@@ -1,0 +1,69 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-06-30"
+ ],
+ "sessions": 128,
+ "trades": 61,
+ "tpw": 2.38,
+ "weeks_in_2_5": 59.0,
+ "weeks_zero": 7.0,
+ "win_rate": 11.5,
+ "avg_r": -0.202,
+ "ci95_r": [
+  -0.478,
+  0.121
+ ],
+ "pf": 0.6,
+ "net": -1840.0,
+ "max_dd": -2434.0,
+ "worst_day": -527.0,
+ "months": {
+  "2026-01": {
+   "trades": 12,
+   "net": -612.0
+  },
+  "2026-02": {
+   "trades": 7,
+   "net": -391.5
+  },
+  "2026-03": {
+   "trades": 11,
+   "net": 1350.0
+  },
+  "2026-04": {
+   "trades": 7,
+   "net": -592.0
+  },
+  "2026-05": {
+   "trades": 16,
+   "net": -927.5
+  },
+  "2026-06": {
+   "trades": 8,
+   "net": -667.0
+  }
+ },
+ "losing_months": 5,
+ "rolling_pass": 0.0,
+ "avg_days_to_pass": null,
+ "completed": 85,
+ "b2b_pass": 0,
+ "b2b_fail": 2,
+ "zero_edge_pass": 0.0,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "A0_current_defaults",
+ "period_name": "dev",
+ "notes": "",
+ "params": {},
+ "scored_at": 1792185737
+}

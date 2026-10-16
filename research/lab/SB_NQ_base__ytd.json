@@ -1,0 +1,87 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-10-16"
+ ],
+ "sessions": 206,
+ "trades": 94,
+ "tpw": 2.28,
+ "weeks_in_2_5": 67.0,
+ "weeks_zero": 5.0,
+ "win_rate": 26.6,
+ "avg_r": -0.093,
+ "ci95_r": [
+  -0.404,
+  0.263
+ ],
+ "pf": 0.91,
+ "net": -2012.6,
+ "max_dd": -5664.5,
+ "worst_day": -725.0,
+ "months": {
+  "2026-01": {
+   "trades": 15,
+   "net": -3940.8
+  },
+  "2026-02": {
+   "trades": 6,
+   "net": -1723.7
+  },
+  "2026-03": {
+   "trades": 9,
+   "net": 660.9
+  },
+  "2026-04": {
+   "trades": 11,
+   "net": 2603.0
+  },
+  "2026-05": {
+   "trades": 11,
+   "net": 1919.2
+  },
+  "2026-06": {
+   "trades": 10,
+   "net": 1547.4
+  },
+  "2026-07": {
+   "trades": 8,
+   "net": -1476.2
+  },
+  "2026-08": {
+   "trades": 5,
+   "net": 572.1
+  },
+  "2026-09": {
+   "trades": 9,
+   "net": -1295.8
+  },
+  "2026-10": {
+   "trades": 10,
+   "net": -878.7
+  }
+ },
+ "losing_months": 5,
+ "rolling_pass": 33.5,
+ "avg_days_to_pass": 33.7,
+ "completed": 197,
+ "b2b_pass": 2,
+ "b2b_fail": 6,
+ "zero_edge_pass": 37.1,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "SB_NQ_base",
+ "period_name": "ytd",
+ "notes": "ICT Silver Bullet",
+ "params": {
+  "sym": "NQ"
+ },
+ "scored_at": 1792187752
+}

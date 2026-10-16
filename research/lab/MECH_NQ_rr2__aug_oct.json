@@ -1,0 +1,61 @@
+{
+ "period": [
+  "2026-08-03",
+  "2026-10-16"
+ ],
+ "sessions": 55,
+ "trades": 18,
+ "tpw": 1.64,
+ "weeks_in_2_5": 55.0,
+ "weeks_zero": 9.0,
+ "win_rate": 33.3,
+ "avg_r": -0.029,
+ "ci95_r": [
+  -0.503,
+  0.482
+ ],
+ "pf": 1.12,
+ "net": 264.8,
+ "max_dd": -1646.6,
+ "worst_day": -338.8,
+ "months": {
+  "2026-08": {
+   "trades": 7,
+   "net": 387.8
+  },
+  "2026-09": {
+   "trades": 7,
+   "net": -1163.9
+  },
+  "2026-10": {
+   "trades": 4,
+   "net": 1040.9
+  }
+ },
+ "losing_months": 1,
+ "rolling_pass": null,
+ "avg_days_to_pass": null,
+ "completed": 0,
+ "b2b_pass": 0,
+ "b2b_fail": 0,
+ "zero_edge_pass": null,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": true,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "MECH_NQ_rr2",
+ "period_name": "aug_oct",
+ "notes": "mech_ifvg public rules",
+ "params": {
+  "target": "rr",
+  "rr": 2.0,
+  "sym": "NQ"
+ },
+ "scored_at": 1792187529
+}

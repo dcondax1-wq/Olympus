@@ -1,0 +1,124 @@
+{
+ "period": [
+  "2025-04-14",
+  "2026-10-16"
+ ],
+ "sessions": 392,
+ "trades": 191,
+ "tpw": 2.44,
+ "weeks_in_2_5": 72.0,
+ "weeks_zero": 8.0,
+ "win_rate": 42.4,
+ "avg_r": -0.115,
+ "ci95_r": [
+  -0.273,
+  0.045
+ ],
+ "pf": 0.79,
+ "net": -7407.45,
+ "max_dd": -7672.15,
+ "worst_day": -749.4,
+ "months": {
+  "2025-04": {
+   "trades": 7,
+   "net": -1047.65
+  },
+  "2025-05": {
+   "trades": 10,
+   "net": -153.55
+  },
+  "2025-06": {
+   "trades": 10,
+   "net": -33.3
+  },
+  "2025-07": {
+   "trades": 13,
+   "net": -527.1
+  },
+  "2025-08": {
+   "trades": 9,
+   "net": -451.15
+  },
+  "2025-09": {
+   "trades": 12,
+   "net": -2658.85
+  },
+  "2025-10": {
+   "trades": 12,
+   "net": 439.4
+  },
+  "2025-11": {
+   "trades": 10,
+   "net": -1069.35
+  },
+  "2025-12": {
+   "trades": 5,
+   "net": -195.0
+  },
+  "2026-01": {
+   "trades": 11,
+   "net": 2403.1
+  },
+  "2026-02": {
+   "trades": 13,
+   "net": 2045.0
+  },
+  "2026-03": {
+   "trades": 13,
+   "net": -199.05
+  },
+  "2026-04": {
+   "trades": 9,
+   "net": -1512.85
+  },
+  "2026-05": {
+   "trades": 7,
+   "net": 119.0
+  },
+  "2026-06": {
+   "trades": 17,
+   "net": -1542.35
+  },
+  "2026-07": {
+   "trades": 13,
+   "net": -1061.1
+  },
+  "2026-08": {
+   "trades": 9,
+   "net": -728.75
+  },
+  "2026-09": {
+   "trades": 6,
+   "net": 34.6
+  },
+  "2026-10": {
+   "trades": 5,
+   "net": -1268.5
+  }
+ },
+ "losing_months": 14,
+ "rolling_pass": 13.8,
+ "avg_days_to_pass": 47.1,
+ "completed": 355,
+ "b2b_pass": 1,
+ "b2b_fail": 9,
+ "zero_edge_pass": 18.7,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "M22_ES_nobias",
+ "period_name": "all18m",
+ "notes": "ICT 2022 Mentorship model, research/lab/M22_RULES.md",
+ "params": {
+  "sym": "ES",
+  "bias": false
+ },
+ "scored_at": 1792187450
+}

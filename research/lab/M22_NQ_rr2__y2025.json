@@ -1,0 +1,85 @@
+{
+ "period": [
+  "2025-04-14",
+  "2025-12-31"
+ ],
+ "sessions": 186,
+ "trades": 45,
+ "tpw": 1.21,
+ "weeks_in_2_5": 39.0,
+ "weeks_zero": 29.0,
+ "win_rate": 42.2,
+ "avg_r": 0.061,
+ "ci95_r": [
+  -0.284,
+  0.428
+ ],
+ "pf": 1.11,
+ "net": 813.6,
+ "max_dd": -3109.7,
+ "worst_day": -659.6,
+ "months": {
+  "2025-04": {
+   "trades": 3,
+   "net": -78.3
+  },
+  "2025-05": {
+   "trades": 5,
+   "net": -106.5
+  },
+  "2025-06": {
+   "trades": 3,
+   "net": 546.3
+  },
+  "2025-07": {
+   "trades": 6,
+   "net": -645.6
+  },
+  "2025-08": {
+   "trades": 7,
+   "net": -1338.1
+  },
+  "2025-09": {
+   "trades": 8,
+   "net": 945.8
+  },
+  "2025-10": {
+   "trades": 5,
+   "net": 476.3
+  },
+  "2025-11": {
+   "trades": 4,
+   "net": -610.3
+  },
+  "2025-12": {
+   "trades": 4,
+   "net": 1624.0
+  }
+ },
+ "losing_months": 5,
+ "rolling_pass": 8.1,
+ "avg_days_to_pass": 76.5,
+ "completed": 99,
+ "b2b_pass": 0,
+ "b2b_fail": 1,
+ "zero_edge_pass": 2.2,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "M22_NQ_rr2",
+ "period_name": "y2025",
+ "notes": "ICT 2022 Mentorship model, research/lab/M22_RULES.md",
+ "params": {
+  "sym": "NQ",
+  "target": "rr",
+  "rr": 2.0
+ },
+ "scored_at": 1792187445
+}

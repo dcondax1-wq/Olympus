@@ -545,6 +545,8 @@ class LiveBot:
             eng = Engine(base, htf=htf, partner=partner, params=params).run()
             res = eng.result()
         self.state = res["state"]
+        self.state["strategy"] = {"model": model, "label": lm.get("label", ""),
+                                  "params": eng_params if model == "engine" else (self.cfg.get("model_params") or lm["params"])}
         self.last_poll = now
         self.bars_tail = base.to_records(max(0, len(base) - 400))
         self._emit_events(res, sym)

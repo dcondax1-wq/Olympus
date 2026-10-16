@@ -1,0 +1,125 @@
+{
+ "period": [
+  "2025-04-14",
+  "2026-10-16"
+ ],
+ "sessions": 392,
+ "trades": 211,
+ "tpw": 2.69,
+ "weeks_in_2_5": 82.0,
+ "weeks_zero": 4.0,
+ "win_rate": 22.3,
+ "avg_r": 0.14,
+ "ci95_r": [
+  -0.056,
+  0.347
+ ],
+ "pf": 1.72,
+ "net": 12991.0,
+ "max_dd": -3361.5,
+ "worst_day": -364.0,
+ "months": {
+  "2025-04": {
+   "trades": 6,
+   "net": 1948.5
+  },
+  "2025-05": {
+   "trades": 16,
+   "net": -286.5
+  },
+  "2025-06": {
+   "trades": 10,
+   "net": 761.0
+  },
+  "2025-07": {
+   "trades": 16,
+   "net": 1124.5
+  },
+  "2025-08": {
+   "trades": 17,
+   "net": 726.0
+  },
+  "2025-09": {
+   "trades": 17,
+   "net": -1674.5
+  },
+  "2025-10": {
+   "trades": 11,
+   "net": -560.0
+  },
+  "2025-11": {
+   "trades": 11,
+   "net": -652.0
+  },
+  "2025-12": {
+   "trades": 14,
+   "net": -26.0
+  },
+  "2026-01": {
+   "trades": 11,
+   "net": 893.5
+  },
+  "2026-02": {
+   "trades": 6,
+   "net": -436.0
+  },
+  "2026-03": {
+   "trades": 9,
+   "net": 2684.5
+  },
+  "2026-04": {
+   "trades": 10,
+   "net": -831.5
+  },
+  "2026-05": {
+   "trades": 11,
+   "net": -790.0
+  },
+  "2026-06": {
+   "trades": 7,
+   "net": -928.0
+  },
+  "2026-07": {
+   "trades": 7,
+   "net": -339.5
+  },
+  "2026-08": {
+   "trades": 14,
+   "net": 5287.5
+  },
+  "2026-09": {
+   "trades": 11,
+   "net": 4125.0
+  },
+  "2026-10": {
+   "trades": 7,
+   "net": 1964.5
+  }
+ },
+ "losing_months": 10,
+ "rolling_pass": 35.2,
+ "avg_days_to_pass": 42.6,
+ "completed": 375,
+ "b2b_pass": 4,
+ "b2b_fail": 2,
+ "zero_edge_pass": 18.0,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": true,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": true
+  }
+ },
+ "name": "ORIG_engine_1day_nograde",
+ "period_name": "all18m",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1
+ },
+ "scored_at": 1792188162
+}

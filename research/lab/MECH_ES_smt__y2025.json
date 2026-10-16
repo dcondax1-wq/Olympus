@@ -1,0 +1,72 @@
+{
+ "period": [
+  "2025-04-14",
+  "2025-12-31"
+ ],
+ "sessions": 186,
+ "trades": 13,
+ "tpw": 0.35,
+ "weeks_in_2_5": 5.0,
+ "weeks_zero": 71.0,
+ "win_rate": 23.1,
+ "avg_r": -0.267,
+ "ci95_r": [
+  -0.7,
+  0.232
+ ],
+ "pf": 0.49,
+ "net": -1109.8,
+ "max_dd": -1459.7,
+ "worst_day": -375.7,
+ "months": {
+  "2025-06": {
+   "trades": 2,
+   "net": 349.9
+  },
+  "2025-07": {
+   "trades": 3,
+   "net": -710.8
+  },
+  "2025-08": {
+   "trades": 2,
+   "net": -34.15
+  },
+  "2025-09": {
+   "trades": 3,
+   "net": -410.8
+  },
+  "2025-10": {
+   "trades": 2,
+   "net": 4.0
+  },
+  "2025-12": {
+   "trades": 1,
+   "net": -307.95
+  }
+ },
+ "losing_months": 4,
+ "rolling_pass": null,
+ "avg_days_to_pass": null,
+ "completed": 0,
+ "b2b_pass": 0,
+ "b2b_fail": 0,
+ "zero_edge_pass": null,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": true,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "MECH_ES_smt",
+ "period_name": "y2025",
+ "notes": "mech_ifvg public rules",
+ "params": {
+  "smt": true,
+  "sym": "ES"
+ },
+ "scored_at": 1792187533
+}

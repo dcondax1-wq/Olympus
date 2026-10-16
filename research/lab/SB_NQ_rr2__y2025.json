@@ -1,0 +1,85 @@
+{
+ "period": [
+  "2025-04-14",
+  "2025-12-31"
+ ],
+ "sessions": 186,
+ "trades": 89,
+ "tpw": 2.39,
+ "weeks_in_2_5": 71.0,
+ "weeks_zero": 8.0,
+ "win_rate": 33.7,
+ "avg_r": -0.07,
+ "ci95_r": [
+  -0.343,
+  0.216
+ ],
+ "pf": 0.9,
+ "net": -1762.5,
+ "max_dd": -5230.3,
+ "worst_day": -700.2,
+ "months": {
+  "2025-04": {
+   "trades": 7,
+   "net": 897.1
+  },
+  "2025-05": {
+   "trades": 7,
+   "net": 606.1
+  },
+  "2025-06": {
+   "trades": 15,
+   "net": -3317.0
+  },
+  "2025-07": {
+   "trades": 7,
+   "net": 1307.3
+  },
+  "2025-08": {
+   "trades": 8,
+   "net": -1463.7
+  },
+  "2025-09": {
+   "trades": 10,
+   "net": 451.7
+  },
+  "2025-10": {
+   "trades": 12,
+   "net": -850.0
+  },
+  "2025-11": {
+   "trades": 10,
+   "net": -450.0
+  },
+  "2025-12": {
+   "trades": 13,
+   "net": 1056.0
+  }
+ },
+ "losing_months": 4,
+ "rolling_pass": 0.0,
+ "avg_days_to_pass": null,
+ "completed": 119,
+ "b2b_pass": 0,
+ "b2b_fail": 3,
+ "zero_edge_pass": 0.0,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "SB_NQ_rr2",
+ "period_name": "y2025",
+ "notes": "ICT Silver Bullet",
+ "params": {
+  "sym": "NQ",
+  "target": "rr",
+  "rr": 2.0
+ },
+ "scored_at": 1792187757
+}

@@ -1,0 +1,125 @@
+{
+ "period": [
+  "2025-04-14",
+  "2026-10-16"
+ ],
+ "sessions": 392,
+ "trades": 23,
+ "tpw": 0.29,
+ "weeks_in_2_5": 5.0,
+ "weeks_zero": 76.0,
+ "win_rate": 39.1,
+ "avg_r": -0.07,
+ "ci95_r": [
+  -0.525,
+  0.425
+ ],
+ "pf": 0.9,
+ "net": -363.0,
+ "max_dd": -1311.7,
+ "worst_day": -657.75,
+ "months": {
+  "2025-04": {
+   "trades": 1,
+   "net": -275.3
+  },
+  "2025-05": {
+   "trades": 1,
+   "net": 179.1
+  },
+  "2025-08": {
+   "trades": 1,
+   "net": 398.5
+  },
+  "2025-09": {
+   "trades": 1,
+   "net": -372.6
+  },
+  "2025-11": {
+   "trades": 1,
+   "net": -345.6
+  },
+  "2025-12": {
+   "trades": 1,
+   "net": -277.95
+  },
+  "2026-01": {
+   "trades": 5,
+   "net": -123.9
+  },
+  "2026-03": {
+   "trades": 2,
+   "net": 225.5
+  },
+  "2026-04": {
+   "trades": 4,
+   "net": 782.5
+  },
+  "2026-06": {
+   "trades": 1,
+   "net": -300.45
+  },
+  "2026-07": {
+   "trades": 3,
+   "net": -401.3
+  },
+  "2026-08": {
+   "trades": 1,
+   "net": -307.0
+  },
+  "2026-09": {
+   "trades": 1,
+   "net": 455.5
+  }
+ },
+ "losing_months": 8,
+ "rolling_pass": null,
+ "avg_days_to_pass": null,
+ "completed": 0,
+ "b2b_pass": 0,
+ "b2b_fail": 0,
+ "zero_edge_pass": null,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": true,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "CONT_ES_IFVG_AMPM",
+ "period_name": "all18m",
+ "notes": "ICT continuation, rules fixed in research/lab/CONT_RULES.md before testing",
+ "params": {
+  "sym": "ES",
+  "entry": "ifvg",
+  "windows": [
+   [
+    570,
+    660
+   ],
+   [
+    810,
+    900
+   ]
+  ],
+  "htf_min": 60,
+  "min_fvg": {
+   "NQ": 3.0,
+   "ES": 0.75
+  },
+  "stop_ticks": 2,
+  "min_rr": 2.0,
+  "fill_ticks": 1,
+  "target_ticks": 1,
+  "flat_mod": 955,
+  "max_trades_day": 2,
+  "max_losers_day": 2,
+  "stop_after_win": true,
+  "daily_stop": -700.0,
+  "risk_usd": 350.0
+ },
+ "scored_at": 1792187814
+}

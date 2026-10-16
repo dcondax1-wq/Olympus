@@ -1,0 +1,123 @@
+{
+ "period": [
+  "2025-04-14",
+  "2026-10-16"
+ ],
+ "sessions": 392,
+ "trades": 186,
+ "tpw": 2.37,
+ "weeks_in_2_5": 68.0,
+ "weeks_zero": 6.0,
+ "win_rate": 28.5,
+ "avg_r": -0.074,
+ "ci95_r": [
+  -0.302,
+  0.168
+ ],
+ "pf": 0.92,
+ "net": -3326.2,
+ "max_dd": -10635.4,
+ "worst_day": -725.0,
+ "months": {
+  "2025-04": {
+   "trades": 8,
+   "net": 2747.9
+  },
+  "2025-05": {
+   "trades": 8,
+   "net": 262.6
+  },
+  "2025-06": {
+   "trades": 15,
+   "net": -3233.0
+  },
+  "2025-07": {
+   "trades": 7,
+   "net": 506.3
+  },
+  "2025-08": {
+   "trades": 8,
+   "net": -1463.7
+  },
+  "2025-09": {
+   "trades": 10,
+   "net": 136.7
+  },
+  "2025-10": {
+   "trades": 13,
+   "net": -2046.9
+  },
+  "2025-11": {
+   "trades": 10,
+   "net": 139.5
+  },
+  "2025-12": {
+   "trades": 13,
+   "net": 1637.0
+  },
+  "2026-01": {
+   "trades": 15,
+   "net": -3940.8
+  },
+  "2026-02": {
+   "trades": 6,
+   "net": -1723.7
+  },
+  "2026-03": {
+   "trades": 9,
+   "net": 660.9
+  },
+  "2026-04": {
+   "trades": 11,
+   "net": 2603.0
+  },
+  "2026-05": {
+   "trades": 11,
+   "net": 1919.2
+  },
+  "2026-06": {
+   "trades": 10,
+   "net": 1547.4
+  },
+  "2026-07": {
+   "trades": 8,
+   "net": -1476.2
+  },
+  "2026-08": {
+   "trades": 5,
+   "net": 572.1
+  },
+  "2026-09": {
+   "trades": 9,
+   "net": -1295.8
+  },
+  "2026-10": {
+   "trades": 10,
+   "net": -878.7
+  }
+ },
+ "losing_months": 8,
+ "rolling_pass": 20.9,
+ "avg_days_to_pass": 31.8,
+ "completed": 383,
+ "b2b_pass": 3,
+ "b2b_fail": 10,
+ "zero_edge_pass": 24.5,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "SB_NQ_base",
+ "period_name": "all18m",
+ "notes": "ICT Silver Bullet",
+ "params": {
+  "sym": "NQ"
+ },
+ "scored_at": 1792187753
+}

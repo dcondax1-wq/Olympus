@@ -1,5 +1,10 @@
 {
   "model": "engine",
-  "params": {},
-  "label": "current defaults (until the 2026 sprint winner is chosen)"
+  "sym": "NQ",
+  "params": {
+    "grade_sizing": false,
+    "conviction_step": 0,
+    "max_trades_day": 1
+  },
+  "label": "Liquidity Engine - straight rules: 1 trade/day, fixed risk (2026 sprint pick, 2026-10-16)"
 }

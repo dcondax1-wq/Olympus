@@ -1,0 +1,83 @@
+{
+ "period": [
+  "2025-04-14",
+  "2025-12-31"
+ ],
+ "sessions": 186,
+ "trades": 77,
+ "tpw": 2.07,
+ "weeks_in_2_5": 74.0,
+ "weeks_zero": 13.0,
+ "win_rate": 31.2,
+ "avg_r": -0.125,
+ "ci95_r": [
+  -0.352,
+  0.116
+ ],
+ "pf": 0.74,
+ "net": -2863.9,
+ "max_dd": -4235.6,
+ "worst_day": -357.6,
+ "months": {
+  "2025-04": {
+   "trades": 6,
+   "net": -402.0
+  },
+  "2025-05": {
+   "trades": 8,
+   "net": 31.2
+  },
+  "2025-06": {
+   "trades": 6,
+   "net": -204.2
+  },
+  "2025-07": {
+   "trades": 5,
+   "net": 182.8
+  },
+  "2025-08": {
+   "trades": 13,
+   "net": -1613.0
+  },
+  "2025-09": {
+   "trades": 8,
+   "net": -87.0
+  },
+  "2025-10": {
+   "trades": 14,
+   "net": -919.1
+  },
+  "2025-11": {
+   "trades": 8,
+   "net": 600.0
+  },
+  "2025-12": {
+   "trades": 9,
+   "net": -452.6
+  }
+ },
+ "losing_months": 6,
+ "rolling_pass": 0.0,
+ "avg_days_to_pass": null,
+ "completed": 136,
+ "b2b_pass": 0,
+ "b2b_fail": 2,
+ "zero_edge_pass": 0.0,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "MECH_NQ_base",
+ "period_name": "y2025",
+ "notes": "mech_ifvg public rules",
+ "params": {
+  "sym": "NQ"
+ },
+ "scored_at": 1792187525
+}

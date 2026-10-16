@@ -1,0 +1,60 @@
+{
+ "period": [
+  "2026-08-03",
+  "2026-10-16"
+ ],
+ "sessions": 55,
+ "trades": 28,
+ "tpw": 2.55,
+ "weeks_in_2_5": 73.0,
+ "weeks_zero": 0.0,
+ "win_rate": 42.9,
+ "avg_r": -0.03,
+ "ci95_r": [
+  -0.459,
+  0.459
+ ],
+ "pf": 0.95,
+ "net": -205.0,
+ "max_dd": -1674.6,
+ "worst_day": -601.1,
+ "months": {
+  "2026-08": {
+   "trades": 13,
+   "net": 757.4
+  },
+  "2026-09": {
+   "trades": 8,
+   "net": -282.4
+  },
+  "2026-10": {
+   "trades": 7,
+   "net": -680.0
+  }
+ },
+ "losing_months": 2,
+ "rolling_pass": null,
+ "avg_days_to_pass": null,
+ "completed": 0,
+ "b2b_pass": 0,
+ "b2b_fail": 0,
+ "zero_edge_pass": null,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": true,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "M22_NQ_nobias",
+ "period_name": "aug_oct",
+ "notes": "ICT 2022 Mentorship model, research/lab/M22_RULES.md",
+ "params": {
+  "sym": "NQ",
+  "bias": false
+ },
+ "scored_at": 1792187443
+}
