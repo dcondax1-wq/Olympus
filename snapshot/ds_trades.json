@@ -1,0 +1,1 @@
+{"title": "Backtest trade log", "description": "Every backtested NQ trade with side, trigger, target, exit, R multiple and P&L.", "source": {"kind": "file", "url": "/_blob/35c2422bb80ae8b6cb357fcd9d1f2d38", "name": "trades.csv"}, "updated": {"at": "2026-10-15T22:00:17+00:00", "by": "Claude (backtest export)"}, "fixed": true}

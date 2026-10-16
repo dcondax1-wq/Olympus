@@ -1,0 +1,202 @@
+# combo study  sym=NQ check=ES range 2026-08-06..2026-10-16  52 days  11 weeks  864 configs  band 2.0-4.5/wk
+
+## Full-sample landscape (in-sample, descriptive)
+configs in the 2.0-4.5/wk band: 390/864; profitable among them: 390; defaults: 29 · 2.8/wk · WR 45% · +1.07R · $+10,718 · PF 6.9 · DD -372
+ES defaults: 47 · 4.6/wk · WR 19% · -0.37R · $-4,272 · PF 0.3 · DD -4,315; ES configs profitable: 0/864; rank corr(avg R NQ, avg R ES) over band configs: -0.11
+
+### Win rate vs expectancy (band configs, in-sample): best avg R per win-rate bucket
+| win-rate bucket | configs | best avg R config | its stats | its ES |
+|---|---|---|---|---|
+| 0-35% | 0 | - | - | - |
+| 35-45% | 318 | min_score=2, w_htf=0, w_m15=0, entry_windows='AM+1330-1500', stop_after_win=False | 21 · 2.0/wk · WR 43% · +1.39R · $+10,122 · PF 7.2 · DD -744 | 33 · 3.2/wk · WR 18% · -0.39R · $-3,645 · PF 0.2 · DD -3,645 |
+| 45-55% | 72 | min_score=2, w_htf=0, stop_after_win=False | 21 · 2.0/wk · WR 52% · +1.56R · $+10,976 · PF 10.1 · DD -528 | 33 · 3.2/wk · WR 18% · -0.35R · $-3,372 · PF 0.3 · DD -3,558 |
+| 55-100% | 0 | - | - | - |
+
+### Pareto front win rate vs avg R (in-sample)
+| config | NQ full | ES full |
+|---|---|---|
+| min_score=2, w_htf=0, stop_after_win=False | 21 · 2.0/wk · WR 52% · +1.56R · $+10,976 · PF 10.1 · DD -528 | 33 · 3.2/wk · WR 18% · -0.35R · $-3,372 · PF 0.3 · DD -3,558 |
+| min_score=2, w_htf=0, stop_after_win=False, min_rr=2.0 | 21 · 2.0/wk · WR 52% · +1.56R · $+10,976 · PF 10.1 · DD -528 | 28 · 2.7/wk · WR 14% · -0.45R · $-3,602 · PF 0.2 · DD -3,614 |
+| w_htf=0 | 30 · 2.9/wk · WR 53% · +1.17R · $+11,187 · PF 7.5 · DD -318 | 51 · 5.0/wk · WR 20% · -0.33R · $-4,192 · PF 0.3 · DD -5,223 |
+| w_htf=0, min_rr=2.0 | 30 · 2.9/wk · WR 53% · +1.17R · $+11,187 · PF 7.5 · DD -318 | 48 · 4.7/wk · WR 19% · -0.34R · $-4,132 · PF 0.3 · DD -5,163 |
+
+### Per-knob marginal (band configs, mean of avg R across configs holding that value; in-sample)
+| knob | value: NQ mean avgR (n configs) / ES mean avgR |
+|---|---|
+| min_score | 1: +1.03 (148) / -0.34 · 0: +0.93 (174) / -0.34 · 2: +1.15 (68) / -0.38 |
+| w_htf | 1: +1.00 (178) / -0.35 · 0: +1.02 (212) / -0.34 |
+| w_m15 | -1: +1.05 (184) / -0.34 · 0: +0.98 (206) / -0.35 |
+| w_vwap | 0: +1.01 (158) / -0.35 · 1: +1.01 (232) / -0.35 |
+| grade_skip | '': +0.94 (242) / -0.36 · 'D': +1.12 (148) / -0.32 |
+| entry_windows | 'both': +0.98 (226) / -0.34 · 'AM+1330-1500': +1.05 (164) / -0.36 |
+| max_trades_day | 2: +1.04 (284) / -0.35 · 1: +0.93 (106) / -0.33 |
+| stop_after_win | True: +1.01 (240) / -0.34 · False: +1.02 (150) / -0.35 |
+| min_rr | 1.5: +1.01 (195) / -0.34 · 2.0: +1.01 (195) / -0.36 |
+
+## Nested walk-forward (3 folds, expanding train window, test blocks of 2 weeks)
+
+### rule: expectancy
+| train weeks | test weeks | chosen config | train (IS) | test (OOS) NQ | test (OOS) ES |
+|---|---|---|---|---|---|
+| 2026-08-03..2026-08-24 | 2026-08-31..2026-09-07 | min_score=2, w_htf=0, entry_windows='AM+1330-1500', max_trades_day=1 | 7 · 2.1/wk · WR 57% · +2.30R · $+6,400 · PF 18.2 · DD -372 | 0 trades LOW | 4 · 2.0/wk · WR 50% · +0.17R · $+128 · PF 1.4 · DD -330 |
+| 2026-08-03..2026-09-07 | 2026-09-14..2026-09-21 | min_score=2, w_htf=0, w_vwap=1, entry_windows='AM+1330-1500' | 12 · 2.2/wk · WR 58% · +1.58R · $+7,898 · PF 12.6 · DD -210 | 6 · 3.0/wk · WR 17% · +0.36R · $+728 · PF 2.3 · DD -558 | 5 · 2.5/wk · WR 20% · -0.50R · $-500 · PF 0.0 · DD -508 |
+| 2026-08-03..2026-09-21 | 2026-09-28..2026-10-12 | min_score=2, w_vwap=1, entry_windows='AM+1330-1500' | 15 · 2.0/wk · WR 47% · +1.39R · $+8,500 · PF 10.4 · DD -288 | 6 · 2.0/wk · WR 50% · +1.19R · $+1,737 · PF 4.8 · DD -276 | 13 · 4.3/wk · WR 0% · -0.70R · $-2,305 · PF 0.0 · DD -2,305 |
+OOS pooled NQ: 12 · 1.7/wk · WR 33% · +0.78R · $+2,464 · PF 3.4 · DD -558 | ES: 22 · 3.1/wk · WR 14% · -0.49R · $-2,676 · PF 0.1 · DD -2,860 | IS->OOS gap avgR: +1.76 -> +0.78
+
+### rule: t-stat
+| train weeks | test weeks | chosen config | train (IS) | test (OOS) NQ | test (OOS) ES |
+|---|---|---|---|---|---|
+| 2026-08-03..2026-08-24 | 2026-08-31..2026-09-07 | defaults | 9 · 2.6/wk · WR 56% · +1.97R · $+7,158 · PF 16.2 · DD -372 | 6 · 3.0/wk · WR 33% · +0.05R · $+546 · PF 3.1 · DD -246 | 9 · 4.5/wk · WR 22% · -0.18R · $-248 · PF 0.6 · DD -424 |
+| 2026-08-03..2026-09-07 | 2026-09-14..2026-09-21 | w_htf=0 | 17 · 3.1/wk · WR 59% · +1.26R · $+8,120 · PF 12.5 · DD -210 | 7 · 3.5/wk · WR 29% · +0.60R · $+1,054 · PF 2.9 · DD -318 | 7 · 3.5/wk · WR 29% · -0.16R · $-281 · PF 0.5 · DD -423 |
+| 2026-08-03..2026-09-21 | 2026-09-28..2026-10-12 | w_htf=0 | 24 · 3.2/wk · WR 50% · +1.07R · $+9,174 · PF 8.3 · DD -318 | 6 · 2.0/wk · WR 67% · +1.60R · $+2,012 · PF 5.4 · DD -276 | 19 · 6.3/wk · WR 11% · -0.69R · $-2,957 · PF 0.0 · DD -2,964 |
+OOS pooled NQ: 19 · 2.7/wk · WR 42% · +0.74R · $+3,614 · PF 3.8 · DD -318 | ES: 35 · 5.0/wk · WR 17% · -0.45R · $-3,486 · PF 0.2 · DD -3,662 | IS->OOS gap avgR: +1.43 -> +0.74
+
+### rule: win-rate
+| train weeks | test weeks | chosen config | train (IS) | test (OOS) NQ | test (OOS) ES |
+|---|---|---|---|---|---|
+| 2026-08-03..2026-08-24 | 2026-08-31..2026-09-07 | w_vwap=1, grade_skip='D', entry_windows='AM+1330-1500', max_trades_day=1 | 8 · 2.4/wk · WR 62% · +1.88R · $+6,725 · PF 13.9 · DD -212 | 2 · 1.0/wk · WR 50% · +0.76R · $+727 · PF 37.4 · DD -20 LOW | 2 · 1.0/wk · WR 50% · +0.08R · $+45 · PF 1.3 · DD -139 |
+| 2026-08-03..2026-09-07 | 2026-09-14..2026-09-21 | w_htf=0 | 17 · 3.1/wk · WR 59% · +1.26R · $+8,120 · PF 12.5 · DD -210 | 7 · 3.5/wk · WR 29% · +0.60R · $+1,054 · PF 2.9 · DD -318 | 7 · 3.5/wk · WR 29% · -0.16R · $-281 · PF 0.5 · DD -423 |
+| 2026-08-03..2026-09-21 | 2026-09-28..2026-10-12 | w_htf=0, max_trades_day=1 | 22 · 3.0/wk · WR 50% · +0.97R · $+7,850 · PF 8.2 · DD -260 | 5 · 1.7/wk · WR 60% · +1.71R · $+1,732 · PF 4.8 · DD -276 LOW | 13 · 4.3/wk · WR 8% · -0.73R · $-1,980 · PF 0.0 · DD -1,987 |
+OOS pooled NQ: 14 · 2.0/wk · WR 43% · +1.02R · $+3,514 · PF 4.4 · DD -318 | ES: 22 · 3.1/wk · WR 18% · -0.47R · $-2,216 · PF 0.2 · DD -2,400 | IS->OOS gap avgR: +1.37 -> +1.02
+
+### rule: worst-block
+| train weeks | test weeks | chosen config | train (IS) | test (OOS) NQ | test (OOS) ES |
+|---|---|---|---|---|---|
+| 2026-08-03..2026-08-24 | 2026-08-31..2026-09-07 | min_score=0, w_htf=0 | 13 · 3.8/wk · WR 54% · +1.38R · $+7,210 · PF 11.5 · DD -210 | 7 · 3.5/wk · WR 43% · -0.01R · $+456 · PF 2.3 · DD -226 | 11 · 5.5/wk · WR 9% · -0.33R · $-635 · PF 0.3 · DD -635 |
+| 2026-08-03..2026-09-07 | 2026-09-14..2026-09-21 | w_htf=0 | 17 · 3.1/wk · WR 59% · +1.26R · $+8,120 · PF 12.5 · DD -210 | 7 · 3.5/wk · WR 29% · +0.60R · $+1,054 · PF 2.9 · DD -318 | 7 · 3.5/wk · WR 29% · -0.16R · $-281 · PF 0.5 · DD -423 |
+| 2026-08-03..2026-09-21 | 2026-09-28..2026-10-12 | w_htf=0 | 24 · 3.2/wk · WR 50% · +1.07R · $+9,174 · PF 8.3 · DD -318 | 6 · 2.0/wk · WR 67% · +1.60R · $+2,012 · PF 5.4 · DD -276 | 19 · 6.3/wk · WR 11% · -0.69R · $-2,957 · PF 0.0 · DD -2,964 |
+OOS pooled NQ: 20 · 2.9/wk · WR 45% · +0.69R · $+3,523 · PF 3.6 · DD -372 | ES: 37 · 5.3/wk · WR 14% · -0.48R · $-3,874 · PF 0.1 · DD -3,874 | IS->OOS gap avgR: +1.23 -> +0.69
+
+### rule: defaults
+| train weeks | test weeks | chosen config | train (IS) | test (OOS) NQ | test (OOS) ES |
+|---|---|---|---|---|---|
+| 2026-08-03..2026-08-24 | 2026-08-31..2026-09-07 | defaults | 9 · 2.6/wk · WR 56% · +1.97R · $+7,158 · PF 16.2 · DD -372 | 6 · 3.0/wk · WR 33% · +0.05R · $+546 · PF 3.1 · DD -246 | 9 · 4.5/wk · WR 22% · -0.18R · $-248 · PF 0.6 · DD -424 |
+| 2026-08-03..2026-09-07 | 2026-09-14..2026-09-21 | defaults | 15 · 2.8/wk · WR 47% · +1.20R · $+7,704 · PF 11.5 · DD -372 | 6 · 3.0/wk · WR 33% · +0.74R · $+1,084 · PF 3.1 · DD -288 | 6 · 3.0/wk · WR 33% · -0.10R · $-98 · PF 0.8 · DD -304 |
+| 2026-08-03..2026-09-21 | 2026-09-28..2026-10-12 | defaults | 21 · 2.8/wk · WR 43% · +1.07R · $+8,789 · PF 7.9 · DD -372 | 8 · 2.7/wk · WR 50% · +1.07R · $+1,930 · PF 4.6 · DD -276 | 16 · 5.3/wk · WR 6% · -0.63R · $-2,300 · PF 0.0 · DD -2,300 |
+OOS pooled NQ: 20 · 2.9/wk · WR 40% · +0.67R · $+3,560 · PF 3.7 · DD -288 | ES: 31 · 4.4/wk · WR 16% · -0.40R · $-2,646 · PF 0.2 · DD -2,822 | IS->OOS gap avgR: +1.41 -> +0.67
+
+### rule: oracle
+| train weeks | test weeks | chosen config | train (IS) | test (OOS) NQ | test (OOS) ES |
+|---|---|---|---|---|---|
+| 2026-08-03..2026-08-24 | 2026-08-31..2026-09-07 | w_htf=0, w_vwap=1, max_trades_day=1 | 12 · 3.5/wk · WR 50% · +1.09R · $+5,710 · PF 9.3 · DD -220 | 6 · 3.0/wk · WR 67% · +0.58R · $+863 · PF 7.5 · DD -132 | 6 · 3.0/wk · WR 17% · -0.20R · $-247 · PF 0.5 · DD -352 |
+| 2026-08-03..2026-09-07 | 2026-09-14..2026-09-21 | min_score=0, w_htf=0, entry_windows='AM+1330-1500', max_trades_day=1 | 14 · 2.6/wk · WR 50% · +0.93R · $+6,220 · PF 8.2 · DD -384 | 6 · 3.0/wk · WR 33% · +0.82R · $+1,230 · PF 4.2 · DD -240 | 8 · 4.0/wk · WR 38% · +0.06R · $+124 · PF 1.5 · DD -154 |
+| 2026-08-03..2026-09-21 | 2026-09-28..2026-10-12 | w_htf=0, w_vwap=1, entry_windows='AM', stop_after_win=False | 12 · 1.6/wk · WR 33% · +0.69R · $+3,305 · PF 4.6 · DD -516 | 6 · 2.0/wk · WR 67% · +2.15R · $+3,676 · PF 37.8 · DD -80 | 12 · 4.0/wk · WR 0% · -0.77R · $-1,804 · PF 0.0 · DD -1,804 |
+OOS pooled NQ: 18 · 2.6/wk · WR 56% · +1.18R · $+5,770 · PF 10.4 · DD -372 | ES: 26 · 3.7/wk · WR 15% · -0.39R · $-1,927 · PF 0.2 · DD -1,959 | IS->OOS gap avgR: +0.91 -> +1.18
+
+## OOS comparison (pooled test weeks only)
+| rule | OOS NQ | 90% CI avg R (bootstrap) | 90% CI win rate | P(avgR<=0) | OOS ES | weekly R diff vs defaults (90% CI, week bootstrap) |
+|---|---|---|---|---|---|---|
+| defaults | 20 · 2.9/wk · WR 40% · +0.67R · $+3,560 · PF 3.7 · DD -288 | +0.01..+1.34 | 20..60% | 0.04 | 31 · 4.4/wk · WR 16% · -0.40R · $-2,646 · PF 0.2 · DD -2,822 | +0.00R/wk (+0.00..+0.00) |
+| expectancy | 12 · 1.7/wk · WR 33% · +0.78R · $+2,464 · PF 3.4 · DD -558 | -0.24..+1.84 | 8..58% | 0.11 | 22 · 3.1/wk · WR 14% · -0.49R · $-2,676 · PF 0.1 · DD -2,860 | -0.57R/wk (-1.03..-0.17) |
+| t-stat | 19 · 2.7/wk · WR 42% · +0.74R · $+3,614 · PF 3.8 · DD -318 | +0.09..+1.46 | 26..63% | 0.03 | 35 · 5.0/wk · WR 17% · -0.45R · $-3,486 · PF 0.2 · DD -3,662 | +0.11R/wk (-0.07..+0.41) |
+| win-rate | 14 · 2.0/wk · WR 43% · +1.02R · $+3,514 · PF 4.4 · DD -318 | +0.18..+1.93 | 21..64% | 0.02 | 22 · 3.1/wk · WR 18% · -0.47R · $-2,216 · PF 0.2 · DD -2,400 | +0.14R/wk (-0.31..+0.58) |
+| worst-block | 20 · 2.9/wk · WR 45% · +0.69R · $+3,523 · PF 3.6 · DD -372 | +0.04..+1.38 | 25..65% | 0.03 | 37 · 5.3/wk · WR 14% · -0.48R · $-3,874 · PF 0.1 · DD -3,874 | +0.06R/wk (-0.18..+0.35) |
+| oracle | 18 · 2.6/wk · WR 56% · +1.18R · $+5,770 · PF 10.4 · DD -372 | +0.50..+1.92 | 39..72% | 0.00 | 26 · 3.7/wk · WR 15% · -0.39R · $-1,927 · PF 0.2 · DD -1,959 | +1.14R/wk (-0.03..+2.33) |
+
+Defaults' OOS avg R is at the 42th percentile of 312 in-band configs on the same OOS weeks.
+
+## Final configs (rule applied to ALL weeks - in-sample numbers; judge them by the OOS table above)
+| rule | config | NQ full (IS) | ES full |
+|---|---|---|---|
+| defaults | defaults | 29 · 2.8/wk · WR 45% · +1.07R · $+10,718 · PF 6.9 · DD -372 | 47 · 4.6/wk · WR 19% · -0.37R · $-4,272 · PF 0.3 · DD -4,315 |
+| expectancy | min_score=2, w_htf=0, stop_after_win=False | 21 · 2.0/wk · WR 52% · +1.56R · $+10,976 · PF 10.1 · DD -528 | 33 · 3.2/wk · WR 18% · -0.35R · $-3,372 · PF 0.3 · DD -3,558 |
+| t-stat | w_htf=0, stop_after_win=False | 34 · 3.3/wk · WR 50% · +1.11R · $+12,537 · PF 7.4 · DD -318 | 53 · 5.2/wk · WR 19% · -0.32R · $-4,270 · PF 0.3 · DD -5,246 |
+| win-rate | w_htf=0 | 30 · 2.9/wk · WR 53% · +1.17R · $+11,187 · PF 7.5 · DD -318 | 51 · 5.0/wk · WR 20% · -0.33R · $-4,192 · PF 0.3 · DD -5,223 |
+| worst-block | w_htf=0 | 30 · 2.9/wk · WR 53% · +1.17R · $+11,187 · PF 7.5 · DD -318 | 51 · 5.0/wk · WR 20% · -0.33R · $-4,192 · PF 0.3 · DD -5,223 |
+
+## Neighbourhood check (one knob one step; full sample and OOS weeks)
+
+### defaults: defaults
+| perturbation | NQ full | NQ OOS weeks | ES full |
+|---|---|---|---|
+| min_score=0 | 33 · 3.2/wk · WR 42% · +0.91R · $+10,629 · PF 6.2 · DD -437 | 21 · 3.0/wk · WR 38% · +0.61R · $+3,484 · PF 3.6 · DD -318 | 57 · 5.6/wk · WR 19% · -0.35R · $-4,352 · PF 0.3 · DD -5,247 |
+| min_score=2 | 15 · 1.4/wk · WR 47% · +1.11R · $+6,667 · PF 8.9 · DD -288 | 10 · 1.4/wk · WR 50% · +1.18R · $+3,708 · PF 8.6 · DD -288 | 21 · 2.1/wk · WR 19% · -0.32R · $-2,202 · PF 0.3 · DD -2,381 |
+| w_htf=0 | 30 · 2.9/wk · WR 53% · +1.17R · $+11,187 · PF 7.5 · DD -318 | 18 · 2.6/wk · WR 56% · +0.99R · $+4,042 · PF 4.9 · DD -318 | 51 · 5.0/wk · WR 20% · -0.33R · $-4,192 · PF 0.3 · DD -5,223 |
+| w_m15=0 | 30 · 2.9/wk · WR 40% · +0.98R · $+10,354 · PF 6.1 · DD -459 | 20 · 2.9/wk · WR 35% · +0.64R · $+3,492 · PF 3.6 · DD -288 | 49 · 4.8/wk · WR 20% · -0.36R · $-4,276 · PF 0.3 · DD -4,319 |
+| w_vwap=1 | 32 · 3.1/wk · WR 44% · +0.95R · $+10,681 · PF 6.2 · DD -456 | 21 · 3.0/wk · WR 38% · +0.62R · $+3,530 · PF 3.6 · DD -318 | 54 · 5.3/wk · WR 20% · -0.35R · $-4,572 · PF 0.3 · DD -4,615 |
+| grade_skip='D' | 19 · 1.8/wk · WR 47% · +1.43R · $+11,012 · PF 9.8 · DD -438 | 13 · 1.9/wk · WR 38% · +0.91R · $+4,280 · PF 5.6 · DD -438 | 30 · 2.9/wk · WR 20% · -0.36R · $-3,677 · PF 0.2 · DD -3,864 |
+| entry_windows='AM' | 15 · 1.4/wk · WR 40% · +1.24R · $+5,744 · PF 8.5 · DD -562 | 10 · 1.4/wk · WR 30% · +0.63R · $+1,624 · PF 3.9 · DD -562 | 31 · 3.0/wk · WR 13% · -0.40R · $-2,762 · PF 0.2 · DD -2,762 |
+| entry_windows='AM+1330-1500' | 25 · 2.4/wk · WR 44% · +1.21R · $+10,573 · PF 7.6 · DD -372 | 16 · 2.3/wk · WR 38% · +0.79R · $+3,415 · PF 4.0 · DD -288 | 43 · 4.2/wk · WR 16% · -0.40R · $-4,254 · PF 0.3 · DD -4,254 |
+| max_trades_day=1 | 25 · 2.4/wk · WR 44% · +1.08R · $+10,040 · PF 7.4 · DD -459 | 16 · 2.3/wk · WR 38% · +0.58R · $+2,882 · PF 3.6 · DD -459 | 36 · 3.5/wk · WR 17% · -0.38R · $-3,535 · PF 0.3 · DD -3,741 |
+| stop_after_win=False | 32 · 3.1/wk · WR 41% · +0.93R · $+10,480 · PF 6.1 · DD -372 | 21 · 3.0/wk · WR 38% · +0.63R · $+3,540 · PF 3.6 · DD -288 | 49 · 4.8/wk · WR 18% · -0.36R · $-4,350 · PF 0.3 · DD -4,392 |
+| min_rr=2.0 | 29 · 2.8/wk · WR 45% · +1.07R · $+10,718 · PF 6.9 · DD -372 | 20 · 2.9/wk · WR 40% · +0.67R · $+3,560 · PF 3.7 · DD -288 | 47 · 4.6/wk · WR 17% · -0.41R · $-4,545 · PF 0.2 · DD -4,588 |
+
+### expectancy: min_score=2, w_htf=0, stop_after_win=False
+| perturbation | NQ full | NQ OOS weeks | ES full |
+|---|---|---|---|
+| min_score=1 | 34 · 3.3/wk · WR 50% · +1.11R · $+12,537 · PF 7.4 · DD -318 | 20 · 2.9/wk · WR 55% · +1.07R · $+5,610 · PF 6.3 · DD -318 | 53 · 5.2/wk · WR 19% · -0.32R · $-4,270 · PF 0.3 · DD -5,246 |
+| min_score=0 | 40 · 3.8/wk · WR 40% · +0.72R · $+10,734 · PF 5.3 · DD -460 | 25 · 3.6/wk · WR 36% · +0.47R · $+3,742 · PF 3.4 · DD -372 | 63 · 6.2/wk · WR 19% · -0.33R · $-4,616 · PF 0.3 · DD -5,575 |
+| w_htf=1 | 15 · 1.4/wk · WR 47% · +1.11R · $+6,667 · PF 8.9 · DD -288 | 10 · 1.4/wk · WR 50% · +1.18R · $+3,708 · PF 8.6 · DD -288 | 21 · 2.1/wk · WR 19% · -0.32R · $-2,202 · PF 0.3 · DD -2,381 |
+| w_m15=0 | 24 · 2.3/wk · WR 50% · +1.36R · $+10,648 · PF 7.6 · DD -528 | 14 · 2.0/wk · WR 57% · +1.34R · $+4,764 · PF 6.8 · DD -528 | 36 · 3.5/wk · WR 19% · -0.38R · $-3,818 · PF 0.2 · DD -4,004 |
+| w_vwap=1 | 30 · 2.9/wk · WR 47% · +1.12R · $+12,033 · PF 7.2 · DD -578 | 17 · 2.4/wk · WR 47% · +1.02R · $+5,100 · PF 5.8 · DD -578 | 46 · 4.5/wk · WR 20% · -0.36R · $-4,471 · PF 0.2 · DD -4,657 |
+| grade_skip='D' | 13 · 1.2/wk · WR 54% · +1.99R · $+9,932 · PF 14.8 · DD -419 | 9 · 1.3/wk · WR 44% · +1.23R · $+3,752 · PF 6.2 · DD -419 | 24 · 2.4/wk · WR 21% · -0.32R · $-2,717 · PF 0.3 · DD -2,911 |
+| entry_windows='AM' | 13 · 1.2/wk · WR 54% · +1.88R · $+7,588 · PF 16.0 · DD -288 | 8 · 1.1/wk · WR 50% · +1.52R · $+3,468 · PF 12.3 · DD -288 | 20 · 2.0/wk · WR 10% · -0.38R · $-1,947 · PF 0.2 · DD -1,947 |
+| entry_windows='AM+1330-1500' | 19 · 1.8/wk · WR 47% · +1.65R · $+10,632 · PF 9.8 · DD -528 | 11 · 1.6/wk · WR 45% · +1.39R · $+4,238 · PF 6.1 · DD -528 | 30 · 2.9/wk · WR 17% · -0.36R · $-3,198 · PF 0.2 · DD -3,198 |
+| max_trades_day=1 | 16 · 1.5/wk · WR 56% · +1.80R · $+9,310 · PF 10.3 · DD -372 | 9 · 1.3/wk · WR 56% · +1.41R · $+2,911 · PF 5.6 · DD -352 | 27 · 2.6/wk · WR 19% · -0.35R · $-2,755 · PF 0.3 · DD -2,960 |
+| stop_after_win=True | 18 · 1.7/wk · WR 56% · +1.62R · $+9,414 · PF 9.0 · DD -528 | 11 · 1.6/wk · WR 55% · +1.19R · $+3,015 · PF 4.8 · DD -528 | 32 · 3.1/wk · WR 19% · -0.36R · $-3,348 · PF 0.3 · DD -3,534 |
+| min_rr=2.0 | 21 · 2.0/wk · WR 52% · +1.56R · $+10,976 · PF 10.1 · DD -528 | 13 · 1.9/wk · WR 54% · +1.29R · $+4,583 · PF 6.6 · DD -528 | 28 · 2.7/wk · WR 14% · -0.45R · $-3,602 · PF 0.2 · DD -3,614 |
+
+### t-stat: w_htf=0, stop_after_win=False
+| perturbation | NQ full | NQ OOS weeks | ES full |
+|---|---|---|---|
+| min_score=0 | 40 · 3.8/wk · WR 40% · +0.72R · $+10,734 · PF 5.3 · DD -460 | 25 · 3.6/wk · WR 36% · +0.47R · $+3,742 · PF 3.4 · DD -372 | 63 · 6.2/wk · WR 19% · -0.33R · $-4,616 · PF 0.3 · DD -5,575 |
+| min_score=2 | 21 · 2.0/wk · WR 52% · +1.56R · $+10,976 · PF 10.1 · DD -528 | 13 · 1.9/wk · WR 54% · +1.29R · $+4,583 · PF 6.6 · DD -528 | 33 · 3.2/wk · WR 18% · -0.35R · $-3,372 · PF 0.3 · DD -3,558 |
+| w_htf=1 | 32 · 3.1/wk · WR 41% · +0.93R · $+10,480 · PF 6.1 · DD -372 | 21 · 3.0/wk · WR 38% · +0.63R · $+3,540 · PF 3.6 · DD -288 | 49 · 4.8/wk · WR 18% · -0.36R · $-4,350 · PF 0.3 · DD -4,392 |
+| w_m15=0 | 38 · 3.7/wk · WR 42% · +0.83R · $+10,560 · PF 5.5 · DD -390 | 24 · 3.4/wk · WR 42% · +0.63R · $+3,633 · PF 3.5 · DD -372 | 55 · 5.4/wk · WR 18% · -0.35R · $-4,521 · PF 0.3 · DD -5,497 |
+| w_vwap=1 | 38 · 3.7/wk · WR 47% · +0.97R · $+12,390 · PF 6.7 · DD -372 | 23 · 3.3/wk · WR 48% · +0.86R · $+5,398 · PF 5.3 · DD -372 | 57 · 5.6/wk · WR 19% · -0.32R · $-4,237 · PF 0.3 · DD -5,216 |
+| grade_skip='D' | 23 · 2.2/wk · WR 43% · +1.16R · $+10,983 · PF 8.4 · DD -468 | 13 · 1.9/wk · WR 38% · +0.90R · $+4,270 · PF 5.5 · DD -468 | 34 · 3.3/wk · WR 24% · -0.30R · $-3,423 · PF 0.2 · DD -3,610 |
+| entry_windows='AM' | 16 · 1.5/wk · WR 50% · +1.40R · $+7,082 · PF 8.6 · DD -496 | 9 · 1.3/wk · WR 56% · +1.35R · $+3,470 · PF 12.3 · DD -288 | 34 · 3.3/wk · WR 15% · -0.30R · $-2,135 · PF 0.4 · DD -2,618 |
+| entry_windows='AM+1330-1500' | 29 · 2.8/wk · WR 48% · +1.21R · $+12,210 · PF 7.9 · DD -318 | 15 · 2.1/wk · WR 53% · +1.25R · $+5,284 · PF 7.2 · DD -318 | 46 · 4.5/wk · WR 17% · -0.33R · $-3,778 · PF 0.3 · DD -4,568 |
+| max_trades_day=1 | 27 · 2.6/wk · WR 52% · +1.11R · $+9,583 · PF 7.2 · DD -276 | 16 · 2.3/wk · WR 56% · +1.09R · $+3,938 · PF 5.6 · DD -276 | 38 · 3.7/wk · WR 21% · -0.28R · $-2,478 · PF 0.4 · DD -3,516 |
+| stop_after_win=True | 30 · 2.9/wk · WR 53% · +1.17R · $+11,187 · PF 7.5 · DD -318 | 18 · 2.6/wk · WR 56% · +0.99R · $+4,042 · PF 4.9 · DD -318 | 51 · 5.0/wk · WR 20% · -0.33R · $-4,192 · PF 0.3 · DD -5,223 |
+| min_rr=2.0 | 34 · 3.3/wk · WR 50% · +1.11R · $+12,537 · PF 7.4 · DD -318 | 20 · 2.9/wk · WR 55% · +1.07R · $+5,610 · PF 6.3 · DD -318 | 49 · 4.8/wk · WR 20% · -0.33R · $-4,045 · PF 0.3 · DD -5,163 |
+
+### win-rate: w_htf=0
+| perturbation | NQ full | NQ OOS weeks | ES full |
+|---|---|---|---|
+| min_score=0 | 36 · 3.5/wk · WR 44% · +0.83R · $+10,992 · PF 5.9 · DD -436 | 23 · 3.3/wk · WR 39% · +0.52R · $+3,782 · PF 3.4 · DD -372 | 60 · 5.9/wk · WR 20% · -0.34R · $-4,484 · PF 0.3 · DD -5,498 |
+| min_score=2 | 18 · 1.7/wk · WR 56% · +1.62R · $+9,414 · PF 9.0 · DD -528 | 11 · 1.6/wk · WR 55% · +1.19R · $+3,015 · PF 4.8 · DD -528 | 32 · 3.1/wk · WR 19% · -0.36R · $-3,348 · PF 0.3 · DD -3,534 |
+| w_htf=1 | 29 · 2.8/wk · WR 45% · +1.07R · $+10,718 · PF 6.9 · DD -372 | 20 · 2.9/wk · WR 40% · +0.67R · $+3,560 · PF 3.7 · DD -288 | 47 · 4.6/wk · WR 19% · -0.37R · $-4,272 · PF 0.3 · DD -4,315 |
+| w_m15=0 | 34 · 3.3/wk · WR 47% · +0.96R · $+10,818 · PF 6.2 · DD -384 | 22 · 3.1/wk · WR 45% · +0.69R · $+3,673 · PF 3.6 · DD -372 | 53 · 5.2/wk · WR 19% · -0.36R · $-4,444 · PF 0.3 · DD -5,474 |
+| w_vwap=1 | 33 · 3.2/wk · WR 52% · +1.04R · $+11,060 · PF 6.8 · DD -372 | 20 · 2.9/wk · WR 50% · +0.81R · $+3,850 · PF 4.1 · DD -372 | 55 · 5.4/wk · WR 20% · -0.33R · $-4,160 · PF 0.3 · DD -5,194 |
+| grade_skip='D' | 22 · 2.1/wk · WR 45% · +1.22R · $+10,989 · PF 8.5 · DD -468 | 13 · 1.9/wk · WR 38% · +0.90R · $+4,270 · PF 5.5 · DD -468 | 34 · 3.3/wk · WR 24% · -0.30R · $-3,423 · PF 0.2 · DD -3,610 |
+| entry_windows='AM' | 13 · 1.2/wk · WR 54% · +1.51R · $+5,726 · PF 9.2 · DD -496 | 7 · 1.0/wk · WR 57% · +1.21R · $+1,902 · PF 7.6 · DD -288 | 32 · 3.1/wk · WR 16% · -0.31R · $-2,058 · PF 0.4 · DD -2,594 |
+| entry_windows='AM+1330-1500' | 25 · 2.4/wk · WR 52% · +1.30R · $+10,860 · PF 8.1 · DD -318 | 13 · 1.9/wk · WR 54% · +1.16R · $+3,716 · PF 5.5 · DD -318 | 44 · 4.3/wk · WR 18% · -0.34R · $-3,700 · PF 0.3 · DD -4,544 |
+| max_trades_day=1 | 27 · 2.6/wk · WR 52% · +1.11R · $+9,583 · PF 7.2 · DD -276 | 16 · 2.3/wk · WR 56% · +1.09R · $+3,938 · PF 5.6 · DD -276 | 38 · 3.7/wk · WR 21% · -0.28R · $-2,478 · PF 0.4 · DD -3,516 |
+| stop_after_win=False | 34 · 3.3/wk · WR 50% · +1.11R · $+12,537 · PF 7.4 · DD -318 | 20 · 2.9/wk · WR 55% · +1.07R · $+5,610 · PF 6.3 · DD -318 | 53 · 5.2/wk · WR 19% · -0.32R · $-4,270 · PF 0.3 · DD -5,246 |
+| min_rr=2.0 | 30 · 2.9/wk · WR 53% · +1.17R · $+11,187 · PF 7.5 · DD -318 | 18 · 2.6/wk · WR 56% · +0.99R · $+4,042 · PF 4.9 · DD -318 | 48 · 4.7/wk · WR 19% · -0.34R · $-4,132 · PF 0.3 · DD -5,163 |
+
+### worst-block: w_htf=0
+| perturbation | NQ full | NQ OOS weeks | ES full |
+|---|---|---|---|
+| min_score=0 | 36 · 3.5/wk · WR 44% · +0.83R · $+10,992 · PF 5.9 · DD -436 | 23 · 3.3/wk · WR 39% · +0.52R · $+3,782 · PF 3.4 · DD -372 | 60 · 5.9/wk · WR 20% · -0.34R · $-4,484 · PF 0.3 · DD -5,498 |
+| min_score=2 | 18 · 1.7/wk · WR 56% · +1.62R · $+9,414 · PF 9.0 · DD -528 | 11 · 1.6/wk · WR 55% · +1.19R · $+3,015 · PF 4.8 · DD -528 | 32 · 3.1/wk · WR 19% · -0.36R · $-3,348 · PF 0.3 · DD -3,534 |
+| w_htf=1 | 29 · 2.8/wk · WR 45% · +1.07R · $+10,718 · PF 6.9 · DD -372 | 20 · 2.9/wk · WR 40% · +0.67R · $+3,560 · PF 3.7 · DD -288 | 47 · 4.6/wk · WR 19% · -0.37R · $-4,272 · PF 0.3 · DD -4,315 |
+| w_m15=0 | 34 · 3.3/wk · WR 47% · +0.96R · $+10,818 · PF 6.2 · DD -384 | 22 · 3.1/wk · WR 45% · +0.69R · $+3,673 · PF 3.6 · DD -372 | 53 · 5.2/wk · WR 19% · -0.36R · $-4,444 · PF 0.3 · DD -5,474 |
+| w_vwap=1 | 33 · 3.2/wk · WR 52% · +1.04R · $+11,060 · PF 6.8 · DD -372 | 20 · 2.9/wk · WR 50% · +0.81R · $+3,850 · PF 4.1 · DD -372 | 55 · 5.4/wk · WR 20% · -0.33R · $-4,160 · PF 0.3 · DD -5,194 |
+| grade_skip='D' | 22 · 2.1/wk · WR 45% · +1.22R · $+10,989 · PF 8.5 · DD -468 | 13 · 1.9/wk · WR 38% · +0.90R · $+4,270 · PF 5.5 · DD -468 | 34 · 3.3/wk · WR 24% · -0.30R · $-3,423 · PF 0.2 · DD -3,610 |
+| entry_windows='AM' | 13 · 1.2/wk · WR 54% · +1.51R · $+5,726 · PF 9.2 · DD -496 | 7 · 1.0/wk · WR 57% · +1.21R · $+1,902 · PF 7.6 · DD -288 | 32 · 3.1/wk · WR 16% · -0.31R · $-2,058 · PF 0.4 · DD -2,594 |
+| entry_windows='AM+1330-1500' | 25 · 2.4/wk · WR 52% · +1.30R · $+10,860 · PF 8.1 · DD -318 | 13 · 1.9/wk · WR 54% · +1.16R · $+3,716 · PF 5.5 · DD -318 | 44 · 4.3/wk · WR 18% · -0.34R · $-3,700 · PF 0.3 · DD -4,544 |
+| max_trades_day=1 | 27 · 2.6/wk · WR 52% · +1.11R · $+9,583 · PF 7.2 · DD -276 | 16 · 2.3/wk · WR 56% · +1.09R · $+3,938 · PF 5.6 · DD -276 | 38 · 3.7/wk · WR 21% · -0.28R · $-2,478 · PF 0.4 · DD -3,516 |
+| stop_after_win=False | 34 · 3.3/wk · WR 50% · +1.11R · $+12,537 · PF 7.4 · DD -318 | 20 · 2.9/wk · WR 55% · +1.07R · $+5,610 · PF 6.3 · DD -318 | 53 · 5.2/wk · WR 19% · -0.32R · $-4,270 · PF 0.3 · DD -5,246 |
+| min_rr=2.0 | 30 · 2.9/wk · WR 53% · +1.17R · $+11,187 · PF 7.5 · DD -318 | 18 · 2.6/wk · WR 56% · +0.99R · $+4,042 · PF 4.9 · DD -318 | 48 · 4.7/wk · WR 19% · -0.34R · $-4,132 · PF 0.3 · DD -5,163 |
+
+## Placebo (engine.robust.placebo: random entries same day/window, same risk/target/BE/time stop) + bootstrap
+| config | real avg R | placebo mean | placebo p95 | p-value | 90% CI real avgR | flipped direction |
+|---|---|---|---|---|---|---|
+| defaults (NQ) defaults | 1.07 | -0.071 | 0.332 | 0.0 | [0.409, 1.761] | -0.318 |
+| defaults (ES) defaults | -0.371 | -0.054 | 0.202 | 0.9933 | [-0.548, -0.181] | 0.005 |
+| expectancy (NQ) min_score=2, w_htf=0, stop_after_win=False | 1.564 | -0.118 | 0.37 | 0.0 | [0.727, 2.442] | -0.528 |
+| expectancy (ES) min_score=2, w_htf=0, stop_after_win=False | -0.351 | -0.062 | 0.272 | 0.9267 | [-0.55, -0.151] | 0.167 |
+| t-stat (NQ) w_htf=0, stop_after_win=False | 1.112 | -0.083 | 0.257 | 0.0 | [0.549, 1.702] | -0.41 |
+| t-stat (ES) w_htf=0, stop_after_win=False | -0.324 | -0.084 | 0.189 | 0.9633 | [-0.498, -0.136] | 0.095 |
+| win-rate (NQ) w_htf=0 | 1.172 | -0.061 | 0.395 | 0.0 | [0.579, 1.785] | -0.432 |
+| win-rate (ES) w_htf=0 | -0.331 | -0.084 | 0.159 | 0.9567 | [-0.512, -0.159] | 0.104 |
+
+## MFFU Builder 50K with LIVE risk settings (grade sizing, $350, dd_aware, $600 daily stop)
+| config | days | net | worst day | worst intraday | eval from day 1 | rolling evals pass/fail/open (avg days) | OOS-days-only rolling | Monte Carlo 60d pass% / fail% / median days |
+|---|---|---|---|---|---|---|---|---|
+| defaults: defaults | 52 | $+10,718 | -285 | -676 | PASS d2 | 31/0/21 (14.0) | 14/0/21 (19.9) | 99.2% / 0.1% / 16.0 |
+| expectancy: min_score=2, w_htf=0, stop_after_win=False | 52 | $+10,976 | -285 | -676 | PASS d2 | 44/0/8 (13.5) | 27/0/8 (16.0) | 98.9% / 0.0% / 15.0 |
+| t-stat: w_htf=0, stop_after_win=False | 52 | $+12,537 | -285 | -676 | PASS d8 | 44/0/8 (15.1) | 27/0/8 (15.6) | 100.0% / 0.0% / 14.0 |
+| win-rate: w_htf=0 | 52 | $+11,187 | -285 | -676 | PASS d2 | 36/0/16 (17.2) | 19/0/16 (20.3) | 99.7% / 0.0% / 15.0 |

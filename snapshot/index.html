@@ -1,0 +1,300 @@
+<style>
+.le { display: grid; gap: var(--cds-gap-lg); font-family: var(--font-anthropic-sans); max-width: 72rem; margin-inline: auto; }
+.le-head { display: grid; gap: var(--cds-gap-xs); }
+.le-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.le-take { color: var(--color-fg-muted); margin: 0; max-width: 62ch; }
+.le-status { display: inline-flex; align-items: center; gap: var(--cds-gap-xs); width: fit-content; padding: var(--cds-pad-xs) var(--cds-pad-sm);
+  border: 1px solid var(--color-border-line); border-radius: 999px; font-size: var(--cds-font-size-caption); color: var(--color-warn); }
+.le-status::before { content: ""; width: .5rem; height: .5rem; border-radius: 50%; background: currentColor; }
+.le-kpis { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); }
+.le-kpi, .le-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); min-width: 0; }
+.le-kpi { display: grid; gap: var(--cds-gap-xs); align-content: start; }
+.le-k { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); }
+.le-v { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.le-grid { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); }
+.le-card h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0; }
+.le-note { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-xs) 0 var(--cds-gap-md); }
+.le-chart { position: relative; min-height: 240px; }
+.le-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius);
+  box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; }
+.le-tip .d { color: var(--cds-text-secondary); }
+.le-bars { display: grid; gap: var(--cds-gap-md); min-height: 180px; }
+.le-bar-row { display: grid; gap: var(--cds-gap-xs); }
+.le-bar-top { display: flex; justify-content: space-between; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-caption); }
+.le-bar-top .n { color: var(--color-fg-muted); }
+.le-bar-top .val { font-variant-numeric: tabular-nums; }
+.le-track { position: relative; height: 14px; }
+.le-track .zero { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--cds-chart-axis); }
+.le-track .fill { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+.le-big { display: flex; flex-wrap: wrap; gap: var(--cds-gap-lg); align-items: baseline; }
+.le-big .le-v { font-size: var(--cds-font-size-title); }
+.le-tbl-wrap { overflow: auto; max-height: 26rem; }
+.le-tbl { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.le-tbl th { position: sticky; top: 0; background: var(--color-panel); text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted);
+  padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.le-tbl td { padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.le-tbl td.num, .le-tbl th.num { text-align: right; }
+.le .up { color: var(--color-ok); }
+.le .dn { color: var(--color-bad); }
+.le-fail { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-xs); min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.le-fail::before { content: ""; width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.le-sec { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: var(--cds-gap-md) 0 0; }
+</style>
+
+<div class="le">
+  <header class="le-head" id="top">
+    <h1>Liquidity Engine snapshot</h1>
+    <p class="le-take">NQ futures backtest, <span data-source="summary" data-field="period_from" data-row="0" class="dash-skeleton">—</span> to
+      <span data-source="summary" data-field="period_to" data-row="0" class="dash-skeleton">—</span>. Strong on these weeks, but the same rules lost money in two other market periods, so the bot stays on paper until it is fixed across regimes.</p>
+    <span class="le-status">Paper trading only</span>
+  </header>
+
+  <section class="le-kpis" id="kpis">
+    <div class="le-kpi"><span class="le-k">Net P&amp;L at $350 risk</span><span class="le-v dash-skeleton" id="k-net" data-source="summary" data-field="net_pnl" data-row="0">—</span></div>
+    <div class="le-kpi"><span class="le-k">Win rate</span><span class="le-v dash-skeleton" id="k-wr" data-source="summary" data-field="win_rate" data-row="0">—</span></div>
+    <div class="le-kpi"><span class="le-k">Profit factor</span><span class="le-v dash-skeleton" id="k-pf" data-source="summary" data-field="profit_factor" data-row="0">—</span></div>
+    <div class="le-kpi"><span class="le-k">Trades per week</span><span class="le-v dash-skeleton" id="k-tpw" data-source="summary" data-field="trades_per_week" data-row="0">—</span></div>
+    <div class="le-kpi"><span class="le-k">Max drawdown</span><span class="le-v dash-skeleton" id="k-dd" data-source="summary" data-field="max_drawdown" data-row="0">—</span></div>
+    <div class="le-kpi"><span class="le-k">Avg days to pass the eval</span><span class="le-v dash-skeleton" id="k-days" data-source="summary" data-field="eval_avg_days" data-row="0">—</span></div>
+  </section>
+
+  <section class="le-card" id="equity">
+    <h2>Simulated MFFU Builder 50K account</h2>
+    <p class="le-note">End-of-day balance against the trailing max-loss line and the $53,000 pass target.</p>
+    <div class="le-chart" id="eq-chart" data-source="equity"></div>
+  </section>
+
+  <h2 class="le-sec" id="robustness">Does it hold up?</h2>
+  <div class="le-grid">
+    <section class="le-card" id="periods">
+      <h2>Average result per trade by period</h2>
+      <p class="le-note">R = multiples of the amount risked. Periods marked unseen were never used to tune the rules.</p>
+      <div class="le-bars" id="period-bars" data-source="periods"></div>
+    </section>
+    <section class="le-card" id="placebo">
+      <h2>Better than random entries?</h2>
+      <p class="le-note">500 fake strategies traded at random times and sides with the same stops, targets and management.</p>
+      <div class="le-big">
+        <div><div class="le-k">Real strategy</div><div class="le-v dash-skeleton" id="p-real" data-source="placebo" data-field="real_avg_r" data-row="0">—</div></div>
+        <div><div class="le-k">Random average</div><div class="le-v dash-skeleton" id="p-mean" data-source="placebo" data-field="placebo_mean_r" data-row="0">—</div></div>
+        <div><div class="le-k">Best 1% of random</div><div class="le-v dash-skeleton" id="p-top" data-source="placebo" data-field="placebo_top1pct_r" data-row="0">—</div></div>
+      </div>
+      <p class="le-note" style="margin-top: var(--cds-gap-md)">Chance a random strategy does as well: <b id="p-p" data-source="placebo" data-field="p_value" data-row="0">—</b>.
+        Likely range of the real average (90%): <b id="p-lo" data-source="placebo" data-field="ci90_low" data-row="0">—</b> to <b id="p-hi" data-source="placebo" data-field="ci90_high" data-row="0">—</b>.
+        This holds for the NQ futures weeks only.</p>
+    </section>
+  </div>
+
+  <section class="le-card" id="modes">
+    <h2>Evaluation modes</h2>
+    <p class="le-note">Pass odds from 3,000 simulated 60-day evals built from the backtested days; rolling counts start an eval on every historical day.</p>
+    <div class="le-tbl-wrap">
+      <table class="le-tbl" data-source="modes" data-row-key="mode">
+        <thead><tr><th data-field="mode">Mode</th><th class="num" data-field="mc_pass">Pass odds</th><th class="num" data-field="median_days">Median days</th>
+          <th class="num" data-field="rolling_passed">Rolling passed</th><th class="num" data-field="rolling_failed">Rolling failed</th><th class="num" data-field="net_pnl">Net P&amp;L</th></tr></thead>
+        <tbody id="modes-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="le-card" id="trades">
+    <h2>Trade log</h2>
+    <p class="le-note">Every backtested trade, newest first. Times are New York.</p>
+    <div class="le-tbl-wrap">
+      <table class="le-tbl" data-source="trades" data-row-key="trade_id">
+        <thead><tr><th data-field="trade_id">Entry</th><th data-field="side">Side</th><th data-field="trigger">Trigger</th><th data-field="target">Target</th>
+          <th data-field="exit">Exit</th><th class="num" data-field="r_multiple">R</th><th class="num" data-field="pnl">P&amp;L</th></tr></thead>
+        <tbody id="trades-body"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const TARGET = 53000;
+  const money = (v) => (v < 0 ? '-$' : '$') + d3.format(',.0f')(Math.abs(v));
+  const smoney = (v) => (v > 0 ? '+' : '') + money(v);
+  const rfmt = (v) => (v > 0 ? '+' : '') + d3.format('.2f')(v) + 'R';
+  const pct = d3.format('.1%');
+  const cls = (v) => (v > 0 ? 'up' : v < 0 ? 'dn' : '');
+
+  function put(id, text, c) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    el.classList.remove('dash-skeleton', 'up', 'dn');
+    if (c) el.classList.add(c);
+  }
+  function fail(el) {
+    el.innerHTML = '';
+    const d = document.createElement('div');
+    d.className = 'le-fail';
+    d.textContent = 'Failed to load';
+    el.appendChild(d);
+  }
+
+  function summary() {
+    const S = dash.data('summary');
+    const ids = ['k-net', 'k-wr', 'k-pf', 'k-tpw', 'k-dd', 'k-days'];
+    document.querySelectorAll('[data-source="summary"][data-field^="period"]').forEach((el) => {
+      if (S.status === 'ok' && S.data.length) { el.textContent = d3.utcFormat('%b %-d, %Y')(new Date(S.data[0][el.dataset.field] + 'T12:00:00Z')); el.classList.remove('dash-skeleton'); }
+      else el.textContent = '—';
+    });
+    if (S.status !== 'ok' || !S.data.length) { ids.forEach((i) => put(i, '—')); return; }
+    const r = S.data[0];
+    put('k-net', smoney(+r.net_pnl), cls(+r.net_pnl));
+    put('k-wr', pct(+r.win_rate));
+    put('k-pf', d3.format('.2f')(+r.profit_factor), +r.profit_factor >= 1 ? 'up' : 'dn');
+    put('k-tpw', d3.format('.1f')(+r.trades_per_week));
+    put('k-dd', money(+r.max_drawdown), 'dn');
+    put('k-days', d3.format('.1f')(+r.eval_avg_days));
+  }
+
+  function equity() {
+    const box = document.getElementById('eq-chart');
+    box.innerHTML = '';
+    const D = dash.data('equity');
+    if (D.status === 'error') { fail(box); return; }
+    if (D.status !== 'ok' || !D.data.length) return;
+    const rows = D.data.map((r) => ({ day: new Date(r.day + 'T12:00:00Z'), bal: +r.balance, mll: +r.trailing_mll }));
+    const W = Math.max(280, box.clientWidth), H = 240, m = { t: 14, r: 64, b: 26, l: 44 };
+    const lo = d3.min(rows, (d) => Math.min(d.bal, d.mll)), hi = Math.max(d3.max(rows, (d) => d.bal), TARGET);
+    const x = d3.scaleUtc(d3.extent(rows, (d) => d.day), [m.l, W - m.r]);
+    const y = d3.scaleLinear([lo - 400, hi + 400], [H - m.b, m.t]).nice();
+    const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).style('display', 'block');
+    svg.append('g').selectAll('line').data(y.ticks(5)).join('line')
+      .attr('x1', m.l).attr('x2', W - m.r).attr('y1', y).attr('y2', y).attr('stroke', 'var(--cds-chart-grid)');
+    svg.append('g').attr('transform', `translate(0,${H - m.b})`)
+      .call(d3.axisBottom(x).ticks(Math.max(2, Math.floor(W / 110))).tickFormat(d3.utcFormat('%b %-d')).tickSizeOuter(0))
+      .attr('font-size', null).attr('font-family', null)
+      .call((g) => g.selectAll('text').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)'))
+      .call((g) => g.selectAll('line,path').attr('stroke', 'var(--cds-chart-axis)'));
+    svg.append('g').selectAll('text').data(y.ticks(5)).join('text')
+      .attr('x', m.l - 6).attr('y', y).attr('dy', '0.32em').attr('text-anchor', 'end')
+      .attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)')
+      .text((v) => '$' + d3.format('.0f')(v / 1000) + 'k');
+    svg.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(TARGET)).attr('y2', y(TARGET))
+      .attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 4');
+    const line = (f) => d3.line().x((d) => x(d.day)).y((d) => y(f(d)));
+    svg.append('path').datum(rows).attr('fill', 'none').attr('stroke', 'var(--cds-chart-status-critical)').attr('stroke-width', 1.5)
+      .attr('stroke-dasharray', '5 4').attr('d', line((d) => d.mll));
+    svg.append('path').datum(rows).attr('fill', 'none').attr('stroke', dash.colors[0]).attr('stroke-width', 2)
+      .attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('d', line((d) => d.bal));
+    const last = rows[rows.length - 1];
+    const lab = (txt, yy, col) => svg.append('text').attr('x', W - m.r + 6).attr('y', yy).attr('dy', '0.32em')
+      .attr('fill', col).style('font-size', 'var(--cds-font-size-caption)').text(txt);
+    let yb = y(last.bal), ym = y(last.mll), yt = y(TARGET);
+    if (Math.abs(yb - yt) < 13) yt = yb + (yt >= yb ? 13 : -13);
+    lab(money(last.bal), yb, 'var(--color-fg)');
+    lab('Target', yt, 'var(--color-fg-muted)');
+    lab('Max loss', Math.max(ym, yt + 13), 'var(--color-fg-muted)');
+    // tooltip
+    const tip = d3.select(box).append('div').attr('class', 'le-tip').style('display', 'none');
+    const dot = svg.append('circle').attr('r', 4).attr('fill', dash.colors[0]).style('display', 'none');
+    const bis = d3.bisector((d) => d.day).center;
+    svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b)
+      .attr('fill', 'transparent')
+      .on('pointermove', (ev) => {
+        const [px] = d3.pointer(ev);
+        const d = rows[bis(rows, x.invert(px))];
+        const sx = box.clientWidth / W;
+        dot.style('display', null).attr('cx', x(d.day)).attr('cy', y(d.bal));
+        tip.style('display', null).html('');
+        tip.append('div').attr('class', 'd').text(d3.utcFormat('%a %b %-d')(d.day));
+        tip.append('div').text('Balance ' + money(d.bal));
+        tip.append('div').text('Max-loss line ' + money(d.mll));
+        const tw = tip.node().offsetWidth;
+        tip.style('left', Math.min(box.clientWidth - tw - 4, Math.max(4, x(d.day) * sx + 10)) + 'px').style('top', '8px');
+      })
+      .on('pointerleave', () => { tip.style('display', 'none'); dot.style('display', 'none'); });
+  }
+
+  function periods() {
+    const box = document.getElementById('period-bars');
+    box.innerHTML = '';
+    const D = dash.data('periods');
+    if (D.status === 'error') { fail(box); return; }
+    if (D.status !== 'ok') return;
+    const rows = D.data.map((r) => ({ ...r, avg_r: +r.avg_r, trades: +r.trades, win_rate: +r.win_rate }));
+    const ext = Math.max(0.5, d3.max(rows, (r) => Math.abs(r.avg_r)));
+    const x = d3.scaleLinear([-ext, ext], [0, 100]);
+    rows.forEach((r) => {
+      const row = document.createElement('div');
+      row.className = 'le-bar-row';
+      const top = document.createElement('div');
+      top.className = 'le-bar-top';
+      const name = document.createElement('span');
+      name.textContent = r.period;
+      const val = document.createElement('span');
+      val.className = 'val ' + cls(r.avg_r);
+      val.textContent = rfmt(r.avg_r) + ' · ' + r.trades + ' trades · ' + pct(r.win_rate) + ' wins';
+      top.append(name, val);
+      const sub = document.createElement('div');
+      sub.className = 'le-bar-top';
+      const role = document.createElement('span');
+      role.className = 'n';
+      role.textContent = r.role + ' · ' + r.data;
+      sub.append(role);
+      const track = document.createElement('div');
+      track.className = 'le-track';
+      const z = document.createElement('div');
+      z.className = 'zero'; z.style.left = x(0) + '%';
+      const f = document.createElement('div');
+      f.className = 'fill';
+      const a = x(Math.min(0, r.avg_r)), b = x(Math.max(0, r.avg_r));
+      f.style.left = a + '%'; f.style.width = Math.max(0.5, b - a) + '%';
+      f.style.background = r.avg_r >= 0 ? dash.colors[0] : 'var(--cds-chart-status-critical)';
+      track.append(f, z);
+      row.append(top, sub, track);
+      box.appendChild(row);
+    });
+  }
+
+  function placebo() {
+    const P = dash.data('placebo');
+    const ids = ['p-real', 'p-mean', 'p-top', 'p-p', 'p-lo', 'p-hi'];
+    if (P.status !== 'ok' || !P.data.length) { ids.forEach((i) => put(i, '—')); return; }
+    const r = P.data[0];
+    put('p-real', rfmt(+r.real_avg_r), cls(+r.real_avg_r));
+    put('p-mean', rfmt(+r.placebo_mean_r), cls(+r.placebo_mean_r));
+    put('p-top', rfmt(+r.placebo_top1pct_r));
+    put('p-p', +r.p_value < 0.001 ? 'under 0.1%' : pct(+r.p_value));
+    put('p-lo', rfmt(+r.ci90_low));
+    put('p-hi', rfmt(+r.ci90_high));
+  }
+
+  function table(bodyId, id, cols) {
+    const body = document.getElementById(bodyId);
+    body.innerHTML = '';
+    const D = dash.data(id);
+    if (D.status !== 'ok') return;
+    D.data.forEach((r) => {
+      const tr = document.createElement('tr');
+      cols.forEach(([k, f, num]) => {
+        const td = document.createElement('td');
+        if (num) td.className = 'num';
+        const v = f ? f(r[k], r) : r[k];
+        td.textContent = v;
+        if (k === 'r_multiple' || k === 'pnl' || k === 'net_pnl') td.classList.add(cls(+r[k]));
+        tr.appendChild(td);
+      });
+      body.appendChild(tr);
+    });
+  }
+
+  dash.onData(() => {
+    summary();
+    equity();
+    periods();
+    placebo();
+    table('modes-body', 'modes', [['mode'], ['mc_pass', (v) => pct(+v), 1], ['median_days', (v) => d3.format('.0f')(+v), 1],
+      ['rolling_passed', null, 1], ['rolling_failed', null, 1], ['net_pnl', (v) => smoney(+v), 1]]);
+    table('trades-body', 'trades', [['trade_id'], ['side'], ['trigger'], ['target'], ['exit'], ['r_multiple', (v) => rfmt(+v), 1], ['pnl', (v) => smoney(+v), 1]]);
+    const body = document.getElementById('trades-body');
+    [...body.children].reverse().forEach((tr) => body.appendChild(tr));
+  });
+})();
+</script>

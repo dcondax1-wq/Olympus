@@ -1,0 +1,1 @@
+{"title": "Results by market period", "description": "Average R per trade on NQ futures (tuning period) and on Nasdaq CFD data from unseen periods and an overlap window.", "source": {"kind": "file", "url": "/_blob/ba93751d9278799f959ef36ec0e3b0d3", "name": "periods.csv"}, "updated": {"at": "2026-10-15T22:00:17+00:00", "by": "Claude (backtest export)"}, "fixed": true}

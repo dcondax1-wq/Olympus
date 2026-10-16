@@ -1,0 +1,187 @@
+{
+ "fixed": {
+  "label": "fixed",
+  "skips": {
+   "2021": {
+    "Stop #pts > max # - pass (risk too wide)": 36,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 25,
+    "IFVG valid but daily limits reached - logged as shadow trade": 8,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 8,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 5,
+    "CISD valid but daily limits reached - logged as shadow trade": 3,
+    "Risk $# too small for a #pt stop - pass": 1,
+    "CISD valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 1
+   },
+   "2022": {
+    "Stop #pts > max # - pass (risk too wide)": 256,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 127,
+    "Risk $# too small for a #pt stop - pass": 104,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 16,
+    "IFVG valid but daily limits reached - logged as shadow trade": 8,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 5,
+    "account reset: balance # vs MLL # (cushion < #) - fresh # eval": 2,
+    "CISD valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 2,
+    "CISD valid but daily limits reached - logged as shadow trade": 1
+   },
+   "2023": {
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 112,
+    "Stop #pts > max # - pass (risk too wide)": 101,
+    "Risk $# too small for a #pt stop - pass": 82,
+    "IFVG valid but daily limits reached - logged as shadow trade": 51,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 29,
+    "CISD valid but daily limits reached - logged as shadow trade": 6,
+    "account reset: balance # vs MLL # (cushion < #) - fresh # eval": 3,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 3,
+    "CISD valid but FOMC day - no afternoon trades - pass (shadow logged)": 2,
+    "IFVG valid but FOMC day - no afternoon trades - pass (shadow logged)": 1,
+    "IFVG valid but NEWS BLACKOUT (FOMC rate decision + projections) - pass (shadow logged)": 1,
+    "IFVG valid but NEWS BLACKOUT (FOMC rate decision) - pass (shadow logged)": 1,
+    "CISD valid but NEWS BLACKOUT (FOMC rate decision) - pass (shadow logged)": 1,
+    "CISD valid but NEWS BLACKOUT (FOMC press conference) - pass (shadow logged)": 1
+   },
+   "2024": {
+    "Stop #pts > max # - pass (risk too wide)": 190,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 103,
+    "Risk $# too small for a #pt stop - pass": 91,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 46,
+    "IFVG valid but daily limits reached - logged as shadow trade": 29,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 15,
+    "CISD valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 6,
+    "CISD valid but daily limits reached - logged as shadow trade": 5,
+    "CISD valid but NEWS BLACKOUT (FOMC press conference) - pass (shadow logged)": 2,
+    "Daily loss stop hit ($#) - bot done for the day": 1,
+    "IFVG valid but FOMC day - no afternoon trades - pass (shadow logged)": 1,
+    "account reset: balance # vs MLL # (cushion < #) - fresh # eval": 1,
+    "IFVG valid but NEWS BLACKOUT (FOMC press conference) - pass (shadow logged)": 1
+   },
+   "2025": {
+    "Stop #pts > max # - pass (risk too wide)": 254,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 89,
+    "Risk $# too small for a #pt stop - pass": 70,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 26,
+    "IFVG valid but daily limits reached - logged as shadow trade": 13,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 6,
+    "IFVG valid but NEWS BLACKOUT (FOMC rate decision) - pass (shadow logged)": 3,
+    "CISD valid but NEWS BLACKOUT (FOMC rate decision) - pass (shadow logged)": 3,
+    "CISD valid but daily limits reached - logged as shadow trade": 2,
+    "CISD valid but NEWS BLACKOUT (FOMC press conference) - pass (shadow logged)": 2,
+    "account reset: balance # vs MLL # (cushion < #) - fresh # eval": 2,
+    "IFVG valid but FOMC day - no afternoon trades - pass (shadow logged)": 1,
+    "IFVG valid but NEWS BLACKOUT (FOMC rate decision + projections) - pass (shadow logged)": 1
+   },
+   "2026": {
+    "Stop #pts > max # - pass (risk too wide)": 287,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 45,
+    "Risk $# too small for a #pt stop - pass": 29,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 11,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 11,
+    "IFVG valid but daily limits reached - logged as shadow trade": 9,
+    "CISD valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 4,
+    "CISD valid but daily limits reached - logged as shadow trade": 2,
+    "IFVG valid but FOMC day - no afternoon trades - pass (shadow logged)": 1
+   }
+  },
+  "shadows": {
+   "2021": 104,
+   "2022": 397,
+   "2023": 523,
+   "2024": 471,
+   "2025": 355,
+   "2026": 201
+  },
+  "taken": {
+   "2021": 53,
+   "2022": 134,
+   "2023": 233,
+   "2024": 172,
+   "2025": 139,
+   "2026": 89
+  }
+ },
+ "old": {
+  "label": "old",
+  "skips": {
+   "2021": {
+    "Stop #pts > max # - pass (risk too wide)": 36,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 25,
+    "IFVG valid but daily limits reached - logged as shadow trade": 8,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 8,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 5,
+    "CISD valid but daily limits reached - logged as shadow trade": 3,
+    "Risk $# too small for a #pt stop - pass": 1,
+    "CISD valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 1
+   },
+   "2022": {
+    "Stop #pts > max # - pass (risk too wide)": 257,
+    "Risk $# too small for a #pt stop - pass": 181,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 131,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 16,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 5,
+    "IFVG valid but daily limits reached - logged as shadow trade": 3,
+    "CISD valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 2
+   },
+   "2023": {
+    "Risk $# too small for a #pt stop - pass": 354,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 144,
+    "Stop #pts > max # - pass (risk too wide)": 104,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 33,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 3,
+    "IFVG valid but NEWS BLACKOUT (FOMC rate decision) - pass (shadow logged)": 2,
+    "CISD valid but FOMC day - no afternoon trades - pass (shadow logged)": 2,
+    "IFVG valid but NEWS BLACKOUT (FOMC press conference) - pass (shadow logged)": 1,
+    "IFVG valid but FOMC day - no afternoon trades - pass (shadow logged)": 1,
+    "IFVG valid but NEWS BLACKOUT (FOMC rate decision + projections) - pass (shadow logged)": 1,
+    "CISD valid but NEWS BLACKOUT (FOMC rate decision) - pass (shadow logged)": 1,
+    "CISD valid but NEWS BLACKOUT (FOMC press conference) - pass (shadow logged)": 1
+   },
+   "2024": {
+    "Risk $# too small for a #pt stop - pass": 296,
+    "Stop #pts > max # - pass (risk too wide)": 192,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 117,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 48,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 18,
+    "CISD valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 6,
+    "CISD valid but NEWS BLACKOUT (FOMC press conference) - pass (shadow logged)": 2,
+    "CISD valid but FOMC day - no afternoon trades - pass (shadow logged)": 1,
+    "IFVG valid but FOMC day - no afternoon trades - pass (shadow logged)": 1,
+    "IFVG valid but NEWS BLACKOUT (FOMC press conference) - pass (shadow logged)": 1
+   },
+   "2025": {
+    "Stop #pts > max # - pass (risk too wide)": 256,
+    "Risk $# too small for a #pt stop - pass": 227,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 96,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 30,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 6,
+    "IFVG valid but NEWS BLACKOUT (FOMC rate decision) - pass (shadow logged)": 3,
+    "CISD valid but NEWS BLACKOUT (FOMC rate decision) - pass (shadow logged)": 3,
+    "CISD valid but NEWS BLACKOUT (FOMC press conference) - pass (shadow logged)": 2,
+    "IFVG valid but FOMC day - no afternoon trades - pass (shadow logged)": 1,
+    "IFVG valid but NEWS BLACKOUT (FOMC rate decision + projections) - pass (shadow logged)": 1
+   },
+   "2026": {
+    "Stop #pts > max # - pass (risk too wide)": 289,
+    "Risk $# too small for a #pt stop - pass": 126,
+    "IFVG found but confluence # < # [..] - pass (shadow logged)": 50,
+    "CISD found but confluence # < # [..] - pass (shadow logged)": 13,
+    "IFVG valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 12,
+    "CISD valid but day range already #x its #-day average (trend / news day) - pass (shadow lo": 4,
+    "IFVG valid but NEWS BLACKOUT (FOMC press conference) - pass (shadow logged)": 1,
+    "IFVG valid but FOMC day - no afternoon trades - pass (shadow logged)": 1
+   }
+  },
+  "shadows": {
+   "2021": 104,
+   "2022": 402,
+   "2023": 554,
+   "2024": 492,
+   "2025": 369,
+   "2026": 207
+  },
+  "taken": {
+   "2021": 53,
+   "2022": 64,
+   "2023": 11,
+   "2024": 2
+  }
+ }
+}

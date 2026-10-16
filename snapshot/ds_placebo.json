@@ -1,0 +1,1 @@
+{"title": "Placebo test", "description": "Real average R versus 500 random-entry strategies with identical exits, plus a bootstrap 90% range.", "source": {"kind": "file", "url": "/_blob/e4cee4b26dbe2976bcf73076f4acc093", "name": "placebo.csv"}, "updated": {"at": "2026-10-15T22:00:17+00:00", "by": "Claude (backtest export)"}, "fixed": true}

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Liquidity Engine mark: hexagonal aperture, a candle whose lower wick sweeps liquidity below the level line,
+       and a luminous sweep running along the lower edges of the aperture. -->
+  <defs>
+    <linearGradient id="le-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0d1626"/><stop offset="1" stop-color="#05080f"/></linearGradient>
+    <linearGradient id="le-sweep" x1="0" y1="0" x2="1" y2="0.6"><stop offset="0" stop-color="#22d3ee" stop-opacity=".15"/><stop offset=".45" stop-color="#22d3ee"/><stop offset="1" stop-color="#3b9dff"/></linearGradient>
+    <linearGradient id="le-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#3b9dff"/></linearGradient>
+    <radialGradient id="le-pool" cx=".2" cy=".05" r=".9"><stop offset="0" stop-color="#3b9dff" stop-opacity=".22"/><stop offset="1" stop-color="#3b9dff" stop-opacity="0"/></radialGradient>
+    <filter id="le-glow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#le-bg)"/>
+  <rect width="512" height="512" rx="112" fill="url(#le-pool)"/>
+  <!-- aperture -->
+  <path d="M256 60 L425.7 158 L425.7 354 L256 452 L86.3 354 L86.3 158 Z" fill="none" stroke="#3b9dff" stroke-opacity=".32" stroke-width="22" stroke-linejoin="round"/>
+  <!-- the sweep: lit lower edges of the aperture -->
+  <path d="M86.3 158 L86.3 354 L256 452 L425.7 354" fill="none" stroke="url(#le-sweep)" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" filter="url(#le-glow)"/>
+  <!-- liquidity level, broken where the wick pierces it -->
+  <path d="M128 312 H232 M280 312 H384" stroke="#3b9dff" stroke-opacity=".6" stroke-width="14" stroke-linecap="round"/>
+  <!-- candle: body, wicks; the lower wick takes the liquidity below the level -->
+  <path d="M256 122 V158 M256 300 V392" stroke="#22d3ee" stroke-width="16" stroke-linecap="round"/>
+  <rect x="230" y="158" width="52" height="142" rx="11" fill="url(#le-body)"/>
+  <circle cx="256" cy="392" r="16" fill="#2dd4a4" filter="url(#le-glow)"/>
+</svg>

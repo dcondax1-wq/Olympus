@@ -1,0 +1,1 @@
+{"title": "Daily account balance", "description": "End-of-day simulated MFFU Builder 50K balance and trailing max-loss level per trading day.", "source": {"kind": "file", "url": "/_blob/2972f6ff1fef3396dcdeef42a236bc5f", "name": "equity.csv"}, "updated": {"at": "2026-10-15T22:00:17+00:00", "by": "Claude (backtest export)"}, "fixed": true}

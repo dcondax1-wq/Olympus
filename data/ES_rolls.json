@@ -1,0 +1,181 @@
+{
+ "sym": "ES",
+ "anchor": "ESZ26",
+ "method": "additive back-adjustment anchored to ESZ26: bars with time < switch_t get +gap (cumulative). TradingView ES1! chunks 2025-04 -> 2026-08-23, clean Yahoo ES=F after that.",
+ "rolls": [
+  {
+   "from": "ESM25",
+   "to": "ESU25",
+   "ltd": "2025-06-20",
+   "switch_day": "2025-06-16",
+   "switch_t": 1750024800,
+   "switch_et": "2025-06-15 18:00:00-04:00",
+   "weekend_switch": true,
+   "open_jump": 22.75,
+   "source_at_switch": "tv-ES1!",
+   "check": "ok",
+   "candidates": {
+    "yahoo_1h_cross": {
+     "gap": 53.0,
+     "unc": 0.32,
+     "n": 104
+    },
+    "carry_model": {
+     "gap": 51.25,
+     "pct": 0.857
+    }
+   },
+   "price_before": 5978.25,
+   "method": "yahoo_1h_cross",
+   "gap": 53.0,
+   "uncertainty": 0.32
+  },
+  {
+   "from": "ESU25",
+   "to": "ESZ25",
+   "ltd": "2025-09-19",
+   "switch_day": "2025-09-16",
+   "switch_t": 1757973600,
+   "switch_et": "2025-09-15 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 56.5,
+   "source_at_switch": "tv-ES1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 56.5,
+     "unc": 1.25
+    },
+    "yahoo_1h_cross": {
+     "gap": 57.75,
+     "unc": 0.33,
+     "n": 20
+    },
+    "carry_model": {
+     "gap": 56.72,
+     "pct": 0.857
+    }
+   },
+   "price_before": 6616.75,
+   "method": "open_jump",
+   "gap": 56.5,
+   "uncertainty": 1.25
+  },
+  {
+   "from": "ESZ25",
+   "to": "ESH26",
+   "ltd": "2025-12-19",
+   "switch_day": "2025-12-16",
+   "switch_t": 1765839600,
+   "switch_et": "2025-12-15 18:00:00-05:00",
+   "weekend_switch": false,
+   "open_jump": 58.5,
+   "source_at_switch": "tv-ES1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 58.5,
+     "unc": 1.25
+    },
+    "yahoo_1h_cross": {
+     "gap": 57.0,
+     "unc": 0.56,
+     "n": 23
+    },
+    "carry_model": {
+     "gap": 58.5,
+     "pct": 0.857
+    }
+   },
+   "price_before": 6824.25,
+   "method": "open_jump",
+   "gap": 58.5,
+   "uncertainty": 1.25
+  },
+  {
+   "from": "ESH26",
+   "to": "ESM26",
+   "ltd": "2026-03-20",
+   "switch_day": "2026-03-17",
+   "switch_t": 1773698400,
+   "switch_et": "2026-03-16 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 52.5,
+   "source_at_switch": "tv-ES1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 52.5,
+     "unc": 1.25
+    },
+    "yahoo_1h_cross": {
+     "gap": 50.5,
+     "unc": 0.25,
+     "n": 7
+    },
+    "carry_model": {
+     "gap": 57.43,
+     "pct": 0.857
+    }
+   },
+   "price_before": 6699.25,
+   "method": "open_jump",
+   "gap": 52.5,
+   "uncertainty": 1.25
+  },
+  {
+   "from": "ESM26",
+   "to": "ESU26",
+   "ltd": "2026-06-18",
+   "switch_day": "2026-06-15",
+   "switch_t": 1781474400,
+   "switch_et": "2026-06-14 18:00:00-04:00",
+   "weekend_switch": true,
+   "open_jump": 107.25,
+   "source_at_switch": "tv-ES1!",
+   "check": "ok",
+   "candidates": {
+    "yahoo_1h_cross": {
+     "gap": 63.75,
+     "unc": 0.36,
+     "n": 11
+    },
+    "carry_model": {
+     "gap": 63.75,
+     "pct": 0.857
+    }
+   },
+   "price_before": 7436.25,
+   "method": "yahoo_1h_cross",
+   "gap": 63.75,
+   "uncertainty": 0.36
+  },
+  {
+   "from": "ESU26",
+   "to": "ESZ26",
+   "switch_t": 1789399800,
+   "switch_et": "2026-09-14 11:30:00-04:00",
+   "gap": 66.25,
+   "method": "ESZ26 single-contract 1h quotes vs ES=F (median before - after)",
+   "uncertainty": 0.12,
+   "note": "Yahoo switched mid-session; the switch bar itself is a mixed bar (open/low re-based)"
+  }
+ ],
+ "carry_pct": 0.857,
+ "sessions": {
+  "tv-ES1!": 352,
+  "yahoo-ES=F": 39
+ },
+ "tv_files": [
+  "ES1_5m_chunk_2025-06-09.csv",
+  "ES1_5m_chunk_2025-07-28.csv",
+  "ES1_5m_chunk_2025-09-15.csv",
+  "ES1_5m_chunk_2025-11-03.csv",
+  "ES1_5m_chunk_2025-12-22.csv",
+  "ES1_5m_chunk_2026-02-09.csv",
+  "ES1_5m_chunk_2026-03-30.csv",
+  "ES1_5m_chunk_2026-05-18.csv",
+  "ES1_5m_chunk_2026-07-06.csv",
+  "ES1_5m_chunk_2026-08-24.csv"
+ ]
+}

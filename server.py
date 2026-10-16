@@ -1,0 +1,923 @@
+"""NQ Liquidity Bot - API + dashboard server.   python server.py  ->  http://127.0.0.1:8765"""
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+import subprocess
+import sys
+import threading
+import time
+from collections import OrderedDict
+
+import uvicorn
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
+
+from engine import analytics, backtest, robust
+from engine.data import available, load
+from engine.instruments import INSTRUMENTS
+from engine.live import BOT
+from engine.model import DEFAULTS
+
+ROOT = os.path.dirname(os.path.abspath(__file__))
+WEB = os.path.join(ROOT, "web")
+app = FastAPI(title="NQ Liquidity Bot")
+# ---- CLOUD GUARD ----
+from engine import cloud_guard as _cg   # password gate (LE_DASH_PASSWORD) + paper-only cloud mode (LE_CLOUD=1)
+_cg.install(app)
+# ---- END CLOUD GUARD ----
+
+
+@app.middleware("http")
+async def no_stale_assets(request, call_next):
+    # the dashboard changes often: make browsers revalidate JS/CSS/HTML instead of running a cached old copy
+    resp = await call_next(request)
+    if not request.url.path.startswith("/api/"):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
+_cache: OrderedDict = OrderedDict()
+_lock = threading.Lock()
+_refresh = {"running": False, "log": "", "finished": None}
+
+
+def _np(o):
+    if hasattr(o, "item"):
+        return o.item()
+    if hasattr(o, "tolist"):
+        return o.tolist()
+    return str(o)
+
+
+def J(obj, status=200):
+    return Response(json.dumps(obj, default=_np, separators=(",", ":")), media_type="application/json", status_code=status)
+
+
+def _key(*parts):
+    return hashlib.md5(json.dumps(parts, sort_keys=True, default=str).encode()).hexdigest()
+
+
+def cached(key, fn):
+    with _lock:
+        if key in _cache:
+            _cache.move_to_end(key)
+            return _cache[key]
+    val = fn()
+    with _lock:
+        _cache[key] = val
+        while len(_cache) > 40:
+            _cache.popitem(last=False)
+    return val
+
+
+def _bt(body):
+    sym, tf = body.get("sym", "NQ"), body.get("tf", "5m")
+    params, plan = body.get("params", {}), body.get("plan", "builder_50k")
+    mt = os.path.getmtime(os.path.join(ROOT, "data", f"{sym}_{tf}.csv"))
+    return cached(_key("bt", sym, tf, params, plan, mt), lambda: backtest.run(sym, tf, params, plan))
+
+
+@app.get("/api/meta")
+def meta():
+    return J({"available": available(), "defaults": DEFAULTS, "plans": analytics.PLANS, "instruments": INSTRUMENTS,
+              "server_time": int(time.time())})
+
+
+@app.get("/api/bars")
+def bars(sym: str = "NQ", tf: str = "5m", start: int | None = None, end: int | None = None):
+    b = load(sym, tf)
+    a, z = 0, len(b)
+    if start:
+        a = int((b.t < start).sum())
+    if end:
+        z = int((b.t <= end).sum())
+    return J({"sym": sym, "tf": tf, "t": b.t[a:z].tolist(), "o": b.o[a:z].tolist(), "h": b.h[a:z].tolist(),
+              "l": b.l[a:z].tolist(), "c": b.c[a:z].tolist(), "v": b.v[a:z].tolist(),
+              "d": b.date_str[a:z], "mod": b.mod[a:z].tolist()})
+
+
+@app.post("/api/backtest")
+async def api_backtest(req: Request):
+    body = await req.json()
+    try:
+        return J(_bt(body))
+    except Exception as e:
+        return J({"error": str(e)}, 400)
+
+
+@app.post("/api/montecarlo")
+async def api_mc(req: Request):
+    body = await req.json()
+    r = _bt(body)
+    plan = analytics.PLANS[body.get("plan", "builder_50k")]
+    pnls = [d["pnl"] for d in r["days"]]
+    return J(analytics.monte_carlo(pnls, plan, runs=int(body.get("runs", 2000)), horizon=int(body.get("horizon", 60))))
+
+
+@app.post("/api/stress")
+async def api_stress(req: Request):
+    body = await req.json()
+    sym, tf, params = body.get("sym", "NQ"), body.get("tf", "5m"), body.get("params", {})
+    return J(cached(_key("stress", sym, tf, params), lambda: robust.stress(sym, tf, params)))
+
+
+@app.post("/api/exitstudy")
+async def api_exitstudy(req: Request):
+    body = await req.json()
+    sym, tf, params = body.get("sym", "NQ"), body.get("tf", "5m"), body.get("params", {})
+    split = body.get("split", "2026-09-22")
+    mt = os.path.getmtime(os.path.join(ROOT, "data", f"{sym}_{tf}.csv"))
+    return J(cached(_key("exit", sym, tf, params, split, mt), lambda: robust.exit_study(sym, tf, params, split)))
+
+
+@app.post("/api/placebo")
+async def api_placebo(req: Request):
+    body = await req.json()
+    sym, tf, params = body.get("sym", "NQ"), body.get("tf", "5m"), body.get("params", {})
+    mt = os.path.getmtime(os.path.join(ROOT, "data", f"{sym}_{tf}.csv"))
+    return J(cached(_key("placebo", sym, tf, params, mt), lambda: robust.placebo(sym, tf, params)))
+
+
+@app.post("/api/news")
+async def api_news(req: Request):
+    from engine import news
+    from engine.model import merge_params
+    body = await req.json()
+    p = merge_params(body.get("params", {}))
+    now = int(time.time())
+    vol = news.volatility()
+    ff = news.ff_calendar()
+    up = news.upcoming_events(now)
+    out = {
+        "now": now,
+        "guard": news.guard(now, p, vol, up),
+        "upcoming": up[:40],
+        "calendar": ff,
+        "headlines": news.headlines(),
+        "volatility": vol,
+        "earnings": news.earnings(),
+        "nq_range": news.nq_range_state(load("NQ", "5m")),
+        "rules": {k: p[k] for k in ("news_filter", "news_before_min", "news_after_min", "fomc_pm_off", "news_flatten_min",
+                                     "news_day_skip", "vix_max", "vix_min", "day_range_max")},
+    }
+    return J(out)
+
+
+@app.post("/api/firms")
+async def api_firms(req: Request):
+    """Same strategy run through every firm's evaluation rules."""
+    body = await req.json()
+    r = _bt({**body, "plan": "builder_50k"})
+    pnls = [d["pnl"] for d in r["days"]]
+    lows = [d.get("low_intraday", min(0.0, d["pnl"])) for d in r["days"]]
+    rows = []
+    for key, pl in analytics.PLANS.items():
+        if key == "builder_50k_addon":
+            continue
+        roll = analytics.rolling_evals(r["days"], pl)
+        mc = cached(_key("firm-mc", key, body.get("params", {}), body.get("sym")),
+                    lambda pl=pl: analytics.monte_carlo(pnls, pl, runs=1500, horizon=60))
+        rows.append({"key": key, "name": pl["name"], "target": pl["target"], "mll": pl["mll"], "lock": pl.get("lock_above"),
+                     "dll": pl.get("dll"), "eval_consistency": pl.get("eval_consistency"), "min_days": pl.get("min_days_eval"),
+                     "max_minis": pl.get("max_minis"), "split": pl.get("split"), "automation": pl.get("automation"),
+                     "price": pl.get("price"), "flat": pl.get("flat"),
+                     "rolling_pass": roll["pass_rate"], "rolling_n": roll["completed"], "avg_days": roll["avg_days_to_pass"],
+                     "mc_pass": mc["pass_prob"], "mc_fail": mc["fail_prob"], "mc_days": mc["median_days_to_pass"],
+                     "funded_paid": mc["funded"]["avg_paid_to_trader"], "bot_ok": not str(pl.get("automation", "")).startswith("PROHIBITED")})
+    return J({"rows": rows, "note": "Rules from each firm's help center as of Oct 2026. Re-check before buying."})
+
+
+_disc = {"proc": None}
+
+
+@app.get("/api/discovery")
+async def api_discovery():
+    """Confluence discovery leaderboard (cached scan of every recorded feature across every period)."""
+    path = os.path.join(ROOT, "data", "discovery.json")
+    running = _disc["proc"] is not None and _disc["proc"].poll() is None
+    data = None
+    if os.path.exists(path):
+        with open(path) as fh:
+            data = json.load(fh)
+    return J({"running": running, "data": data})
+
+
+@app.post("/api/discovery/run")
+async def api_discovery_run():
+    if _disc["proc"] is None or _disc["proc"].poll() is not None:
+        _disc["proc"] = subprocess.Popen([sys.executable, "-m", "engine.discovery"], cwd=ROOT,
+                                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return J({"running": True})
+
+
+@app.post("/api/regime")
+async def api_regime(req: Request):
+    """Strategy result by market regime, real CME futures only (NQ by month + ES). No CFD data is used anywhere."""
+    body = await req.json()
+    params = body.get("params", {})
+    mts = {s: os.path.getmtime(os.path.join(ROOT, "data", f"{s}_5m.csv"))
+           for s in ("NQ", "ES") if os.path.exists(os.path.join(ROOT, "data", f"{s}_5m.csv"))}
+
+    def work():
+        import calendar
+        runs, segs = {}, []
+        for sym in mts:
+            runs[sym] = backtest.run(sym, "5m", {**params, "dd_aware": False, "daily_max_loss": 1e9}, light=True)
+        if "NQ" in runs:                 # one row per calendar month of NQ futures history we hold
+            for ym in sorted({d["date"][:7] for d in runs["NQ"]["days"]}):
+                y, m = int(ym[:4]), int(ym[5:])
+                segs.append((f"NQ futures · {calendar.month_abbr[m]} {y}", "NQ", f"{ym}-01", f"{ym}-31"))
+            segs.append(("NQ futures · all", "NQ", None, None))
+        if "ES" in runs:
+            segs.append(("ES futures · all", "ES", None, None))
+        out = []
+        for label, sym, a, z in segs:
+            rr = runs[sym]
+            days = [d for d in rr["days"] if (not a or d["date"] >= a) and (not z or d["date"] <= z)]
+            if len(days) < 5:
+                continue
+            tr = [t for t in rr["trades"] if (not a or t["day"] >= a) and (not z or t["day"] <= z)]
+            reg = {d["date"]: d.get("regime") for d in days}
+            ers = [d["er10"] for d in days if d.get("er10") is not None]
+            row = {"period": label, "sym": sym, "from": days[0]["date"], "to": days[-1]["date"], "days": len(days),
+                   "er10": round(float(sum(ers) / len(ers)), 3) if ers else None,
+                   "total": {"trades": len(tr), "avg_r": round(sum(t["pnl_r"] for t in tr) / len(tr), 3) if tr else None,
+                             "pnl": round(sum(t["pnl"] for t in tr), 2)}}
+            for g in ("rotational", "trending"):
+                tg = [t for t in tr if reg.get(t["day"]) == g]
+                row[g] = {"trades": len(tg), "days": sum(1 for d in days if d.get("regime") == g),
+                          "avg_r": round(sum(t["pnl_r"] for t in tg) / len(tg), 3) if tg else None,
+                          "pnl": round(sum(t["pnl"] for t in tg), 2)}
+            out.append(row)
+        return out
+    return J({"periods": cached(_key("regime-fut", params, mts), work), "source": "CME futures only"})
+
+
+@app.get("/api/markets")
+def api_markets():
+    from engine import markets
+    return J(markets.snapshot())
+
+
+@app.get("/api/alerts")
+def api_alerts_get():
+    from engine import alerts
+    return J(alerts.public())
+
+
+@app.post("/api/alerts")
+async def api_alerts_save(req: Request):
+    from engine import alerts
+    return J(alerts.save(await req.json()))
+
+
+@app.post("/api/alerts/send")
+async def api_alerts_send(req: Request):
+    from engine import alerts
+    body = await req.json()
+    return J(alerts.send(body.get("text", "Liquidity Engine test alert ✅"), body.get("kind", "signal"), force=bool(body.get("force"))))
+
+
+@app.get("/api/gamma")
+def api_gamma():
+    from engine import gamma
+    try:
+        nq = load("NQ", "5m")
+        live = gamma.live_levels(float(nq.c[-1]))
+    except Exception as e:
+        live = {"error": str(e)}
+    h = gamma.history()
+    last = h.iloc[-1] if len(h) else None
+    hist = None if last is None else {"date": str(last["date"]), "gex_bn": round(float(last["gex_bn"]), 2),
+                                      "gex_pct": round(float(last["gex_pct"]), 1), "dix": round(float(last["dix"]), 4),
+                                      "series": [{"date": str(r.date), "gex_bn": round(float(r.gex_bn), 2)} for r in h.tail(120).itertuples()]}
+    return J({"live": live, "spx": hist})
+
+
+@app.post("/api/optimize")
+async def api_opt(req: Request):
+    body = await req.json()
+    sym, tf, params = body.get("sym", "NQ"), body.get("tf", "5m"), body.get("params", {})
+    x, y = body["x"], body["y"]
+    return J(cached(_key("opt", sym, tf, params, x, y),
+                    lambda: robust.neighbourhood(sym, tf, params, (x["name"], x["values"]), (y["name"], y["values"]))))
+
+
+@app.post("/api/data/refresh")
+def api_refresh():
+    if _refresh["running"]:
+        return J({"ok": False, "error": "refresh already running"})
+
+    def work():
+        _refresh.update(running=True, log="")
+        p = subprocess.run([sys.executable, os.path.join(ROOT, "data", "fetch.py")], capture_output=True, text=True)
+        _refresh.update(running=False, log=p.stdout + p.stderr, finished=int(time.time()))
+        _cache.clear()
+
+    threading.Thread(target=work, daemon=True).start()
+    return J({"ok": True})
+
+
+@app.get("/api/data/refresh")
+def api_refresh_status():
+    return J(_refresh)
+
+
+@app.post("/api/live/start")
+async def live_start(req: Request):
+    body = await req.json()
+    res = BOT.start(body)
+    if res.get("ok"):
+        _autostart_save(body)            # AUTOSTART block: remember it so a crash / reboot can resume (secrets stripped)
+    return J(res)
+
+
+@app.post("/api/live/stop")
+def live_stop():
+    _autostart_clear("stop")             # AUTOSTART block: an intentional stop stays stopped
+    return J(BOT.stop())
+
+
+@app.post("/api/live/kill")
+def live_kill():
+    return J(BOT.kill_switch())
+
+
+@app.post("/api/live/poll")
+def live_poll():
+    if not BOT.cfg:
+        BOT.cfg = {"sym": "NQ", "tf": "5m", "adapter": "paper", "params": {}}
+        from engine.live import PaperAdapter
+        BOT.adapter = PaperAdapter({})
+        BOT.started_at = int(time.time())
+    try:
+        BOT.poll_once()
+        return J(BOT.snapshot())
+    except Exception as e:
+        return J({"error": str(e)}, 500)
+
+
+@app.get("/api/live/state")
+def live_state():
+    return J(BOT.snapshot())
+
+
+# ------------------------------------------------------------------ phone access: this computer's private addresses
+@app.get("/api/net")
+def api_net(request: Request):
+    import ipaddress
+    import socket
+    lan, ts = [], None
+    try:
+        for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+            ip = info[4][0]
+            if ip.startswith("127."):
+                continue
+            a = ipaddress.ip_address(ip)
+            if a in ipaddress.ip_network("100.64.0.0/10"):      # Tailscale / CGNAT range
+                ts = ip
+            elif a.is_private and ip not in lan:
+                lan.append(ip)
+    except Exception:
+        pass
+    return J({"lan": lan, "tailscale": ts, "port": request.url.port or 80, "host": socket.gethostname()})
+
+
+# ------------------------------------------------------------------ TradingView: Pine strategy, data import, webhook
+TV_CFG = os.path.join(ROOT, "data", "tv.json")
+_tv_hook = {"recent": []}
+
+
+def _tv_cfg():
+    import secrets
+    cfg = {}
+    if os.path.exists(TV_CFG):
+        with open(TV_CFG) as fh:
+            cfg = json.load(fh)
+    if not cfg.get("key"):
+        cfg["key"] = secrets.token_urlsafe(18)
+        with open(TV_CFG, "w") as fh:
+            json.dump(cfg, fh)
+    return cfg
+
+
+def _tv_data_status():
+    out = {}
+    for sym in ("NQ", "ES"):
+        path = os.path.join(ROOT, "data", f"{sym}_5m.csv")
+        if not os.path.exists(path):
+            continue
+        try:
+            b = load(sym, "5m")
+            days = sorted(set(b.date_str))
+            imp_path = os.path.join(ROOT, "data", f"{sym}_imported_days.json")
+            imported = json.load(open(imp_path)) if os.path.exists(imp_path) else []
+            out[sym] = {"from": days[0], "to": days[-1], "days": len(days), "bars": int(len(b.t)), "imported_days": len(imported)}
+        except Exception as e:
+            out[sym] = {"error": str(e)}
+    return out
+
+
+@app.get("/api/tv/status")
+def api_tv_status():
+    cfg = _tv_cfg()
+    return J({"data": _tv_data_status(), "hook": {"key": cfg["key"], "public_base": cfg.get("public_base", ""), "recent": _tv_hook["recent"][:20]}})
+
+
+@app.get("/api/tv/pine")
+def api_tv_pine(download: int = 0):
+    path = os.path.join(ROOT, "tradingview", "liquidity_engine.pine")
+    if download:
+        return FileResponse(path, filename="liquidity_engine.pine", media_type="text/plain")
+    with open(path, encoding="utf-8") as fh:
+        # CORS open on purpose: the script is public text and the TradingView page fetches it to fill the Pine Editor
+        return Response(fh.read(), media_type="text/plain; charset=utf-8", headers={"Access-Control-Allow-Origin": "*"})
+
+
+@app.post("/api/tv/hook")
+async def api_tv_hook(req: Request):
+    import secrets
+    body = await req.json()
+    cfg = _tv_cfg()
+    if body.get("rotate"):
+        cfg["key"] = secrets.token_urlsafe(18)
+    if "public_base" in body:
+        cfg["public_base"] = str(body["public_base"]).strip().rstrip("/")
+    with open(TV_CFG, "w") as fh:
+        json.dump(cfg, fh)
+    return J({"key": cfg["key"], "public_base": cfg.get("public_base", ""), "recent": _tv_hook["recent"][:20]})
+
+
+@app.post("/api/tv/webhook")
+async def api_tv_webhook(req: Request, key: str = ""):
+    """TradingView alert webhook. The key in the URL is the only credential; payload is data, shown in the live feed."""
+    cfg = _tv_cfg()
+    if not key or key != cfg["key"]:
+        return J({"error": "bad key"}, 403)
+    raw = (await req.body())[:4000].decode("utf-8", "replace")
+    try:
+        body = json.loads(raw)
+    except Exception:
+        body = {"text": raw}
+    evt = {"t": int(time.time()), "body": body}
+    _tv_hook["recent"].insert(0, evt)
+    del _tv_hook["recent"][50:]
+    text = body.get("text") if isinstance(body, dict) and "text" in body else \
+        f"{body.get('event', 'alert')} {body.get('symbol', '')} @ {body.get('price', '')} {body.get('note', '')}".strip() if isinstance(body, dict) else raw
+    BOT._log("tradingview", f"TradingView: {text}"[:300])
+    try:
+        from engine import alerts
+        alerts.send(f"📡 TradingView · {text}"[:400], "signal")
+    except Exception:
+        pass
+    return J({"ok": True})
+
+
+@app.post("/api/tv/import")
+async def api_tv_import(req: Request, sym: str = "NQ"):
+    """Import a TradingView 'Export chart data' CSV (ISO or unix time) into the bot's futures history."""
+    import importlib.util
+    sym = sym.upper()
+    if sym not in ("NQ", "ES"):
+        return J({"error": "sym must be NQ or ES"}, 400)
+    text = (await req.body()).decode("utf-8-sig", "replace")
+    spec = importlib.util.spec_from_file_location("import_futures", os.path.join(ROOT, "data", "import_futures.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    try:
+        info = mod.tradingview_text(sym, text)
+    except Exception as e:
+        return J({"error": f"could not parse this file: {e}"}, 400)
+    _cache.clear()
+    return J(info)
+
+
+# ---- LIVE TRADING (tradovate) ----
+from engine import golive as _golive
+from engine import tradovate as _tv
+
+_live_arm = {"armed": False, "at": None, "adapter": "paper"}     # memory only, never written to disk
+
+
+@app.get("/api/live/adapters")
+def live_adapters():
+    st = _tv.env_status()
+    return J({"adapters": [
+        {"name": "paper", "label": "Paper (simulated)", "configured": True},
+        {"name": "tradovate-demo", "label": "Tradovate DEMO", "configured": st["present"]},
+        {"name": "tradovate-live", "label": "Tradovate LIVE (MFFU)", "configured": st["present"] and st["env"] == "live"},
+    ], "env": st["env"], "missing": st["missing"], "account": st["account"], "phrase": _tv.LIVE_PHRASE,
+        "armed": _live_arm["armed"], "armed_at": _live_arm["at"], "bot_running": BOT.running, "bot_adapter": BOT.cfg.get("adapter")})
+
+
+@app.post("/api/live/arm")
+async def live_arm(req: Request):
+    body = await req.json()
+    if body.get("disarm"):
+        _live_arm.update({"armed": False, "at": None, "adapter": "paper"})
+        _tv.ARM.update(_live_arm)
+        BOT._log("risk", "DISARMED")
+        return J({"ok": True, "armed": False})
+    if (body.get("phrase") or "").strip() != _tv.LIVE_PHRASE:
+        return J({"ok": False, "error": f"phrase does not match; type exactly: {_tv.LIVE_PHRASE}"}, 400)
+    if _tv.env_status()["env"] != "live":
+        return J({"ok": False, "error": "TRADOVATE_ENV is not 'live' - arming is pointless; restart the server with the live env first"}, 400)
+    if not _tv.env_status()["present"]:
+        return J({"ok": False, "error": "credentials missing in environment"}, 400)
+    _live_arm.update({"armed": True, "at": int(time.time()), "adapter": "tradovate-live"})
+    _tv.ARM.update(_live_arm)
+    BOT._log("risk", "LIVE ARMED by operator (phrase accepted)")
+    return J({"ok": True, "armed": True, "at": _live_arm["at"]})
+
+
+@app.post("/api/live/golive")
+async def live_golive(req: Request):
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    cfg = {k: v for k, v in body.items() if k != "roundtrip"}
+    try:
+        return J(_golive.run(cfg, roundtrip=bool(body.get("roundtrip"))))
+    except Exception as e:
+        return J({"ok": False, "error": str(e), "steps": []}, 500)
+# ---- END LIVE TRADING ----
+
+
+# ---- MEMORY ----
+# Persistent trade memory (engine/memory.py, data/memory.db): every completed routed paper / live trade, its exit-signal
+# counterfactuals and the operator's notes. Read-only reporting: nothing here changes sizing or trading parameters.
+from engine.memory import MEMORY as _MEM
+
+
+def _mem_src(source: str):
+    s = (source or "").strip().lower()
+    if s in ("", "realised", "realized"):
+        return None                      # paper + live
+    if s == "all" or s in ("paper", "live", "backtest"):
+        return s
+    raise ValueError("source must be paper, live, backtest, realised or all")
+
+
+@app.get("/api/memory/stats")
+def memory_stats(learn_min: int | None = None, threshold: float | None = None, sym: str = ""):
+    lm = int(learn_min if learn_min is not None else DEFAULTS["exit_learn_min"])
+    th = float(threshold if threshold is not None else DEFAULTS["exit_learn_threshold"])
+    try:
+        out = {"realised": _MEM.stats(None, lm, th), "paper": _MEM.stats("paper", lm, th), "live": _MEM.stats("live", lm, th),
+               "counts": {s: _MEM.count((s,)) for s in ("paper", "live", "backtest")},
+               "learner": {"learn_min": lm, "threshold": th, "signals": _MEM.signal_summary(("paper", "live"), lm, th),
+                           "seed_default": bool(DEFAULTS.get("memory_seed")),
+                           "seedable": {s: len(v) for s, v in _MEM.exit_gains(("paper", "live"), sym=sym or None).items()}},
+               "calibration": _MEM.calibration(), "state": _MEM.states(), "db": os.path.relpath(_MEM.path, ROOT)}
+        return J(out)
+    except Exception as e:
+        return J({"error": f"memory unavailable: {e}"}, 500)
+
+
+@app.get("/api/memory/trades")
+def memory_trades(source: str = "", limit: int = 200):
+    try:
+        return J({"trades": _MEM.recent(max(1, min(int(limit), 2000)), _mem_src(source))})
+    except ValueError as e:
+        return J({"error": str(e)}, 400)
+
+
+@app.post("/api/memory/note")
+async def memory_note(req: Request):
+    body = await req.json()
+    try:
+        tid = int(body.get("trade_id"))
+    except (TypeError, ValueError):
+        return J({"error": "trade_id required"}, 400)
+    r = _MEM.add_note(tid, str(body.get("text") or ""))
+    return J(r, 200 if r.get("ok") else 404)
+
+
+@app.get("/api/memory/export")
+def memory_export():
+    name = f"liquidity_memory_{time.strftime('%Y-%m-%d')}.csv"
+    return Response(_MEM.export_csv(), media_type="text/csv; charset=utf-8",
+                    headers={"Content-Disposition": f'attachment; filename="{name}"'})
+# ---- END MEMORY ----
+
+
+# ---- AUTOSTART ----
+# Unattended running (engine/watchdog.py, engine/keepawake.py, scripts/run_bot.ps1). data/autostart.json remembers
+# the last successful /api/live/start; on server start a paper / Tradovate-DEMO bot resumes by itself. Live never
+# auto-resumes. /api/live/stop and /api/live/kill delete the record. A heartbeat thread alerts on stalled polls / a
+# stale feed and keeps the PC awake while the bot runs.
+from engine import keepawake as _ka
+from engine import watchdog as _wd
+
+_AUTOSTART = {"path": _wd.AUTOSTART_PATH}
+
+
+def _autostart_log(text):
+    print(f"[autostart] {time.strftime('%Y-%m-%d %H:%M:%S')} {text}", flush=True)
+    try:
+        BOT._log("system", f"Autostart: {text}")
+    except Exception:
+        pass
+
+
+def _autostart_alert(text):
+    try:
+        from engine import alerts
+        alerts.send(text, "system", force=True)
+    except Exception as e:
+        print(f"[autostart] alert failed: {e}", flush=True)
+
+
+def _autostart_save(cfg):
+    try:
+        rec = _wd.save(cfg, _tv.env_status()["env"], _AUTOSTART["path"], phrases=(_tv.LIVE_PHRASE,))
+        _autostart_log(f"saved start config (adapter={rec['cfg'].get('adapter', 'paper')}, mode={rec['mode']})")
+    except Exception as e:
+        _autostart_log(f"could not save autostart.json: {e}")
+
+
+def _autostart_clear(why):
+    try:
+        if _wd.clear(_AUTOSTART["path"]):
+            _autostart_log(f"autostart.json cleared ({why})")
+    except Exception as e:
+        _autostart_log(f"could not clear autostart.json: {e}")
+
+
+class _KillClearsAutostart:
+    """Pure ASGI middleware: a successful POST /api/live/kill also deletes autostart.json (route body untouched)."""
+
+    def __init__(self, inner):
+        self.inner = inner
+
+    async def __call__(self, scope, receive, send):
+        if scope.get("type") != "http" or scope.get("method") != "POST" or scope.get("path") != "/api/live/kill":
+            return await self.inner(scope, receive, send)
+        status = {}
+
+        async def _send(msg):
+            if msg.get("type") == "http.response.start":
+                status["code"] = msg.get("status")
+            await send(msg)
+        await self.inner(scope, receive, _send)
+        if status.get("code") == 200:
+            _autostart_clear("kill switch")
+
+
+app.add_middleware(_KillClearsAutostart)
+WATCHDOG = _wd.Watchdog(BOT, send=_autostart_alert, keepawake=_ka.KEEPAWAKE)
+
+
+def _autostart_resume():
+    rec = _wd.load(_AUTOSTART["path"])
+    d = _wd.decide_resume(rec, time.time(), _tv.env_status()["env"])
+    info = {"checked_at": int(time.time()), "record": bool(rec), "mode": d["mode"], "reason": d["reason"],
+            "resumed": False, "result": None}
+    if rec and isinstance(rec.get("cfg"), dict):
+        info.update(adapter=rec["cfg"].get("adapter", "paper"), saved_at=rec.get("saved_at"))
+    WATCHDOG.autostart_info = info
+    if not d["resume"]:
+        _autostart_log(f"no resume: {d['reason']}")
+        if rec:
+            _autostart_alert(f"Liquidity Engine server restarted; bot NOT resumed: {d['reason']}")
+        return
+    if BOT.running:
+        info["reason"] = "bot already running"
+        return
+    try:
+        res = BOT.start(d["cfg"])
+    except Exception as e:
+        res = {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
+    info.update(resumed=bool(res.get("ok")), result=res)
+    if res.get("ok"):
+        _autostart_log(f"RESUMED {d['mode']} bot ({d['cfg'].get('sym', 'NQ')} {d['cfg'].get('tf', '5m')}, "
+                       f"adapter={d['cfg'].get('adapter', 'paper')}); restored={res.get('restored')}")
+        _autostart_alert(f"Liquidity Engine auto-resumed the {d['mode']} bot after a server restart "
+                         f"({d['cfg'].get('sym', 'NQ')} {d['cfg'].get('tf', '5m')}). Restored state: {res.get('restored')}")
+    else:
+        _autostart_log(f"resume FAILED: {res.get('error')}")
+        _autostart_alert(f"Liquidity Engine server restarted but the bot resume FAILED: {res.get('error')}")
+
+
+def _autostart_startup():
+    WATCHDOG.server_started_at = int(time.time())
+    if os.environ.get("LE_NO_AUTOSTART") == "1":
+        WATCHDOG.autostart_info = {"disabled": "LE_NO_AUTOSTART=1"}
+    else:
+        threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
+    WATCHDOG.start()
+
+
+app.router.add_event_handler("startup", _autostart_startup)
+
+
+@app.get("/api/health/ping")
+def health_ping():
+    return J({"ok": True, "t": int(time.time()), "uptime_s": int(time.time() - WATCHDOG.server_started_at),
+              "bot_running": bool(BOT.running)})
+
+
+@app.get("/api/health/watchdog")
+def health_watchdog():
+    st = WATCHDOG.status()
+    h = BOT.health or {}
+    st.update(bot_adapter=(BOT.cfg or {}).get("adapter"), data_age_s=h.get("data_age_s"), last_ok_poll=h.get("last_ok_poll"),
+              last_error=h.get("last_error"), autostart_record=_wd.load(_AUTOSTART["path"]) is not None)
+    return J(st)
+# ---- END AUTOSTART ----
+
+
+# ---- LAUNCH ----
+# Launch Control page (web/js/page-launch.js). Live orders come from the TradingView Pine strategy through a webhook
+# bridge (TradersPost / PickMyTrade) into the MFFU Tradovate account; this PC only mirrors it on paper. These routes
+# report launch readiness and let the owner fire ONE sample entry at the bridge's PAPER webhook. The bridge URL is a
+# credential: it is used for the single forward and never stored, logged or echoed back.
+_LAUNCH_BLACKOUTS = os.path.join(ROOT, "tradingview", "blackouts.txt")
+
+
+def _launch_sample():
+    """Sample bridge entry: 1 MNQ buy, market, with stop and target near the last NQ price (or a placeholder)."""
+    try:
+        px = round(float(load("NQ", "5m").c[-1]) * 4) / 4
+    except Exception:
+        px = 25000.0
+    return {"ticker": "MNQ1!", "action": "buy", "sentiment": "long", "quantity": 1, "orderType": "market",
+            "price": px, "stopLoss": {"type": "stop", "stopPrice": px - 20.0}, "takeProfit": {"limitPrice": px + 40.0},
+            "comment": "Liquidity Engine launch test (paper)", "test": True}
+
+
+@app.get("/api/launch/blackouts")
+def launch_blackouts(raw: int = 0):
+    if not os.path.exists(_LAUNCH_BLACKOUTS):
+        if raw:
+            return Response("pending: tradingview/blackouts.txt has not been generated yet\n", media_type="text/plain; charset=utf-8")
+        return J({"present": False, "status": "pending", "text": ""})
+    with open(_LAUNCH_BLACKOUTS, encoding="utf-8", errors="replace") as fh:
+        text = fh.read()[:20000]
+    if raw:
+        return Response(text, media_type="text/plain; charset=utf-8")
+    rows = [ln.strip() for ln in text.splitlines() if ln.strip() and not ln.strip().startswith("#")]
+    entries = []                         # the file may hold the same list twice (one line + one per line): de-duplicate
+    for ln in rows:
+        for e in ln.split(","):
+            if e.strip() and e.strip() not in entries:
+                entries.append(e.strip())
+    return J({"present": True, "status": "ready", "text": text, "mtime": int(os.path.getmtime(_LAUNCH_BLACKOUTS)),
+              "entries": entries, "compact": ",".join(entries), "lines": len(entries)})
+
+
+@app.get("/api/launch/status")
+def launch_status():
+    sp = lambda *p: os.path.exists(os.path.join(ROOT, *p))
+    try:
+        auto_rec = _wd.load(_AUTOSTART["path"]) is not None
+    except Exception:
+        auto_rec = False
+    task = None                          # Windows Task Scheduler task created by scripts/install_autostart.ps1
+    if os.name == "nt":
+        try:
+            task = subprocess.run(["schtasks", "/Query", "/TN", "LiquidityEngine"], capture_output=True, timeout=5).returncode == 0
+        except Exception:
+            task = None
+    return J({"server_time": int(time.time()), "status_ps1": sp("scripts", "status.ps1"), "run_bot_ps1": sp("scripts", "run_bot.ps1"),
+              "install_ps1": sp("scripts", "install_autostart.ps1"), "autostart_record": auto_rec, "task_installed": task,
+              "blackouts": sp("tradingview", "blackouts.txt"), "bridge_doc": sp("tradingview", "BRIDGE_SETUP.md"),
+              "sample": _launch_sample()})
+
+
+@app.post("/api/launch/test_webhook")
+async def launch_test_webhook(req: Request):
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+    try:
+        body = await req.json()
+    except Exception:
+        return J({"ok": False, "error": "JSON body required"}, 400)
+    url = str((body or {}).get("url") or "").strip()
+    try:
+        u = urllib.parse.urlsplit(url)
+    except Exception:
+        u = None
+    if not u or u.scheme != "https" or not u.hostname or any(c in url for c in " \r\n\t"):
+        return J({"ok": False, "error": "refused: the webhook URL must be a full https:// address"}, 400)
+    payload = body.get("payload")
+    if payload is None or payload == "":
+        payload = _launch_sample()
+    if isinstance(payload, str):
+        try:
+            payload = json.loads(payload)
+        except Exception:
+            return J({"ok": False, "error": "payload is not valid JSON"}, 400)
+    data = json.dumps(payload).encode()
+    if len(data) > 8000:
+        return J({"ok": False, "error": "payload too large (8 KB max)"}, 400)
+
+    class _NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, *a, **k):
+            return None                  # report a 3xx as-is instead of following it (could downgrade to http)
+
+    opener = urllib.request.build_opener(_NoRedirect)
+    rq = urllib.request.Request(url, data=data, method="POST",
+                                headers={"Content-Type": "application/json", "User-Agent": "LiquidityEngine-launch-test/1"})
+    t0 = time.time()
+    try:
+        with opener.open(rq, timeout=10) as resp:
+            status, text = resp.status, resp.read(4000).decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        try:
+            text = e.read(4000).decode("utf-8", "replace")
+        except Exception:
+            text = ""
+        status = e.code
+    except Exception as e:           # timeout / DNS / TLS: report the class + reason only, never the URL
+        reason = getattr(e, "reason", None) or e
+        msg = f"{e.__class__.__name__}: {reason}".replace(url, "<url>")
+        return J({"ok": False, "status": None, "error": f"no response: {msg}"[:300], "elapsed_ms": int((time.time() - t0) * 1000),
+                  "sent": payload})
+    BOT._log("system", f"Launch test webhook sent to the bridge: HTTP {status}")    # URL deliberately not logged
+    return J({"ok": 200 <= status < 300, "status": status, "body": text, "elapsed_ms": int((time.time() - t0) * 1000), "sent": payload})
+# ---- END LAUNCH ----
+
+
+# ---- CONFLUENCE SEARCH ----
+# learning loop over every recorded confluence (engine/confluence_search.py): registry + background run with progress
+_CSEARCH = {"proc": None, "started": None, "finished": None, "step": 0, "steps": 6, "msg": "", "lines": [], "rc": None}
+_CSEARCH_LOCK = threading.Lock()
+
+
+def _csearch_reader(proc):
+    for raw in iter(proc.stdout.readline, ""):
+        line = raw.rstrip()
+        with _CSEARCH_LOCK:
+            if line.startswith("PROGRESS "):
+                try:
+                    frac, msg = line[9:].split(" ", 1)
+                    a, b = frac.split("/")
+                    _CSEARCH.update(step=int(a), steps=int(b), msg=msg)
+                except ValueError:
+                    pass
+            elif line:
+                _CSEARCH["lines"] = (_CSEARCH["lines"] + [line])[-40:]
+    proc.wait()
+    with _CSEARCH_LOCK:
+        _CSEARCH.update(finished=time.time(), rc=proc.returncode,
+                        msg="done" if proc.returncode == 0 else f"failed (exit {proc.returncode})")
+
+
+def _csearch_running():
+    return _CSEARCH["proc"] is not None and _CSEARCH["proc"].poll() is None
+
+
+@app.get("/api/confluence/registry")
+def api_confluence_registry():
+    """The confluence registry (ACTIVE / PROBATION / CANDIDATE / RETIRED with per-fold evidence and the last run)."""
+    path = os.path.join(ROOT, "data", "confluence_registry.json")
+    data = None
+    if os.path.exists(path):
+        try:
+            with open(path, encoding="utf-8") as fh:
+                data = json.load(fh)
+        except Exception as e:
+            return J({"running": _csearch_running(), "data": None, "error": f"registry unreadable: {e}"})
+    return J({"running": _csearch_running(), "data": data})
+
+
+@app.post("/api/confluence/run")
+def api_confluence_run():
+    """Start one learning cycle in the background (python -m engine.confluence_search --run)."""
+    with _CSEARCH_LOCK:
+        if _csearch_running():
+            return J({"running": True, "already": True})
+        proc = subprocess.Popen([sys.executable, "-u", "-m", "engine.confluence_search", "--run"], cwd=ROOT,
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
+        _CSEARCH.update(proc=proc, started=time.time(), finished=None, step=0, steps=6, msg="starting", lines=[], rc=None)
+    threading.Thread(target=_csearch_reader, args=(proc,), daemon=True).start()
+    return J({"running": True})
+
+
+@app.get("/api/confluence/status")
+def api_confluence_status():
+    with _CSEARCH_LOCK:
+        s = {k: v for k, v in _CSEARCH.items() if k != "proc"}
+    s["running"] = _csearch_running()
+    s["elapsed_s"] = None if not s["started"] else round((s["finished"] or time.time()) - s["started"], 1)
+    return J(s)
+# ---- END CONFLUENCE SEARCH ----
+
+
+@app.get("/")
+def index():
+    return FileResponse(os.path.join(WEB, "index.html"))
+
+
+from engine.extras_api import router as extras_router; app.include_router(extras_router)
+app.mount("/", StaticFiles(directory=WEB), name="web")
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8765))
+    host = os.environ.get("HOST", "0.0.0.0")     # reachable from your phone on the LAN / Tailscale; set HOST=127.0.0.1 to keep it local
+    print(f"NQ Liquidity Bot dashboard -> http://127.0.0.1:{port}  (phone: Settings > Open on your phone)")
+    uvicorn.run(app, host=host, port=port, log_level="warning")

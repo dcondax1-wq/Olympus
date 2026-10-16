@@ -1,0 +1,206 @@
+/* ===== Skins: each is a complete palette + type + one signature effect.
+   Applied as <html data-skin="id" data-theme="dark|light">; loaded last so it wins over the base tokens.
+   Every skin feeds the shared hi-tech layer through --accent / --accent-2 / --glow / --surface / --glass / --display / --brand. */
+
+/* ---------- 1. Terminal (default): near-black blue, electric blue + cyan */
+:root[data-skin="terminal"] { --candle-up: #22c55e; --candle-down: #f05252; }
+
+/* ---------- 2. Bloomberg: pure black, amber terminal, square edges, mono everywhere, no glass */
+:root[data-skin="bloomberg"] {
+  color-scheme: dark;
+  --page: #000; --surface: #0a0a0a; --surface-2: #111; --surface-3: #1b1b1b;
+  --ink: #f4f4f4; --ink-2: #ffb000; --muted: #9a8558; --grid: #1a1a1a; --grid-line: rgba(255, 176, 0, .05); --axis: #333;
+  --border: rgba(255, 176, 0, .22); --accent: #ffb000; --accent-2: #ffd666; --accent-ink: #000; --glow: rgba(255, 176, 0, .28);
+  --ssl: #4aa3ff; --bsl: #ff6a00; --amt: #c084fc; --fvg: #00d084; --gold: #ffb000;
+  --good: #00d084; --good-ink: #00e090; --bad: #ff3b30; --warn: #ffb000; --serious: #ff7a2f; --edge: rgba(255, 176, 0, .06);
+  --shadow: none; --r: 3px; --glass: 100%;
+  --display: "JetBrains Mono", ui-monospace, monospace; --brand: "JetBrains Mono", ui-monospace, monospace; --sans: "JetBrains Mono", ui-monospace, monospace;
+  --candle-up: #00d084; --candle-down: #ff3b30;
+}
+:root[data-skin="bloomberg"] body { background-image: none; }
+:root[data-skin="bloomberg"] .card-h h3, :root[data-skin="bloomberg"] .topbar h1 { color: var(--accent); }
+:root[data-skin="bloomberg"] .card, :root[data-skin="bloomberg"] .kpi, :root[data-skin="bloomberg"] .guard, :root[data-skin="bloomberg"] .rail,
+:root[data-skin="bloomberg"] .topbar, :root[data-skin="bloomberg"] .banner { backdrop-filter: none; -webkit-backdrop-filter: none; }
+:root[data-skin="bloomberg"] .brand-text b { background: none; color: var(--accent); }
+:root[data-skin="bloomberg"] .kpi::after { opacity: 1; height: 1px; background: var(--accent); }
+
+/* ---------- 3. Neon Tokyo: synthwave purple-black, magenta + cyan, neon floor grid */
+:root[data-skin="synthwave"] {
+  color-scheme: dark;
+  --page: #0b0216; --surface: #140726; --surface-2: #1b0b33; --surface-3: #251145;
+  --ink: #f6e9ff; --ink-2: #c9a8ff; --muted: #8a6bb3; --grid: #22103b; --grid-line: rgba(255, 60, 200, .05); --axis: #3b1d63;
+  --border: rgba(255, 80, 220, .22); --accent: #ff2bd6; --accent-2: #00e5ff; --accent-ink: #fff; --glow: rgba(255, 43, 214, .45);
+  --ssl: #00e5ff; --bsl: #ff2bd6; --amt: #b388ff; --fvg: #00ffa3; --gold: #ffd166;
+  --good: #00ffa3; --good-ink: #3dffb5; --bad: #ff4d6d; --warn: #ffd166; --serious: #ff8f6b; --edge: rgba(255, 120, 230, .08);
+  --shadow: 0 0 0 1px rgba(255, 43, 214, .05), 0 14px 40px rgba(20, 0, 40, .6); --glass: 70%;
+  --display: "Orbitron", "Oxanium", sans-serif; --brand: "Orbitron", "Unbounded", sans-serif; --candle-up: #00e5ff; --candle-down: #ff2bd6;
+}
+:root[data-skin="synthwave"] body::after {
+  content: ""; position: fixed; left: -20%; right: -20%; bottom: -6vh; height: 46vh; z-index: 0; pointer-events: none; opacity: .55;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 43, 214, .35) 0 1px, transparent 1px 70px),
+    repeating-linear-gradient(0deg, rgba(0, 229, 255, .28) 0 1px, transparent 1px 46px);
+  transform: perspective(380px) rotateX(62deg); transform-origin: bottom;
+  -webkit-mask-image: linear-gradient(transparent, #000 70%); mask-image: linear-gradient(transparent, #000 70%);
+}
+:root[data-skin="synthwave"] .kpi .v, :root[data-skin="synthwave"] .topbar h1 { text-shadow: 0 0 14px var(--glow); }
+:root[data-skin="synthwave"] .kpi .v { font-size: 22px; letter-spacing: .02em; }
+:root[data-skin="synthwave"] .brand-text b { background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; }
+
+/* ---------- 4. Phosphor: green CRT, VT323, scanlines and glow */
+:root[data-skin="phosphor"] {
+  color-scheme: dark;
+  --page: #020a04; --surface: #04120a; --surface-2: #06180d; --surface-3: #0a2414;
+  --ink: #b6ffcf; --ink-2: #6fe39a; --muted: #3f8f5d; --grid: #0b2615; --grid-line: rgba(57, 255, 120, .06); --axis: #14502b;
+  --border: rgba(57, 255, 120, .22); --accent: #39ff78; --accent-2: #5cf2ff; --accent-ink: #021208; --glow: rgba(57, 255, 120, .4);
+  --ssl: #5cf2ff; --bsl: #ffb347; --amt: #9cff57; --fvg: #39ff78; --gold: #ffe066;
+  --good: #39ff78; --good-ink: #5dff95; --bad: #ff5c5c; --warn: #ffe066; --serious: #ffa95c; --edge: rgba(57, 255, 120, .08);
+  --shadow: 0 0 24px rgba(57, 255, 120, .06); --r: 2px; --glass: 86%;
+  --display: "VT323", "JetBrains Mono", monospace; --brand: "VT323", "JetBrains Mono", monospace; --mono: "VT323", "JetBrains Mono", monospace; --candle-up: #39ff78; --candle-down: #ff5c5c;
+}
+:root[data-skin="phosphor"] body::before {
+  content: ""; position: fixed; inset: 0; z-index: 90; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .22) 0 1px, transparent 1px 3px);
+}
+:root[data-skin="phosphor"] .kpi .v, :root[data-skin="phosphor"] .topbar h1, :root[data-skin="phosphor"] .big-status { text-shadow: 0 0 8px var(--glow); }
+:root[data-skin="phosphor"] .kpi .v { font-size: 36px; }
+:root[data-skin="phosphor"] .mono { font-size: 1.12em; }
+:root[data-skin="phosphor"] .topbar h1 { font-size: 22px; letter-spacing: .08em; }
+:root[data-skin="phosphor"] .brand-text b { font-size: 16px; background: none; color: var(--accent); text-shadow: 0 0 10px var(--glow); }
+:root[data-skin="phosphor"] .brand-text span { font-size: 13px; }
+:root[data-skin="phosphor"] .card-h h3, :root[data-skin="phosphor"] .tbl th, :root[data-skin="phosphor"] .kpi .k, :root[data-skin="phosphor"] .nav-sec { font-size: 14px; letter-spacing: .1em; }
+:root[data-skin="phosphor"] .pill { font-size: 13px; }
+
+/* ---------- 5. Carbon: graphite monochrome, white accent, nothing loud (grotesk everywhere) */
+:root[data-skin="carbon"] {
+  color-scheme: dark;
+  --page: #0e0e0f; --surface: #161618; --surface-2: #1d1d20; --surface-3: #27272b;
+  --ink: #f5f5f5; --ink-2: #b4b4b8; --muted: #78787e; --grid: #222225; --grid-line: rgba(255, 255, 255, .03); --axis: #34343a;
+  --border: rgba(255, 255, 255, .1); --accent: #f5f5f5; --accent-2: #bdbdc2; --accent-ink: #0e0e0f; --glow: rgba(255, 255, 255, .14);
+  --ssl: #9db4ff; --bsl: #ffb08a; --amt: #c7b8ff; --fvg: #8fe3c6; --gold: #e8d28a;
+  --good: #6fe3a1; --good-ink: #7ff0b0; --bad: #ff7a7a; --warn: #f1d27a; --serious: #f6a87a; --edge: rgba(255, 255, 255, .04);
+  --glass: 82%; --display: "Space Grotesk", system-ui, sans-serif; --brand: "Space Grotesk", system-ui, sans-serif;
+  --candle-up: #e8e8e8; --candle-down: #5a5a60;
+}
+:root[data-skin="carbon"] .app::after { display: none; }
+:root[data-skin="carbon"] .kpi .v { letter-spacing: -.02em; }
+
+/* ---------- 6. Arctic: crisp icy light theme */
+:root[data-skin="arctic"] {
+  color-scheme: light;
+  --page: #e6eff8; --surface: #fbfdff; --surface-2: #eff5fb; --surface-3: #e0eaf4;
+  --ink: #0a1726; --ink-2: #3d5168; --muted: #7c8ea3; --grid: #dbe6f1; --grid-line: rgba(0, 90, 170, .06); --axis: #bccbdb;
+  --border: rgba(0, 60, 120, .12); --accent: #0077ff; --accent-2: #00b4d8; --accent-ink: #fff; --glow: rgba(0, 119, 255, .2);
+  --ssl: #0077ff; --bsl: #f0641e; --amt: #6a4bdb; --fvg: #00a487; --gold: #c98a00;
+  --good: #0f9d58; --good-ink: #0b7d45; --bad: #e0353b; --warn: #c98a00; --serious: #e3702e; --edge: rgba(255, 255, 255, .9);
+  --shadow: 0 1px 2px rgba(0, 40, 90, .06), 0 12px 30px rgba(0, 60, 130, .08); --glass: 78%; --candle-up: #0f9d58; --candle-down: #e0353b;
+}
+
+/* ---------- 7. Swiss: white paper, black ink, international orange, flat and editorial (no glass, no glow) */
+:root[data-skin="swiss"] {
+  color-scheme: light;
+  --page: #f6f6f4; --surface: #ffffff; --surface-2: #f2f2f0; --surface-3: #e6e6e3;
+  --ink: #111; --ink-2: #444; --muted: #858582; --grid: #e7e7e4; --grid-line: rgba(0, 0, 0, .04); --axis: #c9c9c5;
+  --border: rgba(0, 0, 0, .14); --accent: #ff4f00; --accent-2: #111; --accent-ink: #fff; --glow: rgba(255, 79, 0, .18);
+  --ssl: #1d4ed8; --bsl: #ff4f00; --amt: #7c3aed; --fvg: #059669; --gold: #ca8a04;
+  --good: #059669; --good-ink: #047857; --bad: #dc2626; --warn: #ca8a04; --serious: #ea580c; --edge: transparent;
+  --shadow: none; --r: 4px; --glass: 100%; --display: "Space Grotesk", system-ui, sans-serif; --brand: "Space Grotesk", system-ui, sans-serif;
+  --candle-up: #111111; --candle-down: #ff4f00;
+}
+:root[data-skin="swiss"] body { background-image: none; }
+:root[data-skin="swiss"] .card, :root[data-skin="swiss"] .kpi, :root[data-skin="swiss"] .guard { border-width: 1.5px; border-color: #111; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: none; }
+:root[data-skin="swiss"] .card:hover, :root[data-skin="swiss"] .kpi:hover { border-color: #111; box-shadow: none; }
+:root[data-skin="swiss"] .card-h h3 { color: var(--ink); font-weight: 700; letter-spacing: .06em; }
+:root[data-skin="swiss"] .card-h::before, :root[data-skin="swiss"] .card-h::after, :root[data-skin="swiss"] .kpi::before { display: none; }
+:root[data-skin="swiss"] .card-h h3::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--accent); margin-right: 8px; vertical-align: 1px; }
+:root[data-skin="swiss"] .kpi .v { font-weight: 700; letter-spacing: -.03em; }
+:root[data-skin="swiss"] .kpi::after { opacity: 1; background: var(--accent); height: 3px; }
+:root[data-skin="swiss"] .brand-text b { background: none; color: #111; }
+:root[data-skin="swiss"] .brand-mark { box-shadow: 0 0 0 1.5px #111; background: #fff; }
+:root[data-skin="swiss"] .btn.primary { box-shadow: none; background: var(--accent); }
+:root[data-skin="swiss"] .topbar h1::before { box-shadow: none; background: var(--accent); }
+
+/* ---------- 8. Blood Moon: near-black with crimson */
+:root[data-skin="bloodmoon"] {
+  color-scheme: dark;
+  --page: #0a0506; --surface: #140a0c; --surface-2: #1b0e11; --surface-3: #26141a;
+  --ink: #fbeff0; --ink-2: #d8a9ae; --muted: #946a70; --grid: #24131a; --grid-line: rgba(255, 60, 80, .045); --axis: #3d1c25;
+  --border: rgba(255, 70, 90, .18); --accent: #ff2e4d; --accent-2: #ff7a3d; --accent-ink: #fff; --glow: rgba(255, 46, 77, .4);
+  --ssl: #5aa9ff; --bsl: #ff8a3d; --amt: #c39bff; --fvg: #2ee6a6; --gold: #ffc861;
+  --good: #2ee6a6; --good-ink: #49f0b6; --bad: #ff2e4d; --warn: #ffc861; --serious: #ff8a5c; --edge: rgba(255, 90, 110, .06);
+  --glass: 72%; --candle-up: #2ee6a6; --candle-down: #ff2e4d;
+}
+:root[data-skin="bloodmoon"] body { background-image: radial-gradient(700px 700px at 85% -10%, rgba(255, 46, 77, .16), transparent 60%); }
+
+/* ---------- 9. Deep Ocean: petrol and cyan */
+:root[data-skin="ocean"] {
+  color-scheme: dark;
+  --page: #021015; --surface: #05191f; --surface-2: #082129; --surface-3: #0d2c36;
+  --ink: #e3fbff; --ink-2: #9fd3df; --muted: #5d8e99; --grid: #0b2730; --grid-line: rgba(0, 220, 255, .045); --axis: #164451;
+  --border: rgba(0, 220, 255, .15); --accent: #00d1ff; --accent-2: #00e6b0; --accent-ink: #00222c; --glow: rgba(0, 209, 255, .35);
+  --ssl: #00d1ff; --bsl: #ff9f43; --amt: #a29bfe; --fvg: #00e6b0; --gold: #ffd166;
+  --good: #00e6b0; --good-ink: #2ff3c3; --bad: #ff5e6c; --warn: #ffd166; --serious: #ff9f6b; --edge: rgba(0, 220, 255, .06);
+  --glass: 70%; --candle-up: #00e6b0; --candle-down: #ff5e6c;
+}
+:root[data-skin="ocean"] body { background-image: radial-gradient(1000px 500px at 50% 120%, rgba(0, 209, 255, .12), transparent 60%),
+  radial-gradient(800px 400px at 0% 0%, rgba(0, 230, 176, .08), transparent 60%); }
+
+/* ---------- 10. Gold Rush: black and gold, gilded numbers, wide display face */
+:root[data-skin="gold"] {
+  color-scheme: dark;
+  --page: #070604; --surface: #110e08; --surface-2: #18140b; --surface-3: #221c10;
+  --ink: #fbf3e0; --ink-2: #d9c38f; --muted: #8f7d55; --grid: #1e190f; --grid-line: rgba(230, 180, 80, .045); --axis: #3a2f19;
+  --border: rgba(230, 180, 80, .22); --accent: #e6b450; --accent-2: #fff3c4; --accent-ink: #1a1205; --glow: rgba(230, 180, 80, .32);
+  --ssl: #7fb2ff; --bsl: #ff8f4d; --amt: #c9a2ff; --fvg: #56d6a6; --gold: #e6b450;
+  --good: #56d6a6; --good-ink: #6fe3b6; --bad: #ff6b5e; --warn: #e6b450; --serious: #ff9a5e; --edge: rgba(255, 220, 140, .07);
+  --glass: 76%; --brand: "Unbounded", "Oxanium", sans-serif; --candle-up: #e6b450; --candle-down: #6b5a3a;
+}
+:root[data-skin="gold"] .kpi .v:not(.up):not(.dn), :root[data-skin="gold"] .topbar h1, :root[data-skin="gold"] .big-status:not(.up):not(.dn), :root[data-skin="gold"] .brand-text b {
+  background: linear-gradient(180deg, #fff3c4, #e6b450 55%, #a8781f); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* keep app content above decorative floors */
+.app { position: relative; z-index: 1; }
+
+/* ---------- global layer: glass panel surface + cursor spotlight (skins.js writes --mx / --my) */
+.card, .kpi, .guard {
+  background:
+    radial-gradient(420px circle at var(--mx, 50%) var(--my, -40%), color-mix(in srgb, var(--accent) 9%, transparent), transparent 45%),
+    linear-gradient(180deg, color-mix(in srgb, var(--accent) 5%, transparent), transparent 55%),
+    color-mix(in srgb, var(--surface) var(--glass, 76%), transparent);
+}
+:root[data-skin="swiss"] .card, :root[data-skin="swiss"] .kpi, :root[data-skin="swiss"] .guard { background: var(--surface); }
+:root[data-skin="bloomberg"] .card, :root[data-skin="bloomberg"] .kpi, :root[data-skin="bloomberg"] .guard { background: var(--surface); }
+
+/* ---------- appearance settings */
+:root[data-density="compact"] .card { padding: 10px 12px; }
+:root[data-density="compact"] .kpi { padding: 9px 12px 8px; }
+:root[data-density="compact"] .kpi .v { font-size: 21px; }
+:root[data-density="compact"] .grid { gap: 10px; margin-bottom: 10px; }
+:root[data-density="compact"] .page { padding: 12px 16px 30px; }
+:root[data-ticker="off"] .ticker { display: none; }
+:root[data-motion="off"] *, :root[data-motion="off"] *::before, :root[data-motion="off"] *::after { animation: none !important; transition: none !important; }
+
+/* ---------- Settings page */
+.skins { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); }
+.skin { border-radius: 14px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; background: var(--surface-2); text-align: left;
+  padding: 0; color: var(--ink); font: inherit; transition: transform .15s, border-color .15s, box-shadow .2s; }
+.skin:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); box-shadow: 0 10px 30px rgba(0,0,0,.2); }
+.skin.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 10px 30px var(--glow); }
+.skin .pv { height: 118px; position: relative; padding: 10px; display: grid; grid-template-rows: auto 1fr; gap: 8px; }
+.skin .pv .bar { display: flex; align-items: center; gap: 6px; }
+.skin .pv .dot { width: 8px; height: 8px; border-radius: 50%; }
+.skin .pv .ttl { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; }
+.skin .pv .num { font-size: 20px; font-weight: 700; margin-left: auto; font-variant-numeric: tabular-nums; }
+.skin .pv svg { width: 100%; height: 100%; }
+.skin .meta { padding: 10px 12px 12px; display: grid; gap: 3px; background: var(--surface); }
+.skin .meta b { font-family: var(--display); letter-spacing: .06em; text-transform: uppercase; font-size: 12px; }
+.skin .meta span { font-size: 12px; color: var(--ink-2); }
+.skin .mode { font: 600 10px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.set-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 0; border-top: 1px solid var(--border); }
+.set-row:first-child { border-top: 0; }
+.set-row .lbl b { display: block; } .set-row .lbl span { font-size: 12px; color: var(--muted); }
+.swatches { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.swatches button { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--border); cursor: pointer; }
+.swatches button.on { box-shadow: 0 0 0 2px var(--ink); }
+.swatches input[type=color] { width: 34px; height: 30px; border: 0; background: none; padding: 0; cursor: pointer; }

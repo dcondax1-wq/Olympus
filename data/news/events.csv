@@ -1,0 +1,240 @@
+date,time_et,event,impact,source
+2021-01-27,14:00,FOMC rate decision,high,federalreserve.gov
+2021-01-27,14:30,FOMC press conference,high,federalreserve.gov
+2021-03-17,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2021-03-17,14:30,FOMC press conference,high,federalreserve.gov
+2021-04-28,14:00,FOMC rate decision,high,federalreserve.gov
+2021-04-28,14:30,FOMC press conference,high,federalreserve.gov
+2021-06-16,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2021-06-16,14:30,FOMC press conference,high,federalreserve.gov
+2021-07-28,14:00,FOMC rate decision,high,federalreserve.gov
+2021-07-28,14:30,FOMC press conference,high,federalreserve.gov
+2021-09-22,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2021-09-22,14:30,FOMC press conference,high,federalreserve.gov
+2021-11-03,14:00,FOMC rate decision,high,federalreserve.gov
+2021-11-03,14:30,FOMC press conference,high,federalreserve.gov
+2021-12-15,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2021-12-15,14:30,FOMC press conference,high,federalreserve.gov
+2022-01-26,14:00,FOMC rate decision,high,federalreserve.gov
+2022-01-26,14:30,FOMC press conference,high,federalreserve.gov
+2022-03-16,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2022-03-16,14:30,FOMC press conference,high,federalreserve.gov
+2022-05-04,14:00,FOMC rate decision,high,federalreserve.gov
+2022-05-04,14:30,FOMC press conference,high,federalreserve.gov
+2022-06-15,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2022-06-15,14:30,FOMC press conference,high,federalreserve.gov
+2022-07-27,14:00,FOMC rate decision,high,federalreserve.gov
+2022-07-27,14:30,FOMC press conference,high,federalreserve.gov
+2022-09-21,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2022-09-21,14:30,FOMC press conference,high,federalreserve.gov
+2022-11-02,14:00,FOMC rate decision,high,federalreserve.gov
+2022-11-02,14:30,FOMC press conference,high,federalreserve.gov
+2022-12-14,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2022-12-14,14:30,FOMC press conference,high,federalreserve.gov
+2023-02-01,14:00,FOMC rate decision,high,federalreserve.gov
+2023-02-01,14:30,FOMC press conference,high,federalreserve.gov
+2023-03-22,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2023-03-22,14:30,FOMC press conference,high,federalreserve.gov
+2023-05-03,14:00,FOMC rate decision,high,federalreserve.gov
+2023-05-03,14:30,FOMC press conference,high,federalreserve.gov
+2023-06-14,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2023-06-14,14:30,FOMC press conference,high,federalreserve.gov
+2023-07-26,14:00,FOMC rate decision,high,federalreserve.gov
+2023-07-26,14:30,FOMC press conference,high,federalreserve.gov
+2023-09-20,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2023-09-20,14:30,FOMC press conference,high,federalreserve.gov
+2023-10-06,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2023-10-11,08:30,PPI (producer inflation),medium,bls.gov
+2023-10-12,08:30,CPI (consumer inflation),high,bls.gov
+2023-11-01,14:00,FOMC rate decision,high,federalreserve.gov
+2023-11-01,14:30,FOMC press conference,high,federalreserve.gov
+2023-11-03,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2023-11-14,08:30,CPI (consumer inflation),high,bls.gov
+2023-11-15,08:30,PPI (producer inflation),medium,bls.gov
+2023-12-08,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2023-12-12,08:30,CPI (consumer inflation),high,bls.gov
+2023-12-13,08:30,PPI (producer inflation),medium,bls.gov
+2023-12-13,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2023-12-13,14:30,FOMC press conference,high,federalreserve.gov
+2024-01-05,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-01-11,08:30,CPI (consumer inflation),high,bls.gov
+2024-01-12,08:30,PPI (producer inflation),medium,bls.gov
+2024-01-31,14:00,FOMC rate decision,high,federalreserve.gov
+2024-01-31,14:30,FOMC press conference,high,federalreserve.gov
+2024-02-02,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-02-13,08:30,CPI (consumer inflation),high,bls.gov
+2024-02-16,08:30,PPI (producer inflation),medium,bls.gov
+2024-03-08,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-03-12,08:30,CPI (consumer inflation),high,bls.gov
+2024-03-14,08:30,PPI (producer inflation),medium,bls.gov
+2024-03-20,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2024-03-20,14:30,FOMC press conference,high,federalreserve.gov
+2024-04-05,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-04-10,08:30,CPI (consumer inflation),high,bls.gov
+2024-04-11,08:30,PPI (producer inflation),medium,bls.gov
+2024-05-01,14:00,FOMC rate decision,high,federalreserve.gov
+2024-05-01,14:30,FOMC press conference,high,federalreserve.gov
+2024-05-03,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-05-14,08:30,PPI (producer inflation),medium,bls.gov
+2024-05-15,08:30,CPI (consumer inflation),high,bls.gov
+2024-06-07,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-06-12,08:30,CPI (consumer inflation),high,bls.gov
+2024-06-12,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2024-06-12,14:30,FOMC press conference,high,federalreserve.gov
+2024-06-13,08:30,PPI (producer inflation),medium,bls.gov
+2024-07-05,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-07-11,08:30,CPI (consumer inflation),high,bls.gov
+2024-07-12,08:30,PPI (producer inflation),medium,bls.gov
+2024-07-31,14:00,FOMC rate decision,high,federalreserve.gov
+2024-07-31,14:30,FOMC press conference,high,federalreserve.gov
+2024-08-02,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-08-13,08:30,PPI (producer inflation),medium,bls.gov
+2024-08-14,08:30,CPI (consumer inflation),high,bls.gov
+2024-09-06,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-09-11,08:30,CPI (consumer inflation),high,bls.gov
+2024-09-12,08:30,PPI (producer inflation),medium,bls.gov
+2024-09-18,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2024-09-18,14:30,FOMC press conference,high,federalreserve.gov
+2024-10-04,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-10-10,08:30,CPI (consumer inflation),high,bls.gov
+2024-10-11,08:30,PPI (producer inflation),medium,bls.gov
+2024-11-01,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-11-07,14:00,FOMC rate decision,high,federalreserve.gov
+2024-11-07,14:30,FOMC press conference,high,federalreserve.gov
+2024-11-13,08:30,CPI (consumer inflation),high,bls.gov
+2024-11-14,08:30,PPI (producer inflation),medium,bls.gov
+2024-12-06,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2024-12-11,08:30,CPI (consumer inflation),high,bls.gov
+2024-12-12,08:30,PPI (producer inflation),medium,bls.gov
+2024-12-18,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2024-12-18,14:30,FOMC press conference,high,federalreserve.gov
+2025-01-10,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-01-14,08:30,PPI (producer inflation),medium,bls.gov
+2025-01-15,08:30,CPI (consumer inflation),high,bls.gov
+2025-01-29,14:00,FOMC rate decision,high,federalreserve.gov
+2025-01-29,14:30,FOMC press conference,high,federalreserve.gov
+2025-02-07,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-02-12,08:30,CPI (consumer inflation),high,bls.gov
+2025-02-13,08:30,PPI (producer inflation),medium,bls.gov
+2025-03-07,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-03-12,08:30,CPI (consumer inflation),high,bls.gov
+2025-03-13,08:30,PPI (producer inflation),medium,bls.gov
+2025-03-19,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2025-03-19,14:30,FOMC press conference,high,federalreserve.gov
+2025-04-04,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-04-10,08:30,CPI (consumer inflation),high,bls.gov
+2025-04-11,08:30,PPI (producer inflation),medium,bls.gov
+2025-05-02,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-05-07,14:00,FOMC rate decision,high,federalreserve.gov
+2025-05-07,14:30,FOMC press conference,high,federalreserve.gov
+2025-05-13,08:30,CPI (consumer inflation),high,bls.gov
+2025-05-15,08:30,PPI (producer inflation),medium,bls.gov
+2025-06-06,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-06-11,08:30,CPI (consumer inflation),high,bls.gov
+2025-06-12,08:30,PPI (producer inflation),medium,bls.gov
+2025-06-18,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2025-06-18,14:30,FOMC press conference,high,federalreserve.gov
+2025-07-03,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-07-15,08:30,CPI (consumer inflation),high,bls.gov
+2025-07-16,08:30,PPI (producer inflation),medium,bls.gov
+2025-07-30,14:00,FOMC rate decision,high,federalreserve.gov
+2025-07-30,14:30,FOMC press conference,high,federalreserve.gov
+2025-08-01,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-08-12,08:30,CPI (consumer inflation),high,bls.gov
+2025-08-14,08:30,PPI (producer inflation),medium,bls.gov
+2025-09-05,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-09-10,08:30,PPI (producer inflation),medium,bls.gov
+2025-09-11,08:30,CPI (consumer inflation),high,bls.gov
+2025-09-17,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2025-09-17,14:30,FOMC press conference,high,federalreserve.gov
+2025-10-24,08:30,CPI (consumer inflation),high,bls.gov
+2025-10-29,14:00,FOMC rate decision,high,federalreserve.gov
+2025-10-29,14:30,FOMC press conference,high,federalreserve.gov
+2025-11-20,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-11-25,08:30,PPI (producer inflation),medium,bls.gov
+2025-12-10,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2025-12-10,14:30,FOMC press conference,high,federalreserve.gov
+2025-12-16,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2025-12-18,08:30,CPI (consumer inflation),high,bls.gov
+2026-01-09,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-01-13,08:30,CPI (consumer inflation),high,bls.gov
+2026-01-14,08:30,PPI (producer inflation),medium,bls.gov
+2026-01-28,14:00,FOMC rate decision,high,federalreserve.gov
+2026-01-28,14:30,FOMC press conference,high,federalreserve.gov
+2026-01-30,08:30,PPI (producer inflation),medium,bls.gov
+2026-02-11,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-02-13,08:30,CPI (consumer inflation),high,bls.gov
+2026-02-27,08:30,PPI (producer inflation),medium,bls.gov
+2026-03-06,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-03-11,08:30,CPI (consumer inflation),high,bls.gov
+2026-03-18,08:30,PPI (producer inflation),medium,bls.gov
+2026-03-18,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2026-03-18,14:30,FOMC press conference,high,federalreserve.gov
+2026-04-03,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-04-10,08:30,CPI (consumer inflation),high,bls.gov
+2026-04-14,08:30,PPI (producer inflation),medium,bls.gov
+2026-04-29,14:00,FOMC rate decision,high,federalreserve.gov
+2026-04-29,14:30,FOMC press conference,high,federalreserve.gov
+2026-05-08,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-05-12,08:30,CPI (consumer inflation),high,bls.gov
+2026-05-13,08:30,PPI (producer inflation),medium,bls.gov
+2026-06-05,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-06-10,08:30,CPI (consumer inflation),high,bls.gov
+2026-06-11,08:30,PPI (producer inflation),medium,bls.gov
+2026-06-17,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2026-06-17,14:30,FOMC press conference,high,federalreserve.gov
+2026-07-02,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-07-14,08:30,CPI (consumer inflation),high,bls.gov
+2026-07-15,08:30,PPI (producer inflation),medium,bls.gov
+2026-07-29,14:00,FOMC rate decision,high,federalreserve.gov
+2026-07-29,14:30,FOMC press conference,high,federalreserve.gov
+2026-08-07,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-08-12,08:30,CPI (consumer inflation),high,bls.gov
+2026-08-13,08:30,PPI (producer inflation),medium,bls.gov
+2026-09-04,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-09-10,08:30,PPI (producer inflation),medium,bls.gov
+2026-09-11,08:30,CPI (consumer inflation),high,bls.gov
+2026-09-16,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2026-09-16,14:30,FOMC press conference,high,federalreserve.gov
+2026-10-02,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-10-28,14:00,FOMC rate decision,high,federalreserve.gov
+2026-10-28,14:30,FOMC press conference,high,federalreserve.gov
+2026-12-09,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2026-12-09,14:30,FOMC press conference,high,federalreserve.gov
+2027-01-27,14:00,FOMC rate decision,high,federalreserve.gov
+2027-01-27,14:30,FOMC press conference,high,federalreserve.gov
+2027-03-17,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2027-03-17,14:30,FOMC press conference,high,federalreserve.gov
+2027-04-28,14:00,FOMC rate decision,high,federalreserve.gov
+2027-04-28,14:30,FOMC press conference,high,federalreserve.gov
+2027-06-09,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2027-06-09,14:30,FOMC press conference,high,federalreserve.gov
+2027-07-28,14:00,FOMC rate decision,high,federalreserve.gov
+2027-07-28,14:30,FOMC press conference,high,federalreserve.gov
+2027-09-15,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2027-09-15,14:30,FOMC press conference,high,federalreserve.gov
+2027-10-27,14:00,FOMC rate decision,high,federalreserve.gov
+2027-10-27,14:30,FOMC press conference,high,federalreserve.gov
+2027-12-08,14:00,FOMC rate decision + projections,high,federalreserve.gov
+2027-12-08,14:30,FOMC press conference,high,federalreserve.gov
+2026-10-22,08:30,Unemployment Claims,medium,dol.gov
+2026-10-23,09:45,S&P Global Flash PMIs,medium,spglobal.com
+2026-10-23,10:00,UMich Consumer Sentiment (final Oct),medium,sca.isr.umich.edu
+2026-10-27,08:30,Durable Goods Orders,medium,census.gov
+2026-10-27,10:00,CB Consumer Confidence,high,conference-board.org
+2026-10-27,10:00,New Home Sales,medium,census.gov
+2026-10-29,08:30,GDP Q3 advance estimate,high,bea.gov
+2026-10-29,08:30,Personal Income & Outlays / Core PCE (Sep),high,bea.gov
+2026-10-29,08:30,Unemployment Claims,medium,dol.gov
+2026-10-30,08:30,Employment Cost Index Q3,medium,bls.gov
+2026-11-02,10:00,ISM Manufacturing PMI,high,ismworld.org
+2026-11-03,10:00,JOLTS Job Openings (Sep),high,bls.gov
+2026-11-04,08:15,ADP Non-Farm Employment (Oct),high,adp.com
+2026-11-04,10:00,ISM Services PMI,high,ismworld.org
+2026-11-05,08:30,Unemployment Claims,medium,dol.gov
+2026-11-05,08:30,Productivity & Unit Labor Costs Q3 (prelim),medium,bls.gov
+2026-11-06,08:30,Non-Farm Payrolls (jobs report),high,bls.gov
+2026-11-10,08:30,CPI (consumer inflation),high,bls.gov
+2026-11-12,08:30,Unemployment Claims,medium,dol.gov
+2026-11-13,08:30,PPI (producer inflation),high,bls.gov
+2026-11-18,14:00,Fed meeting minutes (Oct 27-28),high,federalreserve.gov

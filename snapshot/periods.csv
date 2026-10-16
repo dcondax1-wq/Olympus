@@ -1,0 +1,6 @@
+period,data,role,trades,win_rate,avg_r
+NQ futures · Aug 2026,CME futures,Tuned here,11,0.45454545454545453,1.4673636363636362
+NQ futures · Sep 2026,CME futures,Tuned here,11,0.36363636363636365,0.48100000000000004
+NQ futures · Oct 2026,CME futures,Tuned here,7,0.5714285714285714,1.3691428571428574
+NQ futures · Aug–Oct 2026 (all),CME futures,Tuned here,29,0.4482758620689655,1.0695172413793101
+ES futures · same weeks,CME futures,Not tuned on ES,47,0.19148936170212766,-0.3712340425531914

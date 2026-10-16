@@ -1,0 +1,561 @@
+{
+ "sym": "NQ",
+ "anchor": "NQZ26",
+ "method": "additive back-adjustment anchored to the newest contract: bars with time < switch_t get +gap (cumulative). Unadjusted price = adjusted - sum(gaps of rolls after the bar).",
+ "rolls": [
+  {
+   "from": "NQZ21",
+   "to": "NQH22",
+   "ltd": "2021-12-17",
+   "switch_day": "2021-12-14",
+   "switch_t": 1639436400,
+   "switch_et": "2021-12-13 18:00:00-05:00",
+   "weekend_switch": false,
+   "open_jump": -5.25,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": -5.25,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 78.06,
+     "unc": 61.82,
+     "pct": 0.485
+    }
+   },
+   "method": "open_jump",
+   "gap": -5.25,
+   "uncertainty": 4.0,
+   "price_before": 16093.25
+  },
+  {
+   "from": "NQH22",
+   "to": "NQM22",
+   "ltd": "2022-03-18",
+   "switch_day": "2022-03-15",
+   "switch_t": 1647295200,
+   "switch_et": "2022-03-14 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": -2.5,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": -2.5,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 63.45,
+     "unc": 50.85,
+     "pct": 0.485
+    }
+   },
+   "method": "open_jump",
+   "gap": -2.5,
+   "uncertainty": 4.0,
+   "price_before": 13082.0
+  },
+  {
+   "from": "NQM22",
+   "to": "NQU22",
+   "ltd": "2022-06-17",
+   "switch_day": "2022-06-14",
+   "switch_t": 1655157600,
+   "switch_et": "2022-06-13 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 36.5,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 36.5,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 35.63,
+     "unc": 50.84,
+     "pct": 0.314
+    }
+   },
+   "method": "open_jump",
+   "gap": 36.5,
+   "uncertainty": 4.0,
+   "price_before": 11331.0
+  },
+  {
+   "from": "NQU22",
+   "to": "NQZ22",
+   "ltd": "2022-09-16",
+   "switch_day": "2022-09-13",
+   "switch_t": 1663020000,
+   "switch_et": "2022-09-12 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 82.75,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 82.75,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 85.53,
+     "unc": 59.44,
+     "pct": 0.67
+    }
+   },
+   "method": "open_jump",
+   "gap": 82.75,
+   "uncertainty": 4.0,
+   "price_before": 12771.25
+  },
+  {
+   "from": "NQZ22",
+   "to": "NQH23",
+   "ltd": "2022-12-16",
+   "switch_day": "2022-12-13",
+   "switch_t": 1670886000,
+   "switch_et": "2022-12-12 18:00:00-05:00",
+   "weekend_switch": false,
+   "open_jump": 119.0,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 119.0,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 101.15,
+     "unc": 41.52,
+     "pct": 0.865
+    }
+   },
+   "method": "open_jump",
+   "gap": 119.0,
+   "uncertainty": 4.0,
+   "price_before": 11697.75
+  },
+  {
+   "from": "NQH23",
+   "to": "NQM23",
+   "ltd": "2023-03-17",
+   "switch_day": "2023-03-14",
+   "switch_t": 1678744800,
+   "switch_et": "2023-03-13 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 129.25,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 129.25,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 133.53,
+     "unc": 28.22,
+     "pct": 1.117
+    }
+   },
+   "method": "open_jump",
+   "gap": 129.25,
+   "uncertainty": 4.0,
+   "price_before": 11950.75
+  },
+  {
+   "from": "NQM23",
+   "to": "NQU23",
+   "ltd": "2023-06-16",
+   "switch_day": "2023-06-13",
+   "switch_t": 1686607200,
+   "switch_et": "2023-06-12 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 180.5,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 180.5,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 171.69,
+     "unc": 16.45,
+     "pct": 1.158
+    }
+   },
+   "method": "open_jump",
+   "gap": 180.5,
+   "uncertainty": 4.0,
+   "price_before": 14826.0
+  },
+  {
+   "from": "NQU23",
+   "to": "NQZ23",
+   "ltd": "2023-09-15",
+   "switch_day": "2023-09-12",
+   "switch_t": 1694469600,
+   "switch_et": "2023-09-11 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 191.0,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 191.0,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 194.07,
+     "unc": 18.42,
+     "pct": 1.254
+    }
+   },
+   "method": "open_jump",
+   "gap": 191.0,
+   "uncertainty": 4.0,
+   "price_before": 15471.25
+  },
+  {
+   "from": "NQZ23",
+   "to": "NQH24",
+   "ltd": "2023-12-15",
+   "switch_day": "2023-12-12",
+   "switch_t": 1702335600,
+   "switch_et": "2023-12-11 18:00:00-05:00",
+   "weekend_switch": false,
+   "open_jump": 209.75,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 209.75,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 199.14,
+     "unc": 18.94,
+     "pct": 1.226
+    }
+   },
+   "method": "open_jump",
+   "gap": 209.75,
+   "uncertainty": 4.0,
+   "price_before": 16243.25
+  },
+  {
+   "from": "NQH24",
+   "to": "NQM24",
+   "ltd": "2024-03-15",
+   "switch_day": "2024-03-12",
+   "switch_t": 1710194400,
+   "switch_et": "2024-03-11 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 253.75,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 253.75,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 220.67,
+     "unc": 5.63,
+     "pct": 1.226
+    }
+   },
+   "method": "open_jump",
+   "gap": 253.75,
+   "uncertainty": 4.0,
+   "price_before": 17999.25
+  },
+  {
+   "from": "NQM24",
+   "to": "NQU24",
+   "ltd": "2024-06-21",
+   "switch_day": "2024-06-17",
+   "switch_t": 1718575200,
+   "switch_et": "2024-06-16 18:00:00-04:00",
+   "weekend_switch": true,
+   "open_jump": 258.5,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "carry_model": {
+     "gap": 261.01,
+     "unc": 14.58,
+     "pct": 1.325
+    }
+   },
+   "method": "carry_model",
+   "gap": 261.0,
+   "uncertainty": 14.58,
+   "price_before": 19696.25
+  },
+  {
+   "from": "NQU24",
+   "to": "NQZ24",
+   "ltd": "2024-09-20",
+   "switch_day": "2024-09-17",
+   "switch_t": 1726524000,
+   "switch_et": "2024-09-16 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 235.5,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 235.5,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 257.34,
+     "unc": 26.17,
+     "pct": 1.325
+    }
+   },
+   "method": "open_jump",
+   "gap": 235.5,
+   "uncertainty": 4.0,
+   "price_before": 19419.5
+  },
+  {
+   "from": "NQZ24",
+   "to": "NQH25",
+   "ltd": "2024-12-20",
+   "switch_day": "2024-12-17",
+   "switch_t": 1734390000,
+   "switch_et": "2024-12-16 18:00:00-05:00",
+   "weekend_switch": false,
+   "open_jump": 300.5,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 300.5,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 251.01,
+     "unc": 36.54,
+     "pct": 1.135
+    }
+   },
+   "method": "open_jump",
+   "gap": 300.5,
+   "uncertainty": 4.0,
+   "price_before": 22111.75
+  },
+  {
+   "from": "NQH25",
+   "to": "NQM25",
+   "ltd": "2025-03-21",
+   "switch_day": "2025-03-18",
+   "switch_t": 1742248800,
+   "switch_et": "2025-03-17 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 209.75,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 209.75,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 217.07,
+     "unc": 32.51,
+     "pct": 1.095
+    }
+   },
+   "method": "open_jump",
+   "gap": 209.75,
+   "uncertainty": 4.0,
+   "price_before": 19831.25
+  },
+  {
+   "from": "NQM25",
+   "to": "NQU25",
+   "ltd": "2025-06-20",
+   "switch_day": "2025-06-16",
+   "switch_t": 1750024800,
+   "switch_et": "2025-06-15 18:00:00-04:00",
+   "weekend_switch": true,
+   "open_jump": 120.5,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "carry_model": {
+     "gap": 220.22,
+     "unc": 34.23,
+     "pct": 1.017
+    }
+   },
+   "method": "carry_model",
+   "gap": 220.25,
+   "uncertainty": 34.23,
+   "price_before": 21652.0
+  },
+  {
+   "from": "NQU25",
+   "to": "NQZ25",
+   "ltd": "2025-09-19",
+   "switch_day": "2025-09-16",
+   "switch_t": 1757973600,
+   "switch_et": "2025-09-15 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 237.25,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 237.25,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 246.7,
+     "unc": 44.1,
+     "pct": 1.015
+    }
+   },
+   "method": "open_jump",
+   "gap": 237.25,
+   "uncertainty": 4.0,
+   "price_before": 24296.5
+  },
+  {
+   "from": "NQZ25",
+   "to": "NQH26",
+   "ltd": "2025-12-19",
+   "switch_day": "2025-12-16",
+   "switch_t": 1765839600,
+   "switch_et": "2025-12-15 18:00:00-05:00",
+   "weekend_switch": false,
+   "open_jump": 244.25,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 244.25,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 249.59,
+     "unc": 17.08,
+     "pct": 0.994
+    }
+   },
+   "method": "open_jump",
+   "gap": 244.25,
+   "uncertainty": 4.0,
+   "price_before": 25101.5
+  },
+  {
+   "from": "NQH26",
+   "to": "NQM26",
+   "ltd": "2026-03-20",
+   "switch_day": "2026-03-17",
+   "switch_t": 1773698400,
+   "switch_et": "2026-03-16 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 215.25,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 215.25,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 245.15,
+     "unc": 8.42,
+     "pct": 0.994
+    }
+   },
+   "method": "open_jump",
+   "gap": 215.25,
+   "uncertainty": 4.0,
+   "price_before": 24654.75
+  },
+  {
+   "from": "NQM26",
+   "to": "NQU26",
+   "ltd": "2026-06-18",
+   "switch_day": "2026-06-15",
+   "switch_t": 1781474400,
+   "switch_et": "2026-06-14 18:00:00-04:00",
+   "weekend_switch": true,
+   "open_jump": 513.25,
+   "source_at_switch": "tv-NQ1!",
+   "check": "ok",
+   "candidates": {
+    "ref_NQZ26_1h": {
+     "gap": 254.75,
+     "unc": 9.38,
+     "n": [
+      31,
+      63
+     ]
+    },
+    "carry_model": {
+     "gap": 289.29,
+     "unc": 15.36,
+     "pct": 0.975
+    }
+   },
+   "method": "ref_NQZ26_1h",
+   "gap": 254.75,
+   "uncertainty": 9.38,
+   "price_before": 29677.75
+  },
+  {
+   "from": "NQU26",
+   "to": "NQZ26",
+   "ltd": "2026-09-18",
+   "switch_day": "2026-09-15",
+   "switch_t": 1789423200,
+   "switch_et": "2026-09-14 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 300.75,
+   "source_at_switch": "tv-MNQ1!",
+   "check": "ok",
+   "candidates": {
+    "simultaneous_yahoo": {
+     "gap": 295.5,
+     "unc": 0.46,
+     "n": 66
+    },
+    "ref_NQZ26_1h": {
+     "gap": 293.62,
+     "unc": 0.42,
+     "n": [
+      88,
+      87
+     ]
+    },
+    "open_jump": {
+     "gap": 300.75,
+     "unc": 4.0
+    },
+    "carry_model": {
+     "gap": 284.58,
+     "unc": 19.11,
+     "pct": 0.975
+    }
+   },
+   "method": "simultaneous_yahoo",
+   "gap": 295.5,
+   "uncertainty": 0.46,
+   "price_before": 29195.0
+  }
+ ],
+ "carry_pct": 0.01017289649718963,
+ "weekday_open_drift_p50_p90": [
+  4.0,
+  22.80000000000001
+ ]
+}

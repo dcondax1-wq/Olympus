@@ -1,0 +1,17 @@
+# Liquidity Engine - news blackout input for tradingview/liquidity_engine.pine
+# Generated 2026-10-16 15:06 ET by `python -m engine.calendar_week` for 2026-10-19 .. 2026-10-30
+# Each entry = a HIGH-impact USD release time, ET wall clock (EDT before 2026-11-01, EST after).
+# The Pine applies the window itself: 15 min before -> 30 min after, flatten 5 min before.
+# FOMC days (14:00 decision): the bot's 'no entries after 13:00' rule is NOT expressible as a release time;
+#   the Pine must apply it itself (or turn the PM killzone off manually on those dates): 2026-10-28
+# Paste ONE of the two blocks below (without the # lines) into the strategy's blackout input.
+# Pine input detected in liquidity_engine.pine: no (input not added yet) - both formats written
+
+# --- comma-separated (one line) ---
+2026-10-27 10:00,2026-10-28 14:00,2026-10-28 14:30,2026-10-29 08:30
+
+# --- one per line ---
+2026-10-27 10:00
+2026-10-28 14:00
+2026-10-28 14:30
+2026-10-29 08:30

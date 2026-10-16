@@ -1,0 +1,819 @@
+//@version=5
+// =====================================================================================================
+//  LIQUIDITY ENGINE - Sweep -> IFVG -> Draw on Liquidity   (Pine port of nqbot/engine/model.py DEFAULTS)
+//  Run on MNQ1! 5-minute (CME, exchange data). One TradingView alert on this strategy with the message
+//  {{strategy.order.alert_message}} and the bridge webhook URL routes every order (see BRIDGE_SETUP.md).
+//
+//  Rules (same defaults as the Python bot):
+//   1. Liquidity pools: prior-day H/L, prior-week H/L, Asia/London/overnight H/L, 1H swings (major),
+//      15m swings (minor ITH/ITL), equal highs/lows within 6 pts (major).
+//   2. A pool is swept (trade-through >= 1 tick) from 08:00 ET -> arm the opposite direction.
+//   3. Trigger in the NY killzones (09:30-11:30, 13:30-15:30 ET): first body close through an FVG inside the
+//      manipulation leg (IFVG); CISD close-through fallback when the leg has no FVG.
+//   4. Score >= 1:  +1 1H trend aligned (-1 against) | +1 sweep in discount (long) / premium (short) of the
+//      1H swing range | +1 clean path (<=1 unswept swing to target, -1 if >=3) | -1 15m already aligned (late).
+//   5. Stop beyond the sweep extreme (+2 pts), 10-60 pts. Target = nearest MAJOR untaken pool >= 1.5R
+//      (cap 5R, fallback 2R). Breakeven at +1R. Exit if not +0.5R after 30 min. Giveback exit: was +0.5R then
+//      closes back below entry. Flat 15:55 ET. News blackout from a pasted list of release times.
+//   6. Size: $350 x A+..D checklist grade (x1.5 .. x0.5), capped at 25% of the cushion above the trailing
+//      $2,000 MLL, halved in a trending regime (10-day efficiency > 0.45). No entries once the day's range is
+//      >= 1.6x the 20-day average. Max 2 trades/day, stop after a winner, $600 daily stop.
+//  Known residual differences vs Python (documented in tradingview/BRIDGE_SETUP.md): no SMT (weight 0 in
+//  Python anyway), no walk-forward exit learner, news only from the pasted list, TradingView fill model
+//  (market exits fill at the next bar open instead of the signal bar close).
+// =====================================================================================================
+strategy("Liquidity Engine - Sweep IFVG DOL", overlay=true, initial_capital=50000, pyramiding=0,
+     default_qty_type=strategy.fixed, default_qty_value=1, commission_type=strategy.commission.cash_per_contract,
+     commission_value=0.75, slippage=1, calc_on_order_fills=false, backtest_fill_limits_assumption=1,
+     max_bars_back=600, max_lines_count=200, max_labels_count=300)
+
+// ---------------------------------------------------------------- inputs
+grpR = "Risk"
+riskUsd     = input.float(350, "Risk per trade ($)", group=grpR)
+gradeSizing = input.bool(true, "Grade sizing A+..D (else conviction)", group=grpR)
+convStep    = input.float(0.33, "Conviction step (only when grade sizing is off)", group=grpR)
+maxQty      = input.int(40, "Max contracts (micros on MNQ)", group=grpR)
+maxTrades   = input.int(2, "Max trades / day", group=grpR)
+stopAfterWin = input.bool(true, "Stop after a winner", group=grpR)
+dayStop     = input.float(600, "Daily loss stop ($)", group=grpR)
+ddAware     = input.bool(true, "Cap risk at a fraction of the MLL cushion", group=grpR)
+cushionFrac = input.float(0.25, "Cushion fraction", group=grpR)
+mllAmt      = input.float(2000, "Trailing max loss ($, EOD)", group=grpR)
+mllLock     = input.float(50100, "MLL locks at", group=grpR)
+regimeEr    = input.float(0.45, "Trending regime: 10-day efficiency above (0 = off)", group=grpR)
+regimeMode  = input.string("half", "In a trending regime", options=["half", "skip"], group=grpR)
+dayRangeMax = input.float(1.6, "No entries once day range >= x 20d avg (0 = off)", group=grpR)
+gEarly      = input.int(2, "Grade penalty: first 45 min of the session", group=grpR)
+gQ3         = input.int(1, "Grade penalty: Q3 entry", group=grpR)
+gPd         = input.int(2, "Grade weight: 1H discount/premium", group=grpR)
+grpM = "Model"
+minFvg    = input.float(3.0, "Min FVG size (pts)", group=grpM)
+minStop   = input.float(10.0, "Min stop (pts)", group=grpM)
+maxStop   = input.float(60.0, "Max stop (pts)", group=grpM)
+stopBuf   = input.float(2.0, "Stop buffer beyond sweep (pts)", group=grpM)
+eqTol     = input.float(6.0, "Equal highs/lows tolerance (pts)", group=grpM)
+minRR     = input.float(1.5, "Min R to draw on liquidity", group=grpM)
+maxRR     = input.float(5.0, "Max R cap", group=grpM)
+fallbackRR= input.float(2.0, "Fallback R (no DOL)", group=grpM)
+beAtR     = input.float(1.0, "Breakeven at (R, 0=off)", group=grpM)
+timeStopM = input.int(30, "Time stop (min, 0=off)", group=grpM)
+givebackR = input.float(0.5, "Giveback exit after (R, 0=off)", group=grpM, tooltip="Reached this many R, then a bar closes back below entry: exit at the close.")
+minScore  = input.int(1, "Min confluence score", group=grpM)
+expiryMin = input.int(60, "Setup expiry (min)", group=grpM)
+legLook   = input.int(24, "Leg lookback (bars)", group=grpM)
+flatMod   = input.int(955, "Flat at (ET minutes after midnight, 955 = 15:55)", group=grpM)
+grpN = "News blackout"
+newsOn     = input.bool(true, "Block entries around listed releases", group=grpN)
+newsList   = input.text_area("", "Release times (ET), one per line or ';' separated: YYYY-MM-DD HH:MM label", group=grpN,
+     tooltip="Paste this week's high-impact USD releases, e.g.\n2026-10-21 08:30 CPI\n2026-10-29 14:00 FOMC\nHH:MM must be two digits. A label containing FOMC also blocks entries after 13:00 that day.")
+newsBefore = input.int(15, "Minutes before", group=grpN)
+newsAfter  = input.int(30, "Minutes after", group=grpN)
+newsFlatM  = input.int(5, "Flatten an open trade this many minutes before (0 = off)", group=grpN)
+fomcPmOff  = input.bool(true, "FOMC day: no entries after 13:00", group=grpN)
+grpA = "Alerts / bridge"
+bridge     = input.string("TradersPost", "Bridge JSON schema", options=["TradersPost", "PickMyTrade"], group=grpA)
+bTicker    = input.string("MNQ", "Bridge ticker / symbol", group=grpA, tooltip="Symbol the bridge maps to the Tradovate contract (MNQ1! chart -> MNQ). TradersPost also accepts an explicit contract such as MNQZ2026.")
+syncExits  = input.bool(true, "Send an exit when TradingView's own stop/target fills", group=grpA, tooltip="Keeps the broker flat when the TradingView bracket fills first; harmless when the broker bracket already closed the trade.")
+beModify   = input.bool(true, "Send a breakeven stop modification", group=grpA)
+pmtToken   = input.string("", "PickMyTrade token", group=grpA)
+pmtAccount = input.string("", "PickMyTrade account_id", group=grpA)
+showPools = input.bool(true, "Draw liquidity pools", group="Display")
+
+tz = "America/New_York"
+tick = syminfo.mintick
+barSecs = timeframe.in_seconds()
+
+// ---------------------------------------------------------------- clock (ET)
+mod = hour(time, tz) * 60 + minute(time, tz)
+gapMs = time - nz(time[1], time)
+newDay = (mod >= 1080 and (nz(mod[1], 0) < 1080 or gapMs > 6 * 3600000)) or (mod < 1080 and gapMs > 4 * 3600000)
+inKZ = (mod >= 570 and mod < 690) or (mod >= 810 and mod < 930)
+canArm = mod >= 480 and mod < flatMod
+curDate = year(time, tz) * 10000 + month(time, tz) * 100 + dayofmonth(time, tz)
+
+// ---------------------------------------------------------------- HTF structure built from the chart's own 5m bars
+// (exactly like engine.model.Structure: 2-bar fractals, BOS/CHoCH, protected low/high). The 1H / 15m bar is
+// processed on the 5m bar that completes it, the same moment the Python engine sees it. Non-repainting.
+type Struct
+    float[] h
+    float[] l
+    float sh = na
+    float shMin = na
+    float sl = na
+    float slMax = na
+    int trend = 0
+    float protL = na
+    float protH = na
+    float lsh = na
+    float lsl = na
+    float newH = na
+    float newL = na
+
+method step(Struct this, float bh, float bl, float bc) =>
+    this.h.push(bh)
+    this.l.push(bl)
+    if this.h.size() > 13
+        this.h.shift()
+        this.l.shift()
+    n = this.h.size()
+    if not na(this.shMin)
+        this.shMin := math.min(this.shMin, bl)
+    if not na(this.slMax)
+        this.slMax := math.max(this.slMax, bh)
+    if n >= 5
+        hk = this.h.get(n - 3)
+        lk = this.l.get(n - 3)
+        if hk > math.max(this.h.get(n - 5), this.h.get(n - 4)) and hk >= math.max(this.h.get(n - 2), this.h.get(n - 1))
+            this.sh := hk
+            this.lsh := hk
+            this.newH := hk
+            this.shMin := math.min(lk, math.min(this.l.get(n - 2), this.l.get(n - 1)))
+        if lk < math.min(this.l.get(n - 5), this.l.get(n - 4)) and lk <= math.min(this.l.get(n - 2), this.l.get(n - 1))
+            this.sl := lk
+            this.lsl := lk
+            this.newL := lk
+            this.slMax := math.max(hk, math.max(this.h.get(n - 2), this.h.get(n - 1)))
+    if not na(this.sh) and bc > this.sh
+        this.protL := this.shMin
+        this.trend := 1
+        this.sh := na
+        this.shMin := na
+    else if not na(this.sl) and bc < this.sl
+        this.protH := this.slMax
+        this.trend := -1
+        this.sl := na
+        this.slMax := na
+    if this.trend == 1 and not na(this.protL) and bc < this.protL
+        this.trend := -1
+        this.protH := this.h.max()
+    else if this.trend == -1 and not na(this.protH) and bc > this.protH
+        this.trend := 1
+        this.protL := this.l.min()
+    true
+
+type Agg
+    int b = na
+    float h = na
+    float l = na
+    float c = na
+    bool done = true
+
+method feed(Agg this, Struct s, int ms) =>
+    s.newH := na
+    s.newL := na
+    bk = int(math.floor(time / ms))
+    if na(this.b) or bk != this.b
+        if not na(this.b) and not this.done
+            s.step(this.h, this.l, this.c)          // bucket ended without its last bar: close it now
+        this.b := bk
+        this.h := high
+        this.l := low
+        this.c := close
+        this.done := false
+    else
+        this.h := math.max(this.h, high)
+        this.l := math.min(this.l, low)
+        this.c := close
+    if time_close % ms == 0
+        s.step(this.h, this.l, this.c)
+        this.done := true
+    true
+
+var Struct s1h = Struct.new(array.new_float(), array.new_float())
+var Struct s15 = Struct.new(array.new_float(), array.new_float())
+var Agg g1h = Agg.new()
+var Agg g15 = Agg.new()
+
+// ---------------------------------------------------------------- liquidity pools
+var float[] pPx    = array.new_float()
+var int[]   pSide  = array.new_int()     // +1 buy-side (high), -1 sell-side (low)
+var bool[]  pMajor = array.new_bool()
+var bool[]  pSwing = array.new_bool()    // 1H / 15m swing (counts as an obstacle on the path)
+var int[]   pStr   = array.new_int()     // pool strength (PW 3, PD/ON/LO/H1 2, AS/ITH 1)
+var bool[]  pEqOk  = array.new_bool()    // may take part in equal highs/lows (every kind except prior week)
+var int[]   pBorn  = array.new_int()
+var int[]   pLife  = array.new_int()     // lifetime in ms
+
+f_addPool(float px, int side, bool major, bool swing, int strength, bool eqOk, int lifeMs, bool checkEq) =>
+    idx = -1
+    n = array.size(pPx)
+    if n > 0 and not na(px)
+        for k = 0 to n - 1
+            if idx < 0 and array.get(pSide, k) == side and math.abs(array.get(pPx, k) - px) < tick / 2
+                idx := k
+                if major
+                    array.set(pMajor, k, true)
+                if strength > array.get(pStr, k)       // the stronger kind names the merged level
+                    array.set(pStr, k, strength)
+                    array.set(pSwing, k, swing)
+                    array.set(pEqOk, k, eqOk)
+                    array.set(pLife, k, lifeMs)
+    if idx < 0 and not na(px)
+        array.push(pPx, px)
+        array.push(pSide, side)
+        array.push(pMajor, major)
+        array.push(pSwing, swing)
+        array.push(pStr, strength)
+        array.push(pEqOk, eqOk)
+        array.push(pBorn, time)
+        array.push(pLife, lifeMs)
+        idx := array.size(pPx) - 1
+    if checkEq and idx >= 0
+        m = array.size(pPx)
+        for k = 0 to m - 1
+            if k != idx and array.get(pSide, k) == side and array.get(pEqOk, k)
+                dd = math.abs(array.get(pPx, k) - array.get(pPx, idx))
+                if dd >= tick / 2 and dd <= eqTol
+                    array.set(pMajor, k, true)
+                    array.set(pMajor, idx, true)
+    idx
+
+f_removePool(int k) =>
+    array.remove(pPx, k)
+    array.remove(pSide, k)
+    array.remove(pMajor, k)
+    array.remove(pSwing, k)
+    array.remove(pStr, k)
+    array.remove(pEqOk, k)
+    array.remove(pBorn, k)
+    array.remove(pLife, k)
+
+DAY = 86400000
+var float dHi = na
+var float dLo = na
+var float wHi = na
+var float wLo = na
+var float asH = na
+var float asL = na
+var bool asPub = false
+var float loH = na
+var float loL = na
+var bool loPub = false
+var float onH = na
+var float onL = na
+var bool onPub = false
+var int curWeek = na
+var int tradesToday = 0
+var float dayStartEq = 0.0
+var bool wonToday = false
+var float vwPV = 0.0
+var float vwV = 0.0
+// day-level context (known before the open, like Engine._day_regime)
+var float[] dRanges = array.new_float()
+var float[] dCloses = array.new_float()
+var float adr20 = na
+var bool trending = false
+var float peakEod = strategy.initial_capital
+var float mllLvl = strategy.initial_capital - mllAmt
+var float[] qOpen = array.new_float(7, na)     // Quarterly Theory 90-min "true opens" (quarter start + 20 min)
+
+if newDay
+    if not na(dHi)
+        array.push(dRanges, dHi - dLo)
+        array.push(dCloses, close[1])
+        balEod = strategy.initial_capital + strategy.netprofit
+        peakEod := math.max(peakEod, balEod)
+        mllLvl := math.min(math.max(mllLvl, peakEod - mllAmt), mllLock)
+        if high <= dHi
+            f_addPool(dHi, 1, true, false, 2, true, int(2.2 * DAY), false)
+        if low >= dLo
+            f_addPool(dLo, -1, true, false, 2, true, int(2.2 * DAY), false)
+    nR = array.size(dRanges)
+    if nR > 0
+        sR = 0.0
+        cnt = math.min(20, nR)
+        for k = nR - cnt to nR - 1
+            sR += array.get(dRanges, k)
+        adr20 := sR / cnt
+    trending := false
+    nC = array.size(dCloses)
+    if regimeEr > 0 and nC >= 11
+        path = 0.0
+        for k = nC - 10 to nC - 1
+            path += math.abs(array.get(dCloses, k) - array.get(dCloses, k - 1))
+        if path > 0
+            trending := math.abs(array.get(dCloses, nC - 1) - array.get(dCloses, nC - 11)) / path > regimeEr
+    wk = weekofyear(time + 6 * 3600000, tz)
+    if not na(curWeek) and wk != curWeek and not na(wHi)
+        f_addPool(wHi, 1, true, false, 3, false, 5 * DAY, false)
+        f_addPool(wLo, -1, true, false, 3, false, 5 * DAY, false)
+        wHi := na
+        wLo := na
+    curWeek := wk
+    dHi := high
+    dLo := low
+    asH := na
+    asL := na
+    asPub := false
+    loH := na
+    loL := na
+    loPub := false
+    onH := na
+    onL := na
+    onPub := false
+    tradesToday := 0
+    dayStartEq := strategy.equity
+    wonToday := false
+    for k = 0 to 6
+        array.set(qOpen, k, na)
+    // retire stale pools
+    if array.size(pPx) > 0
+        for k = array.size(pPx) - 1 to 0
+            if time - array.get(pBorn, k) > array.get(pLife, k)
+                f_removePool(k)
+else
+    dHi := math.max(nz(dHi, high), high)
+    dLo := math.min(nz(dLo, low), low)
+wHi := math.max(nz(wHi, high), high)
+wLo := math.min(nz(wLo, low), low)
+
+// HTF structure + swing pools (on the bar that completes the 1H / 15m candle)
+g1h.feed(s1h, 3600000)
+g15.feed(s15, 900000)
+if not na(s1h.newH)
+    f_addPool(s1h.newH, 1, true, true, 2, true, 5 * DAY, true)
+if not na(s1h.newL)
+    f_addPool(s1h.newL, -1, true, true, 2, true, 5 * DAY, true)
+if not na(s15.newH)
+    f_addPool(s15.newH, 1, false, true, 1, true, int(1.2 * DAY), true)
+if not na(s15.newL)
+    f_addPool(s15.newL, -1, false, true, 1, true, int(1.2 * DAY), true)
+
+// Quarterly Theory true opens: 06:20, 07:50, 09:20, 10:50, 12:20, 13:50, 15:20 ET
+if mod >= 380 and mod <= 920 and (mod - 380) % 90 == 0
+    array.set(qOpen, int((mod - 380) / 90), open)
+
+// RTH VWAP (AMT fair value proxy)
+if mod == 570 or (mod >= 570 and nz(mod[1], 0) < 570)
+    vwPV := 0.0
+    vwV := 0.0
+if mod >= 570 and mod < 960
+    vwPV += hlc3 * (volume > 0 ? volume : 1)
+    vwV += volume > 0 ? volume : 1
+vwap = vwV > 0 ? vwPV / vwV : na
+
+// sessions
+if mod >= 1200
+    asH := math.max(nz(asH, high), high)
+    asL := math.min(nz(asL, low), low)
+else if not na(asH) and not asPub and mod < 1080
+    asPub := true
+    f_addPool(asH, 1, true, false, 1, true, int(2.2 * DAY), true)
+    f_addPool(asL, -1, true, false, 1, true, int(2.2 * DAY), true)
+if mod >= 120 and mod < 300
+    loH := math.max(nz(loH, high), high)
+    loL := math.min(nz(loL, low), low)
+else if not na(loH) and not loPub and mod >= 300 and mod < 1080
+    loPub := true
+    f_addPool(loH, 1, true, false, 2, true, int(2.2 * DAY), true)
+    f_addPool(loL, -1, true, false, 2, true, int(2.2 * DAY), true)
+if mod >= 1080 or mod < 570
+    onH := math.max(nz(onH, high), high)
+    onL := math.min(nz(onL, low), low)
+else if not na(onH) and not onPub and mod >= 570 and mod < 1080
+    onPub := true
+    f_addPool(onH, 1, true, false, 2, true, int(2.2 * DAY), false)
+    f_addPool(onL, -1, true, false, 2, true, int(2.2 * DAY), false)
+
+// ---------------------------------------------------------------- news blackout list (parsed once)
+var int[]  evT    = array.new_int()
+var int[]  evDate = array.new_int()
+var bool[] evFomc = array.new_bool()
+if barstate.isfirst and newsOn
+    items = str.split(str.replace_all(newsList, ";", "\n"), "\n")
+    for it in items
+        m = str.match(it, "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}")
+        if str.length(m) == 16
+            y  = int(str.tonumber(str.substring(m, 0, 4)))
+            mo = int(str.tonumber(str.substring(m, 5, 7)))
+            dy = int(str.tonumber(str.substring(m, 8, 10)))
+            hh = int(str.tonumber(str.substring(m, 11, 13)))
+            mi = int(str.tonumber(str.substring(m, 14, 16)))
+            array.push(evT, timestamp(tz, y, mo, dy, hh, mi))
+            array.push(evDate, y * 10000 + mo * 100 + dy)
+            array.push(evFomc, str.contains(str.upper(it), "FOMC"))
+
+f_newsBlock() =>
+    blk = false
+    n = array.size(evT)
+    if newsOn and n > 0
+        for k = 0 to n - 1
+            ev = array.get(evT, k)
+            if ev >= time - newsAfter * 60000 and ev <= time + newsBefore * 60000
+                blk := true
+            if fomcPmOff and array.get(evFomc, k) and array.get(evDate, k) == curDate and mod >= 780
+                blk := true
+    blk
+
+f_newsSoon() =>
+    soon = false
+    n = array.size(evT)
+    if newsOn and newsFlatM > 0 and n > 0
+        for k = 0 to n - 1
+            ev = array.get(evT, k)
+            if ev > time_close and ev <= time_close + newsFlatM * 60000
+                soon := true
+    soon
+
+// ---------------------------------------------------------------- sweeps -> armed setups
+var bool  lArmed = false
+var float lExt = na
+var int   lExtTime = 0
+var int   lExtBar = 0
+var int   lArmMod = 0
+var float lVavg = na
+var float lVrun = 0.0
+var float lVmax = 0.0
+var bool  sArmed = false
+var float sExt = na
+var int   sExtTime = 0
+var int   sExtBar = 0
+var int   sArmMod = 0
+var float sVavg = na
+var float sVrun = 0.0
+var float sVmax = 0.0
+vAvg20 = ta.sma(volume, 20)[1]
+
+if newDay
+    lArmed := false
+    sArmed := false
+
+if lArmed
+    lVrun := math.max(lVrun, volume)
+if sArmed
+    sVrun := math.max(sVrun, volume)
+
+if array.size(pPx) > 0
+    for k = array.size(pPx) - 1 to 0
+        px = array.get(pPx, k)
+        sd = array.get(pSide, k)
+        if sd == -1 and low <= px - tick
+            if canArm and not lArmed
+                lArmed := true
+                lExt := low
+                lExtTime := time
+                lExtBar := bar_index
+                lArmMod := mod
+                lVavg := vAvg20
+                lVrun := volume
+                lVmax := volume
+            f_removePool(k)
+        else if sd == 1 and high >= px + tick
+            if canArm and not sArmed
+                sArmed := true
+                sExt := high
+                sExtTime := time
+                sExtBar := bar_index
+                sArmMod := mod
+                sVavg := vAvg20
+                sVrun := volume
+                sVmax := volume
+            f_removePool(k)
+
+if lArmed and low < lExt
+    lExt := low
+    lExtTime := time
+    lExtBar := bar_index
+    lVmax := lVrun
+if sArmed and high > sExt
+    sExt := high
+    sExtTime := time
+    sExtBar := bar_index
+    sVmax := sVrun
+if lArmed and time - lExtTime > expiryMin * 60000
+    lArmed := false
+if sArmed and time - sExtTime > expiryMin * 60000
+    sArmed := false
+
+// ---------------------------------------------------------------- triggers (highest-bar offsets; no lookahead)
+// returns [triggered, invLow]  for LONG: first body close above a bearish FVG inside the down-leg
+f_trigLong(int extOff) =>
+    trig = false
+    invLow = float(na)
+    // leg origin = highest high in the lookback before the extreme (oldest bar wins ties, like np.argmax)
+    legOff = extOff
+    hh = high[extOff]
+    for j = extOff to extOff + legLook
+        if high[j] >= hh
+            hh := high[j]
+            legOff := j
+    bestTop = float(na)
+    hasGap = false
+    if legOff >= 3
+        for j = legOff - 2 to 1
+            gTop = low[j + 2]
+            gBot = high[j]
+            if gTop - gBot >= minFvg
+                hasGap := true
+                if close > gTop and open < close
+                    firstClose = true
+                    if j > 1
+                        for q = j - 1 to 1
+                            if close[q] > gTop
+                                firstClose := false
+                    if firstClose and (na(bestTop) or gTop < bestTop)
+                        bestTop := gTop
+                        invLow := math.min(low[j], math.min(low[j + 1], low[j + 2]))
+    if not na(bestTop)
+        trig := true
+    else if not hasGap
+        // CISD: close above the open of the first down-close candle of the run that ends at the extreme
+        f = extOff
+        if close[extOff] < open[extOff]
+            while f + 1 < legOff and close[f + 1] < open[f + 1]
+                f += 1
+        lvl = open[f]
+        if close > lvl and open < close
+            firstClose = true
+            if extOff > 1
+                for q = extOff - 1 to 1
+                    if close[q] > lvl
+                        firstClose := false
+            if firstClose
+                trig := true
+                invLow := low[extOff]
+    [trig, invLow]
+
+f_trigShort(int extOff) =>
+    trig = false
+    invHigh = float(na)
+    legOff = extOff
+    ll = low[extOff]
+    for j = extOff to extOff + legLook
+        if low[j] <= ll
+            ll := low[j]
+            legOff := j
+    bestBot = float(na)
+    hasGap = false
+    if legOff >= 3
+        for j = legOff - 2 to 1
+            gBot = high[j + 2]
+            gTop = low[j]
+            if gTop - gBot >= minFvg
+                hasGap := true
+                if close < gBot and open > close
+                    firstClose = true
+                    if j > 1
+                        for q = j - 1 to 1
+                            if close[q] < gBot
+                                firstClose := false
+                    if firstClose and (na(bestBot) or gBot > bestBot)
+                        bestBot := gBot
+                        invHigh := math.max(high[j], math.max(high[j + 1], high[j + 2]))
+    if not na(bestBot)
+        trig := true
+    else if not hasGap
+        f = extOff
+        if close[extOff] > open[extOff]
+            while f + 1 < legOff and close[f + 1] > open[f + 1]
+                f += 1
+        lvl = open[f]
+        if close < lvl and open > close
+            firstClose = true
+            if extOff > 1
+                for q = extOff - 1 to 1
+                    if close[q] < lvl
+                        firstClose := false
+            if firstClose
+                trig := true
+                invHigh := high[extOff]
+    [trig, invHigh]
+
+// ---------------------------------------------------------------- planning: target, score, grade, size
+f_q90(int m) =>
+    q = 0
+    qs = int(na)
+    if m >= 360 and m < 720
+        q := int((m - 360) / 90) + 1
+        qs := 360 + (q - 1) * 90
+    else if m >= 720 and m < 1080
+        q := int((m - 720) / 90) + 1
+        qs := 720 + (q - 1) * 90
+    [q, qs]
+
+bal = strategy.initial_capital + strategy.netprofit
+
+// returns [ok, stop, target, score, qty, grade, gradePoints, riskPts]
+f_plan(int d, float ext, float invX, int armMod, bool climax) =>
+    entry = close
+    stop = ext - d * stopBuf
+    risk = (entry - stop) * d
+    if risk < minStop
+        stop := entry - d * minStop
+        risk := minStop
+    if risk > maxStop
+        alt = invX - d * stopBuf
+        altRisk = (entry - alt) * d
+        if not na(invX) and altRisk >= minStop and altRisk <= maxStop
+            stop := alt
+            risk := altRisk
+        else
+            risk := -1.0
+    ok = risk > 0
+    target = float(na)
+    score = 0
+    pts = 0
+    qty = 0
+    grade = "D"
+    if ok
+        // draw on liquidity: nearest MAJOR opposite pool >= minRR
+        best = float(na)
+        n = array.size(pPx)
+        if n > 0
+            for k = 0 to n - 1
+                px = array.get(pPx, k)
+                if array.get(pSide, k) == d and array.get(pMajor, k) and (px - entry) * d >= minRR * risk
+                    if na(best) or (px - entry) * d < (best - entry) * d
+                        best := px
+        if na(best)
+            target := entry + d * fallbackRR * risk
+        else
+            target := (best - entry) * d > maxRR * risk ? entry + d * maxRR * risk : best - d * tick
+        // confluence score (w_htf 1, w_pd 1, w_lrl 1, w_m15 -1)
+        htf = s1h.trend
+        score += htf == d ? 1 : htf == -d ? -1 : 0
+        pdv = 0
+        if not na(s1h.lsh) and not na(s1h.lsl) and s1h.lsh > s1h.lsl
+            ppos = (ext - s1h.lsl) / (s1h.lsh - s1h.lsl)
+            pdv := (d == 1 and ppos <= 0.5) or (d == -1 and ppos >= 0.5) ? 1 : -1
+        score += pdv > 0 ? 1 : 0
+        obst = 0
+        if n > 0
+            for k = 0 to n - 1
+                px = array.get(pPx, k)
+                if array.get(pSide, k) == d and array.get(pSwing, k) and (px - entry) * d > 0 and (px - target) * d < 0
+                    obst += 1
+        lrl = obst <= 1
+        hrl = obst >= 3
+        score += lrl ? 1 : hrl ? -1 : 0
+        m15al = s15.trend == d
+        score += m15al ? -1 : 0
+        // A+..D checklist grade (Engine._grade, non-zero weights only)
+        vw = na(vwap) ? 0 : ((vwap - entry) * d > 0 ? 1 : -1)
+        firstHour = mod >= 570 and mod < 630
+        pts := (htf == d ? 2 : htf == -d ? -1 : 0) + gPd * pdv + 2 * vw + (climax ? -2 : 0) + (lrl ? 1 : hrl ? -2 : 0)
+             + (firstHour ? -1 : 0) + (m15al ? -1 : 0)
+        [sQ, sQs] = f_q90(armMod)
+        [eQ, eQs] = f_q90(mod)
+        pts += sQ == 2 ? 1 : 0
+        if not na(eQs)
+            qi = int((eQs - 360) / 90)
+            if qi >= 0 and qi <= 6
+                ref = array.get(qOpen, qi)
+                if not na(ref)
+                    pts += (ref - ext) * d > 0 ? 1 : -1
+        if not na(adr20) and adr20 > 0 and (dHi - dLo) / adr20 >= 1.2
+            pts -= 1
+        sessStart = mod < 720 ? 570 : 810
+        pts -= mod - sessStart < 45 ? gEarly : 0
+        pts -= eQ == 3 ? gQ3 : 0
+        mult = pts >= 7 ? 1.5 : pts >= 5 ? 1.25 : pts >= 3 ? 1.0 : pts >= 1 ? 0.75 : 0.5
+        grade := pts >= 7 ? "A+" : pts >= 5 ? "A" : pts >= 3 ? "B" : pts >= 1 ? "C" : "D"
+        // sizing (Engine._size)
+        riskEff = riskUsd
+        if ddAware
+            riskEff := math.min(riskEff, math.max(0.0, (bal - mllLvl) * cushionFrac))
+        if gradeSizing
+            riskEff *= mult
+        else if convStep > 0
+            conv = (vw > 0 ? 1 : 0) - (climax ? 1 : 0) - (firstHour ? 1 : 0)
+            riskEff *= math.max(0.5, math.min(1.5, 1 + convStep * conv))
+        if trending and regimeMode == "half"
+            riskEff *= 0.5
+        qty := math.min(maxQty, int(math.floor(riskEff / (risk * syminfo.pointvalue))))
+    [ok, stop, target, score, qty, grade, pts, risk]
+
+// ---------------------------------------------------------------- webhook payloads
+f_num(float x) =>
+    str.tostring(math.round_to_mintick(x), "#.##")
+
+f_pmtBase(string data, int q, float px, float sl, float tp, bool updSl) =>
+    '{"symbol":"' + bTicker + '","date":"' + str.format_time(time_close, "yyyy-MM-dd'T'HH:mm:ss'Z'", "UTC") + '","data":"' + data
+     + '","quantity":' + str.tostring(q) + ',"risk_percentage":0,"price":' + f_num(px) + ',"tp":' + f_num(tp)
+     + ',"percentage_tp":0,"dollar_tp":0,"sl":' + f_num(sl) + ',"dollar_sl":0,"percentage_sl":0,"trail":0,"trail_stop":0,"trail_trigger":0,"trail_freq":0'
+     + ',"update_tp":false,"update_sl":' + (updSl ? "true" : "false") + ',"token":"' + pmtToken + '","pyramid":false,"same_direction_ignore":true'
+     + ',"reverse_order_close":false' + (data == "close" ? ',"full_closed":true' : '') + ',"account_id":"' + pmtAccount + '"}'
+
+f_entryMsg(string side, int q, float st, float tp) =>
+    bridge == "TradersPost" ?
+     '{"ticker":"' + bTicker + '","action":"' + side + '","quantity":' + str.tostring(q) + ',"orderType":"market","signalPrice":' + f_num(close)
+     + ',"stopLoss":{"type":"stop","stopPrice":' + f_num(st) + '},"takeProfit":{"limitPrice":' + f_num(tp) + '}}' :
+     f_pmtBase(side, q, close, st, tp, false)
+
+f_exitMsg(string reason) =>
+    bridge == "TradersPost" ?
+     '{"ticker":"' + bTicker + '","action":"exit","orderType":"market","cancel":true,"extras":{"reason":"' + reason + '"}}' :
+     f_pmtBase("close", int(math.abs(strategy.position_size)), close, 0.0, 0.0, false)
+
+f_beMsg(int d, float newStop, float tgt) =>
+    bridge == "TradersPost" ?
+     '{"ticker":"' + bTicker + '","action":"breakeven","orderType":"stop"}' :
+     f_pmtBase(d == 1 ? "buy" : "sell", int(math.abs(strategy.position_size)), close, newStop, tgt, true)
+
+// ---------------------------------------------------------------- position management state
+var float trStop = na
+var float trTgt = na
+var float trEntry = na
+var float trRisk = na
+var int   trBar = 0
+var float trMfe = 0.0
+var bool  beSent = false
+var int   lastTrades = 0
+
+dayPnl = strategy.equity - dayStartEq
+if strategy.closedtrades > lastTrades
+    if strategy.closedtrades.profit(strategy.closedtrades - 1) > 0
+        wonToday := true
+    lastTrades := strategy.closedtrades
+
+blocked = tradesToday >= maxTrades or dayPnl <= -dayStop or (stopAfterWin and wonToday)
+flat = strategy.position_size == 0
+rangeBlock = dayRangeMax > 0 and array.size(dRanges) >= 5 and not na(adr20) and adr20 > 0 and (dHi - dLo) / adr20 >= dayRangeMax
+entryBlock = f_newsBlock() or rangeBlock or (trending and regimeMode == "skip")
+
+if flat and inKZ and mod < flatMod - 10 and not blocked
+    if lArmed
+        [tg, invL] = f_trigLong(bar_index - lExtBar)
+        if tg
+            [ok, st, tp, sc, q, gr, gp, rk] = f_plan(1, lExt, invL, lArmMod, lVavg > 0 and lVmax >= 1.5 * lVavg)
+            if not ok
+                lArmed := false                                  // stop too wide: setup consumed
+            else if not entryBlock and sc >= minScore
+                if q < 1
+                    lArmed := false                              // risk too small for the stop: consumed
+                else
+                    strategy.entry("L", strategy.long, qty=q, comment="L r=" + str.tostring(rk, "#.##") + " g=" + gr,
+                         alert_message=f_entryMsg("buy", q, st, tp))
+                    strategy.exit("xL", "L", stop=st, limit=tp, comment_profit="TARGET", comment_loss="STOP",
+                         alert_message=f_exitMsg("bracket"), disable_alert=not syncExits)
+                    trStop := st
+                    trTgt := tp
+                    beSent := false
+                    tradesToday += 1
+                    label.new(bar_index, low, "L " + gr + " s" + str.tostring(sc), style=label.style_label_up, color=color.new(color.green, 20), textcolor=color.white, size=size.tiny)
+                    lArmed := false
+                    sArmed := false
+    if sArmed
+        [tg2, invH] = f_trigShort(bar_index - sExtBar)
+        if tg2
+            [ok2, st2, tp2, sc2, q2, gr2, gp2, rk2] = f_plan(-1, sExt, invH, sArmMod, sVavg > 0 and sVmax >= 1.5 * sVavg)
+            if not ok2
+                sArmed := false
+            else if not entryBlock and sc2 >= minScore
+                if q2 < 1
+                    sArmed := false
+                else
+                    strategy.entry("S", strategy.short, qty=q2, comment="S r=" + str.tostring(rk2, "#.##") + " g=" + gr2,
+                         alert_message=f_entryMsg("sell", q2, st2, tp2))
+                    strategy.exit("xS", "S", stop=st2, limit=tp2, comment_profit="TARGET", comment_loss="STOP",
+                         alert_message=f_exitMsg("bracket"), disable_alert=not syncExits)
+                    trStop := st2
+                    trTgt := tp2
+                    beSent := false
+                    tradesToday += 1
+                    label.new(bar_index, high, "S " + gr2 + " s" + str.tostring(sc2), style=label.style_label_down, color=color.new(color.red, 20), textcolor=color.white, size=size.tiny)
+                    lArmed := false
+                    sArmed := false
+
+// first bar in the position: record the fill
+if strategy.position_size != 0 and nz(strategy.position_size[1]) == 0
+    trEntry := strategy.position_avg_price
+    trRisk := math.abs(trEntry - trStop)
+    trBar := bar_index
+    trMfe := 0.0
+
+if strategy.position_size != 0
+    d = strategy.position_size > 0 ? 1 : -1
+    fav = d == 1 ? high - trEntry : trEntry - low
+    trMfe := math.max(trMfe, trRisk > 0 ? fav / trRisk : 0)
+    reason = ""
+    if mod >= flatMod
+        reason := "FLAT"
+    else if f_newsSoon()
+        reason := "NEWS FLAT"
+    else if timeStopM > 0 and (bar_index - trBar + 1) * barSecs >= timeStopM * 60 and trMfe < 0.5
+        reason := "TIME STOP"
+    else if givebackR > 0 and trMfe >= givebackR and (close - trEntry) * d < 0
+        reason := "GIVEBACK"
+    if reason != ""
+        strategy.close_all(comment=reason, alert_message=f_exitMsg(reason))
+    else if beAtR > 0 and trMfe >= beAtR
+        newStop = d == 1 ? math.max(trStop, trEntry + tick) : math.min(trStop, trEntry - tick)
+        if newStop != trStop
+            trStop := newStop
+            if beModify and not beSent
+                beSent := true
+                alert(f_beMsg(d, newStop, trTgt), alert.freq_once_per_bar_close)
+
+if strategy.position_size > 0
+    strategy.exit("xL", "L", stop=trStop, limit=trTgt, comment_profit="TARGET", comment_loss="STOP",
+         alert_message=f_exitMsg("bracket"), disable_alert=not syncExits)
+if strategy.position_size < 0
+    strategy.exit("xS", "S", stop=trStop, limit=trTgt, comment_profit="TARGET", comment_loss="STOP",
+         alert_message=f_exitMsg("bracket"), disable_alert=not syncExits)
+
+plot(strategy.position_size != 0 ? trStop : na, "Stop", color.red, 1, plot.style_linebr)
+plot(strategy.position_size != 0 ? trTgt : na, "Target", color.green, 1, plot.style_linebr)
+plot(vwap, "RTH VWAP", color.new(color.orange, 40))
+bgcolor(inKZ ? color.new(color.yellow, 92) : na, title="Killzones")
+bgcolor(entryBlock and inKZ ? color.new(color.gray, 85) : na, title="News / range / regime block")
