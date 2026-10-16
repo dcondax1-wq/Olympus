@@ -3,7 +3,13 @@
     python -X utf8 study_ict_run.py [--src PATH|default] [--from YYYY-MM-DD] [--to YYYY-MM-DD]
                                     [--train0 WEEKS] [--block WEEKS] [--workers 8] [--boot 2000]
 
---src default  = exactly the data engine.backtest.run uses (data/NQ_5m.csv + NQ_1h warm-up, Aug-Oct 2026, ES partner).
+--window N     = independent engine runs over N-week windows (each with 21 days warm-up), concatenated.
+Runs behind research/ICT_REPORT.md:
+    --src default --from 2026-08-06 --to 2026-10-16            -> study_ict_results_11wk.txt
+    --src default --from 2021-11-08 --window 10                -> study_ict_results_5y_windowed.txt
+    --src <copy of data/clean/NQ_5m.csv>  (one continuous run)  -> study_ict_results_5y_continuous.txt
+    --src default --from 2025-04-28 --window 10  (NQ+ES aligned) -> study_ict_results_smt_18mo.txt
+--src default  = exactly the data engine.backtest.run uses (data/NQ_5m.csv + NQ_1h warm-up, ES partner).
 --src omitted  = data/clean/NQ_5m.csv if it exists, else a temp merge of data/tv_exports/NQ1_5m_chunk_*.csv (+ NQ_5m.csv).
 Nothing in engine/ is changed: features come from engine/ict_features.py inside a subclass (study_ict_common.ICTEngine).
 

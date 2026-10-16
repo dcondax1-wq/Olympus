@@ -5,7 +5,9 @@
     2. otherwise a temporary merge of data/tv_exports/NQ1_5m_chunk_*.csv + data/NQ_5m.csv, written OUTSIDE data/
        (env ICT_TMP or the system temp dir). Chunk bars (TradingView CME exchange bars) win where both have a bar.
   data/_cfd_archive is never read. `--src default` reproduces engine.backtest.run exactly (data/NQ_5m.csv, NQ_1h warm-up).
-* ES partner: data/ES_5m.csv (only Aug-Oct 2026 exists), used for SMT where the timestamps match.
+* ES partner: data/ES_5m.csv (TradingView ES1! from 2025-04-13 + Yahoo after 2026-08-23, back-adjusted to ESZ26 by
+  tools/stitch_es_chunks.py), used for SMT where the timestamps match; where ES has no bar the SMT features are None.
+  (Note: data/NQ_5m.csv now holds the 5-year clean NQ set, so --src default is the preferred source.)
 * ICTEngine: the real Engine, unchanged, plus (1) the sweep geometry of every candidate stored in its feature dict and
   (2) the ICT features computed at plan time from closed bars only, and (3) an optional gate / score change that
   emulates exactly what an engine weight would do (score < min_score -> pass, shadow still logged, setup not consumed).

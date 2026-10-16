@@ -57,9 +57,12 @@ def pool_family(t) -> str:
 
 
 def target_family(t) -> str:
-    lab = str(t.get("target_label") or "").split(" ")[0].split("/")[0]
-    lab = "".join(ch for ch in lab if not ch.isdigit())
-    return POOL_FAMILY.get(lab, lab or "R")
+    lab = str(t.get("target_label") or "").split(" ")[0]
+    fams = {POOL_FAMILY.get(k, k) for k in ("".join(ch for ch in x if not ch.isdigit()) for x in lab.replace("·", "/").split("/")) if k}
+    for f in POOL_ORDER:
+        if f in fams:
+            return f
+    return sorted(fams)[0] if fams else "R"
 
 
 def agg(ts: list) -> dict:
