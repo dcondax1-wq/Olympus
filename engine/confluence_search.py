@@ -111,13 +111,20 @@ def _num(v):
 
 
 # ------------------------------------------------------------------------------------------------ backtests (cached)
+_STAMPS = {}     # frozen per process (one learning cycle): files appended mid-cycle must not change cache keys
+
+
 def _data_stamp(sym):
+    if sym in _STAMPS:
+        return _STAMPS[sym]
     p = os.path.join(DATA_DIR, f"{sym}_5m.csv")
     try:
         st = os.stat(p)
-        return f"{int(st.st_mtime)}:{st.st_size}"
+        s = f"{int(st.st_mtime)}:{st.st_size}"
     except OSError:
-        return "missing"
+        s = "missing"
+    _STAMPS[sym] = s
+    return s
 
 
 def _defaults_stamp():
@@ -162,8 +169,9 @@ class Runner:
 
     def run_many(self, jobs):
         todo, seen = [], set()
-        for sym, params, wide in jobs:
-            h = _hash(sym, params, wide)
+        # hash once: a data file being appended to mid-cycle (live bars, the ES harvest) must not orphan cached results
+        hs = [_hash(sym, params, wide) for sym, params, wide in jobs]
+        for h, (sym, params, wide) in zip(hs, jobs):
             if h not in self.cache and h not in seen:
                 seen.add(h)
                 todo.append((h, (sym, params, wide)))
@@ -176,7 +184,7 @@ class Runner:
             for (h, _), o in zip(todo, outs):
                 self.cache[h] = o
             self.n_runs += len(todo)
-        return [self.cache[_hash(s, p, w)] for s, p, w in jobs]
+        return [self.cache[h] for h in hs]
 
     def get(self, sym, params, wide=False):
         return self.run_many([(sym, params, wide)])[0]

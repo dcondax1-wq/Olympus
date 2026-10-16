@@ -276,6 +276,18 @@ GRID = {
     "ifvg_15m": {"ifvg_tf": "highest"}, "news_off": {"news_filter": False}, "g_early0": {"g_early": 0}, "g_pd0": {"g_pd": 0},
     "partial50": {"partial_pct": 0.5}, "trend_model": {"trend_model": True},
 }
+_T, _NG, _RS, _M1, _AM = ({"trend_model": True}, {"grade_sizing": False, "conviction_step": 0}, {"regime_mode": "skip"},
+                          {"max_trades_day": 1}, {"arm_minor": False})
+COMBOS = {
+    "baseline": {}, "trend": _T,
+    "trend+max1": {**_T, **_M1}, "trend+rskip": {**_T, **_RS}, "trend+nograde": {**_T, **_NG},
+    "trend+rskip+nograde": {**_T, **_RS, **_NG}, "rskip+nograde": {**_RS, **_NG}, "nograde+max1": {**_NG, **_M1},
+    "trend+dir5": {**_T, "trend_require_dir5": True}, "trend+max1+nograde": {**_T, **_M1, **_NG},
+    "trend+armminor_off": {**_T, **_AM}, "trend+armminor_off+rskip": {**_T, **_AM, **_RS},
+    "trend+armminor_off+nograde": {**_T, **_AM, **_NG}, "trend+rskip+max1": {**_T, **_RS, **_M1},
+    "trend_noregime": {**_T, "trend_require_regime": False}, "trend_noregime+max1": {**_T, "trend_require_regime": False, **_M1},
+    "trend+fvg1.5": {**_T, "trend_fvg_mult": 1.5}, "trend+half": {**_T, "trend_full_size": False},
+}
 TRAIN = ("2021-10-01", "2024-12-31")
 TEST = ("2025-01-01", "2026-10-31")
 TEST_CLEAN = ("2025-01-01", "2026-07-31")     # excludes Aug-Oct 2026, the window the defaults were tuned on
@@ -296,11 +308,12 @@ def grid_summary(res):
 
 
 def cmd_grid(procs=6, mode="full"):
-    keys = list(GRID)
+    G = COMBOS if mode == "combo" else GRID
+    keys = list(G)
     if mode == "flat":
-        jobs = [(k, {**GRID[k], "dd_aware": False}, None, None) for k in keys]
+        jobs = [(k, {**G[k], "dd_aware": False}, None, None) for k in keys]
     else:
-        jobs = [(k, GRID[k], None, None) for k in keys]
+        jobs = [(k, G[k], None, None) for k in keys]
     t0 = time.time()
     outs = pool_map(jobs, procs)
     out = {o["label"]: {"params": o["params"], **grid_summary(o)} for o in outs}
