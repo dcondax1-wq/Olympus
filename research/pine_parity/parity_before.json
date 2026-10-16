@@ -1,0 +1,314 @@
+{
+ "n_py": 25,
+ "n_tv": 8,
+ "entry_matches": 3,
+ "full_matches": 2,
+ "entry_parity": 0.1,
+ "parity": 0.067,
+ "window": [
+  "2026-08-24",
+  "2026-10-16"
+ ],
+ "rows": [
+  {
+   "t": 1787596800,
+   "dir": -1,
+   "py": "TIME",
+   "py_r": 1.7743589743589743,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1787682900,
+   "dir": 1,
+   "py": "GIVEBACK",
+   "py_r": -0.17857142857142858,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1787844000,
+   "dir": -1,
+   "py": "TARGET",
+   "py_r": 5.0,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1787853600,
+   "dir": -1,
+   "py": null,
+   "py_r": null,
+   "tv": "BE",
+   "tv_r": -0.0,
+   "dt": null,
+   "status": "TV ONLY"
+  },
+  {
+   "t": 1787928000,
+   "dir": -1,
+   "py": null,
+   "py_r": null,
+   "tv": "STOP",
+   "tv_r": -1.0,
+   "dt": null,
+   "status": "TV ONLY"
+  },
+  {
+   "t": 1787930100,
+   "dir": -1,
+   "py": "TARGET",
+   "py_r": 5.028436018957346,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1788183600,
+   "dir": -1,
+   "py": "STOP",
+   "py_r": -1.0089285714285714,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1788201600,
+   "dir": -1,
+   "py": "TIMESTOP",
+   "py_r": -0.5024875621890548,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1788270600,
+   "dir": 1,
+   "py": null,
+   "py_r": null,
+   "tv": "TIMESTOP",
+   "tv_r": 0.021367521367521368,
+   "dt": null,
+   "status": "TV ONLY"
+  },
+  {
+   "t": 1788275100,
+   "dir": -1,
+   "py": "GIVEBACK",
+   "py_r": -0.07234042553191489,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1788462600,
+   "dir": -1,
+   "py": "TIME",
+   "py_r": 0.4358974358974359,
+   "tv": "TIME",
+   "tv_r": 0.44666666666666666,
+   "dt": 0,
+   "status": "MATCH"
+  },
+  {
+   "t": 1788546000,
+   "dir": 1,
+   "py": "TIME",
+   "py_r": 1.6153846153846154,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1789154100,
+   "dir": 1,
+   "py": "GIVEBACK",
+   "py_r": -0.0625,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1789498800,
+   "dir": 1,
+   "py": "TIMESTOP",
+   "py_r": -0.57,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1789670700,
+   "dir": 1,
+   "py": "TARGET",
+   "py_r": 5.226415094339623,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1789738800,
+   "dir": 1,
+   "py": "STOP",
+   "py_r": -1.0046728971962617,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1789740600,
+   "dir": 1,
+   "py": "GIVEBACK",
+   "py_r": -0.6854838709677419,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1790170500,
+   "dir": -1,
+   "py": "TARGET",
+   "py_r": 3.577889447236181,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1790261100,
+   "dir": -1,
+   "py": "BE",
+   "py_r": -0.0,
+   "tv": "BE",
+   "tv_r": -0.0,
+   "dt": 0,
+   "status": "MATCH"
+  },
+  {
+   "t": 1790360400,
+   "dir": -1,
+   "py": "TARGET",
+   "py_r": 4.777777777777778,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1790689200,
+   "dir": 1,
+   "py": "STOP",
+   "py_r": -1.0064102564102564,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1791293700,
+   "dir": -1,
+   "py": null,
+   "py_r": null,
+   "tv": "GIVEBACK",
+   "tv_r": -0.6842105263157895,
+   "dt": null,
+   "status": "TV ONLY"
+  },
+  {
+   "t": 1791300600,
+   "dir": -1,
+   "py": "TIME",
+   "py_r": 4.009090909090909,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1791399900,
+   "dir": -1,
+   "py": "TIMESTOP",
+   "py_r": -0.6290322580645161,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1791467100,
+   "dir": -1,
+   "py": "BE",
+   "py_r": -0.0,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1791468000,
+   "dir": 1,
+   "py": "TARGET",
+   "py_r": 4.193333333333333,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1791470400,
+   "dir": -1,
+   "py": null,
+   "py_r": null,
+   "tv": "TARGET",
+   "tv_r": 3.7417840375586855,
+   "dt": null,
+   "status": "TV ONLY"
+  },
+  {
+   "t": 1791828900,
+   "dir": 1,
+   "py": "STOP",
+   "py_r": -1.0113636363636365,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1791832800,
+   "dir": 1,
+   "py": "TIME",
+   "py_r": 1.0849056603773586,
+   "tv": null,
+   "tv_r": null,
+   "dt": null,
+   "status": "PY ONLY"
+  },
+  {
+   "t": 1791898500,
+   "dir": 1,
+   "py": "TARGET",
+   "py_r": 2.092050209205021,
+   "tv": "BE",
+   "tv_r": 0.0,
+   "dt": 0,
+   "status": "EXIT DIFF"
+  }
+ ]
+}

@@ -90,7 +90,8 @@ def _num(s) -> float | None:
 
 
 def read_tv(path: str, tz: str = "America/New_York") -> list[dict]:
-    """One dict per round trip: entry_t, dir, entry, exit, qty, profit, entry_signal, exit_signal, risk_pts (from 'r=')."""
+    """One dict per round trip: entry_t, dir, entry, exit, qty, profit, entry_signal, exit_signal, risk_pts (fill to 'sl=',
+    else the planned 'r=')."""
     zone = ZoneInfo(tz)
     with open(path, encoding="utf-8-sig", newline="") as f:
         rows = list(csv.DictReader(f))
@@ -140,6 +141,9 @@ def read_tv(path: str, tz: str = "America/New_York") -> list[dict]:
             continue
         m = re.search(r"r=([0-9.]+)", t.get("entry_signal", ""))
         t["risk_pts"] = float(m.group(1)) if m else None
+        m = re.search(r"sl=([0-9.]+)", t.get("entry_signal", ""))
+        if m and t.get("entry") is not None:
+            t["risk_pts"] = abs(t["entry"] - float(m.group(1)))     # risk from the actual fill, like the engine's risk_pts
         out.append(t)
     return sorted(out, key=lambda x: x["entry_t"])
 

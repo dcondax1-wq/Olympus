@@ -22,14 +22,16 @@ Legend: **[verified]** = checked against the vendor's own docs page on 2026-10-1
    `strategy.exit(comment_profit=, comment_loss=, disable_alert=)` and `strategy(backtest_fill_limits_assumption=)`.
    If one of these errors, delete that argument; the only effect is weaker labels in the trade list (the parity
    tool falls back to inferring the exit class from the result).
-2. **Parity check against the Python engine.** Strategy Tester > *List of trades* > Export (CSV). Set the chart
-   timezone to New York first. Then:
+2. **Parity check against the Python engine.** Done on 2026-10-16 for Aug 24 - Oct 16 (research/PINE_PARITY.md):
+   the Strategy Tester shows 25 trades, +$8,784.50, PF 6.76, and all 25 match Python's entries, exit classes and
+   R. To repeat it after any change: Strategy Tester > *List of trades* > Export (CSV), with the chart timezone
+   set to New York. Then:
    ```
    python -X utf8 tools/pine_parity.py "%USERPROFILE%\Downloads\<export>.csv"
    ```
    The tool prints every trade side by side (entry time within 10 min, side, exit class, R) plus a parity score.
-   The Python CSVs are Yahoo NQ=F and TradingView uses CME MNQ1!: expect most, not all, trades to match. Treat any
-   `PY ONLY` / `TV ONLY` row inside an entry window as something to look at before going live.
+   Expect 100%. Any `PY ONLY` / `TV ONLY` row means the script on the chart is not the repo version, or one of
+   the section 7 differences fired. `tools/pine_sim.py` replays the script bar by bar to find out which.
 3. **TradingView plan + 2FA.** Webhook alerts need a paid TradingView plan, and TradingView requires
    **two-factor authentication** on the account before it will send to a webhook URL **[UNVERIFIED: I could not
    load TradingView's help pages; this is TradingView's long-standing rule]**. Profile > Settings > Security >
@@ -78,8 +80,14 @@ PickMyTrade: sign up > connect Tradovate (OAuth) > *Generate Alert* for MNQ, qua
 1. Chart: **MNQ1!**, **5 minutes**, regular CME data. Add *Liquidity Engine - Sweep IFVG DOL*.
 2. Inputs: leave the Risk/Model defaults (they equal `engine/model.py` DEFAULTS). Alerts/bridge group:
    *Bridge JSON schema*, *Bridge ticker* (`MNQ` or the explicit contract), *Send an exit when TradingView's own
-   stop/target fills* ON, *Send a breakeven stop modification* ON. News group: paste this week's high-impact USD
-   releases, one per line, e.g.
+   stop/target fills* ON, *Send a breakeven stop modification* ON. *Shift remembered levels at contract rolls* ON.
+   News group: the release list comes prefilled from the engine's calendar. It is complete through mid-November
+   2026 and has only FOMC dates after that. Refresh it every weekend (one line per release, `;` also works):
+   ```
+   python -X utf8 tools/pine_news.py --from 2026-08-01
+   ```
+   and paste the output over the old list. Starting at 2026-08-01 keeps the backtest window's releases, so the
+   Strategy Tester stays comparable. Lines look like:
    ```
    2026-10-21 08:30 CPI
    2026-10-29 14:00 FOMC
@@ -152,51 +160,85 @@ trending regime, max 40. On an NQ1! chart the same code would size in NQ minis: 
 
 ## 7. Pine vs Python differences
 
-Source of truth: `engine/model.py` DEFAULTS, `_plan`, `_grade`, `_size`, `run()` exit block.
+Source of truth: `engine/model.py` DEFAULTS, `_plan`, `_grade`, `_size`, `run()` exit block. Parity is measured, not
+assumed. `tools/pine_sim.py` replays this script bar by bar, including TradingView's fill model, and
+`tools/pine_parity.py` diffs a TradingView trade list against `engine.backtest`. Details: `research/PINE_PARITY.md`.
 
-### Closed in this revision
-1. **Grade sizing** A+..D replaces conviction sizing. Every checklist item with a non-zero weight is ported: 1H
-   structure (+2/-1), 1H discount/premium (x`g_pd`=2, +/-), VWAP side (+/-2), volume climax on the raid (-2,
-   exact definition: max volume from the sweep bar to the extreme >= 1.5x the 20-bar average before the sweep),
-   LRL/HRL (+1/-2), opening hour (-1), 15m already aligned (-1), Q2 sweep (+1), raid beyond the 90-min true open
-   (+/-1), day stretched >= 1.2x ADR (-1), first 45 min of the session (-`g_early`=2), Q3 entry (-`g_q3`=1).
-2. **Trending-regime half size** (10-day efficiency of daily closes > 0.45), plus the `skip` mode.
-3. **MLL-aware risk cap** (`dd_aware`, 25% of the cushion above the EOD trailing $2,000 MLL, locks at $50,100).
-4. **Day-range filter** (`day_range_max` 1.6x the 20-day average range).
-5. **News blackout**: pasted release list, 15 min before / 30 after, FOMC afternoon off, flatten 5 min before.
-6. **1H / 15m structure** is now built from the chart's own 5m bars and processed on the 5m bar that completes the
-   HTF candle, as Python does. The old `request.security(..., lookahead_on)[1]` saw it one 5m bar late. It also
-   adds Python's protected-low/high trend flips, which were missing.
-7. **Equal highs/lows** (within 6 pts) are now major pools / draw-on-liquidity targets (they were missing).
-8. **Path obstacles** count 1H swings as well as 15m swings (Python `ITH/ITL/H1H/H1L`).
-9. **Pool merging** follows Python's strength order (the stronger kind decides lifetime / swing / EQ eligibility).
-10. **CISD level**: the run is only extended when the extreme candle itself closed down (it was always extended),
-    and it stops one bar short of the leg origin (off-by-one). CISD may also fire on the extreme bar itself.
-11. **Leg origin tie-break**: on equal highs the oldest bar wins (np.argmax), not the newest.
-12. **Setup consumption**: a too-wide stop or a size below 1 contract disarms the setup, as in Python.
-13. **Bracket live on the fill bar**: `strategy.exit` is placed with the entry. Before, the fill bar had no
-    stop/target in the backtest.
-14. **Giveback** may fire on the entry bar (Python does).
-15. **Target fills** need a 1-tick trade-through (`touch_ticks` 1) via `backtest_fill_limits_assumption=1`.
-16. **PDH/PDL** are not added when the first bar of the new day already traded through them.
-17. **Exit precedence**: one exit per bar in Python's order (flat time > news flat > time stop > giveback, then
-    BE). Time stop is counted in bars, so it is correct on any chart timeframe.
+**Status 2026-10-16.**
+- **TradingView Strategy Tester** (MNQ1! 5m ETH, Aug 23 - Oct 16 2026): 25 trades, +$8,784.50, PF 6.76, max
+  drawdown $380.
+- **Python on the same bars:** the same 25 entries, same exit classes, R equal to 0.01. P&L is equal to the cent
+  with Python on micro commissions.
+- **Five one-year windows, 2021-11 .. 2026-10 (504 trades), replica vs engine:** 100% identical, with remaining
+  items 1-3 below switched off on the Python side.
 
-### Remaining (Pine cannot do it, or it is deliberate)
-1. **Walk-forward exit learner** (`exit_learn`, seeded from `data/memory.db`): Python may start acting on another
-   exit signal once its counterfactual gain is proven. Pine only has the fixed `giveback` rule. Same trades as long
-   as `engine.backtest.run(...)["exit_signals"]` shows no `learned: true` row.
-2. **News source**: Python reads the archived Forex Factory calendar automatically. Pine only knows what you paste
-   and needs the alert re-created each week.
-3. **Fill model**: Python fills entries at the next open +1 tick and bot exits at the signal-bar close -1 tick.
-   TradingView fills market exits at the next bar's open (+1 tick). This is usually a few ticks; the parity tool
-   compares R with a 0.3R tolerance.
-4. **Gap through stop/target at the fill bar's open**: Python cancels the order, TradingView fills it.
-5. **Data**: Python bars are Yahoo NQ=F (60-day window), Pine uses CME MNQ1! with full history. Different prints
-   create or remove a sweep now and then. This is the main source of PY ONLY / TV ONLY rows.
-6. **Contract split**: Python routes 12 micros as 1 NQ + 2 MNQ. Pine sends 12 MNQ (same risk, slightly higher
-   commission).
-7. **SMT, protected-level, AMT, MTF, gamma, VIX and news-day context**: weight 0 in DEFAULTS, so no effect. Not ported.
-8. **Account state is simulated**: daily stop, stop-after-win and the MLL cushion use TradingView's strategy
-   equity, not the broker's (true of the Python bot too).
-9. **Partials, trailing, trend-day model, learner gate**: all off in DEFAULTS, not ported.
+### Fixed 2026-10-16 (TradingView took 8 trades vs Python 25)
+1. **1H/15m structure never ran on TradingView (root cause).** It was built with a user-defined type and methods
+   (`Struct` / `Agg.feed`), and on TradingView those updates never took effect. The effects:
+   - no 1H trend, discount/premium or 15m trend, so every trade scored exactly 1 and grades fell;
+   - no 15m/1H swing pools, so 52 setups were armed instead of Python's 144.
+
+   Now it is plain `var` state with the same algorithm.
+2. **Pool retirement order.** Stale pools are retired before the prior-day / prior-week pools are added, as in the
+   engine. A new prior-week high that landed on an older level used to be merged into it and deleted on the same
+   bar.
+3. **Contract roll.** At a roll of the continuous contract every remembered level is shifted by the roll gap. That
+   covers pools, day/week/session highs and lows, the 1H/15m structure, the regime closes and the armed setups. The
+   gap is read from the back-adjusted copy of the symbol
+   (`ticker.modify(syminfo.tickerid, backadjustment = backadjustment.on)`). Input *Shift remembered levels at
+   contract rolls*. Without the shift, the Sep 14 roll left pre-roll levels 295.5 pts off and set the trending
+   half-size flag for days.
+4. **Rule exits fill at the signal close.** TIME STOP, GIVEBACK, FLAT and NEWS FLAT use
+   `strategy.close_all(immediately = true)`; they used to fill at the next open. They are handled before new
+   entries, so a new trigger on the exit bar can be taken, as in the engine. The bot also flattens on
+   `session.islastbar` (holiday early closes). The daily stop uses realized P&L.
+5. **Swing pools are born at the 1H/15m candle close** (the engine's `t0`). This decides whether a level survives
+   a retirement boundary.
+6. **News list prefilled** from the engine's calendar (`tools/pine_news.py`). The old default was empty, and over a
+   year that alone moves Pine to 71% parity.
+7. **Entry comment** carries `sl=` so the parity tool computes R from the actual fill.
+
+Earlier port (commit fdaea88), unchanged: grade sizing A+..D with every non-zero checklist weight, trending-regime
+half size / skip, MLL-aware risk cap, day-range filter, news blackout rules, equal highs/lows as major pools, path
+obstacles from 1H and 15m swings, pool merging by strength, CISD level and leg-origin tie-break, setup consumption
+(too-wide stop, size below 1 contract), bracket live on the fill bar, giveback on the entry bar, 1-tick limit
+trade-through, PDH/PDL not added when already traded through, and Python's exit precedence.
+
+### Remaining differences (Pine cannot do it, or it is deliberate)
+1. **Walk-forward exit learner** (`exit_learn`, seeded from `data/memory.db`). Python starts acting on another exit
+   signal once its counterfactual gain is proven: >= 20 cases and >= +0.2R. Pine only has the fixed `giveback`
+   rule. It never fired in the 8-week window. On 2025-10..2026-10 it acted on 12 Python trades (zone_reentry 8,
+   opp_fvg 3, two_against 1). Check `engine.backtest.run(...)["exit_signals"]`: any `learned: true` row means
+   Python now exits differently from TradingView.
+2. **Account reset (backtest only).** After a simulated blown eval (cushion below $250) Python starts a fresh $50k
+   account. Pine keeps the dead account and cannot size 1 micro. This only matters in multi-month backtests.
+   Live, the eval is simply over.
+3. **Mini/micro split.** Python routes 10 or more micros as minis (21 micros = 2 NQ + 1 MNQ) and books mini
+   commissions ($4.50 round turn per mini vs $1.50 per micro). Pine and the bridge trade MNQ only: same risk,
+   slightly higher commission ($31.50 over the 8-week window). Over long runs near the MLL, that small P&L gap can
+   flip a 1-micro sizing decision.
+4. **News source.** Python reads the archived Forex Factory calendar automatically. Pine only knows the list in
+   its input: prefilled to mid-November 2026, then FOMC only. Refresh it weekly (section 3) and re-create the
+   alert after every change. This is the item most likely to break live parity.
+5. **Roll in real time [UNVERIFIED].** In a backtest, or whenever TradingView recalculates the script, the roll
+   shift reproduces the engine exactly (the Sep 14 2026 roll in this window). Whether a *running* alert sees the
+   back-adjusted series restated at the moment of the next roll (MNQZ26 -> MNQH27, around Dec 10-14 2026) is not
+   verified. If it does not, the shift is skipped and for up to ~10 trading days pre-roll levels and the regime
+   flag are off by the gap. Re-create the alert on the first evening after the roll; that recalculates the history.
+   TradingView's own gap may also differ by a few ticks from `data/NQ_rolls.json`.
+6. **Gap through stop/target at the fill bar's open.** Python cancels the order; TradingView fills it and the
+   bracket closes it at the open. This did not happen in any tested window.
+7. **Stop and target touched in the same bar.** Python assumes the stop first; TradingView follows its OHLC path
+   rule. This did not produce a difference in any tested window.
+8. **Holiday early closes.** In backtests Python flattens on the last bar of the trading day; Pine uses
+   `session.islastbar`. Whether TradingView flags a holiday's early last bar in real time is [UNVERIFIED]. A live
+   Python bot would not know either.
+9. **History.** TradingView loads about 8 weeks; Python warms the 1H structure from years of history. Starting
+   Python cold on 2026-08-24 gives the same 25 trades, so this does not matter here.
+10. **Live fills.** Everything above compares backtest with backtest. Live, entries are market orders sent when the
+    bar closes, and the bridge, Tradovate and slippage add their own differences.
+11. **Account state is simulated.** The daily stop, stop-after-win and MLL cushion use TradingView's strategy
+    equity, not the broker's (true of the Python bot too).
+12. **Weight-0 features and features that are off in DEFAULTS** are not ported: SMT, protected level, AMT, MTF,
+    gamma, VIX, news-day context, partials, trailing, the trend-day model and the learner gate. They have no
+    effect.
