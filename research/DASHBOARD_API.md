@@ -91,6 +91,15 @@ Every analytics response has `"meta"`:
 
 Suggested polling: `overview` / `ticker` / `model` / `clock` every 10-15 s (or the SSE `stream`); analytics on page open.
 
+## 0. `GET /api/dash/index`  (live)
+Machine-readable list. `status` is computed from the routes actually registered on the running server, so the UI can
+call only `live` endpoints (a `planned` one would 404).
+```json
+{"ok": true, "status": "ok", "live": 36, "planned": 0, "contract": "research/DASHBOARD_API.md",
+ "endpoints": [{"path": "/api/dash/overview", "status": "live", "params": [], "desc": "home screen in one call"},
+               {"path": "/api/dash/eval", "status": "live", "params": ["since", "balance", "peak_eod", "today_pnl"], "desc": "MFFU 50K eval tracker"}]}
+```
+
 ---
 
 ## 1. `GET /api/dash/overview`  (live)

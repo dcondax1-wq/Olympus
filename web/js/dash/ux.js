@@ -128,6 +128,8 @@ function helpPop() {
 }
 let gPending = 0;
 function onKey(e) {
+  // Esc closes popovers / drawers even while a field inside them has focus
+  if (e.key === 'Escape' && ($('.pop') || $('.w-drawer.on'))) { closePops(); $$('.w-drawer.on').forEach(d => d.classList.remove('on')); document.activeElement?.blur?.(); return; }
   if (e.ctrlKey || e.metaKey || e.altKey || typing(document.activeElement)) return;
   if ($('#cpOverlay.on')) return;
   const k = e.key.toLowerCase();

@@ -131,9 +131,15 @@ ENDPOINTS = [
 ]
 
 
+PLANNED: set = set()                 # paths listed in the contract but not deployed yet (the UI only calls "live" ones)
+
+
 @router.get("/api/dash/index")
 def dash_index():
-    return J({"endpoints": [{"path": p, "params": [x.strip() for x in q.split(",") if x.strip()], "desc": d} for p, q, d in ENDPOINTS],
+    deployed = {getattr(r, "path", None) for r in router.routes}
+    rows = [{"path": p, "status": "live" if p in deployed and p not in PLANNED else "planned",
+             "params": [x.strip() for x in q.split(",") if x.strip()], "desc": d} for p, q, d in ENDPOINTS]
+    return J({"endpoints": rows, "live": sum(1 for r in rows if r["status"] == "live"), "planned": sum(1 for r in rows if r["status"] == "planned"),
               "contract": "research/DASHBOARD_API.md"})
 
 

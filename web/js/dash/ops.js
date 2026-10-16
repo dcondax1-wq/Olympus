@@ -4,7 +4,7 @@ import { $, $$, esc, fmt$, fmtS$, fmtN, fmtR, cls, css, etStr } from '../util.js
 import { S, on } from '../state.js';
 import { L, onLive } from './live.js';
 import { widget, body, meta, buildGrid, openLayout } from './widgets.js';
-import { waiting, stat, spark, getJSON, dash, pref, dur, ago, etToTs, etNow, tradingDate, killzone, LAUNCH_TS } from './kit.js';
+import { waiting, stat, spark, getJSON, dash, dashHas, dur, ago, etToTs, etNow, tradingDate, LAUNCH_TS } from './kit.js';
 
 const isCfd = (s) => /^(NQX|ESX)$/i.test(s) || /X$/i.test(s);
 const FUT = new Set(['NQ', 'ES', 'MNQ', 'MES', 'YM', 'RTY']);
@@ -83,7 +83,7 @@ async function loadNews() {
   if (newsBusy) return;
   newsBusy = true; newsAt = Date.now();
   try {
-    newsApi = await dash('/api/dash/news?days=10&impact=medium', { ttl: 300000 });
+    newsApi = await dash('/api/dash/news?days=14&impact=medium', { ttl: 300000 });
     if (!newsApi && !newsFb) newsFb = await getJSON('/api/news', { ttl: 600000, body: { params: S.params || {} } });
   } finally { newsBusy = false; }
   renderNews();
@@ -135,7 +135,7 @@ function renderNews() {
   }).join('');
   const nextBo = evs.filter(e => e.be && e.be > now).sort((a, b) => a.bs - b.bs)[0];
   el.innerHTML = `${nextBo ? `<div class="acct-row" style="margin:0 0 8px"><span>Next blackout · ${esc(nextBo.ev)}</span><b>${etStr(nextBo.t, true).slice(5)} ET · ${now >= nextBo.bs ? '<span class="dn">ACTIVE</span>' : 'in ' + dur(nextBo.bs - now, { short: true })}</b></div>` : ''}
-    <div class="nt">${rows}<div class="nt-axis"><span></span><div>${[8, 9.5, 11.5, 13.5, 15.5].map(h => `<span style="left:${pct(h * 60)}%">${String(Math.floor(h)).padStart(2, '0')}:${h % 1 ? '30' : '00'}</span>`).join('')}</div></div></div>
+    <div class="nt">${rows}<div class="nt-axis"><i></i><div>${[8, 9.5, 11.5, 13.5, 15.5].map(h => `<span style="left:${pct(h * 60)}%">${String(Math.floor(h)).padStart(2, '0')}:${h % 1 ? '30' : '00'}</span>`).join('')}</div></div></div>
     <div class="tl-legend" style="margin-top:8px"><span><i style="background:color-mix(in srgb,var(--gold) 30%,transparent)"></i>killzones</span><span><i style="background:var(--bad)"></i>high</span><span><i style="background:var(--warn)"></i>medium</span><span><i style="background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--bad) 45%,transparent) 0 4px,transparent 4px 8px)"></i>blackout −${before / 60}/+${after / 60} min</span></div>`;
 }
 
@@ -237,7 +237,11 @@ export function initOps() {
   $('#opsRefresh').onclick = () => showOps(true);
   // next session prep lives on the Command Center
   widget({ id: 'prep', page: 'command', title: 'Next session prep', size: 'm' });
-  onLive(() => { renderHealth(); renderLatency(); if (S.page === 'ops') renderLog(); renderNews(); });
+  onLive(() => {
+    renderHealth(); renderLatency(); if (S.page === 'ops') renderLog(); renderNews();
+    // upgrade the timeline to the dash API once it answers, and refresh it every 5 minutes on this page
+    if (S.page === 'ops' && ((!newsApi && dashHas('/api/dash/news') && Date.now() - newsAt > 15000) || Date.now() - newsAt > 300000)) loadNews();
+  });
   on(() => renderPrep());
   setInterval(() => { if (!document.hidden && S.page === 'command') renderPrep(); }, 60000);
 }

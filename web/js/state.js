@@ -85,7 +85,7 @@ export const PARAM_SCHEMA = [
     ['regime_mode', 'Reversals on trending days', 'sel', 'half size won the regime study', { options: ['half', 'skip', 'full'] }],
     ['be_at_r_trending', 'Trend-day breakeven at (R)', 'num', '0 = same as normal', { step: 0.25 }],
     ['max_rr_trending', 'Trend-day target cap (R)', 'num', '0 = same as normal', { step: 0.5 }],
-    ['trend_model', 'Trend-day continuation setup', 'bool', 'with-trend FVG retest · rescued CFD 2025, cost NQ 2026 · awaiting 2024 data'],
+    ['trend_model', 'Trend-day continuation setup', 'bool', 'with-trend FVG retest · helped in the 2025 study, cost NQ 2026 · re-test on 5y NQ futures'],
     ['trend_require_regime', 'Only on trending days', 'bool'],
     ['trend_require_dir5', 'Require 5-day direction', 'bool'],
     ['trend_fvg_lookback_min', 'FVG lookback (min)', 'num', '', { step: 15 }],

@@ -312,7 +312,7 @@
             <select class="sel sm" id="discFilter"><option value="signal">Stable + leaning</option><option value="all">All features</option><option value="new">New this round</option></select>
             <button class="btn sm" id="discRun">Re-scan</button></div></div>
           <div id="discBoard"><div class="empty">Loading discovery scan…</div></div>
-          <div class="note">Lift = avg R when the confluence is present minus when it is absent, measured separately in each period (CFD columns are hidden: futures only). <b>STABLE</b> = same sign in every period; <b>LEANING</b> = all but one agree; anything else is noise and stays out of the grade. <b>Taken</b> is the same lift on the trades the bot actually took: a confluence only earns a grade weight when both agree and a four-period re-test of the grade confirms it.</div></div>
+          <div class="note">Lift = avg R when the confluence is present minus when it is absent, measured separately in each period (non-futures columns are hidden: real CME futures only). <b>STABLE</b> = same sign in every period; <b>LEANING</b> = all but one agree; anything else is noise and stays out of the grade. <b>Taken</b> is the same lift on the trades the bot actually took: a confluence only earns a grade weight when both agree and a four-period re-test of the grade confirms it.</div></div>
       <div class="card" style="margin-bottom:14px"><div class="card-h"><h3>In-trade exit signals · what the bot watches once it is in</h3>
           <span class="muted small">first firing per trade · gain = R banked by leaving there minus R actually made</span></div>
           <div id="exitSig"><div class="empty">Run a backtest to see exit-signal statistics.</div></div>

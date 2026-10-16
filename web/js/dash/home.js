@@ -9,7 +9,6 @@ import { tickTo, ring, arcGauge, spark, bar, waiting, stat, getJSON, dash, pref,
 
 const PLAN = { start: 50000, target: 3000, mll: 2000, dll: 1000, lock: 50100, internal: 600 };
 const FLOW = ['WAITING FOR SWEEP', 'ARMED - HUNTING IFVG', 'ORDER PENDING', 'IN TRADE', 'DONE FOR DAY'];
-const FLOW_LBL = ['WAIT SWEEP', 'ARMED · IFVG', 'ORDER', 'IN TRADE', 'DONE'];
 const src = (live) => `<span class="src-pill ${live ? 'live' : 'fallback'}" title="${live ? 'served by /api/dash' : 'dash API not deployed yet: computed from existing endpoints'}">${live ? 'dash api' : 'fallback'}</span>`;
 const st = () => L.live?.state || null;
 
@@ -171,7 +170,8 @@ function renderCockpit() {
     const tf = Math.max(0, e.profit) / PLAN.target;
     $('#ckTgtBar').innerHTML = bar(tf, { color: tf >= 1 ? 'var(--good)' : 'var(--accent)', marks: [{ at: .5, label: 'halfway' }] });
     $('#ckTgtS').textContent = `${Math.round(tf * 100)}%`;
-    $('#ckTgtL').textContent = e.pre ? 'eval begins Sun 18:00 ET' : `${fmt$(Math.max(0, PLAN.target - e.profit))} to go · bal ${fmtN(e.balance, 0)}`;
+    const pj = evalApi?.projection;
+    $('#ckTgtL').textContent = pj?.mc_pass_prob != null ? `MC ${Math.round(pj.mc_pass_prob)}% pass in ${pj.mc_horizon || 60}d · median ${pj.mc_median_days ?? '—'}d` : e.pre ? 'eval begins Sun 18:00 ET' : `${fmt$(Math.max(0, PLAN.target - e.profit))} to go · bal ${fmtN(e.balance, 0)}`;
     tickTo($('#ckMllV'), e.cushion, (x) => fmt$(x));
     const cf = e.cushion / PLAN.mll;
     $('#ckMllBar').innerHTML = bar(Math.min(1, cf), { color: e.locked ? 'var(--good)' : cf > .6 ? 'var(--good)' : cf > .3 ? 'var(--warn)' : 'var(--bad)' });
@@ -299,10 +299,12 @@ function renderThink() {
   const s = L.live;
   if (!s) { el.innerHTML = waiting('Waiting for the paper bot', 'Polling /api/live/state every 10 s.'); return; }
   const { ms, text } = narrative(s, modelApi);
-  const idx = FLOW.indexOf(ms);
+  const flow = modelApi?.flow?.length ? modelApi.flow : FLOW;
+  const SHORT = { 'OUTSIDE KILLZONE': 'OUTSIDE KZ', 'WAITING FOR SWEEP': 'WAIT SWEEP', 'ARMED - HUNTING IFVG': 'ARMED · IFVG', 'ORDER PENDING': 'ORDER', 'IN TRADE': 'IN TRADE', 'DONE FOR DAY': 'DONE' };
+  const idx = flow.indexOf(ms);
   meta('think', `${src(!!modelApi)} <span class="pill">${esc(etStr(s.state?.t || s.last_poll || Date.now() / 1000))} ET bar</span>`);
   if (!el.querySelector('.think-say')) el.innerHTML = `<div class="think-flow" id="thFlow"></div><div class="think-say" id="thSay"></div><div class="think-grid" id="thCards"></div><div class="think-log" id="thLog"></div>`;
-  $('#thFlow', el).innerHTML = (idx < 0 ? `<span class="idle">${esc(ms)}</span>` : '') + FLOW_LBL.map((l, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${l}</span>`).join('');
+  $('#thFlow', el).innerHTML = (idx < 0 ? `<span class="idle">${esc(ms)}</span>` : '') + flow.map((f, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}" title="${esc(f)}">${esc(SHORT[f] || f)}</span>`).join('');
   if (text !== lastSay) {
     lastSay = text;
     const say = $('#thSay', el);
@@ -513,7 +515,7 @@ function renderRegime() {
   const el = body('regime'); if (!el) return;
   let er10, regime, rangePct, vix, series, api = !!regApi, thr = 0.45, guard = null;
   if (regApi?.daily) {
-    const d = regApi.daily; er10 = d.er10; regime = d.regime; thr = d.regime_threshold ?? .45; rangePct = d.today_pct_adr; vix = regApi.vix?.VIX?.close ?? regApi.vix?.VIX;
+    const d = regApi.daily; er10 = d.er10; regime = d.regime; thr = d.regime_threshold ?? .45; rangePct = d.today_pct_adr; vix = regApi.vix?.VIX?.last ?? regApi.vix?.VIX?.close ?? null;
     series = (regApi.series || []).map(x => x.er10); guard = d.day_range_guard;
   } else {
     const days = S.res?.days || [];
@@ -529,6 +531,7 @@ function renderRegime() {
   const gV = arcGauge(vix != null ? Math.min(1, Math.max(0, (vix - 10) / 30)) : 0, { color: vix > 25 ? 'var(--bad)' : vix > 20 ? 'var(--warn)' : 'var(--good)', value: vix != null ? fmtN(vix, 1) : '—', unit: 'VIX', mark: (20 - 10) / 30, w: 140 });
   el.innerHTML = `<div class="gauge3"><div>${gEr}<div class="gl">Trendiness</div><div class="gs">ER10 · trending &gt; ${thr}</div></div><div>${gR}<div class="gl">${api ? 'Day range' : 'Volatility'}</div><div class="gs">${guard ? `guard ${fmtN(guard.used_x_adr, 2)}× of ${guard.limit_x_adr}×` : api ? 'vs 20-day ADR' : 'vs 20-day norm'}</div></div><div>${gV}<div class="gl">Fear gauge</div><div class="gs">VIX · 20 = caution</div></div></div>
     ${series?.length > 2 ? `<div class="mini-label" style="margin-top:8px">ER10 · last ${series.length} sessions</div>${spark(series, { w: 300, h: 34, color: css('--warn') })}` : ''}
+    ${guard?.blocks_entries ? `<div class="rdy fail" style="margin-top:8px"><span class="ic">✖</span><span>Day-range guard is <b>blocking new entries</b>: today ran ${fmtN(guard.used_x_adr, 2)}× ADR (limit ${guard.limit_x_adr}×)</span><span></span></div>` : ''}
     <div class="muted small" style="margin-top:6px">Trending days (ER10 &gt; ${thr}) take reversals at half size; the day-range guard blocks entries after 1.6× ADR.</div>`;
 }
 
@@ -607,7 +610,7 @@ function renderRS() {
     <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:96px;margin-top:8px"><path d="${path(esP)}" fill="none" stroke="var(--muted)" stroke-width="1.4" vector-effect="non-scaling-stroke"/><path d="${path(nqP)}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
     <div class="tl-legend"><span><i style="background:var(--accent)"></i>NQ</span><span><i style="background:var(--muted)"></i>ES</span><span>${nqP.length}-day path · NQ/ES ${rsTxt >= 0 ? '+' : ''}${fmtN(rsTxt, 2)}%</span></div>
     <div class="acct-row"><span>Correlation 20d / 60d</span><b>${fmtN(c20, 2)} / ${fmtN(c60, 2)}${beta != null ? ` · β ${fmtN(beta, 2)}` : ''}</b></div>
-    ${imApi?.smt?.today?.length ? `<div class="note">${imApi.smt.today.map(x => esc(x.note)).join('<br>')}</div>` : ''}`;
+    ${imApi?.smt?.today?.length ? `<div class="mini-label" style="margin-top:8px">SMT · levels swept today (NQ / ES)</div><div class="smt-grid">${imApi.smt.today.map(x => `<span class="smt ${x.divergence ? 'div' : x.nq_swept && x.es_swept ? 'both' : 'none'}" title="${esc(x.note || (x.divergence ? 'divergence' : x.nq_swept ? 'both swept' : 'untouched'))}">${esc(x.level)} <i>${x.nq_swept ? '●' : '○'}${x.es_swept ? '●' : '○'}</i></span>`).join('')}</div>${imApi.smt.today.some(x => x.divergence) ? `<div class="note">${imApi.smt.today.filter(x => x.divergence).map(x => esc(x.note || x.level + ' divergence')).join('<br>')}</div>` : '<div class="muted small">No SMT divergence: NQ and ES took the same levels.</div>'}` : ''}`;
 }
 
 // ------------------------------------------------------------------ widget: underwater drawdown (backtest)

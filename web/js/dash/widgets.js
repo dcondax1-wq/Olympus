@@ -1,7 +1,7 @@
 // Widget framework: every card on a dashboard page becomes a widget with a drag handle, expand, export (CSV / PNG) and hide.
 // Order, size and visibility are saved per page in localStorage (le.dash.layout.<page>, wrapped in try/catch by store()).
 import { $, $$, esc, toast } from '../util.js';
-import { pref, saveCSV, savePNG } from './kit.js';
+import { pref, saveCSV, savePNG, waiting } from './kit.js';
 
 const REG = new Map();          // id -> def
 const GRIDS = new Map();        // page -> grid element
@@ -40,7 +40,7 @@ function makeCard(def) {
   } else {
     card = document.createElement('section');
     card.className = 'card w' + (def.cls ? ' ' + def.cls : '');
-    card.innerHTML = `<div class="card-h"><h3>${def.title}</h3><div class="w-meta">${def.sub || ''}</div>${toolsHtml(def)}</div><div class="w-body"></div>`;
+    card.innerHTML = `<div class="card-h"><h3>${def.title}</h3><div class="w-meta">${def.sub || ''}</div>${toolsHtml(def)}</div><div class="w-body">${waiting('Loading…')}</div>`;
     def._body = card.querySelector('.w-body');
     def._meta = card.querySelector('.w-meta');
   }

@@ -42,6 +42,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
 // installable home-screen app: register the service worker (no-op where unsupported, e.g. plain http on a LAN IP in some browsers).
 // Registered after the boot backtest: while that runs the server answers slowly and the worker fetch can time out.
 function registerSW() {
+  if (/\bClaude\//.test(navigator.userAgent)) return;   // the Claude desktop app's preview pane cannot host service workers
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => null);
 }
 

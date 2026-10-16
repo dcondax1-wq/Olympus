@@ -231,6 +231,12 @@ body.w-expanded #wBackdrop { display: block; }
 .lb-row .nm small { display: block; font: 500 10px var(--mono); color: var(--muted); }
 .lb-row .lift { font: 700 12px var(--mono); text-align: right; }
 
+.smt-grid { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 6px; }
+.smt { font: 600 10.5px var(--mono); padding: 3px 6px; border-radius: 5px; background: color-mix(in srgb, var(--surface-2) 80%, transparent); color: var(--muted); }
+.smt i { font-style: normal; letter-spacing: -1px; margin-left: 2px; }
+.smt.both { color: var(--ink-2); }
+.smt.div { color: var(--accent-ink); background: var(--accent); box-shadow: 0 0 10px var(--glow); }
+
 /* ---------------------------------------------------------------- analytics */
 .hm { display: grid; gap: 3px; font: 600 11px var(--mono); }
 .hm .c { border-radius: 6px; padding: 9px 4px; text-align: center; color: var(--ink); position: relative; transition: transform .12s; cursor: default; min-width: 0; overflow: hidden; }
@@ -407,6 +413,9 @@ body.w-expanded #wBackdrop { display: block; }
   .drift-row { grid-template-columns: 90px 1fr 1fr 60px; }
   .page-tools .lbl::after { display: none; }
   .rc-panel { width: calc(100vw - 40px); }
+  #rcBtn, #thmBtn { display: none; }   /* phones: both stay reachable from the ⌘ palette */
+  .think-flow { overflow-x: auto; scrollbar-width: none; }
+  .think-flow span { flex: none; padding: 7px 9px; overflow: visible; }
 }
 @media (max-width: 420px) { .ck-top { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) {

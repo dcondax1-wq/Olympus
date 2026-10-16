@@ -107,6 +107,7 @@ function renderList() {
   if (!q) filtered.sort((a, b) => ORD.indexOf(a.it.kind) - ORD.indexOf(b.it.kind));
   sel = Math.min(sel, Math.max(0, filtered.length - 1));
   const list = $('#cpList');
+  if (!list) return;
   if (!filtered.length) { list.innerHTML = '<div class="cp-empty">Nothing matches. Try a page name, "run", "kill" or "explain ifvg".</div>'; return; }
   let lastKind = null, html = '';
   filtered.forEach((x, i) => {

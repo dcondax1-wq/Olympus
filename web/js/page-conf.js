@@ -229,7 +229,7 @@ function renderDisc() {
   const hidden = d0.slices.length - keep.length;
   const d = { ...d0, slices: keep.map(j => d0.slices[j]), features: d0.features.map(x => ({ ...x, per: keep.map(j => x.per[j]) })) };
   box.style.setProperty('--ns', d.slices.length);
-  $('#discMeta').textContent = `${d.n_features} features · ${d.counts.STABLE} stable · ${d.counts.LEANING} leaning · ${d.generated}${hidden ? ` · ${hidden} CFD columns hidden (verdicts and pooled from an older scan; the registry above is futures-only)` : ''}${disc.running ? ' · re-scanning…' : ''}`;
+  $('#discMeta').textContent = `${d.n_features} features · ${d.counts.STABLE} stable · ${d.counts.LEANING} leaning · ${d.generated}${hidden ? ` · ${hidden} non-futures columns hidden (verdicts and pooled from an older scan; the registry above is futures-only)` : ''}${disc.running ? ' · re-scanning…' : ''}`;
   let rows = d.features;
   if (mode === 'signal') rows = rows.filter(x => x.verdict !== 'NOISE');
   if (mode === 'new') rows = rows.filter(x => x.is_new);
