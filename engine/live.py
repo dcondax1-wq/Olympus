@@ -187,6 +187,15 @@ def _jsonable(o):
     return str(o)
 
 
+def _cover_gap(hist: pd.DataFrame, now: int, period: str, max_days: int) -> str:
+    """Yahoo period long enough to reach back to the end of the stored history (plus 2 days of overlap), so the rolling
+    window never has a hole once the CSV history goes stale. Yahoo caps 5m at 60 days and 1h at 730 days."""
+    if hist is None or not len(hist):
+        return f"{max_days}d"
+    lag = int((now - int(hist["time"].max())) / 86400) + 2
+    return period if lag <= 5 else f"{min(lag, max_days)}d"
+
+
 def clean_bars(df: pd.DataFrame, secs: int, now: int, grid: bool = True):
     """Closed, well-formed, de-duplicated bars only (grid-aligned too when `grid`; 1h holiday half-days sit at :30).
     Returns (frame, drop counts)."""
@@ -305,6 +314,7 @@ class LiveBot:
     def _merged(self, sym, tf, now, secs, period="5d"):
         """Stored history + fresh bars, cleaned. A failing fresh fetch degrades to history (never raises for that)."""
         hist = self.read_hist(sym, tf)
+        period = _cover_gap(hist, now, period, max_days=58)   # stored history ends days ago: fetch enough to bridge it
         try:
             recent = self.fetch_recent(sym, tf, period)
             if recent is None:
@@ -575,7 +585,7 @@ class LiveBot:
         """Stored 1h history merged with fresh 1h bars so HTF structure stays current."""
         hist = self.read_hist(sym, "1h")
         try:
-            rec = self.fetch_recent(sym, "1h", "5d")
+            rec = self.fetch_recent(sym, "1h", _cover_gap(hist, now, "5d", max_days=700))
             if rec is not None and len(rec):
                 hist = pd.concat([hist, rec])
         except Exception as e:
