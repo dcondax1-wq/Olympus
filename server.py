@@ -908,6 +908,19 @@ def api_confluence_status():
 # ---- END CONFLUENCE SEARCH ----
 
 
+# ---- DASH EXTRAS ----
+# /api/dash/*: read-only dashboard analytics (engine/dash_*.py, contract in research/DASHBOARD_API.md). Backtests run in a
+# below-normal-priority subprocess; an import failure here is logged and never stops the server or the bot.
+try:
+    from engine import dash_api as _dash
+    _dash.bind(watchdog=WATCHDOG, live_arm=_live_arm)
+    app.include_router(_dash.router)
+    app.router.add_event_handler("startup", _dash.startup)
+except Exception as _dash_err:
+    print(f"[dash] /api/dash disabled: {_dash_err.__class__.__name__}: {_dash_err}", flush=True)
+# ---- END DASH EXTRAS ----
+
+
 @app.get("/")
 def index():
     return FileResponse(os.path.join(WEB, "index.html"))

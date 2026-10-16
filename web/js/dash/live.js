@@ -1,7 +1,7 @@
 // Live hub: one poller for the paper bot (/api/live/state), the dash overview (/api/dash/overview when deployed), the watchdog
 // and the Pine blackout list. New bot log rows become toast notifications (+ the notification centre); sound stays with sound.js.
 import { $, esc, etStr } from '../util.js';
-import { getJSON, pref, ago } from './kit.js';
+import { getJSON, dash, dashHas, pref, ago } from './kit.js';
 
 export const L = {
   live: null, liveAt: 0, ov: null, wd: null, bo: null, paper: null, lat: [], online: null,
@@ -89,7 +89,9 @@ async function pollLive() {
   const s = await getJSON('/api/live/state', { ttl: 0 });
   const ms = performance.now() - t0;
   L.lat.push({ t: Date.now() / 1000, ms: s ? ms : null }); if (L.lat.length > 90) L.lat.shift();
-  L.online = !!s;
+  // one slow / dropped poll (e.g. while a backtest hogs the server) is not "offline": need two misses in a row
+  L.fails = s ? 0 : (L.fails || 0) + 1;
+  L.online = s ? true : L.fails >= 2 ? false : L.online;
   if (s) {
     L.live = s; L.liveAt = Date.now() / 1000;
     L.log = s.log || [];
@@ -98,10 +100,10 @@ async function pollLive() {
   emit();
 }
 async function pollOverview() {
-  const o = await getJSON('/api/dash/overview', { ttl: 0 });
-  L.ov = o && o.status !== 'computing' ? o : L.ov;
+  const o = await dash('/api/dash/overview');
+  L.ov = o || null;
   L.dash = !!o;
-  if (o && !L.sse) startStream();
+  if (!L.sse && dashHas('/api/dash/stream')) startStream();
   emit();
 }
 async function pollSlow() {

@@ -23,18 +23,26 @@ import * as memoryPage from './page-memory.js';
 import { initCommandExtras } from './page-command-extras.js';
 import { initPalette } from './palette.js';
 import { initVoice } from './voice.js';
+import { addPaletteItems } from './palette.js';
+import { startLive } from './dash/live.js';
+import { initHome } from './dash/home.js';
+import { initAnalytics, showAnalytics } from './dash/analytics.js';
+import { initOps, showOps } from './dash/ops.js';
+import { initUX, paletteActions } from './dash/ux.js';
 
 const TITLES = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
   playbook: 'Playbook', settings: 'Settings & Themes', report: 'Daily Reports', regime: 'Market Regimes', tv: 'TradingView', review: 'Weekly Review', memory: 'Trade Memory',
-  launch: 'Launch Control' };
+  launch: 'Launch Control', analytics: 'Deep Stats', ops: 'Ops & Data' };
 const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: propPage, robust: robustPage, conf: confPage, news: newsPage,
   live: livePage, journal: journalPage, settings: settingsPage, briefing: briefingPage, report: reportPage, regime: regimePage, tv: tvPage, review: reviewPage,
-  memory: memoryPage, launch: launchPage };
+  memory: memoryPage, launch: launchPage, analytics: { show: showAnalytics }, ops: { show: () => showOps() },
+  command: { show: () => requestAnimationFrame(() => window.dispatchEvent(new Event('resize'))) } };
 
-// installable home-screen app: register the service worker (no-op where unsupported, e.g. plain http on a LAN IP in some browsers)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => null));
+// installable home-screen app: register the service worker (no-op where unsupported, e.g. plain http on a LAN IP in some browsers).
+// Registered after the boot backtest: while that runs the server answers slowly and the worker fetch can time out.
+function registerSW() {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => null);
 }
 
 // ------------------------------------------------------------------ navigation
@@ -376,9 +384,12 @@ async function boot() {
   on(renderCommand);
   for (const p of Object.values(PAGES)) p.init?.();
   initCommandExtras(); initPalette(); initVoice();
+  // dashboard layer: ops registers the command 'prep' widget, so it runs before the command grid is built
+  initOps(); initHome(); initAnalytics(); initUX(go); addPaletteItems(paletteActions); startLive();
   renderPlaybook($('#playbook'));
   const want = new URLSearchParams(location.search).get('page');
   go(want && TITLES[want] ? want : store.get('page', 'command'));
   await run();
+  setTimeout(registerSW, 3000);
 }
 boot();

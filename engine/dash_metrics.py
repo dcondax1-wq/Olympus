@@ -237,9 +237,10 @@ def breakdown(trades, by=None):
 
 
 def conditions(trades, min_n=5, top=5):
-    """Best / worst buckets across every dimension (min_n trades each), ranked by avg R."""
+    """Best / worst buckets across every entry-time dimension (min_n trades each), ranked by avg R. Exit reason is an
+    outcome, not a condition, so it is left out."""
     rows = []
-    for dim, groups in breakdown(trades).items():
+    for dim, groups in breakdown(trades, ["grade", "killzone", "dir", "pool", "trigger", "regime", "dow", "target", "model", "hour"]).items():
         for g in groups:
             if g["n"] >= min_n and g["avg_r"] is not None:
                 rows.append({"dim": dim, **g})

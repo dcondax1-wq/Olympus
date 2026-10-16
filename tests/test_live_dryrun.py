@@ -127,6 +127,9 @@ class Replay:
         shutil.rmtree(self.tmp, ignore_errors=True)
 
 
+REF_DAYS = 60
+
+
 def ref_backtest(rp: Replay, params=None, upto=None):
     """What a plain backtest over the same files says (full history, live=True so the last open trade is kept)."""
     nq = rp.frames[("NQ", "5m")]
@@ -136,6 +139,11 @@ def ref_backtest(rp: Replay, params=None, upto=None):
         nq = nq[nq["time"] + 300 <= upto]
         es = es[es["time"] + 300 <= upto]
         h1 = h1[h1["time"] + 3600 <= upto]
+    # data/NQ_5m.csv now holds 5 years; the reference stays the 60-day run it was designed as (a 5-year live=True run
+    # carries one simulated account through every drawdown since 2021 and sizes differently from the 20-day live loop)
+    t_end = int(nq["time"].max())
+    nq = nq[nq["time"] >= t_end - REF_DAYS * 86400]
+    es = es[es["time"] >= t_end - REF_DAYS * 86400]
     h1c, _ = live.clean_bars(h1, 3600, int(h1["time"].max()) + 3600)
     eng = Engine(from_frame("NQ", "5m", nq), htf=from_frame("NQ", "1h", h1c), partner=from_frame("ES", "5m", es),
                  params=merge_params({**(params or {}), "live": True})).run()

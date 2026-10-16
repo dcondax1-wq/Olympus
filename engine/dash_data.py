@@ -33,7 +33,8 @@ WARM_SESS = 25                  # warm-up sessions before every window (pools, A
 WIN_SESS = 40                   # 5y: 8-week test windows
 RECOMPUTE_MIN_S = 600           # never rebuild the same key more often than this (other sessions edit model.py often)
 MAX_CACHE_FILES = 40
-FP_CODE = ("model.py", "backtest.py", "data.py", "mtf.py", "learn.py", "ict_features.py", "instruments.py", "analytics.py")
+FP_CODE = ("model.py", "backtest.py", "data.py", "mtf.py", "learn.py", "ict_features.py", "instruments.py", "analytics.py",
+           "dash_data.py")
 FP_DATA = ("NQ_5m.csv", "NQ_1h.csv", "ES_5m.csv", "NQ_1m.csv", os.path.join("news", "events.csv"))
 
 SLIM_KEYS = ("day", "entry_t", "exit_t", "dir", "entry", "exit_price", "stop0", "target", "risk_pts", "qty", "qty_label",
@@ -151,8 +152,8 @@ def backtest_spec(sym="NQ", days_from=None, days_to=None) -> dict:
 def spec_key(spec: dict) -> str:
     if spec["kind"] == "5y":
         return f"5y_{spec.get('sym', 'NQ')}"
-    if spec["kind"] == "es_fresh":
-        return "es_fresh"
+    if spec["kind"] in ("es_fresh", "coverage"):
+        return spec["kind"]
     if spec.get("default"):
         return f"bt_{spec['sym']}_default"
     return f"bt_{spec['sym']}_{spec['from']}_{spec['to'] or 'latest'}"
@@ -192,7 +193,12 @@ def job_5y(spec):
     for a in range(WARM_SESS, len(ss), WIN_SESS):
         z = min(a + WIN_SESS, len(ss)) - 1
         jobs.append((ss[a - WARM_SESS], ss[a], ss[z], sym))
-    procs = max(1, min(4, (os.cpu_count() or 2) // 3, len(jobs)))
+    procs = max(1, min(3, (os.cpu_count() or 2) // 3, len(jobs)))
+    try:                                  # each worker holds the full 5-year history (~0.5 GB): never squeeze the bot's RAM
+        import psutil
+        procs = max(1, min(procs, int(psutil.virtual_memory().available / 2 ** 30 / 0.7)))
+    except Exception:
+        pass
     outs = []
     _progress(0, len(jobs), f"{len(jobs)} windows on {procs} processes")
     with Pool(procs) as p:
@@ -216,7 +222,12 @@ def job_es_fresh(spec):
     return {"rows": rows}
 
 
-JOBS = {"bt": job_bt, "5y": job_5y, "es_fresh": job_es_fresh}
+def job_coverage(spec):
+    from engine.dash_system import job_coverage as jc
+    return jc(spec)
+
+
+JOBS = {"bt": job_bt, "5y": job_5y, "es_fresh": job_es_fresh, "coverage": job_coverage}
 
 
 def run_job(spec: dict) -> str:
@@ -312,7 +323,7 @@ _mem_lock = threading.Lock()
 def _prune_cache():
     try:
         files = sorted((os.path.join(CACHE, f) for f in os.listdir(CACHE) if f.endswith(".json")), key=os.path.getmtime)
-        keep = {"5y_NQ.json", "bt_NQ_default.json", "es_fresh.json"}
+        keep = {"5y_NQ.json", "bt_NQ_default.json", "es_fresh.json", "coverage.json"}
         extra = [f for f in files if os.path.basename(f) not in keep]
         for f in extra[:-MAX_CACHE_FILES]:
             os.remove(f)

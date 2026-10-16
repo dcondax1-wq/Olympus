@@ -481,11 +481,17 @@ def intermarket(days=60):
     tn, te = nq5[nq5["date"] == show], es5[es5["date"] == show]
     pn = ddn[ddn.index < show]
     pe = dde[dde.index < show]
+    lag = None
+    if len(tn) and len(te):                       # compare over the common time range only (ES history can lag NQ)
+        common = min(int(tn["time"].iloc[-1]), int(te["time"].iloc[-1]))
+        lag = int(tn["time"].iloc[-1]) - int(te["time"].iloc[-1])
+        tn, te = tn[tn["time"] <= common], te[te["time"] <= common]
     if len(tn) and len(te) and len(pn) and len(pe):
         cn_, ce_ = float(tn["close"].iloc[-1]), float(te["close"].iloc[-1])
         nqc, esc = (cn_ / pn["close"].iloc[-1] - 1) * 100, (ce_ / pe["close"].iloc[-1] - 1) * 100
         today = {"session": show, "nq_chg_pct": _r(nqc, 2), "es_chg_pct": _r(esc, 2), "spread_pct": _r(nqc - esc, 2),
-                 "leader": "NQ" if nqc > esc else "ES", "es_last_t": int(te["time"].iloc[-1]), "nq_last_t": int(tn["time"].iloc[-1])}
+                 "leader": "NQ" if nqc > esc else "ES", "compared_to_t": int(tn["time"].iloc[-1]), "es_lag_s": lag,
+                 "note": "both measured to the last bar they share" if lag else None}
         m = pd.merge(tn[["time", "close"]], te[["time", "close"]], on="time", suffixes=("_n", "_e"))
         if len(m) > 12:
             today["intraday_5m_corr"] = _r(m["close_n"].pct_change().corr(m["close_e"].pct_change()), 3)
@@ -564,7 +570,7 @@ def news(days=7, impact="medium", now=None):
 
 
 # ------------------------------------------------------------------ model + bias (live engine snapshot)
-FLOW = ["WAITING FOR SWEEP", "ARMED - HUNTING IFVG", "ORDER PENDING", "IN TRADE", "DONE FOR DAY"]
+FLOW = ["OUTSIDE KILLZONE", "WAITING FOR SWEEP", "ARMED - HUNTING IFVG", "ORDER PENDING", "IN TRADE", "DONE FOR DAY"]
 
 
 def model():
@@ -644,6 +650,7 @@ def prep(now=None):
         er10 = _er(closes, 10)
         thr = p.get("regime_er10_max") or 0.45
         reg = {"er10": _r(er10, 3), "regime": None if er10 is None else ("trending" if er10 > thr else "rotational"),
+               "provisional": bool(len(done)) and done.index[-1] == current_day() and market_open(time.time()),
                "adr20": _r(np.mean(rng[-20:])) if len(rng) >= 5 else None,
                "sizing": "half size (trending regime)" if er10 is not None and er10 > thr and p.get("regime_mode") == "half" else "normal"}
     evs = [x for x in nw["events"] if x["date"] == day]

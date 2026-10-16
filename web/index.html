@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/css/app.css">
   <link rel="stylesheet" href="/css/theme.css">
   <link rel="stylesheet" href="/css/skins.css">
+  <link rel="stylesheet" href="/css/dash.css">
   <link rel="stylesheet" href="/css/mobile.css">
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#05080d">
@@ -50,6 +51,7 @@
       <a data-page="live"><i>●</i><span>Live Bot</span></a>
       <a data-page="news"><i>⚡</i><span>Markets &amp; News</span></a>
       <div class="nav-sec">Analyze</div>
+      <a data-page="analytics"><i>▥</i><span>Deep Stats</span></a>
       <a data-page="backtest"><i>∑</i><span>Backtest</span></a>
       <a data-page="replay"><i>⏵</i><span>Replay</span></a>
       <a data-page="regime"><i>◐</i><span>Regimes</span></a>
@@ -62,6 +64,7 @@
       <a data-page="playbook"><i>❖</i><span>Playbook</span></a>
       <a data-page="review"><i>◈</i><span>Weekly Review</span></a>
       <a data-page="memory"><i>⛁</i><span>Memory</span></a>
+      <a data-page="ops"><i>⌁</i><span>Ops &amp; Data</span></a>
       <a data-page="tv"><i>⇄</i><span>TradingView</span></a>
       <a data-page="settings" id="navSettings"><i>⚙</i><span>Settings</span></a>
     </nav>
@@ -97,57 +100,59 @@
 
     <!-- ============================================================ COMMAND -->
     <section class="page active" id="page-command">
-      <div class="grid kpis" id="cmdKpis"></div>
-      <div class="grid cols-3">
-        <div class="card span-2">
+      <!-- mission strip (js/dash/home.js) -->
+      <div id="cockpit" class="cockpit"></div>
+      <div class="page-tools" id="cmdTools"></div>
+      <!-- every card below is a widget (js/dash/widgets.js): drag ⠿ to reorder, ⤢ expand, ⇩ export, ✕ hide; layout saved per browser -->
+      <div id="cmdGrid">
+        <div class="grid kpis" id="cmdKpis"></div>
+        <div class="card" data-adopt="equity">
           <div class="card-h"><h3>Equity · simulated MFFU account</h3><div class="card-tools mono small" id="cmdEqNote"></div></div>
           <div class="chart-box h260"><canvas id="cmdEquity"></canvas></div>
         </div>
-        <div class="card">
-          <div class="card-h"><h3>MFFU Builder 50K · evaluation</h3></div>
+        <div class="card" data-adopt="account">
+          <div class="card-h"><h3>MFFU Builder 50K · evaluation</h3><span class="muted small">backtest</span></div>
           <div id="cmdAccount"></div>
         </div>
-      </div>
-      <div class="grid cols-3">
-        <div class="card">
+        <div class="card" data-adopt="state">
           <div class="card-h"><h3>Model state · last bar</h3><span class="pill" id="cmdStateTime"></span></div>
           <div id="cmdState"></div>
         </div>
-        <div class="card">
+        <div class="card" data-adopt="ladder">
           <div class="card-h"><h3>Liquidity ladder</h3><span class="muted small">untaken pools around price</span></div>
           <div id="cmdLadder"></div>
         </div>
-        <div class="card">
+        <div class="card" data-adopt="clock">
           <div class="card-h"><h3>Session clock</h3><span class="muted small">New York time</span></div>
           <div id="cmdClock"></div>
         </div>
-      </div>
-      <div class="grid cols-2">
-        <div class="card">
+        <div class="card" data-adopt="mtf">
           <div class="card-h"><h3>Multi-timeframe alignment</h3><span class="muted small">FVG order flow · structure · location</span></div>
           <div id="cmdMtf"></div>
         </div>
-        <div class="card">
+        <div class="card" data-adopt="pd">
           <div class="card-h"><h3>Dealing range · premium / discount</h3><span class="muted small">1H swing range · midnight open</span></div>
           <div id="cmdPd"></div>
         </div>
-      </div>
-      <div class="grid cols-2">
-        <div class="card">
-          <div class="card-h"><h3>Bot brain</h3><span class="muted small">latest reasoning, newest first</span></div>
+        <div class="card" data-adopt="brain">
+          <div class="card-h"><h3>Bot brain · backtest</h3><span class="muted small">latest reasoning, newest first</span></div>
           <div class="feed" id="cmdFeed"></div>
         </div>
-        <div class="card">
+        <div class="card" data-adopt="trades">
           <div class="card-h"><h3>Recent trades</h3><a class="link" data-goto="backtest">all trades →</a></div>
           <div id="cmdTrades"></div>
         </div>
-      </div>
-      <div class="grid cols-3" id="cmdExtras">
         <div class="card" id="cmdWhatIf"></div>
         <div class="card" id="cmdEdge"></div>
         <div class="card" id="cmdRules"></div>
       </div>
     </section>
+
+    <!-- ============================================================ DEEP STATS (js/dash/analytics.js renders it) -->
+    <section class="page" id="page-analytics"><div class="empty">Loading deep stats…</div></section>
+
+    <!-- ============================================================ OPS & DATA (js/dash/ops.js renders it) -->
+    <section class="page" id="page-ops"><div class="empty">Loading ops…</div></section>
 
     <!-- ============================================================ LAUNCH CONTROL (page-launch.js renders it) -->
     <section class="page" id="page-launch"><div class="empty">Loading launch control…</div></section>
@@ -287,7 +292,7 @@
       </div>
       <div class="grid cols-2">
         <div class="card"><div class="card-h"><h3>Out-of-sample split</h3><span class="muted small">tuned before the split, judged after</span></div><div id="oosOut"></div></div>
-        <div class="card"><div class="card-h"><h3>Long-horizon validation</h3><button class="btn primary sm" id="longRun">Run 3-year NQX test</button></div><div id="longOut"><div class="empty">Runs the same model on ~3 years of Nasdaq-100 CFD 5m data (Dukascopy) to test the edge outside the 60-day futures window.</div></div></div>
+        <div class="card"><div class="card-h"><h3>Long-horizon validation</h3><button class="btn primary sm" id="longRun">Run 5-year NQ futures test</button></div><div id="longOut"><div class="empty">Runs the same model over the full five-year NQ futures history (back-adjusted CME NQ1!) and splits the result by year. Quarter-by-quarter detail is on Deep Stats.</div></div></div>
       </div>
     </section>
 

@@ -145,12 +145,12 @@ function renderOOS(res) {
   $('#oosSel').onchange = (e) => { oosSplit = e.target.value; renderOOS(S.res); };
 }
 
+// owner rule: real CME futures only. The long-horizon check runs the full NQ futures history (five years, back-adjusted NQ1!).
 async function runLong() {
-  const avail = S.meta.available;
-  if (!avail.NQX?.includes('5m')) { $('#longOut').innerHTML = '<div class="empty">No NQX data yet. Run <span class="mono">python data/dukascopy.py 3</span> to download ~3 years of Nasdaq-100 CFD history, then restart the server.</div>'; return; }
+  if (!S.meta.available.NQ?.includes('5m')) { $('#longOut').innerHTML = '<div class="empty">No NQ futures 5m history loaded.</div>'; return; }
   busy(true);
   try {
-    const r = await api('/api/backtest', { sym: 'NQX', tf: '5m', params: S.params, plan: S.plan });
+    const r = S.res && S.sym === 'NQ' && S.tf === '5m' ? S.res : await api('/api/backtest', { sym: 'NQ', tf: '5m', params: S.params, plan: S.plan });
     const s = r.stats;
     const byM = {};
     for (const t of r.trades) { const m = t.day.slice(0, 7); (byM[m] ||= []).push(t); }
@@ -163,7 +163,7 @@ async function runLong() {
         .map(([k, v]) => `<div class="kpi"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}</div>
       <div class="chart-box h200"><canvas id="longEq"></canvas></div>
       <table class="tbl" style="margin-top:8px">${head}${Object.keys(byY).sort().map(y => statRow(y, summ(byY[y]))).join('')}</table>
-      <div class="note">${r.range[0]} → ${r.range[1]}. CFD proxy: same index and sessions as NQ, tick volume instead of exchange volume. Rolling eval pass rate ${r.rolling.pass_rate ?? '—'}% over ${r.rolling.completed} starts.</div>`;
+      <div class="note">${r.range[0]} → ${r.range[1]} · NQ futures (CME, back-adjusted). Rolling eval pass rate ${r.rolling.pass_rate ?? '—'}% over ${r.rolling.completed} starts. <a class="link" data-goto="analytics">Quarter detail on Deep Stats →</a></div>`;
     let eq = 0;
     cj('longEq', { type: 'line', data: { labels: r.trades.map(t => t.day), datasets: [{ data: r.trades.map(t => (eq += t.pnl)), borderColor: css('--accent'), borderWidth: 1.6, pointRadius: 0 }] },
       options: baseOpts({ scales: { x: { grid: { display: false }, ticks: { maxTicksLimit: 8 } }, y: { ticks: { callback: v => '$' + (v / 1000).toFixed(0) + 'k' } } } }) });

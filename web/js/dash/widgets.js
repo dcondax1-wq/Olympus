@@ -25,13 +25,18 @@ function toolsHtml(def) {
     <button class="w-t" data-wa="hide" title="Hide (restore from Layout)" aria-label="Hide">✕</button></div>`;
 }
 
+// adopted cards may rebuild their own header (innerHTML): put the tools back whenever they disappear
+function ensureTools(card, def) {
+  let h = card.querySelector(':scope > .card-h');
+  if (!h) { h = document.createElement('div'); h.className = 'card-h w-h-float'; card.prepend(h); }
+  if (!h.querySelector('.w-tools')) h.insertAdjacentHTML('beforeend', toolsHtml(def));
+}
 function makeCard(def) {
   let card = def.el;
   if (card) {
     card.classList.add('w');
-    let h = card.querySelector(':scope > .card-h');
-    if (!h) { h = document.createElement('div'); h.className = 'card-h w-h-float'; card.prepend(h); }
-    h.insertAdjacentHTML('beforeend', toolsHtml(def));
+    ensureTools(card, def);
+    new MutationObserver(() => { if (!card.querySelector(':scope > .card-h > .w-tools')) ensureTools(card, def); }).observe(card, { childList: true });
   } else {
     card = document.createElement('section');
     card.className = 'card w' + (def.cls ? ' ' + def.cls : '');
@@ -45,12 +50,15 @@ function makeCard(def) {
 }
 
 // build (or rebuild) one page's grid from the registry and the saved layout
-export function buildGrid(page, grid) {
+const DEFAULT_ORDER = new Map();
+export function buildGrid(page, grid, order) {
   GRIDS.set(page, grid);
+  if (order) DEFAULT_ORDER.set(page, order);
   grid.classList.add('wgrid');
   const L = layout(page);
   const defs = defsFor(page);
-  const rank = (d) => { const i = L.order.indexOf(d.id); return i < 0 ? 1000 + defs.indexOf(d) : i; };
+  const dflt = DEFAULT_ORDER.get(page) || [];
+  const rank = (d) => { const i = L.order.indexOf(d.id); if (i >= 0) return i; const j = dflt.indexOf(d.id); return j >= 0 ? 500 + j : 1000 + defs.indexOf(d); };
   defs.sort((a, b) => rank(a) - rank(b));
   for (const d of defs) {
     const card = d._card || makeCard(d);

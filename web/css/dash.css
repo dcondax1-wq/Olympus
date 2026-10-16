@@ -209,6 +209,11 @@ body.w-expanded #wBackdrop { display: block; }
 .rdy.pass .ic { color: var(--good-ink); } .rdy.warn .ic { color: var(--warn); } .rdy.fail .ic { color: var(--bad); } .rdy.info .ic, .rdy.wait .ic { color: var(--muted); }
 .rdy .dt { font: 500 10.5px var(--mono); color: var(--muted); max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .rdy.manual { cursor: pointer; } .rdy.manual:hover { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.rdy-more { margin-top: 6px; }
+.rdy-more summary { cursor: pointer; font: 600 12px var(--sans); color: var(--good-ink); padding: 5px 8px; border-radius: 7px; list-style: none; background: color-mix(in srgb, var(--good) 8%, transparent); }
+.rdy-more summary::-webkit-details-marker { display: none; }
+.rdy-more summary:hover { background: color-mix(in srgb, var(--good) 14%, transparent); }
+.rdy-more .rdy-list { margin-top: 4px; }
 
 .gauge3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; text-align: center; }
 .gauge3 .gl { font: 700 10px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }

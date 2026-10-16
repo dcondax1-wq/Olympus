@@ -16,7 +16,7 @@ let GLOSS = [
   { term: 'Premium / discount', name: 'Premium and discount', short: 'Where price sits in the 1H dealing range: above the midpoint is premium (favour shorts), below is discount (favour longs).', long: 'Longs score higher when the sweep lands in discount, shorts in premium. The edge held on both sides of the split in NQ and ES.' },
 ];
 
-const PAGE_ICON = { command: '◎', briefing: '☀', chart: '▤', live: '●', news: '⚡', backtest: '∑', replay: '⏵', regime: '◐', conf: '⧉', robust: '⚗', prop: '⛨', report: '▦', journal: '✎', playbook: '❖', review: '◈', memory: '⛁', tv: '⇄', settings: '⚙' };
+const PAGE_ICON = { analytics: '▥', ops: '⌁', launch: '⏻', command: '◎', briefing: '☀', chart: '▤', live: '●', news: '⚡', backtest: '∑', replay: '⏵', regime: '◐', conf: '⧉', robust: '⚗', prop: '⛨', report: '▦', journal: '✎', playbook: '❖', review: '◈', memory: '⛁', tv: '⇄', settings: '⚙' };
 
 const CSS = `
 #cpOverlay{position:fixed;inset:0;z-index:900;display:none;align-items:flex-start;justify-content:center;padding:12vh 16px 16px;background:color-mix(in srgb,var(--page,#05080d) 55%,transparent);backdrop-filter:blur(10px) saturate(1.2);-webkit-backdrop-filter:blur(10px) saturate(1.2)}
@@ -46,6 +46,9 @@ const CSS = `
 `;
 
 let items = [], filtered = [], sel = 0, mode = 'list';
+// other modules (dash/ux.js) add actions + widget jumps here; each provider returns palette items at open time
+const EXTRA = [];
+export const addPaletteItems = (fn) => { EXTRA.push(fn); };
 
 function pageItems() {
   return $$('#nav a[data-page]').map(a => ({ kind: 'page', key: a.dataset.page, label: a.querySelector('span')?.textContent || a.dataset.page, icon: PAGE_ICON[a.dataset.page] || '▸', hint: 'page', do: () => go(a.dataset.page) }));
@@ -88,7 +91,8 @@ function fuzzy(q, text) {
 const hl = (text, idx) => { const set = new Set(idx); return [...text].map((c, i) => set.has(i) ? `<mark>${esc(c)}</mark>` : esc(c)).join(''); };
 
 function build() {
-  items = [...pageItems(), ...actionItems(), ...glossItems()];
+  const extra = EXTRA.flatMap(f => { try { return f() || []; } catch { return []; } });
+  items = [...pageItems(), ...actionItems(), ...extra, ...glossItems()];
 }
 
 function renderList() {
@@ -99,13 +103,14 @@ function renderList() {
     const [sc, idx] = fuzzy(exp != null ? exp : q, target);
     return { it, sc: exp != null && it.kind !== 'explain' ? -1 : sc, idx, target };
   }).filter(x => x.sc >= 0).sort((a, b) => b.sc - a.sc || a.it.label.localeCompare(b.it.label));
-  if (!q) filtered.sort((a, b) => ['page', 'action', 'explain'].indexOf(a.it.kind) - ['page', 'action', 'explain'].indexOf(b.it.kind));
+  const ORD = ['page', 'action', 'widget', 'explain'];
+  if (!q) filtered.sort((a, b) => ORD.indexOf(a.it.kind) - ORD.indexOf(b.it.kind));
   sel = Math.min(sel, Math.max(0, filtered.length - 1));
   const list = $('#cpList');
   if (!filtered.length) { list.innerHTML = '<div class="cp-empty">Nothing matches. Try a page name, "run", "kill" or "explain ifvg".</div>'; return; }
   let lastKind = null, html = '';
   filtered.forEach((x, i) => {
-    if (x.it.kind !== lastKind) { html += `<div class="cp-sec">${{ page: 'Go to', action: 'Actions', explain: 'Glossary' }[x.it.kind]}</div>`; lastKind = x.it.kind; }
+    if (x.it.kind !== lastKind) { html += `<div class="cp-sec">${{ page: 'Go to', action: 'Actions', widget: 'Widgets on this page', explain: 'Glossary' }[x.it.kind]}</div>`; lastKind = x.it.kind; }
     const label = x.it.kind === 'explain' && exp != null ? `Explain: ${hl(x.it.key, x.idx)}` : hl(x.it.label, x.idx);
     html += `<div class="cp-it ${i === sel ? 'on' : ''}" data-i="${i}"><i>${x.it.icon}</i><b>${label}</b><small>${esc(x.it.hint)}</small></div>`;
   });

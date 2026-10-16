@@ -160,6 +160,32 @@ export async function getJSON(path, { ttl = 30000, body } = {}) {
   return v;
 }
 
+// /api/dash/* gate: endpoints are called only once /api/dash/index lists them as live, so planned routes never 404 in the console.
+let _idx = null, _idxAt = 0, _idxP = null;
+export function dashIndex() {
+  if (Date.now() - _idxAt < 60000 && !_idxP) return Promise.resolve(_idx);
+  if (_idxP) return _idxP;
+  _idxP = (async () => {
+    const j = await getJSON('/api/dash/index', { ttl: 0 });
+    const got = j?.endpoints ? new Set(j.endpoints.filter(e => !e.status || e.status === 'live').map(e => (e.path || '').split('?')[0])) : null;
+    if (got || !_idx) _idx = got;                      // keep the last good list through one failed refresh
+    _idxAt = got ? Date.now() : Date.now() - 50000;   // a miss retries after ~10 s instead of a minute
+    _idxP = null;
+    return _idx;
+  })();
+  return _idxP;
+}
+export const dashHas = (path) => !!_idx && _idx.has(path.split('?')[0]);
+// GET a dash endpoint; null when it is not deployed yet, errored, or answered status "computing" / "no_data" (unless keep)
+export async function dash(path, { ttl = 0, keep = false } = {}) {
+  const idx = await dashIndex();
+  if (!idx || !idx.has(path.split('?')[0])) return null;
+  const j = await getJSON(path, { ttl });
+  if (!j) return null;
+  if (!keep && j.status && j.status !== 'ok') return null;
+  return j;
+}
+
 // ------------------------------------------------------------------ export
 export function toCSV(rows, cols) {
   if (!rows?.length) return '';
@@ -172,29 +198,30 @@ export function saveCSV(name, rows, cols) {
   if (!txt) { toast('Nothing to export yet'); return; }
   downloadFile(name.endsWith('.csv') ? name : name + '.csv', txt, 'text/csv');
 }
-let _h2c = null;
-function loadH2C() {
-  if (window.html2canvas) return Promise.resolve(window.html2canvas);
-  if (_h2c) return _h2c;
-  _h2c = new Promise((res, rej) => {
+// PNG snapshots use html-to-image (SVG foreignObject), so the browser itself renders color-mix(), gradients and glass.
+let _h2i = null;
+function loadH2I() {
+  if (window.htmlToImage) return Promise.resolve(window.htmlToImage);
+  if (_h2i) return _h2i;
+  _h2i = new Promise((res, rej) => {
     const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    s.onload = () => res(window.html2canvas); s.onerror = () => { _h2c = null; rej(new Error('could not load html2canvas')); };
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js';
+    s.onload = () => res(window.htmlToImage); s.onerror = () => { _h2i = null; rej(new Error('could not load html-to-image')); };
     document.head.appendChild(s);
   });
-  return _h2c;
+  return _h2i;
 }
 export async function savePNG(el, name) {
   try {
     toast('Rendering snapshot…', 1500);
-    const h2c = await loadH2C();
-    const bg = css('--page') || '#05080f';
-    const canvas = await h2c(el, { backgroundColor: bg, scale: Math.min(2, window.devicePixelRatio || 1), logging: false, useCORS: true });
+    const h2i = await loadH2I();
+    const url = await h2i.toPng(el, { backgroundColor: css('--page') || '#05080f', pixelRatio: Math.min(2, window.devicePixelRatio || 1), fontEmbedCSS: '', cacheBust: false,
+      filter: (n) => !(n.classList && (n.classList.contains('w-tools') || n.id === 'wBackdrop')) });
     const a = document.createElement('a');
-    a.href = canvas.toDataURL('image/png');
+    a.href = url;
     a.download = `${name}_${new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-')}.png`;
     a.click();
-  } catch (e) { toast('Snapshot failed: ' + e.message, 3500); }
+  } catch (e) { toast('Snapshot failed: ' + (e?.message || e), 3500); }
 }
 
 // tiny persisted prefs for the dashboard layer
