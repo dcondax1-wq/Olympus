@@ -31,12 +31,20 @@ The server has a **cloud mode** (`LE_CLOUD=1`):
 - **Password required.** It won't start without `LE_DASH_PASSWORD` (12+ characters). The browser asks for it, and any username works.
 - **Paper bot starts itself** about 30 seconds after the server boots.
 
-Steps (about 10 minutes, roughly $7/month on Render's Starter plan; the free plan sleeps and would stop the paper bot):
-1. Go to render.com and sign up with **GitHub**. Allow it to see only the `nq-liquidity-engine` repo.
-2. New → **Blueprint** → pick the repo. It reads `render.yaml`.
-3. When it asks for `LE_DASH_PASSWORD`, type a long password that you use nowhere else.
-4. Deploy. You get a URL like `https://liquidity-engine.onrender.com`; open it on your phone and add it to your home screen (it's a PWA).
-5. Every `git push` to `main` redeploys automatically.
+The server uses about 410–510 MB, so it needs a host with **more than 512 MB**. The free and 512 MB plans would hit out-of-memory restarts, and free plans also sleep.
+
+**Option A: Railway (recommended, usage-based, about $5–10/month)**
+1. railway.com → **Login with GitHub** → allow access to `nq-liquidity-engine` only.
+2. New Project → Deploy from GitHub repo → `nq-liquidity-engine`. It builds from `Dockerfile`, with health check and restart settings from `railway.json`.
+3. Service → **Variables**: add `LE_CLOUD = 1` and `LE_DASH_PASSWORD = <a long password you type yourself, used nowhere else>`.
+4. Settings → Networking → **Generate Domain**. Open it on your phone, log in (any username plus that password), and add it to your home screen.
+5. Optionally set a monthly usage limit under Account → Usage.
+
+**Option B: Render ($25/month Standard, 2 GB)**
+1. render.com → sign up with GitHub → New → **Blueprint** → pick the repo (reads `render.yaml`).
+2. Type your `LE_DASH_PASSWORD` when asked, then deploy.
+
+Either way, every `git push` to `main` redeploys automatically.
 
 Notes:
 - Cloud data is real CME futures history from the repo plus live Yahoo `NQ=F` polling. CFD data is never used.

@@ -1,11 +1,12 @@
 # Render.com blueprint: always-on dashboard + paper bot (PC can be off).
 # New > Blueprint > pick this repo. Render asks for LE_DASH_PASSWORD (sync: false = you type it there, it is never in git).
-# Use a paid "starter" instance: free instances sleep after 15 min idle, which would stop the paper bot.
+# Plan: the server peaks around 510 MB (5-year history + dashboard backtests), so 512 MB plans (free/starter) risk
+# out-of-memory restarts; "standard" (2 GB) is safe. Free instances also sleep after 15 min idle (stops the paper bot).
 services:
   - type: web
     name: liquidity-engine
     runtime: docker
-    plan: starter
+    plan: standard
     region: ohio
     healthCheckPath: /api/health/ping
     envVars:
