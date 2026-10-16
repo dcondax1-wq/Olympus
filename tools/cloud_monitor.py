@@ -22,7 +22,9 @@ from zoneinfo import ZoneInfo
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
+from engine import lab_adapter                 # noqa: E402
 from engine.data import from_frame             # noqa: E402
+from engine.lab_adapter import live_model      # noqa: E402
 from engine.live import LiveBot, market_open   # noqa: E402
 from engine.model import Engine, merge_params  # noqa: E402
 
@@ -77,6 +79,9 @@ def load_state(path):
 
 
 def run(out):
+    global SYM
+    lm = live_model()                    # live_model.json: same strategy and symbol as the PC paper bot
+    SYM = lm["sym"]
     os.makedirs(out, exist_ok=True)
     now = int(time.time())
     st = load_state(os.path.join(out, "state.json"))
@@ -90,11 +95,17 @@ def run(out):
     if not len(df):
         raise SystemExit("no bars at all (history missing and Yahoo failed)")
     df = df[df["time"] >= df["time"].max() - WINDOW_DAYS * 86400]
-    base = from_frame(SYM, TF, df)
-    partner = bot._partner(SYM, TF, now, SECS, int(df["time"].min()))
-    htf = bot._htf(SYM, now)
-    res = Engine(base, htf=htf, partner=partner, params=merge_params({"live": True})).run().result()
+    if lm["model"].startswith("lab:"):
+        es_df, _ = bot._merged("ES" if SYM == "NQ" else "NQ", TF, now, SECS)     # partner index (SMT)
+        es_df = es_df[es_df["time"] >= int(df["time"].min())]
+        res = lab_adapter.run(lm["model"][4:], df, lm["params"], es_df)
+    else:
+        base = from_frame(SYM, TF, df)
+        partner = bot._partner(SYM, TF, now, SECS, int(df["time"].min()))
+        htf = bot._htf(SYM, now)
+        res = Engine(base, htf=htf, partner=partner, params=merge_params({**lm["params"], "live": True})).run().result()
     state = res["state"] or {}
+    state.setdefault("model_label", lm.get("label") or lm["model"])
 
     # ---- feed health (same freshness rule as the live bot)
     last_bar = int(df["time"].max())
@@ -225,7 +236,7 @@ def write_chart(path, df, state, res, today):
             sp.set_color("#2a2f3a")
         ax.set_xlim(-1, len(xs) + 18)
         ax.set_ylim(ylo, yhi)
-        ax.set_title(f"NQ 5m - {tday(ts[-1])} (ET) - {state.get('model_state', '')}", color="#e6e6e6", fontsize=10)
+        ax.set_title(f"{SYM} 5m - {tday(ts[-1])} (ET) - {state.get('model_state', '')}", color="#e6e6e6", fontsize=10)
         ax.grid(color="#1c212b", linewidth=0.5)
         fig.tight_layout()
         fig.savefig(path, facecolor=fig.get_facecolor())
@@ -249,11 +260,12 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     price = state.get("price")
     pools = sorted(state.get("active_pools") or [], key=lambda p: abs(float(p["price"]) - float(price or 0)))[:8]
     feed = "OK" if health["fetch_ok"] and not health["stale"] else ("STALE" if health["stale"] else "Yahoo fetch failed, using stored history")
-    L = [f"# NQ Liquidity Engine - cloud paper monitor",
+    L = [f"# {SYM} Liquidity Engine - cloud paper monitor",
          f"Updated **{et(now):%a %b %d %H:%M} ET** - runs every 15 min on market days (GitHub Actions) - "
          f"**paper only, never places orders** - watching since {et(first_run):%b %d %H:%M} ET",
          "", "![NQ 5m today](chart.png)", "",
          "## Status", "| | |", "|---|---|",
+         f"| Strategy | {state.get('model_label', 'engine')} |",
          f"| Model | **{state.get('model_state', '?')}** |",
          f"| Price | {price:,.2f} (last bar {health['last_bar']}, {health['age_min']} min old) |" if price else "| Price | - |",
          f"| Setups | {'<br>'.join(arm) or 'none armed'} |",

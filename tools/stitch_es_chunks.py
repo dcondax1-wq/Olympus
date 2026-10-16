@@ -102,8 +102,11 @@ def main(argv):
               f"({r['method']}, check {r['check']})  candidates {json.dumps(r['candidates'])}")
     tv["contract"] = st.label_contracts(tv, rolls, "ES")
     adj = st.back_adjust(tv, rolls)
-    for c in ("open", "high", "low", "close"):
-        adj[c] += g_sep26                                             # -> ESZ26 price space
+    newest = str(tv["contract"].iloc[-1]) if len(tv) else ""
+    if newest != "ESZ26":                                             # TV data ends before the Sep-2026 roll:
+        for c in ("open", "high", "low", "close"):                   # shift into ESZ26 price space
+            adj[c] += g_sep26
+    print(f"newest TradingView contract {newest}: {'already ESZ26, no extra shift' if newest == 'ESZ26' else f'shifted by Sep-26 gap {g_sep26:+.2f}'}")
     adj["source"] = "tv-ES1!"
 
     # ---- price-space check on the days both sources have (Aug 2026)

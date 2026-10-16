@@ -153,6 +153,37 @@
   {
    "from": "ESU26",
    "to": "ESZ26",
+   "ltd": "2026-09-18",
+   "switch_day": "2026-09-15",
+   "switch_t": 1789423200,
+   "switch_et": "2026-09-14 18:00:00-04:00",
+   "weekend_switch": false,
+   "open_jump": 67.0,
+   "source_at_switch": "tv-ES1!",
+   "check": "ok",
+   "candidates": {
+    "open_jump": {
+     "gap": 67.0,
+     "unc": 1.25
+    },
+    "yahoo_1h_cross": {
+     "gap": 67.75,
+     "unc": 0.25,
+     "n": 7
+    },
+    "carry_model": {
+     "gap": 65.43,
+     "pct": 0.857
+    }
+   },
+   "price_before": 7632.25,
+   "method": "open_jump",
+   "gap": 67.0,
+   "uncertainty": 1.25
+  },
+  {
+   "from": "ESU26",
+   "to": "ESZ26",
    "switch_t": 1789399800,
    "switch_et": "2026-09-14 11:30:00-04:00",
    "gap": 66.25,
@@ -163,8 +194,8 @@
  ],
  "carry_pct": 0.857,
  "sessions": {
-  "tv-ES1!": 352,
-  "yahoo-ES=F": 39
+  "tv-ES1!": 392,
+  "yahoo-ES=F": 0
  },
  "tv_files": [
   "ES1_5m_chunk_2025-06-09.csv",
@@ -176,6 +207,7 @@
   "ES1_5m_chunk_2026-03-30.csv",
   "ES1_5m_chunk_2026-05-18.csv",
   "ES1_5m_chunk_2026-07-06.csv",
-  "ES1_5m_chunk_2026-08-24.csv"
+  "ES1_5m_chunk_2026-08-24.csv",
+  "ES1_5m_chunk_2026-10-16_regular.csv"
  ]
 }

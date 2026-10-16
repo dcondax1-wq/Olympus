@@ -503,7 +503,11 @@ class LiveBot:
         stale = age > 2 * secs + 60
         mopen = market_open(now)
         et_mod = _et(now).hour * 60 + _et(now).minute
-        params = merge_params({**self.cfg.get("params", {}), "live": True})
+        from .lab_adapter import live_model
+        lm = live_model()                     # live_model.json: which strategy the paper bot / cloud monitor trades
+        model = self.cfg.get("model") or lm["model"]
+        eng_params = self.cfg.get("params") or (lm["params"] if model == "engine" else {})
+        params = merge_params({**eng_params, "live": True})
         self._params = params
         in_entry_window = any(a <= et_mod < z for a, z in params["entry_windows"])
         was_stale = self.health["stale"]
@@ -525,10 +529,21 @@ class LiveBot:
             self._log("system", "Feed recovered: new entries allowed again")
         self.health["entries_blocked"] = block
         base = from_frame(sym, tf, df)
-        partner = self._partner(sym, tf, now, secs, int(df["time"].min()))
-        htf = self._htf(sym, now)
-        eng = Engine(base, htf=htf, partner=partner, params=params).run()
-        res = eng.result()
+        if model.startswith("lab:"):
+            from . import lab_adapter
+            es_df = None
+            if PARTNER.get(sym) in YAHOO:
+                try:
+                    es_df, _ = self._merged(PARTNER[sym], tf, now, secs)
+                    es_df = es_df[es_df["time"] >= int(df["time"].min())]
+                except Exception as e:
+                    self._note_error(f"partner {PARTNER.get(sym)} unavailable: {e}")
+            res = lab_adapter.run(model[4:], df, self.cfg.get("model_params") or lm["params"], es_df)
+        else:
+            partner = self._partner(sym, tf, now, secs, int(df["time"].min()))
+            htf = self._htf(sym, now)
+            eng = Engine(base, htf=htf, partner=partner, params=params).run()
+            res = eng.result()
         self.state = res["state"]
         self.last_poll = now
         self.bars_tail = base.to_records(max(0, len(base) - 400))
