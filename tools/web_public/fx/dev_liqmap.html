@@ -16,7 +16,7 @@ const q = new URLSearchParams(location.search), view = 'liqmap';
 const box = document.getElementById('box'); box.style.height = (q.get('h') || 340) + 'px';
 const log = (m) => { document.getElementById('log').textContent += m + '\n'; };
 window.onerror = (m) => log(m);
-const FX = await import('../fx_liqmap.js?' + Date.now());
+const FX = await import('./fx_liqmap.js?' + Date.now());
 FX.init({ level: q.get('level') || 'max' });
 const D = await (await fetch('./dev-data.json')).json();
 const L = D.live, price = L.price, bars = (L.bars || []).slice(-40);

@@ -32281,7 +32281,7 @@ var Hud = class extends View {
 };
 
 // src/liqmap.js
-var S_NEAR = 30;
+var S_NEAR = 60;
 var MAX_SIDE = 8;
 var MAX_BARS = 60;
 var CAP = 48;
@@ -32438,9 +32438,10 @@ var LiquidityMap = class extends Hud {
     super.dispose();
   }
   shape(w, h) {
-    const asp = w / h, W = 4.2 * Math.pow(clamp2(asp / 1.15, 1, 1.9), 0.75);
-    const room = W * (asp < 1.4 ? 0.5 : 0.36), changed = Math.abs(W - this.W) > 0.12;
+    const asp = w / h, W = 3.7 * Math.pow(clamp2(asp / 1.15, 1, 1.9), 0.8), H = 3.4 * clamp2(1.35 / asp, 1, 1.2);
+    const room = W * (asp < 1.4 ? 0.42 : 0.34), changed = Math.abs(W - this.W) > 0.12 || Math.abs(H - this.H) > 0.08;
     this.W = W;
+    this.H = H;
     this.labelRoom = room;
     return changed;
   }
@@ -32828,7 +32829,7 @@ var LiquidityMap = class extends Hud {
           const y = this.k * Math.asinh(v / S_NEAR);
           if (y > (sgn > 0 ? yA : yB) + 0.02)
             break;
-          if (y - last < 0.27)
+          if (y - last < 0.33)
             continue;
           last = y;
           G.seg(x0 - 0.08, sgn * y, 0, x0 + 0.08, sgn * y, 0, vio, 0.55);
@@ -32838,7 +32839,7 @@ var LiquidityMap = class extends Hud {
       }
     }
     G.commit();
-    this.anchors = new Float32Array(corners([], x0 - 0.75, W / 2 + this.labelRoom, -yB - 0.35, yA + 0.4, zt - 0.2, D / 2 + 0.3));
+    this.anchors = new Float32Array(corners([], x0 - 0.5, W / 2 + this.labelRoom, -yB - 0.35, yA + 0.4, zt - 0.2, D / 2 + 0.3));
     this.T.set(this.labelRoom * 0.2 - 0.2, (yA - yB) / 2, -0.15);
     const defs = [], small = this.w < 520;
     if (has)
@@ -32883,7 +32884,7 @@ var LiquidityMap = class extends Hud {
     this.setLabels(defs);
     this.legendFor();
     const nA = this.pools.filter((p) => p.side === "H").length, nB = this.pools.length - nA, up = this.pools.find((p) => p.rank === 0 && p.price >= this.price), dn = this.pools.find((p) => p.rank === 0 && p.price < this.price);
-    this.hint.textContent = !has ? "" : !this.pools.length ? "no untaken pools in range" : `${nA}\u2191 ${nB}\u2193 \xB7 nearest ${up ? fmtPts(up.dist, false) : "\u2014"} up \xB7 ${dn ? fmtPts(dn.dist, false) : "\u2014"} down${small ? "" : " \xB7 tap a plate"}`;
+    this.hint.textContent = !has ? "" : !this.pools.length ? "no untaken pools in range" : `${nA}\u2191 ${nB}\u2193 \xB7 nearest ${up ? fmtPts(Math.abs(up.dist), false) : "\u2014"} up \xB7 ${dn ? fmtPts(Math.abs(dn.dist), false) : "\u2014"} down${small ? "" : " \xB7 tap a plate"}`;
   }
   legendFor() {
     const has = Number.isFinite(this.price), pos = this.pos;

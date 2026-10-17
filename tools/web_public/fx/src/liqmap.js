@@ -1,7 +1,7 @@
 // Liquidity Map (Today / Chart): the untaken liquidity pools around the current price as a 3D ladder of glowing plates.
 //   The price is a bright horizontal beam through the middle (its number in HTML at the right end, tinted green / red for a
 //   moment when it moves). Pools above are buy-side plates (orange), pools below sell-side plates (blue), stacked by distance
-//   on a compressed price axis (asinh: the first ~30 pts are near-linear, far pools stay on screen). Width and glow follow
+//   on a compressed price axis (asinh: the first ~60 pts are near-linear, far pools stay on screen). Width and glow follow
 //   the pool's strength; the nearest pool on each side pulses. Each plate carries its label and price (PDH, ONL, 1H swing...).
 //   An open position adds a red stop plane and a green target plane with their R distance, a thin white entry line and a
 //   risk / reward ruler on the right. The last bars sit behind the ladder as a faint candle trail. "pts from price" ticks
@@ -19,7 +19,7 @@
 import { THREE, Q, theme, glowTexture, POINT_FRAG, count, Hud, addBackdrop, addNebula, addDust, Guides, ringTexture, sprite, additive,
   paintBackdrop, clamp, smooth, outCubic, outBack, num, esc, hash, corners, div, injectStyle } from './hud.js';
 
-const S_NEAR = 30;                      // asinh scale (pts): the near-linear zone around the price
+const S_NEAR = 60;                      // asinh scale (pts): the near-linear zone around the price (covers a typical stop)
 const MAX_SIDE = 8, MAX_BARS = 60, CAP = 48;   // pools per side, trail bars, plate slots (x2 instances: plate + halo)
 const TICKS = [10, 25, 50, 100, 200, 400, 800, 1500, 3000];
 const FLY = 1, MOVE = 2, SHRINK = 4;
@@ -135,9 +135,9 @@ export class LiquidityMap extends Hud {
   retheme() { paintBackdrop(this.bgU); }
   dispose() { this.plates.dispose(); this.trail.dispose(); super.dispose(); }
   shape(w, h) {
-    const asp = w / h, W = 4.2 * Math.pow(clamp(asp / 1.15, 1, 1.9), 0.75);
-    const room = W * (asp < 1.4 ? 0.5 : 0.36), changed = Math.abs(W - this.W) > 0.12;
-    this.W = W; this.labelRoom = room; return changed;
+    const asp = w / h, W = 3.7 * Math.pow(clamp(asp / 1.15, 1, 1.9), 0.8), H = 3.4 * clamp(1.35 / asp, 1, 1.2);
+    const room = W * (asp < 1.4 ? 0.42 : 0.34), changed = Math.abs(W - this.W) > 0.12 || Math.abs(H - this.H) > 0.08;
+    this.W = W; this.H = H; this.labelRoom = room; return changed;
   }
   relayout(w, h) {
     this.regionFix();
@@ -336,7 +336,7 @@ export class LiquidityMap extends Hud {
         let last = 0;
         for (const v of TICKS) {
           const y = this.k * Math.asinh(v / S_NEAR); if (y > (sgn > 0 ? yA : yB) + 0.02) break;
-          if (y - last < 0.27) continue; last = y;
+          if (y - last < 0.33) continue; last = y;
           G.seg(x0 - 0.08, sgn * y, 0, x0 + 0.08, sgn * y, 0, vio, 0.55); G.seg(x0, sgn * y, 0, -W / 2 + 0.1, sgn * y, 0, vio, 0.07, 4);
           ticks.push([v * sgn, sgn * y]);
         }
@@ -344,7 +344,7 @@ export class LiquidityMap extends Hud {
     }
     G.commit();
     // camera anchors: the ladder box + room for the tick labels (left) and the plate labels (right)
-    this.anchors = new Float32Array(corners([], x0 - 0.75, W / 2 + this.labelRoom, -yB - 0.35, yA + 0.4, zt - 0.2, D / 2 + 0.3));
+    this.anchors = new Float32Array(corners([], x0 - 0.5, W / 2 + this.labelRoom, -yB - 0.35, yA + 0.4, zt - 0.2, D / 2 + 0.3));
     this.T.set(this.labelRoom * 0.2 - 0.2, (yA - yB) / 2, -0.15);
     // labels
     const defs = [], small = this.w < 520;
@@ -369,7 +369,7 @@ export class LiquidityMap extends Hud {
     this.setLabels(defs);
     this.legendFor();
     const nA = this.pools.filter((p) => p.side === 'H').length, nB = this.pools.length - nA, up = this.pools.find((p) => p.rank === 0 && p.price >= this.price), dn = this.pools.find((p) => p.rank === 0 && p.price < this.price);
-    this.hint.textContent = !has ? '' : !this.pools.length ? 'no untaken pools in range' : `${nA}↑ ${nB}↓ · nearest ${up ? fmtPts(up.dist, false) : '—'} up · ${dn ? fmtPts(dn.dist, false) : '—'} down${small ? '' : ' · tap a plate'}`;
+    this.hint.textContent = !has ? '' : !this.pools.length ? 'no untaken pools in range' : `${nA}↑ ${nB}↓ · nearest ${up ? fmtPts(Math.abs(up.dist), false) : '—'} up · ${dn ? fmtPts(Math.abs(dn.dist), false) : '—'} down${small ? '' : ' · tap a plate'}`;
   }
   legendFor() {
     const has = Number.isFinite(this.price), pos = this.pos;

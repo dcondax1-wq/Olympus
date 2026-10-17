@@ -1,0 +1,59 @@
+<!doctype html><!-- PRIVATE harness for the weekring view (deleted after testing): dev_weekring.html?h=340&level=max|lite
+  &day=0..6 (ET weekday of "now": 0 Mon .. 4 Fri, 5 Sat = week done, 6 = the Sunday before)  &hour=<float ET hour>  &zero=1 (a week
+  with no trades)  &empty=1 (no data at all)  &nodates=1 (days without dates)  &seq=1 (changed data after 4 s, the same again after 7 s)
+  &tick=1 (the same data with a later clock after 4 s)  &ff=<s>  &fxfixed -->
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fx dev weekring</title>
+<style>
+  :root { --page:#07080c; --accent:#6d7cff; --accent-2:#3ee0c8; --good:#2ee59d; --bad:#ff5a7a; --bsl:#ff9b5c; --ssl:#6d9bff; }
+  html,body{margin:0;background:#07080c;color:#eef1f8;font:14px Inter,system-ui,sans-serif}
+  .box{position:relative;margin:16px;border-radius:18px;overflow:hidden;border:1px solid rgba(160,170,220,.12);background:#0b0d14;z-index:1}
+  .fx-canvas{display:block}
+  #log{position:fixed;bottom:0;left:0;right:0;font:11px monospace;color:#f88;white-space:pre-wrap;z-index:5}
+</style></head><body>
+<div class="box" id="box"></div><div id="log"></div>
+<script type="module">
+const q = new URLSearchParams(location.search), view = 'weekring';
+const box = document.getElementById('box'); box.style.height = (q.get('h') || 340) + 'px';
+const log = (m) => { document.getElementById('log').textContent += m + '\n'; };
+window.onerror = (m) => log(m);
+const FX = await import('../fx_weekring.js?' + Date.now());
+FX.init({ level: q.get('level') || 'max' });
+// the week of Mon 2026-10-12 .. Fri 2026-10-16 (EDT = UTC-4)
+const et = (dayIdx, hour) => Date.UTC(2026, 9, 12 + dayIdx, 0, 0) / 1000 + (hour + 4) * 3600;
+const day = +(q.get('day') ?? 3), hour = +(q.get('hour') ?? 10.7);
+const now = day === 6 ? et(-1, 15) : et(day, hour);
+const nodates = q.get('nodates') === '1';
+const D = (i, trades, done) => ({ date: nodates ? undefined : `2026-10-${12 + i}`, dow: i, trades, pnl: trades.reduce((s, t) => s + t.pnl, 0), sessions_done: done });
+const T = (i, hour, pnl, r, side, exit) => ({ t: et(i, hour), pnl, r, side, exit });
+function make(alt) {
+  if (q.get('empty') === '1') return null;
+  if (q.get('zero') === '1') return { days: [0, 1, 2, 3, 4].map((i) => D(i, [], i < day)), now, target_week_trades: [2, 4] };
+  const days = [
+    D(0, [T(0, 10.08, 640, 2.1, 'long', 'TARGET'), T(0, 14.17, -190, -0.6, 'short', 'TIME')], true),
+    D(1, [T(1, 9.83, alt ? -380 : -412, -1.0, 'short', 'STOP')], true),
+    D(2, [], true),
+    D(3, [T(3, 10.08, 1280, 3.2, 'long', 'TARGET'), ...(alt ? [T(3, 14.08, -260, -0.8, 'short', 'STOP'), T(3, 14.15, 40, 0.05, 'long', 'BE')] : [])], day > 3),
+    D(4, [], false),
+  ];
+  if (alt) days[0].trades.pop(); days[0].pnl = days[0].trades.reduce((s, t) => s + t.pnl, 0);
+  return { days, now: alt ? now + 1800 : now, target_week_trades: [2, 4] };
+}
+window.__picked = null;
+const onPick = (row) => { window.__picked = row; log('picked ' + JSON.stringify(row).slice(0, 160)); };
+window.__ff = (sec) => { const v = window.__view; if (v?.update) for (let i = 0; i < sec * 10; i++) v.update(0, 0.1); };
+window.__mount = (data) => { const v = FX.mount('dev-' + view, box, view, data, { onPick }); window.__view = v; return v; };
+window.__view = window.__mount(make(false));
+if (q.get('ff')) window.__ff(+q.get('ff'));
+window.__FX = FX;
+if (q.get('seq') === '1') {
+  setTimeout(() => { window.__mount(make(true)); window.__seq = 1; }, 4000);
+  setTimeout(() => {
+    const v = window.__view, before = v.sig, nk = v.nowKey, busy0 = !!v.animating;
+    window.__mount(make(true)); window.__seq = 2;
+    log(`same-data remount: sig ${v.sig === before ? 'unchanged' : 'CHANGED'}, nowKey ${v.nowKey === nk ? 'unchanged' : 'CHANGED'}, busy before ${busy0} after ${!!v.animating}`);
+  }, 7000);
+}
+if (q.get('tick') === '1') setTimeout(() => { const d = make(false); d.now += 3 * 3600; window.__mount(d); log('tick: hand -> ' + window.__view.handTo.toFixed(3)); }, 4000);
+window.__ready = true;
+</script></body></html>
