@@ -496,6 +496,7 @@ async def api_tv_import(req: Request, sym: str = "NQ"):
 # ---- LIVE TRADING (tradovate) ----
 from engine import golive as _golive
 from engine import tradovate as _tv
+from engine import ninjatrader as _nt
 
 _live_arm = {"armed": False, "at": None, "adapter": "paper"}     # memory only, never written to disk
 
@@ -507,6 +508,7 @@ def live_adapters():
         {"name": "paper", "label": "Paper (simulated)", "configured": True},
         {"name": "tradovate-demo", "label": "Tradovate DEMO", "configured": st["present"]},
         {"name": "tradovate-live", "label": "Tradovate LIVE (MFFU)", "configured": st["present"] and st["env"] == "live"},
+        {"name": "ninjatrader", "label": "NinjaTrader 8 (Sim101 first; ninjatrader/SETUP.md)", "configured": _nt.folder_ready()},
     ], "env": st["env"], "missing": st["missing"], "account": st["account"], "phrase": _tv.LIVE_PHRASE,
         "armed": _live_arm["armed"], "armed_at": _live_arm["at"], "bot_running": BOT.running, "bot_adapter": BOT.cfg.get("adapter")})
 

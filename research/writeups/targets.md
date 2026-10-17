@@ -4,7 +4,7 @@ family: targets
 date: 2026-10-17
 status: rejected
 summary: Today's target (nearest major pool at least 1.5R away, banking at 5R when the draw is farther) is the best of 15 variants. Nearer caps (3-4R) cut 2026 profit by $5-8k; farther caps (6-8R) help 2021-25 a little but cost 2026 $5-7k; exiting in front of the pool changes almost nothing.
-runs: baseline, screen_baseline, tgt_minrr12, tgt_minrr20, tgt_minrr25, tgt_minrr30, tgt_maxrr3, tgt_maxrr4, tgt_maxrr6, tgt_maxrr8, tgt_major_next, tgt_touch0, tgt_touch2, tgt_front4, tgt_front8, tgt_front16
+runs: baseline, screen_baseline, tgt_maxrr8_replay, tgt_minrr12, tgt_minrr20, tgt_minrr25, tgt_minrr30, tgt_maxrr3, tgt_maxrr4, tgt_maxrr6, tgt_maxrr8, tgt_major_next, tgt_touch0, tgt_touch2, tgt_front4, tgt_front8, tgt_front16
 ---
 
 ## What was tested
@@ -36,6 +36,7 @@ rejected), and on today's settings: no cap, the draw mode and "last real pool" (
 | Bank at 4R | 93 | 2.26 | 2.62 | +$15.2k | −$2.8k | 13.6/0 · 20.9/0 | 702 | 3.23 | 1.08 | +$6.0k | −$11.9k | 3.8/2.2 · 5.7/5.4 | 8/17 | rejected |
 | Bank at 6R | 86 | 2.09 | 2.65 | +$13.3k | −$2.6k | 7.8/0 · 14.6/0 | 684 | 3.15 | 1.12 | +$9.2k | −$10.7k | 4.7/1.7 · 7/4.2 | 7/17 | rejected |
 | Bank at 8R | 85 | 2.06 | 2.86 | +$15.0k | −$2.6k | 7.8/0 · 14.1/0 | 670 | 3.08 | 1.14 | +$10.1k | −$11.4k | 5.2/1.7 · 7/4.2 | 7/17 | rejected |
+| Bank at 8R, exact replay | 85 | 2.06 | 2.88 | +$15.2k | −$2.6k | 7.8/0 · 14.1/0 | 658 | 3.07 | 1.11 | +$8.0k | −$11.3k | 4.6/1.8 · 6.4/4.3 | 7/17 | rejected |
 | Second major pool | 83 | 2.01 | 3.7 | +$18.3k | −$3.0k | 16/0 · 24.8/0 | 626 | 2.88 | 1.04 | +$3.0k | −$9.8k | 5.1/2.2 · 7.1/5.2 | 9/18 | rejected |
 | Fill on touch (0 ticks) | 89 | 2.16 | 3.48 | +$20.1k | −$2.7k | 19.4/0 · 28.2/0 | 679 | 3.17 | 1.09 | +$6.5k | −$11.4k | 4.1/2.1 · 6.1/5.7 | 7/18 | no effect |
 | Fill after 2 ticks | 89 | 2.16 | 3.48 | +$20.1k | −$2.7k | 19.4/0 · 28.2/0 | 679 | 3.17 | 1.09 | +$6.5k | −$11.4k | 4.1/2.1 · 6.1/5.7 | 7/18 | no effect |
@@ -43,14 +44,17 @@ rejected), and on today's settings: no cap, the draw mode and "last real pool" (
 | Exit 8 ticks in front | 89 | 2.16 | 3.46 | +$20.0k | −$2.7k | 19.4/0 · 28.2/0 | 679 | 3.17 | 1.07 | +$5.3k | −$11.5k | 4/2.1 · 6/5.2 | 6/17 | rejected |
 | Exit 16 ticks in front | 89 | 2.16 | 3.45 | +$19.9k | −$2.7k | 19.4/0 · 28.2/0 | 679 | 3.17 | 1.05 | +$4.2k | −$11.6k | 4/2.2 · 6/6.1 | 6/18 | rejected |
 
-Rows 3-11 are one-pass backtests: compare them with the yardstick row. The fill rows are exact (replay entries).
+The "pool at least ...", "bank at ..." and "second major pool" rows are one-pass backtests: compare them with the
+yardstick row. The fill and "in front" rows are exact (re-simulated on the replay's trades), and "bank at 8R, exact
+replay" is a full live-loop replay: it agrees with the one-pass result (2026 falls by $4.9k to +$15.2k, PF 2.88;
+2021-25 rises by $1.5k to +$8.0k, PF 1.11).
 
 ## What it means
 
 - **2026's profit is a handful of big winners that reach far pools.** Any cap below 5R cuts them: banking at 3R
-  halves 2026 profit (PF 3.48 → 2.24) and still does not help 2021-25.
-- **Letting winners run past 5R** helps 2021-25 a little (+$0.4k to +$1.3k against the yardstick) but costs 2026
-  $5-7k: 5R is the balance point between the two periods.
+  takes 40% off 2026 profit (PF 3.45 → 2.24 on the same backtest) and still does not help 2021-25.
+- **Letting winners run past 5R** helps 2021-25 a little (+$0.4k to +$1.3k against the yardstick, +$1.5k in the exact
+  replay of 8R) but costs 2026 $5-7k: 5R is the balance point between the two periods.
 - **Asking for a farther pool (2-3R) or the second pool** loses the trades with a near draw that pay well in 2021-25.
   1.2R lets in trades whose reward is too small for the costs.
 - **Exiting in front of the pool does not catch more winners.** Few trades stall within 1-4 points of the pool;

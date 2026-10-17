@@ -4,7 +4,7 @@ family: other
 date: 2026-10-17
 status: adopt-candidate
 summary: One change is worth making, together with the sizing change: on trending days move the stop to breakeven at +3R instead of +1R. With the sizing change it adds +$4.8k to 2021-25 (PF 1.19 → 1.27) and changes nothing in 2026 evals; on today's sizing alone it causes extra late-May 2026 eval fails, so then keep the current rules. Stops, targets, the other exits, filters and timing are already at their best; 120+ variants tested, no leak found.
-runs: baseline, mgt_betrend300_replay, mgt_betrend300, mgt_betrend250, mgt_betrend_off, combo_risk_sizing, combo_betrend3_risksizing, bias_both_07, combo_betrend3_both07, combo_betrend3_bothhalf, flt_vix20_half, stp_max80, stp_atr015_replay, leak_both_off
+runs: baseline, mgt_betrend300_replay, mgt_betrend300, mgt_betrend250, mgt_betrend_off, combo_risk_sizing, combo_betrend3_risksizing, bias_both_07, combo_betrend3_both07, combo_betrend3_bothhalf, flt_vix20_half, stp_max80, stp_atr015_replay, tgt_maxrr8_replay, leak_both_off
 ---
 
 ## The recommendation (one change, together with the sizing change)
@@ -128,7 +128,7 @@ top of the sizing change, breakeven on trending days at +1.5R / +2R / +2.5R / +3
 | Widest stop 45-50 / 70-80 | 45-50 cuts good trades; 70-80 adds about-break-even trades (useful only if more trades a week are wanted) |
 | Draw at least 2-3R away, or the second pool | 2021-25 profit falls to −$0.3k to +$3.0k (today +$8.8k on the same backtest) |
 | Bank at 3R / 4R | 2026 profit falls by $5-8k |
-| Bank at 6R / 8R | 2021-25 +$0.4k to +$1.3k, but 2026 −$5k to −$7k |
+| Bank at 6R / 8R | 2021-25 +$0.4k to +$1.5k, but 2026 −$5k to −$7k (8R confirmed by an exact replay: 2026 +$15.2k, 2021-25 +$8.0k) |
 | Exit a few ticks in front of the pool | changes almost nothing, slightly worse |
 | Breakeven earlier or later on all days, profit locks, other time stops, giveback at 0.75-1R | every one loses money in 2021-25; locks lose in every variant |
 | Bias as a filter (yesterday's candle, last week's midpoint, weekly open, daily/weekly draw, SMT) | 0.1-1.9 trades a week |

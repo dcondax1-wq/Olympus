@@ -120,8 +120,9 @@ namespace NinjaTrader.NinjaScript.Indicators
             }
         }
 
-        // NinjaTrader stamps minute bars with their CLOSE time in its display time zone (Tools > Options > General).
-        // Convert the close to UTC first (always a valid local time), then step back one bar to the OPEN.
+        // NinjaTrader stamps minute bars with their CLOSE time in its display time zone (Tools > Options > General >
+        // Preferences > Time zone; Help Guide "Application TimeZoneInfo"). Convert the close to UTC first (always a
+        // valid local time), then step back one bar to the OPEN.
         private long OpenUnix()
         {
             DateTime closeLocal = DateTime.SpecifyKind(Time[0], DateTimeKind.Unspecified);

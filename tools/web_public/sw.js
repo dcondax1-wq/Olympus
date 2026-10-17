@@ -1,8 +1,9 @@
 // Home Screen app service worker: works offline with the last data it saw.
 // Page + data.json: network-first (fresh when online, cached copy offline). Versioned files (?v=...): cache-first, and a
-// new version of a file (fx.js?v=<hash> after a rebuild) drops the old one from the cache.
+// new version of a file (fx.js?v=<hash> after a rebuild, runs/<id>.json?v=<hash> and writeups/<slug>.md?v=<hash> after a
+// new backtest or write-up) drops the old one from the cache, so a run or write-up opened once stays readable offline.
 // Everything else: cached copy at once, refreshed in the background.
-const CACHE = 'le-public-v4';
+const CACHE = 'le-public-v5';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=orb1', './icons/apple-touch-icon.png?v=orb1', './icons/icon-512.png?v=orb1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {

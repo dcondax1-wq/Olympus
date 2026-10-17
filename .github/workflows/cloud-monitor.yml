@@ -54,6 +54,11 @@ jobs:
             /research/lab/replays.json
             /research/lab/variant_results.json
             /research/study/
+            /research/runs/*.json
+            /research/writeups/
+            /research/*.md
+            /research/lab/*.md
+            /STRATEGY.md
             /web/icons/
 
       - name: Python

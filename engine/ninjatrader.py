@@ -292,6 +292,14 @@ def default_folder() -> str:
     return cands[0]
 
 
+def folder_ready(folder: str | None = None) -> bool:
+    """NinjaTrader's incoming folder exists (AT Interface was enabled once on this Windows user)."""
+    try:
+        return os.path.isdir(os.path.join(folder or default_folder(), "incoming"))
+    except Exception:
+        return False
+
+
 def _et(ts):
     return dt.datetime.fromtimestamp(float(ts), ET)
 
@@ -865,6 +873,10 @@ class NinjaTraderAdapter:
         res = self._close(legs, why)
         return {"adapter": self.name, "account": self.account, **res}
 
+    def has_open_bracket(self, entry_t=None) -> bool:
+        """LiveBot asks this before sending a stop move: True once a stop of ours is working for that entry."""
+        return any(lg["status"] == "protected" and (entry_t is None or lg["entry_t"] == int(entry_t)) for lg in self.legs)
+
     def cancel_all(self) -> dict:
         if self.disabled or self.readonly:
             return {"ok": False, "error": "REFUSED: " + (self.disabled or "read-only")}
@@ -957,10 +969,20 @@ class NinjaTraderAdapter:
                 self._send_lines([cancel_line(lg["entry_id"])], "CANCEL (entry never filled)")
                 self._retire([lg], "entry never confirmed")
                 self._risk(f"entry {lg['entry_id']} not confirmed by NinjaTrader within {self.pending_timeout:.0f}s: "
-                           "cancel sent. Check NinjaTrader's Orders tab.", alert=True)
+                           f"cancel sent. Check NinjaTrader's Orders and Log tabs (is the account name '{self.account}' and "
+                           f"the instrument '{lg['instrument']}' right?).", alert=True)
             return
         if lg["status"] == "unprotected":
-            self._protect(lg)
+            s, t = self.read_order(lg["stop_id"]), self.read_order(lg["target_id"])
+            if s is not None or t is not None:      # the bracket file was processed after all: never send those ids twice
+                lg["status"], lg["bracket_qty"] = "protected", lg["filled"]
+                self._log("system", f"NinjaTrader: the stop/target of {lg['instrument']} arrived late (stop {s and s['state']}, "
+                                    f"target {t and t['state']})")
+            elif self._flat_since(lg["instrument"], (lg.get("fill_mtime") or 0) + 0.001):
+                self._retire([lg], "closed while unprotected")      # no position left: a stop/target now would be naked
+                self._log("risk", f"NinjaTrader: {lg['instrument']} is flat again; the missing stop/target are not placed")
+            else:
+                self._protect(lg)
             return
         if lg["status"] == "closing":
             if self._is_flat(lg["instrument"], lg.get("fill_mtime")):
@@ -1187,7 +1209,8 @@ def _http(port, path, body=None, timeout=20):
     url = f"http://127.0.0.1:{port}{path}"
     data = None if body is None else json.dumps(body).encode()
     req = urllib.request.Request(url, data=data, headers={"Content-Type": "application/json"}, method="POST" if body is not None else "GET")
-    with urllib.request.urlopen(req, timeout=timeout) as r:
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))      # the local server: never through a proxy
+    with opener.open(req, timeout=timeout) as r:
         return json.loads(r.read().decode() or "{}")
 
 
@@ -1256,6 +1279,11 @@ def _cli_sim_check(cfg, roundtrip=False):
         print(f"   connections reported: {ad.connections() or 'none'}")
         return 0 if ok and ok2 else 1
     # round trip: real (simulated) fills, so the market must be open. The session-time gate is relaxed for Sim only.
+    fresh, why, _ = NinjaTraderBars(ad.folder).recent_bars("NQ", "5m", "1d")
+    if fresh is None:
+        print(f"REFUSED: the round trip needs a fresh price from LE_BarFeed ({why})")
+        return 2
+    px = float(fresh["close"].iloc[-1])
     ad._gate = lambda kind: None if kind != "entry" else (None if not ad.killed else {"ok": False, "error": "killed"})
     r = ad.send({"sym": ad.sym, "side": "buy", "qty": 1, "stop": px - 40, "target": px + 80, "entry_t": int(time.time())})
     print(("OK  " if r["ok"] else "FAIL") + f" 1. bracket: {json.dumps(r.get('legs'), default=str)} {r.get('error') or ''}")
@@ -1287,11 +1315,16 @@ def main(argv=None):
     ap.add_argument("--folder", default=None, help="Documents\\NinjaTrader 8 folder if not the default")
     ap.add_argument("--data", default="ninjatrader", choices=["ninjatrader", "yahoo"], help="bar source for --start")
     ap.add_argument("--confirm", default="", help=f"LIVE accounts only: the phrase '{LIVE_PHRASE}'")
+    ap.add_argument("--instrument", default=None, help="force the instrument name, e.g. 'MNQ 12-26'")
+    ap.add_argument("--contract", default=None, choices=["micro", "auto"], help="micro = MNQ only (default); auto = 10+ micros as NQ minis")
+    ap.add_argument("--close-suffix", default=None, help="text added to the CLOSEPOSITION instrument, e.g. ' Globex'")
+    ap.add_argument("--write-mode", default=None, choices=["direct", "move"], help="how order files reach incoming (default direct)")
     ap.add_argument("--port", type=int, default=int(os.environ.get("PORT", 8766)))
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
-    cfg = {"adapter": "ninjatrader", "sym": "NQ", **({"nt_account": a.account} if a.account else {}),
-           **({"nt_folder": a.folder} if a.folder else {})}
+    opts = {"nt_account": a.account, "nt_folder": a.folder, "nt_instrument": a.instrument, "nt_contract": a.contract,
+            "nt_close_suffix": a.close_suffix, "nt_write_mode": a.write_mode}
+    cfg = {"adapter": "ninjatrader", "sym": "NQ", **{k: v for k, v in opts.items() if v}}
     if a.selftest:
         return 0 if selftest(verbose=not a.quiet) else 1
     if a.status:
@@ -1356,6 +1389,7 @@ class _FakeNT:
         self.reject = set()                 # order types NinjaTrader rejects
         self.hold_partial = False           # fill market orders half now, the rest on release()
         self.close_cancels = True           # CLOSEPOSITION cancels the working orders (documented)
+        self.budget = None                  # process at most this many more files, then stop (a freeze mid-trade)
         self._held: list = []
         self._write("Tradovate.txt", "CONNECTED")
 
@@ -1402,6 +1436,10 @@ class _FakeNT:
         if not self.running:
             return
         for name in sorted(os.listdir(self.inc)):
+            if self.budget is not None:
+                if self.budget <= 0:
+                    return
+                self.budget -= 1
             path = os.path.join(self.inc, name)
             with open(path, "rb") as fh:
                 raw = fh.read()
@@ -1668,6 +1706,24 @@ def selftest(verbose=True) -> bool:
               not r["ok"] and "flattened" in r["error"] and lines_since(k)[-1] == "CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;"
               and ad.position_for("MNQ 12-26")["side"] == "FLAT" and any("REJECTED" in a for a in alerts), r.get("error", ""))
         fake.reject = set()
+        fake.budget = 1                       # NinjaTrader takes the entry file, then freezes before the bracket file
+        r = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 6000})
+        lg = ad.legs[0] if ad.legs else {}
+        unprot = not r["ok"] and lg.get("status") == "unprotected" and any("UNPROTECTED" in a for a in alerts)
+        fake.budget = None
+        ad.tick()                             # NinjaTrader is back: the withdrawn bracket goes in with the same ids
+        check("freeze after the fill: alert + 'unprotected', the next tick places the stop and target",
+              unprot and lg.get("status") == "protected" and fake.orders[lg["stop_id"]]["state"] == "WORKING", r.get("error", ""))
+        ad.send({"sym": "NQ", "side": "exit", "reason": "TIME", "entry_t": T + 6000})
+        fake.budget = 1
+        r = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 6600})
+        lg = ad.legs[0] if ad.legs else {}
+        fake.budget = None
+        fake._do(close_line("Sim101", "MNQ 12-26"))           # closed by hand while the bracket was missing
+        k = len(fake.files)
+        ad.tick()
+        check("freeze, then closed by hand: no stop/target is placed afterwards (they would be naked)",
+              not ad.legs and len(fake.files) == k and ad.history[-1]["closed"] == "closed while unprotected")
         # ---- 12. defensive parsing
         with open(os.path.join(fake.out, "garbage.txt"), "w") as fh:
             fh.write("hello;;world")
@@ -1681,10 +1737,13 @@ def selftest(verbose=True) -> bool:
               and isinstance(ad.status(), dict) and ad.tick()["ok"] and "LEBROKEN.txt" in ad.unparsed)
         check("files: every OIF written matched the documented grammar, no byte-order mark, all named oif*.txt",
               not fake.errors and all(n.startswith("oif_le_") and n.endswith(".txt") for n, _ in fake.files), str(fake.errors[:3]))
-        audit = [ln.rstrip("\n").split("  ")[-1] for ln in open(os.path.join(tmp, "oif.log"), encoding="utf-8")]
+        rows = [ln.rstrip("\n").split("  ") for ln in open(os.path.join(tmp, "oif.log"), encoding="utf-8")]
+        audit = [r_[-1] for r_ in rows]
         processed = [ln for _, ls in fake.files for ln in ls]
-        check("audit: every OIF line written is in logs/ninjatrader_oif.log (the withdrawn one too)",
-              len(audit) == len(processed) + 1 and all(ln in audit for ln in processed), f"{len(audit)} vs {len(processed)} + 1")
+        written, seen = {r_[2] for r_ in rows}, {n for n, _ in fake.files}
+        check("audit: every OIF line written is in logs/ninjatrader_oif.log; files never processed were all withdrawn",
+              seen <= written and all(ln in audit for ln in processed) and len(written - seen) >= 3
+              and not [n for n in os.listdir(fake.inc) if n.startswith("oif")], f"{len(written)} written, {len(seen)} processed")
 
         # ---- 13. bar feed
         feed_dir = os.path.join(folder, FEED_DIR)
@@ -1762,6 +1821,23 @@ def selftest(verbose=True) -> bool:
         check("LiveBot: a TIME STOP exit (not only TIME) is routed to NinjaTrader as CLOSEPOSITION",
               [x["side"] for x in bot.ledger][-1] == "exit" and lines_since(k)[:1] == ["CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;"]
               and not bad.legs, json.dumps(lines_since(k)))
+        t2 = t_in + 3600                    # an entry the adapter refuses (a hand-opened position is open): no stop moves follow
+        now[0] = t2 + 303
+        fake._do("PLACE;Sim101;MNQ 12-26;BUY;1;MARKET;0;0;DAY;;BYHAND1;;")
+        pos2 = {"entry_t": t2, "dir": -1, "qty": 2, "entry": 25020.0, "stop": 25050.0, "target": 24960.0}
+        bot.state = {"position": dict(pos2)}
+        k = len(fake.files)
+        bot._route_signals({"trades": [], "events": []}, "NQ", int(now[0]), 300)
+        refused = [x for x in bot.ledger if x.get("entry_t") == t2 and x["side"] == "sell"]
+        for _ in range(4):
+            bot.state = {"position": {**pos2, "stop": 25019.75, "managed": True}}
+            bot._route_signals({"trades": [], "events": []}, "NQ", int(now[0]), 300)
+        check("LiveBot: when the adapter refuses an entry, the model's breakeven is not sent (no bracket to move)",
+              refused and not refused[0]["result"]["ok"] and not [x for x in bot.ledger if x.get("entry_t") == t2 and x["side"] == "modify"]
+              and len(fake.files) == k and "not adding" in refused[0]["result"].get("error", ""),
+              json.dumps([[x["side"], x["result"].get("error")] for x in bot.ledger if x.get("entry_t") == t2]))
+        bot._open_routed = None
+        fake._do(close_line("Sim101", "MNQ 12-26"))
         orig_y = live._yahoo_recent
         calls = []
         live._yahoo_recent = lambda sym, interval="5m", period="5d": calls.append((sym, interval)) or pd.DataFrame(

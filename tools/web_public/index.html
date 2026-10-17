@@ -574,7 +574,7 @@ table.ht td, table.ht th { padding: 8px 8px; }
 table.ht td.v { font: 600 12.5px var(--mono); text-align: right; }
 table.ht td.v .dl { display: block; margin: 1px 0 0; }
 table.ht th.c { text-align: right; }
-table.ht tr.grp td { font: 650 10.5px var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); padding-top: 14px; border-bottom: 1px solid var(--line); background: transparent; }
+table.ht tr.grp td { white-space: normal; font: 650 10.5px var(--sans); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); padding-top: 14px; border-bottom: 1px solid var(--line); background: transparent; }
 .heat { display: grid; grid-template-columns: 40px repeat(12, minmax(0, 1fr)); gap: 3px; font: 500 10px var(--mono); }
 .heat .hy, .heat .hm { color: var(--muted); display: grid; place-items: center; height: 20px; font-size: 10px; }
 .heat .hy { height: auto; }
@@ -695,7 +695,7 @@ table.ht tr.grp td { font: 650 10.5px var(--sans); letter-spacing: .1em; text-tr
 .linkbtn { border: 0; background: none; padding: 0; color: var(--accent-2); font-size: inherit; text-decoration: underline; text-underline-offset: 2px; }
 table.ht td.best { color: var(--good-ink); } table.ht td.best::after { content: " ●"; font-size: 8px; vertical-align: 2px; }
 table.ht td.k { white-space: normal; min-width: 92px; }
-table.cmp td.k { white-space: nowrap; }
+table.cmp td.k { min-width: 96px; }
 table.cmp th.rn { text-transform: none; letter-spacing: 0; font-size: 11.5px; font-weight: 650; white-space: normal; min-width: 88px; max-width: 160px; vertical-align: bottom; }
 table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .mt.m5 { grid-template-columns: 62px repeat(4, minmax(0, 1fr)); }
@@ -721,6 +721,7 @@ table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-
 .nav .kids a.on::before { left: -11px; top: 8px; bottom: 8px; }
 .side-foot .v { font-size: 13px; }
 @media (min-width: 1101px) { .sub.grp { display: none; } }
+@media (min-width: 761px) and (max-width: 1100px) { .nav .kids { display: none !important; } .nav a.g.cur { background: color-mix(in srgb, var(--accent) 16%, transparent); } }
 
 /* hero links, the owner's rules line, lesson money */
 .hero-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
@@ -755,7 +756,7 @@ table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-
   .toolbar .dd { flex: 1 1 140px; } .toolbar .dd-btn { min-width: 0; width: 100%; }
   .toolbar .field { flex-basis: 100%; }
   .mt > div { padding: 7px 8px; }
-  table.ht td, table.ht th { padding: 7px 5px; font-size: 12px; } table.ht td.v { font-size: 12px; }
+  table.ht td, table.ht th { padding: 7px 5px; font-size: 12px; } table.ht td.v { font-size: 12px; } table.ht th { font-size: 10px; letter-spacing: .03em; }
   .howto-b { padding-left: 16px; }
   .verdict-l > .vi { width: 34px; height: 34px; border-radius: 11px; }
   .agrp > summary { padding: 0 14px; } .agrp-b { padding: 0 14px 6px; }
@@ -764,7 +765,9 @@ table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-
   .xc-top .xc-date { width: 100%; margin-left: 0; order: 9; }
   .hero-links .chipbtn { width: auto; padding: 0 12px; } .hero-links .chipbtn span { display: inline; }
   .steps5.wide { grid-template-columns: 1fr; }
+  .hide-sm { display: none; }
 }
+.tw-hint { margin: -10px 0 16px; text-align: right; font-size: 11px; color: var(--muted); }
 :root[data-motion="off"] *, :root[data-motion="off"] *::before { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
@@ -1528,8 +1531,9 @@ function pcLine() {
 }
 function evalMini(ev) {
   if (!ev) return emptyBox('No eval data yet.', 'The cloud monitor starts the tracker with its first run.');
-  return `<div class="kv" style="margin-top:14px"><div><span>Balance</span><b>${usd(ev.balance)}</b></div><div><span>To target</span><b>${usd(Math.max(0, ev.to_target))}</b></div>
-    <div><span>Max-loss floor</span><b>${usd(ev.trailing_mll)}</b></div><div><span>Cushion</span><b class="${ev.cushion < 700 ? 'dn' : ''}">${usd(ev.cushion)}</b></div></div>`;
+  const lock = (ev.trailing_mll ?? 0) >= 50100 - 0.01;
+  return `<div class="kv" style="margin-top:14px"><div><span>To the target</span><b>${usd(Math.max(0, ev.to_target))}</b></div><div><span>Cushion</span><b class="${ev.cushion < 700 ? 'dn' : ''}">${usd(ev.cushion)}</b></div>
+    <div><span>Max-loss floor</span><b>${usd(ev.trailing_mll)}</b></div><div><span>Floor locked</span><b>${lock ? '<span class="up">yes</span>' : 'not yet'}</b></div></div>`;
 }
 function feedHTML(evts) {
   if (!evts?.length) return emptyBox('Quiet so far today.', 'Sweeps, signals, entries and exits show up here as the cloud monitor sees them.');
@@ -1745,11 +1749,8 @@ VIEWS.results = (el) => {
     ${fxOn() ? `<div class="card fx-card"><div class="card-h"><h3>Month city · net P&amp;L of every month</h3><span class="meta">towers up = profit, down = loss · drag · tap a tower</span></div><div class="fx3d city" id="rsCity"></div></div>` : ''}
     <div class="card"><div class="card-h"><h3>Equity</h3>${segHTML('rsEq', [['2026', '2026'], ['all', '5 years']], mode, 'sm')}</div><div id="rsEqC"></div></div>
     <div class="card"><div class="card-h"><h3>Net by month</h3><span class="meta">tap a bar</span></div><div id="rsMo"></div></div>
-    <div class="card"><div class="card-h"><h3>By year</h3><span class="meta">judged on 2026 and 2021-25</span></div>
-      <div class="tw"><table><tr><th>Year</th><th class="num">Trades</th><th class="num">/wk</th><th class="num">Win</th><th class="num">PF</th><th class="num">Net</th><th class="num">/month</th><th class="num">Max DD</th><th class="num">Eval 2 wk</th><th class="num">Eval 1 mo</th></tr>
-      ${yrs.map(y => { const p = P[y], e = p.eval || {}; return `<tr><td class="mono"><b>${y}</b></td><td class="num">${p.trades}</td><td class="num ${inFreq(p.per_week) ? 'up' : 'dn'}">${num(p.per_week, 1)}</td><td class="num">${pct(p.win_pct)}</td>
-        <td class="num ${p.pf >= 1 ? 'up' : 'dn'}">${fPF(p.pf)}</td><td class="num mono ${cls(p.net)}">${susd(p.net)}</td><td class="num mono ${cls(p.net)}">${kusd(perMonth(p.net, p.from, p.to))}</td><td class="num mono">${usd(p.max_dd)}</td>
-        <td class="num small">${pct(e.within_2_weeks?.pass_pct)} / <span class="dn">${pct(e.within_2_weeks?.fail_pct)}</span></td><td class="num small">${pct(e.within_1_month?.pass_pct)} / <span class="dn">${pct(e.within_1_month?.fail_pct)}</span></td></tr>`; }).join('')}</table></div></div>
+    <div class="card"><div class="card-h"><h3>By year</h3>${segHTML('rsYr', [['money', 'Money'], ['evals', 'Trades & evals']], store.get('rsYr', 'money'), 'sm')}</div><div class="tw" id="rsYrT"></div>
+      <p class="card-d" style="margin:10px 0 0">Judged on 2026 and on 2021-25. Eval columns: pass % / fail % of MFFU evals started in that year.</p></div>
     <div class="card"><div class="card-h"><h3>Back-to-back MFFU evals · 5 years</h3><span class="meta">a new eval starts the day after each one ends</span></div>
       <div class="runs">${(P['All years']?.eval?.back_to_back?.runs || []).map(r => `<span class="run ${r.result === 'PASS' ? 'pass' : r.result === 'FAIL' ? 'fail' : 'open'}" title="${esc(r.start)} ${r.result} after ${r.sessions} sessions">${icon(r.result === 'PASS' ? 'check' : r.result === 'FAIL' ? 'close' : 'clock')}<b>${esc(r.start.slice(2))}</b><i>${r.sessions}d</i></span>`).join('')}</div></div>
     <div class="note">${esc(m.method || '')}</div>`;
@@ -1759,6 +1760,13 @@ VIEWS.results = (el) => {
   fx3d('results-city', $('#rsCity'), 'city', R.months || {});
   onSeg('rsEq', (v) => { store.set('resEq', v); drawEq(); });
   barChart($('#rsMo'), Object.entries(R.months || {}).map(([k, v]) => ({ x: k.slice(2), y: v.net, tip: `<b>${k}</b><span>${susd(v.net)}</span><span>${v.trades} trades · ${v.wins} wins</span>` })), { h: 200 });
+  const drawYr = () => {
+    const money = store.get('rsYr', 'money') === 'money', ev = (e, k) => `${pct(e?.[k]?.pass_pct)} / <span class="dn">${pct(e?.[k]?.fail_pct)}</span>`;
+    $('#rsYrT').innerHTML = `<table class="ht"><tr><th>Year</th>${money ? '<th class="c">PF</th><th class="c">Net</th><th class="c">/month</th><th class="c">Max DD</th>' : '<th class="c">Trades</th><th class="c">/wk</th><th class="c">Eval 2 wk</th><th class="c">Eval 1 mo</th>'}</tr>
+      ${yrs.map(y => { const p = P[y], e = p.eval || {}; return `<tr><td class="mono"><b>${y}</b></td>${money ? `<td class="v ${p.pf >= 1 ? 'up' : 'dn'}">${fPF(p.pf)}</td><td class="v ${cls(p.net)}">${susd(p.net)}</td><td class="v ${cls(p.net)}">${susd(perMonth(p.net, p.from, p.to))}</td><td class="v">${usd(p.max_dd)}</td>`
+        : `<td class="v">${p.trades}</td><td class="v ${inFreq(p.per_week) ? 'up' : 'dn'}">${num(p.per_week, 1)}</td><td class="v">${ev(e, 'within_2_weeks')}</td><td class="v">${ev(e, 'within_1_month')}</td>`}</tr>`; }).join('')}</table>`;
+  };
+  drawYr(); onSeg('rsYr', (v) => { store.set('rsYr', v); drawYr(); });
 };
 
 // ===================================================================== TRADES: replays
@@ -1855,8 +1863,8 @@ VIEWS.stops = (el) => {
     + howto('stops', `<p>The stop always goes beyond the high or low that was swept, so its distance changes every trade (10 to 60 points). The bot never uses a fixed stop.</p>
       <p>Size follows the stop: a wide stop trades fewer micros, so the dollars at risk stay controlled. Each row groups the 5-year trades by stop size: how often they won, the average result in R, and the typical size.</p>`)
     + `<div class="stats">${statBox('Median stop', num(a.median_stop_pts, 1), 'points')}${statBox('Median micros', a.median_micros ?? '—', 'MNQ')}${statBox('Median $ risk', usd(a.median_risk_usd), 'per trade')}</div>
-    <div class="card"><div class="card-h"><h3>By stop size</h3><span class="meta">5 years of replay trades</span></div>${bk.length ? `<div class="tw"><table><tr><th>Stop</th><th class="num">Trades</th><th></th><th class="num">Win</th><th class="num">Avg R</th><th class="num">Micros</th><th class="num">$ risk</th></tr>
-      ${bk.map(b => `<tr><td class="mono"><b>${esc(b.stop_pts)}</b></td><td class="num">${b.trades}</td><td style="min-width:64px;width:22%"><div class="meter"><i style="width:${b.trades / mx * 100}%"></i></div></td><td class="num">${pct(b.win_pct)}</td><td class="num mono ${cls(b.avg_r)}">${fR(b.avg_r)}</td><td class="num">${b.median_micros}</td><td class="num mono">${usd(b.median_risk_usd)}</td></tr>`).join('')}</table></div>` : emptyBox('No stop buckets in this build.', '')}</div>`;
+    <div class="card"><div class="card-h"><h3>By stop size</h3><span class="meta">5 years of replay trades</span></div>${bk.length ? `<div class="tw"><table class="ht"><tr><th>Stop</th><th class="num">Trades</th><th class="hide-sm"></th><th class="num">Win</th><th class="num">Avg R</th><th class="num">Micros</th><th class="num">$ risk</th></tr>
+      ${bk.map(b => `<tr><td class="mono"><b>${esc(b.stop_pts)}</b></td><td class="num">${b.trades}</td><td class="hide-sm" style="min-width:64px;width:22%"><div class="meter"><i style="width:${b.trades / mx * 100}%"></i></div></td><td class="num">${pct(b.win_pct)}</td><td class="num mono ${cR(b.avg_r)}">${fR(b.avg_r)}</td><td class="num">${b.median_micros}</td><td class="num mono">${usd(b.median_risk_usd)}</td></tr>`).join('')}</table></div>` : emptyBox('No stop buckets in this build.', '')}</div>`;
 };
 
 // ===================================================================== LAB: shared pieces
@@ -1867,7 +1875,7 @@ const MET = [
   ['avg_r', 'Average trade', fR, 'hi', DF.r],
   ['grp', 'Risk'], ['dd', 'Max drawdown', usd, 'hi', DF.money], ['worst_day', 'Worst day', usd, 'hi', DF.money], ['stop', 'Median stop', (v) => ok(v) ? num(v, 1) + ' pts' : '—', 'none', DF.n1],
   ['risk', 'Median $ at risk', usd, 'none', DF.money], ['half', 'Half-size trades', (v) => num(v, 0), 'none', DF.n0],
-  ['grp', 'MFFU eval · decided within 2 weeks, no pass slower than 3'], ['p10', 'Pass in 2 weeks', pct, 'hi', DF.pp], ['f10', 'Fail in 2 weeks', pct, 'lo', DF.pp], ['dec10', 'Decided in 2 weeks', pct, 'hi', DF.pp],
+  ['grp', 'MFFU eval · goal: decided in 2 weeks'], ['p10', 'Pass in 2 weeks', pct, 'hi', DF.pp], ['f10', 'Fail in 2 weeks', pct, 'lo', DF.pp], ['dec10', 'Decided in 2 weeks', pct, 'hi', DF.pp],
   ['p15', 'Pass in 3 weeks', pct, 'hi', DF.pp], ['f15', 'Fail in 3 weeks', pct, 'lo', DF.pp], ['p20', 'Pass in 1 month', pct, 'hi', DF.pp], ['f20', 'Fail in 1 month', pct, 'lo', DF.pp],
   ['slow_pass', 'Passes slower than 3 weeks', pct, 'lo', DF.pp], ['pass_med', 'Median sessions to pass', (v) => ok(v) ? num(v, 0) : '—', 'lo', DF.n0],
   ['b2b', 'Back-to-back (passed / failed)', (v) => v ? esc(String(v)).replace('/', ' / ') : '—', 'b2b', DF.n0]];
@@ -2059,9 +2067,9 @@ function yearsHTML(run, base) {
   const Y = run.years || {}, B = base?.years || {}, ys = Object.keys(Y).sort();
   if (!ys.length) return emptyBox('No yearly numbers in this run.', '');
 
-  return `<div class="tw"><table class="ht"><tr><th>Year</th><th class="c">Trades</th><th class="c">Win</th><th class="c">PF</th><th class="c">Net</th><th class="c">/month</th>${base ? '<th class="c">vs live</th>' : ''}</tr>
-    ${ys.map(y => { const a = Y[y] || {}, b = B[y]; return `<tr><td class="mono"><b>${y}</b></td><td class="v">${a.n ?? '—'}</td><td class="v">${pct(a.win)}</td><td class="v ${(a.pf ?? 0) >= 1 ? 'up' : 'dn'}">${fPF(a.pf)}</td>
-      <td class="v ${cls(a.net)}">${susd(a.net)}</td><td class="v ${cls(a.net)}">${susd(perMonth(a.net, y + '-01-01', y + '-12-31', run.days))}</td>${base ? `<td class="v">${b ? dlt(a.net, b.net, DF.money, 'hi') || '—' : '—'}</td>` : ''}</tr>`; }).join('')}</table></div>`;
+  return `<div class="tw"><table class="ht"><tr><th>Year</th><th class="c">Trades</th><th class="c hide-sm">Win</th><th class="c">PF</th><th class="c">Net</th><th class="c">/month</th>${base ? '<th class="c">vs live</th>' : ''}</tr>
+    ${ys.map(y => { const a = Y[y] || {}, b = B[y]; return `<tr><td class="mono"><b>${y}</b></td><td class="v">${a.n ?? '—'}</td><td class="v hide-sm">${pct(a.win)}</td><td class="v ${(a.pf ?? 0) >= 1 ? 'up' : 'dn'}">${fPF(a.pf)}</td>
+      <td class="v ${cls(a.net)}">${kusd(a.net)}</td><td class="v ${cls(a.net)}">${kusd(perMonth(a.net, y + '-01-01', y + '-12-31', run.days))}</td>${base ? `<td class="v">${b ? dlt(a.net, b.net, DF.money, 'hi', '±0') || '—' : '—'}</td>` : ''}</tr>`; }).join('')}</table></div>`;
 }
 function runTradeRow(t, i) {
   const be = Math.abs(t.r) < .05, L = t.dir === 1;
@@ -2243,6 +2251,7 @@ VIEWS.writeup = (el) => {
     const r = md(txt, { dropTitle: true });
     const toc = r.toc.length >= 3 ? `<details class="toc"><summary>${icon('rules')}<span>Contents · ${plural(r.toc.length, 'section')}</span>${icon('down', 'chev')}</summary><div class="toc-b">${r.toc.map(([lv, t, id]) => `<button type="button" class="l${lv + 1}" data-to="${id}">${esc(t)}</button>`).join('')}</div></details>` : '';
     $('#mdBody').innerHTML = toc + `<article class="md">${r.html || '<p class="mut">This document is empty.</p>'}</article>`;
+    $$('#mdBody .md-tw').forEach(t => { if (t.scrollWidth > t.clientWidth + 2) t.insertAdjacentHTML('afterend', '<div class="tw-hint">swipe the table sideways for more →</div>'); });
     $$('#mdBody [data-to]').forEach(b => { b.onclick = () => document.getElementById(b.dataset.to)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   })).catch(still((e) => { $('#mdBody').innerHTML = failBox(e); }));
 };
@@ -2490,8 +2499,9 @@ VIEWS.risk = (el) => {
     + `<div class="card"><div class="card-h"><h3>Calculator</h3><label class="small" style="display:flex;align-items:center;gap:10px">Cold streak (half)<input type="checkbox" class="switch" id="rkH"></label></div>
       <div style="display:flex;align-items:center;gap:14px;margin:6px 0 18px"><span class="small mut">Stop</span><input type="range" id="rkS" min="10" max="60" step="0.25" value="${st}" aria-label="Stop points"><b class="mono" id="rkV" style="min-width:86px;text-align:right"></b></div>
       <div class="calc" id="rkO"></div></div>
-    <div class="card"><div class="card-h"><h3>Size by stop</h3><span class="meta">full size and half size</span></div><div class="tw"><table><tr><th>Stop</th><th class="num">Budget</th><th class="num">Micros</th><th class="num">$ at risk</th><th class="num">Half</th><th class="num">Half $</th></tr>
-      ${[10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60].map(s => { const f = size(s), h = size(s, true); return `<tr><td class="mono"><b>${s} pts</b></td><td class="num mono">${usd(f.b)}</td><td class="num">${f.m}</td><td class="num mono">${usd(f.real)}</td><td class="num">${h.m || '<span class="dn">0 · pass</span>'}</td><td class="num mono">${usd(h.real)}</td></tr>`; }).join('')}</table></div></div>`;
+    <div class="card"><div class="card-h"><h3>Size by stop</h3><span class="meta">full size and half size</span></div><div class="tw"><table class="ht"><tr><th>Stop</th><th class="num hide-sm">Budget</th><th class="num">Micros</th><th class="num">$ at risk</th><th class="num">Half</th><th class="num">Half $</th></tr>
+      ${[10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60].map(s => { const f = size(s), h = size(s, true); return `<tr><td class="mono"><b>${s} pts</b></td><td class="num mono hide-sm">${usd(f.b)}</td><td class="num">${f.m}</td><td class="num mono">${usd(f.real)}</td><td class="num">${h.m || '<span class="dn">0 · pass</span>'}</td><td class="num mono">${usd(h.real)}</td></tr>`; }).join('')}</table></div>
+      <p class="card-d" style="margin:10px 0 0">Budget = $${RK} × ${REF} ÷ stop (full $${RK} up to ${REF} pts); $ at risk = micros × stop × $2. Half = the cold-streak size.</p></div>`;
   const upd = () => { const s = +$('#rkS').value, z = size(s, $('#rkH').checked); store.set('rkStop', s);
     $('#rkV').textContent = num(s, 2) + ' pts'; $('#rkS').style.setProperty('--fill', (s - 10) / 50 * 100 + '%');
     $('#rkO').innerHTML = `<div><span>Budget</span><b>${usd(z.b)}</b></div><div><span>Micros</span><b class="${z.m ? '' : 'dn'}">${z.m || '0 · pass'}</b></div><div><span>$ at risk</span><b>${usd(z.real)}</b></div>
