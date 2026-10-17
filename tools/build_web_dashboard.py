@@ -423,6 +423,17 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     }
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
+    # research data files for the Lab's 3D views (Monte Carlo cloud, intraday heat, calendar): lab/<name>.json
+    lab_dir = os.path.join(out, "lab"); os.makedirs(lab_dir, exist_ok=True)
+    LAB_FILES = ("montecarlo", "intraday_heat", "calendar_effects")
+    have = []
+    for name in LAB_FILES:
+        src = os.path.join(ROOT, "research", "lab", name + ".json")
+        if os.path.exists(src):
+            shutil.copy(src, os.path.join(lab_dir, name + ".json")); have.append(name)
+    data["lab_files"] = have
+    with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
+        json.dump(data, fh, separators=(",", ":"), default=str)
     # the page, the home-screen app files and its icons
     for name in os.listdir(WEB):
         src = os.path.join(WEB, name)
