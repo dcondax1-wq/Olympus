@@ -55,6 +55,9 @@ def mode_of(cfg: dict, tradovate_env: str = "demo") -> str:
         return "live" if (tradovate_env or "demo").lower() == "live" else "demo"
     if adapter == "tradovate-live":
         return "live"
+    if adapter == "ninjatrader":             # NinjaTrader's own Sim101 / SimNNN accounts are demo; any other account is live
+        from .ninjatrader import is_sim, resolve_account
+        return "demo" if is_sim(resolve_account(cfg)) else "live"
     return "other"
 
 

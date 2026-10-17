@@ -3,8 +3,8 @@ title: Managing the trade: breakeven, locks, time stop, giveback
 family: management
 date: 2026-10-17
 status: finding
-summary: Today's management is at its sweet spot on all-days rules, with one exception: on trending days (10-day efficiency above 0.45) NOT moving the stop to breakeven at +1R (or waiting until +3R) adds +$4.7k to 2021-25 (PF 1.09 → 1.15) and leaves 2026 net unchanged (+$20.1k; PF 3.48 → 3.39 through the cold-streak filter). Profit locks, other time stops and giveback levels all lose.
-runs: baseline, mgt_be000, mgt_be075, mgt_be125, mgt_be150, mgt_be200, mgt_betrend075, mgt_betrend150, mgt_betrend200, mgt_betrend250, mgt_betrend300, mgt_betrend_off, mgt_betrend300_replay, mgt_lock15_5, mgt_lock20_5, mgt_lock20_10, mgt_lock30_10, mgt_lock30_15, mgt_ts0, mgt_ts15, mgt_ts20, mgt_ts45, mgt_ts60, mgt_tsr025, mgt_tsr100, mgt_gb075, mgt_gb100, mgt_nogb, mgt_ifvgfail, mgt_newsflat0
+summary: Today's management is at its sweet spot on all-days rules, with one exception: on trending days (10-day efficiency above 0.45) waiting until +3R to move to breakeven adds +$4.7k to 2021-25 (PF 1.09 → 1.15) and leaves 2026 net unchanged (+$20.1k). On today's sizing it adds some late-May 2026 eval fails (beyond 1 month); with the sizing research's quarter size in cold streaks it is clean (+$4.8k in 2021-25). Profit locks, other time stops and giveback levels all lose.
+runs: baseline, combo_betrend3_risksizing, mgt_be000, mgt_be075, mgt_be125, mgt_be150, mgt_be200, mgt_betrend075, mgt_betrend150, mgt_betrend200, mgt_betrend250, mgt_betrend300, mgt_betrend_off, mgt_betrend300_replay, mgt_lock15_5, mgt_lock20_5, mgt_lock20_10, mgt_lock30_10, mgt_lock30_15, mgt_ts0, mgt_ts15, mgt_ts20, mgt_ts45, mgt_ts60, mgt_tsr025, mgt_tsr100, mgt_gb075, mgt_gb100, mgt_nogb, mgt_ifvgfail, mgt_newsflat0
 ---
 
 ## What was tested
@@ -68,10 +68,14 @@ Trades are the same in every row: 89 in 2026 (2.16 a week), 679 in 2021-25 (3.17
 - **Trending days are the exception.** On days the market has been trending (10-day efficiency above 0.45; these
   trades already run at half size), moving the stop to breakeven at +1R cuts trades that would have reached the pool.
   Waiting longer helps 2021-25 steadily: +1.5R → +$1.5k, +2.5R → +$2.7k, +3R or never → +$4.5k to +$4.7k (no
-  knife-edge). 2026 net is unchanged (+$20,114 vs +$20,111); its PF dips 3.48 → 3.39 only because one 2026 trade
-  that now reaches its target (+2.98R instead of −0.02R) switches later trades from half to full size through the
-  cold-streak filter during the bad spring stretch. Without the cold-streak filter the change is better in both
-  periods (2026 PF 3.07 → 3.10, 2021-25 PF 0.98 → 1.02).
+  knife-edge). 2026 net is unchanged (+$20,114 vs +$20,111); its PF dips 3.48 → 3.39 only because one small 2026
+  trade that now reaches its target (+2.98R instead of −0.02R, +$288) keeps the cold-streak filter from halving
+  three May losers (−$283). Without the cold-streak filter the change is better in both periods (2026 PF
+  3.07 → 3.10, 2021-25 PF 0.98 → 1.02).
+- **Eval side effect on today's sizing:** evals are identical up to 1 month in 2026, but those $283 push evals
+  started from mid-March to April 2026 over the limit in late May (2026 evals failed within 3 months 14.1% → 20.4%).
+  With the sizing research's quarter size in cold streaks this disappears (no 2026 eval fails within 3 months
+  either way) and the change adds +$4.8k to 2021-25 (run `combo_betrend3_risksizing`).
 - **Why it works, and the honest caveat:** of the 30 trades it changes, 25 lose a little more (breakeven −0.02R
   becomes a giveback exit around −0.2R) and 5 win big (4 reach the target at +3 to +5R). The gain rests on those 5
   trades, so it is a modest, plausible edge, not a proven one. By year: 2021 +$1.9k, 2022 +$1.9k, 2023 −$0.1k,
@@ -81,5 +85,7 @@ Trades are the same in every row: 89 in 2026 (2.16 a week), 679 in 2021-25 (3.17
 
 - Keep breakeven at +1R, the 30-minute time stop and the giveback exit for normal days.
 - **Candidate:** on trending days, move to breakeven only at +3R (`be_at_r_trending: 3`). It is the only
-  management change that adds money in 2021-25 without taking any from 2026. Easy to port: the Pine script already
-  computes the 10-day efficiency for the half-size rule.
+  management change that adds money in 2021-25 without taking any from 2026. Adopt it together with the sizing
+  change (quarter size in cold streaks); on today's sizing alone it adds late-May 2026 eval fails, so then keep
+  breakeven at +1R everywhere. Easy to port: the Pine script already computes the 10-day efficiency for the
+  half-size rule.

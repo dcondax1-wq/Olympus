@@ -9,8 +9,11 @@ Adapters
   traderspost - POSTs JSON signals to YOUR TradersPost webhook (MFFU supports TradersPost-style automation).
   tradovate   - REST skeleton for Tradovate (demo endpoint by default). Requires your own API credentials in
                 environment variables; disabled unless explicitly armed. Test on demo first.
+  ninjatrader - NinjaTrader 8 ATI order files (engine/ninjatrader.py): the route into the MFFU account through
+                NinjaTrader Desktop. Sim101 by default; a real account needs armed + phrase + NINJATRADER_LIVE=1.
 
-Data: Yahoo Finance futures quotes (free, may be delayed). For real-money execution use your broker's feed.
+Data: Yahoo Finance futures quotes (free, may be delayed). For real-money execution use your broker's feed:
+data_source "ninjatrader" reads the real CME bars NinjaTrader writes (ninjatrader/LE_BarFeed.cs), Yahoo as fallback.
 """
 from __future__ import annotations
 
@@ -138,15 +141,22 @@ class TradovateAdapter:
 
 
 from .tradovate import TradovateAdapter as _TvAdapter  # full REST adapter with live gates (engine/tradovate.py)
+from .ninjatrader import NinjaTraderAdapter as _NtAdapter  # NinjaTrader 8 order files with live gates (engine/ninjatrader.py)
 ADAPTERS = {"paper": PaperAdapter, "traderspost": TradersPostAdapter, "tradovate": _TvAdapter,
-            "tradovate-demo": _TvAdapter, "tradovate-live": _TvAdapter}
+            "tradovate-demo": _TvAdapter, "tradovate-live": _TvAdapter, "ninjatrader": _NtAdapter}
+# Optional adapter capability flags, read with getattr(adapter, flag, False) (paper and Tradovate set none of them):
+#   loop_tick         tick() is called at the start of every poll
+#   route_stop_moves  the model's stop moves (breakeven at 1R) are sent as {"side": "modify", "stop": px}
+#   route_all_exits   every model exit is routed (TIME STOP, giveback, ...), not only TIME; a flatten when flat is harmless
+#   kill_flattens_all the kill switch is routed even when the model shows no position
 
 
 STATE_PATH = os.path.join(DATA_DIR, "live_state.json")
 ET_TZ = ZoneInfo("America/New_York")
 LIVE_DEFAULTS = {
     "sym": "NQ", "tf": "5m", "poll_sec": 60, "adapter": "paper", "params": {}, "armed": False,
-    "data_source": "yahoo",     # yahoo (free, ~10 min delayed) | tradovate (engine.tradovate.TradovateData, falls back to yahoo)
+    "data_source": "yahoo",     # yahoo (free, ~10 min delayed) | tradovate (engine.tradovate.TradovateData) | ninjatrader
+                                # (LE_BarFeed CSVs, engine.ninjatrader.NinjaTraderBars); both fall back to yahoo
     "window_days": 20,          # calendar days of base bars fed to the Engine each poll (verified identical to the full run)
     "stale_polls_block": 3,     # block NEW entries once the feed has been stale this many polls in a row inside an entry window
 }
@@ -267,6 +277,9 @@ class LiveBot:
         self._blocked_entries = set()    # entry_t of engine entries we deliberately did not route
         self._flattened = set()          # entry_t of positions the clock-based safety flatten already closed
         self._restored = None
+        self._nt_feed = None             # engine.ninjatrader.NinjaTraderBars for data_source "ninjatrader"
+        self._nt_notes = {}              # rate limit for the ninjatrader feed notes: key -> (text, unix time logged)
+        self._modify_gaveup = set()      # (entry_t, stop) the broker refused 3 times: not retried again
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -297,6 +310,10 @@ class LiveBot:
     def _fetch_recent(self, sym, interval, period="5d"):
         """Fresh bars from the configured data_source; tradovate falls back to yahoo (logged once per poll)."""
         src = self.cfg.get("data_source", "yahoo")
+        if src == "ninjatrader":
+            df = self._ninjatrader_recent(sym, interval, period)
+            if df is not None:
+                return df
         if src == "tradovate":
             try:
                 from . import tradovate as _tv
@@ -310,6 +327,49 @@ class LiveBot:
                 self._log("warn", f"data_source=tradovate {reason} - falling back to Yahoo for this poll")
             self.health["fallback"] = True
         return _yahoo_recent(sym, interval=interval, period=period)
+
+    def _nt_note(self, key, kind, text, every_s=900):
+        """Log a ninjatrader feed note when it changes, and at most every 15 min while it stays the same."""
+        prev = self._nt_notes.get(key)
+        now = int(self.clock())
+        if prev is None or prev[0] != text or now - prev[1] >= every_s:
+            self._nt_notes[key] = (text, now)
+            self._log(kind, text)
+
+    def _ninjatrader_recent(self, sym, interval, period):
+        """Real CME bars NinjaTrader writes (ninjatrader/LE_BarFeed.cs -> Documents\\NinjaTrader 8\\le_feed). None = use
+        Yahoo for this fetch (logged; health.fallback for the bot's own symbol). When the feed holds fewer days than the
+        gap to the stored history, or has holes, Yahoo fills in underneath and NinjaTrader's bars win wherever both exist."""
+        primary = sym == self.cfg.get("sym", "NQ")
+        try:
+            from . import ninjatrader as _nt
+            if self._nt_feed is None:
+                self._nt_feed = _nt.NinjaTraderBars(folder=self.cfg.get("nt_folder"), roots=self.cfg.get("nt_feed_roots"))
+            df, why, full = self._nt_feed.recent_bars(sym, interval, period, now=int(self.clock()))
+        except Exception as e:
+            df, why, full = None, f"{e.__class__.__name__}: {e}", False
+        if df is not None and len(df):
+            if full:
+                return df
+            self._nt_note(f"fill:{sym}:{interval}", "warn" if primary else "system",
+                          f"data_source=ninjatrader {sym} {interval}: {why} - Yahoo fills the gaps, NinjaTrader bars win")
+            try:
+                y = _yahoo_recent(sym, interval=interval, period=period)
+            except Exception as e:
+                self._note_error(f"Yahoo gap fill failed ({sym} {interval}): {e.__class__.__name__}: {e}")
+                y = None
+            if y is None or not len(y):
+                return df
+            return pd.concat([y, df]).drop_duplicates("time", keep="last").sort_values("time").reset_index(drop=True)
+        if primary:
+            if not self.health.get("fallback"):
+                self._nt_note(f"fallback:{sym}", "warn", f"data_source=ninjatrader {why} - falling back to Yahoo for this poll",
+                              every_s=300)
+            self.health["fallback"] = True
+        else:
+            self._nt_note(f"partner:{sym}", "system", f"data_source=ninjatrader: {sym} {interval} bars from Yahoo ({why})",
+                          every_s=3600)
+        return None
 
     def _merged(self, sym, tf, now, secs, period="5d"):
         """Stored history + fresh bars, cleaned. A failing fresh fetch degrades to history (never raises for that)."""
@@ -340,6 +400,8 @@ class LiveBot:
             old.join(timeout=3)
         self.reset()
         self.cfg = {**LIVE_DEFAULTS, **cfg}
+        if cfg.get("data") and "data_source" not in cfg:
+            self.cfg["data_source"] = cfg["data"]          # {"data": "ninjatrader"} is accepted as a short form
         if self.cfg["adapter"] != "paper" and not self.cfg.get("armed"):
             return {"ok": False, "error": "non-paper adapters must be explicitly armed (armed=true)"}
         if self.cfg["adapter"] not in ADAPTERS:
@@ -379,6 +441,10 @@ class LiveBot:
                          "entry_t": pos.get("entry_t")})
             self._flattened.add(pos.get("entry_t"))
             self._open_routed = None
+        elif getattr(self.adapter, "kill_flattens_all", False):
+            # broker adapters that can flatten the whole account (NinjaTrader FLATTENEVERYTHING) are told even when the
+            # model shows no position: the broker may still hold one (desync, manual order, late fill)
+            self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "reason": "KILL SWITCH", "entry_t": None})
         self.stop()
         self._log("risk", "KILL SWITCH: flattened and stopped")
         self._save_state()
@@ -396,6 +462,51 @@ class LiveBot:
         self._log("order", f"{action['side'].upper()} {action.get('qty', '')} {action['sym']} -> {res.get('ok')}", result=res)
         self._save_state()
         return res
+
+    def _adapter_tick(self):
+        """Adapters that manage broker orders between bars (NinjaTrader: late fill reports, bracket health, flat-time
+        safety) get one tick() per poll, before the data fetch so a failing feed cannot skip it. Never raises."""
+        ad = self.adapter
+        if self.kill or not getattr(ad, "loop_tick", False) or not callable(getattr(ad, "tick", None)):
+            return
+        try:
+            ad.tick()
+        except Exception as e:
+            self._note_error(f"adapter {getattr(ad, 'name', '?')} tick failed: {e.__class__.__name__}: {e}")
+
+    def _broker_stop(self, entry_t):
+        """The stop the broker was last given for this entry: its bracket, then every modify it accepted."""
+        stop = None
+        for r in self.ledger:
+            if r.get("entry_t") != entry_t:
+                continue
+            if r.get("side") in ("buy", "sell"):
+                stop = r.get("stop")
+            elif r.get("side") == "modify" and (r.get("result") or {}).get("ok"):
+                stop = r.get("stop")
+        return stop
+
+    def _route_stop_move(self, pos, sym):
+        """The model moved the stop of the routed position (breakeven at 1R): tell the broker once per new level. A refused
+        modify is retried on the next polls, at most 3 times per level. Stops are only ever tightened."""
+        et_, new = pos.get("entry_t"), pos.get("stop")
+        last = self._broker_stop(et_)
+        if new is None or last is None or abs(float(new) - float(last)) < 1e-9:
+            return
+        d = 1 if pos.get("dir", 1) == 1 else -1
+        if (float(new) - float(last)) * d < 0:
+            return
+        if (et_, new) in self._modify_gaveup:
+            return
+        tries = sum(1 for r in self.ledger if r.get("entry_t") == et_ and r.get("side") == "modify" and r.get("stop") == new)
+        if tries >= 3:
+            self._modify_gaveup.add((et_, new))
+            self._log("risk", f"Broker refused the stop move to {new:.2f} three times: the broker stop stays at {last:.2f}. "
+                              "Check the stop in the broker platform by hand.")
+            return
+        reason = "BE" if (float(new) - float(pos.get("entry") or new)) * d >= 0 else "STOP MOVE"
+        self._route({"sym": sym, "side": "modify", "qty": self._open_qty or pos.get("qty"), "stop": new, "reason": reason,
+                     "entry_t": et_})
 
     def _remember(self, tr, sym, note=None):
         """Persistent trade memory (engine/memory.py): store a completed routed trade. Never raises into routing.
@@ -487,6 +598,7 @@ class LiveBot:
         if self.last_poll is not None and now < self.last_poll - 5:
             self._log("warn", f"clock moved backwards by {self.last_poll - now}s (last poll {_et(self.last_poll):%H:%M:%S} ET, now {_et(now):%H:%M:%S})")
         self.health["fallback"] = False
+        self._adapter_tick()
         self._refresh_guard()
         df, drops = self._merged(sym, tf, now, secs)
         if len(df) == 0:
@@ -738,6 +850,8 @@ class LiveBot:
                 self._open_qty = q
                 self._route({"sym": sym, "side": "buy" if pos["dir"] == 1 else "sell", "qty": q,
                              "stop": pos["stop"], "target": pos["target"], "entry": pos["entry"], "entry_t": pos["entry_t"]})
+        if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
+            self._route_stop_move(pos, sym)
         for tr in res["trades"]:
             if tr["exit_t"] >= start - secs and ("exit", tr["entry_t"]) not in self.seen:
                 self.seen.add(("exit", tr["entry_t"]))
@@ -762,8 +876,9 @@ class LiveBot:
                 if self._open_routed == tr["entry_t"]:
                     self._open_routed = None
                     qty = self._open_qty or tr["qty"]          # what we actually routed (half size in a cold streak)
-                if self.cfg["adapter"] == "paper" or tr["exit_reason"] == "TIME":
-                    # brackets handle stop/target at the broker; the bot only flattens on time exits
+                if self.cfg["adapter"] == "paper" or tr["exit_reason"] == "TIME" or getattr(self.adapter, "route_all_exits", False):
+                    # brackets handle stop/target at the broker; the bot only flattens on time exits (adapters with
+                    # route_all_exits also get TIME STOP / giveback / news exits, and a harmless sync flatten after a bracket fill)
                     self._route({"sym": sym, "side": "exit", "qty": qty, "reason": tr["exit_reason"],
                                  "pnl": round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"],
                                  "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})

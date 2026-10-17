@@ -2,7 +2,9 @@
 
   python tools/research_vp.py check      # feature sanity: engine cross-checks + a no-look-ahead truncation test
   python tools/research_vp.py info       # with / without split of every idea: 2021-25 (decides) and 2026 (untouched)
+  python tools/research_vp.py dry        # info + every sized variant, printed only (nothing saved)
   python tools/research_vp.py all        # check + info + every sized variant -> research/runs/vp_*.json, vwap_*.json
+                                         #   (about 10 min on one core, most of it the placebo test and the saves)
 
 No engine replays: the 768 baseline trades come from runlib.replay() (cached) and only their SIZE is changed
 (runlib.size(raw, rule=...)), which is exact because P&L, commission and slippage are linear in micros. A skip (size 0)
@@ -631,7 +633,7 @@ def save_all(R, base, tag="posthoc"):
         fam = "vwap" if r["name"].startswith("vwap") else "vp"
         rl.save(vid, title_of(r["name"], r["good"], r["kind"]), "filters", r["question"],
                 sizing={"idea": r["name"], "strong_side": "present" if r["good"] else "absent", "kind": r["kind"],
-                        "rule": KINDS.get(r["kind"], f"x{int(r['kind'][2:]) / 100:g} on the strong side"),
+                        "rule": KINDS[r["kind"]] if r["kind"] in KINDS else f"x{int(r['kind'][2:]) / 100:g} on the strong side",
                         "on_top_of": "live sizing incl. the cold-streak half size"},
                 trades=r["T"], scored=r["S"], status=r["status"], verdict=r["verdict"],
                 notes=("Post-hoc on the exact live-loop replay (768 baseline trades, costs included); only the size changes. "

@@ -17,6 +17,7 @@ as a run (tools/runlib.save) so the dashboard can list and open them. Write-ups:
   python tools/research_risk.py weekly        # B7 weekly loss brake, loss-streak cuts
   python tools/research_risk.py packages      # the best single changes combined (incl. the recommended one)
   python tools/research_risk.py recommend     # the recommendation's full table (research/writeups/risk-summary.md)
+  python tools/research_risk.py fast          # fast-eval mode (owner's rule: eval decided within 2 weeks) on top of it
   python tools/research_risk.py summary       # print every risk run's headline numbers
 
 The recommendation (risk-summary.md, run risk_pkg_q25_late_live): one multiplier on the engine's micros where the live loop
@@ -837,7 +838,7 @@ def experiment(family, id, title, question, pol=None, engine=None, eval_aware=Fa
 
 WRITEUP_OF = {"anatomy": "loss-anatomy.md", "levels": "risk-sizing.md", "refstop": "risk-sizing.md", "cold": "risk-sizing.md",
               "ddaware": "risk-sizing.md", "eval": "eval-sizing.md", "situational": "risk-sizing.md", "weekly": "risk-sizing.md",
-              "packages": "risk-summary.md"}
+              "packages": "risk-summary.md", "fast": "risk-summary.md"}
 
 
 def table(rows=None, base=True):
@@ -1207,8 +1208,10 @@ def cmd_recommend():
             ("Win rate", "win", lambda v: f"{v}%"), ("Profit factor", "pf", str), ("Net", "net", _money),
             ("Max drawdown", "dd", lambda v: f"-${-v:,}"), ("Worst day", "worst_day", lambda v: f"-${-v:,}"),
             ("Median $ at risk", "risk", lambda v: f"${v:,.0f}"),
-            ("Eval pass / fail within 2 weeks", ("p10", "f10"), None), ("Eval pass / fail within 1 month", ("p20", "f20"), None),
-            ("Eval pass / fail within 3 months", ("p60", "f60"), None), ("Back-to-back evals passed / failed", "b2b", str))
+            ("Eval pass / fail within 2 weeks", ("p10", "f10"), None), ("Evals decided within 2 weeks", "dec10", lambda v: f"{v}%"),
+            ("Eval pass / fail within 3 weeks", ("p15", "f15"), None), ("Eval pass / fail within 1 month", ("p20", "f20"), None),
+            ("Eval pass / fail within 3 months", ("p60", "f60"), None), ("Passes slower than 3 weeks", "slow_pass", lambda v: f"{v}%"),
+            ("Median sessions to pass", "pass_med", lambda v: f"{v:g}"), ("Back-to-back evals passed / failed", "b2b", str))
     for lab, key, fn in spec:
         row = [lab]
         for name in ("2026", "2021-25"):
@@ -1240,6 +1243,123 @@ def cmd_recommend():
               f"trades at 1 micro {sum(1 for t in X if t['qty'] == 1)} of {len(X)} (live {sum(1 for t in base_tr if a <= t['day'] <= z and t['qty'] == 1)})")
 
 
+# ------------------------------------------------------------------------------------------------ fast-eval mode (owner 2026-10-17)
+def _wide(ref):
+    """Multiplier that turns the live wide-stop scaling (full risk up to 20 pts) into full risk up to `ref` pts."""
+    def m(t):
+        p = t["_plan"]
+        return (min(ref, p) / BASE_REF) if p > BASE_REF else 1.0
+    return m
+
+
+def _press(ref=60, floor=-1000.0, bank=None):
+    """Eval-state press: while the eval balance is at least start + floor, the wide-stop scaling is relaxed to `ref`
+    (ref 60 = $800 on any stop); below that, live sizing. bank: once profit >= $2,000, risk <= bank x what is still needed."""
+    w = _wide(ref)
+    pol = {"mult_usd": lambda t, c: w(t) if c["profit"] >= floor else 1.0}
+    if bank:
+        pol["cap_usd"] = lambda t, c: bank * c["need"] if c["profit"] >= 2000 else 1e9
+    return pol
+
+
+FAST = (
+    # (id, title, rule, extra policy on top of the package, eval-aware, engine)
+    ("risk_fast_press1000", "Fast evals: $800 on any stop until the eval is $1,000 down",
+     "while the eval balance is above $49,000: $800 at risk whatever the stop (no wide-stop scaling); below it: live sizing; "
+     "cold x0.25 and late x0.5 always", _press(60, -1000.0), True, None),
+    ("risk_fast_press500_bank", "Fast evals: $800 on any stop until $500 down, bank the pass",
+     "while the eval balance is above $49,500: $800 on any stop; from +$2,000 profit: risk at most half of what is still "
+     "needed; cold x0.25, late x0.5", _press(60, -500.0, 0.5), True, None),
+    ("risk_fast_press0_bank", "Fast evals: $800 on any stop while the eval is up, bank the pass",
+     "while the eval balance is at or above $50,000: $800 on any stop; from +$2,000: risk at most half of what is still "
+     "needed; cold x0.25, late x0.5", _press(60, 0.0, 0.5), True, None),
+    ("risk_fast_press1000_ref40", "Fast evals (gentler): full risk up to a 40-pt stop until $1,000 down",
+     "while the eval balance is above $49,000: full $800 up to a 40-pt stop, $800 x 40/stop beyond; below it: live sizing",
+     _press(40, -1000.0), True, None),
+    ("risk_fast_flat800", "Fast evals without eval state: $800 on any stop, always",
+     "no wide-stop scaling at all ($800 whatever the stop), cold x0.25, late x0.5", {"ref": 0}, False, None),
+    ("risk_fast_usd1200", "Fast evals by size: $1,200 instead of $800 (engine replay)",
+     "risk_usd 1,200 (full up to a 20-pt stop), cold x0.25, late x0.5", {}, False, {"risk_usd": 1200.0}),
+    ("risk_fast_usd1600", "Fast evals by size: $1,600 instead of $800",
+     "risk_usd 1,600 (full up to a 20-pt stop, max 40 micros), cold x0.25, late x0.5", {"risk_usd": 1600.0}, False, None),
+    ("risk_fast_fresh1200", "Fast evals: $1,200 while the eval is up (the press-the-fresh-eval idea)",
+     "x1.5 ($1,200 up to a 20-pt stop) while the eval balance is at or above $50,000, cold x0.25, late x0.5",
+     {"mult_usd": lambda t, c: 1.5 if c["profit"] >= 0 else 1.0}, True, None),
+    ("risk_fast_cush06_bank", "Eval sizing from the cushion: 0.6 x cushion, bank the pass",
+     "$ risk = 0.6 x cushion above the trailing max loss ($1,200 on a fresh eval, scaled by the stop as live); from +$2,000: "
+     "at most half of what is still needed; cold x0.25, late x0.5",
+     {"mult_usd": lambda t, c: 0.6 * c["cushion"] / BASE_RISK, "cap_usd": lambda t, c: 0.5 * c["need"] if c["profit"] >= 2000 else 1e9},
+     True, None),
+)
+
+
+def fast_status(S, P):
+    """Owner's eval rule vs the recommended package P: decided in 2 weeks more often (dec10 +2 points or more), passes
+    within 3 weeks not fewer, fewer slow passes, 2-week fails up by at most 5 points and evals bought per pass at most 15%
+    more, in BOTH periods; and 2021-25 net and PF not worse than the package. 2-4 trades a week."""
+    def ok(x, y):
+        return (x["dec10"] >= y["dec10"] + 2.0 and x["p15"] >= y["p15"] and (x["slow_pass"] or 100) <= (y["slow_pass"] or 100)
+                and x["f10"] <= y["f10"] + 5.0 and (x.get("epp") or 99) <= 1.15 * (y.get("epp") or 99))
+    a, b, A, Bb = S["spans"]["2026"], S["spans"]["2021-25"], P["spans"]["2026"], P["spans"]["2021-25"]
+    if not all(2.0 <= (x.get("tpw") or 0) <= 4.0 for x in (a, b)):
+        return "rejected"
+    money = b["net"] >= Bb["net"] and (b["pf"] or 0) >= (Bb["pf"] or 0)
+    if ok(a, A) and ok(b, Bb) and money:
+        return "adopt-candidate"
+    if (ok(a, A) or ok(b, Bb)) and money:
+        return "promising"
+    return "rejected"
+
+
+def fast_verdict(S, P, st):
+    a, b, A, Bb = S["spans"]["2026"], S["spans"]["2021-25"], P["spans"]["2026"], P["spans"]["2021-25"]
+    head = {"adopt-candidate": "Faster evals in both periods, 5-year money not worse",
+            "promising": "Faster evals in one period, 5-year money not worse", "rejected": "Not a better fast mode"}[st]
+    return (f"{head}. Decided in 2 weeks: 2026 {a['dec10']:.0f}% (package {A['dec10']:.0f}%), 2021-25 {b['dec10']:.0f}% "
+            f"({Bb['dec10']:.0f}%); 2-week fails {b['f10']:.0f}% ({Bb['f10']:.0f}%) in 2021-25; evals per pass {b.get('epp')} "
+            f"({Bb.get('epp')}); 2021-25 {_money(b['net'])} PF {b['pf']} ({_money(Bb['net'])}, {Bb['pf']}).")
+
+
+def cmd_fast():
+    """Owner's rule 2026-10-17: an eval should be passed or failed within 2 weeks and never take more than 3 weeks to pass.
+    Fast-eval variants on top of the recommended package (cold x0.25, late x0.5)."""
+    q = "Can the eval be decided within 2 weeks (and passed within 3) without failing many more evals?"
+    raw, T, _, B = baseline()
+    P = score(run_account(T, RECOMMENDED), raw)
+    for id, title, rule, extra, ea, eng in FAST:
+        pol = {**RECOMMENDED, **extra}
+        if eng:
+            rawx, Tx, epol = engine_trades(eng)
+            pol = {**epol, **pol}
+        else:
+            rawx, Tx = raw, T
+        trades = chain_trades(Tx, pol, rawx["sessions"]) if ea else run_account(Tx, pol)
+        S = score(trades, rawx, Tx, pol, eval_aware=ea)
+        st = fast_status(S, P)
+        experiment("fast", id, title, q, pol=pol, engine=eng, eval_aware=ea, status=st, verdict=fast_verdict(S, P, st),
+                   sizing={"rule": rule}, tags=["fast-eval"], quiet=True,
+                   notes=f"Rule: {rule}. On top of the recommended package (risk_pkg_q25_late_live). Judged on the owner's eval "
+                         "rule (decided within 2 weeks, passes within 3 weeks) with the 2021-25 net/PF of the package as the floor."
+                         + (" Eval-aware: sized from each eval's own balance; trades and net are back-to-back evals." if ea else ""))
+    rows = [("", "risk_pkg_q25_late_live", "Recommended package (fixed sizing)", "reference", P)] + \
+        [r for r in ROWS if r[0] == "fast"]
+    print(fast_table(rows, B))
+
+
+def fast_table(rows, B):
+    out = []
+    for fam, id, title, st, S in [("", "baseline", "Live strategy", "baseline", B)] + list(rows):
+        a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+        out.append([id, st, f"{a['dec10']:.0f}% ({a['p10']:.0f}/{a['f10']:.0f})", f"{a['p15']:.0f}/{a['f15']:.0f}", f"{a['slow_pass']:.0f}%",
+                    f"{a['pass_med']:g}", a.get("epp"), _money(a["net"]), a["pf"],
+                    f"{b['dec10']:.0f}% ({b['p10']:.0f}/{b['f10']:.0f})", f"{b['p15']:.0f}/{b['f15']:.0f}", f"{b['slow_pass']:.0f}%",
+                    f"{b['pass_med']:g}", f"{b.get('pass_yr')}/{b.get('fail_yr')}", b.get("epp"), _money(b["net"]), b["pf"],
+                    f"{b['dd']:,}"])
+    return _md(out, ["run", "status", "2026 decided in 2w (pass/fail %)", "3w pass/fail %", "slow passes", "median days to pass",
+                     "evals per pass", "net", "PF", "2021-25 decided in 2w (pass/fail %)", "3w pass/fail %", "slow passes",
+                     "median days to pass", "passes/fails a year", "evals per pass", "net", "PF", "max DD"])
+
+
 def cmd_summary():
     rows = [r for r in rl.index() if r.get("family") == "risk"]
     for r in rows:
@@ -1251,7 +1371,7 @@ def cmd_summary():
 def cmd_all():
     cmd_check()
     cmd_anatomy()
-    for c in (cmd_levels, cmd_refstop, cmd_cold, cmd_ddaware, cmd_eval, cmd_situational, cmd_weekly, cmd_packages):
+    for c in (cmd_levels, cmd_refstop, cmd_cold, cmd_ddaware, cmd_eval, cmd_situational, cmd_weekly, cmd_packages, cmd_fast):
         c()
     cmd_recommend()
 

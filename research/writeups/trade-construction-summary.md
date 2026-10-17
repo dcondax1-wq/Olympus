@@ -3,24 +3,34 @@ title: Trade construction: what to change before Sunday
 family: other
 date: 2026-10-17
 status: finding
-summary: One change is worth making: on trending days, move the stop to breakeven at +3R instead of +1R. Same trades (2.2 / 3.2 a week), same 2026 profit (+$20.1k) and identical 2026 eval odds, +$4.7k in 2021-25 (PF 1.09 → 1.15). Stops, targets, the other exits, filters and timing are already at their best; 120+ variants tested, no leak found.
+summary: One change is worth making, together with the sizing change: on trending days move the stop to breakeven at +3R instead of +1R. With the sizing change it adds +$4.8k to 2021-25 (PF 1.19 → 1.27) and changes nothing in 2026 evals; on today's sizing alone it causes extra late-May 2026 eval fails, so then keep the current rules. Stops, targets, the other exits, filters and timing are already at their best; 120+ variants tested, no leak found.
 runs: baseline, mgt_betrend300_replay, mgt_betrend300, mgt_betrend250, mgt_betrend_off, combo_risk_sizing, combo_betrend3_risksizing, bias_both_07, combo_betrend3_both07, combo_betrend3_bothhalf, flt_vix20_half, stp_max80, leak_both_off
 ---
 
-## The recommendation (one change)
+## The recommendation (one change, together with the sizing change)
 
 **Keep every rule as it is, except: on a trending day (10-day efficiency above 0.45, the same test that already
-halves the size), move the stop to breakeven only once the trade is +3R, instead of +1R.**
+halves the size), move the stop to breakeven only once the trade is +3R, instead of +1R. Adopt it together with the
+sizing recommendation (`risk-summary.md`: quarter size in cold streaks, half size on late entries).**
 
-`live_model.json` params: add `"be_at_r_trending": 3.0` (the engine option already exists; nothing else changes).
-Pine: where the script moves the stop to breakeven at `beAtR`, use 3.0 instead when the regime is trending
-(`regimeEr` is already computed for the half-size rule). Two lines.
+`live_model.json` params: add `"be_at_r_trending": 3.0` (the engine option already exists; entries, stops, targets
+and trades a week do not change). Pine: where the script moves the stop to breakeven at `beAtR`, use 3.0 instead
+when the regime is trending (`regimeEr` is already computed for the half-size rule). Two lines.
 
-Status: **promising, not a strict pass.** 2026 net is the same and 2021-25 is clearly better, but the 2026 profit
-factor dips from 3.48 to 3.39 (explained below). If the owner only accepts strict passes, the answer is "keep the
-current rules": nothing else came close.
+- **With the sizing change** (table below): 2026 unchanged where it matters (same passes, no failed eval within 3
+  months either way, net −$96, PF 4.12 → 3.94), 2021-25 **+$4.8k** (PF 1.19 → 1.27, evals passed within 3 months
+  29.3% → 32.8%). Against today's live rules the pair passes the strict rule in both periods.
+- **On today's sizing alone** it is not clean: 2021-25 +$4.7k (PF 1.09 → 1.15) and 2026 has the same money and the
+  same eval odds up to 1 month, but evals started from mid-March to April 2026 fail in late May instead of late June
+  (2026 evals failed within 3 months 14.1% → 20.4%). One small April trade now wins +2.98R (+$288), which keeps the
+  cold-streak filter from switching to half size, so three May losers cost $283 more; that is just enough to push
+  evals started from mid-March to April over the limit in late May. **If the sizing change is not adopted, keep the
+  current rules.**
 
-## Full table: today's rules vs the recommendation (exact, costs included)
+Status: **promising** on its own (2026 PF 3.48 → 3.39 with the same net), **adopt-candidate** with the sizing change
+(run `combo_betrend3_risksizing`).
+
+## Full table: today's rules vs today's rules + the breakeven change (exact, costs included)
 
 | | 2026 today | 2026 new | 2021-25 today | 2021-25 new | All years today | All years new |
 |---|---:|---:|---:|---:|---:|---:|
@@ -38,6 +48,7 @@ current rules": nothing else came close.
 | Evals decided within 2 weeks | 19.4% | 19.4% | 6.2% | 6.3% | 8.3% | 8.5% |
 | Eval passed / failed within 3 weeks | 28.2% / 0% | 28.2% / 0% | 6.1% / 5.7% | 6.2% / 5.7% | 9.6% / 4.8% | 9.8% / 4.8% |
 | Eval passed / failed within 1 month | 33% / 0% | 33% / 0% | 8.7% / 9.4% | 8.9% / 9.4% | 12.9% / 7.9% | 13.1% / 7.9% |
+| Eval passed / failed within 3 months | 63.1% / 14.1% | 63.1% / 20.4% | 20.5% / 55.9% | 23.6% / 52.5% | 30.8% / 49.1% | 33.4% / 47.3% |
 | Passes that took over 3 weeks | 55.4% | 55.4% | 70.5% | 73.5% | 68.8% | 70.7% |
 | Median sessions to a pass | 19 | 19 | 25 | 29 | 25.5 | 28 |
 | Back-to-back evals passed / failed | 4 / 1 | 4 / 1 | 7 / 18 | 8 / 18 | 11 / 19 | 12 / 19 |
@@ -49,13 +60,13 @@ Method: management-only change, so the trades are the same; exits re-simulated o
 trades (the simulator reproduces all 768 baseline trades exactly) and confirmed by a full exact replay
 (run `mgt_betrend300_replay`).
 
-**Eval speed (owner's rule: decided within 2 weeks, no pass slower than 3 weeks).** 2026 is identical on every eval
-line. In 2021-25 the fast lines are equal or a hair better (passed within 2 weeks 4.2% vs 4.1%, within 3 weeks
-6.2% vs 6.1%, fails unchanged); the change adds one back-to-back pass (8 vs 7), and the extra passes come late, so the
-share of passes slower than 3 weeks rises (73.5% vs 70.5%) and the median pass takes 29 sessions instead of 25. It does
-not make any eval slower or riskier; it only adds slow passes that today's rules never reach. No setting tested
-here gets most evals decided inside 2 weeks: even in 2026 only about 1 in 5 is (19.4%); that is a sizing question
-(how much each trade risks), not a trade-construction one.
+**Eval speed (owner's rule: decided within 2 weeks, no pass slower than 3 weeks).** Within 2 and 3 weeks nothing
+gets worse: 2026 is identical, 2021-25 is equal or a hair better (passed within 2 weeks 4.2% vs 4.1%, within 3 weeks
+6.2% vs 6.1%, fails unchanged). The extra 2021-25 passes come late (27 evals that failed now pass, mostly after 3
+weeks), so the share of passes slower than 3 weeks rises (73.5% vs 70.5%) and the median pass takes 29 sessions
+instead of 25. The 2026 side effect is beyond 1 month (late-May fails, see above) and disappears with the sizing
+change. No setting tested here gets most evals decided inside 2 weeks: even in 2026 only about 1 in 5 is (19.4%);
+that depends on how much each trade risks (sizing), not on trade construction.
 
 **Trades a week:** 2.16 (2026) and 3.17 (2021-25), unchanged, inside the owner's 2-4 band.
 
@@ -69,15 +80,15 @@ here gets most evals decided inside 2 weeks: even in 2026 only about 1 in 5 is (
 - Not a knife-edge: waiting until +1.5R adds $1.5k, +2.5R $2.7k, +3R $4.7k, never $4.5k in 2021-25; all leave 2026
   net unchanged.
 - The 2026 PF dip is a side effect of the cold-streak filter, not of worse trades: one April trade becomes +2.98R
-  instead of −0.02R, which keeps later trades at full size during the bad spring stretch. 2026 R per trade rises
+  instead of −0.02R, which keeps three May losers at full size instead of half. 2026 R per trade rises
   (+0.38 → +0.41) and, without the cold-streak filter, the change is better in both periods (2026 PF 3.07 → 3.10,
   2021-25 PF 0.98 → 1.02).
 
-## If the sizing recommendation is adopted too
+## With the sizing recommendation (the recommended pair)
 
 The sizing research (`risk-summary.md`) recommends quarter size in cold streaks and half size on late entries. The two
 changes touch different things (sizes vs the breakeven move) and add up (run `combo_betrend3_risksizing`, exact,
-same trades):
+same trades; columns: sizing change alone vs sizing change + breakeven change):
 
 | | 2026 sizing only | 2026 sizing + breakeven | 2021-25 sizing only | 2021-25 sizing + breakeven | All years sizing only | All years both |
 |---|---:|---:|---:|---:|---:|---:|
@@ -95,6 +106,7 @@ same trades):
 | Evals decided within 2 weeks | 20.4% | 20.4% | 5.9% | 6% | 8.3% | 8.3% |
 | Eval passed / failed within 3 weeks | 29.1% / 0% | 29.1% / 0% | 6% / 3.4% | 6.2% / 3.4% | 9.7% / 2.8% | 9.9% / 2.8% |
 | Eval passed / failed within 1 month | 34% / 0% | 34% / 0% | 8.6% / 5.1% | 8.8% / 5.2% | 13% / 4.3% | 13.1% / 4.4% |
+| Eval passed / failed within 3 months | 63.1% / 0% | 63.1% / 0% | 29.3% / 26.9% | 32.8% / 26.5% | 37.9% / 22.5% | 40.9% / 22.2% |
 | Passes that took over 3 weeks | 53.8% | 53.8% | 79.6% | 81.2% | 74.4% | 75.9% |
 | Median sessions to a pass | 18 | 18 | 31 | 32.5 | 29 | 31 |
 | Back-to-back evals passed / failed | 4 / 1 | 4 / 1 | 7 / 10 | 8 / 10 | 11 / 11 | 12 / 11 |
@@ -144,6 +156,7 @@ PF 3.94 vs 3.48; 2021-25 +$9.9k, PF 1.27 vs 1.09) with 2.16 / 3.17 trades a week
   | Evals decided within 2 weeks | 19.4% | 18.4% | 6.2% | 5.3% | 8.3% | 7.4% |
   | Eval passed / failed within 3 weeks | 28.2% / 0% | 27.2% / 0% | 6.1% / 5.7% | 5.1% / 4.1% | 9.6% / 4.8% | 8.7% / 3.4% |
   | Eval passed / failed within 1 month | 33% / 0% | 32% / 0% | 8.7% / 9.4% | 7.6% / 6.6% | 12.9% / 7.9% | 11.6% / 5.6% |
+  | Eval passed / failed within 3 months | 63.1% / 14.1% | 62.1% / 12.6% | 20.5% / 55.9% | 26.3% / 44.6% | 30.8% / 49.1% | 33.9% / 39.4% |
   | Passes that took over 3 weeks | 55.4% | 56.2% | 70.5% | 80.5% | 68.8% | 74.4% |
   | Median sessions to a pass | 19 | 19.5 | 25 | 30 | 25.5 | 28 |
   | Back-to-back evals passed / failed | 4 / 1 | 4 / 1 | 7 / 18 | 7 / 15 | 11 / 19 | 12 / 16 |

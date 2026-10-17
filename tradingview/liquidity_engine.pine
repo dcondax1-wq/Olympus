@@ -708,10 +708,12 @@ f_why(string reason) =>
      reason == "FLAT" ? "end of day: be flat by 15:55" :
      reason == "NEWS FLAT" ? "high-impact news in " + str.tostring(newsFlatM) + " min" : reason
 
-// exit at market: the bot's own rules (time stop, giveback, 15:55 flat, news) or TradingView's bracket fill (reason "bracket")
+// exit at market: the bot's own rules (time stop, giveback, 15:55 flat, news) or TradingView's bracket fill (reason "bracket";
+// as phone text that one only asks you to check the broker, because your own bracket order closes the trade there)
 f_exitMsg(string reason, int d, int q) =>
     alertFmt == "Phone text" ?
-     "CLOSE " + f_pos(d, q) + " at market · " + f_why(reason) :
+     (reason == "bracket" ? "STOP OR TARGET HIT · " + f_pos(d, q) + " · check your broker: flat, no orders left" :
+     "CLOSE " + f_pos(d, q) + " at market · " + f_why(reason)) :
      bridge == "TradersPost" ?
      '{"ticker":"' + bTicker + '","action":"exit","orderType":"market","cancel":true,"extras":{"reason":"' + reason + '"}}' :
      f_pmtBase("close", q, close, 0.0, 0.0, false)

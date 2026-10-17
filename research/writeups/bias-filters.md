@@ -72,9 +72,10 @@ What it means:
 - **As a size-down they improve PF and drawdown in both periods**, but in 2026 even the "against" trades made
   money, so trading them smaller always costs some 2026 profit. The mildest useful version, 70% size when both
   biases disagree (about 1 trade in 5), costs 2026 $0.75k (−4%) and adds $2.1k to 2021-25 with a smaller drawdown
-  and fewer failed evals (2021-25 back-to-back 7/14 vs 7/18; by year: 2021 +$0.2k, 2022 +$1.2k, 2023 +$0.6k,
-  2024 −$1.0k, 2025 +$1.1k). It fails the strict rule (2026 net is lower), so it is not recommended for Sunday;
-  it is a sizing rule, so it belongs with the sizing research.
+  and fewer failed evals (2021-25 failed within 3 weeks 3.0% vs 5.7%, back-to-back 7/14 vs 7/18), but passes come
+  slower (2021-25 passed within 2 weeks 3.6% vs 4.1%), against the owner's eval-speed rule. By year: 2021 +$0.2k,
+  2022 +$1.2k, 2023 +$0.6k, 2024 −$1.0k, 2025 +$1.1k. It fails the strict rule (2026 net is lower), so it is not
+  recommended for Sunday; it is a sizing rule, so it belongs with the sizing research.
 - **Honest caveat:** both biases were found by looking at these same trades; the "both against" combination was
   picked from four. Treat them as leads, not proven edges.
 
@@ -122,7 +123,7 @@ What it means:
 What it means:
 
 - **The trending-market rule is right as half size.** Skipping trending markets drops 2026 to 1.7 trades a week;
-  full size makes a little more money but with more failed evals (2021-25 1-month fail 13.6% vs 9.5%).
+  full size makes a little more money but with more failed evals (2021-25: 13.3% of evals fail within a month vs 9.3%).
 - **The 1.6x range block is right**: off or 2x adds trades that lose; 1.2x drops below 2 a week.
 - **VIX above 25** helps 2021-25 (mostly 2022) but costs 2026 $1.2k and puts it at 2.0 a week: not worth it.
 - **Both killzones are needed**: either one alone loses money over 2021-25 and halves the trades; starting the

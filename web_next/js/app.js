@@ -36,7 +36,7 @@ import { initControls } from './next/controls.js';
 import * as tradesPage from './next/trades.js';
 import * as hub from './next/datahub.js';
 import * as mods from './next/modpages.js';
-import { initFX, fxWarp } from './next/fx3d.js';
+import { initFX, fxWarp, fxScene } from './next/fx3d.js';
 import * as lab from './next/lab.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
@@ -72,6 +72,7 @@ export function go(page) {
   $('#pageTitle').textContent = TITLES[page];
   store.set('page', page);
   if (prev && prev !== page) fxWarp();
+  fxScene(page);
   onPage(page);
   PAGES[page]?.show?.();
 }

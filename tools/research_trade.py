@@ -131,13 +131,16 @@ for v in (2.0, 2.5, 3.0):
     X(f"mgt_betrend{int(v * 100):03d}", "management", "exitsim", {"be_at_r_trending": v},
       f"Breakeven at +{v:g}R on trending days only", f"On trending days, wait until +{v:g}R before moving to breakeven?",
       sim={"be_at_r_trending": v}, **({"verdict": "Best value: 2026 net unchanged (+$20.1k; PF 3.48 -> 3.39 only through the "
-      "cold-streak filter), 2021-25 +$4.7k (PF 1.09 -> 1.15). Neighbours 2.5R and 'never' are almost as good."} if v == 3.0 else {}))
+      "cold-streak filter; 3-month eval fails 14.1% -> 20.4% from one bad May), 2021-25 +$4.7k (PF 1.09 -> 1.15). "
+      "Neighbours 2.5R and 'never' are almost as good. Clean together with the sizing change."} if v == 3.0 else {}))
 X("mgt_betrend_off", "management", "exitsim", {"be_at_r_trending": 99}, "No breakeven move on trending days",
   "On trending days (10-day efficiency above 0.45), never move the stop to breakeven?", sim={"be_at_r_trending": 99})
 X("mgt_betrend300_replay", "management", "replay", {"be_at_r_trending": 3.0}, "Breakeven at +3R on trending days (exact replay)",
   "Confirm with the exact live-loop replay: on trending days, wait until +3R before moving to breakeven?",
-  verdict="Recommended change. Same 768 trades; 2026 net unchanged (+$20.1k, PF 3.48 -> 3.39 via the cold-streak "
-          "filter), 2021-25 +$4.7k (PF 1.09 -> 1.15), same eval odds. The replay matches the exit simulator on 768/768 trades.")
+  verdict="Recommended together with the sizing change (combo_betrend3_risksizing). Alone: same 768 trades, 2026 net "
+          "unchanged (+$20.1k, PF 3.48 -> 3.39 via the cold-streak filter) and the same eval odds up to 1 month, but "
+          "evals started mid-March to April 2026 fail in late May (3-month fails 14.1% -> 20.4%); 2021-25 +$4.7k "
+          "(PF 1.09 -> 1.15). The replay matches the exit simulator on 768/768 trades.")
 for a, r in ((1.5, 0.5), (2.0, 0.5), (2.0, 1.0), (3.0, 1.0), (3.0, 1.5)):
     X(f"mgt_lock{int(a * 10)}_{int(r * 10)}", "management", "exitsim", {"lock_at_r": a, "lock_r": r},
       f"Lock +{r:g}R once the trade is +{a:g}R", f"After +{a:g}R, should the stop lock in +{r:g}R?",
@@ -252,9 +255,9 @@ X("combo_betrend3_risksizing", "other", "exitsim", {"be_at_r_trending": 3.0},
   "on late entries?", sim={"be_at_r_trending": 3.0}, rule_raw="risk_q25_late", eqf=None, writeup="trade-construction-summary.md",
   note="Sizing: x0.25 in a cold streak and x0.5 on a late entry (tools/research_risk.py RECOMMENDED) replace the live "
        "half-size cold-streak filter; the cold state is computed from this run's own trades.",
-  verdict="They add up: against the sizing recommendation alone, 2026 net is the same (+$20.5k vs +$20.6k; PF 3.94 vs "
-          "4.12 via the cold-streak state) and 2021-25 gains another +$4.8k (PF 1.19 -> 1.27). Against today's live "
-          "rules it is better in both periods.")
+  verdict="Recommended pair. Against the sizing recommendation alone: 2026 the same (net +$20.5k vs +$20.6k, PF 3.94 vs "
+          "4.12, same eval passes, no eval fail within 3 months either way), 2021-25 another +$4.8k (PF 1.19 -> 1.27, "
+          "3-month eval passes 29.3% -> 32.8%). Against today's live rules it is better in both periods.")
 X("combo_betrend3_pwmid07", "other", "exitsim", {"be_at_r_trending": 3.0}, "Trending-day breakeven at +3R + 70% size against the prior-week side",
   "Trending-day breakeven at +3R and 70% size for trades on the wrong side of last week's midpoint?",
   sim={"be_at_r_trending": 3.0}, rule="p70_against_pwmid", writeup="trade-construction-summary.md")

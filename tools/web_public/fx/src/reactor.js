@@ -271,7 +271,8 @@ export class Reactor extends Hud {
     u.uCol.value.copy(this.col); u.uFlowT.value += dt * lerp(0.42, 0.1, clamp(c.health, 0, 1)) * (fail > 0.5 ? 0.3 : 1) * (red ? 0 : 1); u.uBright.value = (this.hasData ? 1 : 0.5) * (1 - fail * 0.5);
     // rings
     const [r0, r1, r2] = this.rings.map((m) => m.userData.U);
-    r0.uFrac.value = pass > 0.5 ? 1 : c.prog; r0.uNeg.value = 0;   // under the start: the cushion ring tells that story r0.uCol.value.set('#2ee59d').lerp(GOLD, pass);
+    r0.uFrac.value = pass > 0.5 ? 1 : c.prog; r0.uCol.value.set('#2ee59d').lerp(GOLD, pass);
+    r0.uNeg.value = 0;   // under the start balance the cushion ring tells that story
     r1.uFrac.value = c.cush; r1.uCol.value.set('#ff2bd6').lerp(GOLD, pass * 0.6);
     const danger1 = c.cush < 0.25 && pass < 0.5 && this.hasData ? 1 : 0;
     r1.uFlash.value = danger1 && !red ? 0.6 * Math.max(0, Math.sin(lt * 6)) : 0;

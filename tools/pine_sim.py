@@ -280,6 +280,8 @@ class Msg:
     def exit(self, reason, d, q, close, t_close_ms):
         P = self.P
         if P["alertFmt"] == "Phone text":
+            if reason == "bracket":
+                return f"STOP OR TARGET HIT · {self.pos(d, q)} · check your broker: flat, no orders left"
             return f"CLOSE {self.pos(d, q)} at market · {self.why(reason)}"
         if P["bridge"] == "TradersPost":
             return ('{"ticker":"' + P["bTicker"] + '","action":"exit","orderType":"market","cancel":true,"extras":{"reason":"'
@@ -390,8 +392,8 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
             qf = rec["qty_full"]
             gross = (px - rec["entry"]) * rec["dir"] * qf * PV
             comm = (qf // 10) * 4.5 + (qf % 10) * 1.5
-            return round((gross - comm) / (risk * qf * PV), 3)
-        return round(pnl / (risk * q * PV), 3)
+            return round(float((gross - comm) / (risk * qf * PV)), 3)
+        return round(float(pnl / (risk * q * PV)), 3)
 
     def close_pos(i, px, reason, t, msg=None, alert_t=None):
         nonlocal pos, avg, netprofit, cur, bracket
@@ -399,7 +401,7 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
         q = abs(pos)
         pnl = (px - avg) * d * q * PV - COMM * q * 2
         netprofit += pnl
-        cur.update({"exit_t": t // 1000, "exit": px, "exit_signal": reason, "profit": round(pnl, 2), "exit_bar": i})
+        cur.update({"exit_t": t // 1000, "exit": float(px), "exit_signal": reason, "profit": round(float(pnl), 2), "exit_bar": i})
         cur["r"] = trade_r(cur, px, pnl)
         coldR.append(cur["r"])
         trades.append(cur)
@@ -419,7 +421,7 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
             d, q, stp, tgt, cmt, info, emsg = pend_entry
             fill = o + d * SLIP * tick
             pos = d * q; avg = fill
-            cur = {"dir": d, "qty": q, "entry_t": t // 1000, "entry": fill, "entry_signal": cmt, "entry_bar": i, **info}
+            cur = {"dir": d, "qty": q, "entry_t": int(t // 1000), "entry": float(fill), "entry_signal": cmt, "entry_bar": i, **info}
             bracket = {"stop": stp, "limit": tgt, "msgs": info.pop("_bracket_msgs")}
             cur.pop("_bracket_msgs", None)
             alerts.append((t // 1000, "ENTRY", emsg))
@@ -674,10 +676,10 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
         trendHalf = st["trending"] and P["regimeMode"] == "half"
         # ---- cold-streak filter: sum of the last coldLook closed-trade R values (Pine f_coldState)
         lastR = coldR[-P["coldLook"]:] if P["coldLook"] > 0 else []
-        coldSum = round(sum(lastR), 2)
+        coldSum = round(float(sum(lastR)), 2)
         coldN = len(lastR)
-        coldNow = P["coldOn"] and (P["coldForce"] == "Always cold" or
-                                   (P["coldForce"] == "Auto" and coldN >= P["coldLook"] and coldSum <= P["coldMinR"]))
+        coldNow = bool(P["coldOn"] and (P["coldForce"] == "Always cold" or
+                                        (P["coldForce"] == "Auto" and coldN >= P["coldLook"] and coldSum <= P["coldMinR"])))
 
         def trig(d_, extOff):
             # direction-space: d=1 uses (H, L, O, C) as is; d=-1 mirrors
@@ -835,9 +837,10 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
                         q = pl["qty"]
                         cmt = (f"{'L' if d_ == 1 else 'S'} r={pl['risk']:.2f} g={pl['grade']}" if legacy else
                                f"{'L' if d_ == 1 else 'S'} r={f_num(pl['risk'])} sl={f_num(pl['stop'])} g={pl['grade']}" + (" cold" if coldNow else ""))
-                        info = {"stop0": pl["stop"], "target": pl["target"], "qty_full": pl["qtyFull"], "cold": coldNow,
-                                "cold_sum": coldSum, "cold_n": coldN, "risk_plan": pl["risk"], "grade": pl["grade"],
-                                "score": pl["score"], "trending": st["trending"], "signal_t": t // 1000,
+                        info = {"stop0": float(pl["stop"]), "target": float(pl["target"]), "qty_full": int(pl["qtyFull"]),
+                                "cold": coldNow, "cold_sum": coldSum, "cold_n": coldN, "risk_plan": float(pl["risk"]),
+                                "grade": pl["grade"], "score": int(pl["score"]), "trending": bool(st["trending"]),
+                                "signal_t": int(t // 1000),
                                 "_bracket_msgs": (M.bracket(True, d_, q, pl["stop"], pl["target"], None, c, t_close),
                                                   M.bracket(False, d_, q, pl["stop"], pl["target"], None, c, t_close))}
                         emsg = M.entry(d_, q, pl["stop"], pl["target"], c, q * pl["risk"] * PV, M.size_note(coldNow, trendHalf), t_close)

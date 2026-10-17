@@ -36,6 +36,7 @@ export function mount3d(key, el, kind, data, opts) {
   return v;
 }
 export const fxWarp = () => FX?.warp();
+export const fxScene = (page) => FX?.scene?.(page);   // per-page background mood (palette, galaxy tilt, spin)
 export const fxPulse = () => FX?.pulse();
 
 export function setFxLevel(lv) {
