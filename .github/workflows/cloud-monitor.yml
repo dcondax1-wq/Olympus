@@ -53,6 +53,9 @@ jobs:
             /research/lab/backtest_live.json
             /research/lab/replays.json
             /research/lab/variant_results.json
+            /research/lab/montecarlo.json
+            /research/lab/intraday_heat.json
+            /research/lab/calendar_effects.json
             /research/study/
             /research/runs/*.json
             /research/writeups/
