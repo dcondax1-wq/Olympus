@@ -83,6 +83,15 @@ const P = {
   clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/>',
   long: '<path d="M4 17l6-6 4 4 6-8"/><path d="M15 7h5v5"/>',
   short: '<path d="M4 7l6 6 4-4 6 8"/><path d="M15 17h5v-5"/>',
+  // new pages
+  strategy: '<path d="M4 20V5.5A1.5 1.5 0 0 1 5.5 4H19v13H5.5A1.5 1.5 0 0 0 4 18.5"/><path d="M4 20h15"/><path d="M8.5 10.5l2.5 2.5 4.5-5"/>',
+  radar: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l6-6"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
+  evals: '<path d="M5 21V4"/><path d="M5 4h12l-2 4 2 4H5"/><path d="M8.5 8h5"/>',
+  heat: '<rect x="3.5" y="3.5" width="5" height="5" rx="1"/><rect x="9.5" y="3.5" width="5" height="5" rx="1" fill="currentColor" opacity=".35"/><rect x="15.5" y="3.5" width="5" height="5" rx="1"/><rect x="3.5" y="9.5" width="5" height="5" rx="1" fill="currentColor" opacity=".7"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><rect x="15.5" y="9.5" width="5" height="5" rx="1" fill="currentColor" opacity=".35"/><rect x="3.5" y="15.5" width="5" height="5" rx="1"/><rect x="9.5" y="15.5" width="5" height="5" rx="1" fill="currentColor" opacity=".5"/><rect x="15.5" y="15.5" width="5" height="5" rx="1"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/><path d="M8 13.5h.1M12 13.5h.1M16 13.5h.1M8 17h.1M12 17h.1"/>',
+  week: '<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5v4M20.5 12h-4M12 20.5v-4M3.5 12h4"/><path d="M12 12l3-3"/>',
+  map: '<path d="M4 7l5-2 6 2 5-2v12l-5 2-6-2-5 2z"/><path d="M9 5v12M15 7v12"/>',
+  money: '<rect x="3" y="6" width="18" height="12" rx="2.5"/><circle cx="12" cy="12" r="2.6"/><path d="M6.5 9.5h.1M17.5 14.5h.1"/>',
 };
 
 export function icon(name, cls = '') {

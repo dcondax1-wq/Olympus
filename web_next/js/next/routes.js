@@ -14,6 +14,8 @@ export const DATA = [
   { id: 'results', label: 'Results', icon: 'results', desc: 'Live settings, 5-year replay: periods, months, eval odds' },
   { id: 'lab', label: 'Experiments', icon: 'variants', desc: 'Research run library: every backtest with its data' },
   { id: 'writeups', label: 'Write-ups', icon: 'reports', desc: 'Plain-language research reports' },
+  { id: 'evals', label: 'Evals', icon: 'evals', desc: 'MFFU eval odds: Monte Carlo paths, lock vs fast-eval press' },
+  { id: 'intraday', label: 'Intraday', icon: 'heat', desc: 'Weekday × hour heat map of every replay trade' },
   { id: 'backtest', label: 'Backtests', icon: 'backtest', desc: 'Run the engine with any parameters' },
   { id: 'replay', label: 'Replays', icon: 'replay', desc: 'Step through a session bar by bar' },
   { id: 'variants', label: 'Tested Variants', icon: 'variants', desc: 'Every variant tested, 2026 vs 5 years' },
@@ -24,10 +26,12 @@ export const DATA = [
 ];
 
 export const MODULES = [
+  { id: 'strategy', label: 'Strategy', icon: 'strategy', desc: 'The locked rulebook in plain language, with the numbers' },
   { id: 'rules', label: 'Strategy Rules', icon: 'rules', desc: 'The exact locked strategy (STRATEGY.md)' },
   { id: 'live', label: 'Liquidity Engine', icon: 'engine', desc: 'Paper bot control, model state, ledger' },
-  { id: 'cold', label: 'Cold-Streak Filter', icon: 'cold', desc: 'Half size when the last 15 signals ≤ 0R' },
+  { id: 'cold', label: 'Cold-Streak Filter', icon: 'cold', desc: 'Quarter size when the last 15 signals ≤ 0R' },
   { id: 'risk', label: 'Risk & Sizing', icon: 'risk', desc: '$800 to a 20-pt stop, scaled down beyond' },
+  { id: 'newshub', label: 'News hub', icon: 'radar', desc: 'Next high-impact event, blackouts, 7-day calendar, headlines' },
   { id: 'news', label: 'Markets & News', icon: 'news', desc: 'Calendar, headlines, cross-market, gamma' },
   { id: 'regime', label: 'Regimes', icon: 'regime', desc: 'Strategy result by market regime' },
   { id: 'conf', label: 'Confluence Lab', icon: 'conf', desc: 'Shadow trades and confluence edge' },
