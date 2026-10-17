@@ -53,17 +53,17 @@ runs: baseline, risk_usd400, risk_usd600, risk_usd700, risk_usd900, risk_usd1000
 
 Today: full $800 up to a 20-pt stop, then $800 × 20 / stop (a 40-pt stop risks $400).
 
-| run | rule | 2026 PF | net | max DD | 1m | 2021-25 PF | net | max DD | 1m | 3m | b2b |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| risk_ref15 | full risk up to 15 pts (engine) | see run | | | | | | | | | |
-| baseline | **20 pts (live)** | 3.48 | +$20,111 | -$2,661 | 30/0 | 1.09 | +$6,491 | -$11,401 | 9/10 | 22/59 | 7/18 |
-| risk_ref25 | 25 pts (engine) | 3.23 | +$22,312 | -$3,232 | 36/0 | 1.08 | +$7,531 | -$13,485 | 9/18 | 19/69 | 9/24 |
-| risk_ref30 | 30 pts (engine) | 3.01 | +$23,492 | -$3,625 | 40/1 | 1.09 | +$8,695 | -$14,861 | 12/21 | 20/73 | 12/30 |
-| risk_ref40 | 40 pts (engine) | see run | | | | | | | | | |
-| risk_refoff | $800 on every stop (engine) | 2.62 | +$26,522 | -$4,857 | 39/7 | 1.13 | +$16,636 | -$16,770 | 17/37 | 25/73 | 16/34 |
-| risk_shape05 | gentler: $800 × square root of (20/stop) | 2.94 | +$22,134 | -$3,524 | 28/0 | 1.10 | +$9,959 | -$13,515 | 10/19 | 21/68 | 10/27 |
-| risk_shape15 | steeper: $800 × (20/stop)^1.5 | 4.02 | +$18,002 | -$2,128 | 30/0 | 1.02 | +$1,018 | -$11,444 | 8/6 | 23/49 | 6/15 |
-| risk_floor400 | never under $400 on a wide stop | 3.42 | +$21,168 | -$2,628 | 30/0 | 1.09 | +$7,609 | -$11,876 | 8/12 | 17/65 | 6/18 |
+| run | rule | 2026 setups/wk | PF | net | max DD | 2w pass/fail | 1m pass/fail | 2021-25 PF | net | max DD | 1m pass/fail | 3m pass/fail | evals per pass | status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| risk_ref15 | full risk up to 15 pts (engine) | 2.09 | 3.89 | +$17,418 | -$1,949 | 12/0 | 25/0 | 1.04 | +$2,346 | -$10,346 | 6/4 | 19/39 | 3.64 | rejected |
+| baseline | **20 pts (live)** | 2.16 | 3.48 | +$20,111 | -$2,661 | 19/0 | 33/0 | 1.09 | +$6,491 | -$11,401 | 9/9 | 20/56 | 3.89 |  |
+| risk_ref25 | 25 pts (engine) | 2.16 | 3.23 | +$22,312 | -$3,232 | 22/0 | 38/0 | 1.08 | +$7,531 | -$13,485 | 9/17 | 18/65 | 3.86 | rejected |
+| risk_ref30 | 30 pts (engine) | 2.16 | 3.01 | +$23,492 | -$3,625 | 26/0 | 41/0 | 1.09 | +$8,695 | -$14,861 | 11/20 | 19/70 | 3.59 | rejected |
+| risk_ref40 | 40 pts (engine) | 2.16 | 2.69 | +$24,641 | -$4,336 | 31/0 | 41/6 | 1.11 | +$13,150 | -$16,900 | 14/32 | 21/71 | 3.46 | rejected |
+| risk_refoff | $800 on every stop (engine) | 2.16 | 2.62 | +$26,522 | -$4,857 | 31/1 | 40/6 | 1.13 | +$16,636 | -$16,770 | 16/37 | 23/70 | 3.27 | rejected |
+| risk_shape05 | gentler: $800 x square root of (20/stop) | 2.16 | 2.94 | +$22,134 | -$3,524 | 21/0 | 31/0 | 1.1 | +$9,959 | -$13,515 | 10/19 | 20/65 | 3.83 | rejected |
+| risk_shape15 | steeper: $800 x (20/stop)^1.5 | 2.06 | 4.02 | +$18,002 | -$2,128 | 16/0 | 30/0 | 1.02 | +$1,018 | -$11,444 | 8/6 | 22/46 | 3.43 | rejected |
+| risk_floor400 | never under $400 on a wide stop | 2.16 | 3.42 | +$21,168 | -$2,628 | 20/0 | 33/0 | 1.09 | +$7,609 | -$11,876 | 8/12 | 16/61 | 4.14 | rejected |
 
 - **In 2021-25 a wide stop is not a worse trade.** Average R is about 0 for every stop size, so more dollars on wide stops is more profit and proportionally more drawdown.
 - **In 2026 wide stops were the weaker trades:**

@@ -1,7 +1,7 @@
 {
  "built": "2026-10-17 20:52",
  "baseline": "baseline",
- "count": 298,
+ "count": 299,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -18916,7 +18916,7 @@
    "family": "risk",
    "question": "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it.",
    "status": "rejected",
-   "verdict": "Not better in both periods. 2026 +$21,168 (live +$20,111), PF 3.42 (3.48), 1-month evals 30% pass / 0% fail (30/0). 2021-25 +$7,609 (+$6,491), PF 1.09 (1.09), evals 8/12% (9/10).",
+   "verdict": "Not better in both periods. 2026 +$21,168 (live +$20,111), PF 3.42 (3.48), 1-month evals 33% pass / 0% fail (33/0). 2021-25 +$7,609 (+$6,491), PF 1.09 (1.09), evals 8/12% (9/9).",
    "writeup": "research/writeups/risk-sizing.md",
    "tags": [
     "risk",
@@ -18927,7 +18927,7 @@
    "sizing": {
     "floor": 400.0
    },
-   "built": "2026-10-17 20:25",
+   "built": "2026-10-17 20:52",
    "spans": {
     "2026": {
      "n": 89,
@@ -18952,7 +18952,12 @@
      "dec10": 19.9,
      "slow_pass": 55.4,
      "pass_med": 19.0,
-     "b2b": "5/1"
+     "b2b": "5/1",
+     "p60": 63.1,
+     "f60": 13.6,
+     "pass_yr": 7.08,
+     "fail_yr": 1.35,
+     "epp": 1.19
     },
     "2021-25": {
      "n": 679,
@@ -18977,7 +18982,12 @@
      "dec10": 7.1,
      "slow_pass": 63.9,
      "pass_med": 21.0,
-     "b2b": "6/18"
+     "b2b": "6/18",
+     "p60": 15.8,
+     "f60": 61.0,
+     "pass_yr": 1.48,
+     "fail_yr": 4.64,
+     "epp": 4.14
     },
     "all": {
      "n": 768,
@@ -19002,7 +19012,9 @@
      "dec10": 9.2,
      "slow_pass": 64.6,
      "pass_med": 23.0,
-     "b2b": "11/19"
+     "b2b": "11/19",
+     "p60": 26.3,
+     "f60": 53.4
     }
    }
   },
@@ -19567,11 +19579,11 @@
   },
   {
    "id": "risk_ref30",
-   "title": "Full risk up to a 30 pts stop",
+   "title": "Full risk up to a 30-pt stop",
    "family": "risk",
    "question": "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it.",
    "status": "rejected",
-   "verdict": "Not better in both periods. 2026 +$23,492 (live +$20,111), PF 3.01 (3.48), 1-month evals 40% pass / 0% fail (30/0). 2021-25 +$8,695 (+$6,491), PF 1.09 (1.09), evals 12/21% (9/10).",
+   "verdict": "Not better in both periods. 2026 +$23,492 (live +$20,111), PF 3.01 (3.48), 1-month evals 41% pass / 0% fail (33/0). 2021-25 +$8,695 (+$6,491), PF 1.09 (1.09), evals 11/20% (9/9).",
    "writeup": "research/writeups/risk-sizing.md",
    "tags": [
     "risk",
@@ -19585,7 +19597,7 @@
     "risk_usd": 800.0,
     "ref": 30.0
    },
-   "built": "2026-10-17 20:11",
+   "built": "2026-10-17 20:52",
    "spans": {
     "2026": {
      "n": 89,
@@ -19610,7 +19622,12 @@
      "dec10": 26.2,
      "slow_pass": 39.2,
      "pass_med": 12.0,
-     "b2b": "5/1"
+     "b2b": "5/1",
+     "p60": 63.1,
+     "f60": 25.7,
+     "pass_yr": 5.72,
+     "fail_yr": 1.51,
+     "epp": 1.26
     },
     "2021-25": {
      "n": 679,
@@ -19635,7 +19652,12 @@
      "dec10": 11.9,
      "slow_pass": 58.7,
      "pass_med": 18.0,
-     "b2b": "12/30"
+     "b2b": "12/30",
+     "p60": 19.4,
+     "f60": 69.5,
+     "pass_yr": 2.72,
+     "fail_yr": 7.05,
+     "epp": 3.59
     },
     "all": {
      "n": 768,
@@ -19660,7 +19682,120 @@
      "dec10": 14.3,
      "slow_pass": 56.5,
      "pass_med": 18.0,
-     "b2b": "17/31"
+     "b2b": "17/31",
+     "p60": 29.9,
+     "f60": 62.4
+    }
+   }
+  },
+  {
+   "id": "risk_ref40",
+   "title": "Full risk up to a 40-pt stop",
+   "family": "risk",
+   "question": "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it.",
+   "status": "rejected",
+   "verdict": "Not better in both periods. 2026 +$24,641 (live +$20,111), PF 2.69 (3.48), 1-month evals 41% pass / 6% fail (33/0). 2021-25 +$13,150 (+$6,491), PF 1.11 (1.09), evals 14/32% (9/9).",
+   "writeup": "research/writeups/risk-sizing.md",
+   "tags": [
+    "risk",
+    "refstop",
+    "wide-stop"
+   ],
+   "params": {
+    "risk_ref_stop": 40.0
+   },
+   "sizing": {
+    "risk_usd": 800.0,
+    "ref": 40.0
+   },
+   "built": "2026-10-17 20:52",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 2.69,
+     "net": 24641,
+     "dd": -4336,
+     "avg_r": 0.378,
+     "stop": 44.0,
+     "worst_day": -790,
+     "risk": 476.0,
+     "half": 28,
+     "per_month": 2512,
+     "p10": 30.6,
+     "f10": 0.0,
+     "p15": 38.3,
+     "f15": 1.0,
+     "p20": 41.3,
+     "f20": 5.8,
+     "dec10": 30.6,
+     "slow_pass": 41.5,
+     "pass_med": 11.0,
+     "b2b": "8/3",
+     "p60": 65.5,
+     "f60": 26.7,
+     "pass_yr": 10.41,
+     "fail_yr": 4.37,
+     "epp": 1.42
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.11,
+     "net": 13150,
+     "dd": -16900,
+     "avg_r": -0.0,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 378.0,
+     "half": 348,
+     "per_month": 258,
+     "p10": 7.2,
+     "f10": 11.0,
+     "p15": 10.0,
+     "f15": 20.2,
+     "p20": 13.6,
+     "f20": 32.3,
+     "dec10": 18.2,
+     "slow_pass": 53.1,
+     "pass_med": 16.0,
+     "b2b": "14/34",
+     "p60": 21.3,
+     "f60": 70.9,
+     "pass_yr": 3.26,
+     "fail_yr": 8.03,
+     "epp": 3.46
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.28,
+     "net": 37792,
+     "dd": -16900,
+     "avg_r": 0.044,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 380.0,
+     "half": 376,
+     "per_month": 621,
+     "p10": 11.0,
+     "f10": 9.2,
+     "p15": 14.6,
+     "f15": 17.1,
+     "p20": 18.8,
+     "f20": 28.0,
+     "dec10": 20.2,
+     "slow_pass": 54.1,
+     "pass_med": 17.0,
+     "b2b": "22/37",
+     "p60": 31.8,
+     "f60": 63.8
     }
    }
   },
@@ -19670,7 +19805,7 @@
    "family": "risk",
    "question": "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it.",
    "status": "rejected",
-   "verdict": "Not better in both periods. 2026 +$26,522 (live +$20,111), PF 2.62 (3.48), 1-month evals 38% pass / 7% fail (30/0). 2021-25 +$16,636 (+$6,491), PF 1.13 (1.09), evals 17/37% (9/10).",
+   "verdict": "Not better in both periods. 2026 +$26,522 (live +$20,111), PF 2.62 (3.48), 1-month evals 40% pass / 6% fail (33/0). 2021-25 +$16,636 (+$6,491), PF 1.13 (1.09), evals 16/37% (9/9).",
    "writeup": "research/writeups/risk-sizing.md",
    "tags": [
     "risk",
@@ -19684,7 +19819,7 @@
     "risk_usd": 800.0,
     "ref": 0.0
    },
-   "built": "2026-10-17 20:11",
+   "built": "2026-10-17 20:52",
    "spans": {
     "2026": {
      "n": 89,
@@ -19709,7 +19844,12 @@
      "dec10": 31.6,
      "slow_pass": 35.3,
      "pass_med": 10.0,
-     "b2b": "7/4"
+     "b2b": "7/4",
+     "p60": 57.8,
+     "f60": 37.9,
+     "pass_yr": 9.3,
+     "fail_yr": 3.66,
+     "epp": 1.39
     },
     "2021-25": {
      "n": 679,
@@ -19734,7 +19874,12 @@
      "dec10": 21.3,
      "slow_pass": 46.4,
      "pass_med": 14.0,
-     "b2b": "16/34"
+     "b2b": "16/34",
+     "p60": 23.1,
+     "f60": 70.1,
+     "pass_yr": 3.54,
+     "fail_yr": 8.04,
+     "epp": 3.27
     },
     "all": {
      "n": 768,
@@ -19759,7 +19904,9 @@
      "dec10": 23.3,
      "slow_pass": 47.0,
      "pass_med": 14.0,
-     "b2b": "23/38"
+     "b2b": "23/38",
+     "p60": 32.2,
+     "f60": 64.9
     }
    }
   },
@@ -19769,7 +19916,7 @@
    "family": "risk",
    "question": "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it.",
    "status": "rejected",
-   "verdict": "Not better in both periods. 2026 +$22,134 (live +$20,111), PF 2.94 (3.48), 1-month evals 28% pass / 0% fail (30/0). 2021-25 +$9,959 (+$6,491), PF 1.1 (1.09), evals 10/19% (9/10).",
+   "verdict": "Not better in both periods. 2026 +$22,134 (live +$20,111), PF 2.94 (3.48), 1-month evals 31% pass / 0% fail (33/0). 2021-25 +$9,959 (+$6,491), PF 1.1 (1.09), evals 10/19% (9/9).",
    "writeup": "research/writeups/risk-sizing.md",
    "tags": [
     "risk",
@@ -19780,7 +19927,7 @@
    "sizing": {
     "alpha": 0.5
    },
-   "built": "2026-10-17 20:25",
+   "built": "2026-10-17 20:52",
    "spans": {
     "2026": {
      "n": 89,
@@ -19805,7 +19952,12 @@
      "dec10": 20.9,
      "slow_pass": 56.2,
      "pass_med": 22.0,
-     "b2b": "6/1"
+     "b2b": "6/1",
+     "p60": 63.1,
+     "f60": 25.2,
+     "pass_yr": 7.23,
+     "fail_yr": 1.51,
+     "epp": 1.21
     },
     "2021-25": {
      "n": 679,
@@ -19830,7 +19982,12 @@
      "dec10": 10.3,
      "slow_pass": 64.9,
      "pass_med": 21.0,
-     "b2b": "10/27"
+     "b2b": "10/27",
+     "p60": 19.7,
+     "f60": 65.2,
+     "pass_yr": 2.29,
+     "fail_yr": 6.47,
+     "epp": 3.83
     },
     "all": {
      "n": 768,
@@ -19855,7 +20012,9 @@
      "dec10": 12.0,
      "slow_pass": 66.0,
      "pass_med": 23.0,
-     "b2b": "16/28"
+     "b2b": "16/28",
+     "p60": 30.1,
+     "f60": 58.8
     }
    }
   },
@@ -19865,7 +20024,7 @@
    "family": "risk",
    "question": "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it.",
    "status": "rejected",
-   "verdict": "Not better in both periods. 2026 +$18,002 (live +$20,111), PF 4.02 (3.48), 1-month evals 30% pass / 0% fail (30/0). 2021-25 +$1,018 (+$6,491), PF 1.02 (1.09), evals 8/6% (9/10).",
+   "verdict": "Not better in both periods. 2026 +$18,002 (live +$20,111), PF 4.02 (3.48), 1-month evals 30% pass / 0% fail (33/0). 2021-25 +$1,018 (+$6,491), PF 1.02 (1.09), evals 8/6% (9/9).",
    "writeup": "research/writeups/risk-sizing.md",
    "tags": [
     "risk",
@@ -19876,7 +20035,7 @@
    "sizing": {
     "alpha": 1.5
    },
-   "built": "2026-10-17 20:25",
+   "built": "2026-10-17 20:52",
    "spans": {
     "2026": {
      "n": 85,
@@ -19901,7 +20060,12 @@
      "dec10": 16.0,
      "slow_pass": 58.5,
      "pass_med": 21.0,
-     "b2b": "4/1"
+     "b2b": "4/1",
+     "p60": 59.7,
+     "f60": 0.0,
+     "pass_yr": 5.49,
+     "fail_yr": 0.87,
+     "epp": 1.16
     },
     "2021-25": {
      "n": 632,
@@ -19926,7 +20090,12 @@
      "dec10": 5.7,
      "slow_pass": 71.7,
      "pass_med": 30.0,
-     "b2b": "6/15"
+     "b2b": "6/15",
+     "p60": 22.1,
+     "f60": 46.2,
+     "pass_yr": 1.48,
+     "fail_yr": 3.59,
+     "epp": 3.43
     },
     "all": {
      "n": 717,
@@ -19951,7 +20120,9 @@
      "dec10": 7.3,
      "slow_pass": 69.2,
      "pass_med": 28.0,
-     "b2b": "11/16"
+     "b2b": "11/16",
+     "p60": 30.0,
+     "f60": 38.7
     }
    }
   },
