@@ -9,9 +9,11 @@ Evidence (research: tools/equity_filter_study.py, live pick, lookback picked on 
   lookback 15: 2021-24 -$1,922 -> +$5,005 | 2025 +$3,860 -> +$5,906 | 2026 +$11,630 -> +$10,339 with PF 2.41 -> 2.99,
   win rate 26% -> 32%, max drawdown -$3,147 -> -$1,174. Neighbours 14-18 all improve every period.
 
-Config (live_model.json): "equity_filter": {"lookback": 15, "min_sum_r": 0.0, "cold_mode": "skip" | "half"}
-(missing/null = off). "half" keeps every setup (2+ a week) and trades the cold streak at half size instead of sitting out:
-$650 risk + half, 2026: 97 trades, 2.4/week, PF 2.55, eval passed within 2 weeks 25% / failed 0% (rolling starts).
+Config (live_model.json): "equity_filter": {"lookback": 15, "min_sum_r": 0.0, "cold_mode": "skip" | "half", "cold_size": 0.25}
+(missing/null = off). "half" keeps every setup (2+ a week) and trades the cold streak at a fraction of full size instead of
+sitting out: "cold_size" (default 0.5) is that fraction. Research 2026-10-17 (research/writeups/risk-summary.md): 0.25 beats
+0.5 at every lookback and threshold tested on 2021-25 (+$10.2k vs +$6.5k, max DD -$9.2k vs -$11.4k, 1-month eval fails
+9.6% -> 7.5%) and costs $0.6k in 2026.
 """
 from __future__ import annotations
 
@@ -69,12 +71,14 @@ def status(cfg: dict | None, before_t: int | None = None, path: str = LEDGER) ->
     lb = int(cfg.get("lookback", 15))
     thr = float(cfg.get("min_sum_r", 0.0))
     half = cfg.get("cold_mode", "skip") == "half"
+    cold_size = min(1.0, max(0.0, float(cfg.get("cold_size", 0.5)))) if half else 0.0
     rows = [x for x in load(path) if before_t is None or int(x["exit_t"]) < int(before_t)]
     last = rows[-lb:]
     s = round(sum(float(x["r"]) for x in last), 2)
     on = len(last) < lb or s > thr
-    mult = 1.0 if on else (0.5 if half else 0.0)
+    mult = 1.0 if on else cold_size
+    size_word = "half" if abs(cold_size - 0.5) < 1e-9 else "quarter" if abs(cold_size - 0.25) < 1e-9 else f"{cold_size:g}x"
     reason = (f"last {len(last)} signals {s:+.2f}R > {thr:+.1f}R: full size" if on else
               f"last {len(last)} signals {s:+.2f}R <= {thr:+.1f}R: cold streak, "
-              + ("half size until it turns positive" if half else "paper only until it turns positive"))
+              + (f"{size_word} size until it turns positive" if half else "paper only until it turns positive"))
     return {"enabled": True, "on": on, "mult": mult, "sum_r": s, "n": len(last), "lookback": lb, "reason": reason}

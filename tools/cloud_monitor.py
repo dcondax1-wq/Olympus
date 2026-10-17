@@ -159,7 +159,7 @@ def run(out):
             if m <= 0:
                 note = "\nNOT TAKEN - cold-streak filter (last 15 signals net negative), tracked on paper only"
             elif m < 1:
-                note = "\nHALF SIZE - cold-streak filter (last 15 signals net negative)"
+                note = f"\n{m:g}x SIZE - cold-streak filter (last 15 signals net negative)"
             new_alerts.append(f"{SYM} {ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
     et_now = et(now)
     eod_sent = st.get("eod_sent")

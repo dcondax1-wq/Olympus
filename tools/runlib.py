@@ -99,11 +99,12 @@ def cold_status(raw_sorted, entry_t, eqf):
     if not eqf:
         return 1.0, None
     lb, thr, half = int(eqf.get("lookback", 15)), float(eqf.get("min_sum_r", 0.0)), eqf.get("cold_mode", "skip") == "half"
+    cold_size = min(1.0, max(0.0, float(eqf.get("cold_size", 0.5)))) if half else 0.0
     rows = [t for t in raw_sorted if t.get("exit_t") and int(t["exit_t"]) < int(entry_t)]
     last = rows[-lb:]
     s = round(sum(float(t["r"]) for t in last), 2)
     on = len(last) < lb or s > thr
-    return (1.0 if on else (0.5 if half else 0.0)), s
+    return (1.0 if on else cold_size), s
 
 
 def size(raw, eqf="live", rule=None, max_micros=MAX_MICROS):

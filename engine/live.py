@@ -670,7 +670,7 @@ class LiveBot:
         if eqf["on"]:
             text = f"Cold streak over: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Back to full size."
         elif eqf.get("mult"):
-            text = (f"Cold streak: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Still taking every setup at half size "
+            text = (f"Cold streak: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Still taking every setup at {eqf['mult']:g}x size "
                     f"until they add back up above 0R.")
         else:
             text = (f"Cold streak: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Sitting out; every setup is still tracked "
