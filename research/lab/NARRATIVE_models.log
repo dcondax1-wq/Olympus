@@ -1,0 +1,25 @@
+﻿silver_bullet v1 dev n 62 {'A': (2, -1.028), 'B': (17, 0.762), 'C': (27, -0.356), 'SKIP': (16, 0.018)} mono False rho 0.24 | base 1066.0 tier 1465.2 1.8
+silver_bullet v1 confirm n 32 {'A': (1, -1.025), 'B': (10, -0.545), 'C': (16, -0.132), 'SKIP': (5, -0.333)} mono False rho 0.111 | base -3078.6 tier -2491.8 1.73
+silver_bullet v1 ytd n 94 {'A': (3, -1.027), 'B': (27, 0.278), 'C': (43, -0.273), 'SKIP': (21, -0.066)} mono False rho 0.187 | base -2012.6 tier -1026.6 1.77
+silver_bullet v1 y2025 n 92 {'A': (7, 0.195), 'B': (22, -0.334), 'C': (36, 0.147), 'SKIP': (27, -0.164)} mono False rho 0.033 | base -1313.6 tier -50.3 1.75
+silver_bullet v2 dev n 62 {'A': (24, -0.014), 'B': (25, 0.147), 'C': (6, 0.371), 'SKIP': (7, -0.571)} mono False rho 0.077 | base 1066.0 tier 1853.9 2.03
+silver_bullet v2 confirm n 32 {'A': (17, -0.101), 'B': (9, -0.646), 'C': (2, 0.713), 'SKIP': (4, -1.04)} mono False rho 0.262 | base -3078.6 tier -2738.1 1.79
+silver_bullet v2 ytd n 94 {'A': (41, -0.05), 'B': (34, -0.063), 'C': (8, 0.456), 'SKIP': (11, -0.742)} mono False rho 0.122 | base -2012.6 tier -884.2 1.94
+silver_bullet v2 y2025 n 92 {'A': (32, -0.164), 'B': (38, -0.101), 'C': (7, 0.607), 'SKIP': (15, -0.018)} mono False rho -0.035 | base -1313.6 tier -3203.3 1.99
+mech_ifvg v1 dev n 53 {'A': (1, -1.011), 'B': (16, -0.389), 'C': (28, -0.086), 'SKIP': (8, 0.111)} mono False rho -0.073 | base -2120.8 tier -3172.9 1.76
+mech_ifvg v1 confirm n 27 {'A': (1, -1.016), 'B': (11, -0.514), 'C': (14, 0.294), 'SKIP': (1, 0.364)} mono False rho -0.585 | base 129.9 tier -905.2 1.67
+mech_ifvg v1 ytd n 80 {'A': (2, -1.014), 'B': (27, -0.44), 'C': (42, 0.041), 'SKIP': (9, 0.139)} mono False rho -0.218 | base -1990.9 tier -4078.1 1.72
+mech_ifvg v1 y2025 n 77 {'A': (7, 0.023), 'B': (25, -0.267), 'C': (41, -0.089), 'SKIP': (4, 0.132)} mono False rho 0.027 | base -2863.9 tier -2362.1 1.96
+mech_ifvg v2 dev n 53 {'A': (4, 0.282), 'B': (21, -0.304), 'C': (9, 0.067), 'SKIP': (19, -0.216)} mono False rho -0.131 | base -2120.8 tier -1424.7 1.33
+mech_ifvg v2 confirm n 27 {'A': (3, -0.937), 'B': (8, 0.111), 'C': (6, -0.364), 'SKIP': (10, 0.193)} mono False rho -0.308 | base 129.9 tier -1589.0 1.09
+mech_ifvg v2 ytd n 80 {'A': (7, -0.24), 'B': (29, -0.19), 'C': (15, -0.106), 'SKIP': (29, -0.075)} mono False rho -0.168 | base -1990.9 tier -3013.7 1.24
+mech_ifvg v2 y2025 n 77 {'A': (5, 0.9), 'B': (28, -0.295), 'C': (11, 0.262), 'SKIP': (33, -0.265)} mono False rho 0.025 | base -2863.9 tier 1346.3 1.18
+ict2022 v1 dev n 36 {'A': (13, 0.236), 'B': (12, 0.084), 'C': (8, -0.152), 'SKIP': (3, 0.688)} mono True rho 0.022 | base 709.2 tier 2063.4 1.25
+ict2022 v1 confirm n 18 {'A': (4, -1.011), 'B': (5, -0.224), 'C': (6, -0.265), 'SKIP': (3, -0.977)} mono False rho -0.004 | base -2623.3 tier -3022.5 0.96
+ict2022 v1 ytd n 54 {'A': (17, -0.058), 'B': (17, -0.007), 'C': (14, -0.2), 'SKIP': (6, -0.145)} mono False rho 0.038 | base -1914.1 tier -959.1 1.14
+ict2022 v1 y2025 n 43 {'A': (15, -0.054), 'B': (12, -0.705), 'C': (8, -0.077), 'SKIP': (8, 0.575)} mono False rho -0.295 | base -1662.1 tier -978.8 0.94
+ict2022 v2 dev n 36 {'A': (7, 0.486), 'B': (10, -0.12), 'C': (4, 0.506), 'SKIP': (15, 0.047)} mono False rho 0.16 | base 709.2 tier 2117.6 0.82
+ict2022 v2 confirm n 18 {'A': (5, -0.168), 'B': (8, -0.698), 'C': (0, None), 'SKIP': (5, -0.652)} mono False rho -0.26 | base -2623.3 tier -1793.8 0.83
+ict2022 v2 ytd n 54 {'A': (12, 0.214), 'B': (18, -0.377), 'C': (4, 0.506), 'SKIP': (20, -0.128)} mono False rho 0.051 | base -1914.1 tier 323.8 0.83
+ict2022 v2 y2025 n 43 {'A': (3, 1.134), 'B': (12, -0.388), 'C': (6, -0.665), 'SKIP': (22, -0.002)} mono True rho -0.161 | base -1662.1 tier 635.3 0.56
+done 19.0 s

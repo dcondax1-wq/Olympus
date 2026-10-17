@@ -1,0 +1,1 @@
+2026-10-16 19:36 lookahead check: 60 sampled setups (engine 2025-26, ATM 1m, Silver Bullet), judged on the full history vs a frame cut at the decision time: 0 with any difference

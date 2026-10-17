@@ -1,0 +1,55 @@
+﻿frames 354333 107307 7.6 s
+judged 93 118 987 18.4 s
+done 20.6 s
+v1 dev      n= 54 A:10/-0.436 B:17/0.067 C:23/0.173 SKIP:4/-0.402 mono=False rho=-0.117 A-CS=-0.524 [-1.27, 0.237, 0.085]
+      base  n=54 tpw=2.11 net=+592 pf=1.11 dd=-2,706 pass=8.2 (zero 4.5) losing_m=4
+      drop  n=27 tpw=1.05 net=-2,308 pf=0.62 dd=-3,610 pass=0.0 (zero 0.0) losing_m=5
+      tier  n=50 tpw=1.95 net=-1,516 pf=0.79 dd=-3,981 pass=0.0 (zero 31.0) losing_m=5
+v1 confirm  n= 39 A:5/0.479 B:9/1.125 C:16/0.824 SKIP:9/1.129 mono=False rho=-0.199 A-CS=-0.455 [-1.822, 0.879, 0.253]
+      base  n=39 tpw=2.5 net=+11,038 pf=5.15 dd=-876 pass=100.0 (zero 19.4) losing_m=1
+      drop  n=14 tpw=0.9 net=+5,015 pf=3.4 dd=-889 pass=100.0 (zero 0.0) losing_m=1
+      tier  n=30 tpw=1.92 net=+6,583 pf=3.67 dd=-823 pass=100.0 (zero 0.0) losing_m=1
+v1 ytd      n= 93 A:15/-0.131 B:26/0.433 C:39/0.44 SKIP:13/0.658 mono=False rho=-0.18 A-CS=-0.626 [-1.343, 0.117, 0.047]
+      base  n=93 tpw=2.26 net=+11,630 pf=2.41 dd=-3,147 pass=48.1 (zero 27.0) losing_m=5
+      drop  n=41 tpw=1.0 net=+2,707 pf=1.33 dd=-3,785 pass=44.9 (zero 34.8) losing_m=6
+      tier  n=80 tpw=1.94 net=+5,067 pf=1.53 dd=-4,254 pass=45.5 (zero 36.0) losing_m=6
+v1 y2025    n=118 A:26/0.241 B:37/-0.239 C:43/-0.102 SKIP:12/0.125 mono=False rho=0.076 A-CS=0.293 [-0.284, 0.88, 0.841]
+      base  n=118 tpw=3.17 net=+1,361 pf=1.14 dd=-3,362 pass=11.8 (zero 0.8) losing_m=5
+      drop  n=63 tpw=1.69 net=+1,431 pf=1.13 dd=-4,055 pass=12.4 (zero 6.5) losing_m=4
+      tier  n=106 tpw=2.85 net=+968 pf=1.07 dd=-5,037 pass=21.0 (zero 14.1) losing_m=4
+v1_scoreonly dev      n= 54 A:10/-0.436 B:17/0.067 C:23/0.173 SKIP:4/-0.402 mono=False rho=-0.117
+v1_scoreonly confirm  n= 39 A:5/0.479 B:9/1.125 C:16/0.824 SKIP:9/1.129 mono=False rho=-0.199
+v1_scoreonly ytd      n= 93 A:15/-0.131 B:26/0.433 C:39/0.44 SKIP:13/0.658 mono=False rho=-0.18
+v1_scoreonly y2025    n=118 A:26/0.241 B:37/-0.239 C:43/-0.102 SKIP:12/0.125 mono=False rho=0.076
+v2 dev      n= 54 A:14/-0.68 B:16/0.671 C:5/-0.404 SKIP:19/-0.002 mono=False rho=-0.361 A-CS=-0.594 [-1.092, -0.121, 0.006]
+      base  n=54 tpw=2.11 net=+592 pf=1.11 dd=-2,706 pass=8.2 (zero 4.5) losing_m=4
+      drop  n=30 tpw=1.17 net=-2,184 pf=0.68 dd=-5,082 pass=0.0 (zero 15.2) losing_m=4
+      tier  n=35 tpw=1.37 net=-2,412 pf=0.66 dd=-5,109 pass=0.0 (zero 15.2) losing_m=4
+v2 confirm  n= 39 A:8/0.753 B:16/0.85 C:3/2.165 SKIP:12/0.812 mono=False rho=-0.011 A-CS=-0.329 [-1.708, 1.297, 0.329]
+      base  n=39 tpw=2.5 net=+11,038 pf=5.15 dd=-876 pass=100.0 (zero 19.4) losing_m=1
+      drop  n=24 tpw=1.54 net=+6,805 pf=4.06 dd=-1,136 pass=100.0 (zero 17.1) losing_m=1
+      tier  n=27 tpw=1.73 net=+7,571 pf=4.39 dd=-1,136 pass=100.0 (zero 19.0) losing_m=1
+v2 ytd      n= 93 A:22/-0.159 B:32/0.76 C:8/0.56 SKIP:31/0.313 mono=False rho=-0.198 A-CS=-0.522 [-1.218, 0.256, 0.089]
+      base  n=93 tpw=2.26 net=+11,630 pf=2.41 dd=-3,147 pass=48.1 (zero 27.0) losing_m=5
+      drop  n=54 tpw=1.31 net=+4,622 pf=1.51 dd=-5,730 pass=32.4 (zero 22.7) losing_m=5
+      tier  n=62 tpw=1.5 net=+5,159 pf=1.55 dd=-5,762 pass=32.4 (zero 22.7) losing_m=5
+v2 y2025    n=118 A:28/-0.141 B:31/-0.152 C:10/-0.016 SKIP:49/0.068 mono=False rho=0.061 A-CS=-0.195 [-0.649, 0.304, 0.206]
+      base  n=118 tpw=3.17 net=+1,361 pf=1.14 dd=-3,362 pass=11.8 (zero 0.8) losing_m=5
+      drop  n=59 tpw=1.59 net=-4,506 pf=0.55 dd=-6,007 pass=0.0 (zero 12.5) losing_m=6
+      tier  n=69 tpw=1.85 net=-4,681 pf=0.57 dd=-6,495 pass=0.0 (zero 13.1) losing_m=6
+v2_scoreonly dev      n= 54 A:16/-0.723 B:27/0.331 C:9/0.232 SKIP:2/-0.152 mono=False rho=-0.361
+v2_scoreonly confirm  n= 39 A:10/0.695 B:22/0.959 C:4/1.562 SKIP:3/0.528 mono=False rho=-0.011
+v2_scoreonly ytd      n= 93 A:26/-0.178 B:49/0.613 C:13/0.641 SKIP:5/0.256 mono=False rho=-0.198
+v2_scoreonly y2025    n=118 A:33/-0.184 B:62/0.013 C:16/0.187 SKIP:7/-0.456 mono=False rho=0.061
+EXP v1 dev      A:8/-0.415 B:19/-0.123 C:19/0.439 SKIP:8/-0.441 mono=False rho=-0.11 | drop net=-2,764 tpw=1.05 | tier net=-1,410
+EXP v1 confirm  A:2/-0.62 B:11/1.343 C:18/0.563 SKIP:8/1.525 mono=False rho=-0.144 | drop net=+4,077 tpw=0.83 | tier net=+5,337
+EXP v1 ytd      A:10/-0.456 B:30/0.415 C:37/0.499 SKIP:16/0.542 mono=False rho=-0.155 | drop net=+1,314 tpw=0.97 | tier net=+3,927
+EXP v1 y2025    A:23/0.274 B:37/-0.176 C:46/-0.15 SKIP:12/0.138 mono=False rho=0.066 | drop net=+2,119 tpw=1.61 | tier net=+1,389
+BRAIN dev      engine avgR=-0.016 brain avgR=0.089 flat350 engine net=+592 brain net=+1,459 pf=1.2 dd=-2,350 by grade {'A': -0.385, 'B': 0.327, 'C': 0.29, 'SKIP': -0.886}
+BRAIN confirm  engine avgR=0.92 brain avgR=0.277 flat350 engine net=+11,038 brain net=+3,971 pf=1.83 dd=-927 by grade {'A': 0.023, 'B': 0.342, 'C': 0.471, 'SKIP': 0.009}
+BRAIN ytd      engine avgR=0.377 brain avgR=0.168 flat350 engine net=+11,630 brain net=+5,430 pf=1.45 dd=-3,163 by grade {'A': -0.249, 'B': 0.333, 'C': 0.364, 'SKIP': -0.266}
+BRAIN y2025    engine avgR=-0.046 brain avgR=-0.1 flat350 engine net=+1,361 brain net=-182 pf=0.99 dd=-3,173 by grade {'A': 0.019, 'B': -0.299, 'C': -0.002, 'SKIP': -0.098}
+FIVE v1 {'2021': ({'A': (2, -0.548), 'B': (12, -0.102), 'C': (19, 0.114), 'SKIP': (5, -0.091)}, -0.131), '2022': ({'A': (16, -0.48), 'B': (60, -0.128), 'C': (99, 0.004), 'SKIP': (17, -0.153)}, -0.011), '2023': ({'A': (32, 0.116), 'B': (76, 0.042), 'C': (113, -0.007), 'SKIP': (39, -0.013)}, 0.05), '2024': ({'A': (40, 0.228), 'B': (61, -0.121), 'C': (98, 0.103), 'SKIP': (22, 0.069)}, -0.147), '2025': ({'A': (27, 0.179), 'B': (55, -0.066), 'C': (69, -0.037), 'SKIP': (22, 0.05)}, 0.038), '2026': ({'A': (13, -0.092), 'B': (24, 0.406), 'C': (52, 0.09), 'SKIP': (14, 0.707)}, -0.217), 'all': ({'A': (130, 0.059), 'B': (288, -0.024), 'C': (450, 0.031), 'SKIP': (119, 0.075)}, -0.044), 'pre2025': ({'A': (90, 0.045), 'B': (209, -0.062), 'C': (329, 0.036), 'SKIP': (83, -0.025)}, -0.041)}
+FIVE v1_scoreonly {'all': ({'A': (130, 0.059), 'B': (288, -0.024), 'C': (450, 0.031), 'SKIP': (119, 0.075)}, -0.044), 'pre2025': ({'A': (90, 0.045), 'B': (209, -0.062), 'C': (329, 0.036), 'SKIP': (83, -0.025)}, -0.041)}
+FIVE v2 {'2021': ({'A': (5, 0.211), 'B': (17, 0.01), 'C': (5, -0.225), 'SKIP': (11, -0.064)}, -0.167), '2022': ({'A': (31, 0.015), 'B': (64, 0.025), 'C': (25, -0.346), 'SKIP': (72, -0.152)}, 0.017), '2023': ({'A': (30, -0.083), 'B': (92, 0.11), 'C': (39, 0.215), 'SKIP': (99, -0.105)}, -0.047), '2024': ({'A': (33, -0.161), 'B': (79, 0.332), 'C': (27, -0.282), 'SKIP': (82, 0.001)}, -0.078), '2025': ({'A': (41, -0.045), 'B': (54, -0.053), 'C': (21, -0.007), 'SKIP': (57, 0.081)}, -0.002), '2026': ({'A': (30, -0.201), 'B': (39, 0.572), 'C': (11, 0.314), 'SKIP': (23, 0.149)}, -0.251), 'all': ({'A': (170, -0.083), 'B': (345, 0.167), 'C': (128, -0.044), 'SKIP': (344, -0.04)}, -0.048), 'pre2025': ({'A': (99, -0.063), 'B': (252, 0.151), 'C': (96, -0.094), 'SKIP': (264, -0.083)}, -0.044)}
+FIVE v2_scoreonly {'all': ({'A': (204, -0.11), 'B': (485, 0.116), 'C': (184, -0.078), 'SKIP': (114, 0.039)}, -0.048), 'pre2025': ({'A': (124, -0.073), 'B': (345, 0.081), 'C': (141, -0.141), 'SKIP': (101, 0.02)}, -0.044)}

@@ -1,0 +1,84 @@
+{
+ "period": [
+  "2025-04-14",
+  "2025-12-31"
+ ],
+ "sessions": 186,
+ "trades": 45,
+ "tpw": 1.21,
+ "weeks_in_2_5": 32.0,
+ "weeks_zero": 24.0,
+ "win_rate": 60.0,
+ "avg_r": -0.038,
+ "ci95_r": [
+  -0.286,
+  0.211
+ ],
+ "pf": 0.96,
+ "net": -204.72,
+ "max_dd": -2002.28,
+ "worst_day": -348.51,
+ "months": {
+  "2025-04": {
+   "trades": 5,
+   "net": -839.05
+  },
+  "2025-05": {
+   "trades": 7,
+   "net": -1122.63
+  },
+  "2025-06": {
+   "trades": 1,
+   "net": 74.6
+  },
+  "2025-07": {
+   "trades": 4,
+   "net": 453.0
+  },
+  "2025-08": {
+   "trades": 4,
+   "net": 501.52
+  },
+  "2025-09": {
+   "trades": 9,
+   "net": 1127.67
+  },
+  "2025-10": {
+   "trades": 7,
+   "net": 319.27
+  },
+  "2025-11": {
+   "trades": 3,
+   "net": -160.27
+  },
+  "2025-12": {
+   "trades": 5,
+   "net": -558.83
+  }
+ },
+ "losing_months": 4,
+ "rolling_pass": 97.8,
+ "avg_days_to_pass": 86.4,
+ "completed": 46,
+ "b2b_pass": 1,
+ "b2b_fail": 1,
+ "zero_edge_pass": 98.1,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "ATM_diag_noskip_flat",
+ "period_name": "y2025",
+ "notes": "DIAGNOSTIC: all V+IFVG signals, no R:R skip (not a candidate)",
+ "params": {
+  "min_rr": 0.0,
+  "sizing": "flat"
+ },
+ "scored_at": 1792191413
+}

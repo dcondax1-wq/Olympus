@@ -94,7 +94,7 @@ DEFAULTS = {
     "partial_pct": 0.0,
     "be_after_partial": True,
     "partial_at": "r",          # r (at partial_r) | pool (at the first opposing pool between entry and target)
-    "target_mode": "major",     # major (nearest major pool >= min R: session/day/week H-L, 1H swings, EQH/EQL) | major_next | dol (nearest pool >= min R) | dol_next (the pool after it) | fixed (fallback_rr)
+    "target_mode": "major",     # major (nearest major pool >= min R: session/day/week H-L, 1H swings, EQH/EQL) | major_next | dol (nearest pool >= min R) | dol_next (the pool after it) | fixed (fallback_rr) | draw (liquidity map, see below)
     "stop_buffer_mult": 1.0,    # multiplies the instrument stop buffer beyond the sweep
     "be_at_r": 1.0,             # move stop to breakeven once price runs this many R (0 = off)
     "trail_mode": "none",       # none | r (trail trail_r behind the best price) | swing (trail behind 5m swings)
@@ -144,6 +144,72 @@ DEFAULTS = {
     # ---- persistent trade memory (engine/memory.py, data/memory.db)
     "memory_seed": True,        # seed the exit-signal learner from remembered paper + live trades at the start of every run
     "memory_write_backtest": False,   # also store this backtest's trades in memory as source 'backtest' (never used for seeding)
+    # ---- discretionary-trader layer (engine/liquidity_map.py, rules from research/lab/DOL_PLAYBOOK.md). Every default
+    #      below keeps today's behaviour; each piece switches on with its own mode: target_mode "draw",
+    #      stop_model "struct_atr", manage_mode "person", plus exit rule "cisd_disp", noon_exit and the draw_* skip rules.
+    #      target_mode "draw" (DOL-4): T = nearest Tier-A draw (PW/PD/RTH/ON/Asia/London H-L, 4H/D swings, EQH/EQL)
+    #        >= draw_min_rr x R and within reach, else nearest Tier-B (1H swings, live 1H/4H/1D FVGs), else draw_fallback
+    "draw_pick": "tier",        # tier (playbook DOL-4) | significance (most significant clean ERL: W > D > session > 1H swing)
+                                #   | farthest_reach (farthest Tier A/B ERL >= draw_min_rr still within reach, else the
+                                #   nearest within-reach draw >= draw_alt_min_rr; DRAW_LEARNER.md variant a)
+    "draw_alt_min_rr": 1.5,     # farthest_reach fallback / PM cap: nearest within-reach draw at least this many R away
+    "draw_pm": "same",          # same | nearest (PM entries: T = nearest within-reach draw >= draw_alt_min_rr)
+    #      trader heuristics (research/lab/TRADER_HEURISTICS.md, NQ1! 2021-26 checks); draw mode only, all off by default
+    "draw_pdx": False,          # B1: yesterday closed beyond the day-before's high (low) -> T = yesterday's high (low) when
+                                #   >= draw_alt_min_rr and within reach (taken 80% / 67% vs 55% / 46%); void once the
+                                #   opposite extreme trades first
+    "draw_one_side": False,     # B3: 09:30 open inside the prior RTH range and one prior-day extreme already taken today ->
+                                #   never target the other one (or beyond it): it follows only ~10% of the time
+    "no_fade_drive": False,     # T1: pass on trades against an opening drive (by 10:00: the 09:30 open never revisited from
+                                #   the 3rd bar, adverse <= 0.05 x ADR20, close - open >= 0.20 x ADR20)
+    "balance_first": False,     # T4 proxy: RTH open inside the prior value area (AMT balance) -> T = nearest draw within
+                                #   reach >= draw_alt_min_rr (quick exit)
+    "draw_min_rr": 2.0,         # draw: minimum distance to T in R
+    "draw_reach": "playbook",   # playbook: dist <= max(0.5 x ADR10, ADR10 - today's range) | none
+    "draw_fallback": "2r",      # no Tier A/B draw: 2r (DOL-9: E + 2R) | skip | major (today's nearest-major rule)
+    "draw_exit_ticks": 2,       # exit this many ticks before the pool (into it, not beyond)
+    "draw_max_obst": 2,         # significance pick only: path obstacles allowed
+    "draw_eq_w": 1.0,           # significance pick only: bonus for an equal highs / lows pool
+    "draw_rank": "rule",        # rule | learned (engine/draw_learner.predict(features) -> P(hit before stop); max EV =
+                                #   p*R - (1-p) among Tier A/B draws; falls back to the rule if the module is missing)
+    "draw_min_ev": -99.0,       # learned: pass when the best draw's EV (in R) is below this (-99 = never)
+    "draw_hrlr": "off",         # DOL-6 skip rule: off | tp1 (>= 3 obstacles: everything exits at TP1, skip if TP1 < draw_min_rr)
+    "draw_block_r": 0.0,        # DOL-6 skip rule: pass if a live opposing 1H/4H FVG starts within this many R (0 = off)
+    "irl_tfs": "5m,15m,1h,4h,1d",   # timeframes whose live FVGs are internal (IRL) draws
+    "irl_mitigation": "ce_touch",   # an FVG stops being a draw on: ce_touch (a wick to its 50% CE; playbook D6) | ce_close |
+                                    #   touch (any trade into it) | full
+    "fvg_min": "playbook",      # gap minimum: playbook (5m max(1 tick, 0.1 ATR14), 15m+ 1 tick) | engine (min_fvg x tf mult)
+    "irl_level": "edge",        # an FVG draw's price: edge (near edge = first touch) | ce
+    "irl_min_r": 1.0,           # TP1 = nearest internal draw at least this many R away, short of T (DOL-5)
+    "irl_partial_src": "playbook",  # TP1 candidates: playbook (gaps + Tier B/C pools, HTF gap > EQ > swing > 5m gap within
+                                    #   0.25R) | all (any draw, nearest) | fvg (gaps only)
+    #      stop_model "struct_atr" (STOP-1..3): sweep extreme - max(2 ticks, stop_atr_buf x ATR14); never widened to a
+    #        minimum or tightened; too wide (> max stop) = pass, inside the noise (< min_stop_atr x ATR) = pass
+    "stop_model": "fixed",      # fixed (today: stop_mode + instrument min/max stop clamp) | struct_atr | protected_swing
+    "stop_atr_buf": 0.1,        # struct_atr: buffer = max(2 ticks, this x Wilder ATR14 of 5m)
+    "min_stop_atr": 0.5,        # struct_atr: pass when the stop is tighter than this x ATR14 (0 = off)
+    "max_stop_atr": 0.0,        # struct_atr: pass when the stop is wider than this x ATR14 (0 = off)
+    "stop_cap": "size",         # struct_atr: size (playbook STOP-3: too wide only when risk_usd buys < 1 micro) | spec
+                                #   (also pass above the instrument max_stop, 60 NQ points)
+    "stop_origin": False,       # struct_atr: use the displacement-origin higher low when tighter and valid (playbook: no)
+    #      manage_mode "person" (MGMT-1..4): TP1 for ceil(n x irl_partial_pct) (>= 1 runner kept) -> stop to entry + 2 ticks
+    #        at the first of TP1 or +person_be_r R -> trail to each new 5m protected low - buffer on every BOS -> rest at T
+    "manage_mode": "standard",  # standard (today: be_at_r, partial_pct, trail_mode) | person
+    "irl_partial_pct": 0.5,     # person: fraction closed at TP1
+    "person_be_r": 1.0,         # person: breakeven at +this R if TP1 has not filled yet (0 = only at TP1)
+    "person_be_ticks": 2,       # person: breakeven stop = entry + this many ticks
+    "person_trail": True,       # person: structure trail after breakeven (MGMT-3)
+    "trail_buf_atr": 0.1,       # person: trail buffer = max(2 ticks, this x ATR14)
+    "noon_exit": False,         # MGMT-7: at 12:00 ET exit an AM trade whose stop is still below entry
+    #      entry_mode "retest" (gallery finding: most full-stop losers died inside the entry bar): after the trigger, rest a
+    #        LIMIT at the trigger zone and fill only if a later bar trades 1 tick through it within retest_bars; the stop
+    #        stays at invalidation. Cancelled when it expires, at flat time, or if price reaches the target first.
+    "entry_mode": "market",     # market (today: next bar's open) | retest
+    "retest_bars": 6,           # retest: bars the limit stays working after the signal bar
+    "retest_level": "edge",     # retest: IFVG near edge | ce (its 50%); a CISD trigger always uses its CISD level
+    #      stop_model "protected_swing": like struct_atr, but the invalidation is the swing the displacement launched
+    #        from (lowest low from the candle before the in-favour run that triggered, through the trigger bar) instead of
+    #        the sweep wick; no draw >= min_rr -> pass
 }
 
 MAJOR_KINDS = {"PDH", "PDL", "PWH", "PWL", "ONH", "ONL", "LOH", "LOL", "ASH", "ASL", "H1H", "H1L"}
@@ -152,6 +218,23 @@ MAJOR_KINDS = {"PDH", "PDL", "PWH", "PWL", "ONH", "ONL", "LOH", "LOL", "ASH", "A
 def _is_major(q):
     """Major liquidity: session / day / week extremes, 1H swings and any equal highs/lows."""
     return bool(q.get("eq")) or any(k in MAJOR_KINDS for k in q.get("kinds", [q["kind"]]))
+
+
+_DRAW_LEARNER = {"tried": False, "fn": None}
+
+
+def _draw_predictor():
+    """draw_rank 'learned': engine/draw_learner.predict(features) -> P(draw hit before the stop), or None when the
+    module (owned by another session) is missing or has no predict(); the rule ranking is used then."""
+    if not _DRAW_LEARNER["tried"]:
+        _DRAW_LEARNER["tried"] = True
+        try:
+            from . import draw_learner as _dl
+            fn = getattr(_dl, "predict", None)
+            _DRAW_LEARNER["fn"] = fn if callable(fn) else None
+        except Exception:
+            _DRAW_LEARNER["fn"] = None
+    return _DRAW_LEARNER["fn"]
 
 
 POOL_STRENGTH = {"PDH": 2, "PDL": 2, "PWH": 3, "PWL": 3, "ONH": 2, "ONL": 2, "ASH": 1, "ASL": 1,
@@ -397,6 +480,15 @@ class Engine:
         while hi_ptr < len(htf) and htf.t[hi_ptr] + htf_secs <= b.t[0]:
             h1.add(htf.t[hi_ptr], htf.h[hi_ptr], htf.l[hi_ptr], htf.c[hi_ptr])
             hi_ptr += 1
+        # discretionary layer (off by default): Wilder ATR14 of the base bars + the liquidity map (live FVGs on
+        # 5m / 15m / 1H / 4H / 1D, prior RTH H/L, 4H / daily swings) for target_mode "draw" / manage_mode "person"
+        use_map = p["target_mode"] == "draw" or p["manage_mode"] == "person"
+        self._atr_w = None
+        if use_map or p["stop_model"] in ("struct_atr", "protected_swing"):
+            from .liquidity_map import wilder_atr
+            self._atr_w = wilder_atr(b.h, b.l, b.c)
+        self._lmap = self._build_lmap(htf, mb) if use_map else None
+        self._cisd_on = "cisd_disp" in {x.strip() for x in str(p["exit_rules"]).split(",")}
 
         # per-day accumulators
         cur_day = None
@@ -680,6 +772,9 @@ class Engine:
                         pp = taken.get("partial_pool")
                         if p["partial_at"] == "pool" and pp and 0.5 <= (pp[0] - fill) * d / risk_pts and (pp[0] - taken["target"]) * d < 0:
                             pos["partial_px"] = pp[0]
+                        if p["manage_mode"] == "person":
+                            pdw = taken.get("partial_draw")
+                            pos["partial_px"] = pdw["target"] if pdw and (pdw["target"] - fill) * d > 0 else None
                         day_trades += 1
                         self._ev(int(L1.t[jf]), "entry", f"{'LONG' if d == 1 else 'SHORT'} {pos['qty_label']} @ {fill:.2f} (1m fill) | "
                                  f"SL {pos['stop']:.2f} | TP {pos['target']:.2f} ({pos['target_label']}) | {pos['rr']}R", dir=d, price=fill)
@@ -732,6 +827,8 @@ class Engine:
             self._m15_ptr = m15_ptr
             if self.mtf is not None:
                 self.mtf.advance(t_end, int(b.t[0]) - 3 * 86400)
+            if self._lmap is not None:
+                self._lmap.advance(t_end, i)
             if midnight_open is None and 0 <= mod < 1080:
                 midnight_open = o   # ICT "true day open"
             # ---- Quarterly Theory true opens (open of each cycle's 2nd quarter) + AMD daily open
@@ -793,7 +890,22 @@ class Engine:
             if pending is not None and pos is None:
                 d = pending["dir"]
                 slip = p["slippage_ticks"] * tick
-                fill = o + d * slip
+                lim, post, fill = pending.get("limit"), None, None
+                if lim is None:
+                    fill = o + d * slip
+                elif i > pending["limit_exp"] or mod >= p["flat_mod"] - 10 or int(b.tday[i]) != pending["limit_tday"]:
+                    self._ev(t, "skip", f"retest limit {lim:.2f} not filled within {pending['retest_bars']} bars - "
+                             f"order cancelled", dir=d)
+                    pending = None
+                elif (l if d == 1 else -h) <= lim * d - p["touch_ticks"] * tick:
+                    # limit filled (a gap through it fills at the open). On this bar only the part after the fill is
+                    # managed: the stop can be hit, a target cannot (the bar's high may have come before the fill).
+                    fill = min(o * d, lim * d) * d
+                    post = (fill, max(fill, c), l) if d == 1 else (fill, h, min(fill, c))
+                elif (h if d == 1 else -l) >= pending["target"] * d:
+                    self._ev(t, "skip", "price reached the target before the retest - order cancelled", dir=d)
+                    pending = None
+            if pending is not None and pos is None and fill is not None:
                 risk_pts = (fill - pending["stop"]) * d
                 if risk_pts <= 0 or (pending["target"] - fill) * d <= 0:
                     self._ev(t, "skip", "Gap through stop/target at open - order cancelled")
@@ -809,8 +921,14 @@ class Engine:
                     pp = pending.get("partial_pool")
                     if p["partial_at"] == "pool" and pp and 0.5 <= (pp[0] - fill) * d / risk_pts and (pp[0] - pending["target"]) * d < 0:
                         pos["partial_px"] = pp[0]
+                    if p["manage_mode"] == "person":
+                        pdw = pending.get("partial_draw")
+                        pos["partial_px"] = pdw["target"] if pdw and (pdw["target"] - fill) * d > 0 else None
+                    if post is not None:
+                        pos["ltf_post"], pos["entry_kind"] = post, "retest limit"
                     day_trades += 1
-                    self._ev(t, "entry", f"{'LONG' if d == 1 else 'SHORT'} {pos['qty_label']} @ {fill:.2f} | "
+                    self._ev(t, "entry", f"{'LONG' if d == 1 else 'SHORT'} {pos['qty_label']} @ {fill:.2f}"
+                             f"{' (retest limit)' if post is not None else ''} | "
                              f"SL {pos['stop']:.2f} | TP {pos['target']:.2f} ({pos['target_label']}) | {pos['rr']}R",
                              dir=d, price=fill)
                 pending = None
@@ -839,7 +957,18 @@ class Engine:
                     self._exit(pos, pos["remaining"], px, t, "STOP" if not (pos["partial_done"] or pos.get("managed")) else "BE/TRAIL")
                     exited = True
                 else:
-                    if (not pos["partial_done"]) and p["partial_pct"] > 0 and high_d >= pos["partial_px"] * d + p["touch_ticks"] * tick:
+                    if p["manage_mode"] == "person":
+                        # person (MGMT-1/2): bank ceil(n x irl_partial_pct) at TP1 (always keep a runner), then the stop
+                        # goes to entry + person_be_ticks. One contract = no partial, so TP1 alone does not move the stop.
+                        if (not pos["partial_done"]) and pos.get("partial_px") is not None and \
+                                high_d >= pos["partial_px"] * d + p["touch_ticks"] * tick:
+                            q = min(pos["qty"] - 1, int(math.ceil(pos["qty"] * p["irl_partial_pct"] - 1e-9)))
+                            pos["partial_done"] = True
+                            if 1 <= q < pos["remaining"]:
+                                self._exit(pos, q, pos["partial_px"], t, f"TP1 {(pos.get('partial_draw') or {}).get('source', 'IRL')}")
+                                pos["stop"] = max(pos["stop"] * d, pos["entry"] * d + p["person_be_ticks"] * tick) * d
+                                pos["managed"] = True
+                    elif (not pos["partial_done"]) and p["partial_pct"] > 0 and high_d >= pos["partial_px"] * d + p["touch_ticks"] * tick:
                         q = int(math.floor(pos["qty"] * p["partial_pct"]))
                         if q >= 1 and q < pos["remaining"]:
                             self._exit(pos, q, pos["partial_px"], t, f"TP1 {p['partial_r']}R")
@@ -861,6 +990,10 @@ class Engine:
                     elif p["time_stop_min"] and (i - pos["entry_i"] + 1) * self.secs >= p["time_stop_min"] * 60 and pos["mfe"] < 0.5:
                         self._exit(pos, pos["remaining"], c - d * slip, t, "TIME STOP")
                         exited = True
+                    elif p["noon_exit"] and mod + self.secs // 60 == 720 and int(b.mod[pos["entry_i"]]) < 720 and \
+                            pos["stop"] * d < pos["entry"] * d:
+                        self._exit(pos, pos["remaining"], c - d * slip, t, "NOON UNPROTECTED")
+                        exited = True
                     elif p["ifvg_fail_exit"] and pos.get("zone") and i > pos["entry_i"] and \
                             (c - pos["zone"][0 if d == 1 else 1]) * d < 0:
                         self._exit(pos, pos["remaining"], c - d * slip, t, "IFVG FAIL")
@@ -874,8 +1007,11 @@ class Engine:
                         e_d, risk = pos["entry"] * d, pos["risk_pts"]
                         new_stop_d = pos["stop"] * d
                         be_r = p["be_at_r_trending"] if (pos.get("regime") == "trending" and p["be_at_r_trending"]) else p["be_at_r"]
+                        be_tk = tick
+                        if p["manage_mode"] == "person":
+                            be_r, be_tk = p["person_be_r"], p["person_be_ticks"] * tick   # MGMT-2: TP1 or +1R, never earlier
                         if be_r and pos["mfe"] >= be_r:
-                            new_stop_d = max(new_stop_d, e_d + tick)
+                            new_stop_d = max(new_stop_d, e_d + be_tk)
                         if p["lock_at_r"] and pos["mfe"] >= p["lock_at_r"]:
                             new_stop_d = max(new_stop_d, e_d + p["lock_r"] * risk)
                         if p["trail_mode"] != "none" and pos["mfe"] >= p["trail_start_r"]:
@@ -890,6 +1026,12 @@ class Engine:
                                         new_stop_d = max(new_stop_d, Ld[k] - spec["stop_buffer"])
                                         break
                                     k -= 1
+                        if p["manage_mode"] == "person" and p["person_trail"]:
+                            # MGMT-3: once at breakeven, every 5m BOS in favour lifts the stop to the new protected low - buffer
+                            prot = self._protected_swing(pos, i, d)
+                            if prot is not None and new_stop_d >= e_d:
+                                atr_i = float(self._atr_w[i]) if self._atr_w is not None else (pos.get("atr") or risk)
+                                new_stop_d = max(new_stop_d, prot - max(2 * tick, p["trail_buf_atr"] * atr_i))
                         if new_stop_d > pos["stop"] * d:
                             pos["stop"] = new_stop_d * d
                             pos["managed"] = True
@@ -1367,6 +1509,210 @@ class Engine:
         return {"type": "CISD", "tf": "1m", "k": ext_i, "t0": key[1], "top": level, "bot": bot,
                 "zone": sorted([bot * d, level * d]), "inv_low": float(bot), "ltf_j": int(j)}
 
+    # ------------------------------------------------------------------ discretionary layer helpers (off by default)
+    def _build_lmap(self, htf, mb):
+        """Liquidity map fed bar by bar: live FVGs on the base tf / 15m / 1H / 4H / 1D, prior RTH H/L and 4H / daily
+        3-bar swings (Tier-A pools the engine does not track). HTF series start a few weeks before the first base bar."""
+        from .liquidity_map import LiquidityBook
+        b, p = self.b, self.p
+        book = LiquidityBook(self.spec["tick"], self.spec["min_fvg"], p["irl_mitigation"], p["fvg_min"])
+        t0 = int(b.t[0])
+        book.add_gap_series("5m" if b.tf == "5m" else b.tf, b.t, b.t + self.secs, b.h, b.l, b.c, atr=self._atr_w, tday=b.tday)
+        if mb is not b and mb.tf == "15m":
+            book.add_gap_series("15m", mb.t, mb.t + 900, mb.h, mb.l, mb.c)
+        if htf is not None and htf.tf == "1h":
+            book.add_gap_series("1h", htf.t, htf.t + 3600, htf.h, htf.l, htf.c, start_t=t0 - 12 * 86400)
+            if self.mtf is not None:
+                s4, s1d = self.mtf.series["4H"], self.mtf.series["1D"]
+            else:
+                from .mtf import build_1d, build_4h
+                s4, s1d = build_4h(htf), build_1d(htf)
+            ref = (htf.t, htf.t + 3600, htf.h, htf.l)
+            for tf, s_ in (("4h", s4), ("1d", s1d)):
+                book.add_gap_series(tf, s_.t, s_.tc, s_.h, s_.l, s_.c, start_t=t0 - 30 * 86400)
+                book.add_swing_series(tf, s_.t, s_.tc, s_.h, s_.l, start_t=t0 - 30 * 86400, ref=ref)
+        book.set_base(b)
+        return book
+
+    def _atr_at(self, i, trig=None):
+        """Wilder ATR14 of the base bars at the decision bar (the previous bar on a 1m confirmation inside bar i)."""
+        k = i - 1 if (trig is not None and trig.get("ltf_j") is not None and i > 0) else i
+        if self._atr_w is not None:
+            return float(self._atr_w[k])
+        from .liquidity_map import atr14
+        return atr14(self.b, k)
+
+    def _draws(self, d, entry, risk, i, h1, trig=None):
+        """Every draw on the trade's side (engine pools + map pools + fresh 5m k=2 / 15m k=1 swings + live FVGs)."""
+        from .liquidity_map import draws, live_swings
+        b, p = self.b, self.p
+        tick = self.spec["tick"]
+        sw = {"H": [], "L": []}
+        ds0 = int(getattr(self, "_day_start", 0))
+        per_day = max(1, 82800 // self.secs)            # base bars in one 23h CME day
+        hs, ls = live_swings(b.h, b.l, 2, i, (i - ds0) + per_day, tick)   # 5m k=2: confirmed today or yesterday
+        sw["H"] += [(px, j, "5m", int(b.t[j])) for px, j in hs]
+        sw["L"] += [(px, j, "5m", int(b.t[j])) for px, j in ls]
+        mb = self.m15
+        last = self._m15_ptr - 1                       # latest CLOSED 15m bar
+        if mb is not b and last >= 4:
+            hs, ls = live_swings(mb.h, mb.l, 1, last, 5 * 92, tick)     # 15m k=1: the last 5 CME days
+            k5 = int(np.searchsorted(b.t, int(mb.t[last]) + 900))
+            hi_since = float(b.h[k5:i + 1].max()) if k5 <= i else -1e18
+            lo_since = float(b.l[k5:i + 1].min()) if k5 <= i else 1e18
+            sw["H"] += [(px, j, "15m", int(mb.t[j])) for px, j in hs if hi_since < px + tick]
+            sw["L"] += [(px, j, "15m", int(mb.t[j])) for px, j in ls if lo_since > px - tick]
+        return draws(d, entry, risk, self._atr_at(i, trig), int(b.t[i]) + self.secs, self.active, self._lmap, swings=sw,
+                     h1_trend=h1.trend, mod=int(b.mod[i]), tick=tick, irl_tfs=p["irl_tfs"], irl_level=p["irl_level"],
+                     eq_w=p["draw_eq_w"], day_start_t=int(b.t[ds0]))
+
+    def _pick_draw(self, ds, d, entry, risk, i, open_loc=None):
+        """Final target T from the map: reach = max(0.5 x ADR10, ADR10 - today's range) (DOL-4), then the optional trader
+        heuristics (B3 one-side cap, B1 strong prior-day extreme), the PM / balance-day nearest caps, then the pick rule."""
+        from .liquidity_map import nearest_in_reach, pick_primary
+        p, b, tick = self.p, self.b, self.spec["tick"]
+        max_dist = None
+        ds0 = getattr(self, "_day_start", 0)
+        pdays = self._prev_days_ref or []
+        if p["draw_reach"] == "playbook":
+            last10 = pdays[-10:]
+            if last10:
+                adr10 = float(np.mean([x["high"] - x["low"] for x in last10]))
+                today = float(b.h[ds0:i + 1].max() - b.l[ds0:i + 1].min())
+                max_dist = max(0.5 * adr10, adr10 - today)
+        if p["draw_one_side"] and pdays and pdays[-1].get("rth_high") is not None:
+            # B3: inside 09:30 open and the opposite prior-RTH extreme already taken in RTH -> never target this side's
+            # extreme or anything beyond it
+            y = pdays[-1]
+            rth0 = next((k for k in range(ds0, i + 1) if 570 <= int(b.mod[k]) < 960), None)
+            if rth0 is not None and y["rth_low"] <= float(b.o[rth0]) <= y["rth_high"]:
+                if d == 1 and float(b.l[rth0:i + 1].min()) <= y["rth_low"] - tick:
+                    cap = (y["rth_high"] - entry) - tick
+                elif d == -1 and float(b.h[rth0:i + 1].max()) >= y["rth_high"] + tick:
+                    cap = (entry - y["rth_low"]) - tick
+                else:
+                    cap = None
+                if cap is not None:
+                    max_dist = cap if max_dist is None else min(max_dist, cap)
+        if p["draw_pdx"] and len(pdays) >= 2:
+            # B1: yesterday closed beyond the day-before's high (low) -> yesterday's high (low) is the draw, unless the
+            # opposite extreme has traded first today
+            y, pp = pdays[-1], pdays[-2]
+            lvl = None
+            if d == 1 and y["close"] > pp["high"] and float(b.l[ds0:i + 1].min()) > y["low"] - tick:
+                lvl = y["high"]
+            elif d == -1 and y["close"] < pp["low"] and float(b.h[ds0:i + 1].max()) < y["high"] + tick:
+                lvl = y["low"]
+            if lvl is not None:
+                dist = (lvl - entry) * d
+                x = next((z for z in ds if abs(z["price"] - lvl) < tick / 2 + 1e-9), None)
+                if x is not None and dist >= p["draw_alt_min_rr"] * risk and (max_dist is None or dist <= max_dist):
+                    return {"primary": x, "why": "B1: yesterday closed beyond its prior extreme", "ev": None,
+                            "max_dist": max_dist}
+        if p["balance_first"] and open_loc == "inside" and not (p["draw_pm"] == "nearest" and int(b.mod[i]) >= 720):
+            x = nearest_in_reach(ds, p["draw_alt_min_rr"], max_dist)
+            return {"primary": x, "why": "balance day: nearest draw within reach" if x is not None else
+                    f"balance day: no draw >= {p['draw_alt_min_rr']}R within reach", "ev": None, "max_dist": max_dist}
+        if p["draw_pm"] == "nearest" and int(b.mod[i]) >= 720:
+            # PM entries reach their draws far less often (DRAW_LEARNER.md): cap T at the nearest draw within reach
+            x = nearest_in_reach(ds, p["draw_alt_min_rr"], max_dist)
+            return {"primary": x, "why": "PM: nearest draw within reach" if x is not None else
+                    f"PM: no draw >= {p['draw_alt_min_rr']}R within reach", "ev": None, "max_dist": max_dist}
+        pred = _draw_predictor() if p["draw_rank"] == "learned" else None
+        prim, why, ev = pick_primary(ds, p["draw_min_rr"], max_dist, p["draw_pick"], p["draw_max_obst"], p["draw_rank"],
+                                     pred, p["draw_min_ev"], p["draw_alt_min_rr"])
+        return {"primary": prim, "why": why, "ev": ev, "max_dist": max_dist}
+
+    def _open_drive(self, i):
+        """TRADER_HEURISTICS T1 opening drive, known from 10:00: +1 up / -1 down / 0. Up = the 09:55 close is >= 0.20 x
+        ADR20 above the 09:30 open, the low never went more than 0.05 x ADR20 below the open, and no bar from the 3rd one
+        (09:40) touched the open. Down is the mirror."""
+        b = self.b
+        ds0 = getattr(self, "_day_start", 0)
+        adr = getattr(self, "_adr20", None)
+        if not adr or int(b.mod[i]) < 600:
+            return 0
+        k0 = next((k for k in range(ds0, i + 1) if int(b.mod[k]) == 570), None)
+        if k0 is None or k0 + 5 > i or int(b.mod[k0 + 5]) != 595:
+            return 0
+        o, c = float(b.o[k0]), float(b.c[k0 + 5])
+        lo, hi = float(b.l[k0:k0 + 6].min()), float(b.h[k0:k0 + 6].max())
+        if c - o >= 0.20 * adr and o - lo <= 0.05 * adr and float(b.l[k0 + 2:k0 + 6].min()) > o:
+            return 1
+        if o - c >= 0.20 * adr and hi - o <= 0.05 * adr and float(b.h[k0 + 2:k0 + 6].max()) < o:
+            return -1
+        return 0
+
+    def _struct_stop(self, d, s, i, entry, mode="struct_atr"):
+        """stop_model 'struct_atr' (playbook STOP-1..3): the sweep extreme (optionally the displacement-origin higher low
+        when tighter and valid) - max(2 ticks, stop_atr_buf x ATR14). stop_model 'protected_swing': the swing the
+        displacement launched from = the lowest low from the candle before the in-favour run that ends at the trigger,
+        through the trigger bar (never beyond the sweep extreme). Never widened to a minimum and never tightened to make
+        the numbers work: a stop inside the noise (< min_stop_atr x ATR) or wider than the cap is a pass."""
+        b, p, spec = self.b, self.p, self.spec
+        tick = spec["tick"]
+        atr = self._atr_at(i)
+        e_d, ext_d, ext_i = entry * d, s["ext"] * d, int(s["ext_i"])
+        buf = max(2 * tick, p["stop_atr_buf"] * atr)
+        floor_ = p["min_stop_atr"] * atr
+        inval_d, src = ext_d, "sweep extreme"
+        if mode == "protected_swing":
+            up = lambda j: (b.c[j] - b.o[j]) * d > 0
+            ld = (lambda j: float(b.l[j])) if d == 1 else (lambda j: -float(b.h[j]))
+            f = i
+            while f - 1 > ext_i and up(f - 1):
+                f -= 1                                   # first candle of the in-favour run that ends at the trigger
+            a0 = max(ext_i, f - 1)
+            inval_d = max(ext_d, min(ld(j) for j in range(a0, i + 1)))
+            src = "protected swing" if inval_d > ext_d else "protected swing = sweep extreme"
+        elif p["stop_origin"] and i - ext_i >= 3:
+            ld = (lambda j: float(b.l[j])) if d == 1 else (lambda j: -float(b.h[j]))
+            seg = [ld(j) for j in range(ext_i + 1, i + 1)]
+            kk = ext_i + 1 + int(np.argmin(seg))
+            # a real higher low the displacement launched from: lower than the bar before and the bar after it
+            if ext_i + 2 <= kk <= i - 1 and ld(kk) < ld(kk - 1) and ld(kk) <= ld(kk + 1):
+                lo = ld(kk)
+                if lo - ext_d >= 0.25 * atr and e_d - (lo - buf) >= max(floor_, 2 * tick):
+                    inval_d, src = lo, "displacement origin"
+        stop_d = inval_d - buf
+        risk = e_d - stop_d
+        if risk <= 0 or (floor_ and risk < floor_):
+            return {"skip": f"Stop {risk:.1f}pts < {p['min_stop_atr']} x ATR {atr:.1f} (inside the noise) - pass", "consume": False}
+        cap = spec["max_stop"] if p["stop_cap"] == "spec" else 1e18     # "size": only the n < 1 contract veto in _size
+        if p["max_stop_atr"]:
+            cap = min(cap, p["max_stop_atr"] * atr)
+        if risk > cap:
+            return {"skip": f"Stop {risk:.1f}pts > max {cap:.1f} - pass (risk too wide)", "consume": True}
+        return {"stop": float(stop_d * d), "risk": float(risk), "atr14": float(atr), "src": src, "inval": float(inval_d * d)}
+
+    def _protected_swing(self, pos, i, d):
+        """5m structure for the person trail (playbook D10): a BOS is a close beyond the most recent confirmed (k=2), not yet
+        broken swing high; at each BOS the protected low = the lowest low from the broken swing's bar through the BOS bar.
+        Returns the highest protected low so far in direction space (None before the first BOS)."""
+        b = self.b
+        hd = (lambda j: float(b.h[j])) if d == 1 else (lambda j: -float(b.l[j]))
+        ld = (lambda j: float(b.l[j])) if d == 1 else (lambda j: -float(b.h[j]))
+        st = pos.get("pswing")
+        if st is None:
+            st = pos["pswing"] = {"sh": None, "sh_k": None, "prot": None}
+            e_i = pos["entry_i"]
+            for k in range(e_i - 3, max(1, e_i - 60), -1):      # latest swing high confirmed before the entry bar
+                hk = hd(k)
+                if hk > hd(k - 1) and hk > hd(k - 2) and hk >= hd(k + 1) and hk >= hd(k + 2):
+                    if max(float(b.c[j]) * d for j in range(k + 1, e_i)) <= hk:
+                        st["sh"], st["sh_k"] = hk, k
+                    break
+        k = i - 2
+        if k >= 2 and k >= pos["entry_i"] - 2:
+            hk = hd(k)
+            if hk > hd(k - 1) and hk > hd(k - 2) and hk >= hd(k + 1) and hk >= hd(k + 2):
+                st["sh"], st["sh_k"] = hk, k
+        if st["sh"] is not None and float(b.c[i]) * d > st["sh"]:
+            lo = min(ld(j) for j in range(st["sh_k"], i + 1))
+            st["prot"] = lo if st["prot"] is None else max(st["prot"], lo)
+            st["sh"], st["sh_k"] = None, None
+        return st["prot"]
+
     # ------------------------------------------------------------------ order planning + confluence
     def _plan(self, d, s, trig, i, h1, m15, prof, open_loc, midnight_open):
         b, p, spec = self.b, self.p, self.spec
@@ -1374,23 +1720,35 @@ class Engine:
         c = b.c[i]
         entry = c
         ext = s["ext"]
-        buf = spec["stop_buffer"] * p["stop_buffer_mult"]
-        if p["stop_mode"] == "ifvg":
-            stop = (trig["inv_low"] - buf) * d   # inv_low is in direction-space
+        if p["no_fade_drive"]:
+            drv = self._open_drive(i)
+            if drv == -d:
+                return {"skip": f"opening drive {'up' if drv == 1 else 'down'} today - never fade it (T1) - pass", "consume": True}
+        stop_info = None
+        if p["stop_model"] in ("struct_atr", "protected_swing"):
+            # structural invalidation + ATR buffer; never widened to a minimum (too tight = inside the noise = pass)
+            stop_info = self._struct_stop(d, s, i, entry, p["stop_model"])
+            if stop_info.get("skip"):
+                return stop_info
+            stop, risk = stop_info["stop"], stop_info["risk"]
         else:
-            stop = ext - d * buf
-        # direction-space helpers
-        risk = (entry - stop) * d
-        if risk < spec["min_stop"]:
-            stop = entry - d * spec["min_stop"]
-            risk = spec["min_stop"]
-        if risk > spec["max_stop"]:
-            alt = (trig["inv_low"] - buf) * d
-            alt_risk = (entry - alt) * d
-            if p["stop_mode"] == "swing" and spec["min_stop"] <= alt_risk <= spec["max_stop"]:
-                stop, risk = alt, alt_risk
+            buf = spec["stop_buffer"] * p["stop_buffer_mult"]
+            if p["stop_mode"] == "ifvg":
+                stop = (trig["inv_low"] - buf) * d   # inv_low is in direction-space
             else:
-                return {"skip": f"Stop {risk:.1f}pts > max {spec['max_stop']} - pass (risk too wide)", "consume": True}
+                stop = ext - d * buf
+            # direction-space helpers
+            risk = (entry - stop) * d
+            if risk < spec["min_stop"]:
+                stop = entry - d * spec["min_stop"]
+                risk = spec["min_stop"]
+            if risk > spec["max_stop"]:
+                alt = (trig["inv_low"] - buf) * d
+                alt_risk = (entry - alt) * d
+                if p["stop_mode"] == "swing" and spec["min_stop"] <= alt_risk <= spec["max_stop"]:
+                    stop, risk = alt, alt_risk
+                else:
+                    return {"skip": f"Stop {risk:.1f}pts > max {spec['max_stop']} - pass (risk too wide)", "consume": True}
 
         # ---- draw on liquidity
         opp = "H" if d == 1 else "L"
@@ -1405,19 +1763,37 @@ class Engine:
                     cands.append((px, "p" + key.upper(), None))
         cands.sort(key=lambda z: (z[0] - entry) * d)
         target, tlabel, tpool = None, None, None
+        tmode = p["target_mode"]
+        ds, draw_sel, tp1 = None, None, None
+        if self._lmap is not None:
+            ds = self._draws(d, entry, risk, i, h1, trig)
+        if tmode == "draw":
+            # DOL-4: nearest Tier-A draw >= draw_min_rr within reach, else nearest Tier B (or the significance / learned
+            # pick); exit draw_exit_ticks before the pool. No R cap. Nothing qualifies -> draw_fallback.
+            draw_sel = self._pick_draw(ds, d, entry, risk, i, open_loc)
+            pr = draw_sel["primary"]
+            if pr is not None:
+                pr["target"] = float(pr["price"] - d * p["draw_exit_ticks"] * tick)
+                target, tlabel, tpool = pr["target"], f"{pr['label']} (tier {pr['tier']} {pr['source']} draw)", pr["pool"]
+            elif p["draw_fallback"] == "skip":
+                return {"skip": draw_sel["why"] + " - pass", "consume": True}
+            elif p["draw_fallback"] == "2r":
+                target, tlabel = entry + d * p["fallback_rr"] * risk, f"{p['fallback_rr']}R ({draw_sel['why']})"
+            else:
+                tmode = "major"
         qual = [z for z in cands if (z[0] - entry) * d / risk >= p["min_rr"]]
-        if p["target_mode"] == "dol_next" and len(qual) >= 2:
+        if tmode == "dol_next" and len(qual) >= 2:
             qual = qual[1:]
-        if p["target_mode"] in ("major", "major_next"):
+        if tmode in ("major", "major_next"):
             qual = [z for z in qual if z[2] is not None and _is_major(z[2])]
-            if p["target_mode"] == "major_next" and len(qual) >= 2:
+            if tmode == "major_next" and len(qual) >= 2:
                 qual = qual[1:]
-        if p["target_mode"] == "fixed":
+        if tmode == "fixed":
             qual = []
         er10_now = (getattr(self, "_regime_day", None) or {}).get("er10")
         trending_now = bool(p["regime_er10_max"] and er10_now is not None and er10_now > p["regime_er10_max"])
         max_rr = p["max_rr_trending"] if (trending_now and p["max_rr_trending"]) else p["max_rr"]
-        if qual:
+        if qual and target is None:
             px, lab, q = qual[0]
             r = (px - entry) * d / risk
             if r > max_rr:
@@ -1433,9 +1809,38 @@ class Engine:
                 partial_pool = (float(px - d * tick), lab)
                 break
         if target is None:
-            if not p["use_fallback"]:
+            if not p["use_fallback"] or p["stop_model"] in ("struct_atr", "protected_swing"):
                 return {"skip": "No draw on liquidity with enough room (< min R) - pass", "consume": True}
             target, tlabel = entry + d * p["fallback_rr"] * risk, f"{p['fallback_rr']}R (no DOL)"
+        # TP1 (DOL-5): nearest internal draw (live FVG / Tier B-C pool) in [irl_min_r x R, T); a gap exits at its near
+        # edge, a pool 2 ticks before it. manage_mode "person" takes the partial there.
+        partial_draw = None
+        if ds is not None:
+            from .liquidity_map import pick_partial
+            tp1 = pick_partial(ds, (target - entry) * d, p["irl_min_r"], risk, p["irl_partial_src"])
+            if tp1 is not None:
+                tp1["target"] = float(tp1["price"] if tp1["is_gap"] else tp1["price"] - d * 2 * tick)
+                if (tp1["target"] - entry) * d <= 0:
+                    tp1 = None
+            if p["manage_mode"] == "person":
+                partial_draw = tp1
+        # DOL-6 skip rules (draw mode only; both off by default)
+        if p["target_mode"] == "draw" and ds is not None:
+            if p["draw_block_r"] > 0:
+                blk = [g for g in self._lmap.gaps(-d, {"1h", "4h"})
+                       if (g["ce"] - entry) * d > 0 and ((g["bot"] if d == 1 else g["top"]) - entry) * d <= p["draw_block_r"] * risk]
+                if blk:
+                    g = blk[0]
+                    return {"skip": f"live {g['tf']} FVG {g['bot']:.2f}-{g['top']:.2f} blocks the path within "
+                                    f"{p['draw_block_r']}R - pass", "consume": True}
+            pr = draw_sel["primary"] if draw_sel else None
+            if p["draw_hrlr"] == "tp1" and pr is not None and pr["obstacles"] >= 3:
+                if tp1 is not None and (tp1["target"] - entry) * d >= p["draw_min_rr"] * risk:
+                    target, tlabel, tpool = tp1["target"], f"{tp1['label']} (HRLR: all out at TP1)", tp1["pool"]
+                    partial_draw = None
+                else:
+                    return {"skip": f"high-resistance path ({pr['obstacles']} obstacles to {pr['source']}) and TP1 "
+                                    f"< {p['draw_min_rr']}R - pass", "consume": True}
 
         # ---- confluence
         tags, score = [], 0
@@ -1651,14 +2056,40 @@ class Engine:
         if trig["type"] == "CONT":
             tags = ["trend-day continuation"] + tags
         sig_ext = float(b.l[i]) if d == 1 else float(b.h[i])     # trigger candle's extreme: closing back through it = warning
-        return {"grade": grade, "grade_mult": gmult, "checklist": checklist, "grade_points": gpts, "model": "trend" if trig["type"] == "CONT" else "sweep",
-                "dir": d, "stop": float(stop), "target": float(target), "target_label": tlabel, "score": score,
-                "conf_tags": tags, "trigger": trig["type"], "trigger_tf": trig.get("tf"), "signal_t": int(b.t[i]),
-                "signal_price": float(c), "pools": [q["label"] for q in s["pools"]], "sweep_ext": float(ext),
-                "zone": trig["zone"], "htf_trend": h1.trend, "m15_trend": m15.trend, "open_loc": open_loc,
-                "features": features, "mtf_bias": bias, "pd_pos": None if pd_pos is None else round(pd_pos, 3),
-                "midnight_open": midnight_open, "key_level": key, "risk_pts_plan": float(risk), "partial_pool": partial_pool,
-                "sig_ext": sig_ext}
+        order = {"grade": grade, "grade_mult": gmult, "checklist": checklist, "grade_points": gpts, "model": "trend" if trig["type"] == "CONT" else "sweep",
+                 "dir": d, "stop": float(stop), "target": float(target), "target_label": tlabel, "score": score,
+                 "conf_tags": tags, "trigger": trig["type"], "trigger_tf": trig.get("tf"), "signal_t": int(b.t[i]),
+                 "signal_price": float(c), "pools": [q["label"] for q in s["pools"]], "sweep_ext": float(ext),
+                 "zone": trig["zone"], "htf_trend": h1.trend, "m15_trend": m15.trend, "open_loc": open_loc,
+                 "features": features, "mtf_bias": bias, "pd_pos": None if pd_pos is None else round(pd_pos, 3),
+                 "midnight_open": midnight_open, "key_level": key, "risk_pts_plan": float(risk), "partial_pool": partial_pool,
+                 "sig_ext": sig_ext}
+        if p["entry_mode"] == "retest":
+            # rest a limit at the trigger zone (IFVG near edge or CE; the CISD level); size on the limit-to-stop risk
+            top_d, bot_d = float(trig["top"]), float(trig["bot"])
+            lvl_d = (top_d + bot_d) / 2 if (p["retest_level"] == "ce" and trig["type"] != "CISD") else top_d
+            lim = min(lvl_d, float(c) * d) * d               # never a worse price than the signal close
+            risk_l = (lim - stop) * d
+            if risk_l <= 2 * tick or (target - lim) * d <= 0:
+                return {"skip": f"retest limit {lim:.2f} not beyond the stop {float(stop):.2f} - pass", "consume": True}
+            order.update({"limit": float(lim), "risk_pts_plan": float(risk_l), "retest_bars": int(p["retest_bars"]),
+                          "limit_exp": int(i + p["retest_bars"]), "limit_tday": int(b.tday[i])})
+            tags.append(f"retest limit {lim:.2f} ({p['retest_bars']} bars)")
+        if stop_info is not None or ds is not None:
+            # discretionary layer: what the stop / target / partial were built from (trade records + events)
+            from .liquidity_map import compact
+            order["stop_src"] = stop_info["src"] if stop_info else p["stop_mode"]
+            order["atr14"] = round(stop_info["atr14"], 2) if stop_info else None
+            order["draw"] = compact(draw_sel["primary"]) if draw_sel else None
+            order["partial_draw"] = compact(partial_draw)
+            if draw_sel and draw_sel.get("ev") is not None:
+                order["draw_ev"] = round(float(draw_sel["ev"]), 3)
+            if partial_draw is not None:
+                tags.append(f"partial @ {partial_draw['label']} ({partial_draw['dist_r']:.1f}R)")
+            if draw_sel and draw_sel["primary"] is not None:
+                pr = draw_sel["primary"]
+                tags.append(f"draw {pr['source']}{' EQ' if pr['eq'] else ''} {pr['dist_r']:.1f}R, {pr['obstacles']} obstacles")
+        return order
 
     # ------------------------------------------------------------------ discretionary-style trade grade
     GRADES = [("A+", 7, 1.5), ("A", 5, 1.25), ("B", 3, 1.0), ("C", 1, 0.75), ("D", -99, 0.5)]
@@ -1799,7 +2230,36 @@ class Engine:
         "m15_flip": "15m structure flips against the trade",
         "two_against": "Two consecutive momentum closes against",
         "vol_against": "Volume climax (2x) on a candle against",
+        "cisd_disp": "Opposing CISD with displacement (body >= 1 ATR and 60% of range, or a gap)",
     }
+
+    def _cisd_against(self, pos, i, o, h, l, c):
+        """DOL playbook MGMT-5 / D11: bar i closes beyond the OPEN of the first candle of the latest in-favour delivery
+        series (a maximal run of in-favour candles that started after entry), its body is >= 50% of its range, and it is
+        a displacement candle (body >= 1 ATR and >= 60% of range) or it leaves an opposing 5m FVG."""
+        b, d = self.b, pos["dir"]
+        e_i = pos["entry_i"]
+        rng = float(h - l)
+        body = float(o - c) * d                     # > 0: the candle closes against the trade
+        if i - e_i < 1 or rng <= 0 or body <= 0 or body < 0.5 * rng:
+            return False
+        up = lambda j: (b.c[j] - b.o[j]) * d > 0
+        j = i - 1
+        while j >= e_i and not up(j):
+            j -= 1
+        if j < e_i:
+            return False
+        f = j
+        while f - 1 >= e_i and up(f - 1):
+            f -= 1
+        if f == e_i and e_i >= 1 and up(e_i - 1):
+            return False                            # the series started before the entry
+        if not (c * d < b.o[f] * d):
+            return False
+        atr = float(self._atr_w[i]) if getattr(self, "_atr_w", None) is not None else (pos.get("atr") or pos["risk_pts"])
+        disp = body >= 1.0 * atr and body >= 0.6 * rng
+        gap = i >= 2 and ((b.h[i] < b.l[i - 2]) if d == 1 else (b.l[i] > b.h[i - 2]))
+        return bool(disp or gap)
 
     def _exit_signals(self, pos, i, o, h, l, c, m15):
         """Evaluate every warning sign on this bar; log the first firing with the R we'd bank by leaving here."""
@@ -1822,6 +2282,8 @@ class Engine:
                            k >= 2 and (c - b.h[i - 1]) * d < 0 and (b.c[i - 1] - b.h[i - 2]) * d < 0,
             "vol_against": (c - o) * d < 0 and i > 20 and b.v[i] >= 2.0 * float(b.v[i - 20:i].mean()),
         }
+        if getattr(self, "_cisd_on", False):
+            now["cisd_disp"] = self._cisd_against(pos, i, o, h, l, c)
         slip_r = p["slippage_ticks"] * self.spec["tick"] / risk
         fired = []
         for name, on in now.items():

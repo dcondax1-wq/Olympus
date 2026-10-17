@@ -1,0 +1,80 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-06-30"
+ ],
+ "sessions": 128,
+ "trades": 53,
+ "tpw": 2.07,
+ "weeks_in_2_5": 63.0,
+ "weeks_zero": 7.0,
+ "win_rate": 28.3,
+ "avg_r": 0.004,
+ "ci95_r": [
+  -0.307,
+  0.356
+ ],
+ "pf": 1.42,
+ "net": 2139.5,
+ "max_dd": -2206.5,
+ "worst_day": -354.0,
+ "months": {
+  "2026-01": {
+   "trades": 14,
+   "net": 846.5
+  },
+  "2026-02": {
+   "trades": 5,
+   "net": -356.5
+  },
+  "2026-03": {
+   "trades": 9,
+   "net": 3054.0
+  },
+  "2026-04": {
+   "trades": 9,
+   "net": 290.5
+  },
+  "2026-05": {
+   "trades": 10,
+   "net": -819.5
+  },
+  "2026-06": {
+   "trades": 6,
+   "net": -875.5
+  }
+ },
+ "losing_months": 3,
+ "rolling_pass": 53.8,
+ "avg_days_to_pass": 40.3,
+ "completed": 78,
+ "b2b_pass": 1,
+ "b2b_fail": 1,
+ "zero_edge_pass": 21.3,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": true,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": true
+  }
+ },
+ "name": "FINAL_14_fomc",
+ "period_name": "dev",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1,
+  "target_mode": "draw",
+  "draw_pick": "farthest_reach",
+  "draw_fallback": "skip",
+  "draw_pm": "nearest",
+  "manage_mode": "person",
+  "person_trail": false,
+  "news_day_skip": "FOMC"
+ },
+ "scored_at": 1792207029
+}

@@ -1,0 +1,64 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-10-16"
+ ],
+ "sessions": 206,
+ "trades": 6,
+ "tpw": 0.15,
+ "weeks_in_2_5": 0.0,
+ "weeks_zero": 86.0,
+ "win_rate": 33.3,
+ "avg_r": -0.133,
+ "ci95_r": [
+  -0.898,
+  0.751
+ ],
+ "pf": 0.66,
+ "net": -295.06,
+ "max_dd": -573.92,
+ "worst_day": -304.34,
+ "months": {
+  "2026-03": {
+   "trades": 3,
+   "net": -7.14
+  },
+  "2026-04": {
+   "trades": 1,
+   "net": -239.03
+  },
+  "2026-08": {
+   "trades": 1,
+   "net": -271.99
+  },
+  "2026-10": {
+   "trades": 1,
+   "net": 223.1
+  }
+ },
+ "losing_months": 3,
+ "rolling_pass": null,
+ "avg_days_to_pass": null,
+ "completed": 0,
+ "b2b_pass": 0,
+ "b2b_fail": 0,
+ "zero_edge_pass": null,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": true,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "ATM_win1100_flat",
+ "period_name": "ytd",
+ "notes": "ATM owner model",
+ "params": {
+  "entry_end": 660,
+  "sizing": "flat"
+ },
+ "scored_at": 1792191293
+}

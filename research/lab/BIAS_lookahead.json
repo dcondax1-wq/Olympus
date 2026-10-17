@@ -1,0 +1,18 @@
+{
+ "samples": 200,
+ "mismatch_cut": {},
+ "examples": [],
+ "dir_differs_with_90d_window": {
+  "ttrades": 0.0,
+  "ttrades_carry": 0.0,
+  "htf_draw": 0.0,
+  "structure": 0.0,
+  "open_amd": 0.0,
+  "composite": 0.0,
+  "samd_cont": 0.0,
+  "samd_rev": 0.0,
+  "samd_rev_only": 0.0,
+  "composite2": 0.0,
+  "h1_trend": 0.0
+ }
+}

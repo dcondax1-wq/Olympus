@@ -1,0 +1,67 @@
+{
+ "period": [
+  "2026-07-01",
+  "2026-10-16"
+ ],
+ "sessions": 78,
+ "trades": 39,
+ "tpw": 2.5,
+ "weeks_in_2_5": 69.0,
+ "weeks_zero": 6.0,
+ "win_rate": 38.5,
+ "avg_r": 0.624,
+ "ci95_r": [
+  0.165,
+  1.12
+ ],
+ "pf": 3.84,
+ "net": 7460.5,
+ "max_dd": -876.5,
+ "worst_day": -354.0,
+ "months": {
+  "2026-07": {
+   "trades": 7,
+   "net": -336.0
+  },
+  "2026-08": {
+   "trades": 14,
+   "net": 3384.0
+  },
+  "2026-09": {
+   "trades": 11,
+   "net": 3002.0
+  },
+  "2026-10": {
+   "trades": 7,
+   "net": 1410.5
+  }
+ },
+ "losing_months": 1,
+ "rolling_pass": 100.0,
+ "avg_days_to_pass": 24.8,
+ "completed": 58,
+ "b2b_pass": 2,
+ "b2b_fail": 0,
+ "zero_edge_pass": 6.5,
+ "gate": {
+  "ok": true,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": true,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": true,
+   "pass>=zero+10": true
+  }
+ },
+ "name": "P_15_mgmt_on_base",
+ "period_name": "confirm",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1,
+  "manage_mode": "person",
+  "person_trail": false
+ },
+ "scored_at": 1792191621
+}

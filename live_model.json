@@ -4,7 +4,14 @@
   "params": {
     "grade_sizing": false,
     "conviction_step": 0,
-    "max_trades_day": 1
+    "max_trades_day": 1,
+    "target_mode": "draw",
+    "draw_pick": "farthest_reach",
+    "draw_fallback": "skip",
+    "draw_pm": "nearest",
+    "manage_mode": "person",
+    "person_trail": false,
+    "news_day_skip": "FOMC"
   },
-  "label": "Liquidity Engine - straight rules: 1 trade/day, fixed risk (2026 sprint pick, 2026-10-16)"
+  "label": "Liquidity Engine - person-style draws (final 2026 pick, 2026-10-17)"
 }

@@ -1,0 +1,72 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-06-30"
+ ],
+ "sessions": 128,
+ "trades": 36,
+ "tpw": 1.41,
+ "weeks_in_2_5": 37.0,
+ "weeks_zero": 26.0,
+ "win_rate": 30.6,
+ "avg_r": 0.08,
+ "ci95_r": [
+  -0.249,
+  0.419
+ ],
+ "pf": 1.32,
+ "net": 1390.49,
+ "max_dd": -1742.66,
+ "worst_day": -702.73,
+ "months": {
+  "2026-01": {
+   "trades": 7,
+   "net": -446.13
+  },
+  "2026-02": {
+   "trades": 5,
+   "net": 619.02
+  },
+  "2026-03": {
+   "trades": 5,
+   "net": 1573.6
+  },
+  "2026-04": {
+   "trades": 5,
+   "net": 391.62
+  },
+  "2026-05": {
+   "trades": 10,
+   "net": -1026.97
+  },
+  "2026-06": {
+   "trades": 4,
+   "net": 279.35
+  }
+ },
+ "losing_months": 2,
+ "rolling_pass": 1.1,
+ "avg_days_to_pass": 71.0,
+ "completed": 90,
+ "b2b_pass": 0,
+ "b2b_fail": 1,
+ "zero_edge_pass": 0.0,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": true,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": true,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "TRADER_LAYER_ENG2_FULL",
+ "period_name": "dev",
+ "notes": "trader layer (research/lab/TRADER_LAYER_RULES.md)",
+ "params": {
+  "source": "ENG2",
+  "config": "FULL"
+ },
+ "scored_at": 1792194956
+}

@@ -1,0 +1,1118 @@
+{
+ "generated": "2026-10-16 19:37",
+ "n": 11,
+ "atm_mtime": 1792193166.4171739,
+ "by": {
+  "v1": {
+   "dev": {
+    "grades": {
+     "n": 5,
+     "by_grade": {
+      "A": {
+       "n": 1,
+       "avg_r": -1.016,
+       "win": 0.0,
+       "sum_r": -1.02
+      },
+      "B": {
+       "n": 3,
+       "avg_r": 0.105,
+       "win": 33.3,
+       "sum_r": 0.32
+      },
+      "C": {
+       "n": 1,
+       "avg_r": 1.767,
+       "win": 100.0,
+       "sum_r": 1.77
+      },
+      "SKIP": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      }
+     },
+     "monotone_A_B_C": false,
+     "spearman": -0.667,
+     "A_minus_CS": -2.783,
+     "A_minus_CS_ci": null
+    },
+    "base": {
+     "trades": 5,
+     "tpw": 0.2,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 40.0,
+     "avg_r": 0.213,
+     "ci95_r": [
+      -0.873,
+      1.3
+     ],
+     "pf": 1.44,
+     "net": 264.13,
+     "max_dd": -304.34,
+     "worst_day": -304.34,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2026-03": {
+       "trades": 3,
+       "net": -7.14
+      },
+      "2026-04": {
+       "trades": 2,
+       "net": 271.27
+      }
+     }
+    },
+    "drop": {
+     "trades": 4,
+     "tpw": 0.16,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 25.0,
+     "avg_r": -0.175,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.4,
+     "net": -550.51,
+     "max_dd": -608.68,
+     "worst_day": -608.68,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 2,
+     "months": {
+      "2026-03": {
+       "trades": 3,
+       "net": -311.48
+      },
+      "2026-04": {
+       "trades": 1,
+       "net": -239.03
+      }
+     }
+    },
+    "tier": {
+     "trades": 5,
+     "tpw": 0.2,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 40.0,
+     "avg_r": 0.213,
+     "ci95_r": [
+      -0.873,
+      1.3
+     ],
+     "pf": 0.58,
+     "net": -380.41,
+     "max_dd": -608.68,
+     "worst_day": -608.68,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 2,
+     "months": {
+      "2026-03": {
+       "trades": 3,
+       "net": -311.48
+      },
+      "2026-04": {
+       "trades": 2,
+       "net": -68.93
+      }
+     }
+    }
+   },
+   "confirm": {
+    "grades": {
+     "n": 2,
+     "by_grade": {
+      "A": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      },
+      "B": {
+       "n": 1,
+       "avg_r": -1.018,
+       "win": 0.0,
+       "sum_r": -1.02
+      },
+      "C": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      },
+      "SKIP": {
+       "n": 1,
+       "avg_r": 0.921,
+       "win": 100.0,
+       "sum_r": 0.92
+      }
+     },
+     "monotone_A_B_C": false,
+     "spearman": null,
+     "A_minus_CS": null,
+     "A_minus_CS_ci": null
+    },
+    "base": {
+     "trades": 2,
+     "tpw": 0.13,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 50.0,
+     "avg_r": -0.048,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.82,
+     "net": -48.89,
+     "max_dd": -271.99,
+     "worst_day": -271.99,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      },
+      "2026-10": {
+       "trades": 1,
+       "net": 223.1
+      }
+     }
+    },
+    "drop": {
+     "trades": 1,
+     "tpw": 0.06,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 0.0,
+     "avg_r": -1.018,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.0,
+     "net": -271.99,
+     "max_dd": -271.99,
+     "worst_day": -271.99,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      }
+     }
+    },
+    "tier": {
+     "trades": 1,
+     "tpw": 0.06,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 0.0,
+     "avg_r": -1.018,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.0,
+     "net": -271.99,
+     "max_dd": -271.99,
+     "worst_day": -271.99,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      }
+     }
+    }
+   },
+   "ytd": {
+    "grades": {
+     "n": 7,
+     "by_grade": {
+      "A": {
+       "n": 1,
+       "avg_r": -1.016,
+       "win": 0.0,
+       "sum_r": -1.02
+      },
+      "B": {
+       "n": 4,
+       "avg_r": -0.175,
+       "win": 25.0,
+       "sum_r": -0.7
+      },
+      "C": {
+       "n": 1,
+       "avg_r": 1.767,
+       "win": 100.0,
+       "sum_r": 1.77
+      },
+      "SKIP": {
+       "n": 1,
+       "avg_r": 0.921,
+       "win": 100.0,
+       "sum_r": 0.92
+      }
+     },
+     "monotone_A_B_C": false,
+     "spearman": -0.414,
+     "A_minus_CS": -2.36,
+     "A_minus_CS_ci": null
+    },
+    "base": {
+     "trades": 7,
+     "tpw": 0.17,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 42.9,
+     "avg_r": 0.139,
+     "ci95_r": [
+      -0.708,
+      1.016
+     ],
+     "pf": 1.25,
+     "net": 215.24,
+     "max_dd": -511.02,
+     "worst_day": -304.34,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 2,
+     "months": {
+      "2026-03": {
+       "trades": 3,
+       "net": -7.14
+      },
+      "2026-04": {
+       "trades": 2,
+       "net": 271.27
+      },
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      },
+      "2026-10": {
+       "trades": 1,
+       "net": 223.1
+      }
+     }
+    },
+    "drop": {
+     "trades": 5,
+     "tpw": 0.12,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 20.0,
+     "avg_r": -0.344,
+     "ci95_r": [
+      -1.018,
+      0.716
+     ],
+     "pf": 0.3,
+     "net": -822.5,
+     "max_dd": -822.5,
+     "worst_day": -608.68,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 3,
+     "months": {
+      "2026-03": {
+       "trades": 3,
+       "net": -311.48
+      },
+      "2026-04": {
+       "trades": 1,
+       "net": -239.03
+      },
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      }
+     }
+    },
+    "tier": {
+     "trades": 6,
+     "tpw": 0.15,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 33.3,
+     "avg_r": 0.008,
+     "ci95_r": [
+      -0.898,
+      0.937
+     ],
+     "pf": 0.45,
+     "net": -652.4,
+     "max_dd": -652.4,
+     "worst_day": -608.68,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 3,
+     "months": {
+      "2026-03": {
+       "trades": 3,
+       "net": -311.48
+      },
+      "2026-04": {
+       "trades": 2,
+       "net": -68.93
+      },
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      }
+     }
+    }
+   },
+   "y2025": {
+    "grades": {
+     "n": 4,
+     "by_grade": {
+      "A": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      },
+      "B": {
+       "n": 1,
+       "avg_r": 1.486,
+       "win": 100.0,
+       "sum_r": 1.49
+      },
+      "C": {
+       "n": 3,
+       "avg_r": -0.669,
+       "win": 33.3,
+       "sum_r": -2.01
+      },
+      "SKIP": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      }
+     },
+     "monotone_A_B_C": false,
+     "spearman": null,
+     "A_minus_CS": null,
+     "A_minus_CS_ci": null
+    },
+    "base": {
+     "trades": 4,
+     "tpw": 0.11,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 50.0,
+     "avg_r": -0.13,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 1.17,
+     "net": 69.08,
+     "max_dd": -417.52,
+     "worst_day": -231.29,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 2,
+     "months": {
+      "2025-04": {
+       "trades": 1,
+       "net": -186.23
+      },
+      "2025-05": {
+       "trades": 1,
+       "net": -231.29
+      },
+      "2025-08": {
+       "trades": 2,
+       "net": 486.6
+      }
+     }
+    },
+    "drop": {
+     "trades": 1,
+     "tpw": 0.03,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 100.0,
+     "avg_r": 1.486,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 99.0,
+     "net": 481.8,
+     "max_dd": 0.0,
+     "worst_day": 0.0,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 0,
+     "months": {
+      "2025-08": {
+       "trades": 1,
+       "net": 481.8
+      }
+     }
+    },
+    "tier": {
+     "trades": 4,
+     "tpw": 0.11,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 50.0,
+     "avg_r": -0.13,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 1.16,
+     "net": 65.88,
+     "max_dd": -417.52,
+     "worst_day": -231.29,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 2,
+     "months": {
+      "2025-04": {
+       "trades": 1,
+       "net": -186.23
+      },
+      "2025-05": {
+       "trades": 1,
+       "net": -231.29
+      },
+      "2025-08": {
+       "trades": 2,
+       "net": 483.4
+      }
+     }
+    }
+   }
+  },
+  "v2": {
+   "dev": {
+    "grades": {
+     "n": 5,
+     "by_grade": {
+      "A": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      },
+      "B": {
+       "n": 1,
+       "avg_r": -0.295,
+       "win": 0.0,
+       "sum_r": -0.29
+      },
+      "C": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      },
+      "SKIP": {
+       "n": 4,
+       "avg_r": 0.34,
+       "win": 50.0,
+       "sum_r": 1.36
+      }
+     },
+     "monotone_A_B_C": false,
+     "spearman": -0.821,
+     "A_minus_CS": null,
+     "A_minus_CS_ci": null
+    },
+    "base": {
+     "trades": 5,
+     "tpw": 0.2,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 40.0,
+     "avg_r": 0.213,
+     "ci95_r": [
+      -0.873,
+      1.3
+     ],
+     "pf": 1.44,
+     "net": 264.13,
+     "max_dd": -304.34,
+     "worst_day": -304.34,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2026-03": {
+       "trades": 3,
+       "net": -7.14
+      },
+      "2026-04": {
+       "trades": 2,
+       "net": 271.27
+      }
+     }
+    },
+    "drop": {
+     "trades": 1,
+     "tpw": 0.04,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 0.0,
+     "avg_r": -0.295,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.0,
+     "net": -62.9,
+     "max_dd": -62.9,
+     "worst_day": -62.9,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2026-03": {
+       "trades": 1,
+       "net": -62.9
+      }
+     }
+    },
+    "tier": {
+     "trades": 1,
+     "tpw": 0.04,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 0.0,
+     "avg_r": -0.295,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.0,
+     "net": -62.9,
+     "max_dd": -62.9,
+     "worst_day": -62.9,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2026-03": {
+       "trades": 1,
+       "net": -62.9
+      }
+     }
+    }
+   },
+   "confirm": {
+    "grades": {
+     "n": 2,
+     "by_grade": {
+      "A": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      },
+      "B": {
+       "n": 2,
+       "avg_r": -0.048,
+       "win": 50.0,
+       "sum_r": -0.1
+      },
+      "C": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      },
+      "SKIP": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      }
+     },
+     "monotone_A_B_C": false,
+     "spearman": null,
+     "A_minus_CS": null,
+     "A_minus_CS_ci": null
+    },
+    "base": {
+     "trades": 2,
+     "tpw": 0.13,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 50.0,
+     "avg_r": -0.048,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.82,
+     "net": -48.89,
+     "max_dd": -271.99,
+     "worst_day": -271.99,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      },
+      "2026-10": {
+       "trades": 1,
+       "net": 223.1
+      }
+     }
+    },
+    "drop": {
+     "trades": 2,
+     "tpw": 0.13,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 50.0,
+     "avg_r": -0.048,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.82,
+     "net": -48.89,
+     "max_dd": -271.99,
+     "worst_day": -271.99,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      },
+      "2026-10": {
+       "trades": 1,
+       "net": 223.1
+      }
+     }
+    },
+    "tier": {
+     "trades": 2,
+     "tpw": 0.13,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 50.0,
+     "avg_r": -0.048,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.82,
+     "net": -48.89,
+     "max_dd": -271.99,
+     "worst_day": -271.99,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      },
+      "2026-10": {
+       "trades": 1,
+       "net": 223.1
+      }
+     }
+    }
+   },
+   "ytd": {
+    "grades": {
+     "n": 7,
+     "by_grade": {
+      "A": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      },
+      "B": {
+       "n": 3,
+       "avg_r": -0.131,
+       "win": 33.3,
+       "sum_r": -0.39
+      },
+      "C": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      },
+      "SKIP": {
+       "n": 4,
+       "avg_r": 0.34,
+       "win": 50.0,
+       "sum_r": 1.36
+      }
+     },
+     "monotone_A_B_C": false,
+     "spearman": -0.709,
+     "A_minus_CS": null,
+     "A_minus_CS_ci": null
+    },
+    "base": {
+     "trades": 7,
+     "tpw": 0.17,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 42.9,
+     "avg_r": 0.139,
+     "ci95_r": [
+      -0.708,
+      1.016
+     ],
+     "pf": 1.25,
+     "net": 215.24,
+     "max_dd": -511.02,
+     "worst_day": -304.34,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 2,
+     "months": {
+      "2026-03": {
+       "trades": 3,
+       "net": -7.14
+      },
+      "2026-04": {
+       "trades": 2,
+       "net": 271.27
+      },
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      },
+      "2026-10": {
+       "trades": 1,
+       "net": 223.1
+      }
+     }
+    },
+    "drop": {
+     "trades": 3,
+     "tpw": 0.07,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 33.3,
+     "avg_r": -0.131,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.67,
+     "net": -111.79,
+     "max_dd": -334.89,
+     "worst_day": -271.99,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 2,
+     "months": {
+      "2026-03": {
+       "trades": 1,
+       "net": -62.9
+      },
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      },
+      "2026-10": {
+       "trades": 1,
+       "net": 223.1
+      }
+     }
+    },
+    "tier": {
+     "trades": 3,
+     "tpw": 0.07,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 33.3,
+     "avg_r": -0.131,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.67,
+     "net": -111.79,
+     "max_dd": -334.89,
+     "worst_day": -271.99,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 2,
+     "months": {
+      "2026-03": {
+       "trades": 1,
+       "net": -62.9
+      },
+      "2026-08": {
+       "trades": 1,
+       "net": -271.99
+      },
+      "2026-10": {
+       "trades": 1,
+       "net": 223.1
+      }
+     }
+    }
+   },
+   "y2025": {
+    "grades": {
+     "n": 4,
+     "by_grade": {
+      "A": {
+       "n": 1,
+       "avg_r": -1.013,
+       "win": 0.0,
+       "sum_r": -1.01
+      },
+      "B": {
+       "n": 0,
+       "avg_r": null,
+       "win": null,
+       "sum_r": 0.0
+      },
+      "C": {
+       "n": 1,
+       "avg_r": 1.486,
+       "win": 100.0,
+       "sum_r": 1.49
+      },
+      "SKIP": {
+       "n": 2,
+       "avg_r": -0.497,
+       "win": 50.0,
+       "sum_r": -0.99
+      }
+     },
+     "monotone_A_B_C": false,
+     "spearman": null,
+     "A_minus_CS": -1.177,
+     "A_minus_CS_ci": null
+    },
+    "base": {
+     "trades": 4,
+     "tpw": 0.11,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 50.0,
+     "avg_r": -0.13,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 1.17,
+     "net": 69.08,
+     "max_dd": -417.52,
+     "worst_day": -231.29,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 2,
+     "months": {
+      "2025-04": {
+       "trades": 1,
+       "net": -186.23
+      },
+      "2025-05": {
+       "trades": 1,
+       "net": -231.29
+      },
+      "2025-08": {
+       "trades": 2,
+       "net": 486.6
+      }
+     }
+    },
+    "drop": {
+     "trades": 1,
+     "tpw": 0.03,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 0.0,
+     "avg_r": -1.013,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.0,
+     "net": -558.69,
+     "max_dd": -558.69,
+     "worst_day": -558.69,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2025-04": {
+       "trades": 1,
+       "net": -558.69
+      }
+     }
+    },
+    "tier": {
+     "trades": 2,
+     "tpw": 0.05,
+     "weeks_in_2_5": 0.0,
+     "win_rate": 50.0,
+     "avg_r": 0.237,
+     "ci95_r": [
+      null,
+      null
+     ],
+     "pf": 0.29,
+     "net": -398.09,
+     "max_dd": -558.69,
+     "worst_day": -558.69,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "losing_months": 1,
+     "months": {
+      "2025-04": {
+       "trades": 1,
+       "net": -558.69
+      },
+      "2025-08": {
+       "trades": 1,
+       "net": 160.6
+      }
+     }
+    }
+   }
+  }
+ },
+ "source": "atm.run() 5m defaults, sizing flat",
+ "owner_tier": {
+  "dev": {
+   "n": 5,
+   "by_grade": {
+    "A": {
+     "n": 1,
+     "avg_r": -1.016,
+     "win": 0.0,
+     "sum_r": -1.02
+    },
+    "B": {
+     "n": 3,
+     "avg_r": 0.105,
+     "win": 33.3,
+     "sum_r": 0.32
+    },
+    "C": {
+     "n": 1,
+     "avg_r": 1.767,
+     "win": 100.0,
+     "sum_r": 1.77
+    },
+    "SKIP": {
+     "n": 0,
+     "avg_r": null,
+     "win": null,
+     "sum_r": 0.0
+    }
+   },
+   "monotone_A_B_C": false,
+   "spearman": -0.671,
+   "A_minus_CS": -2.783,
+   "A_minus_CS_ci": null
+  },
+  "confirm": {
+   "n": 2,
+   "by_grade": {
+    "A": {
+     "n": 0,
+     "avg_r": null,
+     "win": null,
+     "sum_r": 0.0
+    },
+    "B": {
+     "n": 1,
+     "avg_r": -1.018,
+     "win": 0.0,
+     "sum_r": -1.02
+    },
+    "C": {
+     "n": 1,
+     "avg_r": 0.921,
+     "win": 100.0,
+     "sum_r": 0.92
+    },
+    "SKIP": {
+     "n": 0,
+     "avg_r": null,
+     "win": null,
+     "sum_r": 0.0
+    }
+   },
+   "monotone_A_B_C": false,
+   "spearman": null,
+   "A_minus_CS": null,
+   "A_minus_CS_ci": null
+  },
+  "ytd": {
+   "n": 7,
+   "by_grade": {
+    "A": {
+     "n": 1,
+     "avg_r": -1.016,
+     "win": 0.0,
+     "sum_r": -1.02
+    },
+    "B": {
+     "n": 4,
+     "avg_r": -0.175,
+     "win": 25.0,
+     "sum_r": -0.7
+    },
+    "C": {
+     "n": 2,
+     "avg_r": 1.344,
+     "win": 100.0,
+     "sum_r": 2.69
+    },
+    "SKIP": {
+     "n": 0,
+     "avg_r": null,
+     "win": null,
+     "sum_r": 0.0
+    }
+   },
+   "monotone_A_B_C": false,
+   "spearman": -0.578,
+   "A_minus_CS": -2.36,
+   "A_minus_CS_ci": null
+  },
+  "y2025": {
+   "n": 4,
+   "by_grade": {
+    "A": {
+     "n": 1,
+     "avg_r": 1.486,
+     "win": 100.0,
+     "sum_r": 1.49
+    },
+    "B": {
+     "n": 2,
+     "avg_r": -0.497,
+     "win": 50.0,
+     "sum_r": -0.99
+    },
+    "C": {
+     "n": 1,
+     "avg_r": -1.013,
+     "win": 0.0,
+     "sum_r": -1.01
+    },
+    "SKIP": {
+     "n": 0,
+     "avg_r": null,
+     "win": null,
+     "sum_r": 0.0
+    }
+   },
+   "monotone_A_B_C": true,
+   "spearman": null,
+   "A_minus_CS": 2.499,
+   "A_minus_CS_ci": null
+  }
+ }
+}

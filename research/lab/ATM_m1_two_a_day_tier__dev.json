@@ -1,0 +1,73 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-06-30"
+ ],
+ "sessions": 128,
+ "trades": 38,
+ "tpw": 1.48,
+ "weeks_in_2_5": 44.0,
+ "weeks_zero": 19.0,
+ "win_rate": 34.2,
+ "avg_r": 0.178,
+ "ci95_r": [
+  -0.353,
+  0.727
+ ],
+ "pf": 1.3,
+ "net": 2993.33,
+ "max_dd": -3387.69,
+ "worst_day": -935.12,
+ "months": {
+  "2026-01": {
+   "trades": 5,
+   "net": 770.37
+  },
+  "2026-02": {
+   "trades": 5,
+   "net": 1550.22
+  },
+  "2026-03": {
+   "trades": 9,
+   "net": 639.06
+  },
+  "2026-04": {
+   "trades": 7,
+   "net": 3421.37
+  },
+  "2026-05": {
+   "trades": 5,
+   "net": -718.2
+  },
+  "2026-06": {
+   "trades": 7,
+   "net": -2669.49
+  }
+ },
+ "losing_months": 2,
+ "rolling_pass": 48.3,
+ "avg_days_to_pass": 23.7,
+ "completed": 116,
+ "b2b_pass": 1,
+ "b2b_fail": 2,
+ "zero_edge_pass": 35.3,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": true,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": false,
+   "pass>=zero+10": true
+  }
+ },
+ "name": "ATM_m1_two_a_day_tier",
+ "period_name": "dev",
+ "notes": "ATM 1m ladder (owner model)",
+ "params": {
+  "tf": 1,
+  "max_trades_day": 2,
+  "sizing": "tier"
+ },
+ "scored_at": 1792192920
+}

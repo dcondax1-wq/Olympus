@@ -1,0 +1,63 @@
+{
+ "period": [
+  "2026-08-03",
+  "2026-10-16"
+ ],
+ "sessions": 55,
+ "trades": 23,
+ "tpw": 2.09,
+ "weeks_in_2_5": 64.0,
+ "weeks_zero": 9.0,
+ "win_rate": 39.1,
+ "avg_r": 0.806,
+ "ci95_r": [
+  0.087,
+  1.587
+ ],
+ "pf": 4.2,
+ "net": 5526.2,
+ "max_dd": -553.8,
+ "worst_day": -334.8,
+ "months": {
+  "2026-08": {
+   "trades": 10,
+   "net": 1075.66
+  },
+  "2026-09": {
+   "trades": 7,
+   "net": 1682.04
+  },
+  "2026-10": {
+   "trades": 6,
+   "net": 2768.5
+  }
+ },
+ "losing_months": 0,
+ "rolling_pass": 100.0,
+ "avg_days_to_pass": 30.6,
+ "completed": 34,
+ "b2b_pass": 1,
+ "b2b_fail": 0,
+ "zero_edge_pass": null,
+ "gate": {
+  "ok": true,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": true,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": true,
+   "pass>=zero+10": true
+  }
+ },
+ "name": "P_7b_stop_cap60",
+ "period_name": "aug_oct",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1,
+  "stop_model": "struct_atr",
+  "stop_cap": "spec"
+ },
+ "scored_at": 1792191094
+}

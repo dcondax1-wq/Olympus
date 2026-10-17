@@ -1,0 +1,116 @@
+{
+ "ENG1": {
+  "n": 211,
+  "open_side_aligned_n": 86,
+  "open_side_counter_n": 125,
+  "open_side_diff": 0.089,
+  "open_side_aligned_avg_r": 0.193,
+  "open_side_counter_avg_r": 0.104,
+  "D_within_open_side_aligned": {
+   "D_aligned_n": 39,
+   "D_not_aligned_n": 47,
+   "diff": -0.273
+  },
+  "D_aligned_share_on_reclaimed_side": 79.6
+ },
+ "SB": {
+  "n": 186,
+  "open_side_aligned_n": 109,
+  "open_side_counter_n": 77,
+  "open_side_diff": 0.221,
+  "open_side_aligned_avg_r": 0.017,
+  "open_side_counter_avg_r": -0.204,
+  "D_within_open_side_aligned": {
+   "D_aligned_n": 62,
+   "D_not_aligned_n": 47,
+   "diff": 0.287
+  },
+  "D_aligned_share_on_reclaimed_side": 89.9
+ },
+ "MECH": {
+  "n": 157,
+  "open_side_aligned_n": 8,
+  "open_side_counter_n": 148,
+  "open_side_diff": -0.028,
+  "open_side_aligned_avg_r": -0.152,
+  "open_side_counter_avg_r": -0.124,
+  "D_within_open_side_aligned": {
+   "D_aligned_n": 6,
+   "D_not_aligned_n": 2,
+   "diff": 1.141
+  },
+  "D_aligned_share_on_reclaimed_side": 60.0
+ },
+ "M22": {
+  "n": 203,
+  "open_side_aligned_n": 126,
+  "open_side_counter_n": 76,
+  "open_side_diff": 0.135,
+  "open_side_aligned_avg_r": -0.082,
+  "open_side_counter_avg_r": -0.217,
+  "D_within_open_side_aligned": {
+   "D_aligned_n": 62,
+   "D_not_aligned_n": 64,
+   "diff": 0.257
+  },
+  "D_aligned_share_on_reclaimed_side": 87.3
+ },
+ "CONT": {
+  "n": 169,
+  "open_side_aligned_n": 57,
+  "open_side_counter_n": 106,
+  "open_side_diff": 1.055,
+  "open_side_aligned_avg_r": 0.35,
+  "open_side_counter_avg_r": -0.705,
+  "D_within_open_side_aligned": {
+   "D_aligned_n": 18,
+   "D_not_aligned_n": 39,
+   "diff": 2.074
+  },
+  "D_aligned_share_on_reclaimed_side": 54.5
+ },
+ "ATM1m": {
+  "n": 57,
+  "open_side_aligned_n": 11,
+  "open_side_counter_n": 46,
+  "open_side_diff": 0.107,
+  "open_side_aligned_avg_r": 0.108,
+  "open_side_counter_avg_r": 0.001,
+  "D_within_open_side_aligned": {
+   "D_aligned_n": 7,
+   "D_not_aligned_n": 4,
+   "diff": 0.328
+  },
+  "D_aligned_share_on_reclaimed_side": 43.8
+ },
+ "ENG2": {
+  "n": 251,
+  "open_side_aligned_n": 98,
+  "open_side_counter_n": 153,
+  "open_side_diff": 0.073,
+  "open_side_aligned_avg_r": 0.174,
+  "open_side_counter_avg_r": 0.101,
+  "D_within_open_side_aligned": {
+   "D_aligned_n": 44,
+   "D_not_aligned_n": 54,
+   "diff": -0.299
+  },
+  "D_aligned_share_on_reclaimed_side": 74.6
+ },
+ "ATM1m_best": {
+  "n": 48,
+  "open_side_aligned_n": 11,
+  "open_side_counter_n": 37,
+  "open_side_diff": -0.03,
+  "open_side_aligned_avg_r": 0.108,
+  "open_side_counter_avg_r": 0.138,
+  "D_within_open_side_aligned": {
+   "D_aligned_n": 7,
+   "D_not_aligned_n": 4,
+   "diff": 0.328
+  },
+  "D_aligned_share_on_reclaimed_side": 43.8
+ },
+ "pooled_open_side_diff": 0.263,
+ "pooled_D_within_open_side_aligned_diff": 0.636
+}

@@ -1,0 +1,67 @@
+{
+ "period": [
+  "2026-07-01",
+  "2026-10-16"
+ ],
+ "sessions": 78,
+ "trades": 30,
+ "tpw": 1.92,
+ "weeks_in_2_5": 62.0,
+ "weeks_zero": 6.0,
+ "win_rate": 16.7,
+ "avg_r": 0.649,
+ "ci95_r": [
+  -0.155,
+  1.636
+ ],
+ "pf": 3.94,
+ "net": 6782.5,
+ "max_dd": -1062.5,
+ "worst_day": -358.0,
+ "months": {
+  "2026-07": {
+   "trades": 7,
+   "net": 1511.5
+  },
+  "2026-08": {
+   "trades": 11,
+   "net": 2288.0
+  },
+  "2026-09": {
+   "trades": 7,
+   "net": 3295.5
+  },
+  "2026-10": {
+   "trades": 5,
+   "net": -312.5
+  }
+ },
+ "losing_months": 1,
+ "rolling_pass": 100.0,
+ "avg_days_to_pass": 22.1,
+ "completed": 61,
+ "b2b_pass": 2,
+ "b2b_fail": 0,
+ "zero_edge_pass": 33.3,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": true,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": true,
+   "pass>=zero+10": true
+  }
+ },
+ "name": "P_17_retest6",
+ "period_name": "confirm",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1,
+  "entry_mode": "retest",
+  "retest_bars": 6
+ },
+ "scored_at": 1792194637
+}

@@ -1,0 +1,11 @@
+﻿atm trades 11 from run() on 5m 7.5 s
+v1 dev n 5 {'A': (1, -1.016), 'B': (3, 0.105), 'C': (1, 1.767), 'SKIP': (0, None)} mono False rho -0.667
+v1 confirm n 2 {'A': (0, None), 'B': (1, -1.018), 'C': (0, None), 'SKIP': (1, 0.921)} mono False rho None
+v1 ytd n 7 {'A': (1, -1.016), 'B': (4, -0.175), 'C': (1, 1.767), 'SKIP': (1, 0.921)} mono False rho -0.414
+v1 y2025 n 4 {'A': (0, None), 'B': (1, 1.486), 'C': (3, -0.669), 'SKIP': (0, None)} mono False rho None
+v2 dev n 5 {'A': (0, None), 'B': (1, -0.295), 'C': (0, None), 'SKIP': (4, 0.34)} mono False rho -0.821
+v2 confirm n 2 {'A': (0, None), 'B': (2, -0.048), 'C': (0, None), 'SKIP': (0, None)} mono False rho None
+v2 ytd n 7 {'A': (0, None), 'B': (3, -0.131), 'C': (0, None), 'SKIP': (4, 0.34)} mono False rho -0.709
+v2 y2025 n 4 {'A': (1, -1.013), 'B': (0, None), 'C': (1, 1.486), 'SKIP': (2, -0.497)} mono False rho None
+owner tiers {'dev': {'A': (1, -1.016), 'B': (3, 0.105), 'C': (1, 1.767), 'SKIP': (0, None)}, 'confirm': {'A': (0, None), 'B': (1, -1.018), 'C': (1, 0.921), 'SKIP': (0, None)}, 'ytd': {'A': (1, -1.016), 'B': (4, -0.175), 'C': (2, 1.344), 'SKIP': (0, None)}, 'y2025': {'A': (1, 1.486), 'B': (2, -0.497), 'C': (1, -1.013), 'SKIP': (0, None)}}
+done 10.7 s

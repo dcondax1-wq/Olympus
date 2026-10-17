@@ -1,0 +1,84 @@
+{
+ "period": [
+  "2025-04-14",
+  "2025-12-31"
+ ],
+ "sessions": 186,
+ "trades": 103,
+ "tpw": 2.77,
+ "weeks_in_2_5": 87.0,
+ "weeks_zero": 3.0,
+ "win_rate": 31.1,
+ "avg_r": 0.014,
+ "ci95_r": [
+  -0.171,
+  0.205
+ ],
+ "pf": 1.25,
+ "net": 2980.08,
+ "max_dd": -3170.62,
+ "worst_day": -962.04,
+ "months": {
+  "2025-04": {
+   "trades": 6,
+   "net": 2231.07
+  },
+  "2025-05": {
+   "trades": 15,
+   "net": -71.91
+  },
+  "2025-06": {
+   "trades": 9,
+   "net": 1219.37
+  },
+  "2025-07": {
+   "trades": 12,
+   "net": 277.26
+  },
+  "2025-08": {
+   "trades": 14,
+   "net": 376.24
+  },
+  "2025-09": {
+   "trades": 11,
+   "net": -1676.83
+  },
+  "2025-10": {
+   "trades": 10,
+   "net": -1209.83
+  },
+  "2025-11": {
+   "trades": 10,
+   "net": 845.87
+  },
+  "2025-12": {
+   "trades": 16,
+   "net": 988.84
+  }
+ },
+ "losing_months": 3,
+ "rolling_pass": 0.9,
+ "avg_days_to_pass": 49.0,
+ "completed": 106,
+ "b2b_pass": 1,
+ "b2b_fail": 1,
+ "zero_edge_pass": 0.0,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "TRADER_LAYER_ENG2_FULL",
+ "period_name": "y2025",
+ "notes": "trader layer",
+ "params": {
+  "source": "ENG2",
+  "config": "FULL"
+ },
+ "scored_at": 1792194957
+}

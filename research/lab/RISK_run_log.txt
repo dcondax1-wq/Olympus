@@ -1,0 +1,323 @@
+﻿[     1s] ENGINE_orig1day        2026     REC          b2b 4/1 roll 50.8 | P(pass)  60.0 fail   8.9 med 32.0 | zero  27.7 half  43.1 | 250d  85.1/ 14.8 zero  36.0
+[     5s] ENGINE_orig1day        2026     P0           b2b 4/2 roll 53.9 | P(pass)  59.5 fail  15.8 med 30.0 | zero  25.1 half  40.4 | 250d  77.4/ 22.6 zero  28.4
+[    10s] ENGINE_orig1day        2026     P0g          b2b 4/2 roll 55.0 | P(pass)  59.3 fail  15.1 med 30.0 | zero  24.3 half  39.7 | 250d  77.3/ 22.6 zero  27.4
+[    15s] ENGINE_orig1day        2026     P0_250       b2b 2/1 roll 47.1 | P(pass)  41.8 fail   3.9 med 39.0 | zero  13.4 half  25.6
+[    18s] ENGINE_orig1day        2026     P0_500       b2b 5/3 roll 67.9 | P(pass)  63.7 fail  29.5 med 21.0 | zero  26.2 half  42.6 | 250d  67.1/ 32.9 zero  25.9
+[    24s] ENGINE_orig1day        2026     P1           b2b 3/1 roll 41.2 | P(pass)  53.8 fail   5.2 med 32.0 | zero  26.9 half  39.4 | 250d  87.8/ 12.1 zero  38.3
+[    29s] ENGINE_orig1day        2026     P1g          b2b 3/1 roll 44.9 | P(pass)  53.6 fail   4.0 med 32.0 | zero  26.7 half  39.3
+[    35s] ENGINE_orig1day        2026     P1b          b2b 4/2 roll 48.1 | P(pass)  62.4 fail  17.7 med 28.0 | zero  25.9 half  42.2 | 250d  75.8/ 24.1 zero  27.8
+[    41s] ENGINE_orig1day        2026     P2_k20       b2b 2/1 roll 54.5 | P(pass)  39.3 fail   1.0 med 38.0 | zero  13.6 half  24.6
+[    47s] ENGINE_orig1day        2026     P2_k25       b2b 2/1 roll 54.5 | P(pass)  44.3 fail   1.1 med 36.0 | zero  17.3 half  29.2
+[    52s] ENGINE_orig1day        2026     P2_k35       b2b 3/1 roll 54.5 | P(pass)  50.3 fail   1.6 med 32.0 | zero  21.9 half  34.8
+[    56s] ENGINE_orig1day        2026     P2f_k25      b2b 4/1 roll 52.9 | P(pass)  54.6 fail   6.0 med 30.0 | zero  19.4 half  34.6
+[    61s] ENGINE_orig1day        2026     P2f_k35      b2b 3/1 roll 56.5 | P(pass)  57.3 fail   9.3 med 30.0 | zero  21.6 half  37.2 | 250d  80.9/ 19.1 zero  25.0
+[    67s] ENGINE_orig1day        2026     P3_50h       b2b 1/1 roll 69.3 | P(pass)  28.3 fail   0.3 med 38.0 | zero   9.4 half  16.7
+[    73s] ENGINE_orig1day        2026     P3_30h       b2b 2/1 roll 47.1 | P(pass)  44.5 fail   3.9 med 36.0 | zero  15.1 half  28.0
+[    79s] ENGINE_orig1day        2026     P3_50w       b2b 2/1 roll 62.4 | P(pass)  33.6 fail   0.8 med 38.0 | zero  12.6 half  20.9
+[    86s] ENGINE_orig1day        2026     P3_30w       b2b 2/1 roll 47.1 | P(pass)  46.5 fail   4.7 med 36.0 | zero  16.6 half  30.0 | 250d  87.3/ 12.3 zero  28.2
+[    90s] ENGINE_orig1day        2026     P4a          b2b 2/0 roll 49.2 | P(pass)  54.9 fail  14.3 med 32.0 | zero  22.3 half  37.6
+[    93s] ENGINE_orig1day        2026     P4b2         b2b 4/2 roll 55.0 | P(pass)  57.4 fail  14.6 med 31.0 | zero  24.2 half  39.3
+[    98s] ENGINE_orig1day        2026     P4b1         b2b 4/2 roll 64.4 | P(pass)  59.6 fail  15.7 med 30.0 | zero  23.7 half  39.7 | 250d  76.5/ 23.4 zero  27.4
+[   104s] ENGINE_orig1day        2026     P5_t_c_d     b2b 1/0 roll 100.0 | P(pass)  32.1 fail   0.0 med 39.0 | zero  16.3 half  23.1
+[   110s] ENGINE_orig1day        2026     P5_t_c_d_pr  b2b 1/0 roll 100.0 | P(pass)  29.2 fail   0.0 med 39.0 | zero  14.5 half  20.9
+[   117s] ENGINE_orig1day        2026     P5_t_c_d_f2  b2b 1/0 roll 100.0 | P(pass)  34.5 fail   0.0 med 38.0 | zero  17.3 half  25.0
+[   123s] ENGINE_orig1day        2026     P5_t_c_f2    b2b 2/1 roll 55.0 | P(pass)  44.5 fail   1.1 med 35.0 | zero  17.7 half  29.7
+[   129s] ENGINE_orig1day        2026     P5_f_c_d_f2  b2b 1/1 roll 56.5 | P(pass)  29.7 fail   0.6 med 38.0 | zero  10.5 half  18.3
+[   136s] ENGINE_orig1day        2026     P5_f_c35_w30_f1 b2b 2/1 roll 47.6 | P(pass)  47.2 fail   4.2 med 35.0 | zero  16.0 half  29.5 | 250d  85.7/ 13.7 zero  24.9
+[   141s] ENGINE_orig1day        2026     P5_f_c_f2    b2b 3/1 roll 55.0 | P(pass)  53.4 fail   5.9 med 31.0 | zero  19.9 half  34.9
+[   146s] ENGINE_orig1day        2026     P5_f_c35_f1  b2b 3/1 roll 66.0 | P(pass)  57.5 fail   9.6 med 30.0 | zero  21.3 half  37.3 | 250d  80.3/ 19.6 zero  24.8
+[   152s] ENGINE_orig1day        2026     P5_1b_c35_f1 b2b 4/1 roll 60.2 | P(pass)  58.6 fail   9.9 med 28.0 | zero  21.8 half  38.5 | 250d  79.8/ 20.2 zero  25.2
+[   154s] ENGINE_orig1day        2025     REC          b2b 1/1 roll 11.8 | P(pass)  12.5 fail  26.7 med 40.0 | zero  16.5 half  14.3 | 250d  38.2/ 60.9 zero  50.1
+[   160s] ENGINE_orig1day        2025     P0           b2b 1/4 roll 22.3 | P(pass)  12.1 fail  64.9 med 34.0 | zero  16.1 half  13.8 | 250d  18.1/ 81.9 zero  25.8
+[   167s] ENGINE_orig1day        2025     P0g          b2b 1/3 roll 22.5 | P(pass)  11.9 fail  65.6 med 34.0 | zero  15.9 half  13.5 | 250d  17.5/ 82.5 zero  24.6
+[   174s] ENGINE_orig1day        2025     P0_250       b2b 1/3 roll 5.3 | P(pass)   4.1 fail  37.6 med 42.0 | zero   6.2 half   5.0
+[   178s] ENGINE_orig1day        2025     P0_500       b2b 2/6 roll 28.8 | P(pass)  16.8 fail  79.9 med 21.0 | zero  21.7 half  19.1 | 250d  18.4/ 81.5 zero  24.3
+[   188s] ENGINE_orig1day        2025     P1           b2b 0/3 roll 0.0 | P(pass)   2.3 fail  49.5 med 37.0 | zero   3.6 half   3.0 | 250d   7.3/ 92.3 zero  11.9
+[   195s] ENGINE_orig1day        2025     P1g          b2b 0/3 roll 0.0 | P(pass)   2.3 fail  46.1 med 37.0 | zero   3.6 half   3.0
+[   202s] ENGINE_orig1day        2025     P1b          b2b 1/4 roll 6.9 | P(pass)  11.5 fail  72.0 med 33.0 | zero  15.2 half  13.4 | 250d  16.0/ 84.0 zero  22.8
+[   211s] ENGINE_orig1day        2025     P2_k20       b2b 0/1 roll 0.0 | P(pass)   0.8 fail  24.6 med 45.0 | zero   1.3 half   1.0
+[   219s] ENGINE_orig1day        2025     P2_k25       b2b 0/1 roll 0.0 | P(pass)   1.0 fail  27.8 med 44.0 | zero   1.4 half   1.1
+[   227s] ENGINE_orig1day        2025     P2_k35       b2b 0/2 roll 0.0 | P(pass)   1.8 fail  34.0 med 38.0 | zero   2.8 half   2.2
+[   233s] ENGINE_orig1day        2025     P2f_k25      b2b 1/3 roll 18.4 | P(pass)   9.4 fail  52.7 med 32.0 | zero  12.6 half  10.8
+[   241s] ENGINE_orig1day        2025     P2f_k35      b2b 1/3 roll 22.3 | P(pass)  10.7 fail  59.5 med 32.0 | zero  14.4 half  12.4 | 250d  15.4/ 84.5 zero  22.5
+[   249s] ENGINE_orig1day        2025     P3_50h       b2b 0/1 roll 0.0 | P(pass)   1.6 fail   8.7 med 41.5 | zero   2.9 half   2.2
+[   257s] ENGINE_orig1day        2025     P3_30h       b2b 1/3 roll 9.7 | P(pass)   5.1 fail  37.4 med 36.0 | zero   7.9 half   6.4
+[   265s] ENGINE_orig1day        2025     P3_50w       b2b 1/1 roll 10.7 | P(pass)   3.2 fail  18.9 med 39.0 | zero   7.0 half   5.8
+[   275s] ENGINE_orig1day        2025     P3_30w       b2b 1/3 roll 14.0 | P(pass)   6.3 fail  42.8 med 37.0 | zero  10.6 half   9.0 | 250d  16.2/ 83.2 zero  25.2
+[   280s] ENGINE_orig1day        2025     P4a          b2b 1/3 roll 11.6 | P(pass)   8.0 fail  64.4 med 38.0 | zero  10.6 half   9.1
+[   286s] ENGINE_orig1day        2025     P4b2         b2b 1/3 roll 13.8 | P(pass)   9.7 fail  64.9 med 37.0 | zero  13.1 half  11.5
+[   292s] ENGINE_orig1day        2025     P4b1         b2b 1/3 roll 23.9 | P(pass)  12.3 fail  66.2 med 32.0 | zero  16.6 half  14.2 | 250d  17.8/ 82.2 zero  24.4
+[   301s] ENGINE_orig1day        2025     P5_t_c_d     b2b 0/1 roll 0.0 | P(pass)   0.2 fail   5.4 med 40.5 | zero   0.3 half   0.2
+[   310s] ENGINE_orig1day        2025     P5_t_c_d_pr  b2b 0/1 roll 0.0 | P(pass)   0.1 fail   5.4 med 38.0 | zero   0.3 half   0.2
+[   319s] ENGINE_orig1day        2025     P5_t_c_d_f2  b2b 0/1 roll 0.0 | P(pass)   0.2 fail   5.4 med 47.0 | zero   0.5 half   0.3
+[   328s] ENGINE_orig1day        2025     P5_t_c_f2    b2b 0/1 roll 0.0 | P(pass)   1.1 fail  27.8 med 43.5 | zero   1.9 half   1.4
+[   336s] ENGINE_orig1day        2025     P5_f_c_d_f2  b2b 0/1 roll 0.8 | P(pass)   2.0 fail  13.9 med 40.0 | zero   3.3 half   2.8
+[   346s] ENGINE_orig1day        2025     P5_f_c35_w30_f1 b2b 1/3 roll 25.0 | P(pass)   7.1 fail  41.9 med 34.0 | zero  11.4 half   9.8 | 250d  14.2/ 85.5 zero  22.5
+[   353s] ENGINE_orig1day        2025     P5_f_c_f2    b2b 1/3 roll 11.8 | P(pass)   8.1 fail  52.2 med 36.0 | zero  10.9 half   9.4
+[   361s] ENGINE_orig1day        2025     P5_f_c35_f1  b2b 1/3 roll 22.3 | P(pass)  11.2 fail  60.0 med 31.0 | zero  15.0 half  12.6 | 250d  15.9/ 84.1 zero  22.6
+[   370s] ENGINE_orig1day        2025     P5_1b_c35_f1 b2b 1/2 roll 14.2 | P(pass)  10.5 fail  62.0 med 30.0 | zero  14.4 half  12.2 | 250d  15.6/ 84.4 zero  21.8
+[   372s] ENGINE_orig1day        2021-25  REC          b2b 4/9 roll 32.4 | P(pass)  10.2 fail  36.4 med 39.5 | zero   8.7 half   9.6 | 250d  29.4/ 70.1 zero  24.6
+[   379s] ENGINE_orig1day        2021-25  P0           b2b 8/19 roll 32.3 | P(pass)  21.8 fail  58.2 med 33.0 | zero  19.7 half  20.7 | 250d  31.4/ 68.7 zero  27.2
+[   386s] ENGINE_orig1day        2021-25  P0g          b2b 9/18 roll 31.2 | P(pass)  21.6 fail  58.8 med 32.0 | zero  19.4 half  20.6 | 250d  30.4/ 69.6 zero  25.9
+[   394s] ENGINE_orig1day        2021-25  P0_250       b2b 5/10 roll 26.4 | P(pass)  10.3 fail  32.1 med 41.0 | zero   8.9 half   9.7
+[   398s] ENGINE_orig1day        2021-25  P0_500       b2b 15/34 roll 31.5 | P(pass)  26.8 fail  71.0 med 19.0 | zero  24.1 half  25.2 | 250d  28.2/ 71.8 zero  25.5
+[   409s] ENGINE_orig1day        2021-25  P1           b2b 4/9 roll 30.0 | P(pass)  11.3 fail  33.0 med 39.0 | zero  10.2 half  10.6 | 250d  29.6/ 69.4 zero  25.6
+[   417s] ENGINE_orig1day        2021-25  P1g          b2b 3/9 roll 26.9 | P(pass)  11.3 fail  31.9 med 39.0 | zero  10.1 half  10.6
+[   425s] ENGINE_orig1day        2021-25  P1b          b2b 7/18 roll 27.4 | P(pass)  23.5 fail  62.0 med 30.0 | zero  20.9 half  22.3 | 250d  29.1/ 70.9 zero  26.1
+[   435s] ENGINE_orig1day        2021-25  P2_k20       b2b 3/6 roll 21.4 | P(pass)   5.5 fail  16.5 med 41.0 | zero   4.8 half   5.0
+[   445s] ENGINE_orig1day        2021-25  P2_k25       b2b 1/6 roll 22.0 | P(pass)   6.8 fail  18.4 med 40.0 | zero   6.0 half   6.4
+[   454s] ENGINE_orig1day        2021-25  P2_k35       b2b 2/7 roll 31.5 | P(pass)   9.6 fail  22.8 med 39.0 | zero   8.3 half   9.0
+[   462s] ENGINE_orig1day        2021-25  P2f_k25      b2b 6/14 roll 22.6 | P(pass)  17.8 fail  43.0 med 31.0 | zero  15.8 half  16.8
+[   471s] ENGINE_orig1day        2021-25  P2f_k35      b2b 7/16 roll 26.9 | P(pass)  19.6 fail  51.1 med 31.0 | zero  17.6 half  18.8 | 250d  27.8/ 72.2 zero  23.6
+[   482s] ENGINE_orig1day        2021-25  P3_50h       b2b 2/5 roll 25.0 | P(pass)   5.3 fail   6.9 med 36.0 | zero   4.5 half   4.8
+[   491s] ENGINE_orig1day        2021-25  P3_30h       b2b 4/11 roll 24.4 | P(pass)  11.8 fail  33.1 med 37.0 | zero  10.5 half  11.1
+[   501s] ENGINE_orig1day        2021-25  P3_50w       b2b 3/7 roll 31.9 | P(pass)   8.4 fail  15.9 med 38.0 | zero   7.5 half   8.0
+[   513s] ENGINE_orig1day        2021-25  P3_30w       b2b 5/12 roll 25.0 | P(pass)  14.1 fail  37.7 med 37.0 | zero  12.3 half  13.2 | 250d  29.9/ 69.5 zero  25.6
+[   519s] ENGINE_orig1day        2021-25  P4a          b2b 6/15 roll 31.2 | P(pass)  18.2 fail  56.6 med 37.0 | zero  16.0 half  17.0
+[   526s] ENGINE_orig1day        2021-25  P4b2         b2b 8/17 roll 32.7 | P(pass)  20.0 fail  57.3 med 36.0 | zero  17.6 half  18.7
+[   534s] ENGINE_orig1day        2021-25  P4b1         b2b 9/17 roll 33.1 | P(pass)  22.1 fail  59.3 med 31.0 | zero  20.0 half  21.0 | 250d  29.4/ 70.5 zero  25.9
+[   547s] ENGINE_orig1day        2021-25  P5_t_c_d     b2b 1/2 roll 11.1 | P(pass)   1.7 fail   1.0 med 43.0 | zero   1.5 half   1.6
+[   560s] ENGINE_orig1day        2021-25  P5_t_c_d_pr  b2b 2/3 roll 18.2 | P(pass)   1.0 fail   1.0 med 40.5 | zero   0.8 half   1.0
+[   573s] ENGINE_orig1day        2021-25  P5_t_c_d_f2  b2b 2/3 roll 16.8 | P(pass)   1.9 fail   1.0 med 43.5 | zero   1.6 half   1.8
+[   584s] ENGINE_orig1day        2021-25  P5_t_c_f2    b2b 3/7 roll 30.6 | P(pass)   6.7 fail  18.4 med 40.0 | zero   6.0 half   6.4
+[   595s] ENGINE_orig1day        2021-25  P5_f_c_d_f2  b2b 1/4 roll 25.4 | P(pass)   5.7 fail  10.5 med 36.0 | zero   5.2 half   5.4
+[   606s] ENGINE_orig1day        2021-25  P5_f_c35_w30_f1 b2b 5/12 roll 25.4 | P(pass)  15.0 fail  36.0 med 36.0 | zero  12.9 half  14.1 | 250d  27.4/ 72.5 zero  22.5
+[   613s] ENGINE_orig1day        2021-25  P5_f_c_f2    b2b 6/14 roll 21.9 | P(pass)  16.4 fail  42.2 med 34.0 | zero  14.3 half  15.4
+[   622s] ENGINE_orig1day        2021-25  P5_f_c35_f1  b2b 8/17 roll 27.6 | P(pass)  20.1 fail  51.8 med 30.0 | zero  18.0 half  18.9 | 250d  27.1/ 73.0 zero  23.1
+[   632s] ENGINE_orig1day        2021-25  P5_1b_c35_f1 b2b 9/18 roll 27.3 | P(pass)  21.4 fail  52.4 med 29.0 | zero  19.2 half  20.3 | 250d  27.4/ 72.6 zero  23.6
+[   634s] SB_NQ_am               2026     P0           b2b 0/3 roll 0.0 | P(pass)   3.4 fail  61.4 med 34.0 | zero   9.7
+[   636s] SB_NQ_am               2026     P0g          b2b 0/3 roll 0.0 | P(pass)   3.4 fail  62.3 med 34.0 | zero   9.7
+[   637s] SB_NQ_am               2026     P0_500       b2b 0/6 roll 5.8 | P(pass)   5.6 fail  86.2 med 23.0 | zero  15.5
+[   639s] SB_NQ_am               2026     P2f_k35      b2b 0/2 roll 0.0 | P(pass)   3.2 fail  51.6 med 34.0 | zero   9.4
+[   642s] SB_NQ_am               2026     P3_30w       b2b 0/2 roll 0.0 | P(pass)   1.6 fail  39.7 med 34.0 | zero   4.0
+[   644s] SB_NQ_am               2026     P4a          b2b 0/3 roll 0.0 | P(pass)   2.4 fail  61.8 med 37.0 | zero   7.7
+[   646s] SB_NQ_am               2026     P4b1         b2b 0/3 roll 5.3 | P(pass)   3.6 fail  62.7 med 34.0 | zero  10.2
+[   648s] SB_NQ_am               2026     P5_f_c35_f1  b2b 0/2 roll 0.0 | P(pass)   3.4 fail  52.0 med 32.0 | zero   9.8
+[   651s] SB_NQ_am               2026     P5_f_c35_w30_f1 b2b 0/2 roll 0.0 | P(pass)   1.9 fail  35.5 med 33.0 | zero   4.6
+[   653s] SB_NQ_base             2026     P0           b2b 2/6 roll 32.5 | P(pass)  15.7 fail  72.9 med 29.0 | zero  21.3
+[   655s] SB_NQ_base             2026     P0g          b2b 0/5 roll 31.5 | P(pass)  15.3 fail  73.5 med 29.0 | zero  21.0
+[   656s] SB_NQ_base             2026     P0_500       b2b 2/8 roll 15.7 | P(pass)  17.6 fail  81.8 med 16.5 | zero  23.3
+[   659s] SB_NQ_base             2026     P2f_k35      b2b 1/3 roll 25.9 | P(pass)  13.5 fail  63.8 med 27.0 | zero  18.6
+[   663s] SB_NQ_base             2026     P3_30w       b2b 1/3 roll 30.8 | P(pass)  10.5 fail  60.3 med 32.0 | zero  14.7
+[   666s] SB_NQ_base             2026     P4a          b2b 1/4 roll 32.6 | P(pass)  13.3 fail  71.9 med 33.0 | zero  18.5
+[   668s] SB_NQ_base             2026     P4b1         b2b 1/5 roll 32.0 | P(pass)  15.9 fail  74.1 med 28.0 | zero  21.7
+[   671s] SB_NQ_base             2026     P5_f_c35_f1  b2b 1/3 roll 26.5 | P(pass)  13.8 fail  64.4 med 26.0 | zero  19.3
+[   675s] SB_NQ_base             2026     P5_f_c35_w30_f1 b2b 0/2 roll 28.8 | P(pass)  10.9 fail  54.0 med 29.0 | zero  14.9
+[   677s] SB_NQ_ce               2026     P0           b2b 1/6 roll 1.5 | P(pass)  10.5 fail  83.9 med 25.0 | zero  20.6
+[   680s] SB_NQ_ce               2026     P0g          b2b 0/5 roll 1.6 | P(pass)  10.4 fail  83.8 med 24.0 | zero  20.3
+[   681s] SB_NQ_ce               2026     P0_500       b2b 1/11 roll 9.1 | P(pass)  14.5 fail  85.1 med 15.0 | zero  23.8
+[   684s] SB_NQ_ce               2026     P2f_k35      b2b 0/5 roll 1.6 | P(pass)   9.3 fail  78.2 med 24.0 | zero  18.4
+[   688s] SB_NQ_ce               2026     P3_30w       b2b 0/3 roll 1.6 | P(pass)   7.2 fail  74.3 med 27.0 | zero  14.4
+[   691s] SB_NQ_ce               2026     P4a          b2b 0/4 roll 3.8 | P(pass)   8.7 fail  82.8 med 30.0 | zero  17.6
+[   693s] SB_NQ_ce               2026     P4b1         b2b 1/5 roll 2.6 | P(pass)  10.8 fail  84.2 med 24.0 | zero  20.5
+[   696s] SB_NQ_ce               2026     P5_f_c35_f1  b2b 0/4 roll 2.6 | P(pass)   9.5 fail  78.5 med 23.0 | zero  18.4
+[   700s] SB_NQ_ce               2026     P5_f_c35_w30_f1 b2b 0/4 roll 1.6 | P(pass)   7.5 fail  70.9 med 26.0 | zero  14.5
+[   703s] SB_NQ_rr2              2026     P0           b2b 1/2 roll 20.4 | P(pass)  13.5 fail  55.6 med 39.0 | zero  15.1
+[   706s] SB_NQ_rr2              2026     P0g          b2b 1/3 roll 20.4 | P(pass)  13.4 fail  56.4 med 39.0 | zero  15.1
+[   708s] SB_NQ_rr2              2026     P0_500       b2b 1/7 roll 20.2 | P(pass)  19.8 fail  75.6 med 25.0 | zero  21.5
+[   711s] SB_NQ_rr2              2026     P2f_k35      b2b 0/2 roll 31.7 | P(pass)  12.2 fail  41.4 med 37.0 | zero  14.2
+[   715s] SB_NQ_rr2              2026     P3_30w       b2b 0/1 roll 72.2 | P(pass)   8.4 fail  38.3 med 40.0 | zero   9.6
+[   718s] SB_NQ_rr2              2026     P4a          b2b 0/3 roll 16.2 | P(pass)   8.4 fail  55.0 med 44.0 | zero  10.2
+[   721s] SB_NQ_rr2              2026     P4b1         b2b 1/3 roll 20.8 | P(pass)  15.8 fail  57.1 med 35.0 | zero  17.5
+[   724s] SB_NQ_rr2              2026     P5_f_c35_f1  b2b 0/2 roll 33.9 | P(pass)  14.6 fail  42.0 med 33.0 | zero  16.4
+[   729s] SB_NQ_rr2              2026     P5_f_c35_w30_f1 b2b 0/1 roll 52.4 | P(pass)  11.3 fail  30.4 med 36.0 | zero  12.4
+[   732s] MECH_NQ_base           2026     P0           b2b 0/2 roll 0.0 | P(pass)   4.7 fail  46.5 med 41.0 | zero  10.4
+[   735s] MECH_NQ_base           2026     P0g          b2b 0/3 roll 0.0 | P(pass)   4.7 fail  51.0 med 41.0 | zero  10.3
+[   737s] MECH_NQ_base           2026     P0_500       b2b 0/5 roll 0.0 | P(pass)   9.3 fail  76.6 med 31.0 | zero  18.1
+[   740s] MECH_NQ_base           2026     P2f_k35      b2b 0/3 roll 0.0 | P(pass)   4.4 fail  63.1 med 40.0 | zero   9.9
+[   743s] MECH_NQ_base           2026     P3_30w       b2b 0/2 roll 0.0 | P(pass)   1.7 fail  16.7 med 38.0 | zero   4.7
+[   746s] MECH_NQ_base           2026     P4a          b2b 0/3 roll 0.0 | P(pass)   2.6 fail  50.7 med 44.0 | zero   7.0
+[   749s] MECH_NQ_base           2026     P4b1         b2b 0/3 roll 0.0 | P(pass)   4.9 fail  51.4 med 41.0 | zero  11.0
+[   752s] MECH_NQ_base           2026     P5_f_c35_f1  b2b 0/3 roll 0.0 | P(pass)   4.6 fail  63.5 med 40.0 | zero  10.5
+[   756s] MECH_NQ_base           2026     P5_f_c35_w30_f1 b2b 0/2 roll 0.0 | P(pass)   2.1 fail  32.1 med 38.0 | zero   5.9
+[   759s] MECH_NQ_rr2            2026     P0           b2b 0/3 roll 0.0 | P(pass)   1.1 fail  59.5 med 40.0 | zero   7.5
+[   762s] MECH_NQ_rr2            2026     P0g          b2b 0/3 roll 0.0 | P(pass)   1.1 fail  63.7 med 40.0 | zero   7.5
+[   765s] MECH_NQ_rr2            2026     P0_500       b2b 0/6 roll 0.0 | P(pass)   3.0 fail  87.7 med 29.5 | zero  15.5
+[   768s] MECH_NQ_rr2            2026     P2f_k35      b2b 0/4 roll 0.0 | P(pass)   1.0 fail  77.4 med 40.0 | zero   7.3
+[   772s] MECH_NQ_rr2            2026     P3_30w       b2b 0/2 roll 0.0 | P(pass)   0.3 fail  30.5 med 27.5 | zero   3.0
+[   775s] MECH_NQ_rr2            2026     P4a          b2b 0/3 roll 0.0 | P(pass)   0.5 fail  63.6 med 40.0 | zero   4.4
+[   779s] MECH_NQ_rr2            2026     P4b1         b2b 0/3 roll 0.0 | P(pass)   1.6 fail  63.9 med 36.0 | zero   9.2
+[   781s] MECH_NQ_rr2            2026     P5_f_c35_f1  b2b 0/4 roll 0.0 | P(pass)   1.6 fail  77.7 med 36.0 | zero   8.6
+[   785s] MECH_NQ_rr2            2026     P5_f_c35_w30_f1 b2b 0/2 roll 0.0 | P(pass)   0.6 fail  49.6 med 35.0 | zero   4.3
+[   786s] MECH_NQ_smt            2026     P0           b2b 0/0 roll None | P(pass)   2.4 fail   0.4 med 46.0 | zero   1.4
+[   788s] MECH_NQ_smt            2026     P0g          b2b 0/0 roll None | P(pass)   2.4 fail   0.8 med 46.0 | zero   1.4
+[   789s] MECH_NQ_smt            2026     P0_500       b2b 0/1 roll 0.0 | P(pass)   7.7 fail  11.1 med 41.0 | zero   5.4
+[   791s] MECH_NQ_smt            2026     P2f_k35      b2b 0/0 roll None | P(pass)   2.4 fail   2.6 med 46.0 | zero   1.4
+[   793s] MECH_NQ_smt            2026     P3_30w       b2b 0/0 roll None | P(pass)   1.3 fail   0.1 med 45.0 | zero   0.8
+[   794s] MECH_NQ_smt            2026     P4a          b2b 0/0 roll None | P(pass)   1.3 fail   0.8 med 46.0 | zero   0.7
+[   795s] MECH_NQ_smt            2026     P4b1         b2b 0/0 roll None | P(pass)   2.8 fail   0.8 med 46.0 | zero   1.7
+[   797s] MECH_NQ_smt            2026     P5_f_c35_f1  b2b 0/0 roll 0.0 | P(pass)   2.8 fail   2.6 med 46.0 | zero   1.7
+[   798s] MECH_NQ_smt            2026     P5_f_c35_w30_f1 b2b 0/0 roll None | P(pass)   1.6 fail   0.5 med 45.0 | zero   1.1
+[   801s] M22_NQ_canon           2026     P0           b2b 0/2 roll 0.0 | P(pass)   0.6 fail  23.7 med 50.0 | zero   1.2
+[   803s] M22_NQ_canon           2026     P0g          b2b 0/2 roll 0.0 | P(pass)   0.6 fail  26.4 med 50.0 | zero   1.2
+[   806s] M22_NQ_canon           2026     P0_500       b2b 0/2 roll 3.4 | P(pass)   4.6 fail  55.8 med 44.0 | zero   7.9
+[   808s] M22_NQ_canon           2026     P2f_k35      b2b 0/2 roll 0.0 | P(pass)   0.6 fail  31.8 med 50.0 | zero   1.2
+[   811s] M22_NQ_canon           2026     P3_30w       b2b 0/1 roll 0.0 | P(pass)   0.4 fail  13.8 med 51.0 | zero   0.6
+[   814s] M22_NQ_canon           2026     P4a          b2b 0/2 roll 0.0 | P(pass)   0.3 fail  26.3 med 51.0 | zero   0.7
+[   817s] M22_NQ_canon           2026     P4b1         b2b 0/2 roll 0.0 | P(pass)   1.0 fail  26.4 med 48.5 | zero   1.9
+[   820s] M22_NQ_canon           2026     P5_f_c35_f1  b2b 0/2 roll 0.0 | P(pass)   1.0 fail  31.9 med 48.5 | zero   1.9
+[   823s] M22_NQ_canon           2026     P5_f_c35_w30_f1 b2b 0/1 roll 0.0 | P(pass)   0.5 fail  21.5 med 49.5 | zero   1.0
+[   826s] M22_NQ_nobias          2026     P0           b2b 0/2 roll 0.0 | P(pass)   4.4 fail  50.8 med 42.0 | zero   6.0
+[   830s] M22_NQ_nobias          2026     P0g          b2b 0/3 roll 0.0 | P(pass)   4.4 fail  54.1 med 42.0 | zero   6.0
+[   833s] M22_NQ_nobias          2026     P0_500       b2b 0/5 roll 2.1 | P(pass)  17.4 fail  71.6 med 32.0 | zero  21.3
+[   836s] M22_NQ_nobias          2026     P2f_k35      b2b 0/4 roll 0.0 | P(pass)   4.3 fail  58.2 med 41.0 | zero   5.8
+[   841s] M22_NQ_nobias          2026     P3_30w       b2b 0/1 roll 0.0 | P(pass)   2.9 fail  31.4 med 43.0 | zero   4.1
+[   844s] M22_NQ_nobias          2026     P4a          b2b 0/3 roll 0.0 | P(pass)   2.6 fail  53.7 med 46.0 | zero   4.0
+[   848s] M22_NQ_nobias          2026     P4b1         b2b 0/3 roll 0.0 | P(pass)   5.5 fail  54.5 med 41.0 | zero   7.7
+[   851s] M22_NQ_nobias          2026     P5_f_c35_f1  b2b 0/4 roll 0.0 | P(pass)   5.3 fail  58.6 med 40.0 | zero   7.4
+[   855s] M22_NQ_nobias          2026     P5_f_c35_w30_f1 b2b 0/2 roll 0.0 | P(pass)   3.8 fail  42.0 med 44.0 | zero   5.3
+[   858s] M22_NQ_rr2             2026     P0           b2b 0/1 roll 0.0 | P(pass)   2.0 fail  21.7 med 49.0 | zero   2.0
+[   860s] M22_NQ_rr2             2026     P0g          b2b 0/1 roll 0.0 | P(pass)   2.0 fail  25.2 med 49.0 | zero   2.0
+[   862s] M22_NQ_rr2             2026     P0_500       b2b 1/2 roll 30.2 | P(pass)  12.5 fail  53.0 med 38.0 | zero  12.6
+[   864s] M22_NQ_rr2             2026     P2f_k35      b2b 0/1 roll 0.0 | P(pass)   2.0 fail  31.4 med 49.0 | zero   2.0
+[   867s] M22_NQ_rr2             2026     P3_30w       b2b 0/0 roll None | P(pass)   1.2 fail  11.7 med 49.0 | zero   1.2
+[   870s] M22_NQ_rr2             2026     P4a          b2b 0/1 roll 0.0 | P(pass)   1.2 fail  25.2 med 50.0 | zero   1.2
+[   872s] M22_NQ_rr2             2026     P4b1         b2b 0/1 roll 0.0 | P(pass)   3.8 fail  25.3 med 46.0 | zero   3.8
+[   874s] M22_NQ_rr2             2026     P5_f_c35_f1  b2b 0/1 roll 0.0 | P(pass)   3.7 fail  31.6 med 46.0 | zero   3.8
+[   877s] M22_NQ_rr2             2026     P5_f_c35_w30_f1 b2b 0/1 roll 0.0 | P(pass)   2.3 fail  19.9 med 46.0 | zero   2.3
+[   878s] CONT_NQ_FVG            2026     P0           b2b 2/12 roll 23.0 | P(pass)  16.5 fail  83.5 med 7.0 | zero  23.8
+[   880s] CONT_NQ_FVG            2026     P0g          b2b 2/10 roll 23.2 | P(pass)  16.0 fail  84.0 med 6.0 | zero  24.2
+[   881s] CONT_NQ_FVG            2026     P0_500       b2b 2/12 roll 21.6 | P(pass)  14.1 fail  85.9 med 6.0 | zero  20.5
+[   883s] CONT_NQ_FVG            2026     P2f_k35      b2b 1/6 roll 22.5 | P(pass)  15.2 fail  83.4 med 6.0 | zero  23.1
+[   885s] CONT_NQ_FVG            2026     P3_30w       b2b 2/9 roll 18.1 | P(pass)  14.7 fail  85.2 med 7.0 | zero  23.0
+[   887s] CONT_NQ_FVG            2026     P4a          b2b 2/10 roll 23.2 | P(pass)  16.0 fail  83.9 med 7.0 | zero  24.3
+[   888s] CONT_NQ_FVG            2026     P4b1         b2b 2/10 roll 23.2 | P(pass)  16.0 fail  84.0 med 6.5 | zero  24.2
+[   891s] CONT_NQ_FVG            2026     P5_f_c35_f1  b2b 1/6 roll 22.5 | P(pass)  15.2 fail  83.4 med 6.0 | zero  23.0
+[   894s] CONT_NQ_FVG            2026     P5_f_c35_w30_f1 b2b 2/6 roll 18.1 | P(pass)  14.4 fail  83.4 med 7.0 | zero  22.7
+[   896s] CONT_NQ_IFVG_AMPM      2026     P0           b2b 0/0 roll None | P(pass)   0.2 fail   0.1 med 51.0 | zero   0.1
+[   897s] CONT_NQ_IFVG_AMPM      2026     P0g          b2b 0/0 roll None | P(pass)   0.2 fail   0.1 med 51.0 | zero   0.1
+[   899s] CONT_NQ_IFVG_AMPM      2026     P0_500       b2b 0/0 roll None | P(pass)   3.6 fail   2.7 med 46.0 | zero   2.5
+[   901s] CONT_NQ_IFVG_AMPM      2026     P2f_k35      b2b 0/0 roll None | P(pass)   0.2 fail   0.1 med 51.0 | zero   0.1
+[   902s] CONT_NQ_IFVG_AMPM      2026     P3_30w       b2b 0/0 roll None | P(pass)   0.1 fail   0.0 med 56.0 | zero   0.0
+[   904s] CONT_NQ_IFVG_AMPM      2026     P4a          b2b 0/0 roll None | P(pass)   0.0 fail   0.1 med 44.0 | zero   0.0
+[   905s] CONT_NQ_IFVG_AMPM      2026     P4b1         b2b 0/0 roll None | P(pass)   0.3 fail   0.1 med 49.0 | zero   0.2
+[   907s] CONT_NQ_IFVG_AMPM      2026     P5_f_c35_f1  b2b 0/0 roll None | P(pass)   0.3 fail   0.1 med 49.0 | zero   0.2
+[   909s] CONT_NQ_IFVG_AMPM      2026     P5_f_c35_w30_f1 b2b 0/0 roll None | P(pass)   0.2 fail   0.0 med 52.5 | zero   0.1
+[   911s] ATM_1m_base            2026     P0           b2b 1/2 roll 22.8 | P(pass)  11.6 fail  34.8 med 37.0 | zero  10.4
+[   914s] ATM_1m_base            2026     P0g          b2b 1/2 roll 22.8 | P(pass)  11.5 fail  37.4 med 37.0 | zero  10.4
+[   916s] ATM_1m_base            2026     P0_500       b2b 1/2 roll 29.3 | P(pass)  24.1 fail  56.9 med 29.0 | zero  22.7
+[   918s] ATM_1m_base            2026     P1           b2b 1/3 roll 34.9 | P(pass)  25.7 fail  58.7 med 29.0 | zero  24.6
+[   920s] ATM_1m_base            2026     P1g          b2b 2/3 roll 34.9 | P(pass)  25.0 fail  59.8 med 28.0 | zero  23.7
+[   922s] ATM_1m_base            2026     P1b          b2b 2/3 roll 31.9 | P(pass)  25.6 fail  61.5 med 27.0 | zero  24.2
+[   924s] ATM_1m_base            2026     P2f_k35      b2b 1/2 roll 24.1 | P(pass)  11.0 fail  36.0 med 36.0 | zero  10.0
+[   928s] ATM_1m_base            2026     P3_30w       b2b 1/1 roll 40.8 | P(pass)   6.9 fail  10.1 med 39.0 | zero   6.5
+[   930s] ATM_1m_base            2026     P4a          b2b 1/2 roll 20.1 | P(pass)   8.6 fail  36.8 med 40.0 | zero   8.0
+[   933s] ATM_1m_base            2026     P4b1         b2b 1/2 roll 24.5 | P(pass)  12.8 fail  37.9 med 36.0 | zero  11.7
+[   935s] ATM_1m_base            2026     P5_f_c35_f1  b2b 1/2 roll 25.3 | P(pass)  12.3 fail  36.6 med 36.0 | zero  11.3
+[   938s] ATM_1m_base            2026     P5_f_c35_w30_f1 b2b 1/1 roll 38.5 | P(pass)   8.5 fail  15.6 med 38.0 | zero   7.8
+[   941s] ATM_1m_base            2026     P5_1b_c35_f1 b2b 1/2 roll 31.8 | P(pass)  20.5 fail  46.0 med 30.0 | zero  19.2
+[   944s] ATM_1m_base            2026     P5_t_c_d_f2  b2b 1/1 roll 34.1 | P(pass)   6.4 fail  15.5 med 41.0 | zero   6.1
+[   946s] ATM_1m_best            2026     P0           b2b 1/1 roll 38.8 | P(pass)  13.4 fail  23.2 med 39.0 | zero   8.8
+[   948s] ATM_1m_best            2026     P0g          b2b 1/1 roll 38.1 | P(pass)  13.3 fail  25.9 med 39.0 | zero   8.8
+[   949s] ATM_1m_best            2026     P0_500       b2b 2/2 roll 36.4 | P(pass)  28.3 fail  44.9 med 31.0 | zero  20.9
+[   951s] ATM_1m_best            2026     P1           b2b 2/2 roll 40.7 | P(pass)  29.7 fail  48.3 med 30.0 | zero  22.5
+[   952s] ATM_1m_best            2026     P1g          b2b 1/1 roll 41.9 | P(pass)  29.0 fail  49.7 med 30.0 | zero  21.8
+[   954s] ATM_1m_best            2026     P1b          b2b 1/2 roll 37.9 | P(pass)  30.3 fail  50.9 med 29.0 | zero  22.8
+[   956s] ATM_1m_best            2026     P2f_k35      b2b 1/1 roll 38.8 | P(pass)  12.8 fail  23.1 med 38.0 | zero   8.6
+[   958s] ATM_1m_best            2026     P3_30w       b2b 1/0 roll 100.0 | P(pass)   8.4 fail   5.2 med 39.0 | zero   5.8
+[   960s] ATM_1m_best            2026     P4a          b2b 1/1 roll 38.1 | P(pass)  10.4 fail  25.7 med 41.0 | zero   6.6
+[   962s] ATM_1m_best            2026     P4b1         b2b 1/1 roll 38.1 | P(pass)  14.5 fail  26.3 med 38.0 | zero   9.9
+[   964s] ATM_1m_best            2026     P5_f_c35_f1  b2b 1/1 roll 38.8 | P(pass)  14.1 fail  23.4 med 37.0 | zero   9.6
+[   966s] ATM_1m_best            2026     P5_f_c35_w30_f1 b2b 1/1 roll 56.2 | P(pass)  10.6 fail   9.1 med 39.0 | zero   6.6
+[   968s] ATM_1m_best            2026     P5_1b_c35_f1 b2b 1/1 roll 44.9 | P(pass)  24.4 fail  33.2 med 30.0 | zero  17.0
+[   971s] ATM_1m_best            2026     P5_t_c_d_f2  b2b 1/1 roll 38.5 | P(pass)   8.0 fail   9.8 med 40.0 | zero   5.0
+[   973s] ATM_diag_noskip_tier   2026     P0           b2b 0/0 roll None | P(pass)   0.0 fail   4.1 med 53.0 | zero   0.0
+[   976s] ATM_diag_noskip_tier   2026     P0g          b2b 0/1 roll 0.0 | P(pass)   0.0 fail   6.6 med 53.0 | zero   0.0
+[   978s] ATM_diag_noskip_tier   2026     P0_500       b2b 0/1 roll 0.0 | P(pass)   1.6 fail  28.2 med 49.0 | zero   2.4
+[   980s] ATM_diag_noskip_tier   2026     P1           b2b 0/1 roll 0.0 | P(pass)   1.0 fail  29.0 med 48.5 | zero   1.9
+[   982s] ATM_diag_noskip_tier   2026     P1g          b2b 0/2 roll 0.0 | P(pass)   1.0 fail  32.1 med 48.5 | zero   1.9
+[   984s] ATM_diag_noskip_tier   2026     P1b          b2b 0/2 roll 0.0 | P(pass)   1.6 fail  31.6 med 47.5 | zero   2.6
+[   987s] ATM_diag_noskip_tier   2026     P2f_k35      b2b 0/1 roll 0.0 | P(pass)   0.0 fail  14.5 med 53.0 | zero   0.0
+[   989s] ATM_diag_noskip_tier   2026     P3_30w       b2b 0/0 roll None | P(pass)   0.0 fail   0.5 med 53.0 | zero   0.0
+[   991s] ATM_diag_noskip_tier   2026     P4a          b2b 0/1 roll 0.0 | P(pass)   0.0 fail   6.6 med None | zero   0.0
+[   994s] ATM_diag_noskip_tier   2026     P4b1         b2b 0/1 roll 0.0 | P(pass)   0.0 fail   6.6 med 53.5 | zero   0.1
+[   996s] ATM_diag_noskip_tier   2026     P5_f_c35_f1  b2b 0/1 roll 0.0 | P(pass)   0.0 fail  14.5 med 53.5 | zero   0.1
+[   998s] ATM_diag_noskip_tier   2026     P5_f_c35_w30_f1 b2b 0/0 roll None | P(pass)   0.0 fail   2.7 med 48.0 | zero   0.0
+[  1001s] ATM_diag_noskip_tier   2026     P5_1b_c35_f1 b2b 0/2 roll 0.0 | P(pass)   0.9 fail  28.9 med 49.0 | zero   1.4
+[  1003s] ATM_diag_noskip_tier   2026     P5_t_c_d_f2  b2b 0/1 roll 0.0 | P(pass)   0.0 fail  12.7 med 53.0 | zero   0.0
+[  1005s] ATM_m1_base_tier       2026     P0           b2b 1/2 roll 22.8 | P(pass)  11.6 fail  34.8 med 37.0 | zero  10.4
+[  1007s] ATM_m1_base_tier       2026     P0g          b2b 1/2 roll 22.8 | P(pass)  11.5 fail  37.4 med 37.0 | zero  10.4
+[  1009s] ATM_m1_base_tier       2026     P0_500       b2b 1/2 roll 29.3 | P(pass)  24.1 fail  56.9 med 29.0 | zero  22.7
+[  1011s] ATM_m1_base_tier       2026     P1           b2b 1/3 roll 34.9 | P(pass)  25.7 fail  58.7 med 29.0 | zero  24.6
+[  1013s] ATM_m1_base_tier       2026     P1g          b2b 2/3 roll 34.9 | P(pass)  25.0 fail  59.8 med 28.0 | zero  23.7
+[  1014s] ATM_m1_base_tier       2026     P1b          b2b 2/3 roll 31.9 | P(pass)  25.6 fail  61.5 med 27.0 | zero  24.2
+[  1016s] ATM_m1_base_tier       2026     P2f_k35      b2b 1/2 roll 24.1 | P(pass)  11.0 fail  36.0 med 36.0 | zero  10.0
+[  1019s] ATM_m1_base_tier       2026     P3_30w       b2b 1/1 roll 40.8 | P(pass)   6.9 fail  10.1 med 39.0 | zero   6.5
+[  1021s] ATM_m1_base_tier       2026     P4a          b2b 1/2 roll 20.1 | P(pass)   8.6 fail  36.8 med 40.0 | zero   8.0
+[  1023s] ATM_m1_base_tier       2026     P4b1         b2b 1/2 roll 24.5 | P(pass)  12.8 fail  37.9 med 36.0 | zero  11.7
+[  1026s] ATM_m1_base_tier       2026     P5_f_c35_f1  b2b 1/2 roll 25.3 | P(pass)  12.3 fail  36.6 med 36.0 | zero  11.3
+[  1028s] ATM_m1_base_tier       2026     P5_f_c35_w30_f1 b2b 1/1 roll 38.5 | P(pass)   8.5 fail  15.6 med 38.0 | zero   7.8
+[  1030s] ATM_m1_base_tier       2026     P5_1b_c35_f1 b2b 1/2 roll 31.8 | P(pass)  20.5 fail  46.0 med 30.0 | zero  19.2
+[  1033s] ATM_m1_base_tier       2026     P5_t_c_d_f2  b2b 1/1 roll 34.1 | P(pass)   6.4 fail  15.5 med 41.0 | zero   6.1
+[  1035s] ATM_m1_nbars6_tier     2026     P0           b2b 1/1 roll 38.8 | P(pass)  13.4 fail  23.2 med 39.0 | zero   8.8
+[  1037s] ATM_m1_nbars6_tier     2026     P0g          b2b 1/1 roll 38.1 | P(pass)  13.3 fail  25.9 med 39.0 | zero   8.8
+[  1038s] ATM_m1_nbars6_tier     2026     P0_500       b2b 2/2 roll 36.4 | P(pass)  28.3 fail  44.9 med 31.0 | zero  20.9
+[  1039s] ATM_m1_nbars6_tier     2026     P1           b2b 2/2 roll 40.7 | P(pass)  29.7 fail  48.3 med 30.0 | zero  22.5
+[  1041s] ATM_m1_nbars6_tier     2026     P1g          b2b 1/1 roll 41.9 | P(pass)  29.0 fail  49.7 med 30.0 | zero  21.8
+[  1042s] ATM_m1_nbars6_tier     2026     P1b          b2b 1/2 roll 37.9 | P(pass)  30.3 fail  50.9 med 29.0 | zero  22.8
+[  1044s] ATM_m1_nbars6_tier     2026     P2f_k35      b2b 1/1 roll 38.8 | P(pass)  12.8 fail  23.1 med 38.0 | zero   8.6
+[  1046s] ATM_m1_nbars6_tier     2026     P3_30w       b2b 1/0 roll 100.0 | P(pass)   8.4 fail   5.2 med 39.0 | zero   5.8
+[  1048s] ATM_m1_nbars6_tier     2026     P4a          b2b 1/1 roll 38.1 | P(pass)  10.4 fail  25.7 med 41.0 | zero   6.6
+[  1050s] ATM_m1_nbars6_tier     2026     P4b1         b2b 1/1 roll 38.1 | P(pass)  14.5 fail  26.3 med 38.0 | zero   9.9
+[  1052s] ATM_m1_nbars6_tier     2026     P5_f_c35_f1  b2b 1/1 roll 38.8 | P(pass)  14.1 fail  23.4 med 37.0 | zero   9.6
+[  1054s] ATM_m1_nbars6_tier     2026     P5_f_c35_w30_f1 b2b 1/1 roll 56.2 | P(pass)  10.6 fail   9.1 med 39.0 | zero   6.6
+[  1056s] ATM_m1_nbars6_tier     2026     P5_1b_c35_f1 b2b 1/1 roll 44.9 | P(pass)  24.4 fail  33.2 med 30.0 | zero  17.0
+[  1059s] ATM_m1_nbars6_tier     2026     P5_t_c_d_f2  b2b 1/1 roll 38.5 | P(pass)   8.0 fail   9.8 med 40.0 | zero   5.0
+[  1061s] ATM_m1_rr1_tier        2026     P0           b2b 0/2 roll 17.4 | P(pass)  10.4 fail  58.1 med 35.0 | zero  13.3
+[  1064s] ATM_m1_rr1_tier        2026     P0g          b2b 0/2 roll 8.2 | P(pass)  10.3 fail  61.0 med 35.0 | zero  13.0
+[  1066s] ATM_m1_rr1_tier        2026     P0_500       b2b 2/6 roll 25.3 | P(pass)  20.3 fail  74.6 med 24.0 | zero  24.4
+[  1067s] ATM_m1_rr1_tier        2026     P1           b2b 2/6 roll 29.8 | P(pass)  24.4 fail  69.5 med 26.0 | zero  29.1
+[  1069s] ATM_m1_rr1_tier        2026     P1g          b2b 2/6 roll 29.8 | P(pass)  23.4 fail  70.7 med 25.0 | zero  28.0
+[  1071s] ATM_m1_rr1_tier        2026     P1b          b2b 2/6 roll 30.4 | P(pass)  22.9 fail  73.1 med 23.0 | zero  27.1
+[  1074s] ATM_m1_rr1_tier        2026     P2f_k35      b2b 0/3 roll 8.1 | P(pass)   9.7 fail  66.4 med 34.0 | zero  12.2
+[  1077s] ATM_m1_rr1_tier        2026     P3_30w       b2b 0/2 roll 1.7 | P(pass)   6.6 fail  35.4 med 35.0 | zero   8.3
+[  1080s] ATM_m1_rr1_tier        2026     P4a          b2b 0/3 roll 21.2 | P(pass)   9.1 fail  60.0 med 38.0 | zero  11.7
+[  1083s] ATM_m1_rr1_tier        2026     P4b1         b2b 0/3 roll 8.7 | P(pass)  11.5 fail  61.6 med 34.0 | zero  14.4
+[  1085s] ATM_m1_rr1_tier        2026     P5_f_c35_f1  b2b 0/4 roll 8.6 | P(pass)  10.7 fail  66.7 med 33.0 | zero  13.3
+[  1089s] ATM_m1_rr1_tier        2026     P5_f_c35_w30_f1 b2b 0/3 roll 3.8 | P(pass)   8.0 fail  47.8 med 35.0 | zero   9.8
+[  1091s] ATM_m1_rr1_tier        2026     P5_1b_c35_f1 b2b 0/4 roll 26.7 | P(pass)  17.3 fail  71.7 med 25.0 | zero  21.0
+[  1095s] ATM_m1_rr1_tier        2026     P5_t_c_d_f2  b2b 0/2 roll 14.3 | P(pass)   7.1 fail  37.1 med 39.0 | zero   8.8
+[  1097s] ATM_m1_tf5321_tier     2026     P0           b2b 1/2 roll 22.8 | P(pass)  13.6 fail  33.0 med 37.0 | zero  10.7
+[  1100s] ATM_m1_tf5321_tier     2026     P0g          b2b 1/2 roll 22.8 | P(pass)  13.5 fail  35.5 med 37.0 | zero  10.6
+[  1101s] ATM_m1_tf5321_tier     2026     P0_500       b2b 1/2 roll 29.3 | P(pass)  26.9 fail  54.7 med 28.0 | zero  23.1
+[  1103s] ATM_m1_tf5321_tier     2026     P1           b2b 2/4 roll 49.5 | P(pass)  30.0 fail  56.7 med 28.0 | zero  26.2
+[  1104s] ATM_m1_tf5321_tier     2026     P1g          b2b 3/3 roll 49.5 | P(pass)  28.8 fail  57.4 med 27.0 | zero  25.3
+[  1106s] ATM_m1_tf5321_tier     2026     P1b          b2b 3/3 roll 50.8 | P(pass)  29.9 fail  58.0 med 26.0 | zero  26.4
+[  1108s] ATM_m1_tf5321_tier     2026     P2f_k35      b2b 1/2 roll 24.1 | P(pass)  12.7 fail  33.5 med 36.0 | zero  10.2
+[  1111s] ATM_m1_tf5321_tier     2026     P3_30w       b2b 1/0 roll 63.6 | P(pass)   8.4 fail   9.2 med 38.0 | zero   7.2
+[  1113s] ATM_m1_tf5321_tier     2026     P4a          b2b 1/2 roll 21.0 | P(pass)   9.7 fail  34.7 med 41.0 | zero   8.0
+[  1115s] ATM_m1_tf5321_tier     2026     P4b1         b2b 1/2 roll 24.5 | P(pass)  15.1 fail  35.9 med 36.0 | zero  12.3
+[  1117s] ATM_m1_tf5321_tier     2026     P5_f_c35_f1  b2b 1/2 roll 25.3 | P(pass)  14.4 fail  34.0 med 35.0 | zero  11.6
+[  1119s] ATM_m1_tf5321_tier     2026     P5_f_c35_w30_f1 b2b 1/1 roll 50.6 | P(pass)  10.4 fail  14.3 med 38.0 | zero   8.3
+[  1122s] ATM_m1_tf5321_tier     2026     P5_1b_c35_f1 b2b 1/1 roll 38.6 | P(pass)  24.0 fail  42.5 med 29.0 | zero  20.4
+[  1125s] ATM_m1_tf5321_tier     2026     P5_t_c_d_f2  b2b 1/1 roll 36.5 | P(pass)   8.0 fail  14.0 med 40.0 | zero   6.2
+[  1127s] ATM_m1_tgt_half_tier   2026     P0           b2b 1/2 roll 22.8 | P(pass)   9.2 fail  32.4 med 39.0 | zero   8.9
+[  1129s] ATM_m1_tgt_half_tier   2026     P0g          b2b 1/2 roll 22.8 | P(pass)   9.1 fail  35.4 med 38.0 | zero   8.9
+[  1131s] ATM_m1_tgt_half_tier   2026     P0_500       b2b 1/2 roll 29.8 | P(pass)  21.9 fail  55.3 med 30.0 | zero  21.3
+[  1132s] ATM_m1_tgt_half_tier   2026     P1           b2b 1/2 roll 47.3 | P(pass)  22.0 fail  58.4 med 32.0 | zero  21.4
+[  1134s] ATM_m1_tgt_half_tier   2026     P1g          b2b 2/2 roll 46.8 | P(pass)  21.2 fail  59.7 med 31.0 | zero  20.6
+[  1136s] ATM_m1_tgt_half_tier   2026     P1b          b2b 1/2 roll 36.6 | P(pass)  22.2 fail  62.4 med 29.0 | zero  21.6
+[  1138s] ATM_m1_tgt_half_tier   2026     P2f_k35      b2b 1/2 roll 24.1 | P(pass)   8.9 fail  33.5 med 38.0 | zero   8.6
+[  1140s] ATM_m1_tgt_half_tier   2026     P3_30w       b2b 0/0 roll 100.0 | P(pass)   5.6 fail   9.8 med 41.0 | zero   5.3
+[  1142s] ATM_m1_tgt_half_tier   2026     P4a          b2b 1/2 roll 22.8 | P(pass)   6.6 fail  34.8 med 42.0 | zero   6.4
+[  1144s] ATM_m1_tgt_half_tier   2026     P4b1         b2b 1/2 roll 24.5 | P(pass)  10.8 fail  35.8 med 36.0 | zero  10.3
+[  1147s] ATM_m1_tgt_half_tier   2026     P5_f_c35_f1  b2b 1/2 roll 25.9 | P(pass)  10.2 fail  34.0 med 36.0 | zero   9.9
+[  1149s] ATM_m1_tgt_half_tier   2026     P5_f_c35_w30_f1 b2b 0/1 roll 74.1 | P(pass)   6.8 fail  15.0 med 39.0 | zero   6.5
+[  1151s] ATM_m1_tgt_half_tier   2026     P5_1b_c35_f1 b2b 1/2 roll 34.7 | P(pass)  17.3 fail  45.1 med 31.0 | zero  16.9
+[  1154s] ATM_m1_tgt_half_tier   2026     P5_t_c_d_f2  b2b 0/1 roll 3.2 | P(pass)   4.6 fail  14.5 med 42.0 | zero   4.1
+[  1156s] ATM_m1_two_a_day_tier  2026     P0           b2b 1/2 roll 24.1 | P(pass)  13.1 fail  38.2 med 38.0 | zero  12.6
+[  1158s] ATM_m1_two_a_day_tier  2026     P0g          b2b 1/2 roll 22.8 | P(pass)  13.1 fail  40.6 med 38.0 | zero  12.6
+[  1160s] ATM_m1_two_a_day_tier  2026     P0_500       b2b 1/2 roll 30.1 | P(pass)  24.3 fail  60.2 med 29.0 | zero  23.3
+[  1161s] ATM_m1_two_a_day_tier  2026     P1           b2b 1/3 roll 30.1 | P(pass)  25.7 fail  60.6 med 28.0 | zero  25.5
+[  1163s] ATM_m1_two_a_day_tier  2026     P1g          b2b 2/3 roll 30.1 | P(pass)  25.0 fail  61.3 med 28.0 | zero  24.7
+[  1165s] ATM_m1_two_a_day_tier  2026     P1b          b2b 2/4 roll 32.8 | P(pass)  26.7 fail  61.8 med 27.0 | zero  26.3
+[  1167s] ATM_m1_two_a_day_tier  2026     P2f_k35      b2b 1/2 roll 22.8 | P(pass)  12.4 fail  41.4 med 36.0 | zero  12.0
+[  1170s] ATM_m1_two_a_day_tier  2026     P3_30w       b2b 1/1 roll 35.0 | P(pass)   8.1 fail  16.0 med 38.0 | zero   7.8
+[  1172s] ATM_m1_two_a_day_tier  2026     P4a          b2b 1/2 roll 20.1 | P(pass)  10.0 fail  40.0 med 41.0 | zero   9.5
+[  1174s] ATM_m1_two_a_day_tier  2026     P4b1         b2b 1/2 roll 24.5 | P(pass)  14.4 fail  41.1 med 36.0 | zero  14.0
+[  1176s] ATM_m1_two_a_day_tier  2026     P5_f_c35_f1  b2b 1/2 roll 23.9 | P(pass)  13.6 fail  42.0 med 36.0 | zero  13.2
+[  1179s] ATM_m1_two_a_day_tier  2026     P5_f_c35_w30_f1 b2b 1/2 roll 25.9 | P(pass)   9.5 fail  22.8 med 36.0 | zero   9.2
+[  1181s] ATM_m1_two_a_day_tier  2026     P5_1b_c35_f1 b2b 1/2 roll 30.1 | P(pass)  20.9 fail  50.7 med 28.0 | zero  20.5
+[  1184s] ATM_m1_two_a_day_tier  2026     P5_t_c_d_f2  b2b 1/1 roll 24.6 | P(pass)   7.1 fail  24.3 med 40.0 | zero   6.6
+done in 1184s -> C:\Users\Demetri Condax\AppData\Roaming\Claude\scratch-workspaces\70db7b8c-199a-421c-a714-e2c2b5e695d0\6871d521-939b-4b97-a32d-cbe1d3df7863\scratch-2026-10-15-bb0e63\nqbot\research\lab\RISK_results.json
+tables -> C:\Users\Demetri Condax\AppData\Roaming\Claude\scratch-workspaces\70db7b8c-199a-421c-a714-e2c2b5e695d0\6871d521-939b-4b97-a32d-cbe1d3df7863\scratch-2026-10-15-bb0e63\nqbot\research\lab\RISK_tables.md

@@ -1,0 +1,91 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-10-16"
+ ],
+ "sessions": 206,
+ "trades": 63,
+ "tpw": 1.53,
+ "weeks_in_2_5": 43.0,
+ "weeks_zero": 12.0,
+ "win_rate": 23.8,
+ "avg_r": 0.233,
+ "ci95_r": [
+  -0.117,
+  0.634
+ ],
+ "pf": 1.9,
+ "net": 4958.88,
+ "max_dd": -2556.52,
+ "worst_day": -355.5,
+ "months": {
+  "2026-01": {
+   "trades": 8,
+   "net": 379.2
+  },
+  "2026-02": {
+   "trades": 3,
+   "net": -96.5
+  },
+  "2026-03": {
+   "trades": 5,
+   "net": 931.9
+  },
+  "2026-04": {
+   "trades": 7,
+   "net": -484.64
+  },
+  "2026-05": {
+   "trades": 8,
+   "net": -801.82
+  },
+  "2026-06": {
+   "trades": 3,
+   "net": -206.96
+  },
+  "2026-07": {
+   "trades": 6,
+   "net": -288.5
+  },
+  "2026-08": {
+   "trades": 10,
+   "net": 1075.66
+  },
+  "2026-09": {
+   "trades": 7,
+   "net": 1682.04
+  },
+  "2026-10": {
+   "trades": 6,
+   "net": 2768.5
+  }
+ },
+ "losing_months": 5,
+ "rolling_pass": 54.1,
+ "avg_days_to_pass": 60.6,
+ "completed": 185,
+ "b2b_pass": 1,
+ "b2b_fail": 1,
+ "zero_edge_pass": 32.4,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": true,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": false,
+   "pass>=zero+10": true
+  }
+ },
+ "name": "P_7b_stop_cap60",
+ "period_name": "ytd",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1,
+  "stop_model": "struct_atr",
+  "stop_cap": "spec"
+ },
+ "scored_at": 1792191094
+}

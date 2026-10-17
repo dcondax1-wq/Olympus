@@ -27,3 +27,6 @@ data/duka*.err
 data/clean/*.csv
 data/_pre_clean_backup/
 data/NQ_5m.yahoo_backup.csv
+
+# large rendered chart images (rebuild with tools/trade_gallery.py)
+research/lab/gallery/

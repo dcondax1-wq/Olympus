@@ -1,0 +1,1689 @@
+//@version=5
+// =====================================================================================================
+//  ATM MODEL - NQ   Pine port of tools/lab_models/atm.py (PARAMS, MTF_PARAMS, run_raw, run_raw_mtf, qty_for). Mechanical
+//  rules: research/lab/ATM_RULES.md. Design, Pine vs Python differences, parity check: research/lab/ATM_PINE_NOTES.md.
+//
+//  Chart: NQ1! (the data atm.py was tested on) or MNQ1!, CME exchange data, extended hours (ETH) ON. The chart's
+//  timeframe picks the engine:
+//   - 5 minutes = atm.py run_raw (tf 5): everything on the chart's 5m bars.
+//   - 1 minute  = atm.py run_raw_mtf (tf 1, ATM_RULES section G): the owner's "highest timeframe IFVG" ladder. 5m and 3m
+//     (and 2m) bars are built from the chart's 1m bars; at every 1m close the latest closed 5m bar is checked first, then
+//     3m, then 1m, and the first frame with a complete V + IFVG triggers the entry at that 1m close.
+//  15m and 1H candles are built from the chart's bars without lookahead. One TradingView alert on this strategy with the
+//  message {{strategy.order.alert_message}} and the bridge webhook URL routes every order (tradingview/BRIDGE_SETUP.md).
+//  Orders go out as MNQ micros; a full tier-A size can go out as 1 NQ (input). Entries are market orders at the signal
+//  bar's close, as in atm.py.
+//
+//  Rules (atm.py base on 5m; the 1m ladder measures leg, V and IFVG on the trigger frame, V within 30 minutes; shorts mirror):
+//   1. ATM range = highest high / lowest low of the bars opening 07:00 .. 09:25 ET (final at 09:30).
+//   2. From the 09:30 bar, a bar trading >= 1 tick below the ATM low arms a long. A bar trading 1 tick above the
+//      ATM high kills the long for the day (its draw is gone); the mirror kills the short.
+//   3. Extreme = lowest low since the sweep (a lower low restarts the clock). Sweep leg = the last confirmed 5m
+//      fractal swing high (2 bars each side, searched 48 bars back) down to the extreme.
+//   4. Strong V within 6 bars of the extreme: a close back above the ATM low that retraces >= 50% of the leg,
+//      after a bullish displacement candle (body >= 1 x ATR14, or body >= 60% of its range).
+//   5. IFVG: a bearish 3-candle FVG of the leg (c1 >= origin, c3 <= extreme, not closed through before the
+//      extreme) that a close from the extreme on goes above (body close through its far edge).
+//   6. Entry at the close of the first bar (extreme .. extreme + 6, opening before 11:30) where 4 and 5 are done
+//      and the close is inside the range. Stop = extreme - max(2 ticks, 0.1 x ATR14). Target = the ATM high, limit
+//      1 tick under it. Skip if it is < 1.5R away or if $350 cannot buy 1 micro. Flat 15:55 ET. One trade a day.
+//   7. Size: flat $350 of risk in micros (atm.py default since the tiers failed the pre-registered rank test). Option
+//      tier: score = how many of 8 confluences hold (1H trend, SMT vs ES, NQ stronger than ES, open location, IFVG
+//      >= 0.25 ATR, back inside fast, <= 1 resistance zone to the target, target = session level or EQH). A >= 5: 1 NQ
+//      (10 MNQ) if the stop costs <= $700, else $700 in micros. B 3-4: $350. C <= 2: $175 (min 1). Either way the size
+//      is cut so the day's realized loss + the new risk stays within the $1,000 soft DLL.
+// =====================================================================================================
+strategy("ATM Model - NQ", overlay=true, initial_capital=50000, pyramiding=0, default_qty_type=strategy.fixed,
+     default_qty_value=1, commission_type=strategy.commission.cash_per_contract, commission_value=0.70, slippage=1,
+     process_orders_on_close=true, calc_on_order_fills=false, backtest_fill_limits_assumption=1, max_bars_back=2000,
+     max_lines_count=500, max_labels_count=500, max_boxes_count=500)
+
+// ---------------------------------------------------------------- inputs (defaults = atm.py PARAMS)
+grpM = "Model (atm.py PARAMS)"
+rStart    = input.int(420, "ATM range from (ET minute, 420 = 07:00)", group=grpM)
+rEnd      = input.int(570, "ATM range until, exclusive (570 = through the 09:25 bar)", group=grpM)
+openMod   = input.int(570, "Sweeps count from (ET minute, 570 = 09:30)", group=grpM)
+entryEnd  = input.int(690, "Signal bars open before (ET minute, 690 = 11:30)", group=grpM)
+sweepT    = input.int(1, "Sweep: ticks beyond the ATM side", group=grpM)
+vBars     = input.int(6, "V within N bars of the extreme", group=grpM)
+vRetrace  = input.float(0.5, "V close retraces >= X of the sweep leg", group=grpM)
+dispAtr   = input.float(1.0, "Displacement: body >= x ATR14", group=grpM)
+dispFrac  = input.float(0.6, "Displacement: or body >= this share of the candle range", group=grpM)
+swingK    = input.int(2, "Fractal strength (bars each side)", minval=1, group=grpM)
+legLook   = input.int(48, "Leg origin lookback (bars)", group=grpM)
+minFvgT   = input.int(1, "Min FVG size (ticks)", group=grpM)
+stopBufT  = input.int(2, "Stop buffer beyond the extreme (ticks) ...", group=grpM)
+stopBufA  = input.float(0.1, "... or x ATR14, whichever is larger", group=grpM)
+tgtMode   = input.string("opp", "Target", options=["opp", "first_clear", "partial"], group=grpM,
+     tooltip="opp = the opposite ATM side (atm.py base). first_clear = the nearest clear pool (PDH/PDL, prior RTH H/L, Asia H/L, London H/L, 5m EQH/EQL) at least 1R away, untaken, with a clean path; else the opposite side. partial = half the micros at that pool, the runner to the opposite side, stop to entry after the partial.")
+tpMinR    = input.float(1.0, "first_clear / partial: pool at least (R)", group=grpM)
+minRR     = input.float(1.5, "Skip if the opposite ATM side is closer than (R)", group=grpM)
+beAfterP  = input.bool(true, "partial: stop to entry after the partial fills", group=grpM)
+maxTrades = input.int(1, "Max trades / day", group=grpM)
+flatMod   = input.int(955, "Flat at (ET minute, 955 = 15:55)", group=grpM)
+longOn    = input.bool(true, "Longs (ATM low swept)", group=grpM)
+shortOn   = input.bool(true, "Shorts (ATM high swept)", group=grpM)
+grpX = "1m ladder (used on a 1-minute chart = atm.py tf=1, run_raw_mtf)"
+ladderIn  = input.string("5-3-1", "Ladder, highest timeframe first", options=["5-3-1", "5-3-2-1"], group=grpX, tooltip="At every 1m close after the sweep the latest closed bar of each frame is checked, highest first; the first frame with a complete V + IFVG triggers the entry at that 1m close (ATM_RULES section G). 5-3-2-1 = variant m1_tf5321.")
+vMinutes  = input.int(30, "V within N minutes of the extreme (N / frame minutes bars)", group=grpX)
+vBarsFix  = input.int(0, "Or V within this many trigger-frame bars (0 = off; 6 = m1_nbars6)", group=grpX)
+legMin    = input.int(240, "Leg origin lookback (minutes)", group=grpX)
+vFastMin  = input.int(10, "v_fast: first 1m close back inside within N minutes", group=grpX)
+grpC = "Confluences / tiers"
+esSym     = input.symbol("CME_MINI:ES1!", "Partner index for SMT and relative strength", group=grpC)
+ifvgBigA  = input.float(0.25, "ifvg_big: inverted FVG >= x ATR14", group=grpC)
+vFastB    = input.int(2, "v_fast: back inside the range within N bars", group=grpC)
+cutA      = input.int(5, "Tier A: score >=", group=grpC)
+cutB      = input.int(3, "Tier B: score >=", group=grpC)
+grpR = "Risk / sizing (MNQ micros)"
+sizing    = input.string("flat", "Sizing", options=["flat", "tier"], group=grpR, tooltip="flat = the risk below on every trade (atm.py default since the tiers failed the pre-registered rank test, ATM_REPORT.md 9.4). tier = the owner's A/B/C confidence sizing.")
+riskUsd   = input.float(350, "Flat risk ($); a stop this cannot buy 1 micro for is skipped", group=grpR)
+riskA     = input.float(700, "Tier A risk ($)", group=grpR)
+qtyA      = input.int(10, "Tier A max micros (10 = 1 NQ)", group=grpR)
+riskB     = input.float(350, "Tier B risk ($)", group=grpR)
+riskC     = input.float(175, "Tier C risk ($, min 1 micro)", group=grpR)
+maxQty    = input.int(40, "Max micros (flat, B, C)", group=grpR)
+dllUsd    = input.float(1000, "Soft daily loss limit ($)", group=grpR, tooltip="atm.py: the size is cut so the day's realized loss plus the new trade's risk stays inside this.")
+ddAware   = input.bool(false, "Also cap risk at a share of the MLL cushion (not in atm.py)", group=grpR, tooltip="Off = atm.py sizing. On = like the Liquidity Engine: risk <= cushion share x (balance - trailing EOD max-loss level). With a $2,000 cushion and 0.25 this caps tier A at $500.")
+cushFrac  = input.float(0.25, "Cushion share", group=grpR)
+mllAmt    = input.float(2000, "Trailing max loss ($, EOD)", group=grpR)
+mllLock   = input.float(50100, "MLL locks at", group=grpR)
+fracQty   = input.bool(true, "NQ1! chart: book micro-equivalents as fractional NQ (exact $)", group=grpR, tooltip="On an NQ1! chart 3 micros are booked as 0.3 NQ so the Strategy Tester dollars equal MNQ dollars (also set Properties > Commission to 7 per contract there). Turn off if TradingView rejects fractional sizes: entries, exits and R are unchanged, only the tester dollars scale x10.")
+skipOn    = input.bool(false, "Skip listed days (atm.py skip_news, off by default)", group=grpR)
+skipList  = input.text_area("", "Days to skip: YYYY-MM-DD, one per line or ; separated", group=grpR)
+rollAdj   = input.bool(true, "Shift remembered levels at contract rolls", group=grpR, tooltip="atm.py runs on back-adjusted NQ. At a roll of the continuous contract the remembered cross-day levels (prior day, 1H structure, 15m FVGs, ATR) are moved by the roll gap, measured against the back-adjusted copy of this symbol.")
+grpA = "Alerts / bridge"
+bridge    = input.string("TradersPost", "Bridge JSON schema", options=["TradersPost", "PickMyTrade"], group=grpA)
+bTicker   = input.string("MNQ", "Bridge ticker / symbol (micro)", group=grpA, tooltip="Symbol the bridge maps to the Tradovate contract (MNQ1! or NQ1! chart -> MNQ). TradersPost also accepts an explicit contract such as MNQZ2026.")
+aAsMini   = input.bool(false, "Send a full tier-A size (10 MNQ) as 1 NQ", group=grpA, tooltip="Owner's rule: the best setups trade 1 full NQ. Same risk and prices; the order goes to the mini ticker below.")
+bTickerNQ = input.string("NQ", "Bridge ticker / symbol (mini)", group=grpA)
+syncExits = input.bool(true, "Send an exit when TradingView's own stop/target fills", group=grpA, tooltip="Keeps the broker flat when the TradingView bracket fills first; harmless when the broker bracket already closed the trade.")
+partMsgs  = input.bool(true, "partial: send the TP1 exit and the stop-to-entry modification", group=grpA, tooltip="UNVERIFIED with both bridges: paper-test before using target = partial live.")
+pmtToken  = input.string("", "PickMyTrade token", group=grpA)
+pmtAccount = input.string("", "PickMyTrade account_id", group=grpA)
+grpD = "Display"
+showRange = input.bool(true, "ATM range box and lines", group=grpD)
+showIfvg  = input.bool(true, "Sweep marks and IFVG zone", group=grpD)
+showTrade = input.bool(true, "Entry / stop / target lines", group=grpD)
+
+tz = "America/New_York"
+tick = syminfo.mintick
+barMs = timeframe.in_seconds() * 1000
+tfMin = math.round(timeframe.in_seconds() / 60.0)
+PVM = 2.0              // MNQ $ per point (atm.py PV["NQ"]): every size below is in micros
+COMM_RT = 1.40         // strategy_lab COMMISSION_RT per micro; strategy(commission_value) is half of it (per fill)
+SLIP = 0.25            // strategy_lab SLIP_PTS: 1 tick on the market entry, also added to the stop for sizing
+qtyScale = fracQty ? PVM / syminfo.pointvalue : 1.0
+minRngBars = math.max(2, int(math.floor(math.floor((rEnd - rStart) / tfMin) / 2)))
+flatBar = flatMod - tfMin
+mtf = tfMin == 1                  // 1-minute chart: the 1m ladder engine (atm.py run_raw_mtf); otherwise the 5m engine (run_raw)
+use2 = ladderIn == "5-3-2-1"
+
+// ---------------------------------------------------------------- clock (ET). Trading day = 18:00 .. 17:00 ET, named by the date it ends
+mod = hour(time, tz) * 60 + minute(time, tz)
+t6 = time + 21600000
+dKey = year(t6, tz) * 10000 + month(t6, tz) * 100 + dayofmonth(t6, tz)
+newDay = na(dKey[1]) or dKey != dKey[1]
+
+// every YYYY-MM-DD in the text, whatever the separator (no escape characters in this file: the loader puts it in a JS string)
+var int[] skipD = array.new_int()
+if barstate.isfirst and skipOn
+    rest = skipList
+    nSk = 0
+    while nSk < 500
+        mt = str.match(rest, "[0-9]{4}-[0-9]{2}-[0-9]{2}")
+        if str.length(mt) != 10
+            break
+        array.push(skipD, int(str.tonumber(str.substring(mt, 0, 4))) * 10000 + int(str.tonumber(str.substring(mt, 5, 7))) * 100 + int(str.tonumber(str.substring(mt, 8, 10))))
+        rest := str.replace(rest, mt, "", 0)
+        nSk += 1
+
+// ---------------------------------------------------------------- state
+// day
+var int   dayIdx = 0
+var int   curKey = na
+var int   prevKey = na
+var int   dayStartBar = na
+var int   dayStartT = na
+var int   prevDayStartT = na
+var float dayH = na
+var float dayL = na
+var float rthH = na
+var float rthL = na
+var float pdH = na                  // prior trading day high / low (PDH / PDL)
+var float pdL = na
+var float prH = na                  // prior RTH 09:30-16:00 high / low
+var float prL = na
+var float asH = na                  // Asia 20:00-24:00
+var float asL = na
+var int   asAv = na                 // close time of the last Asia bar
+var float pAsH = na                 // high / low traded since then (untaken check)
+var float pAsL = na
+var float loH = na                  // London 02:00-05:00
+var float loL = na
+var int   loAv = na
+var float pLoH = na
+var float pLoL = na
+var float onH = na                  // overnight 18:00 .. the bar before 09:30
+var float onL = na
+var float rngH = na                 // ATM range
+var float rngL = na
+var int   rngN = 0
+var int   rngT0 = na
+var bool  openSeen = false
+var int   openBar = na
+var float openPx = na
+var bool  dayOk = false
+var bool  killL = false             // the long's draw (ATM high) was traded through
+var bool  killS = false
+var int   tradesToday = 0
+var float dayPnl = 0.0              // realized today, micro dollars
+var float myNet = 0.0               // realized since the start, micro dollars
+var float peakEod = strategy.initial_capital
+var float mllLvl = strategy.initial_capital - mllAmt
+// today's confirmed fractal swings, direction space: 1 = swing highs (high), 2 = swing lows (-low)
+var int[]   pvB1 = array.new_int()     // pivot bar_index
+var float[] pvV1 = array.new_float()   // pivot value
+var float[] pvM1 = array.new_float()   // highest value traded after the pivot, through this bar
+var float[] pvA1 = array.new_float()   // ATR14 at the pivot bar
+var int[]   pvB2 = array.new_int()
+var float[] pvV2 = array.new_float()
+var float[] pvM2 = array.new_float()
+var float[] pvA2 = array.new_float()
+var float[] pvX1 = array.new_float()   // 1m chart only: highest 1m value since the 5m swing was confirmed
+var float[] pvX2 = array.new_float()
+var int     d5Start = na               // 1m chart only: 5m frame index of the day's first bucket
+// live (untapped) 15m FVGs, direction space: 1 = bottoms of bearish FVGs (resistance for longs),
+// 2 = -(tops of bullish FVGs) (resistance for shorts); T = time known (close of c3)
+var float[] fvV1 = array.new_float()
+var int[]   fvT1 = array.new_int()
+var float[] fvV2 = array.new_float()
+var int[]   fvT2 = array.new_int()
+// 1H candles and BOS trend (atm.py _HTF)
+var int   h1B = na
+var float h1Ah = na
+var float h1Al = na
+var float h1Ac = na
+var bool  h1Done = true
+var float h1Hm1 = na
+var float h1Hm2 = na
+var float h1Lm1 = na
+var float h1Lm2 = na
+var int   h1N = 0
+var float h1Sh = na
+var bool  h1Shb = true
+var float h1Sl = na
+var bool  h1Slb = true
+var int   h1Tr = 0
+// 15m candles (FVGs)
+var int   m15B = na
+var float m15Ah = na
+var float m15Al = na
+var bool  m15Done = true
+var int   m15T1 = na
+var int   m15T2 = na
+var float m15H1 = na
+var float m15L1 = na
+var float m15H2 = na
+var float m15L2 = na
+// setups (atm.py setups[d]: sweep armed, extreme bar, dead = expired or consumed until a new extreme)
+var bool  lAct = false
+var int   lE = na
+var float lExt = na
+var bool  lDead = false
+var bool  sAct = false
+var int   sE = na
+var float sExt = na
+var bool  sDead = false
+// 1m ladder: frame index of the bucket holding the extreme, and the last frame bar evaluated (atm.py s["last"])
+var int lE5 = na
+var int lE3 = na
+var int lE2 = na
+var int lV5 = -1
+var int lV3 = -1
+var int lV2 = -1
+var int lV1 = -1
+var int sE5 = na
+var int sE3 = na
+var int sE2 = na
+var int sV5 = -1
+var int sV3 = -1
+var int sV2 = -1
+var int sV1 = -1
+// open trade
+var bool   inTrade = false
+var int    trBar = na
+var int    trDir = 0
+var float  trEntry = na             // signal close = atm.py entry
+var float  trStop = na
+var float  trTgt = na               // limit price of the final target
+var float  trTp1 = na               // limit price of the partial (partial mode)
+var bool   trPartial = false
+var bool   tp1Done = false
+var float  trQChart = 0.0
+var float  trQScale = 1.0
+var int    trQ2 = 0
+var string trSym = ""
+var int    trBQty = 0
+var int    trBQ1 = 0
+var int    trBRem = 0
+var int    lastCT = 0
+var int    lastScore = na
+
+// ---------------------------------------------------------------- helpers
+// direction space (atm.py MIR): longs as they are, shorts mirrored (x -> -x, high <-> low)
+f_H(int d, int o) =>
+    d == 1 ? high[o] : -low[o]
+f_L(int d, int o) =>
+    d == 1 ? low[o] : -high[o]
+f_C(int d, int o) =>
+    d == 1 ? close[o] : -close[o]
+f_O(int d, int o) =>
+    d == 1 ? open[o] : -open[o]
+
+// atm.py _pivots: the bar at offset o is above the swingK bars before it and >= the swingK bars after it
+f_piv(int d, int o) =>
+    ok = o >= swingK
+    j = 1
+    while ok and j <= swingK
+        hc = f_H(d, o)
+        if not (hc > f_H(d, o + j) and hc >= f_H(d, o - j))
+            ok := false
+        j += 1
+    ok
+
+f_shift(float[] a, float x) =>
+    k = 0
+    while k < array.size(a)
+        array.set(a, k, array.get(a, k) + x)
+        k += 1
+    k
+
+// strategy_lab.size: micros for a stop of stopPts points at usd risk
+f_size(float stopPts, float usd, int cap) =>
+    stopPts <= 0 ? 0 : int(math.min(cap, math.floor(usd / (stopPts * PVM))))
+
+// ---------------------------------------------------------------- contract roll (back-adjusted offset), as in liquidity_engine.pine
+// rollOff = this bar's price minus the back-adjusted price; it changes by the roll gap on the first bar of a new
+// contract. Shifting every remembered level by that change reproduces atm.py's back-adjusted history.
+adjTicker = ticker.modify(syminfo.tickerid, backadjustment = backadjustment.on)
+adjClose = request.security(adjTicker, timeframe.period, close)
+rollOff = close - adjClose
+rollD = rollAdj and not na(rollOff) and not na(rollOff[1]) and math.abs(rollOff - rollOff[1]) >= tick / 2 ? rollOff - rollOff[1] : 0.0
+if rollD != 0.0
+    pdH += rollD
+    pdL += rollD
+    prH += rollD
+    prL += rollD
+    dayH += rollD
+    dayL += rollD
+    rthH += rollD
+    rthL += rollD
+    asH += rollD
+    asL += rollD
+    pAsH += rollD
+    pAsL += rollD
+    loH += rollD
+    loL += rollD
+    pLoH += rollD
+    pLoL += rollD
+    onH += rollD
+    onL += rollD
+    rngH += rollD
+    rngL += rollD
+    openPx += rollD
+    lExt += rollD
+    sExt += rollD
+    h1Ah += rollD
+    h1Al += rollD
+    h1Ac += rollD
+    h1Hm1 += rollD
+    h1Hm2 += rollD
+    h1Lm1 += rollD
+    h1Lm2 += rollD
+    h1Sh += rollD
+    h1Sl += rollD
+    m15Ah += rollD
+    m15Al += rollD
+    m15H1 += rollD
+    m15L1 += rollD
+    m15H2 += rollD
+    m15L2 += rollD
+    f_shift(fvV1, rollD)
+    f_shift(fvV2, -rollD)
+    f_shift(pvV1, rollD)
+    f_shift(pvM1, rollD)
+    f_shift(pvV2, -rollD)
+    f_shift(pvM2, -rollD)
+
+// ---------------------------------------------------------------- ATR14: Wilder, seeded with the first true range (pandas ewm alpha 1/14, adjust=False)
+var float atrV = na
+pcAdj = na(close[1]) ? close : close[1] + rollD
+trueR = math.max(high - low, math.max(math.abs(high - pcAdj), math.abs(low - pcAdj)))
+atrV := na(atrV) ? trueR : atrV + (trueR - atrV) / 14.0
+
+// ---------------------------------------------------------------- new trading day
+if newDay
+    dayIdx += 1
+    prevKey := curKey
+    curKey := dKey
+    pdH := dayH
+    pdL := dayL
+    prH := rthH
+    prL := rthL
+    prevDayStartT := dayStartT
+    dayStartT := time
+    dayStartBar := bar_index
+    dayH := na
+    dayL := na
+    rthH := na
+    rthL := na
+    asH := na
+    asL := na
+    asAv := na
+    pAsH := na
+    pAsL := na
+    loH := na
+    loL := na
+    loAv := na
+    pLoH := na
+    pLoL := na
+    onH := na
+    onL := na
+    rngH := na
+    rngL := na
+    rngN := 0
+    rngT0 := na
+    openSeen := false
+    openBar := na
+    openPx := na
+    dayOk := false
+    killL := false
+    killS := false
+    lAct := false
+    sAct := false
+    lDead := false
+    sDead := false
+    tradesToday := 0
+    dayPnl := 0.0
+    array.clear(pvB1)
+    array.clear(pvV1)
+    array.clear(pvM1)
+    array.clear(pvA1)
+    array.clear(pvB2)
+    array.clear(pvV2)
+    array.clear(pvM2)
+    array.clear(pvA2)
+    array.clear(pvX1)
+    array.clear(pvX2)
+    // 15m FVGs known before the previous day's start are out of scope (atm.py n_res: kt >= prev_t)
+    kf = array.size(fvT1) - 1
+    while kf >= 0
+        if na(prevDayStartT) or array.get(fvT1, kf) < prevDayStartT
+            array.remove(fvV1, kf)
+            array.remove(fvT1, kf)
+        kf -= 1
+    kf := array.size(fvT2) - 1
+    while kf >= 0
+        if na(prevDayStartT) or array.get(fvT2, kf) < prevDayStartT
+            array.remove(fvV2, kf)
+            array.remove(fvT2, kf)
+        kf -= 1
+    // trailing max loss, end of day (only used when the MLL cushion cap is on)
+    peakEod := math.max(peakEod, strategy.initial_capital + myNet)
+    mllLvl := math.min(math.max(mllLvl, peakEod - mllAmt), mllLock)
+
+// ---------------------------------------------------------------- the day's levels (all final before 09:30)
+dayH := math.max(nz(dayH, high), high)
+dayL := math.min(nz(dayL, low), low)
+if mod >= 570 and mod < 960
+    rthH := math.max(nz(rthH, high), high)
+    rthL := math.min(nz(rthL, low), low)
+if mod >= 1200
+    asH := math.max(nz(asH, high), high)
+    asL := math.min(nz(asL, low), low)
+    asAv := time + barMs
+    pAsH := na
+    pAsL := na
+else if not na(asAv) and time >= asAv
+    pAsH := math.max(nz(pAsH, high), high)
+    pAsL := math.min(nz(pAsL, low), low)
+if mod >= 120 and mod < 300
+    loH := math.max(nz(loH, high), high)
+    loL := math.min(nz(loL, low), low)
+    loAv := time + barMs
+    pLoH := na
+    pLoL := na
+else if not na(loAv) and time >= loAv
+    pLoH := math.max(nz(pLoH, high), high)
+    pLoL := math.min(nz(pLoL, low), low)
+if mod >= rStart and mod < rEnd
+    rngH := math.max(nz(rngH, high), high)
+    rngL := math.min(nz(rngL, low), low)
+    rngN += 1
+    if na(rngT0)
+        rngT0 := time
+if not openSeen
+    if mod >= openMod and mod < 1080
+        // the 09:30 bar: the range is final. atm.py skips the chart's first day, thin ranges (< half the bars),
+        // a first RTH bar at/after the entry cutoff and (optionally) listed news days
+        openSeen := true
+        openBar := bar_index
+        openPx := open
+        dayOk := dayIdx >= 2 and rngN >= minRngBars and not na(rngH) and rngH > rngL and mod < entryEnd and not (skipOn and array.includes(skipD, dKey))
+        // 1m engine only (atm.py run_raw_mtf): no honest prior-day levels after a data hole of more than 4 days
+        if mtf and not na(prevKey)
+            gapMs = timestamp(tz, int(dKey / 10000), int(dKey / 100) % 100, dKey % 100, 12, 0) - timestamp(tz, int(prevKey / 10000), int(prevKey / 100) % 100, prevKey % 100, 12, 0)
+            if gapMs > 4.5 * 86400000
+                dayOk := false
+        if dayOk and showRange
+            box.new(rngT0, rngH, time + math.max(0, flatMod - mod) * 60000, rngL, xloc=xloc.bar_time, border_color=color.new(color.blue, 40), bgcolor=color.new(color.blue, 93), text="ATM " + str.tostring(rngH - rngL, "#.##"), text_size=size.tiny, text_halign=text.align_left, text_valign=text.align_top, text_color=color.new(color.blue, 30))
+    else
+        onH := math.max(nz(onH, high), high)
+        onL := math.min(nz(onL, low), low)
+
+// ---------------------------------------------------------------- 1H candles from the chart's own bars (clock-aligned, counted once their hour has closed)
+h1Bk = int(math.floor(time / 3600000))
+float h1StH = na
+float h1StL = na
+float h1StC = na
+bool h1Stale = false
+if na(h1B) or h1Bk != h1B
+    if not na(h1B) and not h1Done
+        h1Stale := true                     // the hour ended without its last bar (data gap): close it now
+        h1StH := h1Ah
+        h1StL := h1Al
+        h1StC := h1Ac
+    h1B := h1Bk
+    h1Ah := high
+    h1Al := low
+    h1Ac := close
+    h1Done := false
+else
+    h1Ah := math.max(h1Ah, high)
+    h1Al := math.min(h1Al, low)
+    h1Ac := close
+h1Comp = (time + barMs) % 3600000 == 0
+if h1Comp
+    h1Done := true
+for hp = 0 to 1
+    if hp == 0 ? h1Stale : h1Comp
+        bh = hp == 0 ? h1StH : h1Ah
+        bl = hp == 0 ? h1StL : h1Al
+        bc = hp == 0 ? h1StC : h1Ac
+        // 3-candle swing of the previous candle, then BOS: a close through the last confirmed swing sets the trend
+        if h1N >= 2
+            if h1Hm1 > h1Hm2 and h1Hm1 > bh
+                h1Sh := h1Hm1
+                h1Shb := false
+            if h1Lm1 < h1Lm2 and h1Lm1 < bl
+                h1Sl := h1Lm1
+                h1Slb := false
+        if not na(h1Sh) and not h1Shb and bc > h1Sh
+            h1Tr := 1
+            h1Shb := true
+        if not na(h1Sl) and not h1Slb and bc < h1Sl
+            h1Tr := -1
+            h1Slb := true
+        h1Hm2 := h1Hm1
+        h1Hm1 := bh
+        h1Lm2 := h1Lm1
+        h1Lm1 := bl
+        h1N += 1
+
+// ---------------------------------------------------------------- 15m candles -> FVGs (c1, c2, c3 consecutive), known at the close of c3
+m15Bk = int(math.floor(time / 900000))
+float m15StH = na
+float m15StL = na
+int m15StT = na
+bool m15Stale = false
+if na(m15B) or m15Bk != m15B
+    if not na(m15B) and not m15Done
+        m15Stale := true
+        m15StH := m15Ah
+        m15StL := m15Al
+        m15StT := m15B * 900000
+    m15B := m15Bk
+    m15Ah := high
+    m15Al := low
+    m15Done := false
+else
+    m15Ah := math.max(m15Ah, high)
+    m15Al := math.min(m15Al, low)
+m15Comp = (time + barMs) % 900000 == 0
+if m15Comp
+    m15Done := true
+for mp = 0 to 1
+    if mp == 0 ? m15Stale : m15Comp
+        bt = mp == 0 ? m15StT : m15B * 900000
+        bh = mp == 0 ? m15StH : m15Ah
+        bl = mp == 0 ? m15StL : m15Al
+        if not na(m15T2) and bt - m15T1 == 900000 and m15T1 - m15T2 == 900000
+            if bh < m15L2
+                array.push(fvV1, bh)
+                array.push(fvT1, bt + 900000)
+            if bl > m15H2
+                array.push(fvV2, -bl)
+                array.push(fvT2, bt + 900000)
+        m15T2 := m15T1
+        m15H2 := m15H1
+        m15L2 := m15L1
+        m15T1 := bt
+        m15H1 := bh
+        m15L1 := bl
+// tapped (a bar from the one after c3 on reached the near edge) -> no longer live
+// (5m chart: every chart bar; 1m chart: only closed 5m frame bars do this, further down, as atm.py _frame_n_res)
+if not mtf
+    kt1 = array.size(fvV1) - 1
+    while kt1 >= 0
+        if time >= array.get(fvT1, kt1) and high >= array.get(fvV1, kt1)
+            array.remove(fvV1, kt1)
+            array.remove(fvT1, kt1)
+        kt1 -= 1
+    kt2 = array.size(fvV2) - 1
+    while kt2 >= 0
+        if time >= array.get(fvT2, kt2) and -low >= array.get(fvV2, kt2)
+            array.remove(fvV2, kt2)
+            array.remove(fvT2, kt2)
+        kt2 -= 1
+
+// ---------------------------------------------------------------- today's fractal swings (confirmed swingK bars later)
+// 5m chart: the chart's swings. 1m chart: the 5m frame's swings, built further down (atm.py uses 5m swings for the path)
+nPv1 = array.size(pvV1)
+if nPv1 > 0 and not mtf
+    for j = 0 to nPv1 - 1
+        array.set(pvM1, j, math.max(array.get(pvM1, j), high))
+nPv2 = array.size(pvV2)
+if nPv2 > 0 and not mtf
+    for j = 0 to nPv2 - 1
+        array.set(pvM2, j, math.max(array.get(pvM2, j), -low))
+pIdx = bar_index - swingK
+if not mtf and not na(dayStartBar) and pIdx >= dayStartBar
+    if f_piv(1, swingK)
+        mx1 = high
+        j1 = 1
+        while j1 < swingK
+            mx1 := math.max(mx1, high[j1])
+            j1 += 1
+        array.push(pvB1, pIdx)
+        array.push(pvV1, high[swingK])
+        array.push(pvM1, mx1)
+        array.push(pvA1, atrV[swingK])
+    if f_piv(-1, swingK)
+        mx2 = -low
+        j2 = 1
+        while j2 < swingK
+            mx2 := math.max(mx2, -low[j2])
+            j2 += 1
+        array.push(pvB2, pIdx)
+        array.push(pvV2, -low[swingK])
+        array.push(pvM2, mx2)
+        array.push(pvA2, atrV[swingK])
+
+// ---------------------------------------------------------------- partner index (ES): its own ATM range, 09:30 open, extremes since the open (atm.py _Es)
+f_esState() =>
+    eMod = hour(time, tz) * 60 + minute(time, tz)
+    eT6 = time + 21600000
+    eKey = year(eT6, tz) * 10000 + month(eT6, tz) * 100 + dayofmonth(eT6, tz)
+    var int eDk = 0
+    var float eRh = na
+    var float eRl = na
+    var float eOp = na
+    var float eMn = na
+    var float eMx = na
+    if eKey != eDk
+        eDk := eKey
+        eRh := na
+        eRl := na
+        eOp := na
+        eMn := na
+        eMx := na
+    if eMod >= rStart and eMod < rEnd
+        eRh := math.max(nz(eRh, high), high)
+        eRl := math.min(nz(eRl, low), low)
+    if eMod >= openMod and eMod < 1080
+        if na(eOp)
+            eOp := open
+        eMn := math.min(nz(eMn, low), low)
+        eMx := math.max(nz(eMx, high), high)
+    [eRh, eRl, eOp, eMn, eMx, close, eDk]
+
+// ES 5m bars on either chart (atm.py reads ES from closed 5m bars; on a 1m chart's history lookahead_off gives the last closed one)
+[esRH, esRL, esOpen, esMin, esMax, esCl, esDk] = request.security(esSym, "5", f_esState())
+
+// ---------------------------------------------------------------- 1m ladder: 5m / 3m / 2m frames from the chart's 1m bars (atm.py _resample, _Frame)
+// Each frame keeps every closed bar (open time, OHLC, Wilder ATR14 seeded with the first true range). A bucket is closed
+// at its last 1m bar, or at the next bucket's first bar when that last bar is missing, so a forming bar is never read.
+var float[] st5 = array.new_float()     // forming bucket: [key, done, open, high, low, close]
+var int[]   f5T = array.new_int()
+var float[] f5O = array.new_float()
+var float[] f5H = array.new_float()
+var float[] f5L = array.new_float()
+var float[] f5C = array.new_float()
+var float[] f5A = array.new_float()
+var float[] st3 = array.new_float()
+var int[]   f3T = array.new_int()
+var float[] f3O = array.new_float()
+var float[] f3H = array.new_float()
+var float[] f3L = array.new_float()
+var float[] f3C = array.new_float()
+var float[] f3A = array.new_float()
+var float[] st2 = array.new_float()
+var int[]   f2T = array.new_int()
+var float[] f2O = array.new_float()
+var float[] f2H = array.new_float()
+var float[] f2L = array.new_float()
+var float[] f2C = array.new_float()
+var float[] f2A = array.new_float()
+
+f_pushBar(int[] fT, float[] fO, float[] fH, float[] fL, float[] fC, float[] fA, int t0, float o_, float h_, float l_, float c_) =>
+    n = array.size(fC)
+    pc = c_
+    pa = 0.0
+    if n > 0
+        pc := array.get(fC, n - 1)
+        pa := array.get(fA, n - 1)
+    tr_ = math.max(h_ - l_, math.max(math.abs(h_ - pc), math.abs(l_ - pc)))
+    array.push(fT, t0)
+    array.push(fO, o_)
+    array.push(fH, h_)
+    array.push(fL, l_)
+    array.push(fC, c_)
+    array.push(fA, n > 0 ? pa + (tr_ - pa) / 14.0 : tr_)
+    n + 1
+
+// feeds this 1m bar into a frame; returns the frame index of the bucket that contains it (closed now or still forming)
+f_aggr(int spanMs, float[] st, int[] fT, float[] fO, float[] fH, float[] fL, float[] fC, float[] fA) =>
+    bk = math.floor(time / spanMs)
+    if array.size(st) == 0
+        array.push(st, float(bk))
+        array.push(st, 0.0)
+        array.push(st, open)
+        array.push(st, high)
+        array.push(st, low)
+        array.push(st, close)
+    else if bk != int(array.get(st, 0))
+        if array.get(st, 1) == 0.0
+            f_pushBar(fT, fO, fH, fL, fC, fA, int(array.get(st, 0)) * spanMs, array.get(st, 2), array.get(st, 3), array.get(st, 4), array.get(st, 5))
+        array.set(st, 0, float(bk))
+        array.set(st, 1, 0.0)
+        array.set(st, 2, open)
+        array.set(st, 3, high)
+        array.set(st, 4, low)
+        array.set(st, 5, close)
+    else
+        array.set(st, 3, math.max(array.get(st, 3), high))
+        array.set(st, 4, math.min(array.get(st, 4), low))
+        array.set(st, 5, close)
+    cur = array.size(fC)
+    if (time + barMs) % spanMs == 0
+        array.set(st, 1, 1.0)
+        f_pushBar(fT, fO, fH, fL, fC, fA, int(array.get(st, 0)) * spanMs, array.get(st, 2), array.get(st, 3), array.get(st, 4), array.get(st, 5))
+    cur
+
+// direction space on frame arrays (index = frame bar)
+f_aH(int d, float[] fH, float[] fL, int x) =>
+    d == 1 ? array.get(fH, x) : -array.get(fL, x)
+f_aL(int d, float[] fH, float[] fL, int x) =>
+    d == 1 ? array.get(fL, x) : -array.get(fH, x)
+f_aC(int d, float[] fC, int x) =>
+    d == 1 ? array.get(fC, x) : -array.get(fC, x)
+f_aO(int d, float[] fO, int x) =>
+    d == 1 ? array.get(fO, x) : -array.get(fO, x)
+
+// atm.py _pivots on a frame: bar p above the swingK bars before it and >= the swingK bars after it
+f_pivA(int d, float[] fH, float[] fL, int p) =>
+    n = array.size(fH)
+    ok = p - swingK >= 0 and p + swingK < n
+    j = 1
+    while ok and j <= swingK
+        hc = f_aH(d, fH, fL, p)
+        if not (hc > f_aH(d, fH, fL, p - j) and hc >= f_aH(d, fH, fL, p + j))
+            ok := false
+        j += 1
+    ok
+
+int cI5 = na
+int cI3 = na
+int cI2 = na
+if mtf
+    n5Before = array.size(f5C)
+    cI5 := f_aggr(300000, st5, f5T, f5O, f5H, f5L, f5C, f5A)
+    cI3 := f_aggr(180000, st3, f3T, f3O, f3H, f3L, f3C, f3A)
+    if use2
+        cI2 := f_aggr(120000, st2, f2T, f2O, f2H, f2L, f2C, f2A)
+    if newDay
+        d5Start := cI5
+    // highest 1m value since each 5m swing was confirmed (atm.py first-clear EQ pools: untaken from that 5m close on)
+    kx = 0
+    while kx < array.size(pvX1)
+        array.set(pvX1, kx, math.max(array.get(pvX1, kx), high))
+        kx += 1
+    kx := 0
+    while kx < array.size(pvX2)
+        array.set(pvX2, kx, math.max(array.get(pvX2, kx), -low))
+        kx += 1
+    // each 5m frame bar closed on this 1m bar: swings' maxima, 15m FVG taps, a newly confirmed 5m swing (atm.py _frame_n_res)
+    x5 = n5Before
+    while x5 < array.size(f5C)
+        h5 = array.get(f5H, x5)
+        l5 = array.get(f5L, x5)
+        t5 = array.get(f5T, x5)
+        kx := 0
+        while kx < array.size(pvM1)
+            array.set(pvM1, kx, math.max(array.get(pvM1, kx), h5))
+            kx += 1
+        kx := 0
+        while kx < array.size(pvM2)
+            array.set(pvM2, kx, math.max(array.get(pvM2, kx), -l5))
+            kx += 1
+        kx := array.size(fvV1) - 1
+        while kx >= 0
+            if t5 >= array.get(fvT1, kx) and h5 >= array.get(fvV1, kx)
+                array.remove(fvV1, kx)
+                array.remove(fvT1, kx)
+            kx -= 1
+        kx := array.size(fvV2) - 1
+        while kx >= 0
+            if t5 >= array.get(fvT2, kx) and -l5 >= array.get(fvV2, kx)
+                array.remove(fvV2, kx)
+                array.remove(fvT2, kx)
+            kx -= 1
+        p5 = x5 - swingK
+        if not na(d5Start) and p5 >= d5Start
+            if f_pivA(1, f5H, f5L, p5)
+                mxa = array.get(f5H, p5 + 1)
+                q5 = p5 + 2
+                while q5 <= x5
+                    mxa := math.max(mxa, array.get(f5H, q5))
+                    q5 += 1
+                array.push(pvB1, p5)
+                array.push(pvV1, array.get(f5H, p5))
+                array.push(pvM1, mxa)
+                array.push(pvA1, array.get(f5A, p5))
+                array.push(pvX1, -1.0e15)
+            if f_pivA(-1, f5H, f5L, p5)
+                mxb = -array.get(f5L, p5 + 1)
+                q5 = p5 + 2
+                while q5 <= x5
+                    mxb := math.max(mxb, -array.get(f5L, q5))
+                    q5 += 1
+                array.push(pvB2, p5)
+                array.push(pvV2, -array.get(f5L, p5))
+                array.push(pvM2, mxb)
+                array.push(pvA2, array.get(f5A, p5))
+                array.push(pvX2, -1.0e15)
+        x5 += 1
+
+// atm.py _frame_signal: f_signal on a frame's arrays, evaluated at its closed bar m for the extreme bar eB
+f_signalA(int d, int eB, int m, float lvlM, int lb, float[] fO, float[] fH, float[] fL, float[] fC, float[] fA) =>
+    ext = f_aL(d, fH, fL, eB)
+    lo = math.max(0, eB - lb)
+    org = -1
+    p = eB - 1
+    while org < 0 and p >= lo
+        if p + swingK <= m and f_pivA(d, fH, fL, p)
+            org := p
+        p -= 1
+    if org < 0 and eB > lo
+        org := lo
+        bestH = f_aH(d, fH, fL, lo)
+        p := lo + 1
+        while p < eB
+            hp = f_aH(d, fH, fL, p)
+            if hp > bestH
+                bestH := hp
+                org := p
+            p += 1
+    leg = 0.0
+    if org >= 0
+        leg := f_aH(d, fH, fL, org) - ext
+    found = false
+    recBar = -1
+    vBar = -1
+    invBar = -1
+    bestSz = 0.0
+    bestC3 = -1
+    bestTop = 0.0
+    bestBot = 0.0
+    if org >= 0 and leg > 0
+        thr = ext + vRetrace * leg
+        disp = false
+        jj = eB
+        while jj <= m
+            cj = f_aC(d, fC, jj)
+            body = cj - f_aO(d, fO, jj)
+            if body > 0
+                rng = array.get(fH, jj) - array.get(fL, jj)
+                if body >= dispAtr * array.get(fA, jj) or (rng > 0 and body >= dispFrac * rng)
+                    disp := true
+            if cj > lvlM
+                if recBar < 0
+                    recBar := jj
+                if vBar < 0 and disp and cj >= thr
+                    vBar := jj
+            jj += 1
+        if vBar >= 0 and f_aC(d, fC, m) > lvlM
+            // suffix max of the closes from x to eB - 1 (index x - org): "closed through inside the leg" in one pass
+            sm = array.new_float(eB - org + 2, -1.0e15)
+            xq = eB - 1
+            run = -1.0e15
+            while xq >= org
+                run := math.max(run, f_aC(d, fC, xq))
+                array.set(sm, xq - org, run)
+                xq -= 1
+            k3 = org + 2
+            while k3 <= eB
+                top = f_aL(d, fH, fL, k3 - 2)
+                bot = f_aH(d, fH, fL, k3)
+                ok = top - bot >= minFvgT * tick - 1e-9
+                if ok and k3 + 1 < eB
+                    if array.get(sm, k3 + 1 - org) > top
+                        ok := false
+                q = k3 + 1
+                j0 = math.max(eB, k3 + 1)
+                jb = -1
+                if ok
+                    q := j0
+                    while jb < 0 and q <= m
+                        if f_aC(d, fC, q) > top
+                            jb := q
+                        q += 1
+                if jb >= 0
+                    if invBar < 0 or jb < invBar
+                        invBar := jb
+                    if bestC3 < 0 or top - bot > bestSz
+                        bestSz := top - bot
+                        bestC3 := k3
+                        bestTop := top
+                        bestBot := bot
+                k3 += 1
+            found := invBar >= 0
+    [found, org, leg, recBar, vBar, invBar, bestSz, bestC3, bestTop, bestBot]
+
+// ---------------------------------------------------------------- atm.py signal(): strong V + IFVG at this bar's close for the extreme at bar eB
+// Chart bars (the 5m frame on a 5m chart, the 1m frame on a 1m chart), direction space, leg lookback lb bars. Returns
+// [found, org, leg, recBar, vBar, invBar, ifvgSize, ifvgC3, ifvgTop, ifvgBot] (bar indexes; top/bot in direction space).
+f_signal(int d, int eB, float lvlM, int lb) =>
+    i = bar_index
+    ext = f_L(d, i - eB)
+    lo = math.max(0, eB - lb)
+    // leg origin: the last swing (confirmed by now) before the extreme, else the highest bar of the lookback (first wins)
+    org = -1
+    p = eB - 1
+    while org < 0 and p >= lo
+        if p + swingK <= i and f_piv(d, i - p)
+            org := p
+        p -= 1
+    if org < 0 and eB > lo
+        org := lo
+        bestH = f_H(d, i - lo)
+        p := lo + 1
+        while p < eB
+            hp = f_H(d, i - p)
+            if hp > bestH
+                bestH := hp
+                org := p
+            p += 1
+    leg = 0.0
+    if org >= 0
+        leg := f_H(d, i - org) - ext
+    found = false
+    recBar = -1
+    vBar = -1
+    invBar = -1
+    bestSz = 0.0
+    bestC3 = -1
+    bestTop = 0.0
+    bestBot = 0.0
+    if org >= 0 and leg > 0
+        // V: close back inside the range, >= X of the leg, after a displacement candle (from the extreme on)
+        thr = ext + vRetrace * leg
+        disp = false
+        jj = eB
+        while jj <= i
+            o = i - jj
+            cj = f_C(d, o)
+            body = cj - f_O(d, o)
+            if body > 0
+                rng = high[o] - low[o]
+                if body >= dispAtr * atrV[o] or (rng > 0 and body >= dispFrac * rng)
+                    disp := true
+            if cj > lvlM
+                if recBar < 0
+                    recBar := jj
+                if vBar < 0 and disp and cj >= thr
+                    vBar := jj
+            jj += 1
+        if vBar >= 0 and f_C(d, 0) > lvlM
+            // IFVG: a gap of the leg (c1 >= origin, c3 <= extreme), not closed through before the extreme,
+            // closed through from max(extreme, c3 + 1) to this bar. sm = suffix max of the closes from x to eB - 1
+            sm = array.new_float(eB - org + 2, -1.0e15)
+            xq = eB - 1
+            run = -1.0e15
+            while xq >= org
+                run := math.max(run, f_C(d, i - xq))
+                array.set(sm, xq - org, run)
+                xq -= 1
+            k3 = org + 2
+            while k3 <= eB
+                top = f_L(d, i - k3 + 2)
+                bot = f_H(d, i - k3)
+                ok = top - bot >= minFvgT * tick - 1e-9
+                if ok and k3 + 1 < eB
+                    if array.get(sm, k3 + 1 - org) > top
+                        ok := false
+                q = k3 + 1
+                j0 = math.max(eB, k3 + 1)
+                jb = -1
+                if ok
+                    q := j0
+                    while jb < 0 and q <= i
+                        if f_C(d, i - q) > top
+                            jb := q
+                        q += 1
+                if jb >= 0
+                    if invBar < 0 or jb < invBar
+                        invBar := jb
+                    if bestC3 < 0 or top - bot > bestSz
+                        bestSz := top - bot
+                        bestC3 := k3
+                        bestTop := top
+                        bestBot := bot
+                k3 += 1
+            found := invBar >= 0
+    [found, org, leg, recBar, vBar, invBar, bestSz, bestC3, bestTop, bestBot]
+
+// ---------------------------------------------------------------- atm.py n_res(): resistance zones strictly between em and pm - tol (direction space)
+// fresh (untaken) swing highs of today + live opposing 15m FVGs known since the previous day's start; zones within tol merge
+f_nres(int d, float em, float pm, float tol) =>
+    zones = array.new_float()
+    pv = pvV1
+    pmx = pvM1
+    fv = fvV1
+    ft = fvT1
+    if d != 1
+        pv := pvV2
+        pmx := pvM2
+        fv := fvV2
+        ft := fvT2
+    n = array.size(pv)
+    k = 0
+    while k < n
+        v = array.get(pv, k)
+        if em < v and v < pm - tol and array.get(pmx, k) < v + tick
+            array.push(zones, v)
+        k += 1
+    m = array.size(fv)
+    k := 0
+    while k < m
+        v = array.get(fv, k)
+        if array.get(ft, k) >= prevDayStartT and em < v and v < pm - tol
+            array.push(zones, v)
+        k += 1
+    array.sort(zones, order.ascending)
+    cnt = 0
+    float last = na
+    z = array.size(zones)
+    k := 0
+    while k < z
+        v = array.get(zones, k)
+        if na(last) or v - last > tol
+            cnt += 1
+        last := v
+        k += 1
+    cnt
+
+// low (direction space) of swing-array bar idx: a chart bar on a 5m chart, a 5m frame bar on a 1m chart
+f_Lx(int d, int idx) =>
+    float v = na
+    if mtf
+        v := f_aL(d, f5H, f5L, idx)
+    else
+        v := f_L(d, bar_index - idx)
+    v
+
+// ---------------------------------------------------------------- atm.py eq_pools(): relative equal highs (direction space) among today's swings
+// two swings >= 3 bars apart within max(2 ticks, 0.1 x ATR(later)), with a pullback >= 1 ATR(later) between them.
+// Returns [level, highest value traded after the later swing (1m chart: after its confirmation, on 1m bars)]
+f_eqPools(int d) =>
+    bArr = pvB1
+    vArr = pvV1
+    mArr = pvM1
+    aArr = pvA1
+    if d != 1
+        bArr := pvB2
+        vArr := pvV2
+        mArr := pvM2
+        aArr := pvA2
+    if mtf
+        mArr := pvX1
+        if d != 1
+            mArr := pvX2
+    lv = array.new_float()
+    mx = array.new_float()
+    n = array.size(bArr)
+    x = 0
+    while x < n - 1
+        pa = array.get(bArr, x)
+        ha = array.get(vArr, x)
+        runMin = f_Lx(d, pa)
+        pos = pa
+        y = x + 1
+        while y < n
+            pb = array.get(bArr, y)
+            hb = array.get(vArr, y)
+            while pos < pb
+                pos += 1
+                runMin := math.min(runMin, f_Lx(d, pos))
+            ab = array.get(aArr, y)
+            tolp = math.max(2 * tick, 0.1 * ab)
+            if pb - pa >= 3 and math.abs(ha - hb) <= tolp and runMin <= math.min(ha, hb) - ab
+                array.push(lv, math.max(ha, hb))
+                array.push(mx, array.get(mArr, y))
+            y += 1
+        x += 1
+    [lv, mx]
+
+// atm.py tgt_pool, EQ part: two of today's swings within tol of the target, >= 3 bars apart, with a pullback >= ATR(later)
+f_tgtEq(int d, float tm, float tol) =>
+    bArr = pvB1
+    vArr = pvV1
+    aArr = pvA1
+    if d != 1
+        bArr := pvB2
+        vArr := pvV2
+        aArr := pvA2
+    idx = array.new_int()
+    n = array.size(bArr)
+    k = 0
+    while k < n
+        if math.abs(array.get(vArr, k) - tm) <= tol
+            array.push(idx, k)
+        k += 1
+    hit = false
+    m = array.size(idx)
+    x = 0
+    while not hit and x < m - 1
+        kx = array.get(idx, x)
+        y = x + 1
+        while not hit and y < m
+            ky = array.get(idx, y)
+            pa = array.get(bArr, kx)
+            pb = array.get(bArr, ky)
+            if pb - pa >= 3
+                mn = f_Lx(d, pa)
+                q = pa + 1
+                while q <= pb
+                    mn := math.min(mn, f_Lx(d, q))
+                    q += 1
+                if mn <= math.min(array.get(vArr, kx), array.get(vArr, ky)) - array.get(aArr, ky)
+                    hit := true
+            y += 1
+        x += 1
+    hit
+
+f_near(float px, float lvl, float tol) =>
+    not na(px) and math.abs(px - lvl) <= tol
+
+// atm.py tgt_pool: the target (ATM side) is within tol of PDH, prior RTH high, Asia high, London high or the overnight
+// high (lows for a short), or it forms a relative EQH with today's swings
+f_tgtPool(int d, float tgtLvl, float tm, float tol) =>
+    hit = d == 1 ? (f_near(pdH, tgtLvl, tol) or f_near(prH, tgtLvl, tol) or f_near(asH, tgtLvl, tol) or f_near(loH, tgtLvl, tol) or f_near(onH, tgtLvl, tol)) : (f_near(pdL, tgtLvl, tol) or f_near(prL, tgtLvl, tol) or f_near(asL, tgtLvl, tol) or f_near(loL, tgtLvl, tol) or f_near(onL, tgtLvl, tol))
+    if not hit
+        hit := f_tgtEq(d, tm, tol)
+    hit
+
+// atm.py first clear pool (target variants b / c): the nearest pool >= tpMinR x R from entry, below the target - tol,
+// formed before the signal, not traded through by 1 tick, with <= 1 resistance zone on the way. Direction space, na if none.
+f_firstClear(int d, float em, float tm, float rk, float tol) =>
+    cands = array.new_float()
+    lo_ = em + tpMinR * rk
+    hi_ = tm - tol
+    if d == 1
+        if not na(pdH) and pdH >= lo_ and pdH < hi_ and dayH < pdH + tick
+            array.push(cands, pdH)
+        if not na(prH) and prH >= lo_ and prH < hi_ and dayH < prH + tick
+            array.push(cands, prH)
+        if not na(asH) and asH >= lo_ and asH < hi_ and (na(pAsH) or pAsH < asH + tick)
+            array.push(cands, asH)
+        if not na(loH) and loH >= lo_ and loH < hi_ and (na(pLoH) or pLoH < loH + tick)
+            array.push(cands, loH)
+    else
+        if not na(pdL) and -pdL >= lo_ and -pdL < hi_ and -dayL < -pdL + tick
+            array.push(cands, -pdL)
+        if not na(prL) and -prL >= lo_ and -prL < hi_ and -dayL < -prL + tick
+            array.push(cands, -prL)
+        if not na(asL) and -asL >= lo_ and -asL < hi_ and (na(pAsL) or -pAsL < -asL + tick)
+            array.push(cands, -asL)
+        if not na(loL) and -loL >= lo_ and -loL < hi_ and (na(pLoL) or -pLoL < -loL + tick)
+            array.push(cands, -loL)
+    [lv, mx] = f_eqPools(d)
+    k = 0
+    while k < array.size(lv)
+        pmv = array.get(lv, k)
+        if pmv >= lo_ and pmv < hi_ and array.get(mx, k) < pmv + tick
+            array.push(cands, pmv)
+        k += 1
+    array.sort(cands, order.ascending)
+    float res = na
+    k := 0
+    while na(res) and k < array.size(cands)
+        pmv = array.get(cands, k)
+        if f_nres(d, em, pmv, tol) <= 1
+            res := pmv
+        k += 1
+    res
+
+// ---------------------------------------------------------------- webhook payloads (same schemas as liquidity_engine.pine)
+f_num(float x) =>
+    str.tostring(math.round_to_mintick(x), "#.##")
+
+f_pmtBase(string sym, string data, int q, float px, float sl, float tp, bool updSl, bool fullClose) =>
+    '{"symbol":"' + sym + '","date":"' + str.format_time(time_close, "yyyy-MM-dd'T'HH:mm:ss'Z'", "UTC") + '","data":"' + data
+     + '","quantity":' + str.tostring(q) + ',"risk_percentage":0,"price":' + f_num(px) + ',"tp":' + f_num(tp)
+     + ',"percentage_tp":0,"dollar_tp":0,"sl":' + f_num(sl) + ',"dollar_sl":0,"percentage_sl":0,"trail":0,"trail_stop":0,"trail_trigger":0,"trail_freq":0'
+     + ',"update_tp":false,"update_sl":' + (updSl ? "true" : "false") + ',"token":"' + pmtToken + '","pyramid":false,"same_direction_ignore":true'
+     + ',"reverse_order_close":false' + (data == "close" ? (fullClose ? ',"full_closed":true' : ',"full_closed":false') : '') + ',"account_id":"' + pmtAccount + '"}'
+
+f_entryMsg(string sym, string side, int q, float st, float tp) =>
+    bridge == "TradersPost" ?
+     '{"ticker":"' + sym + '","action":"' + side + '","quantity":' + str.tostring(q) + ',"orderType":"market","signalPrice":' + f_num(close)
+     + ',"stopLoss":{"type":"stop","stopPrice":' + f_num(st) + '},"takeProfit":{"limitPrice":' + f_num(tp) + '}}' :
+     f_pmtBase(sym, side, q, close, st, tp, false, true)
+
+f_exitMsg(string sym, int q, string reason) =>
+    bridge == "TradersPost" ?
+     '{"ticker":"' + sym + '","action":"exit","orderType":"market","cancel":true,"extras":{"reason":"' + reason + '"}}' :
+     f_pmtBase(sym, "close", q, close, 0.0, 0.0, false, true)
+
+// partial exit of q contracts (target = partial only). UNVERIFIED on both bridges: paper-test first
+f_partMsg(string sym, int q) =>
+    bridge == "TradersPost" ?
+     '{"ticker":"' + sym + '","action":"exit","orderType":"market","quantity":' + str.tostring(q) + ',"extras":{"reason":"TP1"}}' :
+     f_pmtBase(sym, "close", q, close, 0.0, 0.0, false, false)
+
+f_beMsg(string sym, int d, int q, float newStop, float tgt) =>
+    bridge == "TradersPost" ?
+     '{"ticker":"' + sym + '","action":"breakeven","orderType":"stop"}' :
+     f_pmtBase(sym, d == 1 ? "buy" : "sell", q, close, newStop, tgt, true, true)
+
+// ---------------------------------------------------------------- manage the open trade (before new signals; atm.py resumes the scan the bar after the exit)
+exitedNow = false
+if strategy.closedtrades > lastCT
+    kk = lastCT
+    while kk < strategy.closedtrades
+        szK = strategy.closedtrades.size(kk)
+        qmK = math.abs(szK) / trQScale
+        pnlK = (strategy.closedtrades.exit_price(kk) - strategy.closedtrades.entry_price(kk)) * (szK > 0 ? 1 : -1) * qmK * PVM - COMM_RT * qmK
+        myNet += pnlK
+        dayPnl += pnlK
+        kk += 1
+    lastCT := strategy.closedtrades
+posAbs = math.abs(strategy.position_size)
+if inTrade and bar_index > trBar
+    if posAbs == 0
+        inTrade := false
+        exitedNow := true
+    else if trPartial and not tp1Done and posAbs < trQChart - trQScale * 0.5
+        // the partial filled on this bar: the runner's stop moves to entry from the next bar (atm.py be_after_partial)
+        tp1Done := true
+        trBRem := trBQty - trBQ1
+        if partMsgs
+            alert(f_partMsg(trSym, trBQ1), alert.freq_once_per_bar_close)
+        if beAfterP
+            newStop = trDir == 1 ? math.max(trStop, trEntry) : math.min(trStop, trEntry)
+            if newStop != trStop
+                trStop := newStop
+                strategy.exit("xR", trDir == 1 ? "L" : "S", qty=trQ2 * trQScale, stop=trStop, limit=trTgt, comment_profit="TARGET", comment_loss="STOP",
+                     alert_message=f_exitMsg(trSym, trBRem, "bracket"), disable_alert=not syncExits)
+                if partMsgs
+                    alert(f_beMsg(trSym, trDir, trBRem, trStop, trTgt), alert.freq_once_per_bar_close)
+    // flat at the close of the bar opening 15:50 (15:55 ET), on the session's last bar, or if a trade ever reached a new day
+    if inTrade and ((mod >= flatBar and mod < 1080) or session.islastbar or newDay)
+        strategy.close_all(comment="FLAT", alert_message=f_exitMsg(trSym, trBRem, "FLAT"), immediately=true)
+        inTrade := false
+        exitedNow := true
+
+// ---------------------------------------------------------------- 1m ladder step (atm.py run_raw_mtf, at every 1m close after the sweep)
+// Frames highest first; each frame's latest closed bar is evaluated once, if it lies within N bars of the bucket holding
+// the extreme (N = vMinutes / frame, or vBarsFix). The first complete V + IFVG triggers. alive = some frame is still in its
+// window. Returns [found, frame, frame bar, alive, last5, last3, last2, last1, org, leg, rec, vBar, inv, size, c3, top, bot]
+f_nwin(int tfm) =>
+    vBarsFix > 0 ? vBarsFix : math.max(1, int(math.floor(vMinutes / tfm)))
+
+f_lb(int tfm) =>
+    math.max(2, int(math.floor(legMin / tfm)))
+
+f_ladder(int d, int e1, int e5, int e3, int e2, int v5, int v3, int v2, int v1, float lvlM) =>
+    found = false
+    alive = false
+    trig = 0
+    mT = -1
+    nv5 = v5
+    nv3 = v3
+    nv2 = v2
+    nv1 = v1
+    rOrg = -1
+    rLeg = 0.0
+    rRec = -1
+    rV = -1
+    rInv = -1
+    rSz = 0.0
+    rC3 = -1
+    rTop = 0.0
+    rBot = 0.0
+    m5 = array.size(f5C) - 1
+    if m5 - e5 <= f_nwin(5)
+        alive := true
+    if m5 >= e5 and m5 - e5 <= f_nwin(5) and m5 > v5
+        nv5 := m5
+        [fa, oa, ga, ra, va, ia, za, ca, tA, ba] = f_signalA(d, e5, m5, lvlM, f_lb(5), f5O, f5H, f5L, f5C, f5A)
+        if fa
+            found := true
+            trig := 5
+            mT := m5
+            rOrg := oa
+            rLeg := ga
+            rRec := ra
+            rV := va
+            rInv := ia
+            rSz := za
+            rC3 := ca
+            rTop := tA
+            rBot := ba
+    if not found
+        m3 = array.size(f3C) - 1
+        if m3 - e3 <= f_nwin(3)
+            alive := true
+        if m3 >= e3 and m3 - e3 <= f_nwin(3) and m3 > v3
+            nv3 := m3
+            [fb, ob, gb, rb, vb, ib, zb, cb, tb, bb] = f_signalA(d, e3, m3, lvlM, f_lb(3), f3O, f3H, f3L, f3C, f3A)
+            if fb
+                found := true
+                trig := 3
+                mT := m3
+                rOrg := ob
+                rLeg := gb
+                rRec := rb
+                rV := vb
+                rInv := ib
+                rSz := zb
+                rC3 := cb
+                rTop := tb
+                rBot := bb
+    if not found and use2
+        m2 = array.size(f2C) - 1
+        if m2 - e2 <= f_nwin(2)
+            alive := true
+        if m2 >= e2 and m2 - e2 <= f_nwin(2) and m2 > v2
+            nv2 := m2
+            [fc2, oc, gc, rc, vc, ic, zc, cc, tc, bc] = f_signalA(d, e2, m2, lvlM, f_lb(2), f2O, f2H, f2L, f2C, f2A)
+            if fc2
+                found := true
+                trig := 2
+                mT := m2
+                rOrg := oc
+                rLeg := gc
+                rRec := rc
+                rV := vc
+                rInv := ic
+                rSz := zc
+                rC3 := cc
+                rTop := tc
+                rBot := bc
+    if not found
+        m1 = bar_index
+        if m1 - e1 <= f_nwin(1)
+            alive := true
+        if m1 >= e1 and m1 - e1 <= f_nwin(1) and m1 > v1
+            nv1 := m1
+            [fd, od, gd, rd, vd, idd, zd, cd, td, bd] = f_signal(d, e1, lvlM, f_lb(1))
+            if fd
+                found := true
+                trig := 1
+                mT := m1
+                rOrg := od
+                rLeg := gd
+                rRec := rd
+                rV := vd
+                rInv := idd
+                rSz := zd
+                rC3 := cd
+                rTop := td
+                rBot := bd
+    [found, trig, mT, alive, nv5, nv3, nv2, nv1, rOrg, rLeg, rRec, rV, rInv, rSz, rC3, rTop, rBot]
+
+// ---------------------------------------------------------------- sweeps, kills, setups (atm.py run_raw main loop)
+lowHit = not na(rngL) and low <= rngL - sweepT * tick
+highHit = not na(rngH) and high >= rngH + sweepT * tick
+inWin = dayOk and bar_index >= openBar and mod < entryEnd and mod < 1080
+if inWin and highHit
+    killL := true
+if inWin and lowHit
+    killS := true
+scanNow = inWin and tradesToday < maxTrades and not inTrade and not exitedNow
+int entered = 0
+bool armedL = false
+bool armedS = false
+int sgE = na
+int sgOrg = na
+float sgLeg = na
+int sgRec = na
+int sgV = na
+int sgInv = na
+float sgSize = na
+int sgC3 = na
+float sgTop = na
+float sgBot = na
+int sgTf = tfMin                    // trigger frame (minutes)
+int sgM = na                        // trigger frame bar that completed the signal
+if scanNow
+    if killL
+        lAct := false
+    else if longOn
+        if not lAct
+            if lowHit
+                lAct := true
+                lE := bar_index
+                lExt := low
+                lDead := false
+                armedL := true
+                lE5 := cI5
+                lE3 := cI3
+                lE2 := cI2
+                lV5 := -1
+                lV3 := -1
+                lV2 := -1
+                lV1 := -1
+        else if low < lExt
+            lE := bar_index
+            lExt := low
+            lDead := false
+            lE5 := cI5
+            lE3 := cI3
+            lE2 := cI2
+        if lAct and not lDead
+            if not mtf
+                if bar_index - lE > vBars
+                    lDead := true
+                else
+                    [f1, o1, g1, r1, v1, n1, z1, c1, t1, b1] = f_signal(1, lE, rngL, legLook)
+                    if f1
+                        entered := 1
+                        sgE := lE
+                        sgOrg := o1
+                        sgLeg := g1
+                        sgRec := r1
+                        sgV := v1
+                        sgInv := n1
+                        sgSize := z1
+                        sgC3 := c1
+                        sgTop := t1
+                        sgBot := b1
+            else
+                [lf, ltf, lm, lal, w5, w3, w2, w1, o1, g1, r1, v1, n1, z1, c1, t1, b1] = f_ladder(1, lE, lE5, lE3, lE2, lV5, lV3, lV2, lV1, rngL)
+                lV5 := w5
+                lV3 := w3
+                lV2 := w2
+                lV1 := w1
+                if lf
+                    entered := 1
+                    sgE := lE
+                    sgTf := ltf
+                    sgM := lm
+                    sgOrg := o1
+                    sgLeg := g1
+                    sgRec := r1
+                    sgV := v1
+                    sgInv := n1
+                    sgSize := z1
+                    sgC3 := c1
+                    sgTop := t1
+                    sgBot := b1
+                else if not lal
+                    lDead := true
+    if entered == 0
+        if killS
+            sAct := false
+        else if shortOn
+            if not sAct
+                if highHit
+                    sAct := true
+                    sE := bar_index
+                    sExt := high
+                    sDead := false
+                    armedS := true
+                    sE5 := cI5
+                    sE3 := cI3
+                    sE2 := cI2
+                    sV5 := -1
+                    sV3 := -1
+                    sV2 := -1
+                    sV1 := -1
+            else if high > sExt
+                sE := bar_index
+                sExt := high
+                sDead := false
+                sE5 := cI5
+                sE3 := cI3
+                sE2 := cI2
+            if sAct and not sDead
+                if not mtf
+                    if bar_index - sE > vBars
+                        sDead := true
+                    else
+                        [f2, o2, g2, r2, v2, n2, z2, c2, t2, b2] = f_signal(-1, sE, -rngH, legLook)
+                        if f2
+                            entered := -1
+                            sgE := sE
+                            sgOrg := o2
+                            sgLeg := g2
+                            sgRec := r2
+                            sgV := v2
+                            sgInv := n2
+                            sgSize := z2
+                            sgC3 := c2
+                            sgTop := t2
+                            sgBot := b2
+                else
+                    [sf, stf, sm, sal, x5_, x3_, x2_, x1_, o2, g2, r2, v2, n2, z2, c2, t2, b2] = f_ladder(-1, sE, sE5, sE3, sE2, sV5, sV3, sV2, sV1, -rngH)
+                    sV5 := x5_
+                    sV3 := x3_
+                    sV2 := x2_
+                    sV1 := x1_
+                    if sf
+                        entered := -1
+                        sgE := sE
+                        sgTf := stf
+                        sgM := sm
+                        sgOrg := o2
+                        sgLeg := g2
+                        sgRec := r2
+                        sgV := v2
+                        sgInv := n2
+                        sgSize := z2
+                        sgC3 := c2
+                        sgTop := t2
+                        sgBot := b2
+                    else if not sal
+                        sDead := true
+
+// ---------------------------------------------------------------- signal -> plan -> size -> orders
+if entered != 0
+    d = entered
+    if d == 1
+        lDead := true                       // consumed: only a new extreme re-arms it
+    else
+        sDead := true
+    // ATR14 of the trigger frame (atm.py: the stop buffer and ifvg_big use the frame that triggered; 5m chart = the chart)
+    atrTf = atrV
+    if mtf and sgTf == 5
+        atrTf := array.get(f5A, sgM)
+    else if mtf and sgTf == 3
+        atrTf := array.get(f3A, sgM)
+    else if mtf and sgTf == 2
+        atrTf := array.get(f2A, sgM)
+    if showIfvg and sgC3 >= 2
+        zTop = d == 1 ? sgTop : -sgBot
+        zBot = d == 1 ? sgBot : -sgTop
+        zLeft = time
+        if not mtf or sgTf == 1
+            zLeft := time[bar_index - (sgC3 - 2)]
+        else if sgTf == 5
+            zLeft := array.get(f5T, sgC3 - 2)
+        else if sgTf == 3
+            zLeft := array.get(f3T, sgC3 - 2)
+        else
+            zLeft := array.get(f2T, sgC3 - 2)
+        box.new(zLeft, zTop, time + barMs, zBot, xloc=xloc.bar_time, border_color=color.new(color.orange, 20), bgcolor=color.new(color.orange, 80), text="IFVG " + str.tostring(sgTf) + "m", text_size=size.tiny, text_color=color.new(color.orange, 0))
+    entry = close
+    buf = math.max(stopBufT * tick, stopBufA * atrTf)
+    stopPx = d == 1 ? lExt - buf : sExt + buf
+    riskPts = (entry - stopPx) * d
+    tgtLvl = d == 1 ? rngH : rngL
+    dist = (tgtLvl - entry) * d
+    if riskPts <= 0 or dist < minRR * riskPts
+        label.new(bar_index, d == 1 ? low : high, "skip " + str.tostring(riskPts > 0 ? dist / riskPts : 0, "#.##") + "R", style=d == 1 ? label.style_label_up : label.style_label_down, color=color.new(color.gray, 30), textcolor=color.white, size=size.tiny)
+    else if f_size(riskPts + SLIP, riskUsd, maxQty) < 1
+        label.new(bar_index, d == 1 ? low : high, "skip size", style=d == 1 ? label.style_label_up : label.style_label_down, color=color.new(color.gray, 30), textcolor=color.white, size=size.tiny)
+    else
+        // ---- confluences, all known at the signal close
+        em = entry * d
+        tm = tgtLvl * d
+        atr5 = atrV                         // 1m chart: the last closed 5m frame bar's ATR (atm.py tol on F5)
+        if mtf and array.size(f5A) > 0
+            atr5 := array.get(f5A, array.size(f5A) - 1)
+        tol = math.max(2 * tick, 0.1 * atr5)
+        cTrend = h1Tr == d
+        esOk = not na(esRH) and not na(esRL) and not na(esOpen) and esDk == dKey
+        cSmt = esOk and (d == 1 ? esMin > esRL - tick : esMax < esRH + tick)
+        nqRet = close / openPx - 1
+        esRet = esOk ? esCl / esOpen - 1 : 0.0
+        cRs = esOk and (nqRet - esRet) * d > 0
+        cOpen = (openPx - (rngH + rngL) / 2) * d < 0
+        cBig = sgSize >= ifvgBigA * atrTf
+        cFast = sgRec - sgE <= vFastB
+        if mtf
+            // atm.py run_raw_mtf: the first 1m close back inside the range within vFastMin minutes of the extreme
+            oE = bar_index - sgE
+            lvlD = d == 1 ? rngL : -rngH
+            recMin = -1.0
+            oo = oE
+            while recMin < 0 and oo >= 0
+                if f_C(d, oo) > lvlD
+                    recMin := (time[oo] - time[oE]) / 60000.0
+                oo -= 1
+            cFast := recMin >= 0 and recMin <= vFastMin
+        nRes = f_nres(d, em, tm, tol)
+        cLrlr = nRes <= 1
+        cPool = f_tgtPool(d, tgtLvl, tm, tol)
+        score = (cTrend ? 1 : 0) + (cSmt ? 1 : 0) + (cRs ? 1 : 0) + (cOpen ? 1 : 0) + (cBig ? 1 : 0) + (cFast ? 1 : 0) + (cLrlr ? 1 : 0) + (cPool ? 1 : 0)
+        tier = score >= cutA ? "A" : score >= cutB ? "B" : "C"
+        lastScore := score
+        // ---- target: opposite ATM side, limit 1 tick inside (filled when price reaches the level)
+        float firstLvl = na
+        if tgtMode != "opp"
+            fc = f_firstClear(d, em, tm, riskPts, tol)
+            if not na(fc)
+                firstLvl := fc * d
+        tgtPx = tgtLvl - d * tick
+        float tp1Px = na
+        if tgtMode == "first_clear" and not na(firstLvl)
+            tgtPx := firstLvl - d * tick
+        if tgtMode == "partial" and not na(firstLvl)
+            tp1Px := firstLvl - d * tick
+        // ---- size (atm.py qty_for; stop + the 1-tick entry slippage)
+        rs = riskPts + SLIP
+        qM = 0
+        if sizing == "flat"
+            qM := f_size(rs, riskUsd, maxQty)
+        else if tier == "A"
+            qM := math.min(qtyA, int(math.floor(riskA / (rs * PVM))))
+        else if tier == "B"
+            qM := f_size(rs, riskB, maxQty)
+        else
+            qM := math.max(1, f_size(rs, riskC, maxQty))
+        room = dllUsd + math.min(0.0, dayPnl)
+        qM := math.min(qM, int(math.floor(room / (rs * PVM + COMM_RT))))
+        if ddAware
+            cap = math.max(0.0, (strategy.initial_capital + myNet - mllLvl) * cushFrac)
+            qM := math.min(qM, int(math.floor(cap / (rs * PVM))))
+        tradesToday += 1                    // atm.py counts the setup as the day's trade even if sizing leaves 0
+        lAct := false
+        sAct := false
+        cfTxt = (cTrend ? "1H trend | " : "") + (cSmt ? "SMT | " : "") + (cRs ? "NQ>ES | " : "") + (cOpen ? "open location | " : "")
+             + (cBig ? "big IFVG | " : "") + (cFast ? "fast V | " : "") + (cLrlr ? "LRLR (" + str.tostring(nRes) + " zones) | " : "") + (cPool ? "target = pool | " : "")
+             + "IFVG frame " + str.tostring(sgTf) + "m | "
+        if qM >= 1
+            // atm.py's stop is usually off the tick grid and triggers on low <= stop (high >= stop for a short); bar
+            // prices are on the grid, so the order goes one tick-grid step outward: the same bars trigger it
+            stopOrd = d == 1 ? math.floor(stopPx / tick + 1e-6) * tick : math.ceil(stopPx / tick - 1e-6) * tick
+            qC = qM * qtyScale
+            idE = d == 1 ? "L" : "S"
+            isPart = tgtMode == "partial" and not na(tp1Px) and qM >= 2
+            q1 = isPart ? math.min(qM - 1, int(math.ceil(qM / 2.0))) : 0
+            q2 = qM - q1
+            useMini = aAsMini and tier == "A" and qM % 10 == 0 and not isPart
+            symB = useMini ? bTickerNQ : bTicker
+            bq = useMini ? int(qM / 10) : qM
+            // comment: r = planned risk, sl = atm.py's stop (tools/pine_parity.py reads both)
+            cmt = idE + " r=" + str.tostring(riskPts, "#.##") + " sl=" + str.tostring(stopPx, "#.##") + " t=" + tier + " s=" + str.tostring(score) + " f=" + str.tostring(sgTf)
+            strategy.entry(idE, d == 1 ? strategy.long : strategy.short, qty=qC, comment=cmt,
+                 alert_message=f_entryMsg(symB, d == 1 ? "buy" : "sell", bq, stopOrd, tgtPx))
+            if isPart
+                strategy.exit("xT1", idE, qty=q1 * qtyScale, stop=stopOrd, limit=tp1Px, comment_profit="TP1 TARGET", comment_loss="STOP", disable_alert=true)
+                strategy.exit("xR", idE, qty=q2 * qtyScale, stop=stopOrd, limit=tgtPx, comment_profit="TARGET", comment_loss="STOP",
+                     alert_message=f_exitMsg(symB, bq, "bracket"), disable_alert=not syncExits)
+            else
+                strategy.exit("xA", idE, stop=stopOrd, limit=tgtPx, comment_profit="TARGET", comment_loss="STOP",
+                     alert_message=f_exitMsg(symB, bq, "bracket"), disable_alert=not syncExits)
+            inTrade := true
+            trBar := bar_index
+            trDir := d
+            trEntry := entry
+            trStop := stopOrd
+            trTgt := tgtPx
+            trTp1 := tp1Px
+            trPartial := isPart
+            tp1Done := false
+            trQChart := qC
+            trQScale := qtyScale
+            trQ2 := q2
+            trSym := symB
+            trBQty := bq
+            trBQ1 := q1
+            trBRem := bq
+            label.new(bar_index, d == 1 ? low : high, idE + " " + str.tostring(sgTf) + "m " + tier + " s" + str.tostring(score) + " x" + str.tostring(qM) + " | " + str.tostring(dist / riskPts, "#.#") + "R to ATM",
+                 style=d == 1 ? label.style_label_up : label.style_label_down, color=d == 1 ? color.new(color.green, 15) : color.new(color.red, 15),
+                 textcolor=color.white, size=size.small, tooltip=cfTxt + "stop " + f_num(stopPx) + " (" + str.tostring(riskPts, "#.##") + " pts)")
+            if showTrade
+                tEnd = time + math.max(barMs, (flatMod - mod) * 60000)
+                line.new(time, entry, tEnd, entry, xloc=xloc.bar_time, color=color.new(color.gray, 0), width=1)
+                line.new(time, stopOrd, tEnd, stopOrd, xloc=xloc.bar_time, color=color.new(color.red, 0), width=1)
+                line.new(time, tgtPx, tEnd, tgtPx, xloc=xloc.bar_time, color=color.new(color.green, 0), width=1)
+                if isPart
+                    line.new(time, tp1Px, tEnd, tp1Px, xloc=xloc.bar_time, color=color.new(color.lime, 0), width=1, style=line.style_dashed)
+        else
+            label.new(bar_index, d == 1 ? low : high, "size 0 (DLL)", style=d == 1 ? label.style_label_up : label.style_label_down, color=color.new(color.gray, 30), textcolor=color.white, size=size.tiny)
+
+// ---------------------------------------------------------------- display
+showLvls = showRange and dayOk and bar_index >= openBar and mod < flatMod and mod < 1080
+plot(showLvls ? rngH : na, "ATM high", color.new(color.blue, 30), 1, plot.style_linebr)
+plot(showLvls ? rngL : na, "ATM low", color.new(color.blue, 30), 1, plot.style_linebr)
+plot(inTrade ? trStop : na, "Stop", color.red, 2, plot.style_linebr)
+plot(inTrade ? trTgt : na, "Target", color.green, 2, plot.style_linebr)
+plot(inTrade and trPartial and not tp1Done ? trTp1 : na, "TP1", color.lime, 1, plot.style_linebr)
+plotshape(showIfvg and armedL, "Sweep of the ATM low", shape.triangleup, location.belowbar, color.new(color.blue, 0), size=size.tiny)
+plotshape(showIfvg and armedS, "Sweep of the ATM high", shape.triangledown, location.abovebar, color.new(color.blue, 0), size=size.tiny)
+bgcolor(inWin ? color.new(color.yellow, 94) : na, title="Entry window 09:30-11:30 ET")
+plot(h1Tr, "1H trend", display=display.data_window)
+plot(atrV, "ATR14 (Wilder)", display=display.data_window)
+plot(lastScore, "Last confluence score", display=display.data_window)
+plot(rollOff, "Roll offset", display=display.data_window)
+plot(array.size(fvV1) + array.size(fvV2), "Live 15m FVGs", display=display.data_window)
+
+var label warnLbl = na
+if barstate.islast and ((timeframe.in_seconds() != 300 and timeframe.in_seconds() != 60) or syminfo.session == session.regular)
+    label.delete(warnLbl)
+    warnLbl := label.new(bar_index, high, "ATM Model: use a 5-minute (5m engine) or 1-minute (1m ladder) chart with extended hours (ETH), as atm.py was tested.", style=label.style_label_down, color=color.orange, textcolor=color.black, size=size.normal)

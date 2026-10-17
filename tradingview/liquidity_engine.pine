@@ -31,10 +31,10 @@ strategy("Liquidity Engine - Sweep IFVG DOL", overlay=true, initial_capital=5000
 // ---------------------------------------------------------------- inputs
 grpR = "Risk"
 riskUsd     = input.float(350, "Risk per trade ($)", group=grpR)
-gradeSizing = input.bool(true, "Grade sizing A+..D (else conviction)", group=grpR)
-convStep    = input.float(0.33, "Conviction step (only when grade sizing is off)", group=grpR)
+gradeSizing = input.bool(false, "Grade sizing A+..D (else conviction)", group=grpR)
+convStep    = input.float(0.0, "Conviction step (only when grade sizing is off)", group=grpR)
 maxQty      = input.int(40, "Max contracts (micros on MNQ)", group=grpR)
-maxTrades   = input.int(2, "Max trades / day", group=grpR)
+maxTrades   = input.int(1, "Max trades / day", group=grpR)
 stopAfterWin = input.bool(true, "Stop after a winner", group=grpR)
 dayStop     = input.float(600, "Daily loss stop ($)", group=grpR)
 ddAware     = input.bool(true, "Cap risk at a fraction of the MLL cushion", group=grpR)

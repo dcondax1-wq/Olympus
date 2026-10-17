@@ -1,0 +1,8359 @@
+{
+ "generated": "2026-10-16 19:21",
+ "data": {
+  "sessions": 209,
+  "first": "2025-12-29",
+  "last": "2026-10-16",
+  "bars_1m": 286503,
+  "common_5m": 57303,
+  "match_by_field": {
+   "open": 1.0,
+   "high": 1.0,
+   "low": 1.0,
+   "close": 1.0
+  },
+  "match_all_ohlc": 1.0,
+  "max_abs_close_diff": 0.0
+ },
+ "coverage": {
+  "dev": {
+   "sessions": 128,
+   "covered": 128,
+   "first": "2026-01-02",
+   "last": "2026-06-30",
+   "full": true
+  },
+  "confirm": {
+   "sessions": 78,
+   "covered": 78,
+   "first": "2026-07-01",
+   "last": "2026-10-16",
+   "full": true
+  },
+  "ytd": {
+   "sessions": 206,
+   "covered": 206,
+   "first": "2026-01-02",
+   "last": "2026-10-16",
+   "full": true
+  },
+  "aug_oct": {
+   "sessions": 55,
+   "covered": 55,
+   "first": "2026-08-03",
+   "last": "2026-10-16",
+   "full": true
+  }
+ },
+ "variants": {
+  "m1_base": {
+   "tf": 1
+  },
+  "m1_rr1": {
+   "tf": 1,
+   "min_rr": 1.0
+  },
+  "m1_nbars6": {
+   "tf": 1,
+   "v_bars_fixed": 6
+  },
+  "m1_tf5321": {
+   "tf": 1,
+   "ladder": [
+    5,
+    3,
+    2,
+    1
+   ]
+  },
+  "m1_tgt_half": {
+   "tf": 1,
+   "target": "partial"
+  },
+  "m1_two_a_day": {
+   "tf": 1,
+   "max_trades_day": 2
+  }
+ },
+ "runs": {
+  "m1_base": {
+   "funnel": {
+    "days": 208,
+    "days_ok": 207,
+    "days_swept": 200,
+    "armed": 200,
+    "signals": 166,
+    "signals_1m": 112,
+    "trades": 58,
+    "trades_1m": 47,
+    "signals_5m": 11,
+    "skip_rr": 107,
+    "signals_3m": 43,
+    "trades_3m": 10,
+    "v_expired": 51,
+    "skip_size": 1,
+    "trades_5m": 1
+   },
+   "params": {
+    "tf": 1
+   },
+   "flat": {
+    "dev": {
+     "trades": 36,
+     "tpw": 1.41,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 19.0,
+     "win_rate": 33.3,
+     "avg_r": 0.173,
+     "ci95_r": [
+      -0.355,
+      0.751
+     ],
+     "pf": 1.36,
+     "net": 2400.03,
+     "max_dd": -1998.64,
+     "worst_day": -353.89,
+     "rolling_pass": 100.0,
+     "zero_edge_pass": 21.3,
+     "b2b_pass": 1,
+     "b2b_fail": 0,
+     "losing_months": 2,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 445.9
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 996.2
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 417.37
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 2506.72
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -570.17
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -1395.99
+      }
+     },
+     "avg_days_to_pass": 37.3,
+     "completed": 42,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 22,
+      "target": 11,
+      "time": 3
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 28,
+       "avg_r": 0.142,
+       "net": 1696.71
+      },
+      "3": {
+       "n": 7,
+       "avg_r": 0.467,
+       "net": 1007.66
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 17,
+        "avg_r": 0.278,
+        "win": 41.2,
+        "net": 1529.69
+       },
+       "B": {
+        "n": 15,
+        "avg_r": -0.188,
+        "win": 20.0,
+        "net": -530.04
+       },
+       "C": {
+        "n": 4,
+        "avg_r": 1.084,
+        "win": 50.0,
+        "net": 1400.38
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 298.2
+       },
+       "2": {
+        "n": 3,
+        "avg_r": 1.148,
+        "win": 33.3,
+        "net": 1102.18
+       },
+       "3": {
+        "n": 7,
+        "avg_r": -0.489,
+        "win": 14.3,
+        "net": -817.87
+       },
+       "4": {
+        "n": 8,
+        "avg_r": 0.075,
+        "win": 25.0,
+        "net": 287.83
+       },
+       "5": {
+        "n": 8,
+        "avg_r": -0.013,
+        "win": 37.5,
+        "net": -12.39
+       },
+       "6": {
+        "n": 7,
+        "avg_r": 0.497,
+        "win": 42.9,
+        "net": 1104.52
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 437.56
+       }
+      }
+     },
+     "rho_score_r": [
+      0.185,
+      0.146
+     ],
+     "avg_risk_usd": 301.2,
+     "median_stop_pts": 68.045,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 15,
+       "r_with": -0.163,
+       "n_without": 21,
+       "r_without": 0.413
+      },
+      "smt": {
+       "n_with": 7,
+       "r_with": 1.485,
+       "n_without": 29,
+       "r_without": -0.143
+      },
+      "nq_rs_with": {
+       "n_with": 20,
+       "r_with": -0.022,
+       "n_without": 16,
+       "r_without": 0.417
+      },
+      "open_loc_with": {
+       "n_with": 28,
+       "r_with": -0.049,
+       "n_without": 8,
+       "r_without": 0.951
+      },
+      "ifvg_big": {
+       "n_with": 20,
+       "r_with": 0.015,
+       "n_without": 16,
+       "r_without": 0.371
+      },
+      "v_fast": {
+       "n_with": 32,
+       "r_with": 0.292,
+       "n_without": 4,
+       "r_without": -0.777
+      },
+      "lrlr": {
+       "n_with": 11,
+       "r_with": 0.841,
+       "n_without": 25,
+       "r_without": -0.121
+      },
+      "tgt_pool": {
+       "n_with": 23,
+       "r_with": 0.203,
+       "n_without": 13,
+       "r_without": 0.121
+      }
+     }
+    },
+    "confirm": {
+     "trades": 21,
+     "tpw": 1.35,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 25.0,
+     "win_rate": 33.3,
+     "avg_r": -0.237,
+     "ci95_r": [
+      -0.685,
+      0.265
+     ],
+     "pf": 0.51,
+     "net": -1969.02,
+     "max_dd": -2488.7,
+     "worst_day": -358.11,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 3,
+       "net": -259.4
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 287.88
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1071.52
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -925.98
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 56,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "target": 4,
+      "stop": 12,
+      "time": 5
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 18,
+       "avg_r": -0.249,
+       "net": -1636.78
+      },
+      "3": {
+       "n": 3,
+       "avg_r": -0.166,
+       "net": -332.24
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 12,
+        "avg_r": 0.026,
+        "win": 41.7,
+        "net": -205.82
+       },
+       "B": {
+        "n": 6,
+        "avg_r": -0.374,
+        "win": 33.3,
+        "net": -935.11
+       },
+       "C": {
+        "n": 3,
+        "avg_r": -1.015,
+        "win": 0.0,
+        "net": -828.09
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -278.21
+       },
+       "2": {
+        "n": 2,
+        "avg_r": -1.014,
+        "win": 0.0,
+        "net": -549.88
+       },
+       "3": {
+        "n": 2,
+        "avg_r": 0.764,
+        "win": 100.0,
+        "net": 279.7
+       },
+       "4": {
+        "n": 4,
+        "avg_r": -0.943,
+        "win": 0.0,
+        "net": -1214.81
+       },
+       "5": {
+        "n": 9,
+        "avg_r": 0.077,
+        "win": 44.4,
+        "net": -42.67
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -163.15
+       }
+      }
+     },
+     "rho_score_r": [
+      0.01,
+      0.487
+     ],
+     "avg_risk_usd": 277.9,
+     "median_stop_pts": 68.35,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 5,
+       "r_with": 0.418,
+       "n_without": 16,
+       "r_without": -0.442
+      },
+      "smt": {
+       "n_with": 5,
+       "r_with": -0.215,
+       "n_without": 16,
+       "r_without": -0.244
+      },
+      "nq_rs_with": {
+       "n_with": 9,
+       "r_with": -0.391,
+       "n_without": 12,
+       "r_without": -0.122
+      },
+      "open_loc_with": {
+       "n_with": 18,
+       "r_with": -0.163,
+       "n_without": 3,
+       "r_without": -0.68
+      },
+      "ifvg_big": {
+       "n_with": 13,
+       "r_with": -0.002,
+       "n_without": 8,
+       "r_without": -0.619
+      },
+      "v_fast": {
+       "n_with": 17,
+       "r_with": -0.131,
+       "n_without": 4,
+       "r_without": -0.688
+      },
+      "lrlr": {
+       "n_with": 8,
+       "r_with": 0.002,
+       "n_without": 13,
+       "r_without": -0.385
+      },
+      "tgt_pool": {
+       "n_with": 15,
+       "r_with": -0.449,
+       "n_without": 6,
+       "r_without": 0.294
+      }
+     }
+    },
+    "ytd": {
+     "trades": 57,
+     "tpw": 1.38,
+     "weeks_in_2_5": 45.0,
+     "weeks_zero": 19.0,
+     "win_rate": 33.3,
+     "avg_r": 0.022,
+     "ci95_r": [
+      -0.352,
+      0.45
+     ],
+     "pf": 1.04,
+     "net": 431.01,
+     "max_dd": -3967.66,
+     "worst_day": -358.11,
+     "rolling_pass": 22.8,
+     "zero_edge_pass": 22.8,
+     "b2b_pass": 1,
+     "b2b_fail": 2,
+     "losing_months": 5,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 445.9
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 996.2
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 417.37
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 2506.72
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -570.17
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -1395.99
+      },
+      "2026-07": {
+       "trades": 3,
+       "net": -259.4
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 287.88
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1071.52
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -925.98
+      }
+     },
+     "avg_days_to_pass": 37.3,
+     "completed": 184,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 34,
+      "target": 15,
+      "time": 8
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 46,
+       "avg_r": -0.011,
+       "net": 59.93
+      },
+      "3": {
+       "n": 10,
+       "avg_r": 0.277,
+       "net": 675.42
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 29,
+        "avg_r": 0.174,
+        "win": 41.4,
+        "net": 1323.87
+       },
+       "B": {
+        "n": 21,
+        "avg_r": -0.241,
+        "win": 23.8,
+        "net": -1465.15
+       },
+       "C": {
+        "n": 7,
+        "avg_r": 0.184,
+        "win": 28.6,
+        "net": 572.29
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.064,
+        "win": 50.0,
+        "net": 19.99
+       },
+       "2": {
+        "n": 5,
+        "avg_r": 0.284,
+        "win": 20.0,
+        "net": 552.3
+       },
+       "3": {
+        "n": 9,
+        "avg_r": -0.211,
+        "win": 33.3,
+        "net": -538.17
+       },
+       "4": {
+        "n": 12,
+        "avg_r": -0.264,
+        "win": 16.7,
+        "net": -926.98
+       },
+       "5": {
+        "n": 17,
+        "avg_r": 0.035,
+        "win": 41.2,
+        "net": -55.06
+       },
+       "6": {
+        "n": 10,
+        "avg_r": 0.309,
+        "win": 40.0,
+        "net": 941.37
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 437.56
+       }
+      }
+     },
+     "rho_score_r": [
+      0.118,
+      0.198
+     ],
+     "avg_risk_usd": 292.6,
+     "median_stop_pts": 68.28,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 20,
+       "r_with": -0.017,
+       "n_without": 37,
+       "r_without": 0.043
+      },
+      "smt": {
+       "n_with": 12,
+       "r_with": 0.777,
+       "n_without": 45,
+       "r_without": -0.179
+      },
+      "nq_rs_with": {
+       "n_with": 29,
+       "r_with": -0.136,
+       "n_without": 28,
+       "r_without": 0.186
+      },
+      "open_loc_with": {
+       "n_with": 46,
+       "r_with": -0.094,
+       "n_without": 11,
+       "r_without": 0.506
+      },
+      "ifvg_big": {
+       "n_with": 33,
+       "r_with": 0.008,
+       "n_without": 24,
+       "r_without": 0.041
+      },
+      "v_fast": {
+       "n_with": 49,
+       "r_with": 0.145,
+       "n_without": 8,
+       "r_without": -0.732
+      },
+      "lrlr": {
+       "n_with": 19,
+       "r_with": 0.488,
+       "n_without": 38,
+       "r_without": -0.211
+      },
+      "tgt_pool": {
+       "n_with": 38,
+       "r_with": -0.055,
+       "n_without": 19,
+       "r_without": 0.175
+      }
+     }
+    },
+    "aug_oct": {
+     "trades": 18,
+     "tpw": 1.64,
+     "weeks_in_2_5": 55.0,
+     "weeks_zero": 0.0,
+     "win_rate": 33.3,
+     "avg_r": -0.249,
+     "ci95_r": [
+      -0.715,
+      0.293
+     ],
+     "pf": 0.5,
+     "net": -1709.62,
+     "max_dd": -2488.7,
+     "worst_day": -358.11,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 7,
+       "net": 287.88
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1071.52
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -925.98
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 33,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 3,
+      "time": 5,
+      "stop": 10
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 17,
+       "avg_r": -0.204,
+       "net": -1382.94
+      },
+      "3": {
+       "n": 1,
+       "avg_r": -1.015,
+       "net": -326.68
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 11,
+        "avg_r": 0.12,
+        "win": 45.5,
+        "net": 48.02
+       },
+       "B": {
+        "n": 5,
+        "avg_r": -0.754,
+        "win": 20.0,
+        "net": -1214.21
+       },
+       "C": {
+        "n": 2,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -543.43
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -278.21
+       },
+       "2": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -265.22
+       },
+       "3": {
+        "n": 1,
+        "avg_r": 0.002,
+        "win": 100.0,
+        "net": 0.6
+       },
+       "4": {
+        "n": 4,
+        "avg_r": -0.943,
+        "win": 0.0,
+        "net": -1214.81
+       },
+       "5": {
+        "n": 9,
+        "avg_r": 0.077,
+        "win": 44.4,
+        "net": -42.67
+       },
+       "6": {
+        "n": 2,
+        "avg_r": 0.316,
+        "win": 50.0,
+        "net": 90.69
+       }
+      }
+     },
+     "rho_score_r": [
+      0.273,
+      0.119
+     ],
+     "avg_risk_usd": 284.5,
+     "median_stop_pts": 66.72999999999999,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 4,
+       "r_with": 0.777,
+       "n_without": 14,
+       "r_without": -0.542
+      },
+      "smt": {
+       "n_with": 5,
+       "r_with": -0.215,
+       "n_without": 13,
+       "r_without": -0.262
+      },
+      "nq_rs_with": {
+       "n_with": 9,
+       "r_with": -0.391,
+       "n_without": 9,
+       "r_without": -0.107
+      },
+      "open_loc_with": {
+       "n_with": 15,
+       "r_with": -0.163,
+       "n_without": 3,
+       "r_without": -0.68
+      },
+      "ifvg_big": {
+       "n_with": 11,
+       "r_with": -0.049,
+       "n_without": 7,
+       "r_without": -0.563
+      },
+      "v_fast": {
+       "n_with": 14,
+       "r_with": -0.124,
+       "n_without": 4,
+       "r_without": -0.688
+      },
+      "lrlr": {
+       "n_with": 7,
+       "r_with": 0.148,
+       "n_without": 11,
+       "r_without": -0.502
+      },
+      "tgt_pool": {
+       "n_with": 14,
+       "r_with": -0.409,
+       "n_without": 4,
+       "r_without": 0.311
+      }
+     }
+    }
+   },
+   "tier": {
+    "dev": {
+     "trades": 36,
+     "tpw": 1.41,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 19.0,
+     "win_rate": 33.3,
+     "avg_r": 0.173,
+     "ci95_r": [
+      -0.355,
+      0.751
+     ],
+     "pf": 1.28,
+     "net": 2726.06,
+     "max_dd": -3654.96,
+     "worst_day": -704.32,
+     "rolling_pass": 48.3,
+     "zero_edge_pass": 36.2,
+     "b2b_pass": 1,
+     "b2b_fail": 2,
+     "losing_months": 2,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 770.37
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 1550.22
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 639.06
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 3421.37
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -718.2
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -2936.76
+      }
+     },
+     "avg_days_to_pass": 23.7,
+     "completed": 116,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 22,
+      "target": 11,
+      "time": 3
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 28,
+       "avg_r": 0.142,
+       "net": 2240.76
+      },
+      "3": {
+       "n": 7,
+       "avg_r": 0.467,
+       "net": 1093.99
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 17,
+        "avg_r": 0.278,
+        "win": 41.2,
+        "net": 2502.45
+       },
+       "B": {
+        "n": 15,
+        "avg_r": -0.188,
+        "win": 20.0,
+        "net": -530.04
+       },
+       "C": {
+        "n": 4,
+        "avg_r": 1.084,
+        "win": 50.0,
+        "net": 753.65
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 149.1
+       },
+       "2": {
+        "n": 3,
+        "avg_r": 1.148,
+        "win": 33.3,
+        "net": 604.55
+       },
+       "3": {
+        "n": 7,
+        "avg_r": -0.489,
+        "win": 14.3,
+        "net": -817.87
+       },
+       "4": {
+        "n": 8,
+        "avg_r": 0.075,
+        "win": 25.0,
+        "net": 287.83
+       },
+       "5": {
+        "n": 8,
+        "avg_r": -0.013,
+        "win": 37.5,
+        "net": -685.93
+       },
+       "6": {
+        "n": 7,
+        "avg_r": 0.497,
+        "win": 42.9,
+        "net": 2313.27
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 875.11
+       }
+      }
+     },
+     "rho_score_r": [
+      0.185,
+      0.146
+     ],
+     "avg_risk_usd": 434.1,
+     "median_stop_pts": 68.045
+    },
+    "confirm": {
+     "trades": 21,
+     "tpw": 1.35,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 25.0,
+     "win_rate": 33.3,
+     "avg_r": -0.237,
+     "ci95_r": [
+      -0.685,
+      0.265
+     ],
+     "pf": 0.77,
+     "net": -1334.64,
+     "max_dd": -3762.85,
+     "worst_day": -665.62,
+     "rolling_pass": 15.5,
+     "zero_edge_pass": 41.4,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 3,
+       "net": -640.17
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 2085.98
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1660.4
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -1120.05
+      }
+     },
+     "avg_days_to_pass": 23.0,
+     "completed": 58,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "target": 4,
+      "stop": 12,
+      "time": 5
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 18,
+       "avg_r": -0.249,
+       "net": -675.72
+      },
+      "3": {
+       "n": 3,
+       "avg_r": -0.166,
+       "net": -658.92
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 12,
+        "avg_r": 0.026,
+        "win": 41.7,
+        "net": 156.84
+       },
+       "B": {
+        "n": 6,
+        "avg_r": -0.374,
+        "win": 33.3,
+        "net": -935.11
+       },
+       "C": {
+        "n": 3,
+        "avg_r": -1.015,
+        "win": 0.0,
+        "net": -556.37
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -139.1
+       },
+       "2": {
+        "n": 2,
+        "avg_r": -1.014,
+        "win": 0.0,
+        "net": -417.27
+       },
+       "3": {
+        "n": 2,
+        "avg_r": 0.764,
+        "win": 100.0,
+        "net": 279.7
+       },
+       "4": {
+        "n": 4,
+        "avg_r": -0.943,
+        "win": 0.0,
+        "net": -1214.81
+       },
+       "5": {
+        "n": 9,
+        "avg_r": 0.077,
+        "win": 44.4,
+        "net": 341.1
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -184.26
+       }
+      }
+     },
+     "rho_score_r": [
+      0.01,
+      0.487
+     ],
+     "avg_risk_usd": 456.5,
+     "median_stop_pts": 68.35
+    },
+    "ytd": {
+     "trades": 57,
+     "tpw": 1.38,
+     "weeks_in_2_5": 45.0,
+     "weeks_zero": 19.0,
+     "win_rate": 33.3,
+     "avg_r": 0.022,
+     "ci95_r": [
+      -0.352,
+      0.45
+     ],
+     "pf": 1.09,
+     "net": 1391.42,
+     "max_dd": -4989.6,
+     "worst_day": -704.32,
+     "rolling_pass": 34.9,
+     "zero_edge_pass": 27.2,
+     "b2b_pass": 2,
+     "b2b_fail": 4,
+     "losing_months": 5,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 770.37
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 1550.22
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 639.06
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 3421.37
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -718.2
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -2936.76
+      },
+      "2026-07": {
+       "trades": 3,
+       "net": -640.17
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 2085.98
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1660.4
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -1120.05
+      }
+     },
+     "avg_days_to_pass": 23.6,
+     "completed": 186,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 34,
+      "target": 15,
+      "time": 8
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 46,
+       "avg_r": -0.011,
+       "net": 1565.04
+      },
+      "3": {
+       "n": 10,
+       "avg_r": 0.277,
+       "net": 435.07
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 29,
+        "avg_r": 0.174,
+        "win": 41.4,
+        "net": 2659.29
+       },
+       "B": {
+        "n": 21,
+        "avg_r": -0.241,
+        "win": 23.8,
+        "net": -1465.15
+       },
+       "C": {
+        "n": 7,
+        "avg_r": 0.184,
+        "win": 28.6,
+        "net": 197.28
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.064,
+        "win": 50.0,
+        "net": 10.0
+       },
+       "2": {
+        "n": 5,
+        "avg_r": 0.284,
+        "win": 20.0,
+        "net": 187.28
+       },
+       "3": {
+        "n": 9,
+        "avg_r": -0.211,
+        "win": 33.3,
+        "net": -538.17
+       },
+       "4": {
+        "n": 12,
+        "avg_r": -0.264,
+        "win": 16.7,
+        "net": -926.98
+       },
+       "5": {
+        "n": 17,
+        "avg_r": 0.035,
+        "win": 41.2,
+        "net": -344.83
+       },
+       "6": {
+        "n": 10,
+        "avg_r": 0.309,
+        "win": 40.0,
+        "net": 2129.01
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 875.11
+       }
+      }
+     },
+     "rho_score_r": [
+      0.118,
+      0.198
+     ],
+     "avg_risk_usd": 442.3,
+     "median_stop_pts": 68.28
+    },
+    "aug_oct": {
+     "trades": 18,
+     "tpw": 1.64,
+     "weeks_in_2_5": 55.0,
+     "weeks_zero": 0.0,
+     "win_rate": 33.3,
+     "avg_r": -0.249,
+     "ci95_r": [
+      -0.715,
+      0.293
+     ],
+     "pf": 0.86,
+     "net": -694.47,
+     "max_dd": -3762.85,
+     "worst_day": -665.62,
+     "rolling_pass": 11.4,
+     "zero_edge_pass": 11.4,
+     "b2b_pass": 1,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 7,
+       "net": 2085.98
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1660.4
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -1120.05
+      }
+     },
+     "avg_days_to_pass": 20.5,
+     "completed": 35,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 3,
+      "time": 5,
+      "stop": 10
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 17,
+       "avg_r": -0.204,
+       "net": -41.11
+      },
+      "3": {
+       "n": 1,
+       "avg_r": -1.015,
+       "net": -653.36
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 11,
+        "avg_r": 0.12,
+        "win": 45.5,
+        "net": 791.45
+       },
+       "B": {
+        "n": 5,
+        "avg_r": -0.754,
+        "win": 20.0,
+        "net": -1214.21
+       },
+       "C": {
+        "n": 2,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -271.71
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -139.1
+       },
+       "2": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -132.61
+       },
+       "3": {
+        "n": 1,
+        "avg_r": 0.002,
+        "win": 100.0,
+        "net": 0.6
+       },
+       "4": {
+        "n": 4,
+        "avg_r": -0.943,
+        "win": 0.0,
+        "net": -1214.81
+       },
+       "5": {
+        "n": 9,
+        "avg_r": 0.077,
+        "win": 44.4,
+        "net": 341.1
+       },
+       "6": {
+        "n": 2,
+        "avg_r": 0.316,
+        "win": 50.0,
+        "net": 450.35
+       }
+      }
+     },
+     "rho_score_r": [
+      0.273,
+      0.119
+     ],
+     "avg_risk_usd": 472.2,
+     "median_stop_pts": 66.72999999999999
+    }
+   }
+  },
+  "m1_rr1": {
+   "funnel": {
+    "days": 208,
+    "days_ok": 207,
+    "days_swept": 200,
+    "armed": 200,
+    "signals": 155,
+    "signals_1m": 105,
+    "trades": 96,
+    "trades_1m": 73,
+    "signals_5m": 10,
+    "skip_rr": 58,
+    "signals_3m": 40,
+    "trades_3m": 21,
+    "v_expired": 45,
+    "trades_5m": 2,
+    "skip_size": 1
+   },
+   "params": {
+    "tf": 1,
+    "min_rr": 1.0
+   },
+   "flat": {
+    "dev": {
+     "trades": 59,
+     "tpw": 2.3,
+     "weeks_in_2_5": 78.0,
+     "weeks_zero": 7.0,
+     "win_rate": 40.7,
+     "avg_r": 0.122,
+     "ci95_r": [
+      -0.239,
+      0.524
+     ],
+     "pf": 1.21,
+     "net": 2083.13,
+     "max_dd": -2414.67,
+     "worst_day": -353.89,
+     "rolling_pass": 64.0,
+     "zero_edge_pass": 1.9,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-01": {
+       "trades": 7,
+       "net": -182.52
+      },
+      "2026-02": {
+       "trades": 8,
+       "net": 648.15
+      },
+      "2026-03": {
+       "trades": 15,
+       "net": -154.3
+      },
+      "2026-04": {
+       "trades": 10,
+       "net": 1512.73
+      },
+      "2026-05": {
+       "trades": 11,
+       "net": 851.76
+      },
+      "2026-06": {
+       "trades": 8,
+       "net": -592.69
+      }
+     },
+     "avg_days_to_pass": 58.2,
+     "completed": 50,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 33,
+      "target": 22,
+      "time": 4
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 43,
+       "avg_r": 0.051,
+       "net": 768.75
+      },
+      "3": {
+       "n": 15,
+       "avg_r": 0.403,
+       "net": 1618.72
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 28,
+        "avg_r": 0.246,
+        "win": 50.0,
+        "net": 1640.07
+       },
+       "B": {
+        "n": 26,
+        "avg_r": -0.115,
+        "win": 30.8,
+        "net": -629.5
+       },
+       "C": {
+        "n": 5,
+        "avg_r": 0.664,
+        "win": 40.0,
+        "net": 1072.56
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 298.2
+       },
+       "2": {
+        "n": 4,
+        "avg_r": 0.608,
+        "win": 25.0,
+        "net": 774.36
+       },
+       "3": {
+        "n": 10,
+        "avg_r": -0.197,
+        "win": 30.0,
+        "net": -516.79
+       },
+       "4": {
+        "n": 16,
+        "avg_r": -0.063,
+        "win": 31.2,
+        "net": -112.71
+       },
+       "5": {
+        "n": 12,
+        "avg_r": 0.168,
+        "win": 50.0,
+        "net": 304.72
+       },
+       "6": {
+        "n": 11,
+        "avg_r": 0.336,
+        "win": 45.5,
+        "net": 1047.67
+       },
+       "7": {
+        "n": 5,
+        "avg_r": 0.237,
+        "win": 60.0,
+        "net": 287.68
+       }
+      }
+     },
+     "rho_score_r": [
+      0.157,
+      0.114
+     ],
+     "avg_risk_usd": 287.5,
+     "median_stop_pts": 80.76,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 25,
+       "r_with": -0.153,
+       "n_without": 34,
+       "r_without": 0.325
+      },
+      "smt": {
+       "n_with": 14,
+       "r_with": 0.839,
+       "n_without": 45,
+       "r_without": -0.101
+      },
+      "nq_rs_with": {
+       "n_with": 30,
+       "r_with": 0.117,
+       "n_without": 29,
+       "r_without": 0.129
+      },
+      "open_loc_with": {
+       "n_with": 46,
+       "r_with": -0.044,
+       "n_without": 13,
+       "r_without": 0.71
+      },
+      "ifvg_big": {
+       "n_with": 38,
+       "r_with": -0.058,
+       "n_without": 21,
+       "r_without": 0.449
+      },
+      "v_fast": {
+       "n_with": 51,
+       "r_with": 0.282,
+       "n_without": 8,
+       "r_without": -0.894
+      },
+      "lrlr": {
+       "n_with": 21,
+       "r_with": 0.407,
+       "n_without": 38,
+       "r_without": -0.035
+      },
+      "tgt_pool": {
+       "n_with": 39,
+       "r_with": 0.158,
+       "n_without": 20,
+       "r_without": 0.053
+      }
+     }
+    },
+    "confirm": {
+     "trades": 36,
+     "tpw": 2.31,
+     "weeks_in_2_5": 62.0,
+     "weeks_zero": 0.0,
+     "win_rate": 30.6,
+     "avg_r": -0.326,
+     "ci95_r": [
+      -0.646,
+      0.025
+     ],
+     "pf": 0.46,
+     "net": -3615.3,
+     "max_dd": -3718.37,
+     "worst_day": -358.11,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 4,
+     "months": {
+      "2026-07": {
+       "trades": 9,
+       "net": -593.63
+      },
+      "2026-08": {
+       "trades": 11,
+       "net": -488.36
+      },
+      "2026-09": {
+       "trades": 10,
+       "net": -1569.47
+      },
+      "2026-10": {
+       "trades": 6,
+       "net": -963.84
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 56,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "time": 7,
+      "stop": 22,
+      "target": 7
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 29,
+       "avg_r": -0.304,
+       "net": -2668.81
+      },
+      "3": {
+       "n": 6,
+       "avg_r": -0.315,
+       "net": -684.51
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.019,
+       "net": -261.98
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 16,
+        "avg_r": -0.084,
+        "win": 37.5,
+        "net": -609.29
+       },
+       "B": {
+        "n": 15,
+        "avg_r": -0.355,
+        "win": 33.3,
+        "net": -1713.91
+       },
+       "C": {
+        "n": 5,
+        "avg_r": -1.013,
+        "win": 0.0,
+        "net": -1292.1
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -278.21
+       },
+       "2": {
+        "n": 4,
+        "avg_r": -1.012,
+        "win": 0.0,
+        "net": -1013.89
+       },
+       "3": {
+        "n": 6,
+        "avg_r": -0.019,
+        "win": 50.0,
+        "net": -192.09
+       },
+       "4": {
+        "n": 9,
+        "avg_r": -0.579,
+        "win": 22.2,
+        "net": -1521.82
+       },
+       "5": {
+        "n": 11,
+        "avg_r": -0.122,
+        "win": 36.4,
+        "net": -609.08
+       },
+       "6": {
+        "n": 5,
+        "avg_r": -0.001,
+        "win": 40.0,
+        "net": -0.21
+       }
+      }
+     },
+     "rho_score_r": [
+      -0.03,
+      0.577
+     ],
+     "avg_risk_usd": 266.3,
+     "median_stop_pts": 75.35,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 11,
+       "r_with": -0.145,
+       "n_without": 25,
+       "r_without": -0.406
+      },
+      "smt": {
+       "n_with": 6,
+       "r_with": -0.347,
+       "n_without": 30,
+       "r_without": -0.322
+      },
+      "nq_rs_with": {
+       "n_with": 16,
+       "r_with": -0.357,
+       "n_without": 20,
+       "r_without": -0.301
+      },
+      "open_loc_with": {
+       "n_with": 32,
+       "r_with": -0.271,
+       "n_without": 4,
+       "r_without": -0.763
+      },
+      "ifvg_big": {
+       "n_with": 21,
+       "r_with": -0.088,
+       "n_without": 15,
+       "r_without": -0.659
+      },
+      "v_fast": {
+       "n_with": 29,
+       "r_with": -0.214,
+       "n_without": 7,
+       "r_without": -0.79
+      },
+      "lrlr": {
+       "n_with": 14,
+       "r_with": -0.006,
+       "n_without": 22,
+       "r_without": -0.53
+      },
+      "tgt_pool": {
+       "n_with": 19,
+       "r_with": -0.569,
+       "n_without": 17,
+       "r_without": -0.055
+      }
+     }
+    },
+    "ytd": {
+     "trades": 95,
+     "tpw": 2.31,
+     "weeks_in_2_5": 74.0,
+     "weeks_zero": 2.0,
+     "win_rate": 36.8,
+     "avg_r": -0.048,
+     "ci95_r": [
+      -0.309,
+      0.23
+     ],
+     "pf": 0.91,
+     "net": -1532.17,
+     "max_dd": -4426.09,
+     "worst_day": -358.11,
+     "rolling_pass": 17.4,
+     "zero_edge_pass": 23.1,
+     "b2b_pass": 0,
+     "b2b_fail": 2,
+     "losing_months": 7,
+     "months": {
+      "2026-01": {
+       "trades": 7,
+       "net": -182.52
+      },
+      "2026-02": {
+       "trades": 8,
+       "net": 648.15
+      },
+      "2026-03": {
+       "trades": 15,
+       "net": -154.3
+      },
+      "2026-04": {
+       "trades": 10,
+       "net": 1512.73
+      },
+      "2026-05": {
+       "trades": 11,
+       "net": 851.76
+      },
+      "2026-06": {
+       "trades": 8,
+       "net": -592.69
+      },
+      "2026-07": {
+       "trades": 9,
+       "net": -593.63
+      },
+      "2026-08": {
+       "trades": 11,
+       "net": -488.36
+      },
+      "2026-09": {
+       "trades": 10,
+       "net": -1569.47
+      },
+      "2026-10": {
+       "trades": 6,
+       "net": -963.84
+      }
+     },
+     "avg_days_to_pass": 58.2,
+     "completed": 184,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 55,
+      "target": 29,
+      "time": 11
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 72,
+       "avg_r": -0.092,
+       "net": -1900.06
+      },
+      "3": {
+       "n": 21,
+       "avg_r": 0.198,
+       "net": 934.21
+      },
+      "5": {
+       "n": 2,
+       "avg_r": -1.018,
+       "net": -566.32
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 44,
+        "avg_r": 0.126,
+        "win": 45.5,
+        "net": 1030.78
+       },
+       "B": {
+        "n": 41,
+        "avg_r": -0.203,
+        "win": 31.7,
+        "net": -2343.41
+       },
+       "C": {
+        "n": 10,
+        "avg_r": -0.175,
+        "win": 20.0,
+        "net": -219.54
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.064,
+        "win": 50.0,
+        "net": 19.99
+       },
+       "2": {
+        "n": 8,
+        "avg_r": -0.202,
+        "win": 12.5,
+        "net": -239.53
+       },
+       "3": {
+        "n": 16,
+        "avg_r": -0.13,
+        "win": 37.5,
+        "net": -708.88
+       },
+       "4": {
+        "n": 25,
+        "avg_r": -0.249,
+        "win": 28.0,
+        "net": -1634.53
+       },
+       "5": {
+        "n": 23,
+        "avg_r": 0.029,
+        "win": 43.5,
+        "net": -304.36
+       },
+       "6": {
+        "n": 16,
+        "avg_r": 0.23,
+        "win": 43.8,
+        "net": 1047.46
+       },
+       "7": {
+        "n": 5,
+        "avg_r": 0.237,
+        "win": 60.0,
+        "net": 287.68
+       }
+      }
+     },
+     "rho_score_r": [
+      0.148,
+      0.082
+     ],
+     "avg_risk_usd": 279.4,
+     "median_stop_pts": 80.01,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 36,
+       "r_with": -0.15,
+       "n_without": 59,
+       "r_without": 0.015
+      },
+      "smt": {
+       "n_with": 20,
+       "r_with": 0.483,
+       "n_without": 75,
+       "r_without": -0.189
+      },
+      "nq_rs_with": {
+       "n_with": 46,
+       "r_with": -0.048,
+       "n_without": 49,
+       "r_without": -0.047
+      },
+      "open_loc_with": {
+       "n_with": 78,
+       "r_with": -0.137,
+       "n_without": 17,
+       "r_without": 0.364
+      },
+      "ifvg_big": {
+       "n_with": 59,
+       "r_with": -0.069,
+       "n_without": 36,
+       "r_without": -0.012
+      },
+      "v_fast": {
+       "n_with": 80,
+       "r_with": 0.102,
+       "n_without": 15,
+       "r_without": -0.846
+      },
+      "lrlr": {
+       "n_with": 35,
+       "r_with": 0.242,
+       "n_without": 60,
+       "r_without": -0.216
+      },
+      "tgt_pool": {
+       "n_with": 58,
+       "r_with": -0.08,
+       "n_without": 37,
+       "r_without": 0.004
+      }
+     }
+    },
+    "aug_oct": {
+     "trades": 27,
+     "tpw": 2.45,
+     "weeks_in_2_5": 73.0,
+     "weeks_zero": 0.0,
+     "win_rate": 29.6,
+     "avg_r": -0.37,
+     "ci95_r": [
+      -0.727,
+      0.033
+     ],
+     "pf": 0.42,
+     "net": -3021.67,
+     "max_dd": -3718.37,
+     "worst_day": -358.11,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-08": {
+       "trades": 11,
+       "net": -488.36
+      },
+      "2026-09": {
+       "trades": 10,
+       "net": -1569.47
+      },
+      "2026-10": {
+       "trades": 6,
+       "net": -963.84
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 33,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 4,
+      "time": 6,
+      "stop": 17
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 23,
+       "avg_r": -0.318,
+       "net": -2307.14
+      },
+      "3": {
+       "n": 3,
+       "avg_r": -0.546,
+       "net": -452.55
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.019,
+       "net": -261.98
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 13,
+        "avg_r": -0.055,
+        "win": 38.5,
+        "net": -459.07
+       },
+       "B": {
+        "n": 11,
+        "avg_r": -0.566,
+        "win": 27.3,
+        "net": -1774.55
+       },
+       "C": {
+        "n": 3,
+        "avg_r": -1.015,
+        "win": 0.0,
+        "net": -788.05
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -278.21
+       },
+       "2": {
+        "n": 2,
+        "avg_r": -1.014,
+        "win": 0.0,
+        "net": -509.84
+       },
+       "3": {
+        "n": 2,
+        "avg_r": -0.504,
+        "win": 50.0,
+        "net": -252.73
+       },
+       "4": {
+        "n": 9,
+        "avg_r": -0.579,
+        "win": 22.2,
+        "net": -1521.82
+       },
+       "5": {
+        "n": 10,
+        "avg_r": -0.033,
+        "win": 40.0,
+        "net": -368.6
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.127,
+        "win": 33.3,
+        "net": -90.47
+       }
+      }
+     },
+     "rho_score_r": [
+      0.143,
+      0.232
+     ],
+     "avg_risk_usd": 272.2,
+     "median_stop_pts": 73.1,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 8,
+       "r_with": -0.12,
+       "n_without": 19,
+       "r_without": -0.475
+      },
+      "smt": {
+       "n_with": 5,
+       "r_with": -0.215,
+       "n_without": 22,
+       "r_without": -0.405
+      },
+      "nq_rs_with": {
+       "n_with": 13,
+       "r_with": -0.41,
+       "n_without": 14,
+       "r_without": -0.332
+      },
+      "open_loc_with": {
+       "n_with": 24,
+       "r_with": -0.331,
+       "n_without": 3,
+       "r_without": -0.68
+      },
+      "ifvg_big": {
+       "n_with": 15,
+       "r_with": -0.064,
+       "n_without": 12,
+       "r_without": -0.751
+      },
+      "v_fast": {
+       "n_with": 22,
+       "r_with": -0.283,
+       "n_without": 5,
+       "r_without": -0.75
+      },
+      "lrlr": {
+       "n_with": 10,
+       "r_with": -0.061,
+       "n_without": 17,
+       "r_without": -0.551
+      },
+      "tgt_pool": {
+       "n_with": 18,
+       "r_with": -0.544,
+       "n_without": 9,
+       "r_without": -0.021
+      }
+     }
+    }
+   },
+   "tier": {
+    "dev": {
+     "trades": 59,
+     "tpw": 2.3,
+     "weeks_in_2_5": 78.0,
+     "weeks_zero": 7.0,
+     "win_rate": 40.7,
+     "avg_r": 0.122,
+     "ci95_r": [
+      -0.239,
+      0.524
+     ],
+     "pf": 1.24,
+     "net": 3357.93,
+     "max_dd": -3286.35,
+     "worst_day": -704.32,
+     "rolling_pass": 49.1,
+     "zero_edge_pass": 23.3,
+     "b2b_pass": 2,
+     "b2b_fail": 3,
+     "losing_months": 2,
+     "months": {
+      "2026-01": {
+       "trades": 7,
+       "net": -121.67
+      },
+      "2026-02": {
+       "trades": 8,
+       "net": 1312.63
+      },
+      "2026-03": {
+       "trades": 15,
+       "net": 642.59
+      },
+      "2026-04": {
+       "trades": 10,
+       "net": 1529.01
+      },
+      "2026-05": {
+       "trades": 11,
+       "net": 1692.63
+      },
+      "2026-06": {
+       "trades": 8,
+       "net": -1697.26
+      }
+     },
+     "avg_days_to_pass": 23.3,
+     "completed": 116,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 33,
+      "target": 22,
+      "time": 4
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 43,
+       "avg_r": 0.051,
+       "net": 948.57
+      },
+      "3": {
+       "n": 15,
+       "avg_r": 0.403,
+       "net": 3018.05
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 28,
+        "avg_r": 0.246,
+        "win": 50.0,
+        "net": 3397.69
+       },
+       "B": {
+        "n": 26,
+        "avg_r": -0.115,
+        "win": 30.8,
+        "net": -629.5
+       },
+       "C": {
+        "n": 5,
+        "avg_r": 0.664,
+        "win": 40.0,
+        "net": 589.74
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 149.1
+       },
+       "2": {
+        "n": 4,
+        "avg_r": 0.608,
+        "win": 25.0,
+        "net": 440.64
+       },
+       "3": {
+        "n": 10,
+        "avg_r": -0.197,
+        "win": 30.0,
+        "net": -516.79
+       },
+       "4": {
+        "n": 16,
+        "avg_r": -0.063,
+        "win": 31.2,
+        "net": -112.71
+       },
+       "5": {
+        "n": 12,
+        "avg_r": 0.168,
+        "win": 50.0,
+        "net": 142.97
+       },
+       "6": {
+        "n": 11,
+        "avg_r": 0.336,
+        "win": 45.5,
+        "net": 2457.27
+       },
+       "7": {
+        "n": 5,
+        "avg_r": 0.237,
+        "win": 60.0,
+        "net": 797.45
+       }
+      }
+     },
+     "rho_score_r": [
+      0.157,
+      0.114
+     ],
+     "avg_risk_usd": 427.9,
+     "median_stop_pts": 80.76
+    },
+    "confirm": {
+     "trades": 36,
+     "tpw": 2.31,
+     "weeks_in_2_5": 62.0,
+     "weeks_zero": 0.0,
+     "win_rate": 30.6,
+     "avg_r": -0.326,
+     "ci95_r": [
+      -0.646,
+      0.025
+     ],
+     "pf": 0.63,
+     "net": -3565.56,
+     "max_dd": -4784.87,
+     "worst_day": -665.62,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": 28.0,
+     "b2b_pass": 0,
+     "b2b_fail": 3,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 9,
+       "net": -870.79
+      },
+      "2026-08": {
+       "trades": 11,
+       "net": 621.49
+      },
+      "2026-09": {
+       "trades": 10,
+       "net": -2158.35
+      },
+      "2026-10": {
+       "trades": 6,
+       "net": -1157.91
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 63,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "time": 7,
+      "stop": 22,
+      "target": 7
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 29,
+       "avg_r": -0.304,
+       "net": -2292.39
+      },
+      "3": {
+       "n": 6,
+       "avg_r": -0.315,
+       "net": -1011.19
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.019,
+       "net": -261.98
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 16,
+        "avg_r": -0.084,
+        "win": 37.5,
+        "net": -831.27
+       },
+       "B": {
+        "n": 15,
+        "avg_r": -0.355,
+        "win": 33.3,
+        "net": -1713.91
+       },
+       "C": {
+        "n": 5,
+        "avg_r": -1.013,
+        "win": 0.0,
+        "net": -1020.38
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -139.1
+       },
+       "2": {
+        "n": 4,
+        "avg_r": -1.012,
+        "win": 0.0,
+        "net": -881.28
+       },
+       "3": {
+        "n": 6,
+        "avg_r": -0.019,
+        "win": 50.0,
+        "net": -192.09
+       },
+       "4": {
+        "n": 9,
+        "avg_r": -0.579,
+        "win": 22.2,
+        "net": -1521.82
+       },
+       "5": {
+        "n": 11,
+        "avg_r": -0.122,
+        "win": 36.4,
+        "net": -791.72
+       },
+       "6": {
+        "n": 5,
+        "avg_r": -0.001,
+        "win": 40.0,
+        "net": -39.55
+       }
+      }
+     },
+     "rho_score_r": [
+      -0.03,
+      0.577
+     ],
+     "avg_risk_usd": 402.7,
+     "median_stop_pts": 75.35
+    },
+    "ytd": {
+     "trades": 95,
+     "tpw": 2.31,
+     "weeks_in_2_5": 74.0,
+     "weeks_zero": 2.0,
+     "win_rate": 36.8,
+     "avg_r": -0.048,
+     "ci95_r": [
+      -0.309,
+      0.23
+     ],
+     "pf": 0.99,
+     "net": -207.63,
+     "max_dd": -5917.12,
+     "worst_day": -704.32,
+     "rolling_pass": 29.8,
+     "zero_edge_pass": 29.8,
+     "b2b_pass": 2,
+     "b2b_fail": 6,
+     "losing_months": 5,
+     "months": {
+      "2026-01": {
+       "trades": 7,
+       "net": -121.67
+      },
+      "2026-02": {
+       "trades": 8,
+       "net": 1312.63
+      },
+      "2026-03": {
+       "trades": 15,
+       "net": 642.59
+      },
+      "2026-04": {
+       "trades": 10,
+       "net": 1529.01
+      },
+      "2026-05": {
+       "trades": 11,
+       "net": 1692.63
+      },
+      "2026-06": {
+       "trades": 8,
+       "net": -1697.26
+      },
+      "2026-07": {
+       "trades": 9,
+       "net": -870.79
+      },
+      "2026-08": {
+       "trades": 11,
+       "net": 621.49
+      },
+      "2026-09": {
+       "trades": 10,
+       "net": -2158.35
+      },
+      "2026-10": {
+       "trades": 6,
+       "net": -1157.91
+      }
+     },
+     "avg_days_to_pass": 23.3,
+     "completed": 191,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 55,
+      "target": 29,
+      "time": 11
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 72,
+       "avg_r": -0.092,
+       "net": -1343.82
+      },
+      "3": {
+       "n": 21,
+       "avg_r": 0.198,
+       "net": 2006.86
+      },
+      "5": {
+       "n": 2,
+       "avg_r": -1.018,
+       "net": -870.67
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 44,
+        "avg_r": 0.126,
+        "win": 45.5,
+        "net": 2566.42
+       },
+       "B": {
+        "n": 41,
+        "avg_r": -0.203,
+        "win": 31.7,
+        "net": -2343.41
+       },
+       "C": {
+        "n": 10,
+        "avg_r": -0.175,
+        "win": 20.0,
+        "net": -430.64
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.064,
+        "win": 50.0,
+        "net": 10.0
+       },
+       "2": {
+        "n": 8,
+        "avg_r": -0.202,
+        "win": 12.5,
+        "net": -440.64
+       },
+       "3": {
+        "n": 16,
+        "avg_r": -0.13,
+        "win": 37.5,
+        "net": -708.88
+       },
+       "4": {
+        "n": 25,
+        "avg_r": -0.249,
+        "win": 28.0,
+        "net": -1634.53
+       },
+       "5": {
+        "n": 23,
+        "avg_r": 0.029,
+        "win": 43.5,
+        "net": -648.75
+       },
+       "6": {
+        "n": 16,
+        "avg_r": 0.23,
+        "win": 43.8,
+        "net": 2417.72
+       },
+       "7": {
+        "n": 5,
+        "avg_r": 0.237,
+        "win": 60.0,
+        "net": 797.45
+       }
+      }
+     },
+     "rho_score_r": [
+      0.148,
+      0.082
+     ],
+     "avg_risk_usd": 418.4,
+     "median_stop_pts": 80.01
+    },
+    "aug_oct": {
+     "trades": 27,
+     "tpw": 2.45,
+     "weeks_in_2_5": 73.0,
+     "weeks_zero": 0.0,
+     "win_rate": 29.6,
+     "avg_r": -0.37,
+     "ci95_r": [
+      -0.727,
+      0.033
+     ],
+     "pf": 0.64,
+     "net": -2694.77,
+     "max_dd": -4784.87,
+     "worst_day": -665.62,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": 0.0,
+     "b2b_pass": 0,
+     "b2b_fail": 3,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 11,
+       "net": 621.49
+      },
+      "2026-09": {
+       "trades": 10,
+       "net": -2158.35
+      },
+      "2026-10": {
+       "trades": 6,
+       "net": -1157.91
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 40,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 4,
+      "time": 6,
+      "stop": 17
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 23,
+       "avg_r": -0.318,
+       "net": -1653.56
+      },
+      "3": {
+       "n": 3,
+       "avg_r": -0.546,
+       "net": -779.23
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.019,
+       "net": -261.98
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 13,
+        "avg_r": -0.055,
+        "win": 38.5,
+        "net": -403.89
+       },
+       "B": {
+        "n": 11,
+        "avg_r": -0.566,
+        "win": 27.3,
+        "net": -1774.55
+       },
+       "C": {
+        "n": 3,
+        "avg_r": -1.015,
+        "win": 0.0,
+        "net": -516.33
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -139.1
+       },
+       "2": {
+        "n": 2,
+        "avg_r": -1.014,
+        "win": 0.0,
+        "net": -377.23
+       },
+       "3": {
+        "n": 2,
+        "avg_r": -0.504,
+        "win": 50.0,
+        "net": -252.73
+       },
+       "4": {
+        "n": 9,
+        "avg_r": -0.579,
+        "win": 22.2,
+        "net": -1521.82
+       },
+       "5": {
+        "n": 10,
+        "avg_r": -0.033,
+        "win": 40.0,
+        "net": -310.75
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.127,
+        "win": 33.3,
+        "net": -93.14
+       }
+      }
+     },
+     "rho_score_r": [
+      0.143,
+      0.232
+     ],
+     "avg_risk_usd": 422.3,
+     "median_stop_pts": 73.1
+    }
+   }
+  },
+  "m1_nbars6": {
+   "funnel": {
+    "days": 208,
+    "days_ok": 207,
+    "days_swept": 200,
+    "armed": 200,
+    "signals": 149,
+    "signals_5m": 16,
+    "skip_rr": 100,
+    "signals_3m": 46,
+    "trades": 48,
+    "trades_3m": 12,
+    "v_expired": 63,
+    "signals_1m": 87,
+    "trades_1m": 35,
+    "skip_size": 1,
+    "trades_5m": 1
+   },
+   "params": {
+    "tf": 1,
+    "v_bars_fixed": 6
+   },
+   "flat": {
+    "dev": {
+     "trades": 30,
+     "tpw": 1.17,
+     "weeks_in_2_5": 33.0,
+     "weeks_zero": 30.0,
+     "win_rate": 36.7,
+     "avg_r": 0.286,
+     "ci95_r": [
+      -0.332,
+      0.972
+     ],
+     "pf": 1.52,
+     "net": 2926.83,
+     "max_dd": -2056.31,
+     "worst_day": -353.54,
+     "rolling_pass": 60.8,
+     "zero_edge_pass": 22.3,
+     "b2b_pass": 1,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 445.9
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 996.2
+      },
+      "2026-03": {
+       "trades": 7,
+       "net": 680.43
+      },
+      "2026-04": {
+       "trades": 6,
+       "net": 2860.61
+      },
+      "2026-05": {
+       "trades": 2,
+       "net": -660.32
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -1395.99
+      }
+     },
+     "avg_days_to_pass": 36.8,
+     "completed": 74,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 18,
+      "target": 10,
+      "time": 2
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 22,
+       "avg_r": 0.287,
+       "net": 2223.51
+      },
+      "3": {
+       "n": 7,
+       "avg_r": 0.467,
+       "net": 1007.66
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 15,
+        "avg_r": 0.265,
+        "win": 40.0,
+        "net": 1245.12
+       },
+       "B": {
+        "n": 12,
+        "avg_r": -0.063,
+        "win": 25.0,
+        "net": -72.56
+       },
+       "C": {
+        "n": 3,
+        "avg_r": 1.788,
+        "win": 66.7,
+        "net": 1754.27
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 298.2
+       },
+       "2": {
+        "n": 2,
+        "avg_r": 2.237,
+        "win": 50.0,
+        "net": 1456.07
+       },
+       "3": {
+        "n": 4,
+        "avg_r": -0.339,
+        "win": 25.0,
+        "net": -360.39
+       },
+       "4": {
+        "n": 8,
+        "avg_r": 0.075,
+        "win": 25.0,
+        "net": 287.83
+       },
+       "5": {
+        "n": 6,
+        "avg_r": -0.143,
+        "win": 33.3,
+        "net": -296.96
+       },
+       "6": {
+        "n": 7,
+        "avg_r": 0.497,
+        "win": 42.9,
+        "net": 1104.52
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 437.56
+       }
+      }
+     },
+     "rho_score_r": [
+      0.13,
+      0.246
+     ],
+     "avg_risk_usd": 308.4,
+     "median_stop_pts": 68.045,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 14,
+       "r_with": -0.102,
+       "n_without": 16,
+       "r_without": 0.626
+      },
+      "smt": {
+       "n_with": 5,
+       "r_with": 1.928,
+       "n_without": 25,
+       "r_without": -0.043
+      },
+      "nq_rs_with": {
+       "n_with": 17,
+       "r_with": 0.154,
+       "n_without": 13,
+       "r_without": 0.458
+      },
+      "open_loc_with": {
+       "n_with": 25,
+       "r_with": 0.028,
+       "n_without": 5,
+       "r_without": 1.576
+      },
+      "ifvg_big": {
+       "n_with": 15,
+       "r_with": 0.109,
+       "n_without": 15,
+       "r_without": 0.463
+      },
+      "v_fast": {
+       "n_with": 29,
+       "r_with": 0.331,
+       "n_without": 1,
+       "r_without": -1.023
+      },
+      "lrlr": {
+       "n_with": 10,
+       "r_with": 0.749,
+       "n_without": 20,
+       "r_without": 0.054
+      },
+      "tgt_pool": {
+       "n_with": 20,
+       "r_with": 0.198,
+       "n_without": 10,
+       "r_without": 0.463
+      }
+     }
+    },
+    "confirm": {
+     "trades": 18,
+     "tpw": 1.15,
+     "weeks_in_2_5": 38.0,
+     "weeks_zero": 31.0,
+     "win_rate": 33.3,
+     "avg_r": -0.127,
+     "ci95_r": [
+      -0.661,
+      0.413
+     ],
+     "pf": 0.61,
+     "net": -1279.65,
+     "max_dd": -1763.59,
+     "worst_day": -358.11,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 0,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 3,
+       "net": -259.4
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 252.14
+      },
+      "2026-09": {
+       "trades": 6,
+       "net": -680.49
+      },
+      "2026-10": {
+       "trades": 2,
+       "net": -591.9
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 0,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "target": 4,
+      "stop": 10,
+      "time": 4
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 13,
+       "avg_r": -0.055,
+       "net": -634.06
+      },
+      "3": {
+       "n": 5,
+       "avg_r": -0.314,
+       "net": -645.59
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 10,
+        "avg_r": 0.203,
+        "win": 50.0,
+        "net": 185.21
+       },
+       "B": {
+        "n": 5,
+        "avg_r": -0.256,
+        "win": 20.0,
+        "net": -618.53
+       },
+       "C": {
+        "n": 3,
+        "avg_r": -1.014,
+        "win": 0.0,
+        "net": -846.33
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.016,
+        "win": 0.0,
+        "net": -296.45
+       },
+       "2": {
+        "n": 2,
+        "avg_r": -1.014,
+        "win": 0.0,
+        "net": -549.88
+       },
+       "3": {
+        "n": 2,
+        "avg_r": 0.735,
+        "win": 50.0,
+        "net": 262.2
+       },
+       "4": {
+        "n": 3,
+        "avg_r": -0.916,
+        "win": 0.0,
+        "net": -880.73
+       },
+       "5": {
+        "n": 7,
+        "avg_r": 0.346,
+        "win": 57.1,
+        "net": 348.36
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -163.15
+       }
+      }
+     },
+     "rho_score_r": [
+      -0.005,
+      0.507
+     ],
+     "avg_risk_usd": 281.9,
+     "median_stop_pts": 69.00999999999999,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 4,
+       "r_with": 0.701,
+       "n_without": 14,
+       "r_without": -0.364
+      },
+      "smt": {
+       "n_with": 4,
+       "r_with": -0.029,
+       "n_without": 14,
+       "r_without": -0.155
+      },
+      "nq_rs_with": {
+       "n_with": 7,
+       "r_with": -0.255,
+       "n_without": 11,
+       "r_without": -0.046
+      },
+      "open_loc_with": {
+       "n_with": 15,
+       "r_with": -0.013,
+       "n_without": 3,
+       "r_without": -0.699
+      },
+      "ifvg_big": {
+       "n_with": 10,
+       "r_with": 0.266,
+       "n_without": 8,
+       "r_without": -0.618
+      },
+      "v_fast": {
+       "n_with": 16,
+       "r_with": -0.076,
+       "n_without": 2,
+       "r_without": -0.536
+      },
+      "lrlr": {
+       "n_with": 7,
+       "r_with": 0.149,
+       "n_without": 11,
+       "r_without": -0.303
+      },
+      "tgt_pool": {
+       "n_with": 13,
+       "r_with": -0.39,
+       "n_without": 5,
+       "r_without": 0.557
+      }
+     }
+    },
+    "ytd": {
+     "trades": 48,
+     "tpw": 1.17,
+     "weeks_in_2_5": 36.0,
+     "weeks_zero": 29.0,
+     "win_rate": 35.4,
+     "avg_r": 0.131,
+     "ci95_r": [
+      -0.309,
+      0.6
+     ],
+     "pf": 1.19,
+     "net": 1647.18,
+     "max_dd": -3335.96,
+     "worst_day": -358.11,
+     "rolling_pass": 38.8,
+     "zero_edge_pass": 25.6,
+     "b2b_pass": 1,
+     "b2b_fail": 1,
+     "losing_months": 5,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 445.9
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 996.2
+      },
+      "2026-03": {
+       "trades": 7,
+       "net": 680.43
+      },
+      "2026-04": {
+       "trades": 6,
+       "net": 2860.61
+      },
+      "2026-05": {
+       "trades": 2,
+       "net": -660.32
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -1395.99
+      },
+      "2026-07": {
+       "trades": 3,
+       "net": -259.4
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 252.14
+      },
+      "2026-09": {
+       "trades": 6,
+       "net": -680.49
+      },
+      "2026-10": {
+       "trades": 2,
+       "net": -591.9
+      }
+     },
+     "avg_days_to_pass": 36.8,
+     "completed": 116,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 28,
+      "target": 14,
+      "time": 6
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 35,
+       "avg_r": 0.16,
+       "net": 1589.45
+      },
+      "3": {
+       "n": 12,
+       "avg_r": 0.142,
+       "net": 362.07
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 25,
+        "avg_r": 0.24,
+        "win": 44.0,
+        "net": 1430.33
+       },
+       "B": {
+        "n": 17,
+        "avg_r": -0.12,
+        "win": 23.5,
+        "net": -691.09
+       },
+       "C": {
+        "n": 6,
+        "avg_r": 0.387,
+        "win": 33.3,
+        "net": 907.94
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.062,
+        "win": 50.0,
+        "net": 1.75
+       },
+       "2": {
+        "n": 4,
+        "avg_r": 0.612,
+        "win": 25.0,
+        "net": 906.19
+       },
+       "3": {
+        "n": 6,
+        "avg_r": 0.019,
+        "win": 33.3,
+        "net": -98.19
+       },
+       "4": {
+        "n": 11,
+        "avg_r": -0.195,
+        "win": 18.2,
+        "net": -592.9
+       },
+       "5": {
+        "n": 13,
+        "avg_r": 0.12,
+        "win": 46.2,
+        "net": 51.4
+       },
+       "6": {
+        "n": 10,
+        "avg_r": 0.309,
+        "win": 40.0,
+        "net": 941.37
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 437.56
+       }
+      }
+     },
+     "rho_score_r": [
+      0.045,
+      0.384
+     ],
+     "avg_risk_usd": 298.5,
+     "median_stop_pts": 68.045,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 18,
+       "r_with": 0.076,
+       "n_without": 30,
+       "r_without": 0.164
+      },
+      "smt": {
+       "n_with": 9,
+       "r_with": 1.058,
+       "n_without": 39,
+       "r_without": -0.083
+      },
+      "nq_rs_with": {
+       "n_with": 24,
+       "r_with": 0.035,
+       "n_without": 24,
+       "r_without": 0.227
+      },
+      "open_loc_with": {
+       "n_with": 40,
+       "r_with": 0.013,
+       "n_without": 8,
+       "r_without": 0.723
+      },
+      "ifvg_big": {
+       "n_with": 25,
+       "r_with": 0.172,
+       "n_without": 23,
+       "r_without": 0.087
+      },
+      "v_fast": {
+       "n_with": 45,
+       "r_with": 0.186,
+       "n_without": 3,
+       "r_without": -0.699
+      },
+      "lrlr": {
+       "n_with": 17,
+       "r_with": 0.502,
+       "n_without": 31,
+       "r_without": -0.072
+      },
+      "tgt_pool": {
+       "n_with": 33,
+       "r_with": -0.034,
+       "n_without": 15,
+       "r_without": 0.494
+      }
+     }
+    },
+    "aug_oct": {
+     "trades": 15,
+     "tpw": 1.36,
+     "weeks_in_2_5": 45.0,
+     "weeks_zero": 9.0,
+     "win_rate": 33.3,
+     "avg_r": -0.119,
+     "ci95_r": [
+      -0.676,
+      0.477
+     ],
+     "pf": 0.63,
+     "net": -1020.25,
+     "max_dd": -1763.59,
+     "worst_day": -358.11,
+     "rolling_pass": null,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 0,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 7,
+       "net": 252.14
+      },
+      "2026-09": {
+       "trades": 6,
+       "net": -680.49
+      },
+      "2026-10": {
+       "trades": 2,
+       "net": -591.9
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 0,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 3,
+      "time": 4,
+      "stop": 8
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 12,
+       "avg_r": 0.025,
+       "net": -380.22
+      },
+      "3": {
+       "n": 3,
+       "avg_r": -0.696,
+       "net": -640.03
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 9,
+        "avg_r": 0.339,
+        "win": 55.6,
+        "net": 439.05
+       },
+       "B": {
+        "n": 4,
+        "avg_r": -0.702,
+        "win": 0.0,
+        "net": -897.63
+       },
+       "C": {
+        "n": 2,
+        "avg_r": -1.017,
+        "win": 0.0,
+        "net": -561.67
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.016,
+        "win": 0.0,
+        "net": -296.45
+       },
+       "2": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -265.22
+       },
+       "3": {
+        "n": 1,
+        "avg_r": -0.057,
+        "win": 0.0,
+        "net": -16.9
+       },
+       "4": {
+        "n": 3,
+        "avg_r": -0.916,
+        "win": 0.0,
+        "net": -880.73
+       },
+       "5": {
+        "n": 7,
+        "avg_r": 0.346,
+        "win": 57.1,
+        "net": 348.36
+       },
+       "6": {
+        "n": 2,
+        "avg_r": 0.316,
+        "win": 50.0,
+        "net": 90.69
+       }
+      }
+     },
+     "rho_score_r": [
+      0.125,
+      0.324
+     ],
+     "avg_risk_usd": 290.6,
+     "median_stop_pts": 65.11,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 3,
+       "r_with": 1.274,
+       "n_without": 12,
+       "r_without": -0.468
+      },
+      "smt": {
+       "n_with": 4,
+       "r_with": -0.029,
+       "n_without": 11,
+       "r_without": -0.152
+      },
+      "nq_rs_with": {
+       "n_with": 7,
+       "r_with": -0.255,
+       "n_without": 8,
+       "r_without": -0.001
+      },
+      "open_loc_with": {
+       "n_with": 12,
+       "r_with": 0.026,
+       "n_without": 3,
+       "r_without": -0.699
+      },
+      "ifvg_big": {
+       "n_with": 8,
+       "r_with": 0.269,
+       "n_without": 7,
+       "r_without": -0.563
+      },
+      "v_fast": {
+       "n_with": 13,
+       "r_with": -0.055,
+       "n_without": 2,
+       "r_without": -0.536
+      },
+      "lrlr": {
+       "n_with": 6,
+       "r_with": 0.343,
+       "n_without": 9,
+       "r_without": -0.428
+      },
+      "tgt_pool": {
+       "n_with": 12,
+       "r_with": -0.338,
+       "n_without": 3,
+       "r_without": 0.755
+      }
+     }
+    }
+   },
+   "tier": {
+    "dev": {
+     "trades": 30,
+     "tpw": 1.17,
+     "weeks_in_2_5": 33.0,
+     "weeks_zero": 30.0,
+     "win_rate": 36.7,
+     "avg_r": 0.286,
+     "ci95_r": [
+      -0.332,
+      0.972
+     ],
+     "pf": 1.37,
+     "net": 3223.94,
+     "max_dd": -3597.08,
+     "worst_day": -704.32,
+     "rolling_pass": 49.1,
+     "zero_edge_pass": 36.2,
+     "b2b_pass": 2,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 770.37
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 1550.22
+      },
+      "2026-03": {
+       "trades": 7,
+       "net": 902.12
+      },
+      "2026-04": {
+       "trades": 6,
+       "net": 3598.31
+      },
+      "2026-05": {
+       "trades": 2,
+       "net": -660.32
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -2936.76
+      }
+     },
+     "avg_days_to_pass": 23.8,
+     "completed": 116,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 18,
+      "target": 10,
+      "time": 2
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 22,
+       "avg_r": 0.287,
+       "net": 2738.64
+      },
+      "3": {
+       "n": 7,
+       "avg_r": 0.467,
+       "net": 1093.99
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 15,
+        "avg_r": 0.265,
+        "win": 40.0,
+        "net": 2365.91
+       },
+       "B": {
+        "n": 12,
+        "avg_r": -0.063,
+        "win": 25.0,
+        "net": -72.56
+       },
+       "C": {
+        "n": 3,
+        "avg_r": 1.788,
+        "win": 66.7,
+        "net": 930.59
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 149.1
+       },
+       "2": {
+        "n": 2,
+        "avg_r": 2.237,
+        "win": 50.0,
+        "net": 781.49
+       },
+       "3": {
+        "n": 4,
+        "avg_r": -0.339,
+        "win": 25.0,
+        "net": -360.39
+       },
+       "4": {
+        "n": 8,
+        "avg_r": 0.075,
+        "win": 25.0,
+        "net": 287.83
+       },
+       "5": {
+        "n": 6,
+        "avg_r": -0.143,
+        "win": 33.3,
+        "net": -822.47
+       },
+       "6": {
+        "n": 7,
+        "avg_r": 0.497,
+        "win": 42.9,
+        "net": 2313.27
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 875.11
+       }
+      }
+     },
+     "rho_score_r": [
+      0.13,
+      0.246
+     ],
+     "avg_risk_usd": 461.2,
+     "median_stop_pts": 68.045
+    },
+    "confirm": {
+     "trades": 18,
+     "tpw": 1.15,
+     "weeks_in_2_5": 38.0,
+     "weeks_zero": 31.0,
+     "win_rate": 33.3,
+     "avg_r": -0.127,
+     "ci95_r": [
+      -0.661,
+      0.413
+     ],
+     "pf": 0.99,
+     "net": -65.88,
+     "max_dd": -2467.47,
+     "worst_day": -665.62,
+     "rolling_pass": 16.1,
+     "zero_edge_pass": 16.1,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 3,
+       "net": -640.17
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 2059.36
+      },
+      "2026-09": {
+       "trades": 6,
+       "net": -699.1
+      },
+      "2026-10": {
+       "trades": 2,
+       "net": -785.97
+      }
+     },
+     "avg_days_to_pass": 23.0,
+     "completed": 56,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "target": 4,
+      "stop": 10,
+      "time": 4
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 13,
+       "avg_r": -0.055,
+       "net": 758.16
+      },
+      "3": {
+       "n": 5,
+       "avg_r": -0.314,
+       "net": -824.04
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 10,
+        "avg_r": 0.203,
+        "win": 50.0,
+        "net": 1118.14
+       },
+       "B": {
+        "n": 5,
+        "avg_r": -0.256,
+        "win": 20.0,
+        "net": -618.53
+       },
+       "C": {
+        "n": 3,
+        "avg_r": -1.014,
+        "win": 0.0,
+        "net": -565.49
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.016,
+        "win": 0.0,
+        "net": -148.22
+       },
+       "2": {
+        "n": 2,
+        "avg_r": -1.014,
+        "win": 0.0,
+        "net": -417.27
+       },
+       "3": {
+        "n": 2,
+        "avg_r": 0.735,
+        "win": 50.0,
+        "net": 262.2
+       },
+       "4": {
+        "n": 3,
+        "avg_r": -0.916,
+        "win": 0.0,
+        "net": -880.73
+       },
+       "5": {
+        "n": 7,
+        "avg_r": 0.346,
+        "win": 57.1,
+        "net": 1302.4
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -184.26
+       }
+      }
+     },
+     "rho_score_r": [
+      -0.005,
+      0.507
+     ],
+     "avg_risk_usd": 453.6,
+     "median_stop_pts": 69.00999999999999
+    },
+    "ytd": {
+     "trades": 48,
+     "tpw": 1.17,
+     "weeks_in_2_5": 36.0,
+     "weeks_zero": 29.0,
+     "win_rate": 35.4,
+     "avg_r": 0.131,
+     "ci95_r": [
+      -0.309,
+      0.6
+     ],
+     "pf": 1.24,
+     "net": 3158.06,
+     "max_dd": -4237.25,
+     "worst_day": -704.32,
+     "rolling_pass": 35.9,
+     "zero_edge_pass": 28.0,
+     "b2b_pass": 3,
+     "b2b_fail": 3,
+     "losing_months": 5,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 770.37
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 1550.22
+      },
+      "2026-03": {
+       "trades": 7,
+       "net": 902.12
+      },
+      "2026-04": {
+       "trades": 6,
+       "net": 3598.31
+      },
+      "2026-05": {
+       "trades": 2,
+       "net": -660.32
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -2936.76
+      },
+      "2026-07": {
+       "trades": 3,
+       "net": -640.17
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 2059.36
+      },
+      "2026-09": {
+       "trades": 6,
+       "net": -699.1
+      },
+      "2026-10": {
+       "trades": 2,
+       "net": -785.97
+      }
+     },
+     "avg_days_to_pass": 23.7,
+     "completed": 184,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 28,
+      "target": 14,
+      "time": 6
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 35,
+       "avg_r": 0.16,
+       "net": 3496.8
+      },
+      "3": {
+       "n": 12,
+       "avg_r": 0.142,
+       "net": 269.95
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 25,
+        "avg_r": 0.24,
+        "win": 44.0,
+        "net": 3484.05
+       },
+       "B": {
+        "n": 17,
+        "avg_r": -0.12,
+        "win": 23.5,
+        "net": -691.09
+       },
+       "C": {
+        "n": 6,
+        "avg_r": 0.387,
+        "win": 33.3,
+        "net": 365.1
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.062,
+        "win": 50.0,
+        "net": 0.88
+       },
+       "2": {
+        "n": 4,
+        "avg_r": 0.612,
+        "win": 25.0,
+        "net": 364.22
+       },
+       "3": {
+        "n": 6,
+        "avg_r": 0.019,
+        "win": 33.3,
+        "net": -98.19
+       },
+       "4": {
+        "n": 11,
+        "avg_r": -0.195,
+        "win": 18.2,
+        "net": -592.9
+       },
+       "5": {
+        "n": 13,
+        "avg_r": 0.12,
+        "win": 46.2,
+        "net": 479.93
+       },
+       "6": {
+        "n": 10,
+        "avg_r": 0.309,
+        "win": 40.0,
+        "net": 2129.01
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 875.11
+       }
+      }
+     },
+     "rho_score_r": [
+      0.045,
+      0.384
+     ],
+     "avg_risk_usd": 458.4,
+     "median_stop_pts": 68.045
+    },
+    "aug_oct": {
+     "trades": 15,
+     "tpw": 1.36,
+     "weeks_in_2_5": 45.0,
+     "weeks_zero": 9.0,
+     "win_rate": 33.3,
+     "avg_r": -0.119,
+     "ci95_r": [
+      -0.676,
+      0.477
+     ],
+     "pf": 1.15,
+     "net": 574.29,
+     "max_dd": -2467.47,
+     "worst_day": -665.62,
+     "rolling_pass": 12.1,
+     "zero_edge_pass": 0.0,
+     "b2b_pass": 1,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 7,
+       "net": 2059.36
+      },
+      "2026-09": {
+       "trades": 6,
+       "net": -699.1
+      },
+      "2026-10": {
+       "trades": 2,
+       "net": -785.97
+      }
+     },
+     "avg_days_to_pass": 20.5,
+     "completed": 33,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 3,
+      "time": 4,
+      "stop": 8
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 12,
+       "avg_r": 0.025,
+       "net": 1392.77
+      },
+      "3": {
+       "n": 3,
+       "avg_r": -0.696,
+       "net": -818.48
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 9,
+        "avg_r": 0.339,
+        "win": 55.6,
+        "net": 1752.75
+       },
+       "B": {
+        "n": 4,
+        "avg_r": -0.702,
+        "win": 0.0,
+        "net": -897.63
+       },
+       "C": {
+        "n": 2,
+        "avg_r": -1.017,
+        "win": 0.0,
+        "net": -280.83
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.016,
+        "win": 0.0,
+        "net": -148.22
+       },
+       "2": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -132.61
+       },
+       "3": {
+        "n": 1,
+        "avg_r": -0.057,
+        "win": 0.0,
+        "net": -16.9
+       },
+       "4": {
+        "n": 3,
+        "avg_r": -0.916,
+        "win": 0.0,
+        "net": -880.73
+       },
+       "5": {
+        "n": 7,
+        "avg_r": 0.346,
+        "win": 57.1,
+        "net": 1302.4
+       },
+       "6": {
+        "n": 2,
+        "avg_r": 0.316,
+        "win": 50.0,
+        "net": 450.35
+       }
+      }
+     },
+     "rho_score_r": [
+      0.125,
+      0.324
+     ],
+     "avg_risk_usd": 471.8,
+     "median_stop_pts": 65.11
+    }
+   }
+  },
+  "m1_tf5321": {
+   "funnel": {
+    "days": 208,
+    "days_ok": 207,
+    "days_swept": 200,
+    "armed": 200,
+    "signals": 168,
+    "signals_1m": 95,
+    "trades": 61,
+    "trades_1m": 41,
+    "signals_2m": 30,
+    "skip_rr": 107,
+    "signals_3m": 33,
+    "trades_3m": 8,
+    "v_expired": 51,
+    "trades_2m": 11,
+    "signals_5m": 10,
+    "trades_5m": 1
+   },
+   "params": {
+    "tf": 1,
+    "ladder": [
+     5,
+     3,
+     2,
+     1
+    ]
+   },
+   "flat": {
+    "dev": {
+     "trades": 37,
+     "tpw": 1.45,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 15.0,
+     "win_rate": 32.4,
+     "avg_r": 0.153,
+     "ci95_r": [
+      -0.359,
+      0.724
+     ],
+     "pf": 1.32,
+     "net": 2206.95,
+     "max_dd": -2003.82,
+     "worst_day": -357.4,
+     "rolling_pass": 73.7,
+     "zero_edge_pass": 22.3,
+     "b2b_pass": 1,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 439.9
+      },
+      "2026-02": {
+       "trades": 6,
+       "net": 814.3
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 417.37
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 2503.21
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -570.17
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -1397.66
+      }
+     },
+     "avg_days_to_pass": 38.5,
+     "completed": 57,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 22,
+      "target": 11,
+      "time": 4
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 25,
+       "avg_r": 0.242,
+       "net": 2379.05
+      },
+      "2": {
+       "n": 5,
+       "avg_r": -0.188,
+       "net": -309.02
+      },
+      "3": {
+       "n": 6,
+       "avg_r": 0.262,
+       "net": 441.26
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 19,
+        "avg_r": 0.309,
+        "win": 42.1,
+        "net": 1906.52
+       },
+       "B": {
+        "n": 14,
+        "avg_r": -0.323,
+        "win": 14.3,
+        "net": -1096.44
+       },
+       "C": {
+        "n": 4,
+        "avg_r": 1.084,
+        "win": 50.0,
+        "net": 1396.87
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 298.2
+       },
+       "2": {
+        "n": 3,
+        "avg_r": 1.148,
+        "win": 33.3,
+        "net": 1098.67
+       },
+       "3": {
+        "n": 6,
+        "avg_r": -0.855,
+        "win": 0.0,
+        "net": -1384.27
+       },
+       "4": {
+        "n": 8,
+        "avg_r": 0.075,
+        "win": 25.0,
+        "net": 287.83
+       },
+       "5": {
+        "n": 10,
+        "avg_r": 0.103,
+        "win": 40.0,
+        "net": 366.11
+       },
+       "6": {
+        "n": 7,
+        "avg_r": 0.497,
+        "win": 42.9,
+        "net": 1102.85
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 437.56
+       }
+      }
+     },
+     "rho_score_r": [
+      0.218,
+      0.096
+     ],
+     "avg_risk_usd": 302.8,
+     "median_stop_pts": 68.28,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 15,
+       "r_with": -0.163,
+       "n_without": 22,
+       "r_without": 0.369
+      },
+      "smt": {
+       "n_with": 7,
+       "r_with": 1.485,
+       "n_without": 30,
+       "r_without": -0.157
+      },
+      "nq_rs_with": {
+       "n_with": 22,
+       "r_with": 0.032,
+       "n_without": 15,
+       "r_without": 0.332
+      },
+      "open_loc_with": {
+       "n_with": 29,
+       "r_with": -0.067,
+       "n_without": 8,
+       "r_without": 0.951
+      },
+      "ifvg_big": {
+       "n_with": 21,
+       "r_with": 0.094,
+       "n_without": 16,
+       "r_without": 0.232
+      },
+      "v_fast": {
+       "n_with": 33,
+       "r_with": 0.266,
+       "n_without": 4,
+       "r_without": -0.777
+      },
+      "lrlr": {
+       "n_with": 12,
+       "r_with": 0.728,
+       "n_without": 25,
+       "r_without": -0.122
+      },
+      "tgt_pool": {
+       "n_with": 24,
+       "r_with": 0.171,
+       "n_without": 13,
+       "r_without": 0.121
+      }
+     }
+    },
+    "confirm": {
+     "trades": 23,
+     "tpw": 1.47,
+     "weeks_in_2_5": 50.0,
+     "weeks_zero": 25.0,
+     "win_rate": 39.1,
+     "avg_r": -0.104,
+     "ci95_r": [
+      -0.552,
+      0.371
+     ],
+     "pf": 0.7,
+     "net": -1212.04,
+     "max_dd": -2488.7,
+     "worst_day": -358.11,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 3,
+       "net": -275.92
+      },
+      "2026-08": {
+       "trades": 9,
+       "net": 1061.38
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1071.52
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -925.98
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 56,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "target": 5,
+      "stop": 12,
+      "time": 6
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 15,
+       "avg_r": -0.426,
+       "net": -2221.58
+      },
+      "2": {
+       "n": 6,
+       "avg_r": 0.578,
+       "net": 1057.12
+      },
+      "3": {
+       "n": 2,
+       "avg_r": 0.256,
+       "net": -47.58
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 13,
+        "avg_r": 0.148,
+        "win": 46.2,
+        "net": 280.48
+       },
+       "B": {
+        "n": 8,
+        "avg_r": -0.286,
+        "win": 37.5,
+        "net": -949.09
+       },
+       "C": {
+        "n": 2,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -543.43
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -278.21
+       },
+       "2": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -265.22
+       },
+       "3": {
+        "n": 3,
+        "avg_r": 0.174,
+        "win": 66.7,
+        "net": -21.48
+       },
+       "4": {
+        "n": 5,
+        "avg_r": -0.561,
+        "win": 20.0,
+        "net": -927.61
+       },
+       "5": {
+        "n": 10,
+        "avg_r": 0.231,
+        "win": 50.0,
+        "net": 443.63
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -163.15
+       }
+      }
+     },
+     "rho_score_r": [
+      0.07,
+      0.36
+     ],
+     "avg_risk_usd": 280.7,
+     "median_stop_pts": 68.35,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 6,
+       "r_with": 0.619,
+       "n_without": 17,
+       "r_without": -0.36
+      },
+      "smt": {
+       "n_with": 5,
+       "r_with": -0.215,
+       "n_without": 18,
+       "r_without": -0.074
+      },
+      "nq_rs_with": {
+       "n_with": 10,
+       "r_with": -0.453,
+       "n_without": 13,
+       "r_without": 0.164
+      },
+      "open_loc_with": {
+       "n_with": 20,
+       "r_with": -0.018,
+       "n_without": 3,
+       "r_without": -0.68
+      },
+      "ifvg_big": {
+       "n_with": 14,
+       "r_with": 0.066,
+       "n_without": 9,
+       "r_without": -0.37
+      },
+      "v_fast": {
+       "n_with": 19,
+       "r_with": 0.018,
+       "n_without": 4,
+       "r_without": -0.688
+      },
+      "lrlr": {
+       "n_with": 10,
+       "r_with": 0.26,
+       "n_without": 13,
+       "r_without": -0.385
+      },
+      "tgt_pool": {
+       "n_with": 16,
+       "r_with": -0.32,
+       "n_without": 7,
+       "r_without": 0.389
+      }
+     }
+    },
+    "ytd": {
+     "trades": 60,
+     "tpw": 1.46,
+     "weeks_in_2_5": 48.0,
+     "weeks_zero": 17.0,
+     "win_rate": 35.0,
+     "avg_r": 0.055,
+     "ci95_r": [
+      -0.304,
+      0.45
+     ],
+     "pf": 1.09,
+     "net": 994.91,
+     "max_dd": -3215.86,
+     "worst_day": -358.11,
+     "rolling_pass": 22.8,
+     "zero_edge_pass": 22.8,
+     "b2b_pass": 1,
+     "b2b_fail": 2,
+     "losing_months": 5,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 439.9
+      },
+      "2026-02": {
+       "trades": 6,
+       "net": 814.3
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 417.37
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 2503.21
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -570.17
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -1397.66
+      },
+      "2026-07": {
+       "trades": 3,
+       "net": -275.92
+      },
+      "2026-08": {
+       "trades": 9,
+       "net": 1061.38
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1071.52
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -925.98
+      }
+     },
+     "avg_days_to_pass": 38.5,
+     "completed": 184,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 34,
+      "target": 16,
+      "time": 10
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 40,
+       "avg_r": -0.008,
+       "net": 157.47
+      },
+      "2": {
+       "n": 11,
+       "avg_r": 0.23,
+       "net": 748.1
+      },
+      "3": {
+       "n": 8,
+       "avg_r": 0.26,
+       "net": 393.68
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 32,
+        "avg_r": 0.243,
+        "win": 43.8,
+        "net": 2187.0
+       },
+       "B": {
+        "n": 22,
+        "avg_r": -0.31,
+        "win": 22.7,
+        "net": -2045.53
+       },
+       "C": {
+        "n": 6,
+        "avg_r": 0.383,
+        "win": 33.3,
+        "net": 853.44
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.064,
+        "win": 50.0,
+        "net": 19.99
+       },
+       "2": {
+        "n": 4,
+        "avg_r": 0.607,
+        "win": 25.0,
+        "net": 833.45
+       },
+       "3": {
+        "n": 9,
+        "avg_r": -0.512,
+        "win": 22.2,
+        "net": -1405.75
+       },
+       "4": {
+        "n": 13,
+        "avg_r": -0.17,
+        "win": 23.1,
+        "net": -639.78
+       },
+       "5": {
+        "n": 20,
+        "avg_r": 0.167,
+        "win": 45.0,
+        "net": 809.74
+       },
+       "6": {
+        "n": 10,
+        "avg_r": 0.309,
+        "win": 40.0,
+        "net": 939.7
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 437.56
+       }
+      }
+     },
+     "rho_score_r": [
+      0.147,
+      0.141
+     ],
+     "avg_risk_usd": 294.3,
+     "median_stop_pts": 68.315,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 21,
+       "r_with": 0.061,
+       "n_without": 39,
+       "r_without": 0.051
+      },
+      "smt": {
+       "n_with": 12,
+       "r_with": 0.777,
+       "n_without": 48,
+       "r_without": -0.126
+      },
+      "nq_rs_with": {
+       "n_with": 32,
+       "r_with": -0.12,
+       "n_without": 28,
+       "r_without": 0.254
+      },
+      "open_loc_with": {
+       "n_with": 49,
+       "r_with": -0.047,
+       "n_without": 11,
+       "r_without": 0.506
+      },
+      "ifvg_big": {
+       "n_with": 35,
+       "r_with": 0.083,
+       "n_without": 25,
+       "r_without": 0.015
+      },
+      "v_fast": {
+       "n_with": 52,
+       "r_with": 0.176,
+       "n_without": 8,
+       "r_without": -0.732
+      },
+      "lrlr": {
+       "n_with": 22,
+       "r_with": 0.515,
+       "n_without": 38,
+       "r_without": -0.212
+      },
+      "tgt_pool": {
+       "n_with": 40,
+       "r_with": -0.025,
+       "n_without": 20,
+       "r_without": 0.215
+      }
+     }
+    },
+    "aug_oct": {
+     "trades": 20,
+     "tpw": 1.82,
+     "weeks_in_2_5": 64.0,
+     "weeks_zero": 0.0,
+     "win_rate": 40.0,
+     "avg_r": -0.095,
+     "ci95_r": [
+      -0.593,
+      0.419
+     ],
+     "pf": 0.73,
+     "net": -936.12,
+     "max_dd": -2488.7,
+     "worst_day": -358.11,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": 0.0,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 9,
+       "net": 1061.38
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1071.52
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -925.98
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 33,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 4,
+      "time": 6,
+      "stop": 10
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 14,
+       "avg_r": -0.383,
+       "net": -1967.74
+      },
+      "2": {
+       "n": 5,
+       "avg_r": 0.896,
+       "net": 1358.3
+      },
+      "3": {
+       "n": 1,
+       "avg_r": -1.015,
+       "net": -326.68
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 12,
+        "avg_r": 0.245,
+        "win": 50.0,
+        "net": 534.32
+       },
+       "B": {
+        "n": 6,
+        "avg_r": -0.467,
+        "win": 33.3,
+        "net": -927.01
+       },
+       "C": {
+        "n": 2,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -543.43
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -278.21
+       },
+       "2": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -265.22
+       },
+       "3": {
+        "n": 1,
+        "avg_r": 0.002,
+        "win": 100.0,
+        "net": 0.6
+       },
+       "4": {
+        "n": 5,
+        "avg_r": -0.561,
+        "win": 20.0,
+        "net": -927.61
+       },
+       "5": {
+        "n": 10,
+        "avg_r": 0.231,
+        "win": 50.0,
+        "net": 443.63
+       },
+       "6": {
+        "n": 2,
+        "avg_r": 0.316,
+        "win": 50.0,
+        "net": 90.69
+       }
+      }
+     },
+     "rho_score_r": [
+      0.317,
+      0.096
+     ],
+     "avg_risk_usd": 286.3,
+     "median_stop_pts": 66.72999999999999,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 5,
+       "r_with": 0.946,
+       "n_without": 15,
+       "r_without": -0.442
+      },
+      "smt": {
+       "n_with": 5,
+       "r_with": -0.215,
+       "n_without": 15,
+       "r_without": -0.055
+      },
+      "nq_rs_with": {
+       "n_with": 9,
+       "r_with": -0.392,
+       "n_without": 11,
+       "r_without": 0.148
+      },
+      "open_loc_with": {
+       "n_with": 17,
+       "r_with": 0.008,
+       "n_without": 3,
+       "r_without": -0.68
+      },
+      "ifvg_big": {
+       "n_with": 12,
+       "r_with": 0.035,
+       "n_without": 8,
+       "r_without": -0.29
+      },
+      "v_fast": {
+       "n_with": 16,
+       "r_with": 0.053,
+       "n_without": 4,
+       "r_without": -0.688
+      },
+      "lrlr": {
+       "n_with": 9,
+       "r_with": 0.402,
+       "n_without": 11,
+       "r_without": -0.502
+      },
+      "tgt_pool": {
+       "n_with": 15,
+       "r_with": -0.274,
+       "n_without": 5,
+       "r_without": 0.44
+      }
+     }
+    }
+   },
+   "tier": {
+    "dev": {
+     "trades": 37,
+     "tpw": 1.45,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 15.0,
+     "win_rate": 32.4,
+     "avg_r": 0.153,
+     "ci95_r": [
+      -0.359,
+      0.724
+     ],
+     "pf": 1.29,
+     "net": 2911.54,
+     "max_dd": -3658.32,
+     "worst_day": -704.32,
+     "rolling_pass": 48.3,
+     "zero_edge_pass": 35.3,
+     "b2b_pass": 1,
+     "b2b_fail": 2,
+     "losing_months": 2,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 1324.77
+      },
+      "2026-02": {
+       "trades": 6,
+       "net": 1186.42
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 639.06
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 3419.61
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -718.2
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -2940.12
+      }
+     },
+     "avg_days_to_pass": 24.0,
+     "completed": 116,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 22,
+      "target": 11,
+      "time": 4
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 25,
+       "avg_r": 0.242,
+       "net": 3061.79
+      },
+      "2": {
+       "n": 5,
+       "avg_r": -0.188,
+       "net": -69.15
+      },
+      "3": {
+       "n": 6,
+       "avg_r": 0.262,
+       "net": 527.59
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 19,
+        "avg_r": 0.309,
+        "win": 42.1,
+        "net": 3256.09
+       },
+       "B": {
+        "n": 14,
+        "avg_r": -0.323,
+        "win": 14.3,
+        "net": -1096.44
+       },
+       "C": {
+        "n": 4,
+        "avg_r": 1.084,
+        "win": 50.0,
+        "net": 751.89
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 149.1
+       },
+       "2": {
+        "n": 3,
+        "avg_r": 1.148,
+        "win": 33.3,
+        "net": 602.79
+       },
+       "3": {
+        "n": 6,
+        "avg_r": -0.855,
+        "win": 0.0,
+        "net": -1384.27
+       },
+       "4": {
+        "n": 8,
+        "avg_r": 0.075,
+        "win": 25.0,
+        "net": 287.83
+       },
+       "5": {
+        "n": 10,
+        "avg_r": 0.103,
+        "win": 40.0,
+        "net": 71.07
+       },
+       "6": {
+        "n": 7,
+        "avg_r": 0.497,
+        "win": 42.9,
+        "net": 2309.91
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 875.11
+       }
+      }
+     },
+     "rho_score_r": [
+      0.218,
+      0.096
+     ],
+     "avg_risk_usd": 450.6,
+     "median_stop_pts": 68.28
+    },
+    "confirm": {
+     "trades": 23,
+     "tpw": 1.47,
+     "weeks_in_2_5": 50.0,
+     "weeks_zero": 25.0,
+     "win_rate": 39.1,
+     "avg_r": -0.104,
+     "ci95_r": [
+      -0.552,
+      0.371
+     ],
+     "pf": 0.98,
+     "net": -91.36,
+     "max_dd": -3762.85,
+     "worst_day": -665.62,
+     "rolling_pass": 48.3,
+     "zero_edge_pass": 48.3,
+     "b2b_pass": 1,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 3,
+       "net": -656.69
+      },
+      "2026-08": {
+       "trades": 9,
+       "net": 3345.78
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1660.4
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -1120.05
+      }
+     },
+     "avg_days_to_pass": 30.9,
+     "completed": 58,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "target": 5,
+      "stop": 12,
+      "time": 6
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 15,
+       "avg_r": -0.426,
+       "net": -1844.72
+      },
+      "2": {
+       "n": 6,
+       "avg_r": 0.578,
+       "net": 2127.62
+      },
+      "3": {
+       "n": 2,
+       "avg_r": 0.256,
+       "net": -374.26
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 13,
+        "avg_r": 0.148,
+        "win": 46.2,
+        "net": 1129.44
+       },
+       "B": {
+        "n": 8,
+        "avg_r": -0.286,
+        "win": 37.5,
+        "net": -949.09
+       },
+       "C": {
+        "n": 2,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -271.71
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -139.1
+       },
+       "2": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -132.61
+       },
+       "3": {
+        "n": 3,
+        "avg_r": 0.174,
+        "win": 66.7,
+        "net": -21.48
+       },
+       "4": {
+        "n": 5,
+        "avg_r": -0.561,
+        "win": 20.0,
+        "net": -927.61
+       },
+       "5": {
+        "n": 10,
+        "avg_r": 0.231,
+        "win": 50.0,
+        "net": 1313.7
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -184.26
+       }
+      }
+     },
+     "rho_score_r": [
+      0.07,
+      0.36
+     ],
+     "avg_risk_usd": 457.0,
+     "median_stop_pts": 68.35
+    },
+    "ytd": {
+     "trades": 60,
+     "tpw": 1.46,
+     "weeks_in_2_5": 48.0,
+     "weeks_zero": 17.0,
+     "win_rate": 35.0,
+     "avg_r": 0.055,
+     "ci95_r": [
+      -0.304,
+      0.45
+     ],
+     "pf": 1.17,
+     "net": 2820.18,
+     "max_dd": -4315.01,
+     "worst_day": -704.32,
+     "rolling_pass": 49.5,
+     "zero_edge_pass": 42.4,
+     "b2b_pass": 2,
+     "b2b_fail": 4,
+     "losing_months": 5,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 1324.77
+      },
+      "2026-02": {
+       "trades": 6,
+       "net": 1186.42
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 639.06
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 3419.61
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -718.2
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -2940.12
+      },
+      "2026-07": {
+       "trades": 3,
+       "net": -656.69
+      },
+      "2026-08": {
+       "trades": 9,
+       "net": 3345.78
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1660.4
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -1120.05
+      }
+     },
+     "avg_days_to_pass": 28.3,
+     "completed": 186,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 34,
+      "target": 16,
+      "time": 10
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 40,
+       "avg_r": -0.008,
+       "net": 1217.07
+      },
+      "2": {
+       "n": 11,
+       "avg_r": 0.23,
+       "net": 2058.47
+      },
+      "3": {
+       "n": 8,
+       "avg_r": 0.26,
+       "net": 153.33
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 32,
+        "avg_r": 0.243,
+        "win": 43.8,
+        "net": 4385.53
+       },
+       "B": {
+        "n": 22,
+        "avg_r": -0.31,
+        "win": 22.7,
+        "net": -2045.53
+       },
+       "C": {
+        "n": 6,
+        "avg_r": 0.383,
+        "win": 33.3,
+        "net": 480.18
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.064,
+        "win": 50.0,
+        "net": 10.0
+       },
+       "2": {
+        "n": 4,
+        "avg_r": 0.607,
+        "win": 25.0,
+        "net": 470.18
+       },
+       "3": {
+        "n": 9,
+        "avg_r": -0.512,
+        "win": 22.2,
+        "net": -1405.75
+       },
+       "4": {
+        "n": 13,
+        "avg_r": -0.17,
+        "win": 23.1,
+        "net": -639.78
+       },
+       "5": {
+        "n": 20,
+        "avg_r": 0.167,
+        "win": 45.0,
+        "net": 1384.77
+       },
+       "6": {
+        "n": 10,
+        "avg_r": 0.309,
+        "win": 40.0,
+        "net": 2125.65
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 875.11
+       }
+      }
+     },
+     "rho_score_r": [
+      0.147,
+      0.141
+     ],
+     "avg_risk_usd": 453.0,
+     "median_stop_pts": 68.315
+    },
+    "aug_oct": {
+     "trades": 20,
+     "tpw": 1.82,
+     "weeks_in_2_5": 64.0,
+     "weeks_zero": 0.0,
+     "win_rate": 40.0,
+     "avg_r": -0.095,
+     "ci95_r": [
+      -0.593,
+      0.419
+     ],
+     "pf": 1.11,
+     "net": 565.33,
+     "max_dd": -3762.85,
+     "worst_day": -665.62,
+     "rolling_pass": 14.3,
+     "zero_edge_pass": 12.5,
+     "b2b_pass": 1,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 9,
+       "net": 3345.78
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1660.4
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -1120.05
+      }
+     },
+     "avg_days_to_pass": 18.4,
+     "completed": 35,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 4,
+      "time": 6,
+      "stop": 10
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 14,
+       "avg_r": -0.383,
+       "net": -1210.11
+      },
+      "2": {
+       "n": 5,
+       "avg_r": 0.896,
+       "net": 2428.8
+      },
+      "3": {
+       "n": 1,
+       "avg_r": -1.015,
+       "net": -653.36
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 12,
+        "avg_r": 0.245,
+        "win": 50.0,
+        "net": 1764.05
+       },
+       "B": {
+        "n": 6,
+        "avg_r": -0.467,
+        "win": 33.3,
+        "net": -927.01
+       },
+       "C": {
+        "n": 2,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -271.71
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -139.1
+       },
+       "2": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -132.61
+       },
+       "3": {
+        "n": 1,
+        "avg_r": 0.002,
+        "win": 100.0,
+        "net": 0.6
+       },
+       "4": {
+        "n": 5,
+        "avg_r": -0.561,
+        "win": 20.0,
+        "net": -927.61
+       },
+       "5": {
+        "n": 10,
+        "avg_r": 0.231,
+        "win": 50.0,
+        "net": 1313.7
+       },
+       "6": {
+        "n": 2,
+        "avg_r": 0.316,
+        "win": 50.0,
+        "net": 450.35
+       }
+      }
+     },
+     "rho_score_r": [
+      0.317,
+      0.096
+     ],
+     "avg_risk_usd": 470.3,
+     "median_stop_pts": 66.72999999999999
+    }
+   }
+  },
+  "m1_tgt_half": {
+   "funnel": {
+    "days": 208,
+    "days_ok": 207,
+    "days_swept": 200,
+    "armed": 200,
+    "signals": 166,
+    "signals_1m": 112,
+    "trades": 58,
+    "trades_1m": 47,
+    "signals_5m": 11,
+    "skip_rr": 107,
+    "signals_3m": 43,
+    "trades_3m": 10,
+    "v_expired": 51,
+    "skip_size": 1,
+    "trades_5m": 1
+   },
+   "params": {
+    "tf": 1,
+    "target": "partial"
+   },
+   "flat": {
+    "dev": {
+     "trades": 36,
+     "tpw": 1.41,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 19.0,
+     "win_rate": 36.1,
+     "avg_r": 0.111,
+     "ci95_r": [
+      -0.378,
+      0.669
+     ],
+     "pf": 1.24,
+     "net": 1635.53,
+     "max_dd": -1998.64,
+     "worst_day": -353.89,
+     "rolling_pass": 100.0,
+     "zero_edge_pass": 17.5,
+     "b2b_pass": 1,
+     "b2b_fail": 0,
+     "losing_months": 3,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": -33.1
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 935.7
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 353.37
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 2345.72
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -570.17
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -1395.99
+      }
+     },
+     "avg_days_to_pass": 50.4,
+     "completed": 42,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 22,
+      "target": 10,
+      "be": 2,
+      "time": 2
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 28,
+       "avg_r": 0.069,
+       "net": 992.71
+      },
+      "3": {
+       "n": 7,
+       "avg_r": 0.441,
+       "net": 947.16
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 17,
+        "avg_r": 0.166,
+        "win": 41.2,
+        "net": 889.69
+       },
+       "B": {
+        "n": 15,
+        "avg_r": -0.21,
+        "win": 26.7,
+        "net": -654.54
+       },
+       "C": {
+        "n": 4,
+        "avg_r": 1.084,
+        "win": 50.0,
+        "net": 1400.38
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 298.2
+       },
+       "2": {
+        "n": 3,
+        "avg_r": 1.148,
+        "win": 33.3,
+        "net": 1102.18
+       },
+       "3": {
+        "n": 7,
+        "avg_r": -0.489,
+        "win": 14.3,
+        "net": -817.87
+       },
+       "4": {
+        "n": 8,
+        "avg_r": 0.034,
+        "win": 37.5,
+        "net": 163.33
+       },
+       "5": {
+        "n": 8,
+        "avg_r": -0.013,
+        "win": 37.5,
+        "net": -12.39
+       },
+       "6": {
+        "n": 7,
+        "avg_r": 0.297,
+        "win": 42.9,
+        "net": 625.52
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.426,
+        "win": 50.0,
+        "net": 276.56
+       }
+      }
+     },
+     "rho_score_r": [
+      0.172,
+      0.164
+     ],
+     "avg_risk_usd": 301.2,
+     "median_stop_pts": 68.045,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 15,
+       "r_with": -0.289,
+       "n_without": 21,
+       "r_without": 0.398
+      },
+      "smt": {
+       "n_with": 7,
+       "r_with": 1.358,
+       "n_without": 29,
+       "r_without": -0.189
+      },
+      "nq_rs_with": {
+       "n_with": 20,
+       "r_with": -0.126,
+       "n_without": 16,
+       "r_without": 0.409
+      },
+      "open_loc_with": {
+       "n_with": 28,
+       "r_with": -0.097,
+       "n_without": 8,
+       "r_without": 0.84
+      },
+      "ifvg_big": {
+       "n_with": 20,
+       "r_with": 0.028,
+       "n_without": 16,
+       "r_without": 0.216
+      },
+      "v_fast": {
+       "n_with": 32,
+       "r_with": 0.223,
+       "n_without": 4,
+       "r_without": -0.777
+      },
+      "lrlr": {
+       "n_with": 11,
+       "r_with": 0.588,
+       "n_without": 25,
+       "r_without": -0.098
+      },
+      "tgt_pool": {
+       "n_with": 23,
+       "r_with": 0.106,
+       "n_without": 13,
+       "r_without": 0.121
+      }
+     }
+    },
+    "confirm": {
+     "trades": 21,
+     "tpw": 1.35,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 25.0,
+     "win_rate": 38.1,
+     "avg_r": -0.144,
+     "ci95_r": [
+      -0.623,
+      0.373
+     ],
+     "pf": 0.65,
+     "net": -1290.02,
+     "max_dd": -2488.7,
+     "worst_day": -358.11,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 3,
+       "net": -259.4
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 966.88
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1071.52
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -925.98
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 56,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "target": 4,
+      "stop": 12,
+      "time": 4,
+      "be": 1
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 18,
+       "avg_r": -0.141,
+       "net": -957.78
+      },
+      "3": {
+       "n": 3,
+       "avg_r": -0.166,
+       "net": -332.24
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 12,
+        "avg_r": 0.026,
+        "win": 41.7,
+        "net": -205.82
+       },
+       "B": {
+        "n": 6,
+        "avg_r": -0.049,
+        "win": 50.0,
+        "net": -256.11
+       },
+       "C": {
+        "n": 3,
+        "avg_r": -1.015,
+        "win": 0.0,
+        "net": -828.09
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -278.21
+       },
+       "2": {
+        "n": 2,
+        "avg_r": -1.014,
+        "win": 0.0,
+        "net": -549.88
+       },
+       "3": {
+        "n": 2,
+        "avg_r": 0.764,
+        "win": 100.0,
+        "net": 279.7
+       },
+       "4": {
+        "n": 4,
+        "avg_r": -0.455,
+        "win": 25.0,
+        "net": -535.81
+       },
+       "5": {
+        "n": 9,
+        "avg_r": 0.077,
+        "win": 44.4,
+        "net": -42.67
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -163.15
+       }
+      }
+     },
+     "rho_score_r": [
+      0.008,
+      0.493
+     ],
+     "avg_risk_usd": 277.9,
+     "median_stop_pts": 68.35,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 5,
+       "r_with": 0.418,
+       "n_without": 16,
+       "r_without": -0.32
+      },
+      "smt": {
+       "n_with": 5,
+       "r_with": 0.175,
+       "n_without": 16,
+       "r_without": -0.244
+      },
+      "nq_rs_with": {
+       "n_with": 9,
+       "r_with": -0.391,
+       "n_without": 12,
+       "r_without": 0.041
+      },
+      "open_loc_with": {
+       "n_with": 18,
+       "r_with": -0.055,
+       "n_without": 3,
+       "r_without": -0.68
+      },
+      "ifvg_big": {
+       "n_with": 13,
+       "r_with": -0.002,
+       "n_without": 8,
+       "r_without": -0.375
+      },
+      "v_fast": {
+       "n_with": 17,
+       "r_with": -0.017,
+       "n_without": 4,
+       "r_without": -0.688
+      },
+      "lrlr": {
+       "n_with": 8,
+       "r_with": 0.002,
+       "n_without": 13,
+       "r_without": -0.235
+      },
+      "tgt_pool": {
+       "n_with": 15,
+       "r_with": -0.319,
+       "n_without": 6,
+       "r_without": 0.294
+      }
+     }
+    },
+    "ytd": {
+     "trades": 57,
+     "tpw": 1.38,
+     "weeks_in_2_5": 45.0,
+     "weeks_zero": 19.0,
+     "win_rate": 36.8,
+     "avg_r": 0.017,
+     "ci95_r": [
+      -0.351,
+      0.427
+     ],
+     "pf": 1.03,
+     "net": 345.51,
+     "max_dd": -3288.66,
+     "worst_day": -358.11,
+     "rolling_pass": 22.8,
+     "zero_edge_pass": 22.8,
+     "b2b_pass": 1,
+     "b2b_fail": 2,
+     "losing_months": 6,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": -33.1
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 935.7
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 353.37
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 2345.72
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -570.17
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -1395.99
+      },
+      "2026-07": {
+       "trades": 3,
+       "net": -259.4
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 966.88
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1071.52
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -925.98
+      }
+     },
+     "avg_days_to_pass": 50.4,
+     "completed": 184,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 34,
+      "target": 14,
+      "be": 3,
+      "time": 6
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 46,
+       "avg_r": -0.013,
+       "net": 34.93
+      },
+      "3": {
+       "n": 10,
+       "avg_r": 0.259,
+       "net": 614.92
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 29,
+        "avg_r": 0.108,
+        "win": 41.4,
+        "net": 683.87
+       },
+       "B": {
+        "n": 21,
+        "avg_r": -0.164,
+        "win": 33.3,
+        "net": -910.65
+       },
+       "C": {
+        "n": 7,
+        "avg_r": 0.184,
+        "win": 28.6,
+        "net": 572.29
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.064,
+        "win": 50.0,
+        "net": 19.99
+       },
+       "2": {
+        "n": 5,
+        "avg_r": 0.284,
+        "win": 20.0,
+        "net": 552.3
+       },
+       "3": {
+        "n": 9,
+        "avg_r": -0.211,
+        "win": 33.3,
+        "net": -538.17
+       },
+       "4": {
+        "n": 12,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -372.48
+       },
+       "5": {
+        "n": 17,
+        "avg_r": 0.035,
+        "win": 41.2,
+        "net": -55.06
+       },
+       "6": {
+        "n": 10,
+        "avg_r": 0.169,
+        "win": 40.0,
+        "net": 462.37
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.426,
+        "win": 50.0,
+        "net": 276.56
+       }
+      }
+     },
+     "rho_score_r": [
+      0.107,
+      0.225
+     ],
+     "avg_risk_usd": 292.6,
+     "median_stop_pts": 68.28,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 20,
+       "r_with": -0.112,
+       "n_without": 37,
+       "r_without": 0.087
+      },
+      "smt": {
+       "n_with": 12,
+       "r_with": 0.865,
+       "n_without": 45,
+       "r_without": -0.209
+      },
+      "nq_rs_with": {
+       "n_with": 29,
+       "r_with": -0.208,
+       "n_without": 28,
+       "r_without": 0.251
+      },
+      "open_loc_with": {
+       "n_with": 46,
+       "r_with": -0.08,
+       "n_without": 11,
+       "r_without": 0.425
+      },
+      "ifvg_big": {
+       "n_with": 33,
+       "r_with": 0.016,
+       "n_without": 24,
+       "r_without": 0.019
+      },
+      "v_fast": {
+       "n_with": 49,
+       "r_with": 0.14,
+       "n_without": 8,
+       "r_without": -0.732
+      },
+      "lrlr": {
+       "n_with": 19,
+       "r_with": 0.341,
+       "n_without": 38,
+       "r_without": -0.145
+      },
+      "tgt_pool": {
+       "n_with": 38,
+       "r_with": -0.062,
+       "n_without": 19,
+       "r_without": 0.175
+      }
+     }
+    },
+    "aug_oct": {
+     "trades": 18,
+     "tpw": 1.64,
+     "weeks_in_2_5": 55.0,
+     "weeks_zero": 0.0,
+     "win_rate": 38.9,
+     "avg_r": -0.141,
+     "ci95_r": [
+      -0.649,
+      0.421
+     ],
+     "pf": 0.68,
+     "net": -1030.62,
+     "max_dd": -2488.7,
+     "worst_day": -358.11,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 7,
+       "net": 966.88
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1071.52
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -925.98
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 33,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 3,
+      "time": 4,
+      "be": 1,
+      "stop": 10
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 17,
+       "avg_r": -0.089,
+       "net": -703.94
+      },
+      "3": {
+       "n": 1,
+       "avg_r": -1.015,
+       "net": -326.68
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 11,
+        "avg_r": 0.12,
+        "win": 45.5,
+        "net": 48.02
+       },
+       "B": {
+        "n": 5,
+        "avg_r": -0.364,
+        "win": 40.0,
+        "net": -535.21
+       },
+       "C": {
+        "n": 2,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -543.43
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -278.21
+       },
+       "2": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -265.22
+       },
+       "3": {
+        "n": 1,
+        "avg_r": 0.002,
+        "win": 100.0,
+        "net": 0.6
+       },
+       "4": {
+        "n": 4,
+        "avg_r": -0.455,
+        "win": 25.0,
+        "net": -535.81
+       },
+       "5": {
+        "n": 9,
+        "avg_r": 0.077,
+        "win": 44.4,
+        "net": -42.67
+       },
+       "6": {
+        "n": 2,
+        "avg_r": 0.316,
+        "win": 50.0,
+        "net": 90.69
+       }
+      }
+     },
+     "rho_score_r": [
+      0.259,
+      0.137
+     ],
+     "avg_risk_usd": 284.5,
+     "median_stop_pts": 66.72999999999999,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 4,
+       "r_with": 0.777,
+       "n_without": 14,
+       "r_without": -0.403
+      },
+      "smt": {
+       "n_with": 5,
+       "r_with": 0.175,
+       "n_without": 13,
+       "r_without": -0.262
+      },
+      "nq_rs_with": {
+       "n_with": 9,
+       "r_with": -0.391,
+       "n_without": 9,
+       "r_without": 0.11
+      },
+      "open_loc_with": {
+       "n_with": 15,
+       "r_with": -0.033,
+       "n_without": 3,
+       "r_without": -0.68
+      },
+      "ifvg_big": {
+       "n_with": 11,
+       "r_with": -0.049,
+       "n_without": 7,
+       "r_without": -0.284
+      },
+      "v_fast": {
+       "n_with": 14,
+       "r_with": 0.016,
+       "n_without": 4,
+       "r_without": -0.688
+      },
+      "lrlr": {
+       "n_with": 7,
+       "r_with": 0.148,
+       "n_without": 11,
+       "r_without": -0.324
+      },
+      "tgt_pool": {
+       "n_with": 14,
+       "r_with": -0.269,
+       "n_without": 4,
+       "r_without": 0.311
+      }
+     }
+    }
+   },
+   "tier": {
+    "dev": {
+     "trades": 36,
+     "tpw": 1.41,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 19.0,
+     "win_rate": 36.1,
+     "avg_r": 0.098,
+     "ci95_r": [
+      -0.386,
+      0.648
+     ],
+     "pf": 1.11,
+     "net": 1046.56,
+     "max_dd": -3654.96,
+     "worst_day": -704.32,
+     "rolling_pass": 45.7,
+     "zero_edge_pass": 38.8,
+     "b2b_pass": 1,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": -348.63
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 1375.72
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 575.06
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 3099.37
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -718.2
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -2936.76
+      }
+     },
+     "avg_days_to_pass": 25.8,
+     "completed": 116,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 22,
+      "target": 10,
+      "be": 2,
+      "time": 2
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 28,
+       "avg_r": 0.061,
+       "net": 735.76
+      },
+      "3": {
+       "n": 7,
+       "avg_r": 0.406,
+       "net": 919.49
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 17,
+        "avg_r": 0.139,
+        "win": 41.2,
+        "net": 947.45
+       },
+       "B": {
+        "n": 15,
+        "avg_r": -0.21,
+        "win": 26.7,
+        "net": -654.54
+       },
+       "C": {
+        "n": 4,
+        "avg_r": 1.084,
+        "win": 50.0,
+        "net": 753.65
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 149.1
+       },
+       "2": {
+        "n": 3,
+        "avg_r": 1.148,
+        "win": 33.3,
+        "net": 604.55
+       },
+       "3": {
+        "n": 7,
+        "avg_r": -0.489,
+        "win": 14.3,
+        "net": -817.87
+       },
+       "4": {
+        "n": 8,
+        "avg_r": 0.034,
+        "win": 37.5,
+        "net": 163.33
+       },
+       "5": {
+        "n": 8,
+        "avg_r": -0.043,
+        "win": 37.5,
+        "net": -799.93
+       },
+       "6": {
+        "n": 7,
+        "avg_r": 0.263,
+        "win": 42.9,
+        "net": 1194.27
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.426,
+        "win": 50.0,
+        "net": 553.11
+       }
+      }
+     },
+     "rho_score_r": [
+      0.161,
+      0.18
+     ],
+     "avg_risk_usd": 434.1,
+     "median_stop_pts": 68.045
+    },
+    "confirm": {
+     "trades": 21,
+     "tpw": 1.35,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 25.0,
+     "win_rate": 38.1,
+     "avg_r": -0.144,
+     "ci95_r": [
+      -0.623,
+      0.373
+     ],
+     "pf": 0.88,
+     "net": -655.64,
+     "max_dd": -3762.85,
+     "worst_day": -665.62,
+     "rolling_pass": 41.4,
+     "zero_edge_pass": 46.6,
+     "b2b_pass": 1,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 3,
+       "net": -640.17
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 2764.98
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1660.4
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -1120.05
+      }
+     },
+     "avg_days_to_pass": 32.2,
+     "completed": 58,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "target": 4,
+      "stop": 12,
+      "time": 4,
+      "be": 1
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 18,
+       "avg_r": -0.141,
+       "net": 3.28
+      },
+      "3": {
+       "n": 3,
+       "avg_r": -0.166,
+       "net": -658.92
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 12,
+        "avg_r": 0.026,
+        "win": 41.7,
+        "net": 156.84
+       },
+       "B": {
+        "n": 6,
+        "avg_r": -0.049,
+        "win": 50.0,
+        "net": -256.11
+       },
+       "C": {
+        "n": 3,
+        "avg_r": -1.015,
+        "win": 0.0,
+        "net": -556.37
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -139.1
+       },
+       "2": {
+        "n": 2,
+        "avg_r": -1.014,
+        "win": 0.0,
+        "net": -417.27
+       },
+       "3": {
+        "n": 2,
+        "avg_r": 0.764,
+        "win": 100.0,
+        "net": 279.7
+       },
+       "4": {
+        "n": 4,
+        "avg_r": -0.455,
+        "win": 25.0,
+        "net": -535.81
+       },
+       "5": {
+        "n": 9,
+        "avg_r": 0.077,
+        "win": 44.4,
+        "net": 341.1
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -184.26
+       }
+      }
+     },
+     "rho_score_r": [
+      0.008,
+      0.493
+     ],
+     "avg_risk_usd": 456.5,
+     "median_stop_pts": 68.35
+    },
+    "ytd": {
+     "trades": 57,
+     "tpw": 1.38,
+     "weeks_in_2_5": 45.0,
+     "weeks_zero": 19.0,
+     "win_rate": 36.8,
+     "avg_r": 0.009,
+     "ci95_r": [
+      -0.357,
+      0.413
+     ],
+     "pf": 1.03,
+     "net": 390.92,
+     "max_dd": -4310.6,
+     "worst_day": -704.32,
+     "rolling_pass": 45.7,
+     "zero_edge_pass": 44.5,
+     "b2b_pass": 2,
+     "b2b_fail": 3,
+     "losing_months": 6,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": -348.63
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 1375.72
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 575.06
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 3099.37
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -718.2
+      },
+      "2026-06": {
+       "trades": 5,
+       "net": -2936.76
+      },
+      "2026-07": {
+       "trades": 3,
+       "net": -640.17
+      },
+      "2026-08": {
+       "trades": 7,
+       "net": 2764.98
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1660.4
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -1120.05
+      }
+     },
+     "avg_days_to_pass": 29.8,
+     "completed": 186,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 34,
+      "target": 14,
+      "be": 3,
+      "time": 6
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 46,
+       "avg_r": -0.018,
+       "net": 739.04
+      },
+      "3": {
+       "n": 10,
+       "avg_r": 0.235,
+       "net": 260.57
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 29,
+        "avg_r": 0.092,
+        "win": 41.4,
+        "net": 1104.29
+       },
+       "B": {
+        "n": 21,
+        "avg_r": -0.164,
+        "win": 33.3,
+        "net": -910.65
+       },
+       "C": {
+        "n": 7,
+        "avg_r": 0.184,
+        "win": 28.6,
+        "net": 197.28
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.064,
+        "win": 50.0,
+        "net": 10.0
+       },
+       "2": {
+        "n": 5,
+        "avg_r": 0.284,
+        "win": 20.0,
+        "net": 187.28
+       },
+       "3": {
+        "n": 9,
+        "avg_r": -0.211,
+        "win": 33.3,
+        "net": -538.17
+       },
+       "4": {
+        "n": 12,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -372.48
+       },
+       "5": {
+        "n": 17,
+        "avg_r": 0.021,
+        "win": 41.2,
+        "net": -458.83
+       },
+       "6": {
+        "n": 10,
+        "avg_r": 0.146,
+        "win": 40.0,
+        "net": 1010.01
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.426,
+        "win": 50.0,
+        "net": 553.11
+       }
+      }
+     },
+     "rho_score_r": [
+      0.102,
+      0.238
+     ],
+     "avg_risk_usd": 442.3,
+     "median_stop_pts": 68.28
+    },
+    "aug_oct": {
+     "trades": 18,
+     "tpw": 1.64,
+     "weeks_in_2_5": 55.0,
+     "weeks_zero": 0.0,
+     "win_rate": 38.9,
+     "avg_r": -0.141,
+     "ci95_r": [
+      -0.649,
+      0.421
+     ],
+     "pf": 1.0,
+     "net": -15.47,
+     "max_dd": -3762.85,
+     "worst_day": -665.62,
+     "rolling_pass": 11.4,
+     "zero_edge_pass": 11.4,
+     "b2b_pass": 1,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 7,
+       "net": 2764.98
+      },
+      "2026-09": {
+       "trades": 8,
+       "net": -1660.4
+      },
+      "2026-10": {
+       "trades": 3,
+       "net": -1120.05
+      }
+     },
+     "avg_days_to_pass": 20.5,
+     "completed": 35,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 3,
+      "time": 4,
+      "be": 1,
+      "stop": 10
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 17,
+       "avg_r": -0.089,
+       "net": 637.89
+      },
+      "3": {
+       "n": 1,
+       "avg_r": -1.015,
+       "net": -653.36
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 11,
+        "avg_r": 0.12,
+        "win": 45.5,
+        "net": 791.45
+       },
+       "B": {
+        "n": 5,
+        "avg_r": -0.364,
+        "win": 40.0,
+        "net": -535.21
+       },
+       "C": {
+        "n": 2,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -271.71
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -139.1
+       },
+       "2": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -132.61
+       },
+       "3": {
+        "n": 1,
+        "avg_r": 0.002,
+        "win": 100.0,
+        "net": 0.6
+       },
+       "4": {
+        "n": 4,
+        "avg_r": -0.455,
+        "win": 25.0,
+        "net": -535.81
+       },
+       "5": {
+        "n": 9,
+        "avg_r": 0.077,
+        "win": 44.4,
+        "net": 341.1
+       },
+       "6": {
+        "n": 2,
+        "avg_r": 0.316,
+        "win": 50.0,
+        "net": 450.35
+       }
+      }
+     },
+     "rho_score_r": [
+      0.259,
+      0.137
+     ],
+     "avg_risk_usd": 472.2,
+     "median_stop_pts": 66.72999999999999
+    }
+   }
+  },
+  "m1_two_a_day": {
+   "funnel": {
+    "days": 208,
+    "days_ok": 207,
+    "days_swept": 200,
+    "armed": 231,
+    "signals": 178,
+    "signals_1m": 120,
+    "trades": 64,
+    "trades_1m": 51,
+    "signals_5m": 12,
+    "skip_rr": 112,
+    "signals_3m": 46,
+    "trades_3m": 12,
+    "v_expired": 58,
+    "skip_size": 2,
+    "trades_5m": 1
+   },
+   "params": {
+    "tf": 1,
+    "max_trades_day": 2
+   },
+   "flat": {
+    "dev": {
+     "trades": 38,
+     "tpw": 1.48,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 19.0,
+     "win_rate": 34.2,
+     "avg_r": 0.178,
+     "ci95_r": [
+      -0.353,
+      0.727
+     ],
+     "pf": 1.38,
+     "net": 2667.3,
+     "max_dd": -1731.37,
+     "worst_day": -518.24,
+     "rolling_pass": 100.0,
+     "zero_edge_pass": 21.3,
+     "b2b_pass": 1,
+     "b2b_fail": 0,
+     "losing_months": 2,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 445.9
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 996.2
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 417.37
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 2506.72
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -570.17
+      },
+      "2026-06": {
+       "trades": 7,
+       "net": -1128.72
+      }
+     },
+     "avg_days_to_pass": 37.3,
+     "completed": 42,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 23,
+      "target": 12,
+      "time": 3
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 30,
+       "avg_r": 0.151,
+       "net": 1963.98
+      },
+      "3": {
+       "n": 7,
+       "avg_r": 0.467,
+       "net": 1007.66
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 17,
+        "avg_r": 0.278,
+        "win": 41.2,
+        "net": 1529.69
+       },
+       "B": {
+        "n": 17,
+        "avg_r": -0.134,
+        "win": 23.5,
+        "net": -262.77
+       },
+       "C": {
+        "n": 4,
+        "avg_r": 1.084,
+        "win": 50.0,
+        "net": 1400.38
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 298.2
+       },
+       "2": {
+        "n": 3,
+        "avg_r": 1.148,
+        "win": 33.3,
+        "net": 1102.18
+       },
+       "3": {
+        "n": 8,
+        "avg_r": -0.556,
+        "win": 12.5,
+        "net": -1058.2
+       },
+       "4": {
+        "n": 9,
+        "avg_r": 0.24,
+        "win": 33.3,
+        "net": 795.43
+       },
+       "5": {
+        "n": 8,
+        "avg_r": -0.013,
+        "win": 37.5,
+        "net": -12.39
+       },
+       "6": {
+        "n": 7,
+        "avg_r": 0.497,
+        "win": 42.9,
+        "net": 1104.52
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 437.56
+       }
+      }
+     },
+     "rho_score_r": [
+      0.204,
+      0.109
+     ],
+     "avg_risk_usd": 300.1,
+     "median_stop_pts": 68.045,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 15,
+       "r_with": -0.163,
+       "n_without": 23,
+       "r_without": 0.401
+      },
+      "smt": {
+       "n_with": 7,
+       "r_with": 1.485,
+       "n_without": 31,
+       "r_without": -0.117
+      },
+      "nq_rs_with": {
+       "n_with": 20,
+       "r_with": -0.022,
+       "n_without": 18,
+       "r_without": 0.401
+      },
+      "open_loc_with": {
+       "n_with": 29,
+       "r_with": -0.082,
+       "n_without": 9,
+       "r_without": 1.019
+      },
+      "ifvg_big": {
+       "n_with": 21,
+       "r_with": 0.089,
+       "n_without": 17,
+       "r_without": 0.289
+      },
+      "v_fast": {
+       "n_with": 34,
+       "r_with": 0.291,
+       "n_without": 4,
+       "r_without": -0.777
+      },
+      "lrlr": {
+       "n_with": 12,
+       "r_with": 0.901,
+       "n_without": 26,
+       "r_without": -0.155
+      },
+      "tgt_pool": {
+       "n_with": 25,
+       "r_with": 0.208,
+       "n_without": 13,
+       "r_without": 0.121
+      }
+     }
+    },
+    "confirm": {
+     "trades": 25,
+     "tpw": 1.6,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 25.0,
+     "win_rate": 32.0,
+     "avg_r": -0.242,
+     "ci95_r": [
+      -0.673,
+      0.219
+     ],
+     "pf": 0.54,
+     "net": -2198.62,
+     "max_dd": -2477.72,
+     "worst_day": -610.26,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 4,
+       "net": -506.32
+      },
+      "2026-08": {
+       "trades": 8,
+       "net": 10.43
+      },
+      "2026-09": {
+       "trades": 9,
+       "net": -1391.95
+      },
+      "2026-10": {
+       "trades": 4,
+       "net": -310.78
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 46,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "target": 4,
+      "stop": 15,
+      "time": 6
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 20,
+       "avg_r": -0.326,
+       "net": -2204.13
+      },
+      "3": {
+       "n": 5,
+       "avg_r": 0.092,
+       "net": 5.51
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 14,
+        "avg_r": -0.124,
+        "win": 35.7,
+        "net": -803.7
+       },
+       "B": {
+        "n": 7,
+        "avg_r": -0.465,
+        "win": 28.6,
+        "net": -1182.03
+       },
+       "C": {
+        "n": 4,
+        "avg_r": -0.268,
+        "win": 25.0,
+        "net": -212.89
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -278.21
+       },
+       "2": {
+        "n": 3,
+        "avg_r": -0.018,
+        "win": 33.3,
+        "net": 65.32
+       },
+       "3": {
+        "n": 2,
+        "avg_r": 0.764,
+        "win": 100.0,
+        "net": 279.7
+       },
+       "4": {
+        "n": 5,
+        "avg_r": -0.956,
+        "win": 0.0,
+        "net": -1461.73
+       },
+       "5": {
+        "n": 11,
+        "avg_r": -0.123,
+        "win": 36.4,
+        "net": -640.55
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -163.15
+       }
+      }
+     },
+     "rho_score_r": [
+      -0.125,
+      0.733
+     ],
+     "avg_risk_usd": 279.1,
+     "median_stop_pts": 68.35,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 5,
+       "r_with": 0.418,
+       "n_without": 20,
+       "r_without": -0.408
+      },
+      "smt": {
+       "n_with": 5,
+       "r_with": -0.215,
+       "n_without": 20,
+       "r_without": -0.249
+      },
+      "nq_rs_with": {
+       "n_with": 12,
+       "r_with": -0.547,
+       "n_without": 13,
+       "r_without": 0.039
+      },
+      "open_loc_with": {
+       "n_with": 22,
+       "r_with": -0.183,
+       "n_without": 3,
+       "r_without": -0.68
+      },
+      "ifvg_big": {
+       "n_with": 17,
+       "r_with": -0.065,
+       "n_without": 8,
+       "r_without": -0.619
+      },
+      "v_fast": {
+       "n_with": 20,
+       "r_with": -0.264,
+       "n_without": 5,
+       "r_without": -0.155
+      },
+      "lrlr": {
+       "n_with": 8,
+       "r_with": 0.002,
+       "n_without": 17,
+       "r_without": -0.358
+      },
+      "tgt_pool": {
+       "n_with": 17,
+       "r_with": -0.517,
+       "n_without": 8,
+       "r_without": 0.341
+      }
+     }
+    },
+    "ytd": {
+     "trades": 63,
+     "tpw": 1.53,
+     "weeks_in_2_5": 45.0,
+     "weeks_zero": 19.0,
+     "win_rate": 33.3,
+     "avg_r": 0.011,
+     "ci95_r": [
+      -0.35,
+      0.397
+     ],
+     "pf": 1.04,
+     "net": 468.68,
+     "max_dd": -3929.99,
+     "worst_day": -610.26,
+     "rolling_pass": 24.1,
+     "zero_edge_pass": 23.9,
+     "b2b_pass": 1,
+     "b2b_fail": 2,
+     "losing_months": 5,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 445.9
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 996.2
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 417.37
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 2506.72
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -570.17
+      },
+      "2026-06": {
+       "trades": 7,
+       "net": -1128.72
+      },
+      "2026-07": {
+       "trades": 4,
+       "net": -506.32
+      },
+      "2026-08": {
+       "trades": 8,
+       "net": 10.43
+      },
+      "2026-09": {
+       "trades": 9,
+       "net": -1391.95
+      },
+      "2026-10": {
+       "trades": 4,
+       "net": -310.78
+      }
+     },
+     "avg_days_to_pass": 37.3,
+     "completed": 174,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 38,
+      "target": 16,
+      "time": 9
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 50,
+       "avg_r": -0.04,
+       "net": -240.15
+      },
+      "3": {
+       "n": 12,
+       "avg_r": 0.311,
+       "net": 1013.17
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -304.34
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 31,
+        "avg_r": 0.097,
+        "win": 38.7,
+        "net": 725.99
+       },
+       "B": {
+        "n": 24,
+        "avg_r": -0.231,
+        "win": 25.0,
+        "net": -1444.8
+       },
+       "C": {
+        "n": 8,
+        "avg_r": 0.408,
+        "win": 37.5,
+        "net": 1187.49
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.064,
+        "win": 50.0,
+        "net": 19.99
+       },
+       "2": {
+        "n": 6,
+        "avg_r": 0.565,
+        "win": 33.3,
+        "net": 1167.5
+       },
+       "3": {
+        "n": 10,
+        "avg_r": -0.292,
+        "win": 30.0,
+        "net": -778.5
+       },
+       "4": {
+        "n": 14,
+        "avg_r": -0.187,
+        "win": 21.4,
+        "net": -666.3
+       },
+       "5": {
+        "n": 19,
+        "avg_r": -0.076,
+        "win": 36.8,
+        "net": -652.94
+       },
+       "6": {
+        "n": 10,
+        "avg_r": 0.309,
+        "win": 40.0,
+        "net": 941.37
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 437.56
+       }
+      }
+     },
+     "rho_score_r": [
+      0.097,
+      0.228
+     ],
+     "avg_risk_usd": 291.8,
+     "median_stop_pts": 68.28,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 20,
+       "r_with": -0.017,
+       "n_without": 43,
+       "r_without": 0.025
+      },
+      "smt": {
+       "n_with": 12,
+       "r_with": 0.777,
+       "n_without": 51,
+       "r_without": -0.169
+      },
+      "nq_rs_with": {
+       "n_with": 32,
+       "r_with": -0.219,
+       "n_without": 31,
+       "r_without": 0.249
+      },
+      "open_loc_with": {
+       "n_with": 51,
+       "r_with": -0.126,
+       "n_without": 12,
+       "r_without": 0.594
+      },
+      "ifvg_big": {
+       "n_with": 38,
+       "r_with": 0.02,
+       "n_without": 25,
+       "r_without": -0.001
+      },
+      "v_fast": {
+       "n_with": 54,
+       "r_with": 0.085,
+       "n_without": 9,
+       "r_without": -0.432
+      },
+      "lrlr": {
+       "n_with": 20,
+       "r_with": 0.542,
+       "n_without": 43,
+       "r_without": -0.235
+      },
+      "tgt_pool": {
+       "n_with": 42,
+       "r_with": -0.085,
+       "n_without": 21,
+       "r_without": 0.204
+      }
+     }
+    },
+    "aug_oct": {
+     "trades": 21,
+     "tpw": 1.91,
+     "weeks_in_2_5": 55.0,
+     "weeks_zero": 0.0,
+     "win_rate": 33.3,
+     "avg_r": -0.217,
+     "ci95_r": [
+      -0.685,
+      0.303
+     ],
+     "pf": 0.58,
+     "net": -1692.3,
+     "max_dd": -2389.0,
+     "worst_day": -610.26,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": null,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 8,
+       "net": 10.43
+      },
+      "2026-09": {
+       "trades": 9,
+       "net": -1391.95
+      },
+      "2026-10": {
+       "trades": 4,
+       "net": -310.78
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 23,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 3,
+      "time": 6,
+      "stop": 12
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 18,
+       "avg_r": -0.249,
+       "net": -1703.37
+      },
+      "3": {
+       "n": 3,
+       "avg_r": -0.02,
+       "net": 11.07
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 13,
+        "avg_r": -0.055,
+        "win": 38.5,
+        "net": -549.86
+       },
+       "B": {
+        "n": 5,
+        "avg_r": -0.754,
+        "win": 20.0,
+        "net": -1214.21
+       },
+       "C": {
+        "n": 3,
+        "avg_r": -0.021,
+        "win": 33.3,
+        "net": 71.77
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -278.21
+       },
+       "2": {
+        "n": 2,
+        "avg_r": 0.478,
+        "win": 50.0,
+        "net": 349.98
+       },
+       "3": {
+        "n": 1,
+        "avg_r": 0.002,
+        "win": 100.0,
+        "net": 0.6
+       },
+       "4": {
+        "n": 4,
+        "avg_r": -0.943,
+        "win": 0.0,
+        "net": -1214.81
+       },
+       "5": {
+        "n": 11,
+        "avg_r": -0.123,
+        "win": 36.4,
+        "net": -640.55
+       },
+       "6": {
+        "n": 2,
+        "avg_r": 0.316,
+        "win": 50.0,
+        "net": 90.69
+       }
+      }
+     },
+     "rho_score_r": [
+      -0.057,
+      0.593
+     ],
+     "avg_risk_usd": 286.6,
+     "median_stop_pts": 68.16,
+     "conf": {
+      "trend_1h_with": {
+       "n_with": 4,
+       "r_with": 0.777,
+       "n_without": 17,
+       "r_without": -0.45
+      },
+      "smt": {
+       "n_with": 5,
+       "r_with": -0.215,
+       "n_without": 16,
+       "r_without": -0.217
+      },
+      "nq_rs_with": {
+       "n_with": 11,
+       "r_with": -0.505,
+       "n_without": 10,
+       "r_without": 0.101
+      },
+      "open_loc_with": {
+       "n_with": 18,
+       "r_with": -0.139,
+       "n_without": 3,
+       "r_without": -0.68
+      },
+      "ifvg_big": {
+       "n_with": 14,
+       "r_with": -0.043,
+       "n_without": 7,
+       "r_without": -0.563
+      },
+      "v_fast": {
+       "n_with": 16,
+       "r_with": -0.236,
+       "n_without": 5,
+       "r_without": -0.155
+      },
+      "lrlr": {
+       "n_with": 7,
+       "r_with": 0.148,
+       "n_without": 14,
+       "r_without": -0.399
+      },
+      "tgt_pool": {
+       "n_with": 16,
+       "r_with": -0.485,
+       "n_without": 5,
+       "r_without": 0.643
+      }
+     }
+    }
+   },
+   "tier": {
+    "dev": {
+     "trades": 38,
+     "tpw": 1.48,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 19.0,
+     "win_rate": 34.2,
+     "avg_r": 0.178,
+     "ci95_r": [
+      -0.353,
+      0.727
+     ],
+     "pf": 1.3,
+     "net": 2993.33,
+     "max_dd": -3387.69,
+     "worst_day": -935.12,
+     "rolling_pass": 48.3,
+     "zero_edge_pass": 35.3,
+     "b2b_pass": 1,
+     "b2b_fail": 2,
+     "losing_months": 2,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 770.37
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 1550.22
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 639.06
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 3421.37
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -718.2
+      },
+      "2026-06": {
+       "trades": 7,
+       "net": -2669.49
+      }
+     },
+     "avg_days_to_pass": 23.7,
+     "completed": 116,
+     "window": [
+      "2026-01-02",
+      "2026-06-30"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 128,
+     "exits": {
+      "stop": 23,
+      "target": 12,
+      "time": 3
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 30,
+       "avg_r": 0.151,
+       "net": 2508.03
+      },
+      "3": {
+       "n": 7,
+       "avg_r": 0.467,
+       "net": 1093.99
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 17,
+        "avg_r": 0.278,
+        "win": 41.2,
+        "net": 2502.45
+       },
+       "B": {
+        "n": 17,
+        "avg_r": -0.134,
+        "win": 23.5,
+        "net": -262.77
+       },
+       "C": {
+        "n": 4,
+        "avg_r": 1.084,
+        "win": 50.0,
+        "net": 753.65
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": 0.891,
+        "win": 100.0,
+        "net": 149.1
+       },
+       "2": {
+        "n": 3,
+        "avg_r": 1.148,
+        "win": 33.3,
+        "net": 604.55
+       },
+       "3": {
+        "n": 8,
+        "avg_r": -0.556,
+        "win": 12.5,
+        "net": -1058.2
+       },
+       "4": {
+        "n": 9,
+        "avg_r": 0.24,
+        "win": 33.3,
+        "net": 795.43
+       },
+       "5": {
+        "n": 8,
+        "avg_r": -0.013,
+        "win": 37.5,
+        "net": -685.93
+       },
+       "6": {
+        "n": 7,
+        "avg_r": 0.497,
+        "win": 42.9,
+        "net": 2313.27
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 875.11
+       }
+      }
+     },
+     "rho_score_r": [
+      0.204,
+      0.109
+     ],
+     "avg_risk_usd": 426.0,
+     "median_stop_pts": 68.045
+    },
+    "confirm": {
+     "trades": 25,
+     "tpw": 1.6,
+     "weeks_in_2_5": 44.0,
+     "weeks_zero": 25.0,
+     "win_rate": 32.0,
+     "avg_r": -0.242,
+     "ci95_r": [
+      -0.673,
+      0.219
+     ],
+     "pf": 0.72,
+     "net": -1871.84,
+     "max_dd": -3775.68,
+     "worst_day": -957.55,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": 15.5,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 3,
+     "months": {
+      "2026-07": {
+       "trades": 4,
+       "net": -887.09
+      },
+      "2026-08": {
+       "trades": 8,
+       "net": 1808.53
+      },
+      "2026-09": {
+       "trades": 9,
+       "net": -1980.83
+      },
+      "2026-10": {
+       "trades": 4,
+       "net": -812.45
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 58,
+     "window": [
+      "2026-07-01",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 78,
+     "exits": {
+      "target": 4,
+      "stop": 15,
+      "time": 6
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 20,
+       "avg_r": -0.326,
+       "net": -1243.07
+      },
+      "3": {
+       "n": 5,
+       "avg_r": 0.092,
+       "net": -628.77
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 14,
+        "avg_r": -0.124,
+        "win": 35.7,
+        "net": -441.04
+       },
+       "B": {
+        "n": 7,
+        "avg_r": -0.465,
+        "win": 28.6,
+        "net": -1182.03
+       },
+       "C": {
+        "n": 4,
+        "avg_r": -0.268,
+        "win": 25.0,
+        "net": -248.77
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -139.1
+       },
+       "2": {
+        "n": 3,
+        "avg_r": -0.018,
+        "win": 33.3,
+        "net": -109.67
+       },
+       "3": {
+        "n": 2,
+        "avg_r": 0.764,
+        "win": 100.0,
+        "net": 279.7
+       },
+       "4": {
+        "n": 5,
+        "avg_r": -0.956,
+        "win": 0.0,
+        "net": -1461.73
+       },
+       "5": {
+        "n": 11,
+        "avg_r": -0.123,
+        "win": 36.4,
+        "net": -256.78
+       },
+       "6": {
+        "n": 3,
+        "avg_r": -0.129,
+        "win": 33.3,
+        "net": -184.26
+       }
+      }
+     },
+     "rho_score_r": [
+      -0.125,
+      0.733
+     ],
+     "avg_risk_usd": 422.9,
+     "median_stop_pts": 68.35
+    },
+    "ytd": {
+     "trades": 63,
+     "tpw": 1.53,
+     "weeks_in_2_5": 45.0,
+     "weeks_zero": 19.0,
+     "win_rate": 33.3,
+     "avg_r": 0.011,
+     "ci95_r": [
+      -0.35,
+      0.397
+     ],
+     "pf": 1.07,
+     "net": 1121.49,
+     "max_dd": -5259.53,
+     "worst_day": -957.55,
+     "rolling_pass": 30.1,
+     "zero_edge_pass": 28.0,
+     "b2b_pass": 1,
+     "b2b_fail": 3,
+     "losing_months": 5,
+     "months": {
+      "2026-01": {
+       "trades": 5,
+       "net": 770.37
+      },
+      "2026-02": {
+       "trades": 5,
+       "net": 1550.22
+      },
+      "2026-03": {
+       "trades": 9,
+       "net": 639.06
+      },
+      "2026-04": {
+       "trades": 7,
+       "net": 3421.37
+      },
+      "2026-05": {
+       "trades": 5,
+       "net": -718.2
+      },
+      "2026-06": {
+       "trades": 7,
+       "net": -2669.49
+      },
+      "2026-07": {
+       "trades": 4,
+       "net": -887.09
+      },
+      "2026-08": {
+       "trades": 8,
+       "net": 1808.53
+      },
+      "2026-09": {
+       "trades": 9,
+       "net": -1980.83
+      },
+      "2026-10": {
+       "trades": 4,
+       "net": -812.45
+      }
+     },
+     "avg_days_to_pass": 23.7,
+     "completed": 186,
+     "window": [
+      "2026-01-02",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 206,
+     "exits": {
+      "stop": 38,
+      "target": 16,
+      "time": 9
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 50,
+       "avg_r": -0.04,
+       "net": 1264.96
+      },
+      "3": {
+       "n": 12,
+       "avg_r": 0.311,
+       "net": 465.22
+      },
+      "5": {
+       "n": 1,
+       "avg_r": -1.016,
+       "net": -608.69
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 31,
+        "avg_r": 0.097,
+        "win": 38.7,
+        "net": 2061.41
+       },
+       "B": {
+        "n": 24,
+        "avg_r": -0.231,
+        "win": 25.0,
+        "net": -1444.8
+       },
+       "C": {
+        "n": 8,
+        "avg_r": 0.408,
+        "win": 37.5,
+        "net": 504.88
+       }
+      },
+      "score": {
+       "1": {
+        "n": 2,
+        "avg_r": -0.064,
+        "win": 50.0,
+        "net": 10.0
+       },
+       "2": {
+        "n": 6,
+        "avg_r": 0.565,
+        "win": 33.3,
+        "net": 494.88
+       },
+       "3": {
+        "n": 10,
+        "avg_r": -0.292,
+        "win": 30.0,
+        "net": -778.5
+       },
+       "4": {
+        "n": 14,
+        "avg_r": -0.187,
+        "win": 21.4,
+        "net": -666.3
+       },
+       "5": {
+        "n": 19,
+        "avg_r": -0.076,
+        "win": 36.8,
+        "net": -942.71
+       },
+       "6": {
+        "n": 10,
+        "avg_r": 0.309,
+        "win": 40.0,
+        "net": 2129.01
+       },
+       "7": {
+        "n": 2,
+        "avg_r": 0.676,
+        "win": 50.0,
+        "net": 875.11
+       }
+      }
+     },
+     "rho_score_r": [
+      0.097,
+      0.228
+     ],
+     "avg_risk_usd": 424.8,
+     "median_stop_pts": 68.28
+    },
+    "aug_oct": {
+     "trades": 21,
+     "tpw": 1.91,
+     "weeks_in_2_5": 55.0,
+     "weeks_zero": 0.0,
+     "win_rate": 33.3,
+     "avg_r": -0.217,
+     "ci95_r": [
+      -0.685,
+      0.303
+     ],
+     "pf": 0.82,
+     "net": -984.75,
+     "max_dd": -3775.68,
+     "worst_day": -957.55,
+     "rolling_pass": 0.0,
+     "zero_edge_pass": 11.4,
+     "b2b_pass": 0,
+     "b2b_fail": 1,
+     "losing_months": 2,
+     "months": {
+      "2026-08": {
+       "trades": 8,
+       "net": 1808.53
+      },
+      "2026-09": {
+       "trades": 9,
+       "net": -1980.83
+      },
+      "2026-10": {
+       "trades": 4,
+       "net": -812.45
+      }
+     },
+     "avg_days_to_pass": null,
+     "completed": 35,
+     "window": [
+      "2026-08-03",
+      "2026-10-16"
+     ],
+     "full_coverage": true,
+     "covered_sessions": 55,
+     "exits": {
+      "target": 3,
+      "time": 6,
+      "stop": 12
+     },
+     "trigger_tf": {
+      "1": {
+       "n": 18,
+       "avg_r": -0.249,
+       "net": -361.54
+      },
+      "3": {
+       "n": 3,
+       "avg_r": -0.02,
+       "net": -623.21
+      }
+     },
+     "tiers": {
+      "tier": {
+       "A": {
+        "n": 13,
+        "avg_r": -0.055,
+        "win": 38.5,
+        "net": 193.57
+       },
+       "B": {
+        "n": 5,
+        "avg_r": -0.754,
+        "win": 20.0,
+        "net": -1214.21
+       },
+       "C": {
+        "n": 3,
+        "avg_r": -0.021,
+        "win": 33.3,
+        "net": 35.89
+       }
+      },
+      "score": {
+       "1": {
+        "n": 1,
+        "avg_r": -1.018,
+        "win": 0.0,
+        "net": -139.1
+       },
+       "2": {
+        "n": 2,
+        "avg_r": 0.478,
+        "win": 50.0,
+        "net": 174.99
+       },
+       "3": {
+        "n": 1,
+        "avg_r": 0.002,
+        "win": 100.0,
+        "net": 0.6
+       },
+       "4": {
+        "n": 4,
+        "avg_r": -0.943,
+        "win": 0.0,
+        "net": -1214.81
+       },
+       "5": {
+        "n": 11,
+        "avg_r": -0.123,
+        "win": 36.4,
+        "net": -256.78
+       },
+       "6": {
+        "n": 2,
+        "avg_r": 0.316,
+        "win": 50.0,
+        "net": 450.35
+       }
+      }
+     },
+     "rho_score_r": [
+      -0.057,
+      0.593
+     ],
+     "avg_risk_usd": 440.0,
+     "median_stop_pts": 68.16
+    }
+   }
+  }
+ },
+ "best": {
+  "variant": "m1_nbars6",
+  "criterion": "dev net (flat)"
+ }
+}

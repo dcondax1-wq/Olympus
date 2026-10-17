@@ -1,0 +1,72 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-06-30"
+ ],
+ "sessions": 128,
+ "trades": 17,
+ "tpw": 0.66,
+ "weeks_in_2_5": 11.0,
+ "weeks_zero": 48.0,
+ "win_rate": 29.4,
+ "avg_r": 0.243,
+ "ci95_r": [
+  -0.426,
+  1.092
+ ],
+ "pf": 1.25,
+ "net": 497.46,
+ "max_dd": -1053.96,
+ "worst_day": -401.6,
+ "months": {
+  "2026-01": {
+   "trades": 2,
+   "net": 197.8
+  },
+  "2026-02": {
+   "trades": 3,
+   "net": 5.52
+  },
+  "2026-03": {
+   "trades": 3,
+   "net": -306.7
+  },
+  "2026-04": {
+   "trades": 5,
+   "net": 1344.8
+  },
+  "2026-05": {
+   "trades": 2,
+   "net": -294.98
+  },
+  "2026-06": {
+   "trades": 2,
+   "net": -448.98
+  }
+ },
+ "losing_months": 3,
+ "rolling_pass": null,
+ "avg_days_to_pass": null,
+ "completed": 0,
+ "b2b_pass": 0,
+ "b2b_fail": 0,
+ "zero_edge_pass": null,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": true,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "TRADER_LAYER_ATM1M_noP",
+ "period_name": "dev",
+ "notes": "trader layer (research/lab/TRADER_LAYER_RULES.md)",
+ "params": {
+  "source": "ATM1M",
+  "config": "noP"
+ },
+ "scored_at": 1792194957
+}

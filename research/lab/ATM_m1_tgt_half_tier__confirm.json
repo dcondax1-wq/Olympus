@@ -1,0 +1,65 @@
+{
+ "period": [
+  "2026-07-01",
+  "2026-10-16"
+ ],
+ "sessions": 78,
+ "trades": 21,
+ "tpw": 1.35,
+ "weeks_in_2_5": 44.0,
+ "weeks_zero": 25.0,
+ "win_rate": 38.1,
+ "avg_r": -0.144,
+ "ci95_r": [
+  -0.623,
+  0.373
+ ],
+ "pf": 0.88,
+ "net": -655.64,
+ "max_dd": -3762.85,
+ "worst_day": -665.62,
+ "months": {
+  "2026-07": {
+   "trades": 3,
+   "net": -640.17
+  },
+  "2026-08": {
+   "trades": 7,
+   "net": 2764.98
+  },
+  "2026-09": {
+   "trades": 8,
+   "net": -1660.4
+  },
+  "2026-10": {
+   "trades": 3,
+   "net": -1120.05
+  }
+ },
+ "losing_months": 3,
+ "rolling_pass": 41.4,
+ "avg_days_to_pass": 32.2,
+ "completed": 58,
+ "b2b_pass": 1,
+ "b2b_fail": 1,
+ "zero_edge_pass": 46.6,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "ATM_m1_tgt_half_tier",
+ "period_name": "confirm",
+ "notes": "ATM 1m ladder (owner model)",
+ "params": {
+  "tf": 1,
+  "target": "partial",
+  "sizing": "tier"
+ },
+ "scored_at": 1792192918
+}

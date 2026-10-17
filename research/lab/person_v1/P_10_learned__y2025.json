@@ -1,0 +1,87 @@
+{
+ "period": [
+  "2025-04-14",
+  "2025-12-31"
+ ],
+ "sessions": 186,
+ "trades": 111,
+ "tpw": 2.98,
+ "weeks_in_2_5": 92.0,
+ "weeks_zero": 0.0,
+ "win_rate": 18.0,
+ "avg_r": -0.095,
+ "ci95_r": [
+  -0.274,
+  0.085
+ ],
+ "pf": 1.04,
+ "net": 358.5,
+ "max_dd": -3214.5,
+ "worst_day": -361.5,
+ "months": {
+  "2025-04": {
+   "trades": 6,
+   "net": 978.0
+  },
+  "2025-05": {
+   "trades": 12,
+   "net": -742.5
+  },
+  "2025-06": {
+   "trades": 10,
+   "net": 592.0
+  },
+  "2025-07": {
+   "trades": 16,
+   "net": 1877.5
+  },
+  "2025-08": {
+   "trades": 17,
+   "net": 230.5
+  },
+  "2025-09": {
+   "trades": 17,
+   "net": -1683.0
+  },
+  "2025-10": {
+   "trades": 10,
+   "net": -546.0
+  },
+  "2025-11": {
+   "trades": 9,
+   "net": -272.5
+  },
+  "2025-12": {
+   "trades": 14,
+   "net": -75.5
+  }
+ },
+ "losing_months": 5,
+ "rolling_pass": 11.3,
+ "avg_days_to_pass": 53.6,
+ "completed": 106,
+ "b2b_pass": 1,
+ "b2b_fail": 1,
+ "zero_edge_pass": 7.0,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "P_10_learned",
+ "period_name": "y2025",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1,
+  "target_mode": "draw",
+  "draw_rank": "learned"
+ },
+ "scored_at": 1792192080
+}

@@ -1,0 +1,96 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-10-16"
+ ],
+ "sessions": 206,
+ "trades": 92,
+ "tpw": 2.23,
+ "weeks_in_2_5": 69.0,
+ "weeks_zero": 5.0,
+ "win_rate": 31.5,
+ "avg_r": 0.144,
+ "ci95_r": [
+  -0.118,
+  0.437
+ ],
+ "pf": 1.75,
+ "net": 6266.5,
+ "max_dd": -2959.0,
+ "worst_day": -354.0,
+ "months": {
+  "2026-01": {
+   "trades": 14,
+   "net": 846.5
+  },
+  "2026-02": {
+   "trades": 5,
+   "net": -356.5
+  },
+  "2026-03": {
+   "trades": 9,
+   "net": 3054.0
+  },
+  "2026-04": {
+   "trades": 9,
+   "net": 290.5
+  },
+  "2026-05": {
+   "trades": 10,
+   "net": -819.5
+  },
+  "2026-06": {
+   "trades": 6,
+   "net": -875.5
+  },
+  "2026-07": {
+   "trades": 7,
+   "net": -336.0
+  },
+  "2026-08": {
+   "trades": 17,
+   "net": 1794.0
+  },
+  "2026-09": {
+   "trades": 10,
+   "net": 2355.0
+  },
+  "2026-10": {
+   "trades": 5,
+   "net": 314.0
+  }
+ },
+ "losing_months": 4,
+ "rolling_pass": 64.1,
+ "avg_days_to_pass": 46.1,
+ "completed": 170,
+ "b2b_pass": 2,
+ "b2b_fail": 1,
+ "zero_edge_pass": 8.8,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": true,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": true
+  }
+ },
+ "name": "FINAL_14_fomc",
+ "period_name": "ytd",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1,
+  "target_mode": "draw",
+  "draw_pick": "farthest_reach",
+  "draw_fallback": "skip",
+  "draw_pm": "nearest",
+  "manage_mode": "person",
+  "person_trail": false,
+  "news_day_skip": "FOMC"
+ },
+ "scored_at": 1792207120
+}

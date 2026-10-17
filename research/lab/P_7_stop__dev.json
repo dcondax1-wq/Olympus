@@ -1,0 +1,74 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-06-30"
+ ],
+ "sessions": 128,
+ "trades": 69,
+ "tpw": 2.7,
+ "weeks_in_2_5": 81.0,
+ "weeks_zero": 4.0,
+ "win_rate": 18.8,
+ "avg_r": -0.162,
+ "ci95_r": [
+  -0.365,
+  0.073
+ ],
+ "pf": 0.71,
+ "net": -1576.94,
+ "max_dd": -3260.48,
+ "worst_day": -355.5,
+ "months": {
+  "2026-01": {
+   "trades": 12,
+   "net": 238.78
+  },
+  "2026-02": {
+   "trades": 11,
+   "net": 806.5
+  },
+  "2026-03": {
+   "trades": 13,
+   "net": -1170.26
+  },
+  "2026-04": {
+   "trades": 12,
+   "net": -668.0
+  },
+  "2026-05": {
+   "trades": 13,
+   "net": -1122.22
+  },
+  "2026-06": {
+   "trades": 8,
+   "net": 338.26
+  }
+ },
+ "losing_months": 3,
+ "rolling_pass": 0.0,
+ "avg_days_to_pass": null,
+ "completed": 62,
+ "b2b_pass": 0,
+ "b2b_fail": 1,
+ "zero_edge_pass": 0.0,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": true,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "P_7_stop",
+ "period_name": "dev",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1,
+  "stop_model": "struct_atr"
+ },
+ "scored_at": 1792191014
+}

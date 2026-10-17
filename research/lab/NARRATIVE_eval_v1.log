@@ -1,0 +1,28 @@
+﻿frames 354333 107307 6.6 s
+judged 93 118 987 11.6 s
+done 12.8 s
+v1 dev      n= 54 A:10/-0.436 B:17/0.067 C:23/0.173 SKIP:4/-0.402 mono=False rho=-0.117 A-CS=-0.524 [-1.27, 0.237, 0.085]
+      base  n=54 tpw=2.11 net=+592 pf=1.11 dd=-2,706 pass=8.2 (zero 4.5) losing_m=4
+      drop  n=27 tpw=1.05 net=-2,308 pf=0.62 dd=-3,610 pass=0.0 (zero 0.0) losing_m=5
+      tier  n=50 tpw=1.95 net=-1,516 pf=0.79 dd=-3,981 pass=0.0 (zero 31.0) losing_m=5
+v1 confirm  n= 39 A:5/0.479 B:9/1.125 C:16/0.824 SKIP:9/1.129 mono=False rho=-0.199 A-CS=-0.455 [-1.822, 0.879, 0.253]
+      base  n=39 tpw=2.5 net=+11,038 pf=5.15 dd=-876 pass=100.0 (zero 19.4) losing_m=1
+      drop  n=14 tpw=0.9 net=+5,015 pf=3.4 dd=-889 pass=100.0 (zero 0.0) losing_m=1
+      tier  n=30 tpw=1.92 net=+6,583 pf=3.67 dd=-823 pass=100.0 (zero 0.0) losing_m=1
+v1 ytd      n= 93 A:15/-0.131 B:26/0.433 C:39/0.44 SKIP:13/0.658 mono=False rho=-0.18 A-CS=-0.626 [-1.343, 0.117, 0.047]
+      base  n=93 tpw=2.26 net=+11,630 pf=2.41 dd=-3,147 pass=48.1 (zero 27.0) losing_m=5
+      drop  n=41 tpw=1.0 net=+2,707 pf=1.33 dd=-3,785 pass=44.9 (zero 34.8) losing_m=6
+      tier  n=80 tpw=1.94 net=+5,067 pf=1.53 dd=-4,254 pass=45.5 (zero 36.0) losing_m=6
+v1 y2025    n=118 A:26/0.241 B:37/-0.239 C:43/-0.102 SKIP:12/0.125 mono=False rho=0.076 A-CS=0.293 [-0.284, 0.88, 0.841]
+      base  n=118 tpw=3.17 net=+1,361 pf=1.14 dd=-3,362 pass=11.8 (zero 0.8) losing_m=5
+      drop  n=63 tpw=1.69 net=+1,431 pf=1.13 dd=-4,055 pass=12.4 (zero 6.5) losing_m=4
+      tier  n=106 tpw=2.85 net=+968 pf=1.07 dd=-5,037 pass=21.0 (zero 14.1) losing_m=4
+EXP v1 dev      A:9/-0.483 B:18/-0.073 C:19/0.439 SKIP:8/-0.441 mono=False rho=-0.113 | drop net=-3,084 tpw=1.05 | tier net=-1,730
+EXP v1 confirm  A:2/-0.62 B:12/1.147 C:15/0.828 SKIP:10/1.093 mono=False rho=-0.146 | drop net=+3,753 tpw=0.9 | tier net=+5,325
+EXP v1 ytd      A:11/-0.508 B:30/0.415 C:34/0.61 SKIP:18/0.411 mono=False rho=-0.16 | drop net=+670 tpw=1.0 | tier net=+3,595
+EXP v1 y2025    A:23/0.274 B:37/-0.196 C:46/-0.134 SKIP:12/0.138 mono=False rho=0.065 | drop net=+1,903 tpw=1.61 | tier net=+1,282
+BRAIN dev      engine avgR=-0.016 brain avgR=0.089 flat350 engine net=+592 brain net=+1,459 pf=1.2 dd=-2,350 by grade {'A': -0.385, 'B': 0.327, 'C': 0.29, 'SKIP': -0.886}
+BRAIN confirm  engine avgR=0.92 brain avgR=0.277 flat350 engine net=+11,038 brain net=+3,971 pf=1.83 dd=-927 by grade {'A': 0.023, 'B': 0.342, 'C': 0.471, 'SKIP': 0.009}
+BRAIN ytd      engine avgR=0.377 brain avgR=0.168 flat350 engine net=+11,630 brain net=+5,430 pf=1.45 dd=-3,163 by grade {'A': -0.249, 'B': 0.333, 'C': 0.364, 'SKIP': -0.266}
+BRAIN y2025    engine avgR=-0.046 brain avgR=-0.1 flat350 engine net=+1,361 brain net=-182 pf=0.99 dd=-3,173 by grade {'A': 0.019, 'B': -0.299, 'C': -0.002, 'SKIP': -0.098}
+FIVE v1 {'2021': ({'A': (2, -0.548), 'B': (12, -0.102), 'C': (19, 0.114), 'SKIP': (5, -0.091)}, -0.131), '2022': ({'A': (16, -0.48), 'B': (60, -0.128), 'C': (99, 0.004), 'SKIP': (17, -0.153)}, -0.011), '2023': ({'A': (32, 0.116), 'B': (76, 0.042), 'C': (113, -0.007), 'SKIP': (39, -0.013)}, 0.05), '2024': ({'A': (40, 0.228), 'B': (61, -0.121), 'C': (98, 0.103), 'SKIP': (22, 0.069)}, -0.147), '2025': ({'A': (27, 0.179), 'B': (55, -0.066), 'C': (69, -0.037), 'SKIP': (22, 0.05)}, 0.038), '2026': ({'A': (13, -0.092), 'B': (24, 0.406), 'C': (52, 0.09), 'SKIP': (14, 0.707)}, -0.217), 'all': ({'A': (130, 0.059), 'B': (288, -0.024), 'C': (450, 0.031), 'SKIP': (119, 0.075)}, -0.044), 'pre2025': ({'A': (90, 0.045), 'B': (209, -0.062), 'C': (329, 0.036), 'SKIP': (83, -0.025)}, -0.041)}

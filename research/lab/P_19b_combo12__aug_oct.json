@@ -1,0 +1,67 @@
+{
+ "period": [
+  "2026-08-03",
+  "2026-10-16"
+ ],
+ "sessions": 55,
+ "trades": 21,
+ "tpw": 1.91,
+ "weeks_in_2_5": 55.0,
+ "weeks_zero": 9.0,
+ "win_rate": 23.8,
+ "avg_r": 0.091,
+ "ci95_r": [
+  -0.419,
+  0.679
+ ],
+ "pf": 1.16,
+ "net": 346.38,
+ "max_dd": -1134.02,
+ "worst_day": -334.4,
+ "months": {
+  "2026-08": {
+   "trades": 11,
+   "net": 273.9
+  },
+  "2026-09": {
+   "trades": 6,
+   "net": -111.52
+  },
+  "2026-10": {
+   "trades": 4,
+   "net": 184.0
+  }
+ },
+ "losing_months": 1,
+ "rolling_pass": null,
+ "avg_days_to_pass": null,
+ "completed": 0,
+ "b2b_pass": 0,
+ "b2b_fail": 0,
+ "zero_edge_pass": null,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": true,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "P_19b_combo12",
+ "period_name": "aug_oct",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1,
+  "entry_mode": "retest",
+  "retest_bars": 12,
+  "stop_model": "protected_swing",
+  "stop_cap": "spec",
+  "manage_mode": "person",
+  "person_trail": false
+ },
+ "scored_at": 1792195002
+}

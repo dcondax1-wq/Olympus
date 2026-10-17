@@ -1,0 +1,76 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-06-30"
+ ],
+ "sessions": 128,
+ "trades": 50,
+ "tpw": 1.95,
+ "weeks_in_2_5": 67.0,
+ "weeks_zero": 11.0,
+ "win_rate": 20.0,
+ "avg_r": -0.052,
+ "ci95_r": [
+  -0.401,
+  0.359
+ ],
+ "pf": 1.06,
+ "net": 317.0,
+ "max_dd": -2582.0,
+ "worst_day": -354.0,
+ "months": {
+  "2026-01": {
+   "trades": 15,
+   "net": 880.0
+  },
+  "2026-02": {
+   "trades": 4,
+   "net": -354.5
+  },
+  "2026-03": {
+   "trades": 8,
+   "net": 2298.5
+  },
+  "2026-04": {
+   "trades": 8,
+   "net": -732.0
+  },
+  "2026-05": {
+   "trades": 8,
+   "net": -635.0
+  },
+  "2026-06": {
+   "trades": 7,
+   "net": -1140.0
+  }
+ },
+ "losing_months": 4,
+ "rolling_pass": 6.3,
+ "avg_days_to_pass": 48.6,
+ "completed": 79,
+ "b2b_pass": 0,
+ "b2b_fail": 0,
+ "zero_edge_pass": 5.9,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": true,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": false,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "P_12_far",
+ "period_name": "dev",
+ "notes": "",
+ "params": {
+  "grade_sizing": false,
+  "conviction_step": 0,
+  "max_trades_day": 1,
+  "target_mode": "draw",
+  "draw_pick": "farthest_reach",
+  "draw_fallback": "skip"
+ },
+ "scored_at": 1792191724
+}

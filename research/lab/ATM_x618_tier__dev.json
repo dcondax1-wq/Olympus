@@ -1,0 +1,56 @@
+{
+ "period": [
+  "2026-01-02",
+  "2026-06-30"
+ ],
+ "sessions": 128,
+ "trades": 2,
+ "tpw": 0.08,
+ "weeks_in_2_5": 0.0,
+ "weeks_zero": 93.0,
+ "win_rate": 0.0,
+ "avg_r": -1.018,
+ "ci95_r": [
+  null,
+  null
+ ],
+ "pf": 0.0,
+ "net": -847.72,
+ "max_dd": -847.72,
+ "worst_day": -608.69,
+ "months": {
+  "2026-03": {
+   "trades": 1,
+   "net": -608.69
+  },
+  "2026-04": {
+   "trades": 1,
+   "net": -239.03
+  }
+ },
+ "losing_months": 2,
+ "rolling_pass": null,
+ "avg_days_to_pass": null,
+ "completed": 0,
+ "b2b_pass": 0,
+ "b2b_fail": 0,
+ "zero_edge_pass": null,
+ "gate": {
+  "ok": false,
+  "checks": {
+   "net>0": false,
+   "PF>=1.3": false,
+   "2.0-5.0/wk": false,
+   "maxDD<$2k": true,
+   "pass>=zero+10": false
+  }
+ },
+ "name": "ATM_x618_tier",
+ "period_name": "dev",
+ "notes": "ATM owner model",
+ "params": {
+  "v_retrace": 0.618,
+  "sizing": "tier"
+ },
+ "scored_at": 1792191284
+}
