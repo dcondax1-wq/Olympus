@@ -24,6 +24,7 @@ sys.path.insert(0, ROOT)
 
 from engine import equity_filter               # noqa: E402
 from engine import heartbeat                   # noqa: E402
+from engine import sizing                      # noqa: E402
 from engine import lab_adapter                 # noqa: E402
 from engine.data import from_frame             # noqa: E402
 from engine.lab_adapter import live_model      # noqa: E402
@@ -131,18 +132,23 @@ def run(out):
     state["equity_filter"] = eqf_now
 
     # ---- paper ledger: engine trades that entered after the cloud monitor started watching
-    for t in res["trades"]:
+    sizing_cfg = lm.get("sizing")
+    for t in sorted(res["trades"], key=lambda x: x["entry_t"]):
         if t["entry_t"] >= first_run - SECS:
             prev = ledger.get(int(t["entry_t"]))
-            mult = prev["mult"] if prev and "mult" in prev else \
-                equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["mult"]
+            if prev and "mult" in prev:
+                mult, qty = prev["mult"], prev.get("qty", 0)
+            else:
+                cold = equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["mult"]
+                profit = sum(v["usd"] for k, v in ledger.items() if int(k) < int(t["entry_t"])) if ledger else None
+                r = sizing.route_qty(int(t.get("qty") or 0), t, cold, sizing_cfg, lm.get("params"), profit)
+                mult, qty = r["mult"], r["qty"]
             ledger[int(t["entry_t"])] = {"day": tday(t["entry_t"]), "entry": f"{et(t['entry_t']):%m-%d %H:%M}",
                                          "side": "LONG" if t["dir"] == 1 else "SHORT", "grade": t.get("grade"),
                                          "trigger": t.get("trigger"), "exit": t.get("exit_reason"),
                                          "exit_t": f"{et(t['exit_t']):%H:%M}" if t.get("exit_t") else None,
                                          "R": round(float(t["pnl_r"]), 2), "taken": mult > 0, "mult": mult,
-                                         "usd": round(float(t["pnl"]) * mult, 2),
-                                         "qty": max(1, int((t.get("qty") or 0) * mult)) if mult else 0}
+                                         "usd": round(float(t["pnl"]) * mult, 2), "qty": qty}
     pos = state.get("position")
 
     # ---- alerts for events not seen before (only events from after the monitor started, like LiveBot._emit_events)
@@ -160,6 +166,8 @@ def run(out):
                 note = "\nNOT TAKEN - cold-streak filter (last 15 signals net negative), tracked on paper only"
             elif m < 1:
                 note = f"\n{m:g}x SIZE - cold-streak filter (last 15 signals net negative)"
+            if ev["type"] == "entry" and sizing_cfg and sizing_cfg.get("late_mult") is not None:
+                note += "\n(late entries, where the 15m trend already turned, are traded at half size)"
             new_alerts.append(f"{SYM} {ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
     et_now = et(now)
     eod_sent = st.get("eod_sent")

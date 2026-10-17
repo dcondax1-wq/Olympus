@@ -1,7 +1,9 @@
 # The exact strategy the bot trades: Liquidity Engine, eval mode
 
 Market: NQ futures, traded as MNQ micros ($2 per point), on 5-minute candles. All times are New York (ET).
-Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1`, `risk_usd: 800`, `risk_ref_stop: 20`, `dd_aware: false`, `use_fallback: false`, `equity_filter: {lookback: 15, min_sum_r: 0, cold_mode: half}` (`live_model.json`).
+Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1`, `risk_usd: 800`, `risk_ref_stop: 20`, `dd_aware: false`, `use_fallback: false`, `be_at_r_trending: 3.0`, `memory_seed: false`, `equity_filter: {lookback: 15, min_sum_r: 0, cold_mode: half, cold_size: 0.25}`, `sizing: {late_mult: 0.5}` (`live_model.json`).
+
+**Version:** locked 2026-10-17 (evening) for Monday 2026-10-19. Changes from the morning lock: quarter size in cold streaks (was half), half size on late entries (new), breakeven at +3R on trending days (was +1R). Research: `research/writeups/risk-summary.md`, `trade-construction-summary.md`; every experiment: `research/runs/`.
 
 ## 1. Mark the liquidity
 These are the pools the bot watches:
@@ -47,7 +49,7 @@ These are the pools the bot watches:
   - draws limited to the day's reach (PF ~1.8)
 
 ## 7. Managing the trade
-- **Breakeven:** at **+1R**, move the stop to entry + 1 tick.
+- **Breakeven:** at **+1R**, move the stop to entry + 1 tick. **On a trending day** (10-day efficiency above 0.45, the same test that halves the size) wait until **+3R**: reversal trades against a trend need room, and the giveback rule below still protects them.
 - **Time stop:** if the trade hasn't reached **+0.5R within 30 minutes**, close it.
 - **Giveback:** once it has been **+0.5R**, a candle closing back through the entry closes it.
 - **Close everything by 15:55 ET.**
@@ -61,19 +63,21 @@ These are the pools the bot watches:
     - 53-pt stop: 2 micros, about $212 at risk
 - **Why:** over 5 years, stops under 20 pts averaged +0.34R per trade and 20–30 pts +0.10R, while 30–60 pts averaged about 0R.
 - **Half size** in a trending market (10-day efficiency above 0.45).
+- **Half size on a late entry:** when the 15-minute structure has already turned the trade's way at entry (the −1 item of the confluence score), part of the move is gone, so the size is halved. These trades lost money in both 2021–25 and 2026.
+- The size rules multiply (cold streak × late entry), rounded down once, never below 1 micro.
 - **1 trade per day.** Done for the day after a winner.
 - **No new entries:**
   - from 15 minutes before to 30 minutes after a high-impact US release (CPI, NFP, FOMC…)
   - after 13:00 on FOMC days
   - once the day's range has reached 1.6× the 20-day average
 
-## 9. Cold-streak filter (half size in bad stretches)
+## 9. Cold-streak filter (quarter size in bad stretches)
 - The bot keeps a **shadow record of every signal** in rules 1–8 (`data/shadow_ledger.json`).
 - Before each entry it adds up the R of the **last 15 signals that have already finished**.
 - **Above 0R:** full size.
-- **0R or below:** the trade is **still taken, at half size**. Alerts say "HALF SIZE - cold-streak filter".
+- **0R or below:** the trade is **still taken, at a quarter of the size** (was half until 2026-10-17: over 2021–25 the quarter size beat the half at every lookback and threshold tested). Alerts say "0.25x SIZE - cold-streak filter".
 - Full size comes back **automatically** as soon as the last 15 signals add back up above 0R.
-- Every setup is traded, so it keeps 2+ setups a week. Only the size changes.
+- Every setup is traded, so it keeps 2–4 setups a week. Only the size changes. Cold streaks can last 13–18 weeks; during them most trades are 1 micro (about $100 at risk).
 
 ## How it performed (fresh rerun of the live settings on TradingView NQ1! futures data, commissions and slippage included; `python tools/export_backtest.py`)
 

@@ -222,10 +222,11 @@ def main(procs=11):
     from multiprocessing import Pool
 
     from engine import equity_filter as eqf
+    from engine import sizing as szm
     from engine.data import load
     from tools.strategy_lab import COMMISSION_RT, SLIP_PTS
     lm = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))
-    params, eqf_cfg = lm["params"], lm.get("equity_filter")
+    params, eqf_cfg, sizing_cfg = lm["params"], lm.get("equity_filter"), lm.get("sizing")
     t0 = time.time()
     with Pool(procs) as pool:
         outs = pool.map(fy.bt, fy.live_jobs(params, "export"), chunksize=4)
@@ -241,7 +242,8 @@ def main(procs=11):
         m = st.get("mult", 1.0)
         if m <= 0:
             continue
-        q = max(1, int((t["qty"] or 0) * m)) if m < 1 else t["qty"]
+        rq = szm.route_qty(int(t["qty"] or 0), t, m, sizing_cfg, params)      # cold x late; the fast-eval press is not in the headline
+        q, m = rq["qty"], rq["mult"]
         k = q / t["qty"] if t["qty"] else m
         trades.append({"day": t["day"], "entry_t": t["entry_t"], "exit_t": t["exit_t"], "side": "LONG" if t["dir"] == 1 else "SHORT",
                        "entry": t.get("entry"), "stop": t.get("stop"), "target": t.get("target"), "exit_price": t.get("exit_price"),
@@ -292,9 +294,11 @@ def main(procs=11):
                  "data": {"source": "TradingView CME NQ1! continuous futures, 5-minute bars (data/NQ_5m.csv)",
                           "first_session": first, "last_session": last, "sessions": len(sess), "bars": int(len(nq.t))},
                  "costs": {"instrument": "MNQ micro ($2/pt)", "commission_round_trip_per_micro": COMMISSION_RT, "slippage_pts": SLIP_PTS},
+                 "sizing": sizing_cfg,
                  "method": "Exact live-loop replay: for every session the engine sees only the last 20 days of bars (as the live bot), "
-                           "cold-streak filter applied from the shadow record of finished signals (no look-ahead). Evals use the "
-                           "MFFU Builder 50K rules ($3k target, $2k end-of-day trailing max loss locking at $50,100).",
+                           "cold-streak and late-entry sizing applied from what was known at entry (no look-ahead). Evals use the "
+                           "MFFU Builder 50K rules ($3k target, $2k end-of-day trailing max loss locking at $50,100). The fast-eval "
+                           "press, when on, is not in this headline: see research run risk_fast_press1000.",
                  "seconds": round(time.time() - t0)},
         "periods": periods, "months": months, "stop_buckets": buckets, "lessons": _lessons(trades), "days": days, "trades": trades,
     }

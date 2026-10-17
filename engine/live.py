@@ -498,6 +498,9 @@ class LiveBot:
             return
         if (et_, new) in self._modify_gaveup:
             return
+        ready = getattr(self.adapter, "has_open_bracket", None)
+        if callable(ready) and not ready(et_):
+            return          # nothing at the broker to move yet (entry refused, or its stop not placed yet): next poll
         tries = sum(1 for r in self.ledger if r.get("entry_t") == et_ and r.get("side") == "modify" and r.get("stop") == new)
         if tries >= 3:
             self._modify_gaveup.add((et_, new))
@@ -664,6 +667,8 @@ class LiveBot:
         # (the real bot only: test harnesses run with their own state_path and must not touch the shared ledger)
         from . import equity_filter as _eqf
         self._eqf_cfg = lm.get("equity_filter") if self.state_path == STATE_PATH else None
+        self._sizing_cfg = lm.get("sizing") if self.state_path == STATE_PATH else None   # late-entry size, fast-eval press
+        self._live_params = lm.get("params") or {}
         if self._eqf_cfg:
             try:
                 _eqf.record(res["trades"])
@@ -790,23 +795,33 @@ class LiveBot:
         self._log("risk", text)
         self._alert(("⏸️ " if not eqf["on"] else "▶️ ") + text, "guard")
 
-    def _equity_qty(self, entry_t, qty):
-        """Equity-curve filter for one entry: the quantity to route (0 = hold the entry back), logged when it changes it."""
+    def eval_profit(self):
+        """The eval account's routed profit ($) since cfg eval_start (yyyy-mm-dd; default: everything in the ledger).
+        Used by the fast-eval press (engine/sizing.py); None when the ledger is empty."""
+        start = str(self.cfg.get("eval_start") or "")
+        rows = [r for r in self.ledger if r.get("side") == "exit" and (not start or trading_day(r["t"]) >= start)]
+        return round(sum(float(r.get("pnl") or 0) for r in rows), 2) if self.ledger else None
+
+    def _equity_qty(self, entry_t, qty, pos=None):
+        """Size to route for one entry (0 = hold it back): the engine's micros x cold-streak size x late-entry size, with
+        the fast-eval press when configured (engine/sizing.py). Logged whenever it differs from the engine's micros."""
         try:
             from . import equity_filter as _eqf
+            from . import sizing as _sz
             st = _eqf.status(getattr(self, "_eqf_cfg", None), before_t=entry_t)
+            mult = st.get("mult", 1.0 if st["on"] else 0.0)
+            if mult <= 0:
+                self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET NOT traded: {st['reason']}")
+                return 0
+            r = _sz.route_qty(int(qty), pos or {}, mult, getattr(self, "_sizing_cfg", None), getattr(self, "_live_params", None),
+                              self.eval_profit() if getattr(self, "_sizing_cfg", None) and self._sizing_cfg.get("press") else None)
         except Exception as e:
-            self._note_error(f"equity filter failed, entry allowed at full size: {e}")
+            self._note_error(f"sizing failed, entry allowed at the engine's size: {e}")
             return qty
-        mult = st.get("mult", 1.0 if st["on"] else 0.0)
-        if mult <= 0:
-            self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET NOT traded: {st['reason']}")
-            return 0
-        if mult < 1:
-            q = max(1, int(qty * mult))
-            self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET at {q} instead of {qty}: {st['reason']}")
-            return q
-        return qty
+        if r["qty"] != qty:
+            why = "; ".join(r["reasons"]) or st.get("reason", "")
+            self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET at {r['qty']} instead of {qty}: {why}")
+        return r["qty"]
 
     def _route_signals(self, res, sym, now, secs):
         """Turn the engine's position / completed trades into adapter calls, exactly once each."""
@@ -843,7 +858,7 @@ class LiveBot:
             elif age > late_after:
                 self._blocked_entries.add(pos["entry_t"])
                 self._log("risk", f"Entry at {_et(pos['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
-            elif not (q := self._equity_qty(pos["entry_t"], pos["qty"])):
+            elif not (q := self._equity_qty(pos["entry_t"], pos["qty"], pos)):
                 self._blocked_entries.add(pos["entry_t"])
             else:
                 self._open_routed = pos["entry_t"]

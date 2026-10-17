@@ -42,7 +42,7 @@ sys.path.insert(0, ROOT)
 RUNS = os.path.join(ROOT, "research", "runs")
 CACHE = os.path.join(RUNS, "_cache")
 LIVE = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))
-LIVE_PARAMS, LIVE_EQF = LIVE["params"], LIVE.get("equity_filter")
+LIVE_PARAMS, LIVE_EQF, LIVE_SIZING = LIVE["params"], LIVE.get("equity_filter"), LIVE.get("sizing")
 MAX_MICROS = 40                                   # engine max_micros (MFFU 50K: 4 minis / 40 micros)
 FAMILIES = ("baseline", "risk", "stops", "targets", "management", "bias", "filters", "timing", "other")
 STATUSES = ("baseline", "adopt-candidate", "promising", "rejected", "info")
@@ -107,12 +107,16 @@ def cold_status(raw_sorted, entry_t, eqf):
     return (1.0 if on else cold_size), s
 
 
-def size(raw, eqf="live", rule=None, max_micros=MAX_MICROS):
-    """Sized trades from a replay. eqf: "live" (live_model.json filter), None (off) or a filter dict.
+def size(raw, eqf="live", rule=None, max_micros=MAX_MICROS, sizing="live"):
+    """Sized trades from a replay. eqf: "live" (live_model.json filter), None (off) or a filter dict. sizing: "live"
+    (live_model.json "sizing": late-entry size; the fast-eval press is never applied here), None (off) or a dict.
     rule(t, ctx) -> multiplier on the engine's micros after the filter (0 skips the trade). ctx: {"finished": trades
     (sized, this run) that exited before t entered, "equity", "peak", "dd" (sized $), "day_pnl", "cold_mult", "cold_sum_r",
     "streak" (+n wins / -n losses in a row of finished trades)}. Returns trade dicts with qty/pnl/risk_usd after sizing."""
+    from engine import sizing as szm
     eqf = LIVE_EQF if eqf == "live" else eqf
+    sizing = LIVE_SIZING if sizing == "live" else sizing
+    sizing = {**(sizing or {}), "press": None}
     raw_sorted = sorted(raw["trades"], key=lambda t: t["entry_t"])
     out, done = [], []
     for t in raw_sorted:
@@ -123,7 +127,7 @@ def size(raw, eqf="live", rule=None, max_micros=MAX_MICROS):
         cm, cs = cold_status(raw_sorted, t["entry_t"], eqf)
         if cm <= 0:
             continue
-        q = q0 if cm >= 1 else max(1, int(q0 * cm))
+        q = szm.route_qty(q0, t, cm, sizing, LIVE_PARAMS)["qty"]
         m = 1.0
         if rule:
             fin = [x for x in done if x["exit_t"] and x["exit_t"] < t["entry_t"]]

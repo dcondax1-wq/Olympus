@@ -8,15 +8,23 @@
     "risk_usd": 800,
     "dd_aware": false,
     "risk_ref_stop": 20.0,
-    "use_fallback": false
+    "use_fallback": false,
+    "be_at_r_trending": 3.0,
+    "memory_seed": false
   },
   "equity_filter": {
     "lookback": 15,
     "min_sum_r": 0.0,
-    "cold_mode": "half"
+    "cold_mode": "half",
+    "cold_size": 0.25
   },
-  "label": "Liquidity Engine - eval mode ($800 risk up to a 20-pt stop, less on wider stops; every setup with a real liquidity draw; half size in cold streaks)",
+  "label": "Liquidity Engine - eval mode ($800 risk up to a 20-pt stop, less on wider stops; every setup with a real liquidity draw; quarter size in cold streaks, half size on late entries; breakeven at 3R on trending days)",
   "chosen": "2026-10-17",
   "locked": true,
-  "rules": "STRATEGY.md"
+  "rules": "STRATEGY.md",
+  "sizing": {
+    "late_mult": 0.5,
+    "press": null
+  },
+  "lock_note": "Locked 2026-10-17 for Monday 2026-10-19 (research/writeups/risk-summary.md, trade-construction-summary.md). Previous lock 2026-10-17 morning: cold_size 0.5, no late-entry rule, breakeven at 1R on every day."
 }

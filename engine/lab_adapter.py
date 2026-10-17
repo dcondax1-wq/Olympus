@@ -34,9 +34,9 @@ def live_model() -> dict:
                 cfg = json.load(fh)
         return {"model": cfg.get("model") or "engine", "params": cfg.get("params") or {}, "label": cfg.get("label", ""),
                 "sym": (cfg.get("sym") or "NQ").upper(), "equity_filter": cfg.get("equity_filter"),
-                "chosen": cfg.get("chosen", "")}
+                "sizing": cfg.get("sizing"), "chosen": cfg.get("chosen", "")}
     except Exception:
-        return {"model": "engine", "params": {}, "label": "", "sym": "NQ", "equity_filter": None}
+        return {"model": "engine", "params": {}, "label": "", "sym": "NQ", "equity_filter": None, "sizing": None}
 
 
 def lab_frame(df: pd.DataFrame) -> pd.DataFrame:
