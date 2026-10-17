@@ -474,6 +474,7 @@ export class Constellation extends Hud {
     this.select(sl);
     if (sl) this.emit(sl.it.run);
   }
+  devTapPoint() { const sl = this.slots.find((s) => !s.dead && s.a > 0.5 && !s.it.isBase) || this.baseSlot; if (!sl) return null; const p = this.screen(sl.p); return [p.x, p.y]; }
   select(sl) { this.sel = sl; this.selAt = this.lt; this.u.uSel.value = sl ? sl.idx : -1; this.tipFor(this.hov || sl); }
   hoverAt(sl) {
     if (sl === this.hov) return;
@@ -485,9 +486,14 @@ export class Constellation extends Hud {
     const it = sl.it, r = it.run, st = ST[it.status];
     const tpw = (v) => (Number.isFinite(num(v)) ? num(v).toFixed(1) + '/wk' : '—');
     const row = (lbl, pf, net, tp) => `<i>${lbl}</i> PF <b>${fmtPf(pf)}</b> · ${fmtK(num(net))} · ${tpw(tp)}`;
-    let html = `<b>${esc(trunc(it.title, 38))}</b><u style="color:${st.css}">${st.label}</u>${it.off ? ' <i>(off the scale, pinned to the edge)</i>' : ''}<br>${row('2026', it.pf26, r.net26, r.tpw26)}<br>${row('2021-25', it.pf21, r.net21, r.tpw21)}`;
-    if (Number.isFinite(num(r.dd21))) html += ` · DD ${fmtK(num(r.dd21))}`;
-    if (Number.isFinite(num(r.p20_21))) html += `<br><i>eval in 1 month</i> <b style="color:#5eead4">${pct(num(r.p20_21))}</b> pass · <b style="color:#ff7ad9">${pct(num(r.f20_21))}</b> fail`;
+    const small = this.w < 480;
+    let html = `<b>${esc(trunc(it.title, small ? 30 : 38))}</b><u style="color:${st.css}">${st.label}</u>${it.off && !small ? ' <i>(off the scale, pinned to the edge)</i>' : ''}<br>`;
+    if (small) html += `<i>PF</i> <b>${fmtPf(it.pf26)}</b> <i>2026 ·</i> <b>${fmtPf(it.pf21)}</b> <i>21-25 ·</i> ${tpw(Number.isFinite(it.tpw) ? it.tpw : NaN)}`;
+    else {
+      html += `${row('2026', it.pf26, r.net26, r.tpw26)}<br>${row('2021-25', it.pf21, r.net21, r.tpw21)}`;
+      if (Number.isFinite(num(r.dd21))) html += ` · DD ${fmtK(num(r.dd21))}`;
+      if (Number.isFinite(num(r.p20_21))) html += `<br><i>eval in 1 month</i> <b style="color:#5eead4">${pct(num(r.p20_21))}</b> pass · <b style="color:#ff7ad9">${pct(num(r.f20_21))}</b> fail`;
+    }
     if (this.base && !it.isBase) {
       const b = this.base, up = it.pf26 > b.pf26 && it.pf21 > b.pf21;
       html += `<br><i>vs baseline</i> ${up ? '<b style="color:#4ef0b0">better in both periods</b>' : it.pf26 > b.pf26 ? 'better in 2026 only' : it.pf21 > b.pf21 ? 'better in 2021-25 only' : 'worse in both'}`;

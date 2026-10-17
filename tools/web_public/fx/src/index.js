@@ -13,9 +13,10 @@ import { Constellation } from './constellation.js';
 import { Ribbon } from './ribbon.js';
 import { Reactor } from './reactor.js';
 import { Pipeline } from './pipeline.js';
+import { Losses } from './losses.js';
 
 export const version = 1;
-const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon, reactor: Reactor, pipeline: Pipeline };
+const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon, reactor: Reactor, pipeline: Pipeline, losses: Losses };
 const reg = new Map();
 let field = null, bg = null, inited = false;
 

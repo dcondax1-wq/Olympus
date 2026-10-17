@@ -198,6 +198,11 @@ X("bias_any_half", "bias", "sizerule", {}, "Half size when either bias is agains
   "Half size when the trade follows yesterday's candle OR is on the wrong side of last week's midpoint?", rule="half_any")
 X("bias_both_half", "bias", "sizerule", {}, "Half size only when both biases are against the trade",
   "Half size only when the trade follows yesterday's candle AND is on the wrong side of last week's midpoint?", rule="half_both")
+X("bias_both_07", "bias", "sizerule", {}, "70% size only when both biases are against the trade",
+  "Neighbour check: 70% size (instead of half) when the trade follows yesterday's candle and is on the wrong side of "
+  "last week's midpoint?", rule="p70_both")
+X("bias_both_033", "bias", "sizerule", {}, "One-third size only when both biases are against the trade",
+  "Neighbour check: one-third size when both biases are against the trade?", rule="p33_both")
 X("bias_pdc_07", "bias", "sizerule", {}, "70% size when the trade follows yesterday's candle",
   "Neighbour check: a milder size-down (70%) for trades that follow yesterday's candle?", rule="p70_follow_pd")
 X("bias_pwmid_07", "bias", "sizerule", {}, "70% size when against the prior-week side",
@@ -390,6 +395,8 @@ RULES = {
     "half_against_pwmid": lambda t, ctx: 0.5 if trade_ctx(t).get("pwmid") == -1 else 1.0,
     "half_any": lambda t, ctx: 0.5 if (trade_ctx(t).get("fade_pd") == -1 or trade_ctx(t).get("pwmid") == -1) else 1.0,
     "half_both": lambda t, ctx: 0.5 if (trade_ctx(t).get("fade_pd") == -1 and trade_ctx(t).get("pwmid") == -1) else 1.0,
+    "p70_both": lambda t, ctx: 0.7 if (trade_ctx(t).get("fade_pd") == -1 and trade_ctx(t).get("pwmid") == -1) else 1.0,
+    "p33_both": lambda t, ctx: 0.33 if (trade_ctx(t).get("fade_pd") == -1 and trade_ctx(t).get("pwmid") == -1) else 1.0,
     "p70_follow_pd": lambda t, ctx: 0.7 if trade_ctx(t).get("fade_pd") == -1 else 1.0,
     "p70_against_pwmid": lambda t, ctx: 0.7 if trade_ctx(t).get("pwmid") == -1 else 1.0,
 }

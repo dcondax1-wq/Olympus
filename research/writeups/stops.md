@@ -1,0 +1,70 @@
+---
+title: Stops: where the stop should go
+family: stops
+date: 2026-10-17
+status: rejected
+summary: Today's stop (2 points beyond the sweep extreme, 10-60 points) is the best of 19 variants. Wider buffers, volatility-scaled (ATR) buffers, other min/max limits and stops beyond the gap all lose money in 2026, 2021-25 or both; no stop change is recommended.
+runs: screen_baseline, stp_buf05, stp_buf15, stp_buf20, stp_buf30, stp_atr010, stp_atr015, stp_atr025, stp_atr050, stp_atr010_max70, stp_atr015_max70, stp_atr015_max80, stp_max45, stp_max50, stp_max70, stp_max80, stp_min8, stp_min12, stp_min15, stp_ifvg
+---
+
+## What was tested
+
+Today the stop sits **2 points beyond the sweep extreme** (the low before the IFVG for a long). It is widened to at
+least 10 points; above 60 points the bot uses the far side of the inverted gap if that fits, otherwise it skips.
+Size always follows the stop ($800 risk up to a 20-point stop, less above).
+
+Every variant keeps the rule "stop beyond the sweep extreme" (the owner's hard rule) and only changes how far beyond,
+and the limits. These change which trades are taken, so they were run with the fast one-pass 5-year backtest
+(it matches the exact live replay on 766 of 768 trades) and compared with the same backtest of today's rules.
+
+Tested before on the old settings (2-a-day, $350 risk, grade sizing): max stop 45 / 80 / 100, min stop 15, a 3-point
+buffer and the gap stop were all rejected; fixed 10-15 point stops lose money. This is the first test on today's
+settings, plus a new idea: a buffer that grows with volatility (a share of the 5-minute ATR, new engine option
+`stop_buf_atr`, off by default).
+
+## Results (costs included, cold-streak filter on)
+
+| Setting | 2026 trades | /wk | PF | net | max DD | eval 1 mo pass/fail % | 2021-25 trades | /wk | PF | net | max DD | eval 1 mo pass/fail % | back-to-back pass/fail | status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| **Today: 2 pts beyond, 10-60 pts** | 89 | 2.16 | 3.45 | +$19.9k | −$2.7k | 30.5/0.0 | 691 | 3.18 | 1.11 | +$8.8k | −$11.6k | 9.5/9.5 | 7/18 | yardstick |
+| 1 pt beyond the sweep | 91 | 2.21 | 3.08 | +$17.6k | −$3.1k | 21.9/0.0 | 700 | 3.22 | 1.08 | +$6.0k | −$12.5k | 8.8/9.7 | 8/18 | rejected |
+| 3 pts beyond | 86 | 2.09 | 3.38 | +$18.6k | −$2.6k | 30.5/0.0 | 682 | 3.14 | 1.10 | +$7.4k | −$9.6k | 9.0/5.6 | 7/17 | rejected |
+| 4 pts beyond | 80 | 1.94 | 3.08 | +$14.1k | −$2.1k | 26.2/0.0 | 674 | 3.10 | 1.07 | +$4.9k | −$8.6k | 6.8/6.5 | 6/15 | rejected |
+| 6 pts beyond | 75 | 1.82 | 2.94 | +$11.5k | −$1.7k | 21.9/0.0 | 656 | 3.02 | 0.95 | −$3.2k | −$11.5k | 4.8/6.4 | 5/14 | rejected |
+| 0.10 x ATR beyond | 83 | 2.01 | 2.81 | +$14.7k | −$3.8k | 19.8/0.0 | 681 | 3.13 | 1.10 | +$7.6k | −$9.6k | 8.1/8.1 | 8/17 | rejected |
+| 0.15 x ATR beyond | 76 | 1.84 | 3.71 | +$17.4k | −$2.1k | 27.3/0.0 | 666 | 3.06 | 1.14 | +$10.1k | −$8.7k | 7.2/6.3 | 6/14 | rejected |
+| 0.25 x ATR beyond | 70 | 1.70 | 3.09 | +$10.2k | −$2.0k | 21.9/0.0 | 643 | 2.96 | 1.05 | +$3.4k | −$11.9k | 6.6/5.7 | 5/14 | rejected |
+| 0.5 x ATR beyond | 58 | 1.41 | 2.29 | +$4.9k | −$1.1k | 0.0/0.0 | 557 | 2.56 | 1.05 | +$2.4k | −$7.8k | 5.1/0.9 | 3/9 | rejected |
+| 0.10 x ATR, widest 70 | 96 | 2.33 | 3.11 | +$15.4k | −$3.0k | 27.3/0.0 | 716 | 3.29 | 1.16 | +$11.4k | −$12.0k | 10.4/6.5 | 9/15 | rejected |
+| 0.15 x ATR, widest 70 | 94 | 2.28 | 3.20 | +$15.9k | −$2.8k | 27.3/0.0 | 703 | 3.23 | 1.14 | +$9.3k | −$11.7k | 10.5/5.8 | 9/17 | rejected |
+| 0.15 x ATR, widest 80 | 103 | 2.50 | 3.19 | +$15.1k | −$2.9k | 27.3/0.0 | 735 | 3.38 | 1.11 | +$7.2k | −$13.0k | 10.4/5.9 | 7/15 | rejected |
+| Widest stop 45 | 63 | 1.53 | 3.06 | +$14.9k | −$2.7k | 25.7/0.0 | 570 | 2.62 | 0.93 | −$5.4k | −$14.7k | 5.0/10.6 | 6/20 | rejected |
+| Widest stop 50 | 70 | 1.70 | 3.42 | +$17.5k | −$2.9k | 38.0/0.0 | 625 | 2.87 | 1.03 | +$2.7k | −$12.7k | 8.5/10.1 | 8/20 | rejected |
+| Widest stop 70 | 100 | 2.43 | 3.13 | +$17.7k | −$2.8k | 27.3/0.0 | 728 | 3.35 | 1.09 | +$6.4k | −$14.2k | 10.3/9.6 | 9/17 | rejected |
+| Widest stop 80 | 111 | 2.69 | 3.37 | +$19.0k | −$2.6k | 27.3/0.0 | 750 | 3.45 | 1.07 | +$5.1k | −$13.8k | 10.0/7.8 | 8/15 | rejected |
+| Tightest stop 8 | 89 | 2.16 | 3.45 | +$19.9k | −$2.7k | 30.5/0.0 | 691 | 3.18 | 1.10 | +$8.1k | −$11.6k | 9.0/9.5 | 7/18 | rejected |
+| Tightest stop 12 | 89 | 2.16 | 3.45 | +$19.9k | −$2.7k | 30.5/0.0 | 691 | 3.18 | 1.09 | +$6.9k | −$11.6k | 8.9/9.3 | 7/18 | rejected |
+| Tightest stop 15 | 89 | 2.16 | 3.20 | +$17.9k | −$2.7k | 30.5/0.0 | 691 | 3.18 | 1.07 | +$5.2k | −$11.9k | 8.1/11.0 | 6/17 | rejected |
+| Stop beyond the gap (check) | 91 | 2.21 | 3.08 | +$19.5k | −$2.7k | 19.8/0.0 | 710 | 3.27 | 0.99 | −$1.3k | −$17.1k | 8.3/14.6 | 7/21 | rejected |
+
+(One-pass backtest numbers; the exact live replay of today's rules is 2026 PF 3.48 / +$20.1k and 2021-25 PF 1.09 /
++$6.5k. Compare each row with the first row, not with the replay.)
+
+## What it means
+
+- **2 points beyond the extreme is the sweet spot.** 1 point gets wicked out more (PF falls in both periods). Every
+  extra point of room makes more stops too wide for the 60-point limit, so trades disappear (4 points: 1.9 a week in
+  2026) and 2026 profit falls.
+- **The ATR buffer does not hold up.** 0.15 x ATR looked good on PF (3.71 / 1.14) but only by skipping trades
+  (1.8 a week in 2026), and its neighbours 0.10 and 0.25 are clearly worse: a knife-edge, not a real effect. Allowing
+  70-80 point stops to win the trades back gives the 2021-25 gain but costs $4k in 2026.
+- **The 60-point limit is right.** 45 or 50 cuts good trades and frequency; 70 or 80 adds trades (up to 2.7 a week and
+  88% of 2026 weeks with 2+) that roughly break even after the size cut. If the owner ever wants more trades a week,
+  "widest stop 80" is the cheapest way to get them (2026 −$0.9k, 2021-25 −$3.7k).
+- **The 10-point floor barely matters** (8 and 12 change a few 2021-25 trades); 15 is worse.
+- **Stops beyond the gap** (closer) lose money over 2021-25: the sweep extreme is the right invalidation.
+
+## Verdict
+
+Keep the stop exactly as it is: 2 points beyond the sweep extreme, 10-60 points, gap fallback above 60. Not one
+variant beat it in both periods. The new `stop_buf_atr` option stays in the engine switched off.

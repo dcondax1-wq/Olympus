@@ -96,12 +96,17 @@ const make = (alt) => ({
 window.__picked = null;
 const onPick = (row) => { window.__picked = row; log('picked ' + JSON.stringify(row).slice(0, 160)); };
 window.__ff = (sec) => { const v = window.__view; if (v?.update) for (let i = 0; i < sec * 10; i++) v.update(0, 0.1); };
-window.__mount = (data) => { const v = FX.mount('dev-' + view, box, view, data, { onPick }); window.__view = v; if (q.get('ff')) window.__ff(+q.get('ff')); return v; };
+window.__mount = (data) => { const v = FX.mount('dev-' + view, box, view, data, { onPick }); window.__view = v; return v; };
 window.__view = window.__mount(make(false));
+if (q.get('ff')) window.__ff(+q.get('ff'));
 window.__FX = FX;
 if (q.get('seq') === '1') {
   setTimeout(() => { window.__mount(make(true)); window.__seq = 1; }, 4000);
-  setTimeout(() => { window.__mount(make(true)); window.__seq = 2; }, 7000);
+  setTimeout(() => {   // the same data again: must be a no-op (no new animation, same signature)
+    const v = window.__view, before = v.sig, busy0 = !!(v.animating || v.revving || v.comet);
+    window.__mount(make(true)); window.__seq = 2;
+    log(`same-data remount: sig ${v.sig === before ? 'unchanged' : 'CHANGED'}, busy before ${busy0} after ${!!(v.animating || v.revving || v.comet)}`);
+  }, 7000);
 }
 window.__ready = true;
 </script></body></html>

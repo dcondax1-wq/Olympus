@@ -2,7 +2,8 @@
 //   NODE_PATH=$(npm root -g) node devshot.js <view> [width] [height] [wait_ms] [out.png] [query]
 //   NODE_PATH=$(npm root -g) node devshot.js --batch shots.json      one browser for many shots:
 //     [{ "view": "constellation", "w": 390, "h": 360, "wait": 4000, "out": "a.png", "query": "runs=150",
-//        "tap": [x, y] | "tapItem" (taps the first pickable item: window.__view.devTapPoint()), "shots": [[ms, "b.png"], ...] }]
+//        "tap": [x, y] | "tapItem" (taps the first pickable item: window.__view.devTapPoint()), "touch": true (phone touch events),
+//        "hover": [x, y] | "item" (mouse over that item; prints the tooltip text), "shots": [[ms, "b.png"], ...] }]
 //   Prints console errors / warnings, the picked row after a tap and the view's draw calls per frame.
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -28,7 +29,9 @@ async function shot(b, o) {
   }
   if (o.hover) {
     const box = await p.evaluate(() => { const r = document.getElementById('box').getBoundingClientRect(); return [r.left, r.top]; });
-    await p.mouse.move(box[0] + o.hover[0], box[1] + o.hover[1]); await p.waitForTimeout(700);
+    const pt = o.hover === 'item' ? await p.evaluate(() => window.__view?.devTapPoint?.() || [10, 10]) : o.hover;
+    await p.mouse.move(box[0] + pt[0] - 3, box[1] + pt[1] - 3); await p.mouse.move(box[0] + pt[0], box[1] + pt[1], { steps: 3 }); await p.waitForTimeout(o.afterHover || 1200);
+    info += ' hover@' + pt.map(v => Math.round(v)).join(',') + ' tip=' + JSON.stringify(await p.evaluate(() => document.querySelector('.fxh-tip.on')?.textContent || '')).slice(0, 120);
   }
   const calls = await p.evaluate(() => { const v = window.__view; return v ? v.renderer.info.render.calls + ' calls ' + v.renderer.info.render.points + ' pts ' + v.renderer.info.render.triangles + ' tris' : 'no view'; });
   await p.screenshot({ path: out });

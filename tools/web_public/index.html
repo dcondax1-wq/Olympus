@@ -537,7 +537,7 @@ td.k { color: var(--ink-2); }
 .xcard h3 { margin: 0 0 4px; font-size: 16px; font-weight: 700; letter-spacing: -.01em; line-height: 1.3; }
 .xc-q { margin: 0 0 8px; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
 .xc-v { margin: 0 0 12px; font-size: 13px; color: var(--ink-2); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-.mt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1.1fr); border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: rgba(7,8,12,.28); }
+.mt { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr) minmax(0, 1fr); border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: rgba(7,8,12,.28); }
 .mt > div { padding: 7px 10px; border-bottom: 1px solid rgba(238,241,248,.05); min-width: 0; }
 .mt > div:nth-last-child(-n+3) { border-bottom: 0; }
 .mt > .h { font: 650 10.5px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); background: rgba(22,26,35,.75); }
@@ -1609,10 +1609,9 @@ VIEWS.trades = (el) => {
     ${!paperSrc && fxOn() ? `<div class="card fx-card"><div class="card-h"><h3>Trade galaxy · ${rows.length} trades</h3><span class="meta">drag to turn · tap a star for its report</span></div><div class="fx3d galaxy" id="trGal"></div></div>` : ''}
     ${!paperSrc ? `<div class="card"><div class="card-h"><h3>Equity · the trades shown</h3><span class="meta">cumulative net $</span></div><div id="trEq"></div></div>` : ''}
     <div class="toolbar">
-      ${!paperSrc ? `<span id="trYear"></span>` : ''}
+      ${!paperSrc ? `<span id="trYear"></span>` : ''}<span id="trSort"></span>
       ${segHTML('trF', [['all', 'All'], ['win', 'Wins'], ['loss', 'Losses'], ['long', 'Long'], ['short', 'Short'], ['half', 'Half size']], TS.f)}
-      <label class="field">${icon('search')}<input class="inp" id="trQ" placeholder="Search trigger, pool, lesson…" value="${esc(TS.q)}" autocomplete="off" enterkeyhint="search"></label>
-      <span id="trSort"></span></div>
+      <label class="field">${icon('search')}<input class="inp" id="trQ" placeholder="Search trigger, pool, lesson…" value="${esc(TS.q)}" autocomplete="off" enterkeyhint="search"></label></div>
     <div class="small mut" style="margin:0 2px 10px">${rows.length} of ${plural(all.length, 'trade')}</div>
     <div class="tlist" id="trList">${rows.slice(0, TS.shown).map(t => tradeRow(t)).join('') || (paperSrc ? emptyBox('No paper trades yet.', 'They appear here after the cloud bot’s first setup.') : emptyBox('No trades match.', 'Clear the search or pick another filter.'))}</div>
     ${rows.length > TS.shown ? `<div class="more"><button class="btn ghost" type="button" id="trMore">Show ${Math.min(50, rows.length - TS.shown)} more</button></div>` : ''}`;
@@ -1864,9 +1863,9 @@ const pickRun = (run) => { if (run?.id) location.hash = '#/run/' + encodeURIComp
 VIEWS.lab = (el) => {
   const runs = RUNS_(), b = baseMeta(), W = D.docs?.writeups || [], A = D.docs?.archive || [];
   const n = (s) => runs.filter(r => r.status === s).length, others = runs.filter(r => !b || r.id !== b.id);
-  const pass = others.filter(r => ruleCheck(r).all), cand = others.filter(r => !ruleCheck(r).all && (r.status === 'adopt-candidate' || r.status === 'promising'));
+  const adopt = others.filter(r => r.status === 'adopt-candidate'), prom = others.filter(r => r.status === 'promising');
   const gap = (r) => Math.min((sp(r, '2026').net ?? -1e9) - (sp(b, '2026').net ?? 0), (sp(r, '2021-25').net ?? -1e9) - (sp(b, '2021-25').net ?? 0));
-  const close = b ? others.filter(r => !pass.includes(r) && !cand.includes(r)).sort((x, y) => gap(y) - gap(x)).slice(0, 3) : [];
+  const close = b ? others.filter(r => r.status !== 'adopt-candidate' && r.status !== 'promising').sort((x, y) => gap(y) - gap(x)).slice(0, 3) : [];
   const fams = Object.keys(FAM).filter(f => f !== 'baseline' && runs.some(r => r.family === f));
   const newest = [...runs].sort((x, y) => String(y.built).localeCompare(String(x.built))).slice(0, 6);
   const recRow = (r) => `<a class="rec" href="${runLink(r.id)}"><span class="doc-meta">${famChip(r.family)}${stChip(r.status)}</span><b>${esc(r.title)}</b>${r.verdict ? `<p>${esc(r.verdict)}</p>` : ''}
@@ -1886,10 +1885,10 @@ VIEWS.lab = (el) => {
       ${fxBox('lab-constellation', 'constellation')}
       <div class="legend">${['baseline', 'adopt-candidate', 'promising', 'rejected', 'info'].map(s => `<span><i class="dot2" style="background:${stColor(s)}"></i>${STAT[s][0]}</span>`).join('')}</div></div>
     ${secH('Recommendations')}
-    <div class="card">${pass.length ? `<p class="lead" style="margin-bottom:6px"><b class="up">${plural(pass.length, 'run beats', 'runs beat')} the live strategy in both periods.</b> Check the write-up before changing the bot.</p>${pass.map(recRow).join('')}`
-      : `<p class="lead"><b>Keep the live settings.</b> No run beats the live strategy in both 2026 and 2021-25 yet (net profit and PF, with 2+ trades a week).</p>`}
-      ${cand.length ? `<div class="sec-h" style="margin:18px 0 4px"><span>Marked promising by the research</span><i></i></div>${cand.map(recRow).join('')}` : ''}
-      ${!pass.length && close.length ? `<div class="sec-h" style="margin:18px 0 4px"><span>Closest calls</span><i></i></div>${close.map(xRowHTML).join('')}` : ''}
+    <div class="card">${adopt.length ? `<p class="lead" style="margin-bottom:6px"><b class="up">${plural(adopt.length, 'run is', 'runs are')} marked to adopt by the research.</b> Read the write-up and the numbers below before changing the bot; nothing changes on its own.</p>${adopt.map(recRow).join('')}`
+      : `<p class="lead"><b>Keep the live settings.</b> No experiment is marked to adopt yet: to qualify, a change has to beat the live strategy in 2026 and in 2021-25 and keep 2+ trades a week.</p>`}
+      ${prom.length ? `<div class="sec-h" style="margin:18px 0 4px"><span>Promising · worth a closer look</span><i></i></div>${prom.map(recRow).join('')}` : ''}
+      ${!adopt.length && !prom.length && close.length ? `<div class="sec-h" style="margin:18px 0 4px"><span>Closest calls</span><i></i></div>${close.map(xRowHTML).join('')}` : ''}
       ${!others.length ? `<p class="note">Experiments appear here as soon as the research agents store them.</p>` : ''}</div>
     ${secH('Latest findings', `<button class="chipbtn" type="button" data-go="writeups"><span>All write-ups</span>${icon('right')}</button>`)}
     ${W.length ? `<div class="dgrid">${W.slice(0, 3).map(docCard).join('')}</div>` : `<div class="card">${emptyBox('No write-ups yet.', 'Each experiment gets a write-up in plain words: the question, the numbers and the decision. Until then the archive holds the earlier research.', `<br><button class="btn" type="button" data-go="writeups">${icon('archive')}Open the archive</button>`)}</div>`}
@@ -1902,7 +1901,7 @@ VIEWS.lab = (el) => {
 };
 
 // ===================================================================== LAB: experiments (the run library)
-const XS = { q: '', fam: 'all', st: 'all', sort: store.get('xSort', 'new') };
+const XS = { q: '', fam: 'all', st: 'all', sort: store.get('xSort', 'new'), shown: 24 };
 function xRows(all = false) {
   const q = all ? '' : XS.q, b = baseId();
   let rows = RUNS_().filter(r => all || ((XS.fam === 'all' || r.family === XS.fam) && (XS.st === 'all' || r.status === XS.st)));
@@ -1931,13 +1930,15 @@ VIEWS.experiments = (el) => {
     <div class="chiprow" id="xFam">${[['all', 'All families', runs.length, 'var(--accent)'], ...Object.keys(FAM).filter(f => fc(f)).map(f => [f, FAM[f][0], fc(f), FAM[f][1]])]
       .map(([v, l, c, col]) => `<button type="button" data-v="${v}" class="${XS.fam === v ? 'on' : ''}" style="--c:${col}"><span class="d"></span>${esc(l)}<i>${c}</i></button>`).join('')}</div>
     <div class="small mut" style="margin:0 2px 12px">${rows.length} of ${plural(runs.length, 'run')}${filtered ? ` · <button type="button" class="linkbtn" id="xClr">clear filters</button>` : ''}</div>
-    ${rows.length ? `<div class="xgrid">${rows.map(xCard).join('')}</div>` : `<div class="card">${emptyBox(runs.length ? 'No run matches.' : 'No runs yet.', runs.length ? 'Clear the search or pick another family.' : 'Backtests appear here as the research agents store them.')}</div>`}`;
-  dropdown($('#xSt'), [['all', 'All statuses'], ...Object.keys(STAT).filter(s => runs.some(r => r.status === s)).map(s => [s, STAT[s][0], String(runs.filter(r => r.status === s).length)])], XS.st, (v) => { XS.st = v; render(true); });
+    ${rows.length ? `<div class="xgrid">${rows.slice(0, XS.shown).map(xCard).join('')}</div>` : `<div class="card">${emptyBox(runs.length ? 'No run matches.' : 'No runs yet.', runs.length ? 'Clear the search or pick another family.' : 'Backtests appear here as the research agents store them.')}</div>`}
+    ${rows.length > XS.shown ? `<div class="more"><button class="btn ghost" type="button" id="xMore">Show ${Math.min(24, rows.length - XS.shown)} more</button></div>` : ''}`;
+  dropdown($('#xSt'), [['all', 'All statuses'], ...Object.keys(STAT).filter(s => runs.some(r => r.status === s)).map(s => [s, STAT[s][0], String(runs.filter(r => r.status === s).length)])], XS.st, (v) => { XS.st = v; XS.shown = 24; render(true); });
   dropdown($('#xSort'), [['new', 'Newest first'], ['pf26', 'Profit factor 2026'], ['pf21', 'Profit factor 2021-25'], ['net26', 'Net 2026'], ['net21', 'Net 2021-25'], ['p20', 'Eval pass 1 mo (2021-25)'], ['dd21', 'Smallest drawdown (2021-25)'], ['tpw', 'Trades a week'], ['title', 'A to Z']],
     XS.sort, (v) => { XS.sort = v; store.set('xSort', v); render(true); });
-  $('#xFam').onclick = (e) => { const b = e.target.closest('button[data-v]'); if (!b) return; XS.fam = b.dataset.v; render(true); };
-  $('#xClr')?.addEventListener('click', () => { XS.fam = 'all'; XS.st = 'all'; XS.q = ''; render(true); });
-  let qt; $('#xQ').oninput = (e) => { clearTimeout(qt); qt = setTimeout(() => { XS.q = e.target.value.trim().toLowerCase(); render(true); const q = $('#xQ'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }, 250); };
+  $('#xFam').onclick = (e) => { const b = e.target.closest('button[data-v]'); if (!b) return; XS.fam = b.dataset.v; XS.shown = 24; render(true); };
+  $('#xClr')?.addEventListener('click', () => { XS.fam = 'all'; XS.st = 'all'; XS.q = ''; XS.shown = 24; render(true); });
+  $('#xMore')?.addEventListener('click', () => { XS.shown += 24; render(true); });
+  let qt; $('#xQ').oninput = (e) => { clearTimeout(qt); qt = setTimeout(() => { XS.q = e.target.value.trim().toLowerCase(); XS.shown = 24; render(true); const q = $('#xQ'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }, 250); };
 };
 
 // ===================================================================== LAB: one run

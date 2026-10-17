@@ -131,7 +131,7 @@ def prep(raw, risk_usd=BASE_RISK, ref=BASE_REF):
 
 # ------------------------------------------------------------------------------------------------ shadow-record streaks
 _TRAIL = {}
-ENGINE_KEYS = ("risk_usd", "ref", "alpha", "floor", "trend_mult", "pre_key")
+ENGINE_KEYS = ("risk_usd", "ref", "alpha", "floor", "trend_mult", "pre_key")   # engine-stage sizing (shadow-ledger R)
 
 
 def shadow_r(T, pol):
@@ -212,6 +212,9 @@ def qty_for(T, t, pol, ctx):
     c, _ = cold_mult(T, t["_i"], pol.get("cold", LIVE_COLD), pol)
     if c <= 0:
         return 0, qe, ru
+    if pol.get("late_mult") is not None:         # one live-loop multiplier: cold size x late-entry size, rounded once
+        lm = float(pol["late_mult"]) if (t.get("m15_trend") or 0) * t["dir"] > 0 else 1.0
+        c = c * lm
     if c < 1:
         q = max(1, int(q * c))
     elif c > 1:
@@ -1084,7 +1087,11 @@ PACKAGES = (
      {"cold": Q25, "pre": _sit_pre("15m already turned (late)", "yes", 0.5), "pre_key": "late"}, False),
     ("risk_pkg_q25_prop1000", "Quarter size when cold + size down once the eval cushion is under $1,000",
      {"cold": Q25, "mult_usd": _prop1000}, True),
+    ("risk_pkg_half_late", "Live half size when cold + half size on late entries (smallest change)", {"late_mult": 0.5}, False),
+    ("risk_pkg_q25_late_live", "RECOMMENDED: quarter size when cold, half size on late entries (one multiplier on the micros)",
+     {"cold": Q25, "late_mult": 0.5}, False),
 )
+RECOMMENDED = {"cold": Q25, "late_mult": 0.5}
 
 
 def cmd_packages():
@@ -1114,44 +1121,55 @@ def cold_stretches(T, cold=LIVE_COLD):
 
 
 def cmd_recommend():
-    """The recommended change (risk-summary.md): cold-streak quarter size, with the full table vs the live baseline,
-    plus a cross-check against runlib.size (the dashboard's own sizing code)."""
+    """The recommended change (risk-summary.md): one size multiplier on the engine's micros, applied where the live loop
+    applies the cold-streak half size today: x0.25 in a cold streak (today x0.5), x0.5 on a late entry (15m trend already
+    pointing the trade's way), both = x0.125; rounded down, at least 1 micro. Full table vs the live baseline, plus a
+    cross-check against runlib.size (the dashboard's own sizing code)."""
     raw, T, base_tr, B = baseline()
-    rec_tr = run_account(T, {"cold": Q25})
+    rec_tr = run_account(T, RECOMMENDED)
     S = score(rec_tr, raw)
+    Sq = score(run_account(T, {"cold": Q25}), raw)
     raw_sorted = sorted(raw["trades"], key=lambda t: t["entry_t"])
-    chk = rl.size(raw, eqf=None, rule=lambda t, ctx: 0.25 if rl.cold_status(raw_sorted, t["entry_t"], rl.LIVE_EQF)[0] < 1 else 1.0)
+
+    def mult(t, ctx):
+        cold = rl.cold_status(raw_sorted, t["entry_t"], rl.LIVE_EQF)[0] < 1
+        late = (t.get("m15_trend") or 0) * t["dir"] > 0
+        return (0.25 if cold else 1.0) * (0.5 if late else 1.0)
+    chk = rl.size(raw, eqf=None, rule=mult)
     same = len(chk) == len(rec_tr) and all(a["qty"] == b["qty"] and abs(a["pnl"] - b["pnl"]) < 0.01 for a, b in zip(chk, rec_tr))
-    print(f"cross-check vs runlib.size with a quarter-size rule: {'identical' if same else 'DIFFERENT'}")
-    rows = []
+    print(f"cross-check vs runlib.size with the same multiplier as a rule: {'identical' if same else 'DIFFERENT'}")
     s26 = span_sessions(raw, "2026-01-01", "2026-12-31"); s21 = span_sessions(raw, "2021-01-01", "2025-12-31")
-    for lab, key, fn in (("Trades", "n", str), ("Setups per week", "tpw", lambda v: f"{v:.2f}"), ("Weeks with 2+ setups", "wk2", lambda v: f"{v}%"),
-                         ("Win rate", "win", lambda v: f"{v}%"), ("Profit factor", "pf", str), ("Net", "net", _money),
-                         ("Max drawdown", "dd", lambda v: f"-${-v:,}"), ("Worst day", "worst_day", lambda v: f"-${-v:,}"),
-                         ("Median $ at risk", "risk", lambda v: f"${v:,.0f}"),
-                         ("Eval pass / fail within 2 weeks", ("p10", "f10"), None), ("Eval pass / fail within 1 month", ("p20", "f20"), None),
-                         ("Eval pass / fail within 3 months", ("p60", "f60"), None), ("Back-to-back evals passed / failed", "b2b", str)):
+    rows = []
+    spec = (("Trades", "n", str), ("Setups per week", "tpw", lambda v: f"{v:.2f}"), ("Weeks with 2+ setups", "wk2", lambda v: f"{v}%"),
+            ("Win rate", "win", lambda v: f"{v}%"), ("Profit factor", "pf", str), ("Net", "net", _money),
+            ("Max drawdown", "dd", lambda v: f"-${-v:,}"), ("Worst day", "worst_day", lambda v: f"-${-v:,}"),
+            ("Median $ at risk", "risk", lambda v: f"${v:,.0f}"),
+            ("Eval pass / fail within 2 weeks", ("p10", "f10"), None), ("Eval pass / fail within 1 month", ("p20", "f20"), None),
+            ("Eval pass / fail within 3 months", ("p60", "f60"), None), ("Back-to-back evals passed / failed", "b2b", str))
+    for lab, key, fn in spec:
         row = [lab]
         for name in ("2026", "2021-25"):
-            for X in (B, S):
+            for X in (B, S, Sq):
                 sp = X["spans"][name]
                 row.append(f"{sp[key[0]]:.1f}% / {sp[key[1]]:.1f}%" if isinstance(key, tuple) else fn(sp[key]))
         rows.append(row)
-    ba26, bb26 = b2b_avg(T, {}, s26), b2b_avg(T, {"cold": Q25}, s26)
-    ba21, bb21 = b2b_avg(T, {}, s21), b2b_avg(T, {"cold": Q25}, s21)
-    rows.append(["Back-to-back, 20 start days: passes / fails per year", f"{ba26['pass_yr']} / {ba26['fail_yr']}",
-                 f"{bb26['pass_yr']} / {bb26['fail_yr']}", f"{ba21['pass_yr']} / {ba21['fail_yr']}", f"{bb21['pass_yr']} / {bb21['fail_yr']}"])
-    rows.append(["Evals bought per pass (same)", f"{ba26['evals_per_pass']}", f"{bb26['evals_per_pass']}", f"{ba21['evals_per_pass']}",
-                 f"{bb21['evals_per_pass']}"])
-    print(_md(rows, ["", "2026 live", "2026 quarter size", "2021-25 live", "2021-25 quarter size"]))
-    yrs = [[y, B["years"][y]["n"], _money(B["years"][y]["net"]), B["years"][y]["pf"], _money(S["years"][y]["net"]), S["years"][y]["pf"]]
-           for y in sorted(S["years"])]
-    print(_md(yrs, ["year", "trades", "live net", "PF", "quarter-size net", "PF"]))
+    av = {(n, k): b2b_avg(T, pol, ss) for n, ss in (("2026", s26), ("2021-25", s21))
+          for k, pol in (("live", {}), ("rec", RECOMMENDED), ("q25", {"cold": Q25}))}
+    rows.append(["Back-to-back from 20 start days: passes / fails per year"] +
+                [f"{av[(n, k)]['pass_yr']} / {av[(n, k)]['fail_yr']}" for n in ("2026", "2021-25") for k in ("live", "rec", "q25")])
+    rows.append(["Evals bought per pass (same)"] + [f"{av[(n, k)]['evals_per_pass']}" for n in ("2026", "2021-25") for k in ("live", "rec", "q25")])
+    print(_md(rows, ["", "2026 live", "2026 recommended", "2026 cold x0.25 only", "2021-25 live", "2021-25 recommended",
+                     "2021-25 cold x0.25 only"]))
+    yrs = [[y, B["years"][y]["n"], _money(B["years"][y]["net"]), B["years"][y]["pf"], _money(S["years"][y]["net"]), S["years"][y]["pf"],
+            _money(Sq["years"][y]["net"]), Sq["years"][y]["pf"]] for y in sorted(S["years"])]
+    print(_md(yrs, ["year", "trades", "live net", "PF", "recommended net", "PF", "cold x0.25 only", "PF"]))
     st = cold_stretches(T)
     print("longest cold stretches (weeks, trades, from, to):", [(round(w, 1), n, a, z) for w, n, a, z in st[:5]])
-    n_cold = {name: sum(1 for t in rec_tr if a <= t["day"] <= z and t["half"]) for name, a, z in PERIODS}
-    one = {name: sum(1 for t in rec_tr if a <= t["day"] <= z and t["half"] and t["qty"] == 1) for name, a, z in PERIODS}
-    print("cold-streak trades:", n_cold, "of which at 1 micro:", one)
+    for name, a, z in PERIODS:
+        X = [t for t in rec_tr if a <= t["day"] <= z]
+        late = [t for t in X if (t.get("m15_trend") or 0) * t["dir"] > 0]
+        print(f"{name}: cold-streak trades {sum(1 for t in X if t['half'])}, late entries {len(late)}, "
+              f"trades at 1 micro {sum(1 for t in X if t['qty'] == 1)} of {len(X)} (live {sum(1 for t in base_tr if a <= t['day'] <= z and t['qty'] == 1)})")
 
 
 def cmd_summary():
