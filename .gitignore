@@ -36,3 +36,6 @@ data/shadow_ledger.json
 tools/web_public/fx/node_modules/
 tools/web_public/fx/dev-data.json
 tools/web_public/fx/*.png
+
+# research run library replay cache (tools/runlib.py)
+research/runs/_cache/
