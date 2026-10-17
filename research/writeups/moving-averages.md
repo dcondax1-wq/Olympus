@@ -3,7 +3,7 @@ title: Moving averages as confluence
 family: filters
 date: 2026-10-17
 status: finding
-summary: The textbook "trade with the EMA trend" filters all cost money (2026 net falls by $5-8k). The one moving-average fact that helps is a warning sign: when price is 3+ hourly ATRs on the wrong side of the 1-hour EMA 20 (a "falling knife"), trading at half size lifts 2021-25 from +$6.5k to +$9.6k (PF 1.09 to 1.13, eval fails 9.6% to 6.4%) while 2026 is unchanged (+$20.1k, PF 3.49), with every setup still traded.
+summary: The textbook "trade with the EMA trend" filters all cost money (2026 net falls by $5-8k). The one moving-average fact that helps is a warning sign: when price is 3+ hourly ATRs on the wrong side of the 1-hour EMA 20 (a "falling knife"), trading at half size lifts 2021-25 from +$6.5k to +$9.6k (+$127 to +$189 a month, PF 1.09 to 1.13, 1-month eval fails 9.4% to 6.2%) while 2026 is unchanged (+$20.1k, PF 3.49), with every setup still traded.
 runs: baseline, ema_knife_rma_half, ema_knife_half, ema_knife_quarter, ema_knife_skip, ema_knife_k2_half, ema_knife_k25_half, ema_knife_k35_half, ema_knife_e9_half, ema_knife_e50_half, ema_knife_15m50_half, ema_knife_half_nocold, ema_1h50_trend_half, ema_1h50_trend_x125, ema_15m_stack_half, ema_d200_trend_half, ema_d50_trend_half, ema_d50_with_half, ema_d50_against_x125, ema_tag50h_x125, ema_tag50h_x150
 ---
 
@@ -29,18 +29,23 @@ of trades per week."
 | | Live strategy | With the falling-knife half size |
 |---|---:|---:|
 | **2026** trades / week (weeks with 2+) | 2.16 (71%) | 2.16 (71%) |
-| 2026 net / PF | +$20,111 / 3.48 | +$20,139 / 3.49 |
+| 2026 net / per month / PF | +$20,111 / +$2,050 / 3.48 | +$20,139 / +$2,053 / 3.49 |
 | 2026 max drawdown | -$2,661 | -$2,660 |
-| 2026 MFFU eval pass / fail, 2 weeks / 1 month | 20/0% / 30/0% | 20/0% / 30/0% |
+| 2026 MFFU eval: pass / fail within 2 weeks (decided) | 19.4% / 0.0% (19.4%) | 19.4% / 0.0% (19.4%) |
+| 2026 MFFU eval: pass / fail within 1 month | 33.0% / 0.0% | 33.0% / 0.0% |
+| 2026 passes slower than 3 weeks / median sessions to pass | 55.4% / 19 | 55.4% / 19 |
 | **2021-25** trades / week (weeks with 2+) | 3.17 (92%) | 3.17 (92%) |
-| 2021-25 net / PF | +$6,491 / 1.09 | **+$9,639 / 1.13** |
+| 2021-25 net / per month / PF | +$6,491 / +$127 / 1.09 | **+$9,639 / +$189 / 1.13** |
 | 2021-25 max drawdown | -$11,401 | **-$9,944** |
-| 2021-25 MFFU eval pass / fail, 2 weeks | 4.1% / 2.1% | 4.1% / **0.9%** |
-| 2021-25 MFFU eval pass / fail, 1 month | 8.8% / 9.6% | 9.5% / **6.4%** |
+| 2021-25 MFFU eval: pass / fail within 2 weeks (decided) | 4.1% / 2.1% (6.2%) | 4.1% / **0.9%** (5.0%) |
+| 2021-25 MFFU eval: pass / fail within 1 month | 8.7% / 9.4% | 9.3% / **6.2%** |
+| 2021-25 passes slower than 3 weeks / median sessions to pass | 70.5% / 25 | 76.9% / 27 |
 | 2021-25 back-to-back evals passed / failed | 7 / 18 | 7 / 14 |
 
 It hits few setups (51 of 679 in 2021-25, 3 of 89 in 2026), so it is a small change: it mostly removes losing size in the
-bad stretches. 2026 cannot confirm it (3 setups); it only shows that it does not hurt.
+bad stretches. 2026 cannot confirm it (3 setups); it only shows that it does not hurt. It does **not** make evals faster:
+it mainly removes fast fails (2021-25: failed within 2 weeks 2.1% -> 0.9%, within 1 month 9.4% -> 6.2%);
+passes stay rare and slow.
 
 ## How it was tested
 
@@ -91,29 +96,29 @@ continuation than a stop hunt. It is the old "don't catch a falling knife".
 
 All size rules keep every setup: 2.16 trades a week in 2026 (71% of weeks with 2+) and 3.17 in 2021-25 (92%).
 
-| Run | Rule | 2026 net | 2026 PF | 2026 DD | 2021-25 net | 2021-25 PF | 2021-25 DD | 2021-25 eval 1m pass/fail | Status |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| baseline | live strategy | +$20,111 | 3.48 | -$2,661 | +$6,491 | 1.09 | -$11,401 | 8.8 / 9.6% | |
-| ema_knife_rma_half | **half size on a falling knife (1h EMA 20, 3 Wilder ATR)** | +$20,139 | 3.49 | -$2,660 | +$9,639 | 1.13 | -$9,944 | 9.5 / 6.4% | adopt-candidate |
-| ema_knife_half | same, plain 14-bar ATR (the version picked on 2021-25) | +$18,961 | 3.38 | -$2,660 | +$11,120 | 1.16 | -$8,504 | 9.4 / 5.2% | rejected |
-| ema_knife_quarter | quarter size instead of half | +$18,319 | 3.31 | -$2,660 | +$12,658 | 1.19 | -$7,550 | 9.8 / 5.0% | rejected |
-| ema_knife_k2_half | neighbour: 2 ATR | +$19,065 | 3.70 | -$2,315 | +$13,329 | 1.21 | -$7,763 | 9.4 / 2.8% | rejected |
-| ema_knife_k25_half | neighbour: 2.5 ATR | +$19,336 | 3.55 | -$2,340 | +$13,245 | 1.20 | -$8,611 | 9.6 / 4.8% | rejected |
-| ema_knife_k35_half | neighbour: 3.5 ATR | +$20,138 | 3.49 | -$2,661 | +$9,926 | 1.14 | -$9,805 | 9.5 / 6.5% | adopt-candidate |
-| ema_knife_e9_half | neighbour: 1h EMA 9 | +$20,111 | 3.48 | -$2,661 | +$8,142 | 1.11 | -$10,273 | 9.4 / 6.5% | promising |
-| ema_knife_e50_half | neighbour: 1h EMA 50 | +$18,059 | 3.41 | -$2,474 | +$10,839 | 1.17 | -$8,119 | 9.1 / 2.3% | rejected |
-| ema_knife_15m50_half | neighbour: 15m EMA 50 | +$18,982 | 3.46 | -$2,374 | +$11,769 | 1.17 | -$8,786 | 9.5 / 4.7% | rejected |
-| ema_1h50_trend_half | textbook: half size below the 1h EMA 50 (for a long) | +$12,179 | 3.09 | -$1,689 | +$6,879 | 1.13 | -$7,125 | 5.4 / 1.2% | rejected |
-| ema_1h50_trend_x125 | textbook: 1.25x above the 1h EMA 50 | +$21,412 | 3.50 | -$2,663 | +$7,627 | 1.10 | -$11,928 | 9.6 / 12.5% | rejected |
-| ema_15m_stack_half | textbook: half size when 15m EMAs 20/50/200 are stacked against | +$14,669 | 3.10 | -$2,284 | +$8,075 | 1.13 | -$7,280 | 5.4 / 1.7% | rejected |
-| ema_d200_trend_half | textbook: half size against the 200-day average | +$12,121 | 2.87 | -$1,971 | +$3,552 | 1.06 | -$9,169 | 6.5 / 1.2% | rejected |
-| ema_d50_trend_half | textbook: half size against the 50-day average | +$14,366 | 3.00 | -$2,015 | +$3,210 | 1.06 | -$8,788 | 5.9 / 2.4% | rejected |
-| ema_d50_with_half | the opposite: half size WITH the 50-day average | +$14,787 | 3.81 | -$2,249 | +$6,651 | 1.11 | -$8,880 | 5.2 / 2.8% | rejected |
-| ema_d50_against_x125 | 1.25x against the 50-day average | +$21,920 | 3.62 | -$2,858 | +$6,118 | 1.08 | -$12,084 | 9.1 / 11.2% | rejected |
-| ema_tag50h_x125 | 1.25x when the sweep wick tagged the 1h EMA 50 | +$20,324 | 3.45 | -$2,661 | +$6,992 | 1.09 | -$11,791 | 8.8 / 10.3% | rejected |
-| ema_tag50h_x150 | 1.5x when the sweep wick tagged the 1h EMA 50 | +$20,572 | 3.37 | -$2,661 | +$7,884 | 1.10 | -$12,422 | 9.4 / 11.0% | rejected |
-| ema_knife_skip | check: skip the falling knives | +$18,057 | 3.33 | -$2,631 | +$15,672 | 1.25 | -$6,223 | 9.9 / 4.2% | info |
-| ema_knife_half_nocold | check: knife rule with the cold-streak filter off | +$19,782 | 3.00 | -$4,445 | +$3,824 | 1.04 | -$13,463 | 10.4 / 20.2% | info |
+| Run | Rule | 2026 net ($/month) | 2026 PF | 2026 DD | 2026 eval 2w pass/fail | 2021-25 net ($/month) | 2021-25 PF | 2021-25 DD | 2021-25 eval 2w pass/fail | 2021-25 eval 1m pass/fail | Status |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| baseline | live strategy | +$20,111 (+$2,050) | 3.48 | -$2,661 | 19.4 / 0.0% | +$6,491 (+$127) | 1.09 | -$11,401 | 4.1 / 2.1% | 8.7 / 9.4% |  |
+| ema_knife_rma_half | **half size on a falling knife (1h EMA 20, 3 Wilder ATR)** | +$20,139 (+$2,053) | 3.49 | -$2,660 | 19.4 / 0.0% | +$9,639 (+$189) | 1.13 | -$9,944 | 4.1 / 0.9% | 9.3 / 6.2% | adopt-candidate |
+| ema_knife_half | same, plain 14-bar ATR (the version picked on 2021-25) | +$18,961 (+$1,933) | 3.38 | -$2,660 | 16.0 / 0.0% | +$11,120 (+$218) | 1.16 | -$8,504 | 4.1 / 0.9% | 9.2 / 5.1% | rejected |
+| ema_knife_quarter | quarter size instead of half | +$18,319 (+$1,867) | 3.31 | -$2,660 | 16.0 / 0.0% | +$12,658 (+$248) | 1.19 | -$7,550 | 4.1 / 0.9% | 9.6 / 4.9% | rejected |
+| ema_knife_k2_half | neighbour: 2 ATR | +$19,065 (+$1,944) | 3.7 | -$2,315 | 16.0 / 0.0% | +$13,329 (+$261) | 1.21 | -$7,763 | 4.1 / 0.7% | 9.2 / 2.7% | rejected |
+| ema_knife_k25_half | neighbour: 2.5 ATR | +$19,336 (+$1,971) | 3.55 | -$2,340 | 16.0 / 0.0% | +$13,245 (+$259) | 1.2 | -$8,611 | 4.1 / 0.8% | 9.4 / 4.8% | rejected |
+| ema_knife_k35_half | neighbour: 3.5 ATR | +$20,138 (+$2,053) | 3.49 | -$2,661 | 19.4 / 0.0% | +$9,926 (+$194) | 1.14 | -$9,805 | 4.1 / 0.9% | 9.3 / 6.3% | adopt-candidate |
+| ema_knife_e9_half | neighbour: 1h EMA 9 | +$20,111 (+$2,050) | 3.48 | -$2,661 | 19.4 / 0.0% | +$8,142 (+$160) | 1.11 | -$10,273 | 4.1 / 0.9% | 9.2 / 6.3% | promising |
+| ema_knife_e50_half | neighbour: 1h EMA 50 | +$18,059 (+$1,841) | 3.41 | -$2,474 | 14.6 / 0.0% | +$10,839 (+$212) | 1.17 | -$8,119 | 4.1 / 0.7% | 9.0 / 2.2% | rejected |
+| ema_knife_15m50_half | neighbour: 15m EMA 50 | +$18,982 (+$1,935) | 3.46 | -$2,374 | 19.4 / 0.0% | +$11,769 (+$231) | 1.17 | -$8,786 | 4.1 / 0.9% | 9.3 / 4.6% | rejected |
+| ema_1h50_trend_half | textbook: half size below the 1h EMA 50 (for a long) | +$12,179 (+$1,242) | 3.09 | -$1,689 | 5.3 / 0.0% | +$6,879 (+$135) | 1.13 | -$7,125 | 2.1 / 0.2% | 5.3 / 1.2% | rejected |
+| ema_1h50_trend_x125 | textbook: 1.25x above the 1h EMA 50 | +$21,412 (+$2,183) | 3.5 | -$2,663 | 20.4 / 0.0% | +$7,627 (+$149) | 1.1 | -$11,928 | 4.6 / 2.9% | 9.4 / 12.3% | rejected |
+| ema_15m_stack_half | textbook: half size when 15m EMAs 20/50/200 are stacked against | +$14,669 (+$1,495) | 3.1 | -$2,284 | 10.2 / 0.0% | +$8,075 (+$158) | 1.13 | -$7,280 | 2.3 / 0.7% | 5.3 / 1.7% | rejected |
+| ema_d200_trend_half | textbook: half size against the 200-day average | +$12,121 (+$1,236) | 2.87 | -$1,971 | 4.9 / 0.0% | +$3,552 (+$70) | 1.06 | -$9,169 | 3.1 / 0.0% | 6.3 / 1.2% | rejected |
+| ema_d50_trend_half | textbook: half size against the 50-day average | +$14,366 (+$1,464) | 3.0 | -$2,015 | 10.2 / 0.0% | +$3,210 (+$63) | 1.06 | -$8,788 | 2.8 / 1.0% | 5.8 / 2.3% | rejected |
+| ema_d50_with_half | the opposite: half size WITH the 50-day average | +$14,787 (+$1,507) | 3.81 | -$2,249 | 9.2 / 0.0% | +$6,651 (+$130) | 1.11 | -$8,880 | 2.1 / 0.8% | 5.1 / 2.8% | rejected |
+| ema_d50_against_x125 | 1.25x against the 50-day average | +$21,920 (+$2,235) | 3.62 | -$2,858 | 20.9 / 0.0% | +$6,118 (+$120) | 1.08 | -$12,084 | 4.5 / 3.2% | 9.0 / 11.0% | rejected |
+| ema_tag50h_x125 | 1.25x when the sweep wick tagged the 1h EMA 50 | +$20,324 (+$2,072) | 3.45 | -$2,661 | 21.8 / 0.0% | +$6,992 (+$137) | 1.09 | -$11,791 | 4.1 / 2.1% | 8.7 / 10.1% | rejected |
+| ema_tag50h_x150 | 1.5x when the sweep wick tagged the 1h EMA 50 | +$20,572 (+$2,097) | 3.37 | -$2,661 | 21.8 / 0.0% | +$7,884 (+$154) | 1.1 | -$12,422 | 4.4 / 2.3% | 9.2 / 10.8% | rejected |
+| ema_knife_skip | check: skip the falling knives | +$18,057 (+$1,841) | 3.33 | -$2,631 | 16.0 / 0.0% | +$15,672 (+$307) | 1.25 | -$6,223 | 4.1 / 0.9% | 9.7 / 4.1% | info |
+| ema_knife_half_nocold | check: knife rule with the cold-streak filter off | +$19,782 (+$2,017) | 3.0 | -$4,445 | 20.9 / 0.0% | +$3,824 (+$75) | 1.04 | -$13,463 | 4.3 / 4.2% | 10.2 / 19.9% | info |
 
 Notes on the table:
 - **Skipping** the falling knives drops 2026 to 2.01 trades a week (69% of weeks with 2+) and 2021-25 to 2.79, which is
@@ -122,6 +127,8 @@ Notes on the table:
 - **Cold-streak filter:** the knife rule adds to it rather than overlapping. With the cold filter off, the knife rule
   still lifts 2021-25 from -$2,542 to +$3,824; with it on, from +$6,491 to +$11,120 (plain ATR) / +$9,639 (Wilder).
 - The 1.25x lean-in rules look better on money only because they add size (more risk); the eval fail rate goes up.
+- Eval numbers use the run library's eval-speed scoring (a new MFFU 50K eval started on every session, run up to 60
+  sessions), the same scoring as every other run on the dashboard.
 
 ### Year by year (Wilder-ATR version)
 

@@ -355,26 +355,26 @@ def eval_path(T, pol, sess, k0, horizon=None, by=None, dll=True, record=None):
     return "OPEN", end - k0
 
 
-def eval_stats(T, pol, sess, dll=True):
-    """Rolling 2-week / 1-month pass-fail, eventual pass share (run to the end of the span) and back-to-back, over the
-    sessions `sess` (one span)."""
+def eval_stats(T, pol, sess, dll=True, horizon=60):
+    """The dashboard's eval columns (tools/runlib.eval_speed, owner's rule 2026-10-17), computed with this policy's sizing:
+    a fresh eval started on every session of the span and run up to `horizon` sessions:
+      p10/f10, p15/f15, p20/f20, p60/f60  % of starts passed / failed within 10, 15, 20, 60 sessions
+      dec10      % decided (passed or failed) within 10 sessions
+      slow_pass  % of passes (within the horizon) that needed more than 15 sessions
+      pass_med   median sessions of a pass
+      b2b        back-to-back evals passed/failed from the span's first session."""
     by = _by_day(T)
+    res = [eval_path(T, pol, sess, i, horizon, by, dll) for i in range(len(sess))]
+    n = len(res) or 1
+    pct = lambda c: round(100 * c / n, 1)
+    passes = [d for r, d in res if r == "PASS"]
     out = {}
-    for H, key in ((10, "10"), (20, "20"), (60, "60")):
-        c = collections.Counter()
-        for i in range(len(sess) - H + 1):
-            c[eval_path(T, pol, sess, i, H, by, dll)[0]] += 1
-        n = sum(c.values()) or 1
-        out["p" + key] = round(100 * c["PASS"] / n, 1); out["f" + key] = round(100 * c["FAIL"] / n, 1)
-    c = collections.Counter(); dpass = []
-    for i in range(len(sess)):
-        r, d = eval_path(T, pol, sess, i, None, by, dll)
-        c[r] += 1
-        if r == "PASS":
-            dpass.append(d)
-    res = c["PASS"] + c["FAIL"]
-    out["pE"] = round(100 * c["PASS"] / res, 1) if res else None
-    out["dE"] = int(np.median(dpass)) if dpass else None
+    for H in (10, 15, 20, 60):
+        out[f"p{H}"] = pct(sum(1 for r, d in res if r == "PASS" and d <= H))
+        out[f"f{H}"] = pct(sum(1 for r, d in res if r == "FAIL" and d <= H))
+    out["dec10"] = round(out["p10"] + out["f10"], 1)
+    out["slow_pass"] = round(100 * sum(1 for d in passes if d > 15) / len(passes), 1) if passes else None
+    out["pass_med"] = float(np.median(passes)) if passes else None
     k, P, F = 0, 0, 0
     while k < len(sess):
         r, d = eval_path(T, pol, sess, k, None, by, dll)
@@ -383,6 +383,9 @@ def eval_stats(T, pol, sess, dll=True):
         P += r == "PASS"; F += r == "FAIL"; k += d
     out["b2b"] = f"{P}/{F}"
     return out
+
+
+EVAL_KEYS = ("p10", "f10", "p15", "f15", "p20", "f20", "dec10", "slow_pass", "pass_med", "b2b")
 
 
 def b2b_avg(T, pol, sess, offsets=range(0, 100, 5), dll=True):
@@ -428,11 +431,12 @@ def score(trades, raw, T=None, pol=None, eval_aware=False, dll=True):
         sess = span_sessions(raw, a, z)
         if not sess or not S["spans"][name].get("n"):
             continue
-        if eval_aware:
-            S["spans"][name].update(eval_stats(T, pol, sess, dll))
-        else:
-            e = eval_stats(fixed, {"cold": None}, sess, dll)
-            S["spans"][name].update({k: e[k] for k in ("p60", "f60", "pE", "dE")})
+        TT, PP = (T, pol) if eval_aware else (fixed, {"cold": None})
+        e = eval_stats(TT, PP, sess, dll)
+        S["spans"][name].update(e if eval_aware else {k: e[k] for k in ("p60", "f60")})
+        if name != "all":
+            av = b2b_avg(TT, PP, sess, dll=dll)
+            S["spans"][name].update({"pass_yr": av["pass_yr"], "fail_yr": av["fail_yr"], "epp": av["evals_per_pass"]})
     return S
 
 
@@ -455,9 +459,9 @@ def fmt(S, name):
     s = S["spans"][name]
     if not s.get("n"):
         return f"{name}: no trades"
-    return (f"{name:7s} n={s['n']:3d} tpw={s['tpw']:.2f} wk2={s['wk2']:3d}% win={s['win']:4.1f}% PF={s['pf']} net={s['net']:+7,} "
-            f"DD={s['dd']:7,} 2w {s['p10']:4.1f}/{s['f10']:4.1f} 1m {s['p20']:4.1f}/{s['f20']:4.1f} 3m {s.get('p60', 0):4.1f}/"
-            f"{s.get('f60', 0):4.1f} b2b {s['b2b']}")
+    return (f"{name:7s} n={s['n']:3d} tpw={s['tpw']:.2f} PF={s['pf']} net={s['net']:+7,} DD={s['dd']:7,} | 2w {s['p10']:4.1f}/"
+            f"{s['f10']:4.1f} dec10 {s.get('dec10')} 3w {s.get('p15')}/{s.get('f15')} 1m {s['p20']:4.1f}/{s['f20']:4.1f} slow "
+            f"{s.get('slow_pass')}% med {s.get('pass_med')} b2b {s['b2b']} evals/pass {s.get('epp')}")
 
 
 def show(tag, S):
@@ -1267,9 +1271,9 @@ def cmd_check():
         sess = span_sessions(raw, a, z)
         e = eval_stats(T, {}, sess)
         s0 = S0["spans"][name]
-        ok = all(abs(e[k] - s0[k]) < 0.05 for k in ("p10", "f10", "p20", "f20")) and e["b2b"] == s0["b2b"]
-        print(f"eval simulator {name}: {'matches' if ok else 'DIFFERS'} runlib ({e} vs "
-              f"{ {k: s0[k] for k in ('p10', 'f10', 'p20', 'f20', 'b2b')} })")
+        ok = all((e[k] == s0[k]) if isinstance(e[k], str) or e[k] is None else abs(e[k] - s0[k]) < 0.05 for k in EVAL_KEYS)
+        print(f"eval simulator {name}: {'matches' if ok else 'DIFFERS'} runlib.eval_speed "
+              f"({ {k: e[k] for k in EVAL_KEYS} } vs { {k: s0.get(k) for k in EVAL_KEYS} })")
     nd = sum(1 for t in mine if t["low"] <= -PLAN["dll"])
     print(f"daily loss limit binds on {nd} baseline trades")
 

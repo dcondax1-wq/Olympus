@@ -366,13 +366,13 @@ RUNS = (
 )
 
 
-def status_of(S, B, min_tpw=2.0):
-    """adopt-candidate: better than the baseline in BOTH periods on net and PF, with 2+ trades a week in both, and the
+def status_of(S, B, min_tpw=2.0, max_tpw=4.0):
+    """adopt-candidate: better than the baseline in BOTH periods on net and PF, with 2-4 trades a week in both, and the
     1-month MFFU eval (pass % - fail %) not worse by more than 1 point (so a plain size-up that only adds risk does not
     count); promising: clearly helps one period and does not hurt the other; else rejected."""
     a, b = S["spans"]["2026"], S["spans"]["2021-25"]
     A, Bb = B["spans"]["2026"], B["spans"]["2021-25"]
-    if (a.get("tpw") or 0) < min_tpw or (b.get("tpw") or 0) < min_tpw:
+    if not (min_tpw <= (a.get("tpw") or 0) <= max_tpw and min_tpw <= (b.get("tpw") or 0) <= max_tpw):
         return "rejected"
 
     def ev(x):

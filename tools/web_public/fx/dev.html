@@ -3,7 +3,7 @@
   view=none: only the background field (try &scene=lab, and click the page for a ripple).
   Needs dev-data.json (gitignored): python tools/build_web_dashboard.py --state dash/state.json --out <dir>, copy <dir>/data.json here,
   then serve tools/web_public (python -m http.server 8797) and open http://127.0.0.1:8797/fx/dev.html. devshot.js screenshots it.
-  Options: &year=2026|all (galaxy)  &runs=1|37|150 (constellation)  &ser=1|2 &span=2026|all (ribbon)
+  Options: &year=2026|all (galaxy)  &runs=1|37|150|real (constellation; real = ./dev-runs.json)  &ser=1|2 &span=2026|all (ribbon)
            &bal= &floor= &day= &status= &locked=1 (reactor)  &idx=-1..4 &live=0|1 &kz=0|1 (pipeline)  &empty=1 (no data)
            &seq=1 (re-mount with changed data after 4 s, then the same data again after 7 s: animation + idempotency)
            &ff=<s> (fast-forward the view's clock by s seconds after each mount: finished intros in a slow software GPU)
@@ -84,12 +84,14 @@ function losses(seed = 9) {
   }) };
 }
 const empty = q.get('empty') === '1';
+// &runs=real: a constellation payload from ./dev-runs.json (not in the repo: devshot's "route" option serves one from disk)
+const REAL = q.get('runs') === 'real' ? await (await fetch('./dev-runs.json')).json().catch(() => null) : null;
 const make = (alt) => ({
   galaxy: () => (D.trades || []).filter(t => q.get('year') === 'all' || t.day.startsWith(q.get('year') || '2026')).slice(alt ? 10 : 0),
   city: () => D.results.months,
   orb: () => ({ bars: (D.live.bars || []).slice(-14), pools: D.live.pools || [], price: D.live.price, state: D.live.model_state }),
   candles: () => ({ bars: D.live.bars.slice(-120), pools: D.live.pools, price: D.live.price }),
-  constellation: () => empty ? { runs: [], baseline: 'baseline' } : (() => { const r = runs(+(q.get('runs') || 37)); if (alt) { r.splice(3, 4); r.push(...runs(48, 11).slice(40)); r[5] && (r[5] = { ...r[5], status: 'adopt-candidate', pf26: 4.1, pf21: 1.21 }); } return { runs: r, baseline: 'baseline' }; })(),
+  constellation: () => empty ? { runs: [], baseline: 'baseline' } : REAL ? REAL : (() => { const r = runs(+(q.get('runs') || 37)); if (alt) { r.splice(3, 4); r.push(...runs(48, 11).slice(40)); r[5] && (r[5] = { ...r[5], status: 'adopt-candidate', pf26: 4.1, pf21: 1.21 }); } return { runs: r, baseline: 'baseline' }; })(),
   ribbon: () => empty ? { series: [] } : alt ? ribbon(+(q.get('ser') || 2), q.get('span') || '2026', 13) : ribbon(+(q.get('ser') || 2), q.get('span') || '2026'),
   reactor: () => empty ? {} : alt ? { ...reactor(), balance: reactor().balance + 1450, dayPnl: 620 } : reactor(),
   pipeline: () => empty ? {} : alt ? { ...pipeline(), idx: Math.min(4, pipeline().idx + 1) } : pipeline(),

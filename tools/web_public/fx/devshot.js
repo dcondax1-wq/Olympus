@@ -4,13 +4,14 @@
 //     [{ "view": "constellation", "w": 390, "h": 360, "wait": 4000, "out": "a.png", "query": "runs=150",
 //        "tap": [x, y] | "tapItem" (taps the first pickable item: window.__view.devTapPoint()), "touch": true (phone touch events),
 //        "hover": [x, y] | "item" (mouse over that item; prints the tooltip text), "reduced": true (prefers-reduced-motion),
-//        "dpr": 1 (faster), "shots": [[ms, "b.png"], ...] }]
+//        "dpr": 1 (faster), "route": { "dev-runs.json": "/abs/file.json" } (serve a file from disk), "shots": [[ms, "b.png"], ...] }]
 //   Prints console errors / warnings, the picked row after a tap and the view's draw calls per frame.
 const { chromium } = require('playwright');
 const fs = require('fs');
 async function shot(b, o) {
   const { view = 'galaxy', w = 390, h = 360, wait = 4000, out = `dev_${view}.png`, query = '' } = o;
   const p = await b.newPage({ viewport: { width: +w, height: +h + 40 }, deviceScaleFactor: o.dpr || 2, hasTouch: !!o.touch, isMobile: !!o.touch, reducedMotion: o.reduced ? 'reduce' : 'no-preference' });
+  for (const [file, src] of Object.entries(o.route || {})) await p.route('**/fx/' + file, (r) => r.fulfill({ path: src }));
   const errs = []; p.on('pageerror', e => errs.push('PAGEERR ' + e.message)); p.on('console', m => { if (['error', 'warning'].includes(m.type())) errs.push(m.type() + ' ' + m.text().slice(0, 300)); });
   await p.goto(`http://127.0.0.1:8797/fx/dev.html?view=${view}&h=${h}&${query}`);
   await p.waitForFunction(() => window.__ready === true, null, { timeout: 60000 }).catch(() => errs.push('not ready'));

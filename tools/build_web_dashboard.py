@@ -10,6 +10,7 @@ data.json holds:
   variants  every tested variant (research/lab/variant_results.json)
   study     trades under review (research/study), charts copied to study/
   cold      the cold-streak filter config, state and its last-15 window
+  sizing / strategy   the locked live settings (live_model.json: label, lock date, params, cold-streak filter)
   lab       the research run library index (research/runs, tools/runlib.py): one compact row per backtest run; every run
             file (all its trades, days, months, years) is copied to runs/<id>.json and fetched by the run page on demand
   docs      research write-ups (research/writeups/*.md, front matter + markdown) and an archive of the older result
@@ -135,7 +136,8 @@ def _runs(out, runs_dir):
     rows.sort(key=lambda r: (order.get(r["status"], 9), r["family"], r["id"]))
     base = idx.get("baseline") or "baseline"
     lab = {"built": idx.get("built"), "baseline": base if any(r["id"] == base for r in rows) else None, "count": len(rows),
-           "columns": idx.get("columns") or {}, "families": list(FAMILIES), "statuses": list(STATUSES), "runs": rows}
+           "columns": idx.get("columns") or {}, "owner_rules": idx.get("owner_rules"), "families": list(FAMILIES), "statuses": list(STATUSES),
+           "runs": rows}
     return lab, skipped, sorted(extra)
 
 
@@ -409,6 +411,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                  "window": [{"day": x.get("day"), "r": x.get("r")} for x in sorted(shadow, key=lambda x: x.get("exit_t", 0))[-int(cfg.get("lookback", 15)):]]},
         "sizing": {"risk_usd": (lm.get("params") or {}).get("risk_usd"), "risk_ref_stop": (lm.get("params") or {}).get("risk_ref_stop"),
                    "max_trades_day": (lm.get("params") or {}).get("max_trades_day"), "label": lm.get("label"), "chosen": lm.get("chosen")},
+        # the locked strategy for the Strategy page: label, lock date and the settings that differ from the engine defaults
+        "strategy": {k: lm.get(k) for k in ("label", "chosen", "locked", "model", "sym", "params", "equity_filter")},
         "lab": lab,
         "docs": docs,
     }
