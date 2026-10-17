@@ -32,9 +32,10 @@ Where their steps differ from mine, follow theirs.
 
 ---
 
-## What changed on 2026-10-17
+## What changed on 2026-10-17 (evening lock)
 
-The script now trades the **locked strategy**, the same rules as the Python bot (`live_model.json`, `STRATEGY.md`):
+The script now trades the **locked strategy**, the same rules as the Python bot (`live_model.json`, `STRATEGY.md`,
+locked 2026-10-17 evening for Monday 2026-10-19):
 
 | Setting (Inputs tab) | Old | **New default** |
 |---|---|---|
@@ -44,16 +45,19 @@ The script now trades the **locked strategy**, the same rules as the Python bot 
 | Cap risk at a fraction of the MLL cushion | on | **off** (under "Old rules") |
 | Grade sizing A+..D | on | **off** (under "Old rules") |
 | No major pool in range: fixed-R target | on (2R) | **off**: no target = no trade |
-| Cold-streak filter | (none) | **on**: if the last 15 closed trades add up to 0R or less, the trade is still taken at **half size** |
+| Size in a cold streak | (none) | **0.25**: if the last 15 closed trades add up to 0R or less, the trade is still taken at a **quarter** of the size (the morning lock had half) |
+| Size on a late entry | (none) | **0.5**: when the 15-minute structure had already turned the trade's way at the signal, **half size** |
+| Breakeven at (R) on trending days | (none: 1R every day) | **3**: on a trending day (10-day efficiency above 0.45, the same test that halves the size) the stop moves to breakeven at +3R instead of +1R |
 | Alert format | bridge JSON | **choice: Bridge JSON or Phone text** |
 
 Also new:
-- A **status box** (top right) shows the version ("eval mode 2026-10-17"), the risk rule, the cold-streak state and
-  today's trades.
-- Entry labels show the size, and "cold" when the size was cut.
+- A **status box** (top right) shows the version ("eval mode 2026-10-17 evening"), the risk rule ("late entry x0.5 · BE
+  1R (3R trending)"), the cold-streak state and today's trades.
+- Entry labels show the size, "cold" and "late" when the size was cut.
 
-Size = micros = risk ÷ (stop points × $2), rounded down, max 40, halved in a trending market. In a cold streak:
-micros × 0.5 (at least 1).
+Size = micros = risk ÷ (stop points × $2), rounded down, max 40, halved in a trending market. Then the cuts: cold
+streak × 0.25, late entry × 0.5, multiplied and rounded down once, never below 1 micro (`engine/sizing.py`). A
+40-micro trade in a cold streak that is also late becomes 5.
 
 **Cold streak on TradingView.** TradingView only knows the trades on the loaded chart (about 8 weeks, roughly 15-25
 trades), so it is at full size until 15 trades have closed there ("warming up" in the status box). The Python bot uses
@@ -62,9 +66,10 @@ the Python dashboard, use input *Override* (Always full size / Always cold), the
 
 Parity proof (research/PINE_PARITY.md):
 - On the same bars, the script's replica and the Python engine agree on every trade, size and dollar: 22/22 in the
-  8-week TradingView window, 780/780 over 5 years, the cold-streak cut on the same 379 trades.
+  8-week TradingView window, 780/780 over 5 years, the quarter-size cut on the same 373 trades and the late-entry cut on
+  the same 102.
 - TradingView trades **MNQ1!** prices and the Python bot **NQ1!** prices. Those differ by a tick or two, so now and
-  then one of them takes a different trade or size (3 of 22 trades in the 8-week window).
+  then one of them takes a different trade or size (3 of 22 trades in the 8-week window, plus one late-entry flag).
 
 ---
 
@@ -82,15 +87,16 @@ Parity proof (research/PINE_PARITY.md):
    - Chart timezone **New York**.
    - Add the strategy to the chart. Leave every input at its default.
 4. **Strategy Tester check.**
-   - The status box must read "Liquidity Engine eval mode 2026-10-17".
+   - The status box must read "Liquidity Engine eval mode 2026-10-17 evening".
    - Then compare the List of trades with `research/pine_parity/expected_tv_trades_locked_2026-10-16.csv`. From about
      Aug 26 to Oct 13, every trade should be there with the same time, side, size and exit:
      - 08-27 11:20 short 33 micros, target, +$3,910.50
+     - 08-31 09:40 short 5 micros (label "late": half size), stop, -$290.00
      - 09-17 14:45 long 29 micros, target, +$3,973.00
      - 10-12 14:15 long 16 micros, stop, -$736.00
      - the full list is in research/PINE_PARITY.md
-   - With history starting Aug 23 18:00, the totals are 22 trades, **+$13,190.50**, profit factor **5.86**, 45.45% winners,
-     commission $304.50.
+   - With history starting Aug 23 18:00, the totals are 22 trades, **+$13,733.50**, profit factor **7.33**, 45.45% winners,
+     commission $288.00. (The morning lock's script gave +$13,190.50 and PF 5.86 here.)
    - Your chart starts a little later (TradingView keeps a fixed number of bars), so the first 1-3 trades may be
      missing. Totals then shrink, but the remaining trades stay identical.
    - The Oct 16 afternoon should add no trade.
@@ -163,7 +169,8 @@ Keep **phone text** as the free fallback for days the bridge is down, or before 
 ## 3. The strategy inputs and the ONE alert
 
 1. **Inputs.**
-   - Leave *Risk and size*, *Cold-streak filter*, *Old rules* and *Model* at their defaults: they equal the Python bot.
+   - Leave *Risk and size*, *Cold-streak filter*, *Old rules* and *Model* at their defaults: they equal the Python bot
+     (risk $800 to a 20-pt stop, late entry x0.5, cold streak x0.25, breakeven at 1R or 3R on trending days).
    - *Alerts*:
      - *Alert format* (Bridge JSON / Phone text);
      - *Bridge* (TradersPost / PickMyTrade);
@@ -272,16 +279,19 @@ TARGET HIT · LONG 29 MNQ closed at 29,785.75 · check your broker: flat, no ord
 
 Other phone texts:
 ```
+SHORT 5 MNQ at market · stop 29,426.25 · target 29,273.75 · risk $278 · half size (late entry)
+LONG 1 MNQ at market · stop 30,844.50 · target 31,086.25 · risk $116 · quarter size (cold streak)
+LONG 1 MNQ at market · stop 31,147.00 · target 31,263.50 · risk $84 · quarter size (cold streak) · half size (trending market)
 SHORT 1 MNQ at market · stop 31,213.50 · target 30,965.75 · risk $116 · half size (trending market)
-LONG 1 MNQ at market · stop 29,004.75 · target 29,184.50 · risk $82 · half size (cold streak) · half size (trending market)
 CLOSE SHORT 1 MNQ at market · giveback: was +0.5R, closed back through the entry
 CLOSE LONG 12 MNQ at market · time stop: not +0.5R after 30 min
 CLOSE LONG 12 MNQ at market · end of day: be flat by 15:55
 BREAKEVEN STOP HIT · SHORT 5 MNQ closed at 30,579.00 · check your broker: flat, no orders left
 ```
+"risk $" is the dollars at risk at the size sent (after the cuts).
 
-**Breakeven.** At +1R the strategy moves its own stop to entry ± 1 tick (Python rule) and sends the breakeven message
-once.
+**Breakeven.** At +1R (+3R on a trending day) the strategy moves its own stop to entry ± 1 tick (Python rule) and sends
+the breakeven message once.
 - TradersPost's `breakeven` puts the broker stop **at** the average entry, one tick looser than the model.
 - If the bridge ignores the message, TradingView's own breakeven stop still fills when price returns to entry + 1 tick,
   and the synced exit closes the broker position with a market `exit`. That exit goes out when TradingView sees the
@@ -301,21 +311,23 @@ Source of truth: `engine/model.py` and `live_model.json`. Parity is measured, no
 
 Details and numbers: `research/PINE_PARITY.md`.
 
-**Status 2026-10-17 (locked strategy).**
+**Status 2026-10-17 evening (locked strategy).**
 - **Same bars, both sides:**
-  - 8-week MNQ1! window: 22/22 trades, sizes and dollars equal (+$13,190.50).
-  - 5 years: 780/780, the cold-streak cut on the same 379 trades, net equal to the cent (+$26,823.50 with MNQ
-    commissions).
+  - 8-week MNQ1! window: 22/22 trades, sizes and dollars equal (+$13,733.50).
+  - 5 years: 780/780, the quarter-size cut on the same 373 trades and the late-entry cut on the same 102, net equal to
+    the cent (+$37,362.00 with MNQ commissions).
 - **Replaying the unadjusted contract with the roll shift** (what TradingView sees, 20 rolls) gives the identical 780
   trades.
-- **Against the official live-loop numbers:**
-  - 2026: 89 trades, PF 3.40 vs 3.48, +$19,715 vs +$20,111, the same eval odds (1 month: 30.5% pass, 0% fail).
-  - 5 years: PF 1.29 vs 1.32.
+- **Against the official baseline** (`research/runs/baseline.json`, the live-loop replay):
+  - 2026: 89 trades, PF 3.86 vs 3.94, +$20,110 vs +$20,487, the same eval odds (1 month: 31.6% pass, 0% fail).
+  - 2021-25: PF 1.24 vs 1.27, +$15,001 vs +$16,379.
+  - 5 years: PF 1.50 vs 1.54.
 
 ### Remaining differences (Pine cannot do it, or it is deliberate)
 1. **Data feed (the main one).** TradingView trades MNQ1! prints; the Python bot uses NQ1! (`data/NQ_5m.csv`, Yahoo
-   NQ=F live). A tick or two apart, so a trigger or a stop distance can change.
-   - In the 8-week window: 3 of 22 trades differ, and 4 sizes differ by 1-3 micros.
+   NQ=F live). A tick or two apart, so a trigger, a stop distance or the 15m "late entry" flag can change.
+   - In the 8-week window: 3 of 22 trades differ, 4 sizes differ by 1-3 micros, and one trade is a late entry on
+     MNQ but not on NQ (2 micros vs 4).
    - On identical bars there is no difference.
 2. **Cold-streak record.** TradingView only counts the trades on the loaded chart, so it is at full size until 15
    trades have closed there. The Python bot reads its shadow ledger.
@@ -360,7 +372,8 @@ Details and numbers: `research/PINE_PARITY.md`.
 ## If the script does not compile
 
 There is no Pine compiler outside TradingView, so the 2026-10-17 script has not been compiled yet. Everything it uses
-already compiled on 2026-10-16 except the items below. TradingView's editor names the line; fix only that line.
+already compiled on 2026-10-16 except the items below (the evening changes only add inputs, one more element to a tuple
+that already compiled with nine, and plain arithmetic). TradingView's editor names the line; fix only that line.
 
 | Error mentions | Fix |
 |---|---|

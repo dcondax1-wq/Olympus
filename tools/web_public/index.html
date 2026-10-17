@@ -669,6 +669,7 @@ table.ht tr.grp td { white-space: normal; font: 650 10.5px var(--sans); letter-s
 .fx-cap { position: absolute; left: 12px; top: 10px; z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 99px; font: 650 10px var(--sans); letter-spacing: .08em; text-transform: uppercase;
   color: #e9dcff; background: rgba(12,6,24,.55); border: 1px solid rgba(200,160,255,.2); pointer-events: none; }
 .fx3d.fx-live > .fx-cap { display: none; }
+.fx3d.fx-live + .legend { display: none; }            /* the 3D views draw their own legend */
 .legend .dot2 { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
 .pt { cursor: pointer; transition: r .15s; }
 .gauge-n { font: 800 34px var(--sans); letter-spacing: -.03em; text-align: center; color: var(--ink); }
@@ -1215,7 +1216,7 @@ const GROUPS = [
     ['learned', 'Lessons', 'learned', 'What held in both periods'], ['variants', 'Variants', 'variants', 'The older variant table'], ['study', 'Study', 'study', 'Trades under review']] },
   { id: 'system', label: 'System', icon: 'modules', pages: [['system', 'Overview', 'modules', 'Every part of the bot'], ['strategy', 'Strategy', 'rules', 'The locked strategy in plain words'],
     ['engine', 'Liquidity Engine', 'engine', 'Cloud paper bot: state, position, events'], ['eval', 'MFFU Eval', 'prop', 'Balance, target, trailing max loss'],
-    ['cold', 'Cold-Streak', 'cold', 'Half size when the last 15 signals sum ≤ 0R'], ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop'], ['alerts', 'Alerts', 'alerts', 'Telegram / Discord from the cloud'],
+    ['cold', 'Cold-Streak', 'cold', 'Smaller size when the last 15 signals sum ≤ 0R'], ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop'], ['alerts', 'Alerts', 'alerts', 'Telegram / Discord from the cloud'],
     ['sources', 'Data Sources', 'sources', 'Where every number comes from'], ['settings', 'Settings', 'settings', 'Home Screen app, refresh, 3D']] },
 ];
 const DETAIL = { run: { group: 'lab', label: 'Experiment', back: 'experiments' }, writeup: { group: 'lab', label: 'Write-up', back: 'writeups' },
@@ -1350,7 +1351,7 @@ const STAT = { baseline: ['Live strategy', 'st-baseline', '#ffffff'], 'adopt-can
   rejected: ['Rejected', 'st-rejected', '#ff5a7a'], info: ['Info', 'st-info', '#8a93a8'], finding: ['Finding', 'st-finding', '#c4a6ff'], archive: ['Archive', 'st-archive', '#8a93a8'] };
 const famChip = (f) => { const x = FAM[f] || [f || 'Other', '#a9b1c3']; return `<span class="chip fam" style="--c:${x[1]}">${esc(x[0])}</span>`; };
 const stChip = (s) => { const x = STAT[s] || [s || 'Info', 'st-info']; return `<span class="chip ${x[1]}">${esc(x[0])}</span>`; };
-const famColor = (f) => (FAM[f] || FAM.other)[1], stColor = (s) => (STAT[s] || STAT.info)[2];
+const stColor = (s) => (STAT[s] || STAT.info)[2];
 const LAB = () => D?.lab || { runs: [] };
 const RUNS_ = () => LAB().runs || [];
 const baseId = () => LAB().baseline || 'baseline';
@@ -1953,6 +1954,7 @@ function constFb(el, cd, onPick) {
     bands: b ? [{ x0: b.pf21, y0: b.pf26, color: '#2ee59d', label: 'better in both' }] : [], empty: 'No runs with numbers yet.' });
 }
 const pickRun = (run) => { if (run?.id) location.hash = '#/run/' + encodeURIComponent(run.id); };
+const moreLink = (n, shown, st, what) => n > shown ? `<div class="more" style="margin:12px 0 2px"><button class="btn ghost" type="button" data-xst="${st}">See all ${n} ${what}${icon('right')}</button></div>` : '';
 
 // ===================================================================== LAB: overview
 VIEWS.lab = (el) => {
@@ -1983,9 +1985,9 @@ VIEWS.lab = (el) => {
       ${fxBox('lab-constellation', 'constellation')}
       <div class="legend">${['baseline', 'adopt-candidate', 'promising', 'rejected', 'info'].map(s => `<span><i class="dot2" style="background:${stColor(s)}"></i>${STAT[s][0]}</span>`).join('')}</div></div>
     ${secH('Recommendations')}
-    <div class="card">${adopt.length ? `<p class="lead" style="margin-bottom:6px"><b class="up">${plural(adopt.length, 'run is', 'runs are')} marked to adopt by the research.</b> Read the write-up and the numbers below before changing the bot; nothing changes on its own.</p>${adopt.map(recRow).join('')}`
+    <div class="card">${adopt.length ? `<p class="lead" style="margin-bottom:6px"><b class="up">${plural(adopt.length, 'run is', 'runs are')} marked to adopt by the research.</b> Read the write-up and the numbers below before changing the bot; nothing changes on its own.</p>${adopt.slice(0, 4).map(recRow).join('')}${moreLink(adopt.length, 4, 'adopt-candidate', 'adopt candidates')}`
       : `<p class="lead"><b>Keep the live settings.</b> No experiment is marked to adopt yet: to qualify, a change has to beat the live strategy in 2026 and in 2021-25 and keep 2-4 trades a week.</p>`}
-      ${prom.length ? `<div class="sec-h" style="margin:18px 0 4px"><span>Promising · worth a closer look</span><i></i></div>${prom.map(recRow).join('')}` : ''}
+      ${prom.length ? `<div class="sec-h" style="margin:18px 0 4px"><span>Promising · worth a closer look</span><i></i></div>${prom.slice(0, 3).map(recRow).join('')}${moreLink(prom.length, 3, 'promising', 'promising runs')}` : ''}
       ${!adopt.length && !prom.length && close.length ? `<div class="sec-h" style="margin:18px 0 4px"><span>Closest calls</span><i></i></div>${close.map(xRowHTML).join('')}` : ''}
       ${!others.length ? `<p class="note">Experiments appear here as soon as the research agents store them.</p>` : ''}</div>
     ${secH('Latest findings', `<button class="chipbtn" type="button" data-go="writeups"><span>All write-ups</span>${icon('right')}</button>`)}
@@ -1995,7 +1997,8 @@ VIEWS.lab = (el) => {
     ${secH('Newest runs')}
     <div class="card">${newest.length ? newest.map(xRowHTML).join('') : emptyBox('No runs yet.', '')}</div>`;
   fxFill('lab-constellation', 'constellation', cd, { onPick: pickRun }, (fb) => constFb(fb, cd, pickRun));
-  $$('.fam-t').forEach(t => t.onclick = () => { XS.fam = t.dataset.fam; XS.st = 'all'; XS.q = ''; location.hash = '#/experiments'; });
+  $$('.fam-t').forEach(t => t.onclick = () => { XS.fam = t.dataset.fam; XS.st = 'all'; XS.q = ''; XS.shown = 24; location.hash = '#/experiments'; });
+  $$('[data-xst]').forEach(t => t.onclick = () => { XS.st = t.dataset.xst; XS.fam = 'all'; XS.q = ''; XS.shown = 24; location.hash = '#/experiments'; });
 };
 
 // ===================================================================== LAB: experiments (the run library)
@@ -2532,7 +2535,8 @@ VIEWS.risk = (el) => {
 const prevLock = () => RUNS_().filter(r => r.id !== baseId() && (/^live[_-]/i.test(r.id) || r.family === 'baseline')).sort((a, b) => String(b.id).localeCompare(String(a.id)))[0] || null;
 function lockNoteHTML(t) {
   // file names in the note become links to the published write-ups ("research/writeups/risk-summary.md" -> Risk summary)
-  return esc(t).replace(/(?:research\/writeups\/)?([\w.-]+\.md)\b/g, (m, f) => { const slug = docByFile()[f], d = slug && allDocs().find(x => x.slug === slug);
+  const plainT = String(t).replace(/\bcold_size\s*([\d.]+)/g, (m, v) => `${sizeWord(+v)} size in cold streaks`).replace(/\blate_mult\s*([\d.]+)/g, (m, v) => `${sizeWord(+v)} size on late entries`);
+  return esc(plainT).replace(/(?:research\/writeups\/)?([\w.-]+\.md)\b/g, (m, f) => { const slug = docByFile()[f], d = slug && allDocs().find(x => x.slug === slug);
     return d ? `<a class="lnk" href="${docLink(slug)}">${esc(d.title.split(':')[0])}</a>` : esc(f.replace(/\.md$/, '').replace(/[-_]/g, ' ')); });
 }
 VIEWS.strategy = (el) => {
@@ -2576,7 +2580,7 @@ VIEWS.strategy = (el) => {
     <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>How much it risks</h3></div><div class="kv one">${sizeRows.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div></div>
       <div class="card"><div class="card-h"><h3>Micros by stop</h3><span class="meta">full · cold${R.late != null ? ' · late' : ''}</span></div><div class="tw"><table class="ht"><tr><th>Stop</th><th class="c">Risk</th><th class="c">Full</th><th class="c">Cold</th>${R.late != null ? '<th class="c">Late</th>' : ''}</tr>
         ${[15, 20, 30, 40, 50, 60].map(st => `<tr><td class="mono"><b>${st} pts</b></td><td class="v">${usd(microsFor(st).budget)}</td><td class="v">${microsFor(st).m}</td><td class="v">${microsFor(st, R.cold).m}</td>${R.late != null ? `<td class="v">${microsFor(st, R.late).m}</td>` : ''}</tr>`).join('')}</table></div>
-        <button class="chipbtn" type="button" data-go="risk" style="margin-top:12px">${icon('risk')}<span>Size calculator</span></button></div></div>
+        <div class="hero-links" style="margin-top:12px"><button class="chipbtn" type="button" data-go="risk">${icon('risk')}<span>Size calculator</span></button></div></div></div>
     ${secH('How it has done')}
     <div class="card"><div class="card-h"><h3>Backtest of these settings</h3><span class="meta">real CME NQ futures · costs included</span></div>
       ${prev ? `<p class="card-d">The small number under each value is the change against the previous lock (<a class="lnk" href="${runLink(prev.id)}">${esc(prev.title || prev.id)}</a>); green is better.</p>` : ''}

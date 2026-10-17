@@ -1,19 +1,21 @@
 {
- "note": "locked strategy, 5 years: replica on the engine's own back-adjusted NQ bars (data/NQ_5m.csv) vs engine.backtest with live_model.json over the same bars, cold-streak filter on both sides. Rows: mismatches only (none).",
+ "lock": "locked 2026-10-17 evening: $800 up to a 20-pt stop, 1 trade/day, no fallback target, quarter size in cold streaks, half size on late entries, breakeven at 3R on trending days (live_model.json). The morning lock's files are in commit a603087.",
+ "note": "5 years: replica on the engine's own back-adjusted NQ bars (data/NQ_5m.csv) vs engine.backtest with live_model.json over the same bars, cold-streak and late-entry sizing on both sides. Rows: mismatches only (none).",
  "bars": [
   "2021-10-17 18:00",
   "2026-10-16 16:55"
  ],
  "summary_tradingview_replica": {
   "trades": 780,
-  "net": 26823.5,
-  "gross_profit": 114017.0,
-  "gross_loss": -87193.5,
-  "pf": 1.31,
-  "win_pct": 21.2,
-  "max_dd_closed": -12063.5,
-  "cold_trades": 379,
-  "commission": 5679.0
+  "net": 37362.0,
+  "gross_profit": 108709.0,
+  "gross_loss": -71347.0,
+  "pf": 1.52,
+  "win_pct": 21.8,
+  "max_dd_closed": -9460.5,
+  "cold_trades": 373,
+  "late_trades": 102,
+  "commission": 4630.5
  },
  "parity": {
   "n_py": 780,
@@ -22,13 +24,16 @@
   "full_matches": 780,
   "size_matches": 780,
   "cold_flag_matches": 780,
-  "py_cold_trades": 379,
-  "tv_cold_trades": 379,
+  "py_cold_trades": 373,
+  "tv_cold_trades": 373,
+  "late_flag_matches": 780,
+  "py_late_trades": 102,
+  "tv_late_trades": 102,
   "entry_parity": 1.0,
   "parity": 1.0,
-  "net_tv": 26823.5,
-  "net_py_mnq": 26823.5,
-  "net_py_engine": 28681.49,
+  "net_tv": 37362.0,
+  "net_py_mnq": 37362.0,
+  "net_py_engine": 38831.75,
   "window": [
    "2021-10-18",
    "2026-10-16"
