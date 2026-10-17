@@ -4,13 +4,16 @@
   "params": {
     "grade_sizing": false,
     "conviction_step": 0,
-    "max_trades_day": 1
+    "max_trades_day": 1,
+    "risk_usd": 650,
+    "dd_aware": false
   },
   "equity_filter": {
     "lookback": 15,
-    "min_sum_r": 0.0
+    "min_sum_r": 0.0,
+    "cold_mode": "half"
   },
-  "label": "Liquidity Engine - original + cold-streak filter (last 15 signals must be net positive)",
+  "label": "Liquidity Engine - eval mode ($650 risk, every setup, half size in cold streaks)",
   "chosen": "2026-10-17",
   "locked": true,
   "rules": "STRATEGY.md"

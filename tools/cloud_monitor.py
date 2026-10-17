@@ -133,14 +133,15 @@ def run(out):
     for t in res["trades"]:
         if t["entry_t"] >= first_run - SECS:
             prev = ledger.get(int(t["entry_t"]))
-            taken = prev["taken"] if prev and "taken" in prev else \
-                equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["on"]
+            mult = prev["mult"] if prev and "mult" in prev else \
+                equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["mult"]
             ledger[int(t["entry_t"])] = {"day": tday(t["entry_t"]), "entry": f"{et(t['entry_t']):%m-%d %H:%M}",
                                          "side": "LONG" if t["dir"] == 1 else "SHORT", "grade": t.get("grade"),
                                          "trigger": t.get("trigger"), "exit": t.get("exit_reason"),
                                          "exit_t": f"{et(t['exit_t']):%H:%M}" if t.get("exit_t") else None,
-                                         "R": round(float(t["pnl_r"]), 2), "taken": bool(taken),
-                                         "usd": round(float(t["pnl"]), 2) if taken else 0.0, "qty": t.get("qty")}
+                                         "R": round(float(t["pnl_r"]), 2), "taken": mult > 0, "mult": mult,
+                                         "usd": round(float(t["pnl"]) * mult, 2),
+                                         "qty": max(1, int((t.get("qty") or 0) * mult)) if mult else 0}
     pos = state.get("position")
 
     # ---- alerts for events not seen before (only events from after the monitor started, like LiveBot._emit_events)
@@ -152,9 +153,12 @@ def run(out):
         seen.add(key)
         if ev["type"] in ALERT_TYPES:
             note = ""
-            if ev["type"] == "entry" and eqf_cfg and \
-                    not equity_filter.status(eqf_cfg, before_t=int(ev["t"]), path=shadow_path)["on"]:
+            m = equity_filter.status(eqf_cfg, before_t=int(ev["t"]), path=shadow_path)["mult"] \
+                if ev["type"] == "entry" and eqf_cfg else 1.0
+            if m <= 0:
                 note = "\nNOT TAKEN - cold-streak filter (last 15 signals net negative), tracked on paper only"
+            elif m < 1:
+                note = "\nHALF SIZE - cold-streak filter (last 15 signals net negative)"
             new_alerts.append(f"{SYM} {ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
     et_now = et(now)
     eod_sent = st.get("eod_sent")
@@ -263,7 +267,9 @@ def write_chart(path, df, state, res, today):
 
 
 def usd_cell(v):
-    return money(v["usd"]) if v.get("taken", True) else "skipped (cold streak)"
+    if not v.get("taken", True):
+        return "skipped (cold streak)"
+    return money(v["usd"]) + (" (half size, cold streak)" if v.get("mult", 1.0) < 1 else "")
 
 
 def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run):

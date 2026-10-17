@@ -193,7 +193,7 @@ function render(snap) {
       ['Session', st.model_state, !['DONE FOR DAY'].includes(st.model_state)],
     ];
     const ef = st.equity_filter;
-    if (ef?.enabled) guards.push(['Cold-streak filter', `${ef.on ? 'TRADING' : 'SITTING OUT'} · last ${ef.n} ${ef.sum_r > 0 ? '+' : ''}${fmtN(ef.sum_r, 2)}R`, ef.on]);
+    if (ef?.enabled) guards.push(['Cold-streak filter', `${ef.on ? 'FULL SIZE' : ef.mult ? 'HALF SIZE' : 'SITTING OUT'} · last ${ef.n} ${ef.sum_r > 0 ? '+' : ''}${fmtN(ef.sum_r, 2)}R`, ef.on]);
     if (st.strategy?.label) guards.unshift(['Strategy', String(st.strategy.label).split(' (')[0], true]);
     const h = snap.health;
     if (h) {

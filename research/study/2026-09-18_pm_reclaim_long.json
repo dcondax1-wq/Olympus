@@ -1,0 +1,1 @@
+{"trades": [{"day": "2026-09-18", "entry_t": 1789752000, "exit_t": 1789761300, "dir": 1, "entry": 29746.25, "stop": 29725.0, "exit": 29877.75, "exit_kind": "market", "setup": "ATM PM reclaim long (study, hindsight)", "qty": 15, "risk_pts": 21.25, "pnl": 3909.0, "r": 6.132, "sym": "NQ", "mae_usd": 435.0, "target": 29898.75}]}

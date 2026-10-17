@@ -7,8 +7,8 @@ export function renderPlaybook(el) {
     ['05', 'Stop', 'Beyond the sweep extreme + 2 pts. Minimum 10 pts. Wider than 60 pts: use the far side of the inverted gap if that is 10–60 pts, otherwise skip the trade.'],
     ['06', 'Target the draw on liquidity', 'The nearest untaken MAJOR pool at least 1.5R away, exit order 1 tick in front of it, capped at 5R. No major pool in range: 2R.'],
     ['07', 'Manage the trade', 'Breakeven at +1R. Close if it has not reached +0.5R within 30 min. Once it has been +0.5R, a candle closing back through entry closes it (giveback). Flat by 15:55 ET; close 5 min before high-impact news.'],
-    ['08', 'Risk', '$350 per trade in MNQ micros: $350 ÷ (stop pts × $2), max 40; half size when the market is trending (10-day efficiency above 0.45); never more than 25% of the cushion above the trailing max loss. 1 trade a day; done after a winner or at −$600. No entries from 15 min before to 30 min after high-impact US news, after 13:00 on FOMC days, or once the day\'s range is 1.6× the 20-day average.'],
-    ['09', 'Cold-streak filter (owner pick, locked)', 'Every signal from steps 1–8 goes into a shadow record, traded or not. A trade is taken only if the last 15 finished signals add up above 0R. Otherwise the bot sits out, keeps tracking every setup on paper, and starts trading again by itself the moment the record turns positive. Lookback chosen on 2021–24 only and confirmed on 2025 and 2026.'],
+    ['08', 'Risk', '$650 per trade in MNQ micros: $650 ÷ (stop pts × $2), max 40. Typical stop 44 pts × 7 micros ≈ $616. Half size when the market is trending (10-day efficiency above 0.45). 1 trade a day; done after a winner. No entries from 15 min before to 30 min after high-impact US news, after 13:00 on FOMC days, or once the day\'s range is 1.6× the 20-day average.'],
+    ['09', 'Cold-streak filter: half size (owner pick, locked)', 'Every signal from steps 1–8 goes into a shadow record. If the last 15 finished signals add up to 0R or less, the bot still takes every setup but at half size, and goes back to full size by itself the moment the record turns positive. Every setup is traded, so it keeps 2+ a week.'],
   ];
   const gloss = [
     ['Liquidity pool', 'A price where resting stop and limit orders cluster, typically just beyond obvious highs and lows.'],
@@ -28,26 +28,26 @@ export function renderPlaybook(el) {
   ];
   el.innerHTML = `<div class="pb">
     <h2>The Model · Liquidity Sweep → IFVG → Draw on Liquidity + Cold-Streak Filter</h2>
-    <p class="lead">The strategy the bot trades, locked in by the owner on Oct 17 2026: the original Liquidity Engine (1 trade a day, fixed $350 risk) plus the cold-streak filter. Each rule below is code (<span class="mono">engine/model.py</span>, <span class="mono">engine/equity_filter.py</span>, settings in <span class="mono">live_model.json</span>), written out in <span class="mono">STRATEGY.md</span>, and the bot narrates every decision live.</p>
+    <p class="lead">The strategy the bot trades, locked in by the owner on Oct 17 2026: the Liquidity Engine in eval mode (1 trade a day, $650 risk, every setup taken, half size in cold streaks). Each rule below is code (<span class="mono">engine/model.py</span>, <span class="mono">engine/equity_filter.py</span>, settings in <span class="mono">live_model.json</span>), written out in <span class="mono">STRATEGY.md</span>, and the bot narrates every decision live.</p>
     <div class="steps">${steps.map(([n, h, p]) => `<div class="step"><div class="n">STEP ${n}</div><h4>${h}</h4><p>${p}</p></div>`).join('')}</div>
     <div class="grid cols-2">
       <div class="card"><div class="card-h"><h3>Cold-streak filter</h3></div>
         <ul class="check">
-          <li><b>Rule:</b> trade only while the last 15 finished signals sum above 0R.</li>
-          <li><b>While paused:</b> no real trades, but every setup is still logged and scored on paper. You get an alert when it pauses and when it resumes.</li>
-          <li><b>Why it works here:</b> this model's losing stretches come in runs (Apr–Jul 2026, Sep–Dec 2025). The filter steps aside after a run of losers and comes back once the setups start paying again.</li>
-          <li><b>Cost:</b> it misses the first part of each comeback, so total profit is a little lower, and it can go weeks without a real trade.</li>
-          <li><span class="muted">Live page, Position &amp; risk guard: "Cold-streak filter" shows TRADING or SITTING OUT with the current 15-signal total.</span></li>
+          <li><b>Rule:</b> full size while the last 15 finished signals sum above 0R; half size when they don't.</li>
+          <li><b>In a cold streak:</b> every setup is still taken, at half size. You get an alert when it drops to half size and when it goes back to full.</li>
+          <li><b>Why it works here:</b> this model's losing stretches come in runs (Apr–Jul 2026, Sep–Dec 2025). Half size after a run of losers keeps the damage smaller until the setups start paying again.</li>
+          <li><b>Cost:</b> the first winners of each comeback are at half size.</li>
+          <li><span class="muted">Live page, Position &amp; risk guard: "Cold-streak filter" shows FULL SIZE or HALF SIZE with the current 15-signal total.</span></li>
         </ul></div>
       <div class="card"><div class="card-h"><h3>Pre-trade checklist</h3></div>
         <ul class="check">
-          <li>☐ Cold-streak filter says TRADING (last 15 signals above 0R)</li>
+          <li>☐ Size: full, or half if the cold-streak filter says HALF SIZE</li>
           <li>☐ Inside a killzone (09:30–11:30 or 13:30–15:30 ET)</li>
           <li>☐ A marked pool was clearly swept (trade-through, not a touch)</li>
           <li>☐ Body close back through a gap in the sweep leg (or CISD)</li>
           <li>☐ Major pool at least 1.5R away, confluence score at least 1</li>
           <li>☐ Stop 10–60 NQ pts beyond the sweep extreme</li>
-          <li>☐ No trade yet today, day P&amp;L above −$600</li>
+          <li>☐ No trade yet today</li>
           <li>☐ High-impact news checked; you are at the screen supervising</li>
         </ul></div>
     </div>
@@ -55,18 +55,17 @@ export function renderPlaybook(el) {
       <div class="card"><div class="card-h"><h3>Research findings (honest)</h3></div>
         <ul class="check">
           <li>All numbers: TradingView NQ1! futures data, commissions and slippage included, $350 risk.</li>
-          <li><b>2026 (Jan 2 – Oct 16):</b> 59 trades, 32% win, avg win +2.76R vs avg loss −0.45R, PF 2.99, +$10,339, max DD −$1,174. Without the filter: 93 trades, 26% win, PF 2.41, +$11,630, max DD −$3,147.</li>
-          <li><b>2025:</b> 70 trades, 34% win, PF 1.95, +$5,906, max DD −$1,226 (without: PF 1.32, +$3,860, −$3,362).</li>
-          <li><b>All 5 years (Oct 2021 – Oct 2026):</b> 414 trades, 27% win, PF 1.54, +$21,250, max DD −$4,958 (without: PF 1.19, +$13,568, −$8,900).</li>
-          <li><b>MFFU 50K eval, new start every 2026 day:</b> 43% passed and 0% failed within 6 months, the rest still running. Over all 5 years: 37% passed, 11% failed within 6 months. It rarely fails but is slow: 2–5 months to pass is typical.</li>
-          <li><b>Trade frequency:</b> about 2 a week while trading, but it paused May 1 – Aug 6 2026 (about 14 weeks). Overall 1.4 a week.</li>
+          <li><b>2026 (Jan 2 – Oct 16):</b> 97 trades (2.4 a week, 2+ in 92% of weeks), 26% win, PF 2.55, +$21,359, max DD −$4,379, worst day −$651.</li>
+          <li><b>MFFU 50K eval, new start every 2026 day:</b> 25% passed within 2 weeks (0% failed), 37% within a month (1% failed). Back to back in 2026: 6 passed, 2 failed.</li>
+          <li><b>All 5 years:</b> 824 trades, PF 1.30, +$38,194, max DD −$13,389. Eval within 2 weeks: 12% pass / 6% fail; back to back: 20 passed, 31 failed. 2026 was a good year for this model.</li>
+          <li>No setting passes for sure in 2 weeks: $3k is about 5R at $650 and the $2k limit is about 3 full losses.</li>
           <li>Tested and rejected: ICT 2022, Silver Bullet, Mech/IFVG, continuation and ATM models as taught; 92 confluences; 6 daily-bias methods; grade-based sizing; partials and trailing stops.</li>
           <li>Backtests are not a promise. Paper trade first.</li>
         </ul></div>
       <div class="card"><div class="card-h"><h3>MFFU Builder 50K constraints baked in</h3></div>
         <ul class="check">
           <li>$3,000 target · $2,000 EOD trailing MLL (locks at $50,100) · $1,000 soft daily loss</li>
-          <li>Max 4 minis / 40 micros: the sizer caps at 40 micros. The worst 2026 drawdown with the filter ($1,174) stayed inside the $2,000 MLL</li>
+          <li>Max 4 minis / 40 micros: the sizer caps at 40 micros. At $650 risk the $2,000 MLL is about 3 full losses</li>
           <li>No eval consistency rule; funded payouts require best day ≤ 50% of cycle profit</li>
           <li>Flat before session close: the bot flattens at 15:55 ET</li>
           <li>Automation: MFFU permits automated strategies with <b>active oversight</b>; no HFT, no sim-fill exploitation. Confirm the current policy with MFFU.</li>

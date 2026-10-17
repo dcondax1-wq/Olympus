@@ -9,7 +9,9 @@ Evidence (research: tools/equity_filter_study.py, live pick, lookback picked on 
   lookback 15: 2021-24 -$1,922 -> +$5,005 | 2025 +$3,860 -> +$5,906 | 2026 +$11,630 -> +$10,339 with PF 2.41 -> 2.99,
   win rate 26% -> 32%, max drawdown -$3,147 -> -$1,174. Neighbours 14-18 all improve every period.
 
-Config (live_model.json): "equity_filter": {"lookback": 15, "min_sum_r": 0.0}   (missing/null = off)
+Config (live_model.json): "equity_filter": {"lookback": 15, "min_sum_r": 0.0, "cold_mode": "skip" | "half"}
+(missing/null = off). "half" keeps every setup (2+ a week) and trades the cold streak at half size instead of sitting out:
+$650 risk + half, 2026: 97 trades, 2.4/week, PF 2.55, eval passed within 2 weeks 25% / failed 0% (rolling starts).
 """
 from __future__ import annotations
 
@@ -60,15 +62,19 @@ def record(trades: list, path: str = LEDGER) -> int:
 
 
 def status(cfg: dict | None, before_t: int | None = None, path: str = LEDGER) -> dict:
-    """{"enabled", "on", "sum_r", "n", "lookback", "reason"} for an entry at before_t (unix seconds)."""
+    """{"enabled", "on", "mult", "sum_r", "n", "lookback", "reason"} for an entry at before_t (unix seconds).
+    on = full size. During a cold streak cold_mode "skip" (default) gives mult 0 (paper only), "half" gives mult 0.5."""
     if not cfg:
-        return {"enabled": False, "on": True, "reason": "equity filter off"}
+        return {"enabled": False, "on": True, "mult": 1.0, "reason": "equity filter off"}
     lb = int(cfg.get("lookback", 15))
     thr = float(cfg.get("min_sum_r", 0.0))
+    half = cfg.get("cold_mode", "skip") == "half"
     rows = [x for x in load(path) if before_t is None or int(x["exit_t"]) < int(before_t)]
     last = rows[-lb:]
     s = round(sum(float(x["r"]) for x in last), 2)
     on = len(last) < lb or s > thr
-    reason = (f"last {len(last)} signals {s:+.2f}R > {thr:+.1f}R: trading" if on else
-              f"last {len(last)} signals {s:+.2f}R <= {thr:+.1f}R: cold streak, paper only until it turns positive")
-    return {"enabled": True, "on": on, "sum_r": s, "n": len(last), "lookback": lb, "reason": reason}
+    mult = 1.0 if on else (0.5 if half else 0.0)
+    reason = (f"last {len(last)} signals {s:+.2f}R > {thr:+.1f}R: full size" if on else
+              f"last {len(last)} signals {s:+.2f}R <= {thr:+.1f}R: cold streak, "
+              + ("half size until it turns positive" if half else "paper only until it turns positive"))
+    return {"enabled": True, "on": on, "mult": mult, "sum_r": s, "n": len(last), "lookback": lb, "reason": reason}

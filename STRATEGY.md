@@ -1,7 +1,7 @@
-# The exact strategy the bot trades: Liquidity Engine (original, 1 trade/day) + cold-streak filter
+# The exact strategy the bot trades: Liquidity Engine, eval mode
 
 Market: NQ futures, traded as MNQ micros ($2 per point), on 5-minute candles. All times are New York (ET).
-Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1`, `equity_filter: {lookback: 15, min_sum_r: 0}` (`live_model.json`).
+Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1`, `risk_usd: 650`, `dd_aware: false`, `equity_filter: {lookback: 15, min_sum_r: 0, cold_mode: half}` (`live_model.json`).
 
 ## 1. Mark the liquidity
 These are the pools the bot watches:
@@ -49,61 +49,50 @@ These are the pools the bot watches:
 - **News:** close 5 minutes before a high-impact release.
 
 ## 8. Risk management
-- **Risk $350 per trade.** Micros = $350 ÷ (stop points × $2), rounded down, max 40.
-  - Typical: a 44-point stop × 3 micros ≈ $300.
+- **Risk $650 per trade.** Micros = $650 ÷ (stop points × $2), rounded down, max 40.
+  - 2026 stops: median 44 points (most between 36 and 53, range 12–60). Size: median 6 micros (2–25). Dollar risk: median $595 (up to $655 with fees).
+  - Typical: a 44-point stop × 7 micros ≈ $616.
 - **Half size** in a trending market (10-day efficiency above 0.45).
-- **Never risk more than 25% of the cushion** above the eval's trailing max-loss level.
-- **1 trade per day.** Done for the day after a winner, or at **−$600** on the day.
+- **1 trade per day.** Done for the day after a winner.
 - **No new entries:**
   - from 15 minutes before to 30 minutes after a high-impact US release (CPI, NFP, FOMC…)
   - after 13:00 on FOMC days
   - once the day's range has reached 1.6× the 20-day average
 
-## 9. Cold-streak filter (sit out the bad stretches)
-- The bot keeps a **shadow record of every signal** in rules 1–8, traded or not (`data/shadow_ledger.json`).
+## 9. Cold-streak filter (half size in bad stretches)
+- The bot keeps a **shadow record of every signal** in rules 1–8 (`data/shadow_ledger.json`).
 - Before each entry it adds up the R of the **last 15 signals that have already finished**.
-- **Above 0R:** take the trade as normal.
-- **0R or below:** don't take it. The signal is still tracked on paper, and alerts say "NOT TAKEN - cold-streak filter".
-- Trading resumes **automatically** as soon as the last 15 signals add back up above 0R.
-- Nothing else changes: same entries, stops, targets and risk. So the reward-to-risk of each trade stays the same.
-- Why 15: chosen on 2021–24 data only, then checked on 2025 and 2026, which it never saw. Every lookback from 14 to 18 improves every period, so it isn't one lucky number.
+- **Above 0R:** full size.
+- **0R or below:** the trade is **still taken, at half size**. Alerts say "HALF SIZE - cold-streak filter".
+- Full size comes back **automatically** as soon as the last 15 signals add back up above 0R.
+- Every setup is traded, so it keeps 2+ setups a week. Only the size changes.
 
-## How it performed (verified Oct 17 2026: fresh rerun on TradingView NQ1! futures data, commissions and slippage included)
+## How it performed (fresh rerun of the real engine on TradingView NQ1! futures data, commissions and slippage included)
 
-| Period | Version | Trades | Trades/week | Win % | Avg win / avg loss | Profit factor | Net | Max drawdown |
-|---|---|---:|---:|---:|---:|---:|---:|---:|
-| **2026 (Jan 2 – Oct 16)** | original | 93 | 2.3 | 26% | +2.82R / −0.47R | 2.41 | +$11,630 | −$3,147 |
-| | **with filter (live)** | 59 | 1.4 | **32%** | +2.76R / −0.45R | **2.99** | **+$10,339** | **−$1,174** |
-| 2025 (full year) | original | 148 | 2.9 | 22% | +1.92R / −0.51R | 1.32 | +$3,860 | −$3,362 |
-| | **with filter** | 70 | 1.4 | **34%** | +1.80R / −0.53R | **1.95** | **+$5,906** | **−$1,226** |
-| Oct 2021 – Dec 2024 | original | 562 | 3.5 | 22% | +2.04R / −0.53R | 0.96 | −$1,922 | −$8,900 |
-| | **with filter** | 285 | 1.8 | 24% | +2.12R / −0.53R | **1.18** | **+$5,005** | **−$4,958** |
-| **All 5 years** | original | 803 | 3.1 | 22% | +2.12R / −0.52R | 1.19 | +$13,568 | −$8,900 |
-| | **with filter** | 414 | 1.6 | **27%** | +2.16R / −0.52R | **1.54** | **+$21,250** | **−$4,958** |
+| | 2026 (Jan 2 – Oct 16) | All 5 years (Oct 2021 – Oct 2026) |
+|---|---:|---:|
+| Trades | 97 | 824 |
+| Setups per week | 2.4 (2+ in 92% of weeks) | 3.2 |
+| Win rate | 26% | 22% |
+| Profit factor | 2.55 | 1.30 |
+| Net | +$21,359 | +$38,194 |
+| Max drawdown | −$4,379 | −$13,389 |
+| Worst day | −$651 | −$704 |
 
-**2026 by month:**
+**MFFU 50K eval ($3k target, $2k trailing max loss).** A new eval was started on every trading day:
 
-| | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct |
-|---|---|---|---|---|---|---|---|---|---|---|
-| original | +$894 | −$436 | +$2,684 | −$832 | −$790 | −$928 | −$340 | +$5,288 | +$4,125 | +$1,964 |
-| with filter | +$283 | −$436 | +$1,016 | −$832 | paused | paused | paused | +$4,218 | +$4,125 | +$1,964 |
-
-**MFFU 50K eval ($3k target, $2k trailing max loss).** A new eval was started on every trading day, then I checked where it stood 3 and 6 months (60 and 120 sessions) later:
-
-| Started in | Version | Passed by 3 mo | Failed by 3 mo | Passed by 6 mo | Failed by 6 mo |
-|---|---|---:|---:|---:|---:|
-| 2026 | original | 29% | 27% | 8% | 90% |
-| | **with filter** | 25% | **0%** | **43%** | **0%** |
-| All 5 years | original | 19% | 34% | 27% | 65% |
-| | **with filter** | 17% | **3%** | **37%** | **11%** |
-
-Evals not counted as passed or failed were still running. Run back to back over all 5 years (a new eval the day after each pass or fail): filter 7 passes, 4 fails; original 8 passes, 12 fails.
-
-*Correction:* an earlier version of this page said "83 passed, 0 failed" for 2026. That count let each eval run until the data ended, so it hid how slow passing is.
+| | 2026 | All 5 years |
+|---|---:|---:|
+| Passed within 2 weeks | 25% | 12% |
+| Failed within 2 weeks | 0% | 6% |
+| Passed within 1 month | 37% | 19% |
+| Failed within 1 month | 1% | 20% |
+| Run back to back (new eval after each pass/fail) | 6 passed, 2 failed | 20 passed, 31 failed |
+| Typical time to pass, when it passes | 14 trading days | 14 trading days |
 
 **What to expect:**
-- It wins about 1 trade in 3. Winners are still big (about 2.8R); losers are still small (about 0.45R).
-- **It rarely fails the eval, but it's slow.** A pass typically takes 2–5 months. Most of the profit comes in strong stretches (Aug–Oct 2026).
-- **It goes quiet in bad stretches.** In 2026 it paused from May 1 to Aug 6, about 14 weeks with no real trades, while the signals kept being tracked on paper. It traded in 26 of 42 weeks: about 2 trades a week while active, and 1.4 a week on average overall.
-- In 2021–24 the filter still had a $4,958 drawdown. That's over the $2,000 limit, so failing is possible in a bad year.
+- No setting passes "for sure" in 2 weeks. The $3k target is about 5R at $650; the $2k limit is about 3 full losses. A 2-week pass needs 2 big winners early. In 2026 that happened 1 time in 4.
+- It wins about 1 trade in 4. Winners are big (often 2–5R), losers are about 1R or less.
+- 2026 was a good year for this model. Over 5 years at this size, more evals failed than passed.
+- The older, safer setup ($350, sit out cold streaks) almost never failed but took months to pass and traded 1.4 times a week. It's still available by setting `risk_usd: 350`, `dd_aware: true` and `cold_mode: skip`.
 - Past results are not a promise. Paper-trade it before risking money.

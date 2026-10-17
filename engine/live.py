@@ -374,7 +374,8 @@ class LiveBot:
         self.kill = True
         if self.state and self.state.get("position"):
             pos = self.state["position"]
-            self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "qty": pos.get("qty"), "reason": "KILL SWITCH",
+            qty = self._open_qty if self._open_routed == pos.get("entry_t") and self._open_qty else pos.get("qty")
+            self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "qty": qty, "reason": "KILL SWITCH",
                          "entry_t": pos.get("entry_t")})
             self._flattened.add(pos.get("entry_t"))
             self._open_routed = None
@@ -667,24 +668,33 @@ class LiveBot:
         if prev is None or prev == eqf["on"]:
             return
         if eqf["on"]:
-            text = (f"Cold streak over: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Back to taking trades.")
+            text = f"Cold streak over: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Back to full size."
+        elif eqf.get("mult"):
+            text = (f"Cold streak: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Still taking every setup at half size "
+                    f"until they add back up above 0R.")
         else:
             text = (f"Cold streak: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Sitting out; every setup is still tracked "
                     f"on paper and trading resumes when they add back up above 0R.")
         self._log("risk", text)
         self._alert(("⏸️ " if not eqf["on"] else "▶️ ") + text, "guard")
 
-    def _equity_ok(self, entry_t):
-        """Equity-curve filter gate for one entry; logs why when it holds the entry back (paper only)."""
+    def _equity_qty(self, entry_t, qty):
+        """Equity-curve filter for one entry: the quantity to route (0 = hold the entry back), logged when it changes it."""
         try:
             from . import equity_filter as _eqf
             st = _eqf.status(getattr(self, "_eqf_cfg", None), before_t=entry_t)
         except Exception as e:
-            self._note_error(f"equity filter failed, entry allowed: {e}")
-            return True
-        if not st["on"]:
+            self._note_error(f"equity filter failed, entry allowed at full size: {e}")
+            return qty
+        mult = st.get("mult", 1.0 if st["on"] else 0.0)
+        if mult <= 0:
             self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET NOT traded: {st['reason']}")
-        return st["on"]
+            return 0
+        if mult < 1:
+            q = max(1, int(qty * mult))
+            self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET at {q} instead of {qty}: {st['reason']}")
+            return q
+        return qty
 
     def _route_signals(self, res, sym, now, secs):
         """Turn the engine's position / completed trades into adapter calls, exactly once each."""
@@ -721,12 +731,12 @@ class LiveBot:
             elif age > late_after:
                 self._blocked_entries.add(pos["entry_t"])
                 self._log("risk", f"Entry at {_et(pos['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
-            elif not self._equity_ok(pos["entry_t"]):
+            elif not (q := self._equity_qty(pos["entry_t"], pos["qty"])):
                 self._blocked_entries.add(pos["entry_t"])
             else:
                 self._open_routed = pos["entry_t"]
-                self._open_qty = pos["qty"]
-                self._route({"sym": sym, "side": "buy" if pos["dir"] == 1 else "sell", "qty": pos["qty"],
+                self._open_qty = q
+                self._route({"sym": sym, "side": "buy" if pos["dir"] == 1 else "sell", "qty": q,
                              "stop": pos["stop"], "target": pos["target"], "entry": pos["entry"], "entry_t": pos["entry_t"]})
         for tr in res["trades"]:
             if tr["exit_t"] >= start - secs and ("exit", tr["entry_t"]) not in self.seen:
@@ -748,12 +758,15 @@ class LiveBot:
                         continue
                     self._log("warn", f"Exit {tr['exit_reason']} for an entry this process never routed (model entered {_et(tr['entry_t']):%H:%M} ET during a gap): "
                                       "flatten sent in case a broker position exists - verify by hand")
+                qty = tr["qty"]
                 if self._open_routed == tr["entry_t"]:
                     self._open_routed = None
+                    qty = self._open_qty or tr["qty"]          # what we actually routed (half size in a cold streak)
                 if self.cfg["adapter"] == "paper" or tr["exit_reason"] == "TIME":
                     # brackets handle stop/target at the broker; the bot only flattens on time exits
-                    self._route({"sym": sym, "side": "exit", "qty": tr["qty"], "reason": tr["exit_reason"],
-                                 "pnl": tr["pnl"], "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})
+                    self._route({"sym": sym, "side": "exit", "qty": qty, "reason": tr["exit_reason"],
+                                 "pnl": round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"],
+                                 "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})
                 if routed:
                     self._remember(tr, sym)      # every completed routed trade feeds the persistent memory
 
