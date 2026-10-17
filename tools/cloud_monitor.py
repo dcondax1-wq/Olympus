@@ -195,10 +195,22 @@ def run(out):
                  "events": [{"t": int(e["t"]), "type": e["type"], "text": e["text"]} for e in res["events"] if tday(e["t"]) == today][-25:],
                  "engine_trades": [{"day": tday(t["entry_t"]), "entry_t": int(t["entry_t"]), "dir": t["dir"], "R": round(float(t["pnl_r"]), 2),
                                     "exit": t.get("exit_reason"), "trigger": t.get("trigger"), "risk_pts": t.get("risk_pts"),
-                                    "qty": t.get("qty"), "target_label": t.get("target_label")} for t in res["trades"][-10:]]}
+                                    "qty": t.get("qty"), "target_label": t.get("target_label")} for t in res["trades"][-10:]],
+                 # for the web dashboard's Chart tab: the last ~2 sessions of 5m bars and the untaken pools around price
+                 "bars": [[int(r.time), float(r.open), float(r.high), float(r.low), float(r.close)] for r in df.tail(200).itertuples()],
+                 "pools": _near_pools(state)}
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}")
+
+
+def _near_pools(state, n=6):
+    """Nearest untaken liquidity pools above and below price (label, price, side H/L, strength)."""
+    px = state.get("price")
+    pools = [p for p in state.get("active_pools") or [] if px and abs(p.get("price", 0) - px) / px < 0.03]
+    above = sorted([p for p in pools if p["price"] > px], key=lambda p: p["price"])[:n]
+    below = sorted([p for p in pools if p["price"] < px], key=lambda p: -p["price"])[:n]
+    return [{"label": p.get("label"), "price": p["price"], "side": p.get("side"), "strength": p.get("strength")} for p in above + below]
 
 
 def write_chart(path, df, state, res, today):

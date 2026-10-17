@@ -79,6 +79,10 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
      `icons.js`, `viz.js` (SVG charts), `trades.js`, `datahub.js` (Results, Variants, Lessons, Study), `modpages.js` (Rules,
      Cold-Streak, Risk & Sizing). API: `engine/next_api.py` (`/api/next/*`, read-only, from research/lab + research/study).
    - Next: polish ideas only (per-module live badges, the Today page hero).
-2. Phone dashboard on the `dashboard` branch: per-trade stop pts, micros, $ risk, R, half-size flag, eval progress bar.
+2. **PC-off web dashboard (done 2026-10-17):** https://demetrades2000-coder.github.io/nq-dashboard/, a Home Screen app (PWA) in the
+   same dark design. One static page `tools/web_public/index.html` (+ manifest, sw.js) reads only `data.json`, built by
+   `tools/build_web_dashboard.py` on every cloud-monitor run: live state + recent bars + pools, results, every replay trade with
+   its report, replays (`tools/export_replays.py` → `research/lab/replays.json`, rerun after a new export), variants, lessons,
+   study trades. The scheduled run uses the workflow on the default branch, so merge changes there.
 3. Port the cold-streak filter plus the new sizing and target rules to the Pine script.
 4. Optional: test "smaller size when inducement was taken first" when more data exists.

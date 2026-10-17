@@ -1,0 +1,22 @@
+{
+  "name": "Liquidity Engine",
+  "short_name": "Liquidity",
+  "description": "NQ Liquidity Engine: cloud paper bot, MFFU eval tracker, trades, replays and backtest results. Works with the PC off.",
+  "id": "./",
+  "start_url": "./#/today",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#07080c",
+  "theme_color": "#07080c",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Trades", "url": "./#/trades" },
+    { "name": "Results", "url": "./#/results" },
+    { "name": "Replays", "url": "./#/replays" }
+  ]
+}

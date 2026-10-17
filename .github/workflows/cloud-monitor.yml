@@ -1,5 +1,6 @@
 # Cloud paper monitor: runs the live paper bot's decision loop on a schedule so it works with the PC off.
-# Publishes README.md + chart.png + state.json to the `dashboard` branch (open it in the GitHub app).
+# Publishes README.md + chart.png + state.json to the `dashboard` branch (open it in the GitHub app), and the web dashboard
+# (tools/web_public + data.json, a Home Screen app) to demetrades2000-coder.github.io/nq-dashboard.
 # Paper only - never places orders. Free: about 1,200-1,500 of the 2,000 monthly Actions minutes for private repos.
 # Optional phone alerts: repository secrets TG_TOKEN + TG_CHAT (Telegram) and/or DISCORD_WEBHOOK.
 name: cloud-monitor
@@ -50,6 +51,10 @@ jobs:
             /live_model.json
             /requirements-cloud.txt
             /research/lab/backtest_live.json
+            /research/lab/replays.json
+            /research/lab/variant_results.json
+            /research/study/
+            /web/icons/
 
       - name: Python
         if: steps.guard.outputs.go == '1'
