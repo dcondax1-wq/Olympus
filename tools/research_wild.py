@@ -372,6 +372,35 @@ def shuffle_test(F, raw, key, kind, thr, draws=5000, seed=11):
     return {"observed_gap": round(obs, 3), "p_single": round(single / draws, 3), "p_family": round(family / draws, 3), "factors_tested": len(masks)}
 
 
+def random_control(F, T0, key, kind, thr, mult_hi, mult_lo, draws=4000, seed=5):
+    """Fair test for a size rule: apply the same multipliers to a RANDOM group of the same size (per period) and ask how often
+    the random rule adds at least as much net as the factor rule, in 2021-25, in 2026 and in both. Linear approximation on
+    the live-sized trades (P&L is linear in micros; rounding and the 40-micro cap are ignored here, the saved runs are exact)."""
+    rng = np.random.default_rng(seed)
+    out = {}
+    deltas = {}
+    for span in ("2021-25", "2026"):
+        rows = [(t, F[int(t["entry_t"])].get(key)) for t in T0 if in_span(t["day"], span)]
+        rows = [(t, v) for t, v in rows if v is not None]
+        pnl = np.array([float(t["pnl"]) for t, _ in rows])
+        if kind == "bin":
+            hi = np.array([v >= (thr if thr is not None else 1) for _, v in rows])
+        else:
+            hi = np.array([v > thr for _, v in rows])
+        mult = np.where(hi, mult_hi, mult_lo)
+        obs = float(((mult - 1) * pnl).sum())
+        nh = int(hi.sum())
+        sims = np.empty(draws)
+        for i in range(draws):
+            m = np.zeros(len(pnl), bool); m[rng.choice(len(pnl), nh, replace=False)] = True
+            sims[i] = ((np.where(m, mult_hi, mult_lo) - 1) * pnl).sum()
+        deltas[span] = (obs, sims)
+        out[f"delta_{span}"] = round(obs); out[f"p_{span}"] = round(float((sims >= obs).mean()), 3)
+    o1, s1 = deltas["2021-25"]; o2, s2 = deltas["2026"]
+    out["p_both"] = round(float(((s1 >= o1) & (s2 >= o2)).mean()), 3)
+    return out
+
+
 def make_rule(F, key, kind, thr, mult_hi, mult_lo):
     def rule(t, ctx):
         v = F.get(int(t["entry_t"]), {}).get(key)
@@ -405,8 +434,10 @@ def main(save=True):
     skipped = [r for r in table if not r["old"]]
     print("skipped (too few on one side):", [(r["key"], r["skip"]) for r in skipped])
 
+    Tf = rl.size(raw, rule=lambda t, c: 1.25); Sf = rl.score(Tf, raw)
+    print("\nflat 1.25x on every trade (reference):"); print(" ", rl.line(Sf, "2026")); print(" ", rl.line(Sf, "2021-25"))
     top = ranked[:8]
-    runs = []
+    runs = [{"id": "flat_x125_ref", "key": None, "tag": "x125", "status": "info", "spans": {k: Sf["spans"][k] for k in ("2026", "2021-25", "all")}}]
     for r in top:
         spec = next(x for x in FACTORS if x[0] == r["key"]); kind, thr = spec[2], (r["thr"] if spec[2] == "num" else spec[3])
         worse_is_hi = r["old"]["gap"] < 0
@@ -418,17 +449,22 @@ def main(save=True):
                 mult_hi, mult_lo = (1.0, 1.25) if worse_is_hi else (1.25, 1.0)
             T = rl.size(raw, rule=make_rule(F, r["key"], kind, thr, mult_hi, mult_lo)); S = rl.score(T, raw)
             st = judge(S, S0)
+            ctl = random_control(F, T0, r["key"], kind, thr, mult_hi, mult_lo)
+            if st == "adopt-candidate" and not (ctl["p_2021-25"] < 0.05 and ctl["p_2026"] < 0.05):
+                st = "promising"      # beats the baseline, but a random group of the same size does as well too often in one period
             rid = f"wild_{r['key']}_{tag}"
             side = ("above" if worse_is_hi else "at/below") if tag == "half" else ("at/below" if worse_is_hi else "above")
             print(f"\n{rid} [{st}]  ({'half size' if tag=='half' else '1.25x'} when {r['label']} is {side} {r['thr']})")
             print(" ", rl.line(S, "2026")); print(" ", rl.line(S, "2021-25"))
-            runs.append({"id": rid, "key": r["key"], "tag": tag, "status": st, "spans": {k: S["spans"][k] for k in ("2026", "2021-25", "all")}})
+            print("  random-group control:", ctl)
+            runs.append({"id": rid, "key": r["key"], "tag": tag, "status": st, "control": ctl, "spans": {k: S["spans"][k] for k in ("2026", "2021-25", "all")}})
             if save:
                 rl.save(rid, f"{'Half size' if tag=='half' else '1.25x size'} when {r['label'].lower()} is {side} {r['thr']}", "filters",
                         f"Unexpected factor: {spec[4]}", params={}, sizing={"rule": r["key"], "side": side, "mult": 0.5 if tag == "half" else 1.25},
-                        trades=T, scored=S, status=st if st != "adopt-candidate" else "promising",
+                        trades=T, scored=S, status=st,
                         verdict=f"2021-25 avg R gap {r['old']['gap']:+.3f} (t={r['old']['t']}); 2026 gap {r['new']['gap']:+.3f}. "
-                                f"{'Better in both periods on the size rule.' if st=='adopt-candidate' else 'Does not beat the baseline in both periods.'}",
+                                f"Random group of the same size does as well in both periods {100*ctl['p_both']:.0f}% of the time. "
+                                f"{'Better in both periods and beats random groups.' if st=='adopt-candidate' else ('Beats the baseline in both periods, but not random groups.' if st=='promising' else 'Does not beat the baseline in both periods.')}",
                         notes="Study wild_: 33 unusual factors ranked on 2021-25 only, top 8 tested as size rules. Multiple-comparison warning applies.",
                         writeup="unexpected-factors.md", tags=["wild", "unexpected"])
     best = ranked[0]

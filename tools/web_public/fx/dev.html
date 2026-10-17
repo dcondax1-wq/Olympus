@@ -5,6 +5,7 @@
   then serve tools/web_public (python -m http.server 8797) and open http://127.0.0.1:8797/fx/dev.html. devshot.js screenshots it.
   Options: &year=2026|all (galaxy)  &runs=1|37|150|real (constellation; real = ./dev-runs.json)  &ser=1|2 &span=2026|all (ribbon)
            &bal= &floor= &day= &status= &locked=1 (reactor)  &idx=-1..4 &live=0|1 &kz=0|1 (pipeline)  &empty=1 (no data)
+           &state=idle|listening|thinking|speaking &lvl=0..1 &cold=1 &pnl= &live=0 &text= &cycle=<ms>|0 (jarvis; cycles the four states, default 3000 ms)
            &seq=1 (re-mount with changed data after 4 s, then the same data again after 7 s: animation + idempotency)
            &ff=<s> (fast-forward the view's clock by s seconds after each mount: finished intros in a slow software GPU)
            &bg=0 (hide the full-screen background field: faster in a software GPU)  &scene=<name> (FX.scene preset)  &fxfixed (full res in a software GPU) -->
@@ -84,6 +85,11 @@ function losses(seed = 9) {
   }) };
 }
 const empty = q.get('empty') === '1';
+// jarvis: one payload per state (the caption is what the bot would say in that state)
+const JTEXT = { idle: 'Watching NQ. No sweep yet today.', listening: 'Listening…', thinking: 'Checking the 09:30 killzone and the nearest major pool…',
+  speaking: 'Asia high swept at 09:41. Waiting for the IFVG trigger; stop 32 points, size 2 micros.' };
+const jarvis = (state) => ({ state, level: q.has('lvl') ? +q.get('lvl') : null, text: q.get('text') ?? JTEXT[state] ?? null,
+  mood: { cold: q.get('cold') === '1', pnl: +(q.get('pnl') ?? 640), live: q.get('live') !== '0' } });
 // &runs=real: a constellation payload from ./dev-runs.json (not in the repo: devshot's "route" option serves one from disk)
 const REAL = q.get('runs') === 'real' ? await (await fetch('./dev-runs.json')).json().catch(() => null) : null;
 const make = (alt) => ({
@@ -96,6 +102,7 @@ const make = (alt) => ({
   reactor: () => empty ? {} : alt ? { ...reactor(), balance: reactor().balance + 1450, dayPnl: 620 } : reactor(),
   pipeline: () => empty ? {} : alt ? { ...pipeline(), idx: Math.min(4, pipeline().idx + 1) } : pipeline(),
   losses: () => empty ? { trades: [] } : alt ? { trades: losses().trades.filter((t, i) => i % 3) } : losses(),
+  jarvis: () => empty ? {} : jarvis(q.get('state') || 'idle'),
   none: () => null,
 }[view]());
 window.__picked = null;
@@ -112,6 +119,10 @@ if (q.get('seq') === '1') {
     window.__mount(make(true)); window.__seq = 2;
     log(`same-data remount: sig ${v.sig === before ? 'unchanged' : 'CHANGED'}, busy before ${busy0} after ${!!(v.animating || v.revving || v.comet)}`);
   }, 7000);
+}
+if (view === 'jarvis' && q.get('cycle') !== '0' && !q.get('state')) {   // state cycler: idle -> listening -> thinking -> speaking -> ...
+  const ST = ['idle', 'listening', 'thinking', 'speaking']; let i = 0;
+  window.__cycle = setInterval(() => { i = (i + 1) % ST.length; window.__mount(jarvis(ST[i])); window.__state = ST[i]; }, +(q.get('cycle') || 3000));
 }
 window.__ready = true;
 </script></body></html>

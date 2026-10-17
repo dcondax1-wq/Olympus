@@ -8,7 +8,7 @@
 //     data -> results, mffu -> eval; anything else -> today). Returns the preset used. Call it on every route change
 //     (next to FX.warp()). FX.scenes lists the presets.
 //   FX.ripple(clientX, clientY)  a wave through the background at a screen point (taps on empty background do it already).
-// Kinds for FX.mount (data shapes in each file's header): orb galaxy city candles constellation ribbon reactor pipeline losses.
+// Kinds for FX.mount (data shapes in each file's header): orb galaxy city candles constellation ribbon reactor pipeline losses jarvis.
 import { THREE, Q, setLevel as setQuality, readTheme, theme, enableGyro, wake, toScreen } from './core.js';
 import { Field } from './field.js';
 import { initTaps, spark, setTapColors, setTaps, setBgTap } from './taps.js';
@@ -22,9 +22,10 @@ import { Ribbon } from './ribbon.js';
 import { Reactor } from './reactor.js';
 import { Pipeline } from './pipeline.js';
 import { Losses } from './losses.js';
+import { Jarvis } from './jarvis.js';
 
 export const version = 1;
-const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon, reactor: Reactor, pipeline: Pipeline, losses: Losses };
+const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon, reactor: Reactor, pipeline: Pipeline, losses: Losses, jarvis: Jarvis };
 const reg = new Map();
 let field = null, bg = null, inited = false, sceneName = 'today';
 

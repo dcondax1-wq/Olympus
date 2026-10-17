@@ -7,7 +7,7 @@
 //   the rest of the cash session. The current moment is a clock hand from the hub to the bezel with a comet trailing
 //   behind it along the ring; the bezel has hour ticks, 6-hour marks and day majors, and a scanner glow at the hand.
 //   HTML centre readout: the week's $ (counts to new values), a pill meter of trades this week against the 2-4 target
-//   (target pills outlined, extra ones amber), and the days left. Day labels around the ring with each day's $.
+//   (target pills outlined, extra ones amber), and the days left. Day labels around the ring with each day's $, today's with the clock.
 //   Tap a pearl -> opts.onPick(trade) (the page's own trade object); mouse hover shows the tooltip; drag to tilt.
 //   First data: the hand sweeps from Monday to now and lights the days as it passes, pearls drop onto the ring when it
 //   reaches them. New data: pearls glide / drop in / fade out, a changed day flashes, the hand eases to the new time.
@@ -142,7 +142,7 @@ void main(){
   vec2 s = q - vec2(-0.08, -0.1); float spec = exp(-dot(s, s) * 90.0);
   float rim = exp(-pow((d - 0.54) * 12.0, 2.0)) * 0.6;
   float hi = vHi * exp(-pow((d - 0.86) * 10.0, 2.0));
-  vec3 c = vColor * (halo * 0.35 + body * 0.75 + rim) + vec3(1.0) * (spec * body * 0.9 + hi * 0.9);
+  vec3 c = mix(vColor, vec3(1.0), 0.22) * (halo * 0.35 + body * 0.85 + rim) + vec3(1.0) * (spec * body * 0.9 + hi * 0.9);
   gl_FragColor = vec4(c * vAlpha, 1.0);
 }`;
 
@@ -162,7 +162,8 @@ const CSS = `.fxw-c{position:absolute;left:0;top:0;text-align:center;white-space
 .fxh-weekring .fxh-l.dl.cur{color:#fff}
 .fxh-weekring .fxh-l.dl.fut{color:rgba(188,192,236,.42)}
 .fxh-weekring.compact .fxw-cap,.fxh-weekring.compact .fxw-meter,.fxh-weekring.compact .fxw-left{display:none}
-.fxh-weekring.compact .fxw-pnl{font-size:20px}.fxh-weekring.compact .fxw-sub{font-size:10px}`;
+.fxh-weekring.compact .fxw-pnl{font-size:20px}.fxh-weekring.compact .fxw-sub{font-size:10px}
+.fxh-weekring.compact .fxh-l.dl em,.fxh-weekring.compact .fxh-l.fix{display:none}`;
 
 // ------------------------------------------------------------------ the view
 export class WeekRing extends Hud {
@@ -194,7 +195,7 @@ export class WeekRing extends Hud {
     this.kzRing = new THREE.Mesh(new THREE.RingGeometry(KZ0 - 0.02, KZ1 + 0.02, 200, 1), additive(RING_V, KZ_F, this.kU, { side: THREE.DoubleSide })); this.kzRing.renderOrder = 4; g.add(this.kzRing);
     this.bU = { uCol: { value: new THREE.Color('#7c6cff') }, uTime: u.uTime, uMotion: u.uMotion, uHand: u.uHand, uIn: u.uIn };
     this.bezel = new THREE.Mesh(new THREE.RingGeometry(BZ0, BZ1, 240, 1), additive(RING_V, BEZEL_F, this.bU, { side: THREE.DoubleSide })); this.bezel.renderOrder = 3; g.add(this.bezel);
-    // the hand: hub -> ring (dim to bright), ring -> past the bezel (bright to dim)
+    // the hand: inside the killzone ring -> day ring (dim to bright), day ring -> past the bezel (bright to dim)
     const hg = new THREE.BufferGeometry();
     hg.setAttribute('position', new THREE.BufferAttribute(new Float32Array(12), 3).setUsage(THREE.DynamicDrawUsage));
     hg.setAttribute('color', new THREE.BufferAttribute(new Float32Array([0.12, 0.2, 0.28, 0.55, 0.85, 1, 0.75, 1, 1.1, 0.1, 0.18, 0.22]), 3));
@@ -310,7 +311,7 @@ export class WeekRing extends Hud {
     for (const D of days) D.trades.forEach((x, j) => {
       const frac = Number.isFinite(x.ts) ? etParts(x.ts).frac : (10.5 + j * 1.5) / 24;
       const key = this.keyOf(D, x);
-      items.push({ key, t: x.t, pnl: x.pnl, r: x.r, ts: x.ts, day: D, ang: (D.i + frac) / 5, rad: RM, seed: hash(key), size: 0.15 + 0.2 * Math.sqrt(Math.abs(x.pnl) / maxT),
+      items.push({ key, t: x.t, pnl: x.pnl, r: x.r, ts: x.ts, day: D, ang: (D.i + frac) / 5, rad: RM, seed: hash(key), size: 0.19 + 0.24 * Math.sqrt(Math.abs(x.pnl) / maxT),
         scratch: Math.abs(x.pnl) < 0.03 * maxT || (Number.isFinite(x.r) && Math.abs(x.r) < 0.1) });
     });
     items.sort((a, b) => a.ang - b.ang);
@@ -326,7 +327,7 @@ export class WeekRing extends Hud {
       }
       sl.it = it; sl.ang = it.ang; sl.done = false;
       const x = Math.sin(it.ang * TAU) * it.rad, y = Math.cos(it.ang * TAU) * it.rad;
-      sl.p1.set(x, y, 0.1); if (sl.mode === FLY) { sl.p0.set(x, y, 0.8); sl.p.copy(sl.p0); }
+      sl.p1.set(x, y, 0.14); if (sl.mode === FLY) { sl.p0.set(x, y, 0.85); sl.p.copy(sl.p0); }
       keep.add(it.key); next.push(sl);
     }
     for (const sl of this.slots) {
@@ -418,13 +419,14 @@ export class WeekRing extends Hud {
     for (const D of this.days) {
       const ang = (D.i + 0.5) / 5 * TAU, p = this.world(ang, RL, 0.02, new THREE.Vector3());
       const col = D.pnl >= 0 ? CSS_GOOD : CSS_BAD;
-      const em = D.has ? `<em style="color:${col}">${fmtUsd(D.pnl)}${D.trades.length > 1 ? ' · ' + D.trades.length : ''}</em>` : D.state === 'done' ? '<em>no trade</em>' : '';
-      defs.push({ html: `${D.name}${D.dom ? ' ' + D.dom : ''}${em}`, p, ax: 0.5 - Math.sin(ang) * 0.5, ay: 0.5 + Math.cos(ang) * 0.5, cls: 'dl ' + D.state, keep: true });
+      const has = !!(I && I.has), cur = has && D.i === I.today;
+      const em = !has ? '' : D.has ? `<em style="color:${col}">${fmtUsd(D.pnl)}${D.trades.length > 1 ? ' · ' + D.trades.length : ''}</em>` : D.state === 'done' ? '<em>no trade</em>' : '';
+      defs.push({ html: `${D.name}${D.dom ? ' ' + D.dom : ''}${cur ? ` · ${I.N.hm} ET` : ''}${em}`, p, ax: 0.5 - Math.sin(ang) * 0.5, ay: 0.5 + Math.cos(ang) * 0.5, cls: 'dl ' + D.state, avoid: true, keep: true });
     }
-    if (I && I.has) {
-      const ang = I.hand * TAU, txt = I.today >= 0 ? `${DOW[I.today]} ${I.N.hm} ET` : I.left;
-      defs.push({ text: txt, at: () => (this.introAt < 0 ? this.world(this.hand * TAU, BZ1 + 0.1, 0.05) : null), ax: 0.5 - Math.sin(ang) * 0.5, ay: 0.5 + Math.cos(ang) * 0.5,
-        cls: 'tag', color: '#dffaff', avoid: true, keep: true });
+    if (I && I.has && I.today < 0) {   // today's label carries the time; outside the week the hand gets its own tag
+      const ang = I.hand * TAU, txt = I.left, ax = 0.5 - Math.sin(ang) * 0.5, ay = 0.5 + Math.cos(ang) * 0.5, sx = Math.sin(ang), sy = -Math.cos(ang);
+      defs.push({ text: txt, at: () => (this.introAt < 0 ? this.world(this.hand * TAU, BZ1 + 0.1, 0.05) : null), ax, ay, cls: 'tag', color: '#dffaff', avoid: true, keep: true,
+        alts: [{ ax, ay, dx: sx * 22, dy: sy * 22 }, { ax, ay, dx: sx * 44, dy: sy * 44 }, { ax: 1 - ax, ay: 1 - ay, dx: -sx * 10, dy: -sy * 10 }] });
     }
     this.setLabels(defs);
   }
@@ -478,10 +480,10 @@ export class WeekRing extends Hud {
     u.uHand.value = this.hand;
     const ang = this.hand * TAU, sn = Math.sin(ang), cs = Math.cos(ang);
     const HP = this.handLine.geometry.attributes.position;
-    HP.setXYZ(0, sn * 0.45, cs * 0.45, 0.03); HP.setXYZ(1, sn * R0, cs * R0, 0.03); HP.setXYZ(2, sn * R1, cs * R1, 0.04); HP.setXYZ(3, sn * (BZ1 + 0.07), cs * (BZ1 + 0.07), 0.04);
+    HP.setXYZ(0, sn * 0.98, cs * 0.98, 0.03); HP.setXYZ(1, sn * R0, cs * R0, 0.03); HP.setXYZ(2, sn * R1, cs * R1, 0.04); HP.setXYZ(3, sn * (BZ1 + 0.07), cs * (BZ1 + 0.07), 0.04);
     HP.needsUpdate = true;
     const beat = red ? 0.5 : 0.5 + 0.5 * Math.sin(lt * 2.6);
-    this.head.position.set(sn * RM, cs * RM, 0.09); this.head.scale.setScalar(0.38 + 0.08 * beat); this.head.material.opacity = 0.75 + 0.2 * beat;
+    this.head.position.set(sn * RM, cs * RM, 0.09); this.head.scale.setScalar(0.33 + 0.07 * beat); this.head.material.opacity = 0.75 + 0.2 * beat;
     u.uBright.value = 0.9 + 0.3 * beat;
     // the days: lit share follows the hand, flashes decay
     const I = this.info;
