@@ -198,3 +198,12 @@ def writeups():
                           **meta, "body": body})
     items.sort(key=lambda x: (x["kind"] != "writeup", -(x.get("mtime") or 0)))
     return _J({"items": items})
+
+
+@router.get("/api/next/lab/{name}")
+def lab_file(name: str):
+    """A research data file for a dashboard view: research/lab/<name>.json (montecarlo, intraday_heat, ...)."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,60}", name):
+        return _J({"error": "bad name"}, 400)
+    d = _read(os.path.join(LAB, name + ".json"))
+    return _J(d) if d is not None else _J({"error": "not found"}, 404)
