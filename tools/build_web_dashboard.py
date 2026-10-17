@@ -327,7 +327,7 @@ def _docs(out, writeups_dir):
         rec.update({"kind": "writeup", "title": meta.get("title") or (h1.group(1).strip() if h1 else stem.replace("_", " ")),
                     "family": fam if fam in FAMILIES else "other", "date": meta.get("date") or _date(stem, body),
                     "status": (meta.get("status") or "info").lower(), "summary": meta.get("summary") or _summary(body), "runs": runs,
-                    "track": meta.get("track") or ""})
+                    "runs_linked": [], "track": meta.get("track") or "", "stem": stem.lower()})
         writeups.append(rec)
     writeups.sort(key=lambda d: (d["date"], d["title"]), reverse=True)
 
@@ -358,6 +358,24 @@ def _docs(out, writeups_dir):
     return {"writeups": writeups, "archive": archive}, skipped, left_out, code_dropped
 
 
+def _link(lab, docs):
+    """Cross-links. A run's `writeup` field (a path or a file name) -> `writeup_slug` of the published write-up, and every
+    write-up lists the runs that point at it (`runs_linked`, after the ones its front matter names). Unknown run ids are dropped."""
+    by_stem = {d.pop("stem"): d for d in docs["writeups"]}
+    ids = {r["id"] for r in lab["runs"]}
+    for r in lab["runs"]:
+        w = r.get("writeup")
+        d = by_stem.get(os.path.splitext(os.path.basename(str(w)))[0].lower()) if w else None
+        r["writeup_slug"] = d["slug"] if d else None
+        if d and r["id"] not in d["runs"]:
+            d["runs_linked"].append(r["id"])
+    missing = 0
+    for d in docs["writeups"]:
+        missing += sum(1 for x in d["runs"] if x not in ids)
+        d["runs"] = [x for x in d["runs"] if x in ids]
+    return missing
+
+
 def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     os.makedirs(out, exist_ok=True)
     st = _load(state_path, {}) or {}
@@ -377,6 +395,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     cfg = lm.get("equity_filter") or {}
     lab, run_skipped, run_extra = _runs(out, runs_dir)
     docs, doc_skipped, left_out, code_dropped = _docs(out, writeups_dir)
+    unknown_runs = _link(lab, docs)
     data = {
         "built": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "live": live,
@@ -413,7 +432,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
           + (f"; skipped {', '.join(run_skipped)}" if run_skipped else "") + (f"; private fields kept out: {', '.join(run_extra)}" if run_extra else ""))
     print(f"  docs: {len(docs['writeups'])} write-ups + archive of {len(docs['archive'])} older reports "
           f"({sum(1 for d in docs['archive'] if d['kind'] == 'tables')} of them tables) -> writeups/<slug>.md; "
-          f"{code_dropped} code blocks dropped; {len(left_out)} research docs left out (rulebooks, logs, code notes, >80 KB)")
+          f"{code_dropped} code blocks dropped; {len(left_out)} research docs left out (rulebooks, logs, code notes, >80 KB)"
+          + (f"; {unknown_runs} run ids named in write-ups are not stored runs" if unknown_runs else ""))
     for s in doc_skipped:
         print(f"  docs: SKIPPED {s}")
 
