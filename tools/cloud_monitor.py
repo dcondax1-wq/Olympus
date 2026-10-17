@@ -189,7 +189,13 @@ def run(out):
     write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
-                 "health": health, "eval": ev_track, "model_state": state.get("model_state"), "position": pos}
+                 "health": health, "eval": ev_track, "model_state": state.get("model_state"), "position": pos,
+                 "strategy": lm.get("label"), "params": lm.get("params"), "equity_filter": state.get("equity_filter"),
+                 "price": state.get("price"), "today": today,
+                 "events": [{"t": int(e["t"]), "type": e["type"], "text": e["text"]} for e in res["events"] if tday(e["t"]) == today][-25:],
+                 "engine_trades": [{"day": tday(t["entry_t"]), "entry_t": int(t["entry_t"]), "dir": t["dir"], "R": round(float(t["pnl_r"]), 2),
+                                    "exit": t.get("exit_reason"), "trigger": t.get("trigger"), "risk_pts": t.get("risk_pts"),
+                                    "qty": t.get("qty"), "target_label": t.get("target_label")} for t in res["trades"][-10:]]}
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}")
