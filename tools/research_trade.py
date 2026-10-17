@@ -24,7 +24,9 @@ How a run is computed (the method is written into each run's notes and "method" 
              compared with the screen baseline (run "screen_baseline"), never with the replay baseline. None of them
              beat it in both periods, so none needed a replay.
 
-Judging (CLAUDE.md): adopt only if better in 2026 AND 2021-25 (net and PF) with 2+ trades a week in both.
+Judging (owner's rules): adopt only if better in 2026 AND 2021-25 (net and PF) with 2-4 trades a week in both;
+evals should be decided within 2 weeks and no pass should take over 3 weeks (reported: p10/f10, dec10, p15/f15,
+slow_pass, pass_med from tools/runlib.eval_speed).
 Real CME NQ1! 5m history only (data/NQ_5m.csv). Costs (commission + 1 tick slippage) included everywhere.
 """
 from __future__ import annotations
@@ -93,6 +95,9 @@ for a, m in ((0.1, 70), (0.15, 70), (0.15, 80)):
     X(f"stp_atr{int(a * 100):03d}_max{m}", "stops", "screen", {"stop_buf_atr": a, "spec": {"max_stop": float(m)}},
       f"ATR buffer {a:g} x ATR and widest stop {m} pts", f"The ATR buffer makes stops wider (fewer trades): does allowing {m}-pt stops win the trades back?")
 
+X("stp_atr015_replay", "stops", "replay", {"stop_buf_atr": 0.15}, "Stop buffer = 0.15 x ATR (exact replay check)",
+  "Does the exact live-loop replay agree with the one-pass screen on the most tempting stop variant?")
+
 # ---- 2. targets
 for v in (1.2, 2.0, 2.5, 3.0):
     X(f"tgt_minrr{int(v * 10)}", "targets", "screen", {"min_rr": v}, f"Draw must be at least {v:g}R away (today 1.5R)",
@@ -100,6 +105,8 @@ for v in (1.2, 2.0, 2.5, 3.0):
 for v in (3, 4, 6, 8):
     X(f"tgt_maxrr{v}", "targets", "screen", {"max_rr": float(v)}, f"Bank profit at {v}R on the way (today 5R)",
       f"When the draw is far, bank at {v}R instead of 5R?")
+X("tgt_maxrr8_replay", "targets", "replay", {"max_rr": 8.0}, "Bank at 8R (exact replay check)",
+  "Does the exact live-loop replay agree with the one-pass screen on the target cap that helped 2021-25 most?")
 X("tgt_major_next", "targets", "screen", {"target_mode": "major_next"}, "Aim for the second major pool, not the first",
   "Skip the nearest major pool and aim for the next one?")
 for v in (0, 2):
@@ -235,12 +242,16 @@ X("combo_betrend3_both07", "other", "exitsim", {"be_at_r_trending": 3.0}, "Trend
 X("combo_risk_sizing", "other", "sizerule", {}, "Info: the sizing researcher's recommendation alone",
   "Reference for the combination below: quarter size in cold streaks and half size on late entries (risk-summary.md)?",
   rule_raw="risk_q25_late", eqf=None, status="info", writeup="trade-construction-summary.md",
+  note="Sizing: x0.25 in a cold streak and x0.5 on a late entry (tools/research_risk.py RECOMMENDED) replace the live "
+       "half-size cold-streak filter.",
   verdict="The sizing recommendation on its own (tools/research_risk.py RECOMMENDED), recomputed here as the yardstick "
           "for adding the trending-day breakeven change.")
 X("combo_betrend3_risksizing", "other", "exitsim", {"be_at_r_trending": 3.0},
   "Trending-day breakeven at +3R + the sizing researcher's recommendation",
   "Do the two recommendations add up: breakeven at +3R on trending days plus quarter size in cold streaks and half size "
   "on late entries?", sim={"be_at_r_trending": 3.0}, rule_raw="risk_q25_late", eqf=None, writeup="trade-construction-summary.md",
+  note="Sizing: x0.25 in a cold streak and x0.5 on a late entry (tools/research_risk.py RECOMMENDED) replace the live "
+       "half-size cold-streak filter; the cold state is computed from this run's own trades.",
   verdict="They add up: against the sizing recommendation alone, 2026 net is the same (+$20.5k vs +$20.6k; PF 3.94 vs "
           "4.12 via the cold-streak state) and 2021-25 gains another +$4.8k (PF 1.19 -> 1.27). Against today's live "
           "rules it is better in both periods.")
@@ -467,7 +478,7 @@ def judge(S, B, status=None):
     A, Bb = B["spans"]["2026"], B["spans"]["2021-25"]
     if not a.get("n") or not b.get("n"):
         return status or "rejected", "No trades in one of the periods."
-    tpw_ok = (a["tpw"] or 0) >= 2 and (b["tpw"] or 0) >= 2
+    tpw_ok = 2 <= (a["tpw"] or 0) <= 4 and 2 <= (b["tpw"] or 0) <= 4      # owner rule: 2-4 trades a week in both
     d26, d5 = a["net"] - A["net"], b["net"] - Bb["net"]
     p26, p5 = (a["pf"] or 0) - (A["pf"] or 0), (b["pf"] or 0) - (Bb["pf"] or 0)
     up26, up5 = d26 > 0 and p26 >= 0, d5 > 0 and p5 >= 0
@@ -480,7 +491,9 @@ def judge(S, B, status=None):
     if abs(d26) < 1 and abs(d5) < 1 and abs(p26) < 0.005 and abs(p5) < 0.005:
         st, head = "rejected", "No effect: the same result as today."
     elif not tpw_ok:
-        st, head = "rejected", f"Too few trades ({min(a['tpw'], b['tpw'])} a week)."
+        lo_ = min(a["tpw"], b["tpw"]) < 2
+        st, head = "rejected", (f"Too few trades ({min(a['tpw'], b['tpw'])} a week)." if lo_ else
+                                f"Too many trades ({max(a['tpw'], b['tpw'])} a week; the limit is 4).")
     elif up26 and up5:
         st, head = "adopt-candidate", "Better in both periods."
     elif (help26 and not hurt5) or (help5 and not hurt26):

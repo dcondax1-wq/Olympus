@@ -10,7 +10,7 @@
 //   fly out of the baseline, leavers fade.
 // setData({ runs: [{ id, title, family, status, pf26, pf21, net26, net21, tpw26, tpw21, dd21, p20_21, f20_21 }], baseline: 'baseline' })
 // Draw calls ~17 whatever the run count; particles: 1 star + 1 floor shadow per run + 1000 dust (300 lite).
-import { THREE, Q, theme, glowTexture, POINT_FRAG, count, Hud, addBackdrop, addNebula, addDust, Guides, ringTexture, sprite, additive, attrs,
+import { THREE, Q, theme, glowTexture, POINT_FRAG, Hud, addBackdrop, addNebula, addDust, Guides, ringTexture, sprite, additive, attrs,
   paintBackdrop, clamp, smooth, outCubic, outBack, fract, num, esc, hash, fmtK, fmtPf, pct, corners, div } from './hud.js';
 
 const LANES = ['risk', 'stops', 'targets', 'management', 'bias', 'filters', 'timing', 'other'];   // front -> back
@@ -30,7 +30,7 @@ const lg = (v) => Math.log(clamp(v, 0.25, 20));
 const ALTS = (dx, dy) => [{ ax: 1, ay: 1, dx: -dx, dy: -dy }, { ax: 0, ay: 0, dx, dy }, { ax: 1, ay: 0, dx: -dx, dy }];
 const tickTxt = (v) => (v >= 2 && Number.isInteger(v) ? String(v) : v.toFixed(1));
 const trunc = (s, n) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
-const _v = new THREE.Vector3(), _m = new THREE.Matrix4(), _c = new THREE.Color();
+const _v = new THREE.Vector3(), _m = new THREE.Matrix4();
 
 // ------------------------------------------------------------------ shaders
 const STAR_V = `attribute vec3 aCol; attribute float aSize; attribute float aAlpha; attribute vec4 aMisc; attribute float aSpike;

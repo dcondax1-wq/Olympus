@@ -30,6 +30,7 @@ grade, 2 trades/day; 25 trades, +$8,784.50 on the export), legacy (commit fdaea8
 from __future__ import annotations
 
 import argparse
+import bisect
 import datetime as dt
 import json
 import math
@@ -370,6 +371,7 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
     ev_t = [int(t) * 1000 for t, _ in news]
     ev_date = [int(dt.datetime.fromtimestamp(t, ET).strftime("%Y%m%d")) for t, _ in news]
     ev_fomc = ["FOMC" in lab.upper() for _, lab in news]
+    fomc_dates = {ev_date[k] for k in range(len(ev_t)) if ev_fomc[k]}
     roll_gaps = roll_gaps or {}
     snap_times = set(snap_times or ())
     vol_sma = np.full(n, np.nan)
@@ -473,6 +475,7 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
             for d_ in (1, -1):
                 if A[d_]["ext"] is not None:
                     A[d_]["ext"] += g
+            st["vwPV"] += st["vwV"] * g
 
         if newDay and P["fixRetire"]:
             # retire stale pools BEFORE the new prior-day / prior-week pools are added (engine order)
@@ -571,20 +574,20 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
             add_pool(st["onL"], -1, True, False, 2, True, int(2.2 * DAY), False, t)
 
         def news_block():
-            blk = False
-            if P["newsOn"]:
-                for k in range(len(ev_t)):
-                    if t - P["newsAfter"] * 60000 <= ev_t[k] <= t + P["newsBefore"] * 60000:
-                        blk = True
-                    if P["fomcPmOff"] and ev_fomc[k] and ev_date[k] == curDate and mod >= 780:
-                        blk = True
-            return blk
+            # Pine f_newsBlock loops over every release; same result with a binary search over the sorted times
+            if not P["newsOn"]:
+                return False
+            k = bisect.bisect_left(ev_t, t - P["newsAfter"] * 60000)
+            if k < len(ev_t) and ev_t[k] <= t + P["newsBefore"] * 60000:
+                return True
+            return bool(P["fomcPmOff"] and mod >= 780 and curDate in fomc_dates)
 
         def news_soon():
             if not (P["newsOn"] and P["newsFlatM"] > 0):
                 return False
             tc = t + 300000
-            return any(tc < e <= tc + P["newsFlatM"] * 60000 for e in ev_t)
+            k = bisect.bisect_right(ev_t, tc)
+            return k < len(ev_t) and ev_t[k] <= tc + P["newsFlatM"] * 60000
 
         # ---- sweeps
         vAvg20 = vol_sma[i - 1] if i >= 1 else np.nan

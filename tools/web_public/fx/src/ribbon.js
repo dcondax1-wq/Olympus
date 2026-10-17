@@ -9,7 +9,7 @@
 //   First data: the ribbons draw themselves from left to right (staggered); new data re-draws them quickly.
 // setData({ series: [{ label, color, days: [[date, pnl], ...] }] })   date 'YYYY-MM-DD' (or epoch s / ms), up to 6 series
 // Draw calls ~13; particles: 36 flow sparks per series (16 lite) + 900 dust (300 lite).
-import { THREE, Q, theme, POINT_FRAG, count, rng, Hud, addBackdrop, addNebula, addDust, Guides, additive, attrs, paintBackdrop, cssColor, hex,
+import { THREE, Q, POINT_FRAG, count, rng, Hud, addBackdrop, addNebula, addDust, Guides, additive, attrs, paintBackdrop, cssColor, hex,
   clamp, smooth, fract, num, esc, fmtK, fmtUsd, corners, div, injectStyle } from './hud.js';
 
 const PAL = ['#22d3ee', '#ffd98a', '#ff4fd8', '#2ee59d', '#8b5cf6', '#ff9b5c'];

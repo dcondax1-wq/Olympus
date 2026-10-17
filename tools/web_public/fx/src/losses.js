@@ -10,8 +10,8 @@
 //   First data: the trades rain down from the ceiling; new data: survivors glide, newcomers drop in, leavers fade.
 // setData({ trades: [{ r, mfe, mae, risk_pts, day, kind }], colors?: { 'never worked': '#ff5a7a', ... } })
 // Draw calls ~16 whatever the trade count; particles: 1 point + 1 floor shadow per trade + 800 dust (280 lite).
-import { THREE, Q, theme, POINT_FRAG, count, Hud, addBackdrop, addNebula, addDust, Guides, ringTexture, sprite, additive, attrs, paintBackdrop,
-  clamp, smooth, outCubic, outBack, fract, num, esc, hash, fmtR, pct, corners, div, injectStyle } from './hud.js';
+import { THREE, Q, POINT_FRAG, count, Hud, addBackdrop, addNebula, addDust, Guides, ringTexture, sprite, additive, attrs, paintBackdrop,
+  clamp, smooth, outCubic, outBack, num, esc, hash, fmtR, pct, corners, div, injectStyle } from './hud.js';
 
 // the dashboards' loss-kind colours (tools/web_public/index.html LOSS_K), so the page text and the 3D agree
 const KIND = {

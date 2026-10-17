@@ -4,7 +4,7 @@ family: other
 date: 2026-10-17
 status: finding
 summary: One change is worth making: on trending days, move the stop to breakeven at +3R instead of +1R. Same trades, same 2026 profit (+$20.1k) and eval odds, +$4.7k in 2021-25 (PF 1.09 → 1.15). Stops, targets, the other exits, filters and timing are already at their best; 140+ variants tested, no leak found.
-runs: baseline, mgt_betrend300_replay, mgt_betrend300, mgt_betrend250, mgt_betrend_off, combo_risk_sizing, combo_betrend3_risksizing, bias_both_07, combo_betrend3_both07, combo_betrend3_bothhalf, leak_both_off
+runs: baseline, mgt_betrend300_replay, mgt_betrend300, mgt_betrend250, mgt_betrend_off, combo_risk_sizing, combo_betrend3_risksizing, bias_both_07, combo_betrend3_both07, combo_betrend3_bothhalf, flt_vix20_half, stp_max80, leak_both_off
 ---
 
 ## The recommendation (one change)
@@ -80,10 +80,10 @@ vs 1.09).
 
 | Idea | What happened |
 |---|---|
-| Wider or ATR-scaled stop buffer (3-6 pts, 0.1-0.5 x ATR) | fewer trades (under 2 a week) and less 2026 profit; ATR 0.15 looked good only by skipping trades, its neighbours are worse |
+| Wider or ATR-scaled stop buffer (3-6 pts, 0.1-0.5 x ATR) | fewer trades (from 4 pts: under 2 a week) and less 2026 profit; ATR 0.15 looked good only by skipping trades, its neighbours are worse |
 | Tighter buffer (1 pt), stop beyond the gap | wicked out more; 2021-25 loses money with the gap stop |
 | Widest stop 45-50 / 70-80 | 45-50 cuts good trades; 70-80 adds about-break-even trades (useful only if more trades a week are wanted) |
-| Draw at least 2-3R away, or the second pool | 2021-25 profit falls to −$0.3k to +$3.0k |
+| Draw at least 2-3R away, or the second pool | 2021-25 profit falls to −$0.3k to +$3.0k (today +$8.8k on the same backtest) |
 | Bank at 3R / 4R | 2026 profit falls by $5-8k |
 | Bank at 6R / 8R | 2021-25 +$0.4k to +$1.3k, but 2026 −$5k to −$7k |
 | Exit a few ticks in front of the pool | changes almost nothing, slightly worse |
@@ -110,9 +110,13 @@ vs 1.09).
 
   Better in every 2021-25 year (2021 +$1.5k, 2022 +$3.1k, 2023 +$0.5k, 2024 +$0.1k, 2025 +$1.0k), 2026 −$0.75k. It
   fails the strict rule (2026 net lower), the size rule is not in the engine or the Pine script yet, it is sizing (the
-  other researcher's area), and both biases were found on these same trades. Worth a proper out-of-sample check
+  sizing research's area), and both biases were found on these same trades. Worth a proper out-of-sample check
   after Sunday, not a change for Sunday.
-- **More trades a week:** "widest stop 80" lifts 2026 to 2.7 a week (88% of weeks with 2+) for −$0.9k.
+- **Half size when VIX is above 20** (instead of skipping those days): PF up in both periods (2026 3.61, 2021-25
+  1.14), 2021-25 +$2.5k with drawdown −$7.5k instead of −$11.4k, 2026 −$0.45k (runs `flt_vix20_half`, `flt_vix20_07`).
+  Also a sizing rule.
+- **More trades a week:** "widest stop 80" lifts 2026 to 2.7 a week (88% of weeks with 2+) for −$0.9k in 2026 and
+  −$3.7k in 2021-25.
 
 ## Checks
 

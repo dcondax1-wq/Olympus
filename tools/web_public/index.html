@@ -709,6 +709,9 @@ table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-
 .more-runs > summary { list-style: none; display: inline-block; margin: 12px 0 4px; cursor: pointer; font-size: 13px; }
 .more-runs > summary::-webkit-details-marker { display: none; } .more-runs[open] > summary { display: none; }
 
+.grid.top { align-items: start; }
+.sub.mb { background: linear-gradient(180deg, color-mix(in srgb, var(--page) 90%, transparent), color-mix(in srgb, var(--page) 70%, transparent)); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding-bottom: 8px; }
+
 /* sidebar groups (desktop): the active group opens its pages */
 .nav a.g.cur { color: var(--ink); }
 .nav a.g.cur .ico { color: var(--accent); }
@@ -1026,8 +1029,7 @@ function scatter(el, pts, o = {}) {
   const xf = o.xfmt || ((v) => num(v, 1)), yf = o.yfmt || ((v) => num(v, 1));
   const order = pts.map((p, i) => i).sort((a, b) => (pts[b].r || 5) - (pts[a].r || 5));   // big dots first, small ones on top
   el.innerHTML = `<div class="viz" style="height:${H}px"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">
-    ${(o.bands || []).map(b => `<rect x="${X(b.x0 ?? x0)}" y="${Y(b.y1 ?? y1)}" width="${Math.max(0, X(b.x1 ?? x1) - X(b.x0 ?? x0))}" height="${Math.max(0, Y(b.y0 ?? y0) - Y(b.y1 ?? y1))}" fill="${b.color}" opacity=".09"/>
-      ${b.label ? `<text x="${X(b.x0 ?? x0) + 6}" y="${b.at === 'bottom' ? Y(b.y0 ?? y0) - 7 : Y(b.y1 ?? y1) + 14}" font-size="10" font-weight="700" fill="${b.color}" opacity=".9">${esc(b.label)}</text>` : ''}`).join('')}
+    ${(o.bands || []).map(b => `<rect x="${X(b.x0 ?? x0)}" y="${Y(b.y1 ?? y1)}" width="${Math.max(0, X(b.x1 ?? x1) - X(b.x0 ?? x0))}" height="${Math.max(0, Y(b.y0 ?? y0) - Y(b.y1 ?? y1))}" fill="${b.color}" opacity=".09"/>`).join('')}
     ${ticks(y0, y1).map(v => `<line class="gl" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${L - 7}" y="${Y(v) + 4}" text-anchor="end">${yf(v)}</text>`).join('')}
     ${ticks(x0, x1, W < 420 ? 4 : 6).map(v => `<line class="gl" y1="${T}" y2="${H - B}" x1="${X(v)}" x2="${X(v)}"/><text class="ax" x="${X(v)}" y="${H - B + 15}" text-anchor="middle">${xf(v)}</text>`).join('')}
     ${o.refX != null ? `<line x1="${X(o.refX)}" x2="${X(o.refX)}" y1="${T}" y2="${H - B}" stroke="rgba(238,241,248,.45)" stroke-dasharray="4 4"/>` : ''}
@@ -1035,7 +1037,8 @@ function scatter(el, pts, o = {}) {
     ${o.xlab ? `<text class="ax" x="${(L + W - R) / 2}" y="${H - 4}" text-anchor="middle" fill="var(--ink-2)">${esc(o.xlab)}</text>` : ''}
     ${o.ylab ? `<text class="ax" transform="translate(11 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle" fill="var(--ink-2)">${esc(o.ylab)}</text>` : ''}
     ${order.map(i => { const p = pts[i]; return `<circle class="pt" data-i="${i}" cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="${p.r || 5}" fill="${p.color}" fill-opacity="${p.alpha ?? .8}" stroke="${p.ring || 'rgba(255,255,255,.55)'}" stroke-width="${p.ring ? 2 : 1}"/>`; }).join('')}
-    ${pts.filter(p => p.label).map(p => `<text x="${X(p.x) + (p.r || 5) + 5}" y="${Y(p.y) + 4}" font-size="11" font-weight="650" fill="var(--ink)">${esc(p.label)}</text>`).join('')}
+    ${pts.filter(p => p.label).map(p => `<text x="${X(p.x) + (p.r || 5) + 5}" y="${Y(p.y) + 4}" font-size="11" font-weight="700" fill="var(--ink)" stroke="rgba(7,3,13,.85)" stroke-width="3" paint-order="stroke">${esc(p.label)}</text>`).join('')}
+    ${(o.bands || []).filter(b => b.label).map(b => `<text x="${X(b.x0 ?? x0) + 6}" y="${b.at === 'bottom' ? Y(b.y0 ?? y0) - 7 : Y(b.y1 ?? y1) + 14}" font-size="10.5" font-weight="750" fill="${b.color}" stroke="rgba(7,3,13,.9)" stroke-width="3" paint-order="stroke">${esc(b.label)}</text>`).join('')}
     </svg><div class="tip" hidden></div></div>`;
   const box = el.firstChild, svg = box.firstChild;
   const near = (sx, sy) => { let bi = -1, bd = 26 * 26; pts.forEach((p, i) => { const d = (X(p.x) - sx) ** 2 + (Y(p.y) - sy) ** 2; if (d < bd) { bd = d; bi = i; } }); return bi; };
@@ -1245,6 +1248,7 @@ function subBar(p, g) {
   const sub = $('#sub'), G = GROUPS.find(x => x.id === g);
   sub.className = 'sub';
   if (DETAIL[p]) {
+    sub.classList.add('mb');
     const d = DETAIL[p], [pr, nx] = D ? neighbours(p, ARG) : [null, null];
     sub.innerHTML = `<div class="modbar"><button class="chipbtn back" type="button" data-go="${d.back}">${icon('back')}<span>${PAGES[d.back].label}</span></button><span style="flex:1"></span>
       ${pr ? `<button class="chipbtn" type="button" data-go="${p}" data-arg="${esc(pr[0])}" title="${esc(pr[1])}" aria-label="Previous: ${esc(pr[1])}">${icon('left')}<span>Previous</span></button>` : ''}
@@ -1875,12 +1879,21 @@ function constData() {
     return { id: r.id, title: r.title, family: r.family, status: r.status, pf26: a.pf ?? null, pf21: z.pf ?? null, net26: a.net ?? null, net21: z.net ?? null,
       tpw26: a.tpw ?? null, tpw21: z.tpw ?? null, dd21: z.dd ?? null, p20_21: z.p20 ?? null, f20_21: z.f20 ?? null }; }) };
 }
+// robust axis range: the bulk of the values (outliers sit on the edge, ringed) plus the reference
+function rng2(vals, ref) {
+  const v = vals.filter(ok).sort((a, b) => a - b); if (!v.length) return [0, 1];
+  const q = (p) => v[Math.min(v.length - 1, Math.max(0, Math.round(p * (v.length - 1))))];
+  let lo = Math.min(q(v.length > 20 ? .02 : 0), ref ?? Infinity), hi = Math.max(q(v.length > 20 ? .98 : 1), ref ?? -Infinity);
+  const pd = (hi - lo) * .1 || .2; return [lo - pd, hi + pd];
+}
 function constFb(el, cd, onPick) {
   const runs = cd.runs.filter(r => ok(r.pf26) && ok(r.pf21)), b = cd.runs.find(r => r.id === cd.baseline);
-  scatter(el, runs.map(r => ({ x: r.pf21, y: r.pf26, r: Math.max(5, Math.min(13, 3 + (r.tpw21 || 0) * 2)), color: stColor(r.status), alpha: r.id === cd.baseline ? 1 : .85,
-    ring: r.id === cd.baseline ? '#ffffff' : null, label: r.id === cd.baseline ? 'live' : '', ref: r,
-    tip: `<b>${esc(r.title)}</b><span>PF 2026 ${fPF(r.pf26)} · 2021-25 ${fPF(r.pf21)}</span><span>net ${kusd(r.net26)} / ${kusd(r.net21)} · ${num(r.tpw21, 1)}/wk</span><span>${esc(STAT[r.status]?.[0] || r.status)} · tap to open</span>` })),
-  { h: el.clientHeight, refX: b?.pf21, refY: b?.pf26, xlab: 'profit factor 2021-25 →', ylab: 'profit factor 2026 →', xfmt: (v) => v.toFixed(2), yfmt: (v) => v.toFixed(1), onPick,
+  const [x0, x1] = rng2(runs.map(r => r.pf21), b?.pf21), [y0, y1] = rng2(runs.map(r => r.pf26), b?.pf26);
+  scatter(el, runs.map(r => { const off = r.pf21 < x0 || r.pf21 > x1 || r.pf26 < y0 || r.pf26 > y1;
+    return { x: r.pf21, y: r.pf26, r: Math.max(5, Math.min(13, 3 + (r.tpw21 || 0) * 2)), color: stColor(r.status), alpha: r.id === cd.baseline ? 1 : .85,
+      ring: r.id === cd.baseline ? '#ffffff' : off ? '#f2c35b' : null, label: r.id === cd.baseline ? 'live' : '', ref: r,
+      tip: `<b>${esc(r.title)}</b><span>PF 2026 ${fPF(r.pf26)} · 2021-25 ${fPF(r.pf21)}${off ? ' (off the chart, shown at the edge)' : ''}</span><span>net ${kusd(r.net26)} / ${kusd(r.net21)} · ${num(r.tpw21, 1)}/wk</span><span>${esc(STAT[r.status]?.[0] || r.status)} · tap to open</span>` }; }),
+  { h: el.clientHeight, xmin: x0, xmax: x1, ymin: y0, ymax: y1, refX: b?.pf21, refY: b?.pf26, xlab: 'profit factor 2021-25 →', ylab: 'profit factor 2026 →', xfmt: (v) => v.toFixed(2), yfmt: (v) => v.toFixed(1), onPick,
     bands: b ? [{ x0: b.pf21, y0: b.pf26, color: '#2ee59d', label: 'better in both' }] : [], empty: 'No runs with numbers yet.' });
 }
 const pickRun = (run) => { if (run?.id) location.hash = '#/run/' + encodeURIComponent(run.id); };
@@ -2047,7 +2060,7 @@ VIEWS.run = (el) => {
     + `<div class="card tone" style="--tc:${tone}"><div class="verdict-l"><span class="vi">${icon(isB ? 'flag' : r.status === 'rejected' ? 'close' : r.status === 'adopt-candidate' ? 'check' : 'info')}</span>
         <div style="min-width:0"><div class="eyebrow" style="color:${tone}">${isB ? 'The reference' : 'Verdict'}</div>${(r.verdict || '').length > 110 ? `<p class="vtext">${esc(r.verdict)}</p>` : `<h3>${esc(r.verdict || (isB ? 'The live strategy every experiment is judged against.' : 'No verdict written yet.'))}</h3>`}
         ${isB ? '' : rcHTML(r)}</div></div></div>
-    <div class="grid g2"><div class="card"><div class="card-h"><h3>What this run changes</h3><span class="meta">${isB ? 'the reference' : 'vs the live strategy'}</span></div>${changesHTML(r)}</div>
+    <div class="grid g2 top"><div class="card"><div class="card-h"><h3>What this run changes</h3><span class="meta">${isB ? 'the reference' : 'vs the live strategy'}</span></div>${changesHTML(r)}</div>
       <div class="card"><div class="card-h"><h3>Headline numbers</h3><span class="meta">${isB ? 'the live strategy' : 'small = change vs live'}</span></div>${headlineHTML(r, b)}</div></div>
     <div id="runBody">${skel(1, 'lg')}${skel(2)}</div>`;
   Promise.all([getRun(r.id), isB ? null : getRun(b.id).catch(() => null)])

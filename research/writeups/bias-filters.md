@@ -17,7 +17,7 @@ runs: baseline, screen_baseline, flt_vix20_half, flt_vix20_07, bias_pdc_half, bi
    - **SMT divergence NQ vs ES** at the sweep. ES 5-minute data only starts in April 2025, so this is information only.
 2. **Three ways to use a bias:** skip the trades against it (filter), add or remove a confluence point (changes
    which setup is first each day; new engine options `w_pdc` and `w_pwmid`, off by default), or keep every trade and
-   only **trade smaller** when it is against the trade (the coordinator's request, so trades a week stay the same).
+   only **trade smaller** when it is against the trade (every setup is still traded, so trades a week stay the same).
 3. **Existing filters on today's settings:** trending-market rule, big-range-day block, VIX limits, news rules, minor
    pools, the confluence threshold and weights, longs / shorts only.
 4. **Timing:** morning only, afternoon only, wider windows, setup expiry, when sweeps start counting.

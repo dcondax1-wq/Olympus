@@ -12,8 +12,8 @@
 //   pass* (gold, shock waves), fail* / breach (dim red), stop* / halt / limit (daily limit hit: amber, low energy),
 //   open / active / live (cyan). Under 250 px tall the overlay is compact: rings, balance and status only.
 // Draw calls ~15; particles: 700 accretion sparks (260 lite) + 500 dust (200 lite).
-import { THREE, Q, theme, glowTexture, POINT_FRAG, count, rng, Hud, addBackdrop, addNebula, addDust, additive, attrs, paintBackdrop,
-  clamp, lerp, smooth, outCubic, fract, num, esc, fmtUsd, pct, div, injectStyle } from './hud.js';
+import { THREE, Q, glowTexture, POINT_FRAG, count, rng, Hud, addBackdrop, addNebula, addDust, additive, attrs, paintBackdrop,
+  clamp, lerp, outCubic, fract, num, esc, fmtUsd, pct, div, injectStyle } from './hud.js';
 
 const RINGS = [{ r0: 1.5, r1: 1.66, seg: 40 }, { r0: 1.24, r1: 1.37, seg: 32 }, { r0: 1.0, r1: 1.08, seg: 24 }];
 const HEALTH = [[0, '#ff2b55'], [0.35, '#ff8a3d'], [0.62, '#a855f7'], [1, '#2ee5c8']];

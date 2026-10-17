@@ -4,7 +4,7 @@ family: risk
 date: 2026-10-17
 status: adopt-candidate
 summary: Recommendation: trade a quarter size (not half) in cold streaks and half size on late entries. On the same trades it makes 2021-25 +$11.5k instead of +$6.5k (PF 1.19 vs 1.09, max DD -$9.2k vs -$11.4k) and 2026 +$20.6k instead of +$20.1k (PF 4.12 vs 3.48), and cuts 1-month eval fails in 2021-25 from 9.6% to 5.2%. Every setup is still traded.
-runs: baseline, risk_pkg_q25_late_live, risk_cold_q25, risk_pkg_half_late, risk_pkg_q25_late, risk_pkg_q25_hot8, risk_pkg_q25_prop1000, risk_sit_late_half, risk_hot8_150, risk_eval_prop1000, risk_usd1000, risk_usd600, risk_refoff, risk_ref30, loss_no_cold, loss_all_full
+runs: baseline, risk_pkg_q25_late_live, risk_cold_q25, risk_cold_skip, risk_pkg_half_late, risk_pkg_q25_late, risk_pkg_q25_hot8, risk_pkg_q25_prop1000, risk_sit_late_half, risk_hot8_150, risk_eval_prop1000, risk_usd1000, risk_usd600, risk_refoff, risk_ref30, loss_no_cold, loss_no_trend_half, loss_all_full
 ---
 
 ## The answer to "risking too much or not enough?"
@@ -132,6 +132,8 @@ The recommended sizing is better in 5 of 6 years. 2023 is the exception: -$981 n
 | full risk up to a 30-pt stop | +$23.5k / 3.01 | +$8.7k / 1.09 | 20.7% | more fails |
 | $800 on every trade (no de-risking at all) | +$26.2k / 2.10 | -$1.4k / 0.99 | 68.9% | loses over 5 years |
 | cold-streak filter off | +$20.9k / 3.07 | -$2.5k / 0.98 | 27.4% | the filter is what makes 2021-25 positive |
+| skip mode (sit out cold streaks) | +$19.6k / 4.08 | +$15.0k / 1.32 | 7.2% | best 5-year numbers, but 1.5 setups a week and months without a trade: you rejected it |
+| trending regime at full size (drop the live half) | +$21.3k / 3.28 | +$7.2k / 1.08 | 14.0% | PF lower in both, more eval fails: keep the half |
 | half size while the account is $1.5k below its high | +$14.4k / 3.53 | -$0.4k / 0.99 | 2.8% | cuts size right before the recoveries |
 | half size after 3 losers in a row | +$18.1k / 3.63 | +$3.0k / 1.05 | 3.6% | worse in both |
 | 1.5x right after a winner | +$20.8k / 3.05 | +$4.0k / 1.05 | 15.4% | worse in both |

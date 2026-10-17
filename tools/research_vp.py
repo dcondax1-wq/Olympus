@@ -548,11 +548,11 @@ def status_of(S, base, kind):
         return "rejected" if kind != "skip" else "info"
     if a["net"] == A["net"] and a["pf"] == A["pf"] and a["n"] == A["n"]:
         return "info"                                   # never changed a 2026 trade: untested out of sample
-    freq = (a.get("tpw") or 0) >= 2 and (b.get("tpw") or 0) >= 2
+    freq = all(2 <= (x.get("tpw") or 0) <= 4 for x in (a, b))          # owner's rule: 2-4 trades a week in both periods
     better = lambda x, y: x["net"] > y["net"] and (x["pf"] or 0) > (y["pf"] or 0)
-    no_harm = lambda x, y: x["net"] >= y["net"] - 250 and (x["pf"] or 0) >= (y["pf"] or 0) - 0.02
-    if freq and better(a, A) and better(b, Bs):
+    if rl.passes(S, base) and better(a, A) and better(b, Bs):
         return "adopt-candidate"
+    no_harm = lambda x, y: x["net"] >= y["net"] - 250 and (x["pf"] or 0) >= (y["pf"] or 0) - 0.02
     if freq and ((better(a, A) and no_harm(b, Bs)) or (better(b, Bs) and no_harm(a, A))):
         return "promising"
     return "rejected" if kind != "skip" else "info"
@@ -643,7 +643,7 @@ def fmt(s):
     if not s.get("n"):
         return "no trades"
     return (f"n={s['n']} {s['tpw']}/wk wk2={s['wk2']}% PF={s['pf']} net={s['net']:+,} DD={s['dd']:,} "
-            f"1m pass/fail {s['p20']}/{s['f20']}")
+            f"eval 2wk {s['p10']}/{s['f10']} 1mo {s['p20']}/{s['f20']} slow {s.get('slow_pass')}% b2b {s['b2b']}")
 
 
 if __name__ == "__main__":
@@ -663,7 +663,7 @@ if __name__ == "__main__":
             print(f"  {name:<20} strong side = {'present' if good else 'absent'}  2021-25 gap {obs:+.3f}R  permutation p={pv}"
                   f"  years 2022-25 agreeing {ys[0]} {ys[1]}")
     if cmd in ("all", "dry"):
-        base = rl.load("baseline")
+        base = rl.score(rl.size(raw), raw)               # the live strategy, scored now (same trades as run "baseline")
         print("\nbaseline: 2026", fmt(base["spans"]["2026"]), "| 2021-25", fmt(base["spans"]["2021-25"]))
         plan = []
         for name, good in sel.items():
@@ -701,13 +701,15 @@ if __name__ == "__main__":
                 continue
             ok, reasons = gate(vid, R, base, NB.get(vid, []))
             share = sum(1 for t in raw["trades"] if flag(IDEAS[r["name"]][2], t, FE) is r["good"]) / len(raw["trades"])
-            w, n = placebo(raw, base, share)
-            print(f"\ngate {vid}: {'PASS' if ok else 'FAIL'} {reasons}; placebo: random {share:.0%} subsets sized x1.25 pass "
+            k = r["kind"]
+            m, sh = ((1.25 if k == "up" else int(k[2:]) / 100), share) if k.startswith("up") else (0.5, 1 - share)
+            w, n = placebo(raw, base, sh, m)
+            print(f"\ngate {vid}: {'PASS' if ok else 'FAIL'} {reasons}; placebo: random {sh:.0%} subsets sized x{m:g} pass "
                   f"the both-periods rule {w}/{n}")
             if not ok:
                 r["status"] = "rejected"
                 r["verdict"] = ("Beats the baseline in both periods by a hair, but fails the robustness checks: "
-                                + "; ".join(reasons) + f"; random subsets of the same size pass {w}/{n} times. " + r["verdict"])
+                                + "; ".join(reasons) + f"; random subsets of the same size sized x{m:g} pass {w}/{n} times. " + r["verdict"])
         if cmd == "all":
             save_all(R, base)
             print(f"\nsaved {len(R)} runs:", ", ".join(R))

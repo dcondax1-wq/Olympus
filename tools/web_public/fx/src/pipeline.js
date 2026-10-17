@@ -16,7 +16,7 @@ const STEPS = ['Sweep', 'IFVG', 'Order', 'Trade', 'Done'];
 const DESC = { sweep: 'a liquidity pool was run', ifvg: 'IFVG / CISD trigger in a killzone', order: 'limit order working', trade: 'managing the trade', done: 'one trade a day: finished' };
 const COLS = ['#ff4fd8', '#a855f7', '#22d3ee', '#2ee59d', '#ffd36b'];
 const YN = 0.5, M = 160;
-const _v = new THREE.Vector3(), _c = new THREE.Color(), _c2 = new THREE.Color(), _m = new THREE.Matrix4(), GREY = new THREE.Color('#8a84b8');
+const _v = new THREE.Vector3(), _c = new THREE.Color(), _c2 = new THREE.Color(), GREY = new THREE.Color('#8a84b8');
 // colour of step i of n: the five-colour ramp, sampled
 function stepColor(i, n, out) { const f = n > 1 ? i / (n - 1) * (COLS.length - 1) : 0, a = Math.floor(f), b = Math.min(COLS.length - 1, a + 1); return out.set(COLS[a]).lerp(_c2.set(COLS[b]), f - a); }
 

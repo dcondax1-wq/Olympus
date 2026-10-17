@@ -310,7 +310,7 @@ Q_DAILY = "Does the position versus the daily 50-day average (with or against th
 Q_TAG = "Is a sweep that tags a higher-timeframe EMA (dynamic support / resistance) worth more size?"
 KNIFE_MECH = ("Mechanism: a sweep-and-reverse setup bets that the sweep was a stop hunt. When price is already 3+ hourly ATRs "
               "away from its 20-hour average on the wrong side, a strong one-way move (displacement) is running and the sweep "
-              "is more often continuation than a stop hunt. In 2021-25 these setups won 7% of the time (rest: 22%).")
+              "is more often continuation than a stop hunt. In 2021-25 these setups won 8% of the time (rest: 22%).")
 
 # (id, title, question, family-key, test, hit multiplier, miss multiplier, status override or None, mechanism / note)
 RUNS = (
@@ -407,7 +407,7 @@ def verdict_of(S, B, status, hits):
 
 
 EXTRA_VERDICT = {
-    "ema_knife_half": " This is the rule chosen on 2021-25 before 2026 was looked at. In 2021-25 the 80 setups it hits won 7% of "
+    "ema_knife_half": " This is the rule chosen on 2021-25 before 2026 was looked at. In 2021-25 the 80 setups it hits won 8% of "
                       "the time (rest 22%) and lost money in every year. In 2026 it hits only 6 of 89 setups; one of them was a "
                       "+4.0R winner (2026-10-06, a short at 3.14 ATR, just past the line), which alone costs the $1,150.",
     "ema_knife_rma_half": " Same EMA 20 and 3-ATR line, but the ATR is TradingView's / the engine's Wilder ATR, which is a bit "

@@ -4,7 +4,8 @@ The owner's question: is the bot risking too much (losses wipe out what it earne
 This script answers it on the exact live-loop replay (tools/runlib.replay, costs included) and stores every experiment
 as a run (tools/runlib.save) so the dashboard can list and open them. Write-ups: research/writeups/.
 
-  python tools/research_risk.py all           # every run below (engine replays are cached; first time ~1 h on 2 procs)
+  python tools/research_risk.py all           # every run below (9 engine replays are cached in research/runs/_cache;
+                                              # without the cache they take ~5-12 min each on 2 procs, RISK_PROCS=n)
   python tools/research_risk.py check         # self-tests: sizing + eval simulator reproduce runlib and the engine
   python tools/research_risk.py anatomy       # A  loss anatomy (markdown tables printed) + counterfactual info runs
   python tools/research_risk.py levels        # B1 risk level x0.5 ... x1.5 (post-hoc, confirmed by engine replays)
@@ -14,15 +15,24 @@ as a run (tools/runlib.save) so the dashboard can list and open them. Write-ups:
   python tools/research_risk.py eval          # B5 MFFU eval-aware sizing (own eval simulator, state at entry)
   python tools/research_risk.py situational   # B6 one-factor situational sizing (picked on 2021-25, checked on 2026)
   python tools/research_risk.py weekly        # B7 weekly loss brake, loss-streak cuts
+  python tools/research_risk.py packages      # the best single changes combined (incl. the recommended one)
+  python tools/research_risk.py recommend     # the recommendation's full table (research/writeups/risk-summary.md)
   python tools/research_risk.py summary       # print every risk run's headline numbers
+
+The recommendation (risk-summary.md, run risk_pkg_q25_late_live): one multiplier on the engine's micros where the live loop
+applies the cold-streak half size today: x0.25 in a cold streak (today x0.5), x0.5 on a late entry (15m trend already
+pointing the trade's way), rounded down, at least 1 micro.
 
 Method
   * Sizing is re-done from the engine's own rule, not by scaling integer micros: the engine's sizing stop (signal close to
     stop, `risk_pts_plan`) is reconstructed for every trade so that int(risk$ // (stop x $2)) gives back exactly the
     recorded micros (checked on all 768 trades), then any new $ risk is turned into micros the way engine/model._size does
     (max 40 micros; fewer than 1 micro = the engine skips the setup). The cold-streak half size is then applied the way the
-    live loop does (max(1, int(micros x 0.5))). P&L, commission and slippage are linear in micros, so the re-sized P&L is
-    exact. Engine replays (runlib.replay with risk_usd / risk_ref_stop) confirm the post-hoc numbers.
+    live loop does (max(1, int(micros x 0.5))). Slippage is linear in micros, commission follows the engine (10 micros
+    route as 1 NQ), and the live loop scales the engine trade's P&L linearly to the routed micros (engine/live.py, as
+    runlib.size does), so the re-sized P&L is exact. Engine replays (runlib.replay with risk_usd / risk_ref_stop) confirm
+    the post-hoc numbers and are used for the risk-level and wide-stop runs (a smaller size can make the engine skip a
+    setup and take a later one the same day, which post-hoc sizing cannot see).
   * No look-ahead: a rule sees only the trade's setup fields and trades that FINISHED before it entered (the shadow record
     of every signal for the streak filters; the sized account or the eval account for equity rules). Never the trade's own
     r / pnl / mfe / mae / bars_held / exit.
@@ -37,7 +47,6 @@ from __future__ import annotations
 import collections
 import datetime as dt
 import json
-import math
 import os
 import re
 import sys
@@ -862,7 +871,7 @@ def cmd_refstop():
     q = "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it."
     for ref in (15, 25, 30, 40, 0):
         name = "off (flat $800 on every stop)" if ref == 0 else f"{ref} pts"
-        experiment("refstop", f"risk_ref{ref if ref else 'off'}", f"Full risk up to a {name}" if ref else "No wide-stop scaling: $800 on every stop",
+        experiment("refstop", f"risk_ref{ref if ref else 'off'}", f"Full risk up to a {ref}-pt stop" if ref else "No wide-stop scaling: $800 on every stop",
                    q, engine={"risk_ref_stop": float(ref)}, tags=["wide-stop"],
                    notes=f"risk_ref_stop {ref} (live 20): risk = $800 x {ref}/stop beyond {ref} pts." if ref else
                    "risk_ref_stop 0: $800 whatever the stop (wide stops get few micros only by the stop itself).")
@@ -899,7 +908,8 @@ def cmd_cold():
            ("risk_cold_thrm2", "Cold only when the last 15 signals are below -2R", {"lookback": 15, "thr": -2.0, "size": 0.5}),
            ("risk_cold_thrp2", "Cold unless the last 15 signals are above +2R", {"lookback": 15, "thr": 2.0, "size": 0.5}),
            ("risk_cold_q25", "Quarter size (not half) in a cold streak", {"lookback": 15, "thr": 0.0, "size": 0.25}),
-           ("risk_cold_q75", "Three-quarter size (not half) in a cold streak", {"lookback": 15, "thr": 0.0, "size": 0.75})]
+           ("risk_cold_q75", "Three-quarter size (not half) in a cold streak", {"lookback": 15, "thr": 0.0, "size": 0.75}),
+           ("risk_cold_skip", "Skip mode for reference: sit out cold streaks (rejected by the owner)", {"lookback": 15, "thr": 0.0, "size": 0.0})]
     for id, title, cold in one:
         experiment("cold", id, title, q, pol={"cold": cold}, tags=["cold-streak"],
                    notes=f"Cold-streak filter {cold} (live: lookback 15, threshold 0R, half size). The size cut is applied to the "
