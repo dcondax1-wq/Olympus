@@ -77,6 +77,8 @@
       <!-- mission strip (js/dash/home.js) -->
       <div id="cockpit" class="cockpit"></div>
       <div class="page-tools" id="cmdTools"></div>
+      <!-- week ring + liquidity map (js/next/today.js): 3D views with 2D fallbacks -->
+      <div class="nx-today3" id="nxToday3"></div>
       <!-- every card below is a widget (js/dash/widgets.js): drag ⠿ to reorder, ⤢ expand, ⇩ export, ✕ hide; layout saved per browser -->
       <div id="cmdGrid">
         <div class="grid kpis" id="cmdKpis"></div>
@@ -478,11 +480,15 @@
     <section class="page" id="page-results"><div class="empty">Loading results…</div></section>
     <section class="page" id="page-lab"><div class="empty">Loading the run library…</div></section>
     <section class="page" id="page-writeups"><div class="empty">Loading write-ups…</div></section>
+    <section class="page" id="page-evals"><div class="empty">Loading eval odds…</div></section>
+    <section class="page" id="page-intraday"><div class="empty">Loading the intraday heat map…</div></section>
     <section class="page" id="page-variants"><div class="empty">Loading tested variants…</div></section>
     <section class="page" id="page-learned"><div class="empty">Loading lessons…</div></section>
     <section class="page" id="page-study"><div class="empty">Loading study trades…</div></section>
 
     <!-- ============================================================ MODULES: rules / cold / risk / alerts (js/next/modpages.js) -->
+    <section class="page" id="page-strategy"><div class="empty">Loading the strategy…</div></section>
+    <section class="page" id="page-newshub"><div class="empty">Loading the news hub…</div></section>
     <section class="page" id="page-rules"><div class="empty">Loading the strategy…</div></section>
     <section class="page" id="page-cold"><div class="empty">Loading the cold-streak filter…</div></section>
     <section class="page" id="page-risk"><div class="empty">Loading risk &amp; sizing…</div></section>

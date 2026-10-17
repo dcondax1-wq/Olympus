@@ -707,3 +707,179 @@ kbd, .nx-search kbd { font: 600 10.5px var(--mono); padding: 3px 6px; border-rad
   .nx-runs-grid, .nx-wu-grid { grid-template-columns: 1fr; }
   .nx-md { padding: 16px; font-size: 14px; }
 }
+
+/* ------------------------------------------------------------------ 6. Strategy page (js/next/strategy.js) */
+.nx-hero-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+.nx-sec { margin: 22px 2px 10px; }
+.nx-version { display: flex; flex-direction: column; gap: 8px; }
+.nx-version-h { display: flex; align-items: center; gap: 12px; }
+.nx-version-h .ico { width: 30px; height: 30px; padding: 6px; border-radius: 10px; color: var(--good-ink); background: color-mix(in srgb, var(--good) 14%, transparent); flex: none; }
+.nx-version-h b { display: block; font: 700 15px var(--sans); }
+.nx-version p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+.nx-rules { list-style: none; margin: 0 0 6px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.nx-rule { display: flex; gap: 14px; padding: 16px 18px; border-radius: 16px; border: 1px solid var(--nx-line); background: color-mix(in srgb, var(--surface) 66%, transparent); }
+.nx-rule .nx-step-n { flex: none; width: 30px; height: 30px; font-size: 14px; margin: 0; }
+.nx-rule > div { min-width: 0; }
+.nx-rule b { display: block; font: 700 15px var(--sans); margin-bottom: 4px; }
+.nx-rule p { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--ink-2); }
+.nx-rule p b { display: inline; font: inherit; font-weight: 650; color: var(--ink); }
+.nx-sizing { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.nx-size { display: flex; gap: 12px; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--nx-line); background: color-mix(in srgb, var(--surface) 66%, transparent); }
+.nx-size-i { flex: none; width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; color: var(--accent);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 22%, transparent), color-mix(in srgb, var(--accent-2) 8%, transparent)); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); }
+.nx-size b { display: block; font: 700 14px var(--sans); margin-bottom: 3px; }
+.nx-size p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+.nx-size p b { display: inline; font: inherit; font-weight: 650; color: var(--ink); }
+.nx-guards li { margin: 4px 0; }
+.nx-sizetbl td i { font-style: normal; }
+.nx-sp .nx-sp-big { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 12px 0 14px; }
+.nx-sp .nx-sp-big b { font: 800 36px/1.05 var(--sans); letter-spacing: -.035em; }
+.nx-sp .nx-sp-big span { font: 650 14px var(--mono); }
+.nx-sp .nx-kv b i { font-style: normal; font-weight: 500; }
+.nx-sp-grid { align-items: stretch; }
+.nx-sp-grid .card { margin-bottom: 0; }
+@media (max-width: 760px) {
+  .nx-rule { padding: 14px; gap: 12px; } .nx-rule .nx-step-n { width: 26px; height: 26px; font-size: 12.5px; }
+  .nx-sizing { grid-template-columns: 1fr; }
+  .nx-sp .nx-sp-big b { font-size: 30px; }
+  .nx-hero-acts { width: 100%; } .nx-hero-acts .btn { flex: 1; justify-content: center; }
+}
+
+/* ------------------------------------------------------------------ 7. News hub (js/next/newshub.js) */
+.fx3d.newsradar { height: 440px; }
+.nx-nh-hero { position: relative; overflow: hidden; }
+.nx-nh-hero::after { content: ""; position: absolute; inset: auto -30% -70% auto; width: 320px; height: 320px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(color-mix(in srgb, var(--accent) 24%, transparent), transparent 70%); }
+.nx-nh-hero.high::after { background: radial-gradient(color-mix(in srgb, var(--bad) 26%, transparent), transparent 70%); }
+.nx-nh-hero h3 { margin: 6px 0 8px; font: 750 24px/1.15 var(--sans); letter-spacing: -.02em; }
+.nx-nh-when { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
+.nx-count-dn { font: 750 44px/1.05 var(--mono); letter-spacing: -.03em; margin: 16px 0 14px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.nx-nh-fp { display: flex; gap: 22px; flex-wrap: wrap; }
+.nx-nh-fp span { display: flex; flex-direction: column; gap: 3px; min-width: 90px; }
+.nx-nh-fp em { font: 600 10.5px var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-style: normal; }
+.nx-nh-fp b { font: 650 15px var(--mono); }
+.nx-nh-today { display: flex; flex-direction: column; gap: 10px; }
+.nx-nh-flags { display: flex; flex-direction: column; gap: 6px; }
+.nx-nh-flags > div { display: flex; align-items: center; gap: 10px; padding: 9px 11px; border-radius: 12px; font-size: 13px; background: color-mix(in srgb, var(--surface-2) 70%, transparent); border: 1px solid var(--nx-line); color: var(--ink-2); }
+.nx-nh-flags .ico { width: 17px; height: 17px; flex: none; color: var(--muted); }
+.nx-nh-flags > div.on.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 35%, transparent); } .nx-nh-flags > div.on.warn .ico { color: var(--warn); }
+.nx-nh-flags > div.on.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 35%, transparent); } .nx-nh-flags > div.on.bad .ico { color: var(--bad); }
+.nx-bo { padding-left: 16px; }
+.nx-chip.kz { color: var(--gold); border-color: color-mix(in srgb, var(--gold) 40%, transparent); background: color-mix(in srgb, var(--gold) 10%, transparent); }
+.nx-chip.high { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); background: color-mix(in srgb, var(--bad) 10%, transparent); }
+.nx-cal .nx-cal-h { padding: 16px 18px 0; margin-bottom: 6px; }
+.nx-dot-i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin: 0 3px 0 6px; vertical-align: middle; background: var(--muted); }
+.nx-dot-i.high { background: var(--bad); } .nx-dot-i.med { background: var(--warn); }
+.nx-day { border-top: 1px solid var(--nx-line); padding: 8px 0 6px; }
+.nx-day.today { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+.nx-day header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 18px; }
+.nx-day header b { font: 700 14px var(--sans); } .nx-day.today header b { color: var(--accent); }
+.nx-day-s { flex: 1 1 100%; }
+.nx-ev { display: grid; grid-template-columns: 56px 10px minmax(0, 1fr) auto 70px; align-items: center; gap: 10px; padding: 8px 18px; border-top: 1px solid color-mix(in srgb, var(--ink) 4%, transparent); }
+.nx-ev.past { opacity: .55; }
+.nx-ev.bo { background: color-mix(in srgb, var(--warn) 5%, transparent); }
+.nx-ev-t { font-size: 12px; color: var(--ink-2); }
+.nx-ev-i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.nx-ev.high .nx-ev-i { background: var(--bad); box-shadow: 0 0 10px var(--bad); } .nx-ev.med .nx-ev-i { background: var(--warn); }
+.nx-ev-m { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.nx-ev-m b { font: 600 13.5px var(--sans); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nx-ev.high .nx-ev-m b { font-weight: 700; }
+.nx-ev-sub { display: flex; gap: 8px; flex-wrap: wrap; font-size: 11.5px; color: var(--muted); }
+.nx-ev-sub i { font-style: normal; } .nx-ev-sub i.kz { color: var(--gold); }
+.nx-ev-sub a { color: var(--accent-2); text-decoration: none; display: inline-flex; align-items: center; gap: 3px; } .nx-ev-sub a .ico { width: 12px; height: 12px; }
+.nx-ev-n { display: flex; gap: 12px; }
+.nx-ev-n span { display: flex; flex-direction: column; align-items: flex-end; font: 600 12.5px var(--mono); min-width: 52px; }
+.nx-ev-n em { font: 600 9.5px var(--sans); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-style: normal; }
+.nx-usd { display: block; height: 6px; border-radius: 99px; background: var(--surface-3); overflow: hidden; width: 70px; }
+.nx-usd i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--accent), var(--bad)); }
+.nx-hl { display: flex; flex-direction: column; }
+.nx-hl-row { display: flex; align-items: center; gap: 14px; padding: 10px 2px; border-top: 1px solid color-mix(in srgb, var(--ink) 5%, transparent); color: var(--ink); text-decoration: none; }
+.nx-hl-row:first-child { border-top: 0; } .nx-hl-row:hover b { color: var(--accent-2); }
+.nx-hl-m { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nx-hl-m b { font: 600 13.5px/1.35 var(--sans); }
+.nx-hl-sub { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 11.5px; color: var(--muted); } .nx-hl-sub i { font-style: normal; }
+.nx-tone { font: 650 10.5px var(--sans); padding: 2px 8px; border-radius: 99px; border: 1px solid var(--nx-line); color: var(--ink-2); }
+.nx-tone.pos { color: var(--good-ink); border-color: color-mix(in srgb, var(--good) 40%, transparent); } .nx-tone.neg { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+.nx-rel { flex: none; width: 56px; height: 6px; border-radius: 99px; background: var(--surface-3); overflow: hidden; }
+.nx-rel i { display: block; height: 100%; border-radius: 99px; background: var(--accent-2); }
+.nx-empty-hub { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 26px 24px !important; }
+.nx-empty-hub h3 { margin: 4px 0 0; font: 750 20px var(--sans); letter-spacing: -.02em; }
+.nx-empty-hub p { margin: 0; max-width: 640px; line-height: 1.55; }
+@media (max-width: 760px) {
+  .fx3d.newsradar { height: 340px; }
+  .nx-nh-hero h3 { font-size: 20px; } .nx-count-dn { font-size: 34px; margin: 12px 0 10px; }
+  .nx-nh-fp { gap: 14px; }
+  .nx-ev { grid-template-columns: 44px 8px minmax(0, 1fr); gap: 8px; padding: 8px 14px; }
+  .nx-ev-m b { white-space: normal; }
+  .nx-ev-n { grid-column: 2 / -1; justify-content: flex-start; gap: 16px; } .nx-ev-n span { align-items: flex-start; min-width: 0; }
+  .nx-usd { grid-column: 2 / -1; width: 100%; }
+  .nx-day header { padding: 6px 14px; } .nx-cal .nx-cal-h { padding: 14px 14px 0; }
+  .nx-ev-t { font-size: 11px; }
+}
+
+/* ------------------------------------------------------------------ 8. Lab extras: Evals (Monte Carlo) + Intraday heat (js/next/evals.js) */
+.fx3d.montecarlo, .fx3d.heat { height: 440px; }
+.nx-method { margin: -6px 2px 14px; line-height: 1.5; }
+.nx-prob tr.nx-prob-key td { background: color-mix(in srgb, var(--accent) 8%, transparent); font-weight: 650; }
+.nx-heat { display: grid; grid-template-columns: 64px repeat(var(--cols, 5), minmax(0, 1fr)); gap: 5px; }
+.nx-hh, .nx-hr { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; font-size: 11px; color: var(--muted); min-width: 0; }
+.nx-hh b, .nx-hr b { font: 700 12px var(--sans); color: var(--ink); } .nx-hr b { font-family: var(--mono); }
+.nx-hh span, .nx-hr span { font: 600 11px var(--mono); } .nx-hh i, .nx-hr i { font-style: normal; font-size: 10px; }
+.nx-hr { align-items: flex-end; padding-right: 6px; } .nx-hr.kz b { color: var(--gold); }
+.nx-hc { position: relative; min-height: 58px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 6px 4px; min-width: 0; overflow: hidden;
+  border: 1px solid var(--nx-line); background: color-mix(in srgb, var(--surface-2) 60%, transparent); }
+.nx-hc.pos { background: color-mix(in srgb, var(--good) calc(var(--a, .3) * 100%), var(--surface-2)); border-color: color-mix(in srgb, var(--good) 30%, transparent); }
+.nx-hc.neg { background: color-mix(in srgb, var(--bad) calc(var(--a, .3) * 100%), var(--surface-2)); border-color: color-mix(in srgb, var(--bad) 30%, transparent); }
+.nx-hc.kz::before { content: ""; position: absolute; left: 6px; right: 6px; top: 0; height: 2px; border-radius: 0 0 3px 3px; background: var(--gold); opacity: .7; }
+.nx-hc.empty { opacity: .45; }
+.nx-hc b { font: 700 13px var(--mono); color: var(--ink); } .nx-hc span { font: 500 10px var(--mono); color: var(--ink-2); white-space: nowrap; }
+@media (max-width: 760px) {
+  .fx3d.montecarlo, .fx3d.heat { height: 340px; }
+  .nx-heat { grid-template-columns: 46px repeat(var(--cols, 5), minmax(0, 1fr)); gap: 3px; }
+  .nx-hc { min-height: 50px; border-radius: 8px; padding: 4px 2px; } .nx-hc b { font-size: 11px; } .nx-hc span { font-size: 8.5px; }
+  .nx-hh span, .nx-hr span { display: none; } .nx-hr { padding-right: 3px; }
+}
+
+/* ------------------------------------------------------------------ 9. Today: week ring + liquidity map (js/next/today.js) */
+.nx-today3 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-bottom: 16px; }
+.nx-today3:empty { display: none; }
+.nx-t3 { margin: 0; min-width: 0; }
+.nx-t3 .card-tools { display: flex; align-items: center; gap: 10px; }
+.nx-fxwrap { position: relative; min-width: 0; }
+.nx-fxwrap .fx3d { display: none; height: 320px; }
+.nx-fxwrap .fx3d.fx-live { display: block; }
+.nx-fxwrap .fx3d.fx-live + .nx-2d { display: none; }
+.nx-week { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 16px; align-items: center; }
+.nx-week-ring { display: grid; place-items: center; }
+.nx-ring { display: block; max-width: 100%; }
+.nx-week-side { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.nx-week-side h3 { margin: 0; font: 750 20px/1.2 var(--sans); letter-spacing: -.02em; }
+.nx-week-side p { margin: 0; }
+.nx-week-days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.nx-wd { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 4px; border-radius: 12px; border: 1px solid var(--nx-line); background: color-mix(in srgb, var(--surface-2) 70%, transparent); min-width: 0; }
+.nx-wd span { font: 600 10.5px var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.nx-wd b { font: 750 18px var(--sans); color: var(--ink); } .nx-wd em { font: 600 10.5px var(--mono); font-style: normal; min-height: 13px; }
+.nx-wd.today { border-color: color-mix(in srgb, var(--accent) 50%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent); }
+.nx-wd.win { background: color-mix(in srgb, var(--good) 12%, transparent); } .nx-wd.loss { background: color-mix(in srgb, var(--bad) 12%, transparent); }
+.nx-liq { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(200px, 1fr); gap: 16px; align-items: start; }
+.nx-liq-map { border-radius: 14px; overflow: hidden; background: color-mix(in srgb, var(--page) 50%, transparent); border: 1px solid var(--nx-line); }
+.nx-liq-svg { display: block; }
+.nx-liq-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.nx-liq-side p { margin: 0; }
+.nx-liq-side .nx-kv.one b { text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 1100px) { .nx-today3 { grid-template-columns: 1fr; } }
+@media (max-width: 760px) {
+  .nx-today3 { gap: 12px; margin-bottom: 12px; }
+  .nx-fxwrap .fx3d { height: 280px; }
+  .nx-week { grid-template-columns: 1fr; justify-items: center; } .nx-week-side { width: 100%; } .nx-week-side h3 { font-size: 17px; }
+  .nx-wd { padding: 6px 2px; } .nx-wd b { font-size: 15px; } .nx-wd em { font-size: 9.5px; }
+  .nx-liq { grid-template-columns: 1fr; }
+}
+
+/* money next to R (lab cards + run detail) */
+.nx-pm { font: 600 11px var(--mono); color: var(--ink-2); margin-left: 4px; }
+.nx-rk-ev { font-size: 11.5px; }
+.nx-spans td, .nx-spans th { white-space: nowrap; }
+.nx-pfd { white-space: nowrap; }
+/* a 3D card stays hidden while 3D is off (the oracle's display:grid used to beat the hidden attribute) */
+.nx [data-fx-card][hidden], .nx .card.nx-oracle[hidden] { display: none !important; }

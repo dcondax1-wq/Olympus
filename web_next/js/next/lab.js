@@ -64,16 +64,23 @@ function delta(v, b, kind = 'num', better = 'up') {
   const txt = kind === '$' ? fmtS$(d) : kind === 'pct' ? (d > 0 ? '+' : '') + fmtN(d, 1) : (d > 0 ? '+' : '') + fmtN(d, 2);
   return `<i class="nx-d ${good ? 'up' : 'dn'}">${txt}</i>`;
 }
+const pf = (s, b) => `<span class="nx-pfd">${pct(s.p10)} / <span class="dn">${pct(s.f10)}</span>${b && b.p10 != null ? delta(s.p10, b.p10, 'pct') : ''}</span>`;
 function spanRow(label, s, b) {
-  if (!s?.n) return `<tr><td>${label}</td><td colspan="8" class="muted">no trades</td></tr>`;
+  if (!s?.n) return `<tr><td>${label}</td><td colspan="14" class="muted">no trades</td></tr>`;
+  const dec = s.dec10 ?? (s.p10 != null && s.f10 != null ? s.p10 + s.f10 : null);
   return `<tr><td><b>${label}</b></td><td>${s.n}</td><td class="${s.tpw >= 2 ? 'up' : 'dn'}">${fmtN(s.tpw, 2)}</td><td>${pct(s.win)}</td>
-    <td>${fmtN(s.pf)} ${delta(s.pf, b?.pf)}</td><td class="mono ${cls(s.net)}">${fmtS$(s.net)} ${delta(s.net, b?.net, '$')}</td>
-    <td class="mono">${fmt$(s.dd)} ${delta(s.dd, b?.dd, '$')}</td><td>${pct(s.p20)} / <span class="dn">${pct(s.f20)}</span></td><td>${esc(s.b2b || '—')}</td></tr>`;
+    <td>${fmtN(s.pf)} ${delta(s.pf, b?.pf)}</td><td class="mono ${cls(s.net)}">${fmtS$(s.net)} ${delta(s.net, b?.net, '$')}</td><td class="mono ${cls(s.per_month)}">${s.per_month != null ? fmtS$(s.per_month) : '—'} ${delta(s.per_month, b?.per_month, '$')}</td>
+    <td class="mono">${fmt$(s.dd)} ${delta(s.dd, b?.dd, '$')}</td>
+    <td>${pf(s, b)}</td><td>${pct(dec)} ${delta(dec, b?.dec10 ?? (b?.p10 != null ? b.p10 + b.f10 : null), 'pct')}</td><td>${pct(s.p15)} / <span class="dn">${pct(s.f15)}</span></td>
+    <td>${pct(s.p20)} / <span class="dn">${pct(s.f20)}</span></td><td class="${s.slow_pass > 50 ? 'dn' : ''}">${pct(s.slow_pass)}</td><td class="mono">${s.pass_med != null ? fmtN(s.pass_med, 0) : '—'}</td><td>${esc(s.b2b || '—')}</td></tr>`;
 }
 function runCard(r, base) {
   const a = r.spans?.['2026'] || {}, b = r.spans?.['2021-25'] || {}, A = base?.spans?.['2026'] || {}, B = base?.spans?.['2021-25'] || {};
-  const k = (s, S, lbl) => `<div class="nx-rk"><span>${lbl}</span><b>PF ${fmtN(s.pf)} ${r.id !== 'baseline' ? delta(s.pf, S.pf) : ''}</b>
-    <em class="${cls(s.net)}">${fmtS$(s.net)} ${r.id !== 'baseline' ? delta(s.net, S.net, '$') : ''}</em><em>${fmtN(s.tpw, 1)}/wk · DD ${fmt$(s.dd)}</em></div>`;
+  const isB = r.id === 'baseline';
+  const k = (s, S, lbl) => `<div class="nx-rk"><span>${lbl}</span><b>PF ${fmtN(s.pf)} ${!isB ? delta(s.pf, S.pf) : ''}</b>
+    <em class="${cls(s.net)}">${fmtS$(s.net)} ${!isB ? delta(s.net, S.net, '$') : ''}${s.per_month != null ? ` <i class="nx-pm">${fmtS$(s.per_month)}/mo</i>` : ''}</em>
+    <em>${fmtN(s.tpw, 1)}/wk · DD ${fmt$(s.dd)}</em>
+    <em class="nx-rk-ev" title="eval decided within 2 weeks · passed / failed within 2 weeks">2wk ${pct(s.dec10 ?? (s.p10 != null && s.f10 != null ? s.p10 + s.f10 : null))} ${!isB ? delta(s.dec10, S.dec10, 'pct') : ''} · <span class="up">${pct(s.p10)}</span>/<span class="dn">${pct(s.f10)}</span></em></div>`;
   return `<button type="button" class="nx-runcard ${esc(r.status)}" data-id="${esc(r.id)}">
     <div class="nx-runcard-h">${statChip(r.status)}${r.family !== 'baseline' ? chip(esc(FAM[r.family] || r.family)) : ''}</div>
     <h4>${esc(r.title)}</h4><p class="muted small">${esc(r.verdict || r.question || '')}</p>
@@ -124,9 +131,9 @@ async function renderDetail(el, id) {
       <p>${esc(r.verdict || '—')}</p>${r.notes ? `<p class="muted small">${esc(r.notes)}</p>` : ''}
       ${plist.length ? `<div class="nx-chips">${plist.map(([k, v]) => chip(`<i>${esc(k)}</i> ${esc(typeof v === 'object' ? JSON.stringify(v) : String(v))}`)).join('')}</div>` : '<p class="muted small">Same settings as the live strategy.</p>'}</div>
     <div class="card nx-glass"><div class="card-h"><h3>Headline numbers${b ? ' vs the live strategy' : ''}</h3><span class="muted small">exact live-loop replay, costs included</span></div>
-      <div class="table-wrap"><table class="tbl"><tr><th>Period</th><th>Trades</th><th>/wk</th><th>Win</th><th>PF</th><th>Net</th><th>Max DD</th><th>Eval 1 mo pass / fail</th><th>Back-to-back</th></tr>
+      <div class="table-wrap"><table class="tbl nx-spans"><tr><th>Period</th><th>Trades</th><th>/wk</th><th>Win</th><th>PF</th><th>Net</th><th>$ / mo</th><th>Max DD</th><th>Eval 2 wk pass / fail</th><th>Decided 2 wk</th><th>3 wk pass / fail</th><th>1 mo pass / fail</th><th>Slow passes (&gt;3 wk)</th><th>Median sessions to pass</th><th>Back-to-back</th></tr>
         ${spanRow('2026', r.spans['2026'], B['2026'])}${spanRow('2021-25', r.spans['2021-25'], B['2021-25'])}${spanRow('All years', r.spans.all, B.all)}</table></div>
-      ${b ? '<p class="muted small">Small coloured numbers: difference from the live strategy (green = better).</p>' : ''}</div>
+      <p class="muted small">${b ? 'Small coloured numbers: difference from the live strategy (green = better). ' : ''}Owner's rule: an eval should be decided within 2 weeks and never take over 3 weeks to pass, with 2–4 trades a week.</p></div>
     <div class="card nx-glass"><div class="card-h"><h3>Equity${b ? ' vs the live strategy' : ''}</h3><span class="muted small">cumulative net $ per session</span></div>
       <div class="fx3d ribbon" id="labRibbon" data-fx-card hidden></div><div id="labEq"></div></div>
     <div class="card nx-glass"><div class="card-h"><h3>By year</h3></div><div class="table-wrap"><table class="tbl"><tr><th>Year</th><th>Trades</th><th>Win</th><th>PF</th><th>Net</th></tr>
@@ -157,7 +164,7 @@ async function render() {
   el.innerHTML = `
     <div class="nx-hero"><div><div class="nx-eyebrow">Lab · research run library · ${rows.length} runs · updated ${esc(st.data.built || '')}</div>
       <h2>Every backtest, stored with its data</h2>
-      <p class="muted">Each experiment is the exact live-loop replay with one idea changed, judged on 2026 and on 2021-25. A change is adopted only if it holds in both and keeps 2+ trades a week.</p></div>
+      <p class="muted">Each experiment is the exact live-loop replay with one idea changed, judged on 2026 and on 2021-25. A change is adopted only if it holds in both, keeps 2–4 trades a week and gets evals decided within 2 weeks. Cards show PF, net $, $ a month and the 2-week eval odds.</p></div>
       <button class="btn ghost" type="button" data-goto="writeups">${icon('reports')}Write-ups</button></div>
     <div class="nx-stats">
       <div class="nx-stat"><span>Runs</span><b>${rows.length}</b><em>stored with every trade</em></div>

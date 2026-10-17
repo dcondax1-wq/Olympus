@@ -18,11 +18,12 @@ function stats(rows) {
   const n = rows.length, wins = rows.filter(t => t.pnl > 0);
   const gp = wins.reduce((a, t) => a + t.pnl, 0), gl = -rows.filter(t => t.pnl < 0).reduce((a, t) => a + t.pnl, 0);
   const days = rows.map(t => t.day).sort();
-  const weeks = n ? Math.max(1, (Date.parse(days.at(-1)) - Date.parse(days[0])) / 6048e5) : 1;
+  const spanDays = n ? (Date.parse(days.at(-1)) - Date.parse(days[0])) / 864e5 : 0;
+  const weeks = n ? Math.max(1, spanDays / 7) : 1, months = n ? Math.max(0.5, spanDays / 30.44) : null;
   let eq = 0, peak = 0, dd = 0;
   [...rows].sort((a, b) => a.entry_t - b.entry_t).forEach(t => { eq += t.pnl; peak = Math.max(peak, eq); dd = Math.min(dd, eq - peak); });
   return { n, win: n ? wins.length / n * 100 : 0, pf: gl ? gp / gl : null, net: gp - gl, avgR: n ? rows.reduce((a, t) => a + (t.r || 0), 0) / n : 0,
-    half: rows.filter(t => t.half).length, tpw: n / weeks, dd };
+    half: rows.filter(t => t.half).length, tpw: n / weeks, dd, pm: months ? (gp - gl) / months : null, avg$: n ? (gp - gl) / n : null };
 }
 
 function pass(t) {
@@ -77,10 +78,10 @@ function render() {
       <div class="seg nx-seg-lg" id="trYear">${yearOpts.map(([v, l]) => `<button class="${v === st.year ? 'on' : ''}" data-v="${v}">${l}</button>`).join('')}</div>
     </div>
     <div class="nx-stats">
-      <div class="nx-stat"><span>Trades</span><b data-count="${s.n}">${s.n}</b><em>${fmtN(s.tpw, 1)} / week</em></div>
-      <div class="nx-stat"><span>Net</span><b class="${cls(s.net)}" data-count="${s.net}" data-fmt="s$">${fmtS$(s.net)}</b><em>max DD ${fmt$(s.dd)}</em></div>
+      <div class="nx-stat"><span>Trades</span><b data-count="${s.n}">${s.n}</b><em>${fmtN(s.tpw, 1)} / week · aim 2–4</em></div>
+      <div class="nx-stat"><span>Net</span><b class="${cls(s.net)}" data-count="${s.net}" data-fmt="s$">${fmtS$(s.net)}</b><em>${s.pm != null ? fmtS$(s.pm) + ' a month · ' : ''}max DD ${fmt$(s.dd)}</em></div>
       <div class="nx-stat"><span>Profit factor</span><b>${s.pf != null ? fmtN(s.pf) : '—'}</b><em>win ${fmtN(s.win, 1)}%</em></div>
-      <div class="nx-stat"><span>Avg R</span><b class="${cls(s.avgR)}">${fmtR(s.avgR)}</b><em>per trade</em></div>
+      <div class="nx-stat"><span>Avg R</span><b class="${cls(s.avgR)}">${fmtR(s.avgR)}</b><em>${s.avg$ != null ? fmtS$(s.avg$) + ' per trade' : 'per trade'}</em></div>
       <div class="nx-stat"><span>Half size</span><b data-count="${s.half}">${s.half}</b><em>cold-streak trades</em></div>
     </div>
     <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>Trade galaxy · ${rows.length} trades</h3><span class="muted small">every trade is a star: time → right, R ↑, stop size ↗ · drag to turn · click a star for its report</span></div><div class="fx3d galaxy" id="trGal"></div></div>

@@ -1,7 +1,7 @@
 // News hub (Modules → News hub): /api/next/news (research hub.json built by the news agent). Next high-impact event with a
 // countdown, what today means for the bot (blackouts, FOMC, killzone events), the 7-day calendar with USD-impact bars and
 // surprise colouring, headlines with tone and relevance. A 3D radar mounts over the calendar when 3D is on; the list is the fallback.
-import { $, api, esc, fmtN, etParts, etStr } from '../util.js';
+import { $, esc, fmtN, etParts, etStr } from '../util.js';
 import { sessionAt } from '../app.js';
 import { icon } from './icons.js';
 import { mount3d } from './fx3d.js';

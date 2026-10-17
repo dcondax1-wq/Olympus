@@ -367,8 +367,8 @@ def run_rules(raw, cal, S0, picks, save=True):
         rule = make_rule(cal, key, level, mult)
         T = rl.size(raw, rule=rule)
         S = rl.score(T, raw)
-        st = judge(S, S0) if mult > 0 else ("info")
-        verdict = delta_line(S, S0)
+        st = FINAL_STATUS.get(rid, judge(S, S0) if mult > 0 else "info")
+        verdict = (FINAL_VERDICT.get(rid, "") + " " + delta_line(S, S0)).strip()
         years = {y: (v["net"], v["pf"]) for y, v in S["years"].items()}
         print(f"\n== {rid}: {title}\n   {verdict}")
         print("   years:", ", ".join(f"{y} {n:+,} ({pf})" for y, (n, pf) in years.items()))
@@ -455,6 +455,32 @@ def noise_benchmark(raw, S0, sizes=((34, 0.5), (60, 0.5), (179, 1.25)), draws=30
                               "gain_old_max": int(max(gains_old)), "gain_new_max": int(max(gains_new))}
         print(n, mult, out[f"{n}x{mult}"], flush=True)
     return out
+
+
+# Final statuses after the random-group benchmark (noise_benchmark): a random group of 34 trades at x0.5 beats the live
+# strategy in both periods 15% of the time, a random group of 179 trades at x1.25 60% of the time (net) / 38% (net and PF).
+# No calendar rule's gain clears the random 90th percentile, so none is an adopt-candidate.
+FINAL_STATUS = {
+    "cal_nfp_next_half": "promising", "cal_nfp_next_csv_half": "info", "cal_nfp_next_skip": "info",
+    "cal_june_half": "rejected", "cal_june_skip": "info", "cal_summer_125": "rejected", "cal_opex_week_125": "rejected",
+    "cal_tom_half": "rejected", "cal_half_day_half": "info", "cal_cpi_125": "info", "cal_dst_week_125": "info",
+    "cal_first_week_half": "rejected", "cal_wed_half": "info",
+}
+FINAL_VERDICT = {
+    "cal_nfp_next_half": "Better in both periods, but by $748 over 5 years and $256 in 2026 (3 trades): a random 34-trade group at half size does as well 15% of the time. Watch it, don't adopt.",
+    "cal_nfp_next_csv_half": "Same rule on events.csv dates only (from Oct 2023): same picture, thin sample.",
+    "cal_nfp_next_skip": "Skip check only: drops to 3.02 / 2.09 trades a week; the owner wants every setup traded.",
+    "cal_june_half": "June lost in both periods in R, but half size changes nothing in 2026 and loses $379 in 2021-25 (the June losers were already small).",
+    "cal_june_skip": "Skip check only: under 2 trades a week in 2026.",
+    "cal_summer_125": "More size in July-August: PF falls in 2026 (3.89 vs 3.94) and 1-month eval fails rise in 2021-25 (7.8% vs 5.2%). Not better.",
+    "cal_opex_week_125": "Looks better in both periods, but a random 179-trade group at x1.25 beats the live strategy 60% of the time: a size-up on a profitable strategy, not an OPEX effect. In 2026 OPEX-week trades made less per trade than the others.",
+    "cal_tom_half": "Loses $1,558 in 2026 (the month-start trades were among the best of 2026).",
+    "cal_half_day_half": "21 trades in 2021-25, 1 in 2026: too few to say anything; $6 difference.",
+    "cal_cpi_125": "CPI days were strong in 2021-25 (+0.66R on 30 trades) but 2026 has 2 such trades (both small losers). Info.",
+    "cal_dst_week_125": "29 + 2 trades; 2026 unchanged (1-micro trades don't grow at x1.25). Info.",
+    "cal_first_week_half": "Loses $4.7k in 2021-25 and $3.9k in 2026: the first trade of the week is a normal trade.",
+    "cal_wed_half": "The trap: Wednesday was the best day in 2021-25 (p 0.015) and the worst in 2026 (p 0.04). Half size on Wednesdays gains $363 in 2026 and loses $6.3k in 2021-25.",
+}
 
 
 # (id, title, flag, level, multiplier, question). Multiplier 0 = skip (a check only; the owner wants 2-4 trades a week).

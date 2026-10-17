@@ -88,29 +88,46 @@ async function showEvals() {
 
   const lock = asPct(mc.prob) || {}, pressRaw = mc.press?.prob || (mc.press && typeof mc.press.pass_2w === 'number' ? mc.press : null), press = asPct(pressRaw);
   const pressLabel = mc.press?.label || mc.press?.name || 'Fast-eval press';
-  const rows = [['pass_2w', 'Passed within 2 weeks', 'up'], ['fail_2w', 'Failed within 2 weeks', 'dn'], ['pass_3w', 'Passed within 3 weeks', 'up'], ['pass_4w', 'Passed within 1 month', 'up'], ['pass_6w', 'Passed within 6 weeks', 'up'], ['open_60', 'Still open after 60 sessions', '']];
+  const pressNote = mc.press_rule || mc.press?.note || 'full $800 on any stop while the eval is less than $1,000 down';
+  // rows: [key, label, colour class, kind] kind: pct (higher better) · pctBad (lower better) · n (sessions, lower better) · $ (drawdown, smaller better)
+  const rows = [['pass_2w', 'Passed within 2 weeks', 'up', 'pct'], ['fail_2w', 'Failed within 2 weeks', 'dn', 'pctBad'], ['dec_2w', 'Decided within 2 weeks', '', 'pct'],
+    ['pass_3w', 'Passed within 3 weeks', 'up', 'pct'], ['fail_3w', 'Failed within 3 weeks', 'dn', 'pctBad'], ['pass_4w', 'Passed within 1 month', 'up', 'pct'], ['fail_4w', 'Failed within 1 month', 'dn', 'pctBad'],
+    ['pass_6w', 'Passed within 6 weeks', 'up', 'pct'], ['fail_6w', 'Failed within 6 weeks', 'dn', 'pctBad'], ['pass_60', 'Passed within 60 sessions', 'up', 'pct'], ['fail_60', 'Failed within 60 sessions', 'dn', 'pctBad'], ['open_60', 'Still open after 60 sessions', '', 'pctBad'],
+    ['pass_days_median', 'Median sessions to pass', '', 'n'], ['pass_days_p90', 'Slowest 10% of passes take', '', 'n'], ['dd_median', 'Median drawdown on the way', '', '$'], ['dd_p90', 'Worst 10% drawdown', '', '$'], ['dd_worst', 'Worst drawdown seen', '', '$']];
   const dec = (o) => o && o.pass_2w != null && o.fail_2w != null ? o.pass_2w + o.fail_2w : null;
+  const get = (o, k) => k === 'dec_2w' ? dec(o) : o?.[k];
+  const fmtK = (v, kind) => v == null ? '—' : kind === 'n' ? fmtN(v, 0) + ' sessions' : kind === '$' ? fmt$(v) : pct(v);
   const paths = mc.paths || [], results = paths.map(p => String(p.result || '').toUpperCase());
   const nPass = results.filter(r => r === 'PASS').length, nFail = results.filter(r => r === 'FAIL').length;
-  const medPass = median(mc.hist?.pass_days), medFail = median(mc.hist?.fail_days);
+  const medPass = lock.pass_days_median ?? median(mc.hist?.pass_days), medFail = median(mc.hist?.fail_days);
   const slow = (mc.hist?.pass_days || []).length ? (mc.hist.pass_days.filter(d => d > 15).length / mc.hist.pass_days.length * 100) : null;
+  const exact = Array.isArray(mc.exact) ? mc.exact : [];
+  const ch = mc.chain && typeof mc.chain === 'object' ? Object.entries(mc.chain).filter(([, v]) => v && typeof v === 'object') : [];
+  const exactCard = exact.length ? `<div class="card nx-glass"><div class="card-h"><h3>What really happened · rolling starts in the replay</h3><span class="muted small">a new MFFU 50K eval started on every trading day · pass / fail</span></div>
+    <div class="table-wrap"><table class="tbl"><tr><th>Period</th><th>Starts</th><th>Within 2 weeks</th><th>Within 3 weeks</th><th>Within 1 month</th><th>Within 60 sessions</th><th>Median sessions to pass</th></tr>
+    ${exact.map(x => `<tr><td><b>${esc(x.pool === 'all' ? 'All years' : x.pool)}${x.mode && x.mode !== 'live' ? ' · ' + esc(x.mode) : ''}</b></td><td>${x.n_starts ?? '—'}</td><td><span class="up">${pct(x.pass_2w)}</span> / <span class="dn">${pct(x.fail_2w)}</span></td><td><span class="up">${pct(x.pass_3w)}</span> / <span class="dn">${pct(x.fail_3w)}</span></td><td><span class="up">${pct(x.pass_4w)}</span> / <span class="dn">${pct(x.fail_4w)}</span></td><td><span class="up">${pct(x.pass_60)}</span> / <span class="dn">${pct(x.fail_60)}</span> · open ${pct(x.open_60)}</td><td class="mono">${x.pass_med ?? '—'}</td></tr>`).join('')}</table></div></div>` : histCard;
+  const chainCard = ch.length ? `<div class="card nx-glass"><div class="card-h"><h3>To a funded account · back-to-back evals</h3><span class="muted small">a new eval the day after each pass or fail</span></div>
+    <div class="table-wrap"><table class="tbl"><tr><th>Case</th><th>Evals per pass</th><th>Weeks to funded (median)</th><th>Funded in 3 mo</th><th>6 mo</th><th>12 mo</th><th>Months of fees</th></tr>
+    ${ch.map(([k, v]) => `<tr><td><b>${esc(k)}</b></td><td class="mono">${v.evals_per_pass_mean != null ? fmtN(v.evals_per_pass_mean, 2) : '—'}</td><td class="mono">${v.weeks_to_funded_median != null ? fmtN(v.weeks_to_funded_median, 1) : '—'}</td><td>${pct(v.funded_3m)}</td><td>${pct(v.funded_6m)}</td><td>${pct(v.funded_12m)}</td><td class="mono">${v.months_fees_mean != null ? fmtN(v.months_fees_mean, 1) : '—'}</td></tr>`).join('')}</table></div></div>` : '';
   el.innerHTML = hero + `
     <div class="nx-stats">
       <div class="nx-stat"><span>Decided in 2 weeks</span><b class="${(dec(lock) || 0) >= 50 ? 'up' : ''}">${pct(dec(lock))}</b><em>pass ${pct(lock.pass_2w)} · fail ${pct(lock.fail_2w)}</em></div>
-      <div class="nx-stat"><span>Passed in 1 month</span><b class="up">${pct(lock.pass_4w)}</b><em>${pct(lock.pass_3w)} within 3 weeks</em></div>
-      <div class="nx-stat"><span>Median sessions to pass</span><b>${medPass != null ? fmtN(medPass, 0) : '—'}</b><em>${slow != null ? pct(slow) + ' of passes slower than 3 weeks' : 'from the pass histogram'}</em></div>
+      <div class="nx-stat"><span>Passed in 1 month</span><b class="up">${pct(lock.pass_4w)}</b><em>${pct(lock.pass_3w)} within 3 weeks · ${pct(lock.pass_60)} in 60 sessions</em></div>
+      <div class="nx-stat"><span>Median sessions to pass</span><b>${medPass != null ? fmtN(medPass, 0) : '—'}</b><em>${slow != null ? pct(slow) + ' of passes slower than 3 weeks' : lock.pass_days_p90 != null ? 'slowest 10% take ' + fmtN(lock.pass_days_p90, 0) + '+' : ''}</em></div>
       <div class="nx-stat"><span>Simulated evals</span><b>${paths.length || '—'}</b><em>${nPass} passed · ${nFail} failed${medFail != null ? ' · fails take ~' + fmtN(medFail, 0) + ' sessions' : ''}</em></div>
     </div>
+    ${mc.plan || mc.method ? `<p class="muted small nx-method">${esc(mc.plan || '')}${mc.plan && mc.method ? ' · ' : ''}${esc(mc.method || '')}${mc.paths_pool ? ' · paths shown: ' + esc(mc.paths_pool) : ''}</p>` : ''}
     <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>Eval paths in 3D</h3><span class="muted small">every simulated account · green reaches the target, red hits the max loss · drag to turn</span></div><div class="fx3d montecarlo" id="evMc"></div></div>
-    <div class="card nx-glass"><div class="card-h"><h3>Probability table · lock vs ${esc(pressLabel)}</h3><span class="muted small">${press ? 'press = full $800 on any stop while the eval is less than $1,000 down' : 'press column appears when the file has it'}</span></div>
+    <div class="card nx-glass"><div class="card-h"><h3>Probability table · lock vs ${esc(pressLabel)}</h3><span class="muted small">${press ? esc(pressNote) : 'press column appears when the file has it'}</span></div>
       <div class="table-wrap"><table class="tbl nx-prob"><tr><th>Outcome</th><th>Locked strategy</th>${press ? `<th>${esc(pressLabel)}</th><th>Difference</th>` : ''}</tr>
-      ${rows.map(([k, l, c]) => { const a = lock[k], b = press?.[k]; const d = a != null && b != null ? b - a : null; const good = k.startsWith('fail') || k === 'open_60' ? d < 0 : d > 0;
-        return `<tr><td>${l}</td><td class="mono ${c}"><b>${pct(a)}</b></td>${press ? `<td class="mono ${c}">${pct(b)}</td><td class="mono ${d == null ? 'muted' : good ? 'up' : 'dn'}">${d == null ? '—' : (d > 0 ? '+' : '') + fmtN(d, 1) + ' pts'}</td>` : ''}</tr>`; }).join('')}
-      <tr><td><b>Decided within 2 weeks</b></td><td class="mono"><b>${pct(dec(lock))}</b></td>${press ? `<td class="mono">${pct(dec(press))}</td><td class="mono ${dec(press) > dec(lock) ? 'up' : 'dn'}">${dec(press) != null && dec(lock) != null ? (dec(press) - dec(lock) > 0 ? '+' : '') + fmtN(dec(press) - dec(lock), 1) + ' pts' : '—'}</td>` : ''}</tr></table></div>
-      ${press && mc.press?.note ? `<p class="muted small">${esc(mc.press.note)}</p>` : ''}</div>
+      ${rows.filter(([k]) => get(lock, k) != null || get(press, k) != null).map(([k, l, c, kind]) => { const a = get(lock, k), b = get(press, k); const d = a != null && b != null ? b - a : null; const good = kind === 'pct' ? d > 0 : d < 0;
+        const dtxt = d == null ? '—' : kind === '$' ? fmtS$(d) : (d > 0 ? '+' : '') + fmtN(d, kind === 'n' ? 0 : 1) + (kind === 'n' ? '' : ' pts');
+        return `<tr class="${k === 'dec_2w' ? 'nx-prob-key' : ''}"><td>${l}</td><td class="mono ${c}"><b>${fmtK(a, kind)}</b></td>${press ? `<td class="mono ${c}">${fmtK(b, kind)}</td><td class="mono ${d == null || Math.abs(d) < 1e-9 ? 'muted' : good ? 'up' : 'dn'}">${dtxt}</td>` : ''}</tr>`; }).join('')}</table></div>
+      ${press ? `<p class="muted small">Green difference = better for the owner's rule (decided fast, fewer fails, smaller drawdown). The press passes faster but fails more; it is built in and off until the owner turns it on.</p>` : ''}</div>
     <div class="card nx-glass"><div class="card-h"><h3>Fan of ${Math.min(60, paths.length)} paths</h3><span class="muted small">account balance per session · start $50,000 · target $53,000 · max loss $48,000</span></div>${paths.length ? fanSvg(paths) : '<div class="empty">No paths in the file.</div>'}</div>
     <div class="card nx-glass"><div class="card-h"><h3>When evals get decided</h3><span class="muted small">share of all simulated evals, by week</span></div>${histSvg(mc.hist)}</div>
-    ${histCard}`;
+    ${exactCard}${chainCard}
+    ${mc.writeup ? `<div class="note">Write-up: <span class="mono">${esc(mc.writeup)}</span> (Data → Write-ups). ${esc(mc.strategy || '')}</div>` : ''}`;
   mount3d('lab-montecarlo', $('#evMc'), 'montecarlo', { paths, start: START, target: TARGET, maxLoss: MAXLOSS, prob: lock });
 }
 

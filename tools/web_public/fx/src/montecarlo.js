@@ -19,7 +19,7 @@ import { THREE, Q, glowTexture, POINT_FRAG, count, rng, Hud, addBackdrop, addNeb
 // outcome kinds (index = aMisc.y in the shaders)
 const KIND = [
   { key: 'OPEN', col: '#a78bfa', css: '#b9a6ff', label: 'open', size: 0.16 },
-  { key: 'PASS', col: '#2ee59d', css: '#4ef0b0', label: 'pass', size: 0.5 },
+  { key: 'PASS', col: '#2ee59d', css: '#4ef0b0', label: 'pass', size: 0.56 },
   { key: 'FAIL', col: '#ff2bd6', css: '#ff7ad9', label: 'fail', size: 0.42 },
 ];
 const WK = 5, NX_MIN = 60, WALLS = [{ s: 2 * WK, text: '2 wk · decided?', col: '#ffd98a', css: '#ffe7a8' }, { s: 3 * WK, text: '3 wk · passed?', col: '#22d3ee', css: '#67e8f9' }];
@@ -91,7 +91,7 @@ void main(){
   float ring = exp(-pow((d - 0.5 - vPop * 0.35) * 9.0, 2.0));
   float isPass = step(0.5, vKind) * (1.0 - step(1.5, vKind)), isFail = step(1.5, vKind);
   float hi = vHi * exp(-pow((d - 0.86) * 10.0, 2.0)) * 0.9;
-  float a = halo * 0.4 + core * 1.0 + spk * 0.9 * isPass + ring * 0.85 * isFail + hi;
+  float a = halo * 0.4 + core * 1.0 + spk * 1.1 * isPass + ring * 0.85 * isFail + hi;
   vec3 c = mix(vColor, vec3(1.0), clamp(core * 0.6 + hi * 0.3, 0.0, 1.0));
   gl_FragColor = vec4(c * a * vAlpha, 1.0);
 }`;
@@ -126,8 +126,9 @@ const CSS = `.fxh-montecarlo .mc-top{position:absolute;left:10px;top:9px;right:1
 .fxh-montecarlo .fxh-leg span.on{background:rgba(124,92,255,.18);border-color:rgba(167,139,250,.45)}
 .fxh-montecarlo .fxh-leg.iso span:not(.on){opacity:.45}
 .fxh-montecarlo .fxh-leg em{font-style:normal;font-weight:500;color:rgba(188,192,236,.5)}
-.fxh-montecarlo .mc-prob{display:flex;flex-wrap:wrap;gap:4px 6px;font-size:9px;font-weight:600;letter-spacing:.02em;line-height:1;color:rgba(188,192,236,.72)}
-.fxh-montecarlo .mc-prob span{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:7px;background:rgba(10,8,24,.58);border:1px solid rgba(150,130,255,.22);white-space:nowrap}
+.fxh-montecarlo .mc-top{gap:4px}
+.fxh-montecarlo .mc-prob{display:flex;flex-wrap:wrap;gap:3px 4px;font-size:9px;font-weight:600;letter-spacing:.02em;line-height:1;color:rgba(188,192,236,.72)}
+.fxh-montecarlo .mc-prob span{display:inline-flex;align-items:center;gap:3px;padding:2px 5px;border-radius:6px;background:rgba(10,8,24,.58);border:1px solid rgba(150,130,255,.22);white-space:nowrap}
 .fxh-montecarlo .mc-prob em{font-style:normal;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:8px;color:rgba(214,218,250,.62);margin-right:2px}
 .fxh-montecarlo .mc-prob b{font-weight:800;color:#eef0fb}.fxh-montecarlo .mc-prob b.g{color:#4ef0b0}.fxh-montecarlo .mc-prob b.m{color:#ff7ad9}.fxh-montecarlo .mc-prob b.v{color:#b9a6ff}
 .fxh-montecarlo .fxh-l.wall{font-size:9px;font-weight:700;letter-spacing:.03em}`;
@@ -268,29 +269,29 @@ export class MonteCarlo extends Hud {
     const F = this.flares.geometry.attributes;
     let v = 0;
     P.forEach((p, i) => {
-      const m = p.m, pts = p.P = new Float32Array((m + 1) * 3), k = KIND[p.ki];
-      for (let j = 0; j <= m; j++) { pts[j * 3] = this.X(j); pts[j * 3 + 1] = this.Y(j ? p.b[j - 1] : start); pts[j * 3 + 2] = p.zr * D * Math.min(1, j / 6); }
-      const endX = m / NX, c = _c.set(k.col).multiplyScalar(1.25), base = v;
-      for (let j = 0; j <= m; j++) {
-        const jp = Math.max(0, j - 1), jn = Math.min(m, j + 1), ax = j / NX;
+      const m = p.m, k = KIND[p.ki];
+      // a pass ends where it crosses the target plane (the eval is over there): session jc at fraction t into it
+      let cut = null;
+      if (p.ki === 1) for (let j = 1; j <= m; j++) { const a = j === 1 ? start : p.b[j - 2], b = p.b[j - 1]; if (b >= target && a < target) { cut = { j, t: (target - a) / (b - a) }; break; } }
+      const np = p.np = cut ? cut.j + 1 : m + 1, last = np - 1, pts = p.P = new Float32Array(np * 3);
+      for (let j = 0; j < np; j++) {
+        const x = cut && j === last ? j - 1 + cut.t : j, bal = cut && j === last ? target : j ? p.b[j - 1] : start;
+        pts[j * 3] = this.X(x); pts[j * 3 + 1] = this.Y(bal); pts[j * 3 + 2] = p.zr * D * Math.min(1, x / 6);
+      }
+      const endX = (cut ? cut.j - 1 + cut.t : m) / NX, c = _c.set(k.col).multiplyScalar(1.25), base = v;
+      for (let j = 0; j < np; j++) {
+        const jp = Math.max(0, j - 1), jn = Math.min(last, j + 1), ax = (cut && j === last ? endX * NX : j) / NX;
         for (const side of [-1, 1]) {
           A.position.setXYZ(v, pts[j * 3], pts[j * 3 + 1], pts[j * 3 + 2]); A.aPrev.setXYZ(v, pts[jp * 3], pts[jp * 3 + 1], pts[jp * 3 + 2]);
           A.aNext.setXYZ(v, pts[jn * 3], pts[jn * 3 + 1], pts[jn * 3 + 2]); A.aSide.setX(v, side); A.aX.setX(v, ax);
           A.aCol.setXYZ(v, c.r, c.g, c.b); A.aMisc.setXYZW(v, i, p.ki, endX, p.seed); v++;
         }
-        if (j < m) { const b2 = base + j * 2; idx.push(b2, b2 + 1, b2 + 2, b2 + 1, b2 + 3, b2 + 2); }
+        if (j < last) { const b2 = base + j * 2; idx.push(b2, b2 + 1, b2 + 2, b2 + 1, b2 + 3, b2 + 2); }
       }
-      // flare: a pass flares where it crosses the target plane, the others at their end
-      let fx = pts[m * 3], fy = pts[m * 3 + 1], fz = pts[m * 3 + 2], fe = endX;
-      if (p.ki === 1) {
-        for (let j = 1; j <= m; j++) {
-          const a = j === 1 ? start : p.b[j - 2], b = p.b[j - 1];
-          if (b >= target && a < target) { const t = (target - a) / (b - a); fx = this.X(j - 1 + t); fy = this.Y(target); fz = pts[(j - 1) * 3 + 2] + (pts[j * 3 + 2] - pts[(j - 1) * 3 + 2]) * t; fe = (j - 1 + t) / NX; break; }
-        }
-      }
-      p.F = [fx, fy, fz];
-      F.position.setXYZ(i, fx, fy, fz); _c.set(k.col).lerp(new THREE.Color(1, 1, 1), p.ki ? 0.15 : 0); F.aCol.setXYZ(i, _c.r, _c.g, _c.b);
-      F.aSize.setX(i, k.size * (p.ki ? clamp(1.1 - n / 500, 0.7, 1) : 1)); F.aMisc.setXYZW(i, i, p.ki, fe, p.seed);
+      // flare at the end: on the target plane for a pass, where the fail hit its trailing floor, at session 60 for an open path
+      p.F = [pts[last * 3], pts[last * 3 + 1], pts[last * 3 + 2]]; p.endX = endX;
+      F.position.setXYZ(i, p.F[0], p.F[1], p.F[2]); _c.set(k.col).lerp(new THREE.Color(1, 1, 1), p.ki ? 0.15 : 0); F.aCol.setXYZ(i, _c.r, _c.g, _c.b);
+      F.aSize.setX(i, k.size * (p.ki ? clamp(1.1 - n / 500, 0.7, 1) : 1)); F.aMisc.setXYZW(i, i, p.ki, endX, p.seed);
     });
     G.setIndex(idx);
     this.lines.geometry.dispose(); this.lines.geometry = G;
@@ -343,7 +344,8 @@ export class MonteCarlo extends Hud {
       defs.push({ text: 'target ' + fmtK(target, false), p: new THREE.Vector3(x1, yT, zf), ax: 1, ay: 1, dy: -4, cls: 't', color: KIND[1].css, avoid: true, keep: true });
       defs.push({ text: 'max-loss floor ' + fmtK(floor, false) + ' · trails', p: new THREE.Vector3(x1, yF, zf), ax: 1, ay: 0, dy: 4, cls: 't', color: KIND[2].css, avoid: true, keep: true });
       defs.push({ text: 'start ' + fmtK(start, false), p: new THREE.Vector3(this.X(0), yS, zf), ax: 0, ay: 1, dx: 4, dy: -6, cls: 't', color: '#d9ccff', avoid: true });
-      for (const w of WALLS) defs.push({ text: w.text, p: new THREE.Vector3(this.X(w.s), yt, zf), ax: 0.5, ay: 1, dy: -4, cls: 'wall', color: w.css, avoid: true, keep: true });
+      WALLS.forEach((w, k) => defs.push({ text: w.text, p: new THREE.Vector3(this.X(w.s), yt, zf), ax: k ? 0 : 1, ay: 1, dx: k ? 3 : -3, dy: -4, cls: 'wall', color: w.css, avoid: true, keep: true,
+        alts: [{ ax: 0.5, ay: 1, dy: -4 }, { ax: k ? 0 : 1, ay: 0, dx: k ? 3 : -3, dy: 4 }] }));
     }
     this.setLabels(defs);
     this.legendFor();
@@ -375,9 +377,9 @@ export class MonteCarlo extends Hud {
     let best = -1, bd = maxPx * maxPx;
     for (let i = 0; i < this.paths.length; i++) {
       const p = this.paths[i]; if (this.iso >= 0 && p.ki !== this.iso) continue;
-      const P = p.P, m = p.m;
-      for (let j = 0; j <= m; j++) {
-        if (j / NX > rev) break;
+      const P = p.P, last = p.np - 1;
+      for (let j = 0; j <= last; j++) {
+        if ((j === last ? p.endX : j / NX) > rev) break;
         const x = P[j * 3], y = P[j * 3 + 1], z = P[j * 3 + 2];
         const cw = e[3] * x + e[7] * y + e[11] * z + e[15]; if (cw <= 0) continue;
         const sx = ((e[0] * x + e[4] * y + e[8] * z + e[12]) / cw + 1) * w2 - px, sy = (1 - (e[1] * x + e[5] * y + e[9] * z + e[13]) / cw) * h2 - py;
@@ -402,7 +404,7 @@ export class MonteCarlo extends Hud {
     this.showTip('p' + p.id + '/' + p.m + '/' + p.last, `<b style="color:${k.css}">${k.key}</b> <i>·</i> ${when} <i>(${wk})</i><br>`
       + `<i>final</i> <b>${fmtUsd(p.last, false)}</b> <b style="color:${pnl >= 0 ? KIND[1].css : KIND[2].css}">${fmtUsd(pnl)}</b> · <i>low</i> ${fmtUsd(p.min, false)} · <i>high</i> ${fmtUsd(p.max, false)}`);
   }
-  devTapPoint() { const p = this.paths.find((q) => q.ki === 1) || this.paths[0]; if (!p) return null; const j = Math.max(1, Math.floor(p.m * 0.6)); const s = this.screen(_v.set(p.P[j * 3], p.P[j * 3 + 1], p.P[j * 3 + 2])); return [s.x, s.y]; }
+  devTapPoint() { const p = this.paths.find((q) => q.ki === 1) || this.paths[0]; if (!p) return null; const j = Math.max(1, Math.floor((p.np - 1) * 0.6)); const s = this.screen(_v.set(p.P[j * 3], p.P[j * 3 + 1], p.P[j * 3 + 2])); return [s.x, s.y]; }
 
   // ---------------------------------------------------------------- per frame
   update(t, dt) {
@@ -420,7 +422,7 @@ export class MonteCarlo extends Hud {
     const s = this.sel >= 0 ? this.paths[this.sel] : null;
     if (s) {
       const pulse = Q.reduced ? 1 : 1 + 0.07 * Math.sin(lt * 5), k = KIND[s.ki];
-      this.reticle.visible = this.revealed(s.m / this.NX); this.reticle.position.set(s.F[0], s.F[1], s.F[2]); this.reticle.scale.setScalar(0.42 * pulse);
+      this.reticle.visible = this.revealed(s.endX); this.reticle.position.set(s.F[0], s.F[1], s.F[2]); this.reticle.scale.setScalar(0.42 * pulse);
       this.reticle.material.rotation = Q.reduced ? 0 : lt * 0.8; this.reticle.material.opacity = 0.95; this.reticle.material.color.set(k.col).lerp(_c.set('#ffffff'), 0.5);
     } else this.reticle.visible = false;
     // html

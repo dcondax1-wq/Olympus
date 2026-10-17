@@ -54,7 +54,7 @@ async function showRules() {
             <div class="nx-kv one">${Object.entries(p).map(([k, v]) => `<div><span class="mono">${esc(k)}</span><b class="mono">${esc(JSON.stringify(v))}</b></div>`).join('')}
             ${Object.entries(ef).map(([k, v]) => `<div><span class="mono">equity_filter.${esc(k)}</span><b class="mono">${esc(JSON.stringify(v))}</b></div>`).join('')}</div></div>
           <div class="card nx-glass"><div class="card-h"><h3>Hard rules</h3></div><ul class="nx-list">
-            <li>Futures data only (TradingView CME NQ1!)</li><li>Paper only: never arm live trading</li><li>At least 2 setups a week</li>
+            <li>Futures data only (TradingView CME NQ1!)</li><li>Paper only: never arm live trading</li><li>2–4 setups a week, never fewer than 2</li><li>Evals decided within 2 weeks, never over 3 weeks to pass</li>
             <li>Stop beyond the sweep extreme, never fixed</li><li>Wide stop means less risk: size follows the stop</li>
             <li>Judged on 2026 and 2021-25: adopted only if it holds in both</li></ul></div>
         </div>

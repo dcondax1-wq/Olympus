@@ -3525,7 +3525,7 @@
  },
  "rules": {
   "cal_nfp_next_half": {
-   "status": "adopt-candidate",
+   "status": "promising",
    "2026": {
     "n": 89,
     "tpw": 2.16,
@@ -3683,7 +3683,7 @@
    }
   },
   "cal_nfp_next_csv_half": {
-   "status": "adopt-candidate",
+   "status": "info",
    "2026": {
     "n": 89,
     "tpw": 2.16,
@@ -3920,7 +3920,7 @@
    }
   },
   "cal_summer_125": {
-   "status": "promising",
+   "status": "rejected",
    "2026": {
     "n": 89,
     "tpw": 2.16,
@@ -3999,7 +3999,7 @@
    }
   },
   "cal_opex_week_125": {
-   "status": "adopt-candidate",
+   "status": "rejected",
    "2026": {
     "n": 89,
     "tpw": 2.16,
@@ -4078,7 +4078,7 @@
    }
   },
   "cal_tom_half": {
-   "status": "promising",
+   "status": "rejected",
    "2026": {
     "n": 89,
     "tpw": 2.16,
@@ -4157,7 +4157,7 @@
    }
   },
   "cal_half_day_half": {
-   "status": "promising",
+   "status": "info",
    "2026": {
     "n": 89,
     "tpw": 2.16,
@@ -4236,7 +4236,7 @@
    }
   },
   "cal_cpi_125": {
-   "status": "promising",
+   "status": "info",
    "2026": {
     "n": 89,
     "tpw": 2.16,
@@ -4315,7 +4315,7 @@
    }
   },
   "cal_dst_week_125": {
-   "status": "promising",
+   "status": "info",
    "2026": {
     "n": 89,
     "tpw": 2.16,
@@ -4473,7 +4473,7 @@
    }
   },
   "cal_wed_half": {
-   "status": "promising",
+   "status": "info",
    "2026": {
     "n": 89,
     "tpw": 2.16,
@@ -4550,6 +4550,79 @@
      4.54
     ]
    }
+  }
+ },
+ "noise_benchmark": {
+  "34x0.5": {
+   "n": 34,
+   "mult": 0.5,
+   "draws": 300,
+   "pct_better_both_net": 15.0,
+   "pct_pass_strict": 15.0,
+   "gain_old_p90": 870,
+   "gain_new_p90": 276,
+   "gain_old_max": 1898,
+   "gain_new_max": 510
+  },
+  "60x0.5": {
+   "n": 60,
+   "mult": 0.5,
+   "draws": 300,
+   "pct_better_both_net": 13.3,
+   "pct_pass_strict": 13.3,
+   "gain_old_p90": 1224,
+   "gain_new_p90": 331,
+   "gain_old_max": 2687,
+   "gain_new_max": 708
+  },
+  "179x1.25": {
+   "n": 179,
+   "mult": 1.25,
+   "draws": 300,
+   "pct_better_both_net": 60.0,
+   "pct_pass_strict": 38.3,
+   "gain_old_p90": 1565,
+   "gain_new_p90": 1954,
+   "gain_old_max": 2816,
+   "gain_new_max": 3029
+  }
+ },
+ "live_years": {
+  "2021": {
+   "n": 26,
+   "net": 4025,
+   "pf": 2.42,
+   "win": 34.6
+  },
+  "2022": {
+   "n": 153,
+   "net": -2447,
+   "pf": 0.82,
+   "win": 15.7
+  },
+  "2023": {
+   "n": 193,
+   "net": 7414,
+   "pf": 1.42,
+   "win": 23.3
+  },
+  "2024": {
+   "n": 166,
+   "net": 5683,
+   "pf": 1.36,
+   "win": 21.7
+  },
+  "2025": {
+   "n": 141,
+   "net": 1705,
+   "pf": 1.15,
+   "win": 20.6
+  },
+  "2026": {
+   "n": 89,
+   "net": 20487,
+   "pf": 3.94,
+   "win": 25.8
   }
  }
 }

@@ -10,6 +10,10 @@ let RES = null;
 async function results$() { if (!RES) RES = await api('/api/next/results'); return RES; }
 const fail = (el, e) => { el.innerHTML = `<div class="banner warn">Could not load: ${esc(e.message)}</div>`; };
 const pct = (v) => v == null ? '—' : fmtN(v, v < 10 ? 1 : 0) + '%';
+// money next to R: months in a period (fractional) and net $ per month
+export const monthsOf = (from, to) => { const d = (Date.parse(to) - Date.parse(from)) / 864e5; return d > 0 ? d / 30.44 : null; };
+export const perMo = (net, from, to) => { const m = monthsOf(from, to); return m && net != null ? net / m : null; };
+const pmTxt = (v) => v == null ? '—' : fmtS$(v) + '/mo';
 
 // ------------------------------------------------------------------ RESULTS
 function periodCard(name, p, tag) {
@@ -20,8 +24,9 @@ function periodCard(name, p, tag) {
       <span class="nx-badge ${p.pf >= 1.5 ? 'good' : p.pf >= 1 ? '' : 'bad'}">PF ${fmtN(p.pf)}</span></div>
     <div class="nx-big ${cls(p.net)}" data-count="${p.net}" data-fmt="s$">${fmtS$(p.net)}</div>
     <div class="nx-kv">
+      <div><span>$ per month</span><b class="${cls(p.net)}">${pmTxt(perMo(p.net, p.from, p.to))}</b></div>
       <div><span>Trades</span><b>${p.trades}</b></div>
-      <div><span>Per week</span><b class="${ok2 ? 'up' : 'dn'}">${fmtN(p.per_week, 1)}</b></div>
+      <div><span>Per week · aim 2–4</span><b class="${ok2 ? 'up' : 'dn'}">${fmtN(p.per_week, 1)}</b></div>
       <div><span>Weeks with 2+</span><b>${pct(p.weeks_2plus_pct)}</b></div>
       <div><span>Win rate</span><b>${pct(p.win_pct)}</b></div>
       <div><span>Max drawdown</span><b class="dn">${fmt$(p.max_dd)}</b></div>
@@ -65,9 +70,10 @@ async function showResults() {
       <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>Month city · net P&amp;L of every month</h3><span class="muted small">towers up = profit, down = loss · drag to turn · click a tower</span></div><div class="fx3d city" id="resCity"></div></div>
       <div class="grid cols-2">
         <div class="card nx-glass"><div class="card-h"><h3>By year</h3><span class="muted small">a change is adopted only if it holds in 2026 and 2021-25</span></div>
-          <div class="table-wrap"><table class="tbl"><tr><th>Year</th><th>Trades</th><th>/wk</th><th>2+ wks</th><th>Win</th><th>PF</th><th>Net</th><th>Max DD</th><th>Eval 1mo</th></tr>
+          <div class="table-wrap"><table class="tbl"><tr><th>Year</th><th>Trades</th><th>/wk</th><th>2+ wks</th><th>Win</th><th>PF</th><th>Net</th><th>$ / mo</th><th>Max DD</th><th>Eval 2wk</th><th>Eval 1mo</th></tr>
           ${years.map(y => { const p = P[y]; return `<tr><td class="mono"><b>${y}</b></td><td>${p.trades}</td><td class="${p.per_week >= 2 ? 'up' : 'dn'}">${fmtN(p.per_week, 1)}</td><td>${pct(p.weeks_2plus_pct)}</td>
-            <td>${pct(p.win_pct)}</td><td class="${p.pf >= 1 ? 'up' : 'dn'}">${fmtN(p.pf)}</td><td class="mono ${cls(p.net)}">${fmtS$(p.net)}</td><td class="mono">${fmt$(p.max_dd)}</td>
+            <td>${pct(p.win_pct)}</td><td class="${p.pf >= 1 ? 'up' : 'dn'}">${fmtN(p.pf)}</td><td class="mono ${cls(p.net)}">${fmtS$(p.net)}</td><td class="mono ${cls(p.net)}">${fmtS$(perMo(p.net, p.from, p.to))}</td><td class="mono">${fmt$(p.max_dd)}</td>
+            <td class="small">${pct(p.eval?.within_2_weeks?.pass_pct)} / <span class="dn">${pct(p.eval?.within_2_weeks?.fail_pct)}</span></td>
             <td class="small">${pct(p.eval?.within_1_month?.pass_pct)} / <span class="dn">${pct(p.eval?.within_1_month?.fail_pct)}</span></td></tr>`; }).join('')}</table></div></div>
         <div class="card nx-glass"><div class="card-h"><h3>By stop size</h3><span class="muted small">wide stop = fewer micros = less $ risk</span></div>
           <div class="table-wrap"><table class="tbl"><tr><th>Stop pts</th><th>Trades</th><th>Win</th><th>Avg R</th><th>Micros</th><th>$ risk</th></tr>
@@ -99,9 +105,12 @@ const vs = { sort: 'y2026.pf', dir: -1, q: '', period: 'both' };
 async function showVariants() {
   const el = $('#page-variants');
   try {
-    const v = await api('/api/next/variants');
-    const cols = v.columns || {};
-    const keys = ['n', 'tpw', 'wk2', 'win', 'pf', 'net', 'dd', 'stop', 'p10', 'f10', 'p20', 'f20', 'b2b'];
+    const [v, R] = await Promise.all([api('/api/next/variants'), results$().catch(() => null)]);
+    const cols = { ...(v.columns || {}), pm: 'net $ per month (net ÷ months in the period)' };
+    // $ per month: the period spans come from the live replay (2026 YTD and all years)
+    const span = { y2026: R?.periods?.['2026 YTD'], y5: R?.periods?.['All years'] };
+    for (const r of v.rows || []) for (const p of ['y2026', 'y5']) if (r[p] && typeof r[p].net === 'number' && span[p]) r[p].pm = perMo(r[p].net, span[p].from, span[p].to);
+    const keys = ['n', 'tpw', 'wk2', 'win', 'pf', 'net', 'pm', 'dd', 'stop', 'p10', 'f10', 'p20', 'f20', 'b2b'];
     const get = (r, path) => path.split('.').reduce((o, k) => o?.[k], r);
     const draw = () => {
       let rows = (v.rows || []).filter(r => !vs.q || r.name.toLowerCase().includes(vs.q));
@@ -110,8 +119,8 @@ async function showVariants() {
       const cell = (r, p, k) => {
         const x = r[p]?.[k];
         if (x == null) return '<td class="muted">—</td>';
-        const c = k === 'net' ? cls(x) : k === 'pf' ? (x >= 1.5 ? 'up' : x < 1 ? 'dn' : '') : k === 'tpw' ? (x >= 2 ? '' : 'dn') : k === 'dd' ? 'dn' : '';
-        const t = k === 'net' || k === 'dd' ? fmtS$(x) : typeof x === 'number' && !Number.isInteger(x) ? fmtN(x, k === 'pf' ? 2 : 1) : esc(x);
+        const c = k === 'net' || k === 'pm' ? cls(x) : k === 'pf' ? (x >= 1.5 ? 'up' : x < 1 ? 'dn' : '') : k === 'tpw' ? (x >= 2 ? '' : 'dn') : k === 'dd' ? 'dn' : '';
+        const t = k === 'net' || k === 'dd' || k === 'pm' ? fmtS$(x) : typeof x === 'number' && !Number.isInteger(x) ? fmtN(x, k === 'pf' ? 2 : 1) : esc(x);
         return `<td class="mono ${c}">${t}</td>`;
       };
       $('#varTable').innerHTML = `<table class="tbl nx-vtbl"><thead><tr><th rowspan="${periods.length > 1 ? 2 : 1}" class="nx-sticky">Variant</th>
@@ -124,7 +133,7 @@ async function showVariants() {
     const th = (p, k) => `<th data-s="${p}.${k}" title="${esc(cols[k] || k)}" class="nx-sort ${vs.sort === p + '.' + k ? 'on' : ''}">${esc(k)}${vs.sort === p + '.' + k ? icon(vs.dir < 0 ? 'down' : 'up') : ''}</th>`;
     el.innerHTML = `
       <div class="nx-hero"><div><div class="nx-eyebrow">Tested variants · built ${esc(v.built || '')}</div><h2>${(v.rows || []).length} variants, two periods</h2>
-        <p class="muted">${esc(v.note || '')}. Adopted only if it holds in 2026 <b>and</b> 2021-25 and keeps 2+ trades a week.</p></div></div>
+        <p class="muted">${esc(v.note || '')}. Adopted only if it holds in 2026 <b>and</b> 2021-25 and keeps 2–4 trades a week. <b>pm</b> = net $ per month.</p></div></div>
       <div class="nx-toolbar">
         <div class="seg" id="varPer">${[['both', 'Both'], ['y2026', '2026'], ['y5', '5 years']].map(([k, l]) => `<button data-v="${k}" class="${vs.period === k ? 'on' : ''}">${l}</button>`).join('')}</div>
         <label class="nx-field grow">${icon('search')}<input class="inp" id="varQ" placeholder="Filter variants (engine, ATM, tgt, stop…)" autocomplete="off"></label>
@@ -155,13 +164,17 @@ async function showLearned() {
         </div></div>`).join('') || '<div class="empty">Nothing in this group.</div>';
     };
     const cnt = (k) => f.filter(x => kind(x.verdict) === k).length;
+    // money next to R: 2021-25 = the sum of the yearly nets (2021..2025), 2026 = the YTD period
+    const P = d.periods || {}, yrs = Object.keys(P).filter(k => /^\d{4}$/.test(k) && k < '2026').sort();
+    const net2125 = yrs.length ? yrs.reduce((s, y) => s + (P[y].net || 0), 0) : null, pm2125 = yrs.length ? perMo(net2125, P[yrs[0]].from, P[yrs.at(-1)].to) : null;
+    const p26 = P['2026 YTD'], pm26 = p26 ? perMo(p26.net, p26.from, p26.to) : null;
     el.innerHTML = `
       <div class="nx-hero"><div><div class="nx-eyebrow">What the bot learned · ${f.length} factors checked</div><h2>Only what held in both periods counts</h2>
         <p class="muted">${esc(sm.how_it_learns || '')}</p></div>
         <button class="btn ghost" data-goto="memory">${icon('memory')}Trade memory</button></div>
       <div class="nx-stats">
-        <div class="nx-stat"><span>Baseline avg R</span><b class="${cls(sm.baseline_avg_r?.['2021_25'])}">${fmtR(sm.baseline_avg_r?.['2021_25'])}</b><em>2021-25</em></div>
-        <div class="nx-stat"><span>Baseline avg R</span><b class="${cls(sm.baseline_avg_r?.['2026'])}">${fmtR(sm.baseline_avg_r?.['2026'])}</b><em>2026</em></div>
+        <div class="nx-stat"><span>Baseline avg R · 2021-25</span><b class="${cls(sm.baseline_avg_r?.['2021_25'])}">${fmtR(sm.baseline_avg_r?.['2021_25'])}</b><em>${net2125 != null ? `${fmtS$(net2125)} · ${pmTxt(pm2125)}` : '2021-25'}</em></div>
+        <div class="nx-stat"><span>Baseline avg R · 2026</span><b class="${cls(sm.baseline_avg_r?.['2026'])}">${fmtR(sm.baseline_avg_r?.['2026'])}</b><em>${p26 ? `${fmtS$(p26.net)} · ${pmTxt(pm26)}` : '2026'}</em></div>
         <div class="nx-stat"><span>Wins hit target</span><b>${pct(sm.wins?.hit_target_pct)}</b><em>${sm.wins?.count} wins · avg ${fmtR(sm.wins?.avg_win_r)}</em></div>
         <div class="nx-stat"><span>Losses never +0.3R</span><b>${pct(sm.losses?.never_reached_0_3R_pct)}</b><em>${sm.losses?.count} losses</em></div>
         <div class="nx-stat"><span>Were +1R, then lost</span><b class="dn">${pct(sm.losses?.were_plus_1R_then_lost_pct)}</b><em>stopped in 2 bars ${pct(sm.losses?.stopped_within_2_bars_pct)}</em></div>
