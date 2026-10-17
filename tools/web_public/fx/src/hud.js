@@ -311,11 +311,9 @@ export class Hud extends View {
       l.hidden = !p || (l.show && !l.show());
       if (l.hidden) continue;
       _v.copy(p).project(this.camera);
-      const wid = l.wid || 20, hg = l.hgt || 10;
-      let x = (_v.x + 1) / 2 * w + (l.dx || 0) - (l.ax ?? 0.5) * wid, y = (1 - _v.y) / 2 * h + (l.dy || 0) - (l.ay ?? 0.5) * hg;
-      x = clamp(x, 4, Math.max(4, w - wid - 4));
-      if (l.keep) y = clamp(y, 4, Math.max(4, h - hg - 4));
-      l.hidden = _v.z > 1 || y < 2 || y > h - hg - 2;
+      l.px = (_v.x + 1) / 2 * w; l.py = (1 - _v.y) / 2 * h;
+      const [x, y] = this.labelAt(l, l);
+      l.hidden = _v.z > 1 || y < 2 || y > h - (l.hgt || 10) - 2;
       l.x = x; l.y = y;
       if (!l.hidden && l.tick) { if (!groups.has(l.tick)) groups.set(l.tick, []); groups.get(l.tick).push(l); }
     }
@@ -325,15 +323,24 @@ export class Hud extends View {
     }
     this.adjustLabels?.(this.labels);
     for (const g of groups.values()) for (const l of g) if (!l.hidden) boxes.push([l.x - 2, l.y - 1, l.x + (l.wid || 20) + 2, l.y + (l.hgt || 10) + 1]);
+    const hits = (x, y, l) => { const x0 = x - 2, y0 = y - 1, x1 = x + (l.wid || 20) + 2, y1 = y + (l.hgt || 10) + 1; return boxes.some((b) => x0 < b[2] && x1 > b[0] && y0 < b[3] && y1 > b[1]); };
     for (const l of this.labels) {
       if (!l.hidden && l.avoid) {
-        const x0 = l.x - 2, y0 = l.y - 1, x1 = l.x + (l.wid || 20) + 2, y1 = l.y + (l.hgt || 10) + 1;
-        for (const b of boxes) if (x0 < b[2] && x1 > b[0] && y0 < b[3] && y1 > b[1]) { l.hidden = true; break; }
-        if (!l.hidden) boxes.push([x0, y0, x1, y1]);
+        // the primary spot, then the fallback spots (alts: [{ ax, ay, dx, dy }]) before giving up
+        let ok = !hits(l.x, l.y, l);
+        for (const a of l.alts || []) { if (ok) break; const [x, y] = this.labelAt(l, a); if (!hits(x, y, l) && y >= 2 && y <= this.h - (l.hgt || 10) - 2) { l.x = x; l.y = y; ok = true; } }
+        if (ok) boxes.push([l.x - 2, l.y - 1, l.x + (l.wid || 20) + 2, l.y + (l.hgt || 10) + 1]); else l.hidden = true;
       }
       const tf = l.hidden ? 'translate3d(-999px,-999px,0)' : `translate3d(${l.x.toFixed(1)}px,${l.y.toFixed(1)}px,0)`;
       if (tf !== l.last) { l.el.style.transform = tf; l.last = tf; }
     }
+  }
+
+  labelAt(l, a) {
+    const wid = l.wid || 20, hg = l.hgt || 10;
+    const x = clamp(l.px + (a.dx || 0) - (a.ax ?? 0.5) * wid, 4, Math.max(4, this.w - wid - 4));
+    let y = l.py + (a.dy || 0) - (a.ay ?? 0.5) * hg; if (l.keep) y = clamp(y, 4, Math.max(4, this.h - hg - 4));
+    return [x, y];
   }
 
   // ---------------------------------------------------------------- tooltip

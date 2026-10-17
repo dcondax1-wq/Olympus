@@ -213,8 +213,8 @@ def qty_for(T, t, pol, ctx):
     if c <= 0:
         return 0, qe, ru
     if pol.get("late_mult") is not None:         # one live-loop multiplier: cold size x late-entry size, rounded once
-        lm = float(pol["late_mult"]) if (t.get("m15_trend") or 0) * t["dir"] > 0 else 1.0
-        c = c * lm
+        late = (t["entry_t"] in pol["late_set"]) if pol.get("late_set") is not None else (t.get("m15_trend") or 0) * t["dir"] > 0
+        c = c * (float(pol["late_mult"]) if late else 1.0)
     if c < 1:
         q = max(1, int(q * c))
     elif c > 1:
@@ -949,18 +949,52 @@ EVAL_RULES = (
 )
 
 
+def eval_judgement(T, pol, raw, B_av=None):
+    """Status + verdict for an eval-aware rule, from eval outcomes only (the net of an eval account is not real money):
+    2026 and 2021-25 1-month pass/fail and back-to-back (20 start days) passes per year and evals bought per pass."""
+    out = {}
+    for name, a, z in PERIODS:
+        sess = span_sessions(raw, a, z)
+        out[name] = {**eval_stats(T, pol, sess), **b2b_avg(T, pol, sess)}
+    return out
+
+
+def eval_status(J, JB):
+    def ok(x, y):
+        return (x["evals_per_pass"] or 99) <= (y["evals_per_pass"] or 99) - 0.3 and x["pass_yr"] >= y["pass_yr"] - 0.01
+    a, b = J["2026"], J["2021-25"]
+    A, Bb = JB["2026"], JB["2021-25"]
+    if ok(b, Bb) and ok(a, A) and a["f20"] <= A["f20"] and b["f20"] <= Bb["f20"]:
+        return "adopt-candidate"
+    if ok(b, Bb) and a["pass_yr"] >= A["pass_yr"] - 0.01:
+        return "promising"
+    return "rejected"
+
+
+def eval_verdict(J, JB, status):
+    b, Bb, a, A = J["2021-25"], JB["2021-25"], J["2026"], JB["2026"]
+    head = {"adopt-candidate": "Passes more evals per eval bought in both periods",
+            "promising": "Cheaper passes in 2021-25 without fewer passes", "rejected": "No robust eval gain"}[status]
+    return (f"{head}. 2021-25: 1-month fails {b['f20']:.1f}% (live {Bb['f20']:.1f}%), passes {b['pass_yr']}/yr ({Bb['pass_yr']}), "
+            f"{b['evals_per_pass']} evals per pass ({Bb['evals_per_pass']}). 2026: 1-month pass {a['p20']:.0f}% ({A['p20']:.0f}%), "
+            f"{a['evals_per_pass']} evals per pass ({A['evals_per_pass']}). Net shown is eval-account money (not paid out).")
+
+
 def cmd_eval():
     q = "Can sizing from the eval's state (cushion above the trailing max loss, profit, distance to target) pass more MFFU evals and fail fewer?"
-    for id, title, rule, pol in EVAL_RULES:
-        experiment("eval", id, title, q, pol=pol, eval_aware=True, sizing={"rule": rule}, tags=["eval"],
+    raw, T, _, B = baseline()
+    JB = eval_judgement(T, {}, raw)
+    rules = list(EVAL_RULES) + [
+        (f"risk_eval_prop1000_usd{int(usd)}", f"Risk ${int(usd)}, sized down once the cushion is under $1,000",
+         f"risk_usd {int(usd)}; $ risk x min(1, cushion / $1,000)", {"risk_usd": usd, "mult_usd": _prop1000}) for usd in (1000.0, 1200.0)]
+    for id, title, rule, pol in rules:
+        J = eval_judgement(T, pol, raw)
+        st = eval_status(J, JB)
+        experiment("eval", id, title, q, pol=pol, eval_aware=True, sizing={"rule": rule}, tags=["eval"], status=st,
+                   verdict=eval_verdict(J, JB, st),
                    notes=f"Rule: {rule}. Applied to the $ risk before rounding to micros (1 micro minimum when the engine "
-                         "takes the setup), then the live cold-streak half size.")
-    # the best protection with a bigger base risk: can the protection buy speed?
-    for usd in (1000.0, 1200.0):
-        experiment("eval", f"risk_eval_prop1000_usd{int(usd)}", f"Risk ${int(usd)}, sized down once the cushion is under $1,000", q,
-                   pol={"risk_usd": usd, "mult_usd": lambda t, c: min(1.0, c["cushion"] / 1000.0)}, eval_aware=True,
-                   sizing={"rule": f"risk_usd {int(usd)}; $ risk x min(1, cushion / $1,000)"}, tags=["eval"],
-                   notes="A bigger base risk for speed, with the cushion protection against fails.")
+                         "takes the setup), then the live cold-streak half size. Judged on eval outcomes only: the trades and net "
+                         "of this run are back-to-back evals (eval-account money, not paid out).")
     print(table([r for r in ROWS if r[0] == "eval"]))
 
 
@@ -1022,10 +1056,7 @@ def cmd_situational():
         a, A = S["spans"]["2026"], B["spans"]["2026"]
         sel = b["net"] > Bb["net"] and (b["pf"] or 0) > (Bb["pf"] or 0) and b["p20"] - b["f20"] >= Bb["p20"] - Bb["f20"] - 1.0
         oos = a["net"] > A["net"] and (a["pf"] or 0) >= (A["pf"] or 0)
-        status = ("adopt-candidate" if sel and oos and status_of(S, B) == "adopt-candidate" else
-                  "promising" if sel and (a["net"] >= 0.97 * A["net"] - 150) else "rejected")
-        if min(a["tpw"], b["tpw"]) < 2.0:
-            status = "rejected"
+        status = status_of(S, B) if sel else "rejected"          # same bar as every other run, but only if picked on 2021-25
         verdict = (("Picked on 2021-25 and " + ("held up in 2026" if oos else "did NOT hold up in 2026")) if sel else
                    "Did not improve 2021-25, so not picked") + \
             (f": 2021-25 {_money(b['net'])} vs {_money(Bb['net'])} (PF {b['pf']} vs {Bb['pf']}), 2026 {_money(a['net'])} vs "
@@ -1041,18 +1072,28 @@ def cmd_situational():
     print(f"### Situational rules: {len(SITUATIONAL)} tried, {len(picked)} picked on 2021-25: {picked}")
     print(_md(rows, ["run", "rule", "2021-25 pick", "2021-25 net vs live", "PF", "2026 net vs live", "PF", "status"]))
     print(table([r for r in ROWS if r[0] == "situational"]))
-    # noise check: how often does a random half-size split of the same size improve 2021-25 by chance?
-    rng = np.random.default_rng(7)
-    n21 = [t for t in T if t["day"] < "2026-01-01"]
-    hits = 0
-    for k in range(200):
-        mask = {t["entry_t"] for t in T if rng.random() < 0.3}
-        pol = {"pre": (lambda m: lambda t: 0.5 if t["entry_t"] in m else 1.0)(mask), "pre_key": f"rand{k}"}
-        S = score(run_account(T, pol), raw)
-        b, Bb = S["spans"]["2021-25"], B["spans"]["2021-25"]
-        hits += b["net"] > Bb["net"] and (b["pf"] or 0) > (Bb["pf"] or 0)
-    print(f"noise check: {hits}/200 random 'half size on 30% of setups' rules also improved 2021-25 net and PF "
-          f"({len(n21)} trades in 2021-25)")
+    # noise check: a random flag on the same share of setups, sized the same way (x mult, live-loop form), vs the baseline
+    for id in picked:
+        key, val, mult = next((k, v, m) for i, _, k, v, m, _ in SITUATIONAL if i == id)
+        hit = {t["entry_t"] for t in T if _sit_pre(key, val, mult)(t) != 1.0}
+        S0 = rl.score(run_account(T, {"late_mult": mult, "late_set": hit}), raw)
+        g = [S0["spans"][n]["net"] - B["spans"][n]["net"] for n in ("2021-25", "2026")]
+        print(f"noise check {id}: {noise_beats(T, raw, B, len(hit) / len(T), mult, g)}")
+
+
+def noise_beats(T, raw, ref, share, mult, gains, n=200, seed=7):
+    """How often a random flag on the same share of setups (x mult, one live-loop multiplier) beats the rule's net gains
+    (2021-25, 2026) over the reference score."""
+    rng = np.random.default_rng(seed)
+    w21 = w26 = both = 0
+    base_pol = {"cold": Q25} if ref is not None and ref.get("_q25") else {}
+    for k in range(n):
+        m = {t["entry_t"] for t in T if rng.random() < share}
+        S = rl.score(run_account(T, {**base_pol, "late_mult": mult, "late_set": m}), raw)
+        d21 = S["spans"]["2021-25"]["net"] - ref["spans"]["2021-25"]["net"]
+        d26 = S["spans"]["2026"]["net"] - ref["spans"]["2026"]["net"]
+        w21 += d21 >= gains[0]; w26 += d26 >= gains[1]; both += d21 >= gains[0] and d26 >= gains[1]
+    return f"random flags ({share:.0%} of setups, {n} tries) beat it in 2021-25 {100 * w21 / n:.1f}%, 2026 {100 * w26 / n:.1f}%, both {100 * both / n:.1f}%"
 
 
 # ------------------------------------------------------------------------------------------------ B7 weekly brake, streaks
@@ -1096,8 +1137,14 @@ RECOMMENDED = {"cold": Q25, "late_mult": 0.5}
 
 def cmd_packages():
     q = "Do the best single changes add up? (each tested together, both periods)"
+    raw, T, _, B = baseline()
+    JB = eval_judgement(T, {}, raw) if any(ea for *_, ea in PACKAGES) else None
     for id, title, pol, ea in PACKAGES:
-        experiment("packages", id, title, q, pol=pol, eval_aware=ea, tags=["package"],
+        st = v = None
+        if ea:
+            J = eval_judgement(T, pol, raw)
+            st = eval_status(J, JB); v = eval_verdict(J, JB, st)
+        experiment("packages", id, title, q, pol=pol, eval_aware=ea, tags=["package"], status=st, verdict=v,
                    notes="Combination of single changes that each looked good alone; judged on both periods like any run.")
     print(table([r for r in ROWS if r[0] == "packages"]))
 
@@ -1165,6 +1212,11 @@ def cmd_recommend():
     print(_md(yrs, ["year", "trades", "live net", "PF", "recommended net", "PF", "cold x0.25 only", "PF"]))
     st = cold_stretches(T)
     print("longest cold stretches (weeks, trades, from, to):", [(round(w, 1), n, a, z) for w, n, a, z in st[:5]])
+    late = {t["entry_t"] for t in T if (t.get("m15_trend") or 0) * t["dir"] > 0}
+    Sq["_q25"] = True
+    g = [S["spans"][n]["net"] - Sq["spans"][n]["net"] for n in ("2021-25", "2026")]
+    print(f"late-entry half on top of the quarter size: +${g[0]:,} 2021-25, +${g[1]:,} 2026; noise check: "
+          f"{noise_beats(T, raw, Sq, len(late) / len(T), 0.5, g, n=400, seed=23)}")
     for name, a, z in PERIODS:
         X = [t for t in rec_tr if a <= t["day"] <= z]
         late = [t for t in X if (t.get("m15_trend") or 0) * t["dir"] > 0]

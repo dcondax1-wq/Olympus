@@ -118,11 +118,14 @@ for v in (0.75, 1.5):
 for v in (2.0, 2.5, 3.0):
     X(f"mgt_betrend{int(v * 100):03d}", "management", "exitsim", {"be_at_r_trending": v},
       f"Breakeven at +{v:g}R on trending days only", f"On trending days, wait until +{v:g}R before moving to breakeven?",
-      sim={"be_at_r_trending": v})
+      sim={"be_at_r_trending": v}, **({"verdict": "Best value: 2026 net unchanged (+$20.1k; PF 3.48 -> 3.39 only through the "
+      "cold-streak filter), 2021-25 +$4.7k (PF 1.09 -> 1.15). Neighbours 2.5R and 'never' are almost as good."} if v == 3.0 else {}))
 X("mgt_betrend_off", "management", "exitsim", {"be_at_r_trending": 99}, "No breakeven move on trending days",
   "On trending days (10-day efficiency above 0.45), never move the stop to breakeven?", sim={"be_at_r_trending": 99})
 X("mgt_betrend300_replay", "management", "replay", {"be_at_r_trending": 3.0}, "Breakeven at +3R on trending days (exact replay)",
-  "Confirm with the exact live-loop replay: on trending days, wait until +3R before moving to breakeven?")
+  "Confirm with the exact live-loop replay: on trending days, wait until +3R before moving to breakeven?",
+  verdict="Recommended change. Same 768 trades; 2026 net unchanged (+$20.1k, PF 3.48 -> 3.39 via the cold-streak "
+          "filter), 2021-25 +$4.7k (PF 1.09 -> 1.15), same eval odds. The replay matches the exit simulator on 768/768 trades.")
 for a, r in ((1.5, 0.5), (2.0, 0.5), (2.0, 1.0), (3.0, 1.0), (3.0, 1.5)):
     X(f"mgt_lock{int(a * 10)}_{int(r * 10)}", "management", "exitsim", {"lock_at_r": a, "lock_r": r},
       f"Lock +{r:g}R once the trade is +{a:g}R", f"After +{a:g}R, should the stop lock in +{r:g}R?",
@@ -155,6 +158,10 @@ for v in (0, 1.2, 2.0):
       "Is the big-range-day block useful?" if v == 0 else f"Block new entries at {v:g}x the 20-day average range instead of 1.6x?")
 for v in (25, 30):
     X(f"flt_vixmax{v}", "filters", "screen", {"vix_max": float(v)}, f"Skip days with VIX above {v}", f"Stand aside when yesterday's VIX closed above {v}?")
+X("flt_vix20_half", "filters", "sizerule", {}, "Half size when VIX is above 20 (instead of skipping)",
+  "Keep every setup, but half size when yesterday's VIX closed above 20?", rule="half_vix20")
+X("flt_vix20_07", "filters", "sizerule", {}, "70% size when VIX is above 20",
+  "Neighbour check: 70% size when yesterday's VIX closed above 20?", rule="p70_vix20")
 X("flt_vixmin13", "filters", "screen", {"vix_min": 13.0}, "Skip days with VIX below 13", "Stand aside in very quiet markets (VIX < 13)?")
 X("flt_vixmax20", "filters", "screen", {"vix_max": 20.0}, "Skip days with VIX above 20", "Stand aside when yesterday's VIX closed above 20?")
 X("flt_news_off", "filters", "screen", {"news_filter": False}, "No news blackout", "Is the news blackout (15 min before to 30 min after) useful?")
@@ -216,6 +223,22 @@ X("combo_betrend3_bothhalf", "other", "exitsim", {"be_at_r_trending": 3.0}, "Tre
   "Do the two best single changes add up: breakeven at +3R on trending days and half size when the trade follows yesterday's "
   "candle and is on the wrong side of last week's midpoint?", sim={"be_at_r_trending": 3.0}, rule="half_both",
   writeup="trade-construction-summary.md")
+X("combo_betrend3_both07", "other", "exitsim", {"be_at_r_trending": 3.0}, "Trending-day breakeven at +3R + 70% size when both biases disagree",
+  "The recommended exit change plus the mildest bias size-down (70% size when the trade follows yesterday's candle and "
+  "is on the wrong side of last week's midpoint)?", sim={"be_at_r_trending": 3.0}, rule="p70_both",
+  writeup="trade-construction-summary.md")
+X("combo_risk_sizing", "other", "sizerule", {}, "Info: the sizing researcher's recommendation alone",
+  "Reference for the combination below: quarter size in cold streaks and half size on late entries (risk-summary.md)?",
+  rule_raw="risk_q25_late", eqf=None, status="info", writeup="trade-construction-summary.md",
+  verdict="The sizing recommendation on its own (tools/research_risk.py RECOMMENDED), recomputed here as the yardstick "
+          "for adding the trending-day breakeven change.")
+X("combo_betrend3_risksizing", "other", "exitsim", {"be_at_r_trending": 3.0},
+  "Trending-day breakeven at +3R + the sizing researcher's recommendation",
+  "Do the two recommendations add up: breakeven at +3R on trending days plus quarter size in cold streaks and half size "
+  "on late entries?", sim={"be_at_r_trending": 3.0}, rule_raw="risk_q25_late", eqf=None, writeup="trade-construction-summary.md",
+  verdict="They add up: against the sizing recommendation alone, 2026 net is the same (+$20.5k vs +$20.6k; PF 3.94 vs "
+          "4.12 via the cold-streak state) and 2021-25 gains another +$4.8k (PF 1.19 -> 1.27). Against today's live "
+          "rules it is better in both periods.")
 X("combo_betrend3_pwmid07", "other", "exitsim", {"be_at_r_trending": 3.0}, "Trending-day breakeven at +3R + 70% size against the prior-week side",
   "Trending-day breakeven at +3R and 70% size for trades on the wrong side of last week's midpoint?",
   sim={"be_at_r_trending": 3.0}, rule="p70_against_pwmid", writeup="trade-construction-summary.md")
@@ -397,9 +420,27 @@ RULES = {
     "half_both": lambda t, ctx: 0.5 if (trade_ctx(t).get("fade_pd") == -1 and trade_ctx(t).get("pwmid") == -1) else 1.0,
     "p70_both": lambda t, ctx: 0.7 if (trade_ctx(t).get("fade_pd") == -1 and trade_ctx(t).get("pwmid") == -1) else 1.0,
     "p33_both": lambda t, ctx: 0.33 if (trade_ctx(t).get("fade_pd") == -1 and trade_ctx(t).get("pwmid") == -1) else 1.0,
+    "half_vix20": lambda t, ctx: 0.5 if ((t.get("f") or {}).get("vix_prev") or 0) > 20 else 1.0,
+    "p70_vix20": lambda t, ctx: 0.7 if ((t.get("f") or {}).get("vix_prev") or 0) > 20 else 1.0,
     "p70_follow_pd": lambda t, ctx: 0.7 if trade_ctx(t).get("fade_pd") == -1 else 1.0,
     "p70_against_pwmid": lambda t, ctx: 0.7 if trade_ctx(t).get("pwmid") == -1 else 1.0,
 }
+
+
+def _risk_q25_late(raw):
+    """The sizing researcher's recommendation (research/writeups/risk-summary.md, tools/research_risk.py RECOMMENDED):
+    x0.25 in a cold streak (instead of x0.5) and x0.5 on a late entry (15m trend already the trade's way), one multiplier
+    on the engine's micros, used with eqf=None. The cold state is computed from this run's own trades."""
+    rs = sorted(raw["trades"], key=lambda t: t["entry_t"])
+
+    def mult(t, ctx):
+        cold = rl.cold_status(rs, t["entry_t"], rl.LIVE_EQF)[0] < 1
+        late = (t.get("m15_trend") or 0) * t["dir"] > 0
+        return (0.25 if cold else 1.0) * (0.5 if late else 1.0)
+    return mult
+
+
+RULES_RAW = {"risk_q25_late": _risk_q25_late}
 
 
 # ------------------------------------------------------------------------------------------------ run + judge
@@ -440,9 +481,14 @@ def judge(S, B, status=None):
     elif (help26 and not hurt5) or (help5 and not hurt26):
         st, head = "promising", "Helps " + ("2026" if help26 else "2021-25") + " without hurting the other period."
     elif not up26 and not up5:
-        st, head = "rejected", "Worse in both periods."
+        same26 = abs(d26) < 1 and abs(p26) < 0.005
+        same5 = abs(d5) < 1 and abs(p5) < 0.005
+        st, head = "rejected", ("Same in 2026, worse in 2021-25." if same26 else "Same in 2021-25, worse in 2026." if same5
+                                else "Worse in both periods.")
     else:
-        st, head = "rejected", ("Better in 2026 only" if up26 else "Better in 2021-25 only") + ", worse in the other."
+        same_other = (abs(d5) < 1 and abs(p5) < 0.005) if up26 else (abs(d26) < 1 and abs(p26) < 0.005)
+        st, head = "rejected", ("Better in 2026 only" if up26 else "Better in 2021-25 only") + (
+            ", the same in the other (too small to matter)." if same_other else ", worse in the other.")
     return (status or st), f"{head} {nums}"
 
 
@@ -459,7 +505,10 @@ def compute(x):
         raw = rl.replay({}, procs=PROCS, quiet=True)
     else:
         raise ValueError(m)
-    T = rl.size(raw, rule=RULES[x["rule"]] if x.get("rule") else None)
+    if x.get("rule_raw"):
+        T = rl.size(raw, eqf=x.get("eqf", "live"), rule=RULES_RAW[x["rule_raw"]](raw))
+    else:
+        T = rl.size(raw, eqf=x.get("eqf", "live"), rule=RULES[x["rule"]] if x.get("rule") else None)
     return raw, T, rl.score(T, raw)
 
 

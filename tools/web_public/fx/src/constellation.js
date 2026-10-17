@@ -26,6 +26,8 @@ const FLY = 1, MOVE = 2, SHRINK = 4;
 const FLOOR = -0.32, M = 0.3;    // floor height under the lowest PF 2026, margin of the walls around the data box
 const NICE = [0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.8, 2, 2.5, 3, 3.5, 4, 5, 6, 8, 10, 12, 15, 20];
 const lg = (v) => Math.log(clamp(v, 0.25, 20));
+// fallback spots for a tag next to a star: up-left, down-right, down-left
+const ALTS = (dx, dy) => [{ ax: 1, ay: 1, dx: -dx, dy: -dy }, { ax: 0, ay: 0, dx, dy }, { ax: 1, ay: 0, dx: -dx, dy }];
 const tickTxt = (v) => (v >= 2 && Number.isInteger(v) ? String(v) : v.toFixed(1));
 const trunc = (s, n) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
 const _v = new THREE.Vector3(), _m = new THREE.Matrix4(), _c = new THREE.Color();
@@ -429,7 +431,7 @@ export class Constellation extends Hud {
     defs.push({ text: 'PF 2026 ↑', p: new THREE.Vector3(x0, top, zb), ax: 0, ay: 1, dy: -4, dx: -2, cls: 't', avoid: true });
     if (b) {
       defs.push({ html: `${esc(trunc(b.title, 26))}<br><em>PF ${fmtPf(b.pf26)} · ${fmtPf(b.pf21)}</em>`, at: () => (this.baseSlot && this.baseSlot.a > 0.5 ? this.baseSlot.p : null),
-        ax: 0, ay: 1, dx: 14, dy: -10, cls: 'tag', color: gold, avoid: true, keep: true });
+        ax: 0, ay: 1, dx: 14, dy: -10, cls: 'tag', color: gold, avoid: true, keep: true, alts: ALTS(14, 10) });
       defs.push({ text: 'better in both ↗', p: new THREE.Vector3(x1 - 0.06, top - 0.06, zb), ax: 1, ay: 0, dy: 2, cls: 't', color: '#4ef0b0', avoid: true,
         show: () => this.wU.uIn.value > 0.5 });
     }
@@ -437,7 +439,7 @@ export class Constellation extends Hud {
       if (i >= (this.w < 520 ? 2 : 3)) return;
       const sl = this.byKey.get(it.key), st = ST[it.status];
       defs.push({ html: `${esc(trunc(it.title, this.w < 520 ? 20 : 28))}<br><em>PF ${fmtPf(it.pf26)} · ${fmtPf(it.pf21)}</em>`, at: () => (sl && !sl.dead && sl.a > 0.6 ? sl.p : null),
-        ax: 0, ay: 1, dx: 10, dy: -8, cls: 'tag', color: st.css, avoid: true, keep: true });
+        ax: 0, ay: 1, dx: 10, dy: -8, cls: 'tag', color: st.css, avoid: true, keep: true, alts: ALTS(10, 8) });
     });
     for (const [f, z] of this.laneZ) defs.push({ text: f, p: new THREE.Vector3(x1 + 0.08, FLOOR, z), ax: 0, cls: 'h', avoid: true });
     this.setLabels(defs);
@@ -445,6 +447,7 @@ export class Constellation extends Hud {
     this.hint.textContent = n ? `${n} run${n === 1 ? '' : 's'}${this.unscored ? ` · ${this.unscored} not scored` : ''}` + (n === 1 ? ' · new experiments land here' : ' · tap a star') : '';
   }
   legendFor() {
+    if (!this.items.length) { this.legend.innerHTML = ''; return; }
     const cnt = {}; for (const it of this.items) cnt[it.status] = (cnt[it.status] || 0) + 1;
     const slow = this.items.some((it) => it.slow && !it.isBase);
     this.legend.innerHTML = ORDER.filter((s) => cnt[s] || s === 'baseline').map((s) => {

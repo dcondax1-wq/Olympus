@@ -2,7 +2,8 @@
 
 The site is one page (tools/web_public/index.html) that reads everything from data.json; nothing runs on a server.
 data.json holds:
-  live      the cloud monitor's state (model state, eval tracker, cold-streak filter, paper ledger, recent bars, pools)
+  live      the cloud monitor's state (model state, eval tracker, cold-streak filter, paper ledger, recent bars, pools, and
+            `pc`: the always-on PC bot's heartbeat {present, t, age_s, silent, running, adapter, position, model_state, host, reason})
   results   the live-settings 5-year replay (periods, months, daily P&L, stop buckets, eval odds, lessons)
   trades    every replay trade with its report (why it entered / plan / result / lessons); 2026 with full detail
   replays   5m session bars for each replay trade day (tools/export_replays.py)
@@ -382,7 +383,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     bt = _load(os.path.join(LAB, "backtest_live.json"), {}) or {}
     ledger = sorted((st.get("ledger") or {}).values(), key=lambda v: (v.get("day", ""), v.get("entry", "")), reverse=True)
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
-                                   "equity_filter", "price", "today", "events", "engine_trades", "bars", "pools")}
+                                   "equity_filter", "price", "today", "events", "engine_trades", "bars", "pools", "pc")}
     live["ledger"] = ledger[:200]
     results = None
     if bt:

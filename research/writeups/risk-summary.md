@@ -101,7 +101,7 @@ The recommended sizing is better in 5 of 6 years. 2023 is the exception: -$981 n
 **How strong the late-entry evidence is:**
 - **2021-25:** the difference is small and on its own would not prove anything.
 - **2026:** it is clear, but it rests on 11 trades.
-- **Noise check:** halving a random 13% of trades instead (same count) beats the late rule's gain about 1 time in 10 in 2021-25, and less than 1 time in 100 in 2026.
+- **Noise check:** halving a random 13% of trades instead (same count, 400 tries) beats the late rule's gain about 1 time in 7 in 2021-25 and 1 time in 200 in 2026. It never beat it in both.
 - **The mechanism makes sense.** When the 15m structure has already turned, part of the move is gone and the draw is closer.
 - **Caveat:** this factor was flagged by the existing lessons table, which looks at both periods. 2026 is therefore not a perfectly untouched check for this half.
 - **If only one part can be ported by Sunday, port the cold-streak quarter size.** It carries most of the 5-year gain: +$3.7k of +$5.1k, and 1-month eval fails 9.6% → 7.5%. It costs $568 in 2026.

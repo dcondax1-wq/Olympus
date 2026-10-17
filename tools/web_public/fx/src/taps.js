@@ -1,10 +1,14 @@
 // Tap sparks: a full-screen 2D canvas above the UI. Every tap on a control throws a ring and a spray of neon sparks.
 // Time-based (same speed on slow phones), capped (fast repeated taps on one button stay small) and the loop only runs
-// while sparks are alive.
+// while sparks are alive. A tap (click, so never a scroll) on empty background goes to setBgTap's handler instead
+// (index.js: a ripple through the 3D background) plus two soft rings.
 const SEL = '.btn, .seg button, .tile, .trade, .tabs a, .nav a, .chipbtn, .strip button, .opt, .dd-btn, .swatch, .iconbtn, .nx-tile, .nx-trade, #nav a, .nx-tab, .nx-strip button, .nx-chipbtn, .nx-back, .nx-search, .nx-select-btn, .nx-opt, .fx-tap';
 const MAX_PARTS = 260, MAX_RINGS = 8;
 let cv, g, dpr = 1, parts = [], rings = [], raf = 0, last = 0, colors = ['#6d7cff', '#3ee0c8', '#ff2bd6', '#c084fc', '#ffffff'], on = true;
-let lastEl = null, lastAt = 0;
+let lastEl = null, lastAt = 0, bgTap = null;
+// anything that is not empty background: controls, cards, 3D views, sheets, navigation, media, text being selected
+const BLOCK = 'a, button, input, select, textarea, label, summary, details, [role=button], [role=tab], [role=dialog], [contenteditable], .card, .nx-card, .fx3d, .hero3d, .tile, '
+  + '.trade, .sheet, .modal, .menu, .dd-pop, nav, header, footer, #nav, #tabs, #sub, .sub, .nx-side, .nx-tabbar, .tabs, .chip, .chips, .seg, .strip, table, svg, img, video, canvas, ' + SEL;
 
 function size() { dpr = Math.min(2, devicePixelRatio || 1); cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; cv.style.width = innerWidth + 'px'; cv.style.height = innerHeight + 'px'; }
 function loop(now) {
@@ -57,7 +61,14 @@ export function initTaps(opts = {}) {
     const big = t.matches('.tile, .nx-tile, .trade, .nx-trade, .btn.primary');
     spark(e.clientX, e.clientY, rapid ? 6 : big ? 26 : 16, colors, rapid ? 0.6 : big ? 1.25 : 1);
   }, { passive: true, capture: true });
+  document.addEventListener('click', (e) => {
+    if (!on || !bgTap || e.button !== 0) return;
+    const t = e.target; if (!t || !t.closest || t.closest(BLOCK)) return;
+    try { if (String(getSelection?.() || '').length) return; } catch { }
+    if (bgTap(e.clientX, e.clientY) !== false) spark(e.clientX, e.clientY, 0, [colors[2] || colors[0], colors[1] || colors[0]], 1.5);
+  }, { passive: true, capture: true });
   if (opts.colors) colors = opts.colors;
 }
+export function setBgTap(fn) { bgTap = fn; }
 export function setTapColors(c) { colors = c; }
 export function setTaps(v) { on = v; }

@@ -261,7 +261,7 @@ export class Ribbon extends Hud {
     }
     LG.setIndex(li); FG.setIndex(fi);
     this.lines.geometry.dispose(); this.lines.geometry = LG; this.fills.geometry.dispose(); this.fills.geometry = FG;
-    this.lines.visible = this.fills.visible = n > 0;
+    this.lines.visible = this.fills.visible = this.guides.obj.visible = this.plane.visible = n > 0;
     // ---- flow sparks
     const R = rng(5); this.sparks = [];
     for (const s of S) for (let k = 0; k < this.SP; k++) this.sparks.push({ s, ph: R(), sp: 0.035 + R() * 0.05, sz: 0.035 + R() * 0.035 });
@@ -294,6 +294,7 @@ export class Ribbon extends Hud {
     this.gate.position.set(0, (yb + yt) / 2, (zb + zf) / 2); this.gate.scale.set(zf - zb + 0.1, yt - yb, 1);
     // labels: time ticks, $ ticks, end values, deepest drawdowns
     const defs = [];
+    if (!S.length) { this.setLabels([]); this.legend.innerHTML = ''; return; }
     for (const l of labels) defs.push({ text: l.text, p: new THREE.Vector3(this.X(l.t), Math.min(0, yb), zf + 0.12), ay: 0, dy: 3, tick: 'x' });
     for (const v of dt) defs.push({ text: v ? fmtK(v) : '$0', p: new THREE.Vector3(x0 - 0.12, this.Y(v), zb), ax: 1, avoid: true });
     for (const s of S) {

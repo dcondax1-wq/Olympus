@@ -106,7 +106,8 @@ const CSS = `.fxr-c{position:absolute;left:0;top:0;text-align:center;white-space
 .fxr-row b{font-weight:800;color:#eef0fb}.fxr-row em{font-style:normal;color:rgba(188,192,236,.62);overflow:hidden;text-overflow:ellipsis}
 .fxr-row.warn b{color:#ff7a9a}
 .fxh-reactor.wide .fxr-stats{left:auto;right:16px;top:50%;bottom:auto;transform:translateY(-50%);width:min(250px,40%);gap:9px}
-.fxh-reactor.wide .fxr-row{font-size:12px}`;
+.fxh-reactor.wide .fxr-row{font-size:12px}
+.fxh-reactor .fxh-empty{top:auto;bottom:16px;transform:translateX(-50%)}`;
 
 // ------------------------------------------------------------------ the view
 export class Reactor extends Hud {

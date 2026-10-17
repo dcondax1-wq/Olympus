@@ -1,5 +1,6 @@
 <!doctype html><!-- Test harness for one 3D view: dev.html?view=<kind>&h=360&level=max|lite
-  kinds: orb galaxy city candles (real data) and constellation ribbon reactor pipeline losses (synthetic data built from it).
+  kinds: orb galaxy city candles (real data) and constellation ribbon reactor pipeline losses (synthetic data built from it);
+  view=none: only the background field (try &scene=lab, and click the page for a ripple).
   Needs dev-data.json (gitignored): python tools/build_web_dashboard.py --state dash/state.json --out <dir>, copy <dir>/data.json here,
   then serve tools/web_public (python -m http.server 8797) and open http://127.0.0.1:8797/fx/dev.html. devshot.js screenshots it.
   Options: &year=2026|all (galaxy)  &runs=1|37|150 (constellation)  &ser=1|2 &span=2026|all (ribbon)
@@ -22,6 +23,7 @@
 <script type="module">
 const q = new URLSearchParams(location.search), view = q.get('view') || 'galaxy';
 const box = document.getElementById('box'); box.style.height = (q.get('h') || 360) + 'px';
+if (view === 'none') box.style.display = 'none';   // the background field only (scenes, ripples: click the page)
 const log = (m) => { document.getElementById('log').textContent += m + '\n'; };
 window.onerror = (m) => log(m);
 const FX = await import('../fx.js?' + Date.now());
@@ -92,6 +94,7 @@ const make = (alt) => ({
   reactor: () => empty ? {} : alt ? { ...reactor(), balance: reactor().balance + 1450, dayPnl: 620 } : reactor(),
   pipeline: () => empty ? {} : alt ? { ...pipeline(), idx: Math.min(4, pipeline().idx + 1) } : pipeline(),
   losses: () => empty ? { trades: [] } : alt ? { trades: losses().trades.filter((t, i) => i % 3) } : losses(),
+  none: () => null,
 }[view]());
 window.__picked = null;
 const onPick = (row) => { window.__picked = row; log('picked ' + JSON.stringify(row).slice(0, 160)); };

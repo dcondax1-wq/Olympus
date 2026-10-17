@@ -640,6 +640,8 @@ table.ht tr.grp td { font: 650 10.5px var(--sans); letter-spacing: .1em; text-tr
 .md td { white-space: normal; min-width: 64px; vertical-align: top; color: var(--ink-2); }
 .md th:first-child, .md td:first-child { min-width: 96px; }
 .md tr:hover td { background: transparent; }
+.chip.wrap { white-space: normal; height: auto; min-height: 24px; padding: 3px 9px; line-height: 1.35; max-width: 100%; }
+.doc-foot > span { min-width: 0; overflow-wrap: anywhere; }
 .doc-foot { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: space-between; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
 
 /* loss lab */
@@ -700,6 +702,9 @@ table.ht td.k { white-space: normal; min-width: 92px; }
 .plist > div { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
 .doc .find h4 { color: var(--ink); }
 .rec .rc { margin-top: 4px; }
+.vtext { margin: 2px 0 10px; font-size: 14px; line-height: 1.55; font-weight: 550; color: var(--ink); }
+.more-runs > summary { list-style: none; display: inline-block; margin: 12px 0 4px; cursor: pointer; font-size: 13px; }
+.more-runs > summary::-webkit-details-marker { display: none; } .more-runs[open] > summary { display: none; }
 
 /* sidebar groups (desktop): the active group opens its pages */
 .nav a.g.cur { color: var(--ink); }
@@ -710,6 +715,13 @@ table.ht td.k { white-space: normal; min-width: 92px; }
 .nav .kids a.on::before { left: -11px; top: 8px; bottom: 8px; }
 .side-foot .v { font-size: 13px; }
 @media (min-width: 1101px) { .sub.grp { display: none; } }
+
+/* the PC bot's heartbeat line (Today hero, Liquidity Engine) */
+.pcline { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 14px; padding: 9px 12px; border-radius: 12px; font-size: 12.5px; color: var(--ink-2);
+  background: rgba(22,26,35,.6); border: 1px solid var(--line); }
+.pcline > span:nth-child(2) { flex: 1 1 200px; min-width: 0; }
+.pcline .badge { padding: 3px 9px; font-size: 11px; }
+.dot.bad { background: var(--bad); animation: none; box-shadow: 0 0 10px var(--bad); }
 
 /* system tiles: live badge row */
 .tile-live { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font: 600 11.5px var(--mono); color: var(--ink-2); }
@@ -833,10 +845,10 @@ const ago = (ts) => { const s = Math.max(0, Date.now() / 1000 - ts); return s < 
 function toast(t, ms = 2200) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), ms); }
 const chip = (t, k = '') => `<span class="chip ${k}">${t}</span>`;
 // change vs a reference (the live strategy): green when better. better: 'hi' higher is better, 'lo' lower is better, 'none' grey
-function dlt(v, b, fmt, better = 'hi') {
+function dlt(v, b, fmt, better = 'hi', zero = '<span class="dl">±0</span>') {
   if (!ok(v) || !ok(b)) return '';
   const d = v - b;
-  if (Math.abs(d) < 1e-9) return '<span class="dl">±0</span>';
+  if (Math.abs(d) < 1e-9) return zero;
   const good = better === 'hi' ? d > 0 : better === 'lo' ? d < 0 : null;
   return `<span class="dl ${good == null ? '' : good ? 'up' : 'dn'}">${d > 0 ? '+' : '−'}${fmt(Math.abs(d))}</span>`;
 }
@@ -1011,7 +1023,7 @@ function scatter(el, pts, o = {}) {
   const order = pts.map((p, i) => i).sort((a, b) => (pts[b].r || 5) - (pts[a].r || 5));   // big dots first, small ones on top
   el.innerHTML = `<div class="viz" style="height:${H}px"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">
     ${(o.bands || []).map(b => `<rect x="${X(b.x0 ?? x0)}" y="${Y(b.y1 ?? y1)}" width="${Math.max(0, X(b.x1 ?? x1) - X(b.x0 ?? x0))}" height="${Math.max(0, Y(b.y0 ?? y0) - Y(b.y1 ?? y1))}" fill="${b.color}" opacity=".09"/>
-      ${b.label ? `<text x="${X(b.x0 ?? x0) + 6}" y="${Y(b.y1 ?? y1) + 14}" font-size="10" font-weight="700" fill="${b.color}" opacity=".9">${esc(b.label)}</text>` : ''}`).join('')}
+      ${b.label ? `<text x="${X(b.x0 ?? x0) + 6}" y="${b.at === 'bottom' ? Y(b.y0 ?? y0) - 7 : Y(b.y1 ?? y1) + 14}" font-size="10" font-weight="700" fill="${b.color}" opacity=".9">${esc(b.label)}</text>` : ''}`).join('')}
     ${ticks(y0, y1).map(v => `<line class="gl" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${L - 7}" y="${Y(v) + 4}" text-anchor="end">${yf(v)}</text>`).join('')}
     ${ticks(x0, x1, W < 420 ? 4 : 6).map(v => `<line class="gl" y1="${T}" y2="${H - B}" x1="${X(v)}" x2="${X(v)}"/><text class="ax" x="${X(v)}" y="${H - B + 15}" text-anchor="middle">${xf(v)}</text>`).join('')}
     ${o.refX != null ? `<line x1="${X(o.refX)}" x2="${X(o.refX)}" y1="${T}" y2="${H - B}" stroke="rgba(238,241,248,.45)" stroke-dasharray="4 4"/>` : ''}
@@ -1075,14 +1087,14 @@ function inl(s) {
   t = t.replace(/(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/g, (_, f, c) => put(`<code>${esc(c.replace(/^ ([\s\S]*) $/, '$1'))}</code>`));
   t = t.replace(/\\([\\`*_{}\[\]()#+\-.!|~>])/g, (_, c) => put(esc(c)));
   t = esc(t);
-  t = t.replace(/!?\[([^\]]*)\]\(\s*([^)\s]+)(?:\s+&quot;[\s\S]*?&quot;)?\s*\)/g, (m0, txt, url) => {
-    const u = url.replace(/&amp;/g, '&'), label = txt || esc(u);
+  t = t.replace(/!?\[([^\]]*)\]\(\s*((?:[^()\s]|\([^()\s]*\))+)(?:\s+&quot;[\s\S]*?&quot;)?\s*\)/g, (m0, txt, url) => {
+    const u = url.replace(/&(amp|lt|gt|quot|#39);/g, (m, k) => ({ amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" }[k])), label = txt || esc(u);
     if (/^https?:\/\//i.test(u)) return put(`<a href="${esc(u)}" target="_blank" rel="noopener noreferrer">${label}</a>`);
     if (/^#\/[\w\/%,.-]*$/.test(u)) return put(`<a href="${esc(u)}">${label}</a>`);
     const slug = docByFile()[u.split('#')[0].split('/').pop()];
     return slug ? put(`<a href="#/writeup/${encodeURIComponent(slug)}">${label}</a>`) : label;
   });
-  t = t.replace(/&lt;(https?:\/\/[^\s&]+)&gt;/gi, (_, u) => put(`<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`));
+  t = t.replace(/&lt;(https?:\/\/(?:(?!&gt;)\S)+)&gt;/gi, (_, u) => put(`<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`));
   t = t.replace(/(^|[\s(])(https?:\/\/[^\s<]*[^\s<.,;:!?)\]'"])/gi, (_, a, u) => a + put(`<a href="${u}" target="_blank" rel="noopener noreferrer">${u}</a>`));
   t = t.replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, '<strong>$1</strong>').replace(/(^|[^\w])__(?=\S)([\s\S]*?\S)__(?!\w)/g, '$1<strong>$2</strong>');
   t = t.replace(/(^|[^\w*])\*(?=[^\s*])([^*]*?[^\s*])\*(?![\w*])/g, '$1<em>$2</em>').replace(/(^|[^\w])_(?=[^\s_])([^_]*?[^\s_])_(?!\w)/g, '$1<em>$2</em>');
@@ -1333,7 +1345,7 @@ function rcHTML(r) {
 const runLink = (id) => `#/run/${encodeURIComponent(id)}`;
 const docLink = (slug) => `#/writeup/${encodeURIComponent(slug)}`;
 const allDocs = () => [...(D?.docs?.writeups || []), ...(D?.docs?.archive || [])];
-const docsForRun = (id) => allDocs().filter(d => (d.runs || []).includes(id) || runMeta(id)?.writeup === d.slug);
+const docsForRun = (id) => allDocs().filter(d => (d.runs || []).includes(id) || (d.runs_linked || []).includes(id) || runMeta(id)?.writeup_slug === d.slug);
 
 // ===================================================================== sheets (trade reports)
 function sheet(headHTML, bodyHTML, footHTML = '', label = 'Details') {
@@ -1474,6 +1486,16 @@ const LOSS_K = {
 const lossKind = (t) => (t.mfe ?? 0) < 0.3 ? 'never worked' : (t.mfe ?? 0) >= 1 ? 'gave back' : (t.risk_pts ?? 0) >= 45 ? 'wide stop' : 'normal';
 
 // ===================================================================== TODAY
+// the always-on PC bot's heartbeat (state.json `pc`, engine/heartbeat.py), next to the cloud paper bot
+function pcLine() {
+  const pc = LV().pc;
+  if (!pc || !pc.present) return `<div class="pcline"><span class="dot off"></span><span>PC bot: not reporting (cloud paper bot only)</span></div>`;
+  const mins = ok(pc.t) && pc.t > 0 ? Math.max(0, Math.round((Date.now() / 1000 - pc.t) / 60)) : ok(pc.age_s) ? Math.round(pc.age_s / 60) : null;
+  const seen = mins == null ? 'last seen —' : mins < 90 ? `last seen ${mins} min ago` : mins < 2880 ? `last seen ${Math.round(mins / 60)} h ago` : `last seen ${Math.round(mins / 1440)} days ago`;
+  const tip = [pc.model_state && 'state: ' + pc.model_state, pc.reason].filter(Boolean).join(' · ');
+  return `<div class="pcline"${tip ? ` title="${esc(tip)}"` : ''}><span class="dot ${pc.silent ? 'bad' : pc.running === false ? 'off' : ''}"></span><span>PC bot · ${esc(pc.host || 'PC')} · ${esc(pc.adapter || '—')} · ${seen}</span>
+    ${pc.silent ? '<span class="badge bad">SILENT</span>' : ''}${pc.running === false ? '<span class="badge warn">stopped</span>' : ''}</div>`;
+}
 function evalMini(ev) {
   if (!ev) return emptyBox('No eval data yet.', 'The cloud monitor starts the tracker with its first run.');
   return `<div class="kv" style="margin-top:14px"><div><span>Balance</span><b>${usd(ev.balance)}</b></div><div><span>To target</span><b>${usd(Math.max(0, ev.to_target))}</b></div>
@@ -1512,7 +1534,7 @@ VIEWS.today = (el) => {
         <div><div class="eyebrow">Cloud paper bot · ${s.inkz ? esc(s.inkz[2]) + ' live' : s.next ? `${esc(s.next[0])} in ${Math.floor(s.next[1] / 60)}h ${String(s.next[1] % 60).padStart(2, '0')}m` : s.wk ? 'session over' : 'weekend'}</div>
           <h2>${esc(lv.model_state || '—')}</h2><p>${pos ? `In ${pos.dir === 1 ? 'LONG' : 'SHORT'} ${esc(pos.qty_label || '')} @ ${num(pos.entry)} → TP ${num(pos.target)} / SL ${num(pos.stop)}` : 'Flat. Paper only: it never places real orders.'}</p></div>
         <div class="px"><span class="small mut">NQ futures (Yahoo NQ=F)</span><b>${num(lv.price)}</b><span class="small mut">${esc(lv.health?.last_bar || '')}</span></div></div>
-      <div class="steps">${STEP_L.map((t, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${t}</span>`).join('')}</div></div>
+      <div class="steps">${STEP_L.map((t, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${t}</span>`).join('')}</div>${pcLine()}</div>
     ${howto('today', `<p>The top card is the cloud paper bot right now: its state, the NQ price and the five steps of a setup (the lit step is where it is).</p>
       <ul><li><b>Today · paper</b>: profit or loss of today’s paper trades.</li><li><b>Size now</b>: full or half size. Half means the last 15 signals added up to 0R or less (the cold-streak filter).</li>
       <li><b>Eval · paper</b>: the cloud bot’s MFFU eval, scored with the real rules.</li><li><b>2026 backtest</b>: how the same settings did this year in the replay. PF (profit factor) = money won ÷ money lost.</li></ul>
@@ -1815,7 +1837,7 @@ const C_RUN = '#3ee0c8', C_BASE = '#8f9bff', CMP_C = ['#3ee0c8', '#8f9bff', '#f2
 const b2bPass = (v) => v ? +String(v).split('/')[0] : null;
 function metCell(r, b, s, m) {
   const [k, , f, better, dfm] = m, v = sp(r, s)[k], bv = b ? sp(b, s)[k] : null;
-  const d = !b ? '' : k === 'b2b' ? dlt(b2bPass(v), b2bPass(bv), DF.n0, 'hi') : dlt(v, bv, dfm, better);
+  const d = !b ? '' : k === 'b2b' ? dlt(b2bPass(v), b2bPass(bv), DF.n0, 'hi', '') : dlt(v, bv, dfm, better, '');
   return `<td class="v ${k === 'net' ? cls(v) : ''}">${f(v)}${d}</td>`;
 }
 // the headline table: every metric in 2026 / 2021-25 / all years, with the change vs the live strategy under each value
@@ -1839,7 +1861,7 @@ function xCard(r) {
 }
 function xRowHTML(r) {
   const b = baseMeta(), isB = !b || r.id === b.id;
-  return `<a class="xrow" href="${runLink(r.id)}"><span><b>${esc(r.title || r.id)}</b><small>${esc(FAM[r.family]?.[0] || r.family)} · ${esc(STAT[r.status]?.[0] || r.status)} · ${esc(r.built || '')}</small></span>
+  return `<a class="xrow" href="${runLink(r.id)}"><span><b>${esc(r.title || r.id)}</b><small>${esc(FAM[r.family]?.[0] || r.family)} · ${esc(STAT[r.status]?.[0] || r.status)} · ${esc(fDate(r.built))}</small></span>
     <span class="xr-n"><span>PF ${fPF(sp(r, '2026').pf)} <span class="mut">/</span> ${fPF(sp(r, '2021-25').pf)}</span>${isB ? '<span class="dl">2026 / 2021-25</span>' : `<span>${dlt(sp(r, '2021-25').net, sp(b, '2021-25').net, DF.money, 'hi') || ''}</span>`}</span>${icon('right')}</a>`;
 }
 const cumPts = (days) => { let eq = 0; return days.map(d => { eq += d[1]; return { x: d[0], y: eq }; }); };
@@ -2019,7 +2041,7 @@ VIEWS.run = (el) => {
       <li><b>Equity</b>: profit over time, this run against the live strategy. <b>Month by month</b>: green months made money, red lost; “vs live” colours the difference instead.</li>
       <li><b>Every trade</b>: tap one for its stop, size, best and worst point.</li></ul>`)
     + `<div class="card tone" style="--tc:${tone}"><div class="verdict-l"><span class="vi">${icon(isB ? 'flag' : r.status === 'rejected' ? 'close' : r.status === 'adopt-candidate' ? 'check' : 'info')}</span>
-        <div style="min-width:0"><div class="eyebrow" style="color:${tone}">${isB ? 'The reference' : 'Verdict'}</div><h3>${esc(r.verdict || (isB ? 'The live strategy every experiment is judged against.' : 'No verdict written yet.'))}</h3>
+        <div style="min-width:0"><div class="eyebrow" style="color:${tone}">${isB ? 'The reference' : 'Verdict'}</div>${(r.verdict || '').length > 110 ? `<p class="vtext">${esc(r.verdict)}</p>` : `<h3>${esc(r.verdict || (isB ? 'The live strategy every experiment is judged against.' : 'No verdict written yet.'))}</h3>`}
         ${isB ? '' : rcHTML(r)}</div></div></div>
     <div class="grid g2"><div class="card"><div class="card-h"><h3>What this run changes</h3><span class="meta">${isB ? 'the reference' : 'vs the live strategy'}</span></div>${changesHTML(r)}</div>
       <div class="card"><div class="card-h"><h3>Headline numbers</h3><span class="meta">${isB ? 'the live strategy' : 'small = change vs live'}</span></div>${headlineHTML(r, b)}</div></div>
@@ -2123,7 +2145,12 @@ function archiveGroups() {
 const docOrder = () => [...(D.docs?.writeups || []), ...archiveGroups().flatMap(g => g.docs)];
 function docCard(d) {
   return `<a class="card doc" href="${docLink(d.slug)}"><div class="find"><div class="doc-meta">${famChip(d.family)}${stChip(d.status)}${d.date ? `<span>${esc(fDate(d.date))}</span>` : ''}<span>· ${readMin(d)} min read</span></div>
-    <h4>${esc(d.title)}</h4>${d.summary ? `<p>${esc(d.summary)}</p>` : ''}${(d.runs || []).length ? `<div class="chips">${d.runs.map(id => chip(icon('lab') + esc(runMeta(id)?.title || id))).join('')}</div>` : ''}</div></a>`;
+    <h4>${esc(d.title)}</h4>${d.summary ? `<p>${esc(d.summary)}</p>` : ''}${docRunChips(d)}</div></a>`;
+}
+const docRuns = (d) => [...new Set([...(d.runs || []), ...(d.runs_linked || [])])].filter(id => runMeta(id) && id !== baseId());
+function docRunChips(d) {
+  const ids = docRuns(d); if (!ids.length) return '';
+  return `<div class="chips">${ids.slice(0, 3).map(id => chip(icon('lab') + esc(runMeta(id).title || id), 'wrap')).join('')}${ids.length > 3 ? chip(`+${ids.length - 3} more runs`) : ''}</div>`;
 }
 const arcRow = (d) => `<a class="arow" href="${docLink(d.slug)}"><span><b>${esc(d.title)}</b><small>${[d.date ? esc(fDate(d.date)) : '', d.kind === 'tables' ? 'tables' : readMin(d) + ' min read'].filter(Boolean).join(' · ')}${d.summary ? ' · ' + esc(d.summary) : ''}</small></span>${icon('right')}</a>`;
 VIEWS.writeups = (el) => {
@@ -2147,10 +2174,12 @@ VIEWS.writeups = (el) => {
 VIEWS.writeup = (el) => {
   const d = allDocs().find(x => x.slug === ARG);
   if (!d) { el.innerHTML = head('Lab · write-up', 'Not found', '') + `<div class="card">${emptyBox(`No write-up “${esc(ARG || '')}” in this build.`, '', `<br><button class="btn" type="button" data-go="writeups">${icon('doc')}All write-ups</button>`)}</div>`; return; }
-  const isA = d.kind !== 'writeup', runs = (d.runs || []).map(runMeta).filter(Boolean);
+  const isA = d.kind !== 'writeup', runs = docRuns(d).map(runMeta);
   el.innerHTML = `<div class="reader">${head(`${isA ? 'Archive · ' + esc(d.track || '') : 'Write-up · ' + esc(FAM[d.family]?.[0] || d.family)}${d.date ? ' · ' + esc(fDate(d.date)) : ''}`, esc(d.title), d.summary ? esc(d.summary) : '',
       `${stChip(d.status)}<span class="hint">${icon('clock')}${readMin(d)} min read</span>`)}
-    ${runs.length ? secH('The runs behind it') + `<div class="xgrid">${runs.map(xCard).join('')}</div>` : ''}
+    ${runs.length ? secH(`The runs behind it`, `<em>${runs.length}</em>`) + (runs.length <= 2 ? `<div class="xgrid">${runs.map(xCard).join('')}</div>`
+      : `<div class="card"><p class="card-d" style="margin:0 0 4px">Profit factor 2026 / 2021-25, and the 2021-25 net change against the live strategy.</p>${runs.slice(0, 6).map(xRowHTML).join('')}
+        ${runs.length > 6 ? `<details class="more-runs"><summary class="linkbtn">Show all ${runs.length} runs</summary>${runs.slice(6).map(xRowHTML).join('')}</details>` : ''}</div>`) : ''}
     <div class="card"><div id="mdBody">${skLines(12)}</div><div class="doc-foot"><span>Source: <span class="mono">${esc(d.src || '')}</span></span><span>${num(d.words, 0)} words${isA ? ' · code blocks are left out of the public copy' : ''}</span></div></div></div>`;
   getDoc(d).then(still((txt) => {
     const r = md(txt, { dropTitle: true });
@@ -2178,7 +2207,7 @@ function lossFb(el, L, onPick) {
   scatter(el, L.map(t => ({ x: Math.min(xmax, Math.max(0, t.mfe ?? 0)), y: t.risk_pts, r: Math.max(2.5, Math.min(9, 2 + Math.sqrt(Math.abs(t.pnl)) / 3.2)), color: LOSS_K[t.kind][0], alpha: .7, ref: t,
     tip: `<b>${esc(t.day)} · ${t.dir === 1 ? 'LONG' : 'SHORT'}</b><span>${fR(t.r)} · ${susd(t.pnl)}</span><span>best point ${fR(t.mfe)} · stop ${num(t.risk_pts, 1)} pts</span><span>${esc(t.kind)} · tap for the trade</span>` })),
   { h: el.clientHeight, xmin: 0, xmax, ymin: 8, ymax: 64, xlab: 'best point before it lost (R) →', ylab: 'stop size (pts) →', xfmt: (v) => v.toFixed(1) + 'R', yfmt: (v) => Math.round(v), onPick,
-    bands: [{ x0: 0, x1: 0.3, color: '#ff5a7a', label: 'never worked' }, { x0: 1, x1: xmax, color: '#f2c35b', label: 'gave back' }, { x0: 0.3, x1: 1, y0: 45, color: '#b18cff', label: 'wide stop' }], empty: 'No losing trades.' });
+    bands: [{ x0: 0, x1: 0.3, color: '#ff5a7a', label: 'never worked' }, { x0: 1, x1: xmax, color: '#f2c35b', label: 'gave back' }, { x0: 0.3, x1: 1, y0: 45, color: '#b18cff', label: 'wide stop', at: 'bottom' }], empty: 'No losing trades.' });
 }
 VIEWS.losses = (el) => {
   const b = baseMeta();
@@ -2216,11 +2245,12 @@ function drawLosses(run) {
       <div class="legend">${Object.keys(LOSS_K).map(k => `<span><i class="dot2" style="background:${LOSS_K[k][0]}"></i>${name(k)}</span>`).join('')}</div></div>
     <div class="grid g2">
       <div class="card"><div class="card-h"><h3>Biggest losses${LS2.kind !== 'all' ? ' · ' + esc(LS2.kind) : ''}</h3><span class="meta">tap one</span></div><div class="tlist" id="lsBig">${big.map(runTradeRow).join('') || emptyBox('None.', '')}</div></div>
-      <div class="card"><div class="card-h"><h3>Losing streaks</h3><span class="meta">the longest runs of losses in a row</span></div>
+      <div class="card"><div class="card-h"><h3>Losing streaks</h3><span class="meta">losses in a row, breakeven scratches included</span></div>
         ${streaks.slice(0, 6).map(s => `<div class="streak"><b>${s.n}</b><span><span>${esc(fDate(s.a))} → ${esc(fDate(s.z))}</span><small>${plural(s.n, 'loss', 'losses')} in a row</small></span><em>${kusd(s.pnl)}</em></div>`).join('') || emptyBox('No losing streaks.', '')}</div></div>
     <div class="card"><div class="card-h"><h3>Drawdowns</h3><span class="meta">how far the account fell below its high, day by day</span></div><div id="lsUw"></div>
-      <div class="tw" style="margin-top:14px"><table class="ht"><tr><th>Depth</th><th>From the high</th><th>Low point</th><th>Back at the high</th><th class="c">Sessions</th></tr>
-      ${dds.slice(0, 5).map(d => `<tr><td class="v dn" style="text-align:left">${usd(d.depth)}</td><td class="mono">${esc(d.peak)}</td><td class="mono">${esc(d.trough)}</td><td class="mono">${d.rec ? esc(d.rec) : '<span class="wn">not yet</span>'}</td><td class="v">${d.n}</td></tr>`).join('')}</table></div></div>
+      <div class="tw" style="margin-top:14px"><table class="ht"><tr><th>Depth</th><th>High</th><th>Low</th><th>Back</th><th class="c">Days</th></tr>
+      ${dds.slice(0, 5).map(d => `<tr><td class="v dn" style="text-align:left">${usd(d.depth)}</td><td class="mono">${esc(String(d.peak).slice(2))}</td><td class="mono">${esc(String(d.trough).slice(2))}</td><td class="mono">${d.rec ? esc(String(d.rec).slice(2)) : '<span class="wn">not yet</span>'}</td><td class="v">${d.n}</td></tr>`).join('')}</table></div>
+      <p class="card-d" style="margin:10px 0 0">High = the last high before the fall, Low = the bottom, Back = the day the account made a new high again, Days = trading sessions spent below the high.</p></div>
     <div class="grid g2">
       <div class="card"><div class="card-h"><h3>How the losses ended</h3><span class="meta">exit type</span></div><div class="tw"><table class="ht"><tr><th>Exit</th><th class="c">Losses</th><th class="c">Lost</th><th class="c">Avg R</th></tr>
         ${byExit.map(([k, x]) => `<tr><td class="k">${esc(k)}</td><td class="v">${x.length}</td><td class="v dn">${kusd(x.reduce((s, t) => s + t.pnl, 0))}</td><td class="v">${fR(x.reduce((s, t) => s + t.r, 0) / x.length)}</td></tr>`).join('')}</table></div></div>
@@ -2325,7 +2355,7 @@ VIEWS.engine = (el) => {
   el.innerHTML = head('System · Liquidity Engine · cloud paper bot', esc(lv.model_state || 'No state yet'), esc(lv.strategy || ''))
     + howto('engine', `<p>Every session the engine works through five steps: <b>Sweep</b> (price runs a liquidity pool from 08:00 ET), <b>IFVG</b> (an IFVG or CISD trigger inside a killzone), <b>Order</b> (the entry order is working), <b>Trade</b> (managing the position) and <b>Done</b> (one trade a day).</p>
       <p>The lit step is where the cloud bot is now. Outside the killzones it waits. It runs on paper only and never places real orders.</p>`)
-    + `<div class="card fx-card"><div class="card-h"><h3>Pipeline · where the bot is now</h3><div>${fxSeg('engine-pipeline')}</div></div>${fxBox('engine-pipeline', 'pipeline')}</div>
+    + `<div class="card fx-card"><div class="card-h"><h3>Pipeline · where the bot is now</h3><div>${fxSeg('engine-pipeline')}</div></div>${fxBox('engine-pipeline', 'pipeline')}${pcLine()}</div>
     <div class="grid g2"><div class="card"><div class="card-h"><h3>Position</h3><span class="meta">paper</span></div>${pos ? `<div class="kv">${Object.entries(pos).filter(([, v]) => v == null || typeof v !== 'object').slice(0, 12).map(([k, v]) => `<div><span>${esc(humanKey(k))}</span><b>${esc(typeof v === 'number' ? num(v) : v ?? '—')}</b></div>`).join('')}</div>` : emptyBox('Flat.', 'No paper position open.')}</div>
       <div class="card"><div class="card-h"><h3>Cloud monitor</h3><span class="meta">GitHub Actions</span></div><div class="kv one"><div><span>Last run</span><b>${lv.last_run ? ago(lv.last_run) : '—'}</b></div><div><span>Runs so far</span><b>${lv.runs ?? '—'}</b></div><div><span>Last bar</span><b>${esc(lv.health?.last_bar || '—')}</b></div>
         <div><span>Price</span><b>${num(lv.price)}</b></div><div><span>Mode</span><b>paper only · never places orders</b></div><div><span>Schedule</span><b>every 15 min in the killzones, market days</b></div></div></div></div>

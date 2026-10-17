@@ -185,6 +185,7 @@ def trade_features(B: Bars, t: dict) -> dict | None:
     F["leg_reclaim"] = int((c - F["avwap_leg"]) * d > 0)                    # closed back beyond the leg's average price
     w = B.v[e:i + 1]
     F["avwap_ext"] = float((B.tp[e:i + 1] * w).sum() / w.sum())
+    F["ext_late_r"] = (c - F["avwap_ext"]) * d / float(t["risk_pts"])        # how far past the post-sweep average price
     # --- prior RTH profile (yesterday), naked POCs, prior-week composite, last-5-session composite
     prior = [j for j in range(k - 1, max(-1, k - 1 - 15), -1) if j in B.prof]
     if not prior:
@@ -267,6 +268,12 @@ IDEAS = {
                    lambda t, F: None if F.get("z_eth") is None else F["z_eth"] < -1.0),
     "vwap_rth_band1": ("vwap", "From 10:00: entry more than 1 SD beyond the 09:30 VWAP in the trade's direction",
                        lambda t, F: None if F.get("z_rth") is None else F["z_rth"] > 1.0),
+    "vwap_atr_chase2": ("vwap", "Entry at least 2 ATR past the 09:30 VWAP in the trade's direction (stretched away from value)",
+                        lambda t, F: None if F.get("vwap_atr") is None else F["vwap_atr"] >= 2.0),
+    "vwap_atr_deep2": ("vwap", "Entry at least 2 ATR on the value side of the 09:30 VWAP",
+                       lambda t, F: None if F.get("vwap_atr") is None else F["vwap_atr"] <= -2.0),
+    "vwap_ext_late": ("vwap", "Late entry: more than 0.5R past the VWAP anchored at the sweep extreme",
+                      lambda t, F: None if F.get("ext_late_r") is None else F["ext_late_r"] > 0.5),
     "vwap_sweep2": ("vwap", "The sweep extreme reached the 2-SD band of the 18:00 VWAP (stretched raid)",
                     lambda t, F: None if F.get("ext_z_eth") is None else F["ext_z_eth"] < -2.0),
     "vwap_leg": ("vwap", "Entry back beyond the VWAP anchored at the start of the sweep leg (leg's average price reclaimed)",
@@ -299,8 +306,47 @@ IDEAS = {
                         lambda t, F: F.get("dev_poc_side")),
 }
 
+# plain wording of each side: (condition present, condition absent)
+SIDES = {
+    "vwap_side": ("entry on the value side of the 09:30 VWAP", "entry on the expensive side of the 09:30 VWAP"),
+    "vwap_eth_side": ("entry on the value side of the 18:00 VWAP", "entry on the expensive side of the 18:00 VWAP"),
+    "vwap_chase1": ("entry more than 1 SD past the 18:00 VWAP (chasing)", "entry not more than 1 SD past the 18:00 VWAP"),
+    "vwap_deep1": ("entry more than 1 SD on the value side of the 18:00 VWAP", "entry not deep on the value side of the 18:00 VWAP"),
+    "vwap_rth_band1": ("entry more than 1 SD past the 09:30 VWAP (from 10:00)", "entry within 1 SD of the 09:30 VWAP (from 10:00)"),
+    "vwap_atr_chase2": ("entry 2+ ATR past the 09:30 VWAP", "entry less than 2 ATR past the 09:30 VWAP"),
+    "vwap_atr_deep2": ("entry 2+ ATR on the value side of the 09:30 VWAP", "entry not 2 ATR on the value side of the 09:30 VWAP"),
+    "vwap_ext_late": ("entry more than 0.5R past the sweep-anchored VWAP (late)", "entry within 0.5R of the sweep-anchored VWAP"),
+    "vwap_sweep2": ("the sweep stretched to the 2-SD band of the 18:00 VWAP", "the sweep stayed inside the 2-SD band of the 18:00 VWAP"),
+    "vwap_leg": ("entry back beyond the sweep leg's anchored VWAP", "entry still short of the sweep leg's anchored VWAP"),
+    "vp_sweep_out": ("the sweep ran outside yesterday's value area", "the sweep stayed inside yesterday's value area"),
+    "vp_fail_auction": ("a failed auction (swept outside value, closed back in)", "no failed auction"),
+    "vp_in_value": ("entry inside yesterday's value area", "entry outside yesterday's value area"),
+    "vp_open_in": ("the day opened inside yesterday's value", "the day opened outside yesterday's value"),
+    "vp_open_with": ("the day opened outside value in the trade's direction", "the day did not open outside value in the trade's direction"),
+    "vp_open_against": ("the day opened outside value against the trade", "the day did not open outside value against the trade"),
+    "vp_poc_side": ("entry on the value side of yesterday's POC", "entry on the expensive side of yesterday's POC"),
+    "vp_sweep_level5": ("the sweep extreme was within 5 pts of a volume level", "the sweep extreme was not at a volume level"),
+    "vp_target_level5": ("the target sits within 5 pts of a volume level", "the target is not at a volume level"),
+    "vp_naked_between": ("a naked POC lies between entry and target", "no naked POC between entry and target"),
+    "vp_poc_between": ("yesterday's POC lies between entry and target", "yesterday's POC is not between entry and target"),
+    "vp_thin_path": ("little volume traded between entry and target (thin path)", "the path to the target runs through traded volume"),
+    "vp_week_sweep_out": ("the sweep ran outside last week's value area", "the sweep stayed inside last week's value area"),
+    "vp_dev_poc_side": ("entry on the value side of today's developing POC", "entry on the expensive side of today's developing POC"),
+}
+
+# re-checks of earlier claims, sized the way they were claimed (not chosen by this study's 2021-25 rule)
+RECHECKS = [
+    ("vwap_side", True, "Re-check of the old conviction sizing (x1.33 for value-side entries) and the grade's 'proven' item"),
+    ("vp_open_in", False, "Re-check of the confluence lab (2026-10-16): open inside value HURTS on several short test beds"),
+    ("vp_open_in", True, "AMT theory as written in the engine: an open inside value is a balance day, so fading the edges "
+                         "(our sweep reversals) should work better"),
+]
+
 # neighbour sets for the ideas with a threshold (checked only for the finalists chosen on 2021-25)
 NEIGHBOURS = {
+    "vwap_ext_late": [("vwap_ext_late04", 0.4), ("vwap_ext_late06", 0.6)],
+    "vwap_atr_chase2": [("vwap_atr_chase15", 1.5), ("vwap_atr_chase3", 3.0)],
+    "vwap_atr_deep2": [("vwap_atr_deep15", 1.5), ("vwap_atr_deep3", 3.0)],
     "vwap_chase1": [("vwap_chase05", 0.5), ("vwap_chase15", 1.5), ("vwap_chase2", 2.0)],
     "vwap_deep1": [("vwap_deep05", 0.5), ("vwap_deep15", 1.5)],
     "vwap_sweep2": [("vwap_sweep15", 1.5), ("vwap_sweep25", 2.5)],
@@ -311,6 +357,12 @@ NEIGHBOURS = {
 
 
 def neighbour_fn(base, x):
+    if base == "vwap_ext_late":
+        return lambda t, F: None if F.get("ext_late_r") is None else F["ext_late_r"] > x
+    if base == "vwap_atr_chase2":
+        return lambda t, F: None if F.get("vwap_atr") is None else F["vwap_atr"] >= x
+    if base == "vwap_atr_deep2":
+        return lambda t, F: None if F.get("vwap_atr") is None else F["vwap_atr"] <= -x
     if base == "vwap_chase1":
         return lambda t, F: None if F.get("z_eth") is None else F["z_eth"] > x
     if base == "vwap_deep1":
@@ -409,12 +461,181 @@ def info(T, FE, ideas=None):
     return res
 
 
+# ------------------------------------------------------------------------------------------------ selection (2021-25 only)
+def select(res, min_dr=0.05, share=(0.05, 0.95)):
+    """Pre-registered rule, 2021-25 numbers only: the with/without gap must have the same sign in avg R and in $ per trade,
+    be at least min_dr R, and the condition must cover 5-95% of trades. Returns {idea: good_side} (True = present is good)."""
+    out = {}
+    for name, r in res.items():
+        w, wo = r["2021-25"][True], r["2021-25"][False]
+        n = w["n"] + wo["n"]
+        if not n or not w["n"] or not wo["n"] or not share[0] <= w["n"] / n <= share[1]:
+            continue
+        dr = w["avg_r"] - wo["avg_r"]
+        dd = w["net"] / w["n"] - wo["net"] / wo["n"]
+        if abs(dr) >= min_dr and dr * dd > 0:
+            out[name] = dr > 0
+    return out
+
+
+def perm_p(T, fn, FE, span="2021-25", n=4000, seed=1):
+    """Two-sided permutation p-value of the with-minus-without avg R gap (raw R, one span)."""
+    a, z = {"2026": ("2026-01-01", "2026-12-31"), "2021-25": ("2021-01-01", "2025-12-31")}[span]
+    R, M = [], []
+    for t in T:
+        if a <= t["day"] <= z:
+            f = flag(fn, t, FE)
+            if f is not None:
+                R.append(t["r"]); M.append(f)
+    R, M = np.array(R), np.array(M)
+    obs = R[M].mean() - R[~M].mean()
+    rng = np.random.default_rng(seed)
+    hits = 0
+    for _ in range(n):
+        P = rng.permutation(M)
+        hits += abs(R[P].mean() - R[~P].mean()) >= abs(obs)
+    return round(float(obs), 3), round((hits + 1) / (n + 1), 4)
+
+
+def years_sign(T, fn, FE, good):
+    """Per full year 2022-2025: does the good side beat the other side on avg R? Returns e.g. '3/4' and the gaps."""
+    gaps = []
+    for y in ("2022", "2023", "2024", "2025"):
+        w = [t["r"] for t in T if t["day"][:4] == y and flag(fn, t, FE) is good]
+        o = [t["r"] for t in T if t["day"][:4] == y and flag(fn, t, FE) is (not good)]
+        gaps.append(round(float(np.mean(w) - np.mean(o)), 2) if w and o else None)
+    return f"{sum(1 for g in gaps if g is not None and g > 0)}/4", gaps
+
+
+# ------------------------------------------------------------------------------------------------ sized variants
+KINDS = {
+    "half": "x0.5 on the weak side (every trade still taken)",
+    "up": "x1.25 on the strong side (every trade still taken)",
+    "skip": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
+    "cold": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
+}
+
+
+def make_rule(fn, FE, good, kind):
+    def rule(t, ctx):
+        f = flag(fn, t, FE)
+        if f is None:
+            return 1.0
+        strong = f is good
+        if kind == "half":
+            return 1.0 if strong else 0.5
+        if kind == "up":
+            return 1.25 if strong else 1.0
+        if kind == "skip":
+            return 1.0 if strong else 0.0
+        if kind == "cold":
+            return 2.0 if (strong and ctx["cold_mult"] < 1) else 1.0
+        raise KeyError(kind)
+    return rule
+
+
+def status_of(S, base, kind):
+    a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+    A, Bs = base["spans"]["2026"], base["spans"]["2021-25"]
+    if not a.get("n") or not b.get("n"):
+        return "rejected" if kind != "skip" else "info"
+    if a["net"] == A["net"] and a["pf"] == A["pf"] and a["n"] == A["n"]:
+        return "info"                                   # never changed a 2026 trade: untested out of sample
+    freq = (a.get("tpw") or 0) >= 2 and (b.get("tpw") or 0) >= 2
+    better = lambda x, y: x["net"] > y["net"] and (x["pf"] or 0) > (y["pf"] or 0)
+    no_harm = lambda x, y: x["net"] >= y["net"] - 250 and (x["pf"] or 0) >= (y["pf"] or 0) - 0.02
+    if freq and better(a, A) and better(b, Bs):
+        return "adopt-candidate"
+    if freq and ((better(a, A) and no_harm(b, Bs)) or (better(b, Bs) and no_harm(a, A))):
+        return "promising"
+    return "rejected" if kind != "skip" else "info"
+
+
+def title_of(name, good, kind):
+    strong, weak = SIDES[name] if good else SIDES[name][::-1]
+    return {"half": f"Half size when {weak}", "up": f"1.25x size when {strong}", "skip": f"Skip when {weak}",
+            "cold": f"Cold streak: full size again when {strong}"}[kind]
+
+
+def verdict_of(S, base, st):
+    a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+    A, Bs = base["spans"]["2026"], base["spans"]["2021-25"]
+    def one(x, y, name):
+        if not x.get("n"):
+            return f"{name}: no trades left"
+        return (f"{name}: PF {y['pf']} -> {x['pf']}, net {y['net']:+,} -> {x['net']:+,}, max DD {y['dd']:,} -> {x['dd']:,}, "
+                f"{x['tpw']}/wk")
+    head = {"adopt-candidate": "Better in both periods.", "promising": "Helps one period without hurting the other.",
+            "rejected": "Does not hold in both periods.",
+            "info": ("Never changed a 2026 trade, so it is untested out of sample." if a.get("n") and a["net"] == A["net"]
+                     and a["pf"] == A["pf"] else "Check only (post-hoc skip).")}[st]
+    return f"{head} {one(a, A, '2026')}; {one(b, Bs, '2021-25')}."
+
+
+def run_variants(raw, FE, base, plan, save=False, tag="posthoc"):
+    """plan: list of (id, idea name, fn, good, kind, question). Returns {id: (status, S)}."""
+    out = {}
+    for vid, name, fn, good, kind, question in plan:
+        T = rl.size(raw, rule=make_rule(fn, FE, good, kind))
+        S = rl.score(T, raw)
+        st = status_of(S, base, kind)
+        out[vid] = (st, S)
+        print(f"{vid:<26} {st:<15} 2026 {fmt(S['spans']['2026'])} | 2021-25 {fmt(S['spans']['2021-25'])}", flush=True)
+        if save:
+            fam = "vwap" if name.startswith("vwap") else "vp"
+            rl.save(vid, title_of(name, good, kind), "filters", question,
+                    sizing={"idea": name, "strong_side": "present" if good else "absent", "kind": kind, "rule": KINDS[kind],
+                            "on_top_of": "live sizing incl. the cold-streak half size"},
+                    trades=T, scored=S, status=st, verdict=verdict_of(S, base, st),
+                    notes=("Post-hoc on the exact live-loop replay (768 baseline trades, costs included); only the size changes. "
+                           "Features from data/NQ_5m.csv at the signal close (no look-ahead). Strong side chosen on 2021-25 only. "
+                           "Reproduce: python tools/research_vp.py all"), writeup=WRITEUP, tags=[tag, fam])
+    return out
+
+
+def fmt(s):
+    if not s.get("n"):
+        return "no trades"
+    return (f"n={s['n']} {s['tpw']}/wk wk2={s['wk2']}% PF={s['pf']} net={s['net']:+,} DD={s['dd']:,} "
+            f"1m pass/fail {s['p20']}/{s['f20']}")
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "info"
     B, raw, FE = all_features()
     print(f"features for {len(FE)}/{len(raw['trades'])} trades")
     if cmd in ("check", "all"):
         check(B, raw, FE)
-    if cmd in ("info", "all"):
+    if cmd in ("info", "all", "dry"):
         T0 = rl.size(raw)
-        info(T0, FE)
+        res = info(T0, FE)
+        sel = select(res)
+        print(f"\n{len(IDEAS)} ideas tested; chosen on 2021-25 only ({len(sel)}):")
+        for name, good in sel.items():
+            obs, pv = perm_p(T0, IDEAS[name][2], FE)
+            ys = years_sign(T0, IDEAS[name][2], FE, good)
+            print(f"  {name:<20} strong side = {'present' if good else 'absent'}  2021-25 gap {obs:+.3f}R  permutation p={pv}"
+                  f"  years 2022-25 agreeing {ys[0]} {ys[1]}")
+    if cmd in ("all", "dry"):
+        base = rl.load("baseline")
+        print("\nbaseline: 2026", fmt(base["spans"]["2026"]), "| 2021-25", fmt(base["spans"]["2021-25"]))
+        plan = []
+        for name, good in sel.items():
+            for kind in KINDS:
+                plan.append((f"{name}_{kind}", name, IDEAS[name][2], good, kind, IDEAS[name][1] + "?"))
+        for name, good, why in RECHECKS:
+            for kind in (KINDS if name == "vp_open_in" and good else ("half", "up")):
+                vid = f"{name}_{kind}" if not (name == "vp_open_in" and good) else f"vp_balance_{kind}"
+                plan.append((vid, name, IDEAS[name][2], good, kind, why + ". " + IDEAS[name][1] + "?"))
+        print("\n-- sized variants (a) half / up, (b) skip check, (c) cold-streak interplay; all on top of the live sizing")
+        R1 = run_variants(raw, FE, base, plan, save=(cmd == "all"))
+        # neighbours of the threshold ideas that were chosen, sized the same way as their best-looking 2021-25 kind
+        plan = []
+        for name, good in sel.items():
+            if name not in NEIGHBOURS:
+                continue
+            for vid, x in NEIGHBOURS[name]:
+                plan.append((f"{vid}_half", name, neighbour_fn(name, x), good, "half",
+                             f"Neighbour check of {name}: same idea at threshold {x}. " + IDEAS[name][1] + "?"))
+        print("\n-- neighbour checks (half size on the weak side)")
+        R2 = run_variants(raw, FE, base, plan, save=(cmd == "all"))

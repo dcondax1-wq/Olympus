@@ -42,7 +42,7 @@ SEL, OOS = ("2021-01-01", "2025-12-31"), ("2026-01-01", "2026-12-31")
 
 
 # ------------------------------------------------------------------------------------------------ bars + MAs
-_BARS = {}
+_BARS, _RAW5 = {}, {}
 
 
 def bars(path=None, cut_t=None):
@@ -52,11 +52,16 @@ def bars(path=None, cut_t=None):
     key = (path, cut_t)
     if key in _BARS:
         return _BARS[key]
-    m = pd.read_csv(path or os.path.join(ROOT, "data", "NQ_5m.csv"))
-    m = m.rename(columns={"time": "t", "open": "o", "high": "h", "low": "l", "close": "c"})
+    if path not in _RAW5:
+        m = pd.read_csv(path or os.path.join(ROOT, "data", "NQ_5m.csv"))
+        m = m.rename(columns={"time": "t", "open": "o", "high": "h", "low": "l", "close": "c"})
+        m = m.sort_values("t").reset_index(drop=True)
+        et = pd.to_datetime(m.t, unit="s", utc=True).dt.tz_convert("America/New_York")
+        m["sess"] = (et + pd.Timedelta(hours=6)).dt.strftime("%Y-%m-%d")  # CME session: 18:00 ET -> 17:00 ET
+        _RAW5[path] = m
+    m = _RAW5[path]
     if cut_t is not None:
-        m = m[m.t < cut_t]
-    m = m.sort_values("t").reset_index(drop=True)
+        m = m[m.t < cut_t].reset_index(drop=True)
     out = {}
     for tf, sec in TF_SEC.items():
         if sec == 300:
@@ -73,8 +78,6 @@ def bars(path=None, cut_t=None):
         b["atr"] = tr.rolling(14, min_periods=14).mean()                 # simple 14-bar mean true range
         b["atr_rma"] = tr.ewm(alpha=1 / 14, adjust=False).mean()           # Wilder ATR (TradingView ta.atr) for the check
         out[tf] = b.reset_index(drop=True)
-    et = pd.to_datetime(m.t, unit="s", utc=True).dt.tz_convert("America/New_York")
-    m["sess"] = (et + pd.Timedelta(hours=6)).dt.strftime("%Y-%m-%d")      # CME session: 18:00 ET -> 17:00 ET
     d = m.groupby("sess").agg(o=("o", "first"), h=("h", "max"), l=("l", "min"), c=("c", "last")).reset_index()
     for n in DSMA_LENS:
         d[f"sma{n}"] = d.c.rolling(n, min_periods=n).mean()
@@ -270,12 +273,295 @@ def scan(span=SEL, verbose=True, subsplit=True):
     return res
 
 
+# ------------------------------------------------------------------------------------------------ rules and runs
+def knife(key="1h_e20_side", k=3.0):
+    """Falling knife: price at least k ATR on the WRONG side of the MA at the decision (a long far below the 1h EMA20,
+    a short far above it), i.e. the setup fades a strong one-way move."""
+    return lambda F: F.get(key, float("nan")) < -k
+
+
+def side_with(key):
+    return lambda F: F.get(key, float("nan")) > 0
+
+
+def side_against(key):
+    return lambda F: F.get(key, float("nan")) <= 0
+
+
+def is_flag(key):
+    return lambda F: bool(F.get(key))
+
+
+def mult_rule(test, hit, miss=1.0):
+    """runlib size rule: multiplier `hit` when test(features) is true, else `miss` (0 = skip the trade)."""
+    raw, T, S, F = base()
+
+    def rule(t, ctx):
+        return hit if test(F[int(t["entry_t"])]) else miss
+    return rule
+
+
+Q_KNIFE = ("Should the bot trade smaller when the setup fades a strong one-way move, i.e. price is stretched far from the "
+           "1-hour EMA 20 on the wrong side (a 'falling knife')?")
+Q_TREND = "Do the classic moving-average trend filters (trade with the EMA / SMA trend) help the Liquidity Engine?"
+Q_DAILY = "Does the position versus the daily 50-day average (with or against the daily trend) matter?"
+Q_TAG = "Is a sweep that tags a higher-timeframe EMA (dynamic support / resistance) worth more size?"
+KNIFE_MECH = ("Mechanism: a sweep-and-reverse setup bets that the sweep was a stop hunt. When price is already 3+ hourly ATRs "
+              "away from its 20-hour average on the wrong side, a strong one-way move (displacement) is running and the sweep "
+              "is more often continuation than a stop hunt. In 2021-25 these setups won 7% of the time (rest: 22%).")
+
+# (id, title, question, family-key, test, hit multiplier, miss multiplier, status override or None, mechanism / note)
+RUNS = (
+    # primary rule, chosen on 2021-25 only (before 2026 was looked at)
+    ("ema_knife_half", "Half size on a 'falling knife' (price 3+ ATR on the wrong side of the 1h EMA20)", Q_KNIFE, "knife",
+     knife("1h_e20_side", 3.0), 0.5, 1.0, None, KNIFE_MECH + " Chosen on 2021-25 only: EMA 20 and 3 ATR are the middle of the "
+     "neighbours tried (EMA 9/20/50, 2-4 ATR), all of which point the same way."),
+    ("ema_knife_quarter", "Quarter size on a falling knife (1h EMA20, 3 ATR)", Q_KNIFE, "knife", knife("1h_e20_side", 3.0), 0.25, 1.0,
+     None, "Stronger cut of the same rule."),
+    ("ema_knife_skip", "Check: skip the falling knife setups (1h EMA20, 3 ATR)", Q_KNIFE, "knife", knife("1h_e20_side", 3.0), 0.0, 1.0,
+     "info", "Check only: skipping cuts the number of trades. A post-hoc skip only approximates an engine filter (the engine "
+     "could take a later signal that day instead)."),
+    # neighbours (robustness, not separately selected)
+    ("ema_knife_k2_half", "Neighbour: half size at 2+ ATR from the 1h EMA20", Q_KNIFE, "knife", knife("1h_e20_side", 2.0), 0.5, 1.0, None,
+     "Neighbouring threshold (main rule: 3 ATR)."),
+    ("ema_knife_k25_half", "Neighbour: half size at 2.5+ ATR from the 1h EMA20", Q_KNIFE, "knife", knife("1h_e20_side", 2.5), 0.5, 1.0, None,
+     "Neighbouring threshold (main rule: 3 ATR)."),
+    ("ema_knife_k35_half", "Neighbour: half size at 3.5+ ATR from the 1h EMA20", Q_KNIFE, "knife", knife("1h_e20_side", 3.5), 0.5, 1.0, None,
+     "Neighbouring threshold (main rule: 3 ATR)."),
+    ("ema_knife_e9_half", "Neighbour: half size at 3+ ATR from the 1h EMA9", Q_KNIFE, "knife", knife("1h_e9_side", 3.0), 0.5, 1.0, None,
+     "Neighbouring EMA length (main rule: EMA 20)."),
+    ("ema_knife_e50_half", "Neighbour: half size at 3+ ATR from the 1h EMA50", Q_KNIFE, "knife", knife("1h_e50_side", 3.0), 0.5, 1.0, None,
+     "Neighbouring EMA length (main rule: EMA 20)."),
+    ("ema_knife_15m50_half", "Neighbour: half size at 3+ (15m) ATR from the 15m EMA50", Q_KNIFE, "knife", knife("15m_e50_side", 3.0), 0.5,
+     1.0, None, "Neighbouring timeframe: the 15m EMA 50 spans ~12 hours (main rule: 1h EMA 20, 20 hours)."),
+    ("ema_knife_rma_half", "Neighbour: falling knife measured with the Wilder ATR (TradingView ta.atr)", Q_KNIFE, "knife",
+     knife("1h_e20_side_rma", 3.0), 0.5, 1.0, None, "Same rule with TradingView's ATR (Wilder smoothing) instead of a plain 14-bar mean, "
+     "to show the Pine port would behave the same."),
+    # classic trend-following uses of moving averages (what most traders mean by 'EMA confluence')
+    ("ema_1h50_trend_half", "Textbook: half size when price is on the wrong side of the 1h EMA50", Q_TREND, "trend",
+     side_against("1h_e50_side"), 0.5, 1.0, None, "Textbook intraday trend filter (long only above the 1h EMA 50)."),
+    ("ema_1h50_trend_x125", "Textbook: 1.25x size when price is on the right side of the 1h EMA50", Q_TREND, "trend",
+     side_with("1h_e50_side"), 1.25, 1.0, None, "Same filter, leaning in instead of cutting."),
+    ("ema_15m_stack_half", "Textbook: half size when the 15m EMAs 20/50/200 are stacked against the trade", Q_TREND, "trend",
+     lambda F: F.get("15m_stack", 0) < 0, 0.5, 1.0, None, "EMA stack order (20 below 50 below 200 for a long = downtrend)."),
+    ("ema_d200_trend_half", "Textbook: half size against the daily 200-day average (bull / bear market)", Q_TREND, "trend",
+     side_against("1d_sma200_side"), 0.5, 1.0, None, "Classic bull / bear market line. Needs 200 sessions of 5m history, so it "
+     "only applies from August 2022 (earlier trades keep full size)."),
+    ("ema_d50_trend_half", "Textbook: half size against the daily 50-day average", Q_DAILY, "daily", side_against("1d_sma50_side"),
+     0.5, 1.0, None, "Classic daily trend filter (long only above the 50-day average)."),
+    # the data-driven daily idea (the opposite of the textbook): 2021-25 says counter-daily-trend setups did better
+    ("ema_d50_with_half", "Half size WITH the daily 50-day average (long above it, short below it)", Q_DAILY, "daily",
+     side_with("1d_sma50_side"), 0.5, 1.0, None, "2021-25 scan: setups against the daily 50-day average averaged +0.09R, with it "
+     "-0.14R, for longs and shorts alike (multi-day mean reversion). But the gap came from 2022-23 only; in 2024 it reversed."),
+    ("ema_d50_against_x125", "1.25x size AGAINST the daily 50-day average", Q_DAILY, "daily", side_against("1d_sma50_side"), 1.25, 1.0,
+     None, "Same idea, leaning in instead of cutting."),
+    # sweep tags a higher-timeframe EMA
+    ("ema_tag50h_x125", "1.25x size when the sweep wick pierced the 1h EMA50 and the trigger closed back", Q_TAG, "tag",
+     is_flag("1h_e50_tag"), 1.25, 1.0, None, "Dynamic support: liquidity and the ~2-day EMA at the same price. The 15m EMA 200 "
+     "is almost the same line (200 x 15 min = 50 h). 2021-25: +0.13R vs the rest, t = 1.0 (weak)."),
+    ("ema_tag50h_x150", "1.5x size when the sweep wick pierced the 1h EMA50 and the trigger closed back", Q_TAG, "tag",
+     is_flag("1h_e50_tag"), 1.5, 1.0, None, "Same, bigger lean."),
+)
+
+
+def status_of(S, B, min_tpw=2.0):
+    """adopt-candidate: better than the baseline in BOTH periods on net and PF, with 2+ trades a week in both, and the
+    1-month MFFU eval (pass % - fail %) not worse by more than 1 point (so a plain size-up that only adds risk does not
+    count); promising: clearly helps one period and does not hurt the other; else rejected."""
+    a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+    A, Bb = B["spans"]["2026"], B["spans"]["2021-25"]
+    if (a.get("tpw") or 0) < min_tpw or (b.get("tpw") or 0) < min_tpw:
+        return "rejected"
+
+    def ev(x):
+        return x["p20"] - x["f20"]
+
+    def better(x, y):
+        return x["net"] > y["net"] and (x["pf"] or 0) >= (y["pf"] or 0) and ev(x) >= ev(y) - 1.0
+
+    def clearly(x, y):
+        return x["net"] > y["net"] * 1.05 + 300 and (x["pf"] or 0) > (y["pf"] or 0) and ev(x) >= ev(y) - 1.0
+
+    def not_worse(x, y):
+        return x["net"] >= 0.97 * y["net"] - 150 and (x["pf"] or 0) >= (y["pf"] or 0) - 0.03 and ev(x) >= ev(y) - 1.0
+
+    if better(a, A) and better(b, Bb):
+        return "adopt-candidate"
+    if (clearly(a, A) and not_worse(b, Bb)) or (clearly(b, Bb) and not_worse(a, A)):
+        return "promising"
+    return "rejected"
+
+
+def verdict_of(S, B, status, hits):
+    a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+    A, Bb = B["spans"]["2026"], B["spans"]["2021-25"]
+    head = {"adopt-candidate": "Better than the live strategy in both periods", "promising": "Helps one period without hurting the other",
+            "rejected": "Not better in both periods", "info": "Check only"}[status]
+    if min(a.get("tpw") or 0, b.get("tpw") or 0) < 2.0:
+        head = "Fewer than 2 setups a week" if status != "info" else "Check only: fewer than 2 setups a week"
+    return (f"{head}. 2026: net {_money(a['net'])} (live {_money(A['net'])}), PF {a['pf']} ({A['pf']}), max DD {_money(a['dd'])} "
+            f"({_money(A['dd'])}), {a['tpw']} trades/week. 2021-25: net {_money(b['net'])} ({_money(Bb['net'])}), PF {b['pf']} ({Bb['pf']}), "
+            f"max DD {_money(b['dd'])} ({_money(Bb['dd'])}), {b['tpw']}/week. Rule hit {hits[0]} setups in 2021-25 and {hits[1]} in 2026.")
+
+
+EXTRA_VERDICT = {
+    "ema_knife_half": " This is the rule chosen on 2021-25 before 2026 was looked at. In 2021-25 the 80 setups it hits won 7% of "
+                      "the time (rest 22%) and lost money in every year. In 2026 it hits only 6 of 89 setups; one of them was a "
+                      "+4.0R winner (2026-10-06, a short at 3.14 ATR, just past the line), which alone costs the $1,150.",
+    "ema_knife_rma_half": " Same EMA 20 and 3-ATR line, but the ATR is TradingView's / the engine's Wilder ATR, which is a bit "
+                          "wider, so it hits fewer setups (51 in 2021-25, 3 in 2026). This is the version the engine and the Pine "
+                          "script would naturally use. Honest caveat: it was a robustness check, noticed as the natural "
+                          "implementation only after 2026 had been seen; in 2026 it is simply unchanged (+$28).",
+    "ema_knife_k35_half": " A neighbour check, not the chosen rule: it passes only because it leaves out the one 2026 winner at 3.14 ATR.",
+    "ema_1h50_trend_x125": " Looks better on money only because it adds size to 37% of setups (more risk, no edge: these setups "
+                           "averaged +0.01R vs -0.01R); the 2021-25 drawdown and eval fail rate get worse.",
+}
+
+
+def run_one(spec, save=True, eqf="live"):
+    id, title, q, fam, test, hit, miss, st, note = spec
+    raw, T0, B, F = base()
+    T = rl.size(raw, eqf=eqf, rule=mult_rule(test, hit, miss))
+    S = rl.score(T, raw)
+    hits = (sum(1 for t in raw["trades"] if t["day"] <= "2025-12-31" and test(F[int(t["entry_t"])])),
+            sum(1 for t in raw["trades"] if t["day"] >= "2026-01-01" and test(F[int(t["entry_t"])])))
+    status = st or status_of(S, B)
+    verdict = verdict_of(S, B, status, hits) + EXTRA_VERDICT.get(id, "")
+    if save:
+        rl.save(id, title, "filters", q, sizing={"rule": title, "hit_mult": hit, "else_mult": miss, "group": fam,
+                                                  "cold_streak": "live" if eqf == "live" else "off"},
+                trades=T, scored=S, status=status, verdict=verdict, writeup=WRITEUP, tags=["ema", fam],
+                notes=note + " Method: exact live-loop replay of the live strategy (cached), moving averages computed from "
+                "TradingView CME NQ1! 5m bars closed before the entry (15m / 1h / daily bars built from the same file), the "
+                "size rule applied on top of the live cold-streak half size (runlib.size: P&L, commission and slippage scale "
+                "with the micros; max 40 micros, a cut never goes below 1 micro); costs included. Selection on 2021-25 only, "
+                "2026 checked untouched.")
+    return S, status, hits
+
+
+def cmd_runs(quiet=False):
+    raw, T0, B, F = base()
+    rows = []
+    for spec in RUNS:
+        S, status, hits = run_one(spec)
+        a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+        rows.append([spec[0], spec[1], f"{hits[0]}/{hits[1]}", f"{a['tpw']}", _money(a["net"]), a["pf"], _money(a["dd"]),
+                     f"{a['p10']:.0f}/{a['f10']:.0f}", f"{a['p20']:.0f}/{a['f20']:.0f}", f"{b['tpw']}", _money(b["net"]), b["pf"],
+                     _money(b["dd"]), f"{b['p10']:.1f}/{b['f10']:.1f}", f"{b['p20']:.1f}/{b['f20']:.1f}", b["b2b"], status])
+    # combination check (c): the main rule with and without the live cold-streak filter
+    spec = RUNS[0]
+    S_nc, _, hits = run_one(("ema_knife_half_nocold",) + spec[1:], save=False, eqf=None)
+    T_nc = rl.size(raw, eqf=None)
+    S_base_nc = rl.score(T_nc, raw)
+    rl.save("ema_knife_half_nocold", "Check: falling-knife half size with the cold-streak filter OFF", "filters", Q_KNIFE,
+            sizing={"rule": spec[1], "hit_mult": 0.5, "else_mult": 1.0, "group": "knife", "cold_streak": "off"},
+            trades=rl.size(raw, eqf=None, rule=mult_rule(spec[4], 0.5, 1.0)), scored=S_nc, status="info", writeup=WRITEUP,
+            tags=["ema", "knife"],
+            verdict=(f"Check only: without the cold-streak filter the knife rule moves 2026 net {_money(S_base_nc['spans']['2026']['net'])} -> "
+                     f"{_money(S_nc['spans']['2026']['net'])} and 2021-25 {_money(S_base_nc['spans']['2021-25']['net'])} -> "
+                     f"{_money(S_nc['spans']['2021-25']['net'])} (PF {S_base_nc['spans']['2021-25']['pf']} -> {S_nc['spans']['2021-25']['pf']}), "
+                     f"so the two rules work on different setups and add up."),
+            notes="Same rule as ema_knife_half but on the raw engine size (no cold-streak half size), compared with the cold filter "
+                  "switched off alone (run loss_no_cold). Shows whether the knife rule and the cold-streak filter overlap.")
+    A, Bb = B["spans"]["2026"], B["spans"]["2021-25"]
+    print(f"### ema_* runs ({len(RUNS) + 1}) vs live (2026: {A['tpw']}/wk, {_money(A['net'])}, PF {A['pf']}, DD {_money(A['dd'])}, "
+          f"evals {A['p20']:.0f}/{A['f20']:.0f}; 2021-25: {Bb['tpw']}/wk, {_money(Bb['net'])}, PF {Bb['pf']}, DD {_money(Bb['dd'])}, "
+          f"evals {Bb['p20']:.0f}/{Bb['f20']:.0f}, b2b {Bb['b2b']})")
+    print(_md(rows, ["run", "rule", "hits 21-25/26", "26 /wk", "26 net", "26 PF", "26 DD", "26 eval 2w p/f", "26 eval 1m p/f",
+                     "21-25 /wk", "21-25 net", "21-25 PF", "21-25 DD", "21-25 eval 2w p/f", "21-25 eval 1m p/f", "21-25 b2b", "status"]))
+    print(f"no-cold check: base no-cold 2026 {_money(S_base_nc['spans']['2026']['net'])} PF {S_base_nc['spans']['2026']['pf']}, "
+          f"2021-25 {_money(S_base_nc['spans']['2021-25']['net'])} PF {S_base_nc['spans']['2021-25']['pf']}; knife-half no-cold "
+          f"2026 {_money(S_nc['spans']['2026']['net'])} PF {S_nc['spans']['2026']['pf']}, 2021-25 {_money(S_nc['spans']['2021-25']['net'])} "
+          f"PF {S_nc['spans']['2021-25']['pf']}")
+
+
+def cmd_check(n=80, seed=11):
+    """No look-ahead: recompute the features of n random trades on data cut off at the entry (every 5m bar that opens at or
+    after entry_t removed) and compare with the full-data features."""
+    raw, T, S, F = base()
+    rng = np.random.default_rng(seed)
+    pick = rng.choice(len(raw["trades"]), size=min(n, len(raw["trades"])), replace=False)
+    bad = 0
+    for k in pick:
+        t = raw["trades"][int(k)]
+        Bc = bars(cut_t=int(t["entry_t"]))
+        Fc = features(t, Bc)
+        Ff = F[int(t["entry_t"])]
+        _BARS.pop((None, int(t["entry_t"])), None)
+        for key, v in Ff.items():
+            w = Fc.get(key)
+            if isinstance(v, float) and isinstance(w, float) and (math.isnan(v) and math.isnan(w)):
+                continue
+            if isinstance(v, float) and isinstance(w, float) and abs(v - w) <= 1e-6 * max(1.0, abs(v)):
+                continue
+            if v != w:
+                bad += 1
+                print("MISMATCH", t["day"], key, v, w)
+                break
+        if int(Ff["bar5_t"]) != int(t["signal_t"]):
+            bad += 1
+            print("signal bar mismatch", t["day"], Ff["bar5_t"], t["signal_t"])
+    print(f"look-ahead check: {len(pick)} trades recomputed on data cut at the entry, {bad} mismatches")
+    return bad
+
+
+def cmd_years(spec_id="ema_knife_half"):
+    """Year-by-year net / PF of the main rule vs live, and the rule's hits in each year."""
+    raw, T0, B, F = base()
+    spec = next(s for s in RUNS if s[0] == spec_id)
+    T = rl.size(raw, rule=mult_rule(spec[4], spec[5], spec[6]))
+    S = rl.score(T, raw)
+    rows = []
+    for y in sorted(S["years"]):
+        hit = [t for t in T0 if t["day"][:4] == y and spec[4](F[int(t["entry_t"])])]
+        r = np.array([t["r"] for t in hit]) if hit else np.array([np.nan])
+        rows.append([y, B["years"][y]["n"], _money(B["years"][y]["net"]), B["years"][y]["pf"], _money(S["years"][y]["net"]), S["years"][y]["pf"],
+                     len(hit), f"{np.nanmean(r):+.2f}" if hit else "-", f"{100 * np.mean(r > 0):.0f}%" if hit else "-",
+                     _money(sum(t['pnl'] for t in hit))])
+    print(f"### {spec_id} by year")
+    print(_md(rows, ["year", "trades", "live net", "live PF", "rule net", "rule PF", "knife setups", "their avg R", "their win %",
+                     "their live $"]))
+
+
+def cmd_summary():
+    B = rl.load("baseline")
+    rows = []
+    for p in sorted(os.listdir(rl.RUNS)):
+        if not p.startswith("ema_") or not p.endswith(".json"):
+            continue
+        r = rl.load(p[:-5])
+        a, b = r["spans"]["2026"], r["spans"]["2021-25"]
+        rows.append([r["id"], r["status"], a["tpw"], a["wk2"], _money(a["net"]), a["pf"], _money(a["dd"]), f"{a['p10']:.0f}/{a['f10']:.0f}",
+                     f"{a['p20']:.0f}/{a['f20']:.0f}", a["b2b"], b["tpw"], b["wk2"], _money(b["net"]), b["pf"], _money(b["dd"]),
+                     f"{b['p10']:.1f}/{b['f10']:.1f}", f"{b['p20']:.1f}/{b['f20']:.1f}", b["b2b"]])
+    A, Bb = B["spans"]["2026"], B["spans"]["2021-25"]
+    rows.insert(0, ["baseline", "baseline", A["tpw"], A["wk2"], _money(A["net"]), A["pf"], _money(A["dd"]), f"{A['p10']:.0f}/{A['f10']:.0f}",
+                    f"{A['p20']:.0f}/{A['f20']:.0f}", A["b2b"], Bb["tpw"], Bb["wk2"], _money(Bb["net"]), Bb["pf"], _money(Bb["dd"]),
+                    f"{Bb['p10']:.1f}/{Bb['f10']:.1f}", f"{Bb['p20']:.1f}/{Bb['f20']:.1f}", Bb["b2b"]])
+    print(_md(rows, ["run", "status", "26 /wk", "26 wk2+ %", "26 net", "26 PF", "26 DD", "26 eval 2w", "26 eval 1m", "26 b2b",
+                     "21-25 /wk", "21-25 wk2+ %", "21-25 net", "21-25 PF", "21-25 DD", "21-25 eval 2w", "21-25 eval 1m", "21-25 b2b"]))
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "explore"
     if cmd == "explore":
         scan(SEL)
     elif cmd == "oos":
         scan(OOS, subsplit=False)
+    elif cmd == "check":
+        cmd_check()
+    elif cmd == "runs":
+        cmd_runs()
+    elif cmd == "years":
+        cmd_years(sys.argv[2] if len(sys.argv) > 2 else "ema_knife_half")
+    elif cmd == "summary":
+        cmd_summary()
+    elif cmd == "all":
+        cmd_check()
+        scan(SEL)
+        cmd_runs()
+        cmd_years()
+        cmd_summary()
     elif cmd == "feat":
         raw, T, S, F = base()
         t = sorted(raw["trades"], key=lambda x: x["entry_t"])[int(sys.argv[2]) if len(sys.argv) > 2 else 100]

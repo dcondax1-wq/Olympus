@@ -2,9 +2,17 @@
 //   const FX = await import('./fx.js');  FX.init({ level: 'max' | 'lite' | 'off', gyro });
 //   FX.mount('trades-galaxy', el, 'galaxy', rows, { onPick });   // views are reused when the page re-renders
 //   FX.detachAll()  before a page replaces its HTML;  FX.mood({...}) FX.warp() FX.pulse()
+//   FX.scene(pageId)  the background's mood for a page: palette, galaxy orientation and spin, blended in over ~1.5 s.
+//     Presets: today chart trades results lab losses eval engine settings; every page id of both dashboards maps to one
+//     (replays/stops -> trades, experiments/writeups/run/compare/learned/study -> lab, system/cold/sources/modules -> engine,
+//     data -> results, mffu -> eval; anything else -> today). Returns the preset used. Call it on every route change
+//     (next to FX.warp()). FX.scenes lists the presets.
+//   FX.ripple(clientX, clientY)  a wave through the background at a screen point (taps on empty background do it already).
+// Kinds for FX.mount (data shapes in each file's header): orb galaxy city candles constellation ribbon reactor pipeline losses.
 import { THREE, Q, setLevel as setQuality, readTheme, theme, enableGyro, wake, toScreen } from './core.js';
 import { Field } from './field.js';
-import { initTaps, spark, setTapColors, setTaps } from './taps.js';
+import { initTaps, spark, setTapColors, setTaps, setBgTap } from './taps.js';
+import { resolveScene, sceneNames } from './field.js';
 import { Orb } from './orb.js';
 import { Galaxy } from './galaxy.js';
 import { City } from './city.js';
@@ -18,7 +26,7 @@ import { Losses } from './losses.js';
 export const version = 1;
 const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon, reactor: Reactor, pipeline: Pipeline, losses: Losses };
 const reg = new Map();
-let field = null, bg = null, inited = false;
+let field = null, bg = null, inited = false, sceneName = 'today';
 
 export function supported() {
   try { const c = document.createElement('canvas'); return !!c.getContext('webgl2'); } catch { return false; }
@@ -30,6 +38,7 @@ export function init({ level = 'max', gyro = false } = {}) {
   inited = true;
   readTheme();
   initTaps({ colors: tapColors() });
+  setBgTap((x, y) => (field ? field.ripple(x, y) : false));
   setLevel(level);
   if (gyro) enableGyro(true);
   window.__LEFX = { Q, reg, get field() { return field; }, toScreen, THREE };
@@ -50,7 +59,7 @@ export function setLevel(level) {
   if (!field) {
     bg = document.createElement('div'); bg.className = 'fx-bg'; bg.setAttribute('aria-hidden', 'true');
     document.body.prepend(bg);
-    field = new Field(); field.attach(bg);
+    field = new Field(); field.attach(bg); field.setScene(sceneName, true);
   }
   wake();
   return lv;
@@ -82,6 +91,9 @@ function evict() {
 
 // ---- background mood
 export function mood(m) { field?.setMood(m); }
+export function scene(name) { sceneName = resolveScene(name); field?.setScene(sceneName); document.documentElement.dataset.fxScene = sceneName; return sceneName; }
+export function ripple(x, y) { return field ? field.ripple(x, y) : false; }
+export const scenes = sceneNames;
 export function warp() { field?.warp(); }
 export function pulse() { field?.pulse(); }
 export function sweep() { field?.sweep(); }
