@@ -1749,10 +1749,12 @@ const pf1 = (v) => !ok(v) ? '—' : pct(v <= 1 ? v * 100 : v);
 function timingCard(T, compact = false) {
   if (!T || !T.verdict) return '';
   const go = String(T.verdict).toLowerCase() === 'go', k = go ? 'go' : 'wait';
+  const badge = !go ? 'WAIT' : T.state === 'warmed' ? 'GO · BEST' : T.state === 'stale' ? 'GO · LATE' : 'GO';
+  const head = !go ? 'Wait for the cold streak to end' : T.state === 'warmed' ? 'The best moment to buy or reset the MFFU eval' : T.state === 'stale' ? 'OK to buy or reset the eval, but the odds are lower this far into a full-size run' : 'A good time to buy or reset the MFFU eval';
   const nums = `<div class="kv tn"><div><span>Pass in 1 month</span><b class="up">${pf1(T.pass_1m)}</b></div><div><span>Fail in 1 month</span><b class="dn">${pf1(T.fail_1m)}</b></div><div><span>Median to pass</span><b>${ok(T.median_pass) ? Math.round(T.median_pass) + ' sessions' : '—'}</b></div></div>`;
-  if (compact) return `<div class="ownr ${k}" style="border-color:color-mix(in srgb, var(--${go ? 'good' : 'warn'}) 35%, transparent)"><span class="vb ${k}" style="height:34px;min-width:0;font-size:13px;padding:0 10px;border-radius:10px">${go ? 'GO' : 'WAIT'}</span><span><b>Eval timing now:</b> ${esc(T.reason || '')} Pass within 1 month ${pf1(T.pass_1m)}, fail ${pf1(T.fail_1m)}, median ${ok(T.median_pass) ? Math.round(T.median_pass) : '—'} sessions${ok(T.pass_2w) ? ` · within 2 weeks ${pf1(T.pass_2w)} / ${pf1(T.fail_2w)}` : ''}.</span></div>`;
-  return `<div class="card ${k}"><div class="tl"><span class="vb ${k}">${go ? 'GO' : 'WAIT'}</span>
-    <div class="tl-main"><div class="eyebrow">Eval timing · cold-streak filter shows ${T.state === 'cold' ? 'reduced size (cold streak)' : 'full size'}</div><h3>${go ? 'A good time to buy or reset the MFFU eval' : 'Wait for the cold streak to end'}</h3><p>${esc(T.reason || '')}${ok(T.funded_wk) ? ` Funded in about ${num(T.funded_wk, 0)} weeks when it passes.` : ''}</p></div>${nums}</div></div>`;
+  if (compact) return `<div class="ownr ${k}" style="border-color:color-mix(in srgb, var(--${go ? 'good' : 'warn'}) 35%, transparent)"><span class="vb ${k}" style="height:34px;min-width:0;font-size:13px;padding:0 10px;border-radius:10px">${badge}</span><span><b>Eval timing now:</b> ${esc(T.reason || '')} Pass within 1 month ${pf1(T.pass_1m)}, fail ${pf1(T.fail_1m)}, median ${ok(T.median_pass) ? Math.round(T.median_pass) : '—'} sessions${ok(T.pass_2w) ? ` · within 2 weeks ${pf1(T.pass_2w)} / ${pf1(T.fail_2w)}` : ''}.</span></div>`;
+  return `<div class="card ${k}"><div class="tl"><span class="vb ${k}">${badge}</span>
+    <div class="tl-main"><div class="eyebrow">Eval timing · cold-streak filter shows ${T.state === 'cold' ? 'reduced size (cold streak)' : 'full size'}${ok(T.since_flip) ? ` · ${T.since_flip} sessions since it switched back` : ''}</div><h3>${head}</h3><p>${esc(T.reason || '')}${ok(T.funded_wk) ? ` Funded in about ${num(T.funded_wk, 0)} weeks (median) when it passes.` : ''}</p></div>${nums}</div></div>`;
 }
 // the next USD event as a Today chip (tap: the News page)
 function newsChip() {
