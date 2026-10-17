@@ -235,18 +235,48 @@ def rule_mult(feat, pick, mult):
     return rule
 
 
-def run_rule(raw, base_S, rid, title, question, feat, pick, mult, notes=""):
-    T = rl.size(raw, rule=rule_mult(feat, pick, mult))
-    S = rl.score(T, raw)
+def combo_rule(parts):
+    """parts: [(feat, pick, mult), ...] multiplied together."""
+    fns = [(FEATURES[f], set(p), m) for f, p, m in parts]
+    def rule(t, ctx):
+        m = 1.0
+        for fn, pick, mult in fns:
+            if str(fn(t)) in pick:
+                m *= mult
+        return m
+    return rule
+
+
+def judge(S, base_S):
+    """The study's adopt rule: more net and at least the same PF in both periods, 2-4 trades a week, and no more 1-month eval
+    fails in either period (owner: evals must not fail more often). Mixed periods: promising when the worse period is within
+    1% of its baseline net, else rejected."""
     a, b = S["spans"]["2026"], S["spans"]["2021-25"]
     A, B = base_S["spans"]["2026"], base_S["spans"]["2021-25"]
     better = a["net"] > A["net"] and (a["pf"] or 0) >= (A["pf"] or 0) and b["net"] > B["net"] and (b["pf"] or 0) >= (B["pf"] or 0)
-    status = "adopt-candidate" if better and rl.passes(S) else ("promising" if (a["net"] > A["net"]) != (b["net"] > B["net"]) else "rejected")
-    verdict = (f"2026 {a['net']:+,} (PF {a['pf']}) vs base {A['net']:+,} (PF {A['pf']}); "
-               f"2021-25 {b['net']:+,} (PF {b['pf']}) vs base {B['net']:+,} (PF {B['pf']}). "
-               + ("Better in both periods." if better else "Not better in both periods."))
-    rl.save(rid, title, "timing" if feat in ("hour", "dow", "killzone", "half_hour") else "filters", question,
-            params={}, sizing={"rule": f"{feat} in {sorted(pick)} -> x{mult}", "on_top_of": "live sizing (cold x0.25, late x0.5)"},
+    no_more_fails = a["f20"] <= A["f20"] and b["f20"] <= B["f20"]
+    if better and rl.passes(S) and no_more_fails:
+        return "adopt-candidate"
+    if better:
+        return "promising"           # more money, but more eval fails / drawdown: extra leverage, not an edge
+    close = lambda x, X: x["net"] >= X["net"] - 0.01 * abs(X["net"])
+    if (a["net"] > A["net"] and close(b, B)) or (b["net"] > B["net"] and close(a, A)):
+        return "promising"
+    return "rejected"
+
+
+def run_rule(raw, base_S, rid, title, question, feat, pick, mult, notes="", parts=None, family=None):
+    rule = combo_rule(parts) if parts else rule_mult(feat, pick, mult)
+    T = rl.size(raw, rule=rule)
+    S = rl.score(T, raw)
+    a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+    A, B = base_S["spans"]["2026"], base_S["spans"]["2021-25"]
+    status = judge(S, base_S)
+    verdict = (f"2026 {a['net']:+,} (PF {a['pf']}, DD {a['dd']:,}, 1-month eval {a['p20']}/{a['f20']}) vs base {A['net']:+,} (PF {A['pf']}, DD {A['dd']:,}, {A['p20']}/{A['f20']}); "
+               f"2021-25 {b['net']:+,} (PF {b['pf']}, DD {b['dd']:,}, 1-month eval {b['p20']}/{b['f20']}) vs base {B['net']:+,} (PF {B['pf']}, DD {B['dd']:,}, {B['p20']}/{B['f20']}).")
+    desc = " x ".join(f"{f} in {sorted(p)} -> x{m}" for f, p, m in parts) if parts else f"{feat} in {sorted(pick)} -> x{mult}"
+    rl.save(rid, title, family or ("timing" if feat in ("hour", "dow", "killzone", "half_hour") else "filters"), question,
+            params={}, sizing={"rule": desc, "on_top_of": "live sizing (cold x0.25, late x0.5)"},
             trades=T, scored=S, status=status, verdict=verdict, notes=notes, writeup="intraday-anatomy.md", tags=["intra"])
     return S, status
 
@@ -287,19 +317,36 @@ CANDIDATES = [
 ]
 
 
+COMBOS = [
+    ("intra_combo_defensive", "Half size on 30-40 pt stops and on equal-highs/lows targets", "filters",
+     [("stop_bucket", {"30-40"}, 0.5), ("target_kind", {"equal highs/lows"}, 0.5)],
+     "The two defensive slices together (both lost money in both periods)."),
+    ("intra_combo_all", "Defensive halves + CISD x1.25", "filters",
+     [("stop_bucket", {"30-40"}, 0.5), ("target_kind", {"equal highs/lows"}, 0.5), ("trigger", {"CISD"}, 1.25)],
+     "The two defensive halves plus more size on the stronger trigger."),
+]
+
+
 def candidates(raw, T, base_S, save=True):
     rows = []
     for rid, title, feat, pick, mult, why in CANDIDATES:
         rg = random_group(T, feat, pick)
         if save:
             S, status = run_rule(raw, base_S, rid, title, f"Is the slice '{feat} in {sorted(pick)}' worth a size change?", feat, pick, mult,
-                                 notes=why + f" Random-group check: {json.dumps(rg)}")
+                                 notes=why + f" Random-group check (how often a random group of the same size does as well): {json.dumps(rg)}")
         else:
-            S = rl.score(rl.size(raw, rule=rule_mult(feat, pick, mult)), raw); status = "?"
+            S = rl.score(rl.size(raw, rule=rule_mult(feat, pick, mult)), raw); status = judge(S, base_S)
         a, b = S["spans"]["2026"], S["spans"]["2021-25"]
         rows.append({"id": rid, "title": title, "status": status, "2026": a, "2021-25": b, "random": rg})
-        print(f"{rid:24s} {status:16s} 2026 {a['net']:+7,} PF {a['pf']:5} DD {a['dd']:+7,} p10/f10 {a['p10']}/{a['f10']} p20/f20 {a['p20']}/{a['f20']} | "
-              f"2021-25 {b['net']:+7,} PF {b['pf']:5} DD {b['dd']:+7,} p10/f10 {b['p10']}/{b['f10']} p20/f20 {b['p20']}/{b['f20']} | random {rg}", flush=True)
+        print(f"{rid:24s} {status:16s} {rl.line(S, '2026')}\n{'':41s} {rl.line(S, '2021-25')} | random {rg}", flush=True)
+    for rid, title, fam, parts, why in COMBOS:
+        if save:
+            S, status = run_rule(raw, base_S, rid, title, "Do the slices add up?", None, None, None, notes=why, parts=parts, family=fam)
+        else:
+            S = rl.score(rl.size(raw, rule=combo_rule(parts)), raw); status = judge(S, base_S)
+        a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+        rows.append({"id": rid, "title": title, "status": status, "2026": a, "2021-25": b})
+        print(f"{rid:24s} {status:16s} {rl.line(S, '2026')}\n{'':41s} {rl.line(S, '2021-25')}", flush=True)
     return rows
 
 
