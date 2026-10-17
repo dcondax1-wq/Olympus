@@ -78,6 +78,7 @@ These are the pools the bot watches:
 - **0R or below:** the trade is **still taken, at a quarter of the size** (was half until 2026-10-17: over 2021–25 the quarter size beat the half at every lookback and threshold tested). Alerts say "0.25x SIZE - cold-streak filter".
 - Full size comes back **automatically** as soon as the last 15 signals add back up above 0R.
 - Every setup is traded, so it keeps 2–4 setups a week. Only the size changes. Cold streaks can last 13–18 weeks; during them most trades are 1 micro (about $100 at risk).
+- **When to buy or reset the MFFU eval (2026-10-17 Monte Carlo, `research/writeups/monte-carlo-evals.md`):** start it while the filter shows **full size**. An eval started at full size passed 22% within a month (failed 8%, median 20 sessions to pass); one started in a cold streak passed 4% (median 36 sessions) because quarter-size trades can neither reach +$3,000 nor lose $2,000. The dashboards and the cloud README show this as **Eval timing: GO / WAIT** (`eval_timing` in the cloud state, `engine/equity_filter.py`). It changes nothing about the trading.
 
 ## How it performed (fresh rerun of the live settings on TradingView NQ1! futures data, commissions and slippage included; `python tools/export_backtest.py`)
 
@@ -91,6 +92,8 @@ These are the pools the bot watches:
 | Max drawdown | −$2,249 | −$9,265 | −$9,265 |
 
 Before this lock (half size in cold streaks, breakeven at 1R on every day): 2026 +$20,111 (PF 3.48, max DD −$2,661), 2021–25 +$6,491 (PF 1.09, max DD −$11,401), all years +$26,602 (PF 1.32). Run `live_2026-10-17am` in the research library.
+
+**Read the 2021–25 number as a range, not a point** (`research/writeups/parameter-robustness.md`): every neighbouring setting stays profitable in both periods (105 combinations: 2021–25 +$6.8k to +$18.3k, 2026 +$19.6k to +$23.4k), but the cold-streak lookback of 15 is a ridge: 14 gives +$13.3k, 13 gives +$7.8k, 17 gives +$10.7k over 2021–25. The honest 5-year figure is **+$8k to +$17k ($150–$330 a month)**; 2026 does not depend on it. Costs (`stress-tests.md`): one extra tick of slippage or doubled commission keeps 80–86% of the 2021–25 profit; 3 ticks plus doubled commission keeps 42%. Nothing in the calendar (`calendar-effects.md`: weekday, month, OPEX, FOMC/CPI/NFP days, roll weeks) is worth a rule.
 
 **MFFU 50K eval ($3k target, $2k trailing max loss).** A new eval was started on every trading day:
 

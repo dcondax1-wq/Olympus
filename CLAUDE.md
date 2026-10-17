@@ -47,6 +47,12 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   - 2021-25: PF 1.27, +$16,379 ($321/mo), max DD −$9,265; 1 month 8.8% / 5.2%; back-to-back 8/10.
   - 5 years: PF 1.54, +$36,866, max DD −$9,265; back-to-back evals 12 passed / 11 failed. 2026 was an unusually good year.
   - Before the lock: 2026 PF 3.48 +$20.1k; 2021-25 PF 1.09 +$6.5k DD −$11.4k; 5 years PF 1.32 +$26.6k, b2b 11/19.
+  - Honest range (sensitivity study): the cold lookback 15 is a ridge (14 → +$13.3k, 13 → +$7.8k, 17 → +$10.7k over 2021-25);
+    quote 2021-25 as +$8k to +$17k. Every neighbour of the lock is profitable in both periods. 2 extra ticks of slippage keep
+    80-86% of 2021-25; no calendar rule is worth having.
+- **Eval timing (Monte Carlo):** buy/reset the MFFU eval when the filter shows full size (1-month pass 22% / fail 8%, median
+  20 sessions) and not in a cold streak (4% / 2%, median 36). `equity_filter.eval_timing()` → cloud state `eval_timing`,
+  README row "Eval timing: GO/WAIT", PC Cold-Streak page, phone Today page.
 
 ## Tested and rejected (don't redo without a new idea)
 - Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ATM 5m/1m with a sharp V (0.2–1.5 trades/wk,
