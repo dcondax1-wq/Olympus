@@ -1,7 +1,7 @@
 // Home Screen app service worker: the page works offline with the last data it saw.
 // data.json is network-first (always fresh when online); the shell is cache-first and refreshed in the background.
-const CACHE = 'le-public-v1';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/apple-touch-icon.png'];
+const CACHE = 'le-public-v2';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=orb1', './icons/apple-touch-icon.png?v=orb1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))));

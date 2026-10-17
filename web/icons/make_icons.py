@@ -1,4 +1,7 @@
-"""Render the PWA icons (PNG) from the same design as icon.svg, using Pillow. Run once: python make_icons.py
+"""LEGACY: the original hexagon icons. The app icons are now the 3D Oracle Orb render (research/design/icon_3d, scene orb.js);
+running this script would overwrite them with the old design.
+
+Render the PWA icons (PNG) from the same design as icon.svg, using Pillow. Run once: python make_icons.py
 
 Design (512 design units, see icon.svg): a hexagonal aperture, a luminous "sweep" along its lower edges,
 a broken liquidity level line, and a candle whose lower wick pierces the level and takes the liquidity below it.
