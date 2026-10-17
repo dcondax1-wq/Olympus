@@ -60,7 +60,8 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
 
 ## Infrastructure
 - **PC paper bot + dashboard:** `server.py` on http://localhost:8766, supervised by `scripts/run_bot.ps1` (Windows; runs only while
-  the PC is on). The UI is the ES-module SPA in `web/`, with the API in `engine/dash_*.py`.
+  the PC is on). The UI is the ES-module SPA in `web_next/` layered over `web/`, with the API in `engine/dash_*.py` and
+  `engine/next_api.py`.
 - **PC-off:** the GitHub Actions cloud monitor runs every 15 min on market days. It is the same engine and settings as
   `live_model.json`, keeps a paper ledger plus an MFFU eval tracker, sends Telegram/Discord alerts, and publishes README.md and
   chart.png to the `dashboard` branch (read in the GitHub app).
@@ -69,13 +70,15 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
 - Refreshing `data/*.csv` needs the owner's TradingView export (tools/grab_tv_export.py on the PC). Cloud sessions can't do it.
 
 ## Open work
-1. **Dashboard revamp** (owner priority): a premium dark "command center" look, no default browser controls, custom SVG icons,
-   glass cards, animated numbers, phone-first.
-   - Top level: Today · Chart · Trades · **Data** (Results, Backtests, Replays, Tested Variants, What the Bot Learned, Study Trades,
-     Deep Stats, Data Sources) · **Modules** (tile grid: Strategy Rules, Liquidity Engine, Cold-Streak Filter, Risk & Sizing,
-     Markets & News, Regimes, Confluence Lab, Robustness, Prop Firms, Memory, Briefing, Reports, Journal, TradingView, Alerts) ·
-     Settings. Ctrl+K command palette.
-   - Build in `web_next/` and swap when verified. `engine/ui_api.py` is an unfinished start; it is not committed.
+1. **Dashboard revamp: shipped 2026-10-17** (`web_next/`, served by default; `LE_UI=classic` serves the old `web/`).
+   - `web_next/` overlays `web/`: server.py serves a file from `web_next/` if it exists, else from `web/`, so every page module
+     in `web/js` is shared. Overrides: `index.html` (shell), `js/app.js` (router), `js/skins.js` (Obsidian default skin),
+     `css/next.css` (design system + every control), `sw.js`, `manifest.webmanifest`.
+   - New code in `web_next/js/next/`: `routes.js` (Today · Chart · Trades · Data · Modules · Settings), `shell.js` (sidebar,
+     phone tab bar, Data tabs, Modules grid), `controls.js` (custom dropdowns replace every `<select>`, glyphs become SVG icons),
+     `icons.js`, `viz.js` (SVG charts), `trades.js`, `datahub.js` (Results, Variants, Lessons, Study), `modpages.js` (Rules,
+     Cold-Streak, Risk & Sizing). API: `engine/next_api.py` (`/api/next/*`, read-only, from research/lab + research/study).
+   - Next: polish ideas only (per-module live badges, the Today page hero).
 2. Phone dashboard on the `dashboard` branch: per-trade stop pts, micros, $ risk, R, half-size flag, eval progress bar.
 3. Port the cold-streak filter plus the new sizing and target rules to the Pine script.
 4. Optional: test "smaller size when inducement was taken first" when more data exists.

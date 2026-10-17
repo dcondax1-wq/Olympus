@@ -1,0 +1,22 @@
+{
+  "name": "Liquidity Engine",
+  "short_name": "Liquidity",
+  "description": "NQ futures liquidity bot: command center, live bot, backtests and briefings.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07080c",
+  "theme_color": "#07080c",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Trades", "url": "/?page=trades", "description": "Every trade with its report" },
+    { "name": "Briefing", "url": "/?page=briefing", "description": "Today's game plan" },
+    { "name": "Daily report", "url": "/?page=report", "description": "End-of-day report" }
+  ]
+}

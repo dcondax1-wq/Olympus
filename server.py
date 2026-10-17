@@ -921,13 +921,22 @@ except Exception as _dash_err:
 # ---- END DASH EXTRAS ----
 
 
+# Dashboard UI: web_next/ (the redesigned command center) is served first and falls back to web/ for every file it does
+# not override, so all page modules are shared. LE_UI=classic serves the old web/ dashboard unchanged.
+WEB_NEXT = os.path.join(ROOT, "web_next")
+UI_DIRS = [WEB] if os.environ.get("LE_UI", "next") == "classic" or not os.path.isdir(WEB_NEXT) else [WEB_NEXT, WEB]
+
+
 @app.get("/")
 def index():
-    return FileResponse(os.path.join(WEB, "index.html"))
+    return FileResponse(os.path.join(UI_DIRS[0], "index.html"))
 
 
 from engine.extras_api import router as extras_router; app.include_router(extras_router)
-app.mount("/", StaticFiles(directory=WEB), name="web")
+from engine.next_api import router as next_router; app.include_router(next_router)
+_static = StaticFiles(directory=WEB)
+_static.all_directories = list(UI_DIRS)       # first directory that has the file wins
+app.mount("/", _static, name="web")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8765))
