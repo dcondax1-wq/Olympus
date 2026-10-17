@@ -1366,9 +1366,12 @@ function rcHTML(r) {
   return `<div class="rc">${p(c.y26, 'beats live 2026')}${p(c.y21, 'beats live 2021-25')}${p(c.freq, '2-4 a week')}</div>`;
 }
 const runLink = (id) => `#/run/${encodeURIComponent(id)}`;
-// money per month: net $ over the calendar months between two dates (at least one)
+// $ per month the way the run library counts it (tools/runlib.py): net ÷ (trading sessions ÷ 21). Sessions come from the
+// 5-year export's day list (or a run's own days), so the same period shows the same number on every page.
 const monthsBetween = (a, b) => Math.max(1, (Date.parse(b) - Date.parse(a)) / (30.44 * 864e5));
-const perMonth = (net, a, b) => ok(net) && a && b ? net / monthsBetween(a, b) : null;
+function sessionsIn(a, b, days) { let n = 0; for (const d of days || D?.results?.days || []) { const x = String(d[0]); if (x >= a && x <= b) n++; } return n; }
+const tradeMonths = (a, b, days) => { const n = sessionsIn(a, b, days); return n ? n / 21 : monthsBetween(a, b); };
+const perMonth = (net, a, b, days) => ok(net) && a && b ? net / tradeMonths(a, b, days) : null;
 const ownerRules = () => LAB().owner_rules ? `<div class="ownr">${icon('flag')}<span><b>The owner’s rules:</b> ${esc(LAB().owner_rules)}.</span></div>` : '';
 const docLink = (slug) => `#/writeup/${encodeURIComponent(slug)}`;
 const allDocs = () => [...(D?.docs?.writeups || []), ...(D?.docs?.archive || [])];
@@ -1885,7 +1888,7 @@ function headlineHTML(r, b) {
 // a run card: key numbers 2026 vs 2021-25, the change vs the live strategy, the adoption rule
 function xCard(r) {
   const b = baseMeta(), isB = !b || r.id === b.id;
-  const rows = [['Profit factor', 'pf', fPF, 'hi', DF.pf], ['Net', 'net', kusd, 'hi', DF.money], ['Per month', 'per_month', kusd, 'hi', DF.money], ['Trades / week', 'tpw', (v) => num(v, 1), 'hi', DF.n1],
+  const rows = [['Profit factor', 'pf', fPF, 'hi', DF.pf], ['Net', 'net', kusd, 'hi', DF.money], ['Per month', 'per_month', susd, 'hi', DF.money], ['Trades / week', 'tpw', (v) => num(v, 1), 'hi', DF.n1],
     ['Max drawdown', 'dd', kusd, 'hi', DF.money], ['Eval pass · 2 wk', 'p10', pct, 'hi', DF.pp], ['Eval fail · 2 wk', 'f10', pct, 'lo', DF.pp], ['Decided · 2 wk', 'dec10', pct, 'hi', DF.pp]];
   const cell = (s, [, k, f, bt, dfm]) => { const v = sp(r, s)[k]; return `<div class="v ${k === 'net' ? cls(v) : ''}">${f(v)}${isB ? '' : dlt(v, sp(b, s)[k], dfm, bt)}</div>`; };
   return `<a class="card xcard ${isB ? 'ref' : ''}" href="${runLink(r.id)}">
@@ -2055,10 +2058,10 @@ function changesHTML(r) {
 function yearsHTML(run, base) {
   const Y = run.years || {}, B = base?.years || {}, ys = Object.keys(Y).sort();
   if (!ys.length) return emptyBox('No yearly numbers in this run.', '');
-  const span = {}; for (const d of run.days || []) { const y = String(d[0]).slice(0, 4); span[y] = span[y] || [d[0], d[0]]; span[y][1] = d[0]; }   // first / last session of each year
+
   return `<div class="tw"><table class="ht"><tr><th>Year</th><th class="c">Trades</th><th class="c">Win</th><th class="c">PF</th><th class="c">Net</th><th class="c">/month</th>${base ? '<th class="c">vs live</th>' : ''}</tr>
-    ${ys.map(y => { const a = Y[y] || {}, b = B[y], s = span[y]; return `<tr><td class="mono"><b>${y}</b></td><td class="v">${a.n ?? '—'}</td><td class="v">${pct(a.win)}</td><td class="v ${(a.pf ?? 0) >= 1 ? 'up' : 'dn'}">${fPF(a.pf)}</td>
-      <td class="v ${cls(a.net)}">${susd(a.net)}</td><td class="v ${cls(a.net)}">${s ? kusd(perMonth(a.net, s[0], s[1])) : '—'}</td>${base ? `<td class="v">${b ? dlt(a.net, b.net, DF.money, 'hi') || '—' : '—'}</td>` : ''}</tr>`; }).join('')}</table></div>`;
+    ${ys.map(y => { const a = Y[y] || {}, b = B[y]; return `<tr><td class="mono"><b>${y}</b></td><td class="v">${a.n ?? '—'}</td><td class="v">${pct(a.win)}</td><td class="v ${(a.pf ?? 0) >= 1 ? 'up' : 'dn'}">${fPF(a.pf)}</td>
+      <td class="v ${cls(a.net)}">${susd(a.net)}</td><td class="v ${cls(a.net)}">${susd(perMonth(a.net, y + '-01-01', y + '-12-31', run.days))}</td>${base ? `<td class="v">${b ? dlt(a.net, b.net, DF.money, 'hi') || '—' : '—'}</td>` : ''}</tr>`; }).join('')}</table></div>`;
 }
 function runTradeRow(t, i) {
   const be = Math.abs(t.r) < .05, L = t.dir === 1;
@@ -2329,7 +2332,7 @@ VIEWS.learned = (el) => {
   // money per factor is an estimate: average R x trades x the period's median $ risk (the export keeps R, not $, per factor)
   const b = baseMeta(), P = D.results?.periods || {}, md = D.results?.meta?.data || {};
   const risk21 = sp(b, '2021-25').risk ?? P['All years']?.median_risk_usd, risk26 = sp(b, '2026').risk ?? P['2026 YTD']?.median_risk_usd;
-  const mo21 = monthsBetween(md.first_session || '2021-11-08', '2025-12-31'), mo26 = monthsBetween('2026-01-01', md.last_session || '2026-10-16');
+  const mo21 = tradeMonths('2021-01-01', '2025-12-31'), mo26 = tradeMonths('2026-01-01', '2026-12-31');
   const est = (r, n, risk, mo) => { if (!ok(r) || !ok(n) || !ok(risk)) return ''; const v = r * n * risk; return `<i class="${cls(v)}">≈ ${kusd(v)} · ${kusd(v / mo)} a month</i>`; };
   const kind = (v) => v.startsWith('better') ? 'good' : v.startsWith('worse') ? 'bad' : v.startsWith('not enough') ? 'na' : 'mixed';
   const cnt = (k) => f.filter(x => kind(x.verdict) === k).length, rows = f.filter(x => LS === 'all' || kind(x.verdict) === LS);
@@ -2351,7 +2354,7 @@ VIEWS.learned = (el) => {
 const VS = { sort: 'y2026.pf', dir: -1, q: '', per: 'both', view: store.get('vView', innerWidth < 760 ? 'list' : 'table') };
 VIEWS.variants = (el) => {
   const v = D.variants || {}, cols = { ...(v.columns || {}), pm: 'net $ per month' }, keys = ['n', 'tpw', 'wk2', 'win', 'pf', 'net', 'pm', 'dd', 'stop', 'p10', 'f10', 'p20', 'f20', 'b2b'], list = VS.view === 'list';
-  const md = D.results?.meta?.data || {}, MO = { y2026: monthsBetween('2026-01-01', md.last_session || '2026-10-16'), y5: monthsBetween(md.first_session || '2021-11-08', md.last_session || '2026-10-16') };
+  const MO = { y2026: tradeMonths('2026-01-01', '2026-12-31'), y5: tradeMonths('2000-01-01', '2100-01-01') };   // trading months (sessions ÷ 21), as the run library
   const val = (r, p, k) => k === 'pm' ? (ok(r[p]?.net) ? r[p].net / MO[p] : null) : r[p]?.[k];
   el.innerHTML = head(`Lab · variants · built ${esc(v.built || '')}`, `${plural((v.rows || []).length, 'variant')}, two periods`, `${esc(v.note || '')}.`)
     + howto('variants', `<p>The older strategy-lab table: every variant tested before the run library existed, this year (2026) next to five years. New experiments are stored with all their trades under <b>Experiments</b>.</p>
@@ -2523,7 +2526,7 @@ VIEWS.strategy = (el) => {
       <ul><li><b>R</b> = one unit of risk: +2R made twice what the trade risked.</li><li><b>Killzones</b> = the two windows of the New York session when the bot may enter.</li>
       <li>The numbers at the bottom are the backtest of exactly these settings on real NQ futures data, costs included.</li></ul>`)
     + `<div class="card"><div class="card-h"><h3>Version</h3>${S.locked === false ? chip('not locked', 'warn') : chip('locked', 'good')}</div><div class="kv one">
-        <div><span>Version</span><b style="white-space:normal">${esc(label)}</b></div><div><span>Locked on</span><b>${esc(fDate(chosen) || '—')}</b></div>
+        <div><span>Version</span><b>${esc(label.split(' (')[0])}</b></div><div><span>Locked on</span><b>${esc(fDate(chosen) || '—')}</b></div>
         <div><span>Market</span><b>${esc(S.sym || 'NQ')} futures, traded as MNQ micros ($2 a point)</b></div><div><span>Account</span><b>MFFU Builder 50K eval · paper only</b></div>
         <div><span>Settings</span><b>live_model.json · ${esc(S.model || 'engine')}</b></div></div></div>
     ${secH('What it trades')}
@@ -2541,7 +2544,7 @@ VIEWS.strategy = (el) => {
     ${secH('How it has done')}
     <div class="card"><div class="card-h"><h3>Backtest of these settings</h3><span class="meta">real CME NQ futures · costs included</span></div>
       <div class="tw"><table class="ht"><tr><th>Number</th>${cols.map(([l]) => `<th class="c">${l}</th>`).join('')}</tr>${hl.map(([l, f, c]) => `<tr><td class="k">${l}</td>${cols.map(([, x]) => `<td class="v ${c(x)}">${f(x)}</td>`).join('')}</tr>`).join('')}</table></div>
-      <div class="chips" style="margin-top:12px"><button class="chipbtn" type="button" data-go="trades">${icon('trades')}<span>Every trade</span></button><button class="chipbtn" type="button" data-go="run" data-arg="${esc(baseId())}">${icon('lab')}<span>The stored run</span></button><button class="chipbtn" type="button" data-go="experiments">${icon('variants')}<span>What tried to beat it</span></button></div></div>
+      <div class="hero-links" style="margin-top:14px"><button class="chipbtn" type="button" data-go="trades">${icon('trades')}<span>Every trade</span></button><button class="chipbtn" type="button" data-go="run" data-arg="${esc(baseId())}">${icon('lab')}<span>The stored run</span></button><button class="chipbtn" type="button" data-go="experiments">${icon('variants')}<span>What tried to beat it</span></button></div></div>
     ${secH('Rules that never change')}
     <div class="card"><ul class="list"><li>Futures data only: TradingView CME NQ1! for every test, never CFDs.</li><li>Paper only: the bot never arms live trading.</li><li><b>2-4 setups a week</b>; no filter that pauses trading for weeks.</li>
       <li>The stop goes beyond the sweep extreme, never at a fixed distance; size follows the stop.</li><li>Every change is judged on 2026 and on 2021-25 and adopted only if it holds in both.</li>

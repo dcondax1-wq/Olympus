@@ -329,6 +329,9 @@ class NinjaTraderAdapter:
         self.outgoing = os.path.join(self.folder, "outgoing")
         self.write_mode = "move" if cfg.get("nt_write_mode") == "move" else "direct"
         self.inst_override = {"micro": cfg.get("nt_instrument"), "mini": cfg.get("nt_instrument_mini")}
+        # the guide says CLOSEPOSITION wants "the instrument name including the exchange name": if NinjaTrader ignores
+        # "CLOSEPOSITION;Sim101;MNQ 12-26" on your install (--sim-roundtrip step 3 fails), set nt_close_suffix " Globex"
+        self.close_suffix = str(cfg.get("nt_close_suffix") or "")
         self.ack_wait = float(cfg.get("nt_ack_wait_s", 4.0))         # NinjaTrader must pick a file up within this
         self.fill_wait = float(cfg.get("nt_fill_wait_s", 6.0))       # ... and report the market entry fill within this
         self.verify_wait = float(cfg.get("nt_verify_wait_s", 4.0))   # ... and the bracket / the flat position within this
@@ -798,7 +801,7 @@ class NinjaTraderAdapter:
     def _close(self, legs: list, why: str) -> dict:
         """CLOSEPOSITION for the legs' instruments; once NinjaTrader shows them flat, cancel any leg still working."""
         insts = sorted({lg["instrument"] for lg in legs}) or self._our_instruments()
-        r = self._send_lines([close_line(self.account, i) for i in insts], f"CLOSE ({why})")
+        r = self._send_lines([close_line(self.account, i + self.close_suffix) for i in insts], f"CLOSE ({why})")
         if not r["ok"]:
             self._risk(f"flatten ({why}) could not be delivered: {r.get('error')}. Flatten {', '.join(insts)} in NinjaTrader "
                        "or the Tradovate app NOW.", alert=True)
@@ -1018,7 +1021,7 @@ class NinjaTraderAdapter:
             if p and p["side"] != "FLAT" and time.time() - self._flat_tries.get(inst, 0) > 30:
                 self._flat_tries[inst] = time.time()
                 self._risk(f"{p['side']} {p['qty']} {inst} still open on {self.account} after the flat time: CLOSEPOSITION sent")
-                self._send_lines([close_line(self.account, inst)], "CLOSE (flat time)")
+                self._send_lines([close_line(self.account, inst + self.close_suffix)], "CLOSE (flat time)")
 
     # ------------------------------------------------------------------ persistence / status
     def _save(self):

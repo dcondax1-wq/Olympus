@@ -373,6 +373,16 @@ NEIGHBOURS = {
 }
 
 
+BASE_X = {"vwap_deep1": (1.0, "SD"), "vwap_chase1": (1.0, "SD"), "vwap_atr_deep2": (2.0, "ATR"), "vwap_atr_chase2": (2.0, "ATR"),
+          "vwap_ext_late": (0.5, "R"), "vwap_sweep2": (2.0, "SD"), "vp_sweep_level5": (5.0, "pts"),
+          "vp_target_level5": (5.0, "pts"), "vp_thin_path": (0.7, "x median")}
+
+
+def neighbour_suffix(base, x):
+    b, u = BASE_X[base]
+    return f" (neighbour: {x:g} {u} instead of {b:g} {u})"
+
+
 def neighbour_fn(base, x):
     if base == "vwap_ext_late":
         return lambda t, F: None if F.get("ext_late_r") is None else F["ext_late_r"] > x
@@ -576,7 +586,7 @@ def title_of(name, good, kind):
             "cold": f"Cold streak: full size again when {strong}"}[kind]
 
 
-def verdict_of(S, base, st):
+def verdict_of(S, base, st, head=None):
     a, b = S["spans"]["2026"], S["spans"]["2021-25"]
     A, Bs = base["spans"]["2026"], base["spans"]["2021-25"]
     def one(x, y, name):
@@ -584,7 +594,7 @@ def verdict_of(S, base, st):
             return f"{name}: no trades left"
         return (f"{name}: PF {y['pf']} -> {x['pf']}, net {y['net']:+,} -> {x['net']:+,}, max DD {y['dd']:,} -> {x['dd']:,}, "
                 f"{x['tpw']}/wk")
-    head = {"adopt-candidate": "Better in both periods.", "promising": "Helps one period without hurting the other.",
+    head = head or {"adopt-candidate": "Better in both periods.", "promising": "Helps one period without hurting the other.",
             "rejected": "Does not hold in both periods.",
             "info": ("Never changed a 2026 trade, so it is untested out of sample." if a.get("n") and a["net"] == A["net"]
                      and a["pf"] == A["pf"] else "Check only (post-hoc skip).")}[st]
@@ -594,11 +604,13 @@ def verdict_of(S, base, st):
 def run_variants(raw, FE, base, plan):
     """plan: list of (id, idea name, fn, good, kind, question). Returns {id: record} (sized trades, scores, status)."""
     out = {}
-    for vid, name, fn, good, kind, question in plan:
+    for row in plan:
+        vid, name, fn, good, kind, question = row[:6]
+        suffix = row[6] if len(row) > 6 else ""
         T = rl.size(raw, rule=make_rule(fn, FE, good, kind))
         S = rl.score(T, raw)
         st = status_of(S, base, kind)
-        out[vid] = {"name": name, "good": good, "kind": kind, "question": question, "T": T, "S": S, "status": st,
+        out[vid] = {"name": name, "good": good, "kind": kind, "question": question, "suffix": suffix, "T": T, "S": S, "status": st,
                     "verdict": verdict_of(S, base, st)}
         print(f"{vid:<26} {st:<15} 2026 {fmt(S['spans']['2026'])} | 2021-25 {fmt(S['spans']['2021-25'])}", flush=True)
     return out
@@ -639,7 +651,7 @@ def gate(vid, R, base, neighbours):
 def save_all(R, base, tag="posthoc"):
     for vid, r in R.items():
         fam = "vwap" if r["name"].startswith("vwap") else "vp"
-        rl.save(vid, title_of(r["name"], r["good"], r["kind"]), "filters", r["question"],
+        rl.save(vid, title_of(r["name"], r["good"], r["kind"]) + r.get("suffix", ""), "filters", r["question"],
                 sizing={"idea": r["name"], "strong_side": "present" if r["good"] else "absent", "kind": r["kind"],
                         "rule": KINDS[r["kind"]] if r["kind"] in KINDS else f"x{int(r['kind'][2:]) / 100:g} on the strong side",
                         "on_top_of": "live sizing incl. the cold-streak half size"},
@@ -692,13 +704,15 @@ if __name__ == "__main__":
                 continue
             for vid, x in NEIGHBOURS[name]:
                 plan.append((f"{vid}_half", name, neighbour_fn(name, x), good, "half",
-                             f"Neighbour check of {name}: same idea at threshold {x}. " + IDEAS[name][1] + "?"))
+                             f"Neighbour check of {name}: same idea at threshold {x}. " + IDEAS[name][1] + "?",
+                             neighbour_suffix(name, x)))
         print("\n-- neighbour checks (half size on the weak side)")
         R.update(run_variants(raw, FE, base, plan))
         # neighbours of the AMT balance idea: own tick profile with 60 / 70 / 80% value areas, and other multipliers
         why = "Neighbour check of the AMT balance idea"
         plan = [(f"vp_balance_va{va}_up", "vp_open_in", (lambda t, F, va=va: F.get(f"open_in_{va}")), True, "up",
-                 f"{why}: open inside a {va}% value area from our own tick profile, 1.25x size?") for va in (60, 70, 80)]
+                 f"{why}: open inside a {va}% value area from our own tick profile, 1.25x size?",
+                 f" (neighbour: own tick profile, {va}% value area)") for va in (60, 70, 80)]
         plan += [(f"vp_balance_{k}", "vp_open_in", IDEAS["vp_open_in"][2], True, k, f"{why}: other size multiplier ({k})?")
                  for k in ("up110", "up150")]
         print("\n-- neighbour checks of the AMT balance idea")
@@ -718,8 +732,9 @@ if __name__ == "__main__":
                   f"the both-periods rule {w}/{n}")
             if not ok:
                 r["status"] = "rejected"
-                r["verdict"] = ("Beats the baseline in both periods by a hair, but fails the robustness checks: "
-                                + "; ".join(reasons) + f"; random subsets of the same size sized x{m:g} pass {w}/{n} times. " + r["verdict"])
+                r["verdict"] = verdict_of(r["S"], base, "rejected", head=(
+                    "Beats the baseline in both periods by a hair, but fails the robustness checks: " + "; ".join(reasons)
+                    + f"; random subsets of the same size sized x{m:g} pass {w}/{n} times."))
         if cmd == "all":
             save_all(R, base)
             print(f"\nsaved {len(R)} runs:", ", ".join(R))

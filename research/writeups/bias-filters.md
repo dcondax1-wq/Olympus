@@ -4,7 +4,7 @@ family: bias
 date: 2026-10-17
 status: finding
 summary: Two simple biases separate trades in both periods: fading yesterday's candle and trading on the side of last week's midpoint. As filters or score points they cut trades below 2 a week and the replacement trades lose; as a size-down (70% size when both disagree) they raise PF in both periods (2026 3.48 → 3.62, 2021-25 1.09 → 1.12) and cut 2021-25 drawdown, for −$0.75k in 2026. No filter or timing change beats today's rules.
-runs: baseline, screen_baseline, flt_vix20_half, flt_vix20_07, bias_pdc_half, bias_pwmid_half, bias_any_half, bias_both_half, bias_both_07, bias_both_033, bias_pdc_07, bias_pwmid_07, bias_pdc_skip, bias_pwmid_skip, bias_wkopen_skip, bias_smt_only, bias_pdc1, bias_pwmid1, bias_counter_cap3, bias_w_htf0, bias_w_htf2, bias_w_pd0, bias_w_m15_0, bias_w_dol1, bias_w_dolm1, flt_regime_skip, flt_regime_off, flt_range0, flt_range12, flt_range20, flt_vixmax20, flt_vixmax25, flt_vixmax30, flt_vixmin13, flt_news_off, flt_news_wide, flt_fomc_pm_on, flt_newsday_skip, flt_arm_minor_off, flt_min_score0, flt_min_score2, flt_long_only, flt_short_only, tim_am_only, tim_pm_only, tim_ext, tim_am_late, tim_armexp30, tim_armexp45, tim_armexp90, tim_armstart420, tim_armstart540, tim_armstart570
+runs: baseline, screen_baseline, flt_vix20_half, flt_vix20_07, bias_pdc_half, bias_pwmid_half, bias_any_half, bias_both_half, bias_both_07, bias_both_033, bias_pdc_07, bias_pwmid_07, bias_pdc_skip, bias_pwmid_skip, bias_wkopen_skip, bias_draw_skip, bias_draw_half, bias_smt_only, bias_pdc1, bias_pwmid1, bias_counter_cap3, bias_w_htf0, bias_w_htf2, bias_w_pd0, bias_w_m15_0, bias_w_dol1, bias_w_dolm1, flt_regime_skip, flt_regime_off, flt_range0, flt_range12, flt_range20, flt_vixmax20, flt_vixmax25, flt_vixmax30, flt_vixmin13, flt_news_off, flt_news_wide, flt_fomc_pm_on, flt_newsday_skip, flt_arm_minor_off, flt_min_score0, flt_min_score2, flt_long_only, flt_short_only, tim_am_only, tim_pm_only, tim_ext, tim_am_late, tim_armexp30, tim_armexp45, tim_armexp90, tim_armstart420, tim_armstart540, tim_armstart570
 ---
 
 ## What was tested
@@ -14,6 +14,8 @@ runs: baseline, screen_baseline, flt_vix20_half, flt_vix20_07, bias_pdc_half, bi
      after a down day or a short after an up day.
    - **Prior-week side:** is a long above / a short below last week's midpoint ((high + low) / 2)?
    - **This week's open:** longs below it, shorts above it.
+   - **Daily/weekly draw on liquidity:** does the trade point to the nearest untaken prior-day / prior-week high or
+     low?
    - **SMT divergence NQ vs ES** at the sweep. ES 5-minute data only starts in April 2025, so this is information only.
 2. **Three ways to use a bias:** skip the trades against it (filter), add or remove a confluence point (changes
    which setup is first each day; new engine options `w_pdc` and `w_pwmid`, off by default), or keep every trade and
@@ -41,6 +43,8 @@ Average R per trade on the exact replay (all 768 live-strategy trades):
 | Both against the trade | - | - | about 1 trade in 5 (15-26% by year) |
 
 This week's open did not separate trades (2026 +0.47R vs +0.33R the "wrong" way round, 2021-25 −0.02R vs +0.01R).
+Neither did the **daily/weekly draw on liquidity** (trading toward the nearest untaken prior-day or prior-week high
+or low): better in 2026 (+0.49R vs +0.26R) but not in 2021-25 (−0.02R vs 0.00R).
 
 ## 2. Using them: filter, score point or size
 
@@ -51,6 +55,7 @@ This week's open did not separate trades (2026 +0.47R vs +0.33R the "wrong" way 
 | Filter: only prior-week-side trades | 34 | 0.83 | 6.79 | +$15.1k | −$0.7k | 14.6/0 · 21.8/0 | 270 | 1.26 | 1.27 | +$7.7k | −$3.0k | 1.6/0.1 · 2.4/0.6 | 3/6 | info |
 | Filter: only longs below / shorts above the weekly open | 61 | 1.48 | 3.35 | +$12.9k | −$3.6k | 17/0 · 22.3/0 | 408 | 1.9 | 1.09 | +$3.9k | −$7.8k | 3.1/1.1 · 4.9/3.5 | 4/8 | info |
 | Filter: only SMT trades (ES from 2025-04) | 29 | 0.7 | 4.14 | +$7.8k | −$1.4k | 6.8/0 · 9.2/0 | 24 | 0.11 | 1.53 | +$1.3k | −$2.0k | 0/0 · 0/0 | 1/1 | info |
+| Filter: only trades toward the nearest daily/weekly pool | 44 | 1.07 | 4.37 | +$14.1k | −$2.7k | 12.1/0 · 17/0 | 346 | 1.61 | 1.19 | +$6.9k | −$8.1k | 2.6/0.9 · 3.6/1.9 | 5/8 | info |
 | Score point: fade yesterday (one-pass) | 80 | 1.94 | 2.78 | +$12.9k | −$2.8k | 11.2/0 · 17.5/0 | 595 | 2.74 | 0.96 | −$2.6k | −$10.4k | 1.9/1.5 · 3.1/3.8 | 7/17 | rejected |
 | Score point: prior-week side (one-pass) | 56 | 1.36 | 2.93 | +$12.0k | −$2.1k | 9.7/0 · 14.6/0 | 526 | 2.42 | 0.94 | −$3.5k | −$9.9k | 2.9/0.6 · 4/1.7 | 4/12 | rejected |
 | Half size if it follows yesterday | 89 | 2.16 | 3.61 | +$16.3k | −$2.2k | 12.6/0 · 19.9/0 | 679 | 3.17 | 1.12 | +$6.7k | −$9.4k | 2.8/0.9 · 4.6/1.9 | 6/10 | rejected |
@@ -61,12 +66,13 @@ This week's open did not separate trades (2026 +0.47R vs +0.33R the "wrong" way 
 | One-third size if both are against | 89 | 2.16 | 3.67 | +$18.1k | −$2.0k | 15/0 · 24.8/0 | 679 | 3.17 | 1.15 | +$9.8k | −$8.9k | 3/1.6 · 4.5/2.8 | 7/11 | rejected |
 | 70% size if it follows yesterday | 89 | 2.16 | 3.7 | +$18.0k | −$2.3k | 14.1/0 · 20.9/0 | 679 | 3.17 | 1.11 | +$7.0k | −$9.8k | 3.4/1.5 · 4.7/2.6 | 7/11 | rejected |
 | 70% size if against the prior-week side | 89 | 2.16 | 4.0 | +$18.4k | −$1.8k | 15/0 · 24.3/0 | 679 | 3.17 | 1.12 | +$7.0k | −$8.4k | 3.1/0.7 · 4.1/1.2 | 7/10 | rejected |
+| Half size if pointing away from the nearest daily/weekly pool | 89 | 2.16 | 3.72 | +$16.9k | −$2.3k | 14.6/0 · 19.9/0 | 679 | 3.17 | 1.12 | +$6.7k | −$9.1k | 3.6/1.1 · 5.1/2.8 | 5/10 | rejected |
 | Half size when VIX is above 20 | 89 | 2.16 | 3.61 | +$19.7k | −$2.4k | 19.4/0 · 28.2/0 | 679 | 3.17 | 1.14 | +$9.0k | −$7.5k | 4.1/1.8 · 6.1/3.5 | 6/13 | promising |
 | 70% size when VIX is above 20 | 89 | 2.16 | 3.59 | +$20.0k | −$2.5k | 19.4/0 · 28.2/0 | 679 | 3.17 | 1.13 | +$8.4k | −$8.8k | 4.1/1.8 · 6.1/3.6 | 6/14 | promising |
 
 What it means:
 
-- **As filters they are strong but leave 1-1.6 trades a week**, below the owner's 2-a-week rule.
+- **As filters they are strong but leave 1-1.6 trades a week**, below the owner's 2-4 a week.
 - **As score points they backfire:** the setups that take the freed-up slot later in the day are worse (2021-25 PF
   0.94-0.96). The edge is in sizing the trade the bot already found, not in looking for a different one.
 - **As a size-down they improve PF and drawdown in both periods**, but in 2026 even the "against" trades made

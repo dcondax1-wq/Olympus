@@ -2,7 +2,7 @@
 title: Trade construction: what to change before Sunday
 family: other
 date: 2026-10-17
-status: finding
+status: adopt-candidate
 summary: One change is worth making, together with the sizing change: on trending days move the stop to breakeven at +3R instead of +1R. With the sizing change it adds +$4.8k to 2021-25 (PF 1.19 → 1.27) and changes nothing in 2026 evals; on today's sizing alone it causes extra late-May 2026 eval fails, so then keep the current rules. Stops, targets, the other exits, filters and timing are already at their best; 120+ variants tested, no leak found.
 runs: baseline, mgt_betrend300_replay, mgt_betrend300, mgt_betrend250, mgt_betrend_off, combo_risk_sizing, combo_betrend3_risksizing, bias_both_07, combo_betrend3_both07, combo_betrend3_bothhalf, flt_vix20_half, stp_max80, leak_both_off
 ---
@@ -115,7 +115,9 @@ same trades; columns: sizing change alone vs sizing change + breakeven change):
 
 Same pattern as on its own: 2026 money and eval odds unchanged (−$96), its PF dips through the cold-streak state,
 2021-25 +$4.8k with the same eval speed. Against today's live rules the pair is better in both periods (2026 +$0.4k,
-PF 3.94 vs 3.48; 2021-25 +$9.9k, PF 1.27 vs 1.09) with 2.16 / 3.17 trades a week.
+PF 3.94 vs 3.48; 2021-25 +$9.9k, PF 1.27 vs 1.09) with 2.16 / 3.17 trades a week. Not a knife-edge here either: on
+top of the sizing change, breakeven on trending days at +1.5R / +2R / +2.5R / +3R / never adds +$1.6k / +$1.6k /
++$2.9k / +$4.8k / +$4.7k to 2021-25, and 2026 is identical for all of them.
 
 ## What NOT to do (tested today on the live settings)
 
@@ -129,7 +131,7 @@ PF 3.94 vs 3.48; 2021-25 +$9.9k, PF 1.27 vs 1.09) with 2.16 / 3.17 trades a week
 | Bank at 6R / 8R | 2021-25 +$0.4k to +$1.3k, but 2026 −$5k to −$7k |
 | Exit a few ticks in front of the pool | changes almost nothing, slightly worse |
 | Breakeven earlier or later on all days, profit locks, other time stops, giveback at 0.75-1R | every one loses money in 2021-25; locks lose in every variant |
-| Bias as a filter (yesterday's candle, last week's midpoint, weekly open, SMT) | 0.8-1.9 trades a week |
+| Bias as a filter (yesterday's candle, last week's midpoint, weekly open, daily/weekly draw, SMT) | 0.1-1.9 trades a week |
 | Bias as a confluence point | the replacement trades lose (2021-25 PF 0.94-0.96) |
 | Skip trending markets, VIX above 20 or 25, range block 1.2x, morning or afternoon only | under 2 trades a week or less profit |
 | Confluence score 0 | 3.6 trades a week in 2021-25 but less profit in both periods |
@@ -163,12 +165,11 @@ PF 3.94 vs 3.48; 2021-25 +$9.9k, PF 1.27 vs 1.09) with 2.16 / 3.17 trades a week
   | Median sessions to a pass | 19 | 19.5 | 25 | 30 | 25.5 | 28 |
   | Back-to-back evals passed / failed | 4 / 1 | 4 / 1 | 7 / 18 | 7 / 15 | 11 / 19 | 12 / 16 |
 
-  Better in every 2021-25 year (2021 +$1.5k, 2022 +$3.1k, 2023 +$0.5k, 2024 +$0.1k, 2025 +$1.0k), 2026 −$0.75k, and
-  it cuts 1-month eval fails in 2021-25 (6.6% vs 9.4%) but slows passes (fewer within 2 weeks: 3.6%
-  vs 4.1%), against the owner's eval-speed rule. It
-  fails the strict rule (2026 net lower), the size rule is not in the engine or the Pine script yet, it is sizing (the
-  sizing research's area), and both biases were found on these same trades. Worth a proper out-of-sample check
-  after Sunday, not a change for Sunday.
+  Better in every 2021-25 year (2021 +$1.5k, 2022 +$3.1k, 2023 +$0.5k, 2024 +$0.1k, 2025 +$1.0k), 2026 −$0.75k. It
+  cuts 1-month eval fails in 2021-25 (6.6% vs 9.4%) but slows passes (passed within 2 weeks 3.6% vs 4.1%), against
+  the owner's eval-speed rule. It fails the strict rule (2026 net lower), the size rule is not in the engine or the
+  Pine script yet, it is a sizing rule (the sizing research's area), and both biases were found on these same
+  trades. Worth a proper out-of-sample check after Sunday, not a change for Sunday.
 - **Half size when VIX is above 20** (instead of skipping those days): PF up in both periods (2026 3.61, 2021-25
   1.14), 2021-25 +$2.5k with drawdown −$7.5k instead of −$11.4k, 2026 −$0.45k (runs `flt_vix20_half`, `flt_vix20_07`).
   Also a sizing rule.

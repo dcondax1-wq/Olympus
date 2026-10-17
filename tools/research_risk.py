@@ -1273,6 +1273,9 @@ FAST = (
     ("risk_fast_press0_bank", "Fast evals: $800 on any stop while the eval is up, bank the pass",
      "while the eval balance is at or above $50,000: $800 on any stop; from +$2,000: risk at most half of what is still "
      "needed; cold x0.25, late x0.5", _press(60, 0.0, 0.5), True, None),
+    ("risk_fast_cush1000", "Fast evals: $800 on any stop while the cushion is $1,000 or more",
+     "while balance - trailing max loss >= $1,000: $800 on any stop; below it: live sizing; cold x0.25, late x0.5",
+     {"mult_usd": (lambda w: lambda t, c: w(t) if c["cushion"] >= 1000 else 1.0)(_wide(60))}, True, None),
     ("risk_fast_press1000_ref40", "Fast evals (gentler): full risk up to a 40-pt stop until $1,000 down",
      "while the eval balance is above $49,000: full $800 up to a 40-pt stop, $800 x 40/stop beyond; below it: live sizing",
      _press(40, -1000.0), True, None),
@@ -1358,6 +1361,24 @@ def fast_table(rows, B):
     return _md(out, ["run", "status", "2026 decided in 2w (pass/fail %)", "3w pass/fail %", "slow passes", "median days to pass",
                      "evals per pass", "net", "PF", "2021-25 decided in 2w (pass/fail %)", "3w pass/fail %", "slow passes",
                      "median days to pass", "passes/fails a year", "evals per pass", "net", "PF", "max DD"])
+
+
+def cmd_runtable():
+    """python tools/research_risk.py runtable <id> <id> ...: markdown rows from the saved run files (for the write-ups)."""
+    ids = sys.argv[2:]
+    out = []
+    for id in ids:
+        r = rl.load(id)
+        a, b = r["spans"]["2026"], r["spans"]["2021-25"]
+        f = lambda x, k: x.get(k) if x.get(k) is not None else "-"
+        out.append([id, r["status"], f"{a['n']} ({a['tpw']:.2f}/wk)", a["pf"], _money(a["net"]), f"{a['dd']:,}",
+                    f"{f(a, 'p10')}/{f(a, 'f10')}", f"{f(a, 'p20')}/{f(a, 'f20')}", f(a, "dec10"), f(a, "epp"),
+                    f"{b['n']} ({b['tpw']:.2f}/wk)", b["pf"], _money(b["net"]), f"{b['dd']:,}", f"{f(b, 'p10')}/{f(b, 'f10')}",
+                    f"{f(b, 'p20')}/{f(b, 'f20')}", f"{f(b, 'p60')}/{f(b, 'f60')}", f(b, "dec10"), f(b, "slow_pass"), f(b, "pass_med"),
+                    f"{f(b, 'pass_yr')}/{f(b, 'fail_yr')}", f(b, "epp"), b["b2b"]])
+    print(_md(out, ["run", "status", "2026 trades", "PF", "net", "max DD", "2w p/f", "1m p/f", "dec 2w", "evals/pass",
+                    "2021-25 trades", "PF", "net", "max DD", "2w p/f", "1m p/f", "3m p/f", "dec 2w", "slow passes", "median to pass",
+                    "passes/fails a year", "evals/pass", "b2b"]))
 
 
 def cmd_summary():

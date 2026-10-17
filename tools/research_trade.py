@@ -229,6 +229,12 @@ X("bias_pdc_07", "bias", "sizerule", {}, "70% size when the trade follows yester
   "Neighbour check: a milder size-down (70%) for trades that follow yesterday's candle?", rule="p70_follow_pd")
 X("bias_pwmid_07", "bias", "sizerule", {}, "70% size when against the prior-week side",
   "Neighbour check: a milder size-down (70%) for trades against last week's midpoint side?", rule="p70_against_pwmid")
+X("bias_draw_skip", "bias", "posthoc", {}, "Info: only trades toward the nearest daily/weekly pool",
+  "Daily draw on liquidity: what if trades pointing away from the nearest untaken prior-day / prior-week high or low "
+  "were skipped?", rule="skip_against_draw", status="info")
+X("bias_draw_half", "bias", "sizerule", {}, "Half size when trading away from the nearest daily/weekly pool",
+  "Keep every setup, but half size when the trade points away from the nearest untaken prior-day / prior-week high or low?",
+  rule="half_against_draw")
 X("bias_smt_only", "bias", "posthoc", {}, "Info: only trades with NQ/ES SMT divergence",
   "Does SMT divergence (ES fails to make the new extreme) pick better trades? ES data starts 2025-04.",
   rule="skip_no_smt", status="info")
@@ -427,11 +433,56 @@ def trade_ctx(t):
     return out
 
 
+def draw_ctx(t):
+    """Daily / weekly draw on liquidity at the entry: the nearest UNTAKEN pool among the prior day's and prior week's
+    high and low (not traded through between the start of today / this week and the entry bar). +1 = the trade points
+    to it, -1 = away from it, 0 = none untaken. Only bars before the entry bar are used."""
+    W = _week_ctx()
+    S = _sim_data()
+    B = S["B"]
+    i = S["idx"][int(t["entry_t"])]
+    d, e = int(t["dir"]), float(t["entry"])
+    j = W["days"].index(t["day"])
+    k = W["wkeys"].index(W["wk"][t["day"]])
+    if j == 0 or k == 0:
+        return 0
+    if "first" not in W:
+        first = {}
+        for n_, ds in enumerate(B.date_str):
+            first.setdefault(ds, n_)
+        W["first"] = first
+    first = W["first"]
+    pd = W["days"][j - 1]
+    a_pd, z_pd = first[pd], first[t["day"]]
+    pdh, pdl = float(B.h[a_pd:z_pd].max()), float(B.l[a_pd:z_pd].min())
+    pw = W["info"][W["wkeys"][k - 1]]
+    a_d = first[t["day"]]
+    a_w = first[next(x for x in W["days"] if W["wk"][x] == W["wk"][t["day"]])]
+    hi_d = float(B.h[a_d:i].max()) if i > a_d else e
+    lo_d = float(B.l[a_d:i].min()) if i > a_d else e
+    hi_w = float(B.h[a_w:i].max()) if i > a_w else e
+    lo_w = float(B.l[a_w:i].min()) if i > a_w else e
+    pools = []
+    if hi_d < pdh and pdh > e:
+        pools.append((pdh - e, 1))
+    if lo_d > pdl and pdl < e:
+        pools.append((e - pdl, -1))
+    if hi_w < pw["high"] and pw["high"] > e:
+        pools.append((pw["high"] - e, 1))
+    if lo_w > pw["low"] and pw["low"] < e:
+        pools.append((e - pw["low"], -1))
+    if not pools:
+        return 0
+    return 1 if min(pools)[1] == d else -1
+
+
 RULES = {
     "skip_follow_pd": lambda t, ctx: 0.0 if trade_ctx(t).get("fade_pd") == -1 else 1.0,
     "skip_against_pwmid": lambda t, ctx: 0.0 if trade_ctx(t).get("pwmid") == -1 else 1.0,
     "skip_against_wkopen": lambda t, ctx: 0.0 if trade_ctx(t).get("wkopen") == -1 else 1.0,
     "skip_no_smt": lambda t, ctx: 1.0 if "SMT divergence" in (t.get("conf_tags") or []) else 0.0,
+    "skip_against_draw": lambda t, ctx: 0.0 if draw_ctx(t) == -1 else 1.0,
+    "half_against_draw": lambda t, ctx: 0.5 if draw_ctx(t) == -1 else 1.0,
     # size-down versions (every setup still traded, so trades a week is unchanged)
     "half_follow_pd": lambda t, ctx: 0.5 if trade_ctx(t).get("fade_pd") == -1 else 1.0,
     "half_against_pwmid": lambda t, ctx: 0.5 if trade_ctx(t).get("pwmid") == -1 else 1.0,

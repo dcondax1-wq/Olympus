@@ -26,26 +26,26 @@ runs: baseline, risk_usd400, risk_usd600, risk_usd700, risk_usd900, risk_usd1000
 
 ## 1. How much to risk per trade
 
-| run | risk | 2026 setups/wk | PF | net | max DD | 2w | 1m | 2021-25 PF | net | max DD | 1m | 3m | b2b |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| risk_usd400 | $400 (engine) | see run | | | | | | | | | | | |
-| risk_usd600 | $600 (engine) | 2.09 | 3.51 | +$15,040 | -$1,924 | 9/0 | 26/0 | 1.03 | +$1,516 | -$9,366 | 4/2 | 18/34 | 3/9 |
-| risk_usd700 | $700 | 2.16 | 3.28 | +$16,529 | -$2,462 | 13/0 | 26/0 | 1.08 | +$4,994 | -$10,387 | 7/4 | 27/43 | 7/14 |
-| baseline | **$800 (live)** | 2.16 | 3.48 | +$20,111 | -$2,661 | 20/0 | 30/0 | 1.09 | +$6,491 | -$11,401 | 9/10 | 22/59 | 7/18 |
-| risk_usd900 | $900 | 2.16 | 3.45 | +$22,617 | -$3,063 | 21/0 | 32/0 | 1.08 | +$6,573 | -$12,828 | 8/14 | 17/66 | 8/21 |
-| risk_usd1000 | $1,000 (engine) | 2.16 | 3.47 | +$25,229 | -$3,322 | 23/0 | 36/0 | 1.07 | +$6,880 | -$14,497 | 9/21 | 18/73 | 10/27 |
-| risk_usd1200 | $1,200 (engine) | 2.16 | 3.42 | +$29,742 | -$3,947 | 28/0 | 44/2 | 1.05 | +$5,670 | -$16,285 | 11/31 | 20/75 | 14/32 |
+| run | rule | 2026 setups/wk | PF | net | max DD | 2w pass/fail | 1m pass/fail | 2021-25 PF | net | max DD | 1m pass/fail | 3m pass/fail | evals per pass | status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| risk_usd400 | $400 (engine) | 1.99 | 3.3 | +$9,168 | -$1,514 | 2/0 | 11/0 | 1.03 | +$1,270 | -$5,709 | 2/0 | 8/9 | 3.95 | rejected |
+| risk_usd600 | $600 (engine) | 2.09 | 3.51 | +$15,040 | -$1,924 | 9/0 | 25/0 | 1.03 | +$1,516 | -$9,366 | 4/2 | 17/33 | 4.07 | rejected |
+| risk_usd700 | $700 | 2.16 | 3.28 | +$16,529 | -$2,462 | 12/0 | 25/0 | 1.08 | +$4,994 | -$10,387 | 7/4 | 26/41 | 3.31 | rejected |
+| baseline | **$800 (live)** | 2.16 | 3.48 | +$20,111 | -$2,661 | 19/0 | 33/0 | 1.09 | +$6,491 | -$11,401 | 9/9 | 20/56 | 3.89 |  |
+| risk_usd900 | $900 | 2.16 | 3.45 | +$22,617 | -$3,063 | 20/0 | 34/0 | 1.08 | +$6,573 | -$12,828 | 8/14 | 16/62 | 3.87 | rejected |
+| risk_usd1000 | $1,000 (engine) | 2.16 | 3.47 | +$25,229 | -$3,322 | 23/0 | 38/0 | 1.07 | +$6,880 | -$14,497 | 8/20 | 17/70 | 3.92 | rejected |
+| risk_usd1200 | $1,200 (engine) | 2.16 | 3.42 | +$29,742 | -$3,947 | 27/0 | 45/2 | 1.05 | +$5,670 | -$16,285 | 11/31 | 19/72 | 3.34 | rejected |
 
 **The risk level does not fix 2021-25.**
-- Net there stays between +$1.5k and +$6.9k at every level.
+- Net there stays between +$1.3k and +$6.9k at every level.
 - The drawdown grows in step with the risk.
 
 **The eval trade-off:**
-- More risk passes 2026 evals faster: 44% within a month at $1,200, against 30% today.
-- It fails 2021-25 evals much more often: 31% within a month, against 10%.
-- Evals bought per pass stay about the same: 3.9 at $1,000 and $800, 4.1 at $600 (eval-sizing.md).
+- More risk passes 2026 evals faster: 45% within a month at $1,200, against 33% today.
+- It fails 2021-25 evals much more often: 31% within a month, against 9%.
+- Evals bought per pass stay in the same range at every level: 3.3-4.1 (eval-sizing.md).
 
-**Less risk** loses setups: the engine skips a setup that would get less than 1 micro, so $600 has 2.09 setups a week in 2026.
+**Less risk** loses setups: the engine skips a setup that would get less than 1 micro, so 2026 has 2.09 setups a week at $600 and 1.99 at $400.
 
 **Verdict:** $800 is a sensible middle. There is no eval sweet spot that is better in both periods.
 
@@ -79,20 +79,21 @@ Today: full $800 up to a 20-pt stop, then $800 × 20 / stop (a 40-pt stop risks 
 
 Today: if the last 15 finished signals add up to 0R or less, trade half size.
 
-| run | change | 2026 PF | net | max DD | 1m | 2021-25 PF | net | max DD | 1m | 3m | b2b | status |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| baseline | live: 15 signals, 0R, half | 3.48 | +$20,111 | -$2,661 | 30/0 | 1.09 | +$6,491 | -$11,401 | 9/10 | 22/59 | 7/18 | |
-| risk_cold_lb10 | last 10 signals | 3.46 | +$19,959 | -$2,660 | 27/0 | 0.99 | -$474 | -$13,890 | 5/9 | 15/60 | 6/17 | rejected |
-| risk_cold_lb12 | last 12 signals | 3.77 | +$22,015 | -$2,485 | 38/0 | 1.00 | +$239 | -$14,077 | 6/7 | 16/59 | 6/17 | rejected |
-| risk_cold_lb20 | last 20 signals | 3.36 | +$19,829 | -$2,944 | 30/0 | 1.06 | +$4,857 | -$11,677 | 9/7 | 25/58 | 7/18 | rejected |
-| risk_cold_lb25 | last 25 signals | 3.09 | +$18,934 | -$3,610 | 30/5 | 1.07 | +$5,715 | -$9,825 | 9/10 | 26/55 | 7/17 | rejected |
-| risk_cold_thrm2 | cold only below -2R | 3.57 | +$21,556 | -$2,944 | 38/0 | 1.02 | +$1,662 | -$14,114 | 8/14 | 19/65 | 6/20 | rejected |
-| risk_cold_thrp2 | cold unless above +2R | 3.22 | +$18,026 | -$2,661 | 20/0 | 0.98 | -$1,452 | -$11,568 | 5/4 | 19/47 | 5/14 | rejected |
-| **risk_cold_q25** | **quarter size** | 3.55 | +$19,543 | -$2,333 | 30/0 | **1.16** | **+$10,230** | **-$9,158** | 8/8 | 28/36 | 7/12 | promising |
-| risk_cold_q75 | three-quarter size | 3.36 | +$20,542 | -$3,264 | 34/0 | 1.03 | +$2,687 | -$13,723 | 9/18 | 21/63 | 7/22 | rejected |
-| risk_hot5_125 | x1.25 when last 15 ≥ +5R | 3.55 | +$22,470 | -$2,814 | 30/0 | 1.09 | +$6,844 | -$11,664 | 9/11 | 22/59 | 8/18 | rejected |
-| risk_hot5_150 | x1.5 when last 15 ≥ +5R | 3.54 | +$25,506 | -$3,073 | 30/0 | 1.07 | +$5,510 | -$12,318 | 9/14 | 22/64 | 9/22 | rejected |
-| risk_hot8_150 | x1.5 when last 15 ≥ +8R | 3.58 | +$24,301 | -$3,069 | 30/0 | 1.12 | +$9,006 | -$11,401 | 9/9 | 22/59 | 8/17 | adopt-candidate |
+| run | rule | 2026 setups/wk | PF | net | max DD | 2w pass/fail | 1m pass/fail | 2021-25 PF | net | max DD | 1m pass/fail | 3m pass/fail | evals per pass | status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| baseline | live: 15 signals, 0R, half | 2.16 | 3.48 | +$20,111 | -$2,661 | 19/0 | 33/0 | 1.09 | +$6,491 | -$11,401 | 9/9 | 20/56 | 3.89 |  |
+| risk_cold_lb10 | last 10 signals | 2.16 | 3.46 | +$19,959 | -$2,660 | 19/0 | 30/0 | 0.99 | -$474 | -$13,890 | 5/9 | 14/57 | 3.77 | rejected |
+| risk_cold_lb12 | last 12 signals | 2.16 | 3.77 | +$22,015 | -$2,485 | 24/0 | 40/0 | 1.0 | +$239 | -$14,077 | 6/7 | 15/56 | 4.26 | rejected |
+| risk_cold_lb20 | last 20 signals | 2.16 | 3.36 | +$19,829 | -$2,944 | 19/0 | 33/0 | 1.06 | +$4,857 | -$11,677 | 9/7 | 24/55 | 3.83 | rejected |
+| risk_cold_lb25 | last 25 signals | 2.16 | 3.09 | +$18,934 | -$3,610 | 19/0 | 33/4 | 1.07 | +$5,715 | -$9,825 | 9/10 | 24/52 | 3.66 | rejected |
+| risk_cold_thrm2 | cold only below -2R | 2.16 | 3.57 | +$21,556 | -$2,944 | 24/0 | 40/0 | 1.02 | +$1,662 | -$14,114 | 8/14 | 18/62 | 4.84 | rejected |
+| risk_cold_thrp2 | cold unless above +2R | 2.16 | 3.22 | +$18,026 | -$2,661 | 15/0 | 23/0 | 0.98 | -$1,452 | -$11,568 | 5/4 | 18/44 | 3.72 | rejected |
+| risk_cold_q25 | **quarter size** | 2.16 | 3.55 | +$19,543 | -$2,333 | 19/0 | 33/0 | 1.16 | +$10,230 | -$9,158 | 8/7 | 26/34 | 2.91 | promising |
+| risk_cold_q75 | three-quarter size | 2.16 | 3.36 | +$20,542 | -$3,264 | 24/0 | 36/0 | 1.03 | +$2,687 | -$13,723 | 9/18 | 20/60 | 4.54 | rejected |
+| risk_cold_skip | skip (reference, rejected by you) | 1.48 | 4.08 | +$19,646 | -$2,230 | 19/0 | 33/0 | 1.32 | +$14,994 | -$7,551 | 8/7 | 23/27 | 2.66 | rejected |
+| risk_hot5_125 | x1.25 when last 15 >= +5R | 2.16 | 3.55 | +$22,470 | -$2,814 | 20/0 | 33/0 | 1.09 | +$6,844 | -$11,664 | 9/11 | 20/56 | 3.43 | rejected |
+| risk_hot5_150 | x1.5 when last 15 >= +5R | 2.16 | 3.54 | +$25,506 | -$3,073 | 20/0 | 33/0 | 1.07 | +$5,510 | -$12,318 | 9/14 | 20/60 | 3.67 | rejected |
+| risk_hot8_150 | x1.5 when last 15 >= +8R | 2.16 | 3.58 | +$24,301 | -$3,069 | 20/0 | 33/0 | 1.12 | +$9,006 | -$11,401 | 9/9 | 21/56 | 3.35 | adopt-candidate |
 
 **Lookback and threshold:** today's 15 signals and 0R are the best of the grid in 2021-25. 15 signals was originally picked on 2021-24 data, so this is no surprise.
 - Every other lookback or threshold makes 2021-25 worse.
@@ -115,11 +116,12 @@ Today: if the last 15 finished signals add up to 0R or less, trade half size.
 
 ## 4. Drawdown-aware sizing (smaller below the equity high, full at a new high)
 
-| run | rule | 2026 PF | net | 1m | 2021-25 PF | net | max DD | 1m |
-|---|---|---:|---:|---:|---:|---:|---:|---:|
-| risk_dd_half1500 | half size while $1,500+ below the high | 3.53 | +$14,352 | 16/0 | 0.99 | -$375 | -$6,649 | 3/3 |
-| risk_dd_half3000 | half size while $3,000+ below the high | 3.12 | +$14,300 | 15/0 | 1.00 | -$171 | -$7,006 | 3/6 |
-| risk_dd_linear | x0.75 at -$1k, x0.5 at -$2k, floor x0.25 | 3.31 | +$9,393 | 12/0 | 0.98 | -$664 | -$5,120 | 0/0 |
+| run | rule | 2026 setups/wk | PF | net | max DD | 2w pass/fail | 1m pass/fail | 2021-25 PF | net | max DD | 1m pass/fail | 3m pass/fail | evals per pass | status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| baseline | live | 2.16 | 3.48 | +$20,111 | -$2,661 | 19/0 | 33/0 | 1.09 | +$6,491 | -$11,401 | 9/9 | 20/56 | 3.89 |  |
+| risk_dd_half1500 | half size while $1,500+ below the high | 2.16 | 3.53 | +$14,352 | -$1,875 | 13/0 | 20/0 | 0.99 | -$375 | -$6,649 | 2/3 | 11/18 | 3.72 | rejected |
+| risk_dd_half3000 | half size while $3,000+ below the high | 2.16 | 3.12 | +$14,300 | -$2,502 | 13/0 | 19/0 | 1.0 | -$171 | -$7,006 | 3/5 | 12/31 | 4.37 | rejected |
+| risk_dd_linear | x0.75 at -$1k, x0.5 at -$2k, floor x0.25 | 2.16 | 3.31 | +$9,393 | -$1,412 | 4/0 | 13/0 | 0.98 | -$664 | -$5,120 | 0/0 | 0/4 | 5.48 | rejected |
 
 - All three are rejected.
 - The account's own drawdown is a late signal: it cuts size at the bottom and misses the winners that recover it.
@@ -127,13 +129,14 @@ Today: if the last 15 finished signals add up to 0R or less, trade half size.
 
 ## 5. Weekly loss brake and loss-streak cuts (never skipping a setup)
 
-| run | rule | 2026 PF | net | 1m | 2021-25 PF | net | max DD | 1m | 3m | status |
-|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| risk_week_brake2r | half size after -2R in the week | 3.48 | +$20,111 | 30/0 | 1.11 | +$7,893 | -$10,902 | 9/8 | 25/51 | promising |
-| risk_week_brake1r | half size after -1R in the week | 3.47 | +$18,800 | 30/0 | 1.11 | +$7,124 | -$11,249 | 9/4 | 27/45 | rejected |
-| risk_streak3_half | half size after 3 losers in a row | 3.63 | +$18,124 | 20/0 | 1.05 | +$2,982 | -$11,590 | 8/4 | 23/35 | rejected |
-| risk_streak5_half | half size after 5 losers in a row | 3.67 | +$18,951 | 20/0 | 1.07 | +$4,362 | -$10,321 | 8/6 | 21/42 | rejected |
-| risk_win_x15 | 1.5x right after a winner | 3.05 | +$20,805 | 31/0 | 1.05 | +$4,001 | -$13,507 | 9/15 | 22/62 | rejected |
+| run | rule | 2026 setups/wk | PF | net | max DD | 2w pass/fail | 1m pass/fail | 2021-25 PF | net | max DD | 1m pass/fail | 3m pass/fail | evals per pass | status |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| baseline | live | 2.16 | 3.48 | +$20,111 | -$2,661 | 19/0 | 33/0 | 1.09 | +$6,491 | -$11,401 | 9/9 | 20/56 | 3.89 |  |
+| risk_week_brake2r | half size after -2R in the week | 2.16 | 3.48 | +$20,111 | -$2,661 | 19/0 | 33/0 | 1.11 | +$7,893 | -$10,902 | 9/8 | 24/48 | 3.14 | promising |
+| risk_week_brake1r | half size after -1R in the week | 2.16 | 3.47 | +$18,800 | -$2,358 | 19/0 | 33/0 | 1.11 | +$7,124 | -$11,249 | 9/4 | 26/42 | 3.22 | rejected |
+| risk_streak3_half | half size after 3 losers in a row | 2.16 | 3.63 | +$18,124 | -$1,882 | 15/0 | 23/0 | 1.05 | +$2,982 | -$11,590 | 7/4 | 22/33 | 3.04 | rejected |
+| risk_streak5_half | half size after 5 losers in a row | 2.16 | 3.67 | +$18,951 | -$1,887 | 15/0 | 23/0 | 1.07 | +$4,362 | -$10,321 | 8/6 | 20/40 | 3.53 | rejected |
+| risk_win_x15 | 1.5x right after a winner | 2.16 | 3.05 | +$20,805 | -$2,932 | 19/0 | 32/0 | 1.05 | +$4,001 | -$13,507 | 9/15 | 21/59 | 3.77 | rejected |
 
 - **The -2R weekly brake helps 2021-25** (+$1.4k, fewer eval fails), but it never triggered in 2026, so there is no out-of-sample evidence. Promising, not adopted.
 - **Cutting after a run of losers** cuts size just before the rare big winner.

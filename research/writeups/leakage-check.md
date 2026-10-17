@@ -46,7 +46,10 @@ identical.
 - **VIX, GEX, news:** VIX and GEX use the previous session's value; news uses the published calendar times. None of
   them can see the day being traded.
 - **Fast research tools** used in the other write-ups were checked against the replay: the exit re-simulator
-  reproduces all 768 baseline trades exactly, and the one-pass backtest matches 766 of 768.
+  reproduces all 768 baseline trades exactly (and all 768 trades of the replay with the recommended breakeven
+  change), and the one-pass backtest matches 766 of 768 baseline trades.
+- **Engine edits:** after adding the new research options (all off by default), the baseline replay was re-run from
+  scratch: the same 768 trades and the same numbers.
 
 ## Verdict
 

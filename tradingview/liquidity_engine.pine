@@ -737,8 +737,8 @@ f_beMsg(int d, int q, float newStop, float tgt) =>
 f_coldWord() =>
     coldMult == 0.5 ? "half" : coldMult == 0.25 ? "quarter" : str.tostring(coldMult) + "x"
 
-f_sizeNote(bool cold, bool trendHalf) =>
-    (cold ? " · " + f_coldWord() + " size (cold streak)" : "") + (trendHalf ? " · half size (trending market)" : "")
+f_sizeNote(bool isCold, bool isTrendCut) =>
+    (isCold ? " · " + f_coldWord() + " size (cold streak)" : "") + (isTrendCut ? " · half size (trending market)" : "")
 
 // ---------------------------------------------------------------- manage the open position (before new entries, like the engine:
 // an exit at this close frees the bot to take a new trigger on the same bar)
