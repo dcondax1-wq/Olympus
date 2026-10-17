@@ -92,7 +92,7 @@ async function showCold() {
         </div>
         ${et ? `<div class="card nx-glass nx-state ${et.verdict === 'go' ? 'good' : 'warn'}">
           <div class="nx-eyebrow">Buy or reset the eval now?</div>
-          <div class="nx-state-v">${icon(et.verdict === 'go' ? 'check' : 'clock')}<b>${et.verdict === 'go' ? 'GO' : 'WAIT'}</b></div>
+          <div class="nx-state-v">${icon(et.verdict === 'go' ? 'check' : 'clock')}<b>${et.verdict !== 'go' ? 'WAIT' : et.state === 'warmed' ? 'GO · BEST' : et.state === 'stale' ? 'GO · LATE' : 'GO'}</b></div>
           <div class="nx-kv"><div><span>Pass within 2 weeks</span><b class="up">${pct(et.pass_2w)}</b></div><div><span>Fail within 2 weeks</span><b class="dn">${pct(et.fail_2w)}</b></div>
             <div><span>Pass within 1 month</span><b class="up">${pct(et.pass_1m)}</b></div><div><span>Fail within 1 month</span><b class="dn">${pct(et.fail_1m)}</b></div>
             <div><span>Median sessions to pass</span><b>${et.median_pass}</b></div><div><span>Weeks to funded (median)</span><b>${fmtN(et.funded_wk, 1)}</b></div></div>

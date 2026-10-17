@@ -50,9 +50,11 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   - Honest range (sensitivity study): the cold lookback 15 is a ridge (14 → +$13.3k, 13 → +$7.8k, 17 → +$10.7k over 2021-25);
     quote 2021-25 as +$8k to +$17k. Every neighbour of the lock is profitable in both periods. 2 extra ticks of slippage keep
     80-86% of 2021-25; no calendar rule is worth having.
-- **Eval timing (Monte Carlo):** buy/reset the MFFU eval when the filter shows full size (1-month pass 22% / fail 8%, median
-  20 sessions) and not in a cold streak (4% / 2%, median 36). `equity_filter.eval_timing()` → cloud state `eval_timing`,
-  README row "Eval timing: GO/WAIT", PC Cold-Streak page, phone Today page.
+- **Eval timing (Monte Carlo + eval-game study):** buy/reset the MFFU eval when the filter shows full size (1-month pass 22% /
+  fail 8%), best within 5 sessions of the switch back from a cold streak (26% / 4.5% in 2021-25, 50% in 2026), weakest after
+  20+ sessions at full size (7% / 12%), never in a cold streak (4% / 2%). `equity_filter.eval_timing(status, sessions_since_flip)`
+  → cloud state `eval_timing` (verdict go/wait, state warmed/full/stale/cold), README row, flip alert, PC Cold-Streak page,
+  phone Today page. The MFFU Builder 50K is the right plan; best-day-rule plans (Topstep etc.) would take 2-17 months.
 
 ## Tested and rejected (don't redo without a new idea)
 - Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ATM 5m/1m with a sharp V (0.2–1.5 trades/wk,

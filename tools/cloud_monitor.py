@@ -130,7 +130,7 @@ def run(out):
         equity_filter.record(res["trades"], shadow_path)
     eqf_now = equity_filter.status(eqf_cfg, path=shadow_path)
     state["equity_filter"] = eqf_now
-    state["eval_timing"] = equity_filter.eval_timing(eqf_now)   # buy/reset the eval at full size, not in a cold streak
+    state["eval_timing"] = equity_filter.eval_timing(eqf_now, equity_filter.sessions_since_flip(eqf_cfg, now, shadow_path))   # when to buy/reset the eval
 
     # ---- paper ledger: engine trades that entered after the cloud monitor started watching
     sizing_cfg = lm.get("sizing")
