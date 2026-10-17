@@ -8,6 +8,7 @@ strongest, consistent factors are then tested as SIZE rules (x0.5 / x1.25) with 
 
   python tools/research_cal.py tables      # every factor table (markdown) + research/lab/calendar_effects.json
   python tools/research_cal.py rules       # size rules for the strongest factors, saved as runs cal_*
+  python tools/research_cal.py noise       # random-group benchmark: how often chance alone passes the both-periods test
   python tools/research_cal.py all
 
 No look-ahead: every flag is known before the entry (the calendar, data/news/events.csv release dates, data/NQ_rolls.json,
@@ -417,7 +418,43 @@ def main(cmd="all"):
         out["rules"] = summ
         json.dump(out, open(LAB_JSON, "w", encoding="utf-8"), indent=1)
         print("\nrules added to", LAB_JSON)
+    if cmd in ("noise", "all"):
+        nb = noise_benchmark(raw, S0)
+        out = json.load(open(LAB_JSON, encoding="utf-8")) if os.path.exists(LAB_JSON) else {}
+        out["noise_benchmark"] = nb
+        out["live_years"] = S0["years"]
+        json.dump(out, open(LAB_JSON, "w", encoding="utf-8"), indent=1)
     return raw, cal, T, S0, tables
+
+
+def noise_benchmark(raw, S0, sizes=((34, 0.5), (60, 0.5), (179, 1.25)), draws=300, seed=11):
+    """How often does a RANDOM group of trades of the same size, with the same multiplier, beat the live strategy in both
+    periods (net and PF)? The yardstick for the calendar rules: with ~70 factor levels looked at, a few will pass by
+    chance. Groups are drawn in proportion over the two periods (like a calendar flag)."""
+    rng = np.random.default_rng(seed)
+    trades = sorted(raw["trades"], key=lambda t: t["entry_t"])
+    keys_old = [t["entry_t"] for t in trades if t["day"] < "2026-01-01"]; keys_new = [t["entry_t"] for t in trades if t["day"] >= "2026-01-01"]
+    out = {}
+    for n, mult in sizes:
+        n_new = max(2, round(n * len(keys_new) / len(trades))); n_old = n - n_new
+        hits = both_net = 0
+        gains_old, gains_new = [], []
+        for _ in range(draws):
+            pick = set(rng.choice(keys_old, n_old, replace=False).tolist()) | set(rng.choice(keys_new, n_new, replace=False).tolist())
+            T = rl.size(raw, rule=lambda t, ctx, pick=pick: mult if t["entry_t"] in pick else 1.0)
+            S = rl.score(T, raw)
+            a, b = S["spans"]["2026"], S["spans"]["2021-25"]; A, B = S0["spans"]["2026"], S0["spans"]["2021-25"]
+            gains_old.append(b["net"] - B["net"]); gains_new.append(a["net"] - A["net"])
+            if a["net"] > A["net"] and b["net"] > B["net"]:
+                both_net += 1
+                if (a["pf"] or 0) >= (A["pf"] or 0) and (b["pf"] or 0) >= (B["pf"] or 0):
+                    hits += 1
+        out[f"{n}x{mult}"] = {"n": n, "mult": mult, "draws": draws, "pct_better_both_net": round(100 * both_net / draws, 1),
+                              "pct_pass_strict": round(100 * hits / draws, 1),
+                              "gain_old_p90": int(np.percentile(gains_old, 90)), "gain_new_p90": int(np.percentile(gains_new, 90)),
+                              "gain_old_max": int(max(gains_old)), "gain_new_max": int(max(gains_new))}
+        print(n, mult, out[f"{n}x{mult}"], flush=True)
+    return out
 
 
 # (id, title, flag, level, multiplier, question). Multiplier 0 = skip (a check only; the owner wants 2-4 trades a week).
