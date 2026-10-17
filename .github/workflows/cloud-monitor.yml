@@ -99,8 +99,7 @@ jobs:
           DASH_KEY: ${{ secrets.DASH_DEPLOY_KEY }}
         run: |
           python tools/build_web_dashboard.py --state dash/state.json --chart dash/chart.png --out site
-          mkdir -p ~/.ssh && printf '%s
-' "$DASH_KEY" > ~/.ssh/dash_key && chmod 600 ~/.ssh/dash_key
+          mkdir -p ~/.ssh && echo "$DASH_KEY" > ~/.ssh/dash_key && chmod 600 ~/.ssh/dash_key
           ssh-keyscan -t ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
           cd site
           git init -q -b main
