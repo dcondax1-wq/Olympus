@@ -8,8 +8,8 @@
 <title>Liquidity Engine</title>
 <meta name="description" content="NQ Liquidity Engine: paper bot status, MFFU eval tracker, trades, replays, backtest results and the research lab.">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=orb1">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=orb1">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=drop1">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=drop1">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -776,12 +776,12 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 </style>
 </head>
 <body>
-<div id="splash" aria-hidden="true"><canvas id="spCv"></canvas><div class="sp-in"><img src="icons/icon-512.png?v=orb1" alt="">
+<div id="splash" aria-hidden="true"><canvas id="spCv"></canvas><div class="sp-in"><img src="icons/icon-512.png?v=drop1" alt="">
   <div class="sp-t">LIQUIDITY ENGINE</div><div class="sp-s">NQ futures · paper · works with the PC off</div><div class="sp-bar"><i></i></div></div></div>
 <div class="app">
   <aside class="side">
     <div class="brand">
-      <div class="mark"><img src="icons/icon-192.png?v=orb1" alt="" width="38" height="38"></div>
+      <div class="mark"><img src="icons/icon-192.png?v=drop1" alt="" width="38" height="38"></div>
       <div><b>Liquidity Engine</b><span>NQ · MFFU Builder 50K · paper</span></div>
     </div>
     <nav class="nav" id="nav" aria-label="Sections"></nav>
@@ -1043,7 +1043,7 @@ function scatter(el, pts, o = {}) {
   if (o.xmin == null) x0 -= px; if (o.xmax == null) x1 += px; if (o.ymin == null) y0 -= py; if (o.ymax == null) y1 += py;
   const X = (v) => L + (Math.max(x0, Math.min(x1, v)) - x0) / (x1 - x0) * (W - L - R), Y = (v) => T + (1 - (Math.max(y0, Math.min(y1, v)) - y0) / (y1 - y0)) * (H - T - B);
   const xf = o.xfmt || ((v) => num(v, 1)), yf = o.yfmt || ((v) => num(v, 1));
-  const order = pts.map((p, i) => i).sort((a, b) => (pts[b].r || 5) - (pts[a].r || 5));   // big dots first, small ones on top
+  const order = pts.map((p, i) => i).sort((a, b) => (!!pts[a].top - !!pts[b].top) || (pts[b].r || 5) - (pts[a].r || 5));   // big dots first, small ones (and `top` ones) on top
   el.innerHTML = `<div class="viz" style="height:${H}px"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">
     ${(o.bands || []).map(b => `<rect x="${X(b.x0 ?? x0)}" y="${Y(b.y1 ?? y1)}" width="${Math.max(0, X(b.x1 ?? x1) - X(b.x0 ?? x0))}" height="${Math.max(0, Y(b.y0 ?? y0) - Y(b.y1 ?? y1))}" fill="${b.color}" opacity=".09"/>`).join('')}
     ${ticks(y0, y1).map(v => `<line class="gl" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${L - 7}" y="${Y(v) + 4}" text-anchor="end">${yf(v)}</text>`).join('')}
@@ -1579,7 +1579,7 @@ VIEWS.today = (el) => {
   const todays = (lv.ledger || []).filter(v => v.day === lv.today), dayPnl = todays.reduce((a, v) => a + (v.usd || 0), 0);
   const y = D.results?.periods?.['2026 YTD'], RD = reactorData();
   el.innerHTML = `
-    <div class="card hero-card"><div class="hero3d" id="tdOrb"><img class="hero-fallback" src="icons/icon-512.png?v=orb1" alt="">
+    <div class="card hero-card"><div class="hero3d" id="tdOrb"><img class="hero-fallback" src="icons/icon-512.png?v=drop1" alt="">
         <span class="hero-tag">${icon('engine')}LIVE ORACLE · last ${Math.min(12, (lv.bars || []).length)} bars</span></div>
       <div class="state">
         <div><div class="eyebrow">Cloud paper bot · ${s.inkz ? esc(s.inkz[2]) + ' live' : s.next ? `${esc(s.next[0])} in ${Math.floor(s.next[1] / 60)}h ${String(s.next[1] % 60).padStart(2, '0')}m` : s.wk ? 'session over' : 'weekend'}</div>
@@ -1949,7 +1949,7 @@ function constFb(el, cd, onPick) {
   const runs = cd.runs.filter(r => ok(r.pf26) && ok(r.pf21)), b = cd.runs.find(r => r.id === cd.baseline);
   const [x0, x1] = rng2(runs.map(r => r.pf21), b?.pf21), [y0, y1] = rng2(runs.map(r => r.pf26), b?.pf26);
   scatter(el, runs.map(r => { const off = r.pf21 < x0 || r.pf21 > x1 || r.pf26 < y0 || r.pf26 > y1;
-    return { x: r.pf21, y: r.pf26, r: Math.max(5, Math.min(13, 3 + (r.tpw21 || 0) * 2)), color: stColor(r.status), alpha: r.id === cd.baseline ? 1 : .85,
+    return { x: r.pf21, y: r.pf26, r: Math.max(5, Math.min(13, 3 + (r.tpw21 || 0) * 2)), color: stColor(r.status), alpha: r.id === cd.baseline ? 1 : .85, top: r.id === cd.baseline || r.id === cd.prev,
       ring: r.id === cd.baseline ? '#ffffff' : off ? '#f2c35b' : null, label: r.id === cd.baseline ? 'live' : r.id === cd.prev ? 'previous lock' : '', ref: r,
       tip: `<b>${esc(r.title)}</b><span>PF 2026 ${fPF(r.pf26)} · 2021-25 ${fPF(r.pf21)}${off ? ' (off the chart, shown at the edge)' : ''}</span><span>net ${kusd(r.net26)} / ${kusd(r.net21)} · ${kusd(r.pm21)} a month (2021-25) · ${num(r.tpw21, 1)}/wk</span><span>${esc(STAT[r.status]?.[0] || r.status)} · tap to open</span>` }; }),
   { h: el.clientHeight, xmin: x0, xmax: x1, ymin: y0, ymax: y1, refX: b?.pf21, refY: b?.pf26, xlab: 'profit factor 2021-25 →', ylab: 'profit factor 2026 →', xfmt: (v) => v.toFixed(2), yfmt: (v) => v.toFixed(1), onPick,
