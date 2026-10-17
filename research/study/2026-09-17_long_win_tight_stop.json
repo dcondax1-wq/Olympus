@@ -1,0 +1,1 @@
+{"params": {"grade_sizing": false, "conviction_step": 0, "max_trades_day": 1, "risk_usd": 800, "dd_aware": false, "risk_ref_stop": 20.0}, "trades": [{"day": "2026-09-17", "dir": 1, "entry_t": 1789670700, "exit_t": 1789674600, "exit": "TARGET", "grade": "D", "pnl": 3913.0, "qty": 28, "r": 5.082, "regime": "rotational", "risk_pts": 13.75, "trigger": "CISD"}]}

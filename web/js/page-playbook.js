@@ -55,7 +55,7 @@ export function renderPlaybook(el) {
       <div class="card"><div class="card-h"><h3>Research findings (honest)</h3></div>
         <ul class="check">
           <li>All numbers: TradingView NQ1! futures data, commissions and slippage included, $350 risk.</li>
-          <li><b>2026 (Jan 2 – Oct 16):</b> 97 trades (2.4 a week, 2+ in 92% of weeks), 26% win, PF 2.55, +$21,359, max DD −$4,379, worst day −$651.</li>
+          <li><b>2026 (Jan 2 – Oct 16):</b> 97 trades (2.4 a week, 2+ in 74% of weeks), 26% win, PF 2.55, +$21,359, max DD −$4,379, worst day −$651.</li>
           <li><b>MFFU 50K eval, new start every 2026 day:</b> 25% passed within 2 weeks (0% failed), 37% within a month (1% failed). Back to back in 2026: 6 passed, 2 failed.</li>
           <li><b>All 5 years:</b> 824 trades, PF 1.30, +$38,194, max DD −$13,389. Eval within 2 weeks: 12% pass / 6% fail; back to back: 20 passed, 31 failed. 2026 was a good year for this model.</li>
           <li>No setting passes for sure in 2 weeks: $3k is about 5R at $650 and the $2k limit is about 3 full losses.</li>

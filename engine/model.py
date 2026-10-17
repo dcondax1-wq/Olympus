@@ -96,6 +96,8 @@ DEFAULTS = {
     "partial_at": "r",          # r (at partial_r) | pool (at the first opposing pool between entry and target)
     "target_mode": "major",     # major (nearest major pool >= min R: session/day/week H-L, 1H swings, EQH/EQL) | major_next | dol (nearest pool >= min R) | dol_next (the pool after it) | fixed (fallback_rr) | draw (liquidity map, see below)
     "stop_buffer_mult": 1.0,    # multiplies the instrument stop buffer beyond the sweep
+    "fixed_stop_pts": 0.0,      # > 0: stop exactly this many points from entry, whatever the structure (0 = off)
+    "risk_ref_stop": 0.0,       # > 0: full risk_usd up to this stop (pts); wider stops risk risk_usd x ref / stop (0 = off)
     "be_at_r": 1.0,             # move stop to breakeven once price runs this many R (0 = off)
     "trail_mode": "none",       # none | r (trail trail_r behind the best price) | swing (trail behind 5m swings)
     "trail_start_r": 2.0,
@@ -1739,7 +1741,9 @@ class Engine:
                 stop = ext - d * buf
             # direction-space helpers
             risk = (entry - stop) * d
-            if risk < spec["min_stop"]:
+            if p["fixed_stop_pts"]:
+                stop, risk = entry - d * p["fixed_stop_pts"], p["fixed_stop_pts"]
+            elif risk < spec["min_stop"]:
                 stop = entry - d * spec["min_stop"]
                 risk = spec["min_stop"]
             if risk > spec["max_stop"]:
@@ -2156,6 +2160,10 @@ class Engine:
             risk_usd *= mult
             order["conviction"] = conv
             order["conf_tags"] = order["conf_tags"] + [f"size ×{mult:.2f} (conviction {conv:+d})"]
+        if p["risk_ref_stop"] and risk > p["risk_ref_stop"]:
+            # de-risk wide stops: full risk up to the reference stop, then risk shrinks in proportion (owner rule)
+            risk_usd *= p["risk_ref_stop"] / risk
+            order["conf_tags"] = order["conf_tags"] + [f"wide stop {risk:.0f} pts: risk ${risk_usd:.0f}"]
         if order.get("regime") == "trending" and p["regime_mode"] == "half" and not (order.get("model") == "trend" and p["trend_full_size"]):
             risk_usd *= 0.5
             order["conf_tags"] = order["conf_tags"] + ["trending regime: half size"]

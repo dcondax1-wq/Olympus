@@ -59,6 +59,9 @@ PARAMS = {
     "min_fvg_ticks": 1,
     "stop_buf_ticks": 2,
     "stop_buf_atr": 0.1,
+    "max_stop_pts": 0.0,          # > 0: pass when the structural stop is wider than this (owner: stops should be 10-15 pts)
+    "min_stop_pts": 0.0,          # > 0: a tighter structural stop is widened to this
+    "fixed_stop_pts": 0.0,        # > 0: stop exactly this many points from entry, whatever the structure
     "target": "opp",              # opp (a) | first_clear (b) | partial (c)
     "tp_min_r": 1.0,              # (b)/(c): the first clear pool must be >= this many R from entry
     "min_rr": 1.5,                # skip if the opposite ATM side is closer than this many R
@@ -201,6 +204,15 @@ def _news_days():
 
 
 # ------------------------------------------------------------------------------------------------ the model
+def _stop_rules(entry, stop, R, d, p):
+    """Owner stop-size rules on top of the structural stop: fixed distance, widen to a minimum, pass when too wide."""
+    if p.get("fixed_stop_pts"):
+        return entry - d * p["fixed_stop_pts"], float(p["fixed_stop_pts"]), False
+    if p.get("min_stop_pts") and R < p["min_stop_pts"]:
+        stop, R = entry - d * p["min_stop_pts"], float(p["min_stop_pts"])
+    return stop, R, bool(p.get("max_stop_pts")) and R > p["max_stop_pts"]
+
+
 def run_raw(bars, params=None, es=None, _funnel=None):
     """Causal simulation. Returns raw setups (entries, both exit paths, confluences, tier) before sizing."""
     p = {**PARAMS, **(params or {})}
@@ -464,6 +476,11 @@ def run_raw(bars, params=None, es=None, _funnel=None):
             buf = max(p["stop_buf_ticks"] * TICK, p["stop_buf_atr"] * float(atr[i]))
             stop = (float(l[e]) - buf) if d == 1 else (float(h[e]) + buf)
             R = (entry - stop) * d
+            stop, R, wide = _stop_rules(entry, stop, R, d, p)
+            if wide:
+                fun["skip_wide"] += 1
+                i += 1
+                continue
             tgt_lvl = RH if d == 1 else RL
             dist = (tgt_lvl - entry) * d
             if R <= 0 or dist < p["min_rr"] * R:
@@ -884,6 +901,11 @@ def run_raw_mtf(bars1, params=None, es5=None, _funnel=None):
             ext_px = float(l[e1]) if d == 1 else float(h[e1])
             stop = ext_px - d * buf
             R = (entry - stop) * d
+            stop, R, wide = _stop_rules(entry, stop, R, d, p)
+            if wide:
+                fun["skip_wide"] += 1
+                j += 1
+                continue
             tgt_lvl = RH if d == 1 else RL
             dist = (tgt_lvl - entry) * d
             if R <= 0 or dist < p["min_rr"] * R:

@@ -72,7 +72,7 @@ These are the pools the bot watches:
 | | 2026 (Jan 2 – Oct 16) | All 5 years (Oct 2021 – Oct 2026) |
 |---|---:|---:|
 | Trades | 97 | 824 |
-| Setups per week | 2.4 (2+ in 92% of weeks) | 3.2 |
+| Setups per week | 2.4 (2+ in 74% of weeks) | 3.2 (2+ in 92% of weeks) |
 | Win rate | 26% | 22% |
 | Profit factor | 2.55 | 1.30 |
 | Net | +$21,359 | +$38,194 |
