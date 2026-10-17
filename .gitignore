@@ -30,3 +30,4 @@ data/NQ_5m.yahoo_backup.csv
 
 # large rendered chart images (rebuild with tools/trade_gallery.py)
 research/lab/gallery/
+data/shadow_ledger.json

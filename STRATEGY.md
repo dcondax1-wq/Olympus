@@ -1,7 +1,7 @@
-# The exact strategy the bot trades: Liquidity Engine (original, 1 trade/day)
+# The exact strategy the bot trades: Liquidity Engine (original, 1 trade/day) + cold-streak filter
 
 Market: NQ futures, traded as MNQ micros ($2 per point), on 5-minute candles. All times are New York (ET).
-Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1` (`live_model.json`).
+Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1`, `equity_filter: {lookback: 15, min_sum_r: 0}` (`live_model.json`).
 
 ## 1. Mark the liquidity
 These are the pools the bot watches:
@@ -59,20 +59,39 @@ These are the pools the bot watches:
   - after 13:00 on FOMC days
   - once the day's range has reached 1.6× the 20-day average
 
+## 9. Cold-streak filter (sit out the bad stretches)
+- The bot keeps a **shadow record of every signal** in rules 1–8, traded or not (`data/shadow_ledger.json`).
+- Before each entry it adds up the R of the **last 15 signals that have already finished**.
+- **Above 0R:** take the trade as normal.
+- **0R or below:** don't take it. The signal is still tracked on paper, and alerts say "NOT TAKEN - cold-streak filter".
+- Trading resumes **automatically** as soon as the last 15 signals add back up above 0R.
+- Nothing else changes: same entries, stops, targets and risk. So the reward-to-risk of each trade stays the same.
+- Why 15: chosen on 2021–24 data only, then checked on 2025 and 2026, which it never saw. Every lookback from 14 to 18 improves every period, so it isn't one lucky number.
+
 ## How it performed (TradingView NQ1! futures data, commissions and slippage included)
 
-| Period | Trades | Trades/week | Win % | Profit factor | Net | Max drawdown | 50K eval pass rate (luck alone) |
-|---|---:|---:|---:|---:|---:|---:|---|
-| **2026 (Jan 2 – Oct 16)** | 93 | 2.3 | 26% | **2.41** | **+$11,630** | −$3,147 | **48%** (27%) |
-| Apr–Dec 2025 | 118 | 3.2 | 20% | 1.14 | +$1,361 | −$3,362 | 12% (1%) |
+| Period | Version | Trades | Trades/week | Win % | Avg win / avg loss | Profit factor | Net | Max drawdown |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| **2026 (Jan 2 – Oct 16)** | original | 93 | 2.3 | 26% | +2.82R / −0.47R | 2.41 | +$11,630 | −$3,147 |
+| | **with filter (live)** | 59 | 1.4 | **32%** | +2.76R / −0.45R | **2.99** | **+$10,339** | **−$1,174** |
+| Apr–Dec 2025 | original | 119 | 3.0 | 20% | +1.99R / −0.51R | 1.18 | +$1,751 | −$3,362 |
+| | **with filter** | 52 | 1.3 | **33%** | +1.84R / −0.54R | **1.74** | **+$3,525** | **−$1,227** |
+| Oct 2021 – Dec 2024 | original | 562 | 3.3 | 22% | +2.04R / −0.53R | 0.96 | −$1,923 | −$8,900 |
+| | **with filter** | 285 | 1.7 | 24% | +2.12R / −0.53R | **1.18** | **+$5,005** | **−$4,958** |
 
 **2026 by month:**
 
-| Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct |
-|---|---|---|---|---|---|---|---|---|---|
-| +$894 | −$436 | +$2,684 | −$832 | −$790 | −$928 | −$340 | +$5,288 | +$4,125 | +$1,964 |
+| | Jan | Feb | Mar | Apr | May | Jun | Jul | Aug | Sep | Oct |
+|---|---|---|---|---|---|---|---|---|---|---|
+| original | +$894 | −$436 | +$2,684 | −$832 | −$790 | −$928 | −$340 | +$5,288 | +$4,125 | +$1,964 |
+| with filter | +$283 | −$436 | +$1,016 | −$832 | paused | paused | paused | +$4,218 | +$4,125 | +$1,964 |
+
+**50K eval, starting on any 2026 trading day ($3k target, $2k end-of-day trailing max loss):**
+- original: 45 passed, 38 failed
+- with filter: 83 passed, 0 failed. Its worst drawdown ($1,174) never reached the $2,000 limit.
 
 **What to expect:**
-- It wins about 1 trade in 4. The winners are big (often 2–5R), so most of the profit comes in strong trending stretches like Aug–Oct.
-- Losing months are small, but there can be several in a row (Apr–Jul 2026).
-- The worst drawdown ($3,147) is over the eval's $2,000 trailing limit. To stay inside it, risk about **$200–250 per trade**; profit scales down by the same proportion.
+- It wins about 1 trade in 3. Winners are still big (about 2.8R); losers are still small (about 0.45R).
+- **It goes quiet in bad stretches.** In 2026 it paused from May 1 to Aug 6, about 14 weeks with no real trades, while the signals kept being tracked on paper. It traded in 26 of 41 weeks: about 2 trades a week while active, and 1.4 a week on average overall.
+- Profit is a little lower than the original (−$1,291 in 2026). After a cold streak it waits for the shadow record to recover, so it misses the first part of each comeback. In exchange, drawdown is cut by almost two-thirds.
+- Past results are not a promise. Paper-trade it before risking money.

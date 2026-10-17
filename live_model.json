@@ -6,5 +6,9 @@
     "conviction_step": 0,
     "max_trades_day": 1
   },
-  "label": "Liquidity Engine - original (1 trade/day, fixed risk) - owner's pick 2026-10-17"
+  "equity_filter": {
+    "lookback": 15,
+    "min_sum_r": 0.0
+  },
+  "label": "Liquidity Engine - original + cold-streak filter (last 15 signals must be net positive)"
 }

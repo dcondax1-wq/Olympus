@@ -22,6 +22,7 @@ from zoneinfo import ZoneInfo
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
+from engine import equity_filter               # noqa: E402
 from engine import lab_adapter                 # noqa: E402
 from engine.data import from_frame             # noqa: E402
 from engine.lab_adapter import live_model      # noqa: E402
@@ -120,14 +121,26 @@ def run(out):
               "stale": bool(stale and mopen), "market_open": bool(mopen), "bars_today": len(tb), "rth_bars_today": len(rth),
               "gaps_today": gaps[:10], "dropped": drops, "error": bot.health.get("last_error")}
 
+    # ---- equity-curve filter (same rule as the PC bot): every finished signal goes into the shadow ledger
+    shadow_path = os.path.join(out, "shadow_ledger.json")
+    eqf_cfg = lm.get("equity_filter")
+    if eqf_cfg:
+        equity_filter.record(res["trades"], shadow_path)
+    eqf_now = equity_filter.status(eqf_cfg, path=shadow_path)
+    state["equity_filter"] = eqf_now
+
     # ---- paper ledger: engine trades that entered after the cloud monitor started watching
     for t in res["trades"]:
         if t["entry_t"] >= first_run - SECS:
+            prev = ledger.get(int(t["entry_t"]))
+            taken = prev["taken"] if prev and "taken" in prev else \
+                equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["on"]
             ledger[int(t["entry_t"])] = {"day": tday(t["entry_t"]), "entry": f"{et(t['entry_t']):%m-%d %H:%M}",
                                          "side": "LONG" if t["dir"] == 1 else "SHORT", "grade": t.get("grade"),
                                          "trigger": t.get("trigger"), "exit": t.get("exit_reason"),
                                          "exit_t": f"{et(t['exit_t']):%H:%M}" if t.get("exit_t") else None,
-                                         "R": round(float(t["pnl_r"]), 2), "usd": round(float(t["pnl"]), 2), "qty": t.get("qty")}
+                                         "R": round(float(t["pnl_r"]), 2), "taken": bool(taken),
+                                         "usd": round(float(t["pnl"]), 2) if taken else 0.0, "qty": t.get("qty")}
     pos = state.get("position")
 
     # ---- alerts for events not seen before (only events from after the monitor started, like LiveBot._emit_events)
@@ -138,7 +151,11 @@ def run(out):
             continue
         seen.add(key)
         if ev["type"] in ALERT_TYPES:
-            new_alerts.append(f"{SYM} {ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}")
+            note = ""
+            if ev["type"] == "entry" and eqf_cfg and \
+                    not equity_filter.status(eqf_cfg, before_t=int(ev["t"]), path=shadow_path)["on"]:
+                note = "\nNOT TAKEN - cold-streak filter (last 15 signals net negative), tracked on paper only"
+            new_alerts.append(f"{SYM} {ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
     et_now = et(now)
     eod_sent = st.get("eod_sent")
     if et_now.weekday() < 5 and et_now.hour * 60 + et_now.minute >= 965 and eod_sent != today:
@@ -245,6 +262,10 @@ def write_chart(path, df, state, res, today):
         print("chart failed:", e)
 
 
+def usd_cell(v):
+    return money(v["usd"]) if v.get("taken", True) else "skipped (cold streak)"
+
+
 def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
@@ -266,6 +287,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
          "", "![NQ 5m today](chart.png)", "",
          "## Status", "| | |", "|---|---|",
          f"| Strategy | {state.get('model_label', 'engine')} |",
+         f"| Cold-streak filter | {(state.get('equity_filter') or {}).get('reason', 'off')} |",
          f"| Model | **{state.get('model_state', '?')}** |",
          f"| Price | {price:,.2f} (last bar {health['last_bar']}, {health['age_min']} min old) |" if price else "| Price | - |",
          f"| Setups | {'<br>'.join(arm) or 'none armed'} |",
@@ -281,7 +303,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     tt = [v for v in ledger.values() if v["day"] == today]
     L += ["", f"## Today {today} (cloud paper)"]
     L += ["| Entry | Side | Grade | Trigger | Exit | R | $ |", "|---|---|---|---|---|---:|---:|"] + \
-         [f"| {v['entry']} | {v['side']} | {v['grade']} | {v['trigger']} | {v['exit']} {v['exit_t'] or ''} | {v['R']:+.2f} | {money(v['usd'])} |" for v in tt] \
+         [f"| {v['entry']} | {v['side']} | {v['grade']} | {v['trigger']} | {v['exit']} {v['exit_t'] or ''} | {v['R']:+.2f} | {usd_cell(v)} |" for v in tt] \
         if tt else ["No paper trades today."]
     L += ["", "## Eval tracker (MFFU 50K rules, cloud paper ledger)", "| Balance | Profit | To $3k target | Trailing max loss | Cushion |",
           "|---:|---:|---:|---:|---:|",
@@ -289,7 +311,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     allv = sorted(ledger.values(), key=lambda v: v["entry"], reverse=True)[:20]
     L += ["", "## Cloud paper ledger (latest 20)"]
     L += ["| Entry | Side | Grade | Trigger | Exit | R | $ |", "|---|---|---|---|---|---:|---:|"] + \
-         [f"| {v['entry']} | {v['side']} | {v['grade']} | {v['trigger']} | {v['exit']} | {v['R']:+.2f} | {money(v['usd'])} |" for v in allv] \
+         [f"| {v['entry']} | {v['side']} | {v['grade']} | {v['trigger']} | {v['exit']} | {v['R']:+.2f} | {usd_cell(v)} |" for v in allv] \
         if allv else ["No cloud paper trades yet."]
     evs = [e for e in res["events"] if tday(e["t"]) == today][-15:]
     L += ["", "## Today's events"] + ([f"- {et(e['t']):%H:%M} {e['type']}: {e['text']}" for e in evs] or ["- none yet"])

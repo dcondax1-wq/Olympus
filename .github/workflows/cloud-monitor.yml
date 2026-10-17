@@ -64,6 +64,7 @@ jobs:
           mkdir -p dash
           if git fetch -q --depth 1 origin dashboard 2>/dev/null; then
             git show FETCH_HEAD:state.json > dash/state.json 2>/dev/null || rm -f dash/state.json
+            git show FETCH_HEAD:shadow_ledger.json > dash/shadow_ledger.json 2>/dev/null || rm -f dash/shadow_ledger.json
           fi
 
       - name: Run paper monitor

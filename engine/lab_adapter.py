@@ -33,9 +33,9 @@ def live_model() -> dict:
             with open(CONFIG, encoding="utf-8") as fh:
                 cfg = json.load(fh)
         return {"model": cfg.get("model") or "engine", "params": cfg.get("params") or {}, "label": cfg.get("label", ""),
-                "sym": (cfg.get("sym") or "NQ").upper()}
+                "sym": (cfg.get("sym") or "NQ").upper(), "equity_filter": cfg.get("equity_filter")}
     except Exception:
-        return {"model": "engine", "params": {}, "label": "", "sym": "NQ"}
+        return {"model": "engine", "params": {}, "label": "", "sym": "NQ", "equity_filter": None}
 
 
 def lab_frame(df: pd.DataFrame) -> pd.DataFrame:

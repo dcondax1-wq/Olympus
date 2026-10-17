@@ -547,6 +547,16 @@ class LiveBot:
         self.state = res["state"]
         self.state["strategy"] = {"model": model, "label": lm.get("label", ""),
                                   "params": eng_params if model == "engine" else (self.cfg.get("model_params") or lm["params"])}
+        # equity-curve filter: every finished signal goes into the shadow ledger; entries trade only while it's positive
+        # (the real bot only: test harnesses run with their own state_path and must not touch the shared ledger)
+        from . import equity_filter as _eqf
+        self._eqf_cfg = lm.get("equity_filter") if self.state_path == STATE_PATH else None
+        if self._eqf_cfg:
+            try:
+                _eqf.record(res["trades"])
+            except Exception as e:
+                self._note_error(f"shadow ledger update failed: {e}")
+        self.state["equity_filter"] = _eqf.status(self._eqf_cfg)
         self.last_poll = now
         self.bars_tail = base.to_records(max(0, len(base) - 400))
         self._emit_events(res, sym)
@@ -642,6 +652,18 @@ class LiveBot:
         except Exception as e:
             self._note_error(f"daily summary failed: {e}")
 
+    def _equity_ok(self, entry_t):
+        """Equity-curve filter gate for one entry; logs why when it holds the entry back (paper only)."""
+        try:
+            from . import equity_filter as _eqf
+            st = _eqf.status(getattr(self, "_eqf_cfg", None), before_t=entry_t)
+        except Exception as e:
+            self._note_error(f"equity filter failed, entry allowed: {e}")
+            return True
+        if not st["on"]:
+            self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET NOT traded: {st['reason']}")
+        return st["on"]
+
     def _route_signals(self, res, sym, now, secs):
         """Turn the engine's position / completed trades into adapter calls, exactly once each."""
         start = self.started_at
@@ -677,6 +699,8 @@ class LiveBot:
             elif age > late_after:
                 self._blocked_entries.add(pos["entry_t"])
                 self._log("risk", f"Entry at {_et(pos['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
+            elif not self._equity_ok(pos["entry_t"]):
+                self._blocked_entries.add(pos["entry_t"])
             else:
                 self._open_routed = pos["entry_t"]
                 self._open_qty = pos["qty"]
