@@ -7,7 +7,9 @@ export default async ({ THREE, neonEnv }) => {
   scene.background = bgTexture(THREE, '#300a58', '#0a0314', '#000000', 0.42);
   scene.environment = neonEnv();
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
-  camera.position.set(0, 1.5, 11.6); camera.lookAt(0, -0.2, 0);
+  // ?zoom=1.25 pulls the camera back (Android maskable icon: keep the orb inside the central safe circle)
+  const zoom = +(new URLSearchParams(location.search).get('zoom') || 1);
+  camera.position.set(0, 1.5 * zoom, 11.6 * zoom); camera.lookAt(0, -0.2, 0);
   scene.add(stars(THREE, 600, 45, 2));
   const R = 1.9, oy = 0.35;
   // candles inside (hologram: emissive + slightly transparent)

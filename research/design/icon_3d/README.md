@@ -12,3 +12,8 @@ picks one, then the 1024 render becomes `web/icons/*` (192, 512, maskable 512, a
 
 Re-render: `npm install three@0.160.0` in this folder, serve it (`python3 -m http.server 8799 --bind 127.0.0.1`), then
 `NODE_PATH=$(npm root -g) node shot3d.js 1024 monolith` (writes `out/monolith_1024.png`; needs Playwright + Chromium).
+
+**Shipped: 5, Oracle Orb (2026-10-17).** App icons in `web/icons/` come from
+`NODE_PATH=$(npm root -g) node shot3d.js 2048 orb` (standard) and `Q=zoom=1.3 TAG=_mask ... shot3d.js 2048 orb` (Android
+maskable: the orb pulled into the safe circle), downscaled with LANCZOS. After changing the icon, bump `?v=` in the
+manifests / link tags and the service-worker cache names so phones fetch it.
