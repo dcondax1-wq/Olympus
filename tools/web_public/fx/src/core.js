@@ -92,12 +92,14 @@ export function rng(seed = 7) { let s = seed >>> 0 || 1; return () => (s = (s * 
 
 // ------------------------------------------------------------------ the loop
 const views = new Set();
-let raf = 0, lastT = 0, acc = 0, frames = 0, slow = 0;
+let raf = 0, lastT = 0, acc = 0, frames = 0, slow = 0, lastInput = performance.now();
+for (const ev of ['pointerdown', 'pointermove', 'wheel', 'scroll', 'keydown', 'touchstart']) addEventListener(ev, () => { lastInput = performance.now(); }, { passive: true, capture: true });
 const clock = { t: 0 };
 function tick(now) {
   raf = 0;
   const dt = Math.min(0.1, (now - lastT) / 1000 || 0.016);
-  const minDt = 1 / Q.fps - 0.002;
+  // battery: after 20 s without a touch, scroll or key the whole layer runs at 30 fps
+  const fps = now - lastInput > 20000 ? Math.min(30, Q.fps) : Q.fps, minDt = 1 / fps - 0.002;
   if (dt < minDt) { raf = requestAnimationFrame(tick); return; }
   lastT = now; clock.t += dt;
   par.x += (par.tx - par.x) * Math.min(1, dt * 3); par.y += (par.ty - par.y) * Math.min(1, dt * 3);
@@ -108,7 +110,7 @@ function tick(now) {
   const cost = performance.now() - t0;
   if (any && Q.level !== 'off' && !Q.fixed) {
     acc += dt; frames++;
-    if (dt > 1 / 38 || cost > 22) slow++;
+    if (dt > 1.6 / fps || cost > 22) slow++;
     if (acc > 3) {
       if (slow / frames > 0.5 && Q.dprScale > 0.55) { Q.dprScale = Math.max(0.55, Q.dprScale - 0.2); for (const v of views) v.resize?.(); }
       acc = frames = slow = 0;

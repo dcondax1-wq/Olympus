@@ -25,6 +25,14 @@ const fmtUsd = (v) => (v < 0 && Math.round(-v) ? MINUS : '+') + '$' + Math.round
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const CENTRE = new THREE.Vector3(0, 0.9, 0);
 const _v = new THREE.Vector3(), _m = new THREE.Matrix4(), _c = new THREE.Color();
+// backdrop colours (output space): the page colour when the skin is dark (neon needs a dark stage), a purple/accent glow
+function paintBackdrop(U) {
+  const pg = theme.page.clone().convertLinearToSRGB(), ac = theme.accent.clone().convertLinearToSRGB();
+  const base = 0.2126 * pg.r + 0.7152 * pg.g + 0.0722 * pg.b < 0.22 ? pg : new THREE.Color(0.027, 0.031, 0.047);
+  U.uBot.value.set(base.r * 0.9 + 0.006, base.g * 0.9 + 0.004, base.b * 0.9 + 0.014);
+  U.uTop.value.set(base.r + 0.03, base.g + 0.012, base.b + 0.065);
+  U.uGlow.value.set(0.035 + ac.r * 0.05, 0.012 + ac.g * 0.03, 0.06 + ac.b * 0.07);
+}
 
 // ------------------------------------------------------------------ shaders
 const BG_V = `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
@@ -64,11 +72,11 @@ void main(){
   float sx = p.x / (2.0 * uHalf.x) + 0.5;
   float scan = exp(-pow((sx - fract(t * 0.04)) * 10.0, 2.0)) * uMotion;
   float r = length(p * vec2(0.65, 1.0));
-  float rip = exp(-pow((r - uIntro * 7.5) * 2.2, 2.0)) * (1.0 - uIntro);
+  float rip = exp(-pow((r - uIntro * 7.5) * 5.0, 2.0)) * (1.0 - uIntro) * (1.0 - uIntro);
   float sh = 0.5 + 0.5 * sin(p.x * 2.6 + t * 0.5) * sin(p.y * 3.3 - t * 0.37);
   vec3 col = mix(uC1, uC2, clamp(0.15 + 0.3 * sh + scan * 0.55, 0.0, 1.0));
   vec2 nq = p / uHalf; float fill = exp(-dot(nq, nq) * 1.4) * 0.07;
-  float a = ((major * 0.3 + minor) * (0.55 + 1.1 * scan) + fill + 0.02) * inside + rip * 1.3 * inside;
+  float a = ((major * 0.3 + minor) * (0.55 + 1.1 * scan) + fill + 0.02) * inside + rip * (0.25 + major * 1.2) * inside;
   float bx = exp(-max(e.y, 0.0) * 40.0) * step(e.x, 0.6), by = exp(-max(e.x, 0.0) * 40.0) * step(e.y, 0.6);
   a += max(bx, by) * step(0.0, edge) * 0.9 + exp(-max(edge, 0.0) * 22.0) * step(0.0, edge) * 0.12;
   gl_FragColor = vec4(col * a, 1.0);
@@ -231,7 +239,7 @@ export class Galaxy extends View {
   constructor(opts = {}) {
     super({ fov: 38, dprMax: 2, ...opts,
       orbit: { yaw: -0.34, pitch: 0.34, auto: 0.05, min: -0.7, max: 0.7, pitchMin: 0.1, pitchMax: 0.7, ...(opts.orbit || {}) } });
-    this.canvas.classList.add('fx-galaxy');
+    this.canvas.classList.add('fx-galaxy'); this.canvas.style.display = 'block'; // inline canvases leave a baseline gap that can grow auto-height cards
     this.lt = 0; this.W = 7; this.ys = 0.78; this.L = 13; this.T = new THREE.Vector3();
     this.userRange = !!(opts.orbit && (opts.orbit.min != null || opts.orbit.max != null)); this.Lset = false;
     this.slots = []; this.byKey = new Map(); this.items = []; this.sig = ''; this.cap = 0; this.animating = false; this.t0 = 0; this.t1 = 0;
@@ -268,6 +276,7 @@ export class Galaxy extends View {
     // backdrop: deep purple gradient + soft glow (screen space, drawn first)
     this.bgU = { uTop: { value: new THREE.Vector3(0.05, 0.026, 0.095) }, uBot: { value: new THREE.Vector3(0.016, 0.013, 0.03) },
       uGlow: { value: new THREE.Vector3(0.07, 0.024, 0.12) }, uGlow2: { value: new THREE.Vector3(0.012, 0.03, 0.075) }, uAsp: { value: 1 } };
+    paintBackdrop(this.bgU);
     const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({ uniforms: this.bgU, vertexShader: BG_V, fragmentShader: BG_F, depthTest: false, depthWrite: false }));
     bg.renderOrder = -10; S.add(bg);
     // nebula clouds (world space, so they parallax while orbiting)
@@ -309,6 +318,7 @@ export class Galaxy extends View {
     this.beacon = spr(ring, new THREE.Color('#bdf4ff'), 10);
     this.flash = spr(glowTexture(), new THREE.Color('#d9c8ff'), 12);
     this.head = spr(glowTexture(), new THREE.Color('#c9fbff'), 12);
+    this.tipGlow = spr(glowTexture(), new THREE.Color('#7df3ff'), 12);
     this.ripple = new THREE.Mesh(new THREE.RingGeometry(0.86, 1, 64), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
     this.ripple.rotation.x = -Math.PI / 2; this.ripple.renderOrder = 9; this.ripple.visible = false; S.add(this.ripple);
     S.traverse((o) => { o.frustumCulled = false; });
@@ -467,7 +477,7 @@ export class Galaxy extends View {
       sl.poolS = 0.13 + 0.075 * Math.sqrt(Math.min(Math.abs(r), 5));
     }
   }
-  retheme() { if (this.slots.length) { this.recolor(); this.writeStatic(); this.writeDynamic(); } }
+  retheme() { paintBackdrop(this.bgU); if (this.slots.length) { this.recolor(); this.writeStatic(); this.writeDynamic(); } }
   writeStatic() {
     const n = this.slots.length; this.ensureCap(n);
     const K = this.K, S = this.stars.geometry.attributes, D = this.drops.geometry.attributes, F = this.flows.geometry.attributes, P = this.pools.geometry.attributes;
@@ -487,13 +497,13 @@ export class Galaxy extends View {
     const n = this.slots.length, K = this.K, S = this.stars.geometry.attributes, D = this.drops.geometry.attributes, F = this.flows.geometry.attributes, PA = this.pools.geometry.attributes;
     const P = S.position.array, Z = S.aSize.array, A = S.aAlpha.array, DP = D.position.array, DA = D.aA.array, FP = F.position.array, FA = F.aA.array, OF = PA.aFoot.array, OA = PA.aA.array;
     for (let i = 0; i < n; i++) {
-      const sl = this.slots[i], p = sl.p, a = sl.a, o = i * 6;
+      const sl = this.slots[i], p = sl.p, a = sl.a, la = sl.la ?? a, o = i * 6;
       P[i * 3] = p.x; P[i * 3 + 1] = p.y; P[i * 3 + 2] = p.z;
       Z[i] = sl.size * sl.s; A[i] = sl.alpha * a;
       DP[o] = DP[o + 3] = p.x; DP[o + 1] = p.y; DP[o + 4] = 0; DP[o + 2] = DP[o + 5] = p.z;
-      DA[i * 2] = DA[i * 2 + 1] = a * sl.lineA * sl.alpha;
-      for (let k = 0; k < K; k++) { const q = i * K + k; FP[q * 3] = p.x; FP[q * 3 + 1] = p.y; FP[q * 3 + 2] = p.z; FA[q] = a * sl.flowA; }
-      OF[i * 3] = p.x; OF[i * 3 + 1] = 0.004; OF[i * 3 + 2] = p.z; OA[i] = a * sl.poolA;
+      DA[i * 2] = DA[i * 2 + 1] = la * sl.lineA * sl.alpha;
+      for (let k = 0; k < K; k++) { const q = i * K + k; FP[q * 3] = p.x; FP[q * 3 + 1] = p.y; FP[q * 3 + 2] = p.z; FA[q] = la * sl.flowA; }
+      OF[i * 3] = p.x; OF[i * 3 + 1] = 0.004; OF[i * 3 + 2] = p.z; OA[i] = la * sl.poolA;
     }
     for (const at of [S.position, S.aSize, S.aAlpha, D.position, D.aA, F.position, F.aA, PA.aFoot, PA.aA]) at.needsUpdate = true;
   }
@@ -505,7 +515,7 @@ export class Galaxy extends View {
       if (sl.mode === FLY) {
         const e = outCubic(k), ang = (1 - e) * sl.spin, ox = p1.x - CENTRE.x, oz = p1.z - CENTRE.z, ca = Math.cos(ang), sa = Math.sin(ang);
         p.set(CENTRE.x + (ox * ca - oz * sa) * e, CENTRE.y + (p1.y - CENTRE.y) * e + Math.sin(k * Math.PI) * 0.6, CENTRE.z + (ox * sa + oz * ca) * e);
-        sl.s = k > 0 ? outBack(k) : 0; sl.a = smooth(Math.min(1, k * 2.5));
+        sl.s = k > 0 ? 0.55 + 0.45 * outBack(k) : 0; sl.a = smooth(Math.min(1, k * 4)); sl.la = k * k * k;
       } else if (sl.mode === MOVE) {
         const e = smooth(k); p.lerpVectors(sl.p0, p1, e); sl.s = sl.s0 + (1 - sl.s0) * e; sl.a = sl.a0 + (1 - sl.a0) * e;
       } else if (sl.mode === GROW) {
@@ -513,7 +523,8 @@ export class Galaxy extends View {
       } else {
         const e = smooth(k); p.set(sl.p0.x, sl.p0.y * (1 - e * 0.7), sl.p0.z); sl.s = sl.s0 * (1 - e); sl.a = sl.a0 * (1 - e);
       }
-      if (k >= 1) { sl.done = true; dead ||= sl.dead; } else busy = true;
+      if (sl.mode !== FLY) sl.la = sl.a;
+      if (k >= 1) { sl.done = true; sl.la = sl.a; dead ||= sl.dead; } else busy = true;
     }
     if (!busy && dead) { // compact: drop the stars that finished shrinking
       this.slots = this.slots.filter((s) => !s.dead); this.writeStatic();
@@ -691,6 +702,11 @@ export class Galaxy extends View {
       this.head.scale.setScalar(0.55); this.head.material.opacity = 0.9;
       if (rv >= 1) this.camKey = '';
     } else this.head.visible = false;
+    // "now" on the equity curve
+    if (this.curve && this.reveal >= 1) {
+      this.tipGlow.visible = true; this.tipGlow.position.copy(this.curve.end);
+      this.tipGlow.scale.setScalar(0.42 + (Q.reduced ? 0 : 0.08 * Math.sin(lt * 3))); this.tipGlow.material.opacity = 0.85;
+    } else this.tipGlow.visible = false;
     // newest trade: sonar ping
     const nb = this.newest;
     if (nb && !nb.dead && nb.a > 0.5) {

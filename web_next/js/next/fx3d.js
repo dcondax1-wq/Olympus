@@ -15,7 +15,7 @@ export async function initFX() {
   root.dataset.fx = lv;
   if (lv === 'off' || matchMedia('(prefers-reduced-motion: reduce)').matches) { root.dataset.fx = 'off'; return; }
   await new Promise(r => setTimeout(r, 300));
-  try { FX = await import('/js/fx.js?v=1'); } catch (e) { console.warn('3D layer not loaded', e); root.dataset.fx = 'off'; return; }
+  try { FX = await import('/js/fx.js?v=8026f5c7'); } catch (e) { console.warn('3D layer not loaded', e); root.dataset.fx = 'off'; return; }
   if (!FX.supported()) { FX = null; root.dataset.fx = 'off'; return; }
   root.dataset.fx = FX.init({ level: lv });
   for (const [key, a] of pend) mount3d(key, ...a);

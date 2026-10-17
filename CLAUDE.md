@@ -87,7 +87,7 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
    - **3D layer (2026-10-17):** three.js source in `tools/web_public/fx/src/` (`core.js` loop + quality, `field.js` galaxy background,
      `aura.js` card glow, `taps.js` tap sparks, `orb.js` Live Oracle, `candles.js` 3D chart + replay, `galaxy.js` trade galaxy,
      `city.js` month city). Build with `cd tools/web_public/fx && npm install && npm run build`: it writes the one bundle
-     `tools/web_public/fx.js` and copies it to `web_next/js/fx.js` (commit both). Lazy-loaded after first paint; Settings has
+     `tools/web_public/fx.js`, copies it to `web_next/js/fx.js` and stamps its hash into both import URLs (commit all of it). Lazy-loaded after first paint; Settings has
      Max / Lite / Off; off or no WebGL2 leaves the 2D page. `fx/dev.html?view=orb|galaxy|city|candles` is a test harness;
      add `?fxfixed` to a page URL to stop the auto resolution drop in screenshots. PC side: `web_next/js/next/fx3d.js`.
 3. Port the cold-streak filter plus the new sizing and target rules to the Pine script.

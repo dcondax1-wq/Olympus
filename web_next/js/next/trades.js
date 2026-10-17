@@ -83,8 +83,8 @@ function render() {
       <div class="nx-stat"><span>Avg R</span><b class="${cls(s.avgR)}">${fmtR(s.avgR)}</b><em>per trade</em></div>
       <div class="nx-stat"><span>Half size</span><b data-count="${s.half}">${s.half}</b><em>cold-streak trades</em></div>
     </div>
-    <div class="card nx-glass"><div class="card-h"><h3>Equity · filtered trades</h3><span class="muted small">cumulative net $, oldest → newest</span></div><div id="trEq"></div></div>
     <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>Trade galaxy · ${rows.length} trades</h3><span class="muted small">every trade is a star: time → right, R ↑, stop size ↗ · drag to turn · click a star for its report</span></div><div class="fx3d galaxy" id="trGal"></div></div>
+    <div class="card nx-glass"><div class="card-h"><h3>Equity · filtered trades</h3><span class="muted small">cumulative net $, oldest → newest</span></div><div id="trEq"></div></div>
     <div class="nx-toolbar">
       <div class="seg" id="trFilter">${FILTERS.map(([v, l]) => `<button class="${v === st.filter ? 'on' : ''}" data-v="${v}">${l}</button>`).join('')}</div>
       <label class="nx-field grow">${icon('search')}<input class="inp" id="trQ" placeholder="Search trigger, pool, lesson, tag…" value="${esc(st.q)}" autocomplete="off"></label>
