@@ -91,6 +91,10 @@ jobs:
           MPLBACKEND: Agg
         run: python tools/cloud_monitor.py --out dash
 
+      - name: News hub (USD calendar + headlines, free sources; never fails the run)
+        if: steps.guard.outputs.go == '1'
+        run: python tools/news_hub.py --out data/news/hub.json || true
+
       - name: Publish dashboard branch
         if: steps.guard.outputs.go == '1'
         env:

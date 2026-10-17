@@ -30,8 +30,11 @@ import json
 import os
 import re
 import shutil
+import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+from tools import news_hub  # noqa: E402
 WEB = os.path.join(ROOT, "tools", "web_public")
 LAB = os.path.join(ROOT, "research", "lab")
 STUDY = os.path.join(ROOT, "research", "study")
@@ -402,6 +405,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     data = {
         "built": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "live": live,
+        "news": news_hub.hub_for_dashboard(os.path.join(ROOT, "data", "news", "hub.json")),
         "results": results,
         "trades": _trades(bt),
         "replays": (_load(os.path.join(LAB, "replays.json"), {}) or {}),

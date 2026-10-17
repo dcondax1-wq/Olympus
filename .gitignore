@@ -31,6 +31,9 @@ data/NQ_5m.yahoo_backup.csv
 
 # large rendered chart images (rebuild with tools/trade_gallery.py)
 research/lab/gallery/
+
+# raw fetches of the news hub (tools/news_hub.py saves every source here; --offline rebuilds from them)
+data/news/raw/
 data/shadow_ledger.json
 
 # 3D effects build deps (tools/web_public/fx: npm install && npm run build)

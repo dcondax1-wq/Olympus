@@ -44,7 +44,8 @@ RAW_DIR = os.path.join(NEWS_DIR, "raw")
 FIXTURES = os.path.join(ROOT, "tests", "fixtures", "news")
 DEFAULT_OUT = os.path.join(NEWS_DIR, "hub.json")
 ET_TZ = ZoneInfo("America/New_York")
-UA = "Mozilla/5.0 (X11; Linux x86_64) nq-liquidity-engine-news-hub/1.0 (+public data reader; 1 request per source per run)"
+# same browser UA as engine/news.py and data/build_news.py (bls.gov answers 403 to bare scripts); one GET per source per run
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36"
 TIMEOUT = 15
 MAX_RAW_BYTES = 3_000_000          # a raw file bigger than this is not kept (the pages we read are 20-400 KB)
 HEADLINE_HOURS = 48
@@ -119,6 +120,7 @@ KINDS = [
                    "warsh speaks", "powell testif", "warsh testif", "fed chairman"]),
     ("fed_speaker", ["fomc member", "fed governor", "fed president", "fed vice chair", "vice chair", "governor ", "fed's ",
                      "speaks", "speech", "testif", "remarks"]),
+    ("adp", ["adp "]),
     ("cpi", ["cpi", "consumer price"]),
     ("nfp", ["non-farm", "nonfarm", "payroll", "employment situation", "unemployment rate", "average hourly earnings",
              "jobs report"]),
@@ -130,7 +132,6 @@ KINDS = [
     ("ism_s", ["ism services", "ism non-manufacturing"]),
     ("claims", ["unemployment claims", "jobless claims", "initial claims"]),
     ("jolts", ["jolts", "job openings"]),
-    ("adp", ["adp "]),
     ("umich", ["umich", "uom ", "michigan"]),
     ("cb", ["cb consumer confidence", "consumer confidence"]),
     ("eci", ["employment cost"]),
@@ -142,7 +143,7 @@ KINDS = [
     ("durables", ["durable"]),
     ("housing", ["housing starts", "building permits", "home sales", "nahb", "pending home"]),
     ("auction_30y", ["30-year bond", "30-y bond", "30y bond"]),
-    ("auction_10y", ["10-year note", "10-y note", "10y note"]),
+    ("auction_10y", ["10-year note", "10-y note", "10y note", "10-y bond", "10y bond"]),
     ("auction_20y", ["20-year bond", "20-y bond"]),
     ("auction_other", ["-year note", "-year bond", "-year tips", "tips auction", "note auction", "bond auction", "auction"]),
     ("regional_fed", ["philly fed", "empire state", "richmond", "kansas city fed", "dallas fed", "chicago fed", "beige book"]),
@@ -189,10 +190,10 @@ TONE = [
     ("dovish", r"dovish|rate cut|cuts? rates|cut(s|ting)? interest|inflation (cools|slows|eases|falls|drops)|yields? (fall|drop|slide|tumble|slip)|"
                r"dollar (falls|weakens|slides|drops|slips)|weak(er)? (jobs|payrolls|hiring)|jobs miss|unemployment (rises|jumps|climbs)|"
                r"layoffs|easing|more cuts|lower rates|slowing economy"),
-    ("risk-off", r"sell-?off|plunge|tumble|slump|crash|rout|fear|panic|war|attack|missile|tariff|shutdown|default|downgrade|recession|"
-                 r"slide|sink|drop|fall|lose|losses|worst|warning|crisis|turmoil"),
-    ("risk-on", r"rall(y|ies)|record high|all-time high|surge|soar|gain|rebound|jump|climb|rise|best|optimism|boost|beat|upbeat|"
-                r"strong earnings|bull"),
+    ("risk-off", r"sell-?off|\bplunge|\btumble|\bslump|\bcrash|\brout\b|\bfears?\b|\bpanic|\bwar\b|\battack|missile|tariff|shutdown|"
+                 r"\bdefault|downgrade|recession|\bslides?\b|\bsinks?\b|\bdrops?\b|\bfalls?\b|\blose|\blosses|\bworst\b|warning|crisis|turmoil"),
+    ("risk-on", r"rall(y|ies)|record high|all-time high|\bsurge|\bsoar|\bgains?\b|rebound|\bjumps?\b|\bclimbs?\b|\brises?\b|\bbest\b|optimism|"
+                r"\bboost|\bbeats?\b|upbeat|strong earnings|\bbull"),
 ]
 TONE_RE = [(name, re.compile(rx, re.I)) for name, rx in TONE]
 MONTHS = {m: i for i, m in enumerate(["january", "february", "march", "april", "may", "june", "july", "august", "september",
@@ -256,7 +257,7 @@ def _num(s):
         return None
 
 
-def surprise(kind: str, actual, forecast):
+def surprise(kind: str, actual, forecast, title: str = ""):
     """(actual - forecast, 'above'|'below'|'inline', USD hint) when both are numeric."""
     a, f = _num(actual), _num(forecast)
     if a is None or f is None:
@@ -264,8 +265,9 @@ def surprise(kind: str, actual, forecast):
     d = round(a - f, 3)
     side = "inline" if abs(d) < 1e-9 else "above" if d > 0 else "below"
     hint = None
-    if side != "inline" and (kind in USD_UP_ON_BEAT or kind in INVERSE):
-        up = (d > 0) != (kind in INVERSE)
+    inverse = kind in INVERSE or "unemployment rate" in (title or "").lower()
+    if side != "inline" and (kind in USD_UP_ON_BEAT or inverse):
+        up = (d > 0) != inverse
         hint = "USD+" if up else "USD-"
     return d, side, hint
 
@@ -399,8 +401,8 @@ def parse_ff(raw: bytes, source="ForexFactory"):
         ccy, imp = e.get("country", ""), (e.get("impact") or "").lower()
         title = e.get("title", "")
         kind = classify(title)
-        fed_low = ccy == "USD" and imp == "low" and kind in ("fed_chair", "fed_speaker", "treasury_sec", "potus", "fomc_min")
-        if ccy != "USD" or not (imp in ("high", "medium") or fed_low):
+        fed_low = imp == "low" and kind in ("fed_chair", "fed_speaker", "treasury_sec", "potus", "fomc_min")
+        if ccy != "USD" or not (imp in ("high", "medium", "holiday") or fed_low):
             continue
         out.append({"t": t, "title": title, "country": ccy, "impact": imp, "kind": kind, "forecast": e.get("forecast", ""),
                     "previous": e.get("previous", ""), "actual": e.get("actual", ""), "source": source,
@@ -603,7 +605,7 @@ def normalise(ev: dict, p: dict) -> dict:
     m = _mod(x)
     kz = [i for i, (a, z) in enumerate(p["entry_windows"]) if a <= m < z]
     kz_hit = hi and any(_mod(b0) < z and _mod(b1) > a for a, z in p["entry_windows"]) and b0.date() == x.date()
-    sp, side, hint = surprise(kind, ev.get("actual"), ev.get("forecast"))
+    sp, side, hint = surprise(kind, ev.get("actual"), ev.get("forecast"), ev.get("title", ""))
     return {"t": int(ev["t"]), "date": x.strftime("%Y-%m-%d"), "time_et": x.strftime("%H:%M"), "weekday": x.strftime("%a"),
             "label": x.strftime("%a %b %d %H:%M"), "title": ev.get("title", ""), "kind": kind, "kind_label": KIND_LABEL.get(kind, "Other"),
             "impact": impact, "usd_score": score, "country": ev.get("country", "USD"),
@@ -632,8 +634,10 @@ def merge_events(raw_events, p, start_t, end_t):
                 keep["sources"].append(e["source"])
             if not keep["url"] and e["url"]:
                 keep["url"] = e["url"]
-            if e["impact"] == "high" and keep["impact"] != "high" and _rank(e) <= 1:
-                keep.update(impact="high", usd_score=max(keep["usd_score"], e["usd_score"]))
+            if e["impact"] == "high" and keep["impact"] != "high":      # any source calling it high = the bot blacks out
+                keep.update(normalise({**e, "title": keep["title"], "forecast": keep["forecast"], "previous": keep["previous"],
+                                       "actual": keep["actual"], "source": keep["source"], "url": keep["url"] or e["url"]}, p),
+                            sources=keep["sources"])
             for f in ("actual", "forecast", "previous"):
                 if not keep[f] and e.get(f):
                     keep[f] = e[f]
@@ -720,13 +724,14 @@ def day_rows(events, start: dt.date, end: dt.date, today: dt.date, p: dict, note
             if parts:
                 summary += " Also high-impact: " + ", ".join(parts) + "."
         elif hi:
-            parts = [f"{_short(e)} {e['time_et']}" for e in hi]
-            summary = f"{label}: {len(hi)} high-impact: " + ", ".join(dict.fromkeys(parts)) + ". "
+            parts = list(dict.fromkeys(f"{_short(e)} {e['time_et']}" for e in hi))
+            summary = f"{label}: {len(parts)} high-impact release{'s' if len(parts) > 1 else ''}: " + ", ".join(parts) + ". "
             if kz_hits:
                 summary += "The bot will not enter " + ", ".join(dict.fromkeys(kz_hits)) + " (blackout inside a killzone)."
             else:
-                summary += "Blackout " + ", ".join(f"{_hhmm(a)}-{_hhmm(b)}" for a, b, _ in wins) + \
-                           ": ends before the killzone, so entries are not affected; expect the 08:30 move to set up the first sweep."
+                summary += "Blackout " + ", ".join(f"{_hhmm(a)}-{_hhmm(b)}" for a, b, _ in wins) + ": outside the killzones, entries are not affected."
+                if any(e["time_et"] == "08:30" for e in hi):
+                    summary += " Expect the 08:30 move to set up the first sweep."
         else:
             med = [e for e in evs if e["impact"] == "medium"]
             summary = f"{label}: no high-impact USD release." + (f" Medium: {', '.join(dict.fromkeys(_short(e) + ' ' + e['time_et'] for e in med[:4]))}." if med else "") + \
@@ -779,20 +784,27 @@ def build(days=10, past=2, offline=False, now=None, raw_dir=RAW_DIR, save_raw=Tr
     end_t = int(dt.datetime.combine(end + dt.timedelta(days=1), dt.time.min, ET_TZ).timestamp())
     sources, raw_events, notes = [], [], []
 
-    # fetch everything in parallel (one GET per source, 15 s timeout each)
-    jobs = [("cal", s) for s in CAL_SOURCES] + ([("hl", f) for f in HEADLINE_FEEDS] if headlines else [])
+    # fetch everything in parallel: one GET per distinct source (the Fed feeds serve both the calendar and the headlines)
+    jobs = {}
+    for s in CAL_SOURCES + (HEADLINE_FEEDS if headlines else []):
+        jobs.setdefault(s["slug"], {**s, "ext": s.get("ext", "xml")})
     fetched = {}
     with cf.ThreadPoolExecutor(max_workers=8) as ex:
-        futs = {ex.submit(fetch, {**s, "ext": s.get("ext", "xml")}, offline, raw_dir, save_raw): (kind, s) for kind, s in jobs}
+        futs = {ex.submit(fetch, s, offline, raw_dir, save_raw): slug for slug, s in jobs.items()}
         for fut in cf.as_completed(futs):
-            kind, s = futs[fut]
+            slug = futs[fut]
             try:
-                fetched[(kind, s["slug"])] = fut.result()
+                fetched[slug] = fut.result()
             except Exception as e:          # noqa: BLE001
-                fetched[(kind, s["slug"])] = (None, {"name": s["name"], "slug": s["slug"], "url": s["urls"][0], "ok": False, "n": 0, "error": str(e)[:200]})
+                s = jobs[slug]
+                fetched[slug] = (None, {"name": s["name"], "slug": slug, "url": s["urls"][0], "ok": False, "n": 0, "error": str(e)[:200]})
+
+    def result(s):
+        raw, info = fetched[s["slug"]]
+        return raw, {**info, "name": s["name"]}
 
     for s in CAL_SOURCES:
-        raw, info = fetched[("cal", s["slug"])]
+        raw, info = result(s)
         info["kind"] = "calendar"
         if raw is not None:
             try:
@@ -820,7 +832,7 @@ def build(days=10, past=2, offline=False, now=None, raw_dir=RAW_DIR, save_raw=Tr
 
     items_by_feed = []
     for f in HEADLINE_FEEDS if headlines else []:
-        raw, info = fetched[("hl", f["slug"])]
+        raw, info = result(f)
         info["kind"] = "headlines"
         if raw is not None:
             items = parse_rss(raw)
@@ -875,13 +887,18 @@ def write(hub: dict, out: str):
 
 
 def hub_for_dashboard(path: str = DEFAULT_OUT, days=7, headlines=40, now=None) -> dict:
-    """Compact hub for data.json: events today..+7 days (plus yesterday's results), top headlines, days, next, bot_now."""
+    """Compact hub for data.json: events yesterday..+7 days, top headlines, days, next, bot_now. Never raises."""
     try:
         with open(path, encoding="utf-8") as fh:
             hub = json.load(fh)
     except Exception as e:                  # noqa: BLE001
         return {"error": f"{os.path.relpath(path, ROOT) if os.path.isabs(path) else path} unavailable ({type(e).__name__}): "
                          "run python tools/news_hub.py --out data/news/hub.json", "events": [], "headlines": [], "days": [], "next": None}
+    return compact(hub, days, headlines, now)
+
+
+def compact(hub: dict, days=7, headlines=40, now=None) -> dict:
+    """The data.json cut of an already loaded hub."""
     now = int(now or time.time())
     today = et_dt(now).date()
     lo, hi = (today - dt.timedelta(days=1)).isoformat(), (today + dt.timedelta(days=days)).isoformat()
@@ -901,16 +918,20 @@ def hub_for_dashboard(path: str = DEFAULT_OUT, days=7, headlines=40, now=None) -
 
 
 # ------------------------------------------------------------------ selftest (fixtures, no network)
-def _assert(cond, msg, fails):
+_FAILS: list = []
+
+
+def _assert(cond, msg):
     print(("  ok   " if cond else "  FAIL ") + msg)
     if not cond:
-        fails.append(msg)
+        _FAILS.append(msg)
 
 
 def selftest() -> int:
-    fails = []
+    fails = _FAILS
+    fails.clear()
     p = bot_params()
-    now = int(dt.datetime(2026, 10, 20, 9, 0, tzinfo=ET_TZ).timestamp())     # Tue 09:00 ET
+    now = int(dt.datetime(2026, 10, 19, 9, 0, tzinfo=ET_TZ).timestamp())     # Mon 09:00 ET
     print("news_hub selftest  (fixtures:", os.path.relpath(FIXTURES, ROOT) + ")")
 
     print("classify / score")
@@ -942,10 +963,12 @@ def selftest() -> int:
         with open(os.path.join(FIXTURES, name), "rb") as fh:
             return fh.read()
     ff = parse_ff(fx("ff_thisweek.json"))
-    _assert(len(ff) == 9 and all(e["country"] == "USD" for e in ff), f"ForexFactory: 9 USD rows kept (high/medium + Fed speaker), got {len(ff)}")
+    _assert(len(ff) == 10 and all(e["country"] == "USD" for e in ff), f"ForexFactory: 10 USD rows kept (high/medium + Fed speaker + holiday), got {len(ff)}")
     _assert(any(e["kind"] == "fed_speaker" and e["impact"] == "low" for e in ff), "FF low-impact Fed speaker kept")
-    _assert(not any(e["title"] == "Housing Starts" for e in ff), "FF low-impact data dropped")
-    fomc = parse_fomc(fx("fomccalendars.htm"))
+    _assert(not any(e["title"] == "Housing Starts" for e in ff) and not any(e["country"] == "GBP" for e in ff), "FF low-impact data and other currencies dropped")
+    _assert(classify("ADP Non-Farm Employment Change") == "adp", "ADP is not the jobs report")
+    _assert(surprise("nfp", "4.4%", "4.3%", "Unemployment Rate")[2] == "USD-", "unemployment rate above forecast = USD-")
+    fomc = parse_fomc(fx("fomc_calendar.htm"))
     _assert(len(fomc) == 4 and fomc[0]["title"].startswith("FOMC rate decision") and "projections" in fomc[2]["title"], f"FOMC calendar: 2 meetings -> 4 rows, got {len(fomc)}")
     _assert(et_dt(fomc[0]["t"]).strftime("%Y-%m-%d %H:%M") == "2026-10-28 14:00" and et_dt(fomc[1]["t"]).strftime("%H:%M") == "14:30", "FOMC 14:00 / 14:30 ET")
     bls = parse_bls(fx("bls_schedule.htm"))
@@ -955,15 +978,15 @@ def selftest() -> int:
     _assert(et_dt(jolts["t"]).strftime("%Y-%m-%d %H:%M") == "2026-11-03 10:00", "BLS JOLTS Tue Nov 3 10:00 ET")
     bea = parse_bea(fx("bea_schedule.htm"))
     _assert(len(bea) == 3 and {e["kind"] for e in bea} == {"gdp", "pce", "trade"}, f"BEA schedule: GDP, PCE, trade ({len(bea)})")
-    tr = parse_treasury(fx("treasury_announced.json"))
+    tr = parse_treasury(fx("treasury_auctions.json"))
     _assert(len(tr) == 3 and {e["kind"] for e in tr} == {"auction_10y", "auction_30y", "auction_other"}, f"Treasury: notes/bonds only ({len(tr)}), bills dropped")
     _assert(et_dt(tr[0]["t"]).strftime("%H:%M") == "13:00", "auctions at 13:00 ET")
     sp = parse_fed_speeches(fx("fed_speeches.xml"))
     _assert(len(sp) == 2 and {e["kind"] for e in sp} == {"fed_chair", "fed_speaker"}, "Fed speeches RSS: chair + governor")
     pr = parse_fed_press(fx("fed_press.xml"))
     _assert(len(pr) == 1 and pr[0]["kind"] == "fomc_min", "Fed press RSS: only the FOMC minutes become an event")
-    rss = parse_rss(fx("mw_topstories.xml"))
-    _assert(len(rss) == 4 and all(i["t"] for i in rss), "MarketWatch RSS: 4 items with dates")
+    rss = parse_rss(fx("mw_top.xml"))
+    _assert(len(rss) == 5 and all(i["t"] for i in rss), "MarketWatch RSS: 5 items with dates")
     atom = parse_rss(fx("atom_sample.xml"))
     _assert(len(atom) == 2 and atom[0]["link"].startswith("http"), "Atom feed parsed (link href)")
 
@@ -981,13 +1004,13 @@ def selftest() -> int:
 
     print("full build from fixtures")
     hub = build(days=14, past=2, offline=True, now=now, raw_dir=FIXTURES, save_raw=False, log=lambda *a: None)
-    _assert(hub["range"] == {"from": "2026-10-18", "to": "2026-11-03", "days": 14, "past": 2}, "range = past 2 .. next 14 days")
+    _assert(hub["range"] == {"from": "2026-10-17", "to": "2026-11-02", "days": 14, "past": 2}, "range = past 2 .. next 14 days")
     srcs = {s["slug"]: s for s in hub["sources"]}
     _assert(all(srcs[k]["ok"] for k in ("ff_thisweek", "fomc_calendar", "bls_schedule", "bea_schedule", "treasury_auctions", "engine_calendar")),
             "every fixture-backed calendar source ok")
     _assert(not srcs["ff_nextweek"]["ok"] and "no raw file" in srcs["ff_nextweek"].get("error", ""), "missing raw file -> ok=false with an error, build continues")
     dates = [e["date"] for e in hub["events"]]
-    _assert(dates == sorted(dates) and all("2026-10-18" <= d <= "2026-11-03" for d in dates), "events sorted and inside the range")
+    _assert(dates == sorted(dates) and all("2026-10-17" <= d <= "2026-11-02" for d in dates), "events sorted and inside the range")
     fomc_rows = [e for e in hub["events"] if e["kind"] in ("fomc", "fomc_pc") and e["date"] == "2026-10-28"]
     _assert(len(fomc_rows) == 2 and all(len(e["sources"]) >= 2 for e in fomc_rows), f"FOMC Oct 28 deduped across FF + Fed + engine calendar ({len(fomc_rows)} rows, sources {[e['sources'] for e in fomc_rows]})")
     cpi_rows = [e for e in hub["events"] if e["kind"] == "cpi"]
@@ -1000,7 +1023,8 @@ def selftest() -> int:
     _assert(hub["next"] and hub["next"]["kind"] == "cpi" and hub["next"]["date"] == "2026-10-20" and hub["next"]["time_et"] == "08:30" or
             (hub["next"] and hub["next"]["impact"] == "high" and hub["next"]["t"] > now), f"next = next high-impact event ({hub['next'] and hub['next']['title']} {hub['next'] and hub['next']['label']})")
     days = {r["date"]: r for r in hub["days"]}
-    _assert("2026-10-18" not in days and "2026-10-19" in days, "weekend without events skipped, weekdays listed")
+    _assert("2026-10-17" in days and "2026-10-18" not in days and "2026-10-19" in days and days["2026-10-19"]["is_today"],
+            "Saturday with a Fed speech listed, Sunday without events skipped, today flagged")
     d28 = days["2026-10-28"]
     _assert(d28["fomc"] and "13:00-16:00 FOMC afternoon: no entries" in d28["blackouts"] and any(b.startswith("13:45-15:00") for b in d28["blackouts"]),
             f"FOMC day blackouts merged 13:45-15:00 + afternoon off: {d28['blackouts']}")
@@ -1032,7 +1056,7 @@ def selftest() -> int:
     tmp = os.path.join(tempfile.gettempdir(), "news_hub_selftest.json")
     write(hub, tmp)
     comp = hub_for_dashboard(tmp, now=now)
-    _assert(comp["events"] and all("2026-10-19" <= e["date"] <= "2026-10-27" for e in comp["events"]) and len(comp["headlines"]) <= 40 and comp["next"],
+    _assert(comp["events"] and all("2026-10-18" <= e["date"] <= "2026-10-26" for e in comp["events"]) and len(comp["headlines"]) <= 40 and comp["next"],
             f"hub_for_dashboard: events yesterday..+7d ({len(comp['events'])}), top headlines, next")
     _assert("error" in hub_for_dashboard(os.path.join(tempfile.gettempdir(), "does_not_exist.json")), "hub_for_dashboard never raises on a missing file")
     json.dumps(comp)

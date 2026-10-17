@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Atom sample (fixture)</title>
+  <updated>2026-10-19T12:00:00Z</updated>
+  <entry>
+    <title>Treasury yields fall after soft retail sales</title>
+    <link href="https://example.org/atom-1" rel="alternate"/>
+    <id>urn:uuid:atom-1</id>
+    <updated>2026-10-19T11:30:00Z</updated>
+  </entry>
+  <entry>
+    <title>Dollar gains as tariff talk returns</title>
+    <link href="https://example.org/atom-2" rel="alternate"/>
+    <id>urn:uuid:atom-2</id>
+    <published>2026-10-18T22:00:00-04:00</published>
+  </entry>
+</feed>

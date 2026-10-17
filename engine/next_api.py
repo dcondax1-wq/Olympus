@@ -207,3 +207,18 @@ def lab_file(name: str):
         return _J({"error": "bad name"}, 400)
     d = _read(os.path.join(LAB, name + ".json"))
     return _J(d) if d is not None else _J({"error": "not found"}, 404)
+
+
+@router.get("/api/next/news")
+def news_hub(compact: int = 0):
+    """The news hub (tools/news_hub.py -> data/news/hub.json): USD calendar with the bot's blackouts, scored headlines,
+    per-day summaries. compact=1 returns the same cut the public site embeds in data.json (next 7 days, 40 headlines)."""
+    path = os.path.join(ROOT, "data", "news", "hub.json")
+    d = _read(path)
+    if not d:
+        return _J({"error": "data/news/hub.json missing: run python tools/news_hub.py --out data/news/hub.json",
+                   "events": [], "headlines": [], "days": [], "next": None, "sources": []}, 404)
+    if compact:
+        from tools import news_hub as nh
+        return _J(nh.compact(d))
+    return _J(d)
