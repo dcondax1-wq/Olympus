@@ -49,6 +49,12 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   About 1 min on 11 processes.
 - `python tools/strategy_lab.py engine --name X --period ytd --params '{...}'`: score a variant. `tools/five_year.py live_jobs`
   is the exact live-loop replay.
+- **Research run library** (`tools/runlib.py`, 2026-10-17): every experiment is stored with all its trades and days in
+  `research/runs/<id>.json` (+ `index.json`), scored like the live results (2026 / 2021-25 / all, MFFU evals). `rl.replay(params)`
+  is the exact live-loop replay (~1.5 min on 4 cores, cached in `research/runs/_cache`), `rl.size(raw, rule=...)` re-sizes
+  after the fact (exact), `rl.save(...)` stores a run. `python tools/runlib.py baseline` stores the live strategy. Write-ups go in
+  `research/writeups/*.md` (front matter: title, family, date, status, summary, runs). Both dashboards show runs and write-ups
+  (Lab). New engine options must default to today's behaviour; bump `ENGINE_EPOCH` in runlib if an existing option changes.
 - `python tools/trade_gallery.py --trades <json> --name <n> --all`: annotated trade charts → `research/lab/gallery/` (gitignored).
   Study trades the owner is reviewing are in `research/study/`.
 - `python -X utf8 -m tests.test_live_dryrun --quick`: the live-loop harness. Expected 40/44; known fails:

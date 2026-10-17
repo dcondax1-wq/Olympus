@@ -9,9 +9,11 @@ import { Orb } from './orb.js';
 import { Galaxy } from './galaxy.js';
 import { City } from './city.js';
 import { Candles } from './candles.js';
+import { Constellation } from './constellation.js';
+import { Ribbon } from './ribbon.js';
 
 export const version = 1;
-const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles };
+const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon };
 const reg = new Map();
 let field = null, bg = null, inited = false;
 

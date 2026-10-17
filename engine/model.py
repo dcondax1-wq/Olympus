@@ -96,6 +96,8 @@ DEFAULTS = {
     "partial_at": "r",          # r (at partial_r) | pool (at the first opposing pool between entry and target)
     "target_mode": "major",     # major (nearest major pool >= min R: session/day/week H-L, 1H swings, EQH/EQL) | major_next | dol (nearest pool >= min R) | dol_next (the pool after it) | fixed (fallback_rr) | draw (liquidity map, see below)
     "stop_buffer_mult": 1.0,    # multiplies the instrument stop buffer beyond the sweep
+    "stop_buf_atr": 0.0,        # > 0: buffer beyond the sweep extreme = this x ATR(15) of the base bars at the signal bar
+                                #   (min 1 tick) instead of stop_buffer x stop_buffer_mult (research; 0 = off)
     "fixed_stop_pts": 0.0,      # > 0: stop exactly this many points from entry, whatever the structure (0 = off)
     "risk_ref_stop": 0.0,       # > 0: full risk_usd up to this stop (pts); wider stops risk risk_usd x ref / stop (0 = off)
     "be_at_r": 1.0,             # move stop to breakeven once price runs this many R (0 = off)
@@ -134,6 +136,10 @@ DEFAULTS = {
     "w_pd": 1,                  # sweep in discount (longs) / premium (shorts) of the 1H dealing range
     "w_midnight": 0,            # sweep below (longs) / above (shorts) the midnight true-day open
     "w_dol": 0,                 # trade points toward the nearest MAJOR untaken liquidity (HTF draw)
+    "w_pdc": 0,                 # +w when the trade fades yesterday's candle (long after a down day, short after an up day),
+                                #   -w when it follows it (research; 0 = off)
+    "w_pwmid": 0,               # +w when a long is above / a short is below the prior week's midpoint, -w otherwise
+                                #   (research; 0 = off)
     "w_disp": 0, "w_fast": 0, "w_multi": 0, "w_major": 0, "w_vol": 0, "w_shallow": 0, "w_first": 0, "w_vwap": 0,
     "w_keylevel": 0,            # sweep tapped a 1D/4H/1H FVG or inverted FVG (Blake "valid key level")
     "mtf_gate": -9,             # hard filter: minimum net MTF alignment (-9 = off)
@@ -1735,6 +1741,12 @@ class Engine:
             stop, risk = stop_info["stop"], stop_info["risk"]
         else:
             buf = spec["stop_buffer"] * p["stop_buffer_mult"]
+            if p["stop_buf_atr"]:
+                # research option: buffer beyond the sweep extreme scaled to the current 5m ATR (same ATR as the features)
+                k0 = max(0, i - 14)
+                pc_ = np.r_[b.c[max(0, k0 - 1)], b.c[k0:i]]
+                atr_b = float((np.maximum(b.h[k0:i + 1], pc_) - np.minimum(b.l[k0:i + 1], pc_)).mean())
+                buf = max(tick, p["stop_buf_atr"] * atr_b)
             if p["stop_mode"] == "ifvg":
                 stop = (trig["inv_low"] - buf) * d   # inv_low is in direction-space
             else:
@@ -1936,6 +1948,25 @@ class Engine:
         tgt_major = int(tpool is not None and _is_major(tpool))
         if dol_align:
             score += p["w_dol"]; tags.append("toward nearest major liquidity")
+        # ---- research bias weights (both 0 = off): yesterday's candle and the prior week's midpoint
+        if p["w_pdc"] or p["w_pwmid"]:
+            pdays = self._prev_days_ref or []
+            if p["w_pdc"] and pdays and pdays[-1]["close"] != pdays[-1]["open"]:
+                fade = (pdays[-1]["close"] - pdays[-1]["open"]) * d < 0
+                score += p["w_pdc"] if fade else -p["w_pdc"]
+                tags.append("fades yesterday's candle" if fade else "follows yesterday's candle")
+            if p["w_pwmid"] and pdays:
+                wk_ = lambda ds: _dt.date.fromisoformat(ds).isocalendar()[:2]
+                cw_ = wk_(b.date_str[i])
+                prior = [x for x in pdays if wk_(x["date"]) != cw_]
+                if prior:
+                    w0_ = wk_(prior[-1]["date"])
+                    pw_ = [x for x in prior if wk_(x["date"]) == w0_]
+                    mid_ = (max(x["high"] for x in pw_) + min(x["low"] for x in pw_)) / 2
+                    with_loc = (entry - mid_) * d > 0
+                    score += p["w_pwmid"] if with_loc else -p["w_pwmid"]
+                    tags.append(("above" if d == 1 else "below") + " prior-week midpoint" if with_loc else
+                                ("below" if d == 1 else "above") + " prior-week midpoint (against)")
 
         # ---- Quarterly Theory / AMD / gamma
         def q90(m):
