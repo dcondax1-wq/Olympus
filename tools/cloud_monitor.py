@@ -170,6 +170,13 @@ def run(out):
             if ev["type"] == "entry" and sizing_cfg and sizing_cfg.get("late_mult") is not None:
                 note += "\n(late entries, where the 15m trend already turned, are traded at half size)"
             new_alerts.append(f"{SYM} {ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
+    # eval timing flipped since the last run (cold streak <-> full size): the owner buys/resets the eval on GO
+    prev_et = (st.get("eval_timing") or {}).get("verdict")
+    now_et = state["eval_timing"]
+    if prev_et and prev_et != now_et["verdict"]:
+        new_alerts.append(f"{SYM} EVAL TIMING: {now_et['verdict'].upper()}\n{now_et['reason']}\n"
+                          + ("Good time to buy or reset the MFFU eval." if now_et["verdict"] == "go" else
+                             "Hold off on a new eval until the filter is back at full size."))
     et_now = et(now)
     eod_sent = st.get("eod_sent")
     if et_now.weekday() < 5 and et_now.hour * 60 + et_now.minute >= 965 and eod_sent != today:
@@ -210,7 +217,7 @@ def run(out):
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
                  "health": health, "eval": ev_track, "model_state": state.get("model_state"), "position": pos,
                  "strategy": lm.get("label"), "params": lm.get("params"), "equity_filter": state.get("equity_filter"),
-                 "price": state.get("price"), "today": today,
+                 "eval_timing": state.get("eval_timing"), "price": state.get("price"), "today": today,
                  "events": [{"t": int(e["t"]), "type": e["type"], "text": e["text"]} for e in res["events"] if tday(e["t"]) == today][-25:],
                  "engine_trades": [{"day": tday(t["entry_t"]), "entry_t": int(t["entry_t"]), "dir": t["dir"], "R": round(float(t["pnl_r"]), 2),
                                     "exit": t.get("exit_reason"), "trigger": t.get("trigger"), "risk_pts": t.get("risk_pts"),
