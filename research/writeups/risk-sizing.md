@@ -71,7 +71,7 @@ Today: full $800 up to a 20-pt stop, then $800 × 20 / stop (a 40-pt stop risks 
   - 30-45 pts: -0.15R
   - So less scaling lowers the 2026 PF.
 - **No version is better in both periods.**
-  - $800 on every stop has the most money, but 37% of 1-month evals fail in 2021-25, against 10%.
+  - $800 on every stop has the most money, but 37% of 1-month evals fail in 2021-25, against 9%.
   - The steeper version skips setups (2.06 a week in 2026) and makes almost nothing over 2021-25.
 - **Verdict:** keep the 20-pt reference.
 
@@ -100,17 +100,17 @@ Today: if the last 15 finished signals add up to 0R or less, trade half size.
 - 2026 moves by less than $2k either way.
 
 **Cold size is the robust finding.** In the full 45-point grid (5 lookbacks × 3 thresholds × 3 sizes, printed by `python tools/research_risk.py cold`), a quarter beats a half in 2021-25 at every lookback and threshold.
-- Gain: +$0.2k to +$3.7k.
-- 2026 net moves by -$1k to +$0.3k.
+- Gain: +$0.7k to +$3.7k.
+- 2026 net moves by -$1.6k to +$0.4k.
 - The trades in a cold streak lose money in both periods (-0.11R and -0.10R a trade), so the smaller their size the better.
-- Sitting out entirely (skip mode, run `loss_no_cold` shows the opposite) is best of all, but it pauses trading for months, which you rejected.
+- Sitting out entirely (skip mode, run `risk_cold_skip`: 2021-25 +$15.0k, PF 1.32) is best of all, but it drops to 1.5 setups a week and pauses trading for months, which you rejected.
 
 **Hot-streak boost (x1.5 when the last 15 signals add up to +8R or more):**
 - It beats the live sizing in both periods, and the gain holds for thresholds +6R to +10R.
 - It is not recommended now:
   - the gain comes from simply risking 1.5x on a fifth of the trades
   - 2026 max DD gets worse (-$3.1k)
-  - 3-month eval fails rise in 2026 (29% vs 20%)
+  - 3-month eval fails rise in 2026 (21% vs 14%)
   - at +5R it no longer helps 2021-25
 - Combined with the quarter cold size (run `risk_pkg_q25_hot8`): 2026 +$23.7k, 2021-25 +$12.7k. A candidate for later, with more live data.
 
@@ -174,7 +174,7 @@ These were picked on 2021-25 only, then checked on 2026 untouched. Each rule is 
 **Only one rule passes the strict test cleanly: half size on late entries** (the 15-minute trend already points the trade's way).
 - 2026: +$21.2k, PF 4.02
 - 2021-25: +$8.6k, PF 1.12
-- 1-month eval fails: 6.5% vs 9.6%
+- 1-month eval fails: 6.3% vs 9.4%
 
 **Some rules look good but are not trusted:**
 - Thursday half size, which has no reason at all, also improves 2021-25. Noise can do that.
@@ -191,5 +191,5 @@ These were picked on 2021-25 only, then checked on 2026 untouched. Each rule is 
 - They are combined in the recommendation (risk-summary.md, run `risk_pkg_q25_late_live`):
   - 2026: +$20.6k, PF 4.12, max DD -$2.2k
   - 2021-25: +$11.5k, PF 1.19, max DD -$9.2k
-  - 1-month eval fails in 2021-25: 5.2%, against 9.6%
+  - 1-month eval fails in 2021-25: 5.1%, against 9.4%
   - every setup is still traded

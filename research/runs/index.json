@@ -1,7 +1,7 @@
 {
- "built": "2026-10-17 20:52",
+ "built": "2026-10-17 20:57",
  "baseline": "baseline",
- "count": 299,
+ "count": 300,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -2460,7 +2460,7 @@
      "size": 0.25
     }
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -7685,7 +7685,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -7784,7 +7784,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -7883,7 +7883,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -7982,7 +7982,7 @@
     "rule": "x1.1 on the strong side",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -8081,7 +8081,7 @@
     "rule": "x1.5 on the strong side",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:42",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -8180,7 +8180,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -8279,7 +8279,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -8378,7 +8378,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -8477,7 +8477,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -8576,7 +8576,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -8675,7 +8675,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -8774,7 +8774,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -8873,7 +8873,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -8972,7 +8972,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -9071,7 +9071,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -9170,7 +9170,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -9269,7 +9269,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -9368,7 +9368,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -9467,7 +9467,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -9566,7 +9566,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -9665,7 +9665,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -9764,7 +9764,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -9863,7 +9863,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -9962,7 +9962,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -10061,7 +10061,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -10160,7 +10160,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -10259,7 +10259,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -10358,7 +10358,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -10457,7 +10457,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -10556,7 +10556,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -10655,7 +10655,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -10754,7 +10754,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -10853,7 +10853,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -10952,7 +10952,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -11051,7 +11051,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -11150,7 +11150,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -11249,7 +11249,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -11348,7 +11348,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -11447,7 +11447,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -11546,7 +11546,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -11645,7 +11645,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:54",
    "spans": {
     "2026": {
      "n": 89,
@@ -11744,7 +11744,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:54",
    "spans": {
     "2026": {
      "n": 89,
@@ -11843,7 +11843,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:54",
    "spans": {
     "2026": {
      "n": 89,
@@ -11942,7 +11942,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -12041,7 +12041,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -12140,7 +12140,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -12239,7 +12239,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -12338,7 +12338,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -12437,7 +12437,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -12536,7 +12536,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -12635,7 +12635,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -12734,7 +12734,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -12833,7 +12833,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:54",
    "spans": {
     "2026": {
      "n": 89,
@@ -12932,7 +12932,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -13031,7 +13031,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -13130,7 +13130,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -13229,7 +13229,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -13328,7 +13328,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -13427,7 +13427,7 @@
     "rule": "x0.5 on the weak side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -13526,7 +13526,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -15981,7 +15981,7 @@
      "size": 0.5
     }
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -16093,7 +16093,7 @@
      "size": 0.5
     }
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -16205,7 +16205,7 @@
      "size": 0.5
     }
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -16317,7 +16317,7 @@
      "size": 0.5
     }
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -16429,7 +16429,7 @@
      "size": 0.75
     }
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -16541,7 +16541,7 @@
      "size": 0.0
     }
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 61,
@@ -16653,7 +16653,7 @@
      "size": 0.5
     }
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -16765,7 +16765,7 @@
      "size": 0.5
     }
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 89,
@@ -23006,6 +23006,100 @@
    }
   },
   {
+   "id": "stp_atr015_replay",
+   "title": "Stop buffer = 0.15 x ATR (exact replay check)",
+   "family": "stops",
+   "question": "Does the exact live-loop replay agree with the one-pass screen on the most tempting stop variant?",
+   "status": "rejected",
+   "verdict": "Too few trades (1.84 a week). 2026: PF 3.48 -> 3.74, net +$20.1k -> +$17.6k; 2021-25: PF 1.09 -> 1.1, net +$6.5k -> +$6.9k; 1.84 / 3.05 trades a week.",
+   "writeup": "stops.md",
+   "tags": [
+    "replay"
+   ],
+   "params": {
+    "stop_buf_atr": 0.15
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:57",
+   "spans": {
+    "2026": {
+     "n": 76,
+     "tpw": 1.84,
+     "wk2": 57,
+     "win": 27.6,
+     "pf": 3.74,
+     "net": 17607,
+     "dd": -2083,
+     "avg_r": 0.396,
+     "stop": 43.8,
+     "worst_day": -494,
+     "risk": 270.0,
+     "half": 21,
+     "per_month": 1795,
+     "p10": 15.5,
+     "f10": 0.0,
+     "p15": 24.3,
+     "f15": 0.0,
+     "p20": 26.7,
+     "f20": 0.0,
+     "dec10": 15.5,
+     "slow_pass": 42.5,
+     "pass_med": 13.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 654,
+     "tpw": 3.05,
+     "wk2": 90,
+     "win": 21.3,
+     "pf": 1.1,
+     "net": 6894,
+     "dd": -9423,
+     "avg_r": 0.006,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 204.0,
+     "half": 341,
+     "per_month": 135,
+     "p10": 3.2,
+     "f10": 1.9,
+     "p15": 4.9,
+     "f15": 3.9,
+     "p20": 6.4,
+     "f20": 6.2,
+     "dec10": 5.1,
+     "slow_pass": 69.8,
+     "pass_med": 25.5,
+     "b2b": "6/15"
+    },
+    "all": {
+     "n": 730,
+     "tpw": 2.86,
+     "wk2": 85,
+     "win": 21.9,
+     "pf": 1.32,
+     "net": 24500,
+     "dd": -9423,
+     "avg_r": 0.047,
+     "stop": 41.6,
+     "worst_day": -875,
+     "risk": 207.0,
+     "half": 362,
+     "per_month": 403,
+     "p10": 5.2,
+     "f10": 1.6,
+     "p15": 8.0,
+     "f15": 3.3,
+     "p20": 9.8,
+     "f20": 5.2,
+     "dec10": 6.8,
+     "slow_pass": 64.1,
+     "pass_med": 24.0,
+     "b2b": "10/16"
+    }
+   }
+  },
+  {
    "id": "stp_atr025",
    "title": "Stop buffer = 0.25 x ATR beyond the sweep",
    "family": "stops",
@@ -27485,7 +27579,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 27,
@@ -27584,7 +27678,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:41",
+   "built": "2026-10-17 20:56",
    "spans": {
     "2026": {
      "n": 63,
@@ -27683,7 +27777,7 @@
     "rule": "only in cold streaks: strong-side trades go back to full size, weak side stays at half",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -27782,7 +27876,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 0
@@ -27859,7 +27953,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -27958,7 +28052,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 21,
@@ -28057,7 +28151,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 83,
@@ -28156,7 +28250,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 6,
@@ -28255,7 +28349,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 62,
@@ -28354,7 +28448,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 26,
@@ -28453,7 +28547,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:54",
    "spans": {
     "2026": {
      "n": 53,
@@ -28552,7 +28646,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 28,
@@ -28651,7 +28745,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 26,
@@ -28750,7 +28844,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 30,
@@ -28849,7 +28943,7 @@
     "rule": "x1.25 on the strong side (every trade still taken)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 89,
@@ -28948,7 +29042,7 @@
     "rule": "skip the weak side (check only: a post-hoc skip approximates an engine filter)",
     "on_top_of": "live sizing incl. the cold-streak half size"
    },
-   "built": "2026-10-17 20:40",
+   "built": "2026-10-17 20:55",
    "spans": {
     "2026": {
      "n": 20,

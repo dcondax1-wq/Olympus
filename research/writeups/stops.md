@@ -4,7 +4,7 @@ family: stops
 date: 2026-10-17
 status: rejected
 summary: Today's stop (2 points beyond the sweep extreme, 10-60 points) is the best of 19 variants. Wider buffers, volatility-scaled (ATR) buffers, other min/max limits and stops beyond the gap all lose money in 2026, 2021-25 or both; no stop change is recommended.
-runs: screen_baseline, stp_buf05, stp_buf15, stp_buf20, stp_buf30, stp_atr010, stp_atr015, stp_atr025, stp_atr050, stp_atr010_max70, stp_atr015_max70, stp_atr015_max80, stp_max45, stp_max50, stp_max70, stp_max80, stp_min8, stp_min12, stp_min15, stp_ifvg
+runs: screen_baseline, stp_atr015_replay, stp_buf05, stp_buf15, stp_buf20, stp_buf30, stp_atr010, stp_atr015, stp_atr025, stp_atr050, stp_atr010_max70, stp_atr015_max70, stp_atr015_max80, stp_max45, stp_max50, stp_max70, stp_max80, stp_min8, stp_min12, stp_min15, stp_ifvg
 ---
 
 ## What was tested
@@ -33,6 +33,7 @@ settings, plus a new idea: a buffer that grows with volatility (a share of the 5
 | 6 pts beyond | 75 | 1.82 | 2.94 | +$11.5k | −$1.7k | 9.2/0 · 15/0 | 656 | 3.02 | 0.95 | −$3.2k | −$11.5k | 1.9/0.6 · 3/3.3 | 5/14 | rejected |
 | 0.10 x ATR beyond | 83 | 2.01 | 2.81 | +$14.7k | −$3.8k | 13.6/0 · 19.9/0 | 681 | 3.13 | 1.1 | +$7.6k | −$9.6k | 3.9/2.1 · 6.2/5.1 | 8/17 | rejected |
 | 0.15 x ATR beyond | 76 | 1.84 | 3.71 | +$17.4k | −$2.1k | 15.5/0 · 24.3/0 | 666 | 3.06 | 1.14 | +$10.1k | −$8.7k | 3.8/1.8 · 5.4/3.9 | 6/14 | rejected |
+| 0.15 x ATR beyond, exact replay | 76 | 1.84 | 3.74 | +$17.6k | −$2.1k | 15.5/0 · 24.3/0 | 654 | 3.05 | 1.1 | +$6.9k | −$9.4k | 3.2/1.9 · 4.9/3.9 | 6/15 | rejected |
 | 0.25 x ATR beyond | 70 | 1.7 | 3.09 | +$10.2k | −$2.0k | 9.2/0 · 14.6/0 | 643 | 2.96 | 1.05 | +$3.4k | −$11.9k | 2.9/1.1 · 4.3/3 | 5/14 | rejected |
 | 0.5 x ATR beyond | 58 | 1.41 | 2.29 | +$4.9k | −$1.1k | 0/0 · 0/0 | 557 | 2.56 | 1.05 | +$2.4k | −$7.8k | 0.9/0 · 2.9/0.5 | 3/9 | rejected |
 | 0.10 x ATR, widest 70 | 96 | 2.33 | 3.11 | +$15.4k | −$3.0k | 18/0 · 26.7/0 | 716 | 3.29 | 1.16 | +$11.4k | −$12.0k | 5.6/1.3 · 7.5/3.6 | 9/15 | rejected |
@@ -47,8 +48,10 @@ settings, plus a new idea: a buffer that grows with volatility (a share of the 5
 | Tightest stop 15 | 89 | 2.16 | 3.2 | +$17.9k | −$2.7k | 17.5/0 · 27.7/0 | 691 | 3.18 | 1.07 | +$5.2k | −$11.9k | 4.5/1.9 · 6/6.5 | 6/17 | rejected |
 | Stop beyond the gap (check) | 91 | 2.21 | 3.08 | +$19.5k | −$2.7k | 15/0 · 20.9/0 | 710 | 3.27 | 0.99 | −$1.3k | −$17.1k | 4.7/4.1 · 6.6/9.3 | 7/21 | rejected |
 
-(One-pass backtest numbers; the exact live replay of today's rules is 2026 PF 3.48 / +$20.1k and 2021-25 PF 1.09 /
-+$6.5k. Compare each row with the first row, not with the replay.)
+(One-pass backtest numbers, except the "exact replay" row; the exact live replay of today's rules is 2026 PF 3.48 /
++$20.1k and 2021-25 PF 1.09 / +$6.5k. Compare each one-pass row with the first row, and the exact-replay row with
+the replay. The exact replay of the most tempting variant, 0.15 x ATR, agrees with the one-pass result: 2026 drops to
+76 trades (1.84 a week) and +$17.6k, 2021-25 is about the same as today (+$6.9k vs +$6.5k, PF 1.10 vs 1.09).)
 
 ## What it means
 

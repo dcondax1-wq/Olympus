@@ -4,7 +4,7 @@ family: risk
 date: 2026-10-17
 status: adopt-candidate
 summary: Recommendation: quarter size (not half) in cold streaks and half size on late entries. Same trades: 2021-25 +$11.5k instead of +$6.5k (PF 1.19 vs 1.09, max DD -$9.2k vs -$11.4k), 2026 +$20.6k instead of +$20.1k (PF 4.12 vs 3.48), 1-month eval fails in 2021-25 9.4% to 5.1%. For the 2-week eval rule, an optional fast mode ($800 on any stop until the eval is $1,000 down) doubles eval speed at the same evals per pass but fails more evals a year.
-runs: baseline, risk_pkg_q25_late_live, risk_fast_press1000, risk_fast_press1000_ref40, risk_fast_press0_bank, risk_fast_press500_bank, risk_fast_flat800, risk_fast_usd1200, risk_fast_usd1600, risk_fast_fresh1200, risk_fast_cush06_bank, risk_cold_q25, risk_cold_skip, risk_pkg_half_late, risk_pkg_q25_late, risk_pkg_q25_hot8, risk_pkg_q25_prop1000, risk_sit_late_half, risk_hot8_150, risk_eval_prop1000, risk_usd1000, risk_usd600, risk_refoff, risk_ref30, loss_no_cold, loss_no_trend_half, loss_all_full
+runs: baseline, risk_pkg_q25_late_live, risk_fast_press1000, risk_fast_press1000_ref40, risk_fast_cush1000, risk_fast_press0_bank, risk_fast_press500_bank, risk_fast_flat800, risk_fast_usd1200, risk_fast_usd1600, risk_fast_fresh1200, risk_fast_cush06_bank, risk_cold_q25, risk_cold_skip, risk_pkg_half_late, risk_pkg_q25_late, risk_pkg_q25_hot8, risk_pkg_q25_prop1000, risk_sit_late_half, risk_hot8_150, risk_eval_prop1000, risk_usd1000, risk_usd600, risk_refoff, risk_ref30, loss_no_cold, loss_no_trend_half, loss_all_full
 ---
 
 ## The answer to "risking too much or not enough?"
@@ -14,7 +14,10 @@ Both, in different places.
 - **It risks too much on two kinds of trade that lost money in both periods:**
   - trades taken during a cold streak
   - late entries, where the 15-minute trend had already turned the trade's way
-- **On every other trade the risk is about right.** More risk (a higher $ amount, or less scaling on wide stops) makes more money in 2026, but it makes the drawdown and the eval fail rate grow faster than the profit. Less risk makes less money and, at $400, drops below 2 setups a week.
+- **On every other trade the risk is about right with today's rules.**
+  - More risk (a higher $ amount, or less scaling on wide stops) makes more money in 2026, but the drawdown and the eval fail rate grow faster than the profit.
+  - Less risk makes less money and, at $400, drops below 2 setups a week.
+  - Once the two fixes below are in, more risk on wide stops starts to pay in 2021-25 too (bigger drawdowns, more eval fails). That is the optional fast mode further down.
 
 Over 2021-25 the strategy has no edge in R: 285R won, 287R lost. All of the 5-year profit comes from sizing, and most of it from the cold-streak filter.
 
@@ -154,6 +157,7 @@ The table follows the owner's columns. "Decided in 2w" is passed + failed within
 | risk_fast_press1000_ref40 | adopt-candidate | 27% (27/0) | 34/2 | 24% | 9 | 1.32 | +$26,267 | 3.47 | 13% (7/6) | 9/13 | 66% | 21 | 2.5 / 5.1 | 3.02 | +$17,599 | 1.20 | -$12,446 |
 | risk_fast_press0_bank | adopt-candidate | 23% (22/0) | 32/1 | 50% | 15 | 1.15 | +$21,400 | 3.35 | 11% (8/4) | 12/8 | 60% | 18 | 2.4 / 3.8 | 2.58 | +$13,454 | 1.19 | -$10,564 |
 | risk_fast_press500_bank | promising | 25% (24/1) | 32/3 | 34% | 10.5 | 1.37 | +$26,528 | 3.56 | 14% (9/5) | 13/10 | 54% | 17 | 2.4 / 4.3 | 2.80 | +$19,359 | 1.24 | -$10,631 |
+| risk_fast_cush1000 (press while the cushion is $1,000+) | rejected | 26% (26/0) | 34/0 | 49% | 15 | 1.15 | +$28,291 | 3.47 | 14% (9/6) | 12/10 | 56% | 18 | 2.4 / 4.6 | 2.92 | +$14,649 | 1.17 | -$12,483 |
 | risk_fast_flat800 (no eval state) | promising | 28% (26/2) | 33/4 | 24% | 9 | 1.27 | +$28,565 | 3.33 | 17% (9/8) | 12/15 | 59% | 19 | 3.3 / 6.3 | 2.92 | +$22,647 | 1.23 | -$13,927 |
 | risk_fast_usd1200 | rejected | 23% (23/0) | 33/0 | 48% | 15 | 1.18 | +$30,620 | 4.20 | 13% (6/7) | 8/14 | 55% | 17 | 2.1 / 5.6 | 3.72 | +$11,642 | 1.13 | -$13,200 |
 | risk_fast_usd1600 | rejected | 31% (30/2) | 38/4 | 13% | 7 | 1.32 | +$38,003 | 4.01 | 19% (7/12) | 10/21 | 48% | 15 | 2.5 / 7.2 | 3.86 | -$32 | 1.00 | -$16,292 |
@@ -227,7 +231,7 @@ The table follows the owner's columns. "Decided in 2w" is passed + failed within
 - **1.5x when the last 15 signals add up to +8R or more:**
   - beats the live rules in both periods: 2026 +$24.3k, 2021-25 +$9.0k
   - its extra profit comes from pressing size in hot streaks
-  - more risk: 2026 max DD -$3.1k, 3-month eval fails 29% vs 20%
+  - more risk: 2026 max DD -$3.1k, 3-month eval fails 21% vs 14%
   - Run `risk_hot8_150`; combined with the quarter size, `risk_pkg_q25_hot8`.
 - **Half size when VIX closed at 20 or higher:**
   - helped 2021-25: PF 1.14, max DD -$6.8k
@@ -246,7 +250,7 @@ The table follows the owner's columns. "Decided in 2w" is passed + failed within
   - The recommended sizing was cross-checked against the dashboard's own sizing code (`runlib.size`) and is identical trade by trade.
 - **No look-ahead:** a rule only sees the trade's setup and trades that had already finished.
 - **Rules tried:**
-  - 79 runs in this family, saved in the run library (family "risk", ids risk_* and loss_*)
+  - 78 runs in this family, saved in the run library (family "risk", ids risk_* and loss_*)
   - plus a 45-point cold-streak grid
   - plus 15 one-factor situational rules (picked on 2021-25, then checked on 2026)
   - plus a random-rule noise check

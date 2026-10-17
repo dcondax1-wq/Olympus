@@ -134,7 +134,7 @@ Every big drawdown is a long stretch with very few wins, mostly traded at half s
 But the cost is large:
 - the 5-year max drawdown grows from -$11.4k to -$16.8k
 - the 2026 PF drops from 3.48 to 2.62
-- 1-month eval fails in 2021-25 go from 9.6% to 37%
+- 1-month eval fails in 2021-25 go from 9.4% to 37%
 
 The R edge per trade in 2021-25 is about the same for every stop size:
 - under 20 pts: -0.04R
@@ -158,7 +158,7 @@ So more dollars on wide stops is just more risk, not more edge. That is a choice
 
 | run | 2026 | 2021-25 |
 |---|---|---|
-| `loss_all_full`: $800 on every trade | +$26.2k, PF 2.10 | -$1.4k, PF 0.99; max DD -$27k; 69% of 1-month evals fail |
+| `loss_all_full`: $800 on every trade | +$26.4k, PF 2.11 | +$0.6k, PF 1.00; max DD -$26.6k; 68% of 1-month evals fail |
 | `loss_no_cold`: cold filter off | +$20.9k | -$2.5k; max DD -$17.3k |
 
 ## Which conditions lose in both periods?

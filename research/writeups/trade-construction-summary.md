@@ -4,7 +4,7 @@ family: other
 date: 2026-10-17
 status: adopt-candidate
 summary: One change is worth making, together with the sizing change: on trending days move the stop to breakeven at +3R instead of +1R. With the sizing change it adds +$4.8k to 2021-25 (PF 1.19 → 1.27) and changes nothing in 2026 evals; on today's sizing alone it causes extra late-May 2026 eval fails, so then keep the current rules. Stops, targets, the other exits, filters and timing are already at their best; 120+ variants tested, no leak found.
-runs: baseline, mgt_betrend300_replay, mgt_betrend300, mgt_betrend250, mgt_betrend_off, combo_risk_sizing, combo_betrend3_risksizing, bias_both_07, combo_betrend3_both07, combo_betrend3_bothhalf, flt_vix20_half, stp_max80, leak_both_off
+runs: baseline, mgt_betrend300_replay, mgt_betrend300, mgt_betrend250, mgt_betrend_off, combo_risk_sizing, combo_betrend3_risksizing, bias_both_07, combo_betrend3_both07, combo_betrend3_bothhalf, flt_vix20_half, stp_max80, stp_atr015_replay, leak_both_off
 ---
 
 ## The recommendation (one change, together with the sizing change)
@@ -123,7 +123,7 @@ top of the sizing change, breakeven on trending days at +1.5R / +2R / +2.5R / +3
 
 | Idea | What happened |
 |---|---|
-| Wider or ATR-scaled stop buffer (3-6 pts, 0.1-0.5 x ATR) | fewer trades (from 4 pts: under 2 a week) and less 2026 profit; ATR 0.15 looked good only by skipping trades, its neighbours are worse |
+| Wider or ATR-scaled stop buffer (3-6 pts, 0.1-0.5 x ATR) | fewer trades (from 4 pts: under 2 a week) and less 2026 profit; ATR 0.15 looked good only by skipping trades (exact replay: 1.84 a week, 2026 −$2.5k), its neighbours are worse |
 | Tighter buffer (1 pt), stop beyond the gap | wicked out more; 2021-25 loses money with the gap stop |
 | Widest stop 45-50 / 70-80 | 45-50 cuts good trades; 70-80 adds about-break-even trades (useful only if more trades a week are wanted) |
 | Draw at least 2-3R away, or the second pool | 2021-25 profit falls to −$0.3k to +$3.0k (today +$8.8k on the same backtest) |
