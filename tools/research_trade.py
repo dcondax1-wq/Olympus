@@ -78,9 +78,12 @@ for v in (8, 12, 15):
       f"Should the tightest stop be {v} points instead of 10?")
 X("stp_ifvg", "stops", "screen", {"stop_mode": "ifvg"}, "Stop beyond the inverted gap, not the sweep",
   "Check: is a stop beyond the IFVG (closer) better than beyond the sweep extreme?")
-for a in (0.15, 0.25, 0.5):
+for a in (0.1, 0.15, 0.25, 0.5):
     X(f"stp_atr{int(a * 100):03d}", "stops", "screen", {"stop_buf_atr": a},
       f"Stop buffer = {a:g} x ATR beyond the sweep", f"Does a buffer that grows with volatility ({a:g} x the 5m ATR) beat a fixed 2 points?")
+for a, m in ((0.1, 70), (0.15, 70), (0.15, 80)):
+    X(f"stp_atr{int(a * 100):03d}_max{m}", "stops", "screen", {"stop_buf_atr": a, "spec": {"max_stop": float(m)}},
+      f"ATR buffer {a:g} x ATR and widest stop {m} pts", f"The ATR buffer makes stops wider (fewer trades): does allowing {m}-pt stops win the trades back?")
 
 # ---- 2. targets
 for v in (1.2, 2.0, 2.5, 3.0):
@@ -142,7 +145,13 @@ for v in (0, 1.2, 2.0):
 for v in (25, 30):
     X(f"flt_vixmax{v}", "filters", "screen", {"vix_max": float(v)}, f"Skip days with VIX above {v}", f"Stand aside when yesterday's VIX closed above {v}?")
 X("flt_vixmin13", "filters", "screen", {"vix_min": 13.0}, "Skip days with VIX below 13", "Stand aside in very quiet markets (VIX < 13)?")
+X("flt_vixmax20", "filters", "screen", {"vix_max": 20.0}, "Skip days with VIX above 20", "Stand aside when yesterday's VIX closed above 20?")
 X("flt_news_off", "filters", "screen", {"news_filter": False}, "No news blackout", "Is the news blackout (15 min before to 30 min after) useful?")
+X("flt_news_wide", "filters", "screen", {"news_before_min": 30, "news_after_min": 60}, "Wider news blackout (30 min before, 60 after)",
+  "Should the bot stay out longer around high-impact news?")
+X("flt_fomc_pm_on", "filters", "screen", {"fomc_pm_off": False}, "Trade FOMC afternoons", "Is skipping FOMC-day afternoons useful?")
+X("flt_newsday_skip", "filters", "screen", {"news_day_skip": "CPI,Payrolls,FOMC"}, "Skip CPI, jobs-report and FOMC days",
+  "Stand aside all day on CPI, NFP and FOMC days?")
 X("flt_arm_minor_off", "filters", "screen", {"arm_minor": False}, "Only major pools arm a setup",
   "Ignore sweeps of plain 15-minute swings?")
 X("flt_min_score0", "filters", "screen", {"min_score": 0}, "Confluence score 0 is enough (today 1)", "Take setups with a confluence score of 0?")
@@ -169,6 +178,19 @@ X("bias_pwmid_skip", "bias", "posthoc", {}, "Info: only trades on the prior-week
   "Hard filter version: what if trades against the prior-week midpoint side were skipped?", rule="skip_against_pwmid", status="info")
 X("bias_wkopen_skip", "bias", "posthoc", {}, "Info: only longs below / shorts above the weekly open",
   "Hard filter: trade only longs below this week's open and shorts above it?", rule="skip_against_wkopen", status="info")
+X("bias_pdc_half", "bias", "posthoc", {}, "Half size when the trade follows yesterday's candle",
+  "Keep every setup, but trade at half size when it goes the same way as yesterday's candle (long after an up day)?",
+  rule="half_follow_pd")
+X("bias_pwmid_half", "bias", "posthoc", {}, "Half size when against the prior-week side",
+  "Keep every setup, but half size for longs below / shorts above last week's midpoint?", rule="half_against_pwmid")
+X("bias_any_half", "bias", "posthoc", {}, "Half size when either bias is against the trade",
+  "Half size when the trade follows yesterday's candle OR is on the wrong side of last week's midpoint?", rule="half_any")
+X("bias_both_half", "bias", "posthoc", {}, "Half size only when both biases are against the trade",
+  "Half size only when the trade follows yesterday's candle AND is on the wrong side of last week's midpoint?", rule="half_both")
+X("bias_pdc_07", "bias", "posthoc", {}, "70% size when the trade follows yesterday's candle",
+  "Neighbour check: a milder size-down (70%) for trades that follow yesterday's candle?", rule="p70_follow_pd")
+X("bias_pwmid_07", "bias", "posthoc", {}, "70% size when against the prior-week side",
+  "Neighbour check: a milder size-down (70%) for trades against last week's midpoint side?", rule="p70_against_pwmid")
 X("bias_smt_only", "bias", "posthoc", {}, "Info: only trades with NQ/ES SMT divergence",
   "Does SMT divergence (ES fails to make the new extreme) pick better trades? ES data starts 2025-04.",
   rule="skip_no_smt", status="info")
@@ -343,6 +365,13 @@ RULES = {
     "skip_against_pwmid": lambda t, ctx: 0.0 if trade_ctx(t).get("pwmid") == -1 else 1.0,
     "skip_against_wkopen": lambda t, ctx: 0.0 if trade_ctx(t).get("wkopen") == -1 else 1.0,
     "skip_no_smt": lambda t, ctx: 1.0 if "SMT divergence" in (t.get("conf_tags") or []) else 0.0,
+    # size-down versions (every setup still traded, so trades a week is unchanged)
+    "half_follow_pd": lambda t, ctx: 0.5 if trade_ctx(t).get("fade_pd") == -1 else 1.0,
+    "half_against_pwmid": lambda t, ctx: 0.5 if trade_ctx(t).get("pwmid") == -1 else 1.0,
+    "half_any": lambda t, ctx: 0.5 if (trade_ctx(t).get("fade_pd") == -1 or trade_ctx(t).get("pwmid") == -1) else 1.0,
+    "half_both": lambda t, ctx: 0.5 if (trade_ctx(t).get("fade_pd") == -1 and trade_ctx(t).get("pwmid") == -1) else 1.0,
+    "p70_follow_pd": lambda t, ctx: 0.7 if trade_ctx(t).get("fade_pd") == -1 else 1.0,
+    "p70_against_pwmid": lambda t, ctx: 0.7 if trade_ctx(t).get("pwmid") == -1 else 1.0,
 }
 
 

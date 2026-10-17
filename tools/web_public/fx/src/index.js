@@ -11,9 +11,10 @@ import { City } from './city.js';
 import { Candles } from './candles.js';
 import { Constellation } from './constellation.js';
 import { Ribbon } from './ribbon.js';
+import { Reactor } from './reactor.js';
 
 export const version = 1;
-const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon };
+const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon, reactor: Reactor };
 const reg = new Map();
 let field = null, bg = null, inited = false;
 

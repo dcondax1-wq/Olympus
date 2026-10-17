@@ -174,7 +174,7 @@ def cold_mult(T, i, cold, pol=None):
 
 
 # ------------------------------------------------------------------------------------------------ sizing policy
-def base_risk(t, pol):
+def base_risk(t, pol, with_pre=True):
     """Engine-stage $ risk before rounding: risk_usd x stop factor x trending half x situational multiplier."""
     p = t["_plan"]
     ru = float(pol.get("risk_usd", BASE_RISK))
@@ -185,7 +185,7 @@ def base_risk(t, pol):
         ru = max(ru, float(pol["floor"]))
     if t.get("regime") == "trending":
         ru *= float(pol.get("trend_mult", 0.5))
-    if pol.get("pre"):                           # situational $ multiplier (setup context at entry); give the policy a
+    if with_pre and pol.get("pre"):              # situational $ multiplier (setup context at entry); give the policy a
         ru *= float(pol["pre"](t))               # "pre_key" naming it so the shadow-ledger cache keys differ
     return ru
 
@@ -204,9 +204,9 @@ def qty_for(T, t, pol, ctx):
     if pol.get("mult_usd"):                      # $ multiplier from the account / eval state
         ru *= max(0.0, float(pol["mult_usd"](t, ctx)))
     q = qe = micros(t, ru, pol.get("max_micros", MAX_MICROS))
-    if q < 1 and (pol.get("cap_usd") or pol.get("mult_usd")) and pol.get("min1", True) and \
-            micros(t, base_risk(t, pol), pol.get("max_micros", MAX_MICROS)) >= 1:
-        q = qe = 1                               # a state rule never drops a setup the engine takes: 1 micro minimum
+    if q < 1 and (pol.get("cap_usd") or pol.get("mult_usd") or pol.get("pre")) and pol.get("min1", True) and \
+            micros(t, base_risk(t, pol, with_pre=False), pol.get("max_micros", MAX_MICROS)) >= 1:
+        q = qe = 1                               # a sizing rule never drops a setup the engine takes: 1 micro minimum
     if q < 1:
         return 0, 0, ru
     c, _ = cold_mult(T, t["_i"], pol.get("cold", LIVE_COLD), pol)
@@ -404,7 +404,7 @@ def score(trades, raw, T=None, pol=None, eval_aware=False, dll=True):
             S["spans"][name].update(eval_stats(T, pol, sess, dll))
         else:
             e = eval_stats(fixed, {"cold": None}, sess, dll)
-            S["spans"][name].update({k: e[k] for k in ("pE", "dE")})
+            S["spans"][name].update({k: e[k] for k in ("p60", "f60", "pE", "dE")})
     return S
 
 
@@ -428,7 +428,8 @@ def fmt(S, name):
     if not s.get("n"):
         return f"{name}: no trades"
     return (f"{name:7s} n={s['n']:3d} tpw={s['tpw']:.2f} wk2={s['wk2']:3d}% win={s['win']:4.1f}% PF={s['pf']} net={s['net']:+7,} "
-            f"DD={s['dd']:7,} 2w {s['p10']:4.1f}/{s['f10']:4.1f} 1m {s['p20']:4.1f}/{s['f20']:4.1f} eventual {s.get('pE')}% b2b {s['b2b']}")
+            f"DD={s['dd']:7,} 2w {s['p10']:4.1f}/{s['f10']:4.1f} 1m {s['p20']:4.1f}/{s['f20']:4.1f} 3m {s.get('p60', 0):4.1f}/"
+            f"{s.get('f60', 0):4.1f} b2b {s['b2b']}")
 
 
 def show(tag, S):
@@ -445,24 +446,38 @@ def status_of(S, B, min_tpw=2.0):
     if (a.get("tpw") or 0) < min_tpw or (b.get("tpw") or 0) < min_tpw:
         return "rejected"
 
+    def ev(x):
+        return x["p20"] - x["f20"]
+
     def better(x, y):
-        money = x["net"] > y["net"] and (x["pf"] or 0) >= (y["pf"] or 0)
-        evals = (x["net"] >= y["net"] and x["p20"] - x["f20"] >= y["p20"] - y["f20"] + 2.0)
+        money = x["net"] > y["net"] and (x["pf"] or 0) >= (y["pf"] or 0) and ev(x) >= ev(y) - 1.0
+        evals = x["net"] >= y["net"] and ev(x) >= ev(y) + 2.0
         return money or evals
 
     def not_worse(x, y):
-        return x["net"] >= 0.97 * y["net"] - 150 and (x["pf"] or 0) >= (y["pf"] or 0) - 0.03 and \
-            x["p20"] - x["f20"] >= y["p20"] - y["f20"] - 1.0
+        return x["net"] >= 0.97 * y["net"] - 150 and (x["pf"] or 0) >= (y["pf"] or 0) - 0.03 and ev(x) >= ev(y) - 1.0
 
     def clearly(x, y):
-        return (x["net"] > y["net"] * 1.05 + 300 and (x["pf"] or 0) > (y["pf"] or 0)) or \
-            (x["p20"] - x["f20"] >= y["p20"] - y["f20"] + 3.0 and x["net"] >= y["net"] - 300)
+        return (x["net"] > y["net"] * 1.05 + 300 and (x["pf"] or 0) > (y["pf"] or 0) and ev(x) >= ev(y) - 1.0) or \
+            (ev(x) >= ev(y) + 3.0 and x["net"] >= y["net"] - 300)
 
     if better(a, A) and better(b, Bb):
         return "adopt-candidate"
     if (clearly(a, A) and not_worse(b, Bb)) or (clearly(b, Bb) and not_worse(a, A)):
         return "promising"
     return "rejected"
+
+
+def auto_verdict(S, B, status):
+    a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+    A, Bb = B["spans"]["2026"], B["spans"]["2021-25"]
+    head = {"adopt-candidate": "Better in both periods", "promising": "Helps one period without hurting the other",
+            "rejected": "Not better in both periods", "info": "For information"}[status]
+    if min(a.get("tpw") or 0, b.get("tpw") or 0) < 2.0:
+        head = "Fewer than 2 setups a week"
+    return (f"{head}. 2026 {_money(a['net'])} (live {_money(A['net'])}), PF {a['pf']} ({A['pf']}), 1-month evals {a['p20']:.0f}% pass / "
+            f"{a['f20']:.0f}% fail ({A['p20']:.0f}/{A['f20']:.0f}). 2021-25 {_money(b['net'])} ({_money(Bb['net'])}), PF {b['pf']} "
+            f"({Bb['pf']}), evals {b['p20']:.0f}/{b['f20']:.0f}% ({Bb['p20']:.0f}/{Bb['f20']:.0f}).")
 
 
 def save(id, title, question, trades, S, status, verdict, notes="", params=None, sizing=None, writeup=None, tags=None):
@@ -720,7 +735,7 @@ def missed_winners(T, trades, top=10):
     return _md(rows, ["day", "R", "stop pts", "risked", "made", "at $800 risk", "why it was small"])
 
 
-def cmd_anatomy(write=True):
+def cmd_anatomy():
     raw, T, trades, S = baseline()
     out = ["## Loss anatomy (generated by tools/research_risk.py anatomy)", anatomy(trades, raw),
            "### What each de-risking rule did (vs the same trades without it)\n" + derisk_effects(T, raw),
@@ -728,9 +743,6 @@ def cmd_anatomy(write=True):
            "### The ten biggest winners: sized small?\n" + missed_winners(T, trades)]
     txt = "\n\n".join(out)
     print(txt)
-    if write:
-        os.makedirs(os.path.join(ROOT, WRITEUPS, "data"), exist_ok=True)
-        open(os.path.join(ROOT, WRITEUPS, "data", "loss_anatomy_tables.md"), "w", encoding="utf-8").write(txt + "\n")
     B = S
     info = (("loss_no_cold", "Cold-streak filter off (every setup at full size)", {"cold": None},
              "What does the half-size cold-streak filter earn or cost?"),
@@ -749,6 +761,309 @@ def cmd_anatomy(write=True):
         save(id, title, q, tr, Sx, "info", verdict, notes="Counterfactual for the loss anatomy (post-hoc re-sizing of the "
              "baseline replay, exact engine micros).", sizing={k: v for k, v in pol.items()}, writeup=f"{WRITEUPS}/loss-anatomy.md",
              tags=["anatomy"])
+
+
+# ------------------------------------------------------------------------------------------------ experiment runner
+ROWS = []          # (family, id, title, status, S) of this process, for the summary tables
+
+
+def engine_trades(engine):
+    """Prepped trades of an engine replay with other sizing params (cached by runlib) + the policy that reproduces the
+    engine's own micros on them."""
+    raw = rl.replay(engine, procs=int(os.environ.get("RISK_PROCS", "2")), label="risk", quiet=True)
+    ru, ref = float(engine.get("risk_usd", BASE_RISK)), float(engine.get("risk_ref_stop", BASE_REF))
+    return raw, prep(raw, ru, ref), {"risk_usd": ru, "ref": ref}
+
+
+def experiment(family, id, title, question, pol=None, engine=None, eval_aware=False, notes="", status=None, verdict=None,
+               tags=None, sizing=None, quiet=False):
+    raw, T, _, B = baseline()
+    pol = dict(pol or {})
+    Tx, rawx = T, raw
+    if engine:
+        rawx, Tx, epol = engine_trades(engine)
+        pol = {**epol, **pol}
+    if eval_aware:
+        trades = chain_trades(Tx, pol, rawx["sessions"])
+        S = score(trades, rawx, Tx, pol, eval_aware=True)
+    else:
+        trades = run_account(Tx, pol)
+        S = score(trades, rawx)
+    st = status or status_of(S, B)
+    v = verdict or auto_verdict(S, B, st)
+    if not quiet:
+        show(f"{id}  [{st}]  {title}", S)
+    meth = ("engine replay with " + json.dumps(engine) if engine else "post-hoc re-sizing of the baseline replay (exact engine micros)")
+    if eval_aware:
+        meth += "; sized from each eval's own state (eval simulator); trades = back-to-back evals from the first session"
+    desc = {k: (v_ if not callable(v_) else getattr(v_, "__doc__", None) or "rule") for k, v_ in pol.items()}
+    save(id, title, question, trades, S, st, v, notes=(notes + " " if notes else "") + f"Method: {meth}.", params=engine or {},
+         sizing=sizing or desc, writeup=f"{WRITEUPS}/{WRITEUP_OF.get(family, 'risk-sizing.md')}", tags=[family] + (tags or []))
+    ROWS.append((family, id, title, st, S))
+    return S, st
+
+
+WRITEUP_OF = {"anatomy": "loss-anatomy.md", "levels": "risk-sizing.md", "refstop": "risk-sizing.md", "cold": "risk-sizing.md",
+              "ddaware": "risk-sizing.md", "eval": "eval-sizing.md", "situational": "risk-sizing.md", "weekly": "risk-sizing.md"}
+
+
+def table(rows=None, base=True):
+    """Markdown table of runs: 2026 and 2021-25 side by side (phone-friendly columns)."""
+    rows = rows if rows is not None else ROWS
+    out = []
+    if base:
+        _, _, _, B = baseline()
+        rows = [("", "baseline", "Live strategy", "baseline", B)] + list(rows)
+    for fam, id, title, st, S in rows:
+        a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+        out.append([id, title, st,
+                    f"{a['n']} ({a['tpw']:.1f}/wk)", f"{a['pf']}", _money(a["net"]), f"{a['dd']:,}", f"{a['p10']:.0f}/{a['f10']:.0f}",
+                    f"{a['p20']:.0f}/{a['f20']:.0f}", a["b2b"],
+                    f"{b['n']} ({b['tpw']:.1f}/wk)", f"{b['pf']}", _money(b["net"]), f"{b['dd']:,}", f"{b['p10']:.0f}/{b['f10']:.0f}",
+                    f"{b['p20']:.0f}/{b['f20']:.0f}", f"{b.get('p60', 0):.0f}/{b.get('f60', 0):.0f}", b["b2b"]])
+    return _md(out, ["run", "what", "status", "2026 trades", "PF", "net", "max DD", "2w pass/fail %", "1m pass/fail %", "b2b",
+                     "2021-25 trades", "PF", "net", "max DD", "2w pass/fail %", "1m pass/fail %", "3m pass/fail %", "b2b"])
+
+
+# ------------------------------------------------------------------------------------------------ B1 risk level
+def cmd_levels():
+    q = "How much should one trade risk? The same strategy at a smaller or bigger $ risk."
+    for usd, eng in ((400, True), (600, True), (700, False), (900, False), (1000, True), (1200, True)):
+        x = usd / BASE_RISK
+        experiment("levels", f"risk_usd{usd}", f"Risk ${usd} instead of $800 (x{x:g})", q,
+                   pol={} if eng else {"risk_usd": float(usd)}, engine={"risk_usd": float(usd)} if eng else None,
+                   notes=f"Every $ amount in the sizing rule scaled by {x:g} (wide stops and half sizes in proportion); "
+                         "a setup that would get less than 1 micro is skipped, as the engine does.", tags=["level"])
+    print(table([r for r in ROWS if r[0] == "levels"]))
+
+
+# ------------------------------------------------------------------------------------------------ B2 wide-stop scaling
+def cmd_refstop():
+    q = "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it."
+    for ref in (15, 25, 30, 40, 0):
+        name = "off (flat $800 on every stop)" if ref == 0 else f"{ref} pts"
+        experiment("refstop", f"risk_ref{ref if ref else 'off'}", f"Full risk up to a {name}" if ref else "No wide-stop scaling: $800 on every stop",
+                   q, engine={"risk_ref_stop": float(ref)}, tags=["wide-stop"],
+                   notes=f"risk_ref_stop {ref} (live 20): risk = $800 x {ref}/stop beyond {ref} pts." if ref else
+                   "risk_ref_stop 0: $800 whatever the stop (wide stops get few micros only by the stop itself).")
+    for a, lab in ((0.5, "gentler: $800 x square root of 20/stop"), (1.5, "steeper: $800 x (20/stop)^1.5")):
+        experiment("refstop", f"risk_shape{str(a).replace('.', '')}", f"Wide-stop scaling {lab}", q, pol={"alpha": a},
+                   tags=["wide-stop"], notes=f"risk = $800 x (20/stop)^{a} beyond 20 pts (live: power 1).")
+    experiment("refstop", "risk_floor200", "Never less than $200 at risk (before the trending half)", q, pol={"floor": 200.0},
+               tags=["wide-stop"], notes="Wide stops keep at least $200 at risk; the trending-regime and cold-streak halves still apply.")
+    print(table([r for r in ROWS if r[0] == "refstop"]))
+
+
+# ------------------------------------------------------------------------------------------------ B3 cold streak / hot streak
+def cmd_cold():
+    q = "Which cold-streak rule works best? (last N finished signals sum <= X R -> smaller size; never skips a setup)"
+    grid = []
+    for lb in (10, 12, 15, 20, 25):
+        for thr in (-2.0, 0.0, 2.0):
+            for size in (0.25, 0.5, 0.75):
+                pol = {"cold": {"lookback": lb, "thr": thr, "size": size}}
+                S = score(run_account(baseline()[1], pol), baseline()[0])
+                grid.append((lb, thr, size, S))
+    print("### Cold-streak grid (post-hoc, not saved as runs; one-at-a-time variations below are saved)")
+    rows = [[lb, f"{thr:+.0f}R", size, _money(S["spans"]["2026"]["net"]), S["spans"]["2026"]["pf"],
+             f"{S['spans']['2026']['p20']:.0f}/{S['spans']['2026']['f20']:.0f}", _money(S["spans"]["2021-25"]["net"]),
+             S["spans"]["2021-25"]["pf"], f"{S['spans']['2021-25']['dd']:,}",
+             f"{S['spans']['2021-25']['p20']:.0f}/{S['spans']['2021-25']['f20']:.0f}"] for lb, thr, size, S in grid]
+    print(_md(rows, ["lookback", "threshold", "cold size", "2026 net", "PF", "1m p/f", "2021-25 net", "PF", "max DD", "1m p/f"]))
+    one = [("risk_cold_lb10", "Cold streak judged on the last 10 signals", {"lookback": 10, "thr": 0.0, "size": 0.5}),
+           ("risk_cold_lb12", "Cold streak judged on the last 12 signals", {"lookback": 12, "thr": 0.0, "size": 0.5}),
+           ("risk_cold_lb20", "Cold streak judged on the last 20 signals", {"lookback": 20, "thr": 0.0, "size": 0.5}),
+           ("risk_cold_lb25", "Cold streak judged on the last 25 signals", {"lookback": 25, "thr": 0.0, "size": 0.5}),
+           ("risk_cold_thrm2", "Cold only when the last 15 signals are below -2R", {"lookback": 15, "thr": -2.0, "size": 0.5}),
+           ("risk_cold_thrp2", "Cold unless the last 15 signals are above +2R", {"lookback": 15, "thr": 2.0, "size": 0.5}),
+           ("risk_cold_q25", "Quarter size (not half) in a cold streak", {"lookback": 15, "thr": 0.0, "size": 0.25}),
+           ("risk_cold_q75", "Three-quarter size (not half) in a cold streak", {"lookback": 15, "thr": 0.0, "size": 0.75})]
+    for id, title, cold in one:
+        experiment("cold", id, title, q, pol={"cold": cold}, tags=["cold-streak"],
+                   notes=f"Cold-streak filter {cold} (live: lookback 15, threshold 0R, half size). The size cut is applied to the "
+                         "engine's micros as the live loop does: max(1, int(micros x size)), so 1-micro trades stay at 1 micro.")
+    qh = "Should the bot press when the strategy is hot? (last 15 finished signals sum >= X R -> bigger size)"
+    for thr, m in ((5.0, 1.25), (5.0, 1.5), (8.0, 1.5)):
+        experiment("cold", f"risk_hot{int(thr)}_{int(m * 100)}", f"Hot-streak boost: x{m:g} when the last 15 signals are +{thr:g}R or better",
+                   qh, pol={"hot": {"lookback": 15, "thr": thr, "mult": m}}, tags=["hot-streak"],
+                   notes="On top of the live cold-streak half size; max 40 micros.")
+    print(table([r for r in ROWS if r[0] == "cold"]))
+
+
+# ------------------------------------------------------------------------------------------------ B4 account drawdown-aware
+def cmd_ddaware():
+    q = "Should the bot trade smaller while the account is in a drawdown (back to full size at a new equity high)?"
+    rules = (("risk_dd_half1500", "Half size while $1,500+ below the equity high", lambda t, c: 0.5 if c["dd"] <= -1500 else 1.0),
+             ("risk_dd_half3000", "Half size while $3,000+ below the equity high", lambda t, c: 0.5 if c["dd"] <= -3000 else 1.0),
+             ("risk_dd_linear", "Size shrinks with the drawdown (x0.75 at -$1k, x0.5 at -$2k, floor x0.25)",
+              lambda t, c: max(0.25, 1.0 + c["dd"] / 4000.0)))
+    for id, title, fn in rules:
+        experiment("ddaware", id, title, q, pol={"mult_usd": fn}, tags=["drawdown"], sizing={"rule": title},
+                   notes="Drawdown = sized account equity vs its high, from trades finished before entry. The $ risk is scaled "
+                         "before rounding to micros (1 micro minimum when the engine takes the setup).")
+    print(table([r for r in ROWS if r[0] == "ddaware"]))
+
+
+# ------------------------------------------------------------------------------------------------ B5 MFFU eval-aware
+EVAL_RULES = (
+    ("risk_eval_cap50", "Never risk more than half the cushion", "min($ risk, 0.5 x cushion above the trailing max loss)",
+     {"cap_usd": lambda t, c: 0.5 * c["cushion"]}),
+    ("risk_eval_cap100", "Never risk more than the whole cushion", "min($ risk, 1.0 x cushion): one loss can never fail the eval",
+     {"cap_usd": lambda t, c: 1.0 * c["cushion"]}),
+    ("risk_eval_prop1000", "Size down once the cushion is under $1,000", "$ risk x min(1, cushion / $1,000)",
+     {"mult_usd": lambda t, c: min(1.0, c["cushion"] / 1000.0)}),
+    ("risk_eval_prop1500", "Size down once the cushion is under $1,500", "$ risk x min(1, cushion / $1,500)",
+     {"mult_usd": lambda t, c: min(1.0, c["cushion"] / 1500.0)}),
+    ("risk_eval_prop1000_qty", "Size down under a $1,000 cushion, applied to the routed micros",
+     "routed micros x min(1, cushion / $1,000), rounded down, 1 micro minimum (how the live loop applies the cold-streak half)",
+     {"post": lambda t, c: min(1.0, c["cushion"] / 1000.0)}),
+    ("risk_eval_bank", "Bank the pass: near the target risk only what is needed",
+     "once profit >= $2,000: $ risk <= half of what is still needed (a 2R win finishes the eval)",
+     {"cap_usd": lambda t, c: 0.5 * c["need"] if c["profit"] >= 2000 else 1e9}),
+    ("risk_eval_presslock", "Press after the floor locks (x1.5)", "x1.5 once the trailing max loss has locked at $50,100",
+     {"mult_usd": lambda t, c: 1.5 if c["locked"] else 1.0}),
+    ("risk_eval_pressup", "Press while the eval is in profit (x1.25)", "x1.25 while the balance is above $50,000",
+     {"mult_usd": lambda t, c: 1.25 if c["profit"] >= 0 else 1.0}),
+    ("risk_eval_defend", "Defend while the eval is under water (x0.67)", "x0.67 while the balance is below $50,000",
+     {"mult_usd": lambda t, c: 1.0 if c["profit"] >= 0 else 0.67}),
+)
+
+
+def cmd_eval():
+    q = "Can sizing from the eval's state (cushion above the trailing max loss, profit, distance to target) pass more MFFU evals and fail fewer?"
+    for id, title, rule, pol in EVAL_RULES:
+        experiment("eval", id, title, q, pol=pol, eval_aware=True, sizing={"rule": rule}, tags=["eval"],
+                   notes=f"Rule: {rule}. Applied to the $ risk before rounding to micros (1 micro minimum when the engine "
+                         "takes the setup), then the live cold-streak half size.")
+    # the best protection with a bigger base risk: can the protection buy speed?
+    for usd in (1000.0, 1200.0):
+        experiment("eval", f"risk_eval_prop1000_usd{int(usd)}", f"Risk ${int(usd)}, sized down once the cushion is under $1,000", q,
+                   pol={"risk_usd": usd, "mult_usd": lambda t, c: min(1.0, c["cushion"] / 1000.0)}, eval_aware=True,
+                   sizing={"rule": f"risk_usd {int(usd)}; $ risk x min(1, cushion / $1,000)"}, tags=["eval"],
+                   notes="A bigger base risk for speed, with the cushion protection against fails.")
+    print(table([r for r in ROWS if r[0] == "eval"]))
+
+
+# ------------------------------------------------------------------------------------------------ B6 situational
+SITUATIONAL = (
+    # (id, title, factor key, value, multiplier, mechanism)
+    ("risk_sit_against1h_half", "Half size against the 1H trend", "1H trend", "against the trade", 0.5,
+     "Fading the higher-timeframe trend: the raid is more often continuation than reversal."),
+    ("risk_sit_with1h_x15", "1.5x size with the 1H trend", "1H trend", "with the trade", 1.5, "Same mechanism, lean in instead."),
+    ("risk_sit_late_half", "Half size when the 15m trend has already turned (late entry)", "15m already turned (late)", "yes", 0.5,
+     "Late entry: part of the move is gone, less room to the draw."),
+    ("risk_sit_am_half", "Half size in the morning killzone", "Session", "AM (before 12:00)", 0.5,
+     "The open is the most volatile (more stop hunts)."),
+    ("risk_sit_pm_x15", "1.5x size in the afternoon killzone", "Session", "PM", 1.5, "Same, lean into the calmer afternoon."),
+    ("risk_sit_cisd_half", "Half size on CISD triggers (no fair value gap)", "Trigger", "CISD", 0.5,
+     "CISD is the fallback trigger when the leg left no gap (weaker displacement)."),
+    ("risk_sit_minor_half", "Half size when only a 15m swing was swept", "Pool swept", "minor (15m swing)", 0.5,
+     "Minor pools hold less resting liquidity than session / day levels."),
+    ("risk_sit_poorloc_half", "Half size on poor location (long in premium / short in discount)", "Location", "poor", 0.5,
+     "Buying high in the range leaves less room to the draw."),
+    ("risk_sit_vix20_half", "Half size when VIX closed at 20 or higher", "VIX (prior close)", None, 0.5,
+     "High-volatility regimes: wider ranges, sweeps run further."),
+    ("risk_sit_firsthour_half", "Half size in the first hour (09:30-10:30)", "First hour (09:30-10:30)", "yes", 0.5,
+     "Opening-hour noise."),
+    ("risk_sit_near_half", "Half size when the draw is under 2R away", "Target distance", "under 2R", 0.5,
+     "A near draw pays less per unit of risk."),
+    ("risk_sit_trend_quarter", "Quarter size in a trending regime (live: half)", "Regime (10-day)", "trending", 0.5,
+     "A reversal model in a trending market (the live rule already halves it)."),
+    ("risk_sit_induce_half", "Half size when inducement was taken before the raid", "Inducement taken first", "yes", 0.5,
+     "CLAUDE.md open idea 4: the raid already took the obvious liquidity."),
+    ("risk_sit_news_x15", "1.5x size on high-impact news days", "News day", "yes", 1.5, "News days move further (bigger draws)."),
+    ("risk_sit_thu_half", "Half size on Thursdays (control: no mechanism)", "Weekday", "Thu", 0.5,
+     "Control rule with no market mechanism: shows how often noise looks like an edge."),
+)
+
+
+def _sit_pre(key, val, mult):
+    def pre(t):
+        f = feats(t)
+        if key == "VIX (prior close)":
+            hit = f[key] in ("20-25", "25+")
+        else:
+            hit = f[key] == val
+        return mult if hit else 1.0
+    pre.__doc__ = f"x{mult} when {key} = {val if val else '20+'}"
+    return pre
+
+
+def cmd_situational():
+    """Pick on 2021-25 only, then check 2026 untouched. One factor per rule, each with a stated market mechanism."""
+    q = "Lean in or size down by one setup condition known at entry? (picked on 2021-25, checked on 2026)"
+    raw, T, _, B = baseline()
+    picked = []
+    rows = []
+    for id, title, key, val, mult, mech in SITUATIONAL:
+        pol = {"pre": _sit_pre(key, val, mult), "pre_key": id}
+        S = score(run_account(T, pol), raw)
+        b, Bb = S["spans"]["2021-25"], B["spans"]["2021-25"]
+        a, A = S["spans"]["2026"], B["spans"]["2026"]
+        sel = b["net"] > Bb["net"] and (b["pf"] or 0) > (Bb["pf"] or 0) and b["p20"] - b["f20"] >= Bb["p20"] - Bb["f20"] - 1.0
+        oos = a["net"] > A["net"] and (a["pf"] or 0) >= (A["pf"] or 0)
+        status = ("adopt-candidate" if sel and oos and status_of(S, B) == "adopt-candidate" else
+                  "promising" if sel and (a["net"] >= 0.97 * A["net"] - 150) else "rejected")
+        if min(a["tpw"], b["tpw"]) < 2.0:
+            status = "rejected"
+        verdict = (("Picked on 2021-25 and " + ("held up in 2026" if oos else "did NOT hold up in 2026")) if sel else
+                   "Did not improve 2021-25, so not picked") + \
+            (f": 2021-25 {_money(b['net'])} vs {_money(Bb['net'])} (PF {b['pf']} vs {Bb['pf']}), 2026 {_money(a['net'])} vs "
+             f"{_money(A['net'])} (PF {a['pf']} vs {A['pf']}).")
+        experiment("situational", id, title, q, pol=pol, status=status, verdict=verdict, quiet=True, tags=["situational"],
+                   sizing={"rule": pol["pre"].__doc__, "mechanism": mech},
+                   notes=f"Mechanism: {mech} Selection on 2021-25 only (net and PF up, 1-month eval pass-fail not worse); "
+                         f"2026 is the out-of-sample check. {len(SITUATIONAL)} one-factor rules were tried in total.")
+        rows.append([id, title, "picked" if sel else "-", _money(b["net"] - Bb["net"]), f"{b['pf']}", _money(a["net"] - A["net"]),
+                     f"{a['pf']}", status])
+        if sel:
+            picked.append(id)
+    print(f"### Situational rules: {len(SITUATIONAL)} tried, {len(picked)} picked on 2021-25: {picked}")
+    print(_md(rows, ["run", "rule", "2021-25 pick", "2021-25 net vs live", "PF", "2026 net vs live", "PF", "status"]))
+    print(table([r for r in ROWS if r[0] == "situational"]))
+    # noise check: how often does a random half-size split of the same size improve 2021-25 by chance?
+    rng = np.random.default_rng(7)
+    n21 = [t for t in T if t["day"] < "2026-01-01"]
+    hits = 0
+    for k in range(200):
+        mask = {t["entry_t"] for t in T if rng.random() < 0.3}
+        pol = {"pre": (lambda m: lambda t: 0.5 if t["entry_t"] in m else 1.0)(mask), "pre_key": f"rand{k}"}
+        S = score(run_account(T, pol), raw)
+        b, Bb = S["spans"]["2021-25"], B["spans"]["2021-25"]
+        hits += b["net"] > Bb["net"] and (b["pf"] or 0) > (Bb["pf"] or 0)
+    print(f"noise check: {hits}/200 random 'half size on 30% of setups' rules also improved 2021-25 net and PF "
+          f"({len(n21)} trades in 2021-25)")
+
+
+# ------------------------------------------------------------------------------------------------ B7 weekly brake, streaks
+def cmd_weekly():
+    q = "Should the bot slow down after a bad week or a run of losses? (smaller size, never skipping a setup)"
+    rules = (("risk_week_brake2r", "Half size after -2R in the week", lambda t, c: 0.5 if c["week_r"] <= -2.0 else 1.0),
+             ("risk_week_brake1r", "Half size after -1R in the week", lambda t, c: 0.5 if c["week_r"] <= -1.0 else 1.0),
+             ("risk_streak3_half", "Half size after 3 losers in a row (until a winner)", lambda t, c: 0.5 if c["streak"] <= -3 else 1.0),
+             ("risk_streak5_half", "Half size after 5 losers in a row (until a winner)", lambda t, c: 0.5 if c["streak"] <= -5 else 1.0),
+             ("risk_win_x15", "1.5x size right after a winner", lambda t, c: 1.5 if c["streak"] >= 1 else 1.0))
+    for id, title, fn in rules:
+        experiment("weekly", id, title, q, pol={"mult_usd": fn}, tags=["brake"], sizing={"rule": title},
+                   notes="Week = ISO week; R and streak from this run's trades that finished before entry (a scratch, |R| <= 0.05, "
+                         "counts as a non-winner). Applied to the $ risk before rounding (1 micro minimum).")
+    print(table([r for r in ROWS if r[0] == "weekly"]))
+
+
+def cmd_summary():
+    rows = [r for r in rl.index() if r.get("family") == "risk"]
+    for r in rows:
+        a, b = r["spans"]["2026"], r["spans"]["2021-25"]
+        print(f"{r['id']:28s} {r['status']:15s} 2026 {a.get('net', 0):+7,} PF {a.get('pf')} 1m {a.get('p20')}/{a.get('f20')} | "
+              f"2021-25 {b.get('net', 0):+7,} PF {b.get('pf')} 1m {b.get('p20')}/{b.get('f20')} | {r['title']}")
+
+
+def cmd_all():
+    cmd_check()
+    cmd_anatomy()
+    for c in (cmd_levels, cmd_refstop, cmd_cold, cmd_ddaware, cmd_eval, cmd_situational, cmd_weekly):
+        c()
+    cmd_recommend()
 
 
 # ------------------------------------------------------------------------------------------------ self-tests

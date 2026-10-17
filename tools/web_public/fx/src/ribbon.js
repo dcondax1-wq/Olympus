@@ -155,7 +155,7 @@ export class Ribbon extends Hud {
   }
   retheme() { paintBackdrop(this.bgU); }
   shape(w, h) {
-    const asp = w / h, W = 6.4 * Math.pow(clamp(asp / 1.1, 1, 2.6), 0.85), H = 3.3 * clamp(1.35 / asp, 0.85, 1.15);
+    const asp = w / h, W = 6.4 * Math.pow(clamp(asp / 1.1, 1, 2.6), 0.85), H = 3.3 * clamp(1.6 / asp, 0.85, 1.4);
     const changed = Math.abs(W - this.W) > 0.15 || Math.abs(H - this.H) > 0.08;
     this.W = W; this.H = H; return changed;
   }
@@ -284,7 +284,7 @@ export class Ribbon extends Hud {
     this.plane.position.set(0, 0, (zf + zb) / 2); this.plane.scale.set(x1 - x0, zf - zb, 1);
     this.pU.uX.value.set(x0, x1); this.pU.uZ.value.set(zb, zf);
     const G = this.guides, vio = new THREE.Color('#8f86ff'), { marks, labels } = timeTicks(this.t0, this.t1), dt = dollarTicks(this.lo, this.hi);
-    for (const t of marks) { const x = this.X(t); G.seg(x, yb, zb, x, yt, zb, vio, 0.08, 4).seg(x, 0, zf - 0.12, x, 0, zf + 0.1, vio, 0.6); }
+    for (const t of marks) { const x = this.X(t), y0 = Math.min(0, yb); G.seg(x, yb, zb, x, yt, zb, vio, 0.08, 4).seg(x, y0, zf - 0.12, x, y0, zf + 0.1, vio, 0.6); }
     for (const v of dt) { const y = this.Y(v); if (v) G.seg(x0, y, zb, x1, y, zb, vio, 0.09, 4); G.seg(x0 - 0.08, y, zb, x0 + 0.06, y, zb, vio, 0.55); }
     G.seg(x0, yb, zb, x0, yt, zb, vio, 0.3).seg(x0, 0, zb, x1, 0, zb, vio, 0.22);
     for (const s of S) G.seg(x0, 0, s.z, x1, 0, s.z, s.col, 0.12, 3);
@@ -294,7 +294,7 @@ export class Ribbon extends Hud {
     this.gate.position.set(0, (yb + yt) / 2, (zb + zf) / 2); this.gate.scale.set(zf - zb + 0.1, yt - yb, 1);
     // labels: time ticks, $ ticks, end values, deepest drawdowns
     const defs = [];
-    for (const l of labels) defs.push({ text: l.text, p: new THREE.Vector3(this.X(l.t), 0, zf + 0.12), ay: 0, dy: 3, tick: 'x' });
+    for (const l of labels) defs.push({ text: l.text, p: new THREE.Vector3(this.X(l.t), Math.min(0, yb), zf + 0.12), ay: 0, dy: 3, tick: 'x' });
     for (const v of dt) defs.push({ text: v ? fmtK(v) : '$0', p: new THREE.Vector3(x0 - 0.12, this.Y(v), zb), ax: 1, avoid: true });
     for (const s of S) {
       const j = s.m - 1, p = new THREE.Vector3(s.px[j], s.py[j], s.z);

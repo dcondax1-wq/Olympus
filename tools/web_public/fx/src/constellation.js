@@ -284,7 +284,11 @@ export class Constellation extends Hud {
     const its = this.items;
     // robust range: outliers (a PF of 15 from a handful of trades) are pinned to the edge instead of squashing the rest
     const q = (arr, keep) => { const v = [...arr].sort((a, b) => a - b), n = v.length; if (!n) return [0, 0];
-      let a = n >= 8 ? v[Math.floor(0.04 * (n - 1))] : v[0], c = n >= 8 ? v[Math.ceil(0.96 * (n - 1))] : v[n - 1];
+      let a = v[0], c = v[n - 1];
+      if (n >= 6) {   // Tukey fences in log space
+        const at = (f) => { const i = f * (n - 1), j = Math.floor(i); return v[j] + (v[Math.min(n - 1, j + 1)] - v[j]) * (i - j); };
+        const q1 = at(0.25), q3 = at(0.75), iqr = Math.max(0.08, q3 - q1); a = Math.max(a, q1 - 1.6 * iqr); c = Math.min(c, q3 + 1.6 * iqr);
+      }
       if (keep != null) { a = Math.min(a, keep); c = Math.max(c, keep); } return [a, c]; };
     let [x0, x1] = q(its.map((it) => lg(it.pf21)), this.base ? lg(this.base.pf21) : null);
     let [y0, y1] = q(its.map((it) => lg(it.pf26)), this.base ? lg(this.base.pf26) : null);
