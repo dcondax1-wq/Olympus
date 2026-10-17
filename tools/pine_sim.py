@@ -22,7 +22,9 @@ else open->low->high->close; a stop fills at its price (or the open on a gap) +/
 trade-through (backtest_fill_limits_assumption=1) and fills at its price (or the open on a gap); commission $0.75 per
 contract per fill; rule exits use strategy.close_all(immediately=true) and fill at the bar close -/+ 1 tick.
 
-Presets (--preset): locked (default: the script as of 2026-10-17 = live_model.json), prev (the repo script of 2026-10-16
+Presets (--preset): locked (default: the 2026-10-17 evening lock = live_model.json: quarter size in cold streaks, half
+size on late entries, breakeven at 3R on trending days), am (the 2026-10-17 morning lock: half size cold, no late rule, BE
+at 1R every day), prev (the repo script of 2026-10-16
 evening: $350, cushion cap, 1 trade/day, fallback targets), oct16 (the script TradingView matched on 2026-10-16: $350 x
 grade, 2 trades/day; 25 trades, +$8,784.50 on the export), legacy (commit fdaea88 as TradingView actually ran it - its
 1H/15m structure never updated there - with next-open rule exits: 8 trades, +$547.50).
@@ -52,13 +54,15 @@ DEFAULT_INPUTS = {
     "riskUsd": 800.0, "refStop": 20.0, "maxQty": 40, "maxTrades": 1, "stopAfterWin": True, "dayStop": 600.0,
     "regimeEr": 0.45, "regimeMode": "half", "dayRangeMax": 1.6,
     # cold-streak filter (engine/equity_filter.py with live_model.json equity_filter)
-    "coldOn": True, "coldLook": 15, "coldMinR": 0.0, "coldMult": 0.5, "coldForce": "Auto",
+    "coldOn": True, "coldLook": 15, "coldMinR": 0.0, "coldMult": 0.25, "coldForce": "Auto",
+    # late-entry size (engine/sizing.py late_mult): the 15m structure already turned the trade's way at the signal
+    "lateMult": 0.5,
     # old rules (off in the locked strategy)
     "gradeSizing": False, "convStep": 0.0, "ddAware": False, "cushionFrac": 0.25, "mllAmt": 2000.0, "mllLock": 50100.0,
     "useFallback": False, "fallbackRR": 2.0, "gEarly": 2, "gQ3": 1, "gPd": 2,
     # model
     "minFvg": 3.0, "minStop": 10.0, "maxStop": 60.0, "stopBuf": 2.0, "eqTol": 6.0, "minRR": 1.5, "maxRR": 5.0,
-    "beAtR": 1.0, "timeStopM": 30, "givebackR": 0.5, "minScore": 1, "expiryMin": 60, "legLook": 24,
+    "beAtR": 1.0, "beTrendR": 3.0, "timeStopM": 30, "givebackR": 0.5, "minScore": 1, "expiryMin": 60, "legLook": 24,
     "flatMod": 955, "newsOn": True, "newsBefore": 15, "newsAfter": 30, "newsFlatM": 5, "fomcPmOff": True,
     # alerts
     "alertFmt": "Bridge JSON", "bridge": "TradersPost", "bTicker": "MNQ", "syncExits": True, "beModify": True,
@@ -74,9 +78,11 @@ DEFAULT_INPUTS = {
     # result on TradingView ($0.75 per contract per fill, what the script does); "py" = the engine's mini/micro split
     "coldRComm": "tv",
 }
-_OLD = {"riskUsd": 350.0, "refStop": 0.0, "coldOn": False, "ddAware": True, "useFallback": True}
+_OLD = {"riskUsd": 350.0, "refStop": 0.0, "coldOn": False, "coldMult": 0.5, "lateMult": 1.0, "beTrendR": 0.0,
+        "ddAware": True, "useFallback": True}
 PRESETS = {
-    "locked": {},
+    "locked": {},                                                                # 2026-10-17 evening lock (live_model.json)
+    "am": {"coldMult": 0.5, "lateMult": 1.0, "beTrendR": 0.0},                   # 2026-10-17 morning lock (commit a603087)
     "prev": dict(_OLD),                                                          # repo script 2026-10-16 23:21 (d007e59)
     "oct16": {**_OLD, "gradeSizing": True, "convStep": 0.33, "maxTrades": 2},    # TradingView parity run (ab027f1)
     "legacy": {**_OLD, "gradeSizing": True, "convStep": 0.33, "maxTrades": 2,    # fdaea88 as TradingView ran it
@@ -303,12 +309,17 @@ class Msg:
             return '{"ticker":"' + P["bTicker"] + '","action":"breakeven","orderType":"stop"}'
         return self.pmt("buy" if d == 1 else "sell", q, close, new_stop, tgt, True, t_close_ms)
 
-    def size_word(self):
-        m = self.P["coldMult"]
+    @staticmethod
+    def _word(m):
         return "half" if m == 0.5 else "quarter" if m == 0.25 else f"{_g(float(m))}x"
 
-    def size_note(self, cold, trend_half):
-        return (f" · {self.size_word()} size (cold streak)" if cold else "") + (" · half size (trending market)" if trend_half else "")
+    def size_word(self):
+        return self._word(self.P["coldMult"])
+
+    def size_note(self, cold, late, trend_half):
+        return ((f" · {self.size_word()} size (cold streak)" if cold else "")
+                + (f" · {self._word(self.P['lateMult'])} size (late entry)" if late else "")
+                + (" · half size (trending market)" if trend_half else ""))
 
 
 # ------------------------------------------------------------------------------------------------ simulation
@@ -649,7 +660,8 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
                     else:
                         pend_close = reason
                 else:
-                    if P["beAtR"] > 0 and tr["mfe"] >= P["beAtR"]:
+                    beR = P["beTrendR"] if (st["trending"] and P["beTrendR"] > 0) else P["beAtR"]   # be_at_r_trending
+                    if beR > 0 and tr["mfe"] >= beR:
                         newStop = max(tr["stop"], tr["entry"] + tick) if d == 1 else min(tr["stop"], tr["entry"] - tick)
                         if newStop != tr["stop"]:
                             tr["stop"] = newStop
@@ -731,8 +743,8 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
                 return q, 720 + (q - 1) * 90
             return 0, None
 
-        def size(riskPts, gradeMult, conv, cold):
-            """Pine f_size: Engine._size in the engine's order, then the cold-streak cut. Returns (qty, qtyFull)."""
+        def size(riskPts, gradeMult, conv, cold, late):
+            """Pine f_size: Engine._size in the engine's order, then the cold x late cut (engine/sizing.py). Returns (qty, qtyFull)."""
             riskEff = P["riskUsd"]
             if P["ddAware"]:                                   # old: cap at a fraction of the MLL cushion
                 riskEff = min(riskEff, max(0.0, (bal - st["mllLvl"]) * P["cushionFrac"]))
@@ -746,8 +758,9 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
                 riskEff = riskEff * 0.5
             qtyFull = min(P["maxQty"], int(math.floor(riskEff / (riskPts * PV))))
             qty = qtyFull
-            if cold and qtyFull >= 1:                          # cold streak: micros x coldMult, at least 1
-                qty = max(1, int(qtyFull * P["coldMult"]))
+            mult = (P["coldMult"] if cold else 1.0) * (P["lateMult"] if late else 1.0)   # one rounding, floor 1 micro
+            if mult < 1 and qtyFull >= 1:
+                qty = max(1, int(math.floor(qtyFull * mult)))
             return qty, qtyFull
 
         def plan(d_, ext, invX, armMod, climax, cold):
@@ -788,6 +801,7 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
             score += 1 if lrl else -1 if hrl else 0
             m15al = s15.trend == d_
             score += -1 if m15al else 0
+            late = P["lateMult"] < 1 and m15al                 # late entry: the 15m structure already points the trade's way
             vw = 0 if vwap is None else (1 if (vwap - entry) * d_ > 0 else -1)
             firstHour = 570 <= mod < 630
             comp = {"htf": (2 if htf == d_ else -1 if htf == -d_ else 0), "pd": P["gPd"] * pdv, "vwap": 2 * vw,
@@ -809,9 +823,9 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
             mult = 1.5 if pts >= 7 else 1.25 if pts >= 5 else 1.0 if pts >= 3 else 0.75 if pts >= 1 else 0.5
             grade = "A+" if pts >= 7 else "A" if pts >= 5 else "B" if pts >= 3 else "C" if pts >= 1 else "D"
             conv = (1 if vw > 0 else 0) - (1 if climax else 0) - (1 if firstHour else 0)
-            qty, qtyFull = size(risk, mult, conv, cold)
+            qty, qtyFull = size(risk, mult, conv, cold, late)
             return dict(stop=stop, target=target, score=score, qty=qty, qtyFull=qtyFull, grade=grade, pts=pts, risk=risk,
-                        comp=comp, trending=st["trending"], obst=obst, htf=htf, m15=s15.trend)
+                        comp=comp, trending=st["trending"], obst=obst, htf=htf, m15=s15.trend, late=late)
 
         if debug and (t // 1000) in snap_times:
             events.append((t // 1000, "snap", {"flat": flat, "blocked": bool(blocked), "tradesToday": st["tradesToday"],
@@ -839,14 +853,15 @@ def simulate(S: Series, inputs: dict | None = None, legacy=False, news=None, deb
                     else:
                         q = pl["qty"]
                         cmt = (f"{'L' if d_ == 1 else 'S'} r={pl['risk']:.2f} g={pl['grade']}" if legacy else
-                               f"{'L' if d_ == 1 else 'S'} r={f_num(pl['risk'])} sl={f_num(pl['stop'])} g={pl['grade']}" + (" cold" if coldNow else ""))
+                               f"{'L' if d_ == 1 else 'S'} r={f_num(pl['risk'])} sl={f_num(pl['stop'])} g={pl['grade']}" + (" cold" if coldNow else "")
+                               + (" late" if pl["late"] else ""))
                         info = {"stop0": float(pl["stop"]), "target": float(pl["target"]), "qty_full": int(pl["qtyFull"]),
-                                "cold": coldNow, "cold_sum": coldSum, "cold_n": coldN, "risk_plan": float(pl["risk"]),
+                                "cold": coldNow, "late": bool(pl["late"]), "cold_sum": coldSum, "cold_n": coldN, "risk_plan": float(pl["risk"]),
                                 "grade": pl["grade"], "score": int(pl["score"]), "trending": bool(st["trending"]),
                                 "signal_t": int(t // 1000),
                                 "_bracket_msgs": (M.bracket(True, d_, q, pl["stop"], pl["target"], None, c, t_close),
                                                   M.bracket(False, d_, q, pl["stop"], pl["target"], None, c, t_close))}
-                        emsg = M.entry(d_, q, pl["stop"], pl["target"], c, q * pl["risk"] * PV, M.size_note(coldNow, trendHalf), t_close)
+                        emsg = M.entry(d_, q, pl["stop"], pl["target"], c, q * pl["risk"] * PV, M.size_note(coldNow, pl["late"], trendHalf), t_close)
                         pend_entry = (d_, q, pl["stop"], pl["target"], cmt, info, emsg)
                         tr["stop"], tr["stop0"], tr["tgt"] = pl["stop"], pl["stop"], pl["target"]
                         tr["beSent"] = False
@@ -874,6 +889,7 @@ def stats(trades):
     return {"trades": len(p), "net": round(sum(p), 2), "gross_profit": round(gp, 2), "gross_loss": round(-gl, 2),
             "pf": round(gp / gl, 2) if gl else None, "win_pct": round(100 * sum(1 for x in p if x > 0) / len(p), 1) if p else None,
             "max_dd_closed": round(mdd, 2), "cold_trades": sum(1 for x in trades if x.get("cold")),
+            "late_trades": sum(1 for x in trades if x.get("late")),
             "commission": round(sum(COMM * 2 * x["qty"] for x in trades), 2)}
 
 
@@ -945,7 +961,7 @@ def main():
               f"{fmt(x['exit_t'])} {x['exit_signal']:10} {x['exit']:.2f}  {x['profit']:+9.2f}  R {x.get('r', 0):+.3f}")
     sm = stats(r["trades"])
     print(f"{sm['trades']} trades, net {sm['net']:+.2f}, PF {sm['pf']}, win {sm['win_pct']}%, max DD (closed) {sm['max_dd_closed']:.2f}, "
-          f"cold-streak trades {sm['cold_trades']}, commission {sm['commission']:.2f} | bars {fmt(S.t[0] // 1000)} .. {fmt(S.t[-1] // 1000)}"
+          f"cold-streak trades {sm['cold_trades']}, late-entry trades {sm['late_trades']}, commission {sm['commission']:.2f} | bars {fmt(S.t[0] // 1000)} .. {fmt(S.t[-1] // 1000)}"
           f" | cold record now: last {r['cold_now']['n']} trades {r['cold_now']['sum']:+.2f}R")
     if a.alerts:
         for ts, kind, m in r["alerts"]:
@@ -964,10 +980,17 @@ def main():
         py = pp.py_trades(day_from=d0, day_to=d1, bars_csv=a.csv if a.py_bars else None, cache=a.py_cache)
         py = pp.apply_cold(py)
         res = pp.compare(py, tv, day_from=d0, day_to=d1, t_to=int(S.t[-1] // 1000))
-        cfg = pp.live_model().get("equity_filter") or {}
+        lm = pp.live_model()
+        cfg = lm.get("equity_filter") or {}
         if cfg and abs(float(cfg.get("cold_size", 0.5)) - float(r["inputs"]["coldMult"])) > 1e-9:
             print(f"WARNING: live_model.json cold_size {cfg.get('cold_size', 0.5)} != the script's 'Size in a cold streak' "
                   f"{r['inputs']['coldMult']} - set the input (and DEFAULT_INPUTS['coldMult']) to match")
+        lmult = (lm.get("sizing") or {}).get("late_mult")
+        if abs(float(1.0 if lmult is None else lmult) - float(r["inputs"]["lateMult"])) > 1e-9:
+            print(f"WARNING: live_model.json sizing.late_mult {lmult} != the script's 'Size on a late entry' {r['inputs']['lateMult']}")
+        bet = float((lm.get("params") or {}).get("be_at_r_trending") or 0.0)
+        if abs(bet - float(r["inputs"]["beTrendR"])) > 1e-9:
+            print(f"WARNING: live_model.json be_at_r_trending {bet} != the script's 'Breakeven at (R) on trending days' {r['inputs']['beTrendR']}")
         out["parity"] = {k: v for k, v in res.items()}
     if a.json:
         with open(a.json, "w", encoding="utf-8") as f:

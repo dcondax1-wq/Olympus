@@ -2,13 +2,14 @@
 
     python -X utf8 tools/pine_parity.py <tv_trades.csv> [--tz America/New_York] [--params '{"risk_usd": 600}']
                                         [--from 2026-08-24 --to 2026-10-16] [--tol-min 10] [--r-tol 0.3]
-    python -X utf8 tools/pine_parity.py <tv_trades.csv> --defaults --no-cold     # the old comparison (engine DEFAULTS)
+    python -X utf8 tools/pine_parity.py <tv_trades.csv> --defaults --no-cold     # the old comparison (engine DEFAULTS, no sizing)
     python -X utf8 tools/pine_parity.py --selftest      # builds a synthetic TV export from the Python trades
 
 Python side: the live strategy (live_model.json params; --params overrides single keys, --defaults uses the engine
 DEFAULTS instead) run from the first day of the TradingView list, so both start cold, then the cold-streak filter applied
-exactly as tools/export_backtest.py does (engine/equity_filter.py: sum of the R of the last 15 finished trades <= 0 ->
-micros x 0.5, at least 1). --py-bars <csv> runs the engine on a TradingView bar export instead of data/NQ_5m.csv.
+exactly as tools/export_backtest.py does (engine/equity_filter.py + engine/sizing.py: cold streak x cold_size, late entry
+x late_mult, rounded down once, at least 1). --py-bars <csv> runs the engine on a TradingView bar export instead of
+data/NQ_5m.csv.
 
 Export on TradingView: Strategy Tester > List of trades > Export (CSV). Set the chart timezone to New York (or pass
 --tz with the chart's timezone: the export's Date/Time column is in the chart timezone).
@@ -153,6 +154,7 @@ def read_tv(path: str, tz: str = "America/New_York") -> list[dict]:
         if m and t.get("entry") is not None:
             t["risk_pts"] = abs(t["entry"] - float(m.group(1)))     # risk from the actual fill, like the engine's risk_pts
         t["cold"] = bool(re.search(r"\bcold\b", t.get("entry_signal", "")))   # cold-streak size (entry comment tag)
+        t["late"] = bool(re.search(r"\blate\b", t.get("entry_signal", "")))   # late-entry size (entry comment tag)
         out.append(t)
     return sorted(out, key=lambda x: x["entry_t"])
 
@@ -222,21 +224,26 @@ def py_trades(params: dict | None = None, day_from: str | None = None, day_to: s
                     "exit_t": int(t["exit_t"]), "risk_pts": float(t["risk_pts"]), "qty": int(t["qty"]),
                     "minis": int(t.get("minis") or 0), "micros": int(t.get("micros") or 0), "stop": float(t.get("stop0") or t["stop"]),
                     "target": float(t["target"]), "reason": t["exit_reason"], "grade": t.get("grade"), "pnl_r": float(t["pnl_r"]),
-                    "pnl": float(t["pnl"]), "regime": t.get("regime")})
+                    "pnl": float(t["pnl"]), "regime": t.get("regime"), "m15_trend": int(t.get("m15_trend") or 0)})
     if cache:
         with open(cache, "w", encoding="utf-8") as f:
             json.dump({"key": key, "trades": out}, f)
     return out
 
 
-def apply_cold(py: list[dict], cfg="live", ledger_from: int | None = None) -> list[dict]:
-    """The cold-streak filter exactly as tools/export_backtest.py applies engine/equity_filter.status: the ledger is the
-    engine's own trades (R = pnl_r at full size); an entry is cold when the last `lookback` trades that finished before it
-    sum to <= min_sum_r R (rounded to 2 decimals, at least `lookback` of them). cold_mode half: qty = max(1, int(qty x
-    cold_size)), cold_size 0.5 unless live_model.json sets it (engine/equity_filter.py).
+def apply_cold(py: list[dict], cfg="live", ledger_from: int | None = None, sizing="live") -> list[dict]:
+    """The live-loop sizing exactly as tools/export_backtest.py applies it. Cold streak (engine/equity_filter.status): the
+    ledger is the engine's own trades (R = pnl_r at the engine's size); an entry is cold when the last `lookback` trades
+    that finished before it sum to <= min_sum_r R (rounded to 2 decimals, at least `lookback` of them) -> x cold_size.
+    Late entry (engine/sizing.py, live_model.json "sizing"): the 15m structure already pointed the trade's way at the
+    signal -> x late_mult. One rounding: qty = max(1, floor(qty x cold x late)); cold_mode skip -> no trade.
     ledger_from (s): only trades entered from then on count, like TradingView, whose record starts with the chart's history.
-    Adds qty_full, qty (sized), cold, cold_sum, pnl_mnq ($ with TradingView's MNQ commission) and pnl_sized (engine $ x q/q0)."""
-    cfg = live_model().get("equity_filter") if cfg == "live" else cfg
+    Adds qty_full, qty (sized), cold, late, cold_sum, pnl_mnq ($ with TradingView's MNQ commission) and pnl_sized."""
+    from engine import sizing as szm
+    lm = live_model()
+    cfg = lm.get("equity_filter") if cfg == "live" else cfg
+    sizing = lm.get("sizing") if sizing == "live" else sizing
+    sizing = {**(sizing or {}), "press": None}
     rows = sorted(py, key=lambda t: t["entry_t"])
     for t in rows:
         q0 = int(t.get("qty_full", t["qty"]))
@@ -250,8 +257,10 @@ def apply_cold(py: list[dict], cfg="live", ledger_from: int | None = None) -> li
             on = len(last) < lb or s > thr
             half = cfg.get("cold_mode", "skip") == "half"
             m = 1.0 if on else (min(1.0, max(0.0, float(cfg.get("cold_size", 0.5)))) if half else 0.0)
-        q = q0 if m >= 1 else (max(1, int(q0 * m)) if m > 0 else 0)
-        t.update(qty=q, cold=m < 1, cold_sum=s,
+        tr = {"dir": t["dir"], "m15_trend": t.get("m15_trend", 0), "risk_pts": t["risk_pts"]}
+        q = szm.route_qty(q0, tr, m, sizing, lm.get("params"))["qty"] if m > 0 else 0
+        late = sizing.get("late_mult") is not None and float(sizing["late_mult"]) < 1 and szm.is_late(tr)
+        t.update(qty=q, cold=m < 1, late=bool(late), cold_sum=s,
                  pnl_mnq=round(((t["exit"] - t["entry"]) * t["dir"] * 2.0 - 1.5) * q, 2),
                  pnl_sized=round(t["pnl"] * q / q0, 2) if q0 else 0.0)
     return rows
@@ -284,10 +293,10 @@ def compare(py: list[dict], tv: list[dict], tol_min: float = 10, r_tol: float = 
         pr = (p["exit"] - p["entry"]) * p["dir"] / p["risk_pts"]
         pc = py_class(p["reason"])
         base = {"t": p["entry_t"], "dir": p["dir"], "py": pc, "py_r": pr, "py_q": p.get("qty"), "py_cold": p.get("cold"),
-                "py_usd": p.get("pnl_mnq"), "py_usd_engine": p.get("pnl_sized", p.get("pnl"))}
+                "py_late": p.get("late"), "py_usd": p.get("pnl_mnq"), "py_usd_engine": p.get("pnl_sized", p.get("pnl"))}
         if best is None:
-            rows.append({**base, "tv": None, "tv_r": None, "tv_q": None, "tv_cold": None, "tv_usd": None, "dt": None,
-                         "size_ok": None, "status": "PY ONLY"})
+            rows.append({**base, "tv": None, "tv_r": None, "tv_q": None, "tv_cold": None, "tv_late": None, "tv_usd": None,
+                         "dt": None, "size_ok": None, "status": "PY ONLY"})
             continue
         used.add(best)
         t = tv[best]
@@ -300,7 +309,7 @@ def compare(py: list[dict], tv: list[dict], tol_min: float = 10, r_tol: float = 
         elif tr is None or abs(tr - pr) > r_tol:
             status = "R DIFF"
         tq = int(t["qty"]) if t.get("qty") is not None else None
-        rows.append({**base, "tv": tc, "tv_r": tr, "tv_q": tq, "tv_cold": t.get("cold"), "tv_usd": t.get("profit"),
+        rows.append({**base, "tv": tc, "tv_r": tr, "tv_q": tq, "tv_cold": t.get("cold"), "tv_late": t.get("late"), "tv_usd": t.get("profit"),
                      "dt": (t["entry_t"] - p["entry_t"]) // 60,
                      "size_ok": None if tq is None or p.get("qty") is None else tq == int(p["qty"]), "status": status})
     for j, t in enumerate(tv):
@@ -308,9 +317,9 @@ def compare(py: list[dict], tv: list[dict], tol_min: float = 10, r_tol: float = 
             continue
         risk = t.get("risk_pts")
         tr = (t["exit"] - t["entry"]) * t["dir"] / risk if t.get("exit") is not None and risk else None
-        rows.append({"t": t["entry_t"], "dir": t["dir"], "py": None, "py_r": None, "py_q": None, "py_cold": None, "py_usd": None,
-                     "py_usd_engine": None, "tv": tv_class(t.get("exit_signal", ""), tr), "tv_r": tr,
-                     "tv_q": int(t["qty"]) if t.get("qty") is not None else None, "tv_cold": t.get("cold"),
+        rows.append({"t": t["entry_t"], "dir": t["dir"], "py": None, "py_r": None, "py_q": None, "py_cold": None, "py_late": None,
+                     "py_usd": None, "py_usd_engine": None, "tv": tv_class(t.get("exit_signal", ""), tr), "tv_r": tr,
+                     "tv_q": int(t["qty"]) if t.get("qty") is not None else None, "tv_cold": t.get("cold"), "tv_late": t.get("late"),
                      "tv_usd": t.get("profit"), "dt": None, "size_ok": None, "status": "TV ONLY"})
     rows.sort(key=lambda r: r["t"])
     n_py, n_tv = len(py), len(tv)
@@ -319,12 +328,15 @@ def compare(py: list[dict], tv: list[dict], tol_min: float = 10, r_tol: float = 
     size_m = sum(1 for r in rows if r["size_ok"])
     cold_m = sum(1 for r in rows if r["status"] != "PY ONLY" and r["status"] != "TV ONLY" and r["py_cold"] is not None
                  and r["tv_cold"] is not None and bool(r["py_cold"]) == bool(r["tv_cold"]))
+    late_m = sum(1 for r in rows if r["status"] not in ("PY ONLY", "TV ONLY") and r["py_late"] is not None
+                 and r["tv_late"] is not None and bool(r["py_late"]) == bool(r["tv_late"]))
     denom = n_py + n_tv - entry_m
     net = lambda key, src: round(sum(r[key] for r in rows if r.get(key) is not None and r["status"] in src), 2)
     both = ("MATCH", "EXIT DIFF", "R DIFF")
     out = {"n_py": n_py, "n_tv": n_tv, "entry_matches": entry_m, "full_matches": full_m, "size_matches": size_m,
            "cold_flag_matches": cold_m, "py_cold_trades": sum(1 for t in py if t.get("cold")),
-           "tv_cold_trades": sum(1 for t in tv if t.get("cold")),
+           "tv_cold_trades": sum(1 for t in tv if t.get("cold")), "late_flag_matches": late_m,
+           "py_late_trades": sum(1 for t in py if t.get("late")), "tv_late_trades": sum(1 for t in tv if t.get("late")),
            "entry_parity": round(entry_m / denom, 3) if denom else 1.0, "parity": round(full_m / denom, 3) if denom else 1.0,
            "net_tv": round(sum(t.get("profit") or 0.0 for t in tv), 2),
            "net_py_mnq": round(sum(t.get("pnl_mnq") or 0.0 for t in py), 2) if py and "pnl_mnq" in py[0] else None,
@@ -334,20 +346,20 @@ def compare(py: list[dict], tv: list[dict], tol_min: float = 10, r_tol: float = 
     if verbose:
         f = lambda x: "" if x is None else f"{x:+.2f}"
         g = lambda x: "" if x is None else f"{x:+.0f}"
-        q = lambda x, c: "" if x is None else f"{x}{'c' if c else ''}"
+        q = lambda x, c, l=False: "" if x is None else f"{x}{'c' if c else ''}{'l' if l else ''}"
         print(f"Window {day_from} .. {day_to} | python {n_py} trades | tradingview {n_tv} trades")
         print(f"{'entry (ET)':17} {'side':4} {'python':9} {'R':>6} {'qty':>4} {'$':>7}   {'tradingview':11} {'R':>6} {'qty':>4} {'$':>7} {'dt':>3}  status")
         for r in rows:
             print(f"{dt.datetime.fromtimestamp(r['t'], ET):%Y-%m-%d %H:%M} {'L' if r['dir'] == 1 else 'S':4} {r['py'] or '-':9} {f(r['py_r']):>6} "
-                  f"{q(r['py_q'], r['py_cold']):>4} {g(r['py_usd']):>7}   {r['tv'] or '-':11} {f(r['tv_r']):>6} {q(r['tv_q'], r['tv_cold']):>4} "
+                  f"{q(r['py_q'], r['py_cold'], r['py_late']):>4} {g(r['py_usd']):>7}   {r['tv'] or '-':11} {f(r['tv_r']):>6} {q(r['tv_q'], r['tv_cold'], r['tv_late']):>4} "
                   f"{g(r['tv_usd']):>7} {'' if r['dt'] is None else r['dt']:>3}  {r['status']}"
                   + ("" if r["size_ok"] in (None, True) else "  SIZE DIFF"))
         print(f"Entry parity {out['entry_parity']:.0%} ({entry_m} matched) | full parity {out['parity']:.0%} "
-              f"({full_m} with the same exit class and R within {r_tol}) | same size {size_m} | qty column: c = cold-streak size")
+              f"({full_m} with the same exit class and R within {r_tol}) | same size {size_m} | qty column: c = cold-streak size, l = late-entry size")
         if out["net_py_mnq"] is not None:
             print(f"Net: tradingview {out['net_tv']:+,.2f} | python {out['net_py_mnq']:+,.2f} with MNQ commission "
                   f"({out['net_py_engine']:+,.2f} engine commission) | cold-streak trades: python {out['py_cold_trades']}, "
-                  f"tradingview {out['tv_cold_trades']}")
+                  f"tradingview {out['tv_cold_trades']} | late-entry trades: python {out['py_late_trades']}, tradingview {out['tv_late_trades']}")
     return out
 
 
@@ -446,7 +458,7 @@ def main():
     py = py_trades(json.loads(a.params), day_from=a.day_from, day_to=a.day_to, bars_csv=a.py_bars, defaults=a.defaults)
     if not a.no_cold:
         t0 = None if a.day_from or not tv else min(t["entry_t"] for t in tv) - 600
-        py = apply_cold(py, None if a.defaults else "live", ledger_from=t0)
+        py = apply_cold(py, None if a.defaults else "live", ledger_from=t0, sizing=None if a.defaults else "live")
     res = compare(py, tv, a.tol_min, a.r_tol, a.day_from, a.day_to)
     if a.json:
         with open(a.json, "w", encoding="utf-8") as f:

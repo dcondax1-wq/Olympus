@@ -1,6 +1,7 @@
 //@version=5
 // =====================================================================================================
-//  LIQUIDITY ENGINE - eval mode, locked 2026-10-17   (Pine port of engine/model.py + live_model.json + engine/equity_filter.py)
+//  LIQUIDITY ENGINE - eval mode, locked 2026-10-17 evening   (Pine port of engine/model.py + live_model.json +
+//  engine/equity_filter.py + engine/sizing.py)
 //  Run on MNQ1! 5-minute (CME, ETH). ONE TradingView alert on this strategy: condition "Order fills and alert() function
 //  calls", message {{strategy.order.alert_message}}. Input "Alert format" picks what the message is:
 //    Bridge JSON - for a webhook to TradersPost or PickMyTrade, which places the order in Tradovate (MFFU)
@@ -20,15 +21,16 @@
 //      no trade).
 //   6. Target = nearest MAJOR untaken pool >= 1.5R away, 1 tick in front of it; profit banked at 5R when the draw is
 //      farther. No major pool in range = no trade.
-//   7. Breakeven at +1R. Exit if not +0.5R after 30 min. Giveback exit: was +0.5R, then a close back through entry.
-//      Flat 15:55 ET (or the session's last bar on early-close days). News blackout from the release list (prefilled
-//      from the engine's calendar; refresh with tools/pine_news.py).
+//   7. Breakeven at +1R; on a trending day (10-day efficiency > 0.45) at +3R. Exit if not +0.5R after 30 min. Giveback
+//      exit: was +0.5R, then a close back through entry. Flat 15:55 ET (or the session's last bar on early-close days).
+//      News blackout from the release list (prefilled from the engine's calendar; refresh with tools/pine_news.py).
 //   8. Size: $800 risk up to a 20-pt stop; wider stops risk $800 x 20 / stop. Micros = floor(risk / (stop x $2)), max 40.
-//      Half size in a trending regime (10-day efficiency > 0.45). 1 trade/day, stop after a winner, $600 daily stop,
-//      no entries once the day's range is >= 1.6x the 20-day average.
-//   9. Cold-streak filter: if the R of the last 15 closed trades sums to <= 0, the trade is still taken at half size
-//      (micros x 0.5, at least 1). TradingView builds this record from the trades in the loaded chart history (full
-//      size until 15 trades have closed); the Python bot uses its shadow ledger.
+//      Half size in a trending regime. 1 trade/day, stop after a winner, $600 daily stop, no entries once the day's
+//      range is >= 1.6x the 20-day average.
+//   9. Size cuts (engine/sizing.py): quarter size in a cold streak (the R of the last 15 closed trades sums to <= 0),
+//      half size on a late entry (the 15m structure already turned the trade's way at the signal). The cuts multiply
+//      and are rounded down once, never below 1 micro. TradingView builds the cold-streak record from the trades in
+//      the loaded chart history (full size until 15 trades have closed); the Python bot uses its shadow ledger.
 //  Parity with the Python engine is checked trade by trade with tools/pine_sim.py (a bar-by-bar replica of this script
 //  and of TradingView's fills) and tools/pine_parity.py - see research/PINE_PARITY.md. Remaining differences are listed
 //  in tradingview/BRIDGE_SETUP.md section 7.
@@ -38,7 +40,7 @@ strategy("Liquidity Engine - Sweep IFVG DOL", overlay=true, initial_capital=5000
      commission_value=0.75, slippage=1, calc_on_order_fills=false, backtest_fill_limits_assumption=1,
      max_bars_back=600, max_lines_count=200, max_labels_count=300)
 
-VERSION = "eval mode 2026-10-17"
+VERSION = "eval mode 2026-10-17 evening"
 
 // ---------------------------------------------------------------- inputs
 grpR = "Risk and size"
@@ -51,11 +53,12 @@ dayStop      = input.float(600, "Daily loss stop ($)", group=grpR)
 regimeEr     = input.float(0.45, "Trending regime: 10-day efficiency above (0 = off)", group=grpR)
 regimeMode   = input.string("half", "In a trending regime", options=["half", "skip"], group=grpR)
 dayRangeMax  = input.float(1.6, "No entries once day range >= x 20d avg (0 = off)", group=grpR)
+lateMult     = input.float(0.5, "Size on a late entry (x micros, 1 = off)", minval=0.01, maxval=1.0, group=grpR, tooltip="Late entry = the 15-minute structure had already turned the trade's way at the signal (the -1 item of the confluence score). live_model.json sizing.late_mult 0.5 = half size. Multiplied with the cold-streak size and rounded down once, never below 1 micro.")
 grpC = "Cold-streak filter"
 coldOn    = input.bool(true, "Smaller size in a cold streak", group=grpC, tooltip="Before each entry the strategy adds up the R of the last N closed trades. At or below the threshold the trade is still taken, at the smaller size. On TradingView the record comes from the trades in the loaded chart history (full size until N trades have closed); the Python bot uses its shadow ledger.")
 coldLook  = input.int(15, "Closed trades to add up (N)", minval=1, group=grpC)
 coldMinR  = input.float(0.0, "Cold when they sum to or below (R)", group=grpC)
-coldMult  = input.float(0.5, "Size in a cold streak (x micros, at least 1)", minval=0.01, maxval=1.0, group=grpC, tooltip="0.5 = half size (live_model.json today). Same as cold_size in engine/equity_filter.py: micros = max(1, floor(micros x this)).")
+coldMult  = input.float(0.25, "Size in a cold streak (x micros, at least 1)", minval=0.01, maxval=1.0, group=grpC, tooltip="0.25 = quarter size (live_model.json cold_size, locked 2026-10-17 evening; the morning lock had 0.5). Same as cold_size in engine/equity_filter.py. Multiplied with the late-entry size and rounded down once: micros = max(1, floor(micros x cold x late)).")
 coldForce = input.string("Auto", "Override", options=["Auto", "Always full size", "Always cold"], group=grpC, tooltip="Auto = from the closed trades on this chart. Use an override only if the chart history is too short and the Python dashboard shows a different cold-streak state; re-create the alert after changing it.")
 grpO = "Old rules (off in the locked strategy)"
 gradeSizing = input.bool(false, "Grade sizing A+..D (old: $350 x grade)", group=grpO)
@@ -78,6 +81,7 @@ eqTol     = input.float(6.0, "Equal highs/lows tolerance (pts)", group=grpM)
 minRR     = input.float(1.5, "Min R to draw on liquidity", group=grpM)
 maxRR     = input.float(5.0, "Bank profit at (R) when the draw is farther", group=grpM)
 beAtR     = input.float(1.0, "Breakeven at (R, 0=off)", group=grpM)
+beTrendR  = input.float(3.0, "Breakeven at (R) on trending days (0 = same as above)", group=grpM, tooltip="On a trending day (10-day efficiency above the regime threshold, the same test that halves the size) the stop moves to breakeven at this many R instead. live_model.json be_at_r_trending 3.0: reversal trades against a trend need room; the giveback rule still protects them.")
 timeStopM = input.int(30, "Time stop (min, 0=off)", group=grpM)
 givebackR = input.float(0.5, "Giveback exit after (R, 0=off)", group=grpM, tooltip="Reached this many R, then a bar closes back below entry: exit at the close.")
 minScore  = input.int(1, "Min confluence score", group=grpM)
@@ -737,8 +741,12 @@ f_beMsg(int d, int q, float newStop, float tgt) =>
 f_coldWord() =>
     coldMult == 0.5 ? "half" : coldMult == 0.25 ? "quarter" : str.tostring(coldMult) + "x"
 
-f_sizeNote(bool isCold, bool isTrendCut) =>
-    (isCold ? " · " + f_coldWord() + " size (cold streak)" : "") + (isTrendCut ? " · half size (trending market)" : "")
+f_lateWord() =>
+    lateMult == 0.5 ? "half" : lateMult == 0.25 ? "quarter" : str.tostring(lateMult) + "x"
+
+f_sizeNote(bool isCold, bool isLate, bool isTrendCut) =>
+    (isCold ? " · " + f_coldWord() + " size (cold streak)" : "") + (isLate ? " · " + f_lateWord() + " size (late entry)" : "")
+     + (isTrendCut ? " · half size (trending market)" : "")
 
 // ---------------------------------------------------------------- manage the open position (before new entries, like the engine:
 // an exit at this close frees the bot to take a new trigger on the same bar)
@@ -776,7 +784,8 @@ if posNow != 0
         if jcPnl > 0
             wonToday := true
     else
-        if beAtR > 0 and trMfe >= beAtR
+        beR = trending and beTrendR > 0 ? beTrendR : beAtR       // engine: be_at_r_trending on a trending day
+        if beR > 0 and trMfe >= beR
             newStop = d == 1 ? math.max(trStop, trEntry + tick) : math.min(trStop, trEntry - tick)
             if newStop != trStop
                 trStop := newStop
@@ -929,8 +938,8 @@ f_trigShort(int extOff) =>
 // ---------------------------------------------------------------- sizing (Engine._size, then the cold-streak cut)
 // One rule per step, in the engine's order. To add a size rule later: add an input, add one step here (scale riskEff
 // before the micros are counted, or cut qty after), and mirror the step in tools/pine_sim.py (plan / size there).
-// returns [qty, qtyFull]: contracts to trade, and the size before the cold-streak cut
-f_size(float riskPts, float gradeMult, int conv, bool cold) =>
+// returns [qty, qtyFull]: contracts to trade, and the size before the cold-streak / late-entry cuts
+f_size(float riskPts, float gradeMult, int conv, bool cold, bool late) =>
     riskEff = riskUsd
     if ddAware                                  // old rule: cap at a fraction of the cushion above the trailing MLL
         riskEff := math.min(riskEff, math.max(0.0, (bal - mllLvl) * cushionFrac))
@@ -944,8 +953,9 @@ f_size(float riskPts, float gradeMult, int conv, bool cold) =>
         riskEff := riskEff * 0.5
     qtyFull = math.min(maxQty, int(math.floor(riskEff / (riskPts * syminfo.pointvalue))))
     qty = qtyFull
-    if cold and qtyFull >= 1                    // cold streak: micros x coldMult, at least 1
-        qty := math.max(1, int(qtyFull * coldMult))
+    mult = (cold ? coldMult : 1.0) * (late ? lateMult : 1.0)   // engine/sizing.py: cold x late, rounded down once, floor 1
+    if mult < 1 and qtyFull >= 1
+        qty := math.max(1, int(math.floor(qtyFull * mult)))
     [qty, qtyFull]
 
 // ---------------------------------------------------------------- planning: target, score, grade, size
@@ -960,7 +970,7 @@ f_q90(int m) =>
         qs := 720 + (q - 1) * 90
     [q, qs]
 
-// returns [ok, stop, target, score, qty, grade, gradePoints, riskPts, qtyFull]
+// returns [ok, stop, target, score, qty, grade, gradePoints, riskPts, qtyFull, late]
 // ok = false: stop too wide, or no major pool >= minRR away (with the fallback target off) -> the setup is consumed
 f_plan(int d, float ext, float invX, int armMod, bool climax, bool cold) =>
     entry = close
@@ -984,6 +994,7 @@ f_plan(int d, float ext, float invX, int armMod, bool climax, bool cold) =>
     qty = 0
     qtyFull = 0
     grade = "D"
+    late = false
     n = array.size(pPx)
     if ok
         // draw on liquidity: nearest MAJOR opposite pool >= minRR
@@ -1021,6 +1032,7 @@ f_plan(int d, float ext, float invX, int armMod, bool climax, bool cold) =>
         score += lrl ? 1 : hrl ? -1 : 0
         m15al = mTrend == d
         score += m15al ? -1 : 0
+        late := lateMult < 1 and m15al          // late entry: the 15m structure already points the trade's way
         // A+..D checklist grade (Engine._grade, non-zero weights only; sizes only with the old grade sizing)
         vw = na(vwap) ? 0 : ((vwap - entry) * d > 0 ? 1 : -1)
         firstHour = mod >= 570 and mod < 630
@@ -1043,10 +1055,10 @@ f_plan(int d, float ext, float invX, int armMod, bool climax, bool cold) =>
         mult = pts >= 7 ? 1.5 : pts >= 5 ? 1.25 : pts >= 3 ? 1.0 : pts >= 1 ? 0.75 : 0.5
         grade := pts >= 7 ? "A+" : pts >= 5 ? "A" : pts >= 3 ? "B" : pts >= 1 ? "C" : "D"
         conv = (vw > 0 ? 1 : 0) - (climax ? 1 : 0) - (firstHour ? 1 : 0)
-        [q1, q2] = f_size(risk, mult, conv, cold)
+        [q1, q2] = f_size(risk, mult, conv, cold, late)
         qty := q1
         qtyFull := q2
-    [ok, stop, target, score, qty, grade, pts, risk, qtyFull]
+    [ok, stop, target, score, qty, grade, pts, risk, qtyFull, late]
 
 // ---------------------------------------------------------------- entries
 blocked = tradesToday >= maxTrades or dayPnl <= -dayStop or (stopAfterWin and wonToday)
@@ -1059,15 +1071,15 @@ if flat and inKZ and mod < flatMod - 10 and not blocked
     if lArmed
         [tg, invL] = f_trigLong(bar_index - lExtBar)
         if tg
-            [ok, st, tp, sc, q, gr, gp, rk, qf] = f_plan(1, lExt, invL, lArmMod, lVavg > 0 and lVmax >= 1.5 * lVavg, coldNow)
+            [ok, st, tp, sc, q, gr, gp, rk, qf, lt] = f_plan(1, lExt, invL, lArmMod, lVavg > 0 and lVmax >= 1.5 * lVavg, coldNow)
             if not ok
                 lArmed := false                                  // stop too wide / no major draw in range: setup consumed
             else if not entryBlock and sc >= minScore
                 if q < 1
                     lArmed := false                              // risk too small for the stop: consumed
                 else
-                    strategy.entry("L", strategy.long, qty=q, comment="L r=" + str.tostring(rk, "#.##") + " sl=" + f_num(st) + " g=" + gr + (coldNow ? " cold" : ""),
-                         alert_message=f_entryMsg(1, q, st, tp, q * rk * syminfo.pointvalue, f_sizeNote(coldNow, trendHalf)))
+                    strategy.entry("L", strategy.long, qty=q, comment="L r=" + str.tostring(rk, "#.##") + " sl=" + f_num(st) + " g=" + gr + (coldNow ? " cold" : "") + (lt ? " late" : ""),
+                         alert_message=f_entryMsg(1, q, st, tp, q * rk * syminfo.pointvalue, f_sizeNote(coldNow, lt, trendHalf)))
                     strategy.exit("xL", "L", stop=st, limit=tp, comment_profit="TARGET", comment_loss="STOP",
                          alert_message=f_exitMsg("bracket", 1, q), alert_profit=f_bracketMsg(true, 1, q, st, tp, float(na)),
                          alert_loss=f_bracketMsg(false, 1, q, st, tp, float(na)), disable_alert=not syncExits)
@@ -1077,21 +1089,21 @@ if flat and inKZ and mod < flatMod - 10 and not blocked
                     trTgt := tp
                     beSent := false
                     tradesToday += 1
-                    label.new(bar_index, low, "L " + str.tostring(q) + (coldNow ? " cold" : "") + " " + gr + " s" + str.tostring(sc), style=label.style_label_up, color=color.new(color.green, 20), textcolor=color.white, size=size.tiny)
+                    label.new(bar_index, low, "L " + str.tostring(q) + (coldNow ? " cold" : "") + (lt ? " late" : "") + " " + gr + " s" + str.tostring(sc), style=label.style_label_up, color=color.new(color.green, 20), textcolor=color.white, size=size.tiny)
                     lArmed := false
                     sArmed := false
     if sArmed
         [tg2, invH] = f_trigShort(bar_index - sExtBar)
         if tg2
-            [ok2, st2, tp2, sc2, q2, gr2, gp2, rk2, qf2] = f_plan(-1, sExt, invH, sArmMod, sVavg > 0 and sVmax >= 1.5 * sVavg, coldNow)
+            [ok2, st2, tp2, sc2, q2, gr2, gp2, rk2, qf2, lt2] = f_plan(-1, sExt, invH, sArmMod, sVavg > 0 and sVmax >= 1.5 * sVavg, coldNow)
             if not ok2
                 sArmed := false
             else if not entryBlock and sc2 >= minScore
                 if q2 < 1
                     sArmed := false
                 else
-                    strategy.entry("S", strategy.short, qty=q2, comment="S r=" + str.tostring(rk2, "#.##") + " sl=" + f_num(st2) + " g=" + gr2 + (coldNow ? " cold" : ""),
-                         alert_message=f_entryMsg(-1, q2, st2, tp2, q2 * rk2 * syminfo.pointvalue, f_sizeNote(coldNow, trendHalf)))
+                    strategy.entry("S", strategy.short, qty=q2, comment="S r=" + str.tostring(rk2, "#.##") + " sl=" + f_num(st2) + " g=" + gr2 + (coldNow ? " cold" : "") + (lt2 ? " late" : ""),
+                         alert_message=f_entryMsg(-1, q2, st2, tp2, q2 * rk2 * syminfo.pointvalue, f_sizeNote(coldNow, lt2, trendHalf)))
                     strategy.exit("xS", "S", stop=st2, limit=tp2, comment_profit="TARGET", comment_loss="STOP",
                          alert_message=f_exitMsg("bracket", -1, q2), alert_profit=f_bracketMsg(true, -1, q2, st2, tp2, float(na)),
                          alert_loss=f_bracketMsg(false, -1, q2, st2, tp2, float(na)), disable_alert=not syncExits)
@@ -1101,7 +1113,7 @@ if flat and inKZ and mod < flatMod - 10 and not blocked
                     trTgt := tp2
                     beSent := false
                     tradesToday += 1
-                    label.new(bar_index, high, "S " + str.tostring(q2) + (coldNow ? " cold" : "") + " " + gr2 + " s" + str.tostring(sc2), style=label.style_label_down, color=color.new(color.red, 20), textcolor=color.white, size=size.tiny)
+                    label.new(bar_index, high, "S " + str.tostring(q2) + (coldNow ? " cold" : "") + (lt2 ? " late" : "") + " " + gr2 + " s" + str.tostring(sc2), style=label.style_label_down, color=color.new(color.red, 20), textcolor=color.white, size=size.tiny)
                     lArmed := false
                     sArmed := false
 
@@ -1127,6 +1139,6 @@ if showTable and barstate.islast
          coldN < coldLook ? "Cold streak: warming up (" + str.tostring(coldN) + "/" + str.tostring(coldLook) + " closed trades) - full size" :
          "Last " + str.tostring(coldLook) + " trades: " + (coldSum > 0 ? "+" : "") + str.tostring(coldSum, "#.##") + "R - " + (coldNow ? "COLD, " + f_coldWord() + " size" : "full size")
     table.cell(stBox, 0, 0, "Liquidity Engine " + VERSION, text_color=color.white, text_size=size.small, text_halign=text.align_left)
-    table.cell(stBox, 0, 1, "Risk " + f_usd(riskUsd) + " up to a " + str.tostring(refStop) + "-pt stop · " + str.tostring(maxTrades) + " trade/day", text_color=color.white, text_size=size.small, text_halign=text.align_left)
+    table.cell(stBox, 0, 1, "Risk " + f_usd(riskUsd) + " up to a " + str.tostring(refStop) + "-pt stop · " + str.tostring(maxTrades) + " trade/day" + (lateMult < 1 ? " · late entry x" + str.tostring(lateMult) : "") + " · BE " + str.tostring(beAtR) + "R" + (beTrendR > 0 ? " (" + str.tostring(beTrendR) + "R trending)" : ""), text_color=color.white, text_size=size.small, text_halign=text.align_left)
     table.cell(stBox, 0, 2, coldTxt, text_color=coldNow ? color.orange : color.white, text_size=size.small, text_halign=text.align_left)
     table.cell(stBox, 0, 3, "Today: " + str.tostring(tradesToday) + " trade(s)" + (trendHalf ? " · trending market: half size" : "") + (alertFmt == "Phone text" ? " · alerts: phone text" : " · alerts: " + bridge + " JSON"), text_color=color.white, text_size=size.small, text_halign=text.align_left)

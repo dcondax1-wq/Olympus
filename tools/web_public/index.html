@@ -768,6 +768,8 @@ table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-
   .hide-sm { display: none; }
 }
 .tw-hint { margin: -10px 0 16px; text-align: right; font-size: 11px; color: var(--muted); }
+a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--accent-2) 40%, transparent); text-underline-offset: 3px; }
+.rk-sw { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 0 0 16px; } .rk-sw label { display: flex; align-items: center; gap: 10px; }
 :root[data-motion="off"] *, :root[data-motion="off"] *::before { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
@@ -1914,7 +1916,7 @@ function xCard(r) {
     ['Max drawdown', 'dd', kusd, 'hi', DF.money], ['Eval pass · 2 wk', 'p10', pct, 'hi', DF.pp], ['Eval fail · 2 wk', 'f10', pct, 'lo', DF.pp], ['Decided · 2 wk', 'dec10', pct, 'hi', DF.pp]];
   const cell = (s, [, k, f, bt, dfm]) => { const v = sp(r, s)[k]; return `<div class="v ${k === 'net' ? cls(v) : ''}">${f(v)}${isB ? '' : dlt(v, sp(b, s)[k], dfm, bt)}</div>`; };
   return `<a class="card xcard ${isB ? 'ref' : ''}" href="${runLink(r.id)}">
-    <div class="xc-top">${isB ? stChip('baseline') + chip('the reference') : famChip(r.family) + stChip(r.status)}<span class="xc-date">${esc(r.built || '')}</span></div>
+    <div class="xc-top">${isB ? stChip('baseline') + chip('the reference') : r.id === prevLock()?.id ? chip('previous lock', 'warn') + stChip(r.status) : famChip(r.family) + stChip(r.status)}<span class="xc-date">${esc(r.built || '')}</span></div>
     <h3>${esc(r.title || r.id)}</h3>${r.question ? `<p class="xc-q">${esc(r.question)}</p>` : ''}${r.verdict ? `<p class="xc-v">${esc(r.verdict)}</p>` : ''}
     <div class="mt"><div class="h">${isB ? 'Numbers' : 'vs live'}</div><div class="h">2026</div><div class="h">2021-25</div>
       ${rows.map(x => `<div class="k">${x[0]}</div>${cell('2026', x)}${cell('2021-25', x)}`).join('')}</div>
@@ -1928,7 +1930,7 @@ function xRowHTML(r) {
 const cumPts = (days) => { let eq = 0; return days.map(d => { eq += d[1]; return { x: d[0], y: eq }; }); };
 const fbWait = (t = 'Loading…') => `<div class="fbx"><div class="empty">${t}</div></div>`;
 function constData() {
-  return { baseline: baseId(), runs: RUNS_().map(r => { const a = sp(r, '2026'), z = sp(r, '2021-25');
+  return { baseline: baseId(), prev: prevLock()?.id || null, runs: RUNS_().map(r => { const a = sp(r, '2026'), z = sp(r, '2021-25');
     return { id: r.id, title: r.title, family: r.family, status: r.status, pf26: a.pf ?? null, pf21: z.pf ?? null, net26: a.net ?? null, net21: z.net ?? null,
       tpw26: a.tpw ?? null, tpw21: z.tpw ?? null, dd21: z.dd ?? null, p20_21: z.p20 ?? null, f20_21: z.f20 ?? null,
       pm26: a.per_month ?? null, pm21: z.per_month ?? null, p10_21: z.p10 ?? null, f10_21: z.f10 ?? null, dec10_21: z.dec10 ?? null }; }) };
@@ -1945,7 +1947,7 @@ function constFb(el, cd, onPick) {
   const [x0, x1] = rng2(runs.map(r => r.pf21), b?.pf21), [y0, y1] = rng2(runs.map(r => r.pf26), b?.pf26);
   scatter(el, runs.map(r => { const off = r.pf21 < x0 || r.pf21 > x1 || r.pf26 < y0 || r.pf26 > y1;
     return { x: r.pf21, y: r.pf26, r: Math.max(5, Math.min(13, 3 + (r.tpw21 || 0) * 2)), color: stColor(r.status), alpha: r.id === cd.baseline ? 1 : .85,
-      ring: r.id === cd.baseline ? '#ffffff' : off ? '#f2c35b' : null, label: r.id === cd.baseline ? 'live' : '', ref: r,
+      ring: r.id === cd.baseline ? '#ffffff' : off ? '#f2c35b' : null, label: r.id === cd.baseline ? 'live' : r.id === cd.prev ? 'previous lock' : '', ref: r,
       tip: `<b>${esc(r.title)}</b><span>PF 2026 ${fPF(r.pf26)} · 2021-25 ${fPF(r.pf21)}${off ? ' (off the chart, shown at the edge)' : ''}</span><span>net ${kusd(r.net26)} / ${kusd(r.net21)} · ${kusd(r.pm21)} a month (2021-25) · ${num(r.tpw21, 1)}/wk</span><span>${esc(STAT[r.status]?.[0] || r.status)} · tap to open</span>` }; }),
   { h: el.clientHeight, xmin: x0, xmax: x1, ymin: y0, ymax: y1, refX: b?.pf21, refY: b?.pf26, xlab: 'profit factor 2021-25 →', ylab: 'profit factor 2026 →', xfmt: (v) => v.toFixed(2), yfmt: (v) => v.toFixed(1), onPick,
     bands: b ? [{ x0: b.pf21, y0: b.pf26, color: '#2ee59d', label: 'better in both' }] : [], empty: 'No runs with numbers yet.' });
@@ -2010,6 +2012,7 @@ function xRows(all = false) {
     pm21: (x, y) => v(y, '2021-25', 'per_month', -1e9) - v(x, '2021-25', 'per_month', -1e9), dec10: (x, y) => v(y, '2021-25', 'dec10', -1) - v(x, '2021-25', 'dec10', -1),
     p10: (x, y) => v(y, '2021-25', 'p10', -1) - v(x, '2021-25', 'p10', -1), slow: (x, y) => v(x, '2021-25', 'slow_pass', 1e9) - v(y, '2021-25', 'slow_pass', 1e9) };
   rows = [...rows].sort(S[XS.sort] || S.new);
+  const pv = prevLock()?.id, pi = rows.findIndex(r => r.id === pv); if (pi > 0) rows.unshift(rows.splice(pi, 1)[0]);   // then the previous lock, as a comparison
   const bi = rows.findIndex(r => r.id === b); if (bi > 0) rows.unshift(rows.splice(bi, 1)[0]);     // the live strategy always leads
   return rows;
 }
@@ -2189,7 +2192,7 @@ VIEWS.compare = (el) => {
   const runs = RUNS_(), bid = baseId();
   if (runs.length < 2) { el.innerHTML = head('Lab · compare', 'Runs side by side', '') + `<div class="card">${emptyBox('Compare needs two stored runs.', 'Only the live strategy is stored so far.')}</div>`; return; }
   let ids = String(ARG || '').split(',').filter(id => runMeta(id));
-  const other = (runs.find(r => r.id !== bid) || runs[1]).id;
+  const other = (prevLock() || runs.find(r => r.id !== bid) || runs[1]).id;
   if (!ids.length) ids = [other, bid];
   if (ids.length === 1) ids.push(ids[0] === bid ? other : bid);
   ids = [...new Set(ids)].slice(0, 3);
@@ -2523,51 +2526,63 @@ VIEWS.risk = (el) => {
       <div><span>$ at risk</span><b>${usd(z.usd)}</b></div><div><span>At 1.5R</span><b>${susd(z.usd * 1.5)}</b></div><div><span>5R bank</span><b class="up">${susd(z.usd * 5)}</b></div>`; };
   $('#rkS').oninput = upd; rules.forEach(([id]) => { $('#' + id).onchange = upd; }); upd();
 };
+// the locked strategy in plain words (the owner asked for it on the public site). Every number comes from data.json:
+// live_model.json via `strategy` (label, lock date + note, params, cold-streak filter, size rules) and the stored runs
+// (the live strategy = the run library's baseline, the previous lock as a comparison). The wording of the steps lives here.
+const prevLock = () => RUNS_().filter(r => r.id !== baseId() && (/^live[_-]/i.test(r.id) || r.family === 'baseline')).sort((a, b) => String(b.id).localeCompare(String(a.id)))[0] || null;
+function lockNoteHTML(t) {
+  // file names in the note become links to the published write-ups ("research/writeups/risk-summary.md" -> Risk summary)
+  return esc(t).replace(/(?:research\/writeups\/)?([\w.-]+\.md)\b/g, (m, f) => { const slug = docByFile()[f], d = slug && allDocs().find(x => x.slug === slug);
+    return d ? `<a class="lnk" href="${docLink(slug)}">${esc(d.title.split(':')[0])}</a>` : esc(f.replace(/\.md$/, '').replace(/[-_]/g, ' ')); });
+}
 VIEWS.strategy = (el) => {
-  const S = D.strategy || {}, pr = S.params || {}, ef = S.equity_filter || D.cold?.config || {}, b = baseMeta(), P = D.results?.periods || {};
-  const RK = pr.risk_usd ?? D.sizing?.risk_usd ?? 800, REF = pr.risk_ref_stop ?? D.sizing?.risk_ref_stop ?? 20, MTD = pr.max_trades_day ?? D.sizing?.max_trades_day ?? 1;
-  const lb = ef.lookback ?? 15, thr = ef.min_sum_r ?? 0, mode = ef.cold_mode || 'half', label = S.label || D.sizing?.label || 'Liquidity Engine';
-  const chosen = S.chosen || D.sizing?.chosen || '';
-  const budget = (st) => RK * Math.min(1, REF / st), micros = (st, k = 1) => Math.min(40, Math.floor(budget(st) * k / (st * 2)));
+  const S = D.strategy || {}, pr = S.params || {}, R = sizeRules(), b = baseMeta(), prev = prevLock(), P = D.results?.periods || {};
+  const label = S.label || D.sizing?.label || 'Liquidity Engine', chosen = S.chosen || D.sizing?.chosen || '';
+  const name = label.split(' (')[0], rest = label.includes('(') ? label.slice(label.indexOf('(') + 1).replace(/\)\s*$/, '') : '';
   // headline numbers: the stored live-strategy run (2026 / 2021-25); without it the 5-year export (2026 YTD / all years)
   const fromP = (p) => { if (!p) return {}; const e = p.eval || {}; const w2 = e.within_2_weeks || {}, m1 = e.within_1_month || {};
     return { tpw: p.per_week, pf: p.pf, net: p.net, per_month: perMonth(p.net, p.from, p.to), dd: p.max_dd, p10: w2.pass_pct, f10: w2.fail_pct, dec10: ok(w2.pass_pct) ? w2.pass_pct + (w2.fail_pct || 0) : null, p20: m1.pass_pct, f20: m1.fail_pct, n: p.trades }; };
-  const cols = sp(b, '2026').n ? [['2026', sp(b, '2026')], ['2021-25', sp(b, '2021-25')]] : [['2026', fromP(P['2026 YTD'])], ['5 years', fromP(P['All years'])]];
-  const hl = [['Trades a week', (x) => num(x.tpw, 1), (x) => ok(x.tpw) && !inFreq(x.tpw) ? 'dn' : ''], ['Profit factor', (x) => fPF(x.pf), (x) => (x.pf ?? 0) >= 1 ? 'up' : 'dn'],
-    ['Net profit', (x) => susd(x.net), (x) => cls(x.net)], ['Per month', (x) => susd(x.per_month), (x) => cls(x.per_month)], ['Max drawdown', (x) => usd(x.dd), () => 'dn'],
-    ['Eval pass in 2 weeks', (x) => pct(x.p10), () => 'up'], ['Eval fail in 2 weeks', (x) => pct(x.f10), () => 'dn'], ['Evals decided in 2 weeks', (x) => pct(x.dec10), () => ''],
-    ['Eval pass in 1 month', (x) => pct(x.p20), () => 'up'], ['Eval fail in 1 month', (x) => pct(x.f20), () => 'dn']];
+  const fromRun = sp(b, '2026').n != null;
+  const cols = fromRun ? [['2026', sp(b, '2026'), prev && sp(prev, '2026')], ['2021-25', sp(b, '2021-25'), prev && sp(prev, '2021-25')]] : [['2026', fromP(P['2026 YTD'])], ['5 years', fromP(P['All years'])]];
+  const hl = [['Trades a week', 'tpw', (v) => num(v, 1), 'none', DF.n1, (x) => ok(x.tpw) && !inFreq(x.tpw) ? 'dn' : ''], ['Profit factor', 'pf', fPF, 'hi', DF.pf, (x) => (x.pf ?? 0) >= 1 ? 'up' : 'dn'],
+    ['Net profit', 'net', susd, 'hi', DF.money, (x) => cls(x.net)], ['Per month', 'per_month', susd, 'hi', DF.money, (x) => cls(x.per_month)], ['Max drawdown', 'dd', usd, 'hi', DF.money, () => 'dn'],
+    ['Eval pass in 2 weeks', 'p10', pct, 'hi', DF.pp, () => 'up'], ['Eval fail in 2 weeks', 'f10', pct, 'lo', DF.pp, () => 'dn'], ['Evals decided in 2 weeks', 'dec10', pct, 'hi', DF.pp, () => ''],
+    ['Eval pass in 1 month', 'p20', pct, 'hi', DF.pp, () => 'up'], ['Eval fail in 1 month', 'f20', pct, 'lo', DF.pp, () => 'dn']];
+  const be = R.beTrend ? `<b>+1R</b> (+${num(R.beTrend, 0)}R on trending days)` : '<b>+1R</b>';
   const steps = [
-    ['Sweep', `From 08:00 ET the bot waits for price to run a <b>liquidity pool</b>: an old high or low where other traders’ stop orders sit. That sweep is the setup.`],
-    ['Trigger', `Only inside the New York <b>killzones</b> (09:30–11:30 and 13:30–15:30 ET) it waits for the turn: an <b>inverted fair value gap (IFVG)</b> or a <b>change in state of delivery (CISD)</b>.`],
-    ['Stop', `The stop goes just <b>beyond the high or low of the sweep</b>, 10 to 60 points away, never at a fixed distance. A wide stop means a smaller size.`],
-    ['Target', `The nearest <b>major liquidity pool at least 1.5R away</b>; when that pool is farther, it banks the profit at 5R on the way. ${pr.use_fallback === false ? 'No major pool, no trade.' : ''}`],
-    ['Manage', `Stop to <b>breakeven at +1R</b>; out after <b>30 minutes</b> if the trade has not reached +0.5R; out if a +0.5R trade closes back through the entry (<b>giveback</b>). At most <b>${MTD} trade${MTD === 1 ? '' : 's'} a day</b>.`]];
-  el.innerHTML = head(`System · strategy${chosen ? ` · ${S.locked === false ? 'set' : 'locked'} ${esc(fDate(chosen))}` : ''}`, esc(label.split(' (')[0]), esc(label.includes('(') ? label.slice(label.indexOf('(') + 1).replace(/\)\s*$/, '') : ''),
+    ['Sweep', `From <b>08:00 ET</b> the bot waits for price to run a <b>liquidity pool</b>: an old high or low where other traders’ stop orders sit. That sweep arms the setup.`],
+    ['Trigger', `Only inside the New York <b>killzones</b>, 09:30–11:30 and 13:30–15:30 ET, it enters on the turn: an <b>inverted fair value gap (IFVG)</b> or a <b>change in state of delivery (CISD)</b>.`],
+    ['Stop', `The stop goes just <b>beyond the high or low of the sweep</b>, 10 to 60 points away, never at a fixed distance. A wider stop means a smaller size, so the risk stays the same or less.`],
+    ['Target', `The nearest <b>major liquidity pool at least 1.5R away</b>, banking the profit at <b>5R</b> when that pool is farther. ${pr.use_fallback === false ? '<b>No major pool, no trade.</b>' : ''}`],
+    ['Manage', `Stop to breakeven at ${be}. Out after <b>30 minutes</b> if the trade is not yet +0.5R; out on a <b>giveback</b> (a +0.5R trade that closes back through the entry); <b>flat by 15:55</b>. At most <b>${R.maxDay} trade${R.maxDay === 1 ? '' : 's'} a day</b>, done for the day after a winner.`]];
+  const sizeRows = [[`Up to a ${R.ref}-point stop`, `$${R.risk} of risk`], ['Wider stops', `$${R.risk} × ${R.ref} ÷ stop`], ['Micros', 'risk ÷ (stop × $2), rounded down, at most 40'],
+    ['Trending market', `${sizeWord(R.trend)} size`], ...(R.late != null ? [['Late entry (the 15-minute structure has already turned)', `${sizeWord(R.late)} size`]] : []),
+    [`Cold streak (the last ${R.lb} finished signals sum to ${num(R.thr, 1)}R or less)`, `${sizeWord(R.cold)} size`], ['Together', 'the size rules multiply and round down once, never below 1 micro']];
+  el.innerHTML = head(`System · strategy${chosen ? ` · ${S.locked === false ? 'set' : 'locked'} ${esc(fDate(chosen))}` : ''}`, esc(name), esc(rest),
       `<button class="btn ghost" type="button" data-go="results">${icon('results')}5-year results</button>`)
-    + howto('strategy', `<p>This page is the strategy the bot trades today, written in plain words. It changes only when a new version is locked; every change must first beat it in 2026 <b>and</b> in 2021-25 in the Lab.</p>
+    + howto('strategy', `<p>This page is the strategy the bot trades, written in plain words. It changes only when a new version is locked; every change must first beat it in 2026 <b>and</b> in 2021-25 in the Lab.</p>
       <ul><li><b>R</b> = one unit of risk: +2R made twice what the trade risked.</li><li><b>Killzones</b> = the two windows of the New York session when the bot may enter.</li>
-      <li>The numbers at the bottom are the backtest of exactly these settings on real NQ futures data, costs included.</li></ul>`)
+      <li>The numbers at the bottom are the backtest of exactly these settings on real NQ futures data, costs included${prev ? ', with the change against the previous lock under each value' : ''}.</li></ul>`)
     + `<div class="card"><div class="card-h"><h3>Version</h3>${S.locked === false ? chip('not locked', 'warn') : chip('locked', 'good')}</div><div class="kv one">
-        <div><span>Version</span><b>${esc(label.split(' (')[0])}</b></div><div><span>Locked on</span><b>${esc(fDate(chosen) || '—')}</b></div>
-        <div><span>Market</span><b>${esc(S.sym || 'NQ')} futures, traded as MNQ micros ($2 a point)</b></div><div><span>Account</span><b>MFFU Builder 50K eval · paper only</b></div>
-        <div><span>Settings</span><b>live_model.json · ${esc(S.model || 'engine')}</b></div></div></div>
+        <div><span>Version</span><b>${esc(name)}</b></div><div><span>Locked on</span><b>${esc(fDate(chosen) || '—')}</b></div>
+        <div><span>Market</span><b>${esc(S.sym || 'NQ')} futures, traded as MNQ micros ($2 a point)</b></div><div><span>Account</span><b>MFFU Builder 50K eval · paper only</b></div></div>
+        ${S.lock_note ? `<p class="lead" style="margin-top:12px">${lockNoteHTML(S.lock_note)}</p>` : ''}</div>
     ${secH('What it trades')}
     <div class="card"><p class="lead">The bot trades <b>NQ</b>, the Nasdaq-100 futures, with <b>MNQ micro</b> contracts. It looks for one thing: price running the stops above an old high or below an old low (a <b>sweep</b>), then turning. It trades that turn back toward the next big pool of orders on the other side.</p>
-      <p class="lead">It trades at most ${MTD} time${MTD === 1 ? '' : 's'} a day and aims for <b>2-4 setups a week</b>. It is paper only: it never places a real order.</p></div>
+      <p class="lead">It trades at most ${R.maxDay} time${R.maxDay === 1 ? '' : 's'} a day and aims for <b>2-4 setups a week</b>. It is paper only: it never places a real order.</p></div>
     ${secH('The five steps')}
     <div class="steps5 wide">${steps.map(([t, d], i) => `<div class="step"><span class="step-n">${i + 1}</span><b>${t}</b><span>${d}</span></div>`).join('')}</div>
     ${secH('Size')}
-    <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>How much it risks</h3></div><ul class="list">
-        <li><b>$${RK}</b> of risk on a stop up to <b>${REF} points</b>.</li><li>Wider stops risk less: $${RK} × ${REF} ÷ stop. A 40-point stop risks about ${usd(budget(40))}.</li>
-        <li>Micros = risk ÷ (stop × $2), rounded down, at most 40.</li>
-        <li><b>Cold streak</b>: when the last ${lb} finished signals add up to ${num(thr, 1)}R or less, it trades at <b>${esc(mode)} size</b> until the record turns positive.</li></ul></div>
-      <div class="card"><div class="card-h"><h3>Size by stop</h3><span class="meta">full · cold streak</span></div><div class="tw"><table class="ht"><tr><th>Stop</th><th class="c">Risk</th><th class="c">Micros</th><th class="c">Cold</th></tr>
-        ${[15, 20, 30, 40, 50, 60].map(st => `<tr><td class="mono"><b>${st} pts</b></td><td class="v">${usd(budget(st))}</td><td class="v">${micros(st)}</td><td class="v">${micros(st, mode === 'half' ? .5 : mode === 'skip' ? 0 : 1) || '—'}</td></tr>`).join('')}</table></div></div></div>
+    <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>How much it risks</h3></div><div class="kv one">${sizeRows.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div></div>
+      <div class="card"><div class="card-h"><h3>Micros by stop</h3><span class="meta">full · cold${R.late != null ? ' · late' : ''}</span></div><div class="tw"><table class="ht"><tr><th>Stop</th><th class="c">Risk</th><th class="c">Full</th><th class="c">Cold</th>${R.late != null ? '<th class="c">Late</th>' : ''}</tr>
+        ${[15, 20, 30, 40, 50, 60].map(st => `<tr><td class="mono"><b>${st} pts</b></td><td class="v">${usd(microsFor(st).budget)}</td><td class="v">${microsFor(st).m}</td><td class="v">${microsFor(st, R.cold).m}</td>${R.late != null ? `<td class="v">${microsFor(st, R.late).m}</td>` : ''}</tr>`).join('')}</table></div>
+        <button class="chipbtn" type="button" data-go="risk" style="margin-top:12px">${icon('risk')}<span>Size calculator</span></button></div></div>
     ${secH('How it has done')}
     <div class="card"><div class="card-h"><h3>Backtest of these settings</h3><span class="meta">real CME NQ futures · costs included</span></div>
-      <div class="tw"><table class="ht"><tr><th>Number</th>${cols.map(([l]) => `<th class="c">${l}</th>`).join('')}</tr>${hl.map(([l, f, c]) => `<tr><td class="k">${l}</td>${cols.map(([, x]) => `<td class="v ${c(x)}">${f(x)}</td>`).join('')}</tr>`).join('')}</table></div>
-      <div class="hero-links" style="margin-top:14px"><button class="chipbtn" type="button" data-go="trades">${icon('trades')}<span>Every trade</span></button><button class="chipbtn" type="button" data-go="run" data-arg="${esc(baseId())}">${icon('lab')}<span>The stored run</span></button><button class="chipbtn" type="button" data-go="experiments">${icon('variants')}<span>What tried to beat it</span></button></div></div>
+      ${prev ? `<p class="card-d">The small number under each value is the change against the previous lock (<a class="lnk" href="${runLink(prev.id)}">${esc(prev.title || prev.id)}</a>); green is better.</p>` : ''}
+      <div class="tw"><table class="ht"><tr><th>Number</th>${cols.map(([l]) => `<th class="c">${l}</th>`).join('')}</tr>${hl.map(([l, k, f, bt, dfm, c]) => `<tr><td class="k">${l}</td>${cols.map(([, x, pv]) => `<td class="v ${c(x)}">${f(x[k])}${pv ? dlt(x[k], pv[k], dfm, bt, '') : ''}</td>`).join('')}</tr>`).join('')}</table></div>
+      <div class="hero-links" style="margin-top:14px"><button class="chipbtn" type="button" data-go="trades">${icon('trades')}<span>Every trade</span></button><button class="chipbtn" type="button" data-go="run" data-arg="${esc(baseId())}">${icon('lab')}<span>The stored run</span></button>
+        ${prev ? `<button class="chipbtn" type="button" data-go="compare" data-arg="${esc(baseId() + ',' + prev.id)}">${icon('compare')}<span>Compare with the previous lock</span></button>` : ''}<button class="chipbtn" type="button" data-go="experiments">${icon('variants')}<span>What tried to beat it</span></button></div></div>
     ${secH('Rules that never change')}
     <div class="card"><ul class="list"><li>Futures data only: TradingView CME NQ1! for every test, never CFDs.</li><li>Paper only: the bot never arms live trading.</li><li><b>2-4 setups a week</b>; no filter that pauses trading for weeks.</li>
       <li>The stop goes beyond the sweep extreme, never at a fixed distance; size follows the stop.</li><li>Every change is judged on 2026 and on 2021-25 and adopted only if it holds in both.</li>
