@@ -56,9 +56,9 @@ export function renderPlaybook(el) {
         <ul class="check">
           <li>All numbers: TradingView NQ1! futures data, commissions and slippage included, $350 risk.</li>
           <li><b>2026 (Jan 2 – Oct 16):</b> 59 trades, 32% win, avg win +2.76R vs avg loss −0.45R, PF 2.99, +$10,339, max DD −$1,174. Without the filter: 93 trades, 26% win, PF 2.41, +$11,630, max DD −$3,147.</li>
-          <li><b>MFFU 50K eval, starting any 2026 day:</b> 83 passed, 0 failed with the filter (45 passed, 38 failed without).</li>
-          <li><b>Apr–Dec 2025:</b> +$3,525, PF 1.74, max DD −$1,227 (without: +$1,751, PF 1.18, −$3,362).</li>
-          <li><b>Oct 2021 – Dec 2024:</b> +$5,005, PF 1.18 (without: −$1,923, PF 0.96). The edge depends on the market regime; the filter is what keeps the losing years small.</li>
+          <li><b>2025:</b> 70 trades, 34% win, PF 1.95, +$5,906, max DD −$1,226 (without: PF 1.32, +$3,860, −$3,362).</li>
+          <li><b>All 5 years (Oct 2021 – Oct 2026):</b> 414 trades, 27% win, PF 1.54, +$21,250, max DD −$4,958 (without: PF 1.19, +$13,568, −$8,900).</li>
+          <li><b>MFFU 50K eval, new start every 2026 day:</b> 43% passed and 0% failed within 6 months, the rest still running. Over all 5 years: 37% passed, 11% failed within 6 months. It rarely fails but is slow: 2–5 months to pass is typical.</li>
           <li><b>Trade frequency:</b> about 2 a week while trading, but it paused May 1 – Aug 6 2026 (about 14 weeks). Overall 1.4 a week.</li>
           <li>Tested and rejected: ICT 2022, Silver Bullet, Mech/IFVG, continuation and ATM models as taught; 92 confluences; 6 daily-bias methods; grade-based sizing; partials and trailing stops.</li>
           <li>Backtests are not a promise. Paper trade first.</li>

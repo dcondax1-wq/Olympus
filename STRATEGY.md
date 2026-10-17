@@ -68,16 +68,18 @@ These are the pools the bot watches:
 - Nothing else changes: same entries, stops, targets and risk. So the reward-to-risk of each trade stays the same.
 - Why 15: chosen on 2021–24 data only, then checked on 2025 and 2026, which it never saw. Every lookback from 14 to 18 improves every period, so it isn't one lucky number.
 
-## How it performed (TradingView NQ1! futures data, commissions and slippage included)
+## How it performed (verified Oct 17 2026: fresh rerun on TradingView NQ1! futures data, commissions and slippage included)
 
 | Period | Version | Trades | Trades/week | Win % | Avg win / avg loss | Profit factor | Net | Max drawdown |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
 | **2026 (Jan 2 – Oct 16)** | original | 93 | 2.3 | 26% | +2.82R / −0.47R | 2.41 | +$11,630 | −$3,147 |
 | | **with filter (live)** | 59 | 1.4 | **32%** | +2.76R / −0.45R | **2.99** | **+$10,339** | **−$1,174** |
-| Apr–Dec 2025 | original | 119 | 3.0 | 20% | +1.99R / −0.51R | 1.18 | +$1,751 | −$3,362 |
-| | **with filter** | 52 | 1.3 | **33%** | +1.84R / −0.54R | **1.74** | **+$3,525** | **−$1,227** |
-| Oct 2021 – Dec 2024 | original | 562 | 3.3 | 22% | +2.04R / −0.53R | 0.96 | −$1,923 | −$8,900 |
-| | **with filter** | 285 | 1.7 | 24% | +2.12R / −0.53R | **1.18** | **+$5,005** | **−$4,958** |
+| 2025 (full year) | original | 148 | 2.9 | 22% | +1.92R / −0.51R | 1.32 | +$3,860 | −$3,362 |
+| | **with filter** | 70 | 1.4 | **34%** | +1.80R / −0.53R | **1.95** | **+$5,906** | **−$1,226** |
+| Oct 2021 – Dec 2024 | original | 562 | 3.5 | 22% | +2.04R / −0.53R | 0.96 | −$1,922 | −$8,900 |
+| | **with filter** | 285 | 1.8 | 24% | +2.12R / −0.53R | **1.18** | **+$5,005** | **−$4,958** |
+| **All 5 years** | original | 803 | 3.1 | 22% | +2.12R / −0.52R | 1.19 | +$13,568 | −$8,900 |
+| | **with filter** | 414 | 1.6 | **27%** | +2.16R / −0.52R | **1.54** | **+$21,250** | **−$4,958** |
 
 **2026 by month:**
 
@@ -86,12 +88,22 @@ These are the pools the bot watches:
 | original | +$894 | −$436 | +$2,684 | −$832 | −$790 | −$928 | −$340 | +$5,288 | +$4,125 | +$1,964 |
 | with filter | +$283 | −$436 | +$1,016 | −$832 | paused | paused | paused | +$4,218 | +$4,125 | +$1,964 |
 
-**50K eval, starting on any 2026 trading day ($3k target, $2k end-of-day trailing max loss):**
-- original: 45 passed, 38 failed
-- with filter: 83 passed, 0 failed. Its worst drawdown ($1,174) never reached the $2,000 limit.
+**MFFU 50K eval ($3k target, $2k trailing max loss).** A new eval was started on every trading day, then I checked where it stood 3 and 6 months (60 and 120 sessions) later:
+
+| Started in | Version | Passed by 3 mo | Failed by 3 mo | Passed by 6 mo | Failed by 6 mo |
+|---|---|---:|---:|---:|---:|
+| 2026 | original | 29% | 27% | 8% | 90% |
+| | **with filter** | 25% | **0%** | **43%** | **0%** |
+| All 5 years | original | 19% | 34% | 27% | 65% |
+| | **with filter** | 17% | **3%** | **37%** | **11%** |
+
+Evals not counted as passed or failed were still running. Run back to back over all 5 years (a new eval the day after each pass or fail): filter 7 passes, 4 fails; original 8 passes, 12 fails.
+
+*Correction:* an earlier version of this page said "83 passed, 0 failed" for 2026. That count let each eval run until the data ended, so it hid how slow passing is.
 
 **What to expect:**
 - It wins about 1 trade in 3. Winners are still big (about 2.8R); losers are still small (about 0.45R).
-- **It goes quiet in bad stretches.** In 2026 it paused from May 1 to Aug 6, about 14 weeks with no real trades, while the signals kept being tracked on paper. It traded in 26 of 41 weeks: about 2 trades a week while active, and 1.4 a week on average overall.
-- Profit is a little lower than the original (−$1,291 in 2026). After a cold streak it waits for the shadow record to recover, so it misses the first part of each comeback. In exchange, drawdown is cut by almost two-thirds.
+- **It rarely fails the eval, but it's slow.** A pass typically takes 2–5 months. Most of the profit comes in strong stretches (Aug–Oct 2026).
+- **It goes quiet in bad stretches.** In 2026 it paused from May 1 to Aug 6, about 14 weeks with no real trades, while the signals kept being tracked on paper. It traded in 26 of 42 weeks: about 2 trades a week while active, and 1.4 a week on average overall.
+- In 2021–24 the filter still had a $4,958 drawdown. That's over the $2,000 limit, so failing is possible in a bad year.
 - Past results are not a promise. Paper-trade it before risking money.
