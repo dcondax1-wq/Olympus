@@ -155,7 +155,7 @@ export class Ribbon extends Hud {
   }
   retheme() { paintBackdrop(this.bgU); }
   shape(w, h) {
-    const asp = w / h, W = 6.4 * Math.pow(clamp(asp / 1.1, 1, 2.6), 0.85), H = 3.3 * clamp(1.6 / asp, 0.85, 1.4);
+    const asp = w / h, W = 5.6 * Math.pow(clamp(asp / 1.1, 1, 2.8), 0.9), H = 3.3 * clamp(1.6 / asp, 0.85, 1.4);
     const changed = Math.abs(W - this.W) > 0.15 || Math.abs(H - this.H) > 0.08;
     this.W = W; this.H = H; return changed;
   }
@@ -300,7 +300,7 @@ export class Ribbon extends Hud {
       const j = s.m - 1, p = new THREE.Vector3(s.px[j], s.py[j], s.z);
       defs.push({ html: fmtK(s.final), p, ax: 0, dx: 9, cls: 't end', color: s.css, end: true, show: () => this.revDone(s) });
     }
-    for (const s of S) {
+    for (const s of S.slice(0, 1)) {   // the subject's deepest drawdown in 3D (every series has its DD in the legend)
       if (s.mdd < 1) continue;
       const j = this.mIdx(s, s.mddAt);
       defs.push({ text: 'max DD ' + fmtK(-s.mdd), p: new THREE.Vector3(s.px[j], s.py[j], s.z), ay: 0, dy: 9, cls: 'h', color: 'rgba(255,138,224,.78)', avoid: true, show: () => this.revDone(s) });

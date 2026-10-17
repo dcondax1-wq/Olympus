@@ -820,7 +820,8 @@ def experiment(family, id, title, question, pol=None, engine=None, eval_aware=Fa
 
 
 WRITEUP_OF = {"anatomy": "loss-anatomy.md", "levels": "risk-sizing.md", "refstop": "risk-sizing.md", "cold": "risk-sizing.md",
-              "ddaware": "risk-sizing.md", "eval": "eval-sizing.md", "situational": "risk-sizing.md", "weekly": "risk-sizing.md"}
+              "ddaware": "risk-sizing.md", "eval": "eval-sizing.md", "situational": "risk-sizing.md", "weekly": "risk-sizing.md",
+              "packages": "risk-summary.md"}
 
 
 def table(rows=None, base=True):
@@ -1066,6 +1067,93 @@ def cmd_weekly():
     print(table([r for r in ROWS if r[0] == "weekly"]))
 
 
+# ------------------------------------------------------------------------------------------------ packages + recommendation
+Q25 = {"lookback": 15, "thr": 0.0, "size": 0.25}
+HOT8 = {"lookback": 15, "thr": 8.0, "mult": 1.5}
+
+
+def _prop1000(t, c):
+    """$ risk x min(1, cushion / $1,000)"""
+    return min(1.0, c["cushion"] / 1000.0)
+
+
+PACKAGES = (
+    ("risk_pkg_q25_hot8", "Size by the shadow record: quarter size when cold, 1.5x when the last 15 signals are +8R or better",
+     {"cold": Q25, "hot": HOT8}, False),
+    ("risk_pkg_q25_late", "Quarter size when cold + half size on late entries (15m already turned)",
+     {"cold": Q25, "pre": _sit_pre("15m already turned (late)", "yes", 0.5), "pre_key": "late"}, False),
+    ("risk_pkg_q25_prop1000", "Quarter size when cold + size down once the eval cushion is under $1,000",
+     {"cold": Q25, "mult_usd": _prop1000}, True),
+)
+
+
+def cmd_packages():
+    q = "Do the best single changes add up? (each tested together, both periods)"
+    for id, title, pol, ea in PACKAGES:
+        experiment("packages", id, title, q, pol=pol, eval_aware=ea, tags=["package"],
+                   notes="Combination of single changes that each looked good alone; judged on both periods like any run.")
+    print(table([r for r in ROWS if r[0] == "packages"]))
+
+
+def cold_stretches(T, cold=LIVE_COLD):
+    """Longest stretch (calendar weeks, trades) the cold-streak state lasted."""
+    runs, cur = [], []
+    for t in T:
+        c, _ = cold_mult(T, t["_i"], cold)
+        if c < 1:
+            cur.append(t)
+        elif cur:
+            runs.append(cur); cur = []
+    if cur:
+        runs.append(cur)
+    out = []
+    for r in runs:
+        a, z = dt.date.fromisoformat(r[0]["day"]), dt.date.fromisoformat(r[-1]["day"])
+        out.append(((z - a).days / 7.0, len(r), r[0]["day"], r[-1]["day"]))
+    return sorted(out, reverse=True)
+
+
+def cmd_recommend():
+    """The recommended change (risk-summary.md): cold-streak quarter size, with the full table vs the live baseline,
+    plus a cross-check against runlib.size (the dashboard's own sizing code)."""
+    raw, T, base_tr, B = baseline()
+    rec_tr = run_account(T, {"cold": Q25})
+    S = score(rec_tr, raw)
+    raw_sorted = sorted(raw["trades"], key=lambda t: t["entry_t"])
+    chk = rl.size(raw, eqf=None, rule=lambda t, ctx: 0.25 if rl.cold_status(raw_sorted, t["entry_t"], rl.LIVE_EQF)[0] < 1 else 1.0)
+    same = len(chk) == len(rec_tr) and all(a["qty"] == b["qty"] and abs(a["pnl"] - b["pnl"]) < 0.01 for a, b in zip(chk, rec_tr))
+    print(f"cross-check vs runlib.size with a quarter-size rule: {'identical' if same else 'DIFFERENT'}")
+    rows = []
+    s26 = span_sessions(raw, "2026-01-01", "2026-12-31"); s21 = span_sessions(raw, "2021-01-01", "2025-12-31")
+    for lab, key, fn in (("Trades", "n", str), ("Setups per week", "tpw", lambda v: f"{v:.2f}"), ("Weeks with 2+ setups", "wk2", lambda v: f"{v}%"),
+                         ("Win rate", "win", lambda v: f"{v}%"), ("Profit factor", "pf", str), ("Net", "net", _money),
+                         ("Max drawdown", "dd", lambda v: f"-${-v:,}"), ("Worst day", "worst_day", lambda v: f"-${-v:,}"),
+                         ("Median $ at risk", "risk", lambda v: f"${v:,.0f}"),
+                         ("Eval pass / fail within 2 weeks", ("p10", "f10"), None), ("Eval pass / fail within 1 month", ("p20", "f20"), None),
+                         ("Eval pass / fail within 3 months", ("p60", "f60"), None), ("Back-to-back evals passed / failed", "b2b", str)):
+        row = [lab]
+        for name in ("2026", "2021-25"):
+            for X in (B, S):
+                sp = X["spans"][name]
+                row.append(f"{sp[key[0]]:.1f}% / {sp[key[1]]:.1f}%" if isinstance(key, tuple) else fn(sp[key]))
+        rows.append(row)
+    ba26, bb26 = b2b_avg(T, {}, s26), b2b_avg(T, {"cold": Q25}, s26)
+    ba21, bb21 = b2b_avg(T, {}, s21), b2b_avg(T, {"cold": Q25}, s21)
+    rows.append(["Back-to-back, 20 start days: passes / fails per year", f"{ba26['pass_yr']} / {ba26['fail_yr']}",
+                 f"{bb26['pass_yr']} / {bb26['fail_yr']}", f"{ba21['pass_yr']} / {ba21['fail_yr']}", f"{bb21['pass_yr']} / {bb21['fail_yr']}"])
+    rows.append(["Evals bought per pass (same)", f"{ba26['evals_per_pass']}", f"{bb26['evals_per_pass']}", f"{ba21['evals_per_pass']}",
+                 f"{bb21['evals_per_pass']}"])
+    print(_md(rows, ["", "2026 live", "2026 quarter size", "2021-25 live", "2021-25 quarter size"]))
+    yrs = [[y, B["years"][y]["n"], _money(B["years"][y]["net"]), B["years"][y]["pf"], _money(S["years"][y]["net"]), S["years"][y]["pf"]]
+           for y in sorted(S["years"])]
+    print(_md(yrs, ["year", "trades", "live net", "PF", "quarter-size net", "PF"]))
+    st = cold_stretches(T)
+    print("longest cold stretches (weeks, trades, from, to):", [(round(w, 1), n, a, z) for w, n, a, z in st[:5]])
+    n_cold = {name: sum(1 for t in rec_tr if a <= t["day"] <= z and t["half"]) for name, a, z in PERIODS}
+    one = {name: sum(1 for t in rec_tr if a <= t["day"] <= z and t["half"] and t["qty"] == 1) for name, a, z in PERIODS}
+    print("cold-streak trades:", n_cold, "of which at 1 micro:", one)
+
+
 def cmd_summary():
     rows = [r for r in rl.index() if r.get("family") == "risk"]
     for r in rows:
@@ -1077,7 +1165,7 @@ def cmd_summary():
 def cmd_all():
     cmd_check()
     cmd_anatomy()
-    for c in (cmd_levels, cmd_refstop, cmd_cold, cmd_ddaware, cmd_eval, cmd_situational, cmd_weekly):
+    for c in (cmd_levels, cmd_refstop, cmd_cold, cmd_ddaware, cmd_eval, cmd_situational, cmd_weekly, cmd_packages):
         c()
     cmd_recommend()
 

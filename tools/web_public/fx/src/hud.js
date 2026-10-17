@@ -324,6 +324,7 @@ export class Hud extends View {
       for (const l of g) { if (l.x < right + 6) l.hidden = true; else right = l.x + (l.wid || 20); }
     }
     this.adjustLabels?.(this.labels);
+    for (const g of groups.values()) for (const l of g) if (!l.hidden) boxes.push([l.x - 2, l.y - 1, l.x + (l.wid || 20) + 2, l.y + (l.hgt || 10) + 1]);
     for (const l of this.labels) {
       if (!l.hidden && l.avoid) {
         const x0 = l.x - 2, y0 = l.y - 1, x1 = l.x + (l.wid || 20) + 2, y1 = l.y + (l.hgt || 10) + 1;

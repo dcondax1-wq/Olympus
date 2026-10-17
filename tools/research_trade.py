@@ -57,11 +57,14 @@ def X(id, family, method, params, title, question, **kw):
 
 # ---- 0. leakage check (exact replays)
 X("leak_memseed_off", "other", "replay", {"memory_seed": False}, "Leakage check: trade memory switched off",
-  "Does the backtest read data/memory.db (paper trades, possibly from the future) and change any trade?", status="info")
+  "Does the backtest read data/memory.db (paper trades, possibly from the future) and change any trade?", status="info",
+  verdict="No leak: the same 768 trades as the live strategy (only a VIX value's 15th decimal differs).")
 X("leak_exitlearn_off", "other", "replay", {"exit_learn": False}, "Leakage check: exit learner switched off",
-  "Does the walk-forward exit learner ever act in the live-loop replay?", status="info")
+  "Does the walk-forward exit learner ever act in the live-loop replay?", status="info",
+  verdict="No leak: the same 768 trades, byte for byte. The learner never acts inside a 20-day replay window.")
 X("leak_both_off", "other", "replay", {"memory_seed": False, "exit_learn": False}, "Leakage check: memory and learner off",
-  "Leak-free setting (what the cloud monitor effectively runs): same trades as the baseline?", status="info")
+  "Leak-free setting (what the cloud monitor effectively runs): same trades as the baseline?", status="info",
+  verdict="No leak: the leak-free setting gives the same 768 trades as the live strategy.")
 X("screen_baseline", "other", "screen", {}, "Screen reference: live strategy in one pass over 5 years",
   "What does the fast one-pass backtest give for today's live settings (the yardstick for every screen run)?",
   status="info")
@@ -112,6 +115,14 @@ for v in (0, 0.75, 1.25, 1.5, 2.0):
 for v in (0.75, 1.5):
     X(f"mgt_betrend{int(v * 100):03d}", "management", "exitsim", {"be_at_r_trending": v},
       f"Breakeven at +{v:g}R on trending days only", f"On trending days, move to breakeven at +{v:g}R?", sim={"be_at_r_trending": v})
+for v in (2.0, 2.5, 3.0):
+    X(f"mgt_betrend{int(v * 100):03d}", "management", "exitsim", {"be_at_r_trending": v},
+      f"Breakeven at +{v:g}R on trending days only", f"On trending days, wait until +{v:g}R before moving to breakeven?",
+      sim={"be_at_r_trending": v})
+X("mgt_betrend_off", "management", "exitsim", {"be_at_r_trending": 99}, "No breakeven move on trending days",
+  "On trending days (10-day efficiency above 0.45), never move the stop to breakeven?", sim={"be_at_r_trending": 99})
+X("mgt_betrend300_replay", "management", "replay", {"be_at_r_trending": 3.0}, "Breakeven at +3R on trending days (exact replay)",
+  "Confirm with the exact live-loop replay: on trending days, wait until +3R before moving to breakeven?")
 for a, r in ((1.5, 0.5), (2.0, 0.5), (2.0, 1.0), (3.0, 1.0), (3.0, 1.5)):
     X(f"mgt_lock{int(a * 10)}_{int(r * 10)}", "management", "exitsim", {"lock_at_r": a, "lock_r": r},
       f"Lock +{r:g}R once the trade is +{a:g}R", f"After +{a:g}R, should the stop lock in +{r:g}R?",
@@ -194,6 +205,15 @@ X("bias_pwmid_07", "bias", "sizerule", {}, "70% size when against the prior-week
 X("bias_smt_only", "bias", "posthoc", {}, "Info: only trades with NQ/ES SMT divergence",
   "Does SMT divergence (ES fails to make the new extreme) pick better trades? ES data starts 2025-04.",
   rule="skip_no_smt", status="info")
+
+# ---- 6. combinations (the best single changes together)
+X("combo_betrend3_bothhalf", "other", "exitsim", {"be_at_r_trending": 3.0}, "Trending-day breakeven at +3R + half size when both biases disagree",
+  "Do the two best single changes add up: breakeven at +3R on trending days and half size when the trade follows yesterday's "
+  "candle and is on the wrong side of last week's midpoint?", sim={"be_at_r_trending": 3.0}, rule="half_both",
+  writeup="trade-construction-summary.md")
+X("combo_betrend3_pwmid07", "other", "exitsim", {"be_at_r_trending": 3.0}, "Trending-day breakeven at +3R + 70% size against the prior-week side",
+  "Trending-day breakeven at +3R and 70% size for trades on the wrong side of last week's midpoint?",
+  sim={"be_at_r_trending": 3.0}, rule="p70_against_pwmid", writeup="trade-construction-summary.md")
 
 # ---- 5. timing
 X("tim_am_only", "timing", "screen", {"entry_windows": [[570, 690]]}, "Morning killzone only (09:30-11:30)",
@@ -404,7 +424,9 @@ def judge(S, B, status=None):
     nums = (f"2026: PF {A['pf']} -> {a['pf']}, net {_k(A['net'])} -> {_k(a['net'])}; "
             f"2021-25: PF {Bb['pf']} -> {b['pf']}, net {_k(Bb['net'])} -> {_k(b['net'])}; "
             f"{a['tpw']} / {b['tpw']} trades a week.")
-    if not tpw_ok:
+    if abs(d26) < 1 and abs(d5) < 1 and abs(p26) < 0.005 and abs(p5) < 0.005:
+        st, head = "rejected", "No effect: the same result as today."
+    elif not tpw_ok:
         st, head = "rejected", f"Too few trades ({min(a['tpw'], b['tpw'])} a week)."
     elif up26 and up5:
         st, head = "adopt-candidate", "Better in both periods."
@@ -459,7 +481,7 @@ def run(x, quiet=False):
         st = x["status_final"]
     notes = " ".join(z for z in (f"Method: {METHOD_TXT[x['method']]}.", x.get("note", ""), LEAK_NOTE if not x["id"].startswith("leak") else "") if z)
     rec = rl.save(x["id"], x["title"], x["family"], x["question"], params=x["params"], trades=T, scored=S, status=st,
-                  verdict=ver, notes=notes, writeup=WRITEUP.get(x["family"]), tags=[x["method"]])
+                  verdict=ver, notes=notes, writeup=x.get("writeup") or WRITEUP.get(x["family"]), tags=[x["method"]])
     rec["method"] = METHOD_TXT[x["method"]]
     rl._dump(rec, os.path.join(rl.RUNS, x["id"] + ".json"), separators=(",", ":"))
     if not quiet:

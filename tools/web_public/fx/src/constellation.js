@@ -241,8 +241,9 @@ export class Constellation extends Hud {
     this.lanes = LANES.filter((f) => fams.has(f));
     // best few: the biggest improvement in BOTH periods (the weaker of the two PF ratios vs the baseline)
     const score = (it) => base ? Math.min(Math.log(it.pf26 / base.pf26), Math.log(it.pf21 / base.pf21)) : Math.min(Math.log(it.pf26), Math.log(it.pf21));
-    this.best = items.filter((it) => !it.isBase).sort((a, b) => score(b) - score(a)).slice(0, 3).filter((it, i) => i === 0 || score(it) > -0.08);
     this.layout();
+    // (labels only for runs inside the scale that keep 2+ trades a week)
+    this.best = items.filter((it) => !it.isBase && !it.off && !it.slow).sort((a, b) => score(b) - score(a)).slice(0, 3).filter((it, i) => i === 0 || score(it) > -0.08);
     const first = !this.slots.length && !this.introDone, now = this.lt, red = Q.reduced, n = items.length;
     const B = base ? new THREE.Vector3(base.tx, base.ty, base.tz) : new THREE.Vector3(0, this.H / 2, 0);
     const rank = items.map((it, i) => [i, Math.hypot(it.tx - B.x, it.ty - B.y, it.tz - B.z)]).sort((a, b) => a[1] - b[1]);
@@ -287,11 +288,13 @@ export class Constellation extends Hud {
       let a = v[0], c = v[n - 1];
       if (n >= 6) {   // Tukey fences in log space
         const at = (f) => { const i = f * (n - 1), j = Math.floor(i); return v[j] + (v[Math.min(n - 1, j + 1)] - v[j]) * (i - j); };
-        const q1 = at(0.25), q3 = at(0.75), iqr = Math.max(0.08, q3 - q1); a = Math.max(a, q1 - 1.6 * iqr); c = Math.min(c, q3 + 1.6 * iqr);
+        const q1 = at(0.25), q3 = at(0.75), iqr = Math.max(0.08, q3 - q1); a = Math.max(a, q1 - 1.5 * iqr); c = Math.min(c, q3 + 1.5 * iqr);
       }
       if (keep != null) { a = Math.min(a, keep); c = Math.max(c, keep); } return [a, c]; };
-    let [x0, x1] = q(its.map((it) => lg(it.pf21)), this.base ? lg(this.base.pf21) : null);
-    let [y0, y1] = q(its.map((it) => lg(it.pf26)), this.base ? lg(this.base.pf26) : null);
+    // and a sane PF window: 0.5-3 for five years, 0.5-6 for 2026 (beyond that it is a tiny sample, not an edge)
+    const cap = ([a, c], lo, hi) => [clamp(a, lo, hi), clamp(c, lo, hi)];
+    let [x0, x1] = cap(q(its.map((it) => lg(it.pf21)), this.base ? lg(this.base.pf21) : null), Math.log(0.5), Math.log(3));
+    let [y0, y1] = cap(q(its.map((it) => lg(it.pf26)), this.base ? lg(this.base.pf26) : null), Math.log(0.5), Math.log(6));
     const minS = (a, c, s) => (c - a < s ? [(a + c) / 2 - s / 2, (a + c) / 2 + s / 2] : [a, c]);
     [x0, x1] = minS(x0, x1, 0.42); [y0, y1] = minS(y0, y1, 0.6);
     const px = (x1 - x0) * 0.09, py = (y1 - y0) * 0.08; x0 -= px; x1 += px; y0 -= py; y1 += py;
