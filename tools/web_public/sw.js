@@ -3,7 +3,7 @@
 // new version of a file (fx.js?v=<hash> after a rebuild, runs/<id>.json?v=<hash> and writeups/<slug>.md?v=<hash> after a
 // new backtest or write-up) drops the old one from the cache, so a run or write-up opened once stays readable offline.
 // Everything else: cached copy at once, refreshed in the background.
-const CACHE = 'le-public-v6';
+const CACHE = 'le-public-v7';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {

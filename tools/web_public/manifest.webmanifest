@@ -1,7 +1,7 @@
 {
   "name": "Liquidity Engine",
   "short_name": "Liquidity",
-  "description": "NQ Liquidity Engine: cloud paper bot, MFFU eval tracker, trades, replays, backtest results and the research lab. Works with the PC off.",
+  "description": "NQ Liquidity Engine: cloud paper bot, MFFU eval tracker, USD news and blackouts, trades, replays, backtest results and the research lab. Works with the PC off.",
   "id": "./",
   "start_url": "./#/today",
   "scope": "./",
@@ -33,6 +33,10 @@
     {
       "name": "Today",
       "url": "./#/today"
+    },
+    {
+      "name": "News",
+      "url": "./#/news"
     },
     {
       "name": "Trades",

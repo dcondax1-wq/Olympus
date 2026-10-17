@@ -181,9 +181,8 @@ def part_feed(T0):
     price_usd = sum((r["tv_usd"] - r["py_usd"]) for r in matched if r["size_ok"])
     weeks = 8.0
     n_rows = len(rows)
-    # trades a year from the baseline (all years)
-    sess = len({t["day"] for t in T0})
-    tpy = len(T0) / (1278 / 252)
+    # trades a year from the baseline (all years: sessions / 252)
+    tpy = len(T0) / (len(S0_DAYS) / 252)
     mean_abs = float(np.mean([abs(d) for d in diffs] + [abs(r["tv_usd"]) for r in tv_only] + [abs(r["py_usd"]) for r in py_only]))
     scale_lin = 52 / weeks
     scale_sqrt = scale_lin ** 0.5
@@ -192,7 +191,8 @@ def part_feed(T0):
             "drift_from_unmatched": round(unmatched_usd, 2), "drift_from_sizes": round(size_usd, 2), "drift_from_prices": round(price_usd, 2),
             "mean_abs_diff_per_row": round(mean_abs, 2), "gross_churn_per_year": round(mean_abs * tpy),
             "drift_year_random_walk": round(abs(drift) * scale_sqrt), "drift_year_one_way": round(abs(drift) * scale_lin),
-            "trades_per_year": round(tpy, 1)}
+            "trades_per_year": round(tpy, 1), "share_unmatched": round(100 * (len(tv_only) + len(py_only)) / n_rows, 1),
+            "share_size_diff_of_matched": round(100 * len(size_diff) / len(matched), 1)}
     print(json.dumps(feed, indent=1))
     # bars: MNQ export vs NQ file, roll shift removed
     nq = pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv"))
@@ -226,13 +226,16 @@ def run_eval(days, k0, horizon=None):
     if horizon:
         pn, lo = pn[:horizon], lo[:horizon]
     r = simulate_eval(pn, PLAN, lo)
-    # closest approach to the trailing max loss (cushion), $: from the path (balance after each day, mll)
+    # closest approach to the trailing max loss (cushion), $: the day's intraday low and close against the max-loss level in
+    # force that day (the path stores the level after the day's trailing update, so track the previous one)
     bal = PLAN["start"]
+    mll_prev = PLAN["start"] - PLAN["mll"]
     cush = []
     for k, p in enumerate(r["path"]):
         intra = bal + lo[k]
-        cush.append(min(intra, p["balance"]) - p["mll"])
+        cush.append(min(intra, p["balance"]) - mll_prev)
         bal = p["balance"]
+        mll_prev = p["mll"]
     return {"result": r["result"], "sessions": r["days"], "balance": r["balance"], "min_cushion": round(min(cush), 2) if cush else None,
             "trough": round(min(p["balance"] for p in r["path"]) - PLAN["start"], 2) if r["path"] else None}
 
@@ -372,7 +375,7 @@ def part_micro(raw, T0, S0, save=True):
     res["skip_one"] = {k: {kk: S["spans"][k][kk] for kk in ("n", "tpw", "net", "pf", "per_month", "dd", "p20", "f20", "b2b")} for k in ("2026", "2021-25", "all")}
     if save:
         rl.save("stress_skip_1micro", "Stress: skip the 1-micro trades", "risk", "Are the 1-micro trades worth placing?",
-                sizing={"skip_qty_le": 1}, trades=T, scored=S, status="info",
+                sizing={"skip_qty_le": 1}, trades=T, scored=S, status="rejected",
                 verdict=(f"Without the {res['n_one']} one-micro trades: 2026 {money(S['spans']['2026']['net'])} (PF {S['spans']['2026']['pf']}), "
                          f"2021-25 {money(S['spans']['2021-25']['net'])} (PF {S['spans']['2021-25']['pf']}), {S['spans']['2021-25']['tpw']} trades a week. "
                          "Information only: the 1-micro trades are mostly cold-streak quarter-size trades and they are the paper record that ends a cold streak."),
@@ -497,6 +500,8 @@ def main(parts):
     print(f"P&L formula check: {bad} mismatches on {len(raw['trades'])} raw trades")
     T0 = rl.size(raw)
     S0 = rl.score(T0, raw)
+    global S0_DAYS
+    S0_DAYS = S0["days"]
     for k in ("2026", "2021-25", "all"):
         print("baseline", rl.line(S0, k))
     OUT["baseline"] = {k: S0["spans"][k] for k in ("2026", "2021-25", "all")}
