@@ -1797,6 +1797,22 @@ class Engine:
         er10_now = (getattr(self, "_regime_day", None) or {}).get("er10")
         trending_now = bool(p["regime_er10_max"] and er10_now is not None and er10_now > p["regime_er10_max"])
         max_rr = p["max_rr_trending"] if (trending_now and p["max_rr_trending"]) else p["max_rr"]
+        if tmode == "real" and target is None:
+            # owner rule: always a real liquidity level, never a fixed R. Nearest MAJOR pool within [min_rr, max_rr];
+            # if the major draw is farther than max_rr (or there is none), the farthest real pool of any kind inside
+            # [min_rr, max_rr] on the way to it; nothing real in range -> no trade.
+            inrange = [z for z in cands if p["min_rr"] <= (z[0] - entry) * d / risk <= max_rr]
+            majors = [z for z in inrange if z[2] is not None and _is_major(z[2])]
+            beyond = [z for z in cands if z[2] is not None and _is_major(z[2]) and (z[0] - entry) * d / risk > max_rr]
+            if majors:
+                px, lab, q = majors[0]
+                target, tlabel, tpool = px - d * tick, lab, q
+            elif inrange:
+                px, lab, q = inrange[-1]
+                target, tlabel, tpool = px - d * tick, lab + (f" (on the way to {beyond[0][1]})" if beyond else ""), q
+            else:
+                return {"skip": "No real liquidity level between "
+                                f"{p['min_rr']}R and {max_rr}R - pass", "consume": True}
         if qual and target is None:
             px, lab, q = qual[0]
             r = (px - entry) * d / risk
@@ -2005,7 +2021,9 @@ class Engine:
         on = sess.get("ON")
         adr = getattr(self, "_adr20", None)
         zone = trig.get("zone") or [0, 0]
+        smc = self._smc_flags(d, sweep_i, int(s["ext_i"]), i, pool_px, atr)
         disc = {
+            **smc,
             "x_swept_pd": int("PDH" in labels or "PDL" in labels), "x_swept_on": int("ONH" in labels or "ONL" in labels),
             "x_swept_asia": int("ASH" in labels or "ASL" in labels), "x_swept_london": int("LOH" in labels or "LOL" in labels),
             "x_swept_h1": int("H1H" in labels or "H1L" in labels), "x_swept_eq": int("EQ" in labels), "x_swept_pw": int("PWH" in labels or "PWL" in labels),
@@ -2132,6 +2150,43 @@ class Engine:
         grade, mult = next((g, m) for g, th, m in self.GRADES if pts >= th)
         checklist = [{"label": lab, "state": int(s), "weight": w, "evidence": ev} for lab, s, w, ev in items]
         return grade, mult, checklist, int(pts)
+
+    def _smc_flags(self, d, sweep_i, ext_i, i, pool_px, atr):
+        """Owner-requested SMC reads around the raid (recorded on every candidate; they only change trading if a rule uses
+        them). Direction-space: for a long the raid is below (sell-side liquidity), mirrored for shorts.
+          x_resweep    re-sweep: after the first raid bar, price pulled back >= 0.5 ATR, then pushed to a NEW extreme beyond
+                       the first raid (a double tap of the liquidity)
+          x_inducement inducement: in the 24 bars before the raid, a minor 5m swing (fractal, k=2) sitting just inside the
+                       pool was taken first, i.e. early traders were trapped before the real pool was raided
+          x_fbos       failed break of structure: the raid bar broke the pool but CLOSED back inside it (wick-only sweep)
+          x_rbos       real break of structure in the trade's direction: between the extreme and the trigger, a close beyond
+                       the last 5m swing (fractal, k=2) that formed before the extreme (market-structure shift)"""
+        b = self.b
+        hi, lo, cl = (b.h, b.l, b.c) if d == 1 else (-b.l, -b.h, -b.c)   # direction-space: "lo" is the raid side
+        pool_d = pool_px * d
+        atr = atr or 1e-9
+        out = {"x_resweep": 0, "x_inducement": 0, "x_fbos": 0, "x_rbos": 0}
+        if not (0 <= sweep_i <= ext_i <= i):
+            return out
+        first_ext = float(lo[sweep_i])
+        if ext_i > sweep_i and float(lo[ext_i]) < first_ext:
+            out["x_resweep"] = int(float(hi[sweep_i:ext_i].max()) - first_ext >= 0.5 * atr)
+        for j in range(max(2, sweep_i - 24), sweep_i - 2):
+            lj = float(lo[j])
+            if lj > pool_d and lj < float(lo[j - 1]) and lj < float(lo[j - 2]) and lj < float(lo[j + 1]) and lj < float(lo[j + 2]) \
+                    and float(lo[j + 1:sweep_i].min() if sweep_i > j + 1 else lj) < lj:
+                out["x_inducement"] = 1
+                break
+        out["x_fbos"] = int(float(cl[sweep_i]) > pool_d)
+        swing = None
+        for j in range(ext_i - 3, max(2, ext_i - 25), -1):
+            hj = float(hi[j])
+            if hj > float(hi[j - 1]) and hj > float(hi[j - 2]) and hj > float(hi[j + 1]) and hj > float(hi[j + 2]):
+                swing = hj
+                break
+        if swing is not None and i > ext_i:
+            out["x_rbos"] = int(float(cl[ext_i + 1:i + 1].max()) > swing)
+        return out
 
     def _size(self, order, balance, mll_level):
         """Prop-aware sizing in micros (MFFU 50K: max 40 micros / 4 minis). Mutates and returns the order."""

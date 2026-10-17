@@ -1,7 +1,7 @@
 # The exact strategy the bot trades: Liquidity Engine, eval mode
 
 Market: NQ futures, traded as MNQ micros ($2 per point), on 5-minute candles. All times are New York (ET).
-Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1`, `risk_usd: 650`, `dd_aware: false`, `equity_filter: {lookback: 15, min_sum_r: 0, cold_mode: half}` (`live_model.json`).
+Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1`, `risk_usd: 800`, `risk_ref_stop: 20`, `dd_aware: false`, `use_fallback: false`, `equity_filter: {lookback: 15, min_sum_r: 0, cold_mode: half}` (`live_model.json`).
 
 ## 1. Mark the liquidity
 These are the pools the bot watches:
@@ -37,9 +37,14 @@ These are the pools the bot watches:
 - **Minimum 10 points:** a tighter stop is widened to 10.
 - **Maximum 60 points:** if the stop would be wider, use the far side of the inverted gap instead, provided that's 10–60 points. Otherwise **skip the trade**.
 
-## 6. Target (draw on liquidity)
-- The **nearest untaken major pool** that is **at least 1.5R away**. The exit order sits 1 tick in front of it.
-- **Capped at 5R.** With no major pool in range, the target is **2R**.
+## 6. Target (draw on liquidity, always a real level)
+- The **nearest untaken major pool** at least **1.5R** away: prior day high/low, prior week high/low, overnight, London and Asia highs/lows, 1H swing highs/lows, or equal highs/lows. The exit order sits 1 tick in front of it.
+- **If that draw is more than 5R away**, the trade still aims at it, but profit is banked at **5R on the way**. Big draws like last week's high are rarely reached the same day.
+- **No major pool in range: no trade.** There are no fixed-R targets without a draw.
+- Tested and rejected:
+  - holding for the far draw with no cap (2026 PF 2.21)
+  - exiting at the last minor pool on the way (2026 PF 1.67)
+  - draws limited to the day's reach (PF ~1.8)
 
 ## 7. Managing the trade
 - **Breakeven:** at **+1R**, move the stop to entry + 1 tick.
@@ -48,10 +53,13 @@ These are the pools the bot watches:
 - **Close everything by 15:55 ET.**
 - **News:** close 5 minutes before a high-impact release.
 
-## 8. Risk management
-- **Risk $650 per trade.** Micros = $650 ÷ (stop points × $2), rounded down, max 40.
-  - 2026 stops: median 44 points (most between 36 and 53, range 12–60). Size: median 6 micros (2–25). Dollar risk: median $595 (up to $655 with fees).
-  - Typical: a 44-point stop × 7 micros ≈ $616.
+## 8. Risk management (size follows the stop)
+- **Risk $800 when the stop is 20 points or less.** With a wider stop the risk shrinks in proportion: a 40-pt stop risks $400, a 60-pt stop about $267.
+  - Micros = risk ÷ (stop points × $2), rounded down, max 40.
+  - Examples from 2026:
+    - 13.75-pt stop: 28 micros, $770 at risk
+    - 53-pt stop: 2 micros, about $212 at risk
+- **Why:** over 5 years, stops under 20 pts averaged +0.34R per trade and 20–30 pts +0.10R, while 30–60 pts averaged about 0R.
 - **Half size** in a trending market (10-day efficiency above 0.45).
 - **1 trade per day.** Done for the day after a winner.
 - **No new entries:**
@@ -67,32 +75,34 @@ These are the pools the bot watches:
 - Full size comes back **automatically** as soon as the last 15 signals add back up above 0R.
 - Every setup is traded, so it keeps 2+ setups a week. Only the size changes.
 
-## How it performed (fresh rerun of the real engine on TradingView NQ1! futures data, commissions and slippage included)
+## How it performed (fresh rerun of the live settings on TradingView NQ1! futures data, commissions and slippage included; `python tools/export_backtest.py`)
 
-| | 2026 (Jan 2 – Oct 16) | All 5 years (Oct 2021 – Oct 2026) |
+| | 2026 (Jan 2 – Oct 16) | All 5 years (Nov 2021 – Oct 2026) |
 |---|---:|---:|
-| Trades | 97 | 824 |
-| Setups per week | 2.4 (2+ in 74% of weeks) | 3.2 (2+ in 92% of weeks) |
-| Win rate | 26% | 22% |
-| Profit factor | 2.55 | 1.30 |
-| Net | +$21,359 | +$38,194 |
-| Max drawdown | −$4,379 | −$13,389 |
-| Worst day | −$651 | −$704 |
+| Trades | 89 | 768 |
+| Setups per week | 2.2 (2+ in 71% of weeks) | 3.0 (2+ in 89% of weeks) |
+| Win rate | 25% | 21% |
+| Profit factor | 3.48 | 1.32 |
+| Net | +$20,111 | +$26,602 |
+| Max drawdown | −$2,661 | −$11,401 |
 
 **MFFU 50K eval ($3k target, $2k trailing max loss).** A new eval was started on every trading day:
 
 | | 2026 | All 5 years |
 |---|---:|---:|
-| Passed within 2 weeks | 25% | 12% |
-| Failed within 2 weeks | 0% | 6% |
-| Passed within 1 month | 37% | 19% |
-| Failed within 1 month | 1% | 20% |
-| Run back to back (new eval after each pass/fail) | 6 passed, 2 failed | 20 passed, 31 failed |
-| Typical time to pass, when it passes | 14 trading days | 14 trading days |
+| Passed / failed within 2 weeks | 20% / 0% | 6.5% / 1.7% |
+| Passed / failed within 1 month | 31% / 0% | 12% / 8% |
+| Back to back (new eval after each pass/fail) | 4 passed, 1 failed | 11 passed, 19 failed |
+
+**Also tested and not adopted:**
+- 10–15 pt stops (structural stops are rarely that tight; fixed 15-pt stops get wicked out and lose money)
+- the ATM model with a sharp V (about 0.2–1.5 trades a week, about break-even)
+- re-sweep, inducement, FBOS and RBOS as size rules (no edge that held in both 2021–25 and 2026; they are recorded on every trade and shown in the trade reports)
+
+All variants are in `research/lab/variant_results.json`.
 
 **What to expect:**
-- No setting passes "for sure" in 2 weeks. The $3k target is about 5R at $650; the $2k limit is about 3 full losses. A 2-week pass needs 2 big winners early. In 2026 that happened 1 time in 4.
-- It wins about 1 trade in 4. Winners are big (often 2–5R), losers are about 1R or less.
-- 2026 was a good year for this model. Over 5 years at this size, more evals failed than passed.
-- The older, safer setup ($350, sit out cold streaks) almost never failed but took months to pass and traded 1.4 times a week. It's still available by setting `risk_usd: 350`, `dd_aware: true` and `cold_mode: skip`.
+- No setting passes "for sure" in 2 weeks. At $800 the $3k target is about 4 full winners' worth of R, and the $2k limit is about 2–3 full losses.
+- It wins about 1 trade in 4. Winners are big (often 2–5R); wide-stop losers are small because size follows the stop.
+- 2026 was a good year for this model. Over 5 years at this size, more back-to-back evals failed than passed.
 - Past results are not a promise. Paper-trade it before risking money.

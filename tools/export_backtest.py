@@ -44,6 +44,8 @@ def _slim(t):
     d.update({k: t.get(k) for k in ("pools", "sweep_ext", "zone", "target_label", "conf_tags", "htf_trend", "m15_trend", "pd_pos",
                                     "open_loc", "mfe", "bars_held", "signal_t", "score", "key_level", "trigger_tf")})
     d["checklist"] = [[c.get("label"), c.get("state")] for c in (t.get("checklist") or []) if c.get("weight")]
+    f = t.get("features") or {}
+    d["smc"] = {k: f.get(k) for k in ("x_resweep", "x_inducement", "x_fbos", "x_rbos", "multi_sweep", "fast_reclaim")}
     return d
 
 
@@ -72,6 +74,12 @@ def _report(t, strategy):
         why.append(f"{'discount' if t['pd_pos'] < 0.5 else 'premium'} of the 1H range ({'good' if good else 'poor'} location)")
     if (t.get("m15_trend") or 0) * d > 0:
         why.append("15m had already turned its way (late)")
+    smc = t.get("smc") or {}
+    reads = [txt for k, txt in (("x_resweep", "re-sweep (double tap of the liquidity)"), ("x_inducement", "inducement taken before the raid"),
+                                ("x_fbos", "FBOS: raid candle closed back inside the pool"), ("x_rbos", "RBOS: structure broken back before entry"),
+                                ("multi_sweep", "stacked pools raided")) if smc.get(k)]
+    if reads:
+        why.append("price action: " + ", ".join(reads))
     if t.get("conf_tags"):
         why.append("confluences: " + ", ".join(str(x) for x in t["conf_tags"][:6]))
     plan = (f"Stop {t['stop']:,.2f} beyond the sweep ({t['risk_pts']:.2f} pts) -> {t['qty']} micros, ${t['risk_usd']:,.0f} at risk"
@@ -121,7 +129,11 @@ def _lessons(trades):
                 "Location": "?" if pd is None else ("good (discount long / premium short)" if (d == 1 and pd < 0.5) or (d == -1 and pd > 0.5) else "poor"),
                 "Stop size": "under 20 pts" if t["risk_pts"] < 20 else "20-30 pts" if t["risk_pts"] < 30 else "30-45 pts" if t["risk_pts"] < 45 else "45-60 pts",
                 "Market regime": t.get("regime") or "?",
-                "Day": _et(t["entry_t"]).strftime("%A")}
+                "Day": _et(t["entry_t"]).strftime("%A"),
+                "Re-sweep": "yes" if (t.get("smc") or {}).get("x_resweep") else "no",
+                "Inducement taken first": "yes" if (t.get("smc") or {}).get("x_inducement") else "no",
+                "FBOS (raid closed back inside)": "yes" if (t.get("smc") or {}).get("x_fbos") else "no",
+                "RBOS before entry": "yes" if (t.get("smc") or {}).get("x_rbos") else "no"}
     old = [t for t in trades if t["day"] < "2026-01-01"]; new = [t for t in trades if t["day"] >= "2026-01-01"]
     base_o = float(np.mean([t["r"] for t in old])) if old else 0.0; base_n = float(np.mean([t["r"] for t in new])) if new else 0.0
     out = []
@@ -238,7 +250,7 @@ def main(procs=11):
                        "r": round(t["r"], 3), "pnl": round(t["pnl"] * k, 2), "half": m < 1,
                        "low": -min(t["mae"], max(1.0, -t["r"])) * t["risk_pts"] * 2.0 * q,
                        **{f: t.get(f) for f in ("pools", "sweep_ext", "zone", "target_label", "conf_tags", "htf_trend", "m15_trend",
-                                                "pd_pos", "open_loc", "mfe", "bars_held", "checklist", "trigger_tf", "score")}})
+                                                "pd_pos", "open_loc", "mfe", "bars_held", "checklist", "trigger_tf", "score", "smc")}})
     os.remove(tmp)
     for t in trades:
         t["report"] = _report(t, lm.get("label") or "Liquidity Engine")

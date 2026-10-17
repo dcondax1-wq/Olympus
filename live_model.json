@@ -7,14 +7,15 @@
     "max_trades_day": 1,
     "risk_usd": 800,
     "dd_aware": false,
-    "risk_ref_stop": 20.0
+    "risk_ref_stop": 20.0,
+    "use_fallback": false
   },
   "equity_filter": {
     "lookback": 15,
     "min_sum_r": 0.0,
     "cold_mode": "half"
   },
-  "label": "Liquidity Engine - eval mode ($800 risk up to a 20-pt stop, less on wider stops; every setup; half size in cold streaks)",
+  "label": "Liquidity Engine - eval mode ($800 risk up to a 20-pt stop, less on wider stops; every setup with a real liquidity draw; half size in cold streaks)",
   "chosen": "2026-10-17",
   "locked": true,
   "rules": "STRATEGY.md"
