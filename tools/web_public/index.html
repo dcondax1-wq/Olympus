@@ -627,14 +627,14 @@ function route() {
   if (!TITLES[p]) p = 'today';
   if (groupOf(p) === 'data') store.set('dataSub', p);
   PAGE = p; ARG = arg ? decodeURIComponent(arg) : null;
-  const g = groupOf(p);
+  const g = groupOf(p), inMod = g === 'modules' && p !== 'modules';
   $$('#nav a').forEach(a => a.classList.toggle('on', a.dataset.p === p || a.dataset.p === g));
   $$('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.t === g || (g === 'settings' && a.dataset.t === 'modules')));
-  $('#title').textContent = TITLES[p]; $('#crumb').textContent = g === 'data' ? 'Data' : g === 'modules' ? 'Modules' : '';
+  $('#title').textContent = TITLES[p]; $('#crumb').textContent = g === 'data' ? 'Data' : inMod ? 'Modules' : '';
   document.title = TITLES[p] + ' · Liquidity Engine';
   const sub = $('#sub');
   if (g === 'data') sub.innerHTML = `<div class="strip">${DATA_P.map(([id, l, i]) => `<button type="button" data-go="${id}" class="${id === p ? 'on' : ''}">${icon(i)}<span>${l}</span></button>`).join('')}</div>`;
-  else if (g === 'modules') { const k = MODS.findIndex(x => x[0] === p), pr = MODS[(k + MODS.length - 1) % MODS.length], nx = MODS[(k + 1) % MODS.length];
+  else if (inMod) { const k = MODS.findIndex(x => x[0] === p), pr = MODS[(k + MODS.length - 1) % MODS.length], nx = MODS[(k + 1) % MODS.length];
     sub.innerHTML = `<div class="modbar"><button class="chipbtn back" data-go="modules">${icon('back')}<span>Modules</span></button><span style="flex:1"></span>
       <button class="chipbtn" data-go="${pr[0]}">${icon('left')}<span>${pr[1]}</span></button><button class="chipbtn" data-go="${nx[0]}"><span>${nx[1]}</span>${icon('right')}</button></div>`; }
   else sub.innerHTML = '';
