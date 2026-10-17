@@ -36,11 +36,17 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
      (`use_fallback: false`).
   5. BE at 1R, 30-min time stop, giveback exit, max 1 trade/day.
 - **Size:** `risk_usd 800` up to a 20-pt stop, then scaled down by `risk_ref_stop 20` (risk = 800×20/stop); `dd_aware false`.
-- **Cold-streak filter** (`engine/equity_filter.py`): if the last 15 finished signals sum ≤ 0R, trade at **half size**
-  (`cold_mode: half`).
-- **Results** (live-loop replay, costs included):
-  - 2026 YTD: 89 trades, 2.2/wk, PF 3.48, +$20.1k, max DD −$2.7k; eval within 1 month 31% pass / 0% fail.
-  - 5 years: PF 1.32, +$26.6k, max DD −$11.4k; back-to-back evals 11 passed / 19 failed. 2026 was an unusually good year.
+- **Cold-streak filter** (`engine/equity_filter.py`): if the last 15 finished signals sum ≤ 0R, trade at **a quarter of the size**
+  (`cold_mode: half`, `cold_size: 0.25`; was 0.5 until the 2026-10-17 evening lock).
+- **Late entries** (15m structure already turned the trade's way) trade at **half size** (`sizing.late_mult 0.5`); **breakeven at
+  +3R on trending days** (`be_at_r_trending 3.0`); `memory_seed false` (PC and cloud identical). One shared multiplier:
+  `engine/sizing.py` (cold × late, rounded once, floor 1 micro). The fast-eval press (`sizing.press`) exists and is OFF.
+- **Results** (live-loop replay, costs included, lock of 2026-10-17 evening):
+  - 2026 YTD: 89 trades, 2.16/wk, PF 3.94, +$20,487 ($2,088/mo), max DD −$2,249; eval within 2 weeks 20.4% pass / 0.0% fail,
+    within 1 month 34.0% / 0.0%.
+  - 2021-25: PF 1.27, +$16,379 ($321/mo), max DD −$9,265; 1 month 8.8% / 5.2%; back-to-back 8/10.
+  - 5 years: PF 1.54, +$36,866, max DD −$9,265; back-to-back evals 12 passed / 11 failed. 2026 was an unusually good year.
+  - Before the lock: 2026 PF 3.48 +$20.1k; 2021-25 PF 1.09 +$6.5k DD −$11.4k; 5 years PF 1.32 +$26.6k, b2b 11/19.
 
 ## Tested and rejected (don't redo without a new idea)
 - Published models as taught: ICT 2022, Silver Bullet, Mech/IFVG, continuation, ATM 5m/1m with a sharp V (0.2–1.5 trades/wk,

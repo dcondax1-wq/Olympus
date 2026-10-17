@@ -81,22 +81,27 @@ These are the pools the bot watches:
 
 ## How it performed (fresh rerun of the live settings on TradingView NQ1! futures data, commissions and slippage included; `python tools/export_backtest.py`)
 
-| | 2026 (Jan 2 – Oct 16) | All 5 years (Nov 2021 – Oct 2026) |
-|---|---:|---:|
-| Trades | 89 | 768 |
-| Setups per week | 2.2 (2+ in 71% of weeks) | 3.0 (2+ in 89% of weeks) |
-| Win rate | 25% | 21% |
-| Profit factor | 3.48 | 1.32 |
-| Net | +$20,111 | +$26,602 |
-| Max drawdown | −$2,661 | −$11,401 |
+| | 2026 (Jan 2 – Oct 16) | 2021–25 | All 5 years (Nov 2021 – Oct 2026) |
+|---|---:|---:|---:|
+| Trades | 89 | 679 | 768 |
+| Setups per week | 2.16 (2+ in 71% of weeks) | 3.17 (2+ in 92% of weeks) | 3.0 (2+ in 89% of weeks) |
+| Win rate | 25.8% | 21.1% | 21.6% |
+| Profit factor | 3.94 | 1.27 | 1.54 |
+| Net | +$20,487 ($2,088/month) | +$16,379 ($321/month) | +$36,866 ($606/month) |
+| Max drawdown | −$2,249 | −$9,265 | −$9,265 |
+
+Before this lock (half size in cold streaks, breakeven at 1R on every day): 2026 +$20,111 (PF 3.48, max DD −$2,661), 2021–25 +$6,491 (PF 1.09, max DD −$11,401), all years +$26,602 (PF 1.32). Run `live_2026-10-17am` in the research library.
 
 **MFFU 50K eval ($3k target, $2k trailing max loss).** A new eval was started on every trading day:
 
-| | 2026 | All 5 years |
-|---|---:|---:|
-| Passed / failed within 2 weeks | 20% / 0% | 6.5% / 1.7% |
-| Passed / failed within 1 month | 31% / 0% | 12% / 8% |
-| Back to back (new eval after each pass/fail) | 4 passed, 1 failed | 11 passed, 19 failed |
+| | 2026 | 2021–25 | All 5 years |
+|---|---:|---:|---:|
+| Passed / failed within 2 weeks | 20.4% / 0.0% | 4.1% / 1.9% | 6.7% / 1.6% |
+| Passed / failed within 1 month | 34.0% / 0.0% | 8.8% / 5.2% | 13.1% / 4.4% |
+| Passes slower than 3 weeks · median sessions to pass | 53.8% · 18 | 81.2% · 32.5 | 75.9% · 31 |
+| Back to back (new eval after each pass/fail) | 4 passed, 1 failed | 8 passed, 10 failed | 12 passed, 11 failed |
+
+**Owner's eval-speed rule (2026-10-17):** an eval should be decided within 2 weeks and never take over 3 weeks to pass. At this size most passes still take 3 weeks or more. The researched "fast-eval" press (run `risk_fast_press1000`: $800 on any stop while the eval is less than $1,000 down) halves the time to pass and decides 27% / 15% of evals within 2 weeks (2026 / 2021–25) at the same cost per funded account, but fails about twice as many evals a year. It is built in (`sizing.press` in `live_model.json`) and OFF until the owner turns it on.
 
 **Also tested and not adopted:**
 - 10–15 pt stops (structural stops are rarely that tight; fixed 15-pt stops get wicked out and lose money)
@@ -107,6 +112,7 @@ All variants are in `research/lab/variant_results.json`.
 
 **What to expect:**
 - No setting passes "for sure" in 2 weeks. At $800 the $3k target is about 4 full winners' worth of R, and the $2k limit is about 2–3 full losses.
+- Cold streaks of 13–18 weeks happen; during them most trades are 1 micro. That is the rule working, not the bot being broken.
 - It wins about 1 trade in 4. Winners are big (often 2–5R); wide-stop losers are small because size follows the stop.
 - 2026 was a good year for this model. Over 5 years at this size, more back-to-back evals failed than passed.
 - Past results are not a promise. Paper-trade it before risking money.
