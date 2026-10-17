@@ -1,11 +1,14 @@
 <!doctype html><!-- Test harness for one 3D view: dev.html?view=<kind>&h=360&level=max|lite
-  kinds: orb galaxy city candles (real data) and constellation ribbon reactor pipeline losses (synthetic data built from it);
-  view=none: only the background field (try &scene=lab, and click the page for a ripple).
+  kinds: orb galaxy city candles liqmap heat weekring (real data) and constellation ribbon reactor pipeline losses jarvis newsradar montecarlo
+  (synthetic data built from it); view=none: only the background field (try &scene=lab, and click the page for a ripple).
   Needs dev-data.json (gitignored): python tools/build_web_dashboard.py --state dash/state.json --out <dir>, copy <dir>/data.json here,
   then serve tools/web_public (python -m http.server 8797) and open http://127.0.0.1:8797/fx/dev.html. devshot.js screenshots it.
   Options: &year=2026|all (galaxy)  &runs=1|37|150|real (constellation; real = ./dev-runs.json)  &ser=1|2 &span=2026|all (ribbon)
            &bal= &floor= &day= &status= &locked=1 (reactor)  &idx=-1..4 &live=0|1 &kz=0|1 (pipeline)  &empty=1 (no data)
            &state=idle|listening|thinking|speaking &lvl=0..1 &cold=1 &pnl= &live=0 &text= &cycle=<ms>|0 (jarvis; cycles the four states, default 3000 ms)
+           &n=3|40 &now=<unix s> (newsradar; synthetic USD events around now)  &paths=300|1000 &noprob=1 (montecarlo; random-walk evals)
+           &span=2026|all (heat; the replay trades aggregated by ET weekday x hour)  &pos=long|short|0 &rich=1 (liqmap; rich = labelled synthetic pools)
+           &now=<unix s> (weekring; default: the week of the last replay trade, Thursday 10:42 ET)
            &seq=1 (re-mount with changed data after 4 s, then the same data again after 7 s: animation + idempotency)
            &ff=<s> (fast-forward the view's clock by s seconds after each mount: finished intros in a slow software GPU)
            &bg=0 (hide the full-screen background field: faster in a software GPU)  &scene=<name> (FX.scene preset)  &fxfixed (full res in a software GPU) -->
@@ -85,6 +88,81 @@ function losses(seed = 9) {
   }) };
 }
 const empty = q.get('empty') === '1';
+// ---------------------------------------------------------------- newsradar: synthetic USD events around `now` (&n=3|40, &now=<unix s>)
+const NOW = q.has('now') ? +q.get('now') : Math.floor(Date.now() / 1000);
+function newsradar(alt, seed = 21) {
+  const R = rng(seed), n = +(q.get('n') || 3), H = 3600;
+  const base = [
+    { t: NOW + 25 * 60, title: 'CPI (Sep)', impact: 'high', kind: 'cpi', source: 'BLS', forecast: '3.0%', previous: '2.9%' },
+    { t: NOW + 2 * H + 10 * 60, title: 'Initial jobless claims', impact: 'medium', kind: 'claims', source: 'DOL', forecast: '225k', previous: '219k' },
+    { t: NOW + 4 * H, title: '10-year note auction', impact: 'low', kind: 'auction', source: 'Treasury' },
+    { t: NOW - 2 * H, title: 'GDP q/q (adv)', impact: 'high', kind: 'gdp', source: 'BEA', actual: '2.8%', forecast: '2.6%', previous: '3.0%', surprise: 0.2 },
+    { t: NOW + 6 * H + 30 * 60, title: 'Fed Chair speaks', impact: 'high', kind: 'speaker', source: 'Fed' },
+    { t: NOW + 26 * H, title: 'Core PCE m/m', impact: 'high', kind: 'pce', source: 'BEA', forecast: '0.2%', previous: '0.3%' },
+    { t: NOW + 30 * H, title: 'Nonfarm payrolls', impact: 'high', kind: 'nfp', source: 'BLS', forecast: '150k', previous: '142k' },
+    { t: NOW + 9 * H, title: 'FOMC minutes', impact: 'high', kind: 'fomc', source: 'Fed' },
+    { t: NOW - 9 * H, title: 'too old (dropped)', impact: 'low', kind: 'other' },
+  ];
+  const KINDS = ['cpi', 'nfp', 'fomc', 'pce', 'gdp', 'claims', 'auction', 'speaker', 'other'], IMP = ['high', 'medium', 'low'];
+  const ev = base.slice(0, n >= 8 ? base.length : n);
+  while (ev.length < n) { const i = ev.length, k = KINDS[(R() * KINDS.length) | 0]; ev.push({ t: NOW + Math.round((R() * 46 - 4) * H), title: `${k.toUpperCase()} event #${i}`, impact: IMP[(R() * 3) | 0], kind: k, source: ['BLS', 'Fed', 'Treasury', 'BEA', 'ISM'][i % 5] }); }
+  if (alt) { ev.splice(1, 1); ev.push({ t: NOW + 45 * 60, title: 'Retail sales m/m', impact: 'medium', kind: 'other', source: 'Census', forecast: '0.3%' }); }
+  const o = Math.floor(NOW / 86400) * 86400;   // today's cash session in UTC (09:30-16:00 EDT)
+  return { now: NOW, events: ev, session: { open: o + 13.5 * H, close: o + 20 * H } };
+}
+// ---------------------------------------------------------------- montecarlo: random-walk MFFU evals (&paths=300|1000, &noprob=1)
+function montecarlo(alt, seed = 31) {
+  const R = rng(seed + (alt ? 2 : 0)), n = +(q.get('paths') || 300), paths = [];
+  for (let i = 0; i < n; i++) {
+    const days = [50000]; let b = 50000, floor = 48000, result = 'OPEN';
+    for (let s = 1; s <= 60; s++) {
+      const trade = R() < 0.45, pnl = trade ? (R() < 0.42 ? 400 + R() * 1400 : -(200 + R() * 450)) : 0;
+      b = Math.round(b + pnl); days.push(b); floor = Math.max(floor, b - 2000);
+      if (b >= 53000) { result = 'PASS'; break; } if (b <= floor) { result = 'FAIL'; break; }
+    }
+    paths.push({ days, result, days_n: days.length });
+  }
+  const sh = (f) => Math.round(paths.filter(f).length / n * 1000) / 10;
+  const prob = q.get('noprob') === '1' ? undefined : { pass_2w: sh((p) => p.result === 'PASS' && p.days_n <= 10), fail_2w: sh((p) => p.result === 'FAIL' && p.days_n <= 10),
+    pass_3w: sh((p) => p.result === 'PASS' && p.days_n <= 15), pass_4w: sh((p) => p.result === 'PASS' && p.days_n <= 20), pass_6w: sh((p) => p.result === 'PASS' && p.days_n <= 30), open_60: sh((p) => p.result === 'OPEN') };
+  return { paths, start: 50000, target: 53000, maxLoss: 2000, prob };
+}
+// ---------------------------------------------------------------- heat: the replay trades by ET weekday x entry hour (&span=2026|all)
+const ETF = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', weekday: 'short', hour: 'numeric', hourCycle: 'h23' });
+function heat(alt) {
+  const span = q.get('span') || '2026', cells = new Map();
+  for (const t of (D.trades || [])) {
+    if (span !== 'all' && !t.day.startsWith(span)) continue;
+    if (alt && t.pnl < -300) continue;                       // alt: drop the big losers -> bars shrink / turn green, some vanish
+    const P = {}; for (const p of ETF.formatToParts(new Date(t.entry_t * 1000))) P[p.type] = p.value;
+    const dow = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].indexOf(P.weekday), hour = +P.hour; if (dow < 0) continue;
+    const k = dow + '|' + hour, c = cells.get(k) || { dow, hour, n: 0, net: 0, sumR: 0 };
+    c.n++; c.net += t.pnl; c.sumR += t.r; cells.set(k, c);
+  }
+  return { label: span === 'all' ? '5 years' : span, cells: [...cells.values()].map((c) => ({ dow: c.dow, hour: c.hour, n: c.n, avg_r: +(c.sumR / c.n).toFixed(3), net: Math.round(c.net) })) };
+}
+// ---------------------------------------------------------------- liqmap: the live pools / bars / price (&pos=long|short|0, &rich=1)
+function liqmap(alt) {
+  const L = D.live || {}, price = +(L.price || 0) + (alt ? 18.5 : 0), bars = (L.bars || []).slice(-40);
+  let pools = (L.pools || []).map((p) => ({ ...p, dist: +(p.price - price).toFixed(2) }));
+  if (q.get('rich') === '1') pools = [[39.5, 'H', 'PDH', 3], [12.25, 'H', '1H swing', 1], [88, 'H', 'ONH', 2], [160.5, 'H', 'Asia H', 1], [410, 'H', 'WH', 3],
+    [-21.75, 'L', 'ITL', 1], [-62, 'L', 'ONL', 2], [-118.25, 'L', 'PDL', 3], [-240, 'L', 'Asia L', 1], [-520, 'L', 'WL', 2]].map(([d, s, l, st]) => ({ price: +(price + d).toFixed(2), side: s, label: l, strength: st, dist: d }));
+  if (alt) pools = pools.filter((p, i) => i !== 1).concat([{ price: +(price + 7.75).toFixed(2), side: 'H', label: 'new 5m high', strength: 1, dist: 7.75 }]);
+  const pm = q.get('pos'), position = !pm || pm === '0' ? null : pm === 'short' ? { dir: 'short', entry: price + 4, stop: price + 36, target: price - 92 } : { dir: 'long', entry: price - 3, stop: price - 29, target: price + 75 };
+  return { price, pools, bars, position };
+}
+// ---------------------------------------------------------------- weekring: the week of the last replay trade (&now=<unix s>)
+function weekring(alt) {
+  const T = (D.trades || []).slice().sort((a, b) => a.entry_t - b.entry_t), last = T[T.length - 1];
+  const dowOf = (day) => (new Date(day + 'T12:00:00Z').getUTCDay() + 6) % 7;
+  const mon = new Date(last.day + 'T12:00:00Z'); mon.setUTCDate(mon.getUTCDate() - dowOf(last.day));
+  const dates = [0, 1, 2, 3, 4].map((i) => { const d = new Date(mon); d.setUTCDate(d.getUTCDate() + i); return d.toISOString().slice(0, 10); });
+  const now = q.has('now') ? +q.get('now') : last.entry_t + 3 * 3600 + 7 * 60;
+  const days = dates.map((date, dow) => { const tr = T.filter((t) => t.day === date && t.entry_t <= now).map((t) => ({ r: t.r, pnl: t.pnl, t: t.entry_t, side: t.side.toLowerCase(), exit: t.exit }));
+    if (alt && dow === 1) tr.push({ r: 2.1, pnl: 640, t: Date.parse(date + 'T14:04:00Z') / 1000, side: 'long', exit: 'TARGET' });   // Tue 10:04 ET
+    return { date, dow, trades: tr, pnl: tr.reduce((s, x) => s + x.pnl, 0), sessions_done: date < dates[Math.min(4, Math.floor((now - mon.getTime() / 1000) / 86400))] }; });
+  return { days, now, target_week_trades: [2, 4] };
+}
 // jarvis: one payload per state (the caption is what the bot would say in that state)
 const JTEXT = { idle: 'Watching NQ. No sweep yet today.', listening: 'Listening…', thinking: 'Checking the 09:30 killzone and the nearest major pool…',
   speaking: 'Asia high swept at 09:41. Waiting for the IFVG trigger; stop 32 points, size 2 micros.' };
@@ -103,6 +181,11 @@ const make = (alt) => ({
   pipeline: () => empty ? {} : alt ? { ...pipeline(), idx: Math.min(4, pipeline().idx + 1) } : pipeline(),
   losses: () => empty ? { trades: [] } : alt ? { trades: losses().trades.filter((t, i) => i % 3) } : losses(),
   jarvis: () => empty ? {} : jarvis(q.get('state') || 'idle'),
+  newsradar: () => empty ? { now: NOW, events: [] } : newsradar(alt),
+  montecarlo: () => empty ? { paths: [] } : montecarlo(alt),
+  heat: () => empty ? { cells: [], label: '2026' } : heat(alt),
+  liqmap: () => empty ? {} : liqmap(alt),
+  weekring: () => empty ? null : weekring(alt),
   none: () => null,
 }[view]());
 window.__picked = null;

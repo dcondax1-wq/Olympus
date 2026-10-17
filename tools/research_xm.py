@@ -527,6 +527,8 @@ OVERRIDE = {
     "xm_gexneg_x125": ("info", "Negative gamma is rare (4 trades in 2026, 83 in 2021-25); a lean-in there changes 2026 by $0 and 2021-25 by +$0.7k: no evidence either way."),
     "xm_biggap_x125": ("info", "Lean-in: judge against the uniform x1.25 control (xm_all_x125)."),
     "xm_all_x125": ("info", "Control run, not a proposal."),
+    "xm_both_trend_quarter": ("promising", "Same bucket as xm_both_trend_half; $150 more over 5 years for a more extreme size step. The half version is the single candidate."),
+    "xm_er20_swap_45": ("promising", "Passes the money test in both periods, but it is a size-only approximation (the engine's 10-day half is undone by x2, the BE-at-3R exit still follows the 10-day test) and 1-month eval fails in 2021-25 rise 5.2% -> 8.6% because more days trade full size. Most of the 2021-25 gain is from undoing the 10-day half (undo alone: +$21.8k); the 20-day half is what repairs 2026 (PF 3.56 -> 4.09, DD -$3.4k -> -$2.5k). Needs an engine option (regime lookback 20 days) and a live window of 30+ days before an exact replay can decide it."),
     "xm_er20_only": ("promising", "Size-only approximation of a 20-day trending test: better money and drawdown in 2021-25, same money and a hair lower PF in 2026. Needs an engine option (regime lookback 20 days, cut 0.35, BE-at-3R following the same test) and a 21-session live window before it can be adopted."),
 }
 
@@ -566,11 +568,56 @@ def tables():
     return raw, F, T, S, tabs
 
 
+def noise(n26=12, n25=75, draws=3000, seed=7):
+    """Chance benchmark: half size on a RANDOM group of n26 trades in 2026 and n25 in 2021-25 (the size of the both-trend
+    bucket). How often is that better than the lock in both periods (net and PF), like the owner's test asks?
+    Net/PF only (no eval simulation); the half is applied as the live loop would round it (floor, min 1 micro)."""
+    rng = np.random.default_rng(seed)
+    raw = rl.replay(quiet=True)
+    T = rl.size(raw)
+    def arr(a, z):
+        X = [t for t in T if a <= t["day"] <= z]
+        return np.array([t["pnl"] for t in X]), np.array([t["qty"] for t in X])
+    out = {}
+    for name, a, z, k in (("2026", "2026-01-01", "2026-12-31", n26), ("2021-25", "2021-01-01", "2025-12-31", n25)):
+        p, q = arr(a, z)
+        base_net, base_pf = p.sum(), p[p > 0].sum() / -p[p < 0].sum()
+        wins = 0; nets = []
+        for _ in range(draws):
+            idx = rng.choice(len(p), k, replace=False)
+            m = np.ones(len(p)); m[idx] = np.maximum(1, np.floor(q[idx] * 0.5)) / q[idx]
+            pp = p * m
+            net, pf = pp.sum(), pp[pp > 0].sum() / -pp[pp < 0].sum()
+            wins += (net > base_net and pf >= base_pf); nets.append(net - base_net)
+        out[name] = {"better_pct": round(100 * wins / draws, 1), "median_delta": round(float(np.median(nets))), "p90_delta": round(float(np.percentile(nets, 90)))}
+    # both periods at once (independent draws)
+    out["both_pct"] = round(out["2026"]["better_pct"] * out["2021-25"]["better_pct"] / 100, 1)
+    print("noise benchmark (half size on a random group):", json.dumps(out))
+    return out
+
+
+def finish():
+    """Append the xm_* run headlines to the lab JSON (after `rules`)."""
+    lab = json.load(open(LAB_JSON, encoding="utf-8"))
+    idx = json.load(open(os.path.join(rl.RUNS, "index.json"), encoding="utf-8"))["runs"]
+    lab["rules"] = [{k: r.get(k) for k in ("id", "title", "status", "verdict", "sizing", "spans")} for r in idx if str(r["id"]).startswith("xm_")]
+    lab["baseline"] = rl.load("baseline")["spans"]
+    with open(LAB_JSON, "w", encoding="utf-8") as fh:
+        json.dump(lab, fh, indent=1)
+    print(f"lab json: {len(lab['tables'])} tables, {len(lab['rules'])} rules")
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "tables"
     if cmd in ("tables", "all"):
         raw, F, T, S, tabs = tables()
         if cmd == "all":
             rules(raw, F)
+            finish()
     elif cmd == "rules":
         rules(only=sys.argv[2:] or None)
+        finish()
+    elif cmd == "finish":
+        finish()
+    elif cmd == "noise":
+        noise()
