@@ -1,0 +1,5 @@
+{
+  "private": true,
+  "description": "Liquidity Engine app icon v2 renders (three.js in headless Chromium via Playwright)",
+  "dependencies": { "three": "0.160.0" }
+}

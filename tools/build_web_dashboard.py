@@ -411,8 +411,9 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                  "window": [{"day": x.get("day"), "r": x.get("r")} for x in sorted(shadow, key=lambda x: x.get("exit_t", 0))[-int(cfg.get("lookback", 15)):]]},
         "sizing": {"risk_usd": (lm.get("params") or {}).get("risk_usd"), "risk_ref_stop": (lm.get("params") or {}).get("risk_ref_stop"),
                    "max_trades_day": (lm.get("params") or {}).get("max_trades_day"), "label": lm.get("label"), "chosen": lm.get("chosen")},
-        # the locked strategy for the Strategy page: label, lock date and the settings that differ from the engine defaults
-        "strategy": {k: lm.get(k) for k in ("label", "chosen", "locked", "model", "sym", "params", "equity_filter")},
+        # the locked strategy for the Strategy page: label, lock date + note, the settings that differ from the engine defaults,
+        # the cold-streak filter (cold_size) and the extra size rules (sizing: late_mult, press)
+        "strategy": {k: lm.get(k) for k in ("label", "chosen", "locked", "lock_note", "model", "sym", "params", "equity_filter", "sizing")},
         "lab": lab,
         "docs": docs,
     }
