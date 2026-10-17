@@ -37,6 +37,7 @@ import * as tradesPage from './next/trades.js';
 import * as hub from './next/datahub.js';
 import * as mods from './next/modpages.js';
 import { initFX, fxWarp } from './next/fx3d.js';
+import * as lab from './next/lab.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -47,6 +48,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   memory: memoryPage, launch: launchPage, analytics: { show: showAnalytics }, ops: { show: () => showOps() },
   command: { show: () => requestAnimationFrame(() => window.dispatchEvent(new Event('resize'))) },
   trades: tradesPage, results: hub.results, variants: hub.variants, learned: hub.learned, study: hub.study,
+  lab: lab.experiments, writeups: lab.writeups,
   rules: mods.rules, cold: mods.cold, risk: mods.risk, alerts: { show: () => settingsPage.show() }, modules: { show: () => {} },
   playbook: { show: () => {} } };
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };

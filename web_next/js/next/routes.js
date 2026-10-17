@@ -12,6 +12,8 @@ export const TOP = [
 
 export const DATA = [
   { id: 'results', label: 'Results', icon: 'results', desc: 'Live settings, 5-year replay: periods, months, eval odds' },
+  { id: 'lab', label: 'Experiments', icon: 'variants', desc: 'Research run library: every backtest with its data' },
+  { id: 'writeups', label: 'Write-ups', icon: 'reports', desc: 'Plain-language research reports' },
   { id: 'backtest', label: 'Backtests', icon: 'backtest', desc: 'Run the engine with any parameters' },
   { id: 'replay', label: 'Replays', icon: 'replay', desc: 'Step through a session bar by bar' },
   { id: 'variants', label: 'Tested Variants', icon: 'variants', desc: 'Every variant tested, 2026 vs 5 years' },

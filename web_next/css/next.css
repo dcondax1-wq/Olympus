@@ -667,3 +667,43 @@ kbd, .nx-search kbd { font: 600 10.5px var(--mono); padding: 3px 6px; border-rad
   .nx-oracle .hero3d { height: 250px; }
   .nx-oracle-t { padding: 14px 16px 18px; } .nx-oracle-t h2 { font-size: 22px; } .nx-oracle-px b { font-size: 24px; }
 }
+
+/* ------------------------------------------------------------------ 5. Lab: run library + write-ups (js/next/lab.js) */
+.fx3d.constellation, .fx3d.ribbon { height: 440px; }
+.fx3d.ribbon { margin-bottom: 12px; }
+.nx-runs-grid, .nx-wu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.nx-runcard, .nx-wucard { display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 16px 18px; border-radius: 16px; cursor: pointer; color: var(--ink); font: inherit;
+  border: 1px solid var(--nx-line); background: linear-gradient(160deg, color-mix(in srgb, var(--surface-2) 70%, transparent), color-mix(in srgb, var(--surface) 50%, transparent));
+  transition: transform .15s var(--nx-ease), border-color .2s; position: relative; overflow: hidden; }
+.nx-runcard:hover, .nx-wucard:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.nx-runcard.adopt-candidate { border-color: color-mix(in srgb, var(--good) 45%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--good) 18%, transparent), 0 12px 40px color-mix(in srgb, var(--good) 10%, transparent); }
+.nx-runcard.baseline { border-color: color-mix(in srgb, var(--gold) 45%, transparent); }
+.nx-runcard h4, .nx-wucard h4 { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+.nx-runcard p, .nx-wucard p { margin: 0; line-height: 1.45; }
+.nx-runcard-h { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.nx-rks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 2px; }
+.nx-rk { display: flex; flex-direction: column; gap: 2px; padding: 9px 10px; border-radius: 11px; background: color-mix(in srgb, var(--page) 45%, transparent); border: 1px solid var(--nx-line); }
+.nx-rk span { font: 600 10.5px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.nx-rk b { font-size: 14px; } .nx-rk em { font-style: normal; font-size: 12px; color: var(--ink-2); }
+.nx-d { font-style: normal; font: 600 10.5px var(--mono); margin-left: 4px; color: var(--muted); } .nx-d.up { color: var(--good); } .nx-d.dn { color: var(--bad); }
+.nx-badge.good { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); } .nx-badge.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 35%, transparent); }
+.nx-badge.info { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 35%, transparent); }
+.nx-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 12px; color: var(--ink-2); }
+.nx-legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.nx-chip.link { cursor: pointer; border: 1px solid var(--nx-line); background: transparent; color: var(--ink-2); }
+.nx-chip.link:hover { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.nx-md { padding: 22px 26px; line-height: 1.62; font-size: 14.5px; color: var(--ink); max-width: 980px; }
+.nx-md h2, .nx-md h3, .nx-md h4 { margin: 1.3em 0 .45em; letter-spacing: -.015em; } .nx-md h2:first-child, .nx-md h3:first-child { margin-top: 0; }
+.nx-md h2 { font-size: 21px; } .nx-md h3 { font-size: 17px; } .nx-md h4 { font-size: 15px; color: var(--ink-2); }
+.nx-md p, .nx-md ul, .nx-md ol { margin: 0 0 .85em; } .nx-md li { margin: .25em 0; }
+.nx-md code { font: 500 12.5px var(--mono); padding: 1px 5px; border-radius: 6px; background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.nx-md pre { padding: 12px 14px; border-radius: 12px; overflow: auto; background: color-mix(in srgb, var(--page) 70%, transparent); border: 1px solid var(--nx-line); }
+.nx-md pre code { padding: 0; background: none; }
+.nx-md blockquote { margin: 0 0 1em; padding: 8px 14px; border-left: 3px solid var(--accent); color: var(--ink-2); background: color-mix(in srgb, var(--accent) 6%, transparent); border-radius: 0 10px 10px 0; }
+.nx-md hr { border: 0; border-top: 1px solid var(--nx-line); margin: 1.4em 0; }
+.nx-md .table-wrap { margin: 0 0 1em; } .nx-md a { color: var(--accent-2); }
+@media (max-width: 760px) {
+  .fx3d.constellation, .fx3d.ribbon { height: 340px; }
+  .nx-runs-grid, .nx-wu-grid { grid-template-columns: 1fr; }
+  .nx-md { padding: 16px; font-size: 14px; }
+}
