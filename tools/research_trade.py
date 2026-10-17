@@ -8,17 +8,21 @@ Write-ups: research/writeups/ (leakage-check, stops, targets, management, bias-f
   python tools/research_trade.py list             # ids, methods and params
   python tools/research_trade.py table [family]   # headline table of the stored runs vs the right baseline
 
-Three ways a run is computed (the method is written into each run's notes and "method" field):
-  replay  - the exact live-loop replay (tools/runlib.replay: for every session the engine sees the last 20 days, as the
-            live bot). The reference method; every number in the write-ups' headline tables comes from it.
-  exitsim - management-only settings (breakeven, profit locks, time stop, giveback, exits in front of the pool): the
-            entries cannot change (max 1 trade a day is decided before any management), so the exits are re-simulated
-            bar by bar on the baseline replay's own entries with a line-by-line copy of the engine's exit block
-            (sim_exit below). It reproduces the baseline replay trade for trade (768 of 768: exit, time, R, $).
-  screen  - one engine pass over the whole history (2021-10 .. 2026-10) instead of one 20-day window per session. It
-            matches the live-loop replay on 766 of 768 baseline trades (+14 extra trades), at ~1/30 of the CPU. Used to
-            screen settings that change entries; promising ones are confirmed with a replay. Screen runs are compared
-            with the screen baseline (run "screen_baseline"), never with the replay baseline.
+How a run is computed (the method is written into each run's notes and "method" field):
+  replay   - the exact live-loop replay (tools/runlib.replay: for every session the engine sees the last 20 days, as the
+             live bot). The reference method (leakage checks, and the recommended change: mgt_betrend300_replay).
+  exitsim  - management-only settings (breakeven, profit locks, time stop, giveback, exits in front of the pool): the
+             entries cannot change (max 1 trade a day is decided before any management), so the exits are re-simulated
+             bar by bar on the baseline replay's own entries with a line-by-line copy of the engine's exit block
+             (sim_exit below). Exact: it reproduces the baseline replay trade for trade (768 of 768: exit, time, R, $),
+             and the replay of be_at_r_trending 3 matched it on 768 of 768 trades too (`check_sim` re-checks the first).
+  sizerule - the baseline replay's trades with a size multiplier known at entry (exact: P&L, commission and slippage
+             scale with the micros); posthoc = the same with a skip rule (no replacement trade later that day: info).
+  screen   - one engine pass over the whole history (2021-10 .. 2026-10) instead of one 20-day window per session. It
+             matches the live-loop replay on 766 of 768 baseline trades (+14 extra trades), at ~1/30 of the CPU. Used to
+             screen settings that change entries (stops, targets, filters, timing, score weights). Screen runs are
+             compared with the screen baseline (run "screen_baseline"), never with the replay baseline. None of them
+             beat it in both periods, so none needed a replay.
 
 Judging (CLAUDE.md): adopt only if better in 2026 AND 2021-25 (net and PF) with 2+ trades a week in both.
 Real CME NQ1! 5m history only (data/NQ_5m.csv). Costs (commission + 1 tick slippage) included everywhere.
@@ -46,8 +50,9 @@ LEAK_NOTE = ("Leakage check (run leak_*): memory_seed and exit_learn have no eff
              "so every comparison uses the live settings as they are.")
 
 # ------------------------------------------------------------------------------------------------ experiments
-# id, family, method, params, title, question (+ optional: rule = post-hoc rule name, sim = exit-simulator params,
-# status / verdict overrides, note). Titles and questions are plain language for the owner (phone).
+# id, family, method, params, title, question (+ optional: rule = size/skip rule name in RULES, rule_raw = rule factory
+# in RULES_RAW, eqf = cold-streak filter for sizing (default live), sim = exit-simulator params, status / verdict
+# overrides, note, writeup). Titles and questions are plain language for the owner (phone).
 E = []
 
 

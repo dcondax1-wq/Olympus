@@ -8,8 +8,9 @@
 //   Big numbers in an HTML overlay: balance (counts to new values), profit vs start, status chip, one line per ring.
 //   Drag to tilt (it sways by itself when idle); tap -> opts.onPick(data).
 // setData({ balance, start: 50000, target: 53000, floor, locked, dayPnl, dayLimit: 1000, status, maxLoss: 2000 })
-//   floor = trailing max-loss level (default start - maxLoss); locked = the floor stopped trailing; status 'PASS' |
-//   'FAIL' | 'OPEN' | any word.
+//   floor = trailing max-loss level (default start - maxLoss); locked = the floor stopped trailing; status: any word —
+//   pass* (gold, shock waves), fail* / breach (dim red), stop* / halt / limit (daily limit hit: amber, low energy),
+//   open / active / live (cyan). Under 250 px tall the overlay is compact: rings, balance and status only.
 // Draw calls ~15; particles: 700 accretion sparks (260 lite) + 500 dust (200 lite).
 import { THREE, Q, theme, glowTexture, POINT_FRAG, count, rng, Hud, addBackdrop, addNebula, addDust, additive, attrs, paintBackdrop,
   clamp, lerp, smooth, outCubic, fract, num, esc, fmtUsd, pct, div, injectStyle } from './hud.js';
@@ -107,7 +108,9 @@ const CSS = `.fxr-c{position:absolute;left:0;top:0;text-align:center;white-space
 .fxr-row.warn b{color:#ff7a9a}
 .fxh-reactor.wide .fxr-stats{left:auto;right:16px;top:50%;bottom:auto;transform:translateY(-50%);width:min(250px,40%);gap:9px}
 .fxh-reactor.wide .fxr-row{font-size:12px}
-.fxh-reactor .fxh-empty{top:auto;bottom:16px;transform:translateX(-50%)}`;
+.fxh-reactor .fxh-empty{top:auto;bottom:16px;transform:translateX(-50%)}
+.fxh-reactor.compact .fxr-stats{display:none}.fxh-reactor.compact .fxr-bal{font-size:20px}.fxh-reactor.compact .fxr-cap{display:none}
+.fxh-reactor.compact .fxr-sub{font-size:10px}.fxh-reactor.compact .fxr-chip{top:7px;right:8px}`;
 
 // ------------------------------------------------------------------ the view
 export class Reactor extends Hud {
@@ -174,10 +177,12 @@ export class Reactor extends Hud {
   }
   retheme() { paintBackdrop(this.bgU); }
   relayout(w, h) {
-    const wide = w / h > 1.45 && w > 520;
-    this.ui.classList.toggle('wide', wide);
+    // compact (a short card, e.g. a Today-page mini reactor): rings + balance + chip only, the page shows the numbers
+    const compact = h < 250, wide = !compact && w / h > 1.45 && w > 520;
+    this.ui.classList.toggle('wide', wide); this.ui.classList.toggle('compact', compact);
     const sh = this.stats.isConnected ? this.stats.offsetHeight : 64, sw = this.stats.isConnected ? this.stats.offsetWidth : 240;
-    this.region = wide ? [-1, 1 - 2 * (sw + 30) / w, -1 + 2 * 12 / h, 1 - 2 * 12 / h] : [-1, 1, -1 + 2 * (sh + 14) / h, 1 - 2 * 30 / h];
+    this.region = compact ? [-1, 1, -1 + 2 * 8 / h, 1 - 2 * 8 / h] : wide ? [-1, 1 - 2 * (sw + 30) / w, -1 + 2 * 12 / h, 1 - 2 * 12 / h] : [-1, 1, -1 + 2 * (sh + 14) / h, 1 - 2 * 30 / h];
+    if (this.balTxt) { this.cenW = this.cen.offsetWidth; this.cenH = this.cen.offsetHeight; this.cenLast = null; }
     this.Lset = false;
   }
   attach(el) { super.attach(el); this.relayout(this.w, this.h); }
@@ -194,10 +199,11 @@ export class Reactor extends Hud {
     if (sig === this.sig) return;
     this.sig = sig;
     const has = Number.isFinite(bal);
-    const pass = /pass/i.test(status), fail = /fail|breach|blown|lost/i.test(status);
+    const pass = /pass/i.test(status), fail = /fail|breach|blown|lost/i.test(status), stopped = !pass && !fail && /stop|halt|pause|limit/i.test(status);
     const prog = has ? clamp((bal - start) / Math.max(1, target - start), 0, 1) : 0, neg = has ? clamp((start - bal) / Math.max(1, maxLoss), 0, 1) : 0;
     const cush = has ? clamp((bal - floor) / Math.max(1, maxLoss), 0, 1) : 0, day = clamp(-dayPnl / dayLimit, 0, 1), dayWin = clamp(dayPnl / dayLimit, 0, 1);
-    const health = !has ? 0.62 : pass ? 1 : fail ? 0 : clamp(Math.min(1, cush / 0.6) * (1 - 0.8 * clamp((day - 0.3) / 0.7, 0, 1)), 0, 1);
+    let health = !has ? 0.62 : pass ? 1 : fail ? 0 : clamp(Math.min(1, cush / 0.6) * (1 - 0.8 * clamp((day - 0.3) / 0.7, 0, 1)), 0, 1);
+    if (stopped) health = Math.min(health, 0.36);   // daily limit hit: done for the day
     this.want = { prog, neg, cush, day, dayWin, health, pass: pass ? 1 : 0, fail: fail ? 1 : 0 };
     if (Q.reduced || !this.hasData) Object.assign(this.cur, this.want, { prog: Q.reduced ? prog : 0, cush: Q.reduced ? cush : 0, day: Q.reduced ? day : 0, neg: Q.reduced ? neg : 0, dayWin: Q.reduced ? dayWin : 0 });
     // balance counter + a shock wave on a change of balance
@@ -206,7 +212,7 @@ export class Reactor extends Hud {
       this.balFrom = fromBal; this.balTo = bal; this.balAt = this.lt;
       if (this.hasData && Math.abs(bal - fromBal) >= 1 && !Q.reduced) { this.waveAt = this.lt; this.waveCol.set(bal > fromBal ? '#2ee59d' : '#ff2bd6'); }
     }
-    this.hasData = has; this.info = { start, target, maxLoss, bal, floor, dayPnl, dayLimit, status, locked, pass, fail };
+    this.hasData = has; this.info = { start, target, maxLoss, bal, floor, dayPnl, dayLimit, status, locked, pass, fail, stopped };
     this.writeHtml();
     this.empty.style.display = has ? 'none' : 'block';
     this.cen.style.visibility = has ? 'visible' : 'hidden';
@@ -217,7 +223,7 @@ export class Reactor extends Hud {
   writeHtml() {
     const I = this.info, W = this.want;
     if (!I || !Number.isFinite(I.bal)) { this.chip.innerHTML = ''; this.stats.innerHTML = ''; return; }
-    const stCol = I.pass ? '#ffd36b' : I.fail ? '#ff5a7a' : /open|live|active|running/i.test(I.status) || !I.status ? '#67e8f9' : '#c4b5fd';
+    const stCol = I.pass ? '#ffd36b' : I.fail ? '#ff5a7a' : I.stopped ? '#ffb347' : /open|live|active|running|progress/i.test(I.status) || !I.status ? '#67e8f9' : '#c4b5fd';
     this.chip.innerHTML = (I.locked ? '<em>floor locked</em>' : '') + `<b style="color:${stCol}">${esc((I.status || 'OPEN').toUpperCase().slice(0, 14))}</b>`;
     const prof = I.bal - I.start, toGo = Math.max(0, I.target - I.bal), cushion = I.bal - I.floor;
     this.subEl.innerHTML = I.pass ? '<span style="color:#ffd36b">target reached</span>'

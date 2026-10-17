@@ -869,8 +869,10 @@ def cmd_refstop():
     for a, lab in ((0.5, "gentler: $800 x square root of 20/stop"), (1.5, "steeper: $800 x (20/stop)^1.5")):
         experiment("refstop", f"risk_shape{str(a).replace('.', '')}", f"Wide-stop scaling {lab}", q, pol={"alpha": a},
                    tags=["wide-stop"], notes=f"risk = $800 x (20/stop)^{a} beyond 20 pts (live: power 1).")
-    experiment("refstop", "risk_floor200", "Never less than $200 at risk (before the trending half)", q, pol={"floor": 200.0},
-               tags=["wide-stop"], notes="Wide stops keep at least $200 at risk; the trending-regime and cold-streak halves still apply.")
+    experiment("refstop", "risk_floor400", "Never less than $400 at risk on a wide stop (before the trending and cold halves)", q,
+               pol={"floor": 400.0}, tags=["wide-stop"],
+               notes="Stops of 40-60 pts keep $400 at risk instead of $267-400 (a $200 floor would never bind: a 60-pt stop "
+                     "already gets $267); the trending-regime and cold-streak halves still apply.")
     print(table([r for r in ROWS if r[0] == "refstop"]))
 
 

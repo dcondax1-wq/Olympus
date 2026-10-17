@@ -1,22 +1,24 @@
 // Loss Lab (Lab -> Losses): every losing trade of the baseline run as a glowing point in a 3D scatter.
 //   x = MFE (the best point the trade reached, in R), y = result R (losses hang under the glowing 0R "break-even"
 //   ceiling on drop lines), z = stop size in points (small stops in front). Clusters are coloured by kind ("never
-//   worked" magenta, "gave back" amber, "wide stop" blue, "normal" violet, any other kind a neutral lavender); every
+//   worked" red-pink, "gave back" gold, "wide stop" violet, "normal" blue, any other kind a neutral lavender; or the page's own
+//   colours via colors: { kind: css }); every
 //   cluster has a nebula glow at its centre with its name and count and faint threads from its trades to it. A sheet of
 //   light at MFE 1R marks where the live rules move the stop to breakeven; a dashed line marks a full -1R stop.
 //   Legend with counts and share: tap a chip to isolate that kind (tap again for all). Tap a point -> opts.onPick(trade)
 //   (the page's trade object); mouse hover shows the tooltip; drag to orbit.
 //   First data: the trades rain down from the ceiling; new data: survivors glide, newcomers drop in, leavers fade.
-// setData({ trades: [{ r, mfe, mae, risk_pts, day, kind }] })
+// setData({ trades: [{ r, mfe, mae, risk_pts, day, kind }], colors?: { 'never worked': '#ff5a7a', ... } })
 // Draw calls ~16 whatever the trade count; particles: 1 point + 1 floor shadow per trade + 800 dust (280 lite).
 import { THREE, Q, theme, POINT_FRAG, count, Hud, addBackdrop, addNebula, addDust, Guides, ringTexture, sprite, additive, attrs, paintBackdrop,
   clamp, smooth, outCubic, outBack, fract, num, esc, hash, fmtR, pct, corners, div, injectStyle } from './hud.js';
 
+// the dashboards' loss-kind colours (tools/web_public/index.html LOSS_K), so the page text and the 3D agree
 const KIND = {
-  'never worked': { col: '#ff2bd6', css: '#ff6bd5' },
-  'gave back': { col: '#ff9b3d', css: '#ffb36b' },
-  'wide stop': { col: '#4f8bff', css: '#86aeff' },
-  normal: { col: '#a78bfa', css: '#c4b5fd' },
+  'never worked': { col: '#ff4f7a', css: '#ff5a7a' },
+  'gave back': { col: '#f2c35b', css: '#f2c35b' },
+  'wide stop': { col: '#b18cff', css: '#b18cff' },
+  normal: { col: '#6d9bff', css: '#6d9bff' },
 };
 const OTHER = { col: '#9aa0c8', css: '#c3c6e6' };
 const FLY = 1, MOVE = 2, SHRINK = 4;
@@ -163,14 +165,14 @@ export class Losses extends Hud {
   setData(d, opts) {
     if (opts && typeof opts.onPick === 'function' && opts.onPick !== this._pickFn) this._onRow = opts.onPick;
     const list = d && Array.isArray(d.trades) ? d.trades : Array.isArray(d) ? d : [];
-    const items = [], seen = new Set(), kinds = new Map();
-    let sig = list.length + ':';
+    const items = [], seen = new Set(), kinds = new Map(), over = d && d.colors && typeof d.colors === 'object' ? d.colors : {};
+    let sig = list.length + ':' + JSON.stringify(over) + ':';
     for (let i = 0; i < list.length; i++) {
       const t = list[i]; if (!t || typeof t !== 'object') continue;
       const r = num(t.r), mfe = num(t.mfe, 0), stop = num(t.risk_pts, NaN), kind = String(t.kind ?? 'normal') || 'normal';
       if (!Number.isFinite(r)) continue;
       let key = String(t.day ?? '') + '|' + r + '|' + mfe + '|' + stop; if (seen.has(key)) key += '#' + i; seen.add(key);
-      if (!kinds.has(kind)) kinds.set(kind, { name: kind, n: 0, ...(KIND[kind] || OTHER), sx: 0, sy: 0, sz: 0 });
+      if (!kinds.has(kind)) kinds.set(kind, { name: kind, n: 0, ...(KIND[kind] || OTHER), ...(over[kind] ? { col: over[kind], css: over[kind] } : {}), sx: 0, sy: 0, sz: 0 });
       kinds.get(kind).n++;
       items.push({ key, t, r, mfe: Math.max(0, mfe), stop, kind, seed: hash(key) });
       sig += key + '/' + kind + ',';

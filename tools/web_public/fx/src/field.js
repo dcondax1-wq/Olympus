@@ -18,14 +18,14 @@ void main(){
   float th = aT + uRot * w;
   vec3 p = vec3(cos(th) * aR, aY, sin(th) * aR);
   vec2 dq = p.xz - uGRip.xy; float dd = length(dq);
-  float rp = uGRip.w * exp(-pow((dd - uGRip.z * 5.5) * 1.1, 2.0)) * clamp(1.0 - uGRip.z / 2.6, 0.0, 1.0);
-  p.xz += dq / max(dd, 0.001) * rp * 0.45; p.y += rp * 0.2;
+  float rp = uGRip.w * exp(-pow((dd - uGRip.z * 5.5) * 0.8, 2.0)) * clamp(1.0 - uGRip.z / 2.6, 0.0, 1.0);
+  p.xz += dq / max(dd, 0.001) * rp * 0.6; p.y += rp * 0.3;
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   float tw = 0.72 + 0.28 * sin(uTime * (0.9 + aSeed * 2.2) + aSeed * 40.0);
   float pr = exp(-pow((aR - uPulseR) * 1.3, 2.0)) * uPulse;
-  gl_PointSize = clamp(aS * uPix * tw * (1.0 + pr + rp * 1.3) / -mv.z, 0.0, 48.0);
+  gl_PointSize = clamp(aS * uPix * tw * (1.0 + pr + rp * 1.8) / -mv.z, 0.0, 48.0);
   gl_Position = projectionMatrix * mv;
-  vColor = mix(mix(aCol, uScene * dot(aCol, vec3(0.45)) * 2.2, uSceneK), uTint, uTintK) * uBright * (1.0 + pr * 1.6 + rp * 2.2);
+  vColor = mix(mix(aCol, uScene * dot(aCol, vec3(0.45)) * 2.2, uSceneK), uTint, uTintK) * uBright * (1.0 + pr * 1.6 + rp * 3.5);
   vAlpha = smoothstep(0.6, 3.0, -mv.z) * (0.5 + 0.5 * tw);
 }`;
 const DUST_V = `attribute vec3 aP; attribute float aS; attribute float aSeed;
@@ -169,6 +169,9 @@ export class Field extends View {
     this.bU = { ...this.u, uAge: { value: 99 }, uO: { value: new THREE.Vector3() }, uCol: { value: theme.cyan.clone() } };
     this.burst = new THREE.Points(bg, new THREE.ShaderMaterial({ uniforms: this.bU, vertexShader: BURST_V, fragmentShader: POINT_FRAG, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
     this.burst.visible = false; this.gal.add(this.burst);
+    // tap ripple in the disc: a ring of light spreading through the galaxy plane
+    this.ripRing = new THREE.Mesh(new THREE.RingGeometry(0.93, 1, 96, 1), new THREE.MeshBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    this.ripRing.rotation.x = -Math.PI / 2; this.ripRing.visible = false; this.gal.add(this.ripRing);
     this.flare = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: new THREE.Color('#bff6ff'), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
     this.gal.add(this.flare);
 
@@ -289,6 +292,10 @@ export class Field extends View {
     // ripples age out
     for (const r of this.fU.uRip.value) if (r.w > 0) { r.z += dt; if (r.z > 2.3) r.w = 0; }
     const gr = this.gU.uGRip.value; if (gr.w > 0) { gr.z += dt; if (gr.z > 2.7) gr.w = 0; }
+    if (gr.w > 0) {
+      const a = gr.z; this.ripRing.visible = true; this.ripRing.position.set(gr.x, 0.02, gr.y); this.ripRing.scale.setScalar(0.3 + a * 5.5);
+      this.ripRing.material.color.copy(this.scn.ring).lerp(this.scn.core, 0.35); this.ripRing.material.opacity = Math.max(0, 1 - a / 2.4) * 0.75;
+    } else this.ripRing.visible = false;
     // pulse ring on new data
     this.pulseAge += dt; this.gU.uPulse.value = Math.max(0, 1 - this.pulseAge / 2.2); this.gU.uPulseR.value = this.pulseAge * 7;
     // comet sweeping the liquidity ring

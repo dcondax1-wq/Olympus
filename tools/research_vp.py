@@ -193,6 +193,13 @@ def trade_features(B: Bars, t: dict) -> dict | None:
     P = B.prof[prior[0]]
     F.update({"poc": P["poc"], "vah": P["vah"], "val": P["val"]})
     edge_against = P["val"] if d == 1 else P["vah"]                          # the value edge the sweep ran through
+    a0 = B.starts[k]
+    m_rth = np.flatnonzero(B.rth[a0:i + 1])
+    if len(m_rth):
+        o_rth = float(B.o[a0 + m_rth[0]])
+        for va in (0.6, 0.7, 0.8):
+            x = value_area(P["lo"], P["hist"], va=va)
+            F[f"open_in_{int(va * 100)}"] = int(x["val"] <= o_rth <= x["vah"])
     F["sweep_out_value"] = int((edge_against - ext) * d > 0)                 # long: extreme below VAL
     F["in_prior_value"] = int(P["val"] <= c <= P["vah"])
     F["fail_auction"] = int(F["sweep_out_value"] and (c - edge_against) * d > 0)   # looked below value and closed back in
@@ -524,8 +531,8 @@ def make_rule(fn, FE, good, kind):
         strong = f is good
         if kind == "half":
             return 1.0 if strong else 0.5
-        if kind == "up":
-            return 1.25 if strong else 1.0
+        if kind.startswith("up"):
+            return (1.25 if kind == "up" else int(kind[2:]) / 100) if strong else 1.0
         if kind == "skip":
             return 1.0 if strong else 0.0
         if kind == "cold":
@@ -553,6 +560,8 @@ def status_of(S, base, kind):
 
 def title_of(name, good, kind):
     strong, weak = SIDES[name] if good else SIDES[name][::-1]
+    if kind.startswith("up") and kind != "up":
+        return f"{int(kind[2:]) / 100:g}x size when {strong}"
     return {"half": f"Half size when {weak}", "up": f"1.25x size when {strong}", "skip": f"Skip when {weak}",
             "cold": f"Cold streak: full size again when {strong}"}[kind]
 
@@ -572,25 +581,62 @@ def verdict_of(S, base, st):
     return f"{head} {one(a, A, '2026')}; {one(b, Bs, '2021-25')}."
 
 
-def run_variants(raw, FE, base, plan, save=False, tag="posthoc"):
-    """plan: list of (id, idea name, fn, good, kind, question). Returns {id: (status, S)}."""
+def run_variants(raw, FE, base, plan):
+    """plan: list of (id, idea name, fn, good, kind, question). Returns {id: record} (sized trades, scores, status)."""
     out = {}
     for vid, name, fn, good, kind, question in plan:
         T = rl.size(raw, rule=make_rule(fn, FE, good, kind))
         S = rl.score(T, raw)
         st = status_of(S, base, kind)
-        out[vid] = (st, S)
+        out[vid] = {"name": name, "good": good, "kind": kind, "question": question, "T": T, "S": S, "status": st,
+                    "verdict": verdict_of(S, base, st)}
         print(f"{vid:<26} {st:<15} 2026 {fmt(S['spans']['2026'])} | 2021-25 {fmt(S['spans']['2021-25'])}", flush=True)
-        if save:
-            fam = "vwap" if name.startswith("vwap") else "vp"
-            rl.save(vid, title_of(name, good, kind), "filters", question,
-                    sizing={"idea": name, "strong_side": "present" if good else "absent", "kind": kind, "rule": KINDS[kind],
-                            "on_top_of": "live sizing incl. the cold-streak half size"},
-                    trades=T, scored=S, status=st, verdict=verdict_of(S, base, st),
-                    notes=("Post-hoc on the exact live-loop replay (768 baseline trades, costs included); only the size changes. "
-                           "Features from data/NQ_5m.csv at the signal close (no look-ahead). Strong side chosen on 2021-25 only. "
-                           "Reproduce: python tools/research_vp.py all"), writeup=WRITEUP, tags=[tag, fam])
     return out
+
+
+def by_year(S, base):
+    return {y: S["years"][y]["net"] - base["years"][y]["net"] for y in ("2022", "2023", "2024", "2025", "2026")}
+
+
+def placebo(raw, base, share, m=1.25, n=200, seed=3):
+    """How often does a RANDOM subset of the same share of trades, sized m, beat the baseline in both periods?"""
+    rng = np.random.default_rng(seed)
+    A0, B0 = base["spans"]["2026"], base["spans"]["2021-25"]
+    wins = 0
+    for _ in range(n):
+        pick = {int(t["entry_t"]) for t in raw["trades"] if rng.random() < share}
+        S = rl.score(rl.size(raw, rule=lambda t, ctx: m if int(t["entry_t"]) in pick else 1.0), raw)
+        a, b = S["spans"]["2026"], S["spans"]["2021-25"]
+        wins += a["net"] > A0["net"] and a["pf"] > A0["pf"] and b["net"] > B0["net"] and b["pf"] > B0["pf"]
+    return wins, n
+
+
+def gate(vid, R, base, neighbours):
+    """Mandatory robustness checks for an adopt-candidate: every neighbour must also beat the baseline in both periods,
+    and at least 3 of the 4 full years 2022-25 must improve. Returns (ok, reasons)."""
+    why = []
+    bad = [v for v in neighbours if v in R and R[v]["status"] != "adopt-candidate"]
+    if bad:
+        why.append("neighbours fail (" + ", ".join(f"{v}: 2026 PF {R[v]['S']['spans']['2026']['pf']}, 2021-25 PF "
+                                                   f"{R[v]['S']['spans']['2021-25']['pf']}" for v in bad) + ")")
+    yrs = by_year(R[vid]["S"], base)
+    up = sum(1 for y in ("2022", "2023", "2024", "2025") if yrs[y] > 0)
+    if up < 3:
+        why.append(f"only {up} of 4 full years improve (" + ", ".join(f"{y} {v:+,}" for y, v in yrs.items()) + ")")
+    return not why, why
+
+
+def save_all(R, base, tag="posthoc"):
+    for vid, r in R.items():
+        fam = "vwap" if r["name"].startswith("vwap") else "vp"
+        rl.save(vid, title_of(r["name"], r["good"], r["kind"]), "filters", r["question"],
+                sizing={"idea": r["name"], "strong_side": "present" if r["good"] else "absent", "kind": r["kind"],
+                        "rule": KINDS.get(r["kind"], f"x{int(r['kind'][2:]) / 100:g} on the strong side"),
+                        "on_top_of": "live sizing incl. the cold-streak half size"},
+                trades=r["T"], scored=r["S"], status=r["status"], verdict=r["verdict"],
+                notes=("Post-hoc on the exact live-loop replay (768 baseline trades, costs included); only the size changes. "
+                       "Features from data/NQ_5m.csv at the signal close (no look-ahead). Strong side chosen on 2021-25 only "
+                       "(except the re-checks). Reproduce: python tools/research_vp.py all"), writeup=WRITEUP, tags=[tag, fam])
 
 
 def fmt(s):
@@ -628,7 +674,7 @@ if __name__ == "__main__":
                 vid = f"{name}_{kind}" if not (name == "vp_open_in" and good) else f"vp_balance_{kind}"
                 plan.append((vid, name, IDEAS[name][2], good, kind, why + ". " + IDEAS[name][1] + "?"))
         print("\n-- sized variants (a) half / up, (b) skip check, (c) cold-streak interplay; all on top of the live sizing")
-        R1 = run_variants(raw, FE, base, plan, save=(cmd == "all"))
+        R = run_variants(raw, FE, base, plan)
         # neighbours of the threshold ideas that were chosen, sized the same way as their best-looking 2021-25 kind
         plan = []
         for name, good in sel.items():
@@ -638,4 +684,32 @@ if __name__ == "__main__":
                 plan.append((f"{vid}_half", name, neighbour_fn(name, x), good, "half",
                              f"Neighbour check of {name}: same idea at threshold {x}. " + IDEAS[name][1] + "?"))
         print("\n-- neighbour checks (half size on the weak side)")
-        R2 = run_variants(raw, FE, base, plan, save=(cmd == "all"))
+        R.update(run_variants(raw, FE, base, plan))
+        # neighbours of the AMT balance idea: own tick profile with 60 / 70 / 80% value areas, and other multipliers
+        why = "Neighbour check of the AMT balance idea"
+        plan = [(f"vp_balance_va{va}_up", "vp_open_in", (lambda t, F, va=va: F.get(f"open_in_{va}")), True, "up",
+                 f"{why}: open inside a {va}% value area from our own tick profile, 1.25x size?") for va in (60, 70, 80)]
+        plan += [(f"vp_balance_{k}", "vp_open_in", IDEAS["vp_open_in"][2], True, k, f"{why}: other size multiplier ({k})?")
+                 for k in ("up110", "up150")]
+        print("\n-- neighbour checks of the AMT balance idea")
+        R.update(run_variants(raw, FE, base, plan))
+        # robustness gate for every adopt-candidate
+        NB = {"vp_balance_up": ["vp_balance_va60_up", "vp_balance_va70_up", "vp_balance_va80_up", "vp_balance_up110",
+                                "vp_balance_up150"]}
+        for vid, r in R.items():
+            if r["status"] != "adopt-candidate":
+                continue
+            ok, reasons = gate(vid, R, base, NB.get(vid, []))
+            share = sum(1 for t in raw["trades"] if flag(IDEAS[r["name"]][2], t, FE) is r["good"]) / len(raw["trades"])
+            w, n = placebo(raw, base, share)
+            print(f"\ngate {vid}: {'PASS' if ok else 'FAIL'} {reasons}; placebo: random {share:.0%} subsets sized x1.25 pass "
+                  f"the both-periods rule {w}/{n}")
+            if not ok:
+                r["status"] = "rejected"
+                r["verdict"] = ("Beats the baseline in both periods by a hair, but fails the robustness checks: "
+                                + "; ".join(reasons) + f"; random subsets of the same size pass {w}/{n} times. " + r["verdict"])
+        if cmd == "all":
+            save_all(R, base)
+            print(f"\nsaved {len(R)} runs:", ", ".join(R))
+        counts = collections.Counter(r["status"] for r in R.values())
+        print("statuses:", dict(counts))

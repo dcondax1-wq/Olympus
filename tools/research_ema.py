@@ -14,6 +14,8 @@ check, as a skip, and stored as a run (runlib.save, research/runs/ema_*.json). W
   python tools/research_ema.py explore    # univariate scan of every MA fact on 2021-25 ONLY (the selection table)
   python tools/research_ema.py oos        # the same scan on 2026 (only looked at after the selection was fixed)
   python tools/research_ema.py runs       # save every ema_* run
+  python tools/research_ema.py years [id] # year-by-year table of a rule (default ema_knife_half)
+  python tools/research_ema.py noise      # placebo: half size on 80 random 2021-25 setups, 200 draws (slow, ~3 min)
   python tools/research_ema.py summary    # headline numbers of every ema_* run vs the baseline
 
 Selection protocol (CLAUDE.md, anti-overfitting): rules and parameters are chosen on 2021-25 only, then 2026 is checked
@@ -523,6 +525,24 @@ def cmd_years(spec_id="ema_knife_half"):
                      "their live $"]))
 
 
+def cmd_noise(draws=200, n_hit=80, seed=7):
+    """Placebo: how much does 'half size on n_hit random 2021-25 setups' improve 2021-25 by chance? (main rule: +$4,629)"""
+    raw, T0, B, F = base()
+    rng = np.random.default_rng(seed)
+    ids = [t["entry_t"] for t in raw["trades"] if t["day"] <= "2025-12-31"]
+    gain = []
+    for _ in range(draws):
+        m = set(rng.choice(ids, size=n_hit, replace=False).tolist())
+        S = rl.score(rl.size(raw, rule=lambda t, c, m=m: 0.5 if t["entry_t"] in m else 1.0), raw)
+        gain.append(S["spans"]["2021-25"]["net"] - B["spans"]["2021-25"]["net"])
+    g = np.array(gain)
+    spec = RUNS[0]
+    S = rl.score(rl.size(raw, rule=mult_rule(spec[4], spec[5], spec[6])), raw)
+    real = S["spans"]["2021-25"]["net"] - B["spans"]["2021-25"]["net"]
+    print(f"noise check: half size on {n_hit} random 2021-25 setups, {draws} draws: mean {_money(g.mean())}, 95th percentile "
+          f"{_money(np.percentile(g, 95))}, best {_money(g.max())}; the knife rule {_money(real)} beats {100 * (g < real).mean():.1f}% of them")
+
+
 def cmd_summary():
     B = rl.load("baseline")
     rows = []
@@ -554,13 +574,18 @@ if __name__ == "__main__":
         cmd_runs()
     elif cmd == "years":
         cmd_years(sys.argv[2] if len(sys.argv) > 2 else "ema_knife_half")
+    elif cmd == "noise":
+        cmd_noise()
     elif cmd == "summary":
         cmd_summary()
     elif cmd == "all":
         cmd_check()
         scan(SEL)
         cmd_runs()
-        cmd_years()
+        cmd_years("ema_knife_half")
+        cmd_years("ema_knife_rma_half")
+        scan(OOS, subsplit=False)
+        cmd_noise()
         cmd_summary()
     elif cmd == "feat":
         raw, T, S, F = base()

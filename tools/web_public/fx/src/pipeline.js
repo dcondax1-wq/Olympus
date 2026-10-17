@@ -5,12 +5,15 @@
 //   to idle fades the lights out from the far end. Idle (idx -1): every node dim, a slow drift along the whole track.
 //   Calmer and dimmer outside the killzone; grey-violet and slow when the bot is not live.
 //   Tap a node -> opts.onPick({ step, index, state: 'done' | 'current' | 'next' }); drag sideways to turn it a little.
-// setData({ steps: ['Sweep','IFVG','Order','Trade','Done'], idx, live, killzone })   idx = current step, -1 = idle
+// setData({ steps: ['Sweep','IFVG','Order','Trade','Done'], idx, live, killzone, desc? })   idx = current step, -1 = idle;
+//   desc = one short line per step (defaults for the five standard steps). A card 230 px or taller also gets a hero
+//   readout of the current step above the track.
 // Draw calls ~12; particles: 140 flow + 40 charge sparks (60 + 20 lite) + 260 dust (110 lite).
 import { THREE, Q, glowTexture, POINT_FRAG, count, rng, Hud, addBackdrop, addNebula, addDust, additive, attrs, paintBackdrop, ringTexture, sprite,
   clamp, lerp, smooth, outCubic, fract, num, esc, corners, div, injectStyle } from './hud.js';
 
 const STEPS = ['Sweep', 'IFVG', 'Order', 'Trade', 'Done'];
+const DESC = { sweep: 'a liquidity pool was run', ifvg: 'IFVG / CISD trigger in a killzone', order: 'limit order working', trade: 'managing the trade', done: 'one trade a day: finished' };
 const COLS = ['#ff4fd8', '#a855f7', '#22d3ee', '#2ee59d', '#ffd36b'];
 const YN = 0.5, M = 160;
 const _v = new THREE.Vector3(), _c = new THREE.Color(), _c2 = new THREE.Color(), _m = new THREE.Matrix4(), GREY = new THREE.Color('#8a84b8');
@@ -85,7 +88,11 @@ const CSS = `.fxh-pipeline .fxh-l.st{font-size:10px;font-weight:700;letter-spaci
 .fxh-pipeline .fxh-l.st.cur{font-size:11px;font-weight:800;text-shadow:0 0 10px currentColor,0 0 4px #07080c}
 .fxh-pipeline .fxh-l.st.next{color:rgba(188,192,236,.42)!important}
 .fxp-st{position:absolute;left:10px;top:9px;display:flex;gap:7px;align-items:center;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
-.fxp-st i{width:7px;height:7px;border-radius:50%}`;
+.fxp-st i{width:7px;height:7px;border-radius:50%}
+.fxp-hero{position:absolute;left:10px;right:10px;top:30px;text-align:center;display:none;line-height:1}
+.fxh-pipeline.tall .fxp-hero{display:block}
+.fxp-hero b{display:block;font-size:24px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;text-shadow:0 0 18px currentColor,0 0 5px #07080c;transition:color .6s}
+.fxp-hero span{display:block;margin-top:7px;font-size:11px;font-weight:600;letter-spacing:.02em;color:rgba(214,218,250,.66);text-shadow:0 0 6px #07080c}`;
 
 // ------------------------------------------------------------------ the view
 export class Pipeline extends Hud {
@@ -100,6 +107,7 @@ export class Pipeline extends Hud {
     this.FN = count(140, 60); this.CN = count(40, 20);
     this.build();
     this.status = div('fxp-st', this.ui);
+    this.hero = div('fxp-hero', this.ui, '<b></b><span></span>'); this.tall = false;
   }
   build() {
     const S = this.scene, u = this.u, R = rng(13);
@@ -126,8 +134,13 @@ export class Pipeline extends Hud {
   }
   retheme() { paintBackdrop(this.bgU); }
   relayout(w, h) {
-    this.region = [-1, 1, -1 + 2 * 6 / h, 1 - 2 * 24 / h]; this.nodeK = clamp(1.5 - w / 1400, 1, 1.35);
-    const W = clamp(5.2 * Math.pow(w / h / 2, 0.75), 4.6, 11); if (Math.abs(W - this.Wt) > 0.1 && this.steps.length) { this.Wt = W; this.rebuild(); } else this.Wt = W; }
+    const tall = h >= 230; this.ui.classList.toggle('tall', tall);
+    const top = tall ? 30 + (this.hero.offsetHeight || 44) + 10 : 24;
+    this.region = [-1, 1, -1 + 2 * 6 / h, 1 - 2 * top / h]; this.nodeK = clamp(1.5 - w / 1400, 1, 1.35);
+    const W = clamp(5.2 * Math.pow(w / Math.min(h, tall ? h * 0.7 : h) / 2, 0.75), 4.6, 11), redo = tall !== this.tall || Math.abs(W - this.Wt) > 0.1;
+    this.tall = tall; this.Wt = W;
+    if (redo && this.steps.length) this.rebuild();
+  }
 
   // ---------------------------------------------------------------- data
   setData(d, opts) {
@@ -136,7 +149,8 @@ export class Pipeline extends Hud {
     const steps = Array.isArray(src.steps) && src.steps.length ? src.steps.slice(0, 8).map((s) => String(s ?? '')) : STEPS;
     const n = steps.length, i0 = num(src.idx, -1), idx = Number.isFinite(i0) ? clamp(Math.round(i0), -1, n - 1) : -1;
     const live = src.live == null ? true : !!src.live, kz = !!src.killzone;
-    const sig = steps.join('|') + '#' + idx + '#' + live + '#' + kz;
+    this.desc = steps.map((s, i) => String((Array.isArray(src.desc) ? src.desc[i] : null) ?? DESC[s.toLowerCase()] ?? ''));
+    const sig = steps.join('|') + '#' + idx + '#' + live + '#' + kz + '#' + this.desc.join('|');
     if (sig === this.sig) return;
     const first = this.sig == null; this.sig = sig;
     const shape = steps.join('|') !== this.steps.join('|');
@@ -156,8 +170,8 @@ export class Pipeline extends Hud {
   }
   nodeU(i) { return (i + 1) / (this.steps.length + 1); }
   rebuild() {
-    const n = this.steps.length, W = this.Wt, bow = Math.min(1.3, W * 0.16);
-    this.nodes = this.steps.map((s, i) => { const t = n > 1 ? i / (n - 1) : 0.5, u2 = (2 * t - 1); return new THREE.Vector3((t - 0.5) * W, YN, bow * (1 - u2 * u2) - bow * 0.5); });
+    const n = this.steps.length, W = this.Wt, bow = Math.min(this.tall ? 1.9 : 1.3, W * (this.tall ? 0.24 : 0.16)), yn = this.tall ? YN * 1.4 : YN;
+    this.nodes = this.steps.map((s, i) => { const t = n > 1 ? i / (n - 1) : 0.5, u2 = (2 * t - 1); return new THREE.Vector3((t - 0.5) * W, yn, bow * (1 - u2 * u2) - bow * 0.5); });
     const lead = W / Math.max(1, n - 1) * 0.75;
     const ctrl = [new THREE.Vector3(this.nodes[0].x - lead, 0, this.nodes[0].z - bow * 0.35), ...this.nodes.map((p) => new THREE.Vector3(p.x, 0, p.z)), new THREE.Vector3(this.nodes[n - 1].x + lead, 0, this.nodes[n - 1].z - bow * 0.35)];
     const curve = new THREE.CatmullRomCurve3(ctrl, false, 'centripetal');
@@ -176,8 +190,8 @@ export class Pipeline extends Hud {
     this.floor.scale.set(W + 4, 4.5, 1); this.fU.uHalf.value.set(W / 2 + 2, 2.25);
     this.pads.geometry.instanceCount = n; this.nodePts.geometry.setDrawRange(0, n); this.pillars.geometry.setDrawRange(0, n * 2);
     const zs = this.nodes.map((p) => p.z), z0 = Math.min(...zs), z1 = Math.max(...zs);
-    this.anchors = new Float32Array(corners([], -W / 2 - 0.55, W / 2 + 0.55, -0.32, YN + 0.36, z0 - 0.3, z1 + 0.45));
-    this.T.set(0, YN * 0.45, (z0 + z1) / 2);
+    this.anchors = new Float32Array(corners([], -W / 2 - 0.55, W / 2 + 0.55, -0.32, yn + 0.36, z0 - 0.3, z1 + 0.45));
+    this.T.set(0, yn * 0.45, (z0 + z1) / 2);
     const defs = this.steps.map((s, i) => ({ text: s, p: new THREE.Vector3(this.nodes[i].x, 0, this.nodes[i].z + 0.08), ay: 0, dy: 6, cls: 'st', i }));
     this.setLabels(defs); this.styleLabels();
   }
@@ -196,6 +210,10 @@ export class Pipeline extends Hud {
     const [c, t] = !this.live ? ['#8a84b8', 'bot offline'] : this.kz ? ['#4ef0b0', 'killzone · live'] : ['#a78bfa', 'outside killzone'];
     const st = this.idx < 0 ? 'waiting for a sweep' : this.idx >= this.steps.length - 1 ? 'setup complete' : 'step ' + (this.idx + 1) + ' of ' + this.steps.length;
     this.status.innerHTML = `<i style="background:${c};box-shadow:0 0 8px ${c}"></i><span style="color:${c}">${t}</span><span style="color:rgba(188,192,236,.5)">· ${esc(st)}</span>`;
+    const n = this.steps.length, i = this.idx, hc = i >= 0 ? '#' + stepColor(i, n, _c).lerp(GREY, 1 - this.satTo).getHexString() : '#8a84b8';
+    this.hero.querySelector('b').textContent = i >= 0 ? this.steps[i] : 'Waiting';
+    this.hero.querySelector('b').style.color = hc;
+    this.hero.querySelector('span').textContent = i >= 0 ? (this.desc[i] || 'step ' + (i + 1) + ' of ' + n) : !this.live ? 'the bot is not running' : this.kz ? 'watching for a liquidity sweep' : 'setups only trigger inside the killzones';
     if (this.labels.length) this.styleLabels();
   }
 

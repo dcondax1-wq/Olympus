@@ -4,7 +4,7 @@ family: bias
 date: 2026-10-17
 status: finding
 summary: Two simple biases separate trades in both periods: fading yesterday's candle and trading on the side of last week's midpoint. As filters or score points they cut trades below 2 a week and the replacement trades lose; as a size-down (70% size when both disagree) they raise PF in both periods (2026 3.48 → 3.62, 2021-25 1.09 → 1.12) and cut 2021-25 drawdown, for −$0.75k in 2026. No filter or timing change beats today's rules.
-runs: baseline, screen_baseline, bias_pdc_half, bias_pwmid_half, bias_any_half, bias_both_half, bias_both_07, bias_both_033, bias_pdc_07, bias_pwmid_07, bias_pdc_skip, bias_pwmid_skip, bias_wkopen_skip, bias_smt_only, bias_pdc1, bias_pwmid1, bias_counter_cap3, bias_w_htf0, bias_w_htf2, bias_w_pd0, bias_w_m15_0, bias_w_dol1, bias_w_dolm1, flt_regime_skip, flt_regime_off, flt_range0, flt_range12, flt_range20, flt_vixmax20, flt_vixmax25, flt_vixmax30, flt_vixmin13, flt_news_off, flt_news_wide, flt_fomc_pm_on, flt_newsday_skip, flt_arm_minor_off, flt_min_score0, flt_min_score2, flt_long_only, flt_short_only, tim_am_only, tim_pm_only, tim_ext, tim_am_late, tim_armexp30, tim_armexp45, tim_armexp90, tim_armstart420, tim_armstart540, tim_armstart570
+runs: baseline, screen_baseline, flt_vix20_half, flt_vix20_07, bias_pdc_half, bias_pwmid_half, bias_any_half, bias_both_half, bias_both_07, bias_both_033, bias_pdc_07, bias_pwmid_07, bias_pdc_skip, bias_pwmid_skip, bias_wkopen_skip, bias_smt_only, bias_pdc1, bias_pwmid1, bias_counter_cap3, bias_w_htf0, bias_w_htf2, bias_w_pd0, bias_w_m15_0, bias_w_dol1, bias_w_dolm1, flt_regime_skip, flt_regime_off, flt_range0, flt_range12, flt_range20, flt_vixmax20, flt_vixmax25, flt_vixmax30, flt_vixmin13, flt_news_off, flt_news_wide, flt_fomc_pm_on, flt_newsday_skip, flt_arm_minor_off, flt_min_score0, flt_min_score2, flt_long_only, flt_short_only, tim_am_only, tim_pm_only, tim_ext, tim_am_late, tim_armexp30, tim_armexp45, tim_armexp90, tim_armstart420, tim_armstart540, tim_armstart570
 ---
 
 ## What was tested
@@ -91,7 +91,32 @@ What it means:
 | Morning killzone only | 49 | 1.19 | 2.65 | +$10.1k | −$2.5k | 12.8/0.0 | 528 | 2.43 | 0.95 | −$3.0k | −$10.5k | 5.3/5.6 | 4/14 | rejected |
 | Afternoon killzone only | 51 | 1.24 | 3.51 | +$6.8k | −$1.4k | 10.7/0.0 | 348 | 1.60 | 0.97 | −$1.4k | −$10.0k | 1.6/2.9 | 3/12 | rejected |
 
-<!-- REMAINING-SCREENS -->
+| Ignore the 1H trend | 95 | 2.31 | 2.88 | +$15.1k | −$2.5k | 26.7/0.0 | 760 | 3.50 | 1.01 | +$1.1k | −$14.1k | 9.3/10.6 | 8/20 | rejected |
+| 1H trend counts double | 48 | 1.17 | 2.65 | +$6.8k | −$2.1k | 11.2/0.0 | 405 | 1.86 | 1.08 | +$3.6k | −$6.0k | 3.9/0.6 | 3/8 | rejected |
+| Ignore discount/premium | 47 | 1.14 | 3.22 | +$7.5k | −$2.0k | 11.2/0.0 | 364 | 1.67 | 1.02 | +$0.8k | −$7.8k | 3.4/0.4 | 2/10 | rejected |
+| No penalty for a late 15m entry | 91 | 2.21 | 2.75 | +$15.4k | −$2.8k | 19.8/0.0 | 715 | 3.29 | 1.15 | +$11.8k | −$11.5k | 8.3/9.5 | 8/17 | rejected |
+| Point for trading toward the nearest major pool | 97 | 2.35 | 3.01 | +$18.5k | −$2.7k | 29.4/0.0 | 758 | 3.49 | 1.13 | +$10.9k | −$14.1k | 9.1/9.5 | 10/18 | rejected |
+| Penalty for trading toward it | 60 | 1.46 | 2.94 | +$10.4k | −$2.5k | 21.4/0.0 | 524 | 2.41 | 1.06 | +$3.3k | −$7.3k | 8.9/7.5 | 6/15 | rejected |
+| Confluence score 0 is enough | 103 | 2.50 | 2.74 | +$17.6k | −$2.8k | 26.2/0.0 | 789 | 3.63 | 1.08 | +$6.8k | −$13.4k | 8.2/9.3 | 9/20 | rejected |
+| Confluence score 2 needed | 36 | 0.87 | 2.21 | +$3.0k | −$1.6k | 0.0/0.0 | 319 | 1.47 | 1.03 | +$1.2k | −$6.7k | 3.4/0.6 | 4/7 | rejected |
+| Only major pools arm a setup | 52 | 1.26 | 3.87 | +$11.0k | −$1.9k | 24.1/0.0 | 510 | 2.35 | 1.14 | +$8.3k | −$11.2k | 7.8/2.2 | 8/16 | rejected |
+| Skip VIX above 20 | 77 | 1.87 | 3.59 | +$19.0k | −$2.6k | 30.5/0.0 | 475 | 2.18 | 1.26 | +$13.2k | −$6.0k | 8.5/5.3 | 7/11 | rejected |
+| Skip VIX above 30 | 88 | 2.14 | 3.39 | +$19.6k | −$2.9k | 30.5/0.0 | 659 | 3.03 | 1.10 | +$7.8k | −$12.0k | 9.6/9.5 | 8/18 | rejected |
+| Skip VIX below 13 | 89 | 2.16 | 3.45 | +$19.9k | −$2.7k | 30.5/0.0 | 646 | 2.97 | 1.12 | +$8.5k | −$11.6k | 9.4/9.4 | 7/14 | rejected |
+| No news blackout | 89 | 2.16 | 3.45 | +$19.9k | −$2.7k | 30.5/0.0 | 693 | 3.19 | 1.11 | +$8.7k | −$11.6k | 9.5/9.5 | 7/18 | rejected |
+| Wider news blackout (30 before, 60 after) | 89 | 2.16 | 3.45 | +$19.9k | −$2.7k | 30.5/0.0 | 688 | 3.16 | 1.10 | +$7.8k | −$11.6k | 9.0/10.3 | 7/18 | rejected |
+| Trade FOMC afternoons | 89 | 2.16 | 3.45 | +$19.9k | −$2.7k | 30.5/0.0 | 691 | 3.18 | 1.11 | +$8.8k | −$11.6k | 9.5/9.5 | 7/18 | no effect |
+| Skip CPI, jobs-report and FOMC days | 82 | 1.99 | 3.88 | +$19.0k | −$2.5k | 30.5/0.0 | 645 | 2.97 | 1.00 | +$0.3k | −$13.7k | 8.0/9.1 | 6/19 | rejected |
+| Longs only | 41 | 1.00 | 2.59 | +$5.5k | −$1.2k | 10.7/0.0 | 372 | 1.71 | 1.07 | +$2.8k | −$11.1k | 5.5/1.6 | 4/9 | info |
+| Shorts only | 55 | 1.33 | 3.26 | +$10.9k | −$2.7k | 28.9/0.0 | 479 | 2.20 | 0.94 | −$3.2k | −$10.6k | 5.2/5.4 | 5/15 | info |
+| Wider windows (09:30-12:00, 13:00-15:30) | 100 | 2.43 | 2.94 | +$19.1k | −$2.4k | 30.5/0.0 | 753 | 3.46 | 1.00 | −$0.2k | −$12.3k | 6.8/12.4 | 7/21 | rejected |
+| Morning window from 10:00 | 71 | 1.72 | 3.90 | +$14.7k | −$2.5k | 19.8/0.0 | 598 | 2.75 | 0.85 | −$9.9k | −$15.2k | 4.6/8.6 | 4/17 | rejected |
+| Setup expires after 30 min (today 60) | 84 | 2.04 | 3.36 | +$18.3k | −$2.5k | 27.3/0.0 | 622 | 2.86 | 1.00 | −$0.0k | −$9.5k | 6.4/6.7 | 5/18 | rejected |
+| Setup expires after 45 min | 87 | 2.11 | 3.07 | +$16.4k | −$2.7k | 19.8/0.0 | 661 | 3.04 | 1.05 | +$3.3k | −$9.5k | 7.9/7.2 | 5/17 | rejected |
+| Setup expires after 90 min | 92 | 2.23 | 3.09 | +$20.1k | −$2.6k | 38.0/0.0 | 715 | 3.29 | 1.03 | +$2.5k | −$13.0k | 7.0/9.8 | 7/18 | rejected |
+| Sweeps count from 07:00 (today 08:00) | 89 | 2.16 | 3.45 | +$19.9k | −$2.7k | 30.5/0.0 | 692 | 3.18 | 1.12 | +$9.1k | −$11.3k | 9.5/9.5 | 7/18 | rejected |
+| Sweeps count from 09:00 | 87 | 2.11 | 3.00 | +$14.9k | −$2.7k | 19.8/0.0 | 679 | 3.12 | 1.05 | +$3.4k | −$11.7k | 9.0/8.1 | 7/19 | rejected |
+| Sweeps count from 09:30 | 83 | 2.01 | 3.33 | +$16.8k | −$2.3k | 27.3/0.0 | 659 | 3.03 | 1.02 | +$1.5k | −$11.4k | 8.1/8.0 | 7/19 | rejected |
 
 What it means:
 
@@ -99,7 +124,19 @@ What it means:
   full size makes a little more money but with more failed evals (2021-25 1-month fail 13.6% vs 9.5%).
 - **The 1.6x range block is right**: off or 2x adds trades that lose; 1.2x drops below 2 a week.
 - **VIX above 25** helps 2021-25 (mostly 2022) but costs 2026 $1.2k and puts it at 2.0 a week: not worth it.
-- **Both killzones are needed**: either one alone loses money over 2021-25 and halves the trades.
+- **Both killzones are needed**: either one alone loses money over 2021-25 and halves the trades; starting the
+  morning at 10:00 or widening the windows loses money too. A 60-minute setup expiry and sweeps from 08:00 are
+  right (07:00 changes almost nothing: +$0.3k in 2021-25, 2026 identical).
+- **The confluence score is tuned**: dropping the 1H trend or the discount/premium point, or asking for 2 points,
+  either collapses the trade count or loses money; dropping the late-entry penalty helps 2021-25 (+$3.0k) but costs
+  2026 $4.5k.
+- **News rules barely matter** (no blackout, a wider one or trading FOMC afternoons change almost nothing); skipping
+  CPI / NFP / FOMC days entirely loses $8.5k in 2021-25.
+- **VIX above 20** is the strongest 2021-25 filter found (+$4.4k, PF 1.26, drawdown −$6.0k) because it removes most
+  of 2022, but it drops 2026 to 1.9 trades a week. As a **size-down** instead (exact, every trade kept): half size when
+  VIX > 20 gives 2026 PF 3.61 / +$19.7k (−$0.45k) and 2021-25 PF 1.14 / +$9.0k (+$2.5k, drawdown −$7.5k); 70% size
+  gives 2026 +$20.0k (−$0.1k) and 2021-25 +$8.4k (runs `flt_vix20_half`, `flt_vix20_07`, both "promising"). Like the
+  bias size-down it is a sizing rule: hand it to the sizing research.
 
 ## Verdict
 

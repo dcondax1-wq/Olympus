@@ -1,7 +1,7 @@
 {
- "built": "2026-10-17 20:25",
+ "built": "2026-10-17 20:28",
  "baseline": "baseline",
- "count": 187,
+ "count": 207,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -92,93 +92,12 @@
    }
   },
   {
-   "id": "ema_1h50_trend_x125",
-   "title": "Textbook: 1.25x size when price is on the right side of the 1h EMA50",
-   "family": "filters",
-   "question": "Do the classic moving-average trend filters (trade with the EMA / SMA trend) help the Liquidity Engine?",
-   "status": "adopt-candidate",
-   "verdict": "Better than the live strategy in both periods. 2026: net +$21,412 (live +$20,111), PF 3.5 (3.48), max DD -$2,663 (-$2,661), 2.16 trades/week. 2021-25: net +$7,627 (+$6,491), PF 1.1 (1.09), max DD -$11,928 (-$11,401), 3.17/week. Rule hit 253 setups in 2021-25 and 34 in 2026.",
-   "writeup": "research/writeups/moving-averages.md",
-   "tags": [
-    "ema",
-    "trend"
-   ],
-   "params": {},
-   "sizing": {
-    "rule": "Textbook: 1.25x size when price is on the right side of the 1h EMA50",
-    "hit_mult": 1.25,
-    "else_mult": 1.0,
-    "group": "trend",
-    "cold_streak": "live"
-   },
-   "built": "2026-10-17 20:19",
-   "spans": {
-    "2026": {
-     "n": 89,
-     "tpw": 2.16,
-     "wk2": 71,
-     "win": 24.7,
-     "pf": 3.5,
-     "net": 21412,
-     "dd": -2663,
-     "avg_r": 0.376,
-     "stop": 44.0,
-     "worst_day": -665,
-     "risk": 239.0,
-     "half": 28,
-     "p10": 20.8,
-     "f10": 0.0,
-     "p20": 32.1,
-     "f20": 0.0,
-     "b2b": "5/1"
-    },
-    "2021-25": {
-     "n": 679,
-     "tpw": 3.17,
-     "wk2": 92,
-     "win": 20.5,
-     "pf": 1.1,
-     "net": 7627,
-     "dd": -11928,
-     "avg_r": -0.003,
-     "stop": 41.2,
-     "worst_day": -1014,
-     "risk": 215.0,
-     "half": 351,
-     "p10": 4.6,
-     "f10": 2.9,
-     "p20": 9.6,
-     "f20": 12.5,
-     "b2b": "7/20"
-    },
-    "all": {
-     "n": 768,
-     "tpw": 3.0,
-     "wk2": 89,
-     "win": 21.0,
-     "pf": 1.33,
-     "net": 29039,
-     "dd": -11928,
-     "avg_r": 0.041,
-     "stop": 41.8,
-     "worst_day": -1014,
-     "risk": 216.0,
-     "half": 379,
-     "p10": 7.1,
-     "f10": 2.4,
-     "p20": 13.1,
-     "f20": 10.5,
-     "b2b": "11/21"
-    }
-   }
-  },
-  {
    "id": "ema_knife_k35_half",
    "title": "Neighbour: half size at 3.5+ ATR from the 1h EMA20",
    "family": "filters",
    "question": "Should the bot trade smaller when the setup fades a strong one-way move, i.e. price is stretched far from the 1-hour EMA 20 on the wrong side (a 'falling knife')?",
    "status": "adopt-candidate",
-   "verdict": "Better than the live strategy in both periods. 2026: net +$20,138 (live +$20,111), PF 3.49 (3.48), max DD -$2,661 (-$2,661), 2.16 trades/week. 2021-25: net +$9,926 (+$6,491), PF 1.14 (1.09), max DD -$9,805 (-$11,401), 3.17/week. Rule hit 51 setups in 2021-25 and 2 in 2026.",
+   "verdict": "Better than the live strategy in both periods. 2026: net +$20,138 (live +$20,111), PF 3.49 (3.48), max DD -$2,661 (-$2,661), 2.16 trades/week. 2021-25: net +$9,926 (+$6,491), PF 1.14 (1.09), max DD -$9,805 (-$11,401), 3.17/week. Rule hit 51 setups in 2021-25 and 2 in 2026. A neighbour check, not the chosen rule: it passes only because it leaves out the one 2026 winner at 3.14 ATR.",
    "writeup": "research/writeups/moving-averages.md",
    "tags": [
     "ema",
@@ -192,7 +111,7 @@
     "group": "knife",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -259,7 +178,7 @@
    "family": "filters",
    "question": "Should the bot trade smaller when the setup fades a strong one-way move, i.e. price is stretched far from the 1-hour EMA 20 on the wrong side (a 'falling knife')?",
    "status": "adopt-candidate",
-   "verdict": "Better than the live strategy in both periods. 2026: net +$20,139 (live +$20,111), PF 3.49 (3.48), max DD -$2,660 (-$2,661), 2.16 trades/week. 2021-25: net +$9,639 (+$6,491), PF 1.13 (1.09), max DD -$9,944 (-$11,401), 3.17/week. Rule hit 51 setups in 2021-25 and 3 in 2026.",
+   "verdict": "Better than the live strategy in both periods. 2026: net +$20,139 (live +$20,111), PF 3.49 (3.48), max DD -$2,660 (-$2,661), 2.16 trades/week. 2021-25: net +$9,639 (+$6,491), PF 1.13 (1.09), max DD -$9,944 (-$11,401), 3.17/week. Rule hit 51 setups in 2021-25 and 3 in 2026. Same EMA 20 and 3-ATR line, but the ATR is TradingView's / the engine's Wilder ATR, which is a bit wider, so it hits fewer setups (51 in 2021-25, 3 in 2026). This is the version the engine and the Pine script would naturally use. Honest caveat: it was a robustness check, noticed as the natural implementation only after 2026 had been seen; in 2026 it is simply unchanged (+$28).",
    "writeup": "research/writeups/moving-averages.md",
    "tags": [
     "ema",
@@ -273,7 +192,7 @@
     "group": "knife",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -349,7 +268,7 @@
     "be_at_r_trending": 3.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:22",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -902,7 +821,7 @@
     "rule": "x0.5 when 15m already turned (late) = yes",
     "mechanism": "Late entry: part of the move is gone, less room to the draw."
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -988,7 +907,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:15",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -1069,7 +988,7 @@
     "group": "knife",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -1143,7 +1062,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:24",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -1217,7 +1136,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:24",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -1293,7 +1212,7 @@
     "be_at_r_trending": 1.5
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -1369,7 +1288,7 @@
     "be_at_r_trending": 2.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:07",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -1445,7 +1364,7 @@
     "be_at_r_trending": 2.5
    },
    "sizing": {},
-   "built": "2026-10-17 20:07",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -1521,7 +1440,7 @@
     "be_at_r_trending": 3.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -1597,7 +1516,7 @@
     "be_at_r_trending": 3.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -1673,7 +1592,7 @@
     "be_at_r_trending": 99
    },
    "sizing": {},
-   "built": "2026-10-17 20:07",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -1749,7 +1668,7 @@
     "be_at_r_trending": 3.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:20",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -1996,97 +1915,6 @@
    }
   },
   {
-   "id": "risk_sit_pm_x15",
-   "title": "1.5x size in the afternoon killzone",
-   "family": "risk",
-   "question": "Lean in or size down by one setup condition known at entry? (picked on 2021-25, checked on 2026)",
-   "status": "promising",
-   "verdict": "Picked on 2021-25 and did NOT hold up in 2026: 2021-25 +$9,628 vs +$6,491 (PF 1.12 vs 1.09), 2026 +$23,107 vs +$20,111 (PF 3.41 vs 3.48).",
-   "writeup": "research/writeups/risk-sizing.md",
-   "tags": [
-    "risk",
-    "situational",
-    "situational"
-   ],
-   "params": {},
-   "sizing": {
-    "rule": "x1.5 when Session = PM",
-    "mechanism": "Same, lean into the calmer afternoon."
-   },
-   "built": "2026-10-17 20:19",
-   "spans": {
-    "2026": {
-     "n": 89,
-     "tpw": 2.16,
-     "wk2": 71,
-     "win": 24.7,
-     "pf": 3.41,
-     "net": 23107,
-     "dd": -3355,
-     "avg_r": 0.376,
-     "stop": 44.0,
-     "worst_day": -598,
-     "risk": 308.0,
-     "half": 28,
-     "p10": 20.3,
-     "f10": 0.0,
-     "p20": 26.2,
-     "f20": 0.0,
-     "b2b": "5/1",
-     "p60": 53.7,
-     "f60": 32.7,
-     "pE": 75.8,
-     "dE": 28
-    },
-    "2021-25": {
-     "n": 679,
-     "tpw": 3.17,
-     "wk2": 92,
-     "win": 20.5,
-     "pf": 1.12,
-     "net": 9628,
-     "dd": -11848,
-     "avg_r": -0.003,
-     "stop": 41.2,
-     "worst_day": -1000,
-     "risk": 234.0,
-     "half": 350,
-     "p10": 5.1,
-     "f10": 3.1,
-     "p20": 11.8,
-     "f20": 11.5,
-     "b2b": "9/19",
-     "p60": 29.9,
-     "f60": 57.6,
-     "pE": 38.5,
-     "dE": 32
-    },
-    "all": {
-     "n": 768,
-     "tpw": 3.0,
-     "wk2": 89,
-     "win": 21.0,
-     "pf": 1.35,
-     "net": 32735,
-     "dd": -11848,
-     "avg_r": 0.041,
-     "stop": 41.8,
-     "worst_day": -1000,
-     "risk": 236.0,
-     "half": 378,
-     "p10": 7.4,
-     "f10": 2.6,
-     "p20": 14.1,
-     "f20": 9.6,
-     "b2b": "14/20",
-     "p60": 34.3,
-     "f60": 52.0,
-     "pE": 47.0,
-     "dE": 32
-    }
-   }
-  },
-  {
    "id": "risk_sit_vix20_half",
    "title": "Half size when VIX closed at 20 or higher",
    "family": "risk",
@@ -2104,7 +1932,7 @@
     "rule": "x0.5 when VIX (prior close) = 20+",
     "mechanism": "High-volatility regimes: wider ranges, sweeps run further."
    },
-   "built": "2026-10-17 20:20",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -2280,7 +2108,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:01",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -2354,7 +2182,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:15",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -2428,7 +2256,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:01",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -2504,7 +2332,7 @@
     "counter_rr_cap": 3.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:15",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -2580,7 +2408,7 @@
     "w_pdc": 1
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 80,
@@ -2654,7 +2482,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:01",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -2728,7 +2556,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:01",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -2804,7 +2632,7 @@
     "w_pwmid": 1
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 56,
@@ -2878,7 +2706,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:01",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -2952,7 +2780,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:01",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -3028,7 +2856,7 @@
     "w_dol": 1
    },
    "sizing": {},
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 97,
@@ -3104,7 +2932,7 @@
     "w_dol": -1
    },
    "sizing": {},
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 60,
@@ -3180,7 +3008,7 @@
     "w_htf": 0
    },
    "sizing": {},
-   "built": "2026-10-17 20:18",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 95,
@@ -3242,6 +3070,82 @@
    }
   },
   {
+   "id": "bias_w_htf2",
+   "title": "1H trend counts double",
+   "family": "bias",
+   "question": "Should the 1H trend weigh more?",
+   "status": "rejected",
+   "verdict": "Too few trades (1.17 a week). 2026: PF 3.45 -> 2.65, net +$19.9k -> +$6.8k; 2021-25: PF 1.11 -> 1.08, net +$8.8k -> +$3.6k; 1.17 / 1.86 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "w_htf": 2
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 48,
+     "tpw": 1.17,
+     "wk2": 33,
+     "win": 25.0,
+     "pf": 2.65,
+     "net": 6823,
+     "dd": -2138,
+     "avg_r": 0.232,
+     "stop": 42.5,
+     "worst_day": -554,
+     "risk": 180.0,
+     "half": 31,
+     "p10": 6.6,
+     "f10": 0.0,
+     "p20": 11.2,
+     "f20": 0.0,
+     "b2b": "1/1"
+    },
+    "2021-25": {
+     "n": 405,
+     "tpw": 1.86,
+     "wk2": 58,
+     "win": 22.0,
+     "pf": 1.08,
+     "net": 3586,
+     "dd": -6007,
+     "avg_r": 0.003,
+     "stop": 40.8,
+     "worst_day": -870,
+     "risk": 219.0,
+     "half": 198,
+     "p10": 1.6,
+     "f10": 0.0,
+     "p20": 3.9,
+     "f20": 0.6,
+     "b2b": "3/8"
+    },
+    "all": {
+     "n": 453,
+     "tpw": 1.75,
+     "wk2": 54,
+     "win": 22.3,
+     "pf": 1.21,
+     "net": 10409,
+     "dd": -7205,
+     "avg_r": 0.027,
+     "stop": 41.2,
+     "worst_day": -870,
+     "risk": 217.0,
+     "half": 229,
+     "p10": 2.3,
+     "f10": 0.0,
+     "p20": 4.9,
+     "f20": 0.5,
+     "b2b": "4/9"
+    }
+   }
+  },
+  {
    "id": "bias_w_m15_0",
    "title": "No penalty for a late 15m entry",
    "family": "bias",
@@ -3256,7 +3160,7 @@
     "w_m15": 0
    },
    "sizing": {},
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 91,
@@ -3332,7 +3236,7 @@
     "w_pd": 0
    },
    "sizing": {},
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 47,
@@ -3413,7 +3317,7 @@
     "group": "trend",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -3494,7 +3398,7 @@
     "group": "trend",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -3556,6 +3460,87 @@
    }
   },
   {
+   "id": "ema_1h50_trend_x125",
+   "title": "Textbook: 1.25x size when price is on the right side of the 1h EMA50",
+   "family": "filters",
+   "question": "Do the classic moving-average trend filters (trade with the EMA / SMA trend) help the Liquidity Engine?",
+   "status": "rejected",
+   "verdict": "Not better in both periods. 2026: net +$21,412 (live +$20,111), PF 3.5 (3.48), max DD -$2,663 (-$2,661), 2.16 trades/week. 2021-25: net +$7,627 (+$6,491), PF 1.1 (1.09), max DD -$11,928 (-$11,401), 3.17/week. Rule hit 253 setups in 2021-25 and 34 in 2026. Looks better on money only because it adds size to 37% of setups (more risk, no edge: these setups averaged +0.01R vs -0.01R); the 2021-25 drawdown and eval fail rate get worse.",
+   "writeup": "research/writeups/moving-averages.md",
+   "tags": [
+    "ema",
+    "trend"
+   ],
+   "params": {},
+   "sizing": {
+    "rule": "Textbook: 1.25x size when price is on the right side of the 1h EMA50",
+    "hit_mult": 1.25,
+    "else_mult": 1.0,
+    "group": "trend",
+    "cold_streak": "live"
+   },
+   "built": "2026-10-17 20:26",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.5,
+     "net": 21412,
+     "dd": -2663,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -665,
+     "risk": 239.0,
+     "half": 28,
+     "p10": 20.8,
+     "f10": 0.0,
+     "p20": 32.1,
+     "f20": 0.0,
+     "b2b": "5/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.1,
+     "net": 7627,
+     "dd": -11928,
+     "avg_r": -0.003,
+     "stop": 41.2,
+     "worst_day": -1014,
+     "risk": 215.0,
+     "half": 351,
+     "p10": 4.6,
+     "f10": 2.9,
+     "p20": 9.6,
+     "f20": 12.5,
+     "b2b": "7/20"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.33,
+     "net": 29039,
+     "dd": -11928,
+     "avg_r": 0.041,
+     "stop": 41.8,
+     "worst_day": -1014,
+     "risk": 216.0,
+     "half": 379,
+     "p10": 7.1,
+     "f10": 2.4,
+     "p20": 13.1,
+     "f20": 10.5,
+     "b2b": "11/21"
+    }
+   }
+  },
+  {
    "id": "ema_d200_trend_half",
    "title": "Textbook: half size against the daily 200-day average (bull / bear market)",
    "family": "filters",
@@ -3575,7 +3560,7 @@
     "group": "trend",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -3656,7 +3641,7 @@
     "group": "daily",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -3737,7 +3722,7 @@
     "group": "daily",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -3818,7 +3803,7 @@
     "group": "daily",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -3899,7 +3884,7 @@
     "group": "knife",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -3980,7 +3965,7 @@
     "group": "knife",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -4047,7 +4032,7 @@
    "family": "filters",
    "question": "Should the bot trade smaller when the setup fades a strong one-way move, i.e. price is stretched far from the 1-hour EMA 20 on the wrong side (a 'falling knife')?",
    "status": "rejected",
-   "verdict": "Not better in both periods. 2026: net +$18,961 (live +$20,111), PF 3.38 (3.48), max DD -$2,660 (-$2,661), 2.16 trades/week. 2021-25: net +$11,120 (+$6,491), PF 1.16 (1.09), max DD -$8,504 (-$11,401), 3.17/week. Rule hit 80 setups in 2021-25 and 6 in 2026.",
+   "verdict": "Not better in both periods. 2026: net +$18,961 (live +$20,111), PF 3.38 (3.48), max DD -$2,660 (-$2,661), 2.16 trades/week. 2021-25: net +$11,120 (+$6,491), PF 1.16 (1.09), max DD -$8,504 (-$11,401), 3.17/week. Rule hit 80 setups in 2021-25 and 6 in 2026. This is the rule chosen on 2021-25 before 2026 was looked at. In 2021-25 the 80 setups it hits won 7% of the time (rest 22%) and lost money in every year. In 2026 it hits only 6 of 89 setups; one of them was a +4.0R winner (2026-10-06, a short at 3.14 ATR, just past the line), which alone costs the $1,150.",
    "writeup": "research/writeups/moving-averages.md",
    "tags": [
     "ema",
@@ -4061,7 +4046,7 @@
     "group": "knife",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -4142,7 +4127,7 @@
     "group": "knife",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -4223,7 +4208,7 @@
     "group": "knife",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -4304,7 +4289,7 @@
     "group": "knife",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -4385,7 +4370,7 @@
     "group": "tag",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -4466,7 +4451,7 @@
     "group": "tag",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -4542,7 +4527,7 @@
     "arm_minor": false
    },
    "sizing": {},
-   "built": "2026-10-17 20:18",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 52,
@@ -4604,6 +4589,82 @@
    }
   },
   {
+   "id": "flt_fomc_pm_on",
+   "title": "Trade FOMC afternoons",
+   "family": "filters",
+   "question": "Is skipping FOMC-day afternoons useful?",
+   "status": "rejected",
+   "verdict": "No effect: the same result as today. 2026: PF 3.45 -> 3.45, net +$19.9k -> +$19.9k; 2021-25: PF 1.11 -> 1.11, net +$8.8k -> +$8.8k; 2.16 / 3.18 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "fomc_pm_off": false
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.45,
+     "net": 19908,
+     "dd": -2661,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -554,
+     "risk": 239.0,
+     "half": 29,
+     "p10": 19.8,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 691,
+     "tpw": 3.18,
+     "wk2": 92,
+     "win": 20.7,
+     "pf": 1.11,
+     "net": 8773,
+     "dd": -11626,
+     "avg_r": 0.001,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 215.0,
+     "half": 350,
+     "p10": 4.7,
+     "f10": 2.0,
+     "p20": 9.5,
+     "f20": 9.5,
+     "b2b": "7/18"
+    },
+    "all": {
+     "n": 780,
+     "tpw": 3.02,
+     "wk2": 89,
+     "win": 21.2,
+     "pf": 1.33,
+     "net": 28681,
+     "dd": -11626,
+     "avg_r": 0.044,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 216.0,
+     "half": 379,
+     "p10": 7.0,
+     "f10": 1.7,
+     "p20": 12.5,
+     "f20": 7.9,
+     "b2b": "11/19"
+    }
+   }
+  },
+  {
    "id": "flt_min_score0",
    "title": "Confluence score 0 is enough (today 1)",
    "family": "filters",
@@ -4618,7 +4679,7 @@
     "min_score": 0
    },
    "sizing": {},
-   "built": "2026-10-17 20:18",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 103,
@@ -4680,12 +4741,88 @@
    }
   },
   {
+   "id": "flt_min_score2",
+   "title": "Confluence score 2 needed (today 1)",
+   "family": "filters",
+   "question": "Require a confluence score of 2?",
+   "status": "rejected",
+   "verdict": "Too few trades (0.87 a week). 2026: PF 3.45 -> 2.21, net +$19.9k -> +$3.0k; 2021-25: PF 1.11 -> 1.03, net +$8.8k -> +$1.2k; 0.87 / 1.47 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "min_score": 2
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 36,
+     "tpw": 0.87,
+     "wk2": 19,
+     "win": 25.0,
+     "pf": 2.21,
+     "net": 2982,
+     "dd": -1626,
+     "avg_r": 0.205,
+     "stop": 43.8,
+     "worst_day": -385,
+     "risk": 158.0,
+     "half": 24,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "b2b": "0/0"
+    },
+    "2021-25": {
+     "n": 319,
+     "tpw": 1.47,
+     "wk2": 46,
+     "win": 19.4,
+     "pf": 1.03,
+     "net": 1162,
+     "dd": -6707,
+     "avg_r": -0.056,
+     "stop": 39.5,
+     "worst_day": -858,
+     "risk": 212.0,
+     "half": 174,
+     "p10": 1.5,
+     "f10": 0.0,
+     "p20": 3.4,
+     "f20": 0.6,
+     "b2b": "4/7"
+    },
+    "all": {
+     "n": 355,
+     "tpw": 1.37,
+     "wk2": 42,
+     "win": 20.0,
+     "pf": 1.11,
+     "net": 4143,
+     "dd": -6707,
+     "avg_r": -0.029,
+     "stop": 40.0,
+     "worst_day": -858,
+     "risk": 207.0,
+     "half": 198,
+     "p10": 1.2,
+     "f10": 0.0,
+     "p20": 2.8,
+     "f20": 0.5,
+     "b2b": "5/8"
+    }
+   }
+  },
+  {
    "id": "flt_news_off",
    "title": "No news blackout",
    "family": "filters",
    "question": "Is the news blackout (15 min before to 30 min after) useful?",
    "status": "rejected",
-   "verdict": "Worse in both periods. 2026: PF 3.45 -> 3.45, net +$19.9k -> +$19.9k; 2021-25: PF 1.11 -> 1.11, net +$8.8k -> +$8.7k; 2.16 / 3.19 trades a week.",
+   "verdict": "Same in 2026, worse in 2021-25. 2026: PF 3.45 -> 3.45, net +$19.9k -> +$19.9k; 2021-25: PF 1.11 -> 1.11, net +$8.8k -> +$8.7k; 2.16 / 3.19 trades a week.",
    "writeup": "bias-filters.md",
    "tags": [
     "screen"
@@ -4694,7 +4831,7 @@
     "news_filter": false
    },
    "sizing": {},
-   "built": "2026-10-17 20:18",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 89,
@@ -4756,6 +4893,83 @@
    }
   },
   {
+   "id": "flt_news_wide",
+   "title": "Wider news blackout (30 min before, 60 after)",
+   "family": "filters",
+   "question": "Should the bot stay out longer around high-impact news?",
+   "status": "rejected",
+   "verdict": "Same in 2026, worse in 2021-25. 2026: PF 3.45 -> 3.45, net +$19.9k -> +$19.9k; 2021-25: PF 1.11 -> 1.1, net +$8.8k -> +$7.8k; 2.16 / 3.16 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "news_before_min": 30,
+    "news_after_min": 60
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.45,
+     "net": 19908,
+     "dd": -2661,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -554,
+     "risk": 239.0,
+     "half": 29,
+     "p10": 19.8,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 688,
+     "tpw": 3.16,
+     "wk2": 91,
+     "win": 20.6,
+     "pf": 1.1,
+     "net": 7844,
+     "dd": -11626,
+     "avg_r": 0.004,
+     "stop": 41.1,
+     "worst_day": -875,
+     "risk": 215.0,
+     "half": 344,
+     "p10": 4.7,
+     "f10": 2.1,
+     "p20": 9.0,
+     "f20": 10.3,
+     "b2b": "7/18"
+    },
+    "all": {
+     "n": 777,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.1,
+     "pf": 1.32,
+     "net": 27752,
+     "dd": -11626,
+     "avg_r": 0.046,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 217.0,
+     "half": 373,
+     "p10": 7.0,
+     "f10": 1.8,
+     "p20": 12.1,
+     "f20": 8.6,
+     "b2b": "11/19"
+    }
+   }
+  },
+  {
    "id": "flt_newsday_skip",
    "title": "Skip CPI, jobs-report and FOMC days",
    "family": "filters",
@@ -4770,7 +4984,7 @@
     "news_day_skip": "CPI,Payrolls,FOMC"
    },
    "sizing": {},
-   "built": "2026-10-17 20:18",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 82,
@@ -4846,7 +5060,7 @@
     "day_range_max": 0.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 97,
@@ -4922,7 +5136,7 @@
     "day_range_max": 1.2
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 82,
@@ -4998,7 +5212,7 @@
     "day_range_max": 2.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 95,
@@ -5074,7 +5288,7 @@
     "regime_er10_max": 0
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 89,
@@ -5150,7 +5364,7 @@
     "regime_mode": "skip"
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 71,
@@ -5212,6 +5426,82 @@
    }
   },
   {
+   "id": "flt_vixmax20",
+   "title": "Skip days with VIX above 20",
+   "family": "filters",
+   "question": "Stand aside when yesterday's VIX closed above 20?",
+   "status": "rejected",
+   "verdict": "Too few trades (1.87 a week). 2026: PF 3.45 -> 3.59, net +$19.9k -> +$19.0k; 2021-25: PF 1.11 -> 1.26, net +$8.8k -> +$13.2k; 1.87 / 2.18 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "vix_max": 20.0
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 77,
+     "tpw": 1.87,
+     "wk2": 60,
+     "win": 26.0,
+     "pf": 3.59,
+     "net": 18985,
+     "dd": -2578,
+     "avg_r": 0.375,
+     "stop": 43.2,
+     "worst_day": -554,
+     "risk": 238.0,
+     "half": 27,
+     "p10": 19.8,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 475,
+     "tpw": 2.18,
+     "wk2": 60,
+     "win": 21.9,
+     "pf": 1.26,
+     "net": 13169,
+     "dd": -5983,
+     "avg_r": 0.027,
+     "stop": 39.0,
+     "worst_day": -875,
+     "risk": 220.0,
+     "half": 222,
+     "p10": 4.6,
+     "f10": 1.8,
+     "p20": 8.5,
+     "f20": 5.3,
+     "b2b": "7/11"
+    },
+    "all": {
+     "n": 552,
+     "tpw": 2.13,
+     "wk2": 61,
+     "win": 22.5,
+     "pf": 1.55,
+     "net": 32155,
+     "dd": -5983,
+     "avg_r": 0.076,
+     "stop": 39.8,
+     "worst_day": -875,
+     "risk": 222.0,
+     "half": 249,
+     "p10": 6.9,
+     "f10": 1.5,
+     "p20": 11.7,
+     "f20": 4.5,
+     "b2b": "11/12"
+    }
+   }
+  },
+  {
    "id": "flt_vixmax25",
    "title": "Skip days with VIX above 25",
    "family": "filters",
@@ -5226,7 +5516,7 @@
     "vix_max": 25.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 83,
@@ -5288,6 +5578,158 @@
    }
   },
   {
+   "id": "flt_vixmax30",
+   "title": "Skip days with VIX above 30",
+   "family": "filters",
+   "question": "Stand aside when yesterday's VIX closed above 30?",
+   "status": "rejected",
+   "verdict": "Worse in both periods. 2026: PF 3.45 -> 3.39, net +$19.9k -> +$19.6k; 2021-25: PF 1.11 -> 1.1, net +$8.8k -> +$7.8k; 2.14 / 3.03 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "vix_max": 30.0
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 88,
+     "tpw": 2.14,
+     "wk2": 69,
+     "win": 23.9,
+     "pf": 3.39,
+     "net": 19645,
+     "dd": -2924,
+     "avg_r": 0.359,
+     "stop": 43.6,
+     "worst_day": -554,
+     "risk": 246.0,
+     "half": 28,
+     "p10": 19.8,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 659,
+     "tpw": 3.03,
+     "wk2": 87,
+     "win": 20.9,
+     "pf": 1.1,
+     "net": 7775,
+     "dd": -12005,
+     "avg_r": 0.001,
+     "stop": 40.2,
+     "worst_day": -875,
+     "risk": 216.0,
+     "half": 326,
+     "p10": 4.7,
+     "f10": 2.0,
+     "p20": 9.6,
+     "f20": 9.5,
+     "b2b": "8/18"
+    },
+    "all": {
+     "n": 747,
+     "tpw": 2.89,
+     "wk2": 84,
+     "win": 21.3,
+     "pf": 1.33,
+     "net": 27420,
+     "dd": -12005,
+     "avg_r": 0.043,
+     "stop": 40.8,
+     "worst_day": -875,
+     "risk": 219.0,
+     "half": 354,
+     "p10": 7.0,
+     "f10": 1.7,
+     "p20": 12.6,
+     "f20": 7.9,
+     "b2b": "12/19"
+    }
+   }
+  },
+  {
+   "id": "flt_vixmin13",
+   "title": "Skip days with VIX below 13",
+   "family": "filters",
+   "question": "Stand aside in very quiet markets (VIX < 13)?",
+   "status": "rejected",
+   "verdict": "Same in 2026, worse in 2021-25. 2026: PF 3.45 -> 3.45, net +$19.9k -> +$19.9k; 2021-25: PF 1.11 -> 1.12, net +$8.8k -> +$8.5k; 2.16 / 2.97 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "vix_min": 13.0
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.45,
+     "net": 19908,
+     "dd": -2661,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -554,
+     "risk": 239.0,
+     "half": 29,
+     "p10": 19.8,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 646,
+     "tpw": 2.97,
+     "wk2": 86,
+     "win": 21.2,
+     "pf": 1.12,
+     "net": 8489,
+     "dd": -11626,
+     "avg_r": 0.02,
+     "stop": 41.6,
+     "worst_day": -875,
+     "risk": 217.0,
+     "half": 316,
+     "p10": 4.7,
+     "f10": 1.9,
+     "p20": 9.4,
+     "f20": 9.4,
+     "b2b": "7/14"
+    },
+    "all": {
+     "n": 735,
+     "tpw": 2.84,
+     "wk2": 84,
+     "win": 21.6,
+     "pf": 1.35,
+     "net": 28397,
+     "dd": -11626,
+     "avg_r": 0.063,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 220.0,
+     "half": 345,
+     "p10": 7.0,
+     "f10": 1.6,
+     "p20": 12.4,
+     "f20": 7.8,
+     "b2b": "11/15"
+    }
+   }
+  },
+  {
    "id": "mgt_be000",
    "title": "No breakeven move",
    "family": "management",
@@ -5302,7 +5744,7 @@
     "be_at_r": 0
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -5378,7 +5820,7 @@
     "be_at_r": 0.75
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -5454,7 +5896,7 @@
     "be_at_r": 1.25
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -5530,7 +5972,7 @@
     "be_at_r": 1.5
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -5606,7 +6048,7 @@
     "be_at_r": 2.0
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -5682,7 +6124,7 @@
     "be_at_r_trending": 0.75
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -5758,7 +6200,7 @@
     "exit_giveback_r": 0.75
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -5834,7 +6276,7 @@
     "exit_giveback_r": 1.0
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -5910,7 +6352,7 @@
     "ifvg_fail_exit": true
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -5987,7 +6429,7 @@
     "lock_r": 0.5
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -6064,7 +6506,7 @@
     "lock_r": 1.0
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6141,7 +6583,7 @@
     "lock_r": 0.5
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -6218,7 +6660,7 @@
     "lock_r": 1.0
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6295,7 +6737,7 @@
     "lock_r": 1.5
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6371,7 +6813,7 @@
     "news_flatten_min": 0
    },
    "sizing": {},
-   "built": "2026-10-17 20:03",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6447,7 +6889,7 @@
     "exit_rules": ""
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6523,7 +6965,7 @@
     "time_stop_min": 0
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6599,7 +7041,7 @@
     "time_stop_min": 15
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6675,7 +7117,7 @@
     "time_stop_min": 20
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6751,7 +7193,7 @@
     "time_stop_min": 45
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6827,7 +7269,7 @@
     "time_stop_min": 60
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6903,7 +7345,7 @@
     "time_stop_r_sim": 0.25
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -6979,7 +7421,7 @@
     "time_stop_r_sim": 1.0
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -7055,7 +7497,7 @@
     "be_at_r_trending": 3.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:07",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -7131,7 +7573,7 @@
     "be_at_r_trending": 3.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:07",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -9111,6 +9553,96 @@
    }
   },
   {
+   "id": "risk_floor400",
+   "title": "Never less than $400 at risk on a wide stop (before the trending and cold halves)",
+   "family": "risk",
+   "question": "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it.",
+   "status": "rejected",
+   "verdict": "Not better in both periods. 2026 +$21,168 (live +$20,111), PF 3.42 (3.48), 1-month evals 30% pass / 0% fail (30/0). 2021-25 +$7,609 (+$6,491), PF 1.09 (1.09), evals 8/12% (9/10).",
+   "writeup": "research/writeups/risk-sizing.md",
+   "tags": [
+    "risk",
+    "refstop",
+    "wide-stop"
+   ],
+   "params": {},
+   "sizing": {
+    "floor": 400.0
+   },
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.42,
+     "net": 21168,
+     "dd": -2628,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -554,
+     "risk": 330.0,
+     "half": 28,
+     "p10": 20.3,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "5/1",
+     "p60": 53.7,
+     "f60": 19.0,
+     "pE": 78.3,
+     "dE": 27
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.09,
+     "net": 7609,
+     "dd": -11876,
+     "avg_r": -0.003,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 216.0,
+     "half": 351,
+     "p10": 4.1,
+     "f10": 3.0,
+     "p20": 7.8,
+     "f20": 11.9,
+     "b2b": "6/18",
+     "p60": 16.7,
+     "f60": 64.6,
+     "pE": 22.1,
+     "dE": 34
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.32,
+     "net": 28777,
+     "dd": -11876,
+     "avg_r": 0.041,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 233.0,
+     "half": 379,
+     "p10": 6.6,
+     "f10": 2.5,
+     "p20": 11.1,
+     "f20": 9.9,
+     "b2b": "11/19",
+     "p60": 23.4,
+     "f60": 55.9,
+     "pE": 34.5,
+     "dE": 34
+    }
+   }
+  },
+  {
    "id": "risk_hot5_125",
    "title": "Hot-streak boost: x1.25 when the last 15 signals are +5R or better",
    "family": "risk",
@@ -9394,6 +9926,99 @@
    }
   },
   {
+   "id": "risk_ref25",
+   "title": "Full risk up to a 25 pts stop",
+   "family": "risk",
+   "question": "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it.",
+   "status": "rejected",
+   "verdict": "Not better in both periods. 2026 +$22,312 (live +$20,111), PF 3.23 (3.48), 1-month evals 36% pass / 0% fail (30/0). 2021-25 +$7,531 (+$6,491), PF 1.08 (1.09), evals 9/18% (9/10).",
+   "writeup": "research/writeups/risk-sizing.md",
+   "tags": [
+    "risk",
+    "refstop",
+    "wide-stop"
+   ],
+   "params": {
+    "risk_ref_stop": 25.0
+   },
+   "sizing": {
+    "risk_usd": 800.0,
+    "ref": 25.0
+   },
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.23,
+     "net": 22312,
+     "dd": -3232,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -685,
+     "risk": 330.0,
+     "half": 28,
+     "p10": 22.8,
+     "f10": 0.0,
+     "p20": 36.4,
+     "f20": 0.0,
+     "b2b": "6/1",
+     "p60": 53.7,
+     "f60": 32.7,
+     "pE": 75.8,
+     "dE": 18
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.08,
+     "net": 7531,
+     "dd": -13485,
+     "avg_r": -0.002,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 262.0,
+     "half": 351,
+     "p10": 4.8,
+     "f10": 5.1,
+     "p20": 8.9,
+     "f20": 17.5,
+     "b2b": "9/24",
+     "p60": 18.9,
+     "f60": 68.7,
+     "pE": 23.3,
+     "dE": 25
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.3,
+     "net": 29843,
+     "dd": -13485,
+     "avg_r": 0.041,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 270.0,
+     "half": 379,
+     "p10": 7.6,
+     "f10": 4.3,
+     "p20": 13.3,
+     "f20": 14.6,
+     "b2b": "15/25",
+     "p60": 25.8,
+     "f60": 61.4,
+     "pE": 34.7,
+     "dE": 26
+    }
+   }
+  },
+  {
    "id": "risk_ref30",
    "title": "Full risk up to a 30 pts stop",
    "family": "risk",
@@ -9580,6 +10205,186 @@
    }
   },
   {
+   "id": "risk_shape05",
+   "title": "Wide-stop scaling gentler: $800 x square root of 20/stop",
+   "family": "risk",
+   "question": "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it.",
+   "status": "rejected",
+   "verdict": "Not better in both periods. 2026 +$22,134 (live +$20,111), PF 2.94 (3.48), 1-month evals 28% pass / 0% fail (30/0). 2021-25 +$9,959 (+$6,491), PF 1.1 (1.09), evals 10/19% (9/10).",
+   "writeup": "research/writeups/risk-sizing.md",
+   "tags": [
+    "risk",
+    "refstop",
+    "wide-stop"
+   ],
+   "params": {},
+   "sizing": {
+    "alpha": 0.5
+   },
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 2.94,
+     "net": 22134,
+     "dd": -3524,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -632,
+     "risk": 416.0,
+     "half": 28,
+     "p10": 21.3,
+     "f10": 0.0,
+     "p20": 27.8,
+     "f20": 0.0,
+     "b2b": "6/1",
+     "p60": 53.7,
+     "f60": 35.4,
+     "pE": 73.7,
+     "dE": 26
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.1,
+     "net": 9959,
+     "dd": -13515,
+     "avg_r": -0.003,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 288.0,
+     "half": 351,
+     "p10": 4.6,
+     "f10": 5.7,
+     "p20": 10.0,
+     "f20": 19.4,
+     "b2b": "10/27",
+     "p60": 20.8,
+     "f60": 68.5,
+     "pE": 24.6,
+     "dE": 23
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.29,
+     "net": 32093,
+     "dd": -13515,
+     "avg_r": 0.041,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 292.0,
+     "half": 379,
+     "p10": 7.2,
+     "f10": 4.8,
+     "p20": 12.8,
+     "f20": 16.2,
+     "b2b": "16/28",
+     "p60": 27.4,
+     "f60": 61.6,
+     "pE": 35.4,
+     "dE": 26
+    }
+   }
+  },
+  {
+   "id": "risk_shape15",
+   "title": "Wide-stop scaling steeper: $800 x (20/stop)^1.5",
+   "family": "risk",
+   "question": "How much less should a wide stop risk? Full $800 up to a reference stop, less beyond it.",
+   "status": "rejected",
+   "verdict": "Not better in both periods. 2026 +$18,002 (live +$20,111), PF 4.02 (3.48), 1-month evals 30% pass / 0% fail (30/0). 2021-25 +$1,018 (+$6,491), PF 1.02 (1.09), evals 8/6% (9/10).",
+   "writeup": "research/writeups/risk-sizing.md",
+   "tags": [
+    "risk",
+    "refstop",
+    "wide-stop"
+   ],
+   "params": {},
+   "sizing": {
+    "alpha": 1.5
+   },
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 85,
+     "tpw": 2.06,
+     "wk2": 67,
+     "win": 25.9,
+     "pf": 4.02,
+     "net": 18002,
+     "dd": -2128,
+     "avg_r": 0.428,
+     "stop": 42.8,
+     "worst_day": -482,
+     "risk": 173.0,
+     "half": 26,
+     "p10": 16.8,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "4/1",
+     "p60": 53.7,
+     "f60": 0.0,
+     "pE": 94.8,
+     "dE": 35
+    },
+    "2021-25": {
+     "n": 632,
+     "tpw": 2.95,
+     "wk2": 89,
+     "win": 19.9,
+     "pf": 1.02,
+     "net": 1018,
+     "dd": -11444,
+     "avg_r": -0.004,
+     "stop": 39.8,
+     "worst_day": -875,
+     "risk": 140.0,
+     "half": 335,
+     "p10": 4.0,
+     "f10": 1.7,
+     "p20": 8.1,
+     "f20": 6.0,
+     "b2b": "6/15",
+     "p60": 23.4,
+     "f60": 48.9,
+     "pE": 30.7,
+     "dE": 39
+    },
+    "all": {
+     "n": 717,
+     "tpw": 2.81,
+     "wk2": 86,
+     "win": 20.6,
+     "pf": 1.28,
+     "net": 19020,
+     "dd": -11444,
+     "avg_r": 0.047,
+     "stop": 40.0,
+     "worst_day": -875,
+     "risk": 142.0,
+     "half": 361,
+     "p10": 6.0,
+     "f10": 1.4,
+     "p20": 11.4,
+     "f20": 5.0,
+     "b2b": "11/16",
+     "p60": 27.8,
+     "f60": 40.6,
+     "pE": 44.1,
+     "dE": 40
+    }
+   }
+  },
+  {
    "id": "risk_sit_against1h_half",
    "title": "Half size against the 1H trend",
    "family": "risk",
@@ -9597,7 +10402,7 @@
     "rule": "x0.5 when 1H trend = against the trade",
     "mechanism": "Fading the higher-timeframe trend: the raid is more often continuation than reversal."
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -9688,7 +10493,7 @@
     "rule": "x0.5 when Session = AM (before 12:00)",
     "mechanism": "The open is the most volatile (more stop hunts)."
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -9779,7 +10584,7 @@
     "rule": "x0.5 when Trigger = CISD",
     "mechanism": "CISD is the fallback trigger when the leg left no gap (weaker displacement)."
    },
-   "built": "2026-10-17 20:20",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -9870,7 +10675,7 @@
     "rule": "x0.5 when First hour (09:30-10:30) = yes",
     "mechanism": "Opening-hour noise."
    },
-   "built": "2026-10-17 20:20",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -10052,7 +10857,7 @@
     "rule": "x0.5 when Pool swept = minor (15m swing)",
     "mechanism": "Minor pools hold less resting liquidity than session / day levels."
    },
-   "built": "2026-10-17 20:20",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -10217,6 +11022,97 @@
    }
   },
   {
+   "id": "risk_sit_pm_x15",
+   "title": "1.5x size in the afternoon killzone",
+   "family": "risk",
+   "question": "Lean in or size down by one setup condition known at entry? (picked on 2021-25, checked on 2026)",
+   "status": "rejected",
+   "verdict": "Picked on 2021-25 and did NOT hold up in 2026: 2021-25 +$9,628 vs +$6,491 (PF 1.12 vs 1.09), 2026 +$23,107 vs +$20,111 (PF 3.41 vs 3.48).",
+   "writeup": "research/writeups/risk-sizing.md",
+   "tags": [
+    "risk",
+    "situational",
+    "situational"
+   ],
+   "params": {},
+   "sizing": {
+    "rule": "x1.5 when Session = PM",
+    "mechanism": "Same, lean into the calmer afternoon."
+   },
+   "built": "2026-10-17 20:28",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.41,
+     "net": 23107,
+     "dd": -3355,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -598,
+     "risk": 308.0,
+     "half": 28,
+     "p10": 20.3,
+     "f10": 0.0,
+     "p20": 26.2,
+     "f20": 0.0,
+     "b2b": "5/1",
+     "p60": 53.7,
+     "f60": 32.7,
+     "pE": 75.8,
+     "dE": 28
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.12,
+     "net": 9628,
+     "dd": -11848,
+     "avg_r": -0.003,
+     "stop": 41.2,
+     "worst_day": -1000,
+     "risk": 234.0,
+     "half": 350,
+     "p10": 5.1,
+     "f10": 3.1,
+     "p20": 11.8,
+     "f20": 11.5,
+     "b2b": "9/19",
+     "p60": 29.9,
+     "f60": 57.6,
+     "pE": 38.5,
+     "dE": 32
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.35,
+     "net": 32735,
+     "dd": -11848,
+     "avg_r": 0.041,
+     "stop": 41.8,
+     "worst_day": -1000,
+     "risk": 236.0,
+     "half": 378,
+     "p10": 7.4,
+     "f10": 2.6,
+     "p20": 14.1,
+     "f20": 9.6,
+     "b2b": "14/20",
+     "p60": 34.3,
+     "f60": 52.0,
+     "pE": 47.0,
+     "dE": 32
+    }
+   }
+  },
+  {
    "id": "risk_sit_poorloc_half",
    "title": "Half size on poor location (long in premium / short in discount)",
    "family": "risk",
@@ -10234,7 +11130,7 @@
     "rule": "x0.5 when Location = poor",
     "mechanism": "Buying high in the range leaves less room to the draw."
    },
-   "built": "2026-10-17 20:20",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -10507,7 +11403,7 @@
     "rule": "x1.5 when 1H trend = with the trade",
     "mechanism": "Same mechanism, lean in instead."
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -10854,6 +11750,99 @@
    }
   },
   {
+   "id": "risk_usd1200",
+   "title": "Risk $1200 instead of $800 (x1.5)",
+   "family": "risk",
+   "question": "How much should one trade risk? The same strategy at a smaller or bigger $ risk.",
+   "status": "rejected",
+   "verdict": "Not better in both periods. 2026 +$29,742 (live +$20,111), PF 3.42 (3.48), 1-month evals 44% pass / 2% fail (30/0). 2021-25 +$5,670 (+$6,491), PF 1.05 (1.09), evals 11/31% (9/10).",
+   "writeup": "research/writeups/risk-sizing.md",
+   "tags": [
+    "risk",
+    "levels",
+    "level"
+   ],
+   "params": {
+    "risk_usd": 1200.0
+   },
+   "sizing": {
+    "risk_usd": 1200.0,
+    "ref": 20.0
+   },
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.42,
+     "net": 29742,
+     "dd": -3947,
+     "avg_r": 0.377,
+     "stop": 44.0,
+     "worst_day": -837,
+     "risk": 416.0,
+     "half": 28,
+     "p10": 27.9,
+     "f10": 0.0,
+     "p20": 43.9,
+     "f20": 1.6,
+     "b2b": "7/2",
+     "p60": 53.7,
+     "f60": 38.8,
+     "pE": 71.2,
+     "dE": 13
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.05,
+     "net": 5670,
+     "dd": -16285,
+     "avg_r": -0.001,
+     "stop": 41.2,
+     "worst_day": -1000,
+     "risk": 336.0,
+     "half": 348,
+     "p10": 5.6,
+     "f10": 11.1,
+     "p20": 11.0,
+     "f20": 31.2,
+     "b2b": "14/32",
+     "p60": 19.8,
+     "f60": 74.8,
+     "pE": 20.1,
+     "dE": 17
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.28,
+     "net": 35411,
+     "dd": -16285,
+     "avg_r": 0.043,
+     "stop": 41.8,
+     "worst_day": -1000,
+     "risk": 342.0,
+     "half": 376,
+     "p10": 9.1,
+     "f10": 9.3,
+     "p20": 16.4,
+     "f20": 26.4,
+     "b2b": "21/34",
+     "p60": 26.6,
+     "f60": 67.8,
+     "pE": 31.0,
+     "dE": 18
+    }
+   }
+  },
+  {
    "id": "risk_usd600",
    "title": "Risk $600 instead of $800 (x0.75)",
    "family": "risk",
@@ -10943,6 +11932,186 @@
      "f60": 28.6,
      "pE": 48.1,
      "dE": 59
+    }
+   }
+  },
+  {
+   "id": "risk_usd700",
+   "title": "Risk $700 instead of $800 (x0.875)",
+   "family": "risk",
+   "question": "How much should one trade risk? The same strategy at a smaller or bigger $ risk.",
+   "status": "rejected",
+   "verdict": "Not better in both periods. 2026 +$16,529 (live +$20,111), PF 3.28 (3.48), 1-month evals 26% pass / 0% fail (30/0). 2021-25 +$4,994 (+$6,491), PF 1.08 (1.09), evals 7/4% (9/10).",
+   "writeup": "research/writeups/risk-sizing.md",
+   "tags": [
+    "risk",
+    "levels",
+    "level"
+   ],
+   "params": {},
+   "sizing": {
+    "risk_usd": 700.0
+   },
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.28,
+     "net": 16529,
+     "dd": -2462,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -482,
+     "risk": 219.0,
+     "half": 28,
+     "p10": 12.7,
+     "f10": 0.0,
+     "p20": 25.7,
+     "f20": 0.0,
+     "b2b": "4/1",
+     "p60": 51.7,
+     "f60": 15.6,
+     "pE": 79.1,
+     "dE": 30
+    },
+    "2021-25": {
+     "n": 675,
+     "tpw": 3.15,
+     "wk2": 92,
+     "win": 20.3,
+     "pf": 1.08,
+     "net": 4994,
+     "dd": -10387,
+     "avg_r": -0.011,
+     "stop": 41.0,
+     "worst_day": -752,
+     "risk": 186.0,
+     "half": 359,
+     "p10": 3.7,
+     "f10": 0.7,
+     "p20": 7.3,
+     "f20": 4.0,
+     "b2b": "7/14",
+     "p60": 27.1,
+     "f60": 43.4,
+     "pE": 35.5,
+     "dE": 40
+    },
+    "all": {
+     "n": 764,
+     "tpw": 2.99,
+     "wk2": 89,
+     "win": 20.8,
+     "pf": 1.29,
+     "net": 21524,
+     "dd": -10387,
+     "avg_r": 0.034,
+     "stop": 41.8,
+     "worst_day": -752,
+     "risk": 191.0,
+     "half": 387,
+     "p10": 5.0,
+     "f10": 0.6,
+     "p20": 10.0,
+     "f20": 3.3,
+     "b2b": "11/15",
+     "p60": 30.5,
+     "f60": 38.0,
+     "pE": 45.4,
+     "dE": 39
+    }
+   }
+  },
+  {
+   "id": "risk_usd900",
+   "title": "Risk $900 instead of $800 (x1.125)",
+   "family": "risk",
+   "question": "How much should one trade risk? The same strategy at a smaller or bigger $ risk.",
+   "status": "rejected",
+   "verdict": "Not better in both periods. 2026 +$22,617 (live +$20,111), PF 3.45 (3.48), 1-month evals 32% pass / 0% fail (30/0). 2021-25 +$6,573 (+$6,491), PF 1.08 (1.09), evals 8/14% (9/10).",
+   "writeup": "research/writeups/risk-sizing.md",
+   "tags": [
+    "risk",
+    "levels",
+    "level"
+   ],
+   "params": {},
+   "sizing": {
+    "risk_usd": 900.0
+   },
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.45,
+     "net": 22617,
+     "dd": -3063,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -611,
+     "risk": 302.0,
+     "half": 28,
+     "p10": 20.8,
+     "f10": 0.0,
+     "p20": 32.1,
+     "f20": 0.0,
+     "b2b": "5/1",
+     "p60": 53.7,
+     "f60": 32.0,
+     "pE": 76.3,
+     "dE": 23
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.08,
+     "net": 6573,
+     "dd": -12828,
+     "avg_r": -0.003,
+     "stop": 41.2,
+     "worst_day": -958,
+     "risk": 231.0,
+     "half": 350,
+     "p10": 4.2,
+     "f10": 3.3,
+     "p20": 8.0,
+     "f20": 13.8,
+     "b2b": "8/21",
+     "p60": 17.2,
+     "f60": 65.7,
+     "pE": 21.4,
+     "dE": 26
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.31,
+     "net": 29191,
+     "dd": -12828,
+     "avg_r": 0.041,
+     "stop": 41.8,
+     "worst_day": -958,
+     "risk": 234.0,
+     "half": 378,
+     "p10": 6.8,
+     "f10": 2.8,
+     "p20": 11.9,
+     "f20": 11.5,
+     "b2b": "13/22",
+     "p60": 24.4,
+     "f60": 58.5,
+     "pE": 33.6,
+     "dE": 28
     }
    }
   },
@@ -11141,7 +12310,7 @@
     "stop_buf_atr": 0.1
    },
    "sizing": {},
-   "built": "2026-10-17 20:09",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 83,
@@ -11220,7 +12389,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 96,
@@ -11296,7 +12465,7 @@
     "stop_buf_atr": 0.15
    },
    "sizing": {},
-   "built": "2026-10-17 20:09",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 76,
@@ -11375,7 +12544,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 94,
@@ -11454,7 +12623,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 103,
@@ -11530,7 +12699,7 @@
     "stop_buf_atr": 0.25
    },
    "sizing": {},
-   "built": "2026-10-17 20:09",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 70,
@@ -11606,7 +12775,7 @@
     "stop_buf_atr": 0.5
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 58,
@@ -11986,7 +13155,7 @@
     "stop_mode": "ifvg"
    },
    "sizing": {},
-   "built": "2026-10-17 20:09",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 91,
@@ -12365,7 +13534,7 @@
    "family": "stops",
    "question": "Should the tightest stop be 12 points instead of 10?",
    "status": "rejected",
-   "verdict": "Worse in both periods. 2026: PF 3.45 -> 3.45, net +$19.9k -> +$19.9k; 2021-25: PF 1.11 -> 1.09, net +$8.8k -> +$6.9k; 2.16 / 3.18 trades a week.",
+   "verdict": "Same in 2026, worse in 2021-25. 2026: PF 3.45 -> 3.45, net +$19.9k -> +$19.9k; 2021-25: PF 1.11 -> 1.09, net +$8.8k -> +$6.9k; 2.16 / 3.18 trades a week.",
    "writeup": "stops.md",
    "tags": [
     "screen"
@@ -12376,7 +13545,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-17 20:09",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 89,
@@ -12454,7 +13623,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-17 20:09",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 89,
@@ -12521,7 +13690,7 @@
    "family": "stops",
    "question": "Should the tightest stop be 8 points instead of 10?",
    "status": "rejected",
-   "verdict": "Worse in both periods. 2026: PF 3.45 -> 3.45, net +$19.9k -> +$19.9k; 2021-25: PF 1.11 -> 1.1, net +$8.8k -> +$8.1k; 2.16 / 3.18 trades a week.",
+   "verdict": "Same in 2026, worse in 2021-25. 2026: PF 3.45 -> 3.45, net +$19.9k -> +$19.9k; 2021-25: PF 1.11 -> 1.1, net +$8.8k -> +$8.1k; 2.16 / 3.18 trades a week.",
    "writeup": "stops.md",
    "tags": [
     "screen"
@@ -12532,7 +13701,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-17 20:09",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 89,
@@ -12608,7 +13777,7 @@
     "target_front_ticks": 16
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -12684,7 +13853,7 @@
     "target_front_ticks": 4
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -12760,7 +13929,7 @@
     "target_front_ticks": 8
    },
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -12836,7 +14005,7 @@
     "target_mode": "major_next"
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 83,
@@ -12912,7 +14081,7 @@
     "max_rr": 3.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 95,
@@ -12988,7 +14157,7 @@
     "max_rr": 4.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 93,
@@ -13064,7 +14233,7 @@
     "max_rr": 6.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 86,
@@ -13140,7 +14309,7 @@
     "max_rr": 8.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 85,
@@ -13216,7 +14385,7 @@
     "min_rr": 1.2
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 89,
@@ -13292,7 +14461,7 @@
     "min_rr": 2.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 86,
@@ -13368,7 +14537,7 @@
     "min_rr": 2.5
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 85,
@@ -13444,7 +14613,7 @@
     "min_rr": 3.0
    },
    "sizing": {},
-   "built": "2026-10-17 20:10",
+   "built": "2026-10-17 20:25",
    "spans": {
     "2026": {
      "n": 83,
@@ -13520,7 +14689,7 @@
     "touch_ticks": 0
    },
    "sizing": {},
-   "built": "2026-10-17 20:03",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -13596,7 +14765,7 @@
     "touch_ticks": 2
    },
    "sizing": {},
-   "built": "2026-10-17 20:03",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -13658,6 +14827,91 @@
    }
   },
   {
+   "id": "tim_am_late",
+   "title": "Morning window starts 10:00",
+   "family": "timing",
+   "question": "Skip the first 30 minutes after the open?",
+   "status": "rejected",
+   "verdict": "Too few trades (1.72 a week). 2026: PF 3.45 -> 3.9, net +$19.9k -> +$14.7k; 2021-25: PF 1.11 -> 0.85, net +$8.8k -> -$9.9k; 1.72 / 2.75 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "entry_windows": [
+     [
+      600,
+      690
+     ],
+     [
+      810,
+      930
+     ]
+    ]
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:26",
+   "spans": {
+    "2026": {
+     "n": 71,
+     "tpw": 1.72,
+     "wk2": 57,
+     "win": 23.9,
+     "pf": 3.9,
+     "net": 14666,
+     "dd": -2497,
+     "avg_r": 0.34,
+     "stop": 45.0,
+     "worst_day": -524,
+     "risk": 178.0,
+     "half": 37,
+     "p10": 14.2,
+     "f10": 0.0,
+     "p20": 19.8,
+     "f20": 0.0,
+     "b2b": "3/1"
+    },
+    "2021-25": {
+     "n": 598,
+     "tpw": 2.75,
+     "wk2": 83,
+     "win": 20.1,
+     "pf": 0.85,
+     "net": -9859,
+     "dd": -15194,
+     "avg_r": -0.043,
+     "stop": 40.0,
+     "worst_day": -875,
+     "risk": 206.0,
+     "half": 341,
+     "p10": 2.3,
+     "f10": 2.8,
+     "p20": 4.6,
+     "f20": 8.6,
+     "b2b": "4/17"
+    },
+    "all": {
+     "n": 669,
+     "tpw": 2.59,
+     "wk2": 79,
+     "win": 20.5,
+     "pf": 1.07,
+     "net": 4807,
+     "dd": -16297,
+     "avg_r": -0.002,
+     "stop": 40.8,
+     "worst_day": -875,
+     "risk": 205.0,
+     "half": 378,
+     "p10": 4.1,
+     "f10": 2.3,
+     "p20": 6.8,
+     "f20": 7.2,
+     "b2b": "7/18"
+    }
+   }
+  },
+  {
    "id": "tim_am_only",
    "title": "Morning killzone only (09:30-11:30)",
    "family": "timing",
@@ -13677,7 +14931,7 @@
     ]
    },
    "sizing": {},
-   "built": "2026-10-17 20:15",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 49,
@@ -13753,7 +15007,7 @@
     "arm_expiry_min": 30
    },
    "sizing": {},
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 84,
@@ -13815,6 +15069,82 @@
    }
   },
   {
+   "id": "tim_armexp45",
+   "title": "Setup expires after 45 min (today 60)",
+   "family": "timing",
+   "question": "Let an armed setup wait 45 minutes for its trigger instead of 60?",
+   "status": "rejected",
+   "verdict": "Worse in both periods. 2026: PF 3.45 -> 3.07, net +$19.9k -> +$16.4k; 2021-25: PF 1.11 -> 1.05, net +$8.8k -> +$3.3k; 2.11 / 3.04 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "arm_expiry_min": 45
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:26",
+   "spans": {
+    "2026": {
+     "n": 87,
+     "tpw": 2.11,
+     "wk2": 69,
+     "win": 23.0,
+     "pf": 3.07,
+     "net": 16431,
+     "dd": -2661,
+     "avg_r": 0.339,
+     "stop": 44.0,
+     "worst_day": -554,
+     "risk": 238.0,
+     "half": 29,
+     "p10": 14.7,
+     "f10": 0.0,
+     "p20": 19.8,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 661,
+     "tpw": 3.04,
+     "wk2": 90,
+     "win": 18.0,
+     "pf": 1.05,
+     "net": 3302,
+     "dd": -9526,
+     "avg_r": -0.01,
+     "stop": 40.5,
+     "worst_day": -875,
+     "risk": 213.0,
+     "half": 344,
+     "p10": 3.7,
+     "f10": 2.0,
+     "p20": 7.9,
+     "f20": 7.2,
+     "b2b": "5/17"
+    },
+    "all": {
+     "n": 748,
+     "tpw": 2.89,
+     "wk2": 87,
+     "win": 18.6,
+     "pf": 1.25,
+     "net": 19733,
+     "dd": -9526,
+     "avg_r": 0.031,
+     "stop": 41.1,
+     "worst_day": -875,
+     "risk": 216.0,
+     "half": 373,
+     "p10": 5.4,
+     "f10": 1.7,
+     "p20": 9.5,
+     "f20": 6.0,
+     "b2b": "8/18"
+    }
+   }
+  },
+  {
    "id": "tim_armexp90",
    "title": "Setup expires after 90 min (today 60)",
    "family": "timing",
@@ -13829,7 +15159,7 @@
     "arm_expiry_min": 90
    },
    "sizing": {},
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 92,
@@ -13891,6 +15221,82 @@
    }
   },
   {
+   "id": "tim_armstart420",
+   "title": "Sweeps count from 07:00 (today 08:00)",
+   "family": "timing",
+   "question": "Should only sweeps from 07:00 arm a setup?",
+   "status": "rejected",
+   "verdict": "Better in 2021-25 only, the same in the other (too small to matter). 2026: PF 3.45 -> 3.45, net +$19.9k -> +$19.9k; 2021-25: PF 1.11 -> 1.12, net +$8.8k -> +$9.1k; 2.16 / 3.18 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "arm_start": 420
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:26",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.45,
+     "net": 19908,
+     "dd": -2661,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -554,
+     "risk": 239.0,
+     "half": 29,
+     "p10": 19.8,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 692,
+     "tpw": 3.18,
+     "wk2": 92,
+     "win": 20.7,
+     "pf": 1.12,
+     "net": 9137,
+     "dd": -11324,
+     "avg_r": 0.003,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 215.0,
+     "half": 351,
+     "p10": 4.7,
+     "f10": 2.0,
+     "p20": 9.5,
+     "f20": 9.5,
+     "b2b": "7/18"
+    },
+    "all": {
+     "n": 781,
+     "tpw": 3.02,
+     "wk2": 89,
+     "win": 21.1,
+     "pf": 1.34,
+     "net": 29045,
+     "dd": -11324,
+     "avg_r": 0.046,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 216.0,
+     "half": 380,
+     "p10": 7.0,
+     "f10": 1.7,
+     "p20": 12.5,
+     "f20": 7.9,
+     "b2b": "11/19"
+    }
+   }
+  },
+  {
    "id": "tim_armstart540",
    "title": "Sweeps count from 09:00 (today 08:00)",
    "family": "timing",
@@ -13905,7 +15311,7 @@
     "arm_start": 540
    },
    "sizing": {},
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 87,
@@ -13967,6 +15373,82 @@
    }
   },
   {
+   "id": "tim_armstart570",
+   "title": "Sweeps count from 09:30 (today 08:00)",
+   "family": "timing",
+   "question": "Should only sweeps from 09:30 arm a setup?",
+   "status": "rejected",
+   "verdict": "Worse in both periods. 2026: PF 3.45 -> 3.33, net +$19.9k -> +$16.8k; 2021-25: PF 1.11 -> 1.02, net +$8.8k -> +$1.5k; 2.01 / 3.03 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "arm_start": 570
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:26",
+   "spans": {
+    "2026": {
+     "n": 83,
+     "tpw": 2.01,
+     "wk2": 67,
+     "win": 24.1,
+     "pf": 3.33,
+     "net": 16849,
+     "dd": -2296,
+     "avg_r": 0.331,
+     "stop": 44.0,
+     "worst_day": -554,
+     "risk": 234.0,
+     "half": 35,
+     "p10": 18.8,
+     "f10": 0.0,
+     "p20": 27.3,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 659,
+     "tpw": 3.03,
+     "wk2": 90,
+     "win": 19.7,
+     "pf": 1.02,
+     "net": 1507,
+     "dd": -11373,
+     "avg_r": -0.024,
+     "stop": 39.8,
+     "worst_day": -875,
+     "risk": 216.0,
+     "half": 333,
+     "p10": 4.4,
+     "f10": 2.6,
+     "p20": 8.1,
+     "f20": 8.0,
+     "b2b": "7/19"
+    },
+    "all": {
+     "n": 742,
+     "tpw": 2.87,
+     "wk2": 87,
+     "win": 20.2,
+     "pf": 1.22,
+     "net": 18356,
+     "dd": -11373,
+     "avg_r": 0.016,
+     "stop": 40.2,
+     "worst_day": -875,
+     "risk": 216.0,
+     "half": 368,
+     "p10": 6.5,
+     "f10": 2.2,
+     "p20": 10.8,
+     "f20": 6.7,
+     "b2b": "11/19"
+    }
+   }
+  },
+  {
    "id": "tim_ext",
    "title": "Wider windows (09:30-12:00, 13:00-15:30)",
    "family": "timing",
@@ -13990,7 +15472,7 @@
     ]
    },
    "sizing": {},
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 100,
@@ -14071,7 +15553,7 @@
     ]
    },
    "sizing": {},
-   "built": "2026-10-17 20:15",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 51,
@@ -14145,7 +15627,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 50,
@@ -14219,7 +15701,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 34,
@@ -14293,7 +15775,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 29,
@@ -14367,7 +15849,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 19:47",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 61,
@@ -14448,7 +15930,7 @@
     "group": "knife",
     "cold_streak": "off"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 89,
@@ -14529,7 +16011,7 @@
     "group": "knife",
     "cold_streak": "live"
    },
-   "built": "2026-10-17 20:19",
+   "built": "2026-10-17 20:26",
    "spans": {
     "2026": {
      "n": 83,
@@ -14591,6 +16073,158 @@
    }
   },
   {
+   "id": "flt_long_only",
+   "title": "Longs only",
+   "family": "filters",
+   "question": "Info: how do longs alone do?",
+   "status": "info",
+   "verdict": "Too few trades (1.0 a week). 2026: PF 3.45 -> 2.59, net +$19.9k -> +$5.5k; 2021-25: PF 1.11 -> 1.07, net +$8.8k -> +$2.8k; 1.0 / 1.71 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "short": false
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 41,
+     "tpw": 1.0,
+     "wk2": 21,
+     "win": 24.4,
+     "pf": 2.59,
+     "net": 5533,
+     "dd": -1240,
+     "avg_r": 0.216,
+     "stop": 42.5,
+     "worst_day": -400,
+     "risk": 160.0,
+     "half": 29,
+     "p10": 5.1,
+     "f10": 0.0,
+     "p20": 10.7,
+     "f20": 0.0,
+     "b2b": "1/0"
+    },
+    "2021-25": {
+     "n": 372,
+     "tpw": 1.71,
+     "wk2": 54,
+     "win": 18.0,
+     "pf": 1.07,
+     "net": 2788,
+     "dd": -11137,
+     "avg_r": -0.011,
+     "stop": 42.2,
+     "worst_day": -838,
+     "risk": 214.0,
+     "half": 182,
+     "p10": 2.8,
+     "f10": 0.3,
+     "p20": 5.5,
+     "f20": 1.6,
+     "b2b": "4/9"
+    },
+    "all": {
+     "n": 413,
+     "tpw": 1.6,
+     "wk2": 49,
+     "win": 18.6,
+     "pf": 1.2,
+     "net": 8321,
+     "dd": -11137,
+     "avg_r": 0.012,
+     "stop": 42.2,
+     "worst_day": -838,
+     "risk": 208.0,
+     "half": 211,
+     "p10": 3.1,
+     "f10": 0.2,
+     "p20": 6.2,
+     "f20": 1.3,
+     "b2b": "5/9"
+    }
+   }
+  },
+  {
+   "id": "flt_short_only",
+   "title": "Shorts only",
+   "family": "filters",
+   "question": "Info: how do shorts alone do?",
+   "status": "info",
+   "verdict": "Too few trades (1.33 a week). 2026: PF 3.45 -> 3.26, net +$19.9k -> +$10.9k; 2021-25: PF 1.11 -> 0.94, net +$8.8k -> -$3.2k; 1.33 / 2.2 trades a week.",
+   "writeup": "bias-filters.md",
+   "tags": [
+    "screen"
+   ],
+   "params": {
+    "long": false
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:25",
+   "spans": {
+    "2026": {
+     "n": 55,
+     "tpw": 1.33,
+     "wk2": 40,
+     "win": 21.8,
+     "pf": 3.26,
+     "net": 10874,
+     "dd": -2684,
+     "avg_r": 0.362,
+     "stop": 46.5,
+     "worst_day": -554,
+     "risk": 238.0,
+     "half": 18,
+     "p10": 14.7,
+     "f10": 0.0,
+     "p20": 28.9,
+     "f20": 0.0,
+     "b2b": "3/1"
+    },
+    "2021-25": {
+     "n": 479,
+     "tpw": 2.2,
+     "wk2": 70,
+     "win": 20.0,
+     "pf": 0.94,
+     "net": -3180,
+     "dd": -10634,
+     "avg_r": -0.019,
+     "stop": 38.8,
+     "worst_day": -875,
+     "risk": 214.0,
+     "half": 264,
+     "p10": 1.9,
+     "f10": 1.3,
+     "p20": 5.2,
+     "f20": 5.4,
+     "b2b": "5/15"
+    },
+    "all": {
+     "n": 534,
+     "tpw": 2.06,
+     "wk2": 65,
+     "win": 20.2,
+     "pf": 1.13,
+     "net": 7693,
+     "dd": -10634,
+     "avg_r": 0.02,
+     "stop": 39.4,
+     "worst_day": -875,
+     "risk": 215.0,
+     "half": 282,
+     "p10": 3.8,
+     "f10": 1.1,
+     "p20": 8.6,
+     "f20": 4.6,
+     "b2b": "8/16"
+    }
+   }
+  },
+  {
    "id": "combo_risk_sizing",
    "title": "Info: the sizing researcher's recommendation alone",
    "family": "other",
@@ -14603,7 +16237,7 @@
    ],
    "params": {},
    "sizing": {},
-   "built": "2026-10-17 20:22",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,
@@ -14680,7 +16314,7 @@
     "exit_learn": false
    },
    "sizing": {},
-   "built": "2026-10-17 20:03",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -14756,7 +16390,7 @@
     "exit_learn": false
    },
    "sizing": {},
-   "built": "2026-10-17 20:03",
+   "built": "2026-10-17 20:28",
    "spans": {
     "2026": {
      "n": 89,
@@ -14832,7 +16466,7 @@
     "memory_seed": false
    },
    "sizing": {},
-   "built": "2026-10-17 20:03",
+   "built": "2026-10-17 20:27",
    "spans": {
     "2026": {
      "n": 89,

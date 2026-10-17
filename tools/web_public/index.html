@@ -695,6 +695,9 @@ table.ht tr.grp td { font: 650 10.5px var(--sans); letter-spacing: .1em; text-tr
 .linkbtn { border: 0; background: none; padding: 0; color: var(--accent-2); font-size: inherit; text-decoration: underline; text-underline-offset: 2px; }
 table.ht td.best { color: var(--good-ink); } table.ht td.best::after { content: " ●"; font-size: 8px; vertical-align: 2px; }
 table.ht td.k { white-space: normal; min-width: 92px; }
+table.cmp td.k { white-space: nowrap; }
+table.cmp th.rn { text-transform: none; letter-spacing: 0; font-size: 11.5px; font-weight: 650; white-space: normal; min-width: 88px; max-width: 160px; vertical-align: bottom; }
+table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .mt.m5 { grid-template-columns: 62px repeat(4, minmax(0, 1fr)); }
 .mt.m5 > div:nth-last-child(-n+3) { border-bottom: 1px solid rgba(238,241,248,.05); } .mt.m5 > div:nth-last-child(-n+5) { border-bottom: 0; }
 .xgrid > .vitem { padding: 14px 16px; }
@@ -834,6 +837,7 @@ const fR = (v, d = 2) => { if (!ok(v)) return '—'; const a = Math.abs(Number(v
 const pct = (v) => !ok(v) ? '—' : num(v, Math.abs(v) < 10 && Math.abs(v) % 1 ? 1 : 0) + '%';
 const fPF = (v) => !ok(v) ? '—' : Number(v).toFixed(2);
 const cls = (v) => v > 0 ? 'up' : v < 0 ? 'dn' : '';
+const cR = (v) => ok(v) ? cls(+Number(v).toFixed(2)) : '';          // colour of an R value as it is shown (−0.003 shows 0.00R: no colour)
 const plural = (n, w, pl) => `${n} ${n === 1 ? w : pl || w + 's'}`;
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const fDate = (d) => { if (!d) return ''; const m = String(d).match(/^(\d{4})-(\d\d)(?:-(\d\d))?/); return m ? (m[3] ? `${+m[3]} ` : '') + MONTHS[+m[2] - 1] + ' ' + m[1] : String(d); };
@@ -919,8 +923,8 @@ function hover(box, svg, W, onMove, onLeave) {
   box.onpointermove = mv; box.onpointerdown = mv;
   box.onpointerleave = () => { tip.hidden = true; onLeave?.(); };
 }
-function lineChart(el, pts, { h = 220, fmt = kfmt, color = 'var(--accent)', ref = null } = {}) {
-  if (!el) return; if (!pts.length) { el.innerHTML = '<div class="empty">No data yet.</div>'; return; }
+function lineChart(el, pts, { h = 220, fmt = kfmt, color = 'var(--accent)', ref = null, empty = 'No data yet.' } = {}) {
+  if (!el) return; if (!pts.length) { el.innerHTML = `<div class="empty">${empty}</div>`; return; }
   const W = Math.max(300, el.clientWidth || 600), H = h, L = 50, R = 10, T = 10, B = 22;
   let lo = Math.min(0, ...pts.map(p => p.y), ref ?? 0), hi = Math.max(0, ...pts.map(p => p.y), ref ?? 0); const pd = (hi - lo) * .06 || 1; lo -= pd; hi += pd;
   const X = (i) => L + (pts.length < 2 ? 0 : i / (pts.length - 1) * (W - L - R)), Y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
@@ -1463,7 +1467,7 @@ function reactorFb(el, d) {
     <path d="${arc(0, Math.max(.002, tb))}" fill="none" stroke="url(#${id})" stroke-width="${sw}" stroke-linecap="round" filter="url(#${id}b)" opacity=".55"/>
     ${tick(d.start, '$50,000 start', true)}${d.locked ? '' : tick(50100, '', true)}
     <circle cx="${bx}" cy="${by}" r="${mini ? 11 : 15}" fill="${col}" filter="url(#${id}b)" opacity=".9"/><circle cx="${bx}" cy="${by}" r="${mini ? 6 : 8}" fill="#fff"/>
-    ${mini ? '' : `<text x="${cx - r}" y="${cy + 26}" text-anchor="middle" class="ax" fill="var(--bad)">floor ${usd(d.floor)}</text><text x="${cx + r}" y="${cy + 26}" text-anchor="middle" class="ax" fill="var(--good-ink)">target ${usd(d.target)}</text>`}
+    ${mini ? '' : `<text x="${Math.max(8, cx - r - sw / 2)}" y="${cy + 28}" text-anchor="start" class="ax" fill="var(--bad)">floor ${usd(d.floor)}</text><text x="${Math.min(W - 8, cx + r + sw / 2)}" y="${cy + 28}" text-anchor="end" class="ax" fill="var(--good-ink)">target ${usd(d.target)}</text>`}
   </svg>
   <div style="position:absolute;left:0;right:0;top:${mini ? Math.max(8, cy - r * .62) : cy - r * .52}px;text-align:center;pointer-events:none">
     <div class="eyebrow ${st[1]}" style="color:${st[1] ? '' : 'var(--accent-2)'}">${st[0]}${d.locked ? ' · floor locked' : ''}</div>
@@ -2103,7 +2107,7 @@ function cmpTable(sel, per) {
     if (have.length > 1 && (better === 'hi' || better === 'lo' || better === 'b2b')) { const t = better === 'lo' ? Math.min(...have) : Math.max(...have); if (have.some(v => v !== t)) best = nums.indexOf(t); }
     return `<tr><td class="k">${label}</td>${vals.map((v, i) => `<td class="v ${i === best ? 'best' : ''} ${k === 'net' ? cls(v) : ''}">${f(v)}</td>`).join('')}</tr>`;
   });
-  return `<div class="tw"><table class="ht"><tr><th>Metric</th>${sel.map((r, k) => `<th class="c" style="color:${CMP_C[k]};white-space:normal;min-width:84px">${esc(r.title || r.id)}</th>`).join('')}</tr>${rows.join('')}</table></div>`;
+  return `<div class="tw"><table class="ht cmp"><tr><th>Metric</th>${sel.map((r, k) => `<th class="c rn" style="color:${CMP_C[k]}"><span>${esc(r.title || r.id)}</span></th>`).join('')}</tr>${rows.join('')}</table></div>`;
 }
 VIEWS.compare = (el) => {
   const runs = RUNS_(), bid = baseId();
@@ -2277,13 +2281,13 @@ VIEWS.learned = (el) => {
     + howto('learned', `<p>${esc(sm.how_it_learns || 'Each factor is checked in two periods separately.')}</p>
       <ul><li><b>Lean in</b>: trades with this factor did better than average in both periods.</li><li><b>Avoid</b>: worse in both periods.</li>
       <li><b>Mixed</b>: better in one period, worse in the other, so it is not trusted.</li><li><b>Thin</b>: too few trades to say.</li></ul><p>Avg R = the average result per trade in units of risk.</p>`)
-    + `<div class="stats">${statBox('Avg R 2021-25', fR(sm.baseline_avg_r?.['2021_25']), 'every trade', cls(sm.baseline_avg_r?.['2021_25']))}${statBox('Avg R 2026', fR(sm.baseline_avg_r?.['2026']), 'every trade', cls(sm.baseline_avg_r?.['2026']))}
+    + `<div class="stats">${statBox('Avg R 2021-25', fR(sm.baseline_avg_r?.['2021_25']), 'every trade', cR(sm.baseline_avg_r?.['2021_25']))}${statBox('Avg R 2026', fR(sm.baseline_avg_r?.['2026']), 'every trade', cR(sm.baseline_avg_r?.['2026']))}
       ${statBox('Wins hit target', pct(sm.wins?.hit_target_pct), `${sm.wins?.count ?? '—'} wins · avg ${fR(sm.wins?.avg_win_r)}`)}${statBox('Were +1R, then lost', pct(sm.losses?.were_plus_1R_then_lost_pct), `of ${sm.losses?.count ?? '—'} losses`, 'dn')}</div>
     <div class="toolbar">${segHTML('lS', [['all', `All ${f.length}`], ['good', `Lean in ${cnt('good')}`], ['bad', `Avoid ${cnt('bad')}`], ['mixed', `Mixed ${cnt('mixed')}`], ['na', `Thin ${cnt('na')}`]], LS)}</div>
     ${f.length ? `<div class="lessons">${rows.map(x => { const k = kind(x.verdict); return `<div class="lesson ${k}"><div class="eyebrow">${esc(x.factor)}</div><b>${esc(x.value)}</b>
       <span class="verdict ${k}">${icon(k === 'good' ? 'up' : k === 'bad' ? 'down' : 'minus')}${esc(x.verdict)}</span>
-      <div class="lb"><div><span>2021-25</span><b class="${cls(x.avg_r_2021_25)}">${fR(x.avg_r_2021_25)}</b><i>${x.n_2021_25} trades · win ${pct(x.win_2021_25)}</i></div>
-        <div><span>2026</span><b class="${cls(x.avg_r_2026)}">${fR(x.avg_r_2026)}</b><i>${x.n_2026} trades · win ${pct(x.win_2026)}</i></div></div></div>`; }).join('') || emptyBox('Nothing in this group.', '')}</div>`
+      <div class="lb"><div><span>2021-25</span><b class="${cR(x.avg_r_2021_25)}">${fR(x.avg_r_2021_25)}</b><i>${x.n_2021_25} trades · win ${pct(x.win_2021_25)}</i></div>
+        <div><span>2026</span><b class="${cR(x.avg_r_2026)}">${fR(x.avg_r_2026)}</b><i>${x.n_2026} trades · win ${pct(x.win_2026)}</i></div></div></div>`; }).join('') || emptyBox('Nothing in this group.', '')}</div>`
       : `<div class="card">${emptyBox('No lessons in this build.', 'They come with the 5-year export (tools/export_backtest.py).')}</div>`}`;
   onSeg('lS', (v) => { LS = v; render(true); });
 };
@@ -2292,7 +2296,7 @@ VIEWS.variants = (el) => {
   const v = D.variants || {}, cols = v.columns || {}, keys = ['n', 'tpw', 'wk2', 'win', 'pf', 'net', 'dd', 'stop', 'p10', 'f10', 'p20', 'f20', 'b2b'], list = VS.view === 'list';
   el.innerHTML = head(`Lab · variants · built ${esc(v.built || '')}`, `${plural((v.rows || []).length, 'variant')}, two periods`, `${esc(v.note || '')}.`)
     + howto('variants', `<p>The older strategy-lab table: every variant tested before the run library existed, this year (2026) next to five years. New experiments are stored with all their trades under <b>Experiments</b>.</p>
-      <ul><li><b>pf</b> profit factor · <b>net</b> profit · <b>tpw</b> trades a week · <b>dd</b> max drawdown · <b>p20 / f20</b> eval pass / fail within a month.</li><li>In the table, tap a column header to sort; every column is explained at the bottom.</li></ul>`)
+      <ul><li><b>pf</b> profit factor · <b>net</b> profit · <b>tpw</b> (/ wk) trades a week · <b>dd</b> max drawdown · <b>p20 / f20</b> (Eval in the list) = eval pass % / fail % within a month.</li><li>In the table, tap a column header to sort; every column is explained at the bottom.</li></ul>`)
     + `<div class="toolbar">${segHTML('vView', [['list', 'List'], ['table', 'Table']], VS.view)}${list ? '<span id="vSort"></span>' : segHTML('vPer', [['both', 'Both'], ['y2026', '2026'], ['y5', '5 years']], VS.per)}
       <label class="field">${icon('search')}<input class="inp" id="vQ" placeholder="Filter: engine, ATM, tgt, stop…" value="${esc(VS.q)}" autocomplete="off"></label></div>
     ${list ? '<div class="xgrid" id="vL"></div>' : `<div class="card" style="padding:0;overflow:hidden"><div class="tw" id="vT" style="max-height:70vh"></div></div>
@@ -2302,8 +2306,8 @@ VIEWS.variants = (el) => {
   const draw = () => {
     const rows = sorted();
     if (list) {
-      $('#vL').innerHTML = rows.map(r => `<div class="card vitem"><h3 style="margin:0 0 10px;font-size:14.5px">${esc(r.name)}</h3><div class="mt m5"><div class="h"></div><div class="h">PF</div><div class="h">Net</div><div class="h">/ wk</div><div class="h">Eval 1 mo</div>
-        ${[['y2026', '2026'], ['y5', '5 years']].map(([p, l]) => { const x = r[p] || {}; return `<div class="k">${l}</div><div class="v ${x.pf >= 1.5 ? 'up' : x.pf < 1 ? 'dn' : ''}">${fPF(x.pf)}</div><div class="v ${cls(x.net)}">${kusd(x.net)}</div><div class="v ${ok(x.tpw) && x.tpw < 2 ? 'dn' : ''}">${num(x.tpw, 1)}</div><div class="v">${pct(x.p20)} / ${pct(x.f20)}</div>`; }).join('')}</div></div>`).join('')
+      $('#vL').innerHTML = rows.map(r => `<div class="card vitem"><h3 style="margin:0 0 10px;font-size:14.5px">${esc(r.name)}</h3><div class="mt m5"><div class="h"></div><div class="h">PF</div><div class="h">Net</div><div class="h">/ wk</div><div class="h">Eval</div>
+        ${[['y2026', '2026'], ['y5', '5 years']].map(([p, l]) => { const x = r[p] || {}; return `<div class="k">${l}</div><div class="v ${x.pf >= 1.5 ? 'up' : x.pf < 1 ? 'dn' : ''}">${fPF(x.pf)}</div><div class="v ${cls(x.net)}">${kusd(x.net)}</div><div class="v ${ok(x.tpw) && x.tpw < 2 ? 'dn' : ''}">${num(x.tpw, 1)}</div><div class="v">${ok(x.p20) ? Math.round(x.p20) + '/' + Math.round(x.f20) : '—'}</div>`; }).join('')}</div></div>`).join('')
         || `<div class="card">${emptyBox('No variant matches.', '')}</div>`;
       return;
     }
@@ -2389,7 +2393,7 @@ VIEWS.eval = (el) => {
       <div><span>Pass in 1 month</span><b class="up">${pct(e.within_1_month?.pass_pct)}</b></div><div><span>Fail in 1 month</span><b class="dn">${pct(e.within_1_month?.fail_pct)}</b></div>
       <div><span>Back-to-back</span><b>${e.back_to_back?.passed ?? '—'} passed · ${e.back_to_back?.failed ?? '—'} failed</b></div></div></div>`; }).join('')}</div>`;
   fxFill('eval-reactor', 'reactor', RD, {}, (fb) => reactorFb(fb, RD));
-  lineChart($('#evC'), pts.length ? [{ x: 'start', y: 50000 }, ...pts] : [], { h: 200, fmt: (v) => '$' + (v / 1000).toFixed(1) + 'k', ref: 53000 });
+  lineChart($('#evC'), pts.length ? [{ x: 'start', y: 50000 }, ...pts] : [], { h: 200, fmt: (v) => '$' + (v / 1000).toFixed(1) + 'k', ref: 53000, empty: '<b>No paper trades yet.</b>The line starts at $50,000 with the cloud bot’s first trade.' });
 };
 VIEWS.cold = (el) => {
   const c = D.cold || {}, cfg = c.config || {}, now = c.now || LV().equity_filter || {}, win = c.window || [], lb = cfg.lookback || 15, thr = cfg.min_sum_r ?? 0;
