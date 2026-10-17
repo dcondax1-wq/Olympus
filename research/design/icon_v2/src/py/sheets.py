@@ -59,7 +59,7 @@ def contact(out, items, big=480, title='Liquidity Engine: app icon concepts'):
     sheet = Image.new('RGBA', (W, H), (14, 14, 19, 255))
     d = ImageDraw.Draw(sheet)
     d.text((pad + 8, 34), title, font=font(F_BOLD, 38), fill=(236, 236, 244))
-    d.text((pad + 8, 80), 'ranked 1-8  ·  large  ·  180 / 120 / 60 px on dark  ·  60 px on light  (iOS-style 27% corner mask)', font=font(F_MED, 20), fill=(150, 150, 165))
+    d.text((pad + 8, 80), 'large  ·  180 / 120 / 60 px on dark  ·  60 px on light  (iOS-style 27% corner mask)', font=font(F_MED, 20), fill=(150, 150, 165))
     for i, (k, label, path) in enumerate(items):
         src = Image.open(path)
         cx, cy = pad + (i % cols) * cw, 110 + (i // cols) * ch

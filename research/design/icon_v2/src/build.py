@@ -144,9 +144,9 @@ def build_assets():
         else:
             b64 = base64.b64encode(open(os.path.join(d, 'icon-512.png'), 'rb').read()).decode()
             open(os.path.join(d, 'icon.svg'), 'w').write(
-                '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" width="512" height="512">'
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">'
                 f'<!-- Liquidity Engine app icon "{k}" (3D render, research/design/icon_v2/src) -->'
-                f'<image width="512" height="512" href="data:image/png;base64,{b64}" xlink:href="data:image/png;base64,{b64}"/></svg>\n')
+                f'<image width="512" height="512" href="data:image/png;base64,{b64}"/></svg>\n')
         print(k, sorted(os.listdir(d)))
 
 

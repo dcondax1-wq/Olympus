@@ -1880,8 +1880,10 @@ VIEWS.stops = (el) => {
     + howto('stops', `<p>The stop always goes beyond the high or low that was swept, so its distance changes every trade (10 to 60 points). The bot never uses a fixed stop.</p>
       <p>Size follows the stop: a wide stop trades fewer micros, so the dollars at risk stay controlled. Each row groups the 5-year trades by stop size: how often they won, the average result in R, and the typical size.</p>`)
     + `<div class="stats">${statBox('Median stop', num(a.median_stop_pts, 1), 'points')}${statBox('Median micros', a.median_micros ?? '—', 'MNQ')}${statBox('Median $ risk', usd(a.median_risk_usd), 'per trade')}</div>
-    <div class="card"><div class="card-h"><h3>By stop size</h3><span class="meta">5 years of replay trades</span></div>${bk.length ? `<div class="tw"><table class="ht"><tr><th>Stop</th><th class="num">Trades</th><th class="hide-sm"></th><th class="num">Win</th><th class="num">Avg R</th><th class="num">Micros</th><th class="num">$ risk</th></tr>
-      ${bk.map(b => `<tr><td class="mono"><b>${esc(b.stop_pts)}</b></td><td class="num">${b.trades}</td><td class="hide-sm" style="min-width:64px;width:22%"><div class="meter"><i style="width:${b.trades / mx * 100}%"></i></div></td><td class="num">${pct(b.win_pct)}</td><td class="num mono ${cR(b.avg_r)}">${fR(b.avg_r)}</td><td class="num">${b.median_micros}</td><td class="num mono">${usd(b.median_risk_usd)}</td></tr>`).join('')}</table></div>` : emptyBox('No stop buckets in this build.', '')}</div>`;
+    <div class="card"><div class="card-h"><h3>By stop size</h3><span class="meta">5 years of replay trades</span></div>${bk.length ? `<div class="tw"><table class="ht"><tr><th>Stop</th><th class="num">Trades</th><th class="hide-sm"></th><th class="num hide-sm">Win</th><th class="num">Avg R</th><th class="num">Net</th><th class="num">Micros</th><th class="num">$ risk</th></tr>
+      ${bk.map(b => { const [lo, hi] = String(b.stop_pts).split('-').map(Number), net = ok(lo) && ok(hi) ? (D.trades || []).filter(t => t.risk_pts >= lo && t.risk_pts < hi).reduce((a, t) => a + (t.pnl || 0), 0) : null;
+        return `<tr><td class="mono"><b>${esc(b.stop_pts)}</b></td><td class="num">${b.trades}</td><td class="hide-sm" style="min-width:64px;width:18%"><div class="meter"><i style="width:${b.trades / mx * 100}%"></i></div></td><td class="num hide-sm">${pct(b.win_pct)}</td><td class="num mono ${cR(b.avg_r)}">${fR(b.avg_r)}</td><td class="num mono ${cls(net)}">${kusd(net)}</td><td class="num">${b.median_micros}</td><td class="num mono">${usd(b.median_risk_usd)}</td></tr>`; }).join('')}</table></div>
+      <p class="card-d" style="margin:10px 0 0">Net = the money those trades made after costs over the 5 years. Micros and $ risk are the typical (median) trade in each group.</p>` : emptyBox('No stop buckets in this build.', '')}</div>`;
 };
 
 // ===================================================================== LAB: shared pieces
@@ -2049,13 +2051,24 @@ VIEWS.experiments = (el) => {
 };
 
 // ===================================================================== LAB: one run
+const humanKey = (k) => String(k).replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase());
+// cold-streak filter in either shape: live_model.json {lookback, min_sum_r, cold_mode, cold_size} or a run's {lookback, thr, size}
+const coldText = (v) => { if (!v) return 'off'; if (typeof v !== 'object') return esc(v);
+  const size = v.size ?? v.cold_size ?? (v.cold_mode === 'skip' ? 0 : v.cold_mode === 'half' ? 0.5 : null), thr = v.thr ?? v.min_sum_r ?? 0;
+  return `${sizeWord(size)} size when the last ${v.lookback ?? 15} sum to ${num(thr, 1)}R or less`; };
+const objText = (v) => v && typeof v === 'object' ? Object.entries(v).map(([k, x]) => `${humanKey(k).toLowerCase()} ${typeof x === 'number' ? num(x, Number.isInteger(x) ? 0 : 2) : esc(x)}`).join(' · ') : esc(v);
 const PARAM = {
   risk_usd: ['Risk per trade', (v) => usd(v)], risk_ref_stop: ['Full risk up to a stop of', (v) => v ? num(v, 0) + ' pts' : 'off (same $ at any stop)'], max_trades_day: ['Most trades a day', (v) => esc(v)],
   be_at_r: ['Breakeven at', (v) => v ? num(v, 2) + 'R' : 'off'], time_stop_min: ['Time stop', (v) => v ? v + ' min' : 'off'], min_rr: ['Smallest reward taken', (v) => num(v, 2) + 'R'],
   max_rr: ['Bank the profit at', (v) => num(v, 1) + 'R'], use_fallback: ['Trade without a major pool', (v) => v ? 'yes' : 'no'], fallback_rr: ['Fallback target', (v) => num(v, 1) + 'R'],
   target_mode: ['Target', (v) => esc(v)], stop_mode: ['Stop beyond', (v) => v === 'swing' ? 'the sweep extreme' : esc(v)], stop_buffer_mult: ['Stop buffer', (v) => '×' + num(v, 2)],
   fixed_stop_pts: ['Fixed stop', (v) => v ? num(v, 1) + ' pts' : 'off (structural)'], trail_mode: ['Trailing stop', (v) => esc(v)], trail_start_r: ['Trail starts at', (v) => num(v, 1) + 'R'],
-  trail_r: ['Trail distance', (v) => num(v, 1) + 'R'], partial_pct: ['Partial exit', (v) => v ? Math.round(v * 100) + '%' : 'off'], partial_r: ['Partial at', (v) => num(v, 1) + 'R'],
+  trail_r: ['Trail distance', (v) => num(v, 1) + 'R'], counter_rr_cap: ['Target cap on counter-trend trades', (v) => v ? num(v, 1) + 'R' : 'off'],
+  w_pdc: ['Bias weight: yesterday’s close', (v) => esc(v)], w_pwmid: ['Bias weight: last week’s midpoint', (v) => esc(v)], day_range_max: ['Day-range filter', (v) => v ? num(v, 1) : 'off'],
+  regime_er10_max: ['Trending-day threshold (10-day efficiency)', (v) => v ? num(v, 2) : 'off'], regime_mode: ['Trending-day rule', (v) => esc(v)], vix_max: ['Skip when VIX is above', (v) => v ? num(v, 0) : 'off'],
+  news_flatten_min: ['Close before news', (v) => v ? v + ' min' : 'off'], time_stop_r_sim: ['Time stop needs', (v) => num(v, 2) + 'R'], stop_buf_atr: ['Stop buffer', (v) => v ? num(v, 2) + ' × ATR' : 'off'],
+  spec: ['Stop limits', objText], target_front_ticks: ['Exit in front of the pool', (v) => v + ' ticks'], touch_ticks: ['Target needs a trade-through of', (v) => v + ' ticks'],
+  memory_seed: ['Trade memory', (v) => v ? 'on' : 'off'], exit_learn: ['Exit learner', (v) => v ? 'on' : 'off'], partial_pct: ['Partial exit', (v) => v ? Math.round(v * 100) + '%' : 'off'], partial_r: ['Partial at', (v) => num(v, 1) + 'R'],
   exit_rules: ['Exit signals acted on', (v) => esc(v || 'none')], exit_giveback_r: ['Giveback exit after', (v) => num(v, 2) + 'R'], dd_aware: ['Drawdown-aware size', (v) => v ? 'on' : 'off'],
   grade_sizing: ['Size by grade', (v) => v ? 'on' : 'off'], conviction_step: ['Conviction sizing', (v) => v ? '+' + Math.round(v * 100) + '% a step' : 'off'], use_cisd: ['CISD trigger', (v) => v ? 'on' : 'off'],
   arm_minor: ['Minor sweeps arm setups', (v) => v ? 'yes' : 'no'], daily_max_loss: ['Daily stop', (v) => usd(v)], stop_after_win: ['Stop after a win', (v) => v ? 'yes' : 'no'],
@@ -2065,23 +2078,29 @@ const PARAM = {
   arm_start: ['Sweeps count from', (v) => ok(v) ? `${String(Math.floor(v / 60)).padStart(2, '0')}:${String(v % 60).padStart(2, '0')} ET` : esc(v)], arm_expiry_min: ['Setup expires after', (v) => v + ' min'],
   entry_windows: ['Entry windows', (v) => Array.isArray(v) ? v.map(w => w.map(m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`).join('–')).join(', ') + ' ET' : esc(JSON.stringify(v))] };
 const SIZING = {
-  cold: ['Cold-streak filter', (v) => !v ? 'off' : typeof v === 'object' ? `${esc(v.cold_mode || 'half')} size when the last ${v.lookback ?? 15} sum ≤ ${num(v.min_sum_r ?? 0, 1)}R` : esc(v)],
+  cold: ['Cold-streak filter', coldText], hot: ['Hot-streak size', (v) => v && typeof v === 'object' ? `×${num(v.mult ?? 1, 2)} when the last ${v.lookback ?? 15} sum to +${num(v.thr ?? 0, 0)}R or more` : esc(v)],
+  late_mult: ['Late entries (15-minute structure already turned)', (v) => `${sizeWord(v)} size`], pre: ['Size rule', (v) => esc(v)], mult_usd: ['Risk rule', (v) => esc(v)],
   trend_mult: ['Size on trending days', (v) => '×' + num(v, 2) + (v >= 1 ? ' (full)' : '')], ref: ['Full risk up to a stop of', (v) => v ? num(v, 0) + ' pts' : 'off (same $ at any stop)'],
   risk_usd: ['Risk per trade', (v) => usd(v)], mult: ['Size multiplier', (v) => '×' + num(v, 2)], rule: ['Sizing rule', (v) => esc(v)] };
-const humanKey = (k) => String(k).replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase());
+const HIDE_KEYS = new Set(['pre_key']);            // internal keys of a sizing rule, not settings
 const anyVal = (v) => v == null ? 'off' : v === true ? 'on' : v === false ? 'off' : typeof v === 'number' ? num(v, Number.isInteger(v) ? 0 : 2) : typeof v === 'object' ? `<span class="mono">${esc(JSON.stringify(v))}</span>` : esc(v);
 function kvList(obj, map, liveOf) {
   return Object.entries(obj || {}).map(([k, v]) => { const m = map[k], f = m ? m[1] : anyVal, lv = liveOf ? liveOf(k) : undefined;
     return `<div><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><b>${esc(m ? m[0] : humanKey(k))}</b><span class="pk">${esc(k)}</span></span>
       <span style="display:flex;flex-direction:column;gap:2px;align-items:flex-end"><span class="pv">${f(v)}</span>${lv !== undefined ? `<span class="pl">live: ${lv == null ? 'off' : f(lv)}</span>` : ''}</span></div>`; }).join('');
 }
+// r = the run file (it carries live_params / live_equity_filter: the live settings the run was built on)
 function changesHTML(r) {
-  const b = baseMeta(), isB = !b || r.id === b.id, lp = r.live_params || {}, ps = r.params || {}, sz = r.sizing || {};
+  const b = baseMeta(), isB = !b || r.id === b.id, lp = r.live_params || D.strategy?.params || {}, lef = r.live_equity_filter ?? D.strategy?.equity_filter ?? null, ps = r.params || {};
+  const sz = Object.fromEntries(Object.entries(r.sizing || {}).filter(([k]) => !HIDE_KEYS.has(k)));
   if (isB) return `<p class="lead">Nothing: this is the live strategy the bot trades today, as locked in <span class="mono">live_model.json</span>.</p>
-    <details class="howto" style="margin:12px 0 0"><summary>${icon('rules')}<span>Live settings</span>${icon('down', 'chev')}</summary><div class="plist" style="padding:0 14px 6px">${kvList(lp, PARAM)}${kvList({ cold: r.live_equity_filter }, SIZING)}</div></details>`;
-  const liveP = (k) => k in lp ? lp[k] : undefined, liveS = (k) => k === 'cold' ? (r.live_equity_filter ?? null) : k === 'ref' ? (lp.risk_ref_stop ?? null) : k === 'risk_usd' ? lp.risk_usd : undefined;
+    <details class="howto" style="margin:12px 0 0"><summary>${icon('rules')}<span>Live settings</span>${icon('down', 'chev')}</summary><div class="plist" style="padding:0 14px 6px">${kvList(lp, PARAM)}${kvList({ cold: lef }, SIZING)}</div></details>`;
+  if (r.id === prevLock()?.id) return `<p class="lead">This is the <b>previous lock</b>, kept as a comparison: the settings the bot traded before the current version.</p>
+    <details class="howto" style="margin:12px 0 0"><summary>${icon('rules')}<span>Its settings</span>${icon('down', 'chev')}</summary><div class="plist" style="padding:0 14px 6px">${kvList(lp, PARAM)}${kvList({ cold: lef }, SIZING)}</div></details>`;
+  const liveP = (k) => k in lp ? lp[k] : undefined, liveS = (k) => k === 'cold' ? lef : k === 'ref' ? (lp.risk_ref_stop ?? null) : k === 'risk_usd' ? lp.risk_usd : undefined;
   const rows = kvList(ps, PARAM, liveP) + kvList(sz, SIZING, liveS);
-  return rows ? `<div class="plist">${rows}</div>` : `<p class="lead">Same settings as the live strategy${(r.tags || []).length ? ': ' + esc(r.tags.join(', ')) : ''}. See the question and notes for what was tested.</p>`;
+  const tag = (r.tags || []).includes('sizerule') ? 'a size rule on top of the live settings (it sizes some trades up or down; every trade is still taken)' : '';
+  return rows ? `<div class="plist">${rows}</div>` : `<p class="lead">${tag ? `This run tests ${tag}.` : 'No setting changed: the run tests the live settings themselves.'} The question and the verdict above say what was tried.</p>`;
 }
 function yearsHTML(run, base) {
   const Y = run.years || {}, B = base?.years || {}, ys = Object.keys(Y).sort();
@@ -2129,7 +2148,7 @@ VIEWS.run = (el) => {
     + `<div class="card tone" style="--tc:${tone}"><div class="verdict-l"><span class="vi">${icon(isB ? 'flag' : r.status === 'rejected' ? 'close' : r.status === 'adopt-candidate' ? 'check' : 'info')}</span>
         <div style="min-width:0"><div class="eyebrow" style="color:${tone}">${isB ? 'The reference' : 'Verdict'}</div>${(r.verdict || '').length > 110 ? `<p class="vtext">${esc(r.verdict)}</p>` : `<h3>${esc(r.verdict || (isB ? 'The live strategy every experiment is judged against.' : 'No verdict written yet.'))}</h3>`}
         ${isB ? '' : rcHTML(r)}</div></div></div>
-    <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>What this run changes</h3><span class="meta">${isB ? 'the reference' : 'vs the live strategy'}</span></div>${changesHTML(r)}</div>
+    <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>What this run changes</h3><span class="meta">${isB ? 'the reference' : 'vs the live settings it was built on'}</span></div><div id="runChg">${skLines(4)}</div></div>
       <div class="card"><div class="card-h"><h3>Headline numbers</h3><span class="meta">${isB ? 'the live strategy' : 'small = change vs live'}</span></div>${headlineHTML(r, b)}</div></div>
     <div id="runBody">${skel(1, 'lg')}${skel(2)}</div>`;
   Promise.all([getRun(r.id), isB ? null : getRun(b.id).catch(() => null)])
@@ -2138,6 +2157,7 @@ VIEWS.run = (el) => {
 };
 function drawRunBody(run, base) {
   const box = $('#runBody'); if (!box) return;
+  const chg = $('#runChg'); if (chg) chg.innerHTML = changesHTML(run);
   const docs = docsForRun(run.id), cRun = base ? C_RUN : C_BASE;
   box.innerHTML = `
     <div class="card fx-card"><div class="card-h"><h3>Equity · ${base ? 'this run vs the live strategy' : 'the live strategy'}</h3><div>${segHTML('rsSpan', [['all', '5 years'], ['2026', '2026']], RS.eq, 'sm')}${fxSeg('run-ribbon')}</div></div>
