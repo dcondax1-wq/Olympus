@@ -178,18 +178,18 @@ X("bias_pwmid_skip", "bias", "posthoc", {}, "Info: only trades on the prior-week
   "Hard filter version: what if trades against the prior-week midpoint side were skipped?", rule="skip_against_pwmid", status="info")
 X("bias_wkopen_skip", "bias", "posthoc", {}, "Info: only longs below / shorts above the weekly open",
   "Hard filter: trade only longs below this week's open and shorts above it?", rule="skip_against_wkopen", status="info")
-X("bias_pdc_half", "bias", "posthoc", {}, "Half size when the trade follows yesterday's candle",
+X("bias_pdc_half", "bias", "sizerule", {}, "Half size when the trade follows yesterday's candle",
   "Keep every setup, but trade at half size when it goes the same way as yesterday's candle (long after an up day)?",
   rule="half_follow_pd")
-X("bias_pwmid_half", "bias", "posthoc", {}, "Half size when against the prior-week side",
+X("bias_pwmid_half", "bias", "sizerule", {}, "Half size when against the prior-week side",
   "Keep every setup, but half size for longs below / shorts above last week's midpoint?", rule="half_against_pwmid")
-X("bias_any_half", "bias", "posthoc", {}, "Half size when either bias is against the trade",
+X("bias_any_half", "bias", "sizerule", {}, "Half size when either bias is against the trade",
   "Half size when the trade follows yesterday's candle OR is on the wrong side of last week's midpoint?", rule="half_any")
-X("bias_both_half", "bias", "posthoc", {}, "Half size only when both biases are against the trade",
+X("bias_both_half", "bias", "sizerule", {}, "Half size only when both biases are against the trade",
   "Half size only when the trade follows yesterday's candle AND is on the wrong side of last week's midpoint?", rule="half_both")
-X("bias_pdc_07", "bias", "posthoc", {}, "70% size when the trade follows yesterday's candle",
+X("bias_pdc_07", "bias", "sizerule", {}, "70% size when the trade follows yesterday's candle",
   "Neighbour check: a milder size-down (70%) for trades that follow yesterday's candle?", rule="p70_follow_pd")
-X("bias_pwmid_07", "bias", "posthoc", {}, "70% size when against the prior-week side",
+X("bias_pwmid_07", "bias", "sizerule", {}, "70% size when against the prior-week side",
   "Neighbour check: a milder size-down (70%) for trades against last week's midpoint side?", rule="p70_against_pwmid")
 X("bias_smt_only", "bias", "posthoc", {}, "Info: only trades with NQ/ES SMT divergence",
   "Does SMT divergence (ES fails to make the new extreme) pick better trades? ES data starts 2025-04.",
@@ -426,7 +426,7 @@ def compute(x):
     elif m == "exitsim":
         base = rl.replay({}, procs=PROCS, quiet=True)
         raw = {**base, "trades": [sim_exit(t, x["sim"]) for t in base["trades"]]}
-    elif m == "posthoc":
+    elif m in ("posthoc", "sizerule"):
         raw = rl.replay({}, procs=PROCS, quiet=True)
     else:
         raise ValueError(m)
@@ -440,6 +440,8 @@ METHOD_TXT = {
                "replay 768/768 trades); cold-streak filter + sizing; costs included",
     "screen": "one-pass 5-year backtest (matches the live-loop replay on 766/768 baseline trades) + cold-streak filter + "
               "sizing; costs included; compared with run screen_baseline",
+    "sizerule": "exact live-loop replay of the live strategy + a size rule known at entry (exact: P&L, commission and slippage "
+                "scale with the micros) on top of the cold-streak filter; costs included",
     "posthoc": "exact live-loop replay of the live strategy, trades filtered after the fact (a skipped setup gets no "
                "replacement trade later that day) + cold-streak filter + sizing; costs included",
 }
@@ -500,7 +502,7 @@ if __name__ == "__main__":
         table(sys.argv[2] if len(sys.argv) > 2 else None)
     elif cmd in ("all", "run"):
         ids = [x["id"] for x in E] if cmd == "all" else sys.argv[2:]
-        order = {"screen": 0, "exitsim": 1, "posthoc": 2, "replay": 3}
+        order = {"screen": 0, "exitsim": 1, "posthoc": 2, "sizerule": 2, "replay": 3}
         todo = sorted((by_id(i) for i in ids), key=lambda x: order[x["method"]])
         for x in todo:
             run(x)
