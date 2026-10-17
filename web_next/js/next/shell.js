@@ -3,6 +3,7 @@
 import { $, $$, store, esc } from '../util.js';
 import { icon } from './icons.js';
 import { TOP, DATA, MODULES, TITLES, groupOf } from './routes.js';
+import { fxLevel, setFxLevel } from './fx3d.js';
 
 const root = document.documentElement;
 const pref = { get: (k, d) => store.get('nx.' + k, d), set: (k, v) => store.set('nx.' + k, v) };
@@ -104,8 +105,11 @@ function interfaceCard() {
     <input type="checkbox" class="nx-switch" id="${id}" ${on ? 'checked' : ''}></label>`;
   el.innerHTML = row('nxOptCollapse', 'Compact sidebar', 'Icons only on desktop', pref.get('collapsed', false)) +
     row('nxOptPins', 'Pinned shortcuts', 'Liquidity Engine, Briefing, Results, Cold-Streak in the sidebar', pref.get('pins', true)) +
+    `<div class="nx-switch-row"><span><b>3D effects</b><span class="muted small">Galaxy background, card glow, tap sparks, Live Oracle, trade galaxy, month city. Lite saves battery.</span></span>
+      <div class="seg sm" id="nxOptFx">${[['max', 'Max'], ['lite', 'Lite'], ['off', 'Off']].map(([v, l]) => `<button type="button" data-v="${v}" class="${fxLevel() === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>` +
     `<div class="note">Classic dashboard: start the server with <span class="mono">LE_UI=classic</span> to get the previous look. Every page is shared, so both stay in sync.</div>`;
   $('#nxOptCollapse').onchange = (e) => setCollapsed(e.target.checked);
+  $('#nxOptFx').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; $$('#nxOptFx button').forEach(x => x.classList.toggle('on', x === b)); setFxLevel(b.dataset.v); };
   $('#nxOptPins').onchange = (e) => { pref.set('pins', e.target.checked); root.dataset.pins = e.target.checked ? 'on' : 'off'; };
 }
 

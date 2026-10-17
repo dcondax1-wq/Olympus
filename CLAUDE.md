@@ -78,11 +78,17 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
      phone tab bar, Data tabs, Modules grid), `controls.js` (custom dropdowns replace every `<select>`, glyphs become SVG icons),
      `icons.js`, `viz.js` (SVG charts), `trades.js`, `datahub.js` (Results, Variants, Lessons, Study), `modpages.js` (Rules,
      Cold-Streak, Risk & Sizing). API: `engine/next_api.py` (`/api/next/*`, read-only, from research/lab + research/study).
-   - Next: polish ideas only (per-module live badges, the Today page hero).
+   - The Today page hero is the 3D Live Oracle (see the 3D layer below). Next: polish ideas only (per-module live badges).
 2. **PC-off web dashboard (done 2026-10-17):** https://demetrades2000-coder.github.io/nq-dashboard/, a Home Screen app (PWA) in the
    same dark design. One static page `tools/web_public/index.html` (+ manifest, sw.js) reads only `data.json`, built by
    `tools/build_web_dashboard.py` on every cloud-monitor run: live state + recent bars + pools, results, every replay trade with
    its report, replays (`tools/export_replays.py` → `research/lab/replays.json`, rerun after a new export), variants, lessons,
    study trades. The scheduled run uses the workflow on the default branch, so merge changes there.
+   - **3D layer (2026-10-17):** three.js source in `tools/web_public/fx/src/` (`core.js` loop + quality, `field.js` galaxy background,
+     `aura.js` card glow, `taps.js` tap sparks, `orb.js` Live Oracle, `candles.js` 3D chart + replay, `galaxy.js` trade galaxy,
+     `city.js` month city). Build with `cd tools/web_public/fx && npm install && npm run build`: it writes the one bundle
+     `tools/web_public/fx.js` and copies it to `web_next/js/fx.js` (commit both). Lazy-loaded after first paint; Settings has
+     Max / Lite / Off; off or no WebGL2 leaves the 2D page. `fx/dev.html?view=orb|galaxy|city|candles` is a test harness;
+     add `?fxfixed` to a page URL to stop the auto resolution drop in screenshots. PC side: `web_next/js/next/fx3d.js`.
 3. Port the cold-streak filter plus the new sizing and target rules to the Pine script.
 4. Optional: test "smaller size when inducement was taken first" when more data exists.

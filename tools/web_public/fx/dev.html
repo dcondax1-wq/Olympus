@@ -1,0 +1,33 @@
+<!doctype html><!-- Test harness for one 3D view: dev.html?view=orb|galaxy|city|candles&h=360&year=2026&level=max|lite
+  Needs dev-data.json (gitignored): python tools/build_web_dashboard.py --state dash/state.json --out <dir>, copy <dir>/data.json here,
+  then serve tools/web_public (python -m http.server 8797) and open http://127.0.0.1:8797/fx/dev.html. devshot.js screenshots it. -->
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fx dev</title>
+<style>
+  :root { --page:#07080c; --accent:#6d7cff; --accent-2:#3ee0c8; --good:#2ee59d; --bad:#ff5a7a; --bsl:#ff9b5c; --ssl:#6d9bff; }
+  html,body{margin:0;background:#07080c;color:#eef1f8;font:14px Inter,system-ui,sans-serif}
+  .box{position:relative;margin:16px;border-radius:18px;overflow:hidden;border:1px solid rgba(160,170,220,.12);background:#0b0d14}
+  .fx-canvas{display:block}
+  .fx-bg{position:fixed;inset:0;z-index:0;pointer-events:none}.fx-bg .fx-canvas{width:100%!important;height:100%!important}
+  .box{z-index:1}
+  #log{position:fixed;bottom:0;left:0;right:0;font:11px monospace;color:#f88;white-space:pre-wrap}
+</style></head><body>
+<div class="box" id="box"></div><div id="log"></div>
+<script type="module">
+// Dev harness for one 3D view:  dev.html?view=galaxy&h=360   (needs ./dev-data.json = a copy of a built data.json)
+const q = new URLSearchParams(location.search), view = q.get('view') || 'galaxy';
+const box = document.getElementById('box'); box.style.height = (q.get('h') || 360) + 'px';
+window.onerror = (m) => { document.getElementById('log').textContent += m + '\n'; };
+const FX = await import('../fx.js?' + Date.now());
+FX.init({ level: q.get('level') || 'max' });
+const D = await (await fetch('./dev-data.json')).json();
+const data = {
+  galaxy: () => (D.trades || []).filter(t => q.get('year') === 'all' || t.day.startsWith(q.get('year') || '2026')),
+  city: () => D.results.months,
+  orb: () => ({ bars: (D.live.bars || []).slice(-14), pools: D.live.pools || [], price: D.live.price, state: D.live.model_state }),
+  candles: () => ({ bars: D.live.bars.slice(-120), pools: D.live.pools, price: D.live.price }),
+}[view]();
+window.__picked = null;
+window.__view = FX.mount('dev-' + view, box, view, data, { onPick: (row) => { window.__picked = row; document.getElementById('log').textContent = 'picked ' + JSON.stringify(row).slice(0, 160); } });
+window.__ready = true;
+</script></body></html>

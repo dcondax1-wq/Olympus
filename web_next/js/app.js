@@ -36,6 +36,7 @@ import { initControls } from './next/controls.js';
 import * as tradesPage from './next/trades.js';
 import * as hub from './next/datahub.js';
 import * as mods from './next/modpages.js';
+import { initFX, fxWarp } from './next/fx3d.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -62,11 +63,13 @@ export function go(page) {
   if (page === 'data') page = store.get('dataSub', 'results');
   if (!TITLES[page] || !document.getElementById('page-' + page)) page = 'command';
   if (groupOf(page) === 'data') store.set('dataSub', page);
+  const prev = S.page;
   S.page = page;
   $$('#nav a').forEach(a => a.classList.toggle('active', a.dataset.page === page));
   $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
   $('#pageTitle').textContent = TITLES[page];
   store.set('page', page);
+  if (prev && prev !== page) fxWarp();
   onPage(page);
   PAGES[page]?.show?.();
 }
@@ -382,6 +385,7 @@ function renderClock() {
 async function boot() {
   initShell();
   initControls();
+  initFX();
   applyAppearance();
   installSpotlight();
   startSoundWatch();

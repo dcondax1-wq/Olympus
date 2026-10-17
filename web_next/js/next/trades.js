@@ -6,6 +6,7 @@ import * as chartPage from '../page-chart.js';
 import { go } from '../app.js';
 import { icon } from './icons.js';
 import { lineChart, countAll } from './viz.js';
+import { mount3d } from './fx3d.js';
 
 const st = { year: store.get('nx.trYear', '2026'), filter: 'all', q: '', sort: 'new', shown: 60, data: null, years: [] };
 let loaded = null;
@@ -83,6 +84,7 @@ function render() {
       <div class="nx-stat"><span>Half size</span><b data-count="${s.half}">${s.half}</b><em>cold-streak trades</em></div>
     </div>
     <div class="card nx-glass"><div class="card-h"><h3>Equity · filtered trades</h3><span class="muted small">cumulative net $, oldest → newest</span></div><div id="trEq"></div></div>
+    <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>Trade galaxy · ${rows.length} trades</h3><span class="muted small">every trade is a star: time → right, R ↑, stop size ↗ · drag to turn · click a star for its report</span></div><div class="fx3d galaxy" id="trGal"></div></div>
     <div class="nx-toolbar">
       <div class="seg" id="trFilter">${FILTERS.map(([v, l]) => `<button class="${v === st.filter ? 'on' : ''}" data-v="${v}">${l}</button>`).join('')}</div>
       <label class="nx-field grow">${icon('search')}<input class="inp" id="trQ" placeholder="Search trigger, pool, lesson, tag…" value="${esc(st.q)}" autocomplete="off"></label>
@@ -97,6 +99,7 @@ function render() {
     eq += t.pnl;
     return { x: t.day.slice(2), y: eq, tip: `<b>${t.day} · ${t.side}</b><span>${fmtR(t.r)} · ${fmtS$(t.pnl)}</span><span>total ${fmtS$(eq)}</span>` };
   }), { h: 200, color: 'var(--accent)' });
+  mount3d('trades-galaxy', $('#trGal'), 'galaxy', rows, { onPick: (t) => t && openSheet(t) });
   $('#trYear').onclick = (e) => { const b = e.target.closest('button'); if (b) { st.year = b.dataset.v; store.set('nx.trYear', st.year); st.shown = 60; load(true); } };
   $('#trFilter').onclick = (e) => { const b = e.target.closest('button'); if (b) { st.filter = b.dataset.v; st.shown = 60; render(); } };
   $('#trSort').onchange = (e) => { st.sort = e.target.value; render(); };

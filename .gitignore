@@ -31,3 +31,8 @@ data/NQ_5m.yahoo_backup.csv
 # large rendered chart images (rebuild with tools/trade_gallery.py)
 research/lab/gallery/
 data/shadow_ledger.json
+
+# 3D effects build deps (tools/web_public/fx: npm install && npm run build)
+tools/web_public/fx/node_modules/
+tools/web_public/fx/dev-data.json
+tools/web_public/fx/*.png

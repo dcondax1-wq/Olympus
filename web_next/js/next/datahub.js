@@ -4,6 +4,7 @@ import { $, $$, api, esc, fmt$, fmtS$, fmtN, fmtR, cls, store } from '../util.js
 import { go } from '../app.js';
 import { icon } from './icons.js';
 import { lineChart, barChart, countAll } from './viz.js';
+import { mount3d } from './fx3d.js';
 
 let RES = null;
 async function results$() { if (!RES) RES = await api('/api/next/results'); return RES; }
@@ -61,6 +62,7 @@ async function showResults() {
         <div class="seg sm" id="resEqSeg">${[['2026', '2026'], ['all', '5 years']].map(([v, l]) => `<button data-v="${v}" class="${rs.eq === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>
         <div id="resEq"></div></div>
       <div class="card nx-glass"><div class="card-h"><h3>Net by month</h3><span class="muted small">every month since 2021-11 · hover a bar</span></div><div id="resMonths"></div></div>
+      <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>Month city · net P&amp;L of every month</h3><span class="muted small">towers up = profit, down = loss · drag to turn · click a tower</span></div><div class="fx3d city" id="resCity"></div></div>
       <div class="grid cols-2">
         <div class="card nx-glass"><div class="card-h"><h3>By year</h3><span class="muted small">a change is adopted only if it holds in 2026 and 2021-25</span></div>
           <div class="table-wrap"><table class="tbl"><tr><th>Year</th><th>Trades</th><th>/wk</th><th>2+ wks</th><th>Win</th><th>PF</th><th>Net</th><th>Max DD</th><th>Eval 1mo</th></tr>
@@ -78,6 +80,7 @@ async function showResults() {
     countAll(el);
     drawEq(d);
     const months = Object.entries(d.months || {});
+    mount3d('results-city', $('#resCity'), 'city', d.months || {});
     barChart($('#resMonths'), months.map(([k, v]) => ({ x: k.slice(2), y: v.net, tip: `<b>${k}</b><span>${fmtS$(v.net)}</span><span>${v.trades} trades · ${v.wins} wins</span>` })), { h: 210 });
     $('#resEqSeg').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; rs.eq = b.dataset.v; store.set('nx.resEq', rs.eq); $$('#resEqSeg button').forEach(x => x.classList.toggle('on', x === b)); drawEq(d); };
   } catch (e) { fail(el, e); }

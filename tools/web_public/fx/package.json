@@ -1,0 +1,7 @@
+{
+  "name": "le-fx",
+  "private": true,
+  "description": "3D / particle effects for the Liquidity Engine dashboards (bundled into tools/web_public/fx.js and web_next/js/fx.js)",
+  "scripts": { "build": "node build.mjs" },
+  "devDependencies": { "esbuild": "0.20.2", "three": "0.160.0" }
+}
