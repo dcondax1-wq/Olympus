@@ -1678,8 +1678,10 @@ def selftest(verbose=True) -> bool:
               and isinstance(ad.status(), dict) and ad.tick()["ok"] and "LEBROKEN.txt" in ad.unparsed)
         check("files: every OIF written matched the documented grammar, no byte-order mark, all named oif*.txt",
               not fake.errors and all(n.startswith("oif_le_") and n.endswith(".txt") for n, _ in fake.files), str(fake.errors[:3]))
-        check("audit: every OIF line is in the audit log", os.path.exists(os.path.join(tmp, "oif.log"))
-              and sum(1 for _ in open(os.path.join(tmp, "oif.log"), encoding="utf-8")) == sum(len(ls) for _, ls in fake.files))
+        audit = [ln.rstrip("\n").split("  ")[-1] for ln in open(os.path.join(tmp, "oif.log"), encoding="utf-8")]
+        processed = [ln for _, ls in fake.files for ln in ls]
+        check("audit: every OIF line written is in logs/ninjatrader_oif.log (the withdrawn one too)",
+              len(audit) == len(processed) + 1 and all(ln in audit for ln in processed), f"{len(audit)} vs {len(processed)} + 1")
 
         # ---- 13. bar feed
         feed_dir = os.path.join(folder, FEED_DIR)
@@ -1727,7 +1729,8 @@ def selftest(verbose=True) -> bool:
                         "nt_state_path": os.path.join(tmp, "nt_state2.json"), "nt_audit_log": os.path.join(tmp, "oif.log")}, spawn=False)
         bad = bot.adapter
         check("LiveBot: ADAPTERS['ninjatrader'] selected, 'data' alias -> data_source ninjatrader",
-              r1["ok"] and isinstance(bad, NinjaTraderAdapter) and bot.cfg["data_source"] == "ninjatrader")
+              r1["ok"] and type(bad).__name__ == "NinjaTraderAdapter" and bot.cfg["data_source"] == "ninjatrader",
+              f"{r1} {type(bad).__name__} {bot.cfg.get('data_source')}")
         bad.clock = lambda: now[0]
         bad._sleep = lambda s: (fake.process(), now.__setitem__(0, now[0] + s))
         bad._alert_fn = alerts.append
@@ -1814,4 +1817,6 @@ def market_open_local(ts) -> bool:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # run the canonical engine.ninjatrader module (the one engine.live imports), not a second copy named __main__
+    from engine import ninjatrader as _canonical
+    sys.exit(_canonical.main())

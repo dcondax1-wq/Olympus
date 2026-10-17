@@ -39,3 +39,4 @@ tools/web_public/fx/*.png
 
 # research run library replay cache (tools/runlib.py)
 research/runs/_cache/
+research/runs/*.tmp

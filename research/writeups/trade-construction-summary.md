@@ -66,7 +66,9 @@ gets worse: 2026 is identical, 2021-25 is equal or a hair better (passed within 
 weeks), so the share of passes slower than 3 weeks rises (73.5% vs 70.5%) and the median pass takes 29 sessions
 instead of 25. The 2026 side effect is beyond 1 month (late-May fails, see above) and disappears with the sizing
 change. No setting tested here gets most evals decided inside 2 weeks: even in 2026 only about 1 in 5 is (19.4%);
-that depends on how much each trade risks (sizing), not on trade construction.
+that depends on how much each trade risks (sizing), not on trade construction. The only trade-construction changes
+that pass 2026 evals faster (lock +0.5R after +1.5R: 2026 passed within 3 weeks 35.0% vs 28.2%; setups waiting 90
+minutes: 34.0%) lose $6-8k in 2021-25 and pass its evals slower.
 
 **Trades a week:** 2.16 (2026) and 3.17 (2021-25), unchanged, inside the owner's 2-4 band.
 

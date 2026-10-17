@@ -709,7 +709,7 @@ table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-
 .more-runs > summary { list-style: none; display: inline-block; margin: 12px 0 4px; cursor: pointer; font-size: 13px; }
 .more-runs > summary::-webkit-details-marker { display: none; } .more-runs[open] > summary { display: none; }
 
-.grid.top { align-items: start; }
+.grid.astart { align-items: start; }
 .sub.mb { background: linear-gradient(180deg, color-mix(in srgb, var(--page) 90%, transparent), color-mix(in srgb, var(--page) 70%, transparent)); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding-bottom: 8px; }
 
 /* sidebar groups (desktop): the active group opens its pages */
@@ -1219,6 +1219,9 @@ const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
 const ALIAS = { modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
+// 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
+const SCENE = { replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
+  system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', sources: 'engine' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
 const titleOf = (p) => DETAIL[p]?.label || (p === 'lab' ? 'Lab' : p === 'system' ? 'System' : PAGES[p]?.label) || 'Today';
 let D = null, PAGE = null, ARG = null, RTOK = 0, routed = false;
@@ -1249,6 +1252,7 @@ function route() {
   subBar(p, g);
   stopReplay(); closeSheet(); closeDD();
   if (routed) FX?.warp();
+  FX?.scene?.(SCENE[p] || p);               // the background's mood follows the page (fx presets; unknown ids fall back to today)
   routed = true;
   const pg = $('#page'); pg.classList.add('entering'); clearTimeout(route._t); route._t = setTimeout(() => pg.classList.remove('entering'), 1000);
   render();
@@ -1419,7 +1423,7 @@ const fxOn = () => !!FX && FX.Q.level !== 'off';
 function loadFX() {
   if (FXP || fxPref() === 'off') return FXP;
   FXP = import('./fx.js?v=' + FXV).then((m) => {
-    FX = m; FX.init({ level: fxPref() });
+    FX = m; FX.init({ level: fxPref() }); FX.scene?.(SCENE[PAGE] || PAGE || 'today');
     if (store.get('gyro', false)) armGyro();
     if (D) { FX.mood(moodNow()); render(true); }
     return m;
@@ -2094,7 +2098,7 @@ VIEWS.run = (el) => {
     + `<div class="card tone" style="--tc:${tone}"><div class="verdict-l"><span class="vi">${icon(isB ? 'flag' : r.status === 'rejected' ? 'close' : r.status === 'adopt-candidate' ? 'check' : 'info')}</span>
         <div style="min-width:0"><div class="eyebrow" style="color:${tone}">${isB ? 'The reference' : 'Verdict'}</div>${(r.verdict || '').length > 110 ? `<p class="vtext">${esc(r.verdict)}</p>` : `<h3>${esc(r.verdict || (isB ? 'The live strategy every experiment is judged against.' : 'No verdict written yet.'))}</h3>`}
         ${isB ? '' : rcHTML(r)}</div></div></div>
-    <div class="grid g2 top"><div class="card"><div class="card-h"><h3>What this run changes</h3><span class="meta">${isB ? 'the reference' : 'vs the live strategy'}</span></div>${changesHTML(r)}</div>
+    <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>What this run changes</h3><span class="meta">${isB ? 'the reference' : 'vs the live strategy'}</span></div>${changesHTML(r)}</div>
       <div class="card"><div class="card-h"><h3>Headline numbers</h3><span class="meta">${isB ? 'the live strategy' : 'small = change vs live'}</span></div>${headlineHTML(r, b)}</div></div>
     <div id="runBody">${skel(1, 'lg')}${skel(2)}</div>`;
   Promise.all([getRun(r.id), isB ? null : getRun(b.id).catch(() => null)])
@@ -2528,7 +2532,7 @@ VIEWS.strategy = (el) => {
     ${secH('The five steps')}
     <div class="steps5 wide">${steps.map(([t, d], i) => `<div class="step"><span class="step-n">${i + 1}</span><b>${t}</b><span>${d}</span></div>`).join('')}</div>
     ${secH('Size')}
-    <div class="grid g2 top"><div class="card"><div class="card-h"><h3>How much it risks</h3></div><ul class="list">
+    <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>How much it risks</h3></div><ul class="list">
         <li><b>$${RK}</b> of risk on a stop up to <b>${REF} points</b>.</li><li>Wider stops risk less: $${RK} × ${REF} ÷ stop. A 40-point stop risks about ${usd(budget(40))}.</li>
         <li>Micros = risk ÷ (stop × $2), rounded down, at most 40.</li>
         <li><b>Cold streak</b>: when the last ${lb} finished signals add up to ${num(thr, 1)}R or less, it trades at <b>${esc(mode)} size</b> until the record turns positive.</li></ul></div>
