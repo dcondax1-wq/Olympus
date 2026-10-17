@@ -829,10 +829,17 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 .wk .dots { display: flex; gap: 4px; min-height: 8px; flex-wrap: wrap; justify-content: center; } .wk .dots i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); } .wk .dots i.w { background: var(--good); box-shadow: 0 0 8px var(--good); } .wk .dots i.l { background: var(--bad); }
 .wk-foot { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--ink-2); padding: 12px 16px 0; }
 .liq { display: flex; flex-direction: column; justify-content: center; gap: 3px; height: 100%; padding: 12px 16px; }
-.liq > div { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 4px 10px; border-radius: 9px; font: 600 12px var(--mono); min-width: 0; }
-.liq > div::before { content: ""; position: absolute; left: 10px; top: 50%; height: 2px; width: var(--w, 30%); border-radius: 2px; background: var(--c); opacity: .9; box-shadow: 0 0 10px var(--c); }
-.liq > div span { padding-left: calc(var(--w, 30%) + 10px); color: var(--ink-2); font-family: var(--sans); font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .liq > div b { color: var(--c); white-space: nowrap; } .liq b small { color: var(--muted); font-weight: 500; }
-.liq .pxr { --c: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); margin: 6px 0; padding: 7px 10px; } .liq .pxr::before { display: none; } .liq .pxr span { padding-left: 0; color: var(--ink); } .liq .pxr b { font-size: 15px; color: #fff; }
+.liq > div { display: grid; grid-template-columns: var(--w, 24%) minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 4px 10px; border-radius: 9px; font: 600 12px var(--mono); min-width: 0; }
+.liq > div::before { content: ""; display: block; height: 2px; border-radius: 2px; background: var(--c); opacity: .9; box-shadow: 0 0 10px var(--c); }
+.liq > div span { color: var(--ink-2); font-family: var(--sans); font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .liq > div b { color: var(--c); white-space: nowrap; } .liq b small { color: var(--muted); font-weight: 500; }
+.liq .pxr { --c: var(--accent); grid-template-columns: minmax(0, 1fr) auto; background: color-mix(in srgb, var(--accent) 14%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); margin: 6px 0; padding: 7px 10px; } .liq .pxr::before { display: none; } .liq .pxr span { color: var(--ink); } .liq .pxr b { font-size: 15px; color: #fff; }
+.vb { flex: none; display: grid; place-items: center; min-width: 74px; height: 56px; padding: 0 16px; border-radius: 16px; font: 800 20px var(--sans); letter-spacing: .08em; border: 1px solid var(--line); background: var(--surface-2); }
+.vb.go { color: #0a0c14; background: linear-gradient(135deg, var(--good), color-mix(in srgb, var(--good) 70%, var(--accent-2))); border-color: transparent; box-shadow: 0 0 28px color-mix(in srgb, var(--good) 45%, transparent); }
+.vb.wait { color: #0a0c14; background: linear-gradient(135deg, var(--warn), color-mix(in srgb, var(--warn) 70%, var(--gold))); border-color: transparent; box-shadow: 0 0 24px color-mix(in srgb, var(--warn) 40%, transparent); }
+.card.go { border-color: color-mix(in srgb, var(--good) 35%, transparent); } .card.wait { border-color: color-mix(in srgb, var(--warn) 38%, transparent); }
+.tl .kv.tn { flex: 0 1 300px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.tl .kv.tn > div { padding: 8px 10px; border-radius: 11px; background: rgba(22,26,35,.7); border: 1px solid var(--line); }
+@media (max-width: 760px) { .tl .kv.tn { flex-basis: 100%; } .vb { height: 48px; font-size: 17px; min-width: 64px; } }
 #ptr { position: fixed; left: 50%; top: calc(8px + env(safe-area-inset-top)); z-index: 80; transform: translate(-50%, -60px); width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-2);
   background: rgba(22,26,35,.94); border: 1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,.45); opacity: 0; pointer-events: none; will-change: transform; }
 #ptr.arm { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 50%, transparent); } #ptr.go { transform: translate(-50%, 12px) !important; opacity: 1 !important; } #ptr.go .ico { animation: spin .8s linear infinite; }
@@ -1687,6 +1694,7 @@ VIEWS.today = (el) => {
       ${statBox('Eval · paper', ev ? susd(ev.profit) : '—', ev ? 'of the $3,000 target' : 'no eval data yet', ev ? cls(ev.profit) : '')}
       ${statBox('2026 backtest', y ? 'PF ' + fPF(y.pf) : '—', y ? `${kusd(y.net)} · ${kusd(perMonth(y.net, y.from, y.to))} a month · ${num(y.per_week, 1)}/wk` : 'no backtest in this build')}
     </div>
+    ${timingCard(lv.eval_timing)}
     <div class="grid g2">
       <div class="card fx-card"><div class="card-h"><h3>This week · ${esc(WK.week)}</h3><div>${fxSeg('today-week')}</div></div>${fxBox('today-week', 'weekring')}</div>
       <div class="card fx-card"><div class="card-h"><h3>Liquidity map</h3><div><span class="meta">pools around the price</span>${fxSeg('today-liqmap')}</div></div>${fxBox('today-liqmap', 'liqmap')}</div>
@@ -1731,10 +1739,20 @@ function liqFb(el, L) {
   lv.sort((a, b) => b.price - a.price);
   const k = (el.clientHeight || 300) < 320 ? 3 : 4, above = lv.filter(x => x.price > px).slice(-k), below = lv.filter(x => x.price <= px).slice(0, k);
   const span = Math.max(1, ...[...above, ...below].map(x => Math.abs(x.price - px)));
-  const row = (x) => `<div style="--c:${x.c};--w:${(16 + 66 * (1 - Math.abs(x.price - px) / span)).toFixed(0)}%"><span>${esc(x.label)}</span><b>${num(x.price)} <small>${(x.price > px ? '+' : '') + num(x.price - px, 1)}</small></b></div>`;
+  const row = (x) => `<div style="--c:${x.c};--w:${(8 + 26 * (1 - Math.abs(x.price - px) / span)).toFixed(0)}%"><span>${esc(x.label)}</span><b>${num(x.price)} <small>${(x.price > px ? '+' : '') + num(x.price - px, 1)}</small></b></div>`;
   el.innerHTML = `<div class="liq">${above.map(row).join('') || '<div class="small mut" style="text-align:center">no untaken pool above</div>'}
     <div class="pxr"><span>NQ now${pos ? ` · in ${pos.dir === 1 ? 'LONG' : 'SHORT'}` : ' · flat'}</span><b>${num(px)}</b></div>
     ${below.map(row).join('') || '<div class="small mut" style="text-align:center">no untaken pool below</div>'}</div>`;
+}
+// eval timing (live.eval_timing, written by the cloud monitor): GO while the cold-streak filter shows full size, WAIT in a cold streak
+const pf1 = (v) => !ok(v) ? '—' : pct(v <= 1 ? v * 100 : v);
+function timingCard(T, compact = false) {
+  if (!T || !T.verdict) return '';
+  const go = String(T.verdict).toLowerCase() === 'go', k = go ? 'go' : 'wait';
+  const nums = `<div class="kv tn"><div><span>Pass in 1 month</span><b class="up">${pf1(T.pass_1m)}</b></div><div><span>Fail in 1 month</span><b class="dn">${pf1(T.fail_1m)}</b></div><div><span>Median to pass</span><b>${ok(T.median_pass) ? Math.round(T.median_pass) + ' sessions' : '—'}</b></div></div>`;
+  if (compact) return `<div class="ownr ${k}" style="border-color:color-mix(in srgb, var(--${go ? 'good' : 'warn'}) 35%, transparent)"><span class="vb ${k}" style="height:34px;min-width:0;font-size:13px;padding:0 10px;border-radius:10px">${go ? 'GO' : 'WAIT'}</span><span><b>Eval timing now:</b> ${esc(T.reason || '')} Pass within 1 month ${pf1(T.pass_1m)}, fail ${pf1(T.fail_1m)}, median ${ok(T.median_pass) ? Math.round(T.median_pass) : '—'} sessions${ok(T.pass_2w) ? ` · within 2 weeks ${pf1(T.pass_2w)} / ${pf1(T.fail_2w)}` : ''}.</span></div>`;
+  return `<div class="card ${k}"><div class="tl"><span class="vb ${k}">${go ? 'GO' : 'WAIT'}</span>
+    <div class="tl-main"><div class="eyebrow">Eval timing · cold-streak filter shows ${T.state === 'cold' ? 'reduced size (cold streak)' : 'full size'}</div><h3>${go ? 'A good time to buy or reset the MFFU eval' : 'Wait for the cold streak to end'}</h3><p>${esc(T.reason || '')}${ok(T.funded_wk) ? ` Funded in about ${num(T.funded_wk, 0)} weeks when it passes.` : ''}</p></div>${nums}</div></div>`;
 }
 // the next USD event as a Today chip (tap: the News page)
 function newsChip() {
@@ -2584,21 +2602,306 @@ VIEWS.study = (el) => {
       ${s.risk_usd ? `<div class="chips">${chip('<i>risk</i> $' + esc(s.risk_usd))}</div>` : ''}</div></article>`).join('')}</div>` : `<div class="card">${emptyBox('No study trades.', 'Trades under review appear here.')}</div>`);
 };
 
+// ===================================================================== lazy research files: lab/<name>.json (copied by the build from research/lab, listed in data.json lab_files)
+const LABC = new Map();
+function getLab(name) {
+  const have = D?.lab_files;
+  if (Array.isArray(have) && !have.includes(name)) return Promise.reject(new Error(`research/lab/${name}.json is not in this build`));
+  const key = name + '@' + D.built;
+  if (!LABC.has(key)) LABC.set(key, getJSON(`lab/${encodeURIComponent(name)}.json?v=${encodeURIComponent(D.built)}`).catch(e => { LABC.delete(key); throw e; }));
+  return LABC.get(key);
+}
+
+// ===================================================================== LAB: simulated evals (research/lab/montecarlo.json)
+const MC = { start: 50000, target: 53000, maxLoss: 2000 };
+const mcRes = (p) => p.result || ((v) => v >= MC.target ? 'PASS' : v <= MC.start - MC.maxLoss ? 'FAIL' : 'OPEN')(p.days[p.days.length - 1] ?? MC.start);
+const MC_COL = { PASS: '#2ee59d', FAIL: '#ff2bd6', OPEN: '#a78bfa' };
+VIEWS.evals = (el) => {
+  el.innerHTML = head('Lab · simulated evals', 'How an MFFU eval tends to go', 'Hundreds of evals simulated from the live strategy’s replay trades: the odds of passing or failing within 2, 3, 4 and 6 weeks, how deep the drawdowns get, and every path.')
+    + howto('evals', `<p>Each simulated eval starts at $50,000 and replays the live strategy’s trades in a shuffled order until it passes ($53,000), fails (the trailing $2,000 max loss) or runs out of sessions (60).</p>
+      <ul><li><b>Locked strategy</b> = the live settings. <b>Fast-eval press</b> = the same trades with the eval pressed harder (bigger size early on): faster decisions, more fails.</li>
+      <li>The owner wants an eval <b>decided within 2 weeks</b> (10 sessions) and <b>no pass slower than 3 weeks</b>: the two dashed walls in the fan.</li>
+      <li>In the fan every line is one eval: <b class="up">green</b> passed, <b class="dn">magenta</b> failed, violet still open at session 60. The 3D view lets you drag through them; tap a path for its numbers.</li></ul>`)
+    + `<div id="mcBody">${skel(1)}${skel(1, 'lg')}${skel(1)}</div>`;
+  getLab('montecarlo').then(still(drawEvals)).catch(still((e) => { $('#mcBody').innerHTML = `<div class="card">${emptyBox('No simulated evals in this build.', `${esc(e.message)}. The research lab writes research/lab/montecarlo.json; the cloud monitor copies it on its next run.`)}</div>`; }));
+};
+function drawEvals(M) {
+  const box = $('#mcBody'); if (!box) return;
+  const P = M.prob || {}, Q = M.press || null, paths = (M.paths || []).filter(p => Array.isArray(p.days) && p.days.length), n = paths.length;
+  const cnt = { PASS: 0, FAIL: 0, OPEN: 0 }; paths.forEach(p => cnt[mcRes(p)]++);
+  const val = (o, k) => !o ? null : k === 'dec_2w' ? (ok(o.pass_2w) && ok(o.fail_2w) ? o.pass_2w + o.fail_2w : null) : o[k];
+  const ROWS = [['grp', 'Within 2 weeks (10 sessions) · the owner’s target'], ['pass_2w', 'Passed', 'hi'], ['fail_2w', 'Failed', 'lo'], ['dec_2w', 'Decided (passed or failed)', 'hi'],
+    ['grp', 'Within 3 weeks (15 sessions)'], ['pass_3w', 'Passed', 'hi'], ['fail_3w', 'Failed', 'lo'], ['grp', 'Within 4 and 6 weeks'], ['pass_4w', 'Passed in 4 weeks', 'hi'], ['fail_4w', 'Failed in 4 weeks', 'lo'], ['pass_6w', 'Passed in 6 weeks', 'hi'], ['fail_6w', 'Failed in 6 weeks', 'lo'],
+    ['grp', 'By session 60'], ['pass_60', 'Passed', 'hi'], ['fail_60', 'Failed', 'lo'], ['open_60', 'Still open', 'lo'],
+    ['grp', 'Speed and drawdown'], ['pass_days_median', 'Median sessions to pass', 'lo', 'n'], ['pass_days_p90', '90% of the passes within', 'lo', 'n'], ['dd_median', 'Median drawdown', 'lo', '$'], ['dd_p90', '90th-percentile drawdown', 'lo', '$'], ['dd_worst', 'Worst drawdown', 'lo', '$']];
+  const fmt = (v, f) => f === 'n' ? (ok(v) ? num(v, 0) : '—') : f === '$' ? (ok(v) ? usd(v) : '—') : pct(v);
+  const cell = (o, k, better, f, ref) => { const v = val(o, k); return `<td class="v">${fmt(v, f)}${ref ? dlt(v, val(ref, k), f === 'n' ? DF.n0 : f === '$' ? DF.money : DF.pp, better, '') : ''}</td>`; };
+  const dec = val(P, 'dec_2w');
+  box.innerHTML = `${timingCard(LV().eval_timing, true)}
+    <div class="stats">${statBox('Simulated evals', n || '—', n ? `${cnt.PASS} passed · ${cnt.FAIL} failed · ${cnt.OPEN} open at 60` : 'summary only')}
+      ${statBox('Pass in 2 weeks', pct(P.pass_2w), 'the owner’s target window', 'up')}${statBox('Decided in 2 weeks', pct(dec), `fail ${pct(P.fail_2w)}`)}
+      ${statBox('Sessions to pass', ok(P.pass_days_median) ? Math.round(P.pass_days_median) : '—', `median · 90% within ${ok(P.pass_days_p90) ? Math.round(P.pass_days_p90) : '—'}`)}</div>
+    <div class="card fx-card"><div class="card-h"><h3>Eval fan · ${plural(Math.min(n, 60), 'path')} of ${n}</h3><div>${fxSeg('lab-montecarlo')}</div></div>
+      <p class="card-d">Left to right = sessions. Up = balance. Green crossed $53,000, magenta hit the trailing floor, violet still open. Dashed walls: 2 weeks (decided?) and 3 weeks (passed?).</p>
+      ${fxBox('lab-montecarlo', 'montecarlo')}
+      <div class="legend"><span><i class="dot2" style="background:${MC_COL.PASS}"></i>passed</span><span><i class="dot2" style="background:${MC_COL.FAIL}"></i>failed</span><span><i class="dot2" style="background:${MC_COL.OPEN}"></i>open at session 60</span></div></div>
+    <div class="grid g2 astart">
+      <div class="card"><div class="card-h"><h3>Odds</h3><span class="meta">${Q ? 'locked strategy vs fast-eval press' : 'locked strategy'}</span></div>
+        <div class="tw"><table class="ht"><tr><th>Within…</th><th class="c">Locked</th>${Q ? '<th class="c">Press</th>' : ''}</tr>
+          ${ROWS.map(r => r[0] === 'grp' ? `<tr class="grp"><td colspan="${Q ? 3 : 2}">${r[1]}</td></tr>` : `<tr><td class="k">${r[1]}</td>${cell(P, r[0], r[2], r[3])}${Q ? cell(Q, r[0], r[2], r[3], P) : ''}</tr>`).join('')}</table></div>
+        ${typeof M.press_rule === 'string' ? `<p class="card-d" style="margin:10px 0 0">Press rule: ${esc(M.press_rule)}</p>` : ''}</div>
+      <div class="card"><div class="card-h"><h3>When evals get decided</h3><span class="meta">per session · passes up, fails down</span></div><div id="mcHist"></div>
+        <p class="card-d" style="margin:10px 0 0">The walls are 2 weeks (10 sessions) and 3 weeks (15). ${typeof M.method === 'string' ? esc(M.method) : ''}</p></div></div>
+    ${M.built ? `<div class="note">Built ${esc(M.built)}${M.writeup ? ` · <a class="lnk" href="#/writeups">write-up</a>` : ''}.</div>` : ''}`;
+  const data = { paths, start: MC.start, target: MC.target, maxLoss: MC.maxLoss, prob: { pass_2w: P.pass_2w, fail_2w: P.fail_2w, pass_3w: P.pass_3w, pass_4w: P.pass_4w, pass_6w: P.pass_6w, open_60: P.open_60 } };
+  fxFill('lab-montecarlo', 'montecarlo', data, { onPick: (p) => p && openPath(p) }, (fb) => mcFb(fb, paths));
+  histSVG($('#mcHist'), M.hist);
+}
+function openPath(p) {
+  const r = mcRes(p), last = p.days[p.days.length - 1], peak = Math.max(...p.days), trough = Math.min(...p.days), n = p.days_n ?? p.days.length;
+  sheet(`<span class="side-i" style="color:${MC_COL[r]};background:rgba(255,255,255,.05);border:1px solid var(--line)">${icon(r === 'PASS' ? 'check' : r === 'FAIL' ? 'close' : 'clock')}</span>
+    <div><div class="eyebrow">Simulated eval · ${plural(n, 'session')}</div><h3>${r === 'PASS' ? 'Passed' : r === 'FAIL' ? 'Failed' : 'Still open at session 60'}</h3></div>
+    <div class="sh-res"><b class="${cls(last - MC.start)}">${susd(last - MC.start)}</b><span class="mut">${usd(last)}</span></div>`,
+    `<div class="nums">${nbox('Sessions', n)}${nbox('Decided', r === 'OPEN' ? 'no' : n <= 10 ? 'in 2 weeks' : n <= 15 ? 'in 3 weeks' : `after ${Math.ceil(n / 5)} weeks`)}${nbox('High', usd(peak))}${nbox('Low', usd(trough))}</div>
+     <section><h4>${icon('results')}Balance by session</h4><div id="mcPath"></div></section>`, '', 'Simulated eval');
+  lineChart($('#mcPath'), p.days.map((v, i) => ({ x: String(i + 1), y: v, tip: `<b>session ${i + 1}</b><span>${usd(v)}</span>` })), { h: 180, fmt: (v) => '$' + (v / 1000).toFixed(1) + 'k', ref: MC.target, color: MC_COL[r] });
+}
+// 2D fan: ~60 of the paths as thin lines, target and floor bands, the two rule walls
+function mcFb(el, all) {
+  if (!all.length) { el.innerHTML = fbWait('No simulated paths in this file (summary only).'); return; }
+  const step = Math.max(1, Math.ceil(all.length / 60)), paths = all.filter((_, i) => i % step === 0);
+  const W = Math.max(280, el.clientWidth || 600), H = Math.max(200, el.clientHeight || 340), L = 50, R = 12, T = 14, B = 24, floor = MC.start - MC.maxLoss;
+  const nx = Math.max(60, ...paths.map(p => p.days.length)), vals = paths.flatMap(p => p.days);
+  let lo = Math.min(floor, ...vals), hi = Math.max(MC.target, ...vals); const pd = (hi - lo) * .05 || 100; lo -= pd; hi += pd;
+  const X = (i) => L + i / nx * (W - L - R), Y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  el.innerHTML = `<div class="fbx" style="padding:0"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" aria-hidden="true">
+    ${ticks(lo, hi, 4).map(v => `<line class="gl" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="ax" x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${kfmt(v)}</text>`).join('')}
+    <rect x="${L}" y="${T}" width="${W - L - R}" height="${Math.max(0, Y(MC.target) - T)}" fill="#2ee59d" opacity=".06"/><rect x="${L}" y="${Y(floor)}" width="${W - L - R}" height="${Math.max(0, H - B - Y(floor))}" fill="#ff2bd6" opacity=".07"/>
+    <line x1="${L}" x2="${W - R}" y1="${Y(MC.target)}" y2="${Y(MC.target)}" stroke="#2ee59d" stroke-dasharray="5 4"/><line x1="${L}" x2="${W - R}" y1="${Y(floor)}" y2="${Y(floor)}" stroke="#ff2bd6" stroke-dasharray="5 4"/>
+    ${[[10, '2 wk', -4, 'end'], [15, '3 wk', 4, 'start']].map(([s, t, dx, an]) => `<line x1="${X(s)}" x2="${X(s)}" y1="${T}" y2="${H - B}" stroke="rgba(255,217,138,.55)" stroke-dasharray="3 4"/><text class="ax" x="${X(s) + dx}" y="${T + 11}" text-anchor="${an}" fill="#ffe7a8">${t}</text>`).join('')}
+    ${paths.map(p => `<path d="${p.days.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join('')}" fill="none" stroke="${MC_COL[mcRes(p)]}" stroke-width="1.2" opacity=".5" stroke-linejoin="round"/>`).join('')}
+    ${[0, 20, 40, 60].map(s => `<text class="ax" x="${X(s)}" y="${H - 6}" text-anchor="${s === 0 ? 'start' : 'middle'}">${s}${s === 0 ? ' sessions' : ''}</text>`).join('')}
+    <text class="ax" x="${W - R}" y="${Y(MC.target) - 5}" text-anchor="end" fill="#4ef0b0">target $53k</text><text class="ax" x="${W - R}" y="${Y(floor) + 13}" text-anchor="end" fill="#ff7ad9">max-loss floor</text></svg></div>`;
+}
+// sessions-to-decision histogram: passes up (green), fails down (magenta)
+function histSVG(el, hist) {
+  if (!el) return;
+  const Pd = hist?.pass_days || [], Fd = hist?.fail_days || [], n = Math.max(Pd.length, Fd.length);
+  if (!n) { el.innerHTML = emptyBox('No histogram in this file.', ''); return; }
+  const W = Math.max(280, el.clientWidth || 600), H = 190, L = 36, R = 8, T = 10, B = 22, mid = T + (H - T - B) / 2, mx = Math.max(1, ...Pd, ...Fd), bw = (W - L - R) / n;
+  el.innerHTML = `<div class="viz"><svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">
+    ${Array.from({ length: n }, (_, i) => { const p = Pd[i] || 0, f = Fd[i] || 0, hp = p / mx * (mid - T - 2), hf = f / mx * (H - B - mid - 2), x = (L + i * bw + .5).toFixed(1), w = Math.max(1, bw - 1).toFixed(1);
+      return `<rect class="bar" data-i="${i}" x="${x}" y="${(mid - hp).toFixed(1)}" width="${w}" height="${hp.toFixed(1)}" fill="#2ee59d" opacity=".85"/><rect class="bar" data-i="${i}" x="${x}" y="${mid}" width="${w}" height="${hf.toFixed(1)}" fill="#ff2bd6" opacity=".8"/>`; }).join('')}
+    <line class="zl" x1="${L}" x2="${W - R}" y1="${mid}" y2="${mid}"/>
+    ${[10, 15].filter(s => s <= n).map(s => `<line x1="${L + s * bw}" x2="${L + s * bw}" y1="${T}" y2="${H - B}" stroke="rgba(255,217,138,.55)" stroke-dasharray="3 4"/>`).join('')}
+    ${[0, 10, 20, 30, 40, 50, 60].filter(s => s <= n).map(s => `<text class="ax" x="${L + s * bw}" y="${H - 6}" text-anchor="middle">${s}</text>`).join('')}
+    <text class="ax" x="${L - 5}" y="${T + 10}" text-anchor="end" fill="#4ef0b0">pass</text><text class="ax" x="${L - 5}" y="${H - B - 3}" text-anchor="end" fill="#ff7ad9">fail</text></svg><div class="tip" hidden></div></div>`;
+  const box = el.firstChild, svg = box.firstChild;
+  hover(box, svg, W, (sx) => { const i = Math.max(0, Math.min(n - 1, Math.floor((sx - L) / bw))); return { x: L + i * bw, html: `<b>session ${i}</b><span class="up">${Pd[i] || 0} passed</span><span class="dn">${Fd[i] || 0} failed</span>` }; });
+}
+
+// ===================================================================== LAB: intraday heat (research/lab/intraday_heat.json: weekday × hour of the live strategy's trades)
+const HS = { per: store.get('heatPer', 'all'), m: store.get('heatM', 'net'), pick: null };
+const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+VIEWS.intraday = (el) => {
+  if (ARG && ['all', '2026', '2021-25'].includes(ARG)) HS.per = ARG;
+  el.innerHTML = head('Lab · intraday heat', 'When the bot wins, by weekday and hour', 'Every trade of the live strategy’s replay, grouped by the weekday and the ET hour it entered. Green cells made money, red cells lost it.')
+    + howto('intraday', `<p>Rows are weekdays, columns are the ET hour the trade entered (the killzones are 09:30–11:30 and 13:30–15:30, so most trades sit in 09, 10, 13 and 14).</p>
+      <ul><li><b>Net</b> colours a cell by the money it made after costs; <b>Avg R</b> by the average result in R; <b>Trades</b> by how many there were.</li>
+      <li>Switch between <b>2026</b> and <b>2021-25</b>: a pattern only counts if it shows in both. Few trades in a cell means noise, not a rule.</li></ul><p>Tap a cell for its numbers. The 3D view shows the same grid as towers.</p>`)
+    + `<div id="htBody">${skel(1)}${skel(1, 'lg')}</div>`;
+  getLab('intraday_heat').then(still(drawHeat)).catch(still((e) => { $('#htBody').innerHTML = `<div class="card">${emptyBox('No intraday heat file in this build.', `${esc(e.message)}. The research lab writes research/lab/intraday_heat.json ({cells: [{dow, hour, n, avg_r, net}], periods}); the cloud monitor copies it on its next run.`)}</div>`; }));
+};
+function heatCells(Hd) { return HS.per === 'all' ? Hd.cells || [] : Hd.periods?.[HS.per] || []; }
+function drawHeat(Hd) {
+  const box = $('#htBody'); if (!box) return;
+  const cells = heatCells(Hd), pers = [['all', 'All years'], ...Object.keys(Hd.periods || {}).map(k => [k, k])];
+  const m = HS.m, val = (c) => m === 'net' ? c.net : m === 'avg_r' ? c.avg_r : c.n;
+  const tot = cells.reduce((a, c) => a + (c.n || 0), 0), net = cells.reduce((a, c) => a + (c.net || 0), 0);
+  const ranked = cells.filter(c => (c.n || 0) >= 5).sort((a, b) => (b.net || 0) - (a.net || 0)), best = ranked[0], worst = ranked[ranked.length - 1];
+  const cellName = (c) => `${DOW[c.dow] ?? c.dow} ${pad2(c.hour)}:00`;
+  box.innerHTML = `
+    <div class="toolbar" style="margin-top:0">${segHTML('htPer', pers, HS.per)}${segHTML('htM', [['net', 'Net $'], ['avg_r', 'Avg R'], ['n', 'Trades']], m)}</div>
+    <div class="stats">${statBox('Trades', tot, HS.per === 'all' ? 'all years' : HS.per)}${statBox('Net', susd(net), 'after costs', cls(net))}
+      ${statBox('Best cell', best ? cellName(best) : '—', best ? `${kusd(best.net)} · ${plural(best.n, 'trade')}` : 'needs 5+ trades', 'up')}${statBox('Worst cell', worst ? cellName(worst) : '—', worst ? `${kusd(worst.net)} · ${plural(worst.n, 'trade')}` : '', 'dn')}</div>
+    <div class="card fx-card"><div class="card-h"><h3>Heat · ${esc(pers.find(p => p[0] === HS.per)?.[1] || HS.per)} · ${m === 'net' ? 'net $' : m === 'avg_r' ? 'average R' : 'trades'}</h3><div>${fxSeg('lab-heat')}</div></div>
+      ${fxBox('lab-heat', 'heat')}<div class="heat-i" id="htInfo">Tap a cell for its numbers.</div></div>
+    ${Hd.built ? `<div class="note">Built ${esc(Hd.built)}.</div>` : ''}`;
+  fxFill('lab-heat', 'heat', { cells, label: pers.find(p => p[0] === HS.per)?.[1] || HS.per, metric: m }, {}, (fb) => heatFb(fb, cells, val));
+  onSeg('htPer', (v) => { HS.per = v; store.set('heatPer', v); FX?.detachAll(); drawHeat(Hd); });
+  onSeg('htM', (v) => { HS.m = v; store.set('heatM', v); FX?.detachAll(); drawHeat(Hd); });
+}
+function heatFb(el, cells, val) {
+  if (!cells.length) { el.innerHTML = fbWait('No trades in this period.'); return; }
+  const dows = [...new Set(cells.map(c => c.dow))].sort((a, b) => a - b), hours = [...new Set(cells.map(c => c.hour))].sort((a, b) => a - b);
+  const by = new Map(cells.map(c => [c.dow + ':' + c.hour, c])), mx = Math.max(1e-9, ...cells.map(c => Math.abs(val(c) || 0))), m = HS.m;
+  const fmtV = (v) => m === 'net' ? kusd(v) : m === 'avg_r' ? fR(v) : String(v);
+  el.innerHTML = `<div class="fbx"><div class="hgrid ${hours.length > 8 ? 'dense' : ''}" style="--n:${hours.length}"><span></span>${hours.map(h => `<span class="hx">${pad2(h)}</span>`).join('')}
+    ${dows.map(d => `<span class="hy">${DOW[d] ?? d}</span>` + hours.map(h => { const c = by.get(d + ':' + h); if (!c) return '<span class="c nil"></span>';
+      const v = val(c) || 0, t = Math.min(1, Math.abs(v) / mx), a = (.14 + .76 * Math.sqrt(t)).toFixed(2), bg = m === 'n' ? `rgba(109,124,255,${a})` : v >= 0 ? `rgba(46,229,157,${a})` : `rgba(255,90,122,${a})`;
+      return `<button type="button" class="c ${HS.pick === d + ':' + h ? 'on' : ''}" data-k="${d}:${h}" style="background:${bg}" aria-label="${DOW[d] ?? d} ${pad2(h)}:00">${fmtV(v)}<small>${c.n} tr</small></button>`; }).join('')).join('')}</div></div>`;
+  el.querySelector('.hgrid').onclick = (e) => {
+    const c = e.target.closest('.c[data-k]'); if (!c) return; HS.pick = c.dataset.k;
+    el.querySelectorAll('.c.on').forEach(x => x.classList.remove('on')); c.classList.add('on');
+    const x = by.get(c.dataset.k), info = $('#htInfo'); if (!x || !info) return;
+    info.innerHTML = `<b>${DOW[x.dow] ?? x.dow} ${pad2(x.hour)}:00 ET</b> · ${plural(x.n, 'trade')} · net <b class="${cls(x.net)}">${susd(x.net)}</b> · average <b class="${cR(x.avg_r)}">${fR(x.avg_r)}</b>${ok(x.win_pct) ? ` · win ${pct(x.win_pct)}` : ''}`;
+  };
+}
+
+// ===================================================================== NEWS (data.json.news from tools/news_hub.py: the USD calendar, the bot's blackouts, scored headlines)
+const NEWS = () => D?.news && !D.news.error && (D.news.events || D.news.days) ? D.news : null;
+const NK = { fomc: 'fomc', fomc_pc: 'fomc', fomc_min: 'fomc', cpi: 'cpi', ppi: 'cpi', pce: 'pce', nfp: 'nfp', adp: 'nfp', jolts: 'nfp', claims: 'claims', gdp: 'gdp', auction_30y: 'auction', auction_10y: 'auction',
+  auction_20y: 'auction', auction_other: 'auction', fed_chair: 'speaker', fed_speaker: 'speaker', potus: 'speaker', treasury_sec: 'speaker' };
+const radarKind = (k) => NK[k] || 'other';
+const RK = { fomc: ['#ff2bd6', 'FOMC'], cpi: ['#ffb347', 'CPI / PPI'], pce: ['#ffb347', 'PCE'], nfp: ['#22d3ee', 'Jobs'], claims: ['#22d3ee', 'Claims'], gdp: ['#ff7a59', 'GDP'], auction: ['#8b5cf6', 'Auctions'], speaker: ['#e6e8ff', 'Speakers'], other: ['#9aa0c8', 'Other'] };
+const NS = { mm: store.get('newsMm', false), day: null };
+const pad2 = (v) => String(v).padStart(2, '0');
+// seconds to add to UTC for the ET wall clock at that instant (minute precision is all the radar needs)
+const etOff = (ts) => { const e = et(ts); return Math.round(Date.UTC(e.y, e.mo - 1, e.d, e.h, e.mi) / 1000 - (ts - ts % 60)); };
+function cdFmt(dt) {
+  const a = Math.abs(dt), d = Math.floor(a / 86400), h = Math.floor(a / 3600) % 24, m = Math.floor(a / 60) % 60, s = Math.floor(a) % 60;
+  const txt = d ? `${d}d ${h}h` : h ? `${h}h ${pad2(m)}m` : `${pad2(m)}:${pad2(s)}`;
+  return dt < 0 ? '−' + txt : txt;
+}
+const botRules = () => ({ before_min: 15, after_min: 30, fomc_pm_off: true, flatten_min: 5, ...(NEWS()?.bot_now?.rules || {}) });
+const blackoutOf = (e) => e.blackout ? [e.t - botRules().before_min * 60, e.t + botRules().after_min * 60] : null;
+const hintChip = (h) => !h ? '' : chip(h === 'USD+' ? 'USD↑ · NQ−' : h === 'USD-' ? 'USD↓ · NQ+' : esc(h), h === 'USD+' ? 'bad' : h === 'USD-' ? 'good' : '');
+function evRow(e, i, now = Date.now() / 1000) {
+  const has = (v) => v != null && v !== '', arrow = e.surprise_side === 'above' ? ' ↑' : e.surprise_side === 'below' ? ' ↓' : e.surprise_side === 'inline' ? ' =' : '';
+  const nums = [has(e.forecast) ? `F <b>${esc(e.forecast)}</b>` : '', has(e.previous) ? `P <b>${esc(e.previous)}</b>` : '', has(e.actual) ? `A <b class="${e.usd_hint === 'USD+' ? 'dn' : e.usd_hint === 'USD-' ? 'up' : ''}">${esc(e.actual)}${arrow}</b>` : ''].filter(Boolean);
+  return `<button type="button" class="evr ${e.t < now ? 'past' : ''}" data-ev="${i}"><span class="ev-t"><b>${esc(e.time_et || '')}</b><small>${esc(e.weekday || '')}</small></span>
+    <span class="ev-m"><span class="ev-h"><i class="imp ${esc(e.impact || 'low')}"></i><b>${esc(e.title)}</b>${e.kind_label && e.kind_label !== 'Other' && e.kind_label !== e.title ? chip(esc(e.kind_label)) : ''}
+      ${e.blackout ? chip(`<i>blackout</i> ${esc(e.blackout_start)}–${esc(e.blackout_end)}`, e.blackout_hits_killzone ? 'warn' : '') : ''}${e.in_killzone ? chip(`${esc(e.killzone)} killzone`, 'warn') : ''}${hintChip(e.usd_hint)}</span>
+      ${nums.length ? `<span class="ev-n">${nums.join('')}</span>` : ''}</span>
+    <span class="ev-r"><b>${ok(e.usd_score) ? e.usd_score : '—'}</b><small>usd</small></span></button>`;
+}
+function openEvent(e) {
+  const now = Date.now() / 1000, R = botRules(), k = radarKind(e.kind);
+  sheet(`<span class="side-i" style="color:${RK[k][0]};background:rgba(255,255,255,.05);border:1px solid var(--line)">${icon('news')}</span>
+      <div><div class="eyebrow">${esc(e.weekday || '')} ${esc(fDate(e.date))} · ${esc(e.time_et || '')} ET</div><h3>${esc(e.title)}</h3></div>
+      <div class="sh-res"><b class="${e.impact === 'high' ? 'dn' : e.impact === 'medium' ? 'wn' : ''}" style="font-size:15px;text-transform:uppercase;letter-spacing:.06em">${esc(e.impact || 'low')}</b><span class="mono" data-cd="${e.t}">${cdFmt(e.t - now)}</span></div>`,
+    `<div class="nums">${nbox('Kind', esc(e.kind_label || 'Other'))}${nbox('USD score', ok(e.usd_score) ? e.usd_score + ' / 100' : '—')}${nbox('Forecast', esc(e.forecast || '—'))}${nbox('Previous', esc(e.previous || '—'))}
+        ${nbox('Actual', esc(e.actual || '—'))}${nbox('Surprise', e.surprise_side ? esc(e.surprise_side) + (e.usd_hint ? ' · ' + esc(e.usd_hint) : '') : '—')}${nbox('Bot blackout', e.blackout ? `${esc(e.blackout_start)}–${esc(e.blackout_end)}` : 'none')}${nbox('Killzone', e.in_killzone ? esc(e.killzone) + ' killzone' : 'outside')}</div>
+      <section><h4>${icon('engine')}What the bot does</h4><p>${e.blackout ? `High-impact release: no new entries from ${esc(e.blackout_start)} to ${esc(e.blackout_end)} ET (${R.before_min} min before, ${R.after_min} min after)${e.blackout_hits_killzone ? ', which pauses part of a killzone' : ', outside the killzones, so entries are not affected'}.${R.flatten_min ? ` An open paper trade is closed ${R.flatten_min} min before the release.` : ''}` : 'Not a high-impact release: the bot trades normally.'}${/^fomc/.test(e.kind || '') && R.fomc_pm_off ? ' FOMC day: the PM killzone is off.' : ''}</p></section>
+      ${e.source ? `<section><h4>${icon('sources')}Source</h4><p>${esc(e.source)}${e.url ? ` · <a class="lnk" href="${esc(e.url)}" target="_blank" rel="noopener noreferrer">open ${icon('ext')}</a>` : ''}</p></section>` : ''}`, '', 'Event');
+}
+// 2D radar: a 24-hour clock face (00:00 ET at the top), now at the hub, +24h at the rim; killzones as green arcs
+function radarFb(el, data, onPick) {
+  const W = Math.max(260, el.clientWidth || 360), H = Math.max(220, el.clientHeight || 340), wide = W > 520, foot = wide ? 0 : 50;     // the countdown sits under the dial on a phone, left of it on a wide card
+  const cx = wide ? W * .62 : W / 2, cy = (H - foot) / 2 + 6, R = Math.min(wide ? W * .36 : W / 2, (H - foot) / 2) - 24, HUB = R * .1;
+  const now = data.now, off = etOff(now);
+  const ang = (t) => (((t + off) % 86400 + 86400) % 86400) / 86400 * Math.PI * 2 - Math.PI / 2;
+  const angM = (m) => m / 1440 * Math.PI * 2 - Math.PI / 2;
+  const rad = (dt) => dt <= 0 ? HUB * Math.max(0, 1 + dt / 21600) : dt >= 86400 ? R : HUB + (R - HUB) * Math.sqrt(dt / 86400);
+  const pt = (a, r) => [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+  const arc = (a0, a1, r) => { const [x0, y0] = pt(a0, r), [x1, y1] = pt(a1, r); return `M${x0.toFixed(1)} ${y0.toFixed(1)}A${r} ${r} 0 0 1 ${x1.toFixed(1)} ${y1.toFixed(1)}`; };
+  const evs = data.events.filter(e => e.t - now > -21600 && e.t - now < 172800), next = data.events.filter(e => e.t > now).sort((a, b) => a.t - b.t)[0], ping = motionOn();
+  el.innerHTML = `<div class="radar"><svg viewBox="0 0 ${W} ${H}" aria-hidden="true">
+    <defs><radialGradient id="rdg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#7c4dff" stop-opacity=".32"/><stop offset=".75" stop-color="#2a0a52" stop-opacity=".16"/><stop offset="1" stop-color="#07030d" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#rdg)" stroke="rgba(200,160,255,.2)"/>
+    ${[1, 4, 12].map(h => `<circle cx="${cx}" cy="${cy}" r="${rad(h * 3600)}" fill="none" stroke="rgba(200,160,255,.12)" stroke-dasharray="3 4"/><text x="${cx + 4}" y="${cy - rad(h * 3600) + 11}" class="ax" fill="#9d8fc6">+${h}h</text>`).join('')}
+    <text x="${cx + 4}" y="${cy - R + 11}" class="ax" fill="#9d8fc6">+24h</text>
+    ${[0, 6, 12, 18].map(h => { const [x, y] = pt(angM(h * 60), R + 14); return `<text x="${x}" y="${y + 4}" text-anchor="middle" class="ax" fill="#b9a6ff">${pad2(h)}</text>`; }).join('')}
+    ${data.killzones.map(([a, b]) => `<path d="${arc(angM(a), angM(b), R + 3)}" fill="none" stroke="#2ee59d" stroke-width="4" stroke-linecap="round" opacity=".85"/><path d="M${cx} ${cy}L${pt(angM(a), R).map(v => v.toFixed(1)).join(' ')}A${R} ${R} 0 0 1 ${pt(angM(b), R).map(v => v.toFixed(1)).join(' ')}Z" fill="#2ee59d" opacity=".07"/>`).join('')}
+    <line x1="${cx}" y1="${cy}" x2="${pt(ang(now), R)[0]}" y2="${pt(ang(now), R)[1]}" stroke="rgba(255,255,255,.75)" stroke-width="1.3"/>
+    <circle cx="${cx}" cy="${cy}" r="${HUB}" fill="#2a0a52" stroke="rgba(255,255,255,.4)"/><text x="${cx}" y="${cy + HUB + 12}" text-anchor="middle" class="ax" fill="#cfc6ea">now · ${esc(et(now).hm)} ET</text>
+    ${evs.map(e => { const dt = e.t - now, [x, y] = pt(ang(e.t), rad(dt)), c = RK[radarKind(e.kind)][0], s = e.impact === 'high' ? 7 : e.impact === 'medium' ? 5.5 : 4, op = dt < 0 ? .45 : dt > 86400 ? .4 : 1;
+      return `<g class="rb" data-i="${data.events.indexOf(e)}" opacity="${op}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${s * 2.4}" fill="${c}" opacity=".16"/><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${s}" fill="${c}" stroke="#0a0514" stroke-width="1.5"/>
+        ${e === next && ping ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${s + 6}" fill="none" stroke="${c}" opacity=".8"><animate attributeName="r" from="${s + 3}" to="${s + 16}" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" from=".8" to="0" dur="1.8s" repeatCount="indefinite"/></circle>` : ''}</g>`; }).join('')}
+    </svg>${next ? `<div class="rd-cd"><b data-cd="${next.t}">${cdFmt(next.t - now)}</b><span>${esc(next.title)} · ${esc(et(next.t).wd)} ${esc(et(next.t).hm)} ET${next.t - now > 86400 ? ' · beyond the 24h rim' : ''}</span></div>` : `<div class="rd-cd"><span>No USD events ahead in this build.</span></div>`}</div>`;
+  el.querySelector('svg').onclick = (ev) => { const g = ev.target.closest('.rb'); if (g && onPick) onPick(data.events[+g.dataset.i]); };
+}
+VIEWS.news = (el) => {
+  const N = NEWS(), now = Date.now() / 1000;
+  if (!N) { el.innerHTML = head('System · news hub', 'USD events and the bot’s blackouts', 'Scheduled releases that move the dollar and index futures, mapped onto the bot’s killzones.')
+    + `<div class="card">${emptyBox('No news data in this build yet.', `The cloud monitor builds it from free sources (ForexFactory, BLS, BEA, the Fed, TreasuryDirect, RSS headlines) on every run${D.news?.error ? ': ' + esc(D.news.error) : ''}.`)}</div>`; return; }
+  const E = N.events || [], days = N.days || [], H = N.headlines || [], R = botRules(), todayS = et(now).date;
+  if (ARG && /^\d{4}-\d\d-\d\d$/.test(ARG)) NS.day = ARG;
+  const W = E.map(e => ({ e, w: blackoutOf(e) })).filter(x => x.w), cur = W.find(x => x.w[0] <= now && now < x.w[1]), nextB = W.filter(x => x.w[0] > now).sort((a, b) => a.w[0] - b.w[0])[0];
+  const next = E.filter(e => e.t > now).sort((a, b) => a.t - b.t)[0], today = days.find(d => d.is_today) || days.find(d => d.date === todayS), todayE = E.filter(e => e.date === todayS);
+  const fomc = !!(today?.fomc || todayE.some(e => /^fomc/.test(e.kind || ''))), pauses = (today?.killzone_pauses || []).length || todayE.some(e => e.blackout_hits_killzone);
+  const s = sessionNow(), light = cur || today?.holiday ? 'r' : (nextB && nextB.w[0] - now < 3600) || fomc || pauses ? 'a' : 'g';
+  const hm = (t) => et(t).hm;
+  const headline = cur ? [`Blackout: ${cur.e.title}`, `No new paper entries until ${hm(cur.w[1])} ET (${R.before_min} min before, ${R.after_min} min after a high-impact release).`]
+    : today?.holiday ? ['Holiday', today.summary || 'No session today.']
+    : nextB && nextB.w[0] - now < 3600 ? [`Blackout in ${cdFmt(nextB.w[0] - now)}`, `${nextB.e.title} at ${nextB.e.time_et} ET: no new entries ${hm(nextB.w[0])}–${hm(nextB.w[1])}.${nextB.e.blackout_hits_killzone ? ' It pauses part of a killzone.' : ''}`]
+    : fomc ? ['FOMC day', `${R.fomc_pm_off ? 'The PM killzone is off and a blackout surrounds the decision.' : 'A blackout surrounds the decision.'} ${today?.summary || ''}`]
+    : pauses ? ['A blackout pauses a killzone today', today?.summary || '']
+    : ['Trading normally', today?.summary || (s.wk ? 'No high-impact USD release in the way of the killzones.' : 'Weekend: the next session’s events are below.')];
+  const dayCard = (d) => { const evs = E.filter(e => e.date === d.date), open = NS.day === d.date;
+    return `<button type="button" class="dayc ${d.is_today ? 'today' : ''} ${d.past ? 'past' : ''} ${open ? 'on' : ''}" data-day="${esc(d.date)}"><span class="dayc-h"><b>${esc(d.label || fDate(d.date))}</b>${d.is_today ? chip('today', 'good') : ''}${d.fomc ? chip('FOMC', 'bad') : ''}${d.holiday ? chip('holiday') : ''}${d.heaviest ? chip('heaviest', 'warn') : ''}
+        <span class="n">${d.n_high ? `<span class="dn">${d.n_high} high</span>` : ''}${d.n_medium ? ` · ${d.n_medium} med` : ''}${!d.n_high && !d.n_medium ? 'quiet' : ''}</span></span>
+      <p>${esc(d.summary || '')}</p>
+      ${(d.blackouts || []).length || (d.killzone_pauses || []).length || (d.fed_speakers || []).length ? `<span class="chips">${(d.blackouts || []).map(b => chip(`<i>blackout</i> ${esc(b)}`)).join('')}${(d.killzone_pauses || []).map(b => chip(`<i>killzone pause</i> ${esc(b)}`, 'warn')).join('')}${(d.fed_speakers || []).slice(0, 3).map(b => chip(esc(b))).join('')}</span>` : ''}
+      ${open ? `<span class="evl">${evs.map(e => evRow(e, E.indexOf(e), now)).join('') || emptyBox('No events listed.', '')}</span>` : ''}</button>`; };
+  const hl = NS.mm ? H.filter(h => (h.score || 0) >= 40) : H;
+  const toneChip = (t) => t ? chip(esc(t), 'tone-' + String(t).replace(/\s+/g, '-')) : '';
+  const srcOk = (N.sources || []).filter(x => x.ok).length;
+  el.innerHTML = head(`System · news hub · built ${esc(N.built ? new Date(N.built).toLocaleString() : '—')}${N.offline ? ' · offline build' : ''}`, 'USD events, blackouts and headlines',
+      `Scheduled releases that move the dollar and index futures, from free sources only, scored for USD impact and mapped onto the bot’s killzones. The bot pauses new entries ${R.before_min} min before and ${R.after_min} min after a high-impact release.`,
+      `<button class="btn ghost" type="button" data-go="strategy">${icon('rules')}The rules</button>`)
+    + howto('news', `<p>The <b>traffic light</b> is the bot right now: green = trading normally, amber = a blackout is coming within the hour, an FOMC day or a blackout that pauses a killzone, red = inside a blackout (no new entries) or a holiday.</p>
+      <ul><li><b>Radar</b>: the next 24 hours as a clock face (00:00 ET at the top). Now is the hub; the further out a blip, the further ahead the event. Green arcs are the killzones. Big blips are high-impact releases. Tap a blip for the event.</li>
+      <li><b>Events</b>: F = forecast, P = previous, A = actual. ↑ means the actual came in above the forecast. <b>USD↑ · NQ−</b> is a dollar-positive surprise, which tends to be negative for NQ; <b>USD↓ · NQ+</b> the opposite.</li>
+      <li><b>USD score</b> (0-100) is how much the release usually moves the dollar. <b>Blackout</b> is the bot’s no-entry window around it; it only matters when it overlaps a killzone.</li>
+      <li><b>Headlines</b> are scored for relevance; the tone chip says what the words lean to: hawkish and risk-off are negative for NQ, dovish and risk-on positive.</li></ul>`)
+    + `<div class="card"><div class="tl"><div class="tl-light"><i class="r ${light === 'r' ? 'on' : ''}"></i><i class="a ${light === 'a' ? 'on' : ''}"></i><i class="g ${light === 'g' ? 'on' : ''}"></i></div>
+        <div class="tl-main"><div class="eyebrow">Bot now · ${s.inkz ? esc(s.inkz[2]) : s.open ? 'session open, outside the killzones' : s.wk ? 'session closed' : 'weekend'}</div><h3>${esc(headline[0])}</h3><p>${esc(headline[1])}</p></div></div>
+      <div class="cds"><div><span>${cur ? 'Blackout ends in' : 'Next blackout'}</span><div class="cd" data-cd="${cur ? cur.w[1] : nextB ? nextB.w[0] : ''}">${cur ? cdFmt(cur.w[1] - now) : nextB ? cdFmt(nextB.w[0] - now) : '—'}</div><div class="cd-t">${cur ? esc(cur.e.title) : nextB ? `${esc(nextB.e.title)} · ${esc(nextB.e.weekday)} ${esc(hm(nextB.w[0]))}–${esc(hm(nextB.w[1]))} ET` : 'no high-impact release in the window'}</div></div>
+        <div><span>Next event</span><div class="cd" data-cd="${next ? next.t : ''}">${next ? cdFmt(next.t - now) : '—'}</div><div class="cd-t">${next ? `${esc(next.title)} · ${esc(next.weekday)} ${esc(next.time_et)} ET` : 'nothing scheduled in this build'}</div></div></div></div>
+    <div class="card fx-card"><div class="card-h"><h3>News radar · next 24 hours</h3><div>${fxSeg('news-radar')}</div></div>
+      ${fxBox('news-radar', 'newsradar')}
+      <div class="legend">${Object.entries(RK).filter(([k]) => E.some(e => radarKind(e.kind) === k)).map(([k, v]) => `<span><i class="dot2" style="background:${v[0]}"></i>${v[1]}</span>`).join('')}<span><i class="dot2" style="background:#2ee59d"></i>killzones</span></div></div>
+    ${secH('Today', `<em>${esc(today?.label || fDate(todayS))}</em>`)}
+    <div class="card">${today ? `<p class="lead">${esc(today.summary || '')}</p><div class="chips" style="margin-top:10px">${today.n_high ? chip(`${today.n_high} high-impact`, 'bad') : chip('no high-impact release', 'good')}${today.fomc ? chip('FOMC day', 'bad') : ''}${today.holiday ? chip('holiday') : ''}
+        ${(today.blackouts || []).map(b => chip(`<i>blackout</i> ${esc(b)}`)).join('')}${(today.killzone_pauses || []).map(b => chip(`<i>killzone pause</i> ${esc(b)}`, 'warn')).join('')}${(today.fed_speakers || []).map(b => chip(esc(b))).join('')}</div>` : ''}
+      <div class="evl" style="margin-top:${today ? 12 : 0}px">${todayE.map(e => evRow(e, E.indexOf(e), now)).join('') || emptyBox(today ? 'No USD events today.' : 'No events today.', s.wk ? 'The bot trades both killzones normally.' : 'Markets are closed.')}</div></div>
+    ${secH('Week ahead', `<em>${plural(E.filter(e => e.t > now).length, 'event')} · ${E.filter(e => e.t > now && e.impact === 'high').length} high-impact</em>`)}
+    <div class="daygrid">${days.filter(d => !d.past || d.is_today).map(dayCard).join('') || `<div class="card">${emptyBox('No days ahead in this build.', '')}</div>`}</div>
+    ${secH('Headlines', `<em>${hl.length} of ${H.length}</em>`)}
+    <div class="card"><div class="card-h"><h3>Market headlines · last 48 hours</h3>${segHTML('nwMm', [['all', 'All'], ['mm', 'Market-moving']], NS.mm ? 'mm' : 'all', 'sm')}</div>
+      ${hl.length ? hl.map(h => `<a class="hl" href="${/^https?:\/\//i.test(h.url || '') ? esc(h.url) : '#/news'}" ${/^https?:\/\//i.test(h.url || '') ? 'target="_blank" rel="noopener noreferrer"' : ''}><span><b>${esc(h.title)}</b><small>${esc(h.source || '')} · ${h.t ? esc(et(h.t).wd + ' ' + et(h.t).hm) + ' ET' : esc(h.time_et || '')} ${toneChip(h.tone)}</small></span><span class="sc ${(h.score || 0) >= 40 ? 'hot' : ''}" title="relevance score">${h.score ?? ''}</span></a>`).join('')
+        : emptyBox(H.length ? 'No market-moving headlines right now.' : 'No headlines in this build.', H.length ? 'Headlines scoring 40 or more are market-moving.' : N.offline ? 'This was an offline build: the cloud run fetches the Fed, BLS, Treasury, MarketWatch, CNBC and FX feeds.' : 'The feeds had nothing relevant in the last 48 hours.')}</div>
+    ${secH('Sources', `<em>${srcOk} of ${(N.sources || []).length} live</em>`)}
+    <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>Source health</h3><span class="meta">free, public data only</span></div>${(N.sources || []).map(x => `<div class="src"><span class="dot ${x.ok ? '' : 'off'}"></span><span>${esc(x.name)}</span><small>${x.kind ? esc(x.kind) + ' · ' : ''}${x.ok ? plural(x.n ?? 0, 'item') : 'failed'}</small></div>`).join('') || emptyBox('No source list.', '')}</div>
+      <div class="card"><div class="card-h"><h3>Notes</h3><span class="meta">built ${esc(N.built ? new Date(N.built).toLocaleString() : '—')}</span></div><ul class="list">${(N.notes || []).map(x => `<li>${esc(x)}</li>`).join('') || '<li class="mut">none</li>'}</ul>
+        <div class="note">Rules used: blackout ${R.before_min} min before and ${R.after_min} min after a high-impact release${R.fomc_pm_off ? ', PM killzone off on FOMC days' : ''}${R.flatten_min ? `, open trades closed ${R.flatten_min} min before` : ''}. Times are ET (${esc(N.tz || 'America/New_York')}).</div></div></div>`;
+  const openIdx = (i) => { if (E[i]) openEvent(E[i]); };
+  const kzMin = (R.killzones || ['09:30-11:30', '13:30-15:30']).map(k => String(k).split('-').map(t => { const [h, m] = t.split(':').map(Number); return h * 60 + (m || 0); })).filter(a => a.length === 2 && a.every(ok));
+  const e0 = et(now), ses = { open: Date.UTC(e0.y, e0.mo - 1, e0.d, 9, 30) / 1000 - etOff(now), close: Date.UTC(e0.y, e0.mo - 1, e0.d, 16, 0) / 1000 - etOff(now) };
+  const radar = { now: Math.floor(now), events: E.map(e => ({ ...e, kind: radarKind(e.kind), kindRaw: e.kind })), killzones: kzMin.length ? kzMin : [[570, 690], [810, 930]], session: ses };
+  fxFill('news-radar', 'newsradar', radar, { onPick: (ev) => { const i = ev ? E.findIndex(x => x.t === ev.t && x.title === ev.title) : -1; if (i >= 0) openEvent(E[i]); } }, (fb) => radarFb(fb, radar, (ev) => { const i = E.findIndex(x => x.t === ev.t && x.title === ev.title); if (i >= 0) openEvent(E[i]); }));
+  el.onclick = (ev) => {
+    const r = ev.target.closest('.evr[data-ev]'); if (r) { openIdx(+r.dataset.ev); return; }
+    const d = ev.target.closest('.dayc[data-day]'); if (d) { NS.day = NS.day === d.dataset.day ? null : d.dataset.day; FX?.detachAll(); render(true); }
+  };
+  onSeg('nwMm', (v) => { NS.mm = v === 'mm'; store.set('newsMm', NS.mm); FX?.detachAll(); render(true); });
+};
+setInterval(() => { if (PAGE === 'news' && D && !document.hidden && !$('.sheet-wrap')) { FX?.detachAll(); render(true); } }, 60000);   // the traffic light follows the clock
+
 // ===================================================================== SYSTEM
 VIEWS.system = (el) => {
   const lv = LV(), ef = lv.equity_filter || {}, h = lv.health || {};
   const live = { engine: [lv.model_state ? String(lv.model_state).toLowerCase() : 'no state yet', lv.last_run && Date.now() / 1000 - lv.last_run < 2400 ? '' : 'off'],
     eval: [lv.eval ? `${susd(lv.eval.profit)} · ${usd(lv.eval.cushion)} cushion` : 'waiting for trades', ''], cold: [ef.enabled === false ? 'filter off' : ef.on === false ? sizeWord(ef.mult ?? sizeRules().cold) + ' size now' : 'full size now', ef.on === false ? 'warn' : ''],
     risk: [`$${D.sizing?.risk_usd ?? 800} up to ${D.sizing?.risk_ref_stop ?? 20} pts`, ''], strategy: [D.strategy?.chosen || D.sizing?.chosen ? 'locked ' + (D.strategy?.chosen || D.sizing.chosen) : 'locked', ''], alerts: ['keys in GitHub Secrets', ''],
-    sources: [h.last_bar ? 'last bar ' + h.last_bar : 'no live bars yet', h.error ? 'warn' : ''], settings: [`3D ${fxPref()}`, ''] };
+    sources: [h.last_bar ? 'last bar ' + h.last_bar : 'no live bars yet', h.error ? 'warn' : ''], settings: [`3D ${fxPref()}`, ''], news: newsTile() };
   const tile = ([id, l, ic, d]) => `<button type="button" class="tile" data-go="${id}"><span class="tile-i">${icon(ic)}</span><span class="tile-t">${l}</span><span class="tile-d">${d}</span>
     ${live[id] ? `<span class="tile-live"><span class="dot ${live[id][1]}"></span>${esc(live[id][0])}</span>` : ''}<span class="tile-go">${icon('right')}</span></button>`;
   el.innerHTML = head('System', 'Every part of the bot', 'Live from the cloud monitor and the latest backtest, readable with the PC off.')
     + howto('system', `<p>Each tile is one part of the bot with its live state underneath. The cloud monitor runs on GitHub Actions every 15 minutes in the killzones on market days, so this works with the PC off. It trades on paper only.</p>`)
     + `<div class="tiles">${GROUPS.find(g => g.id === 'system').pages.slice(1).map(tile).join('')}</div>
     ${secH('Research and results')}<div class="tiles">${[['results', 'Results', 'results', 'The live strategy, 5-year replay'], ['experiments', 'Experiments', 'lab', 'Every backtest with its data'],
-      ['writeups', 'Write-ups', 'doc', 'Findings in plain words'], ['losses', 'Loss lab', 'loss', 'Why the bot loses']].map(tile).join('')}</div>`;
+      ['writeups', 'Write-ups', 'doc', 'Findings in plain words'], ['losses', 'Loss lab', 'loss', 'Why the bot loses'], ['evals', 'Simulated evals', 'sim', 'Odds of passing by week'], ['intraday', 'Intraday heat', 'heat', 'Weekday × hour']].map(tile).join('')}</div>`;
 };
+// the News tile's live line: in a blackout, the next blackout, or the next event
+function newsTile() {
+  const N = NEWS(); if (!N) return ['no news data yet', 'off'];
+  const now = Date.now() / 1000, W = (N.events || []).map(e => ({ e, w: blackoutOf(e) })).filter(x => x.w), cur = W.find(x => x.w[0] <= now && now < x.w[1]);
+  if (cur) return [`blackout · ${cur.e.title}`, 'bad'];
+  const next = (N.events || []).filter(e => e.t > now).sort((a, b) => a.t - b.t)[0];
+  return next ? [`next: ${next.title} in ${cdFmt(next.t - now)}`, next.t - now < 3600 && next.impact === 'high' ? 'warn' : ''] : ['no USD events ahead', ''];
+}
 VIEWS.engine = (el) => {
   const lv = LV(), s = sessionNow(), idx = STEPS.indexOf(lv.model_state), age = lv.last_run ? Date.now() / 1000 - lv.last_run : 1e9;
   const PD = { steps: STEP_L.slice(), idx, live: s.open && age < 2400, killzone: !!s.inkz }, pos = lv.position;
@@ -2762,7 +3065,9 @@ VIEWS.sources = (el) => {
         ${row('Gaps today', esc((h.gaps_today || []).join(', ') || 'none'))}${row('Runs', `${lv.runs ?? '—'} since ${lv.first_run ? new Date(lv.first_run * 1000).toLocaleDateString() : '—'}`)}${row('Last run', lv.last_run ? new Date(lv.last_run * 1000).toLocaleString() : '—')}
         ${row('data.json built', new Date(D.built).toLocaleString())}${row('Error', esc(h.error || 'none'))}</div></div></div>
     <div class="card"><div class="card-h"><h3>Lab · run library and write-ups</h3></div><div class="kv one">${row('Runs', `${L.count ?? (L.runs || []).length} stored · index built ${esc(L.built || '—')}`)}${row('Baseline', esc(L.baseline || 'missing'))}
-      ${row('Write-ups', `${(docs.writeups || []).length} · archive ${(docs.archive || []).length} reports`)}${row('Method', 'exact live-loop replay + cold-streak filter + sizing; costs included')}</div></div>
+      ${row('Write-ups', `${(docs.writeups || []).length} · archive ${(docs.archive || []).length} reports`)}${row('Research files', (D.lab_files || []).length ? esc((D.lab_files || []).join(', ')) : 'none')}${row('Method', 'exact live-loop replay + cold-streak filter + sizing; costs included')}</div></div>
+    <div class="card"><div class="card-h"><h3>News hub</h3><span class="meta">tools/news_hub.py · free sources only</span></div><div class="kv one">${(() => { const N = D.news || {}; return row('Events', `${(N.events || []).length} in the window · ${(N.headlines || []).length} headlines`) + row('Built', `${N.built ? esc(new Date(N.built).toLocaleString()) : '—'}${N.offline ? ' · offline build (cached files)' : ''}`)
+      + row('Sources live', `${(N.sources || []).filter(x => x.ok).length} of ${(N.sources || []).length}`) + row('Calendar', 'ForexFactory, Fed FOMC calendar, BLS, BEA, TreasuryDirect, Fed RSS, the engine calendar') + row('Headlines', 'Fed, BLS, BEA, Treasury, White House, MarketWatch, CNBC, FXStreet, Investing.com, ForexLive (RSS)'); })()}</div></div>
     <div class="note">${esc(m.method || '')}</div>`;
 };
 
@@ -2777,7 +3082,9 @@ VIEWS.settings = (el) => {
         <div class="note">Link: <span class="mono">${esc(location.href.split('#')[0])}</span></div></div>
       <div class="card"><div class="card-h"><h3>Behaviour</h3></div>
         <label class="row"><span><b>Auto-refresh</b><span class="small mut">Fetch new data every minute while open</span></span><input type="checkbox" class="switch" id="sAuto" ${store.get('auto', true) ? 'checked' : ''}></label>
-        <label class="row"><span><b>Motion</b><span class="small mut">Animated numbers and transitions</span></span><input type="checkbox" class="switch" id="sMot" ${store.get('motion', true) ? 'checked' : ''}></label>
+        <label class="row"><span><b>Motion</b><span class="small mut">Animated numbers, parallax and transitions</span></span><input type="checkbox" class="switch" id="sMot" ${store.get('motion', true) ? 'checked' : ''}></label>
+        <label class="row"><span><b>Haptic taps</b><span class="small mut">A tiny vibration on buttons and tiles${navigator.vibrate ? '' : ' (this browser does not allow it)'}</span></span><input type="checkbox" class="switch" id="sHap" ${store.get('haptic', true) ? 'checked' : ''}></label>
+        <div class="row"><span><b>Pull to refresh</b><span class="small mut">On a phone, drag down from the top of any page to fetch new data</span></span>${icon('down')}</div>
         <div class="row"><span><b>Accent</b><span class="small mut">Highlight colour</span></span><div class="swatches" id="sAcc">${[['indigo', '#6d7cff'], ['teal', '#2fd3c0'], ['gold', '#e9b44c'], ['rose', '#ff6b9a']].map(([k, c]) => `<button type="button" class="swatch ${store.get('accent', 'indigo') === k ? 'on' : ''}" data-v="${k}" style="background:${c}" aria-label="${k}"></button>`).join('')}</div></div>
         <div class="row"><span><b>Notes</b><span class="small mut">Close every “How to read this” note again</span></span><button class="btn ghost" type="button" id="sHow">${icon('info')}Reset</button></div>
         <div class="row"><span><b>Data</b><span class="small mut">built ${new Date(D.built).toLocaleString()}</span></span><button class="btn ghost" type="button" id="sRef">${icon('refresh')}Refresh now</button></div></div></div>
@@ -2787,7 +3094,8 @@ VIEWS.settings = (el) => {
       <label class="row"><span><b>Tilt to look around</b><span class="small mut">Move your phone and the 3D world moves with you (motion sensors)</span></span><input type="checkbox" class="switch" id="sGyro" ${store.get('gyro', false) ? 'checked' : ''}></label>
       ${FX && !FX.supported() ? '<div class="note">This browser has no WebGL 2, so the 3D layer stays off.</div>' : ''}</div>`;
   $('#sAuto').onchange = (e) => { store.set('auto', e.target.checked); schedule(); };
-  $('#sMot').onchange = (e) => { store.set('motion', e.target.checked); applyLook(); };
+  $('#sMot').onchange = (e) => { store.set('motion', e.target.checked); applyLook(); parallax(); };
+  $('#sHap').onchange = (e) => { store.set('haptic', e.target.checked); if (e.target.checked) haptic(14); };
   $('#sAcc').onclick = (e) => { const b = e.target.closest('.swatch'); if (!b) return; store.set('accent', b.dataset.v); applyLook(); render(true); };
   $('#sRef').onclick = () => load(true);
   $('#sHow').onclick = () => { try { Object.keys(localStorage).filter(k => k.startsWith('le.howto.')).forEach(k => localStorage.removeItem(k)); } catch { } toast('Notes closed'); };
@@ -2875,6 +3183,49 @@ document.addEventListener('pointermove', (e) => {
   t.classList.add('tilt'); t.style.setProperty('--ry', ((px - 0.5) * 10).toFixed(2) + 'deg'); t.style.setProperty('--rx', ((0.5 - py) * 10).toFixed(2) + 'deg');
   t.style.setProperty('--mx', (px * 100).toFixed(1) + '%'); t.style.setProperty('--my', (py * 100).toFixed(1) + '%');
 }, { passive: true });
+// ===================================================================== effects: haptic taps, live countdowns, hero parallax, pull to refresh (all off with motion off / reduced motion where they move things)
+const haptic = (ms = 8) => { if (store.get('haptic', true) && navigator.vibrate) { try { navigator.vibrate(ms); } catch { } } };
+document.addEventListener('pointerdown', (e) => {
+  if (e.pointerType === 'mouse') return;
+  if (e.target.closest?.('button, .tile, .trade, a.card, .tabs a, .nav a, .swatch, .switch, .evr, .dayc, .hgrid .c, .rb, .hl, .rec, .xrow, .arow, .fam-t')) haptic(8);
+}, { passive: true, capture: true });
+// every element with data-cd="<unix seconds>" shows the time until (or since) that moment and ticks once a second
+function tickCD() {
+  const now = Date.now() / 1000;
+  $$('[data-cd]').forEach(el => { const t = +el.dataset.cd; if (!ok(t) || el.dataset.cd === '') return; const dt = t - now; el.textContent = cdFmt(dt); el.classList.toggle('soon', dt > 0 && dt < 3600); el.classList.toggle('now', dt <= 0 && dt > -1800); });
+}
+setInterval(tickCD, 1000);
+// the page head drifts down a little slower than the page and fades, one transform per frame
+let pxQ = false;
+function parallax() {
+  pxQ = false;
+  const h = $('#page > .hero, #page > .hero-card'); if (!h) return;
+  const y = Math.min(Math.max(0, scrollY), 420);
+  if (!motionOn() || innerWidth > 1100 && scrollY === 0) { h.style.transform = ''; h.style.opacity = ''; return; }
+  h.style.transform = y ? `translateY(${(y * 0.22).toFixed(1)}px)` : ''; h.style.opacity = y ? String(Math.max(0, 1 - y / 460).toFixed(3)) : '';
+}
+addEventListener('scroll', () => { if (!pxQ) { pxQ = true; requestAnimationFrame(parallax); } }, { passive: true });
+// pull to refresh on phones: drag down from the top of a page, let go past the ring to fetch data.json again
+(function pullToRefresh() {
+  if (!('ontouchstart' in window)) return;
+  const el = document.createElement('div'); el.id = 'ptr'; el.innerHTML = icon('refresh'); el.setAttribute('aria-hidden', 'true'); document.body.appendChild(el);
+  let y0 = -1, x0 = 0, pull = 0, active = false; const TH = 76;
+  const reset = () => { el.classList.remove('arm', 'go'); el.style.opacity = '0'; el.style.transform = ''; };
+  addEventListener('touchstart', (e) => { if (scrollY > 0 || $('.sheet-wrap') || openDD || el.classList.contains('go')) { y0 = -1; return; } const t = e.touches[0]; y0 = t.clientY; x0 = t.clientX; pull = 0; active = false; }, { passive: true });
+  addEventListener('touchmove', (e) => {
+    if (y0 < 0) return; const t = e.touches[0], dy = t.clientY - y0, dx = Math.abs(t.clientX - x0);
+    if (!active) { if (dx > 14 && dx > dy) { y0 = -1; return; } if (dy < 12) return; active = true; }
+    if (scrollY > 0) { y0 = -1; reset(); return; }
+    pull = Math.max(0, dy); const k = Math.min(1, pull / TH);
+    el.style.opacity = String(k); el.style.transform = `translate(-50%, ${(-60 + k * 72).toFixed(0)}px) rotate(${(k * 270).toFixed(0)}deg)`; el.classList.toggle('arm', k >= 1);
+  }, { passive: true });
+  const end = () => {
+    if (y0 < 0) return; y0 = -1; if (!active) return;
+    if (pull >= TH) { el.classList.add('go'); haptic(12); Promise.resolve(load(true)).finally(() => setTimeout(reset, 350)); } else reset();
+  };
+  addEventListener('touchend', end); addEventListener('touchcancel', end);
+})();
+
 applyLook(); nav(); route(); load('boot'); schedule(); loadFX();
 setInterval(() => FX && D && FX.mood(moodNow()), 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => null);
