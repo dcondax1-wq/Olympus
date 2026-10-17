@@ -10,5 +10,8 @@
     "lookback": 15,
     "min_sum_r": 0.0
   },
-  "label": "Liquidity Engine - original + cold-streak filter (last 15 signals must be net positive)"
+  "label": "Liquidity Engine - original + cold-streak filter (last 15 signals must be net positive)",
+  "chosen": "2026-10-17",
+  "locked": true,
+  "rules": "STRATEGY.md"
 }

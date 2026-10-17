@@ -1,16 +1,14 @@
 export function renderPlaybook(el) {
   const steps = [
-    ['01', 'Map the liquidity', 'Before the open, mark every pool resting orders sit behind: prior day H/L, prior week H/L, Asia, London and overnight H/L, 1H swing points, 15m ITH/ITL. Equal highs/lows (EQH/EQL) are the juiciest; stops cluster there.'],
-    ['02', 'Read the auction (AMT)', "Build the prior RTH volume profile: POC, value-area high and low. Note where the 9:30 open sits vs value. Inside = balance (rotate edge to edge); outside = imbalance (watch for acceptance or an 80%-rule return)."],
-    ['03', 'Frame structure', '1H and 15m swing structure: BOS/CHoCH and the protected low (bullish) or protected high (bearish), the swing that must hold for the trend to stay intact.'],
-    ['04', 'Wait for the sweep', 'Price must trade through a pool. Buy-side taken → look for shorts; sell-side taken → look for longs. No sweep, no trade. Sweeps from 08:00 ET can arm a setup for the killzones.'],
-    ['05', 'Find the manipulation leg', 'The leg runs from the last swing into the sweep extreme. That leg holds the fair value gaps that delivered price into the liquidity grab.'],
-    ['06', 'IFVG confirmation', 'Enter when a candle body closes through an FVG from that leg; the gap is "inverted" and order flow has flipped. If the leg has no FVG, a CISD close through the down-close sequence open stands in.'],
-    ['07', 'Target MAJOR liquidity', 'Target the nearest MAJOR untaken pool that pays ≥1.5R (prior day/week H-L, Asia/London/overnight H-L, 1H swings, equal highs/lows), capped at 5R. Minor 15m swings in between get run through. Draw on liquidity beat fixed-R targets in every test.'],
-    ['10', 'Size by conviction', 'Every valid setup is taken (≈3 per week), but size tilts with the confluences that proved sign-stable: ×1.33 when entering on the discount/premium side of session VWAP, ×0.67 for a volume-climax raid or a first-hour (09:30–10:30) entry. Same trades, higher PF, lower drawdown.'],
-    ['08', 'Manage like a prop trader', 'Stop 1× buffer beyond the sweep extreme. No partials, no trailing (both cut the runners). Breakeven at +1R; exit if not +0.5R within 30 min; leave at the close if the trade was +0.5R and closes back below entry (giveback: improved every test period). Nine other in-trade warning signs are logged with their counterfactual and acted on only once proven. Size ~15–20% of the $2,000 MLL per loss, max 2 trades/day, stop after a winner, flat 15:55 ET.'],
-    ['10', 'Live: pre-committed kill rule', 'Overnight research (research/NIGHT_REPORT.md): the money comes from a few 3–5R runners and the median trade is a small loss, so a losing regime looks like a normal week at first. Live on the eval: $300 risk for the first 10 trades, then $350. Stop and re-validate if the account is down more than $1,000 from its peak after 10 trades, or the win rate is under 25% over 15 trades: that is the losing-period signature, not noise. Odds of a $1,000+ hole in the first 10 trades: 4% if the market behaves like NQ 2026, 21% under the full four-period record.'],
-    ['09', 'Read every timeframe', '1D / 4H / 1H / 15m FVG respect-disrespect sets order flow per timeframe; the 1H swing range sets premium/discount; 1D/4H/1H gaps are HTF key levels. The bot scores location (discount for longs, premium for shorts) and penalises entries where 15m structure has already turned (late).'],
+    ['01', 'Mark the liquidity', 'Major pools: prior day H/L, prior week H/L, overnight H/L, London (02:00–05:00) and Asia (20:00–00:00) H/L, 1H swing highs/lows, equal highs/lows (two levels within 6 pts). Minor pools: 15m swing highs/lows.'],
+    ['02', 'Wait for the sweep', 'From 08:00 ET price trades at least 1 tick through a pool. A swept low arms a long; a swept high arms a short. The sweep extreme follows price if it keeps running, and the setup expires 60 min after the last new extreme. No sweep, no trade.'],
+    ['03', 'Entry trigger in the killzones', 'Only 09:30–11:30 and 13:30–15:30 ET. IFVG: the first gap of at least 3 pts in the leg that ran into the sweep; the trigger is the first candle body closing back through it. With no gap in the leg, CISD: a close back through the open of the candles that made the extreme. Fill at the next 5m open.'],
+    ['04', 'Confluence score of at least 1', '+1 when the 1H trend agrees (−1 against). +1 for a sweep in discount for longs or premium for shorts (1H range). +1 for a clean path (at most 1 unswept swing to target), −1 for 3 or more. −1 when 15m has already turned the trade\'s way (late).'],
+    ['05', 'Stop', 'Beyond the sweep extreme + 2 pts. Minimum 10 pts. Wider than 60 pts: use the far side of the inverted gap if that is 10–60 pts, otherwise skip the trade.'],
+    ['06', 'Target the draw on liquidity', 'The nearest untaken MAJOR pool at least 1.5R away, exit order 1 tick in front of it, capped at 5R. No major pool in range: 2R.'],
+    ['07', 'Manage the trade', 'Breakeven at +1R. Close if it has not reached +0.5R within 30 min. Once it has been +0.5R, a candle closing back through entry closes it (giveback). Flat by 15:55 ET; close 5 min before high-impact news.'],
+    ['08', 'Risk', '$350 per trade in MNQ micros: $350 ÷ (stop pts × $2), max 40; half size when the market is trending (10-day efficiency above 0.45); never more than 25% of the cushion above the trailing max loss. 1 trade a day; done after a winner or at −$600. No entries from 15 min before to 30 min after high-impact US news, after 13:00 on FOMC days, or once the day\'s range is 1.6× the 20-day average.'],
+    ['09', 'Cold-streak filter (owner pick, locked)', 'Every signal from steps 1–8 goes into a shadow record, traded or not. A trade is taken only if the last 15 finished signals add up above 0R. Otherwise the bot sits out, keeps tracking every setup on paper, and starts trading again by itself the moment the record turns positive. Lookback chosen on 2021–24 only and confirmed on 2025 and 2026.'],
   ];
   const gloss = [
     ['Liquidity pool', 'A price where resting stop and limit orders cluster, typically just beyond obvious highs and lows.'],
@@ -29,45 +27,46 @@ export function renderPlaybook(el) {
     ['EOD trailing MLL', "MFFU's max-loss level trails your best end-of-day balance by $2,000 and locks at $50,100."],
   ];
   el.innerHTML = `<div class="pb">
-    <h2>The Model · Liquidity Sweep → IFVG → Draw on Liquidity</h2>
-    <p class="lead">A fully mechanical take on the Blake-style "mech model" (HTF bias → key level → manipulation-leg IFVG → entry), with AMT and ICT liquidity concepts as scored confluence. Each rule below is code in <span class="mono">engine/model.py</span>, and the bot narrates every decision live.</p>
+    <h2>The Model · Liquidity Sweep → IFVG → Draw on Liquidity + Cold-Streak Filter</h2>
+    <p class="lead">The strategy the bot trades, locked in by the owner on Oct 17 2026: the original Liquidity Engine (1 trade a day, fixed $350 risk) plus the cold-streak filter. Each rule below is code (<span class="mono">engine/model.py</span>, <span class="mono">engine/equity_filter.py</span>, settings in <span class="mono">live_model.json</span>), written out in <span class="mono">STRATEGY.md</span>, and the bot narrates every decision live.</p>
     <div class="steps">${steps.map(([n, h, p]) => `<div class="step"><div class="n">STEP ${n}</div><h4>${h}</h4><p>${p}</p></div>`).join('')}</div>
     <div class="grid cols-2">
-      <div class="card"><div class="card-h"><h3>Confluence score (lean, evidence-based)</h3></div>
+      <div class="card"><div class="card-h"><h3>Cold-streak filter</h3></div>
         <ul class="check">
-          <li><b>+1 HTF trend:</b> 1H structure agrees with the trade (−1 if counter-trend). Edge held in both halves.</li>
-          <li><b>+1 Premium/discount:</b> long sweeps in the lower half of the 1H dealing range, shorts in the upper half. Edge held in both halves, NQ and ES.</li>
-          <li><b>±1 Path:</b> +1 low-resistance (≤1 unswept swing to target), −1 high-resistance (≥3).</li>
-          <li><b>−1 Late entry:</b> 15m structure has already flipped your way, so the move is underway.</li>
-          <li><span class="muted">Cut (no edge on the data): protected H/L, SMT, pool quality and AMT location points. Still shown as tags and tracked in the Confluence Lab.</span></li>
-          <li><span class="muted">Shown, not required: 1D/4H/1H/15m FVG order-flow alignment. Hard alignment gates removed the best reversals.</span></li>
-        </ul><div class="note">Minimum score 1. Every candidate is logged as a shadow trade so the Confluence Lab can re-check these edges as data grows.</div></div>
+          <li><b>Rule:</b> trade only while the last 15 finished signals sum above 0R.</li>
+          <li><b>While paused:</b> no real trades, but every setup is still logged and scored on paper. You get an alert when it pauses and when it resumes.</li>
+          <li><b>Why it works here:</b> this model's losing stretches come in runs (Apr–Jul 2026, Sep–Dec 2025). The filter steps aside after a run of losers and comes back once the setups start paying again.</li>
+          <li><b>Cost:</b> it misses the first part of each comeback, so total profit is a little lower, and it can go weeks without a real trade.</li>
+          <li><span class="muted">Live page, Position &amp; risk guard: "Cold-streak filter" shows TRADING or SITTING OUT with the current 15-signal total.</span></li>
+        </ul></div>
       <div class="card"><div class="card-h"><h3>Pre-trade checklist</h3></div>
         <ul class="check">
+          <li>☐ Cold-streak filter says TRADING (last 15 signals above 0R)</li>
           <li>☐ Inside a killzone (09:30–11:30 or 13:30–15:30 ET)</li>
           <li>☐ A marked pool was clearly swept (trade-through, not a touch)</li>
-          <li>☐ Body close through an FVG inside the manipulation leg</li>
-          <li>☐ Opposing liquidity ≥ 1.5R away, path mostly clear</li>
-          <li>☐ Stop beyond the sweep extreme fits the risk budget (10–60 NQ pts)</li>
-          <li>☐ Fewer than 2 trades today, no winner banked yet, day loss &gt; −$600</li>
+          <li>☐ Body close back through a gap in the sweep leg (or CISD)</li>
+          <li>☐ Major pool at least 1.5R away, confluence score at least 1</li>
+          <li>☐ Stop 10–60 NQ pts beyond the sweep extreme</li>
+          <li>☐ No trade yet today, day P&amp;L above −$600</li>
           <li>☐ High-impact news checked; you are at the screen supervising</li>
         </ul></div>
     </div>
     <div class="grid cols-2">
       <div class="card"><div class="card-h"><h3>Research findings (honest)</h3></div>
         <ul class="check">
-          <li>NQ 5m, Aug 6 → Oct 15 2026: 33 trades (3.3/week), 48.5% win, +1.06R/trade, PF 5.27, +$12.7k on $350 base risk, max DD −$1.07k, worst day −$468.</li>
-          <li>MFFU eval: 36/36 rolling starts passed, avg 11 days. Monte Carlo 99% pass. Eval Sprint ($450): avg 9.3 days, 97% pass, 0 rolling failures.</li>
-          <li>All 384 grid configs profitable out-of-sample on NQ; every walk-forward fold positive; robust to 3-tick slippage. Without the 5 best trades PF is still 1.9.</li>
-          <li>Exit study: major-pool DOL targets beat fixed R; partials and trailing stops lose money (they cut the 4R+ runners); BE at 1R and a 30-min time stop help.</li>
-          <li>Cut for having no edge: AMT-location points, protected H/L, SMT, pool quality, London session, hard MTF alignment gates, partials, trails.</li>
-          <li><b>ES did not work</b> (0/384 configs profitable OOS), and the same model on 1m bars lost money. Trade NQ on 5m.</li>
-          <li>Only ~50 sessions of real futures intraday data exist for free. Treat the results as promising, not proven. Paper trade first.</li>
+          <li>All numbers: TradingView NQ1! futures data, commissions and slippage included, $350 risk.</li>
+          <li><b>2026 (Jan 2 – Oct 16):</b> 59 trades, 32% win, avg win +2.76R vs avg loss −0.45R, PF 2.99, +$10,339, max DD −$1,174. Without the filter: 93 trades, 26% win, PF 2.41, +$11,630, max DD −$3,147.</li>
+          <li><b>MFFU 50K eval, starting any 2026 day:</b> 83 passed, 0 failed with the filter (45 passed, 38 failed without).</li>
+          <li><b>Apr–Dec 2025:</b> +$3,525, PF 1.74, max DD −$1,227 (without: +$1,751, PF 1.18, −$3,362).</li>
+          <li><b>Oct 2021 – Dec 2024:</b> +$5,005, PF 1.18 (without: −$1,923, PF 0.96). The edge depends on the market regime; the filter is what keeps the losing years small.</li>
+          <li><b>Trade frequency:</b> about 2 a week while trading, but it paused May 1 – Aug 6 2026 (about 14 weeks). Overall 1.4 a week.</li>
+          <li>Tested and rejected: ICT 2022, Silver Bullet, Mech/IFVG, continuation and ATM models as taught; 92 confluences; 6 daily-bias methods; grade-based sizing; partials and trailing stops.</li>
+          <li>Backtests are not a promise. Paper trade first.</li>
         </ul></div>
       <div class="card"><div class="card-h"><h3>MFFU Builder 50K constraints baked in</h3></div>
         <ul class="check">
           <li>$3,000 target · $2,000 EOD trailing MLL (locks at $50,100) · $1,000 soft daily loss</li>
-          <li>Max 4 minis / 40 micros: the sizer caps at 40 micros</li>
+          <li>Max 4 minis / 40 micros: the sizer caps at 40 micros. The worst 2026 drawdown with the filter ($1,174) stayed inside the $2,000 MLL</li>
           <li>No eval consistency rule; funded payouts require best day ≤ 50% of cycle profit</li>
           <li>Flat before session close: the bot flattens at 15:55 ET</li>
           <li>Automation: MFFU permits automated strategies with <b>active oversight</b>; no HFT, no sim-fill exploitation. Confirm the current policy with MFFU.</li>

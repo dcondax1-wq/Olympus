@@ -556,7 +556,9 @@ class LiveBot:
                 _eqf.record(res["trades"])
             except Exception as e:
                 self._note_error(f"shadow ledger update failed: {e}")
-        self.state["equity_filter"] = _eqf.status(self._eqf_cfg)
+        self.state["equity_filter"] = eqf = _eqf.status(self._eqf_cfg)
+        if self.state_path == STATE_PATH:
+            self._narrate_filter(eqf, lm)
         self.last_poll = now
         self.bars_tail = base.to_records(max(0, len(base) - 400))
         self._emit_events(res, sym)
@@ -651,6 +653,26 @@ class LiveBot:
                 self._alert("\n".join(lines), "daily")
         except Exception as e:
             self._note_error(f"daily summary failed: {e}")
+
+    def _narrate_filter(self, eqf, lm):
+        """Say in the bot log which strategy is locked in (once per start) and every time the cold-streak filter flips."""
+        if not getattr(self, "_strategy_announced", False):
+            self._strategy_announced = True
+            self._log("system", f"Strategy locked: {lm.get('label') or lm.get('model')}"
+                                f"{' (owner pick ' + lm['chosen'] + ')' if lm.get('chosen') else ''}. {eqf['reason']}.")
+        if not eqf.get("enabled"):
+            return
+        prev = getattr(self, "_eqf_last_on", None)
+        self._eqf_last_on = eqf["on"]
+        if prev is None or prev == eqf["on"]:
+            return
+        if eqf["on"]:
+            text = (f"Cold streak over: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Back to taking trades.")
+        else:
+            text = (f"Cold streak: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Sitting out; every setup is still tracked "
+                    f"on paper and trading resumes when they add back up above 0R.")
+        self._log("risk", text)
+        self._alert(("⏸️ " if not eqf["on"] else "▶️ ") + text, "guard")
 
     def _equity_ok(self, entry_t):
         """Equity-curve filter gate for one entry; logs why when it holds the entry back (paper only)."""

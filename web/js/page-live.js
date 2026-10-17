@@ -187,10 +187,14 @@ function render(snap) {
     const cushion = st.balance - st.mll;
     const guards = [
       ['Daily loss stop', `${fmtS$(st.day_pnl)} / -${fmt$(p.daily_max_loss)}`, st.day_pnl > -p.daily_max_loss],
-      ['Trades today', `${st.day_trades} / ${p.max_trades_day}`, st.day_trades < p.max_trades_day],
+      ['Trades today', `${st.day_trades} / ${st.strategy?.params?.max_trades_day ?? p.max_trades_day}`,
+        st.day_trades < (st.strategy?.params?.max_trades_day ?? p.max_trades_day)],
       ['MLL cushion (sim)', fmt$(cushion), cushion > p.risk_usd * 2],
       ['Session', st.model_state, !['DONE FOR DAY'].includes(st.model_state)],
     ];
+    const ef = st.equity_filter;
+    if (ef?.enabled) guards.push(['Cold-streak filter', `${ef.on ? 'TRADING' : 'SITTING OUT'} · last ${ef.n} ${ef.sum_r > 0 ? '+' : ''}${fmtN(ef.sum_r, 2)}R`, ef.on]);
+    if (st.strategy?.label) guards.unshift(['Strategy', String(st.strategy.label).split(' (')[0], true]);
     const h = snap.health;
     if (h) {
       const age = h.data_age_s == null ? '—' : h.data_age_s >= 120 ? `${Math.round(h.data_age_s / 60)} min` : `${Math.round(h.data_age_s)} s`;
