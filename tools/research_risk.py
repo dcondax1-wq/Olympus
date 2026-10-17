@@ -373,6 +373,22 @@ def eval_stats(T, pol, sess, dll=True):
     return out
 
 
+def b2b_avg(T, pol, sess, offsets=range(0, 100, 5), dll=True):
+    """Back-to-back evals started on 20 different first days (0, 5, ... 95 sessions in): average passes and fails per
+    year of trading, so one lucky or unlucky first eval does not decide the comparison."""
+    by = _by_day(T)
+    P = F = yrs = 0.0
+    for k0 in offsets:
+        k, p_, f_ = k0, 0, 0
+        while k < len(sess):
+            r, d = eval_path(T, pol, sess, k, None, by, dll)
+            if r == "OPEN":
+                break
+            p_ += r == "PASS"; f_ += r == "FAIL"; k += d
+        P += p_; F += f_; yrs += (len(sess) - k0) / 252.0
+    return {"pass_yr": round(P / yrs, 2), "fail_yr": round(F / yrs, 2), "evals_per_pass": round((P + F) / P, 2) if P else None}
+
+
 def chain_trades(T, pol, sess, dll=True):
     """Trades of back-to-back evals over all sessions (a new eval the session after each pass or fail)."""
     by = _by_day(T)

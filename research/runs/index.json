@@ -1,7 +1,7 @@
 {
- "built": "2026-10-17 20:01",
+ "built": "2026-10-17 20:03",
  "baseline": "baseline",
- "count": 65,
+ "count": 68,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -5061,6 +5061,235 @@
      "p20": 10.2,
      "f20": 4.4,
      "b2b": "8/9"
+    }
+   }
+  },
+  {
+   "id": "leak_both_off",
+   "title": "Leakage check: memory and learner off",
+   "family": "other",
+   "question": "Leak-free setting (what the cloud monitor effectively runs): same trades as the baseline?",
+   "status": "info",
+   "verdict": "Worse in both periods. 2026: PF 3.48 -> 3.48, net +$20.1k -> +$20.1k; 2021-25: PF 1.09 -> 1.09, net +$6.5k -> +$6.5k; 2.16 / 3.17 trades a week.",
+   "writeup": "leakage-check.md",
+   "tags": [
+    "replay"
+   ],
+   "params": {
+    "memory_seed": false,
+    "exit_learn": false
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:03",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.48,
+     "net": 20111,
+     "dd": -2661,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -554,
+     "risk": 239.0,
+     "half": 28,
+     "p10": 19.8,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.09,
+     "net": 6491,
+     "dd": -11401,
+     "avg_r": -0.003,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 213.0,
+     "half": 351,
+     "p10": 4.1,
+     "f10": 2.1,
+     "p20": 8.8,
+     "f20": 9.6,
+     "b2b": "7/18"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.32,
+     "net": 26602,
+     "dd": -11401,
+     "avg_r": 0.041,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 216.0,
+     "half": 379,
+     "p10": 6.5,
+     "f10": 1.7,
+     "p20": 12.2,
+     "f20": 8.0,
+     "b2b": "11/19"
+    }
+   }
+  },
+  {
+   "id": "leak_exitlearn_off",
+   "title": "Leakage check: exit learner switched off",
+   "family": "other",
+   "question": "Does the walk-forward exit learner ever act in the live-loop replay?",
+   "status": "info",
+   "verdict": "Worse in both periods. 2026: PF 3.48 -> 3.48, net +$20.1k -> +$20.1k; 2021-25: PF 1.09 -> 1.09, net +$6.5k -> +$6.5k; 2.16 / 3.17 trades a week.",
+   "writeup": "leakage-check.md",
+   "tags": [
+    "replay"
+   ],
+   "params": {
+    "exit_learn": false
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:03",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.48,
+     "net": 20111,
+     "dd": -2661,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -554,
+     "risk": 239.0,
+     "half": 28,
+     "p10": 19.8,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.09,
+     "net": 6491,
+     "dd": -11401,
+     "avg_r": -0.003,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 213.0,
+     "half": 351,
+     "p10": 4.1,
+     "f10": 2.1,
+     "p20": 8.8,
+     "f20": 9.6,
+     "b2b": "7/18"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.32,
+     "net": 26602,
+     "dd": -11401,
+     "avg_r": 0.041,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 216.0,
+     "half": 379,
+     "p10": 6.5,
+     "f10": 1.7,
+     "p20": 12.2,
+     "f20": 8.0,
+     "b2b": "11/19"
+    }
+   }
+  },
+  {
+   "id": "leak_memseed_off",
+   "title": "Leakage check: trade memory switched off",
+   "family": "other",
+   "question": "Does the backtest read data/memory.db (paper trades, possibly from the future) and change any trade?",
+   "status": "info",
+   "verdict": "Worse in both periods. 2026: PF 3.48 -> 3.48, net +$20.1k -> +$20.1k; 2021-25: PF 1.09 -> 1.09, net +$6.5k -> +$6.5k; 2.16 / 3.17 trades a week.",
+   "writeup": "leakage-check.md",
+   "tags": [
+    "replay"
+   ],
+   "params": {
+    "memory_seed": false
+   },
+   "sizing": {},
+   "built": "2026-10-17 20:03",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 24.7,
+     "pf": 3.48,
+     "net": 20111,
+     "dd": -2661,
+     "avg_r": 0.376,
+     "stop": 44.0,
+     "worst_day": -554,
+     "risk": 239.0,
+     "half": 28,
+     "p10": 19.8,
+     "f10": 0.0,
+     "p20": 30.5,
+     "f20": 0.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 20.5,
+     "pf": 1.09,
+     "net": 6491,
+     "dd": -11401,
+     "avg_r": -0.003,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 213.0,
+     "half": 351,
+     "p10": 4.1,
+     "f10": 2.1,
+     "p20": 8.8,
+     "f20": 9.6,
+     "b2b": "7/18"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.0,
+     "pf": 1.32,
+     "net": 26602,
+     "dd": -11401,
+     "avg_r": 0.041,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 216.0,
+     "half": 379,
+     "p10": 6.5,
+     "f10": 1.7,
+     "p20": 12.2,
+     "f20": 8.0,
+     "b2b": "11/19"
     }
    }
   },
