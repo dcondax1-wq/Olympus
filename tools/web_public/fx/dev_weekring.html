@@ -17,7 +17,7 @@ const q = new URLSearchParams(location.search), view = 'weekring';
 const box = document.getElementById('box'); box.style.height = (q.get('h') || 340) + 'px';
 const log = (m) => { document.getElementById('log').textContent += m + '\n'; };
 window.onerror = (m) => log(m);
-const FX = await import('../fx_weekring.js?' + Date.now());
+const FX = await import('./fx_weekring.js?' + Date.now());
 FX.init({ level: q.get('level') || 'max' });
 // the week of Mon 2026-10-12 .. Fri 2026-10-16 (EDT = UTC-4)
 const et = (dayIdx, hour) => Date.UTC(2026, 9, 12 + dayIdx, 0, 0) / 1000 + (hour + 4) * 3600;

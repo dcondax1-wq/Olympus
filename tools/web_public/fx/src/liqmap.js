@@ -348,12 +348,12 @@ export class LiquidityMap extends Hud {
     this.T.set(this.labelRoom * 0.2 - 0.2, (yA - yB) / 2, -0.15);
     // labels
     const defs = [], small = this.w < 520;
-    if (has) defs.push({ html: `<i>price</i>${fmtPx(this.price)}`, at: () => this.beamR, ax: 0, dx: 8, cls: 'px', keep: true, show: () => this.beamS > 0.6 });
+    if (has) defs.push({ html: `<i>price</i>${fmtPx(this.price)}`, at: () => this.beamR, ax: 0, dx: 8, cls: 'px', keep: true, avoid: true, show: () => this.beamS > 0.6 });
     const at = (sl) => () => (sl && !sl.dead && sl.a > 0.45 ? sl.pr : null);
     if (pos) {
       const R = pos.R, dirTxt = pos.dir > 0 ? 'long' : 'short';
       const posDef = (key, title, css, body) => defs.push({ html: `<b style="color:${css}">${title}</b><em>${body}</em>`, at: at(this.byKey.get(key)), ax: 0, dx: 8, cls: 'tag pos', avoid: true, keep: true,
-        alts: [{ ax: 0, ay: 1, dx: 8, dy: -4 }, { ax: 0, ay: 0, dx: 8, dy: 4 }] });
+        alts: [{ ax: 0, ay: 1, dx: 8, dy: -4 }, { ax: 0, ay: 0, dx: 8, dy: 4 }, { ax: 1, dx: -8 }, { ax: 1, ay: 0, dx: -8, dy: 4 }, { ax: 1, ay: 1, dx: -8, dy: -4 }] });
       posDef('__stop', 'stop', CSS_C.stop, `${MINUS}1R · ${fmtPx(pos.stop)}`);
       if (Number.isFinite(pos.target)) posDef('__target', 'target', CSS_C.target, `${fmtRR(pos.tr)} · ${fmtPx(pos.target)}`);
       posDef('__entry', dirTxt, CSS_C.entry, `${fmtPx(pos.entry)} · 1R = ${Math.round(R)} pts`);
