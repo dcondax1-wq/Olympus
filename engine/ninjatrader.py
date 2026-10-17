@@ -313,7 +313,7 @@ class NinjaTraderAdapter:
     route_all_exits = True      # LiveBot routes every model exit (TIME STOP, giveback, ...): a CLOSEPOSITION when flat is harmless
     kill_flattens_all = True    # the kill switch reaches NinjaTrader even when the model shows no position
 
-    def __init__(self, cfg: dict | None = None, readonly: bool = False):
+    def __init__(self, cfg: dict | None = None, readonly: bool = False, clock=None):
         cfg = dict(cfg or {})
         self.cfg = cfg
         self.readonly = readonly                       # status / checks only: never writes, never withdraws
@@ -335,7 +335,7 @@ class NinjaTraderAdapter:
         self.pending_timeout = float(cfg.get("nt_pending_timeout_s", 45.0))
         self.state_path = cfg.get("nt_state_path") or STATE_PATH
         self.audit_path = cfg.get("nt_audit_log") or AUDIT_PATH
-        self.clock = time.time
+        self.clock = clock or time.time
         self._sleep = time.sleep                       # the self-test swaps in a simulated NinjaTrader here
         self._alert_fn = None                          # None = the bot's phone alerts (guard kind); the self-test captures
         self.lock = threading.RLock()
@@ -1128,7 +1128,7 @@ class NinjaTraderBars:
         mins = self.MINUTES[interval]
         base_m = mins if mins in (1, 5) else 5
         path = self.file_for(sym, base_m)
-        if path is None and mins == 5:
+        if path is None and mins == 5 and self.file_for(sym, 1):
             path, base_m = self.file_for(sym, 1), 1               # only a 1m chart: build 5m from it
         if path is None:
             return None, (f"no feed file {FEED_DIR}/{self.roots.get(sym, [sym])[0]}_{base_m}m.csv (is LE_BarFeed on a "
@@ -1503,8 +1503,7 @@ def selftest(verbose=True) -> bool:
         def make(cfg_extra=None, nt=fake):
             cfg = {"adapter": "ninjatrader", "sym": "NQ", "armed": True, "nt_folder": folder, "params": {"max_micros": 40, "flat_mod": 955},
                    "nt_state_path": os.path.join(tmp, "nt_state.json"), "nt_audit_log": os.path.join(tmp, "oif.log"), **(cfg_extra or {})}
-            ad = NinjaTraderAdapter(cfg)
-            ad.clock = lambda: now[0]
+            ad = NinjaTraderAdapter(cfg, clock=lambda: now[0])
             ad._sleep = lambda s: (nt.process(), now.__setitem__(0, now[0] + s))
             ad._alert_fn = alerts.append
             return ad

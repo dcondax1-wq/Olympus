@@ -303,9 +303,12 @@ class Msg:
             return '{"ticker":"' + P["bTicker"] + '","action":"breakeven","orderType":"stop"}'
         return self.pmt("buy" if d == 1 else "sell", q, close, new_stop, tgt, True, t_close_ms)
 
-    @staticmethod
-    def size_note(cold, trend_half):
-        return (" · half size (cold streak)" if cold else "") + (" · half size (trending market)" if trend_half else "")
+    def size_word(self):
+        m = self.P["coldMult"]
+        return "half" if m == 0.5 else "quarter" if m == 0.25 else f"{_g(float(m))}x"
+
+    def size_note(self, cold, trend_half):
+        return (f" · {self.size_word()} size (cold streak)" if cold else "") + (" · half size (trending market)" if trend_half else "")
 
 
 # ------------------------------------------------------------------------------------------------ simulation
@@ -961,6 +964,10 @@ def main():
         py = pp.py_trades(day_from=d0, day_to=d1, bars_csv=a.csv if a.py_bars else None, cache=a.py_cache)
         py = pp.apply_cold(py)
         res = pp.compare(py, tv, day_from=d0, day_to=d1, t_to=int(S.t[-1] // 1000))
+        cfg = pp.live_model().get("equity_filter") or {}
+        if cfg and abs(float(cfg.get("cold_size", 0.5)) - float(r["inputs"]["coldMult"])) > 1e-9:
+            print(f"WARNING: live_model.json cold_size {cfg.get('cold_size', 0.5)} != the script's 'Size in a cold streak' "
+                  f"{r['inputs']['coldMult']} - set the input (and DEFAULT_INPUTS['coldMult']) to match")
         out["parity"] = {k: v for k, v in res.items()}
     if a.json:
         with open(a.json, "w", encoding="utf-8") as f:

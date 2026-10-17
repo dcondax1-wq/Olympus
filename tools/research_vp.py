@@ -17,7 +17,15 @@ prices its plan at that close too (entry = signal close; the fill is the next op
 Volume profile approximation: 5m bars only, so each bar's volume is spread evenly over every tick (0.25 pt) between its
 low and high. POC / value area (70%, expanded from the POC one row at a time, as engine/model.volume_profile does) are
 read from 5-point rows of that tick histogram. Profiles are RTH only (09:30-16:00 ET). Naked POC = a prior RTH POC
-(last 10 sessions) that no bar has traded through since that session's 16:00 close.
+(last 10 sessions) that lies outside the low-high range of every bar since that session's 16:00 close (Globex trades
+almost 23 h a day, so price passes through every level inside that range).
+
+Method: 24 ideas; the strong side of each is chosen on 2021-25 only by select() (same sign in avg R and $ per trade, a
+gap of 0.05R or more, 5-95% of trades); 2026 is only used to judge. Each chosen idea is sized four ways on top of the
+live sizing (x0.5 weak side, x1.25 strong side, skip weak side as a check, cold-streak interplay); earlier claims are
+re-checked; threshold ideas get neighbour runs; any run that beats the baseline in both periods must pass gate()
+(neighbours too, 3 of 4 full years 2022-25) and is compared with a placebo (random subsets of the same size).
+Write-up: research/writeups/vwap-volume-profile.md.
 """
 from __future__ import annotations
 

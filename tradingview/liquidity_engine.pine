@@ -55,7 +55,7 @@ grpC = "Cold-streak filter"
 coldOn    = input.bool(true, "Smaller size in a cold streak", group=grpC, tooltip="Before each entry the strategy adds up the R of the last N closed trades. At or below the threshold the trade is still taken, at the smaller size. On TradingView the record comes from the trades in the loaded chart history (full size until N trades have closed); the Python bot uses its shadow ledger.")
 coldLook  = input.int(15, "Closed trades to add up (N)", minval=1, group=grpC)
 coldMinR  = input.float(0.0, "Cold when they sum to or below (R)", group=grpC)
-coldMult  = input.float(0.5, "Size in a cold streak (x micros, at least 1)", minval=0.01, maxval=1.0, group=grpC)
+coldMult  = input.float(0.5, "Size in a cold streak (x micros, at least 1)", minval=0.01, maxval=1.0, group=grpC, tooltip="0.5 = half size (live_model.json today). Same as cold_size in engine/equity_filter.py: micros = max(1, floor(micros x this)).")
 coldForce = input.string("Auto", "Override", options=["Auto", "Always full size", "Always cold"], group=grpC, tooltip="Auto = from the closed trades on this chart. Use an override only if the chart history is too short and the Python dashboard shows a different cold-streak state; re-create the alert after changing it.")
 grpO = "Old rules (off in the locked strategy)"
 gradeSizing = input.bool(false, "Grade sizing A+..D (old: $350 x grade)", group=grpO)
@@ -734,8 +734,11 @@ f_beMsg(int d, int q, float newStop, float tgt) =>
      '{"ticker":"' + bTicker + '","action":"breakeven","orderType":"stop"}' :
      f_pmtBase(d == 1 ? "buy" : "sell", q, close, newStop, tgt, true)
 
+f_coldWord() =>
+    coldMult == 0.5 ? "half" : coldMult == 0.25 ? "quarter" : str.tostring(coldMult) + "x"
+
 f_sizeNote(bool cold, bool trendHalf) =>
-    (cold ? " · half size (cold streak)" : "") + (trendHalf ? " · half size (trending market)" : "")
+    (cold ? " · " + f_coldWord() + " size (cold streak)" : "") + (trendHalf ? " · half size (trending market)" : "")
 
 // ---------------------------------------------------------------- manage the open position (before new entries, like the engine:
 // an exit at this close frees the bot to take a new trigger on the same bar)
@@ -1122,7 +1125,7 @@ if showTable and barstate.islast
          coldForce == "Always cold" ? "Cold streak: forced ON - smaller size" :
          coldForce == "Always full size" ? "Cold streak: forced off - full size" :
          coldN < coldLook ? "Cold streak: warming up (" + str.tostring(coldN) + "/" + str.tostring(coldLook) + " closed trades) - full size" :
-         "Last " + str.tostring(coldLook) + " trades: " + (coldSum > 0 ? "+" : "") + str.tostring(coldSum, "#.##") + "R - " + (coldNow ? "COLD, half size" : "full size")
+         "Last " + str.tostring(coldLook) + " trades: " + (coldSum > 0 ? "+" : "") + str.tostring(coldSum, "#.##") + "R - " + (coldNow ? "COLD, " + f_coldWord() + " size" : "full size")
     table.cell(stBox, 0, 0, "Liquidity Engine " + VERSION, text_color=color.white, text_size=size.small, text_halign=text.align_left)
     table.cell(stBox, 0, 1, "Risk " + f_usd(riskUsd) + " up to a " + str.tostring(refStop) + "-pt stop · " + str.tostring(maxTrades) + " trade/day", text_color=color.white, text_size=size.small, text_halign=text.align_left)
     table.cell(stBox, 0, 2, coldTxt, text_color=coldNow ? color.orange : color.white, text_size=size.small, text_halign=text.align_left)

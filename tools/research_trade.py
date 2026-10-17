@@ -586,8 +586,10 @@ def table(family=None):
             print(f"{x['id']:20s} (not run)"); continue
         r = rl.load(x["id"])
         a, b = r["spans"]["2026"], r["spans"]["2021-25"]
+        ev = lambda s: f"2wk {s.get('p10')}/{s.get('f10')} 3wk {s.get('p15')}/{s.get('f15')}"
         print(f"{x['id']:20s} {x['method']:8s} {r['status']:15s} 26: n={a.get('n')} tpw={a.get('tpw')} PF={a.get('pf')} net={a.get('net')} "
-              f"dd={a.get('dd')} p20={a.get('p20')} | 21-25: n={b.get('n')} tpw={b.get('tpw')} PF={b.get('pf')} net={b.get('net')} dd={b.get('dd')} b2b={b.get('b2b')}")
+              f"dd={a.get('dd')} {ev(a)} | 21-25: n={b.get('n')} tpw={b.get('tpw')} PF={b.get('pf')} net={b.get('net')} dd={b.get('dd')} "
+              f"{ev(b)} b2b={b.get('b2b')}")
 
 
 if __name__ == "__main__":

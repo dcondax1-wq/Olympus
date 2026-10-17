@@ -232,7 +232,8 @@ def py_trades(params: dict | None = None, day_from: str | None = None, day_to: s
 def apply_cold(py: list[dict], cfg="live", ledger_from: int | None = None) -> list[dict]:
     """The cold-streak filter exactly as tools/export_backtest.py applies engine/equity_filter.status: the ledger is the
     engine's own trades (R = pnl_r at full size); an entry is cold when the last `lookback` trades that finished before it
-    sum to <= min_sum_r R (rounded to 2 decimals, at least `lookback` of them). cold_mode half: qty = max(1, int(qty x 0.5)).
+    sum to <= min_sum_r R (rounded to 2 decimals, at least `lookback` of them). cold_mode half: qty = max(1, int(qty x
+    cold_size)), cold_size 0.5 unless live_model.json sets it (engine/equity_filter.py).
     ledger_from (s): only trades entered from then on count, like TradingView, whose record starts with the chart's history.
     Adds qty_full, qty (sized), cold, cold_sum, pnl_mnq ($ with TradingView's MNQ commission) and pnl_sized (engine $ x q/q0)."""
     cfg = live_model().get("equity_filter") if cfg == "live" else cfg
@@ -247,7 +248,8 @@ def apply_cold(py: list[dict], cfg="live", ledger_from: int | None = None) -> li
             last = fin[-lb:]
             s = round(sum(float(x["pnl_r"]) for x in last), 2)
             on = len(last) < lb or s > thr
-            m = 1.0 if on else (0.5 if cfg.get("cold_mode", "skip") == "half" else 0.0)
+            half = cfg.get("cold_mode", "skip") == "half"
+            m = 1.0 if on else (min(1.0, max(0.0, float(cfg.get("cold_size", 0.5)))) if half else 0.0)
         q = q0 if m >= 1 else (max(1, int(q0 * m)) if m > 0 else 0)
         t.update(qty=q, cold=m < 1, cold_sum=s,
                  pnl_mnq=round(((t["exit"] - t["entry"]) * t["dir"] * 2.0 - 1.5) * q, 2),
