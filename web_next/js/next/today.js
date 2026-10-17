@@ -39,20 +39,21 @@ function arc(cx, cy, r, a0, a1) {
 }
 function ringSvg(d) {
   const n = d.days.reduce((s, x) => s + x.trades, 0), net = d.days.reduce((s, x) => s + x.pnl, 0);
-  const cx = 100, cy = 100, R = 76, gap = 0.09, seg = Math.PI * 2 / 5;
-  let svg = `<circle cx="${cx}" cy="${cy}" r="${R}" stroke="var(--surface-3)" stroke-width="14" fill="none"/>`;
+  // ring of five day segments (labels outside the ring), the week's count and net in the middle
+  const cx = 100, cy = 100, R = 64, gap = 0.1, seg = Math.PI * 2 / 5;
+  let svg = `<circle cx="${cx}" cy="${cy}" r="${R}" stroke="var(--surface-3)" stroke-width="13" fill="none"/>`;
   d.days.forEach((x, i) => {
     const a0 = -Math.PI / 2 + i * seg + gap / 2, a1 = a0 + seg - gap;
     const col = !x.trades ? (x.past ? 'color-mix(in srgb, var(--ink) 14%, transparent)' : 'var(--surface-3)') : x.pnl > 0 ? 'var(--good)' : x.pnl < 0 ? 'var(--bad)' : 'var(--ink-2)';
-    svg += `<path d="${arc(cx, cy, R, a0, a1)}" stroke="${col}" stroke-width="${x.trades ? 14 : 10}" fill="none" stroke-linecap="butt" opacity="${x.trades ? .95 : .9}"/>`;
-    if (x.today) svg += `<path d="${arc(cx, cy, R + 13, a0, a1)}" stroke="var(--accent)" stroke-width="3" fill="none" opacity=".95"/>`;
-    const am = (a0 + a1) / 2, lx = cx + (R - 24) * Math.cos(am), ly = cy + (R - 24) * Math.sin(am);
-    svg += `<text x="${lx.toFixed(1)}" y="${(ly + 3.5).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="600" fill="${x.today ? 'var(--accent)' : 'var(--muted)'}" font-family="Inter, system-ui">${x.label}${x.trades ? ' ' + x.trades : ''}</text>`;
+    svg += `<path d="${arc(cx, cy, R, a0, a1)}" stroke="${col}" stroke-width="${x.trades ? 13 : 9}" fill="none" stroke-linecap="butt" opacity="${x.trades ? .95 : .9}"/>`;
+    if (x.today) svg += `<path d="${arc(cx, cy, R + 11, a0, a1)}" stroke="var(--accent)" stroke-width="2.5" fill="none" opacity=".95"/>`;
+    const am = (a0 + a1) / 2, lx = cx + (R + 23) * Math.cos(am), ly = cy + (R + 23) * Math.sin(am);
+    svg += `<text x="${lx.toFixed(1)}" y="${(ly + 3.5).toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="650" fill="${x.today ? 'var(--accent)' : x.trades ? 'var(--ink-2)' : 'var(--muted)'}" font-family="Inter, system-ui">${x.label}${x.trades ? ' · ' + x.trades : ''}</text>`;
   });
   const band = n < TARGET[0] ? 'below' : n > TARGET[1] ? 'above' : 'in';
-  svg += `<text x="${cx}" y="${cy - 2}" text-anchor="middle" font-size="34" font-weight="750" fill="var(--ink)" font-family="Inter, system-ui" letter-spacing="-1">${n}</text>
-    <text x="${cx}" y="${cy + 17}" text-anchor="middle" font-size="9.5" font-weight="600" fill="var(--muted)" font-family="Inter, system-ui" letter-spacing=".8">TRADES · AIM ${TARGET[0]}–${TARGET[1]}</text>
-    <text x="${cx}" y="${cy + 33}" text-anchor="middle" font-size="12" font-weight="650" fill="${net > 0 ? 'var(--good-ink)' : net < 0 ? 'var(--bad)' : 'var(--ink-2)'}" font-family="JetBrains Mono, monospace">${n ? fmtS$(net) : '—'}</text>`;
+  svg += `<text x="${cx}" y="${cy + 2}" text-anchor="middle" font-size="34" font-weight="750" fill="var(--ink)" font-family="Inter, system-ui" letter-spacing="-1">${n}</text>
+    <text x="${cx}" y="${cy + 18}" text-anchor="middle" font-size="8.5" font-weight="650" fill="var(--muted)" font-family="Inter, system-ui" letter-spacing=".6">AIM ${TARGET[0]}–${TARGET[1]} A WEEK</text>
+    <text x="${cx}" y="${cy + 33}" text-anchor="middle" font-size="11.5" font-weight="650" fill="${net > 0 ? 'var(--good-ink)' : net < 0 ? 'var(--bad)' : 'var(--ink-2)'}" font-family="JetBrains Mono, monospace">${n ? fmtS$(net) : '—'}</text>`;
   return { svg: `<svg viewBox="0 0 200 200" width="190" height="190" class="nx-ring">${svg}</svg>`, n, net, band };
 }
 function renderWeek() {
@@ -63,7 +64,8 @@ function renderWeek() {
     lastWeekSig = sig;
     const { svg, n, net, band } = ringSvg(d);
     const left = Math.max(0, TARGET[0] - n), remaining = d.days.filter(x => !x.past && !(x.today && d.now.minutes >= 960)).length;
-    const verdict = !d.loaded ? 'Waiting for the paper bot' : band === 'in' ? 'On pace: 2–4 trades a week' : band === 'above' ? 'Busy week: above the 2–4 aim' : n === 0 && remaining === 5 ? 'Fresh week' : left ? `${left} more for the 2-a-week floor · ${remaining} session${remaining === 1 ? '' : 's'} left` : 'Below the aim';
+    const verdict = !d.loaded ? 'Waiting for the paper bot' : band === 'in' ? 'On pace: 2–4 trades a week' : band === 'above' ? 'Busy week: above the 2–4 aim'
+      : remaining === 0 ? `Week over: ${n} trade${n === 1 ? '' : 's'} (aim 2–4)` : n === 0 && remaining === 5 ? 'Fresh week' : left ? `${left} more for the 2-a-week floor · ${remaining} session${remaining === 1 ? '' : 's'} left` : 'Below the aim';
     el.innerHTML = `<div class="nx-week"><div class="nx-week-ring">${svg}</div>
       <div class="nx-week-side"><div class="nx-eyebrow">Paper ledger · week of ${esc(d.days[0].date)}</div><h3>${esc(verdict)}</h3>
         <div class="nx-week-days">${d.days.map(x => `<div class="nx-wd ${x.today ? 'today' : ''} ${x.trades ? (x.pnl > 0 ? 'win' : x.pnl < 0 ? 'loss' : 'flat') : ''}"><span>${x.label}</span><b>${x.trades || (x.past || x.today ? '0' : '·')}</b><em class="${cls(x.pnl)}">${x.trades ? fmtS$(x.pnl) : ''}</em></div>`).join('')}</div>
@@ -80,7 +82,10 @@ async function liquidity() {
 }
 function mapSvg(price, pools, pos) {
   const W = 420, H = 300, L = 8, R = 8, T = 16, B = 16;
-  const near = pools.filter(p => price && Math.abs(p.price - price) / price < 0.025).sort((a, b) => b.price - a.price);
+  // pools within 2.5% of price; when the bot is not polling only a few key levels exist, so keep at least 3 each side
+  let near = pools.filter(p => price && Math.abs(p.price - price) / price < 0.025);
+  if (near.length < 6) { const up = pools.filter(p => p.price > price).sort((a, b) => a.price - b.price).slice(0, 3), dn = pools.filter(p => p.price < price).sort((a, b) => b.price - a.price).slice(0, 3); near = [...new Set([...near, ...up, ...dn])]; }
+  near = near.sort((a, b) => b.price - a.price);
   const ys = near.map(p => p.price).concat([price], pos ? [pos.entry, pos.stop, pos.target].filter(Number.isFinite) : []);
   let lo = Math.min(...ys), hi = Math.max(...ys); const pad = (hi - lo) * 0.08 || 20; lo -= pad; hi += pad;
   const Y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);

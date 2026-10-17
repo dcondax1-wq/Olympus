@@ -883,3 +883,20 @@ kbd, .nx-search kbd { font: 600 10.5px var(--mono); padding: 3px 6px; border-rad
 .nx-pfd { white-space: nowrap; }
 /* a 3D card stays hidden while 3D is off (the oracle's display:grid used to beat the hidden attribute) */
 .nx [data-fx-card][hidden], .nx .card.nx-oracle[hidden] { display: none !important; }
+/* news hub: bot traffic light, notes, earlier days, magenta tones */
+.nx-light { display: flex; align-items: flex-start; gap: 12px; padding: 12px 13px; border-radius: 14px; border: 1px solid var(--nx-line); background: color-mix(in srgb, var(--surface-2) 70%, transparent); }
+.nx-light i { flex: none; width: 14px; height: 14px; border-radius: 50%; margin-top: 3px; background: var(--muted); box-shadow: 0 0 0 4px color-mix(in srgb, var(--muted) 18%, transparent); }
+.nx-light.green i { background: var(--good); box-shadow: 0 0 0 4px color-mix(in srgb, var(--good) 20%, transparent), 0 0 14px var(--good); }
+.nx-light.amber i { background: var(--warn); box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn) 20%, transparent), 0 0 14px var(--warn); }
+.nx-light.red i { background: var(--bad); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bad) 20%, transparent), 0 0 14px var(--bad); }
+.nx-light > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.nx-light b { font: 700 14.5px var(--sans); } .nx-light.red b { color: var(--bad); } .nx-light.amber b { color: var(--warn); } .nx-light.green b { color: var(--good-ink); }
+.nx-light span { font-size: 12.5px; color: var(--ink-2); line-height: 1.4; } .nx-light em { font-style: normal; font-size: 11px; color: var(--muted); margin-top: 3px; }
+.nx-notes { display: flex; flex-wrap: wrap; gap: 6px; margin: -4px 0 16px; } .nx-notes .nx-chip { height: auto; min-height: 26px; padding: 4px 10px; white-space: normal; } .nx-notes .ico { width: 13px; height: 13px; color: var(--accent); flex: none; }
+.nx-day.past { opacity: .6; } .nx-day.heavy header b::after { content: " · heavy"; color: var(--bad); font-weight: 600; font-size: 11px; }
+.nx-earlier { border-top: 1px solid var(--nx-line); } .nx-earlier summary { cursor: pointer; padding: 10px 18px; font: 600 12.5px var(--sans); color: var(--muted); list-style: none; }
+.nx-earlier summary::before { content: "▸ "; } .nx-earlier[open] summary::before { content: "▾ "; }
+.nx-tone.neg { color: #ff6bd5; border-color: rgba(255, 107, 213, .45); background: rgba(255, 107, 213, .08); }
+.nx-src { margin: -6px 2px 16px; line-height: 1.5; }
+@media (max-width: 760px) { .nx-earlier summary { padding: 10px 14px; } }
+.nx-nh-top { align-items: start; }
