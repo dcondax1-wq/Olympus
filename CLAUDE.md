@@ -72,7 +72,9 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   `live_model.json`, keeps a paper ledger plus an MFFU eval tracker, sends Telegram/Discord alerts, and publishes README.md and
   chart.png to the `dashboard` branch (read in the GitHub app).
 - **PC off, free:** `scripts/PC_OFF_OPTIONS.md` (A: TradingView brain + one tap on the phone; B: the PC wakes itself at 07:50 ET,
-  trades through NinjaTrader, hibernates at 16:35: `scripts/schedule_pc.ps1`; paid bridges / VPS only as options C-D).
+  trades through NinjaTrader, hibernates at 16:35: `scripts/schedule_pc.ps1`; E: a spare Surface on 24/7: `scripts/setup_dedicated_pc.ps1`;
+  paid bridges / VPS only as options C-D). The always-on PC pushes a heartbeat (`engine/heartbeat.py`, branch `heartbeat`,
+  on with `LE_HEARTBEAT=1`); the cloud monitor alerts when it goes silent in a session.
 - **TradingView:** Pine port in `tradingview/liquidity_engine.pine` (parity notes in `research/PINE_PARITY.md`). It does **not**
   have the cold-streak filter or the new sizing/target rules yet.
 - Refreshing `data/*.csv` needs the owner's TradingView export (tools/grab_tv_export.py on the PC). Cloud sessions can't do it.

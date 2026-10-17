@@ -608,6 +608,7 @@ def memory_export():
 # the last successful /api/live/start; on server start a paper / Tradovate-DEMO bot resumes by itself. Live never
 # auto-resumes. /api/live/stop and /api/live/kill delete the record. A heartbeat thread alerts on stalled polls / a
 # stale feed and keeps the PC awake while the bot runs.
+from engine import heartbeat as _hb
 from engine import keepawake as _ka
 from engine import watchdog as _wd
 
@@ -668,6 +669,7 @@ class _KillClearsAutostart:
 
 app.add_middleware(_KillClearsAutostart)
 WATCHDOG = _wd.Watchdog(BOT, send=_autostart_alert, keepawake=_ka.KEEPAWAKE)
+HEARTBEAT = _hb.Heartbeat(BOT, log=lambda t: print(t, flush=True))   # pushes "I'm alive" to the heartbeat branch (LE_HEARTBEAT=1)
 
 
 def _autostart_resume():
@@ -708,6 +710,7 @@ def _autostart_startup():
     else:
         threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
     WATCHDOG.start()
+    HEARTBEAT.start()
 
 
 app.router.add_event_handler("startup", _autostart_startup)
@@ -716,7 +719,7 @@ app.router.add_event_handler("startup", _autostart_startup)
 @app.get("/api/health/ping")
 def health_ping():
     return J({"ok": True, "t": int(time.time()), "uptime_s": int(time.time() - WATCHDOG.server_started_at),
-              "bot_running": bool(BOT.running)})
+              "bot_running": bool(BOT.running), "heartbeat": HEARTBEAT.status()})
 
 
 @app.get("/api/health/watchdog")

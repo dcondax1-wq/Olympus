@@ -23,6 +23,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from engine import equity_filter               # noqa: E402
+from engine import heartbeat                   # noqa: E402
 from engine import lab_adapter                 # noqa: E402
 from engine.data import from_frame             # noqa: E402
 from engine.lab_adapter import live_model      # noqa: E402
@@ -185,6 +186,15 @@ def run(out):
     ev_track = {"balance": round(bal, 2), "profit": round(bal - START_BAL, 2), "to_target": round(START_BAL + TARGET - bal, 2),
                 "trailing_mll": round(mll, 2), "cushion": round(bal - mll, 2)}
 
+    # ---- the always-on PC's heartbeat (engine/heartbeat.py): alert when it went silent in a session
+    pc = heartbeat.read(cwd=ROOT, now=now)
+    pc_alert_at = st.get("pc_alert_at")
+    in_session = et_now.weekday() < 5 and 480 <= et_now.hour * 60 + et_now.minute <= 990
+    if pc.get("present") and pc.get("silent") and in_session and now - float(pc_alert_at or 0) > 3600:
+        pc_alert_at = now
+        sent = send_alert(f"PC BOT SILENT: the {pc.get('host') or 'PC'} bot ({pc.get('adapter')}) last reported "
+                          f"{pc['age_s'] // 60} min ago{' WITH AN OPEN POSITION' if pc.get('position') else ''}. "
+                          "Check the PC / NinjaTrader. The cloud paper bot keeps running.") or sent
     write_chart(os.path.join(out, "chart.png"), df, state, res, today)
     write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
@@ -198,7 +208,9 @@ def run(out):
                                     "qty": t.get("qty"), "target_label": t.get("target_label")} for t in res["trades"][-10:]],
                  # for the web dashboard's Chart tab: the last ~2 sessions of 5m bars and the untaken pools around price
                  "bars": [[int(r.time), float(r.open), float(r.high), float(r.low), float(r.close)] for r in df.tail(200).itertuples()],
-                 "pools": _near_pools(state)}
+                 "pools": _near_pools(state),
+                 "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host", "reason")},
+                 "pc_alert_at": pc_alert_at}
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}")
