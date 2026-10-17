@@ -139,7 +139,7 @@ def cold():
     last = equity_filter.load()[-(int((cfg or {}).get("lookback", 15))):]
     d = _live_bt() or {}
     hist = [{"day": t.get("day"), "r": t.get("r"), "half": bool(t.get("half")), "pnl": t.get("pnl")} for t in d.get("trades") or []]
-    return _J({"config": cfg, "now": now, "window": last, "history": hist})
+    return _J({"config": cfg, "now": now, "eval_timing": equity_filter.eval_timing(now), "window": last, "history": hist})
 
 
 # ------------------------------------------------------------------ research lab: run library + write-ups

@@ -130,6 +130,7 @@ def run(out):
         equity_filter.record(res["trades"], shadow_path)
     eqf_now = equity_filter.status(eqf_cfg, path=shadow_path)
     state["equity_filter"] = eqf_now
+    state["eval_timing"] = equity_filter.eval_timing(eqf_now)   # buy/reset the eval at full size, not in a cold streak
 
     # ---- paper ledger: engine trades that entered after the cloud monitor started watching
     sizing_cfg = lm.get("sizing")
@@ -307,7 +308,7 @@ def write_chart(path, df, state, res, today):
 def usd_cell(v):
     if not v.get("taken", True):
         return "skipped (cold streak)"
-    return money(v["usd"]) + (" (half size, cold streak)" if v.get("mult", 1.0) < 1 else "")
+    return money(v["usd"]) + (f" ({v.get('mult', 1.0):g}x size: {', '.join(v.get('reasons') or ['cold streak'])})" if v.get("mult", 1.0) < 1 else "")
 
 
 def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run):
@@ -332,6 +333,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
          "## Status", "| | |", "|---|---|",
          f"| Strategy | {state.get('model_label', 'engine')} |",
          f"| Cold-streak filter | {(state.get('equity_filter') or {}).get('reason', 'off')} |",
+         f"| Eval timing | **{(state.get('eval_timing') or {}).get('verdict', '?').upper()}**: {(state.get('eval_timing') or {}).get('reason', '')} |",
          f"| Model | **{state.get('model_state', '?')}** |",
          f"| Price | {price:,.2f} (last bar {health['last_bar']}, {health['age_min']} min old) |" if price else "| Price | - |",
          f"| Setups | {'<br>'.join(arm) or 'none armed'} |",

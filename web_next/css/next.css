@@ -900,3 +900,6 @@ kbd, .nx-search kbd { font: 600 10.5px var(--mono); padding: 3px 6px; border-rad
 .nx-src { margin: -6px 2px 16px; line-height: 1.5; }
 @media (max-width: 760px) { .nx-earlier summary { padding: 10px 14px; } }
 .nx-nh-top { align-items: start; }
+
+/* Risk & Sizing calculator: the two size switches side by side */
+.nx-switches { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
