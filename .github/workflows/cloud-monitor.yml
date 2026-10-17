@@ -48,6 +48,7 @@ jobs:
             /data/news/
             /data/shadow_ledger_seed.json
             /live_model.json
+            /requirements-cloud.txt
             /research/lab/backtest_live.json
 
       - name: Python
