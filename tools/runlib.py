@@ -167,19 +167,49 @@ def days_of(trades, sessions):
 SPANS = (("2026", "2026-01-01", "2026-12-31"), ("2021-25", "2021-01-01", "2025-12-31"), ("all", "2000-01-01", "2100-01-01"))
 
 
+def eval_speed(days, horizon=60):
+    """Owner's rule (2026-10-17): on the 50K an eval should be decided within 2 weeks and never take over 3 weeks to
+    pass. A fresh MFFU Builder 50K eval is started on every session and run up to `horizon` sessions:
+      p10/f10, p15/f15, p20/f20  % of starts that passed / failed within 10, 15, 20 sessions
+      dec10                      % decided (passed or failed) within 10 sessions
+      slow_pass                  % of all passes (within the horizon) that needed more than 15 sessions
+      pass_med                   median sessions of a pass
+      b2b                        back-to-back evals passed/failed (a new eval the day after each one ends)"""
+    from engine.analytics import PLANS, simulate_eval
+    plan = PLANS["builder_50k"]
+    pn = [d["pnl"] for d in days]; lo = [d["low"] for d in days]
+    res = [simulate_eval(pn[i:i + horizon], plan, lo[i:i + horizon]) for i in range(len(days))]
+    n = len(res) or 1
+    pct = lambda c: round(100 * c / n, 1)
+    passes = [r["days"] for r in res if r["result"] == "PASS"]
+    out = {}
+    for H in (10, 15, 20):
+        out[f"p{H}"] = pct(sum(1 for r in res if r["result"] == "PASS" and r["days"] <= H))
+        out[f"f{H}"] = pct(sum(1 for r in res if r["result"] == "FAIL" and r["days"] <= H))
+    out["dec10"] = round(out["p10"] + out["f10"], 1)
+    out["slow_pass"] = round(100 * sum(1 for d in passes if d > 15) / len(passes), 1) if passes else None
+    out["pass_med"] = float(np.median(passes)) if passes else None
+    k, pa, fa = 0, 0, 0
+    while k < len(days):
+        x = simulate_eval(pn[k:], plan, lo[k:])
+        if x["result"] == "OPEN":
+            break
+        pa += x["result"] == "PASS"; fa += x["result"] == "FAIL"; k += x["days"]
+    out["b2b"] = f"{pa}/{fa}"
+    return out
+
+
 def _compact(T, D):
-    """The variant_results.json columns for one span."""
-    from tools.export_backtest import _evals, _stats
+    """The dashboard columns for one span."""
+    from tools.export_backtest import _stats
     s = _stats(T, D) if T else None
     if not s:
         return {"n": 0}
-    e = _evals(D)
-    b = e["back_to_back"]
+    e = eval_speed(D)
     return {"n": s["trades"], "tpw": s["per_week"], "wk2": s["weeks_2plus_pct"], "win": s["win_pct"], "pf": s["pf"], "net": round(s["net"]),
             "dd": round(s["max_dd"]), "avg_r": round(float(np.mean([t["r"] for t in T])), 3), "stop": s["median_stop_pts"],
             "worst_day": round(s["worst_day"]), "risk": s["median_risk_usd"], "half": s["half_size_trades"],
-            "p10": e["within_2_weeks"]["pass_pct"], "f10": e["within_2_weeks"]["fail_pct"], "p20": e["within_1_month"]["pass_pct"],
-            "f20": e["within_1_month"]["fail_pct"], "b2b": f"{b['passed']}/{b['failed']}"}
+            "per_month": round(s["net"] / max(len(D) / 21, 1e-9)), **e}
 
 
 def score(trades, raw_or_sessions):
@@ -203,10 +233,10 @@ def score(trades, raw_or_sessions):
     return out
 
 
-def passes(S, base=None, min_tpw=2.0):
-    """The CLAUDE.md rule: better than the baseline on 2026 AND 2021-25 (net and PF), and 2+ trades a week in both."""
+def passes(S, base=None, min_tpw=2.0, max_tpw=4.0):
+    """The owner's rule: better than the baseline on 2026 AND 2021-25 (net and PF), and 2-4 trades a week in both."""
     a, b = S["spans"]["2026"], S["spans"]["2021-25"]
-    if (a.get("tpw") or 0) < min_tpw or (b.get("tpw") or 0) < min_tpw:
+    if not (min_tpw <= (a.get("tpw") or 0) <= max_tpw and min_tpw <= (b.get("tpw") or 0) <= max_tpw):
         return False
     if base is None:
         return True
@@ -257,9 +287,12 @@ def index():
     rows.sort(key=lambda r: (order.get(r["status"], 9), r["family"], r["id"]))
     _dump({"built": dt.datetime.now().strftime("%Y-%m-%d %H:%M"), "baseline": "baseline", "count": len(rows),
                    "columns": {"n": "trades", "tpw": "trades/week", "wk2": "% weeks with 2+", "win": "win %", "pf": "profit factor",
-                               "net": "net $", "dd": "max drawdown $", "avg_r": "avg R", "stop": "median stop pts",
-                               "p10": "eval pass % in 2 weeks", "f10": "eval fail % in 2 weeks", "p20": "eval pass % in 1 month",
-                               "f20": "eval fail % in 1 month", "b2b": "back-to-back evals passed/failed"},
+                               "net": "net $", "per_month": "net $ per month", "dd": "max drawdown $", "avg_r": "avg R", "stop": "median stop pts",
+                               "risk": "median $ at risk", "p10": "eval pass % in 2 weeks", "f10": "eval fail % in 2 weeks",
+                               "dec10": "% evals decided in 2 weeks", "p15": "eval pass % in 3 weeks", "f15": "eval fail % in 3 weeks",
+                               "p20": "eval pass % in 1 month", "f20": "eval fail % in 1 month", "slow_pass": "% of passes slower than 3 weeks",
+                               "pass_med": "median sessions to pass", "b2b": "back-to-back evals passed/failed"},
+                   "owner_rules": "2-4 trades a week; judged on 2026 and 2021-25; evals decided within 2 weeks, no pass slower than 3 weeks",
                    "runs": rows}, os.path.join(RUNS, "index.json"), indent=1)
     return rows
 
@@ -268,8 +301,9 @@ def line(S, name="2026"):
     s = S["spans"][name]
     if not s.get("n"):
         return f"{name}: no trades"
-    return (f"{name}: n={s['n']} tpw={s['tpw']} wk2={s['wk2']}% win={s['win']}% PF={s['pf']} net={s['net']:+,} DD={s['dd']:,} "
-            f"eval2w {s['p10']}/{s['f10']} eval1m {s['p20']}/{s['f20']} b2b {s['b2b']}")
+    return (f"{name}: n={s['n']} tpw={s['tpw']} wk2={s['wk2']}% win={s['win']}% PF={s['pf']} net={s['net']:+,} (${s.get('per_month', 0):,}/mo) "
+            f"DD={s['dd']:,} eval2w {s['p10']}/{s['f10']} dec {s.get('dec10')}% eval3w {s.get('p15')}/{s.get('f15')} "
+            f"slow {s.get('slow_pass')}% med {s.get('pass_med')} b2b {s['b2b']}")
 
 
 if __name__ == "__main__":
@@ -283,6 +317,22 @@ if __name__ == "__main__":
         save("baseline", "Live strategy (locked 2026-10-17)", "baseline", "What the live bot does today",
              params={}, trades=T, scored=S, status="baseline",
              verdict="The reference every experiment is judged against.", notes=LIVE.get("label", ""))
+    elif cmd == "rescore":
+        # recompute every stored run's spans/years from its stored trades and days (new columns, same data)
+        for path in sorted(glob.glob(os.path.join(RUNS, "*.json"))):
+            if os.path.basename(path) == "index.json":
+                continue
+            r = json.load(open(path, encoding="utf-8"))
+            T = [dict(zip(r["trade_cols"], a)) for a in r["trades"]]
+            for t in T:
+                t["half"] = bool(t["half"])
+                t["low"] = -min(float(t.get("mae") or 0), max(1.0, -float(t["r"]))) * float(t["risk_pts"]) * 2.0 * int(t["qty"])
+            S = score(T, [d[0] for d in r["days"]])
+            r["spans"], r["years"], r["months"] = S["spans"], S["years"], S["months"]
+            r["days"] = [[d["date"], d["pnl"], d["low"], d["trades"]] for d in S["days"]]
+            _dump(r, path, separators=(",", ":"))
+            print("rescored", r["id"], line(r, "2026")[:80])
+        index()
     elif cmd == "show":
         r = load(sys.argv[2])
         print(r["title"], "|", r["status"], "|", r["verdict"])

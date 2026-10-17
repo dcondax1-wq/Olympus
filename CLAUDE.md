@@ -11,7 +11,17 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
 - **Paper only.** Never arm live trading or place real orders. MFFU requires the owner to be present for live trading.
 - **No secrets in the repo or chat.** `data/alerts.json`, `tv.json`, `tv_device.json`, `autostart.json`, `live_state.json`, `memory.db`
   and `.env*` are gitignored. Telegram/Discord keys live in GitHub Secrets only.
-- **Frequency:** at least **2 setups a week**. Never make a filter that pauses trading for weeks the default.
+- **Frequency:** **2-4 trades a week** (owner, 2026-10-17; before: at least 2). Never make a filter that pauses trading for weeks the
+  default; prefer size changes over skipping.
+- **Owner requirements (2026-10-17), keep them in every report and on the dashboard:**
+  - Implement what the research proves (better in 2026 AND 2021-25, 2-4 trades a week); store every experiment with its data
+    (`tools/runlib.py` → `research/runs/`) and write it up in plain language (`research/writeups/`).
+  - **Money, not only R:** every result shows net $ and $ per month next to PF / R.
+  - **Eval speed on the MFFU 50K:** an eval should be passed or failed within **2 weeks** and never take more than **3 weeks** to
+    pass. Scored as `p10/f10` (pass/fail within 10 sessions), `dec10` (% decided in 10), `p15/f15`, `slow_pass` (% of passes
+    slower than 15 sessions) and `pass_med` (median sessions to pass) in every run. The live strategy as of 2026-10-17 decides
+    only 19% of evals in 2 weeks (2026) and 6% (2021-25): a fast-eval sizing mode is open work.
+  - The strategy is written in plain language in its own area of the dashboard (Strategy page, versioned, with its numbers).
 - **Stops** go beyond the sweep extreme, i.e. the high/low made before the IFVG, never at a fixed distance. **Wide stop means less
   risk**: size follows the stop.
 - Every result is judged on 2026 **and** on 2021-25 (5 years). A change is adopted only if it holds in both and keeps 2+/week.
