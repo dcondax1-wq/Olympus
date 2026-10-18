@@ -46,3 +46,7 @@ research/runs/_cache/
 research/runs/*.tmp
 research/design/icon_v2/src/node_modules/
 *.tmp.*
+
+# phone notifications (engine/push.py): the VAPID private key + subscriptions and the PC's sent-notice keys
+data/push.json
+data/push_sent.json

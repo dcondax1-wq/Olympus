@@ -4,3 +4,4 @@ yfinance==1.7.0
 requests==2.34.2
 matplotlib==3.11.2
 tzdata
+cryptography==50.0.2

@@ -9,3 +9,5 @@ yfinance==1.7.0
 psutil==7.2.2
 tzdata
 httpx
+cryptography==50.0.2
+# optional: pywebpush==2.5.0 (Web Push sender; engine/push.py has a built-in one that needs only cryptography)

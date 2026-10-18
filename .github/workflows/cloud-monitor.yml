@@ -2,13 +2,20 @@
 # Publishes README.md + chart.png + state.json to the `dashboard` branch (open it in the GitHub app), and the web dashboard
 # (tools/web_public + data.json, a Home Screen app) to demetrades2000-coder.github.io/nq-dashboard.
 # Paper only - never places orders. Free: about 1,200-1,500 of the 2,000 monthly Actions minutes for private repos.
-# Optional phone alerts: repository secrets TG_TOKEN + TG_CHAT (Telegram) and/or DISCORD_WEBHOOK.
+# Phone notifications (free Web Push to the Home Screen app, docs/NOTIFICATIONS.md): repository secrets LE_VAPID_PRIVATE +
+# LE_PUSH_SUBS (more phones: LE_PUSH_SUBS_2, LE_PUSH_SUBS_3). Telegram / Discord (TG_TOKEN + TG_CHAT, DISCORD_WEBHOOK) stay
+# off unless the repository variable LE_ALERTS_CHAT is 1.
 name: cloud-monitor
 
 on:
   schedule:
     - cron: "2,32 6-21 * * 1-5"      # UTC, half-hourly; covers 02:00-16:25 ET in summer (EDT) and winter (EST) time (LIT trades London); ~32 jobs a day, ~2 of them exit at the guard
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      push_test:
+        description: "Send a test notification to the phone app"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -78,7 +85,10 @@ jobs:
 
       - name: Install
         if: steps.guard.outputs.go == '1'
-        run: pip install -q -r requirements-cloud.txt
+        run: |
+          pip install -q -r requirements-cloud.txt
+          # Web Push sender; engine/push.py has a built-in sender (cryptography only) if this ever fails to install
+          pip install -q pywebpush==2.5.0 || echo "pywebpush not installed: engine/push.py uses its built-in sender"
 
       - name: Load previous dashboard state
         if: steps.guard.outputs.go == '1'
@@ -93,6 +103,13 @@ jobs:
       - name: Run paper monitor
         if: steps.guard.outputs.go == '1'
         env:
+          LE_VAPID_PRIVATE: ${{ secrets.LE_VAPID_PRIVATE }}
+          LE_PUSH_SUBS: ${{ secrets.LE_PUSH_SUBS }}
+          LE_PUSH_SUBS_2: ${{ secrets.LE_PUSH_SUBS_2 }}
+          LE_PUSH_SUBS_3: ${{ secrets.LE_PUSH_SUBS_3 }}
+          LE_PUSH_TEST: ${{ github.event_name == 'workflow_dispatch' && inputs.push_test && '1' || '' }}
+          LE_PUSH_DEFER_TO_PC: ${{ vars.LE_PUSH_DEFER_TO_PC }}
+          LE_ALERTS_CHAT: ${{ vars.LE_ALERTS_CHAT }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}

@@ -1,4 +1,6 @@
-"""Phone alerts: Telegram bot and/or Discord webhook.
+"""Phone alerts: Telegram bot and/or Discord webhook (off by default since 2026-10-18: the owner gets notifications through
+the phone app, engine/push.py). Chat alerts send only when LE_ALERTS_CHAT=1 or live_model.json {"alerts": {"chat": true}}.
+System alerts (server restart / resume failures) also go to the app as a notification.
 
 Config lives only on this machine in data/alerts.json (you enter it in Settings). Secrets are never returned to the
 browser in full. Telegram: create a bot with @BotFather -> token; message the bot once, then use @userinfobot (or the
@@ -52,6 +54,7 @@ def public(cfg=None) -> dict:
     return {"telegram_token": _mask(cfg["telegram_token"]), "telegram_chat": cfg["telegram_chat"],
             "discord_webhook": _mask(cfg["discord_webhook"]), "events": cfg["events"],
             "telegram_on": bool(cfg["telegram_token"] and cfg["telegram_chat"]), "discord_on": bool(cfg["discord_webhook"]),
+            "chat_on": chat_on(),
             "recent": _recent[-20:]}
 
 
@@ -61,8 +64,35 @@ def _post(url, body):
         return r.status
 
 
+def chat_on() -> bool:
+    """Telegram / Discord switch: env LE_ALERTS_CHAT=1 or live_model.json {"alerts": {"chat": true}} (default off)."""
+    if os.environ.get("LE_ALERTS_CHAT", "") == "1":
+        return True
+    try:
+        root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        with open(os.path.join(root, "live_model.json"), encoding="utf-8") as fh:
+            return bool((json.load(fh).get("alerts") or {}).get("chat"))
+    except Exception:
+        return False
+
+
+def _push_system(text: str, kind: str):
+    """Server-level alerts (autostart resume failures, restarts) also reach the phone app. Never raises."""
+    if kind != "system":
+        return
+    try:
+        from . import push
+        first, _, rest = str(text).partition(". ")
+        push.pc_notify(push.text_payload("PC", "system", first[:90], rest or first, key=f"system:{int(time.time()) // 60}:{abs(hash(text)) % 10**6}"))
+    except Exception:
+        pass
+
+
 def send(text: str, kind: str = "signal", force: bool = False) -> dict:
-    """Send to every configured channel when this kind of alert is enabled. Never raises."""
+    """Send to every configured channel when this kind of alert is enabled and chat alerts are switched on. Never raises."""
+    _push_system(text, kind)
+    if not chat_on():
+        return {"sent": False, "reason": "Telegram / Discord are off (the phone app notifies; LE_ALERTS_CHAT=1 turns them on)"}
     cfg = load()
     if not force and not cfg["events"].get(kind, False):
         return {"sent": False, "reason": f"{kind} alerts are off"}
