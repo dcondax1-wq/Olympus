@@ -1,7 +1,7 @@
 {
- "built": "2026-10-18 20:51",
+ "built": "2026-10-18 20:56",
  "baseline": "baseline",
- "count": 968,
+ "count": 980,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -696,6 +696,102 @@
      "slow_pass": 75.1,
      "pass_med": 31.0,
      "b2b": "12/10"
+    }
+   }
+  },
+  {
+   "id": "lit_ll_t15",
+   "title": "15-minute check: at minute 15 after the fill, best point < +0.5R and close <= -0.3R -> exit next 1m open",
+   "family": "management",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "adopt-candidate",
+   "verdict": "Picked as the simplest member of the minute 15-20 family that holds in both halves; neighbours x 0.25/0.3/0.4, mfe 0.3/0.5/0.7, minute 15/18/20 all improve both halves; minute 10/12 leave H2 unchanged, minute 25/30 lose H2. Cut 13 trades, all would-be full stop-outs (9 H1, 4 H2), exited at -0.33 to -0.62R; no winner or breakeven touched. H1 (pick): 2-week pass/fail 57.1/5.9% (Monte Carlo 52.9/2.9), 1 month 77.1/12.8, back-to-back 13 passes in 20 evals, eval-path net $+35,545 ($+5,832/mo, PF 3.8, DD $-3,517), plain LIT size $+34,219 PF 5.23, 3.12/wk, win 22.5%. H2 (check): 2-week pass/fail 52.2/0.0% (Monte Carlo 56.2/2.9), 1 month 62.7/13.6, back-to-back 6 passes in 11 evals, eval-path net $+15,456 ($+4,161/mo, PF 2.4, DD $-2,348), plain LIT size $+9,611 PF 2.75, 2.56/wk, win 35.0%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": {
+     "ts": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5,
+      "upto": 15
+     }
+    },
+    "mult": null,
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:53",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.13,
+     "net": 51381,
+     "dd": -3517,
+     "avg_r": 0.792,
+     "stop": 45.8,
+     "worst_day": -1003,
+     "risk": 533.0,
+     "half": 17,
+     "per_month": 5238,
+     "p10": 48.5,
+     "f10": 10.2,
+     "p15": 60.2,
+     "f15": 23.3,
+     "p20": 62.6,
+     "f20": 31.1,
+     "dec10": 58.7,
+     "slow_pass": 6.1,
+     "pass_med": 6.0,
+     "b2b": "17/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.13,
+     "net": 51381,
+     "dd": -3517,
+     "avg_r": 0.792,
+     "stop": 45.8,
+     "worst_day": -1003,
+     "risk": 533.0,
+     "half": 17,
+     "per_month": 5238,
+     "p10": 48.5,
+     "f10": 10.2,
+     "p15": 60.2,
+     "f15": 23.3,
+     "p20": 62.6,
+     "f20": 31.1,
+     "dec10": 58.7,
+     "slow_pass": 6.1,
+     "pass_med": 6.0,
+     "b2b": "17/6"
     }
    }
   },
@@ -6851,6 +6947,102 @@
    }
   },
   {
+   "id": "lit_ll_t15_win",
+   "title": "Early-failure window: minute 15-19, best < +0.5R, close <= -0.3R -> exit",
+   "family": "management",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "promising",
+   "verdict": "Same family, a 5-minute window. Helps both halves; the window end (19) was set knowing that H2 slow winners dip later. H1 (pick): 2-week pass/fail 57.1/4.2% (Monte Carlo 53.3/2.2), 1 month 78.9/8.3, back-to-back 13 passes in 20 evals, eval-path net $+36,546 ($+5,996/mo, PF 3.79, DD $-3,457), plain LIT size $+34,776 PF 5.62, 3.12/wk, win 22.5%. H2 (check): 2-week pass/fail 52.2/0.0% (Monte Carlo 56.2/2.8), 1 month 62.7/6.8, back-to-back 6 passes in 11 evals, eval-path net $+15,667 ($+4,218/mo, PF 2.45, DD $-2,331), plain LIT size $+9,600 PF 2.75, 2.56/wk, win 35.0%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": {
+     "ts": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5,
+      "upto": 19
+     }
+    },
+    "mult": null,
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.15,
+     "net": 52476,
+     "dd": -3458,
+     "avg_r": 0.804,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 540.0,
+     "half": 17,
+     "per_month": 5349,
+     "p10": 49.0,
+     "f10": 8.7,
+     "p15": 60.7,
+     "f15": 20.9,
+     "p20": 62.6,
+     "f20": 29.1,
+     "dec10": 57.7,
+     "slow_pass": 3.8,
+     "pass_med": 6.0,
+     "b2b": "17/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.15,
+     "net": 52476,
+     "dd": -3458,
+     "avg_r": 0.804,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 540.0,
+     "half": 17,
+     "per_month": 5349,
+     "p10": 49.0,
+     "f10": 8.7,
+     "p15": 60.7,
+     "f15": 20.9,
+     "p20": 62.6,
+     "f20": 29.1,
+     "dec10": 57.7,
+     "slow_pass": 3.8,
+     "pass_med": 6.0,
+     "b2b": "17/6"
+    }
+   }
+  },
+  {
    "id": "mgt_betrend150",
    "title": "Breakeven at +1.5R on trending days only",
    "family": "management",
@@ -12561,6 +12753,135 @@
      "slow_pass": 54.1,
      "pass_med": 17.0,
      "b2b": "23/31"
+    }
+   }
+  },
+  {
+   "id": "lit_funded_tiers",
+   "title": "Funded: $400 under $2,000 room, $800 above + $1,500 best-day cap",
+   "family": "risk",
+   "question": "After the MFFU eval passes: which LIT size maximises $ withdrawn per funded account over 3 / 6 months and keeps the account alive?",
+   "status": "promising",
+   "verdict": "Funded MFFU Builder 50K, Monte Carlo 2,000 x 6 months, $1.90 commission, H1 / H2: account lost 3 mo 0.8% / 1.7%, 6 mo 1.6% / 3.2%; paid to the trader 3 mo $1,918 / $1,507, 6 mo $4,604 / $3,929 ($767 / $655 a month); median first payout session 29.0 / 34.0; 5 payouts within 6 mo 22.7% / 16.8%; median max DD $-1,420 / $-1,390. Back to back on real history: H1 {'accounts': 1, 'lost': 0, 'graduated': 0, 'open_at_end': 1, 'paid': 5434, 'per_month': 892, 'first_payout_sessions': [4], 'worst_dd': -1470}, H2 {'accounts': 1, 'lost': 0, 'graduated': 0, 'open_at_end': 1, 'paid': 1160, 'per_month': 312, 'first_payout_sessions': [75], 'worst_dd': -842}, 2021-25 (ref) {'accounts': 1, 'lost': 0, 'graduated': 0, 'open_at_end': 1, 'paid': 2614, 'per_month': 51, 'first_payout_sessions': [137], 'worst_dd': -3465}.",
+   "writeup": "lit-funded-sizing",
+   "tags": [
+    "lit",
+    "lit_funded"
+   ],
+   "params": {
+    "lit_sizing": {
+     "mode": "funded",
+     "funded": {
+      "tiers": [
+       [
+        0,
+        400
+       ],
+       [
+        2000,
+        800
+       ]
+      ],
+      "ref": 20,
+      "room_f": null,
+      "max_win": 1500,
+      "wk": true
+     }
+    }
+   },
+   "sizing": {
+    "mode": "funded",
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": true
+   },
+   "built": "2026-10-18 20:51",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.83,
+     "net": 16751,
+     "dd": -1470,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -342,
+     "risk": 162.0,
+     "half": 17,
+     "per_month": 1708,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 13.1,
+     "f15": 0.0,
+     "p20": 20.9,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 80.7,
+     "pass_med": 30.5,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 149,
+     "tpw": 0.69,
+     "wk2": 22,
+     "win": 18.8,
+     "pf": 1.26,
+     "net": 3383,
+     "dd": -3465,
+     "avg_r": 0.112,
+     "stop": 42.0,
+     "worst_day": -1004,
+     "risk": 171.0,
+     "half": 8,
+     "per_month": 66,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.6,
+     "p20": 0.0,
+     "f20": 1.8,
+     "dec10": 0.0,
+     "slow_pass": 100.0,
+     "pass_med": 45.5,
+     "b2b": "2/1"
+    },
+    "all": {
+     "n": 269,
+     "tpw": 1.05,
+     "wk2": 32,
+     "win": 22.3,
+     "pf": 1.9,
+     "net": 20133,
+     "dd": -3484,
+     "avg_r": 0.387,
+     "stop": 43.2,
+     "worst_day": -1004,
+     "risk": 168.0,
+     "half": 25,
+     "per_month": 331,
+     "p10": 0.9,
+     "f10": 0.0,
+     "p15": 2.1,
+     "f15": 0.5,
+     "p20": 3.4,
+     "f20": 1.5,
+     "dec10": 0.9,
+     "slow_pass": 88.7,
+     "pass_med": 36.5,
+     "b2b": "6/1"
     }
    }
   },
@@ -29205,6 +29526,670 @@
      "slow_pass": 71.7,
      "pass_med": 26.5,
      "b2b": "14/15"
+    }
+   }
+  },
+  {
+   "id": "lit_ll_cont10",
+   "title": "Time stop from minute 10 on: best < +0.5R, close <= -0.3R -> exit",
+   "family": "management",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "rejected",
+   "verdict": "Best H1 member; H2 2-week pass 50.7 -> 44.9. H1 (pick): 2-week pass/fail 58.0/0.0% (Monte Carlo 55.2/0.5), 1 month 80.7/4.6, back-to-back 13 passes in 20 evals, eval-path net $+37,856 ($+6,211/mo, PF 4.32, DD $-3,144), plain LIT size $+36,059 PF 6.78, 3.12/wk, win 22.5%. H2 (check): 2-week pass/fail 44.9/0.0% (Monte Carlo 50.0/0.0), 1 month 47.5/0.0, back-to-back 7 passes in 12 evals, eval-path net $+19,824 ($+5,337/mo, PF 3.38, DD $-2,067), plain LIT size $+9,324 PF 3.08, 2.56/wk, win 30.0%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": {
+     "ts": {
+      "at": 10,
+      "x": 0.3,
+      "mfe": 0.5
+     }
+    },
+    "mult": null,
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.0,
+     "pf": 3.8,
+     "net": 55981,
+     "dd": -3144,
+     "avg_r": 0.833,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 549.0,
+     "half": 17,
+     "per_month": 5707,
+     "p10": 44.2,
+     "f10": 5.3,
+     "p15": 58.3,
+     "f15": 13.6,
+     "p20": 60.2,
+     "f20": 21.8,
+     "dec10": 49.5,
+     "slow_pass": 14.3,
+     "pass_med": 7.0,
+     "b2b": "16/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.0,
+     "pf": 3.8,
+     "net": 55981,
+     "dd": -3144,
+     "avg_r": 0.833,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 549.0,
+     "half": 17,
+     "per_month": 5707,
+     "p10": 44.2,
+     "f10": 5.3,
+     "p15": 58.3,
+     "f15": 13.6,
+     "p20": 60.2,
+     "f20": 21.8,
+     "dec10": 49.5,
+     "slow_pass": 14.3,
+     "pass_med": 7.0,
+     "b2b": "16/5"
+    }
+   }
+  },
+  {
+   "id": "lit_ll_cont15",
+   "title": "Time stop from minute 15 on (no end): best < +0.5R, close <= -0.3R -> exit",
+   "family": "management",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "rejected",
+   "verdict": "The honest H1 pick of the continuous family (H1 2-week fails 8.4 -> 0.0). It kills 2 slow H2 winners: H2 2-week pass 50.7 -> 44.9 although H2 money rises. H1 (pick): 2-week pass/fail 57.1/0.0% (Monte Carlo 54.6/0.6), 1 month 78.9/0.0, back-to-back 13 passes in 20 evals, eval-path net $+37,798 ($+6,201/mo, PF 4.3, DD $-3,203), plain LIT size $+35,765 PF 6.47, 3.12/wk, win 22.5%. H2 (check): 2-week pass/fail 44.9/0.0% (Monte Carlo 49.7/0.4), 1 month 47.5/0.0, back-to-back 7 passes in 12 evals, eval-path net $+18,088 ($+4,870/mo, PF 2.98, DD $-2,105), plain LIT size $+9,106 PF 2.94, 2.56/wk, win 30.0%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": {
+     "ts": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     }
+    },
+    "mult": null,
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.0,
+     "pf": 3.58,
+     "net": 54113,
+     "dd": -3203,
+     "avg_r": 0.821,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 538.0,
+     "half": 17,
+     "per_month": 5516,
+     "p10": 44.2,
+     "f10": 5.8,
+     "p15": 54.9,
+     "f15": 16.0,
+     "p20": 57.8,
+     "f20": 24.8,
+     "dec10": 50.0,
+     "slow_pass": 16.9,
+     "pass_med": 7.0,
+     "b2b": "16/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.0,
+     "pf": 3.58,
+     "net": 54113,
+     "dd": -3203,
+     "avg_r": 0.821,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 538.0,
+     "half": 17,
+     "per_month": 5516,
+     "p10": 44.2,
+     "f10": 5.8,
+     "p15": 54.9,
+     "f15": 16.0,
+     "p20": 57.8,
+     "f20": 24.8,
+     "dec10": 50.0,
+     "slow_pass": 16.9,
+     "pass_med": 7.0,
+     "b2b": "16/5"
+    }
+   }
+  },
+  {
+   "id": "lit_ll_scratch07",
+   "title": "Scratch: after +0.7R, a close back below -0.3R before breakeven -> exit",
+   "family": "management",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "rejected",
+   "verdict": "Loses money in both halves. H1 (pick): 2-week pass/fail 52.9/8.4% (Monte Carlo 51.1/6.0), 1 month 76.1/16.5, back-to-back 11 passes in 20 evals, eval-path net $+30,654 ($+5,029/mo, PF 2.96, DD $-3,876), plain LIT size $+31,615 PF 4.24, 3.12/wk, win 21.2%. H2 (check): 2-week pass/fail 53.6/0.0% (Monte Carlo 53.8/3.0), 1 month 62.7/3.4, back-to-back 5 passes in 11 evals, eval-path net $+8,305 ($+2,236/mo, PF 1.69, DD $-3,122), plain LIT size $+8,753 PF 2.52, 2.56/wk, win 32.5%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": {
+     "scr": {
+      "m": 0.7,
+      "x": 0.3
+     }
+    },
+    "mult": null,
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:55",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.0,
+     "pf": 2.49,
+     "net": 41276,
+     "dd": -3876,
+     "avg_r": 0.699,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 494.0,
+     "half": 17,
+     "per_month": 4208,
+     "p10": 44.7,
+     "f10": 12.6,
+     "p15": 55.8,
+     "f15": 29.1,
+     "p20": 56.3,
+     "f20": 36.9,
+     "dec10": 57.3,
+     "slow_pass": 0.9,
+     "pass_med": 5.0,
+     "b2b": "15/8"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.0,
+     "pf": 2.49,
+     "net": 41276,
+     "dd": -3876,
+     "avg_r": 0.699,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 494.0,
+     "half": 17,
+     "per_month": 4208,
+     "p10": 44.7,
+     "f10": 12.6,
+     "p15": 55.8,
+     "f15": 29.1,
+     "p20": 56.3,
+     "f20": 36.9,
+     "dec10": 57.3,
+     "slow_pass": 0.9,
+     "pass_med": 5.0,
+     "b2b": "15/8"
+    }
+   }
+  },
+  {
+   "id": "lit_ll_t25",
+   "title": "25-minute check: best < +0.5R, close <= -0.3R -> exit",
+   "family": "management",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "rejected",
+   "verdict": "Later checks catch H2's slow winners (they dip 0.3-0.5R after 20 minutes): H2 2-week pass 50.7 -> 43.5. H1 (pick): 2-week pass/fail 55.5/6.7% (Monte Carlo 52.8/4.8), 1 month 76.1/11.0, back-to-back 12 passes in 20 evals, eval-path net $+35,744 ($+5,864/mo, PF 3.79, DD $-3,201), plain LIT size $+33,911 PF 5.04, 3.12/wk, win 22.5%. H2 (check): 2-week pass/fail 43.5/0.0% (Monte Carlo 48.9/3.4), 1 month 50.8/13.6, back-to-back 6 passes in 11 evals, eval-path net $+13,216 ($+3,558/mo, PF 2.24, DD $-2,419), plain LIT size $+8,190 PF 2.41, 2.56/wk, win 32.5%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": {
+     "ts": {
+      "at": 25,
+      "x": 0.3,
+      "mfe": 0.5,
+      "upto": 25
+     }
+    },
+    "mult": null,
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:55",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.8,
+     "pf": 3.08,
+     "net": 48907,
+     "dd": -3201,
+     "avg_r": 0.742,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 538.0,
+     "half": 17,
+     "per_month": 4986,
+     "p10": 48.5,
+     "f10": 5.3,
+     "p15": 56.8,
+     "f15": 20.4,
+     "p20": 58.7,
+     "f20": 29.1,
+     "dec10": 53.8,
+     "slow_pass": 8.6,
+     "pass_med": 6.0,
+     "b2b": "17/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.8,
+     "pf": 3.08,
+     "net": 48907,
+     "dd": -3201,
+     "avg_r": 0.742,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 538.0,
+     "half": 17,
+     "per_month": 4986,
+     "p10": 48.5,
+     "f10": 5.3,
+     "p15": 56.8,
+     "f15": 20.4,
+     "p20": 58.7,
+     "f20": 29.1,
+     "dec10": 53.8,
+     "slow_pass": 8.6,
+     "pass_med": 6.0,
+     "b2b": "17/6"
+    }
+   }
+  },
+  {
+   "id": "lit_ll_t5",
+   "title": "Early cut, minute 5-14: best < +0.5R, close <= -0.3R -> exit",
+   "family": "management",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "rejected",
+   "verdict": "The first 5-10 minutes are noise: 2-3 winners killed in each half. H1 (pick): 2-week pass/fail 56.3/1.7% (Monte Carlo 47.9/1.3), 1 month 75.2/8.3, back-to-back 11 passes in 18 evals, eval-path net $+28,122 ($+4,614/mo, PF 3.12, DD $-3,286), plain LIT size $+28,260 PF 4.49, 3.12/wk, win 20.0%. H2 (check): 2-week pass/fail 31.9/0.0% (Monte Carlo 44.5/1.1), 1 month 30.5/13.6, back-to-back 3 passes in 9 evals, eval-path net $+3,776 ($+1,017/mo, PF 1.33, DD $-4,767), plain LIT size $+7,002 PF 2.31, 2.56/wk, win 27.5%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": {
+     "ts": {
+      "at": 5,
+      "x": 0.3,
+      "mfe": 0.5,
+      "upto": 14
+     }
+    },
+    "mult": null,
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:55",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 22.5,
+     "pf": 2.33,
+     "net": 33342,
+     "dd": -5487,
+     "avg_r": 0.602,
+     "stop": 45.8,
+     "worst_day": -1003,
+     "risk": 537.0,
+     "half": 17,
+     "per_month": 3399,
+     "p10": 39.3,
+     "f10": 6.8,
+     "p15": 44.7,
+     "f15": 22.8,
+     "p20": 46.1,
+     "f20": 35.9,
+     "dec10": 46.1,
+     "slow_pass": 7.1,
+     "pass_med": 6.0,
+     "b2b": "12/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 22.5,
+     "pf": 2.33,
+     "net": 33342,
+     "dd": -5487,
+     "avg_r": 0.602,
+     "stop": 45.8,
+     "worst_day": -1003,
+     "risk": 537.0,
+     "half": 17,
+     "per_month": 3399,
+     "p10": 39.3,
+     "f10": 6.8,
+     "p15": 44.7,
+     "f15": 22.8,
+     "p20": 46.1,
+     "f20": 35.9,
+     "dec10": 46.1,
+     "slow_pass": 7.1,
+     "pass_med": 6.0,
+     "b2b": "12/6"
+    }
+   }
+  },
+  {
+   "id": "lit_ll_tighten60",
+   "title": "After 60 minutes without +0.5R, stop up to -0.3R",
+   "family": "management",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "rejected",
+   "verdict": "Small money, 2-week pass unchanged in both halves; earlier tightening (15-45 min) loses H2. H1 (pick): 2-week pass/fail 52.9/5.9% (Monte Carlo 51.9/2.7), 1 month 76.1/14.7, back-to-back 12 passes in 20 evals, eval-path net $+34,578 ($+5,673/mo, PF 3.73, DD $-3,593), plain LIT size $+34,210 PF 5.23, 3.12/wk, win 22.5%. H2 (check): 2-week pass/fail 50.7/0.0% (Monte Carlo 55.1/1.5), 1 month 54.2/0.0, back-to-back 5 passes in 11 evals, eval-path net $+12,461 ($+3,355/mo, PF 2.09, DD $-2,914), plain LIT size $+9,401 PF 2.71, 2.56/wk, win 32.5%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": {
+     "tt": {
+      "at": 60,
+      "x": 0.3,
+      "mfe": 0.5
+     }
+    },
+    "mult": null,
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:55",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.8,
+     "pf": 2.87,
+     "net": 46884,
+     "dd": -3593,
+     "avg_r": 0.779,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 514.0,
+     "half": 17,
+     "per_month": 4779,
+     "p10": 44.7,
+     "f10": 11.7,
+     "p15": 60.2,
+     "f15": 24.8,
+     "p20": 61.2,
+     "f20": 32.5,
+     "dec10": 56.4,
+     "slow_pass": 1.6,
+     "pass_med": 7.0,
+     "b2b": "15/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.8,
+     "pf": 2.87,
+     "net": 46884,
+     "dd": -3593,
+     "avg_r": 0.779,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 514.0,
+     "half": 17,
+     "per_month": 4779,
+     "p10": 44.7,
+     "f10": 11.7,
+     "p15": 60.2,
+     "f15": 24.8,
+     "p20": 61.2,
+     "f20": 32.5,
+     "dec10": 56.4,
+     "slow_pass": 1.6,
+     "pass_med": 7.0,
+     "b2b": "15/6"
+    }
+   }
+  },
+  {
+   "id": "lit_ll_wide2",
+   "title": "Stop 2 ticks wider (size follows the stop)",
+   "family": "management",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "rejected",
+   "verdict": "Stop-outs are not shake-outs: only 1 of 53 came back after going < 0.5R beyond the stop. Every wider stop (1-8 ticks, 0.1-0.3R) is flat or worse. H1 (pick): 2-week pass/fail 52.9/9.2% (Monte Carlo 50.5/7.0), 1 month 75.2/17.4, back-to-back 11 passes in 20 evals, eval-path net $+30,885 ($+5,067/mo, PF 2.94, DD $-4,017), plain LIT size $+31,257 PF 4.37, 3.12/wk, win 22.5%. H2 (check): 2-week pass/fail 50.7/4.3% (Monte Carlo 53.6/5.7), 1 month 55.9/8.5, back-to-back 5 passes in 11 evals, eval-path net $+11,666 ($+3,141/mo, PF 1.95, DD $-3,151), plain LIT size $+8,756 PF 2.45, 2.56/wk, win 35.0%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": {
+     "wide": {
+      "ticks": 2
+     }
+    },
+    "mult": null,
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:56",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.49,
+     "net": 42901,
+     "dd": -4017,
+     "avg_r": 0.712,
+     "stop": 46.2,
+     "worst_day": -1008,
+     "risk": 502.0,
+     "half": 17,
+     "per_month": 4373,
+     "p10": 46.6,
+     "f10": 18.9,
+     "p15": 57.3,
+     "f15": 31.1,
+     "p20": 57.8,
+     "f20": 37.9,
+     "dec10": 65.5,
+     "slow_pass": 0.8,
+     "pass_med": 6.0,
+     "b2b": "14/7"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.49,
+     "net": 42901,
+     "dd": -4017,
+     "avg_r": 0.712,
+     "stop": 46.2,
+     "worst_day": -1008,
+     "risk": 502.0,
+     "half": 17,
+     "per_month": 4373,
+     "p10": 46.6,
+     "f10": 18.9,
+     "p15": 57.3,
+     "f15": 31.1,
+     "p20": 57.8,
+     "f20": 37.9,
+     "dec10": 65.5,
+     "slow_pass": 0.8,
+     "pass_med": 6.0,
+     "b2b": "14/7"
     }
    }
   },
@@ -78940,6 +79925,184 @@
      "slow_pass": 51.5,
      "pass_med": 16.0,
      "b2b": "23/37"
+    }
+   }
+  },
+  {
+   "id": "lit_ll_model",
+   "title": "3-feature logistic stop-out model (inducement age, stop/ATR, R:R), fit on H1, x0.5 on its top third",
+   "family": "risk",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "rejected",
+   "verdict": "No skill out of sample (H2 AUC 0.57; 5 feature sets tried, 0.47-0.63). H2 2-week pass 50.7 -> 39.1. H1 (pick): 2-week pass/fail 52.1/4.2% (Monte Carlo 51.4/2.8), 1 month 78.0/8.3, back-to-back 11 passes in 19 evals, eval-path net $+32,101 ($+5,267/mo, PF 3.59, DD $-3,012), plain LIT size $+32,485 PF 4.89, 3.12/wk, win 22.5%. H2 (check): 2-week pass/fail 39.1/0.0% (Monte Carlo 42.0/2.5), 1 month 40.7/0.0, back-to-back 3 passes in 9 evals, eval-path net $+12,166 ($+3,275/mo, PF 2.41, DD $-2,153), plain LIT size $+7,950 PF 2.56, 2.56/wk, win 35.0%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": null,
+    "mult": "model",
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:56",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.21,
+     "net": 46725,
+     "dd": -3012,
+     "avg_r": 0.731,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 389.0,
+     "half": 17,
+     "per_month": 4763,
+     "p10": 45.6,
+     "f10": 5.8,
+     "p15": 62.1,
+     "f15": 18.4,
+     "p20": 67.5,
+     "f20": 25.7,
+     "dec10": 51.4,
+     "slow_pass": 11.7,
+     "pass_med": 8.0,
+     "b2b": "15/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.21,
+     "net": 46725,
+     "dd": -3012,
+     "avg_r": 0.731,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 389.0,
+     "half": 17,
+     "per_month": 4763,
+     "p10": 45.6,
+     "f10": 5.8,
+     "p15": 62.1,
+     "f15": 18.4,
+     "p20": 67.5,
+     "f20": 25.7,
+     "dec10": 51.4,
+     "slow_pass": 11.7,
+     "pass_med": 8.0,
+     "b2b": "15/6"
+    }
+   }
+  },
+  {
+   "id": "lit_ll_seq_samedir",
+   "title": "Half size when the last trade in the same direction was a stop-out",
+   "family": "risk",
+   "question": "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week sizing (config C) in both 2026 halves?",
+   "status": "rejected",
+   "verdict": "Sequence memory flips: after a stop-out H1 trades are worse, H2 better. 2-week pass -8.4 / -8.7. H1 (pick): 2-week pass/fail 44.5/0.0% (Monte Carlo 47.5/1.0), 1 month 66.1/3.7, back-to-back 10 passes in 18 evals, eval-path net $+28,327 ($+4,647/mo, PF 3.43, DD $-2,493), plain LIT size $+31,574 PF 5.05, 3.12/wk, win 22.5%. H2 (check): 2-week pass/fail 42.0/0.0% (Monte Carlo 36.2/2.2), 1 month 61.0/0.0, back-to-back 5 passes in 10 evals, eval-path net $+13,294 ($+3,579/mo, PF 2.58, DD $-2,089), plain LIT size $+5,965 PF 2.37, 2.56/wk, win 35.0%. Baseline (live config C): H1 52.9/8.4, H2 50.7/2.9.",
+   "writeup": "lit-loss-learning",
+   "tags": [
+    "lit",
+    "lit_loss_learn"
+   ],
+   "params": {
+    "rule": null,
+    "mult": "seq:same_dir",
+    "lit": "live_model.json lit (unchanged)"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "base": "need",
+    "need_buf": 1.0,
+    "room_f": 0.6,
+    "wk": false,
+    "dll_cap": true,
+    "stop_at_target": true,
+    "max_usd": null,
+    "press_at": null,
+    "press_mult": 1.0,
+    "press_room": null,
+    "protect_over": null,
+    "protect_keep": 0.0
+   },
+   "built": "2026-10-18 20:56",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.0,
+     "net": 40886,
+     "dd": -2529,
+     "avg_r": 0.73,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 382.0,
+     "half": 17,
+     "per_month": 4168,
+     "p10": 37.4,
+     "f10": 4.4,
+     "p15": 48.1,
+     "f15": 14.6,
+     "p20": 53.4,
+     "f20": 25.2,
+     "dec10": 41.8,
+     "slow_pass": 27.2,
+     "pass_med": 9.0,
+     "b2b": "12/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.0,
+     "net": 40886,
+     "dd": -2529,
+     "avg_r": 0.73,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 382.0,
+     "half": 17,
+     "per_month": 4168,
+     "p10": 37.4,
+     "f10": 4.4,
+     "p15": 48.1,
+     "f15": 14.6,
+     "p20": 53.4,
+     "f20": 25.2,
+     "dec10": 41.8,
+     "slow_pass": 27.2,
+     "pass_med": 9.0,
+     "b2b": "12/3"
     }
    }
   },

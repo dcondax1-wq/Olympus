@@ -15,7 +15,11 @@ ONCE, floor 1 micro, cap max_micros. cold 0 (skip mode) means no trade.
 LIT (live_model.json "lit_sizing": {"mode": "normal" | "eval" | "fast_eval" | "safe_eval" | "two_week"}, default normal):
 lit_qty() below, used by the PC bot and the cloud monitor's paper ledger; mffu_eval() is the eval room for safe_eval / eval;
 two_week_qty() + eval_state() + eval_session() are the two-week eval mode (owner order 2026-10-18: pass within 10 sessions;
-research/writeups/lit-two-week-eval.md, run lit_2wk_rec = config C); eval_clock() is the 10-session reset reminder.
+research/writeups/lit-two-week-eval.md, run lit_2wk_rec = config C); eval_clock() is the session clock (no reset since
+2026-10-18, owner: one-time fee). 2026-10-18 additions (research/writeups/lit-funded-sizing.md): mode "funded" (funded_qty,
+funded_state: the MFFU sim-funded account), mode "auto" (two_week until the eval is passed, then funded), two_week_until +
+after_mode (the eval goes on in another mode after session N), the opt-in day guard (lit_sizing.guard, day_guard), $1.90
+commission and the minimum-days trade in two_week.
 """
 from __future__ import annotations
 
