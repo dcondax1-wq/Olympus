@@ -39,7 +39,9 @@ Do the Sim test first; only go to the eval when the Sim test is clean.
 ## Overnight
 - Leave the Surface **plugged in, awake, NinjaTrader open and connected**. No trade can happen before **02:00 ET**;
   most LIT trades are 02:00-08:00 ET.
-- Every entry goes in with its stop and target at the broker, so a dropped PC can't leave the trade unprotected.
+- The stop and target are placed at the broker right after the fill (a few seconds; up to ~1 minute if NinjaTrader is
+  slow to report the fill). After that, a dropped PC can't leave the trade unprotected, but it can't move the stop to
+  breakeven or flatten at 15:55 either (MFFU auto-closes at 16:10).
   A real-account bot does **not** restart by itself after a crash or reboot: if the PC restarts, start step 11 again.
 - Phone: entries and results arrive as notifications (tap **Turn on** in the app once).
 
