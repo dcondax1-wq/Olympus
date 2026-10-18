@@ -283,10 +283,243 @@ def edge_table(res):
     return rows
 
 
+# ------------------------------------------------------------------------------------------------ combinations + critic
+CONF = {
+    "disp1": dict(disp=1.0),
+    "vix05": dict(vix=(-9, 0.5)),
+    "how": dict(how=True),
+    "depth05": dict(depth=(0.5, 99)),
+    "tgt_daily": dict(classes=("pd", "pw", "pm")),
+    "fixed4": dict(fixed_rr=4.0),
+    "po3_00": dict(po3="00"),
+    "vec": dict(vec="climax"),
+    "ind2": dict(ind=2),
+}
+
+
+def quick(T, sess=SESS):
+    """Fast stats for a search: per period n, trades/week, PF, net; plus odd / even calendar months (all years)."""
+    import collections as co
+    nd = co.Counter(d[:4] >= "2026" for d in sess)
+    out = {}
+    for nm, sel, days in (("2026", lambda d: d >= "2026", nd[True]), ("2021-25", lambda d: d < "2026", nd[False]),
+                          ("odd", lambda d: int(d[5:7]) % 2 == 1, sum(1 for d in sess if int(d[5:7]) % 2)),
+                          ("even", lambda d: int(d[5:7]) % 2 == 0, sum(1 for d in sess if not int(d[5:7]) % 2))):
+        p = np.array([t["pnl"] for t in T if sel(t["day"])] or [0.0])
+        gl = -p[p < 0].sum()
+        out[nm] = {"n": int((p != 0).sum()), "tpw": round(len([t for t in T if sel(t["day"])]) / max(days / 5, 1e-9), 2),
+                   "pf": round(float(p[p > 0].sum() / gl), 2) if gl else None, "net": round(float(p.sum()))}
+    return out
+
+
+def combos(base="day"):
+    import itertools
+    M, C = market()
+    keys = list(CONF)
+    rows = []
+    for r in range(0, 4):
+        for ks in itertools.combinations(keys, r):
+            if "tgt_daily" in ks and "fixed4" in ks:
+                continue
+            v = {**BASES[base]}
+            for k in ks:
+                v.update(CONF[k])
+            T = lit.run(M, C, make(**v), SESS)
+            q = quick(T)
+            rows.append({"base": base, "conf": list(ks), **q})
+    rows.sort(key=lambda x: -(x["odd"]["pf"] or 0))
+    json.dump(rows, open(os.path.join(ROOT, "research", "lab", f"lit_combos_{base}.json"), "w"), indent=0)
+    print(f"{len(rows)} combos; top 15 by ODD-month PF (selection), with EVEN months as the check, tpw >= 2 in both periods:")
+    k = 0
+    for x in rows:
+        if x["2026"]["tpw"] < 2 or x["2021-25"]["tpw"] < 2:
+            continue
+        print(f"{'+'.join(x['conf']) or 'base':32s} odd PF {x['odd']['pf']} ${x['odd']['net']} | even PF {x['even']['pf']} ${x['even']['net']}"
+              f" | 2026 n={x['2026']['n']} tpw={x['2026']['tpw']} PF={x['2026']['pf']} ${x['2026']['net']}"
+              f" | 21-25 n={x['2021-25']['n']} tpw={x['2021-25']['tpw']} PF={x['2021-25']['pf']} ${x['2021-25']['net']}")
+        k += 1
+        if k >= 15:
+            break
+
+
+CAND = {
+    "A": {**BASES["day"], "disp": 1.0, "depth": (0.5, 99), "classes": ("pd", "pw", "pm")},
+    "B": {**BASES["day"], "vix": (-9, 0.5), "depth": (0.5, 99), "classes": ("pd", "pw", "pm")},
+    "AB": {**BASES["day"], "disp": 1.0, "vix": (-9, 0.5), "depth": (0.5, 99), "classes": ("pd", "pw", "pm")},
+}
+
+
+def full_line(S, nm):
+    s = S["spans"][nm]
+    return (f"{nm}: n={s['n']} tpw={s['tpw']} wk2={s['wk2']}% win={s['win']}% PF={s['pf']} net={s['net']:+,} (${s['per_month']:,}/mo) "
+            f"DD={s['dd']:,} 2w {s['p10']}/{s['f10']} 1m {s['p20']}/{s['f20']} MCpass {s.get('mc_pass_rate')}% b2b {s['b2b']} medstop {s['stop']}")
+
+
+def slip_extra(T, ticks=2):
+    out = []
+    for t in T:
+        x = dict(t); x["pnl"] = round(t["pnl"] - ticks * lit.TICK * lit.PV * t["qty"], 2); out.append(x)
+    return out
+
+
+def critic(names=("A", "B", "AB")):
+    M, C = market()
+    rep = {}
+    for nm in names:
+        v = CAND[nm]
+        T = lit.run(M, C, make(**v), SESS)
+        S = score(T, mc=True)
+        print(f"=== {nm} {v}")
+        for sp in ("2026", "2021-25", "all"):
+            print("  " + full_line(S, sp))
+        print("  years:", {y: (x["n"], x["pf"], x["net"]) for y, x in S["years"].items()})
+        q = quick(T)
+        print("  odd/even months:", q["odd"], q["even"])
+        Q = quick(slip_extra(T))
+        print("  +2 ticks slippage: 2026", Q["2026"], "21-25", Q["2021-25"])
+        longs = [t for t in T if t["dir"] == 1]; shorts = [t for t in T if t["dir"] == -1]
+        print("  longs", quick(longs)["2021-25"], quick(longs)["2026"], "| shorts", quick(shorts)["2021-25"], quick(shorts)["2026"])
+        nb = {}
+        tweaks = {"disp0.8": {"disp": 0.8}, "disp1.2": {"disp": 1.2}, "depth0.3": {"depth": (0.3, 99)}, "depth0.75": {"depth": (0.75, 99)},
+                  "vix0.4": {"vix": (-9, 0.4)}, "vix0.6": {"vix": (-9, 0.6)}, "maxstop60": {"max_stop": 60}, "maxstop100": {"max_stop": 100},
+                  "market": {"entry": "market"}, "lon_ny": {"win": "lon_ny"}, "all3": {"win": "all3"}, "be_none": {"be_r": None},
+                  "be1.5": {"be_r": 1.5}, "minrr1": {"min_rr": 1.0}, "minrr2": {"min_rr": 2.0}, "bank3": {"max_rr": 3.0}, "nobank": {"max_rr": None},
+                  "buf1": {"stop_buf": 1.0}, "buf4": {"stop_buf": 4.0}, "wait6": {"wait": 6}, "wait24": {"wait": 24},
+                  "tgt+bu": {"classes": ("pd", "pw", "pm", "buildup")}, "tgt+sess": {"classes": ("pd", "pw", "pm", "asia", "london", "ny")}}
+        for k, tw in tweaks.items():
+            if k.startswith("vix") and "vix" not in v or k.startswith("disp") and "disp" not in v:
+                continue
+            q2 = quick(lit.run(M, C, make(**{**v, **tw}), SESS))
+            nb[k] = q2
+            print(f"  nb {k:10s} 2026 n={q2['2026']['n']} PF={q2['2026']['pf']} ${q2['2026']['net']} | 21-25 n={q2['2021-25']['n']} "
+                  f"PF={q2['2021-25']['pf']} ${q2['2021-25']['net']}")
+        for kw in ({"leg": 18}, {"leg": 36}, {"sweep_win": 12}, {"sweep_win": 36}):
+            M2, C2 = market(**kw)
+            q2 = quick(lit.run(M2, C2, make(**v), SESS)); nb[str(kw)] = q2
+            print(f"  nb {str(kw):10s} 2026 n={q2['2026']['n']} PF={q2['2026']['pf']} ${q2['2026']['net']} | 21-25 n={q2['2021-25']['n']} "
+                  f"PF={q2['2021-25']['pf']} ${q2['2021-25']['net']}")
+        rep[nm] = {"variant": {k: (list(x) if isinstance(x, (tuple, set)) else x) for k, x in v.items()}, **row(S), "odd_even": q,
+                   "slip2": Q, "neighbours": nb}
+    json.dump(rep, open(os.path.join(ROOT, "research", "lab", "lit_critic.json"), "w"), indent=1)
+
+
+RUNS = {
+    "lit_textbook_ny": ("LIT as taught, NY killzones, market entry", {**BASES["ny"], "entry": "market", "max_stop": 60}, "rejected",
+                        "Pure LIT (sweep -> structure shift, market entry next bar, stop beyond the protected low) in the NY killzones: "
+                        "too few trades (0.5/wk in 2026) and it loses money in 2021-25."),
+    "lit_raw_day": ("LIT, 02:00-15:30, retest entry, no confluence filters", BASES["day"], "rejected",
+                    "Every LIT setup of the day with a limit entry on the retest of the broken structure: about break-even (PF 0.97 / 1.01)."),
+    "lit_A": ("LIT best: displacement >= 1 ATR, sweep >= 0.5 ATR deep, targets PDH/PWH/PMH", CAND["A"], "info",
+              "Best LIT variant (picked on odd months only). Profitable in 2026 and 2021-25 and in every neighbour, but thin "
+              "(PF 1.26 / 1.15), drawdown -$21k and MFFU evals fail more often than they pass; well below the locked bot in 2026."),
+    "lit_B": ("LIT: VIX-move filter, sweep >= 0.5 ATR deep, targets PDH/PWH/PMH", CAND["B"], "info",
+              "Runner-up: best 2021-25 money (+$43.6k) but 2026 PF only 1.15 and all of the 2021-25 edge comes from longs."),
+}
+
+
+def save_runs():
+    M, C = market()
+    for rid, (title, v, status, verdict) in RUNS.items():
+        T = lit.run(M, C, make(**v), SESS)
+        S = score(T, mc=True)
+        vv = {k: (list(x) if isinstance(x, (tuple, set)) else x) for k, x in v.items()}
+        rl.save(rid, title, "other", "Does the owner's LIT method (Liquidity Inducement Theorem) beat the Liquidity Engine?",
+                params=vv, trades=T, scored=S, status=status, verdict=verdict, writeup="lit-strategy", tags=["lit"],
+                notes="engine/lit.py + tools/research_lit.py; separate strategy, not the live engine; no cold-streak filter; "
+                      "size $800 up to a 20-pt stop then 800x20/stop, MNQ, max 40 micros, $1.40/micro + 1 tick slippage")
+        print(rid, full_line(S, "2026")); print("   ", full_line(S, "2021-25"))
+
+
+def charts(n=8):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import datetime as dt
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
+    M, C = market()
+    T = lit.run(M, C, make(**CAND["A"]), SESS)
+    out = os.path.join(ROOT, "research", "study", "lit")
+    os.makedirs(out, exist_ok=True)
+    pick = []
+    for want, k in (("TARGET", 4), ("STOP", 2), ("BE", 1), ("EOD", 1)):
+        for yr in ("2026", "2025", "2024", "2023"):
+            xs = [t for t in T if t["exit"] == want and t["day"][:4] == yr and t not in pick]
+            if xs and sum(1 for p in pick if p["exit"] == want) < k:
+                pick.append(xs[len(xs) // 2])
+    names = []
+    for t in pick[:n]:
+        k = M.day_of[t["entry_i"]]
+        a = max(t["sweep_i"] - 30, M.days[k][1]); z = min(t["exit_i"] + 12, M.n - 1)
+        idx = np.arange(a, z + 1)
+        fig, ax = plt.subplots(figsize=(12, 6.2), dpi=110)
+        fig.patch.set_facecolor("#ffffff"); ax.set_facecolor("#ffffff")
+        for x, i in enumerate(idx):
+            o, h, l, c = M.o[i], M.h[i], M.l[i], M.c[i]
+            up = c >= o
+            col = "#2a9d8f" if up else "#d1495b"
+            if M.climax[i]:
+                col = "#0b6e4f" if up else "#8f1d2c"
+            ax.vlines(x, l, h, color="#6b6b6b", lw=0.8)
+            ax.add_patch(plt.Rectangle((x - 0.32, min(o, c)), 0.64, max(abs(c - o), 0.25), color=col, ec=col))
+        X = lambda i: int(i - a)
+        ext_px = M.l[t["ext_i"]] if t["dir"] == 1 else M.h[t["ext_i"]]
+        want = "low" if t["dir"] == 1 else "high"
+        drawn = {}
+        for side, px, ki, nm, cls in M.levels(k):
+            if nm not in t["swept"] or side != want or ki >= t["ext_i"]:
+                continue
+            if (px > ext_px) if t["dir"] == 1 else (px < ext_px):     # the extreme traded through it
+                if nm not in drawn or abs(px - ext_px) < abs(drawn[nm] - ext_px):
+                    drawn[nm] = px
+        by_px = {}
+        for nm, px in drawn.items():
+            by_px.setdefault(round(px, 2), []).append(nm)
+        for px, nms in by_px.items():
+            ax.axhline(px, color="#7a5195", lw=1, ls=":")
+            ax.text(0.5, px, " swept " + " / ".join(sorted(nms)), color="#4a2f5f", fontsize=8, va="bottom")
+        e0 = X(t["entry_i"]); e1 = X(t["exit_i"])
+        for px, lab, col in ((t["entry_px"], "entry", "#1f3b73"), (t["stop_px"], "stop (beyond protected low/high)", "#b23a48"),
+                             (t["target_px"], "target (PDH/PDL/PWH/PWL/PMH/PML)", "#2d6a4f")):
+            ax.hlines(px, e0, e1, color=col, lw=2)
+            ax.text(e1 + 0.3, px, f" {lab} {px:,.2f}", color=col, fontsize=8, va="center")
+        ax.axvline(X(t["sweep_i"]), color="#999999", lw=0.8, ls="--")
+        ax.text(X(t["sweep_i"]), ax.get_ylim()[1], "sweep", fontsize=8, color="#555555", ha="center", va="bottom")
+        ax.scatter([X(t["ext_i"])], [M.l[t["ext_i"]] if t["dir"] == 1 else M.h[t["ext_i"]]], s=60, marker="o", facecolor="none",
+                   edgecolor="#b23a48", lw=1.6, zorder=5)
+        ax.scatter([X(t["ref_i"])], [M.h[t["ref_i"]] if t["dir"] == 1 else M.l[t["ref_i"]]], s=60, marker="s", facecolor="none",
+                   edgecolor="#1f3b73", lw=1.6, zorder=5)
+        ax.hlines(M.h[t["ref_i"]] if t["dir"] == 1 else M.l[t["ref_i"]], X(t["ref_i"]), X(t["i"]), color="#1f3b73", lw=1, ls="--")
+        ax.text(X(t["i"]), M.h[t["ref_i"]] if t["dir"] == 1 else M.l[t["ref_i"]], " structure shift", fontsize=8, color="#1f3b73")
+        ticks = list(range(0, len(idx), 12))
+        ax.set_xticks(ticks)
+        ax.set_xticklabels([dt.datetime.fromtimestamp(int(M.t[idx[q]]), ET).strftime("%H:%M") for q in ticks], fontsize=8)
+        ax.grid(axis="y", color="#eeeeee", lw=0.6); ax.set_axisbelow(True)
+        for sp in ("top", "right"):
+            ax.spines[sp].set_visible(False)
+        side = "LONG" if t["dir"] == 1 else "SHORT"
+        ax.set_title(f"LIT {side} {t['day']} - {t['exit']}  {t['r']:+.2f}R  ${t['pnl']:+,.0f}  ({t['qty']} MNQ, stop {t['risk_pts']:.1f} pts, "
+                     f"inducements taken {t['ind_n']})", fontsize=10, loc="left")
+        ax.text(0.0, -0.09, "circle = protected low/high (stop goes beyond it) · square = the swing that broke · darker candles = PVSRA "
+                "climax vector · times ET · 5m CME NQ1!", transform=ax.transAxes, fontsize=7.5, color="#555555")
+        fn = f"{t['day']}_{side.lower()}_{t['exit'].lower()}.png"
+        fig.tight_layout(); fig.savefig(os.path.join(out, fn)); plt.close(fig)
+        names.append(fn)
+    print("charts:", names)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "grid"
     if cmd == "grid":
         grid(sys.argv[2] if len(sys.argv) > 2 else "day")
+    elif cmd == "save":
+        save_runs()
+    elif cmd == "charts":
+        charts()
+    elif cmd == "critic":
+        critic()
+    elif cmd == "combos":
+        combos(sys.argv[2] if len(sys.argv) > 2 else "day")
     elif cmd == "edges":
         res = json.load(open(OUT.replace(".json", f"_{sys.argv[2] if len(sys.argv) > 2 else 'day'}.json")))
         for r in edge_table(res):
