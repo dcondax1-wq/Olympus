@@ -87,6 +87,16 @@ def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15")):
     rp = Replay()
     df1 = pd.read_csv(os.path.join(ROOT, "data", "NQ_1m.csv"))
     rp.frames[("NQ", "1m")] = df1[df1["time"] >= at(sessions[0], 18, 0) - 70 * 86400].reset_index(drop=True)
+    o1 = dict(zip(df1["time"].astype("int64"), df1["open"].astype(float)))
+
+    def forming_1m(sym, interval, period="5d"):
+        # a live 1m feed shows the minute that has just started from its first trade (its open): the bot sizes an entry
+        # decided on the 1m CISD close from it, as the backtest fills at that open
+        t = rp.now - rp.now % 60
+        if sym == "NQ" and interval == "1m" and t in o1:
+            return pd.DataFrame([{"time": t, "open": o1[t], "high": o1[t], "low": o1[t], "close": o1[t], "volume": 0.0}])
+        return pd.DataFrame()
+    rp.recent_hook = forming_1m
     rp.install_globals()
     want = [t for d in sessions for t in by_day.get(d, [])]
     t_start = at(sessions[0], 18, 0)
@@ -117,7 +127,9 @@ def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15")):
         extra = [r for r in led if r["side"] in ("buy", "sell", "exit") and int(r["entry_t"]) not in {int(t["entry_t"]) for t in want}]
         not_routed = [l["text"] for l in bot.log if "NOT routed" in l["text"] or "never routed" in l["text"]]
         states = sorted({str((bot.state or {}).get("model_state", ""))[:40]})
+        delays = [int(ent[int(t["entry_t"])]["t"]) - int(t["entry_t"]) for t in want if int(t["entry_t"]) in ent]
         res = {"sessions": list(sessions), "polls": len(times), "want": len(want), "entries_ok": e_ok, "exits_ok": x_ok,
+               "entry_route_delay_s": delays,
                "extra": len(extra), "not_routed": not_routed[:10], "errors": [e[1] for e in errors[:5]], "rows": rows,
                "last_model_state": (bot.state or {}).get("model_state"), "poll_ms": int(np.mean(ms)) if ms else None,
                "modify_routes": sum(1 for r in led if r["side"] == "modify"), "states_seen": states}
@@ -287,7 +299,8 @@ def main():
         b = out["bot"]
         print(f"LiveBot (paper) on LIT, sessions {b['sessions']}: {b['polls']} polls, routed entries {b['entries_ok']}/{b['want']} "
               f"exits {b['exits_ok']}/{b['want']}, extra routes {b['extra']}, not-routed log lines {len(b['not_routed'])}, "
-              f"errors {len(b['errors'])}, mean poll {b['poll_ms']} ms", flush=True)
+              f"errors {len(b['errors'])}, mean poll {b['poll_ms']} ms, entry routed {b['entry_route_delay_s']} s after the "
+              f"backtest's fill-bar open (polls 3 s after the minute)", flush=True)
     out["seconds"] = round(time.time() - t_all)
     with open(OUT, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=1, default=str)

@@ -1,0 +1,2287 @@
+{
+ "version": 1,
+ "mode": "observe",
+ "mode_why": "not better on both 2026 halves (H1: funded; H2: net, funded, p10): ships in OBSERVE mode (logs proposals, applies nothing)",
+ "updated": 1792347826,
+ "rules": {
+  "prior_n": 20.0,
+  "bounds": [
+   0.5,
+   1.25
+  ],
+  "step_max": 0.25,
+  "skip_min_n": 15,
+  "window_days": 182,
+  "wf_blocks": 6,
+  "wf_block_days": 30,
+  "wf_min_active": 2,
+  "trades_week": [
+   2.0,
+   4.0
+  ],
+  "risk_cap_usd": 900.0,
+  "never_changes": "stops, targets, entries, the LIT setup rules, the weekly stop, the Monday rule"
+ },
+ "knobs": {
+  "trap": {
+   "stale": {
+    "mult": 0.5,
+    "skip": false,
+    "since": "2026-04-19",
+    "decision": "d0012"
+   },
+   "fresh": {
+    "mult": 1.25,
+    "skip": false,
+    "since": "2026-04-26",
+    "decision": "d0013"
+   }
+  }
+ },
+ "decisions": [
+  {
+   "id": "d0001",
+   "asof": "2026-02-01",
+   "at": 1792347782,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "not enough trades to learn from: 17 in the last 6 months (needs 20)",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 0,
+   "passed": 0
+  },
+  {
+   "id": "d0002",
+   "asof": "2026-02-08",
+   "at": 1792347782,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: walk_forward 15, signal 15, halves 11): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "id": "d0003",
+   "asof": "2026-02-15",
+   "at": 1792347782,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "13 proposal(s), none passed the guardrails (failed: walk_forward 13, signal 11, halves 9): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 13,
+   "passed": 0
+  },
+  {
+   "id": "d0004",
+   "asof": "2026-02-22",
+   "at": 1792347782,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: walk_forward 14, signal 12, halves 8, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "id": "d0005",
+   "asof": "2026-03-01",
+   "at": 1792347783,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: walk_forward 15, signal 13, halves 9, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "id": "d0006",
+   "asof": "2026-03-08",
+   "at": 1792347783,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "19 proposal(s), none passed the guardrails (failed: walk_forward 19, signal 14, halves 11, eval_fail_2wk 2, trades_week 2): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 19,
+   "passed": 0
+  },
+  {
+   "id": "d0007",
+   "asof": "2026-03-15",
+   "at": 1792347783,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "19 proposal(s), none passed the guardrails (failed: walk_forward 19, signal 14, halves 11, eval_fail_2wk 3, trades_week 2): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 19,
+   "passed": 0
+  },
+  {
+   "id": "d0008",
+   "asof": "2026-03-22",
+   "at": 1792347783,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "18 proposal(s), none passed the guardrails (failed: walk_forward 18, signal 14, halves 11, eval_fail_2wk 3, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 18,
+   "passed": 0
+  },
+  {
+   "id": "d0009",
+   "asof": "2026-03-29",
+   "at": 1792347783,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: walk_forward 15, signal 15, halves 9, eval_fail_2wk 2, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "id": "d0010",
+   "asof": "2026-04-05",
+   "at": 1792347783,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "13 proposal(s), none passed the guardrails (failed: walk_forward 13, signal 10, halves 7, eval_fail_2wk 2, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 13,
+   "passed": 0
+  },
+  {
+   "id": "d0011",
+   "asof": "2026-04-12",
+   "at": 1792347783,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "stale",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "Inducement (trap) age: older trap (> 6 bars): 22 trades, mean -0.21R vs +0.87R overall (shrunk +0.30R, prior 20 trades) -> x1 -> x0.75 (target x0.5); walk-forward +723 $ on 2 blocks, both halves better, eval 2-wk fails not up",
+   "evidence": {
+    "estimate": {
+     "n": 22,
+     "mean_r": -0.215,
+     "usd": -2977.32,
+     "post_r": 0.303,
+     "target": 0.5,
+     "skip_ok": true
+    },
+    "rbar": 0.873,
+    "checks": {
+     "walk_forward": {
+      "pass": true,
+      "delta_usd": 723.46,
+      "active_blocks": 2,
+      "need_blocks": 2,
+      "blocks": [
+       {
+        "block": "2025-10-14",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2025-11-13",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2025-12-13",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2026-01-12",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2026-02-11",
+        "active": true,
+        "n": 7,
+        "delta": 778.1,
+        "value": {
+         "mult": 0.75
+        }
+       },
+       {
+        "block": "2026-03-13",
+        "active": true,
+        "n": 6,
+        "delta": -54.64,
+        "value": {
+         "mult": 0.75
+        }
+       }
+      ]
+     },
+     "halves": {
+      "pass": true,
+      "split": "visible history cut at 2026-02-13",
+      "halves": [
+       {
+        "from": "2026-01-02",
+        "to": "2026-02-12",
+        "before": 10033.78,
+        "after": 10953.78,
+        "delta": 920.0
+       },
+       {
+        "from": "2026-02-13",
+        "to": "2026-04-09",
+        "before": 11906.88,
+        "after": 12415.94,
+        "delta": 509.06
+       }
+      ]
+     },
+     "trades_week": {
+      "pass": true,
+      "before": 3.1,
+      "after": 3.1,
+      "band": [
+       2.0,
+       4.0
+      ]
+     },
+     "eval_fail_2wk": {
+      "pass": true,
+      "recent_before": 5.6,
+      "recent_after": 0.0,
+      "all_before": 5.7,
+      "all_after": 0.0
+     },
+     "signal": {
+      "pass": true,
+      "z": -2.58,
+      "need": 2.5,
+      "away_from_1": true
+     },
+     "max_step": {
+      "pass": true,
+      "from": 1.0,
+      "to": 0.75
+     }
+    }
+   },
+   "numbers": {
+    "recent": {
+     "before": {
+      "n": 44,
+      "taken": 44,
+      "net": 21940.66,
+      "pf": 3.81,
+      "dd": -3021.9,
+      "tpw": 3.1,
+      "r_sum": 38.43,
+      "p10": 38.0,
+      "f10": 5.6,
+      "p20": 59.2,
+      "f20": 11.3
+     },
+     "after": {
+      "n": 44,
+      "taken": 44,
+      "net": 23369.72,
+      "pf": 4.9,
+      "dd": -2325.3,
+      "tpw": 3.1,
+      "r_sum": 38.43,
+      "p10": 38.0,
+      "f10": 0.0,
+      "p20": 64.8,
+      "f20": 2.8
+     },
+     "from": "2026-01-02",
+     "to": "2026-04-11"
+    },
+    "all": {
+     "before": {
+      "n": 44,
+      "taken": 44,
+      "net": 21940.66,
+      "pf": 3.81,
+      "dd": -3021.9,
+      "tpw": 3.14,
+      "r_sum": 38.43,
+      "p10": 38.6,
+      "f10": 5.7,
+      "p20": 60.0,
+      "f20": 11.4
+     },
+     "after": {
+      "n": 44,
+      "taken": 44,
+      "net": 23369.72,
+      "pf": 4.9,
+      "dd": -2325.3,
+      "tpw": 3.14,
+      "r_sum": 38.43,
+      "p10": 38.6,
+      "f10": 0.0,
+      "p20": 65.7,
+      "f20": 2.9
+     }
+    }
+   },
+   "applied": false,
+   "proposals": 14,
+   "passed": 1
+  },
+  {
+   "id": "d0012",
+   "asof": "2026-04-19",
+   "at": 1792347783,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "stale",
+   "before": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.5,
+    "skip": false
+   },
+   "reason": "Inducement (trap) age: older trap (> 6 bars): 23 trades, mean -0.10R vs +1.04R overall (shrunk +0.43R, prior 20 trades) -> x0.75 -> x0.5 (target x0.5); walk-forward +12 $ on 2 blocks, both halves better, eval 2-wk fails not up",
+   "evidence": {
+    "estimate": {
+     "n": 23,
+     "mean_r": -0.095,
+     "usd": -2359.04,
+     "post_r": 0.433,
+     "target": 0.5,
+     "skip_ok": true
+    },
+    "rbar": 1.04,
+    "checks": {
+     "walk_forward": {
+      "pass": true,
+      "delta_usd": 11.66,
+      "active_blocks": 2,
+      "need_blocks": 2,
+      "blocks": [
+       {
+        "block": "2025-10-21",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2025-11-20",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2025-12-20",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2026-01-19",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2026-02-18",
+        "active": true,
+        "n": 7,
+        "delta": -78.24,
+        "value": {
+         "mult": 0.5
+        }
+       },
+       {
+        "block": "2026-03-20",
+        "active": true,
+        "n": 5,
+        "delta": 89.9,
+        "value": {
+         "mult": 0.5
+        }
+       }
+      ]
+     },
+     "halves": {
+      "pass": true,
+      "split": "visible history cut at 2026-02-17",
+      "halves": [
+       {
+        "from": "2026-01-02",
+        "to": "2026-02-16",
+        "before": 15290.28,
+        "after": 15842.38,
+        "delta": 552.1
+       },
+       {
+        "from": "2026-02-17",
+        "to": "2026-04-17",
+        "before": 14595.78,
+        "after": 14607.44,
+        "delta": 11.66
+       }
+      ]
+     },
+     "trades_week": {
+      "pass": true,
+      "before": 3.09,
+      "after": 3.09,
+      "band": [
+       2.0,
+       4.0
+      ]
+     },
+     "eval_fail_2wk": {
+      "pass": true,
+      "recent_before": 0.0,
+      "recent_after": 0.0,
+      "all_before": 0.0,
+      "all_after": 0.0
+     },
+     "signal": {
+      "pass": true,
+      "z": -2.57,
+      "need": 2.5,
+      "away_from_1": true
+     },
+     "max_step": {
+      "pass": true,
+      "from": 0.75,
+      "to": 0.5
+     }
+    }
+   },
+   "numbers": {
+    "recent": {
+     "before": {
+      "n": 47,
+      "taken": 47,
+      "net": 29886.06,
+      "pf": 5.97,
+      "dd": -2325.3,
+      "tpw": 3.09,
+      "r_sum": 48.9,
+      "p10": 48.7,
+      "f10": 0.0,
+      "p20": 85.5,
+      "f20": 2.6
+     },
+     "after": {
+      "n": 47,
+      "taken": 47,
+      "net": 30449.82,
+      "pf": 6.99,
+      "dd": -2034.3,
+      "tpw": 3.09,
+      "r_sum": 48.9,
+      "p10": 48.7,
+      "f10": 0.0,
+      "p20": 85.5,
+      "f20": 2.6
+     },
+     "from": "2026-01-02",
+     "to": "2026-04-18"
+    },
+    "all": {
+     "before": {
+      "n": 47,
+      "taken": 47,
+      "net": 29886.06,
+      "pf": 5.97,
+      "dd": -2325.3,
+      "tpw": 3.09,
+      "r_sum": 48.9,
+      "p10": 48.7,
+      "f10": 0.0,
+      "p20": 85.5,
+      "f20": 2.6
+     },
+     "after": {
+      "n": 47,
+      "taken": 47,
+      "net": 30449.82,
+      "pf": 6.99,
+      "dd": -2034.3,
+      "tpw": 3.09,
+      "r_sum": 48.9,
+      "p10": 48.7,
+      "f10": 0.0,
+      "p20": 85.5,
+      "f20": 2.6
+     }
+    }
+   },
+   "applied": false,
+   "proposals": 15,
+   "passed": 1
+  },
+  {
+   "id": "d0013",
+   "asof": "2026-04-26",
+   "at": 1792347783,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "fresh",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "reason": "Inducement (trap) age: fresh trap (inducement <= 6 bars / 30 min old): 25 trades, mean +2.04R vs +0.90R overall (shrunk +1.53R, prior 20 trades) -> x1 -> x1.25 (target x1.25); walk-forward +1,432 $ on 2 blocks, both halves better, eval 2-wk fails not up",
+   "evidence": {
+    "estimate": {
+     "n": 25,
+     "mean_r": 2.041,
+     "usd": 31106.18,
+     "post_r": 1.534,
+     "target": 1.25,
+     "skip_ok": false
+    },
+    "rbar": 0.899,
+    "checks": {
+     "walk_forward": {
+      "pass": true,
+      "delta_usd": 1432.3,
+      "active_blocks": 2,
+      "need_blocks": 2,
+      "blocks": [
+       {
+        "block": "2025-10-28",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2025-11-27",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2025-12-27",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2026-01-26",
+        "active": false,
+        "why": "too little data before it"
+       },
+       {
+        "block": "2026-02-25",
+        "active": true,
+        "n": 5,
+        "delta": 752.9,
+        "value": {
+         "mult": 1.25
+        }
+       },
+       {
+        "block": "2026-03-27",
+        "active": true,
+        "n": 5,
+        "delta": 679.4,
+        "value": {
+         "mult": 1.25
+        }
+       }
+      ]
+     },
+     "halves": {
+      "pass": true,
+      "split": "visible history cut at 2026-02-20",
+      "halves": [
+       {
+        "from": "2026-01-02",
+        "to": "2026-02-19",
+        "before": 15136.18,
+        "after": 16901.6,
+        "delta": 1765.42
+       },
+       {
+        "from": "2026-02-20",
+        "to": "2026-04-24",
+        "before": 14910.24,
+        "after": 16342.54,
+        "delta": 1432.3
+       }
+      ]
+     },
+     "trades_week": {
+      "pass": true,
+      "before": 3.21,
+      "after": 3.21,
+      "band": [
+       2.0,
+       4.0
+      ]
+     },
+     "eval_fail_2wk": {
+      "pass": true,
+      "recent_before": 0.0,
+      "recent_after": 0.0,
+      "all_before": 0.0,
+      "all_after": 0.0
+     },
+     "signal": {
+      "pass": true,
+      "z": 2.79,
+      "need": 2.5,
+      "away_from_1": true
+     },
+     "max_step": {
+      "pass": true,
+      "from": 1.0,
+      "to": 1.25
+     }
+    }
+   },
+   "numbers": {
+    "recent": {
+     "before": {
+      "n": 52,
+      "taken": 52,
+      "net": 30046.42,
+      "pf": 6.48,
+      "dd": -2034.3,
+      "tpw": 3.21,
+      "r_sum": 46.77,
+      "p10": 45.7,
+      "f10": 0.0,
+      "p20": 80.2,
+      "f20": 2.5
+     },
+     "after": {
+      "n": 52,
+      "taken": 52,
+      "net": 33244.14,
+      "pf": 6.66,
+      "dd": -2209.6,
+      "tpw": 3.21,
+      "r_sum": 46.77,
+      "p10": 49.4,
+      "f10": 0.0,
+      "p20": 80.2,
+      "f20": 2.5
+     },
+     "from": "2026-01-02",
+     "to": "2026-04-25"
+    },
+    "all": {
+     "before": {
+      "n": 52,
+      "taken": 52,
+      "net": 30046.42,
+      "pf": 6.48,
+      "dd": -2034.3,
+      "tpw": 3.21,
+      "r_sum": 46.77,
+      "p10": 45.7,
+      "f10": 0.0,
+      "p20": 80.2,
+      "f20": 2.5
+     },
+     "after": {
+      "n": 52,
+      "taken": 52,
+      "net": 33244.14,
+      "pf": 6.66,
+      "dd": -2209.6,
+      "tpw": 3.21,
+      "r_sum": 46.77,
+      "p10": 49.4,
+      "f10": 0.0,
+      "p20": 80.2,
+      "f20": 2.5
+     }
+    }
+   },
+   "applied": false,
+   "proposals": 14,
+   "passed": 1
+  },
+  {
+   "id": "d0014",
+   "asof": "2026-05-03",
+   "at": 1792347783,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "11 proposal(s), none passed the guardrails (failed: walk_forward 10, halves 10, signal 10, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 11,
+   "passed": 0
+  },
+  {
+   "id": "d0015",
+   "asof": "2026-05-10",
+   "at": 1792347784,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: walk_forward 14, halves 13, signal 13, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "id": "d0016",
+   "asof": "2026-05-17",
+   "at": 1792347784,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: walk_forward 15, halves 15, signal 15, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "id": "d0017",
+   "asof": "2026-05-24",
+   "at": 1792347784,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: halves 16, signal 15, walk_forward 14, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "id": "d0018",
+   "asof": "2026-05-31",
+   "at": 1792347784,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "12 proposal(s), none passed the guardrails (failed: halves 12, signal 12, walk_forward 11): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 12,
+   "passed": 0
+  },
+  {
+   "id": "d0019",
+   "asof": "2026-06-07",
+   "at": 1792347784,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, signal 15, walk_forward 14): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "id": "d0020",
+   "asof": "2026-06-14",
+   "at": 1792347784,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: halves 14, signal 14, walk_forward 12): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "id": "d0021",
+   "asof": "2026-06-21",
+   "at": 1792347784,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, signal 15, walk_forward 13): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "id": "d0022",
+   "asof": "2026-06-28",
+   "at": 1792347785,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, signal 15, walk_forward 13): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "id": "d0023",
+   "asof": "2026-07-05",
+   "at": 1792347785,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: halves 14, signal 14, walk_forward 13): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "id": "d0024",
+   "asof": "2026-07-12",
+   "at": 1792347785,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: halves 16, signal 16, walk_forward 14, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "id": "d0025",
+   "asof": "2026-07-19",
+   "at": 1792347785,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, signal 15, walk_forward 12): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "id": "d0026",
+   "asof": "2026-07-26",
+   "at": 1792347785,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "13 proposal(s), none passed the guardrails (failed: halves 13, signal 13, walk_forward 11): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 13,
+   "passed": 0
+  },
+  {
+   "id": "d0027",
+   "asof": "2026-08-02",
+   "at": 1792347785,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "11 proposal(s), none passed the guardrails (failed: halves 11, signal 11, walk_forward 9): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 11,
+   "passed": 0
+  },
+  {
+   "id": "d0028",
+   "asof": "2026-08-09",
+   "at": 1792347785,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: halves 14, signal 14, walk_forward 13): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "id": "d0029",
+   "asof": "2026-08-16",
+   "at": 1792347786,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: halves 14, signal 14, walk_forward 11, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "id": "d0030",
+   "asof": "2026-08-23",
+   "at": 1792347786,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, signal 15, walk_forward 13, trades_week 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "id": "d0031",
+   "asof": "2026-08-30",
+   "at": 1792347786,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "12 proposal(s), none passed the guardrails (failed: signal 12, walk_forward 11, halves 11): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 12,
+   "passed": 0
+  },
+  {
+   "id": "d0032",
+   "asof": "2026-09-06",
+   "at": 1792347786,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: walk_forward 15, halves 15, signal 15, eval_fail_2wk 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "id": "d0033",
+   "asof": "2026-09-13",
+   "at": 1792347786,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: signal 15, walk_forward 13, halves 13, eval_fail_2wk 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "id": "d0034",
+   "asof": "2026-09-20",
+   "at": 1792347787,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "17 proposal(s), none passed the guardrails (failed: halves 16, signal 16, walk_forward 13): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 17,
+   "passed": 0
+  },
+  {
+   "id": "d0035",
+   "asof": "2026-09-27",
+   "at": 1792347787,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "17 proposal(s), none passed the guardrails (failed: halves 16, signal 16, walk_forward 13): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 17,
+   "passed": 0
+  },
+  {
+   "id": "d0036",
+   "asof": "2026-10-04",
+   "at": 1792347787,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: halves 16, walk_forward 14, signal 13): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "id": "d0037",
+   "asof": "2026-10-11",
+   "at": 1792347787,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 14, walk_forward 12, signal 12, eval_fail_2wk 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "id": "d0038",
+   "asof": "2026-10-18",
+   "at": 1792347788,
+   "source": "history replay",
+   "mode": "apply",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: halves 15, signal 15, walk_forward 13, eval_fail_2wk 1): every knob stays",
+   "evidence": {},
+   "numbers": {},
+   "applied": false,
+   "proposals": 16,
+   "passed": 0
+  }
+ ],
+ "last_review": {
+  "asof": "2026-10-18",
+  "decision": "d0038",
+  "action": "none",
+  "reason": "16 proposal(s), none passed the guardrails (failed: halves 15, signal 15, walk_forward 13, eval_fail_2wk 1): every knob stays",
+  "trades": 73,
+  "rbar": 0.537,
+  "proposals": [
+   {
+    "fam": "trap",
+    "b": "stale",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 37,
+    "mean_r": 0.311,
+    "target": 0.726,
+    "failed": [
+     "walk_forward",
+     "eval_fail_2wk"
+    ],
+    "wf_delta": 0.0,
+    "halves": [
+     364.04,
+     812.66
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "levels",
+    "b": "multi",
+    "kind": "mult",
+    "value": 1.2,
+    "pass": false,
+    "n": 53,
+    "mean_r": 0.692,
+    "target": 1.209,
+    "failed": [
+     "halves",
+     "signal"
+    ],
+    "wf_delta": 476.7,
+    "halves": [
+     37.9,
+     -139.7
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "levels",
+    "b": "single",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 20,
+    "mean_r": 0.128,
+    "target": 0.619,
+    "failed": [
+     "halves",
+     "signal"
+    ],
+    "wf_delta": 71.8,
+    "halves": [
+     -1570.22,
+     -110.3
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "session",
+    "b": "lon_early",
+    "kind": "mult",
+    "value": 1.25,
+    "pass": false,
+    "n": 39,
+    "mean_r": 1.006,
+    "target": 1.25,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": -52.9,
+    "halves": [
+     148.7,
+     -196.1
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "session",
+    "b": "ny",
+    "kind": "mult",
+    "value": 0.9,
+    "pass": false,
+    "n": 15,
+    "mean_r": 0.388,
+    "target": 0.881,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": 0.0,
+    "halves": [
+     -1237.52,
+     69.9
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "session",
+    "b": "lon_late",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 19,
+    "mean_r": -0.307,
+    "target": 0.5,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": -239.38,
+    "halves": [
+     -957.4,
+     -486.08
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "session",
+    "b": "lon_late",
+    "kind": "skip",
+    "value": null,
+    "pass": false,
+    "n": 19,
+    "mean_r": -0.307,
+    "target": 0.5,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": -4075.4,
+    "halves": [
+     -5460.74,
+     -2423.46
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "vix",
+    "b": "mid",
+    "kind": "mult",
+    "value": 0.95,
+    "pass": false,
+    "n": 44,
+    "mean_r": 0.513,
+    "target": 0.968,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": -2028.78,
+    "halves": [
+     -819.2,
+     -364.6
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "vix",
+    "b": "low",
+    "kind": "mult",
+    "value": 1.05,
+    "pass": false,
+    "n": 29,
+    "mean_r": 0.575,
+    "target": 1.041,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": 0.0,
+    "halves": [
+     0.0,
+     0.0
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "grade",
+    "b": "B",
+    "kind": "mult",
+    "value": 0.9,
+    "pass": false,
+    "n": 54,
+    "mean_r": 0.479,
+    "target": 0.921,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": -1327.4,
+    "halves": [
+     -1648.4,
+     215.7
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "grade",
+    "b": "C",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 9,
+    "mean_r": -0.521,
+    "target": 0.5,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": 0.0,
+    "halves": [
+     -413.04,
+     0.0
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "grade",
+    "b": "A",
+    "kind": "mult",
+    "value": 1.25,
+    "pass": false,
+    "n": 10,
+    "mean_r": 1.805,
+    "target": 1.25,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": 0.0,
+    "halves": [
+     0.0,
+     0.0
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "es",
+    "b": "no_confirm",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 26,
+    "mean_r": 0.27,
+    "target": 0.718,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": -1390.8,
+    "halves": [
+     -1973.98,
+     -993.38
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "es",
+    "b": "confirm",
+    "kind": "mult",
+    "value": 1.2,
+    "pass": false,
+    "n": 47,
+    "mean_r": 0.685,
+    "target": 1.193,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": -73.4,
+    "halves": [
+     39.8,
+     -161.8
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "h4",
+    "b": "against",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 42,
+    "mean_r": 0.124,
+    "target": 0.5,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "signal"
+    ],
+    "wf_delta": -2094.88,
+    "halves": [
+     -4049.3,
+     -1895.48
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "h4",
+    "b": "with",
+    "kind": "mult",
+    "value": 1.25,
+    "pass": false,
+    "n": 31,
+    "mean_r": 1.097,
+    "target": 1.25,
+    "failed": [
+     "halves",
+     "signal"
+    ],
+    "wf_delta": 369.0,
+    "halves": [
+     314.7,
+     -105.8
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "buckets": {
+   "trap": {
+    "stale": {
+     "n": 37,
+     "mean_r": 0.311,
+     "usd": 5529.16,
+     "post_r": 0.39,
+     "target": 0.726,
+     "skip_ok": false
+    },
+    "fresh": {
+     "n": 36,
+     "mean_r": 0.77,
+     "usd": 14409.22,
+     "post_r": 0.687,
+     "target": 1.25,
+     "skip_ok": false
+    }
+   },
+   "levels": {
+    "multi": {
+     "n": 53,
+     "mean_r": 0.692,
+     "usd": 18973.52,
+     "post_r": 0.649,
+     "target": 1.209,
+     "skip_ok": false
+    },
+    "single": {
+     "n": 20,
+     "mean_r": 0.128,
+     "usd": 964.86,
+     "post_r": 0.333,
+     "target": 0.619,
+     "skip_ok": false
+    }
+   },
+   "session": {
+    "lon_early": {
+     "n": 39,
+     "mean_r": 1.006,
+     "usd": 17234.62,
+     "post_r": 0.847,
+     "target": 1.25,
+     "skip_ok": false
+    },
+    "ny": {
+     "n": 15,
+     "mean_r": 0.388,
+     "usd": 3166.4,
+     "post_r": 0.473,
+     "target": 0.881,
+     "skip_ok": false
+    },
+    "lon_late": {
+     "n": 19,
+     "mean_r": -0.307,
+     "usd": -462.64,
+     "post_r": 0.126,
+     "target": 0.5,
+     "skip_ok": true
+    }
+   },
+   "vix": {
+    "mid": {
+     "n": 44,
+     "mean_r": 0.513,
+     "usd": 12958.22,
+     "post_r": 0.52,
+     "target": 0.968,
+     "skip_ok": false
+    },
+    "low": {
+     "n": 29,
+     "mean_r": 0.575,
+     "usd": 6980.16,
+     "post_r": 0.559,
+     "target": 1.041,
+     "skip_ok": false
+    }
+   },
+   "grade": {
+    "B": {
+     "n": 54,
+     "mean_r": 0.479,
+     "usd": 12304.72,
+     "post_r": 0.495,
+     "target": 0.921,
+     "skip_ok": false
+    },
+    "C": {
+     "n": 9,
+     "mean_r": -0.521,
+     "usd": -1954.2,
+     "post_r": 0.209,
+     "target": 0.5,
+     "skip_ok": false
+    },
+    "A": {
+     "n": 10,
+     "mean_r": 1.805,
+     "usd": 9587.86,
+     "post_r": 0.96,
+     "target": 1.25,
+     "skip_ok": false
+    }
+   },
+   "es": {
+    "no_confirm": {
+     "n": 26,
+     "mean_r": 0.27,
+     "usd": 2124.02,
+     "post_r": 0.386,
+     "target": 0.718,
+     "skip_ok": false
+    },
+    "confirm": {
+     "n": 47,
+     "mean_r": 0.685,
+     "usd": 17814.36,
+     "post_r": 0.641,
+     "target": 1.193,
+     "skip_ok": false
+    }
+   },
+   "h4": {
+    "against": {
+     "n": 42,
+     "mean_r": 0.124,
+     "usd": 4666.56,
+     "post_r": 0.257,
+     "target": 0.5,
+     "skip_ok": false
+    },
+    "with": {
+     "n": 31,
+     "mean_r": 1.097,
+     "usd": 15271.82,
+     "post_r": 0.877,
+     "target": 1.25,
+     "skip_ok": false
+    }
+   }
+  }
+ },
+ "reviews": [
+  {
+   "asof": "2026-02-01",
+   "decision": "d0001",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 0,
+   "passed": 0
+  },
+  {
+   "asof": "2026-02-08",
+   "decision": "d0002",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "asof": "2026-02-15",
+   "decision": "d0003",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 13,
+   "passed": 0
+  },
+  {
+   "asof": "2026-02-22",
+   "decision": "d0004",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "asof": "2026-03-01",
+   "decision": "d0005",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "asof": "2026-03-08",
+   "decision": "d0006",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 19,
+   "passed": 0
+  },
+  {
+   "asof": "2026-03-15",
+   "decision": "d0007",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 19,
+   "passed": 0
+  },
+  {
+   "asof": "2026-03-22",
+   "decision": "d0008",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 18,
+   "passed": 0
+  },
+  {
+   "asof": "2026-03-29",
+   "decision": "d0009",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "asof": "2026-04-05",
+   "decision": "d0010",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 13,
+   "passed": 0
+  },
+  {
+   "asof": "2026-04-12",
+   "decision": "d0011",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "stale",
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "proposals": 14,
+   "passed": 1
+  },
+  {
+   "asof": "2026-04-19",
+   "decision": "d0012",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "stale",
+   "after": {
+    "mult": 0.5,
+    "skip": false
+   },
+   "proposals": 15,
+   "passed": 1
+  },
+  {
+   "asof": "2026-04-26",
+   "decision": "d0013",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "fresh",
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "proposals": 14,
+   "passed": 1
+  },
+  {
+   "asof": "2026-05-03",
+   "decision": "d0014",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 11,
+   "passed": 0
+  },
+  {
+   "asof": "2026-05-10",
+   "decision": "d0015",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "asof": "2026-05-17",
+   "decision": "d0016",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "asof": "2026-05-24",
+   "decision": "d0017",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "asof": "2026-05-31",
+   "decision": "d0018",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 12,
+   "passed": 0
+  },
+  {
+   "asof": "2026-06-07",
+   "decision": "d0019",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "asof": "2026-06-14",
+   "decision": "d0020",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "asof": "2026-06-21",
+   "decision": "d0021",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "asof": "2026-06-28",
+   "decision": "d0022",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "asof": "2026-07-05",
+   "decision": "d0023",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "asof": "2026-07-12",
+   "decision": "d0024",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "asof": "2026-07-19",
+   "decision": "d0025",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "asof": "2026-07-26",
+   "decision": "d0026",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 13,
+   "passed": 0
+  },
+  {
+   "asof": "2026-08-02",
+   "decision": "d0027",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 11,
+   "passed": 0
+  },
+  {
+   "asof": "2026-08-09",
+   "decision": "d0028",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "asof": "2026-08-16",
+   "decision": "d0029",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 14,
+   "passed": 0
+  },
+  {
+   "asof": "2026-08-23",
+   "decision": "d0030",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "asof": "2026-08-30",
+   "decision": "d0031",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 12,
+   "passed": 0
+  },
+  {
+   "asof": "2026-09-06",
+   "decision": "d0032",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "asof": "2026-09-13",
+   "decision": "d0033",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "asof": "2026-09-20",
+   "decision": "d0034",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 17,
+   "passed": 0
+  },
+  {
+   "asof": "2026-09-27",
+   "decision": "d0035",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 17,
+   "passed": 0
+  },
+  {
+   "asof": "2026-10-04",
+   "decision": "d0036",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 16,
+   "passed": 0
+  },
+  {
+   "asof": "2026-10-11",
+   "decision": "d0037",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 15,
+   "passed": 0
+  },
+  {
+   "asof": "2026-10-18",
+   "decision": "d0038",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "after": null,
+   "proposals": 16,
+   "passed": 0
+  }
+ ],
+ "history_replay": {
+  "built": "2026-10-18T18:23:34",
+  "verdict": "not better on both 2026 halves (H1: funded; H2: net, funded, p10): ships in OBSERVE mode (logs proposals, applies nothing)",
+  "mode": "observe",
+  "resized": 73,
+  "changes_2026": 3,
+  "reviews_2026": 38,
+  "changes_2021_25": 0,
+  "reviews_2021_25": 209,
+  "base_H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "pf": 4.01,
+   "net": 33305,
+   "per_month": 5464,
+   "dd": -2513,
+   "p10": 37.5,
+   "f10": 3.1,
+   "p20": 60.2,
+   "f20": 6.2,
+   "pass_rate": 92.3,
+   "funded_net": 37046
+  },
+  "base_H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "pf": 2.51,
+   "net": 10465,
+   "per_month": 2818,
+   "dd": -2157,
+   "p10": 29.5,
+   "f10": 0.0,
+   "p20": 47.4,
+   "f20": 0.0,
+   "pass_rate": 95.7,
+   "funded_net": 11659
+  },
+  "base_2026": {
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 3.48,
+   "net": 43838,
+   "per_month": 4469,
+   "dd": -2513,
+   "p10": 34.5,
+   "f10": 1.9,
+   "p20": 55.3,
+   "f20": 3.9,
+   "pass_rate": 84.8,
+   "funded_net": 48705
+  },
+  "base_2021-25": {
+   "n": 510,
+   "tpw": 2.38,
+   "pf": 0.98,
+   "net": -1430,
+   "per_month": -28,
+   "dd": -17694,
+   "p10": 8.8,
+   "f10": 8.1,
+   "p20": 15.8,
+   "f20": 20.8,
+   "pass_rate": 30.7,
+   "funded_net": 4252
+  },
+  "learned_H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "pf": 4.58,
+   "net": 36862,
+   "per_month": 6048,
+   "dd": -2513,
+   "p10": 39.8,
+   "f10": 3.1,
+   "p20": 65.6,
+   "f20": 6.2,
+   "pass_rate": 92.7,
+   "funded_net": 35984
+  },
+  "learned_H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "pf": 2.61,
+   "net": 10050,
+   "per_month": 2706,
+   "dd": -1496,
+   "p10": 23.1,
+   "f10": 0.0,
+   "p20": 47.4,
+   "f20": 0.0,
+   "pass_rate": 100.0,
+   "funded_net": 11548
+  },
+  "learned_2026": {
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 3.75,
+   "net": 43948,
+   "per_month": 4480,
+   "dd": -2513,
+   "p10": 33.5,
+   "f10": 1.9,
+   "p20": 58.7,
+   "f20": 3.9,
+   "pass_rate": 95.6,
+   "funded_net": 47533
+  },
+  "learned_2021-25": {
+   "n": 510,
+   "tpw": 2.38,
+   "pf": 0.98,
+   "net": -1430,
+   "per_month": -28,
+   "dd": -17694,
+   "p10": 8.8,
+   "f10": 8.1,
+   "p20": 15.8,
+   "f20": 20.8,
+   "pass_rate": 30.7,
+   "funded_net": 4252
+  },
+  "file": "research/lit/learn_replay.json",
+  "run": "lit_learn_replay",
+  "writeup": "research/writeups/lit-learning-loop.md"
+ }
+}

@@ -209,7 +209,7 @@ def detector(seed=11):
     rng = np.random.default_rng(seed)
     picks = []
     y26 = int(np.searchsorted(M.dates, "2026-01-01"))
-    for tf in ("5m", "15m", "1h"):
+    for tf in ("5m", "15m", "1h", "4h"):
         B = htf(M, tf)
         rej = []
         obs = O.detect(B["o"], B["h"], B["l"], B["c"], None, tf, rejects=rej, t=B["t"])
@@ -241,7 +241,8 @@ def detector(seed=11):
         want = {"5m": {"clear": 2, "doji in the run": 1, "inside bar": 1, "gap": 1, "back to back": 1, "rejected: weak move": 1},
                 "15m": {"clear": 2, "doji in the run": 1, "back to back": 1, "rejected: no structure break": 1,
                         "rejected: price went back below the block first": 1},
-                "1h": {"clear": 3, "inside bar": 1, "gap": 1, "rejected: no FVG": 1, "rejected: session break inside the move (an opening gap)": 1}}[tf]
+                "1h": {"clear": 3, "inside bar": 1, "gap": 1, "rejected: no FVG": 1, "rejected: session break inside the move (an opening gap)": 1},
+                "4h": {"clear": 1, "back to back": 1}}[tf]
         for cat, k in want.items():
             L = cats.get(cat) or []
             if not L:
@@ -646,7 +647,7 @@ def orun(P=None, sessions=SESS):
             continue
         busy = t["exit_i"]; per_day[z["day"]] += 1
         t["ob_m"] = mult; t["ob_why"] = why; t["src"] = src
-        t["poi"] = [(tf, k_) for tf, k_, _ in hits] if hits else []
+        t["poi"] = list(hits) if hits else []
         out.append(t)
     return out
 
@@ -752,6 +753,231 @@ def check():
     return len(n26) == 120 and abs(sum(t["pnl"] for t in n26) - 41734) < 2
 
 
+# ================================================================================================ the grid
+H3 = ["15m", "1h", "4h"]
+H2T = ["1h", "4h"]
+
+
+def variants():
+    V = collections.OrderedDict()
+    V["base: live LIT"] = {}
+    # ---- 2. OB as the point of interest
+    poi = {"tfs": H3, "zone": "body", "pre": 36, "tol": 1.0}
+    V["POI require 15m/1h/4h body"] = {"poi": {**poi, "mode": "require"}}
+    V["POI require 15m/1h/4h wick"] = {"poi": {**poi, "zone": "wick", "mode": "require"}}
+    V["POI require 1h/4h body"] = {"poi": {**poi, "tfs": H2T, "mode": "require"}}
+    V["POI require loose (3h-6h leg, 2 ATR)"] = {"poi": {**poi, "pre": 72, "tol": 2.0, "mode": "require"}}
+    V["POI require + breakers"] = {"poi": {**poi, "breaker": True, "mode": "require"}}
+    V["POI require extreme OB only"] = {"poi": {**poi, "only": "extreme", "pre": 72, "tol": 2.0, "mode": "require"}}
+    V["POI require decisional OB only"] = {"poi": {**poi, "only": "decisional", "pre": 72, "tol": 2.0, "mode": "require"}}
+    V["POI x1.25 when present"] = {"poi": {**poi, "mode": "size", "mult": 1.25}}
+    V["POI x1.5 when present"] = {"poi": {**poi, "mode": "size", "mult": 1.5}}
+    V["POI x1.5 when present (loose)"] = {"poi": {**poi, "pre": 72, "tol": 2.0, "mode": "size", "mult": 1.5}}
+    V["POI x1.25 when present (wick, loose)"] = {"poi": {**poi, "zone": "wick", "pre": 72, "tol": 2.0, "mode": "size", "mult": 1.25}}
+    V["POI half size without one"] = {"poi": {**poi, "mode": "half_without", "mult": 0.5}}
+    V["POI skip when > 1 ATR from any fresh HTF OB"] = {"poi": {**poi, "mode": "skip_far", "far": 1.0}}
+    V["POI skip when > 3 ATR from any fresh HTF OB"] = {"poi": {**poi, "mode": "skip_far", "far": 3.0}}
+    V["POI half when > 3 ATR from any fresh HTF OB"] = {"poi": {**poi, "mode": "half_far", "far": 3.0, "mult": 0.5}}
+    # ---- 3. OB as the entry
+    for lv, nm in (("mt", "5m OB mean threshold"), ("wmt", "5m OB wick middle")):
+        for x in (0.25, 0.5):
+            V[f"entry {nm} (tap + 1m CISD) if within {x:g} of the stop"] = {"obe": {"level": lv, "x": x, "how": "tap"}}
+        V[f"entry {nm} (plain limit) if within 0.5 of the stop"] = {"obe": {"level": lv, "x": 0.5, "how": "limit"}}
+    V["entry 5m OB wick top (shallower tap)"] = {"obe": {"level": "wtop", "x": 1.0, "how": "tap"}}
+    for lv, nm in (("edge", "1m OB body edge"), ("mt", "1m OB mean threshold")):
+        for x in (0.15, 0.3):
+            V[f"entry {nm} after the 1m CISD if within {x:g} of the stop"] = {"obe1": {"level": lv, "x": x, "wait": 10}}
+    # ---- 4. OB as the target / obstacle
+    V["target opposing 1h/4h OB alone"] = {"obt": {"tfs": H2T, "pick": "alone"}}
+    V["target opposing 15m/1h/4h OB alone"] = {"obt": {"tfs": H3, "pick": "alone"}}
+    V["target nearer of 1h/4h OB and VIX band"] = {"obt": {"tfs": H2T, "pick": "nearer"}}
+    V["target nearer of 15m/1h/4h OB and VIX band"] = {"obt": {"tfs": H3, "pick": "nearer"}}
+    V["obstacle skip: opposing 1h/4h OB < 1.5R"] = {"obx": {"tfs": H2T, "rr": 1.5, "mode": "skip"}}
+    V["obstacle skip: opposing 15m/1h/4h OB < 1.5R"] = {"obx": {"tfs": H3, "rr": 1.5, "mode": "skip"}}
+    V["obstacle half: opposing 1h/4h OB < 1.5R"] = {"obx": {"tfs": H2T, "rr": 1.5, "mode": "half", "mult": 0.5}}
+    V["obstacle half: opposing 15m/1h/4h OB < 1.5R"] = {"obx": {"tfs": H3, "rr": 1.5, "mode": "half", "mult": 0.5}}
+    # ---- 5. OB-only setups (extra setup type)
+    for tfs, tn in ((H2T, "1h/4h"), (H3, "15m/1h/4h")):
+        for dp in (0.0, 0.25):
+            for tol in (0.5, 1.0):
+                V[f"OB-only setups {tn} depth {dp:g} tol {tol:g}"] = {"obonly": {"tfs": tfs, "depth": dp, "tol": tol}}
+    return V
+
+
+def _load():
+    return json.load(open(OUT, encoding="utf-8")) if os.path.exists(OUT) else {}
+
+
+def summary(o):
+    return {m: {sp: {k: o[m][sp].get(k) for k in ("n", "tpw", "wk2", "win", "pf", "net", "per_month", "dd", "p10", "f10", "p20", "f20",
+                                                  "pass_rate", "pass_med", "b2b", "cost", "worst_day", "med_stop")}
+                for sp in o[m]} for m in o}
+
+
+def grid(only=None):
+    V = variants()
+    res = _load()
+    for nm, P in V.items():
+        if only and not any(k in nm for k in only):
+            continue
+        if not only and nm in res and res[nm].get("P") == json.loads(json.dumps(P)):
+            continue
+        U = unit(P)
+        o = summary(both(U))
+        o["extra"] = {"n_ob_src": sum(1 for t in U if t.get("src") == "ob" and t["day"] >= "2026"),
+                      "n_mult": sum(1 for t in U if t.get("ob_m", 1.0) != 1.0 and t["day"] >= "2026"),
+                      "n_obe": sum(1 for t in U if t.get("e2_px") is not None and t["day"] >= "2026")}
+        res[nm] = {"P": P, **o}
+        json.dump(res, open(OUT, "w"), indent=1, default=float)
+        b = res.get("base: live LIT")
+        dl = ""
+        if b and nm != "base: live LIT":
+            g = lambda m, sp, k: (o[m][sp].get(k) or 0) - (b[m][sp].get(k) or 0)
+            dl = " | d eval H1 {:+,} H2 {:+,} | d 2wk H1 {:+.1f} H2 {:+.1f}".format(
+                g("eval", "H1", "net"), g("eval", "H2", "net"), g("two_week", "H1", "p10"), g("two_week", "H2", "p10"))
+        w = lambda sp: f"{o['two_week'][sp].get('p10')}/{o['two_week'][sp].get('f10')}"
+        print(f"{nm[:62]:62s} EVAL H1[{line(o['eval'], 'H1')}] H2[{line(o['eval'], 'H2')}] | 2WK H1 {w('H1')} H2 {w('H2')} "
+              f"{o['extra']}{dl}", flush=True)
+    return res
+
+
+# ================================================================================================ example trades
+LOOSE = {"tfs": H3, "zone": "body", "pre": 72, "tol": 2.0, "mode": "size", "mult": 1.0}
+
+
+def draw_trade(path, M, t, z, hits, title, sub):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Rectangle
+    ee, ei = z["ext_i"], int(np.searchsorted(M.t, t["entry_t"], side="right") - 1)
+    xi = int(t["exit_i"])
+    a = max(0, ee - 70); zz = min(M.n, max(xi, ei) + 25)
+    o, h, l, c = M.o[a:zz], M.h[a:zz], M.l[a:zz], M.c[a:zz]
+    span = float(h.max() - l.min()) or 1.0
+    fig, ax = plt.subplots(figsize=(11, 5.6), dpi=110)
+    fig.patch.set_facecolor("#fcfcfb"); ax.set_facecolor("#fcfcfb")
+    _candles(ax, o, h, l, c)
+    tag = lambda x, y, txt, va="center", ha="left", color=INK: ax.text(x, y, txt, fontsize=7.5, color=color, va=va, ha=ha, zorder=8,
+                                                                     bbox=dict(facecolor="#fcfcfb", edgecolor="none", alpha=0.85, pad=0.8))
+    lo_v, hi_v = float(l.min()), float(h.max())
+    for tf, kd, j in hits:
+        I = ob_index(M, tf, "body")
+        X = I[t["dir"]] if kd == "ob" else I[-t["dir"]]
+        ob = X["ob"][j]
+        col = BULL if t["dir"] == 1 else BEAR
+        x0 = max(ob["k5"] - a, -1) + 0.5
+        ax.add_patch(Rectangle((x0, ob["bot"]), zz - a - x0, ob["top"] - ob["bot"], facecolor=col, alpha=0.18, edgecolor=col, lw=1.2, zorder=1))
+        tag(max(x0, 0), ob["top"] if t["dir"] == 1 else ob["bot"], f"fresh {tf} {'order block' if kd == 'ob' else 'breaker'} (known {et(M.t[ob['k5']] + 300).strftime('%m-%d %H:%M')})",
+            va="bottom" if t["dir"] == 1 else "top")
+        lo_v, hi_v = min(lo_v, ob["bot"]), max(hi_v, ob["top"])
+    cb = cisd_block(M, z)
+    d = t["dir"]
+    ax.add_patch(Rectangle((z["ref_i"] - a - 0.45, min(cb["top"], cb["bot"]) * 1 if d == 1 else -max(cb["top"], cb["bot"])),
+                           (ee - z["ref_i"]) + 0.9, abs(cb["top"] - cb["bot"]), facecolor="none", edgecolor=MUTED, lw=1.0, ls="--", zorder=2))
+    tag(z["ref_i"] - a - 0.45, cb["top"] * d, "5m OB = CISD run", va="bottom" if d == 1 else "top", color=MUTED)
+    ax.plot([ee - a], [z["ext_d"] * d], marker="^" if d == 1 else "v", ms=8, color=INK, zorder=7)
+    tag(ee - a + 0.8, z["ext_d"] * d, "sweep extreme", va="top" if d == 1 else "bottom")
+    x1, x2 = ei - a, xi - a
+    for px, lab, ls in ((t["entry_px"], "entry", "-"), (t["stop_px"], "stop", ":"), (t["target_px"], "target", "--")):
+        ax.plot([x1, x2 + 0.5], [px, px], color=INK, lw=1.1, ls=ls, zorder=6)
+        tag(x2 + 1, px, f"{lab} {px:.2f}")
+        lo_v, hi_v = min(lo_v, px), max(hi_v, px)
+    n = zz - a
+    step = max(1, n // 9)
+    ticks = list(range(0, n, step))
+    ax.set_xticks(ticks); ax.set_xticklabels([et(M.t[a + i]).strftime("%m-%d %H:%M") for i in ticks], fontsize=7)
+    ax.tick_params(axis="y", labelsize=7, colors=MUTED); ax.tick_params(axis="x", colors=MUTED)
+    for sp in ax.spines.values():
+        sp.set_color(GRID)
+    ax.grid(axis="y", color=GRID, lw=0.6); ax.set_axisbelow(True)
+    ax.set_xlim(-1, n + 10)
+    pad = 0.05 * (hi_v - lo_v)
+    ax.set_ylim(lo_v - pad, hi_v + pad)
+    ax.set_title(title + "\n" + sub, fontsize=9.5, color=INK, loc="left")
+    fig.text(0.01, 0.012, "5m candles. Shaded = the fresh higher-timeframe order block the sweep ran into (POI). Dashed box = the 5m "
+                          "block that made the 5m CISD (its top is the limit). Lines = entry, stop (1 tick beyond the sweep extreme), target.",
+             fontsize=7.2, color=MUTED)
+    fig.tight_layout(rect=(0, 0.035, 1, 1))
+    fig.savefig(path, facecolor=fig.get_facecolor())
+    plt.close(fig)
+
+
+def charts(n_each=3):
+    """6 live LIT trades of 2026 whose sweep ran into a fresh HTF order block (loose POI definition), 3 winners and 3 losers."""
+    M, C = market()
+    cz = {(z["day"], z["ext_i"]): z for z in C}
+    U = unit({"poi": LOOSE})
+    os.makedirs(STUDY, exist_ok=True)
+    P26 = [t for t in U if t["day"] >= "2026" and t["poi"]]
+    T8 = {(x["day"], x["entry_t"]): x for x in T.sized(U, EVAL)}
+    win = sorted([t for t in P26 if t["legs"][0][1] > 0], key=lambda t: -t["legs"][0][1] / t["risk_pts"])[:n_each]
+    los = [t for t in P26 if t["exit"] == "STOP"][:n_each]
+    out = []
+    for lab, L in (("winner", win), ("loser", los)):
+        for t in L:
+            z = cz[(t["day"], t["ext_i"])]
+            r = t["legs"][0][1] / t["risk_pts"]
+            x = T8.get((t["day"], t["entry_t"]))
+            nm = f"trade_{t['day']}_{'long' if t['dir'] == 1 else 'short'}_{lab}.png"
+            tfs = ", ".join(sorted({h[0] for h in t["poi"]}))
+            draw_trade(os.path.join(STUDY, nm), M, t, z, t["poi"],
+                       f"{t['day']} LIT {'long' if t['dir'] == 1 else 'short'} into a fresh {tfs} order block - {lab} ({t['exit']}, {r:+.2f}R)",
+                       f"swept {', '.join(z['swept'])}; stop {t['risk_pts']:.1f} pts; eval size {x['qty'] if x else '?'} micros "
+                       f"{('$%+,.0f' % x['pnl']) if x else ''}")
+            out.append({"file": nm, "day": t["day"], "dir": t["dir"], "exit": t["exit"], "r": round(r, 2), "poi": [h[:2] for h in t["poi"]]})
+    json.dump(out, open(os.path.join(STUDY, "trades_index.json"), "w"), indent=1)
+    print("\n".join(x["file"] for x in out))
+    return out
+
+
+# ================================================================================================ store the runs
+def _slug(nm):
+    import re
+    return re.sub(r"_+", "_", re.sub(r"[^a-z0-9]+", "_", nm.lower())).strip("_")[:48]
+
+
+def _h(s):
+    if not s or not s.get("n"):
+        return "no trades"
+    return (f"n={s['n']} {s['tpw']}/wk win {s['win']}% PF {s['pf']} net {s['net']:+,} (${s['per_month']:,}/mo) DD {s['dd']:,}; "
+            f"eval 2wk {s['p10']}/{s['f10']} 1mo {s['p20']}/{s['f20']}")
+
+
+def save(names=None, status_of=None, why_of=None):
+    """rl.save one run per variant: id lit_ob_<slug>, trades = the eval-mode path ($800 up to a 25-pt stop, 60% room cap,
+    back-to-back evals) in 2026 + 2021-25; the verdict carries both live sizes (eval and two_week) per half."""
+    V = variants()
+    res = _load()
+    status_of = status_of or {}
+    why_of = why_of or {}
+    for nm in (names or V):
+        P = V[nm]
+        U = unit(P)
+        Tr = T.evals(U, EVAL, "2026", ROOM)[1] + T.evals(U, EVAL, "2021-25", ROOM)[1]
+        Tr = [{k: v for k, v in t.items() if k not in ("legs", "poi")} for t in Tr]
+        S = rl.score(Tr, SESS)
+        o = res.get(nm) or summary(both(U))
+        rid = "lit_ob_" + ("base" if nm.startswith("base") else _slug(nm))
+        ver = (f"{why_of.get(nm, '')} EVAL MODE ($800 up to a 25-pt stop + 60% room cap): H1 (pick) {_h(o['eval']['H1'])}; "
+               f"H2 (check) {_h(o['eval']['H2'])}; 2021-25 reference {_h(o['eval']['2021-25'])}. TWO_WEEK MODE (live config C, "
+               f"fresh eval each session, $ from back-to-back evals reset at 10 sessions): H1 {_h(o['two_week']['H1'])}; "
+               f"H2 {_h(o['two_week']['H2'])}; 2021-25 {_h(o['two_week']['2021-25'])}.")
+        rl.save(rid, "LIT order blocks: " + nm, "other",
+                "Owner order 2026-10-18: order blocks are huge, trade all of LIT - does an order block (POI, entry, target, obstacle, "
+                "OB-only setup) improve the live LIT trade in both 2026 halves?",
+                params={**LIVE, **P}, sizing={"eval": {"rule": list(EVAL), "room_k": ROOM}, "two_week": TWC}, trades=Tr, scored=S,
+                status=status_of.get(nm, "rejected" if not nm.startswith("base") else "info"), verdict=ver,
+                notes="tools/lit_ob.py (detector engine/lit_ob.py; run loop = tools/lit_tightstop.trun + OB hooks; no OB option == run "
+                      "lit_live trade for trade). Stored trades = eval-mode back-to-back path. Numbers per mode in "
+                      "research/lit/ob_results.json. results=" + json.dumps(o, default=float),
+                writeup="lit-order-blocks", tags=["lit", "lit_ob"])
+        print("saved", rid, flush=True)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
-    globals()[cmd]()
+    if cmd == "grid":
+        grid(sys.argv[2:] or None)
+    else:
+        globals()[cmd]()

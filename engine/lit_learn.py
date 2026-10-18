@@ -420,6 +420,7 @@ def default_learning(mode="observe") -> dict:
             "rules": {"prior_n": PRIOR_N, "bounds": [MULT_LO, MULT_HI], "step_max": STEP_MAX, "skip_min_n": SKIP_MIN_N,
                       "window_days": WINDOW_DAYS, "wf_blocks": WF_BLOCKS, "wf_block_days": WF_BLOCK_DAYS,
                       "wf_min_active": WF_MIN_ACTIVE, "trades_week": list(TPW), "risk_cap_usd": RISK_CAP,
+                      "z_min": Z_MIN, "sig_min_n": SIG_MIN_N, "history_days": HISTORY_DAYS,
                       "never_changes": "stops, targets, entries, the LIT setup rules, the weekly stop, the Monday rule"},
             "knobs": {}, "decisions": [], "last_review": None, "reviews": []}
 

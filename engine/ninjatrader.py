@@ -2121,12 +2121,18 @@ def selftest(verbose=True) -> bool:
             [{"time": 60, "open": 1.0, "high": 1.0, "low": 1.0, "close": 1.0, "volume": 0.0}])
         try:
             now[0] = f1now
+            with open(os.path.join(feed_dir, "MNQ_1m_open.csv"), "w") as fh:
+                fh.write(f"{last1 + 60},25123.5\n")             # LE_BarFeed: the forming minute's first trade
             got1 = lbot._lit_1m("NQ", f1now, f1now - 5 * 86400)
             ok1 = got1 is not None and int(got1["time"].iloc[-1]) == last1 and not calls and len(got1) == len([r_ for r_ in rows1 if r_[0] >= f1now - 5 * 86400])
+            fo1 = lbot._forming.get(("NQ", 60))
             now[0] = f1now + 1800
             got2 = lbot._lit_1m("NQ", f1now + 1800, f1now - 5 * 86400)
             check("LIT: 1m bars from NinjaTrader's MNQ_1m.csv (no Yahoo call); a stale 1m file -> Yahoo 1m, bot health untouched",
                   ok1 and calls == [("NQ", "1m")] and got2 is not None and not lbot.health.get("fallback"), f"calls={calls}")
+            check("LIT: the forming minute's open from MNQ_1m_open.csv (sizes an entry decided on the 1m CISD close); an old "
+                  "minute in it is ignored", fo1 == (last1 + 60, 25123.5) and lbot._forming.get(("NQ", 60)) is None
+                  and NinjaTraderBars(folder=folder).forming_open("NQ", now=f1now + 1800) is None, f"{fo1}")
         finally:
             live._yahoo_recent = orig_y
         blob = open(os.path.join(tmp, "oif.log"), encoding="utf-8").read() + json.dumps(list(ad.trace))

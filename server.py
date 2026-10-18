@@ -970,6 +970,16 @@ def index():
 
 from engine.extras_api import router as extras_router; app.include_router(extras_router)
 from engine.next_api import router as next_router; app.include_router(next_router)
+# the PC pages' LIT backtest (/api/next/lit_backtest: LIT replay + levels / session boxes of every 2026 day, ~5-25 s) is built
+# in the background at start, so the first dashboard load does not wait for it (LE_PREWARM=0 skips it)
+if os.environ.get("LE_PREWARM", "1") != "0":
+    def _prewarm_lit():
+        try:
+            from engine import lit_dash
+            lit_dash.backtest("2026")
+        except Exception as e:
+            print(f"[lit_dash] prewarm failed: {e}")
+    threading.Thread(target=_prewarm_lit, name="lit-prewarm", daemon=True).start()
 _static = StaticFiles(directory=WEB)
 _static.all_directories = list(UI_DIRS)       # first directory that has the file wins
 app.mount("/", _static, name="web")

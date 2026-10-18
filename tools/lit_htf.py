@@ -948,6 +948,25 @@ def fvg_way_variants(ages_days=(2, 5, 10), tfs=("1h", "4h")):
     return out
 
 
+def pool_variants(ages_days=(10, 20, 40)):
+    """Robustness of the 4H draw (nearest unswept 4H swing on the target side) to the swing memory. Cached."""
+    p = os.path.join(CACHE, f"lithtf_poolvar_{VER}_{rl._data_key().replace(':', '_')}.pkl")
+    if os.path.exists(p):
+        return pickle.load(open(p, "rb"))
+    R = S.build()["rows"]
+    M, Cx = market()
+    H = HTF(M)
+    out = collections.defaultdict(dict)
+    for dd in ages_days:
+        H._pools("4h", dd * 276, 60)
+        for r in R:
+            z = Cx[r["key"]]
+            out[r["key"]][f"pl_sw4h_{dd}d"] = H._pool_draw("4h", "swing", int(z["i"]), int(z["dir"]), float(M.c[int(z["i"])]))
+    out = dict(out)
+    pickle.dump(out, open(p, "wb"))
+    return out
+
+
 def _tilt(fn, up=1.25, dn=0.75):
     return lambda r: up if fn(r) == 1 else dn if fn(r) == 0 else 1.0
 
@@ -981,6 +1000,14 @@ def followup_specs():
     T["[post-hoc] 4H draw size-neutral: 1.4x when the nearest unswept 4H swing is on the target side, else 0.8x"] = \
         dict(size=_tilt(draw4, 1.4, 0.8))
     T["[post-hoc] 4H draw: 1.25x / 0.85x"] = dict(size=_tilt(draw4, 1.25, 0.85))
+    PV_ = pool_variants()
+    for r in R:
+        r["h"].update(PV_[r["key"]])
+    for dd in (10, 40):
+        k = f"pl_sw4h_{dd}d"
+        T[f"[memory] 4H draw size-neutral 1.4x / 0.8x, {dd}-day 4H swing memory"] = \
+            dict(size=_tilt(lambda r, k=k: r["h"][k] if not np.isnan(r["h"][k]) else None, 1.4, 0.8))
+    T["[post-hoc] 4H draw: 1.5x / 0.75x"] = dict(size=_tilt(draw4, 1.5, 0.75))
     T["[stack] fresh trap tilt x 4H draw tilt (1.25 / 0.75 each)"] = dict(size=lambda r: _tilt(trap)(r) * _tilt(draw4)(r))
     T["[reference] fresh trap only (lit_sel_trap6_size)"] = dict(size=_tilt(trap))
     return T
