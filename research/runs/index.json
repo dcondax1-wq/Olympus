@@ -1,7 +1,7 @@
 {
- "built": "2026-10-18 20:36",
+ "built": "2026-10-18 20:41",
  "baseline": "baseline",
- "count": 963,
+ "count": 966,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -35373,6 +35373,314 @@
    }
   },
   {
+   "id": "lit_adv_own2_continuation_reversal_idm_half_setups_that_",
+   "title": "LIT advanced report ch2-4: own2 continuation/reversal IDM: half setups that are neither",
+   "family": "other",
+   "question": "Owner's LIT Advanced Decisions Report (2026-10-18), chapters 2-4 + experiment 4 of ch13: internal sweep vs thesis boundary (fade vs continuation), zone eligibility and session carryover vs reset, weak reaction vs completed trap, timed forceful sweeps, ES on the same event.",
+   "status": "rejected",
+   "verdict": "worse. TWO_WEEK MODE (live sizing, fresh eval each session, $ from back-to-back evals reset at 10 sessions): H1 (pick) n=80 3.12/wk win 22.5% PF 2.77 net +25,556 ($4,193/mo) DD -3,585; eval 2wk 47.1/7.6; LIT-rule size +27,042; unit R per original candidate +54.97 over 222; H2 (check) n=40 2.56/wk win 35.0% PF 1.61 net +7,323 ($1,972/mo) DD -3,116; eval 2wk 50.7/2.9; LIT-rule size +6,919; unit R per original candidate +20.8 over 108; 2021-25 reference n=510 2.38/wk win 17.5% PF 1.12 net +15,252 ($299/mo) DD -20,388; eval 2wk 15.2/4.9; LIT-rule size +2,866; unit R per original candidate +6.78 over 2333. Base H1 2wk 52.9/8.4 net +31,116; H2 2wk 50.7/2.9 net +10,481.",
+   "writeup": "lit-adv-continuation",
+   "tags": [
+    "lit",
+    "lit_adv"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "rule": "own2 continuation/reversal IDM: half setups that are neither"
+   },
+   "sizing": {
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    }
+   },
+   "built": "2026-10-18 20:39",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.25,
+     "net": 32964,
+     "dd": -3585,
+     "avg_r": 0.731,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 460.0,
+     "half": 17,
+     "per_month": 3360,
+     "p10": 36.4,
+     "f10": 15.0,
+     "p15": 47.1,
+     "f15": 29.1,
+     "p20": 50.0,
+     "f20": 36.4,
+     "dec10": 51.4,
+     "slow_pass": 11.0,
+     "pass_med": 8.0,
+     "b2b": "11/6"
+    },
+    "2021-25": {
+     "n": 510,
+     "tpw": 2.38,
+     "wk2": 76,
+     "win": 17.5,
+     "pf": 1.12,
+     "net": 15252,
+     "dd": -20388,
+     "avg_r": -0.005,
+     "stop": 38.1,
+     "worst_day": -1014,
+     "risk": 506.0,
+     "half": 39,
+     "per_month": 299,
+     "p10": 13.0,
+     "f10": 14.7,
+     "p15": 17.7,
+     "f15": 34.2,
+     "p20": 23.5,
+     "f20": 50.7,
+     "dec10": 27.7,
+     "slow_pass": 42.8,
+     "pass_med": 13.0,
+     "b2b": "16/41"
+    },
+    "all": {
+     "n": 630,
+     "tpw": 2.46,
+     "wk2": 78,
+     "win": 19.2,
+     "pf": 1.31,
+     "net": 48216,
+     "dd": -20388,
+     "avg_r": 0.135,
+     "stop": 40.0,
+     "worst_day": -1014,
+     "risk": 495.0,
+     "half": 56,
+     "per_month": 792,
+     "p10": 16.7,
+     "f10": 14.8,
+     "p15": 22.5,
+     "f15": 33.4,
+     "p20": 28.0,
+     "f20": 48.4,
+     "dec10": 31.5,
+     "slow_pass": 35.4,
+     "pass_med": 11.0,
+     "b2b": "27/47"
+    }
+   }
+  },
+  {
+   "id": "lit_adv_own2_hierarchy_half_when_only_a_minor_level_buil",
+   "title": "LIT advanced report ch2-4: own2 hierarchy: half when only a minor level (build-up) was swept",
+   "family": "other",
+   "question": "Owner's LIT Advanced Decisions Report (2026-10-18), chapters 2-4 + experiment 4 of ch13: internal sweep vs thesis boundary (fade vs continuation), zone eligibility and session carryover vs reset, weak reaction vs completed trap, timed forceful sweeps, ES on the same event.",
+   "status": "rejected",
+   "verdict": "H2 only. TWO_WEEK MODE (live sizing, fresh eval each session, $ from back-to-back evals reset at 10 sessions): H1 (pick) n=80 3.12/wk win 22.5% PF 2.96 net +29,482 ($4,837/mo) DD -3,529; eval 2wk 56.3/7.6; LIT-rule size +31,852; unit R per original candidate +59.89 over 222; H2 (check) n=40 2.56/wk win 35.0% PF 2.41 net +14,608 ($3,933/mo) DD -2,878; eval 2wk 52.2/2.9; LIT-rule size +8,214; unit R per original candidate +27.14 over 108; 2021-25 reference n=510 2.38/wk win 17.5% PF 0.94 net -7,816 ($-153/mo) DD -28,479; eval 2wk 13.5/4.5; LIT-rule size -4,993; unit R per original candidate -13.74 over 2333. Base H1 2wk 52.9/8.4 net +31,116; H2 2wk 50.7/2.9 net +10,481.",
+   "writeup": "lit-adv-continuation",
+   "tags": [
+    "lit",
+    "lit_adv"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "rule": "own2 hierarchy: half when only a minor level (build-up) was swept"
+   },
+   "sizing": {
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    }
+   },
+   "built": "2026-10-18 20:36",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.72,
+     "net": 43569,
+     "dd": -3529,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 478.0,
+     "half": 17,
+     "per_month": 4441,
+     "p10": 48.5,
+     "f10": 15.5,
+     "p15": 57.8,
+     "f15": 27.2,
+     "p20": 60.2,
+     "f20": 33.5,
+     "dec10": 64.0,
+     "slow_pass": 5.6,
+     "pass_med": 6.0,
+     "b2b": "15/5"
+    },
+    "2021-25": {
+     "n": 510,
+     "tpw": 2.38,
+     "wk2": 76,
+     "win": 17.5,
+     "pf": 0.94,
+     "net": -7816,
+     "dd": -28479,
+     "avg_r": -0.023,
+     "stop": 38.1,
+     "worst_day": -1014,
+     "risk": 532.0,
+     "half": 39,
+     "per_month": -153,
+     "p10": 9.6,
+     "f10": 14.5,
+     "p15": 14.8,
+     "f15": 38.1,
+     "p20": 18.5,
+     "f20": 54.2,
+     "dec10": 24.1,
+     "slow_pass": 37.9,
+     "pass_med": 13.0,
+     "b2b": "15/47"
+    },
+    "all": {
+     "n": 630,
+     "tpw": 2.46,
+     "wk2": 78,
+     "win": 19.2,
+     "pf": 1.22,
+     "net": 35752,
+     "dd": -28479,
+     "avg_r": 0.12,
+     "stop": 40.0,
+     "worst_day": -1014,
+     "risk": 526.0,
+     "half": 56,
+     "per_month": 587,
+     "p10": 16.3,
+     "f10": 14.6,
+     "p15": 22.1,
+     "f15": 36.3,
+     "p20": 25.6,
+     "f20": 50.9,
+     "dec10": 30.9,
+     "slow_pass": 26.9,
+     "pass_med": 9.0,
+     "b2b": "29/52"
+    }
+   }
+  },
+  {
    "id": "lit_adv_own2_idm_speed_half_when_the_inducement_swing_is",
    "title": "LIT advanced report ch2-4: own2 IDM speed: half when the inducement swing is older than 12 bars at the sweep (slow = build-up)",
    "family": "other",
@@ -35523,6 +35831,160 @@
      "slow_pass": 33.9,
      "pass_med": 11.0,
      "b2b": "31/49"
+    }
+   }
+  },
+  {
+   "id": "lit_adv_own2_session_open_half_unless_the_sweep_extreme_",
+   "title": "LIT advanced report ch2-4: own2 session open: half unless the sweep extreme came within 30 min of an open",
+   "family": "other",
+   "question": "Owner's LIT Advanced Decisions Report (2026-10-18), chapters 2-4 + experiment 4 of ch13: internal sweep vs thesis boundary (fade vs continuation), zone eligibility and session carryover vs reset, weak reaction vs completed trap, timed forceful sweeps, ES on the same event.",
+   "status": "rejected",
+   "verdict": "worse. TWO_WEEK MODE (live sizing, fresh eval each session, $ from back-to-back evals reset at 10 sessions): H1 (pick) n=80 3.12/wk win 22.5% PF 2.25 net +11,856 ($1,945/mo) DD -2,892; eval 2wk 14.3/1.7; LIT-rule size +18,195; unit R per original candidate +43.02 over 222; H2 (check) n=40 2.56/wk win 35.0% PF 1.94 net +8,053 ($2,168/mo) DD -2,643; eval 2wk 27.5/0.0; LIT-rule size +5,367; unit R per original candidate +15.35 over 108; 2021-25 reference n=510 2.38/wk win 17.5% PF 0.99 net -982 ($-19/mo) DD -21,148; eval 2wk 7.8/4.0; LIT-rule size -2,759; unit R per original candidate -1.87 over 2333. Base H1 2wk 52.9/8.4 net +31,116; H2 2wk 50.7/2.9 net +10,481.",
+   "writeup": "lit-adv-continuation",
+   "tags": [
+    "lit",
+    "lit_adv"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "rule": "own2 session open: half unless the sweep extreme came within 30 min of an open"
+   },
+   "sizing": {
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    }
+   },
+   "built": "2026-10-18 20:37",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.04,
+     "net": 19308,
+     "dd": -3004,
+     "avg_r": 0.733,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 240.0,
+     "half": 17,
+     "per_month": 1968,
+     "p10": 13.6,
+     "f10": 8.7,
+     "p15": 24.3,
+     "f15": 24.8,
+     "p20": 35.4,
+     "f20": 36.4,
+     "dec10": 22.3,
+     "slow_pass": 41.9,
+     "pass_med": 14.0,
+     "b2b": "5/5"
+    },
+    "2021-25": {
+     "n": 510,
+     "tpw": 2.38,
+     "wk2": 76,
+     "win": 17.5,
+     "pf": 0.99,
+     "net": -982,
+     "dd": -21148,
+     "avg_r": -0.014,
+     "stop": 38.1,
+     "worst_day": -1012,
+     "risk": 368.0,
+     "half": 39,
+     "per_month": -19,
+     "p10": 7.6,
+     "f10": 8.9,
+     "p15": 11.1,
+     "f15": 22.4,
+     "p20": 16.5,
+     "f20": 36.5,
+     "dec10": 16.5,
+     "slow_pass": 60.3,
+     "pass_med": 18.0,
+     "b2b": "10/35"
+    },
+    "all": {
+     "n": 630,
+     "tpw": 2.46,
+     "wk2": 78,
+     "win": 19.2,
+     "pf": 1.14,
+     "net": 18326,
+     "dd": -21148,
+     "avg_r": 0.128,
+     "stop": 40.0,
+     "worst_day": -1012,
+     "risk": 345.0,
+     "half": 56,
+     "per_month": 301,
+     "p10": 8.5,
+     "f10": 8.8,
+     "p15": 13.2,
+     "f15": 22.8,
+     "p20": 19.6,
+     "f20": 36.5,
+     "dec10": 17.3,
+     "slow_pass": 56.7,
+     "pass_med": 17.0,
+     "b2b": "15/40"
     }
    }
   },
@@ -90149,7 +90611,7 @@
      "wk": false
     }
    },
-   "built": "2026-10-18 20:32",
+   "built": "2026-10-18 20:41",
    "spans": {
     "2026": {
      "n": 145,
@@ -115202,7 +115664,7 @@
      "wk": false
     }
    },
-   "built": "2026-10-18 20:32",
+   "built": "2026-10-18 20:41",
    "spans": {
     "2026": {
      "n": 120,
