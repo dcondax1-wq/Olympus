@@ -7,6 +7,8 @@ summary: The current rules of 60 futures prop-firm plans (MyFundedFutures Builde
 runs: lit_live
 ---
 
+> **Owner's real MFFU prices (with the MFFU discount code, 2026-10-18):** Builder 25K **$63**, Builder 50K **$91.80** (list $105 / $153). Cost per funded account at those prices: 25K about **$97** (63 / 0.65), 50K about **$116** (91.80 / 0.79). The other firms' prices below are list prices from search summaries; most firms run discount codes too, so check the real price before comparing. Pass and fail odds do not depend on the price.
+
 ## In one minute
 
 - **Question (owner, 2026-10-18):** "If I start a 25K Builder or a Rapid account on Monday, what are the stats? On simulated
@@ -37,7 +39,7 @@ runs: lit_live
 - **Monday start, MFFU Rapid** (every size): pass within 2 weeks **5%**, within 1 month 10-15%, in the end 51-54%; median
   29-34 sessions. The Rapid's 50% best-day rule in the eval is the reason. **Rapid EOD** (30% rule, 4 days): 0% within a
   month, 7% in the end. **Builder beats Rapid for LIT at every size.**
-- **Top 3 for LIT:** (1) **MFFU Builder 50K**: keep it (34.5% pass in 2 weeks, H2 29.5%, 4% fail in a month, $195 per funded
+- **Top 3 for LIT:** (1) **MFFU Builder 50K**: keep it (34.5% pass in 2 weeks, H2 29.5%, 4% fail in a month, $116 per funded (at your $91.80 price; $195 at list)
   account, bots allowed with oversight, everything is already built for it). (2) **Lucid Pro 50K**: the same eval maths,
   $178 per funded account, automation explicitly allowed. (3) **FundedNext Rapid Daily** (25K now, 50K once its price is
   confirmed): the same eval maths, no consistency rule even at payout, daily payouts, $124 per funded 25K. Details below.
