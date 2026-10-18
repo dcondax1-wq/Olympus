@@ -155,6 +155,17 @@ def run_model(lm, bot, df_all, now, store_1m=None, week_hist=None):
     return Engine(base, htf=htf, partner=partner, params=merge_params({**lm["params"], "live": True})).run().result()
 
 
+def _watch_summary(out):
+    """tools/lit_watch.py's record (<out>/watch.json): last watch, minutes used this month, Yahoo's 1m lag."""
+    try:
+        from tools.lit_watch import watch_summary
+        p = os.path.join(out, "watch.json")
+        return watch_summary(load_state(p)) if os.path.exists(p) else None
+    except Exception as e:
+        print("watch summary failed:", e.__class__.__name__, e)
+        return None
+
+
 def week_rows(ledger):
     """The LIT weekly stop's ledger rows (engine/lit.py week_stops): day, exit reason, exit time of every paper trade."""
     return [{"day": v["day"], "exit": v.get("exit"), "exit_t": v.get("exit_ts")} for v in ledger.values()]
@@ -444,6 +455,16 @@ def run(out):
                     week_hist=week_rows(ledger) if lm["model"] == "lit" else None)
     state = res["state"] or {}
     state.setdefault("model_label", lm.get("label") or lm["model"])
+    if lm["model"] == "lit":                 # armed / forming setup (tools/lit_watch.py keeps the job polling while it is set)
+        try:
+            from engine import lit as _lit
+            from engine import lit_watch
+            _P = {**_lit.DEFAULTS, **(lm.get("lit") or {})}
+            _brew = [] if (state.get("position") or state.get("day_trades")) else lit_watch.brewing(lit_watch.market(df_all, _P, SYM), _P)
+            state["armed"] = lit_watch.armed_line(state, _brew, _P.get("cisd1m") or 20)
+        except Exception as e:
+            print("armed line failed:", e.__class__.__name__, e)
+            state["armed"] = None
 
     # ---- feed health (same freshness rule as the live bot)
     last_bar = int(df["time"].max())
@@ -650,6 +671,8 @@ def run(out):
                  "equity_filter": state.get("equity_filter"),
                  "eval_timing": state.get("eval_timing"), "price": state.get("price"), "today": today,
                  "setups": state.get("setups") or {},
+                 # the phone line of an armed / forming LIT setup and the fast-entry watcher's record (tools/lit_watch.py)
+                 "armed": state.get("armed"), "watch": _watch_summary(out),
                  "events": [{"t": int(e["t"]), "type": e["type"], "text": e["text"]} for e in res["events"] if tday(e["t"]) == today][-25:],
                  "engine_trades": [{"day": tday(t["entry_t"]), "entry_t": int(t["entry_t"]), "dir": t["dir"], "R": round(float(t["pnl_r"]), 2),
                                     "exit": t.get("exit_reason"), "trigger": t.get("trigger"), "risk_pts": t.get("risk_pts"),
@@ -820,6 +843,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
          f"| Eval timing | **{(state.get('eval_timing') or {}).get('verdict', '?').upper()}**: {(state.get('eval_timing') or {}).get('reason', '')} |",
          f"| Model | **{state.get('model_state', '?')}** |",
          f"| Price | {price:,.2f} (last bar {health['last_bar']}, {health['age_min']} min old) |" if price else "| Price | - |",
+         *([f"| Armed setup | **{state['armed']['text']}** |"] if state.get("armed") else []),
          f"| Setups | {'<br>'.join(arm) or 'none armed'} |",
          f"| Open position | {json.dumps(state.get('position')) if state.get('position') else 'flat'} |",
          *([f"| Structure | 1H {state.get('h1_trend')}, 15m {state.get('m15_trend')}; MTF {bias or '-'} |"]

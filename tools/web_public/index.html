@@ -261,6 +261,11 @@ th.sticky { z-index: 2; }
 .ttop { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13.5px; }
 .sidetxt { font-weight: 700; font-size: 11px; letter-spacing: .08em; }
 .tres { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
+/* trade charts (tradechart.js): the Chart button on trade rows and the chart box at the top of a trade sheet */
+.tcb { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 8px; border-radius: 999px; font: 600 12px var(--sans); color: var(--ink); background: color-mix(in srgb, var(--accent) 16%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); cursor: pointer; }
+.tcb svg { width: 13px; height: 13px; } .tcb:hover { background: color-mix(in srgb, var(--accent) 26%, transparent); }
+.tcbox { background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px; padding: 12px; min-height: 120px; }
+.sheet.tc-wide { width: min(980px, calc(100vw - 24px)); }
 .tres b { font-size: 18px; font-weight: 750; } .tres span { font: 600 12.5px var(--mono); }
 .more { display: flex; justify-content: center; margin: 16px 0; }
 
@@ -1626,6 +1631,37 @@ function loadLK() {
   return LKP;
 }
 const lkCtx = () => (LK && D ? LK.fromCloud(D, Date.now() / 1000) : null);
+// trade charts (tradechart.js: a trade drawn like TradingView's Long / Short Position tool on the real candles), loaded on demand;
+// the replay trades' bars + markers are in replays/<id>.json (tools/export_replays.py -> tools/build_web_dashboard.py)
+let TC = null, TCP = null;
+const TCV = '00000000';
+function loadTC() {
+  if (TCP) return TCP;
+  TCP = import('./tradechart.js?v=' + TCV).then((m) => { TC = m; return m; }).catch((e) => { console.warn('trade chart unavailable', e); TCP = null; throw e; });
+  return TCP;
+}
+// a paper / live trade has no replay record: its chart is drawn from the recent 5m bars in data.json when they cover the entry
+const tcLive = (t) => !!(t && !t.chart && t.entry_t && t.entry != null && t.stop != null && (LV().bars || []).length && LV().bars[0][0] <= t.entry_t);
+const tcAvail = (t) => !!(t && (t.chart || tcLive(t)));
+const tcBtn = (t) => (tcAvail(t) ? `<span class="tcb" role="button" tabindex="0" data-chart aria-label="Open the trade chart">${icon('chart')}Chart</span>` : '');
+function tcMount(box, t, opts = {}) {
+  if (!box) return;
+  if (!tcAvail(t)) { box.innerHTML = `<div class="note">No chart for this trade: charts are drawn for the ${esc(isLIT() ? 'LIT' : '')} replay trades of 2026 (1-minute data) and for paper trades inside the recent bars.</div>`; return; }
+  box.innerHTML = skLines(4);
+  loadTC().then((m) => (t.chart ? m.load(t.chart, { base: 'replays/' }) : m.fromTrade({ ...t, id: 'live_' + t.entry_t }, LV().bars || [])))
+    .then((rec) => { if (box.isConnected) TC.mount(box, rec, opts); })
+    .catch((e) => { console.warn('trade chart', e); if (box.isConnected) box.innerHTML = '<div class="note">The chart could not load (offline?). Pull to refresh and try again.</div>'; });
+}
+// the chart on its own, in a wide sheet (the Chart button on a trade row)
+function openChart(t) {
+  const w = sheet(`<span class="side-i ${t.side === 'LONG' ? 'L' : 'S'}">${icon(t.side === 'LONG' ? 'long' : 'short')}</span>
+      <div><div class="eyebrow">${esc(t.day)} · ${t.entry_t ? et(t.entry_t).hm + ' ET' : esc(t.time || '')} · trade chart</div><h3>${esc(t.side)} · ${esc(t.trigger || '')} · ${esc(t.exit || '')}</h3></div>
+      <div class="sh-res"><b class="${cls(t.r)}">${fR(t.r)}</b><span class="${cls(t.pnl)}">${susd(t.pnl)}</span></div>`,
+    `<div class="tcbox" id="shTC"></div>`, t.report ? `<button class="btn primary" type="button" id="shFull">${icon('doc')}Full report</button>` : '', 'Trade chart');
+  w.querySelector('.sheet')?.classList.add('tc-wide');
+  tcMount(w.querySelector('#shTC'), t);
+  w.querySelector('#shFull')?.addEventListener('click', () => openSheet(t));
+}
 const lkWait = () => `<div class="card">${skLines(6)}</div>`;
 const LK_PAGES = ['today', 'day', 'levels', 'cockpit', 'eval'];
 // the LIT panels say "next in 43m": redraw them softly every minute while one is on screen (3D views are kept)
@@ -1982,7 +2018,8 @@ VIEWS.trades = (el) => {
   const paper = (LV().ledger || []);
   const years = [...new Set((D.trades || []).map(t => t.day.slice(0, 4)))].sort().reverse();
   if (TS.year !== 'all' && !years.includes(TS.year)) TS.year = years[0] || 'all';
-  let rows = TS.src === 'paper' ? paper.map(v => ({ day: v.day, entry_t: 0, time: v.entry, side: v.side, r: v.R, pnl: v.usd, qty: v.qty, half: v.mult > 0 && v.mult < 1, trigger: v.trigger, exit: v.exit, grade: v.grade, taken: v.taken, risk_pts: null, risk_usd: null }))
+  let rows = TS.src === 'paper' ? paper.map(v => ({ day: v.day, entry_t: v.entry_t || 0, time: v.entry, side: v.side, r: v.R, pnl: v.usd, qty: v.qty, half: v.mult > 0 && v.mult < 1, trigger: v.trigger, exit: v.exit, grade: v.grade, taken: v.taken, risk_pts: v.risk_pts ?? null, risk_usd: null,
+        entry: v.entry_px ?? null, stop: v.stop_px ?? null, target: v.target_px ?? null, exit_price: v.exit_px ?? null, exit_t: v.exit_ts || null }))
     : (D.trades || []).filter(t => TS.year === 'all' || t.day.startsWith(TS.year));
   const all = rows;
   rows = rows.filter(t => {
@@ -2025,7 +2062,7 @@ VIEWS.trades = (el) => {
   onSeg('trF', (v) => { TS.f = v; TS.shown = 50; render(true); });
   let qt; $('#trQ').oninput = (e) => { clearTimeout(qt); qt = setTimeout(() => { TS.q = e.target.value.trim().toLowerCase(); TS.shown = 50; render(true); const q = $('#trQ'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }, 250); };
   $('#trMore')?.addEventListener('click', () => { TS.shown += 50; render(true); });
-  $('#trList').onclick = (e) => { const b = e.target.closest('.trade'); if (b) openSheet(rows[+b.dataset.k]); };
+  $('#trList').onclick = (e) => { const b = e.target.closest('.trade'); if (!b) return; const t = rows[+b.dataset.k]; if (e.target.closest('[data-chart]')) openChart(t); else openSheet(t); };
   $$('#trList .trade').forEach((b, i) => { b.dataset.k = i; });
 };
 function tradeRow(t) {
@@ -2034,7 +2071,7 @@ function tradeRow(t) {
     <span class="side-i ${t.side === 'LONG' ? 'L' : 'S'}">${icon(t.side === 'LONG' ? 'long' : 'short')}</span>
     <span class="tmain"><span class="ttop"><b>${esc(t.day)}</b><span class="mut">${t.entry_t ? et(t.entry_t).hm + ' ET' : esc(t.time || '')}</span><span class="sidetxt ${t.side === 'LONG' ? 'up' : 'dn'}">${esc(t.side)}</span>
       ${t.half ? chip('half size', 'warn') : ''}${t.taken === false ? chip('not taken', 'bad') : ''}</span>
-      <span class="chips">${t.risk_pts != null ? chip(`<i>stop</i> ${num(t.risk_pts, 1)} pts`) : ''}${chip(`<i>micros</i> ${t.qty ?? '—'}`)}${t.risk_usd != null ? chip(`<i>risk</i> ${usd(t.risk_usd)}`) : ''}${t.trigger ? chip(esc(t.trigger)) : ''}${t.exit ? chip(esc(t.exit)) : ''}</span></span>
+      <span class="chips">${t.risk_pts != null ? chip(`<i>stop</i> ${num(t.risk_pts, 1)} pts`) : ''}${chip(`<i>micros</i> ${t.qty ?? '—'}`)}${t.risk_usd != null ? chip(`<i>risk</i> ${usd(t.risk_usd)}`) : ''}${t.trigger ? chip(esc(t.trigger)) : ''}${t.exit ? chip(esc(t.exit)) : ''}${tcBtn(t)}</span></span>
     <span class="tres"><b class="${cls(t.r)}">${fR(t.r)}</b><span class="${cls(t.pnl)}">${susd(t.pnl)}</span></span></button>`;
 }
 function openSheet(t) {
@@ -2043,7 +2080,7 @@ function openSheet(t) {
   const w = sheet(`<span class="side-i ${t.side === 'LONG' ? 'L' : 'S'}">${icon(t.side === 'LONG' ? 'long' : 'short')}</span>
       <div><div class="eyebrow">${esc(t.day)} · ${esc(rp.time || (t.entry_t ? et(t.entry_t).hm + ' ET' : t.time || ''))}</div><h3>${esc(t.side)} · ${esc(t.trigger || '')} · ${esc(t.exit || '')}</h3></div>
       <div class="sh-res"><b class="${cls(t.r)}">${fR(t.r)}</b><span class="${cls(t.pnl)}">${susd(t.pnl)}</span></div>`,
-    `<div class="nums">${nbox('Stop', t.risk_pts != null ? num(t.risk_pts, 2) + ' pts' : '—')}${nbox('Micros', t.qty ?? '—')}${nbox('$ risk', usd(t.risk_usd))}${nbox('Size', t.half ? '<span class="wn">half</span>' : 'full')}
+    `${tcAvail(t) ? '<div class="tcbox" id="shTC"></div>' : ''}<div class="nums">${nbox('Stop', t.risk_pts != null ? num(t.risk_pts, 2) + ' pts' : '—')}${nbox('Micros', t.qty ?? '—')}${nbox('$ risk', usd(t.risk_usd))}${nbox('Size', t.half ? '<span class="wn">half</span>' : 'full')}
         ${t.entry != null ? nbox('Entry', num(t.entry)) + nbox('Stop price', num(t.stop)) + nbox('Target', num(t.target)) + nbox('Exit', num(t.exit_price)) : ''}
         ${t.mfe != null ? nbox('Best point', fR(t.mfe)) : ''}${t.bars_held != null ? nbox('Bars held', t.bars_held) : ''}${t.regime ? nbox('Regime', esc(t.regime)) : ''}${t.grade ? nbox('Grade', esc(t.grade)) : ''}</div>
       ${rp.plan ? `<section><h4>${icon('target')}Plan</h4><p>${esc(rp.plan)}</p></section>` : ''}
@@ -2055,6 +2092,7 @@ function openSheet(t) {
       ${!rp.plan && !rp.why ? '<div class="note">Cloud paper trade: the full report is written into the backtest replay after the next export.</div>' : ''}`,
     hasReplay ? `<button class="btn primary" type="button" id="shRp">${icon('replay')}Replay this session</button>` : '', 'Trade report');
   w.querySelector('#shRp')?.addEventListener('click', () => { closeSheet(); location.hash = '#/replays/' + t.entry_t; });
+  if (tcAvail(t)) tcMount(w.querySelector('#shTC'), t);
 }
 
 // ===================================================================== TRADES: results

@@ -948,6 +948,7 @@ def summary(L: dict | None, recs: list, today: str | None = None) -> dict:
 
 
 # ------------------------------------------------------------------------------------------------ live features
+_FCACHE = {}               # (day, entry_t, dir) -> features: an entry's facts never change once the trade exists
 def live_features(M, C, trades, P, es_df=None, only_after: int | None = None) -> dict:
     """{(day, i, dir): {"f": features, "buckets", "grade", "post"}} for the live loop's trades (engine/lit_live.py), the
     same 50 features as the research (tools/lit_select.py feats on the live market window) + the 4H draw. trades: the
@@ -955,19 +956,27 @@ def live_features(M, C, trades, P, es_df=None, only_after: int | None = None) ->
     journal record is written already). Never raises: a failure returns {} (sizing then stays at 1.0)."""
     out = {}
     try:
-        import numpy as np
-        from tools import lit_select as S
         want = [t for t in trades if t.get("i") is not None and (only_after is None or t.get("exit_t") is None
                                                                   or int(t.get("exit_t") or 0) >= only_after or t.get("exit") == "OPEN")]
+        # entry facts are fixed once known: computed once per trade per process (the live loop polls every minute)
+        for t in want:
+            ck = (t["day"], int(t["entry_t"]), int(t["dir"]))
+            if ck in _FCACHE:
+                out[(t["day"], int(t["i"]), int(t["dir"]))] = _FCACHE[ck]
+        want = [t for t in want if (t["day"], int(t["entry_t"]), int(t["dir"])) not in _FCACHE]
         if not want:
             return out
+        import numpy as np
+        from tools import lit_select as S
         if es_df is not None and len(es_df):
             es = es_df.drop_duplicates("time").set_index("time").reindex(M.t)
             ES = {"h": es["high"].values.astype(float), "l": es["low"].values.astype(float), "c": es["close"].values.astype(float)}
         else:
             nan = np.full(M.n, np.nan)
             ES = {"h": nan, "l": nan, "c": nan}
-        NEWS = S.news_cal()
+        if "S" not in _NEWS:
+            _NEWS["S"] = S.news_cal()
+        NEWS = _NEWS["S"]
         WK = S.week_open_close(M)
         PU = {**P}
         days = {t["day"] for t in want}
@@ -996,6 +1005,9 @@ def live_features(M, C, trades, P, es_df=None, only_after: int | None = None) ->
             f.update(h4_feats(M, z["i"], z["dir"]))
             f = {k: _clean(v) for k, v in f.items()}
             out[key] = {"f": f, "buckets": buckets(f), "grade": trader_grade(f)}
+            if len(_FCACHE) > 5000:
+                _FCACHE.clear()
+            _FCACHE[(t["day"], int(t["entry_t"]), int(t["dir"]))] = out[key]
     except Exception as e:                       # the learning layer must never stop the live loop
         out["_error"] = f"{e.__class__.__name__}: {e}"
     return out

@@ -568,6 +568,8 @@ class LiveBot:
 
     def _learn_es(self, sym, tf, now, secs):
         """ES 5m bars for the learning loop's ES features, fetched at most every 5 minutes; None when unavailable."""
+        if self.state_path != STATE_PATH:      # test harnesses: no extra feed (the ES features are then unknown)
+            return None
         c = getattr(self, "_es_cache", None)
         if c and now - c[0] < 300:
             return c[1]

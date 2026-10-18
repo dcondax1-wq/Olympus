@@ -62,7 +62,7 @@ from engine.sizing import two_week_qty  # noqa: E402
 from tools import lit_final as F  # noqa: E402
 from tools import lit_2wk as W  # noqa: E402
 
-OUT = os.path.join(ROOT, "research", "lit", "adv_results.json")
+OUT = os.environ.get("ADV_OUT") or os.path.join(ROOT, "research", "lit", "adv_results.json")
 OUT_DIAG = os.path.join(ROOT, "research", "lit", "adv_diag.json")
 PV, COMM, SLIP, TICK = lit.PV, lit.COMM, lit.SLIP, lit.TICK
 LIVE = {**lit.DEFAULTS, **json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]}

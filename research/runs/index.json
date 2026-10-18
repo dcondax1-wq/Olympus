@@ -1,7 +1,7 @@
 {
- "built": "2026-10-18 18:32",
+ "built": "2026-10-18 19:29",
  "baseline": "baseline",
- "count": 900,
+ "count": 910,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -33211,6 +33211,1028 @@
      "slow_pass": 17.9,
      "pass_med": 8.0,
      "b2b": "32/57"
+    }
+   }
+  },
+  {
+   "id": "lit_ep_bos1m",
+   "title": "A2 confirmation: 1m BOS",
+   "family": "other",
+   "question": "Owner order 2026-10-18: entries on the dot; report ch.5/13 exp. 1: direct vs confirmation vs refined limit per original candidate.",
+   "status": "rejected",
+   "verdict": "A 1m BOS instead of the 1m CISD: later, fewer fills, worse in both halves. H1: 63 trades 2.46/wk, win 23.8%, PF 3.39, net +22,067 ($3,620/mo), DD -2,801; two-week eval sizing: 2-week pass/fail 44.5/0.0 (Monte Carlo 38.9/1.7); per candidate (U=$1,000): 222 setups, fill 39.2%, $+219 a setup (-58 vs live); H2: 35 trades 2.24/wk, win 31.4%, PF 1.64, net +3,520 ($948/mo), DD -1,711; two-week eval sizing: 2-week pass/fail 52.2/0.0 (Monte Carlo 45.5/4.0); per candidate (U=$1,000): 108 setups, fill 41.7%, $+179 a setup (-61 vs live); 2026: 98 trades 2.38/wk, win 26.5%, PF 2.73, net +25,587 ($2,608/mo), DD -2,801; two-week eval sizing: 2-week pass/fail 45.2/0.0; per candidate (U=$1,000): 330 setups, fill 40.0%, $+206 a setup (-59 vs live).",
+   "writeup": "lit-entry-precision",
+   "tags": [
+    "lit",
+    "lit_entry_precision"
+   ],
+   "params": {
+    "lit": {
+     "ref": "cisd",
+     "extra_boxes": [],
+     "window": [
+      [
+       120,
+       930
+      ]
+     ],
+     "sweep_names": null,
+     "disp": 0.8,
+     "depth": 0.5,
+     "idm_a": [
+      1.0,
+      36,
+      1
+     ],
+     "nwog_discount": false,
+     "mw_filter": false,
+     "wait": 6,
+     "tf": "1m",
+     "cisd1m": 20,
+     "stop_buf": 0.25,
+     "min_stop": 8.0,
+     "max_stop": 80.0,
+     "classes": [
+      "vix"
+     ],
+     "vix_k": 1.0,
+     "min_rr": 1.5,
+     "max_rr": 8.0,
+     "fallback_rr": null,
+     "be_r": 1.0,
+     "flat_mod": 955,
+     "max_per_day": 1,
+     "how_out": 1.0,
+     "monday": true,
+     "wk_stop": [
+      2,
+      0.5
+     ],
+     "fills": null
+    },
+    "entry": {
+     "mode": "bos1m",
+     "zone": "cisd",
+     "tol": 0,
+     "thru": 1,
+     "lm": null,
+     "runaway": null,
+     "two_w": 0.5,
+     "ctf": 1
+    }
+   },
+   "sizing": {
+    "rule": "LIT rule $800 up to 20 pts + weekly stop (trades); eval numbers with lit_sizing two_week"
+   },
+   "built": "2026-10-18 19:24",
+   "spans": {
+    "2026": {
+     "n": 98,
+     "tpw": 2.38,
+     "wk2": 69,
+     "win": 26.5,
+     "pf": 2.73,
+     "net": 25587,
+     "dd": -2801,
+     "avg_r": 0.582,
+     "stop": 49.0,
+     "worst_day": -838,
+     "risk": 270.0,
+     "half": 10,
+     "per_month": 2608,
+     "p10": 11.7,
+     "f10": 0.0,
+     "p15": 16.5,
+     "f15": 1.9,
+     "p20": 21.4,
+     "f20": 4.4,
+     "dec10": 11.7,
+     "slow_pass": 61.4,
+     "pass_med": 20.5,
+     "b2b": "5/1"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 98,
+     "tpw": 2.38,
+     "wk2": 69,
+     "win": 26.5,
+     "pf": 2.73,
+     "net": 25587,
+     "dd": -2801,
+     "avg_r": 0.582,
+     "stop": 49.0,
+     "worst_day": -838,
+     "risk": 270.0,
+     "half": 10,
+     "per_month": 2608,
+     "p10": 11.7,
+     "f10": 0.0,
+     "p15": 16.5,
+     "f15": 1.9,
+     "p20": 21.4,
+     "f20": 4.4,
+     "dec10": 11.7,
+     "slow_pass": 61.4,
+     "pass_med": 20.5,
+     "b2b": "5/1"
+    }
+   }
+  },
+  {
+   "id": "lit_ep_direct",
+   "title": "A1 direct limit at the CISD level (1-tick trade-through)",
+   "family": "other",
+   "question": "Owner order 2026-10-18: entries on the dot; report ch.5/13 exp. 1: direct vs confirmation vs refined limit per original candidate.",
+   "status": "rejected",
+   "verdict": "Direct-zone entry: fills 3/4 of the setups instead of 1/2; the extra fills are the setups the 1m CISD filters out and lose $28.9k in H1. H1: 94 trades 3.67/wk, win 19.1%, PF 2.15, net +19,918 ($3,268/mo), DD -3,417; two-week eval sizing: 2-week pass/fail 45.4/9.2 (Monte Carlo 46.0/7.1); per candidate (U=$1,000): 222 setups, fill 75.7%, $+214 a setup (-63 vs live); H2: 49 trades 3.14/wk, win 24.5%, PF 1.7, net +5,665 ($1,525/mo), DD -2,220; two-week eval sizing: 2-week pass/fail 27.5/1.4 (Monte Carlo 32.9/1.7); per candidate (U=$1,000): 108 setups, fill 72.2%, $+140 a setup (-100 vs live); 2026: 143 trades 3.47/wk, win 21.0%, PF 2.01, net +25,583 ($2,608/mo), DD -3,908; two-week eval sizing: 2-week pass/fail 37.1/6.1; per candidate (U=$1,000): 330 setups, fill 74.5%, $+190 a setup (-75 vs live).",
+   "writeup": "lit-entry-precision",
+   "tags": [
+    "lit",
+    "lit_entry_precision"
+   ],
+   "params": {
+    "lit": {
+     "ref": "cisd",
+     "extra_boxes": [],
+     "window": [
+      [
+       120,
+       930
+      ]
+     ],
+     "sweep_names": null,
+     "disp": 0.8,
+     "depth": 0.5,
+     "idm_a": [
+      1.0,
+      36,
+      1
+     ],
+     "nwog_discount": false,
+     "mw_filter": false,
+     "wait": 6,
+     "tf": "1m",
+     "cisd1m": 20,
+     "stop_buf": 0.25,
+     "min_stop": 8.0,
+     "max_stop": 80.0,
+     "classes": [
+      "vix"
+     ],
+     "vix_k": 1.0,
+     "min_rr": 1.5,
+     "max_rr": 8.0,
+     "fallback_rr": null,
+     "be_r": 1.0,
+     "flat_mod": 955,
+     "max_per_day": 1,
+     "how_out": 1.0,
+     "monday": true,
+     "wk_stop": [
+      2,
+      0.5
+     ],
+     "fills": null
+    },
+    "entry": {
+     "mode": "direct",
+     "zone": "cisd",
+     "tol": 0,
+     "thru": 1,
+     "lm": null,
+     "runaway": null,
+     "two_w": 0.5,
+     "ctf": 1
+    }
+   },
+   "sizing": {
+    "rule": "LIT rule $800 up to 20 pts + weekly stop (trades); eval numbers with lit_sizing two_week"
+   },
+   "built": "2026-10-18 19:24",
+   "spans": {
+    "2026": {
+     "n": 143,
+     "tpw": 3.47,
+     "wk2": 95,
+     "win": 21.0,
+     "pf": 2.01,
+     "net": 25583,
+     "dd": -3908,
+     "avg_r": 0.517,
+     "stop": 40.5,
+     "worst_day": -853,
+     "risk": 334.0,
+     "half": 25,
+     "per_month": 2608,
+     "p10": 23.3,
+     "f10": 7.3,
+     "p15": 32.5,
+     "f15": 19.9,
+     "p20": 38.8,
+     "f20": 29.6,
+     "dec10": 30.6,
+     "slow_pass": 20.2,
+     "pass_med": 9.0,
+     "b2b": "8/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 143,
+     "tpw": 3.47,
+     "wk2": 95,
+     "win": 21.0,
+     "pf": 2.01,
+     "net": 25583,
+     "dd": -3908,
+     "avg_r": 0.517,
+     "stop": 40.5,
+     "worst_day": -853,
+     "risk": 334.0,
+     "half": 25,
+     "per_month": 2608,
+     "p10": 23.3,
+     "f10": 7.3,
+     "p15": 32.5,
+     "f15": 19.9,
+     "p20": 38.8,
+     "f20": 29.6,
+     "dec10": 30.6,
+     "slow_pass": 20.2,
+     "pass_med": 9.0,
+     "b2b": "8/6"
+    }
+   }
+  },
+  {
+   "id": "lit_ep_lm_close1",
+   "title": "A3 refined: limit at the CISD close 1 bar, else market",
+   "family": "other",
+   "question": "Owner order 2026-10-18: entries on the dot; report ch.5/13 exp. 1: direct vs confirmation vs refined limit per original candidate.",
+   "status": "rejected",
+   "verdict": "Closest miss: H1 +$1.3k, H2 -$0.2k and 2-week H2 49.3% vs 50.7%. Not better in both halves. H1: 80 trades 3.12/wk, win 22.5%, PF 4.6, net +34,093 ($5,593/mo), DD -2,336; two-week eval sizing: 2-week pass/fail 52.9/7.6 (Monte Carlo 50.6/6.3); per candidate (U=$1,000): 222 setups, fill 54.5%, $+276 a setup (-1 vs live); H2: 40 trades 2.56/wk, win 35.0%, PF 2.41, net +8,785 ($2,365/mo), DD -1,542; two-week eval sizing: 2-week pass/fail 49.3/1.4 (Monte Carlo 53.0/5.1); per candidate (U=$1,000): 108 setups, fill 51.9%, $+220 a setup (-19 vs live); 2026: 120 trades 2.91/wk, win 26.7%, PF 3.73, net +42,878 ($4,371/mo), DD -2,336; two-week eval sizing: 2-week pass/fail 49.2/5.1; per candidate (U=$1,000): 330 setups, fill 53.6%, $+258 a setup (-7 vs live).",
+   "writeup": "lit-entry-precision",
+   "tags": [
+    "lit",
+    "lit_entry_precision"
+   ],
+   "params": {
+    "lit": {
+     "ref": "cisd",
+     "extra_boxes": [],
+     "window": [
+      [
+       120,
+       930
+      ]
+     ],
+     "sweep_names": null,
+     "disp": 0.8,
+     "depth": 0.5,
+     "idm_a": [
+      1.0,
+      36,
+      1
+     ],
+     "nwog_discount": false,
+     "mw_filter": false,
+     "wait": 6,
+     "tf": "1m",
+     "cisd1m": 20,
+     "stop_buf": 0.25,
+     "min_stop": 8.0,
+     "max_stop": 80.0,
+     "classes": [
+      "vix"
+     ],
+     "vix_k": 1.0,
+     "min_rr": 1.5,
+     "max_rr": 8.0,
+     "fallback_rr": null,
+     "be_r": 1.0,
+     "flat_mod": 955,
+     "max_per_day": 1,
+     "how_out": 1.0,
+     "monday": true,
+     "wk_stop": [
+      2,
+      0.5
+     ],
+     "fills": null
+    },
+    "entry": {
+     "mode": "cisd1m",
+     "zone": "cisd",
+     "tol": 0,
+     "thru": 1,
+     "lm": [
+      "close",
+      1
+     ],
+     "runaway": null,
+     "two_w": 0.5,
+     "ctf": 1
+    }
+   },
+   "sizing": {
+    "rule": "LIT rule $800 up to 20 pts + weekly stop (trades); eval numbers with lit_sizing two_week"
+   },
+   "built": "2026-10-18 19:26",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.73,
+     "net": 42878,
+     "dd": -2336,
+     "avg_r": 0.737,
+     "stop": 45.5,
+     "worst_day": -790,
+     "risk": 276.0,
+     "half": 17,
+     "per_month": 4371,
+     "p10": 28.2,
+     "f10": 1.9,
+     "p15": 41.7,
+     "f15": 2.9,
+     "p20": 55.8,
+     "f20": 3.9,
+     "dec10": 30.1,
+     "slow_pass": 48.8,
+     "pass_med": 15.0,
+     "b2b": "10/2"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.73,
+     "net": 42878,
+     "dd": -2336,
+     "avg_r": 0.737,
+     "stop": 45.5,
+     "worst_day": -790,
+     "risk": 276.0,
+     "half": 17,
+     "per_month": 4371,
+     "p10": 28.2,
+     "f10": 1.9,
+     "p15": 41.7,
+     "f15": 2.9,
+     "p20": 55.8,
+     "f20": 3.9,
+     "dec10": 30.1,
+     "slow_pass": 48.8,
+     "pass_med": 15.0,
+     "b2b": "10/2"
+    }
+   }
+  },
+  {
+   "id": "lit_ep_lm_fvg3",
+   "title": "A3 refined: limit at the 1m FVG 3 bars, else market",
+   "family": "other",
+   "question": "Owner order 2026-10-18: entries on the dot; report ch.5/13 exp. 1: direct vs confirmation vs refined limit per original candidate.",
+   "status": "rejected",
+   "verdict": "H1 +$1.3k, H2 -$2.0k: H1 only. H1: 80 trades 3.12/wk, win 22.5%, PF 4.67, net +34,053 ($5,587/mo), DD -2,227; two-week eval sizing: 2-week pass/fail 53.8/6.7 (Monte Carlo 53.0/4.1); per candidate (U=$1,000): 222 setups, fill 55.0%, $+287 a setup (+10 vs live); H2: 39 trades 2.5/wk, win 30.8%, PF 2.12, net +6,979 ($1,879/mo), DD -1,546; two-week eval sizing: 2-week pass/fail 50.7/8.7 (Monte Carlo 48.5/6.5); per candidate (U=$1,000): 108 setups, fill 50.0%, $+182 a setup (-58 vs live); 2026: 119 trades 2.89/wk, win 25.2%, PF 3.65, net +41,033 ($4,183/mo), DD -2,227; two-week eval sizing: 2-week pass/fail 50.3/7.1; per candidate (U=$1,000): 330 setups, fill 53.3%, $+253 a setup (-12 vs live).",
+   "writeup": "lit-entry-precision",
+   "tags": [
+    "lit",
+    "lit_entry_precision"
+   ],
+   "params": {
+    "lit": {
+     "ref": "cisd",
+     "extra_boxes": [],
+     "window": [
+      [
+       120,
+       930
+      ]
+     ],
+     "sweep_names": null,
+     "disp": 0.8,
+     "depth": 0.5,
+     "idm_a": [
+      1.0,
+      36,
+      1
+     ],
+     "nwog_discount": false,
+     "mw_filter": false,
+     "wait": 6,
+     "tf": "1m",
+     "cisd1m": 20,
+     "stop_buf": 0.25,
+     "min_stop": 8.0,
+     "max_stop": 80.0,
+     "classes": [
+      "vix"
+     ],
+     "vix_k": 1.0,
+     "min_rr": 1.5,
+     "max_rr": 8.0,
+     "fallback_rr": null,
+     "be_r": 1.0,
+     "flat_mod": 955,
+     "max_per_day": 1,
+     "how_out": 1.0,
+     "monday": true,
+     "wk_stop": [
+      2,
+      0.5
+     ],
+     "fills": null
+    },
+    "entry": {
+     "mode": "cisd1m",
+     "zone": "cisd",
+     "tol": 0,
+     "thru": 1,
+     "lm": [
+      "fvg",
+      3
+     ],
+     "runaway": null,
+     "two_w": 0.5,
+     "ctf": 1
+    }
+   },
+   "sizing": {
+    "rule": "LIT rule $800 up to 20 pts + weekly stop (trades); eval numbers with lit_sizing two_week"
+   },
+   "built": "2026-10-18 19:27",
+   "spans": {
+    "2026": {
+     "n": 119,
+     "tpw": 2.89,
+     "wk2": 83,
+     "win": 25.2,
+     "pf": 3.65,
+     "net": 41033,
+     "dd": -2227,
+     "avg_r": 0.713,
+     "stop": 45.5,
+     "worst_day": -815,
+     "risk": 288.0,
+     "half": 17,
+     "per_month": 4183,
+     "p10": 26.2,
+     "f10": 1.9,
+     "p15": 38.3,
+     "f15": 2.9,
+     "p20": 51.9,
+     "f20": 3.9,
+     "dec10": 28.1,
+     "slow_pass": 51.8,
+     "pass_med": 16.0,
+     "b2b": "10/2"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 119,
+     "tpw": 2.89,
+     "wk2": 83,
+     "win": 25.2,
+     "pf": 3.65,
+     "net": 41033,
+     "dd": -2227,
+     "avg_r": 0.713,
+     "stop": 45.5,
+     "worst_day": -815,
+     "risk": 288.0,
+     "half": 17,
+     "per_month": 4183,
+     "p10": 26.2,
+     "f10": 1.9,
+     "p15": 38.3,
+     "f15": 2.9,
+     "p20": 51.9,
+     "f20": 3.9,
+     "dec10": 28.1,
+     "slow_pass": 51.8,
+     "pass_med": 16.0,
+     "b2b": "10/2"
+    }
+   }
+  },
+  {
+   "id": "lit_ep_reclaim",
+   "title": "A2 confirmation: 1m close back above the zone",
+   "family": "other",
+   "question": "Owner order 2026-10-18: entries on the dot; report ch.5/13 exp. 1: direct vs confirmation vs refined limit per original candidate.",
+   "status": "rejected",
+   "verdict": "First 1m close back above the zone: worse in both halves. H1: 86 trades 3.36/wk, win 18.6%, PF 1.89, net +14,101 ($2,313/mo), DD -5,133; two-week eval sizing: 2-week pass/fail 34.5/10.9 (Monte Carlo 35.8/10.0); per candidate (U=$1,000): 222 setups, fill 63.5%, $+166 a setup (-111 vs live); H2: 43 trades 2.76/wk, win 20.9%, PF 2.29, net +7,848 ($2,113/mo), DD -1,905; two-week eval sizing: 2-week pass/fail 46.4/1.4 (Monte Carlo 37.8/2.5); per candidate (U=$1,000): 108 setups, fill 59.3%, $+197 a setup (-42 vs live); 2026: 129 trades 3.13/wk, win 19.4%, PF 2.0, net +21,949 ($2,237/mo), DD -5,133; two-week eval sizing: 2-week pass/fail 37.1/7.1; per candidate (U=$1,000): 330 setups, fill 62.1%, $+176 a setup (-88 vs live).",
+   "writeup": "lit-entry-precision",
+   "tags": [
+    "lit",
+    "lit_entry_precision"
+   ],
+   "params": {
+    "lit": {
+     "ref": "cisd",
+     "extra_boxes": [],
+     "window": [
+      [
+       120,
+       930
+      ]
+     ],
+     "sweep_names": null,
+     "disp": 0.8,
+     "depth": 0.5,
+     "idm_a": [
+      1.0,
+      36,
+      1
+     ],
+     "nwog_discount": false,
+     "mw_filter": false,
+     "wait": 6,
+     "tf": "1m",
+     "cisd1m": 20,
+     "stop_buf": 0.25,
+     "min_stop": 8.0,
+     "max_stop": 80.0,
+     "classes": [
+      "vix"
+     ],
+     "vix_k": 1.0,
+     "min_rr": 1.5,
+     "max_rr": 8.0,
+     "fallback_rr": null,
+     "be_r": 1.0,
+     "flat_mod": 955,
+     "max_per_day": 1,
+     "how_out": 1.0,
+     "monday": true,
+     "wk_stop": [
+      2,
+      0.5
+     ],
+     "fills": null
+    },
+    "entry": {
+     "mode": "reclaim",
+     "zone": "cisd",
+     "tol": 0,
+     "thru": 1,
+     "lm": null,
+     "runaway": null,
+     "two_w": 0.5,
+     "ctf": 1
+    }
+   },
+   "sizing": {
+    "rule": "LIT rule $800 up to 20 pts + weekly stop (trades); eval numbers with lit_sizing two_week"
+   },
+   "built": "2026-10-18 19:25",
+   "spans": {
+    "2026": {
+     "n": 129,
+     "tpw": 3.13,
+     "wk2": 90,
+     "win": 19.4,
+     "pf": 2.0,
+     "net": 21949,
+     "dd": -5133,
+     "avg_r": 0.394,
+     "stop": 41.0,
+     "worst_day": -853,
+     "risk": 292.0,
+     "half": 22,
+     "per_month": 2237,
+     "p10": 18.9,
+     "f10": 6.8,
+     "p15": 26.7,
+     "f15": 16.5,
+     "p20": 32.0,
+     "f20": 28.2,
+     "dec10": 25.7,
+     "slow_pass": 24.7,
+     "pass_med": 10.0,
+     "b2b": "6/7"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 129,
+     "tpw": 3.13,
+     "wk2": 90,
+     "win": 19.4,
+     "pf": 2.0,
+     "net": 21949,
+     "dd": -5133,
+     "avg_r": 0.394,
+     "stop": 41.0,
+     "worst_day": -853,
+     "risk": 292.0,
+     "half": 22,
+     "per_month": 2237,
+     "p10": 18.9,
+     "f10": 6.8,
+     "p15": 26.7,
+     "f15": 16.5,
+     "p20": 32.0,
+     "f20": 28.2,
+     "dec10": 25.7,
+     "slow_pass": 24.7,
+     "pass_med": 10.0,
+     "b2b": "6/7"
+    }
+   }
+  },
+  {
+   "id": "lit_ep_tol16",
+   "title": "C tap tolerance 16 ticks",
+   "family": "other",
+   "question": "Owner order 2026-10-18: entries on the dot; report ch.5/13 exp. 1: direct vs confirmation vs refined limit per original candidate.",
+   "status": "rejected",
+   "verdict": "4-pt tap tolerance: H1 -$8.2k, H2 +$1.6k: H2 only. H1: 89 trades 3.48/wk, win 21.3%, PF 3.21, net +24,538 ($4,026/mo), DD -3,148; two-week eval sizing: 2-week pass/fail 41.2/13.4 (Monte Carlo 44.5/10.1); per candidate (U=$1,000): 222 setups, fill 60.8%, $+246 a setup (-30 vs live); H2: 45 trades 2.88/wk, win 35.6%, PF 2.67, net +10,543 ($2,839/mo), DD -1,897; two-week eval sizing: 2-week pass/fail 53.6/4.3 (Monte Carlo 57.2/4.2); per candidate (U=$1,000): 108 setups, fill 55.6%, $+310 a setup (+70 vs live); 2026: 134 trades 3.25/wk, win 26.1%, PF 3.01, net +35,081 ($3,576/mo), DD -3,148; two-week eval sizing: 2-week pass/fail 43.7/9.6; per candidate (U=$1,000): 330 setups, fill 59.1%, $+267 a setup (+2 vs live).",
+   "writeup": "lit-entry-precision",
+   "tags": [
+    "lit",
+    "lit_entry_precision"
+   ],
+   "params": {
+    "lit": {
+     "ref": "cisd",
+     "extra_boxes": [],
+     "window": [
+      [
+       120,
+       930
+      ]
+     ],
+     "sweep_names": null,
+     "disp": 0.8,
+     "depth": 0.5,
+     "idm_a": [
+      1.0,
+      36,
+      1
+     ],
+     "nwog_discount": false,
+     "mw_filter": false,
+     "wait": 6,
+     "tf": "1m",
+     "cisd1m": 20,
+     "stop_buf": 0.25,
+     "min_stop": 8.0,
+     "max_stop": 80.0,
+     "classes": [
+      "vix"
+     ],
+     "vix_k": 1.0,
+     "min_rr": 1.5,
+     "max_rr": 8.0,
+     "fallback_rr": null,
+     "be_r": 1.0,
+     "flat_mod": 955,
+     "max_per_day": 1,
+     "how_out": 1.0,
+     "monday": true,
+     "wk_stop": [
+      2,
+      0.5
+     ],
+     "fills": null
+    },
+    "entry": {
+     "mode": "cisd1m",
+     "zone": "cisd",
+     "tol": 16,
+     "thru": 1,
+     "lm": null,
+     "runaway": null,
+     "two_w": 0.5,
+     "ctf": 1
+    }
+   },
+   "sizing": {
+    "rule": "LIT rule $800 up to 20 pts + weekly stop (trades); eval numbers with lit_sizing two_week"
+   },
+   "built": "2026-10-18 19:28",
+   "spans": {
+    "2026": {
+     "n": 134,
+     "tpw": 3.25,
+     "wk2": 90,
+     "win": 26.1,
+     "pf": 3.01,
+     "net": 35081,
+     "dd": -3148,
+     "avg_r": 0.654,
+     "stop": 46.0,
+     "worst_day": -806,
+     "risk": 248.0,
+     "half": 23,
+     "per_month": 3576,
+     "p10": 26.2,
+     "f10": 3.4,
+     "p15": 39.8,
+     "f15": 8.7,
+     "p20": 49.5,
+     "f20": 11.2,
+     "dec10": 29.6,
+     "slow_pass": 51.5,
+     "pass_med": 16.0,
+     "b2b": "9/2"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 134,
+     "tpw": 3.25,
+     "wk2": 90,
+     "win": 26.1,
+     "pf": 3.01,
+     "net": 35081,
+     "dd": -3148,
+     "avg_r": 0.654,
+     "stop": 46.0,
+     "worst_day": -806,
+     "risk": 248.0,
+     "half": 23,
+     "per_month": 3576,
+     "p10": 26.2,
+     "f10": 3.4,
+     "p15": 39.8,
+     "f15": 8.7,
+     "p20": 49.5,
+     "f20": 11.2,
+     "dec10": 29.6,
+     "slow_pass": 51.5,
+     "pass_med": 16.0,
+     "b2b": "9/2"
+    }
+   }
+  },
+  {
+   "id": "lit_ep_two_step",
+   "title": "D two-step: half limit at the zone, half on the 1m CISD",
+   "family": "other",
+   "question": "Owner order 2026-10-18: entries on the dot; report ch.5/13 exp. 1: direct vs confirmation vs refined limit per original candidate.",
+   "status": "rejected",
+   "verdict": "Two-step entry: worse in both halves (already rejected as two_stage in lit-experiments). H1: 94 trades 3.67/wk, win 21.3%, PF 3.01, net +25,385 ($4,165/mo), DD -2,961; two-week eval sizing: 2-week pass/fail 46.2/6.7 (Monte Carlo 42.3/4.9); per candidate (U=$1,000): 222 setups, fill 76.1%, $+234 a setup (-43 vs live); H2: 49 trades 3.14/wk, win 30.6%, PF 2.13, net +7,188 ($1,935/mo), DD -1,624; two-week eval sizing: 2-week pass/fail 42.0/1.4 (Monte Carlo 36.2/1.4); per candidate (U=$1,000): 108 setups, fill 73.1%, $+193 a setup (-47 vs live); 2026: 143 trades 3.47/wk, win 24.5%, PF 2.72, net +32,573 ($3,321/mo), DD -2,961; two-week eval sizing: 2-week pass/fail 42.6/4.6; per candidate (U=$1,000): 330 setups, fill 75.2%, $+221 a setup (-44 vs live).",
+   "writeup": "lit-entry-precision",
+   "tags": [
+    "lit",
+    "lit_entry_precision"
+   ],
+   "params": {
+    "lit": {
+     "ref": "cisd",
+     "extra_boxes": [],
+     "window": [
+      [
+       120,
+       930
+      ]
+     ],
+     "sweep_names": null,
+     "disp": 0.8,
+     "depth": 0.5,
+     "idm_a": [
+      1.0,
+      36,
+      1
+     ],
+     "nwog_discount": false,
+     "mw_filter": false,
+     "wait": 6,
+     "tf": "1m",
+     "cisd1m": 20,
+     "stop_buf": 0.25,
+     "min_stop": 8.0,
+     "max_stop": 80.0,
+     "classes": [
+      "vix"
+     ],
+     "vix_k": 1.0,
+     "min_rr": 1.5,
+     "max_rr": 8.0,
+     "fallback_rr": null,
+     "be_r": 1.0,
+     "flat_mod": 955,
+     "max_per_day": 1,
+     "how_out": 1.0,
+     "monday": true,
+     "wk_stop": [
+      2,
+      0.5
+     ],
+     "fills": null
+    },
+    "entry": {
+     "mode": "two",
+     "zone": "cisd",
+     "tol": 0,
+     "thru": 1,
+     "lm": null,
+     "runaway": null,
+     "two_w": 0.5,
+     "ctf": 1
+    }
+   },
+   "sizing": {
+    "rule": "LIT rule $800 up to 20 pts + weekly stop (trades); eval numbers with lit_sizing two_week"
+   },
+   "built": "2026-10-18 19:28",
+   "spans": {
+    "2026": {
+     "n": 143,
+     "tpw": 3.47,
+     "wk2": 95,
+     "win": 24.5,
+     "pf": 2.72,
+     "net": 32573,
+     "dd": -2961,
+     "avg_r": 0.535,
+     "stop": 43.8,
+     "worst_day": -806,
+     "risk": 287.0,
+     "half": 30,
+     "per_month": 3321,
+     "p10": 21.8,
+     "f10": 2.4,
+     "p15": 30.1,
+     "f15": 11.2,
+     "p20": 37.4,
+     "f20": 16.0,
+     "dec10": 24.2,
+     "slow_pass": 49.6,
+     "pass_med": 15.0,
+     "b2b": "7/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 143,
+     "tpw": 3.47,
+     "wk2": 95,
+     "win": 24.5,
+     "pf": 2.72,
+     "net": 32573,
+     "dd": -2961,
+     "avg_r": 0.535,
+     "stop": 43.8,
+     "worst_day": -806,
+     "risk": 287.0,
+     "half": 30,
+     "per_month": 3321,
+     "p10": 21.8,
+     "f10": 2.4,
+     "p15": 30.1,
+     "f15": 11.2,
+     "p20": 37.4,
+     "f20": 16.0,
+     "dec10": 24.2,
+     "slow_pass": 49.6,
+     "pass_med": 15.0,
+     "b2b": "7/3"
+    }
+   }
+  },
+  {
+   "id": "lit_ep_zone_mid",
+   "title": "B zone: halfway CISD level - trigger close",
+   "family": "other",
+   "question": "Owner order 2026-10-18: entries on the dot; report ch.5/13 exp. 1: direct vs confirmation vs refined limit per original candidate.",
+   "status": "rejected",
+   "verdict": "Shallower zone: H1 -$5.9k, H2 +$0.2k. H1: 88 trades 3.44/wk, win 21.6%, PF 3.41, net +26,866 ($4,408/mo), DD -2,480; two-week eval sizing: 2-week pass/fail 42.0/7.6 (Monte Carlo 44.9/10.6); per candidate (U=$1,000): 222 setups, fill 60.8%, $+237 a setup (-40 vs live); H2: 44 trades 2.82/wk, win 29.5%, PF 2.52, net +9,141 ($2,461/mo), DD -1,823; two-week eval sizing: 2-week pass/fail 46.4/7.2 (Monte Carlo 48.1/5.6); per candidate (U=$1,000): 108 setups, fill 57.4%, $+246 a setup (+6 vs live); 2026: 132 trades 3.2/wk, win 24.2%, PF 3.1, net +36,007 ($3,671/mo), DD -2,480; two-week eval sizing: 2-week pass/fail 41.6/8.1; per candidate (U=$1,000): 330 setups, fill 59.7%, $+240 a setup (-25 vs live).",
+   "writeup": "lit-entry-precision",
+   "tags": [
+    "lit",
+    "lit_entry_precision"
+   ],
+   "params": {
+    "lit": {
+     "ref": "cisd",
+     "extra_boxes": [],
+     "window": [
+      [
+       120,
+       930
+      ]
+     ],
+     "sweep_names": null,
+     "disp": 0.8,
+     "depth": 0.5,
+     "idm_a": [
+      1.0,
+      36,
+      1
+     ],
+     "nwog_discount": false,
+     "mw_filter": false,
+     "wait": 6,
+     "tf": "1m",
+     "cisd1m": 20,
+     "stop_buf": 0.25,
+     "min_stop": 8.0,
+     "max_stop": 80.0,
+     "classes": [
+      "vix"
+     ],
+     "vix_k": 1.0,
+     "min_rr": 1.5,
+     "max_rr": 8.0,
+     "fallback_rr": null,
+     "be_r": 1.0,
+     "flat_mod": 955,
+     "max_per_day": 1,
+     "how_out": 1.0,
+     "monday": true,
+     "wk_stop": [
+      2,
+      0.5
+     ],
+     "fills": null
+    },
+    "entry": {
+     "mode": "cisd1m",
+     "zone": "mid",
+     "tol": 0,
+     "thru": 1,
+     "lm": null,
+     "runaway": null,
+     "two_w": 0.5,
+     "ctf": 1
+    }
+   },
+   "sizing": {
+    "rule": "LIT rule $800 up to 20 pts + weekly stop (trades); eval numbers with lit_sizing two_week"
+   },
+   "built": "2026-10-18 19:27",
+   "spans": {
+    "2026": {
+     "n": 132,
+     "tpw": 3.2,
+     "wk2": 90,
+     "win": 24.2,
+     "pf": 3.1,
+     "net": 36007,
+     "dd": -2480,
+     "avg_r": 0.58,
+     "stop": 47.4,
+     "worst_day": -655,
+     "risk": 241.0,
+     "half": 23,
+     "per_month": 3671,
+     "p10": 27.2,
+     "f10": 1.5,
+     "p15": 38.8,
+     "f15": 4.4,
+     "p20": 47.1,
+     "f20": 8.7,
+     "dec10": 28.7,
+     "slow_pass": 48.4,
+     "pass_med": 15.0,
+     "b2b": "9/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 132,
+     "tpw": 3.2,
+     "wk2": 90,
+     "win": 24.2,
+     "pf": 3.1,
+     "net": 36007,
+     "dd": -2480,
+     "avg_r": 0.58,
+     "stop": 47.4,
+     "worst_day": -655,
+     "risk": 241.0,
+     "half": 23,
+     "per_month": 3671,
+     "p10": 27.2,
+     "f10": 1.5,
+     "p15": 38.8,
+     "f15": 4.4,
+     "p20": 47.1,
+     "f20": 8.7,
+     "dec10": 28.7,
+     "slow_pass": 48.4,
+     "pass_med": 15.0,
+     "b2b": "9/3"
     }
    }
   },
@@ -96926,6 +97948,260 @@
      "slow_pass": 19.0,
      "pass_med": 8.0,
      "b2b": "25/68"
+    }
+   }
+  },
+  {
+   "id": "lit_ep_close",
+   "title": "A2 confirmation: CISD candle close (vs next open)",
+   "family": "other",
+   "question": "Owner order 2026-10-18: entries on the dot; report ch.5/13 exp. 1: direct vs confirmation vs refined limit per original candidate.",
+   "status": "info",
+   "verdict": "Fill at the CISD candle close instead of the next open: the same within $0.4k a half (noise). H1: 80 trades 3.12/wk, win 22.5%, PF 4.47, net +32,332 ($5,304/mo), DD -2,158; two-week eval sizing: 2-week pass/fail 52.9/7.6 (Monte Carlo 50.5/6.5); per candidate (U=$1,000): 222 setups, fill 54.5%, $+277 a setup (+0 vs live); H2: 40 trades 2.56/wk, win 35.0%, PF 2.4, net +8,713 ($2,346/mo), DD -1,510; two-week eval sizing: 2-week pass/fail 50.7/4.3 (Monte Carlo 55.3/6.4); per candidate (U=$1,000): 108 setups, fill 50.9%, $+233 a setup (-7 vs live); 2026: 120 trades 2.91/wk, win 26.7%, PF 3.64, net +41,045 ($4,184/mo), DD -2,158; two-week eval sizing: 2-week pass/fail 49.7/6.6; per candidate (U=$1,000): 330 setups, fill 53.3%, $+262 a setup (-2 vs live).",
+   "writeup": "lit-entry-precision",
+   "tags": [
+    "lit",
+    "lit_entry_precision"
+   ],
+   "params": {
+    "lit": {
+     "ref": "cisd",
+     "extra_boxes": [],
+     "window": [
+      [
+       120,
+       930
+      ]
+     ],
+     "sweep_names": null,
+     "disp": 0.8,
+     "depth": 0.5,
+     "idm_a": [
+      1.0,
+      36,
+      1
+     ],
+     "nwog_discount": false,
+     "mw_filter": false,
+     "wait": 6,
+     "tf": "1m",
+     "cisd1m": 20,
+     "stop_buf": 0.25,
+     "min_stop": 8.0,
+     "max_stop": 80.0,
+     "classes": [
+      "vix"
+     ],
+     "vix_k": 1.0,
+     "min_rr": 1.5,
+     "max_rr": 8.0,
+     "fallback_rr": null,
+     "be_r": 1.0,
+     "flat_mod": 955,
+     "max_per_day": 1,
+     "how_out": 1.0,
+     "monday": true,
+     "wk_stop": [
+      2,
+      0.5
+     ],
+     "fills": null
+    },
+    "entry": {
+     "mode": "close",
+     "zone": "cisd",
+     "tol": 0,
+     "thru": 1,
+     "lm": null,
+     "runaway": null,
+     "two_w": 0.5,
+     "ctf": 1
+    }
+   },
+   "sizing": {
+    "rule": "LIT rule $800 up to 20 pts + weekly stop (trades); eval numbers with lit_sizing two_week"
+   },
+   "built": "2026-10-18 19:25",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.64,
+     "net": 41045,
+     "dd": -2158,
+     "avg_r": 0.729,
+     "stop": 45.0,
+     "worst_day": -726,
+     "risk": 274.0,
+     "half": 17,
+     "per_month": 4184,
+     "p10": 26.2,
+     "f10": 1.9,
+     "p15": 39.8,
+     "f15": 2.9,
+     "p20": 55.3,
+     "f20": 2.9,
+     "dec10": 28.1,
+     "slow_pass": 51.2,
+     "pass_med": 16.0,
+     "b2b": "10/2"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.64,
+     "net": 41045,
+     "dd": -2158,
+     "avg_r": 0.729,
+     "stop": 45.0,
+     "worst_day": -726,
+     "risk": 274.0,
+     "half": 17,
+     "per_month": 4184,
+     "p10": 26.2,
+     "f10": 1.9,
+     "p15": 39.8,
+     "f15": 2.9,
+     "p20": 55.3,
+     "f20": 2.9,
+     "dec10": 28.1,
+     "slow_pass": 51.2,
+     "pass_med": 16.0,
+     "b2b": "10/2"
+    }
+   }
+  },
+  {
+   "id": "lit_ep_live",
+   "title": "live: tap -> 1m CISD -> next open",
+   "family": "other",
+   "question": "Owner order 2026-10-18: entries on the dot; report ch.5/13 exp. 1: direct vs confirmation vs refined limit per original candidate.",
+   "status": "info",
+   "verdict": "Reference: today's LIT entry (== run lit_live trade for trade). H1: 80 trades 3.12/wk, win 22.5%, PF 4.44, net +32,773 ($5,377/mo), DD -2,315; two-week eval sizing: 2-week pass/fail 52.9/8.4 (Monte Carlo 50.5/6.2); per candidate (U=$1,000): 222 setups, fill 54.5%, $+277 a setup (+0 vs live); H2: 40 trades 2.56/wk, win 35.0%, PF 2.46, net +8,962 ($2,413/mo), DD -1,466; two-week eval sizing: 2-week pass/fail 50.7/2.9 (Monte Carlo 55.4/5.5); per candidate (U=$1,000): 108 setups, fill 50.9%, $+240 a setup (+0 vs live); 2026: 120 trades 2.91/wk, win 26.7%, PF 3.66, net +41,734 ($4,254/mo), DD -2,315; two-week eval sizing: 2-week pass/fail 49.7/6.1; per candidate (U=$1,000): 330 setups, fill 53.3%, $+265 a setup (+0 vs live).",
+   "writeup": "lit-entry-precision",
+   "tags": [
+    "lit",
+    "lit_entry_precision"
+   ],
+   "params": {
+    "lit": {
+     "ref": "cisd",
+     "extra_boxes": [],
+     "window": [
+      [
+       120,
+       930
+      ]
+     ],
+     "sweep_names": null,
+     "disp": 0.8,
+     "depth": 0.5,
+     "idm_a": [
+      1.0,
+      36,
+      1
+     ],
+     "nwog_discount": false,
+     "mw_filter": false,
+     "wait": 6,
+     "tf": "1m",
+     "cisd1m": 20,
+     "stop_buf": 0.25,
+     "min_stop": 8.0,
+     "max_stop": 80.0,
+     "classes": [
+      "vix"
+     ],
+     "vix_k": 1.0,
+     "min_rr": 1.5,
+     "max_rr": 8.0,
+     "fallback_rr": null,
+     "be_r": 1.0,
+     "flat_mod": 955,
+     "max_per_day": 1,
+     "how_out": 1.0,
+     "monday": true,
+     "wk_stop": [
+      2,
+      0.5
+     ],
+     "fills": null
+    },
+    "entry": {
+     "mode": "cisd1m",
+     "zone": "cisd",
+     "tol": 0,
+     "thru": 1,
+     "lm": null,
+     "runaway": null,
+     "two_w": 0.5,
+     "ctf": 1
+    }
+   },
+   "sizing": {
+    "rule": "LIT rule $800 up to 20 pts + weekly stop (trades); eval numbers with lit_sizing two_week"
+   },
+   "built": "2026-10-18 19:23",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.66,
+     "net": 41734,
+     "dd": -2315,
+     "avg_r": 0.734,
+     "stop": 45.8,
+     "worst_day": -755,
+     "risk": 274.0,
+     "half": 17,
+     "per_month": 4254,
+     "p10": 26.7,
+     "f10": 1.9,
+     "p15": 39.8,
+     "f15": 2.9,
+     "p20": 55.3,
+     "f20": 3.9,
+     "dec10": 28.6,
+     "slow_pass": 52.0,
+     "pass_med": 16.0,
+     "b2b": "10/2"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.66,
+     "net": 41734,
+     "dd": -2315,
+     "avg_r": 0.734,
+     "stop": 45.8,
+     "worst_day": -755,
+     "risk": 274.0,
+     "half": 17,
+     "per_month": 4254,
+     "p10": 26.7,
+     "f10": 1.9,
+     "p15": 39.8,
+     "f15": 2.9,
+     "p20": 55.3,
+     "f20": 3.9,
+     "dec10": 28.6,
+     "slow_pass": 52.0,
+     "pass_med": 16.0,
+     "b2b": "10/2"
     }
    }
   },

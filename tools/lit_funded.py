@@ -12,7 +12,7 @@ Funded account (MFFU Builder 50K, as modelled; research/writeups/lit-prop-firms.
             day <= 50% of the cycle's profit, first after 2 sessions; 5 sim payouts, then live (the path stops: "graduated")
   split     80% to the trader; payouts lower the balance, never the floor
   costs     $1.40 a micro, 1 tick on market entries and stop exits (in the trade points); max 40 micros
-Samples: 2,000 Monte Carlo paths of 126 sessions (6 months; 63 = 3 months) in 5-session blocks from the half (H1 = Jan-Jun
+Samples: 1,000 Monte Carlo paths of 126 sessions (6 months; 63 = 3 months) in 5-session blocks from the half (H1 = Jan-Jun
 2026 pick, H2 = Jul-Oct 2026 check; the same paths for every config), and back-to-back on real history (a new funded account
 the session after one is lost or graduates). 2021-25 (5m entries, PF 1.01) is a reference line only.
 
@@ -38,7 +38,7 @@ from tools import lit_2wk as W  # noqa: E402
 OUT = os.path.join(ROOT, "research", "lit", "funded.json")
 PV, COMM, SLIP = 2.0, 1.40, 0.25
 H3, H6 = 63, 126
-N_MC, BLOCK = 2000, 5
+N_MC, BLOCK = 1000, 5
 A = dict(SZ.FD_50K)
 
 
@@ -211,9 +211,9 @@ def configs():
     C["eval_mode"] = "plain:eval"        # lit_sizing mode eval ($800 up to 25 pts, 60% room cap, min 1)
     C["normal_guard"] = {"tiers": [[0, 800]], "ref": 20, "room_f": 0.6}
     # fixed $ by the floor's lock
-    for pre in (200, 300, 400, 500, 600):
-        for post in (600, 800, 1000):
-            for rf in (0.5, 0.6, None):
+    for pre in (300, 400, 500):
+        for post in (800, 1000):
+            for rf in (0.6, None):
                 C[f"lock_{pre}_{post}_r{rf}"] = {"tiers": [[0, post]], "pre_lock_usd": pre, "ref": 20, "room_f": rf}
     # $ by the cushion (room to the floor)
     T = {"cushA": [[0, 200], [1500, 400], [2500, 800], [3500, 1000]],
@@ -225,8 +225,8 @@ def configs():
         for rf in (0.6, None):
             C[f"{nm}_r{rf}"] = {"tiers": tr, "ref": 20, "room_f": rf}
     # % of the room (fractional Kelly)
-    for p in (0.05, 0.08, 0.1, 0.12, 0.15, 0.2, 0.25, 0.3):
-        for mx in (800, 1000):
+    for p in (0.05, 0.1, 0.15, 0.2, 0.3):
+        for mx in (1000,):
             C[f"pct{int(p * 100)}_max{mx}"] = {"pct": p, "pct_min_usd": 100, "pct_max_usd": mx, "ref": 20, "room_f": None}
     return C
 
@@ -237,8 +237,7 @@ def extras(best):
     for nm, c in best.items():
         C[f"{nm}|wk_off"] = {**c, "wk": False}
         C[f"{nm}|ref25"] = {**c, "ref": 25}
-        C[f"{nm}|ref15"] = {**c, "ref": 15}
-        for mw in (1500, 2000, 2500):
+        for mw in (1500, 2500):
             C[f"{nm}|maxwin{mw}"] = {**c, "max_win": mw}
     return C
 
@@ -257,19 +256,19 @@ def grid():
             print(i, nm, out["rows"][nm]["H1"]["paid_6m"], out["rows"][nm]["H1"]["loss_6m"], flush=True)
     # shortlist on H1: the best expected 6-month payout, and the lowest loss among those within 90% of the best payout
     rows = out["rows"]
-    top = sorted(rows, key=lambda k: -rows[k]["H1"]["paid_6m"])[:8]
+    top = sorted(rows, key=lambda k: -rows[k]["H1"]["paid_6m"])[:3]
     best_pay = rows[top[0]]["H1"]["paid_6m"]
-    safe = sorted([k for k in rows if rows[k]["H1"]["paid_6m"] >= 0.9 * best_pay], key=lambda k: rows[k]["H1"]["loss_6m"])[:6]
+    safe = sorted([k for k in rows if rows[k]["H1"]["paid_6m"] >= 0.9 * best_pay], key=lambda k: rows[k]["H1"]["loss_6m"])[:3]
     short = list(dict.fromkeys(top + safe))
     for nm, c in extras({k: rows[k]["cfg"] for k in short}).items():
         rows[nm] = {"cfg": c, "hold": 0, "H1": mc(c, "H1")}
-    top = sorted(rows, key=lambda k: -rows[k]["H1"]["paid_6m"])[:10]
+    top = sorted(rows, key=lambda k: -rows[k]["H1"]["paid_6m"])[:5]
     best_pay = rows[top[0]]["H1"]["paid_6m"]
-    safe = sorted([k for k in rows if rows[k]["H1"]["paid_6m"] >= 0.9 * best_pay], key=lambda k: rows[k]["H1"]["loss_6m"])[:8]
+    safe = sorted([k for k in rows if rows[k]["H1"]["paid_6m"] >= 0.9 * best_pay], key=lambda k: rows[k]["H1"]["loss_6m"])[:5]
     short = list(dict.fromkeys(top + safe + ["normal", "eval_mode", "normal_guard"]))
     # payout hold-back on the shortlist
-    for nm in list(short):
-        for hold in (500, 1000):
+    for nm in [k for k in short if k not in ("normal", "eval_mode")]:
+        for hold in (1000,):
             k2 = f"{nm}|hold{hold}"
             rows[k2] = {"cfg": rows[nm]["cfg"], "hold": hold, "H1": mc(rows[nm]["cfg"], "H1", hold=hold)}
             short.append(k2)

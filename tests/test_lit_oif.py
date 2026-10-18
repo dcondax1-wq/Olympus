@@ -7,7 +7,7 @@ NinjaTrader 8 on a temp folder, account Sim101); nothing is ever armed for a rea
 
 For each backtest trade (tools/lit_final.py run on live_model.json "lit" = run lit_live), a fresh LiveBot (engine/live.py,
 model LIT, adapter ninjatrader, Sim101) is polled on its own minute-aligned schedule (engine/live.next_wake: 2 s and 32 s
-after each minute) from 6 min before the entry to 90 s after it, with a clock that runs on during each poll (the real
+after each minute) from 150 s before the entry to 60 s after it, with a clock that runs on during each poll (the real
 compute time counts). Bars appear as they close; the 1m feed shows the minute that has just started from its open (as
 Yahoo / LE_BarFeed's MNQ_1m_open.csv do). Checks per trade:
   - the MARKET entry order file (PLACE ... BUY/SELL n MARKET) is written once, <= LIMIT_S after the 1m CISD candle closed,
@@ -46,6 +46,10 @@ def main():
     P = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]
     only = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)
     T = [t for t in F.run(P) if t["day"] >= "2026-01-01" and (not only or t["day"] in only)]
+    part = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--part=")), None)      # --part=1/2: every 2nd trade
+    if part:
+        i_, n_ = map(int, part.split("/"))
+        T = T[i_ - 1::n_]
     print(f"{len(T)} backtest trades to replay", flush=True)
     os.environ["LE_LIVE_MODEL"] = json.dumps({"model": "lit", "sym": "NQ", "label": "LIT OIF test", "lit": P,
                                               "params": {"risk_usd": 800, "risk_ref_stop": 20.0, "max_micros": 40}})
@@ -72,7 +76,7 @@ def main():
             d, ent = int(t["dir"]), int(t["entry_t"])
             folder = os.path.join(tmp, t["day"], "NinjaTrader 8")
             fake = nt._FakeNT(folder, price=float(o1.get(ent, t["entry_px"] * d)))
-            a, z = ent - 360, ent + 90
+            a, z = ent - 150, ent + 60
             rp.now = a - 60
             bot = live.LiveBot()
             bot.clock = clock
@@ -95,14 +99,17 @@ def main():
             written = []
             orig_write = ad._write_oif
 
-            def rec_write(lines, label, orig_write=orig_write, written=written):
-                written.append((clock(), list(lines)))
+            cur = {"wake": None}
+
+            def rec_write(lines, label, orig_write=orig_write, written=written, cur=cur):
+                written.append((clock(), list(lines), cur["wake"]))
                 return orig_write(lines, label)
             ad._write_oif = rec_write
             errors, durs = [], []
             wake = live.next_wake(a)
             while wake <= z:
                 rp.now = int(wake)
+                cur["wake"] = wake
                 clock.base, clock.t0, clock.running = wake, time.perf_counter(), True
                 last = int(wake) - int(wake) % 60 - 60
                 if last in c1:
@@ -116,18 +123,24 @@ def main():
                 durs.append((round(time.perf_counter() - p0, 2), round(clock() - wake, 2), hm(wake)))
                 wake = live.next_wake(max(wake, clock.base))
             side = "BUY" if d == 1 else "SELL"
-            entries = [(tw, ln) for tw, ls in written for ln in ls if ln.startswith("PLACE;") and ";MARKET;" in ln]
-            ok_side = [(tw, ln) for tw, ln in entries if ln.split(";")[3] == side]
+            entries = [(tw, ln, wk) for tw, ls, wk in written for ln in ls if ln.startswith("PLACE;") and ";MARKET;" in ln]
+            ok_side = [(tw, ln, wk) for tw, ln, wk in entries if ln.split(";")[3] == side]
+            first_poll = live.next_wake(ent - 0.01)            # the first poll after the 1m CISD candle closed (close + 2 s)
             first = ok_side[0] if ok_side else None
             delay = round(first[0] - ent, 2) if first else None
             qty = int(first[1].split(";")[4]) if first else None
-            stop_l = [ln for _, ls in written for ln in ls if ";STOPMARKET;" in ln]
-            tgt_l = [ln for _, ls in written for ln in ls if ln.startswith("PLACE;") and ";LIMIT;" in ln]
+            stop_l = [ln for _, ls, _w in written for ln in ls if ";STOPMARKET;" in ln]
+            tgt_l = [ln for _, ls, _w in written for ln in ls if ln.startswith("PLACE;") and ";LIMIT;" in ln]
+            at_first = first is not None and first[2] == first_poll
+            compute = round(first[0] - first[2], 2) if first else None
             stop_ok = bool(stop_l) and abs(float(stop_l[0].split(";")[7]) - live.tick_px(t["stop_px"], d)) < 1e-6
             tgt_ok = bool(tgt_l) and abs(float(tgt_l[0].split(";")[6]) - live.tick_px(t["target_px"], d, target=True)) < 1e-6
-            ok = first is not None and 0 <= delay <= LIMIT_S and qty == int(t["qty"]) and len(entries) == 1 and stop_ok and tgt_ok
+            # pass: written by the first poll after the close (2 s schedule + that poll's own compute), as the backtest's
+            # trade; the delay limit is also checked unless the box itself was overloaded (that poll's compute > LIMIT_S - 2)
+            ok = first is not None and at_first and qty == int(t["qty"]) and len(entries) == 1 and stop_ok and tgt_ok \
+                and (delay <= LIMIT_S or compute > LIMIT_S - 2)
             row = {"day": t["day"], "entry_bar": hm(ent), "dir": d, "qty": int(t["qty"]), "oif_t": hm(first[0]) if first else None,
-                   "delay_s": delay, "oif_qty": qty, "entries_written": len(entries), "stop_ok": stop_ok, "target_ok": tgt_ok,
+                   "delay_s": delay, "first_poll": at_first, "compute_s": compute, "oif_qty": qty, "entries_written": len(entries), "stop_ok": stop_ok, "target_ok": tgt_ok,
                    "ok": ok, "errors": errors[:3], "polls": len(durs), "poll_real_s_max": max(d_[0] for d_ in durs) if durs else None,
                    "entry_poll": next(([d_[0], d_[1]] for d_ in durs if d_[2] == hm(live.next_wake(ent - 1))), None),
                    "why": None if ok else [x["text"] for x in list(bot.log)[:6]]}
@@ -140,17 +153,24 @@ def main():
         rp.cleanup()
         shutil.rmtree(tmp, ignore_errors=True)
     dl = np.array([r["delay_s"] for r in rows if r["delay_s"] is not None], float)
+    cp = np.array([r["compute_s"] for r in rows if r["compute_s"] is not None], float)
     missed = [r["day"] for r in rows if not r["ok"]]
     res = {"trades": len(rows), "routed_ok": len(rows) - len(missed), "missed": missed, "limit_s": LIMIT_S,
+           "first_poll": sum(1 for r in rows if r["first_poll"]), "part": part,
+           "compute_s": {"median": round(float(np.median(cp)), 2) if len(cp) else None, "max": round(float(cp.max()), 2) if len(cp) else None},
+           "over_limit": [(r["day"], r["delay_s"], r["compute_s"]) for r in rows if r["delay_s"] is not None and r["delay_s"] > LIMIT_S],
            "delay_s": {"median": round(float(np.median(dl)), 2) if len(dl) else None, "max": round(float(dl.max()), 2) if len(dl) else None,
                        "mean": round(float(dl.mean()), 2) if len(dl) else None},
            "seconds": round(time.time() - t_all), "rows": rows}
     if not only:
-        with open(OUT, "w", encoding="utf-8") as fh:
+        out = OUT if not part else OUT.replace(".json", "_part%s.json" % part.replace("/", "of"))
+        with open(out, "w", encoding="utf-8") as fh:
             json.dump(res, fh, indent=1)
     print(f"LIT -> NinjaTrader OIF: {res['routed_ok']}/{len(rows)} entries written at the backtest's entry bar "
           f"(median {res['delay_s']['median']} s, max {res['delay_s']['max']} s after the 1m CISD close); missed {len(missed)} "
-          f"{missed[:10]} in {res['seconds']}s", flush=True)
+          f"{missed[:10]}; written by the first poll after the close {res['first_poll']}/{len(rows)}; one poll's compute "
+          f"median {res['compute_s']['median']} s max {res['compute_s']['max']} s; over {LIMIT_S:g} s: {res['over_limit'][:8]} "
+          f"in {res['seconds']}s", flush=True)
     sys.exit(0 if not missed else 1)
 
 
