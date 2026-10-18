@@ -109,8 +109,10 @@ def _cisd_agg(B, hi_d, lo_d, c_d, o_d, tapped, k, m):
     if (int(B.mod[k]) + 1) % m:
         return False
     g0 = int(B.mod[tapped]) // m
-    a = tapped - (int(B.mod[tapped]) - g0 * m)
-    a = max(a, 0)
+    at = tapped - (int(B.mod[tapped]) - g0 * m)          # first 1m bar of the tap's m-minute bar
+    a = max(at - 30 * m, 0)
+    while a < at and B.day[a] != B.day[tapped]:
+        a += 1
     O, H, L_, C = [], [], [], []
     j = a
     while j <= k:
@@ -123,7 +125,12 @@ def _cisd_agg(B, hi_d, lo_d, c_d, o_d, tapped, k, m):
     if len(C) < 2:
         return False
     O, C, L_ = np.array(O), np.array(C), np.array(L_)
-    lk = int(np.argmin(L_))
+    gt = len(C) - 1 - (int(B.mod[k]) // m - g0)          # index of the tap's m-minute bar
+    if gt < 0 or len(C) - 1 <= gt:
+        return False
+    lk = gt + int(np.argmin(L_[gt:]))
+    if lk < 3:
+        return False
     cz = lit._cisd_level(C, O, lk)
     n = len(C) - 1
     return cz is not None and n > lk and C[n] > cz[0] and all(C[q] <= cz[0] for q in range(lk + 1, n))
@@ -567,6 +574,20 @@ def grid(V=None, mc=True, only=None):
 
 
 SAVES = [   # run id, variant name, status, why
+    ("lit_ep_live", "live: tap -> 1m CISD -> next open", "info", "Reference: today's LIT entry (== run lit_live trade for trade)."),
+    ("lit_ep_direct", "A1 direct limit at the CISD level (1-tick trade-through)", "rejected",
+     "Direct-zone entry: fills 3/4 of the setups instead of 1/2; the extra fills are the setups the 1m CISD filters out and lose $28.9k in H1."),
+    ("lit_ep_bos1m", "A2 confirmation: 1m BOS", "rejected", "A 1m BOS instead of the 1m CISD: later, fewer fills, worse in both halves."),
+    ("lit_ep_reclaim", "A2 confirmation: 1m close back above the zone", "rejected", "First 1m close back above the zone: worse in both halves."),
+    ("lit_ep_close", "A2 confirmation: CISD candle close (vs next open)", "info", "Fill at the CISD candle close instead of the next open: the same within $0.4k a half (noise)."),
+    ("lit_ep_lm_close1", "A3 refined: limit at the CISD close 1 bar, else market", "rejected",
+     "Closest miss: H1 +$1.3k, H2 -$0.2k and 2-week H2 49.3% vs 50.7%. Not better in both halves."),
+    ("lit_ep_lm_fvg3", "A3 refined: limit at the 1m FVG 3 bars, else market", "rejected", "H1 +$1.3k, H2 -$2.0k: H1 only."),
+    ("lit_ep_zone_mid", "B zone: halfway CISD level - trigger close", "rejected", "Shallower zone: H1 -$5.9k, H2 +$0.2k."),
+    ("lit_ep_tol16", "C tap tolerance 16 ticks", "rejected", "4-pt tap tolerance: H1 -$8.2k, H2 +$1.6k: H2 only."),
+    ("lit_ep_two_step", "D two-step: half limit at the zone, half on the 1m CISD", "rejected", "Two-step entry: worse in both halves (already rejected as two_stage in lit-experiments)."),
+    ("lit_ep_runaway05", "D skip if the fill is > 0.5R above the zone", "rejected", "Patience: H1 +$2.8k, H2 -$4.2k (as in lit-1m-management)."),
+    ("lit_ep_cisd3m", "E confirmation: 3m CISD (instead of 1m), next 1m open", "rejected", "An M3 confirmation instead of M1: far worse in both halves."),
 ]
 
 

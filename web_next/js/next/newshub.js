@@ -49,7 +49,7 @@ function toneChip(t) {
   const hint = v === 'neg' ? 'leans down for NQ' : v === 'pos' ? 'leans up for NQ' : 'no lean';
   return `<span class="nx-tone ${v}" title="${hint}">${esc(s)}</span>`;
 }
-const txt = (b) => typeof b === 'string' ? esc(b) : Array.isArray(b) ? esc(b.join(' · ')) : b && typeof b === 'object' ? esc(`${b.start ?? ''}–${b.end ?? ''}${b.title ? ' ' + b.title : ''}`) : esc(String(b ?? ''));
+const txt = (b) => typeof b === 'string' ? esc(litTxt(b)) : Array.isArray(b) ? esc(litTxt(b.join(' · '))) : b && typeof b === 'object' ? esc(`${b.start ?? ''}–${b.end ?? ''}${b.title ? ' ' + b.title : ''}`) : esc(String(b ?? ''));
 
 function eventRow(e, now) {
   const past = e.t && e.t < now;

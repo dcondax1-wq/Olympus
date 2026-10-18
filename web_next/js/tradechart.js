@@ -67,7 +67,7 @@ export function fromTrade(t, bars5, { bars1 = null, levels = [], now = Date.now(
   const B = (bars5 || []).map((b) => (Array.isArray(b) ? { t: +b[0], o: +b[1], h: +b[2], l: +b[3], c: +b[4] } : { t: +b.t, o: +b.o, h: +b.h, l: +b.l, c: +b.c })).filter((b) => Number.isFinite(b.t)).sort((a, b) => a.t - b.t);
   const et0 = +t.entry_t, off = etOffset(et0 || (B[0] && B[0].t) || now);
   const kind = EXITK(t.exit);
-  const xt = t.exit_t ? +t.exit_t - 300 : (B.length ? B[B.length - 1].t : et0);
+  const xt = t.exit_t ? +t.exit_t - 60 : (B.length ? B[B.length - 1].t : et0);   // exit_t = end of the exit bar (1m or 5m)
   const entry = +t.entry, stop = +t.stop, target = +t.target;
   const risk = Math.abs(entry - stop) || 1;
   const xp = t.exit_price != null ? +t.exit_price : (B.length ? B[B.length - 1].c : entry);

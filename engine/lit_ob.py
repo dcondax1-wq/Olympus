@@ -23,8 +23,9 @@ What an order block is here (bullish; a bearish block is the exact mirror, with 
   7. Life cycle (lifecycle()): fresh until the first touch (low <= the proximal edge = zone top: mitigation); failed when a
      candle CLOSES below the distal edge (zone bottom) at or after the touch -> a bearish BREAKER block on the same zone,
      known at that close, fresh until price trades back up to its proximal edge (the zone bottom).
-Timeframes: resample() builds 15m / 1h / 4h candles from 5m (1h = clock hours, 15m = clock quarters, 4h = 18:00 ET aligned
-like engine/lit.py open_4h); an HTF candle is known only after its last 5m bar closed (`last`).
+Timeframes: resample() builds 15m / 1h / 4h / 1d candles from 5m (1h = clock hours, 15m = clock quarters, 4h = 18:00 ET
+aligned like engine/lit.py open_4h, 1d = the CME trading day); an HTF candle is known only after its last 5m bar closed
+(`last`).
 
     obs = detect(o, h, l, c, tf="1h")                 # both directions, indices in the bars given
     lifecycle(obs, h, l, c)                           # adds mit / brk / brk_mit indices on the same bars
@@ -49,13 +50,15 @@ DEFAULTS = {
     "no_break": True,     # no session break (a bar-to-bar time gap > the timeframe + 30 min: the 17:00 halt, weekends)
                           # between the block and the bar that qualifies it: an opening gap is not a displacement
 }
-TF_SECS = {"5m": 300, "15m": 900, "1h": 3600, "4h": 14400}
+TF_SECS = {"5m": 300, "15m": 900, "1h": 3600, "4h": 14400, "1d": 86400}
+BREAK_SECS = {"1d": 4 * 86400}     # a session break on daily candles = a gap longer than a long weekend
 
 
 # ------------------------------------------------------------------------------------------------ bars
 def resample(t, o, h, l, c, tf, mod=None, day=None, closed_last=False):
     """HTF candles from 5m arrays. Returns dict t (open time of the first 5m bar), o, h, l, c, first, last (5m indices).
-    tf "5m" returns the bars unchanged. 4h needs mod (ET minute) and day (trading-day index). The final candle is dropped
+    tf "5m" returns the bars unchanged. 4h needs mod (ET minute) and day (trading-day index); 1d needs day (one candle per
+    CME trading day, 18:00 -> 17:00 ET). The final candle is dropped
     unless closed_last (it may still be forming)."""
     t = np.asarray(t); o = np.asarray(o, float); h = np.asarray(h, float); l = np.asarray(l, float); c = np.asarray(c, float)
     n = len(t)
@@ -70,6 +73,10 @@ def resample(t, o, h, l, c, tf, mod=None, day=None, closed_last=False):
         if mod is None or day is None:
             raise ValueError("4h needs mod and day")
         g = np.asarray(day).astype(np.int64) * 10 + ((np.asarray(mod) - 1080) % 1440) // 240
+    elif tf == "1d":
+        if day is None:
+            raise ValueError("1d needs day")
+        g = np.asarray(day).astype(np.int64)        # the CME trading day 18:00 -> 17:00 ET
     else:
         raise ValueError(tf)
     st = np.r_[0, np.flatnonzero(np.diff(g)) + 1]
@@ -218,7 +225,8 @@ def detect(o, h, l, c, cfg=None, tf="5m", rejects=None, t=None):
     brk = None
     if t is not None and P["no_break"] and len(t) > 1:
         tt = np.asarray(t, dtype=np.int64)
-        brk = np.r_[False, np.diff(tt) > TF_SECS.get(tf, 300) + 1800]     # brk[i]: a session break right before bar i
+        lim = BREAK_SECS.get(tf, TF_SECS.get(tf, 300) + 1800)
+        brk = np.r_[False, np.diff(tt) > lim]     # brk[i]: a session break right before bar i
     out = []
     for d in (1, -1):
         rj = [] if rejects is not None else None

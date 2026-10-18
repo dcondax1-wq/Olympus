@@ -305,6 +305,8 @@ def drun(P=None, sessions=SESS):
             early = rc is not None and rc <= X["k"]
             if X["mode"] == "skip" and not early:
                 continue
+            if X["mode"] == "skipfast" and early:
+                continue
             if X["mode"] == "size":
                 xm *= X["hi"] if early else X["lo"]
         ep = min(float(z["ref_d"]), z["trig_c"])
@@ -382,6 +384,9 @@ def variants():
     V["trap ref react1.0"] = {"trap": {"react": 1.0, "win": 24, "lvl": "ref", "wait": 30}}
     V["trap ext react1.0 win12"] = {"trap": {"react": 1.0, "win": 12, "lvl": "ext", "wait": 30}}
     V["trap ext react1.0 flip"] = {"trap": {"react": 1.0, "win": 24, "lvl": "ext", "wait": 30, "flip": True}}
+    for rc in (2.0, 3.0):
+        V[f"trap ref react{rc}"] = {"trap": {"react": rc, "win": 24, "lvl": "ref", "wait": 30}}
+    V["trap ref react1.0 half"] = {"trap": {"react": 1.0, "win": 24, "lvl": "ref", "wait": 30, "size": 0.5}}
     V["trap ext react1.0 half"] = {"trap": {"react": 1.0, "win": 24, "lvl": "ext", "wait": 30, "size": 0.5}}
     for mj in ("daily", "box"):
         for sz in (0.5, 1.0):
@@ -389,6 +394,12 @@ def variants():
     for kk in (3, 5, 8):
         V[f"recross size k{kk}"] = {"recross": {"k": kk, "mode": "size", "hi": 1.25, "lo": 0.75}}
         V[f"recross slow k{kk}"] = {"recross": {"k": kk, "mode": "size", "hi": 0.75, "lo": 1.25}}
+    # follow-ups (after the first grid): the slow recross carries the R; same total size (fast x0.5 / slow x1.1, ~1.0 on
+    # average in 2026) and trade only the slow ones
+    V["recross slow k3 neutral"] = {"recross": {"k": 3, "mode": "size", "hi": 0.5, "lo": 1.1}}
+    V["recross slow k3 skipfast"] = {"recross": {"k": 3, "mode": "skipfast"}}
+    V["recross slow k2"] = {"recross": {"k": 2, "mode": "size", "hi": 0.75, "lo": 1.25}}
+    V["recross slow k4"] = {"recross": {"k": 4, "mode": "size", "hi": 0.75, "lo": 1.25}}
     V["recross skip k5"] = {"recross": {"k": 5, "mode": "skip"}}
     V["recross skip k8"] = {"recross": {"k": 8, "mode": "skip"}}
     for ni in (1, 2, 3):

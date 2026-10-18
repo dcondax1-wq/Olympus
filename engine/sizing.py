@@ -162,6 +162,35 @@ def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None =
             if L.get("mode"):
                 out["learn"] = L
             return out
+    if mode == "funded":
+        # the funded account (funded_qty above, cfg["funded"]); state = funded_state() {room, cum, locked}; state None ->
+        # room = the `room` argument (locked unknown = not locked), or the smallest size when that is unknown too
+        st = state if state is not None else ({"room": room, "cum": 0.0, "locked": False} if room is not None else None)
+        why: list = []
+        acct = {**(c.get("acct") or {})}
+        acct.setdefault("max_micros", int(max_micros))
+        if st is None:
+            fallback = "funded: account state unknown -> smallest size, no room cap"
+            log.warning("lit_qty %s", fallback)
+        q = funded_qty({"risk_pts": _num(risk), "tgt_pts": trade.get("tgt_pts", trade.get("tgt")), "entry": trade.get("entry"),
+                        "target": trade.get("target"), "size_mult": trade.get("size_mult", 1.0)}, st, c.get("funded"),
+                       acct=acct, why=why)
+        reasons += [f"funded: {w}" for w in why] + ([fallback] if fallback else [])
+        if q <= 0:
+            out = {"qty": 0, "mult": 0.0, "reasons": reasons}
+            if fallback:
+                out["fallback"] = fallback
+            return out
+        q = min(q, max_micros)
+        if lm < 1.0 - 1e-9:                    # learned cut only, never a size-up (the funded caps sit at the limit)
+            q = max(1, int(q * lm + 1e-9))
+            reasons += L["reasons"]
+        out = {"qty": q, "mult": round(q / qty, 4), "reasons": reasons}
+        if L.get("mode"):
+            out["learn"] = L
+        if fallback:
+            out["fallback"] = fallback
+        return out
     if mode == "fast_eval" and risk:
         from .lit import qty_for
         base = qty_for(float(risk), 800.0, float(c.get("fast_ref_stop", 40.0)), max_micros)
@@ -407,8 +436,117 @@ def eval_clock(day_pnl: dict, start: str | None, today: str, session_over: bool 
             "reset": bool(reset), "text": text}
 
 
+# ------------------------------------------------------------------------------------------------ LIT funded (after the eval)
+# lit_sizing mode "funded" (2026-10-18, research/writeups/lit-funded-sizing.md, tools/lit_funded.py): the MFFU Builder 50K
+# funded / sim-funded account, where the goal is payouts without losing the account. Same floor rule as the eval (EOD high
+# - $2,000, locked at start + $100), $1,000 soft daily loss; payouts need balance - $2,100 buffer >= $500 (max $2,000 a
+# request, best day <= 50% of the cycle's profit, 5 sim payouts, 80% split). cfg = lit_sizing["funded"] (every $ x acct scale):
+#   tiers      [[cushion_from, usd], ...]: $ risk by the room to the floor (the last tier whose cushion_from <= room)
+#   pre_lock_usd   None | $ risk while the floor has not locked yet (min with the tier)
+#   pct        None | $ risk = pct x room (fractional Kelly on the room), clamped to [pct_min_usd, pct_max_usd]; replaces tiers
+#   ref        20: size follows the stop: usd up to a ref-pt stop, then usd x ref / stop (the LIT rule)
+#   wk         True: x the weekly stop's multiplier (trade["size_mult"])
+#   room_f     0.6 | None: a full stop-out (stop + slip_ticks, commission) <= room_f x room
+#   dll_cap    True: a full stop-out may not take the day below -dll
+#   max_win    None | $: the target's $ may not exceed this (keeps the best day small for the 50% payout rule)
+#   slip_ticks 2: ticks of slippage assumed on the stop in every cap
+#   skip_breach True: when even 1 micro's full stop-out would reach the floor or the soft daily loss -> 0 (skip). The soft caps
+#              (room_f, max_win) never go below 1 micro.
+# state = {"room": balance + today's closed P&L - trailing floor ($), "cum": today's closed P&L, "locked": floor at the lock}
+FD_50K = {"mll": 2000.0, "lock": 100.0, "dll": 1000.0, "buffer": 2100.0, "pay_min": 500.0, "pay_max": 2000.0, "split": 0.8,
+          "cons": 0.5, "cycle_days": 2, "first_wait": 2, "max_payouts": 5, "max_micros": 40, "scale": 1.0}
+FD_DEFAULT = {"tiers": [[0.0, 800.0]], "pre_lock_usd": None, "pct": None, "pct_min_usd": 100.0, "pct_max_usd": 1000.0,
+              "ref": 20.0, "wk": True, "room_f": 0.6, "dll_cap": True, "max_win": None, "slip_ticks": 2, "skip_breach": True}
+
+
+def funded_qty(trade: dict, state: dict | None, cfg: dict | None = None, acct: dict | None = None, why: list | None = None) -> int:
+    """Micros for one LIT entry on a funded account. 0 = no trade (stop distance unknown, or even 1 micro could breach)."""
+    c = {**FD_DEFAULT, **(cfg or {})}
+    A = {**FD_50K, **(acct or {})}
+    sc = float(A.get("scale", 1.0))
+    note = (lambda s: why.append(s)) if why is not None else (lambda s: None)
+    risk = _num(trade.get("risk_pts", trade.get("risk")))
+    if risk is None and trade.get("entry") is not None and trade.get("stop0", trade.get("stop")) is not None:
+        risk = abs(float(trade["entry"]) - float(trade.get("stop0", trade.get("stop"))))
+    if not risk or risk <= 0:
+        note("stop distance unknown: no trade")
+        return 0
+    tgt = _num(trade.get("tgt_pts", trade.get("tgt")))
+    if tgt is None and trade.get("entry") is not None and trade.get("target") is not None:
+        tgt = abs(float(trade["target"]) - float(trade["entry"]))
+    st = state or {}
+    room = _num(st.get("room"))
+    cum = float(_num(st.get("cum"), 0.0))
+    locked = bool(st.get("locked"))
+    tiers = sorted((float(a) * sc, float(u) * sc) for a, u in (c["tiers"] or [[0.0, 800.0]]))
+    if room is None:                                   # unknown room: the smallest tier, no room cap (reason logged)
+        usd = tiers[0][1] if c["pct"] is None else float(c["pct_min_usd"]) * sc
+        note(f"room to the floor unknown: smallest size ${usd:,.0f}")
+    elif c["pct"] is not None:
+        usd = min(max(float(c["pct"]) * max(0.0, room), float(c["pct_min_usd"]) * sc), float(c["pct_max_usd"]) * sc)
+        note(f"{float(c['pct']) * 100:g}% of ${room:,.0f} room -> ${usd:,.0f}")
+    else:
+        usd = tiers[0][1]
+        for a, u in tiers:
+            if room >= a:
+                usd = u
+        if c["pre_lock_usd"] is not None and not locked and usd > float(c["pre_lock_usd"]) * sc:
+            usd = float(c["pre_lock_usd"]) * sc
+            note(f"floor not locked yet: ${usd:,.0f}")
+        note(f"${usd:,.0f} at ${room:,.0f} room")
+    ref = float(c["ref"] or 0)
+    r = usd if not ref or risk <= ref else usd * ref / risk
+    q = max(1, int(r / (risk * TW_PV) + 1e-9))
+    if c["wk"]:
+        m = _num(trade.get("size_mult", trade.get("wk_m")), 1.0)
+        if m < 1:
+            q = max(1, int(q * m + 1e-9))
+            note(f"weekly stop x{m:g} -> {q}")
+    loss1 = (risk + 0.25 * float(c["slip_ticks"])) * TW_PV + TW_COMM        # a full stop-out of 1 micro, $
+    if c["max_win"] and tgt and tgt * TW_PV - TW_COMM > 0:
+        cap = int(float(c["max_win"]) * sc / (tgt * TW_PV - TW_COMM))
+        if cap < q:
+            q = max(1, cap)
+            note(f"best day <= ${float(c['max_win']) * sc:,.0f} -> {q}")
+    if c["room_f"] and room is not None:
+        cap = int(float(c["room_f"]) * max(0.0, room) / loss1)
+        if cap < q:
+            q = max(1, cap)
+            note(f"{float(c['room_f']) * 100:.0f}% of ${room:,.0f} room -> {q}")
+    hard = []                                          # never past these (the account rules), stop + slip + commission
+    if room is not None:
+        hard.append((room, f"${room:,.0f} room to the floor"))
+    if c["dll_cap"]:
+        hard.append((float(A["dll"]) * sc + cum, f"soft daily loss ${float(A['dll']) * sc:,.0f}"))
+    for lim, lab in hard:
+        cap = int(max(0.0, lim) / loss1 - 1e-9) if lim > loss1 else 0
+        if lim <= loss1 and c["skip_breach"]:
+            note(f"1 micro's stop-out ${loss1:,.0f} would reach the {lab}: no trade")
+            return 0
+        if cap < q:
+            q = max(1, cap)
+            note(f"{lab} -> {q}")
+    return int(min(q, int(A["max_micros"])))
+
+
+def funded_state(day_pnl: dict, today_cum: float = 0.0, payouts: dict | None = None, plan: dict | None = None) -> dict:
+    """state for funded_qty from the funded account's closed P&L per earlier day + today's closed P&L. payouts = {day: $
+    withdrawn at that day's end}: they lower the balance, never the floor (the floor only moves up and locks at start + lock)."""
+    A = {**FD_50K, **(plan or {})}
+    bal = peak = 0.0
+    floor = -float(A["mll"])
+    pay = payouts or {}
+    for d in sorted(set(day_pnl) | set(pay)):
+        bal += float(day_pnl.get(d, 0.0))
+        peak = max(peak, bal)
+        floor = min(max(floor, peak - float(A["mll"])), float(A["lock"]))
+        bal -= float(pay.get(d, 0.0))
+    return {"balance": round(bal, 2), "cum": float(today_cum), "room": round(bal + today_cum - floor, 2),
+            "floor": round(floor, 2), "locked": floor >= float(A["lock"]) - 1e-9}
+
+
 def selftest() -> bool:
-    t_late = {"dir": 1, "m15_trend": 1, "risk_pts": 44.0}
+    t_late ={"dir": 1, "m15_trend": 1, "risk_pts": 44.0}
     t_ok = {"dir": -1, "m15_trend": 1, "risk_pts": 44.0}
     sz = {"late_mult": 0.5, "press": None}
     assert route_qty(4, t_ok, 1.0, sz)["qty"] == 4

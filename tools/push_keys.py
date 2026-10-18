@@ -1,15 +1,13 @@
-"""Make the VAPID key pair for phone notifications (Web Push to the Home Screen app). Run it once, on your own computer.
+"""Optional: your own VAPID key pair for the phone notifications. Not needed: the cloud monitor makes one by itself and keeps
+it in the GitHub Actions cache (docs/NOTIFICATIONS.md). Use this only to pin a key in a GitHub Secret.
 
     python tools/push_keys.py            # new pair: prints both keys, saves them for the PC bot in data/push.json
     python tools/push_keys.py --show     # the public key and how many phones are set up (never the private key)
-    python tools/push_keys.py --add-sub '<code from the app>'    # the PC bot also notifies that phone
+    python tools/push_keys.py --add-sub '<subscription JSON>'    # manual override: the PC bot also notifies that phone
 
-What goes where (docs/NOTIFICATIONS.md has the click-by-click version):
-  private key -> GitHub Secret LE_VAPID_PRIVATE (https://github.com/demetrades2000-coder/nq-liquidity-engine/settings/secrets/actions)
-                 and data/push.json on the PC (gitignored, written by this tool). Never in the repo, never in a chat.
-  public key  -> tools/web_public/push_key.json (written by this tool; not secret, commit it): the app subscribes with it.
-                 The cloud monitor also publishes it (derived from the private key), so the app finds it either way.
-The app can also make the pair on the phone itself (Settings -> Notifications -> Make the keys on this phone).
+The private key goes into the GitHub Secret LE_VAPID_PRIVATE
+(https://github.com/demetrades2000-coder/nq-liquidity-engine/settings/secrets/actions) and data/push.json (gitignored);
+never into the repo or a chat. Phones re-subscribe with the new key by themselves on their next open.
 """
 from __future__ import annotations
 
@@ -59,8 +57,7 @@ def main(argv=None):
     print("\n2. PUBLIC key (not secret):", pub)
     if not a.no_save:
         print(f"   saved in {os.path.relpath(PUBLIC_FILE, ROOT)} (commit this file) and, with the private key, in data/push.json (gitignored)")
-    print("\n3. Open the app from your Home Screen -> System -> Settings -> Turn on notifications, copy the code it shows into a")
-    print("   GitHub Secret named LE_PUSH_SUBS, and (for the PC bot) run: python tools/push_keys.py --add-sub '<the code>'")
+    print("\n3. Nothing else: phones subscribe with the new key by themselves the next time the app opens.")
     return 0
 
 

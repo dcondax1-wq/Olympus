@@ -274,8 +274,8 @@ def detector(seed=11):
 
 
 # ================================================================================================ fast block queries
-# A block counts for at most this many 5m bars after it is known (15m: 2 days, 1h: 10 days, 4h: 30 days of 24h bars).
-AGE = {"5m": 288, "15m": 576, "1h": 2880, "4h": 8640}
+# A block counts for at most this many 5m bars after it is known (15m: 2 days, 1h: 10 days, 4h: 30 days, 1d: 60 days).
+AGE = {"5m": 288, "15m": 576, "1h": 2880, "4h": 8640, "1d": 17280}   # 1d: 60 days
 INF = 10 ** 12
 _IX = {}
 
@@ -495,6 +495,53 @@ def ob_cands(M, tfs=("1h", "4h"), kind="body"):
     return C2
 
 
+def ob_inside_cands(M, tfs=("1h", "4h", "1d"), kind="body", visit=72):
+    """LIT candidates for a sweep INSIDE a fresh HTF block: once price first enters the block, every 5m swing low it makes
+    inside the zone (during that first visit: within `visit` 5m bars of the first touch, no 5m close beyond the far edge) is a
+    liquidity level; engine.lit.candidates then needs the usual sweep of that internal low + inducement + displacement +
+    5m CISD. Mirror for shorts (swing highs inside a bearish block)."""
+    key = ("in", tuple(tfs), kind, visit)
+    if key in _OC:
+        return _OC[key]
+    p = os.path.join(CACHE, f"lit_ob_inside_{'-'.join(tfs)}_{kind}_{visit}_v1_{rl._data_key().replace(':', '_')}.pkl")
+    if os.path.exists(p):
+        _OC[key] = pickle.load(open(p, "rb"))
+        return _OC[key]
+    lv = collections.defaultdict(list)
+    names = {}
+    for tf in tfs:
+        for q, ob in enumerate(blocks(M, tf, None, kind)):
+            m5 = ob["mit5"]
+            if m5 is None or m5 - ob["k5"] > AGE[tf]:
+                continue
+            d, top, bot = ob["dir"], ob["top"], ob["bot"]
+            end = min(M.n - 3, m5 + visit)
+            cl = M.c[m5:end + 1]
+            dead = np.flatnonzero(cl < bot) if d == 1 else np.flatnonzero(cl > top)
+            if len(dead):
+                end = m5 + int(dead[0])
+            sw = M.fl if d == 1 else M.fh
+            a = int(np.searchsorted(sw, m5)); b = int(np.searchsorted(sw, end, side="right"))
+            for f in sw[a:b]:
+                f = int(f)
+                px = float(M.l[f] if d == 1 else M.h[f])
+                if not (bot <= px <= top):
+                    continue
+                nm = f"obin{tf}#{q}@{f}"
+                names[nm] = (d, top, bot, tf)
+                for k in range(int(M.day_of[f + 2]), min(len(M.days) - 1, int(M.day_of[f + 2]) + 1) + 1):
+                    lv[k].append(("low" if d == 1 else "high", px, f + 2, nm, "obin"))
+    C2 = lit.candidates(_OBM(M, lv), ref=LIVE["ref"])
+    for z in C2:
+        z["src"] = "obin"
+        z["ob_names"] = [n for n in z["swept"] if n in names]
+        z["ob_zones"] = [names[n] for n in z["ob_names"]]
+    os.makedirs(CACHE, exist_ok=True)
+    pickle.dump(C2, open(p, "wb"))
+    _OC[key] = C2
+    return C2
+
+
 # ================================================================================================ executor (unit size)
 def osim(M, B, z, entry_px, tgt_lvl, fb, stop0, P, e1=None):
     """tools/lit_tightstop.tsim (stop 1 tick beyond the sweep extreme) with one option: e1 = {"level": "edge" | "mt",
@@ -622,7 +669,11 @@ def orun(P=None, sessions=SESS):
     if Q5:
         main = {(z["day"], z["dir"], z["ext_i"]) for z in C
                 if lit.setup_ok(z, P, names) and not (P.get("monday") and lit.monday_block(M, z))}
-        C2 = [z for z in ob_cands(M, Q5["tfs"], Q5.get("zone", "body")) if (z["day"], z["dir"], z["ext_i"]) not in main]
+        src_c = (ob_inside_cands(M, Q5["tfs"], Q5.get("zone", "body")) if Q5.get("mode") == "inside" else
+                 ob_cands(M, Q5["tfs"], Q5.get("zone", "body")))
+        C2 = [z for z in src_c if (z["day"], z["dir"], z["ext_i"]) not in main]
+        if Q5.get("mode") == "inside" and Q5.get("both"):
+            C2 += [z for z in ob_cands(M, Q5["tfs"], Q5.get("zone", "body")) if (z["day"], z["dir"], z["ext_i"]) not in main]
         C = sorted(list(C) + C2, key=lambda z: (z["entry_t"], -z["dir"]))
     out, busy, per_day = [], -1, collections.Counter()
     for z in C:
@@ -631,7 +682,7 @@ def orun(P=None, sessions=SESS):
         if z["entry_i"] <= busy or per_day[z["day"]] >= P["max_per_day"]:
             continue
         src = z.get("src", "main")
-        if src == "ob":
+        if src in ("ob", "obin"):
             if not lit.setup_ok(z, {**P, "depth": Q5.get("depth", 0.0)}, None):
                 continue
             tol = Q5.get("tol", 0.5) * z["atr_ext"]
@@ -881,6 +932,15 @@ def variants():
         for dp in (0.0, 0.25):
             for tol in (0.5, 1.0):
                 V[f"OB-only setups {tn} depth {dp:g} tol {tol:g}"] = {"obonly": {"tfs": tfs, "depth": dp, "tol": tol}}
+    # ---- owner 2026-10-18 (evening): HTF blocks incl. daily as LIT POIs and as an extra entry source
+    H4 = ["1h", "4h", "1d"]
+    V["POI require loose 1h/4h/1d"] = {"poi": {"tfs": H4, "zone": "body", "pre": 72, "tol": 2.0, "mode": "require"}}
+    V["POI require loose 15m/1h/4h/1d"] = {"poi": {"tfs": H3 + ["1d"], "zone": "body", "pre": 72, "tol": 2.0, "mode": "require"}}
+    for tfs, tn in ((H4, "1h/4h/1d"), (H3 + ["1d"], "15m/1h/4h/1d")):
+        V[f"OB-only setups {tn} depth 0 tol 1"] = {"obonly": {"tfs": tfs, "depth": 0.0, "tol": 1.0}}
+        for dp in (0.25, 0.5):
+            V[f"OB-inside setups {tn} depth {dp:g}"] = {"obonly": {"tfs": tfs, "mode": "inside", "depth": dp, "tol": 1.0}}
+        V[f"OB-inside + OB-only setups {tn} depth 0.5"] = {"obonly": {"tfs": tfs, "mode": "inside", "both": True, "depth": 0.5, "tol": 1.0}}
     return V
 
 
@@ -904,7 +964,7 @@ def grid(only=None):
             continue
         U = unit(P)
         o = summary(both(U))
-        o["extra"] = {"n_ob_src": sum(1 for t in U if t.get("src") == "ob" and t["day"] >= "2026"),
+        o["extra"] = {"n_ob_src": sum(1 for t in U if t.get("src") in ("ob", "obin") and t["day"] >= "2026"),
                       "n_mult": sum(1 for t in U if t.get("ob_m", 1.0) != 1.0 and t["day"] >= "2026"),
                       "n_obe": sum(1 for t in U if t.get("e2_px") is not None and t["day"] >= "2026")}
         res[nm] = {"P": P, **o}

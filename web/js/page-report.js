@@ -37,8 +37,10 @@ function render() {
   const wins = trs.filter(t => t.pnl > 0).length;
   const avgR = trs.length ? trs.reduce((a, t) => a + t.pnl_r, 0) / trs.length : null;
   const k = [['Day P&L', fmtS$(d.pnl || 0), cls(d.pnl)], ['Trades', `${trs.length}`, ''], ['Win / loss', `${wins} / ${trs.length - wins}`, ''],
-    ['Avg R', avgR == null ? '—' : fmtR(avgR), cls(avgR)], ['Grades', trs.map(t => t.grade || '?').join(' ') || '—', ''],
-    ['Regime', (d.regime || '—').toUpperCase(), d.regime === 'trending' ? 'dn' : 'up'], ['Balance', fmtN(d.balance || 0, 0), ''], ['Trailing MLL', fmtN(d.mll || 0, 0), '']];
+    ['Avg R', avgR == null ? '—' : fmtR(avgR), cls(avgR)],
+    ...(r.model === 'lit' ? [['Swept', trs.map(t => (t.pools || [])[0] || '—').join(', ') || '—', ''], ['Entry', trs.map(t => t.entry_kind || '—').join(', ') || '—', '']]
+      : [['Grades', trs.map(t => t.grade || '?').join(' ') || '—', ''], ['Regime', (d.regime || '—').toUpperCase(), d.regime === 'trending' ? 'dn' : 'up']]),
+    ['Balance', fmtN(d.balance || 0, 0), ''], ['Trailing MLL', fmtN(d.mll || 0, 0), '']];
   $('#repKpis').innerHTML = k.map(([a, b, c]) => `<div class="kpi"><div class="k">${a}</div><div class="v ${c}">${esc(b)}</div></div>`).join('');
   const signs = (t) => Object.entries(t.xsig || {}).sort((a, b) => a[1].k - b[1].k).map(([n, x]) =>
     `<span class="pill ${t.exit_signal === n ? 'bad' : ''}" title="bar +${x.k} · ${x.r >= 0 ? '+' : ''}${x.r}R at the time${x.gain != null ? ` · leaving would have made ${x.gain >= 0 ? '+' : ''}${x.gain}R more` : ''}">${t.exit_signal === n ? '✕ ' : '⚠ '}${esc(n)}</span>`).join(' ') || '<span class="muted small">none</span>';

@@ -211,6 +211,116 @@ def check():
     return bad == 0
 
 
+# ================================================================================================ scoring
+def variant(R=None, mult=None):
+    """Unit trades (lit_2wk format) of rule R; mult(r) -> size multiplier (<1 = cut, applied like lit_qty's learned cut:
+    after the two-week micros, rounded down, min 1)."""
+    out = []
+    for r in db()["trades"]:
+        s = psim(r, R)
+        m = float(mult(r)) if mult else 1.0
+        out.append({"day": r["day"], "entry_t": r["entry_t"], "exit_t": r["exit_t"], "dir": r["dir"], "risk": round(s["risk"], 2),
+                    "tgt": round(r["tg"] - r["entry"], 2), "pts": round(s["pts"], 4), "w1": round(s["w1"], 4),
+                    "exit": s["exit"], "wk_m": r["wk_m"], "tf": r["tf"], "ll_m": m, "mfe": s["mfe"], "mins": s["mins"]})
+    return out
+
+
+_W = None
+_ORIG_QTY = None
+
+
+def _w():
+    """tools/lit_2wk with its two_week_qty wrapped so a trade's ll_m (a size cut) applies after the two-week micros."""
+    global _W, _ORIG_QTY
+    if _W is None:
+        from tools import lit_2wk as W
+        _ORIG_QTY = W.S.two_week_qty
+
+        def qty(t, st, cfg=None, acct=None, why=None):
+            q = _ORIG_QTY(t, st, cfg, acct)
+            m = float(t.get("ll_m", 1.0))
+            if q > 0 and m < 1.0 - 1e-9:
+                q = max(1, int(q * m + 1e-9))
+            return q
+        W.S.two_week_qty = qty
+        _W = W
+    return _W
+
+
+_KEY = [0]
+
+
+def score(U, cfg=None, mc=True, label=None):
+    """p10 / f10 (exact fresh-eval starts on every session of the half, full 10 sessions seen), Monte Carlo, and the money
+    on the back-to-back eval path (reset after 10 sessions) and at the plain LIT size ($800 up to 20 pts, 800x20/stop)."""
+    W = _w()
+    cfg = cfg or CFG_C
+    _KEY[0] += 1
+    v = f"ll{_KEY[0]}"
+    sess = db()["sess"]
+    by = collections.defaultdict(list)
+    for t in U:
+        by[t["day"]].append(t)
+    W._D[v] = {"sess": sess, "by": [by.get(s, []) for s in sess], "trades": U,
+               "dow": np.array([dt.date.fromisoformat(s).weekday() for s in sess])}
+    o = {}
+    for sp in ("H1", "H2", "2026"):
+        a, z = SPAN[sp]
+        e = W.exact(cfg, sp, v)
+        T, bb = W.b2b(cfg, sp, v)
+        pn = np.array([x["pnl"] for x in T]) if T else np.zeros(0)
+        eq = np.cumsum(pn) if len(pn) else np.zeros(1)
+        dd = float((eq - np.maximum.accumulate(np.r_[0.0, eq])[1:]).min()) if len(pn) else 0.0
+        tr = [t for t in U if a <= t["day"] <= z]
+        days = [s for s in sess if a <= s <= z and s <= "2026-10-16"]
+        weeks = max(1e-9, len(days) / 5.0)
+        months = max(1e-9, len(days) / 21.0)
+        lq = []
+        for t in tr:
+            m = float(t["wk_m"]) * min(1.0, t["ll_m"])
+            q0 = lit.qty_for(t["risk"])
+            q = q0 if abs(m - 1.0) < 1e-9 else max(1, int(q0 * m + 1e-9))
+            lq.append(t["pts"] * PV * q - COMM * q)
+        lq = np.array(lq)
+        cnt = collections.Counter(lit.iso_week(t["day"]) for t in tr)
+        o[sp] = {"n": len(tr), "tpw": round(len(tr) / weeks, 2),
+                 "wk2": round(100.0 * sum(1 for w in {lit.iso_week(s) for s in days} if cnt[w] >= 2)
+                              / max(1, len({lit.iso_week(s) for s in days})), 1),
+                 "win": round(100.0 * sum(1 for t in tr if t["pts"] * PV - COMM > 0) / max(1, len(tr)), 1),
+                 "p10": e["p10"], "f10": e["f10"], "p20": e["p20"], "f20": e["f20"], "n10": e["n10"], "cost": e["cost"],
+                 "pass_med": e["pass_med"],
+                 "b2b_net": round(float(pn.sum())), "b2b_pm": round(float(pn.sum()) / months),
+                 "b2b_pf": round(float(pn[pn > 0].sum() / -pn[pn < 0].sum()), 2) if (pn < 0).any() else None,
+                 "b2b_dd": round(dd), "evals": bb["evals"], "passed": bb["passed"], "failed": bb["failed"],
+                 "lit_net": round(float(lq.sum())), "lit_pm": round(float(lq.sum()) / months),
+                 "lit_pf": round(float(lq[lq > 0].sum() / -lq[lq < 0].sum()), 2) if (lq < 0).any() else None,
+                 "lit_dd": round(float((np.cumsum(lq) - np.maximum.accumulate(np.r_[0.0, np.cumsum(lq)])[1:]).min())) if len(lq) else 0}
+        if mc and sp != "2026":
+            m = W.mc(cfg, sp, v)
+            o[sp]["mc_p10"], o[sp]["mc_f10"] = m["p10"], m["f10"]
+    W._D.pop(v, None)
+    for k in [k for k in W._SEQ if k[1] == v]:
+        W._SEQ.pop(k, None)
+    if label:
+        o["label"] = label
+    return o
+
+
+def fmt(nm, o):
+    def f(s):
+        x = o[s]
+        mc = f" mc {x['mc_p10']}/{x['mc_f10']}" if "mc_p10" in x else ""
+        return (f"{s}: 2w {x['p10']:4.1f}/{x['f10']:4.1f}{mc} | b2b {x['b2b_net']:+7,} ${x['b2b_pm']:+6,}/mo PF {x['b2b_pf']} "
+                f"DD {x['b2b_dd']:,} ({x['passed']}/{x['evals']}) | lit {x['lit_net']:+7,} PF {x['lit_pf']} | {x['tpw']}/wk win {x['win']}")
+    return f"{nm:34s} {f('H1')}\n{'':34s} {f('H2')}"
+
+
+def base():
+    o = score(variant())
+    print(fmt("baseline (live, config C)", o))
+    return o
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
-    {"build": build, "check": check}[cmd]()
+    {"build": build, "check": check, "base": base}[cmd]()
