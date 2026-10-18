@@ -11,7 +11,8 @@ Config (live_model.json "lit_sizing", mode "two_week"; every $ figure is for the
   usd, ref   800, 25 (base "lit" only)
   max_usd    None | $ cap of a full stop-out per trade (stop + 1 tick, commission in)
   wk         True = times the weekly stop's multiplier (trade["size_mult"], half after 2 stop-outs in the week)
-  press_at, press_mult    from eval session press_at on (not passed yet): micros x press_mult (before the caps)
+  press_at, press_mult, press_room    from eval session press_at on (not passed yet): micros x press_mult (before the caps)
+                                      and the room cap at press_room instead of room_f (None = unchanged)
   protect_over, protect_keep    once the eval profit is >= protect_over, a full stop-out may not take the profit below
                                 protect_keep x profit
   room_f     0.6 | None: micros <= room_f x room / (stop x $2), room = balance - trailing max-loss floor (as today's safe cap)
@@ -32,7 +33,7 @@ PV, COMM, SLIP = 2.0, 1.40, 0.25
 MFFU_50K = {"target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0, "max_micros": 40, "scale": 1.0}
 MFFU_25K = {"target": 1500.0, "mll": 1000.0, "lock": 100.0, "dll": 600.0, "max_micros": 20, "scale": 0.5}
 DEFAULT = {"base": "need", "need_buf": 1.0, "usd": 800.0, "ref": 25.0, "max_usd": None, "wk": True,
-           "press_at": None, "press_mult": 1.0, "protect_over": None, "protect_keep": 0.0,
+           "press_at": None, "press_mult": 1.0, "press_room": None, "protect_over": None, "protect_keep": 0.0,
            "room_f": 0.6, "dll_cap": True, "stop_at_target": True}
 
 
@@ -82,9 +83,14 @@ def two_week_qty(trade: dict, state: dict, cfg: dict | None = None, acct: dict |
         if m < 1:
             q = max(1, int(q * m + 1e-9))
             note(f"weekly stop x{m:g} -> {q}")
-    if c["press_at"] and sess >= int(c["press_at"]) and float(c["press_mult"]) != 1.0:
-        q = max(1, int(q * float(c["press_mult"]) + 1e-9))
-        note(f"clock press from session {int(c['press_at'])}: x{float(c['press_mult']):g} -> {q}")
+    room_f = c["room_f"]
+    if c["press_at"] and sess >= int(c["press_at"]):
+        if float(c["press_mult"]) != 1.0:
+            q = max(1, int(q * float(c["press_mult"]) + 1e-9))
+            note(f"clock press from session {int(c['press_at'])}: x{float(c['press_mult']):g} -> {q}")
+        if c["press_room"] is not None:
+            room_f = c["press_room"]
+            note(f"clock press from session {int(c['press_at'])}: room cap {float(room_f) * 100:.0f}%")
     # ---- caps (never below 1 micro)
     caps = []
     if c["max_usd"]:
@@ -92,11 +98,10 @@ def two_week_qty(trade: dict, state: dict, cfg: dict | None = None, acct: dict |
     if c["protect_over"] is not None and profit >= float(c["protect_over"]) * sc:
         keep = float(c["protect_keep"]) * profit
         caps.append((int(max(0.0, profit + cum - keep) / loss1), f"protect: a loss keeps the profit above ${keep:,.0f}"))
-    if c["room_f"] and room is not None:
-        caps.append((int(float(c["room_f"]) * max(0.0, room) / (risk * PV)), f"{float(c['room_f']) * 100:.0f}% of ${room:,.0f} room"))
+    if room_f and room is not None:
+        caps.append((int(float(room_f) * max(0.0, room) / (risk * PV)), f"{float(room_f) * 100:.0f}% of ${room:,.0f} room"))
     if c["dll_cap"]:
-        caps.append((int(max(0.0, float(A["dll"]) * sc / sc * 1.0 + cum) / loss1) if False else
-                     int(max(0.0, float(A["dll"]) + cum) / loss1), f"soft daily loss ${float(A['dll']):,.0f}"))
+        caps.append((int(max(0.0, float(A["dll"]) + cum) / loss1), f"soft daily loss ${float(A['dll']):,.0f}"))
     for cap, lab in caps:
         if cap < q:
             q = max(1, cap)
@@ -106,8 +111,9 @@ def two_week_qty(trade: dict, state: dict, cfg: dict | None = None, acct: dict |
 
 # ------------------------------------------------------------------------------------------------ live adapter
 def eval_state(day_pnl: dict, today_cum: float = 0.0, plan: dict | None = None) -> dict:
-    """state for two_week_qty from the eval's closed P&L per trading day (sorted keys) + today's closed P&L. Same floor rule as
-    engine/sizing.mffu_eval: EOD high - max loss, locked at start + lock."""
+    """state for two_week_qty from the eval's closed P&L per session since the eval started (every session, 0 on days without a
+    trade; sorted keys) + today's closed P&L. Same floor rule as engine/sizing.mffu_eval: EOD high - max loss, locked at
+    start + lock."""
     A = {**MFFU_50K, **(plan or {})}
     bal = peak = 0.0
     floor = -float(A["mll"])

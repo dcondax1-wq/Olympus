@@ -856,6 +856,19 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 }
 :root[data-motion="off"] *, :root[data-motion="off"] *::before { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* activity feed + phone notifications */
+.act-list > .act-day { display: block; padding: 14px 0 4px; border-bottom: 0; font: 650 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.act-list > .act-day:first-child { padding-top: 2px; }
+.act.hl { margin: 0 -10px; padding-left: 10px; padding-right: 10px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.act .act-s { white-space: normal; }
+.act .sl-r { line-height: 1.5; }
+.row-btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 6px; }
+.btn.sm { min-height: 32px; padding: 0 11px; font-size: 12px; border-radius: 10px; }
+.codebox { margin-top: 12px; }
+.codebox .cb-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; font-size: 12.5px; }
+.codebox textarea { width: 100%; box-sizing: border-box; resize: vertical; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(7,8,12,.7); color: var(--ink); font: 12px/1.45 var(--mono); word-break: break-all; }
+.codebox textarea.secret { border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+#nav a .nb { margin-left: auto; font: 700 10.5px var(--mono); font-style: normal; padding: 2px 7px; border-radius: 99px; color: #fff; background: var(--accent); }
 </style>
 </head>
 <body>
@@ -1307,7 +1320,8 @@ const GROUPS = [
   { id: 'system', label: 'System', icon: 'modules', pages: [['system', 'Overview', 'modules', 'Every part of the bot'], ['strategy', 'Strategy', 'rules', 'The locked strategy in plain words'],
     ['engine', 'Paper bot', 'engine', 'LIT cloud paper bot: state, position, events'], ['eval', 'MFFU Eval', 'prop', 'Balance, target, trailing max loss'],
     ['news', 'News', 'news', 'USD events, the bot’s blackouts, headlines'],
-    ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop, weekly stop'], ['alerts', 'Alerts', 'alerts', 'Telegram / Discord from the cloud'],
+    ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop, weekly stop'], ['activity', 'Activity', 'trades', 'Every fill and outcome, newest first'],
+    ['alerts', 'Notifications', 'alerts', 'Phone notifications for every fill and outcome'],
     ['sources', 'Data Sources', 'sources', 'Where every number comes from'], ['archive', 'Archive', 'archive', 'Previous strategy: Liquidity Engine, Oct 17'],
     ['settings', 'Settings', 'settings', 'Home Screen app, refresh, 3D']] },
 ];
@@ -1323,11 +1337,11 @@ const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
 const ALIAS = { modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
   calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive',
-  plan: 'day', clock: 'day', session: 'day', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
+  plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
 // 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
 const SCENE = { replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
-  evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', sources: 'engine', news: 'today',
+  evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', activity: 'today', sources: 'engine', news: 'today',
   archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', levels: 'chart', cockpit: 'eval' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
 const titleOf = (p) => DETAIL[p]?.label || (p === 'lab' ? 'Lab' : p === 'system' ? 'System' : PAGES[p]?.label) || 'Today';
@@ -1778,6 +1792,7 @@ VIEWS.today = (el) => {
       ${statBox('2026 backtest', y ? 'PF ' + fPF(y.pf) : '—', y ? `${kusd(y.net)} · ${kusd(perMonth(y.net, y.from, y.to))} a month · ${num(y.per_week, 1)}/wk` : 'no backtest in this build')}
     </div>
     ${timingCard(lv.eval_timing)}
+    ${activityCard()}
     ${lit ? todayLit() : ''}
     <div class="grid g2">
       <div class="card fx-card"><div class="card-h"><h3>This week · ${esc(WK.week)}</h3><div>${fxSeg('today-week')}</div></div>${fxBox('today-week', 'weekring')}</div>
@@ -1800,6 +1815,7 @@ VIEWS.today = (el) => {
   fxFill('today-week', 'weekring', WK, {}, (fb) => weekFb(fb, WK));
   fxFill('today-liqmap', 'liqmap', LQ, {}, (fb) => liqFb(fb, LQ));
   if (lit) todayLitFill();
+  pushPromptFill();
 };
 // the paper trades of the current ET week, Monday to Friday (cloud ledger: day, side, R, usd, entry, qty, mult, taken)
 function weekData() {
@@ -3353,9 +3369,21 @@ VIEWS.strategy = (el) => {
       <li>MFFU evals should be decided within 2 weeks, and no pass should take more than 3 weeks.</li></ul></div>`;
 };
 VIEWS.alerts = (el) => {
-  el.innerHTML = head('System · alerts', 'Phone alerts with the PC off', 'The cloud monitor sends sweeps, entries, exits and an end-of-day summary to Telegram and/or Discord.')
-    + `<div class="card"><div class="card-h"><h3>Setup</h3><span class="meta">keys live in GitHub Secrets only</span></div><div class="kv one"><div><span>Telegram</span><b>secrets TG_TOKEN + TG_CHAT</b></div><div><span>Discord</span><b>secret DISCORD_WEBHOOK</b></div><div><span>Sent for</span><b>sweep · signal · entry · exit · end of day</b></div>
-      ${isLIT() ? `<div><span>Strategy</span><b>${esc(stratName())} · entries 02:00–15:30 ET</b></div><div><span>Weekly stop</span><b>entries after 2 stop-outs in the week show their half size</b></div><div><span>Previous strategy</span><b>paper shadow, no alerts</b></div>` : `<div><span>Cold streak</span><b>entries are marked HALF SIZE</b></div>`}<div><span>Where</span><b>GitHub repo → Settings → Secrets → Actions</b></div></div></div>`;
+  const P = LV().push || {};
+  el.innerHTML = head('System · notifications', 'A notification for every fill and every outcome', 'Free Web Push to this Home Screen app, from the cloud paper bot (PC off) and from the PC bot (within seconds while the PC is on). No Telegram or Discord needed.')
+    + `<div class="card" id="pushCardN">${pushShell()}</div>
+    <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>What you get</h3></div><ul class="list">
+      <li><b>Fill</b>: side, micros, entry, stop, target, $ at risk and the setup (what was swept, the target).</li>
+      <li><b>Outcome</b>: target, stop, breakeven or end of day, with R, $ and the MFFU eval balance after it; half size from the weekly stop is noted.</li>
+      <li><b>PC bot silent</b> during a session, and <b>eval timing</b> changes.</li>
+      <li>Each notice once. <b>Cloud paper</b> = the cloud bot (it checks every 30 min, so its notices come up to ~30 min after the fill); <b>PC …</b> = the PC bot (NinjaTrader Sim fills within seconds).</li></ul>
+      <div class="note">Every notice also lands in <a href="#/activity">Activity</a>, which works even before notifications are on.</div></div>
+      <div class="card"><div class="card-h"><h3>Where the keys live</h3><span class="meta">GitHub Secrets only</span></div><div class="kv one">
+        <div><span>LE_VAPID_PRIVATE</span><b>the private key (secret)</b></div><div><span>LE_PUSH_SUBS</span><b>this phone’s code (more phones: LE_PUSH_SUBS_2, _3)</b></div>
+        <div><span>Cloud now</span><b>${P.configured ? `${P.devices || 0} phone${P.devices === 1 ? '' : 's'} · ${esc(P.sender || '')}` : 'not set up'}</b></div>
+        <div><span>Telegram / Discord</span><b>${P.chat ? 'on (LE_ALERTS_CHAT)' : 'off: the app notifies instead'}</b></div></div>
+        <div class="note"><a href="${SECRETS_URL}" target="_blank" rel="noopener noreferrer">Open the repo’s secrets</a> · step by step: docs/NOTIFICATIONS.md</div></div></div>`;
+  pushFill('pushCardN');
 };
 VIEWS.sources = (el) => {
   const m = D.results?.meta || {}, lv = LV(), h = lv.health || {}, L = LAB(), docs = D.docs || {};
@@ -3408,11 +3436,213 @@ VIEWS.archive = (el) => {
       <div class="card"><div class="card-h"><h3>Switch back</h3><span class="meta">paper only either way</span></div><ol class="list">${(A.switch_back || []).map(x => `<li><span class="mono">${esc(x)}</span></li>`).join('')}</ol></div></div>`;
 };
 
+// ===================================================================== NOTIFICATIONS + ACTIVITY
+// Activity: every fill and every outcome of the cloud paper bot (live.ledger + the open position) merged with the notices the
+// cloud monitor sent (live.notices: fills, outcomes, PC silent, eval timing), newest first. It works before notifications are
+// set up. Notifications: free Web Push (engine/push.py) from the cloud monitor and the PC bot to this Home Screen app; a tap
+// opens #/activity/<key>. The app badge counts what this device has not seen yet.
+const SECRETS_URL = 'https://github.com/demetrades2000-coder/nq-liquidity-engine/settings/secrets/actions';
+const ACT_K = { fill: 'Fill', outcome: 'Outcome', pc: 'PC bot', timing: 'Eval timing', test: 'Test', risk: 'Needs a look', system: 'System' };
+function activity() {
+  const lv = LV(), M = new Map();
+  for (const v of lv.ledger || []) {
+    const t0 = +v.entry_t; if (!t0) continue;
+    M.set('fill:' + t0, { key: 'fill:' + t0, kind: 'fill', t: t0, side: v.side, qty: v.qty, entry: v.entry_px, stop: v.stop_px, target: v.target_px, src: 'Cloud paper', taken: v.taken !== false, reasons: v.reasons });
+    if (v.exit_ts && v.exit && v.exit !== 'OPEN') M.set('out:' + t0, { key: 'out:' + t0, kind: 'outcome', t: +v.exit_ts, side: v.side, exit: v.exit, R: v.R, usd: v.usd, qty: v.qty, src: 'Cloud paper', taken: v.taken !== false, reasons: v.reasons, entry_t: t0 });
+  }
+  const p = lv.position;
+  if (p && p.entry_t && !M.has('fill:' + p.entry_t)) M.set('fill:' + p.entry_t, { key: 'fill:' + p.entry_t, kind: 'fill', t: +p.entry_t, side: p.dir === 1 ? 'LONG' : 'SHORT', qty: p.qty, entry: p.entry, stop: p.stop0 ?? p.stop, target: p.target, src: 'Cloud paper', open: true });
+  if (p && p.entry_t && M.has('fill:' + p.entry_t)) M.get('fill:' + p.entry_t).open = true;
+  for (const n of lv.notices || []) {
+    if (!n || !n.key) continue;
+    const d = M.get(n.key), nn = Object.fromEntries(Object.entries(n).filter(([, x]) => x != null && x !== ''));
+    // the ledger is the truth for R / $ / time; the notice adds its words (and the sized micros of a still-open trade)
+    M.set(n.key, d ? { ...d, ...nn, t: d.t, R: d.R ?? n.R, usd: d.usd ?? n.usd, exit: d.exit ?? n.exit, side: d.side || n.side, open: d.open } : { ...nn, kind: n.kind || 'info' });
+  }
+  return [...M.values()].filter(x => ok(x.t)).sort((a, b) => b.t - a.t || (a.kind === 'fill' ? 1 : -1));
+}
+const SW_BADGE = './__badge';
+const swCount = () => (window.caches ? caches.open('le-badge').then(c => c.match(SW_BADGE)).then(r => r ? r.text() : '0').then(t => +t || 0).catch(() => 0) : Promise.resolve(0));
+const swCountSet = (n) => { try { if (window.caches) caches.open('le-badge').then(c => c.put(SW_BADGE, new Response(String(n)))).catch(() => null); } catch { } };
+function actUnseen(A = activity()) { const s = store.get('act.seen', null); return s == null ? 0 : A.filter(x => x.t > s).length; }
+async function actBadge() {
+  const A = activity();
+  if (store.get('act.seen', null) == null) store.set('act.seen', A[0]?.t || 0);      // first launch: nothing old counts as new
+  const n = Math.max(actUnseen(A), PAGE === 'activity' ? 0 : await swCount());
+  try { if (n && navigator.setAppBadge) await navigator.setAppBadge(n); else if (!n && navigator.clearAppBadge) await navigator.clearAppBadge(); } catch { }
+  const a = $('#nav a[data-p="activity"]');
+  if (a) { a.querySelector('.nb')?.remove(); if (n) a.insertAdjacentHTML('beforeend', `<em class="nb">${n > 99 ? '99+' : n}</em>`); }
+  return n;
+}
+function actMarkSeen() { const A = activity(); store.set('act.seen', Math.max(A[0]?.t || 0, store.get('act.seen', 0) || 0)); swCountSet(0); actBadge(); }
+const actDay = (t) => { const e = et(t), td = et(Date.now() / 1000).date; return e.date === td ? 'Today' : `${e.wd} ${fDate(e.date)}`; };
+function actRow(x, hl = '') {
+  const L = x.side === 'LONG', side = x.side ? `<b class="${L ? 'up' : 'dn'}" style="font-size:11px;letter-spacing:.08em">${esc(x.side)}</b>` : '';
+  const src = x.src ? `<span class="mut">${esc(x.src)}</span>` : '';
+  let ic, title, sub, right = '';
+  if (x.kind === 'fill') {
+    ic = `<span class="side-i ${L ? 'L' : 'S'}" style="width:32px;height:32px;border-radius:10px">${icon(L ? 'long' : 'short')}</span>`;
+    title = `${side}<span>filled${ok(x.qty) ? ` · ${x.qty} micros` : ''}${ok(x.entry) ? ` @ ${num(x.entry)}` : ''}</span>${x.open ? chip('open', 'good') : ''}${x.taken === false ? chip('not taken', 'warn') : ''}`;
+    sub = [ok(x.stop) ? `stop ${num(x.stop)}` : '', ok(x.target) ? `target ${num(x.target)}` : '', ok(x.risk_usd) ? `${usd(x.risk_usd)} at risk` : '', (x.reasons || []).join('; ')].filter(Boolean).join(' · ');
+  } else if (x.kind === 'outcome') {
+    ic = `<span class="side-i ${(x.usd ?? x.R ?? 0) >= 0 ? 'L' : 'S'}" style="width:32px;height:32px;border-radius:10px">${icon((x.usd ?? x.R ?? 0) >= 0 ? 'check' : 'minus')}</span>`;
+    title = `${side}<b>${esc(x.exit || 'EXIT')}</b>${x.taken === false ? chip('paper only', 'warn') : ''}`;
+    sub = [ok(x.qty) ? `${x.qty} micros` : '', (x.reasons || []).join('; '), x.body ? String(x.body).split('\n')[0] : ''].filter(Boolean).join(' · ');
+    right = `<span class="sl-r ${cR(x.R)}">${fR(x.R)}<br><span class="${cls(x.usd)}">${susd(x.usd)}</span></span>`;
+  } else {
+    ic = `<span class="side-i" style="width:32px;height:32px;border-radius:10px;border:1px solid var(--line)">${icon(x.kind === 'timing' ? 'prop' : x.kind === 'pc' ? 'phone' : x.kind === 'risk' ? 'risk' : 'alerts')}</span>`;
+    title = `<b>${esc(String(x.title || ACT_K[x.kind] || 'Notice').replace(/^[^·]*·\s*/, ''))}</b>`;
+    sub = x.body || '';
+  }
+  return `<div class="act ${hl === x.key ? 'hl' : ''}" data-key="${esc(x.key)}">${ic}<span class="sl-m"><span class="sl-t">${title}</span><span class="sl-s act-s">${esc(sub)}</span>
+    <span class="sl-s"><span class="mono">${et(x.t).hm} ET</span> · ${esc(ACT_K[x.kind] || x.kind || '')} · ${src}${x.sent ? ' · <span class="up">notified</span>' : ''}</span></span>${right}</div>`;
+}
+function actList(A, hl = '', grouped = true) {
+  if (!A.length) return emptyBox('Nothing yet.', 'Every fill and every outcome of the paper bot shows up here, newest first, with a phone notification once they are on.');
+  let out = '', day = null;
+  for (const x of A) { const d = actDay(x.t); if (grouped && d !== day) { day = d; out += `<div class="act-day">${esc(d)}</div>`; } out += actRow(x, hl); }
+  return `<div class="slist act-list">${out}</div>`;
+}
+function activityCard() {
+  const A = activity(), n = actUnseen(A);
+  return `<div class="card"><div class="card-h"><h3>Activity</h3><div>${n ? chip(n + ' new', 'good') : ''}<button class="chipbtn" type="button" data-go="activity"><span>All</span>${icon('right')}</button></div></div>
+    ${actList(A.slice(0, 5), '', false)}<div id="pushPrompt"></div></div>`;
+}
+VIEWS.activity = (el) => {
+  const A = activity(), f = store.get('act.f', 'all');
+  const rows = A.filter(x => f === 'all' || (f === 'other' ? !['fill', 'outcome'].includes(x.kind) : x.kind === f));
+  const outs = A.filter(x => x.kind === 'outcome'), net = outs.reduce((a, x) => a + (x.usd || 0), 0);
+  el.innerHTML = head('System · activity', 'Every fill and every outcome', 'The paper bot’s trades as they happen, newest first, with the notices sent to this phone. A notification tap opens the trade here.')
+    + `<div class="stats">${statBox('Fills', A.filter(x => x.kind === 'fill').length)}${statBox('Outcomes', outs.length, `${outs.filter(x => (x.usd || 0) > 0).length} won`)}${statBox('Net · paper', susd(net), 'all outcomes listed', cls(net))}${statBox('Notifications', LV().push?.devices ? `${LV().push.devices} device${LV().push.devices === 1 ? '' : 's'}` : 'off', LV().push?.devices ? 'cloud sends them' : 'set up in Settings')}</div>
+    <div class="card"><div class="card-h"><h3>Activity</h3>${segHTML('actF', [['all', 'All'], ['fill', 'Fills'], ['outcome', 'Outcomes'], ['other', 'Other']], f, 'sm')}</div>${actList(rows, ARG || '')}</div>
+    <div class="card" id="pushCardA">${pushShell()}</div>`;
+  onSeg('actF', (v) => { store.set('act.f', v); render(true); });
+  pushFill('pushCardA');
+  actMarkSeen();
+  if (ARG) { const r = el.querySelector(`.act[data-key="${CSS.escape(ARG)}"]`); if (r) setTimeout(() => r.scrollIntoView({ block: 'center', behavior: motionOn() ? 'smooth' : 'auto' }), 60); }
+};
+
+// ---- Web Push on this device: subscribe from a tap, show the code for the GitHub Secret
+const b64uBytes = (s) => { const b = atob(String(s).replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - String(s).length % 4) % 4)); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+const bytesB64u = (u) => btoa(String.fromCharCode(...new Uint8Array(u))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const pushSupport = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const PUSH = { fileKey: undefined };
+async function pushKey() {
+  const nk = store.get('push.newkeys', null), cloud = LV().push?.vapid_public;
+  if (nk && cloud && nk.pub === cloud) { store.set('push.newkeys', null); return cloud; }   // the cloud runs with the phone-made key now
+  if (nk) return nk.pub;
+  if (cloud) return cloud;
+  if (PUSH.fileKey === undefined) { try { PUSH.fileKey = (await getJSON('push_key.json?t=' + Date.now())).vapid_public || null; } catch { PUSH.fileKey = null; } }
+  return PUSH.fileKey;
+}
+async function pushMakeKeys() {
+  const kp = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify']);
+  const j = await crypto.subtle.exportKey('jwk', kp.privateKey);
+  const pub = bytesB64u(Uint8Array.from([4, ...b64uBytes(j.x), ...b64uBytes(j.y)]));
+  store.set('push.newkeys', { pub, priv: j.d, t: Date.now() });
+  return pub;
+}
+async function swReg() {
+  let r = await navigator.serviceWorker.getRegistration();
+  if (!r) r = await navigator.serviceWorker.register('sw.js');
+  if (!r.active) await navigator.serviceWorker.ready;
+  return r;
+}
+const sameKey = (sub, key) => { try { const a = new Uint8Array(sub.options.applicationServerKey), b = b64uBytes(key); return a.length === b.length && a.every((v, i) => v === b[i]); } catch { return true; } };
+async function pushSub() { try { const r = await navigator.serviceWorker.getRegistration(); return r ? await r.pushManager.getSubscription() : null; } catch { return null; } }
+async function devId(ep) { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ep)); return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 12); }
+const subCode = (sub) => { const j = sub.toJSON(); return JSON.stringify([{ endpoint: j.endpoint, keys: { p256dh: j.keys.p256dh, auth: j.keys.auth } }]); };
+async function pushTurnOn() {
+  // the permission prompt must come straight from the tap (iPhone): it is the first thing this does
+  const perm = await Notification.requestPermission();
+  if (perm !== 'granted') throw new Error(perm === 'denied' ? 'Notifications are blocked for this app. iPhone: Settings → Notifications → Liquidity → Allow Notifications, then try again.' : 'Notifications were not allowed.');
+  const key = await pushKey();
+  if (!key) throw new Error('No notification key yet: tap “Make the keys on this phone” first.');
+  const reg = await swReg();
+  let sub = await reg.pushManager.getSubscription();
+  if (sub && !sameKey(sub, key)) { await sub.unsubscribe(); sub = null; }
+  if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(key) });
+  return sub;
+}
+const copyBox = (id, label, value, secret = false) => `<div class="codebox"><div class="cb-h"><b>${label}</b><button class="btn ghost sm" type="button" data-copy="${id}">${icon('doc')}Copy</button></div>
+  <textarea id="${id}" readonly rows="${secret ? 2 : 4}" spellcheck="false" ${secret ? 'class="secret"' : ''}>${esc(value)}</textarea></div>`;
+const pushShell = () => `<div class="card-h"><h3>Phone notifications</h3><span class="meta" id="pushChip"></span></div><div id="pushBox">${skLines(4)}</div>`;
+async function pushFill(cardId) {
+  const box = () => $('#' + cardId + ' #pushBox') || $('#pushBox'), draw = still((h, c) => { const b = box(); if (b) b.innerHTML = h; const ch = $('#' + cardId + ' #pushChip'); if (ch && c != null) ch.innerHTML = c; });
+  const P = LV().push || {};
+  if (!pushSupport()) {
+    draw(isIOS() && !isStandalone()
+      ? `<ol class="list"><li>On iPhone, notifications work in the <b>Home Screen app</b> (iOS 16.4 or later), not in a Safari tab.</li><li>In Safari tap <b>Share</b> ${icon('share')} → <b>Add to Home Screen</b>.</li><li>Open <b>Liquidity</b> from the Home Screen, come back here and tap <b>Turn on notifications</b>.</li></ol>`
+      : emptyBox('This browser cannot receive notifications.', ' Use the Home Screen app on your iPhone, or Chrome / Edge / Firefox. The Activity list works everywhere.'), chip('not available'));
+    return;
+  }
+  const sub = await pushSub(), perm = Notification.permission, key = await pushKey(), nk = store.get('push.newkeys', null);
+  const id = sub ? await devId(sub.endpoint) : null, inCloud = !!(id && (P.device_ids || []).includes(id)), gone = !!(id && (P.gone || []).includes(id));
+  const keyOk = sub && key ? sameKey(sub, key) : false;
+  const state = !sub ? (perm === 'denied' ? ['blocked', 'bad'] : ['off', '']) : gone ? ['expired', 'bad'] : inCloud && keyOk ? ['on', 'good'] : ['waiting for the code', 'warn'];
+  const steps = sub && !(inCloud && keyOk) ? `<ol class="list">
+      ${nk ? `<li>Copy <b>key</b> below. Open <a href="${SECRETS_URL}/new" target="_blank" rel="noopener noreferrer">GitHub → New repository secret</a>, name <b class="mono">LE_VAPID_PRIVATE</b>, paste, <b>Add secret</b>.</li>` : ''}
+      <li>Copy <b>this phone’s code</b> below. Open <a href="${SECRETS_URL}/new" target="_blank" rel="noopener noreferrer">GitHub → New repository secret</a>, name <b class="mono">LE_PUSH_SUBS</b> (a second phone: <b class="mono">LE_PUSH_SUBS_2</b>), paste, <b>Add secret</b>. Already there? Open it and <b>Update secret</b> with this code.</li>
+      <li>The next cloud run (every 30 min on market days, 02:00–16:25 ET) picks it up and this card says <b>on</b>. To test now: GitHub → <b>Actions</b> → <b>cloud-monitor</b> → <b>Run workflow</b> → tick <b>Send a test notification</b>.</li>
+      <li>For the PC bot too: PC dashboard → Alerts → Phone app notifications → paste the same key and code → Save.</li></ol>` : '';
+  const html = `
+    <div class="note" style="margin-top:0">A notification for every <b>fill</b> and every <b>outcome</b> (target, stop, breakeven, end of day: R, $ and the eval balance), plus the PC bot going silent and eval-timing changes. Free, no Telegram or Discord. Cloud notices say <b>Cloud paper</b>, the PC bot’s say <b>PC …</b>.</div>
+    <div class="kv" style="margin:12px 0"><div><span>This phone</span><b class="${state[1] === 'good' ? 'up' : state[1] === 'bad' ? 'dn' : ''}">${esc(state[0])}</b></div><div><span>Permission</span><b>${esc(perm)}</b></div>
+      <div><span>Cloud sender</span><b>${P.configured ? `${P.devices || 0} phone${P.devices === 1 ? '' : 's'}` : 'no key yet'}</b></div><div><span>Last sent</span><b>${P.last_sent_at ? ago(P.last_sent_at) : '—'}</b></div></div>
+    ${gone ? `<div class="ownr" style="margin:0 0 12px">${icon('info')}<span>The push service says this phone’s code <b>expired</b>. Tap <b>Turn on again</b> and update the <b class="mono">LE_PUSH_SUBS</b> secret with the new code.</span></div>` : ''}
+    ${sub && key && !keyOk ? `<div class="ownr" style="margin:0 0 12px">${icon('info')}<span>The cloud uses a different key than this phone subscribed with. Tap <b>Turn on again</b>, then update the secret.</span></div>` : ''}
+    ${!key ? `<div class="ownr" style="margin:0 0 12px">${icon('info')}<span><b>One-time step:</b> the notification keys do not exist yet. Make them here (the private one is shown once for a GitHub Secret, never sent anywhere else), or run <span class="mono">python tools/push_keys.py</span> on the PC.</span></div>` : ''}
+    <div class="row-btns">
+      ${!key ? `<button class="btn primary" type="button" id="puKeys">${icon('risk')}Make the keys on this phone</button>` : ''}
+      ${key && (!sub || gone || !keyOk) ? `<button class="btn primary" type="button" id="puOn">${icon('alerts')}${sub ? 'Turn on again' : 'Turn on notifications'}</button>` : ''}
+      ${sub ? `<button class="btn ghost" type="button" id="puTest">${icon('check')}Test on this phone</button><button class="btn ghost" type="button" id="puOff">${icon('close')}Turn off</button>` : ''}
+    </div>
+    ${steps}
+    ${sub && nk && nk.priv ? copyBox('puPriv', 'Key · secret LE_VAPID_PRIVATE (private: only into GitHub Secrets)', nk.priv, true) + `<div class="note">Saved it in GitHub? <button class="btn ghost sm" type="button" id="puForget">I saved it: forget the key here</button> (the cloud then publishes the matching public key and this phone keeps working).</div>` : ''}
+    ${sub ? copyBox('puCode', `This phone’s code · secret ${inCloud ? 'LE_PUSH_SUBS (already in the cloud)' : 'LE_PUSH_SUBS'}`, subCode(sub)) : ''}
+    <div class="note">Setup guide: docs/NOTIFICATIONS.md in the repo. Secrets: <a href="${SECRETS_URL}" target="_blank" rel="noopener noreferrer">${esc(SECRETS_URL.replace('https://', ''))}</a></div>`;
+  draw(html, chip(state[0], state[1]));
+  const b = box(); if (!b) return;
+  const err = (e) => { toast(e.message || String(e), 5200); };
+  b.querySelector('#puKeys')?.addEventListener('click', async () => { try { await pushMakeKeys(); toast('Keys made: now tap Turn on notifications'); pushFill(cardId); } catch (e) { err(e); } });
+  b.querySelector('#puOn')?.addEventListener('click', async () => { try { await pushTurnOn(); toast('Notifications on: copy the code below into GitHub'); haptic(14); pushFill(cardId); } catch (e) { err(e); } });
+  b.querySelector('#puTest')?.addEventListener('click', async () => {
+    try { const r = await swReg(); await r.showNotification('Liquidity · test on this phone', { body: 'This is how a fill or an outcome will look.', icon: 'icons/icon-192.png?v=drop1', badge: 'icons/icon-192.png?v=drop1', tag: 'le-local-test', data: { url: '#/activity' } }); toast('Test shown'); } catch (e) { err(e); }
+  });
+  b.querySelector('#puOff')?.addEventListener('click', async () => { try { const s = await pushSub(); if (s) await s.unsubscribe(); toast('Notifications off on this phone'); pushFill(cardId); } catch (e) { err(e); } });
+  b.querySelector('#puForget')?.addEventListener('click', () => { if (!confirm('Forget the private key on this phone? Only do this after it is saved as the GitHub Secret LE_VAPID_PRIVATE.')) return; const nk2 = store.get('push.newkeys', null); if (nk2) store.set('push.newkeys', { pub: nk2.pub, priv: null, t: nk2.t }); pushFill(cardId); });
+  b.onclick = async (e) => {
+    const c = e.target.closest('[data-copy]'); if (!c) return;
+    const ta = b.querySelector('#' + c.dataset.copy); if (!ta) return;
+    try { await navigator.clipboard.writeText(ta.value); toast('Copied'); } catch { ta.select(); try { document.execCommand('copy'); toast('Copied'); } catch { toast('Select the text and copy it'); } }
+  };
+}
+// Today: a one-line nudge until this phone is set up (dismissed for a week with Not now)
+async function pushPromptFill() {
+  const el = $('#pushPrompt'); if (!el) return;
+  if (store.get('push.later', 0) > Date.now()) return;
+  const draw = still((h) => { const x = $('#pushPrompt'); if (x) x.innerHTML = h; });
+  if (pushSupport()) { const s = await pushSub(); if (s && Notification.permission === 'granted') return; }
+  else if (!isIOS()) return;
+  draw(`<div class="ownr" style="margin:12px 0 0">${icon('alerts')}<span><b>Get a notification for every fill and every outcome.</b> ${pushSupport() ? 'One tap here, then one GitHub Secret.' : 'Open the app from your Home Screen first.'}
+    <span class="row-btns" style="margin-top:8px"><button class="btn primary sm" type="button" data-go="settings">Set up</button><button class="btn ghost sm" type="button" id="puLater">Not now</button></span></span></div>`);
+  $('#puLater')?.addEventListener('click', () => { store.set('push.later', Date.now() + 7 * 864e5); $('#pushPrompt').innerHTML = ''; });
+}
+// the service worker asks the page to open a notification's trade, and tells it a push arrived (fetch the new data)
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', (e) => {
+  const m = e.data || {};
+  if (m.type === 'open' && /^#\/[\w\-/:.%]*$/.test(m.hash || '')) { if (location.hash === m.hash) route(); else location.hash = m.hash; }
+  else if (m.type === 'push') { load(); actBadge(); }
+});
+
 // ===================================================================== SETTINGS
 VIEWS.settings = (el) => {
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent), standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   el.innerHTML = head('System · settings', 'Make it yours', 'Saved on this device only.')
-    + `<div class="grid g2"><div class="card"><div class="card-h"><h3>Home Screen app</h3>${standalone ? chip('installed', 'good') : ''}</div>
+    + `<div class="card" id="pushCardS">${pushShell()}</div>
+    <div class="grid g2"><div class="card"><div class="card-h"><h3>Home Screen app</h3>${standalone ? chip('installed', 'good') : ''}</div>
         ${standalone ? '<div class="note" style="margin-top:0">Running as a Home Screen app. It opens full screen and refreshes by itself.</div>' :
           `<ol class="list"><li>${ios ? `In Safari tap <b>Share</b> ${icon('share')}` : 'In Chrome tap the <b>⋮ menu</b>'}</li><li>${ios ? 'Choose <b>Add to Home Screen</b>' : 'Choose <b>Install app</b> or <b>Add to Home screen</b>'}</li><li>Open <b>Liquidity</b> from your Home Screen: full screen, no browser bars</li></ol>
           ${INSTALL ? `<div style="margin-top:14px"><button class="btn primary" type="button" id="inst">${icon('phone')}Install app</button></div>` : ''}`}
@@ -3448,6 +3678,7 @@ VIEWS.settings = (el) => {
     store.set('gyro', okG); if (!okG) { e.target.checked = false; toast('Motion sensors not available or not allowed'); } else toast('Tilt your phone to look around');
   };
   $('#inst')?.addEventListener('click', async () => { INSTALL.prompt(); await INSTALL.userChoice; INSTALL = null; render(true); });
+  pushFill('pushCardS');
 };
 let INSTALL = null;
 addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); INSTALL = e; });
@@ -3461,7 +3692,7 @@ async function load(manual = false) {
     const r = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const nd = await r.json(), changed = !D || nd.built !== D.built, first = !D;
-    D = nd; status();
+    D = nd; status(); actBadge();
     if (first) subBar(PAGE, groupOf(PAGE));        // detail pages show previous / next once the lists are known
     if (FX) { FX.mood(moodNow()); if (changed && manual !== 'boot') FX.pulse(); }
     if (changed && !(PAGE === 'replays' && RP?.timer)) render(!first);

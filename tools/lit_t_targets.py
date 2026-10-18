@@ -586,16 +586,28 @@ def grid(only=None):
 
 
 # ================================================================================================ store runs
-def save(names=None, status_of=None, why_of=None):
+def _py(v):
+    """numpy scalars -> python (rl.save writes plain json)."""
+    if isinstance(v, np.integer):
+        return int(v)
+    if isinstance(v, np.floating):
+        return float(v)
+    if isinstance(v, np.bool_):
+        return bool(v)
+    return v
+
+def save(names=None, status_of=None, why_of=None, skip=()):
     V = variants()
     res = _load()
     for nm in names or list(V):
+        if nm in skip:
+            continue
         fam, P = V[nm]
         U = unit(P)
         ps = P_of(P)["pstop"]
         Tr = evals(U, EVAL, "2026", ROOM, ps)[1] + evals(U, EVAL, "2021-25", ROOM, ps)[1]
-        Tr = [{k: v for k, v in t.items() if k not in ("legs",)} for t in Tr]
-        S = rl.score(Tr, SESS)
+        Tr = [{k: _py(v) for k, v in t.items() if k not in ("legs",)} for t in Tr]
+        S = json.loads(json.dumps(rl.score(Tr, SESS), default=_py))
         o = res.get(nm, {}).get("score") or score(U, pstop=ps)
         h = lambda s: (f"n={s['n']} {s['tpw']}/wk win {s['win']}% PF {s['pf']} net {s['net']:+,} (${s['per_month']:,}/mo) DD {s['dd']:,} "
                        f"eval 2wk {s['p10']}/{s['f10']} 1mo {s['p20']}/{s['f20']} pass rate {s['pass_rate']}% median {s['pass_med']}")

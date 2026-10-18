@@ -35,6 +35,10 @@
       "url": "./#/today"
     },
     {
+      "name": "Activity",
+      "url": "./#/activity"
+    },
+    {
       "name": "News",
       "url": "./#/news"
     },

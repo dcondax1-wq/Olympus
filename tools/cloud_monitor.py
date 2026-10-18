@@ -42,6 +42,7 @@ START_BAL, TARGET, MLL_AMT, MLL_LOCK = 50000.0, 3000.0, 2000.0, 50100.0
 KILLZONES = ((570, 690), (810, 930))
 ALERT_TYPES = ("sweep", "signal", "entry", "exit")
 PUSH_SRC = "Cloud paper"
+PUSH_MAX_AGE_S = 2 * 86400    # a fill / outcome older than this is never notified (a late first run, a restored state)
 _LM = None                    # live_model.json of this run (send_alert's chat switch)
 
 
@@ -451,7 +452,7 @@ def run(out):
     push_since = int(st.get("push_since") or now)
     pcfg = push.config()
     notifier = push.Notifier(keys=st.get("pushed") or [], cfg=pcfg)
-    candidates = trade_notices(ledger, res, pos, lm, max(push_since - 60, now - 2 * 86400, first_run - SECS), state,
+    candidates = trade_notices(ledger, res, pos, lm, max(push_since - 60, now - PUSH_MAX_AGE_S, first_run - SECS), state,
                                size=lambda t: paper_size(ledger, t, lm["model"], eqf_cfg, shadow_path, sizing_cfg, lm.get("params"),
                                                          lm.get("lit_sizing") if lm["model"] == "lit" else None))
     defer = (os.environ.get("LE_PUSH_DEFER_TO_PC", "") == "1" and pc.get("present") and pc.get("running") and not pc.get("silent")

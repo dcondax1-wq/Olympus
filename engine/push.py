@@ -206,7 +206,7 @@ def fill_payload(src: str, sym: str, side: str, qty, entry, stop, target, entry_
         lines.append(note)
     return {"kind": "fill", "src": src, "key": key or f"fill:{int(entry_t or 0)}", "t": int(entry_t or time.time()),
             "title": f"{src} · {model} {side} filled", "body": _clip("\n".join(lines)),
-            "tag": f"{_tag(src)}-trade-{int(entry_t or 0)}", "url": url or f"#/activity/fill:{int(entry_t or 0)}",
+            "tag": f"{_tag(src)}-fill-{int(entry_t or 0)}", "url": url or f"#/activity/fill:{int(entry_t or 0)}",
             "side": side, "qty": qty, "entry": entry, "stop": stop, "target": target, "risk_usd": round(risk_usd, 2)}
 
 
@@ -219,7 +219,7 @@ def outcome_payload(src: str, sym: str, side: str, exit_reason: str, r, usd, ent
     rtxt = "" if r is None else f" {float(r):+.2f}R"
     lines = [f"{EXIT_WORDS.get(reason, reason.lower())}"
              + (f" · entry {_et_hm(entry_t)} → exit {_et_hm(exit_t)} ET" if entry_t and exit_t else "")
-             + (f" · {qty} micros" if qty else "")]
+             + (f" · {qty} micro{'' if int(qty) == 1 else 's'}" if qty else "")]
     if balance is not None:
         lines.append(f"Eval balance ${float(balance):,.0f}"
                      + (f" (${max(0.0, float(to_target)):,.0f} to the $3k target)" if to_target is not None and float(to_target) > 0
@@ -228,7 +228,7 @@ def outcome_payload(src: str, sym: str, side: str, exit_reason: str, r, usd, ent
         lines.append(note)
     return {"kind": "outcome", "src": src, "key": key or f"out:{int(entry_t or 0)}", "t": int(exit_t or time.time()),
             "title": f"{src} · {model} {side} {reason}{rtxt} {_money(usd)}", "body": _clip("\n".join(lines)),
-            "tag": f"{_tag(src)}-trade-{int(entry_t or 0)}", "url": url or f"#/activity/out:{int(entry_t or 0)}",
+            "tag": f"{_tag(src)}-out-{int(entry_t or 0)}", "url": url or f"#/activity/out:{int(entry_t or 0)}",
             "side": side, "exit": reason, "R": None if r is None else round(float(r), 2), "usd": round(float(usd or 0), 2)}
 
 
