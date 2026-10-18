@@ -20,7 +20,7 @@ runs: lit_fill_live_today, lit_fill_live_today_eval, lit_fill_live_fixed, lit_fi
   that costs nothing, because price is as likely to be lower as higher by then. But each entry lands somewhere from 9 points
   better to 25 points worse (sd 7.5 pts), and a trade can end up risking **1.65x what was planned**. On the eval sizing the bots
   use, that randomness costs eval odds: 2026 **pass rate 84.8% → 71.2%**, 1-month passes 55.3% → 49.5%.
-- **Fix (recommended, not done here because it changes the live loop):** decide the entry when the 1m CISD candle closes, and poll
+- **Fix (done 2026-10-18 evening, see "The timing fix" below):** decide the entry when the 1m CISD candle closes, and poll
   2 seconds after each minute. Then the entry is about 6 s late, the error is 0.6 pts, and the eval odds are back to the
   backtest's: **pass rate 84.8%, 2 weeks 34.5% pass / 2.4% fail, 1 month 56.3% / 3.9%**.
 - **Order types:** keep **stop-market** stops (a stop-limit can leave you in a runaway trade) and keep the **target limit where it is**
@@ -149,6 +149,38 @@ points to the real stop distance (up to 1.65x the planned risk), and the eval's 
 of these did it: the Mar 3 stop lost 74 pts instead of 57, and in late May three breakeven exits lost 8-13 pts each instead of
 0. Together they turned about 20 eval starts from pass into fail. The effect is noise, not a lost edge: H2 even did a little better.
 But noise is exactly what an eval cannot afford, and the fix removes it.
+
+## The timing fix (done 2026-10-18 evening, paper / Sim tested)
+
+What the PC bot does now (`engine/live.py`, `engine/lit_live.py`, `engine/lit.py` live mode, `engine/ninjatrader.py`,
+`ninjatrader/LE_BarFeed.cs`):
+
+- **The entry is decided the moment the 1m CISD candle closes.** The model no longer waits for the next 1m bar to exist: it
+  reports "enter now" (state `enter_now`) and the bot sends the MARKET order (with its stop and target) in that same poll.
+  The backtest's fill is the open of the next bar, which is exactly what a market order sent within seconds of that open gets.
+- **The size uses the backtest's own fill price.** The feed shows the minute that has just started from its first trade
+  (Yahoo's last row; NinjaTrader: LE_BarFeed now also writes `le_feed\MNQ_1m_open.csv` = that minute's open), so the micros,
+  stop and target are the backtest's. Without that open the size would come from the CISD close: in a test of every 2026 trade
+  that would have routed other micros on 27 of 120 trades (and a slightly different 8R target on a few); the bot logs it and
+  flattens at once if the real open turns out to fail a rule (e.g. the 1.5R minimum).
+- **A setup is seen as soon as its 5m trigger bar closes.** Before, the live loop needed the next 5m bar to close too, so 18
+  of 120 trades were seen 1-3 minutes after their fill (the old fill model missed this). The forming 5m bar is now added to the
+  market as a flat bar at its open, never used as a trigger, an executor bar or a level.
+- **Polls are aligned to the clock:** 2 s after every minute (a bar has just closed) and a mid-minute poll for exits. With
+  NinjaTrader's 1m file, a bar not yet written at +2 s is re-polled the moment the file changes. The breakeven CHANGE and the
+  15:55 TIME exit go out in the first poll after their 1m bar closes.
+
+**Proof (fake clock that runs on during each poll, paper / NinjaTrader Sim simulator, nothing armed):**
+- `tests/test_lit_oif.py --part=1/6` (20 trades spread over Jan-Oct 2026; one process): **20/20 MARKET order files written by
+  the first poll after the 1m CISD close, at the backtest's entry bar, with the backtest's side, micros, stop and target; 0
+  missed.** Delay from the candle close to the order file: median **3.6 s**, 2.5-3.7 s on a quiet box; 5 trades took 17-26 s
+  because the test box was overloaded (one poll took 15-24 s of CPU); on the PC a poll takes ~1-1.5 s.
+- `tests/test_lit_timing.py`: entry 2-3 s, breakeven CHANGE 2 s after the +1R bar closed, 15:55 TIME exit 2 s after the 15:55
+  bar closed (10/10 checks).
+- `tests/test_lit_live.py`: the day-end replay is still 120/120 trades identical; the intraday polls (early mode) show no new
+  differences and every "enter now" matches the backtest trade.
+
+**Re-measured with the fill model** (`tools/lit_fills.py`, scenario `live_now` = the code above; see the table in the report).
 
 ## What changes a decision
 

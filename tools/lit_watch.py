@@ -72,6 +72,13 @@ def _ledger_rows(out):
     return [{"day": v.get("day"), "exit": v.get("exit"), "exit_t": v.get("exit_ts")} for v in (st.get("ledger") or {}).values()]
 
 
+def _monitor_has_today(out, res):
+    """The last monitor run (state.json) shows today's LIT trade: an open position or a ledger row of today."""
+    st = _load(os.path.join(out, "state.json"), {})
+    day = ((res.get("state") or {}).get("lit") or {}).get("today")
+    return bool(st.get("position")) or any(v.get("day") == day for v in (st.get("ledger") or {}).values())
+
+
 def full_run(out, publish, why):
     """The regular monitor (ledger + notification + dashboards) and the publish script, as the workflow runs them."""
     print(f"watch: {why} -> full monitor run", flush=True)
@@ -134,7 +141,7 @@ def main():
         base1 = pd.DataFrame()
     week = _ledger_rows(out)
     lags = list(W.get("lag") or [])
-    last_sig, brew, brew_t, M = None, [], None, None
+    last_sig, brew, brew_t, M, confirm_t = None, [], None, None, 0
     polls, runs, why_end, kinds = 0, [], "cap", set()
     forming_s0 = float(W.get("forming_s", 0))
     while True:
@@ -150,9 +157,14 @@ def main():
         except Exception as ex:
             print("watch: Yahoo fetch failed:", ex.__class__.__name__, flush=True)
             y5 = y1 = pd.DataFrame()
-        feed_t = now
+        feed_t, forming = now, None
         if len(y1):
             newest = int(y1["time"].max())
+            try:
+                fo = float(y1.loc[y1["time"] == newest, "open"].iloc[-1])
+                forming = (newest, fo) if fo > 0 else None      # the backtest fills at this bar's open (1m CISD entries)
+            except Exception:
+                forming = None
             lags.append([now, int(now - (newest + 60))])     # seconds since the newest 1m bar would have closed
             # A delayed feed's newest row can be a bar still forming in feed time while clean_bars (wall clock) calls it
             # closed: only bars that ended by the newest row's open are used (costs at most a minute, never a partial bar).
@@ -164,7 +176,9 @@ def main():
         df5 = df5[df5["time"] + 300 <= feed_t]
         df1 = df1[df1["time"] + 60 <= feed_t]
         try:
-            res = lit_live.run(df5, P, one_min=df1 if len(df1) else None, now=now, sym=sym, week_hist=week)
+            # early mode on the feed's clock: a setup is seen while its entry bar is still forming (as the PC bot does)
+            res = lit_live.run(df5, P, one_min=df1 if len(df1) else None, now=feed_t, sym=sym, week_hist=week,
+                               forming=forming, early=True)
         except Exception as ex:
             print("watch: model failed:", ex.__class__.__name__, ex, flush=True)
             why_end = "model error"
@@ -180,6 +194,16 @@ def main():
                 print("watch: forming check failed:", ex.__class__.__name__, ex, flush=True)
                 brew = []
         ok, why = lit_watch.alive(res, brew)
+        if why in ("in trade", "done for today") and not _monitor_has_today(out, res):
+            # the watcher saw the entry first (early mode); the monitor shows it once the 5m bar after the trigger has
+            # closed (<= 5 min): re-run it every minute until its ledger / position has the trade, then stop
+            ok, why = True, "entry seen, waiting for the monitor"
+            if last_sig is not None and now - confirm_t >= 60:
+                confirm_t = now
+                full_run(out, not a.no_publish, why)
+                week = _ledger_rows(out)
+                if _monitor_has_today(out, res):
+                    ok, why = False, "in trade"
         if why == "setup forming":
             if float(W.get("forming_s", 0)) >= a.forming_budget * 60 or used_min >= a.month_budget:
                 ok, why = False, "forming budget used"
@@ -193,6 +217,7 @@ def main():
                                                  "line": line and line["text"]})
             _save(wpath, W)
             secs = full_run(out, not a.no_publish, f"{why} ({res['state'].get('model_state')})")
+            confirm_t = now
             runs.append({"t": now, "why": why, "position": bool(res["state"].get("position")), "secs": secs})
             week = _ledger_rows(out)
         last_sig = sig
