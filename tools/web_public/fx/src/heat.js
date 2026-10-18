@@ -8,7 +8,11 @@
 //   Tap a bar -> opts.onPick(cell) (the page's cell object); mouse hover shows the tooltip; drag to orbit.
 //   First data: the bars rise out of the floor in a wave (left to right, back to front) while the killzone strips light up;
 //   new data: bars morph (height, colour, cap), newcomers rise, leavers sink; the same data twice does nothing.
-// setData({ cells: [{ dow: 0-4 (Mon-Fri), hour: 9-15 (ET entry hour), n, avg_r, net }], label: '2026' })
+// setData({ cells: [{ dow: 0-4 (Mon-Fri), hour: 9-15 (ET entry hour), n, avg_r, net }], label: '2026',
+//           hours: [h0, h1] (the hour columns h0..h1-1; default 9-16, widened to the cells' hours when they fall outside),
+//           zones: [[startH, endH], ...] (lit floor strips, ET hours; default the two killzones), zoneLabel: 'killzone' })
+//   LIT passes hours [1, 16], zones [[2, 15.5]] and zoneLabel 'entry window'; with more than 8 columns the hour labels
+//   shorten to "02" so they fit a 390 px phone.
 //   A missing cell, a cell with n <= 0 or a dow / hour outside the grid = an empty socket. A duplicate (dow, hour) keeps the
 //   last one. avg_r missing -> neutral lavender; net missing or 0 -> a faint white cap. A bare array of cells works too.
 // Draw calls ~11 (backdrop, 2 nebula, dust, floor, guides, pools, bars = one InstancedMesh, caps, reticle) whatever the data.
@@ -16,15 +20,14 @@
 import { THREE, Q, theme, Hud, addBackdrop, addNebula, addDust, Guides, ringTexture, sprite, additive, attrs, count,
   paintBackdrop, clamp, smooth, outBack, num, esc, hash, fmtR, fmtUsd, corners, div, injectStyle } from './hud.js';
 
-const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], H0 = 9, NH = 7, ND = 5, N = NH * ND;
-const KZ = [[9.5, 11.5], [13.5, 15.5]];                  // killzones in ET hours
+const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], ND = 5, CAP = 24 * ND;
+const KZ = [[9.5, 11.5], [13.5, 15.5]];                  // killzones in ET hours (the default zones)
 const RISE = 1, MOVE = 2, SINK = 4;
 const C = { good: new THREE.Color('#2ee59d'), mid: new THREE.Color('#8b5cf6'), bad: new THREE.Color('#ff2bd6'),
   gold: new THREE.Color('#ffd98a'), red: new THREE.Color('#ff5a7a'), none: new THREE.Color('#c4b5fd') };
 const CSS = { good: '#4ef0b0', bad: '#ff7ad9', gold: '#ffe7a8', red: '#ff8a9e', kz: '#5eead4', none: '#c4b5fd' };
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector2(), _m = new THREE.Matrix4(), _c = new THREE.Color(), _k = new THREE.Color();
 const hhmm = (h) => String(h).padStart(2, '0') + ':00';
-const kzOf = (h) => (h < 12 ? 'AM' : h >= 13 ? 'PM' : null);   // which killzone an hour column (9-15) belongs to; 12 = lunch
 // average R -> colour: magenta (-1R) .. neutral violet (0) .. green (+1R), saturating beyond
 function rColor(out, r) {
   if (!Number.isFinite(r)) return out.copy(C.none).multiplyScalar(0.6);
@@ -79,13 +82,13 @@ void main(){ vec2 q = (gl_PointCoord - 0.5) * vec2(2.0, 4.2); float d = dot(q, q
   float a = 1.0 - d; a = a * a; float core = exp(-d * 9.0); gl_FragColor = vec4(vColor * (a * 0.45 + core * 0.9) * vAlpha, 1.0); }`;
 const WALL_V = `varying vec3 vW; void main(){ vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`;
 // the floor: a socket plate per cell, fine cell borders, the two killzone strips (green, scanned) with glowing borders, a rim
-const FLOOR_F = `uniform vec2 uX; uniform vec2 uZ; uniform vec2 uG0; uniform float uCs; uniform vec4 uKZ; uniform vec3 uBase; uniform vec3 uGood;
+const FLOOR_F = `uniform vec2 uX; uniform vec2 uZ; uniform vec2 uG0; uniform float uCs; uniform float uNH; uniform vec4 uKZ; uniform vec3 uBase; uniform vec3 uGood;
 uniform float uTime; uniform float uMotion; uniform float uIn; varying vec3 vW;
 void main(){
   vec2 p = vW.xz, lo = vec2(uX.x, uZ.x), hi = vec2(uX.y, uZ.y), e = min(p - lo, hi - p); float edge = min(e.x, e.y);
   if (edge < 0.0) discard;
   vec2 g = (p - uG0) / uCs, fw = fwidth(g);
-  float inside = step(0.0, g.x) * step(g.x, ${NH}.0) * step(0.0, g.y) * step(g.y, ${ND}.0);
+  float inside = step(0.0, g.x) * step(g.x, uNH) * step(0.0, g.y) * step(g.y, ${ND}.0);
   vec2 f = fract(g) - 0.5;
   vec2 d = abs(f) - vec2(0.31); float sq = length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
   float sock = (1.0 - smoothstep(0.0, fw.x * 1.6, abs(sq))) * 0.6 + (1.0 - step(0.0, sq)) * 0.22;
@@ -113,7 +116,8 @@ export class HeatCube extends Hud {
       orbit: { yaw: -0.42, pitch: 0.46, auto: 0.03, min: -0.95, max: 0.95, pitchMin: 0.2, pitchMax: 0.95 } });
     injectStyle('fxh-heat-css', STYLE);
     // grid: column i (hour 9 + i) -> x0 + (i + .5) cs, row j (Mon = 0, at the back) -> z0 + (j + .5) cs
-    this.cs = 1; this.fp = 0.62; this.hmax = 2.3; this.x0 = -NH / 2; this.z0 = -ND / 2;
+    this.H0 = 9; this.NH = 7; this.KZ = KZ; this.zoneLabel = 'killzone';
+    this.cs = 1; this.fp = 0.62; this.hmax = 2.3; this.x0 = -this.NH / 2; this.z0 = -ND / 2;
     this.slots = []; this.byKey = new Map(); this.animating = false; this.introDone = false; this.introAt = -1;
     this.nMax = 1; this.netMax = 1; this.total = 0; this.label = ''; this.sel = null; this.hov = null;
     Object.assign(this.u, { uSel: { value: -1 }, uHov: { value: -1 }, uSquash: { value: 0.45 }, uIn: { value: 1 } });
@@ -126,16 +130,16 @@ export class HeatCube extends Hud {
     this.bgU = addBackdrop(S, [0.5, 0.55]);
     addNebula(S, [['#6d28d9', -4, 3, -9, 15, 8, 0.1], ['#ff2bd6', 5, 0.5, -9, 11, 7, 0.045]]);
     this.dust = addDust(S, u, { n: count(Q.phone ? 650 : 800, 280), box: [6, 2.2, 4], cy: 1.3, seed: 43 });
-    this.fU = { uX: { value: new THREE.Vector2() }, uZ: { value: new THREE.Vector2() }, uG0: { value: new THREE.Vector2() }, uCs: { value: 1 }, uKZ: { value: new THREE.Vector4() },
+    this.fU = { uX: { value: new THREE.Vector2() }, uZ: { value: new THREE.Vector2() }, uG0: { value: new THREE.Vector2() }, uCs: { value: 1 }, uNH: { value: 7 }, uKZ: { value: new THREE.Vector4() },
       uBase: { value: new THREE.Color('#5b3bd1') }, uGood: { value: theme.good.clone() }, uTime: u.uTime, uMotion: u.uMotion, uIn: u.uIn };
     this.floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), additive(WALL_V, FLOOR_F, this.fU, { side: THREE.DoubleSide, extensions: { derivatives: true } }));
     this.floor.rotation.x = -Math.PI / 2; this.floor.renderOrder = 1; S.add(this.floor);
     this.guides = new Guides(S, 3);
-    this.pools = new THREE.Points(attrs(N, { position: [3, 1], aCol: [3, 1], aSize: [1, 1], aAlpha: [1, 1] }), additive(GLOW_V, POOL_F, u)); this.pools.renderOrder = 2; S.add(this.pools);
-    this.caps = new THREE.Points(attrs(N, { position: [3, 1], aCol: [3, 1], aSize: [1, 1], aAlpha: [1, 1] }), additive(GLOW_V, CAP_F, u)); this.caps.renderOrder = 6; S.add(this.caps);
+    this.pools = new THREE.Points(attrs(CAP, { position: [3, 1], aCol: [3, 1], aSize: [1, 1], aAlpha: [1, 1] }), additive(GLOW_V, POOL_F, u)); this.pools.renderOrder = 2; S.add(this.pools);
+    this.caps = new THREE.Points(attrs(CAP, { position: [3, 1], aCol: [3, 1], aSize: [1, 1], aAlpha: [1, 1] }), additive(GLOW_V, CAP_F, u)); this.caps.renderOrder = 6; S.add(this.caps);
     const box = new THREE.BoxGeometry(1, 1, 1); box.translate(0, 0.5, 0);
-    for (const k of ['aCol', 'aCap', 'aMisc']) box.setAttribute(k, new THREE.InstancedBufferAttribute(new Float32Array(N * 3), 3).setUsage(THREE.DynamicDrawUsage));
-    this.bars = new THREE.InstancedMesh(box, additive(BAR_V, BAR_F, u, { extensions: { derivatives: true } }), N);
+    for (const k of ['aCol', 'aCap', 'aMisc']) box.setAttribute(k, new THREE.InstancedBufferAttribute(new Float32Array(CAP * 3), 3).setUsage(THREE.DynamicDrawUsage));
+    this.bars = new THREE.InstancedMesh(box, additive(BAR_V, BAR_F, u, { extensions: { derivatives: true } }), CAP);
     this.bars.instanceMatrix.setUsage(THREE.DynamicDrawUsage); this.bars.count = 0; this.bars.renderOrder = 5; S.add(this.bars);
     const ret = ringTexture(true); this.textures.push(ret);
     this.reticle = sprite(S, ret, '#ffffff', 12);
@@ -145,7 +149,8 @@ export class HeatCube extends Hud {
   relayout() { this.regionFix(); if (!this.framed) { this.framed = true; this.frameScene(); } }
   regionFix() { const lh = this.legend?.isConnected ? this.legend.offsetHeight : 14; this.region = [-1, 1, -1 + 2 * 18 / this.h, 1 - 2 * (lh + 14) / this.h]; }
   attach(el) { super.attach(el); this.regionFix(); }
-  xOfT(t) { return this.x0 + (t - H0) * this.cs; }                     // a time of day (hours, ET) -> x
+  xOfT(t) { return this.x0 + (t - this.H0) * this.cs; }                     // a time of day (hours, ET) -> x
+  kzOf(h) { const z = this.KZ.findIndex(([a, b]) => h + 1 > a && h < b); return z < 0 ? null : this.KZ.length > 1 ? (this.KZ[z][0] < 12 ? 'AM ' : 'PM ') + this.zoneLabel : this.zoneLabel; }   // the zone an hour column touches
   yOf(n) { return n > 0 ? Math.max(0.06, clamp(n / this.nMax, 0, 1) * this.hmax) : 0; }
 
   // ---------------------------------------------------------------- data
@@ -153,6 +158,20 @@ export class HeatCube extends Hud {
     if (opts && typeof opts.onPick === 'function' && opts.onPick !== this._pickFn) this._onRow = opts.onPick;
     const src = d && typeof d === 'object' && !Array.isArray(d) ? d : { cells: Array.isArray(d) ? d : [] };
     const list = Array.isArray(src.cells) ? src.cells : [], label = src.label == null ? '' : String(src.label);
+    // hour columns: the page's range, or 9-16 widened to the cells' hours
+    let hr = Array.isArray(src.hours) && src.hours.length === 2 ? src.hours.map((v) => Math.round(num(v, NaN))) : null;
+    if (!hr || !(hr[0] >= 0 && hr[1] > hr[0] && hr[1] <= 24)) {
+      const hs = list.map((c) => Math.floor(num(c?.hour, NaN))).filter((h) => h >= 0 && h < 24);
+      hr = [Math.min(9, ...hs), Math.max(16, ...hs.map((h) => h + 1))];
+    }
+    const zones = Array.isArray(src.zones) && src.zones.length ? src.zones.slice(0, 2).map((z) => [num(z?.[0], 0), num(z?.[1], 0)]) : KZ;
+    const zl = typeof src.zoneLabel === 'string' && src.zoneLabel ? src.zoneLabel : 'killzone';
+    const shape = hr[0] + '-' + hr[1] + '|' + JSON.stringify(zones) + '|' + zl;
+    if (shape !== this.shape) {
+      if (this.shape != null) { for (const sl of this.slots) { sl.dead = true; } this.slots = []; this.byKey.clear(); this.sig = null; this.sel = this.hov = null; }
+      this.shape = shape; this.H0 = hr[0]; this.NH = hr[1] - hr[0]; this.KZ = zones; this.zoneLabel = zl; this.x0 = -this.NH / 2; this.fU.uNH.value = this.NH;
+    }
+    const H0 = this.H0, NH = this.NH;
     const cells = new Map();
     for (const c of list) {
       if (!c || typeof c !== 'object') continue;
@@ -239,10 +258,11 @@ export class HeatCube extends Hud {
     return out;
   }
   frameScene() {
-    const cs = this.cs, x0 = this.x0, z0 = this.z0, x1 = x0 + NH * cs, z1 = z0 + ND * cs, hm = this.hmax, M = 0.35, xl = x0 - M, zb = z0 - M, xr = x1 + M, zf = z1 + M;
+    const NH = this.NH, H0 = this.H0, KZ = this.KZ, cs = this.cs, x0 = this.x0, z0 = this.z0, x1 = x0 + NH * cs, z1 = z0 + ND * cs, hm = this.hmax, M = 0.35, xl = x0 - M, zb = z0 - M, xr = x1 + M, zf = z1 + M;
     this.floor.position.set((x0 + x1) / 2, 0, (z0 + z1) / 2); this.floor.scale.set(xr - xl, zf - zb, 1);
     this.fU.uX.value.set(xl, xr); this.fU.uZ.value.set(zb, zf); this.fU.uG0.value.set(x0, z0); this.fU.uCs.value = cs;
-    this.fU.uKZ.value.set(this.xOfT(KZ[0][0]), this.xOfT(KZ[0][1]), this.xOfT(KZ[1][0]), this.xOfT(KZ[1][1]));
+    const k2 = KZ[1] || KZ[0];
+    this.fU.uKZ.value.set(this.xOfT(KZ[0][0]), this.xOfT(KZ[0][1]), this.xOfT(k2[0]), this.xOfT(k2[1]));
     // guides: trade-count ticks across the back wall and down the left side, the height axis at the back-left corner
     const G = this.guides, vio = new THREE.Color('#8f86ff'), ticks = this.slots.length ? this.ticks() : [], top = hm + 0.15;
     for (const n of ticks) { const y = this.yOf(n); G.seg(xl, y, zb, xr, y, zb, vio, 0.09, 4).seg(xl, y, zb, xl, y, zf, vio, 0.06, 4).seg(xl - 0.08, y, zb, xl + 0.08, y, zb, vio, 0.55); }
@@ -251,12 +271,13 @@ export class HeatCube extends Hud {
     this.anchors = new Float32Array(corners([], xl - 0.9, xr + 0.25, -0.15, top + 0.3, zb - 0.2, zf + 0.5));
     this.T.set((x0 + x1) / 2, hm * 0.38, (z0 + z1) / 2);
     const defs = [];
-    for (let i = 0; i <= NH; i++) defs.push({ text: hhmm(H0 + i), p: new THREE.Vector3(x0 + i * cs, 0, zf + 0.05), ay: 0, dy: 3, tick: 'x', color: i < NH && kzOf(H0 + i) ? CSS.kz : null });
+    const dense = NH > 8, hl = (h) => (dense ? String(h % 24).padStart(2, '0') : hhmm(h));      // 15+ columns on a phone: "02", not "02:00"
+    for (let i = 0; i <= NH; i++) defs.push({ text: hl(H0 + i), p: new THREE.Vector3(x0 + i * cs, 0, zf + 0.05), ay: 0, dy: 3, tick: 'x', color: i < NH && this.kzOf(H0 + i) ? CSS.kz : null });
     defs.push({ text: 'entry hour (ET) →', p: new THREE.Vector3(xr + 0.12, 0, zf + 0.05), ax: 0, ay: 0, dy: 3, cls: 't', avoid: true });
     for (let j = 0; j < ND; j++) defs.push({ text: DAYS[j], p: new THREE.Vector3(xl - 0.1, 0, z0 + (j + 0.5) * cs), ax: 1, cls: 't', avoid: true });
     for (const n of ticks) defs.push({ text: String(n), p: new THREE.Vector3(xl - 0.12, this.yOf(n), zb), ax: 1, cls: 'h', avoid: true });
     if (ticks.length) defs.push({ text: 'trades ↑', p: new THREE.Vector3(xl, top, zb), ax: 1, dx: 8, ay: 1, dy: -4, cls: 't', avoid: true });
-    for (const [a, b] of KZ) defs.push({ text: (a < 12 ? 'AM' : 'PM') + ' killzone', p: new THREE.Vector3(this.xOfT(a) + 0.08, top, zb), ax: 0, ay: 1, dy: -3, cls: 'h', color: CSS.kz, avoid: true,
+    for (const [a, b] of KZ) defs.push({ text: KZ.length > 1 ? (a < 12 ? 'AM ' : 'PM ') + this.zoneLabel : this.zoneLabel, p: new THREE.Vector3(this.xOfT(a) + 0.08, top, zb), ax: 0, ay: 1, dy: -3, cls: 'h', color: CSS.kz, avoid: true,
       show: () => this.u.uIn.value > 0.4 });
     this.setLabels(defs);
     this.legendFor();
@@ -265,9 +286,9 @@ export class HeatCube extends Hud {
     const n = this.total, cells = this.byKey.size, small = this.w < 520;
     const L = [`<span><i class="grad"></i>avg R <em>−1R → +1R</em></span>`,
       `<span><i style="background:${CSS.gold};box-shadow:0 0 6px ${CSS.gold}"></i>cap: net $${small ? '' : ' <em>(gold +, red −)</em>'}</span>`,
-      `<span><i style="background:${CSS.good};box-shadow:0 0 6px ${CSS.good};border-radius:2px;width:10px"></i>killzone</span>`];
+      `<span><i style="background:${CSS.good};box-shadow:0 0 6px ${CSS.good};border-radius:2px;width:10px"></i>${esc(this.zoneLabel)}</span>`];
     if (!small) L.push('<span>height = trades</span>');
-    if (n) L.push(`<span class="hint">${this.label ? esc(this.label) + ' · ' : ''}${n} trade${n === 1 ? '' : 's'}${small ? '' : ` · ${cells}/${N} hours`} · tap a bar</span>`);
+    if (n) L.push(`<span class="hint">${this.label ? esc(this.label) + ' · ' : ''}${n} trade${n === 1 ? '' : 's'}${small ? '' : ` · ${cells}/${this.NH * ND} hours`} · tap a bar</span>`);
     this.legend.innerHTML = L.join('');
     if (this.w > 10) this.regionFix();
   }
@@ -287,7 +308,7 @@ export class HeatCube extends Hud {
       if (t > 0) {
         _v.copy(r.direction).multiplyScalar(t).add(r.origin);
         const i = Math.floor((_v.x - this.x0) / this.cs), j = Math.floor((_v.z - this.z0) / this.cs);
-        if (i >= 0 && i < NH && j >= 0 && j < ND) { const key = j + '|' + (H0 + i); return this.byKey.get(key) || { empty: true, key, dow: j, hour: H0 + i, i, j }; }
+        if (i >= 0 && i < this.NH && j >= 0 && j < ND) { const key = j + '|' + (this.H0 + i); return this.byKey.get(key) || { empty: true, key, dow: j, hour: this.H0 + i, i, j }; }
       }
     }
     return null;
@@ -306,8 +327,8 @@ export class HeatCube extends Hud {
   tipFor(t) {
     if (!t) { this.showTip(null); return; }
     if (t.empty) { this.showTip('e' + t.key, `<b>${DAYS[t.dow]} ${hhmm(t.hour)}</b> <i>no trades</i>`); return; }
-    const it = t.it, kz = kzOf(it.hour), rc = it.avg > 0.05 ? CSS.good : it.avg < -0.05 ? CSS.bad : CSS.none, nc = it.net > 0 ? CSS.gold : it.net < 0 ? CSS.red : '#eef0fb';
-    this.showTip(t.key, `<b>${DAYS[it.dow]} ${hhmm(it.hour)}</b><u style="color:${kz ? CSS.kz : '#b9a6ff'}">${kz ? kz + ' killzone' : 'lunch'}</u><br>`
+    const it = t.it, kz = this.kzOf(it.hour), rc = it.avg > 0.05 ? CSS.good : it.avg < -0.05 ? CSS.bad : CSS.none, nc = it.net > 0 ? CSS.gold : it.net < 0 ? CSS.red : '#eef0fb';
+    this.showTip(t.key, `<b>${DAYS[it.dow]} ${hhmm(it.hour)}</b><u style="color:${kz ? CSS.kz : '#b9a6ff'}">${kz || (this.KZ === KZ ? 'lunch' : 'outside')}</u><br>`
       + `<i>trades</i> <b>${it.n}</b> · <i>avg</i> <b style="color:${rc}">${fmtR(it.avg)}</b> · <i>net</i> <b style="color:${nc}">${fmtUsd(it.net)}</b>`);
   }
   tipAnchor(t) { if (t.empty) _v.set(this.x0 + (t.i + 0.5) * this.cs, 0, this.z0 + (t.j + 0.5) * this.cs); else _v.set(t.x, t.h + 0.05, t.z); return this.screen(_v); }

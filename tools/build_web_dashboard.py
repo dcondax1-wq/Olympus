@@ -48,7 +48,7 @@ ICONS = os.path.join(ROOT, "web", "icons")
 
 FULL = ("day", "entry_t", "exit_t", "side", "entry", "stop", "target", "exit_price", "exit", "trigger", "grade", "regime",
         "risk_pts", "qty", "risk_usd", "r", "pnl", "half", "pools", "sweep_ext", "zone", "target_label", "conf_tags", "mfe",
-        "bars_held", "checklist", "smc", "report")
+        "bars_held", "checklist", "smc", "report", "cisd_level", "entry_kind", "plan_rr")     # the last 3: LIT replay overlays
 SLIM_DROP = ("conf_tags", "checklist", "smc", "zone", "pools")
 
 

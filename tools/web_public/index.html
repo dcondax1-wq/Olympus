@@ -773,6 +773,9 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 .rk-sw { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 0 0 16px; } .rk-sw label { display: flex; align-items: center; gap: 10px; }
 
 /* ===== news hub (traffic light, radar, events, days, headlines), Lab evals + intraday, Today week ring + liquidity map, effects ===== */
+.fx3d.dayclock { height: 380px; } .fx3d.dayclock.mini { height: 300px; } .fx3d.dayclock > .fx-fb { padding: 12px; }
+.fx3d.dayclock:not(.fx-live) { height: auto !important; } .fx3d.dayclock:not(.fx-live) > .fx-fb { position: relative; }
+@media (min-width: 761px) { .fx3d.dayclock { height: 440px; } .fx3d.dayclock.mini { height: 320px; } }
 .fx3d.newsradar, .fx3d.montecarlo { height: 340px; } .fx3d.heat, .fx3d.liqmap { height: 300px; } .fx3d.weekring { height: 230px; }
 @media (min-width: 761px) { .fx3d.newsradar, .fx3d.montecarlo { height: 440px; } .fx3d.heat { height: 360px; } .fx3d.liqmap { height: 340px; } .fx3d.weekring { height: 260px; } }
 .hero-links .chipbtn { max-width: 100%; } .hero-links .chipbtn span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1292,7 +1295,8 @@ function mdList(blk) {
 
 // ===================================================================== routes: five groups, the same on the phone tab bar and the desktop sidebar
 const GROUPS = [
-  { id: 'today', label: 'Today', icon: 'today', pages: [['today', 'Today', 'today', 'Live bot, eval and today’s events']] },
+  { id: 'today', label: 'Today', icon: 'today', pages: [['today', 'Today', 'today', 'Live bot, eval and today’s events'], ['day', 'Day plan', 'clock', 'The LIT day: sessions, entry window, news, what’s next'],
+    ['levels', 'Levels', 'target', 'Every LIT level, the setup tracker'], ['cockpit', 'Eval cockpit', 'prop', 'What a stop-out or a winner does to the eval']] },
   { id: 'chart', label: 'Chart', icon: 'chart', pages: [['chart', 'Chart', 'chart', 'Live 5m chart and liquidity pools']] },
   { id: 'trades', label: 'Trades', icon: 'trades', pages: [['trades', 'Trades', 'trades', 'Every trade with its report'], ['results', 'Results', 'results', 'Live settings, 5-year replay'],
     ['replays', 'Replays', 'replay', 'Step through each trade day'], ['stops', 'Stop Sizes', 'stops', 'Wide stop, smaller size']] },
@@ -1318,12 +1322,13 @@ const DETAIL = { run: { group: 'lab', label: 'Experiment', back: 'experiments' }
 const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
 const ALIAS = { modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
-  calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive' };
+  calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive',
+  plan: 'day', clock: 'day', session: 'day', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
 // 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
 const SCENE = { replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
   evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', sources: 'engine', news: 'today',
-  archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab' };
+  archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', levels: 'chart', cockpit: 'eval' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
 const titleOf = (p) => DETAIL[p]?.label || (p === 'lab' ? 'Lab' : p === 'system' ? 'System' : PAGES[p]?.label) || 'Today';
 let D = null, PAGE = null, ARG = null, RTOK = 0, routed = false;
@@ -1602,6 +1607,26 @@ function loadFX() {
   }).catch((e) => { console.warn('3D effects unavailable', e); FX = null; });
   return FXP;
 }
+// LIT panels (litkit.js: Day clock, Setup tracker, Levels board, Eval cockpit, Week planner, checklist), loaded after the first paint
+let LK = null, LKP = null;
+const LKV = '0';
+function loadLK() {
+  if (LKP) return LKP;
+  LKP = import('./litkit.js?v=' + LKV).then((m) => { LK = m; if (D) render(true); return m; }).catch((e) => { console.warn('LIT panels unavailable', e); LK = null; });
+  return LKP;
+}
+const lkCtx = () => (LK && D ? LK.fromCloud(D, Date.now() / 1000) : null);
+const lkWait = () => `<div class="card">${skLines(6)}</div>`;
+const LK_PAGES = ['today', 'day', 'levels', 'cockpit', 'eval'];
+// the LIT panels say "next in 43m": redraw them softly every minute while one is on screen (3D views are kept)
+setInterval(() => { if (D && LK && !document.hidden && LK_PAGES.includes(PAGE) && !$('.sheet-wrap') && !openDD) render(true); }, 60000);
+function lkPick(row) {
+  if (!row) return;
+  if (row.title && row.t) { if (NEWS()?.events?.some(e => e.t === row.t) && row.date) openEvent(row); else toast(`${row.title} · ${et(row.t).hm || ''} ET`); return; }
+  if (row.label && row.a != null) { toast(`${row.label}${ok(row.hi) ? ` · high ${num(row.hi)}${row.hiTaken ? ' (taken)' : ''} · low ${num(row.lo)}${row.loTaken ? ' (taken)' : ''}` : ''}`); return; }
+  if (row.expires_t) { toast(`LIT ${row.dir === 1 ? 'LONG' : 'SHORT'} limit armed · ${row.label || ''}`); return; }
+  if (row.t) toast(`${row.dir === 1 ? 'LONG' : 'SHORT'} ${row.open ? 'open' : susd(row.pnl)}`);
+}
 // iOS only grants motion sensors from a tap: re-arm on the first tap after a reload
 function armGyro() { const f = () => { FX?.enableGyro(true); removeEventListener('pointerdown', f, true); }; addEventListener('pointerdown', f, true); }
 function moodNow() {
@@ -1753,6 +1778,7 @@ VIEWS.today = (el) => {
       ${statBox('2026 backtest', y ? 'PF ' + fPF(y.pf) : '—', y ? `${kusd(y.net)} · ${kusd(perMonth(y.net, y.from, y.to))} a month · ${num(y.per_week, 1)}/wk` : 'no backtest in this build')}
     </div>
     ${timingCard(lv.eval_timing)}
+    ${lit ? todayLit() : ''}
     <div class="grid g2">
       <div class="card fx-card"><div class="card-h"><h3>This week · ${esc(WK.week)}</h3><div>${fxSeg('today-week')}</div></div>${fxBox('today-week', 'weekring')}</div>
       <div class="card fx-card"><div class="card-h"><h3>Liquidity map</h3><div><span class="meta">pools around the price</span>${fxSeg('today-liqmap')}</div></div>${fxBox('today-liqmap', 'liqmap')}</div>
@@ -1773,6 +1799,7 @@ VIEWS.today = (el) => {
   fxFill('today-reactor', 'reactor', RD, {}, (fb) => reactorFb(fb, RD));
   fxFill('today-week', 'weekring', WK, {}, (fb) => weekFb(fb, WK));
   fxFill('today-liqmap', 'liqmap', LQ, {}, (fb) => liqFb(fb, LQ));
+  if (lit) todayLitFill();
 };
 // the paper trades of the current ET week, Monday to Friday (cloud ledger: day, side, R, usd, entry, qty, mult, taken)
 function weekData() {
@@ -1822,6 +1849,79 @@ function newsChip() {
   const now = Date.now() / 1000, next = (N.events || []).filter(e => e.t > now).sort((a, b) => a.t - b.t)[0] || (N.next && N.next.t > now ? N.next : null);
   if (!next) return `<button class="chipbtn" type="button" data-go="news">${icon('news')}<span>News · no USD events ahead</span></button>`;
   return `<button class="chipbtn ${next.impact === 'high' ? 'warn' : ''}" type="button" data-go="news">${icon('news')}<span>News · next: ${esc(next.title)} in <b data-cd="${next.t}">${cdFmt(next.t - now)}</b></span></button>`;
+}
+
+// ===================================================================== LIT PANELS (litkit.js): Day plan · Levels · Eval cockpit
+const lkPhase = (C) => { if (C.closed) return 'Market closed'; const m = et(C.now).h * 60 + et(C.now).mi; return m >= 1080 || m < 120 ? 'Asia session' : m < 300 ? 'London session' : m < 570 ? 'Pre-market' : m < 690 ? 'New York AM' : m < 810 ? 'New York lunch' : m < 960 ? 'New York PM' : m < 1020 ? 'After hours' : 'Daily halt'; };
+VIEWS.day = (el) => {
+  const C = lkCtx();
+  if (!C) { el.innerHTML = head('Today · LIT day', 'Day plan', '') + lkWait(); loadLK(); return; }
+  const CK = LK.clockData(C);
+  el.innerHTML = head(`Today · LIT day · ${esc(fDate(C.day))}`, lkPhase(C), 'The LIT trading day from the 18:00 open to the 17:00 close: the session boxes LIT takes its levels from, the 02:00–15:30 entry window, USD news and the bot’s trade.')
+    + howto('day', `<p>The <b>day clock</b> runs from 18:00 ET (top) clockwise to the 17:00 close; the dark wedge before the top is the daily halt.</p>
+      <ul><li><b>Outer ring</b>: the session boxes (Asia violet, Frankfurt / London cyan, NY amber; the premarket and cash session are thin bands). Their highs and lows become LIT levels; a dim box had both sides taken.</li>
+      <li><b>Green ring</b>: the entry window (02:00–15:30 ET); the red tick is the 15:55 flat. Dots on it are USD events (red high, amber medium); the pink bars are the ±15/30 min around a high-impact release. LIT does not pause for news.</li>
+      <li><b>Inner track</b>: today’s trade from entry to exit, or an armed limit order (amber).</li><li>The white hand is now; the middle says the phase and counts down to what comes next.</li></ul>
+      <p><b>Before the session</b> checks what the bot needs: 95 of 120 LIT trades in 2026 entered 02:00–08:00 ET, so the PC and NinjaTrader must be up from about 01:55 ET for the real route. Paper only.</p>`)
+    + `<div class="card fx-card"><div class="card-h"><h3>Day clock</h3><div><span class="meta">ET · 18:00 → 17:00</span>${fxSeg('day-clock')}</div></div>${fxBox('day-clock', 'dayclock')}</div>
+    <div class="grid g2"><div class="card"><div class="card-h"><h3>What happens next</h3><span class="meta">${esc(C.day)}</span></div>${LK.planHTML(C)}</div>
+      <div class="card"><div class="card-h"><h3>Before the session</h3><span class="meta">checklist</span></div>${LK.readyHTML(C)}</div></div>
+    <div class="card"><div class="card-h"><h3>This week</h3><button class="chipbtn" type="button" data-go="news">${icon('news')}<span>News</span></button></div>${LK.weekHTML(C)}</div>`;
+  fxFill('day-clock', 'dayclock', CK, { onPick: lkPick }, (fb) => { fb.innerHTML = LK.clockSVG(C); });
+};
+VIEWS.levels = (el) => {
+  const C = lkCtx();
+  if (!C) { el.innerHTML = head('Today · LIT levels', 'Levels', '') + lkWait(); loadLK(); return; }
+  const RD = LK.railData(C), R = LK.rail(C), L = LK.levels(C).filter(r => !r.target), nTaken = L.filter(r => r.taken).length;
+  el.innerHTML = head(`Today · LIT levels · NQ ${num(C.price)}`, esc(R.why[0].toUpperCase() + R.why.slice(1)), `${plural(L.length, 'level')} today, ${nTaken} taken. LIT waits for one of them to be swept by half an ATR or more, then for inducement, displacement and a 5-minute CISD.`)
+    + howto('levels', `<p>The <b>setup tracker</b> is where the bot is in a LIT setup: levels marked → sweep → inducement → displacement → 5m CISD (these three are confirmed together on one 5-minute close) → a limit order at the CISD level for 30 minutes → after the limit is touched, a 1-minute CISD → in the trade → done (1 trade a day).</p>
+      <p>The <b>levels board</b> lists every level LIT watches today: session highs and lows, PDH/PDL, weekly and monthly highs/lows, gaps and equal highs/lows, with the distance from the price in points and in $ for one micro (MNQ, $2 a point). “Sweep ≥” is how far price must run past it to count (0.5 × the 5-minute ATR). Struck-through levels were taken already. The VIX band rows are the target the bot aims for (the 18:00 open ± one VIX day move).</p>`)
+    + `<div class="card fx-card"><div class="card-h"><h3>Setup tracker</h3><div>${fxSeg('levels-rail')}</div></div>${fxBox('levels-rail', 'pipeline')}<div style="margin-top:14px">${LK.railHTML(C)}</div></div>
+    <div class="card"><div class="card-h"><h3>Levels board</h3><span class="meta">pts · $ per MNQ</span></div>${LK.levelsHTML(C, { max: 18 })}</div>
+    <div class="card fx-card"><div class="card-h"><h3>Liquidity map</h3><div><span class="meta">3D ladder of the untaken levels</span>${fxSeg('levels-liqmap')}</div></div>${fxBox('levels-liqmap', 'liqmap')}</div>`;
+  if (!fxFill('levels-rail', 'pipeline', RD, {}, () => { })) { const b = $('#fx_levels-rail'); if (b) b.style.display = 'none'; }      // 2D: the step rail below says it all
+  const LQ = { price: C.price, pools: L.filter(r => !r.taken && ok(r.dist)).map(r => ({ price: r.price, side: r.side, label: r.label.split(' · ')[0], strength: r.strength })), bars: (LV().bars || []).slice(-40), position: LV().position || null };
+  fxFill('levels-liqmap', 'liqmap', LQ, {}, (fb) => liqFb(fb, LQ));
+};
+// the forward-odds fan when 3D is off: up to 60 simulated paths from the current balance
+function simFb(el, sim) {
+  if (!sim) { el.innerHTML = fbWait('Not enough 2026 sessions for a simulation.'); return; }
+  const P = sim.paths.slice(0, 60), W = 600, H = 300, n = Math.max(2, ...P.map(p => p.days.length)), lo = Math.min(sim.floor, ...P.flatMap(p => p.days)) - 200, hi = Math.max(sim.target, ...P.flatMap(p => p.days)) + 200;
+  const X = (i) => 40 + i / (n - 1) * (W - 52), Y = (v) => 12 + (hi - v) / (hi - lo) * (H - 36);
+  const col = { PASS: 'var(--good)', FAIL: 'var(--bad)', OPEN: 'var(--accent)' };
+  el.innerHTML = `<div class="fbx"><svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" preserveAspectRatio="none" role="img" aria-label="Simulated eval paths">
+    <line x1="40" x2="${W - 12}" y1="${Y(sim.target)}" y2="${Y(sim.target)}" stroke="var(--good)" stroke-dasharray="4 4"/><line x1="40" x2="${W - 12}" y1="${Y(sim.floor)}" y2="${Y(sim.floor)}" stroke="var(--bad)" stroke-dasharray="4 4"/>
+    ${[10, 15].map(k => k < n ? `<line x1="${X(k)}" x2="${X(k)}" y1="8" y2="${H - 24}" stroke="var(--line)"/><text x="${X(k) + 3}" y="${H - 10}" font-size="10" fill="var(--muted)">${k / 5} wk</text>` : '').join('')}
+    ${P.map(p => `<polyline fill="none" stroke="${col[p.result]}" stroke-opacity=".35" stroke-width="1.2" points="${p.days.map((v, i) => X(i).toFixed(1) + ',' + Y(v).toFixed(1)).join(' ')}"/>`).join('')}
+    <text x="44" y="${Y(sim.target) - 4}" font-size="10" fill="var(--good)">target ${usd(sim.target)}</text><text x="44" y="${Y(sim.floor) + 12}" font-size="10" fill="var(--bad)">floor ${usd(sim.floor)}</text></svg></div>`;
+}
+VIEWS.cockpit = (el) => {
+  const C = lkCtx();
+  if (!C) { el.innerHTML = head('Today · eval cockpit', 'Eval cockpit', '') + lkWait(); loadLK(); return; }
+  const span = store.get('ckSpan', 'H2'), sim = LK.evalSim(C, { span }), K = LK.cockpit(C);
+  el.innerHTML = head(`Today · MFFU Builder 50K · eval cockpit`, `${usd(K.toTarget)} to pass · ${usd(K.cushion)} of room`, 'What the next trade can do to the paper eval, and the odds from here. Owner’s rule: decided within 2 weeks, passed within 3.')
+    + howto('cockpit', `<p>The bars: progress from $50,000 to the $53,000 target, the room above the trailing max-loss floor (it trails $2,000 under the best end-of-day balance and locks at $50,100) and today’s soft $1,000 loss limit.</p>
+      <ul><li><b>Size now</b>: the micros LIT would trade on a typical 2026 stop (the median, about 46 points), with the weekly stop and the sizing switch applied.</li>
+      <li><b>One full stop-out</b>: that size losing the whole stop, with costs. <b>One typical winner</b>: the 2026 H2 average winner in R at that size.</li>
+      <li><b>From this balance</b>: thousands of simulated evals that start at today’s balance and floor and draw real 2026 LIT sessions at random. H2 (Jul–Oct) is the honest check half; 2026 includes the half the rules were picked on.</li></ul>`)
+    + `<div class="grid g2"><div class="card"><div class="card-h"><h3>Cockpit</h3><span class="meta">cloud paper</span></div>${LK.cockpitHTML(C, sim)}</div>
+      <div class="card fx-card"><div class="card-h"><h3>From here · simulated evals</h3><div>${segHTML('ckSpan', [['H2', '2026 H2'], ['2026', '2026']], span, 'sm')}${fxSeg('cockpit-mc')}</div></div>${fxBox('cockpit-mc', 'montecarlo')}
+        <p class="card-d" style="margin:10px 0 0">${sim ? `${pct(sim.pass10)} pass and ${pct(sim.fail10)} fail within 2 weeks; ${pct(sim.pass15)} pass within 3 weeks; median ${sim.med ?? '—'} sessions to pass (${sim.days} sessions resampled).` : 'No 2026 sessions in this build.'}</p></div></div>
+    <div class="card"><div class="card-h"><h3>Before the session</h3><button class="chipbtn" type="button" data-go="day">${icon('clock')}<span>Day plan</span></button></div>${LK.readyHTML(C)}</div>`;
+  onSeg('ckSpan', (v) => { store.set('ckSpan', v); render(true); });
+  const MP = LK.simPayload(sim);
+  fxFill('cockpit-mc', 'montecarlo', MP || { paths: [] }, {}, (fb) => simFb(fb, sim));
+};
+// Today: the LIT day in one card (compact clock + what's next) and the setup tracker
+function todayLit() {
+  const C = lkCtx(); if (!C) return '';
+  return `<div class="grid g2"><div class="card fx-card"><div class="card-h"><h3>LIT day · ${esc(lkPhase(C))}</h3><div><button class="chipbtn" type="button" data-go="day"><span>Day plan</span>${icon('right')}</button>${fxSeg('today-clock')}</div></div>
+      ${fxBox('today-clock', 'dayclock', 'mini')}<div style="margin-top:12px">${LK.planHTML(C, { compact: true })}</div></div>
+    <div class="card"><div class="card-h"><h3>Setup tracker</h3><button class="chipbtn" type="button" data-go="levels"><span>Levels</span>${icon('right')}</button></div>${LK.railHTML(C)}</div></div>`;
+}
+function todayLitFill() {
+  const C = lkCtx(); if (!C) return;
+  fxFill('today-clock', 'dayclock', LK.clockData(C), { onPick: lkPick }, (fb) => { fb.innerHTML = LK.clockSVG(C); });
 }
 
 // ===================================================================== CHART
@@ -2026,8 +2126,10 @@ VIEWS.replays = (el) => {
   for (let i = 0; i <= iEntry; i++) if (t.sweep_ext != null && (long ? bars[i][3] <= t.sweep_ext + 0.01 : bars[i][2] >= t.sweep_ext - 0.01)) iSweep = i;
   const rp = t.report || {};
   const events = [];
-  const kzStart = bars.findIndex(b => { const e = et(b[0]); return e.h * 60 + e.mi >= 570; });
-  if (kzStart > 0) events.push({ i: kzStart, type: 'signal', text: 'NY AM killzone opens: the engine can trigger from here.' });
+  const litR = isLIT() && !archived(), kzAt = litR ? 120 : 570;
+  const kzStart = bars.findIndex(b => { const e = et(b[0]), m = e.h * 60 + e.mi; return m >= kzAt && m < 1080; });
+  if (kzStart > 0) events.push({ i: kzStart, type: 'signal', text: litR ? 'LIT entry window opens (02:00 ET): a swept level can trigger from here.' : 'NY AM killzone opens: the engine can trigger from here.' });
+  if (litR && t.cisd_level != null && iSweep >= 0) events.push({ i: Math.min(iEntry, iSweep + 1), type: 'signal', text: `Inducement, displacement and a 5m CISD close: limit order at the CISD level ${num(t.cisd_level)}${t.entry_kind ? ` (filled by ${t.entry_kind})` : ''}.` });
   if (iSweep >= 0) events.push({ i: iSweep, type: 'sweep', text: `${long ? 'Sell-side' : 'Buy-side'} liquidity swept${t.pools?.length ? ' (' + t.pools.join(', ') + ')' : ''}, extreme ${num(t.sweep_ext)}. ${long ? 'Long' : 'Short'} setup armed.` });
   events.push({ i: iEntry, type: 'entry', text: `${t.side || ''} ${t.trigger || ''} trigger. ${rp.plan || ''}` });
   (rp.why || []).slice(0, 4).forEach(w => events.push({ i: iEntry, type: 'signal', text: w }));
@@ -2057,7 +2159,9 @@ VIEWS.replays = (el) => {
     if (iSweep >= 0 && t.sweep_ext != null) marks.push({ p: t.sweep_ext, color: '#ff9b5c', label: 'sweep ' + num(t.sweep_ext), i: Math.max(0, iSweep - 6), from: iSweep });
     if (t.entry != null) marks.push({ p: t.entry, color: '#8fa0ff', label: 'entry ' + num(t.entry), i: iEntry, from: iEntry },
       { p: t.stop, color: '#ff5a7a', label: 'stop ' + num(t.stop), i: iEntry, from: iEntry }, { p: t.target, color: '#2ee59d', label: 'target ' + num(t.target), i: iEntry, from: iEntry });
-    v3 = fx3d('replay-3d', $('#rpC'), 'candles', { bars, marks, follow: true, count: RP.i + 1 });
+    // LIT: the CISD level, the risk / reward boxes and the 02:00-15:30 entry window (litkit.js replay3d)
+    const X = litR && LK ? LK.replay3d(t, { iSweep, iEntry, iExit }) : null;
+    v3 = fx3d('replay-3d', $('#rpC'), 'candles', X ? { bars, marks: X.marks, zones: X.zones, windows: X.windows, follow: true, count: RP.i + 1 } : { bars, marks, follow: true, count: RP.i + 1 });
   }
   const draw = () => {
     const i = RP.i, shown = bars.slice(0, i + 1);
@@ -2844,7 +2948,9 @@ function drawHeat(Hd) {
     <div class="card fx-card"><div class="card-h"><h3>Heat · ${esc(pers.find(p => p[0] === HS.per)?.[1] || HS.per)} · ${m === 'net' ? 'net $' : m === 'avg_r' ? 'average R' : 'trades'}</h3><div>${fxSeg('lab-heat')}</div></div>
       ${fxBox('lab-heat', 'heat')}<div class="heat-i" id="htInfo">Tap a cell for its numbers.</div></div>
     ${Hd.built ? `<div class="note">Built ${esc(Hd.built)}.${Hd.note ? ' ' + esc(Hd.note) : ''}</div>` : ''}`;
-  fxFill('lab-heat', 'heat', { cells, label: pers.find(p => p[0] === HS.per)?.[1] || HS.per, metric: m }, {}, (fb) => heatFb(fb, cells, val));
+  // LIT (Intraday page): hour columns 01:00-15:00 and its 02:00-15:30 entry window as the lit floor strip; the archive keeps the killzones
+  const litH = PAGE === 'intraday' && isLIT(), hx = litH ? { hours: [1, 16], zones: [[2, 15.5]], zoneLabel: 'entry window' } : {};
+  fxFill('lab-heat', 'heat', { cells, label: pers.find(p => p[0] === HS.per)?.[1] || HS.per, metric: m, ...hx }, {}, (fb) => heatFb(fb, cells, val));
   onSeg('htPer', (v) => { HS.per = v; store.set('heatPer', v); FX?.detachAll(); drawHeat(Hd); });
   onSeg('htM', (v) => { HS.m = v; store.set('heatM', v); FX?.detachAll(); drawHeat(Hd); });
 }
@@ -3058,6 +3164,7 @@ VIEWS.eval = (el) => {
     + howto('eval', `<p>MFFU Builder 50K rules: start at <b>$50,000</b>, pass at <b>$53,000</b>. The <b>max-loss floor</b> trails $2,000 below the best end-of-day balance and stops moving once it reaches $50,100. A day that loses $1,000 is stopped.</p>
       <p>The reactor shows the balance on the way from the floor (left) to the target (right). The backtest odds are how often an eval started on any day of the replay passed or failed within 2 weeks and within 1 month.</p>`)
     + `<div class="card fx-card"><div class="card-h"><h3>Eval reactor</h3><div>${fxSeg('eval-reactor')}</div></div>${fxBox('eval-reactor', 'reactor')}</div>
+    ${isLIT() && lkCtx() ? `<div class="card"><div class="card-h"><h3>Cockpit · what the next trade does</h3><button class="chipbtn" type="button" data-go="cockpit"><span>Odds from here</span>${icon('right')}</button></div>${LK.cockpitHTML(lkCtx())}</div>` : ''}
     <div class="grid g2"><div class="card"><div class="card-h"><h3>Account</h3><span class="meta">cloud paper</span></div>${evalCard(ev, RD)}</div>
       <div class="card"><div class="card-h"><h3>Balance by day</h3><span class="meta">dashed line = $53,000 target</span></div><div id="evC"></div></div></div>
     ${secH(`Backtest odds · ${esc(stratName())}`)}
@@ -3456,7 +3563,7 @@ addEventListener('scroll', () => { if (!pxQ) { pxQ = true; requestAnimationFrame
   addEventListener('touchend', end); addEventListener('touchcancel', end);
 })();
 
-applyLook(); nav(); route(); load('boot'); schedule(); loadFX();
+applyLook(); nav(); route(); load('boot'); schedule(); loadFX(); loadLK();
 setInterval(() => FX && D && FX.mood(moodNow()), 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => null);
 </script>

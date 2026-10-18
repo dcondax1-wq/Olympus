@@ -213,7 +213,7 @@ export function railHTML(C) {
     const [side, s] = R.setup, left = N(s.expires_t) - C.now;
     detail = kv([['Setup', `${side.toUpperCase()} · swept ${esc((s.pools || []).join(', ') || '—')}`], ['Limit', `${px(s.limit)}${ok(P) ? ` <em>${spts(s.limit - P)} pts</em>` : ''}`],
       ['Stop', `${px(s.stop)} <em>${ok(s.limit) && ok(s.stop) ? Math.abs(s.limit - s.stop).toFixed(2) + ' pts' : ''}</em>`], ['Target', px(s.target)],
-      ['Waiting for', esc(s.waiting || (s.tapped_t ? '1m CISD' : 'limit fill'))], ['Expires', ok(s.expires_t) ? `${hm(et(s.expires_t).min)} ET${left > 0 ? ` · in ${cd(left)}` : ''}` : '—']]);
+      ['Waiting for', esc(s.waiting || (s.tapped_t ? '1m CISD' : 'limit fill'))], ['Expires', ok(s.expires_t) ? `${hm(et(s.expires_t).min)} ET${left > 0 ? ` · in <span data-cd="${s.expires_t}">${cd(left)}</span>` : ''}` : '—']]);
   } else if (R.sig) {
     const s = R.sig; detail = kv([['Last signal', `${s.dir === 1 ? 'LONG' : 'SHORT'} ${hm(et(s.t).min)} ET`], ['Limit', px(s.limit_px)], ['Stop', px(s.stop_px)], ['Target', `${px(s.target_px)}${ok(s.rr) ? ` · ${(+s.rr).toFixed(1)}R` : ''}`]]);
   } else if (R.takenToday.length) {
@@ -228,6 +228,7 @@ export function railHTML(C) {
 const kv = (rows) => `<div class="lk-kv">${rows.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>`;
 
 // ------------------------------------------------------------------ levels board
+const nameShort = (l) => { const p = String(l).split(' · '); return p.length > 2 ? `${p[0]} · ${p[1]} +${p.length - 2}` : l; };
 export function levelsHTML(C, { max = 14 } = {}) {
   css();
   const L = levels(C), P = C.price, mic = sizeNow(C);
@@ -235,11 +236,11 @@ export function levelsHTML(C, { max = 14 } = {}) {
   const above = L.filter((r) => r.above), below = L.filter((r) => !r.above);
   const pick = (arr, near) => arr.sort((a, b) => Math.abs(a.dist) - Math.abs(b.dist)).slice(0, Math.ceil(max / 2)).sort((a, b) => b.price - a.price);
   const stTxt = (r) => r.target ? 'target' : r.taken ? `taken${r.takenAt ? ' ' + hm(et(r.takenAt).min) : ''}` : ok(r.sweepAt) ? `sweep ${r.side === 'H' ? '≥' : '≤'} ${px(r.sweepAt)}` : 'untaken';
-  const row = (r) => `<tr class="${r.taken ? 'tk' : ''}${r.nearest ? ' near' : ''}${r.target ? ' tgt' : ''}"><td class="lb"><i class="lk-sw ${r.side === 'H' ? 'h' : 'l'}${r.target ? ' v' : ''}"></i><span>${esc(r.label)}</span>${r.nearest ? ' <em class="lk-pill on">next</em>' : ''}<small>${stTxt(r)}</small></td>
-    <td class="n">${px(r.price)}</td><td class="n ${r.above ? 'lk-up' : 'lk-dn'}">${ok(r.dist) ? spts(r.dist) : '—'}</td><td class="n hs">${ok(r.usd) ? usd(r.usd) : '—'}</td>
-    <td class="n hs">${mic.m && ok(r.usd) ? usd(r.usd * mic.m) : '—'}</td><td class="st hs">${stTxt(r)}</td></tr>`;
-  return `<div class="lk lk-lv"><div class="lk-tw"><table><thead><tr><th>Level</th><th class="n">Price</th><th class="n">Pts</th><th class="n hs">$ / MNQ</th><th class="n hs">$ at ${mic.m || 0}</th><th class="hs">State</th></tr></thead>
-    <tbody>${pick(above).map(row).join('')}<tr class="px"><td colspan="6"><b>NQ ${px(P)}</b> <span>${ok(C.atr) ? `5m ATR ${C.atr.toFixed(1)} pts · a sweep needs ${(C.litRules.depth * C.atr).toFixed(1)} pts beyond a level` : ''}</span></td></tr>${pick(below).map(row).join('')}</tbody></table></div>
+  const row = (r) => `<tr class="${r.taken ? 'lk-tk' : ''}${r.nearest ? ' lk-near' : ''}${r.target ? ' lk-tgt' : ''}"><td class="lk-lbl"><i class="lk-sw ${r.side === 'H' ? 'h' : 'l'}${r.target ? ' v' : ''}"></i><span title="${esc(r.label)}">${esc(nameShort(r.label))}</span>${r.nearest ? ' <em class="lk-pill on">next</em>' : ''}<small>${stTxt(r)}</small></td>
+    <td class="lk-n">${px(r.price)}</td><td class="lk-n ${r.above ? 'lk-up' : 'lk-dn'}">${ok(r.dist) ? spts(r.dist) : '—'}</td><td class="lk-n lk-hs">${ok(r.usd) ? usd(r.usd) : '—'}</td>
+    <td class="lk-n lk-hs">${mic.m && ok(r.usd) ? usd(r.usd * mic.m) : '—'}</td><td class="lk-stc lk-hs">${stTxt(r)}</td></tr>`;
+  return `<div class="lk lk-lv"><div class="lk-tw"><table><thead><tr><th>Level</th><th class="lk-n">Price</th><th class="lk-n">Pts</th><th class="lk-n lk-hs">$ / MNQ</th><th class="lk-n lk-hs">$ at ${mic.m || 0}</th><th class="lk-hs">State</th></tr></thead>
+    <tbody>${pick(above).map(row).join('')}<tr class="lk-pxr"><td colspan="6"><b>NQ ${px(P)}</b> <span>${ok(C.atr) ? `5m ATR ${C.atr.toFixed(1)} pts · a sweep needs ${(C.litRules.depth * C.atr).toFixed(1)} pts beyond a level` : ''}</span></td></tr>${pick(below).map(row).join('')}</tbody></table></div>
     <p class="lk-note">$ / MNQ = distance × $2 for one micro. “$ at ${mic.m || 0}” = the move at today’s size for a ${C.stats?.spans?.['2026']?.med_stop ?? 46}-pt stop (${mic.m || 0} micros${mic.mult < 1 ? ', weekly stop: half size' : ''}). LIT trades only when a level is swept, then waits for inducement, displacement and a 5m CISD.${C.levelsFull ? '' : ' Taken = traded through since the box closed (5m bars).'}</p></div>`;
 }
 
@@ -344,7 +345,7 @@ export function clockData(C) {
   const trades = C.dayTrades.map((v) => ({ t: v.t, exit_t: v.exit_t, dir: /long/i.test(v.side) ? 1 : -1, pnl: N(v.usd, 0), r: N(v.R), exit: v.exit, side: v.side })).filter((x) => ok(x.t));
   if (pos && ok(pos.entry_t)) trades.push({ t: pos.entry_t, exit_t: null, dir: pos.dir, pnl: N(pos.unrealized, 0), r: N(pos.unrealized_r), open: true });
   const su = Object.entries(C.setups || {})[0];
-  return { now: C.now, day: C.day, closed: C.closed, windows: C.litRules.window, flat: C.litRules.flat_mod, boxes: boxesFor(C), events: ev.map((e) => ({ t: e.t, title: e.title, impact: e.impact, kind: e.kind })),
+  return { now: C.now, day: C.day, closed: C.closed, windows: C.litRules.window, flat: C.litRules.flat_mod, boxes: boxesFor(C), events: ev.map(({ win, ...e }) => e),
     blackouts: ev.filter((e) => e.win).map((e) => e.win), trades, setup: su ? { t: su[1].arm_t, expires_t: su[1].expires_t, dir: su[0] === 'long' ? 1 : -1, label: 'swept ' + (su[1].pools || []).join(', ') } : null,
     open18: C.lit?.open18 ?? null, vixMove: C.lit?.vix_move ?? null, done: !pos && (C.dayTrades.length >= (C.litRules.max_per_day || 1) || /done for today/i.test(C.model_state || '')) };
 }
@@ -373,8 +374,8 @@ export function planHTML(C, { compact = false } = {}) {
   css();
   const rows = plan(C), K = { open: 'acc', asia: 'asia', london: 'lon', pre: 'pre', ny: 'ny', window: 'go', rth: 'acc', flat: 'bad', close: 'mut', news: 'news', trade: 'trade' };
   const list = compact ? rows.filter((r) => r.state !== 'past').slice(0, 5) : rows;
-  return `<div class="lk lk-plan">${C.closed ? `<div class="lk-why"><span class="lk-dot"></span><b>Market closed · the next LIT day opens Sunday 18:00 ET</b><em class="lk-pill">in ${cd(C.S - C.now)}</em></div>` : ''}
-    <ol>${list.map((r) => `<li class="${r.state} k-${K[r.kind] || 'mut'}"><time>${hm(et(r.t).min)}${r.t1 ? '<small>–' + hm(et(r.t1).min) + '</small>' : ''}</time><i></i><div><b>${r.label}</b>${r.state === 'next' ? `<em class="lk-pill on">in ${cd(r.t - C.now)}</em>` : r.state === 'now' ? '<em class="lk-pill on">now</em>' : ''}<span>${r.note}</span></div></li>`).join('')}</ol></div>`;
+  return `<div class="lk lk-plan">${C.closed ? `<div class="lk-why"><span class="lk-dot"></span><b>Market closed · the next LIT day opens Sunday 18:00 ET</b><em class="lk-pill">in <span data-cd="${C.S}">${cd(C.S - C.now)}</span></em></div>` : ''}
+    <ol>${list.map((r) => `<li class="${r.state} k-${K[r.kind] || 'mut'}"><time>${hm(et(r.t).min)}${r.t1 ? '<small>–' + hm(et(r.t1).min) + '</small>' : ''}</time><i></i><div><b>${r.label}</b>${r.state === 'next' ? `<em class="lk-pill on">in <span data-cd="${r.t}">${cd(r.t - C.now)}</span></em>` : r.state === 'now' ? '<em class="lk-pill on">now</em>' : ''}<span>${r.note}</span></div></li>`).join('')}</ol></div>`;
 }
 // 2D fallback of the day clock: an SVG dial (18:00 at the top) + the readout
 export function clockSVG(C) {
@@ -395,7 +396,7 @@ export function clockSVG(C) {
   const P = plan(C), nx = P.find((r) => r.state === 'next'), m = et(C.now).min, open = !C.closed && inWin(C, m);
   return `<div class="lk lk-clock"><svg viewBox="0 0 240 240" role="img" aria-label="LIT day clock">${s}</svg>
     <div class="lk-cr"><span class="lk-k">LIT day · ${esc(C.day)}</span><b>${C.closed ? 'Closed' : phaseName(m)}</b><em class="lk-pill ${open ? 'on' : ''}">${C.closed ? 'weekend' : open ? 'entries open' : 'entries closed'}</em>
-      ${nx ? `<span>next: <b>${nx.label}</b> ${hm(et(nx.t).min)} · in ${cd(nx.t - C.now)}</span>` : ''}${ok(D.open18) ? `<span>18:00 open ${px(D.open18)}${ok(D.vixMove) ? ` · VIX band ±${Math.round(D.vixMove)} pts` : ''}</span>` : ''}</div></div>`;
+      ${nx ? `<span>next: <b>${nx.label}</b> ${hm(et(nx.t).min)} · in <b data-cd="${nx.t}">${cd(nx.t - C.now)}</b></span>` : ''}${ok(D.open18) ? `<span>18:00 open ${px(D.open18)}${ok(D.vixMove) ? ` · VIX band ±${Math.round(D.vixMove)} pts` : ''}</span>` : ''}</div></div>`;
 }
 const phaseName = (m) => (m >= 1080 || m < 120 ? 'Asia' : m < 300 ? 'London' : m < 570 ? 'Pre-market' : m < 690 ? 'NY AM' : m < 810 ? 'NY lunch' : m < 960 ? 'NY PM' : m < 1020 ? 'After hours' : 'Halt');
 
@@ -470,7 +471,7 @@ export function css() {
   s.textContent = `.lk{--lk-asia:#b49bff;--lk-lon:#67e8f9;--lk-pre:#ffc777;--lk-ny:#ffb27a;font-variant-numeric:tabular-nums;min-width:0}
 .lk-up{color:var(--good-ink,var(--good))}.lk-dn{color:var(--bad)}.lk-wn{color:var(--warn)}
 .lk-k{display:block;font-size:10.5px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.lk-pill{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:99px;font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.02em;color:var(--ink-2);border:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+.lk-pill{display:inline-flex;align-items:center;gap:.3em;height:20px;padding:0 8px;border-radius:99px;font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.02em;color:var(--ink-2);border:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
 .lk-pill.on{color:var(--good-ink,var(--good));border-color:color-mix(in srgb,var(--good) 40%,transparent);background:color-mix(in srgb,var(--good) 10%,transparent)}
 .lk-pill.wn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
 .lk-why{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}.lk-why b{font-weight:700}
@@ -496,13 +497,13 @@ export function css() {
 .lk-tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px}
 .lk-lv table{width:100%;border-collapse:collapse;font-size:12.5px}
 .lk-lv th{font-size:10.5px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 6px;border-bottom:1px solid var(--line)}
-.lk-lv td{padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap}.lk-lv td.lb{white-space:normal}.lk-lv td.lb small{display:none;font-size:10.5px;color:var(--muted);margin:2px 0 0 15px}.lk-lv .n{text-align:right;font-family:var(--mono)}
-.lk-lv tr.tk td{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}.lk-lv tr.tk td.st{text-decoration:none}
-.lk-lv tr.near td{background:color-mix(in srgb,var(--accent) 7%,transparent)}.lk-lv tr.tgt td{color:var(--good-ink,var(--good))}
-.lk-lv td.st{font-size:11px;color:var(--ink-2)}
-.lk-lv tr.px td{background:var(--surface-2);font-size:12px;color:var(--ink-2);white-space:normal}.lk-lv tr.px b{color:var(--ink);font-family:var(--mono);margin-right:8px}
+.lk-lv td{padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap}.lk-lv td.lk-lbl{white-space:normal}.lk-lv td.lk-lbl small{display:none;font-size:10.5px;color:var(--muted);margin:2px 0 0 15px}.lk-lv .lk-n{text-align:right;font-family:var(--mono)}
+.lk-lv tr.lk-tk td{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}.lk-lv tr.lk-tk td.lk-stc{text-decoration:none}
+.lk-lv tr.lk-near td{background:color-mix(in srgb,var(--accent) 7%,transparent)}.lk-lv tr.lk-tgt td{color:var(--good-ink,var(--good))}
+.lk-lv td.lk-stc{font-size:11px;color:var(--ink-2)}
+.lk-lv tr.lk-pxr td{background:var(--surface-2);font-size:12px;color:var(--ink-2);white-space:normal}.lk-lv tr.lk-pxr b{color:var(--ink);font-family:var(--mono);margin-right:8px}
 .lk-sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px;vertical-align:0}.lk-sw.h{background:var(--bsl)}.lk-sw.l{background:var(--ssl)}.lk-sw.v{background:var(--good);border-radius:50%}
-@media (max-width:560px){.lk-lv .hs{display:none}.lk-lv td.lb small{display:block}.lk-lv tr.tk td.lb small{text-decoration:none}}
+@media (max-width:560px){.lk-lv .lk-hs{display:none}.lk-lv td.lk-lbl small{display:block}.lk-lv tr.lk-tk td.lk-lbl small{text-decoration:none}}
 .lk-ckh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
 .lk-big{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}.lk-ckh em{font-style:normal;font-size:12px;font-weight:650}
 .lk-st{padding:6px 12px;border-radius:10px;font-size:12px;font-weight:800;letter-spacing:.08em;border:1px solid var(--line)}

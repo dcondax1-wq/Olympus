@@ -12,6 +12,7 @@
 //   LK.cockpit(C)    -> MFFU eval numbers + what-ifs    LK.cockpitHTML(C, sim) -> the eval cockpit
 //   LK.evalSim(C, { span: 'H2'|'2026', n, sessions }) -> forward pass / fail odds from the current balance (resampled
 //                       2026 sessions) and paths for the 'montecarlo' 3D view (LK.simPayload(sim))
+//   LK.readyHTML(C)  -> pre-session checklist (PC + NinjaTrader up before 01:55 ET, feed, 1m bars, eval, news, size rules)
 //   LK.weekHTML(C)   -> the week planner (days, trades, USD events, Monday rule, weekly stop, 2-4 trades target)
 //   LK.replay3d(t, { iSweep, iEntry, iExit }) -> { marks, zones, windows } for the 'candles' replay of a LIT trade
 //   LK.css()         -> injects the CSS once (every *HTML function calls it)
@@ -76,7 +77,7 @@ export function fromCloud(D, now = Date.now() / 1000) {
       ref_stop: X.sizing?.ref_stop ?? S.params?.risk_ref_stop ?? 20, max_micros: X.sizing?.max_micros ?? S.params?.max_micros ?? 40,
       fast_ref_stop: X.sizing?.fast_ref_stop ?? S.lit_sizing?.fast_ref_stop ?? 40, safe_cap: X.sizing?.safe_cap ?? S.lit_sizing?.safe_cap ?? 0.6, wk_stop: X.sizing?.wk_stop ?? S.lit?.wk_stop ?? [2, 0.5] },
     plan: X.plan || null, litRules: { ...(X.rules || {}), window: X.rules?.window || S.lit?.window || [[120, 930]] }, boxes: X.boxes || null, stats: X.stats || null,
-    timing: lv.eval_timing || null, periods: D?.results?.periods || null, engineTrades: lv.engine_trades || [] });
+    timing: lv.eval_timing || null, periods: D?.results?.periods || null, engineTrades: lv.engine_trades || [], pc: lv.pc || null, health: lv.health || null });
 }
 // the PC dashboard: its live state (/api/live/state: the PC bot's LIT state) + data it already has
 // PC ledger rows: { t, side: 'buy'|'sell'|'exit', qty, reason, pnl, entry_t, exit_t } (engine/live.py _route); exits become trades
@@ -94,7 +95,8 @@ export function fromPC(live, extra = {}, now = Date.now() / 1000) {
     levels: st.active_pools || extra.levels || [], levelsFull: !!st.active_pools, lit: st.lit || {}, session: st.session || {}, setups: st.setups || {}, position: st.position || null,
     rules: st.lit_rules || {}, eval: extra.eval || null, ledger: extra.ledger || [], events: extra.events || [], news: extra.news || [], newsRules: extra.newsRules || null,
     newsDays: extra.newsDays || [], sizing: extra.sizing || {}, plan: extra.plan || null, litRules: extra.rules || { window: [[120, 930]] }, boxes: extra.boxes || null,
-    stats: extra.stats || null, timing: extra.timing || null, periods: extra.periods || null, engineTrades: extra.engineTrades || [] });
+    stats: extra.stats || null, timing: extra.timing || null, periods: extra.periods || null, engineTrades: extra.engineTrades || [],
+    pc: { present: true, running: !!live?.running, silent: false, adapter: live?.cfg?.adapter, age_s: live?.last_poll ? now - live.last_poll : null }, health: live?.health || null });
 }
 // a ledger row's entry epoch: { day, entry: 'MM-DD HH:MM' } (ET)
 function ledgerT(v) {
@@ -211,7 +213,7 @@ export function railHTML(C) {
     const [side, s] = R.setup, left = N(s.expires_t) - C.now;
     detail = kv([['Setup', `${side.toUpperCase()} · swept ${esc((s.pools || []).join(', ') || '—')}`], ['Limit', `${px(s.limit)}${ok(P) ? ` <em>${spts(s.limit - P)} pts</em>` : ''}`],
       ['Stop', `${px(s.stop)} <em>${ok(s.limit) && ok(s.stop) ? Math.abs(s.limit - s.stop).toFixed(2) + ' pts' : ''}</em>`], ['Target', px(s.target)],
-      ['Waiting for', esc(s.waiting || (s.tapped_t ? '1m CISD' : 'limit fill'))], ['Expires', ok(s.expires_t) ? `${hm(et(s.expires_t).min)} ET${left > 0 ? ` · in ${cd(left)}` : ''}` : '—']]);
+      ['Waiting for', esc(s.waiting || (s.tapped_t ? '1m CISD' : 'limit fill'))], ['Expires', ok(s.expires_t) ? `${hm(et(s.expires_t).min)} ET${left > 0 ? ` · in <span data-cd="${s.expires_t}">${cd(left)}</span>` : ''}` : '—']]);
   } else if (R.sig) {
     const s = R.sig; detail = kv([['Last signal', `${s.dir === 1 ? 'LONG' : 'SHORT'} ${hm(et(s.t).min)} ET`], ['Limit', px(s.limit_px)], ['Stop', px(s.stop_px)], ['Target', `${px(s.target_px)}${ok(s.rr) ? ` · ${(+s.rr).toFixed(1)}R` : ''}`]]);
   } else if (R.takenToday.length) {
@@ -342,7 +344,7 @@ export function clockData(C) {
   const trades = C.dayTrades.map((v) => ({ t: v.t, exit_t: v.exit_t, dir: /long/i.test(v.side) ? 1 : -1, pnl: N(v.usd, 0), r: N(v.R), exit: v.exit, side: v.side })).filter((x) => ok(x.t));
   if (pos && ok(pos.entry_t)) trades.push({ t: pos.entry_t, exit_t: null, dir: pos.dir, pnl: N(pos.unrealized, 0), r: N(pos.unrealized_r), open: true });
   const su = Object.entries(C.setups || {})[0];
-  return { now: C.now, day: C.day, closed: C.closed, windows: C.litRules.window, flat: C.litRules.flat_mod, boxes: boxesFor(C), events: ev.map((e) => ({ t: e.t, title: e.title, impact: e.impact, kind: e.kind })),
+  return { now: C.now, day: C.day, closed: C.closed, windows: C.litRules.window, flat: C.litRules.flat_mod, boxes: boxesFor(C), events: ev.map(({ win, ...e }) => e),
     blackouts: ev.filter((e) => e.win).map((e) => e.win), trades, setup: su ? { t: su[1].arm_t, expires_t: su[1].expires_t, dir: su[0] === 'long' ? 1 : -1, label: 'swept ' + (su[1].pools || []).join(', ') } : null,
     open18: C.lit?.open18 ?? null, vixMove: C.lit?.vix_move ?? null, done: !pos && (C.dayTrades.length >= (C.litRules.max_per_day || 1) || /done for today/i.test(C.model_state || '')) };
 }
@@ -371,8 +373,8 @@ export function planHTML(C, { compact = false } = {}) {
   css();
   const rows = plan(C), K = { open: 'acc', asia: 'asia', london: 'lon', pre: 'pre', ny: 'ny', window: 'go', rth: 'acc', flat: 'bad', close: 'mut', news: 'news', trade: 'trade' };
   const list = compact ? rows.filter((r) => r.state !== 'past').slice(0, 5) : rows;
-  return `<div class="lk lk-plan">${C.closed ? `<div class="lk-why"><span class="lk-dot"></span><b>Market closed · the next LIT day opens Sunday 18:00 ET</b><em class="lk-pill">in ${cd(C.S - C.now)}</em></div>` : ''}
-    <ol>${list.map((r) => `<li class="${r.state} k-${K[r.kind] || 'mut'}"><time>${hm(et(r.t).min)}${r.t1 ? '<small>–' + hm(et(r.t1).min) + '</small>' : ''}</time><i></i><div><b>${r.label}</b>${r.state === 'next' ? `<em class="lk-pill on">in ${cd(r.t - C.now)}</em>` : r.state === 'now' ? '<em class="lk-pill on">now</em>' : ''}<span>${r.note}</span></div></li>`).join('')}</ol></div>`;
+  return `<div class="lk lk-plan">${C.closed ? `<div class="lk-why"><span class="lk-dot"></span><b>Market closed · the next LIT day opens Sunday 18:00 ET</b><em class="lk-pill">in <span data-cd="${C.S}">${cd(C.S - C.now)}</span></em></div>` : ''}
+    <ol>${list.map((r) => `<li class="${r.state} k-${K[r.kind] || 'mut'}"><time>${hm(et(r.t).min)}${r.t1 ? '<small>–' + hm(et(r.t1).min) + '</small>' : ''}</time><i></i><div><b>${r.label}</b>${r.state === 'next' ? `<em class="lk-pill on">in <span data-cd="${r.t}">${cd(r.t - C.now)}</span></em>` : r.state === 'now' ? '<em class="lk-pill on">now</em>' : ''}<span>${r.note}</span></div></li>`).join('')}</ol></div>`;
 }
 // 2D fallback of the day clock: an SVG dial (18:00 at the top) + the readout
 export function clockSVG(C) {
@@ -393,9 +395,34 @@ export function clockSVG(C) {
   const P = plan(C), nx = P.find((r) => r.state === 'next'), m = et(C.now).min, open = !C.closed && inWin(C, m);
   return `<div class="lk lk-clock"><svg viewBox="0 0 240 240" role="img" aria-label="LIT day clock">${s}</svg>
     <div class="lk-cr"><span class="lk-k">LIT day · ${esc(C.day)}</span><b>${C.closed ? 'Closed' : phaseName(m)}</b><em class="lk-pill ${open ? 'on' : ''}">${C.closed ? 'weekend' : open ? 'entries open' : 'entries closed'}</em>
-      ${nx ? `<span>next: <b>${nx.label}</b> ${hm(et(nx.t).min)} · in ${cd(nx.t - C.now)}</span>` : ''}${ok(D.open18) ? `<span>18:00 open ${px(D.open18)}${ok(D.vixMove) ? ` · VIX band ±${Math.round(D.vixMove)} pts` : ''}</span>` : ''}</div></div>`;
+      ${nx ? `<span>next: <b>${nx.label}</b> ${hm(et(nx.t).min)} · in <b data-cd="${nx.t}">${cd(nx.t - C.now)}</b></span>` : ''}${ok(D.open18) ? `<span>18:00 open ${px(D.open18)}${ok(D.vixMove) ? ` · VIX band ±${Math.round(D.vixMove)} pts` : ''}</span>` : ''}</div></div>`;
 }
 const phaseName = (m) => (m >= 1080 || m < 120 ? 'Asia' : m < 300 ? 'London' : m < 570 ? 'Pre-market' : m < 690 ? 'NY AM' : m < 810 ? 'NY lunch' : m < 960 ? 'NY PM' : m < 1020 ? 'After hours' : 'Halt');
+
+// ------------------------------------------------------------------ pre-session checklist
+// 95 of LIT's 120 trades in 2026 entered 02:00-08:00 ET: the PC + NinjaTrader must be up from ~01:55 ET for real fills
+export function ready(C) {
+  const out = [], add = (st, label, note) => out.push({ st, label, note });
+  const h = C.health || {}, pc = C.pc || {}, ev = cockpit(C), news = newsToday(C).filter((e) => e.impact === 'high');
+  const age = C.last_run ? C.now - C.last_run : null;
+  add(age == null ? 'bad' : age < 40 * 60 || C.closed ? 'ok' : 'warn', 'Cloud paper bot', age == null ? 'no run yet' : `last run ${cd(age)} ago${C.closed ? ' (market closed)' : ''}`);
+  add(h.error ? 'bad' : h.stale ? 'warn' : 'ok', 'Price feed', h.error ? String(h.error) : h.stale ? `stale · last bar ${h.last_bar || '?'}` : `fresh · last bar ${h.last_bar || '—'} (Yahoo NQ=F)`);
+  add(pc.present ? (pc.silent ? 'bad' : pc.running === false ? 'warn' : 'ok') : 'warn', 'PC bot + NinjaTrader', pc.present ? (pc.silent ? `silent for ${cd(pc.age_s || 0)}` : `${pc.adapter || 'paper'} · ${pc.running === false ? 'stopped' : 'running'}`)
+    : 'no heartbeat: start the PC by 01:55 ET (most LIT entries come 02:00-08:00)');
+  add(C.lit?.one_min_day === false ? 'warn' : 'ok', '1-minute bars', C.lit?.one_min_day === false ? 'today runs on 5m bars only (fewer, worse fills)' : 'LIT enters on a 1m CISD');
+  add(ev.failed ? 'bad' : ev.passed ? 'ok' : ev.room < 0.35 ? 'warn' : 'ok', 'Eval room', ev.passed ? 'target reached' : `${usd(ev.cushion)} above the floor · ${usd(ev.toTarget)} to the target`);
+  add(ev.dllLeft != null && ev.dllLeft <= 0 ? 'bad' : 'ok', 'Daily loss limit', ev.dllLeft == null ? 'none' : `${usd(Math.max(0, ev.dllLeft))} left today`);
+  add(ev.wk && ev.wk.mult < 1 ? 'warn' : 'ok', 'Size', `${ev.z.m} micros on a ${ev.z.stop}-pt stop · mode ${C.sizing.mode}${ev.wk && ev.wk.mult < 1 ? ' · weekly stop: half size' : ''}`);
+  add(news.length ? 'warn' : 'ok', 'High-impact news', news.length ? news.map((e) => `${hm(et(e.t).min)} ${e.title}`).join(' · ') : 'none today');
+  if (ev.mon?.today && ev.mon.today !== 'none') add('warn', 'Monday rule', ev.mon.text || '');
+  return out;
+}
+export function readyHTML(C) {
+  css();
+  const R = ready(C), bad = R.filter((r) => r.st === 'bad').length, warn = R.filter((r) => r.st === 'warn').length;
+  return `<div class="lk lk-ready"><div class="lk-why"><span class="lk-dot ${bad ? '' : 'on'}"></span><b>${bad ? `${bad} problem${bad > 1 ? 's' : ''}` : warn ? `ready, ${warn} to check` : 'all set'}</b></div>
+    <ul>${R.map((r) => `<li class="${r.st}"><i>${r.st === 'ok' ? '✓' : r.st === 'warn' ? '!' : '✕'}</i><b>${esc(r.label)}</b><span>${esc(r.note)}</span></li>`).join('')}</ul></div>`;
+}
 
 // ------------------------------------------------------------------ the week planner
 export function weekHTML(C) {
@@ -512,6 +539,12 @@ export function css() {
 .lk-dt{display:flex;gap:4px;min-height:14px;margin:6px 0}.lk-dt i{width:10px;height:10px;border-radius:50%;background:var(--ink-2)}.lk-dt i.w{background:var(--good)}.lk-dt i.l{background:var(--bad)}.lk-dt span{font-size:10.5px;color:var(--muted)}
 .lk-ev{font-size:10.5px;line-height:1.3;color:var(--ink-2);margin-top:4px;overflow-wrap:anywhere}.lk-ev time{display:block;font-family:var(--mono);font-size:10px;color:var(--muted)}
 .lk-ev.high{color:var(--bad)}.lk-ev.medium{color:var(--warn)}.lk-ev.rule{color:var(--accent-2);font-weight:650}
+.lk-ready ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.lk-ready li{display:grid;grid-template-columns:22px minmax(90px,150px) 1fr;gap:8px;align-items:baseline;padding:7px 10px;border-radius:10px;background:var(--surface-2);border:1px solid var(--line)}
+.lk-ready li i{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;font-style:normal;font-size:11px;font-weight:800;align-self:center}
+.lk-ready li.ok i{background:color-mix(in srgb,var(--good) 22%,transparent);color:var(--good-ink,var(--good))}.lk-ready li.warn i{background:color-mix(in srgb,var(--warn) 22%,transparent);color:var(--warn)}
+.lk-ready li.bad i{background:color-mix(in srgb,var(--bad) 22%,transparent);color:var(--bad)}.lk-ready li b{font-size:12.5px}.lk-ready li span{font-size:12px;color:var(--ink-2);min-width:0;overflow-wrap:anywhere}
+@media (max-width:480px){.lk-ready li{grid-template-columns:22px 1fr}.lk-ready li span{grid-column:2}}
 @media (max-width:560px){.lk-days{grid-template-columns:1fr}.lk-day{min-height:0;display:grid;grid-template-columns:70px 1fr;gap:2px 8px}.lk-dh{grid-row:span 3;flex-direction:column}.lk-dt{margin:0}}`;
   document.head.appendChild(s);
 }
