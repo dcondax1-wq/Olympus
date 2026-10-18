@@ -279,6 +279,34 @@ async def api_alerts_send(req: Request):
     return J(alerts.send(body.get("text", "Liquidity Engine test alert ✅"), body.get("kind", "signal"), force=bool(body.get("force"))))
 
 
+# phone app notifications (Web Push, engine/push.py): data/push.json holds the VAPID private key + the app's subscription
+# codes (gitignored); the API never returns the private key or an endpoint
+@app.get("/api/push")
+def api_push_get():
+    from engine import push
+    return J({**push.status(), "recent": push.pc_notifier().log[-10:]})
+
+
+@app.post("/api/push")
+async def api_push_save(req: Request):
+    from engine import push
+    try:
+        return J({"ok": True, **push.save_pc_config(await req.json())})
+    except ValueError as e:
+        return J({"ok": False, "error": str(e)}, 400)
+
+
+@app.post("/api/push/test")
+def api_push_test():
+    from engine import push
+    if not push.enabled():
+        return J({"ok": False, "error": "not set up yet: paste the private key and the app's code first"}, 400)
+    p = push.text_payload("PC", "test", "Test notification", "Notifications from the PC bot work: one for every fill and every outcome.",
+                          key=f"test:{int(time.time())}")
+    r = push.pc_notifier().notify(p)
+    return J({"ok": bool(r.get("sent")), **{k: r.get(k) for k in ("sent", "devices", "gone", "errors")}})
+
+
 @app.get("/api/gamma")
 def api_gamma():
     from engine import gamma

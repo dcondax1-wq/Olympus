@@ -96,6 +96,7 @@ class Heartbeat:
         cfg = getattr(self.bot, "cfg", None) or {}
         return {"t": int(time.time()), "running": bool(getattr(self.bot, "running", False)), "adapter": cfg.get("adapter", "paper"),
                 "position": bool(st.get("position")), "model_state": st.get("model_state"), "host": platform.node(),
+                "model": (st.get("strategy") or {}).get("model") or cfg.get("model"),     # the cloud's push de-dup (LE_PUSH_DEFER_TO_PC)
                 "every_s": int(self.every_s)}
 
     def beat(self) -> dict:

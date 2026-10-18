@@ -10,7 +10,8 @@ Only the stop (where it sits, how it triggers) and the stop moves after the fill
   1. close-based stop (cstop=N): the trade is closed only when a candle of the executor (1m; 5m on days without 1m bars)
      CLOSES beyond the live stop (1 tick past the sweep extreme), at the next bar's open + 1 tick of slippage; a hard
      emergency stop N pts further out is always working. cstop_size "emerg" = size on the emergency stop (size follows the
-     stop: the real worst case), "ext" = live size (the worst case is N pts bigger than the size assumes).
+     stop: the real worst case), "ext" = live size (the worst case is N pts bigger than the size assumes). cstop_tf 5 (extra
+     idea): only a 5m candle close counts (the trade is still walked on 1m bars).
   2. stop behind the next liquidity (liq=kind): 1 tick past the nearest resting liquidity beyond the sweep extreme, known at
      the trigger bar: "frac" = untouched confirmed 5m fractal low (k=2, last 2 days), "eq" = untouched equal lows (LIT build-up,
      engine buildups()), "lit" = untouched LIT level (session boxes, PDL/PWL/PML, gaps, build-ups), "any" = the nearest of all.
@@ -27,7 +28,7 @@ Only the stop (where it sits, how it triggers) and the stop moves after the fill
 
   python tools/lit_t_stops.py check   # defaults == run lit_live (120 trades 2026) and == the baseline eval run numbers
   python tools/lit_t_stops.py grid    # every variant -> research/lit/t_stops_results.json
-  python tools/lit_t_stops.py save    # store the chosen runs lit_u_stops_* (rl.save, family other, tags lit, lit_untested, lit_stops)
+  python tools/lit_t_stops.py save    # store every variant as run lit_u_stops_* (rl.save, family other, tags lit, lit_untested, lit_stops)
 Pick on 2026 H1 (Jan 2 - Jun 30), check on 2026 H2 (Jul 1 - Oct 16); 2021-25 is a reference line (5m only, no 1m data).
 1 CPU process. Paper research only.
 """
@@ -56,7 +57,7 @@ RULE = ("lit", 800, 25.0)          # live eval sizing: $800 up to a 25-pt stop, 
 ROOM_K = 0.6                       # + never more than 60% of the room to the trailing max-loss floor
 
 SDEF = {
-    "cstop": None, "cstop_size": "emerg",
+    "cstop": None, "cstop_size": "emerg", "cstop_tf": 1,
     "liq": None, "liq_cap": 80.0, "liq_over": "cut", "liq_back": 576,
     "buf_atr": 0.0, "rref": "orig",
     "be_time": None, "be_after": None, "be_close": False,
@@ -250,7 +251,8 @@ def ssim(M, B, z, entry_px, tgt_lvl, fb, stop0, P):
                     cur, be_done, soft = max(cur, entry), True, False
             if lk and not lk_done and hi_d[k] >= lk_lvl:
                 cur = max(cur, entry + lk[1] * (lk_lvl - entry)); lk_done = True; soft = False
-        if soft and c_d[k] <= cur:                  # idea 1: a close beyond the stop -> out at the next bar's open
+        if soft and c_d[k] <= cur and (P["cstop_tf"] == 1 or (int(B.t[k]) + B.secs) % (60 * P["cstop_tf"]) == 0):
+            # idea 1: a close beyond the stop (cstop_tf 5: only a 5m candle close) -> out at the next bar's open
             if k + 1 < B.n and B.day[k + 1] == s_day and B.mod[k + 1] < 1080:
                 k += 1
                 worst = min(worst, float(o_d[k]) - entry)
@@ -392,6 +394,9 @@ def variants():
     for n in (5, 10, 15):
         V[f"close {n} emerg-size"] = {"cstop": float(n), "cstop_size": "emerg"}
         V[f"close {n} live-size"] = {"cstop": float(n), "cstop_size": "ext"}
+    for n in (10, 15):
+        V[f"close5m {n} emerg-size"] = {"cstop": float(n), "cstop_size": "emerg", "cstop_tf": 5}
+        V[f"close5m {n} live-size"] = {"cstop": float(n), "cstop_size": "ext", "cstop_tf": 5}
     # 2. stop behind the next liquidity
     for kind in ("frac", "eq", "lit", "any"):
         for over in ("cut", "ext"):
@@ -412,6 +417,9 @@ def variants():
     # 5. profit lock
     for x in (0.6, 0.75, 0.85):
         V[f"lock 50% at {int(x * 100)}%"] = {"lock": (x, 0.5)}
+    V["lock 25% at 75%"] = {"lock": (0.75, 0.25)}
+    V["lock 75% at 75%"] = {"lock": (0.75, 0.75)}
+    V["lock 50% at 50%"] = {"lock": (0.5, 0.5)}
     return V
 
 
@@ -458,9 +466,45 @@ def save(picks):
         print("saved", rid, row("", o, spans=("H1", "H2")), flush=True)
 
 
+def _slug(nm):
+    import re
+    return "lit_u_stops_" + re.sub(r"[^a-z0-9]+", "_", nm.lower().replace("%", "pct").replace(">=", "ge").replace(">", "gt")).strip("_")
+
+
+IDEA = [("close", "1. close-based stop + emergency stop"), ("liq", "2. stop behind the next liquidity"),
+        ("buf", "3. volatility buffer"), ("be", "4. time-based / close-based breakeven"), ("lock", "5. profit lock")]
+
+
+def save_all():
+    """Store every grid variant (verdict from the grid: ADOPT only when H1 and H2 both beat the baseline and 2-4 trades/week)."""
+    res = _load()
+    b = res["base"]["score"]
+    picks = []
+    for nm, rec in res.items():
+        if nm == "base":
+            picks.append((_slug("base"), "LIT live + eval sizing (reference of the untested-stops study, == lit_tight_eval_800_25_room60)",
+                          nm, "info", "Reference: the live LIT signals and stop with the live eval sizing."))
+            continue
+        o = rec["score"]
+        d1, d2 = o["H1"]["net"] - b["H1"]["net"], o["H2"]["net"] - b["H2"]["net"]
+        tpw = min(o["H1"]["tpw"], o["H2"]["tpw"])
+        if d1 > 0 and d2 > 0 and 2 <= tpw <= 4:
+            st, v = "adopt-candidate", "ADOPT"
+        elif abs(d1) < 500 and abs(d2) < 500:
+            st, v = "info", "NEUTRAL"
+        else:
+            st, v = "rejected", "REJECT"
+        idea = next(t for k, t in IDEA if nm.startswith(k))
+        picks.append((_slug(nm), f"LIT untested stops - {idea}: {nm}", nm, st,
+                      f"{v}: H1 {d1:+,} $ / H2 {d2:+,} $ vs the baseline (LIT live + eval sizing)."))
+    save(picks)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     if cmd == "check":
         sys.exit(0 if check() else 1)
     elif cmd == "grid":
         grid(sys.argv[2:] or None)
+    elif cmd == "save":
+        save_all()

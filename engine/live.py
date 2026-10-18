@@ -966,9 +966,10 @@ class LiveBot:
                 self._open_routed = pos["entry_t"]
                 self._open_qty = q
                 d = 1 if pos["dir"] == 1 else -1
-                self._route({"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
-                             "stop": tick_px(pos["stop"], d), "target": tick_px(pos["target"], d, target=True),
-                             "entry": pos["entry"], "entry_t": pos["entry_t"]})
+                rr = self._route({"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
+                                  "stop": tick_px(pos["stop"], d), "target": tick_px(pos["target"], d, target=True),
+                                  "entry": pos["entry"], "entry_t": pos["entry_t"]})
+                self._push_fill(pos, q, sym, rr)
         if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._route_stop_move(pos, sym)
         for tr in res["trades"]:
@@ -1003,6 +1004,69 @@ class LiveBot:
                                  "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})
                 if routed:
                     self._remember(tr, sym)      # every completed routed trade feeds the persistent memory
+                    self._push_outcome(tr, qty, sym)
+
+    # ------------------------------------------------------------------ phone notifications (engine/push.py, Web Push)
+    def _push_src(self):
+        """'PC paper' / 'PC NinjaTrader Sim' / 'PC Tradovate demo' ...: the same words the NinjaTrader adapter uses, so the
+        adapter's real-fill notice and this one share a de-dup key."""
+        name = str(self.cfg.get("adapter") or "paper")
+        if name == "paper":
+            return "PC paper"
+        env = getattr(self.adapter, "env", None)
+        if name == "ninjatrader":
+            return f"PC NinjaTrader {'Sim' if env != 'live' else 'LIVE'}"
+        return f"PC {name.capitalize()}{' ' + str(env) if env else ''}"
+
+    def _push_model(self):
+        m = ((self.state or {}).get("strategy") or {}).get("model") or self.cfg.get("model") or "engine"
+        return "LIT" if m == "lit" else "Engine" if m == "engine" else str(m)
+
+    def _push_send(self, payload):
+        """Only the real bot sends (harnesses run with their own state_path). Never raises into routing."""
+        if self.state_path != STATE_PATH:
+            return None
+        try:
+            from . import push
+            return push.pc_notify(payload)
+        except Exception as e:
+            self._log("warn", f"phone notification failed: {e.__class__.__name__}")
+            return None
+
+    def _push_fill(self, pos, qty, sym, res):
+        try:
+            from . import push
+            res = res or {}
+            if getattr(self.adapter, "reports_fills", False):
+                return                      # NinjaTrader: the adapter notifies the real fill (and its own problems)
+            if res.get("ok") is False:
+                self._push_send(push.text_payload(self._push_src(), "risk", f"{self._push_model()} entry NOT placed",
+                                                  f"{'LONG' if pos.get('dir') == 1 else 'SHORT'} {qty} @ {float(pos.get('entry') or 0):,.2f}: "
+                                                  f"{str(res.get('error') or 'refused')[:300]}", key=f"refused:{int(pos['entry_t'])}"))
+                return
+            name = str(self.cfg.get("adapter") or "paper")
+            why = "; ".join(pos.get("size_why") or [])
+            self._push_send(push.fill_payload(
+                self._push_src(), sym, "LONG" if pos.get("dir") == 1 else "SHORT", qty, pos.get("entry"), pos.get("stop0", pos.get("stop")),
+                pos.get("target"), pos["entry_t"], risk_pts=pos.get("risk_pts"), model=self._push_model(),
+                setup=" · ".join(x for x in (f"target {pos['target_label']}" if pos.get("target_label") else "",
+                                             "" if name == "paper" else f"order sent to {name} (fill not confirmed by it)") if x),
+                note=f"Size: {why}" if why else ""))
+        except Exception as e:
+            self._log("warn", f"phone notification failed: {e.__class__.__name__}")
+
+    def _push_outcome(self, tr, qty, sym):
+        try:
+            from . import push
+            from . import sizing as _sz
+            ev = _sz.mffu_eval(self.eval_days()) if self.cfg.get("eval_start") else None
+            usd = float(tr.get("pnl") or 0) * qty / tr["qty"] if tr.get("qty") else float(tr.get("pnl") or 0)
+            self._push_send(push.outcome_payload(
+                self._push_src(), sym, "LONG" if tr.get("dir") == 1 else "SHORT", tr.get("exit_reason"), tr.get("pnl_r"), usd,
+                tr["entry_t"], tr.get("exit_t"), qty=qty, balance=ev["balance"] if ev else None, to_target=ev["to_target"] if ev else None,
+                model=self._push_model()))
+        except Exception as e:
+            self._log("warn", f"phone notification failed: {e.__class__.__name__}")
 
     # ------------------------------------------------------------------ background loop
     def _loop(self, gen=None):
