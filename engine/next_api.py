@@ -333,3 +333,18 @@ def lit_extra():
         return _J(lit_dash_extra.extra({}, lm))
     except Exception as e:                                   # never 500 the dashboard over a panel
         return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
+
+
+@router.get("/api/next/lit_backtest")
+def lit_backtest(period: str = "2026"):
+    """The LIT replay (research/lab/backtest_live.json) in /api/backtest's shape for the PC pages that show the live strategy
+    (Today widgets, Chart overlays, Replays, Journal, Reports, Weekly Review): trades, days with the MFFU balance / trailing
+    MLL, stats, eval, LIT levels + session boxes per day, events, and the LIT state (the PC bot's when it runs LIT, else
+    the state at the last bar of the data files). period = 2026 (default) | all. /api/backtest stays for the Archive."""
+    try:
+        from . import lit_dash
+        return _J(lit_dash.backtest(period))
+    except FileNotFoundError:
+        return _J({"error": "research/lab/backtest_live.json missing: run python tools/export_backtest.py"}, 404)
+    except Exception as e:                                   # never 500 the dashboard
+        return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)

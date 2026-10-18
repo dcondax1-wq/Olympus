@@ -15,8 +15,9 @@ What an order block is here (bullish; a bearish block is the exact mirror, with 
   4. Zone: body = [lowest body bottom, highest body top] of the run (TTrades), wick = [lowest low, highest high].
      Mean threshold (mt) = the middle of the body zone; wick_mt = the middle of the wick zone.
   5. swept = the block's low took a 2-bar fractal low (made in the liq_lb candles before the run, untaken until the run).
-  6. kind = "extreme" when the block's low is the lowest low of the leg_lb candles up to conf (the origin of the leg),
-     else "decisional" (a later block inside the leg, closer to price).
+  6. kind = "extreme" when the block's low is the lowest low since the swing high its move broke (the origin of the leg
+     that broke structure; without a broken swing: the last leg_lb candles), else "decisional" (a block formed higher
+     inside that leg, closer to price).
   7. Life cycle (lifecycle()): fresh until the first touch (low <= the proximal edge = zone top: mitigation); failed when a
      candle CLOSES below the distal edge (zone bottom) at or after the touch -> a bearish BREAKER block on the same zone,
      known at that close, fresh until price trades back up to its proximal edge (the zone bottom).
@@ -100,8 +101,9 @@ def _fractal_lows(l, k=2):
 
 
 # ------------------------------------------------------------------------------------------------ detection
-def _detect_dir(o, h, l, c, P, at):
-    """Bullish blocks in direction space (o, h, l, c already mirrored for bearish)."""
+def _detect_dir(o, h, l, c, P, at, rej=None):
+    """Bullish blocks in direction space (o, h, l, c already mirrored for bearish). rej: a list that collects the
+    rejected candidates (last down run before an up candle that never qualified) with the reason."""
     n = len(o)
     rng = h - l
     body = np.abs(c - o)
@@ -164,12 +166,19 @@ def _detect_dir(o, h, l, c, P, at):
             if ok_s and (fvg is not None or not P["need_fvg"]):
                 conf = b; break
         if conf is None:
+            if rej is not None:
+                rej.append({"s": s_run, "e": e_run, "u": u, "why": ("no FVG" if fvg is None and P["need_fvg"] else
+                            "no structure break" if bos_k is None and not (swept and cisd_k is not None) else "failed"),
+                            "fvg": fvg is not None, "bos_lvl": bos_lvl, "swept": swept, "cisd": cisd_k is not None})
             continue
         mb = float(body[u:conf + 1].max() / max(at[conf], 1e-9))
         if mb < P["min_disp_atr"]:
             continue
         seen.add((s_run, e_run))
-        lo_leg = float(l[max(0, s_run - P["leg_lb"]):conf + 1].min())
+        # the leg that broke structure starts at the swing high it broke (else leg_lb candles back): the block holding the
+        # lowest low since then is that leg's origin (extreme); a block above that low formed later in it (decisional)
+        ref = int(fh[q]) if (bos_lvl is not None and q >= 0) else max(0, s_run - P["leg_lb"])
+        lo_leg = float(l[ref:conf + 1].min())
         out.append({"s": s_run, "e": e_run, "u": u, "conf": conf, "body_top": body_top, "body_bot": body_bot,
                     "wick_top": wick_top, "wick_bot": wick_bot, "fvg": fvg[:2] if fvg else None,
                     "bos": bos_lvl if bos_k is not None else None, "bos_i": bos_k, "swept": bool(swept),
@@ -178,18 +187,22 @@ def _detect_dir(o, h, l, c, P, at):
     return out
 
 
-def detect(o, h, l, c, cfg=None, tf="5m"):
+def detect(o, h, l, c, cfg=None, tf="5m", rejects=None):
     """Every order block of both directions in the bars given (sorted by conf). Prices are real prices: for a bullish
-    block (dir +1) top/bot = the zone, proximal edge = top; for a bearish block (dir -1) proximal edge = bot."""
+    block (dir +1) top/bot = the zone, proximal edge = top; for a bearish block (dir -1) proximal edge = bot.
+    rejects: a list that receives the candidates that did not qualify ({"dir", "s", "e", "u", "why", ...})."""
     P = {**DEFAULTS, **(cfg or {})}
     o = np.asarray(o, float); h = np.asarray(h, float); l = np.asarray(l, float); c = np.asarray(c, float)
     at = atr(h, l, c)
     out = []
     for d in (1, -1):
+        rj = [] if rejects is not None else None
         if d == 1:
-            R = _detect_dir(o, h, l, c, P, at)
+            R = _detect_dir(o, h, l, c, P, at, rj)
         else:
-            R = _detect_dir(-o, -l, -h, -c, P, at)
+            R = _detect_dir(-o, -l, -h, -c, P, at, rj)
+        if rejects is not None:
+            rejects.extend({**r, "dir": d, "tf": tf} for r in rj)
         for r in R:
             x = {"dir": d, "tf": tf, "s": r["s"], "e": r["e"], "u": r["u"], "conf": r["conf"], "swept": r["swept"],
                  "kind": r["kind"], "disp_atr": r["disp_atr"], "n_run": r["n_run"], "bos_i": r["bos_i"]}

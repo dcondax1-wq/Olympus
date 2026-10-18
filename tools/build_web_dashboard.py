@@ -501,7 +501,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     ledger = sorted(({**v, "entry_t": int(k)} if str(k).isdigit() else dict(v) for k, v in (st.get("ledger") or {}).items()),
                     key=lambda v: (v.get("day", ""), v.get("entry", "")), reverse=True)
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
-                                   "equity_filter", "eval_timing", "price", "today", "events", "engine_trades", "bars", "pools", "pc",
+                                   "equity_filter", "eval_timing", "eval_2wk", "price", "today", "events", "engine_trades", "bars", "pools", "pc",
                                    "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
                                    "push", "notices")}
     # phone notifications: the VAPID public key the app subscribes with (the cloud's, derived from the LE_VAPID_PRIVATE secret,

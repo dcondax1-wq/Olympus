@@ -93,6 +93,7 @@ function xmap(bars, secs) {
     let lo = 0, hi = T.length - 1;
     if (t < T[0]) return (t - T[0]) / secs;
     while (lo < hi) { const m = (lo + hi + 1) >> 1; if (T[m] <= t) lo = m; else hi = m - 1; }
+    if (lo === T.length - 1) return lo + (t - T[lo]) / secs;     // past the last bar: off the panel, not piled on the edge
     return lo + Math.min(1, (t - T[lo]) / secs);
   };
 }
@@ -237,16 +238,17 @@ export function svg(rec, { width = 380, height = 260, tf = '5m', view = null, co
   // breakeven move
   if (rec.be && rec.be.t) {
     const x = sx(X(rec.be.t) + 0.5);
-    o.push(`<rect class="tc-be" x="${(x - 3.5).toFixed(1)}" y="${(yE - 3.5).toFixed(1)}" width="7" height="7" rx="1.5"/>`);
-    lab.push({ x, y: yE + (d > 0 ? 6 : -6), text: 'BE', cls: 'tc-l-ink', anchor: 'middle', prio: 3, vb: d > 0 ? 'top' : 'bottom', bg: false, fs: fs - 1.5 });
+    if (x >= pl && x <= pr) o.push(`<rect class="tc-be" x="${(x - 3.5).toFixed(1)}" y="${(yE - 3.5).toFixed(1)}" width="7" height="7" rx="1.5"/>`);
+    if (x >= pl && x <= pr) lab.push({ x, y: yE + (d > 0 ? 6 : -6), text: 'BE', cls: 'tc-l-ink', anchor: 'middle', prio: 3, vb: d > 0 ? 'top' : 'bottom', bg: false, fs: fs - 1.5 });
   }
-  // exit
-  if (!rec.live || kind !== 'OPEN') {
+  // exit (only on a panel that shows the exit bar)
+  const xkI = X(rec.exit.t);
+  if (xkI != null && xkI <= n + 0.2 && xk >= pl && xk <= pr) {
     const s = small ? 4 : 5;
-    o.push(`<path class="tc-x tc-k-${esc(kind)}" d="M${xk - s} ${yk - s}L${xk + s} ${yk + s}M${xk + s} ${yk - s}L${xk - s} ${yk + s}"/>`);
+    if (!rec.live || kind !== 'OPEN') o.push(`<path class="tc-x tc-k-${esc(kind)}" d="M${xk - s} ${yk - s}L${xk + s} ${yk + s}M${xk + s} ${yk - s}L${xk - s} ${yk + s}"/>`);
+    const right = xk > pl + pw * 0.62;
+    lab.push({ x: xk + (right ? -8 : 8), y: yk, text: `${kind} ${fusd(rec.pnl)} · ${fr(rec.r)}`, cls: `tc-pill tc-k-${kind}`, anchor: right ? 'end' : 'start', prio: 0, vb: 'middle', pill: true, fs: fs + 0.5, bold: true });
   }
-  const right = xk > pl + pw * 0.62;
-  lab.push({ x: xk + (right ? -8 : 8), y: yk, text: `${kind} ${fusd(rec.pnl)} · ${fr(rec.r)}`, cls: `tc-pill tc-k-${kind}`, anchor: right ? 'end' : 'start', prio: 0, vb: 'middle', pill: true, fs: fs + 0.5, bold: true });
   // crosshair
   if (cross && cross.i >= 0 && cross.i < n) {
     const cx = sx(cross.i + 0.5);

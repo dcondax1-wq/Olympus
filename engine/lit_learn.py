@@ -62,6 +62,7 @@ STEP = 0.05                # knobs move on a 0.05 grid
 SKIP_MIN_N = 15            # a skip needs >= 15 trades in the bucket that lost money
 WINDOW_DAYS = 182          # trailing 6 months: estimation window and the guardrails' recent window
 WF_BLOCKS, WF_BLOCK_DAYS, WF_MIN_ACTIVE = 6, 30, 2
+HISTORY_DAYS = 364         # the visible history of a review: the trailing 12 months (2026: everything from Jan 2)
 MIN_TRADES = 20            # no review below this many journal trades in the window
 TPW = (2.0, 4.0)
 RISK_CAP = 900.0           # a sized-up trade never risks more than this (MFFU $1,000 soft daily loss limit)
@@ -760,7 +761,7 @@ def review(recs: list, L: dict | None, asof: str, sessions=None, source: str = "
     state, decision). At most one knob changes, and only after every guardrail passes; the decision is logged either way."""
     L = copy.deepcopy(L) if L else default_learning()
     knobs = L.setdefault("knobs", {})
-    V = _visible(recs, asof)
+    V = [r for r in _visible(recs, asof) if r["day"] >= _shift(asof, -HISTORY_DAYS)]
     w0 = _shift(asof, -WINDOW_DAYS)
     W = [r for r in V if r["day"] >= w0]
     dec = {"id": _next_id(L), "asof": asof, "at": int(time.time()), "source": source, "mode": L.get("mode"),

@@ -299,7 +299,8 @@ class LiveBot:
         self._nt_notes = {}              # rate limit for the ninjatrader feed notes: key -> (text, unix time logged)
         self._modify_gaveup = set()      # (entry_t, stop) the broker refused 3 times: not retried again
         self._week_prev = []             # LIT weekly stop: this ISO week's routed exits from earlier days (live_state.json)
-        self._eval_prev = {}             # LIT safe_eval: routed P&L per earlier trading day of the eval (live_state.json)
+        self._eval_prev = {}             # LIT safe_eval / eval / two_week: routed P&L per earlier trading day of the eval (live_state.json)
+        self._lit_sizing = None          # live_model.json lit_sizing (or the start cfg's), set on every poll
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):

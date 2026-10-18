@@ -74,6 +74,8 @@ class XMap:
         i = bisect.bisect_right(self.t, t) - 1
         if i < 0:
             return (t - self.t[0]) / self.s
+        if i == len(self.t) - 1:            # past the last bar: keep going (off the panel), never pile up on the edge
+            return i + (t - self.t[i]) / self.s
         return i + min(1.0, (t - self.t[i]) / self.s)
 
 
@@ -116,7 +118,6 @@ def label(ax, x, y, text, col, ha="left", va="bottom", dy=2, fs=6.6, bold=False,
 
 def declutter(fig, fixed=()):
     """move each registered label up/down (in steps) until it overlaps no earlier label nor a fixed artist."""
-    fig.canvas.draw()
     rr = fig.canvas.get_renderer()
     placed = [f.get_window_extent(rr).padded(2) for f in fixed]
     for _p, _i, a in sorted(LABELS, key=lambda z: z[:2]):
@@ -167,7 +168,7 @@ def draw_panel(ax, r, bars, secs, main=True):
         ax.add_patch(Rectangle((x0, bx["lo"]), x1 - x0, bx["hi"] - bx["lo"], facecolor=col, alpha=0.06, edgecolor=col, lw=0.6,
                                ls=(0, (2, 2)), zorder=1))
         if main:
-            ax.annotate(bx["k"], xy=(x0, bx["hi"]), xytext=(2, 2), textcoords="offset points", fontsize=6.2, color=col, alpha=0.9, zorder=2)
+            label(ax, x0, bx["hi"], bx["k"], col, dx=2, dy=2, fs=6.2, bg=False, prio=4)
     candles(ax, bars, w=0.62 if secs == 300 else 0.66)
     # position boxes: fill -> exit
     xe, xx = X(r["entry"]["t"]), X(r["exit"]["t_end"])
@@ -249,14 +250,14 @@ def draw_panel(ax, r, bars, secs, main=True):
     # breakeven move
     if r.get("be"):
         xb = X(r["be"]["t"]) + 0.5
-        if 0 <= xb <= n + 1:
+        if 0 <= xb <= n + 0.6:
             ax.plot([xb], [ent], marker="s", ms=3.6, color=C["ink"], zorder=10, clip_on=True)
             if main:
                 label(ax, xb, ent, "BE", C["ink"], ha="center", va="bottom" if d == -1 else "top", dy=4 if d == -1 else -4, fs=6.2, bg=False)
     # exit
     xk = X(r["exit"]["t"]) + 0.5
     ec = EXIT_C.get(r["exit_kind"], C["ink2"])
-    if 0 <= xk <= n + 1:
+    if 0 <= xk <= n + 0.6:
         ax.plot([xk], [r["exit"]["px"]], marker="X", ms=5.5, color=ec, mec=C["page"], mew=0.6, zorder=11, clip_on=True)
         if main:
             res = f"{r['exit_kind']} {fusd(r['pnl'])} · {fr(r['r'])}"
@@ -274,7 +275,6 @@ def draw_panel(ax, r, bars, secs, main=True):
 
 def row(fig, x, y, parts, gap=0.012):
     """texts side by side (measured), for the title line."""
-    fig.canvas.draw()
     rr = fig.canvas.get_renderer()
     W = fig.get_window_extent(rr).width
     for txt, col, fs, fw in parts:

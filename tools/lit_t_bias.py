@@ -23,6 +23,7 @@ changes:
 
   python tools/lit_t_bias.py check   # defaults == run lit_live (120 trades 2026) and == the baseline eval run numbers
   python tools/lit_t_bias.py grid    # every variant -> research/lit/t_bias_results.json
+  python tools/lit_t_bias.py flat    # + the fixed-size net $ deltas (no eval path) of every non-target variant
   python tools/lit_t_bias.py save    # store every variant as run lit_u_bias_* (rl.save, family other, tags lit, lit_untested, lit_bias)
 Pick on 2026 H1 (Jan 2 - Jun 30), check on 2026 H2 (Jul 1 - Oct 16); 2021-25 is a reference line (5m only, no 1m data).
 1 CPU process. Paper research only.
@@ -467,14 +468,54 @@ def _h(s):
             f"pass rate {s['pass_rate']}% median {s['pass_med']}")
 
 
-def verdict(o, b):
+# verdicts the plain rule gets wrong (see research/writeups/lit-untested-bias.md)
+OVERRIDE = {
+    "wp how skip toward": ("REJECT", "better on the eval path in both halves, but at a fixed size H1 loses $2,321 (it skips a "
+                           "+$2.4k winner on 22 Jan; the H1 gain is one later trade sized 11 instead of 1 micro by the eval room) "
+                           "and the H1 pass rate falls 92.3% -> 83.7%."),
+    "wp tw skip toward": ("REJECT", "better on the eval path in both halves, but at a fixed size H1 loses $2,078 (it skips a "
+                          "+$2.4k winner on 22 Jan; the H1 gain is one later trade sized 11 instead of 1 micro by the eval room) "
+                          "and the H1 pass rate falls 92.3% -> 84.6%."),
+}
+
+
+def verdict(o, b, nm=None):
     d1, d2 = o["H1"]["net"] - b["H1"]["net"], o["H2"]["net"] - b["H2"]["net"]
     tpw = min(o["H1"]["tpw"], o["H2"]["tpw"])
+    if nm in OVERRIDE:
+        return OVERRIDE[nm][0], d1, d2
+    if d2 == 0 and o["H2"].get("touched", 0) == 0 and nm and nm.startswith("vix") and d1 > 0:
+        return "NEUTRAL", d1, d2           # no H2 trade qualifies: cannot be checked out of sample
     if d1 > 0 and d2 > 0 and 2 <= tpw <= 4:
         return "ADOPT", d1, d2
     if abs(d1) < 500 and abs(d2) < 500:
         return "NEUTRAL", d1, d2
     return "REJECT", d1, d2
+
+
+def flat(U, P):
+    """Net $ per span at the eval size without the eval path (no room cap, no eval restarts): separates the rule's own effect
+    from eval-path sizing luck."""
+    P = B_of(P)
+    out = []
+    for t in sorted(U, key=lambda t: t["entry_t"]):
+        cum = sum(y["pnl"] for y in out if y["day"] == t["day"])
+        if cum <= -DLL:
+            continue
+        mi, mn = qty(t, P, {"bal": PLAN["start"], "cum": cum, "room": None})
+        out.append(TS.at_size(t, mi, mn, cum))
+    return {s: round(sum(t["pnl"] for t in out if SPAN[s][0] <= t["day"] <= SPAN[s][1])) for s in ("H1", "H2", "2021-25")}
+
+
+def flat_all():
+    res = _load()
+    V = variants()
+    for nm in res:
+        if nm.startswith("tgt"):
+            continue                     # needs the eval state: no fixed-size version
+        res[nm]["flat"] = flat(unit(V[nm]), V[nm])
+        print(nm, res[nm]["flat"], flush=True)
+    json.dump(res, open(OUT, "w"), indent=1, default=str)
 
 
 def save_all():
@@ -488,11 +529,17 @@ def save_all():
             rid, title, status = _slug("base"), "LIT live + eval sizing (reference of the untested-bias study, == lit_tight_eval_800_25_room60)", "info"
             why = "Reference: the live LIT signals with the live eval sizing."
         else:
-            v, d1, d2 = verdict(o, b)
+            v, d1, d2 = verdict(o, b, nm)
             status = {"ADOPT": "adopt-candidate", "NEUTRAL": "info", "REJECT": "rejected"}[v]
             idea = next(t for k, t in IDEA if nm.startswith(k))
             rid, title = _slug(nm), f"LIT untested bias - {idea}: {nm}"
             why = f"{v}: H1 {d1:+,} $ / H2 {d2:+,} $ vs the baseline (LIT live + eval sizing)."
+            if nm in OVERRIDE:
+                why += " " + OVERRIDE[nm][1]
+            if "flat" in rec:
+                fb = res["base"]["flat"]
+                why += (f" Fixed size (no eval path): H1 {rec['flat']['H1'] - fb['H1']:+,} $, H2 {rec['flat']['H2'] - fb['H2']:+,} $, "
+                        f"2021-25 {rec['flat']['2021-25'] - fb['2021-25']:+,} $.")
         U = unit(P)
         T = evals(U, "2026", B_of(P))[1] + evals(U, "2021-25", B_of(P))[1]
         T = [{k: v for k, v in t.items() if k not in ("legs",)} for t in T]
@@ -514,5 +561,7 @@ if __name__ == "__main__":
         sys.exit(0 if check() else 1)
     elif cmd == "grid":
         grid(sys.argv[2:] or None)
+    elif cmd == "flat":
+        flat_all()
     elif cmd == "save":
         save_all()
