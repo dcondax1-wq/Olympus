@@ -56,7 +56,7 @@
     "first_wait": 2,
     "split_first": null,
     "since_last": 0.0,
-    "dll": null
+    "dll": 600
    },
    "bot": "automation allowed with active oversight (policy unchanged Sep 2026; confirm with MFFU)",
    "news": "allowed",
@@ -79,7 +79,8 @@
    ],
    "unconfirmed": [
     "DLL: $600 soft per the current help center, none on the legacy 25K",
-    "price: list (coupons 40-50% off are common)"
+    "price: list (coupons 40-50% off are common)",
+    "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)"
    ],
    "sold": true,
    "note": "5 sim payouts, then live (80/20, daily, no consistency)",
@@ -587,7 +588,8 @@
     }
    },
    "price_paid": 63.0,
-   "price_note": "owner price with MFFU code, 2026-10-18 (list $105)"
+   "price_note": "owner price with MFFU code, 2026-10-18 (list $105)",
+   "owner_price": 63.0
   },
   {
    "id": "mffu_builder_50k",
@@ -625,7 +627,7 @@
     "first_wait": 2,
     "split_first": null,
     "since_last": 0.0,
-    "dll": null
+    "dll": 1000
    },
    "bot": "automation allowed with active oversight (policy unchanged Sep 2026; confirm with MFFU)",
    "news": "allowed",
@@ -647,7 +649,8 @@
     "https://pipback.com/blog/my-funded-futures-review"
    ],
    "unconfirmed": [
-    "price: list (coupons 40-50% off are common)"
+    "price: list (coupons 40-50% off are common)",
+    "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)"
    ],
    "sold": true,
    "note": "5 sim payouts, then live (80/20, daily, no consistency)",
@@ -1155,7 +1158,8 @@
     }
    },
    "price_paid": 91.8,
-   "price_note": "owner price with MFFU code, 2026-10-18 (list $153)"
+   "price_note": "owner price with MFFU code, 2026-10-18 (list $153)",
+   "owner_price": 91.8
   },
   {
    "id": "mffu_builder_100k",
@@ -1193,7 +1197,7 @@
     "first_wait": 2,
     "split_first": null,
     "since_last": 0.0,
-    "dll": null
+    "dll": 1750
    },
    "bot": "automation allowed with active oversight (policy unchanged Sep 2026; confirm with MFFU)",
    "news": "allowed",
@@ -1218,7 +1222,8 @@
     "price not found",
     "payout min/max assumed (50K x 1.5)",
     "the plan page lists only 25K and 50K for sale",
-    "price: list (coupons 40-50% off are common)"
+    "price: list (coupons 40-50% off are common)",
+    "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)"
    ],
    "sold": false,
    "note": "5 sim payouts, then live (80/20, daily, no consistency)",
@@ -1610,7 +1615,7 @@
     "first_wait": 2,
     "split_first": null,
     "since_last": 0.0,
-    "dll": null
+    "dll": 2500
    },
    "bot": "automation allowed with active oversight (policy unchanged Sep 2026; confirm with MFFU)",
    "news": "allowed",
@@ -1636,7 +1641,8 @@
     "max contracts not found (8 minis assumed)",
     "payout min/max assumed",
     "the plan page lists only 25K and 50K for sale",
-    "price: list (coupons 40-50% off are common)"
+    "price: list (coupons 40-50% off are common)",
+    "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)"
    ],
    "sold": false,
    "note": "5 sim payouts, then live (80/20, daily, no consistency)",

@@ -1,7 +1,8 @@
 """Cloud fast-entry watcher check (tools/lit_watch.py + engine/lit_watch.py) on every 2026 session.
 
-    python -X utf8 -m tests.test_lit_watch            # 4 processes, ~10-20 min
-    python -X utf8 -m tests.test_lit_watch --procs=2 --lag=600
+    python -X utf8 -m tests.test_lit_watch            # one process, ~30-40 min
+    python -X utf8 -m tests.test_lit_watch --months=2026-03 --spot=5   # smoke test on one month
+    python -X utf8 -m tests.test_lit_watch --procs=4 --lag=0           # more processes; a real-time feed
 
 What it replays: the GitHub Actions schedule (runs at :02 and :32 ET, 02:02-16:02; a run's monitor looks ~60 s after its
 start; a run that finds a LIT setup armed or forming keeps polling; a run queued behind a watching job starts when it
@@ -103,7 +104,10 @@ def crons(d):
 def sim_day(d, policy, lag, memo, month_used):
     """One session under one policy. Returns (detection dict or None, jobs [(start, watch_s)], forming_s, checks)."""
     tr = G["REF"].get(d)
-    first_sig = min((s["t"] for s in G["sigs"].get(d, [])), default=None)
+    # the trade's own signal (the setup that fills): from it on every poll is the real engine; earlier no-fill setups of the day
+    # count as armed for their 30-min limit window (cost only: nothing can be entered from them)
+    own = [s["t"] for s in G["sigs"].get(d, []) if s["status"] == "filled"]
+    first_sig = own[-1] if own else None
     arm_iv = [(s["t"], s["t"] + G["P"]["wait"] * 300) for s in G["sigs"].get(d, []) if s["status"] != "filled"]
     det, jobs, form_s, bad = None, [], 0, []
 
@@ -118,6 +122,8 @@ def sim_day(d, policy, lag, memo, month_used):
     def look(now):
         """(alive, why) at a poll + detection bookkeeping."""
         nonlocal det
+        if det is not None:                  # the day's entry is in: LIT takes one trade a day, later runs only cost
+            return False, "done for today"
         res, v = state_at(now)
         b = brew_at(v)
         if res is None:                      # nothing placed yet today (or a day without a trade): table + signal windows
@@ -194,16 +200,19 @@ def brew_spot_check(n=40):
 def main():
     t0 = time.time()
     lag = _arg("lag", 600)
-    procs = _arg("procs", 4)
+    procs = _arg("procs", 1)
     setup()
     sess, REF = G["sess"], G["REF"]
     print(f"setup: {G['n_ref']} backtest trades, {len(sess)} sessions, forming bars {len(G['brew'])}, "
           f"{sum(len(v) for v in G['sigs'].values())} signals ({time.time() - t0:.0f}s)", flush=True)
-    spot = brew_spot_check()
+    spot = brew_spot_check(_arg("spot", 40))
     print(f"forming check, live window vs whole history: {spot['same']}/{spot['checked']} identical", flush=True)
     months = collections.defaultdict(list)
+    only = _arg("months", "")
     for d in sess:
-        months[d[:7]].append(d)
+        if not only or d[:7] in only.split(","):
+            months[d[:7]].append(d)
+    sess = [d for v in months.values() for d in v]
     only = _arg("only", "")
     if only:                                              # --only=2026-01 (a quick run on one month)
         months = {m: v for m, v in months.items() if m.startswith(only)}
@@ -258,7 +267,8 @@ def main():
              "actions_min_month_extra": round(extra_min / n_mo), "watch_min_month": round(watch_min / n_mo),
              "forming_min_month": round(form_min / n_mo)}
         out["policies"][pol] = p
-        ok &= p["n_differences"] == 0 and not missing and shown_same == len(dl) == G["n_ref"]
+        n_want = sum(1 for d in sess if d in REF)
+        ok &= p["n_differences"] == 0 and not missing and shown_same == len(dl) == n_want
         print(f"{pol:6s}: {len(dl)}/{G['n_ref']} entries seen, {shown_same} identical to the backtest, {len(bad)} differences; "
               f"delay from the entry median {p['delay_min']['median']} min (p90 {p['delay_min']['p90']}, max {p['delay_min']['max']}), "
               f"{p['delay_min']['within_2_min_of_feed']} within 2 min of Yahoo showing it; +{p['actions_min_month_extra']} Actions min/month",

@@ -110,7 +110,7 @@ def main():
           and float((S.get("two_week") or {}).get("room_f") or 1.0) <= 1.0)
 
     # a full stop-out at the true MFFU cost (commission $1.90, 1 tick slip) vs the soft DLL and the room, over stops 8-90
-    comm, worst_dll, worst_room = L50["comm_rt_micro"], 0.0, 1.0
+    comm, worst_dll, worst_room = L50["comm_rt_micro"], 0.0, 0.0
     tw = S.get("two_week") or {}
     for stop in [8, 10, 12, 15, 18, 20, 24, 25, 30, 33, 40, 50, 60, 70, 80, 88]:
         for tgt_r in (1.5, 2.0, 3.0, 5.0, 8.0):

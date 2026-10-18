@@ -870,6 +870,11 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 .row-btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 6px; }
 .btn.sm { min-height: 32px; padding: 0 11px; font-size: 12px; border-radius: 10px; }
 #nav a .nb { margin-left: auto; font: 700 10.5px var(--mono); font-style: normal; padding: 2px 7px; border-radius: 99px; color: #fff; background: var(--accent); }
+/* Briefing (engine/lit_brief.py) */
+.br-plan { font-size: 15px; line-height: 1.5; margin: 0 0 10px; color: var(--ink); }
+.br-log { max-height: none; } .br-log .evt.br-new { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.tag.br-n { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--ink); }
+.br-facts > div { align-items: flex-start; } .br-facts b { font-weight: 500; text-align: right; max-width: 70%; }
 </style>
 </head>
 <body>
@@ -1309,7 +1314,7 @@ function mdList(blk) {
 
 // ===================================================================== routes: five groups, the same on the phone tab bar and the desktop sidebar
 const GROUPS = [
-  { id: 'today', label: 'Today', icon: 'today', pages: [['today', 'Today', 'today', 'Live bot, eval and today’s events'], ['day', 'Day plan', 'clock', 'The LIT day: sessions, entry window, news, what’s next'],
+  { id: 'today', label: 'Today', icon: 'today', pages: [['today', 'Today', 'today', 'Live bot, eval and today’s events'], ['brief', 'Briefing', 'doc', 'The bot’s morning briefing, intraday log and recap'], ['day', 'Day plan', 'clock', 'The LIT day: sessions, entry window, news, what’s next'],
     ['levels', 'Levels', 'target', 'Every LIT level, the setup tracker'], ['cockpit', 'Eval cockpit', 'prop', 'What a stop-out or a winner does to the eval']] },
   { id: 'chart', label: 'Chart', icon: 'chart', pages: [['chart', 'Chart', 'chart', 'Live 5m chart and liquidity pools']] },
   { id: 'trades', label: 'Trades', icon: 'trades', pages: [['trades', 'Trades', 'trades', 'Every trade with its report'], ['results', 'Results', 'results', 'Live settings, 5-year replay'],
@@ -1338,12 +1343,12 @@ const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
 const ALIAS = { modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
   calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive',
-  plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
+  briefing: 'brief', analyst: 'brief', recap: 'brief', plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
 // 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
 const SCENE = { replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
   evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', activity: 'today', sources: 'engine', news: 'today',
-  archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', levels: 'chart', cockpit: 'eval' };
+  archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', brief: 'today', levels: 'chart', cockpit: 'eval' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
 const titleOf = (p) => DETAIL[p]?.label || (p === 'lab' ? 'Lab' : p === 'system' ? 'System' : PAGES[p]?.label) || 'Today';
 let D = null, PAGE = null, ARG = null, RTOK = 0, routed = false;
@@ -1834,6 +1839,7 @@ VIEWS.today = (el) => {
     </div>
     ${timingCard(lv.eval_timing)}
     ${activityCard()}
+    ${lit ? briefCard() : ''}
     ${lit ? todayLit() : ''}
     <div class="grid g2">
       <div class="card fx-card"><div class="card-h"><h3>This week · ${esc(WK.week)}</h3><div>${fxSeg('today-week')}</div></div>${fxBox('today-week', 'weekring')}</div>
@@ -1980,6 +1986,51 @@ function todayLit() {
       ${fxBox('today-clock', 'dayclock', 'mini')}<div style="margin-top:12px">${LK.planHTML(C, { compact: true })}</div></div>
     <div class="card"><div class="card-h"><h3>Setup tracker</h3><button class="chipbtn" type="button" data-go="levels"><span>Levels</span>${icon('right')}</button></div>${LK.railHTML(C)}</div></div>`;
 }
+// ===================================================================== BRIEFING (engine/lit_brief.py via live.brief): morning plan, intraday log, recap
+const BRV = () => LV().brief || null;
+const brKind = { sweep: ['SWEEP', 'sweep'], box: ['BOX', ''], cisd: ['CISD', 'signal'], armed: ['ARMED', 'entry'], rejected: ['REJECTED', ''], tap: ['TAP', 'signal'],
+  expired: ['EXPIRED', ''], entry: ['ENTRY', 'entry'], exit: ['EXIT', 'exit'] };
+function brLog(log, n) {
+  const L = (log || []).slice(0, n || 999);
+  if (!L.length) return emptyBox('Nothing yet today.', 'Sweeps, 5m CISDs, armed and rejected setups, entries and exits show up here, newest first, every 30 minutes.');
+  return `<div class="feed br-log">${L.map(r => { const k = brKind[r.kind] || [String(r.kind).toUpperCase(), '']; return `<div class="evt${r.new ? ' br-new' : ''}"><div class="t">${et(r.t).hm}</div><div><span class="tag ${k[1]}">${k[0]}</span>${r.new ? '<span class="tag br-n">NEW</span>' : ''}${esc(r.text)}</div></div>`; }).join('')}</div>`;
+}
+function brLevels(mo, max) {
+  const px = mo.price, L = [...(mo.levels || [])].filter(r => r.kind !== 'buildup' || !r.taken).sort((a, b) => b.price - a.price).slice(0, max || 40);
+  return `<div class="kv one">${L.map(r => `<div><span><b style="color:${r.side === 'H' ? 'var(--bsl)' : 'var(--ssl)'}">${r.side === 'H' ? 'BSL' : 'SSL'}</b> ${r.taken ? `<s class="mut">${esc(r.label)}</s>` : esc(r.label)}${r.taken ? ` <span class="mut">· taken ${et(r.taken_t).hm} · ${num(r.depth_atr, 1)} ATR</span>` : ''}</span>
+    <b class="mono">${num(r.price)} <span class="mut">${ok(px) ? (r.price > px ? '+' : '') + num(r.price - px, 0) : ''}</span></b></div>`).join('')}</div>`;
+}
+function brBoxes(mo) {
+  return `<div class="kv">${(mo.boxes || []).map(b => `<div><span>${esc(b.label)} <span class="mut">${esc(b.window)}</span></span><b>${b.status === 'done' ? `${num(b.high)} / ${num(b.low)}` : esc(b.status)}${b.status === 'done' ? `<small class="mut" style="display:block;font-weight:500">${b.high_taken_t ? 'high taken ' + et(b.high_taken_t).hm : 'high untaken'} · ${b.low_taken_t ? 'low taken ' + et(b.low_taken_t).hm : 'low untaken'}</small>` : ''}</b></div>`).join('')}</div>`;
+}
+function briefCard() {
+  const B = BRV(); if (!B) return '';
+  const mo = B.morning, rc = B.recap;
+  return `<div class="card"><div class="card-h"><h3>Briefing · ${esc(B.day || '')}</h3><button class="chipbtn" type="button" data-go="brief"><span>Open</span>${icon('right')}</button></div>
+    ${mo ? `<p class="br-plan">${esc(mo.plan)}</p><div class="note">${esc(mo.overnight?.text || '')} ${esc(mo.eval?.text || '')}</div>` : `<div class="note">${esc(B.waiting ? 'Waiting for the ' + B.waiting.replace('next session ', '') + ' session.' : 'The morning briefing is built on the first run after 01:30 ET.')}</div>`}
+    ${rc ? `<div class="note"><b>End of day:</b> ${esc(rc.text)} ${esc(rc.lesson || '')}</div>` : ''}
+    <div style="margin-top:10px">${brLog(B.log, 4)}</div></div>`;
+}
+VIEWS.brief = (el) => {
+  const B = BRV();
+  if (!B) { el.innerHTML = head('Today · LIT day analyst', 'Briefing', '') + emptyBox('No briefing yet.', 'The cloud monitor writes it on its first run after 01:30 ET on a market day.'); return; }
+  const mo = B.morning, rc = B.recap, pv = B.prev, nw = B.now || {};
+  el.innerHTML = head(`Today · LIT day analyst · ${esc(fDate(B.day || ''))}`, mo ? 'Game plan' : 'Briefing', mo ? `Built ${esc(mo.built)} ET${mo.stage === 'full' ? ' (refreshed after 07:30)' : ' (refreshed after 07:30 ET)'} · updated ${esc(B.at || '')} · paper only, no notifications` : esc(B.at || ''))
+    + howto('brief', `<p>The bot’s own analysis of the LIT day. The <b>game plan</b> is written on the first cloud run after 01:30 ET and refreshed once after 07:30 ET: which levels are untaken, which side was taken overnight, the target band and the eval size.</p>
+      <ul><li><b>Intraday log</b>: every 30 minutes, what changed: a level swept (how deep in ATR; LIT needs 0.5), a box closed, a 5-minute CISD with its inducement and displacement, a setup armed or rejected (and the rule), a limit tapped, the entry and the exit. NEW marks what the last run added.</li>
+      <li><b>End of day</b> (after 16:00 ET): the result, what the setups did and one lesson.</li></ul><p>Nothing here sends a notification; pushes are only for entries and outcomes.</p>`)
+    + (mo ? `<div class="card"><div class="card-h"><h3>Game plan</h3><span class="meta">NQ ${num(mo.price)} at ${esc(mo.built)}</span></div><p class="br-plan">${esc(mo.plan)}</p>
+      <div class="kv one br-facts"><div><span>Overnight</span><b>${esc(mo.overnight?.text || '')}</b></div><div><span>Target band</span><b>${esc(mo.vix?.text || '')}</b></div>
+      <div><span>News</span><b class="${(mo.news || []).length ? 'wn' : ''}">${esc(mo.news_text || '')}</b></div>
+      ${mo.monday?.text ? `<div><span>Monday rule</span><b>${esc(mo.monday.text)}</b></div>` : ''}${mo.weekly_stop?.text ? `<div><span>Weekly stop</span><b>${esc(mo.weekly_stop.text)}</b></div>` : ''}
+      <div><span>Eval</span><b>${esc(mo.eval?.text || '')}</b></div></div></div>` : '')
+    + (rc ? `<div class="card"><div class="card-h"><h3>End of day</h3><span class="meta ${cls(rc.pnl)}">${susd(rc.pnl)}</span></div><p class="br-plan">${esc(rc.text)}</p><div class="note">${esc(rc.setups)}</div><div class="note"><b>Lesson:</b> ${esc(rc.lesson || '')}</div></div>` : '')
+    + `<div class="card"><div class="card-h"><h3>Intraday log</h3><span class="meta">${plural((B.log || []).length, 'entry')}${B.new ? ` · ${B.new} new` : ''}</span></div>
+      ${nw.model_state ? `<div class="note" style="margin-bottom:10px">Now (${esc(nw.at || '')}): ${esc(nw.model_state)}</div>` : ''}${brLog(B.log)}</div>`
+    + (mo ? `<div class="grid g2"><div class="card"><div class="card-h"><h3>Trap boxes</h3><span class="meta">ET</span></div>${brBoxes(mo)}</div>
+      <div class="card"><div class="card-h"><h3>LIT map</h3><span class="meta">${mo.untaken?.above ?? 0} above · ${mo.untaken?.below ?? 0} below untaken</span></div>${brLevels(mo, 24)}</div></div>` : '')
+    + (pv?.recap ? `<div class="card"><div class="card-h"><h3>Yesterday · ${esc(pv.day || '')}</h3></div><div class="note">${esc(pv.recap.text)} ${esc(pv.recap.lesson || '')}</div></div>` : '');
+};
 function todayLitFill() {
   const C = lkCtx(); if (!C) return;
   fxFill('today-clock', 'dayclock', LK.clockData(C), { onPick: lkPick }, (fb) => { fb.innerHTML = LK.clockSVG(C); });
