@@ -457,14 +457,28 @@ def _archive(st, state_path, cfg_engine):
             "cold_config": cfg_engine}
 
 
+def _lit_extra(st, lm):
+    """The LIT panels' data (Day clock, Setup tracker, Levels, Eval cockpit, Week planner: tools/lit_dash_extra.py); None off LIT."""
+    if not lab_scope.is_lit_model(lm):
+        return None
+    try:
+        from tools import lit_dash_extra
+        return lit_dash_extra.extra(st, lm)
+    except Exception as e:                      # the panels must never break the build
+        print("  lit_extra unavailable:", e.__class__.__name__, e)
+        return None
+
+
 def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     os.makedirs(out, exist_ok=True)
     st = _load(state_path, {}) or {}
     bt = _load(os.path.join(LAB, "backtest_live.json"), {}) or {}
-    ledger = sorted((st.get("ledger") or {}).values(), key=lambda v: (v.get("day", ""), v.get("entry", "")), reverse=True)
+    # the ledger is keyed by entry time (epoch s): kept on each row as entry_t (the LIT day clock and week planner place trades by it)
+    ledger = sorted(({**v, "entry_t": int(k)} if str(k).isdigit() else dict(v) for k, v in (st.get("ledger") or {}).items()),
+                    key=lambda v: (v.get("day", ""), v.get("entry", "")), reverse=True)
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
                                    "equity_filter", "eval_timing", "price", "today", "events", "engine_trades", "bars", "pools", "pc",
-                                   "model", "shadow", "lit_rules", "lit_sizing")}
+                                   "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups")}
     live["ledger"] = ledger[:200]
     results = None
     if bt:
@@ -502,6 +516,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         "lab": lab,
         "docs": docs,
         "archive": _archive(st, state_path, cfg) if lab_scope.is_lit_model(lm) else None,
+        "lit_extra": _lit_extra(st, lm),
     }
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)

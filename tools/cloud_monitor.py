@@ -358,6 +358,12 @@ def run(out):
                  # for the web dashboard's Chart tab: the last ~2 sessions of 5m bars and the untaken pools around price
                  "bars": [[int(r.time), float(r.open), float(r.high), float(r.low), float(r.close)] for r in df.tail(200).itertuples()],
                  "pools": _near_pools(state),
+                 # LIT panels (tools/web_public/litkit.js): the day context (18:00 open, VIX band, today's signals), the session
+                 # boxes' highs / lows and every untaken LIT level (the Levels board marks a level taken when it leaves this list)
+                 "lit": state.get("lit") if lm["model"] == "lit" else None,
+                 "session": state.get("session") if lm["model"] == "lit" else None,
+                 "levels": [{k: p.get(k) for k in ("label", "price", "side", "strength", "kind")} for p in state.get("active_pools") or []][:60]
+                 if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host", "reason")},
                  "pc_alert_at": pc_alert_at}
     if shadow is not None:
