@@ -709,6 +709,10 @@ DEFAULTS = {
                                  # low (PDL) only longs (both taken / neither: no rule); a skipped setup leaves the day free
     "wk_stop": None,             # weekly stop [n, mult]: after n STOP exits in the calendar week (ISO week of the trading day,
                                  # Mon-Fri) the rest of that week trades at mult x size (one rounding with how_out, floor 1 micro)
+    # execution (research only; research/writeups/lit-live-fills.md): None = the plain backtest fills above
+    "fills": None,               # realistic fill model {} / {...}: engine/lit_fills.py FILL_DEFAULTS (live bot latency, market
+                                 # entry at the price when the order reaches CME, stop slippage by hour and bar range, target
+                                 # limit needs a trade-through, breakeven lag, MFFU commission). Ignored by the live loop.
 }
 
 
@@ -785,6 +789,9 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     Returns a trade dict (runlib columns) or None. live=True (engine/lit_live.py): when the bars end before the setup is
     decided, returns {"pending": True, ...} (limit still working / tapped and waiting for the 1m CISD), and when they end
     inside the trade, the trade with exit "OPEN" (stop_now = the stop after a breakeven move). live=False never does."""
+    if P.get("fills") is not None and not live:
+        from engine import lit_fills
+        return lit_fills.simulate(M, B, cand, entry_px, tgt, stop, P)
     d = cand["dir"]
     hi_d, lo_d, c_d, o_d = B.dirs(d)
     t0 = int(M.t[cand["entry_i"]])
@@ -899,11 +906,14 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
 def scale_trade(t, m):
     """Size multiplier on a finished trade (exact: P&L, commission and slippage are linear in micros); floor 1 micro."""
     q0 = t["qty"]
+    if not q0:                           # a realistic-fill skip (engine/lit_fills.py): nothing to scale
+        return dict(t)
     q = max(1, int(q0 * m + 1e-9)) if m < 1 else min(MAX_MICROS, int(q0 * m + 1e-9))
     f = q / q0
-    per = (t["pnl"] + COMM * q0) / q0
+    cm = t.get("comm_rt", COMM)
+    per = (t["pnl"] + cm * q0) / q0
     x = dict(t)
-    x.update(qty=q, pnl=round(per * q - COMM * q, 2), risk_usd=round(t["risk_usd"] * f, 2), half=f < 1, mult=round(f, 3),
+    x.update(qty=q, pnl=round(per * q - cm * q, 2), risk_usd=round(t["risk_usd"] * f, 2), half=f < 1, mult=round(f, 3),
              low=round(t["low"] * f, 2))
     return x
 
@@ -980,7 +990,8 @@ def week_stops(day, entry_t, own, week_hist=None):
     for t in own:
         if t["day"] in ext_days or t.get("exit_t") is None or iso_week(t["day"]) != wk:
             continue
-        n += t["exit"] == "STOP" and int(t["exit_t"]) <= int(entry_t)
+        # the live ledger records the model's exit reason (engine/live.py routes it); realistic-fill trades carry it apart
+        n += t.get("exit_model_kind", t["exit"]) == "STOP" and int(t["exit_t"]) <= int(entry_t)
     return n
 
 

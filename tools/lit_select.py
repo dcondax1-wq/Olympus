@@ -50,6 +50,7 @@ SESS = F.SESS
 SPAN = dict(F.SPAN)
 SPAN["H1a"] = ("2026-01-01", "2026-04-30")
 SPAN["H1b"] = ("2026-05-01", "2026-06-30")
+TL.SPAN.update(H1a=SPAN["H1a"], H1b=SPAN["H1b"])
 CACHE = os.path.join(ROOT, "research", "runs", "_cache")
 OUT = os.path.join(ROOT, "research", "lit", "select_results.json")
 VER = "v1"
@@ -367,7 +368,7 @@ def evals_x(U, span, rule=EVAL_RULE, room_k=ROOM_K, horizon=60):
     return o, path
 
 
-def score(U, spans=("H1", "H2", "2026", "2021-25")):
+def score(U, spans=("H1", "H1a", "H1b", "H2", "2026", "2021-25")):
     out = {}
     for s in spans:
         e, path = evals_x(U, s)
@@ -522,4 +523,4 @@ if __name__ == "__main__":
     else:
         import importlib
         mod = importlib.import_module("tools.lit_select_rules")
-        getattr(mod, cmd)()
+        getattr(mod, cmd)(*sys.argv[2:])
