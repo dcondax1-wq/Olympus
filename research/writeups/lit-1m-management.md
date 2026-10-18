@@ -3,7 +3,7 @@ title: LIT on the 1-minute chart - smarter entries and "this trade is wrong" exi
 family: other
 date: 2026-10-18
 status: adopt-candidate
-summary: The owner asked for 1-minute entries and loss management that thinks like a person. On the exact live LIT signals (2026, true 1m bars, eval sizing $800 up to a 25-pt stop + the 60% room cap), 95 variants were tested, picked on Jan-Jun and checked on Jul-Oct. 1m entry filters (inner 1m inducement, 1m displacement, volume, absorption, patience, pullback entries) all lose money in both halves. The classic "trade is wrong" signals (1m CISD against, a new 1m low, back inside the swept level, higher low taken, a volume surge against) do cut 50-100% of the losers early, but they also kill 30-80% of the winners. In Jul-Oct the winners dip as deep as the losers before they run (median 0.54R against), so every one of these signals loses money there. One signal is real in both halves: ES not confirming. When ES closes a 5m bar beyond its own sweep extreme and NQ then prints a 1m CISD against, before the trade has reached +0.75R, exit at the next 1m open. It cut 8 of 53 losers at about half a loss and touched no winner: H1 +$446, H2 +$1,514. That is small and rests on 8 trades. Profit rules (structure trail, closing at the 18:00 or midnight open on a stall, skipping breakeven on fast moves) do not hold in both halves. Paper only.
+summary: The owner asked for 1-minute entries and loss management that thinks like a person. On the exact live LIT signals (2026, true 1m bars, eval sizing $800 up to a 25-pt stop + the 60% room cap), 153 variants were tested, picked on Jan-Jun and checked on Jul-Oct. 1m entry filters (inner 1m inducement, 1m displacement, volume, absorption, patience, pullback entries) all lose money in both halves. The classic "trade is wrong" signals (1m CISD against, a new 1m low, back inside the swept level, higher low taken, a volume surge against) do cut 50-100% of the losers early, but they also kill 30-80% of the winners. In Jul-Oct the winners dip as deep as the losers before they run (median 0.54R against), so every one of these signals loses money there. One signal is real in both halves: ES not confirming. When ES closes a 5m bar beyond its own sweep extreme and NQ then prints a 1m CISD against, before the trade has reached +0.75R, exit at the next 1m open. It cut 8 of 53 losers at about half a loss and touched no winner: H1 +$446, H2 +$1,514. That is small and rests on 8 trades. Profit rules (structure trail, closing at the 18:00 or midnight open on a stall, skipping breakeven on fast moves) do not hold in both halves. Paper only.
 runs: lit_1m_base_eval, lit_1m_es_exit, lit_1m_o18_stall, lit_1m_halfcut_cisd, lit_1m_cut_cisd, lit_1m_cut_newlow, lit_1m_cut_accept, lit_1m_cut_hl, lit_1m_cut_volsurge, lit_1m_idm1_req, lit_1m_disp1_half, lit_1m_absorb_half, lit_1m_patience, lit_1m_pullback, lit_1m_bos_trail, lit_1m_fast_be
 ---
 
@@ -13,9 +13,9 @@ runs: lit_1m_base_eval, lit_1m_es_exit, lit_1m_o18_stall, lit_1m_halfcut_cisd, l
   not how a bot would trade."
 - **The question:** what would an experienced tape reader do on the 1m chart, from the moment the limit is tapped to the exit?
   We tested that in three groups:
-  - **1m entry intelligence (17 ideas, 43 variants).**
-  - **"The trade is wrong" exits (6 signals, 50 variants).**
-  - **Human profit management (3 ideas, 39 variants).**
+  - **1m entry intelligence (5 ideas, 50 variants).**
+  - **"The trade is wrong" exits (6 signals, 69 variants, full and half exits).**
+  - **Human profit management (3 ideas, 31 variants), plus 3 combinations.**
 - **The answer, in plain words:**
   - **On LIT's 1m chart, a losing trade and a winning trade look the same for the first 30-60 minutes.**
     - In Jan-Jun the winners barely dipped: the median low was 0.12R against the entry.
@@ -165,7 +165,7 @@ session. "Avg win / loss" is per trade at the eval size.
 | | H2 | +10,465 | 2,818 | 2.51 | 2.56 | 35.0 | -2,157 | 1,390 / -300 | 29.5 / 0.0 | 47.4 / 0.0 | 95.7% | 17.5 |
 
 Trades a week stay at 3.12 (H1) and 2.56 (H2) for every exit rule, because exits don't change which setups are taken. 86% of
-weeks keep 2+ trades, as live.
+weeks keep 2+ trades (H1 85%, H2 81%), as live.
 
 ## 4. 1m entry intelligence: all worse
 
@@ -205,9 +205,9 @@ weeks keep 2+ trades, as live.
 - **Close at a key level when price stalls there** (1m CISD against after touching it):
   - At the **18:00 open, 1.5R or more away,** both halves come out a little ahead on the eval path (+$907 / +$939).
   - But per trade at the eval size, H1 loses $637. The 1.0R and 2.0R versions lose H1 money too.
-  - It is a lone spike: of the 8 trades it touched, it saved 6 breakevens and cut 2 targets short. Not adopted.
+  - It is a lone spike: of the 8 trades it touched, it turned 5 breakevens into profits and cut 3 targets short. Not adopted.
   - The **midnight open** and the **swept box's other side** lose in both halves.
-- **Skip breakeven when the move to 1R is fast:** no H2 trade reached 1R within 5-15 minutes, so H2 is unchanged. In H1 the
+- **Skip breakeven when the move to 1R is fast:** no H2 trade reached 1R within 5-30 minutes, so H2 is unchanged. In H1 the
   1-month eval fails jump from 6% to 17%. Rejected; the breakeven at 1R stays.
 
 ## 6. The top 3, exactly
@@ -224,13 +224,13 @@ weeks keep 2+ trades, as live.
      - H1 +$33,751 (+$446), PF 4.18, DD −$2,513, 2-week eval 37.5 / 3.1, 1-month 64.8 / 6.2, pass rate 92.6%.
      - H2 +$11,979 (+$1,514), PF 2.99, DD −$2,086, 2-week 29.5 / 0.0, 1-month 50.0 / 0.0, pass rate 96.0%.
      - 3.12 / 2.56 trades a week.
-   - **Per trade:** 8 trades cut, all would-be stop-outs, exited at a median of about −0.55R instead of −1R. +$458 in H1
+   - **Per trade:** 8 trades cut, all would-be stop-outs, exited at a median of about −0.57R instead of −1R. +$458 in H1
      (3 trades), +$1,178 in H2 (5 trades), no winner touched.
    - **Neighbours:** every close-based version gains in both halves (under +0.25R, +0.5R or +0.75R, with or without the
      1m CISD). Wick-based versions lose a $5.4k winner in H1 at +0.75R.
    - **Reference, Apr-Dec 2025 (5m only, coarser):**
      - It changed 4 of 87 trades: 3 stop-outs cut a little earlier, and 1 breakeven turned into a −38.5-pt loss.
-     - Net +$17 per trade at the eval size, and −$723 on the eval path. Not a confirmation, not a contradiction: too few
+     - Net +$17 in total at the eval size (trade by trade, no room cap), and −$723 on the eval path. Not a confirmation, not a contradiction: too few
        trades.
    - **To wire it:** the live loop needs ES 5m bars (the cloud monitor already loads ES for SMT; `engine/live.py` has
      `ES=F`). It is a market exit, so the NinjaTrader route needs `route_all_exits`.

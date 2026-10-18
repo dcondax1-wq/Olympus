@@ -2,8 +2,10 @@
 
 The site is one page (tools/web_public/index.html) that reads everything from data.json; nothing runs on a server.
 data.json holds:
-  live      the cloud monitor's state (model state, eval tracker, cold-streak filter, paper ledger, recent bars, pools, and
-            `pc`: the always-on PC bot's heartbeat {present, t, age_s, silent, running, adapter, position, model_state, host, reason})
+  live      the cloud monitor's state (model state, eval tracker, cold-streak filter, paper ledger, recent bars, pools,
+            `pc`: the always-on PC bot's heartbeat {present, t, age_s, silent, running, adapter, position, model_state, host, reason},
+            `notices`: the last 80 phone notifications (fills, outcomes, PC silent, eval timing) for the app's Activity feed, and
+            `push`: the public notification status {configured, vapid_public, devices, device_ids, sent_this_run, gone, ...})
   results   the live-settings 5-year replay (periods, months, daily P&L, stop buckets, eval odds, lessons)
   trades    every replay trade with its report (why it entered / plan / result / lessons); 2026 with full detail
   replays   5m session bars for each replay trade day (tools/export_replays.py)
@@ -478,7 +480,14 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                     key=lambda v: (v.get("day", ""), v.get("entry", "")), reverse=True)
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
                                    "equity_filter", "eval_timing", "price", "today", "events", "engine_trades", "bars", "pools", "pc",
-                                   "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups")}
+                                   "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
+                                   "push", "notices")}
+    # phone notifications: the VAPID public key the app subscribes with (the cloud's, derived from the LE_VAPID_PRIVATE secret,
+    # else tools/web_public/push_key.json from tools/push_keys.py) and the public push status (device ids, never endpoints)
+    pk = (_load(os.path.join(WEB, "push_key.json"), {}) or {}).get("vapid_public")
+    live["push"] = {**(st.get("push") or {}), "vapid_public": (st.get("push") or {}).get("vapid_public") or pk}
+    for k in ("private", "vapid_private", "subs"):            # never public (status() has none of these; belt and braces)
+        live["push"].pop(k, None)
     live["ledger"] = ledger[:200]
     results = None
     if bt:

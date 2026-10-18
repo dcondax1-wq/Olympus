@@ -9,7 +9,36 @@ const EVENTS = [['sweep', 'Liquidity sweeps'], ['signal', 'Signals (IFVG confirm
 export function init() {
   document.addEventListener('le-appearance', () => { if ($('#page-settings').classList.contains('active')) render(); });
 }
-export function show() { render(); loadAlerts(); loadNet(); }
+export function show() { render(); loadAlerts(); loadPush(); loadNet(); }
+
+// ---------- phone app notifications (Web Push, engine/push.py): the PC bot notifies every fill and outcome within seconds
+async function loadPush() {
+  const out = $('#pushOut'); if (!out) return;
+  let p;
+  try { p = await api('/api/push'); } catch (e) { out.innerHTML = '<div class="empty">Could not read the notification setup.</div>'; return; }
+  const on = p.configured && p.devices > 0;
+  $('#pushState').textContent = on ? `● ${p.devices} phone${p.devices === 1 ? '' : 's'}` : p.configured ? 'keys set, no phone yet' : 'not set up';
+  $('#pushState').className = 'pill ' + (on ? 'good' : '');
+  out.innerHTML = `
+    <div class="small muted" style="margin-bottom:10px">The PC bot sends a notification to the phone app (Home Screen web app) for every fill and every outcome, a few seconds after it happens. Free: no Telegram or Discord needed.</div>
+    <div class="form-grid">
+      <span>VAPID private key</span><input class="inp" id="puPriv" placeholder="${p.configured ? 'saved (paste a new one to replace it)' : 'from tools/push_keys.py or the app'}" autocomplete="off" type="password">
+      <span>Phone code(s)</span><textarea class="inp" id="puSubs" rows="3" placeholder='[{"endpoint":"https://web.push.apple.com/…","keys":{…}}] from the app: System → Settings → Turn on notifications' spellcheck="false"></textarea>
+    </div>
+    <div class="row gap" style="margin-top:12px"><button class="btn primary sm" id="puSave">Save</button><button class="btn ghost sm" id="puTest" ${on ? '' : 'disabled'}>Send test</button>
+      <button class="btn ghost sm" id="puClear" ${p.configured || p.devices ? '' : 'disabled'}>Forget all</button></div>
+    <div class="note">Stored only on this computer (data/push.json, never committed). Same keys as the GitHub Secrets LE_VAPID_PRIVATE and LE_PUSH_SUBS, so the cloud and this PC reach the same phone; their notices say which one sent them (“PC …” or “Cloud paper”). Sender: ${esc(p.sender || '—')}.${p.error ? ` <b>${esc(p.error)}</b>` : ''}</div>
+    ${p.vapid_public ? `<div class="mini-label" style="margin:12px 0 4px">Public key (not secret)</div><div class="mono small" style="word-break:break-all">${esc(p.vapid_public)}</div>` : ''}
+    ${(p.recent || []).length ? `<div class="mini-label" style="margin:12px 0 6px">Recent</div>${p.recent.slice().reverse().slice(0, 6).map(r => `<div class="small muted">${new Date(r.t * 1000).toLocaleTimeString()} · ${esc(r.title || r.key)} · ${r.skipped ? esc(r.skipped) : `sent ${r.sent || 0}`}${(r.gone || []).length ? ' · expired: turn notifications on again in the app' : ''}</div>`).join('')}` : ''}`;
+  $('#puSave').onclick = async () => {
+    const body = {}; if ($('#puPriv').value.trim()) body.vapid_private = $('#puPriv').value.trim(); if ($('#puSubs').value.trim()) body.subs = $('#puSubs').value.trim();
+    if (!Object.keys(body).length) { toast('Nothing to save'); return; }
+    try { const r = await api('/api/push', body); toast(r.ok === false ? r.error : `Saved: ${r.devices} phone(s)`); } catch (e) { toast('Not saved: ' + (e.message || e)); }
+    loadPush();
+  };
+  $('#puTest').onclick = async () => { try { const r = await api('/api/push/test', {}); toast(r.ok ? `Test sent to ${r.sent} phone(s)` : 'Not sent: ' + (r.error || JSON.stringify(r.errors || r.gone))); } catch (e) { toast('Not sent: ' + (e.message || e)); } loadPush(); };
+  $('#puClear').onclick = async () => { if (!confirm('Forget the notification keys and phones on this PC?')) return; await api('/api/push', { clear: true }); toast('Forgotten'); loadPush(); };
+}
 
 // ---------- open on your phone: LAN / Tailscale addresses + QR codes
 async function loadNet() {
@@ -82,8 +111,8 @@ function render() {
 async function loadAlerts() {
   let c;
   try { c = await api('/api/alerts'); } catch (e) { return; }
-  $('#alertState').textContent = c.telegram_on || c.discord_on ? `● ${[c.telegram_on && 'Telegram', c.discord_on && 'Discord'].filter(Boolean).join(' + ')}` : 'not set up';
-  $('#alertState').className = 'pill ' + (c.telegram_on || c.discord_on ? 'good' : '');
+  $('#alertState').textContent = !c.chat_on ? 'off (the app notifies)' : c.telegram_on || c.discord_on ? `● ${[c.telegram_on && 'Telegram', c.discord_on && 'Discord'].filter(Boolean).join(' + ')}` : 'not set up';
+  $('#alertState').className = 'pill ' + (c.chat_on && (c.telegram_on || c.discord_on) ? 'good' : '');
   $('#alertsOut').innerHTML = `
     <div class="form-grid">
       <span>Telegram bot token</span><input class="inp" id="alTgTok" placeholder="from @BotFather" value="${esc(c.telegram_token)}" autocomplete="off">
@@ -93,6 +122,7 @@ async function loadAlerts() {
     <div class="mini-label" style="margin:14px 0 6px">Send me</div>
     <div class="checks">${EVENTS.map(([k, l]) => `<label class="row gap small"><input type="checkbox" data-ev="${k}" ${c.events[k] ? 'checked' : ''}> ${l}</label>`).join('')}</div>
     <div class="row gap" style="margin-top:12px"><button class="btn primary sm" id="alSave">Save</button><button class="btn ghost sm" id="alTest">Send test</button></div>
+    ${c.chat_on ? '' : '<div class="note" style="margin-top:0"><b>Off by default:</b> notifications go to the phone app instead. To use Telegram / Discord as well, start the server with LE_ALERTS_CHAT=1 (or set "alerts": {"chat": true} in live_model.json).</div>'}
     <div class="note">Stored only on this computer (data/alerts.json). Telegram: message <b>@BotFather</b> → /newbot for a token, send your bot a message, then get your chat id from <b>@userinfobot</b>. Discord: channel settings → Integrations → Webhooks.</div>
     ${c.recent.length ? `<div class="mini-label" style="margin:12px 0 6px">Recent</div>${c.recent.slice().reverse().slice(0, 5).map(r => `<div class="small muted">${new Date(r.t * 1000).toLocaleTimeString()} · ${esc(r.kind)} · ${esc(JSON.stringify(r.result))}</div>`).join('')}` : ''}`;
   const body = () => ({
