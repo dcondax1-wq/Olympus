@@ -208,6 +208,10 @@ def run2(M, cands, P=None, sessions=None, B1=None, B5=None, X=None):
             tp, fb = P["fallback_rr"] * risk, True
         else:
             tp = min(best, P["max_rr"] * risk) if P["max_rr"] else best
+        if X.get("tgt_fn"):
+            tp = X["tgt_fn"](z, ep, risk, tp)
+            if tp is None:
+                continue
         if X.get("bars"):
             B = X["bars"](z, B1, B5)
         else:
@@ -1002,7 +1006,12 @@ def build(cfg):
         P["idm_a"] = [1.0, cfg["idm_age"], 1]
     if cfg.get("min_rr"):
         P["min_rr"] = cfg["min_rr"]
-    T = run(P=P)
+    skips = []
+    if cfg.get("monday"):
+        skips.append(lambda z: (lambda f: f["mon_took_fri"] in ("high", "low") and ((f["mon_took_fri"] == "high") != (z["dir"] == -1)))(feat_m(z)))
+    T = run({"skip": (lambda z: any(fn(z) for fn in skips))} if skips else None, P=P)
+    if cfg.get("es_mult"):
+        T = scaled(T, lambda t: cfg["es_mult"] if fz(t["_z"]).get("smt") == "both swept" else 1.0)
     if cfg.get("stop_half"):
         T = scaled(T, lambda t: 0.5 if t["risk_pts"] > cfg["stop_half"] else 1.0)
     fns = []
@@ -1054,17 +1063,29 @@ def refine():
 COMBOS = {
     "lit_final": {},
     "A inducement <= 12 bars": {"idm_age": 12},
-    "B weekly stop (2 stops -> half)": {"wk_stop": (2, 0.5)},
-    "C after a winner 1.5x next trade": {"after_win": (1.5, 1)},
-    "D half size above 60-pt stop": {"stop_half": 60},
-    "A+B": {"idm_age": 12, "wk_stop": (2, 0.5)},
-    "A+C": {"idm_age": 12, "after_win": (1.5, 1)},
-    "B+C": {"wk_stop": (2, 0.5), "after_win": (1.5, 1)},
-    "A+B+C": {"idm_age": 12, "wk_stop": (2, 0.5), "after_win": (1.5, 1)},
-    "A+B+C+D": {"idm_age": 12, "wk_stop": (2, 0.5), "after_win": (1.5, 1), "stop_half": 60},
-    "A18+B": {"idm_age": 18, "wk_stop": (2, 0.5)},
-    "A18+B+C": {"idm_age": 18, "wk_stop": (2, 0.5), "after_win": (1.5, 1)},
+    "M Monday after Friday's H/L taken: only back toward the other side": {"monday": True},
+    "W weekly stop: 3 stop-outs in the week -> quarter size": {"wk_stop": (3, 0.25)},
+    "W2 weekly stop: 2 stop-outs in the week -> half size": {"wk_stop": (2, 0.5)},
+    "S half size above a 60-pt stop": {"stop_half": 60},
+    "C after a winner 1.5x the next trade": {"after_win": (1.5, 1)},
+    "C2 after a winner 2x the next 2 trades": {"after_win": (2.0, 2)},
+    "E 1.5x when ES also swept": {"es_mult": 1.5},
+    "A+M": {"idm_age": 12, "monday": True},
+    "A+M+W": {"idm_age": 12, "monday": True, "wk_stop": (3, 0.25)},
+    "A+M+W2": {"idm_age": 12, "monday": True, "wk_stop": (2, 0.5)},
+    "A+M+W+S": {"idm_age": 12, "monday": True, "wk_stop": (3, 0.25), "stop_half": 60},
+    "A+M+W+C": {"idm_age": 12, "monday": True, "wk_stop": (3, 0.25), "after_win": (1.5, 1)},
+    "A+M+W+C2": {"idm_age": 12, "monday": True, "wk_stop": (3, 0.25), "after_win": (2.0, 2)},
+    "A18+M+W": {"idm_age": 18, "monday": True, "wk_stop": (3, 0.25)},
 }
+
+
+def ror(T, nm):
+    """Return on risk: net $ / total $ put at risk (edge per dollar risked; size-neutral)."""
+    a, z = F.SPAN[nm]
+    TT = [t for t in T if a <= t["day"] <= z]
+    r = sum(t["risk_usd"] for t in TT)
+    return round(100 * sum(t["pnl"] for t in TT) / r, 1) if r else None
 
 
 def combos(names=None):
@@ -1074,7 +1095,295 @@ def combos(names=None):
             continue
         T = build(cfg)
         o = F.score(T)
+        for sp in o:
+            o[sp]["ror"] = ror(T, sp)
+            mo = collections.defaultdict(float)
+            for t in T:
+                if F.SPAN[sp][0] <= t["day"] <= F.SPAN[sp][1]:
+                    mo[t["day"][:7]] += t["pnl"]
+            o[sp]["worst_month"] = round(min(mo.values())) if mo else None
+            st = mx = 0
+            for t in sorted([t for t in T if F.SPAN[sp][0] <= t["day"] <= F.SPAN[sp][1]], key=lambda t: t["entry_t"]):
+                st = st + 1 if t["pnl"] <= 0 else 0; mx = max(mx, st)
+            o[sp]["max_nowin_run"] = mx
         res[nm] = {"cfg": cfg, **o}
-        print(nm, F.fmt(o), flush=True)
+        print(nm, " | ".join(f"{k}[{F.fmt({k: v})[len(k) + 1:-1]} ror={v['ror']}% wm={v['worst_month']} run={v['max_nowin_run']} f20={v['f20']} p20={v['p20']} $/mo={v['per_month']}]" for k, v in o.items()), flush=True)
     json.dump(res, open(os.path.join(OUTD, "losses_combos.json"), "w"), indent=1, default=_j)
     return res
+
+
+# ================================================================================================ masters-study filters (research/lit/masters.md)
+def tf_relaxed_variants():
+    V = collections.OrderedDict()
+    for dep, dis, age, mx in ((0.3, 0.6, 24, 120.0), (0.25, 0.5, 36, 150.0), (0.4, 0.7, 24, 100.0)):
+        for en in ("1m", "3m"):
+            P = {"depth": dep, "disp": dis, "idm_a": [1.0, age, 1], "max_stop": mx}
+            V[f"setup 15m relaxed (depth {dep}, disp {dis}, idm age {age}, max stop {mx:.0f}) / entry {en}"] = (lambda P=P, en=en: run_tf("15m", en, P=P))
+    return V
+
+
+def tf_relaxed():
+    base_o = fast(base_trades())
+    res = collections.OrderedDict()
+    for nm, fn in tf_relaxed_variants().items():
+        o = fast(fn())
+        res[nm] = {**o, "dH1": o["H1"]["net"] - base_o["H1"]["net"], "dH2": o["H2"]["net"] - base_o["H2"]["net"]}
+        print(f"{nm:66s} dH1={res[nm]['dH1']:+7,} dH2={res[nm]['dH2']:+7,} | {_fl(o)}", flush=True)
+    p = os.path.join(OUTD, "losses_tf.json")
+    J = json.load(open(p)); J["variants"].update(res); json.dump(J, open(p, "w"), indent=1, default=_j)
+    return res
+
+
+def _holidays():
+    """US exchange holidays + early-close days (CME equity futures halt early / thin): the 9 NYSE holidays, Good Friday, the
+    day after Thanksgiving, Christmas Eve, July 3 (weekday) - as trading-day dates."""
+    from pandas.tseries.holiday import (AbstractHolidayCalendar, GoodFriday, Holiday, USLaborDay, USMartinLutherKingJr,
+                                        USMemorialDay, USPresidentsDay, USThanksgivingDay, nearest_workday)
+    class Cal(AbstractHolidayCalendar):
+        rules = [Holiday("NY", month=1, day=1, observance=nearest_workday), USMartinLutherKingJr, USPresidentsDay, GoodFriday,
+                 USMemorialDay, Holiday("J19", month=6, day=19, start_date="2022-01-01", observance=nearest_workday),
+                 Holiday("J4", month=7, day=4, observance=nearest_workday), USLaborDay, USThanksgivingDay,
+                 Holiday("XM", month=12, day=25, observance=nearest_workday)]
+    H = {d.strftime("%Y-%m-%d") for d in Cal().holidays("2021-01-01", "2026-12-31")}
+    E = set()
+    for y in range(2021, 2027):
+        tg = [d for d in Cal().holidays(f"{y}-11-01", f"{y}-11-30") if d.month == 11][0]
+        E.add((tg + pd.Timedelta(days=1)).strftime("%Y-%m-%d"))
+        for md in ("12-24", "07-03"):
+            d = pd.Timestamp(f"{y}-{md}")
+            if d.dayofweek < 5:
+                E.add(d.strftime("%Y-%m-%d"))
+    return H, E
+
+
+def feat_m(z):
+    """Masters features (setup time, no look-ahead)."""
+    key = ("m", z["day"], z["i"], z["dir"])
+    if key in _FC:
+        return _FC[key]
+    M, C, B1, B5 = base()
+    i, ee, sb, d, k = z["i"], z["ext_i"], z["sweep_i"], z["dir"], z["k"]
+    x = M.ctx[k]; s = x["s"]
+    hi_d, lo_d, c_d = (M.h, M.l, M.c) if d == 1 else (-M.l, -M.h, -M.c)
+    swing_hi, swing_lo = (M.fh, M.fl) if d == 1 else (M.fl, M.fh)
+    f = {}
+    # D2 engineered liquidity: a 5m swing high (long) in the last session + today that came within x% of a still-unbroken
+    # target pool without taking it
+    pools = [z["entry_d"] + dist for cls, L in z["targets"].items() if cls != "buildup" for dist in L]
+    px = abs(M.c[i])
+    best = None
+    a0 = max(s, sb - 72)                       # the 6 hours before the trap, inside today's session
+    for j in swing_hi[(swing_hi >= a0) & (swing_hi <= sb)]:
+        hj = hi_d[j]
+        for p in pools:
+            gap = (p - hj) / px * 100
+            if 0.005 <= gap and (best is None or gap < best):
+                best = gap
+    f["eng_gap_pct"] = best
+    # D6 time confluence of the sweep extreme minute (1m when available)
+    t5 = int(M.t[ee])
+    j0 = int(np.searchsorted(B1.t, t5)); j1 = int(np.searchsorted(B1.t, t5 + 300))
+    if j1 - j0 == 5:
+        seg = B1.l[j0:j1] if d == 1 else -B1.h[j0:j1]
+        m = int(B1.mod[j0 + int(np.argmin(seg))]); f["ext_min_src"] = "1m"
+    else:
+        m = int(M.mod[ee]) + 2; f["ext_min_src"] = "5m"
+    f["ext_mod"] = m
+    key_t = (480, 570, 600, 1200)
+    f["t_key5"] = any(abs(m - kt) <= 5 for kt in key_t)
+    f["t_key2"] = any(abs(m - kt) <= 2 for kt in key_t)
+    f["t_3min"] = (m % 15) <= 2 or (m % 15) >= 12
+    # D9 outside day yesterday
+    if k >= 2:
+        (d1, s1, e1), (d2, s2, e2) = M.days[k - 1], M.days[k - 2]
+        f["outside_yday"] = bool(M.h[s1:e1].max() > M.h[s2:e2].max() and M.l[s1:e1].min() < M.l[s2:e2].min())
+    # D1 two lines: nearest respected unswept 5m swing low below price before the sweep (respected = price moved >= kATR away)
+    for kk in (1.0, 2.0):
+        ref = sb - 1; pxr = c_d[ref]; line = None
+        for j in swing_lo[(swing_lo >= max(0, s - 864)) & (swing_lo <= ref - 2)][::-1]:
+            lv = lo_d[j]
+            if lv >= pxr or lo_d[j + 1:ref + 1].min() < lv:
+                continue
+            if hi_d[j:ref + 1].max() - lv < kk * M.atr[j]:
+                continue
+            if line is None or lv > line:
+                line = lv
+        f[f"two_lines_{kk:g}"] = None if line is None else bool(z["ext_d"] < line)
+    # D13 same-direction BOS legs since midnight before the trigger: closes above distinct confirmed fractal highs
+    a = s + int(np.argmax(M.mod[s:i + 1] < 1080)) if (M.mod[s:i + 1] < 1080).any() else i
+    legs = 0; broken = set()
+    fh = swing_hi[(swing_hi >= a - 24) & (swing_hi < i)]
+    for j in fh:
+        cc = c_d[j + 3:i]
+        if len(cc) and (cc > hi_d[j]).any():
+            first = j + 3 + int(np.argmax(cc > hi_d[j]))
+            if first >= a and first < z["ext_i"]:
+                broken.add((first, float(hi_d[j])))
+    lv = -np.inf
+    for first, h_ in sorted(broken):          # successive breaks of higher swing highs (one leg each)
+        if h_ > lv:
+            legs += 1; lv = h_
+    f["legs_before"] = legs
+    # D16 Monday took Friday's high (long target side for a short) before the trigger
+    f["mon_took_fri"] = None
+    if x["dow"] == 0 and "pdh" in x:
+        took_hi = M.h[s:i + 1].max() > x["pdh"]; took_lo = M.l[s:i + 1].min() < x["pdl"]
+        f["mon_took_fri"] = ("high" if took_hi else "") + ("low" if took_lo else "") or "none"
+    H, E = _holidays()
+    f["holiday"] = z["day"] in H; f["early_close"] = z["day"] in E
+    _FC[key] = f
+    return f
+
+
+def monday_target(z, ep, risk, tp):
+    """D16: Monday that took Friday's high (low): a short (long) targets Friday's low (high), >= min_rr, banked at max_rr."""
+    M = base()[0]; x = M.ctx[z["k"]]
+    f = feat_m(z)
+    if x["dow"] != 0 or not f["mon_took_fri"] or f["mon_took_fri"] == "none":
+        return tp
+    if z["dir"] == -1 and "high" in f["mon_took_fri"]:
+        dist = (-x["pdl"]) - ep
+    elif z["dir"] == 1 and "low" in f["mon_took_fri"]:
+        dist = x["pdh"] - ep
+    else:
+        return tp
+    if dist < P0["min_rr"] * risk:
+        return tp
+    return min(dist, P0["max_rr"] * risk)
+
+
+def masters_variants():
+    V = collections.OrderedDict()
+    sk = lambda pred: (lambda: with_f(run({"skip": lambda z: pred(feat_m(z), z)})))
+    sz = lambda mult: (lambda: scaled(base_trades(), lambda t: mult(feat_m(t["_z"]), t)))
+    for x in (0.02, 0.05, 0.1, 0.3):
+        V[f"D2 engineered liquidity within {x}%: half size without"] = ("size", sz(lambda f, t, x=x: 1.0 if (f["eng_gap_pct"] is not None and f["eng_gap_pct"] <= x) else 0.5))
+        V[f"D2 engineered liquidity within {x}%: skip without"] = ("skip", sk(lambda f, z, x=x: not (f["eng_gap_pct"] is not None and f["eng_gap_pct"] <= x)))
+    for lab, key in (("+-5 min of 08:00/09:30/10:00/20:00", "t_key5"), ("+-2 min of 08:00/09:30/10:00/20:00", "t_key2"), ("3-minute rule (15m candle edges)", "t_3min")):
+        for m in (0.5, 0.75):
+            V[f"D6 time confluence {lab}: {m}x without"] = ("size", sz(lambda f, t, key=key, m=m: 1.0 if f[key] else m))
+    V["D6 time confluence (key times +-5 or 3-minute rule): 0.5x without"] = ("size", sz(lambda f, t: 1.0 if (f["t_key5"] or f["t_3min"]) else 0.5))
+    V["D9 day after an outside day: half size"] = ("size", sz(lambda f, t: 0.5 if f.get("outside_yday") else 1.0))
+    V["D9 day after an outside day: skip"] = ("skip", sk(lambda f, z: bool(f.get("outside_yday"))))
+    for kk in (1.0, 2.0):
+        V[f"D1 two lines (respected = {kk:g} ATR): only sweeps of the nearest line"] = ("skip", sk(lambda f, z, kk=kk: f[f"two_lines_{kk:g}"] is False))
+        V[f"D1 two lines (respected = {kk:g} ATR): half size otherwise"] = ("size", sz(lambda f, t, kk=kk: 0.5 if f[f"two_lines_{kk:g}"] is False else 1.0))
+    for n in (3, 4):
+        V[f"D13 {n}+ same-direction legs since midnight: skip"] = ("skip", sk(lambda f, z, n=n: f["legs_before"] >= n))
+        V[f"D13 {n}+ same-direction legs since midnight: half"] = ("size", sz(lambda f, t, n=n: 0.5 if f["legs_before"] >= n else 1.0))
+    V["D8 bank holidays and early-close days off"] = ("skip", sk(lambda f, z: f["holiday"] or f["early_close"]))
+    V["D16 Monday took Friday's high/low: target Friday's opposite extreme"] = ("mgmt", lambda: with_f(run({"tgt_fn": monday_target})))
+    V["D16 Monday took Friday's high/low: only trade back toward the other side"] = ("skip", sk(
+        lambda f, z: f["mon_took_fri"] in ("high", "low") and ((f["mon_took_fri"] == "high") != (z["dir"] == -1))))
+    return V
+
+
+def masters():
+    base_o = fast(base_trades())
+    T26 = [t for t in base_trades() if t["day"] >= "2026"]
+    facts = {}
+    for key in ("eng_gap_pct", "t_key5", "t_3min", "outside_yday", "two_lines_1", "two_lines_2", "legs_before", "mon_took_fri", "holiday", "early_close"):
+        vals = [feat_m(t["_z"]).get(key) for t in T26]
+        if key == "eng_gap_pct":
+            vals = [None if v is None else ("<=0.1%" if v <= 0.1 else "<=0.3%" if v <= 0.3 else ">0.3%") for v in vals]
+        if key == "legs_before":
+            vals = [str(min(v, 4)) for v in vals]
+        facts[key] = table(T26, [(key, vals, "cat")])[key] if any(v is not None for v in vals) else {}
+        for lab, s_ in facts[key].items():
+            print(f"  {key:14s} {lab:10s} n={s_['n']:3d} ({s_['n1']}/{s_['n2']}) win={s_['win']} net={s_['net']:+7,} PF={s_['pf']} H1={s_['h1']:+7,} H2={s_['h2']:+7,}", flush=True)
+    res = collections.OrderedDict()
+    for nm, (fam, fn) in masters_variants().items():
+        o = fast(fn())
+        res[nm] = {"family": fam, **o, "dH1": o["H1"]["net"] - base_o["H1"]["net"], "dH2": o["H2"]["net"] - base_o["H2"]["net"]}
+        print(f"{nm:72s} dH1={res[nm]['dH1']:+7,} dH2={res[nm]['dH2']:+7,} | {_fl(o)}", flush=True)
+    json.dump({"base": base_o, "facts_2026": facts, "variants": res}, open(os.path.join(OUTD, "losses_masters.json"), "w"), indent=1, default=_j)
+    return res
+
+
+# ================================================================================================ Reim's boxes (decoded to NY time)
+class MarketReim(lit.Market):
+    """lit.Market plus Reim's Asia box 18:05-01:00 ET (crosses midnight, which lit.Market's boxes can't), class asia, named
+    asia_reim. Known once the 00:55 bar closed. London 03-04 (lon34) and NY 08-09 (ny89) already exist."""
+
+    def _context(self):
+        super()._context()
+        mod = self.mod
+        for x in self.ctx:
+            s, e = x["s"], x["e"]
+            md = mod[s:e]
+            ii = np.flatnonzero((md >= 1085) | (md < 60))
+            if len(ii) >= 2:
+                x["asia_reim"] = (float(self.h[s + ii].max()), float(self.l[s + ii].min()), int(s + ii[-1]))
+            else:
+                x.pop("asia_reim", None)
+
+
+def market_reim():
+    if "MR" not in _S:
+        lit.EXTRA_BOXES.setdefault("asia_reim", (1085, 60, "asia"))      # runtime registration only (engine/lit.py untouched)
+        M = MarketReim(extra_boxes=["asia_reim"])
+        p = os.path.join(F.CACHE, f"litloss_reim_cands_{rl._data_key().replace(':', '_')}.pkl")
+        if os.path.exists(p):
+            C = pickle.load(open(p, "rb"))
+        else:
+            C = lit.candidates(M, ref="cisd")
+            pickle.dump(C, open(p, "wb"))
+        M0, C0, B1, B5 = base()
+        _S.update(MR=M, CR=C, B1R=remap(B1, M0, M), B5R=remap(B5, M0, M))
+    return _S["MR"], _S["CR"], _S["B1R"], _S["B5R"]
+
+
+REIM_SET = ["asia_reim_h", "asia_reim_l", "lon34_h", "lon34_l", "ny89_h", "ny89_l", "pdh", "pdl", "pwh", "pwl"]
+
+
+def reim():
+    base_o = fast(base_trades())
+    M, C, B1, B5 = market_reim()
+    res = collections.OrderedDict()
+    for nm, P in (("Reim Asia box 18:05-01:00 added to every level", {"extra_boxes": ["asia_reim"]}),
+                  ("Reim's levels only (Asia 18:05-01:00, London 03-04, NY 08-09, PDH/PDL, PWH/PWL)", {"extra_boxes": ["asia_reim"], "sweep_names": REIM_SET}),
+                  ("Reim's levels + PMH/PML", {"extra_boxes": ["asia_reim"], "sweep_names": REIM_SET + ["pmh", "pml"]})):
+        T = run2(M, C, {**P0, **P}, F.SESS, B1=B1, B5=B5)
+        o = fast(T)
+        res[nm] = {**o, "dH1": o["H1"]["net"] - base_o["H1"]["net"], "dH2": o["H2"]["net"] - base_o["H2"]["net"]}
+        print(f"{nm:80s} dH1={res[nm]['dH1']:+7,} dH2={res[nm]['dH2']:+7,} | {_fl(o)}", flush=True)
+    p = os.path.join(OUTD, "losses_masters.json")
+    J = json.load(open(p)) if os.path.exists(p) else {}
+    J["reim_boxes"] = res
+    json.dump(J, open(p, "w"), indent=1, default=_j)
+    return res
+
+
+# ================================================================================================ store runs
+SAVES = [
+    ("lit_loss_pack", "LIT final + loss rules: Monday rule + weekly stop (2 stop-outs -> half size)", {"monday": True, "wk_stop": (2, 0.5)}, "adopt-candidate"),
+    ("lit_loss_weekly_stop", "LIT final + weekly stop: after 2 stop-outs in a week, half size for the rest of it", {"wk_stop": (2, 0.5)}, "adopt-candidate"),
+    ("lit_loss_monday", "LIT final + Monday rule: once Monday took Friday's high (low), only shorts (longs)", {"monday": True}, "adopt-candidate"),
+    ("lit_loss_after_win", "LIT final + 1.5x size on the trade after a winner", {"after_win": (1.5, 1)}, "promising"),
+    ("lit_loss_pack_win", "LIT final + Monday rule + weekly stop + 1.5x after a winner", {"monday": True, "wk_stop": (2, 0.5), "after_win": (1.5, 1)}, "promising"),
+    ("lit_loss_idm12", "LIT final + inducement no older than 12 bars (1 hour)", {"idm_age": 12}, "rejected"),
+]
+
+
+def save():
+    for rid, title, cfg, status in SAVES:
+        T = build(cfg)
+        S = rl.score(T, F.SESS)
+        o = F.score(T)
+        h = lambda s: (f"n={s['n']} {s['tpw']}/wk win {s['win']}% PF {s['pf']} net {s['net']:+,} (${s['per_month']:,}/mo) DD {s['dd']:,} "
+                       f"eval 2wk {s['p10']}/{s['f10']} 1mo {s['p20']}/{s['f20']} pass rate {s['pass_rate']}%")
+        clean = [{k: v for k, v in t.items() if not k.startswith("_")} for t in T]
+        rl.save(rid, title, "other", "Owner order 2026-10-18: where and why does LIT lose, and which loss rules help both halves of 2026?",
+                params={**P0, "loss_rules": {k: list(v) if isinstance(v, tuple) else v for k, v in cfg.items()}}, trades=clean, scored=S,
+                status=status,
+                verdict=f"2026 H1 (pick) {h(o['H1'])}; 2026 H2 (check) {h(o['H2'])}; 2026 {h(o['2026'])}; 2021-25 reference only {h(o['2021-25'])}",
+                notes="tools/lit_losses.py build(cfg) on top of lit_final (engine/lit.py run_x, research/lit/lit_final.json); weekly stop and "
+                      "after-winner sizing re-size finished trades exactly (floor 1 micro); Monday rule skips the setup (the day stays free).",
+                writeup="lit-losses", tags=["lit", "lit_loss"])
+        print("saved", rid, F.fmt(o), flush=True)
+
+
+if __name__ == "__main__":
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
+    {"check": check, "anatomy": anatomy, "rules": rules, "refine": refine, "combos": combos, "tf": tf, "tf_relaxed": tf_relaxed,
+     "masters": masters, "reim": reim, "save": save}[cmd]()

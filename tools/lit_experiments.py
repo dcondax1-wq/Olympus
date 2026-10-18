@@ -40,7 +40,7 @@ from tools import runlib as rl  # noqa: E402
 
 OUT = os.path.join(ROOT, "research", "lit", "experiments_results.json")
 SESS = F.SESS
-SPAN = F.SPAN
+SPAN = {**F.SPAN, "all": ("2000-01-01", "2100-01-01")}
 PV, COMM, SLIP, MAXQ = lit.PV, lit.COMM, lit.SLIP, lit.MAX_MICROS
 PLAN = PLANS["builder_50k"]
 
@@ -54,7 +54,16 @@ XDEF = {
                             # these classes >= min_r R from the fill (before the main target), stop to breakeven after it
     "after": None,          # {day: unix t}: only setups whose entry bar opens after t (a second-session leg)
     "days": None,           # set of days the run may trade (None = all)
+    "be_mode": "r",         # r = breakeven at be_r R (current) | swing = once price takes the first opposing internal swing
+                            # (k=2 fractal high for a long, above the entry) formed after the fill on the execution bars (1m in 2026)
+                            # | swing5 = the same on 5m swings. With be_r set too, whichever comes first.
+    "min_tgt_pts": 0.0,     # target at least this many NQ points from the fill (Marco / ICT minimum move)
+    "reentry": None,        # size multiplier for one re-entry after a full stop: same day, same direction, a new sweep beyond the
+                            # first stop (new trap; the setup filters incl. the inducement gate apply), the first target untouched
+    "two_stage": None,      # fraction of the micros on a plain limit at the CISD level; the rest waits for the 1m confirmation
 }
+DLL = 1000.0                # MFFU 50K soft daily loss limit: at -$1,000 on the day (open P&L included) the position is flattened
+                            # and the day ends (not a breach). Applied to every sized result below.
 FINAL = F.final_params()
 
 
@@ -63,8 +72,32 @@ def P_of(P):
 
 
 # ------------------------------------------------------------------------------------------------ executor (unit size)
+_SW = {}
+
+
+def _swing_targets(M, z):
+    """Internal pools: unbroken 5m k=2 swing highs (lows for a short) beyond the market entry, confirmed by the trigger bar,
+    made in the last 288 bars. Distances from entry_d (direction space)."""
+    d = z["dir"]
+    if d not in _SW:
+        _SW[d] = (M.fh if d == 1 else M.fl, M.h if d == 1 else -M.l)
+    idx, hd = _SW[d]
+    i = z["i"]
+    a = np.searchsorted(idx, i - 288); b = np.searchsorted(idx, i - 1)
+    out = []
+    for j in idx[a:b]:
+        j = int(j)
+        if j + 2 > i or hd[j] <= z["entry_d"]:
+            continue
+        if hd[j + 1:i + 1].max() < hd[j]:
+            out.append(round(float(hd[j] - z["entry_d"]), 2))
+    return sorted(out)
+
+
 def _targets(M, z, P, classes):
-    T = {c: z["targets"].get(c, []) for c in classes if c not in ("vix", "vxn")}
+    T = {c: z["targets"].get(c, []) for c in classes if c not in ("vix", "vxn", "swing")}
+    if "swing" in classes:
+        T["swing"] = _swing_targets(M, z)
     x = M.ctx[z["k"]]
     for c in ("vix", "vxn"):
         if c in classes:
@@ -170,6 +203,8 @@ def xsim(M, B, z, entry_px, tgt, stop, P, p1_lvl=None):
             if dist < P["min_rr"] * risk:
                 return None
             tg = entry + (min(dist, P["max_rr"] * risk) if P["max_rr"] else dist)
+    if P["min_tgt_pts"] and tg - entry < P["min_tgt_pts"]:
+        return None
     p1 = None
     if p1_lvl is not None and P["partial"]:
         if p1_lvl - entry >= P["partial"].get("min_r", 1.0) * risk and p1_lvl < tg:
@@ -177,6 +212,16 @@ def xsim(M, B, z, entry_px, tgt, stop, P, p1_lvl=None):
     be_r = P["be_r"]
     cur, be_done, mfe, mae, worst, worst2 = stop, False, 0.0, 0.0, 0.0, 0.0
     part = False
+    bm = P["be_mode"]
+    sw_lvl = sw_k = None
+    if bm == "swing5":
+        idx5, h5 = (M.fh, M.h) if d == 1 else (M.fl, -M.l)
+        f5 = int(B.t[fill]) // 300 * 300
+        for j in idx5[np.searchsorted(idx5, int(np.searchsorted(M.t, f5))):]:
+            j = int(j)
+            if j + 2 < M.n and h5[j] > entry:
+                sw_lvl, sw_k = float(h5[j]), int(M.t[j + 2]) + 300     # usable from this time on (swing confirmed)
+                break
     k = fill
     exit_px = kind = None
     while k < B.n:
@@ -201,6 +246,15 @@ def xsim(M, B, z, entry_px, tgt, stop, P, p1_lvl=None):
                     cur, be_done = max(cur, entry), True
             if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk:
                 cur, be_done = entry, True
+            if bm == "swing" and not be_done:
+                if sw_lvl is not None and k > sw_k and hi_d[k] > sw_lvl:
+                    cur, be_done = entry, True
+                elif sw_lvl is None and k - 2 >= fill and k - 4 >= 0:
+                    j = k - 2
+                    if hi_d[j] > hi_d[j - 2:j].max() and hi_d[j] >= hi_d[j + 1:k + 1].max() and hi_d[j] > entry:
+                        sw_lvl, sw_k = float(hi_d[j]), k
+            elif bm == "swing5" and not be_done and sw_lvl is not None and B.t[k] >= sw_k and hi_d[k] > sw_lvl:
+                cur, be_done = entry, True
         if B.mod[k] >= flat:
             exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
         k += 1
@@ -212,7 +266,7 @@ def xsim(M, B, z, entry_px, tgt, stop, P, p1_lvl=None):
     return {"day": z["day"], "entry_t": int(B.t[fill]), "exit_t": int(B.t[k]) + B.secs, "exit_i": xi5, "dir": d,
             "risk_pts": round(risk, 2), "exit": kind, "trigger": "LIT-" + ("1m" if B.secs == 60 else "5m"), "mfe": round(mfe, 3),
             "mae": round(min(mae, 1.0 + SLIP / risk), 3), "bars_held": int(k - fill + 1), "regime": "", "half": False,
-            "legs": legs, "w1": worst, "w2": worst2, "part": part,
+            "legs": legs, "w1": worst, "w2": worst2, "part": part, "_stop_d": stop, "_tg_d": tg,
             "entry_px": round(entry * d, 2), "stop_px": round(stop * d, 2), "target_px": round(tg * d, 2), "swept": z["swept"],
             "tf": B.secs // 60, "ext_i": z["ext_i"], "sweep_i": z["sweep_i"],
             # setup features known at entry (for grade sizing)
@@ -232,6 +286,7 @@ def xrun(P=None, sessions=SESS):
     after, days = P.get("after") or {}, P.get("days")
     out, busy, per_day = [], -1, collections.Counter()
     pclasses = (P["partial"] or {}).get("classes")
+    stopped = {}
     for z in C:
         if sset is not None and z["day"] not in sset:
             continue
@@ -239,8 +294,17 @@ def xrun(P=None, sessions=SESS):
             continue
         if z["day"] in after and int(M.t[z["entry_i"]]) <= after[z["day"]]:
             continue
-        if z["entry_i"] <= busy or per_day[z["day"]] >= P["max_per_day"]:
+        if z["entry_i"] <= busy:
             continue
+        re = False
+        if per_day[z["day"]] >= P["max_per_day"]:
+            st = stopped.get(z["day"])
+            if not (P["reentry"] and st and per_day[z["day"]] == P["max_per_day"] and z["dir"] == st[0] and z["ext_d"] < st[1]):
+                continue
+            hd = M.h if z["dir"] == 1 else -M.l
+            if hd[st[3]:z["i"] + 1].max() >= st[2]:
+                continue                                    # the first trade's target already traded
+            re = True
         if not lit.setup_ok(z, P, names):
             continue
         ep = min(float(z["ref_d"]), z["trig_c"])
@@ -268,9 +332,25 @@ def xrun(P=None, sessions=SESS):
         B = B1 if use1 else B5
         tgt = ("lvl", ep + tp, fb) if P.get("cisd1m") else ("pts", tp)
         t = xsim(M, B, z, ep, tgt, stop, P, p1)
-        if t is None or lit.qty_for(t["risk_pts"]) < 1:     # as run_x: no micro at the LIT rule -> no trade (stop > ~89 pts)
+        if P["two_stage"]:
+            tA = xsim(M, B, z, ep, tgt, stop, {**P, "cisd1m": None}, p1)
+            if tA is not None and lit.qty_for(tA["risk_pts"]) < 1:
+                tA = None
+            if t is not None and lit.qty_for(t["risk_pts"]) < 1:
+                t = None
+            if tA is None and t is None:
+                continue
+            g = dict(t or tA)
+            g.update(stages=[(P["two_stage"], tA), (1.0 - P["two_stage"], t)], entry_t=min(x["entry_t"] for x in (tA, t) if x),
+                     exit_t=max(x["exit_t"] for x in (tA, t) if x), exit_i=max(x["exit_i"] for x in (tA, t) if x))
+            t = g
+        elif t is None or lit.qty_for(t["risk_pts"]) < 1:     # as run_x: no micro at the LIT rule -> no trade (stop > ~89 pts)
             continue
+        if re:
+            t["smult"] = P["reentry"]; t["reentry"] = True
         busy = t["exit_i"]; per_day[z["day"]] += 1
+        if t["exit"] == "STOP" and not re:
+            stopped[z["day"]] = (z["dir"], t["_stop_d"], t["_tg_d"], z["entry_i"])
         out.append(t)
     return out
 
@@ -280,12 +360,26 @@ def base_qty(t, risk_usd=800.0, ref_stop=20.0):
     """$risk_usd up to a ref_stop-pt stop, then risk_usd*ref_stop/stop (ref_stop None = flat $ at any stop); max 40."""
     rp = t["risk_pts"]
     r = risk_usd if (ref_stop is None or rp <= ref_stop) else risk_usd * ref_stop / rp
-    return max(0, min(MAXQ, int(r / (rp * PV))))
+    q = max(0, min(MAXQ, int(r / (rp * PV))))
+    if t.get("smult") and q:
+        q = max(1, int(q * t["smult"] + 1e-9))
+    return q
 
 
 def at_qty(t, q):
     """The unit trade at q micros (P&L, commission, slippage linear; a partial splits the micros, 1 micro = all runner)."""
     q = int(q)
+    if t.get("stages"):
+        (fa, tA), (_, tB) = t["stages"]
+        qa = (int(q * fa + 0.5) if q >= 2 else 0) if tB else max(1, int(q * fa + 0.5))   # the limit leg keeps its share
+        qa = qa if tA else 0
+        qb = q - qa if tB else 0
+        parts = [at_qty(x, n) for x, n in ((tA, qa), (tB, qb)) if x and n > 0]
+        if not parts:
+            parts = [at_qty(tA or tB, q)]
+        pnl = sum(x["pnl"] for x in parts); ru = sum(x["risk_usd"] for x in parts)
+        return {**t, "qty": sum(x["qty"] for x in parts), "pnl": round(pnl, 2), "low": round(sum(x["low"] for x in parts), 2),
+                "risk_usd": round(ru, 2), "r": round(pnl / ru, 3) if ru else 0.0, "mult": 1.0}
     if len(t["legs"]) == 2 and q >= 2:
         f = t["legs"][0][0]
         q1 = min(q - 1, max(1, int(q * f + 0.5)))
@@ -322,11 +416,25 @@ def sized(T, qfn=None, mult=None):
                 q = 0 if m <= 0 else (max(1, int(q0 * m + 1e-9)) if m < 1 else min(MAXQ, int(q0 * m + 1e-9)))
         if q < 1:
             continue
-        x = at_qty(t, q)
+        cum = sum(y["pnl"] for y in out if y["day"] == t["day"])
+        if cum <= -DLL:
+            continue
+        x = dll_cut(at_qty(t, q), cum)
         x["mult"] = round(q / q0, 3) if q0 else 1.0
         x["half"] = q < q0
         out.append(x)
     return out
+
+
+def dll_cut(x, cum):
+    """MFFU soft daily loss limit: if the day's P&L (open included) reaches -DLL during this trade, it is flattened there
+    (1 tick slippage) and the day ends."""
+    worst = max(x["low"], -(x["risk_pts"] + SLIP) * PV * x["qty"] - COMM * x["qty"])   # open P&L never below the stop's loss
+    if DLL and cum + worst <= -DLL:
+        pnl = round(-DLL - cum - SLIP * PV * x["qty"], 2)
+        if pnl < x["pnl"]:
+            return {**x, "pnl": pnl, "low": pnl, "exit": "DLL", "r": round(pnl / x["risk_usd"], 3) if x["risk_usd"] else x["r"]}
+    return x
 
 
 # ------------------------------------------------------------------------------------------------ eval game (state sizing)
@@ -359,7 +467,9 @@ def eval_game(T, span="2026", sizer=None, horizon=60, day_stop=None, b2b=True):
                 q = int(sizer(t, st))
                 if q < 1:
                     continue
-                x = at_qty(t, min(MAXQ, q))
+                if DLL and cum <= -DLL:
+                    break
+                x = dll_cut(at_qty(t, min(MAXQ, q)), cum)
                 low = min(low, cum + x["low"]); cum += x["pnl"]; low = min(low, cum)
                 n += 1
                 if x["pnl"] > 0:
@@ -524,6 +634,23 @@ def fam_A():
     # money left to target: risk what is needed to finish in ~2 winners (avg winner ~ 5R): never more than flat $R
     for R in (600, 1000):
         V[f"flat ${R}, cap at 40% of the $ left to target"] = ("state", lambda t, st, R=R: min(base_qty(t, R, None), max(1, int(0.4 * (PLAN['target'] - st['profit']) / (t['risk_pts'] * PV)))))
+    # ICT halving (masters S1): after a full loss x0.5 until 50% of the loss is made back, x0.25 after a second loss
+    for rec in (0.5, 0.25, 1.0):
+        V[f"ICT halving, back after {int(rec*100)}% recovered"] = ("mult", lambda t, c, rec=rec: ict_mult(c["done"], rec))
+    # cushion first, then press (masters S3); buffer sizing (S2). "scaled" = the $ is the LIT rule's risk up to a 20-pt stop
+    for flat in (False, True):
+        tag = "flat" if flat else "scaled"
+        ref = None if flat else 20.0
+        for R0, up in ((400, 1000), (500, 1000), (400, 1500), (500, 1500)):
+            V[f"cushion {tag}: ${R0}, $800 after +${up}, $300 if buffer < $1k"] = (
+                "state", lambda t, st, R0=R0, up=up, ref=ref: max(1, base_qty(t, 300 if st["room"] < 1000 else (800 if st["profit"] >= up else R0), ref)))
+        for f in (0.25, 0.35, 0.45):
+            V[f"buffer {tag}: risk {int(f*100)}% of buffer, $200-1,000"] = (
+                "state", lambda t, st, f=f, ref=ref: max(1, base_qty(t, min(1000.0, max(200.0, f * st["room"])), ref)))
+    # bigger scaled risk with the room cap
+    for R in (1000, 1200, 1500):
+        for k in (0.35, 0.5):
+            V[f"risk ${R} scaled, cap {int(k*100)}% of room"] = ("state", lambda t, st, R=R, k=k: max(1, min(base_qty(t, R, 20.0), int(k * st["room"] / (t["risk_pts"] * PV)))))
     for nm, (kind, fn) in V.items():
         if kind == "state":
             o = sc_state(U, fn)
@@ -533,6 +660,23 @@ def fam_A():
         rec = {"kind": kind, **o}
         _store("A", nm, rec)
         print(row(nm, o), flush=True)
+
+
+def ict_mult(done, rec=0.5):
+    """ICT loss halving on the closed trades (sized $): a full loss (stop) -> x0.5; a second one while reduced -> x0.25; back
+    to x1 once the P&L since the first loss has made back rec x the $ lost."""
+    m, need, acc = 1.0, 0.0, 0.0
+    for x in done:
+        if m < 1.0:
+            acc += x["pnl"]
+        if x["exit"] in ("STOP", "DLL") and x["pnl"] < 0:
+            if m == 1.0:
+                m, need, acc = 0.5, rec * -x["pnl"], 0.0
+            else:
+                m = 0.25; need += rec * -x["pnl"]
+        elif m < 1.0 and acc >= need:
+            m = 1.0
+    return m
 
 
 # ================================================================================================ B. second session (New York)
@@ -610,6 +754,10 @@ def fam_C():
                       ("first PD/PW/PM", ["pd", "pw", "pm"]), ("first build-up", ["buildup"])):
         for frac, mr in ((0.5, 1.0), (0.5, 2.0), (0.33, 2.0), (0.5, 3.0)):
             V[f"half at {pc_nm} >= {mr}R (frac {frac}), runner to VIX"] = {"partial": {"classes": pc, "min_r": mr, "frac": frac, "be": True}}
+    for frac in (0.2, 0.25, 0.3, 0.5):
+        V[f"{int(frac*100)}% at the first internal 5m swing pool >= 1R, runner to VIX"] = {"partial": {"classes": ["swing"], "min_r": 1.0, "frac": frac, "be": True}}
+        V[f"{int(frac*100)}% at the first pool incl. internal swings >= 1R, runner to VIX"] = {"partial": {"classes": allp + ["swing"], "min_r": 1.0, "frac": frac, "be": True}}
+    V["25% at internal swing >= 1R, no BE after it"] = {"partial": {"classes": ["swing"], "min_r": 1.0, "frac": 0.25, "be": False}}
     for frac, mr in ((0.5, 2.0),):
         V["half at first pool >= 2R, runner to VIX no bank"] = {"partial": {"classes": allp, "min_r": mr, "frac": frac, "be": True}, "max_rr": None}
         V["half at first pool >= 2R, runner to PW/PM"] = {"partial": {"classes": allp, "min_r": mr, "frac": frac, "be": True}, "classes": ["pw", "pm"], "max_rr": None}
@@ -640,12 +788,98 @@ def fam_D():
         print(row(nm, o), "| med stop", o["median_stop_2026"], flush=True)
 
 
+# ================================================================================================ E. from the masters study
+def fam_E():
+    V = collections.OrderedDict()
+    V["final (BE at 1R)"] = {}
+    V["BE on structure (1m swing taken), no 1R"] = {"be_mode": "swing", "be_r": None}
+    V["BE on structure (5m swing taken), no 1R"] = {"be_mode": "swing5", "be_r": None}
+    V["BE on 1m structure or 1R, first"] = {"be_mode": "swing", "be_r": 1.0}
+    V["BE on 5m structure or 1R, first"] = {"be_mode": "swing5", "be_r": 1.0}
+    V["BE on 1m structure or 2R, first"] = {"be_mode": "swing", "be_r": 2.0}
+    V["BE on 5m structure or 2R, first"] = {"be_mode": "swing5", "be_r": 2.0}
+    V["no breakeven"] = {"be_r": None}
+    for mr, pts in ((3.0, 0.0), (3.0, 30.0), (3.0, 40.0), (2.0, 0.0), (2.5, 0.0), (1.5, 30.0), (1.5, 40.0), (2.0, 30.0)):
+        V[f"min target {mr}R and {int(pts)} pts"] = {"min_rr": mr, "min_tgt_pts": pts}
+    V["re-entry at half size after a stop (new trap, target intact)"] = {"reentry": 0.5}
+    V["re-entry at full size after a stop"] = {"reentry": 1.0}
+    for f in (0.2, 0.25, 0.33):
+        V[f"two-stage: {int(f*100)}% on the limit, rest on 1m confirm"] = {"two_stage": f}
+    for nm, P in V.items():
+        U = unit(P)
+        o = sc(sized(U))
+        o["exits_2026"] = dict(collections.Counter(t["exit"] for t in U if t["day"] >= "2026"))
+        _store("E", nm, {"params": P, **o})
+        print(row(nm, o), "|", o["exits_2026"], flush=True)
+
+
+# ================================================================================================ store the runs
+def cap_room(k, q):
+    return lambda t, st: max(1, min(q(t), int(k * st["room"] / (t["risk_pts"] * PV))))
+
+
+def save_runs():
+    """Store the experiments that matter as research runs lit_x_* (family other, tag lit). Fixed sizing rules store the
+    continuous trade list; eval-state rules store the back-to-back eval path (a new eval the session after each one ends)."""
+    allp = ["buildup", "asia", "london", "ny", "pre", "pd", "pw", "pm", "gap"]
+    q800_40 = lambda t: max(1, base_qty(t, 800, 40.0))
+    R = [  # id, title, question, params, sizing kind, sizer, status, verdict
+        ("lit_x_fast_eval", "LIT final + fast-eval size: $800 up to a 40-pt stop, then 800x40/stop", "A: which risk level passes the 50K eval fastest?",
+         {}, "fixed", q800_40, "adopt-candidate", "Best 2-week pass rate in both 2026 halves (H1 52% vs 33%, H2 47% vs 23%) and half the expected sessions to a pass, but 21-27% of evals fail within 2 weeks (vs 15% / 0%). Eval mode only."),
+        ("lit_x_room_cap60", "LIT final + never risk more than 60% of the room to the MFFU max-loss floor", "A: MFFU-aware risk cap",
+         {}, "state", cap_room(0.6, base_qty), "adopt-candidate", "2-week fails H1 14.8% -> 3.9%, 1-month fails 25.8% -> 10.2%, pass rate 66% -> 80%; H2 identical (never binds); 2021-25 fails 16.3% -> 6.8%, DD -20.7k -> -12.1k. Costs passes per month in a back-to-back run (2026 10 -> 8)."),
+        ("lit_x_risk600", "LIT final at $600 up to a 20-pt stop", "A: risk level with the highest pass rate inside 3 weeks (H1)",
+         {}, "fixed", lambda t: max(1, base_qty(t, 600, 20.0)), "info", "Pass rate H1 84.5% / H2 100%, but median pass 14 / 32.5 sessions: too slow for the owner's 3-week rule in H2."),
+        ("lit_x_flat800", "LIT final at a flat $800 at any stop", "A: flat $ risk like a prop trader",
+         {}, "fixed", lambda t: max(1, base_qty(t, 800, None)), "rejected", "Fast (median pass 3-4 sessions) but PF 2.37/2.10 and 27-32% of evals fail in 2 weeks; the 40-pt version is better on every line."),
+        ("lit_x_ict_halving", "LIT final + ICT loss halving (x0.5 after a stop, x0.25 after a second, full after 50% made back)", "A: masters S1",
+         {}, "mult", lambda t, c: ict_mult(c["done"], 0.5), "rejected", "With 1 winner in 4-5 trades the bot is small almost all the time and the rare 5-8R winners come at quarter size: 2026 +$10.0k vs +$38.9k."),
+        ("lit_x_cushion", "LIT final + cushion first: $500, $800 after +$1,500, $300 if the buffer is under $1,000", "A: masters S3",
+         {}, "state", lambda t, st: max(1, base_qty(t, 300 if st["room"] < 1000 else (800 if st["profit"] >= 1500 else 500), 20.0)), "rejected", "Safer (no 2-week fails) but slow: 2-week passes H1 25% / H2 2.6%, median pass 11 / 33 sessions."),
+        ("lit_x_ny_plain", "LIT final London + NY killzones (09:30-11:30, 13:30-15:30) on days London did not trade, pools+VIX targets, plain limit", "B: a NY second session",
+         {"window": LONW, "ny_leg": {"window": NYK, "classes": allp + ["vix"], "cisd1m": None}}, "ny", None, "rejected", "NY LIT setups are rare in 2026 (8-37 a year); every NY leg made less than the final's own NY trades: H1 -$5.4k, H2 +$1.1k."),
+        ("lit_x_tgt_vix_gap", "LIT final, target = nearest of the VIX band or an NWOG/NDOG edge", "C: draws on liquidity",
+         {"classes": ["vix", "gap"]}, "fixed", None, "rejected", "Closest target variant: H1 +$0.7k, H2 -$0.3k vs the VIX band alone. Weekly/monthly, Asia/London, build-ups and all partials made less in H1."),
+        ("lit_x_stop_tap", "LIT final, stop 0.1 ATR beyond the 1m low since the tap (protected 1m swing)", "D: stops",
+         {"stop_mode": "tap", "stop_atr": 0.1}, "fixed", None, "rejected", "Stop 17-20 pts instead of 47: same total R in H1 (51.4 vs 51.5), less in H2 (21.6 vs 24.3), win rate 15%; the extra $ is only the 2.6x bigger risk (DD -9.3k, 2-week fails 37-41%)."),
+        ("lit_x_be_struct", "LIT final, breakeven when a 5m swing high (low) after the fill is taken, or at 1R", "E: masters breakeven on structure",
+         {"be_mode": "swing5", "be_r": 1.0}, "fixed", None, "rejected", "Fewer evals fail in H1, but net H1 -$1.8k and H2 -$2.3k; the 1m version scratches far more winners (H2 +$2.9k)."),
+        ("lit_x_reentry", "LIT final + one half-size re-entry after a stop (new sweep beyond the stop, inducement gate, target untouched)", "E: masters re-entry",
+         {"reentry": 0.5}, "fixed", None, "rejected", "13 more trades in 2026: H1 -$0.3k, H2 +$1.9k; 2021-25 -$1.8k. Not both halves."),
+        ("lit_x_partial_swing25", "LIT final + 25% off at the first internal 5m swing pool >= 1R, rest to the VIX band", "C/E: masters partial at liquidity",
+         {"partial": {"classes": ["swing"], "min_r": 1.0, "frac": 0.25, "be": True}}, "fixed", None, "rejected", "H1 -$6.2k, H2 -$0.6k: taking money off early cuts the 5-8R days that carry the strategy."),
+    ]
+    for rid, title, q, P, kind, fn, status, verdict in R:
+        if kind == "ny":
+            L = unit({"window": LONW}); lon = {t["day"] for t in L}
+            N = unit({**P["ny_leg"], "days": set(SESS) - lon})
+            T = sized(sorted(L + N, key=lambda t: t["entry_t"]))
+        elif kind == "state":
+            T = eval_game(unit(P), "all", fn)["_path"]
+        elif kind == "mult":
+            T = sized(unit(P), mult=fn)
+        else:
+            T = sized(unit(P), qfn=(lambda t, c, fn=fn: fn(t)) if fn else None)
+        T = [{**t, "half": bool(t.get("half"))} for t in T]
+        S = rl.score(T, SESS)
+        o = sc(T) if kind != "state" else sc_state(unit(P), fn, spans=("H1", "H2", "2026", "2021-25"))
+        h = lambda s: (f"net {s['net']:+,} PF {s['pf']} DD {s['dd']:,} 2w {s.get('p10')}/{s.get('f10')} pass rate {s.get('pass_rate')}%")
+        rl.save(rid, title, "other", q, params={**FINAL, **{k: v for k, v in P.items() if k != "days"}}, trades=T, scored=S, status=status,
+                verdict=verdict + f" | H1 {h(o['H1'])}; H2 {h(o['H2'])}; 2021-25 {h(o['2021-25'])}",
+                notes="tools/lit_experiments.py (wraps engine/lit.py run_x logic, exact: check). Eval-state sizing runs store the "
+                      "back-to-back MFFU 50K eval path. MFFU $1,000 soft daily loss limit modelled.",
+                writeup="lit-experiments", tags=["lit", "lit_experiments"])
+        print("saved", rid, rl.line(S, "2026")[:150], flush=True)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     if cmd == "check":
         check()
-    elif cmd in ("A", "B", "C", "D"):
+    elif cmd in ("A", "B", "C", "D", "E"):
         globals()["fam_" + cmd]()
+    elif cmd == "save":
+        save_runs()
     elif cmd == "all":
-        for f in (fam_A, fam_B, fam_C, fam_D):
+        for f in (fam_A, fam_B, fam_C, fam_D, fam_E):
             f()

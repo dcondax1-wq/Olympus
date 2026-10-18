@@ -39,6 +39,11 @@ from engine.data import load, load_ltf  # noqa: E402
 
 ET = ZoneInfo("America/New_York")
 OUT = os.path.join(ROOT, "research", "lit", "live_check.json")
+# Days where the live loop cannot match the backtest by design (reported, not failed):
+KNOWN = {"2026-04-03": "Good Friday (09:15 close): the backtest runs the day on 5m bars because its 1m file misses 6 windows "
+                       "after the entry (96.7% < 97% day cover, a whole-day look-ahead); at 04:02 the live loop has every 1m "
+                       "bar so far, enters on 1m (24,716.75, 3 micros, 3 min earlier than the backtest's 5m fill at 24,714.25, "
+                       "4 micros) and only switches to the backtest's trade once the day's cover drops."}
 FINAL = os.path.join(ROOT, "research", "lit", "lit_final.json")
 
 
@@ -224,13 +229,19 @@ def main():
             else:
                 lags.append(first - ent)
         lag = np.array(lags) / 60.0
+        known = [b for b in bad if b["day"] in KNOWN]
+        bad = [b for b in bad if b["day"] not in KNOWN]
         out["intraday"] = {"trade_days": len(by_day), "polls": polls, "differences": bad[:30], "n_differences": len(bad),
+                           "known_differences": {d: {"polls": sum(1 for b in known if b["day"] == d), "why": KNOWN[d],
+                                                     "first": next((b for b in known if b["day"] == d), None)}
+                                                 for d in sorted({b["day"] for b in known})},
                            "polls_with_matching_open_position": seen_open, "trade_never_seen_open_or_closed": never,
                            "delay_entry_to_first_poll_min": {"median": round(float(np.median(lag)), 2) if len(lag) else None,
                                                              "max": round(float(lag.max()), 2) if len(lag) else None,
                                                              "within_1_min": int((lag <= 1.0).sum()), "within_5_min": int((lag <= 5.0).sum())},
                            "seconds": round(time.time() - t0)}
-        print(f"intraday: {polls} polls on {len(by_day)} trade days, {len(bad)} differences, open position matched on "
+        print(f"intraday: {polls} polls on {len(by_day)} trade days, {len(bad)} differences (+{len(known)} on known days "
+              f"{sorted({b['day'] for b in known})}), open position matched on "
               f"{seen_open} polls, entry seen after median {out['intraday']['delay_entry_to_first_poll_min']['median']} min "
               f"(max {out['intraday']['delay_entry_to_first_poll_min']['max']}) in {out['intraday']['seconds']}s", flush=True)
     # ---- 3. the PC paper bot itself (engine/live.py LiveBot + PaperAdapter) on LIT, fed bar by bar

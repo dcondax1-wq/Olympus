@@ -50,11 +50,11 @@
   "n_extra": 0,
   "exit_differs": [],
   "net_backtest": 38873.34,
-  "seconds": 69
+  "seconds": 63
  },
  "intraday": {
   "trade_days": 127,
-  "polls": 10689,
+  "polls": 524,
   "differences": [
    {
     "day": "2026-04-03",
@@ -643,28 +643,18 @@
      24967.25,
      4
     ]
-   },
-   {
-    "day": "2026-05-25",
-    "now": 1779728700,
-    "what": "still open after the backtest exit"
-   },
-   {
-    "day": "2026-05-25",
-    "now": 1779729000,
-    "what": "still open after the backtest exit"
    }
   ],
-  "n_differences": 34,
-  "polls_with_matching_open_position": 3664,
+  "n_differences": 28,
+  "polls_with_matching_open_position": 101,
   "trade_never_seen_open_or_closed": [],
   "delay_entry_to_first_poll_min": {
    "median": 1.0,
-   "max": 3.0,
-   "within_1_min": 110,
-   "within_5_min": 127
+   "max": 1.0,
+   "within_1_min": 4,
+   "within_5_min": 4
   },
-  "seconds": 2779
+  "seconds": 150
  },
- "seconds": 2863
+ "seconds": 223
 }
