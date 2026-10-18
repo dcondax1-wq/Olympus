@@ -8,8 +8,9 @@ Run ONCE in an Administrator PowerShell in the project folder:
   ... -DryRun     show the checks and the plan, change nothing
 
 What it does: checks the machine (64-bit, RAM, disk, Windows S mode, git, python), power plan (AC: never sleep or
-hibernate, screen off after 10 min, lid close = nothing, wake timers on), Windows Update active hours 08:00-17:00 so
-restarts land at night, installs the LiquidityEngine logon task (install_autostart.ps1), a NinjaTrader Startup
+hibernate, screen off after 10 min, lid close = nothing, wake timers on), Windows Update active hours 01:00-17:00 New
+York time (converted to this PC's clock; LIT trades from 02:00 ET, so restarts must land 17:00-01:00 ET) plus "no automatic
+restart while someone is signed in", installs the LiquidityEngine logon task (install_autostart.ps1), a NinjaTrader Startup
 shortcut, and prints what you still do by hand: automatic sign-in (Microsoft's free Autologon tool), NinjaTrader's
 "connect on startup", and MFFU's written OK for automation. Details: scripts/PC_OFF_OPTIONS.md (option E).
 #>
@@ -64,11 +65,22 @@ if ($isAdmin) {
     & powercfg /setacvalueindex SCHEME_CURRENT SUB_SLEEP RTCWAKE 1 | Out-Null
     & powercfg /hibernate on | Out-Null
     & powercfg /setactive SCHEME_CURRENT | Out-Null
-    Write-Host "== Windows Update: active hours 08:00-17:00 (restarts happen at night; the bot comes back by itself after a restart)"
+    # LIT enters 02:00-15:30 ET and is flat at 15:55, so a Windows Update restart must land between 17:00 and 01:00 New York
+    # time. Active hours are in this PC's own clock (max 18 h): convert 01:00 / 17:00 ET once (re-run after a DST change if
+    # this PC is not on US time: Europe and the US change clocks on different weekends, Oct 25 / Nov 1 2026, Mar 28 / Mar 14 2027).
+    $etZone = [TimeZoneInfo]::FindSystemTimeZoneById('Eastern Standard Time')
+    $d0 = [DateTime]::SpecifyKind((Get-Date).Date, 'Unspecified')
+    $ahStart = [TimeZoneInfo]::ConvertTimeToUtc($d0.AddHours(1), $etZone).ToLocalTime().Hour
+    $ahEnd = [TimeZoneInfo]::ConvertTimeToUtc($d0.AddHours(17), $etZone).ToLocalTime().Hour
+    Write-Host "== Windows Update: active hours 01:00-17:00 ET = $($ahStart):00-$($ahEnd):00 on this PC (restarts only 17:00-01:00 ET; the bot comes back by itself)"
     $ux = 'HKLM:\SOFTWARE\Microsoft\WindowsUpdate\UX\Settings'
     if (-not (Test-Path $ux)) { New-Item -Path $ux -Force | Out-Null }
-    Set-ItemProperty -Path $ux -Name ActiveHoursStart -Value 8 -Type DWord
-    Set-ItemProperty -Path $ux -Name ActiveHoursEnd -Value 17 -Type DWord
+    Set-ItemProperty -Path $ux -Name ActiveHoursStart -Value $ahStart -Type DWord
+    Set-ItemProperty -Path $ux -Name ActiveHoursEnd -Value $ahEnd -Type DWord
+    # no forced restart while the (auto-)signed-in user is logged on; updates still install, the restart waits for you
+    $au = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU'
+    if (-not (Test-Path $au)) { New-Item -Path $au -Force | Out-Null }
+    Set-ItemProperty -Path $au -Name NoAutoRebootWithLoggedOnUsers -Value 1 -Type DWord
     Set-ItemProperty -Path $ux -Name SmartActiveHoursState -Value 0 -Type DWord -ErrorAction SilentlyContinue
 }
 
@@ -92,4 +104,6 @@ Write-Host " 2. NinjaTrader: Tools > Options > General: tick 'Connect on startup
 Write-Host "    Automated Trading Interface: tick 'AT Interface'. Save the workspace with ONE MNQ 5-minute chart that has LE_BarFeed on it (ninjatrader\SETUP.md)."
 Write-Host " 3. Start the bot once from the dashboard (http://localhost:$Port) with adapter 'ninjatrader' on account Sim101: it then resumes by itself after any restart."
 Write-Host " 4. Lock the screen (Win+L) and leave it plugged in. Your phone gets a Telegram/Discord alert from the cloud monitor if this PC goes quiet in a session."
-Write-Host " 5. Before any real order: MFFU's written OK for automated trading on your account."
+Write-Host " 5. Restart this PC yourself once a week after 17:00 ET on Friday (Settings > Windows Update > Restart now) so updates do not pile up;"
+Write-Host "    during an eval you can also Pause updates for 1-5 weeks there. Never restart between 01:30 and 16:00 ET on a weekday."
+Write-Host " 6. Before any real order: MFFU's written OK for automated trading on your account."

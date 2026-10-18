@@ -8,6 +8,33 @@ import { icon } from './icons.js';
 import { lineChart, countAll } from './viz.js';
 import { mount3d } from './fx3d.js';
 
+// trade charts (the same tradechart.js as the phone site: tools/web_public/tradechart.js, copied to /js/tradechart.js by
+// `cd tools/web_public/fx && npm run build`): a LIT trade drawn like TradingView's Long / Short Position tool, loaded on demand;
+// records from /api/next/tradechart/<id> (research/lab/replays.json "charts", tools/export_replays.py)
+let TCP = null;
+const loadTC = () => TCP || (TCP = import('../tradechart.js?v=00000000').catch((e) => { TCP = null; throw e; }));
+export function chartInto(box, t, opts = {}) {
+  if (!box) return;
+  if (!t?.chart) { box.innerHTML = '<div class="muted small">No chart for this trade: charts are drawn for the 2026 LIT replay trades (1-minute data).</div>'; return; }
+  box.innerHTML = '<div class="nx-skel"><i></i><i></i></div>';
+  loadTC().then((TC) => TC.load(t.chart, { base: '/api/next/tradechart/', ext: '' }).then((rec) => { if (box.isConnected) TC.mount(box, rec, opts); }))
+    .catch((e) => { console.warn('trade chart', e); if (box.isConnected) box.innerHTML = '<div class="muted small">The chart could not load: run <span class="mono">python tools/export_replays.py</span>.</div>'; });
+}
+const tcBtn = (t) => (t.chart ? `<span class="nx-tcb" role="button" tabindex="0" data-chart title="Open the trade chart">${icon('chart')}Chart</span>` : '');
+function tcCss() {
+  if (!document.getElementById('nx-tc-css')) {
+    const c = document.createElement('style'); c.id = 'nx-tc-css';
+    c.textContent = `.nx-sheet.nx-sheet-tc{width:min(980px,calc(100vw - 24px))}.nx-tcbox{background:var(--surface-2,#161a23);border:1px solid var(--border,rgba(160,170,220,.12));border-radius:14px;padding:12px;min-height:120px;margin-bottom:6px}
+.nx-tcb{display:inline-flex;align-items:center;gap:5px;padding:3px 10px 3px 8px;border-radius:999px;font:600 12px var(--sans,system-ui);color:var(--ink,#eef1f8);cursor:pointer;background:color-mix(in srgb,var(--brand,#6d7cff) 16%,transparent);border:1px solid color-mix(in srgb,var(--brand,#6d7cff) 45%,transparent)}
+.nx-tcb svg{width:13px;height:13px}.nx-tcb:hover{background:color-mix(in srgb,var(--brand,#6d7cff) 28%,transparent)}`;
+    document.head.appendChild(c);
+  }
+}
+// the chart on its own, in a wide sheet (the Chart button on a trade row)
+export function openChart(t) {
+  openSheet(t, { chartOnly: true });
+}
+
 const st = { year: store.get('nx.trYear', '2026'), filter: 'all', q: '', sort: 'new', shown: 60, data: null, years: [] };
 let loaded = null;
 
@@ -56,7 +83,7 @@ function row(t, i) {
         ${t.half ? chip('half size', 'warn') : ''}</span>
       <span class="nx-trade-meta">
         ${chip(`<i>stop</i> ${fmtN(t.risk_pts, 1)} pts`)}${chip(`<i>micros</i> ${t.qty}`)}${chip(`<i>risk</i> ${fmt$(t.risk_usd)}`)}
-        ${chip(esc(t.trigger))}${chip(esc(t.exit))}${t.grade ? chip('grade ' + esc(t.grade)) : ''}
+        ${chip(esc(t.trigger))}${chip(esc(t.exit))}${t.grade ? chip('grade ' + esc(t.grade)) : ''}${tcBtn(t)}
       </span>
     </span>
     <span class="nx-trade-res"><b class="${cls(t.r)}">${fmtR(t.r)}</b><span class="${cls(t.pnl)}">${fmtS$(t.pnl)}</span></span>
@@ -64,6 +91,7 @@ function row(t, i) {
 }
 
 function render() {
+  tcCss();
   const el = $('#page-trades');
   if (!st.data) return;
   const all = st.data;
@@ -107,11 +135,11 @@ function render() {
   let tq;
   $('#trQ').oninput = (e) => { clearTimeout(tq); tq = setTimeout(() => { st.q = e.target.value.trim().toLowerCase(); st.shown = 60; render(); const q = $('#trQ'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }, 220); };
   $('#trMore')?.addEventListener('click', () => { st.shown += 60; render(); });
-  $('#trList').onclick = (e) => { const b = e.target.closest('.nx-trade'); if (b) openSheet(st.data[+b.dataset.i]); };
+  $('#trList').onclick = (e) => { const b = e.target.closest('.nx-trade'); if (!b) return; const t = st.data[+b.dataset.i]; if (e.target.closest('[data-chart]')) openChart(t); else openSheet(t); };
 }
 
 // ------------------------------------------------------------------ detail sheet
-export function openSheet(t) {
+export function openSheet(t, { chartOnly = false } = {}) {
   closeSheet();
   const rp = t.report || {};
   const ck = (t.checklist || []).map(([k, v]) => `<li class="${v > 0 ? 'ok' : v < 0 ? 'no' : 'na'}">${icon(v > 0 ? 'check' : v < 0 ? 'close' : 'minus')}<span>${esc(k)}</span></li>`).join('');
@@ -119,7 +147,7 @@ export function openSheet(t) {
   const num = (k, v) => `<div><span>${k}</span><b>${v}</b></div>`;
   const wrap = document.createElement('div');
   wrap.className = 'nx-sheet-wrap';
-  wrap.innerHTML = `<div class="nx-scrim"></div><aside class="nx-sheet" role="dialog" aria-modal="true" aria-label="Trade report">
+  wrap.innerHTML = `<div class="nx-scrim"></div><aside class="nx-sheet${t.chart ? ' nx-sheet-tc' : ''}" role="dialog" aria-modal="true" aria-label="Trade report">
     <div class="nx-sheet-grab"></div>
     <header class="nx-sheet-h">
       <span class="nx-trade-side ${t.side === 'LONG' ? 'L' : 'S'}">${icon(t.side === 'LONG' ? 'long' : 'short')}</span>
@@ -128,7 +156,8 @@ export function openSheet(t) {
       <button class="btn ghost icon nx-sheet-x" type="button" title="Close">✕</button>
     </header>
     <div class="nx-sheet-b">
-      <div class="nx-nums">${num('Stop', fmtN(t.risk_pts, 2) + ' pts')}${num('Micros', t.qty)}${num('$ risk', fmt$(t.risk_usd))}${num('Size', t.half ? `<span class="warn-t">half (${String(t.trigger || '').startsWith('LIT') ? 'weekly stop' : 'cold streak'})</span>` : 'full')}
+      ${t.chart ? '<div class="nx-tcbox" id="nxTC"></div>' : ''}
+      ${chartOnly ? '' : `<div class="nx-nums">${num('Stop', fmtN(t.risk_pts, 2) + ' pts')}${num('Micros', t.qty)}${num('$ risk', fmt$(t.risk_usd))}${num('Size', t.half ? `<span class="warn-t">half (${String(t.trigger || '').startsWith('LIT') ? 'weekly stop' : 'cold streak'})</span>` : 'full')}
         ${num('Entry', fmtN(t.entry))}${num('Stop price', fmtN(t.stop))}${num('Target', fmtN(t.target))}${num('Exit', fmtN(t.exit_price))}
         ${num('Best point', t.mfe != null ? '+' + fmtN(t.mfe, 2) + 'R' : '—')}${num('Bars held', t.bars_held ?? '—')}${num('Regime', esc(t.regime || '—'))}${num('Grade', esc(t.grade || '—'))}</div>
       <section><h4>${icon('target')}Plan</h4><p>${esc(rp.plan || '—')}</p><p class="muted small">Target: ${esc(t.target_label || '—')}</p></section>
@@ -137,9 +166,9 @@ export function openSheet(t) {
       <section><h4>${icon('learned')}Lessons</h4><ul class="nx-list">${(rp.lessons || []).map(w => `<li>${esc(w)}</li>`).join('') || '<li class="muted">none recorded</li>'}</ul></section>
       ${ck ? `<section><h4>${icon('rules')}Checklist</h4><ul class="nx-check">${ck}</ul></section>` : ''}
       ${(t.conf_tags || []).length ? `<section><h4>${icon('conf')}Confluences</h4><div class="nx-chips">${t.conf_tags.map(c => chip(esc(c))).join('')}</div></section>` : ''}
-      ${smc ? `<section><h4>${icon('study')}Price action</h4><div class="nx-chips">${smc}</div></section>` : ''}
+      ${smc ? `<section><h4>${icon('study')}Price action</h4><div class="nx-chips">${smc}</div></section>` : ''}`}
     </div>
-    <footer class="nx-sheet-f"><button class="btn primary" type="button" id="nxOpenChart">${icon('chart')}Open day on chart</button></footer>
+    <footer class="nx-sheet-f">${chartOnly ? `<button class="btn" type="button" id="nxFull">${icon('trades')}Full report</button>` : ''}<button class="btn primary" type="button" id="nxOpenChart">${icon('chart')}Open day on chart</button></footer>
   </aside>`;
   document.body.appendChild(wrap);
   requestAnimationFrame(() => wrap.classList.add('on'));
@@ -152,6 +181,9 @@ export function openSheet(t) {
     go('chart');
   };
   document.addEventListener('keydown', escClose);
+  wrap.querySelector('#nxFull')?.addEventListener('click', () => openSheet(t));
+  if (t.chart) chartInto(wrap.querySelector('#nxTC'), t);
+  tcCss();
 }
 function escClose(e) { if (e.key === 'Escape') closeSheet(); }
 export function closeSheet() {

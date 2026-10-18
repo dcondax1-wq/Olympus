@@ -689,7 +689,7 @@ def orun(P=None, sessions=SESS):
         if Q5 and Q5.get("second") and src == "main" and per_day[z["day"]] - day_ob[z["day"]] >= 1:
             continue                        # the main model keeps its one trade a day
         if src in ("ob", "obin"):
-            if not lit.setup_ok(z, {**P, "depth": Q5.get("depth", 0.0)}, None):
+            if not lit.setup_ok(z, {**P, "depth": Q5.get("depth", 0.0), "disp": Q5.get("disp", P["disp"])}, None):
                 continue
             tol = Q5.get("tol", 0.5) * z["atr_ext"]
             ext = z["ext_d"] * z["dir"]
@@ -953,6 +953,8 @@ def variants():
         V[f"OB-inside + OB-only setups {tn} depth 0.5"] = {"obonly": {"tfs": tfs, "mode": "inside", "both": True, "depth": 0.5, "tol": 1.0}}
     V["OB setups (into + inside) 15m/1h/4h/1d as a 2nd trade a day"] = {"obonly": {"tfs": H3 + ["1d"], "mode": "inside", "both": True,
                                                                                   "depth": 0.0, "tol": 0.5, "second": True}}
+    V["OB setups 15m/1h/4h/1d, displacement 0.5 ATR, as a 2nd trade a day"] = {"obonly": {"tfs": H3 + ["1d"], "mode": "inside", "both": True,
+                                                                                     "depth": 0.0, "tol": 0.5, "second": True, "disp": 0.5}}
     V["OB setups (into + inside) 1h/4h/1d as a 2nd trade a day"] = {"obonly": {"tfs": H4, "mode": "inside", "both": True,
                                                                              "depth": 0.0, "tol": 0.5, "second": True}}
     return V
