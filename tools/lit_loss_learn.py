@@ -321,6 +321,146 @@ def base():
     return o
 
 
+# ================================================================================================ sequence / context rules
+def _lvl(r):
+    for k, v in (("asia", "asia"), ("lon", "lon"), ("ny", "ny"), ("pd", "pd"), ("pw", "pw"), ("pm", "pm"), ("nwog", "gap"),
+                 ("ndog", "gap"), ("bu", "bu")):
+        if any(x.startswith(k) for x in r["swept"]):
+            return v
+    return "other"
+
+
+def _prev():
+    D = sorted(db()["trades"], key=lambda r: r["entry_t"])
+    return {r["day"]: [x for x in D if x["exit_t"] <= r["entry_t"]] for r in D}
+
+
+def seq_rule(kind):
+    P = _prev()
+    st = lambda x: x["exit"] == "STOP"                                    # noqa: E731
+    f = {"same_dir": lambda r: (lambda S: bool(S) and st(S[-1]))([x for x in P[r["day"]] if x["dir"] == r["dir"]]),
+         "last_stop_same_dir": lambda r: bool(P[r["day"]]) and st(P[r["day"]][-1]) and P[r["day"]][-1]["dir"] == r["dir"],
+         "same_level": lambda r: (lambda S: bool(S) and st(S[-1]))([x for x in P[r["day"]] if _lvl(x) == _lvl(r)]),
+         "prev_day_stop": lambda r: bool(P[r["day"]]) and st(P[r["day"]][-1])}[kind]
+    return lambda r: 0.5 if f(r) else 1.0
+
+
+def model_rule(fs=("idm_age", "stop_atr", "rr")):
+    """3-feature logistic regression for P(full stop-out), fit on H1 only; x0.5 on the top third of H1 scores (frozen)."""
+    D = db()["trades"]
+    H1 = [r for r in D if r["day"] <= SPAN["H1"][1]]
+    X = np.array([[float(np.nan_to_num(r["f"][k])) for k in fs] for r in H1])
+    mu, sd = X.mean(0), X.std(0) + 1e-9
+    Z = (X - mu) / sd
+    Y = np.array([1.0 if r["exit"] == "STOP" else 0.0 for r in H1])
+    w, b0 = np.zeros(len(fs)), 0.0
+    for _ in range(3000):
+        p = 1 / (1 + np.exp(-(Z @ w + b0)))
+        w -= 0.1 * (Z.T @ (p - Y) / len(Y) + w / len(Y))
+        b0 -= 0.1 * float(np.mean(p - Y))
+    sc = lambda r: float(1 / (1 + np.exp(-(((np.array([float(np.nan_to_num(r["f"][k])) for k in fs]) - mu) / sd) @ w + b0))))  # noqa
+    thr = float(np.quantile([sc(r) for r in H1], 2 / 3))
+    return lambda r: 0.5 if sc(r) >= thr else 1.0
+
+
+# ================================================================================================ the runs
+T15 = {"ts": {"at": 15, "x": 0.3, "mfe": 0.5, "upto": 15}}
+RUNS = [  # id, title, rule, mult, status, why
+    ("lit_ll_t15", "15-minute check: at minute 15 after the fill, best point < +0.5R and close <= -0.3R -> exit next 1m open",
+     T15, None, "adopt-candidate",
+     "Picked as the simplest member of the minute 15-20 family that holds in both halves; neighbours x 0.25/0.3/0.4, mfe 0.3/0.5/0.7, "
+     "minute 15/18/20 all improve both halves; minute 10/12 leave H2 unchanged, minute 25/30 lose H2. Cut 13 trades, all would-be "
+     "full stop-outs (9 H1, 4 H2), exited at -0.33 to -0.62R; no winner or breakeven touched."),
+    ("lit_ll_t15_win", "Early-failure window: minute 15-19, best < +0.5R, close <= -0.3R -> exit", {"ts": {"at": 15, "x": 0.3, "mfe": 0.5, "upto": 19}},
+     None, "promising", "Same family, a 5-minute window. Helps both halves; the window end (19) was set knowing that H2 slow winners dip later."),
+    ("lit_ll_cont15", "Time stop from minute 15 on (no end): best < +0.5R, close <= -0.3R -> exit", {"ts": {"at": 15, "x": 0.3, "mfe": 0.5}},
+     None, "rejected", "The honest H1 pick of the continuous family (H1 2-week fails 8.4 -> 0.0). It kills 2 slow H2 winners: H2 2-week pass "
+     "50.7 -> 44.9 although H2 money rises."),
+    ("lit_ll_cont10", "Time stop from minute 10 on: best < +0.5R, close <= -0.3R -> exit", {"ts": {"at": 10, "x": 0.3, "mfe": 0.5}},
+     None, "rejected", "Best H1 member; H2 2-week pass 50.7 -> 44.9."),
+    ("lit_ll_t25", "25-minute check: best < +0.5R, close <= -0.3R -> exit", {"ts": {"at": 25, "x": 0.3, "mfe": 0.5, "upto": 25}},
+     None, "rejected", "Later checks catch H2's slow winners (they dip 0.3-0.5R after 20 minutes): H2 2-week pass 50.7 -> 43.5."),
+    ("lit_ll_t5", "Early cut, minute 5-14: best < +0.5R, close <= -0.3R -> exit", {"ts": {"at": 5, "x": 0.3, "mfe": 0.5, "upto": 14}},
+     None, "rejected", "The first 5-10 minutes are noise: 2-3 winners killed in each half."),
+    ("lit_ll_tighten60", "After 60 minutes without +0.5R, stop up to -0.3R", {"tt": {"at": 60, "x": 0.3, "mfe": 0.5}},
+     None, "rejected", "Small money, 2-week pass unchanged in both halves; earlier tightening (15-45 min) loses H2."),
+    ("lit_ll_scratch07", "Scratch: after +0.7R, a close back below -0.3R before breakeven -> exit", {"scr": {"m": 0.7, "x": 0.3}},
+     None, "rejected", "Loses money in both halves."),
+    ("lit_ll_wide2", "Stop 2 ticks wider (size follows the stop)", {"wide": {"ticks": 2}}, None, "rejected",
+     "Stop-outs are not shake-outs: only 1 of 53 came back after going < 0.5R beyond the stop. Every wider stop (1-8 ticks, 0.1-0.3R) "
+     "is flat or worse."),
+    ("lit_ll_seq_samedir", "Half size when the last trade in the same direction was a stop-out", None, "seq:same_dir", "rejected",
+     "Sequence memory flips: after a stop-out H1 trades are worse, H2 better. 2-week pass -8.4 / -8.7."),
+    ("lit_ll_model", "3-feature logistic stop-out model (inducement age, stop/ATR, R:R), fit on H1, x0.5 on its top third", None, "model",
+     "rejected", "No skill out of sample (H2 AUC 0.57; 5 feature sets tried, 0.47-0.63). H2 2-week pass 50.7 -> 39.1."),
+]
+
+
+def _mult(spec):
+    if spec is None:
+        return None
+    if spec == "model":
+        return model_rule()
+    if spec.startswith("seq:"):
+        return seq_rule(spec[4:])
+    raise ValueError(spec)
+
+
+def b2b_trades(U, cfg=None):
+    """The back-to-back eval path of 2026 (trades with their eval size) for the run library."""
+    W = _w()
+    _KEY[0] += 1
+    v = f"ll{_KEY[0]}"
+    sess = db()["sess"]
+    by = collections.defaultdict(list)
+    for t in U:
+        by[t["day"]].append(t)
+    W._D[v] = {"sess": sess, "by": [by.get(s, []) for s in sess], "trades": U,
+               "dow": np.array([dt.date.fromisoformat(s).weekday() for s in sess])}
+    T, bb = W.b2b(cfg or CFG_C, "2026", v)
+    W._D.pop(v, None)
+    return T, bb
+
+
+def grid():
+    res = {"base": score(variant())}
+    print(fmt("baseline (live, config C)", res["base"]), flush=True)
+    for rid, title, R, M, status, why in RUNS:
+        res[rid] = score(variant(R, _mult(M)), label=title)
+        print(fmt(rid, res[rid]), flush=True)
+    json.dump(res, open(OUT, "w"), indent=1, default=float)
+    print("->", OUT)
+
+
+def save():
+    from tools import runlib as rl
+    res = json.load(open(OUT)) if os.path.exists(OUT) else {}
+    sess = [s for s in db()["sess"] if "2026-01-01" <= s <= "2026-10-16"]
+    for rid, title, R, M, status, why in RUNS:
+        U = variant(R, _mult(M))
+        o = res.get(rid) or score(U)
+        T, bb = b2b_trades(U)
+        S = rl.score(T, sess)
+        h = lambda s: (f"2-week pass/fail {o[s]['p10']}/{o[s]['f10']}% (Monte Carlo {o[s].get('mc_p10')}/{o[s].get('mc_f10')}), "  # noqa
+                       f"1 month {o[s]['p20']}/{o[s]['f20']}, back-to-back {o[s]['passed']} passes in {o[s]['evals']} evals, eval-path "
+                       f"net ${o[s]['b2b_net']:+,} (${o[s]['b2b_pm']:+,}/mo, PF {o[s]['b2b_pf']}, DD ${o[s]['b2b_dd']:,}), plain LIT size "
+                       f"${o[s]['lit_net']:+,} PF {o[s]['lit_pf']}, {o[s]['tpw']}/wk, win {o[s]['win']}%")
+        b = res.get("base")
+        ref = (f" Baseline (live config C): H1 {b['H1']['p10']}/{b['H1']['f10']}, H2 {b['H2']['p10']}/{b['H2']['f10']}." if b else "")
+        verdict = f"{why} H1 (pick): {h('H1')}. H2 (check): {h('H2')}.{ref}"
+        rl.save(rid, title, "management" if R else "risk",
+                "Owner 2026-10-18: learn from LIT's losses; does the rule raise the MFFU 50K 2-week pass rate under the live two-week "
+                "sizing (config C) in both 2026 halves?", params={"rule": R, "mult": M, "lit": "live_model.json lit (unchanged)"},
+                sizing={"mode": "two_week", **CFG_C}, trades=T, scored=S, status=status, verdict=verdict,
+                notes=("tools/lit_loss_learn.py: the 120 live 2026 LIT trades (tools/lit_1m_manage unit() == run lit_live) re-played "
+                       "on their true 1m paths (check: 120/120 identical with no rule); eval scoring tools/lit_2wk.py (exact MFFU 50K, "
+                       "fresh eval on every session, 4,000-path Monte Carlo). Stored trades = the 2026 back-to-back eval path, so the "
+                       "library's own eval columns re-play those day P&Ls; the exact eval numbers are in the verdict. scores=" +
+                       json.dumps(o, default=float)),
+                writeup="lit-loss-learning", tags=["lit", "lit_loss_learn"])
+        print("saved", rid, bb, flush=True)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
-    {"build": build, "check": check, "base": base}[cmd]()
+    {"build": build, "check": check, "base": base, "grid": grid, "save": save}[cmd]()

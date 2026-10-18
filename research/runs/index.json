@@ -1,7 +1,7 @@
 {
- "built": "2026-10-18 20:46",
+ "built": "2026-10-18 20:51",
  "baseline": "baseline",
- "count": 966,
+ "count": 968,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -114,6 +114,105 @@
      "slow_pass": 75.9,
      "pass_med": 31.0,
      "b2b": "12/11"
+    }
+   }
+  },
+  {
+   "id": "lit_funded_normal",
+   "title": "Funded: today's normal LIT size, no cap (baseline)",
+   "family": "risk",
+   "question": "After the MFFU eval passes: which LIT size maximises $ withdrawn per funded account over 3 / 6 months and keeps the account alive?",
+   "status": "baseline",
+   "verdict": "Funded MFFU Builder 50K, Monte Carlo 2,000 x 6 months, $1.90 commission, H1 / H2: account lost 3 mo 19.8% / 25.8%, 6 mo 20.3% / 27.8%; paid to the trader 3 mo $1,624 / $1,469, 6 mo $3,423 / $3,020 ($570 / $503 a month); median first payout session 31.0 / 29.0; 5 payouts within 6 mo 5.3% / 4.1%; median max DD $-2,135 / $-2,000. Back to back on real history: H1 {'accounts': 1, 'lost': 0, 'graduated': 0, 'open_at_end': 1, 'paid': 4800, 'per_month': 788, 'first_payout_sessions': [22], 'worst_dd': -2332}, H2 {'accounts': 1, 'lost': 0, 'graduated': 0, 'open_at_end': 1, 'paid': 1600, 'per_month': 431, 'first_payout_sessions': [68], 'worst_dd': -1489}, 2021-25 (ref) {'accounts': 25, 'lost': 24, 'graduated': 0, 'open_at_end': 1, 'paid': 6400, 'per_month': 125, 'first_payout_sessions': [94, 32], 'worst_dd': -9295}.",
+   "writeup": "lit-funded-sizing",
+   "tags": [
+    "lit",
+    "lit_funded"
+   ],
+   "params": {
+    "lit_sizing": {
+     "mode": "normal"
+    }
+   },
+   "sizing": {
+    "mode": "normal"
+   },
+   "built": "2026-10-18 20:51",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.61,
+     "net": 41424,
+     "dd": -2332,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -763,
+     "risk": 274.0,
+     "half": 17,
+     "per_month": 4223,
+     "p10": 26.2,
+     "f10": 1.9,
+     "p15": 39.3,
+     "f15": 2.9,
+     "p20": 54.9,
+     "f20": 3.9,
+     "dec10": 28.1,
+     "slow_pass": 52.1,
+     "pass_med": 16.0,
+     "b2b": "10/2"
+    },
+    "2021-25": {
+     "n": 510,
+     "tpw": 2.38,
+     "wk2": 76,
+     "win": 16.9,
+     "pf": 0.87,
+     "net": -15160,
+     "dd": -34328,
+     "avg_r": -0.036,
+     "stop": 38.1,
+     "worst_day": -1014,
+     "risk": 370.0,
+     "half": 39,
+     "per_month": -297,
+     "p10": 6.3,
+     "f10": 13.8,
+     "p15": 10.2,
+     "f15": 26.3,
+     "p20": 12.7,
+     "f20": 35.3,
+     "dec10": 20.1,
+     "slow_pass": 58.9,
+     "pass_med": 19.0,
+     "b2b": "10/36"
+    },
+    "all": {
+     "n": 630,
+     "tpw": 2.46,
+     "wk2": 78,
+     "win": 18.7,
+     "pf": 1.2,
+     "net": 26264,
+     "dd": -34328,
+     "avg_r": 0.109,
+     "stop": 40.0,
+     "worst_day": -1014,
+     "risk": 346.0,
+     "half": 56,
+     "per_month": 432,
+     "p10": 9.9,
+     "f10": 11.9,
+     "p15": 15.3,
+     "f15": 22.5,
+     "p20": 19.9,
+     "f20": 30.2,
+     "dec10": 21.8,
+     "slow_pass": 55.6,
+     "pass_med": 17.0,
+     "b2b": "20/38"
     }
    }
   },
@@ -3423,6 +3522,119 @@
      "slow_pass": 52.5,
      "pass_med": 16.0,
      "b2b": "18/28"
+    }
+   }
+  },
+  {
+   "id": "lit_funded_rec",
+   "title": "Funded: 40% of the room (max $800) + $1,500 best-day cap (recommended)",
+   "family": "risk",
+   "question": "After the MFFU eval passes: which LIT size maximises $ withdrawn per funded account over 3 / 6 months and keeps the account alive?",
+   "status": "adopt-candidate",
+   "verdict": "Funded MFFU Builder 50K, Monte Carlo 2,000 x 6 months, $1.90 commission, H1 / H2: account lost 3 mo 0.6% / 0.6%, 6 mo 1.0% / 1.5%; paid to the trader 3 mo $2,012 / $1,919, 6 mo $4,613 / $4,433 ($769 / $739 a month); median first payout session 27.0 / 26.0; 5 payouts within 6 mo 24.5% / 23.8%; median max DD $-1,494 / $-1,471. Back to back on real history: H1 {'accounts': 1, 'lost': 0, 'graduated': 0, 'open_at_end': 1, 'paid': 4164, 'per_month': 683, 'first_payout_sessions': [4], 'worst_dd': -1470}, H2 {'accounts': 1, 'lost': 0, 'graduated': 0, 'open_at_end': 1, 'paid': 924, 'per_month': 249, 'first_payout_sessions': [67], 'worst_dd': -916}, 2021-25 (ref) {'accounts': 3, 'lost': 2, 'graduated': 0, 'open_at_end': 1, 'paid': 2254, 'per_month': 44, 'first_payout_sessions': [137], 'worst_dd': -3236}.",
+   "writeup": "lit-funded-sizing",
+   "tags": [
+    "lit",
+    "lit_funded"
+   ],
+   "params": {
+    "lit_sizing": {
+     "mode": "funded",
+     "funded": {
+      "pct": 0.4,
+      "pct_min_usd": 100,
+      "pct_max_usd": 800,
+      "ref": 20,
+      "room_f": null,
+      "max_win": 1500
+     }
+    }
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.4,
+    "pct_min_usd": 100,
+    "pct_max_usd": 800,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500
+   },
+   "built": "2026-10-18 20:51",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.82,
+     "net": 17899,
+     "dd": -1470,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -342,
+     "risk": 170.0,
+     "half": 17,
+     "per_month": 1825,
+     "p10": 6.8,
+     "f10": 0.0,
+     "p15": 13.1,
+     "f15": 0.0,
+     "p20": 22.8,
+     "f20": 0.0,
+     "dec10": 6.8,
+     "slow_pass": 81.9,
+     "pass_med": 30.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 196,
+     "tpw": 0.91,
+     "wk2": 29,
+     "win": 15.3,
+     "pf": 0.95,
+     "net": -1076,
+     "dd": -7229,
+     "avg_r": -0.07,
+     "stop": 38.6,
+     "worst_day": -1004,
+     "risk": 176.0,
+     "half": 12,
+     "per_month": -21,
+     "p10": 0.4,
+     "f10": 0.0,
+     "p15": 0.8,
+     "f15": 0.4,
+     "p20": 0.9,
+     "f20": 1.5,
+     "dec10": 0.4,
+     "slow_pass": 84.2,
+     "pass_med": 41.0,
+     "b2b": "2/4"
+    },
+    "all": {
+     "n": 316,
+     "tpw": 1.24,
+     "wk2": 38,
+     "win": 19.6,
+     "pf": 1.56,
+     "net": 16823,
+     "dd": -7249,
+     "avg_r": 0.233,
+     "stop": 41.8,
+     "worst_day": -1004,
+     "risk": 173.0,
+     "half": 29,
+     "per_month": 276,
+     "p10": 1.9,
+     "f10": 0.0,
+     "p15": 3.7,
+     "f15": 0.3,
+     "p20": 5.7,
+     "f20": 1.3,
+     "dec10": 1.9,
+     "slow_pass": 82.1,
+     "pass_med": 33.0,
+     "b2b": "6/4"
     }
    }
   },
@@ -90748,7 +90960,7 @@
      "wk": false
     }
    },
-   "built": "2026-10-18 20:35",
+   "built": "2026-10-18 20:47",
    "spans": {
     "2026": {
      "n": 195,
@@ -90869,7 +91081,7 @@
      "wk": false
     }
    },
-   "built": "2026-10-18 20:35",
+   "built": "2026-10-18 20:48",
    "spans": {
     "2026": {
      "n": 178,
@@ -91103,7 +91315,7 @@
      "wk": false
     }
    },
-   "built": "2026-10-18 20:34",
+   "built": "2026-10-18 20:46",
    "spans": {
     "2026": {
      "n": 155,
