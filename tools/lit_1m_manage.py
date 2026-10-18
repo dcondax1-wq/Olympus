@@ -159,6 +159,7 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
     P = LIVE
     B = cx.B1 if use1 else cx.B5
     on1 = use1 and B.secs == 60
+    es5 = bool(X["x_es"] and X["x_es"].get("on5") and B.secs == 300)   # reference line: the ES exit on 5m-only days
     d = z["dir"]
     hi_d, lo_d, c_d, o_d = B.dirs(d)
     _, _, c_m, o_m = B.dirs(-d)                # mirrored (against-trade) space for CISD against
@@ -286,7 +287,7 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
                     hi_, lo_, _ = xx[base]
                     lv.append(("box", hi_ if d == 1 else -lo_))
     es_ext = None
-    if on1 and X["x_es"]:
+    if (on1 or es5) and X["x_es"]:
         ta = int(M.t[z["ext_i"]]) - 1800
         tb = int(B.t[fill]) // 300 * 300            # 5m bars that closed before the fill's 5m bar
         a = int(np.searchsorted(cx.es_t, ta)); b = int(np.searchsorted(cx.es_t, tb))
@@ -347,11 +348,11 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
         if hi_d[k] >= hi_d[hk]:
             hk = k
         # ---------------------------------------------------------------- signals at the close of bar k (act at k+1)
-        if on1:
+        if on1 or es5:
             mins = (B.t[k] - B.t[fill]) / 60.0
             nxt_ok = k + 1 < B.n and B.day[k + 1] == s_day and B.mod[k + 1] < 1080
             sig = None
-            live_cut = part is None
+            live_cut = part is None and on1
             o = X["x_cisd"] if live_cut else None
             if o and mfe < o["mfe"] and (o.get("win") is None or mins <= o["win"]) and k > hk:
                 cz = lit._cisd_level(c_m, o_m, hk)
@@ -380,11 +381,12 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
                             sig = "CUT_HL"
                     else:
                         cutlvl = (lo_d[jl] - TICK, "CUT_HL")
-            o = X["x_es"] if live_cut else None
+            o = X["x_es"] if (part is None and (on1 or es5)) else None
+            te = int(B.t[k]) + B.secs                     # this bar's close time
             if o and sig is None and es_ext is not None and mfe < o["mfe"]:
-                if not es_bad and (int(B.t[k]) + 60) % 300 == 0:
-                    ie = int(np.searchsorted(cx.es_t, int(B.t[k]) - 240))
-                    if ie < len(cx.es_t) and cx.es_t[ie] == int(B.t[k]) - 240 and cx.es_t[ie] >= int(B.t[fill]) // 300 * 300:
+                if not es_bad and te % 300 == 0:
+                    ie = int(np.searchsorted(cx.es_t, te - 300))
+                    if ie < len(cx.es_t) and cx.es_t[ie] == te - 300 and cx.es_t[ie] >= int(B.t[fill]) // 300 * 300:
                         eh, el, ec = cx.es_dir(d)
                         v = el[ie] if o.get("how", "low") == "low" else ec[ie]
                         if v < es_ext - TICK:
@@ -415,7 +417,7 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
                     cz = lit._cisd_level(c_m, o_m, hk)
                     if cz is not None and c_d[k] < -cz[0] and c_d[k] > entry:
                         sig = "LVL"
-            o = X["p_bos"]
+            o = X["p_bos"] if on1 else None
             if o:
                 base = lowk if lowk is not None else fill
                 shs = [j for j in range(base, k - 1) if sh_d[j] and j not in used_sh]
