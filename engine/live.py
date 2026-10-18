@@ -1032,6 +1032,13 @@ class LiveBot:
                 r = _sz.route_qty(int(qty), pos or {}, mult, getattr(self, "_sizing_cfg", None), getattr(self, "_live_params", None),
                                   self.eval_profit() if getattr(self, "_sizing_cfg", None) and self._sizing_cfg.get("press") else None)
         except Exception as e:
+            mode = str((getattr(self, "_lit_sizing", None) or {}).get("mode") or "")
+            if (self.state or {}).get("model") == "lit" and mode in ("two_week", "eval", "safe_eval", "funded"):
+                # an eval / funded account: never route without the room caps (fail closed)
+                self._note_error(f"sizing failed ({mode}): {e.__class__.__name__}: {e}")
+                self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET NOT traded: the {mode} sizing failed, so the eval room caps "
+                                  "could not be applied")
+                return 0
             self._note_error(f"sizing failed, entry allowed at the engine's size: {e}")
             return qty
         if r["qty"] != qty:

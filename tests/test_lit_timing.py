@@ -75,6 +75,25 @@ def units():
           n_at == [2, 3, 3], str(n_at))
     check("forming_open: the open of the minute still forming, None once it has closed",
           live.forming_open(df, 60, 179) == (120, 3.0) and live.forming_open(df, 60, 180) is None)
+    # sizing fails closed on an eval / funded account: an exception in lit_qty routes nothing (normal mode: the model's size)
+    from engine import sizing as _sz
+    orig = _sz.lit_qty
+    _sz.lit_qty = lambda *a, **kw: (_ for _ in ()).throw(RuntimeError("injected sizing failure"))
+    try:
+        b2 = live.LiveBot()
+        b2.clock = lambda: 1_790_000_000
+        b2.cfg = {**live.LIVE_DEFAULTS}
+        b2.state = {"model": "lit"}
+        got = {}
+        for mode in ("two_week", "eval", "safe_eval", "funded", "normal"):
+            b2._lit_sizing = {"mode": mode}
+            b2.eval_room = lambda: 1500.0
+            b2.eval_state = lambda: {}
+            got[mode] = b2._equity_qty(1_790_000_000, 5, {"risk_pts": 30.0})
+    finally:
+        _sz.lit_qty = orig
+    check("sizing fails closed: lit_qty raising -> 0 micros in two_week / eval / safe_eval / funded, the model's 5 in normal",
+          got == {"two_week": 0, "eval": 0, "safe_eval": 0, "funded": 0, "normal": 5}, str(got))
 
 
 class Clock:
