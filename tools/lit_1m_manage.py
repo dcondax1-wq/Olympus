@@ -82,7 +82,7 @@ ROOM = 0.6
 LITR = ("lit", 800, 20.0)            # the LIT rule (normal mode), for the check against lit_live
 XDEF = {"idm1": None, "disp1": None, "absorb": None, "patience": None, "pull": None,
         "x_cisd": None, "x_newlow": None, "x_accept": None, "x_opp": None, "x_es": None, "x_vol": None,
-        "p_bos": None, "p_lvl": None, "p_be": None, "cut_counts": True}
+        "p_bos": None, "p_lvl": None, "p_be": None, "cut_counts": True, "cut_frac": None}
 
 
 # ================================================================================================ context (1m extras, ES)
@@ -123,6 +123,22 @@ class Ctx:
 
 
 _CTX = None
+_AT = TS.at_size
+
+
+def at_size(t, mi, mn, cum=0.0):
+    """TS.at_size with a partial cut: legs [(f, pts), (1 - f, pts)] -> int(q x f) micros out at the cut (min 0), the rest
+    at the final exit; commission on every micro once."""
+    legs = t["legs"]
+    if len(legs) == 1:
+        return _AT(t, mi, mn, cum)
+    q = mi + 10 * mn
+    q1 = int(q * legs[0][0] + 1e-9)
+    pts = (q1 * legs[0][1] + (q - q1) * legs[1][1]) / q
+    return _AT({**t, "legs": [(1.0, pts)]}, mi, mn, cum)
+
+
+TS.at_size = at_size
 
 
 def ctx():
@@ -287,6 +303,9 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
     touched = set()
     pend = None
     cutlvl = None
+    es_bad = False
+    cf = float(X.get("cut_frac") or 1.0) if on1 else 1.0
+    part = None                          # (fraction, points) of a partial cut
     k = fill
     exit_px = kind = None
     sl_d = cx.swing_low(d) if on1 else None
@@ -295,14 +314,21 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
         if B.day[k] != s_day or B.mod[k] >= 1080:
             k -= 1; exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
         if pend is not None:
-            exit_px, kind = float(o_d[k]) - SLIP, pend
-            break
+            if cf < 1.0 and part is None:
+                part = (cf, float(o_d[k]) - SLIP - entry, pend); pend = None
+            else:
+                exit_px, kind = float(o_d[k]) - SLIP, pend
+                break
         mae = max(mae, (entry - lo_d[k]) / risk)
         worst = min(worst, lo_d[k] - entry)
+        if cutlvl is not None and cutlvl[0] > cur and lo_d[k] <= cutlvl[0]:      # resting stop order above the stop: hit first
+            px = min(cutlvl[0], float(o_d[k])) - SLIP
+            if cf < 1.0 and part is None:
+                part = (cf, px - entry, cutlvl[1]); cutlvl = None
+            else:
+                exit_px, kind = px, cutlvl[1]; break
         if lo_d[k] <= cur:
             exit_px, kind = cur - SLIP, ("TRAIL" if cur > entry + 1e-9 or (cur > stop0 and not be_done) else "BE" if be_done else "STOP"); break
-        if cutlvl is not None and lo_d[k] <= cutlvl[0]:
-            exit_px, kind = min(cutlvl[0], float(o_d[k])) - SLIP, cutlvl[1]; break
         if not (k == fill and limit_fill):
             mfe = max(mfe, (hi_d[k] - entry) / risk)
             if hi_d[k] >= tg:
@@ -325,12 +351,13 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
             mins = (B.t[k] - B.t[fill]) / 60.0
             nxt_ok = k + 1 < B.n and B.day[k + 1] == s_day and B.mod[k + 1] < 1080
             sig = None
-            o = X["x_cisd"]
+            live_cut = part is None
+            o = X["x_cisd"] if live_cut else None
             if o and mfe < o["mfe"] and (o.get("win") is None or mins <= o["win"]) and k > hk:
                 cz = lit._cisd_level(c_m, o_m, hk)
                 if cz is not None and c_d[k] < -cz[0]:
                     sig = "CUT_CISD"
-            o = X["x_newlow"]
+            o = X["x_newlow"] if live_cut else None
             if o and sig is None and mfe < o["mfe"] and mins <= o["win"]:
                 ref = lo_d[fill] if o.get("ref", "fill") == "fill" else lo_d[kconf if kconf is not None else fill]
                 if o.get("how", "close") == "close":
@@ -338,12 +365,12 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
                         sig = "CUT_LOW"
                 else:
                     cutlvl = (ref - TICK, "CUT_LOW") if mins < o["win"] else None
-            o = X["x_accept"]
+            o = X["x_accept"] if live_cut else None
             if o and sig is None and sw_lvl is not None and mfe < o.get("mfe", 99):
                 n = int(o["k"])
                 if k - n + 1 >= fill and (c_d[k - n + 1:k + 1] < sw_lvl).all():
                     sig = "CUT_ACCEPT"
-            o = X["x_opp"]
+            o = X["x_opp"] if live_cut else None
             if o and sig is None and mfe < o["mfe"]:
                 js = [j for j in range(fill, k - 1) if sl_d[j]]
                 if js:
@@ -353,21 +380,28 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
                             sig = "CUT_HL"
                     else:
                         cutlvl = (lo_d[jl] - TICK, "CUT_HL")
-            o = X["x_es"]
-            if o and sig is None and es_ext is not None and mfe < o["mfe"] and (int(B.t[k]) + 60) % 300 == 0:
-                ie = int(np.searchsorted(cx.es_t, int(B.t[k]) - 240))
-                if ie < len(cx.es_t) and cx.es_t[ie] == int(B.t[k]) - 240 and cx.es_t[ie] >= int(B.t[fill]) // 300 * 300:
-                    eh, el, ec = cx.es_dir(d)
-                    v = el[ie] if o.get("how", "low") == "low" else ec[ie]
-                    if v < es_ext - TICK:
+            o = X["x_es"] if live_cut else None
+            if o and sig is None and es_ext is not None and mfe < o["mfe"]:
+                if not es_bad and (int(B.t[k]) + 60) % 300 == 0:
+                    ie = int(np.searchsorted(cx.es_t, int(B.t[k]) - 240))
+                    if ie < len(cx.es_t) and cx.es_t[ie] == int(B.t[k]) - 240 and cx.es_t[ie] >= int(B.t[fill]) // 300 * 300:
+                        eh, el, ec = cx.es_dir(d)
+                        v = el[ie] if o.get("how", "low") == "low" else ec[ie]
+                        if v < es_ext - TICK:
+                            es_bad = True
+                            if not o.get("cisd"):
+                                sig = "CUT_ES"
+                if es_bad and o.get("cisd") and sig is None and k > hk:
+                    cz = lit._cisd_level(c_m, o_m, hk)
+                    if cz is not None and c_d[k] < -cz[0]:
                         sig = "CUT_ES"
-            o = X["x_vol"]
+            o = X["x_vol"] if live_cut else None
             if o and sig is None and mfe < o["mfe"] and k > fill:
                 vr = cx.v1[k] / cx.vavg[k] if cx.vavg[k] and not np.isnan(cx.vavg[k]) else 0.0
                 if c_d[k] < o_d[k] and vr >= o["vol"] and (o_d[k] - c_d[k]) >= o["body"] * cx.atr1[k]:
                     sig = "CUT_VOL"
-            o = X["p_lvl"]
-            if o and sig is None and lv:
+            o = X["p_lvl"] if live_cut else None
+            if o and sig is None and (lv or "o00" in o.get("lv", ())):
                 for nm, L in lv:
                     if entry + o.get("min_r", 0.5) * risk <= L < tg and hi_d[k] >= L - o.get("tol", 0.0):
                         touched.add(nm)
@@ -396,17 +430,23 @@ def msim(X, z, entry_px, tgt_lvl, fb, stop0, use1):
             if sig is not None:
                 if nxt_ok:
                     pend = sig
+                elif cf < 1.0:
+                    pass                          # no next bar: the rest is closed by the day's end anyway
                 else:
                     exit_px, kind = float(c_d[k]) - SLIP, sig
                     break
         k += 1
     if exit_px is None:
         return None
+    legs = [(1.0, exit_px - entry)]
+    if part is not None:
+        legs = [(part[0], part[1]), (1.0 - part[0], exit_px - entry)]
+        kind = kind + "+" + part[2]
     xi5 = int(np.searchsorted(M.t, B.t[k], side="right") - 1)
     return {"day": z["day"], "entry_t": int(B.t[fill]), "exit_t": int(B.t[k]) + B.secs, "exit_i": xi5, "dir": d,
             "risk_pts": round(risk, 2), "risk0": round(risk, 2), "exit": kind, "trigger": "LIT-" + ("1m" if B.secs == 60 else "5m"),
             "mfe": round(mfe, 3), "mae": round(min(mae, 1.0 + SLIP / risk), 3), "bars_held": int(k - fill + 1), "regime": "",
-            "half": False, "legs": [(1.0, exit_px - entry)], "w1": worst, "w2": 0.0, "part": False, "e_m": e_m, "e_why": why,
+            "half": False, "legs": legs, "pts": sum(w * p for w, p in legs), "w1": worst, "w2": 0.0, "part": False, "e_m": e_m, "e_why": why,
             "entry_px": round(entry * d, 2), "stop_px": round(stop0 * d, 2), "target_px": round(tg * d, 2),
             "limit_fill": limit_fill, "swept": z["swept"], "tf": B.secs // 60, "i": z["i"], "ext_i": z["ext_i"]}
 
@@ -460,9 +500,9 @@ def mrun(X=None, sessions=S26):
 
 
 def is_stop(t, cut_counts=True):
-    if t["exit"] == "STOP":
+    if t["exit"].split("+")[0] == "STOP":
         return True
-    return cut_counts and t["exit"].startswith("CUT") and t["legs"][0][1] < 0
+    return cut_counts and t["exit"].startswith("CUT") and t["pts"] < 0
 
 
 def marks(U, cut_counts=True):
@@ -586,6 +626,31 @@ def variants(group):
         for fast in (5, 10, 15, 30):
             for alt in (None, 2.0):
                 V[f"p_be 1R within {fast}min -> BE at {alt}"] = {"p_be": {"fast": fast, "alt": alt}}
+    elif group == "more":
+        for lvs in (("o00",), ("o18", "o00", "box")):
+            for mr in (0.5, 1.0, 2.0):
+                V[f"p_lvl {'+'.join(lvs)} min {mr}R"] = {"p_lvl": {"lv": lvs, "min_r": mr}}
+        for mr in (1.5, 3.0):
+            V[f"p_lvl o18 min {mr}R"] = {"p_lvl": {"lv": ("o18",), "min_r": mr}}
+        for m in (0.25, 0.5, 0.75, 99):
+            for how in ("low", "close"):
+                for cz in (False, True):
+                    V[f"x_es {how} mfe<{m}{' + 1m CISD' if cz else ''}"] = {"x_es": {"mfe": m, "how": how, "cisd": cz}}
+        V["x_es close mfe<0.5 (cut not a stop)"] = {"x_es": {"mfe": 0.5, "how": "close"}, "cut_counts": False}
+        V["x_es low mfe<0.5 (cut not a stop)"] = {"x_es": {"mfe": 0.5, "how": "low"}, "cut_counts": False}
+        for f in (0.5,):
+            V[f"half-cut x_cisd mfe<0.25"] = {"x_cisd": {"mfe": 0.25, "win": None}, "cut_frac": f}
+            V[f"half-cut x_cisd mfe<0.5"] = {"x_cisd": {"mfe": 0.5, "win": None}, "cut_frac": f}
+            V[f"half-cut x_newlow conf 10min close"] = {"x_newlow": {"ref": "conf", "win": 10, "how": "close", "mfe": 0.5}, "cut_frac": f}
+            V[f"half-cut x_newlow conf 15min close"] = {"x_newlow": {"ref": "conf", "win": 15, "how": "close", "mfe": 0.5}, "cut_frac": f}
+            V[f"half-cut x_opp mfe<0.5 touch"] = {"x_opp": {"mfe": 0.5, "how": "touch"}, "cut_frac": f}
+            V[f"half-cut x_accept 3 closes mfe<0.5"] = {"x_accept": {"k": 3, "mfe": 0.5}, "cut_frac": f}
+            V[f"half-cut x_vol vol>=3 body>=0.5"] = {"x_vol": {"vol": 3.0, "body": 0.5, "mfe": 0.5}, "cut_frac": f}
+            V[f"half-cut x_es close mfe<0.5"] = {"x_es": {"mfe": 0.5, "how": "close"}, "cut_frac": f}
+            V[f"half-cut x_es low mfe<0.75"] = {"x_es": {"mfe": 0.75, "how": "low"}, "cut_frac": f}
+        V["x_es close 0.5 + p_lvl o18 2R"] = {"x_es": {"mfe": 0.5, "how": "close"}, "p_lvl": {"lv": ("o18",), "min_r": 2.0}}
+        V["x_es low 0.5 + p_lvl o18 1R"] = {"x_es": {"mfe": 0.5, "how": "low"}, "p_lvl": {"lv": ("o18",), "min_r": 1.0}}
+        V["x_es close 0.5 + p_lvl o18 1R"] = {"x_es": {"mfe": 0.5, "how": "close"}, "p_lvl": {"lv": ("o18",), "min_r": 1.0}}
     return V
 
 
@@ -644,15 +709,15 @@ def diag(names=None):
                 if b is None:
                     continue
                 q = Tq[(t["day"], t["entry_t"])]["micros"]
-                dd_ = (t["legs"][0][1] - b["legs"][0][1]) * PV * q
+                dd_ = (t["pts"] - b["pts"]) * PV * q
                 r["net_d"] += dd_
-                fired = t["exit"] != b["exit"] or abs(t["legs"][0][1] - b["legs"][0][1]) > 1e-6
+                fired = t["exit"] != b["exit"] or abs(t["pts"] - b["pts"]) > 1e-6
                 r["fires"] += fired
                 if b["exit"] == "STOP":
                     r["losers"] += 1
                     if fired:
                         r["losers_cut"] += 1; r["saved"] += dd_
-                elif b["legs"][0][1] > 0.5:
+                elif b["pts"] > 0.5:
                     r["winners"] += 1
                     if fired and dd_ < 0:
                         r["winners_killed"] += 1; r["lost"] += dd_

@@ -315,8 +315,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -56,
+    "pnl_diff_vs_model": -26,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -26,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      0
+     ],
+     "BE": [
+      34,
+      -20
+     ],
+     "TARGET": [
+      25,
+      -6
+     ],
+     "EOD": [
+      8,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.256,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -343,8 +365,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -498,
+    "pnl_diff_vs_model": -22,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -22,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      0
+     ],
+     "BE": [
+      29,
+      -20
+     ],
+     "TARGET": [
+      15,
+      -2
+     ],
+     "EOD": [
+      4,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.258,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -371,8 +415,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 442,
+    "pnl_diff_vs_model": -3,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -3,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      0
+     ],
+     "BE": [
+      5,
+      0
+     ],
+     "TARGET": [
+      10,
+      -3
+     ],
+     "EOD": [
+      4,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.25,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.25
@@ -554,8 +620,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -366,
+    "pnl_diff_vs_model": -336,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -336,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -96
+     ],
+     "BE": [
+      34,
+      -134
+     ],
+     "TARGET": [
+      25,
+      -88
+     ],
+     "EOD": [
+      8,
+      -18
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.256,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -582,8 +670,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -727,
+    "pnl_diff_vs_model": -251,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -251,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -58
+     ],
+     "BE": [
+      29,
+      -116
+     ],
+     "TARGET": [
+      15,
+      -65
+     ],
+     "EOD": [
+      4,
+      -12
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.258,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -610,8 +720,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 360,
+    "pnl_diff_vs_model": -85,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -85,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -38
+     ],
+     "BE": [
+      5,
+      -18
+     ],
+     "TARGET": [
+      10,
+      -23
+     ],
+     "EOD": [
+      4,
+      -6
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.25,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.25
@@ -793,8 +925,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -366,
+    "pnl_diff_vs_model": -336,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -336,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -96
+     ],
+     "BE": [
+      34,
+      -134
+     ],
+     "TARGET": [
+      25,
+      -88
+     ],
+     "EOD": [
+      8,
+      -18
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.256,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -821,8 +975,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -727,
+    "pnl_diff_vs_model": -251,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -251,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -58
+     ],
+     "BE": [
+      29,
+      -116
+     ],
+     "TARGET": [
+      15,
+      -65
+     ],
+     "EOD": [
+      4,
+      -12
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.258,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -849,8 +1025,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 360,
+    "pnl_diff_vs_model": -85,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -85,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -38
+     ],
+     "BE": [
+      5,
+      -18
+     ],
+     "TARGET": [
+      10,
+      -23
+     ],
+     "EOD": [
+      4,
+      -6
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.25,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.25
@@ -1032,8 +1230,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -546,
+    "pnl_diff_vs_model": -516,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -516,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -183
+     ],
+     "BE": [
+      34,
+      -227
+     ],
+     "TARGET": [
+      25,
+      -88
+     ],
+     "EOD": [
+      8,
+      -18
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.612,
     "stop_slip_pts_p90": 1.088,
     "stop_slip_pts_worst": 2.84
@@ -1060,8 +1280,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -857,
+    "pnl_diff_vs_model": -381,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -381,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -113
+     ],
+     "BE": [
+      29,
+      -191
+     ],
+     "TARGET": [
+      15,
+      -65
+     ],
+     "EOD": [
+      4,
+      -12
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.633,
     "stop_slip_pts_p90": 1.13,
     "stop_slip_pts_worst": 2.84
@@ -1088,8 +1330,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 310,
+    "pnl_diff_vs_model": -135,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -135,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -69
+     ],
+     "BE": [
+      5,
+      -36
+     ],
+     "TARGET": [
+      10,
+      -23
+     ],
+     "EOD": [
+      4,
+      -6
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -1271,8 +1535,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -450,
+    "pnl_diff_vs_model": -420,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -420,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -157
+     ],
+     "BE": [
+      34,
+      -197
+     ],
+     "TARGET": [
+      25,
+      -66
+     ],
+     "EOD": [
+      8,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.03,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.612,
     "stop_slip_pts_p90": 1.088,
     "stop_slip_pts_worst": 2.84
@@ -1299,8 +1585,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -787,
+    "pnl_diff_vs_model": -311,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -311,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -98
+     ],
+     "BE": [
+      29,
+      -165
+     ],
+     "TARGET": [
+      15,
+      -48
+     ],
+     "EOD": [
+      4,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.03,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.633,
     "stop_slip_pts_p90": 1.13,
     "stop_slip_pts_worst": 2.84
@@ -1327,8 +1635,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 337,
+    "pnl_diff_vs_model": -109,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -109,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -59
+     ],
+     "BE": [
+      5,
+      -32
+     ],
+     "TARGET": [
+      10,
+      -18
+     ],
+     "EOD": [
+      4,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.03,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -1497,8 +1827,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1233,
+    "pnl_diff_vs_model": -1203,
     "outcome_flips": 12,
+    "pnl_diff_vs_backtest": -1203,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      761
+     ],
+     "BE": [
+      34,
+      -1099
+     ],
+     "TARGET": [
+      25,
+      -878
+     ],
+     "EOD": [
+      8,
+      13
+     ]
+    },
+    "entry_slip_pts_sd": 7.49,
+    "entry_slip_abs_gt5": 47,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.755,
     "stop_slip_pts_p90": 1.182,
     "stop_slip_pts_worst": 13.38
@@ -1525,8 +1877,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -2050,
+    "pnl_diff_vs_model": -1575,
     "outcome_flips": 8,
+    "pnl_diff_vs_backtest": -1575,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      356
+     ],
+     "BE": [
+      29,
+      -1138
+     ],
+     "TARGET": [
+      15,
+      -759
+     ],
+     "EOD": [
+      4,
+      -33
+     ]
+    },
+    "entry_slip_pts_sd": 6.52,
+    "entry_slip_abs_gt5": 30,
+    "real_vs_planned_risk_max": 1.56,
     "stop_slip_pts_mean": 0.838,
     "stop_slip_pts_p90": 1.34,
     "stop_slip_pts_worst": 13.38
@@ -1553,8 +1927,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 818,
+    "pnl_diff_vs_model": 372,
     "outcome_flips": 4,
+    "pnl_diff_vs_backtest": 372,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      405
+     ],
+     "BE": [
+      5,
+      39
+     ],
+     "TARGET": [
+      10,
+      -119
+     ],
+     "EOD": [
+      4,
+      46
+     ]
+    },
+    "entry_slip_pts_sd": 8.86,
+    "entry_slip_abs_gt5": 17,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -1725,8 +2121,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -734,
+    "pnl_diff_vs_model": -703,
     "outcome_flips": 13,
+    "pnl_diff_vs_backtest": -703,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      761
+     ],
+     "BE": [
+      34,
+      -600
+     ],
+     "TARGET": [
+      25,
+      -878
+     ],
+     "EOD": [
+      8,
+      13
+     ]
+    },
+    "entry_slip_pts_sd": 7.49,
+    "entry_slip_abs_gt5": 47,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.612,
     "stop_slip_pts_p90": 1.088,
     "stop_slip_pts_worst": 2.84
@@ -1753,8 +2171,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1551,
+    "pnl_diff_vs_model": -1076,
     "outcome_flips": 9,
+    "pnl_diff_vs_backtest": -1076,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      356
+     ],
+     "BE": [
+      29,
+      -639
+     ],
+     "TARGET": [
+      15,
+      -759
+     ],
+     "EOD": [
+      4,
+      -33
+     ]
+    },
+    "entry_slip_pts_sd": 6.52,
+    "entry_slip_abs_gt5": 30,
+    "real_vs_planned_risk_max": 1.56,
     "stop_slip_pts_mean": 0.633,
     "stop_slip_pts_p90": 1.13,
     "stop_slip_pts_worst": 2.84
@@ -1781,8 +2221,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 818,
+    "pnl_diff_vs_model": 372,
     "outcome_flips": 4,
+    "pnl_diff_vs_backtest": 372,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      405
+     ],
+     "BE": [
+      5,
+      39
+     ],
+     "TARGET": [
+      10,
+      -119
+     ],
+     "EOD": [
+      4,
+      46
+     ]
+    },
+    "entry_slip_pts_sd": 8.86,
+    "entry_slip_abs_gt5": 17,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -1954,8 +2416,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -984,
+    "pnl_diff_vs_model": -954,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -954,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -113
+     ],
+     "BE": [
+      34,
+      -712
+     ],
+     "TARGET": [
+      25,
+      -105
+     ],
+     "EOD": [
+      8,
+      -24
+     ]
+    },
+    "entry_slip_pts_sd": 0.6,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
     "stop_slip_pts_mean": 0.755,
     "stop_slip_pts_p90": 1.182,
     "stop_slip_pts_worst": 13.38
@@ -1982,8 +2466,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1312,
+    "pnl_diff_vs_model": -836,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -836,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -91
+     ],
+     "BE": [
+      29,
+      -674
+     ],
+     "TARGET": [
+      15,
+      -90
+     ],
+     "EOD": [
+      4,
+      19
+     ]
+    },
+    "entry_slip_pts_sd": 0.55,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
     "stop_slip_pts_mean": 0.838,
     "stop_slip_pts_p90": 1.34,
     "stop_slip_pts_worst": 13.38
@@ -2010,8 +2516,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 328,
+    "pnl_diff_vs_model": -118,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -118,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -21
+     ],
+     "BE": [
+      5,
+      -37
+     ],
+     "TARGET": [
+      10,
+      -15
+     ],
+     "EOD": [
+      4,
+      -44
+     ]
+    },
+    "entry_slip_pts_sd": 0.68,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -2195,8 +2723,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1695,
+    "pnl_diff_vs_model": -1664,
     "outcome_flips": 12,
+    "pnl_diff_vs_backtest": -1664,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      562
+     ],
+     "BE": [
+      34,
+      -1302
+     ],
+     "TARGET": [
+      25,
+      -919
+     ],
+     "EOD": [
+      8,
+      -4
+     ]
+    },
+    "entry_slip_pts_sd": 7.49,
+    "entry_slip_abs_gt5": 47,
+    "real_vs_planned_risk_max": 1.66,
     "stop_slip_pts_mean": 1.291,
     "stop_slip_pts_p90": 2.362,
     "stop_slip_pts_worst": 13.62
@@ -2223,8 +2773,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -2381,
+    "pnl_diff_vs_model": -1906,
     "outcome_flips": 8,
+    "pnl_diff_vs_backtest": -1906,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      233
+     ],
+     "BE": [
+      29,
+      -1303
+     ],
+     "TARGET": [
+      15,
+      -791
+     ],
+     "EOD": [
+      4,
+      -45
+     ]
+    },
+    "entry_slip_pts_sd": 6.52,
+    "entry_slip_abs_gt5": 31,
+    "real_vs_planned_risk_max": 1.56,
     "stop_slip_pts_mean": 1.389,
     "stop_slip_pts_p90": 2.67,
     "stop_slip_pts_worst": 13.62
@@ -2251,8 +2823,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 687,
+    "pnl_diff_vs_model": 242,
     "outcome_flips": 4,
+    "pnl_diff_vs_backtest": 242,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      329
+     ],
+     "BE": [
+      5,
+      1
+     ],
+     "TARGET": [
+      10,
+      -129
+     ],
+     "EOD": [
+      4,
+      40
+     ]
+    },
+    "entry_slip_pts_sd": 8.86,
+    "entry_slip_abs_gt5": 16,
+    "real_vs_planned_risk_max": 1.66,
     "stop_slip_pts_mean": 1.061,
     "stop_slip_pts_p90": 1.91,
     "stop_slip_pts_worst": 2.88
@@ -2423,8 +3017,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1315,
+    "pnl_diff_vs_model": -1285,
     "outcome_flips": 12,
+    "pnl_diff_vs_backtest": -1285,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      761
+     ],
+     "BE": [
+      34,
+      -1099
+     ],
+     "TARGET": [
+      25,
+      -960
+     ],
+     "EOD": [
+      8,
+      13
+     ]
+    },
+    "entry_slip_pts_sd": 7.49,
+    "entry_slip_abs_gt5": 47,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.755,
     "stop_slip_pts_p90": 1.182,
     "stop_slip_pts_worst": 13.38
@@ -2451,8 +3067,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -2113,
+    "pnl_diff_vs_model": -1637,
     "outcome_flips": 8,
+    "pnl_diff_vs_backtest": -1637,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      356
+     ],
+     "BE": [
+      29,
+      -1138
+     ],
+     "TARGET": [
+      15,
+      -822
+     ],
+     "EOD": [
+      4,
+      -33
+     ]
+    },
+    "entry_slip_pts_sd": 6.52,
+    "entry_slip_abs_gt5": 30,
+    "real_vs_planned_risk_max": 1.56,
     "stop_slip_pts_mean": 0.838,
     "stop_slip_pts_p90": 1.34,
     "stop_slip_pts_worst": 13.38
@@ -2479,8 +3117,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 798,
+    "pnl_diff_vs_model": 352,
     "outcome_flips": 4,
+    "pnl_diff_vs_backtest": 352,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      405
+     ],
+     "BE": [
+      5,
+      39
+     ],
+     "TARGET": [
+      10,
+      -139
+     ],
+     "EOD": [
+      4,
+      46
+     ]
+    },
+    "entry_slip_pts_sd": 8.86,
+    "entry_slip_abs_gt5": 17,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -2653,8 +3313,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1067,
+    "pnl_diff_vs_model": -1036,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -1036,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -113
+     ],
+     "BE": [
+      34,
+      -712
+     ],
+     "TARGET": [
+      25,
+      -187
+     ],
+     "EOD": [
+      8,
+      -24
+     ]
+    },
+    "entry_slip_pts_sd": 0.6,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
     "stop_slip_pts_mean": 0.755,
     "stop_slip_pts_p90": 1.182,
     "stop_slip_pts_worst": 13.38
@@ -2681,8 +3363,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1374,
+    "pnl_diff_vs_model": -899,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -899,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -91
+     ],
+     "BE": [
+      29,
+      -674
+     ],
+     "TARGET": [
+      15,
+      -152
+     ],
+     "EOD": [
+      4,
+      19
+     ]
+    },
+    "entry_slip_pts_sd": 0.55,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
     "stop_slip_pts_mean": 0.838,
     "stop_slip_pts_p90": 1.34,
     "stop_slip_pts_worst": 13.38
@@ -2709,8 +3413,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 308,
+    "pnl_diff_vs_model": -138,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -138,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -21
+     ],
+     "BE": [
+      5,
+      -37
+     ],
+     "TARGET": [
+      10,
+      -35
+     ],
+     "EOD": [
+      4,
+      -44
+     ]
+    },
+    "entry_slip_pts_sd": 0.68,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44

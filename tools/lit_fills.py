@@ -154,6 +154,7 @@ def lit_fills_params(cfg):
 # ------------------------------------------------------------------------------------------------ diagnostics
 def diag(T, spans=("2026", "H1", "H2")):
     out = {}
+    base = {t["day"]: t for t in run("base")}
     for s in spans:
         a, z = F.SPAN[s]
         X = [t for t in T if a <= t["day"] <= z]
@@ -171,7 +172,16 @@ def diag(T, spans=("2026", "H1", "H2")):
              "exits_model": dict(collections.Counter(t["exit_model_kind"] for t in R)),
              "model_targets": len(tg_m), "model_targets_missed_by_limit": sum(1 for t in tg_m if t["exit"] != "TARGET"),
              "pnl_diff_vs_model": round(sum(t["pnl"] - t["pnl_model"] for t in R)),
-             "outcome_flips": sum(1 for t in R if (t["pnl"] > 0) != (t["pnl_model"] > 0))}
+             "outcome_flips": sum(1 for t in R if (t["pnl"] > 0) != (t["pnl_model"] > 0)),
+             "pnl_diff_vs_backtest": round(sum(t["pnl"] - base[t["day"]]["pnl"] for t in R if t["day"] in base)),
+             "diff_by_exit": {}}
+        for kd in ("STOP", "BE", "TARGET", "EOD"):
+            Z = [t for t in R if t["day"] in base and base[t["day"]]["exit"] == kd]
+            d["diff_by_exit"][kd] = [len(Z), round(sum(t["pnl"] - base[t["day"]]["pnl"] for t in Z))]
+        s_ = np.array([t["slip_entry_pts"] for t in R])
+        d["entry_slip_pts_sd"] = round(float(s_.std()), 2)
+        d["entry_slip_abs_gt5"] = int((np.abs(s_) > 5).sum())
+        d["real_vs_planned_risk_max"] = round(float(max((t["risk_pts"] + t["slip_entry_pts"]) / t["risk_pts"] for t in R)), 2)
         st = [t for t in R if t["exit"] in ("STOP", "BE")]
         if st:
             sl = [(t["stop_px"] - t["exit_px"]) * t["dir"] if t["exit"] == "STOP" else (t["entry_model"] - t["exit_px"]) * t["dir"]

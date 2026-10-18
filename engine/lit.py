@@ -915,6 +915,8 @@ def scale_trade(t, m):
     x = dict(t)
     x.update(qty=q, pnl=round(per * q - cm * q, 2), risk_usd=round(t["risk_usd"] * f, 2), half=f < 1, mult=round(f, 3),
              low=round(t["low"] * f, 2))
+    if "pnl_model" in t:                 # realistic-fill trades: the model's own P&L at the same size ($1.40 commission)
+        x["pnl_model"] = round((t["pnl_model"] + COMM * q0) / q0 * q - COMM * q, 2)
     return x
 
 
