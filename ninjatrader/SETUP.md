@@ -77,13 +77,18 @@ against verbatim copies of the Help Guide pages (see Sources). Open the official
 1. Copy `ninjatrader\LE_BarFeed.cs` from the repo into `Documents\NinjaTrader 8\bin\Custom\Indicators\`.
 2. Control Center > **New > NinjaScript Editor** > Indicators > double-click **LE_BarFeed** > press **F5** (compile).
    A message at the bottom says whether it compiled. The editor adds a block called "NinjaScript generated code" at
-   the end of the file. That is normal.
+   the end of the file. That is normal. If the bottom panel lists errors, check which file each one names: an error
+   in another script (any file other than `LE_BarFeed.cs`) also stops the compile. Send a photo of the error list.
 3. **New > Chart**: instrument **MNQ 12-26** (the front month; the bot uses the same one), Type **Minute**,
    Value **5**, **Days to load 30**, Trading hours **CME US Index Futures ETH** (the default for MNQ; RTH-only bars
    would miss the overnight pools and every London trade). Then right-click the chart > **Indicators** >
    **LE_BarFeed** > Add. In its settings leave **Also write 1-minute bars** ticked (the default) > OK.
    This one chart is all you need: the indicator adds a 1-minute series of the same instrument by itself (you do not
-   see it on the chart) and writes it to a second file.
+   see it on the chart) and writes it to a second file. (It always loads that 1-minute series, even with the box
+   unticked; unticked it just does not write the file.)
+   To see that it works: Control Center > **New > NinjaScript Output**. After the chart has loaded it shows
+   `LE_BarFeed: 8000 bars written to ...MNQ_5m.csv` and `LE_BarFeed: 20000 bars written to ...MNQ_1m.csv`
+   (fewer bars at first is fine).
 4. Do **not** add LE_BarFeed to a separate 1-minute MNQ chart as well: two writers on `MNQ_1m.csv` would fight. (If you
    ever want a 1-minute chart with LE_BarFeed for something else, untick "Also write 1-minute bars" on the 5-minute
    one.)
@@ -111,8 +116,12 @@ every poll (the 5-minute file for the setups, the 1-minute file for LIT's entry)
 
 ES bars (the partner market) come from Yahoo unless you also put LE_BarFeed on an MES 5-minute chart.
 
-**If it does not compile.** NinjaScript cannot be compiled outside NinjaTrader. It was compiled here only against
-stand-ins for the NinjaTrader parts, and it compiled and ran. Check these lines first:
+**If it does not compile.** NinjaScript cannot be compiled outside NinjaTrader. It was compiled here (2026-10-18)
+against stand-ins for the NinjaTrader parts with the Help Guide's signatures, together with the editor's
+"generated code" block and NinjaTrader's standard `using` lines, as C# 5 (the oldest compiler any NinjaTrader 8
+has used): no errors, no warnings. A test then ran it through every chart state with 13 days of 5- and 1-minute
+bars across both daylight-saving changes and with NinjaTrader set to New York, Chicago, Berlin and UTC time: the files
+held exactly the right bars, and the bot's own reader accepted them. Check these lines first:
 
 - `NinjaTrader.Core.Globals.GeneralOptions.TimeZoneInfo`: NinjaTrader's display time zone **[doc: "Application
   TimeZoneInfo"]**. Only if this line errors, replace it with `TimeZoneInfo.Local`. That is correct only while
