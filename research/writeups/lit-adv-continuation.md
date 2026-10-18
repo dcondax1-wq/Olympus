@@ -3,8 +3,8 @@ title: LIT advanced report ch2-4 - thesis boundary, session carryover, weak reac
 family: other
 date: 2026-10-18
 status: rejected
-summary: The owner's LIT Advanced Decisions Report (chapters 2-4, experiment 4 of chapter 13) and his LIT group's session / Smart Money Trap / inducement notes became 170 variants on the 2026 LIT path, each picked on Jan-Jun and checked on Jul-Oct, under the live two-week eval sizing. Nothing is adopted. Four variants improve both halves; three are lone points whose neighbours fail, and the best one (skip a sweep made by one huge 5m bar with no pause before it) changes only 2 trades per half. The session rules (Asia direction carries into London, London into NY, no inducement before NY) and the Smart Money Trap (untaken liquidity right beside the zone) all cost money or eval passes in at least one half. Carrying Asia theses into the 02:00 order window helps Jul-Oct and hurts Jan-Jun. LIT live stays as it is. Paper only.
-runs: lit_adv_base, lit_adv_forceful_bar_2_5_atr_without_a_pause_6_bar_range, lit_adv_forceful_bar_2_0_atr_without_a_pause_6_bar_range, lit_adv_own_smt_trap_half_when_an_unbroken_15m_swing_sits, lit_adv_on_the_way_untaken_major_level_2_0_atr_beyond_t, lit_adv_bos15_half_intact, lit_adv_carry_pre_02_00_theses_from_18_00, lit_adv_own_sessions_combined_half_setups_against_asia_lo
+summary: The owner's LIT Advanced Decisions Report (chapters 2-4, experiment 4 of chapter 13) and his LIT group's session / Smart Money Trap / inducement notes became 176 variants on the 2026 LIT path, each picked on Jan-Jun and checked on Jul-Oct, under the live two-week eval sizing. Nothing is adopted. Four variants improve both halves; three are lone points whose neighbours fail, and the best one (skip a sweep made by one huge 5m bar with no pause before it) changes only 2 trades per half. The session rules (Asia direction carries into London, London into NY, no inducement before NY) and the Smart Money Trap (untaken liquidity right beside the zone) all cost money or eval passes in at least one half. Carrying Asia theses into the 02:00 order window helps Jul-Oct and hurts Jan-Jun. LIT live stays as it is. Paper only.
+runs: lit_adv_base, lit_adv_forceful_bar_2_5_atr_without_a_pause_6_bar_range, lit_adv_forceful_bar_2_0_atr_without_a_pause_6_bar_range, lit_adv_own_smt_trap_half_when_an_unbroken_15m_swing_sit, lit_adv_on_the_way_untaken_major_level_2_0_atr_beyond_th, lit_adv_bos15_half_intact, lit_adv_bos1h_half_broken, lit_adv_rng24_skip_broken, lit_adv_boundary_preserving_target_the_next_pool_when_bo, lit_adv_continuation_trades_internal_15m_sweep_bos1h_int, lit_adv_carry_pre_02_00_theses_from_18_00, lit_adv_carry_pre_02_00_theses_from_18_00_unmitigated_on, lit_adv_re_arm_an_expired_untapped_limit_at_the_next_ope, lit_adv_trap_skip_completed_traps_reaction_1_0_atr, lit_adv_pass_through_half, lit_adv_es_same_level_skip_nq_only, lit_adv_es_has_not_shifted_own_5m_cisd_by_nq_s_trigger_s, lit_adv_own_asia_idm_london_pre_ny_continue_half_london_, lit_adv_own_london_idm_ny_continues_half_ny_08_00_setups, lit_adv_own_no_idm_before_ny_half_ny_setups_on_days_with, lit_adv_own_sessions_combined_half_setups_against_asia_l, lit_adv_own2_idm_speed_half_when_the_inducement_swing_is, lit_adv_own2_hierarchy_half_when_only_a_minor_level_buil, lit_adv_own2_session_open_half_unless_the_sweep_extreme_, lit_adv_own2_continuation_reversal_idm_half_setups_that_
 ---
 
 ## In one minute
@@ -16,7 +16,7 @@ runs: lit_adv_base, lit_adv_forceful_bar_2_5_atr_without_a_pause_6_bar_range, li
   - A rule counts as better only if the **2-week eval pass rate AND the money** both go up in both halves, at 2-4 trades
     a week.
   - Sizing is the live **two_week** mode ("one winner passes", `engine/sizing.py`). Costs are in.
-- **Result: nothing is adopted.** 170 variants; 4 improve both halves.
+- **Result: nothing is adopted.** 176 variants; 4 improve both halves.
   - **"Skip a sweep made by one huge bar with no pause before it"** (Gadd's "a timed forceful sweep can be continuation").
     The 2-week pass rate goes 52.9% → 53.8% in H1 and **50.7% → 65.2% in H2**. Net: H1 +$1.9k, H2 +$2.5k.
     - But it changes only **2 trades in each half**.
@@ -93,11 +93,11 @@ is listed, plus every variant that improved both halves.
 | Owner tip: session opens, half unless the sweep came within 30 min of an open | 80 · 3.12 | 14.3 / 1.7 | +11,856 | 40 · 2.56 | 27.5 / 0.0 | +8,053 | 1.94 | +18,195 / +5,367 | | worse |
 | Owner tip: continuation / reversal inducement only, half the rest | 80 · 3.12 | 47.1 / 7.6 | +25,556 | 40 · 2.56 | 50.7 / 2.9 | +7,323 | 1.61 | +27,042 / +6,919 | | worse |
 
-Counts over all 170 variants:
+Counts over all 176 variants:
 - 4 improve both halves (all above);
-- about 30 improve H2 only;
-- about 7 improve H1 only;
-- the rest are worse or unchanged.
+- 25 improve H2 only;
+- 5 improve H1 only;
+- 137 are worse and 5 change nothing.
 
 Every row with all its columns (win %, 1-month odds, unit R per candidate, 2021-25) is in `adv_cont_results.json`.
 
@@ -165,6 +165,9 @@ Every row with all its columns (win %, 1-month odds, unit R per candidate, 2021-
   - The *pause* itself (the 6 bars before the sweep span at most 1.5 ATR) is the opposite of Gadd's preference on NQ.
     Those setups make −0.05 R (H1) and +0.07 R (H2) per candidate, against +0.33 / +0.30 for the rest. The post-hoc test
     is below.
+  - **Post-hoc test, not a pick:** skipping or halving the paused setups (≤ 1.0 / 1.5 / 2.0 ATR) never improves both
+    halves. At 1.5 ATR the H2 2-week pass rate drops 50.7% → 40.6%. At 1.0 ATR nothing changes. So the pause is not a rule
+    either way.
   - Adding "timed" (first 15 minutes of an open) made it worse.
 - **"On the way" to a farther level:** skipping when an untaken major level sits within 2 ATR beyond the extreme helps
   money in both halves. But it triples the H2 fail rate and the nearer distances are worse.
