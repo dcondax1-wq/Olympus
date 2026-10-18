@@ -566,6 +566,39 @@ class LiveBot:
         self._route({"sym": sym, "side": "modify", "qty": self._open_qty or pos.get("qty"), "stop": new, "reason": reason,
                      "entry_t": et_})
 
+    def _learn_es(self, sym, tf, now, secs):
+        """ES 5m bars for the learning loop's ES features, fetched at most every 5 minutes; None when unavailable."""
+        c = getattr(self, "_es_cache", None)
+        if c and now - c[0] < 300:
+            return c[1]
+        es = None
+        if PARTNER.get(sym) in YAHOO:
+            keep = dict(self.health)
+            try:
+                es, _ = self._merged(PARTNER[sym], tf, now, secs)
+            except Exception as e:
+                self._note_error(f"partner {PARTNER.get(sym)} unavailable (learning features): {e}")
+            self.health.clear(); self.health.update(keep)
+        self._es_cache = (now, es)
+        return es
+
+    def _journal(self, tr, qty):
+        """The LIT learning loop's journal (engine/lit_learn.py): one record per routed LIT exit, source "pc", with the
+        routed micros and $ (the real bot only; test harnesses run with their own state_path). Never raises into routing."""
+        if self.state_path != STATE_PATH or (self.state or {}).get("model") != "lit":
+            return
+        try:
+            from . import lit_learn
+            lr = tr.get("learn") or {}
+            pnl = round(tr["pnl"] * qty / tr["qty"], 2) if tr.get("qty") else tr["pnl"]
+            rec = lit_learn.record(tr, "pc", f=lr.get("f"), post=tr.get("post"), qty=qty, pnl=pnl,
+                                   learn=getattr(self, "_learn_at", {}).get(tr["entry_t"]))
+            if lit_learn.append_journal([rec]):
+                self._log("system", f"Learning journal: {rec['exit']} {rec['r']:+.2f}R"
+                                    + (f", cause {rec['cause']}" if rec.get("cause") else ""))
+        except Exception as e:
+            self._note_error(f"learning journal failed: {e}")
+
     def _remember(self, tr, sym, note=None):
         """Persistent trade memory (engine/memory.py): store a completed routed trade. Never raises into routing.
         Source: 'live' only for a real-money adapter (Tradovate env=live, TradersPost); paper and demo are 'paper'."""
@@ -722,7 +755,8 @@ class LiveBot:
             # forming / early: an entry is decided the moment its 1m CISD candle closes and routed at market at once
             # (state "enter_now"), sized from the forming 1m bar's open when the feed shows it (research/writeups/lit-live-fills.md)
             res = lit_live.run(df_full, lit_p, one_min=df1, now=now, sym=sym, week_hist=self.lit_week_hist(),
-                               forming=self._forming.get((sym, 60)) if df1 is not None else None, early=True)
+                               forming=self._forming.get((sym, 60)) if df1 is not None else None, early=True,
+                               learn=True, es_df=self._learn_es(sym, tf, now, secs))   # learning loop (engine/lit_learn.py)
             last1 = int(df1["time"].max()) if df1 is not None and len(df1) else None
             self.health["last_1m_bar_t"] = last1
             self.health["bar_1m_behind"] = bool(last1 is not None and mopen and last1 + 60 < now - now % 60)
@@ -986,6 +1020,10 @@ class LiveBot:
                 mode = (lsz or {}).get("mode")
                 room = self.eval_room() if mode in ("safe_eval", "eval", "two_week") else None
                 r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room, state=self.eval_state() if mode == "two_week" else None)
+                if r.get("learn"):             # the learning loop's multiplier at this entry (applied, or would-be in observe)
+                    if not hasattr(self, "_learn_at"):
+                        self._learn_at = {}
+                    self._learn_at[entry_t] = {k: r["learn"].get(k) for k in ("mode", "mult", "would", "skip", "would_skip", "buckets")}
                 if r.get("fallback"):
                     self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET sizing: {r['fallback']}")
             else:
@@ -1116,6 +1154,7 @@ class LiveBot:
                                  "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})
                 if routed:
                     self._remember(tr, sym)      # every completed routed trade feeds the persistent memory
+                    self._journal(tr, qty)       # and the LIT learning loop's journal (data/lit_journal.jsonl)
                     self._push_outcome(tr, qty, sym)
 
     # ------------------------------------------------------------------ phone notifications (engine/push.py, Web Push)

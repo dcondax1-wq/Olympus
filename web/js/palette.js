@@ -5,13 +5,13 @@ import { go, run } from './app.js';
 
 // built-in glossary so the palette explains terms even when the server is unreachable; /api/extras/glossary replaces it
 let GLOSS = [
-  { term: 'IFVG', name: 'Inversion fair value gap', short: 'A fair value gap that price closes through, flipping it from support to resistance (or back). The bot\'s entry trigger after a sweep.', long: 'A fair value gap is a three-candle imbalance. When price later closes completely through it, the gap inverts: a bullish FVG that was support becomes resistance. After a liquidity sweep, the first IFVG that closes back inside the range confirms the reversal and sets the entry zone.' },
+  { term: 'IFVG', name: 'Inversion fair value gap', short: 'A fair value gap that price closes through, flipping it from support to resistance (or back). The previous strategy\'s entry trigger (Archive); LIT enters on a CISD.', long: 'A fair value gap is a three-candle imbalance. When price later closes completely through it, the gap inverts: a bullish FVG that was support becomes resistance. After a liquidity sweep, the first IFVG that closes back inside the range confirms the reversal and sets the entry zone.' },
   { term: 'CISD', name: 'Change in state of delivery', short: 'A close through the opening price of the last opposing candle series. The fallback trigger when the reversal leg has no FVG.', long: 'After a sweep, a close through the open of the first candle of the raid means the market stopped delivering in the raid direction. Used only when the leg printed no fair value gap to invert.' },
   { term: 'Sweep', name: 'Liquidity sweep / raid', short: 'Price trades through a resting pool of stops (a prior high or low) and fails to continue. Nothing is armed until a pool has been swept.', long: 'Buy stops rest above highs (BSL), sell stops below lows (SSL). A sweep fills them and reverses. The sweep extreme becomes the protected point: the reversal is valid only while price stays on the right side of it.' },
   { term: 'DOL', name: 'Draw on liquidity', short: 'The pool price is most likely heading to next; the bot\'s profit target.', long: 'After a sweep on one side the market usually rotates to untaken liquidity on the other side. The bot targets the next quality pool and skips the trade if it is closer than the minimum R.' },
   { term: 'LRL / HRL', name: 'Low / high resistance liquidity', short: 'LRL is a clean, untested level that price slices through easily; HRL has been defended before and takes more effort to break.', long: 'A raid through a high-resistance level is more likely to be a true sweep and reverse. Pool quality feeds the confluence score through w_lrl.' },
   { term: 'Giveback', name: 'Giveback exit rule', short: 'Once a trade reached +0.5R and then closes back below entry, the bot exits instead of waiting for the full stop.', long: 'Reaching +0.5R and surrendering the whole move is the signature of a failed reversal. Leaving at the first close back through entry turns a -1R loser into roughly a scratch. The only exit signal that improved every tested period.' },
-  { term: 'Killzone', name: 'Killzone', short: 'High-volume windows: London 02:00-05:00, NY AM 09:30-11:30, NY PM 13:30-15:30 ET.', long: 'Entries are only allowed inside the configured entry windows. Sweeps from 08:00 ET can arm a setup for the killzone.' },
+  { term: 'Entry window', name: 'LIT entry window', short: 'LIT enters only 02:00-15:30 ET and is flat by 15:55. Most 2026 trades entered 02:00-08:00.', long: 'The previous strategy (Archive) traded two killzones; LIT trades one window from the Frankfurt hour to 15:30, 1 trade a day.' },
   { term: 'MLL', name: 'Trailing maximum loss limit', short: 'The prop-firm drawdown line: trails end-of-day balance highs by $2,000 and locks at start + $100.', long: 'The account fails if balance or intraday low touches the line. The Command Center shows the cushion above it.' },
   { term: 'Premium / discount', name: 'Premium and discount', short: 'Where price sits in the 1H dealing range: above the midpoint is premium (favour shorts), below is discount (favour longs).', long: 'Longs score higher when the sweep lands in discount, shorts in premium. The edge held on both sides of the split in NQ and ES.' },
 ];
@@ -108,7 +108,7 @@ function renderList() {
   sel = Math.min(sel, Math.max(0, filtered.length - 1));
   const list = $('#cpList');
   if (!list) return;
-  if (!filtered.length) { list.innerHTML = '<div class="cp-empty">Nothing matches. Try a page name, "run", "kill" or "explain ifvg".</div>'; return; }
+  if (!filtered.length) { list.innerHTML = '<div class="cp-empty">Nothing matches. Try a page name, "run", "kill" or "explain cisd".</div>'; return; }
   let lastKind = null, html = '';
   filtered.forEach((x, i) => {
     if (x.it.kind !== lastKind) { html += `<div class="cp-sec">${{ page: 'Go to', action: 'Actions', widget: 'Widgets on this page', explain: 'Glossary' }[x.it.kind]}</div>`; lastKind = x.it.kind; }
@@ -159,7 +159,7 @@ export function initPalette() {
   const st = document.createElement('style'); st.id = 'cpStyle'; st.textContent = CSS; document.head.appendChild(st);
   const ov = document.createElement('div'); ov.id = 'cpOverlay';
   ov.innerHTML = `<div class="cp" role="dialog" aria-label="Command palette">
-      <div class="cp-in"><i>⌘</i><input id="cpInput" placeholder="Jump to a page, run an action, or type “explain ifvg”…" autocomplete="off" spellcheck="false"><kbd>esc</kbd></div>
+      <div class="cp-in"><i>⌘</i><input id="cpInput" placeholder="Jump to a page, run an action, or type “explain cisd”…" autocomplete="off" spellcheck="false"><kbd>esc</kbd></div>
       <div id="cpBody"></div>
       <div class="cp-foot"><span>↑↓ navigate</span><span>↵ select</span><span>ctrl+K or / to open</span></div></div>`;
   document.body.appendChild(ov);

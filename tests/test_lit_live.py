@@ -6,6 +6,8 @@ backtest (tools/lit_final.py run = engine/lit.py run_x on the whole history), on
     python -X utf8 -m tests.test_lit_live --w20        # also: the engine's plain 20-day window (shows why LIT needs more)
     python -X utf8 -m tests.test_lit_live --days --bot  # day-end replay + the LiveBot (paper) check only
     python -X utf8 -m tests.test_lit_live --final       # the lit_final params instead of live_model.json "lit" (loss pack on)
+    python -X utf8 -m tests.test_lit_live --days --nobot --phantom=4   # + minute polls on 4 sessions without a trade
+    python -X utf8 -m tests.test_lit_live --only=2026-01-02,2026-04-29  # intraday polls on these trade days only
     python -X utf8 -m tests.test_lit_live --days --bot --bot-sessions=2026-10-06,2026-10-07,2026-10-08
                                                         # the LiveBot on a weekly-stop week (2 stop-outs, then half size)
 
@@ -15,7 +17,9 @@ backtest (tools/lit_final.py run = engine/lit.py run_x on the whole history), on
 2. Intraday polls: on every 2026 trade day, a poll at every 5m close from 01:55 ET until 10 min after the exit, plus a
    poll every minute from 10 min before the entry to 5 min after it (the 1m bars of the forming 5m bar are visible).
    Every open position and finished trade the adapter shows must be the backtest's; reports the delay from the entry
-   to the first poll that shows it.
+   to the first poll that shows it. Polls run like the PC bot (early mode, the forming 1m bar's open shown): an entry
+   decided on the 1m CISD close ("enter_now", routed at market at once) must be the backtest's trade too (entry, stop,
+   target, micros); the same poll without the forming bar's open reports how often the estimate would size differently.
 3. LiveBot: engine/live.py itself (PaperAdapter, frozen clock, bars revealed as they close, raw 1m file read like a feed) on
    three October sessions: every backtest trade must be routed once (side, micros, stop, target) and exited once (reason, $).
 Results -> research/lit/live_check.json. One process.
@@ -292,6 +296,25 @@ def main():
               f"{enter['match']} identical to the backtest trade); without the forming bar's open (sized from the CISD close): "
               f"{len(enter['est_qty_differs'])}/{enter['est_days']} days route other micros, {enter['est_target_differs']} another "
               f"target", flush=True)
+    # ---- 2b. --phantom=N: N sessions WITHOUT a backtest trade, a poll every minute 01:55-15:35 ET (the early mode adds the
+    # forming 5m bar; nothing it shows may ever become a position, an entry to route or a trade on such a day)
+    ph = next((int(a.split("=", 1)[1]) for a in sys.argv if a.startswith("--phantom=")), 0)
+    if ph:
+        t0 = time.time()
+        quiet = [d for d in sess if d not in by_day]
+        pick = [quiet[int(i)] for i in np.linspace(0, len(quiet) - 1, ph)] if len(quiet) >= ph else quiet
+        n_p, ph_bad, ph_pending = 0, [], 0
+        for d in pick:
+            for now in range(at(d, 1, 55), at(d, 15, 35) + 1, 60):
+                n_p += 1
+                st = poll(now)
+                if st["state"].get("position") or st["state"].get("enter_now") or any(t["day"] == d for t in st["trades"]):
+                    ph_bad.append({"day": d, "now": now, "state": st["state"].get("model_state")})
+                ph_pending += bool(st["state"].get("setups"))
+        out["phantom"] = {"days": pick, "polls": n_p, "bad": ph_bad[:20], "n_bad": len(ph_bad), "polls_with_a_working_setup": ph_pending,
+                          "seconds": round(time.time() - t0)}
+        print(f"phantom check: {n_p} minute polls on {len(pick)} sessions without a trade {pick}: {len(ph_bad)} positions / entries / "
+              f"trades shown (setups armed on {ph_pending} polls) in {out['phantom']['seconds']}s", flush=True)
     # ---- 3. the PC paper bot itself (engine/live.py LiveBot + PaperAdapter) on LIT, fed bar by bar
     if "--bot" in sys.argv or ("--days" not in sys.argv and "--nobot" not in sys.argv):
         bs = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--bot-sessions=")), None)
@@ -305,7 +328,8 @@ def main():
     with open(OUT, "w", encoding="utf-8") as fh:
         json.dump(out, fh, indent=1, default=str)
     ok = out["day_end"]["matched_exits_and_pnl"] == len(REF) and not out["day_end"]["n_extra"] and \
-        (not out.get("intraday") or not out["intraday"]["n_differences"]) and (not out.get("bot") or out["bot"]["ok"])
+        (not out.get("intraday") or not out["intraday"]["n_differences"]) and (not out.get("bot") or out["bot"]["ok"]) and \
+        (not out.get("phantom") or not out["phantom"]["n_bad"])
     print("OK" if ok else "DIFFERENCES (see research/lit/live_check.json)")
     sys.exit(0 if ok else 1)
 

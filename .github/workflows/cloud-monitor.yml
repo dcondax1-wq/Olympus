@@ -12,10 +12,15 @@ name: cloud-monitor
 on:
   schedule:
     - cron: "2,32 6-21 * * 1-5"      # UTC, half-hourly; covers 02:00-16:25 ET in summer (EDT) and winter (EST) time (LIT trades London); ~32 jobs a day, ~2 of them exit at the guard
+    - cron: "47 21 * * 0"            # Sunday ~17:47 ET: the learning loop's weekly review (engine/lit_learn.py); Monday's first run catches up if it is skipped
   workflow_dispatch:
     inputs:
       push_test:
         description: "Send a test notification to the phone app"
+        type: boolean
+        default: false
+      learn_review:
+        description: "Run the learning loop's review now (normally every Sunday)"
         type: boolean
         default: false
 
@@ -37,6 +42,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "go=1" >> "$GITHUB_OUTPUT"; exit 0; fi
           dow=$(TZ=America/New_York date +%u); h=$(TZ=America/New_York date +%-H); m=$(TZ=America/New_York date +%-M)
           mod=$((h*60+m)); go=0
+          if [ "${{ github.event.schedule }}" = "47 21 * * 0" ]; then go=1; fi   # Sunday: the learning loop's weekly review
           if [ "$dow" -le 5 ]; then
             # LIT (live_model.json since 2026-10-18) enters 02:00-15:30 ET, mostly London: half-hourly from 02:00 keeps the
             # run count (~30 a day) and the free Actions minutes where they were with the old 15-min killzone cadence
@@ -62,6 +68,8 @@ jobs:
             /live_model_lit.json
             /data/VIX_1d.csv
             /data/VXN_1d.csv
+            /data/lit_journal.jsonl
+            /data/lit_learning.json
             /requirements-cloud.txt
             /research/lab/backtest_live.json
             /research/lab/replays.json
@@ -109,6 +117,9 @@ jobs:
             git show FETCH_HEAD:state.json > dash/state.json 2>/dev/null || rm -f dash/state.json
             git show FETCH_HEAD:shadow_ledger.json > dash/shadow_ledger.json 2>/dev/null || rm -f dash/shadow_ledger.json
             git show FETCH_HEAD:bars_1m.csv > dash/bars_1m.csv 2>/dev/null || rm -f dash/bars_1m.csv     # LIT 1m bars (12 days)
+            # the learning loop (engine/lit_learn.py): the append-only trade journal and the learned knobs / decisions log
+            git show FETCH_HEAD:lit_journal.jsonl > dash/lit_journal.jsonl 2>/dev/null || rm -f dash/lit_journal.jsonl
+            git show FETCH_HEAD:lit_learning.json > dash/lit_learning.json 2>/dev/null || rm -f dash/lit_learning.json
           fi
 
       - name: Run paper monitor
@@ -120,6 +131,7 @@ jobs:
           LE_PUSH_SUBS_2: ${{ secrets.LE_PUSH_SUBS_2 }}
           LE_PUSH_SUBS_3: ${{ secrets.LE_PUSH_SUBS_3 }}
           LE_PUSH_TEST: ${{ github.event_name == 'workflow_dispatch' && inputs.push_test && '1' || '' }}
+          LE_LEARN_REVIEW: ${{ github.event_name == 'workflow_dispatch' && inputs.learn_review && '1' || '' }}
           LE_PUSH_EXTRA: ${{ vars.LE_PUSH_EXTRA }}
           LE_ALERTS_CHAT: ${{ vars.LE_ALERTS_CHAT }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}

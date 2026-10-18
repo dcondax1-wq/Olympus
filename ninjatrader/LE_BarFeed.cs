@@ -6,6 +6,9 @@
 // same instrument to a second file in the same folder and format:
 //     Documents\NinjaTrader 8\le_feed\<ROOT>_1m.csv            e.g. MNQ_1m.csv   (LIT enters on 1-minute bars)
 // one line per bar:  time,open,high,low,close,volume   with time = the bar's OPEN time in unix seconds (UTC).
+// It also keeps ONE line in <ROOT>_1m_open.csv: "time,open" of the minute that has just started (its first trade), rewritten
+// once a minute. LIT decides an entry when its 1-minute CISD candle closes and sends a market order at once; the bot sizes
+// that order from this open, the price the backtest fills at (research/writeups/lit-live-fills.md).
 // The Python bot (engine/ninjatrader.py, data_source "ninjatrader") reads these files instead of Yahoo, so it trades on
 // the same real CME bars NinjaTrader shows.
 //
@@ -18,7 +21,7 @@
 // Use: ONE MNQ 5-minute chart, Trading hours "CME US Index Futures ETH", 30 days loaded: it writes MNQ_5m.csv and
 // MNQ_1m.csv (the 1-minute series is added by the indicator itself). Do not also run it on a separate 1-minute chart of
 // the same instrument (two writers on MNQ_1m.csv), or switch "Also write 1-minute bars" off there.
-// Only standard NinjaScript: OnStateChange / OnBarUpdate, Calculate.OnBarClose, File.AppendAllText; C# 5 syntax only
+// Only standard NinjaScript: OnStateChange / OnBarUpdate / OnMarketData, Calculate.OnBarClose, File.AppendAllText; C# 5 syntax only
 // (no $"..." strings, no ?. or =>), so it compiles on every NinjaTrader 8 version.
 
 #region Using declarations
@@ -69,6 +72,9 @@ namespace NinjaTrader.NinjaScript.Indicators
         private bool active;                  // a minute chart and the le_feed folder exists
         private bool addOneMinute;            // the chart is > 1 minute and the 1-minute file is wanted: series 1 is written
         private int problems;
+        private string openPath;              // <ROOT>_1m_open.csv: "time,open" of the minute that has just started
+        private long lastOpenMinute = long.MinValue;
+        private bool realtime;
 
         protected override void OnStateChange()
         {
@@ -112,6 +118,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                     feeds[1] = new Feed { Minutes = 1, MaxBars = MaxBars1m };
                     feeds[1].FilePath = Path.Combine(folder, root + "_1m.csv");
                 }
+                if (addOneMinute || BarsPeriod.Value == 1)
+                    openPath = Path.Combine(folder, root + "_1m_open.csv");
                 try
                 {
                     Directory.CreateDirectory(folder);
@@ -124,6 +132,7 @@ namespace NinjaTrader.NinjaScript.Indicators
             }
             else if (State == State.Realtime)
             {
+                realtime = true;
                 if (active && feeds != null)
                     foreach (Feed f in feeds)
                         if (f.History != null)
@@ -174,6 +183,54 @@ namespace NinjaTrader.NinjaScript.Indicators
                 }
                 if (f.LinesInFile > f.MaxBars + TrimEvery)
                     Trim(f);
+            }
+        }
+
+        // The first trade of every new minute = that 1-minute bar's open: one line "time,open" (time = the minute's start in
+        // unix seconds, UTC) replaces <ROOT>_1m_open.csv. It arrives with the tick that closes the previous bar (OnBarClose),
+        // so the bot reads the closed bar and the new bar's open in the same poll. Realtime only; one tiny write a minute.
+        protected override void OnMarketData(MarketDataEventArgs marketDataUpdate)
+        {
+            if (!active || !realtime || openPath == null || BarsInProgress != 0 || marketDataUpdate.MarketDataType != MarketDataType.Last)
+                return;
+            long minute;
+            try
+            {
+                DateTime local = DateTime.SpecifyKind(marketDataUpdate.Time, DateTimeKind.Unspecified);
+                DateTime utc = TimeZoneInfo.ConvertTimeToUtc(local, NinjaTrader.Core.Globals.GeneralOptions.TimeZoneInfo);
+                long secs = (utc.Ticks - EpochTicks) / TimeSpan.TicksPerSecond;
+                minute = secs - secs % 60;
+            }
+            catch (Exception)
+            {
+                return;
+            }
+            if (minute <= lastOpenMinute)
+                return;
+            lastOpenMinute = minute;
+            string line = minute.ToString(CultureInfo.InvariantCulture) + "," + marketDataUpdate.Price.ToString("0.########", CultureInfo.InvariantCulture) + "\n";
+            string tmp = openPath + ".tmp";
+            lock (FileLock)
+            {
+                try
+                {
+                    File.WriteAllText(tmp, line);
+                    if (File.Exists(openPath))
+                        File.Replace(tmp, openPath, null);   // one atomic swap: the bot never reads half a line
+                    else
+                        File.Move(tmp, openPath);
+                }
+                catch (Exception)
+                {
+                    try
+                    {
+                        File.Copy(tmp, openPath, true);
+                    }
+                    catch (Exception e2)
+                    {
+                        Report(null, "could not write " + openPath + ": " + e2.Message);
+                    }
+                }
             }
         }
 

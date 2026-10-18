@@ -3,7 +3,7 @@ import { SKINS, A, setAppearance, previewSvg } from './skins.js';
 import { chime } from './sound.js';
 
 const ACCENTS = ['#4c8dff', '#ff2bd6', '#00d1ff', '#39ff78', '#ffb000', '#ff2e4d', '#a78bfa', '#f5f5f5'];
-const EVENTS = [['sweep', 'Liquidity sweeps'], ['signal', 'Signals (IFVG confirmed)'], ['entry', 'Entries'], ['exit', 'Exits'],
+const EVENTS = [['sweep', 'Liquidity sweeps'], ['signal', 'Signals (LIT setup: sweep + CISD)'], ['entry', 'Entries'], ['exit', 'Exits'],
   ['guard', 'Trade-guard changes (news / volatility)'], ['daily', 'End-of-day report'], ['regime', 'Regime changes']];
 
 export function init() {

@@ -2,7 +2,7 @@
  "version": 1,
  "mode": "observe",
  "mode_why": "not better on both 2026 halves (H1: funded; H2: net, funded, p10): ships in OBSERVE mode (logs proposals, applies nothing)",
- "updated": 1792347826,
+ "updated": 1792348084,
  "rules": {
   "prior_n": 20.0,
   "bounds": [
@@ -20,6 +20,9 @@
    4.0
   ],
   "risk_cap_usd": 900.0,
+  "z_min": 2.5,
+  "sig_min_n": 10,
+  "history_days": 364,
   "never_changes": "stops, targets, entries, the LIT setup rules, the weekly stop, the Monday rule"
  },
  "knobs": {
@@ -42,7 +45,7 @@
   {
    "id": "d0001",
    "asof": "2026-02-01",
-   "at": 1792347782,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -60,7 +63,7 @@
   {
    "id": "d0002",
    "asof": "2026-02-08",
-   "at": 1792347782,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -78,7 +81,7 @@
   {
    "id": "d0003",
    "asof": "2026-02-15",
-   "at": 1792347782,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -96,7 +99,7 @@
   {
    "id": "d0004",
    "asof": "2026-02-22",
-   "at": 1792347782,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -114,7 +117,7 @@
   {
    "id": "d0005",
    "asof": "2026-03-01",
-   "at": 1792347783,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -132,7 +135,7 @@
   {
    "id": "d0006",
    "asof": "2026-03-08",
-   "at": 1792347783,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -150,7 +153,7 @@
   {
    "id": "d0007",
    "asof": "2026-03-15",
-   "at": 1792347783,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -168,7 +171,7 @@
   {
    "id": "d0008",
    "asof": "2026-03-22",
-   "at": 1792347783,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -186,7 +189,7 @@
   {
    "id": "d0009",
    "asof": "2026-03-29",
-   "at": 1792347783,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -204,7 +207,7 @@
   {
    "id": "d0010",
    "asof": "2026-04-05",
-   "at": 1792347783,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -222,7 +225,7 @@
   {
    "id": "d0011",
    "asof": "2026-04-12",
-   "at": 1792347783,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "mult",
@@ -410,7 +413,7 @@
   {
    "id": "d0012",
    "asof": "2026-04-19",
-   "at": 1792347783,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "mult",
@@ -598,7 +601,7 @@
   {
    "id": "d0013",
    "asof": "2026-04-26",
-   "at": 1792347783,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "mult",
@@ -786,7 +789,7 @@
   {
    "id": "d0014",
    "asof": "2026-05-03",
-   "at": 1792347783,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -804,7 +807,7 @@
   {
    "id": "d0015",
    "asof": "2026-05-10",
-   "at": 1792347784,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -822,7 +825,7 @@
   {
    "id": "d0016",
    "asof": "2026-05-17",
-   "at": 1792347784,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -840,7 +843,7 @@
   {
    "id": "d0017",
    "asof": "2026-05-24",
-   "at": 1792347784,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -858,7 +861,7 @@
   {
    "id": "d0018",
    "asof": "2026-05-31",
-   "at": 1792347784,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -876,7 +879,7 @@
   {
    "id": "d0019",
    "asof": "2026-06-07",
-   "at": 1792347784,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -894,7 +897,7 @@
   {
    "id": "d0020",
    "asof": "2026-06-14",
-   "at": 1792347784,
+   "at": 1792348081,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -912,7 +915,7 @@
   {
    "id": "d0021",
    "asof": "2026-06-21",
-   "at": 1792347784,
+   "at": 1792348082,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -930,7 +933,7 @@
   {
    "id": "d0022",
    "asof": "2026-06-28",
-   "at": 1792347785,
+   "at": 1792348082,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -948,7 +951,7 @@
   {
    "id": "d0023",
    "asof": "2026-07-05",
-   "at": 1792347785,
+   "at": 1792348082,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -966,7 +969,7 @@
   {
    "id": "d0024",
    "asof": "2026-07-12",
-   "at": 1792347785,
+   "at": 1792348082,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -984,7 +987,7 @@
   {
    "id": "d0025",
    "asof": "2026-07-19",
-   "at": 1792347785,
+   "at": 1792348082,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1002,7 +1005,7 @@
   {
    "id": "d0026",
    "asof": "2026-07-26",
-   "at": 1792347785,
+   "at": 1792348082,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1020,7 +1023,7 @@
   {
    "id": "d0027",
    "asof": "2026-08-02",
-   "at": 1792347785,
+   "at": 1792348082,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1038,7 +1041,7 @@
   {
    "id": "d0028",
    "asof": "2026-08-09",
-   "at": 1792347785,
+   "at": 1792348082,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1056,7 +1059,7 @@
   {
    "id": "d0029",
    "asof": "2026-08-16",
-   "at": 1792347786,
+   "at": 1792348082,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1074,7 +1077,7 @@
   {
    "id": "d0030",
    "asof": "2026-08-23",
-   "at": 1792347786,
+   "at": 1792348082,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1092,7 +1095,7 @@
   {
    "id": "d0031",
    "asof": "2026-08-30",
-   "at": 1792347786,
+   "at": 1792348083,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1110,7 +1113,7 @@
   {
    "id": "d0032",
    "asof": "2026-09-06",
-   "at": 1792347786,
+   "at": 1792348083,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1128,7 +1131,7 @@
   {
    "id": "d0033",
    "asof": "2026-09-13",
-   "at": 1792347786,
+   "at": 1792348083,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1146,7 +1149,7 @@
   {
    "id": "d0034",
    "asof": "2026-09-20",
-   "at": 1792347787,
+   "at": 1792348083,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1164,7 +1167,7 @@
   {
    "id": "d0035",
    "asof": "2026-09-27",
-   "at": 1792347787,
+   "at": 1792348083,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1182,7 +1185,7 @@
   {
    "id": "d0036",
    "asof": "2026-10-04",
-   "at": 1792347787,
+   "at": 1792348083,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1200,7 +1203,7 @@
   {
    "id": "d0037",
    "asof": "2026-10-11",
-   "at": 1792347787,
+   "at": 1792348083,
    "source": "history replay",
    "mode": "apply",
    "action": "none",
@@ -1218,7 +1221,7 @@
   {
    "id": "d0038",
    "asof": "2026-10-18",
-   "at": 1792347788,
+   "at": 1792348083,
    "source": "history replay",
    "mode": "apply",
    "action": "none",

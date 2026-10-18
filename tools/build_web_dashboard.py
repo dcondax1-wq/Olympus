@@ -493,6 +493,15 @@ def _lit_extra(st, lm):
         return None
 
 
+def _learning_fallback():
+    try:
+        from engine import lit_learn
+        L = lit_learn.load_learning()
+        return lit_learn.summary(L, lit_learn.load_journal()) if L else None
+    except Exception:
+        return None
+
+
 def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     os.makedirs(out, exist_ok=True)
     st = _load(state_path, {}) or {}
@@ -503,7 +512,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
                                    "equity_filter", "eval_timing", "eval_2wk", "price", "today", "events", "engine_trades", "bars", "pools", "pc",
                                    "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
-                                   "push", "notices")}
+                                   "push", "notices", "learning")}       # learning: engine/lit_learn.py summary (the "What the bot learned" card)
     # phone notifications: the VAPID public key the app subscribes with (the cloud's, derived from the LE_VAPID_PRIVATE secret,
     # else tools/web_public/push_key.json from tools/push_keys.py) and the public push status (device ids, never endpoints)
     pk = (_load(os.path.join(WEB, "push_key.json"), {}) or {}).get("vapid_public")
@@ -570,6 +579,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         if os.path.exists(src):
             shutil.copy(src, os.path.join(lab_dir, name + ".json")); have.append(name)
     data["lab_files"] = have
+    # the learning loop (engine/lit_learn.py): the cloud's summary from state.json, else the repo's learning file + journal
+    data["learning"] = st.get("learning") or _learning_fallback()
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # the page, the home-screen app files and its icons

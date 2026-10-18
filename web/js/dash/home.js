@@ -293,7 +293,7 @@ function editAccount() {
 let lastSay = '';
 function narrative(s, m) {
   const st0 = s.state || {};
-  if (st0.model === 'lit') return litNarrative(s, st0);
+  if ((st0.model || 'lit') === 'lit') return litNarrative(s, st0);
   const ms = m?.model_state || st0.model_state || '—';
   const price = st0.price;
   const out = [];
@@ -331,10 +331,10 @@ function renderThink() {
   const s = L.live;
   if (!s) { el.innerHTML = waiting('Waiting for the paper bot', 'Polling /api/live/state every 10 s.'); return; }
   const { ms, text } = narrative(s, modelApi);
-  const isLit = s.state?.model === 'lit';
+  const isLit = (s.state?.model || 'lit') === 'lit';      // LIT is the live strategy: a stopped bot shows the LIT flow
   const flow = isLit ? LIT_FLOW : modelApi?.flow?.length ? modelApi.flow : FLOW;
   const SHORT = { 'OUTSIDE KILLZONE': 'OUTSIDE KZ', 'WAITING FOR SWEEP': 'WAIT SWEEP', 'ARMED - HUNTING IFVG': 'ARMED · IFVG', 'ORDER PENDING': 'ORDER', 'IN TRADE': 'IN TRADE', 'DONE FOR DAY': 'DONE' };
-  const idx = isLit ? litIdx(s.state) : flow.indexOf(ms);
+  const idx = isLit ? litIdx(s.state || {}) : flow.indexOf(ms);
   meta('think', `${src(!!modelApi)} <span class="pill">${esc(etStr(s.state?.t || s.last_poll || Date.now() / 1000))} ET bar</span>`);
   if (!el.querySelector('.think-say')) el.innerHTML = `<div class="think-flow" id="thFlow"></div><div class="think-say" id="thSay"></div><div class="think-grid" id="thCards"></div><div class="think-log" id="thLog"></div>`;
   $('#thFlow', el).innerHTML = (idx < 0 ? `<span class="idle">${esc(ms)}</span>` : '') + flow.map((f, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}" title="${esc(f)}">${esc(SHORT[f] || f)}</span>`).join('');
@@ -526,8 +526,9 @@ function renderSessions() {
     const pd = new Date(Date.UTC(y, mo - 1, d) - 86400000);
     const at = (dd, h, m) => etToTs(dd.y, dd.mo, dd.d, h, m);
     const P = { y: pd.getUTCFullYear(), mo: pd.getUTCMonth() + 1, d: pd.getUTCDate() }, D = { y, mo, d };
-    const defs = [['Asia', '20:00–00:00', at(P, 20, 0), at(D, 0, 0)], ['London', '02:00–05:00', at(D, 2, 0), at(D, 5, 0)], ['Overnight', '18:00–09:30', at(P, 18, 0), at(D, 9, 30)],
-      ['NY AM', '09:30–11:30', at(D, 9, 30), at(D, 11, 30)], ['Lunch', '11:30–13:30', at(D, 11, 30), at(D, 13, 30)], ['NY PM', '13:30–16:00', at(D, 13, 30), at(D, 16, 0)]];
+    // the LIT session boxes (engine/lit.py SESSIONS): their highs and lows are LIT levels
+    const defs = [['Asia', '20:00–00:00', at(P, 20, 0), at(D, 0, 0)], ['Frankfurt', '02:00–03:00', at(D, 2, 0), at(D, 3, 0)], ['London', '03:00–04:00', at(D, 3, 0), at(D, 4, 0)],
+      ['Premarket', '04:00–09:30', at(D, 4, 0), at(D, 9, 30)], ['NY 08-09', '08:00–09:00', at(D, 8, 0), at(D, 9, 0)], ['NY cash', '09:30–16:00', at(D, 9, 30), at(D, 16, 0)]];
     const now = Date.now() / 1000;
     rows = defs.map(([name, sub, a, b]) => {
       const bb = bars.filter(x => x.t >= a && x.t < b);

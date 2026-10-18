@@ -5,7 +5,7 @@
    "day": "2026-01-02",
    "exit": "BE",
    "polls": 48,
-   "poll_ms_mean": 436,
+   "poll_ms_mean": 299,
    "entry_close": "02:04:00",
    "entry_routed": "02:04:02",
    "entry_delay_s": 2,
@@ -23,7 +23,7 @@
    "day": "2026-04-29",
    "exit": "BE",
    "polls": 26,
-   "poll_ms_mean": 1355,
+   "poll_ms_mean": 1107,
    "entry_close": "04:39:00",
    "entry_routed": "04:39:02",
    "entry_delay_s": 2,
@@ -38,21 +38,21 @@
    ]
   },
   {
-   "day": "2026-06-19",
+   "day": "2026-09-30",
    "exit": "EOD",
    "polls": 30,
-   "poll_ms_mean": 1307,
-   "entry_close": "12:03:00",
-   "entry_routed": "12:03:02",
-   "entry_delay_s": 2,
+   "poll_ms_mean": 1354,
+   "entry_close": "13:46:00",
+   "entry_routed": "13:46:03",
+   "entry_delay_s": 3,
    "entry_same_as_backtest": true,
    "be_bar_close": null,
-   "be_routed": null,
+   "be_routed": "15:55:02",
    "be_delay_s": null,
-   "eod_exit": "13:00:00",
-   "eod_delay_s": 10325,
+   "eod_exit": "15:56:00",
+   "eod_delay_s": 2,
    "log": [
-    "LIT 1m CISD closed at 12:03 ET: MARKET entry sent at once (2 s after the close; the backtest fills at this bar's open)"
+    "LIT 1m CISD closed at 13:46 ET: MARKET entry sent at once (3 s after the close; the backtest fills at this bar's open)"
    ]
   }
  ]

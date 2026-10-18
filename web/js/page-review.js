@@ -72,7 +72,7 @@ function buildWeeks(trades, days, xs) {
 function takeaways(w, prev, xs) {
   const tr = w.trades, out = [];
   const add = (tone, text) => out.push({ tone, text });
-  if (!tr.length) { add('', 'No trades this week: every candidate was filtered, or no pool was swept inside a killzone.'); return out; }
+  if (!tr.length) { add('', 'No trades this week: no LIT level was swept with inducement, displacement and a CISD inside the 02:00-15:30 entry window.'); return out; }
   const losers = tr.filter(t => t.pnl <= 0);
   const early = losers.filter(t => { const m = entryMin(t); return m >= 570 && m < 615; });
   if (losers.length && early.length) add(early.length / losers.length >= .5 ? 'warn' : '', `${early.length} of ${losers.length} loser${losers.length !== 1 ? 's' : ''} ${early.length !== 1 ? 'were' : 'was a'} first-45-minute entr${early.length !== 1 ? 'ies' : 'y'} (09:30–10:15), the window the discovery scan flagged as weakest.`);

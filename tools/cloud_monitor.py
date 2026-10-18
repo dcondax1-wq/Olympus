@@ -250,7 +250,7 @@ def _setup_line(res, entry_t, d, trade=None):
 
 def _news(reasons):
     """Size reasons worth a line in a notification (the weekly stop's half size, a room cap), not the size mode's usual one."""
-    return [r for r in reasons or [] if not str(r).lower().startswith(("eval size", "fast eval"))]
+    return [r for r in reasons or [] if not str(r).lower().startswith(("eval size", "fast eval", "two week", "one winner"))]
 
 
 def trade_notices(ledger, res, pos, lm, since, state=None, size=None):

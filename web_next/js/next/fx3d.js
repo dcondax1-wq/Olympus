@@ -4,6 +4,7 @@
 // Views asked for before the bundle arrived are mounted as soon as it does.
 import { $, esc, store, fmtN, etStr, api } from '../util.js';
 import { L, onLive } from '../dash/live.js';
+import { S } from '../state.js';
 
 let FX = null;
 const pend = new Map();
@@ -49,7 +50,8 @@ export function setFxLevel(lv) {
 // ------------------------------------------------------------------ mood + the Live Oracle on Today
 const NY = (t = Date.now()) => { const s = new Date(t).toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false, weekday: 'short', hour: '2-digit', minute: '2-digit' });
   const [wd, hm] = s.split(' '); const [h, m] = hm.split(':').map(Number); return { wd: wd.replace(',', ''), m: (h % 24) * 60 + m }; };
-function killzone() { const { wd, m } = NY(); return !['Sat', 'Sun'].includes(wd) && ((m >= 570 && m < 690) || (m >= 810 && m < 930)); }
+// the live strategy's entry window (LIT: 02:00-15:30 ET, Mon-Fri); the FX mood key keeps its name
+function killzone() { const { wd, m } = NY(); return !['Sat', 'Sun'].includes(wd) && m >= 120 && m < 930; }
 function mood() {
   const s = L.live?.state || {}, pos = s.position;
   FX?.mood({ killzone: killzone(), live: !!L.live?.running, cold: s.equity_filter?.on === false, pnl: +(L.live?.day_pnl_routed || 0) });
@@ -75,15 +77,19 @@ function oracle() {
   let bars = (lv.bars || []).slice(-12).map(b => [b.time, b.open, b.high, b.low, b.close]), price = s.price ?? bars.at(-1)?.[4];
   let pools = (s.active_pools || []).map(p => ({ price: p.price, side: p.side, label: p.label, strength: p.strength }));
   const fromFile = !bars.length;
-  if (fromFile) { fallback(); if (fb) { bars = fb.bars; price = fb.price; pools = fb.pools; } }
+  if (fromFile) {
+    fallback(); if (fb) { bars = fb.bars; price = fb.price; pools = fb.pools; }
+    const ls = S.res?.model === 'lit' ? S.res.state : null;     // bot stopped: the LIT levels at the last bar (/api/next/lit_backtest)
+    if (ls?.active_pools?.length) pools = ls.active_pools.filter(p => p.kind !== 'vix').map(p => ({ price: p.price, side: p.side, label: p.label, strength: p.strength }));
+  }
   pools = pools.filter(p => price && Math.abs(p.price - price) / price < 0.03);
   mount3d('today-orb', el, 'orb', { bars, pools, price, mood: mood() });
   const pos = s.position, t = $('#nxOracleT');
   const sig = [s.model_state, price, pos?.entry, lv.running, bars.length].join('|');
   if (t && sig !== lastSig) {
     lastSig = sig;
-    t.innerHTML = `<div class="nx-eyebrow">PC paper bot · ${lv.running ? 'running' : 'stopped'}${killzone() ? ' · killzone live' : ''}</div>
-      <h2>${esc(s.model_state || (bars.length ? (killzone() ? 'Watching the killzone' : 'Outside killzone') : 'Waiting for bars'))}</h2>
+    t.innerHTML = `<div class="nx-eyebrow">PC paper bot · ${lv.running ? 'running' : 'stopped'}${killzone() ? ' · LIT entry window open' : ''}</div>
+      <h2>${esc(s.model_state || (bars.length ? (killzone() ? 'Watching the LIT levels' : 'Outside the LIT entry window (02:00-15:30 ET)') : 'Waiting for bars'))}</h2>
       <p class="muted">${pos ? `In ${pos.dir === 1 ? 'LONG' : 'SHORT'} @ ${fmtN(pos.entry)} → TP ${fmtN(pos.target)} / SL ${fmtN(pos.stop)}` : 'Flat. Paper only, never places real orders.'}</p>
       <div class="nx-oracle-px"><span class="muted small">NQ futures · ${fromFile ? 'last bar in the data file' : 'live feed'}</span><b class="mono">${price != null ? fmtN(price) : '—'}</b>
         <span class="muted small">${bars.length ? etStr(bars.at(-1)[0]) + ' ET · last ' + bars.length + ' bars in the orb' : ''}</span></div>`;
