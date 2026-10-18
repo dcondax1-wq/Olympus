@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#07080c">
 <meta name="color-scheme" content="dark">
 <title>Liquidity Engine</title>
-<meta name="description" content="NQ Liquidity Engine: paper bot status, MFFU eval tracker, trades, replays, backtest results and the research lab.">
+<meta name="description" content="NQ futures paper bot on the LIT strategy: bot status, MFFU eval tracker, trades, replays, backtest results and the research lab. The previous strategy is kept in the Archive.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=drop1">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png?v=drop1">
@@ -857,12 +857,12 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 </head>
 <body>
 <div id="splash" aria-hidden="true"><canvas id="spCv"></canvas><div class="sp-in"><img src="icons/icon-512.png?v=drop1" alt="">
-  <div class="sp-t">LIQUIDITY ENGINE</div><div class="sp-s">NQ futures · paper · works with the PC off</div><div class="sp-bar"><i></i></div></div></div>
+  <div class="sp-t">LIQUIDITY ENGINE</div><div class="sp-s">LIT strategy · NQ futures · paper · works with the PC off</div><div class="sp-bar"><i></i></div></div></div>
 <div class="app">
   <aside class="side">
     <div class="brand">
       <div class="mark"><img src="icons/icon-192.png?v=drop1" alt="" width="38" height="38"></div>
-      <div><b>Liquidity Engine</b><span>NQ · MFFU Builder 50K · paper</span></div>
+      <div><b>Liquidity Engine</b><span id="sideStrat">LIT · NQ · MFFU Builder 50K · paper</span></div>
     </div>
     <nav class="nav" id="nav" aria-label="Sections"></nav>
     <div class="side-foot"><div class="k">Cloud monitor</div><div class="v" id="sideRun">—</div><div class="small mut" id="sideSub">GitHub Actions · PC off</div></div>
@@ -1299,23 +1299,31 @@ const GROUPS = [
   { id: 'lab', label: 'Lab', icon: 'lab', pages: [['lab', 'Overview', 'layers', 'Latest findings and every run'], ['experiments', 'Experiments', 'lab', 'Every backtest, stored with its data'],
     ['writeups', 'Write-ups', 'doc', 'Findings in plain words, plus the archive'], ['losses', 'Losses', 'loss', 'Why the bot loses, and how much'],
     ['evals', 'Evals', 'sim', 'Simulated MFFU evals: odds and paths'], ['intraday', 'Intraday', 'heat', 'When the bot wins: weekday × hour'],
-    ['learned', 'Lessons', 'learned', 'What held in both periods'], ['variants', 'Variants', 'variants', 'The older variant table'], ['study', 'Study', 'study', 'Trades under review']] },
+    ['learned', 'Lessons', 'learned', 'What the replay trades teach']] },
   { id: 'system', label: 'System', icon: 'modules', pages: [['system', 'Overview', 'modules', 'Every part of the bot'], ['strategy', 'Strategy', 'rules', 'The locked strategy in plain words'],
-    ['engine', 'Liquidity Engine', 'engine', 'Cloud paper bot: state, position, events'], ['eval', 'MFFU Eval', 'prop', 'Balance, target, trailing max loss'],
+    ['engine', 'Paper bot', 'engine', 'LIT cloud paper bot: state, position, events'], ['eval', 'MFFU Eval', 'prop', 'Balance, target, trailing max loss'],
     ['news', 'News', 'news', 'USD events, the bot’s blackouts, headlines'],
-    ['cold', 'Cold-Streak', 'cold', 'Smaller size when the last 15 signals sum ≤ 0R'], ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop'], ['alerts', 'Alerts', 'alerts', 'Telegram / Discord from the cloud'],
-    ['sources', 'Data Sources', 'sources', 'Where every number comes from'], ['settings', 'Settings', 'settings', 'Home Screen app, refresh, 3D']] },
+    ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop, weekly stop'], ['alerts', 'Alerts', 'alerts', 'Telegram / Discord from the cloud'],
+    ['sources', 'Data Sources', 'sources', 'Where every number comes from'], ['archive', 'Archive', 'archive', 'Previous strategy: Liquidity Engine, Oct 17'],
+    ['settings', 'Settings', 'settings', 'Home Screen app, refresh, 3D']] },
 ];
+// the previous strategy (Liquidity Engine, locked 2026-10-17): its pages live under System → Archive (research/archive/engine-2026-10-17)
+const ARCH = 'Archive: previous strategy (Liquidity Engine, Oct 17)';
 const DETAIL = { run: { group: 'lab', label: 'Experiment', back: 'experiments' }, writeup: { group: 'lab', label: 'Write-up', back: 'writeups' },
-  compare: { group: 'lab', label: 'Compare runs', back: 'experiments' } };
+  compare: { group: 'lab', label: 'Compare runs', back: 'experiments' },
+  // archive pages (back = the Archive page)
+  cold: { group: 'system', label: 'Cold-streak filter · archive', back: 'archive' }, variants: { group: 'system', label: 'Variants · archive', back: 'archive' },
+  study: { group: 'system', label: 'Study trades · archive', back: 'archive' }, oldresults: { group: 'system', label: 'Old results · archive', back: 'archive' },
+  oldevals: { group: 'system', label: 'Old Monte Carlo · archive', back: 'archive' }, oldheat: { group: 'system', label: 'Old intraday heat · archive', back: 'archive' } };
 const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
 const ALIAS = { modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
-  calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday' };
+  calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
 // 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
 const SCENE = { replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
-  evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', sources: 'engine', news: 'today' };
+  evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', sources: 'engine', news: 'today',
+  archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
 const titleOf = (p) => DETAIL[p]?.label || (p === 'lab' ? 'Lab' : p === 'system' ? 'System' : PAGES[p]?.label) || 'Today';
 let D = null, PAGE = null, ARG = null, RTOK = 0, routed = false;
@@ -1342,7 +1350,7 @@ function route() {
   $$('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.t === g));
   $('#title').textContent = titleOf(p);
   $('#crumb').textContent = G && G.pages.length > 1 && p !== G.pages[0][0] ? G.label : '';
-  document.title = titleOf(p) + ' · Liquidity Engine';
+  document.title = titleOf(p) + ' · Liquidity Engine';     // the app's name; the strategy (LIT) shows on every page
   subBar(p, g);
   stopReplay(); closeSheet(); closeDD();
   if (routed) FX?.warp();
@@ -1449,23 +1457,39 @@ const famChip = (f) => { const x = FAM[f] || [f || 'Other', '#a9b1c3']; return `
 const stChip = (s) => { const x = STAT[s] || [s || 'Info', 'st-info']; return `<span class="chip ${x[1]}">${esc(x[0])}</span>`; };
 const stColor = (s) => (STAT[s] || STAT.info)[2];
 const LAB = () => D?.lab || { runs: [] };
-const RUNS_ = () => LAB().runs || [];
-const baseId = () => LAB().baseline || 'baseline';
-const runMeta = (id) => RUNS_().find(r => r.id === id) || null;
+// which strategy's runs the Lab pages show: LIT (live) by default; the old engine's for #/experiments/archive and for a run or
+// a comparison of engine runs (data.json lab: every row has `strategy`, `baseline` = lit_live, `archive_baseline` = baseline)
+const liveStrat = () => LAB().live_strategy || 'engine';
+const ALLRUNS = () => LAB().runs || [];
+const runMeta = (id) => ALLRUNS().find(r => r.id === id) || null;
+function scope() {
+  const live = liveStrat(); if (live !== 'lit') return live;
+  if (PAGE === 'run') return runMeta(ARG)?.strategy || live;
+  if (PAGE === 'compare') return runMeta(String(ARG || '').split(',')[0])?.strategy || live;
+  if (PAGE === 'experiments' && ARG === 'archive') return 'engine';
+  return live;
+}
+const archived = () => liveStrat() === 'lit' && scope() === 'engine';
+const RUNS_ = () => liveStrat() !== 'lit' ? ALLRUNS() : ALLRUNS().filter(r => (r.strategy || 'engine') === scope());
+const baseId = () => archived() ? (LAB().archive_baseline || 'baseline') : (LAB().baseline || 'baseline');
+const LITS = () => liveStrat() === 'lit' && !archived();         // the LIT rule: judged on 2026; 2021-25 is a reference line
 const baseMeta = () => runMeta(baseId());
 const sp = (r, s) => r?.spans?.[s] || {};
-// the owner's adoption rule: better than the live strategy on net and PF in 2026 AND 2021-25, 2-4 trades a week in both
+// the owner's adoption rule. LIT (2026-10-18): better than the live LIT run in 2026 (net and PF; the research picks on Jan-Jun
+// and checks on Jul-Oct), 2-4 trades a week; 2021-25 is a reference line only. The archived engine experiments: better in 2026
+// AND 2021-25, 2-4 trades a week in both.
 const inFreq = (t) => ok(t) && t >= 2 && t <= 4;
 function ruleCheck(r) {
-  const b = baseMeta(), isB = !b || r.id === b.id;
+  const b = baseMeta(), isB = !b || r.id === b.id, lit = LITS();
   const better = (a, x) => a.n && x.n ? (a.net > x.net && (a.pf || 0) >= (x.pf || 0)) : null;
-  const freq = inFreq(sp(r, '2026').tpw) && inFreq(sp(r, '2021-25').tpw);
+  const freq = inFreq(sp(r, '2026').tpw) && (lit || inFreq(sp(r, '2021-25').tpw));
   const y26 = isB ? null : better(sp(r, '2026'), sp(b, '2026')), y21 = isB ? null : better(sp(r, '2021-25'), sp(b, '2021-25'));
-  return { y26, y21, freq, all: !isB && y26 && y21 && freq };
+  return { y26, y21, freq, lit, all: !isB && y26 && (lit || y21) && freq };
 }
 function rcHTML(r) {
-  const c = ruleCheck(r), p = (v, t) => `<span class="${v == null ? '' : v ? 'ok' : 'no'}">${icon(v == null ? 'minus' : v ? 'check' : 'close')}${t}</span>`;
-  return `<div class="rc">${p(c.y26, 'beats live 2026')}${p(c.y21, 'beats live 2021-25')}${p(c.freq, '2-4 a week')}</div>`;
+  const c = ruleCheck(r), p = (v, t, k = '') => `<span class="${k || (v == null ? '' : v ? 'ok' : 'no')}">${icon(k ? 'minus' : v == null ? 'minus' : v ? 'check' : 'close')}${t}</span>`;
+  return c.lit ? `<div class="rc">${p(c.y26, 'beats live 2026')}${p(c.freq, '2-4 a week')}${p(null, `2021-25 ${c.y21 == null ? '' : c.y21 ? 'better' : 'worse'} (reference)`, 'ref')}</div>`
+    : `<div class="rc">${p(c.y26, 'beats live 2026')}${p(c.y21, 'beats live 2021-25')}${p(c.freq, '2-4 a week')}</div>`;
 }
 const runLink = (id) => `#/run/${encodeURIComponent(id)}`;
 // $ per month the way the run library counts it (tools/runlib.py): net ÷ (trading sessions ÷ 21). Sessions come from the
@@ -1488,7 +1512,8 @@ function microsFor(stop, mult = 1) {
   const m = mult >= 1 || base < 1 ? base : Math.max(1, Math.floor(base * mult));
   return { budget, base, m, usd: m * stop * 2 };
 }
-const ownerRules = () => LAB().owner_rules ? `<div class="ownr">${icon('flag')}<span><b>The owner’s rules:</b> ${esc(LAB().owner_rules)}.</span></div>` : '';
+const ownerRules = () => { const t = archived() ? '2-4 trades a week; judged on 2026 and 2021-25; evals decided within 2 weeks, no pass slower than 3 weeks (the rule for the previous strategy)' : LAB().owner_rules;
+  return t ? `<div class="ownr">${icon('flag')}<span><b>The owner’s rules:</b> ${esc(t)}.</span></div>` : ''; };
 const docLink = (slug) => `#/writeup/${encodeURIComponent(slug)}`;
 const allDocs = () => [...(D?.docs?.writeups || []), ...(D?.docs?.archive || [])];
 const docsForRun = (id) => allDocs().filter(d => (d.runs || []).includes(id) || (d.runs_linked || []).includes(id) || runMeta(id)?.writeup_slug === d.slug);
@@ -1531,16 +1556,20 @@ function shadowCard() {
   const sh = LV().shadow; if (!sh) return '';
   const L = Object.values(sh.ledger || {}), net = L.reduce((a, v) => a + (v.usd || 0), 0), ev = sh.eval || {};
   const since = sh.first_run ? new Date(sh.first_run * 1000).toISOString().slice(0, 10) : '';
-  return `<div class="card"><div class="card-h"><h3>Old strategy, paper</h3><span class="meta">${esc(String(sh.label || sh.model || 'Liquidity Engine').split(' (')[0])} · shadow, no alerts</span></div>
+  return `<div class="card"><div class="card-h"><h3>Previous strategy · paper shadow</h3><button class="chipbtn" type="button" data-go="archive">${icon('archive')}<span>Archive</span></button></div>
+    <p class="card-d" style="margin:0 0 10px">${esc(String(sh.label || sh.model || 'Liquidity Engine').split(' (')[0])} (locked Oct 17) keeps trading on paper next to LIT, with no alerts, so it can come back.</p>
     <div class="kv"><div><span>Paper ledger</span><b class="${cls(net)}">${susd(net)}</b></div><div><span>Trades</span><b>${L.length}${since ? ` since ${esc(fDate(since))}` : ''}</b></div>
       <div><span>Eval tracker</span><b class="${cls(ev.profit)}">${ok(ev.profit) ? susd(ev.profit) : '—'}</b></div><div><span>Now</span><b>${esc(sh.position ? 'in a trade' : 'flat')}</b></div></div>
     <p class="small mut" style="margin:10px 0 0">${esc(sh.error ? 'Error: ' + sh.error : (sh.model_state || ''))}</p></div>`;
 }
+// the entry windows: LIT 02:00-15:30 ET (live_model.json lit.window, London + New York); the old engine the two NY killzones
+const litWin = () => ((D?.strategy?.lit || {}).window || [[120, 930]]);
+const hmM = (m) => `${pad2(Math.floor(m / 60))}:${pad2(m % 60)}`;
 function sessionNow(ts = Date.now() / 1000) {
-  const e = et(ts), mod = e.h * 60 + e.mi, wk = !['Sat', 'Sun'].includes(e.wd);
-  const kz = [[570, 690, 'NY AM killzone'], [810, 930, 'NY PM killzone']];
+  const e = et(ts), mod = e.h * 60 + e.mi, wk = !['Sat', 'Sun'].includes(e.wd), lit = isLIT();
+  const kz = lit ? litWin().map(([a, b]) => [a, b, `LIT window ${hmM(a)}–${hmM(b)}`]) : [[570, 690, 'NY AM killzone'], [810, 930, 'NY PM killzone']];
   const inkz = wk && kz.find(([a, b]) => mod >= a && mod < b);
-  const open = wk && mod >= 570 && mod < 960;
+  const open = wk && mod >= (lit ? Math.max(0, kz[0][0] - 10) : 570) && mod < 960;
   let next = null;
   if (wk) { const k = kz.find(([a]) => mod < a); if (k) next = [k[2], k[0] - mod]; }
   return { e, inkz, open, next, wk };
@@ -1642,18 +1671,21 @@ function reactorFb(el, d) {
   ${mini ? '' : `<div style="position:absolute;left:18px;right:18px;bottom:16px"><div class="small mut" style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Today ${susd(d.dayPnl)}</span><span>daily limit −${usd(d.dayLimit)}</span></div>
     <div class="meter ${dayW > .5 ? 'bad' : ''}"><i style="width:${(dayW * 100).toFixed(1)}%"></i></div></div>`}</div>`;
 }
-// Liquidity Engine pipeline: the five steps of a setup, the live one lit
+// the pipeline: the five steps of a setup, the live one lit (LIT: sweep, 5m CISD, limit at the CISD level, trade, done)
 function pipeFb(el, d) {
-  const desc = ['A liquidity pool is run', 'IFVG / CISD in a killzone', 'Limit order working', 'Managing the trade', 'One trade a day'];
+  const desc = isLIT() ? ['A LIT level is swept, inducement taken', '5m displacement + CISD close', 'Limit at the CISD level, then the 1m CISD', 'Managing the trade', 'One trade a day']
+    : ['A liquidity pool is run', 'IFVG / CISD in a killzone', 'Limit order working', 'Managing the trade', 'One trade a day'];
   el.innerHTML = `<div class="fbx"><div class="pipe">${d.steps.map((s, i) => `<div class="pn ${i < d.idx ? 'done' : i === d.idx ? 'on' : ''}"><i>${i < d.idx ? icon('check') : i + 1}</i><b>${esc(s)}</b><span>${desc[i] || ''}</span></div>`).join('')}</div>
-    <div class="pipe-s">${d.idx < 0 ? `Now: <b>${esc(LV().model_state || 'no state yet')}</b>. ${d.killzone ? '' : 'Setups only trigger inside the killzones.'}` : `Now at step ${d.idx + 1}: <b>${esc(d.steps[d.idx])}</b>.`} ${d.live ? '<span class="up">Cloud monitor live.</span>' : '<span class="mut">Cloud monitor idle.</span>'}</div></div>`;
+    <div class="pipe-s">${d.idx < 0 ? `Now: <b>${esc(LV().model_state || 'no state yet')}</b>. ${d.killzone ? '' : isLIT() ? 'LIT enters only 02:00–15:30 ET.' : 'Setups only trigger inside the killzones.'}` : `Now at step ${d.idx + 1}: <b>${esc(d.steps[d.idx])}</b>.`} ${d.live ? '<span class="up">Cloud monitor live.</span>' : '<span class="mut">Cloud monitor idle.</span>'}</div></div>`;
 }
+// a wide stop: 45+ points for the old engine (stops 10-60), 65+ for LIT (stops 8-80, median ~46)
+const wideAt = () => isLIT() && !archived() ? 65 : 45;
 const LOSS_K = {
   'never worked': ['#ff5a7a', 'Went against the entry almost at once: its best point was under +0.3R.'],
   'gave back': ['#f2c35b', 'Was +1R or better at some point, then ended below zero (mostly breakeven exits that only paid costs).'],
-  'wide stop': ['#b18cff', 'A 45+ point stop: small size, but price needed a long way to go.'],
-  normal: ['#6d9bff', 'Made some progress (0.3 to 1R), then hit the stop, the time stop or the giveback exit.'] };
-const lossKind = (t) => (t.mfe ?? 0) < 0.3 ? 'never worked' : (t.mfe ?? 0) >= 1 ? 'gave back' : (t.risk_pts ?? 0) >= 45 ? 'wide stop' : 'normal';
+  'wide stop': ['#b18cff', 'A very wide stop: small size, but price needed a long way to go.'],
+  normal: ['#6d9bff', 'Made some progress (0.3 to 1R), then hit the stop or the end-of-day exit.'] };
+const lossKind = (t) => (t.mfe ?? 0) < 0.3 ? 'never worked' : (t.mfe ?? 0) >= 1 ? 'gave back' : (t.risk_pts ?? 0) >= wideAt() ? 'wide stop' : 'normal';
 
 // ===================================================================== TODAY
 // the always-on PC bot's heartbeat (state.json `pc`, engine/heartbeat.py), next to the cloud paper bot
@@ -1706,7 +1738,7 @@ VIEWS.today = (el) => {
           <h2>${esc(lv.model_state || '—')}</h2><p>${pos ? `In ${pos.dir === 1 ? 'LONG' : 'SHORT'} ${esc(pos.qty_label || '')} @ ${num(pos.entry)} → TP ${num(pos.target)} / SL ${num(pos.stop)}` : 'Flat. Paper only: it never places real orders.'}</p></div>
         <div class="px"><span class="small mut">NQ futures (Yahoo NQ=F)</span><b>${num(lv.price)}</b><span class="small mut">${esc(lv.health?.last_bar || '')}</span></div></div>
       <div class="steps">${stepLabels().map((t, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${t}</span>`).join('')}</div>${pcLine()}
-      <div class="hero-links"><button class="chipbtn" type="button" data-go="strategy">${icon('rules')}<span>The strategy</span></button><button class="chipbtn" type="button" data-go="engine">${icon('engine')}<span>Engine details</span></button><button class="chipbtn" type="button" data-go="results">${icon('results')}<span>5-year results</span></button>${newsChip()}</div></div>
+      <div class="hero-links"><button class="chipbtn" type="button" data-go="strategy">${icon('rules')}<span>The strategy · ${esc(stratName())}</span></button><button class="chipbtn" type="button" data-go="engine">${icon('engine')}<span>Bot details</span></button><button class="chipbtn" type="button" data-go="results">${icon('results')}<span>${lit ? 'Results' : '5-year results'}</span></button>${newsChip()}</div></div>
     ${howto('today', `<p>The top card is the cloud paper bot right now: its state, the NQ price and the five steps of a setup (the lit step is where it is). The <b>News</b> chip is the next USD event and how long until it; tap it for the blackouts.</p>
       <ul><li><b>Today · paper</b>: profit or loss of today’s paper trades.</li>${lit ? `<li><b>Size now</b>: LIT’s weekly stop. After 2 stop-outs in a calendar week the rest of that week trades at half size; Monday starts at full size again.</li>` : `<li><b>Size now</b>: the cold-streak size. When the last 15 finished signals add up to 0R or less, the bot trades at ${esc(sizeWord(sizeRules().cold))} size.</li>`}
       <li><b>Eval · paper</b>: the cloud bot’s MFFU eval, scored with the real rules.</li><li><b>2026 backtest</b>: how the same settings did this year in the replay. PF (profit factor) = money won ÷ money lost.</li>
@@ -1732,7 +1764,7 @@ VIEWS.today = (el) => {
     </div>
     <div class="card"><div class="card-h"><h3>Price now · last sessions</h3><button class="chipbtn" type="button" data-go="chart"><span>Open chart</span>${icon('right')}</button></div><div id="tdChart"></div></div>
     <div class="grid g2">
-      <div class="card"><div class="card-h"><h3>Latest engine signals</h3><span class="meta">the cloud engine’s 20-day window</span></div>${sigList(lv.engine_trades)}</div>
+      <div class="card"><div class="card-h"><h3>Latest ${lit ? 'LIT' : 'engine'} signals</h3><span class="meta">${lit ? 'the cloud bot’s recent window' : 'the cloud engine’s 20-day window'}</span></div>${sigList(lv.engine_trades)}</div>
       ${labTeaser()}
     </div>
     ${lit ? shadowCard() : ''}`;
@@ -1800,7 +1832,8 @@ function liveChart(el, h, n) {
   const lines = (lv.pools || []).map(p => ({ p: p.price, color: p.side === 'H' ? 'var(--bsl)' : 'var(--ssl)', label: (p.side === 'H' ? 'BSL ' : 'SSL ') + (p.label || ''), dash: p.strength < 2 }));
   if (px) lines.push({ p: px, color: 'var(--accent)', label: num(px, 2), keep: true });
   const shade = []; let a = null;
-  bars.forEach((b, i) => { const e = et(b[0]), m = e.h * 60 + e.mi, k = (m >= 570 && m < 690) || (m >= 810 && m < 930); if (k && a == null) a = i; if (!k && a != null) { shade.push([a, i - 1]); a = null; } });
+  const W = isLIT() ? litWin() : [[570, 690], [810, 930]];
+  bars.forEach((b, i) => { const e = et(b[0]), m = e.h * 60 + e.mi, k = W.some(([x, y]) => m >= x && m < y); if (k && a == null) a = i; if (!k && a != null) { shade.push([a, i - 1]); a = null; } });
   if (a != null) shade.push([a, bars.length - 1]);
   candleChart(el, bars, { h, lines, shade });
 }
@@ -1815,9 +1848,9 @@ VIEWS.chart = (el) => {
       segHTML('chN', [[78, '1 session'], [120, '10 hours'], [200, 'All']], n) + (fxOn() ? segHTML('chMode', [['3d', '3D'], ['2d', '2D']], m3 ? '3d' : '2d') : ''))
     + howto('chart', `<p>Each candle is 5 minutes of NQ futures from the live paper feed (Yahoo NQ=F). Backtests never use this feed; they use TradingView CME data.</p>
       <ul><li><b>Orange lines above price</b>: buy-side liquidity, old highs where buy stops sit.</li><li><b>Blue lines below</b>: sell-side liquidity, old lows with sell stops. Dashed lines are weaker pools.</li>
-      <li><b>Purple shading</b>: the killzones (09:30–11:30 and 13:30–15:30 ET), the only times the bot can enter.</li></ul><p>The bot waits for price to run one of these pools (a sweep), then looks for its entry trigger.</p>`)
+      <li><b>Purple shading</b>: ${isLIT() ? 'LIT’s entry window (02:00–15:30 ET, London and New York)' : 'the killzones (09:30–11:30 and 13:30–15:30 ET)'}, the only times the bot can enter.</li></ul><p>The bot waits for price to run one of these pools (a sweep), then looks for its entry trigger.</p>`)
     + `<div class="card">${m3 ? '<div class="fx3d chart3d" id="chMain3d"></div><div class="small mut" style="margin-top:8px">Drag sideways to turn the chart. Glowing planes are untaken liquidity pools; the purple floor strips are the killzones.</div>' : '<div id="chMain"></div>'}
-      <div class="legend"><span><i style="background:var(--bsl)"></i>BSL above (buy stops)</span><span><i style="background:var(--ssl)"></i>SSL below (sell stops)</span><span><i style="background:var(--accent)"></i>last price</span><span><i style="background:color-mix(in srgb,var(--accent) 30%,transparent);height:10px"></i>killzones</span></div></div>
+      <div class="legend"><span><i style="background:var(--bsl)"></i>BSL above (buy stops)</span><span><i style="background:var(--ssl)"></i>SSL below (sell stops)</span><span><i style="background:var(--accent)"></i>last price</span><span><i style="background:color-mix(in srgb,var(--accent) 30%,transparent);height:10px"></i>${isLIT() ? 'entry window' : 'killzones'}</span></div></div>
     <div class="card"><div class="card-h"><h3>Liquidity pools near price</h3><span class="meta">untaken · highest first · distance from price</span></div>${poolsHTML(lv)}</div>`;
   if (m3) fx3d('chart-3d', $('#chMain3d'), 'candles', { bars: (lv.bars || []).slice(-n), pools: lv.pools || [], price: lv.price });
   else liveChart($('#chMain'), innerWidth < 760 ? 340 : 460, n);
@@ -1849,18 +1882,18 @@ VIEWS.trades = (el) => {
   const key = { new: (a, b) => (b.entry_t - a.entry_t) || b.day.localeCompare(a.day), old: (a, b) => (a.entry_t - b.entry_t) || a.day.localeCompare(b.day), best: (a, b) => b.r - a.r, worst: (a, b) => a.r - b.r, wide: (a, b) => (b.risk_pts || 0) - (a.risk_pts || 0) }[TS.sort];
   rows = [...rows].sort(key);
   const s = tStats(rows), paperSrc = TS.src === 'paper';
-  el.innerHTML = head(paperSrc ? 'Trades · cloud paper ledger' : 'Trades · exact live-loop replay, costs included', paperSrc ? 'Paper trades' : TS.year === 'all' ? 'Every trade, 5 years' : TS.year + ' trades',
-      paperSrc ? 'Trades the cloud monitor took on paper with the live strategy, since it started.' : 'Same engine, sizing and cold-streak filter as the live bot. Tap a trade for why it entered, the plan, the result and the lessons.',
+  el.innerHTML = head(paperSrc ? `Trades · ${esc(stratName())} · cloud paper ledger` : `Trades · ${esc(stratName())} replay, costs included`, paperSrc ? 'Paper trades' : TS.year === 'all' ? (isLIT() ? 'Every trade since 2021-11' : 'Every trade, 5 years') : TS.year + ' trades',
+      paperSrc ? `Trades the cloud monitor took on paper with ${esc(stratName())}, since it started.` : isLIT() ? 'The LIT replay: same rules, sizing and weekly stop as the live bot, 1-minute entries in 2026. Tap a trade for why it entered, the plan, the result and the lessons.' : 'Same engine, sizing and cold-streak filter as the live bot. Tap a trade for why it entered, the plan, the result and the lessons.',
       segHTML('trSrc', [['replay', 'Backtest replay'], ['paper', `Cloud paper · ${paper.length}`]], TS.src))
     + howto('trades', `<p>Each row is one trade. <b>R</b> is the result in units of risk: +2R made twice what it risked, −1R lost the full stop. The $ figure is after commission and slippage.</p>
-      <ul><li><b>Green bar</b> on the left = a win, red = a loss, grey = breakeven.</li><li><b>Half size</b> = taken during a cold streak (the last 15 signals summed to 0R or less).</li>
+      <ul><li><b>Green bar</b> on the left = a win, red = a loss, grey = breakeven.</li><li><b>Half size</b> = ${isLIT() ? 'the weekly stop: taken after 2 stop-outs in the same calendar week' : 'taken during a cold streak (the last 15 signals summed to 0R or less)'}.</li>
       <li><b>Stop</b> = points from entry to the stop, which sits beyond the sweep’s high or low. Wider stops trade fewer micros.</li></ul>
       <p>Tap a trade for its full report. The galaxy shows every trade as a star: higher = better R, further back = wider stop.</p>`)
     + `<div class="stats">
       ${statBox('Trades', `<span data-count="${s.n}">${s.n}</span>`, `${num(s.tpw, 1)} a week`)}
       ${statBox('Net', `<span data-count="${s.net}" data-fmt="s$">${susd(s.net)}</span>`, `${kusd(s.pm)} a month · win ${num(s.win, 1)}%`, cls(s.net))}
       ${statBox('Profit factor', s.pf != null ? fPF(s.pf) : '—', `average trade ${fR(s.avg)}`)}
-      ${statBox('Half size', s.half, 'cold-streak trades')}</div>
+      ${statBox('Half size', s.half, isLIT() ? 'weekly-stop trades' : 'cold-streak trades')}</div>
     ${!paperSrc && fxOn() ? `<div class="card fx-card"><div class="card-h"><h3>Trade galaxy · ${rows.length} trades</h3><span class="meta">drag to turn · tap a star for its report</span></div><div class="fx3d galaxy" id="trGal"></div></div>` : ''}
     ${!paperSrc ? `<div class="card"><div class="card-h"><h3>Equity · the trades shown</h3><span class="meta">cumulative net $</span></div><div id="trEq"></div></div>` : ''}
     <div class="toolbar">
@@ -1929,26 +1962,36 @@ function periodCard(name, tag, p) {
       <div class="ev"><span>Eval within 1 month</span><div class="pf"><b class="up">${pct(m1.pass_pct)}</b><i>pass</i><b class="dn">${pct(m1.fail_pct)}</b><i>fail</i></div><div class="m2"><i class="p" style="width:${m1.pass_pct || 0}%"></i><i class="f" style="width:${m1.fail_pct || 0}%"></i></div></div>
       <div class="ev"><span>Back-to-back evals</span><div class="pf"><b class="up">${bb.passed ?? '—'}</b><i>passed</i><b class="dn">${bb.failed ?? '—'}</b><i>failed</i></div>${med != null ? `<div class="small mut">median ${med} sessions to pass · ${slow} of ${passes.length} took over 3 weeks</div>` : ''}</div></div></div>`;
 }
-VIEWS.results = (el) => {
-  const R = D.results;
-  if (!R) { el.innerHTML = head('Trades · results', 'Backtest results', '') + emptyBox('No backtest bundle in this build.', 'The cloud monitor adds it from research/lab/backtest_live.json.'); return; }
+VIEWS.results = (el) => resultsView(el, D.results, false);
+VIEWS.oldresults = (el) => resultsView(el, D.archive?.results, true);
+function resultsView(el, R, arch) {
+  if (!R) { el.innerHTML = head(arch ? 'Archive · results' : 'Trades · results', 'Backtest results', '') + emptyBox('No backtest bundle in this build.', arch ? 'The archive reads research/lab/backtest_engine.json.' : 'The cloud monitor adds it from research/lab/backtest_live.json.'); return; }
   const P = R.periods, m = R.meta || {}, yrs = Object.keys(P).filter(k => /^\d{4}$/.test(k)), mode = store.get('resEq', '2026');
-  el.innerHTML = head(`Trades · results · built ${esc(m.built || '')}`, 'The live strategy, replayed on 5 years of NQ futures',
+  const lit = !arch && isLIT() && P['2026 H2 (check)'];
+  el.innerHTML = head(`${arch ? 'Archive · Liquidity Engine' : 'Trades · ' + esc(stratName())} · results · built ${esc(m.built || '')}`, arch ? 'The previous strategy, replayed on 5 years of NQ futures' : lit ? `${esc(stratName())}, judged on 2026` : 'The live strategy, replayed on 5 years of NQ futures',
       `${esc(m.data?.source || '')}: ${esc(m.data?.first_session || '')} → ${esc(m.data?.last_session || '')}, ${m.data?.sessions || ''} sessions. ${esc(m.costs?.instrument || '')}, $${m.costs?.commission_round_trip_per_micro ?? ''}/micro round trip, ${m.costs?.slippage_pts ?? ''} pt slippage.`,
-      `<button class="btn ghost" type="button" data-go="trades">${icon('trades')}All trades</button>`)
-    + howto('results', `<p>The live strategy replayed exactly as the bot runs it (same 20-day window, sizing, cold-streak filter and costs) on real CME NQ futures data.</p>
+      arch ? `<button class="btn ghost" type="button" data-go="archive">${icon('archive')}Archive</button>` : `<button class="btn ghost" type="button" data-go="trades">${icon('trades')}All trades</button>`)
+    + (arch ? `<div class="ownr">${icon('archive')}<span><b>${esc(ARCH)}.</b> These are the numbers of the strategy the bot traded until 2026-10-18. The live strategy is ${esc(stratName())}: see Trades → Results.</span></div>` : '')
+    + howto('results', lit ? `<p>${esc(stratName())} replayed exactly as the bot runs it (same rules, sizing, weekly stop and costs) on real CME NQ futures data. 2026 trades enter on 1-minute bars; 2021-25 has no 1-minute data and runs on 5-minute bars, so it is a reference line only.</p>
+      <ul><li><b>2026 H1</b> (Jan–Jun) is where the settings were picked; <b>2026 H2</b> (Jul–Oct) is the check they were never tuned on. <b>Expect the H2 rate.</b></li>
+      <li><b>Net</b> and <b>per month</b> = the money made after costs. <b>PF (profit factor)</b> = money won ÷ money lost.</li>
+      <li><b>Eval within 2 weeks / 1 month</b> = start an MFFU eval on every possible day: the share that passed or failed within that time. The owner wants evals decided within 2 weeks and no pass slower than 3 weeks.</li></ul>`
+      : `<p>The live strategy replayed exactly as the bot runs it (same 20-day window, sizing, cold-streak filter and costs) on real CME NQ futures data.</p>
       <ul><li><b>Net</b> and <b>per month</b> = the money made after costs; per month spreads it over the calendar months of the period.</li><li><b>PF (profit factor)</b> = money won ÷ money lost. Above 1 makes money; above 1.5 is good.</li>
       <li><b>Max drawdown</b> = the biggest drop from a high point to a low point.</li>
       <li><b>Eval within 2 weeks / 1 month</b> = start an MFFU eval on every possible day: the share that passed or failed within that time. <b>Decided</b> = passed or failed; the owner wants evals decided within 2 weeks and no pass slower than 3 weeks.</li>
       <li><b>Back-to-back evals</b> = one eval after another for five years: how many passed and how many failed, and how long the passes took.</li></ul>
       <p>A change to the strategy is only adopted if it holds in 2026 <b>and</b> in 2021-25 and keeps 2-4 trades a week.</p>`)
-    + `<div class="grid g2">${periodCard('2026 YTD', 'This year', P['2026 YTD'])}${periodCard('5 years', '2021-11 → today', P['All years'])}</div>
+    + (lit ? `<div class="grid g2">${periodCard('2026', 'The judged year', P['2026 YTD'])}${periodCard('2026 H2 · the check', 'Jul–Oct, never tuned on: expect this rate', P['2026 H2 (check)'])}</div>
+      <div class="grid g2">${periodCard('2026 H1 · picked on', 'Jan–Jun, where the settings were chosen', P['2026 H1 (picked on)'])}${periodCard('2021-25 · reference', '5-minute bars only, never a gate', P['2021-25 (reference)'])}</div>`
+      : `<div class="grid g2">${periodCard('2026 YTD', 'This year', P['2026 YTD'])}${periodCard('5 years', '2021-11 → today', P['All years'])}</div>`)
+    + `
     ${fxOn() ? `<div class="card fx-card"><div class="card-h"><h3>Month city · net P&amp;L of every month</h3><span class="meta">towers up = profit, down = loss · drag · tap a tower</span></div><div class="fx3d city" id="rsCity"></div></div>` : ''}
     <div class="card"><div class="card-h"><h3>Equity</h3>${segHTML('rsEq', [['2026', '2026'], ['all', '5 years']], mode, 'sm')}</div><div id="rsEqC"></div></div>
     <div class="card"><div class="card-h"><h3>Net by month</h3><span class="meta">tap a bar</span></div><div id="rsMo"></div></div>
     <div class="card"><div class="card-h"><h3>By year</h3>${segHTML('rsYr', [['money', 'Money'], ['evals', 'Trades & evals']], store.get('rsYr', 'money'), 'sm')}</div><div class="tw" id="rsYrT"></div>
       <p class="card-d" style="margin:10px 0 0">Judged on 2026 and on 2021-25. Eval columns: pass % / fail % of MFFU evals started in that year.</p></div>
-    <div class="card"><div class="card-h"><h3>Back-to-back MFFU evals · 5 years</h3><span class="meta">a new eval starts the day after each one ends</span></div>
+    <div class="card"><div class="card-h"><h3>Back-to-back MFFU evals · ${lit ? 'since 2021-11 (2026 judged)' : '5 years'}</h3><span class="meta">a new eval starts the day after each one ends</span></div>
       <div class="runs">${(P['All years']?.eval?.back_to_back?.runs || []).map(r => `<span class="run ${r.result === 'PASS' ? 'pass' : r.result === 'FAIL' ? 'fail' : 'open'}" title="${esc(r.start)} ${r.result} after ${r.sessions} sessions">${icon(r.result === 'PASS' ? 'check' : r.result === 'FAIL' ? 'close' : 'clock')}<b>${esc(r.start.slice(2))}</b><i>${r.sessions}d</i></span>`).join('')}</div></div>
     <div class="note">${esc(m.method || '')}</div>`;
   const drawEq = () => { let eq = 0, pk = 0; const mm = store.get('resEq', '2026');
@@ -1964,7 +2007,7 @@ VIEWS.results = (el) => {
         : `<td class="v">${p.trades}</td><td class="v ${inFreq(p.per_week) ? 'up' : 'dn'}">${num(p.per_week, 1)}</td><td class="v">${ev(e, 'within_2_weeks')}</td><td class="v">${ev(e, 'within_1_month')}</td>`}</tr>`; }).join('')}</table>`;
   };
   drawYr(); onSeg('rsYr', (v) => { store.set('rsYr', v); drawYr(); });
-};
+}
 
 // ===================================================================== TRADES: replays
 let RP = null;
@@ -2056,11 +2099,12 @@ VIEWS.replays = (el) => {
 // ===================================================================== TRADES: stop sizes
 VIEWS.stops = (el) => {
   const R = D.results || {}, bk = R.stop_buckets || [], a = R.periods?.['All years'] || {}, mx = Math.max(1, ...bk.map(b => b.trades));
-  el.innerHTML = head('Trades · stop sizes · 5 years', 'Wide stop means less risk', 'Stops go beyond the sweep extreme, so their size varies. Size follows the stop: the wider it is, the fewer micros.')
-    + howto('stops', `<p>The stop always goes beyond the high or low that was swept, so its distance changes every trade (10 to 60 points). The bot never uses a fixed stop.</p>
+  const lit = isLIT(), y = R.periods?.['2026 YTD'] || {};
+  el.innerHTML = head(`Trades · ${esc(stratName())} · stop sizes · ${lit ? 'every replay trade since 2021-11' : '5 years'}`, 'Wide stop means less risk', 'Stops go beyond the sweep extreme, so their size varies. Size follows the stop: the wider it is, the fewer micros.')
+    + howto('stops', `<p>The stop always goes beyond the high or low that was swept, so its distance changes every trade (${lit ? '8 to 80 points for LIT; the 1-minute fill can widen it to about 88' : '10 to 60 points'}). The bot never uses a fixed stop.</p>
       <p>Size follows the stop: a wide stop trades fewer micros, so the dollars at risk stay controlled. Each row groups the 5-year trades by stop size: how often they won, the average result in R, and the typical size.</p>`)
-    + `<div class="stats">${statBox('Median stop', num(a.median_stop_pts, 1), 'points')}${statBox('Median micros', a.median_micros ?? '—', 'MNQ')}${statBox('Median $ risk', usd(a.median_risk_usd), 'per trade')}</div>
-    <div class="card"><div class="card-h"><h3>By stop size</h3><span class="meta">5 years of replay trades</span></div>${bk.length ? `<div class="tw"><table class="ht"><tr><th>Stop</th><th class="num">Trades</th><th class="hide-sm"></th><th class="num hide-sm">Win</th><th class="num">Avg R</th><th class="num">Net</th><th class="num">Micros</th><th class="num">$ risk</th></tr>
+    + `<div class="stats">${statBox('Median stop', num(a.median_stop_pts, 1), lit ? `points · 2026: ${num(y.median_stop_pts, 1)}` : 'points')}${statBox('Median micros', a.median_micros ?? '—', lit ? `MNQ · 2026: ${y.median_micros ?? '—'}` : 'MNQ')}${statBox('Median $ risk', usd(a.median_risk_usd), lit ? `per trade · 2026: ${usd(y.median_risk_usd)}` : 'per trade')}</div>
+    <div class="card"><div class="card-h"><h3>By stop size</h3><span class="meta">${lit ? 'every replay trade (2021-25 on 5m bars)' : '5 years of replay trades'}</span></div>${bk.length ? `<div class="tw"><table class="ht"><tr><th>Stop</th><th class="num">Trades</th><th class="hide-sm"></th><th class="num hide-sm">Win</th><th class="num">Avg R</th><th class="num">Net</th><th class="num">Micros</th><th class="num">$ risk</th></tr>
       ${bk.map(b => { const [lo, hi] = String(b.stop_pts).split('-').map(Number), net = ok(lo) && ok(hi) ? (D.trades || []).filter(t => t.risk_pts >= lo && t.risk_pts < hi).reduce((a, t) => a + (t.pnl || 0), 0) : null;
         return `<tr><td class="mono"><b>${esc(b.stop_pts)}</b></td><td class="num">${b.trades}</td><td class="hide-sm" style="min-width:64px;width:18%"><div class="meter"><i style="width:${b.trades / mx * 100}%"></i></div></td><td class="num hide-sm">${pct(b.win_pct)}</td><td class="num mono ${cR(b.avg_r)}">${fR(b.avg_r)}</td><td class="num mono ${cls(net)}">${kusd(net)}</td><td class="num">${b.median_micros}</td><td class="num mono">${usd(b.median_risk_usd)}</td></tr>`; }).join('')}</table></div>
       <p class="card-d" style="margin:10px 0 0">Net = the money those trades made after costs over the 5 years. Micros and $ risk are the typical (median) trade in each group.</p>` : emptyBox('No stop buckets in this build.', '')}</div>`;
@@ -2139,8 +2183,12 @@ const pickRun = (run) => { if (run?.id) location.hash = '#/run/' + encodeURIComp
 const moreLink = (n, shown, st, what) => n > shown ? `<div class="more" style="margin:12px 0 2px"><button class="btn ghost" type="button" data-xst="${st}">See all ${n} ${what}${icon('right')}</button></div>` : '';
 
 // ===================================================================== LAB: overview
+// write-ups of the live strategy first (data.json docs.writeups: strategy lit | engine | archive, LIT pinned first)
+const liveDocs = () => (D.docs?.writeups || []).filter(d => liveStrat() !== 'lit' || d.strategy === 'lit');
+const oldDocs = () => liveStrat() !== 'lit' ? [] : (D.docs?.writeups || []).filter(d => d.strategy !== 'lit');
+const oldRunsN = () => liveStrat() !== 'lit' ? 0 : ALLRUNS().filter(r => r.strategy !== 'lit').length;
 VIEWS.lab = (el) => {
-  const runs = RUNS_(), b = baseMeta(), W = D.docs?.writeups || [], A = D.docs?.archive || [];
+  const runs = RUNS_(), b = baseMeta(), W = liveDocs(), A = D.docs?.archive || [], lit = LITS();
   const n = (s) => runs.filter(r => r.status === s).length, others = runs.filter(r => !b || r.id !== b.id);
   const adopt = others.filter(r => r.status === 'adopt-candidate'), prom = others.filter(r => r.status === 'promising');
   const gap = (r) => Math.min((sp(r, '2026').net ?? -1e9) - (sp(b, '2026').net ?? 0), (sp(r, '2021-25').net ?? -1e9) - (sp(b, '2021-25').net ?? 0));
@@ -2151,8 +2199,9 @@ VIEWS.lab = (el) => {
     <div class="chips">${chip(`<i>PF 26</i> ${fPF(sp(r, '2026').pf)}${dlt(sp(r, '2026').pf, sp(b, '2026').pf, DF.pf, 'hi')}`)}${chip(`<i>PF 21-25</i> ${fPF(sp(r, '2021-25').pf)}${dlt(sp(r, '2021-25').pf, sp(b, '2021-25').pf, DF.pf, 'hi')}`)}
       ${chip(`<i>$/mo 21-25</i> ${kusd(sp(r, '2021-25').per_month)}${dlt(sp(r, '2021-25').per_month, sp(b, '2021-25').per_month, DF.money, 'hi')}`)}${chip(`<i>decided 2 wk</i> ${pct(sp(r, '2021-25').dec10)}`)}${chip(`<i>/wk</i> ${num(sp(r, '2021-25').tpw, 1)}`)}</div>${rcHTML(r)}</a>`;
   const cd = constData();
-  el.innerHTML = head('Lab · research hub', 'Every backtest, stored with its data',
-      `${plural(runs.length, 'run')} · ${plural(W.length, 'write-up')} · ${plural(A.length, 'archived report')}. Each run is the live strategy with one change, judged on 2026 and on 2021-25.`,
+  el.innerHTML = head(`Lab · research hub · ${esc(stratName())}`, lit ? `${esc(stratName())}: every backtest, stored with its data` : 'Every backtest, stored with its data',
+      lit ? `${plural(runs.length, 'LIT run')} · ${plural(W.length, 'LIT write-up')}. Each run is LIT with one change, judged on 2026 (picked on Jan–Jun, checked on Jul–Oct); 2021-25 is a reference line. The previous strategy’s ${oldRunsN()} runs are in the Archive.`
+        : `${plural(runs.length, 'run')} · ${plural(W.length, 'write-up')} · ${plural(A.length, 'archived report')}. Each run is the live strategy with one change, judged on 2026 and on 2021-25.`,
       `<button class="btn ghost" type="button" data-go="experiments">${icon('lab')}All experiments</button>`)
     + howto('lab', `<p>The Lab keeps every backtest the research agents run. Each one is the live strategy with <b>one</b> change, replayed on the same NQ futures data with the same costs, and scored the same way.</p>
       <ul><li><b>Constellation</b>: every run is a dot. Up = better profit factor in 2026, right = better in 2021-25. The dashed cross is the live strategy; the green corner is “better in both”. Bigger dot = more trades a week.</li>
@@ -2173,11 +2222,13 @@ VIEWS.lab = (el) => {
       ${!adopt.length && !prom.length && close.length ? `<div class="sec-h" style="margin:18px 0 4px"><span>Closest calls</span><i></i></div>${close.map(xRowHTML).join('')}` : ''}
       ${!others.length ? `<p class="note">Experiments appear here as soon as the research agents store them.</p>` : ''}</div>
     ${secH('Latest findings', `<button class="chipbtn" type="button" data-go="writeups"><span>All write-ups</span>${icon('right')}</button>`)}
-    ${W.length ? `<div class="dgrid">${W.slice(0, 3).map(docCard).join('')}</div>` : `<div class="card">${emptyBox('No write-ups yet.', 'Each experiment gets a write-up in plain words: the question, the numbers and the decision. Until then the archive holds the earlier research.', `<br><button class="btn" type="button" data-go="writeups">${icon('archive')}Open the archive</button>`)}</div>`}
+    ${W.length ? `<div class="dgrid">${W.slice(0, lit ? 5 : 3).map(docCard).join('')}</div>` : `<div class="card">${emptyBox('No write-ups yet.', 'Each experiment gets a write-up in plain words: the question, the numbers and the decision. Until then the archive holds the earlier research.', `<br><button class="btn" type="button" data-go="writeups">${icon('archive')}Open the archive</button>`)}</div>`}
     ${fams.length ? secH('By family') + `<div class="famgrid">${fams.map(f => { const rs = runs.filter(r => r.family === f), best = b ? [...rs].sort((x, y) => gap(y) - gap(x))[0] : rs[0];
       return `<button type="button" class="fam-t" data-fam="${f}" style="--c:${FAM[f][1]}"><b>${FAM[f][0]}</b><span>${plural(rs.length, 'run')} · ${rs.filter(r => r.status === 'rejected').length} rejected</span>${best ? `<em>${esc(best.title)}</em>` : ''}</button>`; }).join('')}</div>` : ''}
     ${secH('Newest runs')}
-    <div class="card">${newest.length ? newest.map(xRowHTML).join('') : emptyBox('No runs yet.', '')}</div>`;
+    <div class="card">${newest.length ? newest.map(xRowHTML).join('') : emptyBox('No runs yet.', '')}</div>
+    ${oldRunsN() ? `${secH(esc(ARCH))}<a class="card doc" href="#/archive"><div class="find"><div class="doc-meta">${stChip('archive')}<span>${oldRunsN()} runs · ${oldDocs().length} write-ups</span></div>
+      <h4>The previous strategy’s research</h4><p>Every experiment run on the Liquidity Engine before LIT went live, its write-ups, the old Monte Carlo and the cold-streak filter. Kept so it can come back.</p></div></a>` : ''}`;
   fxFill('lab-constellation', 'constellation', cd, { onPick: pickRun }, (fb) => constFb(fb, cd, pickRun));
   $$('.fam-t').forEach(t => t.onclick = () => { XS.fam = t.dataset.fam; XS.st = 'all'; XS.q = ''; XS.shown = 24; location.hash = '#/experiments'; });
   $$('[data-xst]').forEach(t => t.onclick = () => { XS.st = t.dataset.xst; XS.fam = 'all'; XS.q = ''; XS.shown = 24; location.hash = '#/experiments'; });
@@ -2204,9 +2255,13 @@ function xRows(all = false) {
 VIEWS.experiments = (el) => {
   const runs = RUNS_(), rows = xRows(), fc = (f) => runs.filter(r => r.family === f).length;
   const filtered = XS.fam !== 'all' || XS.st !== 'all' || XS.q;
-  el.innerHTML = head('Lab · experiments', `${plural(runs.length, 'backtest')}, judged on 2026 and 2021-25`,
-      'Each run is the live strategy with one change, replayed on the same NQ futures data with the same costs. The small numbers are the change against the live strategy.',
-      runs.length > 1 ? `<button class="btn ghost" type="button" data-go="compare">${icon('compare')}Compare runs</button>` : '')
+  const arch = archived(), lit = LITS(), cmpArg = arch ? [prevLock()?.id, baseId()].filter(Boolean).join(',') : '';
+  el.innerHTML = head(arch ? 'Archive · Liquidity Engine experiments' : `Lab · ${esc(stratName())} experiments`, arch ? `${plural(runs.length, 'backtest')} of the previous strategy` : lit ? `${plural(runs.length, 'LIT backtest')}, judged on 2026` : `${plural(runs.length, 'backtest')}, judged on 2026 and 2021-25`,
+      arch ? 'Each run is the Liquidity Engine (the strategy before LIT) with one change, judged on 2026 and 2021-25 against its own lock. Kept as the archive; none of them is live.'
+        : 'Each run is the live strategy with one change, replayed on the same NQ futures data with the same costs. The small numbers are the change against the live strategy.',
+      (runs.length > 1 ? `<button class="btn ghost" type="button" data-go="compare"${cmpArg ? ` data-arg="${esc(cmpArg)}"` : ''}>${icon('compare')}Compare runs</button>` : '')
+      + (arch ? `<button class="btn ghost" type="button" data-go="archive">${icon('archive')}Archive</button>` : oldRunsN() ? `<button class="btn ghost" type="button" data-go="experiments" data-arg="archive">${icon('archive')}Previous strategy’s runs</button>` : ''))
+    + (arch ? `<div class="ownr">${icon('archive')}<span><b>${esc(ARCH)}.</b> The live strategy is ${esc(stratName())}; its runs are under Lab → Experiments.</span></div>` : '')
     + howto('experiments', `<p>Each card is one backtest, stored with all its trades and days.</p>
       <ul><li>The two columns are <b>2026</b> (this year) and <b>2021-25</b> (the five years before it). A change has to work in both.</li>
       <li>The small number under each value is the change against the live strategy: <b class="up">green</b> is better (more profit, less drawdown, higher pass rate), <b class="dn">red</b> is worse.</li>
@@ -2271,8 +2326,14 @@ function kvList(obj, map, liveOf) {
 }
 // r = the run file (it carries live_params / live_equity_filter: the live settings the run was built on)
 function changesHTML(r) {
-  const b = baseMeta(), isB = !b || r.id === b.id, lp = r.live_params || D.strategy?.params || {}, lef = r.live_equity_filter ?? D.strategy?.equity_filter ?? null, ps = r.params || {};
+  const b = baseMeta(), isB = !b || r.id === b.id, ps = r.params || {};
+  // the settings a run was built on: LIT runs = the live LIT run's params; the engine's = live_params stored with the run
+  const lp = LITS() ? (b?.params || {}) : (r.live_params || D.strategy?.params || {}), lef = LITS() ? null : (r.live_equity_filter ?? D.strategy?.equity_filter ?? null);
   const sz = Object.fromEntries(Object.entries(r.sizing || {}).filter(([k]) => !HIDE_KEYS.has(k)));
+  if (isB && archived()) return `<p class="lead">Nothing: this is the <b>previous strategy’s lock</b> (Liquidity Engine, 2026-10-17, <span class="mono">live_model_engine.json</span>), the reference of every archived engine experiment.</p>
+    <details class="howto" style="margin:12px 0 0"><summary>${icon('rules')}<span>Its settings</span>${icon('down', 'chev')}</summary><div class="plist" style="padding:0 14px 6px">${kvList(lp, PARAM)}${kvList({ cold: lef }, SIZING)}</div></details>`;
+  if (isB && LITS()) return `<p class="lead">Nothing: this is the live strategy the bot trades today (${esc(stratName())}), as locked in <span class="mono">live_model.json</span>.</p>
+    <details class="howto" style="margin:12px 0 0"><summary>${icon('rules')}<span>Its settings</span>${icon('down', 'chev')}</summary><div class="plist" style="padding:0 14px 6px">${kvList(ps, PARAM)}</div></details>`;
   if (isB) return `<p class="lead">Nothing: this is the live strategy the bot trades today, as locked in <span class="mono">live_model.json</span>.</p>
     <details class="howto" style="margin:12px 0 0"><summary>${icon('rules')}<span>Live settings</span>${icon('down', 'chev')}</summary><div class="plist" style="padding:0 14px 6px">${kvList(lp, PARAM)}${kvList({ cold: lef }, SIZING)}</div></details>`;
   if (r.id === prevLock()?.id) return `<p class="lead">This is the <b>previous lock</b>, kept as a comparison: the settings the bot traded before the current version.</p>
@@ -2318,7 +2379,7 @@ VIEWS.run = (el) => {
   if (RS.id !== r.id) Object.assign(RS, { id: r.id, tf: 'all', y: 'all', sort: 'new', shown: 40 });
   const isB = !b || r.id === b.id;
   const tone = { 'adopt-candidate': 'var(--good)', promising: 'var(--accent-2)', rejected: 'var(--bad)', baseline: 'var(--accent)' }[r.status] || 'var(--muted)';
-  el.innerHTML = head(`Lab · experiment · ${esc(FAM[r.family]?.[0] || r.family)}`, esc(r.title || r.id), r.question ? esc(r.question) : '',
+  el.innerHTML = head(`${archived() ? 'Archive · Liquidity Engine experiment' : `Lab · ${esc(r.strategy === 'lit' ? 'LIT' : stratName())} experiment`} · ${esc(FAM[r.family]?.[0] || r.family)}`, esc(r.title || r.id), r.question ? esc(r.question) : '',
       `${isB ? stChip('baseline') : famChip(r.family) + stChip(r.status)}<span class="hint">${icon('clock')}${esc(r.built || '')}</span>`)
     + howto('run', `<ul><li><b>Verdict</b>: the research agent’s conclusion. The pills show the adoption rule: beat the live strategy in 2026 and in 2021-25 (net profit and profit factor) with 2-4 trades a week.</li>
       <li><b>What this run changes</b>: the one setting that differs from the live bot (with the live value under it).</li>
@@ -2428,7 +2489,7 @@ function archiveGroups() {
     docs: [...docs].sort((a, b) => (a.kind === 'tables') - (b.kind === 'tables') || String(b.date || '').localeCompare(String(a.date || ''))) }))
     .sort((a, b) => String(b.date).localeCompare(String(a.date)) || a.track.localeCompare(b.track));
 }
-const docOrder = () => [...(D.docs?.writeups || []), ...archiveGroups().flatMap(g => g.docs)];
+const docOrder = () => [...liveDocs(), ...oldDocs(), ...archiveGroups().flatMap(g => g.docs)];
 function docCard(d) {
   return `<a class="card doc" href="${docLink(d.slug)}"><div class="find"><div class="doc-meta">${famChip(d.family)}${stChip(d.status)}${d.date ? `<span>${esc(fDate(d.date))}</span>` : ''}<span>· ${readMin(d)} min read</span></div>
     <h4>${esc(d.title)}</h4>${d.summary ? `<p>${esc(d.summary)}</p>` : ''}${docRunChips(d)}</div></a>`;
@@ -2440,17 +2501,19 @@ function docRunChips(d) {
 }
 const arcRow = (d) => `<a class="arow" href="${docLink(d.slug)}"><span><b>${esc(d.title)}</b><small>${[d.date ? esc(fDate(d.date)) : '', d.kind === 'tables' ? 'tables' : readMin(d) + ' min read'].filter(Boolean).join(' · ')}${d.summary ? ' · ' + esc(d.summary) : ''}</small></span>${icon('right')}</a>`;
 VIEWS.writeups = (el) => {
-  const W = D.docs?.writeups || [], A = D.docs?.archive || [], q = WS.q;
+  const W = D.docs?.writeups || [], A = D.docs?.archive || [], q = WS.q, lit = liveStrat() === 'lit';
   const match = (d) => (WS.fam === 'all' || d.family === WS.fam) && (!q || [d.title, d.summary, d.track, d.family, d.status, ...(d.runs || [])].join(' ').toLowerCase().includes(q));
-  const w = W.filter(match), groups = archiveGroups().map(g => ({ ...g, docs: g.docs.filter(match) })).filter(g => g.docs.length), nA = groups.reduce((a, g) => a + g.docs.length, 0);
+  const w = liveDocs().filter(match), wo = oldDocs().filter(match), groups = archiveGroups().map(g => ({ ...g, docs: g.docs.filter(match) })).filter(g => g.docs.length), nA = groups.reduce((a, g) => a + g.docs.length, 0);
   const fams = Object.keys(FAM).filter(f => [...W, ...A].some(d => d.family === f)), fc = (f) => [...W, ...A].filter(d => d.family === f).length;
   el.innerHTML = head('Lab · write-ups', 'Every finding, written up', `${plural(W.length, 'research write-up')} · ${plural(A.length, 'archived report')} from the earlier research`)
     + howto('writeups', `<p><b>Write-ups</b> explain each experiment in plain words: the question, what was tested, the numbers in both periods and the decision. Each links to the runs behind it.</p>
       <p>The <b>archive</b> holds the earlier research reports, grouped by topic. Code is left out of the public copies. Tap any item to read it.</p>`)
     + `<div class="toolbar" style="margin-top:0"><label class="field">${icon('search')}<input class="inp" id="wQ" placeholder="Search titles and summaries…" value="${esc(WS.q)}" autocomplete="off" enterkeyhint="search"></label></div>
     <div class="chiprow" id="wFam">${[['all', 'All topics', W.length + A.length, 'var(--accent)'], ...fams.map(f => [f, FAM[f][0], fc(f), FAM[f][1]])].map(([v, l, c, col]) => `<button type="button" data-v="${v}" class="${WS.fam === v ? 'on' : ''}" style="--c:${col}"><span class="d"></span>${esc(l)}<i>${c}</i></button>`).join('')}</div>
-    ${secH('Research write-ups', `<em>${w.length}</em>`)}
+    ${secH(lit ? `${esc(stratName())} write-ups · the live strategy` : 'Research write-ups', `<em>${w.length}</em>`)}
     ${w.length ? `<div class="dgrid">${w.map(docCard).join('')}</div>` : `<div class="card">${emptyBox(W.length ? 'No write-up matches.' : 'No write-ups yet.', W.length ? 'Clear the search or pick another topic.' : 'The research agents publish one for each experiment: the question, the numbers and the decision.')}</div>`}
+    ${lit ? `${secH(esc(ARCH) + ' · write-ups', `<em>${wo.length}</em>`)}<details class="agrp"${q || WS.fam !== 'all' ? ' open' : ''}><summary>${stChip('archive')}<b>The Liquidity Engine’s research (before LIT)</b><span class="small mut">${plural(wo.length, 'write-up')}</span>${icon('down', 'chev')}</summary>
+      <div class="agrp-b">${wo.map(arcRow).join('') || emptyBox('No write-up matches.', '')}</div></details>` : ''}
     ${secH('Archive · earlier research', `<em>${nA}</em>`)}
     ${groups.length ? groups.map(g => `<details class="agrp"${q || WS.fam !== 'all' ? ' open' : ''}><summary>${famChip(g.family)}<b>${esc(g.track)}</b><span class="small mut">${plural(g.docs.length, 'report')}</span>${icon('down', 'chev')}</summary><div class="agrp-b">${g.docs.map(arcRow).join('')}</div></details>`).join('')
       : `<div class="card">${emptyBox('No archived report matches.', '')}</div>`}`;
@@ -2493,15 +2556,15 @@ function lossFb(el, L, onPick) {
   const xmax = 3;
   scatter(el, L.map(t => ({ x: Math.min(xmax, Math.max(0, t.mfe ?? 0)), y: t.risk_pts, r: Math.max(2.5, Math.min(9, 2 + Math.sqrt(Math.abs(t.pnl)) / 3.2)), color: LOSS_K[t.kind][0], alpha: .7, ref: t,
     tip: `<b>${esc(t.day)} · ${t.dir === 1 ? 'LONG' : 'SHORT'}</b><span>${fR(t.r)} · ${susd(t.pnl)}</span><span>best point ${fR(t.mfe)} · stop ${num(t.risk_pts, 1)} pts</span><span>${esc(t.kind)} · tap for the trade</span>` })),
-  { h: el.clientHeight, xmin: 0, xmax, ymin: 8, ymax: 64, xlab: 'best point before it lost (R) →', ylab: 'stop size (pts) →', xfmt: (v) => v.toFixed(1) + 'R', yfmt: (v) => Math.round(v), onPick,
-    bands: [{ x0: 0, x1: 0.3, color: '#ff5a7a', label: 'never worked' }, { x0: 1, x1: xmax, color: '#f2c35b', label: 'gave back' }, { x0: 0.3, x1: 1, y0: 45, color: '#b18cff', label: 'wide stop', at: 'bottom' }], empty: 'No losing trades.' });
+  { h: el.clientHeight, xmin: 0, xmax, ymin: 6, ymax: Math.max(64, ...L.map(t => (t.risk_pts || 0) + 4)), xlab: 'best point before it lost (R) →', ylab: 'stop size (pts) →', xfmt: (v) => v.toFixed(1) + 'R', yfmt: (v) => Math.round(v), onPick,
+    bands: [{ x0: 0, x1: 0.3, color: '#ff5a7a', label: 'never worked' }, { x0: 1, x1: xmax, color: '#f2c35b', label: 'gave back' }, { x0: 0.3, x1: 1, y0: wideAt(), color: '#b18cff', label: 'wide stop', at: 'bottom' }], empty: 'No losing trades.' });
 }
 VIEWS.losses = (el) => {
   const b = baseMeta();
-  el.innerHTML = head('Lab · loss lab', 'Why the bot loses, and how much', b ? `Every losing trade of the live strategy’s replay: ${plural(sp(b, 'all').n ?? 0, 'trade')} since 2021-11, costs included.` : '')
+  el.innerHTML = head(`Lab · loss lab · ${esc(stratName())}`, 'Why the bot loses, and how much', b ? `Every losing trade of the live strategy’s replay (run ${esc(b.id)}): ${plural(sp(b, 'all').n ?? 0, 'trade')} since 2021-11, costs included${LITS() ? '; LIT is judged on 2026, 2021-25 is on 5-minute bars (reference)' : ''}.` : '')
     + howto('losses', `<p>Every trade of the live strategy that lost money, sorted into four kinds:</p>
       <ul><li><b>Never worked</b>: it went against the entry almost at once (its best point was under +0.3R).</li><li><b>Gave back</b>: it was +1R or better, then ended below zero. With breakeven at 1R these are mostly scratches that only paid costs.</li>
-      <li><b>Wide stop</b>: a stop of 45+ points (size was already small).</li><li><b>Normal</b>: some progress, then the stop, the time stop or the giveback exit.</li></ul>
+      <li><b>Wide stop</b>: a stop of ${wideAt()}+ points (size was already small).</li><li><b>Normal</b>: some progress, then the stop or the end-of-day exit.</li></ul>
       <p>The cards show how many trades and how much money each kind cost; tap one to focus on it. <b>Streaks</b> are losses in a row. <b>Drawdowns</b> are drops from a high point of the account, how deep and how long until it was back.</p>`)
     + (b ? `<div id="lsBody">${skel(1)}${skel(1, 'lg')}${skel(2)}</div>` : `<div class="card">${emptyBox('No live-strategy run in this build yet.', 'The loss lab reads the stored live-strategy run (research/runs/baseline.json).')}</div>`);
   if (b) getRun(b.id).then(still(drawLosses)).catch(still((e) => { $('#lsBody').innerHTML = `<div class="card">${failBox(e)}</div>`; }));
@@ -2565,7 +2628,7 @@ VIEWS.learned = (el) => {
   const est = (r, n, risk, mo) => { if (!ok(r) || !ok(n) || !ok(risk)) return ''; const v = r * n * risk; return `<i class="${cls(v)}">≈ ${kusd(v)} · ${kusd(v / mo)} a month</i>`; };
   const kind = (v) => v.startsWith('better') ? 'good' : v.startsWith('worse') ? 'bad' : v.startsWith('not enough') ? 'na' : 'mixed';
   const cnt = (k) => f.filter(x => kind(x.verdict) === k).length, rows = f.filter(x => LS === 'all' || kind(x.verdict) === LS);
-  el.innerHTML = head(`Lab · lessons · ${plural(f.length, 'factor')}`, 'What the bot learned', 'Only a pattern that holds in both 2021-25 and 2026 counts as a lesson.')
+  el.innerHTML = head(`Lab · ${esc(stratName())} lessons · ${plural(f.length, 'factor')}`, 'What the bot learned', isLIT() ? 'Each factor of the LIT replay trades, 2026 next to 2021-25 (reference, 5-minute bars). Only a pattern that holds in both counts as a lesson; LIT itself is judged on 2026.' : 'Only a pattern that holds in both 2021-25 and 2026 counts as a lesson.')
     + howto('learned', `<p>${esc(sm.how_it_learns || 'Each factor is checked in two periods separately.')}</p>
       <ul><li><b>Lean in</b>: trades with this factor did better than average in both periods.</li><li><b>Avoid</b>: worse in both periods.</li>
       <li><b>Mixed</b>: better in one period, worse in the other, so it is not trusted.</li><li><b>Thin</b>: too few trades to say.</li></ul>
@@ -2585,7 +2648,7 @@ VIEWS.variants = (el) => {
   const v = D.variants || {}, cols = { ...(v.columns || {}), pm: 'net $ per month' }, keys = ['n', 'tpw', 'wk2', 'win', 'pf', 'net', 'pm', 'dd', 'stop', 'p10', 'f10', 'p20', 'f20', 'b2b'], list = VS.view === 'list';
   const MO = { y2026: tradeMonths('2026-01-01', '2026-12-31'), y5: tradeMonths('2000-01-01', '2100-01-01') };   // trading months (sessions ÷ 21), as the run library
   const val = (r, p, k) => k === 'pm' ? (ok(r[p]?.net) ? r[p].net / MO[p] : null) : r[p]?.[k];
-  el.innerHTML = head(`Lab · variants · built ${esc(v.built || '')}`, `${plural((v.rows || []).length, 'variant')}, two periods`, `${esc(v.note || '')}.`)
+  el.innerHTML = head(`Archive · Liquidity Engine · variants · built ${esc(v.built || '')}`, `${plural((v.rows || []).length, 'variant')}, two periods`, `${esc(v.note || '')}. These are variants of the previous strategy (before LIT).`)
     + howto('variants', `<p>The older strategy-lab table: every variant tested before the run library existed, this year (2026) next to five years. New experiments are stored with all their trades under <b>Experiments</b>.</p>
       <ul><li><b>pf</b> profit factor · <b>net</b> profit · <b>pm</b> net $ a month · <b>tpw</b> trades a week (the target is 2-4) · <b>dd</b> max drawdown · <b>p10 / f10</b> and <b>p20 / f20</b> = eval pass % / fail % within 2 weeks and within a month.</li><li>In the table, tap a column header to sort; every column is explained at the bottom.</li></ul>`)
     + `<div class="toolbar">${segHTML('vView', [['list', 'List'], ['table', 'Table']], VS.view)}${list ? '<span id="vSort"></span>' : segHTML('vPer', [['both', 'Both'], ['y2026', '2026'], ['y5', '5 years']], VS.per)}
@@ -2623,7 +2686,7 @@ VIEWS.variants = (el) => {
 };
 VIEWS.study = (el) => {
   const it = D.study || [];
-  el.innerHTML = head('Lab · study trades', `${plural(it.length, 'item')} under review`, 'Annotated charts and the engine’s numbers for trades you are reviewing.')
+  el.innerHTML = head('Archive · Liquidity Engine · study trades', `${plural(it.length, 'item')} under review`, 'Annotated charts and the old engine’s numbers for trades reviewed before LIT went live.')
     + howto('study', `<p>Each card is a trade picked out for a closer look: an annotated chart (tap it to open full size) and the engine’s numbers for the same trade. Some compare two versions, for example a fixed 15-point stop against the structural stop.</p>`)
     + (it.length ? `<div class="study">${it.map(s => `<article class="card">${s.image ? `<a href="${esc(s.image)}" target="_blank" rel="noopener"><img loading="lazy" src="${esc(s.image)}" alt="${esc(s.title)}"></a>` : ''}
       <div class="sb"><div class="eyebrow">${esc(fDate(s.date))}</div><h3>${esc(s.title)}</h3>
@@ -2646,17 +2709,27 @@ function getLab(name) {
 const MC = { start: 50000, target: 53000, maxLoss: 2000 };
 const mcRes = (p) => p.result || ((v) => v >= MC.target ? 'PASS' : v <= MC.start - MC.maxLoss ? 'FAIL' : 'OPEN')(p.days[p.days.length - 1] ?? MC.start);
 const MC_COL = { PASS: '#2ee59d', FAIL: '#ff2bd6', OPEN: '#a78bfa' };
-VIEWS.evals = (el) => {
-  el.innerHTML = head('Lab · simulated evals', 'How an MFFU eval tends to go', 'Hundreds of evals simulated from the live strategy’s replay trades: the odds of passing or failing within 2, 3, 4 and 6 weeks, how deep the drawdowns get, and every path.')
-    + howto('evals', `<p>Each simulated eval starts at $50,000 and replays the live strategy’s trades in a shuffled order until it passes ($53,000), fails (the trailing $2,000 max loss) or runs out of sessions (60).</p>
-      <ul><li><b>Locked strategy</b> = the live settings. <b>Fast-eval press</b> = the same trades with the eval pressed harder (bigger size early on): faster decisions, more fails.</li>
+VIEWS.evals = (el) => evalsView(el, 'montecarlo', false);
+VIEWS.oldevals = (el) => evalsView(el, 'montecarlo_engine', true);
+function evalsView(el, file, arch) {
+  const lit = !arch && isLIT();
+  el.innerHTML = head(arch ? 'Archive · Liquidity Engine · simulated evals' : `Lab · ${esc(stratName())} · simulated evals`, 'How an MFFU eval tends to go',
+      arch ? 'The previous strategy’s Monte Carlo (Oct 17): evals simulated from the Liquidity Engine’s 5-year replay. Kept for the archive; the live strategy’s is under Lab → Evals.'
+        : lit ? `Thousands of evals simulated from ${esc(stratName())}’s 2026 sessions (the judged year): the odds of passing or failing within 2, 3, 4 and 6 weeks, how deep the drawdowns get, and every path.`
+        : 'Hundreds of evals simulated from the live strategy’s replay trades: the odds of passing or failing within 2, 3, 4 and 6 weeks, how deep the drawdowns get, and every path.',
+      arch ? `<button class="btn ghost" type="button" data-go="archive">${icon('archive')}Archive</button>` : '')
+    + howto('evals', `<p>Each simulated eval starts at $50,000 and replays ${lit ? 'LIT’s 2026 sessions in shuffled weeks (blocks of 5 sessions)' : 'the strategy’s trades in a shuffled order'} until it passes ($53,000), fails (the trailing $2,000 max loss, checked against the intraday low) or runs out of sessions (60).</p>
+      <ul><li><b>Locked strategy</b> = the live settings. ${lit ? '<b>Fast-eval</b> = LIT’s fast-eval sizing switch ($800 up to a 40-point stop, off in the live settings): faster decisions, many more fails.' : '<b>Fast-eval press</b> = the same trades with the eval pressed harder (bigger size early on): faster decisions, more fails.'}</li>
+      ${lit ? '<li>2026 was split for the research: the settings were picked on Jan–Jun (H1) and checked on Jul–Oct (H2). The <b>H2</b> odds are the honest ones.</li>' : ''}
       <li>The owner wants an eval <b>decided within 2 weeks</b> (10 sessions) and <b>no pass slower than 3 weeks</b>: the two dashed walls in the fan.</li>
       <li>In the fan every line is one eval: <b class="up">green</b> passed, <b class="dn">magenta</b> failed, violet still open at session 60. The 3D view lets you drag through them; tap a path for its numbers.</li></ul>`)
+    + (arch ? `<div class="ownr">${icon('archive')}<span><b>${esc(ARCH)}.</b> GO / WAIT eval timing came from the old cold-streak filter; LIT has no such filter, so any session is a fine start.</span></div>` : '')
     + `<div id="mcBody">${skel(1)}${skel(1, 'lg')}${skel(1)}</div>`;
-  getLab('montecarlo').then(still(drawEvals)).catch(still((e) => { $('#mcBody').innerHTML = `<div class="card">${emptyBox('No simulated evals in this build.', `${esc(e.message)}. The research lab writes research/lab/montecarlo.json; the cloud monitor copies it on its next run.`)}</div>`; }));
-};
-function drawEvals(M) {
+  getLab(file).then(still((M) => drawEvals(M, arch))).catch(still((e) => { $('#mcBody').innerHTML = `<div class="card">${emptyBox('No simulated evals in this build.', `${esc(e.message)}. ${arch ? 'The archive keeps research/archive/engine-2026-10-17/montecarlo.json.' : 'tools/lit_dash_data.py writes research/lab/montecarlo.json; the cloud monitor copies it on its next run.'}`)}</div>`; }));
+}
+function drawEvals(M, arch) {
   const box = $('#mcBody'); if (!box) return;
+  const litM = M.strategy_model === 'lit', pressL = litM ? 'Fast-eval' : 'Press';
   const P = M.prob || {}, Q = M.press || null, paths = (M.paths || []).filter(p => Array.isArray(p.days) && p.days.length), n = paths.length;
   const cnt = { PASS: 0, FAIL: 0, OPEN: 0 }; paths.forEach(p => cnt[mcRes(p)]++);
   const val = (o, k) => !o ? null : k === 'dec_2w' ? (ok(o.pass_2w) && ok(o.fail_2w) ? o.pass_2w + o.fail_2w : null) : o[k];
@@ -2667,7 +2740,8 @@ function drawEvals(M) {
   const fmt = (v, f) => f === 'n' ? (ok(v) ? num(v, 0) : '—') : f === '$' ? (ok(v) ? usd(v) : '—') : pct(v);
   const cell = (o, k, better, f, ref) => { const v = val(o, k); return `<td class="v">${fmt(v, f)}${ref ? dlt(v, val(ref, k), f === 'n' ? DF.n0 : f === '$' ? DF.money : DF.pp, better, '') : ''}</td>`; };
   const dec = val(P, 'dec_2w');
-  box.innerHTML = `${timingCard(LV().eval_timing, true)}
+  const half = M.halves || null, ex = (M.exact || []).filter(x => x.sizing === 'live' || !x.sizing);
+  box.innerHTML = `${arch ? timingCard(D.archive?.eval_timing, true) : timingCard(LV().eval_timing, true)}
     <div class="stats">${statBox('Simulated evals', n || '—', n ? `${cnt.PASS} passed · ${cnt.FAIL} failed · ${cnt.OPEN} open at 60` : 'summary only')}
       ${statBox('Pass in 2 weeks', pct(P.pass_2w), 'the owner’s target window', 'up')}${statBox('Decided in 2 weeks', pct(dec), `fail ${pct(P.fail_2w)}`)}
       ${statBox('Sessions to pass', ok(P.pass_days_median) ? Math.round(P.pass_days_median) : '—', `median · 90% within ${ok(P.pass_days_p90) ? Math.round(P.pass_days_p90) : '—'}`)}</div>
@@ -2676,13 +2750,18 @@ function drawEvals(M) {
       ${fxBox('lab-montecarlo', 'montecarlo')}
       <div class="legend"><span><i class="dot2" style="background:${MC_COL.PASS}"></i>passed</span><span><i class="dot2" style="background:${MC_COL.FAIL}"></i>failed</span><span><i class="dot2" style="background:${MC_COL.OPEN}"></i>open at session 60</span></div></div>
     <div class="grid g2 astart">
-      <div class="card"><div class="card-h"><h3>Odds</h3><span class="meta">${Q ? 'locked strategy vs fast-eval press' : 'locked strategy'}</span></div>
-        <div class="tw"><table class="ht"><tr><th>Within…</th><th class="c">Locked</th>${Q ? '<th class="c">Press</th>' : ''}</tr>
+      <div class="card"><div class="card-h"><h3>Odds</h3><span class="meta">${Q ? (litM ? 'live sizing vs the fast-eval switch (off)' : 'locked strategy vs fast-eval press') : 'locked strategy'}</span></div>
+        <div class="tw"><table class="ht"><tr><th>Within…</th><th class="c">Locked</th>${Q ? `<th class="c">${pressL}</th>` : ''}</tr>
           ${ROWS.map(r => r[0] === 'grp' ? `<tr class="grp"><td colspan="${Q ? 3 : 2}">${r[1]}</td></tr>` : `<tr><td class="k">${r[1]}</td>${cell(P, r[0], r[2], r[3])}${Q ? cell(Q, r[0], r[2], r[3], P) : ''}</tr>`).join('')}</table></div>
-        ${typeof M.press_rule === 'string' ? `<p class="card-d" style="margin:10px 0 0">Press rule: ${esc(M.press_rule)}</p>` : ''}</div>
+        ${typeof M.press_rule === 'string' ? `<p class="card-d" style="margin:10px 0 0">${litM ? 'Fast-eval' : 'Press rule'}: ${esc(M.press_rule)}</p>` : ''}</div>
       <div class="card"><div class="card-h"><h3>When evals get decided</h3><span class="meta">per session · passes up, fails down</span></div><div id="mcHist"></div>
         <p class="card-d" style="margin:10px 0 0">The walls are 2 weeks (10 sessions) and 3 weeks (15). ${typeof M.method === 'string' ? esc(M.method) : ''}</p></div></div>
-    ${M.built ? `<div class="note">Built ${esc(M.built)}${M.writeup ? ` · <a class="lnk" href="#/writeups">write-up</a>` : ''}.</div>` : ''}`;
+    ${half || ex.length ? `<div class="card"><div class="card-h"><h3>${litM ? '2026 halves and the real history' : 'The real history'}</h3><span class="meta">pass / fail %</span></div><div class="tw"><table class="ht">
+      <tr><th>Case</th><th class="c">2 weeks</th><th class="c">4 weeks</th><th class="c">60 sessions</th></tr>
+      ${half ? Object.entries(half).map(([k, h]) => `<tr><td class="k">${esc(k)} · simulated${k.endsWith('H2') ? ' · <b>the honest rate</b>' : ''}</td><td class="v">${pct(h.pass_2w)} / <span class="dn">${pct(h.fail_2w)}</span></td><td class="v">${pct(h.pass_4w)} / <span class="dn">${pct(h.fail_4w)}</span></td><td class="v">${pct(h.pass_60)} / <span class="dn">${pct(h.fail_60)}</span></td></tr>`).join('') : ''}
+      ${ex.map(x => `<tr><td class="k">${esc(x.pool === 'all' ? 'all years' : x.pool)} · real history${x.pool === '2021-25' && litM ? ' (reference)' : ''}</td><td class="v">${pct(x.pass_2w)} / <span class="dn">${pct(x.fail_2w)}</span></td><td class="v">${pct(x.pass_4w)} / <span class="dn">${pct(x.fail_4w)}</span></td><td class="v">${pct(x.pass_60)} / <span class="dn">${pct(x.fail_60)}</span></td></tr>`).join('')}</table></div>
+      <p class="card-d" style="margin:10px 0 0">Real history = a fresh eval started on every session of the period and followed for up to 60 sessions (no resampling).</p></div>` : ''}
+    ${M.built ? `<div class="note">Built ${esc(M.built)}${M.strategy ? ' · ' + esc(M.strategy) : ''}${M.writeup ? ` · <a class="lnk" href="#/writeups">write-up</a>` : ''}.</div>` : ''}`;
   const data = { paths, start: MC.start, target: MC.target, maxLoss: MC.maxLoss, prob: { pass_2w: P.pass_2w, fail_2w: P.fail_2w, pass_3w: P.pass_3w, pass_4w: P.pass_4w, pass_6w: P.pass_6w, open_60: P.open_60 } };
   fxFill('lab-montecarlo', 'montecarlo', data, { onPick: (p) => p && openPath(p) }, (fb) => mcFb(fb, paths));
   histSVG($('#mcHist'), M.hist);
@@ -2733,19 +2812,27 @@ function histSVG(el, hist) {
 // ===================================================================== LAB: intraday heat (research/lab/intraday_heat.json: weekday × hour of the live strategy's trades)
 const HS = { per: store.get('heatPer', 'all'), m: store.get('heatM', 'net'), pick: null };
 const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-VIEWS.intraday = (el) => {
+VIEWS.intraday = (el) => heatView(el, 'intraday_heat', false);
+VIEWS.oldheat = (el) => heatView(el, 'intraday_heat_engine', true);
+function heatView(el, file, arch) {
   if (ARG && ['all', '2026', '2021-25'].includes(ARG)) HS.per = ARG;
-  el.innerHTML = head('Lab · intraday heat', 'When the bot wins, by weekday and hour', 'Every trade of the live strategy’s replay, grouped by the weekday and the ET hour it entered. Green cells made money, red cells lost it.')
-    + howto('intraday', `<p>Rows are weekdays, columns are the ET hour the trade entered (the killzones are 09:30–11:30 and 13:30–15:30, so most trades sit in 09, 10, 13 and 14).</p>
+  const lit = !arch && isLIT();
+  el.innerHTML = head(arch ? 'Archive · Liquidity Engine · intraday heat' : `Lab · ${esc(stratName())} · intraday heat`, 'When the bot wins, by weekday and hour', `Every trade of the ${arch ? 'previous strategy’s' : 'live strategy’s'} replay, grouped by the weekday and the ET hour it entered. Green cells made money, red cells lost it.`,
+      arch ? `<button class="btn ghost" type="button" data-go="archive">${icon('archive')}Archive</button>` : '')
+    + howto('intraday', lit ? `<p>Rows are weekdays, columns are the ET hour the trade entered, 01:00 to 15:00. LIT enters 02:00–15:30 ET, so London (02:00–05:00) is in the grid; most 2026 trades enter before 08:00.</p>
+      <ul><li><b>Net</b> colours a cell by the money it made after costs; <b>Avg R</b> by the average result in R; <b>Trades</b> by how many there were.</li>
+      <li><b>2026</b> is the judged year; <b>H1</b> is where the settings were picked, <b>H2</b> the check. 2021-25 is a reference (5-minute bars). Few trades in a cell means noise, not a rule.</li></ul><p>Tap a cell for its numbers. The 3D view shows the same grid as towers.</p>`
+      : `<p>Rows are weekdays, columns are the ET hour the trade entered (the killzones are 09:30–11:30 and 13:30–15:30, so most trades sit in 09, 10, 13 and 14).</p>
       <ul><li><b>Net</b> colours a cell by the money it made after costs; <b>Avg R</b> by the average result in R; <b>Trades</b> by how many there were.</li>
       <li>Switch between <b>2026</b> and <b>2021-25</b>: a pattern only counts if it shows in both. Few trades in a cell means noise, not a rule.</li></ul><p>Tap a cell for its numbers. The 3D view shows the same grid as towers.</p>`)
     + `<div id="htBody">${skel(1)}${skel(1, 'lg')}</div>`;
-  getLab('intraday_heat').then(still(drawHeat)).catch(still((e) => { $('#htBody').innerHTML = `<div class="card">${emptyBox('No intraday heat file in this build.', `${esc(e.message)}. The research lab writes research/lab/intraday_heat.json ({cells: [{dow, hour, n, avg_r, net}], periods}); the cloud monitor copies it on its next run.`)}</div>`; }));
-};
+  getLab(file).then(still(drawHeat)).catch(still((e) => { $('#htBody').innerHTML = `<div class="card">${emptyBox('No intraday heat file in this build.', `${esc(e.message)}. tools/lit_dash_data.py writes research/lab/intraday_heat.json ({cells: [{dow, hour, n, avg_r, net}], periods}); the cloud monitor copies it on its next run.`)}</div>`; }));
+}
 function heatCells(Hd) { return HS.per === 'all' ? Hd.cells || [] : Hd.periods?.[HS.per] || []; }
 function drawHeat(Hd) {
   const box = $('#htBody'); if (!box) return;
-  const cells = heatCells(Hd), pers = [['all', 'All years'], ...Object.keys(Hd.periods || {}).map(k => [k, k])];
+  if (HS.per !== 'all' && !(Hd.periods || {})[HS.per]) HS.per = 'all';
+  const cells = heatCells(Hd), pers = [['all', Hd.cells_label || 'All years'], ...Object.keys(Hd.periods || {}).map(k => [k, k.replace(' (reference)', ' ref')])];
   const m = HS.m, val = (c) => m === 'net' ? c.net : m === 'avg_r' ? c.avg_r : c.n;
   const tot = cells.reduce((a, c) => a + (c.n || 0), 0), net = cells.reduce((a, c) => a + (c.net || 0), 0);
   const ranked = cells.filter(c => (c.n || 0) >= 5).sort((a, b) => (b.net || 0) - (a.net || 0)), best = ranked[0], worst = ranked[ranked.length - 1];
@@ -2756,7 +2843,7 @@ function drawHeat(Hd) {
       ${statBox('Best cell', best ? cellName(best) : '—', best ? `${kusd(best.net)} · ${plural(best.n, 'trade')}` : 'needs 5+ trades', 'up')}${statBox('Worst cell', worst ? cellName(worst) : '—', worst ? `${kusd(worst.net)} · ${plural(worst.n, 'trade')}` : '', 'dn')}</div>
     <div class="card fx-card"><div class="card-h"><h3>Heat · ${esc(pers.find(p => p[0] === HS.per)?.[1] || HS.per)} · ${m === 'net' ? 'net $' : m === 'avg_r' ? 'average R' : 'trades'}</h3><div>${fxSeg('lab-heat')}</div></div>
       ${fxBox('lab-heat', 'heat')}<div class="heat-i" id="htInfo">Tap a cell for its numbers.</div></div>
-    ${Hd.built ? `<div class="note">Built ${esc(Hd.built)}.</div>` : ''}`;
+    ${Hd.built ? `<div class="note">Built ${esc(Hd.built)}.${Hd.note ? ' ' + esc(Hd.note) : ''}</div>` : ''}`;
   fxFill('lab-heat', 'heat', { cells, label: pers.find(p => p[0] === HS.per)?.[1] || HS.per, metric: m }, {}, (fb) => heatFb(fb, cells, val));
   onSeg('htPer', (v) => { HS.per = v; store.set('heatPer', v); FX?.detachAll(); drawHeat(Hd); });
   onSeg('htM', (v) => { HS.m = v; store.set('heatM', v); FX?.detachAll(); drawHeat(Hd); });
@@ -2912,16 +2999,18 @@ setInterval(() => { if (PAGE === 'news' && D && !document.hidden && !$('.sheet-w
 // ===================================================================== SYSTEM
 VIEWS.system = (el) => {
   const lv = LV(), ef = lv.equity_filter || {}, h = lv.health || {};
-  const live = { engine: [lv.model_state ? String(lv.model_state).toLowerCase() : 'no state yet', lv.last_run && Date.now() / 1000 - lv.last_run < 2400 ? '' : 'off'],
+  const wk = litWeek(), sh = lv.shadow;
+  const live = { engine: [`${stratName()} · ${lv.model_state ? String(lv.model_state).replace(/^LIT:\s*/, '').toLowerCase() : 'no state yet'}`, lv.last_run && Date.now() / 1000 - lv.last_run < 2400 ? '' : 'off'],
     eval: [lv.eval ? `${susd(lv.eval.profit)} · ${usd(lv.eval.cushion)} cushion` : 'waiting for trades', ''], cold: [ef.enabled === false ? 'filter off' : ef.on === false ? sizeWord(ef.mult ?? sizeRules().cold) + ' size now' : 'full size now', ef.on === false ? 'warn' : ''],
-    risk: [`$${D.sizing?.risk_usd ?? 800} up to ${D.sizing?.risk_ref_stop ?? 20} pts`, ''], strategy: [D.strategy?.chosen || D.sizing?.chosen ? 'locked ' + (D.strategy?.chosen || D.sizing.chosen) : 'locked', ''], alerts: ['keys in GitHub Secrets', ''],
+    risk: [`$${D.sizing?.risk_usd ?? 800} up to ${D.sizing?.risk_ref_stop ?? 20} pts${isLIT() && wk ? ' · ' + (wk.mult < 1 ? 'weekly stop: half' : `weekly stop ${wk.stops}/${wk.after}`) : ''}`, wk && wk.mult < 1 ? 'warn' : ''],
+    archive: [sh ? `Liquidity Engine · shadow paper${sh.error ? ' · error' : ''}` : 'Liquidity Engine, Oct 17', sh?.error ? 'warn' : ''], strategy: [D.strategy?.chosen || D.sizing?.chosen ? 'locked ' + (D.strategy?.chosen || D.sizing.chosen) : 'locked', ''], alerts: ['keys in GitHub Secrets', ''],
     sources: [h.last_bar ? 'last bar ' + h.last_bar : 'no live bars yet', h.error ? 'warn' : ''], settings: [`3D ${fxPref()}`, ''], news: newsTile() };
   const tile = ([id, l, ic, d]) => `<button type="button" class="tile" data-go="${id}"><span class="tile-i">${icon(ic)}</span><span class="tile-t">${l}</span><span class="tile-d">${d}</span>
     ${live[id] ? `<span class="tile-live"><span class="dot ${live[id][1]}"></span>${esc(live[id][0])}</span>` : ''}<span class="tile-go">${icon('right')}</span></button>`;
-  el.innerHTML = head('System', 'Every part of the bot', 'Live from the cloud monitor and the latest backtest, readable with the PC off.')
-    + howto('system', `<p>Each tile is one part of the bot with its live state underneath. The cloud monitor runs on GitHub Actions every 15 minutes in the killzones on market days, so this works with the PC off. It trades on paper only.</p>`)
+  el.innerHTML = head(`System · ${esc(stratName())}`, 'Every part of the bot', `The live strategy is ${esc(stratName())}. Live from the cloud monitor and the latest backtest, readable with the PC off.`)
+    + howto('system', `<p>Each tile is one part of the bot with its live state underneath. The cloud monitor runs on GitHub Actions ${isLIT() ? 'every 30 minutes, 02:00–16:25 ET,' : 'every 15 minutes in the killzones'} on market days, so this works with the PC off. It trades on paper only. <b>Archive</b> keeps the previous strategy (Liquidity Engine, Oct 17) so it can come back.</p>`)
     + `<div class="tiles">${GROUPS.find(g => g.id === 'system').pages.slice(1).map(tile).join('')}</div>
-    ${secH('Research and results')}<div class="tiles">${[['results', 'Results', 'results', 'The live strategy, 5-year replay'], ['experiments', 'Experiments', 'lab', 'Every backtest with its data'],
+    ${secH('Research and results')}<div class="tiles">${[['results', 'Results', 'results', `${stratName()}, judged on 2026`], ['experiments', 'Experiments', 'lab', 'Every backtest with its data'],
       ['writeups', 'Write-ups', 'doc', 'Findings in plain words'], ['losses', 'Loss lab', 'loss', 'Why the bot loses'], ['evals', 'Simulated evals', 'sim', 'Odds of passing by week'], ['intraday', 'Intraday heat', 'heat', 'Weekday × hour']].map(tile).join('')}</div>`;
 };
 // the News tile's live line: in a blackout, the next blackout, or the next event
@@ -2933,17 +3022,20 @@ function newsTile() {
   return next ? [`next: ${next.title} in ${cdFmt(next.t - now)}`, next.t - now < 3600 && next.impact === 'high' ? 'warn' : ''] : ['no USD events ahead', ''];
 }
 VIEWS.engine = (el) => {
-  const lv = LV(), s = sessionNow(), idx = STEPS.indexOf(lv.model_state), age = lv.last_run ? Date.now() / 1000 - lv.last_run : 1e9;
-  const PD = { steps: STEP_L.slice(), idx, live: s.open && age < 2400, killzone: !!s.inkz }, pos = lv.position;
-  el.innerHTML = head('System · Liquidity Engine · cloud paper bot', esc(lv.model_state || 'No state yet'), esc(lv.strategy || ''))
-    + howto('engine', `<p>Every session the engine works through five steps: <b>Sweep</b> (price runs a liquidity pool from 08:00 ET), <b>IFVG</b> (an IFVG or CISD trigger inside a killzone), <b>Order</b> (the entry order is working), <b>Trade</b> (managing the position) and <b>Done</b> (one trade a day).</p>
+  const lv = LV(), s = sessionNow(), idx = stepIdx(lv), age = lv.last_run ? Date.now() / 1000 - lv.last_run : 1e9, lit = isLIT();
+  const PD = { steps: stepLabels().slice(), idx, live: s.open && age < 2400, killzone: !!s.inkz }, pos = lv.position;
+  el.innerHTML = head(`System · ${esc(stratName())} · cloud paper bot`, esc(lv.model_state || 'No state yet'), esc(lv.strategy || ''))
+    + howto('engine', lit ? `<p>Every session LIT works through five steps: <b>Sweep</b> (a LIT level is taken at least 0.5 ATR deep, after an inducement swing), <b>CISD</b> (a 5-minute displacement candle and the CISD close), <b>Limit</b> (a limit at the CISD level for 30 minutes, then a 1-minute CISD), <b>Trade</b> (managing the position, breakeven at 1R, flat by 15:55) and <b>Done</b> (one trade a day).</p>
+      <p>The lit step is where the cloud bot is now. It enters only 02:00–15:30 ET. It runs on paper only and never places real orders.</p>`
+      : `<p>Every session the engine works through five steps: <b>Sweep</b> (price runs a liquidity pool from 08:00 ET), <b>IFVG</b> (an IFVG or CISD trigger inside a killzone), <b>Order</b> (the entry order is working), <b>Trade</b> (managing the position) and <b>Done</b> (one trade a day).</p>
       <p>The lit step is where the cloud bot is now. Outside the killzones it waits. It runs on paper only and never places real orders.</p>`)
     + `<div class="card fx-card"><div class="card-h"><h3>Pipeline · where the bot is now</h3><div>${fxSeg('engine-pipeline')}</div></div>${fxBox('engine-pipeline', 'pipeline')}${pcLine()}</div>
     <div class="grid g2"><div class="card"><div class="card-h"><h3>Position</h3><span class="meta">paper</span></div>${pos ? `<div class="kv">${Object.entries(pos).filter(([, v]) => v == null || typeof v !== 'object').slice(0, 12).map(([k, v]) => `<div><span>${esc(humanKey(k))}</span><b>${esc(typeof v === 'number' ? num(v) : v ?? '—')}</b></div>`).join('')}</div>` : emptyBox('Flat.', 'No paper position open.')}</div>
       <div class="card"><div class="card-h"><h3>Cloud monitor</h3><span class="meta">GitHub Actions</span></div><div class="kv one"><div><span>Last run</span><b>${lv.last_run ? ago(lv.last_run) : '—'}</b></div><div><span>Runs so far</span><b>${lv.runs ?? '—'}</b></div><div><span>Last bar</span><b>${esc(lv.health?.last_bar || '—')}</b></div>
-        <div><span>Price</span><b>${num(lv.price)}</b></div><div><span>Mode</span><b>paper only · never places orders</b></div><div><span>Schedule</span><b>every 15 min in the killzones, market days</b></div></div></div></div>
+        <div><span>Price</span><b>${num(lv.price)}</b></div><div><span>Mode</span><b>paper only · never places orders</b></div><div><span>Schedule</span><b>${lit ? 'every 30 min, 02:00–16:25 ET, market days' : 'every 15 min in the killzones, market days'}</b></div></div></div></div>
     <div class="grid g2"><div class="card"><div class="card-h"><h3>Today’s events</h3><span class="meta">${esc(lv.today || '')}</span></div>${feedHTML(lv.events)}</div>
-      <div class="card"><div class="card-h"><h3>Latest engine signals</h3><span class="meta">the 20-day window</span></div>${sigList(lv.engine_trades)}</div></div>`;
+      <div class="card"><div class="card-h"><h3>Latest ${lit ? 'LIT' : 'engine'} signals</h3><span class="meta">${lit ? 'the recent window' : 'the 20-day window'}</span></div>${sigList(lv.engine_trades)}</div></div>
+    ${lit ? shadowCard() : ''}`;
   fxFill('engine-pipeline', 'pipeline', PD, {}, (fb) => pipeFb(fb, PD));
 };
 function evalCard(ev, RD) {
@@ -2966,32 +3058,30 @@ VIEWS.eval = (el) => {
     + `<div class="card fx-card"><div class="card-h"><h3>Eval reactor</h3><div>${fxSeg('eval-reactor')}</div></div>${fxBox('eval-reactor', 'reactor')}</div>
     <div class="grid g2"><div class="card"><div class="card-h"><h3>Account</h3><span class="meta">cloud paper</span></div>${evalCard(ev, RD)}</div>
       <div class="card"><div class="card-h"><h3>Balance by day</h3><span class="meta">dashed line = $53,000 target</span></div><div id="evC"></div></div></div>
-    ${secH('Backtest odds')}
-    <div class="grid g2">${[['2026 YTD', '2026'], ['All years', '5 years']].map(([k, l]) => { const e = P[k]?.eval || {}; return `<div class="card"><div class="card-h"><h3>${l}</h3><span class="meta">rolling eval starts</span></div>
+    ${secH(`Backtest odds · ${esc(stratName())}`)}
+    <div class="grid g2">${(isLIT() && P['2026 H2 (check)'] ? [['2026 YTD', '2026 (judged)'], ['2026 H2 (check)', '2026 H2 · the honest rate']] : [['2026 YTD', '2026'], ['All years', '5 years']]).map(([k, l]) => { const e = P[k]?.eval || {}; return `<div class="card"><div class="card-h"><h3>${l}</h3><span class="meta">rolling eval starts</span></div>
       <div class="kv"><div><span>Pass in 2 weeks</span><b class="up">${pct(e.within_2_weeks?.pass_pct)}</b></div><div><span>Fail in 2 weeks</span><b class="dn">${pct(e.within_2_weeks?.fail_pct)}</b></div>
       <div><span>Pass in 1 month</span><b class="up">${pct(e.within_1_month?.pass_pct)}</b></div><div><span>Fail in 1 month</span><b class="dn">${pct(e.within_1_month?.fail_pct)}</b></div>
       <div><span>Back-to-back</span><b>${e.back_to_back?.passed ?? '—'} passed · ${e.back_to_back?.failed ?? '—'} failed</b></div></div></div>`; }).join('')}</div>`;
   fxFill('eval-reactor', 'reactor', RD, {}, (fb) => reactorFb(fb, RD));
   lineChart($('#evC'), pts.length ? [{ x: 'start', y: 50000 }, ...pts] : [], { h: 200, fmt: (v) => '$' + (v / 1000).toFixed(1) + 'k', ref: 53000, empty: '<b>No paper trades yet.</b>The line starts at $50,000 with the cloud bot’s first trade.' });
 };
-VIEWS.cold = (el) => {
-  if (isLIT() && !el.dataset.oldCold) {
+// LIT's own size rules (weekly stop, Monday rule): on Risk & Sizing
+function litRulesHTML() {
     const wk = litWeek(), mon = litMonday(), L = D.strategy?.lit || {};
-    el.innerHTML = head('System · size rules', 'LIT has no cold-streak filter', `The live strategy is ${esc(stratName())}. Its size rule is the <b>weekly stop</b>; the cold-streak filter belongs to the old strategy, which runs as a paper shadow.`)
-      + `<div class="grid g2"><div class="card"><div class="eyebrow">Weekly stop · now</div>
+    return `<div class="grid g2"><div class="card"><div class="eyebrow">Weekly stop · now</div>
           <div style="margin:10px 0 14px"><b style="font-size:26px;font-weight:800" class="${wk && wk.mult < 1 ? 'wn' : 'up'}">${wk ? (wk.mult < 1 ? sizeWord(wk.mult).toUpperCase() + ' SIZE' : 'FULL SIZE') : 'FULL SIZE'}</b></div>
           <div class="kv"><div><span>Stop-outs this week</span><b>${wk ? `${wk.stops} of ${wk.after}` : '—'}</b></div><div><span>Week</span><b>${esc(wk?.week || '—')}</b></div></div>
           <p class="small mut" style="margin:10px 0 0">After ${L.wk_stop ? L.wk_stop[0] : 2} STOP exits in a calendar week (Mon–Fri), the rest of that week trades at ${L.wk_stop ? sizeWord(L.wk_stop[1]) : 'half'} size (rounded down once, at least 1 micro). Monday starts at full size again. Counted from the cloud paper ledger.</p></div>
         <div class="card"><div class="eyebrow">Monday rule</div><div style="margin:10px 0 14px"><b style="font-size:22px;font-weight:800">${L.monday === false ? 'OFF' : esc(mon?.text || 'Applies on Mondays')}</b></div>
-          <p class="small mut">On Monday, once the session has taken Friday’s high, only shorts; once it has taken Friday’s low, only longs. A skipped setup leaves the day free for another.</p></div></div>
-        <div class="hero-links" style="margin-top:12px"><button class="chipbtn" type="button" id="oldCold">${icon('cold')}<span>The old strategy’s cold-streak filter</span></button></div>`;
-    $('#oldCold').onclick = () => { el.dataset.oldCold = '1'; VIEWS.cold(el); };
-    return;
-  }
-  const c = D.cold || {}, cfg = c.config || {}, now = c.now || LV().equity_filter || {}, win = c.window || [], R = sizeRules(), lb = R.lb, thr = R.thr, word = sizeWord(R.cold);
-  const T = [...(D.trades || [])].reverse(), roll = T.map((t, i) => ({ t, s: T.slice(Math.max(0, i - lb), i).reduce((a, x) => a + (x.r || 0), 0) })).filter(x => x.t.day.startsWith('2026'));
+          <p class="small mut">On Monday, once the session has taken Friday’s high, only shorts; once it has taken Friday’s low, only longs. A skipped setup leaves the day free for another.</p></div></div>`;
+}
+VIEWS.cold = (el) => {
+  const lit = isLIT(), c = D.cold || {}, cfg = c.config || {}, now = c.now || LV().equity_filter || {}, win = c.window || [], R = sizeRules(), lb = R.lb, thr = R.thr, word = sizeWord(R.cold);
   const mx = Math.max(1, ...win.map(x => Math.abs(x.r))), pos = Math.max(2, Math.min(98, 50 + (now.sum_r || 0) / Math.max(6, Math.abs(now.sum_r || 0)) * 48));
-  el.innerHTML = head('System · cold-streak filter', `${word[0].toUpperCase() + word.slice(1)} size when the last ${lb} signals sum ≤ ${num(thr, 1)}R`, `Every signal is still traded, so the bot keeps its 2-4 setups a week. In a cold streak it trades at ${word} size.`)
+  el.innerHTML = head(lit ? 'Archive · Liquidity Engine · cold-streak filter' : 'System · cold-streak filter', `${word[0].toUpperCase() + word.slice(1)} size when the last ${lb} signals sum ≤ ${num(thr, 1)}R`, `Every signal is still traded, so the bot keeps its 2-4 setups a week. In a cold streak it trades at ${word} size.`,
+      lit ? `<button class="btn ghost" type="button" data-go="archive">${icon('archive')}Archive</button>` : '')
+    + (lit ? `<div class="ownr">${icon('archive')}<span><b>${esc(ARCH)}.</b> The cold-streak filter belongs to the previous strategy; it still sizes its paper shadow. ${esc(stratName())} has no cold-streak filter: its size rule is the weekly stop (System → Risk &amp; Sizing).</span></div>` : '')
     + howto('cold', `<p>The bot adds up the results (in R) of the last ${lb} finished signals. If the sum is ${num(thr, 1)}R or less, the next trades are taken at <b>${word} size</b>; once it turns positive, it goes back to full size.</p>
       <ul><li>The slider shows where the sum is now: left = cold, right = warm.</li><li>The bars are those ${lb} results, oldest to newest.</li><li>The line is the same sum through 2026: below the dashed line = ${word} size.</li></ul>
       <p>Skipping trades in a cold streak tested better on paper but paused trading for 14 weeks, so the bot trades smaller instead of stopping.</p>`)
@@ -3003,10 +3093,49 @@ VIEWS.cold = (el) => {
         <div class="kv"><div><span>Sum of the last ${now.n ?? lb}</span><b class="${cls(now.sum_r)}">${fR(now.sum_r)}</b></div><div><span>Size</span><b>×${num(now.mult ?? 1, 2)}</b></div></div><div class="note">${esc(now.reason || '')}</div></div>
       <div class="card span2"><div class="card-h"><h3>The window · last ${win.length} finished signals</h3><span class="meta">oldest → newest</span></div>
         ${win.length ? `<div class="rbars">${win.map(x => `<div class="rbar" title="${esc(x.day || '')} ${fR(x.r)}"><i class="${x.r >= 0 ? 'pos' : 'neg'}" style="height:${Math.abs(x.r) / mx * 50}%;${x.r >= 0 ? 'bottom:50%' : 'top:50%'}"></i></div>`).join('')}</div>` : emptyBox('No signals yet.', '')}</div></div>
-    <div class="card"><div class="card-h"><h3>Rolling ${lb}-signal sum · 2026 replay</h3><span class="meta">below the dashed line = ${word} size</span></div><div id="cdC"></div></div>`;
-  lineChart($('#cdC'), roll.map(x => ({ x: x.t.day.slice(5), y: x.s, tip: `<b>${x.t.day}</b><span>prior ${lb}: ${fR(x.s)}</span><span>${x.t.half ? 'reduced size' : 'full size'} · ${fR(x.t.r)}</span>` })), { h: 220, fmt: (v) => (v > 0 ? '+' : '') + v.toFixed(0) + 'R', ref: thr, color: 'var(--accent-2)' });
+    <div class="card"><div class="card-h"><h3>Rolling ${lb}-signal sum · 2026 replay${lit ? ' of the old engine' : ''}</h3><span class="meta">below the dashed line = ${word} size</span></div><div id="cdC">${lit ? skLines(5) : ''}</div></div>`;
+  // the rolling sum over the strategy's own replay trades: the live bundle, or (archived) the engine's stored run
+  const drawRoll = (TT) => { const T = [...TT].sort((a, b) => (a.entry_t || 0) - (b.entry_t || 0)), roll = T.map((t, i) => ({ t, s: T.slice(Math.max(0, i - lb), i).reduce((a, x) => a + (x.r || 0), 0) })).filter(x => x.t.day.startsWith('2026'));
+  lineChart($('#cdC'), roll.map(x => ({ x: x.t.day.slice(5), y: x.s, tip: `<b>${x.t.day}</b><span>prior ${lb}: ${fR(x.s)}</span><span>${x.t.half ? 'reduced size' : 'full size'} · ${fR(x.t.r)}</span>` })), { h: 220, fmt: (v) => (v > 0 ? '+' : '') + v.toFixed(0) + 'R', ref: thr, color: 'var(--accent-2)' }); };
+  if (!lit) drawRoll(D.trades || []);
+  else if (LAB().archive_baseline) getRun(LAB().archive_baseline).then(still((run) => drawRoll(run.T))).catch(still((e) => { $('#cdC').innerHTML = failBox(e); }));
 };
+// LIT's sizing (engine/lit.py qty_for): $risk up to the reference stop, risk x ref / stop beyond it, micros = budget / (stop x $2)
+// rounded down, at most 40, none under 1 micro; the weekly stop halves it (one rounding, floor 1); fast_eval moves the reference to 40
+function litMicros(stop, ref, mult = 1) {
+  const S = D.strategy || {}, pr = S.params || {}, risk = pr.risk_usd ?? 800, maxM = pr.max_micros ?? 40;
+  const budget = stop <= ref ? risk : risk * ref / stop, base = Math.max(0, Math.min(maxM, Math.floor(budget / (stop * 2))));
+  const m = mult >= 1 || base < 1 ? base : Math.max(1, Math.floor(base * mult));
+  return { budget, base, m, usd: m * stop * 2 };
+}
+function litRisk(el) {
+  const S = D.strategy || {}, pr = S.params || {}, ls = S.lit_sizing || {}, L = S.lit || {}, mode = ls.mode || 'normal';
+  const ref = pr.risk_ref_stop ?? 20, fref = ls.fast_ref_stop ?? 40, risk = pr.risk_usd ?? 800, wkm = L.wk_stop ? L.wk_stop[1] : 0.5, wkn = L.wk_stop ? L.wk_stop[0] : 2;
+  const lo = L.min_stop ?? 8, hi = (L.max_stop ?? 80) + 8, st = Math.max(lo, Math.min(hi, store.get('rkStopL', 40)));
+  el.innerHTML = head(`System · ${esc(stratName())} · risk & sizing`, 'Size follows the stop', `Full $${risk} risk up to a ${ref}-pt stop; wider stops risk $${risk} × ${ref} ÷ stop. MNQ micros at $2 a point, at most ${pr.max_micros ?? 40}. Sizing mode now: <b>${esc(mode)}</b>.`)
+    + howto('risk', `<p>LIT’s stop sits 1 tick beyond the sweep extreme (planned 8 to 80 points; the 1-minute fill can widen it to about 88), so its size changes every trade. The bot sizes every trade from it:</p>
+      <ul><li>Up to a ${ref}-point stop the budget is <b>$${risk}</b>. Wider stops get less: $${risk} × ${ref} ÷ stop (a 40-point stop gets ${usd(litMicros(40, ref).budget)}).</li>
+      <li>Micros = budget ÷ (stop × $2), rounded down, at most ${pr.max_micros ?? 40}; under 1 micro = no trade.</li>
+      <li><b>Weekly stop</b>: after ${wkn} stop-outs in a calendar week, ${sizeWord(wkm)} size for the rest of that week (rounded down once, at least 1 micro).</li>
+      <li><b>Fast-eval</b> (a switch, ${mode === 'fast_eval' ? '<b>on</b>' : 'off'}): the full $${risk} up to a ${fref}-point stop, for faster evals with many more fails.</li>
+      <li>No cold-streak filter and no late-entry rule: those belonged to the previous strategy (System → Archive).</li></ul><p>Move the slider and flip the switches to try any trade.</p>`)
+    + `<div class="card"><div class="card-h"><h3>Calculator</h3></div>
+      <div style="display:flex;align-items:center;gap:14px;margin:6px 0 14px"><span class="small mut">Stop</span><input type="range" id="rkS" min="${lo}" max="${hi}" step="0.25" value="${st}" aria-label="Stop points"><b class="mono" id="rkV" style="min-width:86px;text-align:right"></b></div>
+      <div class="rk-sw"><label class="small">Weekly stop (${sizeWord(wkm)})<input type="checkbox" class="switch" id="rkW"></label><label class="small">Fast-eval (${fref}-pt reference)<input type="checkbox" class="switch" id="rkF" ${mode === 'fast_eval' ? 'checked' : ''}></label></div>
+      <div class="calc" id="rkO"></div></div>
+    <div class="card"><div class="card-h"><h3>Size by stop</h3><span class="meta">micros · $ at risk</span></div><div class="tw"><table class="ht"><tr><th>Stop</th><th class="c hide-sm">Budget</th><th class="c">Normal</th><th class="c">Weekly stop</th><th class="c">Fast-eval</th></tr>
+      ${[8, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80].map(s => { const f = litMicros(s, ref), w = litMicros(s, ref, wkm), x = litMicros(s, fref);
+        const cell = (z) => `<td class="v">${z.m || '—'}<span class="dl">${z.m ? usd(z.usd) : 'no trade'}</span></td>`; return `<tr><td class="mono"><b>${s} pts</b></td><td class="v hide-sm">${usd(f.budget)}</td>${cell(f)}${cell(w)}${cell(x)}</tr>`; }).join('')}</table></div>
+      <p class="card-d" style="margin:10px 0 0">Each cell: micros, and below it the $ at risk at the stop (micros × stop × $2). Weekly stop = ${sizeWord(wkm)} size after ${wkn} stop-outs in the week; fast-eval is ${mode === 'fast_eval' ? 'ON' : 'off'} in the live settings.</p></div>
+    ${secH('Loss rules now')}${litRulesHTML()}`;
+  const upd = () => { const s = +$('#rkS').value, z = litMicros(s, $('#rkF').checked ? fref : ref, $('#rkW').checked ? wkm : 1); store.set('rkStopL', s);
+    $('#rkV').textContent = num(s, 2) + ' pts'; $('#rkS').style.setProperty('--fill', (s - lo) / (hi - lo) * 100 + '%');
+    $('#rkO').innerHTML = `<div><span>Budget</span><b>${usd(z.budget)}</b></div><div><span>Size rule</span><b>${$('#rkW').checked ? sizeWord(wkm) + ' (weekly stop)' : 'full'}</b></div><div><span>Micros</span><b class="${z.m ? '' : 'dn'}">${z.m || '0 · no trade'}</b></div>
+      <div><span>$ at risk</span><b>${usd(z.usd)}</b></div><div><span>At 1.5R</span><b>${susd(z.usd * 1.5)}</b></div><div><span>8R bank</span><b class="up">${susd(z.usd * 8)}</b></div>`; };
+  $('#rkS').oninput = upd; $('#rkW').onchange = upd; $('#rkF').onchange = upd; upd();
+}
 VIEWS.risk = (el) => {
+  if (isLIT()) { litRisk(el); return; }
   const R = sizeRules(), st = store.get('rkStop', 40), rules = [['rkC', `Cold streak (${sizeWord(R.cold)})`, R.cold], ...(R.late != null ? [['rkL', `Late entry (${sizeWord(R.late)})`, R.late]] : []), ['rkT', `Trending day (${sizeWord(R.trend)})`, R.trend]];
   el.innerHTML = head('System · risk & sizing', 'Size follows the stop', `Full $${R.risk} risk up to a ${R.ref}-pt stop; wider stops risk $${R.risk} × ${R.ref} ÷ stop. MNQ micros at $2 a point, at most 40.`)
     + howto('risk', `<p>The stop sits beyond the sweep’s high or low, so its size changes. The bot sizes every trade from it:</p>
@@ -3056,7 +3185,9 @@ function litStrategy(el) {
     ${cols.length ? `${secH('How it has done')}<div class="card"><div class="card-h"><h3>LIT replay of these settings</h3><span class="meta">real CME NQ futures · costs included</span></div>
       <div class="tw"><table class="ht"><tr><th>Number</th>${cols.map(([l]) => `<th class="c">${esc(l)}</th>`).join('')}</tr>${rows.map(([l, f]) => `<tr><td class="k">${l}</td>${cols.map(([, p]) => `<td class="v">${f(p)}</td>`).join('')}</tr>`).join('')}</table></div>
       <p class="card-d" style="margin-top:10px">Expect the H2 rate, not the full-year rate: H1 was tuned, H2 was not. 2021-25 has no 1-minute data, so it is a reference line only.</p></div>` : ''}
-    ${secH('The rules, word for word')}<div class="card"><article class="md">${r.html || '<p class="mut">STRATEGY.md is not in this build.</p>'}</article></div>`;
+    ${secH('The rules, word for word')}<div class="card"><article class="md">${r.html || '<p class="mut">STRATEGY.md is not in this build.</p>'}</article></div>
+    ${D.archive ? `${secH('Previous strategy')}<a class="card doc" href="#/archive"><div class="find"><div class="doc-meta">${stChip('archive')}<span>locked ${esc(fDate(D.archive.strategy?.chosen || '2026-10-17'))}</span></div><h4>${esc(ARCH)}</h4>
+      <p>The Liquidity Engine traded until 2026-10-18 and keeps running as a paper shadow. Its rules, numbers, files and the steps to switch back are in the Archive.</p></div></a>` : ''}`;
 }
 VIEWS.strategy = (el) => {
   if (isLIT() && D.strategy?.rules_md) { litStrategy(el); return; }
@@ -3115,25 +3246,57 @@ VIEWS.strategy = (el) => {
 VIEWS.alerts = (el) => {
   el.innerHTML = head('System · alerts', 'Phone alerts with the PC off', 'The cloud monitor sends sweeps, entries, exits and an end-of-day summary to Telegram and/or Discord.')
     + `<div class="card"><div class="card-h"><h3>Setup</h3><span class="meta">keys live in GitHub Secrets only</span></div><div class="kv one"><div><span>Telegram</span><b>secrets TG_TOKEN + TG_CHAT</b></div><div><span>Discord</span><b>secret DISCORD_WEBHOOK</b></div><div><span>Sent for</span><b>sweep · signal · entry · exit · end of day</b></div>
-      <div><span>Cold streak</span><b>entries are marked HALF SIZE</b></div><div><span>Where</span><b>GitHub repo → Settings → Secrets → Actions</b></div></div></div>`;
+      ${isLIT() ? `<div><span>Strategy</span><b>${esc(stratName())} · entries 02:00–15:30 ET</b></div><div><span>Weekly stop</span><b>entries after 2 stop-outs in the week show their half size</b></div><div><span>Previous strategy</span><b>paper shadow, no alerts</b></div>` : `<div><span>Cold streak</span><b>entries are marked HALF SIZE</b></div>`}<div><span>Where</span><b>GitHub repo → Settings → Secrets → Actions</b></div></div></div>`;
 };
 VIEWS.sources = (el) => {
   const m = D.results?.meta || {}, lv = LV(), h = lv.health || {}, L = LAB(), docs = D.docs || {};
   const row = (k, v) => `<div><span>${k}</span><b>${v}</b></div>`;
   el.innerHTML = head('System · data sources', 'Where every number comes from', 'Backtests use TradingView CME futures exports only. The live paper feed is Yahoo NQ=F. This site is static: the cloud monitor rebuilds it every run.')
-    + howto('sources', `<ul><li><b>Backtests, replays and the Lab</b>: TradingView CME NQ1! futures, 5-minute bars, replayed exactly like the live loop with commission and slippage.</li>
+    + howto('sources', `<ul><li><b>Backtests, replays and the Lab</b>: TradingView CME NQ1! futures, ${isLIT() ? '5-minute bars plus 1-minute bars for 2026 (LIT’s entries)' : '5-minute bars'}, replayed exactly like the live loop with commission and slippage.</li>
       <li><b>Live paper feed</b>: Yahoo NQ=F, polled by the cloud monitor (GitHub Actions). It is never used for testing.</li><li><b>This page</b> reads one file, data.json, rebuilt on every cloud-monitor run; run files and write-ups load when you open them and stay readable offline afterwards.</li></ul>`)
     + `<div class="grid g2"><div class="card"><div class="card-h"><h3>Backtest &amp; replays</h3></div><div class="kv one">${row('Source', esc(m.data?.source || '—'))}${row('Sessions', `${esc(m.data?.first_session || '')} → ${esc(m.data?.last_session || '')} (${m.data?.sessions || '—'})`)}
         ${row('Bars', num(m.data?.bars, 0))}${row('Costs', `${esc(m.costs?.instrument || '')} · $${m.costs?.commission_round_trip_per_micro ?? ''}/micro · ${m.costs?.slippage_pts ?? ''} pt slip`)}${row('Built', esc(m.built || '—'))}
         ${row('Replays', `${(D.replays?.sessions || []).length} sessions · built ${esc(D.replays?.built || '—')}`)}${row('Variants', `${(D.variants?.rows || []).length} · built ${esc(D.variants?.built || '—')}`)}</div></div>
-      <div class="card"><div class="card-h"><h3>Live feed · cloud monitor</h3></div><div class="kv one">${row('Feed', 'Yahoo NQ=F 5m (polled)')}${row('Last bar', esc(h.last_bar || '—'))}${row('Bars today', `${h.bars_today ?? '—'} (${h.rth_bars_today ?? '—'}/78 RTH)`)}
+      <div class="card"><div class="card-h"><h3>Live feed · cloud monitor</h3></div><div class="kv one">${row('Feed', isLIT() ? 'Yahoo NQ=F 5m + 1m (polled)' : 'Yahoo NQ=F 5m (polled)')}${row('Last bar', esc(h.last_bar || '—'))}${row('Bars today', `${h.bars_today ?? '—'} (${h.rth_bars_today ?? '—'}/78 RTH)`)}
         ${row('Gaps today', esc((h.gaps_today || []).join(', ') || 'none'))}${row('Runs', `${lv.runs ?? '—'} since ${lv.first_run ? new Date(lv.first_run * 1000).toLocaleDateString() : '—'}`)}${row('Last run', lv.last_run ? new Date(lv.last_run * 1000).toLocaleString() : '—')}
         ${row('data.json built', new Date(D.built).toLocaleString())}${row('Error', esc(h.error || 'none'))}</div></div></div>
     <div class="card"><div class="card-h"><h3>Lab · run library and write-ups</h3></div><div class="kv one">${row('Runs', `${L.count ?? (L.runs || []).length} stored · index built ${esc(L.built || '—')}`)}${row('Baseline', esc(L.baseline || 'missing'))}
-      ${row('Write-ups', `${(docs.writeups || []).length} · archive ${(docs.archive || []).length} reports`)}${row('Research files', (D.lab_files || []).length ? esc((D.lab_files || []).join(', ')) : 'none')}${row('Method', 'exact live-loop replay + cold-streak filter + sizing; costs included')}</div></div>
+      ${row('Write-ups', `${(docs.writeups || []).length} · archive ${(docs.archive || []).length} reports`)}${row('Research files', (D.lab_files || []).length ? esc((D.lab_files || []).join(', ')) : 'none')}${row('Method', isLIT() ? 'LIT replay (engine/lit.py, the same code as the live loop) + weekly stop + sizing; costs included' : 'exact live-loop replay + cold-streak filter + sizing; costs included')}${D.archive ? row('Archive', esc(D.archive.dir || '')) : ''}</div></div>
     <div class="card"><div class="card-h"><h3>News hub</h3><span class="meta">tools/news_hub.py · free sources only</span></div><div class="kv one">${(() => { const N = D.news || {}; return row('Events', `${(N.events || []).length} in the window · ${(N.headlines || []).length} headlines`) + row('Built', `${N.built ? esc(new Date(N.built).toLocaleString()) : '—'}${N.offline ? ' · offline build (cached files)' : ''}`)
       + row('Sources live', `${(N.sources || []).filter(x => x.ok).length} of ${(N.sources || []).length}`) + row('Calendar', 'ForexFactory, Fed FOMC calendar, BLS, BEA, TreasuryDirect, Fed RSS, the engine calendar') + row('Headlines', 'Fed, BLS, BEA, Treasury, White House, MarketWatch, CNBC, FXStreet, Investing.com, ForexLive (RSS)'); })()}</div></div>
     <div class="note">${esc(m.method || '')}</div>`;
+};
+
+// ===================================================================== ARCHIVE: the previous strategy (Liquidity Engine, locked 2026-10-17)
+// data.json archive (tools/build_web_dashboard.py _archive): its lock, its last 5-year bundle (backtest_engine.json), its eval
+// timing; its runs (lab archive_baseline / archive_prev and every engine experiment), its write-ups, its Monte Carlo and heat files.
+VIEWS.archive = (el) => {
+  const A = D.archive;
+  if (!A) { el.innerHTML = head('System · archive', 'Nothing archived', '') + `<div class="card">${emptyBox('No archived strategy in this build.', 'The archive appears while LIT is the live strategy.')}</div>`; return; }
+  const S = A.strategy || {}, ab = runMeta(LAB().archive_baseline), pv = runMeta(LAB().archive_prev), readme = allDocs().find(d => d.slug === A.readme);
+  const nOld = oldRunsN(), wo = oldDocs().filter(d => d.slug !== A.readme);
+  const ev = (x, a, b) => ok(x?.[a]) ? `${pct(x[a])} / <span class="dn">${pct(x[b])}</span>` : '—';
+  const rows = [['Trades a week', (x) => num(x.tpw, 2)], ['Profit factor', (x) => fPF(x.pf)], ['Net', (x) => `<span class="${cls(x.net)}">${susd(x.net)}</span>`], ['Per month', (x) => susd(x.per_month)],
+    ['Max drawdown', (x) => usd(x.dd)], ['Eval pass / fail · 2 weeks', (x) => ev(x, 'p10', 'f10')], ['Eval pass / fail · 1 month', (x) => ev(x, 'p20', 'f20')], ['Back-to-back (passed / failed)', (x) => esc(String(x.b2b || '—')).replace('/', ' / ')]];
+  const cols = [['2026', '2026'], ['2021-25', '2021-25'], ['all', '5 years']];
+  const tile = ([go, l, ic, d, arg]) => `<button type="button" class="tile" data-go="${go}"${arg ? ` data-arg="${esc(arg)}"` : ''}><span class="tile-i">${icon(ic)}</span><span class="tile-t">${l}</span><span class="tile-d">${d}</span><span class="tile-go">${icon('right')}</span></button>`;
+  el.innerHTML = head(`System · ${esc(ARCH)}`, esc(String(S.label || 'Liquidity Engine').split(' (')[0]), `The strategy the bot traded until 2026-10-18, locked ${esc(fDate(S.chosen || '2026-10-17'))}. ${esc(stratName())} replaced it; this one keeps running as a paper shadow (no alerts) and can come back.`,
+      readme ? `<button class="btn ghost" type="button" data-go="writeup" data-arg="${esc(readme.slug)}">${icon('doc')}How to switch back</button>` : '')
+    + howto('archive', `<p>Nothing here is live. These pages are the previous strategy as it was on Oct 17: its rules, its 5-year numbers, the cold-streak filter that sized it, its Monte Carlo and GO / WAIT eval timing, and every experiment run on it.</p>
+      <p>The live strategy is <b>${esc(stratName())}</b>: Today, Trades, Lab and System show it.</p>`)
+    + `<div class="ownr">${icon('archive')}<span><b>Archived, not deleted.</b> Files: ${esc(A.dir || '')}/README.md (the rules in plain words, the numbers, where every file is and the exact steps to switch back).</span></div>
+    <div class="card"><div class="card-h"><h3>Its numbers</h3><span class="meta">${ab ? `run ${esc(ab.id)} · exact live-loop replay, costs in` : 'stored run missing'}</span></div>
+      ${ab ? `<div class="tw"><table class="ht"><tr><th>Number</th>${cols.map(([, l]) => `<th class="c">${l}</th>`).join('')}</tr>${rows.map(([l, f]) => `<tr><td class="k">${l}</td>${cols.map(([s]) => `<td class="v">${f(sp(ab, s))}</td>`).join('')}</tr>`).join('')}</table></div>` : emptyBox('No stored run of it in this build.', '')}
+      <p class="card-d" style="margin:10px 0 0">2026 was a good year for it: over 2021-25 the honest range is +$8k to +$17k. ${pv ? `The morning lock of Oct 17 is run <a class="lnk" href="${runLink(pv.id)}">${esc(pv.id)}</a>.` : ''}</p>
+      <div class="hero-links" style="margin-top:12px">${ab ? `<button class="chipbtn" type="button" data-go="run" data-arg="${esc(ab.id)}">${icon('lab')}<span>Its stored run</span></button>` : ''}${ab ? `<button class="chipbtn" type="button" data-go="compare" data-arg="${esc((LAB().baseline || '') + ',' + ab.id)}">${icon('compare')}<span>Compare with ${esc(stratName())}</span></button>` : ''}</div></div>
+    ${timingCard(A.eval_timing)}
+    ${shadowCard()}
+    ${secH('Its pages')}<div class="tiles">${[readme ? ['writeup', 'Rules and how to switch back', 'doc', 'The archive README in plain words', readme.slug] : null, ['oldresults', 'Its results', 'results', '5-year replay, months, eval odds'],
+      ['cold', 'Cold-streak filter', 'cold', 'Quarter size when the last 15 signals sum ≤ 0R'], ['oldevals', 'Its Monte Carlo', 'sim', 'Simulated evals and GO / WAIT timing'], ['oldheat', 'Its intraday heat', 'heat', 'NY killzones, weekday × hour'],
+      ['experiments', 'Its experiments', 'lab', `${nOld} runs, judged against its own lock`, 'archive'], ['variants', 'Variants table', 'variants', 'The older strategy-lab table'], ['study', 'Study trades', 'study', 'Trades reviewed before LIT']].filter(Boolean).map(tile).join('')}</div>
+    ${wo.length ? `${secH('Its write-ups', `<em>${wo.length}</em>`)}<div class="card">${wo.slice(0, 8).map(arcRow).join('')}${wo.length > 8 ? `<div class="more" style="margin:12px 0 2px"><button class="btn ghost" type="button" data-go="writeups">All ${wo.length} in Write-ups${icon('right')}</button></div>` : ''}</div>` : ''}
+    <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>Where its files are</h3></div><ul class="list">${(A.files || []).map(f => `<li><span class="mono">${esc(f)}</span></li>`).join('')}</ul></div>
+      <div class="card"><div class="card-h"><h3>Switch back</h3><span class="meta">paper only either way</span></div><ol class="list">${(A.switch_back || []).map(x => `<li><span class="mono">${esc(x)}</span></li>`).join('')}</ol></div></div>`;
 };
 
 // ===================================================================== SETTINGS

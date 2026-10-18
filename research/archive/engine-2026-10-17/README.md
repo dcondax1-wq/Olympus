@@ -74,8 +74,8 @@ fail within 2 weeks 6.5% / 0.9%, within 60 sessions 35.4% / 30.2%, median 28 ses
 2. Re-export the dashboard bundle: `python tools/export_backtest.py` (about 1 minute; it writes
    `research/lab/backtest_live.json` for the engine, because `live_model.json` now says `"model": "engine"`).
 3. Put its research files back for the dashboards: `cp research/archive/engine-2026-10-17/montecarlo.json
-   research/archive/engine-2026-10-17/intraday_heat.json research/lab/` (or re-run `python tools/research_mc.py all`
-   and `python tools/research_intra.py`).
+   research/archive/engine-2026-10-17/intraday_heat.json research/lab/` (`python tools/research_mc.py all` and
+   `python tools/research_intra.py` rebuild them, into this folder, from the engine replay).
 4. Re-run the replays file: `python tools/export_replays.py`, then check the live loop:
    `python -X utf8 -m tests.test_live_dryrun --quick` (expected 41/44).
 5. Commit and merge to the default branch: the cloud monitor reads `live_model.json` on its next run; the PC bot runs it

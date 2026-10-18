@@ -14,7 +14,7 @@ ENGINE_PREV = "live_2026-10-17am"  # its morning lock
 ARCHIVE_DIR = "research/archive/engine-2026-10-17"
 ARCHIVE_LABEL = "Archive: previous strategy (Liquidity Engine, Oct 17)"
 # LIT write-ups shown first in the Lab, in this order (stems; research/lit/masters.md is published as "lit-masters")
-LIT_PINNED = ("lit-strategy", "lit-final", "lit-losses", "lit-experiments", "lit-masters")
+LIT_PINNED = ("lit-final", "lit-losses", "lit-experiments", "lit-strategy", "lit-masters")
 
 
 def is_lit_model(lm: dict | None) -> bool:

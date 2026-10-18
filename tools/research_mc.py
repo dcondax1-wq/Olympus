@@ -1,6 +1,6 @@
 """Monte Carlo of the MFFU Builder 50K eval on the LOCKED strategy (study "mc", runs mc_*, research/writeups/monte-carlo-evals.md).
 
-  python tools/research_mc.py all      # everything: tables printed, research/lab/montecarlo.json, runs mc_* saved
+  python tools/research_mc.py all      # everything: tables printed, research/archive/engine-2026-10-17/montecarlo.json, runs mc_* saved
   python tools/research_mc.py check    # sanity checks (bootstrap engine vs runlib's exact rolling evals, press re-sizing)
   python tools/research_mc.py quick    # fewer paths, no saving (smoke test)
 
@@ -450,9 +450,12 @@ def write_json(R):
            "conditional": [{**strip(r), "start_state": k[2]} for k, r in R["cond"].items()],
            "conditional_exact": [{**r, "start_state": k[2]} for k, r in R["cond_exact"].items()],
            "cold_streaks": [{"sessions": n, "from": a, "to": z} for _, n, a, z in R["cold_runs"]]}
-    os.makedirs(LAB, exist_ok=True)
-    rl._dump(out, os.path.join(LAB, "montecarlo.json"), separators=(",", ":"))
-    print("wrote research/lab/montecarlo.json", f"({os.path.getsize(os.path.join(LAB, 'montecarlo.json')) // 1024} KB)")
+    # the Liquidity Engine is archived since LIT went live (2026-10-18): its Monte Carlo goes to the archive, and
+    # research/lab/montecarlo.json is LIT's (tools/lit_dash_data.py)
+    arc = os.path.join(ROOT, "research", "archive", "engine-2026-10-17")
+    os.makedirs(arc, exist_ok=True)
+    rl._dump(out, os.path.join(arc, "montecarlo.json"), separators=(",", ":"))
+    print("wrote research/archive/engine-2026-10-17/montecarlo.json", f"({os.path.getsize(os.path.join(arc, 'montecarlo.json')) // 1024} KB)")
 
 
 def _mc_note(R, mode):

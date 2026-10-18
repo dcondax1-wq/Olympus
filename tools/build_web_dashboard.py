@@ -35,12 +35,15 @@ import sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from tools import news_hub  # noqa: E402
+from engine import lab_scope  # noqa: E402
 WEB = os.path.join(ROOT, "tools", "web_public")
 LAB = os.path.join(ROOT, "research", "lab")
 STUDY = os.path.join(ROOT, "research", "study")
 RUNS = os.path.join(ROOT, "research", "runs")
 WRITEUPS = os.path.join(ROOT, "research", "writeups")
 RESEARCH = os.path.join(ROOT, "research")
+LIT_DOCS = os.path.join(ROOT, "research", "lit")                      # LIT research notes (masters.md, entry.md, ...): LIT write-ups
+ARCHIVE = os.path.join(ROOT, *lab_scope.ARCHIVE_DIR.split("/"))       # the previous strategy (Liquidity Engine, Oct 17), archived
 ICONS = os.path.join(ROOT, "web", "icons")
 
 FULL = ("day", "entry_t", "exit_t", "side", "entry", "stop", "target", "exit_price", "exit", "trigger", "grade", "regime",
@@ -104,8 +107,10 @@ RUN_KEYS = ("id", "title", "family", "question", "status", "verdict", "notes", "
 INDEX_KEYS = ("id", "title", "family", "question", "status", "verdict", "writeup", "tags", "params", "sizing", "built", "spans")
 
 
-def _runs(out, runs_dir):
-    """Index row per run into data.json; each run file copied to <out>/runs/<id>.json (fetched as runs/<id>.json?v=<hash>)."""
+def _runs(out, runs_dir, lm=None):
+    """Index row per run into data.json; each run file copied to <out>/runs/<id>.json (fetched as runs/<id>.json?v=<hash>).
+    Every row says which strategy it belongs to (`strategy`: lit | engine, engine/lab_scope.py). While live_model.json says
+    lit, the Lab's reference run is lit_live and the engine's own baseline is kept as `archive_baseline` for the Archive."""
     dest = os.path.join(out, "runs")
     shutil.rmtree(dest, ignore_errors=True)
     os.makedirs(dest, exist_ok=True)
@@ -134,13 +139,26 @@ def _runs(out, runs_dir):
         row["v"] = hashlib.sha1(blob).hexdigest()[:10]
         row["kb"] = round(len(blob) / 1024)
         row["n_days"] = len(pub.get("days") or [])
+        row["strategy"] = lab_scope.strategy_of_run(pub)
         rows.append(row)
     order = {s: i for i, s in enumerate(STATUSES)}
     rows.sort(key=lambda r: (order.get(r["status"], 9), r["family"], r["id"]))
-    base = idx.get("baseline") or "baseline"
-    lab = {"built": idx.get("built"), "baseline": base if any(r["id"] == base for r in rows) else None, "count": len(rows),
-           "columns": idx.get("columns") or {}, "owner_rules": idx.get("owner_rules"), "families": list(FAMILIES), "statuses": list(STATUSES),
-           "runs": rows}
+    ids = {r["id"] for r in rows}
+    base = lab_scope.live_baseline(lm, ids) or (idx.get("baseline") if idx.get("baseline") in ids else None)
+    old = lab_scope.ENGINE_BASELINE if lab_scope.ENGINE_BASELINE in ids and base != lab_scope.ENGINE_BASELINE else None
+    for r in rows:
+        if r["id"] == base:                      # the live strategy's run reads as the reference on every page
+            r["family"], r["status"] = "baseline", "baseline"
+        elif old and r["id"] == old:
+            r["status"] = "baseline"             # the reference of the archived engine experiments
+    lit = lab_scope.is_lit_model(lm)
+    lab = {"built": idx.get("built"), "baseline": base, "count": len(rows),
+           "archive_baseline": old, "archive_prev": lab_scope.ENGINE_PREV if lab_scope.ENGINE_PREV in ids else None,
+           "live_strategy": "lit" if lit else "engine", "archive_label": lab_scope.ARCHIVE_LABEL if lit else None,
+           "columns": idx.get("columns") or {},
+           "owner_rules": ("LIT is tuned and judged on 2026 only (picked on Jan-Jun, checked on Jul-Oct; 2021-25 is a reference line); "
+                           "2-4 trades a week; evals decided within 2 weeks, no pass slower than 3 weeks") if lit else idx.get("owner_rules"),
+           "families": list(FAMILIES), "statuses": list(STATUSES), "runs": rows}
     return lab, skipped, sorted(extra)
 
 
@@ -325,7 +343,9 @@ def _docs(out, writeups_dir):
         return k
 
     writeups = []
-    for p in sorted(glob.glob(os.path.join(writeups_dir, "*.md"))):
+    extra = [(p, "lit-" + os.path.splitext(os.path.basename(p))[0]) for p in sorted(glob.glob(os.path.join(LIT_DOCS, "*.md")))]
+    extra += [(p, "archive-engine-2026-10-17") for p in glob.glob(os.path.join(ARCHIVE, "README.md"))]
+    for p, stem0 in [(p, None) for p in sorted(glob.glob(os.path.join(writeups_dir, "*.md")))] + extra:
         try:
             with open(p, encoding="utf-8") as fh:
                 raw = fh.read()
@@ -333,7 +353,7 @@ def _docs(out, writeups_dir):
             skipped.append(os.path.relpath(p, ROOT))
             continue
         meta, body = _front(raw)
-        stem = os.path.splitext(os.path.basename(p))[0]
+        stem = stem0 or os.path.splitext(os.path.basename(p))[0]
         h1 = re.search(r"^#\s+(.+)$", body, re.M)
         rec = publish(p, slugify(stem), body)
         if not rec:
@@ -343,9 +363,15 @@ def _docs(out, writeups_dir):
         rec.update({"kind": "writeup", "title": meta.get("title") or (h1.group(1).strip() if h1 else stem.replace("_", " ")),
                     "family": fam if fam in FAMILIES else "other", "date": meta.get("date") or _date(stem, body),
                     "status": (meta.get("status") or "info").lower(), "summary": meta.get("summary") or _summary(body), "runs": runs,
-                    "runs_linked": [], "track": meta.get("track") or "", "stem": stem.lower()})
+                    "runs_linked": [], "track": meta.get("track") or "", "stem": stem.lower(),
+                    "strategy": "archive" if stem0 and stem0.startswith("archive-") else lab_scope.strategy_of_doc(stem, rec["src"]),
+                    "pin": lab_scope.pin_rank(stem)})
+        if stem0 and stem0.startswith("archive-"):
+            rec["status"] = "archive"
         writeups.append(rec)
+    # LIT first (the pinned ones in their order, then the rest newest first), then the previous strategy's write-ups
     writeups.sort(key=lambda d: (d["date"], d["title"]), reverse=True)
+    writeups.sort(key=lambda d: ({"lit": 0, "archive": 1}.get(d["strategy"], 2), d["pin"]))
 
     archive, left_out = [], []
     for p in sorted(glob.glob(os.path.join(RESEARCH, "*.md")) + glob.glob(os.path.join(LAB, "*.md"))):
@@ -392,6 +418,43 @@ def _link(lab, docs):
     return missing
 
 
+def _archive(st, state_path, cfg_engine):
+    """The previous strategy (Liquidity Engine, locked 2026-10-17) for the Archive pages: its lock, its last 5-year bundle
+    (research/lab/backtest_engine.json: periods, months, days, stop buckets, lessons; no per-trade rows), the cold-streak
+    filter's state (cloud shadow) and where its files are (research/archive/engine-2026-10-17/README.md)."""
+    lm = _load(os.path.join(ROOT, "live_model_engine.json"), {}) or {}
+    bt = _load(os.path.join(LAB, "backtest_engine.json"), {}) or {}
+    res = None
+    if bt:
+        res = {"meta": {k: bt.get("meta", {}).get(k) for k in ("built", "strategy", "data", "costs", "method", "equity_filter")},
+               "periods": bt.get("periods", {}), "months": bt.get("months", {}), "stop_buckets": bt.get("stop_buckets", []),
+               "lessons": bt.get("lessons", {}), "days": [[d["date"], round(d["pnl"], 2), d.get("trades", 0)] for d in bt.get("days", [])],
+               "trades": len(bt.get("trades") or [])}
+    sh = (st or {}).get("shadow") or {}
+    # its eval-timing verdict (GO / WAIT from the cold-streak filter), from the shadow ledger the cloud monitor keeps
+    timing = None
+    try:
+        from engine import equity_filter as eqf
+        led = os.path.join(os.path.dirname(state_path) or ".", "shadow_ledger.json")
+        if not os.path.exists(led):
+            led = os.path.join(ROOT, "data", "shadow_ledger_seed.json")
+        if cfg_engine and os.path.exists(led):
+            timing = eqf.eval_timing(sh.get("equity_filter") or eqf.status(cfg_engine, path=led), eqf.sessions_since_flip(cfg_engine, path=led))
+    except Exception as e:                      # the archive must never break the build
+        print("  archive: eval timing unavailable:", e.__class__.__name__, e)
+    return {"label": lab_scope.ARCHIVE_LABEL, "readme": "archive-engine-2026-10-17", "dir": lab_scope.ARCHIVE_DIR,
+            "strategy": {k: lm.get(k) for k in ("label", "chosen", "locked", "lock_note", "model", "sym", "params", "equity_filter", "sizing")},
+            "results": res, "eval_timing": timing,
+            "files": ["live_model_engine.json", "research/lab/backtest_engine.json", "tradingview/liquidity_engine.pine",
+                      "STRATEGY.md (section: Previous strategy)", "research/runs/baseline.json", "research/runs/live_2026-10-17am.json",
+                      lab_scope.ARCHIVE_DIR + "/montecarlo.json", lab_scope.ARCHIVE_DIR + "/intraday_heat.json"],
+            "switch_back": ["cp live_model_engine.json live_model.json", "python tools/export_backtest.py",
+                            "cp research/archive/engine-2026-10-17/montecarlo.json research/archive/engine-2026-10-17/intraday_heat.json research/lab/",
+                            "python tools/export_replays.py, then python -X utf8 -m tests.test_live_dryrun --quick",
+                            "commit and merge to the default branch (the cloud monitor reads live_model.json)"],
+            "cold_config": cfg_engine}
+
+
 def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     os.makedirs(out, exist_ok=True)
     st = _load(state_path, {}) or {}
@@ -409,8 +472,10 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     shadow = _load(os.path.join(os.path.dirname(state_path) or ".", "shadow_ledger.json"), None) \
         or _load(os.path.join(ROOT, "data", "shadow_ledger_seed.json"), []) or []
     lm = _load(os.path.join(ROOT, "live_model.json"), {}) or {}
-    cfg = lm.get("equity_filter") or {}
-    lab, run_skipped, run_extra = _runs(out, runs_dir)
+    # the cold-streak filter belongs to the old engine: while LIT is live it is the archived lock's (shadow ledger)
+    cfg = lm.get("equity_filter") or ((_load(os.path.join(ROOT, "live_model_engine.json"), {}) or {}).get("equity_filter")
+                                      if lab_scope.is_lit_model(lm) else None) or {}
+    lab, run_skipped, run_extra = _runs(out, runs_dir, lm)
     docs, doc_skipped, left_out, code_dropped = _docs(out, writeups_dir)
     unknown_runs = _link(lab, docs)
     data = {
@@ -422,7 +487,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         "replays": (_load(os.path.join(LAB, "replays.json"), {}) or {}),
         "variants": _load(os.path.join(LAB, "variant_results.json"), {}) or {},
         "study": _study(out),
-        "cold": {"config": cfg, "now": st.get("equity_filter"),
+        "cold": {"config": cfg, "now": st.get("equity_filter") if not lab_scope.is_lit_model(lm) else (st.get("shadow") or {}).get("equity_filter"),
                  "window": [{"day": x.get("day"), "r": x.get("r")} for x in sorted(shadow, key=lambda x: x.get("exit_t", 0))[-int(cfg.get("lookback", 15)):]]},
         "sizing": {"risk_usd": (lm.get("params") or {}).get("risk_usd"), "risk_ref_stop": (lm.get("params") or {}).get("risk_ref_stop"),
                    "max_trades_day": (lm.get("params") or {}).get("max_trades_day"), "label": lm.get("label"), "chosen": lm.get("chosen")},
@@ -434,15 +499,22 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                      "rules_md": _lit_rules_md() if lm.get("model") == "lit" else None},
         "lab": lab,
         "docs": docs,
+        "archive": _archive(st, state_path, cfg) if lab_scope.is_lit_model(lm) else None,
     }
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # research data files for the Lab's 3D views (Monte Carlo cloud, intraday heat, calendar): lab/<name>.json
     lab_dir = os.path.join(out, "lab"); os.makedirs(lab_dir, exist_ok=True)
-    LAB_FILES = ("montecarlo", "intraday_heat", "calendar_effects")
+    # live files from research/lab (LIT's while live_model.json says lit: tools/lit_dash_data.py); the previous strategy's
+    # versions from the archive as <name>_engine (calendar_effects is an engine study, so it is archive-only)
+    LAB_FILES = [(n, os.path.join(LAB, n + ".json")) for n in ("montecarlo", "intraday_heat")]
+    if lab_scope.is_lit_model(lm):
+        LAB_FILES += [(n + "_engine", os.path.join(ARCHIVE, n + ".json")) for n in ("montecarlo", "intraday_heat")]
+        LAB_FILES += [("calendar_effects_engine", os.path.join(LAB, "calendar_effects.json"))]
+    else:
+        LAB_FILES += [("calendar_effects", os.path.join(LAB, "calendar_effects.json"))]
     have = []
-    for name in LAB_FILES:
-        src = os.path.join(ROOT, "research", "lab", name + ".json")
+    for name, src in LAB_FILES:
         if os.path.exists(src):
             shutil.copy(src, os.path.join(lab_dir, name + ".json")); have.append(name)
     data["lab_files"] = have

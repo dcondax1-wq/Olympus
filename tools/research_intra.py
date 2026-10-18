@@ -2,7 +2,7 @@
 
 Slices the locked strategy's exact live-loop replay (tools/runlib.replay) by entry hour x weekday, AM/PM killzone,
 time in trade, MFE/MAE, trigger, swept pool type, stop bucket, target label and confluence score, in 2026 and 2021-25.
-Writes research/lab/intraday_heat.json (3D heat view) and prints the tables for research/writeups/intraday-anatomy.md.
+Writes research/archive/engine-2026-10-17/intraday_heat.json (the archived engine version) (3D heat view) and prints the tables for research/writeups/intraday-anatomy.md.
 The strongest slices that are known at entry are then tested as size rules (x0.5 / x1.25) with rl.size(rule=...).
 
   python tools/research_intra.py            # tables + heat json + size-rule runs (intra_*)
@@ -420,8 +420,9 @@ def main(save=True):
     print(text)
     H = heat(T)
     if save:
-        rl._dump(H, os.path.join(ROOT, "research", "lab", "intraday_heat.json"), indent=1)
-        print("wrote research/lab/intraday_heat.json")
+        # archived engine version (LIT's research/lab/intraday_heat.json comes from tools/lit_dash_data.py)
+        rl._dump(H, os.path.join(ROOT, "research", "archive", "engine-2026-10-17", "intraday_heat.json"), indent=1)
+        print("wrote research/archive/engine-2026-10-17/intraday_heat.json")
     rows = candidates(raw, T, base_S, save=save)
     json.dump(rows, open(os.path.join(scratch, "candidates.json"), "w"), indent=1)
     return raw, T, base_S, out_tables, prof, rows
