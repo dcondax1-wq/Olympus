@@ -193,7 +193,7 @@ def simulate(M, B, cand, entry_px, tgt, stop, P):
             if hi_d[k] >= tg:
                 k_x, kind_m, xpx_m = k, "TARGET", tg; break
             if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk:
-                cur, be_done, k_be = entry, True, k
+                cur, be_done, k_be = entry + float(P.get("be_off") or 0.0), True, k
         stop_at[k] = cur
         if B.mod[k] >= flat:
             k_x, kind_m, xpx_m = k, "EOD", float(c_d[k]) - SLIP; break
@@ -268,7 +268,7 @@ def simulate(M, B, cand, entry_px, tgt, stop, P):
         return out("TARGET", j, max(L, e_real - 2 * hs(T_e)), e_real, w1)
     lat_poll = Fp["poll_s"] * Fp["phase"] + Fp["compute_s"] + Fp["route_s"] + Fp["feed_s"]
     T_be = None
-    if k_be is not None and (int(B.t[k_be]) + secs + lat_poll) > T_e - 1e-9 and stop_at.get(last_closed, stop) != entry:
+    if k_be is not None and (int(B.t[k_be]) + secs + lat_poll) > T_e - 1e-9 and stop_at.get(last_closed, stop) != entry + float(P.get("be_off") or 0.0):
         T_be = int(B.t[k_be]) + secs + (lat_poll if Fp["be_lag"] else 0.0)
     T_x = int(B.t[k_x]) + secs + lat_poll if Fp["route_model_exits"] else None
     T_eod = None
@@ -277,7 +277,7 @@ def simulate(M, B, cand, entry_px, tgt, stop, P):
         if len(fl):
             T_eod = int(B.t[fl[0]]) + Fp["poll_s"] * Fp["phase"] + Fp["route_s"]
     cur_r = s_r
-    be_px = round(entry / TICK) * TICK
+    be_px = round((entry + float(P.get("be_off") or 0.0)) / TICK) * TICK
     b = j
     while b < B.n:
         if B.day[b] != s_day or B.mod[b] >= 1080:

@@ -512,7 +512,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
                                    "equity_filter", "eval_timing", "eval_2wk", "price", "today", "events", "engine_trades", "bars", "pools", "pc",
                                    "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
-                                   "push", "notices", "learning")}       # learning: engine/lit_learn.py summary (the "What the bot learned" card)
+                                   "push", "notices", "learning",       # learning: engine/lit_learn.py summary (the "What the bot learned" card)
+                                   "armed", "watch")}                  # armed: engine/lit_watch.py armed_line; watch: tools/lit_watch.py summary (Yahoo lag)
     try:                                   # LIT day analyst (engine/lit_brief.py): today's news re-read from the fresh hub
         from engine import lit_brief
         live["brief"] = lit_brief.with_news(st.get("brief"), _load(os.path.join(ROOT, "data", "news", "hub.json"), None))

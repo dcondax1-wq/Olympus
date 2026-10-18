@@ -721,6 +721,8 @@ DEFAULTS = {
     "fallback_rr": None,             # fixed R target when no level clears min_rr (None = no trade)
     # management
     "be_r": 1.0, "flat_mod": 955, "max_per_day": 1,
+    "be_off": 0.0,               # breakeven stop = entry + be_off pts (research/writeups/lit-adv-management.md; 0.0 = today's stop
+                                 # at the entry exactly; 1.25 = entry + costs: $1.90 commission + 1 tick of exit slippage, 5 ticks)
     # all hours (research/writeups/lit-all-hours.md; all off = today's RTH-only rules)
     "all_hours": False,          # True: the candidates were built with candidates(evening=True); the executor runs in trading-day
                                  # order (an 18:00-02:00 entry is held at most to flat_mod of the same trading day, never through
@@ -735,6 +737,10 @@ DEFAULTS = {
                                  # low (PDL) only longs (both taken / neither: no rule); a skipped setup leaves the day free
     "wk_stop": None,             # weekly stop [n, mult]: after n STOP exits in the calendar week (ISO week of the trading day,
                                  # Mon-Fri) the rest of that week trades at mult x size (one rounding with how_out, floor 1 micro)
+    "t_check": None,             # 15-minute check (research/writeups/lit-loss-learning.md, run lit_ll_t15; off = None):
+                                 # {"at": 15, "x": 0.3, "mfe": 0.5}: at the close of the 1m bar that ends `at` minutes after the
+                                 # fill, if the trade never reached +mfe R, the breakeven has not moved the stop and that close is
+                                 # more than x R below the entry, exit at the next 1m open - 1 tick ("CUT_T15"). 1m bars only.
     # execution (research only; research/writeups/lit-live-fills.md): None = the plain backtest fills above
     "fills": None,               # realistic fill model {} / {...}: engine/lit_fills.py FILL_DEFAULTS (live bot latency, market
                                  # entry at the price when the order reaches CME, stop slippage by hour and bar range, target
@@ -924,12 +930,16 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
                 "pnl": 0.0, "r": 0.0, "low": 0.0, "half": False, "mult": 1.0, "exit": "OPEN", "exit_t": None,
                 "exit_i": 10 ** 12, "tf": B.secs // 60, "limit_fill": False, "swept": cand["swept"]}
     be_r = P["be_r"]
+    tc = P.get("t_check") if B.secs == 60 else None
     cur, be_done, mfe, mae, worst = stop, False, 0.0, 0.0, 0.0
     k = fill
     exit_px = kind = None
+    cut = None                               # the 15-minute check fired at the close of the previous bar
     while k < B.n:
         if B.day[k] != s_day or (not ev and B.mod[k] >= 1080):
             k -= 1; exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
+        if cut is not None:
+            exit_px, kind = float(o_d[k]) - SLIP, cut; break
         mae = max(mae, (entry - lo_d[k]) / risk)
         worst = min(worst, lo_d[k] - entry)
         if lo_d[k] <= cur:
@@ -939,9 +949,15 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
             if hi_d[k] >= tg:
                 exit_px, kind = tg, "TARGET"; break
             if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk:
-                cur, be_done = entry, True
+                cur, be_done = entry + float(P.get("be_off") or 0.0), True
         if _late(B.mod[k], flat, ev) if ev else B.mod[k] >= flat:
             exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
+        if tc and not be_done and round((B.t[k] - B.t[fill]) / 60.0) + 1 == int(tc.get("at", 15)) \
+                and mfe < float(tc.get("mfe", 0.5)) and c_d[k] < entry - float(tc.get("x", 0.3)) * risk:
+            if k + 1 < B.n and B.day[k + 1] == s_day:
+                cut = "CUT_T15"                  # exit at the next 1m open
+            elif live and k + 1 >= B.n:          # live: the check bar is the last closed bar -> exit at market now
+                exit_px, kind = float(c_d[k]) - SLIP, "CUT_T15"; break
         k += 1
     if exit_px is None:
         if not live:

@@ -19,8 +19,9 @@ Part 1, the audit (python tools/lit_adv_audit.py audit -> research/lit/adv_audit
   scoring             runlib.eval_speed counts every start, also the ones whose 10 / 20 sessions run past the end of the
                       span (they can only be OPEN): p10 / f10 / p20 / f20 are diluted. Re-scored on full windows only
                       (runlib.eval_speed(full_only=True), default off) and with H1 starts allowed to run into July.
-Part 2, SMT (python tools/lit_adv_audit.py smt -> research/lit/adv_smt.json; save -> runs lit_adv_smt_*):
-  see smt_flags() for the matching rule.
+Part 2, synchronized NQ/ES divergence (ICT's "SMT"; NOT the LIT "smart money trap", research/lit/owner_lit_notes.md):
+  python tools/lit_adv_audit.py smt -> research/lit/adv_smt.json; save -> runs lit_adv_div_* + lit_adv_audit_gap5m.
+  See smt_flags() for the matching rule (rule keys "smt_*" = NQ took the level, ES held = "nqonly" in the run ids).
 Judged on 2026 only: pick on H1 (Jan 2 - Jun 30), check on H2 (Jul 1 - Oct 16). Paper only. 1 CPU process.
 """
 from __future__ import annotations
@@ -531,9 +532,44 @@ def smt():
     return out, res
 
 
+def shuffle(rows, fn, m=1.25, n=5000, seed=5):
+    """Is the rule better than sizing up the same NUMBER of random trades of the half? (In a profitable half any size-up
+    adds $.) p = share of random picks that add at least as much as the rule; approximate ((m-1) x P&L, no rounding)."""
+    rng = np.random.default_rng(seed)
+    o = {}
+    for nm, (a, z) in (("H1", H1), ("H2", H2)):
+        rr = [r for r in rows if a <= r["day"] <= z]
+        p = np.array([r["pnl"] for r in rr]); on = np.array([fn(r) != 1.0 for r in rr])
+        if not on.any():
+            o[nm] = None
+            continue
+        dl = (m - 1) * p[on].sum()
+        sims = np.array([(m - 1) * p[rng.choice(len(p), int(on.sum()), replace=False)].sum() for _ in range(n)])
+        o[nm] = {"n_on": int(on.sum()), "delta": round(float(dl)), "random_mean": round(float(sims.mean())),
+                 "p": round(float((sims >= dl).mean()), 3)}
+    return o
+
+
+def save_gap5m():
+    M, C, B1, B5, T = live()
+    Bg, nadd = gap5m_bars(M, B1)
+    Tg = lit.run_x(M, C, P_LIVE, SESS, B1=Bg, B5=B5)
+    cmp_ = compare(T, Tg)
+    rl.save("lit_adv_audit_gap5m", "LIT live with dropped 1m windows filled by their 5m bar (audit fix, default off)", "other",
+            "Report 2 ch.7 audit: the 1m walk jumps over 1m windows that do not rebuild the 5m bar; does seeing them change "
+            "the 2026 trades?", params={**P_LIVE, "gap5m": True}, trades=Tg, scored=rl.score(Tg, SESS), status="info",
+            verdict=f"{nadd} dropped 5m windows on full-coverage 1m days filled; {cmp_['n_changed']} 2026 trade(s) change, "
+                    f"2026 net {cmp_['net_before']:+,} -> {cmp_['net_after']:+,} ({cmp_['d_net']:+,}).",
+            notes="tools/lit_adv_audit.py gap5m_bars (built in the tool, engine untouched).", writeup="lit-adv-audit-smt",
+            tags=["lit", "lit_adv"])
+    print("saved lit_adv_audit_gap5m", cmp_["d_net"])
+
+
 def save():
+    save_gap5m()
     out, res = smt()
     b = res["base"]
+    rows = out["rows"]
 
     def h(nm, s):
         x, w = res[nm]["normal"][s], res[nm]["two_week"][s]
@@ -544,19 +580,24 @@ def save():
             continue
         d1 = res[nm]["normal"]["H1"]["net"] - b["normal"]["H1"]["net"]
         d2 = res[nm]["normal"]["H2"]["net"] - b["normal"]["H2"]["net"]
-        ok = d1 > 0 and d2 > 0 and res[nm]["two_week"]["H1"]["p10"] >= b["two_week"]["H1"]["p10"] and \
+        fn = smt_rules()[nm]
+        mm = max((fn(r) for r in rows), key=lambda v: abs(v - 1.0))
+        sh = shuffle(rows, fn, m=mm)
+        beat = all(sh[s] and sh[s]["p"] < 0.2 for s in ("H1", "H2")) if mm > 1 else True
+        ok = d1 > 0 and d2 > 0 and beat and res[nm]["two_week"]["H1"]["p10"] >= b["two_week"]["H1"]["p10"] and \
             res[nm]["two_week"]["H2"]["p10"] >= b["two_week"]["H2"]["p10"]
-        rid = "lit_adv_smt_" + nm.replace(".", "p").replace("_x", "_x")
+        rid = "lit_adv_div_" + nm.replace("smt", "nqonly").replace(".", "p")
         TT = res[nm]["_trades"]
-        rl.save(rid, f"LIT + synchronized ES SMT size rule: {nm}", "other",
-                "Owner's LIT Advanced Decisions Report (2026-10-18) experiment 5: does NQ taking a level while ES holds its "
-                "same-time copy (or the reverse) pick better LIT trades? Size multiplier, not a skip.",
+        rl.save(rid, f"LIT + synchronized NQ/ES divergence size rule: {nm.replace('smt', 'nqonly')}", "other",
+                "Owner's LIT Advanced Decisions Report (2026-10-18) experiment 5 (synchronized divergence; not the LIT "
+                "'smart money trap'): does NQ taking a level while ES holds its same-time copy (or the reverse) pick "
+                "better LIT trades? Size multiplier, not a skip.",
                 params={**P_LIVE, "smt_rule": nm}, trades=TT, scored=rl.score(TT, SESS),
                 status="adopt-candidate" if ok else "rejected",
                 verdict=(f"H1 (pick) {h(nm, 'H1')} (d net {d1:+,}). H2 (check) {h(nm, 'H2')} (d net {d2:+,}). Base H1 "
                          f"{b['normal']['H1']['net']:+,} / H2 {b['normal']['H2']['net']:+,}; two_week 2wk H1 "
                          f"{b['two_week']['H1']['p10']}/{b['two_week']['H1']['f10']} H2 {b['two_week']['H2']['p10']}/"
-                         f"{b['two_week']['H2']['f10']}."),
+                         f"{b['two_week']['H2']['f10']}. Same number of RANDOM trades sized the same way: {sh}."),
                 notes="tools/lit_adv_audit.py smt (wraps engine/lit.py, tools/lit_2wk.py; no engine edit). NQ1! and ES1! 5m "
                       "TradingView, same timestamps only; $ at the LIT size ($800/20 + weekly stop) x the rule; eval odds "
                       "under lit_qty two_week (full 10/20-session windows).", writeup="lit-adv-audit-smt",

@@ -744,6 +744,14 @@ table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-
 .pcline .badge { padding: 3px 9px; font-size: 11px; }
 .dot.bad { background: var(--bad); animation: none; box-shadow: 0 0 10px var(--bad); }
 
+/* the armed / forming LIT setup line (state.armed from engine/lit_watch.py armed_line; Today hero + Briefing) */
+.armline { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.45; color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 9%, rgba(22,26,35,.6)); border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line)); border-left: 3px solid var(--accent); }
+.armline.L { border-left-color: var(--good); } .armline.S { border-left-color: var(--bad); }
+.armline .badge { padding: 3px 9px; font-size: 10.5px; letter-spacing: .06em; margin-top: 1px; }
+.armline .badge.acc { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.armline .al-m { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; } .armline .al-s { display: block; margin-top: 3px; font-size: 11.5px; color: var(--muted); }
+.card > .armline:first-child { margin-top: 0; }
 /* system tiles: live badge row */
 .tile-live { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font: 600 11.5px var(--mono); color: var(--ink-2); }
 .tile-live .dot { width: 7px; height: 7px; }
@@ -1784,6 +1792,16 @@ function pcLine() {
   return `<div class="pcline"${tip ? ` title="${esc(tip)}"` : ''}><span class="dot ${pc.silent ? 'bad' : pc.running === false ? 'off' : ''}"></span><span>PC bot · ${esc(pc.host || 'PC')} · ${esc(pc.adapter || '—')} · ${seen}</span>
     ${pc.silent ? '<span class="badge bad">SILENT</span>' : ''}${pc.running === false ? '<span class="badge warn">stopped</span>' : ''}</div>`;
 }
+// the armed / forming LIT setup (live.armed, engine/lit_watch.py armed_line) and the fast watcher's Yahoo lag (live.watch); '' when none or past its time
+const ARM_KIND = { armed: ['ARMED', 'acc'], tapped: ['TAPPED', 'warn'], entering: ['ENTERING', 'good'], forming: ['FORMING', ''] };
+function armedLine() {
+  const lv = LV(), a = lv.armed;
+  if (!a || !a.text || lv.position) return '';
+  if (ok(a.until_t) && a.until_t > 0 && Date.now() / 1000 > a.until_t) return '';
+  const k = ARM_KIND[a.kind] || [String(a.kind || 'setup').toUpperCase(), ''], lag = lv.watch?.yahoo_lag_1m_s;
+  const sub = [ok(a.until_t) && a.until_t > 0 ? `until ${et(a.until_t).hm} ET` : '', lag && ok(lag.median) ? `Yahoo 1m lag ~${Math.round(lag.median)} s (median of ${lag.n})` : '', 'paper only'].filter(Boolean).join(' · ');
+  return `<div class="armline ${a.side === 'LONG' ? 'L' : a.side === 'SHORT' ? 'S' : ''}"><span class="badge ${k[1]}">${esc(k[0])}</span><span class="al-m">${esc(a.text)}<span class="al-s">${esc(sub)}</span></span></div>`;
+}
 function evalMini(ev) {
   if (!ev) return emptyBox('No eval data yet.', 'The cloud monitor starts the tracker with its first run.');
   const lock = (ev.trailing_mll ?? 0) >= 50100 - 0.01;
@@ -1823,7 +1841,7 @@ VIEWS.today = (el) => {
         <div><div class="eyebrow">Cloud paper bot · ${esc(stratName())} · ${s.inkz ? esc(s.inkz[2]) + ' live' : s.next ? `${esc(s.next[0])} in ${Math.floor(s.next[1] / 60)}h ${String(s.next[1] % 60).padStart(2, '0')}m` : s.wk ? 'session over' : 'weekend'}</div>
           <h2>${esc(lv.model_state || '—')}</h2><p>${pos ? `In ${pos.dir === 1 ? 'LONG' : 'SHORT'} ${esc(pos.qty_label || '')} @ ${num(pos.entry)} → TP ${num(pos.target)} / SL ${num(pos.stop)}` : 'Flat. Paper only: it never places real orders.'}</p></div>
         <div class="px"><span class="small mut">NQ futures (Yahoo NQ=F)</span><b>${num(lv.price)}</b><span class="small mut">${esc(lv.health?.last_bar || '')}</span></div></div>
-      <div class="steps">${stepLabels().map((t, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${t}</span>`).join('')}</div>${pcLine()}
+      ${armedLine()}<div class="steps">${stepLabels().map((t, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${t}</span>`).join('')}</div>${pcLine()}
       <div class="hero-links"><button class="chipbtn" type="button" data-go="strategy">${icon('rules')}<span>The strategy · ${esc(stratName())}</span></button><button class="chipbtn" type="button" data-go="engine">${icon('engine')}<span>Bot details</span></button><button class="chipbtn" type="button" data-go="results">${icon('results')}<span>${lit ? 'Results' : '5-year results'}</span></button>${newsChip()}</div></div>
     ${howto('today', `<p>The top card is the cloud paper bot right now: its state, the NQ price and the five steps of a setup (the lit step is where it is). The <b>News</b> chip is the next USD event and how long until it; tap it for the blackouts.</p>
       <ul><li><b>Today · paper</b>: profit or loss of today’s paper trades.</li>${lit ? `<li><b>Size now</b>: LIT’s weekly stop. After 2 stop-outs in a calendar week the rest of that week trades at half size; Monday starts at full size again.</li>` : `<li><b>Size now</b>: the cold-streak size. When the last 15 finished signals add up to 0R or less, the bot trades at ${esc(sizeWord(sizeRules().cold))} size.</li>`}
@@ -2016,12 +2034,13 @@ function briefCard() {
 }
 VIEWS.brief = (el) => {
   const B = BRV();
-  if (!B) { el.innerHTML = head('Today · LIT day analyst', 'Briefing', '') + emptyBox('No briefing yet.', 'The cloud monitor writes it on its first run after 01:30 ET on a market day.'); return; }
+  if (!B) { el.innerHTML = head('Today · LIT day analyst', 'Briefing', '') + (armedLine() ? `<div class="card"><div class="card-h"><h3>Setup now</h3><span class="meta">in-app only</span></div>${armedLine()}</div>` : '') + emptyBox('No briefing yet.', 'The cloud monitor writes it on its first run after 01:30 ET on a market day.'); return; }
   const mo = B.morning, rc = B.recap, pv = B.prev, nw = B.now || {};
   el.innerHTML = head(`Today · LIT day analyst · ${esc(fDate(B.day || ''))}`, mo ? 'Game plan' : 'Briefing', mo ? `Built ${esc(mo.built)} ET${mo.stage === 'full' ? ' (refreshed after 07:30)' : ' (refreshed after 07:30 ET)'} · updated ${esc(B.at || '')} · paper only, no notifications` : esc(B.at || ''))
     + howto('brief', `<p>The bot’s own analysis of the LIT day. The <b>game plan</b> is written on the first cloud run after 01:30 ET and refreshed once after 07:30 ET: which levels are untaken, which side was taken overnight, the target band and the eval size.</p>
       <ul><li><b>Intraday log</b>: every 30 minutes, what changed: a level swept (how deep in ATR; LIT needs 0.5), a box closed, a 5-minute CISD with its inducement and displacement, a setup armed or rejected (and the rule), a limit tapped, the entry and the exit. NEW marks what the last run added.</li>
       <li><b>End of day</b> (after 16:00 ET): the result, what the setups did and one lesson.</li></ul><p>Nothing here sends a notification; pushes are only for entries and outcomes.</p>`)
+    + (armedLine() ? `<div class="card"><div class="card-h"><h3>Setup now</h3><span class="meta">${esc(LV().armed.side || '')} · in-app only</span></div>${armedLine()}</div>` : '')
     + (mo ? `<div class="card"><div class="card-h"><h3>Game plan</h3><span class="meta">NQ ${num(mo.price)} at ${esc(mo.built)}</span></div><p class="br-plan">${esc(mo.plan)}</p>
       <div class="kv one br-facts"><div><span>Overnight</span><b>${esc(mo.overnight?.text || '')}</b></div><div><span>Target band</span><b>${esc(mo.vix?.text || '')}</b></div>
       <div><span>News</span><b class="${(mo.news || []).length ? 'wn' : ''}">${esc(mo.news_text || '')}</b></div>

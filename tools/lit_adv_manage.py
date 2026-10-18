@@ -58,20 +58,24 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 from engine import lit  # noqa: E402
-from engine.sizing import two_week_qty  # noqa: E402
+from engine import sizing as SZ  # noqa: E402
 from tools import lit_final as F  # noqa: E402
 from tools import lit_2wk as W  # noqa: E402
 
-OUT = os.environ.get("ADV_OUT") or os.path.join(ROOT, "research", "lit", "adv_results.json")
+OUT = os.environ.get("ADV_OUT") or os.path.join(ROOT, "research", "lit", "adv_results2.json")
 OUT_DIAG = os.path.join(ROOT, "research", "lit", "adv_diag.json")
 PV, COMM, SLIP, TICK = lit.PV, lit.COMM, lit.SLIP, lit.TICK
 LIVE = {**lit.DEFAULTS, **json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]}
-CFG = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit_sizing"]["two_week"]
+_LM = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit_sizing"]
+CFG = {**{k: _LM[k] for k in ("two_week", "safe_cap", "eval_ref_stop", "fast_ref_stop")}, "mode": "two_week",
+       "two_week_until": _LM.get("two_week_until", 10), "after_mode": _LM.get("after_mode", "safe_eval")}
+ECOMM = SZ.TW_COMM                   # MFFU MNQ round trip $1.90 (the eval scoring)
 A50 = W.ACCT["50k"]
 SPANS = {"H1": ("2026-01-01", "2026-06-30"), "H2": ("2026-07-01", "2026-12-31"), "2026": ("2026-01-01", "2026-12-31")}
 S26 = [d for d in F.SESS if d >= "2026-01-01"]
-BE_COST = 1.0                         # commission $1.40 / micro = 0.7 pt + 1 tick exit slippage 0.25 pt, rounded up
-XDEF = {"pre_sess": "keep", "pre_tap": "cancel", "pre_conf": "keep", "be": {"r": 1.0, "off": 0.0}, "part": None, "tsel": None}
+BE_COST = 1.25                        # commission $1.90 / micro = 0.95 pt + 1 tick exit slippage 0.25 pt, rounded up to 5 ticks
+XDEF = {"pre_sess": "keep", "pre_tap": "cancel", "pre_conf": "keep", "be": {"r": 1.0, "off": 0.0}, "part": None, "tsel": None,
+        "t_check": None}
 DIAG = []                             # pre-fill events of the last run (cancelled ones included)
 
 
@@ -298,11 +302,15 @@ def asim(X, z, entry_px, tgt_lvl, fb, stop0, use1, pre_flag=None):
     cur, be_done, mfe, mae, worst = stop0, False, 0.0, 0.0, 0.0
     part = None
     be_t = None
+    tc = X["t_check"] if on else None
+    cut = None
     k = fill
     exit_px = kind = None
     while k < B.n:
         if B.day[k] != s_day or B.mod[k] >= 1080:
             k -= 1; exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
+        if cut is not None:
+            exit_px, kind = float(o_d[k]) - SLIP, cut; break
         mae = max(mae, (entry - lo_d[k]) / risk)
         worst = min(worst, lo_d[k] - entry)
         if lo_d[k] <= cur:
@@ -317,6 +325,12 @@ def asim(X, z, entry_px, tgt_lvl, fb, stop0, use1, pre_flag=None):
                 exit_px, kind = tg, "TARGET"; break
         if B.mod[k] >= flat:
             exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
+        if tc and not be_done and (B.t[k] - B.t[fill]) / 60.0 + 1.0 == float(tc.get("at", 15)) \
+                and mfe < float(tc.get("mfe", 0.5)) and c_d[k] < entry - float(tc.get("x", 0.3)) * risk \
+                and k + 1 < B.n and B.day[k + 1] == s_day:
+            cut = "CUT_T15"                  # research/lit/loss_learn_t15_patch.md: exit at the next 1m open
+            k += 1
+            continue
         # ---- end of bar k: breakeven decision (acts from bar k+1)
         if any_be and not be_done and not (k == fill and limit_fill):
             pend_now = False
@@ -456,11 +470,12 @@ def leg_pnl(t, q):
     else:
         q1 = int(q * legs[0][0] + 1e-9)
         g = (q1 * legs[0][1] + (q - q1) * legs[1][1]) * PV
-    return g - COMM * q
+    return g - ECOMM * q
 
 
 def run_eval(seq, by, horizon=20, keep=None, cfg=None):
-    """lit_2wk.run_eval with partial legs (integer micros: int(q x f) out at the partial)."""
+    """One MFFU 50K eval, sized by engine/sizing.lit_qty exactly as the live loop (two_week for 10 sessions, then safe_eval),
+    with partial legs (integer micros: int(q x f) out at the partial), commission $1.90."""
     cfg = cfg or CFG
     tgt, mll, dll, lockv = A50["target"], A50["mll"], A50["dll"], A50["lock"]
     bal = peak = 0.0
@@ -470,12 +485,14 @@ def run_eval(seq, by, horizon=20, keep=None, cfg=None):
         for t in by[si]:
             if cum <= -dll:
                 break
-            st = {"profit": bal, "cum": cum, "room": bal + cum - floor, "session": kk + 1}
-            q = two_week_qty({"risk_pts": t["risk"], "tgt_pts": t["tgt"], "size_mult": 1.0}, st, cfg, acct=A50)
+            st = {"profit": bal, "cum": cum, "room": bal + cum - floor, "session": kk + 1, "n_today": 0}
+            m0 = lit.qty_for(t["risk"])
+            q = SZ.lit_qty(m0, {"risk_pts": t["risk"], "tgt_pts": t["tgt"], "size_mult": 1.0}, cfg, room=st["room"], state=st,
+                           learning=None)["qty"] if m0 else 0
             if q <= 0:
                 continue
             pnl = leg_pnl(t, q)
-            low = min(0.0, t["w1"] * PV * q - COMM * q, pnl)
+            low = min(0.0, t["w1"] * PV * q - ECOMM * q, pnl)
             if cum + low <= -dll:
                 pnl = -dll - cum - SLIP * PV * q
                 low = pnl
@@ -524,7 +541,7 @@ def evals(U, span):
 _MC = {}
 
 
-def mc(U, span, n=4000):
+def mc(U, span, n=2000):
     by = by_day(U)
     a, z = span_ix(span)
     if (span, n) not in _MC:
@@ -544,13 +561,14 @@ def mc(U, span, n=4000):
 
 
 def b2b(U, span):
-    """The owner's policy: a new eval after a pass, a fail or 10 sessions. Returns the path trades and pass/fail counts."""
+    """The owner's policy (no reset): a new eval only after a pass or a fail. Returns the path trades and pass/fail counts."""
     by = by_day(U)
     a, z = span_ix(span)
     k, T, n = a, [], collections.Counter()
     while k < z:
-        r, used = run_eval(list(range(k, min(z, k + 10))), by, 10, keep=T)
-        if r == "OPEN" and k + used >= z and used < 10:
+        r, used = run_eval(list(range(k, z)), by, z - k, keep=T)
+        if r == "OPEN":
+            n[r] += 1
             break
         n[r] += 1
         k += used
@@ -617,7 +635,37 @@ def check():
 
 
 # ================================================================================================ variants
+T15 = {"at": 15, "x": 0.3, "mfe": 0.5}
+
+
 def variants():
+    """Round 2 (2026-10-18 evening): the live sizing two_week 10 sessions then safe_eval, $1.90, no reset; every idea
+    alone and on top of the 15-minute check (t_check, research/lit/loss_learn_t15_patch.md)."""
+    V = collections.OrderedDict()
+    ideas = collections.OrderedDict()
+    ideas["live"] = {}
+    for off in (0.5, 1.0, 1.25, 1.5, 2.0, 3.0):
+        ideas[f"BE at 1R to entry + {off} pts"] = {"be": {"r": 1.0, "off": off}}
+    ideas["BE at 1R, not while ob50 pending"] = {"be": {"r": 1.0, "pend": "ob50"}}
+    ideas["BE at 1R, not while ob50 pending, + 1.25 pts"] = {"be": {"r": 1.0, "pend": "ob50", "off": 1.25}}
+    ideas["BE at 1R + sw5"] = {"be": {"r": 1.0, "need": "sw5"}}
+    ideas["BE at 1.5R"] = {"be": {"r": 1.5}}
+    ideas["no BE"] = {"be": {"r": None}}
+    ideas["part 0.33 at first leg >= 1.0R, BE keep"] = {"part": {"obst": "leg", "f": 0.33, "min_r": 1.0, "be": "keep"}}
+    ideas["part 0.5 at first struct >= 1.0R, BE after"] = {"part": {"obst": "struct", "f": 0.5, "min_r": 1.0, "be": "after"}}
+    ideas["tsel deadline c=1.5"] = {"tsel": {"mode": "deadline", "c": 1.5}}
+    ideas["tsel deadline c=2.0"] = {"tsel": {"mode": "deadline", "c": 2.0}}
+    ideas["tsel journey >= 1.0 VIX moves"] = {"tsel": {"mode": "journey", "u": 1.0, "obst": "struct"}}
+    ideas["tsel loc (struct)"] = {"tsel": {"mode": "loc", "obst": "struct"}}
+    ideas["pre_sess reval:pool"] = {"pre_sess": "reval:pool"}
+    for nm, X in ideas.items():
+        V[nm] = X
+        V[nm + " | t15"] = {**X, "t_check": T15}
+    return V
+
+
+def variants1():
+    """Round 1 (2026-10-18 afternoon, two_week config C, $1.40, reset after 10 sessions): research/lit/adv_results.json."""
     V = collections.OrderedDict()
     V["live"] = {}
     # ---- ch6 / exp 3: the objective is encountered before the fill
@@ -748,7 +796,7 @@ def diag():
         q = qmap.get(t["entry_t"], 1)
         rows.append({"day": t["day"], "half": "H1" if t["day"] <= "2026-06-30" else "H2", "exit": t["exit"], "exit_nobe": y["exit"],
                      "z_r": round(t["pts"] / t["risk"], 3), "y_r": round(y["pts"] / y["risk"], 3), "b_r": round(t["tgt"] / t["risk"], 2),
-                     "q": q, "z_usd": round(t["pts"] * PV * q - COMM * q, 2), "y_usd": round(y["pts"] * PV * q - COMM * q, 2)})
+                     "q": q, "z_usd": round(t["pts"] * PV * q - ECOMM * q, 2), "y_usd": round(y["pts"] * PV * q - ECOMM * q, 2)})
     be = {}
     for h in ("H1", "H2", "2026"):
         R = [r for r in rows if (h == "2026" or r["half"] == h)]
@@ -823,21 +871,19 @@ def diag():
 Q = ("LIT Advanced Decisions Report ch6/8/9/10 (owner 2026-10-18): does breakeven remove more recoveries than losses, do partials "
      "at the first opposition pay, should the target follow the entry location / journey / deadline, and what to do when the "
      "objective trades before the fill? Live two_week sizing, picked on 2026 H1, checked on H2.")
-SAVES = [   # run id, variant name
-    ("lit_adv_base", "live"),
-    ("lit_adv_pre_sess_skip", "pre_sess skip"), ("lit_adv_pre_sess_reval_vix15", "pre_sess reval:vix15"),
-    ("lit_adv_pre_sess_reval_pool", "pre_sess reval:pool"), ("lit_adv_pre_tap_keep", "pre_tap keep"),
-    ("lit_adv_pre_tap_reval_vix15", "pre_tap reval:vix15"), ("lit_adv_pre_conf_cancel", "pre_conf cancel"),
-    ("lit_adv_pre_conf_reval_vix15", "pre_conf reval:vix15"),
-    ("lit_adv_no_be", "no BE"), ("lit_adv_be_1p5r", "BE at 1.5R"), ("lit_adv_be_2r", "BE at 2.0R"),
-    ("lit_adv_be_costs", "BE at 1R to entry + costs"), ("lit_adv_be_sw1", "BE at 1R + sw1"), ("lit_adv_be_sw5", "BE at 1R + sw5"),
-    ("lit_adv_be_left", "BE at 1R + left"), ("lit_adv_be_pend_ob50", "BE at 1R, not while ob50 pending"),
-    ("lit_adv_be_pend_fvg1", "BE at 1R, not while fvg1 pending"),
+SAVES = [   # run id, variant name (round 2: live sizing two_week 10 sessions then safe_eval, $1.90, no reset)
+    ("lit_adv_base", "live"), ("lit_adv_base_t15", "live | t15"),
+    ("lit_adv_be_costs", "BE at 1R to entry + 1.25 pts"), ("lit_adv_be_costs_t15", "BE at 1R to entry + 1.25 pts | t15"),
+    ("lit_adv_be_off_1", "BE at 1R to entry + 1.0 pts"), ("lit_adv_be_off_2", "BE at 1R to entry + 2.0 pts"),
+    ("lit_adv_be_pend_ob50", "BE at 1R, not while ob50 pending"), ("lit_adv_be_pend_ob50_t15", "BE at 1R, not while ob50 pending | t15"),
+    ("lit_adv_be_sw5", "BE at 1R + sw5"), ("lit_adv_be_sw5_t15", "BE at 1R + sw5 | t15"),
+    ("lit_adv_be_1p5r", "BE at 1.5R"), ("lit_adv_no_be", "no BE"), ("lit_adv_no_be_t15", "no BE | t15"),
+    ("lit_adv_part_leg_third", "part 0.33 at first leg >= 1.0R, BE keep"),
     ("lit_adv_part_struct_half_be_after", "part 0.5 at first struct >= 1.0R, BE after"),
-    ("lit_adv_part_struct_half_be_keep", "part 0.5 at first struct >= 1.0R, BE keep"),
-    ("lit_adv_part_all_third_be_keep", "part 0.33 at first all >= 1.0R, BE keep"),
-    ("lit_adv_tsel_loc", "tsel loc (struct)"), ("lit_adv_tsel_journey_1p25", "tsel journey >= 1.25 VIX moves"),
-    ("lit_adv_tsel_deadline_2", "tsel deadline c=2.0"),
+    ("lit_adv_tsel_deadline_1p5", "tsel deadline c=1.5"), ("lit_adv_tsel_deadline_1p5_t15", "tsel deadline c=1.5 | t15"),
+    ("lit_adv_tsel_deadline_2", "tsel deadline c=2.0"), ("lit_adv_tsel_deadline_2_t15", "tsel deadline c=2.0 | t15"),
+    ("lit_adv_tsel_journey_1", "tsel journey >= 1.0 VIX moves"), ("lit_adv_tsel_loc", "tsel loc (struct)"),
+    ("lit_adv_pre_sess_reval_pool", "pre_sess reval:pool"),
 ]
 
 
@@ -850,6 +896,8 @@ def verdict_of(o, base):
     both_n = up("H1", "net") and up("H2", "net")
     if both_p and both_n:
         return "promising", "better 2-week pass rate and more money in both halves"
+    if both_n and not dn("H1", "p10") and not dn("H2", "p10") and not up("H1", "f10") and not up("H2", "f10"):
+        return "promising", "more money in both halves, 2-week pass and fail rates not worse"
     if (up("H1", "p10") or up("H1", "net")) and not (up("H2", "p10") or up("H2", "net")):
         return "rejected", "H1 only"
     if (up("H2", "p10") or up("H2", "net")) and not (up("H1", "p10") or up("H1", "net")):
@@ -862,7 +910,6 @@ def verdict_of(o, base):
 def save(only=None):
     from tools import runlib as rl
     res = _load()
-    base = res["live"]
     V = variants()
     for rid, nm in SAVES:
         if only and rid not in only:
@@ -876,7 +923,12 @@ def save(only=None):
         for t in T:
             t["risk_pts"] = t["risk"]; t["r"] = round(t["pnl"] / t["risk_usd"], 3) if t["risk_usd"] else 0.0
         S = rl.score(T, S26)
-        st, why = verdict_of(o, base) if nm != "live" else ("info", "reference: LIT live with the live two_week sizing")
+        ref = "live | t15" if nm.endswith("| t15") else "live"
+        st, why = verdict_of(o, res[ref]) if nm != ref else ("info", "reference: LIT live" + (" + the 15-minute check" if "t15" in nm else "")
+                                                             + " with the live sizing")
+        if rid in ("lit_adv_be_costs", "lit_adv_be_costs_t15") and st == "promising":
+            st = "adopt-candidate"
+        why += f" (vs {ref})"
         h = lambda s: (f"n={o[s]['n']} {o[s]['tpw']}/wk win {o[s]['win']}% PF {o[s]['pf']} net {o[s]['net']:+,} (${o[s]['per_month']:,}/mo) "
                        f"DD {o[s]['dd']:,}; 2-week pass/fail {o[s]['p10']}/{o[s]['f10']} (Monte Carlo {o[s]['mc']['p10']}/{o[s]['mc']['f10']}), "
                        f"1 month {o[s]['p20']}/{o[s]['f20']}, unit R {o[s]['unit']['tot_r']}")
