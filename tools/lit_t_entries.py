@@ -118,6 +118,9 @@ def es():
 def _es_level(E, ek, nm, d):
     """(direction-space price, ES known index) of ES's copy of NQ level `nm`, or None (build-ups and gaps have no copy)."""
     ex = E.ctx[ek]
+    if nm.split("_")[0] in ("trap", "on"):           # opening-model levels: ES's own trap box / overnight range
+        L = [(p, ki) for p, ki, n2 in _levels_x(E, ek, d, "open", X={"lv": None}) if n2 == nm]
+        return L[0] if L else None
     base = nm[:-2] if nm.endswith(("_h", "_l")) else None
     if base in lit.SESSIONS and base in ex:
         hi_, lo_, ki = ex[base]
@@ -302,11 +305,13 @@ def day_ranges(B):
     return _DR[id(B)]
 
 
-def _levels_x(M, k, d, kind):
-    """[(direction-space price, known 5m index, name)] of the low-side liquidity (for longs) used by the detector."""
+def _levels_x(M, k, d, kind, X=None):
+    """[(direction-space price, known 5m index, name)] of the low-side liquidity (for longs) used by the detector.
+    kind "open": X["lv"] = None (trap box + overnight) | "trap" | "on"."""
     x = M.ctx[k]; s, e = x["s"], x["e"]
     mod = M.mod
     if kind == "open":
+        lv = (X or {}).get("lv")
         ii = np.arange(s, e)
         k930 = ii[(mod[ii] >= 570) & (mod[ii] < 1080)]
         if not len(k930):
@@ -316,7 +321,7 @@ def _levels_x(M, k, d, kind):
         trap = ii[(mod[ii] >= 480) & (mod[ii] < 570)]
         on = ii[(ii <= ki)]
         for nm, jj in (("trap", trap), ("on", on)):
-            if len(jj) < 2:
+            if len(jj) < 2 or (lv and nm != lv):
                 continue
             p = float(M.l[jj].min()) if d == 1 else -float(M.h[jj].max())
             out.append((p, ki, nm + ("_l" if d == 1 else "_h")))
@@ -383,7 +388,7 @@ def detect(M, B1, B5, X, P, days):
         for d in (1, -1):
             hi_d, lo_d, c_d, o_d = B.dirs(d)
             lo_d5 = M.l if d == 1 else -M.h
-            L = _levels_x(M, k, d, kind)
+            L = _levels_x(M, k, d, kind, X)
             br = []                                  # (exec bar of the first breach, price, name)
             for p, ki, nm in L:
                 fb = lit._first_breach(lo_d5, max(ki, s - 600), e, p)
@@ -658,6 +663,15 @@ def variants():
                                             "idm": False, "ev_max": 60}}
     V["open d0.5 to1030 smt"] = {"x1m": {"kind": "open", "sweep_win": (570, 600), "sig_end": 630, "depth": 0.5,
                                          "idm": True, "ev_max": 60, "smt_req": True}}
+    # robustness of the best opening model (neighbours of d0.25 to 10:00)
+    OB = {"kind": "open", "sweep_win": (570, 600), "sig_end": 600, "depth": 0.25, "idm": True, "ev_max": 60}
+    V["open d0.25 to1015"] = {"x1m": {**OB, "sig_end": 615}}
+    V["open d0.25 to1000 ev30"] = {"x1m": {**OB, "ev_max": 30}}
+    V["open d0.25 to1000 trap only"] = {"x1m": {**OB, "lv": "trap"}}
+    V["open d0.25 to1000 overnight only"] = {"x1m": {**OB, "lv": "on"}}
+    V["open d0.25 to1000 half"] = {"x1m": {**OB, "size": 0.5}}
+    V["open d0.25 to1000 smt"] = {"x1m": {**OB, "smt_req": True}}
+    V["open d0 to1000"] = {"x1m": {**OB, "depth": 0.0}}
     return V
 
 

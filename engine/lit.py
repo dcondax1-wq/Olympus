@@ -723,6 +723,7 @@ class XBars:
         self.t, self.o, self.h, self.l, self.c, self.mod, self.day, self.secs = t, o, h, l, c, mod, np.asarray(day), secs
         self.n = len(t)
         self.full = full                  # Market day indices with full coverage (1m only)
+        self.next_open = None             # live only: (time, open) of the bar forming after the last one (engine/lit_live.py)
         self._d = {1: (h, l, c, o), -1: (-l, -h, -c, -o)}
 
     def dirs(self, d):
@@ -781,6 +782,20 @@ def bars_1m(M: Market, cover=0.97, src=None, tol=None, tail=False):
     return XBars(b.t[ix], b.o[ix] - sh, b.h[ix] - sh, b.l[ix] - sh, b.c[ix] - sh, b.mod[ix], day, 60, full)
 
 
+def _next_bar_same_day(B: XBars, k, day):
+    """Live: the bar after B's last bar k (still forming) belongs to the same session (no 18:00 roll, no CME early-close
+    halt in between), so the backtest would fill there."""
+    m = int(B.mod[k]) + B.secs // 60
+    if m >= 1020:
+        return False
+    try:
+        from engine.lit_live import early_close
+        ec = early_close(str(day))
+    except Exception:
+        ec = None
+    return ec is None or m < ec
+
+
 def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     """Walk one trade on B (5m or 1m). Stop beyond the 5m sweep extreme. Conservative intrabar rule: stop before target;
     a limit fill bar gets no target / breakeven credit. tgt = ("pts", distance from the fill) or ("lvl", direction-space price,
@@ -837,6 +852,13 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
             cz = _cisd_level(c_d, o_d, lowk)
             if cz is not None and k > lowk and c_d[k] > cz[0] and k + 1 < B.n and B.day[k + 1] == s_day:
                 fill = k + 1; entry = float(o_d[k + 1]) + SLIP; limit_fill = False; break
+            if live and cz is not None and k > lowk and c_d[k] > cz[0] and k + 1 == B.n and _next_bar_same_day(B, k, cand["day"]):
+                # live: the CISD candle k has just CLOSED and the backtest's fill bar (k + 1) is the one forming now.
+                # Decide now (a market order sent within seconds of k + 1's open gets the backtest's "next open"),
+                # sized from k + 1's open when the feed already shows it (B.next_open), else from k's close (estimate).
+                nx = getattr(B, "next_open", None)
+                exact = nx is not None and int(nx[0]) == int(B.t[k]) + B.secs
+                fill = k + 1; entry = (d * float(nx[1]) if exact else float(c_d[k])) + SLIP; limit_fill = False; break
         k += 1
     else:
         if live and fill is None:           # the data ended before the setup was decided
@@ -859,6 +881,12 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     q = qty_for(risk)
     if q < 1:
         return None
+    if fill >= B.n:                          # live only: enter now (see above); the open trade appears once k + 1 closes
+        return {"enter_now": True, "est": not exact, "day": cand["day"], "dir": d, "entry_t": int(B.t[fill - 1]) + B.secs,
+                "cisd_t": int(B.t[fill - 1]), "entry_px": round(entry * d, 2), "stop_px": round(stop * d, 2),
+                "target_px": round(tg * d, 2), "risk_pts": round(risk, 2), "qty": q, "risk_usd": round(risk * PV * q, 2),
+                "pnl": 0.0, "r": 0.0, "low": 0.0, "half": False, "mult": 1.0, "exit": "OPEN", "exit_t": None,
+                "exit_i": 10 ** 12, "tf": B.secs // 60, "limit_fill": False, "swept": cand["swept"]}
     be_r = P["be_r"]
     cur, be_done, mfe, mae, worst = stop, False, 0.0, 0.0, 0.0
     k = fill

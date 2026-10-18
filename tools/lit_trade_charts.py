@@ -53,6 +53,10 @@ def fusd(v: float) -> str:
     return ("+" if v > 0 else "−" if v < 0 else "") + f"${abs(v):,.0f}"
 
 
+def fr(v: float) -> str:
+    return ("+" if v > 0 else "−" if v < 0 else "") + f"{abs(v):.2f}R"
+
+
 def et(t: int, off: int) -> dt.datetime:
     return dt.datetime.utcfromtimestamp(int(t) + off)
 
@@ -102,11 +106,11 @@ LABELS = []
 FIXED = []
 
 
-def label(ax, x, y, text, col, ha="left", va="bottom", dy=2, fs=6.6, bold=False, bg=True):
-    a = ax.annotate(text, xy=(x, y), xytext=(0, dy), textcoords="offset points", ha=ha, va=va, fontsize=fs, color=col,
+def label(ax, x, y, text, col, ha="left", va="bottom", dy=2, fs=6.6, bold=False, bg=True, prio=2, dx=0, box=None):
+    a = ax.annotate(text, xy=(x, y), xytext=(dx, dy), textcoords="offset points", ha=ha, va=va, fontsize=fs, color=col,
                 fontweight="bold" if bold else "normal", zorder=15, annotation_clip=True,
-                bbox=dict(boxstyle="round,pad=0.18", fc=C["panel"], ec="none", alpha=0.78) if bg else None)
-    LABELS.append(a)
+                bbox=box or (dict(boxstyle="round,pad=0.18", fc=C["panel"], ec="none", alpha=0.78) if bg else None))
+    LABELS.append((prio, len(LABELS), a))
     return a
 
 
@@ -114,18 +118,20 @@ def declutter(fig, fixed=()):
     """move each registered label up/down (in steps) until it overlaps no earlier label nor a fixed artist."""
     fig.canvas.draw()
     rr = fig.canvas.get_renderer()
-    placed = [f.get_window_extent(rr).expanded(1.02, 1.08) for f in fixed]
-    for a in LABELS:
+    placed = [f.get_window_extent(rr).padded(2) for f in fixed]
+    for _p, _i, a in sorted(LABELS, key=lambda z: z[:2]):
         base = tuple(a.xyann)
         best = None
         for k in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 8, -8):
             a.xyann = (base[0], base[1] + k * 7.5)
-            bb = a.get_window_extent(rr)
-            if not any(bb.overlaps(p) for p in placed):
+            bb = a.get_window_extent(rr).padded(2.5)
+            ab = a.axes.bbox
+            inside = bb.y0 >= ab.y0 - 1 and bb.y1 <= ab.y1 + 1
+            if inside and not any(bb.overlaps(p) for p in placed):
                 best = bb
                 break
         if best is None:
-            a.xyann = base; best = a.get_window_extent(rr)
+            a.xyann = base; best = a.get_window_extent(rr).padded(2.5)
         placed.append(best)
     LABELS.clear()
 
@@ -150,7 +156,7 @@ def draw_panel(ax, r, bars, secs, main=True):
     ax.yaxis.set_major_formatter(matplotlib.ticker.FuncFormatter(lambda v, _: f"{v:,.0f}"))
     # x ticks: every hour on 5m (every 30 min when short), every 10 min on 1m
     step = (1800 if n > 70 else 900) if secs == 60 else (7200 if n > 150 else 3600 if n > 60 else 1800)
-    ticks = [(i, b[0]) for i, b in enumerate(bars) if (b[0] + r["off"]) % step == 0]
+    ticks = [(i, b[0]) for i, b in enumerate(bars) if (b[0] + r["off"]) % step == 0 and 2 <= i <= n - 2]
     ax.set_xticks([i for i, _ in ticks]); ax.set_xticklabels([et(t, r["off"]).strftime("%H:%M") for _, t in ticks])
     # session boxes
     for bx in r["boxes"]:
@@ -178,16 +184,25 @@ def draw_panel(ax, r, bars, secs, main=True):
     if main:
         tgt_y = r["target"]; stp_y = r["stop"]
         xm = xe + 0.6
-        FIXED.append(ax.annotate(f"Target {fpx(tgt_y)} · {r['plan_rr']:.2f}R", xy=(xm, tgt_y), xytext=(0, -3 if d == 1 else 3), textcoords="offset points",
-                    va="top" if d == 1 else "bottom", fontsize=6.6, color=C["good"], zorder=16, clip_on=True))
-        FIXED.append(ax.annotate(f"Stop {fpx(stp_y)} · {r['risk_pts']:.2f} pts · ${r['risk_usd']:,.0f}", xy=(xm, stp_y), xytext=(0, 3 if d == 1 else -3),
-                    textcoords="offset points", va="bottom" if d == 1 else "top", fontsize=6.6, color=C["bad"], zorder=16, clip_on=True))
-    # swept levels
+        label(ax, xm, tgt_y, f"Target {fpx(tgt_y)} · {r['plan_rr']:.2f}R", C["good"], va="top" if d == 1 else "bottom",
+              dy=-3 if d == 1 else 3, prio=1, bg=False)
+        label(ax, xm, stp_y, f"Stop {fpx(stp_y)} · {r['risk_pts']:.2f} pts · ${r['risk_usd']:,.0f}", C["bad"], va="bottom" if d == 1 else "top",
+              dy=3 if d == 1 else -3, prio=1, bg=False)
+    # swept levels (levels at the same price share one line and one label)
+    merged = {}
     for lv in r["levels"]:
+        m = merged.setdefault(lv["px"], {**lv, "names": []})
+        m["names"].append(lv["label"])
+        if lv.get("t") and (not m.get("t") or lv["t"] < m["t"]):
+            m["t"] = lv["t"]
+    for lv in merged.values():
+        lv = {**lv, "label": " / ".join(lv["names"])}
         col = C["bsl"] if d == -1 else C["ssl"]
         x0 = X(lv["t"]) if lv.get("t") else 0
         x0 = max(0, x0 or 0)
         xs = X(r["sweep"]["ext_t"]) + 1
+        if xs <= 1:
+            continue
         ax.plot([x0, max(xs, x0 + 1)], [lv["px"], lv["px"]], color=col, lw=0.9, ls=(0, (4, 2.5)), zorder=5)
         if main:
             label(ax, x0 + 0.3, lv["px"], f"{lv['label']} {fpx(lv['px'])}", col, va="bottom" if d == 1 else "top", dy=2 if d == 1 else -2)
@@ -244,12 +259,10 @@ def draw_panel(ax, r, bars, secs, main=True):
     if 0 <= xk <= n + 1:
         ax.plot([xk], [r["exit"]["px"]], marker="X", ms=5.5, color=ec, mec=C["page"], mew=0.6, zorder=11, clip_on=True)
         if main:
-            res = f"{r['exit_kind']} {fusd(r['pnl'])} · {r['r']:+.2f}R"
+            res = f"{r['exit_kind']} {fusd(r['pnl'])} · {fr(r['r'])}"
             right = xk > 0.7 * (n + 6)
-            FIXED.append(ax.annotate(res, xy=(xk, r["exit"]["px"]), xytext=(-7 if right else 7, 0), textcoords="offset points", va="center",
-                        ha="right" if right else "left", fontsize=7,
-                        fontweight="bold", color="#0b0d12", zorder=21,
-                        bbox=dict(boxstyle="round,pad=0.3,rounding_size=0.3", fc=ec, ec="none")))
+            label(ax, xk, r["exit"]["px"], res, "#0b0d12", ha="right" if right else "left", va="center", dy=0, dx=-7 if right else 7,
+                  fs=7, bold=True, prio=0, box=dict(boxstyle="round,pad=0.3,rounding_size=0.3", fc=ec, ec="none"))
     # right-axis price tags (TradingView style), nudged apart
     items = [(r["target"], fpx(r["target"]), C["good"]), (ent, fpx(ent), C["entry"]), (r["stop"], fpx(r["stop"]), C["bad"])]
     y0, y1 = ax.get_ylim()
@@ -294,14 +307,16 @@ def render(r, path, dpi=220):
     x = 0.014
     row(fig, x, 0.955, [(f"{e:%a %Y-%m-%d} · {e:%H:%M} ET", C["ink"], 10, "bold"), (r["side"], side_c, 10, "bold"),
                          (f"{r['qty']} MNQ · ${r['risk_usd']:,.0f} at risk", C["ink2"], 9, "normal")])
-    fig.text(0.985, 0.955, f"{r['exit_kind']}  {fusd(r['pnl'])} · {r['r']:+.2f}R", fontsize=10, fontweight="bold", color=res_c,
+    fig.text(0.985, 0.955, f"{r['exit_kind']}  {fusd(r['pnl'])} · {fr(r['r'])}", fontsize=10, fontweight="bold", color=res_c,
              va="center", ha="right")
-    swept = ", ".join(f"{lv['label']} {fpx(lv['px'])}" for lv in r["levels"])
+    lv = r["levels"]
+    swept = ", ".join(f"{z['label']} {fpx(z['px'])}" for z in lv[:3]) + (f" (+{len(lv) - 3})" if len(lv) > 3 else "")
     sub = (f"LIT · swept {swept} · sweep {fpx(r['sweep']['ext_px'])} ({r['sweep']['depth_atr']:.2f} ATR) · "
-           f"{r['entry_kind']} entry {fpx(r['entry']['px'])} · stop {fpx(r['stop'])} · target {fpx(r['target'])} {r['target_label']}")
+           f"{len(r['idm'])} IDM · {r['entry_kind']} entry · target {r['target_label']}")
     if r.get("size_why"):
         sub += " · " + "; ".join(r["size_why"])
-    fig.text(x, 0.905, sub, fontsize=6.6, color=C["muted"], va="center")
+    fs = 6.6 if len(sub) <= 150 else max(5.4, 6.6 * 150 / len(sub))
+    fig.text(x, 0.905, sub, fontsize=fs, color=C["muted"], va="center")
     fig.text(0.985, 0.022, "CME NQ1! futures (TradingView export) · times ET · paper backtest", fontsize=5.6, color=C["muted"], ha="right")
     declutter(fig, FIXED)
     FIXED.clear()
