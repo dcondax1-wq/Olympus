@@ -191,9 +191,9 @@ def test_review_refuses_noise():
 def test_noise_false_change_rate():
     """The calibration that set Z_MIN = 2.5: on pure-noise journals (no bucket better than another; fat-tailed LIT-like R),
     the learner may change a knob in only a few percent of weeks (2.0 gave 15%, 2.5 gives ~4%, 3.0 ~1% over 20 seeds)."""
-    sun = ["2026-%s" % x for x in ("07-05", "07-19", "08-02", "08-16", "08-30", "09-13")]
+    sun = ["2026-%s" % x for x in ("07-05", "07-19", "08-02", "08-16", "08-30")]
     tot = weeks = 0
-    for seed in range(1, 7):
+    for seed in range(1, 21):
         rng = random.Random(seed)
         R = []
         for i, d in enumerate(weekdays("2026-01-05", 190)):
@@ -209,7 +209,7 @@ def test_noise_false_change_rate():
             L, d = LL.review(R, L, s)
             tot += d["action"] != "none"
             weeks += 1
-    assert tot / weeks <= 0.12, (tot, weeks)
+    assert tot / weeks <= 0.08, (tot, weeks)
 
 
 def test_guardrail_eval_fail():

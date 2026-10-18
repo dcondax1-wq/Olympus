@@ -61,7 +61,7 @@ S26 = [d for d in T.SESS if d >= "2026-01-01"]
 LIVE = T.LIVE
 TW = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit_sizing"]["two_week"]
 U_BUDGET = 1000.0
-EDEF = {"mode": "cisd1m", "zone": "cisd", "tol": 0, "thru": 1, "lm": None, "runaway": None, "two_w": 0.5}
+EDEF = {"mode": "cisd1m", "zone": "cisd", "tol": 0, "thru": 1, "lm": None, "runaway": None, "two_w": 0.5, "ctf": 1}
 
 
 def P_of(X=None):
@@ -101,6 +101,32 @@ def _bos_level(hi_d, tapped, lowk):
         if j + 1 <= lowk and hi_d[j] > hi_d[j - 1] and hi_d[j] >= hi_d[j + 1]:
             return float(hi_d[j])
     return float(hi_d[tapped:lowk + 1].max())
+
+
+def _cisd_agg(B, hi_d, lo_d, c_d, o_d, tapped, k, m):
+    """CISD on m-minute bars (clock-aligned, built from the 1m bars from the tap's m-minute bar on), checked only when bar k
+    closes an m-minute bar (no look-ahead: a decision on a closed m-minute bar)."""
+    if (int(B.mod[k]) + 1) % m:
+        return False
+    g0 = int(B.mod[tapped]) // m
+    a = tapped - (int(B.mod[tapped]) - g0 * m)
+    a = max(a, 0)
+    O, H, L_, C = [], [], [], []
+    j = a
+    while j <= k:
+        g = int(B.mod[j]) // m
+        e = j
+        while e + 1 <= k and int(B.mod[e + 1]) // m == g and B.day[e + 1] == B.day[j]:
+            e += 1
+        O.append(float(o_d[j])); C.append(float(c_d[e])); H.append(float(hi_d[j:e + 1].max())); L_.append(float(lo_d[j:e + 1].min()))
+        j = e + 1
+    if len(C) < 2:
+        return False
+    O, C, L_ = np.array(O), np.array(C), np.array(L_)
+    lk = int(np.argmin(L_))
+    cz = lit._cisd_level(C, O, lk)
+    n = len(C) - 1
+    return cz is not None and n > lk and C[n] > cz[0] and all(C[q] <= cz[0] for q in range(lk + 1, n))
 
 
 def _lm_level(c_d, o_d, hi_d, lo_d, lowk, k, kind):
@@ -163,7 +189,9 @@ def entry_of(M, B, z, L, tgt_lvl, stop0, P, mode=None):
                 return None
             lowk = tapped + int(np.argmin(lo_d[tapped:k + 1]))
             trig = False
-            if mode in ("cisd1m", "close"):
+            if mode in ("cisd1m", "close") and P["ctf"] > 1 and B.secs == 60:
+                trig = _cisd_agg(B, hi_d, lo_d, c_d, o_d, tapped, k, P["ctf"])
+            elif mode in ("cisd1m", "close"):
                 cz = lit._cisd_level(c_d, o_d, lowk)
                 trig = cz is not None and k > lowk and c_d[k] > cz[0]
             elif mode == "bos1m":
@@ -263,7 +291,7 @@ def esim(M, B, z, ep_live, tgt_lvl, fb, stop0, P):
         first = min((t for _, t in got), key=lambda t: t["entry_t"])
         last = max((t for _, t in got), key=lambda t: t["exit_t"])
         fsum = sum(f for f, _ in got)
-        ent = sum(f * (t["legs"][0][1] * 0 + float(t["entry_px"]) * z["dir"]) for f, t in got) / fsum
+        ent = sum(f * float(t["entry_px"]) * z["dir"] for f, t in got) / fsum
         x = dict(first)
         # one unit = the planned position; a missing leg trades nothing (its commission share is given back)
         pts = sum(f * t["legs"][0][1] for f, t in got) + (1 - fsum) * COMM / PV
@@ -510,6 +538,9 @@ def variants():
         V[f"D skip if the fill is > {x}R above the zone"] = {"runaway": x}
     V["D two-step: half limit at the zone, half on the 1m CISD"] = {"mode": "two"}
     V["D two-step: 1/3 limit, 2/3 on the 1m CISD"] = {"mode": "two", "two_w": 1 / 3}
+    for m in (2, 3, 5):
+        V[f"E confirmation: {m}m CISD (instead of 1m), next 1m open"] = {"ctf": m}
+    V["E 3m CISD within 30 1m bars"] = {"ctf": 3, "cisd1m": 30}
     return V
 
 
@@ -519,8 +550,10 @@ def _jsonable(o):
     return o
 
 
-def grid(V=None, mc=True):
+def grid(V=None, mc=True, only=None):
     V = V or variants()
+    if only:
+        V = collections.OrderedDict((k, v) for k, v in V.items() if k.startswith(tuple(only)) or k.startswith("live"))
     res = json.load(open(OUT)) if os.path.exists(OUT) else {}
     o0, _ = score({}, mc=mc, key="base")
     C0 = o0["cand"]
@@ -568,7 +601,7 @@ if __name__ == "__main__":
     if cmd == "check":
         print("OK" if check() else "MISMATCH")
     elif cmd == "grid":
-        grid()
+        grid(only=sys.argv[2:] or None)
     elif cmd == "save":
         save()
     else:

@@ -13,6 +13,8 @@ const KZ = [[120, 930]];
 const inWin = (e) => { if (!e?.t) return false; const p = etParts(e.t), m = p.h * 60 + p.mi; return KZ.some(([a, b]) => m >= a && m < b); };
 let timer = null, DATA = null, loadedAt = 0;
 
+// the hub's text is written for the previous strategy's killzones (tools/news_hub.py); LIT trades one 02:00-15:30 window
+const litTxt = (v) => String(v ?? '').replace(/both killzones/gi, 'its 02:00-15:30 entry window').replace(/\bkillzones?\b/gi, 'entry window');
 const num = (v) => (v == null || v === '') ? '—' : esc(String(v));
 const impactCls = (e) => e.impact === 'high' ? 'high' : e.impact === 'medium' ? 'med' : 'low';
 function etToday() { const p = etParts(Date.now() / 1000); return `${p.y}-${String(p.mo).padStart(2, '0')}-${String(p.d).padStart(2, '0')}`; }
@@ -99,7 +101,7 @@ function render(el, d) {
     <header><b>${day.is_today || day.date === today ? 'Today · ' : ''}${esc(day.label || day.date)}</b>${day.label && day.label !== day.date ? `<span class="mono muted">${esc(day.date)}</span>` : ''}
       ${day.holiday ? '<span class="nx-chip">holiday</span>' : ''}${day.fomc ? '<span class="nx-chip warn">FOMC</span>' : ''}${day.n_high ? `<span class="nx-chip high">${day.n_high} high</span>` : ''}${day.heaviest ? '<span class="nx-chip">heaviest day</span>' : ''}
       ${(day.blackouts || []).length ? `<span class="nx-chip">${day.blackouts.length} blackout${day.blackouts.length === 1 ? '' : 's'}</span>` : ''}
-      ${day.summary ? `<span class="muted small nx-day-s">${esc(day.summary)}</span>` : ''}</header>
+      ${day.summary ? `<span class="muted small nx-day-s">${esc(litTxt(day.summary))}</span>` : ''}</header>
     ${ev.map(e => eventRow(e, now)).join('') || '<div class="empty small">No USD releases.</div>'}</section>`; };
 
   el.innerHTML = `
@@ -127,10 +129,10 @@ function render(el, d) {
         </div>
         ${boList.length ? `<ul class="nx-list small nx-bo">${boList.map(b => `<li>${txt(b)}</li>`).join('')}</ul>` : ''}
         ${(todayD?.fed_speakers || []).length ? `<p class="muted small">Fed speakers: ${esc(todayD.fed_speakers.join(', '))}</p>` : ''}
-        ${todayD?.summary ? `<p class="muted small">${esc(todayD.summary)}</p>` : ''}
+        ${todayD?.summary ? `<p class="muted small">${esc(litTxt(todayD.summary))}</p>` : ''}
       </div>
     </div>
-    ${(d.notes || []).length ? `<div class="nx-notes">${d.notes.map(n => `<span class="nx-chip">${icon('info')} ${esc(n)}</span>`).join('')}</div>` : ''}
+    ${(d.notes || []).length ? `<div class="nx-notes">${d.notes.map(n => `<span class="nx-chip">${icon('info')} ${esc(litTxt(n))}</span>`).join('')}</div>` : ''}
 
     <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>News radar · the week around the LIT entry window</h3><span class="muted small">each blip is a release · the gold ring is the 02:00-15:30 entry window · drag to turn</span></div><div class="fx3d newsradar" id="nhRadar"></div></div>
 

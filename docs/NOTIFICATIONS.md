@@ -1,93 +1,47 @@
-# Phone notifications: every fill and every outcome, in your app
+# Phone notifications: one for every trade, in your app
 
-**What it does.** Your Home Screen app (Liquidity, https://demetrades2000-coder.github.io/nq-dashboard/) gets a notification:
+**What you get.** Your Home Screen app (Liquidity, https://demetrades2000-coder.github.io/nq-dashboard/) shows:
 
-- when a trade **fills**: side, micros, entry, stop, target, $ at risk and the setup (what was swept, the target);
-- when a trade **ends**: target, stop, breakeven or end of day, with R, $ and the MFFU eval balance after it (half size from
-  the weekly stop is noted);
-- when the always-on PC bot **goes silent** during a session, and when **eval timing** changes.
-
-It is free (Web Push: Apple delivers it, like any app notification). Telegram and Discord are no longer needed and are
-off. Every notice also lands in the app's **Activity** page (System -> Activity, and a card on Today), which works even
-before notifications are on. The app icon shows a badge with the number of new ones.
-
-Who sends what:
-
-| Notice says | Comes from | How fast |
+| When | Title | Text |
 |---|---|---|
-| **Cloud paper** | the cloud paper bot (GitHub Actions, PC off) | at its next check, every 30 min on market days 02:00-16:25 ET (so up to ~30 min after the fill; GitHub can add a few minutes) |
-| **PC paper** / **PC NinjaTrader Sim** | the PC bot, while the PC is on | a few seconds after the fill (NinjaTrader: when NinjaTrader reports the fill) |
+| a trade is entered | `LONG · MFFU 50K` | `Entered 4 MNQ` |
+| the trade ends (the same notification is replaced) | `LONG · MFFU 50K` | `+$1,812` (win), `−$366` (loss), `$0 breakeven`, `+$212 closed 15:55` |
 
-Each notice is sent once. When both the cloud and the PC trade the same strategy you get both, each clearly labelled.
-To have only the PC's while the PC bot runs: add the repository **variable** (not secret) `LE_PUSH_DEFER_TO_PC` = `1`.
+The account name says who traded: **Paper** = the cloud paper bot (PC off), the NinjaTrader account (for example
+**Sim101**) = the PC bot, the name in `live_model.json` `"account": {"name": ...}` (default **MFFU 50K**) = a real account.
+Each trade is notified once, even when the cloud and the PC both trade it. Nothing else pushes: the PC bot going silent and
+eval-timing changes appear in the app's **Activity** page (System -> Activity, and a card on Today), next to every
+entry and result with its details (prices, stop, target, R, eval balance). The app icon shows a badge with the new ones.
+
+Free. Telegram and Discord are off.
+
+How fast: the cloud paper bot checks every 30 minutes on market days (02:00-16:25 ET), so its notices arrive up to ~30
+minutes after the fill (GitHub can add a few minutes). The PC bot's arrive a few seconds after the fill.
 
 Paper only, as always: notifications never place or change an order.
 
 ---
 
-## One-time setup (about 5 minutes, all from the iPhone)
+## Setup: tap Allow (that is all)
 
 You need iOS 16.4 or later, and the app must be opened **from the Home Screen** (notifications do not work in a Safari tab).
 
-### Step 1. Put the app on the Home Screen (skip if it is already there)
+1. If the app is not on your Home Screen yet: open the link above in Safari -> **Share** -> **Add to Home Screen** -> **Add**,
+   then open **Liquidity** from the Home Screen.
+2. On **Today**, tap **Turn on** in the "Get a notification for every trade" card (or System -> Settings -> **Turn on
+   notifications**), then **Allow**.
 
-1. Open https://demetrades2000-coder.github.io/nq-dashboard/ in Safari.
-2. Tap **Share** -> **Add to Home Screen** -> **Add**.
-3. Close Safari and open **Liquidity** from the Home Screen.
+Done. The app tells the cloud bot by itself. Its card says **waiting for the cloud** until the next cloud run (market days,
+every 30 min) and **on** after it. If you allow notifications on a weekend, open the app once on Monday so it can remind
+the cloud (the relay forgets after about 12 hours; the app re-sends by itself whenever it opens until the cloud has it).
 
-### Step 2. Turn notifications on in the app
+Optional check: GitHub -> **Actions** -> **cloud-monitor** -> **Run workflow** -> tick **Send a test notification**.
 
-1. In the app: **System** -> **Settings** (or the "Get a notification for every fill" card on Today -> **Set up**).
-2. If you see **Make the keys on this phone**, tap it once. This makes the key pair on your phone. (The other way: run
-   `python tools/push_keys.py` on the PC; see "Keys made on the PC" below.)
-3. Tap **Turn on notifications**, then **Allow**.
-4. The card now shows one or two boxes with a **Copy** button:
-   - **Key · secret LE_VAPID_PRIVATE**: only when you made the keys on the phone. Private: it goes only into GitHub.
-   - **This phone's code · secret LE_PUSH_SUBS**: always.
-
-### Step 3. Paste them into two GitHub Secrets
-
-Open https://github.com/demetrades2000-coder/nq-liquidity-engine/settings/secrets/actions (the app links there too) and
-tap **New repository secret**:
-
-| Name | Secret (paste) |
-|---|---|
-| `LE_VAPID_PRIVATE` | the key from the app's first box (or from `tools/push_keys.py`) |
-| `LE_PUSH_SUBS` | the code from the app's "This phone's code" box |
-
-Tap **Add secret** after each. Then, back in the app, tap **I saved it: forget the key here** (the phone does not need
-the private key any more).
-
-### Step 4. Check it
-
-- Wait for the next cloud run (every 30 min on market days), or start one now: GitHub -> **Actions** -> **cloud-monitor**
-  -> **Run workflow** -> tick **Send a test notification** -> **Run workflow**. A "Test notification" arrives in about a
-  minute.
-- The app's notification card then says **on** (the cloud lists this phone). The dashboard branch README shows
-  "Notifications: app notifications on: 1 device(s)".
-
-### The PC bot too (optional, when the PC is on)
-
-PC dashboard (http://localhost:8766) -> **Alerts** -> **Phone app notifications**: paste the same private key and the
-same phone code -> **Save** -> **Send test**. They are stored only on the PC, in `data/push.json` (never committed).
+The PC bot (optional) links by itself too, as long as its heartbeat is on (`LE_HEARTBEAT=1`, the always-on PC setup): the
+next cloud run hands it the notification key, sealed so only that PC can open it. PC dashboard -> Alerts -> Phone app
+notifications shows **linked** and has a **Send test** button.
 
 ---
-
-## Keys made on the PC instead of the phone
-
-```
-python tools/push_keys.py
-```
-
-It prints the **private key** (put it in the GitHub Secret `LE_VAPID_PRIVATE`; never in a chat or a file in the repo),
-writes the public key to `tools/web_public/push_key.json` (not secret: commit it so the app finds it before the first
-cloud run) and saves both in `data/push.json` for the PC bot. Then do step 2 (the app shows only the phone code) and
-add the phone to the PC bot with `python tools/push_keys.py --add-sub '<the code>'` or the PC dashboard card.
-
-## More phones
-
-Do step 2 on the other phone and save its code as a new secret `LE_PUSH_SUBS_2` (a third: `LE_PUSH_SUBS_3`). A GitHub
-Secret cannot be read back, so each phone gets its own. (One secret can also hold several codes one after another.)
 
 ## When something is off
 
@@ -95,23 +49,38 @@ Secret cannot be read back, so each phone gets its own. (One secret can also hol
 |---|---|
 | "On iPhone, notifications work in the Home Screen app" | Open Liquidity from the Home Screen, not from Safari. |
 | **blocked** | iPhone Settings -> Notifications -> Liquidity -> Allow Notifications, then tap Turn on again. |
-| **waiting for the code** | The secret `LE_PUSH_SUBS` is missing or holds another code: paste this phone's code again (Update secret). It turns **on** after the next cloud run. |
-| **expired** | Apple renewed the phone's subscription. Tap **Turn on again** and update `LE_PUSH_SUBS` with the new code. |
-| "The cloud uses a different key" | The keys changed. Tap **Turn on again** and update `LE_PUSH_SUBS`. |
+| **waiting for the cloud** for more than a market day | Open the app again (it re-sends); check that the cloud-monitor workflow runs (Actions tab). |
+| **tap to finish** | Tap Turn on once more (the phone wanted a tap to finish the subscription). |
 
-## Telegram / Discord
+If the cloud's key ever changes (its cache is lost), the app subscribes again on its next open, by itself.
 
-Off since 2026-10-18 (the app replaces them). The code stays: set the repository variable `LE_ALERTS_CHAT` = `1` (cloud)
-or start the PC server with `LE_ALERTS_CHAT=1` (or add `"alerts": {"chat": true}` to `live_model.json`) to turn them back on.
+## Settings you can change (optional)
+
+| What | Where |
+|---|---|
+| Account name in the notices | `live_model.json`: `"account": {"name": "MFFU 50K", "paper": "Paper"}` |
+| Also push PC-silent / eval-timing / NinjaTrader trouble | repository variable `LE_PUSH_EXTRA` = `1` (PC: start the server with `LE_PUSH_EXTRA=1`) |
+| Your own key instead of the automatic one | GitHub Secret `LE_VAPID_PRIVATE` (make one with `python tools/push_keys.py`); phones re-subscribe by themselves |
+| Telegram / Discord back on | repository variable `LE_ALERTS_CHAT` = `1` (PC: `LE_ALERTS_CHAT=1`, or `"alerts": {"chat": true}` in `live_model.json`) |
+
+Secrets live at https://github.com/demetrades2000-coder/nq-liquidity-engine/settings/secrets/actions (variables: the
+Variables tab next to it). None is needed for the normal setup.
 
 ## How it works (for the curious)
 
-- `engine/push.py`: builds the notices, keeps each one to a single send (de-dup keys), and sends Web Push (pywebpush when
-  installed, else a small built-in sender that needs only `cryptography`). Nothing configured = it does nothing.
-- `tools/cloud_monitor.py`: after each run, a notice for every new fill (from the model's entry and open position) and
-  every new outcome (from the paper ledger, with the eval balance). Keys already sent are kept in `state.json` on the
-  `dashboard` branch, with the last 80 notices for the app's Activity page. Nothing older than 2 days is ever sent.
-- `engine/live.py` (PC paper fills and every routed outcome) and `engine/ninjatrader.py` (NinjaTrader's reported fill and the
-  bracket's stop / target fill): sent in the background so routing never waits; keys in `data/push_sent.json`.
-- `tools/web_public/sw.js`: shows each push, counts it on the badge and opens the app at that notice when tapped.
-- Tests: `python -X utf8 -m tests.test_push`.
+- **Relay**: a free ntfy.sh topic named in `tools/web_public/push_relay.json` (not secret). When you allow notifications the
+  app posts its push subscription there. A subscription alone cannot send anything: sending needs the private key.
+- **Key**: with no `LE_VAPID_PRIVATE` secret, the workflow makes a key pair on its first run and keeps the private key in the
+  GitHub Actions cache (`.le_push/vapid.json`, refreshed every run; never committed, never printed). The public key goes
+  into data.json, the app subscribes with it.
+- **Cloud** (`tools/cloud_monitor.py`): every run reads the relay, keeps the subscriptions in `state.json` on the private
+  `dashboard` branch, and sends an entry notice for each new fill and an outcome notice for each finished trade (nothing
+  older than 2 days). Keys already sent are kept in `state.json`; a "sent" marker on the relay tells the PC.
+- **PC** (`engine/live.py`, `engine/ninjatrader.py`): the heartbeat publishes the PC's own public key
+  (`data/push_pc_key.json` holds the private part, gitignored); the cloud seals the notification key to it in `state.json`;
+  the PC opens it and sends the same two notices (NinjaTrader: when NinjaTrader reports the fill and when the bracket's stop
+  or target fills). Before sending it checks the relay, so a trade the cloud already notified is not sent twice (and the
+  other way round). Same notification tag per trade, so at worst a notice is replaced, never doubled.
+- **App** (`tools/web_public/index.html`, `sw.js`): shows each push, counts it on the badge, opens the app at the trade when
+  tapped, and keeps the subscription current on every open.
+- Tests: `python -X utf8 -m tests.test_push` (payloads, relay, keys, de-dup, encryption).

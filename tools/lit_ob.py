@@ -325,6 +325,10 @@ def poi_hits(M, z, Q):
                 continue
             if (d == 1 and ext < X["bot"][j] - tol * at) or (d == -1 and ext > X["top"][j] + tol * at):
                 continue
+            if Q.get("clean_liq") and liq_beyond(M, z, X["bot"][j] if d == 1 else X["top"][j], Q["clean_liq"]):
+                continue
+            if Q.get("clean_fvg") and fvg_beyond(M, z, tf, X["bot"][j] if d == 1 else X["top"][j], Q["clean_fvg"]):
+                continue
             hits.append((tf, "ob", int(j)))
         if Q.get("breaker"):
             Y = I[-d]                       # a failed opposite block = a breaker of the trade's direction
@@ -336,6 +340,63 @@ def poi_hits(M, z, Q):
                     continue
                 hits.append((tf, "breaker", int(j)))
     return hits
+
+
+def liq_beyond(M, z, distal, k_atr):
+    """Chapter 12 'liquidity beyond the zone': a LIT level of the swept side (session box, PDL/PWL/PML, gap edge, build-up),
+    known before the extreme and still untaken at the extreme, within k_atr x ATR beyond the block's far edge."""
+    d = z["dir"]; ee = z["ext_i"]; at = z["atr_ext"]
+    lo_d = M.l if d == 1 else -M.h
+    dist_d = distal * d
+    for side, px, ki, nm, cls in M.levels(z["k"]):
+        if (side == "low") != (d == 1) or ki >= ee:
+            continue
+        p = px * d
+        if not (dist_d - k_atr * at <= p < dist_d):
+            continue
+        st = max(int(ki), M.ctx[z["k"]]["s"] - 600)
+        if lo_d[st + 1:ee + 1].min() >= p:
+            return True
+    return False
+
+
+_FV = {}
+
+
+def fvgs(M, tf):
+    """FVGs of tf from the 5m file: arrays lo, hi, k5 (known at that 5m close)."""
+    if tf not in _FV:
+        B = htf(M, tf)
+        h, l = B["h"], B["l"]
+        j = np.arange(2, len(h))
+        up = l[j] > h[j - 2]; dn = h[j] < l[j - 2]
+        lo = np.r_[h[j - 2][up], h[j][dn]]; hi = np.r_[l[j][up], l[j - 2][dn]]
+        k5 = np.r_[B["last"][j][up], B["last"][j][dn]]
+        o = np.argsort(k5, kind="stable")
+        _FV[tf] = (lo[o], hi[o], k5[o])
+    return _FV[tf]
+
+
+def fvg_beyond(M, z, tf, distal, k_atr):
+    """Chapter 12 'imbalance beyond the zone': an FVG of the block's timeframe, known before the extreme, lying within k_atr x
+    ATR beyond the block's far edge and not yet fully traded through by the extreme (price may still want it: the expected
+    mitigation would pass through the stop)."""
+    d = z["dir"]; ee = z["ext_i"]; at = z["atr_ext"]
+    lo, hi, k5 = fvgs(M, tf)
+    b = int(np.searchsorted(k5, ee))
+    a = int(np.searchsorted(k5, ee - AGE[tf]))
+    for q in range(a, b):
+        if d == 1:
+            if not (distal - k_atr * at <= hi[q] <= distal):
+                continue
+            if M.l[k5[q] + 1:ee + 1].min() > lo[q]:
+                return True
+        else:
+            if not (distal <= lo[q] <= distal + k_atr * at):
+                continue
+            if M.h[k5[q] + 1:ee + 1].max() < hi[q]:
+                return True
+    return False
 
 
 def poi_dist(M, z, Q):
@@ -559,7 +620,8 @@ def orun(P=None, sessions=SESS):
     B1 = F.bars(M, "1m") if P["tf"] == "1m" else None
     Q5 = P["obonly"]
     if Q5:
-        main = {(z["day"], z["dir"], z["ext_i"]) for z in C}
+        main = {(z["day"], z["dir"], z["ext_i"]) for z in C
+                if lit.setup_ok(z, P, names) and not (P.get("monday") and lit.monday_block(M, z))}
         C2 = [z for z in ob_cands(M, Q5["tfs"], Q5.get("zone", "body")) if (z["day"], z["dir"], z["ext_i"]) not in main]
         C = sorted(list(C) + C2, key=lambda z: (z["entry_t"], -z["dir"]))
     out, busy, per_day = [], -1, collections.Counter()
@@ -612,8 +674,9 @@ def orun(P=None, sessions=SESS):
             classes = ["obt"] if Qt.get("pick") == "alone" else classes + ["obt"]
         best = None
         for c in classes:
+            mr = (Qt.get("min_r", P["min_rr"]) if (Qt and c == "obt") else P["min_rr"])
             for dist in sorted(TT.get(c, [])):
-                if dist >= P["min_rr"] * risk:
+                if dist >= mr * risk:
                     if best is None or dist < best:
                         best = dist
                     break
@@ -796,6 +859,23 @@ def variants():
     V["obstacle skip: opposing 15m/1h/4h OB < 1.5R"] = {"obx": {"tfs": H3, "rr": 1.5, "mode": "skip"}}
     V["obstacle half: opposing 1h/4h OB < 1.5R"] = {"obx": {"tfs": H2T, "rr": 1.5, "mode": "half", "mult": 0.5}}
     V["obstacle half: opposing 15m/1h/4h OB < 1.5R"] = {"obx": {"tfs": H3, "rr": 1.5, "mode": "half", "mult": 0.5}}
+    # ---- chapter 12 of the second report (qualify the origin, one job per block, first opposition)
+    lo_ = {"tfs": H3, "zone": "body", "pre": 72, "tol": 2.0}
+    V["ch12 POI x1.5, origin took liquidity"] = {"poi": {**lo_, "swept": True, "mode": "size", "mult": 1.5}}
+    V["ch12 POI x1.5, no liquidity beyond the zone"] = {"poi": {**lo_, "clean_liq": 2.0, "mode": "size", "mult": 1.5}}
+    V["ch12 POI x1.5, no imbalance beyond the zone"] = {"poi": {**lo_, "clean_fvg": 2.0, "mode": "size", "mult": 1.5}}
+    V["ch12 POI x1.5, all origin checks"] = {"poi": {**lo_, "swept": True, "clean_liq": 2.0, "clean_fvg": 2.0, "mode": "size", "mult": 1.5}}
+    V["ch12 POI require, all origin checks"] = {"poi": {**lo_, "swept": True, "clean_liq": 2.0, "clean_fvg": 2.0, "mode": "require"}}
+    V["ch12 POI half without a clean POI"] = {"poi": {**lo_, "clean_liq": 2.0, "clean_fvg": 2.0, "mode": "half_without", "mult": 0.5}}
+    V["ch12 target first opposition 15m/1h/4h if >= 1R, else VIX"] = {"obt": {"tfs": H3, "pick": "nearer", "min_r": 1.0}}
+    V["ch12 target first opposition 1h/4h if >= 1R, else VIX"] = {"obt": {"tfs": H2T, "pick": "nearer", "min_r": 1.0}}
+    # ---- neighbours of the obstacle rule (the one OB idea that helped the live two_week mode in H1)
+    for tfs, tn in ((H3, "15m/1h/4h"), (["15m"], "15m"), (["15m", "1h"], "15m/1h")):
+        for rr in (1.0, 1.5, 2.0):
+            nm = f"obstacle skip: opposing {tn} OB < {rr:g}R"
+            if nm not in V:
+                V[nm] = {"obx": {"tfs": tfs, "rr": rr, "mode": "skip"}}
+    V["obstacle skip: opposing 15m/1h/4h OB (wick zone) < 1.5R"] = {"obx": {"tfs": H3, "rr": 1.5, "mode": "skip", "zone": "wick"}}
     # ---- 5. OB-only setups (extra setup type)
     for tfs, tn in ((H2T, "1h/4h"), (H3, "15m/1h/4h")):
         for dp in (0.0, 0.25):
