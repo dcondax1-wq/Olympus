@@ -873,6 +873,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 /* Briefing (engine/lit_brief.py) */
 .br-plan { font-size: 15px; line-height: 1.5; margin: 0 0 10px; color: var(--ink); }
 .br-log { max-height: none; } .br-log .evt.br-new { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.br-w { border-left: 3px solid var(--line); padding-left: 10px; } .br-w.warn { border-color: var(--warn); color: var(--ink); } .br-w.good { border-color: var(--good); color: var(--ink); }
 .tag.br-n { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--ink); }
 .br-facts > div { align-items: flex-start; } .br-facts b { font-weight: 500; text-align: right; max-width: 70%; }
 </style>
@@ -1639,7 +1640,7 @@ const lkCtx = () => (LK && D ? LK.fromCloud(D, Date.now() / 1000) : null);
 // trade charts (tradechart.js: a trade drawn like TradingView's Long / Short Position tool on the real candles), loaded on demand;
 // the replay trades' bars + markers are in replays/<id>.json (tools/export_replays.py -> tools/build_web_dashboard.py)
 let TC = null, TCP = null;
-const TCV = '00000000';
+const TCV = 'b1526d92';
 function loadTC() {
   if (TCP) return TCP;
   TCP = import('./tradechart.js?v=' + TCV).then((m) => { TC = m; return m; }).catch((e) => { console.warn('trade chart unavailable', e); TCP = null; throw e; });
@@ -2003,11 +2004,13 @@ function brLevels(mo, max) {
 function brBoxes(mo) {
   return `<div class="kv">${(mo.boxes || []).map(b => `<div><span>${esc(b.label)} <span class="mut">${esc(b.window)}</span></span><b>${b.status === 'done' ? `${num(b.high)} / ${num(b.low)}` : esc(b.status)}${b.status === 'done' ? `<small class="mut" style="display:block;font-weight:500">${b.high_taken_t ? 'high taken ' + et(b.high_taken_t).hm : 'high untaken'} · ${b.low_taken_t ? 'low taken ' + et(b.low_taken_t).hm : 'low untaken'}</small>` : ''}</b></div>`).join('')}</div>`;
 }
+const brWarn = (B, all) => (B.mffu || []).filter(w => all || w.level !== 'info').map(w => `<div class="note br-w ${esc(w.level)}">${esc(w.text)}</div>`).join('');
 function briefCard() {
   const B = BRV(); if (!B) return '';
   const mo = B.morning, rc = B.recap;
   return `<div class="card"><div class="card-h"><h3>Briefing · ${esc(B.day || '')}</h3><button class="chipbtn" type="button" data-go="brief"><span>Open</span>${icon('right')}</button></div>
     ${mo ? `<p class="br-plan">${esc(mo.plan)}</p><div class="note">${esc(mo.overnight?.text || '')} ${esc(mo.eval?.text || '')}</div>` : `<div class="note">${esc(B.waiting ? 'Waiting for the ' + B.waiting.replace('next session ', '') + ' session.' : 'The morning briefing is built on the first run after 01:30 ET.')}</div>`}
+    ${brWarn(B)}
     ${rc ? `<div class="note"><b>End of day:</b> ${esc(rc.text)} ${esc(rc.lesson || '')}</div>` : ''}
     <div style="margin-top:10px">${brLog(B.log, 4)}</div></div>`;
 }
@@ -2024,6 +2027,7 @@ VIEWS.brief = (el) => {
       <div><span>News</span><b class="${(mo.news || []).length ? 'wn' : ''}">${esc(mo.news_text || '')}</b></div>
       ${mo.monday?.text ? `<div><span>Monday rule</span><b>${esc(mo.monday.text)}</b></div>` : ''}${mo.weekly_stop?.text ? `<div><span>Weekly stop</span><b>${esc(mo.weekly_stop.text)}</b></div>` : ''}
       <div><span>Eval</span><b>${esc(mo.eval?.text || '')}</b></div></div></div>` : '')
+    + ((B.mffu || []).length ? `<div class="card"><div class="card-h"><h3>MFFU rules today</h3><span class="meta">in-app only</span></div>${brWarn(B, true)}</div>` : '')
     + (rc ? `<div class="card"><div class="card-h"><h3>End of day</h3><span class="meta ${cls(rc.pnl)}">${susd(rc.pnl)}</span></div><p class="br-plan">${esc(rc.text)}</p><div class="note">${esc(rc.setups)}</div><div class="note"><b>Lesson:</b> ${esc(rc.lesson || '')}</div></div>` : '')
     + `<div class="card"><div class="card-h"><h3>Intraday log</h3><span class="meta">${plural((B.log || []).length, 'entry')}${B.new ? ` · ${B.new} new` : ''}</span></div>
       ${nw.model_state ? `<div class="note" style="margin-bottom:10px">Now (${esc(nw.at || '')}): ${esc(nw.model_state)}</div>` : ''}${brLog(B.log)}</div>`

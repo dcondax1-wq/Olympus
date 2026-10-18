@@ -422,8 +422,12 @@ def pre_window_theses():
     if os.path.exists(p):
         return pickle.load(open(p, "rb"))
     M = _days2026(base()[0])
-    fn = _patched_candidates()
-    C2 = fn(M, ref=PU["ref"], t_from=0)
+    wk0 = lit._week_context
+    lit._week_context = _no_week
+    try:
+        C2 = lit.candidates(M, ref=PU["ref"], evening=True)     # engine option (all-hours study): triggers from 18:30 ET
+    finally:
+        lit._week_context = wk0
     out = [z for z in C2 if (z["mod"] >= 1080 or z["mod"] < 120)]
     pickle.dump(out, open(p, "wb"))
     return out
@@ -670,7 +674,16 @@ def ann_all():
     if "AA" not in _S:
         A = annotate()
         SC = session_ctx()
-        _S["AA"] = {k: {**v, **SC.get(k, {})} for k, v in A.items()}
+        Z = base()[5]
+        M = base()[0]
+
+        def own2(k):
+            z = Z[k]
+            q = [aa for dd, aa in z["idm_a"] if dd <= 1.0 and aa <= 36]
+            em = int(M.mod[z["ext_i"]])
+            return {"idm_age": min(q) if q else None, "cls": sorted(z["swept_cls"]),
+                    "ext_open30": int(any(o <= em < o + 30 for o in OPENS))}
+        _S["AA"] = {k: {**v, **SC.get(k, {}), **own2(k)} for k, v in A.items()}
     return _S["AA"]
 
 
@@ -811,6 +824,22 @@ def variants():
                 fam="own smt", **f((lambda dz: lambda r, a: a["smt15"] is not None and a["smt15"] <= dz)(dz)))
             V[f"own SMT trap: {lab} when an untaken LIT level sits <= {dz} ATR beyond the extreme"] = dict(
                 fam="own smt", **f((lambda dz: lambda r, a: a["onway_any"] is not None and a["onway_any"] <= dz)(dz)))
+    # ---- owner's tips (2nd batch): inducement speed, hierarchy, session-open final inducement, continuation / reversal IDM
+    RANK = lambda a: 3 if set(a["cls"]) & MAJOR else 2 if set(a["cls"]) & {"asia", "london", "ny", "pre"} else 1
+    CONT = lambda a: a["bd"]["bos1h"] == "intact" and not (set(a["cls"]) & MAJOR)
+    REV = lambda a: "buildup" in a["cls"] and a["bd"]["bos1h"] == "against"
+    for m, lab in ((0.5, "half"), (0.75, "0.75x"), (0.0, "skip")):
+        f = (lambda m: (lambda c: dict(skip=c) if m == 0 else dict(size=lambda r, a: m if c(r, a) else 1.0)))(m)
+        for ag in (6, 12, 24):
+            V[f"own2 IDM speed: {lab} when the inducement swing is older than {ag} bars at the sweep (slow = build-up)"] = dict(
+                fam="own2 speed", **f((lambda ag: lambda r, a: a["idm_age"] is not None and a["idm_age"] > ag)(ag)))
+        V[f"own2 hierarchy: {lab} when only a minor level (build-up) was swept"] = dict(fam="own2 rank", **f(lambda r, a: RANK(a) == 1))
+        V[f"own2 hierarchy: {lab} unless a major level (PD/PW/PM/gap) was swept"] = dict(fam="own2 rank", **f(lambda r, a: RANK(a) < 3))
+        V[f"own2 session open: {lab} unless the sweep extreme came within 30 min of an open"] = dict(
+            fam="own2 open", **f(lambda r, a: a["ext_open30"] == 0))
+        V[f"own2 continuation/reversal IDM: {lab} setups that are neither"] = dict(
+            fam="own2 contrev", **f(lambda r, a: not (CONT(a) or REV(a))))
+        V[f"own2 continuation IDM only: {lab} the rest"] = dict(fam="own2 contrev", **f(lambda r, a: not CONT(a)))
     # ---- ch4: ES, the same event
     for cl in ("nq_only", "es_led", "both"):
         c = (lambda cl: lambda r, a: a["es_cls"] == cl)(cl)

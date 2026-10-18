@@ -269,6 +269,66 @@ def fbos_grid(jobs=(("fbos", "1day"), ("fbos_all", "1day"), ("cycle", "1day"), (
         print(line(key, o), "| F-BoS setups 2026:", o["n_fbos_setups_2026"], flush=True)
 
 
+# ------------------------------------------------------------------------------------------------ trendline / channel liquidity
+def market_ts():
+    """Evening candidates with trendline/channel liquidity ("TS", owner's notes) as an extra level class "ts": a 5m fractal low
+    whose two previous fractal lows and two previous fractal highs are each lower than the one before (a falling channel's
+    last low), known 2 bars after the swing (fractal confirmation); mirror for a rising channel's last high. Sweeping it and
+    running the other way is then a LIT setup. Research only (Market.levels wrapped on this instance)."""
+    M, _ = F.market("cisd", ())
+    p = os.path.join(CACHE, f"litallhours_ts_v1_cisd_{rl._data_key().replace(':', '_')}.pkl")
+    if os.path.exists(p):
+        return M, pickle.load(open(p, "rb"))
+    import bisect
+    fl, fh = np.asarray(M.fl), np.asarray(M.fh)
+    orig = M.levels
+
+    def chan(k):
+        s, e = M.days[k][1], M.days[k][2]
+        L = []
+        for side, F_, O_, arr, oarr in (("low", fl, fh, M.l, M.h), ("high", fh, fl, M.h, M.l)):
+            sg = 1 if side == "low" else -1          # falling channel for lows (lower lows, lower highs); rising for highs
+            a, z = bisect.bisect_left(F_, s - 72), bisect.bisect_left(F_, e)
+            for q in range(max(a, 2), z):
+                m = int(F_[q]); p1, p2 = int(F_[q - 1]), int(F_[q - 2])
+                if not (sg * arr[m] < sg * arr[p1] < sg * arr[p2]):
+                    continue
+                j = bisect.bisect_left(O_, m) - 1
+                if j < 1:
+                    continue
+                h1, h2 = int(O_[j]), int(O_[j - 1])
+                if not (sg * oarr[h1] < sg * oarr[h2]) or m - p2 > 72:
+                    continue
+                L.append((side, float(arr[m]), m + 2, "ts_" + side[0], "ts"))
+        return L
+
+    def levels(k):
+        return orig(k) + chan(k)
+    M.levels = levels
+    try:
+        C = lit.candidates(M, ref="cisd", evening=True)
+    finally:
+        M.levels = orig
+    pickle.dump(C, open(p, "wb"))
+    return M, C
+
+
+def ts_grid(jobs=(("live", "1day"), ("full", "1day"), ("live", "rearm_sal"))):
+    res = json.load(open(OUT)) if os.path.exists(OUT) else {}
+    M, _ = market()
+    _, Cts = market_ts()
+    for win, count in jobs:
+        key = f"ts|{win}|{count}"
+        if key in res:
+            continue
+        T = lit.run_x(M, Cts, P_of(win, count), SESS, B1=F.bars(M, "1m"), B5=F.bars(M, "5m"))
+        o = {"money": money(T), "eval": eval2wk(T, key),
+             "n_ts_trades_2026": sum(1 for t in T if t["day"] >= "2026" and any(x.startswith("ts_") for x in t["swept"]))}
+        res[key] = o
+        json.dump(res, open(OUT, "w"), indent=1, default=float)
+        print(line(key, o), "| trades sweeping a TS level 2026:", o["n_ts_trades_2026"], flush=True)
+
+
 def save(picks):
     """picks: [(run id, win, count, status, title, why)]: store each with its trades at the LIT size."""
     res = json.load(open(OUT))

@@ -150,10 +150,19 @@ def main():
         except Exception as ex:
             print("watch: Yahoo fetch failed:", ex.__class__.__name__, flush=True)
             y5 = y1 = pd.DataFrame()
+        feed_t = now
         if len(y1):
-            lags.append([now, int(now - (int(y1["time"].max()) + 60))])     # seconds since the newest 1m bar closed
-        df5, _ = clean_bars(pd.concat([x for x in (base5, y5) if len(x)]), 300, now)
-        df1, _ = clean_bars(pd.concat([x for x in (base1, y1) if len(x)]) if (len(base1) or len(y1)) else pd.DataFrame(), 60, now)
+            newest = int(y1["time"].max())
+            lags.append([now, int(now - (newest + 60))])     # seconds since the newest 1m bar would have closed
+            # A delayed feed's newest row can be a bar still forming in feed time while clean_bars (wall clock) calls it
+            # closed: only bars that ended by the newest row's open are used (costs at most a minute, never a partial bar).
+            feed_t = newest
+            y1 = y1[y1["time"] + 60 <= feed_t]
+            y5 = y5[y5["time"] + 300 <= feed_t] if len(y5) else y5
+        df5, _ = clean_bars(pd.concat([x for x in (base5, y5) if len(x)]), 300, feed_t)
+        df1, _ = clean_bars(pd.concat([x for x in (base1, y1) if len(x)]) if (len(base1) or len(y1)) else pd.DataFrame(), 60, feed_t)
+        df5 = df5[df5["time"] + 300 <= feed_t]
+        df1 = df1[df1["time"] + 60 <= feed_t]
         try:
             res = lit_live.run(df5, P, one_min=df1 if len(df1) else None, now=now, sym=sym, week_hist=week)
         except Exception as ex:

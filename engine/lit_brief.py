@@ -320,7 +320,7 @@ def mffu_rules():
 
 
 def mffu_notes(now, day, ledger=None, clock=None, eval_start=None, flat_mod=955):
-    """In-app MFFU warnings (never pushed): the must-be-flat time (+ the CME early halt on a half-day), the 7-day
+    """In-app MFFU warnings (in-app only): the must-be-flat time (+ the CME early halt on a half-day), the 7-day
     inactivity rule (5+ calendar days since the last fill on the eval ledger) and what to do once the eval passed."""
     from engine.lit_live import early_close
     R = mffu_rules()
@@ -347,7 +347,9 @@ def mffu_notes(now, day, ledger=None, clock=None, eval_start=None, flat_mod=955)
         n = (_et(now).date() - ref).days
         if n >= 5:
             out.append({"kind": "inactivity", "level": "warn", "days": n,
-                        "text": f"No trade for {n} days - place 1 MNQ by hand before day {R['inactivity_days']} (MFFU inactivity rule)."
+                        "text": (f"No trade for {n} days - MFFU can close the account at {R['inactivity_days']}: place 1 MNQ by hand "
+                                 f"today (MFFU inactivity rule)." if n >= R["inactivity_days"] - 1 else
+                                 f"No trade for {n} days - place 1 MNQ by hand before day {R['inactivity_days']} (MFFU inactivity rule).")
                         if fills else f"No trade for {n} days since the eval started - place 1 MNQ by hand before day "
                                       f"{R['inactivity_days']} (MFFU inactivity rule)."})
     return out

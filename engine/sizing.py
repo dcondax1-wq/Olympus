@@ -211,6 +211,29 @@ def lit_qty_core(qty: int, trade: dict, cfg: dict | None = None, room: float | N
     lm = float(L["mult"])
     if L["skip"]:
         return {"qty": 0, "mult": 0.0, "reasons": reasons + L["reasons"], "learn": L}
+    if mode == "auto":
+        # eval until it is passed, then the funded rules (2026-10-18). state = eval_state() (+ "days_traded"); the eval counts
+        # as passed once profit (earlier sessions) >= the target: the minimum-days trade first (two_week, 1 micro while
+        # days_traded < min_days), then mode "funded" on state["funded"] (= funded_state() of the funded account; missing ->
+        # the funded fallback, the smallest size). Never "one winner passes" sizing on a passed / funded account.
+        st = state or {}
+        tgt_usd = float(((c.get("two_week") or {}).get("acct") or {}).get("target", TW_50K["target"]))
+        passed = state is not None and _num(st.get("profit")) is not None and float(st["profit"]) >= tgt_usd
+        if passed:
+            mind = (c.get("two_week") or {}).get("min_days", TW_DEFAULT["min_days"])
+            if mind and _num(st.get("days_traded"), 1.0) < float(mind):
+                mode = "two_week"
+            else:
+                reasons.append("auto: eval passed -> funded sizing")
+                return lit_qty_core(qty, trade, {**c, "mode": "funded"}, room=None, max_micros=max_micros,
+                                    state=st.get("funded"), learning=learning)
+        else:
+            mode = c.get("eval_mode") or "two_week"
+    if mode == "two_week" and c.get("two_week_until") and state is not None and _num(state.get("session")) is not None \
+            and float(state["session"]) > float(c["two_week_until"]):
+        # owner 2026-10-18: no reset; after session two_week_until the eval goes on in lit_sizing.after_mode (default eval)
+        mode = c.get("after_mode") or "eval"
+        reasons.append(f"session {int(state['session'])} > {int(c['two_week_until'])}: {mode} sizing")
     if mode == "two_week":
         tgt = _num(trade.get("tgt_pts", trade.get("tgt")))
         if tgt is None and trade.get("entry") is not None and trade.get("target") is not None:
@@ -344,17 +367,20 @@ def _learn(trade, learning):
 #   room_f     0.6 | None: micros <= room_f x room / (stop x $2), room = balance - trailing max-loss floor
 #   dll_cap    True: a full stop-out (stop + 1 tick, commission) may not take the day below -dll (the MFFU soft daily loss)
 #   stop_at_target  True: no new trade once the day's P&L already reaches the eval target (never risk the pass)
+#   min_days   2: after the target was reached on an earlier session, one 1-micro "minimum-days trade" while the eval has fewer
+#              than min_days traded days (state "days_traded", unknown = 1); None = never
 # Always: at least 1 micro (the room / daily caps never go below 1), at most max_micros.
 # state = {"profit": eval profit at the start of the day ($, vs the start balance), "cum": today's closed P&L ($),
 #          "room": balance + cum - trailing floor ($), "session": eval session number (1 = first day), "n_today": trades so far}
 # trade = {"risk_pts" | "risk": stop distance at entry (pts), "tgt_pts" | "tgt" | (entry, target): target distance (pts),
 #          "size_mult" | "wk_m": weekly-stop multiplier}
-TW_PV, TW_COMM, TW_SLIP = 2.0, 1.40, 0.25
+TW_PV, TW_COMM, TW_SLIP = 2.0, 1.90, 0.25   # MFFU MNQ round trip $1.90 (research/lit/mffu_rules.json; was 1.40 until 2026-10-18)
+TW_DLL_SLIP = 0.5                            # the soft daily loss cap assumes 2 ticks of stop slippage (2026-10-18)
 TW_50K = {"target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0, "max_micros": 40, "scale": 1.0}
 TW_25K = {"target": 1500.0, "mll": 1000.0, "lock": 100.0, "dll": 600.0, "max_micros": 20, "scale": 0.5}
 TW_DEFAULT = {"base": "need", "need_buf": 1.0, "usd": 800.0, "ref": 25.0, "max_usd": None, "wk": True,
               "press_at": None, "press_mult": 1.0, "press_room": None, "protect_over": None, "protect_keep": 0.0,
-              "room_f": 0.6, "dll_cap": True, "stop_at_target": True}
+              "room_f": 0.6, "dll_cap": True, "stop_at_target": True, "min_days": 2}
 EVAL_SESSIONS = 10          # the owner's rule: an eval not passed after 10 sessions is reset (a new purchase)
 
 
@@ -387,6 +413,13 @@ def two_week_qty(trade: dict, state: dict, cfg: dict | None = None, acct: dict |
     need = float(A["target"]) - profit - cum
     note = (lambda s: why.append(s)) if why is not None else (lambda s: None)
     if c["stop_at_target"] and need <= 0:
+        # MFFU may need 2 trading days (help guide 1, plan page 2): once the target was reached on an EARLIER session and the
+        # eval has fewer than min_days traded days, ONE 1-micro trade on a later session (state days_traded; unknown = 1)
+        dtr = _num(state.get("days_traded"), 1.0)
+        if (c.get("min_days") and profit >= float(A["target"]) and cum == 0 and not state.get("n_today")
+                and dtr < float(c["min_days"])):
+            note(f"minimum-days trade: target reached, {int(dtr)} of {int(c['min_days'])} trading days -> 1 micro")
+            return 1
         note("eval target already reached today: no new trade")
         return 0
     loss1 = (risk + SLIP) * PV + COMM                       # a full stop-out of 1 micro, $
@@ -423,7 +456,8 @@ def two_week_qty(trade: dict, state: dict, cfg: dict | None = None, acct: dict |
     if room_f and room is not None:
         caps.append((int(float(room_f) * max(0.0, room) / (risk * PV)), f"{float(room_f) * 100:.0f}% of ${room:,.0f} room"))
     if c["dll_cap"]:
-        caps.append((int(max(0.0, float(A["dll"]) + cum) / loss1), f"soft daily loss ${float(A['dll']):,.0f}"))
+        loss_d = (risk + TW_DLL_SLIP) * PV + COMM                 # 2 ticks of stop slippage (2026-10-18)
+        caps.append((int(max(0.0, float(A["dll"]) + cum) / loss_d), f"soft daily loss ${float(A['dll']):,.0f}"))
     for cap, lab in caps:
         if cap < q:
             q = max(1, cap)
@@ -500,11 +534,12 @@ def eval_clock(day_pnl: dict, start: str | None, today: str, session_over: bool 
     else:
         status = "open"
     done = 0 if not sess else sess - (0 if session_over else 1)
-    reset = status == "open" and done >= EVAL_SESSIONS
+    # owner 2026-10-18: no reset (one-time fee, no monthly cost): an open eval just keeps going; "reset" stays False
+    reset = False
     if status == "open":
-        text = (f"reset recommended: {done} sessions done without a pass (the 2-week rule); buy a new eval and set "
-                f"lit_sizing.eval_start to its first session" if reset else
-                f"session {sess} of {EVAL_SESSIONS}, {max(0, EVAL_SESSIONS - done)} left")
+        to_go = max(0.0, float(A["target"]) - bal)
+        text = (f"session {sess} of {EVAL_SESSIONS}, {max(0, EVAL_SESSIONS - done)} left, ${to_go:,.0f} to go" if done < EVAL_SESSIONS
+                else f"session {sess}, ${to_go:,.0f} to go")
     elif status == "not started":
         text = "not started yet"
     elif status == "unknown":
@@ -687,8 +722,10 @@ def selftest() -> bool:
     # the 10-session clock and the reset reminder
     ck = eval_clock({"2026-10-20": 500.0}, "2026-10-19", "2026-10-30", session_over=False)
     assert ck["status"] == "open" and ck["session"] == 10 and not ck["reset"], ck
-    assert eval_clock({"2026-10-20": 500.0}, "2026-10-19", "2026-10-30", session_over=True)["reset"]
-    assert eval_clock({"2026-10-20": 500.0}, "2026-10-19", "2026-11-02")["reset"]
+    ck = eval_clock({"2026-10-20": 500.0}, "2026-10-19", "2026-10-30", session_over=True)
+    assert not ck["reset"] and ck["text"] == "session 10, $2,500 to go", ck                 # no reset (owner 2026-10-18)
+    ck = eval_clock({"2026-10-20": 500.0}, "2026-10-19", "2026-11-02")
+    assert not ck["reset"] and ck["status"] == "open" and ck["text"] == "session 11, $2,500 to go", ck
     assert eval_clock({"2026-10-20": 3100.0}, "2026-10-19", "2026-11-02")["status"] == "passed"
     assert eval_clock({"2026-10-20": -2000.0}, "2026-10-19", "2026-10-21")["status"] == "failed"
     assert eval_clock({}, "2026-10-19", "2026-10-18")["status"] == "not started"

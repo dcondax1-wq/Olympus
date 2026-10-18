@@ -497,13 +497,13 @@ class _OBM:
 _OC = {}
 
 
-def ob_cands(M, tfs=("1h", "4h"), kind="body"):
+def ob_cands(M, tfs=("1h", "4h"), kind="body", flip=False):
     """LIT candidates (engine.lit.candidates, unchanged) where the 'swept liquidity' is the proximal edge of a fresh HTF block:
     price trades INTO the block (first touch = the sweep), then the inducement / displacement / 5m CISD rules as usual."""
-    key = (tuple(tfs), kind)
+    key = (tuple(tfs), kind, flip)
     if key in _OC:
         return _OC[key]
-    p = os.path.join(CACHE, f"lit_ob_cands_{'-'.join(tfs)}_{kind}_v1_{rl._data_key().replace(':', '_')}.pkl")
+    p = os.path.join(CACHE, f"lit_ob_cands_{'-'.join(tfs)}_{kind}{'_flip' if flip else ''}_v1_{rl._data_key().replace(':', '_')}.pkl")
     if os.path.exists(p):
         _OC[key] = pickle.load(open(p, "rb"))
         return _OC[key]
@@ -511,13 +511,20 @@ def ob_cands(M, tfs=("1h", "4h"), kind="body"):
     names = {}
     for tf in tfs:
         for q, ob in enumerate(blocks(M, tf, None, kind)):
-            k5, m5 = ob["k5"], ob["mit5"]
+            if flip:
+                # flip zone (owner's notes; ICT breaker): a failed block becomes the opposite zone, known when the candle
+                # closed through it, fresh until price first returns to it (the retest)
+                if ob["brk5"] is None:
+                    continue
+                k5, m5, dd = ob["brk5"], ob["bmit5"], -ob["dir"]
+            else:
+                k5, m5, dd = ob["k5"], ob["mit5"], ob["dir"]
             endk = min(m5 if m5 is not None else INF, k5 + AGE[tf], M.n - 1)
             nm = f"ob{tf}#{q}"
-            names[nm] = (ob["dir"], ob["top"], ob["bot"], tf)
-            prox = ob["top"] if ob["dir"] == 1 else ob["bot"]
+            names[nm] = (dd, ob["top"], ob["bot"], tf)
+            prox = ob["top"] if dd == 1 else ob["bot"]
             for k in range(int(M.day_of[k5]), int(M.day_of[endk]) + 1):
-                lv[k].append(("low" if ob["dir"] == 1 else "high", float(prox), int(k5), nm, "ob"))
+                lv[k].append(("low" if dd == 1 else "high", float(prox), int(k5), nm, "ob"))
     C2 = lit.candidates(_OBM(M, lv), ref=LIVE["ref"])
     for z in C2:
         z["src"] = "ob"
@@ -704,7 +711,7 @@ def orun(P=None, sessions=SESS):
         main = {(z["day"], z["dir"], z["ext_i"]) for z in C
                 if lit.setup_ok(z, P, names) and not (P.get("monday") and lit.monday_block(M, z))}
         src_c = (ob_inside_cands(M, Q5["tfs"], Q5.get("zone", "body")) if Q5.get("mode") == "inside" else
-                 ob_cands(M, Q5["tfs"], Q5.get("zone", "body")))
+                 ob_cands(M, Q5["tfs"], Q5.get("zone", "body"), flip=bool(Q5.get("flip"))))
         C2 = [z for z in src_c if (z["day"], z["dir"], z["ext_i"]) not in main]
         if Q5.get("mode") == "inside" and Q5.get("both"):
             C2 += [z for z in ob_cands(M, Q5["tfs"], Q5.get("zone", "body")) if (z["day"], z["dir"], z["ext_i"]) not in main]
@@ -1011,6 +1018,8 @@ def variants():
     V["mit: OB setups 2nd trade, full mitigation box (wick zone)"] = {"obonly": {**SEC, "zone": "wick"}}
     V["mit: orderflow continuation, 5m/15m OB-inside as 2nd trade"] = {"obonly": {"tfs": ["5m", "15m"], "mode": "inside", "depth": 0.0,
                                                                               "tol": 0.5, "second": True}}
+    V["mit: flip zones (failed demand = supply, retest) 15m/1h/4h/1d as 2nd trade"] = {"obonly": {"tfs": H3 + ["1d"], "flip": True,
+                                                                                             "depth": 0.0, "tol": 0.5, "second": True}}
     V["mit: POI require, initial-BoS + FVG next to it + trap rule (loose)"] = {"poi": {"tfs": H3 + ["1d"], "zone": "body", "pre": 72, "tol": 2.0,
                                                                                     "peak": True, "fvg_adj": True, "clean_liq": 2.0, "mode": "require"}}
     V["OB setups (into + inside) 1h/4h/1d as a 2nd trade a day"] = {"obonly": {"tfs": H4, "mode": "inside", "both": True,
@@ -1138,7 +1147,7 @@ def charts(n_each=3):
             draw_trade(os.path.join(STUDY, nm), M, t, z, t["poi"],
                        f"{t['day']} LIT {'long' if t['dir'] == 1 else 'short'} into a fresh {tfs} order block - {lab} ({t['exit']}, {r:+.2f}R)",
                        f"swept {', '.join(z['swept'])}; stop {t['risk_pts']:.1f} pts; eval size {x['qty'] if x else '?'} micros "
-                       f"{('$%+,.0f' % x['pnl']) if x else ''}")
+                       f"{format(x['pnl'], '+,.0f') + ' $' if x else ''}")
             out.append({"file": nm, "day": t["day"], "dir": t["dir"], "exit": t["exit"], "r": round(r, 2), "poi": [h[:2] for h in t["poi"]]})
     json.dump(out, open(os.path.join(STUDY, "trades_index.json"), "w"), indent=1)
     print("\n".join(x["file"] for x in out))

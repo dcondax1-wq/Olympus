@@ -99,6 +99,7 @@ def main():
                         check(mo["built_t"] == refreshed_t, f"{tag}: rebuilt again after the 07:30 refresh")
                 else:
                     check(mo["built_t"] == morning_t, f"{tag}: rebuilt before 07:30")
+            check(any(w["kind"] == "flat" and "16:10" in w["text"] for w in b.get("mffu") or []), f"{tag}: MFFU flat time missing")
             check((b.get("recap") is not None) == (hh * 60 + mm >= lit_brief.RECAP_AT), f"{tag}: recap timing")
             prev = json.loads(_j(b))
         # the day's trades: entry and exit in the log, the recap's P&L
@@ -117,6 +118,15 @@ def main():
         print(f"{day}: {len(tr)} trade(s) {sum(t['pnl'] for t in tr):+.0f} | log {len(prev['log'])} {n}")
         print(f"  plan: {mo['plan']}")
         print(f"  recap: {rc.get('text')} {rc.get('setups')} {rc.get('lesson')}")
+    # MFFU warnings: inactivity after 5+ calendar days without a fill, eval passed, CME half-day halt
+    T = lambda y, m, d, h=9: int(dt.datetime(y, m, d, h, 0, tzinfo=ET).timestamp())
+    W = lit_brief.mffu_notes(T(2026, 11, 27), "2026-11-27", [{"day": "2026-11-20", "entry_t": T(2026, 11, 20, 4)}], {"status": "open"}, "2026-11-16")
+    check(any(w["kind"] == "inactivity" and w["days"] == 7 for w in W), "inactivity warning at 7 days")
+    check(any(w["kind"] == "half_day" and "13:15" in w["text"] for w in W), "half-day halt (day after Thanksgiving 13:15)")
+    W = lit_brief.mffu_notes(T(2026, 11, 24), "2026-11-24", [{"day": "2026-11-20", "entry_t": T(2026, 11, 20, 4)}], {"status": "open"}, "2026-11-16")
+    check(not any(w["kind"] == "inactivity" for w in W), "no inactivity warning at 4 days")
+    W = lit_brief.mffu_notes(T(2026, 10, 23), "2026-10-23", [], {"status": "passed"}, "2026-10-19")
+    check(any(w["kind"] == "passed" and "funded" in w["text"] for w in W) and not any(w["kind"] == "inactivity" for w in W), "passed note")
     check("engine.push" not in sys.modules or True, "push")          # the brief never imports the push module
     src = open(os.path.join(ROOT, "engine", "lit_brief.py"), encoding="utf-8").read()
     check("push" not in src.replace("pushes", "").split('"""', 2)[2], "lit_brief.py references push")

@@ -36,7 +36,7 @@ if (process.env.STAMP !== '0') {     // STAMP=0 npm run build: bundle only, leav
   // the trade chart module (tradechart.js): its content hash in the phone page (const TCV) and in every PC page that imports it
   const tv = createHash('sha1').update(readFileSync(path.join(here, '..', 'tradechart.js'))).digest('hex').slice(0, 8);
   stamp('tools/web_public/index.html', /const TCV = '?[\w]*'?;/, `const TCV = '${tv}';`, true);
-  for (const f of ['web_next/js/next/trades.js', 'web_next/js/next/tradesheet.js']) {
+  for (const f of ['web_next/js/next/trades.js', 'web_next/js/next/litpages.js']) {
     try { readFileSync(path.join(root, f)); } catch { continue; }
     stamp(f, /\.\.\/tradechart\.js\?v=[\w]*/g, `../tradechart.js?v=${tv}`, true);
   }
