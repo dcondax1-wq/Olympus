@@ -45,3 +45,4 @@ tools/web_public/fx/*.png
 research/runs/_cache/
 research/runs/*.tmp
 research/design/icon_v2/src/node_modules/
+*.tmp.*
