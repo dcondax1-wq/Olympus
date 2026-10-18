@@ -2,9 +2,10 @@
 tools/lit_2wk.py, research/writeups/lit-two-week-eval.md.
 
 two_week_qty() is self-contained (no imports from the repo) so the coordinator can move it into engine/sizing.py as the
-lit_sizing mode "two_week" (lit_qty: `if mode == "two_week": return two_week_qty(trade, state, cfg)`).
+lit_sizing mode "two_week" (lit_qty: `if mode == "two_week": q = two_week_qty(trade, state, c.get("two_week"))`).
+Recommended (run lit_2wk_max_plain): {"base": "need", "room_f": 1.0, "wk": true}; safer (run lit_2wk_rec): room_f 0.6, wk false.
 
-Config (live_model.json "lit_sizing", mode "two_week"; every $ figure is for the 50K and is multiplied by acct["scale"]):
+Config (live_model.json "lit_sizing"["two_week"]; every $ figure is for the 50K and is multiplied by acct["scale"]):
   base       "need" (default) = one winner passes: micros so the trade's target $ covers what is still needed to the eval
              target, ceil(need x need_buf / (target pts x $2 - $1.40)) | "lit" = $usd up to a ref-pt stop, then usd x ref / stop
   need_buf   1.0
