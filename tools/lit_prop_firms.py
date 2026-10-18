@@ -210,18 +210,18 @@ def plans():
     # ---- Alpha Futures (monthly; EOD trailing that stops at the start balance; Zero: no eval consistency + daily guard)
     for sz, pr, tg, ml in ((50, None, 3000, 2000), (100, 239, 6000, 3000), (150, 349, 9000, 4500)):
         P.append(plan(f"alpha_std_{sz}k", "Alpha Futures", "Standard", sz, pr, "month", tg, ml, lock=0.0, minis=sz // 10, cons=0.5,
-                      min_days=1, funded=F(trail="eod", lock=0.0, buffer=0.0, pay_min=200, pay_max=None, pay_pct=0.5, split=0.9,
+                      min_days=1, funded=F(trail="eod", lock=0.0, buffer=0.0, pay_min=200, pay_max=ml, pay_pct=0.5, split=0.9,
                                            cons=0.4, dll=0.02 * sz * 1000),
                       bot="semi-automated only (fully automated prohibited); NinjaTrader/Tradovate not offered for new accounts since 2026-07-12",
                       news="check", src=S_ALPHA,
                       unconf=["50K price not found", "150K price $349 vs $419", "max contracts not found (size/10 minis assumed)",
-                              "funded payout rules assumed"]))
+                              "funded payout rules assumed (cap = max loss per payout)"]))
     P.append(plan("alpha_zero_50k", "Alpha Futures", "Zero", 50, 139, "month", 3000, 2000, lock=0.0, dll=1000, minis=5, cons=None,
-                  min_days=1, funded=F(trail="eod", lock=0.0, buffer=0.0, pay_min=200, pay_pct=0.5, split=0.9, cons=0.4, dll=1000),
+                  min_days=1, funded=F(trail="eod", lock=0.0, buffer=0.0, pay_min=200, pay_max=2000, pay_pct=0.5, split=0.9, cons=0.4, dll=1000),
                   bot="semi-automated only; no NinjaTrader for new accounts", news="check", src=S_ALPHA,
                   unconf=["target $3,000 assumed", "max contracts assumed", "daily guard soft assumed"]))
     P.append(plan("alpha_adv_50k", "Alpha Futures", "Advanced", 50, None, "month", 4000, 1750, lock=0.0, minis=5, cons=0.5,
-                  min_days=1, funded=F(trail="eod", lock=0.0, buffer=0.0, pay_min=200, pay_pct=0.5, split=0.9, cons=None),
+                  min_days=1, funded=F(trail="eod", lock=0.0, buffer=0.0, pay_min=200, pay_max=1750, pay_pct=0.5, split=0.9, cons=None),
                   bot="semi-automated only; no NinjaTrader for new accounts", news="check", src=S_ALPHA,
                   unconf=["price not found", "eval consistency 40% vs 50%", "max contracts assumed"]))
     # ---- FundedNext Futures (one-time; Rapid Pro / Rapid Daily since 2026-07-10; Legacy 40% eval consistency)
@@ -297,7 +297,7 @@ def span_idx(span):
 # ================================================================================================ sizing
 def qty(t, P, rule, room):
     pts, w1, mfe, rp, wk = t
-    if rule == "scaled":
+    if rule in ("scaled", "skip"):
         risk, ref = 800.0 * P["mll"] / 2000.0, 25.0
     else:
         risk, ref = 800.0, 20.0
@@ -305,9 +305,11 @@ def qty(t, P, rule, room):
     q = max(1, int(r / (rp * PV)))
     if wk < 1.0:
         q = max(1, int(q * wk + 1e-9))
-    if rule == "scaled" and room is not None:
+    if rule in ("scaled", "skip") and room is not None:
         cap = int(0.6 * max(0.0, room) / (rp * PV))
         if cap < q:
+            if rule == "skip" and cap < 1:
+                return 0                        # research variant: even 1 micro would risk over 60% of the room -> no trade
             q = max(1, cap)
     return min(q, P["max_micros"])
 
@@ -338,6 +340,8 @@ def run_eval(P, rule, seq, by):
             if dll and cum <= -dll:
                 break
             q = qty(t, P, rule, bal + cum - floor)
+            if q <= 0:
+                continue
             pnl, low, up = at_size(t, q)
             traded = True
             if dll and cum + low <= -dll:
@@ -455,6 +459,8 @@ def run_funded(P, rule, seq, by):
             if dll and cum <= -dll:
                 break
             q = qty(t, P, rule, bal + cum - floor)
+            if q <= 0:
+                continue
             pnl, low, up = at_size(t, q)
             traded = True
             if dll and cum + low <= -dll:
@@ -557,6 +563,27 @@ def score_plan(P):
         if rule == "scaled":
             o["funded"] = {s: funded(P, rule, s) for s in ("2026", "H2")}
         out[rule] = o
+    if P["firm"] == "MyFundedFutures" and P["plan"] in ("Builder", "Rapid", "Rapid EOD") and P["size"] <= 50:
+        out["skip"] = {"exact": {s: exact(P, "skip", s) for s in ("2026", "H1", "H2")},
+                       "monday": {s: exact(P, "skip", s, monday=True) for s in ("2026", "H1", "H2")},
+                       "mc": {s: mc(P, "skip", s) for s in ("2026", "H1", "H2")},
+                       "trades_2026_fresh": trade_count(P)}
+    return out
+
+
+def trade_count(P):
+    """Trades a fresh eval takes on the first 60 sessions of every 2026 start, skip vs scaled (how much the skip pauses)."""
+    D = data()
+    a, z = span_idx("2026")
+    out = {}
+    for rule in ("scaled", "skip"):
+        n_tr, n_s = 0, 0
+        for i in range(a, z):
+            seq = list(range(i, min(z, i + H)))
+            r, n = run_eval(P, rule, seq, D["by"])
+            n_s += n
+            n_tr += sum(1 for k in seq[:n] for _ in D["by"][k])
+        out[rule] = round(n_tr / max(1, n_s) * 5, 2)
     return out
 
 
@@ -603,7 +630,7 @@ def run_all(procs=2):
                       "2w": "10 sessions", "1m": "20 sessions", "ever": "60 sessions"},
            "plans": [{**p, "results": res[p["id"]]} for p in PL]}
     with open(OUT, "w", encoding="utf-8") as fh:
-        json.dump(out, fh, indent=1, default=float)
+        json.dump(out, fh, separators=(",", ":"), default=float)
     print(f"wrote {OUT} ({os.path.getsize(OUT) // 1024} KB, {len(PL)} plans)")
     return out
 
