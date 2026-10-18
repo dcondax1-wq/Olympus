@@ -180,7 +180,20 @@ What the PC bot does now (`engine/live.py`, `engine/lit_live.py`, `engine/lit.py
 - `tests/test_lit_live.py`: the day-end replay is still 120/120 trades identical; the intraday polls (early mode) show no new
   differences and every "enter now" matches the backtest trade.
 
-**Re-measured with the fill model** (`tools/lit_fills.py`, scenario `live_now` = the code above; see the table in the report).
+**Re-measured with the fill model** (`python tools/lit_fills.py run live_today live_fixed live_now`; `live_now` = the code
+above: decision on the CISD close, poll 2 s after the minute, 1.5 s compute):
+
+| 2026 | Bot before the fix (`live_today`) | **Bot now (`live_now`)** | Backtest (`lit_live`) |
+|---|---:|---:|---:|
+| Median entry delay | 95 s | **4.3 s** | 0 |
+| Entry error vs the backtest price: sd / worst | 7.5 / 25 pts | **0.45 / 1.2 pts** | 0 |
+| Real risk vs planned, worst | 1.65x | **1.02x** | 1.00x |
+| LIT size rule: net · PF · H2 $/month | +$40,532 · 3.48 · $2,513 | **+$41,281 · 3.58 · $2,378** | +$41,734 · 3.66 · $2,413 |
+| Eval sizing: pass rate · 2 wk pass/fail · 1 mo pass/fail | 71.2% · 31.6/1.5 · 49.5/4.4 | **84.8% · 34.5/1.9 · 56.3/3.9** | 84.8% · 34.5/1.9 · 55.3/3.9 |
+
+The remaining -$453 against the backtest is costs, not timing: $1.90 commission, stop slippage, spread, target rounding.
+The fill model places the "seen late" trades at the CISD close too, so the old column was even a little optimistic for the
+18 trades the old loop saw 1-3 minutes late.
 
 ## What changes a decision
 

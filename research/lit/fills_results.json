@@ -3442,5 +3442,302 @@
     "stop_slip_pts_worst": 1.44
    }
   }
+ },
+ "live_now": {
+  "title": "REALISTIC, the bot as coded since 2026-10-18 (CISD-close entry, polls 2 s after each minute, 1.5 s compute)",
+  "fills": {
+   "detect": "bar_close",
+   "poll_s": 4.0,
+   "phase": 0.5,
+   "compute_s": 1.5
+  },
+  "normal": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 22.5,
+    "pf": 4.31,
+    "net": 32447,
+    "per_month": 5323,
+    "dd": -2347,
+    "p10": 28.1,
+    "f10": 3.1,
+    "p20": 60.9,
+    "f20": 6.2,
+    "pass_rate": 92.3,
+    "pass_med": 14.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 35.0,
+    "pf": 2.42,
+    "net": 8834,
+    "per_month": 2378,
+    "dd": -1487,
+    "p10": 23.1,
+    "f10": 0.0,
+    "p20": 44.9,
+    "f20": 0.0,
+    "pass_rate": 100.0,
+    "pass_med": 21.0
+   },
+   "2026": {
+    "n": 120,
+    "tpw": 2.91,
+    "wk2": 86,
+    "win": 26.7,
+    "pf": 3.58,
+    "net": 41281,
+    "per_month": 4208,
+    "dd": -2347,
+    "p10": 26.2,
+    "f10": 1.9,
+    "p20": 54.9,
+    "f20": 3.9,
+    "pass_rate": 95.5,
+    "pass_med": 16.0
+   },
+   "2021-25": {
+    "n": 510,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 16.9,
+    "pf": 0.96,
+    "net": -3776,
+    "per_month": -74,
+    "dd": -22798,
+    "p10": 6.7,
+    "f10": 10.1,
+    "p20": 12.4,
+    "f20": 29.3,
+    "pass_rate": 30.2,
+    "pass_med": 22.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 22.5,
+    "pf": 3.91,
+    "net": 32947,
+    "per_month": 5405,
+    "dd": -2543,
+    "p10": 37.5,
+    "f10": 3.1,
+    "p20": 61.7,
+    "f20": 6.2,
+    "pass_rate": 92.3,
+    "pass_med": 10.5,
+    "worst_day": -813
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 35.0,
+    "pf": 2.48,
+    "net": 10333,
+    "per_month": 2782,
+    "dd": -2195,
+    "p10": 29.5,
+    "f10": 0.0,
+    "p20": 47.4,
+    "f20": 0.0,
+    "pass_rate": 95.7,
+    "pass_med": 17.5,
+    "worst_day": -687
+   },
+   "2026": {
+    "n": 120,
+    "tpw": 2.91,
+    "wk2": 86,
+    "win": 26.7,
+    "pf": 3.39,
+    "net": 43419,
+    "per_month": 4426,
+    "dd": -2543,
+    "p10": 34.5,
+    "f10": 1.9,
+    "p20": 56.3,
+    "f20": 3.9,
+    "pass_rate": 84.8,
+    "pass_med": 12.0,
+    "worst_day": -813
+   },
+   "2021-25": {
+    "n": 510,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 16.9,
+    "pf": 0.89,
+    "net": -9016,
+    "per_month": -177,
+    "dd": -19822,
+    "p10": 8.4,
+    "f10": 0.3,
+    "p20": 15.4,
+    "f20": 9.5,
+    "pass_rate": 31.4,
+    "pass_med": 17.0,
+    "worst_day": -893
+   }
+  },
+  "diag": {
+   "2026": {
+    "model_trades": 120,
+    "skipped": 0,
+    "skipped_model_pnl": 0,
+    "lat_s_med": 4.3,
+    "entry_slip_pts_mean": -0.095,
+    "entry_slip_pts_p90": 0.417,
+    "entry_slip_pts_worst": 1.16,
+    "exits_live": {
+     "BE": 34,
+     "TARGET": 25,
+     "STOP": 53,
+     "EOD": 8
+    },
+    "exits_model": {
+     "BE": 34,
+     "TARGET": 25,
+     "STOP": 53,
+     "EOD": 8
+    },
+    "model_targets": 25,
+    "model_targets_missed_by_limit": 0,
+    "pnl_diff_vs_model": -453,
+    "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -453,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -124
+     ],
+     "BE": [
+      34,
+      -209
+     ],
+     "TARGET": [
+      25,
+      -95
+     ],
+     "EOD": [
+      8,
+      -26
+     ]
+    },
+    "entry_slip_pts_sd": 0.45,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.02,
+    "stop_slip_pts_mean": 0.612,
+    "stop_slip_pts_p90": 1.088,
+    "stop_slip_pts_worst": 2.84
+   },
+   "H1": {
+    "model_trades": 80,
+    "skipped": 0,
+    "skipped_model_pnl": 0,
+    "lat_s_med": 4.3,
+    "entry_slip_pts_mean": -0.054,
+    "entry_slip_pts_p90": 0.369,
+    "entry_slip_pts_worst": 1.16,
+    "exits_live": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    },
+    "exits_model": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    },
+    "model_targets": 15,
+    "model_targets_missed_by_limit": 0,
+    "pnl_diff_vs_model": -326,
+    "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -326,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -93
+     ],
+     "BE": [
+      29,
+      -173
+     ],
+     "TARGET": [
+      15,
+      -79
+     ],
+     "EOD": [
+      4,
+      19
+     ]
+    },
+    "entry_slip_pts_sd": 0.41,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.02,
+    "stop_slip_pts_mean": 0.633,
+    "stop_slip_pts_p90": 1.13,
+    "stop_slip_pts_worst": 2.84
+   },
+   "H2": {
+    "model_trades": 40,
+    "skipped": 0,
+    "skipped_model_pnl": 0,
+    "lat_s_med": 4.3,
+    "entry_slip_pts_mean": -0.176,
+    "entry_slip_pts_p90": 0.462,
+    "entry_slip_pts_worst": 0.78,
+    "exits_live": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    },
+    "exits_model": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    },
+    "model_targets": 10,
+    "model_targets_missed_by_limit": 0,
+    "pnl_diff_vs_model": -128,
+    "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -128,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -31
+     ],
+     "BE": [
+      5,
+      -36
+     ],
+     "TARGET": [
+      10,
+      -16
+     ],
+     "EOD": [
+      4,
+      -45
+     ]
+    },
+    "entry_slip_pts_sd": 0.51,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.02,
+    "stop_slip_pts_mean": 0.561,
+    "stop_slip_pts_p90": 0.955,
+    "stop_slip_pts_worst": 1.44
+   }
+  }
  }
 }
