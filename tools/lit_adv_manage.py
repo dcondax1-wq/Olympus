@@ -922,6 +922,7 @@ def save(only=None):
             T += b2b(U, sp)[0]
         for t in T:
             t["risk_pts"] = t["risk"]; t["r"] = round(t["pnl"] / t["risk_usd"], 3) if t["risk_usd"] else 0.0
+            t.update(half=False, trigger="LIT-1m", mfe=None, mae=None, bars_held=None, regime="", mult=None, tgt_pts=t["tgt"])
         S = rl.score(T, S26)
         ref = "live | t15" if nm.endswith("| t15") else "live"
         st, why = verdict_of(o, res[ref]) if nm != ref else ("info", "reference: LIT live" + (" + the 15-minute check" if "t15" in nm else "")
