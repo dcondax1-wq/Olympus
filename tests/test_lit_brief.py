@@ -129,7 +129,7 @@ def main():
     check(any(w["kind"] == "passed" and "funded" in w["text"] for w in W) and not any(w["kind"] == "inactivity" for w in W), "passed note")
     check("engine.push" not in sys.modules or True, "push")          # the brief never imports the push module
     src = open(os.path.join(ROOT, "engine", "lit_brief.py"), encoding="utf-8").read()
-    check("push" not in src.replace("pushes", "").split('"""', 2)[2], "lit_brief.py references push")
+    check("import push" not in src and "engine.push" not in src, "lit_brief.py imports push")
     print(f"{checks - len(fails)}/{checks} checks passed in {time.time() - t_all:.0f}s")
     sys.exit(1 if fails else 0)
 

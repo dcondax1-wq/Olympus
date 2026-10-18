@@ -775,6 +775,21 @@ def selftest() -> bool:
     # tiers by the floor's lock
     TC = {"mode": "funded", "funded": {"tiers": [[0, 800]], "pre_lock_usd": 400, "room_f": None}}
     assert lit_qty(3, {"risk_pts": 20.0}, TC, state=f0)["qty"] == 10 and lit_qty(3, {"risk_pts": 20.0}, TC, state=s2)["qty"] == 20
+    # ---- minimum-days trade, session switch, auto (2026-10-18)
+    won = {"profit": 3100.0, "cum": 0.0, "room": 2000.0, "session": 3, "n_today": 0}
+    r = lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, C, state={**won, "days_traded": 1})
+    assert r["qty"] == 1 and any("minimum-days trade" in w for w in r["reasons"]), r
+    assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, C, state={**won, "days_traded": 2})["qty"] == 0     # once only
+    assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, C, state={**won, "cum": 50.0, "days_traded": 1})["qty"] == 0  # same day
+    U = {**C, "two_week_until": 10, "after_mode": "eval"}
+    assert lit_qty(3, {"risk_pts": 44.0, "tgt_pts": 100.0}, U, room=2000.0, state={**fresh, "session": 10})["qty"] == 8
+    r = lit_qty(3, {"risk_pts": 44.0, "tgt_pts": 100.0}, U, room=2000.0, state={**fresh, "session": 11})
+    assert r["qty"] == 5 and "eval sizing" in r["reasons"][0], r                        # $800 up to 25 pts: 5 micros
+    AU = {**U, "mode": "auto", "funded": FC["funded"]}
+    assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, AU, room=2000.0, state=fresh)["qty"] == 8        # eval: two_week
+    r = lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, AU, state={**won, "days_traded": 2, "funded": f0})
+    assert r["qty"] == 3 and "auto: eval passed -> funded sizing" in r["reasons"], r                         # funded rules
+    assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, AU, state={**won, "days_traded": 1, "funded": f0})["qty"] == 1
     print("sizing selftest OK")
     return True
 

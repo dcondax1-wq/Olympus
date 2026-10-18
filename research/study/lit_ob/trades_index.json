@@ -1,0 +1,88 @@
+[
+ {
+  "file": "trade_2026-06-04_short_winner.png",
+  "day": "2026-06-04",
+  "dir": -1,
+  "exit": "TARGET",
+  "r": 6.44,
+  "poi": [
+   [
+    "15m",
+    "ob"
+   ]
+  ]
+ },
+ {
+  "file": "trade_2026-10-14_short_winner.png",
+  "day": "2026-10-14",
+  "dir": -1,
+  "exit": "TARGET",
+  "r": 3.81,
+  "poi": [
+   [
+    "15m",
+    "ob"
+   ]
+  ]
+ },
+ {
+  "file": "trade_2026-07-20_long_winner.png",
+  "day": "2026-07-20",
+  "dir": 1,
+  "exit": "TARGET",
+  "r": 3.67,
+  "poi": [
+   [
+    "15m",
+    "ob"
+   ],
+   [
+    "15m",
+    "ob"
+   ]
+  ]
+ },
+ {
+  "file": "trade_2026-02-26_short_loser.png",
+  "day": "2026-02-26",
+  "dir": -1,
+  "exit": "STOP",
+  "r": -1.01,
+  "poi": [
+   [
+    "15m",
+    "ob"
+   ]
+  ]
+ },
+ {
+  "file": "trade_2026-02-27_long_loser.png",
+  "day": "2026-02-27",
+  "dir": 1,
+  "exit": "STOP",
+  "r": -1.01,
+  "poi": [
+   [
+    "15m",
+    "ob"
+   ]
+  ]
+ },
+ {
+  "file": "trade_2026-06-24_long_loser.png",
+  "day": "2026-06-24",
+  "dir": 1,
+  "exit": "STOP",
+  "r": -1.0,
+  "poi": [
+   [
+    "15m",
+    "ob"
+   ],
+   [
+    "15m",
+    "ob"
+   ]
+  ]
+ }
+]

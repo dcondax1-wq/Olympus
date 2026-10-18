@@ -329,13 +329,25 @@ def ts_grid(jobs=(("live", "1day"), ("full", "1day"), ("live", "rearm_sal"))):
         print(line(key, o), "| trades sweeping a TS level 2026:", o["n_ts_trades_2026"], flush=True)
 
 
+def trades_of(key):
+    """Re-run the trades of a stored variant key (window|count, fbos kind|count, ts|window|count)."""
+    parts = key.split("|")
+    if parts[0] in ("fbos", "fbos_all", "cycle", "fbos_cycle"):
+        return fbos_variant(parts[0], parts[1])[1], P_of("full", parts[1])
+    if parts[0] == "ts":
+        M, _ = market()
+        _, Cts = market_ts()
+        P = P_of(parts[1], parts[2])
+        return lit.run_x(M, Cts, P, SESS, B1=F.bars(M, "1m"), B5=F.bars(M, "5m")), P
+    P = P_of(parts[0], parts[1])
+    return run(P), P
+
+
 def save(picks):
-    """picks: [(run id, win, count, status, title, why)]: store each with its trades at the LIT size."""
+    """picks: [(run id, variant key, status, title, why)]: store each with its trades at the LIT size."""
     res = json.load(open(OUT))
-    for rid, win, count, status, title, why in picks:
-        key = f"{win}|{count}"
-        P = P_of(win, count)
-        T = run(P)
+    for rid, key, status, title, why in picks:
+        T, P = trades_of(key)
         o = res[key]
         m, e = o["money"], o["eval"]
         h = lambda s: (f"{s}: {m[s]['n']} trades, {m[s]['tpw']}/wk, win {m[s]['win']}%, PF {m[s]['pf']}, net ${m[s]['net']:+,} "
@@ -346,7 +358,7 @@ def save(picks):
                    f"2021-25 reference (5m) PF {m['2021-25']['pf']} ${m['2021-25']['net']:+,}.")
         rl.save(rid, title, "sessions", "Owner order 2026-10-18: the bot should always be looking for LIT trades (CME trades "
                 "18:00-17:00 ET): entry window, trades per day / session, re-arming after a target or breakeven.",
-                params={k: P[k] for k in ("window", "all_hours", "per_session", "stop_after_loss", "max_per_day")},
+                params={"variant": key, **{k: P[k] for k in ("window", "all_hours", "per_session", "stop_after_loss", "max_per_day")}},
                 sizing={"money": "LIT rule $800/20 + weekly stop (= lit_live)", "eval": {"mode": "two_week", **TW}},
                 trades=T, scored=rl.score(T, SESS), status=status, verdict=verdict,
                 notes="tools/lit_all_hours.py (engine/lit.py candidates(evening=True) + run_x options all_hours / per_session / "
