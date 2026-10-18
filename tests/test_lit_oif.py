@@ -99,7 +99,7 @@ def main():
                 written.append((clock(), list(lines)))
                 return orig_write(lines, label)
             ad._write_oif = rec_write
-            errors = []
+            errors, durs = [], []
             wake = live.next_wake(a)
             while wake <= z:
                 rp.now = int(wake)
@@ -107,11 +107,13 @@ def main():
                 last = int(wake) - int(wake) % 60 - 60
                 if last in c1:
                     fake.move(c1[last])                       # NinjaTrader fills a market order at the last price
+                p0 = time.perf_counter()
                 try:
                     bot.poll_once()
                 except Exception as e:
                     errors.append(f"{hm(wake)} {e.__class__.__name__}: {e}")
                 clock.running = False
+                durs.append((round(time.perf_counter() - p0, 2), round(clock() - wake, 2), hm(wake)))
                 wake = live.next_wake(max(wake, clock.base))
             side = "BUY" if d == 1 else "SELL"
             entries = [(tw, ln) for tw, ls in written for ln in ls if ln.startswith("PLACE;") and ";MARKET;" in ln]
@@ -126,7 +128,8 @@ def main():
             ok = first is not None and 0 <= delay <= LIMIT_S and qty == int(t["qty"]) and len(entries) == 1 and stop_ok and tgt_ok
             row = {"day": t["day"], "entry_bar": hm(ent), "dir": d, "qty": int(t["qty"]), "oif_t": hm(first[0]) if first else None,
                    "delay_s": delay, "oif_qty": qty, "entries_written": len(entries), "stop_ok": stop_ok, "target_ok": tgt_ok,
-                   "ok": ok, "errors": errors[:3],
+                   "ok": ok, "errors": errors[:3], "polls": len(durs), "poll_real_s_max": max(d_[0] for d_ in durs) if durs else None,
+                   "entry_poll": next(([d_[0], d_[1]] for d_ in durs if d_[2] == hm(live.next_wake(ent - 1))), None),
                    "why": None if ok else [x["text"] for x in list(bot.log)[:6]]}
             rows.append(row)
             if not ok or n % 10 == 0:

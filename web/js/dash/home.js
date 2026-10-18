@@ -518,7 +518,7 @@ let sessApi = null;
 function renderSessions() {
   const el = body('sessions'); if (!el) return;
   let rows, day, api = false;
-  if (sessApi?.sessions) { api = true; rows = sessApi.sessions.map(s => ({ name: s.name, sub: `${s.start_et}–${s.end_et}`, hi: s.high, lo: s.low, rng: s.range, pct: s.pct_of_avg, state: s.state })); day = sessApi.day; }
+  if (sessApi?.sessions && S.res?.model !== 'lit') { api = true; rows = sessApi.sessions.map(s => ({ name: s.name, sub: `${s.start_et}–${s.end_et}`, hi: s.high, lo: s.low, rng: s.range, pct: s.pct_of_avg, state: s.state })); day = sessApi.day; }
   else {
     const { bars, date } = dayBars();
     if (!bars.length) { el.innerHTML = waiting('Waiting for today\'s bars'); return; }

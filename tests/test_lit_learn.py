@@ -188,6 +188,30 @@ def test_review_refuses_noise():
     assert len(L["decisions"]) == 10 and all(x["reason"] for x in L["decisions"])
 
 
+def test_noise_false_change_rate():
+    """The calibration that set Z_MIN = 2.5: on pure-noise journals (no bucket better than another; fat-tailed LIT-like R),
+    the learner may change a knob in only a few percent of weeks (2.0 gave 15%, 2.5 gives ~4%, 3.0 ~1% over 20 seeds)."""
+    sun = ["2026-%s" % x for x in ("07-05", "07-19", "08-02", "08-16", "08-30", "09-13")]
+    tot = weeks = 0
+    for seed in range(1, 7):
+        rng = random.Random(seed)
+        R = []
+        for i, d in enumerate(weekdays("2026-01-05", 190)):
+            if i % 2:
+                continue
+            r = rng.choice([-1.02, -1.02, -1.02, -0.02, -0.02, 4.0])
+            R.append(rec(d, r, f={"idm_age": rng.choice([3.0, 12.0]), "mod": rng.choice([200.0, 350.0, 600.0]),
+                                  "vix": rng.choice([14.0, 18.0, 25.0]), "n_swept": rng.choice([1.0, 2.0]),
+                                  "es_swept": rng.choice([0.0, 1.0]), "h4_draw": rng.choice([-1.0, 0.0, 1.0])},
+                         exit_="TARGET" if r > 0 else "STOP"))
+        L = LL.default_learning("apply")
+        for s in sun:
+            L, d = LL.review(R, L, s)
+            tot += d["action"] != "none"
+            weeks += 1
+    assert tot / weeks <= 0.12, (tot, weeks)
+
+
 def test_guardrail_eval_fail():
     # a size-up of a bucket that wins on average but carries the big losses: the 2-week fail gate must be able to say no
     R = _two_bucket_history()
@@ -332,6 +356,7 @@ def test_review_due():
 
 
 TESTS = [test_causes, test_buckets_grade, test_shrinkage, test_review_moves_one_knob, test_review_refuses_noise,
+         test_noise_false_change_rate,
          test_guardrail_eval_fail, test_not_enough_data, test_no_lookahead_in_review, test_apply_observe_revert,
          test_sizing_hook, test_journal_append_merge, test_record_from_live_trade, test_review_due]
 

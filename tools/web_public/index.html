@@ -3563,6 +3563,8 @@ function pushEnsure(tap = false) {
 }
 async function pushEnsure_(tap) {
   {
+    if (tap) store.set('push.off', false);
+    else if (store.get('push.off', false)) return (PUSH.last = { state: 'off' });      // turned off here: stays off until a tap
     if (tap && Notification.permission !== 'granted') {
       const perm = await Notification.requestPermission();          // the prompt must come straight from the tap (iPhone)
       if (perm !== 'granted') throw new Error(perm === 'denied' ? 'Notifications are blocked. iPhone: Settings → Notifications → Liquidity → Allow Notifications.' : 'Notifications were not allowed.');
@@ -3592,6 +3594,7 @@ async function pushEnsure_(tap) {
   }
 }
 async function pushOff() {
+  store.set('push.off', true);
   const s = await pushSub(); if (!s) return;
   const id = await devId(s.endpoint);
   await s.unsubscribe();
