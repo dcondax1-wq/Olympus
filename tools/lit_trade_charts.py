@@ -108,10 +108,11 @@ LABELS = []
 FIXED = []
 
 
-def label(ax, x, y, text, col, ha="left", va="bottom", dy=2, fs=6.6, bold=False, bg=True, prio=2, dx=0, box=None):
+def label(ax, x, y, text, col, ha="left", va="bottom", dy=2, fs=6.6, bold=False, bg=True, prio=2, dx=0, box=None, mx=None):
     a = ax.annotate(text, xy=(x, y), xytext=(dx, dy), textcoords="offset points", ha=ha, va=va, fontsize=fs, color=col,
                 fontweight="bold" if bold else "normal", zorder=15, annotation_clip=True,
                 bbox=box or (dict(boxstyle="round,pad=0.18", fc=C["panel"], ec="none", alpha=0.78) if bg else None))
+    a._mx = mx
     LABELS.append((prio, len(LABELS), a))
     return a
 
@@ -124,6 +125,8 @@ def declutter(fig, fixed=()):
         base = tuple(a.xyann)
         best = None
         for k in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 8, -8):
+            if a._mx is not None and abs(k) > a._mx:
+                break
             a.xyann = (base[0], base[1] + k * 7.5)
             bb = a.get_window_extent(rr).padded(2.5)
             ab = a.axes.bbox
@@ -132,6 +135,8 @@ def declutter(fig, fixed=()):
                 best = bb
                 break
         if best is None:
+            if a._mx is not None:          # a minor label with no free spot nearby: leave it out
+                a.set_visible(False); continue
             a.xyann = base; best = a.get_window_extent(rr).padded(2.5)
         placed.append(best)
     LABELS.clear()
@@ -168,7 +173,7 @@ def draw_panel(ax, r, bars, secs, main=True):
         ax.add_patch(Rectangle((x0, bx["lo"]), x1 - x0, bx["hi"] - bx["lo"], facecolor=col, alpha=0.06, edgecolor=col, lw=0.6,
                                ls=(0, (2, 2)), zorder=1))
         if main:
-            label(ax, x0, bx["hi"], bx["k"], col, dx=2, dy=2, fs=6.2, bg=False, prio=4)
+            label(ax, x0, bx["hi"], bx["k"], col, dx=2, dy=2, fs=6.2, bg=False, prio=4, mx=1)
     candles(ax, bars, w=0.62 if secs == 300 else 0.66)
     # position boxes: fill -> exit
     xe, xx = X(r["entry"]["t"]), X(r["exit"]["t_end"])
@@ -216,7 +221,7 @@ def draw_panel(ax, r, bars, secs, main=True):
         ax.plot([x0, x1], [z["px"], z["px"]], color=C["gold"], lw=0.8, ls=(0, (1, 1.5)), zorder=5)
         ax.plot([x0], [z["px"]], marker="v" if d == -1 else "^", ms=4, color=C["gold"], zorder=8, clip_on=True)
         if main:
-            label(ax, x0, z["px"], "IDM", C["gold"], ha="center", va="top" if d == 1 else "bottom", dy=-4 if d == 1 else 4, fs=6.2, bg=False)
+            label(ax, x0, z["px"], "IDM", C["gold"], ha="center", va="top" if d == 1 else "bottom", dy=-4 if d == 1 else 4, fs=6.2, bg=False, mx=2)
     # sweep extreme
     xs = X(r["sweep"]["ext_t"]) + 0.5
     ax.plot([xs], [r["sweep"]["ext_px"]], marker="o", ms=5, mfc="none", mec=C["warn"], mew=1.2, zorder=9, clip_on=True)
@@ -253,7 +258,7 @@ def draw_panel(ax, r, bars, secs, main=True):
         if 0 <= xb <= n + 0.6:
             ax.plot([xb], [ent], marker="s", ms=3.6, color=C["ink"], zorder=10, clip_on=True)
             if main:
-                label(ax, xb, ent, "BE", C["ink"], ha="center", va="bottom" if d == -1 else "top", dy=4 if d == -1 else -4, fs=6.2, bg=False)
+                label(ax, xb, ent, "BE", C["ink"], ha="center", va="bottom" if d == -1 else "top", dy=4 if d == -1 else -4, fs=6.2, bg=False, mx=2)
     # exit
     xk = X(r["exit"]["t"]) + 0.5
     ec = EXIT_C.get(r["exit_kind"], C["ink2"])

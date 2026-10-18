@@ -1,0 +1,2094 @@
+{
+ "built": "2026-10-18T17:58:13",
+ "verdict": "better on both 2026 halves (net $, 2-week fails not up, 2+ trades a week): ships in APPLY mode",
+ "mode": "apply",
+ "better": {
+  "H1": true,
+  "H2": true,
+  "2026": false,
+  "2021-25": false
+ },
+ "base": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 4.01,
+   "net": 33305,
+   "per_month": 5464,
+   "dd": -2513,
+   "p10": 37.5,
+   "f10": 3.1,
+   "dec10": 40.6,
+   "p15": 53.1,
+   "f15": 4.7,
+   "p20": 60.2,
+   "f20": 6.2,
+   "pass_rate": 92.3,
+   "pass_med": 10.5,
+   "slow_pass": 29.2,
+   "b2b": "7/2",
+   "funded_net": 37046,
+   "funded_pf": 4.06,
+   "funded_dd": -3022
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 2.51,
+   "net": 10465,
+   "per_month": 2818,
+   "dd": -2157,
+   "p10": 29.5,
+   "f10": 0.0,
+   "dec10": 29.5,
+   "p15": 38.5,
+   "f15": 0.0,
+   "p20": 47.4,
+   "f20": 0.0,
+   "pass_rate": 95.7,
+   "pass_med": 17.5,
+   "slow_pass": 54.5,
+   "b2b": "3/1",
+   "funded_net": 11659,
+   "funded_pf": 2.5,
+   "funded_dd": -1988
+  },
+  "2026": {
+   "n": 120,
+   "tpw": 2.91,
+   "wk2": 86,
+   "win": 26.7,
+   "pf": 3.48,
+   "net": 43838,
+   "per_month": 4469,
+   "dd": -2513,
+   "p10": 34.5,
+   "f10": 1.9,
+   "dec10": 36.4,
+   "p15": 47.6,
+   "f15": 2.9,
+   "p20": 55.3,
+   "f20": 3.9,
+   "pass_rate": 84.8,
+   "pass_med": 12.0,
+   "slow_pass": 39.5,
+   "b2b": "10/3",
+   "funded_net": 48705,
+   "funded_pf": 3.45,
+   "funded_dd": -3022
+  },
+  "2021-25": {
+   "n": 510,
+   "tpw": 2.38,
+   "wk2": 76,
+   "win": 17.5,
+   "pf": 0.98,
+   "net": -1430,
+   "per_month": -28,
+   "dd": -17694,
+   "p10": 8.8,
+   "f10": 8.1,
+   "dec10": 16.9,
+   "p15": 12.6,
+   "f15": 13.5,
+   "p20": 15.8,
+   "f20": 20.8,
+   "pass_rate": 30.7,
+   "pass_med": 16.5,
+   "slow_pass": 52.5,
+   "b2b": "7/25",
+   "funded_net": 4252,
+   "funded_pf": 1.04,
+   "funded_dd": -24847
+  }
+ },
+ "learned": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 4.53,
+   "net": 34077,
+   "per_month": 5591,
+   "dd": -2513,
+   "p10": 39.8,
+   "f10": 1.6,
+   "dec10": 41.4,
+   "p15": 53.1,
+   "f15": 3.9,
+   "p20": 65.6,
+   "f20": 5.5,
+   "pass_rate": 92.7,
+   "pass_med": 10.5,
+   "slow_pass": 33.3,
+   "b2b": "8/2",
+   "funded_net": 34528,
+   "funded_pf": 4.32,
+   "funded_dd": -3022
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 2.71,
+   "net": 10668,
+   "per_month": 2872,
+   "dd": -1496,
+   "p10": 23.1,
+   "f10": 0.0,
+   "dec10": 23.1,
+   "p15": 34.6,
+   "f15": 0.0,
+   "p20": 47.4,
+   "f20": 0.0,
+   "pass_rate": 100.0,
+   "pass_med": 20.0,
+   "slow_pass": 62.5,
+   "b2b": "2/0",
+   "funded_net": 12166,
+   "funded_pf": 2.95,
+   "funded_dd": -1496
+  },
+  "2026": {
+   "n": 120,
+   "tpw": 2.91,
+   "wk2": 86,
+   "win": 26.7,
+   "pf": 3.68,
+   "net": 41163,
+   "per_month": 4196,
+   "dd": -2513,
+   "p10": 33.5,
+   "f10": 1.0,
+   "dec10": 34.5,
+   "p15": 46.1,
+   "f15": 2.4,
+   "p20": 58.7,
+   "f20": 3.4,
+   "pass_rate": 95.6,
+   "pass_med": 14.0,
+   "slow_pass": 45.4,
+   "b2b": "10/2",
+   "funded_net": 46695,
+   "funded_pf": 3.8,
+   "funded_dd": -3022
+  },
+  "2021-25": {
+   "n": 461,
+   "tpw": 2.15,
+   "wk2": 68,
+   "win": 16.7,
+   "pf": 0.86,
+   "net": -8917,
+   "per_month": -175,
+   "dd": -17707,
+   "p10": 6.1,
+   "f10": 5.6,
+   "dec10": 11.7,
+   "p15": 8.8,
+   "f15": 10.2,
+   "p20": 10.6,
+   "f20": 15.1,
+   "pass_rate": 29.8,
+   "pass_med": 21.0,
+   "slow_pass": 60.2,
+   "b2b": "4/20",
+   "funded_net": 4771,
+   "funded_pf": 1.05,
+   "funded_dd": -15617
+  }
+ },
+ "resized": 509,
+ "decisions_2026": [
+  {
+   "id": "d0001",
+   "asof": "2026-02-01",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "not enough trades to learn from: 17 in the last 6 months (needs 20)"
+  },
+  {
+   "id": "d0002",
+   "asof": "2026-02-08",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: walk_forward 15, halves 11): every knob stays"
+  },
+  {
+   "id": "d0003",
+   "asof": "2026-02-15",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "13 proposal(s), none passed the guardrails (failed: walk_forward 13, halves 9): every knob stays"
+  },
+  {
+   "id": "d0004",
+   "asof": "2026-02-22",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: walk_forward 14, halves 8, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0005",
+   "asof": "2026-03-01",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: walk_forward 15, halves 9, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0006",
+   "asof": "2026-03-08",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "19 proposal(s), none passed the guardrails (failed: walk_forward 19, halves 11, eval_fail_2wk 2, trades_week 2): every knob stays"
+  },
+  {
+   "id": "d0007",
+   "asof": "2026-03-15",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "19 proposal(s), none passed the guardrails (failed: walk_forward 19, halves 11, eval_fail_2wk 3, trades_week 2): every knob stays"
+  },
+  {
+   "id": "d0008",
+   "asof": "2026-03-22",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "18 proposal(s), none passed the guardrails (failed: walk_forward 18, halves 11, eval_fail_2wk 3, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0009",
+   "asof": "2026-03-29",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: walk_forward 15, halves 9, eval_fail_2wk 2, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0010",
+   "asof": "2026-04-05",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "13 proposal(s), none passed the guardrails (failed: walk_forward 13, halves 7, eval_fail_2wk 2, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0011",
+   "asof": "2026-04-12",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "stale",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "Inducement (trap) age: older trap (> 6 bars): 22 trades, mean -0.21R vs +0.87R overall (shrunk +0.30R, prior 20 trades) -> x1 -> x0.75 (target x0.5); walk-forward +723 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0012",
+   "asof": "2026-04-19",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "stale",
+   "before": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.5,
+    "skip": false
+   },
+   "reason": "Inducement (trap) age: older trap (> 6 bars): 23 trades, mean -0.10R vs +1.04R overall (shrunk +0.43R, prior 20 trades) -> x0.75 -> x0.5 (target x0.5); walk-forward +12 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0013",
+   "asof": "2026-04-26",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "fresh",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "reason": "Inducement (trap) age: fresh trap (inducement <= 6 bars / 30 min old): 25 trades, mean +2.04R vs +0.90R overall (shrunk +1.53R, prior 20 trades) -> x1 -> x1.25 (target x1.25); walk-forward +1,432 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0014",
+   "asof": "2026-05-03",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "11 proposal(s), none passed the guardrails (failed: walk_forward 10, halves 10, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0015",
+   "asof": "2026-05-10",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: walk_forward 14, halves 13, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0016",
+   "asof": "2026-05-17",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: walk_forward 15, halves 15, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0017",
+   "asof": "2026-05-24",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: halves 16, walk_forward 14, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0018",
+   "asof": "2026-05-31",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "12 proposal(s), none passed the guardrails (failed: halves 12, walk_forward 11): every knob stays"
+  },
+  {
+   "id": "d0019",
+   "asof": "2026-06-07",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, walk_forward 14): every knob stays"
+  },
+  {
+   "id": "d0020",
+   "asof": "2026-06-14",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: halves 14, walk_forward 12): every knob stays"
+  },
+  {
+   "id": "d0021",
+   "asof": "2026-06-21",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, walk_forward 13): every knob stays"
+  },
+  {
+   "id": "d0022",
+   "asof": "2026-06-28",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, walk_forward 13): every knob stays"
+  },
+  {
+   "id": "d0023",
+   "asof": "2026-07-05",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: halves 14, walk_forward 13): every knob stays"
+  },
+  {
+   "id": "d0024",
+   "asof": "2026-07-12",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: halves 16, walk_forward 14, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0025",
+   "asof": "2026-07-19",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, walk_forward 12): every knob stays"
+  },
+  {
+   "id": "d0026",
+   "asof": "2026-07-26",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "13 proposal(s), none passed the guardrails (failed: halves 13, walk_forward 11): every knob stays"
+  },
+  {
+   "id": "d0027",
+   "asof": "2026-08-02",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "11 proposal(s), none passed the guardrails (failed: halves 11, walk_forward 9): every knob stays"
+  },
+  {
+   "id": "d0028",
+   "asof": "2026-08-09",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: halves 14, walk_forward 13): every knob stays"
+  },
+  {
+   "id": "d0029",
+   "asof": "2026-08-16",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: halves 14, walk_forward 11, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0030",
+   "asof": "2026-08-23",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, walk_forward 13, trades_week 1): every knob stays"
+  },
+  {
+   "id": "d0031",
+   "asof": "2026-08-30",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "12 proposal(s), none passed the guardrails (failed: walk_forward 11, halves 11): every knob stays"
+  },
+  {
+   "id": "d0032",
+   "asof": "2026-09-06",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "16 proposal(s), none passed the guardrails (failed: walk_forward 15, halves 15, eval_fail_2wk 1): every knob stays"
+  },
+  {
+   "id": "d0033",
+   "asof": "2026-09-13",
+   "action": "mult",
+   "fam": "levels",
+   "bucket": "multi",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.1,
+    "skip": false
+   },
+   "reason": "Liquidity taken: 2+ levels or a daily/weekly/monthly level or gap: 52 trades, mean +0.86R vs +0.78R overall (shrunk +0.84R, prior 20 trades) -> x1 -> x1.1 (target x1.078); walk-forward +479 $ on 4 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0034",
+   "asof": "2026-09-20",
+   "action": "mult",
+   "fam": "h4",
+   "bucket": "with",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "reason": "4H draw: nearest untaken 4H swing on the target side: 29 trades, mean +1.32R vs +0.57R overall (shrunk +1.01R, prior 20 trades) -> x1 -> x1.25 (target x1.25); walk-forward +839 $ on 5 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0035",
+   "asof": "2026-09-27",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, walk_forward 11, eval_fail_2wk 1): every knob stays"
+  },
+  {
+   "id": "d0036",
+   "asof": "2026-10-04",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 15, walk_forward 12, eval_fail_2wk 1): every knob stays"
+  },
+  {
+   "id": "d0037",
+   "asof": "2026-10-11",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "14 proposal(s), none passed the guardrails (failed: halves 14, walk_forward 11, eval_fail_2wk 2): every knob stays"
+  },
+  {
+   "id": "d0038",
+   "asof": "2026-10-18",
+   "action": "none",
+   "fam": null,
+   "bucket": null,
+   "before": null,
+   "after": null,
+   "reason": "15 proposal(s), none passed the guardrails (failed: halves 14, walk_forward 13, eval_fail_2wk 2): every knob stays"
+  }
+ ],
+ "decisions_2021_25": [
+  {
+   "id": "d0023",
+   "asof": "2022-06-05",
+   "action": "mult",
+   "fam": "vix",
+   "bucket": "mid",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "VIX regime: VIX 16-22: 11 trades, mean -0.07R vs +0.34R overall (shrunk +0.19R, prior 20 trades) -> x1 -> x0.75 (target x0.57); walk-forward +302 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0026",
+   "asof": "2022-06-26",
+   "action": "mult",
+   "fam": "h4",
+   "bucket": "with",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "4H draw: nearest untaken 4H swing on the target side: 18 trades, mean +0.12R vs +0.42R overall (shrunk +0.28R, prior 20 trades) -> x1 -> x0.75 (target x0.656); walk-forward +362 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0027",
+   "asof": "2022-07-03",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "stale",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "reason": "Inducement (trap) age: older trap (> 6 bars): 28 trades, mean +0.68R vs +0.46R overall (shrunk +0.59R, prior 20 trades) -> x1 -> x1.25 (target x1.25); walk-forward +513 $ on 3 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0029",
+   "asof": "2022-07-17",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "lon_late",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "reason": "Entry time: late London 05:00-08:00 ET: 17 trades, mean +0.62R vs +0.32R overall (shrunk +0.46R, prior 20 trades) -> x1 -> x1.25 (target x1.25); walk-forward +215 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0030",
+   "asof": "2022-07-24",
+   "action": "mult",
+   "fam": "h4",
+   "bucket": "with",
+   "before": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.5,
+    "skip": false
+   },
+   "reason": "4H draw: nearest untaken 4H swing on the target side: 20 trades, mean +0.00R vs +0.30R overall (shrunk +0.15R, prior 20 trades) -> x0.75 -> x0.5 (target x0.502); walk-forward +154 $ on 3 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0034",
+   "asof": "2022-08-21",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "ny",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.8,
+    "skip": false
+   },
+   "reason": "Entry time: New York 08:00-15:30 ET: 14 trades, mean +0.19R vs +0.34R overall (shrunk +0.28R, prior 20 trades) -> x1 -> x0.8 (target x0.822); walk-forward +124 $ on 3 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0038",
+   "asof": "2022-09-18",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "ny",
+   "before": {
+    "mult": 0.8,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.55,
+    "skip": false
+   },
+   "reason": "Entry time: New York 08:00-15:30 ET: 13 trades, mean -0.20R vs +0.33R overall (shrunk +0.12R, prior 20 trades) -> x0.8 -> x0.55 (target x0.5); walk-forward +62 $ on 3 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0040",
+   "asof": "2022-10-02",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "ny",
+   "before": {
+    "mult": 0.55,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.5,
+    "skip": false
+   },
+   "reason": "Entry time: New York 08:00-15:30 ET: 14 trades, mean -0.17R vs +0.24R overall (shrunk +0.07R, prior 20 trades) -> x0.55 -> x0.5 (target x0.5); walk-forward +2 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0048",
+   "asof": "2022-11-27",
+   "action": "mult",
+   "fam": "levels",
+   "bucket": "single",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.9,
+    "skip": false
+   },
+   "reason": "Liquidity taken: one minor level: 16 trades, mean +0.17R vs +0.23R overall (shrunk +0.20R, prior 20 trades) -> x1 -> x0.9 (target x0.88); walk-forward +317 $ on 4 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0050",
+   "asof": "2022-12-11",
+   "action": "mult",
+   "fam": "h4",
+   "bucket": "with",
+   "before": {
+    "mult": 0.5,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "4H draw: nearest untaken 4H swing on the target side: 33 trades, mean +0.18R vs +0.28R overall (shrunk +0.22R, prior 20 trades) -> x0.5 -> x0.75 (target x0.765); walk-forward +516 $ on 3 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0094",
+   "asof": "2023-10-15",
+   "action": "mult",
+   "fam": "levels",
+   "bucket": "single",
+   "before": {
+    "mult": 0.9,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "reason": "Liquidity taken: one minor level: 10 trades, mean +0.14R vs -0.19R overall (shrunk -0.08R, prior 20 trades) -> x0.9 -> x1 (target x1); walk-forward +61 $ on 6 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0114",
+   "asof": "2024-03-03",
+   "action": "skip",
+   "fam": "vix",
+   "bucket": "mid",
+   "before": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": true
+   },
+   "reason": "VIX regime: VIX 16-22: 18 trades, mean -0.09R vs -0.11R overall (shrunk -0.10R, prior 20 trades) -> skip (lost money with 15+ trades); walk-forward +467 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0128",
+   "asof": "2024-06-09",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "ny",
+   "before": {
+    "mult": 0.5,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "Entry time: New York 08:00-15:30 ET: 22 trades, mean +0.02R vs -0.11R overall (shrunk -0.04R, prior 20 trades) -> x0.5 -> x0.75 (target x1); walk-forward +81 $ on 6 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0132",
+   "asof": "2024-07-07",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "ny",
+   "before": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "reason": "Entry time: New York 08:00-15:30 ET: 23 trades, mean +0.15R vs +0.05R overall (shrunk +0.10R, prior 20 trades) -> x0.75 -> x1 (target x1); walk-forward +256 $ on 6 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0133",
+   "asof": "2024-07-14",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "lon_late",
+   "before": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "reason": "Entry time: late London 05:00-08:00 ET: 13 trades, mean -0.34R vs +0.07R overall (shrunk -0.09R, prior 20 trades) -> x1.25 -> x1 (target x0.5); walk-forward +387 $ on 6 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0149",
+   "asof": "2024-11-03",
+   "action": "mult",
+   "fam": "h4",
+   "bucket": "against",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "4H draw: nearest untaken 4H swing on the stop side: 32 trades, mean +0.04R vs +0.31R overall (shrunk +0.14R, prior 20 trades) -> x1 -> x0.75 (target x0.5); walk-forward +210 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0150",
+   "asof": "2024-11-10",
+   "action": "mult",
+   "fam": "levels",
+   "bucket": "multi",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "Liquidity taken: 2+ levels or a daily/weekly/monthly level or gap: 44 trades, mean +0.14R vs +0.30R overall (shrunk +0.19R, prior 20 trades) -> x1 -> x0.75 (target x0.632); walk-forward +219 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0155",
+   "asof": "2024-12-15",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "lon_early",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "reason": "Entry time: London 02:00-05:00 ET: 26 trades, mean +0.36R vs +0.09R overall (shrunk +0.24R, prior 20 trades) -> x1 -> x1.25 (target x1.25); walk-forward +264 $ on 3 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0156",
+   "asof": "2024-12-22",
+   "action": "mult",
+   "fam": "h4",
+   "bucket": "with",
+   "before": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "reason": "4H draw: nearest untaken 4H swing on the target side: 29 trades, mean +0.13R vs -0.01R overall (shrunk +0.07R, prior 20 trades) -> x0.75 -> x1 (target x1); walk-forward +967 $ on 6 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0157",
+   "asof": "2024-12-29",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "ny",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "Entry time: New York 08:00-15:30 ET: 21 trades, mean -0.27R vs +0.15R overall (shrunk -0.06R, prior 20 trades) -> x1 -> x0.75 (target x0.5); walk-forward +59 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0159",
+   "asof": "2025-01-12",
+   "action": "mult",
+   "fam": "levels",
+   "bucket": "single",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "reason": "Liquidity taken: one minor level: 16 trades, mean +0.54R vs +0.18R overall (shrunk +0.34R, prior 20 trades) -> x1 -> x1.25 (target x1.25); walk-forward +363 $ on 5 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0160",
+   "asof": "2025-01-19",
+   "action": "mult",
+   "fam": "h4",
+   "bucket": "against",
+   "before": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.5,
+    "skip": false
+   },
+   "reason": "4H draw: nearest untaken 4H swing on the stop side: 31 trades, mean -0.19R vs +0.20R overall (shrunk -0.04R, prior 20 trades) -> x0.75 -> x0.5 (target x0.5); walk-forward +373 $ on 3 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0161",
+   "asof": "2025-01-26",
+   "action": "mult",
+   "fam": "vix",
+   "bucket": "low",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "reason": "VIX regime: VIX under 16: 21 trades, mean +0.68R vs +0.24R overall (shrunk +0.47R, prior 20 trades) -> x1 -> x1.25 (target x1.25); walk-forward +727 $ on 3 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0162",
+   "asof": "2025-02-02",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "fresh",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "reason": "Inducement (trap) age: fresh trap (inducement <= 6 bars / 30 min old): 29 trades, mean +0.57R vs +0.25R overall (shrunk +0.44R, prior 20 trades) -> x1 -> x1.25 (target x1.25); walk-forward +428 $ on 4 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0163",
+   "asof": "2025-02-09",
+   "action": "mult",
+   "fam": "h4",
+   "bucket": "with",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "reason": "4H draw: nearest untaken 4H swing on the target side: 33 trades, mean +0.51R vs +0.25R overall (shrunk +0.41R, prior 20 trades) -> x1 -> x1.25 (target x1.25); walk-forward +188 $ on 5 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0167",
+   "asof": "2025-03-09",
+   "action": "unskip",
+   "fam": "vix",
+   "bucket": "mid",
+   "before": {
+    "mult": 0.75,
+    "skip": true
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "VIX regime: VIX 16-22: 35 trades, mean +0.44R vs +0.41R overall (shrunk +0.43R, prior 20 trades) -> skip lifted; walk-forward +1,899 $ on 3 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0168",
+   "asof": "2025-03-16",
+   "action": "mult",
+   "fam": "grade",
+   "bucket": "A",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.8,
+    "skip": false
+   },
+   "reason": "Trader's grade: grade A (4 of 4 points): 4 trades, mean -0.12R vs +0.44R overall (shrunk +0.35R, prior 20 trades) -> x1 -> x0.8 (target x0.788); walk-forward +328 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0169",
+   "asof": "2025-03-23",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "ny",
+   "before": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.8,
+    "skip": false
+   },
+   "reason": "Entry time: New York 08:00-15:30 ET: 19 trades, mean +0.23R vs +0.40R overall (shrunk +0.32R, prior 20 trades) -> x0.75 -> x0.8 (target x0.795); walk-forward +181 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0170",
+   "asof": "2025-03-30",
+   "action": "mult",
+   "fam": "grade",
+   "bucket": "A",
+   "before": {
+    "mult": 0.8,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "Trader's grade: grade A (4 of 4 points): 4 trades, mean -0.12R vs +0.31R overall (shrunk +0.24R, prior 20 trades) -> x0.8 -> x0.75 (target x0.769); walk-forward +211 $ on 2 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0171",
+   "asof": "2025-04-06",
+   "action": "mult",
+   "fam": "vix",
+   "bucket": "high",
+   "before": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "VIX regime: VIX 22+: 6 trades, mean -0.52R vs +0.17R overall (shrunk +0.01R, prior 20 trades) -> x1 -> x0.75 (target x0.5); walk-forward +102 $ on 4 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0172",
+   "asof": "2025-04-13",
+   "action": "mult",
+   "fam": "vix",
+   "bucket": "high",
+   "before": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.5,
+    "skip": false
+   },
+   "reason": "VIX regime: VIX 22+: 5 trades, mean -0.42R vs +0.21R overall (shrunk +0.09R, prior 20 trades) -> x0.75 -> x0.5 (target x0.5); walk-forward +106 $ on 3 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0190",
+   "asof": "2025-08-17",
+   "action": "mult",
+   "fam": "h4",
+   "bucket": "against",
+   "before": {
+    "mult": 0.5,
+    "skip": false
+   },
+   "after": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "reason": "4H draw: nearest untaken 4H swing on the stop side: 23 trades, mean -0.13R vs -0.03R overall (shrunk -0.08R, prior 20 trades) -> x0.5 -> x0.75 (target x1); walk-forward +714 $ on 4 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0191",
+   "asof": "2025-08-24",
+   "action": "mult",
+   "fam": "trap",
+   "bucket": "stale",
+   "before": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "reason": "Inducement (trap) age: older trap (> 6 bars): 33 trades, mean -0.18R vs -0.06R overall (shrunk -0.14R, prior 20 trades) -> x1.25 -> x1 (target x1); walk-forward +775 $ on 6 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0197",
+   "asof": "2025-10-05",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "lon_early",
+   "before": {
+    "mult": 1.25,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "reason": "Entry time: London 02:00-05:00 ET: 25 trades, mean -0.38R vs -0.23R overall (shrunk -0.31R, prior 20 trades) -> x1.25 -> x1 (target x1); walk-forward +766 $ on 6 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0203",
+   "asof": "2025-11-16",
+   "action": "mult",
+   "fam": "session",
+   "bucket": "ny",
+   "before": {
+    "mult": 0.8,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "reason": "Entry time: New York 08:00-15:30 ET: 23 trades, mean +0.26R vs -0.04R overall (shrunk +0.12R, prior 20 trades) -> x0.8 -> x1 (target x1); walk-forward +298 $ on 5 blocks, both halves better, eval 2-wk fails not up"
+  },
+  {
+   "id": "d0204",
+   "asof": "2025-11-23",
+   "action": "mult",
+   "fam": "vix",
+   "bucket": "mid",
+   "before": {
+    "mult": 0.75,
+    "skip": false
+   },
+   "after": {
+    "mult": 1.0,
+    "skip": false
+   },
+   "reason": "VIX regime: VIX 16-22: 42 trades, mean -0.15R vs -0.06R overall (shrunk -0.12R, prior 20 trades) -> x0.75 -> x1 (target x1); walk-forward +386 $ on 5 blocks, both halves better, eval 2-wk fails not up"
+  }
+ ],
+ "reviews_2026": 38,
+ "changes_2026": 5,
+ "reviews_2021_25": 209,
+ "changes_2021_25": 36,
+ "knobs_end_2026": {
+  "trap": {
+   "stale": {
+    "mult": 0.5,
+    "skip": false,
+    "since": "2026-04-19",
+    "decision": "d0012"
+   },
+   "fresh": {
+    "mult": 1.25,
+    "skip": false,
+    "since": "2026-04-26",
+    "decision": "d0013"
+   }
+  },
+  "levels": {
+   "multi": {
+    "mult": 1.1,
+    "skip": false,
+    "since": "2026-09-13",
+    "decision": "d0033"
+   }
+  },
+  "h4": {
+   "with": {
+    "mult": 1.25,
+    "skip": false,
+    "since": "2026-09-20",
+    "decision": "d0034"
+   }
+  }
+ },
+ "knobs_end_2025": {
+  "vix": {
+   "mid": {
+    "mult": 1.0,
+    "skip": false,
+    "since": "2025-11-23",
+    "decision": "d0204"
+   },
+   "low": {
+    "mult": 1.25,
+    "skip": false,
+    "since": "2025-01-26",
+    "decision": "d0161"
+   },
+   "high": {
+    "mult": 0.5,
+    "skip": false,
+    "since": "2025-04-13",
+    "decision": "d0172"
+   }
+  },
+  "h4": {
+   "with": {
+    "mult": 1.25,
+    "skip": false,
+    "since": "2025-02-09",
+    "decision": "d0163"
+   },
+   "against": {
+    "mult": 0.75,
+    "skip": false,
+    "since": "2025-08-17",
+    "decision": "d0190"
+   }
+  },
+  "trap": {
+   "stale": {
+    "mult": 1.0,
+    "skip": false,
+    "since": "2025-08-24",
+    "decision": "d0191"
+   },
+   "fresh": {
+    "mult": 1.25,
+    "skip": false,
+    "since": "2025-02-02",
+    "decision": "d0162"
+   }
+  },
+  "session": {
+   "lon_late": {
+    "mult": 1.0,
+    "skip": false,
+    "since": "2024-07-14",
+    "decision": "d0133"
+   },
+   "ny": {
+    "mult": 1.0,
+    "skip": false,
+    "since": "2025-11-16",
+    "decision": "d0203"
+   },
+   "lon_early": {
+    "mult": 1.0,
+    "skip": false,
+    "since": "2025-10-05",
+    "decision": "d0197"
+   }
+  },
+  "levels": {
+   "single": {
+    "mult": 1.25,
+    "skip": false,
+    "since": "2025-01-12",
+    "decision": "d0159"
+   },
+   "multi": {
+    "mult": 0.75,
+    "skip": false,
+    "since": "2024-11-10",
+    "decision": "d0150"
+   }
+  },
+  "grade": {
+   "A": {
+    "mult": 0.75,
+    "skip": false,
+    "since": "2025-03-30",
+    "decision": "d0170"
+   }
+  }
+ },
+ "last_review_2026": {
+  "asof": "2026-10-18",
+  "decision": "d0038",
+  "action": "none",
+  "reason": "15 proposal(s), none passed the guardrails (failed: halves 14, walk_forward 13, eval_fail_2wk 2): every knob stays",
+  "trades": 73,
+  "rbar": 0.537,
+  "proposals": [
+   {
+    "fam": "trap",
+    "b": "stale",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 37,
+    "mean_r": 0.311,
+    "target": 0.726,
+    "failed": [
+     "walk_forward",
+     "eval_fail_2wk"
+    ],
+    "wf_delta": 0.0,
+    "halves": [
+     342.04,
+     588.46
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "levels",
+    "b": "multi",
+    "kind": "mult",
+    "value": 1.2,
+    "pass": false,
+    "n": 53,
+    "mean_r": 0.692,
+    "target": 1.209,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": 0.0,
+    "halves": [
+     196.1,
+     -161.8
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "levels",
+    "b": "single",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 20,
+    "mean_r": 0.128,
+    "target": 0.619,
+    "failed": [
+     "halves"
+    ],
+    "wf_delta": 105.8,
+    "halves": [
+     -286.02,
+     311.1
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "session",
+    "b": "lon_early",
+    "kind": "mult",
+    "value": 1.25,
+    "pass": false,
+    "n": 39,
+    "mean_r": 1.006,
+    "target": 1.25,
+    "failed": [
+     "walk_forward",
+     "halves",
+     "eval_fail_2wk"
+    ],
+    "wf_delta": -135.8,
+    "halves": [
+     282.7,
+     -279.0
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "session",
+    "b": "ny",
+    "kind": "mult",
+    "value": 0.9,
+    "pass": false,
+    "n": 15,
+    "mean_r": 0.388,
+    "target": 0.881,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": 0.0,
+    "halves": [
+     -532.2,
+     -22.1
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "session",
+    "b": "lon_late",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 19,
+    "mean_r": -0.307,
+    "target": 0.5,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": -313.2,
+    "halves": [
+     -394.8,
+     -313.2
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "session",
+    "b": "lon_late",
+    "kind": "skip",
+    "value": null,
+    "pass": false,
+    "n": 19,
+    "mean_r": -0.307,
+    "target": 0.5,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": -4075.4,
+    "halves": [
+     -5212.64,
+     -2423.46
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "vix",
+    "b": "mid",
+    "kind": "mult",
+    "value": 0.95,
+    "pass": false,
+    "n": 44,
+    "mean_r": 0.513,
+    "target": 0.968,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": -1020.0,
+    "halves": [
+     266.6,
+     0.0
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "vix",
+    "b": "low",
+    "kind": "mult",
+    "value": 1.05,
+    "pass": false,
+    "n": 29,
+    "mean_r": 0.575,
+    "target": 1.041,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": 0.0,
+    "halves": [
+     0.0,
+     0.0
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "grade",
+    "b": "B",
+    "kind": "mult",
+    "value": 0.9,
+    "pass": false,
+    "n": 54,
+    "mean_r": 0.479,
+    "target": 0.921,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": -470.0,
+    "halves": [
+     -740.4,
+     -1109.96
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "grade",
+    "b": "C",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 9,
+    "mean_r": -0.521,
+    "target": 0.5,
+    "failed": [
+     "halves"
+    ],
+    "wf_delta": 105.8,
+    "halves": [
+     -206.52,
+     105.8
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "grade",
+    "b": "A",
+    "kind": "mult",
+    "value": 1.25,
+    "pass": false,
+    "n": 10,
+    "mean_r": 1.805,
+    "target": 1.25,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": 0.0,
+    "halves": [
+     0.0,
+     0.0
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "es",
+    "b": "no_confirm",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 26,
+    "mean_r": 0.27,
+    "target": 0.718,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": -541.6,
+    "halves": [
+     -432.6,
+     -417.8
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "es",
+    "b": "confirm",
+    "kind": "mult",
+    "value": 1.2,
+    "pass": false,
+    "n": 47,
+    "mean_r": 0.685,
+    "target": 1.193,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": -323.5,
+    "halves": [
+     468.3,
+     -161.8
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   },
+   {
+    "fam": "h4",
+    "b": "against",
+    "kind": "mult",
+    "value": 0.75,
+    "pass": false,
+    "n": 42,
+    "mean_r": 0.124,
+    "target": 0.5,
+    "failed": [
+     "walk_forward",
+     "halves"
+    ],
+    "wf_delta": -1083.9,
+    "halves": [
+     -2691.4,
+     -951.6
+    ],
+    "f10": [
+     0.0,
+     0.0
+    ]
+   }
+  ],
+  "buckets": {
+   "trap": {
+    "stale": {
+     "n": 37,
+     "mean_r": 0.311,
+     "usd": 5529.16,
+     "post_r": 0.39,
+     "target": 0.726,
+     "skip_ok": false
+    },
+    "fresh": {
+     "n": 36,
+     "mean_r": 0.77,
+     "usd": 14409.22,
+     "post_r": 0.687,
+     "target": 1.25,
+     "skip_ok": false
+    }
+   },
+   "levels": {
+    "multi": {
+     "n": 53,
+     "mean_r": 0.692,
+     "usd": 18973.52,
+     "post_r": 0.649,
+     "target": 1.209,
+     "skip_ok": false
+    },
+    "single": {
+     "n": 20,
+     "mean_r": 0.128,
+     "usd": 964.86,
+     "post_r": 0.333,
+     "target": 0.619,
+     "skip_ok": false
+    }
+   },
+   "session": {
+    "lon_early": {
+     "n": 39,
+     "mean_r": 1.006,
+     "usd": 17234.62,
+     "post_r": 0.847,
+     "target": 1.25,
+     "skip_ok": false
+    },
+    "ny": {
+     "n": 15,
+     "mean_r": 0.388,
+     "usd": 3166.4,
+     "post_r": 0.473,
+     "target": 0.881,
+     "skip_ok": false
+    },
+    "lon_late": {
+     "n": 19,
+     "mean_r": -0.307,
+     "usd": -462.64,
+     "post_r": 0.126,
+     "target": 0.5,
+     "skip_ok": true
+    }
+   },
+   "vix": {
+    "mid": {
+     "n": 44,
+     "mean_r": 0.513,
+     "usd": 12958.22,
+     "post_r": 0.52,
+     "target": 0.968,
+     "skip_ok": false
+    },
+    "low": {
+     "n": 29,
+     "mean_r": 0.575,
+     "usd": 6980.16,
+     "post_r": 0.559,
+     "target": 1.041,
+     "skip_ok": false
+    }
+   },
+   "grade": {
+    "B": {
+     "n": 54,
+     "mean_r": 0.479,
+     "usd": 12304.72,
+     "post_r": 0.495,
+     "target": 0.921,
+     "skip_ok": false
+    },
+    "C": {
+     "n": 9,
+     "mean_r": -0.521,
+     "usd": -1954.2,
+     "post_r": 0.209,
+     "target": 0.5,
+     "skip_ok": false
+    },
+    "A": {
+     "n": 10,
+     "mean_r": 1.805,
+     "usd": 9587.86,
+     "post_r": 0.96,
+     "target": 1.25,
+     "skip_ok": false
+    }
+   },
+   "es": {
+    "no_confirm": {
+     "n": 26,
+     "mean_r": 0.27,
+     "usd": 2124.02,
+     "post_r": 0.386,
+     "target": 0.718,
+     "skip_ok": false
+    },
+    "confirm": {
+     "n": 47,
+     "mean_r": 0.685,
+     "usd": 17814.36,
+     "post_r": 0.641,
+     "target": 1.193,
+     "skip_ok": false
+    }
+   },
+   "h4": {
+    "against": {
+     "n": 42,
+     "mean_r": 0.124,
+     "usd": 4666.56,
+     "post_r": 0.257,
+     "target": 0.5,
+     "skip_ok": false
+    },
+    "with": {
+     "n": 31,
+     "mean_r": 1.097,
+     "usd": 15271.82,
+     "post_r": 0.877,
+     "target": 1.25,
+     "skip_ok": false
+    }
+   }
+  }
+ },
+ "guardrail_fails_2026": {
+  "proposals": 544,
+  "walk_forward": 487,
+  "halves": 468,
+  "trades_week": 19,
+  "eval_fail_2wk": 25
+ },
+ "guardrail_fails_2021_25": {
+  "proposals": 2861,
+  "walk_forward": 1852,
+  "trades_week": 1137,
+  "halves": 2326,
+  "eval_fail_2wk": 107
+ },
+ "proposals_by_week_2026": [
+  [
+   "2026-02-01",
+   0,
+   0
+  ],
+  [
+   "2026-02-08",
+   15,
+   0
+  ],
+  [
+   "2026-02-15",
+   13,
+   0
+  ],
+  [
+   "2026-02-22",
+   14,
+   0
+  ],
+  [
+   "2026-03-01",
+   15,
+   0
+  ],
+  [
+   "2026-03-08",
+   19,
+   0
+  ],
+  [
+   "2026-03-15",
+   19,
+   0
+  ],
+  [
+   "2026-03-22",
+   18,
+   0
+  ],
+  [
+   "2026-03-29",
+   15,
+   0
+  ],
+  [
+   "2026-04-05",
+   13,
+   0
+  ],
+  [
+   "2026-04-12",
+   14,
+   1
+  ],
+  [
+   "2026-04-19",
+   15,
+   1
+  ],
+  [
+   "2026-04-26",
+   14,
+   2
+  ],
+  [
+   "2026-05-03",
+   11,
+   0
+  ],
+  [
+   "2026-05-10",
+   14,
+   0
+  ],
+  [
+   "2026-05-17",
+   16,
+   0
+  ],
+  [
+   "2026-05-24",
+   16,
+   0
+  ],
+  [
+   "2026-05-31",
+   12,
+   0
+  ],
+  [
+   "2026-06-07",
+   15,
+   0
+  ],
+  [
+   "2026-06-14",
+   14,
+   0
+  ],
+  [
+   "2026-06-21",
+   15,
+   0
+  ],
+  [
+   "2026-06-28",
+   15,
+   0
+  ],
+  [
+   "2026-07-05",
+   14,
+   0
+  ],
+  [
+   "2026-07-12",
+   16,
+   0
+  ],
+  [
+   "2026-07-19",
+   15,
+   0
+  ],
+  [
+   "2026-07-26",
+   13,
+   0
+  ],
+  [
+   "2026-08-02",
+   11,
+   0
+  ],
+  [
+   "2026-08-09",
+   14,
+   0
+  ],
+  [
+   "2026-08-16",
+   14,
+   0
+  ],
+  [
+   "2026-08-23",
+   15,
+   0
+  ],
+  [
+   "2026-08-30",
+   12,
+   0
+  ],
+  [
+   "2026-09-06",
+   16,
+   0
+  ],
+  [
+   "2026-09-13",
+   16,
+   2
+  ],
+  [
+   "2026-09-20",
+   17,
+   1
+  ],
+  [
+   "2026-09-27",
+   15,
+   0
+  ],
+  [
+   "2026-10-04",
+   15,
+   0
+  ],
+  [
+   "2026-10-11",
+   14,
+   0
+  ],
+  [
+   "2026-10-18",
+   15,
+   0
+  ]
+ ],
+ "causes_2026": {
+  "against_4h_draw": {
+   "n": 18,
+   "usd_at_eval_base": -6076.6,
+   "label": "against the 4H draw: the nearest untaken 4H swing was on the stop side"
+  },
+  "wick_then_target": {
+   "n": 12,
+   "usd_at_eval_base": -4898.8,
+   "label": "stopped by a wick, then price went on to the target the same day"
+  },
+  "es_no_confirm": {
+   "n": 12,
+   "usd_at_eval_base": -4419.0,
+   "label": "ES did not confirm: ES did not sweep its own level"
+  },
+  "late_london": {
+   "n": 4,
+   "usd_at_eval_base": -1591.8,
+   "label": "late in the London move: entry 05:00-08:00 ET"
+  },
+  "opp_extreme_in": {
+   "n": 4,
+   "usd_at_eval_base": -1035.1,
+   "label": "the day's opposite extreme was already in before the entry"
+  },
+  "not_turning_point": {
+   "n": 1,
+   "usd_at_eval_base": -806.4,
+   "label": "not the day's turning point: price ran through the sweep extreme"
+  },
+  "be_scratch": {
+   "n": 34,
+   "usd_at_eval_base": -476.9,
+   "label": "breakeven scratch: went +1R, came back to the entry"
+  },
+  "news_spike": {
+   "n": 1,
+   "usd_at_eval_base": -275.6,
+   "label": "news spike: a high-impact release hit the trade (15 min before the entry to the exit)"
+  },
+  "wide_stop": {
+   "n": 1,
+   "usd_at_eval_base": -165.4,
+   "label": "wide stop: planned stop over 47 pts"
+  },
+  "stale_trap": {
+   "n": 1,
+   "usd_at_eval_base": -164.9,
+   "label": "stale trap: the inducement swing was older than 10 bars (50 min)"
+  }
+ },
+ "tags_2026": {
+  "not_turning_point": 53,
+  "against_4h_draw": 50,
+  "opp_extreme_in": 42,
+  "be_scratch": 34,
+  "wide_stop": 33,
+  "stale_trap": 27,
+  "late_london": 26,
+  "es_no_confirm": 25,
+  "wick_then_target": 12,
+  "news_spike": 2
+ }
+}

@@ -82,9 +82,9 @@ def learn(recs, sun, start_day, quiet=False):
             for f in p["failed"]:
                 FC[f] += 1
         D.append(d)
-    L["_fail_counts"] = dict(FC)
         if d["action"] != "none" and not quiet:
             print(f"  {s}: {d['action']} {d['fam']}/{d['bucket']} {d['before']} -> {d['after']} | {d['reason'][:150]}", flush=True)
+    L["_fail_counts"] = dict(FC)
     if not quiet:
         print(f"  {len(sun)} reviews in {time.time() - t0:.0f}s, {sum(1 for d in D if d['action'] != 'none')} changes", flush=True)
     return K, D, L

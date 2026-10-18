@@ -170,7 +170,7 @@ export function svg(rec, { width = 380, height = 260, tf = '5m', view = null, co
     if (z == null || z < i0 || a > i1) continue;
     const x0 = sx(Math.max(a, i0 - 1)), x1 = sx(z);
     o.push(`<rect class="tc-box tc-box-${esc(bx.k)}" x="${x0.toFixed(1)}" y="${sy(bx.hi).toFixed(1)}" width="${Math.max(1, x1 - x0).toFixed(1)}" height="${Math.max(1, sy(bx.lo) - sy(bx.hi)).toFixed(1)}"/>`);
-    if (!one) lab.push({ x: Math.max(x0, pl) + 3, y: sy(bx.hi) - 3, text: bx.k, cls: `tc-boxl tc-box-${bx.k}`, anchor: 'start', prio: 4, vb: 'bottom', fs: fs - 1.5 });
+    if (!one) lab.push({ x: Math.max(x0, pl) + 3, y: sy(bx.hi) - 3, text: bx.k, cls: `tc-boxl tc-box-${bx.k}`, anchor: 'start', prio: 4, max: 1, vb: 'bottom', fs: fs - 1.5 });
   }
   // the position boxes (fill -> exit)
   const xe = sx(xe0 ?? 0), xx = Math.max(sx(xx0 ?? 0), xe + 4);
@@ -191,8 +191,8 @@ export function svg(rec, { width = 380, height = 260, tf = '5m', view = null, co
   const xk = sx(X(rec.exit.t) + 0.5), yk = sy(rec.exit.px);
   o.push(`<line class="tc-path tc-k-${esc(kind)}" x1="${xe.toFixed(1)}" y1="${yE.toFixed(1)}" x2="${xk.toFixed(1)}" y2="${yk.toFixed(1)}"/>`);
   if (!one && boxVis) {
-    lab.push({ x: xe + 4, y: yT + (d > 0 ? 3 : -3), text: `Target ${fpx(rec.target)} · ${(+rec.plan_rr).toFixed(2)}R`, cls: 'tc-l-good', anchor: 'start', prio: 1, vb: d > 0 ? 'top' : 'bottom', bg: false });
-    lab.push({ x: xe + 4, y: yS + (d > 0 ? -3 : 3), text: `Stop ${fpx(rec.stop)} · ${(+rec.risk_pts).toFixed(2)} pts · $${Math.round(rec.risk_usd).toLocaleString('en-US')}`, cls: 'tc-l-bad', anchor: 'start', prio: 1, vb: d > 0 ? 'bottom' : 'top', bg: false });
+    lab.push({ x: xe + 4, y: yT + (d > 0 ? 3 : -3), text: `Target ${fpx(rec.target)} · ${(+rec.plan_rr).toFixed(2)}R`, cls: 'tc-l-good', anchor: 'start', prio: 1, vb: d > 0 ? 'top' : 'bottom' });
+    lab.push({ x: xe + 4, y: yS + (d > 0 ? -3 : 3), text: `Stop ${fpx(rec.stop)} · ${(+rec.risk_pts).toFixed(2)} pts · $${Math.round(rec.risk_usd).toLocaleString('en-US')}`, cls: 'tc-l-bad', anchor: 'start', prio: 1, vb: d > 0 ? 'bottom' : 'top' });
   }
   // swept levels (same price = one line)
   const lv = new Map();
@@ -211,7 +211,7 @@ export function svg(rec, { width = 380, height = 260, tf = '5m', view = null, co
     o.push(`<line class="tc-idm" x1="${sx(a).toFixed(1)}" x2="${sx(b).toFixed(1)}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}"/>`);
     const s = 4, px = sx(a);
     o.push(d > 0 ? `<path class="tc-idmm" d="M${px - s} ${y + s + 2}L${px + s} ${y + s + 2}L${px} ${y + 1}Z"/>` : `<path class="tc-idmm" d="M${px - s} ${y - s - 2}L${px + s} ${y - s - 2}L${px} ${y - 1}Z"/>`);
-    if (!one) lab.push({ x: px, y: y + (d > 0 ? s + 4 : -s - 4), text: 'IDM', cls: 'tc-l-gold', anchor: 'middle', prio: 3, vb: d > 0 ? 'top' : 'bottom', bg: false, fs: fs - 1.5 });
+    if (!one) lab.push({ x: px, y: y + (d > 0 ? s + 4 : -s - 4), text: 'IDM', cls: 'tc-l-gold', anchor: 'middle', prio: 3, max: 2, vb: d > 0 ? 'top' : 'bottom', bg: false, fs: fs - 1.5 });
   }
   // sweep extreme
   if (rec.sweep && rec.sweep.ext_t) {
@@ -250,7 +250,7 @@ export function svg(rec, { width = 380, height = 260, tf = '5m', view = null, co
   if (rec.be && rec.be.t) {
     const x = sx(X(rec.be.t) + 0.5);
     if (x >= pl && x <= pr) o.push(`<rect class="tc-be" x="${(x - 3.5).toFixed(1)}" y="${(yE - 3.5).toFixed(1)}" width="7" height="7" rx="1.5"/>`);
-    if (x >= pl && x <= pr) lab.push({ x, y: yE + (d > 0 ? 6 : -6), text: 'BE', cls: 'tc-l-ink', anchor: 'middle', prio: 3, vb: d > 0 ? 'top' : 'bottom', bg: false, fs: fs - 1.5 });
+    if (x >= pl && x <= pr) lab.push({ x, y: yE + (d > 0 ? 6 : -6), text: 'BE', cls: 'tc-l-ink', anchor: 'middle', prio: 3, max: 2, vb: d > 0 ? 'top' : 'bottom', bg: false, fs: fs - 1.5 });
   }
   // exit (only on a panel that shows the exit bar)
   const xkI = X(rec.exit.t);
@@ -298,6 +298,7 @@ function placeLabels(L, { pl, pr, pt, pb, fs }) {
     const base = l.vb === 'top' ? l.y : l.vb === 'bottom' ? l.y - h : l.y - h / 2;
     let y0 = null;
     for (const k of [0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5, 6, -6, 8, -8, 10, -10]) {
+      if (l.max != null && Math.abs(k) > l.max) break;
       const y = base + k * (h * 0.8);
       if (y < pt + 1 || y + h > pb - 1) continue;
       if (!placed.some((p) => x0 < p.x + p.w && x0 + w > p.x && y < p.y + p.h && y + h > p.y)) { y0 = y; break; }
