@@ -1,5 +1,5 @@
 import { $, $$, seg, esc, fmtN, fmt$, fmtS$, fmtR, cls, etStr, store, tradingDay } from './util.js';
-import { S, on, loadBars } from './state.js';
+import { S, on, loadBars, litStart } from './state.js';
 import { TradeChart, LAYERS, LAYERS_LIT } from './chart.js';
 import { feed } from './app.js';
 
@@ -63,7 +63,7 @@ async function refresh() {
 }
 
 async function loadInto() {
-  const bars = await loadBars(litMode() ? 'NQ' : S.sym, tf);   // LIT trades NQ
+  const bars = await loadBars(litMode() ? 'NQ' : S.sym, tf, litStart());   // LIT trades NQ
   tc.setBars(bars, TF_SECS[tf]);
   const r = S.res;
   tc.setAnnotations({ pools: r.pools, ifvgs: r.ifvgs, trades: r.trades, profiles: r.profiles, htf_fvgs: r.htf_fvgs, sweeps: r.events.filter(e => e.type === 'sweep' && e.dir && !e.text.startsWith('Also')),

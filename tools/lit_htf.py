@@ -717,6 +717,37 @@ def print_map(res):
               f"t {o['taken_H2']['d_r']} p{o['taken_H2']['p']} | {o['cand_2021-25']['d_r']} | {o['verdict']} fq {o['fisher_q']}")
 
 
+def chance_holders(n_shuffle=300, seed=5):
+    """How many confluences 'hold' in both halves by chance: on the filled candidates, same sign of the avg-R difference in H1
+    and H2 and |difference| >= 0.2R in both (n >= MIN_N each side), observed vs outcomes shuffled within each half."""
+    R = rows()
+    cids = list(CONF)
+
+    def mats(s):
+        a, z = S.SPAN[s]
+        C = [r for r in R if a <= r["day"] <= z and r["u"] is not None]
+        return np.array([r["u"]["r1"] for r in C]), np.array([[flag(r, c) for c in cids] for r in C])
+
+    def diffs(y, X):
+        out = []
+        for j in range(X.shape[1]):
+            x = X[:, j]; ok = ~np.isnan(x); x, yy = x[ok], y[ok]
+            out.append(np.nan if (x == 1).sum() < MIN_N or (x == 0).sum() < MIN_N else yy[x == 1].mean() - yy[x == 0].mean())
+        return np.array(out)
+
+    def holders(d1, d2):
+        ok = ~np.isnan(d1) & ~np.isnan(d2)
+        return int(((np.sign(d1) == np.sign(d2)) & (np.abs(d1) >= 0.2) & (np.abs(d2) >= 0.2) & ok).sum()), int(ok.sum())
+    y1, X1 = mats("H1"); y2, X2 = mats("H2")
+    obs, elig = holders(diffs(y1, X1), diffs(y2, X2))
+    rng = np.random.default_rng(seed)
+    cnt = np.array([holders(diffs(rng.permutation(y1), X1), diffs(rng.permutation(y2), X2))[0] for _ in range(n_shuffle)])
+    o = {"observed": obs, "eligible": elig, "chance_mean": round(float(cnt.mean()), 1), "chance_p95": float(np.quantile(cnt, 0.95)),
+         "p": round(float((cnt >= obs).mean()), 3)}
+    print(o)
+    return o
+
+
 # ================================================================================================ 2- and 3-way combinations
 def combos(top=25, n_perm=1000, min_on=15):
     """AND combinations of 2 and 3 confluences, each in its H1-favourable orientation, picked on H1 candidates by the z of the
@@ -1107,6 +1138,8 @@ if __name__ == "__main__":
         lookahead(int(sys.argv[2]) if len(sys.argv) > 2 else 10)
     elif cmd == "map":
         map_()
+    elif cmd == "chance":
+        chance_holders()
     elif cmd == "combos":
         combos()
     elif cmd == "final":

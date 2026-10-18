@@ -181,10 +181,11 @@ export function setParam(key, val) {
   store.set('params', S.params);
 }
 
-export async function loadBars(sym, tf) {
-  const k = sym + tf;
+// start (epoch s, optional): only bars from then on (the LIT pages load 2026, not the whole 5-year file)
+export async function loadBars(sym, tf, start = null) {
+  const k = sym + tf + (start ? '@' + start : '');
   if (S.bars[k]) return S.bars[k];
-  const r = await api(`/api/bars?sym=${sym}&tf=${tf}`);
+  const r = await api(`/api/bars?sym=${sym}&tf=${tf}${start ? `&start=${start}` : ''}`);
   const out = r.t.map((t, i) => ({ t, o: r.o[i], h: r.h[i], l: r.l[i], c: r.c[i], v: r.v[i], d: r.d[i], mod: r.mod[i] }));
   S.bars[k] = out;
   return out;
@@ -194,6 +195,8 @@ export function on(fn) { S.listeners.push(fn); }
 // The previous strategy's (engine) backtest for the Archive pages. The redesigned dashboard (web_next) sets S.mode = 'lit':
 // S.res is then the LIT replay (/api/next/lit_backtest) and the engine's /api/backtest result lives in S.eng (loaded when an
 // Archive page opens). The classic dashboard leaves S.mode unset, so S.res is the engine result as before.
+// first bar the LIT pages load: 5 days before the LIT replay's first session
+export const litStart = () => (S.res?.model === 'lit' && S.res.range?.[0] ? Math.floor(Date.parse(S.res.range[0] + 'T00:00:00Z') / 1000) - 5 * 86400 : null);
 export const ENG = () => (S.mode === 'lit' ? S.eng || null : S.res);
 export function emit() { for (const f of S.listeners) { try { f(S.res); } catch (e) { console.error(e); } } }
 

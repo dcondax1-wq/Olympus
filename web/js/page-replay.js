@@ -1,5 +1,5 @@
 import { $, seg, esc, fmtN, fmtS$, cls, etStr, store, toast, tradingDay } from './util.js';
-import { S, on, loadBars } from './state.js';
+import { S, on, loadBars, litStart } from './state.js';
 import { TradeChart } from './chart.js';
 import { feed } from './app.js';
 
@@ -41,7 +41,7 @@ export function retheme() { tc?.applyTheme(); }
 async function setupDays() {
   if (!S.res || !tc) return;
   stale = false;
-  bars = await loadBars(S.res?.model === 'lit' ? 'NQ' : S.sym, S.tf);   // LIT trades NQ
+  bars = await loadBars(S.res?.model === 'lit' ? 'NQ' : S.sym, S.tf, litStart());   // LIT trades NQ
   const days = S.res.days;
   $('#rpDay').innerHTML = days.map(d => `<option value="${d.date}">${d.date} ${d.trades ? (d.pnl > 0 ? '★ +' : '☆ ') + Math.round(d.pnl) : ''}</option>`).reverse().join('');
   const pick = S.res.trades.length ? S.res.trades.at(-1).day : days.at(-1).date;

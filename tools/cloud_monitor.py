@@ -44,6 +44,8 @@ ALERT_TYPES = ("sweep", "signal", "entry", "exit")
 PUSH_SRC = "Cloud paper"
 PUSH_MAX_AGE_S = 2 * 86400    # a fill / outcome older than this is never notified (a late first run, a restored state)
 _LM = None                    # live_model.json of this run (send_alert's chat switch)
+_LEARN = None                 # the learning loop's state (engine/lit_learn.py, <out>/lit_learning.json) for lit_qty
+_LEARN_AT = {}                # entry_t -> lit_qty's "learn" block (the multiplier in force / would be), for the ledger row
 
 
 def et(t):
@@ -135,7 +137,14 @@ def run_model(lm, bot, df_all, now, store_1m=None, week_hist=None):
                     df1 = pd.concat(parts).drop_duplicates("time", keep="last").sort_values("time")
                     df1 = df1[df1["time"] >= int(df1["time"].max()) - 12 * 86400].reset_index(drop=True)
                     df1[["time", "open", "high", "low", "close", "volume"]].to_csv(store_1m, index=False)
-        return lit_live.run(df_all, P, one_min=df1, now=now, sym=SYM, week_hist=week_hist)
+        es_df = None                           # ES 5m for the learning loop's ES features (engine/lit_learn.py)
+        keep = dict(bot.health)
+        try:
+            es_df, _ = bot._merged("ES" if SYM == "NQ" else "NQ", TF, now, SECS)
+        except Exception as e:
+            print("ES bars unavailable (learning features):", e.__class__.__name__)
+        bot.health.clear(); bot.health.update(keep)
+        return lit_live.run(df_all, P, one_min=df1, now=now, sym=SYM, week_hist=week_hist, learn=True, es_df=es_df)
     if lm["model"].startswith("lab:"):
         es_df, _ = bot._merged("ES" if SYM == "NQ" else "NQ", TF, now, SECS)     # partner index (SMT)
         es_df = es_df[es_df["time"] >= int(df["time"].min())]
@@ -186,8 +195,19 @@ def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, para
                                          **{k: (round(float(t[s]), 2) if t.get(s) is not None else None) for k, s in
                                             (("entry_px", "entry"), ("stop_px", "stop"), ("target_px", "target"),
                                              ("exit_px", "exit_price"), ("risk_pts", "risk_pts"))},
-                                         **({"reasons": reasons} if reasons else {})}
+                                         **({"reasons": reasons} if reasons else {}),
+                                         **({"learn": _learn_row(prev, t)} if _learn_row(prev, t) else {})}
     return ledger
+
+
+def _learn_row(prev, t):
+    """The learning layer at the entry (kept from the first sizing of the trade): mode, applied / would-be multiplier, buckets."""
+    if prev and prev.get("learn"):
+        return prev["learn"]
+    L = _LEARN_AT.get(int(t["entry_t"]))
+    if not L or not L.get("mode"):
+        return None
+    return {k: L.get(k) for k in ("mode", "mult", "would", "skip", "would_skip", "buckets")}
 
 
 def paper_size(ledger, t, model, eqf_cfg, shadow_path, sizing_cfg, params, lit_sizing=None):
@@ -200,7 +220,9 @@ def paper_size(ledger, t, model, eqf_cfg, shadow_path, sizing_cfg, params, lit_s
         mode = ls.get("mode")
         room = eval_track(before, start)["cushion"] if mode in ("safe_eval", "eval", "two_week") else None
         state = lit_eval_state(before, start, tday(t["entry_t"])) if mode == "two_week" else None
-        r = sizing.lit_qty(int(t.get("qty") or 0), t, lit_sizing, room=room, state=state)
+        r = sizing.lit_qty(int(t.get("qty") or 0), t, lit_sizing, room=room, state=state, learning=_LEARN)
+        if r.get("learn"):
+            _LEARN_AT[int(t["entry_t"])] = r["learn"]
         if r.get("fallback"):
             print(f"sizing {et(t['entry_t']):%m-%d %H:%M}: {r['fallback']}")
         return r["mult"], r["qty"], r["reasons"]
@@ -333,13 +355,70 @@ def eval_track(ledger, start=None):
             "trailing_mll": round(mll, 2), "cushion": round(bal - mll, 2)}
 
 
+def learning_paths(out):
+    """The cloud's learning files, kept on the dashboard branch: <out>/lit_journal.jsonl (append-only) and
+    <out>/lit_learning.json; seeded from the repo's data/ copies (the 2026 backtest records, the replay's state) on the
+    first run."""
+    import shutil
+    from engine import lit_learn
+    jp, lp = os.path.join(out, "lit_journal.jsonl"), os.path.join(out, "lit_learning.json")
+    for dst, src in ((jp, lit_learn.JOURNAL_PATH), (lp, lit_learn.LEARNING_PATH)):
+        if not os.path.exists(dst) and os.path.exists(src):
+            shutil.copyfile(src, dst)
+    return jp, lp
+
+
+def learning_step(out, ledger, res, now, today):
+    """The learning loop's cloud part (engine/lit_learn.py): journal every finished paper trade once its session is over
+    (the hindsight facts then cover the whole day), run the weekly review on Sunday or on the first run after it (or now
+    with LE_LEARN_REVIEW=1, the workflow's "learn_review" input), and return the state.json "learning" block."""
+    from engine import lit_learn
+    jp, lp = learning_paths(out)
+    L = lit_learn.load_learning(lp) or lit_learn.default_learning()
+    by_t = {int(t["entry_t"]): t for t in res.get("trades") or []}
+    have = {r.get("key") for r in lit_learn.load_journal(jp) if r.get("source") == "cloud"}
+    et_now = et(now)
+    new = []
+    for k, v in sorted(ledger.items()):
+        if v.get("exit") in (None, "OPEN") or not v.get("exit_ts"):
+            continue
+        over = v["day"] < today or (et_now.hour * 60 + et_now.minute >= 960)
+        t = by_t.get(int(k))
+        if not over or t is None:
+            continue
+        lr = t.get("learn") or {}
+        rec = lit_learn.record(t, "cloud", f=lr.get("f"), post=t.get("post"), qty=v.get("qty"), pnl=v.get("usd"),
+                               learn=v.get("learn"), logged_at=now)
+        if rec["key"] not in have:
+            new.append(rec)
+    n_new = lit_learn.append_journal(new, jp)
+    if n_new:
+        print(f"learning: journaled {n_new} trade(s)")
+    J = lit_learn.load_journal(jp)
+    due = lit_learn.review_due(L, et_now.date())
+    force = os.environ.get("LE_LEARN_REVIEW", "") == "1"
+    if due or force:
+        asof = due if due else et_now.date().isoformat()
+        L, d = lit_learn.review(J, L, asof, source="cloud weekly" if due else "cloud manual")
+        lit_learn.save_learning(L, lp)
+        print(f"learning: review as of {asof}: {d['action']} - {d['reason'][:160]}")
+    return lit_learn.summary(L, J, today)
+
+
 def run(out):
-    global SYM, _LM
+    global SYM, _LM, _LEARN
     lm = live_model()                    # live_model.json: same strategy and symbol as the PC paper bot
     SYM = lm["sym"]
     _LM = lm
     os.makedirs(out, exist_ok=True)
     now = int(time.time())
+    if lm["model"] == "lit":             # the learning loop's knobs for the paper ledger's sizing (observe mode: 1.0)
+        try:
+            from engine import lit_learn
+            _LEARN = lit_learn.load_learning(learning_paths(out)[1])
+        except Exception as e:
+            print("learning state unavailable:", e.__class__.__name__, e)
+            _LEARN = None
     st = load_state(os.path.join(out, "state.json"))
     first_run = int(st.get("first_run") or now)
     seen = set(tuple(k) for k in st.get("seen", []))
@@ -396,6 +475,15 @@ def run(out):
     update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, lm.get("params"),
                   lit_sizing=lm.get("lit_sizing") if lm["model"] == "lit" else None)
     pos = state.get("position")
+    learning = None
+    if lm["model"] == "lit":                     # the learning loop (journal + Sunday review); never stops the dashboard
+        try:
+            learning = learning_step(out, ledger, res, now, today)
+            if res.get("learn_error"):
+                learning["error"] = res["learn_error"]
+        except Exception as e:
+            print("learning step failed:", e.__class__.__name__, e)
+            learning = {"error": f"{e.__class__.__name__}: {e}"}
 
     # ---- shadow: the old strategy on the same bars, its own paper ledger and cold-streak history, no alerts
     shadow = None
@@ -581,7 +669,9 @@ def run(out):
                  # phone app notifications: the keys already sent (de-dup), when they started, the public status (never the
                  # private key or an endpoint) and the last 80 notices for the app's Activity feed
                  "push_since": push_since, "pushed": notifier.keys()[-600:], "push": push_state, "notices": notices,
-                 "push_subs": push_subs, "push_pc": push_pc}
+                 "push_subs": push_subs, "push_pc": push_pc,
+                 # the learning loop (engine/lit_learn.py): mode, knobs, last review, decisions, this month's loss causes
+                 "learning": learning}
     if shadow is not None:
         new_state["shadow"] = shadow
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
@@ -690,7 +780,7 @@ def _push_cell(p):
 
 def usd_cell(v):
     if not v.get("taken", True):
-        return "skipped (cold streak)"
+        return "skipped (learned skip)" if any("learned skip" in x for x in v.get("reasons") or []) else "skipped (cold streak)"
     if v.get("mult", 1.0) >= 1 and v.get("reasons"):         # LIT: the weekly stop is inside the model's micros
         return money(v["usd"]) + f" ({v.get('qty')} micros: {', '.join(v['reasons'])})"
     return money(v["usd"]) + (f" ({v.get('mult', 1.0):g}x size: {', '.join(v.get('reasons') or ['cold streak'])})" if v.get("mult", 1.0) < 1 else "")
