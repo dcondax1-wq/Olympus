@@ -1,7 +1,7 @@
 {
- "built": "2026-10-18 16:12",
+ "built": "2026-10-18 16:13",
  "baseline": "baseline",
- "count": 681,
+ "count": 683,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -28278,6 +28278,281 @@
      "slow_pass": 43.4,
      "pass_med": 14.0,
      "b2b": "10/3"
+    }
+   }
+  },
+  {
+   "id": "lit_1m_patience",
+   "title": "LIT + skip when the 1m CISD comes after price ran > 0.5R above the limit",
+   "family": "other",
+   "question": "Owner order 2026-10-18: trade off the 1-minute chart for the entry, manage losses like a person - what does the 1m chart tell us after the tap and after the fill?",
+   "status": "rejected",
+   "verdict": "H1 +$4.1k, H2 -$5.1k. 2026 H1 (pick) n=74 2.89/wk win 24.3% PF 4.7 net +37,449 ($6,144/mo) DD -2,259 avg win $2882 avg loss $-198; eval 2wk 41.4/2.3 1mo 64.1/4.7 pass rate 93.4% median 10.0; 2026 H2 (check) n=35 2.24/wk win 28.6% PF 1.88 net +5,402 ($1,454/mo) DD -2,432 avg win $1394 avg loss $-292; eval 2wk 23.1/0.0 1mo 34.6/0.0 pass rate 68.0% median 18.0. 2021-25: no 1m bars, not testable.",
+   "writeup": "lit-1m-management",
+   "tags": [
+    "lit",
+    "lit_1m"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "idm1": null,
+    "disp1": null,
+    "absorb": null,
+    "patience": {
+     "r": 0.5
+    },
+    "pull": null,
+    "x_cisd": null,
+    "x_newlow": null,
+    "x_accept": null,
+    "x_opp": null,
+    "x_es": null,
+    "x_vol": null,
+    "p_bos": null,
+    "p_lvl": null,
+    "p_be": null,
+    "cut_counts": true,
+    "cut_frac": null,
+    "size": [
+     "lit",
+     800,
+     25.0
+    ],
+    "room_k": 0.6
+   },
+   "sizing": {},
+   "built": "2026-10-18 16:12",
+   "spans": {
+    "2026": {
+     "n": 109,
+     "tpw": 2.65,
+     "wk2": 79,
+     "win": 25.7,
+     "pf": 3.67,
+     "net": 43010,
+     "dd": -2432,
+     "avg_r": 0.727,
+     "stop": 47.2,
+     "worst_day": -806,
+     "risk": 306.0,
+     "half": 11,
+     "per_month": 4385,
+     "p10": 32.0,
+     "f10": 1.9,
+     "p15": 44.7,
+     "f15": 2.9,
+     "p20": 54.4,
+     "f20": 2.9,
+     "dec10": 33.9,
+     "slow_pass": 44.9,
+     "pass_med": 14.0,
+     "b2b": "10/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 109,
+     "tpw": 2.65,
+     "wk2": 79,
+     "win": 25.7,
+     "pf": 3.67,
+     "net": 43010,
+     "dd": -2432,
+     "avg_r": 0.727,
+     "stop": 47.2,
+     "worst_day": -806,
+     "risk": 306.0,
+     "half": 11,
+     "per_month": 4385,
+     "p10": 32.0,
+     "f10": 1.9,
+     "p15": 44.7,
+     "f15": 2.9,
+     "p20": 54.4,
+     "f20": 2.9,
+     "dec10": 33.9,
+     "slow_pass": 44.9,
+     "pass_med": 14.0,
+     "b2b": "10/3"
+    }
+   }
+  },
+  {
+   "id": "lit_1m_pullback",
+   "title": "LIT + enter on a limit at the 1m CISD candle's 50% (body) for 20 bars instead of the next open",
+   "family": "other",
+   "question": "Owner order 2026-10-18: trade off the 1-minute chart for the entry, manage losses like a person - what does the 1m chart tell us after the tap and after the fill?",
+   "status": "rejected",
+   "verdict": "Misses winners that never pull back: H1 -$4.3k, H2 -$5.4k. 2026 H1 (pick) n=72 2.81/wk win 19.4% PF 3.78 net +28,975 ($4,754/mo) DD -3,019 avg win $3306 avg loss $-217; eval 2wk 35.2/3.1 1mo 50.0/14.1 pass rate 70.8% median 9.0; 2026 H2 (check) n=37 2.37/wk win 27.0% PF 1.73 net +5,107 ($1,375/mo) DD -2,456 avg win $1424 avg loss $-336; eval 2wk 15.4/0.0 1mo 34.6/0.0 pass rate 64.2% median 16.0. 2021-25: no 1m bars, not testable.",
+   "writeup": "lit-1m-management",
+   "tags": [
+    "lit",
+    "lit_1m"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "idm1": null,
+    "disp1": null,
+    "absorb": null,
+    "patience": null,
+    "pull": {
+     "px": "body50",
+     "wait": 20
+    },
+    "x_cisd": null,
+    "x_newlow": null,
+    "x_accept": null,
+    "x_opp": null,
+    "x_es": null,
+    "x_vol": null,
+    "p_bos": null,
+    "p_lvl": null,
+    "p_be": null,
+    "cut_counts": true,
+    "cut_frac": null,
+    "size": [
+     "lit",
+     800,
+     25.0
+    ],
+    "room_k": 0.6
+   },
+   "sizing": {},
+   "built": "2026-10-18 16:12",
+   "spans": {
+    "2026": {
+     "n": 109,
+     "tpw": 2.65,
+     "wk2": 71,
+     "win": 22.0,
+     "pf": 3.0,
+     "net": 34339,
+     "dd": -3019,
+     "avg_r": 0.556,
+     "stop": 42.0,
+     "worst_day": -831,
+     "risk": 309.0,
+     "half": 16,
+     "per_month": 3501,
+     "p10": 20.9,
+     "f10": 1.9,
+     "p15": 34.0,
+     "f15": 2.4,
+     "p20": 43.2,
+     "f20": 4.9,
+     "dec10": 22.8,
+     "slow_pass": 50.0,
+     "pass_med": 15.5,
+     "b2b": "7/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 109,
+     "tpw": 2.65,
+     "wk2": 71,
+     "win": 22.0,
+     "pf": 3.0,
+     "net": 34339,
+     "dd": -3019,
+     "avg_r": 0.556,
+     "stop": 42.0,
+     "worst_day": -831,
+     "risk": 309.0,
+     "half": 16,
+     "per_month": 3501,
+     "p10": 20.9,
+     "f10": 1.9,
+     "p15": 34.0,
+     "f15": 2.4,
+     "p20": 43.2,
+     "f20": 4.9,
+     "dec10": 22.8,
+     "slow_pass": 50.0,
+     "pass_med": 15.5,
+     "b2b": "7/3"
     }
    }
   },
