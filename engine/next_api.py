@@ -20,12 +20,15 @@ from fastapi import APIRouter
 from fastapi.responses import FileResponse, Response
 
 from . import equity_filter
+from . import lab_scope
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LAB = os.path.join(ROOT, "research", "lab")
 STUDY = os.path.join(ROOT, "research", "study")
 RUNS = os.path.join(ROOT, "research", "runs")
 WRITEUPS = os.path.join(ROOT, "research", "writeups")
+LIT_DOCS = os.path.join(ROOT, "research", "lit")
+ARCHIVE = os.path.join(ROOT, *lab_scope.ARCHIVE_DIR.split("/"))      # the previous strategy (Liquidity Engine, Oct 17)
 router = APIRouter()
 _cache: dict = {}
 _lock = threading.Lock()
@@ -80,7 +83,8 @@ def trades(year: str = "2026"):
     if year != "all":
         rows = [t for t in rows if str(t.get("day", "")).startswith(year)]
     years = sorted({str(t.get("day", ""))[:4] for t in d.get("trades") or [] if t.get("day")})
-    return _J({"year": year, "years": years, "built": d.get("meta", {}).get("built"), "trades": rows[::-1]})
+    return _J({"year": year, "years": years, "built": d.get("meta", {}).get("built"), "model": d.get("meta", {}).get("model") or "engine",
+               "strategy": d.get("meta", {}).get("strategy"), "trades": rows[::-1]})
 
 
 @router.get("/api/next/variants")
@@ -134,10 +138,12 @@ def strategy():
 def cold():
     """Cold-streak filter now (shadow ledger) plus its history across the live replay."""
     lm = _read(os.path.join(ROOT, "live_model.json")) or {}
-    cfg = lm.get("equity_filter")
+    lit = lab_scope.is_lit_model(lm)
+    # the cold-streak filter is the previous strategy's: while LIT is live it is read from its archived lock and its bundle
+    cfg = lm.get("equity_filter") or ((_read(os.path.join(ROOT, "live_model_engine.json")) or {}).get("equity_filter") if lit else None)
     now = equity_filter.status(cfg)
     last = equity_filter.load()[-(int((cfg or {}).get("lookback", 15))):]
-    d = _live_bt() or {}
+    d = (_read(os.path.join(LAB, "backtest_engine.json")) if lit else None) or _live_bt() or {}
     hist = [{"day": t.get("day"), "r": t.get("r"), "half": bool(t.get("half")), "pnl": t.get("pnl")} for t in d.get("trades") or []]
     et = equity_filter.eval_timing(now, equity_filter.sessions_since_flip(cfg))
     model = lm.get("model") or "engine"
@@ -152,6 +158,7 @@ def cold():
         except Exception:
             rules = None
     return _J({"config": cfg, "now": now, "eval_timing": et, "window": last, "history": hist, "model": model, "lit_rules": rules,
+               "archived": lit, "archive_label": lab_scope.ARCHIVE_LABEL if lit else None,
                "lit": {k: (lm.get("lit") or {}).get(k) for k in ("monday", "wk_stop")} if model == "lit" else None,
                "lit_sizing": lm.get("lit_sizing") if model == "lit" else None})
 
@@ -160,7 +167,22 @@ def cold():
 @router.get("/api/next/runs")
 def runs():
     """The run library index (one row per stored backtest, headline numbers for 2026 / 2021-25 / all)."""
-    return _J(_read(os.path.join(RUNS, "index.json")) or {"runs": [], "count": 0, "note": "no runs yet: python tools/runlib.py baseline"})
+    idx = _read(os.path.join(RUNS, "index.json"))
+    if not idx:
+        return _J({"runs": [], "count": 0, "note": "no runs yet: python tools/runlib.py baseline"})
+    # every row tagged lit | engine; while LIT is live the reference run is lit_live and the engine's lock is the archive's
+    lm = _read(os.path.join(ROOT, "live_model.json")) or {}
+    rows = [{**r, "strategy": lab_scope.strategy_of_run(r)} for r in idx.get("runs") or []]
+    ids = {r["id"] for r in rows}
+    base = lab_scope.live_baseline(lm, ids) or idx.get("baseline")
+    old = lab_scope.ENGINE_BASELINE if lab_scope.ENGINE_BASELINE in ids and base != lab_scope.ENGINE_BASELINE else None
+    for r in rows:
+        if r["id"] == base:
+            r["family"], r["status"] = "baseline", "baseline"
+        elif old and r["id"] == old:
+            r["status"] = "baseline"
+    return _J({**idx, "runs": rows, "baseline": base, "archive_baseline": old,
+               "live_strategy": "lit" if lab_scope.is_lit_model(lm) else "engine", "archive_label": lab_scope.ARCHIVE_LABEL})
 
 
 @router.get("/api/next/run/{rid}")
@@ -169,6 +191,8 @@ def run(rid: str):
     if not re.fullmatch(r"[A-Za-z0-9_.-]{1,80}", rid) or rid in ("index",) or rid.startswith("_"):
         return _J({"error": "bad id"}, 400)
     d = _read(os.path.join(RUNS, rid + ".json"))
+    if d and lab_scope.strategy_of_run(d) == "lit" and "cold-streak" in str(d.get("method") or ""):
+        d = {**d, "method": lab_scope.LIT_METHOD, "strategy": "lit"}    # runlib's default text names the engine's filter
     return _J(d) if d else _J({"error": "not found"}, 404)
 
 
@@ -195,7 +219,7 @@ def _front(text: str):
 def writeups():
     """Research write-ups (research/writeups/*.md) newest first, then the older reports in research/ as an archive."""
     items = []
-    for folder, kind in ((WRITEUPS, "writeup"), (os.path.join(ROOT, "research"), "archive"), (LAB, "archive")):
+    for folder, kind in ((WRITEUPS, "writeup"), (LIT_DOCS, "writeup"), (ARCHIVE, "writeup"), (os.path.join(ROOT, "research"), "archive"), (LAB, "archive")):
         try:
             names = sorted(os.listdir(folder))
         except OSError:
@@ -208,9 +232,12 @@ def writeups():
                 continue
             text = _read(path, parse=lambda fh: fh.read()) or ""
             meta, body = _front(text)
-            items.append({"slug": n[:-3], "kind": kind, "file": os.path.relpath(path, ROOT), "mtime": int(os.path.getmtime(path)),
-                          **meta, "body": body})
-    items.sort(key=lambda x: (x["kind"] != "writeup", -(x.get("mtime") or 0)))
+            slug = ("lit-" + n[:-3]) if folder == LIT_DOCS else ("archive-engine-2026-10-17" if folder == ARCHIVE else n[:-3])
+            strat = "archive" if folder == ARCHIVE else lab_scope.strategy_of_doc(slug, os.path.relpath(path, ROOT))
+            items.append({"slug": slug, "kind": kind, "file": os.path.relpath(path, ROOT), "mtime": int(os.path.getmtime(path)),
+                          **meta, "body": body, "strategy": strat if kind == "writeup" else "engine", "pin": lab_scope.pin_rank(slug)})
+    # LIT write-ups first (the pinned ones in order), then the previous strategy's, then the older reports
+    items.sort(key=lambda x: (x["kind"] != "writeup", {"lit": 0, "archive": 1}.get(x["strategy"], 2), x["pin"], -(x.get("mtime") or 0)))
     return _J({"items": items})
 
 
@@ -219,8 +246,28 @@ def lab_file(name: str):
     """A research data file for a dashboard view: research/lab/<name>.json (montecarlo, intraday_heat, ...)."""
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,60}", name):
         return _J({"error": "bad name"}, 400)
-    d = _read(os.path.join(LAB, name + ".json"))
+    # <name>_engine: the previous strategy's copy from the archive (montecarlo_engine, intraday_heat_engine)
+    d = _read(os.path.join(ARCHIVE, name[:-7] + ".json")) if name.endswith("_engine") else _read(os.path.join(LAB, name + ".json"))
     return _J(d) if d is not None else _J({"error": "not found"}, 404)
+
+
+@router.get("/api/next/archive")
+def archive():
+    """The previous strategy (Liquidity Engine, locked 2026-10-17) for the Archive page: its lock, its last bundle's periods
+    (research/lab/backtest_engine.json, no per-trade rows), its stored runs' headline numbers, the README in plain words
+    (research/archive/engine-2026-10-17/README.md) and the cold-streak filter's state on the PC's shadow ledger."""
+    lm = _read(os.path.join(ROOT, "live_model_engine.json")) or {}
+    bt = _read(os.path.join(LAB, "backtest_engine.json")) or {}
+    idx = _read(os.path.join(RUNS, "index.json")) or {}
+    runs = {r["id"]: r for r in idx.get("runs") or [] if r.get("id") in (lab_scope.ENGINE_BASELINE, lab_scope.ENGINE_PREV)}
+    readme = _read(os.path.join(ARCHIVE, "README.md"), parse=lambda fh: fh.read()) or ""
+    cfg = lm.get("equity_filter")
+    now = equity_filter.status(cfg)
+    return _J({"label": lab_scope.ARCHIVE_LABEL, "dir": lab_scope.ARCHIVE_DIR, "live_model": lm,
+               "periods": bt.get("periods") or {}, "meta": {k: (bt.get("meta") or {}).get(k) for k in ("built", "strategy", "method")},
+               "runs": runs, "readme": _front(readme)[1] if readme else "",
+               "cold": {"config": cfg, "now": now, "eval_timing": equity_filter.eval_timing(now, equity_filter.sessions_since_flip(cfg))},
+               "engine_runs": sum(1 for r in idx.get("runs") or [] if lab_scope.strategy_of_run(r) == "engine")})
 
 
 @router.get("/api/next/news")

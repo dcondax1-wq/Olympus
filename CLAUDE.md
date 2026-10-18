@@ -92,6 +92,11 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   held in both periods. "No inducement" looked better, but the sample is thin.
 - The skip-mode cold-streak filter: best PF, but it paused for 14 weeks, which the owner rejected.
 - All variants with numbers: `research/lab/variant_results.json`.
+- The owner's LIT Complete Report (2026-10-18, `research/writeups/lit-report-tests.md`, `tools/lit_report.py`, runs `lit_rep_*`):
+  reclaim, confirmation deadline, acceptance, displacement quality (top-quarter close, 1.5-3x median body, FVG), 2+
+  inducements, inducement room, 2+ levels swept, leg premium/discount, double-sided sweep, first obstacle (0.5R = lone spike),
+  continuation / flip 2nd trade, costs inside the $800, Berlin-time London boxes (no 2026 change, 2021-25 +$5.8k): none adopted.
+  The report's ch.21 model makes 0 trades in 2026. Beginner guide: `research/writeups/lit-playbook.md`.
 
 ## Key commands (run from the repo root)
 - `python tools/export_backtest.py`: the live-settings 5-year replay → `research/lab/backtest_live.json`. Contains periods, months,
@@ -125,7 +130,7 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   NinjaTrader's `incoming` folder (bracket entry, breakeven, flatten, kill) and reads fills/positions from `outgoing`;
   `ninjatrader/LE_BarFeed.cs` writes MNQ 5m bars to `le_feed\*.csv` (`data_source: "ninjatrader"`, falls back to Yahoo when
   stale). Sim accounts by default; a real account needs armed + the LIVE phrase + `NINJATRADER_LIVE=1`. Self-test:
-  `python -m engine.ninjatrader --selftest` (50 checks; `LE_BarFeed.cs` also writes `le_feed\MNQ_1m.csv` for LIT, not yet compiled on a real install). Setup for a non-coder: `ninjatrader/SETUP.md`. Known gap: the
+  `python -m engine.ninjatrader --selftest` (54 checks, incl. cancel-pending entries, partial exit fills and the CME early-close flat (5 min before the halt; entries stop 15 min before) added 2026-10-18; `LE_BarFeed.cs` also writes `le_feed\MNQ_1m.csv` for LIT, not yet compiled on a real install). Setup for a non-coder: `ninjatrader/SETUP.md`. Known gap: the
   Tradovate adapter never received breakeven moves or non-TIME exits (the NinjaTrader flags `route_all_exits`,
   `route_stop_moves` fix it; apply the same to Tradovate before ever using it).
 - **PC off, free:** `scripts/PC_OFF_OPTIONS.md` (A: TradingView brain + one tap on the phone; B: the PC wakes itself at 07:50 ET,
@@ -162,3 +167,6 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
      add `?fxfixed` to a page URL to stop the auto resolution drop in screenshots. PC side: `web_next/js/next/fx3d.js`.
 3. Pine port done 2026-10-17 (see TradingView above). Open: compile check on TradingView (6 constructs listed in BRIDGE_SETUP.md), optionally read signals from NQ1! so both feeds agree.
 4. Optional: test "smaller size when inducement was taken first" when more data exists.
+5. **Before the Dec 2026 roll:** the live LIT window mixes the back-adjusted file with unadjusted Yahoo NQ=F; after the roll
+   the pre-roll bars (PDH/PWH/PMH, gaps) sit 100-250 pts off until they leave the window. Detect the roll jump and back-adjust
+   (see `lit-report-tests.md` audit). The cloud paper ledger now freezes finished trades (`tests/test_ledger_freeze.py`).

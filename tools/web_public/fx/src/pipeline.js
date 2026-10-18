@@ -5,7 +5,8 @@
 //   to idle fades the lights out from the far end. Idle (idx -1): every node dim, a slow drift along the whole track.
 //   Calmer and dimmer outside the killzone; grey-violet and slow when the bot is not live.
 //   Tap a node -> opts.onPick({ step, index, state: 'done' | 'current' | 'next' }); drag sideways to turn it a little.
-// setData({ steps: ['Sweep','IFVG','Order','Trade','Done'], idx, live, killzone, desc? })   idx = current step, -1 = idle;
+// setData({ steps: ['Sweep','IFVG','Order','Trade','Done'], idx, live, killzone, desc?, zone?, idle? })   idx = current step, -1 = idle;
+//   zone = the name of the trading window (default 'killzone'; LIT: 'entry window'), idle = the hero line while idle;
 //   desc = one short line per step (defaults for the five standard steps). A card 230 px or taller also gets a hero
 //   readout of the current step above the track.
 // Draw calls ~12; particles: 140 flow + 40 charge sparks (60 + 20 lite) + 260 dust (110 lite).
@@ -150,7 +151,8 @@ export class Pipeline extends Hud {
     const n = steps.length, i0 = num(src.idx, -1), idx = Number.isFinite(i0) ? clamp(Math.round(i0), -1, n - 1) : -1;
     const live = src.live == null ? true : !!src.live, kz = !!src.killzone;
     this.desc = steps.map((s, i) => String((Array.isArray(src.desc) ? src.desc[i] : null) ?? DESC[s.toLowerCase()] ?? ''));
-    const sig = steps.join('|') + '#' + idx + '#' + live + '#' + kz + '#' + this.desc.join('|');
+    this.zone = typeof src.zone === 'string' && src.zone ? src.zone : 'killzone'; this.idleTxt = typeof src.idle === 'string' ? src.idle : null;
+    const sig = steps.join('|') + '#' + idx + '#' + live + '#' + kz + '#' + this.desc.join('|') + '#' + this.zone + '#' + this.idleTxt;
     if (sig === this.sig) return;
     const first = this.sig == null; this.sig = sig;
     const shape = steps.join('|') !== this.steps.join('|');
@@ -207,13 +209,13 @@ export class Pipeline extends Hud {
   }
   state(i) { return this.idx < 0 || i > this.idx ? 'next' : i === this.idx ? 'current' : 'done'; }
   writeStatus() {
-    const [c, t] = !this.live ? ['#8a84b8', 'bot offline'] : this.kz ? ['#4ef0b0', 'killzone · live'] : ['#a78bfa', 'outside killzone'];
+    const [c, t] = !this.live ? ['#8a84b8', 'bot offline'] : this.kz ? ['#4ef0b0', (this.zone || 'killzone') + ' · live'] : ['#a78bfa', 'outside ' + (this.zone || 'killzone')];
     const st = this.idx < 0 ? 'waiting for a sweep' : this.idx >= this.steps.length - 1 ? 'setup complete' : 'step ' + (this.idx + 1) + ' of ' + this.steps.length;
     this.status.innerHTML = `<i style="background:${c};box-shadow:0 0 8px ${c}"></i><span style="color:${c}">${t}</span><span style="color:rgba(188,192,236,.5)">· ${esc(st)}</span>`;
     const n = this.steps.length, i = this.idx, hc = i >= 0 ? '#' + stepColor(i, n, _c).lerp(GREY, 1 - this.satTo).getHexString() : '#8a84b8';
     this.hero.querySelector('b').textContent = i >= 0 ? this.steps[i] : 'Waiting';
     this.hero.querySelector('b').style.color = hc;
-    this.hero.querySelector('span').textContent = i >= 0 ? (this.desc[i] || 'step ' + (i + 1) + ' of ' + n) : !this.live ? 'the bot is not running' : this.kz ? 'watching for a liquidity sweep' : 'setups only trigger inside the killzones';
+    this.hero.querySelector('span').textContent = i >= 0 ? (this.desc[i] || 'step ' + (i + 1) + ' of ' + n) : !this.live ? 'the bot is not running' : this.idleTxt || (this.kz ? 'watching for a liquidity sweep' : 'setups only trigger inside the killzones');
     if (this.labels.length) this.styleLabels();
   }
 

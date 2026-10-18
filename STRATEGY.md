@@ -55,7 +55,9 @@ Every one of these counts as liquidity:
 
 ## 8. Managing the trade
 - Stop to **breakeven at +1R**.
-- **Flat by 15:55 ET** (the live bot flattens on the clock too).
+- **Flat by 15:55 ET** (the live bot flattens on the clock too). On a CME early-close day (US holidays 13:00 ET, the day after
+  Thanksgiving and Christmas Eve 13:15 ET) the NinjaTrader route stops new entries 15 minutes and flattens 5 minutes before the
+  halt (execution safety, 2026-10-18; the backtest exits at the day's last bar).
 - **One trade a day**, never two at once.
 
 ## 9. Size (size follows the stop)
@@ -138,6 +140,8 @@ records every trade at the model's prices.
 The strategy the bot traded until 2026-10-18. It keeps running in the cloud monitor as a shadow paper ledger (README section
 "Old strategy (shadow, paper)", no alerts) on `live_model_engine.json`; the PC bot runs it with `"model": "engine"` in its
 start settings. Its replay: `python tools/runlib.py baseline`; its last dashboard bundle: `research/lab/backtest_engine.json`.
+Archived in one place (rules in plain words, numbers, every file, the steps to switch back): `research/archive/engine-2026-10-17/README.md`;
+both dashboards show it under System / Modules → Archive.
 
 Market: NQ futures, traded as MNQ micros ($2 per point), on 5-minute candles. All times are New York (ET).
 Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1`, `risk_usd: 800`, `risk_ref_stop: 20`, `dd_aware: false`, `use_fallback: false`, `be_at_r_trending: 3.0`, `memory_seed: false`, `equity_filter: {lookback: 15, min_sum_r: 0, cold_mode: half, cold_size: 0.25}`, `sizing: {late_mult: 0.5}` (`live_model_engine.json`, the old `live_model.json`).

@@ -81,13 +81,14 @@ async function showEvals() {
     return `<tr><td><b>${esc(k === 'All years' ? '5 years' : k)}</b></td><td>${p.trades}</td><td><span class="up">${pct(w.pass_pct)}</span> / <span class="dn">${pct(w.fail_pct)}</span></td><td><span class="up">${pct(m.pass_pct)}</span> / <span class="dn">${pct(m.fail_pct)}</span></td><td>${p.eval?.back_to_back ? `${p.eval.back_to_back.passed} / ${p.eval.back_to_back.failed}` : '—'}</td></tr>`; };
   const histCard = res ? `<div class="card nx-glass"><div class="card-h"><h3>What really happened · rolling starts in the replay</h3><span class="muted small">a new MFFU 50K eval started every trading day · pass / fail</span></div>
     <div class="table-wrap"><table class="tbl"><tr><th>Period</th><th>Trades</th><th>Within 2 weeks</th><th>Within 1 month</th><th>Back-to-back</th></tr>${hist('2026 YTD')}${hist('All years')}</table></div></div>` : '';
-  const hero = `<div class="nx-hero"><div><div class="nx-eyebrow">${icon('evals')} Lab · evals${mc?.built ? ' · built ' + esc(mc.built) : ''}</div><h2>How fast does an eval get decided?</h2>
-    <p class="muted">Owner's rule: an eval should be <b>decided within 2 weeks</b> and never take over 3 weeks to pass. MFFU Builder 50K: +$3,000 target, $2,000 trailing max loss. Each path below is one simulated eval drawn from the strategy's own trading days.</p></div>
-    <button class="btn ghost" data-goto="prop">${icon('prop')}Prop firms</button></div>`;
+  const litM = mc?.strategy_model === 'lit';
+  const hero = `<div class="nx-hero"><div><div class="nx-eyebrow">${icon('evals')} Lab · evals${litM ? ' · LIT 2026' : ''}${mc?.built ? ' · built ' + esc(mc.built) : ''}</div><h2>How fast does an eval get decided?</h2>
+    <p class="muted">Owner's rule: an eval should be <b>decided within 2 weeks</b> and never take over 3 weeks to pass. MFFU Builder 50K: +$3,000 target, $2,000 trailing max loss. Each path below is one simulated eval drawn from ${litM ? 'LIT’s 2026 sessions (the judged year; settings picked on Jan–Jun, checked on Jul–Oct)' : 'the strategy\'s own trading days'}.</p></div>
+    ${litM ? `<button class="btn ghost" data-goto="archive">${icon('archive')}Previous strategy’s odds</button>` : `<button class="btn ghost" data-goto="prop">${icon('prop')}Prop firms</button>`}</div>`;
   if (!mc) { el.innerHTML = hero + emptyCard('No Monte Carlo yet', 'montecarlo', 'The eval simulation has not been published.') + histCard; return; }
 
   const lock = asPct(mc.prob) || {}, pressRaw = mc.press?.prob || (mc.press && typeof mc.press.pass_2w === 'number' ? mc.press : null), press = asPct(pressRaw);
-  const pressLabel = mc.press?.label || mc.press?.name || 'Fast-eval press';
+  const pressLabel = mc.press?.label || mc.press?.name || (litM ? 'Fast-eval sizing (off)' : 'Fast-eval press');
   const pressNote = mc.press_rule || mc.press?.note || 'full $800 on any stop while the eval is less than $1,000 down';
   // rows: [key, label, colour class, kind] kind: pct (higher better) · pctBad (lower better) · n (sessions, lower better) · $ (drawdown, smaller better)
   const rows = [['pass_2w', 'Passed within 2 weeks', 'up', 'pct'], ['fail_2w', 'Failed within 2 weeks', 'dn', 'pctBad'], ['dec_2w', 'Decided within 2 weeks', '', 'pct'],
@@ -146,13 +147,13 @@ function normCells(cells) {
   }
   return out;
 }
-function heatGrid(cells) {
+function heatGrid(cells, lit = false) {
   const C = normCells(cells);
   if (!C.length) return '<div class="empty">No cells.</div>';
   const hours = [...new Set(C.map(c => c.h))].sort((a, b) => a - b);
   const maxN = Math.max(1, ...C.map(c => c.n || 0)), maxA = Math.max(0.3, ...C.map(c => Math.abs(c.avg_r || 0)));
   const at = (d, h) => C.find(c => c.d === d && c.h === h);
-  const kz = (h) => (h >= 9 && h < 12) || (h >= 13 && h < 16);
+  const kz = (h) => lit ? h >= 2 && h < 16 : (h >= 9 && h < 12) || (h >= 13 && h < 16);     // LIT enters 02:00-15:30
   const cell = (c, h) => {
     if (!c || !c.n) return `<div class="nx-hc empty ${kz(h) ? 'kz' : ''}"></div>`;
     const a = c.avg_r || 0, k = Math.min(1, Math.abs(a) / maxA), al = 0.18 + 0.72 * k * (0.5 + 0.5 * Math.min(1, c.n / maxN));
@@ -164,16 +165,18 @@ function heatGrid(cells) {
     <div class="nx-hh"></div>${DN.map((n, d) => `<div class="nx-hh"><b>${n}</b><span class="${cls(dayTot[d].net)}">${fmtS$(dayTot[d].net)}</span><i>${dayTot[d].n}</i></div>`).join('')}
     ${hours.map((h, i) => `<div class="nx-hr ${kz(h) ? 'kz' : ''}"><b>${String(h).padStart(2, '0')}:00</b><span class="${cls(hourTot[i].net)}">${fmtS$(hourTot[i].net)}</span><i>${hourTot[i].n}</i></div>${DN.map((_, d) => cell(at(d, h), h)).join('')}`).join('')}
   </div>
-  <div class="nx-legend"><span><i style="background:var(--good)"></i>positive avg R</span><span><i style="background:var(--bad)"></i>negative avg R</span><span>stronger colour = bigger edge and more trades</span><span><i style="background:var(--gold)"></i>killzone hours</span></div>`;
+  <div class="nx-legend"><span><i style="background:var(--good)"></i>positive avg R</span><span><i style="background:var(--bad)"></i>negative avg R</span><span>stronger colour = bigger edge and more trades</span><span><i style="background:var(--gold)"></i>${lit ? 'LIT entry window' : 'killzone hours'}</span></div>`;
 }
 async function showIntraday() {
   const el = $('#page-intraday'); if (!el) return;
   el.innerHTML = '<div class="nx-skel"><i></i><i></i></div>';
   let d = null;
   try { d = await labFile('intraday_heat'); } catch (e) { el.innerHTML = `<div class="banner warn">Could not load the intraday file: ${esc(e.message)}</div>`; return; }
-  const hero = `<div class="nx-hero"><div><div class="nx-eyebrow">${icon('heat')} Lab · intraday${d?.built ? ' · built ' + esc(d.built) : ''}</div><h2>Which hours and weekdays pay</h2>
-    <p class="muted">Every replay trade placed by weekday and entry hour (ET). Green cells made money per trade, red lost; the killzones 09:30–11:30 and 13:30–15:30 are where the bot is allowed to enter. Read it as context: hour filters were tested and none held in both periods.</p></div>
-    <button class="btn ghost" data-goto="analytics">${icon('stats')}Deep stats</button></div>`;
+  const litH = d?.strategy_model === 'lit';
+  const hero = `<div class="nx-hero"><div><div class="nx-eyebrow">${icon('heat')} Lab · intraday${litH ? ' · LIT' : ''}${d?.built ? ' · built ' + esc(d.built) : ''}</div><h2>Which hours and weekdays pay</h2>
+    <p class="muted">${litH ? 'Every LIT replay trade placed by weekday and entry hour (ET), 01:00 to 15:00. Green cells made money per trade, red lost. LIT enters 02:00–15:30 (London and New York); most 2026 trades enter before 08:00. 2026 is the judged year; H1 picked, H2 checked, 2021-25 a reference.'
+      : 'Every replay trade placed by weekday and entry hour (ET). Green cells made money per trade, red lost; the killzones 09:30–11:30 and 13:30–15:30 are where the bot is allowed to enter. Read it as context: hour filters were tested and none held in both periods.'}</p></div>
+    <button class="btn ghost" data-goto="trades">${icon('trades')}Trades</button></div>`;
   if (!d) { el.innerHTML = hero + emptyCard('No intraday heat map yet', 'intraday_heat', 'The weekday × hour study has not been published.'); return; }
   const per = d.periods && typeof d.periods === 'object' ? Object.entries(d.periods).filter(([, v]) => Array.isArray(v) || Array.isArray(v?.cells)) : [];
   const cellsOf = (k) => k === 'all' ? d.cells || [] : (Array.isArray(d.periods[k]) ? d.periods[k] : d.periods[k].cells);
@@ -181,17 +184,17 @@ async function showIntraday() {
   const C = cellsOf(ist.per), N = C.reduce((s, c) => s + (c.n || 0), 0), net = C.reduce((s, c) => s + (c.net || 0), 0);
   const best = [...normCells(C)].filter(c => c.n >= 5).sort((a, b) => (b.avg_r || 0) - (a.avg_r || 0));
   el.innerHTML = hero + `
-    ${per.length ? `<div class="nx-toolbar"><div class="seg" id="ihPer">${[['all', 'All years'], ...per.map(([k]) => [k, k])].map(([k, l]) => `<button data-v="${esc(k)}" class="${ist.per === k ? 'on' : ''}">${esc(l)}</button>`).join('')}</div></div>` : ''}
+    ${per.length ? `<div class="nx-toolbar"><div class="seg" id="ihPer">${[['all', d.cells_label || 'All years'], ...per.map(([k]) => [k, k])].map(([k, l]) => `<button data-v="${esc(k)}" class="${ist.per === k ? 'on' : ''}">${esc(l)}</button>`).join('')}</div></div>` : ''}
     <div class="nx-stats">
-      <div class="nx-stat"><span>Trades</span><b>${N}</b><em>${esc(ist.per === 'all' ? 'all years' : ist.per)}</em></div>
+      <div class="nx-stat"><span>Trades</span><b>${N}</b><em>${esc(ist.per === 'all' ? (d.cells_label || 'all years') : ist.per)}</em></div>
       <div class="nx-stat"><span>Net</span><b class="${cls(net)}">${fmtS$(net)}</b><em>all cells</em></div>
       <div class="nx-stat"><span>Best cell (5+ trades)</span><b class="up">${best[0] ? `${DN[best[0].d]} ${String(best[0].h).padStart(2, '0')}:00` : '—'}</b><em>${best[0] ? fmtR(best[0].avg_r) + ' avg · ' + best[0].n + ' trades' : ''}</em></div>
       <div class="nx-stat"><span>Worst cell (5+ trades)</span><b class="dn">${best.length ? `${DN[best.at(-1).d]} ${String(best.at(-1).h).padStart(2, '0')}:00` : '—'}</b><em>${best.length ? fmtR(best.at(-1).avg_r) + ' avg · ' + best.at(-1).n + ' trades' : ''}</em></div>
     </div>
     <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>Heat towers</h3><span class="muted small">height = trades, colour = avg R · drag to turn</span></div><div class="fx3d heat" id="ihHeat"></div></div>
-    <div class="card nx-glass"><div class="card-h"><h3>Weekday × entry hour</h3><span class="muted small">avg R per trade · trades · net $</span></div>${heatGrid(C)}</div>`;
+    <div class="card nx-glass"><div class="card-h"><h3>Weekday × entry hour</h3><span class="muted small">avg R per trade · trades · net $</span></div>${heatGrid(C, litH)}</div>`;
   $('#ihPer')?.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { ist.per = b.dataset.v; showIntraday(); } });
-  mount3d('lab-heat', $('#ihHeat'), 'heat', { cells: normCells(C).map(c => ({ dow: c.d, hour: c.h, n: c.n, avg_r: c.avg_r, net: c.net })), label: ist.per === 'all' ? 'All years' : ist.per });
+  mount3d('lab-heat', $('#ihHeat'), 'heat', { cells: normCells(C).map(c => ({ dow: c.d, hour: c.h, n: c.n, avg_r: c.avg_r, net: c.net })), label: ist.per === 'all' ? (d.cells_label || 'All years') : ist.per });
 }
 
 export const evals = { show: showEvals };

@@ -1,7 +1,11 @@
 // 3D candles for the Chart and Replay pages: glossy candles on a neon floor, liquidity pools as translucent glowing
 // planes with "resting order" sparkles, killzones as soft volumes, a particle stream flowing along the price path,
 // HTML price tags. Replay API: setCount(n) reveals the first n bars, event(kind, i, price) fires a particle burst.
-// setData({ bars:[[t,o,h,l,c]], pools:[{price, side, label, strength}], price, marks:[{p, color, label}], follow, killzones:[[i0,i1]] })
+// setData({ bars:[[t,o,h,l,c]], pools:[{price, side, label, strength}], price, marks:[{p, color, label}], follow, killzones:[[i0,i1]],
+//           windows:[[startMin, endMin]] (ET minutes of the soft volumes when killzones is not given; default the NY killzones;
+//           LIT passes its entry window [[120, 930]]), zones:[{ a, b (prices), from, to (bar indexes), color, label }] })
+//   zones: translucent price boxes (LIT replay: entry -> stop in red = the risk, entry -> target in green = the reward),
+//   revealed with the marks once the replay reaches `from`.
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { THREE, View, Q, theme, par, glow, neon, POINT_FRAG, rng, count, toScreen } from './core.js';
 
@@ -80,7 +84,8 @@ export class Candles extends View {
 
   setData(d = {}) {
     const bars = d.bars || [];
-    const sig = bars.length + ':' + (bars[0]?.[0] || 0) + ':' + (bars.at(-1)?.[0] || 0) + ':' + (bars.at(-1)?.[4] || 0) + '|' + (d.pools || []).map(p => p.price).join(',') + '|' + (d.marks || []).map(m => m.p).join(',');
+    const sig = bars.length + ':' + (bars[0]?.[0] || 0) + ':' + (bars.at(-1)?.[0] || 0) + ':' + (bars.at(-1)?.[4] || 0) + '|' + (d.pools || []).map(p => p.price).join(',') + '|' + (d.marks || []).map(m => m.p).join(',')
+      + '|' + (d.zones || []).map(z => [z.a, z.b, z.from, z.to].join(':')).join(',') + '|' + JSON.stringify(d.windows || null);
     this.follow = !!d.follow;
     if (sig === this.sig) return;
     this.sig = sig;
@@ -91,6 +96,7 @@ export class Candles extends View {
     const pools = (d.pools || []);
     let lo = Math.min(...bars.map(b => b[3])), hi = Math.max(...bars.map(b => b[2]));
     for (const m of d.marks || []) { lo = Math.min(lo, m.p); hi = Math.max(hi, m.p); }
+    for (const z of d.zones || []) { if (Number.isFinite(z.a) && Number.isFinite(z.b)) { lo = Math.min(lo, z.a, z.b); hi = Math.max(hi, z.a, z.b); } }
     // only the nearest two pools above and below price; ones far outside the bars' range get an edge tag only
     const px0 = d.price ?? bars.at(-1)[4], rg = hi - lo || 1;
     const nearest = [...pools.filter(p => p.price > px0).sort((a, b) => a.price - b.price).slice(0, 2), ...pools.filter(p => p.price < px0).sort((a, b) => b.price - a.price).slice(0, 2)];
@@ -116,7 +122,7 @@ export class Candles extends View {
     for (const m of [this.mU, this.mD, this.wk]) { m.instanceMatrix.needsUpdate = true; if (m.instanceColor) m.instanceColor.needsUpdate = true; m.frustumCulled = false; this.g.add(m); }
     if (!ups.length) this.mU.count = 0; if (!dns.length) this.mD.count = 0;
     // killzones (ET 09:30-11:30, 13:30-15:30) as soft volumes
-    const kz = d.killzones || this._killzones(bars);
+    const kz = d.killzones || this._killzones(bars, d.windows);
     for (const [a, b] of kz) {
       const w = (b - a + 1) * DX, cx = (this.X(a) + this.X(b)) / 2;
       const strip = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ color: new THREE.Color('#8b5cf6').multiplyScalar(0.06), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
@@ -150,6 +156,18 @@ export class Candles extends View {
       m._mesh = bar; m._tag = this._tag(new THREE.Vector3(0.75, y, 0.35), m.label, '#' + col.getHexString(), true);
     }
     this.marks = d.marks || [];
+    // zones (replay: the trade's risk and reward boxes)
+    this.zones = [];
+    for (const z of d.zones || []) {
+      if (!Number.isFinite(z.a) || !Number.isFinite(z.b)) continue;
+      const i0 = Math.max(0, Math.min(n - 1, z.from ?? 0)), i1 = Math.max(i0, Math.min(n - 1, z.to ?? n - 1)), x0 = this.X(i0) - DX / 2, x1 = this.X(i1) + DX / 2;
+      const y0 = this.Y(Math.min(z.a, z.b)), y1 = this.Y(Math.max(z.a, z.b)), col = new THREE.Color(z.color || '#8b5cf6');
+      const box = new THREE.Mesh(this.unitBox, new THREE.MeshBasicMaterial({ color: col.clone().multiplyScalar(0.16), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+      box.position.set((x0 + x1) / 2, (y0 + y1) / 2, 0); box.scale.set(Math.max(0.05, x1 - x0), Math.max(0.01, y1 - y0), 0.9); box.visible = false; this.g.add(box);
+      const rim = new THREE.Mesh(this.unitBox, neon(col, 1.2, 0.8)); rim.position.set(x0, (y0 + y1) / 2, 0.45); rim.scale.set(0.02, Math.max(0.01, y1 - y0), 0.02); rim.visible = false; this.g.add(rim);
+      const zz = { ...z, from: i0, _mesh: box, _rim: rim, _tag: z.label ? this._tag(new THREE.Vector3(x1, (y0 + y1) / 2, 0.45), z.label, '#' + col.getHexString(), true) : null };
+      this.zones.push(zz);
+    }
     // price line
     const px = d.price ?? bars.at(-1)[4];
     if (d.price != null) {
@@ -159,10 +177,11 @@ export class Candles extends View {
     this.path = bars.map((b, i) => new THREE.Vector3(this.X(i), this.Y(b[4]), 0));
     this.setCount(d.count ?? n, true);
   }
-  _killzones(bars) {
+  _killzones(bars, windows) {
+    const W = Array.isArray(windows) && windows.length ? windows : [[570, 690], [810, 930]];
     const out = []; let a = null;
     const et = (t) => { const s = new Date(t * 1000).toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false, hour: '2-digit', minute: '2-digit' }); const [h, m] = s.split(':').map(Number); return (h % 24) * 60 + m; };
-    bars.forEach((b, i) => { const m = et(b[0]), k = (m >= 570 && m < 690) || (m >= 810 && m < 930); if (k && a == null) a = i; if (!k && a != null) { out.push([a, i - 1]); a = null; } });
+    bars.forEach((b, i) => { const m = et(b[0]), k = W.some(([x, y]) => m >= x && m < y); if (k && a == null) a = i; if (!k && a != null) { out.push([a, i - 1]); a = null; } });
     if (a != null) out.push([a, bars.length - 1]);
     return out;
   }
@@ -180,6 +199,7 @@ export class Candles extends View {
     const cu = this.order.up.filter(i => i < nVis).length, cd = this.order.dn.filter(i => i < nVis).length;
     this.mU.count = cu; this.mD.count = cd; this.wk.count = nVis;
     for (const m of this.marks || []) { const on = m.from == null || nVis - 1 >= m.from; if (m._mesh) m._mesh.visible = on; if (m._tag) m._tag.hidden = !on; }
+    for (const z of this.zones || []) { const on = nVis - 1 >= z.from; z._mesh.visible = z._rim.visible = on; if (z._tag) z._tag.hidden = !on; }
     // frame the bars in focus: centre on their price band and pull back just enough to fit it
     this.focus = this._focusN(this.n);
     const f0 = Math.max(0, nVis - this.focus), fb = this.bars.slice(f0, nVis);

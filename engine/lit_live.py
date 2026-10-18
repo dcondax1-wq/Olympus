@@ -241,8 +241,10 @@ def _easter(y):
 
 
 def early_close(day: str) -> int | None:
-    """ET minute at which CME equity futures halt early on this trading date (US holidays 13:00, Good Friday 09:15 when it
-    trades at all), else None. Used only to close a paper position the backtest closes at the day's last bar."""
+    """ET minute at which CME equity futures halt early on this trading date (US holidays 13:00 = 12:00 CT; the day after
+    Thanksgiving and Christmas Eve 13:15 = 12:15 CT, CME product calendar per the LIT report ch.28; Good Friday 09:15 when
+    it trades at all), else None. Closes a paper position the backtest closes at the day's last bar, and moves the
+    NinjaTrader adapter's flat time / entry cutoff before the halt (engine/ninjatrader.py)."""
     d = dt.date.fromisoformat(day)
     y = d.year
     jul4 = dt.date(y, 7, 4)
@@ -251,6 +253,8 @@ def early_close(day: str) -> int | None:
     jun19 = jun19 + dt.timedelta(days=1) if jun19.weekday() == 6 else jun19 - dt.timedelta(days=1) if jun19.weekday() == 5 else jun19
     hol = {_nth_weekday(y, 1, 0, 3), _nth_weekday(y, 2, 0, 3), _nth_weekday(y, 5, 0, -1), jun19, jul4, _nth_weekday(y, 9, 0, 1),
            _nth_weekday(y, 11, 3, 4), _nth_weekday(y, 11, 3, 4) + dt.timedelta(days=1), dt.date(y, 12, 24)}
+    if d == _nth_weekday(y, 11, 3, 4) + dt.timedelta(days=1) or d == dt.date(y, 12, 24):
+        return 13 * 60 + 15
     if d in hol:
         return 13 * 60
     if d == _easter(y) - dt.timedelta(days=2):

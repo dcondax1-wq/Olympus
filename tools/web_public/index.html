@@ -821,7 +821,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 .hgrid .hy, .hgrid .hx { color: var(--muted); display: grid; place-items: center; height: 20px; } .hgrid .hy { height: auto; }
 .hgrid .c { height: 44px; border-radius: 9px; background: var(--surface-3); display: grid; place-items: center; align-content: center; color: rgba(255,255,255,.92); font-size: 11px; border: 1px solid transparent; padding: 0; min-width: 0; overflow: hidden; line-height: 1.2; }
 .hgrid .c.on { border-color: #fff; box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); } .hgrid .c.nil { background: transparent; border: 1px dashed rgba(238,241,248,.07); cursor: default; }
-.hgrid .c small { display: block; font-size: 9px; opacity: .75; } .hgrid.dense .c { font-size: 9.5px; } .hgrid.dense .c small { display: none; }
+.hgrid .c small { display: block; font-size: 9px; opacity: .75; } .hgrid.dense .c { font-size: 9px; letter-spacing: -.03em; } .hgrid.dense .c small { display: none; }
 .wk { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 0 14px; }
 .wk > div { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border-radius: 14px; background: rgba(22,26,35,.7); border: 1px solid var(--line); min-width: 0; }
 .wk > div.today { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 22%, transparent); } .wk > div.future { opacity: .5; }
@@ -1539,7 +1539,7 @@ const nbox = (k, v) => `<div><span>${k}</span><b>${v}</b></div>`;
 const LV = () => D?.live || {};
 // the live strategy: LIT (live_model.json "model": "lit", no cold-streak filter) or the old Liquidity Engine
 const isLIT = () => (LV().model || D?.strategy?.model) === 'lit';
-const stratName = () => String(LV().strategy || D?.strategy?.label || (isLIT() ? 'LIT' : 'Liquidity Engine')).split(' (')[0];
+const stratName = () => String(LV().strategy || D?.strategy?.label || (isLIT() ? 'LIT' : 'Liquidity Engine')).split(' (')[0].split(' - ')[0];   // "LIT"; the engine: "Liquidity Engine"
 // LIT's size rule now: the weekly stop (after 2 stop-outs in a calendar week, half size for the rest of it)
 const litWeek = () => (LV().lit_rules || {}).weekly_stop || null;
 const litMonday = () => (LV().lit_rules || {}).monday || null;
@@ -2839,7 +2839,7 @@ function drawHeat(Hd) {
   const cellName = (c) => `${DOW[c.dow] ?? c.dow} ${pad2(c.hour)}:00`;
   box.innerHTML = `
     <div class="toolbar" style="margin-top:0">${segHTML('htPer', pers, HS.per)}${segHTML('htM', [['net', 'Net $'], ['avg_r', 'Avg R'], ['n', 'Trades']], m)}</div>
-    <div class="stats">${statBox('Trades', tot, HS.per === 'all' ? 'all years' : HS.per)}${statBox('Net', susd(net), 'after costs', cls(net))}
+    <div class="stats">${statBox('Trades', tot, HS.per === 'all' ? (Hd.cells_label || 'all years') : HS.per)}${statBox('Net', susd(net), 'after costs', cls(net))}
       ${statBox('Best cell', best ? cellName(best) : '—', best ? `${kusd(best.net)} · ${plural(best.n, 'trade')}` : 'needs 5+ trades', 'up')}${statBox('Worst cell', worst ? cellName(worst) : '—', worst ? `${kusd(worst.net)} · ${plural(worst.n, 'trade')}` : '', 'dn')}</div>
     <div class="card fx-card"><div class="card-h"><h3>Heat · ${esc(pers.find(p => p[0] === HS.per)?.[1] || HS.per)} · ${m === 'net' ? 'net $' : m === 'avg_r' ? 'average R' : 'trades'}</h3><div>${fxSeg('lab-heat')}</div></div>
       ${fxBox('lab-heat', 'heat')}<div class="heat-i" id="htInfo">Tap a cell for its numbers.</div></div>
@@ -2852,7 +2852,9 @@ function heatFb(el, cells, val) {
   if (!cells.length) { el.innerHTML = fbWait('No trades in this period.'); return; }
   const dows = [...new Set(cells.map(c => c.dow))].sort((a, b) => a - b), hours = [...new Set(cells.map(c => c.hour))].sort((a, b) => a - b);
   const by = new Map(cells.map(c => [c.dow + ':' + c.hour, c])), mx = Math.max(1e-9, ...cells.map(c => Math.abs(val(c) || 0))), m = HS.m;
-  const fmtV = (v) => m === 'net' ? kusd(v) : m === 'avg_r' ? fR(v) : String(v);
+  // 15 hour columns (LIT, 01:00-15:00) on a phone: short numbers without the $ / R signs
+  const dense = hours.length > 8, sh = (v) => Math.abs(v) >= 950 ? Math.round(v / 1000) + 'k' : (v / 1000).toFixed(1).replace(/^(-?)0\./, '$1.') + 'k';   // 4 characters at most
+  const fmtV = (v) => dense ? (m === 'net' ? (v ? sh(v) : '·') : m === 'avg_r' ? (v ? num(v, 1) : '·') : String(v || '·')) : m === 'net' ? kusd(v) : m === 'avg_r' ? fR(v) : String(v);
   el.innerHTML = `<div class="fbx"><div class="hgrid ${hours.length > 8 ? 'dense' : ''}" style="--n:${hours.length}"><span></span>${hours.map(h => `<span class="hx">${pad2(h)}</span>`).join('')}
     ${dows.map(d => `<span class="hy">${DOW[d] ?? d}</span>` + hours.map(h => { const c = by.get(d + ':' + h); if (!c) return '<span class="c nil"></span>';
       const v = val(c) || 0, t = Math.min(1, Math.abs(v) / mx), a = (.14 + .76 * Math.sqrt(t)).toFixed(2), bg = m === 'n' ? `rgba(109,124,255,${a})` : v >= 0 ? `rgba(46,229,157,${a})` : `rgba(255,90,122,${a})`;
@@ -3276,8 +3278,8 @@ VIEWS.archive = (el) => {
   const S = A.strategy || {}, ab = runMeta(LAB().archive_baseline), pv = runMeta(LAB().archive_prev), readme = allDocs().find(d => d.slug === A.readme);
   const nOld = oldRunsN(), wo = oldDocs().filter(d => d.slug !== A.readme);
   const ev = (x, a, b) => ok(x?.[a]) ? `${pct(x[a])} / <span class="dn">${pct(x[b])}</span>` : '—';
-  const rows = [['Trades a week', (x) => num(x.tpw, 2)], ['Profit factor', (x) => fPF(x.pf)], ['Net', (x) => `<span class="${cls(x.net)}">${susd(x.net)}</span>`], ['Per month', (x) => susd(x.per_month)],
-    ['Max drawdown', (x) => usd(x.dd)], ['Eval pass / fail · 2 weeks', (x) => ev(x, 'p10', 'f10')], ['Eval pass / fail · 1 month', (x) => ev(x, 'p20', 'f20')], ['Back-to-back (passed / failed)', (x) => esc(String(x.b2b || '—')).replace('/', ' / ')]];
+  const rows = [['Trades a week', (x) => num(x.tpw, 2)], ['Profit factor', (x) => fPF(x.pf)], ['Net', (x) => `<span class="${cls(x.net)}">${kusd(x.net)}</span>`], ['Per month', (x) => susd(x.per_month)],
+    ['Max drawdown', (x) => kusd(x.dd)], ['Eval pass / fail · 2 weeks', (x) => ev(x, 'p10', 'f10')], ['Eval pass / fail · 1 month', (x) => ev(x, 'p20', 'f20')], ['Back-to-back (passed / failed)', (x) => esc(String(x.b2b || '—')).replace('/', ' / ')]];
   const cols = [['2026', '2026'], ['2021-25', '2021-25'], ['all', '5 years']];
   const tile = ([go, l, ic, d, arg]) => `<button type="button" class="tile" data-go="${go}"${arg ? ` data-arg="${esc(arg)}"` : ''}><span class="tile-i">${icon(ic)}</span><span class="tile-t">${l}</span><span class="tile-d">${d}</span><span class="tile-go">${icon('right')}</span></button>`;
   el.innerHTML = head(`System · ${esc(ARCH)}`, esc(String(S.label || 'Liquidity Engine').split(' (')[0]), `The strategy the bot traded until 2026-10-18, locked ${esc(fDate(S.chosen || '2026-10-17'))}. ${esc(stratName())} replaced it; this one keeps running as a paper shadow (no alerts) and can come back.`,

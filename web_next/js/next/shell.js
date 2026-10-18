@@ -2,13 +2,13 @@
 // search button and the Settings > Interface card. app.js calls initShell() at boot and onPage(id) on every navigation.
 import { $, $$, store, esc } from '../util.js';
 import { icon } from './icons.js';
-import { TOP, DATA, MODULES, TITLES, groupOf } from './routes.js';
+import { TOP, DATA, MODULES, ARCHIVE, TITLES, groupOf } from './routes.js';
 import { fxLevel, setFxLevel } from './fx3d.js';
 
 const root = document.documentElement;
 const pref = { get: (k, d) => store.get('nx.' + k, d), set: (k, v) => store.set('nx.' + k, v) };
 
-const PINS = ['strategy', 'live', 'briefing', 'results', 'cold'];
+const PINS = ['strategy', 'live', 'briefing', 'results', 'evals'];
 
 function navLink(p, extra = '') {
   // label span first: the command palette reads the first <span> of each #nav link as the page name (CSS puts the icon first)
@@ -21,7 +21,7 @@ function buildNav() {
   nav.innerHTML = TOP.map(p => navLink(p)).join('') +
     `<div class="nx-nav-sec">Pinned</div>` +
     PINS.map(id => [...DATA, ...MODULES].find(p => p.id === id)).map(p => navLink(p, 'class="nx-pin"')).join('') +
-    `<div class="nx-nav-all" hidden>${[...DATA, ...MODULES].filter(p => !PINS.includes(p.id)).map(p => `<a data-page="${p.id}"><span>${esc(p.label)}</span></a>`).join('')}</div>`;
+    `<div class="nx-nav-all" hidden>${[...DATA, ...MODULES].filter(p => !PINS.includes(p.id)).map(p => `<a data-page="${p.id}"><span>${esc(p.label)}</span></a>`).join('')}${ARCHIVE.map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id])}</span></a>`).join('')}</div>`;
   $('#nxTabs').innerHTML = TOP.filter(p => p.id !== 'settings').map(p =>
     `<button type="button" data-goto="${p.id}" class="nx-tab" data-tab="${p.id}"><span class="nx-ti">${icon(p.icon)}</span><span>${p.label}</span></button>`).join('');
   $('#nxCollapse').innerHTML = icon('collapse') + '<span>Collapse</span>';
@@ -71,6 +71,8 @@ function buildModules() {
     b.textContent = !d.now.enabled ? 'off' : d.now.on ? 'full size' : 'half size';
   }).catch(() => null);
   const b = $('#nxBadge-risk'); if (b) { b.className = 'nx-tile-b'; b.textContent = '$800 · ref 20 pts'; }
+  const ab = $('#nxBadge-archive'); if (ab) { ab.className = 'nx-tile-b'; ab.textContent = 'Liquidity Engine · shadow'; }
+  const lb = $('#nxBadge-live'); if (lb) { lb.className = 'nx-tile-b good'; lb.textContent = 'LIT'; }
   fetch('/api/next/strategy').then(r => r.ok ? r.json() : null).then(d => {
     const s = $('#nxBadge-strategy'); if (!s || !d?.live_model) return;
     s.className = 'nx-tile-b good'; s.textContent = (d.live_model.locked ? 'locked ' : '') + (d.live_model.chosen || '');
@@ -90,6 +92,15 @@ function buildSub(page) {
       `<button type="button" role="tab" data-goto="${p.id}" class="${p.id === page ? 'on' : ''}" aria-selected="${p.id === page}">${icon(p.icon)}<span>${esc(p.label)}</span></button>`).join('')}</div>`;
     el.querySelector('.on')?.scrollIntoView({ inline: 'center', block: 'nearest' });
     el.hidden = false;
+  } else if (g === 'archive') {
+    const i = ARCHIVE.findIndex(p => p.id === page);
+    const prev = ARCHIVE[(i - 1 + ARCHIVE.length) % ARCHIVE.length], next = ARCHIVE[(i + 1) % ARCHIVE.length];
+    el.innerHTML = `<div class="nx-modbar">
+      <button type="button" class="nx-back" data-goto="archive">${icon('back')}<span>Archive</span></button>
+      <span class="nx-modbar-sp"></span>
+      <button type="button" class="nx-chipbtn" data-goto="${prev.id}" title="${esc(prev.label)}">${icon('left')}<span>${esc(prev.label)}</span></button>
+      <button type="button" class="nx-chipbtn" data-goto="${next.id}" title="${esc(next.label)}"><span>${esc(next.label)}</span>${icon('right')}</button></div>`;
+    el.hidden = false;
   } else if (g === 'modules' && page !== 'modules') {
     const i = MODULES.findIndex(p => p.id === page);
     const prev = MODULES[(i - 1 + MODULES.length) % MODULES.length], next = MODULES[(i + 1) % MODULES.length];
@@ -107,11 +118,11 @@ export function onPage(page) {
   root.dataset.page = page;
   root.dataset.group = g;
   $$('#nav > a').forEach(a => a.classList.toggle('active', a.dataset.page === page || a.dataset.page === g));
-  $$('#nxTabs .nx-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === g || (g === 'settings' && t.dataset.tab === 'modules')));
-  $('#nxCrumb').textContent = g === 'data' ? 'Data' : g === 'modules' && page !== 'modules' ? 'Modules' : '';
+  $$('#nxTabs .nx-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === g || ((g === 'settings' || g === 'archive') && t.dataset.tab === 'modules')));
+  $('#nxCrumb').textContent = g === 'data' ? 'Data' : g === 'modules' && page !== 'modules' ? 'Modules' : g === 'archive' ? 'Archive · previous strategy' : '';
   buildSub(page);
   requestAnimationFrame(() => { $('#page-' + page)?.scrollTo?.(0, 0); });
-  document.title = `${TITLES[page] || 'Liquidity Engine'} · Liquidity Engine`;
+  document.title = `${TITLES[page] || 'Liquidity Engine'} · Liquidity Engine`;   // the app's name; the strategy is LIT
 }
 
 function interfaceCard() {
@@ -119,7 +130,7 @@ function interfaceCard() {
   const row = (id, label, sub, on) => `<label class="nx-switch-row"><span><b>${label}</b><span class="muted small">${sub}</span></span>
     <input type="checkbox" class="nx-switch" id="${id}" ${on ? 'checked' : ''}></label>`;
   el.innerHTML = row('nxOptCollapse', 'Compact sidebar', 'Icons only on desktop', pref.get('collapsed', false)) +
-    row('nxOptPins', 'Pinned shortcuts', 'Strategy, Liquidity Engine, Briefing, Results, Cold-Streak in the sidebar', pref.get('pins', true)) +
+    row('nxOptPins', 'Pinned shortcuts', 'Strategy, Paper Bot (LIT), Briefing, Results, Evals in the sidebar', pref.get('pins', true)) +
     `<div class="nx-switch-row"><span><b>3D effects</b><span class="muted small">Galaxy background, card glow, tap sparks, Live Oracle, trade galaxy, month city. Lite saves battery.</span></span>
       <div class="seg sm" id="nxOptFx">${[['max', 'Max'], ['lite', 'Lite'], ['off', 'Off']].map(([v, l]) => `<button type="button" data-v="${v}" class="${fxLevel() === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>` +
     `<div class="note">Classic dashboard: start the server with <span class="mono">LE_UI=classic</span> to get the previous look. Every page is shared, so both stay in sync.</div>`;

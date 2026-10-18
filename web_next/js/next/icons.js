@@ -68,6 +68,7 @@ const P = {
   alerts: '<path d="M6 16.5V11a6 6 0 1 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 0 0 4 0"/><path d="M19.5 3.5l1.5-1M21 7h1.5"/>',
   launch: '<path d="M14.5 4.5c2.8-1 5-1 5-1s0 2.2-1 5L12 15l-3-3z"/><path d="M9 12l-3.5.5L3.5 15l4 .5M12 15l-.5 3.5L9 20.5l-.5-4M15.5 8.5h.1"/>',
   review: '<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4M8.5 15l2.3 2.3 4.7-4.6"/>',
+  archive: '<rect x="3" y="4" width="18" height="5" rx="1.5"/><path d="M5 9v9.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V9"/><path d="M10 13h4"/>',
   playbook: '<rect x="4" y="6" width="11" height="15" rx="2"/><path d="M8 3h10a2 2 0 0 1 2 2v13"/>',
   live: '<circle cx="12" cy="12" r="2.5"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/>',
   results: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',

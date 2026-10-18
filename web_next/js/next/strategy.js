@@ -135,7 +135,9 @@ function litPage(lm, markdown, r) {
       <div class="grid cols-2 nx-sp-grid">${cards.map(([k, tag]) => periodCard(k, P[k], tag)).join('')}</div>` : ''}
     <div class="nx-eyebrow nx-sec">The rules, word for word (STRATEGY.md)</div>
     <div class="card nx-glass nx-md">${md(litRulesMd(markdown) || 'STRATEGY.md not found.')}</div>
-    ${r ? `<div class="note">${esc(r.meta?.method || '')}</div>` : ''}`;
+    ${r ? `<div class="note">${esc(r.meta?.method || '')}</div>` : ''}
+    <button type="button" class="card nx-glass nx-tile" data-goto="archive" style="width:100%;text-align:left;margin-top:14px"><span class="nx-tile-i">${icon('archive')}</span>
+      <span class="nx-tile-t">Archive: previous strategy (Liquidity Engine, Oct 17)</span><span class="nx-tile-d">It traded until 2026-10-18 and keeps running as a paper shadow: its rules, numbers, files and the steps to switch back.</span><span class="nx-tile-go">${icon('right')}</span></button>`;
 }
 
 export const strategy = { show };

@@ -90,7 +90,9 @@ DEAD = {"CANCELLED", "CANCELED", "REJECTED"}
 LIVE_STATES = {"INITIALIZED", "SUBMITTED", "ACCEPTED", "TRIGGERPENDING", "WORKING", "CHANGEPENDING", "CHANGESUBMITTED",
                "CANCELPENDING", "CANCELSUBMITTED", "PENDINGSUBMIT", "PENDINGCHANGE", "PENDINGCANCEL"}
 KNOWN_STATES = {FILLED, PARTFILLED, "UNKNOWN"} | DEAD | LIVE_STATES
-OPEN_STATUSES = ("entry_sent", "pending", "protected", "unprotected", "closing")
+OPEN_STATUSES = ("entry_sent", "pending", "cancel_pending", "protected", "unprotected", "closing")
+# cancel_pending: a CANCEL of an unfilled entry was sent; only NinjaTrader's CANCELLED/REJECTED resolves it, and a fill that
+# arrives meanwhile is protected like any other (LIT report ch.27: an execution can arrive while a cancel is pending).
 
 
 def _template_regex(fmt: str):
@@ -657,11 +659,25 @@ class NinjaTraderAdapter:
                 pass
             e = _et(self.clock())
             mod = e.hour * 60 + e.minute
-            if e.weekday() >= 5 or mod >= self.flat_mod or mod < self.session_from:
+            cut = self._flat_today(e, entry=True)
+            if e.weekday() >= 5 or mod >= cut or mod < self.session_from:
                 return {"ok": False, "error": f"REFUSED: entry outside the session ({e:%a %H:%M} ET; entries "
                                               f"{self.session_from // 60:02d}:{self.session_from % 60:02d}-"
-                                              f"{self.flat_mod // 60:02d}:{self.flat_mod % 60:02d} ET on weekdays)"}
+                                              f"{cut // 60:02d}:{cut % 60:02d} ET on weekdays"
+                                              + (", CME early close today" if cut < self.flat_mod else "") + ")"}
         return None
+
+    def _flat_today(self, e, entry=False) -> int:
+        """Flat time (ET minute) for the date of `e`: flat_mod, or on a CME early-close day (engine/lit_live.early_close)
+        5 minutes before the halt, so nothing is held into it; entries stop 15 minutes before the halt (LIT report ch.28)."""
+        try:
+            from .lit_live import early_close
+            ec = early_close(e.date().isoformat())
+        except Exception:
+            ec = None
+        if ec is None or e.hour * 60 + e.minute >= 1080:
+            return self.flat_mod
+        return min(self.flat_mod, ec - (15 if entry else 5))
 
     def _split(self, action: dict) -> dict:
         qty = int(action.get("qty") or 0)
@@ -865,7 +881,7 @@ class NinjaTraderAdapter:
     def _cancel_working(self, legs, why) -> list:
         ids = []
         for lg in legs:
-            for oid in (lg["stop_id"], lg["target_id"]) + ((lg["entry_id"],) if lg["status"] in ("pending", "entry_sent") else ()):
+            for oid in (lg["stop_id"], lg["target_id"]) + ((lg["entry_id"],) if lg["status"] in ("pending", "entry_sent", "cancel_pending") else ()):
                 st = self.read_order(oid)
                 if st and st["state"] in LIVE_STATES | {PARTFILLED}:
                     ids.append(oid)
@@ -988,10 +1004,24 @@ class NinjaTraderAdapter:
                 self._log("risk", f"NinjaTrader: entry {lg['entry_id']} {st['state']}: nothing was opened")
             elif now - lg["sent_at"] > self.pending_timeout:
                 self._send_lines([cancel_line(lg["entry_id"])], "CANCEL (entry never filled)")
-                self._retire([lg], "entry never confirmed")
+                lg["status"], lg["cancel_sent"] = "cancel_pending", now
+                self._save()
                 self._risk(f"entry {lg['entry_id']} not confirmed by NinjaTrader within {self.pending_timeout:.0f}s: "
-                           f"cancel sent. Check NinjaTrader's Orders and Log tabs (is the account name '{self.account}' and "
-                           f"the instrument '{lg['instrument']}' right?).", alert=True)
+                           f"cancel sent (CANCEL PENDING: a late fill is still protected). Check NinjaTrader's Orders and Log tabs "
+                           f"(is the account name '{self.account}' and the instrument '{lg['instrument']}' right?).", alert=True)
+            return
+        if lg["status"] == "cancel_pending":
+            if lg["filled"] > 0:
+                self._risk(f"NinjaTrader: entry {lg['entry_id']} filled {lg['filled']} @ {lg['fill_px']} while its cancel was pending: "
+                           "placing the stop and target", alert=True)
+                self._protect(lg)
+            elif st and st["state"] in DEAD:
+                self._retire([lg], f"entry {st['state'].lower()} (cancel confirmed)")
+                self._log("system", f"NinjaTrader: entry {lg['entry_id']} {st['state']}: nothing was opened")
+            elif now - lg.get("cancel_sent", now) > 20 * self.pending_timeout and self._is_flat(lg["instrument"], None):
+                self._retire([lg], "cancel never confirmed, account flat")
+                self._risk(f"NinjaTrader never confirmed the cancel of {lg['entry_id']}; the account is flat on {lg['instrument']}: "
+                           "stopped watching it", alert=True)
             return
         if lg["status"] == "unprotected":
             s, t = self.read_order(lg["stop_id"]), self.read_order(lg["target_id"])
@@ -1021,6 +1051,18 @@ class NinjaTraderAdapter:
                 self._log("system", f"NinjaTrader: entry now filled {q}; stop and target resized from {lg['bracket_qty']} to {q}")
                 lg["bracket_qty"] = q
         s, t = self.read_order(lg["stop_id"]), self.read_order(lg["target_id"])
+        # an exit leg partly filled (LIT report ch.27): the sibling must shrink to the quantity still open, or a later full fill
+        # of the sibling would open an opposite position
+        for name, x, other_id in (("stop", s, lg["target_id"]), ("target", t, lg["stop_id"])):
+            if x and x["state"] == PARTFILLED and 0 < x["filled"] < lg["bracket_qty"]:
+                rest = lg["bracket_qty"] - x["filled"]
+                if lg.get("sibling_qty", {}).get(other_id) != rest:
+                    r = self._send_lines([change_line(other_id, qty=rest)], "BRACKET QTY (partial exit)")
+                    if r["ok"]:
+                        lg.setdefault("sibling_qty", {})[other_id] = rest
+                        self._risk(f"NinjaTrader: {name} of {lg['instrument']} partly filled ({x['filled']} of {lg['bracket_qty']}): "
+                                   f"the other leg resized to {rest}")
+                        self._save()
         hit = [(name, x) for name, x in (("STOP", s), ("TARGET", t)) if x and x["state"] == FILLED]
         if hit:
             name, x = hit[0]
@@ -1052,12 +1094,13 @@ class NinjaTraderAdapter:
         mod = e.hour * 60 + e.minute
         if e.weekday() >= 5:
             return
-        for lg in [x for x in self.legs if x["status"] in ("protected", "unprotected", "pending")]:
-            if mod >= self.flat_mod or mod < self.session_from:
-                self._risk(f"flat time {self.flat_mod // 60:02d}:{self.flat_mod % 60:02d} ET passed with the bot's "
-                           f"{lg['instrument']} trade open: flattening", alert=False)
+        flat = self._flat_today(e)
+        for lg in [x for x in self.legs if x["status"] in ("protected", "unprotected", "pending", "cancel_pending")]:
+            if mod >= flat or mod < self.session_from:
+                self._risk(f"flat time {flat // 60:02d}:{flat % 60:02d} ET{' (CME early close)' if flat < self.flat_mod else ''} "
+                           f"passed with the bot's {lg['instrument']} trade open: flattening", alert=False)
                 self._close([lg], why="flat time")
-        if not (self.flat_mod <= mod < 1020):         # the account itself: only between flat time and the 17:00 close
+        if not (flat <= mod < 1020):                  # the account itself: only between flat time and the 17:00 close
             return
         for inst in self._our_instruments():
             p = self.position_for(inst)
@@ -1412,6 +1455,8 @@ class _FakeNT:
         self.hold_partial = False           # fill market orders half now, the rest on release()
         self.close_cancels = True           # CLOSEPOSITION cancels the working orders (documented)
         self.budget = None                  # process at most this many more files, then stop (a freeze mid-trade)
+        self.hold_market = False            # accept market orders without filling them (a slow / thin market)
+        self.slow_cancel = False            # CANCEL leaves the order CANCELPENDING (it can still fill)
         self._held: list = []
         self._write("Tradovate.txt", "CONNECTED")
 
@@ -1491,6 +1536,8 @@ class _FakeNT:
             if o["type"] in self.reject:
                 o["state"] = "REJECTED"
                 self._state(oid, o)
+            elif o["type"] == "MARKET" and self.hold_market:
+                self._state(oid, o)
             elif o["type"] == "MARKET":
                 if self.hold_partial and o["qty"] > 1:
                     self._fill(oid, o["qty"] // 2, self.price)
@@ -1510,7 +1557,7 @@ class _FakeNT:
         elif cmd == "CANCEL":
             o = self.orders.get(f[10])
             if o and o["state"] in LIVE_STATES:
-                o["state"] = "CANCELLED"
+                o["state"] = "CANCELPENDING" if self.slow_cancel else "CANCELLED"
                 self._state(f[10], o)
         elif cmd in ("CLOSEPOSITION", "FLATTENEVERYTHING"):
             keys = [(f[1], f[2])] if cmd == "CLOSEPOSITION" else list(self.pos)
@@ -1746,6 +1793,59 @@ def selftest(verbose=True) -> bool:
         ad.tick()
         check("freeze, then closed by hand: no stop/target is placed afterwards (they would be naked)",
               not ad.legs and len(fake.files) == k and ad.history[-1]["closed"] == "closed while unprotected")
+        # ---- 11b. order states from the LIT report ch.27: CANCEL PENDING and partial exit fills
+        fake.hold_market, fake.slow_cancel = True, True
+        r = ad.send({"sym": "NQ", "side": "buy", "qty": 2, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 7200})
+        lg = ad.legs[0] if ad.legs else {}
+        pend = not r["ok"] and lg.get("status") == "pending"
+        now[0] += ad.pending_timeout + 1
+        ad.tick()                             # timeout: CANCEL sent, NinjaTrader leaves it CANCELPENDING
+        cp = lg.get("status") == "cancel_pending" and lg in ad.legs and fake.orders[lg["entry_id"]]["state"] == "CANCELPENDING"
+        refused = not ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020,
+                               "entry_t": T + 7260})["ok"]
+        fake._fill(lg["entry_id"], 2, fake.price)          # the execution arrives while the cancel is pending
+        ad.tick()
+        check("cancel pending: an unfilled entry's CANCEL keeps the leg watched; a late fill gets its stop + target",
+              pend and cp and refused and lg.get("status") == "protected" and fake.orders[lg["stop_id"]]["state"] == "WORKING"
+              and fake.orders[lg["stop_id"]]["qty"] == 2, f"pend={pend} cp={cp} refused={refused} status={lg.get('status')}")
+        ad.send({"sym": "NQ", "side": "exit", "reason": "TIME", "entry_t": T + 7200})
+        fake.slow_cancel = False
+        r = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": T + 7800})
+        lg = ad.legs[0] if ad.legs else {}
+        now[0] += ad.pending_timeout + 1
+        ad.tick()                             # CANCEL sent and confirmed CANCELLED by NinjaTrader
+        ad.tick()
+        check("cancel confirmed: CANCELLED resolves the unfilled entry, nothing protected, the leg retired",
+              not ad.legs and ad.history[-1]["closed"].startswith("entry cancelled") and lg.get("stop_id") not in fake.orders,
+              ad.history[-1]["closed"] if ad.history else "")
+        fake.hold_market = False
+        r = ad.send({"sym": "NQ", "side": "buy", "qty": 4, "stop": 25000, "target": 25060, "entry": 25020, "entry_t": T + 8400})
+        lg = ad.legs[0] if ad.legs else {}
+        fake._fill(lg["stop_id"], 1, 25000.0)              # the stop fills 1 of 4: 3 still open
+        k = len(fake.files)
+        ad.tick()
+        check("partial exit: the stop fills 1 of 4 -> the target is resized to 3 (CHANGE;;;;3;;0;0;;;<id>;;)",
+              r["ok"] and lines_since(k) == [f"CHANGE;;;;3;;0;0;;;{lg['target_id']};;"] and fake.orders[lg["target_id"]]["qty"] == 3,
+              json.dumps(lines_since(k)))
+        ad.send({"sym": "NQ", "side": "exit", "reason": "TIME", "entry_t": T + 8400})
+        # ---- 11c. CME early close (LIT report ch.28): entries stop 15 min and positions go flat 5 min before the halt
+        from .lit_live import early_close
+        ecs = [early_close(x) for x in ("2026-11-27", "2026-12-24", "2026-09-07", "2026-04-03", "2026-10-21")]
+        keep_now = now[0]
+        now[0] = dt.datetime(2026, 11, 27, 12, 0, tzinfo=ET).timestamp()
+        r_ok = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": int(now[0])})
+        lg = ad.legs[0] if ad.legs else {}
+        now[0] = dt.datetime(2026, 11, 27, 13, 11, tzinfo=ET).timestamp()
+        k = len(fake.files)
+        ad.tick()
+        flat_ok = not ad.legs and ad.history[-1]["closed"] == "flat time" and "CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;" in lines_since(k)
+        now[0] = dt.datetime(2026, 11, 27, 13, 2, tzinfo=ET).timestamp()
+        r_late = ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020, "entry_t": int(now[0])})
+        check("early close: halts 13:15 (Black Friday, Dec 24) / 13:00 (Labor Day) / 09:15 (Good Friday); a 12:00 entry is "
+              "flattened at 13:11, a 13:02 entry is refused",
+              ecs == [795, 795, 780, 555, None] and r_ok["ok"] and flat_ok and not r_late["ok"] and "early close" in r_late["error"],
+              f"{ecs} ok={r_ok['ok']} flat={flat_ok} late={r_late.get('error')}")
+        now[0] = keep_now
         # ---- 12. defensive parsing
         with open(os.path.join(fake.out, "garbage.txt"), "w") as fh:
             fh.write("hello;;world")

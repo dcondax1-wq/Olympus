@@ -13,6 +13,8 @@ ENGINE_BASELINE = "baseline"       # tools/runlib.py baseline: the Liquidity Eng
 ENGINE_PREV = "live_2026-10-17am"  # its morning lock
 ARCHIVE_DIR = "research/archive/engine-2026-10-17"
 ARCHIVE_LABEL = "Archive: previous strategy (Liquidity Engine, Oct 17)"
+LIT_METHOD = ("LIT replay (engine/lit.py run_x, the same code as the live loop engine/lit_live.py): 2026 entries on 1-minute bars, "
+              "2021-25 on 5-minute bars (reference); live sizing + weekly stop; costs included")
 # LIT write-ups shown first in the Lab, in this order (stems; research/lit/masters.md is published as "lit-masters")
 LIT_PINNED = ("lit-final", "lit-losses", "lit-experiments", "lit-strategy", "lit-masters")
 

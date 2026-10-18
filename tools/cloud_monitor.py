@@ -145,6 +145,16 @@ def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, para
     for t in sorted(res["trades"], key=lambda x: x["entry_t"]):
         if t["entry_t"] >= first_run - SECS:
             prev = ledger.get(int(t["entry_t"]))
+            if prev and prev.get("exit_ts") and prev.get("exit") not in (None, "OPEN"):
+                # a finished paper trade is the decision made on the bars available then (LIT report ch.27): a later re-run on
+                # revised bars (Yahoo corrections, late 1m bars) never rewrites it; the difference is only noted
+                new = {"exit": t.get("exit_reason"), "R": round(float(t["pnl_r"]), 2),
+                       "exit_ts": int(t["exit_t"]) if t.get("exit_t") else None}
+                if any(new[k] != prev.get(k) for k in new):
+                    prev["revised_replay"] = new
+                else:
+                    prev.pop("revised_replay", None)
+                continue
             reasons = None
             if prev and "mult" in prev:
                 mult, qty = prev["mult"], prev.get("qty", 0)
@@ -293,9 +303,11 @@ def run(out):
             if ev["type"] == "entry" and lm["model"] == "lit":
                 lr = ledger.get(int(ev["t"])) or {}
                 mode = (lm.get("lit_sizing") or {}).get("mode") or "normal"
+                if mode == "normal" and lr.get("reasons"):           # e.g. the weekly stop's half size
+                    note += f"\n{lr.get('qty')} micros ({'; '.join(lr['reasons'])})"
                 if mode != "normal":
                     note += f"\nsizing mode {mode}" + (f": {lr['qty']} micros ({'; '.join(lr.get('reasons') or [])})" if lr else "")
-            new_alerts.append(f"{SYM} {ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
+            new_alerts.append(f"{SYM} {'LIT ' if lm['model'] == 'lit' else ''}{ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
     # eval timing flipped since the last run (cold streak <-> full size): the owner buys/resets the eval on GO
     prev_et = (st.get("eval_timing") or {}).get("verdict") if prev_model == lm["model"] else None   # no flip alert on a switch
     now_et = state["eval_timing"]
@@ -308,7 +320,7 @@ def run(out):
     if et_now.weekday() < 5 and et_now.hour * 60 + et_now.minute >= 965 and eod_sent != today:
         eod_sent = today
         tt = [v for v in ledger.values() if v["day"] == today]
-        lines = [f"{SYM} cloud paper - end of day {today}", f"Trades: {len(tt)} | P&L {money(sum(v['usd'] for v in tt))}"]
+        lines = [f"{SYM} {'LIT ' if lm['model'] == 'lit' else ''}cloud paper - end of day {today}", f"Trades: {len(tt)} | P&L {money(sum(v['usd'] for v in tt))}"]
         lines += [f"{v['side']} {v['grade'] or ''} {v['trigger']} -> {v['exit']} {v['R']:+.2f}R {money(v['usd'])}" for v in tt]
         lines.append(f"Model now: {state.get('model_state')}")
         new_alerts.append("\n".join(lines))
@@ -463,7 +475,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     price = state.get("price")
     pools = sorted(state.get("active_pools") or [], key=lambda p: abs(float(p["price"]) - float(price or 0)))[:8]
     feed = "OK" if health["fetch_ok"] and not health["stale"] else ("STALE" if health["stale"] else "Yahoo fetch failed, using stored history")
-    L = [f"# {SYM} Liquidity Engine - cloud paper monitor",
+    L = [f"# {SYM} {'LIT' if (lm or {}).get('model') == 'lit' else 'Liquidity Engine'} - cloud paper monitor",   # the strategy's name (LIT since 2026-10-18)
          f"Updated **{et(now):%a %b %d %H:%M} ET** - runs every 30 min, 02:00-16:25 ET, on market days (GitHub Actions) - "
          f"**paper only, never places orders** - watching since {et(first_run):%b %d %H:%M} ET",
          "", "![NQ 5m today](chart.png)", "",
@@ -515,9 +527,10 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     if shadow:
         sl = sorted((shadow.get("ledger") or {}).values(), key=lambda v: v["entry"], reverse=True)
         se = shadow.get("eval") or {}
-        L += ["", "## Old strategy (shadow, paper)",
+        L += ["", "## Old strategy (shadow, paper) - Archive: previous strategy (Liquidity Engine, Oct 17)",
               f"The previous strategy ({shadow.get('label') or shadow.get('model')}) runs on the same bars for comparison: "
-              "own paper ledger, no alerts.", "| | |", "|---|---|",
+              "own paper ledger, no alerts. It is archived, not deleted: research/archive/engine-2026-10-17/README.md "
+              "(rules, numbers, files, how to switch back).", "| | |", "|---|---|",
               f"| Model | {shadow.get('model_state') or '-'} |",
               f"| Cold-streak filter | {(shadow.get('equity_filter') or {}).get('reason', 'off')} |",
               f"| Open position | {json.dumps(shadow.get('position')) if shadow.get('position') else 'flat'} |",

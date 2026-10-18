@@ -58,18 +58,20 @@ async function showResults() {
     const years = Object.keys(P).filter(k => /^\d{4}$/.test(k));
     el.innerHTML = `
       <div class="nx-hero">
-        <div><div class="nx-eyebrow">Results · exact live-loop replay · built ${esc(m.built)}</div><h2>${esc(m.strategy.split(' (')[0])}</h2>
+        <div><div class="nx-eyebrow">Results · ${m.model === 'lit' ? 'LIT replay (the live loop’s code), judged on 2026' : 'exact live-loop replay'} · built ${esc(m.built)}</div><h2>${esc(m.strategy.split(' (')[0])}</h2>
           <p class="muted">${esc(m.data?.source || '')}: ${esc(m.data?.first_session)} → ${esc(m.data?.last_session)}, ${m.data?.sessions} sessions. Costs: ${esc(m.costs?.instrument)}, $${m.costs?.commission_round_trip_per_micro}/micro round trip, ${m.costs?.slippage_pts} pt slippage.</p></div>
         <button class="btn ghost" data-goto="trades">${icon('trades')}All trades</button>
       </div>
-      <div class="grid cols-2">${periodCard('2026 YTD', P['2026 YTD'], 'This year')}${periodCard('5 years', P['All years'], '2021-11 → today')}</div>
+      ${m.model === 'lit' && P['2026 H2 (check)'] ? `<div class="grid cols-2">${periodCard('2026', P['2026 YTD'], 'The judged year')}${periodCard('2026 H2 · the check', P['2026 H2 (check)'], 'Jul–Oct, never tuned on: expect this rate')}</div>
+      <div class="grid cols-2">${periodCard('2026 H1 · picked on', P['2026 H1 (picked on)'], 'Jan–Jun, where the settings were chosen')}${periodCard('2021-25 · reference', P['2021-25 (reference)'], '5-minute bars only (no 1m data), never a gate')}</div>`
+      : `<div class="grid cols-2">${periodCard('2026 YTD', P['2026 YTD'], 'This year')}${periodCard('5 years', P['All years'], '2021-11 → today')}</div>`}
       <div class="card nx-glass"><div class="card-h"><h3>Equity</h3>
         <div class="seg sm" id="resEqSeg">${[['2026', '2026'], ['all', '5 years']].map(([v, l]) => `<button data-v="${v}" class="${rs.eq === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>
         <div id="resEq"></div></div>
       <div class="card nx-glass"><div class="card-h"><h3>Net by month</h3><span class="muted small">every month since 2021-11 · hover a bar</span></div><div id="resMonths"></div></div>
       <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>Month city · net P&amp;L of every month</h3><span class="muted small">towers up = profit, down = loss · drag to turn · click a tower</span></div><div class="fx3d city" id="resCity"></div></div>
       <div class="grid cols-2">
-        <div class="card nx-glass"><div class="card-h"><h3>By year</h3><span class="muted small">a change is adopted only if it holds in 2026 and 2021-25</span></div>
+        <div class="card nx-glass"><div class="card-h"><h3>By year</h3><span class="muted small">${m.model === 'lit' ? 'LIT is tuned and judged on 2026; earlier years are a reference' : 'a change is adopted only if it holds in 2026 and 2021-25'}</span></div>
           <div class="table-wrap"><table class="tbl"><tr><th>Year</th><th>Trades</th><th>/wk</th><th>2+ wks</th><th>Win</th><th>PF</th><th>Net</th><th>$ / mo</th><th>Max DD</th><th>Eval 2wk</th><th>Eval 1mo</th></tr>
           ${years.map(y => { const p = P[y]; return `<tr><td class="mono"><b>${y}</b></td><td>${p.trades}</td><td class="${p.per_week >= 2 ? 'up' : 'dn'}">${fmtN(p.per_week, 1)}</td><td>${pct(p.weeks_2plus_pct)}</td>
             <td>${pct(p.win_pct)}</td><td class="${p.pf >= 1 ? 'up' : 'dn'}">${fmtN(p.pf)}</td><td class="mono ${cls(p.net)}">${fmtS$(p.net)}</td><td class="mono ${cls(p.net)}">${fmtS$(perMo(p.net, p.from, p.to))}</td><td class="mono">${fmt$(p.max_dd)}</td>
@@ -80,7 +82,7 @@ async function showResults() {
           ${(d.stop_buckets || []).map(b => `<tr><td class="mono"><b>${esc(b.stop_pts)}</b></td><td>${b.trades}</td><td>${pct(b.win_pct)}</td><td class="mono ${cls(b.avg_r)}">${fmtR(b.avg_r)}</td>
             <td>${b.median_micros}</td><td class="mono">${fmt$(b.median_risk_usd)}</td></tr>`).join('')}</table></div></div>
       </div>
-      <div class="card nx-glass"><div class="card-h"><h3>Back-to-back MFFU evals</h3><span class="muted small">start a new eval the day after each one ends · 5 years</span></div>
+      <div class="card nx-glass"><div class="card-h"><h3>Back-to-back MFFU evals</h3><span class="muted small">start a new eval the day after each one ends · ${m.model === 'lit' ? 'since 2021-11' : '5 years'}</span></div>
         ${runsStrip(P['All years'].eval?.back_to_back?.runs)}</div>
       <div class="note">${esc(m.method || '')}</div>`;
     countAll(el);
@@ -132,7 +134,7 @@ async function showVariants() {
     };
     const th = (p, k) => `<th data-s="${p}.${k}" title="${esc(cols[k] || k)}" class="nx-sort ${vs.sort === p + '.' + k ? 'on' : ''}">${esc(k)}${vs.sort === p + '.' + k ? icon(vs.dir < 0 ? 'down' : 'up') : ''}</th>`;
     el.innerHTML = `
-      <div class="nx-hero"><div><div class="nx-eyebrow">Tested variants · built ${esc(v.built || '')}</div><h2>${(v.rows || []).length} variants, two periods</h2>
+      <div class="nx-hero"><div><div class="nx-eyebrow">Archive · Liquidity Engine · tested variants · built ${esc(v.built || '')}</div><h2>${(v.rows || []).length} variants, two periods</h2>
         <p class="muted">${esc(v.note || '')}. Adopted only if it holds in 2026 <b>and</b> 2021-25 and keeps 2–4 trades a week. <b>pm</b> = net $ per month.</p></div></div>
       <div class="nx-toolbar">
         <div class="seg" id="varPer">${[['both', 'Both'], ['y2026', '2026'], ['y5', '5 years']].map(([k, l]) => `<button data-v="${k}" class="${vs.period === k ? 'on' : ''}">${l}</button>`).join('')}</div>
@@ -194,7 +196,7 @@ async function showStudy() {
     const d = await api('/api/next/study');
     const items = d.items || [];
     el.innerHTML = `
-      <div class="nx-hero"><div><div class="nx-eyebrow">Study trades · research/study</div><h2>${items.length} trade${items.length === 1 ? '' : 's'} under review</h2>
+      <div class="nx-hero"><div><div class="nx-eyebrow">Archive · Liquidity Engine · study trades · research/study</div><h2>${items.length} trade${items.length === 1 ? '' : 's'} under review</h2>
         <p class="muted">Annotated charts and the engine's numbers for trades you are reviewing. Make more with <span class="mono">tools/trade_gallery.py</span>.</p></div></div>
       <div class="nx-study">${items.map(it => {
         const tr = it.data?.trades || [];

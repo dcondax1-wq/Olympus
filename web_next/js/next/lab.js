@@ -55,7 +55,12 @@ export function md(src) {
 }
 
 // ------------------------------------------------------------------ experiments (run library)
-const st = { fam: store.get('nx.labFam', 'all'), status: 'all', q: '', sel: null, data: null, base: null, cache: new Map() };
+// scope: which strategy's runs the list shows. LIT (live, reference run lit_live) by default; 'engine' = the previous strategy's
+// experiments (Archive), judged against its own lock (archive_baseline). /api/next/runs tags every row with `strategy`.
+const st = { fam: store.get('nx.labFam', 'all'), status: 'all', q: '', sel: null, data: null, base: null, cache: new Map(), scope: null };
+const liveStrat = () => st.data?.live_strategy || 'engine';
+const scopeNow = () => liveStrat() === 'lit' ? (st.scope || 'lit') : 'all';
+const baseFor = (scope) => scope === 'engine' ? (st.data?.archive_baseline || 'baseline') : (st.data?.baseline || 'baseline');
 
 function delta(v, b, kind = 'num', better = 'up') {
   if (v == null || b == null) return '';
@@ -76,7 +81,7 @@ function spanRow(label, s, b) {
 }
 function runCard(r, base) {
   const a = r.spans?.['2026'] || {}, b = r.spans?.['2021-25'] || {}, A = base?.spans?.['2026'] || {}, B = base?.spans?.['2021-25'] || {};
-  const isB = r.id === 'baseline';
+  const isB = r.id === base?.id;
   const k = (s, S, lbl) => `<div class="nx-rk"><span>${lbl}</span><b>PF ${fmtN(s.pf)} ${!isB ? delta(s.pf, S.pf) : ''}</b>
     <em class="${cls(s.net)}">${fmtS$(s.net)} ${!isB ? delta(s.net, S.net, '$') : ''}${s.per_month != null ? ` <i class="nx-pm">${fmtS$(s.per_month)}/mo</i>` : ''}</em>
     <em>${fmtN(s.tpw, 1)}/wk · DD ${fmt$(s.dd)}</em>
@@ -86,9 +91,9 @@ function runCard(r, base) {
     <h4>${esc(r.title)}</h4><p class="muted small">${esc(r.verdict || r.question || '')}</p>
     <div class="nx-rks">${k(a, A, '2026')}${k(b, B, '2021-25')}</div></button>`;
 }
-function constellationData(rows) {
+function constellationData(rows, baseId = 'baseline') {
   const g = (r, k, f) => r.spans?.[k]?.[f] ?? null;
-  return { baseline: 'baseline', runs: rows.map(r => ({ id: r.id, title: r.title, family: r.family, status: r.status, pf26: g(r, '2026', 'pf'), pf21: g(r, '2021-25', 'pf'),
+  return { baseline: baseId, runs: rows.map(r => ({ id: r.id, title: r.title, family: r.family, status: r.status, pf26: g(r, '2026', 'pf'), pf21: g(r, '2021-25', 'pf'),
     net26: g(r, '2026', 'net'), net21: g(r, '2021-25', 'net'), tpw26: g(r, '2026', 'tpw'), tpw21: g(r, '2021-25', 'tpw'), dd21: g(r, '2021-25', 'dd'),
     p20_21: g(r, '2021-25', 'p20'), f20_21: g(r, '2021-25', 'f20') })) };
 }
@@ -117,8 +122,10 @@ function equitySvg(series, h = 230) {
 
 async function renderDetail(el, id) {
   el.innerHTML = '<div class="nx-skel"><i></i><i></i></div>';
+  if (!st.data) { try { st.data = await api('/api/next/runs'); } catch { /* the reference run falls back to "baseline" */ } }
   let r, b;
-  try { [r, b] = await Promise.all([getRun(id), id === 'baseline' ? null : getRun('baseline').catch(() => null)]); }
+  const meta = (st.data?.runs || []).find(x => x.id === id), bid = baseFor(liveStrat() === 'lit' && meta?.strategy === 'engine' ? 'engine' : 'lit');
+  try { [r, b] = await Promise.all([getRun(id), id === bid ? null : getRun(bid).catch(() => null)]); }
   catch (e) { el.innerHTML = `<div class="banner warn">Could not load run ${esc(id)}: ${esc(e.message)}</div>`; return; }
   const B = b?.spans || {};
   const plist = Object.entries({ ...(r.params || {}), ...(r.sizing || {}) });
@@ -146,7 +153,7 @@ async function renderDetail(el, id) {
   $('#labBack').onclick = () => { st.sel = null; render(); };
   el.querySelector('[data-wu]')?.addEventListener('click', (e) => { wst.sel = e.currentTarget.dataset.wu; go('writeups'); });
   const series = [{ label: r.title, color: '#7c8cff', days: r.days.map(d => [d[0], d[1]]) }];
-  if (b) series.push({ label: 'Live strategy', color: '#3ee0c8', days: b.days.map(d => [d[0], d[1]]) });
+  if (b) series.push({ label: bid === 'baseline' && liveStrat() === 'lit' ? 'Previous strategy (archive lock)' : 'Live strategy', color: '#3ee0c8', days: b.days.map(d => [d[0], d[1]]) });
   $('#labEq').innerHTML = equitySvg(series);
   mount3d('lab-ribbon', $('#labRibbon'), 'ribbon', { series });
 }
@@ -156,16 +163,20 @@ async function render() {
   if (st.sel) return renderDetail(el, st.sel);
   if (!st.data) el.innerHTML = '<div class="nx-skel"><i></i><i></i><i></i></div>';
   try { st.data = await api('/api/next/runs'); } catch (e) { el.innerHTML = `<div class="banner warn">Could not load the run library: ${esc(e.message)}</div>`; return; }
-  const rows = st.data.runs || [], base = rows.find(r => r.id === 'baseline');
+  const sc = scopeNow(), all = st.data.runs || [], rows = sc === 'all' ? all : all.filter(r => (r.strategy || 'engine') === sc);
+  const base = all.find(r => r.id === baseFor(sc)), nLit = all.filter(r => r.strategy === 'lit').length, nOld = all.length - nLit;
   const fams = ['all', ...new Set(rows.map(r => r.family))];
   const shown = rows.filter(r => (st.fam === 'all' || r.family === st.fam) && (st.status === 'all' || r.status === st.status)
     && (!st.q || (r.title + ' ' + r.question + ' ' + r.verdict + ' ' + r.id).toLowerCase().includes(st.q)));
   const n = (s) => rows.filter(r => r.status === s).length;
   el.innerHTML = `
-    <div class="nx-hero"><div><div class="nx-eyebrow">Lab · research run library · ${rows.length} runs · updated ${esc(st.data.built || '')}</div>
-      <h2>Every backtest, stored with its data</h2>
-      <p class="muted">Each experiment is the exact live-loop replay with one idea changed, judged on 2026 and on 2021-25. A change is adopted only if it holds in both, keeps 2–4 trades a week and gets evals decided within 2 weeks. Cards show PF, net $, $ a month and the 2-week eval odds.</p></div>
-      <button class="btn ghost" type="button" data-goto="writeups">${icon('reports')}Write-ups</button></div>
+    <div class="nx-hero"><div><div class="nx-eyebrow">Lab · research run library · ${sc === 'engine' ? esc(st.data.archive_label || 'Archive: previous strategy') : sc === 'lit' ? 'LIT' : ''} · ${rows.length} runs · updated ${esc(st.data.built || '')}</div>
+      <h2>${sc === 'engine' ? 'The previous strategy’s experiments (archive)' : sc === 'lit' ? 'LIT: every backtest, stored with its data' : 'Every backtest, stored with its data'}</h2>
+      <p class="muted">${sc === 'lit' ? 'Each experiment is LIT with one idea changed, tuned and judged on 2026 only (picked on Jan–Jun, checked on Jul–Oct); 2021-25 is a reference line. The reference card is the live LIT run (lit_live). Cards show PF, net $, $ a month and the 2-week eval odds.'
+        : sc === 'engine' ? 'Each run is the Liquidity Engine (the strategy before LIT) with one idea changed, judged on 2026 and 2021-25 against its own lock (run baseline). None of them is live.'
+        : 'Each experiment is the exact live-loop replay with one idea changed, judged on 2026 and on 2021-25. A change is adopted only if it holds in both, keeps 2–4 trades a week and gets evals decided within 2 weeks. Cards show PF, net $, $ a month and the 2-week eval odds.'}</p></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${sc !== 'all' ? `<div class="seg" id="labScope">${[['lit', `LIT · ${nLit}`], ['engine', `Archive · ${nOld}`]].map(([v, l]) => `<button class="${v === sc ? 'on' : ''}" data-v="${v}">${l}</button>`).join('')}</div>` : ''}
+      <button class="btn ghost" type="button" data-goto="writeups">${icon('reports')}Write-ups</button></div></div>
     <div class="nx-stats">
       <div class="nx-stat"><span>Runs</span><b>${rows.length}</b><em>stored with every trade</em></div>
       <div class="nx-stat"><span>Adopt candidates</span><b class="up">${n('adopt-candidate')}</b><em>better in both periods</em></div>
@@ -180,7 +191,8 @@ async function render() {
     </div>
     <div class="nx-count muted small">${shown.length} of ${rows.length} runs</div>
     <div class="nx-runs-grid" id="labGrid">${shown.map(r => runCard(r, base)).join('') || '<div class="empty">No runs match.</div>'}</div>`;
-  mount3d('lab-constellation', $('#labConst'), 'constellation', constellationData(rows), { onPick: (run) => { if (run?.id) { st.sel = run.id; render(); } } });
+  $('#labScope')?.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { st.scope = b.dataset.v; st.fam = 'all'; render(); } });
+  mount3d('lab-constellation', $('#labConst'), 'constellation', constellationData(rows, base?.id), { onPick: (run) => { if (run?.id) { st.sel = run.id; render(); } } });
   $('#labFam').onclick = (e) => { const b = e.target.closest('button'); if (b) { st.fam = b.dataset.v; store.set('nx.labFam', st.fam); render(); } };
   $('#labStat').onclick = (e) => { const b = e.target.closest('button'); if (b) { st.status = b.dataset.v; render(); } };
   let tq; $('#labQ').oninput = (e) => { clearTimeout(tq); tq = setTimeout(() => { st.q = e.target.value.trim().toLowerCase(); render().then(() => { const q = $('#labQ'); q?.focus(); q?.setSelectionRange(q.value.length, q.value.length); }); }, 220); };
@@ -188,9 +200,10 @@ async function render() {
 }
 export const experiments = { show: () => render() };
 export function openRun(id) { st.sel = id; go('lab'); }
+export function openArchiveRuns() { st.scope = 'engine'; st.sel = null; st.fam = 'all'; go('lab'); }
 
 // ------------------------------------------------------------------ write-ups
-const wst = { data: null, sel: null, kind: 'writeup' };
+const wst = { data: null, sel: null, kind: 'lit' };
 async function renderWriteups() {
   const el = $('#page-writeups'); if (!el) return;
   if (!wst.data) {
@@ -213,11 +226,14 @@ async function renderWriteups() {
     }
     wst.sel = null;
   }
-  const list = items.filter(x => x.kind === wst.kind);
+  const KINDS = [['lit', 'LIT write-ups', (x) => x.kind === 'writeup' && x.strategy === 'lit'], ['engine', 'Previous strategy (archive)', (x) => x.kind === 'writeup' && x.strategy !== 'lit'],
+    ['archive', 'Older reports', (x) => x.kind === 'archive']];
+  if (!KINDS.some(k => k[0] === wst.kind)) wst.kind = 'lit';
+  const list = items.filter(KINDS.find(k => k[0] === wst.kind)[2]);
   el.innerHTML = `
     <div class="nx-hero"><div><div class="nx-eyebrow">Lab · write-ups</div><h2>Research write-ups</h2>
-      <p class="muted">Plain-language reports on every experiment: what was tested, the numbers for 2026 and 2021-25, and the verdict. The archive holds the older research reports.</p></div>
-      <div class="seg" id="wuKind">${[['writeup', 'Write-ups'], ['archive', 'Archive']].map(([v, l]) => `<button class="${v === wst.kind ? 'on' : ''}" data-v="${v}">${l} · ${items.filter(x => x.kind === v).length}</button>`).join('')}</div></div>
+      <p class="muted">Plain-language reports on every experiment: what was tested, the numbers, and the verdict. LIT (the live strategy) first; the Liquidity Engine’s write-ups and the older reports are kept as the archive.</p></div>
+      <div class="seg" id="wuKind">${KINDS.map(([v, l, f]) => `<button class="${v === wst.kind ? 'on' : ''}" data-v="${v}">${l} · ${items.filter(f).length}</button>`).join('')}</div></div>
     <div class="nx-wu-grid">${list.map(w => `<button type="button" class="nx-wucard" data-slug="${esc(w.slug)}">
       <div class="nx-runcard-h">${w.status ? statChip(w.status) : ''}${w.family ? chip(esc(FAM[w.family] || w.family)) : ''}${w.date ? `<span class="muted small">${esc(w.date)}</span>` : ''}</div>
       <h4>${esc(w.title)}</h4><p class="muted small">${esc(w.summary || (w.body || '').replace(/[#*`|>-]/g, ' ').slice(0, 180) + '…')}</p></button>`).join('') || '<div class="empty">No write-ups yet: the research runs write them as they finish.</div>'}</div>`;

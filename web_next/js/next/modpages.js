@@ -105,7 +105,7 @@ async function showCold() {
         ${ws ? `Now: <b>${esc(ws.text || '')}</b>.` : 'Now: the PC bot is not running, so this week\'s count is not known here (the cloud README shows it).'} ${mon && mon.text ? esc(mon.text) + '.' : ''}
         Sizing mode <b>${esc((c.lit_sizing || {}).mode || 'normal')}</b>. The eval odds below are LIT's own (run ${esc(et?.run || 'lit_live')}); the filter on the rest of this page is the old engine's (shadow).</div>` : '';
     el.innerHTML = `${litBox}
-      <div class="nx-hero"><div><div class="nx-eyebrow">Cold-streak filter · engine/equity_filter.py</div>
+      <div class="nx-hero"><div><div class="nx-eyebrow">${isLit ? esc(c.archive_label || 'Archive: previous strategy') + ' · ' : ''}Cold-streak filter · engine/equity_filter.py</div>
         <h2>${word[0].toUpperCase() + word.slice(1)} size when the last ${lb} signals sum ≤ ${fmtN(thr, 1)}R</h2>
         <p class="muted">Every signal is kept (2–4 setups a week). In a cold streak the bot trades it at ${word} size and goes back to full size as soon as the ${lb}-signal record turns positive. Skip mode had the best PF but paused trading for 14 weeks, so it was rejected; the sensitivity study (Lab → write-ups → parameter-robustness) shows the lookback of ${lb} is the one number that matters.</p></div></div>
       <div class="grid cols-3">
@@ -145,11 +145,14 @@ async function showCold() {
 // Mirrors engine/sizing.py: the engine's micros (full $ risk up to REF pts, then RISK x REF / stop, floored), then ONE
 // multiplier (cold size x late size), floored once, at least 1 micro, at most MAXM. No micro at full size = no trade.
 const PV = 2, MAXM = 40;
-let SZ = { risk: 800, ref: 20, cold: 0.25, late: 0.5 };
+// LIT (live_model.json "model": "lit", engine/lit.py qty_for + engine/sizing.py lit_qty): the first switch is the weekly stop
+// (half size after 2 stop-outs in the week), the second the fast-eval sizing mode (full risk up to a 40-pt stop)
+let SZ = { risk: 800, ref: 20, cold: 0.25, late: 0.5, lit: false, fref: 40, wk: 0.5, wkn: 2, mode: 'normal' };
 function size(stop, cold, late) {
-  const budget = SZ.risk * Math.min(1, SZ.ref / stop);
+  const ref = SZ.lit && late ? SZ.fref : SZ.ref;
+  const budget = SZ.risk * Math.min(1, ref / stop);
   const base = Math.min(MAXM, Math.floor(budget / (stop * PV)));
-  const mult = (cold ? SZ.cold : 1) * (late ? SZ.late : 1);
+  const mult = SZ.lit ? (cold ? SZ.wk : 1) : (cold ? SZ.cold : 1) * (late ? SZ.late : 1);
   const micros = base <= 0 ? 0 : mult >= 1 ? base : Math.min(MAXM, Math.max(1, Math.floor(base * mult)));
   return { budget, base, mult, micros, real: micros * stop * PV };
 }
@@ -159,9 +162,11 @@ async function showRisk() {
   try { r = await results$(); } catch { }
   try { lm = (await api('/api/next/strategy')).live_model || null; } catch { }
   if (lm) {
-    const p = lm.params || {}, ef = lm.equity_filter || {}, sz = lm.sizing || {};
-    SZ = { risk: +p.risk_usd || 800, ref: +p.risk_ref_stop || 20, cold: ef.cold_mode === 'half' ? +(ef.cold_size ?? 0.5) : 0, late: sz.late_mult == null ? 1 : +sz.late_mult };
+    const p = lm.params || {}, ef = lm.equity_filter || {}, sz = lm.sizing || {}, L = lm.lit || {}, ls = lm.lit_sizing || {};
+    SZ = { risk: +p.risk_usd || 800, ref: +p.risk_ref_stop || 20, cold: ef.cold_mode === 'half' ? +(ef.cold_size ?? 0.5) : 0, late: sz.late_mult == null ? 1 : +sz.late_mult,
+      lit: lm.model === 'lit', fref: +(ls.fast_ref_stop || 40), wk: L.wk_stop ? +L.wk_stop[1] : 0.5, wkn: L.wk_stop ? +L.wk_stop[0] : 2, mode: ls.mode || 'normal' };
   }
+  if (SZ.lit) return showRiskLit(el, r);
   const stops = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
   el.innerHTML = `
     <div class="nx-hero"><div><div class="nx-eyebrow">Risk &amp; sizing · live_model.json · engine/sizing.py</div><h2>Size follows the stop</h2>
@@ -194,6 +199,47 @@ async function showRisk() {
     $('#rkOut').innerHTML = `<div><span>Risk budget</span><b>${fmt$(z.budget)}</b></div><div><span>Engine micros</span><b class="${z.base ? '' : 'dn'}">${z.base || '0 · pass'}</b></div>
       <div><span>Multiplier</span><b>×${fmtN(z.mult, 3)}</b></div><div><span>Micros placed</span><b class="${z.micros ? '' : 'dn'}">${z.micros || '0 · pass'}</b></div>
       <div><span>$ at risk</span><b>${fmt$(z.real)}</b></div><div><span>1.5R target</span><b>${fmtS$(z.real * 1.5)}</b></div><div><span>5R bank</span><b class="up">${fmtS$(z.real * 5)}</b></div>
+      <div><span>Stop in ticks</span><b>${Math.round(s * 4)}</b></div>`;
+  };
+  $('#rkStop').oninput = upd; $('#rkCold').onchange = upd; $('#rkLate').onchange = upd; upd();
+}
+
+// LIT: same calculator, LIT's rules (weekly stop, fast-eval switch), stops 8-88 pts, banked at 8R
+function showRiskLit(el, r) {
+  const stops = [8, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80], lo = 8, hi = 88, y = r?.periods?.['2026 YTD'];
+  el.innerHTML = `
+    <div class="nx-hero"><div><div class="nx-eyebrow">Risk &amp; sizing · LIT · live_model.json · engine/lit.py</div><h2>Size follows the stop</h2>
+      <p class="muted">Full $${SZ.risk} risk up to a ${SZ.ref}-pt stop; wider stops risk $${SZ.risk} × ${SZ.ref} / stop (a wide stop means <b>less</b> money at risk). MNQ micros at $${PV}/pt, max ${MAXM}; under 1 micro = no trade.
+      <b>Weekly stop</b>: after ${SZ.wkn} stop-outs in a calendar week, ${sizeWord(SZ.wk)} size for the rest of it (rounded down once, at least 1 micro). <b>Fast-eval</b> sizing switch: full risk up to a ${SZ.fref}-pt stop (mode now: <b>${esc(SZ.mode)}</b>).
+      No cold-streak filter and no late-entry rule: those were the previous strategy's (Modules → Archive).</p></div></div>
+    <div class="grid cols-3">
+      <div class="card nx-glass span-2 nx-calc">
+        <div class="card-h"><h3>Calculator</h3><div class="nx-switches"><label class="nx-switch-row inline"><span>Weekly stop (${sizeWord(SZ.wk)})</span><input type="checkbox" class="nx-switch" id="rkCold"></label>
+          <label class="nx-switch-row inline"><span>Fast-eval (${SZ.fref}-pt reference)</span><input type="checkbox" class="nx-switch" id="rkLate" ${SZ.mode === 'fast_eval' ? 'checked' : ''}></label></div></div>
+        <div class="nx-range-row"><span>Stop</span><input type="range" id="rkStop" min="${lo}" max="${hi}" step="0.25" value="40"><b class="mono" id="rkStopV">40 pts</b></div>
+        <div class="nx-calc-out" id="rkOut"></div>
+      </div>
+      <div class="card nx-glass"><div class="card-h"><h3>MFFU Builder 50K</h3></div>
+        <div class="nx-kv one"><div><span>Profit target</span><b>$3,000</b></div><div><span>Max loss (EOD trailing)</span><b>$2,000</b></div>
+          <div><span>Locks at</span><b>$50,100</b></div><div><span>Soft daily loss</span><b>$1,000</b></div><div><span>Max size</span><b>4 minis / 40 micros</b></div>
+          <div><span>Trades per day</span><b>1</b></div></div></div>
+    </div>
+    <div class="card nx-glass"><div class="card-h"><h3>Size by stop</h3><span class="muted small">normal · weekly stop (${sizeWord(SZ.wk)}) · fast-eval · both</span></div>
+      <div class="table-wrap"><table class="tbl"><tr><th>Stop</th><th>Risk budget</th><th>Micros</th><th>$ at risk</th><th>Weekly stop: micros · $</th><th>Fast-eval: micros · $</th><th>Both: micros · $</th></tr>
+      ${stops.map(s => { const f = size(s, false, false), c = size(s, true, false), l = size(s, false, true), b = size(s, true, true); const cell = (z) => z.micros ? `${z.micros} · ${fmt$(z.real)}` : '<span class="dn">0 · no trade</span>';
+        return `<tr><td class="mono"><b>${s} pts</b></td><td class="mono">${fmt$(f.budget)}</td><td>${f.micros || '<span class="dn">0 · no trade</span>'}</td>
+        <td class="mono">${fmt$(f.real)}</td><td class="mono">${cell(c)}</td><td class="mono">${cell(l)}</td><td class="mono">${cell(b)}</td></tr>`; }).join('')}</table></div></div>
+    ${r ? `<div class="card nx-glass"><div class="card-h"><h3>What the stops really were · LIT replay</h3><span class="muted small">2026: median ${fmtN(y?.median_stop_pts, 1)} pts · ${y?.median_micros ?? '—'} micros · ${fmt$(y?.median_risk_usd)} risk</span></div>
+      <div class="nx-buckets">${(r.stop_buckets || []).map(b => { const mx = Math.max(...r.stop_buckets.map(x => x.trades)); return `<div class="nx-bucket"><span class="mono">${esc(b.stop_pts)} pts</span>
+        <div class="nx-bucket-bar"><i style="width:${b.trades / mx * 100}%"></i></div><b>${b.trades}</b><em class="${cls(b.avg_r)}">${fmtR(b.avg_r)}</em><em>${b.median_micros} micros · ${fmt$(b.median_risk_usd)}</em></div>`; }).join('')}</div>
+      <p class="muted small">Every replay trade since 2021-11 (2021-25 on 5-minute bars, a reference line).</p></div>` : ''}`;
+  const upd = () => {
+    const s = +$('#rkStop').value, z = size(s, $('#rkCold').checked, $('#rkLate').checked);
+    $('#rkStopV').textContent = fmtN(s, 2) + ' pts';
+    $('#rkStop').style.setProperty('--fill', ((s - lo) / (hi - lo) * 100) + '%');
+    $('#rkOut').innerHTML = `<div><span>Risk budget</span><b>${fmt$(z.budget)}</b></div><div><span>LIT micros</span><b class="${z.base ? '' : 'dn'}">${z.base || '0 · no trade'}</b></div>
+      <div><span>Multiplier</span><b>×${fmtN(z.mult, 3)}</b></div><div><span>Micros placed</span><b class="${z.micros ? '' : 'dn'}">${z.micros || '0 · no trade'}</b></div>
+      <div><span>$ at risk</span><b>${fmt$(z.real)}</b></div><div><span>1.5R target</span><b>${fmtS$(z.real * 1.5)}</b></div><div><span>8R bank</span><b class="up">${fmtS$(z.real * 8)}</b></div>
       <div><span>Stop in ticks</span><b>${Math.round(s * 4)}</b></div>`;
   };
   $('#rkStop').oninput = upd; $('#rkCold').onchange = upd; $('#rkLate').onchange = upd; upd();

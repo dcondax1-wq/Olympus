@@ -281,6 +281,9 @@ def V():
     S["inducements: half size with only 1"] = ("ch14 multiple inducements", half(lambda M, z: len(idm_q(z)) < 2))
     for x in (0.1, 0.2, 0.3):
         S[f"inducement: at least {x} ATR above the swept level"] = ("ch5 inducement room", sk(lambda M, z, x=x: not idm_q(z) or max(idm_q(z)) < x))
+    # ch.7 ETM final sweep: at least two levels swept by the same run
+    S["final sweep: 2+ levels swept (skip with 1)"] = ("ch7 final sweep", sk(lambda M, z: len(z["swept"]) < 2))
+    S["final sweep: half size with 1 level swept"] = ("ch7 final sweep", half(lambda M, z: len(z["swept"]) < 2))
     # ch.11 premium / discount of the leg
     S["discount: limit in the lower half of the leg (skip in premium)"] = ("ch11 premium/discount", sk(lambda M, z: f_leg_pos(M, z) > 0.5))
     S["discount: half size in premium"] = ("ch11 premium/discount", half(lambda M, z: f_leg_pos(M, z) > 0.5))
@@ -289,8 +292,9 @@ def V():
     S["double-sided: skip when any opposite level was taken first today"] = ("ch6 double-sided", sk(lambda M, z: f_double_sided(M, z, False)))
     S["double-sided: half size when any opposite level was taken first"] = ("ch6 double-sided", half(lambda M, z: f_double_sided(M, z, False)))
     # ch.16 / 26 first obstacle
-    for r in (0.5, 1.0, 1.5):
+    for r in (0.25, 0.4, 0.5, 0.6, 0.75, 1.0, 1.5):
         S[f"first obstacle: skip when a level sits within {r}R"] = ("ch26 first obstacle", sk(lambda M, z, r=r: (f_obstacle_r(M, z) or 99) < r))
+    S["first obstacle: half size when a level sits within 0.5R"] = ("ch26 first obstacle", half(lambda M, z: (f_obstacle_r(M, z) or 99) < 0.5))
     S["first obstacle: half size when a level sits within 1R"] = ("ch26 first obstacle", half(lambda M, z: (f_obstacle_r(M, z) or 99) < 1.0))
     # ch.14 continuation / failed reversal
     S["continuation: 2nd trade same side after a non-stop first trade"] = (
@@ -350,6 +354,14 @@ def test(only=None):
 
 
 # ================================================================================================ chapter 21 benchmark
+WHY = collections.Counter()          # where the ch.21 model drops each day (r1..r12 = the return points of srr_day)
+WHY_LABEL = {"r1": "no 1m bars", "r2": "missing range bars (08:00-09:25 not complete)", "r3": "one bar crossed both boundaries",
+             "r4": "no boundary event 09:30-10:30", "r5": "no reclaim close within 3 bars", "r6": "no strict 5-bar pivot",
+             "r7": "objective (other side) traded before confirmation", "r8": "no confirmation bar (pivot close + 1.5x body + top "
+             "quarter + FVG) within 6 bars before 10:30", "r9": "non-positive risk", "r10": "2R target beyond the range",
+             "r11": "limit never filled (C+1..C+5, before 10:30)", "r12": "size rounds to zero"}
+
+
 def srr_day(B, k, M):
     """Session Range Reclaim Version 2 (report ch.21) on true 1m bars for Market day k. Returns a trade dict or None.
     Range 08:00-09:25 (half-open), first boundary event from 09:30, reclaim within 3 bars, strict 5-bar pivot in the 20 bars
@@ -360,11 +372,13 @@ def srr_day(B, k, M):
     stops out; no target credit on the fill bar."""
     ix = np.flatnonzero(B.day == k)
     if not len(ix):
+        WHY["r1"] += 1
         return None
     a, z = int(ix[0]), int(ix[-1]) + 1
     mod = B.mod[a:z]
     rng = np.flatnonzero((mod >= 480) & (mod < 565))
     if len(rng) != 85:                                   # missing range bars: the day is invalid
+        WHY["r2"] += 1
         return None
     H = float(B.h[a + rng].max()); L = float(B.l[a + rng].min())
     freeze = a + int(rng[-1])                            # the 09:24 bar closes at 09:25
@@ -374,17 +388,20 @@ def srr_day(B, k, M):
         dn = B.l[j] <= L - TICK and B.c[j - 1] >= L
         up = B.h[j] >= H + TICK and B.c[j - 1] <= H
         if dn and up:
+            WHY["r3"] += 1
             return None                                  # one bar crossed both boundaries: reject the day
         if dn or up:
             S, side = j, (1 if dn else -1)
             break
     if S is None:
+        WHY["r4"] += 1
         return None
     d = side
     hi, lo, c, o = (B.h, B.l, B.c, B.o) if d == 1 else (-B.l, -B.h, -B.c, -B.o)
     Ld, Hd = (L, H) if d == 1 else (-H, -L)              # direction space: swept boundary Ld (below), objective Hd (above)
     R = next((j for j in range(S, min(S + 4, z)) if c[j] > Ld), None)
     if R is None:
+        WHY["r5"] += 1
         return None
     piv = None
     for j in range(S - 3, max(S - 21, a + 1), -1):       # right bars j+1, j+2 closed before S opens
@@ -393,12 +410,14 @@ def srr_day(B, k, M):
         if hi[j] > max(hi[j - 1], hi[j - 2], hi[j + 1], hi[j + 2]):
             piv = float(hi[j]); break
     if piv is None:
+        WHY["r6"] += 1
         return None
     C = None
     for j in range(R, min(R + 6, z)):
         if B.mod[j] + 1 > 629:                           # must close strictly before 10:30
             break
         if hi[freeze + 1:j + 1].max() >= Hd:             # the objective traded before confirmation
+            WHY["r7"] += 1
             return None
         body = c[j] - o[j]
         med = float(np.median(np.abs(c[j - 20:j] - o[j - 20:j])))
@@ -407,6 +426,7 @@ def srr_day(B, k, M):
                 and lo[j] >= hi[j - 2] + TICK):
             C = j; break
     if C is None:
+        WHY["r8"] += 1
         return None
     ext = float(lo[S:C + 1].min())
     stop = ext - 2 * TICK
@@ -414,9 +434,11 @@ def srr_day(B, k, M):
     entry = math.floor(mid / TICK + 1e-9) * TICK          # direction space: a long rounds down, a short (price) rounds up
     risk = entry - stop
     if risk <= 0:
+        WHY["r9"] += 1
         return None
     tgt = entry + 2 * risk
     if tgt > Hd - TICK:
+        WHY["r10"] += 1
         return None
     fill = None
     for j in range(C + 1, min(C + 6, z)):
@@ -427,9 +449,11 @@ def srr_day(B, k, M):
         if hi[j] >= tgt:
             break
     if fill is None:
+        WHY["r11"] += 1
         return None
     q = lit.qty_for(ent - stop)
     if q < 1:
+        WHY["r12"] += 1
         return None
     k_ = fill
     xp = kind = None
@@ -456,7 +480,9 @@ def srr():
     T = [t for t in (srr_day(B1, k, M) for k in sorted(B1.full)) if t]
     T = [t for t in T if t["day"] in set(F.SESS)]
     o = F.score(T, spans=("H1", "H2", "2026"))
+    funnel = {WHY_LABEL[k]: v for k, v in sorted(WHY.items(), key=lambda x: int(x[0][1:]))}
     print("SRR v2 (ch.21) alone:", F.fmt(o), flush=True)
+    print("days:", len(B1.full), "funnel:", funnel, flush=True)
     L = run()
     byday = {t["day"]: t for t in L}
     comb = []
@@ -469,22 +495,96 @@ def srr():
     oc = F.score(comb, spans=("H1", "H2", "2026"))
     print("LIT live + SRR (first entry of the day wins):", F.fmt(oc), flush=True)
     res = json.load(open(OUT)) if os.path.exists(OUT) else {}
-    res["_srr"] = {"alone": o, "with_lit": oc, "n_days_1m": len(B1.full)}
+    res["_srr"] = {"alone": o, "with_lit": oc, "n_days_1m": len(B1.full), "funnel": funnel, "trades": len(T)}
     json.dump(res, open(OUT, "w"), indent=1, default=str)
     return T, comb
 
 
+# ================================================================================================ ch.28 clocks: European boxes
+class MarketDST(lit.Market):
+    """lit.Market with the two boxes that are European wall-clock windows kept on Europe/Berlin time (LIT report ch.28):
+    lon34 (Reim's London inducement window 09:00-10:00 Berlin = 03:00-04:00 ET) and lon23 (Frankfurt 08:00-09:00 Berlin =
+    02:00-03:00 ET). In the weeks when the US and Europe are on different DST (2026: Mar 9-27, Oct 26-30) they sit one hour
+    later in ET (04:00-05:00 and 03:00-04:00). Every other box is a New York window and stays as it is."""
+
+    def _context(self):
+        super()._context()
+        import datetime as _dt
+        from zoneinfo import ZoneInfo
+        ny, be = ZoneInfo("America/New_York"), ZoneInfo("Europe/Berlin")
+        self.dst_shift_days = []
+        for x in self.ctx:
+            d = _dt.date.fromisoformat(str(x["date"]))
+            noon = _dt.datetime(d.year, d.month, d.day, 12, 0)
+            off = (be.utcoffset(noon) - ny.utcoffset(noon)).total_seconds() / 3600
+            if off == 6:
+                continue
+            self.dst_shift_days.append(str(x["date"]))
+            s, e = x["s"], x["e"]
+            md = self.mod[s:e]
+            for nm, (a_, z_) in (("lon34", (240, 300)), ("lon23", (180, 240))):
+                ii = np.flatnonzero((md >= a_) & (md < z_))
+                ii = ii[md[ii] < 1080]
+                if len(ii) >= 2:
+                    x[nm] = (float(self.h[s + ii].max()), float(self.l[s + ii].min()), int(s + ii[-1]))
+
+
+def dst():
+    import pickle
+    M = MarketDST(extra_boxes=P_LIVE["extra_boxes"])
+    p = os.path.join(F.CACHE, f"litrep_dst_cands_{rl._data_key().replace(':', '_')}.pkl")
+    if os.path.exists(p):
+        C = pickle.load(open(p, "rb"))
+    else:
+        C = lit.candidates(M, ref=P_LIVE["ref"])
+        pickle.dump(C, open(p, "wb"))
+    B1, B5 = lit.bars_1m(M), lit.bars_5m(M)
+    T = core(M, C, P_LIVE, F.SESS, B1, B5)
+    o = F.score(T)
+    b = F.score(run())
+    d26 = [d for d in M.dst_shift_days if d >= "2026"]
+    T0 = {(t["day"], t["entry_t"], t["pnl"]) for t in run() if t["day"] in d26}
+    T1 = {(t["day"], t["entry_t"], t["pnl"]) for t in T if t["day"] in d26}
+    print("DST-shifted days 2026:", d26, flush=True)
+    print("trades on them  base:", sorted(T0), "\n  Berlin boxes:", sorted(T1), flush=True)
+    print("Berlin-time European boxes:", F.fmt(o), flush=True)
+    res = json.load(open(OUT)) if os.path.exists(OUT) else {}
+    res["_dst"] = {**o, "dH1": o["H1"]["net"] - b["H1"]["net"], "dH2": o["H2"]["net"] - b["H2"]["net"],
+                   "d21_25": o["2021-25"]["net"] - b["2021-25"]["net"], "days_2026": d26, "base_trades": sorted(T0),
+                   "dst_trades": sorted(T1)}
+    json.dump(res, open(OUT, "w"), indent=1, default=str)
+    return T
+
+
 # ================================================================================================ store runs
-def save():
+def rid_of(nm, n=48):
+    rid = "lit_rep_" + "".join(ch if ch.isalnum() else "_" for ch in nm.lower())[:n].strip("_")
+    while "__" in rid:
+        rid = rid.replace("__", "_")
+    return rid
+
+
+def run_ids():
+    """Variant name -> run id (48-char slug; the longer slug when two names share the first 48 characters)."""
+    out, used = {}, set()
+    for nm in V():
+        rid = rid_of(nm)
+        if rid in used:
+            rid = rid_of(nm, 72)
+        used.add(rid)
+        out[nm] = rid
+    return out
+
+
+def save(only=None):
     res = json.load(open(OUT))
     b = res["_base"]
+    ids = run_ids()
     for nm, (fam, X) in V().items():
         r = res.get(nm)
-        if not r:
+        if not r or (only and only not in nm):
             continue
-        rid = "lit_rep_" + "".join(ch if ch.isalnum() else "_" for ch in nm.lower())[:48].strip("_")
-        while "__" in rid:
-            rid = rid.replace("__", "_")
+        rid = ids[nm]
         T = run(_second_half(dict(X)))
         S = rl.score(T, F.SESS)
         o = F.score(T)
@@ -498,10 +598,13 @@ def save():
                 notes="tools/lit_report.py core() = engine/lit.py _run_core copy with hooks; base lit_live (live_model.json lit) "
                       f"H1 {b['H1']['net']:+,} H2 {b['H2']['net']:+,}.", writeup="lit-report-tests", tags=["lit", "lit_report"])
         print("saved", rid, flush=True)
-    if "_srr" in res:
+    if "_srr" in res and not only:
         T, comb = srr()
         for rid, title, TT in (("lit_rep_srr_v2", "Report ch.21 Session Range Reclaim V2 alone (benchmark)", T),
                                ("lit_rep_srr_v2_plus_lit", "LIT live + Session Range Reclaim V2 (first entry of the day wins)", comb)):
+            if not T:
+                print("SRR v2 made no trade in 2026: nothing to store as a run (the funnel is in report_results.json)", flush=True)
+                break
             S = rl.score(TT, F.SESS)
             o = F.score(TT, spans=("H1", "H2", "2026"))
             rl.save(rid, title, "other", "The report's own illustrative model (chapter 21) as a simple comparison model for LIT",
@@ -516,4 +619,4 @@ def save():
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     arg = sys.argv[2] if len(sys.argv) > 2 else None
-    {"check": check, "test": lambda: test(arg), "srr": srr, "save": save}[cmd]()
+    {"check": check, "test": lambda: test(arg), "srr": srr, "save": lambda: save(arg), "dst": dst}[cmd]()

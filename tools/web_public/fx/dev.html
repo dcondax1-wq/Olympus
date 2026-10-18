@@ -9,6 +9,7 @@
            &n=3|40 &now=<unix s> (newsradar; synthetic USD events around now)  &paths=300|1000 &noprob=1 (montecarlo; random-walk evals)
            &span=2026|all (heat; the replay trades aggregated by ET weekday x hour)  &pos=long|short|0 &rich=1 (liqmap; rich = labelled synthetic pools)
            &now=<unix s> (weekring; default: the week of the last replay trade, Thursday 10:42 ET)
+           &now=<unix s> &trade=0|win|loss|open &setup=1 &closed=1 (dayclock; default: a Tuesday 08:47 ET with CPI at 08:30 and a London trade)
            &seq=1 (re-mount with changed data after 4 s, then the same data again after 7 s: animation + idempotency)
            &ff=<s> (fast-forward the view's clock by s seconds after each mount: finished intros in a slow software GPU)
            &bg=0 (hide the full-screen background field: faster in a software GPU)  &scene=<name> (FX.scene preset)  &fxfixed (full res in a software GPU) -->
@@ -163,6 +164,19 @@ function weekring(alt) {
     return { date, dow, trades: tr, pnl: tr.reduce((s, x) => s + x.pnl, 0), sessions_done: date < dates[Math.min(4, Math.floor((now - mon.getTime() / 1000) / 86400))] }; });
   return { days, now, target_week_trades: [2, 4] };
 }
+// ---------------------------------------------------------------- dayclock: a synthetic LIT day (&now=<unix s>, &trade=, &setup=1, &closed=1)
+function dayclock(alt) {
+  const base = Date.parse('2026-10-13T12:47:00Z') / 1000, now = q.has('now') ? +q.get('now') : base + (alt ? 3 * 3600 : 0);   // Tue 08:47 ET (EDT)
+  const at = (h, m = 0) => Date.parse('2026-10-13T00:00:00Z') / 1000 + (h + 4) * 3600 + m * 60;      // ET time on Oct 13
+  const tr = q.get('trade') || 'win', trades = tr === '0' ? [] : [{ t: at(3, 41), exit_t: tr === 'open' ? null : at(tr === 'loss' ? 5 : 7, 12), dir: -1, pnl: tr === 'loss' ? -412 : 1830, r: tr === 'loss' ? -1.02 : 4.4, open: tr === 'open', exit: tr === 'loss' ? 'STOP' : 'TARGET' }];
+  const events = [{ t: at(8, 30), title: 'CPI (Sep)', impact: 'high', blackout: true }, { t: at(10, 0), title: 'Consumer sentiment', impact: 'medium' }, { t: at(13, 0), title: '10-year note auction', impact: 'low' },
+    { t: at(14, 0), title: 'Fed speaker', impact: alt ? 'high' : 'medium' }];
+  return { now, day: '2026-10-13', closed: q.get('closed') === '1' ? true : undefined, windows: [[120, 930]], flat: 955,
+    boxes: [{ key: 'asia', label: 'Asia', a: 1200, b: 1440, kind: 'asia', hi: 30212.5, lo: 30088.25, hiTaken: true }, { key: 'fra', label: 'Frankfurt', a: 120, b: 180, kind: 'london', hi: 30240, lo: 30150.5, hiTaken: true },
+      { key: 'lon', label: 'London 03-04', a: 180, b: 240, kind: 'london', hi: 30262.75, lo: 30160 }, { key: 'pre', label: 'Premarket', a: 240, b: 570, kind: 'pre', hi: 30262.75, lo: 30010.25 },
+      { key: 'ny89', label: 'NY 08-09', a: 480, b: 540, kind: 'ny', hi: 30080, lo: 30010.25, loTaken: !!alt }, { key: 'rth', label: 'Cash session', a: 570, b: 960, kind: 'rth' }],
+    events, blackouts: [[at(8, 25), at(8, 40)]], trades, setup: q.get('setup') === '1' ? { t: at(8, 42), expires_t: at(9, 12), dir: 1, label: 'swept NY 08-09 low' } : null, open18: 30150.25, vixMove: 312.4 };
+}
 // jarvis: one payload per state (the caption is what the bot would say in that state)
 const JTEXT = { idle: 'Watching NQ. No sweep yet today.', listening: 'Listening…', thinking: 'Checking the 09:30 killzone and the nearest major pool…',
   speaking: 'Asia high swept at 09:41. Waiting for the IFVG trigger; stop 32 points, size 2 micros.' };
@@ -186,6 +200,7 @@ const make = (alt) => ({
   heat: () => empty ? { cells: [], label: '2026' } : heat(alt),
   liqmap: () => empty ? {} : liqmap(alt),
   weekring: () => empty ? null : weekring(alt),
+  dayclock: () => empty ? null : dayclock(alt),
   none: () => null,
 }[view]());
 window.__picked = null;

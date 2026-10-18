@@ -127,6 +127,8 @@ def _runs(out, runs_dir, lm=None):
             continue
         extra |= set(r) - set(RUN_KEYS)
         pub = {k: r.get(k) for k in RUN_KEYS}
+        if lab_scope.strategy_of_run(pub) == "lit" and "cold-streak" in str(pub.get("method") or ""):
+            pub["method"] = lab_scope.LIT_METHOD        # runlib's default text names the engine's cold-streak filter
         if pub["family"] not in FAMILIES:
             pub["family"] = "other"
         if pub["status"] not in STATUSES:

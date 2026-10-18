@@ -1,6 +1,7 @@
 // Bundle the 3D / particle effects into one ES module for both dashboards.
 //   cd tools/web_public/fx && npm install && npm run build
-// Outputs: tools/web_public/fx.js (phone dashboard, published by the cloud monitor) and web_next/js/fx.js (PC dashboard).
+// Outputs: tools/web_public/fx.js (phone dashboard, published by the cloud monitor) and web_next/js/fx.js (PC dashboard);
+// it also copies tools/web_public/litkit.js (the LIT panels) to web_next/js/litkit.js.
 // The bundle's content hash is stamped into both pages' import URL (fx.js?v=<hash>), so a phone's service worker, which
 // keeps versioned files forever, fetches the new bundle after every rebuild.
 import { build } from 'esbuild';
@@ -14,6 +15,8 @@ const out = path.join(here, '..', 'fx.js');
 await build({ entryPoints: [path.join(here, 'src', 'index.js')], bundle: true, format: 'esm', minify: true, target: ['es2020', 'safari15'],
   outfile: out, legalComments: 'none', logLevel: 'warning' });
 copyFileSync(out, path.join(root, 'web_next', 'js', 'fx.js'));
+// the LIT panels (plain ES module, not bundled): one source for both dashboards
+copyFileSync(path.join(here, '..', 'litkit.js'), path.join(root, 'web_next', 'js', 'litkit.js'));
 const v = createHash('sha1').update(readFileSync(out)).digest('hex').slice(0, 8);
 const stamp = (file, re, rep) => {
   const p = path.join(root, file), s = readFileSync(p, 'utf8'), t = s.replace(re, rep);

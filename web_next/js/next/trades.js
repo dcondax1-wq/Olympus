@@ -72,9 +72,9 @@ function render() {
   const yearOpts = [...st.years].reverse().map(y => [y, y]).concat([['all', 'All years']]);
   el.innerHTML = `
     <div class="nx-hero">
-      <div><div class="nx-eyebrow">Live settings · exact live-loop replay${loaded?.built ? ` · built ${esc(loaded.built)}` : ''}</div>
-        <h2>${st.year === 'all' ? 'Every trade, 5 years' : st.year + ' trades'}</h2>
-        <p class="muted">Same engine, sizing and cold-streak filter as <span class="mono">live_model.json</span>. Costs included. Tap a trade for the full report.</p></div>
+      <div><div class="nx-eyebrow">Live settings · ${loaded?.model === 'lit' ? 'LIT replay' : 'exact live-loop replay'}${loaded?.built ? ` · built ${esc(loaded.built)}` : ''}</div>
+        <h2>${st.year === 'all' ? (loaded?.model === 'lit' ? 'Every LIT trade since 2021-11' : 'Every trade, 5 years') : st.year + ' trades'}</h2>
+        <p class="muted">${loaded?.model === 'lit' ? 'Same LIT rules, sizing and weekly stop as <span class="mono">live_model.json</span> (2026 entries on 1-minute bars; 2021-25 on 5-minute bars, a reference).' : 'Same engine, sizing and cold-streak filter as <span class="mono">live_model.json</span>.'} Costs included. Tap a trade for the full report.</p></div>
       <div class="seg nx-seg-lg" id="trYear">${yearOpts.map(([v, l]) => `<button class="${v === st.year ? 'on' : ''}" data-v="${v}">${l}</button>`).join('')}</div>
     </div>
     <div class="nx-stats">
@@ -82,7 +82,7 @@ function render() {
       <div class="nx-stat"><span>Net</span><b class="${cls(s.net)}" data-count="${s.net}" data-fmt="s$">${fmtS$(s.net)}</b><em>${s.pm != null ? fmtS$(s.pm) + ' a month · ' : ''}max DD ${fmt$(s.dd)}</em></div>
       <div class="nx-stat"><span>Profit factor</span><b>${s.pf != null ? fmtN(s.pf) : '—'}</b><em>win ${fmtN(s.win, 1)}%</em></div>
       <div class="nx-stat"><span>Avg R</span><b class="${cls(s.avgR)}">${fmtR(s.avgR)}</b><em>${s.avg$ != null ? fmtS$(s.avg$) + ' per trade' : 'per trade'}</em></div>
-      <div class="nx-stat"><span>Half size</span><b data-count="${s.half}">${s.half}</b><em>cold-streak trades</em></div>
+      <div class="nx-stat"><span>Half size</span><b data-count="${s.half}">${s.half}</b><em>${loaded?.model === 'lit' ? 'weekly-stop trades' : 'cold-streak trades'}</em></div>
     </div>
     <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>Trade galaxy · ${rows.length} trades</h3><span class="muted small">every trade is a star: time → right, R ↑, stop size ↗ · drag to turn · click a star for its report</span></div><div class="fx3d galaxy" id="trGal"></div></div>
     <div class="card nx-glass"><div class="card-h"><h3>Equity · filtered trades</h3><span class="muted small">cumulative net $, oldest → newest</span></div><div id="trEq"></div></div>
@@ -128,7 +128,7 @@ export function openSheet(t) {
       <button class="btn ghost icon nx-sheet-x" type="button" title="Close">✕</button>
     </header>
     <div class="nx-sheet-b">
-      <div class="nx-nums">${num('Stop', fmtN(t.risk_pts, 2) + ' pts')}${num('Micros', t.qty)}${num('$ risk', fmt$(t.risk_usd))}${num('Size', t.half ? '<span class="warn-t">half (cold streak)</span>' : 'full')}
+      <div class="nx-nums">${num('Stop', fmtN(t.risk_pts, 2) + ' pts')}${num('Micros', t.qty)}${num('$ risk', fmt$(t.risk_usd))}${num('Size', t.half ? `<span class="warn-t">half (${String(t.trigger || '').startsWith('LIT') ? 'weekly stop' : 'cold streak'})</span>` : 'full')}
         ${num('Entry', fmtN(t.entry))}${num('Stop price', fmtN(t.stop))}${num('Target', fmtN(t.target))}${num('Exit', fmtN(t.exit_price))}
         ${num('Best point', t.mfe != null ? '+' + fmtN(t.mfe, 2) + 'R' : '—')}${num('Bars held', t.bars_held ?? '—')}${num('Regime', esc(t.regime || '—'))}${num('Grade', esc(t.grade || '—'))}</div>
       <section><h4>${icon('target')}Plan</h4><p>${esc(rp.plan || '—')}</p><p class="muted small">Target: ${esc(t.target_label || '—')}</p></section>
