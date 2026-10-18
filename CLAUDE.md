@@ -27,7 +27,28 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
 - Every result is judged on 2026 **and** on 2021-25 (5 years). A change is adopted only if it holds in both and keeps 2+/week.
   Report trades/week, % weeks with 2+, PF, net, max DD, and MFFU eval pass/fail within 2 weeks and 1 month.
 
-## Live strategy (locked 2026-10-17): `live_model.json` + `STRATEGY.md` (exact rules)
+## Live strategy (locked 2026-10-18): LIT, `live_model.json` (= `live_model_lit.json`) + `STRATEGY.md`
+- **Owner's order (2026-10-18): LIT is the strategy, tuned and judged on 2026 only** (Jan 2 - Oct 16). Pick on Jan-Jun 2026,
+  check on Jul-Oct 2026, report both halves; 2021-25 is a reference line, never a gate. This replaces "better in 2026 AND
+  2021-25" for LIT changes only; every other hard rule stays.
+- **Rules** (`engine/lit.py` run_x, params in `live_model.json` "lit" = `research/lit/lit_final.json`): sweep of any LIT level
+  (session boxes, PDH/PDL, PWH/PWL, PMH/PML, NWOG/NDOG, build-ups), >= 0.5 ATR deep, inducement swing taken first (<= 1 ATR,
+  <= 36 bars), displacement body >= 0.8 ATR, 5m CISD close; limit at the CISD level for 30 min, then a 1m CISD within 20 bars
+  -> next 1m open; stop 1 tick beyond the sweep extreme (planned 8-80 pts; the 1m fill can widen it to ~88); target 18:00 open +/- 1 VIX one-day move, >= 1.5R, banked
+  at 8R; BE at 1R, flat 15:55, 1 trade/day, entries 02:00-15:30. Size $800 up to 20 pts, 800x20/stop, max 40 micros; no
+  cold-streak filter. Eval-safe switch (off): `how_out 0.5`.
+- **Results** (costs in): 2026 127 trades, 3.08/wk, PF 3.06, +$38,873 ($3,963/mo), DD -$3,097, pass rate 79.9%;
+  H1 (picked) PF 3.55 +$30,661; **H2 (check) PF 2.19 +$8,212 (~$2,200/mo): quote the H2 rate**; 2021-25 reference PF 1.03
+  +$3,806 DD -$20,695 (no 1m data there). Needs 1m bars (5m only: +$6.6k in 2026). 100 of 127 trades enter 02:00-08:00 ET.
+- **Live loop:** `engine/lit_live.py` (PC `engine/live.py`, cloud `tools/cloud_monitor.py`) on the bars from the previous
+  month's first day + 1m bars (data/NQ_1m.csv + Yahoo NQ=F 1m, 7 days). `python -X utf8 -m tests.test_lit_live` replays every
+  2026 session through it (127/127 trades identical). `tools/export_backtest.py` exports the LIT replay when the model is lit.
+- **Shadow:** the cloud monitor also runs the old engine (`live_model_engine.json`) as a paper ledger, state key `shadow`,
+  README "Old strategy (shadow, paper)", no alerts. The PC bot runs the old engine with `"model": "engine"` in its start cfg.
+- `tools/runlib.py`, `tools/pine_parity.py`, `tests/test_live_dryrun.py` read the engine lock from `live_model_engine.json`
+  (engine.lab_adapter.engine_config_raw) while live_model.json says lit.
+
+## Previous strategy (shadow): Liquidity Engine, eval mode (`live_model_engine.json`, locked 2026-10-17)
 - **Liquidity Engine, eval mode** (`engine/model.py`):
   1. Sweep of a liquidity pool from 08:00 ET.
   2. IFVG/CISD trigger in the killzones (09:30–11:30, 13:30–15:30).
@@ -81,7 +102,7 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   (Lab). New engine options must default to today's behaviour; bump `ENGINE_EPOCH` in runlib if an existing option changes.
 - `python tools/trade_gallery.py --trades <json> --name <n> --all`: annotated trade charts → `research/lab/gallery/` (gitignored).
   Study trades the owner is reviewing are in `research/study/`.
-- `python -X utf8 -m tests.test_live_dryrun --quick`: the live-loop harness. Expected 40/44; known fails:
+- `python -X utf8 -m tests.test_live_dryrun --quick`: the live-loop harness. Expected 41/44 (pinned to the old engine); known fails:
   - replay entries/exits vs plain backtest
   - restart exit routing
   - kill switch later-route

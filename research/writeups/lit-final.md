@@ -20,7 +20,7 @@ runs: lit_final, baseline, lit_A, lit_entry_best, lit_risk_vix_bank8, lit_sessio
   - On **Jan-Jun 2026 (H1)**, by H1 profit **without its 3 best trades**, so one lucky trade cannot choose the strategy.
   - Then checked on **Jul-Oct 2026 (H2)**, which was not used to choose.
 - **Result:** LIT final makes **+$38,873 in 2026** (PF 3.06, $3,963 a month, 3.1 trades a week, max drawdown −$3,097). It
-  stays profitable in both halves, with every one of 25 neighbouring settings, and with 2 extra ticks of slippage.
+  stays profitable in both halves, with every one of 23 neighbouring settings, and with 2 extra ticks of slippage.
 - **The honest part:**
   - **H1 was tuned, H2 was not.** H1 made +$30.7k. H2, the out-of-sample half, made +$8.2k (PF 2.19, about **$2,200 a month**).
     Plan on the H2 rate, not the full-year average.
@@ -199,7 +199,7 @@ extreme falls outside the Tuesday 03:00 to Wednesday 11:30 high/low-of-week wind
 | **1m execution → everything on 5m** | +5,361 | +1,253 | +6,614 | **the edge needs 1m bars** |
 | Whole risk study (= `lit_entry_best`) | +15,990 | +3,851 | +19,841 | needed in both |
 
-**25 neighbouring settings.** All are profitable in both halves of 2026. The 2026 net ranges from +$26.9k to +$44.3k (PF 2.45 to
+**23 neighbouring settings.** All are profitable in both halves of 2026. The 2026 net ranges from +$26.9k to +$44.3k (PF 2.45 to
 3.49). The ones tried:
 - VIX move 0.9 / 1.1
 - bank 7R / 9R

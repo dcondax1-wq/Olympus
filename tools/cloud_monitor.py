@@ -83,6 +83,19 @@ def load_state(path):
         return {}
 
 
+def _lit_eval_odds():
+    """MFFU 50K eval odds of LIT from its stored 2026 run (research/runs/lit_final.json), in eval_timing's fields."""
+    try:
+        with open(os.path.join(ROOT, "research", "runs", "lit_final.json"), encoding="utf-8") as fh:
+            s = json.load(fh)["spans"]["2026"]
+        return {"pass_2w": round(s["p10"] / 100, 3), "fail_2w": round(s["f10"] / 100, 3), "pass_1m": round(s["p20"] / 100, 3),
+                "fail_1m": round(s["f20"] / 100, 3),
+                "median_pass": s["pass_med"], "funded_wk": None,
+                "reason": "no cold-streak filter: odds from the LIT 2026 backtest (tuned on Jan-Jun; Jul-Oct was weaker)"}
+    except Exception:
+        return {"pass_2w": None, "fail_2w": None, "pass_1m": None, "fail_1m": None, "median_pass": None, "funded_wk": None}
+
+
 def run_model(lm, bot, df_all, now, store_1m=None):
     """One poll of a strategy on the merged bars: the engine on the 20-day window (as LiveBot.poll_once), LIT on the
     previous-month window with 1m bars (engine/lit_live.py), a lab module on the 20-day window."""
@@ -215,6 +228,8 @@ def run(out):
     eqf_now = equity_filter.status(eqf_cfg, path=shadow_path)
     state["equity_filter"] = eqf_now
     state["eval_timing"] = equity_filter.eval_timing(eqf_now, equity_filter.sessions_since_flip(eqf_cfg, now, shadow_path))   # when to buy/reset the eval
+    if lm["model"] == "lit":                      # the odds above are the old engine's; LIT's come from its own 2026 run
+        state["eval_timing"] = {**state["eval_timing"], **_lit_eval_odds()}
 
     # ---- paper ledger: model trades that entered after the cloud monitor started watching
     sizing_cfg = lm.get("sizing")
@@ -430,7 +445,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     pools = sorted(state.get("active_pools") or [], key=lambda p: abs(float(p["price"]) - float(price or 0)))[:8]
     feed = "OK" if health["fetch_ok"] and not health["stale"] else ("STALE" if health["stale"] else "Yahoo fetch failed, using stored history")
     L = [f"# {SYM} Liquidity Engine - cloud paper monitor",
-         f"Updated **{et(now):%a %b %d %H:%M} ET** - runs every 15 min on market days (GitHub Actions) - "
+         f"Updated **{et(now):%a %b %d %H:%M} ET** - runs every 30 min, 02:00-16:25 ET, on market days (GitHub Actions) - "
          f"**paper only, never places orders** - watching since {et(first_run):%b %d %H:%M} ET",
          "", "![NQ 5m today](chart.png)", "",
          "## Status", "| | |", "|---|---|",
