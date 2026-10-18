@@ -161,7 +161,7 @@ def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, para
                 reasons = prev.get("reasons")
             elif res.get("model") == "lit":
                 before = {k: v for k, v in ledger.items() if int(k) < int(t["entry_t"])}
-                room = eval_track(before)["cushion"] if (lit_sizing or {}).get("mode") == "safe_eval" else None
+                room = eval_track(before)["cushion"] if (lit_sizing or {}).get("mode") in ("safe_eval", "eval") else None
                 r = sizing.lit_qty(int(t.get("qty") or 0), t, lit_sizing, room=room)
                 mult, qty, reasons = r["mult"], r["qty"], r["reasons"]
             else:

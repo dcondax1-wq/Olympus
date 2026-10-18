@@ -374,9 +374,10 @@ def at_size(t, mi, mn, cum=0.0):
          "r": round(pnl / ru, 3) if ru else 0.0, "mult": t.get("wk_m", 1.0), "half": t.get("wk_m", 1.0) < 1}
     worst = max(x["low"], -(t["risk_pts"] + SLIP) * PV * q - comm)
     if DLL and cum + worst <= -DLL:
+        # MFFU closes the position when the day reaches -$1,000 (open P&L included): flat there with 1 tick of slippage,
+        # whether the trade would have recovered (worse) or run on to a bigger stop loss (better: the loss is capped)
         p2 = round(-DLL - cum - SLIP * PV * q, 2)
-        if p2 < x["pnl"]:
-            x.update(pnl=p2, low=p2, exit="DLL", r=round(p2 / ru, 3) if ru else 0.0)
+        x.update(pnl=p2, low=min(p2, 0.0), exit="DLL", r=round(p2 / ru, 3) if ru else 0.0)
     return x
 
 
@@ -637,31 +638,42 @@ def honest():
 
 
 # ================================================================================================ store runs
-SAVES = [   # id, title, stop variant, size, room_k, status, verdict (filled from the numbers)
-    ("lit_tight_live_ref", "LIT live (sweep-extreme stop, $800 up to 20 pts) - reference for the tight-stop study",
-     "live: sweep extreme + 1 tick", "LIT rule $800/20", None, "info"),
-    ("lit_tight_tap_lit", "LIT, stop beyond the 1m protected swing (+1 tick), LIT size rule ($800 up to 20 pts)",
-     "1m protected swing + 1 tick", "LIT rule $800/20", None, "rejected"),
-    ("lit_tight_tap_flat400", "LIT, stop beyond the 1m protected swing (+1 tick), flat $400 a trade",
-     "1m protected swing + 1 tick", "flat $400", None, "rejected"),
-    ("lit_tight_ext_flat400", "LIT live stop (sweep extreme), flat $400 a trade",
-     "live: sweep extreme + 1 tick", "flat $400", None, "info"),
-    ("lit_tight_frac50_flat800", "LIT, stop at 50% of the sweep-extreme distance, flat $800",
-     "50% of the extreme distance", "flat $800", None, "rejected"),
-    ("lit_tight_cap25_skip", "LIT, skip setups whose sweep-extreme stop is wider than 25 pts (LIT size rule)",
-     "cap 25: skip wider", "LIT rule $800/20", None, "rejected"),
-    ("lit_tight_ext_1nq", "LIT live stop (sweep extreme), 1 NQ mini on every trade",
-     "live: sweep extreme + 1 tick", "1 NQ", None, "rejected"),
-    ("lit_tight_tap_1nq", "LIT, stop beyond the 1m protected swing, 1 NQ mini on every trade",
-     "1m protected swing + 1 tick", "1 NQ", None, "rejected"),
+EXT, TAP = "live: sweep extreme + 1 tick", "1m protected swing + 1 tick"
+SAVES = [   # id, title, stop variant, size rule, room_k, status, why
+    ("lit_tight_live_ref", "LIT live (sweep-extreme stop, $800 up to 20 pts) - reference for the tight-stop study", EXT, ("lit", 800, 20.0), None,
+     "info", "The live strategy as the study's reference (== run lit_live)."),
+    ("lit_tight_tap_lit", "LIT, stop beyond the 1m protected swing (+1 tick), LIT size rule", TAP, ("lit", 800, 20.0), None, "rejected",
+     "Median stop 14-17 pts, so the LIT rule puts ~$740 at risk instead of ~$270: the H1 $ come from 2.7x the risk. H2 and 2021-25 lose."),
+    ("lit_tight_ext_flat800", "LIT live stop (sweep extreme), flat $800 a trade", EXT, ("lit", 800, None), None, "info",
+     "Equal-risk reference for the tight stops: $800 at risk on every trade."),
+    ("lit_tight_tap_flat800", "LIT, stop beyond the 1m protected swing, flat $800 a trade (equal risk)", TAP, ("lit", 800, None), None, "rejected",
+     "At the same $800 a trade the tight stop wins H1 but loses H2 (and 2021-25) against the sweep-extreme stop: not both halves."),
+    ("lit_tight_frac50_flat800", "LIT, stop at 50% of the sweep-extreme distance, flat $800", "50% of the extreme distance", ("lit", 800, None), None,
+     "rejected", "Half the stop doubles the stop-outs of trades that later work; H2 loses money."),
+    ("lit_tight_cap25_skip", "LIT, skip setups whose sweep-extreme stop is wider than 25 pts", "cap 25: skip wider", ("lit", 800, 20.0), None,
+     "rejected", "Only ~0.3 trades a week are left: breaks the 2-4 a week rule."),
+    ("lit_tight_cap30_tap", "LIT, 1m protected-swing stop when the sweep-extreme stop is wider than 30 pts (else skip)", "cap 30: 1m swing if wider, else skip",
+     ("lit", 800, None), None, "rejected", "Keeps 2.8 trades a week, but at equal risk H2 is below the live stop."),
+    ("lit_tight_entry_ob", "LIT, refined entry: limit at the 1m order block after the 1m CISD (10 bars), sweep-extreme stop",
+     "entry ob limit 10 bars, extreme stop", ("lit", 800, 20.0), None, "rejected",
+     "Shorter stops by ~3 pts only; misses the winners that never come back: H1 -$15k vs live."),
+    ("lit_tight_ext_1nq", "LIT live stop (sweep extreme), 1 NQ mini on every trade", EXT, ("nq", 1), None, "rejected",
+     "1 NQ on a 45-pt median stop risks ~$900 (up to $1,700, cut by the $1,000 daily limit): 2-week fails 30-40%."),
+    ("lit_tight_tap_1nq", "LIT, 1m protected-swing stop, 1 NQ mini on every trade", TAP, ("nq", 1), None, "rejected",
+     "Risk is small (~$270-310) but the tight stop's edge is gone in H2 and 2021-25."),
+    ("lit_tight_eval_fast_room60", "LIT live stop, $800 up to a 40-pt stop + never more than 60% of the room to the max-loss floor",
+     EXT, ("lit", 800, 40.0), 0.6, "adopt-candidate", "Fastest eval with 2-week fails under 10% in both halves (eval-speed mode)."),
+    ("lit_tight_eval_800_25_room60", "LIT live stop, $800 up to a 25-pt stop + never more than 60% of the room to the max-loss floor",
+     EXT, ("lit", 800, 25.0), 0.6, "adopt-candidate", "Same pass rate as live, faster passes in both halves (balanced eval mode)."),
+    ("lit_tight_funded_800_25", "LIT live stop, $800 up to a 25-pt stop (no room cap): funded-account size", EXT, ("lit", 800, 25.0), None,
+     "promising", "More $ in both halves than live at a DD near the $2,000 trailing limit; the room cap still guards the first $2,100."),
 ]
 
 
 def save(extra=None):
     V = stop_variants()
-    for rid, title, vn, sn, rk, status in (extra or SAVES):
+    for rid, title, vn, rule, rk, status, why in (extra or SAVES):
         U = unit(V[vn])
-        rule = SIZES[sn]
         if rk is None:
             T = sized(U, rule)
         else:
@@ -674,7 +686,7 @@ def save(extra=None):
                        f"1mo {s['p20']}/{s['f20']} pass rate {s['pass_rate']}% median {s['pass_med']}")
         rl.save(rid, title, "other", "Owner order 2026-10-18: upsizing and fewer wide stops - do tighter stops or more contracts pay on LIT?",
                 params={**LIVE, **V[vn], "size": list(rule), "room_k": rk}, trades=T, scored=S, status=status,
-                verdict=f"2026 H1 (pick) {h(o['H1'])}; 2026 H2 (check) {h(o['H2'])}; 2021-25 reference only {h(o['2021-25'])}",
+                verdict=f"{why} 2026 H1 (pick) {h(o['H1'])}; 2026 H2 (check) {h(o['H2'])}; 2021-25 reference only {h(o['2021-25'])}",
                 notes="tools/lit_tightstop.py (wraps engine/lit.py; stop_mode ext + LIT size == run lit_live trade for trade). "
                       "Same LIT signals and fills; the stop, entry limit or size changes. MFFU $1,000 soft daily loss modelled; "
                       "NQ minis at $4.50 a round trip.", writeup="lit-tight-stops-size", tags=["lit", "lit_tight"])

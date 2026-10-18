@@ -56,15 +56,17 @@
   "equity_filter": null,
   "sizing": null,
   "lit_sizing": {
-    "mode": "normal",
+    "mode": "eval",
     "modes": {
       "normal": "the LIT rule: $800 up to a 20-pt stop, then 800x20/stop, max 40 micros (then the weekly stop)",
       "fast_eval": "eval speed: $800 up to a 40-pt stop, then 800x40/stop (run lit_x_fast_eval: 2-week passes H1 52% / H2 47%, but 21-27% of evals fail in 2 weeks)",
-      "safe_eval": "never risk more than 60% of the room between the eval balance and the trailing max-loss floor: micros capped at 0.6 x room / (stop x $2), min 1 (run lit_x_room_cap60: 1-month fails H1 25.8% -> 10.2%)"
+      "safe_eval": "never risk more than 60% of the room between the eval balance and the trailing max-loss floor: micros capped at 0.6 x room / (stop x $2), min 1 (run lit_x_room_cap60: 1-month fails H1 25.8% -> 10.2%)",
+      "eval": "eval (on since 2026-10-18): $800 up to a 25-pt stop, then 800x25/stop, then never more than 60% of the room to the trailing max-loss floor (run lit_tight_eval_800_25_room60: 2-week passes H1 37.5% / H2 29.5% vs 28.9 / 23.1, fails 3.1 / 0.0 unchanged)"
     },
     "safe_cap": 0.6,
     "fast_ref_stop": 40.0,
-    "note": "OFF (normal) until the owner switches it; applied by the cloud monitor ledger and the PC bot (engine/sizing.py lit_qty), one rounding"
+    "note": "eval mode ON (2026-10-18); normal = the LIT rule; applied by the cloud monitor ledger and the PC bot (engine/sizing.py lit_qty), one rounding",
+    "eval_ref_stop": 25.0
   },
   "size_rule": "$800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $2/pt; max 40 micros; no trade under 1 micro (engine/lit.py qty_for). Weekly stop: after 2 STOP exits in the calendar week, half size for the rest of it (one rounding, floor 1 micro). No cold-streak filter, no late-entry rule. Switch lit_sizing.mode (normal / fast_eval / safe_eval), default normal.",
   "costs": "$1.40 per micro round trip; 1 tick slippage on market entries and on stop / breakeven / end-of-day exits (limit entries and targets fill at the price)",

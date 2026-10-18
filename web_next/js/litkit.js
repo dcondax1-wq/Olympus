@@ -69,7 +69,7 @@ const short = (l) => String(l).replace(/ \d\d-\d\d$/, '');
 export function fromCloud(D, now = Date.now() / 1000) {
   const lv = D?.live || {}, X = D?.lit_extra || {}, S = D?.strategy || {}, news = D?.news && !D.news.error ? D.news : null;
   const ledger = (lv.ledger || []).map((v) => ({ ...v, t: v.entry_t || ledgerT(v), exit_t: v.exit_ts || null }));
-  return mk({ now, model: lv.model || S.model, model_state: lv.model_state, price: lv.price, last_run: lv.last_run, bars: lv.bars || [],
+  return mk({ src: 'cloud', now, model: lv.model || S.model, model_state: lv.model_state, price: lv.price, last_run: lv.last_run, bars: lv.bars || [],
     levels: X.levels || lv.levels || lv.pools || [], levelsFull: !!(X.levels || lv.levels), lit: { ...(X.lit || {}), ...(lv.lit || {}) }, session: lv.session || X.lit?.session || {},
     setups: lv.setups || {}, position: lv.position || null, rules: lv.lit_rules || {}, eval: lv.eval || null, ledger, events: lv.events || [],
     news: news ? (news.events || []) : [], newsRules: news?.bot_now?.rules || null, newsDays: news?.days || [],
@@ -91,7 +91,8 @@ export function pcLedger(rows) {
 export function fromPC(live, extra = {}, now = Date.now() / 1000) {
   const st = live?.state || live || {};
   if (!extra.ledger && live?.ledger) extra = { ...extra, ledger: pcLedger(live.ledger), bars: extra.bars || live.bars };
-  return mk({ now, model: st.model || 'lit', model_state: st.model_state, price: st.price, last_run: st.t, bars: extra.bars || st.bars || [],
+  const bars = (extra.bars || st.bars || []).map((b) => (Array.isArray(b) ? b : [b.time ?? b.t, b.open ?? b.o, b.high ?? b.h, b.low ?? b.l, b.close ?? b.c]));
+  return mk({ src: 'pc', now, model: st.model || 'lit', model_state: st.model_state, price: st.price, last_run: live?.last_poll ?? st.t, bars,
     levels: st.active_pools || extra.levels || [], levelsFull: !!st.active_pools, lit: st.lit || {}, session: st.session || {}, setups: st.setups || {}, position: st.position || null,
     rules: st.lit_rules || {}, eval: extra.eval || null, ledger: extra.ledger || [], events: extra.events || [], news: extra.news || [], newsRules: extra.newsRules || null,
     newsDays: extra.newsDays || [], sizing: extra.sizing || {}, plan: extra.plan || null, litRules: extra.rules || { window: [[120, 930]] }, boxes: extra.boxes || null,
@@ -228,6 +229,7 @@ export function railHTML(C) {
 const kv = (rows) => `<div class="lk-kv">${rows.map(([k, v]) => `<div><span>${k}</span><b>${v}</b></div>`).join('')}</div>`;
 
 // ------------------------------------------------------------------ levels board
+const nameShort = (l) => { const p = String(l).split(' · '); return p.length > 2 ? `${p[0]} · ${p[1]} +${p.length - 2}` : l; };
 export function levelsHTML(C, { max = 14 } = {}) {
   css();
   const L = levels(C), P = C.price, mic = sizeNow(C);
@@ -235,11 +237,11 @@ export function levelsHTML(C, { max = 14 } = {}) {
   const above = L.filter((r) => r.above), below = L.filter((r) => !r.above);
   const pick = (arr, near) => arr.sort((a, b) => Math.abs(a.dist) - Math.abs(b.dist)).slice(0, Math.ceil(max / 2)).sort((a, b) => b.price - a.price);
   const stTxt = (r) => r.target ? 'target' : r.taken ? `taken${r.takenAt ? ' ' + hm(et(r.takenAt).min) : ''}` : ok(r.sweepAt) ? `sweep ${r.side === 'H' ? '≥' : '≤'} ${px(r.sweepAt)}` : 'untaken';
-  const row = (r) => `<tr class="${r.taken ? 'tk' : ''}${r.nearest ? ' near' : ''}${r.target ? ' tgt' : ''}"><td class="lb"><i class="lk-sw ${r.side === 'H' ? 'h' : 'l'}${r.target ? ' v' : ''}"></i><span>${esc(r.label)}</span>${r.nearest ? ' <em class="lk-pill on">next</em>' : ''}<small>${stTxt(r)}</small></td>
-    <td class="n">${px(r.price)}</td><td class="n ${r.above ? 'lk-up' : 'lk-dn'}">${ok(r.dist) ? spts(r.dist) : '—'}</td><td class="n hs">${ok(r.usd) ? usd(r.usd) : '—'}</td>
-    <td class="n hs">${mic.m && ok(r.usd) ? usd(r.usd * mic.m) : '—'}</td><td class="st hs">${stTxt(r)}</td></tr>`;
-  return `<div class="lk lk-lv"><div class="lk-tw"><table><thead><tr><th>Level</th><th class="n">Price</th><th class="n">Pts</th><th class="n hs">$ / MNQ</th><th class="n hs">$ at ${mic.m || 0}</th><th class="hs">State</th></tr></thead>
-    <tbody>${pick(above).map(row).join('')}<tr class="px"><td colspan="6"><b>NQ ${px(P)}</b> <span>${ok(C.atr) ? `5m ATR ${C.atr.toFixed(1)} pts · a sweep needs ${(C.litRules.depth * C.atr).toFixed(1)} pts beyond a level` : ''}</span></td></tr>${pick(below).map(row).join('')}</tbody></table></div>
+  const row = (r) => `<tr class="${r.taken ? 'lk-tk' : ''}${r.nearest ? ' lk-near' : ''}${r.target ? ' lk-tgt' : ''}"><td class="lk-lbl"><i class="lk-sw ${r.side === 'H' ? 'h' : 'l'}${r.target ? ' v' : ''}"></i><span title="${esc(r.label)}">${esc(nameShort(r.label))}</span>${r.nearest ? ' <em class="lk-pill on">next</em>' : ''}<small>${stTxt(r)}</small></td>
+    <td class="lk-n">${px(r.price)}</td><td class="lk-n ${r.above ? 'lk-up' : 'lk-dn'}">${ok(r.dist) ? spts(r.dist) : '—'}</td><td class="lk-n lk-hs">${ok(r.usd) ? usd(r.usd) : '—'}</td>
+    <td class="lk-n lk-hs">${mic.m && ok(r.usd) ? usd(r.usd * mic.m) : '—'}</td><td class="lk-stc lk-hs">${stTxt(r)}</td></tr>`;
+  return `<div class="lk lk-lv"><div class="lk-tw"><table><thead><tr><th>Level</th><th class="lk-n">Price</th><th class="lk-n">Pts</th><th class="lk-n lk-hs">$ / MNQ</th><th class="lk-n lk-hs">$ at ${mic.m || 0}</th><th class="lk-hs">State</th></tr></thead>
+    <tbody>${pick(above).map(row).join('')}<tr class="lk-pxr"><td colspan="6"><b>NQ ${px(P)}</b> <span>${ok(C.atr) ? `5m ATR ${C.atr.toFixed(1)} pts · a sweep needs ${(C.litRules.depth * C.atr).toFixed(1)} pts beyond a level` : ''}</span></td></tr>${pick(below).map(row).join('')}</tbody></table></div>
     <p class="lk-note">$ / MNQ = distance × $2 for one micro. “$ at ${mic.m || 0}” = the move at today’s size for a ${C.stats?.spans?.['2026']?.med_stop ?? 46}-pt stop (${mic.m || 0} micros${mic.mult < 1 ? ', weekly stop: half size' : ''}). LIT trades only when a level is swept, then waits for inducement, displacement and a 5m CISD.${C.levelsFull ? '' : ' Taken = traded through since the box closed (5m bars).'}</p></div>`;
 }
 
@@ -405,8 +407,8 @@ export function ready(C) {
   const out = [], add = (st, label, note) => out.push({ st, label, note });
   const h = C.health || {}, pc = C.pc || {}, ev = cockpit(C), news = newsToday(C).filter((e) => e.impact === 'high');
   const age = C.last_run ? C.now - C.last_run : null;
-  add(age == null ? 'bad' : age < 40 * 60 || C.closed ? 'ok' : 'warn', 'Cloud paper bot', age == null ? 'no run yet' : `last run ${cd(age)} ago${C.closed ? ' (market closed)' : ''}`);
-  add(h.error ? 'bad' : h.stale ? 'warn' : 'ok', 'Price feed', h.error ? String(h.error) : h.stale ? `stale · last bar ${h.last_bar || '?'}` : `fresh · last bar ${h.last_bar || '—'} (Yahoo NQ=F)`);
+  add(age == null ? 'bad' : age < 40 * 60 || C.closed ? 'ok' : 'warn', C.src === 'pc' ? 'Paper bot (this PC)' : 'Cloud paper bot', age == null ? 'no run yet' : `last run ${cd(age)} ago${C.closed ? ' (market closed)' : ''}`);
+  add(h.error ? 'bad' : h.stale ? 'warn' : 'ok', 'Price feed', h.error ? String(h.error) : h.stale ? `stale · last bar ${h.last_bar || '?'}` : `fresh · last bar ${h.last_bar || '—'}${C.src === 'pc' ? '' : ' (Yahoo NQ=F)'}`);
   add(pc.present ? (pc.silent ? 'bad' : pc.running === false ? 'warn' : 'ok') : 'warn', 'PC bot + NinjaTrader', pc.present ? (pc.silent ? `silent for ${cd(pc.age_s || 0)}` : `${pc.adapter || 'paper'} · ${pc.running === false ? 'stopped' : 'running'}`)
     : 'no heartbeat: start the PC by 01:55 ET (most LIT entries come 02:00-08:00)');
   add(C.lit?.one_min_day === false ? 'warn' : 'ok', '1-minute bars', C.lit?.one_min_day === false ? 'today runs on 5m bars only (fewer, worse fills)' : 'LIT enters on a 1m CISD');
@@ -470,7 +472,7 @@ export function css() {
   s.textContent = `.lk{--lk-asia:#b49bff;--lk-lon:#67e8f9;--lk-pre:#ffc777;--lk-ny:#ffb27a;font-variant-numeric:tabular-nums;min-width:0}
 .lk-up{color:var(--good-ink,var(--good))}.lk-dn{color:var(--bad)}.lk-wn{color:var(--warn)}
 .lk-k{display:block;font-size:10.5px;font-weight:650;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.lk-pill{display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:99px;font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.02em;color:var(--ink-2);border:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+.lk-pill{display:inline-flex;align-items:center;gap:.3em;height:20px;padding:0 8px;border-radius:99px;font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.02em;color:var(--ink-2);border:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
 .lk-pill.on{color:var(--good-ink,var(--good));border-color:color-mix(in srgb,var(--good) 40%,transparent);background:color-mix(in srgb,var(--good) 10%,transparent)}
 .lk-pill.wn{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
 .lk-why{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 12px}.lk-why b{font-weight:700}
@@ -496,13 +498,13 @@ export function css() {
 .lk-tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px}
 .lk-lv table{width:100%;border-collapse:collapse;font-size:12.5px}
 .lk-lv th{font-size:10.5px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 6px;border-bottom:1px solid var(--line)}
-.lk-lv td{padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap}.lk-lv td.lb{white-space:normal}.lk-lv td.lb small{display:none;font-size:10.5px;color:var(--muted);margin:2px 0 0 15px}.lk-lv .n{text-align:right;font-family:var(--mono)}
-.lk-lv tr.tk td{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}.lk-lv tr.tk td.st{text-decoration:none}
-.lk-lv tr.near td{background:color-mix(in srgb,var(--accent) 7%,transparent)}.lk-lv tr.tgt td{color:var(--good-ink,var(--good))}
-.lk-lv td.st{font-size:11px;color:var(--ink-2)}
-.lk-lv tr.px td{background:var(--surface-2);font-size:12px;color:var(--ink-2);white-space:normal}.lk-lv tr.px b{color:var(--ink);font-family:var(--mono);margin-right:8px}
+.lk-lv td{padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap}.lk-lv td.lk-lbl{white-space:normal}.lk-lv td.lk-lbl small{display:none;font-size:10.5px;color:var(--muted);margin:2px 0 0 15px}.lk-lv .lk-n{text-align:right;font-family:var(--mono)}
+.lk-lv tr.lk-tk td{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}.lk-lv tr.lk-tk td.lk-stc{text-decoration:none}
+.lk-lv tr.lk-near td{background:color-mix(in srgb,var(--accent) 7%,transparent)}.lk-lv tr.lk-tgt td{color:var(--good-ink,var(--good))}
+.lk-lv td.lk-stc{font-size:11px;color:var(--ink-2)}
+.lk-lv tr.lk-pxr td{background:var(--surface-2);font-size:12px;color:var(--ink-2);white-space:normal}.lk-lv tr.lk-pxr b{color:var(--ink);font-family:var(--mono);margin-right:8px}
 .lk-sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:7px;vertical-align:0}.lk-sw.h{background:var(--bsl)}.lk-sw.l{background:var(--ssl)}.lk-sw.v{background:var(--good);border-radius:50%}
-@media (max-width:560px){.lk-lv .hs{display:none}.lk-lv td.lb small{display:block}.lk-lv tr.tk td.lb small{text-decoration:none}}
+@media (max-width:560px){.lk-lv .lk-hs{display:none}.lk-lv td.lk-lbl small{display:block}.lk-lv tr.lk-tk td.lk-lbl small{text-decoration:none}}
 .lk-ckh{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}
 .lk-big{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em;margin:4px 0 2px}.lk-ckh em{font-style:normal;font-size:12px;font-weight:650}
 .lk-st{padding:6px 12px;border-radius:10px;font-size:12px;font-weight:800;letter-spacing:.08em;border:1px solid var(--line)}

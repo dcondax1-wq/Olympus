@@ -39,7 +39,7 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   cold-streak filter. Eval-safe switch (off): `how_out 0.5`.
 - **Loss pack (on, 2026-10-18, `research/writeups/lit-losses.md`):** weekly stop (after 2 stop-outs in a calendar week, half
   size for the rest of it: `wk_stop`) and the Monday rule (once Monday took Friday's high only shorts, Friday's low only longs:
-  `monday`). Sizing switch `lit_sizing.mode` normal (default) | fast_eval ($800 up to a 40-pt stop) | safe_eval (micros capped
+  `monday`). Sizing `lit_sizing.mode` **eval (ON 2026-10-18: $800 up to a 25-pt stop + 60% room cap, run lit_tight_eval_800_25_room60, 2-wk passes 37.5/29.5 vs 28.9/23.1)** | normal | fast_eval ($800 up to a 40-pt stop) | safe_eval (micros capped
   at 60% of the eval room); see `lit-experiments.md`.
 - **Results LIT + pack** (run `lit_live`, costs in): 2026 120 trades, 2.91/wk, win 26.7%, PF 3.66, +$41,734 ($4,254/mo),
   DD -$2,315, eval 2 wk 26.7/1.9, 1 mo 55.3/3.9, pass rate 95.5%; H1 (picked) PF 4.44 +$32,773; **H2 (check) PF 2.46

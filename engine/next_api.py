@@ -283,3 +283,18 @@ def news_hub(compact: int = 0):
         from tools import news_hub as nh
         return _J(nh.compact(d))
     return _J(d)
+
+
+@router.get("/api/next/lit_extra")
+def lit_extra():
+    """The LIT panels' static data (tools/lit_dash_extra.py): MFFU plan, LIT size rule + switches, timing rules, session
+    boxes, 2026 stats and sessions (forward eval odds). The live parts (levels, setups, session boxes' prices) come from
+    the PC bot's own state (/api/live/state), so the state passed here is empty."""
+    lm = _read(os.path.join(ROOT, "live_model.json")) or {}
+    if not lab_scope.is_lit_model(lm):
+        return _J({"error": "live_model.json is not LIT"}, 404)
+    try:
+        from tools import lit_dash_extra
+        return _J(lit_dash_extra.extra({}, lm))
+    except Exception as e:                                   # never 500 the dashboard over a panel
+        return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)

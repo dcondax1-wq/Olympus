@@ -91,7 +91,8 @@ def mffu_eval(day_pnl: dict, plan: dict | None = None) -> dict:
 
 def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None = None, max_micros: int = 40) -> dict:
     """Micros to route for one LIT entry. qty = the model's micros (engine/lit.py: $800 up to a 20-pt stop, then 800x20/stop,
-    times the weekly stop, rounded once). cfg = live_model.json "lit_sizing" {"mode": "normal" | "fast_eval" | "safe_eval"}:
+    times the weekly stop, rounded once). cfg = live_model.json "lit_sizing" {"mode": "normal" | "eval" | "fast_eval" | "safe_eval"}:
+      eval       $800 up to an eval_ref_stop (25) pt stop, then 800x25/stop, times the weekly stop, then the safe_eval cap
       normal     the model's micros (default)
       fast_eval  $800 up to a fast_ref_stop (40) pt stop, then 800x40/stop, times the model's size multiplier (weekly stop),
                  rounded down once, floor 1 (run lit_x_fast_eval)
@@ -114,7 +115,15 @@ def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None =
         q = base if m >= 1 else max(1, int(base * m + 1e-9))
         q = max(q, 1)
         reasons.append(f"fast eval: $800 up to a {float(c.get('fast_ref_stop', 40.0)):g}-pt stop -> {q} micros")
-    elif mode == "safe_eval" and risk:
+    if mode == "eval" and risk:
+        # the eval mode (2026-10-18, run lit_tight_eval_800_25_room60): $800 up to an eval_ref_stop (25) pt stop, then
+        # 800x25/stop, times the weekly stop, rounded once; then the safe_eval room cap below
+        from .lit import qty_for
+        base = qty_for(float(risk), 800.0, float(c.get("eval_ref_stop", 25.0)), max_micros)
+        m = float(trade.get("size_mult") or 1.0)
+        q = max(1, base if m >= 1 else int(base * m + 1e-9))
+        reasons.append(f"eval size: $800 up to a {float(c.get('eval_ref_stop', 25.0)):g}-pt stop -> {q} micros")
+    if mode in ("safe_eval", "eval") and risk:
         if room is None:
             reasons.append("safe eval: eval room unknown, no cap")
         else:
@@ -144,6 +153,8 @@ def selftest() -> bool:
     assert route_qty(4, t_late, 0.25, fast, {"risk_usd": 800}, eval_profit=500.0)["qty"] == 1   # 9 x 0.125 = 1.1 -> 1
     lt = {"risk_pts": 47.0}
     assert lit_qty(3, lt)["qty"] == 3 and lit_qty(3, lt, {"mode": "normal"})["qty"] == 3
+    assert lit_qty(3, {"risk_pts": 44.0, "size_mult": 1.0}, {"mode": "eval", "eval_ref_stop": 25})["qty"] == 5   # 800*25/44 / 88 = 5.2
+    assert lit_qty(3, {"risk_pts": 44.0, "size_mult": 1.0}, {"mode": "eval", "safe_cap": 0.6}, room=300)["qty"] == 2   # 180/88
     assert lit_qty(3, lt, {"mode": "fast_eval"})["qty"] == 7                       # 800*40/47 = 680.9 / 94 = 7.2 -> 7
     assert lit_qty(1, {**lt, "size_mult": 0.5}, {"mode": "fast_eval"})["qty"] == 3  # 7 x 0.5 = 3.5 -> 3 (one rounding)
     assert lit_qty(3, lt, {"mode": "safe_eval"}, room=2000.0)["qty"] == 3           # 0.6*2000/94 = 12.8 -> no cap

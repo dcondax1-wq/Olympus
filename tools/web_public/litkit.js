@@ -69,7 +69,7 @@ const short = (l) => String(l).replace(/ \d\d-\d\d$/, '');
 export function fromCloud(D, now = Date.now() / 1000) {
   const lv = D?.live || {}, X = D?.lit_extra || {}, S = D?.strategy || {}, news = D?.news && !D.news.error ? D.news : null;
   const ledger = (lv.ledger || []).map((v) => ({ ...v, t: v.entry_t || ledgerT(v), exit_t: v.exit_ts || null }));
-  return mk({ now, model: lv.model || S.model, model_state: lv.model_state, price: lv.price, last_run: lv.last_run, bars: lv.bars || [],
+  return mk({ src: 'cloud', now, model: lv.model || S.model, model_state: lv.model_state, price: lv.price, last_run: lv.last_run, bars: lv.bars || [],
     levels: X.levels || lv.levels || lv.pools || [], levelsFull: !!(X.levels || lv.levels), lit: { ...(X.lit || {}), ...(lv.lit || {}) }, session: lv.session || X.lit?.session || {},
     setups: lv.setups || {}, position: lv.position || null, rules: lv.lit_rules || {}, eval: lv.eval || null, ledger, events: lv.events || [],
     news: news ? (news.events || []) : [], newsRules: news?.bot_now?.rules || null, newsDays: news?.days || [],
@@ -91,7 +91,8 @@ export function pcLedger(rows) {
 export function fromPC(live, extra = {}, now = Date.now() / 1000) {
   const st = live?.state || live || {};
   if (!extra.ledger && live?.ledger) extra = { ...extra, ledger: pcLedger(live.ledger), bars: extra.bars || live.bars };
-  return mk({ now, model: st.model || 'lit', model_state: st.model_state, price: st.price, last_run: st.t, bars: extra.bars || st.bars || [],
+  const bars = (extra.bars || st.bars || []).map((b) => (Array.isArray(b) ? b : [b.time ?? b.t, b.open ?? b.o, b.high ?? b.h, b.low ?? b.l, b.close ?? b.c]));
+  return mk({ src: 'pc', now, model: st.model || 'lit', model_state: st.model_state, price: st.price, last_run: live?.last_poll ?? st.t, bars,
     levels: st.active_pools || extra.levels || [], levelsFull: !!st.active_pools, lit: st.lit || {}, session: st.session || {}, setups: st.setups || {}, position: st.position || null,
     rules: st.lit_rules || {}, eval: extra.eval || null, ledger: extra.ledger || [], events: extra.events || [], news: extra.news || [], newsRules: extra.newsRules || null,
     newsDays: extra.newsDays || [], sizing: extra.sizing || {}, plan: extra.plan || null, litRules: extra.rules || { window: [[120, 930]] }, boxes: extra.boxes || null,
@@ -406,8 +407,8 @@ export function ready(C) {
   const out = [], add = (st, label, note) => out.push({ st, label, note });
   const h = C.health || {}, pc = C.pc || {}, ev = cockpit(C), news = newsToday(C).filter((e) => e.impact === 'high');
   const age = C.last_run ? C.now - C.last_run : null;
-  add(age == null ? 'bad' : age < 40 * 60 || C.closed ? 'ok' : 'warn', 'Cloud paper bot', age == null ? 'no run yet' : `last run ${cd(age)} ago${C.closed ? ' (market closed)' : ''}`);
-  add(h.error ? 'bad' : h.stale ? 'warn' : 'ok', 'Price feed', h.error ? String(h.error) : h.stale ? `stale · last bar ${h.last_bar || '?'}` : `fresh · last bar ${h.last_bar || '—'} (Yahoo NQ=F)`);
+  add(age == null ? 'bad' : age < 40 * 60 || C.closed ? 'ok' : 'warn', C.src === 'pc' ? 'Paper bot (this PC)' : 'Cloud paper bot', age == null ? 'no run yet' : `last run ${cd(age)} ago${C.closed ? ' (market closed)' : ''}`);
+  add(h.error ? 'bad' : h.stale ? 'warn' : 'ok', 'Price feed', h.error ? String(h.error) : h.stale ? `stale · last bar ${h.last_bar || '?'}` : `fresh · last bar ${h.last_bar || '—'}${C.src === 'pc' ? '' : ' (Yahoo NQ=F)'}`);
   add(pc.present ? (pc.silent ? 'bad' : pc.running === false ? 'warn' : 'ok') : 'warn', 'PC bot + NinjaTrader', pc.present ? (pc.silent ? `silent for ${cd(pc.age_s || 0)}` : `${pc.adapter || 'paper'} · ${pc.running === false ? 'stopped' : 'running'}`)
     : 'no heartbeat: start the PC by 01:55 ET (most LIT entries come 02:00-08:00)');
   add(C.lit?.one_min_day === false ? 'warn' : 'ok', '1-minute bars', C.lit?.one_min_day === false ? 'today runs on 5m bars only (fewer, worse fills)' : 'LIT enters on a 1m CISD');

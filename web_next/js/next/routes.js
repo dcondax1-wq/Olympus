@@ -38,6 +38,9 @@ export const ARCHIVE = [
 ];
 
 export const MODULES = [
+  { id: 'litday', label: 'LIT Day plan', icon: 'clock', desc: 'Day clock 18:00-17:00 ET, what happens next, pre-session checklist, week planner' },
+  { id: 'litlevels', label: 'LIT Levels', icon: 'target', desc: 'Setup tracker (sweep → CISD → limit → 1m CISD) and every LIT level with its distance' },
+  { id: 'litcockpit', label: 'Eval cockpit', icon: 'wallet', desc: 'What one stop-out or winner does to the MFFU eval; pass / fail odds from this balance' },
   { id: 'strategy', label: 'Strategy', icon: 'strategy', desc: 'LIT, the locked rulebook in plain language, with the numbers' },
   { id: 'rules', label: 'Strategy Rules', icon: 'rules', desc: 'The exact locked strategy (STRATEGY.md)' },
   { id: 'live', label: 'Paper Bot · LIT', icon: 'engine', desc: 'Paper bot control, model state, ledger' },

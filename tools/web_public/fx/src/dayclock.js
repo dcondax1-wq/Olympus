@@ -196,9 +196,9 @@ const CSS = `.fxd-c{position:absolute;left:0;top:0;text-align:center;white-space
 .fxd-win.on{color:#4ef0b0;box-shadow:0 0 12px rgba(46,229,157,.35)}.fxd-win.off{color:rgba(188,192,236,.7)}.fxd-win.done{color:#ffc777}
 .fxd-next{font-size:10.5px;font-weight:700;color:rgba(214,218,250,.82);text-shadow:0 0 8px rgba(5,3,14,.95),0 0 3px rgba(5,3,14,.95)}
 .fxd-cd{margin-top:3px;font-size:15px;font-weight:800;color:#fff;font-variant-numeric:tabular-nums;text-shadow:0 0 12px rgba(5,3,14,.95),0 0 3px rgba(5,3,14,.95)}
-.fxh-dayclock .fxh-l.fixl{transform:none!important;left:10px;right:auto;top:auto;bottom:9px}
+.fxh-dayclock .fxh-l.fixl{transform:none!important;left:10px;right:auto;top:auto;bottom:12px}.fxh-dayclock .fxh-l.fix{bottom:12px}
 .fxh-dayclock .fxh-l.hr{font-size:9px;font-weight:700;color:rgba(188,192,236,.55)}
-.fxh-dayclock .fxh-l.hr.top{color:#dffaff}
+.fxh-dayclock .fxh-l.hr.t18{color:#dffaff}
 .fxh-dayclock .fxh-l.bx{font-size:9.5px;font-weight:700;letter-spacing:.02em;text-shadow:0 0 8px #07080c,0 0 3px #07080c;text-align:center;line-height:1.15}
 .fxh-dayclock .fxh-l.bx em{display:block;font-style:normal;font-size:8.5px;font-weight:600;color:rgba(214,218,250,.62)}
 .fxh-dayclock.compact .fxd-sub,.fxh-dayclock.compact .fxh-leg,.fxh-dayclock.compact .fxh-l.bx em,.fxh-dayclock.compact .fxh-l.fix,.fxh-dayclock.compact .fxh-l.fixl,.fxh-dayclock.compact .fxh-l.hr{display:none}
@@ -481,7 +481,7 @@ export class DayClock extends Hud {
     const defs = [];
     for (let h = 18, k = 0; k < 8; k++, h = (h + 3) % 24) {
       const ang = turnOfMin(h * 60) * TAU, p = this.world(ang, RL - 0.06, 0.02, new THREE.Vector3());
-      defs.push({ text: pad2(h), p, ax: 0.5 - Math.sin(ang) * 0.5, ay: 0.5 + Math.cos(ang) * 0.5, cls: 'hr' + (h === 18 ? ' top' : ''), keep: true });
+      defs.push({ text: pad2(h), p, ax: 0.5 - Math.sin(ang) * 0.5, ay: 0.5 + Math.cos(ang) * 0.5, cls: 'hr' + (h === 18 ? ' t18' : ''), keep: true });
     }
     for (const b of this.boxes) {
       if (b.kind === KIND.rth) continue;

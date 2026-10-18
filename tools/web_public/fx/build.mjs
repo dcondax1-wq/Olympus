@@ -26,5 +26,9 @@ const stamp = (file, re, rep) => {
 if (process.env.STAMP !== '0') {     // STAMP=0 npm run build: bundle only, leave the pages alone (parallel page edits)
   stamp('tools/web_public/index.html', /const FXV = '?[\w]*'?;/, `const FXV = '${v}';`);
   stamp('web_next/js/next/fx3d.js', /\/js\/fx\.js\?v=[\w]*/, `/js/fx.js?v=${v}`);
+  // the LIT panels module (litkit.js) gets its own content hash in both pages' import URL
+  const lv = createHash('sha1').update(readFileSync(path.join(here, '..', 'litkit.js'))).digest('hex').slice(0, 8);
+  stamp('tools/web_public/index.html', /const LKV = '?[\w]*'?;/, `const LKV = '${lv}';`);
+  stamp('web_next/js/next/litpages.js', /\.\.\/litkit\.js\?v=[\w]*/, `../litkit.js?v=${lv}`);
 }
 console.log(`fx.js ${(statSync(out).size / 1024).toFixed(0)} KB, v=${v} -> tools/web_public/fx.js + web_next/js/fx.js`);

@@ -43,6 +43,7 @@ import { newshub as newshubPage } from './next/newshub.js';
 import { evals as evalsPage, intraday as intradayPage } from './next/evals.js';
 import { initToday } from './next/today.js';
 import { archive as archivePage } from './next/archive.js';
+import { litday, litlevels, litcockpit, initLitToday } from './next/litpages.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -54,7 +55,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   command: { show: () => requestAnimationFrame(() => window.dispatchEvent(new Event('resize'))) },
   trades: tradesPage, results: hub.results, variants: hub.variants, learned: hub.learned, study: hub.study,
   lab: lab.experiments, writeups: lab.writeups, evals: evalsPage, intraday: intradayPage,
-  strategy: strategyPage, newshub: newshubPage, archive: archivePage,
+  strategy: strategyPage, newshub: newshubPage, archive: archivePage, litday, litlevels, litcockpit,
   rules: mods.rules, cold: mods.cold, risk: mods.risk, alerts: { show: () => settingsPage.show() }, modules: { show: () => {} },
   playbook: { show: () => {} } };
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };
@@ -416,7 +417,7 @@ async function boot() {
   for (const p of Object.values(PAGES)) p.init?.();
   initCommandExtras(); initPalette(); initVoice();
   // dashboard layer: ops registers the command 'prep' widget, so it runs before the command grid is built
-  initOps(); initHome(); initAnalytics(); initUX(go); addPaletteItems(paletteActions); startLive(); initToday();
+  initOps(); initHome(); initAnalytics(); initUX(go); addPaletteItems(paletteActions); startLive(); initToday(); initLitToday();
   renderPlaybook($('#playbook'));
   const want = new URLSearchParams(location.search).get('page');
   go(want && TITLES[want] ? want : store.get('page', 'command'));

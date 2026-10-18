@@ -912,7 +912,7 @@ class LiveBot:
             if (self.state or {}).get("model") == "lit":
                 # LIT: the model's micros already carry the weekly stop; lit_sizing (normal / fast_eval / safe_eval) re-sizes
                 # from the stop with one rounding (engine/sizing.lit_qty)
-                room = self.eval_room() if (lsz or {}).get("mode") == "safe_eval" else None
+                room = self.eval_room() if (lsz or {}).get("mode") in ("safe_eval", "eval") else None
                 r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room)
             else:
                 r = _sz.route_qty(int(qty), pos or {}, mult, getattr(self, "_sizing_cfg", None), getattr(self, "_live_params", None),

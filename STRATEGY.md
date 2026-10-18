@@ -68,7 +68,15 @@ Every one of these counts as liquidity:
 - **No cold-streak filter, no late-entry rule.** Eval-safe switch, off: `how_out: 0.5` (half size when the sweep extreme falls
   outside Tuesday 03:00 – Wednesday 11:30; LIT final numbers): 2026 +$27.8k instead of +$38.9k, max DD −$2.3k, no eval failed
   within 2 weeks.
-- **Sizing switches** (`live_model.json` → `"lit_sizing": {"mode": ...}`), both **off** (`"normal"`) until the owner turns one on.
+- **Eval sizing (ON since 2026-10-18, `"lit_sizing": {"mode": "eval"}`):** $800 up to a **25-point** stop, then 800 × 25 ÷ stop
+  (times the weekly stop's half, rounded down once), then never more than **60% of the room** between the eval balance and the
+  trailing max-loss floor. Typical trade: about 4 micros, about $330 at risk (the LIT rule alone: 3 micros, $275). Run
+  `lit_tight_eval_800_25_room60` (`research/writeups/lit-tight-stops-size.md`): 2-week passes H1 37.5% / H2 29.5% (the LIT rule
+  28.9% / 23.1%), 2-week fails 3.1% / 0.0% (unchanged), $/month H1 $5,464 / H2 $2,818 ($5,377 / $2,413), median 10.5 / 17.5
+  sessions to pass (13.5 / 21); whole-2026 pass rate 84.8% (LIT rule 95.5%), worst day −$806. Tighter stops were tested and
+  rejected: they win Jan-Jun and lose Jul-Oct (breakeven at 1R gets hit by normal pullbacks). 1 NQ fixed fails 28-38% of evals
+  within 2 weeks: never on the eval. Set `"mode": "normal"` to go back to the plain LIT rule.
+- **Other sizing switches** (`"lit_sizing": {"mode": ...}`), off unless chosen:
   The PC bot and the cloud monitor's paper ledger apply them (`engine/sizing.py` `lit_qty`), with one rounding:
   - `"fast_eval"`: $800 up to a **40-point** stop, then 800 × 40 ÷ stop (times the weekly stop's half, rounded down once).
     Run `lit_x_fast_eval` (LIT final): the best 2-week pass rate in both halves (H1 52% vs 33%, H2 47% vs 23%) and half the
