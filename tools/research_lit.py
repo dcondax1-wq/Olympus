@@ -162,6 +162,15 @@ def go(M, C, cfg, cold=False, mc=False):
     return T, score(T, mc=mc)
 
 
+def short(S):
+    o = []
+    for nm in ("2026", "2021-25"):
+        s = S["spans"][nm]
+        o.append(f"{nm}: n={s.get('n')} tpw={s.get('tpw')} PF={s.get('pf')} net={s.get('net')} dd={s.get('dd')}")
+        o[-1] += f" 2w={s.get('p10')}/{s.get('f10')}" if s.get('n') else ""
+    return " | ".join(o)
+
+
 def brief(S):
     a, b = S["spans"]["2026"], S["spans"]["2021-25"]
     f = lambda s: (f"n={s.get('n')} tpw={s.get('tpw')} win={s.get('win')} PF={s.get('pf')} net={s.get('net')} $/mo={s.get('per_month')} "
@@ -170,10 +179,15 @@ def brief(S):
 
 
 # ------------------------------------------------------------------------------------------------ grid
-BASE_V = dict(win="ny_both", liq="all")
+BASES = {"day": dict(win="day", liq="all", entry="ref", max_stop=80),
+         "ny": dict(win="ny_both", liq="all", entry="ref", max_stop=80),
+         "lon_ny": dict(win="lon_ny", liq="all", entry="ref", max_stop=80)}
+BASE_V = BASES["day"]
 
 
-def grid():
+def grid(base="day"):
+    global BASE_V
+    BASE_V = BASES[base]
     res = {}
     M, C = market()
     print(len(C), "candidates", flush=True)
@@ -182,10 +196,13 @@ def grid():
         v = {**BASE_V, **kw}
         T, S = go(M, C, make(**v))
         res[name] = {"variant": {k: (sorted(x) if isinstance(x, set) else x) for k, x in v.items()}, **row(S)}
-        print(f"{name:28s} {brief(S)}", flush=True)
+        print(f"{name:24s} {short(S)}", flush=True)
         return S
 
     t("base")
+    for em in ("market", "ref", "fib50", "fib62", "fib70"):
+        t(f"entry_{em}", entry=em)
+    t("wait6", wait=6); t("wait24", wait=24)
     # entry windows (incl. London) and session markers
     for w in WIN:
         t(f"win_{w}", win=w)
@@ -243,13 +260,13 @@ def grid():
         nm = "det_" + "_".join(f"{k}{v}" for k, v in kw.items())
         T, S = go(M2, C2, make(**BASE_V))
         res[nm] = {"variant": {**BASE_V, "detector": kw}, **row(S)}
-        print(f"{nm:28s} {brief(S)}", flush=True)
+        print(f"{nm:24s} {short(S)}", flush=True)
     for tol in (0.08, 0.3):
         M2, C2 = market(tol_atr=tol)
         T, S = go(M2, C2, make(**BASE_V))
         res[f"det_tol{tol}"] = {"variant": {**BASE_V, "tol_atr": tol}, **row(S)}
-        print(f"{'det_tol' + str(tol):28s} {brief(S)}", flush=True)
-    json.dump(res, open(OUT, "w"), indent=1)
+        print(f"{'det_tol' + str(tol):24s} {short(S)}", flush=True)
+    json.dump(res, open(OUT.replace(".json", f"_{base}.json"), "w"), indent=1)
     print("wrote", OUT)
 
 
@@ -269,8 +286,8 @@ def edge_table(res):
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "grid"
     if cmd == "grid":
-        grid()
+        grid(sys.argv[2] if len(sys.argv) > 2 else "day")
     elif cmd == "edges":
-        res = json.load(open(OUT))
+        res = json.load(open(OUT.replace(".json", f"_{sys.argv[2] if len(sys.argv) > 2 else 'day'}.json")))
         for r in edge_table(res):
             print("%-26s 26: n=%4s PF=%5s net=%7s | 21-25: n=%4s PF=%5s net=%7s %s" % (*r[:7], "BOTH" if r[7] else ""))
