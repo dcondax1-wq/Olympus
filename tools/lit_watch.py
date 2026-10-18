@@ -142,6 +142,7 @@ def main():
     week = _ledger_rows(out)
     lags = list(W.get("lag") or [])
     last_sig, brew, brew_t, M, confirm_t = None, [], None, None, 0
+    wait0 = 0
     polls, runs, why_end, kinds = 0, [], "cap", set()
     forming_s0 = float(W.get("forming_s", 0))
     while True:
@@ -198,6 +199,9 @@ def main():
             # the watcher saw the entry first (early mode); the monitor shows it once the 5m bar after the trigger has
             # closed (<= 5 min): re-run it every minute until its ledger / position has the trade, then stop
             ok, why = True, "entry seen, waiting for the monitor"
+            wait0 = wait0 or now
+            if now - wait0 > 480:                # the monitor shows it within ~5 min; never burn minutes past 8
+                ok, why = False, "entry seen; monitor did not show it within 8 min"
             if last_sig is not None and now - confirm_t >= 60:
                 confirm_t = now
                 full_run(out, not a.no_publish, why)

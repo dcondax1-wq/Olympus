@@ -2,10 +2,10 @@
  "lag_s": 600,
  "sessions": 206,
  "backtest_trades": 120,
- "real_polls": 502,
+ "real_polls": 1377,
  "forming_spot_check": {
-  "checked": 20,
-  "same": 20,
+  "checked": 10,
+  "same": 10,
   "diff": []
  },
  "assumptions": {
@@ -20,30 +20,9 @@
  "policies": {
   "now": {
    "trades_seen": 120,
-   "identical_to_backtest": 119,
-   "differences": [
-    {
-     "day": "2026-04-03",
-     "now": 1775205180,
-     "got": [
-      1775203320,
-      1,
-      24716.75,
-      24670.25,
-      24967.25,
-      3
-     ],
-     "want": [
-      1775203500,
-      1,
-      24714.25,
-      24670.25,
-      24967.25,
-      4
-     ]
-    }
-   ],
-   "n_differences": 1,
+   "identical_to_backtest": 120,
+   "differences": [],
+   "n_differences": 0,
    "not_seen_same_day": [],
    "delay_min": {
     "median": 26.5,
@@ -66,96 +45,54 @@
   },
   "armed": {
    "trades_seen": 120,
-   "identical_to_backtest": 119,
-   "differences": [
-    {
-     "day": "2026-04-03",
-     "now": 1775204010,
-     "got": [
-      1775203320,
-      1,
-      24716.75,
-      24670.25,
-      24967.25,
-      3
-     ],
-     "want": [
-      1775203500,
-      1,
-      24714.25,
-      24670.25,
-      24967.25,
-      4
-     ]
-    }
-   ],
-   "n_differences": 1,
+   "identical_to_backtest": 120,
+   "differences": [],
+   "n_differences": 0,
    "not_seen_same_day": [],
    "delay_min": {
-    "median": 17.0,
-    "p75": 26.2,
-    "p90": 34.1,
-    "max": 41.0,
-    "mean": 19.7,
-    "within_2_min_of_feed": 46,
-    "within_5_min_of_feed": 54,
-    "within_15": 54,
-    "within_30": 99
+    "median": 12.0,
+    "p75": 21.0,
+    "p90": 29.0,
+    "max": 35.0,
+    "mean": 16.7,
+    "within_2_min_of_feed": 62,
+    "within_5_min_of_feed": 71,
+    "within_15": 71,
+    "within_30": 111
    },
    "delay_after_feed_shows_it_min": {
-    "median": 7.0,
-    "p90": 24.1
+    "median": 2.0,
+    "p90": 19.0
    },
-   "actions_min_month_extra": 183,
-   "watch_min_month": 169,
+   "actions_min_month_extra": 206,
+   "watch_min_month": 191,
    "forming_min_month": 0
   },
   "watch": {
    "trades_seen": 120,
-   "identical_to_backtest": 119,
-   "differences": [
-    {
-     "day": "2026-04-03",
-     "now": 1775204010,
-     "got": [
-      1775203320,
-      1,
-      24716.75,
-      24670.25,
-      24967.25,
-      3
-     ],
-     "want": [
-      1775203500,
-      1,
-      24714.25,
-      24670.25,
-      24967.25,
-      4
-     ]
-    }
-   ],
-   "n_differences": 1,
+   "identical_to_backtest": 120,
+   "differences": [],
+   "n_differences": 0,
    "not_seen_same_day": [],
    "delay_min": {
-    "median": 17.0,
-    "p75": 26.2,
-    "p90": 34.1,
-    "max": 41.0,
-    "mean": 19.7,
-    "within_2_min_of_feed": 46,
-    "within_5_min_of_feed": 54,
-    "within_15": 54,
-    "within_30": 99
+    "median": 11.5,
+    "p75": 16.0,
+    "p90": 23.1,
+    "max": 35.0,
+    "mean": 14.8,
+    "within_2_min_of_feed": 77,
+    "within_5_min_of_feed": 89,
+    "within_15": 89,
+    "within_30": 114
    },
    "delay_after_feed_shows_it_min": {
-    "median": 7.0,
-    "p90": 24.1
+    "median": 1.5,
+    "p90": 13.1
    },
-   "actions_min_month_extra": 501,
-   "watch_min_month": 463,
-   "forming_min_month": 262
+   "actions_min_month_extra": 553,
+   "watch_min_month": 515,
+   "forming_min_month": 258
   }
  },
- "seconds": 788
+ "seconds": 1627
 }
