@@ -11,7 +11,7 @@ Funded account (MFFU Builder 50K, as modelled; research/writeups/lit-prop-firms.
   payout    at a session's end: balance - $2,100 buffer >= $500, max $2,000 a request, >= 2 traded days in the cycle, best
             day <= 50% of the cycle's profit, first after 2 sessions; 5 sim payouts, then live (the path stops: "graduated")
   split     80% to the trader; payouts lower the balance, never the floor
-  costs     $1.40 a micro, 1 tick on market entries and stop exits (in the trade points); max 40 micros
+  costs     $1.90 a micro (grids: $1.40), 1 tick on market entries and stop exits (in the trade points); max 40 micros
 Samples: 1,000 Monte Carlo paths of 126 sessions (6 months; 63 = 3 months) in 5-session blocks from the half (H1 = Jan-Jun
 2026 pick, H2 = Jul-Oct 2026 check; the same paths for every config), and back-to-back on real history (a new funded account
 the session after one is lost or graduates). 2021-25 (5m entries, PF 1.01) is a reference line only.
@@ -36,7 +36,7 @@ from engine import sizing as SZ  # noqa: E402
 from tools import lit_2wk as W  # noqa: E402
 
 OUT = os.path.join(ROOT, "research", "lit", "funded.json")
-PV, COMM, SLIP = 2.0, 1.40, 0.25
+PV, COMM, SLIP = 2.0, SZ.TW_COMM, 0.25   # $1.90 MFFU round trip (was 1.40 in the grids of 2026-10-18 afternoon)
 H3, H6 = 63, 126
 N_MC, BLOCK = 1000, 5
 A = dict(SZ.FD_50K)

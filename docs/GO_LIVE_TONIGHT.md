@@ -15,15 +15,26 @@ Do the Sim test first; only go to the eval when the Sim test is clean.
 ## 21:00 ET: Sim test (10 minutes)
 5. Start the bot: double-click `scripts\run_bot.ps1` (or `python server.py`), open http://localhost:8766.
 6. `python -m engine.ninjatrader --selftest` → it must say PASS.
-7. `python -m engine.ninjatrader --sim-roundtrip` → three `OK` lines and `FLAT`.
+7. `python -m engine.ninjatrader --status` → shows fresh `MNQ_5m.csv` and `MNQ_1m.csv`; then
+   `python -m engine.ninjatrader --sim-check` → OK; then
+   `python -m engine.ninjatrader --sim-roundtrip` → three `OK` lines and `FLAT`
+   (if only the close fails, retry with `--close-suffix " Globex"` and add that to step 11).
+   **This is the first time the NinjaTrader route runs on a real install: if any of these fail, stay on Sim tonight
+   and send Claude a photo.**
 8. `python -m engine.ninjatrader --start` → the Live page log shows
    `NinjaTrader adapter: account Sim101 (SIM), MNQ 12-26, ... ready` and the strategy says **LIT**.
 
 ## Then: the eval (your step, all three locks)
 9. Stop the Sim bot (dashboard **Stop**).
-10. Add `$env:NINJATRADER_LIVE = '1'` to `.env.local.ps1` in the bot folder, then restart `scripts\run_bot.ps1`.
+10. Add `$env:NINJATRADER_LIVE = '1'` and `$env:LE_HEARTBEAT = '1'` to `.env.local.ps1` in the bot folder, then
+    restart `scripts\run_bot.ps1`. (The heartbeat lets the cloud push "PC bot silent" to your phone if the PC dies,
+    from 01:50 ET.)
+    Only your eval account should be connected in NinjaTrader: the kill switch flattens every connected account.
 11. Run: `python -m engine.ninjatrader --start --account <your eval account Name> --confirm "I ACCEPT LIVE RISK"`
 12. The log must show your eval account (not SIM), MNQ 12-26, LIT, sizing **two_week**, eval session 1 on Mon Oct 19.
+    The sizing assumes the eval starts tonight at $50,000 with no trades. If it already has P&L, tell Claude first.
+13. Windows: pause updates for a week (Settings > Windows Update > Pause), and run
+    `scripts\setup_dedicated_pc.ps1` as Administrator (no restarts 01:00-17:00 ET, no sleep).
 
 ## Overnight
 - Leave the Surface **plugged in, awake, NinjaTrader open and connected**. No trade can happen before **02:00 ET**;

@@ -3,13 +3,59 @@ title: LIT launch audit - is anything missing for day trading? (2026-10-18)
 family: other
 date: 2026-10-18
 status: info
-summary: End-to-end launch check of the LIT paper bot before the 18:00 ET Sunday open. Verdict - ready for paper tonight. Needs the contract-roll fix before Wed 2026-12-09, and the cloud heartbeat alert moved to the London session this week. Fixed today - Windows Update restart hours and the PC wake time (both were set for the old 08:00 strategy, while LIT trades from 02:00). Calendar, DST, holidays, early closes and the Sunday open are handled. A news blackout would change 1 of 120 trades in 2026 (H1 +$207, H2 $0), so no news rule.
+summary: End-to-end launch check of the LIT bot before the 18:00 ET Sunday open. Real MFFU eval at 21:00 ET - go only after the five checks in section 0 (Sim101 round trip on the Surface first; the code itself is sound). Paper - ready tonight. Needs the contract-roll fix before Wed 2026-12-09, and the cloud heartbeat alert moved to the London session this week. Fixed today - Windows Update restart hours and the PC wake time (both were set for the old 08:00 strategy, while LIT trades from 02:00). Calendar, DST, holidays, early closes and the Sunday open are handled. A news blackout would change 1 of 120 trades in 2026 (H1 +$207, H2 $0), so no news rule.
 runs: lit_live
 ---
 
+## 0. Real MFFU eval from 21:00 ET tonight: go / no-go
+
+The repo's hard rule is still "paper only". Arming a real account is the owner's own decision and step (SETUP.md
+section 11). Nothing here arms anything.
+
+**Verdict: GO only if the five checks below pass tonight. No code blocker was found.** The live locks, the account
+name handling, the instrument name, the bracket, the 15:55 flat, the kill switch and the restart rule all do what
+SETUP.md says (self-test 55/55).
+
+Must pass before arming:
+1. **First real-install test.** The NinjaTrader route and LE_BarFeed have never run on a real install. After the
+   18:00 ET open, on the Surface and on Sim101, run SETUP.md 5.1 `--status`, 5.2 `--sim-check` and 5.3
+   `--sim-roundtrip`. All three must say OK and the round trip must end FLAT. Then check that `--status` shows a fresh
+   `MNQ_5m.csv` **and** `MNQ_1m.csv` (LIT needs the 1m file). If 5.3 fails on CLOSEPOSITION, use `--close-suffix " Globex"`.
+   If anything fails: no go.
+2. **Maximum position size of the plan.** The bot can send up to 40 micros (`two_week` max 40). If the MFFU 50K Builder
+   allows fewer (check in the MFFU dashboard; many 50K plans allow 3 minis = 30 micros), a large order is rejected and
+   that trade is missed. It is not a rule breach, because the broker refuses it. To cap it, the start config needs
+   `lit_sizing` with `two_week.max_micros` at the plan limit (the CLI `--start` cannot pass it today: use POST
+   `/api/live/start`, or ask for a `--max-micros` flag).
+3. **Only the eval account connected** in NinjaTrader. The kill switch flattens every connected account.
+4. **The eval clock.** `live_model.json` `lit_sizing.eval_start` is `2026-10-19`, which is tonight's session (Sunday
+   evening counts as Monday). That is right only if the eval is new or reset tonight. The two_week size counts the eval's
+   profit from the bot's own trades since that day: it knows nothing of earlier manual trades or the broker's fees.
+5. **Being there 02:00-08:00 ET** (95 of 120 trades enter then), and MFFU's OK for automation (SETUP.md 13 item 12).
+   A live bot never restarts by itself (`engine/watchdog.py` AUTO_MODES = paper/demo). After a crash or a Windows restart,
+   it stays off until you start it. Today the phone gets no alert for that before 08:00 ET (#2 below; the PC
+   watchdog's stale-feed alert also only runs 09:00-16:00 ET).
+   Pause Windows Update tonight, and run `scripts\setup_dedicated_pc.ps1` again as Administrator.
+
+Known limits (accept or fix later):
+- The stop and target go in only after NinjaTrader reports the fill, normally under 1 s. If that report takes more than
+  6 s, the position is open without a stop until the next poll (up to ~60 s), with a "fill not reported yet" log line.
+- Both legs are `DAY` orders. A dead PC means no 15:55 flat and no breakeven move. The bracket stays at the broker until
+  it fills or the 17:00 ET close. Whether the OCO link holds without NinjaTrader running depends on the connection
+  (SETUP.md 13 item 6, unverified).
+- In LIT mode the PC can send news "STAND DOWN" messages, but LIT does not stand down (section 3).
+- The roll (section 2) is not an issue until 2026-12-10.
+
+Doc fixes done for this: SETUP.md `lit_sizing` row (it said default `normal`; it is `two_week` with `eval_start`), a
+new `eval_start` row, and a pre-arm checklist in section 11. Section 11's command is correct as written: `--start`
+sends armed + present + `data_source ninjatrader`, and the server needs `NINJATRADER_LIVE=1` and the exact phrase.
+Section 13 item 11 (NinjaTrader's own rollover date equals the bot's 8-day rule) is unverified, but it does not matter
+for the bot. The bot names the contract itself (`MNQ 12-26` until 2026-12-09, then `MNQ 03-27`). Only the chart has to
+be switched by hand.
+
 ## Verdict
 
-**Ready for paper trading tonight (18:00 ET).** The rules, the clock and the order route work, and the self-tests pass
+**Paper: ready tonight (18:00 ET).** The rules, the clock and the order route work, and the self-tests pass
 (see the table at the end). Three things need doing before a set date:
 
 | # | What | Before | Who / where |
@@ -165,5 +211,5 @@ levels until mid-January in either case (paper only, so nothing is lost but sign
 | `tests.test_push` | 41/41 |
 | `tests.test_lit_oif` (~30 min test) | stopped at 15 min. 1 of 5 checked days within 10 s; the others 10-15 s late because each poll took 8-35 s on the overloaded box. Prices, size and bracket were right on every day. Rerun on the PC. |
 | `tests.test_lit_timing` | stopped at 4 min (overload). The first day: entry routed 2 s after the 1m close, same as the backtest. |
-| `tests.test_live_dryrun --quick` | see the report (still running under load at the time of writing). |
-| `tools/cloud_monitor.py --out <tmp>` | see the report. |
+| `tests.test_live_dryrun --quick` | **not finished**: stopped at the 20-minute limit inside part 1 (3-session replay) on the overloaded box. Expected 41/44 (old engine); rerun on the PC. |
+| `tools/cloud_monitor.py --out <tmp>` | **OK** (exit 0, 9 min under load). README, chart, state written; LIT "market closed", ledger 0. Yahoo NQ=F returned no data from this container (weekend / network), so it ran on the stored bars. |

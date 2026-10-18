@@ -840,6 +840,11 @@ def variants():
         V[f"own2 continuation/reversal IDM: {lab} setups that are neither"] = dict(
             fam="own2 contrev", **f(lambda r, a: not (CONT(a) or REV(a))))
         V[f"own2 continuation IDM only: {lab} the rest"] = dict(fam="own2 contrev", **f(lambda r, a: not CONT(a)))
+    # ---- post hoc (after the class tables): a compressed range just before the sweep (the 'pause') under-performed
+    for pz in (1.0, 1.5, 2.0):
+        c = (lambda pz: lambda r, a: a["pause"] <= pz)(pz)
+        V[f"post pause before the sweep (6-bar range <= {pz} ATR): skip"] = dict(fam="post pause", skip=c)
+        V[f"post pause before the sweep (6-bar range <= {pz} ATR): half"] = dict(fam="post pause", size=_half(c))
     # ---- ch4: ES, the same event
     for cl in ("nq_only", "es_led", "both"):
         c = (lambda cl: lambda r, a: a["es_cls"] == cl)(cl)

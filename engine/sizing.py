@@ -478,7 +478,8 @@ def eval_state(day_pnl: dict, today_cum: float = 0.0, plan: dict | None = None, 
         peak = max(peak, bal)
         floor = min(max(floor, peak - float(A["mll"])), float(A["lock"]))
     return {"profit": round(bal, 2), "cum": float(today_cum), "room": round(bal + today_cum - floor, 2),
-            "session": int(session) if session is not None else len(day_pnl) + 1, "n_today": 0}
+            "session": int(session) if session is not None else len(day_pnl) + 1, "n_today": 0,
+            "days_traded": sum(1 for v in day_pnl.values() if abs(float(v)) > 1e-9)}   # earlier sessions with a closed trade
 
 
 def _full_closures(y: int) -> set:
@@ -691,7 +692,7 @@ def selftest() -> bool:
     C = {"mode": "two_week", "two_week": {"base": "need", "need_buf": 1.0, "room_f": 0.6, "wk": False, "dll_cap": True,
                                           "stop_at_target": True}, "eval_ref_stop": 25.0, "safe_cap": 0.6}
     fresh = eval_state({}, 0.0, session=1)
-    assert fresh == {"profit": 0.0, "cum": 0.0, "room": 2000.0, "session": 1, "n_today": 0}, fresh
+    assert fresh == {"profit": 0.0, "cum": 0.0, "room": 2000.0, "session": 1, "n_today": 0, "days_traded": 0}, fresh
     # 40-pt stop, 200-pt target: ceil(3000 / 398.6) = 8; 60% room cap 1200 / 80 = 15, dll 1000 / 81.9 = 12 -> 8
     r = lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, C, state=fresh)
     assert r["qty"] == 8 and "one winner passes" in r["reasons"][0] and "fallback" not in r, r
@@ -791,6 +792,9 @@ def selftest() -> bool:
     r = lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, AU, state={**won, "days_traded": 2, "funded": f0})
     assert r["qty"] == 3 and "auto: eval passed -> funded sizing" in r["reasons"], r                         # funded rules
     assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, AU, state={**won, "days_traded": 1, "funded": f0})["qty"] == 1
+    es = eval_state({"a": 3100.0, "b": 0.0}, 0.0, session=3)
+    assert es["days_traded"] == 1 and lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, C, state=es)["qty"] == 1   # min-days trade
+    assert eval_state({"a": 2000.0, "b": 0.0, "c": 1100.0}, 0.0)["days_traded"] == 2
     print("sizing selftest OK")
     return True
 

@@ -566,7 +566,7 @@ def run(out):
                              "Hold off on a new eval until the filter is back at full size."))
     et_now = et(now)
     eod_sent = st.get("eod_sent")
-    if et_now.weekday() < 5 and et_now.hour * 60 + et_now.minute >= 965 and eod_sent != today:
+    if et_now.weekday() < 5 and et_now.hour * 60 + et_now.minute >= 960 and eod_sent != today:
         eod_sent = today
         tt = [v for v in ledger.values() if v["day"] == today]
         lines = [f"{SYM} {'LIT ' if lm['model'] == 'lit' else ''}cloud paper - end of day {today}", f"Trades: {len(tt)} | P&L {money(sum(v['usd'] for v in tt))}"]
@@ -586,7 +586,7 @@ def run(out):
     # ---- the always-on PC's heartbeat (engine/heartbeat.py): alert when it went silent in a session
     pc = heartbeat.read(cwd=ROOT, now=now)
     pc_alert_at = st.get("pc_alert_at")
-    in_session = et_now.weekday() < 5 and 480 <= et_now.hour * 60 + et_now.minute <= 990
+    in_session = et_now.weekday() < 5 and 110 <= et_now.hour * 60 + et_now.minute <= 990   # 01:50-16:30 ET: LIT trades from 02:00
     other_notices = []
     if pc.get("present") and pc.get("silent") and in_session and now - float(pc_alert_at or 0) > 3600:
         pc_alert_at = now
@@ -631,8 +631,9 @@ def run(out):
     for n in sorted(candidates, key=lambda x: (x["t"], x["kind"] != "fill")) + other_notices:
         if notifier.seen(n):
             continue
-        # entry / outcome are pushed; the PC silent and eval-timing notices stay in the app (LE_PUSH_EXTRA=1 pushes them too)
-        r = notifier.notify(n, push_it=n["kind"] in ("fill", "outcome", "test") or push.extra_on(), other_sent=pc_sent)
+        # entry / outcome are pushed, and "PC bot silent" (the PC may be trading a real eval overnight); eval-timing
+        # notices stay in the app (LE_PUSH_EXTRA=1 pushes them too)
+        r = notifier.notify(n, push_it=n["kind"] in ("fill", "outcome", "test", "pc") or push.extra_on(), other_sent=pc_sent)
         push_res.append(r)
         notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "account", "key", "title", "body", "url", "side", "R", "usd", "exit",
                                                  "qty", "entry", "stop", "target", "risk_usd", "setup", "balance", "to_target", "note")},
