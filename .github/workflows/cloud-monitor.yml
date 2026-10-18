@@ -7,7 +7,7 @@ name: cloud-monitor
 
 on:
   schedule:
-    - cron: "*/15 12-21 * * 1-5"     # UTC; covers 08:00-16:25 ET in both summer (EDT) and winter (EST) time
+    - cron: "*/15 6-21 * * 1-5"      # UTC; covers 02:00-16:25 ET in both summer (EDT) and winter (EST) time (LIT trades London)
   workflow_dispatch: {}
 
 permissions:
@@ -29,10 +29,10 @@ jobs:
           dow=$(TZ=America/New_York date +%u); h=$(TZ=America/New_York date +%-H); m=$(TZ=America/New_York date +%-M)
           mod=$((h*60+m)); go=0
           if [ "$dow" -le 5 ]; then
-            if [ $mod -ge 565 ] && [ $mod -le 700 ]; then go=1; fi            # 09:25-11:40 killzone: every 15 min
-            if [ $mod -ge 805 ] && [ $mod -le 940 ]; then go=1; fi            # 13:25-15:40 killzone: every 15 min
+            # LIT (live_model.json since 2026-10-18) enters 02:00-15:30 ET, mostly London: half-hourly from 02:00 keeps the
+            # run count (~30 a day) and the free Actions minutes where they were with the old 15-min killzone cadence
             if [ $mod -ge 965 ] && [ $mod -le 985 ]; then go=1; fi            # 16:05-16:25 end-of-day summary
-            if [ $mod -ge 480 ] && [ $mod -le 985 ] && [ $((m % 30)) -lt 15 ]; then go=1; fi   # otherwise half-hourly
+            if [ $mod -ge 120 ] && [ $mod -le 985 ] && [ $((m % 30)) -lt 15 ]; then go=1; fi   # 02:00-16:25 half-hourly
           fi
           echo "ET $(TZ=America/New_York date '+%a %H:%M') -> go=$go"
           echo "go=$go" >> "$GITHUB_OUTPUT"
@@ -49,6 +49,10 @@ jobs:
             /data/news/
             /data/shadow_ledger_seed.json
             /live_model.json
+            /live_model_engine.json
+            /live_model_lit.json
+            /data/VIX_1d.csv
+            /data/VXN_1d.csv
             /requirements-cloud.txt
             /research/lab/backtest_live.json
             /research/lab/replays.json
@@ -83,6 +87,7 @@ jobs:
           if git fetch -q --depth 1 origin dashboard 2>/dev/null; then
             git show FETCH_HEAD:state.json > dash/state.json 2>/dev/null || rm -f dash/state.json
             git show FETCH_HEAD:shadow_ledger.json > dash/shadow_ledger.json 2>/dev/null || rm -f dash/shadow_ledger.json
+            git show FETCH_HEAD:bars_1m.csv > dash/bars_1m.csv 2>/dev/null || rm -f dash/bars_1m.csv     # LIT 1m bars (12 days)
           fi
 
       - name: Run paper monitor

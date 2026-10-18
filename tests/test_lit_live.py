@@ -1,0 +1,250 @@
+"""LIT live-loop check: engine/lit_live.py (what the PC paper bot and the cloud monitor run every poll) against the LIT
+backtest (tools/lit_final.py run = engine/lit.py run_x on the whole history), on every 2026 session.
+
+    python -X utf8 -m tests.test_lit_live              # day-end replay of 2026 + intraday polls on every trade day
+    python -X utf8 -m tests.test_lit_live --days       # day-end replay only (~1 min)
+    python -X utf8 -m tests.test_lit_live --w20        # also: the engine's plain 20-day window (shows why LIT needs more)
+    python -X utf8 -m tests.test_lit_live --days --bot  # day-end replay + the LiveBot (paper) check only
+
+1. Day-end replay: for every 2026 session the adapter sees only the bars up to that session's close (5m from
+   data/NQ_5m.csv, 1m from data/NQ_1m.csv as the research cleaned it) and must report that day's backtest trade exactly
+   (entry time, side, entry, stop, target, micros, exit, $).
+2. Intraday polls: on every 2026 trade day, a poll at every 5m close from 01:55 ET until 10 min after the exit, plus a
+   poll every minute from 10 min before the entry to 5 min after it (the 1m bars of the forming 5m bar are visible).
+   Every open position and finished trade the adapter shows must be the backtest's; reports the delay from the entry
+   to the first poll that shows it.
+3. LiveBot: engine/live.py itself (PaperAdapter, frozen clock, bars revealed as they close, raw 1m file read like a feed) on
+   three October sessions: every backtest trade must be routed once (side, micros, stop, target) and exited once (reason, $).
+Results -> research/lit/live_check.json. One process.
+"""
+from __future__ import annotations
+
+import collections
+import datetime as dt
+import json
+import os
+import sys
+import time
+from zoneinfo import ZoneInfo
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+
+from engine import lit_live  # noqa: E402
+from engine.data import load, load_ltf  # noqa: E402
+
+ET = ZoneInfo("America/New_York")
+OUT = os.path.join(ROOT, "research", "lit", "live_check.json")
+FINAL = os.path.join(ROOT, "research", "lit", "lit_final.json")
+
+
+def day_close(d: str) -> int:
+    """17:00 ET of trading date d (the session's end)."""
+    return int(dt.datetime.combine(dt.date.fromisoformat(d), dt.time(17, 0), ET).timestamp())
+
+
+def at(d: str, hh: int, mm: int) -> int:
+    day = dt.date.fromisoformat(d)
+    if hh >= 18:
+        day -= dt.timedelta(days=1)
+    return int(dt.datetime.combine(day, dt.time(hh, mm), ET).timestamp())
+
+
+def key(t):
+    return (int(t["entry_t"]), int(t["dir"]), round(float(t["entry"]), 2), round(float(t["stop"]), 2),
+            round(float(t["target"]), 2), int(t["qty"]))
+
+
+def ref_key(t):
+    return (int(t["entry_t"]), int(t["dir"]), round(t["entry_px"], 2), round(t["stop_px"], 2), round(t["target_px"], 2), int(t["qty"]))
+
+
+def ref_exit(t):
+    return ("TIME" if t["exit"] == "EOD" else t["exit"], int(t["exit_t"]), round(t["pnl"], 2))
+
+
+def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15")):
+    """LiveBot.poll_once with live_model = LIT, PaperAdapter, a frozen clock and a bar source that only shows closed bars
+    (tests/test_live_dryrun.Replay). Polls at every 5m close (every minute from 10 min before to 5 min after each entry).
+    The bot reads the raw data/NQ_1m.csv like a feed (engine/lit_live.feed_1m), not the research-cleaned 1m."""
+    from tests.test_live_dryrun import Replay
+    os.environ["LE_LIVE_MODEL"] = json.dumps({"model": "lit", "sym": "NQ", "label": "LIT test", "lit": P,
+                                              "params": {"risk_usd": 800, "risk_ref_stop": 20.0, "max_micros": 40}})
+    rp = Replay()
+    df1 = pd.read_csv(os.path.join(ROOT, "data", "NQ_1m.csv"))
+    rp.frames[("NQ", "1m")] = df1[df1["time"] >= at(sessions[0], 18, 0) - 70 * 86400].reset_index(drop=True)
+    rp.install_globals()
+    want = [t for d in sessions for t in by_day.get(d, [])]
+    t_start = at(sessions[0], 18, 0)
+    times = set(range(t_start + 300, day_close(sessions[-1]) + 1, 300))
+    for t in want:
+        times |= set(range(int(t["entry_t"]) - 600, int(t["entry_t"]) + 301, 60))
+    errors, ms = [], []
+    try:
+        bot = rp.bot(start_now=t_start)
+        for now in sorted(times):
+            rp.poll(bot, now + 3, errors)
+            ms.append(bot.health.get("poll_ms") or 0)
+        led = bot.ledger
+        ent = {r["entry_t"]: r for r in led if r["side"] in ("buy", "sell")}
+        exi = {r["entry_t"]: r for r in led if r["side"] == "exit"}
+        e_ok = x_ok = 0
+        rows = []
+        for t in want:
+            e, x = ent.get(int(t["entry_t"])), exi.get(int(t["entry_t"]))
+            eo = e is not None and e["side"] == ("buy" if t["dir"] == 1 else "sell") and e["qty"] == t["qty"] and \
+                abs(e["stop"] - t["stop_px"]) < 1e-6 and abs(e["target"] - t["target_px"]) < 1e-6
+            xo = x is not None and x["reason"] == ("TIME" if t["exit"] == "EOD" else t["exit"]) and abs(x["pnl"] - t["pnl"]) < 0.01
+            e_ok += eo; x_ok += xo
+            rows.append({"entry": int(t["entry_t"]), "want": [t["dir"], t["qty"], t["exit"], t["pnl"]],
+                         "routed_entry": e and {k: e.get(k) for k in ("side", "qty", "stop", "target", "t")},
+                         "routed_exit": x and {k: x.get(k) for k in ("reason", "pnl", "t")}})
+        extra = [r for r in led if r["side"] in ("buy", "sell", "exit") and int(r["entry_t"]) not in {int(t["entry_t"]) for t in want}]
+        not_routed = [l["text"] for l in bot.log if "NOT routed" in l["text"] or "never routed" in l["text"]]
+        states = sorted({str((bot.state or {}).get("model_state", ""))[:40]})
+        res = {"sessions": list(sessions), "polls": len(times), "want": len(want), "entries_ok": e_ok, "exits_ok": x_ok,
+               "extra": len(extra), "not_routed": not_routed[:10], "errors": [e[1] for e in errors[:5]], "rows": rows,
+               "last_model_state": (bot.state or {}).get("model_state"), "poll_ms": int(np.mean(ms)) if ms else None,
+               "modify_routes": sum(1 for r in led if r["side"] == "modify"), "states_seen": states}
+        res["ok"] = e_ok == len(want) and x_ok == len(want) and not extra and not errors and not not_routed
+        return res
+    finally:
+        rp.cleanup()
+        os.environ.pop("LE_LIVE_MODEL", None)
+
+
+def main():
+    t_all = time.time()
+    P = json.load(open(FINAL, encoding="utf-8"))["params"]
+    from tools import lit_final as F
+    REF = [t for t in F.run(P) if t["day"] >= "2026-01-01"]
+    sess = [d for d in F.SESS if d >= "2026-01-01"]
+    by_day = collections.defaultdict(list)
+    for t in REF:
+        by_day[t["day"]].append(t)
+    df5 = pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv"))
+    df5 = df5[df5["time"] >= day_close(sess[0]) - 120 * 86400].reset_index(drop=True)
+    b1, _ = load_ltf("NQ", load("NQ", "5m"))
+    b1 = b1.slice(int(np.searchsorted(b1.t, int(df5["time"].min()))), len(b1))
+    T5 = df5["time"].values
+    out = {"strategy": "lit_final", "params": P, "sessions": len(sess), "backtest_trades": len(REF)}
+
+    def poll(now, window_days=None):
+        cut5 = df5.iloc[:int(np.searchsorted(T5 + 300, now, side="right"))]
+        if window_days:
+            cut5 = cut5[cut5["time"] >= cut5["time"].max() - window_days * 86400]
+        cut1 = b1.slice(0, int(np.searchsorted(b1.t + 60, now, side="right")))
+        if window_days:
+            # the 20-day variant: no extension of the window (lit_live.window_start bypassed)
+            orig = lit_live.window_start
+            lit_live.window_start = lambda last_t: int(cut5["time"].min())
+            try:
+                return lit_live.run(cut5, P, one_min=cut1, now=now)
+            finally:
+                lit_live.window_start = orig
+        return lit_live.run(cut5, P, one_min=cut1, now=now)
+
+    # ---- 1. day-end replay
+    def day_end(window_days=None):
+        same = exits_same = 0
+        miss, extra, wrong = [], [], []
+        t0 = time.time()
+        for d in sess:
+            res = poll(day_close(d), window_days)
+            got = [t for t in res["trades"] if t["day"] == d]
+            want = by_day.get(d, [])
+            gk = {key(t): t for t in got}
+            for w in want:
+                g = gk.pop(ref_key(w), None)
+                if g is None:
+                    miss.append((d, int(w["entry_t"])))
+                    continue
+                same += 1
+                if (g["exit_reason"], g["exit_t"], round(g["pnl"], 2)) == ref_exit(w):
+                    exits_same += 1
+                else:
+                    wrong.append((d, (g["exit_reason"], g["exit_t"], g["pnl"]), ref_exit(w)))
+            extra += [(d, k[0]) for k in gk]
+            if res["state"].get("position"):
+                extra.append((d, "open position at the session close"))
+        r = {"sessions": len(sess), "backtest_trades": len(REF), "matched_entries": same, "matched_exits_and_pnl": exits_same,
+             "missing": miss[:20], "n_missing": len(miss), "extra": extra[:20], "n_extra": len(extra), "exit_differs": wrong[:20],
+             "net_backtest": round(sum(t["pnl"] for t in REF), 2), "seconds": round(time.time() - t0)}
+        return r
+
+    out["day_end"] = day_end()
+    print(f"day-end replay (prev-month window): {out['day_end']['matched_exits_and_pnl']}/{len(REF)} trades identical "
+          f"(entries {out['day_end']['matched_entries']}, missing {out['day_end']['n_missing']}, extra {out['day_end']['n_extra']}) "
+          f"in {out['day_end']['seconds']}s", flush=True)
+    if "--w20" in sys.argv:
+        out["day_end_20d"] = day_end(20)
+        print(f"day-end replay (plain 20-day window): {out['day_end_20d']['matched_exits_and_pnl']}/{len(REF)} identical "
+              f"(missing {out['day_end_20d']['n_missing']}, extra {out['day_end_20d']['n_extra']})", flush=True)
+
+    # ---- 2. intraday polls on every trade day
+    if "--days" not in sys.argv:
+        t0 = time.time()
+        polls = 0
+        bad, lags, seen_open, never = [], [], 0, []
+        for d, want in sorted(by_day.items()):
+            w = want[0]
+            ent, ext = int(w["entry_t"]), int(w["exit_t"])
+            times = set(range(at(d, 1, 55), min(ext + 600, day_close(d)) + 1, 300))
+            times |= set(range(ent - 600, ent + 301, 60))
+            first = None
+            for now in sorted(times):
+                polls += 1
+                res = poll(now)
+                pos = res["state"].get("position")
+                fin = [t for t in res["trades"] if t["day"] == d]
+                for t in fin:
+                    if key(t) != ref_key(w) or (t["exit_reason"], t["exit_t"], round(t["pnl"], 2)) != ref_exit(w):
+                        bad.append({"day": d, "now": now, "what": "finished trade differs", "got": key(t)})
+                if pos:
+                    pk = (pos["entry_t"], pos["dir"], round(pos["entry"], 2), round(pos["stop0"], 2), round(pos["target"], 2), pos["qty"])
+                    if pk != ref_key(w):
+                        bad.append({"day": d, "now": now, "what": "open position differs", "got": pk, "want": ref_key(w)})
+                    elif now >= ext + 60 * (1 if w.get("tf") == 1 else 5):
+                        bad.append({"day": d, "now": now, "what": "still open after the backtest exit"})
+                    else:
+                        seen_open += 1
+                if first is None and (pos or fin):
+                    first = now
+            if len(lags) % 20 == 0 and first is not None:
+                print(f"  ... {d}: {polls} polls, {len(bad)} differences, {time.time() - t0:.0f}s", flush=True)
+            if first is None:
+                never.append(d)
+            else:
+                lags.append(first - ent)
+        lag = np.array(lags) / 60.0
+        out["intraday"] = {"trade_days": len(by_day), "polls": polls, "differences": bad[:30], "n_differences": len(bad),
+                           "polls_with_matching_open_position": seen_open, "trade_never_seen_open_or_closed": never,
+                           "delay_entry_to_first_poll_min": {"median": round(float(np.median(lag)), 2) if len(lag) else None,
+                                                             "max": round(float(lag.max()), 2) if len(lag) else None,
+                                                             "within_1_min": int((lag <= 1.0).sum()), "within_5_min": int((lag <= 5.0).sum())},
+                           "seconds": round(time.time() - t0)}
+        print(f"intraday: {polls} polls on {len(by_day)} trade days, {len(bad)} differences, open position matched on "
+              f"{seen_open} polls, entry seen after median {out['intraday']['delay_entry_to_first_poll_min']['median']} min "
+              f"(max {out['intraday']['delay_entry_to_first_poll_min']['max']}) in {out['intraday']['seconds']}s", flush=True)
+    # ---- 3. the PC paper bot itself (engine/live.py LiveBot + PaperAdapter) on LIT, fed bar by bar
+    if "--bot" in sys.argv or ("--days" not in sys.argv and "--nobot" not in sys.argv):
+        out["bot"] = bot_replay(P, by_day)
+        b = out["bot"]
+        print(f"LiveBot (paper) on LIT, sessions {b['sessions']}: {b['polls']} polls, routed entries {b['entries_ok']}/{b['want']} "
+              f"exits {b['exits_ok']}/{b['want']}, extra routes {b['extra']}, not-routed log lines {len(b['not_routed'])}, "
+              f"errors {len(b['errors'])}, mean poll {b['poll_ms']} ms", flush=True)
+    out["seconds"] = round(time.time() - t_all)
+    with open(OUT, "w", encoding="utf-8") as fh:
+        json.dump(out, fh, indent=1, default=str)
+    ok = out["day_end"]["matched_exits_and_pnl"] == len(REF) and not out["day_end"]["n_extra"] and \
+        (not out.get("intraday") or not out["intraday"]["n_differences"]) and (not out.get("bot") or out["bot"]["ok"])
+    print("OK" if ok else "DIFFERENCES (see research/lit/live_check.json)")
+    sys.exit(0 if ok else 1)
+
+
+if __name__ == "__main__":
+    main()

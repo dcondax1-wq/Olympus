@@ -654,6 +654,12 @@ def test_restart(rp: Replay, ref_trades, start_t):
 # ------------------------------------------------------------------------------------------------ main
 def main():
     t_all = time.perf_counter()
+    # This harness replays the Liquidity Engine (engine/model.py) through the live loop and compares it with Engine
+    # backtests. Since 2026-10-18 live_model.json runs LIT (tests/test_lit_live.py checks that one), so the bot here is
+    # pinned to the engine's lock (live_model.json while it says "engine", else live_model_engine.json).
+    if not os.environ.get("LE_LIVE_MODEL"):
+        from engine.lab_adapter import engine_config_raw
+        os.environ["LE_LIVE_MODEL"] = json.dumps(engine_config_raw())
     prod_state = live.STATE_PATH
     prod_existed = os.path.exists(prod_state)
     prod_mtime = os.path.getmtime(prod_state) if prod_existed else None
