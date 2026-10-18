@@ -258,7 +258,9 @@ connection = `CONNECTED` or `DISCONNECTED`. The outgoing folder is emptied when 
 All three locks are needed at once, or every order is refused:
 
 1. The server runs with `NINJATRADER_LIVE=1`. Add `$env:NINJATRADER_LIVE = '1'` to `.env.local.ps1` (gitignored),
-   then restart `scripts\run_bot.ps1`.
+   then stop everything with `scripts\stop_bot.ps1` and start `scripts\run_bot.ps1` again (it reads the file only when
+   it starts; `stop_bot.ps1 -RestartServer` keeps the old environment). Run both as
+   `powershell -ExecutionPolicy Bypass -File scripts\<name>.ps1`.
 2. The start says armed.
 3. The start carries the phrase `I ACCEPT LIVE RISK`.
 

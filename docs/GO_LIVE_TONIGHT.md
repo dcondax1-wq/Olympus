@@ -6,16 +6,21 @@ Do the Sim test first; only go to the eval when the Sim test is clean.
 ## Before you start (once)
 1. **Merge the PR** Claude sends (GitHub app, "Merge"). The cloud app and the phone notifications run from main.
 2. On the Surface, run the Claude task **"Set up the NQ LIT paper bot on this Surface"** if it isn't done yet
-   (Git, Python, the bot, NinjaTrader, the bar feed). Then on the Surface: `git pull` in the bot folder.
+   (Git, Python, the bot, NinjaTrader, the bar feed). Then on the Surface, in a PowerShell window in the bot folder:
+   `git pull`, then `pip install -r requirements.txt` (the pull added `cryptography`, which the PC's phone notices need).
 3. NinjaTrader 8: log in, connect your MFFU account (Tradovate connection), **Tools > Options > Automated trading
    interface > AT Interface** ticked. Control Center > Accounts: write down your eval account's **Name** exactly.
 4. The `LE_BarFeed` indicator is on an **MNQ 12-26, 5 minute** chart, and `Documents\NinjaTrader 8\le_feed\` has
    `MNQ_5m.csv` and `MNQ_1m.csv` with today's time.
 
 ## 21:00 ET: Sim test (10 minutes)
-5. Start the bot: double-click `scripts\run_bot.ps1` (or `python server.py`), open http://localhost:8766.
+5. Start the bot: in a PowerShell window in the bot folder run
+   `powershell -ExecutionPolicy Bypass -File scripts\run_bot.ps1` and leave that window open (double-clicking a `.ps1`
+   file only opens it in Notepad). Open http://localhost:8766. Run the commands below in a second PowerShell window
+   in the bot folder.
 6. `python -m engine.ninjatrader --selftest` → it must say PASS.
-7. `python -m engine.ninjatrader --status` → shows fresh `MNQ_5m.csv` and `MNQ_1m.csv`; then
+7. `python -m engine.ninjatrader --status` → `Bar feed 5m` and `Bar feed 1m` lines with a `last open` a few minutes
+   ago (that is `MNQ_5m.csv` and `MNQ_1m.csv`; not `NOT USABLE`); then
    `python -m engine.ninjatrader --sim-check` → OK; then
    `python -m engine.ninjatrader --sim-roundtrip` → three `OK` lines and `FLAT`
    (if only the close fails, retry with `--close-suffix " Globex"` and add that to step 11).
@@ -26,15 +31,31 @@ Do the Sim test first; only go to the eval when the Sim test is clean.
 
 ## Then: the eval (your step, all three locks)
 9. Stop the Sim bot (dashboard **Stop**).
-10. Add `$env:NINJATRADER_LIVE = '1'` and `$env:LE_HEARTBEAT = '1'` to `.env.local.ps1` in the bot folder, then
-    restart `scripts\run_bot.ps1`. (The heartbeat lets the cloud push "PC bot silent" to your phone if the PC dies,
-    from 01:50 ET.)
+10. Stop the server completely: `powershell -ExecutionPolicy Bypass -File scripts\stop_bot.ps1` (the run_bot window
+    says `supervisor stopped`). Then add the two lines to `.env.local.ps1` in the bot folder (these commands create the
+    file if it is missing; Notepad could save it as `.env.local.ps1.txt`):
+    `Add-Content .env.local.ps1 ''` (starts a new line), then `Add-Content .env.local.ps1 '$env:NINJATRADER_LIVE = "1"'`
+    and `Add-Content .env.local.ps1 '$env:LE_HEARTBEAT = "1"'`.
+    Start `powershell -ExecutionPolicy Bypass -File scripts\run_bot.ps1` again: its `supervisor pid ... starting` line
+    must end with `loaded .env.local.ps1 (values not shown)`. The file is read only when run_bot.ps1 starts, so the dashboard Stop or
+    `stop_bot.ps1 -RestartServer` is not enough. (run_bot.ps1 turns the heartbeat on by itself anyway. The heartbeat lets
+    the cloud push "PC bot silent" to your phone if the PC dies; the cloud checks every 30 min from about 02:00 ET.)
     Only your eval account should be connected in NinjaTrader: the kill switch flattens every connected account.
 11. Run: `python -m engine.ninjatrader --start --account <your eval account Name> --confirm "I ACCEPT LIVE RISK"`
-12. The log must show your eval account (not SIM), MNQ 12-26, LIT, sizing **two_week**, eval session 1 on Mon Oct 19.
+12. The command prints `Bot start: OK` and the line
+    `NinjaTrader adapter: account <your eval Name> (LIVE ACCOUNT), MNQ 12-26, folder ..., ready`.
+    If that line says `DISABLED (...)` instead of `ready`, the bot runs but every order is refused: the text says which
+    lock is missing (usually: restart run_bot.ps1 as in step 10). Within a minute the Live page log also shows
+    `Strategy locked: LIT - Liquidity Inducement (2026-tuned) + loss pack`. The sizing and the eval session are not in the
+    log; check them with
+    `$s = Invoke-RestMethod http://localhost:8766/api/live/state; $s.state.strategy.model; $s.state.eval_2wk.text`
+    → `lit` and `session 1 of 10, 10 left, $3,000 to go` (Sunday evening counts as Monday Oct 19; sizing `two_week`
+    and eval start 2026-10-19 come from `live_model.json`). If `--start` says `already running`, press **Stop** first.
     The sizing assumes the eval starts tonight at $50,000 with no trades. If it already has P&L, tell Claude first.
-13. Windows: pause updates for a week (Settings > Windows Update > Pause), and run
-    `scripts\setup_dedicated_pc.ps1` as Administrator (no restarts 01:00-17:00 ET, no sleep).
+13. Windows: pause updates for a week (Settings > Windows Update > Pause), and in a PowerShell opened with
+    **Run as administrator**, in the bot folder, run
+    `powershell -ExecutionPolicy Bypass -File scripts\setup_dedicated_pc.ps1 -NinjaTrader "C:\Program Files\NinjaTrader 8\bin\NinjaTrader.exe"`
+    (no restarts 01:00-17:00 ET, no sleep; it does not touch the running bot).
 
 ## Overnight
 - Leave the Surface **plugged in, awake, NinjaTrader open and connected**. No trade can happen before **02:00 ET**;
