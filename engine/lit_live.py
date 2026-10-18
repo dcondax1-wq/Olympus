@@ -124,10 +124,18 @@ def _slice_bars(b: Bars, t_from: int) -> Bars:
 
 
 def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | None = None, sym: str = "NQ",
-        week_hist: list | None = None) -> dict:
+        week_hist: list | None = None, learn: bool = False, es_df: pd.DataFrame | None = None,
+        learn_after: int | None = None, forming: tuple | None = None) -> dict:
     """week_hist: the caller's ledger of this week's finished trades ({"day", "exit", "exit_t"}) for the weekly stop
     ("wk_stop"): the cloud monitor's LIT ledger, the PC bot's routed exits; a day it does not cover counts the model's own
-    trade (engine/lit.py week_stops)."""
+    trade (engine/lit.py week_stops).
+    learn=True (the learning loop, engine/lit_learn.py): every trade that finished after learn_after (default: the last 3
+    days) and the open position carry "learn" = the 50 causal features at entry + buckets + grade, and finished trades the
+    hindsight facts "post" (journal + cause codes). es_df = ES 5m bars for the ES features (None: unknown). Off by default:
+    the trades and every decision are identical either way.
+    forming = (open time, open price) of the 1m bar forming now, when the feed shows it (Yahoo's last row, NinjaTrader's
+    LE_BarFeed open file): state["enter_now"] (an entry decided on the 1m CISD close that just happened) is then sized from
+    the backtest's own fill price (that bar's open + 1 tick) instead of an estimate from the CISD close."""
     P = {**lit.DEFAULTS, **(params or {})}
     df5 = _clean5(df5)
     if not len(df5):
@@ -151,9 +159,53 @@ def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | 
         # not re-simulated on 5m (that would invent a different trade for a day that was traded on 1m), so they drop out.
         k1 = min(B1.full)
         C = [z for z in C if z["k"] >= k1]
+    _set_next_open(B1, B5, forming, src if B1 is not None else None)
     R = lit.run_live(M, C, P, B1=B1, B5=B5, week_hist=week_hist)
     now = int(now) if now is not None else last_t + 300
-    return _shape(M, R, P, now, B1)
+    if learn:
+        _attach_learn(M, C, R, P, es_df, learn_after if learn_after is not None else now - 3 * 86400)
+    out = _shape(M, R, P, now, B1)
+    if R.get("learn_error"):
+        out["learn_error"] = R["learn_error"]
+    return out
+
+
+def _set_next_open(B1, B5, forming, src):
+    """The forming bar's open on the executor bars (lit.XBars.next_open), on the 5m basis of the 1m bars (bars_1m shifts a
+    window whose 1m bars sit on another contract's basis)."""
+    if not forming:
+        return
+    try:
+        ft, fo = int(forming[0]), float(forming[1])
+    except (TypeError, ValueError, IndexError):
+        return
+    sh = 0.0
+    if B1 is not None and B1.n:
+        if src is not None and len(src):
+            j = int(np.searchsorted(src.t, B1.t[-1]))
+            if j < len(src.t) and int(src.t[j]) == int(B1.t[-1]):
+                sh = float(src.c[j]) - float(B1.c[-1])
+        if ft == int(B1.t[-1]) + 60:
+            B1.next_open = (ft, fo - sh)
+    if B5 is not None and B5.n and ft % 300 == 0 and ft == int(B5.t[-1]) + 300:
+        B5.next_open = (ft, fo - sh)
+
+
+def _attach_learn(M, C, R, P, es_df, after):
+    """The learning loop's inputs on the executor's trades (engine/lit_learn.py live_features / post_facts)."""
+    try:
+        from engine import lit_learn
+        F = lit_learn.live_features(M, C, R["trades"], P, es_df=es_df, only_after=after)
+        for t in R["trades"]:
+            x = F.get((t["day"], int(t.get("i", -1)), int(t["dir"])))
+            if x:
+                t["learn"] = x
+                if t["exit"] != "OPEN":
+                    t["post"] = lit_learn.post_facts(M, {**t, "target_px": t.get("target_px")})
+        if F.get("_error"):
+            R["learn_error"] = F["_error"]
+    except Exception as e:                       # never stops the live loop
+        R["learn_error"] = f"{e.__class__.__name__}: {e}"
 
 
 # ------------------------------------------------------------------------------------------------ output shape
@@ -186,7 +238,8 @@ def _trade(t):
             "risk_pts": float(t["risk_pts"]), "risk_usd": float(t["risk_usd"]), "target_label": t.get("target_label"),
             "swept": _sweep_names(t.get("swept")), "sweep_ext": t.get("sweep_ext"), "tf": f"{t.get('tf', 5)}m",
             "mfe": t.get("mfe"), "bars_held": t.get("bars_held"), "entry_kind": "limit" if t.get("limit_fill") else "1m CISD",
-            "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or []}
+            "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+            **({"mae": t.get("mae"), "learn": t["learn"], "post": t.get("post")} if t.get("learn") else {})}
 
 
 def _levels(M, k, upto):
@@ -294,8 +347,21 @@ def _closed(now):
     return wd == 5 or (wd == 6 and m < 1080) or (wd == 4 and m >= 1020) or (1020 <= m < 1080)
 
 
+def _enter_now(t):
+    """lit.run_live "enter_now" in the position's shape: the entry decided on the 1m CISD close, for the live loop to route
+    at market at once (engine/live.py); entry = the backtest's fill (the forming bar's open + 1 tick), or est = True when
+    the feed did not show that open yet (CISD close + 1 tick: the micros may then differ from the model's by a few)."""
+    return {"entry_t": int(t["entry_t"]), "cisd_t": int(t["cisd_t"]), "dir": int(t["dir"]), "qty": int(t["qty"]),
+            "stop": float(t["stop_px"]), "stop0": float(t["stop_px"]), "target": float(t["target_px"]), "entry": float(t["entry_px"]),
+            "est": bool(t.get("est")), "setup": "LIT", "trigger": "LIT", "risk_pts": float(t["risk_pts"]), "be": False,
+            "target_label": t.get("target_label"), "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+            "tf": f"{t.get('tf', 1)}m"}
+
+
 def _shape(M, R, P, now, B1):
     trades, events, position = [], [], None
+    en = (R.get("enter_now") or [None])[0]
+    enter_now = _enter_now(en) if en and not _session_over(en["day"], now, int(M.t[M.n - 1]) + 300) else None
     for s in R["signals"]:
         events.append({"t": s["t"], "type": "signal", "dir": s["dir"],
                        "text": f"LIT {_side(s['dir'])} setup: swept {', '.join(_sweep_names(s['swept']))} (extreme {s['sweep_ext']:,.2f}); "
@@ -315,7 +381,8 @@ def _shape(M, R, P, now, B1):
                         "stop0": float(t["stop_px"]), "target": float(t["target_px"]), "entry": float(t["entry_px"]), "setup": "LIT",
                         "trigger": "LIT", "risk_pts": float(t["risk_pts"]), "be": bool(t.get("be_done")),
                         "unrealized": float(t["pnl"]), "unrealized_r": float(t["r"]), "target_label": t.get("target_label"),
-                        "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or []}
+                        "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+                        **({"learn": t["learn"]} if t.get("learn") else {})}
             continue
         tr = _trade(t)
         trades.append(tr)
@@ -356,6 +423,9 @@ def _shape(M, R, P, now, B1):
     elif position:
         ms = (f"LIT: IN TRADE {_side(position['dir'])} @ {position['entry']:,.2f} | stop {position['stop']:,.2f}"
               f"{' (breakeven)' if position['be'] else ''} | target {position['target']:,.2f}")
+    elif enter_now:
+        ms = (f"LIT: ENTERING {_side(enter_now['dir'])} at market now (1m CISD closed {_hm(enter_now['entry_t'])} ET) | "
+              f"{enter_now['qty']} micros | stop {enter_now['stop']:,.2f} | target {enter_now['target']:,.2f}")
     elif len(day_tr) >= P["max_per_day"] and str(trading_date(now)) == today:
         t = day_tr[-1]
         ms = f"LIT: done for today ({t['exit_reason']} {t['pnl_r']:+.2f}R, ${t['pnl']:+,.0f}); 1 trade a day"
@@ -387,7 +457,8 @@ def _shape(M, R, P, now, B1):
         rules["weekly_stop"] = {**w, "on": True,
                                 "text": (f"weekly stop ON: {w['stops']} stop-outs this week, {w['mult']:g}x size for the rest of the week"
                                          if w["mult"] < 1 else f"{w['stops']} of {w['after']} stop-outs this week: full size")}
-    state = {"model": "lit", "model_state": ms, "lit_rules": rules, "position": position, "setups": setups, "active_pools": _levels(M, k, last),
+    state = {"model": "lit", "model_state": ms, "lit_rules": rules, "position": position, "enter_now": enter_now, "setups": setups,
+             "active_pools": _levels(M, k, last),
              "session": sess, "price": price, "t": int(M.t[last]), "day_trades": len(day_tr),
              "day_pnl": round(sum(t["pnl"] for t in day_tr), 2),
              "lit": {"today": today, "open18": x.get("open18"), "vix": round(x["vix"], 2) if x.get("vix") else None, "vix_move": round(x["vix_move"], 2) if x.get("vix_move") else None,

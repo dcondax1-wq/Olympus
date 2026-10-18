@@ -8,7 +8,9 @@ data.json holds:
             `push`: the public notification status {configured, vapid_public, devices, device_ids, sent_this_run, gone, ...})
   results   the live-settings 5-year replay (periods, months, daily P&L, stop buckets, eval odds, lessons)
   trades    every replay trade with its report (why it entered / plan / result / lessons); 2026 with full detail
-  replays   5m session bars for each replay trade day (tools/export_replays.py)
+  replays   5m session bars for each replay trade day (tools/export_replays.py); LIT trade charts (bars + every marker of
+            each trade) go to replays/<id>.json, loaded lazily by the trade sheet (tools/web_public/tradechart.js); each trade
+            row and session names its chart id ("chart")
   variants  every tested variant (research/lab/variant_results.json)
   study     trades under review (research/study), charts copied to study/
   cold      the cold-streak filter config, state and its last-15 window
@@ -62,7 +64,24 @@ def _load(path, default=None):
         return default
 
 
-def _trades(bt):
+def _charts(out, replays):
+    """LIT trade chart records -> <out>/replays/<id>.json (one small file per trade, loaded when a chart is opened)."""
+    recs = replays.pop("charts", None) or {}
+    replays.pop("charts_source", None)
+    d = os.path.join(out, "replays")
+    if os.path.isdir(d):
+        shutil.rmtree(d)
+    if not recs:
+        return {}
+    os.makedirs(d, exist_ok=True)
+    for k, r in recs.items():
+        if SAFE_ID.match(k):
+            with open(os.path.join(d, k + ".json"), "w", encoding="utf-8") as fh:
+                json.dump(r, fh, separators=(",", ":"))
+    return {(r["day"], int(r["entry"]["t"])): k for k, r in recs.items() if SAFE_ID.match(k)}
+
+
+def _trades(bt, charts=None):
     out = []
     for t in reversed(bt.get("trades") or []):
         row = {k: t.get(k) for k in FULL}
@@ -75,6 +94,9 @@ def _trades(bt):
         for k in ("mfe", "r", "risk_usd", "pnl"):
             if isinstance(row.get(k), float):
                 row[k] = round(row[k], 3)
+        ch = (charts or {}).get((t.get("day"), int(t.get("entry_t") or 0)))
+        if ch:
+            row["chart"] = ch
         out.append(row)
     return out
 
@@ -503,13 +525,15 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     lab, run_skipped, run_extra = _runs(out, runs_dir, lm)
     docs, doc_skipped, left_out, code_dropped = _docs(out, writeups_dir)
     unknown_runs = _link(lab, docs)
+    replays = _load(os.path.join(LAB, "replays.json"), {}) or {}
+    charts = _charts(out, replays)
     data = {
         "built": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "live": live,
         "news": news_hub.hub_for_dashboard(os.path.join(ROOT, "data", "news", "hub.json")),
         "results": results,
-        "trades": _trades(bt),
-        "replays": (_load(os.path.join(LAB, "replays.json"), {}) or {}),
+        "trades": _trades(bt, charts),
+        "replays": replays,
         "variants": _load(os.path.join(LAB, "variant_results.json"), {}) or {},
         "study": _study(out),
         "cold": {"config": cfg, "now": st.get("equity_filter") if not lab_scope.is_lit_model(lm) else (st.get("shadow") or {}).get("equity_filter"),
@@ -560,7 +584,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     open(os.path.join(out, ".nojekyll"), "w").close()
     kb = os.path.getsize(os.path.join(out, "data.json")) // 1024
     print(f"site -> {out}: data.json {kb} KB, {len(ledger)} paper trades, {len(data['trades'])} replay trades, "
-          f"{len(data['replays'].get('sessions', []))} replays, {len(data['variants'].get('rows', []))} variants, {len(data['study'])} study")
+          f"{len(data['replays'].get('sessions', []))} replays, {len(charts)} trade charts -> replays/<id>.json, {len(data['variants'].get('rows', []))} variants, {len(data['study'])} study")
     print(f"  lab: {lab['count']} runs (baseline: {lab['baseline'] or 'missing'}) -> runs/<id>.json"
           + (f"; skipped {', '.join(run_skipped)}" if run_skipped else "") + (f"; private fields kept out: {', '.join(run_extra)}" if run_extra else ""))
     print(f"  docs: {len(docs['writeups'])} write-ups + archive of {len(docs['archive'])} older reports "

@@ -153,8 +153,9 @@ def week_rows(ledger):
 
 def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, params, lit_sizing=None):
     """Paper ledger: the model's trades that entered after this ledger started watching, sized as the PC bot sizes them.
-    lit_sizing (LIT only): live_model.json "lit_sizing" -> engine/sizing.lit_qty (normal / fast_eval / safe_eval, the
-    room from this ledger's MFFU eval tracker at the entry); the model's micros already carry the weekly stop."""
+    lit_sizing (LIT only): live_model.json "lit_sizing" -> engine/sizing.lit_qty (normal / eval / fast_eval / safe_eval /
+    two_week; the room and the two_week eval state from this ledger's MFFU eval tracker at the entry, from
+    lit_sizing.eval_start); the model's micros already carry the weekly stop."""
     for t in sorted(res["trades"], key=lambda x: x["entry_t"]):
         if t["entry_t"] >= first_run - SECS:
             prev = ledger.get(int(t["entry_t"]))
@@ -193,9 +194,15 @@ def paper_size(ledger, t, model, eqf_cfg, shadow_path, sizing_cfg, params, lit_s
     """(mult, micros, reasons) of one entry, sized as the PC bot sizes it (update_ledger, and the fill notification of a
     position that is still open)."""
     if model == "lit":
+        ls = lit_sizing or {}
+        start = ls.get("eval_start")
         before = {k: v for k, v in ledger.items() if int(k) < int(t["entry_t"])}
-        room = eval_track(before)["cushion"] if (lit_sizing or {}).get("mode") in ("safe_eval", "eval") else None
-        r = sizing.lit_qty(int(t.get("qty") or 0), t, lit_sizing, room=room)
+        mode = ls.get("mode")
+        room = eval_track(before, start)["cushion"] if mode in ("safe_eval", "eval", "two_week") else None
+        state = lit_eval_state(before, start, tday(t["entry_t"])) if mode == "two_week" else None
+        r = sizing.lit_qty(int(t.get("qty") or 0), t, lit_sizing, room=room, state=state)
+        if r.get("fallback"):
+            print(f"sizing {et(t['entry_t']):%m-%d %H:%M}: {r['fallback']}")
         return r["mult"], r["qty"], r["reasons"]
     cold = equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["mult"]
     profit = sum(v["usd"] for k, v in ledger.items() if int(k) < int(t["entry_t"])) if ledger else None
@@ -217,6 +224,11 @@ def _setup_line(res, entry_t, d, trade=None):
             label = label or sig[-1].get("target_label")
     parts = [f"Swept {', '.join(swept)}" if swept else "", f"target {label}" if label else "", f"{kind} entry" if kind else ""]
     return " · ".join(p for p in parts if p)
+
+
+def _news(reasons):
+    """Size reasons worth a line in a notification (the weekly stop's half size, a room cap), not the size mode's usual one."""
+    return [r for r in reasons or [] if not str(r).lower().startswith(("eval size", "fast eval"))]
 
 
 def trade_notices(ledger, res, pos, lm, since, state=None, size=None):
@@ -246,8 +258,8 @@ def trade_notices(ledger, res, pos, lm, since, state=None, size=None):
         note = []
         if mult is not None and mult <= 0:
             note.append("NOT TAKEN (cold-streak filter), tracked on paper only")
-        if reasons:
-            note.append("Size: " + "; ".join(reasons))
+        if _news(reasons):
+            note.append("Size: " + "; ".join(_news(reasons)))
         if t is not None and not p:
             note.append(f"Closed before this check ({t.get('exit_reason')}): the outcome follows")
         out.append(push.fill_payload(PUSH_SRC, SYM, "LONG" if d == 1 else "SHORT", qty, src.get("entry"),
@@ -258,12 +270,12 @@ def trade_notices(ledger, res, pos, lm, since, state=None, size=None):
         v = ledger[k]
         if not v.get("exit_ts") or v.get("exit") in (None, "OPEN") or int(v["exit_ts"]) < since:
             continue
-        bal = eval_track({j: w for j, w in ledger.items() if j <= k})
+        bal = eval_track({j: w for j, w in ledger.items() if j <= k}, (lm.get("lit_sizing") or {}).get("eval_start") if model == "lit" else None)
         note = []
         if not v.get("taken", True):
             note.append("Not taken (cold-streak filter): paper only")
-        if v.get("reasons"):
-            note.append("Size: " + "; ".join(v["reasons"]))
+        if _news(v.get("reasons")):
+            note.append("Size: " + "; ".join(_news(v["reasons"])))
         ws = rules.get("weekly_stop") or {}
         if v.get("exit") == "STOP" and ws.get("on") and float(ws.get("mult") or 1) < 1 and k == max(ledger):
             note.append(f"Weekly stop ON: {ws.get('stops')} stop-outs this week, {float(ws['mult']):g}x size for the rest of it")
@@ -273,11 +285,41 @@ def trade_notices(ledger, res, pos, lm, since, state=None, size=None):
     return out
 
 
-def eval_track(ledger):
-    """MFFU 50K eval tracker from a paper ledger (EOD trailing max loss, locks at $50,100)."""
+def eval_day_pnl(ledger, start=None):
+    """Paper P&L per trading day of the eval: ledger rows from `start` (yyyy-mm-dd, lit_sizing.eval_start) on."""
     by_day = {}
     for v in ledger.values():
+        if start and v["day"] < str(start):
+            continue
         by_day[v["day"]] = by_day.get(v["day"], 0.0) + v["usd"]
+    return by_day
+
+
+def lit_eval_state(before, start, day):
+    """The two_week sizer's eval state at an entry on trading day `day` (engine/sizing.eval_state): the closed paper P&L of
+    the eval's earlier days, today's closed P&L so far (`before` = the ledger rows that entered before this entry) and the
+    session number since lit_sizing.eval_start. None when the eval start is unknown (lit_qty then falls back to eval)."""
+    if not start:
+        return None
+    pnl = eval_day_pnl(before, start)
+    return sizing.eval_state({d: v for d, v in pnl.items() if d < day}, pnl.get(day, 0.0),
+                             session=max(1, sizing.eval_session(start, day) or 1))
+
+
+def eval_clock(ledger, lm, now):
+    """State key eval_2wk: the two-week eval clock (session x of 10 since lit_sizing.eval_start, reset recommended after
+    session 10), engine/sizing.eval_clock. None for the old engine."""
+    if lm.get("model") != "lit":
+        return None
+    start = (lm.get("lit_sizing") or {}).get("eval_start")
+    e = et(now)
+    over = e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60           # after the 15:55 flat: today's session is done
+    return sizing.eval_clock(eval_day_pnl(ledger, start), start, tday(now), session_over=over)
+
+
+def eval_track(ledger, start=None):
+    """MFFU 50K eval tracker from a paper ledger (EOD trailing max loss, locks at $50,100); rows from `start` on."""
+    by_day = eval_day_pnl(ledger, start)
     bal, peak, mll = START_BAL, START_BAL, START_BAL - MLL_AMT
     for d in sorted(by_day):
         bal += by_day[d]
@@ -422,8 +464,11 @@ def run(out):
     for a in new_alerts:
         sent = send_alert(a) or sent
 
-    # ---- eval tracker from the cloud ledger (EOD trailing max loss, locks at $50,100)
-    ev_track = eval_track(ledger)
+    # ---- eval tracker from the cloud ledger (EOD trailing max loss, locks at $50,100), from lit_sizing.eval_start (a new
+    # purchase restarts it), and the two-week clock: session x of 10, reset recommended after session 10
+    ev_start = (lm.get("lit_sizing") or {}).get("eval_start") if lm["model"] == "lit" else None
+    ev_track = {**eval_track(ledger, ev_start), **({"start": ev_start} if ev_start else {})}
+    state["eval_2wk"] = eval_clock(ledger, lm, now)
 
     # ---- the always-on PC's heartbeat (engine/heartbeat.py): alert when it went silent in a session
     pc = heartbeat.read(cwd=ROOT, now=now)
@@ -489,7 +534,7 @@ def run(out):
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
                  "lit_rules": state.get("lit_rules"), "lit_sizing": (lm.get("lit_sizing") or {}).get("mode") if lm["model"] == "lit" else None,
-                 "health": health, "eval": ev_track, "model_state": state.get("model_state"), "position": pos,
+                 "health": health, "eval": ev_track, "eval_2wk": state.get("eval_2wk"), "model_state": state.get("model_state"), "position": pos,
                  "strategy": lm.get("label"), "params": lm.get("lit") if lm["model"] == "lit" else lm.get("params"),
                  "equity_filter": state.get("equity_filter"),
                  "eval_timing": state.get("eval_timing"), "price": state.get("price"), "today": today,
@@ -653,7 +698,9 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
          *([f"| Cold-streak filter | {(state.get('equity_filter') or {}).get('reason', 'off')} |"] if (lm or {}).get("model") != "lit" else
            [f"| Weekly stop | {((state.get('lit_rules') or {}).get('weekly_stop') or {}).get('text') or 'off'} |",
             f"| Monday rule | {((state.get('lit_rules') or {}).get('monday') or {}).get('text') or ('on (applies on Mondays)' if ((state.get('lit_rules') or {}).get('monday') or {}).get('on') else 'off')} |",
-            f"| Sizing mode | {((lm or {}).get('lit_sizing') or {}).get('mode') or 'normal'} |"]),
+            f"| Sizing mode | {((lm or {}).get('lit_sizing') or {}).get('mode') or 'normal'} |",
+            *([f"| Eval clock | {'**RESET RECOMMENDED** - ' if ck.get('reset') else ''}{ck.get('text')} (eval start {ck.get('start') or '?'}) |"]
+              if (ck := state.get("eval_2wk")) else [])]),
          f"| Eval timing | **{(state.get('eval_timing') or {}).get('verdict', '?').upper()}**: {(state.get('eval_timing') or {}).get('reason', '')} |",
          f"| Model | **{state.get('model_state', '?')}** |",
          f"| Price | {price:,.2f} (last bar {health['last_bar']}, {health['age_min']} min old) |" if price else "| Price | - |",
@@ -679,7 +726,8 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     L += ["| Entry | Side | Grade | Trigger | Exit | R | $ |", "|---|---|---|---|---|---:|---:|"] + \
          [f"| {v['entry']} | {v['side']} | {v['grade']} | {v['trigger']} | {v['exit']} {v['exit_t'] or ''} | {v['R']:+.2f} | {usd_cell(v)} |" for v in tt] \
         if tt else ["No paper trades today."]
-    L += ["", "## Eval tracker (MFFU 50K rules, cloud paper ledger)", "| Balance | Profit | To $3k target | Trailing max loss | Cushion |",
+    L += ["", f"## Eval tracker (MFFU 50K rules, cloud paper ledger{', since ' + ev_track['start'] if ev_track.get('start') else ''})",
+          "| Balance | Profit | To $3k target | Trailing max loss | Cushion |",
           "|---:|---:|---:|---:|---:|",
           f"| ${ev_track['balance']:,.2f} | {money(ev_track['profit'])} | ${ev_track['to_target']:,.2f} | ${ev_track['trailing_mll']:,.2f} | ${ev_track['cushion']:,.2f} |"]
     allv = sorted(ledger.values(), key=lambda v: v["entry"], reverse=True)[:20]

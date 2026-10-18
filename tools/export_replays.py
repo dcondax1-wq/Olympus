@@ -7,6 +7,12 @@ through each session bar by bar with the trade's sweep, entry, stop, target and 
   python tools/export_replays.py                 # 2026 trade days (default)
   python tools/export_replays.py --since 2025-01-01
 Bars run 07:00-16:00 ET (01:00-16:00 when a trade enters before 07:00, as LIT's London trades do). Prices are stored as integer quarter-points to keep the file small.
+
+LIT model (live_model.json "model": "lit"): replays.json also carries "charts", one chart record per LIT replay trade
+(tools/lit_chart_data.py: 5m bars from 2 h before the sweep to 1 h after the exit, 1m bars around the entry, the swept levels,
+inducement, sweep extreme, CISD levels, limit, 1m confirmation, breakeven and exit), keyed by <date>_<HHMM ET>_<long|short>.
+tools/build_web_dashboard.py writes each one to site/replays/<id>.json (the phone loads them lazily; data.json keeps only the
+ids); the PC serves them at /api/next/tradechart/<id> (engine/next_api.py). --no-charts skips them.
 """
 from __future__ import annotations
 
@@ -24,7 +30,7 @@ OUT = os.path.join(ROOT, "research", "lab", "replays.json")
 ET = ZoneInfo("America/New_York")
 
 
-def main(since: str) -> None:
+def main(since: str, charts: bool = True) -> None:
     with open(BT, encoding="utf-8") as fh:
         trades = [t for t in json.load(fh)["trades"] if t["day"] >= since]
     days = {t["day"] for t in trades}
@@ -50,13 +56,32 @@ def main(since: str) -> None:
         out.append({"day": t["day"], "entry_t": t["entry_t"], "t0": bars[0][0],
                     "dt": [round((b[0] - bars[0][0]) / 300) for b in bars],    # bar index (5m steps) from t0
                     "o": [b[1] for b in bars], "h": [b[2] for b in bars], "l": [b[3] for b in bars], "c": [b[4] for b in bars]})
+    bundle = {"built": dt.datetime.now(ET).strftime("%Y-%m-%d %H:%M"), "source": "TradingView CME NQ1! 5m (data/NQ_5m.csv)",
+              "scale": 4, "sessions": out}
+    with open(os.path.join(ROOT, "live_model.json"), encoding="utf-8") as fh:
+        lit_model = json.load(fh).get("model") == "lit"
+    if charts and lit_model:
+        import sys
+        sys.path.insert(0, ROOT)
+        from tools.lit_chart_data import build
+        recs = build(since)
+        bundle["charts"] = recs
+        bundle["charts_source"] = ("TradingView CME NQ1! 5m (data/NQ_5m.csv) + 1m (data/NQ_1m.csv, on the 5m price basis); "
+                                   "tools/lit_chart_data.py")
+        # each session row names its trade's chart (same day + entry time)
+        ids = {(r["day"], r["entry"]["t"]): k for k, r in recs.items()}
+        for s_ in out:
+            k = ids.get((s_["day"], int(s_["entry_t"])))
+            if k:
+                s_["chart"] = k
     with open(OUT, "w", encoding="utf-8") as fh:
-        json.dump({"built": dt.datetime.now(ET).strftime("%Y-%m-%d %H:%M"), "source": "TradingView CME NQ1! 5m (data/NQ_5m.csv)",
-                   "scale": 4, "sessions": out}, fh, separators=(",", ":"))
-    print(f"replays -> {OUT}: {len(out)} sessions, {os.path.getsize(OUT) // 1024} KB")
+        json.dump(bundle, fh, separators=(",", ":"))
+    print(f"replays -> {OUT}: {len(out)} sessions, {len(bundle.get('charts') or {})} trade charts, {os.path.getsize(OUT) // 1024} KB")
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--since", default="2026-01-01")
-    main(ap.parse_args().since)
+    ap.add_argument("--no-charts", action="store_true", help="skip the LIT trade chart records")
+    a = ap.parse_args()
+    main(a.since, not a.no_charts)

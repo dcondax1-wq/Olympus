@@ -786,7 +786,7 @@ def _next_bar_same_day(B: XBars, k, day):
     """Live: the bar after B's last bar k (still forming) belongs to the same session (no 18:00 roll, no CME early-close
     halt in between), so the backtest would fill there."""
     m = int(B.mod[k]) + B.secs // 60
-    if m >= 1020:
+    if 1020 <= m <= 1080:                # the 17:00-18:00 ET halt (the setup walk itself stops at the flat time)
         return False
     try:
         from engine.lit_live import early_close
@@ -803,7 +803,10 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     re-measured from the fill). Ported from tools/lit_entry.py sim() (identical to simulate() on 5m bars).
     Returns a trade dict (runlib columns) or None. live=True (engine/lit_live.py): when the bars end before the setup is
     decided, returns {"pending": True, ...} (limit still working / tapped and waiting for the 1m CISD), and when they end
-    inside the trade, the trade with exit "OPEN" (stop_now = the stop after a breakeven move). live=False never does."""
+    inside the trade, the trade with exit "OPEN" (stop_now = the stop after a breakeven move), and when the 1m CISD candle
+    is the last closed bar, {"enter_now": True, ...}: the entry decided at that close, to route at market at once (the
+    backtest fills at the next bar's open; entry/qty from B.next_open when the feed shows the forming bar, else "est" from
+    the CISD close). live=False never does any of this."""
     if P.get("fills") is not None and not live:
         from engine import lit_fills
         return lit_fills.simulate(M, B, cand, entry_px, tgt, stop, P)
@@ -1049,7 +1052,9 @@ def run_live(M: Market, cands, P=None, B1=None, B5=None, week_hist=None):
     every setup that passed the filters and was sent to the executor (limit placed), with its plan}. A pending setup does
     not block a later one: whichever fills first is the day's trade (the backtest decides in setup order; the two differ
     only when a later setup fills while an earlier limit is still working and that earlier limit fills afterwards).
-    week_hist: the live ledger's finished trades of this week for the weekly stop (see week_stops); None = the run's own."""
+    week_hist: the live ledger's finished trades of this week for the weekly stop (see week_stops); None = the run's own.
+    "enter_now": at most one entry decided on the 1m CISD close that just happened (simulate_x live), to route at market
+    at once; it becomes the open trade in "trades" once its fill bar has closed."""
     return _run_core(M, cands, P, None, B1, B5, live=True, week_hist=week_hist)
 
 
@@ -1061,7 +1066,7 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
     if P["tf"] == "1m" and B1 is None and not live:
         B1 = bars_1m(M)
     out, busy, per_day = [], -1, collections.Counter()
-    pending, signals = [], []
+    pending, signals, enter_now = [], [], []
     buf = P["stop_buf"]
     for z in cands:
         if sset is not None and z["day"] not in sset:
@@ -1107,7 +1112,8 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
                                                                              if P["max_rr"] and best and best > P["max_rr"] * risk else ""),
                             "swept": z["swept"], "sweep_ext": round(z["ext_d"] * d, 2), "ind": len(z.get("idm_a") or []),
                             "disp": z["disp"], "tf": B.secs // 60, "how": z["how"],
-                            "status": "pending" if (t and t.get("pending")) else ("filled" if t else "no fill")})
+                            "status": "pending" if (t and t.get("pending")) else "entering" if (t and t.get("enter_now"))
+                            else ("filled" if t else "no fill")})
         if t is None:
             continue
         if t.get("pending"):
@@ -1130,6 +1136,10 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
         if live:
             t["target_label"] = signals[-1]["target_label"]
             t["sweep_ext"] = signals[-1]["sweep_ext"]
+            if t.get("enter_now"):           # decided on the CISD close, sized like the trade: routed at market now
+                t["sig_t"] = int(M.t[z["entry_i"]])
+                enter_now.append(t)
+                continue
         out.append(t)
     if not live:
         return {"trades": out}
@@ -1141,4 +1151,4 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
         week = {"week": "%d-W%02d" % iso_week(today), "stops": int(ws), "after": int(P["wk_stop"][0]),
                 "mult": float(P["wk_stop"][1]) if ws >= P["wk_stop"][0] else 1.0, "ledger_days": sorted({r["day"] for r in (week_hist or [])
                                                                                                         if r.get("day") and iso_week(r["day"]) == iso_week(today)})}
-    return {"trades": out, "pending": pending, "signals": signals, "week": week}
+    return {"trades": out, "pending": pending, "signals": signals, "week": week, "enter_now": enter_now}

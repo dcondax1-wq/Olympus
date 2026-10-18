@@ -703,6 +703,9 @@ IDEA = [("bstop", "1. buy-stop entry beyond the 1m CISD candle"), ("chase", "2. 
         ("smt", "3. ES SMT"), ("open", "4. LIT opening model")]
 
 
+PICKS = {"open d0.25 to1000 overnight only"}      # the opening model picked on H1 (best H1 net of the ideas that also held in H2)
+
+
 def save_all():
     """Store every grid variant (ADOPT only when H1 and H2 both beat the baseline and 2-4 trades/week)."""
     res = _load()
@@ -717,7 +720,8 @@ def save_all():
             d1, d2 = o["H1"]["net"] - b["H1"]["net"], o["H2"]["net"] - b["H2"]["net"]
             tpw = min(o["H1"]["tpw"], o["H2"]["tpw"]); tpx = max(o["H1"]["tpw"], o["H2"]["tpw"])
             if d1 > 0 and d2 > 0 and tpw >= 2 and tpx <= 4:
-                st, v = "adopt-candidate", "ADOPT"
+                # one pick per idea (best H1); its positive neighbours are "promising"
+                st, v = ("adopt-candidate", "ADOPT") if nm in PICKS else ("promising", "ADOPT-neighbour")
             elif abs(d1) < 500 and abs(d2) < 500:
                 st, v = "info", "NEUTRAL"
             else:

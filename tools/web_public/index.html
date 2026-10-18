@@ -859,7 +859,7 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 /* activity feed + phone notifications */
 .act-list > .act-day { display: block; padding: 14px 0 4px; border-bottom: 0; font: 650 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .act-list > .act-day:first-child { padding-top: 2px; }
-.act.hl { margin: 0 -10px; padding-left: 10px; padding-right: 10px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.act.act-hl { margin: 0 -10px; padding-left: 10px; padding-right: 10px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 12%, transparent); }
 .act .act-s { white-space: normal; }
 .act .sl-r { line-height: 1.5; }
 .row-btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 6px; }
@@ -3476,25 +3476,27 @@ async function actBadge() {
 }
 function actMarkSeen() { const A = activity(); store.set('act.seen', Math.max(A[0]?.t || 0, store.get('act.seen', 0) || 0)); swCountSet(0); actBadge(); }
 const actDay = (t) => { const e = et(t), td = et(Date.now() / 1000).date; return e.date === td ? 'Today' : `${e.wd} ${fDate(e.date)}`; };
+const mic = (n) => +n === 1 ? '1 micro' : `${n} micros`;
+const noteR = (rs) => (rs || []).filter(r => !/^(eval size|fast eval)/i.test(r));      // the size mode's usual line is not news
 function actRow(x, hl = '') {
   const L = x.side === 'LONG', side = x.side ? `<b class="${L ? 'up' : 'dn'}" style="font-size:11px;letter-spacing:.08em">${esc(x.side)}</b>` : '';
   const src = x.src ? `<span class="mut">${esc(x.src)}</span>` : '';
   let ic, title, sub, right = '';
   if (x.kind === 'fill') {
     ic = `<span class="side-i ${L ? 'L' : 'S'}" style="width:32px;height:32px;border-radius:10px">${icon(L ? 'long' : 'short')}</span>`;
-    title = `${side}<span>filled${ok(x.qty) ? ` · ${x.qty} micros` : ''}${ok(x.entry) ? ` @ ${num(x.entry)}` : ''}</span>${x.open ? chip('open', 'good') : ''}${x.taken === false ? chip('not taken', 'warn') : ''}`;
-    sub = [ok(x.stop) ? `stop ${num(x.stop)}` : '', ok(x.target) ? `target ${num(x.target)}` : '', ok(x.risk_usd) ? `${usd(x.risk_usd)} at risk` : '', (x.reasons || []).join('; ')].filter(Boolean).join(' · ');
+    title = `${side}<span>filled${ok(x.qty) ? ` · ${mic(x.qty)}` : ''}${ok(x.entry) ? ` @ ${num(x.entry)}` : ''}</span>${x.open ? chip('open', 'good') : ''}${x.taken === false ? chip('not taken', 'warn') : ''}`;
+    sub = [ok(x.stop) ? `stop ${num(x.stop)}` : '', ok(x.target) ? `target ${num(x.target)}` : '', ok(x.risk_usd) ? `${usd(x.risk_usd)} at risk` : '', noteR(x.reasons).join('; ')].filter(Boolean).join(' · ');
   } else if (x.kind === 'outcome') {
     ic = `<span class="side-i ${(x.usd ?? x.R ?? 0) >= 0 ? 'L' : 'S'}" style="width:32px;height:32px;border-radius:10px">${icon((x.usd ?? x.R ?? 0) >= 0 ? 'check' : 'minus')}</span>`;
     title = `${side}<b>${esc(x.exit || 'EXIT')}</b>${x.taken === false ? chip('paper only', 'warn') : ''}`;
-    sub = [ok(x.qty) ? `${x.qty} micros` : '', (x.reasons || []).join('; '), x.body ? String(x.body).split('\n')[0] : ''].filter(Boolean).join(' · ');
+    sub = [x.body ? String(x.body).split('\n')[0] : ok(x.qty) ? mic(x.qty) : '', noteR(x.reasons).join('; ')].filter(Boolean).join(' · ');
     right = `<span class="sl-r ${cR(x.R)}">${fR(x.R)}<br><span class="${cls(x.usd)}">${susd(x.usd)}</span></span>`;
   } else {
     ic = `<span class="side-i" style="width:32px;height:32px;border-radius:10px;border:1px solid var(--line)">${icon(x.kind === 'timing' ? 'prop' : x.kind === 'pc' ? 'phone' : x.kind === 'risk' ? 'risk' : 'alerts')}</span>`;
     title = `<b>${esc(String(x.title || ACT_K[x.kind] || 'Notice').replace(/^[^·]*·\s*/, ''))}</b>`;
     sub = x.body || '';
   }
-  return `<div class="act ${hl === x.key ? 'hl' : ''}" data-key="${esc(x.key)}">${ic}<span class="sl-m"><span class="sl-t">${title}</span><span class="sl-s act-s">${esc(sub)}</span>
+  return `<div class="act ${hl === x.key ? 'act-hl' : ''}" data-key="${esc(x.key)}">${ic}<span class="sl-m"><span class="sl-t">${title}</span><span class="sl-s act-s">${esc(sub)}</span>
     <span class="sl-s"><span class="mono">${et(x.t).hm} ET</span> · ${esc(ACT_K[x.kind] || x.kind || '')} · ${src}${x.sent ? ' · <span class="up">notified</span>' : ''}</span></span>${right}</div>`;
 }
 function actList(A, hl = '', grouped = true) {

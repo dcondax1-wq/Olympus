@@ -114,7 +114,8 @@ def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None =
     learning (engine/lit_learn.py, the learning loop): "auto" = data/lit_learning.json (env LE_LIT_LEARNING), a dict, or
     None. In mode "apply" the learned bucket multiplier (0.5-1.25x) joins the weekly stop in the one rounding (a size-up
     never risks more than $900) and a learned skip routes 0; in "observe", or with no file / no features, nothing changes
-    (the would-be multiplier is returned under "learn"). two_week mode honours a learned skip only.
+    (the would-be multiplier is returned under "learn"). two_week mode honours a learned skip and a learned cut below 1x,
+    never a size-up.
     Returns {"qty", "mult" (vs the model's micros), "reasons"} (+ "fallback": why two_week fell back to eval, "learn")."""
     c = cfg or {}
     mode = c.get("mode") or "normal"
@@ -154,7 +155,13 @@ def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None =
             if q <= 0:
                 return {"qty": 0, "mult": 0.0, "reasons": reasons}
             q = min(q, max_micros)
-            return {"qty": q, "mult": round(q / qty, 4), "reasons": reasons}
+            if lm < 1.0 - 1e-9:                # learned cut (never a size-up: the two-week caps already sit at the limit)
+                q = max(1, int(q * lm + 1e-9))
+                reasons += L["reasons"]
+            out = {"qty": q, "mult": round(q / qty, 4), "reasons": reasons}
+            if L.get("mode"):
+                out["learn"] = L
+            return out
     if mode == "fast_eval" and risk:
         from .lit import qty_for
         base = qty_for(float(risk), 800.0, float(c.get("fast_ref_stop", 40.0)), max_micros)
@@ -181,7 +188,7 @@ def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None =
                 q = max(1, cap)
                 reasons.append(f"safe eval: {q} micro{'s' if q != 1 else ''} = {float(c.get('safe_cap', 0.6)) * 100:.0f}% of ${float(room):,.0f} room to the max-loss floor")
     q = min(q, max_micros)
-    out = {"qty": q, "mult": round(q / qty, 4), "reasons": reasons + (L["reasons"] if mode != "two_week" else [])}
+    out = {"qty": q, "mult": round(q / qty, 4), "reasons": reasons + L["reasons"]}
     if L.get("mode"):
         out["learn"] = L
     if fallback:
