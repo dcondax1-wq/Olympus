@@ -1,7 +1,7 @@
 {
- "built": "2026-10-18 22:24",
+ "built": "2026-10-18 22:25",
  "baseline": "baseline",
- "count": 1005,
+ "count": 1009,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -8650,163 +8650,6 @@
      "slow_pass": 29.8,
      "pass_med": 10.0,
      "b2b": "32/52"
-    }
-   }
-  },
-  {
-   "id": "lit_adv_tsel_deadline_1p5_t15",
-   "title": "tsel deadline c=1.5 | t15",
-   "family": "other",
-   "question": "LIT Advanced Decisions Report ch6/8/9/10 (owner 2026-10-18): does breakeven remove more recoveries than losses, do partials at the first opposition pay, should the target follow the entry location / journey / deadline, and what to do when the objective trades before the fill? Live two_week sizing, picked on 2026 H1, checked on H2.",
-   "status": "promising",
-   "verdict": "more money in both halves, 2-week pass and fail rates not worse (vs live | t15). 2026 H1 (pick) n=80 3.12/wk win 22.5% PF 3.86 net +35,343 ($5,798/mo) DD -3,518; 2-week pass/fail 59.7/6.7 (Monte Carlo 56.6/3.4), 1 month 77.1/11.9, unit R 67.41; 2026 H2 (check) n=40 2.56/wk win 35.0% PF 2.34 net +11,672 ($3,143/mo) DD -3,088; 2-week pass/fail 52.2/0.0 (Monte Carlo 54.9/3.6), 1 month 49.2/3.4, unit R 29.17. 2021-25: no 1m bars, not tested.",
-   "writeup": "lit-adv-management",
-   "tags": [
-    "lit",
-    "lit_adv"
-   ],
-   "params": {
-    "ref": "cisd",
-    "extra_boxes": [],
-    "window": [
-     [
-      120,
-      930
-     ]
-    ],
-    "sweep_names": null,
-    "disp": 0.8,
-    "depth": 0.5,
-    "idm_a": [
-     1.0,
-     36,
-     1
-    ],
-    "nwog_discount": false,
-    "mw_filter": false,
-    "wait": 6,
-    "tf": "1m",
-    "cisd1m": 20,
-    "stop_buf": 0.25,
-    "min_stop": 8.0,
-    "max_stop": 80.0,
-    "classes": [
-     "vix"
-    ],
-    "vix_k": 1.0,
-    "min_rr": 1.5,
-    "max_rr": 8.0,
-    "fallback_rr": null,
-    "be_r": 1.0,
-    "flat_mod": 955,
-    "max_per_day": 1,
-    "be_off": 0.0,
-    "all_hours": false,
-    "per_session": null,
-    "stop_after_loss": false,
-    "how_out": 1.0,
-    "monday": true,
-    "wk_stop": [
-     2,
-     0.5
-    ],
-    "t_check": {
-     "at": 15,
-     "x": 0.3,
-     "mfe": 0.5
-    },
-    "fills": null,
-    "pre_sess": "keep",
-    "pre_tap": "cancel",
-    "pre_conf": "keep",
-    "be": {
-     "r": 1.0,
-     "off": 0.0,
-     "need": null,
-     "pend": null
-    },
-    "part": null,
-    "tsel": {
-     "mode": "deadline",
-     "c": 1.5
-    }
-   },
-   "sizing": {
-    "mode": "two_week",
-    "two_week": {
-     "base": "need",
-     "need_buf": 1.0,
-     "room_f": 0.6,
-     "wk": false,
-     "dll_cap": true,
-     "stop_at_target": true,
-     "max_usd": null,
-     "press_at": null,
-     "press_mult": 1.0,
-     "press_room": null,
-     "protect_over": null,
-     "protect_keep": 0.0
-    },
-    "safe_cap": 0.6,
-    "eval_ref_stop": 25.0,
-    "fast_ref_stop": 40.0,
-    "two_week_until": 10,
-    "after_mode": "safe_eval"
-   },
-   "built": "2026-10-18 22:24",
-   "spans": {
-    "2026": {
-     "n": 120,
-     "tpw": 2.91,
-     "wk2": 86,
-     "win": 26.7,
-     "pf": 3.23,
-     "net": 47016,
-     "dd": -3518,
-     "avg_r": 0.779,
-     "stop": 45.8,
-     "worst_day": -1004,
-     "risk": 408.0,
-     "half": 0,
-     "per_month": 4793,
-     "p10": 32.5,
-     "f10": 4.4,
-     "p15": 45.1,
-     "f15": 8.3,
-     "p20": 51.0,
-     "f20": 16.0,
-     "dec10": 36.9,
-     "slow_pass": 27.3,
-     "pass_med": 10.0,
-     "b2b": "13/3"
-    },
-    "2021-25": {
-     "n": 0
-    },
-    "all": {
-     "n": 120,
-     "tpw": 2.91,
-     "wk2": 86,
-     "win": 26.7,
-     "pf": 3.23,
-     "net": 47016,
-     "dd": -3518,
-     "avg_r": 0.779,
-     "stop": 45.8,
-     "worst_day": -1004,
-     "risk": 408.0,
-     "half": 0,
-     "per_month": 4793,
-     "p10": 32.5,
-     "f10": 4.4,
-     "p15": 45.1,
-     "f15": 8.3,
-     "p20": 51.0,
-     "f20": 16.0,
-     "dec10": 36.9,
-     "slow_pass": 27.3,
-     "pass_med": 10.0,
-     "b2b": "13/3"
     }
    }
   },
@@ -41188,6 +41031,156 @@
    }
   },
   {
+   "id": "lit_adv_pre_sess_reval_pool",
+   "title": "pre_sess reval:pool",
+   "family": "other",
+   "question": "LIT Advanced Decisions Report ch6/8/9/10 (owner 2026-10-18): does breakeven remove more recoveries than losses, do partials at the first opposition pay, should the target follow the entry location / journey / deadline, and what to do when the objective trades before the fill? Live two_week sizing, picked on 2026 H1, checked on H2.",
+   "status": "rejected",
+   "verdict": "H1 only (vs live). 2026 H1 (pick) n=81 3.16/wk win 23.5% PF 3.79 net +38,519 ($6,319/mo) DD -3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 51.1/6.8), 1 month 72.5/16.5, unit R 65.39; 2026 H2 (check) n=40 2.56/wk win 35.0% PF 2.13 net +9,674 ($2,605/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8, unit R 26.96. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-adv-management",
+   "tags": [
+    "lit",
+    "lit_adv"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "fills": null,
+    "pre_sess": "reval:pool",
+    "pre_tap": "cancel",
+    "pre_conf": "keep",
+    "be": {
+     "r": 1.0,
+     "off": 0.0,
+     "need": null,
+     "pend": null
+    },
+    "part": null,
+    "tsel": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-18 22:24",
+   "spans": {
+    "2026": {
+     "n": 121,
+     "tpw": 2.94,
+     "wk2": 86,
+     "win": 27.3,
+     "pf": 3.15,
+     "net": 48193,
+     "dd": -3612,
+     "avg_r": 0.738,
+     "stop": 46.0,
+     "worst_day": -1004,
+     "risk": 435.0,
+     "half": 0,
+     "per_month": 4913,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 11.7,
+     "p20": 54.9,
+     "f20": 20.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 121,
+     "tpw": 2.94,
+     "wk2": 86,
+     "win": 27.3,
+     "pf": 3.15,
+     "net": 48193,
+     "dd": -3612,
+     "avg_r": 0.738,
+     "stop": 46.0,
+     "worst_day": -1004,
+     "risk": 435.0,
+     "half": 0,
+     "per_month": 4913,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 11.7,
+     "p20": 54.9,
+     "f20": 20.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
    "id": "lit_adv_re_arm_an_expired_untapped_limit_at_the_next_ope",
    "title": "LIT advanced report ch2-4: ch3 re-arm an expired untapped limit at the next open 03:00/08:00/09:30",
    "family": "other",
@@ -41803,6 +41796,163 @@
    }
   },
   {
+   "id": "lit_adv_tsel_deadline_1p5_t15",
+   "title": "tsel deadline c=1.5 | t15",
+   "family": "other",
+   "question": "LIT Advanced Decisions Report ch6/8/9/10 (owner 2026-10-18): does breakeven remove more recoveries than losses, do partials at the first opposition pay, should the target follow the entry location / journey / deadline, and what to do when the objective trades before the fill? Live two_week sizing, picked on 2026 H1, checked on H2.",
+   "status": "rejected",
+   "verdict": "Lone spike, rejected: on top of the 15-minute check it adds money in both halves, but alone it loses money in both halves and its neighbour c=2 loses H1 money. more money in both halves, 2-week pass and fail rates not worse (vs live | t15). 2026 H1 (pick) n=80 3.12/wk win 22.5% PF 3.86 net +35,343 ($5,798/mo) DD -3,518; 2-week pass/fail 59.7/6.7 (Monte Carlo 56.6/3.4), 1 month 77.1/11.9, unit R 67.41; 2026 H2 (check) n=40 2.56/wk win 35.0% PF 2.34 net +11,672 ($3,143/mo) DD -3,088; 2-week pass/fail 52.2/0.0 (Monte Carlo 54.9/3.6), 1 month 49.2/3.4, unit R 29.17. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-adv-management",
+   "tags": [
+    "lit",
+    "lit_adv"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "fills": null,
+    "pre_sess": "keep",
+    "pre_tap": "cancel",
+    "pre_conf": "keep",
+    "be": {
+     "r": 1.0,
+     "off": 0.0,
+     "need": null,
+     "pend": null
+    },
+    "part": null,
+    "tsel": {
+     "mode": "deadline",
+     "c": 1.5
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-18 22:24",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.23,
+     "net": 47016,
+     "dd": -3518,
+     "avg_r": 0.779,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 408.0,
+     "half": 0,
+     "per_month": 4793,
+     "p10": 32.5,
+     "f10": 4.4,
+     "p15": 45.1,
+     "f15": 8.3,
+     "p20": 51.0,
+     "f20": 16.0,
+     "dec10": 36.9,
+     "slow_pass": 27.3,
+     "pass_med": 10.0,
+     "b2b": "13/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.23,
+     "net": 47016,
+     "dd": -3518,
+     "avg_r": 0.779,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 408.0,
+     "half": 0,
+     "per_month": 4793,
+     "p10": 32.5,
+     "f10": 4.4,
+     "p15": 45.1,
+     "f15": 8.3,
+     "p20": 51.0,
+     "f20": 16.0,
+     "dec10": 36.9,
+     "slow_pass": 27.3,
+     "pass_med": 10.0,
+     "b2b": "13/3"
+    }
+   }
+  },
+  {
    "id": "lit_adv_tsel_deadline_2",
    "title": "tsel deadline c=2.0",
    "family": "other",
@@ -41952,6 +42102,470 @@
      "slow_pass": 33.3,
      "pass_med": 10.5,
      "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_adv_tsel_deadline_2_t15",
+   "title": "tsel deadline c=2.0 | t15",
+   "family": "other",
+   "question": "LIT Advanced Decisions Report ch6/8/9/10 (owner 2026-10-18): does breakeven remove more recoveries than losses, do partials at the first opposition pay, should the target follow the entry location / journey / deadline, and what to do when the objective trades before the fill? Live two_week sizing, picked on 2026 H1, checked on H2.",
+   "status": "rejected",
+   "verdict": "mixed: not better in both halves (vs live | t15). 2026 H1 (pick) n=80 3.12/wk win 22.5% PF 3.64 net +33,087 ($5,428/mo) DD -3,537; 2-week pass/fail 63.0/6.7 (Monte Carlo 56.0/3.1), 1 month 78.0/11.9, unit R 69.43; 2026 H2 (check) n=40 2.56/wk win 35.0% PF 2.24 net +9,347 ($2,517/mo) DD -3,088; 2-week pass/fail 52.2/0.0 (Monte Carlo 55.0/3.6), 1 month 49.2/3.4, unit R 29.17. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-adv-management",
+   "tags": [
+    "lit",
+    "lit_adv"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "fills": null,
+    "pre_sess": "keep",
+    "pre_tap": "cancel",
+    "pre_conf": "keep",
+    "be": {
+     "r": 1.0,
+     "off": 0.0,
+     "need": null,
+     "pend": null
+    },
+    "part": null,
+    "tsel": {
+     "mode": "deadline",
+     "c": 2.0
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-18 22:24",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.11,
+     "net": 42434,
+     "dd": -3867,
+     "avg_r": 0.793,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 385.0,
+     "half": 0,
+     "per_month": 4326,
+     "p10": 36.9,
+     "f10": 5.3,
+     "p15": 46.6,
+     "f15": 11.2,
+     "p20": 51.0,
+     "f20": 16.5,
+     "dec10": 42.2,
+     "slow_pass": 30.9,
+     "pass_med": 9.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.11,
+     "net": 42434,
+     "dd": -3867,
+     "avg_r": 0.793,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 385.0,
+     "half": 0,
+     "per_month": 4326,
+     "p10": 36.9,
+     "f10": 5.3,
+     "p15": 46.6,
+     "f15": 11.2,
+     "p20": 51.0,
+     "f20": 16.5,
+     "dec10": 42.2,
+     "slow_pass": 30.9,
+     "pass_med": 9.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_adv_tsel_journey_1",
+   "title": "tsel journey >= 1.0 VIX moves",
+   "family": "other",
+   "question": "LIT Advanced Decisions Report ch6/8/9/10 (owner 2026-10-18): does breakeven remove more recoveries than losses, do partials at the first opposition pay, should the target follow the entry location / journey / deadline, and what to do when the objective trades before the fill? Live two_week sizing, picked on 2026 H1, checked on H2.",
+   "status": "rejected",
+   "verdict": "mixed: not better in both halves (vs live). 2026 H1 (pick) n=80 3.12/wk win 23.8% PF 3.04 net +28,557 ($4,685/mo) DD -3,772; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.6/7.9), 1 month 69.7/17.4, unit R 63.5; 2026 H2 (check) n=40 2.56/wk win 35.0% PF 2.0 net +8,948 ($2,409/mo) DD -2,809; 2-week pass/fail 43.5/2.9 (Monte Carlo 50.8/7.2), 1 month 42.4/6.8, unit R 25.98. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-adv-management",
+   "tags": [
+    "lit",
+    "lit_adv"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "fills": null,
+    "pre_sess": "keep",
+    "pre_tap": "cancel",
+    "pre_conf": "keep",
+    "be": {
+     "r": 1.0,
+     "off": 0.0,
+     "need": null,
+     "pend": null
+    },
+    "part": null,
+    "tsel": {
+     "mode": "journey",
+     "u": 1.0,
+     "obst": "struct"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-18 22:24",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 27.5,
+     "pf": 2.64,
+     "net": 37505,
+     "dd": -3772,
+     "avg_r": 0.718,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 414.0,
+     "half": 0,
+     "per_month": 3823,
+     "p10": 30.1,
+     "f10": 7.3,
+     "p15": 42.2,
+     "f15": 16.5,
+     "p20": 48.5,
+     "f20": 25.2,
+     "dec10": 37.4,
+     "slow_pass": 35.6,
+     "pass_med": 11.0,
+     "b2b": "12/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 27.5,
+     "pf": 2.64,
+     "net": 37505,
+     "dd": -3772,
+     "avg_r": 0.718,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 414.0,
+     "half": 0,
+     "per_month": 3823,
+     "p10": 30.1,
+     "f10": 7.3,
+     "p15": 42.2,
+     "f15": 16.5,
+     "p20": 48.5,
+     "f20": 25.2,
+     "dec10": 37.4,
+     "slow_pass": 35.6,
+     "pass_med": 11.0,
+     "b2b": "12/4"
+    }
+   }
+  },
+  {
+   "id": "lit_adv_tsel_loc",
+   "title": "tsel loc (struct)",
+   "family": "other",
+   "question": "LIT Advanced Decisions Report ch6/8/9/10 (owner 2026-10-18): does breakeven remove more recoveries than losses, do partials at the first opposition pay, should the target follow the entry location / journey / deadline, and what to do when the objective trades before the fill? Live two_week sizing, picked on 2026 H1, checked on H2.",
+   "status": "rejected",
+   "verdict": "H2 only (vs live). 2026 H1 (pick) n=80 3.12/wk win 26.2% PF 2.74 net +24,675 ($4,048/mo) DD -3,455; 2-week pass/fail 52.9/13.4 (Monte Carlo 48.8/8.8), 1 month 65.1/16.5, unit R 62.45; 2026 H2 (check) n=40 2.56/wk win 35.0% PF 2.3 net +12,066 ($3,249/mo) DD -2,493; 2-week pass/fail 50.7/7.2 (Monte Carlo 52.0/10.6), 1 month 49.2/22.0, unit R 23.73. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-adv-management",
+   "tags": [
+    "lit",
+    "lit_adv"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "fills": null,
+    "pre_sess": "keep",
+    "pre_tap": "cancel",
+    "pre_conf": "keep",
+    "be": {
+     "r": 1.0,
+     "off": 0.0,
+     "need": null,
+     "pend": null
+    },
+    "part": null,
+    "tsel": {
+     "mode": "loc",
+     "obst": "struct"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-18 22:24",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 29.2,
+     "pf": 2.57,
+     "net": 36741,
+     "dd": -3455,
+     "avg_r": 0.681,
+     "stop": 45.8,
+     "worst_day": -1010,
+     "risk": 372.0,
+     "half": 0,
+     "per_month": 3745,
+     "p10": 39.8,
+     "f10": 5.8,
+     "p15": 48.1,
+     "f15": 16.5,
+     "p20": 55.3,
+     "f20": 28.6,
+     "dec10": 45.6,
+     "slow_pass": 20.2,
+     "pass_med": 7.5,
+     "b2b": "11/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 29.2,
+     "pf": 2.57,
+     "net": 36741,
+     "dd": -3455,
+     "avg_r": 0.681,
+     "stop": 45.8,
+     "worst_day": -1010,
+     "risk": 372.0,
+     "half": 0,
+     "per_month": 3745,
+     "p10": 39.8,
+     "f10": 5.8,
+     "p15": 48.1,
+     "f15": 16.5,
+     "p20": 55.3,
+     "f20": 28.6,
+     "dec10": 45.6,
+     "slow_pass": 20.2,
+     "pass_med": 7.5,
+     "b2b": "11/5"
     }
    }
   },

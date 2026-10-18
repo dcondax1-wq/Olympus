@@ -212,8 +212,10 @@ under water. Every idea was rerun on top of it.
     - Neighbours 0.5, 1.0 and 1.5 pts all help both halves. 2.0 pts and more start to turn breakevens into full trades back
       (H2 2-week fails 2.9% to 4.3%).
   - **Engine option (done):** `engine/lit.py` DEFAULTS `"be_off": 0.0`. `simulate_x` puts the breakeven stop at
-    `entry + be_off`; `engine/lit_fills.py` uses the same level. The default 0.0 is today's behaviour:
-    `python -X utf8 -m tests.test_lit_live` stays 120/120. The live loop routes the model's `stop_now`, so the broker stop
+    `entry + be_off`; `engine/lit_fills.py` uses the same level. The default 0.0 is today's behaviour
+    (`entry + 0.0` is the same number): the day-end replay of `python -X utf8 -m tests.test_lit_live` stays 120/120. With
+    `be_off 1.25`, `engine/lit.py run_x` equals the study executor on all 120 trades of 2026 (34 breakeven exits at +1.0 pt
+    after slippage). The live loop routes the model's `stop_now`, so the broker stop
     follows automatically (reason "BE", since it is above the entry).
   - **Config change:** `live_model.json` `"lit": {..., "be_off": 1.25}`.
   - **Honest size of it:** about $15-25 per breakeven trade on the eval path ($2.50 a micro). 2026 had 34 breakeven exits, about $760 in the eval path, almost
