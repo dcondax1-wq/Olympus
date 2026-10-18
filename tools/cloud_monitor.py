@@ -4,7 +4,9 @@ Each run does what LiveBot.poll_once does - stored history + fresh Yahoo bars, 2
 live params - then writes a dashboard (README.md + chart.png + state.json) into --out, which the workflow publishes on
 the repo's `dashboard` branch. Paper only: it never routes an order anywhere.
 
-Optional phone alerts: set TG_TOKEN + TG_CHAT (Telegram) and/or DISCORD_WEBHOOK as repository secrets.
+Phone notifications: Web Push to the Home Screen app (engine/push.py) for every fill and every outcome, the PC heartbeat
+going silent and eval-timing flips; secrets LE_VAPID_PRIVATE + LE_PUSH_SUBS (docs/NOTIFICATIONS.md). Telegram / Discord
+(TG_TOKEN + TG_CHAT, DISCORD_WEBHOOK) are off unless LE_ALERTS_CHAT=1 or live_model.json {"alerts": {"chat": true}}.
 
     python tools/cloud_monitor.py --out dash
 """
@@ -26,6 +28,7 @@ sys.path.insert(0, ROOT)
 
 from engine import equity_filter               # noqa: E402
 from engine import heartbeat                   # noqa: E402
+from engine import push                        # noqa: E402
 from engine import sizing                      # noqa: E402
 from engine import lab_adapter                 # noqa: E402
 from engine.data import from_frame             # noqa: E402
@@ -38,6 +41,8 @@ SYM, TF, SECS, WINDOW_DAYS = "NQ", "5m", 300, 20
 START_BAL, TARGET, MLL_AMT, MLL_LOCK = 50000.0, 3000.0, 2000.0, 50100.0
 KILLZONES = ((570, 690), (810, 930))
 ALERT_TYPES = ("sweep", "signal", "entry", "exit")
+PUSH_SRC = "Cloud paper"
+_LM = None                    # live_model.json of this run (send_alert's chat switch)
 
 
 def et(t):
@@ -53,8 +58,15 @@ def money(x):
     return f"{'+' if x > 0 else '-' if x < 0 else ''}${abs(x):,.2f}"
 
 
-def send_alert(text):
+def chat_on(lm=None):
+    """Telegram / Discord alerts (owner 2026-10-18: notifications come through the app; chat only when switched on)."""
+    return os.environ.get("LE_ALERTS_CHAT", "") == "1" or bool(((lm or {}).get("alerts") or {}).get("chat"))
+
+
+def send_alert(text, lm=None):
     sent = []
+    if not chat_on(lm if lm is not None else _LM):
+        return sent
     tok, chat = os.environ.get("TG_TOKEN", ""), os.environ.get("TG_CHAT", "")
     if tok and chat:
         try:
@@ -159,16 +171,8 @@ def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, para
             if prev and "mult" in prev:
                 mult, qty = prev["mult"], prev.get("qty", 0)
                 reasons = prev.get("reasons")
-            elif res.get("model") == "lit":
-                before = {k: v for k, v in ledger.items() if int(k) < int(t["entry_t"])}
-                room = eval_track(before)["cushion"] if (lit_sizing or {}).get("mode") in ("safe_eval", "eval") else None
-                r = sizing.lit_qty(int(t.get("qty") or 0), t, lit_sizing, room=room)
-                mult, qty, reasons = r["mult"], r["qty"], r["reasons"]
             else:
-                cold = equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["mult"]
-                profit = sum(v["usd"] for k, v in ledger.items() if int(k) < int(t["entry_t"])) if ledger else None
-                r = sizing.route_qty(int(t.get("qty") or 0), t, cold, sizing_cfg, params, profit)
-                mult, qty = r["mult"], r["qty"]
+                mult, qty, reasons = paper_size(ledger, t, res.get("model"), eqf_cfg, shadow_path, sizing_cfg, params, lit_sizing)
             ledger[int(t["entry_t"])] = {"day": tday(t["entry_t"]), "entry": f"{et(t['entry_t']):%m-%d %H:%M}",
                                          "side": "LONG" if t["dir"] == 1 else "SHORT", "grade": t.get("grade"),
                                          "trigger": t.get("trigger"), "exit": t.get("exit_reason"),
@@ -176,8 +180,96 @@ def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, para
                                          "R": round(float(t["pnl_r"]), 2), "taken": mult > 0, "mult": mult,
                                          "usd": round(float(t["pnl"]) * mult, 2), "qty": qty,
                                          "exit_ts": int(t["exit_t"]) if t.get("exit_t") else None,
+                                         # prices for the app's Activity feed and the notifications
+                                         **{k: (round(float(t[s]), 2) if t.get(s) is not None else None) for k, s in
+                                            (("entry_px", "entry"), ("stop_px", "stop"), ("target_px", "target"),
+                                             ("exit_px", "exit_price"), ("risk_pts", "risk_pts"))},
                                          **({"reasons": reasons} if reasons else {})}
     return ledger
+
+
+def paper_size(ledger, t, model, eqf_cfg, shadow_path, sizing_cfg, params, lit_sizing=None):
+    """(mult, micros, reasons) of one entry, sized as the PC bot sizes it (update_ledger, and the fill notification of a
+    position that is still open)."""
+    if model == "lit":
+        before = {k: v for k, v in ledger.items() if int(k) < int(t["entry_t"])}
+        room = eval_track(before)["cushion"] if (lit_sizing or {}).get("mode") in ("safe_eval", "eval") else None
+        r = sizing.lit_qty(int(t.get("qty") or 0), t, lit_sizing, room=room)
+        return r["mult"], r["qty"], r["reasons"]
+    cold = equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["mult"]
+    profit = sum(v["usd"] for k, v in ledger.items() if int(k) < int(t["entry_t"])) if ledger else None
+    r = sizing.route_qty(int(t.get("qty") or 0), t, cold, sizing_cfg, params, profit)
+    return r["mult"], r["qty"], None
+
+
+def _setup_line(res, entry_t, d, trade=None):
+    """'Swept Asia low, PDL · target 18:00 open + VIX move · limit entry' for a fill notification."""
+    swept, label, kind = (trade or {}).get("swept"), (trade or {}).get("target_label"), (trade or {}).get("entry_kind")
+    if not swept:
+        sig = [s for s in res.get("signals") or [] if int(s.get("t") or 0) <= int(entry_t) and s.get("dir") == d]
+        if sig:
+            try:
+                from engine.lit_live import _sweep_names
+                swept = _sweep_names(sig[-1].get("swept"))
+            except Exception:
+                swept = sig[-1].get("swept")
+            label = label or sig[-1].get("target_label")
+    parts = [f"Swept {', '.join(swept)}" if swept else "", f"target {label}" if label else "", f"{kind} entry" if kind else ""]
+    return " · ".join(p for p in parts if p)
+
+
+def trade_notices(ledger, res, pos, lm, since, state=None, size=None):
+    """Push payloads for every fill and every outcome since `since` (the Notifier sends each key once).
+    size(t) -> (mult, micros, reasons) sizes an open position the way the ledger will."""
+    model = lm.get("model", "engine")
+    mname = "LIT" if model == "lit" else str(lm.get("label") or model).split(" (")[0]
+    out = []
+    by_t = {int(t["entry_t"]): t for t in res.get("trades") or []}
+    for ev in res.get("events") or []:
+        if ev.get("type") != "entry" or int(ev["t"]) < since:
+            continue
+        et_ = int(ev["t"])
+        t = by_t.get(et_)
+        p = pos if pos and int(pos.get("entry_t") or 0) == et_ else None
+        src = p or t
+        if src is None:
+            continue
+        row = ledger.get(et_) or {}
+        if row:
+            mult, qty, reasons = row.get("mult", 1.0), row.get("qty"), row.get("reasons")
+        elif size is not None:
+            mult, qty, reasons = size({**src, "entry_t": et_})
+        else:
+            mult, qty, reasons = 1.0, src.get("qty"), None
+        d = int(src.get("dir") or 1)
+        note = []
+        if mult is not None and mult <= 0:
+            note.append("NOT TAKEN (cold-streak filter), tracked on paper only")
+        if reasons:
+            note.append("Size: " + "; ".join(reasons))
+        if t is not None and not p:
+            note.append(f"Closed before this check ({t.get('exit_reason')}): the outcome follows")
+        out.append(push.fill_payload(PUSH_SRC, SYM, "LONG" if d == 1 else "SHORT", qty, src.get("entry"),
+                                     src.get("stop0", src.get("stop")), src.get("target"), et_,
+                                     setup=_setup_line(res, et_, d, t), risk_pts=src.get("risk_pts"), note="\n".join(note), model=mname))
+    rules = (state or {}).get("lit_rules") or {}
+    for k in sorted(ledger):
+        v = ledger[k]
+        if not v.get("exit_ts") or v.get("exit") in (None, "OPEN") or int(v["exit_ts"]) < since:
+            continue
+        bal = eval_track({j: w for j, w in ledger.items() if j <= k})
+        note = []
+        if not v.get("taken", True):
+            note.append("Not taken (cold-streak filter): paper only")
+        if v.get("reasons"):
+            note.append("Size: " + "; ".join(v["reasons"]))
+        ws = rules.get("weekly_stop") or {}
+        if v.get("exit") == "STOP" and ws.get("on") and float(ws.get("mult") or 1) < 1 and k == max(ledger):
+            note.append(f"Weekly stop ON: {ws.get('stops')} stop-outs this week, {float(ws['mult']):g}x size for the rest of it")
+        out.append(push.outcome_payload(PUSH_SRC, SYM, v.get("side"), v.get("exit"), v.get("R"), v.get("usd"), k, v.get("exit_ts"),
+                                        qty=v.get("qty"), balance=bal["balance"], to_target=bal["to_target"], note="\n".join(note),
+                                        model=mname))
+    return out
 
 
 def eval_track(ledger):
@@ -195,9 +287,10 @@ def eval_track(ledger):
 
 
 def run(out):
-    global SYM
+    global SYM, _LM
     lm = live_model()                    # live_model.json: same strategy and symbol as the PC paper bot
     SYM = lm["sym"]
+    _LM = lm
     os.makedirs(out, exist_ok=True)
     now = int(time.time())
     st = load_state(os.path.join(out, "state.json"))
@@ -335,13 +428,62 @@ def run(out):
     pc = heartbeat.read(cwd=ROOT, now=now)
     pc_alert_at = st.get("pc_alert_at")
     in_session = et_now.weekday() < 5 and 480 <= et_now.hour * 60 + et_now.minute <= 990
+    other_notices = []
     if pc.get("present") and pc.get("silent") and in_session and now - float(pc_alert_at or 0) > 3600:
         pc_alert_at = now
-        sent = send_alert(f"PC BOT SILENT: the {pc.get('host') or 'PC'} bot ({pc.get('adapter')}) last reported "
-                          f"{pc['age_s'] // 60} min ago{' WITH AN OPEN POSITION' if pc.get('position') else ''}. "
-                          "Check the PC / NinjaTrader. The cloud paper bot keeps running.") or sent
+        silent_txt = (f"The {pc.get('host') or 'PC'} bot ({pc.get('adapter')}) last reported {pc['age_s'] // 60} min ago"
+                      f"{' WITH AN OPEN POSITION' if pc.get('position') else ''}. Check the PC / NinjaTrader. The cloud paper bot keeps running.")
+        sent = send_alert("PC BOT SILENT: " + silent_txt) or sent
+        other_notices.append(push.text_payload("Cloud", "pc", "PC bot silent" + (" with a position" if pc.get("position") else ""),
+                                               silent_txt, key=f"pc_silent:{now}", t=now))
+    if prev_et and prev_et != now_et["verdict"]:
+        other_notices.append(push.text_payload("Cloud", "timing", f"Eval timing: {now_et['verdict'].upper()}",
+                                               f"{now_et['reason']} " + ("Good time to buy or reset the MFFU eval." if now_et["verdict"] == "go"
+                                                                         else "Hold off on a new eval until the filter is back at full size."),
+                                               key=f"timing:{now_et['verdict']}:{now}", t=now))
+    if os.environ.get("LE_PUSH_TEST", "") == "1":             # Actions -> cloud-monitor -> Run workflow -> "Send a test notification"
+        other_notices.append(push.text_payload("Cloud", "test", "Test notification",
+                                               "Notifications from the cloud paper bot work. You get one for every fill and every outcome.",
+                                               key=f"test:{now}", t=now))
+
+    # ---- phone app notifications (Web Push, engine/push.py): every fill and every outcome once each, de-duplicated by key
+    # (state.json "pushed"); nothing older than this feature's first run, nothing older than 2 days
+    push_since = int(st.get("push_since") or now)
+    pcfg = push.config()
+    notifier = push.Notifier(keys=st.get("pushed") or [], cfg=pcfg)
+    candidates = trade_notices(ledger, res, pos, lm, max(push_since - 60, now - 2 * 86400, first_run - SECS), state,
+                               size=lambda t: paper_size(ledger, t, lm["model"], eqf_cfg, shadow_path, sizing_cfg, lm.get("params"),
+                                                         lm.get("lit_sizing") if lm["model"] == "lit" else None))
+    defer = (os.environ.get("LE_PUSH_DEFER_TO_PC", "") == "1" and pc.get("present") and pc.get("running") and not pc.get("silent")
+             and pc.get("model") == lm["model"])          # the PC bot trades the same strategy and notifies itself
+    notices = list(st.get("notices") or [])
+    push_res = []
+    for n in sorted(candidates, key=lambda x: (x["t"], x["kind"] != "fill")) + other_notices:
+        if notifier.seen(n):
+            continue
+        if defer and n["kind"] in ("fill", "outcome"):
+            notifier.mark(n)
+            r = {"skipped": "PC bot notifies"}
+        else:
+            r = notifier.notify(n)
+        push_res.append(r)
+        notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "key", "title", "body", "url", "side", "R", "usd", "exit", "qty",
+                                                 "entry", "stop", "target", "risk_usd")},
+                        "sent": int(r.get("sent") or 0), "at": now})
+    notices = sorted(notices, key=lambda x: (x.get("t") or 0, x.get("at") or 0))[-80:]
+    gone = sorted({g for r in push_res for g in r.get("gone") or []})
+    push_errs = [e for r in push_res for e in r.get("errors") or []]
+    push_state = push.status(pcfg)
+    push_state.update({"sent_this_run": sum(int(r.get("sent") or 0) for r in push_res), "new": len(push_res),
+                       "gone": gone if push_res else ((st.get("push") or {}).get("gone") or []), "errors": push_errs[:5],
+                       "last_sent_at": now if any(r.get("sent") for r in push_res) else (st.get("push") or {}).get("last_sent_at"),
+                       "chat": chat_on(lm), "defer_to_pc": bool(defer)})
+    if push_res:
+        print(f"push: {len(push_res)} new notice(s), sent {push_state['sent_this_run']} to {push_state['devices']} device(s)"
+              + (f", expired {gone}" if gone else "") + (f", errors {push_errs[:3]}" if push_errs else ""))
     write_chart(os.path.join(out, "chart.png"), df, state, res, today)
-    write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm)
+    write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm,
+                 push_state=push_state)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
@@ -364,8 +506,12 @@ def run(out):
                  "session": state.get("session") if lm["model"] == "lit" else None,
                  "levels": [{k: p.get(k) for k in ("label", "price", "side", "strength", "kind")} for p in state.get("active_pools") or []][:60]
                  if lm["model"] == "lit" else None,
-                 "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host", "reason")},
-                 "pc_alert_at": pc_alert_at}
+                 "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
+                                               "reason", "model")},
+                 "pc_alert_at": pc_alert_at,
+                 # phone app notifications: the keys already sent (de-dup), when they started, the public status (never the
+                 # private key or an endpoint) and the last 80 notices for the app's Activity feed
+                 "push_since": push_since, "pushed": notifier.keys()[-600:], "push": push_state, "notices": notices}
     if shadow is not None:
         new_state["shadow"] = shadow
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
@@ -454,6 +600,22 @@ def write_chart(path, df, state, res, today):
         print("chart failed:", e)
 
 
+def _push_cell(p):
+    p = p or {}
+    if not p.get("configured"):
+        return "app notifications not set up (docs/NOTIFICATIONS.md: secrets LE_VAPID_PRIVATE + LE_PUSH_SUBS)"
+    if not p.get("devices"):
+        return "keys set, no phone yet (add the app's code as secret LE_PUSH_SUBS)"
+    s = f"app notifications on: {p['devices']} device(s), {p.get('sender')} sender"
+    if p.get("sent_this_run"):
+        s += f"; sent {p['sent_this_run']} this run"
+    if p.get("gone"):
+        s += f"; {len(p['gone'])} expired subscription(s): turn notifications on again in the app and replace the secret"
+    if p.get("errors"):
+        s += f"; errors: {'; '.join(p['errors'][:2])}"
+    return s
+
+
 def usd_cell(v):
     if not v.get("taken", True):
         return "skipped (cold streak)"
@@ -462,7 +624,7 @@ def usd_cell(v):
     return money(v["usd"]) + (f" ({v.get('mult', 1.0):g}x size: {', '.join(v.get('reasons') or ['cold streak'])})" if v.get("mult", 1.0) < 1 else "")
 
 
-def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None):
+def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
     arm = []
@@ -506,7 +668,8 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
             f"{'1m' if lt.get('one_min_day') else '5m (no full 1m feed today)'} execution; "
             f"{len(lt.get('signals_today') or [])} setups today |"] if (lt := state.get("lit")) and lt.get("open18") else []),
          f"| Feed | {feed}; {health['rth_bars_today']}/78 RTH bars today; gaps: {', '.join(health['gaps_today']) or 'none'} |",
-         f"| Alerts | {', '.join(sent) if sent else ('phone alerts on' if os.environ.get('TG_TOKEN') or os.environ.get('DISCORD_WEBHOOK') else 'phone alerts off (add TG_TOKEN + TG_CHAT secrets)')} |",
+         f"| Notifications | {_push_cell(push_state)} |",
+         f"| Telegram / Discord | {', '.join(sent) if sent else ('on' if chat_on(lm) and (os.environ.get('TG_TOKEN') or os.environ.get('DISCORD_WEBHOOK')) else 'off (the app notifies; LE_ALERTS_CHAT=1 turns chat alerts back on)')} |",
          "", "## Nearest liquidity pools", "| Pool | Price | Distance |", "|---|---:|---:|"]
     L += [f"| {p.get('label')} ({'buy-side' if p.get('side') == 'H' else 'sell-side'}) | {float(p['price']):,.2f} | "
           f"{float(p['price']) - float(price or 0):+,.2f} |" for p in pools] or ["| - | - | - |"]

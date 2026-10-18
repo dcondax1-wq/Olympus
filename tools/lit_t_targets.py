@@ -537,6 +537,10 @@ def variants():
     for mod in (660, 690):
         for r in (0.5, 1.0, 2.0):
             V[f"tx_{mod // 60:02d}{mod % 60:02d}_{r:g}R"] = ("tx", {"tx": mod, "tx_r": r})
+    for mod in (675, 705, 720):           # neighbours of the 11:30 pick: 11:15, 11:45, 12:00
+        for r in (0.5, 1.0):
+            V[f"tx_{mod // 60:02d}{mod % 60:02d}_{r:g}R"] = ("tx", {"tx": mod, "tx_r": r})
+    V["tx_1130_0R"] = ("tx", {"tx": 690, "tx_r": 0.0})
     # 3. opposite inducement / opposite LIT setup
     for r in (0.0, 1.0, 2.0, 3.0):
         V[f"oi_idm_{r:g}R"] = ("oi", {"oi": "idm", "oi_r": r})

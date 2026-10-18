@@ -739,6 +739,70 @@ def diag(names=None):
     return out
 
 
+# ================================================================================================ store runs
+Q = "Owner order 2026-10-18: trade off the 1-minute chart for the entry, manage losses like a person - what does the 1m chart tell us after the tap and after the fill?"
+ES_X = {"x_es": {"mfe": 0.75, "how": "close", "cisd": True}}
+SAVES = [   # id, title, X, status, why
+    ("lit_1m_base_eval", "LIT live, eval sizing ($800 up to 25 pts + 60% room cap) - reference for the 1m study", {}, "info",
+     "The live LIT signals at the eval size (== run lit_tight_eval_800_25_room60)."),
+    ("lit_1m_es_exit", "LIT + ES exit: close when ES makes a new 5m close beyond its own sweep extreme and NQ then prints a 1m CISD against, before +0.75R",
+     ES_X, "adopt-candidate", "Better in both halves, no winner cut; only 8 trades of 120 touched (all would-be stop-outs), so the gain is small."),
+    ("lit_1m_o18_stall", "LIT + take profit at the 18:00 open when price stalls there (1m CISD against) once it is >= 1.5R away",
+     {"p_lvl": {"lv": ["o18"], "min_r": 1.5}}, "rejected", "Both halves up on the eval path, but per trade H1 loses $637 and 1.0R / 2.0R lose H1: a lone spike."),
+    ("lit_1m_halfcut_cisd", "LIT + close half on a 1m CISD against before +0.25R",
+     {"x_cisd": {"mfe": 0.25, "win": None}, "cut_frac": 0.5}, "rejected", "Safer H1 eval (1-month fails 6.2% -> 3.1%), but H2 loses $1.8k: H2 winners dip first."),
+    ("lit_1m_cut_cisd", "LIT + exit on a 1m CISD against before +0.25R",
+     {"x_cisd": {"mfe": 0.25, "win": None}}, "rejected", "Cuts 37 of 53 losers early (+$9.7k) but kills 8 winners (-$14.2k); H2 goes negative."),
+    ("lit_1m_cut_newlow", "LIT + exit on a 1m close below the 1m CISD candle's low within 15 minutes",
+     {"x_newlow": {"ref": "conf", "win": 15, "how": "close", "mfe": 0.5}}, "rejected", "H1 +$7.3k, H2 -$11.7k: the H2 winners make that new low first."),
+    ("lit_1m_cut_accept", "LIT + exit after 3 1m closes back beyond the swept level",
+     {"x_accept": {"k": 3, "mfe": 0.5}}, "rejected", "Accepted back beyond the level is normal for LIT winners: -$14.8k H1, -$7.0k H2."),
+    ("lit_1m_cut_hl", "LIT + exit when the 1m higher low after the fill is taken (before +0.5R)",
+     {"x_opp": {"mfe": 0.5, "how": "touch"}}, "rejected", "Cuts 45 of 53 losers, kills 10 winners: -$7.1k H1, -$3.8k H2."),
+    ("lit_1m_cut_volsurge", "LIT + exit on a 1m candle against with volume >= 3x and body >= 0.5 ATR (before +0.5R)",
+     {"x_vol": {"vol": 3.0, "body": 0.5, "mfe": 0.5}}, "rejected", "Worse in both halves (H1 -$3.6k, H2 -$0.5k)."),
+    ("lit_1m_idm1_req", "LIT + inner 1m inducement required (the 1m low must take out a 1m swing low formed after the tap)",
+     {"idm1": {"pre": 0, "mode": "req"}}, "rejected", "Halves the trades (1.5 / 0.6 a week) and H2 loses money."),
+    ("lit_1m_disp1_half", "LIT + half size when the 1m CISD candle's body is under 0.5 ATR(1m)",
+     {"disp1": {"body": 0.5, "mode": "half"}}, "rejected", "Less money in both halves; the weak-candle trades include big winners."),
+    ("lit_1m_absorb_half", "LIT + half size without absorption (tap bar's lower wick >= 50% of its range)",
+     {"absorb": {"bar": "tap", "vol": 0.0, "wick": 0.5, "mode": "half"}}, "rejected", "Less money in both halves."),
+    ("lit_1m_patience", "LIT + skip when the 1m CISD comes after price ran > 0.5R above the limit",
+     {"patience": {"r": 0.5}}, "rejected", "H1 +$4.1k, H2 -$5.1k."),
+    ("lit_1m_pullback", "LIT + enter on a limit at the 1m CISD candle's 50% (body) for 20 bars instead of the next open",
+     {"pull": {"px": "body50", "wait": 20}}, "rejected", "Misses winners that never pull back: H1 -$4.3k, H2 -$5.4k."),
+    ("lit_1m_bos_trail", "LIT + stop to the 1m higher low after a 1m break of structure made by a displacement candle (body >= 1.5 ATR 1m) once +1R",
+     {"p_bos": {"body": 1.5, "be": True, "min_r": 1.0}}, "rejected", "Turns big winners into small ones: H1 -$12.2k, H2 -$1.6k."),
+    ("lit_1m_fast_be", "LIT + no breakeven when the move to +1R took 5 minutes or less",
+     {"p_be": {"fast": 5, "alt": None}}, "rejected", "H1 +$1.5k but 1-month eval fails 6% -> 17%; no H2 trade reaches 1R that fast."),
+]
+
+
+def save(only=None):
+    for rid, title, X, status, why in SAVES:
+        if only and rid not in only:
+            continue
+        U = unit(X)
+        T = evals_path(U)
+        S = rl.score(T, S26)
+        o = score(U)
+        h = lambda s: (f"n={s['n']} {s['tpw']}/wk win {s['win']}% PF {s['pf']} net {s['net']:+,} (${s['per_month']:,}/mo) DD {s['dd']:,} "
+                       f"avg win ${s['avg_win']} avg loss ${s['avg_loss']}; eval 2wk {s['p10']}/{s['f10']} 1mo {s['p20']}/{s['f20']} "
+                       f"pass rate {s['pass_rate']}% median {s['pass_med']}")
+        rl.save(rid, title, "other", Q, params={**LIVE, **X_of(X), "size": list(EVAL), "room_k": ROOM}, trades=T, scored=S,
+                status=status, verdict=f"{why} 2026 H1 (pick) {h(o['H1'])}; 2026 H2 (check) {h(o['H2'])}. 2021-25: no 1m bars, not testable.",
+                notes="tools/lit_1m_manage.py (wraps engine/lit.py; options off == run lit_live trade for trade). 1m decisions on closed "
+                      "bars, exits at the next 1m open - 1 tick; eval sizing ($800 up to 25 pts, weekly stop, 60% room cap), MFFU 50K evals "
+                      "played back to back for $ and drawdown.", writeup="lit-1m-management", tags=["lit", "lit_1m"])
+        print("saved", rid, flush=True)
+
+
+def evals_path(U):
+    T = TS.evals(U, EVAL, "2026", ROOM)[1]
+    cv = lambda v: int(v) if isinstance(v, np.integer) else float(v) if isinstance(v, np.floating) else v
+    return [{k: cv(v) for k, v in t.items() if k not in ("legs",)} for t in T]
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     if cmd == "check":
@@ -747,3 +811,5 @@ if __name__ == "__main__":
         grid(sys.argv[2])
     elif cmd == "diag":
         diag(sys.argv[2:] or None)
+    elif cmd == "save":
+        save(sys.argv[2:] or None)

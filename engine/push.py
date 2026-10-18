@@ -25,6 +25,7 @@ import os
 import struct
 import threading
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -32,7 +33,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG_PATH = os.path.join(ROOT, "data", "push.json")            # PC only, gitignored
 SENT_PATH = os.path.join(ROOT, "data", "push_sent.json")         # PC de-dup keys, gitignored
 APP_URL = "https://demetrades2000-coder.github.io/nq-dashboard/"
-SUBJECT = os.environ.get("LE_PUSH_SUBJECT") or APP_URL            # VAPID "sub" claim: a contact URL (no e-mail needed)
+SUBJECT = os.environ.get("LE_PUSH_SUBJECT") or "https://demetrades2000-coder.github.io"   # VAPID "sub" claim: a contact URL, host only
 TTL_S = 6 * 3600                                                  # a notice older than 6 h is not worth delivering
 MAX_BODY = 600
 POINT_VALUE = {"NQ": 2.0, "ES": 5.0}                              # $ per point of one micro (MNQ / MES)
