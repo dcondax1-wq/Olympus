@@ -18,6 +18,7 @@ data_source "ninjatrader" reads the real CME bars NinjaTrader writes (ninjatrade
 from __future__ import annotations
 
 import json
+import math
 import os
 import threading
 import time
@@ -185,6 +186,23 @@ def market_open(ts) -> bool:
     return not (1020 <= mod < 1080)
 
 
+TICK = 0.25
+
+
+def tick_px(px, d: int = 1, target: bool = False):
+    """A price on the 0.25 tick grid before it is routed. Stops: nearest tick (LIT's stop is already 1 tick beyond the sweep
+    extreme). Targets: rounded TOWARD the entry (a long's target down, a short's up), so the broker's limit sits at or in
+    front of the model's target and fills whenever the model counts the target (LIT's VIX-band target is not a tick price)."""
+    if px is None:
+        return None
+    x = float(px) / TICK
+    if target:
+        q = math.floor(x + 1e-9) if d == 1 else math.ceil(x - 1e-9)
+    else:
+        q = round(x)
+    return round(q * TICK, 2)
+
+
 def _jsonable(o):
     if isinstance(o, (np.integer,)):
         return int(o)
@@ -280,6 +298,8 @@ class LiveBot:
         self._nt_feed = None             # engine.ninjatrader.NinjaTraderBars for data_source "ninjatrader"
         self._nt_notes = {}              # rate limit for the ninjatrader feed notes: key -> (text, unix time logged)
         self._modify_gaveup = set()      # (entry_t, stop) the broker refused 3 times: not retried again
+        self._week_prev = []             # LIT weekly stop: this ISO week's routed exits from earlier days (live_state.json)
+        self._eval_prev = {}             # LIT safe_eval: routed P&L per earlier trading day of the eval (live_state.json)
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -489,7 +509,7 @@ class LiveBot:
     def _route_stop_move(self, pos, sym):
         """The model moved the stop of the routed position (breakeven at 1R): tell the broker once per new level. A refused
         modify is retried on the next polls, at most 3 times per level. Stops are only ever tightened."""
-        et_, new = pos.get("entry_t"), pos.get("stop")
+        et_, new = pos.get("entry_t"), tick_px(pos.get("stop"), 1 if pos.get("dir", 1) == 1 else -1)
         last = self._broker_stop(et_)
         if new is None or last is None or abs(float(new) - float(last)) < 1e-9:
             return
@@ -539,6 +559,7 @@ class LiveBot:
                 "open_routed": self._open_routed, "open_qty": self._open_qty, "blocked_entries": sorted(self._blocked_entries),
                 "flattened": sorted(self._flattened),
                 "seen": [list(k) for k in list(self.seen)[-2000:]], "ledger": self.ledger[-300:],
+                "week_exits": self.lit_week_hist() if self.cfg else [], "eval_days": self.eval_days() if self.cfg else {},
                 "day_pnl_routed": self.day_pnl_routed(), "trades_today": self.trades_today()}
 
     def _save_state(self):
@@ -564,6 +585,12 @@ class LiveBot:
             self._log("warn", f"live_state.json unreadable ({e}) - starting clean")
             return
         today = trading_day(self.clock())
+        if s.get("sym") == self.cfg.get("sym"):
+            # kept across days: the LIT weekly stop needs this week's earlier stop-outs, safe_eval the eval's daily P&L
+            from .lit import iso_week
+            wk = iso_week(today)
+            self._week_prev = [r for r in (s.get("week_exits") or []) if r.get("day") and r["day"] != today and iso_week(r["day"]) == wk]
+            self._eval_prev = {d: float(v) for d, v in (s.get("eval_days") or {}).items() if d != today}
         if s.get("day") != today or s.get("sym") != self.cfg.get("sym") or s.get("tf") != self.cfg.get("tf"):
             self._log("system", f"Ignoring live_state.json from {s.get('day')} {s.get('sym')} {s.get('tf')} (today is {today})")
             return
@@ -656,7 +683,7 @@ class LiveBot:
         if model == "lit":
             from . import lit_live
             df1 = self._lit_1m(sym, now, int(df_full["time"].min())) if lit_p.get("tf") == "1m" else None
-            res = lit_live.run(df_full, lit_p, one_min=df1, now=now, sym=sym)
+            res = lit_live.run(df_full, lit_p, one_min=df1, now=now, sym=sym, week_hist=self.lit_week_hist())
         elif model.startswith("lab:"):
             from . import lab_adapter
             es_df = None
@@ -681,6 +708,7 @@ class LiveBot:
         from . import equity_filter as _eqf
         self._eqf_cfg = lm.get("equity_filter") if self.state_path == STATE_PATH else None
         self._sizing_cfg = lm.get("sizing") if self.state_path == STATE_PATH else None   # late-entry size, fast-eval press
+        self._lit_sizing = (self.cfg.get("lit_sizing") or lm.get("lit_sizing")) if model == "lit" else None   # normal/fast_eval/safe_eval
         self._live_params = lm.get("params") or {}
         if self._eqf_cfg:
             try:
@@ -826,6 +854,42 @@ class LiveBot:
         self._log("risk", text)
         self._alert(("⏸️ " if not eqf["on"] else "▶️ ") + text, "guard")
 
+    def _exit_rows(self):
+        """This process's routed exits as weekly-stop rows (engine/lit.py week_stops)."""
+        out = []
+        for r in self.ledger:
+            if r.get("side") != "exit" or r.get("entry_t") is None:
+                continue
+            out.append({"day": trading_day(r["entry_t"]), "entry_t": int(r["entry_t"]), "exit": r.get("reason"),
+                        "exit_t": int(r.get("exit_t") or r["t"]), "pnl": float(r.get("pnl") or 0.0)})
+        return out
+
+    def lit_week_hist(self):
+        """LIT weekly stop: this ISO week's routed exits (earlier days restored from live_state.json + today's ledger)."""
+        from .lit import iso_week
+        wk = iso_week(trading_day(self.clock()))
+        rows = {(r["day"], r.get("entry_t")): r for r in self._week_prev if iso_week(r["day"]) == wk}
+        for r in self._exit_rows():
+            rows[(r["day"], r["entry_t"])] = r
+        return sorted(rows.values(), key=lambda r: r["exit_t"])
+
+    def eval_days(self):
+        """Routed P&L per trading day of the eval (earlier days from live_state.json + today's ledger), from cfg eval_start."""
+        start = str(self.cfg.get("eval_start") or "")
+        days = {d: v for d, v in self._eval_prev.items() if not start or d >= start}
+        today = trading_day(self.clock())
+        days.pop(today, None)
+        for r in self.ledger:
+            if r.get("side") == "exit" and (not start or trading_day(r["t"]) >= start):
+                d = trading_day(r["t"])
+                days[d] = round(days.get(d, 0.0) + float(r.get("pnl") or 0), 2)
+        return days
+
+    def eval_room(self):
+        """MFFU 50K room: eval balance minus the trailing max-loss floor (engine/sizing.mffu_eval)."""
+        from . import sizing as _sz
+        return _sz.mffu_eval(self.eval_days())["cushion"]
+
     def eval_profit(self):
         """The eval account's routed profit ($) since cfg eval_start (yyyy-mm-dd; default: everything in the ledger).
         Used by the fast-eval press (engine/sizing.py); None when the ledger is empty."""
@@ -844,8 +908,15 @@ class LiveBot:
             if mult <= 0:
                 self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET NOT traded: {st['reason']}")
                 return 0
-            r = _sz.route_qty(int(qty), pos or {}, mult, getattr(self, "_sizing_cfg", None), getattr(self, "_live_params", None),
-                              self.eval_profit() if getattr(self, "_sizing_cfg", None) and self._sizing_cfg.get("press") else None)
+            lsz = getattr(self, "_lit_sizing", None)
+            if (self.state or {}).get("model") == "lit":
+                # LIT: the model's micros already carry the weekly stop; lit_sizing (normal / fast_eval / safe_eval) re-sizes
+                # from the stop with one rounding (engine/sizing.lit_qty)
+                room = self.eval_room() if (lsz or {}).get("mode") == "safe_eval" else None
+                r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room)
+            else:
+                r = _sz.route_qty(int(qty), pos or {}, mult, getattr(self, "_sizing_cfg", None), getattr(self, "_live_params", None),
+                                  self.eval_profit() if getattr(self, "_sizing_cfg", None) and self._sizing_cfg.get("press") else None)
         except Exception as e:
             self._note_error(f"sizing failed, entry allowed at the engine's size: {e}")
             return qty
@@ -894,8 +965,10 @@ class LiveBot:
             else:
                 self._open_routed = pos["entry_t"]
                 self._open_qty = q
-                self._route({"sym": sym, "side": "buy" if pos["dir"] == 1 else "sell", "qty": q,
-                             "stop": pos["stop"], "target": pos["target"], "entry": pos["entry"], "entry_t": pos["entry_t"]})
+                d = 1 if pos["dir"] == 1 else -1
+                self._route({"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
+                             "stop": tick_px(pos["stop"], d), "target": tick_px(pos["target"], d, target=True),
+                             "entry": pos["entry"], "entry_t": pos["entry_t"]})
         if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._route_stop_move(pos, sym)
         for tr in res["trades"]:

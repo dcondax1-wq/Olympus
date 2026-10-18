@@ -249,6 +249,25 @@ def _read_text(path):
 
 
 # ---------------------------------------------------------------------- naming, folders, time
+def _session_from(cfg: dict) -> int:
+    """First ET minute of the trading session the adapter accepts entries in (and before which it flattens a leftover
+    trade): cfg nt_session_from, else the LIT entry window's start (02:00) when the bot trades LIT (cfg model, else
+    live_model.json), else 08:00 (the Liquidity Engine)."""
+    if cfg.get("nt_session_from") is not None:
+        return int(cfg["nt_session_from"])
+    try:
+        from .lab_adapter import live_model
+        lm = live_model()
+        model = cfg.get("model") or lm.get("model")
+        if model == "lit":
+            from . import lit as _lit
+            w = (cfg.get("model_params") or lm.get("lit") or {}).get("window") or _lit.DEFAULTS["window"]
+            return int(min(a for a, _ in w))
+    except Exception:
+        pass
+    return 480
+
+
 def is_sim(account: str) -> bool:
     return bool(SIM_ACCOUNT.match(str(account or "").strip()))
 
@@ -328,6 +347,7 @@ class NinjaTraderAdapter:
         p = cfg.get("params") or {}
         self.sym = cfg.get("sym", "NQ")
         self.flat_mod = int(p.get("flat_mod", 955))
+        self.session_from = _session_from(cfg)          # first ET minute an entry may go in (LIT 02:00, the engine 08:00)
         self.max_micros = min(MAX_MICROS_HARD, int(p.get("max_micros", cfg.get("max_micros", MAX_MICROS_HARD))))
         mode = str(cfg.get("nt_contract") or "micro").lower()
         self.contract_mode = mode if mode in ("micro", "auto") else "auto"   # micro: MNQ only | auto: 10+ micros as NQ minis
@@ -637,8 +657,9 @@ class NinjaTraderAdapter:
                 pass
             e = _et(self.clock())
             mod = e.hour * 60 + e.minute
-            if e.weekday() >= 5 or mod >= self.flat_mod or mod < 480:
-                return {"ok": False, "error": f"REFUSED: entry outside the session ({e:%a %H:%M} ET; entries 08:00-"
+            if e.weekday() >= 5 or mod >= self.flat_mod or mod < self.session_from:
+                return {"ok": False, "error": f"REFUSED: entry outside the session ({e:%a %H:%M} ET; entries "
+                                              f"{self.session_from // 60:02d}:{self.session_from % 60:02d}-"
                                               f"{self.flat_mod // 60:02d}:{self.flat_mod % 60:02d} ET on weekdays)"}
         return None
 
@@ -1032,7 +1053,7 @@ class NinjaTraderAdapter:
         if e.weekday() >= 5:
             return
         for lg in [x for x in self.legs if x["status"] in ("protected", "unprotected", "pending")]:
-            if mod >= self.flat_mod or mod < 480:
+            if mod >= self.flat_mod or mod < self.session_from:
                 self._risk(f"flat time {self.flat_mod // 60:02d}:{self.flat_mod % 60:02d} ET passed with the bot's "
                            f"{lg['instrument']} trade open: flattening", alert=False)
                 self._close([lg], why="flat time")
@@ -1175,7 +1196,8 @@ class NinjaTraderBars:
             return None, (f"{os.path.basename(path)}: {bad} bars stamped 17:00-17:59 ET, when CME is closed. Bar times "
                           "look shifted (NinjaTrader time zone or bar-close stamps)"), False
         age = now - (last_open + bsecs)
-        stale_s = self.stale_s if self.stale_s is not None else bsecs + 120
+        # a 1m file may skip a minute without trades (quiet overnight): stale only after 7 minutes; 5m after 7 minutes too
+        stale_s = self.stale_s if self.stale_s is not None else max(bsecs + 120, 420)
         if market_open(now) and market_open(now - stale_s) and age > stale_s:
             return None, (f"{os.path.basename(path)} is stale: last bar {_et(last_open):%a %H:%M} ET, {age // 60} min ago "
                           "(NinjaTrader closed, disconnected, or the chart was removed?)"), False
@@ -1864,6 +1886,81 @@ def selftest(verbose=True) -> bool:
         check("autostart: ninjatrader on Sim101 counts as demo (may resume), any other account as live (never resumes)",
               mode_of({"adapter": "ninjatrader"}) == "demo" and mode_of({"adapter": "ninjatrader", "nt_account": "Sim101"}) == "demo"
               and mode_of({"adapter": "ninjatrader", "nt_account": "MFFUEV12345"}) == "live")
+        # ---- 15. LIT on NinjaTrader: London entry (02:00+), VIX-band target on the tick grid, BE at 1R, 15:55 flatten, 1m feed
+        check("LIT: the adapter's session starts at the LIT window (02:00 ET) for model lit, 08:00 for the engine",
+              _session_from({"model": "lit", "model_params": {"window": [[120, 930]]}}) == 120 and _session_from({"model": "engine"}) == 480
+              and _session_from({"nt_session_from": 300}) == 300)
+        fake.move(25020.0)
+        now[0] = dt.datetime(2026, 10, 22, 2, 35, 3, tzinfo=ET).timestamp()        # Thursday 02:35 ET (London)
+        lbot = live.LiveBot()
+        lbot.clock = lambda: now[0]
+        lbot.state_path = os.path.join(tmp, "live_state_lit.json")
+        lbot._remember = lambda *a, **kw: None
+        r2 = lbot.start({"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "armed": True, "data": "ninjatrader", "nt_folder": folder,
+                         "model": "lit", "model_params": {"window": [[120, 930]]},
+                         "nt_state_path": os.path.join(tmp, "nt_state3.json"), "nt_audit_log": os.path.join(tmp, "oif.log")}, spawn=False)
+        lad = lbot.adapter
+        lad.clock = lambda: now[0]
+        lad._sleep = lambda s_: (fake.process(), now.__setitem__(0, now[0] + s_))
+        lad._alert_fn = alerts.append
+        t_l = int(dt.datetime(2026, 10, 22, 2, 35, tzinfo=ET).timestamp())
+        lpos = {"entry_t": t_l, "dir": 1, "qty": 3, "entry": 25020.0, "stop": 24970.25, "stop0": 24970.25, "target": 25087.37,
+                "risk_pts": 49.75, "setup": "LIT"}
+        lbot.state = {"model": "lit", "position": dict(lpos)}
+        lbot.started_at = t_l - 3600
+        k = len(fake.files)
+        lbot._route_signals({"trades": [], "events": []}, "NQ", int(now[0]), 300)
+        lg = lad.legs[0] if lad.legs else {}
+        got = [ls for _, ls in fake.files[k:]]
+        check("LIT: a 02:35 ET entry is routed (not refused as outside the session); the VIX-band target 25087.37 goes in as "
+              "LIMIT 25087.25 (tick, toward the entry), the stop as STOPMARKET 24970.25",
+              r2["ok"] and lad.session_from == 120 and len(got) == 2 and got[0][0].split(";")[3:6] == ["BUY", "3", "MARKET"]
+              and got[1] == [f"PLACE;Sim101;MNQ 12-26;SELL;3;STOPMARKET;0;24970.25;DAY;{lg.get('oco')};{lg.get('stop_id')};;",
+                             f"PLACE;Sim101;MNQ 12-26;SELL;3;LIMIT;25087.25;0;DAY;{lg.get('oco')};{lg.get('target_id')};;"],
+              json.dumps(got))
+        from .live import tick_px
+        check("LIT: tick rounding: stops to the nearest tick, targets toward the entry (long down, short up)",
+              tick_px(25087.37, 1, True) == 25087.25 and tick_px(24912.63, -1, True) == 24912.75 and tick_px(25000.0, 1, True) == 25000.0
+              and tick_px(24970.13, 1) == 24970.25 and tick_px(24970.12, -1) == 24970.0)
+        now[0] += 60
+        lad.tick()
+        check("LIT: the adapter's flat-time watch leaves a 02:36 ET London trade alone (no CLOSEPOSITION before 08:00)",
+              lad.legs and lad.legs[0]["status"] == "protected" and not any(ln.startswith("CLOSEPOSITION") for ln in lines_since(k)))
+        lbot.state = {"model": "lit", "position": {**lpos, "stop": 25020.0, "be": True}}
+        k = len(fake.files)
+        lbot._route_signals({"trades": [], "events": []}, "NQ", int(now[0]), 300)
+        check("LIT: breakeven at 1R (model stop = the fill) -> one CHANGE of the stop to 25020.00",
+              lines_since(k) == [f"CHANGE;;;;0;;0;25020.00;;;{lg.get('stop_id')};;"], json.dumps(lines_since(k)))
+        now[0] = dt.datetime(2026, 10, 22, 15, 55, 4, tzinfo=ET).timestamp()
+        lbot.state = {"model": "lit", "position": None}
+        k = len(fake.files)
+        ltr = {"entry_t": t_l, "exit_t": int(now[0]) - 4, "exit_reason": "TIME", "qty": 3, "pnl": 120.0, "pnl_r": 0.4, "dir": 1}
+        lbot._route_signals({"trades": [ltr], "events": []}, "NQ", int(now[0]), 300)
+        check("LIT: the 15:55 flat (model exit EOD -> TIME) is routed as CLOSEPOSITION and the bracket is retired",
+              lines_since(k)[:1] == ["CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;"] and not lad.legs, json.dumps(lines_since(k)))
+        # 1m bars for LIT's entry come from LE_BarFeed's MNQ_1m.csv (data_source ninjatrader), Yahoo only when it is stale
+        f1now = int(dt.datetime(2026, 10, 22, 3, 7, 30, tzinfo=ET).timestamp())
+        last1 = f1now - f1now % 60 - 60
+        rows1 = [(t, 25000 + i * 0.25, 25000.5 + i * 0.25, 24999.75 + i * 0.25, 25000.25 + i * 0.25, 10 + i)
+                 for i, t in enumerate(range(last1 - 8 * 1440 * 60, last1 + 1, 60)) if market_open_local(t)]
+        with open(os.path.join(feed_dir, "MNQ_1m.csv"), "w") as fh:
+            fh.write("time,open,high,low,close,volume\n" + "".join(f"{a},{b},{c},{d},{e},{f}\n" for a, b, c, d, e, f in rows1))
+        lbot.cfg["data_source"] = "ninjatrader"
+        lbot._nt_feed = None
+        lbot.read_hist = lambda sym, tf: pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume"])
+        calls = []
+        live._yahoo_recent = lambda sym, interval="5m", period="5d": calls.append((sym, interval)) or pd.DataFrame(
+            [{"time": 60, "open": 1.0, "high": 1.0, "low": 1.0, "close": 1.0, "volume": 0.0}])
+        try:
+            now[0] = f1now
+            got1 = lbot._lit_1m("NQ", f1now, f1now - 5 * 86400)
+            ok1 = got1 is not None and int(got1["time"].iloc[-1]) == last1 and not calls and len(got1) == len([r_ for r_ in rows1 if r_[0] >= f1now - 5 * 86400])
+            now[0] = f1now + 1800
+            got2 = lbot._lit_1m("NQ", f1now + 1800, f1now - 5 * 86400)
+            check("LIT: 1m bars from NinjaTrader's MNQ_1m.csv (no Yahoo call); a stale 1m file -> Yahoo 1m, bot health untouched",
+                  ok1 and calls == [("NQ", "1m")] and got2 is not None and not lbot.health.get("fallback"), f"calls={calls}")
+        finally:
+            live._yahoo_recent = orig_y
         blob = open(os.path.join(tmp, "oif.log"), encoding="utf-8").read() + json.dumps(list(ad.trace))
         check("secrets: no confirm phrase or credential in the OIF audit log / trace", LIVE_PHRASE not in blob)
     finally:

@@ -1,6 +1,6 @@
 # NinjaTrader 8 route: the PC bot places orders through NinjaTrader
 
-**What it does.** The PC bot runs the same engine and settings as always. Instead of paper fills, it writes small
+**What it does.** The PC bot runs the same strategy and settings as always (today: LIT, `live_model.json`). Instead of paper fills, it writes small
 "order instruction files" into a folder that NinjaTrader 8 watches. NinjaTrader places the orders on the account you
 name, for example `Sim101` for testing or the MFFU account through its Tradovate connection. NinjaTrader writes back
 fills and positions, and the bot reads them. A small NinjaTrader indicator, `LE_BarFeed`, also hands the bot the real
@@ -10,7 +10,13 @@ CME bars from your chart, so the bot no longer depends on Yahoo's delayed bars.
 PC bot (server.py) --order files--> Documents\NinjaTrader 8\incoming --> NinjaTrader 8 --Tradovate connection--> account
 NinjaTrader  ------fills/positions--> Documents\NinjaTrader 8\outgoing --> PC bot
 MNQ 5m chart + LE_BarFeed --bars--> Documents\NinjaTrader 8\le_feed\MNQ_5m.csv --> PC bot (instead of Yahoo)
+                         \-1m bars-> Documents\NinjaTrader 8\le_feed\MNQ_1m.csv --> PC bot (LIT's 1-minute entry)
 ```
+
+**LIT needs the 1-minute file.** LIT finds its setups on 5-minute bars but enters on a 1-minute confirmation. On 5-minute
+bars only, the same rules made +$6.6k in 2026 instead of +$41.7k. One MNQ 5-minute chart with LE_BarFeed writes both
+files (step 4). LIT also trades the London morning: entries from **02:00 ET** (most 2026 trades entered 02:00-08:00 ET),
+so NinjaTrader and the PC bot must be running from about 01:55 ET.
 
 Why this route: Tradovate gives prop accounts no API keys, so `engine/tradovate.py` cannot reach the MFFU account.
 NinjaTrader's Automated Trading Interface (ATI) can, and it needs no password or key.
@@ -74,24 +80,33 @@ against verbatim copies of the Help Guide pages (see Sources). Open the official
    the end of the file. That is normal.
 3. **New > Chart**: instrument **MNQ 12-26** (the front month; the bot uses the same one), Type **Minute**,
    Value **5**, **Days to load 30**, Trading hours **CME US Index Futures ETH** (the default for MNQ; RTH-only bars
-   would miss the overnight pools). Then right-click the chart > **Indicators** > **LE_BarFeed** > Add > OK.
-4. Optional: a second chart, MNQ **1-minute** with LE_BarFeed (Days to load 7). The bot does not need it today.
-5. Check: `Documents\NinjaTrader 8\le_feed\MNQ_5m.csv` exists and gets one new line every 5 minutes.
-   `python -m engine.ninjatrader --status` shows `Bar feed 5m: ... bars, last open ...`.
+   would miss the overnight pools and every London trade). Then right-click the chart > **Indicators** >
+   **LE_BarFeed** > Add. In its settings leave **Also write 1-minute bars** ticked (the default) > OK.
+   This one chart is all you need: the indicator adds a 1-minute series of the same instrument by itself (you do not
+   see it on the chart) and writes it to a second file.
+4. Do **not** add LE_BarFeed to a separate 1-minute MNQ chart as well: two writers on `MNQ_1m.csv` would fight. (If you
+   ever want a 1-minute chart with LE_BarFeed for something else, untick "Also write 1-minute bars" on the 5-minute
+   one.)
+5. Check, in File Explorer, the folder `Documents\NinjaTrader 8\le_feed`:
+   - `MNQ_5m.csv` gets one new line every 5 minutes;
+   - `MNQ_1m.csv` gets one new line every minute (a minute with no trade has no line; that is normal).
+   `python -m engine.ninjatrader --status` shows `Bar feed 5m: ... bars, last open ...` and `Bar feed 1m: ...`.
+   The bot's log says `data_source=ninjatrader ... falling back to Yahoo` when one of them is missing or stale.
 6. Save the workspace (Control Center > Workspaces > Save) so the chart comes back after a restart.
 7. **Quarterly roll** (next: Thursday 2026-12-10): switch the chart to **MNQ 03-27**. The bot switches its order
    instrument by itself on the same date, using the same 8-days-before-expiry rule as `engine/tradovate.py`.
 
 What LE_BarFeed writes: `time,open,high,low,close,volume`, where time is the bar's **open** in unix seconds (UTC).
-That is the same layout the bot gets from Yahoo. It writes the chart's history once when the chart loads, then one
-short line per closed bar. It rewrites the file (keeping 8,000 bars, about 29 days of 5-minute bars) only every
-1,000 bars, so it is cheap on a small PC. The bot checks the file on every poll:
+That is the same layout the bot gets from Yahoo, in both files. It writes the chart's history once when the chart
+loads, then one short line per closed bar. It rewrites a file only every 1,000 bars (keeping 8,000 five-minute bars,
+about 29 days, and 20,000 one-minute bars, about 14 days), so it is cheap on a small PC. The bot checks each file on
+every poll (the 5-minute file for the setups, the 1-minute file for LIT's entry):
 
 | The bot sees | It does |
 |---|---|
 | file fresh | uses NinjaTrader's bars (Yahoo is not called) |
 | file shorter than the history gap, or missing more than 10% of the last 3 days' bars | fills the holes from Yahoo; NinjaTrader's bars win wherever both have one |
-| file missing, or stale during market hours (last bar more than 7 minutes old) | uses Yahoo for that poll and logs `data_source=ninjatrader ... falling back to Yahoo` |
+| file missing, or stale during market hours (last bar more than 7 minutes old) | uses Yahoo for that poll and logs `data_source=ninjatrader ... falling back to Yahoo` (for the 1-minute file: LIT takes Yahoo's 1-minute bars; a day without full 1-minute bars runs on 5-minute bars, as in the backtest) |
 | bars stamped 17:00-17:59 ET (CME is closed then) or in the future | treats the times as wrong (time zone or close-stamped bars) and uses Yahoo |
 
 ES bars (the partner market) come from Yahoo unless you also put LE_BarFeed on an MES 5-minute chart.
@@ -103,7 +118,9 @@ stand-ins for the NinjaTrader parts, and it compiled and ran. Check these lines 
   TimeZoneInfo"]**. Only if this line errors, replace it with `TimeZoneInfo.Local`. That is correct only while
   NinjaTrader's time zone (Tools > Options > General) is the same as Windows' time zone.
 - `Log(..., LogLevel.Warning)`: if it errors, delete that one line. `Print` alone is enough.
-- `NinjaTrader.Core.Globals.UserDataDir`, `Volume[0]`, `File.Replace`, `IsSuspendedWhileInactive` are standard.
+- `NinjaTrader.Core.Globals.UserDataDir`, `Volumes[s][0]`, `Times[s][0]`, `CurrentBars[s]`, `BarsInProgress`,
+  `AddDataSeries(BarsPeriodType.Minute, 1)` (in `State.Configure`), `File.Replace`, `IsSuspendedWhileInactive` are
+  standard NinjaScript.
 - The editor's own "NinjaScript generated code" block must stay as it made it.
 
 ## 5. Test on Sim101 (no money involved)
@@ -128,9 +145,12 @@ Run these in a PowerShell window in the project folder, with NinjaTrader open an
    and **HOLD TO KILL** buttons work for it.
    (The same thing as an API call: POST `/api/live/start` with
    `{"adapter": "ninjatrader", "armed": true, "nt_account": "Sim101", "data_source": "ninjatrader", "present": true}`.)
-5. Leave it running until the first real signal (about 2 a week). On the chart you should see: the entry, a stop and
-   a target right after it, the stop moving to entry plus 1 tick once the trade reaches the breakeven level (1R, or
-   3R on trending days in the current `live_model.json`), and the exit.
+5. Leave it running until the first real signal (about 3 a week, most of them between 02:00 and 08:00 ET). On the
+   chart you should see: the entry (a market order once the 1-minute confirmation prints), a stop 1 tick beyond the
+   sweep extreme and the target (the VIX band, or the 8R bank) right after it, the stop moving to the entry once the
+   trade is +1R (breakeven), and the exit (stop, target, or the 15:55 ET flat).
+   Every price the bot sends is on the 0.25 tick grid: the stop to the nearest tick, the target rounded toward the
+   entry (the VIX band is rarely a tick price), so the broker's target sits at or just in front of the model's.
    A Sim101 bot restarts by itself after a crash or reboot, like paper.
 
 ## 6. What the bot sends (exact lines)
@@ -169,7 +189,7 @@ connection = `CONNECTED` or `DISCONNECTED`. The outgoing folder is emptied when 
 | Message | Meaning, what to do |
 |---|---|
 | `did not pick up ... withdrawn, NOT executed` | NinjaTrader is closed, or AT Interface is off (step 3). The file was deleted so it can never run late. |
-| `REFUSED: ...` | A safety gate said no (size above 40 micros or 4 minis, before 08:00 or after 15:55 ET, weekend, kill on, a position already open, live lock). Nothing was sent. |
+| `REFUSED: ...` | A safety gate said no (size above 40 micros or 4 minis, before the session start (02:00 ET for LIT, 08:00 for the old engine) or after 15:55 ET, weekend, kill on, a position already open, live lock). Nothing was sent. |
 | `fill not reported yet` | The entry went in but no fill report came within 6 s. The stop and target go in at the next poll. After 45 s the entry is cancelled and you get an alert. |
 | `... REJECTED ...: flattening at once` | NinjaTrader refused the stop or target. The position was closed. Read NinjaTrader's Log tab for the reason. |
 | `FLATTEN NOT CONFIRMED` (also a phone alert) | NinjaTrader still shows a position. The stop stays, and the bot retries every 30 s. Look at NinjaTrader now. |
@@ -188,7 +208,8 @@ connection = `CONNECTED` or `DISCONNECTED`. The outgoing folder is emptied when 
 - **In NinjaTrader by hand**: Chart Trader **Close**, or the Positions tab > right-click > Flatten. The bot notices a
   position you closed by hand and cancels its leftover stop and target.
 - **Flat-time rule**: while the bot runs, between 15:55 and 17:00 ET it closes any MNQ position on its account, also
-  one you opened by hand. Positions after 18:00 ET are left alone.
+  one you opened by hand. Positions after 18:00 ET are left alone. A bot trade still open before the session start
+  (02:00 ET for LIT) or after 15:55 ET is closed.
 
 ## 9. If NinjaTrader or the PC is off
 
@@ -205,7 +226,7 @@ connection = `CONNECTED` or `DISCONNECTED`. The outgoing folder is emptied when 
 
 ## 10. Low-end PC (the Surface as the always-on box)
 
-- **One chart only**: MNQ 5-minute with LE_BarFeed. The 1-minute chart is optional; skip it on 4 GB of RAM.
+- **One chart only**: MNQ 5-minute with LE_BarFeed (it writes the 1-minute file too). No second chart.
 - **Nothing else open**: no Market Analyzer, no SuperDOM, no extra charts or workspaces, no browser left running.
 - **Connect on startup** ticked for the Tradovate/MFFU connection (step 2). Save the workspace (step 4) so the chart
   comes back after a reboot.
@@ -244,7 +265,9 @@ requires. Size caps stay on: 40 micros or 4 minis at most. To go back to testing
 | `nt_close_suffix` [empty] | Text added to the instrument in CLOSEPOSITION, for example `" Globex"` (step 5.3; `--close-suffix`) |
 | `nt_write_mode` [`direct`] | `direct` writes each file in one go; `move` writes it next door, then moves it into incoming (the guide allows both; `--write-mode`) |
 | `nt_ack_wait_s` [4] / `nt_fill_wait_s` [6] / `nt_verify_wait_s` [4] / `nt_pending_timeout_s` [45] | How long to wait for NinjaTrader at each step |
-| `data_source` (or `data`) [`yahoo`] | `ninjatrader` reads LE_BarFeed's files; Yahoo is the fallback |
+| `data_source` (or `data`) [`yahoo`] | `ninjatrader` reads LE_BarFeed's files (5m and 1m); Yahoo is the fallback |
+| `nt_session_from` [LIT: 120 = 02:00 ET; engine: 480 = 08:00 ET] | First ET minute (after midnight) an entry is accepted; a bot trade still open before it is closed |
+| `lit_sizing` [from `live_model.json`: `{"mode": "normal"}`] | LIT size switch: `normal`, `fast_eval` ($800 up to a 40-pt stop) or `safe_eval` (at most 60% of the room to the eval's max-loss floor). Off (`normal`) unless you set it. |
 
 ## 13. Assumptions to verify on a real install
 
@@ -259,7 +282,8 @@ requires. Size caps stay on: 40 micros or 4 minis at most. To go back to testing
 6. OCO on the Tradovate connection: when the target fills, NinjaTrader cancels the stop. The first Sim101 trade shows
    it. The bot cancels a leftover leg either way.
 7. A market fill is reported within 6 s, and order confirmation does not hold ATI orders back.
-8. LE_BarFeed compiles (section 4); its bar times are bar opens. The bot rejects shifted times.
+8. LE_BarFeed compiles (section 4); its bar times are bar opens. The bot rejects shifted times. The added 1-minute
+   series loads as many days as the chart (30); `MNQ_1m.csv` keeps the last 20,000 one-minute bars.
 9. Orders are processed while NinjaTrader is minimized and the screen is locked or off.
 10. The account Name string, the Tradovate environment, and whether a NinjaTrader license is needed (ask MFFU).
 11. NinjaTrader's own rollover date for MNQ matches the bot's (8 days before the 3rd-Friday expiry).

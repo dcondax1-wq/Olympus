@@ -27,7 +27,8 @@ EXIT_NAMES = {"stop": "STOP", "target": "TARGET", "market": "EXIT", "time": "TIM
 def _shape(cfg: dict) -> dict:
     return {"model": cfg.get("model") or "engine", "params": cfg.get("params") or {}, "label": cfg.get("label", ""),
             "sym": (cfg.get("sym") or "NQ").upper(), "equity_filter": cfg.get("equity_filter"),
-            "sizing": cfg.get("sizing"), "chosen": cfg.get("chosen", ""), "lit": cfg.get("lit")}
+            "sizing": cfg.get("sizing"), "chosen": cfg.get("chosen", ""), "lit": cfg.get("lit"),
+            "lit_sizing": cfg.get("lit_sizing")}
 
 
 def live_model() -> dict:
@@ -42,7 +43,8 @@ def live_model() -> dict:
                 cfg = json.load(fh)
         return _shape(cfg)
     except Exception:
-        return {"model": "engine", "params": {}, "label": "", "sym": "NQ", "equity_filter": None, "sizing": None, "lit": None}
+        return {"model": "engine", "params": {}, "label": "", "sym": "NQ", "equity_filter": None, "sizing": None, "lit": None,
+                "lit_sizing": None}
 
 
 def engine_config_raw() -> dict:

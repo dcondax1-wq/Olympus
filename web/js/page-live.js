@@ -193,6 +193,9 @@ function render(snap) {
       ['Session', st.model_state, !['DONE FOR DAY'].includes(st.model_state)],
     ];
     const ef = st.equity_filter;
+    const lr = st.lit_rules;                   // LIT: weekly stop + Monday rule instead of the cold-streak filter
+    if (lr?.weekly_stop) guards.push(['Weekly stop', lr.weekly_stop.text || '', !(lr.weekly_stop.mult < 1)]);
+    if (lr?.monday?.text) guards.push(['Monday rule', lr.monday.text, true]);
     if (ef?.enabled) guards.push(['Cold-streak filter', `${ef.on ? 'FULL SIZE' : ef.mult ? 'HALF SIZE' : 'SITTING OUT'} · last ${ef.n} ${ef.sum_r > 0 ? '+' : ''}${fmtN(ef.sum_r, 2)}R`, ef.on]);
     if (st.strategy?.label) guards.unshift(['Strategy', String(st.strategy.label).split(' (')[0], true]);
     const h = snap.health;

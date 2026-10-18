@@ -1,7 +1,7 @@
 {
   "model": "lit",
   "sym": "NQ",
-  "label": "LIT - Liquidity Inducement (2026-tuned)",
+  "label": "LIT - Liquidity Inducement (2026-tuned) + loss pack",
   "chosen": "2026-10-18",
   "locked": true,
   "rules": "STRATEGY.md",
@@ -46,14 +46,30 @@
     "be_r": 1.0,
     "flat_mod": 955,
     "max_per_day": 1,
-    "how_out": 1.0
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+      2,
+      0.5
+    ]
   },
   "equity_filter": null,
   "sizing": null,
-  "size_rule": "$800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $2/pt; max 40 micros; no trade under 1 micro (engine/lit.py qty_for). No cold-streak filter, no late-entry rule.",
+  "lit_sizing": {
+    "mode": "normal",
+    "modes": {
+      "normal": "the LIT rule: $800 up to a 20-pt stop, then 800x20/stop, max 40 micros (then the weekly stop)",
+      "fast_eval": "eval speed: $800 up to a 40-pt stop, then 800x40/stop (run lit_x_fast_eval: 2-week passes H1 52% / H2 47%, but 21-27% of evals fail in 2 weeks)",
+      "safe_eval": "never risk more than 60% of the room between the eval balance and the trailing max-loss floor: micros capped at 0.6 x room / (stop x $2), min 1 (run lit_x_room_cap60: 1-month fails H1 25.8% -> 10.2%)"
+    },
+    "safe_cap": 0.6,
+    "fast_ref_stop": 40.0,
+    "note": "OFF (normal) until the owner switches it; applied by the cloud monitor ledger and the PC bot (engine/sizing.py lit_qty), one rounding"
+  },
+  "size_rule": "$800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $2/pt; max 40 micros; no trade under 1 micro (engine/lit.py qty_for). Weekly stop: after 2 STOP exits in the calendar week, half size for the rest of it (one rounding, floor 1 micro). No cold-streak filter, no late-entry rule. Switch lit_sizing.mode (normal / fast_eval / safe_eval), default normal.",
   "costs": "$1.40 per micro round trip; 1 tick slippage on market entries and on stop / breakeven / end-of-day exits (limit entries and targets fill at the price)",
   "judged_on": "2026 only (owner order 2026-10-18): parameters picked on Jan 2 - Jun 30 2026, checked on Jul 1 - Oct 16 2026; 2021-25 is a reference line, never a gate",
-  "lock_note": "Locked 2026-10-18 (research/writeups/lit-final.md, run lit_final). 2026 (Jan 2 - Oct 16): 127 trades, 3.08/wk, 90% of weeks with 2+, win 23.6%, PF 3.06, +$38,873 ($3,963/mo), max DD -$3,097; MFFU 50K eval within 2 weeks 29.1% pass / 9.2% fail, within 1 month 48.1% / 16.0%, pass rate 79.9%, median 12 sessions to pass. H1 (picked on): PF 3.55, +$30,661. H2 (check, nothing tuned on it): PF 2.19, +$8,212 (~$2,200/mo) - expect the H2 rate, not the full-year rate. 2021-25 reference (no 1m data there, so the 1m entry cannot be checked): PF 1.03, +$3,806, max DD -$20,695. 100 of 127 trades enter 02:00-08:00 ET (London morning). Old strategy (Liquidity Engine, live_model_engine.json) 2026: PF 3.94, +$20,487; it keeps running as the cloud shadow ledger.",
+  "lock_note": "Locked 2026-10-18, loss pack adopted 2026-10-18 (research/writeups/lit-losses.md, run lit_loss_pack = lit_live): LIT final + Monday rule + weekly stop. 2026 (Jan 2 - Oct 16): 120 trades, 2.91/wk, 86% of weeks with 2+, win 26.7%, PF 3.66, +$41,734 ($4,254/mo), max DD -$2,315; MFFU 50K eval within 2 weeks 26.7% pass / 1.9% fail, within 1 month 55.3% / 3.9%, pass rate 95.5%, median 16 sessions to pass. H1 (picked on): PF 4.44, +$32,773. H2 (check): PF 2.46, +$8,962 (~$2,400/mo) - expect the H2 rate. 2021-25 reference (no 1m data there): PF 1.01, +$1,275, max DD -$20,462. Without the pack (run lit_final): 2026 PF 3.06 +$38,873 DD -$3,097, pass rate 79.9%. Old strategy (Liquidity Engine, live_model_engine.json) 2026: PF 3.94, +$20,487; it keeps running as the cloud shadow ledger.",
   "eval_safe_option": {
     "how_out": 0.5,
     "what": "half size when the sweep extreme is outside Tue 03:00 - Wed 11:30 ET; 2026 +$27.8k (PF 3.17) instead of +$38.9k, max DD -$2.3k instead of -$3.1k, no eval failed within 2 weeks, pass rate 86% instead of 80%"

@@ -12,11 +12,20 @@ function inline(s) {
 }
 export function md(text) {
   const out = [], stack = [];
-  let para = [];
+  let para = [], rows = [];
   const flushP = () => { if (para.length) { out.push(`<p>${inline(para.join(' '))}</p>`); para = []; } };
   const closeTo = (depth) => { while (stack.length > depth) out.push(`</li></${stack.pop()}>`); };
+  const cells = (l) => l.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+  const flushT = () => {
+    if (!rows.length) return;
+    const body = rows.filter(r => !/^\|?\s*:?-{2,}/.test(r));
+    out.push(`<div class="table-wrap"><table class="tbl">${body.map((r, i) => `<tr>${cells(r).map(c => i ? `<td>${inline(c)}</td>` : `<th>${inline(c)}</th>`).join('')}</tr>`).join('')}</table></div>`);
+    rows = [];
+  };
   for (const raw of text.split('\n')) {
     const line = raw.replace(/\s+$/, '');
+    if (/^\|/.test(line.trim())) { flushP(); closeTo(0); rows.push(line.trim()); continue; }
+    flushT();
     const h = line.match(/^(#{1,4})\s+(.*)/);
     const li = line.match(/^(\s*)([-*]|\d+\.)\s+(.*)/);
     if (h) { flushP(); closeTo(0); const n = h[1].length; out.push(`<h${n + 1}>${inline(h[2])}</h${n + 1}>`); }
@@ -29,29 +38,43 @@ export function md(text) {
     else if (stack.length && /^\s+/.test(raw)) out.push(' ' + inline(line.trim()));
     else { closeTo(0); para.push(line.trim()); }
   }
-  flushP(); closeTo(0);
+  flushP(); closeTo(0); flushT();
   return out.join('');
+}
+
+// the LIT part of STRATEGY.md (everything before "## Previous strategy"), for the Strategy pages when live_model.json is lit
+export function litRulesMd(markdown) {
+  const t = String(markdown || '');
+  const i = t.search(/^## Previous strategy/m);
+  return i > 0 ? t.slice(0, i) : t;
 }
 
 async function showRules() {
   const el = $('#page-rules');
   try {
     const d = await api('/api/next/strategy');
-    const lm = d.live_model || {}, p = lm.params || {}, ef = lm.equity_filter || {};
+    const lm = d.live_model || {}, p = lm.params || {}, ef = lm.equity_filter || {}, isLit = lm.model === 'lit', L = lm.lit || {};
+    const STEPS = isLit ? [
+        ['Sweep', 'A LIT level (session box, PDH/PDL, PWH/PWL, PMH/PML, gap, equal highs/lows) taken ≥ 0.5 ATR deep', 'sweep'],
+        ['Inducement + CISD', 'A small swing trapped first, 0.8 ATR displacement, 5m CISD close, 02:00–15:30 ET', 'trigger'],
+        ['Entry + stop', 'Limit at the CISD level, 1m CISD confirmation; stop 1 tick beyond the sweep extreme (8–80 pts)', 'stop'],
+        ['Target', '18:00 open ± 1 VIX one-day move, ≥ 1.5R, banked at 8R', 'target'],
+        ['Manage + loss rules', `BE at 1R · flat 15:55 · 1 trade/day${L.monday ? ' · Monday rule' : ''}${L.wk_stop ? ` · weekly stop (${L.wk_stop[0]} stop-outs → ×${L.wk_stop[1]})` : ''}`, 'manage']] : [
+        ['Sweep', 'A liquidity pool is taken from 08:00 ET', 'sweep'], ['Trigger', 'IFVG / CISD inside 09:30–11:30 or 13:30–15:30', 'trigger'],
+        ['Stop', 'Beyond the sweep extreme, 10–60 pts', 'stop'], ['Target', 'Nearest major pool ≥1.5R, bank 5R on the way', 'target'],
+        ['Manage', 'BE at 1R · 30-min time stop · giveback exit · 1 trade/day', 'manage']];
+    const kv = isLit ? { ...p, ...Object.fromEntries(Object.entries(L).map(([k, v]) => ['lit.' + k, v])), 'lit_sizing.mode': (lm.lit_sizing || {}).mode || 'normal' } : p;
     el.innerHTML = `
       <div class="nx-hero"><div><div class="nx-eyebrow">Strategy rules · locked ${esc(lm.chosen || '')}${lm.locked ? ' · ' + icon('check') + ' locked' : ''}</div>
         <h2>${esc((lm.label || 'Liquidity Engine').split(' (')[0])}</h2><p class="muted">${esc(lm.label || '')}</p></div>
         <button class="btn ghost" data-goto="playbook">${icon('playbook')}Playbook</button></div>
-      <div class="nx-steps">${[
-        ['Sweep', 'A liquidity pool is taken from 08:00 ET', 'sweep'], ['Trigger', 'IFVG / CISD inside 09:30–11:30 or 13:30–15:30', 'trigger'],
-        ['Stop', 'Beyond the sweep extreme, 10–60 pts', 'stop'], ['Target', 'Nearest major pool ≥1.5R, bank 5R on the way', 'target'],
-        ['Manage', 'BE at 1R · 30-min time stop · giveback exit · 1 trade/day', 'manage']]
+      <div class="nx-steps">${STEPS
         .map(([t, s], i) => `<div class="nx-step"><span class="nx-step-n">${i + 1}</span><b>${t}</b><span>${s}</span></div>`).join('')}</div>
       <div class="grid cols-3">
         <div class="card nx-glass span-2 nx-md">${md(d.markdown || 'STRATEGY.md not found.')}</div>
         <div class="nx-col">
           <div class="card nx-glass"><div class="card-h"><h3>live_model.json</h3><span class="muted small">what the bot and cloud monitor trade</span></div>
-            <div class="nx-kv one">${Object.entries(p).map(([k, v]) => `<div><span class="mono">${esc(k)}</span><b class="mono">${esc(JSON.stringify(v))}</b></div>`).join('')}
+            <div class="nx-kv one">${Object.entries(kv).map(([k, v]) => `<div><span class="mono">${esc(k)}</span><b class="mono">${esc(JSON.stringify(v))}</b></div>`).join('')}
             ${Object.entries(ef).map(([k, v]) => `<div><span class="mono">equity_filter.${esc(k)}</span><b class="mono">${esc(JSON.stringify(v))}</b></div>`).join('')}</div></div>
           <div class="card nx-glass"><div class="card-h"><h3>Hard rules</h3></div><ul class="nx-list">
             <li>Futures data only (TradingView CME NQ1!)</li><li>Paper only: never arm live trading</li><li>2–4 setups a week, never fewer than 2</li><li>Evals decided within 2 weeks, never over 3 weeks to pass</li>
@@ -77,7 +100,11 @@ async function showCold() {
     const P = r?.periods || {};
     const maxAbs = Math.max(1, ...win.map(x => Math.abs(x.r)));
     const pct = (v) => fmtN((v || 0) * 100, 0) + '%';
-    el.innerHTML = `
+    const isLit = c.model === 'lit', ws = (c.lit_rules || {}).weekly_stop, mon = (c.lit_rules || {}).monday;
+    const litBox = isLit ? `<div class="banner info"><b>LIT has no cold-streak filter.</b> The live strategy is LIT${c.lit?.wk_stop ? `: its size rule is the <b>weekly stop</b> (after ${c.lit.wk_stop[0]} stop-outs in a calendar week, ×${c.lit.wk_stop[1]} size for the rest of it)` : ''}${c.lit?.monday ? ' and the <b>Monday rule</b> (once Monday took Friday\'s high only shorts, once it took Friday\'s low only longs)' : ''}.
+        ${ws ? `Now: <b>${esc(ws.text || '')}</b>.` : 'Now: the PC bot is not running, so this week\'s count is not known here (the cloud README shows it).'} ${mon && mon.text ? esc(mon.text) + '.' : ''}
+        Sizing mode <b>${esc((c.lit_sizing || {}).mode || 'normal')}</b>. The eval odds below are LIT's own (run ${esc(et?.run || 'lit_live')}); the filter on the rest of this page is the old engine's (shadow).</div>` : '';
+    el.innerHTML = `${litBox}
       <div class="nx-hero"><div><div class="nx-eyebrow">Cold-streak filter · engine/equity_filter.py</div>
         <h2>${word[0].toUpperCase() + word.slice(1)} size when the last ${lb} signals sum ≤ ${fmtN(thr, 1)}R</h2>
         <p class="muted">Every signal is kept (2–4 setups a week). In a cold streak the bot trades it at ${word} size and goes back to full size as soon as the ${lb}-signal record turns positive. Skip mode had the best PF but paused trading for 14 weeks, so it was rejected; the sensitivity study (Lab → write-ups → parameter-robustness) shows the lookback of ${lb} is the one number that matters.</p></div></div>
@@ -95,8 +122,8 @@ async function showCold() {
           <div class="nx-state-v">${icon(et.verdict === 'go' ? 'check' : 'clock')}<b>${et.verdict !== 'go' ? 'WAIT' : et.state === 'warmed' ? 'GO · BEST' : et.state === 'stale' ? 'GO · LATE' : 'GO'}</b></div>
           <div class="nx-kv"><div><span>Pass within 2 weeks</span><b class="up">${pct(et.pass_2w)}</b></div><div><span>Fail within 2 weeks</span><b class="dn">${pct(et.fail_2w)}</b></div>
             <div><span>Pass within 1 month</span><b class="up">${pct(et.pass_1m)}</b></div><div><span>Fail within 1 month</span><b class="dn">${pct(et.fail_1m)}</b></div>
-            <div><span>Median sessions to pass</span><b>${et.median_pass}</b></div><div><span>Weeks to funded (median)</span><b>${fmtN(et.funded_wk, 1)}</b></div></div>
-          <div class="note">${esc(et.reason || '')} · Monte Carlo, Lab → write-ups → monte-carlo-evals.</div>
+            <div><span>Median sessions to pass</span><b>${et.median_pass ?? '—'}</b></div>${isLit ? `<div><span>Pass rate (passed ÷ decided)</span><b>${et.pass_rate != null ? fmtN(et.pass_rate, 1) + '%' : '—'}</b></div>` : `<div><span>Weeks to funded (median)</span><b>${fmtN(et.funded_wk, 1)}</b></div>`}</div>
+          <div class="note">${esc(et.reason || '')}${isLit ? '' : ' · Monte Carlo, Lab → write-ups → monte-carlo-evals.'}</div>
         </div>` : ''}
         <div class="card nx-glass ${et ? '' : 'span-2'}"><div class="card-h"><h3>The window · last ${win.length} finished signals</h3><span class="muted small">oldest → newest</span></div>
           <div class="nx-rbars">${win.map(x => `<div class="nx-rbar" title="${esc(x.day || '')} ${fmtR(x.r)}"><i class="${x.r >= 0 ? 'pos' : 'neg'}" style="height:${Math.abs(x.r) / maxAbs * 50}%;${x.r >= 0 ? 'bottom:50%' : 'top:50%'}"></i><span>${esc(String(x.day || '').slice(5))}</span></div>`).join('') || '<div class="empty">No signals recorded yet.</div>'}</div>

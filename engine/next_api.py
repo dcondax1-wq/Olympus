@@ -139,7 +139,21 @@ def cold():
     last = equity_filter.load()[-(int((cfg or {}).get("lookback", 15))):]
     d = _live_bt() or {}
     hist = [{"day": t.get("day"), "r": t.get("r"), "half": bool(t.get("half")), "pnl": t.get("pnl")} for t in d.get("trades") or []]
-    return _J({"config": cfg, "now": now, "eval_timing": equity_filter.eval_timing(now, equity_filter.sessions_since_flip(cfg)), "window": last, "history": hist})
+    et = equity_filter.eval_timing(now, equity_filter.sessions_since_flip(cfg))
+    model = lm.get("model") or "engine"
+    rules = None
+    if model == "lit":
+        # LIT has no cold-streak filter: the eval odds are LIT's own (stored run lit_live), plus its weekly stop / Monday rule
+        from . import lit_live
+        et = {**et, **lit_live.eval_odds(ROOT)}
+        try:
+            from .live import BOT
+            rules = (BOT.state or {}).get("lit_rules")
+        except Exception:
+            rules = None
+    return _J({"config": cfg, "now": now, "eval_timing": et, "window": last, "history": hist, "model": model, "lit_rules": rules,
+               "lit": {k: (lm.get("lit") or {}).get(k) for k in ("monday", "wk_stop")} if model == "lit" else None,
+               "lit_sizing": lm.get("lit_sizing") if model == "lit" else None})
 
 
 # ------------------------------------------------------------------ research lab: run library + write-ups

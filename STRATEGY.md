@@ -5,10 +5,11 @@ candles. All times are New York (ET); the trading day runs 18:00 to 17:00.
 Settings: `live_model.json` (copy in `live_model_lit.json`) → `"model": "lit"`, parameters under `"lit"`; code `engine/lit.py`
 (rules) + `engine/lit_live.py` (the live loop: PC paper bot and cloud monitor). Paper only.
 
-**Version:** locked 2026-10-18. **Owner's order (2026-10-18): LIT is the strategy, tuned and judged on 2026 only** (Jan 2 – Oct 16).
-Picked on Jan–Jun 2026, checked on Jul–Oct 2026. 2021–25 is shown as a reference line, never as a gate. The previous strategy
-(Liquidity Engine, below) keeps running in the cloud monitor as a shadow paper ledger for comparison. Research:
-`research/writeups/lit-final.md`, run `lit_final`.
+**Version:** locked 2026-10-18, **loss pack adopted 2026-10-18** (rule 10: Monday rule + weekly stop). **Owner's order
+(2026-10-18): LIT is the strategy, tuned and judged on 2026 only** (Jan 2 – Oct 16). Picked on Jan–Jun 2026, checked on
+Jul–Oct 2026. 2021–25 is shown as a reference line, never as a gate. The previous strategy (Liquidity Engine, below) keeps
+running in the cloud monitor as a shadow paper ledger for comparison. Research: `research/writeups/lit-final.md` (run
+`lit_final`), `research/writeups/lit-losses.md` (run `lit_loss_pack`); the live settings are run `lit_live`.
 
 ## 1. Liquidity levels
 Every one of these counts as liquidity:
@@ -61,45 +62,74 @@ Every one of these counts as liquidity:
 - **$800 risk up to a 20-point stop**, then 800 × 20 ÷ stop (a 40-pt stop risks $400, an 80-pt stop $200).
 - Micros = risk ÷ (stop × $2), rounded down, at most 40; under 1 micro means no trade.
 - 2026 median stop 47 points → 3 micros, about $290 at risk.
+- **Weekly stop** (rule 10): after 2 stop-outs in the week, the micros are halved (rounded down once, at least 1 micro).
 - **No cold-streak filter, no late-entry rule.** Eval-safe switch, off: `how_out: 0.5` (half size when the sweep extreme falls
-  outside Tuesday 03:00 – Wednesday 11:30): 2026 +$27.8k instead of +$38.9k, max DD −$2.3k, no eval failed within 2 weeks.
+  outside Tuesday 03:00 – Wednesday 11:30; LIT final numbers): 2026 +$27.8k instead of +$38.9k, max DD −$2.3k, no eval failed
+  within 2 weeks.
+- **Sizing switches** (`live_model.json` → `"lit_sizing": {"mode": ...}`), both **off** (`"normal"`) until the owner turns one on.
+  The PC bot and the cloud monitor's paper ledger apply them (`engine/sizing.py` `lit_qty`), with one rounding:
+  - `"fast_eval"`: $800 up to a **40-point** stop, then 800 × 40 ÷ stop (times the weekly stop's half, rounded down once).
+    Run `lit_x_fast_eval` (LIT final): the best 2-week pass rate in both halves (H1 52% vs 33%, H2 47% vs 23%) and half the
+    sessions to a pass, but 21–27% of evals fail within 2 weeks. Eval mode only.
+  - `"safe_eval"`: never risk more than **60% of the room** between the eval balance and the trailing max-loss floor:
+    micros capped at 0.6 × room ÷ (stop × $2), at least 1. Run `lit_x_room_cap60` (LIT final): 1-month fails H1 25.8% → 10.2%,
+    pass rate H1 66% → 80%; H2 unchanged (it never binds there).
 - Costs in every number: $1.40 per micro round trip, 1 tick slippage on market entries and on stop / breakeven / end-of-day
   exits; limit fills and targets fill at their price.
 
-## How LIT performed (`python tools/export_backtest.py` → `research/lab/backtest_live.json`, costs included)
+## 10. Loss rules (adopted 2026-10-18, `research/writeups/lit-losses.md`)
+Both were picked on Jan–Jun 2026 and helped Jul–Oct too (`engine/lit.py` options `monday` and `wk_stop`, on in `live_model.json`).
+- **Monday rule:** on Monday, once the session (from Sunday 18:00) has taken **Friday's high**, take **only shorts**; once it has
+  taken **Friday's low**, take **only longs**. Both taken, or neither: no side rule. A skipped setup leaves the day free for a
+  later one.
+- **Weekly stop:** after **2 STOP exits** in the current calendar week (ET, Monday to Friday, by trading day), the rest of that
+  week trades at **half size** (micros rounded down once, at least 1). Breakeven and end-of-day exits do not count. Monday
+  starts at full size again. The live bots count the week's stop-outs from their own ledger (cloud: its LIT paper ledger; PC:
+  its routed exits), and the model's own replay for any day the ledger does not cover.
+
+## How LIT performed (`python tools/export_backtest.py` → `research/lab/backtest_live.json`, costs included, run `lit_live`)
+
+LIT with the loss pack (rules 1–10, exactly what the bots trade):
 
 | | 2026 (Jan 2 – Oct 16) | 2026 H1 (picked on) | 2026 H2 (check) | 2021–25 (reference only) |
 |---|---:|---:|---:|---:|
-| Trades · per week · weeks with 2+ | 127 · 3.08 · 90% | 85 · 3.32 · 89% | 42 · 2.69 · 88% | 534 · 2.49 · 78% |
-| Win rate | 23.6% | 18.8% | 33.3% | 18.4% |
-| Profit factor | **3.06** | 3.55 | 2.19 | 1.03 |
-| Net · per month | **+$38,873 · $3,963** | +$30,661 · $5,030 | +$8,212 · $2,211 | +$3,806 · $75 |
-| Max drawdown | −$3,097 | −$3,097 | −$1,741 | −$20,695 |
-| MFFU 50K eval within 2 weeks (pass / fail) | 29.1% / 9.2% | 32.8% / 14.8% | 23.1% / 0.0% | 7.1% / 16.3% |
-| Within 1 month (pass / fail) | 48.1% / 16.0% | 52.3% / 25.8% | 41.0% / 0.0% | 15.0% / 39.2% |
-| Pass rate (passed ÷ decided) · median sessions to pass | 79.9% · 12 | 66.3% · 8 | 100% · 22.5 | 31.6% · 20 |
+| Trades · per week · weeks with 2+ | 120 · 2.91 · 86% | 80 · 3.12 · 85% | 40 · 2.56 · 81% | 510 · 2.38 · 76% |
+| Win rate | 26.7% | 22.5% | 35.0% | 17.5% |
+| Profit factor | **3.66** | 4.44 | 2.46 | 1.01 |
+| Net · per month | **+$41,734 · $4,254** | +$32,773 · $5,377 | +$8,962 · $2,413 | +$1,275 · $25 |
+| Max drawdown | −$2,315 | −$2,315 | −$1,466 | −$20,462 |
+| MFFU 50K eval within 2 weeks (pass / fail) | 26.7% / 1.9% | 28.9% / 3.1% | 23.1% / 0.0% | 6.6% / 14.3% |
+| Within 1 month (pass / fail) | 55.3% / 3.9% | 61.7% / 6.2% | 44.9% / 0.0% | 12.9% / 34.4% |
+| Pass rate (passed ÷ decided) · median sessions to pass | **95.5%** · 16 | 92.3% · 13.5 | 100% · 21 | 28.4% · 20 |
+| Back to back (new eval after each pass / fail) | 10 passed, 2 failed | 8 / 2 | 2 / 0 | 11 / 35 |
 
 Eval columns from the research library scoring (`tools/lit_final.py`, a new eval started on every session); the dashboard's
 Results page counts only evals with a full 2-week / 1-month window inside the period, so it shows slightly different figures
-(2026: 27.4% / 9.6% and 44.4% / 17.6%).
+(2026: 24.9% / 2.0% and 52.4% / 4.3%).
+
+Without the loss pack (LIT final, run `lit_final`): 2026 127 trades, PF 3.06, +$38,873, max DD −$3,097, 2-week 29.1% / 9.2%,
+1-month 48.1% / 16.0%, pass rate 79.9%; H1 PF 3.55 +$30,661; H2 PF 2.19 +$8,212; 2021–25 PF 1.03 +$3,806, DD −$20,695. The
+pack: +$2.1k in H1 and +$0.75k in H2, the worst month −$466 → −$34, 1-month eval fails 16% → 4%, a pass takes a median 16
+sessions instead of 12, 86% of weeks with 2+ trades instead of 90%; 2021–25 $2.5k less (the Monday rule costs money there).
 
 Same months, old strategy: 2026 PF 3.94, +$20,487 (H1 +$4,919, H2 +$15,568), max DD −$2,249.
 
 **Read this honestly:**
-- **Expect the H2 rate (about $2,200 a month), not the full-year $3,963.** H1 was tuned, H2 was not; the old bot did better in H2.
-- **2021–25 shows no edge** (PF 1.03, drawdown −$20.7k). Those years have no 1m data, so the 1m entry cannot be checked there.
-  On 5m candles only, the same rules make +$6.6k in 2026: **the edge needs 1-minute bars.**
-- **A few trades carry it:** the top 3 are 41% of 2026's net; there was a run of 14 trades with no winner.
-- **It is a London-morning strategy:** 100 of 127 trades enter 02:00–08:00 ET. New York alone gives 1.1 trades a week and lost
-  in H2. MFFU wants the owner present for live trading, so that clashes; paper trading is not affected.
-- Months 2026: Jan +10.8k, Feb +1.8k, Mar +5.5k, Apr +5.5k, May +4.8k, Jun +2.2k, Jul +0.5k, Aug −0.5k, Sep +1.7k, Oct (to the
-  16th) +6.5k.
-- Robust in the checks that were run: every one of 25 neighbouring settings stays profitable in both halves (2026 +$26.9k to
-  +$44.3k); 2 extra ticks of slippage still leave +$38.2k.
+- **Expect the H2 rate (about $2,400 a month), not the full-year $4,254.** H1 was tuned, H2 was not; the old bot did better in H2.
+- **2021–25 shows no edge** (PF 1.01, drawdown −$20.5k). Those years have no 1m data, so the 1m entry cannot be checked there.
+  On 5m candles only, the same rules (LIT final) make +$6.6k in 2026: **the edge needs 1-minute bars.**
+- **A few trades carry it:** the top 3 are 38% of 2026's net; the longest run without a winner is 12 trades.
+- **It is a London-morning strategy:** 95 of 120 trades enter 02:00–08:00 ET. LIT's own New York entries (08:00–15:30 ET) are
+  25 of 120, 0.61 a week, H2 PF 1.10 (+$94); in LIT final 27 of 127, 0.66 a week, H2 PF 0.65. MFFU wants the owner present for
+  live trading, so that clashes; paper trading is not affected.
+- Months 2026: Jan +9.5k, Feb +2.2k, Mar +7.2k, Apr +6.3k, May +5.3k, Jun +2.2k, Jul +0.5k, Aug −0.03k, Sep +1.8k, Oct (to the
+  16th) +6.7k.
+- Robust in the checks that were run (LIT final): every one of 23 neighbouring settings stays profitable in both halves (2026
+  +$26.9k to +$44.3k); 2 extra ticks of slippage still leave +$38.2k.
 
 **Live loop (paper):** the PC bot (`engine/live.py`) and the cloud monitor (`tools/cloud_monitor.py`) run `engine/lit_live.py` on
 the bars from the first day of the previous month on, plus 1m bars (stored `data/NQ_1m.csv` + Yahoo `NQ=F` 1m, 7 days).
-`tests/test_lit_live.py` replays every 2026 session through it and gets the backtest's trades. The cloud monitor runs every
+`tests/test_lit_live.py` replays every 2026 session through it (with the loss pack) and gets the backtest's trades. The cloud monitor runs every
 30 minutes from 02:00 to 16:25 ET, so its alerts can be up to ~30 minutes late (plus Yahoo's delay); its paper ledger still
 records every trade at the model's prices.
 

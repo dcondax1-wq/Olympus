@@ -4,8 +4,18 @@ family: other
 date: 2026-10-18
 status: adopt-candidate
 summary: Every 2026 trade of LIT final was taken apart (time, level, sweep, inducement, stop, MFE, news, VIX, ES, opens, 1H/4H). 59 stop-outs carry 97% of the lost dollars. They are trades that never worked (median best point +0.3R, 45 minutes to the stop), not shake-outs. About 110 rules were tested, each picked on Jan-Jun and checked on Jul-Oct, plus timeframes and the masters-study filters. Two rules help both halves and the eval: a weekly stop (after 2 stop-outs in a week, half size for the rest of it) and a Monday rule (once Monday has taken Friday's high, only shorts; once it has taken Friday's low, only longs). Together (lit_loss_pack): 2026 +$41.7k, PF 3.66, max DD -$2.3k, eval pass rate 95.5% (was 80%), H1 +$2.1k and H2 +$0.75k better than LIT final. Every exit-management idea (scale-outs, trails, stop to the inducement) and every other timeframe lost money in both halves.
-runs: lit_loss_pack, lit_loss_weekly_stop, lit_loss_monday, lit_loss_after_win, lit_loss_pack_win, lit_loss_idm12, lit_final
+runs: lit_live, lit_loss_pack, lit_loss_weekly_stop, lit_loss_monday, lit_loss_after_win, lit_loss_pack_win, lit_loss_idm12, lit_final
 ---
+
+## Adopted (2026-10-18)
+
+- The pack is live: `engine/lit.py` options `monday` and `wk_stop` (off by default, so `lit_final` stays reproducible), on in
+  `live_model.json`. Run **`lit_live`** = the engine with the options; it equals `lit_loss_pack` trade for trade (630 trades,
+  `python tools/lit_losses.py live`).
+- The PC bot and the cloud monitor apply both (`engine/lit_live.py`): the weekly stop counts this week's stop-outs from the
+  bot's own ledger (cloud: its LIT paper ledger; PC: its routed exits, kept across the days of the week in
+  `data/live_state.json`), and the model's replay for any day the ledger does not cover. `tests/test_lit_live.py` with the pack:
+  every 2026 session gives the backtest's trades.
 
 ## In one minute
 

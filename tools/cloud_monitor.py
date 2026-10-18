@@ -84,19 +84,12 @@ def load_state(path):
 
 
 def _lit_eval_odds():
-    """MFFU 50K eval odds of LIT from its stored 2026 run (research/runs/lit_final.json), in eval_timing's fields."""
-    try:
-        with open(os.path.join(ROOT, "research", "runs", "lit_final.json"), encoding="utf-8") as fh:
-            s = json.load(fh)["spans"]["2026"]
-        return {"pass_2w": round(s["p10"] / 100, 3), "fail_2w": round(s["f10"] / 100, 3), "pass_1m": round(s["p20"] / 100, 3),
-                "fail_1m": round(s["f20"] / 100, 3),
-                "median_pass": s["pass_med"], "funded_wk": None,
-                "reason": "no cold-streak filter: odds from the LIT 2026 backtest (tuned on Jan-Jun; Jul-Oct was weaker)"}
-    except Exception:
-        return {"pass_2w": None, "fail_2w": None, "pass_1m": None, "fail_1m": None, "median_pass": None, "funded_wk": None}
+    """MFFU 50K eval odds of LIT from its stored 2026 run (engine/lit_live.eval_odds: research/runs/lit_live.json)."""
+    from engine import lit_live
+    return lit_live.eval_odds(ROOT)
 
 
-def run_model(lm, bot, df_all, now, store_1m=None):
+def run_model(lm, bot, df_all, now, store_1m=None, week_hist=None):
     """One poll of a strategy on the merged bars: the engine on the 20-day window (as LiveBot.poll_once), LIT on the
     previous-month window with 1m bars (engine/lit_live.py), a lab module on the 20-day window."""
     df = df_all[df_all["time"] >= df_all["time"].max() - WINDOW_DAYS * 86400]
@@ -129,7 +122,7 @@ def run_model(lm, bot, df_all, now, store_1m=None):
                     df1 = pd.concat(parts).drop_duplicates("time", keep="last").sort_values("time")
                     df1 = df1[df1["time"] >= int(df1["time"].max()) - 12 * 86400].reset_index(drop=True)
                     df1[["time", "open", "high", "low", "close", "volume"]].to_csv(store_1m, index=False)
-        return lit_live.run(df_all, P, one_min=df1, now=now, sym=SYM)
+        return lit_live.run(df_all, P, one_min=df1, now=now, sym=SYM, week_hist=week_hist)
     if lm["model"].startswith("lab:"):
         es_df, _ = bot._merged("ES" if SYM == "NQ" else "NQ", TF, now, SECS)     # partner index (SMT)
         es_df = es_df[es_df["time"] >= int(df["time"].min())]
@@ -140,13 +133,27 @@ def run_model(lm, bot, df_all, now, store_1m=None):
     return Engine(base, htf=htf, partner=partner, params=merge_params({**lm["params"], "live": True})).run().result()
 
 
-def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, params):
-    """Paper ledger: the model's trades that entered after this ledger started watching, sized as the PC bot sizes them."""
+def week_rows(ledger):
+    """The LIT weekly stop's ledger rows (engine/lit.py week_stops): day, exit reason, exit time of every paper trade."""
+    return [{"day": v["day"], "exit": v.get("exit"), "exit_t": v.get("exit_ts")} for v in ledger.values()]
+
+
+def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, params, lit_sizing=None):
+    """Paper ledger: the model's trades that entered after this ledger started watching, sized as the PC bot sizes them.
+    lit_sizing (LIT only): live_model.json "lit_sizing" -> engine/sizing.lit_qty (normal / fast_eval / safe_eval, the
+    room from this ledger's MFFU eval tracker at the entry); the model's micros already carry the weekly stop."""
     for t in sorted(res["trades"], key=lambda x: x["entry_t"]):
         if t["entry_t"] >= first_run - SECS:
             prev = ledger.get(int(t["entry_t"]))
+            reasons = None
             if prev and "mult" in prev:
                 mult, qty = prev["mult"], prev.get("qty", 0)
+                reasons = prev.get("reasons")
+            elif res.get("model") == "lit":
+                before = {k: v for k, v in ledger.items() if int(k) < int(t["entry_t"])}
+                room = eval_track(before)["cushion"] if (lit_sizing or {}).get("mode") == "safe_eval" else None
+                r = sizing.lit_qty(int(t.get("qty") or 0), t, lit_sizing, room=room)
+                mult, qty, reasons = r["mult"], r["qty"], r["reasons"]
             else:
                 cold = equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["mult"]
                 profit = sum(v["usd"] for k, v in ledger.items() if int(k) < int(t["entry_t"])) if ledger else None
@@ -157,7 +164,9 @@ def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, para
                                          "trigger": t.get("trigger"), "exit": t.get("exit_reason"),
                                          "exit_t": f"{et(t['exit_t']):%H:%M}" if t.get("exit_t") else None,
                                          "R": round(float(t["pnl_r"]), 2), "taken": mult > 0, "mult": mult,
-                                         "usd": round(float(t["pnl"]) * mult, 2), "qty": qty}
+                                         "usd": round(float(t["pnl"]) * mult, 2), "qty": qty,
+                                         "exit_ts": int(t["exit_t"]) if t.get("exit_t") else None,
+                                         **({"reasons": reasons} if reasons else {})}
     return ledger
 
 
@@ -202,7 +211,8 @@ def run(out):
     if not len(df_all):
         raise SystemExit("no bars at all (history missing and Yahoo failed)")
     df = df_all[df_all["time"] >= df_all["time"].max() - WINDOW_DAYS * 86400]
-    res = run_model(lm, bot, df_all, now, store_1m=os.path.join(out, "bars_1m.csv"))
+    res = run_model(lm, bot, df_all, now, store_1m=os.path.join(out, "bars_1m.csv"),
+                    week_hist=week_rows(ledger) if lm["model"] == "lit" else None)
     state = res["state"] or {}
     state.setdefault("model_label", lm.get("label") or lm["model"])
 
@@ -233,7 +243,8 @@ def run(out):
 
     # ---- paper ledger: model trades that entered after the cloud monitor started watching
     sizing_cfg = lm.get("sizing")
-    update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, lm.get("params"))
+    update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, lm.get("params"),
+                  lit_sizing=lm.get("lit_sizing") if lm["model"] == "lit" else None)
     pos = state.get("position")
 
     # ---- shadow: the old strategy on the same bars, its own paper ledger and cold-streak history, no alerts
@@ -279,6 +290,11 @@ def run(out):
                 note = f"\n{m:g}x SIZE - cold-streak filter (last 15 signals net negative)"
             if ev["type"] == "entry" and sizing_cfg and sizing_cfg.get("late_mult") is not None:
                 note += "\n(late entries, where the 15m trend already turned, are traded at half size)"
+            if ev["type"] == "entry" and lm["model"] == "lit":
+                lr = ledger.get(int(ev["t"])) or {}
+                mode = (lm.get("lit_sizing") or {}).get("mode") or "normal"
+                if mode != "normal":
+                    note += f"\nsizing mode {mode}" + (f": {lr['qty']} micros ({'; '.join(lr.get('reasons') or [])})" if lr else "")
             new_alerts.append(f"{SYM} {ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
     # eval timing flipped since the last run (cold streak <-> full size): the owner buys/resets the eval on GO
     prev_et = (st.get("eval_timing") or {}).get("verdict") if prev_model == lm["model"] else None   # no flip alert on a switch
@@ -317,6 +333,7 @@ def run(out):
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
+                 "lit_rules": state.get("lit_rules"), "lit_sizing": (lm.get("lit_sizing") or {}).get("mode") if lm["model"] == "lit" else None,
                  "health": health, "eval": ev_track, "model_state": state.get("model_state"), "position": pos,
                  "strategy": lm.get("label"), "params": lm.get("lit") if lm["model"] == "lit" else lm.get("params"),
                  "equity_filter": state.get("equity_filter"),
@@ -422,6 +439,8 @@ def write_chart(path, df, state, res, today):
 def usd_cell(v):
     if not v.get("taken", True):
         return "skipped (cold streak)"
+    if v.get("mult", 1.0) >= 1 and v.get("reasons"):         # LIT: the weekly stop is inside the model's micros
+        return money(v["usd"]) + f" ({v.get('qty')} micros: {', '.join(v['reasons'])})"
     return money(v["usd"]) + (f" ({v.get('mult', 1.0):g}x size: {', '.join(v.get('reasons') or ['cold streak'])})" if v.get("mult", 1.0) < 1 else "")
 
 
@@ -450,7 +469,10 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
          "", "![NQ 5m today](chart.png)", "",
          "## Status", "| | |", "|---|---|",
          f"| Strategy | {state.get('model_label', 'engine')} |",
-         f"| Cold-streak filter | {(state.get('equity_filter') or {}).get('reason', 'off')} |",
+         *([f"| Cold-streak filter | {(state.get('equity_filter') or {}).get('reason', 'off')} |"] if (lm or {}).get("model") != "lit" else
+           [f"| Weekly stop | {((state.get('lit_rules') or {}).get('weekly_stop') or {}).get('text') or 'off'} |",
+            f"| Monday rule | {((state.get('lit_rules') or {}).get('monday') or {}).get('text') or ('on (applies on Mondays)' if ((state.get('lit_rules') or {}).get('monday') or {}).get('on') else 'off')} |",
+            f"| Sizing mode | {((lm or {}).get('lit_sizing') or {}).get('mode') or 'normal'} |"]),
          f"| Eval timing | **{(state.get('eval_timing') or {}).get('verdict', '?').upper()}**: {(state.get('eval_timing') or {}).get('reason', '')} |",
          f"| Model | **{state.get('model_state', '?')}** |",
          f"| Price | {price:,.2f} (last bar {health['last_bar']}, {health['age_min']} min old) |" if price else "| Price | - |",

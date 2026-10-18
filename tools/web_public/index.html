@@ -1512,6 +1512,30 @@ const nbox = (k, v) => `<div><span>${k}</span><b>${v}</b></div>`;
 
 // ===================================================================== live status (top bar)
 const LV = () => D?.live || {};
+// the live strategy: LIT (live_model.json "model": "lit", no cold-streak filter) or the old Liquidity Engine
+const isLIT = () => (LV().model || D?.strategy?.model) === 'lit';
+const stratName = () => String(LV().strategy || D?.strategy?.label || (isLIT() ? 'LIT' : 'Liquidity Engine')).split(' (')[0];
+// LIT's size rule now: the weekly stop (after 2 stop-outs in a calendar week, half size for the rest of it)
+const litWeek = () => (LV().lit_rules || {}).weekly_stop || null;
+const litMonday = () => (LV().lit_rules || {}).monday || null;
+// LIT's model states -> the five steps (Sweep, CISD, Limit, Trade, Done); the engine's states are matched exactly
+function stepIdx(lv) {
+  const m = String(lv.model_state || '');
+  if (!isLIT()) return STEPS.indexOf(m);
+  if (/IN TRADE/.test(m)) return 3; if (/done for today/.test(m)) return 4; if (/tapped/.test(m)) return 2; if (/limit armed/.test(m)) return 1;
+  if (/watching/.test(m)) return 0; return -1;
+}
+const stepLabels = () => isLIT() ? ['Sweep', 'CISD', 'Limit', 'Trade', 'Done'] : STEP_L;
+// the old strategy's paper ledger next to LIT (cloud state "shadow"): a small card
+function shadowCard() {
+  const sh = LV().shadow; if (!sh) return '';
+  const L = Object.values(sh.ledger || {}), net = L.reduce((a, v) => a + (v.usd || 0), 0), ev = sh.eval || {};
+  const since = sh.first_run ? new Date(sh.first_run * 1000).toISOString().slice(0, 10) : '';
+  return `<div class="card"><div class="card-h"><h3>Old strategy, paper</h3><span class="meta">${esc(String(sh.label || sh.model || 'Liquidity Engine').split(' (')[0])} · shadow, no alerts</span></div>
+    <div class="kv"><div><span>Paper ledger</span><b class="${cls(net)}">${susd(net)}</b></div><div><span>Trades</span><b>${L.length}${since ? ` since ${esc(fDate(since))}` : ''}</b></div>
+      <div><span>Eval tracker</span><b class="${cls(ev.profit)}">${ok(ev.profit) ? susd(ev.profit) : '—'}</b></div><div><span>Now</span><b>${esc(sh.position ? 'in a trade' : 'flat')}</b></div></div>
+    <p class="small mut" style="margin:10px 0 0">${esc(sh.error ? 'Error: ' + sh.error : (sh.model_state || ''))}</p></div>`;
+}
 function sessionNow(ts = Date.now() / 1000) {
   const e = et(ts), mod = e.h * 60 + e.mi, wk = !['Sat', 'Sun'].includes(e.wd);
   const kz = [[570, 690, 'NY AM killzone'], [810, 930, 'NY PM killzone']];
@@ -1555,7 +1579,7 @@ function moodNow() {
   const lv = LV(), s = sessionNow(), ef = lv.equity_filter || {};
   const pnl = (lv.ledger || []).filter(v => v.day === lv.today).reduce((a, v) => a + (v.usd || 0), 0);
   const age = lv.last_run ? Date.now() / 1000 - lv.last_run : 1e9;
-  return { killzone: !!s.inkz, live: s.open && age < 2400, cold: ef.on === false, pnl, inTrade: !!lv.position, side: lv.position?.dir || 0 };
+  return { killzone: !!s.inkz, live: s.open && age < 2400, cold: isLIT() ? (litWeek()?.mult ?? 1) < 1 : ef.on === false, pnl, inTrade: !!lv.position, side: lv.position?.dir || 0 };
 }
 // mount a 3D view into el (or leave the 2D fallback that is already there)
 function fx3d(key, el, kind, data, opts) {
@@ -1671,26 +1695,28 @@ function labTeaser() {
 }
 VIEWS.today = (el) => {
   const lv = LV(), s = sessionNow(), ef = lv.equity_filter || {}, ev = lv.eval;
-  const idx = STEPS.indexOf(lv.model_state), pos = lv.position;
+  const idx = stepIdx(lv), pos = lv.position, lit = isLIT(), wk = litWeek(), mon = litMonday();
   const todays = (lv.ledger || []).filter(v => v.day === lv.today), dayPnl = todays.reduce((a, v) => a + (v.usd || 0), 0);
   const y = D.results?.periods?.['2026 YTD'], RD = reactorData(), WK = weekData(), LQ = liqData();
   el.innerHTML = `
     <div class="card hero-card"><div class="hero3d" id="tdOrb"><img class="hero-fallback" src="icons/icon-512.png?v=drop1" alt="">
         <span class="hero-tag">${icon('engine')}LIVE ORACLE · last ${Math.min(12, (lv.bars || []).length)} bars</span></div>
       <div class="state">
-        <div><div class="eyebrow">Cloud paper bot · ${s.inkz ? esc(s.inkz[2]) + ' live' : s.next ? `${esc(s.next[0])} in ${Math.floor(s.next[1] / 60)}h ${String(s.next[1] % 60).padStart(2, '0')}m` : s.wk ? 'session over' : 'weekend'}</div>
+        <div><div class="eyebrow">Cloud paper bot · ${esc(stratName())} · ${s.inkz ? esc(s.inkz[2]) + ' live' : s.next ? `${esc(s.next[0])} in ${Math.floor(s.next[1] / 60)}h ${String(s.next[1] % 60).padStart(2, '0')}m` : s.wk ? 'session over' : 'weekend'}</div>
           <h2>${esc(lv.model_state || '—')}</h2><p>${pos ? `In ${pos.dir === 1 ? 'LONG' : 'SHORT'} ${esc(pos.qty_label || '')} @ ${num(pos.entry)} → TP ${num(pos.target)} / SL ${num(pos.stop)}` : 'Flat. Paper only: it never places real orders.'}</p></div>
         <div class="px"><span class="small mut">NQ futures (Yahoo NQ=F)</span><b>${num(lv.price)}</b><span class="small mut">${esc(lv.health?.last_bar || '')}</span></div></div>
-      <div class="steps">${STEP_L.map((t, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${t}</span>`).join('')}</div>${pcLine()}
+      <div class="steps">${stepLabels().map((t, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${t}</span>`).join('')}</div>${pcLine()}
       <div class="hero-links"><button class="chipbtn" type="button" data-go="strategy">${icon('rules')}<span>The strategy</span></button><button class="chipbtn" type="button" data-go="engine">${icon('engine')}<span>Engine details</span></button><button class="chipbtn" type="button" data-go="results">${icon('results')}<span>5-year results</span></button>${newsChip()}</div></div>
     ${howto('today', `<p>The top card is the cloud paper bot right now: its state, the NQ price and the five steps of a setup (the lit step is where it is). The <b>News</b> chip is the next USD event and how long until it; tap it for the blackouts.</p>
-      <ul><li><b>Today · paper</b>: profit or loss of today’s paper trades.</li><li><b>Size now</b>: the cold-streak size. When the last 15 finished signals add up to 0R or less, the bot trades at ${esc(sizeWord(sizeRules().cold))} size.</li>
+      <ul><li><b>Today · paper</b>: profit or loss of today’s paper trades.</li>${lit ? `<li><b>Size now</b>: LIT’s weekly stop. After 2 stop-outs in a calendar week the rest of that week trades at half size; Monday starts at full size again.</li>` : `<li><b>Size now</b>: the cold-streak size. When the last 15 finished signals add up to 0R or less, the bot trades at ${esc(sizeWord(sizeRules().cold))} size.</li>`}
       <li><b>Eval · paper</b>: the cloud bot’s MFFU eval, scored with the real rules.</li><li><b>2026 backtest</b>: how the same settings did this year in the replay. PF (profit factor) = money won ÷ money lost.</li>
       <li><b>This week</b>: the paper trades of the current week, Monday to Friday (the owner wants 2 to 4 setups a week).</li><li><b>Liquidity map</b>: the untaken pools around the price: buy-side (orange) above, sell-side (blue) below, with the distance in points. The bot waits for one of them to be swept.</li></ul>
       <p>Everything here is paper. The bot never places real orders.</p>`)}
     <div class="stats">
       ${statBox('Today · paper', susd(dayPnl), `${plural(todays.length, 'trade')} · ${esc(lv.today || '')}`, cls(dayPnl))}
-      ${statBox('Size now', ef.enabled === false ? 'Full' : ef.on === false ? sizeWord(ef.mult ?? sizeRules().cold).replace(/^\w/, c => c.toUpperCase()) : 'Full', `last 15 signals ${fR(ef.sum_r)}`, ef.on === false && ef.enabled !== false ? 'wn' : 'up')}
+      ${lit ? statBox('Size now', wk ? (wk.mult < 1 ? sizeWord(wk.mult).replace(/^\w/, c => c.toUpperCase()) : 'Full') : 'Full',
+        wk ? `weekly stop · ${wk.stops} of ${wk.after} stop-outs this week${mon && mon.today && mon.today !== 'none' ? ' · ' + (mon.today === 'high' ? 'Monday: shorts only' : mon.today === 'low' ? 'Monday: longs only' : 'Monday: both sides') : ''}` : 'weekly stop · no data yet', wk && wk.mult < 1 ? 'wn' : 'up') :
+      statBox('Size now', ef.enabled === false ? 'Full' : ef.on === false ? sizeWord(ef.mult ?? sizeRules().cold).replace(/^\w/, c => c.toUpperCase()) : 'Full', `last 15 signals ${fR(ef.sum_r)}`, ef.on === false && ef.enabled !== false ? 'wn' : 'up')}
       ${statBox('Eval · paper', ev ? susd(ev.profit) : '—', ev ? 'of the $3,000 target' : 'no eval data yet', ev ? cls(ev.profit) : '')}
       ${statBox('2026 backtest', y ? 'PF ' + fPF(y.pf) : '—', y ? `${kusd(y.net)} · ${kusd(perMonth(y.net, y.from, y.to))} a month · ${num(y.per_week, 1)}/wk` : 'no backtest in this build')}
     </div>
@@ -1708,7 +1734,8 @@ VIEWS.today = (el) => {
     <div class="grid g2">
       <div class="card"><div class="card-h"><h3>Latest engine signals</h3><span class="meta">the cloud engine’s 20-day window</span></div>${sigList(lv.engine_trades)}</div>
       ${labTeaser()}
-    </div>`;
+    </div>
+    ${lit ? shadowCard() : ''}`;
   liveChart($('#tdChart'), 220, 120);
   fx3d('today-orb', $('#tdOrb'), 'orb', { bars: (lv.bars || []).slice(-12), pools: lv.pools || [], price: lv.price, mood: moodNow() });
   fxFill('today-reactor', 'reactor', RD, {}, (fb) => reactorFb(fb, RD));
@@ -1749,12 +1776,13 @@ const pf1 = (v) => !ok(v) ? '—' : pct(v <= 1 ? v * 100 : v);
 function timingCard(T, compact = false) {
   if (!T || !T.verdict) return '';
   const go = String(T.verdict).toLowerCase() === 'go', k = go ? 'go' : 'wait';
+  const litT = T.model === 'lit' || T.state === 'lit';
   const badge = !go ? 'WAIT' : T.state === 'warmed' ? 'GO · BEST' : T.state === 'stale' ? 'GO · LATE' : 'GO';
-  const head = !go ? 'Wait for the cold streak to end' : T.state === 'warmed' ? 'The best moment to buy or reset the MFFU eval' : T.state === 'stale' ? 'OK to buy or reset the eval, but the odds are lower this far into a full-size run' : 'A good time to buy or reset the MFFU eval';
+  const head = litT ? 'Any session is a fine start for the MFFU eval' : !go ? 'Wait for the cold streak to end' : T.state === 'warmed' ? 'The best moment to buy or reset the MFFU eval' : T.state === 'stale' ? 'OK to buy or reset the eval, but the odds are lower this far into a full-size run' : 'A good time to buy or reset the MFFU eval';
   const nums = `<div class="kv tn"><div><span>Pass in 1 month</span><b class="up">${pf1(T.pass_1m)}</b></div><div><span>Fail in 1 month</span><b class="dn">${pf1(T.fail_1m)}</b></div><div><span>Median to pass</span><b>${ok(T.median_pass) ? Math.round(T.median_pass) + ' sessions' : '—'}</b></div></div>`;
   if (compact) return `<div class="ownr ${k}" style="border-color:color-mix(in srgb, var(--${go ? 'good' : 'warn'}) 35%, transparent)"><span class="vb ${k}" style="height:34px;min-width:0;font-size:13px;padding:0 10px;border-radius:10px">${badge}</span><span><b>Eval timing now:</b> ${esc(T.reason || '')} Pass within 1 month ${pf1(T.pass_1m)}, fail ${pf1(T.fail_1m)}, median ${ok(T.median_pass) ? Math.round(T.median_pass) : '—'} sessions${ok(T.pass_2w) ? ` · within 2 weeks ${pf1(T.pass_2w)} / ${pf1(T.fail_2w)}` : ''}.</span></div>`;
   return `<div class="card ${k}"><div class="tl"><span class="vb ${k}">${badge}</span>
-    <div class="tl-main"><div class="eyebrow">Eval timing · cold-streak filter shows ${T.state === 'cold' ? 'reduced size (cold streak)' : 'full size'}${ok(T.since_flip) ? ` · ${T.since_flip} sessions since it switched back` : ''}</div><h3>${head}</h3><p>${esc(T.reason || '')}${ok(T.funded_wk) ? ` Funded in about ${num(T.funded_wk, 0)} weeks (median) when it passes.` : ''}</p></div>${nums}</div></div>`;
+    <div class="tl-main"><div class="eyebrow">${litT ? `Eval odds · LIT 2026 backtest${T.run ? ' (run ' + esc(T.run) + ')' : ''} · no cold-streak filter` : `Eval timing · cold-streak filter shows ${T.state === 'cold' ? 'reduced size (cold streak)' : 'full size'}${ok(T.since_flip) ? ` · ${T.since_flip} sessions since it switched back` : ''}`}</div><h3>${head}</h3><p>${esc(T.reason || '')}${ok(T.funded_wk) ? ` Funded in about ${num(T.funded_wk, 0)} weeks (median) when it passes.` : ''}</p></div>${nums}</div></div>`;
 }
 // the next USD event as a Today chip (tap: the News page)
 function newsChip() {
@@ -2947,6 +2975,19 @@ VIEWS.eval = (el) => {
   lineChart($('#evC'), pts.length ? [{ x: 'start', y: 50000 }, ...pts] : [], { h: 200, fmt: (v) => '$' + (v / 1000).toFixed(1) + 'k', ref: 53000, empty: '<b>No paper trades yet.</b>The line starts at $50,000 with the cloud bot’s first trade.' });
 };
 VIEWS.cold = (el) => {
+  if (isLIT() && !el.dataset.oldCold) {
+    const wk = litWeek(), mon = litMonday(), L = D.strategy?.lit || {};
+    el.innerHTML = head('System · size rules', 'LIT has no cold-streak filter', `The live strategy is ${esc(stratName())}. Its size rule is the <b>weekly stop</b>; the cold-streak filter belongs to the old strategy, which runs as a paper shadow.`)
+      + `<div class="grid g2"><div class="card"><div class="eyebrow">Weekly stop · now</div>
+          <div style="margin:10px 0 14px"><b style="font-size:26px;font-weight:800" class="${wk && wk.mult < 1 ? 'wn' : 'up'}">${wk ? (wk.mult < 1 ? sizeWord(wk.mult).toUpperCase() + ' SIZE' : 'FULL SIZE') : 'FULL SIZE'}</b></div>
+          <div class="kv"><div><span>Stop-outs this week</span><b>${wk ? `${wk.stops} of ${wk.after}` : '—'}</b></div><div><span>Week</span><b>${esc(wk?.week || '—')}</b></div></div>
+          <p class="small mut" style="margin:10px 0 0">After ${L.wk_stop ? L.wk_stop[0] : 2} STOP exits in a calendar week (Mon–Fri), the rest of that week trades at ${L.wk_stop ? sizeWord(L.wk_stop[1]) : 'half'} size (rounded down once, at least 1 micro). Monday starts at full size again. Counted from the cloud paper ledger.</p></div>
+        <div class="card"><div class="eyebrow">Monday rule</div><div style="margin:10px 0 14px"><b style="font-size:22px;font-weight:800">${L.monday === false ? 'OFF' : esc(mon?.text || 'Applies on Mondays')}</b></div>
+          <p class="small mut">On Monday, once the session has taken Friday’s high, only shorts; once it has taken Friday’s low, only longs. A skipped setup leaves the day free for another.</p></div></div>
+        <div class="hero-links" style="margin-top:12px"><button class="chipbtn" type="button" id="oldCold">${icon('cold')}<span>The old strategy’s cold-streak filter</span></button></div>`;
+    $('#oldCold').onclick = () => { el.dataset.oldCold = '1'; VIEWS.cold(el); };
+    return;
+  }
   const c = D.cold || {}, cfg = c.config || {}, now = c.now || LV().equity_filter || {}, win = c.window || [], R = sizeRules(), lb = R.lb, thr = R.thr, word = sizeWord(R.cold);
   const T = [...(D.trades || [])].reverse(), roll = T.map((t, i) => ({ t, s: T.slice(Math.max(0, i - lb), i).reduce((a, x) => a + (x.r || 0), 0) })).filter(x => x.t.day.startsWith('2026'));
   const mx = Math.max(1, ...win.map(x => Math.abs(x.r))), pos = Math.max(2, Math.min(98, 50 + (now.sum_r || 0) / Math.max(6, Math.abs(now.sum_r || 0)) * 48));
@@ -2996,7 +3037,29 @@ function lockNoteHTML(t) {
   return esc(plainT).replace(/(?:research\/writeups\/)?([\w.-]+\.md)\b/g, (m, f) => { const slug = docByFile()[f], d = slug && allDocs().find(x => x.slug === slug);
     return d ? `<a class="lnk" href="${docLink(slug)}">${esc(d.title.split(':')[0])}</a>` : esc(f.replace(/\.md$/, '').replace(/[-_]/g, ' ')); });
 }
+function litStrategy(el) {
+  const S = D.strategy || {}, P = D.results?.periods || {}, L = S.lit || {}, name = stratName(), mode = (S.lit_sizing || {}).mode || 'normal';
+  const cols = [['2026', P['2026 YTD']], ['H1 (picked on)', P['2026 H1 (picked on)']], ['H2 (check)', P['2026 H2 (check)']], ['2021-25 (reference)', P['2021-25 (reference)']]].filter(([, p]) => p);
+  const ev = (p, k, w) => { const e = (p.eval || {})[w] || {}; return pct(e[k]); };
+  const rows = [['Trades a week', (p) => num(p.per_week, 1)], ['Profit factor', (p) => fPF(p.pf)], ['Net profit', (p) => susd(p.net)], ['Per month', (p) => susd(p.per_month ?? perMonth(p.net, p.from, p.to))],
+    ['Max drawdown', (p) => usd(p.max_dd)], ['Eval pass / fail in 2 weeks', (p) => `${ev(p, 'pass_pct', 'within_2_weeks')} / ${ev(p, 'fail_pct', 'within_2_weeks')}`],
+    ['Eval pass / fail in 1 month', (p) => `${ev(p, 'pass_pct', 'within_1_month')} / ${ev(p, 'fail_pct', 'within_1_month')}`]];
+  const r = md(S.rules_md || '');
+  el.innerHTML = head(`System · strategy${S.chosen ? ` · locked ${esc(fDate(S.chosen))}` : ''}`, esc(name), 'The exact rules the bot trades (STRATEGY.md), judged on 2026: picked on Jan–Jun, checked on Jul–Oct.',
+      `<button class="btn ghost" type="button" data-go="results">${icon('results')}Results</button>`)
+    + `<div class="card"><div class="card-h"><h3>Version</h3>${chip('locked', 'good')}</div><div class="kv one">
+        <div><span>Version</span><b>${esc(S.label || name)}</b></div><div><span>Locked on</span><b>${esc(fDate(S.chosen) || '—')}</b></div>
+        <div><span>Loss rules</span><b>Monday rule ${L.monday ? 'on' : 'off'} · weekly stop ${L.wk_stop ? `on (${L.wk_stop[0]} stop-outs → ${sizeWord(L.wk_stop[1])} size)` : 'off'}</b></div>
+        <div><span>Sizing mode</span><b>${esc(mode)}${mode === 'normal' ? ' (fast-eval / safe-eval switches off)' : ''}</b></div>
+        <div><span>Account</span><b>MFFU Builder 50K eval · paper only</b></div></div>
+        ${S.lock_note ? `<p class="lead" style="margin-top:12px">${lockNoteHTML(S.lock_note)}</p>` : ''}</div>
+    ${cols.length ? `${secH('How it has done')}<div class="card"><div class="card-h"><h3>LIT replay of these settings</h3><span class="meta">real CME NQ futures · costs included</span></div>
+      <div class="tw"><table class="ht"><tr><th>Number</th>${cols.map(([l]) => `<th class="c">${esc(l)}</th>`).join('')}</tr>${rows.map(([l, f]) => `<tr><td class="k">${l}</td>${cols.map(([, p]) => `<td class="v">${f(p)}</td>`).join('')}</tr>`).join('')}</table></div>
+      <p class="card-d" style="margin-top:10px">Expect the H2 rate, not the full-year rate: H1 was tuned, H2 was not. 2021-25 has no 1-minute data, so it is a reference line only.</p></div>` : ''}
+    ${secH('The rules, word for word')}<div class="card"><article class="md">${r.html || '<p class="mut">STRATEGY.md is not in this build.</p>'}</article></div>`;
+}
 VIEWS.strategy = (el) => {
+  if (isLIT() && D.strategy?.rules_md) { litStrategy(el); return; }
   const S = D.strategy || {}, pr = S.params || {}, R = sizeRules(), b = baseMeta(), prev = prevLock(), P = D.results?.periods || {};
   const label = S.label || D.sizing?.label || 'Liquidity Engine', chosen = S.chosen || D.sizing?.chosen || '';
   const name = label.split(' (')[0], rest = label.includes('(') ? label.slice(label.indexOf('(') + 1).replace(/\)\s*$/, '') : '';

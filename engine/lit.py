@@ -704,6 +704,11 @@ DEFAULTS = {
     "be_r": 1.0, "flat_mod": 955, "max_per_day": 1,
     # size (micros = $800 up to a 20-pt stop, then 800*20/stop, max 40; then these multipliers, floor 1 micro)
     "how_out": 1.0,              # multiplier when the sweep extreme is outside the high/low-of-week window (Tue 03:00-Wed 11:30)
+    # loss rules (research/writeups/lit-losses.md, run lit_loss_pack; both off by default so lit_final stays reproducible)
+    "monday": False,             # Monday rule: once Monday's session took Friday's high (PDH) only shorts, once it took Friday's
+                                 # low (PDL) only longs (both taken / neither: no rule); a skipped setup leaves the day free
+    "wk_stop": None,             # weekly stop [n, mult]: after n STOP exits in the calendar week (ISO week of the trading day,
+                                 # Mon-Fri) the rest of that week trades at mult x size (one rounding with how_out, floor 1 micro)
 }
 
 
@@ -927,6 +932,58 @@ def setup_ok(z, P, names=None):
     return True
 
 
+def monday_block(M: Market, z):
+    """Monday rule (lit_loss_pack): on a Monday trading day, True when the session (from 18:00 Sunday to the trigger bar) has
+    taken Friday's high but not its low and the setup is a long, or taken Friday's low but not its high and it is a short."""
+    x = M.ctx[z["k"]]
+    if x["dow"] != 0 or "pdh" not in x:
+        return False
+    s, i = x["s"], z["i"]
+    took_hi = bool(M.h[s:i + 1].max() > x["pdh"])
+    took_lo = bool(M.l[s:i + 1].min() < x["pdl"])
+    if took_hi == took_lo:
+        return False
+    return (took_hi and z["dir"] == 1) or (took_lo and z["dir"] == -1)
+
+
+def monday_state(M: Market, k, upto):
+    """Today's Monday rule for the dashboards: None (not Monday / no Friday levels), "both", "none", "high" (Friday's high
+    taken: shorts only) or "low" (Friday's low taken: longs only), seen by bar `upto`."""
+    x = M.ctx[k]
+    if x["dow"] != 0 or "pdh" not in x:
+        return None
+    s = x["s"]
+    if upto < s:
+        return "none"
+    hi = bool(M.h[s:upto + 1].max() > x["pdh"]); lo = bool(M.l[s:upto + 1].min() < x["pdl"])
+    return "both" if hi and lo else "high" if hi else "low" if lo else "none"
+
+
+def iso_week(day):
+    import datetime as _dt
+    return tuple(_dt.date.fromisoformat(str(day)).isocalendar()[:2])
+
+
+def week_stops(day, entry_t, own, week_hist=None):
+    """STOP exits in the ISO week of trading day `day` that finished by entry_t. own = this run's finished trades; week_hist =
+    the live ledger's rows ({"day", "exit" or "exit_reason", "exit_t"}): a day the ledger knows is counted from the ledger
+    (what was routed), every other day from the run's own trades (one trade a day, so no double count)."""
+    wk = iso_week(day)
+    ext = [r for r in (week_hist or []) if r.get("day") and iso_week(r["day"]) == wk]
+    ext_days = {r["day"] for r in ext}
+    n = 0
+    for r in ext:
+        ex = r.get("exit") or r.get("exit_reason")
+        xt = r.get("exit_t")
+        done = (int(xt) <= int(entry_t)) if isinstance(xt, (int, float, np.integer)) else (r["day"] < day)
+        n += ex == "STOP" and done
+    for t in own:
+        if t["day"] in ext_days or t.get("exit_t") is None or iso_week(t["day"]) != wk:
+            continue
+        n += t["exit"] == "STOP" and int(t["exit_t"]) <= int(entry_t)
+    return n
+
+
 def targets_x(M: Market, z, P):
     """Target distances from the market entry (direction space) per class, plus the VIX band class."""
     T = {c: z["targets"].get(c, []) for c in P["classes"] if c != "vix"}
@@ -945,16 +1002,17 @@ def run_x(M: Market, cands, P=None, sessions=None, B1=None, B5=None):
     return _run_core(M, cands, P, sessions, B1, B5, live=False)["trades"]
 
 
-def run_live(M: Market, cands, P=None, B1=None, B5=None):
+def run_live(M: Market, cands, P=None, B1=None, B5=None, week_hist=None):
     """run_x for the live loop (engine/lit_live.py) on a window that ends now. Returns {"trades": finished trades + at most
     one with exit "OPEN", "pending": setups whose limit is still working (or tapped, waiting for the 1m CISD), "signals":
     every setup that passed the filters and was sent to the executor (limit placed), with its plan}. A pending setup does
     not block a later one: whichever fills first is the day's trade (the backtest decides in setup order; the two differ
-    only when a later setup fills while an earlier limit is still working and that earlier limit fills afterwards)."""
-    return _run_core(M, cands, P, None, B1, B5, live=True)
+    only when a later setup fills while an earlier limit is still working and that earlier limit fills afterwards).
+    week_hist: the live ledger's finished trades of this week for the weekly stop (see week_stops); None = the run's own."""
+    return _run_core(M, cands, P, None, B1, B5, live=True, week_hist=week_hist)
 
 
-def _run_core(M: Market, cands, P, sessions, B1, B5, live):
+def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
     P = {**DEFAULTS, **(P or {})}
     names = set(P["sweep_names"]) if P.get("sweep_names") else None
     sset = set(sessions) if sessions else None
@@ -970,6 +1028,8 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live):
         if z["entry_i"] <= busy or per_day[z["day"]] >= P["max_per_day"]:
             continue
         if not setup_ok(z, P, names):
+            continue
+        if P.get("monday") and monday_block(M, z):
             continue
         ep = min(float(z["ref_d"]), z["trig_c"])
         stop = z["ext_d"] - buf
@@ -1015,8 +1075,17 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live):
             continue
         busy = t["exit_i"]; per_day[z["day"]] += 1
         m = P["how_out"] if (P["how_out"] != 1.0 and not z["how"]) else 1.0
+        why = ["outside the high/low-of-week window x%g" % m] if m != 1.0 else []
+        if P.get("wk_stop"):
+            n_st, m_st = P["wk_stop"]
+            ws = week_stops(z["day"], t["entry_t"], out, week_hist)
+            if ws >= n_st:
+                m *= float(m_st)
+                why.append(f"weekly stop: {ws} stop-outs this week x{float(m_st):g}")
         if m != 1.0:
             t = scale_trade(t, m)
+            t["size_mult"] = round(m, 6)
+            t["size_why"] = why
         if live:
             t["target_label"] = signals[-1]["target_label"]
             t["sweep_ext"] = signals[-1]["sweep_ext"]
@@ -1024,4 +1093,11 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live):
     if not live:
         return {"trades": out}
     pending = [x for x in pending if per_day[x["day"]] < P["max_per_day"] and busy < 10 ** 12]
-    return {"trades": out, "pending": pending, "signals": signals}
+    week = None
+    if P.get("wk_stop") and M.n:
+        today = M.days[-1][0]
+        ws = week_stops(today, 10 ** 12, [t for t in out if t["exit"] != "OPEN"], week_hist)
+        week = {"week": "%d-W%02d" % iso_week(today), "stops": int(ws), "after": int(P["wk_stop"][0]),
+                "mult": float(P["wk_stop"][1]) if ws >= P["wk_stop"][0] else 1.0, "ledger_days": sorted({r["day"] for r in (week_hist or [])
+                                                                                                        if r.get("day") and iso_week(r["day"]) == iso_week(today)})}
+    return {"trades": out, "pending": pending, "signals": signals, "week": week}

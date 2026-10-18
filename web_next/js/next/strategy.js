@@ -4,6 +4,7 @@
 import { $, api, esc, fmt$, fmtS$, fmtN, cls } from '../util.js';
 import { icon } from './icons.js';
 import { results$ } from './datahub.js';
+import { md, litRulesMd } from './modpages.js';
 
 const fail = (el, e) => { el.innerHTML = `<div class="banner warn">Could not load the strategy: ${esc(e.message)}</div>`; };
 const pct = (v) => v == null ? '—' : fmtN(v, v < 10 ? 1 : 0) + '%';
@@ -52,6 +53,7 @@ async function show() {
   try { d = await api('/api/next/strategy'); } catch (e) { fail(el, e); return; }
   try { r = await results$(); } catch { r = null; }
   const lm = d.live_model || {}, p = lm.params || {}, ef = lm.equity_filter || {}, sz = lm.sizing || {};
+  if (lm.model === 'lit') { el.innerHTML = litPage(lm, d.markdown, r); return; }
   const risk = +(p.risk_usd ?? 800), ref = +(p.risk_ref_stop ?? 20), beTrend = p.be_at_r_trending ?? 3, perDay = p.max_trades_day ?? 1;
   const lb = ef.lookback ?? 15, thr = ef.min_sum_r ?? 0, coldMode = ef.cold_mode || 'half', coldSize = ef.cold_size ?? (coldMode === 'half' ? 0.5 : 0.25);
   const late = sz.late_mult ?? 0.5, press = sz.press;
@@ -114,6 +116,26 @@ async function show() {
       <div class="table-wrap"><table class="tbl"><tr><th>Year</th><th>Trades</th><th>/wk</th><th>PF</th><th>Net</th><th>$ / month</th><th>Max DD</th><th>Eval 2 wk</th><th>Eval 1 mo</th></tr>
       ${years.map(y => yearRow(y, P[y])).join('')}</table></div></div>` : ''}
     <div class="note">${esc(r.meta?.method || '')}</div>` : '<div class="banner warn">Results are not available: run <span class="mono">python tools/export_backtest.py</span> to rebuild research/lab/backtest_live.json.</div>'}`;
+}
+
+// LIT (live_model.json "model": "lit"): the rules are read from STRATEGY.md (its LIT part), the numbers from the replay
+function litPage(lm, markdown, r) {
+  const P = r?.periods || {}, L = lm.lit || {}, mode = (lm.lit_sizing || {}).mode || 'normal';
+  const cards = [['2026 YTD', 'This year (judged on)'], ['2026 H1 (picked on)', 'Jan–Jun 2026'], ['2026 H2 (check)', 'Jul–Oct 2026: expect this rate'],
+    ['2021-25 (reference)', 'Reference only (no 1m data)']].filter(([k]) => P[k]);
+  return `
+    <div class="nx-hero"><div><div class="nx-eyebrow">${icon('strategy')} Strategy · the rulebook${lm.locked ? ' · locked' : ''} · STRATEGY.md</div>
+      <h2>${esc((lm.label || 'LIT').split(' (')[0])}</h2>
+      <p class="muted">NQ futures as MNQ micros ($${PV} a point). Setups on 5-minute candles, entry and management on 1-minute candles, New York time. Judged on 2026 only (picked on Jan–Jun, checked on Jul–Oct).</p></div>
+      <div class="nx-hero-acts"><button class="btn ghost" data-goto="rules">${icon('rules')}Exact text</button><button class="btn ghost" data-goto="results">${icon('results')}Results</button></div></div>
+    <div class="card nx-glass nx-version"><div class="nx-version-h">${icon('check')}<div><b>Version ${esc(lm.chosen || '—')}</b><span class="muted small">${esc(lm.model)} · ${esc(lm.sym || 'NQ')} · ${lm.locked ? 'locked' : 'draft'}</span></div></div>
+      <p>${esc(lm.lock_note || 'No lock note.')}</p>
+      <p class="muted small">Loss rules: Monday rule <b>${L.monday ? 'on' : 'off'}</b> · weekly stop <b>${L.wk_stop ? `on (after ${L.wk_stop[0]} stop-outs in a week, ×${L.wk_stop[1]} size)` : 'off'}</b> · sizing mode <b>${esc(mode)}</b>${mode === 'normal' ? ' (fast_eval / safe_eval switches are off)' : ''}.</p></div>
+    ${r && cards.length ? `<div class="nx-eyebrow nx-sec">How it did · LIT replay, costs included · built ${esc(r.meta?.built || '')}</div>
+      <div class="grid cols-2 nx-sp-grid">${cards.map(([k, tag]) => periodCard(k, P[k], tag)).join('')}</div>` : ''}
+    <div class="nx-eyebrow nx-sec">The rules, word for word (STRATEGY.md)</div>
+    <div class="card nx-glass nx-md">${md(litRulesMd(markdown) || 'STRATEGY.md not found.')}</div>
+    ${r ? `<div class="note">${esc(r.meta?.method || '')}</div>` : ''}`;
 }
 
 export const strategy = { show };

@@ -1,5 +1,5 @@
 {
- "strategy": "lit_final",
+ "strategy": "lit_live (live_model.json)",
  "params": {
   "ref": "cisd",
   "extra_boxes": [],
@@ -35,26 +35,31 @@
   "be_r": 1.0,
   "flat_mod": 955,
   "max_per_day": 1,
-  "how_out": 1.0
+  "how_out": 1.0,
+  "monday": true,
+  "wk_stop": [
+   2,
+   0.5
+  ]
  },
  "sessions": 206,
- "backtest_trades": 127,
+ "backtest_trades": 120,
  "day_end": {
   "sessions": 206,
-  "backtest_trades": 127,
-  "matched_entries": 127,
-  "matched_exits_and_pnl": 127,
+  "backtest_trades": 120,
+  "matched_entries": 120,
+  "matched_exits_and_pnl": 120,
   "missing": [],
   "n_missing": 0,
   "extra": [],
   "n_extra": 0,
   "exit_differs": [],
-  "net_backtest": 38873.34,
-  "seconds": 58
+  "net_backtest": 41734.34,
+  "seconds": 80
  },
  "intraday": {
-  "trade_days": 127,
-  "polls": 10689,
+  "trade_days": 120,
+  "polls": 10041,
   "differences": [],
   "n_differences": 0,
   "known_differences": {
@@ -84,15 +89,15 @@
     }
    }
   },
-  "polls_with_matching_open_position": 3664,
+  "polls_with_matching_open_position": 3450,
   "trade_never_seen_open_or_closed": [],
   "delay_entry_to_first_poll_min": {
    "median": 1.0,
    "max": 3.0,
-   "within_1_min": 110,
-   "within_5_min": 127
+   "within_1_min": 102,
+   "within_5_min": 120
   },
-  "seconds": 2929
+  "seconds": 3470
  },
  "bot": {
   "sessions": [
@@ -141,7 +146,7 @@
      "side": "sell",
      "qty": 1,
      "stop": 30862.0,
-     "target": 30495.31,
+     "target": 30495.5,
      "t": 1791969903
     },
     "routed_exit": {
@@ -152,12 +157,12 @@
    }
   ],
   "last_model_state": "LIT: market closed (next session 18:00 ET; entries 02:00-15:30 ET)",
-  "poll_ms": 700,
+  "poll_ms": 908,
   "modify_routes": 0,
   "states_seen": [
    "LIT: market closed (next session 18:00 E"
   ],
   "ok": true
  },
- "seconds": 3622
+ "seconds": 4396
 }

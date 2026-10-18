@@ -61,6 +61,12 @@ function buildModules() {
   // live badges
   fetch('/api/next/cold').then(r => r.ok ? r.json() : null).then(d => {
     const b = $('#nxBadge-cold'); if (!b || !d?.now) return;
+    if (d.model === 'lit') {                  // LIT has no cold-streak filter: the badge shows its weekly stop
+      const w = d.lit_rules?.weekly_stop;
+      b.className = 'nx-tile-b ' + (w && w.mult < 1 ? 'warn' : 'good');
+      b.textContent = w ? (w.mult < 1 ? 'weekly stop: half' : `weekly stop ${w.stops}/${w.after}`) : 'LIT: weekly stop';
+      return;
+    }
     b.className = 'nx-tile-b ' + (d.now.on ? 'good' : 'warn');
     b.textContent = !d.now.enabled ? 'off' : d.now.on ? 'full size' : 'half size';
   }).catch(() => null);

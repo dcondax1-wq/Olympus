@@ -254,7 +254,7 @@ def _report_lit(t, strategy):
              f"limit tapped, then a 1m CISD: market entry at the next {t['trigger_tf']} open + 1 tick")
     plan = (f"{entry}. Stop {t['stop']:,.2f}, 1 tick beyond the sweep extreme ({t['risk_pts']:.2f} pts) -> {t['qty']} micros, "
             f"${t['risk_usd']:,.0f} at risk; target {t['target']:,.2f} ({t['target_label']}, {t['plan_rr']:.2f}R); breakeven at 1R, "
-            "flat at 15:55 ET")
+            "flat at 15:55 ET" + (f" ({'; '.join(t['size_why'])})" if t.get("size_why") else ""))
     mfe = t.get("mfe") or 0.0
     res = (f"{t['exit']} at {_et(t['exit_t']):%H:%M} after {t.get('bars_held') or '?'} {t['trigger_tf']} bars: {t['r']:+.2f}R, "
            f"${t['pnl']:+,.0f}; best point +{mfe:.2f}R")
@@ -361,7 +361,10 @@ def main_lit(lm):
              "htf_trend": None, "m15_trend": None, "pd_pos": None, "open_loc": None, "mfe": t.get("mfe"), "bars_held": t.get("bars_held"),
              "checklist": [], "trigger_tf": f"{t.get('tf', 5)}m", "score": None, "smc": {},
              "depth_atr": z["depth_atr"], "disp": z["disp"], "idm_n": sum(1 for dd, aa in z["idm_a"] if dd <= (P["idm_a"] or [9, 999])[0] and aa <= (P["idm_a"] or [9, 999])[1]),
-             "how": bool(z["how"]), "cisd_level": round(float(z["ref_d"]) * d, 2), "entry_kind": "limit" if fill_limit else "1m CISD"}
+             "how": bool(z["how"]), "cisd_level": round(float(z["ref_d"]) * d, 2), "entry_kind": "limit" if fill_limit else "1m CISD",
+             "size_why": t.get("size_why") or [], "weekly_stop": any("weekly stop" in w for w in (t.get("size_why") or []))}
+        if x["weekly_stop"]:
+            x["conf_tags"].append("weekly stop: half size")
         x["report"] = _report_lit(x, label)
         trades.append(x)
     by = collections.defaultdict(list)
@@ -407,7 +410,11 @@ def main_lit(lm):
                                     "(data/NQ_1m.csv) for the entry and trade management; VIX daily (data/VIX_1d.csv)",
                           "first_session": first, "last_session": last, "sessions": len(sess), "bars": int(len(nq.t))},
                  "costs": {"instrument": "MNQ micro ($2/pt)", "commission_round_trip_per_micro": lit.COMM, "slippage_pts": lit.SLIP},
-                 "sizing": {"rule": lm.get("size_rule"), "eval_safe_option": lm.get("eval_safe_option")},
+                 "sizing": {"rule": lm.get("size_rule"), "eval_safe_option": lm.get("eval_safe_option"),
+                            "lit_sizing": lm.get("lit_sizing")},
+                 "loss_rules": {"monday": bool(P.get("monday")), "wk_stop": P.get("wk_stop"),
+                                "text": "Monday rule: once Monday took Friday's high only shorts, once it took Friday's low only longs; "
+                                        "weekly stop: after 2 stop-outs in a calendar week, half size for the rest of it"},
                  "method": "LIT replay (engine/lit.py run_x, every value known at the close of its bar). The live loop runs the same "
                            "code on the recent bars (engine/lit_live.py): tests/test_lit_live.py replays every 2026 session and gets the "
                            "same trades. 2026 days with full 1m bars enter and are managed on 1m bars; 2021-25 (no 1m data) on 5m bars, "

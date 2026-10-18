@@ -12,6 +12,7 @@ extra, default-off options; with none set it reproduces lit_final trade for trad
   python tools/lit_losses.py rules       # rule search (pick H1, check H2)   -> research/lit/losses_rules.json
   python tools/lit_losses.py tf          # timeframes (5m/15m setup, 1m/3m entry, 1H/4H bias, top-down, adaptive)
   python tools/lit_losses.py save        # store the adopt candidates as runs lit_loss_* (family other, tag lit)
+  python tools/lit_losses.py live        # the adopted pack as engine options (live_model.json lit) -> run lit_live
 1 CPU process.
 """
 from __future__ import annotations
@@ -1383,7 +1384,35 @@ def save():
         print("saved", rid, F.fmt(o), flush=True)
 
 
+def save_live():
+    """The adopted pack inside the engine (engine/lit.py options "monday" + "wk_stop", live_model.json "lit"): checks it
+    equals build(lit_loss_pack) trade for trade and stores it as run lit_live (the live LIT settings)."""
+    lm = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))
+    P = {**lit.DEFAULTS, **lm["lit"]}
+    T = F.run(P)
+    ref = build({"monday": True, "wk_stop": (2, 0.5)})
+    ka = [(t["day"], t["entry_t"], round(t["pnl"], 2), t["exit"], t["qty"]) for t in T]
+    kb = [(t["day"], t["entry_t"], round(t["pnl"], 2), t["exit"], t["qty"]) for t in sorted(ref, key=lambda t: t["entry_t"])]
+    same = ka == kb
+    print("engine options == build(lit_loss_pack):", same, len(ka), len(kb), flush=True)
+    if not same:
+        raise SystemExit("the engine options do not reproduce lit_loss_pack")
+    S = rl.score(T, F.SESS)
+    o = F.score(T)
+    h = lambda s: (f"n={s['n']} {s['tpw']}/wk win {s['win']}% PF {s['pf']} net {s['net']:+,} (${s['per_month']:,}/mo) DD {s['dd']:,} "
+                   f"eval 2wk {s['p10']}/{s['f10']} 1mo {s['p20']}/{s['f20']} pass rate {s['pass_rate']}%")
+    clean = [{k: v for k, v in t.items() if not k.startswith("_") and k not in ("size_why", "size_mult")} for t in T]
+    rl.save("lit_live", "LIT live: lit_final + loss pack (Monday rule, weekly stop) as engine options", "other",
+            "The live LIT settings (live_model.json, 2026-10-18): the adopted loss pack inside engine/lit.py",
+            params=P, trades=clean, scored=S, status="adopt-candidate",
+            verdict=f"ADOPTED 2026-10-18 (the live LIT). 2026 H1 (pick) {h(o['H1'])}; 2026 H2 (check) {h(o['H2'])}; 2026 {h(o['2026'])}; 2021-25 reference only {h(o['2021-25'])}",
+            notes="engine/lit.py run_x with monday=True, wk_stop=[2, 0.5] (live_model.json lit); identical to lit_loss_pack "
+                  "(tools/lit_losses.py build) trade for trade. The live loop (engine/lit_live.py) runs the same code: "
+                  "tests/test_lit_live.py.", writeup="lit-losses", tags=["lit", "lit_loss", "live"])
+    print("saved lit_live", F.fmt(o), flush=True)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     {"check": check, "anatomy": anatomy, "rules": rules, "refine": refine, "combos": combos, "tf": tf, "tf_relaxed": tf_relaxed,
-     "masters": masters, "reim": reim, "save": save}[cmd]()
+     "masters": masters, "reim": reim, "save": save, "live": save_live}[cmd]()

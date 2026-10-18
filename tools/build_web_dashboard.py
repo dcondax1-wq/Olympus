@@ -274,6 +274,16 @@ def _date(title, body):
     return ""
 
 
+def _lit_rules_md():
+    try:
+        with open(os.path.join(ROOT, "STRATEGY.md"), encoding="utf-8") as fh:
+            text = fh.read()
+    except OSError:
+        return None
+    m = re.search(r"^## Previous strategy", text, re.M)
+    return text[:m.start()].rstrip() + "\n" if m else text
+
+
 def _strategy_lines():
     try:
         with open(os.path.join(ROOT, "STRATEGY.md"), encoding="utf-8") as fh:
@@ -389,7 +399,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     ledger = sorted((st.get("ledger") or {}).values(), key=lambda v: (v.get("day", ""), v.get("entry", "")), reverse=True)
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
                                    "equity_filter", "eval_timing", "price", "today", "events", "engine_trades", "bars", "pools", "pc",
-                                   "model", "shadow")}
+                                   "model", "shadow", "lit_rules", "lit_sizing")}
     live["ledger"] = ledger[:200]
     results = None
     if bt:
@@ -418,7 +428,10 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                    "max_trades_day": (lm.get("params") or {}).get("max_trades_day"), "label": lm.get("label"), "chosen": lm.get("chosen")},
         # the locked strategy for the Strategy page: label, lock date + note, the settings that differ from the engine defaults,
         # the cold-streak filter (cold_size) and the extra size rules (sizing: late_mult, press)
-        "strategy": {k: lm.get(k) for k in ("label", "chosen", "locked", "lock_note", "model", "sym", "params", "equity_filter", "sizing")},
+        "strategy": {**{k: lm.get(k) for k in ("label", "chosen", "locked", "lock_note", "model", "sym", "params", "equity_filter", "sizing",
+                                               "lit", "lit_sizing", "size_rule")},
+                     # LIT: the rules word for word (the LIT part of STRATEGY.md, before "## Previous strategy") for the Strategy page
+                     "rules_md": _lit_rules_md() if lm.get("model") == "lit" else None},
         "lab": lab,
         "docs": docs,
     }

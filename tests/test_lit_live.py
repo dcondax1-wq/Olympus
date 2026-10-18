@@ -5,6 +5,9 @@ backtest (tools/lit_final.py run = engine/lit.py run_x on the whole history), on
     python -X utf8 -m tests.test_lit_live --days       # day-end replay only (~1 min)
     python -X utf8 -m tests.test_lit_live --w20        # also: the engine's plain 20-day window (shows why LIT needs more)
     python -X utf8 -m tests.test_lit_live --days --bot  # day-end replay + the LiveBot (paper) check only
+    python -X utf8 -m tests.test_lit_live --final       # the lit_final params instead of live_model.json "lit" (loss pack on)
+    python -X utf8 -m tests.test_lit_live --days --bot --bot-sessions=2026-10-06,2026-10-07,2026-10-08
+                                                        # the LiveBot on a weekly-stop week (2 stop-outs, then half size)
 
 1. Day-end replay: for every 2026 session the adapter sees only the bars up to that session's close (5m from
    data/NQ_5m.csv, 1m from data/NQ_1m.csv as the research cleaned it) and must report that day's backtest trade exactly
@@ -45,6 +48,7 @@ KNOWN = {"2026-04-03": "Good Friday (09:15 close): the backtest runs the day on 
                        "bar so far, enters on 1m (24,716.75, 3 micros, 3 min earlier than the backtest's 5m fill at 24,714.25, "
                        "4 micros) and only switches to the backtest's trade once the day's cover drops."}
 FINAL = os.path.join(ROOT, "research", "lit", "lit_final.json")
+LIVE = os.path.join(ROOT, "live_model.json")          # the live LIT params (lit_final + the loss pack: Monday rule, weekly stop)
 
 
 def day_close(d: str) -> int:
@@ -77,6 +81,7 @@ def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15")):
     (tests/test_live_dryrun.Replay). Polls at every 5m close (every minute from 10 min before to 5 min after each entry).
     The bot reads the raw data/NQ_1m.csv like a feed (engine/lit_live.feed_1m), not the research-cleaned 1m."""
     from tests.test_live_dryrun import Replay
+    from engine.live import tick_px
     os.environ["LE_LIVE_MODEL"] = json.dumps({"model": "lit", "sym": "NQ", "label": "LIT test", "lit": P,
                                               "params": {"risk_usd": 800, "risk_ref_stop": 20.0, "max_micros": 40}})
     rp = Replay()
@@ -101,8 +106,9 @@ def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15")):
         rows = []
         for t in want:
             e, x = ent.get(int(t["entry_t"])), exi.get(int(t["entry_t"]))
+            # the bot routes tick prices (engine/live.tick_px): stop to the nearest tick, the VIX-band target toward the entry
             eo = e is not None and e["side"] == ("buy" if t["dir"] == 1 else "sell") and e["qty"] == t["qty"] and \
-                abs(e["stop"] - t["stop_px"]) < 1e-6 and abs(e["target"] - t["target_px"]) < 1e-6
+                abs(e["stop"] - tick_px(t["stop_px"], t["dir"])) < 1e-6 and abs(e["target"] - tick_px(t["target_px"], t["dir"], target=True)) < 1e-6
             xo = x is not None and x["reason"] == ("TIME" if t["exit"] == "EOD" else t["exit"]) and abs(x["pnl"] - t["pnl"]) < 0.01
             e_ok += eo; x_ok += xo
             rows.append({"entry": int(t["entry_t"]), "want": [t["dir"], t["qty"], t["exit"], t["pnl"]],
@@ -124,7 +130,8 @@ def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15")):
 
 def main():
     t_all = time.time()
-    P = json.load(open(FINAL, encoding="utf-8"))["params"]
+    # --final: the lit_final params (no loss pack); default: live_model.json "lit" (what the bots trade)
+    P = json.load(open(FINAL, encoding="utf-8"))["params"] if "--final" in sys.argv else json.load(open(LIVE, encoding="utf-8"))["lit"]
     from tools import lit_final as F
     REF = [t for t in F.run(P) if t["day"] >= "2026-01-01"]
     sess = [d for d in F.SESS if d >= "2026-01-01"]
@@ -136,7 +143,7 @@ def main():
     b1, _ = load_ltf("NQ", load("NQ", "5m"))
     b1 = b1.slice(int(np.searchsorted(b1.t, int(df5["time"].min()))), len(b1))
     T5 = df5["time"].values
-    out = {"strategy": "lit_final", "params": P, "sessions": len(sess), "backtest_trades": len(REF)}
+    out = {"strategy": "lit_final" if "--final" in sys.argv else "lit_live (live_model.json)", "params": P, "sessions": len(sess), "backtest_trades": len(REF)}
 
     def poll(now, window_days=None):
         cut5 = df5.iloc[:int(np.searchsorted(T5 + 300, now, side="right"))]
@@ -246,7 +253,8 @@ def main():
               f"(max {out['intraday']['delay_entry_to_first_poll_min']['max']}) in {out['intraday']['seconds']}s", flush=True)
     # ---- 3. the PC paper bot itself (engine/live.py LiveBot + PaperAdapter) on LIT, fed bar by bar
     if "--bot" in sys.argv or ("--days" not in sys.argv and "--nobot" not in sys.argv):
-        out["bot"] = bot_replay(P, by_day)
+        bs = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--bot-sessions=")), None)
+        out["bot"] = bot_replay(P, by_day, tuple(bs)) if bs else bot_replay(P, by_day)
         b = out["bot"]
         print(f"LiveBot (paper) on LIT, sessions {b['sessions']}: {b['polls']} polls, routed entries {b['entries_ok']}/{b['want']} "
               f"exits {b['exits_ok']}/{b['want']}, extra routes {b['extra']}, not-routed log lines {len(b['not_routed'])}, "

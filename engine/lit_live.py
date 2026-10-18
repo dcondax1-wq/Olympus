@@ -38,6 +38,34 @@ LBL = {"asia20": "Asia", "asia18": "Asia 18-00", "asia19": "Tokyo", "lon25": "Lo
 STRENGTH = {"pd": 3, "pw": 3, "pm": 3, "gap": 2, "asia": 2, "london": 2, "ny": 2, "pre": 2, "x_ny": 2, "buildup": 1}
 
 
+def eval_odds(root: str | None = None) -> dict:
+    """MFFU 50K eval odds of the live LIT from its stored 2026 run (research/runs/lit_live.json = live_model.json "lit" with
+    the loss pack; lit_final.json before it existed), in eval_timing's fields. LIT has no cold-streak filter, so the
+    verdict is always go: any session is as good a start as another in the backtest."""
+    import json
+    import os
+    root = root or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    out = {"model": "lit", "verdict": "go", "state": "lit", "since_flip": None, "funded_wk": None,
+           "pass_2w": None, "fail_2w": None, "pass_1m": None, "fail_1m": None, "median_pass": None, "run": None}
+    for rid in ("lit_live", "lit_final"):
+        p = os.path.join(root, "research", "runs", rid + ".json")
+        if not os.path.exists(p):
+            continue
+        try:
+            with open(p, encoding="utf-8") as fh:
+                sp = json.load(fh)["spans"]["2026"]
+        except Exception:
+            continue
+        out.update(pass_2w=round(sp["p10"] / 100, 3), fail_2w=round(sp["f10"] / 100, 3), pass_1m=round(sp["p20"] / 100, 3),
+                   fail_1m=round(sp["f20"] / 100, 3), median_pass=sp.get("pass_med"), pass_rate=sp.get("pass_rate"), run=rid,
+                   reason=f"LIT has no cold-streak filter: any session is a fine start. Odds from the LIT 2026 backtest (run {rid}: "
+                          f"tuned on Jan-Jun, Jul-Oct was weaker)")
+        break
+    else:
+        out["reason"] = "LIT has no cold-streak filter; no stored LIT run for the odds"
+    return out
+
+
 def _et(t):
     return dt.datetime.fromtimestamp(int(t), ET)
 
@@ -95,7 +123,11 @@ def _slice_bars(b: Bars, t_from: int) -> Bars:
     return b.slice(a, len(b))
 
 
-def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | None = None, sym: str = "NQ") -> dict:
+def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | None = None, sym: str = "NQ",
+        week_hist: list | None = None) -> dict:
+    """week_hist: the caller's ledger of this week's finished trades ({"day", "exit", "exit_t"}) for the weekly stop
+    ("wk_stop"): the cloud monitor's LIT ledger, the PC bot's routed exits; a day it does not cover counts the model's own
+    trade (engine/lit.py week_stops)."""
     P = {**lit.DEFAULTS, **(params or {})}
     df5 = _clean5(df5)
     if not len(df5):
@@ -119,7 +151,7 @@ def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | 
         # not re-simulated on 5m (that would invent a different trade for a day that was traded on 1m), so they drop out.
         k1 = min(B1.full)
         C = [z for z in C if z["k"] >= k1]
-    R = lit.run_live(M, C, P, B1=B1, B5=B5)
+    R = lit.run_live(M, C, P, B1=B1, B5=B5, week_hist=week_hist)
     now = int(now) if now is not None else last_t + 300
     return _shape(M, R, P, now, B1)
 
@@ -153,7 +185,8 @@ def _trade(t):
             "pnl": float(t["pnl"]), "pnl_r": float(t["r"]), "exit_reason": reason, "trigger": "LIT", "grade": "", "day": t["day"],
             "risk_pts": float(t["risk_pts"]), "risk_usd": float(t["risk_usd"]), "target_label": t.get("target_label"),
             "swept": _sweep_names(t.get("swept")), "sweep_ext": t.get("sweep_ext"), "tf": f"{t.get('tf', 5)}m",
-            "mfe": t.get("mfe"), "bars_held": t.get("bars_held"), "entry_kind": "limit" if t.get("limit_fill") else "1m CISD"}
+            "mfe": t.get("mfe"), "bars_held": t.get("bars_held"), "entry_kind": "limit" if t.get("limit_fill") else "1m CISD",
+            "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or []}
 
 
 def _levels(M, k, upto):
@@ -269,14 +302,16 @@ def _shape(M, R, P, now, B1):
         kind = "limit" if t.get("limit_fill") else "1m CISD"
         events.append({"t": int(t["entry_t"]), "type": "entry", "dir": int(t["dir"]),
                        "text": f"{side} LIT @ {t['entry_px']:,.2f} stop {t['stop_px']:,.2f} target {t['target_px']:,.2f} qty {t['qty']} "
-                               f"({kind} entry, {t.get('tf', 5)}m bars)"})
+                               f"({kind} entry, {t.get('tf', 5)}m bars)"
+                               + (f" - {'; '.join(t['size_why'])}" if t.get("size_why") else "")})
         if t["exit"] == "OPEN" and _session_over(t["day"], now, int(M.t[M.n - 1]) + 300):
             t = _close_at_session_end(t)       # early-close holiday: the backtest exits at the day's last bar
         if t["exit"] == "OPEN":
             position = {"entry_t": int(t["entry_t"]), "dir": int(t["dir"]), "qty": int(t["qty"]), "stop": float(t["stop_now"]),
                         "stop0": float(t["stop_px"]), "target": float(t["target_px"]), "entry": float(t["entry_px"]), "setup": "LIT",
                         "trigger": "LIT", "risk_pts": float(t["risk_pts"]), "be": bool(t.get("be_done")),
-                        "unrealized": float(t["pnl"]), "unrealized_r": float(t["r"]), "target_label": t.get("target_label")}
+                        "unrealized": float(t["pnl"]), "unrealized_r": float(t["r"]), "target_label": t.get("target_label"),
+                        "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or []}
             continue
         tr = _trade(t)
         trades.append(tr)
@@ -333,7 +368,22 @@ def _shape(M, R, P, now, B1):
         ms = "LIT: waiting for London sweep (entries from 02:00 ET)"
     else:
         ms = "LIT: watching for a sweep + inducement + CISD (entries until 15:30 ET)"
-    state = {"model": "lit", "model_state": ms, "position": position, "setups": setups, "active_pools": _levels(M, k, last),
+    mon = lit.monday_state(M, k, last) if P.get("monday") else None
+    if mon in ("high", "low") and not position and not (len(day_tr) >= P["max_per_day"] and str(trading_date(now)) == today):
+        ms += f" | Monday rule: Friday's {mon} taken, {'shorts' if mon == 'high' else 'longs'} only"
+    rules = {"monday": {"on": bool(P.get("monday")), "today": mon,
+                        "text": (None if mon is None else
+                                 "Monday: Friday's high taken - shorts only" if mon == "high" else
+                                 "Monday: Friday's low taken - longs only" if mon == "low" else
+                                 "Monday: Friday's high and low both taken - no side rule" if mon == "both" else
+                                 "Monday: Friday's high/low not taken yet - both sides")},
+             "weekly_stop": None}
+    if R.get("week"):
+        w = R["week"]
+        rules["weekly_stop"] = {**w, "on": True,
+                                "text": (f"weekly stop ON: {w['stops']} stop-outs this week, {w['mult']:g}x size for the rest of the week"
+                                         if w["mult"] < 1 else f"{w['stops']} of {w['after']} stop-outs this week: full size")}
+    state = {"model": "lit", "model_state": ms, "lit_rules": rules, "position": position, "setups": setups, "active_pools": _levels(M, k, last),
              "session": sess, "price": price, "t": int(M.t[last]), "day_trades": len(day_tr),
              "day_pnl": round(sum(t["pnl"] for t in day_tr), 2),
              "lit": {"today": today, "open18": x.get("open18"), "vix": round(x["vix"], 2) if x.get("vix") else None, "vix_move": round(x["vix_move"], 2) if x.get("vix_move") else None,

@@ -4,7 +4,7 @@ stop, target) that exists at that bar is the same as with the full data.
 The cut bar N is kept only as a just-opened bar (high = low = close = open, volume 0), so a setup whose entry bar is N may
 use N's open but nothing else from it. Compared per setup: every field candidates() returns (sweep, extreme, CISD level,
 inducement, displacement, targets, PO3, VIX room, high/low-of-week flag, ...), plus the run_live signal (limit / stop /
-target) for the lit_final parameters on 5m bars.
+target) for the live LIT parameters (live_model.json "lit", loss pack on; --final: lit_final) on 5m bars.
 
   python -X utf8 -m tests.test_lit_lookahead            # 30 cuts (half of them on 2026 entry bars), about 3 minutes
   python -X utf8 -m tests.test_lit_lookahead --cuts 8   # quicker
@@ -40,8 +40,10 @@ def _norm(z):
     return json.dumps(z, sort_keys=True, default=str)
 
 
-def main(cuts=30, seed=7):
-    params = json.load(open(os.path.join(ROOT, "research", "lit", "lit_final.json")))["params"]
+def main(cuts=30, seed=7, final=False):
+    # the live LIT params (live_model.json "lit": lit_final + the loss pack's Monday rule and weekly stop); --final: lit_final
+    params = json.load(open(os.path.join(ROOT, "research", "lit", "lit_final.json")))["params"] if final else \
+        json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]
     P = {**lit.DEFAULTS, **params, "tf": "5m"}
     full = load("NQ", "5m")
     a = int(np.searchsorted(np.array(full.date_str), START))
@@ -89,4 +91,5 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--cuts", type=int, default=30)
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--final", action="store_true", help="the lit_final params instead of live_model.json lit")
     sys.exit(0 if main(**vars(ap.parse_args())) else 1)

@@ -6,7 +6,7 @@ through each session bar by bar with the trade's sweep, entry, stop, target and 
 
   python tools/export_replays.py                 # 2026 trade days (default)
   python tools/export_replays.py --since 2025-01-01
-Bars run 07:00-16:00 ET. Prices are stored as integer quarter-points to keep the file small.
+Bars run 07:00-16:00 ET (01:00-16:00 when a trade enters before 07:00, as LIT's London trades do). Prices are stored as integer quarter-points to keep the file small.
 """
 from __future__ import annotations
 
@@ -29,6 +29,9 @@ def main(since: str) -> None:
         trades = [t for t in json.load(fh)["trades"] if t["day"] >= since]
     days = {t["day"] for t in trades}
     by_day: dict = {d: [] for d in days}
+    # the old engine trades New York only (bars from 07:00); LIT enters from 02:00 ET, so its replays start at 01:00
+    early = any(dt.datetime.fromtimestamp(int(t["entry_t"]), ET).hour < 7 for t in trades)
+    a0 = 60 if early else 420
     with open(BARS, encoding="utf-8") as fh:
         for row in csv.DictReader(fh):
             t = int(float(row["time"]))
@@ -37,7 +40,7 @@ def main(since: str) -> None:
             if d not in by_day:
                 continue
             mod = e.hour * 60 + e.minute
-            if 420 <= mod < 960:
+            if a0 <= mod < 960:
                 by_day[d].append([t] + [round(float(row[k]) * 4) for k in ("open", "high", "low", "close")])
     out = []
     for t in sorted(trades, key=lambda x: x["entry_t"]):

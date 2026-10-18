@@ -37,12 +37,17 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   -> next 1m open; stop 1 tick beyond the sweep extreme (planned 8-80 pts; the 1m fill can widen it to ~88); target 18:00 open +/- 1 VIX one-day move, >= 1.5R, banked
   at 8R; BE at 1R, flat 15:55, 1 trade/day, entries 02:00-15:30. Size $800 up to 20 pts, 800x20/stop, max 40 micros; no
   cold-streak filter. Eval-safe switch (off): `how_out 0.5`.
-- **Results** (costs in): 2026 127 trades, 3.08/wk, PF 3.06, +$38,873 ($3,963/mo), DD -$3,097, pass rate 79.9%;
-  H1 (picked) PF 3.55 +$30,661; **H2 (check) PF 2.19 +$8,212 (~$2,200/mo): quote the H2 rate**; 2021-25 reference PF 1.03
-  +$3,806 DD -$20,695 (no 1m data there). Needs 1m bars (5m only: +$6.6k in 2026). 100 of 127 trades enter 02:00-08:00 ET.
+- **Loss pack (on, 2026-10-18, `research/writeups/lit-losses.md`):** weekly stop (after 2 stop-outs in a calendar week, half
+  size for the rest of it: `wk_stop`) and the Monday rule (once Monday took Friday's high only shorts, Friday's low only longs:
+  `monday`). Sizing switch `lit_sizing.mode` normal (default) | fast_eval ($800 up to a 40-pt stop) | safe_eval (micros capped
+  at 60% of the eval room); see `lit-experiments.md`.
+- **Results LIT + pack** (run `lit_live`, costs in): 2026 120 trades, 2.91/wk, win 26.7%, PF 3.66, +$41,734 ($4,254/mo),
+  DD -$2,315, eval 2 wk 26.7/1.9, 1 mo 55.3/3.9, pass rate 95.5%; H1 (picked) PF 4.44 +$32,773; **H2 (check) PF 2.46
+  +$8,962 (~$2,400/mo): quote the H2 rate**; 2021-25 reference PF 1.01 +$1,275 DD -$20,462 (no 1m data there). Needs 1m bars
+  (5m only: +$6.6k in 2026). 95 of 120 trades enter 02:00-08:00 ET: NinjaTrader and the PC must be running from ~01:55 ET.
 - **Live loop:** `engine/lit_live.py` (PC `engine/live.py`, cloud `tools/cloud_monitor.py`) on the bars from the previous
   month's first day + 1m bars (data/NQ_1m.csv + Yahoo NQ=F 1m, 7 days). `python -X utf8 -m tests.test_lit_live` replays every
-  2026 session through it (127/127 trades identical). `tools/export_backtest.py` exports the LIT replay when the model is lit.
+  2026 session through it (120/120 trades identical with the pack; `python tools/lit_losses.py live` stores run `lit_live`). `tools/export_backtest.py` exports the LIT replay when the model is lit.
 - **Shadow:** the cloud monitor also runs the old engine (`live_model_engine.json`) as a paper ledger, state key `shadow`,
   README "Old strategy (shadow, paper)", no alerts. The PC bot runs the old engine with `"model": "engine"` in its start cfg.
 - `tools/runlib.py`, `tools/pine_parity.py`, `tests/test_live_dryrun.py` read the engine lock from `live_model_engine.json`
@@ -120,7 +125,7 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   NinjaTrader's `incoming` folder (bracket entry, breakeven, flatten, kill) and reads fills/positions from `outgoing`;
   `ninjatrader/LE_BarFeed.cs` writes MNQ 5m bars to `le_feed\*.csv` (`data_source: "ninjatrader"`, falls back to Yahoo when
   stale). Sim accounts by default; a real account needs armed + the LIVE phrase + `NINJATRADER_LIVE=1`. Self-test:
-  `python -m engine.ninjatrader --selftest` (43 checks). Setup for a non-coder: `ninjatrader/SETUP.md`. Known gap: the
+  `python -m engine.ninjatrader --selftest` (50 checks; `LE_BarFeed.cs` also writes `le_feed\MNQ_1m.csv` for LIT, not yet compiled on a real install). Setup for a non-coder: `ninjatrader/SETUP.md`. Known gap: the
   Tradovate adapter never received breakeven moves or non-TIME exits (the NinjaTrader flags `route_all_exits`,
   `route_stop_moves` fix it; apply the same to Tradovate before ever using it).
 - **PC off, free:** `scripts/PC_OFF_OPTIONS.md` (A: TradingView brain + one tap on the phone; B: the PC wakes itself at 07:50 ET,
