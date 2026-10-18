@@ -672,15 +672,19 @@ def build(df5, now, params=None, live=None, prev=None, news=None, ev=None, clock
     k = len(M.days) - 1
     last = M.n - 1
     day = str(M.days[k][0])
+    nd = dt.date.fromisoformat(day_now)
+    while nd.weekday() >= 5:
+        nd += dt.timedelta(days=1)
+    day_now_txt = str(nd)
     if day != day_now:          # the new trading day has not printed a bar yet (evening / weekend): keep the last brief
         if prev.get("day") == day:
-            return {**prev, **base, "waiting": f"next session {day_now}"}
+            return {**prev, **base, "waiting": f"next session {day_now_txt}"}
         # no brief of the last session yet (first run, a gap): write it as of that session's end
         end = int(dt.datetime.combine(dt.date.fromisoformat(day), dt.time(17, 0), ET).timestamp())
         if end < now:
             b = build(df5, end, params, live, prev, news, ev, clock, lit_sizing, model_params, ledger_today, learning, sym, ledger)
-            return {**b, **base, "waiting": f"next session {day_now}"}
-        return {**prev, **base, "waiting": f"next session {day_now}"}
+            return {**b, **base, "waiting": f"next session {day_now_txt}"}
+        return {**prev, **base, "waiting": f"next session {day_now_txt}"}
     b = {**base, "day": day, "waiting": None}
     if prev.get("day") == day:
         b["morning"], b["log"], b["recap"], b["prev"] = prev.get("morning"), prev.get("log") or [], prev.get("recap"), prev.get("prev")

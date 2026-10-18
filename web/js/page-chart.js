@@ -38,6 +38,7 @@ const litMode = () => S.res?.model === 'lit';
 function renderLayerSeg() {
   const el = $('#chartLayers');
   el.dataset.mode = litMode() ? 'lit' : 'eng';
+  if (litMode() && !store.get('layersLit', false)) { tc.layers.fvg = false; tc.setLayer?.('fvg', false); store.set('layersLit', true); }   // LIT: auto FVG boxes off by default
   el.innerHTML = (litMode() ? LAYERS_LIT : LAYERS).map(([k, label]) => `<button data-k="${k}" class="${tc.layers[k] ? 'on' : ''}">${label}</button>`).join('');
   el.onclick = (e) => {
     const b = e.target.closest('button'); if (!b) return;

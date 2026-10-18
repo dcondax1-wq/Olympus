@@ -1,11 +1,11 @@
 {
  "lag_s": 600,
- "sessions": 22,
+ "sessions": 206,
  "backtest_trades": 120,
- "real_polls": 69,
+ "real_polls": 502,
  "forming_spot_check": {
-  "checked": 5,
-  "same": 5,
+  "checked": 20,
+  "same": 20,
   "diff": []
  },
  "assumptions": {
@@ -13,86 +13,149 @@
   "look_s": 60,
   "watch_every_s": 60,
   "cap_min": 55.0,
-  "forming_budget_min_day": 20.0,
-  "month_budget_min": 650.0,
+  "forming_budget_min_day": 15.0,
+  "month_budget_min": 550.0,
   "crons": ":02 and :32 ET, 02:02-16:02 (GitHub may start a run several minutes late or skip it)"
  },
  "policies": {
   "now": {
-   "trades_seen": 10,
-   "identical_to_backtest": 10,
-   "differences": [],
-   "n_differences": 0,
+   "trades_seen": 120,
+   "identical_to_backtest": 119,
+   "differences": [
+    {
+     "day": "2026-04-03",
+     "now": 1775205180,
+     "got": [
+      1775203320,
+      1,
+      24716.75,
+      24670.25,
+      24967.25,
+      3
+     ],
+     "want": [
+      1775203500,
+      1,
+      24714.25,
+      24670.25,
+      24967.25,
+      4
+     ]
+    }
+   ],
+   "n_differences": 1,
    "not_seen_same_day": [],
    "delay_min": {
-    "median": 33.0,
-    "p75": 37.8,
-    "p90": 39.1,
-    "max": 40.0,
-    "mean": 30.2,
-    "within_2_min_of_feed": 1,
-    "within_5_min_of_feed": 1,
-    "within_15": 1,
-    "within_30": 4
+    "median": 26.5,
+    "p75": 35.0,
+    "p90": 39.0,
+    "max": 41.0,
+    "mean": 26.2,
+    "within_2_min_of_feed": 10,
+    "within_5_min_of_feed": 19,
+    "within_15": 19,
+    "within_30": 73
    },
    "delay_after_feed_shows_it_min": {
-    "median": 23.0,
-    "p90": 29.1
+    "median": 16.5,
+    "p90": 29.0
    },
    "actions_min_month_extra": 0,
    "watch_min_month": 0,
    "forming_min_month": 0
   },
   "armed": {
-   "trades_seen": 10,
-   "identical_to_backtest": 10,
-   "differences": [],
-   "n_differences": 0,
+   "trades_seen": 120,
+   "identical_to_backtest": 119,
+   "differences": [
+    {
+     "day": "2026-04-03",
+     "now": 1775204010,
+     "got": [
+      1775203320,
+      1,
+      24716.75,
+      24670.25,
+      24967.25,
+      3
+     ],
+     "want": [
+      1775203500,
+      1,
+      24714.25,
+      24670.25,
+      24967.25,
+      4
+     ]
+    }
+   ],
+   "n_differences": 1,
    "not_seen_same_day": [],
    "delay_min": {
-    "median": 11.5,
-    "p75": 22.5,
-    "p90": 27.8,
-    "max": 35.0,
-    "mean": 17.5,
-    "within_2_min_of_feed": 6,
-    "within_5_min_of_feed": 6,
-    "within_15": 6,
-    "within_30": 9
+    "median": 17.0,
+    "p75": 26.2,
+    "p90": 34.1,
+    "max": 41.0,
+    "mean": 19.7,
+    "within_2_min_of_feed": 46,
+    "within_5_min_of_feed": 54,
+    "within_15": 54,
+    "within_30": 99
    },
    "delay_after_feed_shows_it_min": {
-    "median": 1.5,
-    "p90": 17.8
+    "median": 7.0,
+    "p90": 24.1
    },
-   "actions_min_month_extra": 255,
-   "watch_min_month": 233,
+   "actions_min_month_extra": 183,
+   "watch_min_month": 169,
    "forming_min_month": 0
   },
   "watch": {
-   "trades_seen": 10,
-   "identical_to_backtest": 10,
-   "differences": [],
-   "n_differences": 0,
+   "trades_seen": 120,
+   "identical_to_backtest": 119,
+   "differences": [
+    {
+     "day": "2026-04-03",
+     "now": 1775204010,
+     "got": [
+      1775203320,
+      1,
+      24716.75,
+      24670.25,
+      24967.25,
+      3
+     ],
+     "want": [
+      1775203500,
+      1,
+      24714.25,
+      24670.25,
+      24967.25,
+      4
+     ]
+    }
+   ],
+   "n_differences": 1,
    "not_seen_same_day": [],
    "delay_min": {
-    "median": 11.5,
-    "p75": 22.5,
-    "p90": 27.8,
-    "max": 35.0,
-    "mean": 17.5,
-    "within_2_min_of_feed": 6,
-    "within_5_min_of_feed": 6,
-    "within_15": 6,
-    "within_30": 9
+    "median": 17.0,
+    "p75": 26.2,
+    "p90": 34.1,
+    "max": 41.0,
+    "mean": 19.7,
+    "within_2_min_of_feed": 46,
+    "within_5_min_of_feed": 54,
+    "within_15": 54,
+    "within_30": 99
    },
    "delay_after_feed_shows_it_min": {
-    "median": 1.5,
-    "p90": 17.8
+    "median": 7.0,
+    "p90": 24.1
    },
-   "actions_min_month_extra": 694,
-   "watch_min_month": 647,
-   "forming_min_month": 331
+   "actions_min_month_extra": 501,
+   "watch_min_month": 463,
+   "forming_min_month": 262
   }
  },
- "seconds": 198
+ "seconds": 788
 }

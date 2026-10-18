@@ -1,7 +1,7 @@
 {
- "built": "2026-10-18 20:13",
+ "built": "2026-10-18 20:28",
  "baseline": "baseline",
- "count": 926,
+ "count": 929,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -85698,6 +85698,248 @@
    }
   },
   {
+   "id": "lit_hours_asia_only",
+   "title": "LIT all hours: the 18:00-02:00 entries alone",
+   "family": "sessions",
+   "question": "Owner order 2026-10-18: the bot should always be looking for LIT trades (CME trades 18:00-17:00 ET): entry window, trades per day / session, re-arming after a target or breakeven.",
+   "status": "rejected",
+   "verdict": "Asia LIT setups on their own lose money in H1. Picked on 2026 H1, checked on H2 (owner's LIT rule). H1: 48 trades, 1.88/wk, win 8.3%, PF 0.82, net $-1,336 ($-219/mo), DD $-3,184, worst day $-876; two_week eval 2-wk pass/fail 16.8/0.0; H2: 28 trades, 1.79/wk, win 17.9%, PF 1.84, net $+5,236 ($1,410/mo), DD $-2,418, worst day $-853; two_week eval 2-wk pass/fail 42.0/0.0; 2026: 76 trades, 1.84/wk, win 11.8%, PF 1.29, net $+3,900 ($398/mo), DD $-3,882, worst day $-876; two_week eval 2-wk pass/fail 24.9/0.0; Monte Carlo 2-wk H1 14.6/0.1, H2 38.9/0.5; 2021-25 reference (5m) PF 0.83 $-13,910.",
+   "writeup": "lit-all-hours",
+   "tags": [
+    "lit",
+    "lit_hours"
+   ],
+   "params": {
+    "variant": "asia_only_add|1day",
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      120
+     ]
+    ],
+    "all_hours": true,
+    "per_session": null,
+    "stop_after_loss": false,
+    "max_per_day": 1
+   },
+   "sizing": {
+    "money": "LIT rule $800/20 + weekly stop (= lit_live)",
+    "eval": {
+     "mode": "two_week",
+     "base": "need",
+     "need_buf": 1.0,
+     "max_usd": null,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "room_f": 0.6,
+     "wk": false
+    }
+   },
+   "built": "2026-10-18 20:28",
+   "spans": {
+    "2026": {
+     "n": 76,
+     "tpw": 1.84,
+     "wk2": 52,
+     "win": 11.8,
+     "pf": 1.29,
+     "net": 3900,
+     "dd": -3882,
+     "avg_r": 0.196,
+     "stop": 42.1,
+     "worst_day": -876,
+     "risk": 337.0,
+     "half": 5,
+     "per_month": 398,
+     "p10": 16.5,
+     "f10": 3.4,
+     "p15": 21.4,
+     "f15": 9.7,
+     "p20": 22.8,
+     "f20": 18.0,
+     "dec10": 19.9,
+     "slow_pass": 38.0,
+     "pass_med": 11.0,
+     "b2b": "2/4"
+    },
+    "2021-25": {
+     "n": 251,
+     "tpw": 1.17,
+     "wk2": 36,
+     "win": 10.8,
+     "pf": 0.83,
+     "net": -13910,
+     "dd": -26471,
+     "avg_r": -0.04,
+     "stop": 24.5,
+     "worst_day": -874,
+     "risk": 612.0,
+     "half": 9,
+     "per_month": -272,
+     "p10": 5.5,
+     "f10": 8.6,
+     "p15": 8.4,
+     "f15": 20.7,
+     "p20": 11.3,
+     "f20": 31.8,
+     "dec10": 14.1,
+     "slow_pass": 61.7,
+     "pass_med": 20.0,
+     "b2b": "10/33"
+    },
+    "all": {
+     "n": 327,
+     "tpw": 1.28,
+     "wk2": 39,
+     "win": 11.0,
+     "pf": 0.9,
+     "net": -10010,
+     "dd": -28965,
+     "avg_r": 0.015,
+     "stop": 26.5,
+     "worst_day": -876,
+     "risk": 545.0,
+     "half": 14,
+     "per_month": -164,
+     "p10": 7.3,
+     "f10": 7.7,
+     "p15": 10.5,
+     "f15": 18.9,
+     "p20": 13.1,
+     "f20": 29.6,
+     "dec10": 15.0,
+     "slow_pass": 56.2,
+     "pass_med": 18.0,
+     "b2b": "12/38"
+    }
+   }
+  },
+  {
+   "id": "lit_hours_full",
+   "title": "LIT all hours: entries 18:00-15:30 (Asia added), 1 trade a day",
+   "family": "sessions",
+   "question": "Owner order 2026-10-18: the bot should always be looking for LIT trades (CME trades 18:00-17:00 ET): entry window, trades per day / session, re-arming after a target or breakeven.",
+   "status": "rejected",
+   "verdict": "Asia setups take the day's one slot before London: H1 money and 2-week passes fall. Picked on 2026 H1, checked on H2 (owner's LIT rule). H1: 95 trades, 3.71/wk, win 18.9%, PF 3.26, net $+27,310 ($4,480/mo), DD $-3,533, worst day $-876; two_week eval 2-wk pass/fail 50.4/5.9; H2: 50 trades, 3.21/wk, win 22.0%, PF 2.0, net $+9,644 ($2,597/mo), DD $-1,793, worst day $-853; two_week eval 2-wk pass/fail 53.6/4.3; 2026: 145 trades, 3.52/wk, win 20.0%, PF 2.7, net $+36,954 ($3,767/mo), DD $-4,768, worst day $-876; two_week eval 2-wk pass/fail 49.2/5.1; Monte Carlo 2-wk H1 46.6/5.2, H2 52.2/9.4; 2021-25 reference (5m) PF 0.93 $-10,511.",
+   "writeup": "lit-all-hours",
+   "tags": [
+    "lit",
+    "lit_hours"
+   ],
+   "params": {
+    "variant": "full|1day",
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      930
+     ]
+    ],
+    "all_hours": true,
+    "per_session": null,
+    "stop_after_loss": false,
+    "max_per_day": 1
+   },
+   "sizing": {
+    "money": "LIT rule $800/20 + weekly stop (= lit_live)",
+    "eval": {
+     "mode": "two_week",
+     "base": "need",
+     "need_buf": 1.0,
+     "max_usd": null,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "room_f": 0.6,
+     "wk": false
+    }
+   },
+   "built": "2026-10-18 20:28",
+   "spans": {
+    "2026": {
+     "n": 145,
+     "tpw": 3.52,
+     "wk2": 95,
+     "win": 20.0,
+     "pf": 2.7,
+     "net": 36954,
+     "dd": -4768,
+     "avg_r": 0.562,
+     "stop": 43.0,
+     "worst_day": -876,
+     "risk": 309.0,
+     "half": 21,
+     "per_month": 3767,
+     "p10": 25.7,
+     "f10": 1.5,
+     "p15": 39.8,
+     "f15": 9.2,
+     "p20": 51.0,
+     "f20": 14.6,
+     "dec10": 27.2,
+     "slow_pass": 42.3,
+     "pass_med": 14.0,
+     "b2b": "9/3"
+    },
+    "2021-25": {
+     "n": 640,
+     "tpw": 2.99,
+     "wk2": 89,
+     "win": 15.3,
+     "pf": 0.93,
+     "net": -10511,
+     "dd": -19501,
+     "avg_r": 0.014,
+     "stop": 31.5,
+     "worst_day": -874,
+     "risk": 429.0,
+     "half": 65,
+     "per_month": -206,
+     "p10": 9.4,
+     "f10": 25.1,
+     "p15": 12.5,
+     "f15": 44.0,
+     "p20": 13.5,
+     "f20": 56.6,
+     "dec10": 34.5,
+     "slow_pass": 18.3,
+     "pass_med": 8.5,
+     "b2b": "15/52"
+    },
+    "all": {
+     "n": 785,
+     "tpw": 3.07,
+     "wk2": 91,
+     "win": 16.2,
+     "pf": 1.15,
+     "net": 26443,
+     "dd": -19501,
+     "avg_r": 0.116,
+     "stop": 33.2,
+     "worst_day": -876,
+     "risk": 395.0,
+     "half": 86,
+     "per_month": 435,
+     "p10": 12.4,
+     "f10": 21.3,
+     "p15": 17.2,
+     "f15": 38.4,
+     "p20": 19.9,
+     "f20": 49.8,
+     "dec10": 33.7,
+     "slow_pass": 29.0,
+     "pass_med": 10.0,
+     "b2b": "24/55"
+    }
+   }
+  },
+  {
    "id": "ses_asia_add1",
    "title": "NY + Asia 19:00-22:00, 1 trade a day",
    "family": "sessions",
@@ -109867,6 +110109,123 @@
      "slow_pass": 77.8,
      "pass_med": 32.0,
      "b2b": "12/11"
+    }
+   }
+  },
+  {
+   "id": "lit_hours_base",
+   "title": "LIT all hours: the live LIT (02:00-15:30, 1 trade a day), reference",
+   "family": "sessions",
+   "question": "Owner order 2026-10-18: the bot should always be looking for LIT trades (CME trades 18:00-17:00 ET): entry window, trades per day / session, re-arming after a target or breakeven.",
+   "status": "info",
+   "verdict": "Reference = lit_live. H1: 80 trades, 3.12/wk, win 22.5%, PF 4.44, net $+32,773 ($5,377/mo), DD $-2,315, worst day $-755; two_week eval 2-wk pass/fail 52.9/8.4; H2: 40 trades, 2.56/wk, win 35.0%, PF 2.46, net $+8,962 ($2,413/mo), DD $-1,466, worst day $-635; two_week eval 2-wk pass/fail 50.7/2.9; 2026: 120 trades, 2.91/wk, win 26.7%, PF 3.66, net $+41,734 ($4,254/mo), DD $-2,315, worst day $-755; two_week eval 2-wk pass/fail 49.7/6.1; Monte Carlo 2-wk H1 50.5/6.2, H2 55.4/5.5; 2021-25 reference (5m) PF 1.01 $+1,275.",
+   "writeup": "lit-all-hours",
+   "tags": [
+    "lit",
+    "lit_hours"
+   ],
+   "params": {
+    "variant": "live|1day",
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "max_per_day": 1
+   },
+   "sizing": {
+    "money": "LIT rule $800/20 + weekly stop (= lit_live)",
+    "eval": {
+     "mode": "two_week",
+     "base": "need",
+     "need_buf": 1.0,
+     "max_usd": null,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "room_f": 0.6,
+     "wk": false
+    }
+   },
+   "built": "2026-10-18 20:27",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.66,
+     "net": 41734,
+     "dd": -2315,
+     "avg_r": 0.734,
+     "stop": 45.8,
+     "worst_day": -755,
+     "risk": 274.0,
+     "half": 16,
+     "per_month": 4254,
+     "p10": 26.7,
+     "f10": 1.9,
+     "p15": 39.8,
+     "f15": 2.9,
+     "p20": 55.3,
+     "f20": 3.9,
+     "dec10": 28.6,
+     "slow_pass": 52.0,
+     "pass_med": 16.0,
+     "b2b": "10/2"
+    },
+    "2021-25": {
+     "n": 510,
+     "tpw": 2.38,
+     "wk2": 76,
+     "win": 17.5,
+     "pf": 1.01,
+     "net": 1275,
+     "dd": -20462,
+     "avg_r": 0.019,
+     "stop": 38.1,
+     "worst_day": -860,
+     "risk": 370.0,
+     "half": 32,
+     "per_month": 25,
+     "p10": 6.6,
+     "f10": 14.3,
+     "p15": 10.2,
+     "f15": 24.6,
+     "p20": 12.9,
+     "f20": 34.4,
+     "dec10": 20.9,
+     "slow_pass": 60.4,
+     "pass_med": 20.0,
+     "b2b": "11/35"
+    },
+    "all": {
+     "n": 630,
+     "tpw": 2.46,
+     "wk2": 78,
+     "win": 19.2,
+     "pf": 1.37,
+     "net": 43009,
+     "dd": -20462,
+     "avg_r": 0.155,
+     "stop": 40.0,
+     "worst_day": -860,
+     "risk": 346.0,
+     "half": 48,
+     "per_month": 707,
+     "p10": 10.3,
+     "f10": 12.3,
+     "p15": 15.3,
+     "f15": 21.1,
+     "p20": 20.1,
+     "f20": 29.5,
+     "dec10": 22.6,
+     "slow_pass": 56.5,
+     "pass_med": 18.0,
+     "b2b": "21/37"
     }
    }
   },
