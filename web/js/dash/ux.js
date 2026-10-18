@@ -155,7 +155,7 @@ function statusBar() {
   const main = $('.main'); if (!main || $('#sbar')) return;
   const sb = document.createElement('footer'); sb.className = 'sbar'; sb.id = 'sbar';
   sb.innerHTML = `<span class="sb-mode paper" id="sbMode">PAPER</span><span id="sbSrv"><span class="dot-live off"></span> server</span><span id="sbBot">bot —</span><span id="sbData">data —</span>
-    <span id="sbKz">killzone —</span><span id="sbApi">dash api —</span><span class="grow" id="sbLast"></span><span id="sbClock">—</span><span><kbd>?</kbd> keys · <kbd>Ctrl K</kbd></span>`;
+    <span id="sbKz">entry window —</span><span id="sbApi">dash api —</span><span class="grow" id="sbLast"></span><span id="sbClock">—</span><span><kbd>?</kbd> keys · <kbd>Ctrl K</kbd></span>`;
   main.appendChild(sb);
   const upd = () => {
     const s = L.live, h = s?.health || {}, now = Date.now() / 1000;

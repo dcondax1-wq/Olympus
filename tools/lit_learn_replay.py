@@ -147,11 +147,20 @@ def run(save=True):
     for s in SP:
         print("  " + S.line(lrn, s), "| funded", lrn[s]["funded_net"],
               f"(d net {lrn[s]['net'] - base[s]['net']:+,}, funded {lrn[s]['funded_net'] - base[s]['funded_net']:+,})")
-    better = {s: (lrn[s]["net"] > base[s]["net"] and lrn[s]["f10"] <= base[s]["f10"] and lrn[s]["tpw"] >= 2.0) for s in SP}
+    # "better" in a half = more money on the eval path AND at the funded size (the steadier yardstick: no eval-path luck),
+    # 2-week eval fails not up, 2-week passes not down, 2+ trades a week
+    def chk(s):
+        x, y = lrn[s], base[s]
+        return {"net": x["net"] > y["net"], "funded": x["funded_net"] > y["funded_net"], "f10": x["f10"] <= y["f10"],
+                "p10": x["p10"] >= y["p10"], "tpw": x["tpw"] >= 2.0}
+    checks = {s: chk(s) for s in SP}
+    better = {s: all(checks[s].values()) for s in SP}
     both = better["H1"] and better["H2"]
     mode = "apply" if both else "observe"
-    verdict = ("better on both 2026 halves (net $, 2-week fails not up, 2+ trades a week): ships in APPLY mode" if both else
-               "not better on both 2026 halves: ships in OBSERVE mode (logs proposals, applies nothing)")
+    miss = "; ".join(f"{s}: " + ", ".join(k for k, v in checks[s].items() if not v) for s in ("H1", "H2") if not better[s])
+    verdict = ("better on both 2026 halves (eval-path $ and funded $ up, 2-week fails not up, 2-week passes not down, 2+ trades "
+               "a week): ships in APPLY mode" if both else
+               f"not better on both 2026 halves ({miss}): ships in OBSERVE mode (logs proposals, applies nothing)")
     print("VERDICT:", verdict)
     # causes of the 2026 losses (the journal's anatomy)
     import collections
@@ -161,6 +170,7 @@ def run(save=True):
             cz[r["cause"]][0] += 1; cz[r["cause"]][1] += r["pnl"]
     tags = collections.Counter(t for r in recs if r["day"] >= "2026" for t in r["tags"])
     out = {"built": dt.datetime.now().isoformat(timespec="seconds"), "verdict": verdict, "mode": mode, "better": better,
+           "checks": checks, "z_min": LL.Z_MIN,
            "base": compact(base), "learned": compact(lrn), "resized": n_ch,
            "decisions_2026": [{k: d.get(k) for k in ("id", "asof", "action", "fam", "bucket", "before", "after", "reason")} for d in D26],
            "decisions_2021_25": [{k: d.get(k) for k in ("id", "asof", "action", "fam", "bucket", "before", "after", "reason")}

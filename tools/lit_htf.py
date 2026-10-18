@@ -925,8 +925,103 @@ def _compact(o):
     return {s: {k: o[s].get(k) for k in keys} for s in o}
 
 
+# ================================================================================================ follow-ups (post-hoc, marked as such)
+def fvg_way_variants(ages_days=(2, 5, 10), tfs=("1h", "4h")):
+    """Robustness of 'an unfilled opposing HTF FVG between entry and target' to the FVG memory: recompute it per candidate
+    for each time frame and memory (5m bars = days x 276). Cached."""
+    p = os.path.join(CACHE, f"lithtf_fvgvar_{VER}_{rl._data_key().replace(':', '_')}.pkl")
+    if os.path.exists(p):
+        return pickle.load(open(p, "rb"))
+    R = S.build()["rows"]
+    M, Cx = market()
+    H = HTF(M)
+    out = collections.defaultdict(dict)
+    for tf in tfs:
+        for dd in ages_days:
+            H._fvgs(tf, dd * 276)
+            for r in R:
+                z = Cx[r["key"]]
+                pl = S.plan_of(M, z)
+                out[r["key"]][f"fv_way{tf}_{dd}d"] = float(H._fvg_way(tf, int(z["i"]), int(z["dir"]), pl["ep"], pl["tp"]))
+    out = dict(out)
+    pickle.dump(out, open(p, "wb"))
+    return out
+
+
+def _tilt(fn, up=1.25, dn=0.75):
+    return lambda r: up if fn(r) == 1 else dn if fn(r) == 0 else 1.0
+
+
+def followup_specs():
+    R = rows()
+    V = fvg_way_variants()
+    for r in R:
+        r["h"].update(V[r["key"]])
+    clear1h = _on("fv_way1h", True)
+    clear_lv = _on("dr_reach", True)
+    trap = lambda r: float(r["f"]["idm_age"] <= 6)
+    n_obst = lambda r: int(r["h"]["fv_way1h"] == 1) + int(r["h"]["dr_reach"] == 1)
+    T = collections.OrderedDict()
+    T["[post-hoc] clear path: no 1H FVG and no untaken HTF level between entry and target: 1.25x / 0.75x"] = \
+        dict(size=_tilt(lambda r: float(n_obst(r) == 0)))
+    T["[post-hoc] obstacles graded: 0 -> 1.25x, 1 -> 1x, 2 -> 0.75x"] = dict(size=lambda r: {0: 1.25, 1: 1.0, 2: 0.75}[n_obst(r)])
+    T["[post-hoc] no 1H or 4H opposing FVG in the way: 1.25x / 0.75x"] = \
+        dict(size=_tilt(lambda r: float(r["h"]["fv_way1h"] == 0 and r["h"]["fv_way4h"] == 0)))
+    for up, dn in ((1.15, 0.85), (1.5, 0.5), (1.25, 1.0), (1.0, 0.75)):
+        T[f"[neighbour] NOT fv_way1h: {up:g}x / {dn:g}x"] = dict(size=_tilt(clear1h, up, dn))
+    for tf in ("1h", "4h"):
+        for dd in (2, 5, 10):
+            k = f"fv_way{tf}_{dd}d"
+            T[f"[memory] no opposing {tf.upper()} FVG ({dd}-day memory) in the way: 1.25x / 0.75x"] = \
+                dict(size=_tilt(lambda r, k=k: 1.0 - r["h"][k]))
+    T["[stack] fresh trap tilt x clear 1H path tilt (one rounding, $900 cap)"] = \
+        dict(size=lambda r: _tilt(trap)(r) * _tilt(clear1h)(r))
+    T["[stack] fresh trap tilt x clear HTF-level path tilt"] = dict(size=lambda r: _tilt(trap)(r) * _tilt(clear_lv)(r))
+    draw4 = _on("pl_sw4h")
+    T["[post-hoc] 4H draw size-neutral: 1.4x when the nearest unswept 4H swing is on the target side, else 0.8x"] = \
+        dict(size=_tilt(draw4, 1.4, 0.8))
+    T["[post-hoc] 4H draw: 1.25x / 0.85x"] = dict(size=_tilt(draw4, 1.25, 0.85))
+    T["[stack] fresh trap tilt x 4H draw tilt (1.25 / 0.75 each)"] = dict(size=lambda r: _tilt(trap)(r) * _tilt(draw4)(r))
+    T["[reference] fresh trap only (lit_sel_trap6_size)"] = dict(size=_tilt(trap))
+    return T
+
+
+def followups():
+    T = followup_specs()
+    base_o, _ = run_spec({})
+    out = collections.OrderedDict(base={"o": _compact(base_o)})
+    for nm, spec in T.items():
+        o, U = run_spec(spec)
+        out[nm] = {"o": _compact(o)}
+        print(f"\n{nm}")
+        for s_ in ("H1", "H2", "2021-25"):
+            print("  " + S.line(o, s_), f"| cost/2wk {o[s_]['cost_2wk']} | funded {o[s_]['funded_net']:+,} "
+                  f"(d {o[s_]['funded_net'] - base_o[s_]['funded_net']:+,}) | d net {o[s_]['net'] - base_o[s_]['net']:+,}", flush=True)
+    json.dump(out, open(os.path.join(OUTD, "htf_followups.json"), "w"), indent=1, default=float)
+    return T
+
+
 # ================================================================================================ finalists, shuffle test, runs
-def finalists(names, save=False, statuses=None):
+FINAL = collections.OrderedDict([
+    # name in rules() / followups()                                          (run id suffix, status)
+    ("NOT fv_way1h: 1.25x with, 0.75x without", ("clear1h_size", "promising")),
+    ("NOT dr_reach: 1.25x with, 0.75x without", ("clearlv_size", "promising")),
+    ("[stack] fresh trap tilt x clear HTF-level path tilt", ("trap_x_clearlv", "adopt-candidate")),
+    ("[stack] fresh trap tilt x clear 1H path tilt (one rounding, $900 cap)", ("trap_x_clear1h", "promising")),
+    ("[post-hoc] clear path: no 1H FVG and no untaken HTF level between entry and target: 1.25x / 0.75x", ("clearpath_size", "promising")),
+    ("[post-hoc] 4H draw size-neutral: 1.4x when the nearest unswept 4H swing is on the target side, else 0.8x", ("draw4h_neutral", "promising")),
+    ("[stack] fresh trap tilt x 4H draw tilt (1.25 / 0.75 each)", ("trap_x_draw4h", "promising")),
+    ("WITH the HTF draw (composite >= 2): London setups only when aligned", ("with_draw_london", "rejected")),
+    ("WITH the HTF draw (composite >= 2): 1.25x / 0.75x", ("with_draw_size", "rejected")),
+    ("pl_sw4h: 1.25x with, 0.75x without", ("draw4h_size", "rejected")),
+    ("pl_sw4h: London setups only when aligned", ("draw4h_london", "rejected")),
+    ("bi_pdbos: London setups only when aligned", ("pdbos_london", "rejected")),
+    ("NOT dr_reach: London setups only when aligned", ("clearlv_london", "rejected")),
+    ("AGAINST the HTF draw (composite 0): skip", ("against_skip", "rejected")),
+])
+
+
+def finalists(names=None, save=False, statuses=None):
     """names: rule names as printed by rules(); scores them, runs the size shuffle test, optionally stores runs lit_htf_*."""
     from tools import lit_select_rules as SR
     SL = shortlist()
@@ -934,19 +1029,18 @@ def finalists(names, save=False, statuses=None):
     for nm, (fn, htf, info) in SL.items():
         allspecs.update(specs_for(nm, fn, htf))
     allspecs.update(extra_rules())
+    allspecs.update(followup_specs())
     base_o, _ = run_spec({})
     out = {}
-    for nm in names:
+    for nm in names or FINAL:
         spec = allspecs[nm]
         o, U = run_spec(spec)
         pm = SR._perm(rows(), U) if spec.get("size") else None
-        out[nm] = {"o": _compact(o), "perm": pm}
-        print(nm, "| shuffle", pm)
-        if save:
-            rid = "lit_htf_" + "".join(ch if ch.isalnum() else "_" for ch in nm.lower())[:60].strip("_")
-            while "__" in rid:
-                rid = rid.replace("__", "_")
-            _save(rid, nm, spec, (statuses or {}).get(nm, "promising"), o, base_o, pm)
+        rid = "lit_htf_" + FINAL[nm][0] if nm in FINAL else None
+        out[nm] = {"id": rid, "o": _compact(o), "perm": pm}
+        print(nm, "| shuffle", pm, flush=True)
+        if save and rid:
+            _save(rid, nm, spec, FINAL[nm][1], o, base_o, pm)
     json.dump(out, open(os.path.join(OUTD, "htf_final.json"), "w"), indent=1, default=float)
     return out
 
@@ -988,6 +1082,12 @@ if __name__ == "__main__":
         map_()
     elif cmd == "combos":
         combos()
+    elif cmd == "final":
+        finalists(save=False)
+    elif cmd == "save":
+        finalists(save=True)
+    elif cmd == "followups":
+        followups()
     elif cmd == "rules":
         rules(sys.argv[2] if len(sys.argv) > 2 else None)
     else:

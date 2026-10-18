@@ -2,9 +2,11 @@
 # Publishes README.md + chart.png + state.json to the `dashboard` branch (open it in the GitHub app), and the web dashboard
 # (tools/web_public + data.json, a Home Screen app) to demetrades2000-coder.github.io/nq-dashboard.
 # Paper only - never places orders. Free: about 1,200-1,500 of the 2,000 monthly Actions minutes for private repos.
-# Phone notifications (free Web Push to the Home Screen app, docs/NOTIFICATIONS.md): repository secrets LE_VAPID_PRIVATE +
-# LE_PUSH_SUBS (more phones: LE_PUSH_SUBS_2, LE_PUSH_SUBS_3). Telegram / Discord (TG_TOKEN + TG_CHAT, DISCORD_WEBHOOK) stay
-# off unless the repository variable LE_ALERTS_CHAT is 1.
+# Phone notifications (free Web Push to the Home Screen app, docs/NOTIFICATIONS.md): automatic. The app posts its subscription
+# to the ntfy.sh relay when the owner taps Allow; this job reads it, keeps it in state.json and sends an entry and an outcome
+# notice for every trade. The notification key is made on the first run and kept in the Actions cache (never committed or
+# printed); a secret LE_VAPID_PRIVATE overrides it. Telegram / Discord (TG_TOKEN + TG_CHAT, DISCORD_WEBHOOK) stay off unless
+# the repository variable LE_ALERTS_CHAT is 1.
 name: cloud-monitor
 
 on:
@@ -75,6 +77,15 @@ jobs:
             /STRATEGY.md
             /web/icons/
 
+      - name: Notification key (Actions cache; made by the monitor on the first run, refreshed every run)
+        if: steps.guard.outputs.go == '1'
+        uses: actions/cache@v4
+        with:
+          path: .le_push
+          key: le-vapid-v1-${{ github.run_id }}
+          restore-keys: |
+            le-vapid-v1-
+
       - name: Python
         if: steps.guard.outputs.go == '1'
         uses: actions/setup-python@v5
@@ -104,11 +115,12 @@ jobs:
         if: steps.guard.outputs.go == '1'
         env:
           LE_VAPID_PRIVATE: ${{ secrets.LE_VAPID_PRIVATE }}
+          LE_VAPID_KEY_FILE: .le_push/vapid.json
           LE_PUSH_SUBS: ${{ secrets.LE_PUSH_SUBS }}
           LE_PUSH_SUBS_2: ${{ secrets.LE_PUSH_SUBS_2 }}
           LE_PUSH_SUBS_3: ${{ secrets.LE_PUSH_SUBS_3 }}
           LE_PUSH_TEST: ${{ github.event_name == 'workflow_dispatch' && inputs.push_test && '1' || '' }}
-          LE_PUSH_DEFER_TO_PC: ${{ vars.LE_PUSH_DEFER_TO_PC }}
+          LE_PUSH_EXTRA: ${{ vars.LE_PUSH_EXTRA }}
           LE_ALERTS_CHAT: ${{ vars.LE_ALERTS_CHAT }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}

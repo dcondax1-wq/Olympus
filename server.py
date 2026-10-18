@@ -284,7 +284,9 @@ async def api_alerts_send(req: Request):
 @app.get("/api/push")
 def api_push_get():
     from engine import push
-    return J({**push.status(), "recent": push.pc_notifier().log[-10:]})
+    sync = push.pc_sync()
+    return J({**push.status(push.pc_config(sync)), "linked": bool(sync.get("private")), "sync_error": push._PC.get("sync_err"),
+              "heartbeat_key": bool(push.pc_public_key()), "recent": push.pc_notifier().log[-10:]})
 
 
 @app.post("/api/push")
@@ -299,11 +301,12 @@ async def api_push_save(req: Request):
 @app.post("/api/push/test")
 def api_push_test():
     from engine import push
-    if not push.enabled():
-        return J({"ok": False, "error": "not set up yet: paste the private key and the app's code first"}, 400)
-    p = push.text_payload("PC", "test", "Test notification", "Notifications from the PC bot work: one for every fill and every outcome.",
-                          key=f"test:{int(time.time())}")
-    r = push.pc_notifier().notify(p)
+    cfg = push.pc_config(push.pc_sync(force=True))
+    if not push.enabled(cfg):
+        return J({"ok": False, "error": "not linked yet: keep the heartbeat on (LE_HEARTBEAT=1) and allow notifications in the phone app; the cloud links this PC on its next run"}, 400)
+    n = push.pc_notifier()
+    n.cfg = cfg
+    r = n.notify(push.text_payload("PC", "test", "Test · PC bot", "Notifications from the PC bot work.", key=f"test:{int(time.time())}"))
     return J({"ok": bool(r.get("sent")), **{k: r.get(k) for k in ("sent", "devices", "gone", "errors")}})
 
 

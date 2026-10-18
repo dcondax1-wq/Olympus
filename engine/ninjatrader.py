@@ -425,7 +425,7 @@ class NinjaTraderAdapter:
                 return
             from .live import BOT
             BOT._alert("⚠️ NinjaTrader: " + text, "guard")
-            self._push(lambda P: P.text_payload(self._push_src(), "risk", "NinjaTrader needs a look", text,
+            self._push(lambda P: P.text_payload("PC", "risk", "NinjaTrader needs a look", text,
                                                 key=f"risk:{int(self.clock()) // 60}:{abs(hash(text)) % 10**6}"))
         except Exception:
             pass
@@ -1301,6 +1301,28 @@ class NinjaTraderBars:
             full = False
             why = f"feed is missing {gaps:.0%} of the bars of the last 3 days (ETH trading hours on the chart?)"
         return df.reset_index(drop=True), why, full
+
+    def forming_open(self, sym, now=None):
+        """(open time, open) of the 1-minute bar forming now, from LE_BarFeed's <ROOT>_1m_open.csv (one line "time,open",
+        rewritten on the first trade of every minute), or None (no file, unreadable, or not the current minute). The live
+        loop sizes a LIT entry decided on the 1m CISD close from it (the backtest fills at that bar's open + 1 tick)."""
+        now = int(now if now is not None else time.time())
+        for root in self.roots.get(sym, [sym]):
+            p = os.path.join(self.dir, f"{root}_1m_open.csv")
+            if os.path.exists(p):
+                break
+        else:
+            return None
+        try:
+            with open(p, encoding="utf-8") as fh:
+                lines = [x.strip() for x in fh.read().splitlines() if x.strip()]
+            t_s, px_s = lines[-1].split(",")[:2]
+            t, px = int(float(t_s)), float(px_s)
+        except (OSError, ValueError, IndexError):
+            return None
+        if t % 60 or not (t <= now < t + 60) or not (px > 0):
+            return None
+        return (t, px)
 
     @staticmethod
     def _gap_ratio(df, secs, market_open):

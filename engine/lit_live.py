@@ -408,8 +408,9 @@ def _enter_now(t):
 
 def _shape(M, R, P, now, B1):
     trades, events, position = [], [], None
+    nc = getattr(M, "n_closed", M.n)          # early mode: M ends with the forming 5m bar, which is not shown as a bar
     en = (R.get("enter_now") or [None])[0]
-    enter_now = _enter_now(en) if en and not _session_over(en["day"], now, int(M.t[M.n - 1]) + 300) else None
+    enter_now = _enter_now(en) if en and not _session_over(en["day"], now, int(M.t[nc - 1]) + 300) else None
     for s in R["signals"]:
         events.append({"t": s["t"], "type": "signal", "dir": s["dir"],
                        "text": f"LIT {_side(s['dir'])} setup: swept {', '.join(_sweep_names(s['swept']))} (extreme {s['sweep_ext']:,.2f}); "
@@ -422,7 +423,7 @@ def _shape(M, R, P, now, B1):
                        "text": f"{side} LIT @ {t['entry_px']:,.2f} stop {t['stop_px']:,.2f} target {t['target_px']:,.2f} qty {t['qty']} "
                                f"({kind} entry, {t.get('tf', 5)}m bars)"
                                + (f" - {'; '.join(t['size_why'])}" if t.get("size_why") else "")})
-        if t["exit"] == "OPEN" and _session_over(t["day"], now, int(M.t[M.n - 1]) + 300):
+        if t["exit"] == "OPEN" and _session_over(t["day"], now, int(M.t[nc - 1]) + 300):
             t = _close_at_session_end(t)       # early-close holiday: the backtest exits at the day's last bar
         if t["exit"] == "OPEN":
             position = {"entry_t": int(t["entry_t"]), "dir": int(t["dir"]), "qty": int(t["qty"]), "stop": float(t["stop_now"]),
@@ -443,7 +444,7 @@ def _shape(M, R, P, now, B1):
         d["pnl"] += t["pnl"]; d["trades"] += 1
     k = len(M.days) - 1
     today = M.days[k][0]
-    last = M.n - 1
+    last = nc - 1
     price = float(M.c[last])
     x = M.ctx[k]
     setups = {}

@@ -734,6 +734,11 @@ def bars_5m(M: Market):
     return XBars(M.t, M.o, M.h, M.l, M.c, M.mod, M.day_of, 300)
 
 
+def closed_bars(B: XBars, n):
+    """The first n bars of B (engine/lit_live.py early mode: the forming 5m bar in the market is never an executor bar)."""
+    return XBars(B.t[:n], B.o[:n], B.h[:n], B.l[:n], B.c[:n], B.mod[:n], B.day[:n], B.secs, B.full)
+
+
 def bars_1m(M: Market, cover=0.97, src=None, tol=None, tail=False):
     """True 1m NQ bars (data/NQ_1m.csv, cleaned by engine.data.load_ltf). Only days with >= cover of their 5m minutes in
     clean 1m bars are used for execution; other days fall back to 5m.
@@ -757,7 +762,8 @@ def bars_1m(M: Market, cover=0.97, src=None, tol=None, tail=False):
     ends = np.r_[starts[1:], len(t5)]
     keep = np.zeros(len(t5), bool)
     shift = np.zeros(len(t5))
-    last5 = int(M.t[-1]) if M.n else -1
+    n5 = getattr(M, "n_closed", M.n)        # engine/lit_live.py early mode: M ends with the forming 5m bar (not checked)
+    last5 = int(M.t[n5 - 1]) if n5 else -1
     for a, z in zip(starts, ends):
         j = j5c[a]
         if tail and t5[a] > last5:
@@ -778,7 +784,7 @@ def bars_1m(M: Market, cover=0.97, src=None, tol=None, tail=False):
     dmap = {d: k for k, (d, s, e) in enumerate(M.days)}
     day = np.array([dmap.get(x, -1) for x in np.asarray(b.date_str)[ix]])
     cnt = np.bincount(day[day >= 0], minlength=len(M.days))
-    full = {k for k, (d, s, e) in enumerate(M.days) if cnt[k] >= cover * 5 * (e - s)}
+    full = {k for k, (d, s, e) in enumerate(M.days) if cnt[k] >= cover * 5 * (min(e, n5) - s)}
     return XBars(b.t[ix], b.o[ix] - sh, b.h[ix] - sh, b.l[ix] - sh, b.c[ix] - sh, b.mod[ix], day, 60, full)
 
 

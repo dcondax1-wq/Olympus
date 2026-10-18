@@ -11,6 +11,11 @@ export const LAYERS = [
   ['ifvg', 'Triggers'], ['trades', 'Trades'], ['profile', 'Profile'],
 ];
 
+// LIT (the live strategy since 2026-10-18): its levels, session boxes + entry window, 5m CISD zones and trades
+export const LAYERS_LIT = [
+  ['pools', 'LIT levels'], ['sessions', 'Session boxes'], ['ifvg', 'CISD'], ['trades', 'Trades'], ['fvg', 'FVGs'], ['gamma', 'Gamma'],
+];
+
 export class TradeChart {
   constructor(el, { legend = null, minFvg = 3 } = {}) {
     this.el = el;
@@ -208,9 +213,30 @@ export class TradeChart {
     g.font = '600 10px JetBrains Mono, monospace';
     g.textBaseline = 'middle';
 
-    // ---- session bands + killzones
+    // ---- session bands + killzones (previous engine) | LIT session boxes + the 02:00-15:30 entry window (ann.mode 'lit')
     const days = [...new Set(this.bars.slice(i0, i1 + 1).map(b => b.d))].filter(Boolean);
-    if (this.layers.sessions) {
+    if (this.layers.sessions && this.ann.mode === 'lit') {
+      const KC = { asia: c.amt, london: c.ssl, pre: c.muted, ny: c.bsl };
+      for (const D of days) {
+        const xa = this._xc(etWall(D, 120)), xb = this._xc(etWall(D, 930));
+        if (xa != null && xb != null && xb > 0 && xa < W) {
+          g.fillStyle = alpha(c.gold, .045); g.fillRect(xa, 0, xb - xa, H);
+          g.fillStyle = c.muted; g.globalAlpha = .75; g.fillText('LIT ENTRY 02:00-15:30', xa + 4, 10); g.globalAlpha = 1;
+        }
+        const xf = this._xc(etWall(D, 955));
+        if (xf != null && xf > 0 && xf < W) { g.strokeStyle = alpha(c.bad, .55); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(xf, 0); g.lineTo(xf, H); g.stroke(); g.setLineDash([]); }
+      }
+      for (const bx of this.ann.boxes || []) {
+        if (bx.t0 > tB || bx.t1 < tA || bx.t0 > this.cursorT) continue;
+        const end = Math.min(bx.t1, this.cursorT + this.tfSecs);
+        const xa = this._x(bx.t0), xb = this._x(end), yh = this._y(bx.hi), yl = this._y(bx.lo);
+        if (xa == null || xb == null || yh == null || yl == null) continue;
+        const col = KC[bx.kind] || c.ink2;
+        g.fillStyle = alpha(col, bx.kind === 'pre' ? .04 : .08); g.fillRect(xa, yh, Math.max(2, xb - xa), yl - yh);
+        g.strokeStyle = alpha(col, .6); g.lineWidth = 1; g.strokeRect(xa, yh, Math.max(2, xb - xa), yl - yh);
+        g.fillStyle = col; g.globalAlpha = .9; g.fillText(bx.label, xa + 3, yh - 6); g.globalAlpha = 1;
+      }
+    } else if (this.layers.sessions) {
       for (const D of days) {
         const pd = prevCalDate(D);
         const bands = [

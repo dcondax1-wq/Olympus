@@ -253,6 +253,33 @@ def clean_bars(df: pd.DataFrame, secs: int, now: int, grid: bool = True):
     return df.reset_index(drop=True), drops
 
 
+def forming_open(df, secs: int, now: int):
+    """(open time, open) of the bar still forming at `now` in a fresh fetch (Yahoo shows it from its first trade), or None.
+    clean_bars drops that bar; only its open is used (LIT sizes an entry decided on the 1m CISD close from it)."""
+    try:
+        if df is None or not len(df) or "time" not in df or "open" not in df:
+            return None
+        t = df["time"].astype("int64")
+        r = df[(t % secs == 0) & (t <= now) & (t + secs > now)]
+        if not len(r):
+            return None
+        o = float(r["open"].iloc[-1])
+        return (int(r["time"].iloc[-1]), o) if o > 0 and math.isfinite(o) else None
+    except Exception:
+        return None
+
+
+def next_wake(now: float, offsets=(2.0, 32.0)) -> float:
+    """The next poll time after `now`: `offsets` seconds after each minute boundary (2 s after a bar closes, and a mid-minute
+    poll). The old loop slept 60 s after each poll (not aligned to the minute, ~31 s late on average)."""
+    m = math.floor(now / 60.0) * 60.0
+    for base in (m, m + 60.0):
+        for o in sorted(float(x) for x in offsets):
+            if base + o > now + 0.05:
+                return base + o
+    return m + 120.0
+
+
 class LiveBot:
     """Same Engine as the backtester, re-run on a rolling window every poll; decisions are a pure function of the bars.
 
@@ -299,6 +326,10 @@ class LiveBot:
         self._nt_notes = {}              # rate limit for the ninjatrader feed notes: key -> (text, unix time logged)
         self._modify_gaveup = set()      # (entry_t, stop) the broker refused 3 times: not retried again
         self._week_prev = []             # LIT weekly stop: this ISO week's routed exits from earlier days (live_state.json)
+        self._forming = {}               # (sym, secs) -> (open time, open) of the bar forming at the last fetch (LIT sizing)
+        self._nt_forming = {}            # (sym, secs) -> the same from NinjaTrader's LE_BarFeed open file
+        self._provisional = {}           # entry_t -> what was routed for a LIT entry decided on the 1m CISD close
+        self._nt_repoll = None           # minute boundary already re-polled for a late NinjaTrader 1m bar
         self._eval_prev = {}             # LIT safe_eval / eval / two_week: routed P&L per earlier trading day of the eval (live_state.json)
         self._lit_sizing = None          # live_model.json lit_sizing (or the start cfg's), set on every poll
 
@@ -367,6 +398,8 @@ class LiveBot:
             if self._nt_feed is None:
                 self._nt_feed = _nt.NinjaTraderBars(folder=self.cfg.get("nt_folder"), roots=self.cfg.get("nt_feed_roots"))
             df, why, full = self._nt_feed.recent_bars(sym, interval, period, now=int(self.clock()))
+            if interval == "1m" and df is not None and callable(getattr(self._nt_feed, "forming_open", None)):
+                self._nt_forming[(sym, 60)] = self._nt_feed.forming_open(sym, now=int(self.clock()))
         except Exception as e:
             df, why, full = None, f"{e.__class__.__name__}: {e}", False
         if df is not None and len(df):
@@ -407,6 +440,7 @@ class LiveBot:
             self._note_error(f"data refresh failed ({sym} {tf}): {e.__class__.__name__}: {e}")
         frames = [f for f in (hist, recent) if f is not None and len(f)]
         df = pd.concat(frames) if frames else pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume"])
+        self._forming[(sym, secs)] = self._nt_forming.pop((sym, secs), None) or forming_open(recent, secs, now)
         return clean_bars(df, secs, now)
 
     # ------------------------------------------------------------------ lifecycle
@@ -558,7 +592,7 @@ class LiveBot:
                 "sym": self.cfg.get("sym"), "tf": self.cfg.get("tf"), "adapter": self.cfg.get("adapter"),
                 "started_at": self.started_at, "kill": self.kill, "eod_sent": self._eod_sent, "guard_key": self._guard_key,
                 "open_routed": self._open_routed, "open_qty": self._open_qty, "blocked_entries": sorted(self._blocked_entries),
-                "flattened": sorted(self._flattened),
+                "flattened": sorted(self._flattened), "provisional": {str(k): v for k, v in self._provisional.items()},
                 "seen": [list(k) for k in list(self.seen)[-2000:]], "ledger": self.ledger[-300:],
                 "week_exits": self.lit_week_hist() if self.cfg else [], "eval_days": self.eval_days() if self.cfg else {},
                 "day_pnl_routed": self.day_pnl_routed(), "trades_today": self.trades_today()}
@@ -603,6 +637,7 @@ class LiveBot:
         self._open_qty = s.get("open_qty")
         self._blocked_entries = set(s.get("blocked_entries") or [])
         self._flattened = set(s.get("flattened") or [])
+        self._provisional = {int(k): v for k, v in (s.get("provisional") or {}).items()}
         if s.get("started_at"):
             self.started_at = min(self.started_at, int(s["started_at"]))
         self.kill = bool(s.get("kill")) and not clear_kill
@@ -684,7 +719,13 @@ class LiveBot:
         if model == "lit":
             from . import lit_live
             df1 = self._lit_1m(sym, now, int(df_full["time"].min())) if lit_p.get("tf") == "1m" else None
-            res = lit_live.run(df_full, lit_p, one_min=df1, now=now, sym=sym, week_hist=self.lit_week_hist())
+            # forming / early: an entry is decided the moment its 1m CISD candle closes and routed at market at once
+            # (state "enter_now"), sized from the forming 1m bar's open when the feed shows it (research/writeups/lit-live-fills.md)
+            res = lit_live.run(df_full, lit_p, one_min=df1, now=now, sym=sym, week_hist=self.lit_week_hist(),
+                               forming=self._forming.get((sym, 60)) if df1 is not None else None, early=True)
+            last1 = int(df1["time"].max()) if df1 is not None and len(df1) else None
+            self.health["last_1m_bar_t"] = last1
+            self.health["bar_1m_behind"] = bool(last1 is not None and mopen and last1 + 60 < now - now % 60)
         elif model.startswith("lab:"):
             from . import lab_adapter
             es_df = None
@@ -958,14 +999,45 @@ class LiveBot:
             self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET at {r['qty']} instead of {qty}: {why}")
         return r["qty"]
 
+    def _confirm_provisional(self, pos, en, res, sym):
+        """A LIT entry routed on its 1m CISD close (before its fill bar existed), checked once the model has that bar: the
+        same trade -> nothing to do (micros / target compared when the size came from an estimate); no trade any more (the
+        real open failed a check the estimate passed, e.g. the 1.5R minimum) -> the routed position is flattened at once."""
+        et_ = self._open_routed
+        pv = self._provisional.get(et_) if et_ is not None else None
+        if not pv or pv.get("done") or (en and en.get("entry_t") == et_):
+            return
+        cur = pos if pos and pos.get("entry_t") == et_ else next((t for t in res["trades"] if t["entry_t"] == et_), None)
+        pv["done"] = True
+        if cur is None:
+            self._log("risk", f"LIT entry routed at the {_et(et_):%H:%M} ET 1m CISD close is not the model's trade once its fill bar "
+                              "closed (sized from an estimate): flattening the routed position")
+            self._flattened.add(et_)
+            self._route({"sym": sym, "side": "exit", "qty": self._open_qty, "reason": "NO TRADE", "entry_t": et_, "pnl": 0.0})
+            self._open_routed = None
+            return
+        d = pv["dir"]
+        if int(cur["qty"]) != int(pv["model_qty"]):
+            self._log("warn", f"LIT entry {_et(et_):%H:%M} ET: routed {pv['qty']} micros sized from the CISD close; the model's trade "
+                              f"(sized from the real open) has {int(cur['qty'])}. The broker keeps {pv['qty']}.")
+        tg = tick_px(cur["target"], d, target=True)
+        if tg is not None and abs(float(tg) - float(pv["target"])) > 1e-9:
+            self._log("warn", f"LIT entry {_et(et_):%H:%M} ET: broker target {pv['target']:.2f} (from the estimate), the model's "
+                              f"target is {tg:.2f}; the model's exit is still routed when it comes")
+
     def _route_signals(self, res, sym, now, secs):
         """Turn the engine's position / completed trades into adapter calls, exactly once each."""
         start = self.started_at
         pos = self.state.get("position")
+        # LIT: an entry decided on its 1m CISD close (lit_live state "enter_now"), routed at market at once; the open
+        # position with the same entry_t appears once its fill bar has closed (then it is already routed, and checked)
+        en = self.state.get("enter_now") if not pos else None
         late_after = 2 * secs + 60
+        self._confirm_provisional(pos, en, res, sym)
         # desync: we routed an entry the engine no longer knows about (no open position, no completed trade with it)
         if self._open_routed is not None:
-            known = (pos and pos.get("entry_t") == self._open_routed) or any(t["entry_t"] == self._open_routed for t in res["trades"])
+            known = (pos and pos.get("entry_t") == self._open_routed) or (en and en.get("entry_t") == self._open_routed) \
+                or any(t["entry_t"] == self._open_routed for t in res["trades"])
             if not known and not self.health["desync"]:
                 self.health["desync"] = True
                 self._log("risk", f"DESYNC: entry routed at {_et(self._open_routed):%H:%M} ET is no longer in the model (feed revision?). "
@@ -984,25 +1056,32 @@ class LiveBot:
             self._route({"sym": sym, "side": "exit", "qty": self._open_qty or pos.get("qty"), "reason": "TIME SAFETY",
                          "entry_t": self._open_routed})
             self._open_routed = None
-        if pos and pos["entry_t"] >= start - secs and ("entry", pos["entry_t"]) not in self.seen:
-            self.seen.add(("entry", pos["entry_t"]))
-            age = now - (pos["entry_t"] + secs)
+        ent = pos or en
+        if ent and ent["entry_t"] >= start - secs and ("entry", ent["entry_t"]) not in self.seen:
+            self.seen.add(("entry", ent["entry_t"]))
+            age = now - (ent["entry_t"] + secs)
             if self.health["entries_blocked"]:
-                self._blocked_entries.add(pos["entry_t"])
-                self._log("risk", f"Entry at {_et(pos['entry_t']):%H:%M} ET NOT routed: feed stale")
+                self._blocked_entries.add(ent["entry_t"])
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: feed stale")
             elif age > late_after:
-                self._blocked_entries.add(pos["entry_t"])
-                self._log("risk", f"Entry at {_et(pos['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
-            elif not (q := self._equity_qty(pos["entry_t"], pos["qty"], pos)):
-                self._blocked_entries.add(pos["entry_t"])
+                self._blocked_entries.add(ent["entry_t"])
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
+            elif not (q := self._equity_qty(ent["entry_t"], ent["qty"], ent)):
+                self._blocked_entries.add(ent["entry_t"])
             else:
-                self._open_routed = pos["entry_t"]
+                self._open_routed = ent["entry_t"]
                 self._open_qty = q
-                d = 1 if pos["dir"] == 1 else -1
+                d = 1 if ent["dir"] == 1 else -1
+                if ent is en:
+                    self._provisional[int(en["entry_t"])] = {"qty": q, "model_qty": int(en["qty"]), "dir": d, "est": bool(en.get("est")),
+                                                             "target": tick_px(en["target"], d, target=True), "t": int(self.clock())}
+                    self._log("system", f"LIT 1m CISD closed at {_et(en['entry_t']):%H:%M} ET: MARKET entry sent at once "
+                                        f"({int(self.clock()) - int(en['entry_t'])} s after the close; the backtest fills at this bar's open)"
+                                        + ("; size from the CISD close, the feed did not show this bar's open yet" if en.get("est") else ""))
                 rr = self._route({"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
-                                  "stop": tick_px(pos["stop"], d), "target": tick_px(pos["target"], d, target=True),
-                                  "entry": pos["entry"], "entry_t": pos["entry_t"]})
-                self._push_fill(pos, q, sym, rr)
+                                  "stop": tick_px(ent["stop"], d), "target": tick_px(ent["target"], d, target=True),
+                                  "entry": ent["entry"], "entry_t": ent["entry_t"]})
+                self._push_fill(ent, q, sym, rr)
         if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._route_stop_move(pos, sym)
         for tr in res["trades"]:
@@ -1104,7 +1183,45 @@ class LiveBot:
                 self._note_error(f"poll failed: {e.__class__.__name__}: {e}")
                 self.health["ok"] = False
                 traceback.print_exc()
-            self.stop_flag.wait(self.cfg.get("poll_sec", 60))
+            self.stop_flag.wait(self._sleep_s())
+
+    def _sleep_s(self):
+        """Seconds to the next poll: aligned to the minute (cfg poll_offsets, default 2 s and 32 s after each minute boundary,
+        so a closed 1m bar is acted on ~2 s after it closes and exits get a mid-minute look). cfg poll_align false, or a
+        poll_sec under 30 (test harnesses), keeps the plain poll_sec sleep. With NinjaTrader's 1m feed, a 1m bar not yet in
+        the file at the 2 s poll (LE_BarFeed writes it on the first tick of the next minute) is re-polled the moment the file
+        changes (up to 20 s after the boundary)."""
+        ps = float(self.cfg.get("poll_sec", 60) or 60)
+        if self.cfg.get("poll_align") is False or ps < 30:
+            return ps
+        now = float(self.clock())
+        if self._await_nt_bar(now):
+            return 0.0
+        return max(0.0, next_wake(now, self.cfg.get("poll_offsets") or (2.0, 32.0)) - now)
+
+    def _await_nt_bar(self, now, limit_s=20.0, step=0.25):
+        """True (poll again now) once NinjaTrader's 1m file changed after the poll found the minute's bar missing."""
+        boundary = int(now // 60 * 60)
+        if self.cfg.get("data_source") != "ninjatrader" or not self.health.get("bar_1m_behind") or self._nt_repoll == boundary \
+                or now - boundary >= limit_s or self._nt_feed is None:
+            return False
+        self._nt_repoll = boundary
+        path = self._nt_feed.file_for(self.cfg.get("sym", "NQ"), 1)
+        if not path:
+            return False
+        try:
+            m0 = os.stat(path).st_mtime_ns
+        except OSError:
+            return False
+        t_end = time.time() + max(0.0, limit_s - (now - boundary))
+        while time.time() < t_end and not self.stop_flag.is_set():
+            self.stop_flag.wait(step)
+            try:
+                if os.stat(path).st_mtime_ns != m0:
+                    return True
+            except OSError:
+                return False
+        return False
 
     def snapshot(self):
         return {"running": self.running, "cfg": {k: v for k, v in self.cfg.items() if k != "webhook_url"},

@@ -3,7 +3,8 @@
 import { esc, css, etParts, etOffset, fmt$, fmtN, store, toast, downloadFile } from '../util.js';
 
 // ------------------------------------------------------------------ New York time
-export const KZ = [{ id: 'am', name: 'NY AM killzone', a: 570, b: 690 }, { id: 'pm', name: 'NY PM killzone', a: 810, b: 930 }];
+// the live strategy's entry window (LIT, since 2026-10-18: entries 02:00-15:30 ET; the previous engine's killzones were 09:30-11:30 / 13:30-15:30)
+export const KZ = [{ id: 'lit', name: 'LIT entry window', a: 120, b: 930 }];
 export const LAUNCH_TS = etToTs(2026, 10, 18, 18, 0);          // Sunday 2026-10-18 18:00 ET: TradingView alerts go live
 
 // UTC seconds of an ET wall-clock moment (DST-safe: two passes over the offset)
@@ -20,7 +21,7 @@ export function etNow(ts = Date.now() / 1000) {
 }
 export const marketOpen = (n = etNow()) => !(n.dow === 6 || (n.dow === 5 && n.mod >= 1020) || (n.dow === 0 && n.mod < 1080) || (n.mod >= 1020 && n.mod < 1080));
 
-// the current / next killzone: {state:'live'|'next', kz, start, end, secs}
+// the current / next entry window: {state:'live'|'next', kz, start, end, secs}
 export function killzone(ts = Date.now() / 1000) {
   for (let k = 0; k < 9; k++) {
     const n = etNow(ts + k * 86400);

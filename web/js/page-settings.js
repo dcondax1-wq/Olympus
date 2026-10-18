@@ -17,10 +17,10 @@ async function loadPush() {
   let p;
   try { p = await api('/api/push'); } catch (e) { out.innerHTML = '<div class="empty">Could not read the notification setup.</div>'; return; }
   const on = p.configured && p.devices > 0;
-  $('#pushState').textContent = on ? `● ${p.devices} phone${p.devices === 1 ? '' : 's'}` : p.configured ? 'keys set, no phone yet' : 'not set up';
+  $('#pushState').textContent = on ? `● ${p.devices} phone${p.devices === 1 ? '' : 's'}${p.linked ? ' · linked' : ''}` : p.configured ? 'key set, no phone yet' : 'waiting for the cloud';
   $('#pushState').className = 'pill ' + (on ? 'good' : '');
   out.innerHTML = `
-    <div class="small muted" style="margin-bottom:10px">The PC bot sends a notification to the phone app (Home Screen web app) for every fill and every outcome, a few seconds after it happens. Free: no Telegram or Discord needed.</div>
+    <div class="small muted" style="margin-bottom:10px">The PC bot sends the phone app a notification for every entry and every outcome, a few seconds after it happens. <b>Automatic:</b> allow notifications once in the phone app; with the heartbeat on (LE_HEARTBEAT=1) the cloud links this PC on its next run (it seals the notification key to this PC). ${p.linked ? '<b class="good">Linked.</b>' : `Not linked yet${p.sync_error ? ' (' + esc(p.sync_error) + ')' : ''}.`} The fields below are only a manual override.</div>
     <div class="form-grid">
       <span>VAPID private key</span><input class="inp" id="puPriv" placeholder="${p.configured ? 'saved (paste a new one to replace it)' : 'from tools/push_keys.py or the app'}" autocomplete="off" type="password">
       <span>Phone code(s)</span><textarea class="inp" id="puSubs" rows="3" placeholder='[{"endpoint":"https://web.push.apple.com/…","keys":{…}}] from the app: System → Settings → Turn on notifications' spellcheck="false"></textarea>

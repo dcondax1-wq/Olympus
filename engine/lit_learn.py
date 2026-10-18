@@ -65,8 +65,9 @@ STEP = 0.05                # knobs move on a 0.05 grid
 SKIP_MIN_N = 15            # a skip needs >= 15 trades in the bucket that lost money
 WINDOW_DAYS = 182          # trailing 6 months: estimation window and the guardrails' recent window
 WF_BLOCKS, WF_BLOCK_DAYS, WF_MIN_ACTIVE = 6, 30, 2
-Z_MIN = 2.0                # significance gate: a move away from 1.0x (or a skip) needs the bucket's mean R to differ from the
-                           # rest of the window by >= Z_MIN standard errors (Welch, R winsorized at +/-WINSOR); set on noise
+Z_MIN = 2.5                # significance gate: a move away from 1.0x (or a skip) needs the bucket's mean R to differ from the
+                           # rest of the window by >= Z_MIN standard errors (pooled spread, R winsorized at +/-WINSOR). Set on
+                           # pure-noise journals only: 2.0 -> a false change in 15% of weeks, 2.5 -> 4%, 3.0 -> 1%
 WINSOR = 5.0
 SIG_MIN_N = 10           # the signal test needs 10+ trades in the bucket and 10+ outside it
 ACTIVE = None              # families the learner may move (None = all of FAMILIES; the sensitivity study narrows it)

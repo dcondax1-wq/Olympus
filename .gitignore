@@ -52,3 +52,5 @@ research/design/icon_v2/src/node_modules/
 # phone notifications (engine/push.py): the VAPID private key + subscriptions and the PC's sent-notice keys
 data/push.json
 data/push_sent.json
+.le_push/
+data/push_pc_key.json

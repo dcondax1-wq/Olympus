@@ -8,7 +8,38 @@ import { widget, body, meta, buildGrid } from './widgets.js';
 import { tickTo, ring, arcGauge, spark, bar, waiting, stat, getJSON, dash, pref, dur, ago, killzone, etNow, etToTs, LAUNCH_TS, marketOpen, tradingDate, weekOf } from './kit.js';
 
 const PLAN = { start: 50000, target: 3000, mll: 2000, dll: 1000, lock: 50100, internal: 600 };
-const FLOW = ['WAITING FOR SWEEP', 'ARMED - HUNTING IFVG', 'ORDER PENDING', 'IN TRADE', 'DONE FOR DAY'];
+const FLOW = ['WAITING FOR SWEEP', 'ARMED - HUNTING IFVG', 'ORDER PENDING', 'IN TRADE', 'DONE FOR DAY'];   // previous engine (archive)
+// LIT (live since 2026-10-18): levels -> sweep -> 5m CISD -> limit at the CISD level (30 min) -> 1m CISD -> trade -> done
+const LIT_FLOW = ['LEVELS', 'SWEEP', 'CISD', 'LIMIT', '1m CISD', 'IN TRADE', 'DONE'];
+function litIdx(st) {
+  const ms = String(st.model_state || ''), su = Object.values(st.setups || {})[0];
+  if (st.position) return 5;
+  if (/done for today/i.test(ms)) return 6;
+  if (su?.tapped_t || /tapped/i.test(ms)) return 4;
+  if (su || /limit armed/i.test(ms)) return 3;
+  if ((st.lit?.signals_today || []).length) return 2;
+  return /closed/i.test(ms) ? -1 : 0;
+}
+function litNarrative(s, st0) {
+  const ms = String(st0.model_state || '—').replace(/^LIT: /, ''), price = st0.price, out = [];
+  if (!s.running) out.push('The paper bot is stopped, so nothing is being hunted.');
+  out.push(ms.charAt(0).toUpperCase() + ms.slice(1) + '.');
+  for (const [k, su] of Object.entries(st0.setups || {})) {
+    if (!su) continue;
+    out.push(`${k === 'long' ? 'Long' : 'Short'} limit ${fmtN(su.limit, 2)} after the sweep of ${esc((su.pools || []).join(', ') || 'a level')} (extreme ${fmtN(su.ext, 2)}): stop ${fmtN(su.stop, 2)}, target ${fmtN(su.target, 2)}${su.tapped_t ? ', limit touched, waiting for a 1m CISD' : ''}.`);
+  }
+  const pos = st0.position;
+  if (pos) out.push(`Position: ${pos.dir === 1 ? 'LONG' : 'SHORT'} ${pos.qty} MNQ from ${fmtN(pos.entry, 2)}, stop ${fmtN(pos.stop, 2)}${pos.be ? ' (breakeven)' : ''}, target ${fmtN(pos.target, 2)} (${esc(pos.target_label || 'VIX band')}).`);
+  const L0 = st0.lit || {};
+  if (L0.open18 && L0.vix_move) out.push(`Target band: 18:00 open ${fmtN(L0.open18, 2)} ± ${fmtN(L0.vix_move, 1)} pts (VIX ${fmtN(L0.vix, 1)}).`);
+  const R = st0.lit_rules || {};
+  if (R.monday?.text) out.push(R.monday.text + '.');
+  if (R.weekly_stop?.text) out.push('Weekly stop: ' + R.weekly_stop.text.replace(/^weekly stop /i, '') + '.');
+  const pools = (st0.active_pools || []).filter(p => price != null && p.kind !== 'vix');
+  const up = pools.filter(p => p.price > price).sort((a, b) => a.price - b.price)[0], dn = pools.filter(p => p.price < price).sort((a, b) => b.price - a.price)[0];
+  if (up || dn) out.push(`Nearest LIT levels: ${up ? `${esc(up.label)} +${fmtN(up.price - price, 1)}` : 'none above'} · ${dn ? `${esc(dn.label)} −${fmtN(price - dn.price, 1)}` : 'none below'}.`);
+  return { ms: LIT_FLOW[litIdx(st0)] || 'CLOSED', text: out.join(' ') };
+}
 const src = (live) => `<span class="src-pill ${live ? 'live' : 'fallback'}" title="${live ? 'served by /api/dash' : 'dash API not deployed yet: computed from existing endpoints'}">${live ? 'dash api' : 'fallback'}</span>`;
 const st = () => L.live?.state || null;
 
@@ -89,7 +120,7 @@ function dataAge() {
 }
 function sessionName(n = etNow()) {
   if (!marketOpen(n)) return n.mod >= 1020 && n.mod < 1080 && n.dow >= 1 && n.dow <= 4 ? 'CME maintenance' : 'Market closed';
-  const S2 = [[0, 120, 'Asia'], [120, 300, 'London'], [300, 570, 'Pre-market'], [570, 690, 'NY AM killzone'], [690, 810, 'NY lunch'], [810, 930, 'NY PM killzone'], [930, 960, 'Closing hour'], [960, 1020, 'Post-close'], [1080, 1200, 'Globex open'], [1200, 1440, 'Asia']];
+  const S2 = [[0, 120, 'Asia'], [120, 180, 'Frankfurt hour'], [180, 240, 'London open'], [240, 480, 'Pre-market'], [480, 540, 'NY 08-09'], [540, 570, 'Pre-market'], [570, 930, 'NY cash session'], [930, 960, 'No new entries · flat 15:55'], [960, 1020, 'Post-close'], [1080, 1200, 'Globex open'], [1200, 1440, 'Asia 20-00 box']];
   return (S2.find(([a, b]) => n.mod >= a && n.mod < b) || [0, 0, ''])[2];
 }
 
@@ -101,7 +132,7 @@ function cockpitSkeleton(el) {
       <div class="ck-cell ck-price"><div class="ck-k">NQ futures <span id="ckPxSrc"></span></div><div class="ck-v" id="ckPx">—</div><div class="ck-s" id="ckPxSub"></div><div id="ckSpark" style="height:30px;margin-top:4px"></div></div>
       <div class="ck-cell"><div class="ck-k">Today · paper routed</div><div class="ck-v" id="ckToday">—</div><div class="ck-s" id="ckTodaySub"></div></div>
       <div class="ck-cell"><div class="ck-k">This week · band 2–4</div><div class="ck-v sm" id="ckWeek">—</div><div class="ck-band" id="ckBand"></div><div class="ck-s" id="ckWeekSub"></div></div>
-      <div class="ck-cell ck-kz"><div id="ckKzRing"></div><div style="min-width:0"><div class="ck-k" id="ckKzK">Killzone</div><div class="ck-v sm" id="ckKzT">—</div><div class="ck-s" id="ckKzS"></div></div></div>
+      <div class="ck-cell ck-kz"><div id="ckKzRing"></div><div style="min-width:0"><div class="ck-k" id="ckKzK">Entry window</div><div class="ck-v sm" id="ckKzT">—</div><div class="ck-s" id="ckKzS"></div></div></div>
     </div>
     <div class="ck-mid">
       <div class="ck-meter"><div class="ck-k">Profit target · $3,000 <span id="ckEvalSrc"></span></div><div class="row1"><b id="ckTgtV">—</b><span id="ckTgtS"></span></div><div id="ckTgtBar">${bar(0)}</div><div class="row2"><span id="ckTgtL"></span><span>$53,000</span></div></div>
@@ -262,6 +293,7 @@ function editAccount() {
 let lastSay = '';
 function narrative(s, m) {
   const st0 = s.state || {};
+  if (st0.model === 'lit') return litNarrative(s, st0);
   const ms = m?.model_state || st0.model_state || '—';
   const price = st0.price;
   const out = [];
@@ -299,9 +331,10 @@ function renderThink() {
   const s = L.live;
   if (!s) { el.innerHTML = waiting('Waiting for the paper bot', 'Polling /api/live/state every 10 s.'); return; }
   const { ms, text } = narrative(s, modelApi);
-  const flow = modelApi?.flow?.length ? modelApi.flow : FLOW;
+  const isLit = s.state?.model === 'lit';
+  const flow = isLit ? LIT_FLOW : modelApi?.flow?.length ? modelApi.flow : FLOW;
   const SHORT = { 'OUTSIDE KILLZONE': 'OUTSIDE KZ', 'WAITING FOR SWEEP': 'WAIT SWEEP', 'ARMED - HUNTING IFVG': 'ARMED · IFVG', 'ORDER PENDING': 'ORDER', 'IN TRADE': 'IN TRADE', 'DONE FOR DAY': 'DONE' };
-  const idx = flow.indexOf(ms);
+  const idx = isLit ? litIdx(s.state) : flow.indexOf(ms);
   meta('think', `${src(!!modelApi)} <span class="pill">${esc(etStr(s.state?.t || s.last_poll || Date.now() / 1000))} ET bar</span>`);
   if (!el.querySelector('.think-say')) el.innerHTML = `<div class="think-flow" id="thFlow"></div><div class="think-say" id="thSay"></div><div class="think-grid" id="thCards"></div><div class="think-log" id="thLog"></div>`;
   $('#thFlow', el).innerHTML = (idx < 0 ? `<span class="idle">${esc(ms)}</span>` : '') + flow.map((f, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}" title="${esc(f)}">${esc(SHORT[f] || f)}</span>`).join('');
@@ -317,13 +350,15 @@ function renderThink() {
   const s0 = s.state || {}, price = s0.price;
   const card = (k, su) => {
     if (!su) return `<div class="setup-card none"><div class="h"><span>${k.toUpperCase()}</span><span>idle</span></div><div class="b muted">not armed</div><div class="d">waits for a ${k === 'long' ? 'sell-side' : 'buy-side'} sweep</div></div>`;
+    if (isLit) return `<div class="setup-card ${k}"><div class="h"><span>${k.toUpperCase()} LIMIT</span><span>${su.arm_t ? etStr(su.arm_t) : ''}</span></div><div class="b">${fmtN(su.limit, 2)}</div><div class="d">stop ${fmtN(su.stop, 2)} · until ${su.expires_t ? etStr(su.expires_t) : '—'}${su.tapped_t ? ' · touched' : ''}</div></div>`;
     const d = price != null ? su.ext - price : null;
     return `<div class="setup-card ${k}"><div class="h"><span>${k.toUpperCase()} ARMED</span><span>${su.arm_t ? etStr(su.arm_t) : ''}</span></div><div class="b">${fmtN(su.ext, 2)}</div><div class="d">${d != null ? `${d > 0 ? '+' : ''}${fmtN(d, 1)} pts · ` : ''}${esc(String(Array.isArray(su.pools) ? su.pools.join(' ') : su.pools || '').split(/\s+/).slice(0, 3).join(' '))}</div></div>`;
   };
   const pos = s0.position;
   $('#thCards', el).innerHTML = card('long', s0.setups?.long) + card('short', s0.setups?.short) +
     `<div class="setup-card ${pos ? (pos.dir === 1 ? 'long' : 'short') : 'none'}"><div class="h"><span>POSITION</span><span>${s0.day_trades ?? 0} today</span></div><div class="b ${pos ? '' : 'muted'}">${pos ? `${pos.dir === 1 ? 'LONG' : 'SHORT'} @ ${fmtN(pos.entry, 2)}` : 'flat'}</div><div class="d">${pos ? `SL ${fmtN(pos.stop, 2)} · TP ${fmtN(pos.target, 2)}` : `day ${fmtS$(s0.day_pnl)}`}</div></div>` +
-    `<div class="setup-card none"><div class="h"><span>LEVELS</span><span>1H</span></div><div class="b" style="font-size:13px">${s0.h1_protected_high ? fmtN(s0.h1_protected_high, 2) : '—'} / ${s0.h1_protected_low ? fmtN(s0.h1_protected_low, 2) : '—'}</div><div class="d">protected high / low</div></div>`;
+    (isLit ? `<div class="setup-card none"><div class="h"><span>TARGET BAND</span><span>VIX</span></div><div class="b" style="font-size:13px">${s0.lit?.open18 && s0.lit?.vix_move ? `${fmtN(s0.lit.open18 - s0.lit.vix_move, 0)} / ${fmtN(s0.lit.open18 + s0.lit.vix_move, 0)}` : '—'}</div><div class="d">18:00 open ± one VIX day</div></div>`
+      : `<div class="setup-card none"><div class="h"><span>LEVELS</span><span>1H</span></div><div class="b" style="font-size:13px">${s0.h1_protected_high ? fmtN(s0.h1_protected_high, 2) : '—'} / ${s0.h1_protected_low ? fmtN(s0.h1_protected_low, 2) : '—'}</div><div class="d">protected high / low</div></div>`);
   const rows = (s.log || []).filter(r => r.type !== 'warn').slice(0, 5);
   $('#thLog', el).innerHTML = rows.map(r => `<div><span>${etStr(r.t)}</span><span>${esc(r.text)}</span></div>`).join('') || '';
 }
@@ -383,8 +418,9 @@ function renderReady() {
 }
 
 // ------------------------------------------------------------------ widget: session timeline (18:00 → 17:00 ET)
-const SEGS = [[0, 120, 'Globex', 'var(--amt)'], [120, 360, 'Asia', 'var(--amt)'], [480, 660, 'London', 'var(--ssl)'], [660, 930, 'Pre-mkt', 'var(--surface-3)'],
-  [930, 1050, 'NY AM KZ', 'var(--gold)'], [1050, 1170, 'Lunch', 'var(--surface-3)'], [1170, 1290, 'NY PM KZ', 'var(--gold)'], [1290, 1320, 'Close', 'var(--ink-2)'], [1320, 1380, 'Post', 'var(--surface-3)']];
+// minutes after 18:00 ET: the LIT session boxes; the gold strip above them is the 02:00-15:30 entry window
+const SEGS = [[0, 120, 'Globex', 'var(--amt)'], [120, 360, 'Asia 20-00', 'var(--amt)'], [480, 540, 'Frankfurt', 'var(--ssl)'], [540, 600, 'London', 'var(--ssl)'], [600, 840, 'Pre-mkt', 'var(--surface-3)'],
+  [840, 900, 'NY 08-09', 'var(--bsl)'], [900, 930, '', 'var(--surface-3)'], [930, 1290, 'NY cash', 'var(--ink-2)'], [1290, 1320, 'Flat 15:55', 'var(--bad)'], [1320, 1380, 'Post', 'var(--surface-3)']];
 const EVCOL = { sweep: 'var(--gold)', signal: 'var(--accent)', entry: 'var(--accent)', exit: 'var(--good)', order: 'var(--amt)', risk: 'var(--bad)', error: 'var(--bad)', news: 'var(--serious)', tradingview: 'var(--accent-2)' };
 function renderTimeline() {
   const el = body('timeline'); if (!el) return;
@@ -417,6 +453,7 @@ function renderTimeline() {
     svg += `<rect x="${a / 1380 * W}" y="${PH + 6}" width="${(b - a) / 1380 * W - 1}" height="16" rx="3" fill="${col}" opacity="${col.includes('surface') ? .9 : .45}"/>
       ${(b - a) >= 100 ? `<text x="${(a + b) / 2 / 1380 * W}" y="${PH + 18}" text-anchor="middle" font-size="9.5" fill="var(--ink)" font-weight="600">${name}</text>` : ''}`;
   }
+  svg += `<rect x="${480 / 1380 * W}" y="${PH + 1}" width="${(1290 - 480) / 1380 * W}" height="4" rx="2" fill="var(--gold)" opacity=".85"><title>LIT entry window 02:00-15:30 ET</title></rect>`;
   // blackout windows today
   const p = S.meta?.defaults || {};
   for (const e of (L.bo?.entries || [])) {
@@ -434,7 +471,7 @@ function renderTimeline() {
   const cur = date === tradingDate();
   meta('timeline', `<span class="pill">${cur ? 'today' : 'last session'} · ${esc(date)}</span>`);
   el.innerHTML = `<div class="tl"><svg viewBox="0 0 ${W} ${PH + 52}" width="${W}" height="${PH + 52}" style="width:100%;height:auto">${svg}</svg></div>
-    <div class="tl-legend"><span><i style="background:var(--gold)"></i>sweep · killzones</span><span><i style="background:var(--accent)"></i>signal / entry</span><span><i style="background:var(--good)"></i>exit</span><span><i style="background:color-mix(in srgb,var(--bad) 40%,transparent)"></i>news blackout</span><span><i style="background:var(--amt)"></i>Asia</span><span><i style="background:var(--ssl)"></i>London</span></div>`;
+    <div class="tl-legend"><span><i style="background:var(--gold)"></i>sweep · entry window 02:00-15:30</span><span><i style="background:var(--accent)"></i>signal / entry</span><span><i style="background:var(--good)"></i>exit</span><span><i style="background:color-mix(in srgb,var(--bad) 40%,transparent)"></i>news blackout</span><span><i style="background:var(--amt)"></i>Asia</span><span><i style="background:var(--ssl)"></i>London</span></div>`;
 }
 
 // ------------------------------------------------------------------ widget: live liquidity map
@@ -532,7 +569,7 @@ function renderRegime() {
   el.innerHTML = `<div class="gauge3"><div>${gEr}<div class="gl">Trendiness</div><div class="gs">ER10 · trending &gt; ${thr}</div></div><div>${gR}<div class="gl">${api ? 'Day range' : 'Volatility'}</div><div class="gs">${guard ? `guard ${fmtN(guard.used_x_adr, 2)}× of ${guard.limit_x_adr}×` : api ? 'vs 20-day ADR' : 'vs 20-day norm'}</div></div><div>${gV}<div class="gl">Fear gauge</div><div class="gs">VIX · 20 = caution</div></div></div>
     ${series?.length > 2 ? `<div class="mini-label" style="margin-top:8px">ER10 · last ${series.length} sessions</div>${spark(series, { w: 300, h: 34, color: css('--warn') })}` : ''}
     ${guard?.blocks_entries ? `<div class="rdy fail" style="margin-top:8px"><span class="ic">✖</span><span>Day-range guard is <b>blocking new entries</b>: today ran ${fmtN(guard.used_x_adr, 2)}× ADR (limit ${guard.limit_x_adr}×)</span><span></span></div>` : ''}
-    <div class="muted small" style="margin-top:6px">Trending days (ER10 &gt; ${thr}) take reversals at half size; the day-range guard blocks entries after 1.6× ADR.</div>`;
+    <div class="muted small" style="margin-top:6px">${S.res?.model === 'lit' ? 'Context only: LIT has no regime or day-range rule. Its target is the VIX one-day move from the 18:00 open, so a higher VIX means a wider target band.' : `Trending days (ER10 &gt; ${thr}) take reversals at half size; the day-range guard blocks entries after 1.6× ADR.`}</div>`;
 }
 
 // ------------------------------------------------------------------ widget: live event feed
@@ -561,7 +598,36 @@ function renderFeed() {
 
 // ------------------------------------------------------------------ widget: eval pass odds (Monte Carlo)
 let mcRes = null, mcKey = '';
+// LIT (web_next, S.res.model 'lit'): bootstrap of the LIT replay days through the MFFU rules, here in the browser
+// (the /api/dash and /api/montecarlo backtests run the previous engine)
+function litOdds(res, runs = 3000, horizon = 60) {
+  const plan = res.plan, days = res.days;
+  if (!plan || !days?.length) return null;
+  let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  let pass = 0, fail = 0; const dtp = [], fin = [];
+  for (let k = 0; k < runs; k++) {
+    let bal = plan.start, peak = bal, mll = bal - plan.mll, res0 = 'OPEN';
+    const lock = plan.start + (plan.lock_above ?? 1e9);
+    for (let j = 0; j < horizon; j++) {
+      const d = days[Math.floor(rnd() * days.length)];
+      const low = bal + Math.min(0, d.low_intraday ?? Math.min(0, d.pnl));
+      bal += d.pnl;
+      if (low <= mll || bal <= mll) { res0 = 'FAIL'; break; }
+      peak = Math.max(peak, bal); mll = Math.min(Math.max(mll, peak - plan.mll), lock);
+      if (bal - plan.start >= plan.target) { res0 = 'PASS'; dtp.push(j + 1); break; }
+    }
+    if (res0 === 'PASS') pass++; else if (res0 === 'FAIL') fail++;
+    fin.push(bal);
+  }
+  dtp.sort((a, b) => a - b); fin.sort((a, b) => a - b);
+  const q = (a, f) => a.length ? a[Math.min(a.length - 1, Math.floor(f * a.length))] : null;
+  const pp = pass / runs * 100, fp = fail / runs * 100;
+  return { pass_prob: Math.round(pp * 10) / 10, fail_prob: Math.round(fp * 10) / 10, open_prob: Math.round((100 - pp - fp) * 10) / 10,
+    days_to_pass: { median: q(dtp, .5), p90: q(dtp, .9) }, final: { p5: q(fin, .05), p50: q(fin, .5), p95: q(fin, .95) }, api: false,
+    basis: `bootstrap of the ${days.length} LIT replay sessions ${res.range?.[0] || ''} → ${res.range?.[1] || ''}` };
+}
 async function loadOdds() {
+  if (S.res?.model === 'lit') { mcRes = litOdds(S.res); renderOdds(); return; }
   const api = await dash('/api/dash/montecarlo?n=3000&horizon=60', { ttl: 120000 });
   if (api) { mcRes = { ...api, api: true, basis: `${api.meta?.source || 'backtest'} · ${api.meta?.sessions ?? '?'} sessions` }; renderOdds(); return; }
   if (!S.res) return;
@@ -698,7 +764,7 @@ export function initHome() {
     widget({ id, page: 'command', title, size, el });
   }
   widget({ id: 'uw', page: 'command', title: 'Underwater · drawdown from peak', size: 'l', csv: () => { let eq = 0, pk = 0; return { name: 'drawdown', rows: (S.res?.days || []).map(d => { eq += d.pnl || 0; pk = Math.max(pk, eq); return { date: d.date, pnl: d.pnl, cum_pnl: +eq.toFixed(2), dd: +(eq - pk).toFixed(2) }; }) }; } });
-  widget({ id: 'conflb', page: 'command', title: 'Confluence leaderboard', size: 'm', csv: () => confData ? { name: 'confluence', rows: confData.items } : null });
+  widget({ id: 'conflb', page: 'command', title: 'Confluence leaderboard · previous engine (archive)', size: 'm', csv: () => confData ? { name: 'confluence', rows: confData.items } : null });
   widget({ id: 'meminsight', page: 'command', title: 'Memory insights', size: 'm' });
   buildGrid('command', $('#cmdGrid'), ['think', 'ready', 'timeline', 'prep', 'lmap', 'sessions', 'lfeed', 'odds', 'rs', 'regime', 'conflb', 'meminsight',
     'kpis', 'equity', 'account', 'uw', 'rules', 'state', 'ladder', 'clock', 'mtf', 'pd', 'brain', 'trades', 'whatif', 'edge']);

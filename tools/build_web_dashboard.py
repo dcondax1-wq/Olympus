@@ -507,8 +507,10 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # phone notifications: the VAPID public key the app subscribes with (the cloud's, derived from the LE_VAPID_PRIVATE secret,
     # else tools/web_public/push_key.json from tools/push_keys.py) and the public push status (device ids, never endpoints)
     pk = (_load(os.path.join(WEB, "push_key.json"), {}) or {}).get("vapid_public")
+    relay = _load(os.path.join(WEB, "push_relay.json"), {}) or {}
     live["push"] = {**(st.get("push") or {}), "vapid_public": (st.get("push") or {}).get("vapid_public") or pk}
-    for k in ("private", "vapid_private", "subs"):            # never public (status() has none of these; belt and braces)
+    live["push"].setdefault("relay", {"ntfy": relay.get("ntfy"), "topic": relay.get("topic")} if relay.get("topic") else None)
+    for k in ("private", "vapid_private", "subs", "push_subs", "box"):   # never public (status() has none of these; belt and braces)
         live["push"].pop(k, None)
     live["ledger"] = ledger[:200]
     results = None

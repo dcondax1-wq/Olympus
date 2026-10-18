@@ -145,7 +145,7 @@ def main():
     T5 = df5["time"].values
     out = {"strategy": "lit_final" if "--final" in sys.argv else "lit_live (live_model.json)", "params": P, "sessions": len(sess), "backtest_trades": len(REF)}
 
-    def poll(now, window_days=None, hint=True):
+    def poll(now, window_days=None, hint=True, early=True):
         cut5 = df5.iloc[:int(np.searchsorted(T5 + 300, now, side="right"))]
         if window_days:
             cut5 = cut5[cut5["time"] >= cut5["time"].max() - window_days * 86400]
@@ -158,10 +158,10 @@ def main():
             orig = lit_live.window_start
             lit_live.window_start = lambda last_t: int(cut5["time"].min())
             try:
-                return lit_live.run(cut5, P, one_min=cut1, now=now, forming=forming)
+                return lit_live.run(cut5, P, one_min=cut1, now=now, forming=forming, early=early)
             finally:
                 lit_live.window_start = orig
-        return lit_live.run(cut5, P, one_min=cut1, now=now, forming=forming)
+        return lit_live.run(cut5, P, one_min=cut1, now=now, forming=forming, early=early)
 
     # ---- 1. day-end replay
     def day_end(window_days=None):

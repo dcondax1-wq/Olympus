@@ -272,6 +272,486 @@ def detector(seed=11):
     return out
 
 
+# ================================================================================================ fast block queries
+# A block counts for at most this many 5m bars after it is known (15m: 2 days, 1h: 10 days, 4h: 30 days of 24h bars).
+AGE = {"5m": 288, "15m": 576, "1h": 2880, "4h": 8640}
+INF = 10 ** 12
+_IX = {}
+
+
+def ob_index(M, tf, kind="body"):
+    """{d: arrays} of the blocks of direction d (k5, mit5, top, bot, swept, extreme, brk5, bmit5) + touch order."""
+    key = (tf, kind)
+    if key in _IX:
+        return _IX[key]
+    obs = blocks(M, tf, None, kind)
+    out = {}
+    for d in (1, -1):
+        L = [x for x in obs if x["dir"] == d]
+        A = {"ob": L,
+             "k5": np.array([x["k5"] for x in L], dtype=np.int64),
+             "mit5": np.array([x["mit5"] if x["mit5"] is not None else INF for x in L], dtype=np.int64),
+             "top": np.array([x["top"] for x in L]), "bot": np.array([x["bot"] for x in L]),
+             "swept": np.array([x["swept"] for x in L], bool), "ext": np.array([x["kind"] == "extreme" for x in L], bool),
+             "brk5": np.array([x["brk5"] if x["brk5"] is not None else INF for x in L], dtype=np.int64),
+             "bmit5": np.array([x["bmit5"] if x["bmit5"] is not None else INF for x in L], dtype=np.int64)}
+        A["by_mit"] = np.argsort(A["mit5"], kind="stable"); A["mit_sorted"] = A["mit5"][A["by_mit"]]
+        A["by_bmit"] = np.argsort(A["bmit5"], kind="stable"); A["bmit_sorted"] = A["bmit5"][A["by_bmit"]]
+        out[d] = A
+    _IX[key] = out
+    return out
+
+
+def poi_hits(M, z, Q):
+    """Fresh blocks (and breakers if Q["breaker"]) of the trade's direction that the sweep ran INTO: first touch between
+    `pre` 5m bars before the first breach of the swept level and the extreme, known before that touch, at most AGE old,
+    and the extreme no deeper than tol x ATR(5m) past the far edge."""
+    d = z["dir"]; ee = z["ext_i"]; sb = z["sweep_i"]; ext = z["ext_d"] * d; at = z["atr_ext"]
+    kind, tol, pre = Q.get("zone", "body"), Q.get("tol", 0.5), Q.get("pre", 12)
+    hits = []
+    for tf in Q["tfs"]:
+        I = ob_index(M, tf, kind)
+        X = I[d]
+        a = int(np.searchsorted(X["mit_sorted"], sb - pre)); b = int(np.searchsorted(X["mit_sorted"], ee, side="right"))
+        for j in X["by_mit"][a:b]:
+            if ee - X["k5"][j] > AGE[tf]:
+                continue
+            if Q.get("only") == "extreme" and not X["ext"][j]:
+                continue
+            if Q.get("only") == "decisional" and X["ext"][j]:
+                continue
+            if Q.get("swept") and not X["swept"][j]:
+                continue
+            if (d == 1 and ext < X["bot"][j] - tol * at) or (d == -1 and ext > X["top"][j] + tol * at):
+                continue
+            hits.append((tf, "ob", int(j)))
+        if Q.get("breaker"):
+            Y = I[-d]                       # a failed opposite block = a breaker of the trade's direction
+            a = int(np.searchsorted(Y["bmit_sorted"], sb - pre)); b = int(np.searchsorted(Y["bmit_sorted"], ee, side="right"))
+            for j in Y["by_bmit"][a:b]:
+                if ee - Y["brk5"][j] > AGE[tf]:
+                    continue
+                if (d == 1 and ext < Y["bot"][j] - tol * at) or (d == -1 and ext > Y["top"][j] + tol * at):
+                    continue
+                hits.append((tf, "breaker", int(j)))
+    return hits
+
+
+def poi_dist(M, z, Q):
+    """ATR(5m) distance from the sweep extreme to the nearest block of the trade's direction that was fresh when the sweep
+    leg started (0 = the extreme is inside one); inf = none within AGE."""
+    d = z["dir"]; ee = z["ext_i"]; t0 = z["sweep_i"] - Q.get("pre", 12); ext = z["ext_d"] * d; at = max(z["atr_ext"], 1e-9)
+    best = np.inf
+    for tf in Q["tfs"]:
+        X = ob_index(M, tf, Q.get("zone", "body"))[d]
+        m = (X["k5"] < t0) & (X["mit5"] >= t0) & (ee - X["k5"] <= AGE[tf])
+        if not m.any():
+            continue
+        top, bot = X["top"][m], X["bot"][m]
+        dist = np.where((ext >= bot) & (ext <= top), 0.0, np.minimum(np.abs(ext - top), np.abs(ext - bot)))
+        best = min(best, float(dist.min()) / at)
+    return best
+
+
+def opp_dists(M, z, ep, Q, i=None):
+    """Distances (direction space, from the limit price ep) to the proximal edge of every opposing block that is fresh at the
+    trigger bar i and lies beyond ep, nearest first."""
+    d = z["dir"]; i = z["i"] if i is None else i
+    out = []
+    for tf in Q["tfs"]:
+        Y = ob_index(M, tf, Q.get("zone", "body"))[-d]
+        m = (Y["k5"] <= i) & (Y["mit5"] > i) & (i - Y["k5"] <= AGE[tf])
+        if not m.any():
+            continue
+        prox = (Y["bot"][m] if d == 1 else -Y["top"][m])      # direction space
+        dist = prox - ep
+        out.extend(float(x) for x in dist[dist > 0])
+    return sorted(out)
+
+
+def cisd_block(M, z):
+    """The 5m block that made the 5m CISD: the down-close run into the extreme (direction space). body top = the CISD level
+    (today's limit), body bottom, wick top / bottom of the run."""
+    d = z["dir"]
+    hi_d, lo_d, c_d, o_d = (M.h, M.l, M.c, M.o) if d == 1 else (-M.l, -M.h, -M.c, -M.o)
+    ee, st = z["ext_i"], z["ref_i"]
+    j = ee
+    while j > ee - 3 and not (c_d[j] < o_d[j]):
+        j -= 1
+    seg = slice(st, j + 1)
+    top = float(o_d[st]); bot = float(np.minimum(o_d[seg], c_d[seg]).min())
+    return {"top": top, "bot": bot, "mt": 0.5 * (top + bot), "wtop": float(hi_d[seg].max()), "wbot": float(lo_d[seg].min()),
+            "wmt": 0.5 * (float(hi_d[seg].max()) + float(lo_d[seg].min()))}
+
+
+# ================================================================================================ OB-only setups
+class _OBM:
+    """engine.lit.Market whose liquidity levels are the proximal edges of fresh HTF blocks (OB-only setups)."""
+
+    def __init__(self, M, lv):
+        self._M, self._lv = M, lv
+
+    def __getattr__(self, k):
+        return getattr(self._M, k)
+
+    def levels(self, k):
+        return self._lv.get(k, [])
+
+
+_OC = {}
+
+
+def ob_cands(M, tfs=("1h", "4h"), kind="body"):
+    """LIT candidates (engine.lit.candidates, unchanged) where the 'swept liquidity' is the proximal edge of a fresh HTF block:
+    price trades INTO the block (first touch = the sweep), then the inducement / displacement / 5m CISD rules as usual."""
+    key = (tuple(tfs), kind)
+    if key in _OC:
+        return _OC[key]
+    p = os.path.join(CACHE, f"lit_ob_cands_{'-'.join(tfs)}_{kind}_v1_{rl._data_key().replace(':', '_')}.pkl")
+    if os.path.exists(p):
+        _OC[key] = pickle.load(open(p, "rb"))
+        return _OC[key]
+    lv = collections.defaultdict(list)
+    names = {}
+    for tf in tfs:
+        for q, ob in enumerate(blocks(M, tf, None, kind)):
+            k5, m5 = ob["k5"], ob["mit5"]
+            endk = min(m5 if m5 is not None else INF, k5 + AGE[tf], M.n - 1)
+            nm = f"ob{tf}#{q}"
+            names[nm] = (ob["dir"], ob["top"], ob["bot"], tf)
+            prox = ob["top"] if ob["dir"] == 1 else ob["bot"]
+            for k in range(int(M.day_of[k5]), int(M.day_of[endk]) + 1):
+                lv[k].append(("low" if ob["dir"] == 1 else "high", float(prox), int(k5), nm, "ob"))
+    C2 = lit.candidates(_OBM(M, lv), ref=LIVE["ref"])
+    for z in C2:
+        z["src"] = "ob"
+        z["ob_names"] = [n for n in z["swept"] if n in names]
+        z["ob_zones"] = [names[n] for n in z["ob_names"]]
+    os.makedirs(CACHE, exist_ok=True)
+    pickle.dump(C2, open(p, "wb"))
+    _OC[key] = C2
+    return C2
+
+
+# ================================================================================================ executor (unit size)
+def osim(M, B, z, entry_px, tgt_lvl, fb, stop0, P, e1=None):
+    """tools/lit_tightstop.tsim (stop 1 tick beyond the sweep extreme) with one option: e1 = {"level": "edge" | "mt",
+    "x": share} = after the 1m CISD, a limit at the 1m block (the down-close 1m run into the 1m low; edge = its body top =
+    the 1m CISD level, mt = the middle of its body) when that level is within x of the stop distance from the confirming
+    close, valid e1 "wait" 1m bars (cancelled if the target trades or the extreme breaks); else the next 1m open (today)."""
+    if e1 is None:
+        return T.tsim(M, B, z, entry_px, tgt_lvl, fb, stop0, P)
+    d = z["dir"]
+    hi_d, lo_d, c_d, o_d = B.dirs(d)
+    t0 = int(M.t[z["entry_i"]])
+    k0 = int(np.searchsorted(B.t, t0))
+    s_day = int(M.day_of[z["entry_i"]])
+    if k0 >= B.n:
+        return None
+    flat = P["flat_mod"]; wait_s = P["wait"] * 300
+    cis = P.get("cisd1m")
+    if cis and B.secs == 300:
+        cis = max(1, cis // 5)
+    limit_fill, fill, tapped, kconf, lowk = True, None, None, None, None
+    k = k0
+    while k < B.n:
+        if B.day[k] != s_day or B.mod[k] >= flat or B.mod[k] >= 1080:
+            break
+        if tapped is None and B.t[k] >= t0 + wait_s:
+            break
+        if lo_d[k] <= stop0:
+            break
+        if tapped is None and lo_d[k] <= entry_px:
+            tapped = k
+        if tapped is None and hi_d[k] >= tgt_lvl:
+            break
+        if tapped is not None:
+            if k - tapped > cis:
+                break
+            lowk = tapped + int(np.argmin(lo_d[tapped:k + 1]))
+            cz = lit._cisd_level(c_d, o_d, lowk)
+            if cz is not None and k > lowk and c_d[k] > cz[0] and k + 1 < B.n and B.day[k + 1] == s_day:
+                kconf = k
+                break
+        k += 1
+    if kconf is None:
+        return None
+    cz = lit._cisd_level(c_d, o_d, lowk)
+    st1 = cz[1]
+    j = lowk
+    while j > lowk - 3 and not (c_d[j] < o_d[j]):
+        j -= 1
+    top = float(o_d[st1]); bot = float(np.minimum(o_d[st1:j + 1], c_d[st1:j + 1]).min()) if j >= st1 else top
+    L = top if e1["level"] == "edge" else 0.5 * (top + bot)
+    L = min(L, float(c_d[kconf]))
+    near = (float(c_d[kconf]) - L) <= e1["x"] * (float(c_d[kconf]) - stop0) and L > stop0
+    e_px = None
+    if not near:
+        fill = kconf + 1; entry = float(o_d[kconf + 1]) + SLIP; limit_fill = False
+    else:
+        e_px = L
+        for b in range(kconf + 1, min(B.n, kconf + 1 + e1.get("wait", 10))):
+            if B.day[b] != s_day or B.mod[b] >= flat or B.mod[b] >= 1080:
+                break
+            if lo_d[b] <= stop0:
+                break
+            if lo_d[b] <= L:
+                fill = b; entry = min(L, float(o_d[b])); limit_fill = True
+                break
+            if hi_d[b] >= tgt_lvl:
+                break
+        if fill is None:
+            return None
+    risk = entry - stop0
+    if risk <= 0 or lit.qty_for(risk) < 1:
+        return None
+    if fb:
+        tg = entry + P["fallback_rr"] * risk
+    else:
+        dist = tgt_lvl - entry
+        if dist < P["min_rr"] * risk:
+            return None
+        tg = entry + (min(dist, P["max_rr"] * risk) if P["max_rr"] else dist)
+    be_d = None if P["be_r"] is None else P["be_r"] * risk
+    cur, be_done, mfe, mae, worst = stop0, False, 0.0, 0.0, 0.0
+    k = fill
+    exit_px = kind = None
+    while k < B.n:
+        if B.day[k] != s_day or B.mod[k] >= 1080:
+            k -= 1; exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
+        mae = max(mae, (entry - lo_d[k]) / risk)
+        worst = min(worst, lo_d[k] - entry)
+        if lo_d[k] <= cur:
+            exit_px, kind = cur - SLIP, ("BE" if be_done else "STOP"); break
+        if not (k == fill and limit_fill):
+            mfe = max(mfe, (hi_d[k] - entry) / risk)
+            if hi_d[k] >= tg:
+                exit_px, kind = tg, "TARGET"; break
+            if be_d is not None and not be_done and hi_d[k] >= entry + be_d:
+                cur, be_done = entry, True
+        if B.mod[k] >= flat:
+            exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
+        k += 1
+    if exit_px is None:
+        return None
+    xi5 = int(np.searchsorted(M.t, B.t[k], side="right") - 1)
+    return {"day": z["day"], "entry_t": int(B.t[fill]), "exit_t": int(B.t[k]) + B.secs, "exit_i": xi5, "dir": d,
+            "risk_pts": round(risk, 2), "risk0": round(risk, 2), "exit": kind, "trigger": "LIT-" + ("1m" if B.secs == 60 else "5m"),
+            "mfe": round(mfe, 3), "mae": round(min(mae, 1.0 + SLIP / risk), 3), "bars_held": int(k - fill + 1), "regime": "",
+            "half": False, "legs": [(1.0, exit_px - entry)], "w1": worst, "w2": 0.0, "part": False, "stop_src": "ext",
+            "entry_px": round(entry * d, 2), "stop_px": round(stop0 * d, 2), "stop0_px": round(stop0 * d, 2),
+            "target_px": round(tg * d, 2), "e2_px": round(e_px * d, 2) if e_px is not None else None,
+            "limit_fill": limit_fill, "swept": z["swept"], "tf": B.secs // 60, "i": z["i"], "ext_i": z["ext_i"]}
+
+
+# ================================================================================================ the run loop
+OBDEF = {"poi": None, "obt": None, "obx": None, "obe": None, "obe1": None, "obonly": None}
+
+
+def orun(P=None, sessions=SESS):
+    """Unit-size trades of one OB variant on the live LIT settings (tools/lit_tightstop.trun + the OB hooks)."""
+    P = {**T.P_of(), **OBDEF, **(P or {})}
+    names = set(P["sweep_names"]) if P.get("sweep_names") else None
+    sset = set(sessions) if sessions else None
+    M, C = market()
+    B5 = F.bars(M, "5m")
+    B1 = F.bars(M, "1m") if P["tf"] == "1m" else None
+    Q5 = P["obonly"]
+    if Q5:
+        main = {(z["day"], z["dir"], z["ext_i"]) for z in C}
+        C2 = [z for z in ob_cands(M, Q5["tfs"], Q5.get("zone", "body")) if (z["day"], z["dir"], z["ext_i"]) not in main]
+        C = sorted(list(C) + C2, key=lambda z: (z["entry_t"], -z["dir"]))
+    out, busy, per_day = [], -1, collections.Counter()
+    for z in C:
+        if sset is not None and z["day"] not in sset:
+            continue
+        if z["entry_i"] <= busy or per_day[z["day"]] >= P["max_per_day"]:
+            continue
+        src = z.get("src", "main")
+        if src == "ob":
+            if not lit.setup_ok(z, {**P, "depth": Q5.get("depth", 0.0)}, None):
+                continue
+            tol = Q5.get("tol", 0.5) * z["atr_ext"]
+            ext = z["ext_d"] * z["dir"]
+            if not any((dd == 1 and ext >= bt - tol) or (dd == -1 and ext <= tp + tol) for dd, tp, bt, _ in z["ob_zones"]):
+                continue
+        elif not lit.setup_ok(z, P, names):
+            continue
+        if P.get("monday") and lit.monday_block(M, z):
+            continue
+        ep = min(float(z["ref_d"]), z["trig_c"])
+        stop0 = z["ext_d"] - P["stop_buf"]
+        risk = ep - stop0
+        if not (P["min_stop"] <= risk <= P["max_stop"]):
+            continue
+        mult, why = 1.0, []
+        Q = P["poi"]
+        hits = None
+        if Q:
+            hits = poi_hits(M, z, Q)
+            md = Q.get("mode", "require")
+            if md == "require" and not hits:
+                continue
+            if md == "size" and hits:
+                mult *= Q["mult"]; why.append("poi")
+            if md in ("skip_far", "half_far"):
+                if poi_dist(M, z, Q) > Q["far"]:
+                    if md == "skip_far":
+                        continue
+                    mult *= Q.get("mult", 0.5); why.append("far")
+            if md == "half_without" and not hits:
+                mult *= Q.get("mult", 0.5); why.append("no poi")
+        sh = z["entry_d"] - ep
+        TT = {c: [x + sh for x in v] for c, v in lit.targets_x(M, z, P).items()}
+        classes = list(P["classes"])
+        Qt = P["obt"]
+        if Qt:
+            od = opp_dists(M, z, ep, Qt)
+            TT["obt"] = od
+            classes = ["obt"] if Qt.get("pick") == "alone" else classes + ["obt"]
+        best = None
+        for c in classes:
+            for dist in sorted(TT.get(c, [])):
+                if dist >= P["min_rr"] * risk:
+                    if best is None or dist < best:
+                        best = dist
+                    break
+        fb = False
+        if best is None:
+            if not P["fallback_rr"]:
+                continue
+            tp, fb = P["fallback_rr"] * risk, True
+        else:
+            tp = min(best, P["max_rr"] * risk) if P["max_rr"] else best
+        Qx = P["obx"]
+        if Qx:
+            od = opp_dists(M, z, ep, Qx)
+            if od and od[0] < Qx.get("rr", 1.5) * risk:
+                if Qx.get("mode", "skip") == "skip":
+                    continue
+                mult *= Qx.get("mult", 0.5); why.append("obstacle")
+        use1 = P["tf"] == "1m" and B1 is not None and int(M.day_of[z["entry_i"]]) in B1.full
+        B = B1 if use1 else B5
+        ep_use, Pu = ep, P
+        Qe = P["obe"]
+        if Qe:
+            cb = cisd_block(M, z)
+            L = cb[Qe["level"]]
+            if (ep - L) <= Qe["x"] * (ep - stop0) and L - stop0 >= P["min_stop"] and L != ep:
+                ep_use = min(L, z["trig_c"])
+                if Qe.get("how") == "limit":
+                    Pu = {**P, "cisd1m": None}
+        t = osim(M, B, z, ep_use, ep + tp, fb, stop0, Pu, P["obe1"])
+        if t is None:
+            continue
+        busy = t["exit_i"]; per_day[z["day"]] += 1
+        t["ob_m"] = mult; t["ob_why"] = why; t["src"] = src
+        t["poi"] = [(tf, k_) for tf, k_, _ in hits] if hits else []
+        out.append(t)
+    return out
+
+
+# ================================================================================================ scoring (both live sizes)
+EVAL = ("lit", 800, 25.0)
+ROOM = 0.6
+_orig_qty_of = T.qty_of
+
+
+def _qty_capped(t, rule, room=None, room_k=None):
+    """tools/lit_tightstop.qty_of (weekly stop x OB multiplier in one rounding, room cap) with the 40-micro cap restored for
+    size-ups (> 1)."""
+    mi, mn = _orig_qty_of(t, rule, room, room_k)
+    return min(mi, MAXQ), mn
+
+
+T.qty_of = _qty_capped
+TWC = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8")).get("lit_sizing", {}).get("two_week") or \
+    {"base": "need", "need_buf": 1.0, "room_f": 0.6, "wk": False, "dll_cap": True, "stop_at_target": True}
+
+
+def marks(U):
+    T.wk_marks(U)
+    for t in U:
+        t["wk_raw"] = t["wk_m"]
+        t["wk_m"] = t["wk_m"] * t.get("ob_m", 1.0)
+    return U
+
+
+def tw_by(U):
+    by = collections.defaultdict(list)
+    for t in sorted(U, key=lambda t: t["entry_t"]):
+        tg = abs(float(t["target_px"]) - float(t["entry_px"]))
+        by[t["day"]].append({"day": t["day"], "entry_t": t["entry_t"], "exit_t": t["exit_t"], "dir": t["dir"], "risk": t["risk_pts"],
+                             "tgt": round(tg, 2), "pts": float(t["legs"][0][1]), "w1": float(t["w1"]), "exit": t["exit"],
+                             "wk_m": t.get("wk_raw", 1.0), "size_mult": t.get("ob_m", 1.0), "tf": t["tf"]})
+    return [by.get(s, []) for s in SESS]
+
+
+def tw_score(U, cfg=None, spans=("H1", "H2", "2026", "2021-25")):
+    """two_week mode: a fresh eval on every session of the span (only starts that can see 10 / 20 sessions count), plus the
+    back-to-back path (a new eval after a pass, a fail or 10 sessions) for the $ columns."""
+    from tools import lit_2wk as L2
+    cfg = dict(cfg or TWC)
+    if any(t.get("ob_m", 1.0) < 1 for t in U):
+        cfg["wk"] = True                    # size_mult = the OB multiplier only (config C ignores the weekly stop)
+    by = tw_by(U)
+    out = {}
+    for sp in spans:
+        a0, z0 = SPAN[sp]
+        ix = [i for i, d in enumerate(SESS) if a0 <= d <= z0]
+        a, z = ix[0], ix[-1] + 1
+        res = [L2.run_eval(cfg, list(range(i, min(z, i + 20))), by, "50k", 20) for i in range(a, z)]
+        o = L2.summarize(res, "50k", [z - i for i in range(a, z)])
+        k, path, n = a, [], collections.Counter()
+        while k < z:
+            r, used, _, _ = L2.run_eval(cfg, list(range(k, min(z, k + 10))), by, "50k", 10, keep=path)
+            if r == "OPEN" and k + used >= z and used < 10:
+                break
+            n[r] += 1; k += used
+        st = T.stats(path, sp)
+        out[sp] = {**st, "p10": o["p10"], "f10": o["f10"], "p20": o["p20"], "f20": o["f20"], "pass_med": o["pass_med"],
+                   "cost": o["cost"], "n10": o["n10"], "b2b": f"{n['PASS']}/{n['FAIL']}/{n['OPEN']}"}
+    return out, path
+
+
+def ev_score(U):
+    return T.score(U, EVAL, room_k=ROOM)
+
+
+def both(U):
+    return {"eval": ev_score(U), "two_week": tw_score(U)[0]}
+
+
+def line(o, sp):
+    s = o.get(sp) or {}
+    if not s.get("n"):
+        return "n=0"
+    return (f"n={s['n']} {s['tpw']}/wk win {s['win']}% PF {s['pf']} {s['net']:+,} (${s['per_month']:,}/mo) DD {s['dd']:,} "
+            f"2w {s['p10']}/{s['f10']} 1m {s['p20']}/{s['f20']}")
+
+
+_U = {}
+
+
+def unit(P=None):
+    key = json.dumps(P or {}, sort_keys=True, default=str)
+    if key not in _U:
+        _U[key] = marks(orun(P))
+    return _U[key]
+
+
+def check():
+    U = unit()
+    T0 = T.sized([dict(t, wk_m=t["wk_raw"]) for t in U], ("lit", 800, 20.0))
+    n26 = [t for t in T0 if t["day"] >= "2026"]
+    print(f"lit_ob no-OB run: {len(T0)} trades, 2026 {len(n26)} net {sum(t['pnl'] for t in n26):+,.0f} (run lit_live: 120, +41,734)")
+    o = both(U)
+    for m in ("eval", "two_week"):
+        for sp in ("H1", "H2", "2021-25"):
+            print(m, sp, line(o[m], sp))
+    return len(n26) == 120 and abs(sum(t["pnl"] for t in n26) - 41734) < 2
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     globals()[cmd]()
