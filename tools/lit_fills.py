@@ -19,6 +19,8 @@ Scenarios are cumulative steps from the plain backtest to the live bot as coded 
   stress      live_today with 2x the stop slippage (+1 base tick, 5% of the range), +1 tick spread, target 2 ticks through
   inside1     live_today with the target limit 1 tick inside the level
   fixed_in1   live_fixed with the target limit 1 tick inside the level
+  lat_nobe    live_today but the breakeven reaches the broker at once (isolates the breakeven lag)
+  measured    (only when logs/fill_audit_report.json exists) the fills tools/fill_audit.py measured: `run measured`
 
   python tools/lit_fills.py check      # base == run lit_live; n0 close to base
   python tools/lit_fills.py run        # every scenario -> research/lit/fills_results.json (1 process, ~15 min)
@@ -74,6 +76,16 @@ TITLES = {
     "inside1": "REALISTIC with the target limit 1 tick inside the level",
     "fixed_in1": "REALISTIC, bot fixed, target limit 1 tick inside the level",
 }
+# measured: the suggested fills of tools/fill_audit.py (logs/fill_audit_report.json, after a week on Sim101 / the MFFU account)
+_AUDIT = os.path.join(ROOT, "logs", "fill_audit_report.json")
+if os.path.exists(_AUDIT):
+    try:
+        _sug = json.load(open(_AUDIT, encoding="utf-8")).get("suggested_fills") or {}
+        if _sug:
+            SCEN["measured"] = {k: v for k, v in _sug.items() if not k.startswith("_")}
+            TITLES["measured"] = "MEASURED: the fills tools/fill_audit.py measured on NinjaTrader"
+    except Exception:
+        pass
 _RUNS = {}
 
 

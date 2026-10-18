@@ -89,8 +89,9 @@ def read_outgoing(folder):
     return out
 
 
-def load_archive(path=ARCHIVE):
+def load_archive(path=None):
     """order id -> its latest known state (a FILLED state is never replaced by a later non-FILLED one)."""
+    path = path or ARCHIVE
     rows = {}
     if not os.path.exists(path):
         return rows
@@ -106,9 +107,10 @@ def load_archive(path=ARCHIVE):
     return rows
 
 
-def archive(folder=None, path=ARCHIVE):
+def archive(folder=None, path=None):
     from engine.ninjatrader import default_folder
     folder = folder or default_folder()
+    path = path or ARCHIVE
     have = load_archive(path)
     cur = read_outgoing(folder)
     new = 0
