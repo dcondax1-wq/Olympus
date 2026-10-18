@@ -1,7 +1,7 @@
 {
  "built": "2026-10-18 20:13",
  "baseline": "baseline",
- "count": 921,
+ "count": 926,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -8897,6 +8897,180 @@
      "slow_pass": 53.7,
      "pass_med": 17.0,
      "b2b": "24/42"
+    }
+   }
+  },
+  {
+   "id": "lit_ob_ob_setups_into_inside_15m_1h_4h_1d_as_a_2nd_trad",
+   "title": "LIT order blocks: OB setups (into + inside) 15m/1h/4h/1d as a 2nd trade a day",
+   "family": "other",
+   "question": "Owner order 2026-10-18: order blocks are huge, trade all of LIT - does an order block (POI, entry, target, obstacle, OB-only setup) improve the live LIT trade in both 2026 halves?",
+   "status": "promising",
+   "verdict": "PROMISING (thin): +10 trades in 2026, more $ in both halves, but the H2 2-week pass is flat to -1.4 and it needs a 2nd trade a day. EVAL MODE ($800 up to a 25-pt stop + 60% room cap): H1 (pick) n=84 3.28/wk win 23.8% PF 4.26 net +34,722 ($5,697/mo) DD -2,505; eval 2wk 37.5/3.9 1mo 63.3/6.2; H2 (check) n=42 2.69/wk win 35.7% PF 2.53 net +10,671 ($2,873/mo) DD -2,069; eval 2wk 29.5/0.0 1mo 48.7/0.0; 2021-25 reference n=546 2.55/wk win 17.0% PF 1.03 net +2,762 ($54/mo) DD -16,803; eval 2wk 9.5/8.5 1mo 14.8/25.3. TWO_WEEK MODE (live config C, fresh eval each session, $ from back-to-back evals reset at 10 sessions): H1 n=84 3.28/wk win 23.8% PF 3.53 net +35,867 ($5,884/mo) DD -3,585; eval 2wk 55.5/7.6 1mo 78.0/14.7; H2 n=42 2.69/wk win 35.7% PF 1.96 net +11,932 ($3,212/mo) DD -3,122; eval 2wk 49.3/2.9 1mo 54.2/3.4; 2021-25 n=544 2.54/wk win 16.9% PF 0.97 net -4,547 ($-89/mo) DD -24,574; eval 2wk 16.3/7.5 1mo 25.3/28.3.",
+   "writeup": "lit-order-blocks",
+   "tags": [
+    "lit",
+    "lit_ob"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "obonly": {
+     "tfs": [
+      "15m",
+      "1h",
+      "4h",
+      "1d"
+     ],
+     "mode": "inside",
+     "both": true,
+     "depth": 0.0,
+     "tol": 0.5,
+     "second": true
+    }
+   },
+   "sizing": {
+    "eval": {
+     "rule": [
+      "lit",
+      800,
+      25.0
+     ],
+     "room_k": 0.6
+    },
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    }
+   },
+   "built": "2026-10-18 20:13",
+   "spans": {
+    "2026": {
+     "n": 126,
+     "tpw": 3.06,
+     "wk2": 90,
+     "win": 27.8,
+     "pf": 3.49,
+     "net": 45533,
+     "dd": -2505,
+     "avg_r": 0.749,
+     "stop": 45.8,
+     "worst_day": -806,
+     "risk": 322.0,
+     "half": 16,
+     "per_month": 4642,
+     "p10": 28.6,
+     "f10": 1.9,
+     "p15": 44.2,
+     "f15": 5.3,
+     "p20": 58.3,
+     "f20": 10.2,
+     "dec10": 30.5,
+     "slow_pass": 45.8,
+     "pass_med": 14.5,
+     "b2b": "10/3"
+    },
+    "2021-25": {
+     "n": 546,
+     "tpw": 2.55,
+     "wk2": 80,
+     "win": 17.0,
+     "pf": 1.03,
+     "net": 2762,
+     "dd": -16803,
+     "avg_r": 0.021,
+     "stop": 38.2,
+     "worst_day": -860,
+     "risk": 312.0,
+     "half": 51,
+     "per_month": 54,
+     "p10": 8.3,
+     "f10": 6.3,
+     "p15": 11.7,
+     "f15": 15.7,
+     "p20": 14.7,
+     "f20": 24.7,
+     "dec10": 14.6,
+     "slow_pass": 51.6,
+     "pass_med": 16.0,
+     "b2b": "10/28"
+    },
+    "all": {
+     "n": 672,
+     "tpw": 2.63,
+     "wk2": 82,
+     "win": 19.0,
+     "pf": 1.42,
+     "net": 48296,
+     "dd": -16803,
+     "avg_r": 0.157,
+     "stop": 40.1,
+     "worst_day": -860,
+     "risk": 314.0,
+     "half": 67,
+     "per_month": 794,
+     "p10": 12.0,
+     "f10": 5.9,
+     "p15": 17.3,
+     "f15": 14.7,
+     "p20": 22.1,
+     "f20": 23.5,
+     "dec10": 17.9,
+     "slow_pass": 49.7,
+     "pass_med": 15.0,
+     "b2b": "20/32"
     }
    }
   },
@@ -35936,6 +36110,182 @@
    }
   },
   {
+   "id": "lit_ob_ch12_poi_x1_5_all_origin_checks",
+   "title": "LIT order blocks: ch12 POI x1.5, all origin checks",
+   "family": "other",
+   "question": "Owner order 2026-10-18: order blocks are huge, trade all of LIT - does an order block (POI, entry, target, obstacle, OB-only setup) improve the live LIT trade in both 2026 halves?",
+   "status": "rejected",
+   "verdict": " EVAL MODE ($800 up to a 25-pt stop + 60% room cap): H1 (pick) n=80 3.12/wk win 22.5% PF 4.11 net +34,377 ($5,640/mo) DD -2,513; eval 2wk 42.2/3.1 1mo 63.3/6.2; H2 (check) n=40 2.56/wk win 35.0% PF 2.51 net +10,465 ($2,818/mo) DD -2,157; eval 2wk 29.5/0.0 1mo 47.4/0.0; 2021-25 reference n=510 2.38/wk win 17.5% PF 0.94 net -5,022 ($-98/mo) DD -19,426; eval 2wk 8.8/8.1 1mo 15.8/21.2. TWO_WEEK MODE (live config C, fresh eval each session, $ from back-to-back evals reset at 10 sessions): H1 n=80 3.12/wk win 22.5% PF 3.02 net +31,342 ($5,142/mo) DD -3,980; eval 2wk 52.9/8.4 1mo 75.2/17.4; H2 n=40 2.56/wk win 35.0% PF 1.85 net +10,481 ($2,822/mo) DD -3,122; eval 2wk 50.7/2.9 1mo 61.0/16.9; 2021-25 n=510 2.38/wk win 17.5% PF 1.04 net +5,131 ($101/mo) DD -26,105; eval 2wk 15.4/5.6 1mo 23.6/22.9.",
+   "writeup": "lit-order-blocks",
+   "tags": [
+    "lit",
+    "lit_ob"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "poi": {
+     "tfs": [
+      "15m",
+      "1h",
+      "4h"
+     ],
+     "zone": "body",
+     "pre": 72,
+     "tol": 2.0,
+     "swept": true,
+     "clean_liq": 2.0,
+     "clean_fvg": 2.0,
+     "mode": "size",
+     "mult": 1.5
+    }
+   },
+   "sizing": {
+    "eval": {
+     "rule": [
+      "lit",
+      800,
+      25.0
+     ],
+     "room_k": 0.6
+    },
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    }
+   },
+   "built": "2026-10-18 20:13",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.54,
+     "net": 44910,
+     "dd": -2513,
+     "avg_r": 0.734,
+     "stop": 45.8,
+     "worst_day": -806,
+     "risk": 312.0,
+     "half": 17,
+     "per_month": 4578,
+     "p10": 34.0,
+     "f10": 1.9,
+     "p15": 48.1,
+     "f15": 2.9,
+     "p20": 59.7,
+     "f20": 3.9,
+     "dec10": 35.9,
+     "slow_pass": 43.1,
+     "pass_med": 13.0,
+     "b2b": "10/3"
+    },
+    "2021-25": {
+     "n": 510,
+     "tpw": 2.38,
+     "wk2": 76,
+     "win": 17.5,
+     "pf": 0.94,
+     "net": -5022,
+     "dd": -19426,
+     "avg_r": 0.019,
+     "stop": 38.1,
+     "worst_day": -869,
+     "risk": 270.0,
+     "half": 39,
+     "per_month": -98,
+     "p10": 6.4,
+     "f10": 3.5,
+     "p15": 9.7,
+     "f15": 9.3,
+     "p20": 12.6,
+     "f20": 17.9,
+     "dec10": 9.9,
+     "slow_pass": 51.9,
+     "pass_med": 16.0,
+     "b2b": "7/26"
+    },
+    "all": {
+     "n": 630,
+     "tpw": 2.46,
+     "wk2": 78,
+     "win": 19.2,
+     "pf": 1.39,
+     "net": 39889,
+     "dd": -19426,
+     "avg_r": 0.155,
+     "stop": 40.0,
+     "worst_day": -869,
+     "risk": 276.0,
+     "half": 56,
+     "per_month": 655,
+     "p10": 11.3,
+     "f10": 3.6,
+     "p15": 16.3,
+     "f15": 9.0,
+     "p20": 20.6,
+     "f20": 16.7,
+     "dec10": 14.9,
+     "slow_pass": 48.4,
+     "pass_med": 15.0,
+     "b2b": "17/30"
+    }
+   }
+  },
+  {
    "id": "lit_ob_entry_1m_ob_mean_threshold_after_the_1m_cisd_if_",
    "title": "LIT order blocks: entry 1m OB mean threshold after the 1m CISD if within 0.15 of the stop",
    "family": "other",
@@ -36264,6 +36614,523 @@
      "slow_pass": 54.1,
      "pass_med": 17.0,
      "b2b": "19/30"
+    }
+   }
+  },
+  {
+   "id": "lit_ob_ob_inside_setups_1h_4h_1d_depth_0_25",
+   "title": "LIT order blocks: OB-inside setups 1h/4h/1d depth 0.25",
+   "family": "other",
+   "question": "Owner order 2026-10-18: order blocks are huge, trade all of LIT - does an order block (POI, entry, target, obstacle, OB-only setup) improve the live LIT trade in both 2026 halves?",
+   "status": "rejected",
+   "verdict": " EVAL MODE ($800 up to a 25-pt stop + 60% room cap): H1 (pick) n=80 3.12/wk win 22.5% PF 4.01 net +33,305 ($5,464/mo) DD -2,513; eval 2wk 37.5/3.1 1mo 60.2/6.2; H2 (check) n=40 2.56/wk win 35.0% PF 2.52 net +10,475 ($2,820/mo) DD -2,157; eval 2wk 29.5/0.0 1mo 47.4/0.0; 2021-25 reference n=514 2.4/wk win 17.7% PF 1.08 net +7,397 ($145/mo) DD -15,306; eval 2wk 9.6/8.8 1mo 16.0/22.8. TWO_WEEK MODE (live config C, fresh eval each session, $ from back-to-back evals reset at 10 sessions): H1 n=80 3.12/wk win 22.5% PF 3.02 net +31,342 ($5,142/mo) DD -3,980; eval 2wk 52.9/8.4 1mo 75.2/17.4; H2 n=40 2.56/wk win 35.0% PF 1.98 net +12,002 ($3,231/mo) DD -3,122; eval 2wk 52.2/2.9 1mo 61.0/16.9; 2021-25 n=514 2.4/wk win 17.7% PF 1.03 net +4,625 ($91/mo) DD -25,490; eval 2wk 16.2/6.3 1mo 25.5/22.3.",
+   "writeup": "lit-order-blocks",
+   "tags": [
+    "lit",
+    "lit_ob"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "obonly": {
+     "tfs": [
+      "1h",
+      "4h",
+      "1d"
+     ],
+     "mode": "inside",
+     "depth": 0.25,
+     "tol": 1.0
+    }
+   },
+   "sizing": {
+    "eval": {
+     "rule": [
+      "lit",
+      800,
+      25.0
+     ],
+     "room_k": 0.6
+    },
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    }
+   },
+   "built": "2026-10-18 20:13",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.48,
+     "net": 43848,
+     "dd": -2513,
+     "avg_r": 0.734,
+     "stop": 45.8,
+     "worst_day": -806,
+     "risk": 312.0,
+     "half": 17,
+     "per_month": 4470,
+     "p10": 31.1,
+     "f10": 1.9,
+     "p15": 46.1,
+     "f15": 2.9,
+     "p20": 56.8,
+     "f20": 3.9,
+     "dec10": 33.0,
+     "slow_pass": 42.8,
+     "pass_med": 13.0,
+     "b2b": "10/3"
+    },
+    "2021-25": {
+     "n": 514,
+     "tpw": 2.4,
+     "wk2": 76,
+     "win": 17.7,
+     "pf": 1.08,
+     "net": 7397,
+     "dd": -15306,
+     "avg_r": 0.034,
+     "stop": 38.2,
+     "worst_day": -860,
+     "risk": 316.0,
+     "half": 40,
+     "per_month": 145,
+     "p10": 8.8,
+     "f10": 4.9,
+     "p15": 12.8,
+     "f15": 11.1,
+     "p20": 16.3,
+     "f20": 18.7,
+     "dec10": 13.7,
+     "slow_pass": 50.9,
+     "pass_med": 16.0,
+     "b2b": "12/28"
+    },
+    "all": {
+     "n": 634,
+     "tpw": 2.48,
+     "wk2": 78,
+     "win": 19.4,
+     "pf": 1.48,
+     "net": 51245,
+     "dd": -15306,
+     "avg_r": 0.167,
+     "stop": 40.1,
+     "worst_day": -860,
+     "risk": 314.0,
+     "half": 57,
+     "per_month": 842,
+     "p10": 12.8,
+     "f10": 4.8,
+     "p15": 18.5,
+     "f15": 10.5,
+     "p20": 23.2,
+     "f20": 17.4,
+     "dec10": 17.6,
+     "slow_pass": 48.3,
+     "pass_med": 15.0,
+     "b2b": "22/32"
+    }
+   }
+  },
+  {
+   "id": "lit_ob_ob_only_setups_15m_1h_4h_1d_depth_0_tol_1",
+   "title": "LIT order blocks: OB-only setups 15m/1h/4h/1d depth 0 tol 1",
+   "family": "other",
+   "question": "Owner order 2026-10-18: order blocks are huge, trade all of LIT - does an order block (POI, entry, target, obstacle, OB-only setup) improve the live LIT trade in both 2026 halves?",
+   "status": "rejected",
+   "verdict": " EVAL MODE ($800 up to a 25-pt stop + 60% room cap): H1 (pick) n=81 3.16/wk win 22.2% PF 4.16 net +33,703 ($5,529/mo) DD -2,490; eval 2wk 37.5/3.9 1mo 63.3/6.2; H2 (check) n=42 2.69/wk win 33.3% PF 1.83 net +6,152 ($1,656/mo) DD -2,069; eval 2wk 19.2/0.0 1mo 38.5/0.0; 2021-25 reference n=532 2.48/wk win 16.9% PF 0.97 net -2,907 ($-57/mo) DD -18,282; eval 2wk 8.6/8.5 1mo 14.1/25.2. TWO_WEEK MODE (live config C, fresh eval each session, $ from back-to-back evals reset at 10 sessions): H1 n=81 3.16/wk win 22.2% PF 3.1 net +31,747 ($5,208/mo) DD -3,980; eval 2wk 52.9/7.6 1mo 75.2/17.4; H2 n=42 2.69/wk win 33.3% PF 1.6 net +7,650 ($2,060/mo) DD -3,122; eval 2wk 47.8/2.9 1mo 54.2/3.4; 2021-25 n=532 2.48/wk win 16.9% PF 0.94 net -8,394 ($-164/mo) DD -27,753; eval 2wk 15.1/7.2 1mo 22.6/26.1.",
+   "writeup": "lit-order-blocks",
+   "tags": [
+    "lit",
+    "lit_ob"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "obonly": {
+     "tfs": [
+      "15m",
+      "1h",
+      "4h",
+      "1d"
+     ],
+     "depth": 0.0,
+     "tol": 1.0
+    }
+   },
+   "sizing": {
+    "eval": {
+     "rule": [
+      "lit",
+      800,
+      25.0
+     ],
+     "room_k": 0.6
+    },
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    }
+   },
+   "built": "2026-10-18 20:13",
+   "spans": {
+    "2026": {
+     "n": 123,
+     "tpw": 2.99,
+     "wk2": 88,
+     "win": 26.0,
+     "pf": 3.12,
+     "net": 39995,
+     "dd": -2490,
+     "avg_r": 0.675,
+     "stop": 45.5,
+     "worst_day": -806,
+     "risk": 316.0,
+     "half": 17,
+     "per_month": 4077,
+     "p10": 24.8,
+     "f10": 1.9,
+     "p15": 40.3,
+     "f15": 4.4,
+     "p20": 54.4,
+     "f20": 8.7,
+     "dec10": 26.7,
+     "slow_pass": 50.0,
+     "pass_med": 15.5,
+     "b2b": "9/3"
+    },
+    "2021-25": {
+     "n": 532,
+     "tpw": 2.48,
+     "wk2": 78,
+     "win": 16.9,
+     "pf": 0.97,
+     "net": -2907,
+     "dd": -18282,
+     "avg_r": 0.002,
+     "stop": 38.2,
+     "worst_day": -860,
+     "risk": 298.0,
+     "half": 48,
+     "per_month": -57,
+     "p10": 6.6,
+     "f10": 3.8,
+     "p15": 9.8,
+     "f15": 11.0,
+     "p20": 13.0,
+     "f20": 21.0,
+     "dec10": 10.4,
+     "slow_pass": 57.0,
+     "pass_med": 18.0,
+     "b2b": "10/29"
+    },
+    "all": {
+     "n": 655,
+     "tpw": 2.56,
+     "wk2": 80,
+     "win": 18.6,
+     "pf": 1.34,
+     "net": 37087,
+     "dd": -18282,
+     "avg_r": 0.129,
+     "stop": 40.0,
+     "worst_day": -860,
+     "risk": 304.0,
+     "half": 65,
+     "per_month": 609,
+     "p10": 9.9,
+     "f10": 3.8,
+     "p15": 15.1,
+     "f15": 10.6,
+     "p20": 20.0,
+     "f20": 20.1,
+     "dec10": 13.7,
+     "slow_pass": 54.4,
+     "pass_med": 17.0,
+     "b2b": "19/33"
+    }
+   }
+  },
+  {
+   "id": "lit_ob_ob_setups_15m_1h_4h_1d_displacement_0_5_atr_as_a",
+   "title": "LIT order blocks: OB setups 15m/1h/4h/1d, displacement 0.5 ATR, as a 2nd trade a day",
+   "family": "other",
+   "question": "Owner order 2026-10-18: order blocks are huge, trade all of LIT - does an order block (POI, entry, target, obstacle, OB-only setup) improve the live LIT trade in both 2026 halves?",
+   "status": "rejected",
+   "verdict": " EVAL MODE ($800 up to a 25-pt stop + 60% room cap): H1 (pick) n=88 3.44/wk win 23.9% PF 4.36 net +36,958 ($6,064/mo) DD -2,505; eval 2wk 43.0/3.9 1mo 64.8/6.2; H2 (check) n=43 2.76/wk win 34.9% PF 2.37 net +10,183 ($2,742/mo) DD -2,069; eval 2wk 24.4/0.0 1mo 48.7/0.0; 2021-25 reference n=585 2.73/wk win 17.1% PF 1.02 net +2,343 ($46/mo) DD -17,826; eval 2wk 10.6/8.5 1mo 15.9/27.4. TWO_WEEK MODE (live config C, fresh eval each session, $ from back-to-back evals reset at 10 sessions): H1 n=87 3.4/wk win 24.1% PF 3.5 net +36,283 ($5,953/mo) DD -3,585; eval 2wk 57.1/7.6 1mo 76.1/14.7; H2 n=43 2.76/wk win 34.9% PF 2.17 net +13,800 ($3,715/mo) DD -2,611; eval 2wk 44.9/2.9 1mo 49.2/6.8; 2021-25 n=581 2.71/wk win 17.0% PF 0.94 net -9,919 ($-194/mo) DD -24,723; eval 2wk 17.4/7.8 1mo 26.3/30.2.",
+   "writeup": "lit-order-blocks",
+   "tags": [
+    "lit",
+    "lit_ob"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "obonly": {
+     "tfs": [
+      "15m",
+      "1h",
+      "4h",
+      "1d"
+     ],
+     "mode": "inside",
+     "both": true,
+     "depth": 0.0,
+     "tol": 0.5,
+     "second": true,
+     "disp": 0.5
+    }
+   },
+   "sizing": {
+    "eval": {
+     "rule": [
+      "lit",
+      800,
+      25.0
+     ],
+     "room_k": 0.6
+    },
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    }
+   },
+   "built": "2026-10-18 20:13",
+   "spans": {
+    "2026": {
+     "n": 131,
+     "tpw": 3.18,
+     "wk2": 90,
+     "win": 27.5,
+     "pf": 3.47,
+     "net": 47281,
+     "dd": -2505,
+     "avg_r": 0.744,
+     "stop": 44.2,
+     "worst_day": -823,
+     "risk": 328.0,
+     "half": 18,
+     "per_month": 4820,
+     "p10": 32.5,
+     "f10": 1.9,
+     "p15": 48.1,
+     "f15": 4.9,
+     "p20": 59.7,
+     "f20": 8.7,
+     "dec10": 34.4,
+     "slow_pass": 43.1,
+     "pass_med": 14.0,
+     "b2b": "11/3"
+    },
+    "2021-25": {
+     "n": 585,
+     "tpw": 2.73,
+     "wk2": 82,
+     "win": 17.1,
+     "pf": 1.02,
+     "net": 2343,
+     "dd": -17826,
+     "avg_r": 0.007,
+     "stop": 37.8,
+     "worst_day": -959,
+     "risk": 249.0,
+     "half": 71,
+     "per_month": 46,
+     "p10": 8.6,
+     "f10": 6.2,
+     "p15": 11.1,
+     "f15": 14.6,
+     "p20": 13.2,
+     "f20": 24.5,
+     "dec10": 14.8,
+     "slow_pass": 47.3,
+     "pass_med": 14.0,
+     "b2b": "13/33"
+    },
+    "all": {
+     "n": 716,
+     "tpw": 2.8,
+     "wk2": 84,
+     "win": 19.0,
+     "pf": 1.43,
+     "net": 49624,
+     "dd": -17826,
+     "avg_r": 0.142,
+     "stop": 39.4,
+     "worst_day": -959,
+     "risk": 266.0,
+     "half": 89,
+     "per_month": 815,
+     "p10": 12.9,
+     "f10": 5.8,
+     "p15": 17.5,
+     "f15": 13.6,
+     "p20": 21.1,
+     "f20": 23.0,
+     "dec10": 18.7,
+     "slow_pass": 45.9,
+     "pass_med": 14.0,
+     "b2b": "24/37"
     }
    }
   },

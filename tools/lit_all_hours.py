@@ -63,6 +63,8 @@ COUNT = {
     "2day": {"max_per_day": 2},
     "rearm_sal": {"max_per_day": 9, "stop_after_loss": True},
     "rearm": {"max_per_day": 9},
+    "asia_plus": {"max_per_day": 2, "per_session": [[[1080, 120], [120, 1080]], 1]},   # 1 Asia + the live day trade
+    "asia_plus_sal": {"max_per_day": 2, "per_session": [[[1080, 120], [120, 1080]], 1], "stop_after_loss": True},
 }
 
 

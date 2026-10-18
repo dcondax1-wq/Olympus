@@ -280,12 +280,42 @@ INF = 10 ** 12
 _IX = {}
 
 
+_FL = set()
+
+
+def flags(M, tf, kind="body", peak_lb=48):
+    """Owner's LIT mitigation notes: peak = the block holds the extreme of the last peak_lb candles of its timeframe up to
+    the bar that made it known (the OB of the INITIAL break of structure off the peak); fvg_adj = the move's FVG starts right
+    at the block's last candle (the inefficiency sits directly above / below the block). Stored on the block dicts."""
+    if (tf, kind) in _FL:
+        return
+    B = htf(M, tf)
+    for ob in blocks(M, tf, None, kind):
+        a = max(0, ob["conf"] - peak_lb)
+        if ob["dir"] == 1:
+            ob["peak"] = bool(ob["wick_bot"] <= B["l"][a:ob["conf"] + 1].min())
+            ob["fvg_adj"] = bool(ob["fvg"] is not None and abs(ob["fvg"][0] - B["h"][ob["e"]]) < 1e-9)
+        else:
+            ob["peak"] = bool(ob["wick_top"] >= B["h"][a:ob["conf"] + 1].max())
+            ob["fvg_adj"] = bool(ob["fvg"] is not None and abs(ob["fvg"][1] - B["l"][ob["e"]]) < 1e-9)
+    _FL.add((tf, kind))
+
+
+def block_of(M, nm, kind="body"):
+    """The block dict behind an OB-only / OB-inside level name (ob<tf>#<q> or obin<tf>#<q>@<f>)."""
+    head, rest = nm.split("#")
+    tf = head[4:] if head.startswith("obin") else head[2:]
+    flags(M, tf, kind)
+    return blocks(M, tf, None, kind)[int(rest.split("@")[0])]
+
+
 def ob_index(M, tf, kind="body"):
     """{d: arrays} of the blocks of direction d (k5, mit5, top, bot, swept, extreme, brk5, bmit5) + touch order."""
     key = (tf, kind)
     if key in _IX:
         return _IX[key]
     obs = blocks(M, tf, None, kind)
+    flags(M, tf, kind)
     out = {}
     for d in (1, -1):
         L = [x for x in obs if x["dir"] == d]
@@ -322,6 +352,10 @@ def poi_hits(M, z, Q):
             if Q.get("only") == "decisional" and X["ext"][j]:
                 continue
             if Q.get("swept") and not X["swept"][j]:
+                continue
+            if Q.get("peak") and not X["ob"][j].get("peak"):
+                continue
+            if Q.get("fvg_adj") and not X["ob"][j].get("fvg_adj"):
                 continue
             if (d == 1 and ext < X["bot"][j] - tol * at) or (d == -1 and ext > X["top"][j] + tol * at):
                 continue
@@ -695,6 +729,19 @@ def orun(P=None, sessions=SESS):
             ext = z["ext_d"] * z["dir"]
             if not any((dd == 1 and ext >= bt - tol) or (dd == -1 and ext <= tp + tol) for dd, tp, bt, _ in z["ob_zones"]):
                 continue
+            if Q5.get("peak") or Q5.get("fvg_adj") or Q5.get("clean_liq"):
+                ok = False
+                for nm_ in z["ob_names"]:
+                    ob_ = block_of(M, nm_, Q5.get("zone", "body"))
+                    if Q5.get("peak") and not ob_.get("peak"):
+                        continue
+                    if Q5.get("fvg_adj") and not ob_.get("fvg_adj"):
+                        continue
+                    if Q5.get("clean_liq") and liq_beyond(M, z, ob_["bot"] if ob_["dir"] == 1 else ob_["top"], Q5["clean_liq"]):
+                        continue
+                    ok = True; break
+                if not ok:
+                    continue
         elif not lit.setup_ok(z, P, names):
             continue
         if P.get("monday") and lit.monday_block(M, z):
@@ -955,6 +1002,17 @@ def variants():
                                                                                   "depth": 0.0, "tol": 0.5, "second": True}}
     V["OB setups 15m/1h/4h/1d, displacement 0.5 ATR, as a 2nd trade a day"] = {"obonly": {"tfs": H3 + ["1d"], "mode": "inside", "both": True,
                                                                                      "depth": 0.0, "tol": 0.5, "second": True, "disp": 0.5}}
+    # ---- owner's LIT group notes on mitigation (research/lit/owner_lit_notes.md)
+    SEC = {"tfs": H3 + ["1d"], "mode": "inside", "both": True, "depth": 0.0, "tol": 0.5, "second": True}
+    V["mit: OB setups 2nd trade, initial-BoS (peak) blocks only"] = {"obonly": {**SEC, "peak": True}}
+    V["mit: OB setups 2nd trade, FVG right next to the block"] = {"obonly": {**SEC, "fvg_adj": True}}
+    V["mit: OB setups 2nd trade, trap rule (no untaken liquidity beyond)"] = {"obonly": {**SEC, "clean_liq": 2.0}}
+    V["mit: OB setups 2nd trade, all three"] = {"obonly": {**SEC, "peak": True, "fvg_adj": True, "clean_liq": 2.0}}
+    V["mit: OB setups 2nd trade, full mitigation box (wick zone)"] = {"obonly": {**SEC, "zone": "wick"}}
+    V["mit: orderflow continuation, 5m/15m OB-inside as 2nd trade"] = {"obonly": {"tfs": ["5m", "15m"], "mode": "inside", "depth": 0.0,
+                                                                              "tol": 0.5, "second": True}}
+    V["mit: POI require, initial-BoS + FVG next to it + trap rule (loose)"] = {"poi": {"tfs": H3 + ["1d"], "zone": "body", "pre": 72, "tol": 2.0,
+                                                                                    "peak": True, "fvg_adj": True, "clean_liq": 2.0, "mode": "require"}}
     V["OB setups (into + inside) 1h/4h/1d as a 2nd trade a day"] = {"obonly": {"tfs": H4, "mode": "inside", "both": True,
                                                                              "depth": 0.0, "tol": 0.5, "second": True}}
     return V

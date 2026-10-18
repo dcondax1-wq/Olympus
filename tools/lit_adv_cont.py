@@ -607,6 +607,57 @@ def internal_candidates():
     return C2
 
 
+# ================================================================================================ owner's session notes + SMT
+def session_ctx():
+    """Owner's LIT-group session notes, causal at each setup's trigger close (setups = sweep + inducement + displacement +
+    5m CISD that pass the live setup filters, filled or not):
+      asia_dir   direction of the latest Asia thesis of the trading day (trigger 18:00-01:55, the pre-02:00 theses)
+      lon_dir    direction of the latest London / Frankfurt setup (entry 02:00-07:55) whose trigger closed before this one
+      idm_pre_ny any Asia or London setup before 08:00 this day
+      smt15      ATR distance from the sweep extreme to the nearest UNBROKEN 15m swing beyond it (liquidity right beside
+                 the zone: the owner's Smart Money Trap), known before the extreme; None = none within 2 days"""
+    p = os.path.join(CACHE, f"litadv_sess_{VER}_{rl._data_key().replace(':', '_')}.pkl")
+    if os.path.exists(p):
+        return pickle.load(open(p, "rb"))
+    M, C, B1, B5, R, Z = base()
+    Pw = {**PU, "window": [[0, 1440]]}
+    asia = collections.defaultdict(list)
+    for z in pre_window_theses():
+        if lit.setup_ok(z, Pw, None):
+            asia[z["day"]].append((int(M.t[z["i"]]), z["dir"]))
+    lon = collections.defaultdict(list)
+    for z in C:
+        if 120 <= z["mod"] < 480 and lit.setup_ok(z, PU, None):
+            lon[z["day"]].append((int(M.t[z["i"]]), z["dir"]))
+    X = structs(M)["15m"]
+    out = {}
+    for r in R:
+        z = Z[r["key"]]
+        ti = int(M.t[z["i"]])
+        a = [x for x in asia.get(z["day"], []) if x[0] < ti]
+        l_ = [x for x in lon.get(z["day"], []) if x[0] < ti]
+        d = z["dir"]
+        hi_d, lo_d, _, _ = dirs(M, d)
+        sw, kk = X[d]["sw"], X[d]["sw_k"]
+        hi_k = int(np.searchsorted(kk, z["ext_i"]))
+        best = None
+        for q in range(hi_k - 1, -1, -1):
+            p_, kn = sw[q]
+            if kn < z["ext_i"] - LOOK["15m"]:
+                break
+            if p_ >= z["ext_d"]:
+                continue
+            if lo_d[kn + 1:z["i"] + 1].min() < p_:
+                continue
+            dd = (z["ext_d"] - p_) / max(z["atr_ext"], 1e-9)
+            best = dd if best is None else min(best, dd)
+        out[r["key"]] = {"asia_dir": max(a)[1] if a else 0, "lon_dir": max(l_)[1] if l_ else 0,
+                         "idm_pre_ny": int(bool(a or [x for x in lon.get(z["day"], []) if x[0] < ti])),
+                         "smt15": None if best is None else round(best, 3), "mod": z["mod"], "dir": d}
+    pickle.dump(out, open(p, "wb"))
+    return out
+
+
 # ================================================================================================ the path and its scores
 def merged(extra):
     R = base()[4]
@@ -615,10 +666,18 @@ def merged(extra):
     return rows
 
 
+def ann_all():
+    if "AA" not in _S:
+        A = annotate()
+        SC = session_ctx()
+        _S["AA"] = {k: {**v, **SC.get(k, {})} for k, v in A.items()}
+    return _S["AA"]
+
+
 def run(skip=None, size=None, extra=(), retarget=None):
     """The real one-trade-a-day path. skip(row, ann) / size(row, ann) on the original candidates (extra rows always pass);
     retarget(row, ann) -> a new u (target change) or None (keep)."""
-    A = annotate()
+    A = ann_all()
     rows = merged(extra)
     if retarget is not None:
         rr = []
@@ -637,7 +696,7 @@ def run(skip=None, size=None, extra=(), retarget=None):
 def cand_r(rows, skip=None, size=None, span="H1"):
     """Per ORIGINAL candidate (live-filter setups of the span, each simulated alone, unit size, unfilled = 0): total unit R
     and the count; skipped = 0, sized = R x mult; extra rows add their own R."""
-    A = annotate()
+    A = ann_all()
     a, z = SPAN[span]
     tot, n = 0.0, 0
     for r in rows:
@@ -730,6 +789,28 @@ def variants():
             c = (lambda key, dz: lambda r, a: a[key] is not None and a[key] <= dz)(key, dz)
             V[f"ch4 on the way: untaken {lab} level <= {dz} ATR beyond the extreme: skip"] = dict(fam="ch4 onway", skip=c)
             V[f"ch4 on the way: {lab} <= {dz} ATR: half"] = dict(fam="ch4 onway", size=_half(c))
+    # ---- owner's session notes (LIT group)
+    LONPRE = lambda a: 120 <= a["mod"] < 570
+    for m, lab in ((0.5, "half"), (0.75, "0.75x"), (0.0, "skip")):
+        f = (lambda m: (lambda c: dict(skip=c) if m == 0 else dict(size=lambda r, a: m if c(r, a) else 1.0)))(m)
+        V[f"own Asia IDM -> London/pre-NY continue: {lab} London/pre-NY setups against Asia"] = dict(
+            fam="own asia", **f(lambda r, a: LONPRE(a) and a["asia_dir"] != 0 and a["dir"] != a["asia_dir"]))
+        V[f"own London IDM -> NY continues: {lab} NY (08:00+) setups against London"] = dict(
+            fam="own london", **f(lambda r, a: a["mod"] >= 480 and a["lon_dir"] != 0 and a["dir"] != a["lon_dir"]))
+        V[f"own London IDM -> NY continues: {lab} NY (09:30+) setups against London"] = dict(
+            fam="own london", **f(lambda r, a: a["mod"] >= 570 and a["lon_dir"] != 0 and a["dir"] != a["lon_dir"]))
+        V[f"own no IDM before NY: {lab} NY setups on days WITH an earlier IDM"] = dict(
+            fam="own noidm", **f(lambda r, a: a["mod"] >= 480 and a["idm_pre_ny"] == 1))
+        V[f"own no IDM before NY: {lab} NY setups on days WITHOUT an earlier IDM"] = dict(
+            fam="own noidm", **f(lambda r, a: a["mod"] >= 480 and a["idm_pre_ny"] == 0))
+        V[f"own sessions combined: {lab} setups against Asia (London/pre-NY) or against London (NY)"] = dict(
+            fam="own combined", **f(lambda r, a: (LONPRE(a) and a["asia_dir"] != 0 and a["dir"] != a["asia_dir"]) or
+                                    (a["mod"] >= 570 and a["lon_dir"] != 0 and a["dir"] != a["lon_dir"])))
+        for dz in (0.25, 0.5, 1.0):
+            V[f"own SMT trap: {lab} when an unbroken 15m swing sits <= {dz} ATR beyond the extreme"] = dict(
+                fam="own smt", **f((lambda dz: lambda r, a: a["smt15"] is not None and a["smt15"] <= dz)(dz)))
+            V[f"own SMT trap: {lab} when an untaken LIT level sits <= {dz} ATR beyond the extreme"] = dict(
+                fam="own smt", **f((lambda dz: lambda r, a: a["onway_any"] is not None and a["onway_any"] <= dz)(dz)))
     # ---- ch4: ES, the same event
     for cl in ("nq_only", "es_led", "both"):
         c = (lambda cl: lambda r, a: a["es_cls"] == cl)(cl)
@@ -816,7 +897,12 @@ def grid(only=None):
     for sp in ("H1", "H2", "2026", "2021-25"):
         print("  " + line(base_o, sp))
     out = collections.OrderedDict(base={"o": _compact(base_o)})
-    for nm, spec in variants().items():
+    V = variants()
+    pri = lambda nm: (0 if nm.startswith("own") else 1 if nm.startswith("ch4") else 2 if nm.startswith("ch2") and "extra" not in V[nm]
+                      else 3 if nm.startswith("ch3") else 4)
+    dest = OUT if not only else OUT.replace(".json", "_" + OBT._slug(only) + ".json")
+    for nm in sorted(V, key=pri):
+        spec = V[nm]
         if only and only not in nm:
             continue
         o, U, rows = run_spec(spec)
@@ -825,7 +911,8 @@ def grid(only=None):
         print(f"\n{nm}  [{v}]")
         for sp in ("H1", "H2", "2021-25"):
             print("  " + line(o, sp), flush=True)
-    json.dump(out, open(OUT if not only else OUT.replace(".json", "_" + OBT._slug(only) + ".json"), "w"), indent=1, default=float)
+        json.dump(out, open(dest, "w"), indent=1, default=float)
+    json.dump(out, open(dest, "w"), indent=1, default=float)
     return out
 
 

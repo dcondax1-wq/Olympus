@@ -299,6 +299,60 @@ def size_today(stop, tgt, clock=None, ev=None, lit_sizing=None, params=None, wk_
     return {"mode": mode, "stop": stop, "tgt": round(tgt, 1), "qty": int(q), "risk_usd": round(risk), "why": why}
 
 
+# ------------------------------------------------------------------------------------------------ MFFU account warnings
+_RULES = {}
+
+
+def mffu_rules():
+    """The few MFFU Builder 50K rules the brief warns about (research/lit/mffu_rules.json; defaults when it is missing)."""
+    if "v" not in _RULES:
+        r = {"inactivity_days": 7, "flat": "16:10", "half_day_auto": False}
+        try:
+            with open(os.path.join(ROOT, "research", "lit", "mffu_rules.json"), encoding="utf-8") as fh:
+                e = json.load(fh)["builder_50k"]["eval"]
+            r["inactivity_days"] = int(((e.get("inactivity") or {}).get("value") or {}).get("days") or 7)
+            r["flat"] = str(((e.get("trading_hours") or {}).get("value") or {}).get("must_be_flat") or "16:10 ET").split()[0]
+            r["half_day_auto"] = bool(((e.get("holidays_early_close") or {}).get("value") or {}).get("auto_liquidation"))
+        except Exception:
+            pass
+        _RULES["v"] = r
+    return _RULES["v"]
+
+
+def mffu_notes(now, day, ledger=None, clock=None, eval_start=None, flat_mod=955):
+    """In-app MFFU warnings (never pushed): the must-be-flat time (+ the CME early halt on a half-day), the 7-day
+    inactivity rule (5+ calendar days since the last fill on the eval ledger) and what to do once the eval passed."""
+    from engine.lit_live import early_close
+    R = mffu_rules()
+    out = []
+    fm = f"{flat_mod // 60:02d}:{flat_mod % 60:02d}"
+    out.append({"kind": "flat", "level": "info",
+                "text": f"MFFU: be flat by {R['flat']} ET (auto-liquidation then); the bot flattens at {fm} ET."})
+    ec = early_close(day)
+    if ec is not None:
+        h = f"{ec // 60:02d}:{ec % 60:02d}"
+        out.append({"kind": "half_day", "level": "warn",
+                    "text": f"CME half-day: trading halts at {h} ET. MFFU does {'' if R['half_day_auto'] else 'NOT '}auto-flatten at the "
+                            f"early halt: be flat before {h} ET (the NinjaTrader route flattens 5 min before)."})
+    st = (clock or {}).get("status")
+    if st == "passed":
+        out.append({"kind": "passed", "level": "good",
+                    "text": "Eval passed - switch sizing to funded (tell Claude) and check MFFU marked it passed; if not by next "
+                            "morning, place one 1-micro trade (minimum days)."})
+    started = eval_start and str(eval_start) <= str(day)
+    if started and st not in ("passed", "failed"):
+        fills = [int(v.get("entry_t") or 0) for v in ledger or [] if str(v.get("day") or "") >= str(eval_start) and v.get("entry_t")]
+        ref = dt.date.fromisoformat(str(max(dt.date.fromisoformat(str(eval_start)[:10]), *(_et(t).date() for t in fills)) if fills
+                                    else str(eval_start)[:10]))
+        n = (_et(now).date() - ref).days
+        if n >= 5:
+            out.append({"kind": "inactivity", "level": "warn", "days": n,
+                        "text": f"No trade for {n} days - place 1 MNQ by hand before day {R['inactivity_days']} (MFFU inactivity rule)."
+                        if fills else f"No trade for {n} days since the eval started - place 1 MNQ by hand before day "
+                                      f"{R['inactivity_days']} (MFFU inactivity rule)."})
+    return out
+
+
 # ------------------------------------------------------------------------------------------------ setup verdicts
 def reject_reason(M, z, P):
     """The first LIT rule a 5m CISD candidate fails (engine/lit.py setup_ok / monday_block / stop range / target), or None
@@ -604,7 +658,7 @@ def recap(M, C, k, last, now, P, live, log, ledger_today=None, learning=None):
 
 
 def build(df5, now, params=None, live=None, prev=None, news=None, ev=None, clock=None, lit_sizing=None, model_params=None,
-          ledger_today=None, learning=None, sym="NQ") -> dict:
+          ledger_today=None, learning=None, sym="NQ", ledger=None) -> dict:
     """The brief at `now` (see the module doc). prev = the last brief (state["brief"]); live = engine/lit_live.run() at now."""
     now = int(now)
     prev = prev if isinstance(prev, dict) else {}
@@ -617,6 +671,13 @@ def build(df5, now, params=None, live=None, prev=None, news=None, ev=None, clock
     last = M.n - 1
     day = str(M.days[k][0])
     if day != day_now:          # the new trading day has not printed a bar yet (evening / weekend): keep the last brief
+        if prev.get("day") == day:
+            return {**prev, **base, "waiting": f"next session {day_now}"}
+        # no brief of the last session yet (first run, a gap): write it as of that session's end
+        end = int(dt.datetime.combine(dt.date.fromisoformat(day), dt.time(17, 0), ET).timestamp())
+        if end < now:
+            b = build(df5, end, params, live, prev, news, ev, clock, lit_sizing, model_params, ledger_today, learning, sym, ledger)
+            return {**b, **base, "waiting": f"next session {day_now}"}
         return {**prev, **base, "waiting": f"next session {day_now}"}
     b = {**base, "day": day, "waiting": None}
     if prev.get("day") == day:
@@ -634,6 +695,12 @@ def build(df5, now, params=None, live=None, prev=None, news=None, ev=None, clock
     if same_date and m >= RECAP_AT:
         b["recap"] = recap(M, C, k, last, now, P, live, b["log"], ledger_today, learning)
     b["new"] = sum(1 for r in b["log"] if r.get("new"))
+    try:
+        b["mffu"] = mffu_notes(now, day, ledger, clock, (lit_sizing or {}).get("eval_start"), int(P.get("flat_mod", 955)))
+    except Exception as e:                      # a warning must never break the brief
+        b["mffu"] = [{"kind": "error", "level": "info", "text": f"MFFU checks unavailable ({e.__class__.__name__})"}]
+    if b.get("morning") and b["morning"].get("day") == day:
+        b["morning"]["mffu"] = b["mffu"]
     return b
 
 
@@ -663,6 +730,8 @@ def readme_lines(b) -> list:
         L += [f"**Game plan** ({'refreshed' if mo['stage'] == 'full' else 'built'} {mo['built']} ET): {mo['plan']}", "",
               f"- Overnight: {mo['overnight']['text']}", f"- Target: {mo['vix']['text']}", f"- News: {mo['news_text']}",
               f"- Eval: {mo['eval']['text']}"]
+        L += [f"- {'**' if w['level'] in ('warn', 'good') else ''}{w['text']}{'**' if w['level'] in ('warn', 'good') else ''}"
+              for w in b.get("mffu") or []]
         if mo["monday"].get("text"):
             L.append(f"- {mo['monday']['text']}")
         if mo.get("weekly_stop"):
@@ -714,7 +783,8 @@ def cloud_hook(out, new_state, old_state, res, df_all, now, lm):
     led = [{**v, "entry_t": int(k)} for k, v in (new_state.get("ledger") or {}).items() if v.get("day") == today and str(k).isdigit()]
     b = build(df_all, now, params=lm.get("lit"), live=res, prev=(old_state or {}).get("brief"), news=hub, ev=new_state.get("eval"),
               clock=new_state.get("eval_2wk"), lit_sizing=lm.get("lit_sizing"), model_params=lm.get("params"), ledger_today=led,
-              learning=new_state.get("learning"), sym=lm.get("sym") or "NQ")
+              learning=new_state.get("learning"), sym=lm.get("sym") or "NQ",
+              ledger=[{**v, "entry_t": int(k)} for k, v in (new_state.get("ledger") or {}).items() if str(k).isdigit()])
     new_state["brief"] = b
     _insert_readme(os.path.join(out, "README.md"), readme_lines(b))
     return b

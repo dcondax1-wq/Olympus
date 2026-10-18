@@ -35,3 +35,24 @@ Paraphrased rules to test. LIT only; judged on 2026 (pick Jan-Jun, check Jul-Oct
 ## R-BoS (real break of structure)
 - Don't rely on an R-BoS to enter: NQ often runs without giving an entry. (Matches the entry study: waiting for a 1m
   BOS was worse than the 1m CISD in both halves, `lit-entry-precision.md`.)
+
+## Tips (second batch of screenshots)
+- Someone is always being induced, in every direction: find where, and whose stops.
+- Make sure the "inducement" isn't a build-up of equal highs/lows: real inducement is taken **fast**.
+- Watch the Asia high/low, PDH/PDL, HTF build-ups and the time.
+- Always trade **away from** the inducement. Inducements rank minor -> medium -> major: prioritise the higher one.
+- Session opens often give the **final** inducement.
+- "Always ask who is profiting right now and where their stops are."
+
+## LIT visuals
+- **Trendline / channel liquidity (TS):** a falling (rising) channel of lower highs and lows; the channel's last low
+  is swept later ("TS" line), then the run the other way. A wedge of lower highs breaks, the last high leaves a supply
+  block, price retraces into it and drops.
+- **Demand to supply (flip):** a demand zone that fails becomes supply; the retest from below is the short entry
+  (and the mirror for supply to demand).
+- **Continuation inducement:** in a trend, an internal low (high) is swept against the trend, then the trend continues.
+- **Reversal inducement:** a channel of rising lows under equal highs; the highs are swept, then the reversal.
+- **SMT picture:** a rising channel with a supply zone above. Price wicks into the supply and fails (false reaction);
+  the channel low (F-BoS line) is swept; then the strong rally.
+- **FVG + compression:** after a break to a peak, price pulls back in a curved, compressing channel and returns into
+  the FVG / supply at the peak, then drops.
