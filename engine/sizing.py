@@ -224,9 +224,10 @@ def lit_qty_core(qty: int, trade: dict, cfg: dict | None = None, room: float | N
             if mind and _num(st.get("days_traded"), 1.0) < float(mind):
                 mode = "two_week"
             else:
-                reasons.append("auto: eval passed -> funded sizing")
-                return lit_qty_core(qty, trade, {**c, "mode": "funded"}, room=None, max_micros=max_micros,
-                                    state=st.get("funded"), learning=learning)
+                out = lit_qty_core(qty, trade, {**c, "mode": "funded"}, room=None, max_micros=max_micros,
+                                   state=st.get("funded"), learning=learning)
+                out["reasons"] = ["auto: eval passed -> funded sizing"] + list(out.get("reasons") or [])
+                return out
         else:
             mode = c.get("eval_mode") or "two_week"
     if mode == "two_week" and c.get("two_week_until") and state is not None and _num(state.get("session")) is not None \
@@ -782,7 +783,7 @@ def selftest() -> bool:
     assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, C, state={**won, "days_traded": 2})["qty"] == 0     # once only
     assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, C, state={**won, "cum": 50.0, "days_traded": 1})["qty"] == 0  # same day
     U = {**C, "two_week_until": 10, "after_mode": "eval"}
-    assert lit_qty(3, {"risk_pts": 44.0, "tgt_pts": 100.0}, U, room=2000.0, state={**fresh, "session": 10})["qty"] == 8
+    assert lit_qty(3, {"risk_pts": 44.0, "tgt_pts": 100.0}, U, room=2000.0, state={**fresh, "session": 10})["qty"] == 11   # 16 -> room 13 -> dll 1000 / 90.9 = 11
     r = lit_qty(3, {"risk_pts": 44.0, "tgt_pts": 100.0}, U, room=2000.0, state={**fresh, "session": 11})
     assert r["qty"] == 5 and "eval sizing" in r["reasons"][0], r                        # $800 up to 25 pts: 5 micros
     AU = {**U, "mode": "auto", "funded": FC["funded"]}

@@ -540,7 +540,7 @@ def rearm_rows(opens=(180, 480, 570)):
         nxt = next((j for j in range(w, e) if any(M.mod[j] == o for o in opens) and M.mod[j] < 930), None)
         if nxt is None:
             continue
-        if lo_d[w:nxt].min() <= pl["ep"] or hi_d[w:nxt].max() >= pl["ep"] + pl["tp"]:
+        if nxt > w and (lo_d[w:nxt].min() <= pl["ep"] or hi_d[w:nxt].max() >= pl["ep"] + pl["tp"]):
             continue                                         # mitigated without an order / objective consumed / broken
         u, zz = _sim(M, z, pl["ep"], pl["tp"], pl["stop0"], entry_i=nxt)
         rows.append(_row(zz, u, "rearm", {"orig_mod": z["mod"]}))
@@ -932,7 +932,7 @@ def grid(only=None):
     dest = OUT if not only else OUT.replace(".json", "_" + OBT._slug(only) + ".json")
     for nm in sorted(V, key=pri):
         spec = V[nm]
-        if only and only not in nm:
+        if only and not any(nm.startswith(x) for x in only.split(",")):
             continue
         o, U, rows = run_spec(spec)
         v = verdict(o, base_o)

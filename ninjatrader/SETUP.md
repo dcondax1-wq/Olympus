@@ -266,7 +266,23 @@ Command:
 `python -m engine.ninjatrader --start --account <the MFFU account Name> --confirm "I ACCEPT LIVE RISK"`
 
 A real-account bot never restarts by itself after a crash or reboot; you start it by hand. Stay present, as MFFU
-requires. Size caps stay on: 40 micros or 4 minis at most. To go back to testing, start again with
+requires. LIT trades from 02:00 ET (most trades 02:00-08:00), so "present" means awake then.
+
+Before the first live start, check:
+- The account Name is exactly as in NinjaTrader's Accounts tab. Any name that is not `Sim...` / `Playback...` counts
+  as live.
+- Only the eval account is connected. The kill switch (`FLATTENEVERYTHING`) flattens **every** connected account.
+- The plan's maximum position size. The bot can send up to 40 micros. If MFFU allows fewer on your plan, the bot has to
+  be capped below that (ask Claude) before you arm it.
+- `lit_sizing.eval_start` in `live_model.json` (or `eval_start` in the start config) is the first session of *this*
+  eval. The two_week size counts the eval's profit from the bot's own trades since that day, not from the broker's
+  statement.
+- Windows Update is paused (Settings > Windows Update > Pause), and `scripts\setup_dedicated_pc.ps1` was run again as
+  Administrator after 2026-10-18, so restarts can only land 17:00-01:00 ET.
+- Steps 5.2 and 5.3 passed on Sim101 on this PC, and the first Sim101 trade showed the stop and target as one OCO pair
+  (section 13 item 6).
+- Both legs are sent `DAY`. If the PC dies with a trade open, the stop and target stay at the broker until they fill or the
+  17:00 ET close, but nobody flattens at 15:55 ET. Then flatten in the MFFU / Tradovate app yourself. Size caps stay on: 40 micros or 4 minis at most. To go back to testing, start again with
 `--account Sim101`, and remove the line from `.env.local.ps1`.
 
 ## 12. Settings (start-config keys; defaults in brackets)
@@ -282,7 +298,8 @@ requires. Size caps stay on: 40 micros or 4 minis at most. To go back to testing
 | `nt_ack_wait_s` [4] / `nt_fill_wait_s` [6] / `nt_verify_wait_s` [4] / `nt_pending_timeout_s` [45] | How long to wait for NinjaTrader at each step |
 | `data_source` (or `data`) [`yahoo`] | `ninjatrader` reads LE_BarFeed's files (5m and 1m); Yahoo is the fallback |
 | `nt_session_from` [LIT: 120 = 02:00 ET; engine: 480 = 08:00 ET] | First ET minute (after midnight) an entry is accepted; a bot trade still open before it is closed |
-| `lit_sizing` [from `live_model.json`: `{"mode": "normal"}`] | LIT size switch: `normal`, `fast_eval` ($800 up to a 40-pt stop) or `safe_eval` (at most 60% of the room to the eval's max-loss floor). Off (`normal`) unless you set it. |
+| `lit_sizing` [from `live_model.json`: `{"mode": "two_week", "eval_start": "2026-10-19"}`] | LIT size switch: `two_week` (on since 2026-10-18: micros so the target covers what is left to +$3,000, at most 60% of the room to the max-loss floor and the $1,000 soft daily loss, max 40, min 1; it counts sessions from `eval_start`), `eval`, `normal`, `fast_eval` or `safe_eval`. Without a known eval state it falls back to `eval`. |
+| `eval_start` [`live_model.json` `lit_sizing.eval_start`] | First session (yyyy-mm-dd, the trading day; Sunday evening counts as Monday) of the eval this account is on. Set it again after every eval reset, or the size is worked out from the wrong balance. |
 
 ## 13. Assumptions to verify on a real install
 
