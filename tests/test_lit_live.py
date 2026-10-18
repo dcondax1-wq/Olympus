@@ -190,7 +190,10 @@ def main():
         t0 = time.time()
         polls = 0
         bad, lags, seen_open, never = [], [], 0, []
+        only = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)
         for d, want in sorted(by_day.items()):
+            if only and d not in only:
+                continue
             w = want[0]
             ent, ext = int(w["entry_t"]), int(w["exit_t"])
             times = set(range(at(d, 1, 55), min(ext + 600, day_close(d)) + 1, 300))

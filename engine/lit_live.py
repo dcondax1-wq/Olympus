@@ -185,10 +185,57 @@ def _levels(M, k, upto):
     return uniq
 
 
-def _session_over(day: str, now: int) -> bool:
-    """The trading day `day` has ended by `now` (17:00 ET of that date or later)."""
-    end = dt.datetime.combine(dt.date.fromisoformat(day), dt.time(17, 0), ET)
-    return now >= int(end.timestamp())
+def _nth_weekday(y, m, wd, n):
+    d = dt.date(y, m, 1)
+    d += dt.timedelta(days=(wd - d.weekday()) % 7)
+    if n > 0:
+        return d + dt.timedelta(weeks=n - 1)
+    last = dt.date(y + (m == 12), m % 12 + 1, 1) - dt.timedelta(days=1)      # n = -1: last weekday wd of the month
+    return last - dt.timedelta(days=(last.weekday() - wd) % 7)
+
+
+def _easter(y):
+    a, b, c = y % 19, y // 100, y % 100
+    d, e = b // 4, b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i, k = c // 4, c % 4
+    l_ = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l_) // 451
+    month = (h + l_ - 7 * m + 114) // 31
+    return dt.date(y, month, (h + l_ - 7 * m + 114) % 31 + 1)
+
+
+def early_close(day: str) -> int | None:
+    """ET minute at which CME equity futures halt early on this trading date (US holidays 13:00, Good Friday 09:15 when it
+    trades at all), else None. Used only to close a paper position the backtest closes at the day's last bar."""
+    d = dt.date.fromisoformat(day)
+    y = d.year
+    jul4 = dt.date(y, 7, 4)
+    jul4 = jul4 + dt.timedelta(days=1) if jul4.weekday() == 6 else jul4 - dt.timedelta(days=1) if jul4.weekday() == 5 else jul4
+    jun19 = dt.date(y, 6, 19)
+    jun19 = jun19 + dt.timedelta(days=1) if jun19.weekday() == 6 else jun19 - dt.timedelta(days=1) if jun19.weekday() == 5 else jun19
+    hol = {_nth_weekday(y, 1, 0, 3), _nth_weekday(y, 2, 0, 3), _nth_weekday(y, 5, 0, -1), jun19, jul4, _nth_weekday(y, 9, 0, 1),
+           _nth_weekday(y, 11, 3, 4), _nth_weekday(y, 11, 3, 4) + dt.timedelta(days=1), dt.date(y, 12, 24)}
+    if d in hol:
+        return 13 * 60
+    if d == _easter(y) - dt.timedelta(days=2):
+        return 9 * 60 + 15
+    return None
+
+
+def _session_over(day: str, now: int, last_close: int | None = None) -> bool:
+    """The trading day `day` has ended by `now`: 17:00 ET of that date, or an early-close holiday's halt once the feed has
+    stopped at it (last bar closed by the halt, now 5+ minutes past it)."""
+    date = dt.date.fromisoformat(day)
+    if now >= int(dt.datetime.combine(date, dt.time(17, 0), ET).timestamp()):
+        return True
+    ec = early_close(day)
+    if ec is None or last_close is None:
+        return False
+    halt = int(dt.datetime.combine(date, dt.time(ec // 60, ec % 60), ET).timestamp())
+    return last_close <= halt and now >= halt + 300
 
 
 def _close_at_session_end(t):
@@ -223,7 +270,7 @@ def _shape(M, R, P, now, B1):
         events.append({"t": int(t["entry_t"]), "type": "entry", "dir": int(t["dir"]),
                        "text": f"{side} LIT @ {t['entry_px']:,.2f} stop {t['stop_px']:,.2f} target {t['target_px']:,.2f} qty {t['qty']} "
                                f"({kind} entry, {t.get('tf', 5)}m bars)"})
-        if t["exit"] == "OPEN" and _session_over(t["day"], now):
+        if t["exit"] == "OPEN" and _session_over(t["day"], now, int(M.t[M.n - 1]) + 300):
             t = _close_at_session_end(t)       # early-close holiday: the backtest exits at the day's last bar
         if t["exit"] == "OPEN":
             position = {"entry_t": int(t["entry_t"]), "dir": int(t["dir"]), "qty": int(t["qty"]), "stop": float(t["stop_now"]),
