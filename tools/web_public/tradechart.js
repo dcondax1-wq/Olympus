@@ -102,7 +102,18 @@ function niceStep(range, n) {
   for (const m of [1, 2, 2.5, 5, 10]) if (m * p >= raw) return m * p;
   return 10 * p;
 }
-const tw = (s, fs, mono) => String(s).length * fs * (mono ? 0.61 : 0.56) + 2;
+// text width in px: measured on a canvas with the page's own font (fallback: an estimate)
+let _mctx = null, _sans = null;
+function tw(s, fs, bold = false) {
+  try {
+    if (!_mctx && typeof document !== 'undefined') {
+      _mctx = document.createElement('canvas').getContext('2d');
+      _sans = (getComputedStyle(document.documentElement).getPropertyValue('--sans') || '').trim() || 'system-ui, -apple-system, Segoe UI, sans-serif';
+    }
+    if (_mctx) { _mctx.font = `${bold ? 700 : 500} ${fs}px ${_sans}`; return _mctx.measureText(String(s)).width + 2; }
+  } catch { /* estimate below */ }
+  return String(s).length * fs * (bold ? 0.6 : 0.56) + 2;
+}
 
 // ------------------------------------------------------------------ the chart (one SVG string)
 // view = { i0, i1 } visible bar range (floats); null = the whole window
@@ -129,7 +140,7 @@ export function svg(rec, { width = 380, height = 260, tf = '5m', view = null, co
   const boxVis = xe0 != null && xx0 != null && xx0 >= i0 && xe0 <= i1;
   if (boxVis) {
     lo = Math.min(lo, rec.stop, ent); hi = Math.max(hi, rec.stop, ent);
-    if (!one || exitIn) { lo = Math.min(lo, rec.target); hi = Math.max(hi, rec.target); }
+    if (!one || (exitIn && (rec.exit.kind || rec.exit_kind) === 'TARGET')) { lo = Math.min(lo, rec.target); hi = Math.max(hi, rec.target); }
   }
   const padY = (hi - lo) * 0.06 + 1;
   lo -= padY; hi += padY;
@@ -281,7 +292,7 @@ function placeLabels(L, { pl, pr, pt, pb, fs }) {
   const placed = [], out = [];
   L.sort((a, b) => a.prio - b.prio);
   for (const l of L) {
-    const f = l.fs || fs, w = tw(l.text, f, false) + (l.pill ? 10 : 4), h = f + (l.pill ? 7 : 4);
+    const f = l.fs || fs, w = tw(l.text, f, !!l.bold) + (l.pill ? 10 : 4), h = f + (l.pill ? 7 : 4);
     let x0 = l.anchor === 'end' ? l.x - w : l.anchor === 'middle' ? l.x - w / 2 : l.x;
     x0 = Math.max(pl + 1, Math.min(pr - w - 1, x0));
     const base = l.vb === 'top' ? l.y : l.vb === 'bottom' ? l.y - h : l.y - h / 2;
@@ -295,7 +306,7 @@ function placeLabels(L, { pl, pr, pt, pb, fs }) {
     placed.push({ x: x0, y: y0, w, h });
     if (l.pill) out.push(`<g class="${l.cls}"><rect x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${(h / 2).toFixed(1)}"/>`);
     else if (l.bg !== false) out.push(`<rect class="tc-lbg" x="${x0.toFixed(1)}" y="${y0.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="3"/>`);
-    out.push(`<text class="tc-t ${l.pill ? '' : l.cls}" x="${(x0 + (l.pill ? 5 : 2)).toFixed(1)}" y="${(y0 + h / 2 + f * 0.35).toFixed(1)}" font-size="${f}"${l.bold ? ' font-weight="700"' : ''}>${esc(l.text)}</text>`);
+    out.push(`<text class="tc-lab ${l.pill ? '' : l.cls}" x="${(x0 + (l.pill ? 5 : 2)).toFixed(1)}" y="${(y0 + h / 2 + f * 0.35).toFixed(1)}" font-size="${f}"${l.bold ? ' font-weight="700"' : ''}>${esc(l.text)}</text>`);
     if (l.pill) out.push('</g>');
   }
   return out.join('');
@@ -428,6 +439,7 @@ export function css() {
 .tc-grid{stroke:rgba(160,170,220,.08);stroke-width:1}
 .tc-t{font-family:var(--mono,ui-monospace,Menlo,monospace);fill:var(--tc-ink)}
 .tc-ax{fill:var(--tc-mut)}
+.tc-lab{font-family:var(--sans,system-ui,-apple-system,Segoe UI,sans-serif);font-weight:500;fill:var(--tc-ink);stroke:none}
 .tc-svg .tc-mut{fill:var(--tc-mut)}
 .tc-up{stroke:var(--tc-up);stroke-width:1}.tc-dn{stroke:var(--tc-dn);stroke-width:1}
 .tc-upf{fill:var(--tc-up)}.tc-dnf{fill:var(--tc-dn)}
@@ -441,7 +453,7 @@ export function css() {
 .tc-pill rect{fill:currentColor;stroke:none}.tc-pill text{fill:#0b0d12;stroke:none}
 .tc-box{fill-opacity:.07;stroke-width:1;stroke-dasharray:3 3;stroke-opacity:.7}
 .tc-box-Asia{fill:#6d7cff;stroke:#6d7cff;color:#8f9bff}.tc-box-London{fill:#f7b955;stroke:#f7b955;color:#f7b955}.tc-box-NY{fill:#3ee0c8;stroke:#3ee0c8;color:#3ee0c8}
-text.tc-boxl{fill:currentColor;opacity:.9;font-family:var(--sans,system-ui)}
+text.tc-boxl{fill:currentColor;opacity:.9;stroke:none}
 .tc-lvl{stroke-width:1.3;stroke-dasharray:6 4}.tc-bsl{stroke:var(--bsl,#ff9b5c)}.tc-ssl{stroke:var(--ssl,#6d9bff)}
 .tc-l-bsl{fill:var(--bsl,#ff9b5c)}.tc-l-ssl{fill:var(--ssl,#6d9bff)}.tc-l-good{fill:var(--tc-good)}.tc-l-bad{fill:var(--tc-bad)}
 .tc-l-warn{fill:var(--tc-warn)}.tc-l-gold{fill:var(--tc-gold)}.tc-l-acc{fill:#8f9bff}.tc-l-teal{fill:var(--tc-teal)}.tc-l-ink{fill:var(--tc-ink)}

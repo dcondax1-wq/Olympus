@@ -146,7 +146,7 @@ def draw_panel(ax, r, bars, secs, main=True):
         s.set_color(C["grid"])
     lows = [b[3] for b in bars]; highs = [b[2] for b in bars]
     in_win = r["exit"]["t"] <= bars[-1][0]
-    ys = lows + highs + [r["stop"], r["entry"]["px"]] + ([r["target"]] if (main or in_win) else [])
+    ys = lows + highs + [r["stop"], r["entry"]["px"]] + ([r["target"]] if (main or (in_win and r["exit_kind"] == "TARGET")) else [])
     lo, hi = min(ys), max(ys)
     pad = (hi - lo) * 0.06 + 2
     ax.set_ylim(lo - pad, hi + pad)
