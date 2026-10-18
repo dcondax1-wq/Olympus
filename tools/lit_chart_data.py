@@ -238,7 +238,7 @@ def build(since: str = "2026-01-01", until: str = "9999", params: dict | None = 
         rec = {
             "id": rid, "day": t["day"], "side": side, "d": d, "tf": int(B.secs // 60), "off": off,
             "qty": q, "risk_usd": round(t["risk_usd"], 2), "risk_pts": round(t["risk_pts"], 2), "pnl": round(t["pnl"], 2),
-            "r": round(t["r"], 3), "exit_kind": kind, "entry_kind": "limit" if w["limit_fill"] else "1m CISD",
+            "r": round(t["r"], 3), "exit_kind": kind, "entry_kind": "limit" if w["limit_fill"] else ("1m CISD" if B.secs == 60 else "5m CISD"),
             "size_why": t.get("size_why") or [],
             "entry": {"t": entry_t, "px": round(entry * d, 2)},
             "stop": round(stop * d, 2), "target": round(t["target_px"], 2),
