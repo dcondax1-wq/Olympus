@@ -44,7 +44,7 @@ CACHE = os.path.join(RUNS, "_cache")
 LIVE = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))
 LIVE_PARAMS, LIVE_EQF, LIVE_SIZING = LIVE["params"], LIVE.get("equity_filter"), LIVE.get("sizing")
 MAX_MICROS = 40                                   # engine max_micros (MFFU 50K: 4 minis / 40 micros)
-FAMILIES = ("baseline", "risk", "stops", "targets", "management", "bias", "filters", "timing", "other")
+FAMILIES = ("baseline", "risk", "stops", "targets", "management", "bias", "filters", "timing", "winrate", "sessions", "other")
 STATUSES = ("baseline", "adopt-candidate", "promising", "rejected", "info")
 TRADE_COLS = ["day", "entry_t", "exit_t", "dir", "r", "pnl", "risk_pts", "qty", "risk_usd", "half", "exit", "trigger", "mfe", "mae",
               "bars_held", "regime", "mult"]

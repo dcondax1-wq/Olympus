@@ -125,7 +125,7 @@ def run(ids):
     for k in ids:
         t, fam, q, prm = V[k]
         raw = rl.replay(prm, procs=2, label=k, quiet=True)
-        T = rl.size(raw)
+        T = rl.size(raw, rule=RULES.get(k))
         S = rl.score(T, raw)
         print(k, "|", rl.line(S, "2026"), "||", rl.line(S, "2021-25"), flush=True)
 
@@ -154,8 +154,91 @@ def by_window(T):
     return {k: f"n={v[0]} win={round(100 * v[1] / v[0])}% net={v[2]:+.0f}" for k, v in sorted(out.items())}
 
 
+def _depth(t):
+    return float((t.get("ff") or {}).get("depth_atr") or 0.0)
+
+
+def _et_mod(t):
+    import datetime as dt
+    from zoneinfo import ZoneInfo
+    e = dt.datetime.fromtimestamp(int(t["entry_t"]), ZoneInfo("America/New_York"))
+    return e.hour * 60 + e.minute
+
+
+def _deep(th, m=0.5):
+    return lambda t, c: m if _depth(t) >= th else 1
+
+
+def _second(m):
+    return lambda t, c: m if any(x["day"] == t["day"] for x in c["finished"]) else 1
+
+
+def _off_ny(m):
+    return lambda t, c: 1 if (570 <= _et_mod(t) < 695 or 810 <= _et_mod(t) < 935) else m
+
+
+# exact re-sizing of finished replays (same trades, smaller size): id -> (base variant, rule, title, question)
+SIZED = {
+    "wr_deep30_half": ("ses_feat_base", _deep(3.0), "Half size after a very deep sweep (3+ ATR)", "Same trades, half size when the sweep ran 3+ ATR past the pool"),
+    "wr_deep35_half": ("ses_feat_base", _deep(3.5), "Half size after a very deep sweep (3.5+ ATR)", "Same trades, half size when the sweep ran 3.5+ ATR past the pool"),
+    "wr_deep40_half": ("ses_feat_base", _deep(4.0), "Half size after a very deep sweep (4+ ATR)", "Same trades, half size when the sweep ran 4+ ATR past the pool"),
+    "wr_deep27_half": ("ses_feat_base", _deep(2.67), "Half size after a deep sweep (2.7+ ATR)", "Same trades, half size when the sweep ran 2.7+ ATR past the pool"),
+    "wr_deep35_quarter": ("ses_feat_base", _deep(3.5, 0.25), "Quarter size after a very deep sweep (3.5+ ATR)", "Same trades, quarter size when the sweep ran 3.5+ ATR"),
+    "ses_ny_max2_q25": ("ses_ny_max2", _second(0.25), "NY, 2nd trade a day at quarter size", "Second trade (after a non-win) at quarter size"),
+    "ses_ny_max2_afterwin_half": ("ses_ny_max2_afterwin", _second(0.5), "NY, 2nd trade only after a win, half size", "Second trade after a win at half size"),
+    "ses_lon_add2any_q25": ("ses_lon_add2any", _off_ny(0.25), "NY + London, London at quarter size", "London trades at a quarter of the size"),
+    "ses_asia_add2any_q25": ("ses_asia_add2any", _off_ny(0.25), "NY + Asia, Asia at quarter size", "Asia trades at a quarter of the size"),
+    "ses_lunch_add2any_q25": ("ses_lunch_add2any", _off_ny(0.25), "NY + lunch, lunch at quarter size", "Lunch trades at a quarter of the size"),
+}
+for _k, (_b, _r, _t, _q) in SIZED.items():
+    V[_k] = (_t, "winrate" if _k.startswith("wr_") else "sessions", _q, V[_b][3])
+
 VERDICTS = {}   # id -> (status, verdict), filled in after the runs
-RULES = {}      # id -> size rule for runs that re-size the baseline
+RULES = {k: v[1] for k, v in SIZED.items()}   # id -> size rule
+
+R, P, A, I = "rejected", "promising", "adopt-candidate", "info"
+VERDICTS.update({
+    "ses_feat_base": (I, "Same 768 trades as the baseline; only stores every entry feature for the win-rate screens."),
+    "ses_lon_alone": (R, "London alone loses in both periods: 2026 -$4.8k (PF 0.54), 2021-25 -$13.9k (PF 0.83), win 17-18%."),
+    "ses_pre_alone": (R, "Pre-open alone loses in both: 2026 -$2.0k, 2021-25 -$9.5k (PF 0.68), 1.1-1.4 trades a week."),
+    "ses_lunch_alone": (R, "Lunch alone: 2026 +$0.8k but 2021-25 -$8.7k (PF 0.74)."),
+    "ses_late_alone": (R, "15:30-15:45 alone: 0.15-0.3 trades a week and loses in both."),
+    "ses_asia_alone": (R, "Asia alone: 2026 +$4.4k (PF 1.44) but 2021-25 -$14.4k (PF 0.71), win 16-17%."),
+    "ses_lon_alone_slip": (I, "+1 tick outside RTH: London 2021-25 -$13.9k becomes -$19.8k."),
+    "ses_asia_alone_slip": (I, "+1 tick outside RTH: Asia 2021-25 -$14.4k becomes -$13.5k (most of its exits are limits)."),
+    "ses_pre_alone_slip": (I, "+1 tick outside RTH: pre-open 2021-25 -$9.5k becomes -$9.9k."),
+    "ses_ny_max2": (R, "2nd NY trade after a non-win: 2026 -$1.4k, 2021-25 -$11.5k, 1-month eval fails 5.2% -> 16.3%."),
+    "ses_ny_max2_afterwin": (R, "2nd NY trade only after a win: 2026 -$0.4k, 2021-25 -$8.4k."),
+    "ses_ny_max2_win1": (R, "One AM + one PM trade: 2026 -$1.3k, 2021-25 -$10.5k, fails 16.3% in a month."),
+    "ses_ny_max2_q25": (R, "Second trade at quarter size still costs 2026 -$0.7k and 2021-25 -$12.9k."),
+    "ses_ny_max2_afterwin_half": (R, "Second trade after a win at half size: 2026 -$0.4k, 2021-25 -$8.2k."),
+    "ses_lon_add2any_q25": (R, "London added at quarter size: 2026 +$8.8k (vs +$20.5k), 2021-25 +$12.7k (vs +$16.4k)."),
+    "ses_asia_add2any_q25": (R, "Asia added at quarter size: 2026 -$2.4k, 2021-25 -$8.1k."),
+    "ses_lunch_add2any_q25": (R, "Lunch added at quarter size: 2026 -$1.1k, 2021-25 -$9.6k."),
+    "wr_partial_pool50": (R, "Win rate 26% -> 34% (2026) / 21% -> 31% (2021-25), but net -$5.3k and -$11.9k."),
+    "wr_partial_pool50_keep": (R, "Same partial, stop kept: win 34% / 31%, net -$5.3k and -$9.2k."),
+    "wr_partial_1r50": (R, "Win rate 44% / 36%, but 2026 -$8.7k and 2021-25 -$16.1k (PF 1.00)."),
+    "wr_retest_ce": (R, "Limit at the gap middle: win rate falls to 9% / 18%; 2026 loses money (-$3.0k), 1.6 trades a week."),
+    "wr_retest12": (R, "Limit at the gap edge for 12 bars: win 11% / 18%, 2026 -$9.9k, 1.8 trades a week; 2021-25 +$5.8k."),
+    "wr_fvg6": (R, "6-pt minimum gap: win 20.5% / 19.6%, 2026 -$10.8k, 2021-25 -$16.3k."),
+    "wr_fvg10": (R, "10-pt minimum gap: loses in 2021-25 (-$8.3k)."),
+    "wr_depth_max27": (R, "Skipping sweeps deeper than 2.7 ATR: 1.67 trades a week in 2026, both periods earn less."),
+    "wr_depth_max35": (R, "Skipping sweeps deeper than 3.5 ATR: best win rate (28.2% / 22.1%) and 2021-25 +$3.0k, but 2026 -$1.1k and 1.89 a week."),
+    "wr_depth_band": (R, "Depth 0.5-3 ATR only: 1.26 trades a week in 2026, less money in both."),
+    "wr_htf4h": (R, "Only with 4H order flow: 0.97 trades a week in 2026, 2026 -$16.6k."),
+    "wr_htf1h": (R, "Only with 1H order flow: 1.04 trades a week, 2026 -$13.2k, 2021-25 -$7.4k."),
+    "wr_htf_trend": (R, "Only with 1H structure: 1.17 trades a week, less money in both."),
+    "wr_deep35_half": (A, "Half size after a sweep 3.5+ ATR past the pool (1 trade in 5): 2026 +$293 (PF 3.94 -> 4.11, DD -$2.2k -> -$2.0k), "
+                          "2021-25 +$1.5k (PF 1.27 -> 1.32, DD -$9.3k -> -$7.5k, 1-month fails 5.2% -> 3.5%). Every trade kept."),
+    "wr_deep30_half": (P, "Neighbour of 3.5: 2026 +$291, 2021-25 +$0.4k, DD -$7.1k."),
+    "wr_deep40_half": (P, "Neighbour of 3.5: 2026 +$293, 2021-25 +$2.2k, DD -$7.9k."),
+    "wr_deep27_half": (R, "Threshold too low: 2026 -$1.1k."),
+    "wr_deep35_quarter": (P, "Quarter instead of half: 2026 +$417, 2021-25 +$2.2k, PF 4.19 / 1.35; same eval odds as half."),
+})
+for _w in WIN:
+    VERDICTS.setdefault(f"ses_{_w}_add1", (R, "Added to NY with 1 trade a day: the new window takes the day's trade first and loses in 2021-25."))
+    VERDICTS.setdefault(f"ses_{_w}_add2", (R, "Added to NY, 1 per window: more trades, less money in 2021-25 and more failed evals."))
+    VERDICTS.setdefault(f"ses_{_w}_add2any", (R, "Added to NY, 1 per window, any outcome: more trades, less money in 2021-25 and more failed evals."))
 
 
 def pass_rate(s):
@@ -171,7 +254,7 @@ if __name__ == "__main__":
     elif cmd == "table":
         for k in ids:
             raw = rl.replay(V[k][3], procs=2, quiet=True)
-            T = rl.size(raw); S = rl.score(T, raw)
+            T = rl.size(raw, rule=RULES.get(k)); S = rl.score(T, raw)
             print(k, *[row(S["spans"][sp], sp) for sp in ("2026", "2021-25")], sep="\n   ")
             if k.startswith("ses_") and "_add" in k:
                 print("   by window:", by_window(T))
