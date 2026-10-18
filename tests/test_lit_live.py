@@ -145,20 +145,23 @@ def main():
     T5 = df5["time"].values
     out = {"strategy": "lit_final" if "--final" in sys.argv else "lit_live (live_model.json)", "params": P, "sessions": len(sess), "backtest_trades": len(REF)}
 
-    def poll(now, window_days=None):
+    def poll(now, window_days=None, hint=True):
         cut5 = df5.iloc[:int(np.searchsorted(T5 + 300, now, side="right"))]
         if window_days:
             cut5 = cut5[cut5["time"] >= cut5["time"].max() - window_days * 86400]
         cut1 = b1.slice(0, int(np.searchsorted(b1.t + 60, now, side="right")))
+        # the 1m bar forming at `now` (a feed shows its first tick, i.e. its open): sizes an entry decided on the CISD close
+        jf = int(np.searchsorted(b1.t, now - now % 60))
+        forming = (int(b1.t[jf]), float(b1.o[jf])) if hint and jf < len(b1.t) and int(b1.t[jf]) == now - now % 60 else None
         if window_days:
             # the 20-day variant: no extension of the window (lit_live.window_start bypassed)
             orig = lit_live.window_start
             lit_live.window_start = lambda last_t: int(cut5["time"].min())
             try:
-                return lit_live.run(cut5, P, one_min=cut1, now=now)
+                return lit_live.run(cut5, P, one_min=cut1, now=now, forming=forming)
             finally:
                 lit_live.window_start = orig
-        return lit_live.run(cut5, P, one_min=cut1, now=now)
+        return lit_live.run(cut5, P, one_min=cut1, now=now, forming=forming)
 
     # ---- 1. day-end replay
     def day_end(window_days=None):
@@ -202,6 +205,7 @@ def main():
         t0 = time.time()
         polls = 0
         bad, lags, seen_open, never = [], [], 0, []
+        enter = {"seen": 0, "days": 0, "match": 0, "differs": [], "est_days": 0, "est_qty_differs": [], "est_target_differs": 0}
         only = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)
         for d, want in sorted(by_day.items()):
             if only and d not in only:
@@ -211,11 +215,31 @@ def main():
             times = set(range(at(d, 1, 55), min(ext + 600, day_close(d)) + 1, 300))
             times |= set(range(ent - 600, ent + 301, 60))
             first = None
+            en_first = None
             for now in sorted(times):
                 polls += 1
                 res = poll(now)
                 pos = res["state"].get("position")
                 fin = [t for t in res["trades"] if t["day"] == d]
+                en = res["state"].get("enter_now")
+                if en:
+                    # the entry decided on the 1m CISD close (routed at market at once): must be the backtest's trade
+                    enter["seen"] += 1
+                    ek = (en["entry_t"], en["dir"], round(en["entry"], 2), round(en["stop0"], 2), round(en["target"], 2), en["qty"])
+                    if ek == ref_key(w) and not en.get("est"):
+                        enter["match"] += 1
+                    else:
+                        bad.append({"day": d, "now": now, "what": "enter-now entry differs", "got": ek, "want": ref_key(w)})
+                    if en_first is None:
+                        en_first = now
+                        enter["days"] += 1
+                        # the same poll when the feed does not show the forming bar's open yet: sized from the CISD close
+                        e2 = poll(now, hint=False)["state"].get("enter_now")
+                        if e2:
+                            enter["est_days"] += 1
+                            if e2["qty"] != w["qty"]:
+                                enter["est_qty_differs"].append((d, e2["qty"], int(w["qty"])))
+                            enter["est_target_differs"] += round(e2["target"], 2) != round(w["target_px"], 2)
                 for t in fin:
                     if key(t) != ref_key(w) or (t["exit_reason"], t["exit_t"], round(t["pnl"], 2)) != ref_exit(w):
                         bad.append({"day": d, "now": now, "what": "finished trade differs", "got": key(t)})
@@ -227,7 +251,7 @@ def main():
                         bad.append({"day": d, "now": now, "what": "still open after the backtest exit"})
                     else:
                         seen_open += 1
-                if first is None and (pos or fin):
+                if first is None and (pos or fin or en):
                     first = now
             if len(lags) % 20 == 0 and first is not None:
                 print(f"  ... {d}: {polls} polls, {len(bad)} differences, {time.time() - t0:.0f}s", flush=True)
@@ -243,6 +267,7 @@ def main():
                                                      "first": next((b for b in known if b["day"] == d), None)}
                                                  for d in sorted({b["day"] for b in known})},
                            "polls_with_matching_open_position": seen_open, "trade_never_seen_open_or_closed": never,
+                           "enter_now": {**enter, "est_qty_differs": enter["est_qty_differs"][:40]},
                            "delay_entry_to_first_poll_min": {"median": round(float(np.median(lag)), 2) if len(lag) else None,
                                                              "max": round(float(lag.max()), 2) if len(lag) else None,
                                                              "within_1_min": int((lag <= 1.0).sum()), "within_5_min": int((lag <= 5.0).sum())},
@@ -251,6 +276,10 @@ def main():
               f"{sorted({b['day'] for b in known})}), open position matched on "
               f"{seen_open} polls, entry seen after median {out['intraday']['delay_entry_to_first_poll_min']['median']} min "
               f"(max {out['intraday']['delay_entry_to_first_poll_min']['max']}) in {out['intraday']['seconds']}s", flush=True)
+        print(f"enter-now (entry decided on the 1m CISD close): seen on {enter['days']} trade days ({enter['seen']} polls, "
+              f"{enter['match']} identical to the backtest trade); without the forming bar's open (sized from the CISD close): "
+              f"{len(enter['est_qty_differs'])}/{enter['est_days']} days route other micros, {enter['est_target_differs']} another "
+              f"target", flush=True)
     # ---- 3. the PC paper bot itself (engine/live.py LiveBot + PaperAdapter) on LIT, fed bar by bar
     if "--bot" in sys.argv or ("--days" not in sys.argv and "--nobot" not in sys.argv):
         bs = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--bot-sessions=")), None)
