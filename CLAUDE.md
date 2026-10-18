@@ -24,6 +24,11 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   - The strategy is written in plain language in its own area of the dashboard (Strategy page, versioned, with its numbers).
 - **Stops** go beyond the sweep extreme, i.e. the high/low made before the IFVG, never at a fixed distance. **Wide stop means less
   risk**: size follows the stop.
+- **Owner's trading principles (2026-10-18, keep them):** the stop sits at the protected low/high (1 tick beyond the
+  sweep extreme), never a random or fixed distance; a bigger stop means fewer micros (de-risk), a small stop allows more;
+  one clear target (the VIX-band objective, banked at 8R), no greed; size follows the stop and the target. Under two_week
+  sizing (fresh eval, 2026) micros fall from a median 14 at <20-pt stops to 4 at 60+ pts; $ at risk stays $450-$660 median,
+  capped near $1,000 by the 60% room and the soft daily loss.
 - Every result is judged on 2026 **and** on 2021-25 (5 years). A change is adopted only if it holds in both and keeps 2+/week.
   Report trades/week, % weeks with 2+, PF, net, max DD, and MFFU eval pass/fail within 2 weeks and 1 month.
 
