@@ -25,7 +25,11 @@ plus 26 LTF LIT confluences from lit_select's features. Steps:
                                      # checked on H2 -> research/lit/htf_combos.json
   python tools/lit_htf.py rules      # survivors as skip / size 1.25x-0.75x / "HTF-aligned only in London" on the real LIT
                                      # path at the eval size -> research/lit/htf_rules.json
-  python tools/lit_htf.py save       # rl.save the runs lit_htf_* (family other, tags lit, lit_htf)
+  python tools/lit_htf.py chance     # how many confluences 'hold' in both halves by chance (outcomes shuffled)
+  python tools/lit_htf.py followups  # post-hoc: size neighbours, FVG / 4H swing memory, stacks -> research/lit/htf_followups.json
+  python tools/lit_htf.py final      # the finalists + the size shuffle test -> research/lit/htf_final.json
+  python tools/lit_htf.py save       # the same + rl.save the runs lit_htf_* (family other, tags lit, lit_htf)
+Write-up: research/writeups/lit-htf-confluences.md.
 Judged on 2026: pick on H1 (Jan 2 - Jun 30), check on H2 (Jul 1 - Oct 16). 2021-25 is a reference line (5m entries only).
 Main metric: the MFFU 50K eval passed within 10 sessions (p10 / f10) and the cost per 2-week pass ($91.80 / p10).
 Paper only. 1 CPU process. Changes no engine file.
@@ -1062,13 +1066,13 @@ def followups():
 # ================================================================================================ finalists, shuffle test, runs
 FINAL = collections.OrderedDict([
     # name in rules() / followups()                                          (run id suffix, status)
-    ("NOT fv_way1h: 1.25x with, 0.75x without", ("clear1h_size", "promising")),
+    ("NOT fv_way1h: 1.25x with, 0.75x without", ("clear1h_size", "adopt-candidate")),
     ("NOT dr_reach: 1.25x with, 0.75x without", ("clearlv_size", "promising")),
     ("[stack] fresh trap tilt x clear HTF-level path tilt", ("trap_x_clearlv", "adopt-candidate")),
     ("[stack] fresh trap tilt x clear 1H path tilt (one rounding, $900 cap)", ("trap_x_clear1h", "promising")),
     ("[post-hoc] clear path: no 1H FVG and no untaken HTF level between entry and target: 1.25x / 0.75x", ("clearpath_size", "promising")),
-    ("[post-hoc] 4H draw size-neutral: 1.4x when the nearest unswept 4H swing is on the target side, else 0.8x", ("draw4h_neutral", "promising")),
-    ("[stack] fresh trap tilt x 4H draw tilt (1.25 / 0.75 each)", ("trap_x_draw4h", "promising")),
+    ("[post-hoc] 4H draw size-neutral: 1.4x when the nearest unswept 4H swing is on the target side, else 0.8x", ("draw4h_neutral", "adopt-candidate")),
+    ("[stack] fresh trap tilt x 4H draw tilt (1.25 / 0.75 each)", ("trap_x_draw4h", "rejected")),
     ("WITH the HTF draw (composite >= 2): London setups only when aligned", ("with_draw_london", "rejected")),
     ("WITH the HTF draw (composite >= 2): 1.25x / 0.75x", ("with_draw_size", "rejected")),
     ("pl_sw4h: 1.25x with, 0.75x without", ("draw4h_size", "rejected")),
