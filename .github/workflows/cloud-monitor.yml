@@ -79,6 +79,10 @@ jobs:
             /research/lab/montecarlo.json
             /research/lab/intraday_heat.json
             /research/lab/calendar_effects.json
+            /research/lab/backtest_engine.json
+            /research/lit/*.md
+            /research/lit/mffu_rules.json
+            /research/archive/engine-2026-10-17/
             /research/study/
             /research/runs/*.json
             /research/writeups/
@@ -145,6 +149,8 @@ jobs:
 
       - name: News hub (USD calendar + headlines, free sources; never fails the run)
         if: steps.guard.outputs.go == '1'
+        timeout-minutes: 5
+        continue-on-error: true
         run: python tools/news_hub.py --out data/news/hub.json || true
 
       - name: Publish dashboard branch
@@ -183,6 +189,8 @@ jobs:
       # Costs minutes only on those stretches: at most 15 min a day on forming setups, 550 a month in all.
       - name: Watch an armed / forming LIT setup (fast entry notice)
         if: steps.guard.outputs.go == '1' && github.event.schedule != '47 21 * * 0'
+        timeout-minutes: 62          # cap 55 + the last full run / publish; a hang or a kill never fails the job (cache still saved)
+        continue-on-error: true
         env:
           LE_VAPID_PRIVATE: ${{ secrets.LE_VAPID_PRIVATE }}
           LE_VAPID_KEY_FILE: .le_push/vapid.json
