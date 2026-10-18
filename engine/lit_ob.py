@@ -46,6 +46,8 @@ DEFAULTS = {
     "leg_lb": 24,         # extreme vs decisional: lowest low of this many candles up to conf
     "min_disp_atr": 0.8,  # biggest body of the move >= this x ATR(14) of that timeframe (LIT's displacement: 0.8)
     "min_fvg_atr": 0.1,   # the FVG must be at least this x ATR(14) tall (no 1-tick gaps in a slow grind)
+    "no_break": True,     # no session break (a bar-to-bar time gap > the timeframe + 30 min: the 17:00 halt, weekends)
+                          # between the block and the bar that qualifies it: an opening gap is not a displacement
 }
 TF_SECS = {"5m": 300, "15m": 900, "1h": 3600, "4h": 14400}
 
@@ -104,7 +106,7 @@ def _fractal_lows(l, k=2):
 
 
 # ------------------------------------------------------------------------------------------------ detection
-def _detect_dir(o, h, l, c, P, at, rej=None):
+def _detect_dir(o, h, l, c, P, at, rej=None, brk=None):
     """Bullish blocks in direction space (o, h, l, c already mirrored for bearish). rej: a list that collects the
     rejected candidates (last down run before an up candle that never qualified) with the reason."""
     n = len(o)
@@ -158,10 +160,11 @@ def _detect_dir(o, h, l, c, P, at, rej=None):
                 continue
             if f + 1 >= s_run or l[f + 1:s_run].min() >= l[f]:
                 swept = True; break
-        fvg = None; bos_k = None; cisd_k = None; conf = None
+        fvg = None; bos_k = None; cisd_k = None; conf = None; died = None
         for b in range(u, min(n, u + P["disp_max"])):
             if l[b] < wick_bot or c[b] < body_bot:
-                break                                  # the move made a lower low / closed back below: not the origin
+                died = "price went back below the block first"   # a lower low / a close back below: not the origin
+                break
             if fvg is None and b - 2 >= e_run and l[b] - h[b - 2] >= P["min_fvg_atr"] * at[b]:
                 fvg = (float(h[b - 2]), float(l[b]), b)
             if cisd_k is None and c[b] > body_top:
@@ -174,14 +177,22 @@ def _detect_dir(o, h, l, c, P, at, rej=None):
                     (swept and cisd_k is not None) if qual == "liq" else cisd_k is not None)
             if ok_s and (fvg is not None or not P["need_fvg"]):
                 conf = b; break
+        if conf is not None and brk is not None and brk[s_run + 1:conf + 1].any():
+            if rej is not None:
+                rej.append({"s": s_run, "e": e_run, "u": u, "why": "session break inside the move (an opening gap)", "fvg": fvg is not None,
+                            "bos_lvl": bos_lvl, "swept": swept, "cisd": cisd_k is not None, "conf": conf})
+            continue
         if conf is None:
             if rej is not None:
-                rej.append({"s": s_run, "e": e_run, "u": u, "why": ("no FVG" if fvg is None and P["need_fvg"] else
-                            "no structure break" if bos_k is None and not (swept and cisd_k is not None) else "failed"),
+                rej.append({"s": s_run, "e": e_run, "u": u, "why": (died or ("no FVG" if fvg is None and P["need_fvg"] else
+                            "no structure break")),
                             "fvg": fvg is not None, "bos_lvl": bos_lvl, "swept": swept, "cisd": cisd_k is not None})
             continue
         mb = float(body[u:conf + 1].max() / max(at[conf], 1e-9))
         if mb < P["min_disp_atr"]:
+            if rej is not None:
+                rej.append({"s": s_run, "e": e_run, "u": u, "why": f"weak move (biggest body {mb:.2f} ATR)", "fvg": True,
+                            "bos_lvl": bos_lvl, "swept": swept, "cisd": True, "conf": conf})
             continue
         seen.add((s_run, e_run))
         # the leg that broke structure starts at the swing high it broke (else leg_lb candles back): the block holding the
@@ -196,20 +207,25 @@ def _detect_dir(o, h, l, c, P, at, rej=None):
     return out
 
 
-def detect(o, h, l, c, cfg=None, tf="5m", rejects=None):
+def detect(o, h, l, c, cfg=None, tf="5m", rejects=None, t=None):
     """Every order block of both directions in the bars given (sorted by conf). Prices are real prices: for a bullish
     block (dir +1) top/bot = the zone, proximal edge = top; for a bearish block (dir -1) proximal edge = bot.
-    rejects: a list that receives the candidates that did not qualify ({"dir", "s", "e", "u", "why", ...})."""
+    rejects: a list that receives the candidates that did not qualify ({"dir", "s", "e", "u", "why", ...}).
+    t: bar open times in seconds (needed for the session-break rule no_break; without t the rule is off)."""
     P = {**DEFAULTS, **(cfg or {})}
     o = np.asarray(o, float); h = np.asarray(h, float); l = np.asarray(l, float); c = np.asarray(c, float)
     at = atr(h, l, c)
+    brk = None
+    if t is not None and P["no_break"] and len(t) > 1:
+        tt = np.asarray(t, dtype=np.int64)
+        brk = np.r_[False, np.diff(tt) > TF_SECS.get(tf, 300) + 1800]     # brk[i]: a session break right before bar i
     out = []
     for d in (1, -1):
         rj = [] if rejects is not None else None
         if d == 1:
-            R = _detect_dir(o, h, l, c, P, at, rj)
+            R = _detect_dir(o, h, l, c, P, at, rj, brk)
         else:
-            R = _detect_dir(-o, -l, -h, -c, P, at, rj)
+            R = _detect_dir(-o, -l, -h, -c, P, at, rj, brk)
         if rejects is not None:
             rejects.extend({**r, "dir": d, "tf": tf} for r in rj)
         for r in R:
@@ -306,7 +322,7 @@ def chart_zones(t, o, h, l, c, mod=None, day=None, tf="5m", cfg=None, kind="body
     """JSON-ready blocks of one timeframe for a chart from 5m arrays: start / known / mitigated / broken times (seconds,
     5m bar open times; a block is drawn from its first candle to the touch, a breaker from the break to its touch)."""
     B = resample(t, o, h, l, c, tf, mod, day)
-    obs = lifecycle(detect(B["o"], B["h"], B["l"], B["c"], cfg, tf), B["h"], B["l"], B["c"], kind)
+    obs = lifecycle(detect(B["o"], B["h"], B["l"], B["c"], cfg, tf, t=B["t"]), B["h"], B["l"], B["c"], kind)
     sec = TF_SECS[tf]
     tt = B["t"]
     T = lambda i: None if i is None else int(tt[i])

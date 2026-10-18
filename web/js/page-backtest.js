@@ -1,5 +1,5 @@
 import { $, $$, seg, esc, fmtN, fmt$, fmtS$, fmtR, cls, etStr, store, toast, css, downloadFile } from './util.js';
-import { S, on, PARAM_SCHEMA, PRESETS, WINDOW_PRESETS, effective, getParam, setParam, cj, baseOpts } from './state.js';
+import { S, ENG, on, PARAM_SCHEMA, PRESETS, WINDOW_PRESETS, effective, getParam, setParam, cj, baseOpts } from './state.js';
 import { kpiTiles, go, run } from './app.js';
 import * as chartPage from './page-chart.js';
 
@@ -11,12 +11,12 @@ const hm = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 6
 const unhm = (s) => { const [h, m] = s.split(':').map(Number); return h * 60 + (m || 0); };
 
 export function init() {
-  on(render);
+  on(() => render(ENG()));
   seg($('#bdSeg'), [['conf', 'Confluence'], ['pool', 'Pool swept'], ['trigger', 'Trigger'], ['target', 'Target'], ['score', 'Score'], ['hour', 'Hour'], ['dir', 'Side']], bdKey,
     (v) => { bdKey = v; store.set('bdKey', v); renderBreakdown(); });
   seg($('#tradeFilter'), [['all', 'All'], ['win', 'Winners'], ['loss', 'Losers'], ['long', 'Longs'], ['short', 'Shorts']], filter, (v) => { filter = v; renderTable(); });
   $('#exportCsv').onclick = exportCsv;
-  $('#exportJson').onclick = () => downloadFile(`backtest_${S.sym}.json`, JSON.stringify({ params: S.res.params, stats: S.res.stats, trades: S.res.trades }, null, 2), 'application/json');
+  $('#exportJson').onclick = () => downloadFile(`backtest_${S.sym}.json`, JSON.stringify({ params: ENG().params, stats: ENG().stats, trades: ENG().trades }, null, 2), 'application/json');
 }
 export function show() { if (S.meta && !$('#paramPanel').dataset.built) buildParams(); }
 
@@ -153,7 +153,7 @@ function renderCalendar(res) {
 }
 
 function renderBreakdown() {
-  const rows = (S.res?.breakdowns?.[bdKey] || []).slice().sort((a, b) => b.pnl - a.pnl);
+  const rows = (ENG()?.breakdowns?.[bdKey] || []).slice().sort((a, b) => b.pnl - a.pnl);
   if (!rows.length) { $('#btBreak').innerHTML = '<div class="empty">No data</div>'; return; }
   const max = Math.max(1, ...rows.map(r => Math.abs(r.pnl)));
   $('#btBreak').innerHTML = `<div class="bars-list">` + rows.map(r => {
@@ -184,8 +184,8 @@ const COLS = [
 ];
 
 function renderTable() {
-  if (!S.res) return;
-  let trs = S.res.trades.map((t, i) => ({ ...t, _i: i }));
+  if (!ENG()) return;
+  let trs = ENG().trades.map((t, i) => ({ ...t, _i: i }));
   if (filter === 'win') trs = trs.filter(t => t.pnl > 0);
   if (filter === 'loss') trs = trs.filter(t => t.pnl <= 0);
   if (filter === 'long') trs = trs.filter(t => t.dir === 1);
@@ -205,6 +205,6 @@ function renderTable() {
 function exportCsv() {
   const keys = ['day', 'entry_t', 'exit_t', 'dir', 'trigger', 'score', 'qty', 'qty_label', 'entry', 'stop0', 'target', 'target_label', 'rr', 'exit_reason', 'exit_price', 'pnl_r', 'pnl', 'comm', 'mfe', 'mae', 'bars_held'];
   const rows = [keys.join(',') + ',pools,confluence'];
-  for (const t of S.res.trades) rows.push(keys.map(k => JSON.stringify(t[k] ?? '')).join(',') + ',' + JSON.stringify(t.pools.join(' | ')) + ',' + JSON.stringify(t.conf_tags.join(' | ')));
-  downloadFile(`trades_${S.sym}_${S.res.range[0]}_${S.res.range[1]}.csv`, rows.join('\n'), 'text/csv');
+  for (const t of ENG().trades) rows.push(keys.map(k => JSON.stringify(t[k] ?? '')).join(',') + ',' + JSON.stringify(t.pools.join(' | ')) + ',' + JSON.stringify(t.conf_tags.join(' | ')));
+  downloadFile(`trades_${S.sym}_${ENG().range[0]}_${ENG().range[1]}.csv`, rows.join('\n'), 'text/csv');
 }

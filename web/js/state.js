@@ -191,6 +191,10 @@ export async function loadBars(sym, tf) {
 }
 
 export function on(fn) { S.listeners.push(fn); }
+// The previous strategy's (engine) backtest for the Archive pages. The redesigned dashboard (web_next) sets S.mode = 'lit':
+// S.res is then the LIT replay (/api/next/lit_backtest) and the engine's /api/backtest result lives in S.eng (loaded when an
+// Archive page opens). The classic dashboard leaves S.mode unset, so S.res is the engine result as before.
+export const ENG = () => (S.mode === 'lit' ? S.eng || null : S.res);
 export function emit() { for (const f of S.listeners) { try { f(S.res); } catch (e) { console.error(e); } } }
 
 // ---- Chart.js theme

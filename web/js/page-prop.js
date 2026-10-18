@@ -1,8 +1,8 @@
 import { $, $$, esc, fmtN, fmt$, fmtS$, cls, store, css, api, busy, toast } from './util.js';
-import { S, on, cj, baseOpts } from './state.js';
+import { S, ENG, on, cj, baseOpts } from './state.js';
 
 export function init() {
-  on(render);
+  on(() => render(ENG()));
   $('#planSel').onchange = (e) => { S.plan = e.target.value; store.set('plan', S.plan); window.LE.run(); };
   $('#evalStart').onchange = () => renderEval();
   $('#mcRun').onclick = runMC;
@@ -73,7 +73,7 @@ async function loadFirms() {
 }
 
 function renderEval() {
-  const res = S.res; if (!res) return;
+  const res = ENG(); if (!res) return;
   const s = +$('#evalStart').value || 0;
   const days = res.days.slice(s);
   const ev = simulateEval(days.map(d => d.pnl), days.map(d => d.low_intraday), res.plan);
@@ -108,7 +108,7 @@ function renderRolling(res) {
 }
 
 async function runMC() {
-  if (!S.res) return;
+  if (!ENG()) return;
   busy(true);
   try {
     const r = await api('/api/montecarlo', { sym: S.sym, tf: S.tf, params: S.params, plan: S.plan, runs: +$('#mcRuns').value || 2000, horizon: +$('#mcDays').value || 60 });
@@ -122,8 +122,8 @@ async function runMC() {
         { label: 'p75', data: b['75'], borderColor: 'transparent', pointRadius: 0, fill: false },
         { label: 'p25–p75', data: b['25'], borderColor: 'transparent', backgroundColor: 'rgba(57,135,229,.24)', pointRadius: 0, fill: '-1' },
         { label: 'Median', data: b['50'], borderColor: css('--accent'), borderWidth: 2, pointRadius: 0 },
-        { label: 'Target +$3k', data: L.map(() => S.res.plan.target), borderColor: css('--good'), borderDash: [3, 3], borderWidth: 1.2, pointRadius: 0 },
-        { label: 'Initial MLL -$2k', data: L.map(() => -S.res.plan.mll), borderColor: css('--bad'), borderDash: [3, 3], borderWidth: 1.2, pointRadius: 0 },
+        { label: 'Target +$3k', data: L.map(() => ENG().plan.target), borderColor: css('--good'), borderDash: [3, 3], borderWidth: 1.2, pointRadius: 0 },
+        { label: 'Initial MLL -$2k', data: L.map(() => -ENG().plan.mll), borderColor: css('--bad'), borderDash: [3, 3], borderWidth: 1.2, pointRadius: 0 },
       ] },
       options: baseOpts({ plugins: { legend: { display: true, position: 'top', align: 'end', labels: { filter: i => !['p95', 'p75'].includes(i.text) } }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${fmt$(c.parsed.y)}` } } },
         scales: { x: { title: { display: true, text: 'trading days' }, grid: { display: false } }, y: { ticks: { callback: v => '$' + v } } } }),
@@ -133,7 +133,7 @@ async function runMC() {
       ['Eval pass', r.pass_prob + '%', 'up'], ['Eval fail', r.fail_prob + '%', 'dn'], ['Median days to pass', r.median_days_to_pass ?? '—'], ['p90 days to pass', r.p90_days_to_pass ?? '—'],
       ['Funded: ≥1 payout', f.p_at_least_one + '%'], ['Funded: all 5 payouts', f.p_all_five + '%'], ['Avg paid to you', fmt$(f.avg_paid_to_trader), 'up'], ['Funded blow rate', f.blow_rate + '%'],
     ].map(([k, v, c]) => `<div class="kpi"><div class="k">${k}</div><div class="v ${c || ''}">${v}</div></div>`).join('') +
-      `<div class="note" style="grid-column:1/-1">Resamples the ${S.res.days.length} backtested sessions with replacement. It assumes the future looks like this sample, which came from one market regime, so read these odds as an <b>optimistic upper bound</b>. Funded stats model the sim-funded stage (buffer, 50% consistency, $2k cap, 5 payouts).</div>`;
+      `<div class="note" style="grid-column:1/-1">Resamples the ${ENG().days.length} backtested sessions with replacement. It assumes the future looks like this sample, which came from one market regime, so read these odds as an <b>optimistic upper bound</b>. Funded stats model the sim-funded stage (buffer, 50% consistency, $2k cap, 5 payouts).</div>`;
   } catch (e) { toast('Monte Carlo failed: ' + e.message); }
   busy(false);
 }
@@ -150,14 +150,14 @@ function renderSizer() {
     store.set('sizer', { stop, risk });
     const micros = Math.min(40, Math.floor(risk / (stop * spec.micro_pv)));
     const minis = Math.min(4, Math.floor(risk / (stop * spec.mini_pv)));
-    const pctMll = risk / S.res.plan.mll * 100;
+    const pctMll = risk / ENG().plan.mll * 100;
     $('#szOut').innerHTML = `<div class="state-grid">
       <div class="st"><div class="k">M${S.sym} contracts</div><div class="v">${micros}</div></div>
       <div class="st"><div class="k">${S.sym} contracts</div><div class="v">${minis}</div></div>
       <div class="st"><div class="k">Actual risk (micros)</div><div class="v">${fmt$(micros * stop * spec.micro_pv)}</div></div>
       <div class="st"><div class="k">% of MLL</div><div class="v ${pctMll > 25 ? 'dn' : 'up'}">${fmtN(pctMll, 1)}%</div></div>
-      <div class="st"><div class="k">Losses to breach</div><div class="v">${Math.floor(S.res.plan.mll / Math.max(1, micros * stop * spec.micro_pv))}</div></div>
-      <div class="st"><div class="k">Wins (2.5R) to target</div><div class="v">${Math.ceil(S.res.plan.target / Math.max(1, 2.5 * micros * stop * spec.micro_pv))}</div></div></div>
+      <div class="st"><div class="k">Losses to breach</div><div class="v">${Math.floor(ENG().plan.mll / Math.max(1, micros * stop * spec.micro_pv))}</div></div>
+      <div class="st"><div class="k">Wins (2.5R) to target</div><div class="v">${Math.ceil(ENG().plan.target / Math.max(1, 2.5 * micros * stop * spec.micro_pv))}</div></div></div>
       <div class="note">${pctMll > 25 ? '⚠ Over 25% of the max loss per trade. A normal losing streak can end the account.' : '✓ Inside the 10–25% of MLL per-trade band, which survives normal losing streaks.'}</div>`;
   };
   el.oninput = calc; calc();

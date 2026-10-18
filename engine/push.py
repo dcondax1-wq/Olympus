@@ -1,20 +1,26 @@
 """Web Push notifications to the phone app (the Home Screen web app at demetrades2000-coder.github.io/nq-dashboard).
 
-Free and without a server of our own: the phone's browser (Apple / Google / Mozilla push service) delivers the message.
-The app subscribes once from Settings (a tap on "Turn on notifications") and shows a code; that code goes into a GitHub
-Secret, and the cloud monitor (tools/cloud_monitor.py) and the PC bot (engine/live.py, engine/ninjatrader.py) send to it.
+Owner (2026-10-18): the only thing to do is tap "Allow" in the app; the rest is automatic. Two kinds of notice, short:
+  ENTRY    title "LONG · MFFU 50K"   body "Entered 4 MNQ"
+  OUTCOME  title "LONG · MFFU 50K"   body "+$1,812" | "−$366" | "$0 breakeven" | "+$212 closed 15:55"
+One notification tag per trade (the outcome replaces the entry), the app icon, details in the app's Activity page.
+Account label: "Paper" for the cloud paper bot, the NinjaTrader account name for PC fills (e.g. "Sim101"), live_model.json
+"account": {"name": ...} (default "MFFU 50K") for a real account.
 
-Config, first found wins (nothing configured = every call is a silent no-op):
-  LE_VAPID_PRIVATE      the VAPID private key: base64url of the raw 32-byte P-256 key (GitHub Secret, or data/push.json)
-  LE_VAPID_PUBLIC       optional: the matching public key (it is derived from the private key when missing)
-  LE_PUSH_SUBS          the app's subscription code(s): a JSON list, one object, or objects one after another
-  LE_PUSH_SUBS_2 .. _5  more devices (a GitHub Secret cannot be read back, so each device can get its own secret)
-  data/push.json        PC only (gitignored): {"vapid_private": "...", "subs": [...]} (Settings -> Alerts on the PC dashboard)
-Keys: python tools/push_keys.py makes a pair (or the app makes one on the phone). The public key is not secret.
+How it stays automatic (no server of our own, no copy-paste):
+  relay    a free ntfy.sh topic (tools/web_public/push_relay.json, not secret). The app posts its push subscription there when
+           notifications are allowed; the cloud monitor reads the topic every run and keeps the subscriptions in its own
+           state (dashboard branch). The cloud and the PC post "sent" markers there, so a trade is notified once.
+  key      the VAPID key pair. GitHub Secret LE_VAPID_PRIVATE when set; otherwise the cloud makes a pair on its first run and
+           keeps the private key in the GitHub Actions cache (LE_VAPID_KEY_FILE, never committed, never printed). The public
+           key goes to data.json; when it changes, the app subscribes again on its next open.
+  PC       the PC bot gets the same key without a manual step: it publishes its own public key in the heartbeat, the cloud
+           encrypts the VAPID private key to it (ECIES, state.json on the private dashboard branch) and the PC decrypts it
+           with data/push_pc_key.json (gitignored), together with the subscriptions.
+Manual overrides still work: LE_PUSH_SUBS (+ _2.._5) secrets, data/push.json on the PC.
 
-Sending uses pywebpush when it is installed, else the small built-in RFC 8291 (aes128gcm) + RFC 8292 (VAPID) sender
-below, which needs only `cryptography`. Payloads are JSON {title, body, tag, url, kind, key, t, src} for tools/web_public/sw.js.
-Never raises into the caller.
+Sending uses pywebpush when installed, else the built-in RFC 8291 (aes128gcm) + RFC 8292 (VAPID) sender (needs only
+`cryptography`). Nothing configured = every call is a silent no-op. Never raises into the trading loops.
 """
 from __future__ import annotations
 
@@ -30,13 +36,17 @@ import urllib.parse
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CONFIG_PATH = os.path.join(ROOT, "data", "push.json")            # PC only, gitignored
+CONFIG_PATH = os.path.join(ROOT, "data", "push.json")            # PC manual override, gitignored
 SENT_PATH = os.path.join(ROOT, "data", "push_sent.json")         # PC de-dup keys, gitignored
+PC_KEY_PATH = os.path.join(ROOT, "data", "push_pc_key.json")     # the PC's own key (receives the VAPID key), gitignored
+RELAY_PATH = os.path.join(ROOT, "tools", "web_public", "push_relay.json")
 APP_URL = "https://demetrades2000-coder.github.io/nq-dashboard/"
 SUBJECT = os.environ.get("LE_PUSH_SUBJECT") or "https://demetrades2000-coder.github.io"   # VAPID "sub" claim: a contact URL, host only
-TTL_S = 6 * 3600                                                  # a notice older than 6 h is not worth delivering
-MAX_BODY = 600
-POINT_VALUE = {"NQ": 2.0, "ES": 5.0}                              # $ per point of one micro (MNQ / MES)
+TTL_S = 6 * 3600
+MAX_SUBS = 10
+# push services a subscription may point at (the relay is public: nothing else is ever POSTed to)
+PUSH_HOSTS = ("web.push.apple.com", "fcm.googleapis.com", "updates.push.services.mozilla.com", "push.services.mozilla.com",
+              "notify.windows.com", "android.googleapis.com")
 _lock = threading.Lock()
 
 
@@ -51,8 +61,13 @@ def b64u_dec(s: str) -> bytes:
 
 
 def endpoint_id(endpoint: str) -> str:
-    """Short, non-reversible id of a subscription (the app compares it to its own to say 'this phone is connected')."""
+    """Short, non-reversible id of a subscription (the app compares it with its own to say 'this phone is on')."""
     return hashlib.sha256(str(endpoint).encode()).hexdigest()[:12]
+
+
+def extra_on() -> bool:
+    """Notices other than entry / outcome (PC silent, eval timing, NinjaTrader trouble): app-only unless LE_PUSH_EXTRA=1."""
+    return os.environ.get("LE_PUSH_EXTRA", "") == "1"
 
 
 # ---------------------------------------------------------------------------------------------- keys
@@ -75,16 +90,90 @@ def public_from_private(priv_b64: str) -> str:
 
 
 def generate_keys() -> tuple[str, str]:
-    """A new VAPID key pair: (private, public), both base64url."""
+    """A new P-256 key pair: (private, public), both base64url."""
     from cryptography.hazmat.primitives.asymmetric import ec
     k = ec.generate_private_key(ec.SECP256R1())
     return b64u(k.private_numbers().private_value.to_bytes(32, "big")), b64u(_pub_bytes(k.public_key()))
 
 
-# ---------------------------------------------------------------------------------------------- config
+def _read_json(path) -> dict:
+    try:
+        with open(path, encoding="utf-8") as fh:
+            return json.load(fh) or {}
+    except Exception:
+        return {}
+
+
+def _write_private(path, obj):
+    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+    tmp = path + ".tmp"
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh)
+    os.replace(tmp, path)
+
+
+def ensure_key_file(path: str) -> dict:
+    """Cloud: the VAPID key pair kept in the Actions cache, made on the first run when the file is missing or broken.
+    Returns {"public", "new"}: never the private key (callers must not print it)."""
+    k = _read_json(path)
+    try:
+        return {"public": public_from_private(k["private"]), "new": False}
+    except Exception:
+        priv, pub = generate_keys()
+        _write_private(path, {"private": priv, "made": int(time.time())})
+        return {"public": pub, "new": True}
+
+
+# ---- ECIES: the cloud hands the VAPID private key to the PC without anyone copying it
+def seal(secret: bytes, recipient_pub_b64: str) -> str:
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+    rp = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), b64u_dec(recipient_pub_b64))
+    eph = ec.generate_private_key(ec.SECP256R1())
+    key = HKDF(hashes.SHA256(), 32, None, b"le-push-pc-v1").derive(eph.exchange(ec.ECDH(), rp))
+    nonce = os.urandom(12)
+    return b64u(_pub_bytes(eph.public_key()) + nonce + AESGCM(key).encrypt(nonce, secret, None))
+
+
+def unseal(box_b64: str, recipient_priv_b64: str) -> bytes:
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import ec
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+    b = b64u_dec(box_b64)
+    eph = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), b[:65])
+    key = HKDF(hashes.SHA256(), 32, None, b"le-push-pc-v1").derive(_priv_from_b64(recipient_priv_b64).exchange(ec.ECDH(), eph))
+    return AESGCM(key).decrypt(b[65:77], b[77:], None)
+
+
+def pc_public_key(path: str | None = None) -> str | None:
+    """The PC's own public key for the heartbeat (made once, private part in data/push_pc_key.json). Never raises."""
+    path = path or PC_KEY_PATH
+    try:
+        k = _read_json(path)
+        if k.get("private"):
+            return public_from_private(k["private"])
+        priv, pub = generate_keys()
+        _write_private(path, {"private": priv, "made": int(time.time())})
+        return pub
+    except Exception:
+        return None
+
+
+# ---------------------------------------------------------------------------------------------- subscriptions
+def _good_endpoint(ep) -> bool:
+    if not (isinstance(ep, str) and ep.startswith("https://")):
+        return False
+    host = urllib.parse.urlsplit(ep).hostname or ""
+    return any(host == h or host.endswith("." + h) for h in PUSH_HOSTS)
+
+
 def parse_subs(text) -> list:
-    """Subscriptions from a secret's text: a JSON list, one object, or several objects one after another (any spacing).
-    Keeps only well-formed ones {endpoint: https://..., keys: {p256dh, auth}}, de-duplicated by endpoint."""
+    """Subscriptions from a secret's text / a list: a JSON list, one object, or several objects one after another.
+    Keeps only well-formed ones on a known push service {endpoint, keys: {p256dh, auth}}, de-duplicated by endpoint."""
     if not text:
         return []
     items = []
@@ -107,44 +196,114 @@ def parse_subs(text) -> list:
         if not isinstance(x, dict):
             continue
         ep, keys = x.get("endpoint"), x.get("keys") or {}
-        if not (isinstance(ep, str) and ep.startswith("https://") and keys.get("p256dh") and keys.get("auth")):
-            continue
-        if ep in seen:
+        if not (_good_endpoint(ep) and keys.get("p256dh") and keys.get("auth")) or ep in seen:
             continue
         seen.add(ep)
-        out.append({"endpoint": ep, "keys": {"p256dh": keys["p256dh"], "auth": keys["auth"]}})
+        out.append({"endpoint": ep, "keys": {"p256dh": str(keys["p256dh"]), "auth": str(keys["auth"])}})
     return out
 
 
-def _file_cfg(path=None) -> dict:
-    try:
-        with open(path or CONFIG_PATH, encoding="utf-8") as fh:
-            return json.load(fh) or {}
-    except Exception:
-        return {}
+# ---------------------------------------------------------------------------------------------- relay (ntfy.sh)
+class Relay:
+    """The free ntfy.sh topic: the app posts {"le": "sub", ...}; the cloud / PC post {"le": "sent", "key"}. ntfy keeps
+    messages about 12 h, so the app posts again on each open until the cloud lists the phone. Never raises."""
+
+    def __init__(self, base=None, topic=None, timeout=10.0, http=None):
+        cfg = _read_json(RELAY_PATH)
+        self.base = (base or os.environ.get("LE_PUSH_RELAY") or cfg.get("ntfy") or "https://ntfy.sh").rstrip("/")
+        self.topic = topic or os.environ.get("LE_PUSH_TOPIC") or cfg.get("topic")
+        self.timeout = timeout
+        self.http = http                     # tests: http(method, url, body) -> text
+        self.error = None
+
+    def ok(self) -> bool:
+        return bool(self.topic)
+
+    def public(self) -> dict:
+        return {"ntfy": self.base, "topic": self.topic}
+
+    def _req(self, method, url, body=None):
+        if self.http is not None:
+            return self.http(method, url, body)
+        req = urllib.request.Request(url, data=body, method=method, headers={"User-Agent": "LiquidityEngine/1.0"})
+        with urllib.request.urlopen(req, timeout=self.timeout) as r:
+            return r.read().decode("utf-8", "replace")
+
+    def read(self, since: str = "all") -> list:
+        """Every relay message still on the topic: [{"le": ..., ..., "_t"}] (anything else on the topic is ignored)."""
+        if not self.ok():
+            return []
+        try:
+            text = self._req("GET", f"{self.base}/{self.topic}/json?poll=1&since={since}")
+        except Exception as e:
+            self.error = e.__class__.__name__
+            return []
+        out = []
+        for line in str(text or "").splitlines():
+            try:
+                m = json.loads(line)
+                if m.get("event") not in (None, "message"):
+                    continue
+                body = json.loads(m.get("message") or "")
+                if isinstance(body, dict) and body.get("le") in ("sub", "unsub", "sent"):
+                    body["_t"] = int(m.get("time") or 0)
+                    out.append(body)
+            except Exception:
+                continue
+        return out
+
+    def post(self, obj: dict) -> bool:
+        if not self.ok():
+            return False
+        try:
+            self._req("POST", f"{self.base}/{self.topic}", json.dumps(obj, separators=(",", ":")).encode())
+            return True
+        except Exception as e:
+            self.error = e.__class__.__name__
+            return False
+
+    def sent_keys(self, msgs=None) -> set:
+        return {str(m["key"]) for m in (self.read() if msgs is None else msgs) if m.get("le") == "sent" and m.get("key")}
 
 
-def config(env=None, path=None) -> dict:
-    """{"private", "public", "subs", "source", "error"}; private None = not configured."""
+def merge_relay_subs(stored: list, msgs: list, public: str | None, gone=(), now=None) -> list:
+    """The cloud's subscription list: stored rows + "sub" messages made with today's key, minus "unsub" / expired ones,
+    newest MAX_SUBS. Rows: {"sub", "id", "key", "t"}."""
+    rows = {r["id"]: r for r in stored or [] if r.get("id") and r.get("sub")}
+    for m in sorted(msgs or [], key=lambda x: x.get("_t", 0)):
+        if m.get("le") == "sub":
+            subs = parse_subs(m.get("sub"))
+            if not subs:
+                continue
+            sid = endpoint_id(subs[0]["endpoint"])
+            rows[sid] = {"sub": subs[0], "id": sid, "key": m.get("key"), "t": int(m.get("_t") or now or time.time())}
+        elif m.get("le") == "unsub" and m.get("id") in rows and int(m.get("_t") or 0) >= rows[m["id"]].get("t", 0):
+            rows.pop(m["id"], None)
+    gone = set(gone or [])
+    keep = [r for r in rows.values() if r["id"] not in gone and (not public or not r.get("key") or r["key"] == public)]
+    return sorted(keep, key=lambda r: r["t"])[-MAX_SUBS:]
+
+
+# ---------------------------------------------------------------------------------------------- config
+def config(env=None, path=None, subs_extra=None, private=None) -> dict:
+    """{"private", "public", "subs", "source", "error"}; private None = not configured.
+    Private key: LE_VAPID_PRIVATE (secret) > LE_VAPID_KEY_FILE (cloud cache) > `private` (the PC's synced key) > data/push.json."""
     env = os.environ if env is None else env
-    f = _file_cfg(path)
-    priv = (env.get("LE_VAPID_PRIVATE") or "").strip() or (f.get("vapid_private") or "").strip() or None
-    src = "env" if (env.get("LE_VAPID_PRIVATE") or "").strip() else "file" if priv else None
-    texts = [env.get("LE_PUSH_SUBS")] + [env.get(f"LE_PUSH_SUBS_{i}") for i in range(2, 6)]
+    f = _read_json(path or CONFIG_PATH)
+    kf = _read_json(env.get("LE_VAPID_KEY_FILE")) if env.get("LE_VAPID_KEY_FILE") else {}
+    cands = [("secret", (env.get("LE_VAPID_PRIVATE") or "").strip()), ("cache", (kf.get("private") or "").strip()),
+             ("pc-sync", (private or "").strip()), ("file", (f.get("vapid_private") or "").strip())]
+    src, priv = next(((s, p) for s, p in cands if p), (None, None))
     subs = []
-    for t in texts:
+    for t in [env.get("LE_PUSH_SUBS")] + [env.get(f"LE_PUSH_SUBS_{i}") for i in range(2, 6)]:
         subs += parse_subs(t)
-    subs += parse_subs(f.get("subs"))
-    subs = parse_subs(subs)
-    pub, err = (env.get("LE_VAPID_PUBLIC") or "").strip() or (f.get("vapid_public") or "").strip() or None, None
+    subs = parse_subs(subs + parse_subs(f.get("subs")) + parse_subs(subs_extra or []))
+    pub, err = None, None
     if priv:
         try:
-            derived = public_from_private(priv)
-            if pub and pub != derived:
-                err = "LE_VAPID_PUBLIC does not match LE_VAPID_PRIVATE: using the one derived from the private key"
-            pub = derived
+            pub = public_from_private(priv)
         except Exception as e:
-            err, priv = f"VAPID private key unusable ({e.__class__.__name__}: {e})", None
+            err, priv, src = f"VAPID private key unusable ({e.__class__.__name__})", None, None
     return {"private": priv, "public": pub, "subs": subs, "source": src, "error": err}
 
 
@@ -153,30 +312,36 @@ def enabled(cfg=None) -> bool:
     return bool(c["private"] and c["subs"])
 
 
-def status(cfg=None, last=None) -> dict:
+def status(cfg=None, **extra) -> dict:
     """Public view for the dashboards: never the private key or an endpoint, only short endpoint ids."""
     c = cfg or config()
     return {"configured": bool(c["private"]), "vapid_public": c["public"], "devices": len(c["subs"]),
             "device_ids": [endpoint_id(s["endpoint"]) for s in c["subs"]], "source": c["source"], "error": c["error"],
-            "sender": sender_name(), **({"last": last} if last else {})}
+            "sender": sender_name(), **extra}
 
 
 # ---------------------------------------------------------------------------------------------- payloads
-def _money(x) -> str:
-    x = float(x or 0)
-    return f"{'+' if x > 0 else '-' if x < 0 else ''}${abs(x):,.0f}"
+MINUS = "−"
 
 
-def _px(x) -> str:
-    return "-" if x is None else f"{float(x):,.2f}"
+def money(x) -> str:
+    """+$1,812 / −$366 / $0 (whole dollars, a real minus sign)."""
+    v = round(float(x or 0))
+    return "$0" if v == 0 else f"{'+' if v > 0 else MINUS}${abs(v):,.0f}"
 
 
-def _clip(s, n=MAX_BODY) -> str:
-    s = str(s or "")
-    return s if len(s) <= n else s[: n - 1] + "…"
+def account_label(lm: dict | None = None, kind: str = "live") -> str:
+    """live_model.json "account": {"name": "MFFU 50K", "paper": "Paper"} (both optional)."""
+    a = (lm or {}).get("account") or {}
+    return str(a.get("paper") or "Paper") if kind == "paper" else str(a.get("name") or "MFFU 50K")
 
 
-def _et_hm(t) -> str:
+def trade_tag(entry_t) -> str:
+    """One notification per trade: the outcome replaces the entry (the same tag from the cloud and the PC)."""
+    return f"le-trade-{int(entry_t or 0)}"
+
+
+def _hm(t) -> str:
     try:
         import datetime as dt
         from zoneinfo import ZoneInfo
@@ -185,71 +350,38 @@ def _et_hm(t) -> str:
         return ""
 
 
-EXIT_WORDS = {"TARGET": "target hit", "STOP": "stopped out", "BE": "breakeven", "TIME": "flat at the close (15:55)",
-              "EOD": "flat at the close (15:55)", "TIME SAFETY": "flattened at the close (safety)", "KILL": "kill switch"}
-
-
-def fill_payload(src: str, sym: str, side: str, qty, entry, stop, target, entry_t, setup: str = "", risk_pts=None,
-                 note: str = "", model: str = "LIT", url: str | None = None, key: str | None = None) -> dict:
-    """A fill: 'Cloud paper · LIT LONG filled' / '12 MNQ @ 21,034.25 · stop ... · target ... · $820 at risk'."""
-    side = str(side or "").upper() or ("LONG" if (target or 0) > (entry or 0) else "SHORT")
-    if risk_pts is None and entry is not None and stop is not None:
-        risk_pts = abs(float(entry) - float(stop))
-    pv = POINT_VALUE.get(str(sym).upper(), 2.0)
-    risk_usd = float(qty or 0) * float(risk_pts or 0) * pv
-    micro = "MNQ" if str(sym).upper() == "NQ" else "MES" if str(sym).upper() == "ES" else f"micro {sym}"
-    lines = [f"{qty} {micro} @ {_px(entry)} · stop {_px(stop)} · target {_px(target)}",
-             f"${risk_usd:,.0f} at risk ({float(risk_pts or 0):.1f} pt stop){' · ' + _et_hm(entry_t) + ' ET' if entry_t else ''}"]
-    if setup:
-        lines.append(setup)
-    if note:
-        lines.append(note)
-    return {"kind": "fill", "src": src, "key": key or f"fill:{int(entry_t or 0)}", "t": int(entry_t or time.time()),
-            "title": f"{src} · {model} {side} filled", "body": _clip("\n".join(lines)),
-            "tag": f"{_tag(src)}-fill-{int(entry_t or 0)}", "url": url or f"#/activity/fill:{int(entry_t or 0)}",
-            "side": side, "qty": qty, "entry": entry, "stop": stop, "target": target, "risk_usd": round(risk_usd, 2)}
-
-
-def outcome_payload(src: str, sym: str, side: str, exit_reason: str, r, usd, entry_t, exit_t=None, qty=None,
-                    balance=None, to_target=None, note: str = "", model: str = "LIT", url: str | None = None,
-                    key: str | None = None) -> dict:
-    """An outcome: 'Cloud paper · LIT LONG TARGET +3.20R +$2,560' / '... eval balance $52,560 ($440 to the target)'."""
+def entry_payload(account: str, side: str, qty, entry_t, src: str = "", contract: str = "MNQ", **detail) -> dict:
+    """ENTRY: title "LONG · MFFU 50K", body "Entered 4 MNQ". detail (entry, stop, target, risk_usd, setup...) stays in the
+    app's Activity page; it is never sent."""
     side = str(side or "").upper()
-    reason = str(exit_reason or "EXIT").upper()
-    rtxt = "" if r is None else f" {float(r):+.2f}R"
-    lines = [f"{EXIT_WORDS.get(reason, reason.lower())}"
-             + (f" · entry {_et_hm(entry_t)} → exit {_et_hm(exit_t)} ET" if entry_t and exit_t else "")
-             + (f" · {qty} micro{'' if int(qty) == 1 else 's'}" if qty else "")]
-    if balance is not None:
-        lines.append(f"Eval balance ${float(balance):,.0f}"
-                     + (f" (${max(0.0, float(to_target)):,.0f} to the $3k target)" if to_target is not None and float(to_target) > 0
-                        else " (target reached)" if to_target is not None else ""))
-    if note:
-        lines.append(note)
-    return {"kind": "outcome", "src": src, "key": key or f"out:{int(entry_t or 0)}", "t": int(exit_t or time.time()),
-            "title": f"{src} · {model} {side} {reason}{rtxt} {_money(usd)}", "body": _clip("\n".join(lines)),
-            "tag": f"{_tag(src)}-out-{int(entry_t or 0)}", "url": url or f"#/activity/out:{int(entry_t or 0)}",
-            "side": side, "exit": reason, "R": None if r is None else round(float(r), 2), "usd": round(float(usd or 0), 2)}
+    return {"kind": "fill", "key": f"fill:{int(entry_t or 0)}", "t": int(entry_t or time.time()), "src": src, "account": account,
+            "title": f"{side} · {account}", "body": f"Entered {int(qty or 0)} {contract}", "tag": trade_tag(entry_t),
+            "url": f"#/activity/fill:{int(entry_t or 0)}", "side": side, "qty": qty, **detail}
+
+
+def outcome_payload(account: str, side: str, exit_reason: str, usd, entry_t, exit_t=None, src: str = "", **detail) -> dict:
+    """OUTCOME: title "LONG · MFFU 50K", body "+$1,812" / "−$366" / "$0 breakeven" / "+$212 closed 15:55"."""
+    side, reason = str(side or "").upper(), str(exit_reason or "").upper()
+    body = money(usd)
+    if reason == "BE":
+        body += " breakeven"
+    elif reason in ("TIME", "EOD", "TIME SAFETY", "KILL"):
+        body += f" closed {_hm(exit_t)}" if exit_t else " closed"
+    return {"kind": "outcome", "key": f"out:{int(entry_t or 0)}", "t": int(exit_t or time.time()), "src": src, "account": account,
+            "title": f"{side} · {account}", "body": body, "tag": trade_tag(entry_t), "url": f"#/activity/out:{int(entry_t or 0)}",
+            "side": side, "exit": reason, "usd": round(float(usd or 0), 2), **detail}
 
 
 def text_payload(src: str, kind: str, title: str, body: str, key: str, t=None, url: str = "#/activity") -> dict:
-    """Any other notice: PC heartbeat silent, eval timing flip, NinjaTrader risk, test."""
-    return {"kind": kind, "src": src, "key": key, "t": int(t or time.time()), "title": _clip(f"{src} · {title}", 120),
-            "body": _clip(body), "tag": f"{_tag(src)}-{kind}", "url": url}
-
-
-def _tag(src) -> str:
-    return "".join(c for c in str(src).lower() if c.isalnum()) or "le"
+    """Other notices (PC silent, eval timing, NinjaTrader trouble, test): app-only unless LE_PUSH_EXTRA=1 (a test: always)."""
+    return {"kind": kind, "src": src, "key": key, "t": int(t or time.time()), "title": str(title)[:120], "body": str(body)[:600],
+            "tag": f"le-{kind}", "url": url}
 
 
 def wire(payload: dict) -> bytes:
-    """What goes to the phone (under the 4 KB push limit): title, body, tag, url, kind, key, t, src."""
-    keep = {k: payload.get(k) for k in ("title", "body", "tag", "url", "kind", "key", "t", "src")}
-    b = json.dumps(keep, separators=(",", ":"), ensure_ascii=False).encode()
-    if len(b) > 3000:
-        keep["body"] = _clip(keep["body"], 300)
-        b = json.dumps(keep, separators=(",", ":"), ensure_ascii=False).encode()
-    return b
+    """What goes to the phone (well under the 4 KB push limit): title, body, tag, url, kind, key, t."""
+    keep = {k: payload.get(k) for k in ("title", "body", "tag", "url", "kind", "key", "t")}
+    return json.dumps(keep, separators=(",", ":"), ensure_ascii=False).encode()
 
 
 # ---------------------------------------------------------------------------------------------- built-in sender
@@ -267,8 +399,7 @@ def encrypt(plaintext: bytes, p256dh: str, auth: str, salt: bytes | None = None,
     as_key = as_key or ec.generate_private_key(ec.SECP256R1())
     as_pub = _pub_bytes(as_key.public_key())
     shared = as_key.exchange(ec.ECDH(), ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), ua_pub))
-    prk_key = _hmac(auth_secret, shared)
-    ikm = _hmac(prk_key, b"WebPush: info\x00" + ua_pub + as_pub + b"\x01")
+    ikm = _hmac(_hmac(auth_secret, shared), b"WebPush: info\x00" + ua_pub + as_pub + b"\x01")
     salt = salt or os.urandom(16)
     prk = _hmac(salt, ikm)
     cek = _hmac(prk, b"Content-Encoding: aes128gcm\x00\x01")[:16]
@@ -286,10 +417,8 @@ def vapid_header(endpoint: str, priv_b64: str, pub_b64: str | None = None, subje
     claims = {"aud": f"{u.scheme}://{u.netloc}", "exp": int((now or time.time()) + 12 * 3600), "sub": subject}
     head = b64u(json.dumps({"typ": "JWT", "alg": "ES256"}, separators=(",", ":")).encode())
     body = b64u(json.dumps(claims, separators=(",", ":")).encode())
-    key = _priv_from_b64(priv_b64)
-    r, s = decode_dss_signature(key.sign(f"{head}.{body}".encode(), ec.ECDSA(hashes.SHA256())))
-    sig = b64u(r.to_bytes(32, "big") + s.to_bytes(32, "big"))
-    return f"vapid t={head}.{body}.{sig}, k={pub_b64 or public_from_private(priv_b64)}"
+    r, s = decode_dss_signature(_priv_from_b64(priv_b64).sign(f"{head}.{body}".encode(), ec.ECDSA(hashes.SHA256())))
+    return f"vapid t={head}.{body}.{b64u(r.to_bytes(32, 'big') + s.to_bytes(32, 'big'))}, k={pub_b64 or public_from_private(priv_b64)}"
 
 
 def _send_builtin(sub: dict, data: bytes, priv: str, pub: str, ttl: int = TTL_S, urgency: str = "high") -> int:
@@ -311,8 +440,7 @@ def _send_pywebpush(sub: dict, data: bytes, priv: str, pub: str, ttl: int = TTL_
                     ttl=int(ttl), headers={"Urgency": urgency}, timeout=15)
         return int(getattr(r, "status_code", 201))
     except WebPushException as e:
-        resp = getattr(e, "response", None)
-        return int(getattr(resp, "status_code", 0) or 0)
+        return int(getattr(getattr(e, "response", None), "status_code", 0) or 0)
 
 
 def sender_name() -> str:
@@ -328,9 +456,8 @@ def _sender():
 
 
 def send(payload: dict, cfg=None, sender=None) -> dict:
-    """Send one notice to every subscription. {"sent": n, "devices": n, "gone": [ids], "errors": [...]}; never raises.
-    gone = the push service answered 404/410: that device's subscription expired (turn notifications on again in the app
-    and replace its secret)."""
+    """One notice to every subscription: {"sent", "devices", "gone": [ids], "errors"}; never raises. gone = the push service
+    answered 403/404/410 (expired, or made for another key): the app subscribes again on its next open."""
     c = cfg or config()
     if not enabled(c):
         return {"sent": 0, "devices": len(c["subs"]), "skipped": "not configured"}
@@ -338,53 +465,47 @@ def send(payload: dict, cfg=None, sender=None) -> dict:
     data = wire(payload)
     out = {"sent": 0, "devices": len(c["subs"]), "gone": [], "errors": []}
     for sub in c["subs"]:
+        sid = endpoint_id(sub["endpoint"])
         try:
             code = int(send_one(sub, data, c["private"], c["public"]))
         except Exception as e:
-            out["errors"].append(f"{endpoint_id(sub['endpoint'])}: {e.__class__.__name__}: {str(e)[:120]}")
+            out["errors"].append(f"{sid}: {e.__class__.__name__}")
             continue
         if 200 <= code < 300:
             out["sent"] += 1
-        elif code in (404, 410):
-            out["gone"].append(endpoint_id(sub["endpoint"]))
+        elif code in (403, 404, 410):
+            out["gone"].append(sid)
         else:
-            out["errors"].append(f"{endpoint_id(sub['endpoint'])}: HTTP {code}")
+            out["errors"].append(f"{sid}: HTTP {code}")
     return out
 
 
 # ---------------------------------------------------------------------------------------------- de-duplication
 class Notifier:
-    """Sends each notice once, keyed by payload["key"] (prefixed with the source, so the PC's and the cloud's never collide
-    and each says where it comes from). keys: an iterable of already-sent keys (the cloud keeps them in state.json); path: a
-    JSON file that keeps them (the PC: data/push_sent.json). sender(sub, data, priv, pub) -> HTTP status, for tests."""
+    """Sends each notice once by its key ("fill:<entry_t>", "out:<entry_t>": the same key for the cloud and the PC).
+    keys: keys already sent (the cloud keeps them in state.json); path: a JSON file of them (the PC: data/push_sent.json);
+    relay: skip a trade notice the other side already marked as sent, and mark ours. sender(sub, data, priv, pub) -> HTTP
+    status, for tests."""
 
-    def __init__(self, keys=None, path: str | None = None, sender=None, cfg=None, keep: int = 600):
-        self.path, self.sender, self.cfg, self.keep = path, sender, cfg, keep
-        self.sent: dict = {}
-        if path:
-            try:
-                with open(path, encoding="utf-8") as fh:
-                    self.sent = {str(k): float(v) for k, v in (json.load(fh) or {}).items()}
-            except Exception:
-                self.sent = {}
+    def __init__(self, keys=None, path: str | None = None, sender=None, cfg=None, relay: Relay | None = None, src: str = "",
+                 keep: int = 600):
+        self.path, self.sender, self.cfg, self.relay, self.src, self.keep = path, sender, cfg, relay, src, keep
+        self.sent: dict = {str(k): float(v) for k, v in _read_json(path).items()} if path else {}
         for k in keys or []:
             self.sent.setdefault(str(k), time.time())
         self.log: list = []
 
-    def full_key(self, payload: dict) -> str:
-        return f"{_tag(payload.get('src') or '')}:{payload['key']}"
-
     def seen(self, payload: dict) -> bool:
-        return self.full_key(payload) in self.sent
+        return str(payload["key"]) in self.sent
 
-    def mark(self, payload: dict):
-        self.sent[self.full_key(payload)] = time.time()
+    def mark(self, payload_or_key):
+        self.sent[str(payload_or_key["key"] if isinstance(payload_or_key, dict) else payload_or_key)] = time.time()
 
-    def notify(self, payload: dict) -> dict:
-        """Send unless already sent. The key is marked even when push is not configured, so a notice is never sent late
-        (hours after the event) once the owner sets push up."""
+    def notify(self, payload: dict, push_it: bool = True, other_sent: set | None = None) -> dict:
+        """Send unless already sent (here, or by the other side per the relay). The key is marked even when push is not set
+        up, so nothing is ever sent hours late. push_it False = record only (the app-only notices)."""
         with _lock:
-            k = self.full_key(payload)
+            k = str(payload["key"])
             if k in self.sent:
                 return {"dup": True, "key": k}
             self.sent[k] = time.time()
@@ -392,12 +513,22 @@ class Notifier:
                 for old in sorted(self.sent, key=self.sent.get)[: len(self.sent) - self.keep]:
                     self.sent.pop(old, None)
             self._save()
+        if not push_it:
+            return {"sent": 0, "key": k, "skipped": "app only"}
+        trade = payload.get("kind") in ("fill", "outcome")
+        if other_sent is None and trade and self.relay is not None and enabled(self.cfg):
+            other_sent = self.relay.sent_keys()
+        if other_sent and k in other_sent:
+            return {"sent": 0, "dup": True, "key": k, "by": "other side"}
         try:
             res = send(payload, cfg=self.cfg, sender=self.sender)
-        except Exception as e:                       # send() never raises; belt and braces for the trading loops
-            res = {"sent": 0, "errors": [f"{e.__class__.__name__}: {e}"]}
+        except Exception as e:
+            res = {"sent": 0, "errors": [e.__class__.__name__]}
         res["key"] = k
-        self.log.append({"t": int(time.time()), "key": k, "title": payload.get("title"), **{x: res.get(x) for x in ("sent", "gone", "errors", "skipped")}})
+        if res.get("sent") and trade and self.relay is not None:
+            self.relay.post({"le": "sent", "key": k, "src": self.src, "t": int(time.time())})
+        self.log.append({"t": int(time.time()), "key": k, "title": payload.get("title"),
+                         **{x: res.get(x) for x in ("sent", "gone", "errors", "skipped")}})
         del self.log[:-50]
         return res
 
@@ -417,48 +548,88 @@ class Notifier:
             pass
 
 
-_PC = None
+# ---------------------------------------------------------------------------------------------- PC side
+_PC = {"notifier": None, "sync": None, "sync_t": 0.0, "sync_err": None}
+SYNC_EVERY_S = 20 * 60
+
+
+def pc_sync(force: bool = False, fetch=None, key_path: str | None = None) -> dict:
+    """The VAPID key + subscriptions the cloud shares with this PC (state.json on the private dashboard branch: push_pc.box
+    sealed to the PC's heartbeat key, push_subs). Cached 20 min. fetch() -> state dict, for tests. Never raises."""
+    if not force and fetch is None and _PC["sync"] is not None and time.time() - _PC["sync_t"] < SYNC_EVERY_S:
+        return _PC["sync"]
+    out = {"private": None, "subs": []}
+    try:
+        if fetch is not None:
+            st = fetch()
+        else:
+            import subprocess
+            r = subprocess.run(["git", "fetch", "-q", "--depth", "1", "origin", "dashboard"], cwd=ROOT, capture_output=True, text=True, timeout=60)
+            if r.returncode:
+                raise RuntimeError("no dashboard branch")
+            r = subprocess.run(["git", "show", "FETCH_HEAD:state.json"], cwd=ROOT, capture_output=True, text=True, timeout=30)
+            st = json.loads(r.stdout) if not r.returncode else {}
+        box = ((st or {}).get("push_pc") or {}).get("box")
+        mine = _read_json(key_path or PC_KEY_PATH).get("private")
+        if box and mine:
+            out["private"] = unseal(box, mine).decode()
+        out["subs"] = [r["sub"] for r in (st or {}).get("push_subs") or [] if r.get("sub")]
+        _PC["sync_err"] = None
+    except Exception as e:
+        _PC["sync_err"] = e.__class__.__name__
+    _PC["sync"], _PC["sync_t"] = out, time.time()
+    return out
+
+
+def pc_config(sync=None) -> dict:
+    s = sync if sync is not None else pc_sync()
+    return config(private=s.get("private"), subs_extra=s.get("subs"))
 
 
 def pc_notifier() -> Notifier:
-    """The PC process's notifier (LiveBot and the NinjaTrader adapter share it): keys in data/push_sent.json."""
-    global _PC
-    if _PC is None:
-        _PC = Notifier(path=SENT_PATH)
-    return _PC
+    if _PC["notifier"] is None:
+        _PC["notifier"] = Notifier(path=SENT_PATH, relay=Relay(timeout=4.0), src="pc")
+    return _PC["notifier"]
+
+
+def _pc_send(payload, push_it):
+    try:
+        n = pc_notifier()
+        n.cfg = pc_config()
+        if not enabled(n.cfg):
+            n.mark(payload)
+            n._save()
+            return
+        n.notify(payload, push_it=push_it)
+    except Exception:
+        pass
 
 
 def pc_notify(payload: dict) -> dict | None:
-    """PC side: send in a background thread so a slow push service never delays order routing. Never raises."""
+    """PC side, in a background thread (git fetch / push service never delay order routing). Entry and outcome notices are
+    pushed; other kinds only with LE_PUSH_EXTRA=1. Never raises."""
     try:
-        n = pc_notifier()
-        if n.seen(payload):
+        if pc_notifier().seen(payload):
             return {"dup": True}
-        if not enabled():
-            n.mark(payload)
-            n._save()
-            return {"skipped": "not configured"}
-        threading.Thread(target=n.notify, args=(payload,), name="push", daemon=True).start()
+        push_it = payload.get("kind") in ("fill", "outcome", "test") or extra_on()
+        threading.Thread(target=_pc_send, args=(payload, push_it), name="push", daemon=True).start()
         return {"queued": True}
     except Exception:
         return None
 
 
-# ---------------------------------------------------------------------------------------------- PC config (data/push.json)
 def save_pc_config(patch: dict, path: str | None = None) -> dict:
-    """Settings -> Alerts on the PC dashboard: store the private key and/or subscriptions in data/push.json (gitignored).
-    subs_mode 'add' (default) appends to the stored ones, 'replace' replaces them."""
+    """PC dashboard manual override (data/push.json, gitignored): a private key and/or subscription codes."""
     path = path or CONFIG_PATH
-    cur = _file_cfg(path)
+    cur = _read_json(path)
     priv = (patch.get("vapid_private") or "").strip()
     if priv:
         public_from_private(priv)                    # raises ValueError on a bad key: the API returns the message
         cur["vapid_private"] = priv
-        cur.pop("vapid_public", None)
     if patch.get("subs") is not None:
         new = parse_subs(patch.get("subs"))
         if patch.get("subs") and not new:
-            raise ValueError("no subscription found in that text: copy the whole code from the app")
+            raise ValueError("no subscription found in that text: copy the whole code")
         cur["subs"] = new if patch.get("subs_mode") == "replace" else parse_subs((cur.get("subs") or []) + new)
     if patch.get("clear"):
         cur = {}

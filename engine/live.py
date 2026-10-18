@@ -1040,20 +1040,22 @@ class LiveBot:
                     self._push_outcome(tr, qty, sym)
 
     # ------------------------------------------------------------------ phone notifications (engine/push.py, Web Push)
-    def _push_src(self):
-        """'PC paper' / 'PC NinjaTrader Sim' / 'PC Tradovate demo' ...: the same words the NinjaTrader adapter uses, so the
-        adapter's real-fill notice and this one share a de-dup key."""
+    def _push_account(self):
+        """The account label of a PC notification: "Paper", the NinjaTrader account name ("Sim101"), or live_model.json
+        "account": {"name"} (default "MFFU 50K") for a real account."""
+        from . import push
+        from .lab_adapter import live_model
         name = str(self.cfg.get("adapter") or "paper")
         if name == "paper":
-            return "PC paper"
+            return "Paper"
         env = getattr(self.adapter, "env", None)
-        if name == "ninjatrader":
-            return f"PC NinjaTrader {'Sim' if env != 'live' else 'LIVE'}"
-        return f"PC {name.capitalize()}{' ' + str(env) if env else ''}"
-
-    def _push_model(self):
-        m = ((self.state or {}).get("strategy") or {}).get("model") or self.cfg.get("model") or "engine"
-        return "LIT" if m == "lit" else "Engine" if m == "engine" else str(m)
+        acct = getattr(self.adapter, "account", None)
+        if env != "live":
+            return str(acct or "Demo")
+        try:
+            return push.account_label(live_model(), "live")
+        except Exception:
+            return "MFFU 50K"
 
     def _push_send(self, payload):
         """Only the real bot sends (harnesses run with their own state_path). Never raises into routing."""
@@ -1067,37 +1069,24 @@ class LiveBot:
             return None
 
     def _push_fill(self, pos, qty, sym, res):
+        """ENTRY notice for a routed entry (paper: the fill; NinjaTrader notifies its own real fill)."""
         try:
             from . import push
             res = res or {}
-            if getattr(self.adapter, "reports_fills", False):
-                return                      # NinjaTrader: the adapter notifies the real fill (and its own problems)
-            if res.get("ok") is False:
-                self._push_send(push.text_payload(self._push_src(), "risk", f"{self._push_model()} entry NOT placed",
-                                                  f"{'LONG' if pos.get('dir') == 1 else 'SHORT'} {qty} @ {float(pos.get('entry') or 0):,.2f}: "
-                                                  f"{str(res.get('error') or 'refused')[:300]}", key=f"refused:{int(pos['entry_t'])}"))
+            if getattr(self.adapter, "reports_fills", False) or res.get("ok") is False:
                 return
-            name = str(self.cfg.get("adapter") or "paper")
-            why = "; ".join(pos.get("size_why") or [])
-            self._push_send(push.fill_payload(
-                self._push_src(), sym, "LONG" if pos.get("dir") == 1 else "SHORT", qty, pos.get("entry"), pos.get("stop0", pos.get("stop")),
-                pos.get("target"), pos["entry_t"], risk_pts=pos.get("risk_pts"), model=self._push_model(),
-                setup=" · ".join(x for x in (f"target {pos['target_label']}" if pos.get("target_label") else "",
-                                             "" if name == "paper" else f"order sent to {name} (fill not confirmed by it)") if x),
-                note=f"Size: {why}" if why else ""))
+            self._push_send(push.entry_payload(self._push_account(), "LONG" if pos.get("dir") == 1 else "SHORT", qty, pos["entry_t"],
+                                               src="pc", contract="MNQ" if sym == "NQ" else "MES" if sym == "ES" else sym,
+                                               entry=pos.get("entry"), stop=pos.get("stop0", pos.get("stop")), target=pos.get("target")))
         except Exception as e:
             self._log("warn", f"phone notification failed: {e.__class__.__name__}")
 
     def _push_outcome(self, tr, qty, sym):
         try:
             from . import push
-            from . import sizing as _sz
-            ev = _sz.mffu_eval(self.eval_days()) if self.eval_start() else None
             usd = float(tr.get("pnl") or 0) * qty / tr["qty"] if tr.get("qty") else float(tr.get("pnl") or 0)
-            self._push_send(push.outcome_payload(
-                self._push_src(), sym, "LONG" if tr.get("dir") == 1 else "SHORT", tr.get("exit_reason"), tr.get("pnl_r"), usd,
-                tr["entry_t"], tr.get("exit_t"), qty=qty, balance=ev["balance"] if ev else None, to_target=ev["to_target"] if ev else None,
-                model=self._push_model()))
+            self._push_send(push.outcome_payload(self._push_account(), "LONG" if tr.get("dir") == 1 else "SHORT", tr.get("exit_reason"),
+                                                 usd, tr["entry_t"], tr.get("exit_t"), src="pc", R=tr.get("pnl_r"), qty=qty))
         except Exception as e:
             self._log("warn", f"phone notification failed: {e.__class__.__name__}")
 

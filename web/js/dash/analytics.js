@@ -1,7 +1,7 @@
-// Deep Stats page: history analytics over one normalised trade set. Sources: the loaded backtest (S.res, continuous NQ
+// Deep Stats page: history analytics over one normalised trade set. Sources: the loaded backtest (ENG(), continuous NQ
 // futures history), the dash API's 5-year windowed run, or completed paper trades (/api/dash/trades). Real CME futures only.
 import { $, $$, esc, fmt$, fmtS$, fmtN, fmtR, cls, css, etParts, etStr } from '../util.js';
-import { S, on, cj, baseOpts } from '../state.js';
+import { S, ENG, on, cj, baseOpts } from '../state.js';
 import { widget, body, meta, buildGrid, openLayout } from './widgets.js';
 import { waiting, stat, heat, heatSeq, dash, dashIndex, pref, saveCSV, weekOf, spark } from './kit.js';
 
@@ -51,8 +51,8 @@ async function load() {
   A.loading = true; A.note = '';
   let set = null;
   if (A.src === 'bt') {
-    if (!S.res) { A.set = null; A.loading = false; A.note = 'Waiting for the backtest to finish…'; renderAll(); return; }
-    set = fromBacktest(S.res);
+    if (!ENG()) { A.set = null; A.loading = false; A.note = 'Waiting for the backtest to finish…'; renderAll(); return; }
+    set = fromBacktest(ENG());
   } else {
     A.set = null; renderAll();
     await dashIndex();

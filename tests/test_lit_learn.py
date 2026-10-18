@@ -55,8 +55,10 @@ def test_causes():
     s = rec("2026-03-02", -1.02)
     assert s["cause"] == "not_turning_point" and s["tags"] == ["not_turning_point"], s["tags"]
     s = rec("2026-03-02", -1.02, f={"es_swept": 0.0, "mod": 330.0, "idm_age": 14.0, "stop_pts": 55.0})
-    assert s["cause"] == "es_no_confirm" and s["tags"] == ["es_no_confirm", "late_london", "stale_trap", "wide_stop",
+    assert s["cause"] == "es_no_confirm" and s["tags"] == ["es_no_confirm", "stale_trap", "late_london", "wide_stop",
                                                            "not_turning_point"], s["tags"]
+    s = rec("2026-03-02", -1.02, f={"es_swept": 0.0}, post={"opp_ext_in": True})
+    assert s["cause"] == "opp_extreme_in" and "es_no_confirm" in s["tags"]
     s = rec("2026-03-02", -1.02, f={"h4_draw": -1.0})
     assert s["cause"] == "against_4h_draw"
     s = rec("2026-03-02", -1.02, f={"es_swept": 0.0}, post={"target_after_stop": True})

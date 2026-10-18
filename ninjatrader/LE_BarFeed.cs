@@ -18,18 +18,32 @@
 // Use: ONE MNQ 5-minute chart, Trading hours "CME US Index Futures ETH", 30 days loaded: it writes MNQ_5m.csv and
 // MNQ_1m.csv (the 1-minute series is added by the indicator itself). Do not also run it on a separate 1-minute chart of
 // the same instrument (two writers on MNQ_1m.csv), or switch "Also write 1-minute bars" off there.
-// Only standard NinjaScript: OnStateChange / OnBarUpdate, Calculate.OnBarClose, File.AppendAllText.
+// Only standard NinjaScript: OnStateChange / OnBarUpdate, Calculate.OnBarClose, File.AppendAllText; C# 5 syntax only
+// (no $"..." strings, no ?. or =>), so it compiles on every NinjaTrader 8 version.
 
 #region Using declarations
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Xml.Serialization;
 using NinjaTrader.Cbi;
+using NinjaTrader.Gui;
+using NinjaTrader.Gui.Chart;
+using NinjaTrader.Gui.SuperDom;
+using NinjaTrader.Gui.Tools;
 using NinjaTrader.Data;
 using NinjaTrader.NinjaScript;
+using NinjaTrader.Core.FloatingPoint;
+using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
 namespace NinjaTrader.NinjaScript.Indicators
@@ -37,6 +51,7 @@ namespace NinjaTrader.NinjaScript.Indicators
     public class LE_BarFeed : Indicator
     {
         private const string Header = "time,open,high,low,close,volume";
+        private static readonly object FileLock = new object();   // one writer at a time, across every LE_BarFeed in NinjaTrader
         private static readonly long EpochTicks = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
 
         // One output file per bar series: [0] = the chart's own bars, [1] = the added 1-minute series (when there is one).
@@ -52,7 +67,7 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private Feed[] feeds;
         private bool active;                  // a minute chart and the le_feed folder exists
-        private bool addOneMinute;            // the chart is > 1 minute and the 1-minute file is wanted: series 1 = 1m
+        private bool addOneMinute;            // the chart is > 1 minute and the 1-minute file is wanted: series 1 is written
         private int problems;
 
         protected override void OnStateChange()
@@ -74,13 +89,14 @@ namespace NinjaTrader.NinjaScript.Indicators
             }
             else if (State == State.Configure)
             {
-                addOneMinute = WriteOneMinute && BarsPeriod.BarsPeriodType == BarsPeriodType.Minute && BarsPeriod.Value > 1;
-                if (addOneMinute)
-                    AddDataSeries(BarsPeriodType.Minute, 1);   // same instrument and trading hours as the chart
+                // Always added, with fixed arguments: the Help Guide says AddDataSeries() must not depend on run-time values
+                // (chart period, inputs). Whether series 1 is written is decided at State.DataLoaded.
+                AddDataSeries(BarsPeriodType.Minute, 1);       // same instrument and trading hours as the chart
             }
             else if (State == State.DataLoaded)
             {
                 active = BarsPeriod.BarsPeriodType == BarsPeriodType.Minute && BarsPeriod.Value >= 1;
+                addOneMinute = active && WriteOneMinute && BarsPeriod.Value > 1 && BarsArray.Length > 1;
                 if (!active)
                 {
                     Print("LE_BarFeed: only minute charts are supported (this chart: " + BarsPeriod.ToString() + "). Nothing is written.");
@@ -144,16 +160,20 @@ namespace NinjaTrader.NinjaScript.Indicators
                     f.History.Dequeue();
                 return;
             }
-            try
+            lock (FileLock)
             {
-                File.AppendAllText(f.FilePath, line + "\n");
-                f.LinesInFile++;
+                try
+                {
+                    File.AppendAllText(f.FilePath, line + "\n");
+                    f.LinesInFile++;
+                }
+                catch (Exception e)
+                {
+                    Report(f, "append failed (" + e.Message + "); this bar is missing from the feed");
+                    return;
+                }
                 if (f.LinesInFile > f.MaxBars + TrimEvery)
                     Trim(f);
-            }
-            catch (Exception e)
-            {
-                Report(f, "append failed (" + e.Message + "); this bar is missing from the feed");
             }
         }
 
@@ -184,9 +204,14 @@ namespace NinjaTrader.NinjaScript.Indicators
             int n = f.History.Count;
             f.History.Clear();
             f.History = null;
-            if (Swap(f, sb.ToString()))
+            bool ok;
+            lock (FileLock)
+                ok = Swap(f, sb.ToString());
+            if (ok)
+            {
                 f.LinesInFile = n;
-            Print("LE_BarFeed: " + n + " bars written to " + f.FilePath + "; appending each new bar");
+                Print("LE_BarFeed: " + n + " bars written to " + f.FilePath + "; appending each new bar");
+            }
         }
 
         private void Trim(Feed f)

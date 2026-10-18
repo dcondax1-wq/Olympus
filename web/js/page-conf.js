@@ -1,5 +1,5 @@
 import { $, esc, fmtN, fmtS$, fmtR, cls, etStr, css, api, busy, toast } from './util.js';
-import { S, on, cj, baseOpts, effective } from './state.js';
+import { S, ENG, on, cj, baseOpts, effective } from './state.js';
 
 export const FEATURE_LABELS = {
   htf_trend: ['1H structure aligned', 'w_htf'], protected: ['Protected H/L intact', 'w_protected'], lrl: ['Low-resistance path (LRL)', 'w_lrl'],
@@ -22,8 +22,8 @@ export const FEATURE_LABELS = {
 let split = null;
 
 export function init() {
-  on(render);
-  $('#confSplit').onchange = (e) => { split = e.target.value; render(S.res); };
+  on(() => render(ENG()));
+  $('#confSplit').onchange = (e) => { split = e.target.value; render(ENG()); };
   $('#discFilter').onchange = renderDisc;
   $('#discRun').onclick = async () => {
     await api('/api/discovery/run', {}); toast('Discovery re-scan started: about 2 minutes'); pollDisc();

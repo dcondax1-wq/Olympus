@@ -1,5 +1,5 @@
 import { $, $$, esc, fmtN, fmtS$, fmtR, cls, api, busy } from './util.js';
-import { S, on, effective } from './state.js';
+import { S, ENG, on, effective } from './state.js';
 import { go } from './app.js';
 import * as chartPage from './page-chart.js';
 
@@ -23,7 +23,7 @@ function weeksOf(p) {
 }
 
 function render() {
-  const r = S.res;
+  const r = ENG();
   if (!r) return;
   const days = r.days.filter(d => d.er10 != null);
   const last = days.at(-1) || {};

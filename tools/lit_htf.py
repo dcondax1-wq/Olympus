@@ -599,7 +599,7 @@ def _perm_p(y, x, n=4000, rng=None):
     Y = np.array([rng.permutation(y) for _ in range(n)])
     s1 = Y[:, x == 1].sum(1)
     dif = s1 / n1 - (y.sum() - s1) / n0
-    return float(((np.abs(dif) >= abs(obs) - 1e-12).sum() + 1) / (n + 1))
+    return round(float(((np.abs(dif) >= abs(obs) - 1e-12).sum() + 1) / (n + 1)), 4)
 
 
 def _cell(y, usd, x):
@@ -721,38 +721,46 @@ def print_map(res):
 def combos(top=25, n_perm=1000, min_on=15):
     """AND combinations of 2 and 3 confluences, each in its H1-favourable orientation, picked on H1 candidates by the z of the
     mean-R difference (combo vs the rest). Family-wise correction: Westfall-Young max-z over every combination tried (labels
-    shuffled n_perm times). The top combinations are then checked on H2 (and 2021-25 for reference)."""
+    shuffled n_perm times). The top combinations are checked on H2 (and 2021-25 for reference). Run twice: every confluence
+    ("all") and HTF confluences only ("htf"). Chance line: the share of ALL H1-positive combinations that also 'hold' in H2."""
     R = rows()
     res = json.load(open(os.path.join(OUTD, "htf_map.json")))["map"]
-    cids = [c for c in CONF if c != "cx_against"]
-    orient = {}
-    for c in cids:
-        d = res[c]["cand_H1"]["d_r"]
-        orient[c] = 1 if (d is None or d >= 0) else 0
+    out_all = {}
+    for fam in ("all", "htf"):
+        cids = [c for c in CONF if c != "cx_against" and (fam == "all" or not c.startswith("lt_"))]
+        out_all[fam] = _combos(R, res, cids, top, n_perm, min_on)
+    json.dump(out_all, open(os.path.join(OUTD, "htf_combos.json"), "w"), indent=1, default=float)
+    return out_all
+
+
+def _combos(R, res, cids, top, n_perm, min_on):
+    orient = {c: 1 if (res[c]["cand_H1"]["d_r"] is None or res[c]["cand_H1"]["d_r"] >= 0) else 0 for c in cids}
+
     def mat(s):
         a, z = S.SPAN[s]
         C = [r for r in R if a <= r["day"] <= z and r["u"] is not None]
         y = np.array([r["u"]["r1"] for r in C])
         X = np.array([[flag(r, c) for c in cids] for r in C])
-        Xo = np.where(np.isnan(X), 0.0, np.where(np.array([orient[c] for c in cids]) == 1, X, 1 - X))
+        Xo = np.where(np.array([orient[c] for c in cids]) == 1, X, 1 - X)
         Xo[np.isnan(X)] = 0.0                                                     # unknown = not on
         usd = np.array([_usd_alone(r["u"]) for r in C])
-        return C, y, Xo, usd
-    C1, y1, X1, u1 = mat("H1")
-    C2, y2, X2, u2 = mat("H2")
-    C3, y3, X3, u3 = mat("2021-25")
+        return y, Xo, usd
+    y1, X1, u1 = mat("H1"); y2, X2, u2 = mat("H2"); y3, X3, u3 = mat("2021-25")
     K = len(cids)
     lits = [f"{c}" if orient[c] else f"NOT {c}" for c in cids]
-    combs = [(a, b) for a, b in itertools.combinations(range(K), 2)] + list(itertools.combinations(range(K), 3))
+    combs = list(itertools.combinations(range(K), 2)) + list(itertools.combinations(range(K), 3))
+    is2 = np.array([len(c) == 2 for c in combs])
+
     def cmat(X):
         out = np.empty((X.shape[0], len(combs)), np.float32)
         for j, cb in enumerate(combs):
             out[:, j] = np.prod(X[:, list(cb)], axis=1)
         return out
-    Z1 = cmat(X1)
-    n1 = Z1.sum(0); N = len(y1)
-    valid = (n1 >= min_on) & (N - n1 >= min_on)
+    Z1, Z2, Z3 = cmat(X1), cmat(X2), cmat(X3)
+    n1 = Z1.sum(0)
+    valid = (n1 >= min_on) & (len(y1) - n1 >= min_on)
     sd = y1.std()
+
     def zstat(y, Zm, nn):
         s1 = y @ Zm
         m1 = s1 / np.maximum(nn, 1); m0 = (y.sum() - s1) / np.maximum(len(y) - nn, 1)
@@ -760,37 +768,55 @@ def combos(top=25, n_perm=1000, min_on=15):
     z_obs = np.where(valid, zstat(y1, Z1, n1), -np.inf)
     rng = np.random.default_rng(21)
     mx = np.empty(n_perm)
-    Zv = Z1[:, valid]; nv = n1[valid]
+    Zv, nv = Z1[:, valid], n1[valid]
     for q in range(n_perm):
         mx[q] = zstat(rng.permutation(y1), Zv, nv).max()
-    order = np.argsort(-z_obs)[:top]
-    Z2 = cmat(X2); Z3 = cmat(X3)
-    out = []
-    for j in order:
-        cb = combs[j]
-        def st(y, Zc, usd):
-            m = Zc[:, j] == 1
-            if not m.any():
-                return {"n": 0}
-            return {"n": int(m.sum()), "win": round(100 * float((y[m] > 0.5).mean()), 1), "avg_r": round(float(y[m].mean()), 3),
-                    "rest_r": round(float(y[~m].mean()), 3), "d_r": round(float(y[m].mean() - y[~m].mean()), 3),
-                    "usd": round(float(usd[m].sum()))}
-        h2 = st(y2, Z2, u2)
-        p2 = _perm_p(y2, (Z2[:, j] == 1).astype(float)) if h2["n"] >= 3 else None
-        out.append({"combo": " AND ".join(lits[i] for i in cb), "ids": [cids[i] for i in cb], "neg": [1 - orient[cids[i]] for i in cb],
-                    "z_h1": round(float(z_obs[j]), 2), "p_fwer_h1": round(float((mx >= z_obs[j]).mean()), 4),
-                    "H1": st(y1, Z1, u1), "H2": {**h2, "p": p2}, "2021-25": st(y3, Z3, u3),
-                    "holds_h2": bool(h2["n"] >= MIN_N and h2.get("d_r", 0) >= 0.2)})
-    info = {"n_literals": K, "n_combos_2": sum(1 for c in combs if len(c) == 2), "n_combos_3": sum(1 for c in combs if len(c) == 3),
+    # H2 for every combination (chance line)
+    n2 = Z2.sum(0)
+    s2 = y2 @ Z2
+    d2 = s2 / np.maximum(n2, 1) - (y2.sum() - s2) / np.maximum(len(y2) - n2, 1)
+    pos1 = valid & (z_obs > 0)
+    ev2 = pos1 & (n2 >= MIN_N) & (len(y2) - n2 >= MIN_N)
+    chance = round(100 * float((d2[ev2] >= 0.2).mean()), 1) if ev2.any() else None
+
+    def st(y, Zc, usd, j):
+        m = Zc[:, j] == 1
+        if not m.any():
+            return {"n": 0}
+        return {"n": int(m.sum()), "win": round(100 * float((y[m] > 0.5).mean()), 1), "avg_r": round(float(y[m].mean()), 3),
+                "rest_r": round(float(y[~m].mean()), 3), "d_r": round(float(y[m].mean() - y[~m].mean()), 3),
+                "usd": round(float(usd[m].sum()))}
+
+    def rows_of(order):
+        out = []
+        for j in order:
+            cb = combs[j]
+            h2 = st(y2, Z2, u2, j)
+            p2 = _perm_p(y2, (Z2[:, j] == 1).astype(float)) if h2["n"] >= 3 and len(y2) - h2["n"] >= 3 else None
+            out.append({"combo": " AND ".join(lits[i] for i in cb), "ids": [cids[i] for i in cb],
+                        "neg": [1 - orient[cids[i]] for i in cb], "z_h1": round(float(z_obs[j]), 2),
+                        "p_fwer_h1": round(float((mx >= z_obs[j]).mean()), 4), "H1": st(y1, Z1, u1, j), "H2": {**h2, "p": p2},
+                        "2021-25": st(y3, Z3, u3, j), "holds_h2": bool(h2["n"] >= MIN_N and h2.get("d_r", -9) >= 0.2)})
+        return out
+    top_all = rows_of(np.argsort(-z_obs)[:top])
+    top_pairs = rows_of(np.argsort(-np.where(is2, z_obs, -np.inf))[:12])
+    info = {"literals": lits, "n_literals": K, "n_combos_2": int(is2.sum()), "n_combos_3": int((~is2).sum()),
             "n_valid_h1": int(valid.sum()), "min_on": min_on, "n_perm": n_perm,
-            "max_z_null_p95": round(float(np.quantile(mx, 0.95)), 2), "top": out}
-    json.dump(info, open(os.path.join(OUTD, "htf_combos.json"), "w"), indent=1, default=float)
-    print(f"tried {info['n_combos_2']} pairs + {info['n_combos_3']} triples ({info['n_valid_h1']} with >= {min_on} setups on "
-          f"each side in H1); null 95% of max z = {info['max_z_null_p95']}")
-    for o in out:
-        print(f"z {o['z_h1']:5.2f} fwer p {o['p_fwer_h1']:.3f} | H1 n {o['H1']['n']} avgR {o['H1']['avg_r']:+.2f} (rest "
-              f"{o['H1']['rest_r']:+.2f}) | H2 n {o['H2']['n']} avgR {o['H2'].get('avg_r')} d {o['H2'].get('d_r')} p {o['H2']['p']} | "
-              f"21-25 n {o['2021-25']['n']} d {o['2021-25'].get('d_r')} | {'HOLDS' if o['holds_h2'] else '-'} | {o['combo']}")
+            "max_z_null_p95": round(float(np.quantile(mx, 0.95)), 2),
+            "chance_hold_pct": chance, "n_chance_pool": int(ev2.sum()),
+            "top_holds": sum(o["holds_h2"] for o in top_all), "top_eligible": sum(o["H2"]["n"] >= MIN_N for o in top_all),
+            "top": top_all, "top_pairs": top_pairs}
+    print(f"\n[{'all' if any(c.startswith('lt_') for c in cids) else 'htf'}] {K} literals: tried {info['n_combos_2']} pairs + "
+          f"{info['n_combos_3']} triples ({info['n_valid_h1']} with >= {min_on} setups on each side in H1); null 95% of max z = "
+          f"{info['max_z_null_p95']}; chance that an H1-positive combo holds in H2: {chance}% (pool {info['n_chance_pool']}); "
+          f"top {top}: {info['top_holds']} hold of {info['top_eligible']} with H2 n >= {MIN_N}")
+    for lab, L in (("top", top_all), ("pairs", top_pairs)):
+        print(" --", lab)
+        for o in L:
+            print(f"  z {o['z_h1']:5.2f} fwer p {o['p_fwer_h1']:.3f} | H1 n {o['H1']['n']} avgR {o['H1']['avg_r']:+.2f} (rest "
+                  f"{o['H1']['rest_r']:+.2f}) | H2 n {o['H2']['n']} avgR {o['H2'].get('avg_r')} d {o['H2'].get('d_r')} p "
+                  f"{o['H2']['p']} | 21-25 n {o['2021-25']['n']} d {o['2021-25'].get('d_r')} | {'HOLDS' if o['holds_h2'] else '-'} | "
+                  f"{o['combo']}")
     return info
 
 
@@ -842,7 +868,12 @@ def shortlist():
             neg = o["verdict"] == "holds (-)"
             out[("NOT " if neg else "") + c] = (_on(c, neg), not c.startswith("lt_"), o)
     try:
-        cb = json.load(open(os.path.join(OUTD, "htf_combos.json")))["top"]
+        J = json.load(open(os.path.join(OUTD, "htf_combos.json")))
+        cb, seen = [], set()
+        for fam in ("all", "htf"):
+            for o in J[fam]["top"] + J[fam]["top_pairs"]:
+                if o["combo"] not in seen:
+                    seen.add(o["combo"]); cb.append(o)
     except FileNotFoundError:
         cb = []
     for o in cb:

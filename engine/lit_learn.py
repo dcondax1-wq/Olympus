@@ -21,7 +21,10 @@ A loop that is real but cannot overfit or blow up the eval:
    b. trades a week stay 2-4 (only a skip can lower them);
    c. the MFFU 50K 2-week fail rate (fresh eval on every session, eval sizing with the 60% room cap) does not go up, on the
       trailing 6 months and on the whole visible history;
-   d. at most one bucket changes per week, by at most 0.25x.
+   d. at most one bucket changes per week, by at most 0.25x;
+   e. signal: a move away from 1.0x (or a skip) needs the bucket's mean R to differ from the rest of the 6-month window by
+      Z_MIN standard errors (pooled spread, R winsorized at +/-5R, 10+ trades on each side). Calibrated on pure-noise journals (tests/test_lit_learn.py), not
+      on 2026. Moves back toward 1.0x need no signal.
    Otherwise the knob stays. Every decision (also "no change") is written to data/lit_learning.json with the reason, the
    evidence and the before/after numbers, and can be reverted (revert()).
 5. Modes: "observe" logs proposals and keeps a shadow knob set (what the bot would size), applies nothing (multiplier 1.0);
@@ -62,6 +65,11 @@ STEP = 0.05                # knobs move on a 0.05 grid
 SKIP_MIN_N = 15            # a skip needs >= 15 trades in the bucket that lost money
 WINDOW_DAYS = 182          # trailing 6 months: estimation window and the guardrails' recent window
 WF_BLOCKS, WF_BLOCK_DAYS, WF_MIN_ACTIVE = 6, 30, 2
+Z_MIN = 2.0                # significance gate: a move away from 1.0x (or a skip) needs the bucket's mean R to differ from the
+                           # rest of the window by >= Z_MIN standard errors (Welch, R winsorized at +/-WINSOR); set on noise
+WINSOR = 5.0
+SIG_MIN_N = 10           # the signal test needs 10+ trades in the bucket and 10+ outside it
+ACTIVE = None              # families the learner may move (None = all of FAMILIES; the sensitivity study narrows it)
 HISTORY_DAYS = 364         # the visible history of a review: the trailing 12 months (2026: everything from Jan 2)
 MIN_TRADES = 20            # no review below this many journal trades in the window
 TPW = (2.0, 4.0)
@@ -248,12 +256,12 @@ def post_facts(M, t: dict) -> dict:
 CAUSES = collections.OrderedDict([
     ("news_spike", "news spike: a high-impact release hit the trade (15 min before the entry to the exit)"),
     ("wick_then_target", "stopped by a wick, then price went on to the target the same day"),
-    ("es_no_confirm", "ES did not confirm: ES did not sweep its own level"),
-    ("against_4h_draw", "against the 4H draw: the nearest untaken 4H swing was on the stop side"),
-    ("late_london", "late in the London move: entry 05:00-08:00 ET"),
     ("opp_extreme_in", "the day's opposite extreme was already in before the entry"),
+    ("es_no_confirm", "ES did not confirm: ES did not sweep its own level"),
     ("stale_trap", "stale trap: the inducement swing was older than 10 bars (50 min)"),
+    ("late_london", "late in the London move: entry 05:00-08:00 ET"),
     ("wide_stop", "wide stop: planned stop over 47 pts"),
+    ("against_4h_draw", "against the 4H draw: the nearest untaken 4H swing was on the stop side"),
     ("not_turning_point", "not the day's turning point: price ran through the sweep extreme"),
     ("be_scratch", "breakeven scratch: went +1R, came back to the entry"),
     ("eod_fade", "flat at 15:55 with a loss"),
@@ -276,20 +284,20 @@ def cause_codes(rec: dict):
         tags.append("news_spike")
     if stop and p.get("target_after_stop"):
         tags.append("wick_then_target")
+    if p.get("opp_ext_in"):
+        tags.append("opp_extreme_in")
     if _num(f.get("es_swept")) == 0:
         tags.append("es_no_confirm")
-    if (_num(f.get("h4_draw")) or 0) < 0:
-        tags.append("against_4h_draw")
+    if (_num(f.get("idm_age")) or 0) > 10:
+        tags.append("stale_trap")
     m = _num(f.get("mod"))
     if m is not None and 300 <= m < 480:
         tags.append("late_london")
-    if p.get("opp_ext_in"):
-        tags.append("opp_extreme_in")
-    if (_num(f.get("idm_age")) or 0) > 10:
-        tags.append("stale_trap")
     sp = _num(f.get("stop_pts")) or _num(rec.get("risk_pts")) or 0
     if sp > 47:
         tags.append("wide_stop")
+    if (_num(f.get("h4_draw")) or 0) < 0:
+        tags.append("against_4h_draw")
     if stop:
         tags.append("not_turning_point")
     if ex == "BE":
@@ -589,10 +597,11 @@ def _play(ss, by, i0, H=20):
 
 
 # ------------------------------------------------------------------------------------------------ estimation
-def estimate(recs: list, prior_n: float = PRIOR_N) -> dict:
+def estimate(recs: list, prior_n: float | None = None) -> dict:
     """Per bucket: n, mean R, $ at the eval base size, the shrunk mean R (prior worth prior_n trades at the overall mean)
     and the target multiplier = shrunk mean / overall mean, clipped to [0.5, 1.25] (1.0 when the overall mean R is not
     positive: no edge to allocate). skip_ok: >= 15 trades that lost money at the base size."""
+    prior_n = PRIOR_N if prior_n is None else prior_n
     if not recs:
         return {"n": 0, "rbar": None, "fam": {}}
     rbar = sum(float(r["r"]) for r in recs) / len(recs)
@@ -607,6 +616,8 @@ def estimate(recs: list, prior_n: float = PRIOR_N) -> dict:
             x[2] += float(r["pnl_pm"]) * int(r["q_pre"])
     out = {}
     for fam in acc:
+        if ACTIVE is not None and fam not in ACTIVE:
+            continue
         out[fam] = {}
         for b, (n, sr, usd) in acc[fam].items():
             post = (sr + prior_n * rbar) / (n + prior_n)
@@ -713,6 +724,17 @@ def guardrails(V: list, knobs: dict, cand: dict, asof: str, wf: dict, sessions=N
     a1 = simulate(V, knobs, override=ov, sessions=sessions)
     checks["eval_fail_2wk"] = {"pass": s1["f10"] <= s0["f10"] + 1e-9 and a1["f10"] <= a0["f10"] + 1e-9,
                                "recent_before": s0["f10"], "recent_after": s1["f10"], "all_before": a0["f10"], "all_after": a1["f10"]}
+    # e. signal: is the bucket really different from the rest (not chance)? Only for a move away from 1.0x or a skip
+    W = [r for r in V if r["day"] >= w0]
+    zz = welch_z(W, fam, b)
+    away = cand["kind"] == "skip" or (cand["kind"] == "mult" and abs(cand["value"] - 1.0) > abs(float(cur.get("mult", 1.0)) - 1.0) + 1e-9)
+    if not away:
+        sig_ok = True
+    elif cand["kind"] == "skip":
+        sig_ok = zz is not None and zz <= -Z_MIN
+    else:
+        sig_ok = zz is not None and abs(zz) >= Z_MIN and (zz > 0) == (cand["value"] > float(cur.get("mult", 1.0)))
+    checks["signal"] = {"pass": bool(sig_ok), "z": None if zz is None else round(zz, 2), "need": Z_MIN, "away_from_1": away}
     # d. size of the step (one bucket a week is enforced by review())
     cm = float(cur.get("mult", 1.0))
     checks["max_step"] = {"pass": cand["kind"] != "mult" or abs(cand["value"] - cm) <= STEP_MAX + 1e-9, "from": cm,
@@ -720,6 +742,20 @@ def guardrails(V: list, knobs: dict, cand: dict, asof: str, wf: dict, sessions=N
     return {"pass": all(c["pass"] for c in checks.values()), "checks": checks,
             "numbers": {"recent": {"before": s0, "after": s1, "from": win_first, "to": last},
                         "all": {"before": a0, "after": a1}}}
+
+
+def welch_z(W, fam, b):
+    """z of the bucket's mean R vs the rest of W, with the pooled spread of all of W (a small bucket of all losers has no
+    spread of its own and would look certain); R winsorized at +/-WINSOR. None with fewer than SIG_MIN_N trades on a side."""
+    a = [max(-WINSOR, min(WINSOR, float(r["r"]))) for r in W if (r.get("buckets") or {}).get(fam) == b]
+    c = [max(-WINSOR, min(WINSOR, float(r["r"]))) for r in W if (r.get("buckets") or {}).get(fam) != b]
+    if len(a) < SIG_MIN_N or len(c) < SIG_MIN_N:
+        return None
+    allr = a + c
+    m = sum(allr) / len(allr)
+    sd = math.sqrt(sum((x - m) ** 2 for x in allr) / (len(allr) - 1))
+    se = sd * math.sqrt(1.0 / len(a) + 1.0 / len(c))
+    return (sum(a) / len(a) - sum(c) / len(c)) / se if se > 0 else None
 
 
 def _wf_blocks(V, asof):

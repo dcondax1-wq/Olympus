@@ -431,8 +431,15 @@ class NinjaTraderAdapter:
             pass
 
     # ------------------------------------------------------------------ phone notifications (engine/push.py)
-    def _push_src(self):
-        return f"PC NinjaTrader {'Sim' if self.sim else 'LIVE'}"
+    def _push_account(self):
+        if self.sim:
+            return self.account                  # "Sim101"
+        try:
+            from . import push
+            from .lab_adapter import live_model
+            return push.account_label(live_model(), "live")
+        except Exception:
+            return "MFFU 50K"
 
     def _push(self, make):
         """Send one phone notification (background thread, once per key). Only the real bot: never the self-test or a
@@ -446,26 +453,21 @@ class NinjaTraderAdapter:
             pass
 
     def _push_fill(self, lg):
-        pv = 20.0 if lg["instrument"].upper().startswith(("NQ", "ES")) and not lg["instrument"].upper().startswith(("MNQ", "MES")) else 2.0
-        risk = abs(float(lg["fill_px"] or 0) - float(lg.get("stop0") or lg["stop"]))
-        self._push(lambda P: {**P.fill_payload(self._push_src(), self.sym, "LONG" if lg["dir"] == 1 else "SHORT", lg["filled"],
-                                               lg["fill_px"], lg.get("stop0") or lg["stop"], lg["target"], lg["entry_t"], risk_pts=risk,
-                                               setup=f"{lg['filled']} {lg['instrument']} on {self.account}"
-                                                     + (f" ({lg['qty']} sent)" if lg["filled"] < lg["qty"] else "")),
-                              "risk_usd": round(lg["filled"] * risk * pv, 2)})
+        """ENTRY: NinjaTrader reported the entry fill."""
+        inst = lg["instrument"].split(" ")[0]
+        self._push(lambda P: P.entry_payload(self._push_account(), "LONG" if lg["dir"] == 1 else "SHORT", lg["filled"], lg["entry_t"],
+                                             src="pc", contract=inst, entry=lg["fill_px"], stop=lg.get("stop0") or lg["stop"],
+                                             target=lg["target"]))
 
     def _push_exit(self, lg, name, x):
-        """The bracket closed the trade (stop or target filled at NinjaTrader): the real exit price, R and $ before costs."""
-        pv = 2.0 if lg["instrument"].upper().startswith(("MNQ", "MES")) else 20.0 if lg["instrument"].upper().startswith("NQ") else 50.0
+        """OUTCOME: the bracket closed the trade (stop or target filled at NinjaTrader): $ from the real fills, before costs."""
+        u = lg["instrument"].upper()
+        pv = 2.0 if u.startswith("MNQ") else 5.0 if u.startswith("MES") else 20.0 if u.startswith("NQ") else 50.0
         fill, ex = float(lg["fill_px"] or 0), float(x.get("avg") or 0)
-        risk = abs(fill - float(lg.get("stop0") or lg["stop"])) or None
-        pts = (ex - fill) * lg["dir"]
-        r = pts / risk if risk else None
-        usd = pts * int(x.get("filled") or lg["bracket_qty"] or 0) * pv
+        usd = (ex - fill) * lg["dir"] * int(x.get("filled") or lg["bracket_qty"] or 0) * pv
         reason = "TARGET" if name == "TARGET" else ("BE" if abs(ex - fill) <= 1.0 else "STOP")
-        self._push(lambda P: P.outcome_payload(self._push_src(), self.sym, "LONG" if lg["dir"] == 1 else "SHORT", reason, r, usd,
-                                               lg["entry_t"], int(self.clock()), qty=x.get("filled"),
-                                               note=f"{name.lower()} filled @ {ex:,.2f} ({lg['instrument']}, before commissions)"))
+        self._push(lambda P: P.outcome_payload(self._push_account(), "LONG" if lg["dir"] == 1 else "SHORT", reason, usd,
+                                               lg["entry_t"], int(self.clock()), src="pc", exit_px=ex, qty=x.get("filled")))
 
     def _risk(self, text, alert=False):
         self.last_error = text

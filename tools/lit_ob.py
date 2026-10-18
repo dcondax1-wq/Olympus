@@ -80,7 +80,7 @@ def blocks(M, tf, cfg=None, kind="body"):
         _OB[key] = pickle.load(open(p, "rb"))
         return _OB[key]
     B = htf(M, tf)
-    obs = O.detect(B["o"], B["h"], B["l"], B["c"], cfg, tf)
+    obs = O.detect(B["o"], B["h"], B["l"], B["c"], cfg, tf, t=B["t"])
     O.lifecycle(obs, B["h"], B["l"], B["c"], kind)
     last = B["last"]
     for ob in obs:
@@ -123,74 +123,81 @@ def _candles(ax, o, h, l, c, x0=0, w=0.6):
                                edgecolor=INK, lw=0.8, zorder=4))
 
 
-def draw_block(path, B, tfname, ob, title, note="", pad_l=30, pad_r=40, rejected=None, kind="body", extra=None):
-    """One block on its own timeframe. ob: a detected block (indices on B) or, with rejected, the rejected candidate."""
+def draw_block(path, B, tfname, ob, title, sub="", note="", pad_l=30, pad_r=40, rejected=None, kind="body", extra=None,
+               win=None):
+    """One block on its own timeframe. ob: a detected block (indices on B) or, with rejected, the rejected candidate.
+    win = (a, z) bar range to show (default: pad_l before the block, pad_r after it is known)."""
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
     s = ob["s"]
     end_i = ob.get("conf", ob.get("u", s))
-    a = max(0, s - pad_l); z = min(len(B["o"]), end_i + pad_r)
+    a, z = win if win else (max(0, s - pad_l), min(len(B["o"]), end_i + pad_r))
     o, h, l, c = (B[k][a:z] for k in ("o", "h", "l", "c"))
-    fig, ax = plt.subplots(figsize=(11, 5.2), dpi=110)
+    span = float(max(h) - min(l)) or 1.0
+    fig, ax = plt.subplots(figsize=(11, 5.4), dpi=110)
     fig.patch.set_facecolor("#fcfcfb"); ax.set_facecolor("#fcfcfb")
     _candles(ax, o, h, l, c)
     d = ob["dir"]
     col = BULL if d == 1 else BEAR
+    tag = lambda x, y, txt, va="center", ha="left", color=INK: ax.text(x, y, txt, fontsize=7.5, color=color, va=va, ha=ha, zorder=6,
+                                                                     bbox=dict(facecolor="#fcfcfb", edgecolor="none", alpha=0.85, pad=0.8))
     if rejected is None:
         bt, tp = O.zone(ob, kind)
         mit = ob.get("mit")
-        xe = (mit - a) if mit is not None and mit < z else (z - a)
-        ax.add_patch(Rectangle((s - a - 0.45, bt), xe - (s - a) + 0.9, tp - bt, facecolor=col, alpha=0.22, edgecolor=col, lw=1.2, zorder=1))
+        xe = (mit - a) if mit is not None and mit < z else (z - a - 1)
+        x0 = s - a - 0.45
+        ax.add_patch(Rectangle((x0, bt), xe - x0 + 0.45, tp - bt, facecolor=col, alpha=0.20, edgecolor=col, lw=1.2, zorder=1))
         wb, wt = O.zone(ob, "wick" if kind == "body" else "body")
-        ax.add_patch(Rectangle((s - a - 0.45, wb), (ob["e"] - s) + 0.9, wt - wb, facecolor="none", edgecolor=col, lw=0.8, ls=":", zorder=2))
-        ax.plot([s - a - 0.45, xe + 0.45], [ob["mt"]] * 2, color=col, lw=1.0, ls="--", zorder=2)
-        ax.text(xe + 0.6, ob["mt"], "mean threshold", color=MUTED, fontsize=7, va="center")
+        ax.add_patch(Rectangle((x0, wb), (ob["e"] - s) + 0.9, wt - wb, facecolor="none", edgecolor=col, lw=0.9, ls=":", zorder=2))
+        ax.plot([x0, xe + 0.45], [ob["mt"]] * 2, color=col, lw=1.0, ls="--", zorder=2)
+        tag(xe + 0.8, ob["mt"], "MT 50%", color=MUTED)
+        tag(xe + 0.8, tp if d == 1 else bt, ("OB " + kind), va="bottom" if d == 1 else "top", color=INK)
         if ob.get("fvg"):
             fl, fh_ = ob["fvg"]
-            ax.add_patch(Rectangle((ob["u"] - a - 0.45, fl), ob["conf"] - ob["u"] + 1.4, fh_ - fl, facecolor="#9a9a94", alpha=0.25, lw=0, zorder=1))
-            ax.text(ob["conf"] - a + 1.1, 0.5 * (fl + fh_), "FVG", color=MUTED, fontsize=7, va="center")
+            ax.add_patch(Rectangle((ob["u"] - a - 0.45, fl), ob["conf"] - ob["u"] + 1.4, fh_ - fl, facecolor="#9a9a94", alpha=0.3, lw=0, zorder=1))
+            tag(ob["conf"] - a + 1.2, 0.5 * (fl + fh_), "FVG", color=MUTED)
         if ob.get("bos") is not None:
-            ax.plot([max(0, s - a - 8), ob["bos_i"] - a + 0.5], [ob["bos"]] * 2, color=INK, lw=1.0, zorder=2)
-            ax.text(max(0, s - a - 8), ob["bos"], " swing broken (BOS)", color=INK, fontsize=7, va="bottom")
-        ax.axvline(ob["conf"] - a, color=MUTED, lw=0.8, ls=":", zorder=0)
-        ax.text(ob["conf"] - a, ax.get_ylim()[1] if False else max(h) , " known here", color=MUTED, fontsize=7, va="top")
+            xb = max(0, s - a - 10)
+            ax.plot([xb, ob["bos_i"] - a + 0.45], [ob["bos"]] * 2, color=INK, lw=1.1, zorder=2)
+            tag(xb, ob["bos"], "swing broken", va="bottom" if d == 1 else "top")
+        ax.axvline(ob["conf"] - a + 0.5, color=MUTED, lw=0.8, ls=":", zorder=0)
+        tag(ob["conf"] - a + 0.6, max(h) + 0.02 * span, "known (candle closed)", va="top", color=MUTED)
         if mit is not None and mit < z:
-            ax.annotate("first touch = mitigated", (mit - a, tp if d == 1 else bt), xytext=(mit - a + 1, (tp if d == 1 else bt) + (-1 if d == 1 else 1) * 0.08 * (max(h) - min(l))),
-                        fontsize=7, color=INK, arrowprops=dict(arrowstyle="-", color=MUTED, lw=0.6))
+            y = tp if d == 1 else bt
+            ax.plot([mit - a], [y], marker="o", ms=6, mfc="none", mec=INK, zorder=7)
+            tag(mit - a + 0.8, y - d * 0.06 * span, "1st touch = mitigated", va="top" if d == 1 else "bottom")
         brk = ob.get("brk")
         if brk is not None and brk < z:
-            ax.annotate("closed through: breaker", (brk - a, c[brk - a]), xytext=(brk - a + 1, c[brk - a] - d * 0.1 * (max(h) - min(l))),
-                        fontsize=7, color=INK, arrowprops=dict(arrowstyle="-", color=MUTED, lw=0.6))
-        lab = (f"{'bullish' if d == 1 else 'bearish'} {tfname} order block ({ob['kind']}{', took liquidity' if ob['swept'] else ''}) "
-               f"{kind} {bt:.2f}-{tp:.2f}")
-        ax.text(s - a - 0.45, tp if d == 1 else bt, lab, color=INK, fontsize=8, va="bottom" if d == 1 else "top",
-                bbox=dict(facecolor="#fcfcfb", edgecolor="none", alpha=0.8, pad=1))
+            ax.plot([brk - a], [c[brk - a]], marker="x", ms=7, color=INK, zorder=7)
+            tag(brk - a + 0.8, c[brk - a] - d * 0.10 * span, "close through = breaker", va="top" if d == 1 else "bottom")
     else:
-        bt = min(np.minimum(B["o"][s:ob["e"] + 1], B["c"][s:ob["e"] + 1])); tp = max(np.maximum(B["o"][s:ob["e"] + 1], B["c"][s:ob["e"] + 1]))
-        ax.add_patch(Rectangle((s - a - 0.45, bt), (ob["e"] - s) + 0.9 + 6, tp - bt, facecolor="none", edgecolor=MUTED, lw=1.2, ls="--", zorder=1))
-        ax.text(s - a - 0.45, tp if d == 1 else bt, f"rejected {'bullish' if d == 1 else 'bearish'} {tfname} candidate: {rejected}",
-                color=INK, fontsize=8, va="bottom" if d == 1 else "top", bbox=dict(facecolor="#fcfcfb", edgecolor="none", alpha=0.8, pad=1))
+        e = ob["e"]
+        bt = float(min(np.minimum(B["o"][s:e + 1], B["c"][s:e + 1]))); tp = float(max(np.maximum(B["o"][s:e + 1], B["c"][s:e + 1])))
+        ax.add_patch(Rectangle((s - a - 0.45, bt), (e - s) + 0.9 + 6, tp - bt, facecolor="none", edgecolor=MUTED, lw=1.3, ls="--", zorder=1))
+        tag(s - a + 7, 0.5 * (bt + tp), "not an order block", color=INK)
         if ob.get("bos_lvl") is not None:
-            ax.plot([max(0, s - a - 8), z - a], [ob["bos_lvl"] if d == 1 else -ob["bos_lvl"]] * 2, color=INK, lw=0.8, ls=":")
-            ax.text(max(0, s - a - 8), ob["bos_lvl"] if d == 1 else -ob["bos_lvl"], " swing it had to break", color=INK, fontsize=7, va="bottom")
+            lv = ob["bos_lvl"] if d == 1 else -ob["bos_lvl"]
+            ax.plot([max(0, s - a - 10), z - a - 1], [lv] * 2, color=INK, lw=0.9, ls=":")
+            tag(max(0, s - a - 10), lv, "swing it had to close beyond", va="bottom" if d == 1 else "top")
     if extra:
         extra(ax, a)
     n = z - a
-    step = max(1, n // 10)
+    step = max(1, n // 9)
     ticks = list(range(0, n, step))
     ax.set_xticks(ticks)
-    ax.set_xticklabels([et(B["t"][a + i]).strftime("%m-%d %H:%M") for i in ticks], fontsize=7, rotation=0)
+    ax.set_xticklabels([et(B["t"][a + i]).strftime("%m-%d %H:%M") for i in ticks], fontsize=7)
     ax.tick_params(axis="y", labelsize=7, colors=MUTED); ax.tick_params(axis="x", colors=MUTED)
     for sp in ax.spines.values():
         sp.set_color(GRID)
     ax.grid(axis="y", color=GRID, lw=0.6); ax.set_axisbelow(True)
-    ax.set_xlim(-1, n)
-    ax.set_title(title, fontsize=10, color=INK, loc="left")
+    ax.set_xlim(-1, n + 4)
+    ax.set_ylim(min(l) - 0.05 * span, max(h) + 0.06 * span)
+    ax.set_title(title + ("\n" + sub if sub else ""), fontsize=9.5, color=INK, loc="left")
     if note:
-        fig.text(0.01, 0.01, note, fontsize=7.5, color=MUTED)
-    fig.tight_layout(rect=(0, 0.04 if note else 0, 1, 1))
+        fig.text(0.01, 0.012, note, fontsize=7.2, color=MUTED)
+    fig.tight_layout(rect=(0, 0.035 if note else 0, 1, 1))
     fig.savefig(path, facecolor=fig.get_facecolor())
     plt.close(fig)
 
@@ -205,7 +212,7 @@ def detector(seed=11):
     for tf in ("5m", "15m", "1h"):
         B = htf(M, tf)
         rej = []
-        obs = O.detect(B["o"], B["h"], B["l"], B["c"], None, tf, rejects=rej)
+        obs = O.detect(B["o"], B["h"], B["l"], B["c"], None, tf, rejects=rej, t=B["t"])
         O.lifecycle(obs, B["h"], B["l"], B["c"])
         a26 = int(np.searchsorted(B["last"], y26))
         obs = [x for x in obs if x["s"] >= a26 and x["conf"] + 45 < len(B["o"])]
@@ -216,7 +223,7 @@ def detector(seed=11):
         cats["doji in the run"] = [x for x in obs if any(neutral(i) for i in range(x["s"], x["e"] + 1)) or x["u"] - x["e"] > 1]
         cats["inside bar"] = [x for x in obs if x["n_run"] == 1 and B["h"][x["s"]] <= B["h"][x["s"] - 1] and B["l"][x["s"]] >= B["l"][x["s"] - 1]]
         cats["gap"] = [x for x in obs if (B["t"][x["u"]] - B["t"][x["e"]]) > 3 * O.TF_SECS[tf] or
-                       abs(B["o"][x["u"]] - B["c"][x["e"]]) > 0.5 * (B["h"][x["e"]] - B["l"][x["e"]])]
+                       x["dir"] * (B["o"][x["u"]] - B["c"][x["e"]]) > 0.5 * (B["h"][x["e"]] - B["l"][x["e"]])]
         by_conf = collections.defaultdict(list)
         for x in obs:
             by_conf[x["dir"]].append(x)
@@ -228,9 +235,13 @@ def detector(seed=11):
         cats["back to back"] = b2b
         cats["rejected: no FVG"] = [x for x in rej if x["why"] == "no FVG" and x["bos_lvl"] is not None]
         cats["rejected: no structure break"] = [x for x in rej if x["why"] == "no structure break" and x["fvg"]]
-        want = {"5m": {"clear": 2, "doji in the run": 1, "inside bar": 1, "gap": 1, "back to back": 1, "rejected: no FVG": 1},
-                "15m": {"clear": 2, "doji in the run": 1, "back to back": 1, "rejected: no structure break": 1, "gap": 1},
-                "1h": {"clear": 3, "inside bar": 1, "gap": 1, "rejected: no FVG": 1, "rejected: no structure break": 1}}[tf]
+        cats["rejected: session break inside the move (an opening gap)"] = [x for x in rej if x["why"].startswith("session break")]
+        cats["rejected: weak move"] = [x for x in rej if x["why"].startswith("weak move")]
+        cats["rejected: price went back below the block first"] = [x for x in rej if x["why"].startswith("price went back")]
+        want = {"5m": {"clear": 2, "doji in the run": 1, "inside bar": 1, "gap": 1, "back to back": 1, "rejected: weak move": 1},
+                "15m": {"clear": 2, "doji in the run": 1, "back to back": 1, "rejected: no structure break": 1,
+                        "rejected: price went back below the block first": 1},
+                "1h": {"clear": 3, "inside bar": 1, "gap": 1, "rejected: no FVG": 1, "rejected: session break inside the move (an opening gap)": 1}}[tf]
         for cat, k in want.items():
             L = cats.get(cat) or []
             if not L:
@@ -241,13 +252,20 @@ def detector(seed=11):
     for n, (tf, B, cat, ob) in enumerate(picks[:20], 1):
         nm = f"detector_{n:02d}_{tf}_{cat.replace(':', '').replace(' ', '_')}.png"
         day = et(B["t"][ob["s"]]).strftime("%Y-%m-%d %H:%M ET")
+        side = "bullish" if ob["dir"] == 1 else "bearish"
         if cat.startswith("rejected"):
-            draw_block(os.path.join(STUDY, nm), B, tf, ob, f"{n}. {tf} {cat} - {day}", rejected=cat.split(": ")[1],
-                       note="Dashed box: the last opposite-colour run before the move. It is NOT an order block: " + cat.split(": ")[1] + ".")
+            why = ob["why"]
+            draw_block(os.path.join(STUDY, nm), B, tf, ob, f"{n}. {tf} {side} candidate REJECTED: {why} - {day}",
+                       sub="the last opposite-colour run before a move, but the move does not qualify",
+                       rejected=why, note="Dashed box: the run a chart reader might mark. The detector does not count it: " + why + ".")
         else:
-            draw_block(os.path.join(STUDY, nm), B, tf, ob, f"{n}. {tf} {cat} - {day}",
-                       note="Shaded: the block's body (the zone), dotted: its wick range, dashed: mean threshold, grey: the FVG the move "
-                            "left. The zone ends at the first touch (mitigation).")
+            bt, tp = O.zone(ob, "body")
+            sub = (f"{side} order block, {ob['kind']}{', took liquidity' if ob['swept'] else ''}, body {bt:.2f}-{tp:.2f} "
+                   f"({tp - bt:.1f} pts), {ob['n_run']} candle{'s' if ob['n_run'] > 1 else ''}, biggest move body {ob['disp_atr']:.1f} ATR"
+                   f"{', broke swing ' + format(ob['bos'], '.2f') if ob['bos'] is not None else ', liquidity + CISD close (no swing above)'}")
+            draw_block(os.path.join(STUDY, nm), B, tf, ob, f"{n}. {tf} {cat} - {day}", sub=sub,
+                       note="Shaded = block body (the zone), dotted = its wick range, dashed = mean threshold (50%), grey = the FVG of the "
+                            "move. The zone stops at the first touch (mitigation); x = a close through it (breaker).")
         out.append({"file": nm, "tf": tf, "case": cat, "dir": ob["dir"], "start": day})
     json.dump(out, open(os.path.join(STUDY, "detector_index.json"), "w"), indent=1)
     print("\n".join(f"{x['file']}" for x in out))

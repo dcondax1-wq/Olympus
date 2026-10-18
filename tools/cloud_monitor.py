@@ -236,6 +236,7 @@ def trade_notices(ledger, res, pos, lm, since, state=None, size=None):
     size(t) -> (mult, micros, reasons) sizes an open position the way the ledger will."""
     model = lm.get("model", "engine")
     mname = "LIT" if model == "lit" else str(lm.get("label") or model).split(" (")[0]
+    acct = push.account_label(lm, "paper")          # "Paper": the cloud bot never trades a real account
     out = []
     by_t = {int(t["entry_t"]): t for t in res.get("trades") or []}
     for ev in res.get("events") or []:
@@ -262,9 +263,12 @@ def trade_notices(ledger, res, pos, lm, since, state=None, size=None):
             note.append("Size: " + "; ".join(_news(reasons)))
         if t is not None and not p:
             note.append(f"Closed before this check ({t.get('exit_reason')}): the outcome follows")
-        out.append(push.fill_payload(PUSH_SRC, SYM, "LONG" if d == 1 else "SHORT", qty, src.get("entry"),
-                                     src.get("stop0", src.get("stop")), src.get("target"), et_,
-                                     setup=_setup_line(res, et_, d, t), risk_pts=src.get("risk_pts"), note="\n".join(note), model=mname))
+        stop = src.get("stop0", src.get("stop"))
+        risk_pts = src.get("risk_pts") if src.get("risk_pts") is not None else (abs(float(src["entry"]) - float(stop)) if src.get("entry") is not None and stop is not None else None)
+        out.append(push.entry_payload(acct, "LONG" if d == 1 else "SHORT", qty, et_, src=PUSH_SRC, model=mname,
+                                      entry=src.get("entry"), stop=stop, target=src.get("target"),
+                                      risk_usd=round(float(qty or 0) * float(risk_pts or 0) * 2.0, 2) if risk_pts is not None else None,
+                                      setup=_setup_line(res, et_, d, t), note="\n".join(note)))
     rules = (state or {}).get("lit_rules") or {}
     for k in sorted(ledger):
         v = ledger[k]
@@ -279,9 +283,9 @@ def trade_notices(ledger, res, pos, lm, since, state=None, size=None):
         ws = rules.get("weekly_stop") or {}
         if v.get("exit") == "STOP" and ws.get("on") and float(ws.get("mult") or 1) < 1 and k == max(ledger):
             note.append(f"Weekly stop ON: {ws.get('stops')} stop-outs this week, {float(ws['mult']):g}x size for the rest of it")
-        out.append(push.outcome_payload(PUSH_SRC, SYM, v.get("side"), v.get("exit"), v.get("R"), v.get("usd"), k, v.get("exit_ts"),
-                                        qty=v.get("qty"), balance=bal["balance"], to_target=bal["to_target"], note="\n".join(note),
-                                        model=mname))
+        out.append(push.outcome_payload(acct, v.get("side"), v.get("exit"), v.get("usd"), k, v.get("exit_ts"), src=PUSH_SRC, model=mname,
+                                        R=v.get("R"), qty=v.get("qty"), balance=bal["balance"], to_target=bal["to_target"],
+                                        note="\n".join(note)))
     return out
 
 
@@ -492,41 +496,60 @@ def run(out):
                                                "Notifications from the cloud paper bot work. You get one for every fill and every outcome.",
                                                key=f"test:{now}", t=now))
 
-    # ---- phone app notifications (Web Push, engine/push.py): every fill and every outcome once each, de-duplicated by key
-    # (state.json "pushed"); nothing older than this feature's first run, nothing older than 2 days
+    # ---- phone app notifications (Web Push, engine/push.py): entry + outcome of every trade once each, de-duplicated by key
+    # across runs (state.json "pushed") and with the PC (relay "sent" markers); nothing older than 2 days. Subscriptions
+    # arrive through the relay (the app posts them when notifications are allowed) and live in state.json "push_subs".
     push_since = int(st.get("push_since") or now)
-    pcfg = push.config()
-    notifier = push.Notifier(keys=st.get("pushed") or [], cfg=pcfg)
+    key_file = os.environ.get("LE_VAPID_KEY_FILE")
+    if key_file and not os.environ.get("LE_VAPID_PRIVATE"):
+        try:
+            if push.ensure_key_file(key_file)["new"]:
+                print("push: made a new notification key (kept in the Actions cache; phones subscribe again on their next open)")
+        except Exception as e:
+            print("push: key file unavailable:", e.__class__.__name__)
+    relay = push.Relay()
+    relay_msgs = relay.read()
+    pub_now = push.config()["public"]
+    push_subs = push.merge_relay_subs(st.get("push_subs") or [], relay_msgs, pub_now, now=now)
+    pcfg = push.config(subs_extra=[r["sub"] for r in push_subs])
+    notifier = push.Notifier(keys=st.get("pushed") or [], cfg=pcfg, relay=relay, src="cloud")
+    pc_sent = relay.sent_keys(relay_msgs)
     candidates = trade_notices(ledger, res, pos, lm, max(push_since - 60, now - PUSH_MAX_AGE_S, first_run - SECS), state,
                                size=lambda t: paper_size(ledger, t, lm["model"], eqf_cfg, shadow_path, sizing_cfg, lm.get("params"),
                                                          lm.get("lit_sizing") if lm["model"] == "lit" else None))
-    defer = (os.environ.get("LE_PUSH_DEFER_TO_PC", "") == "1" and pc.get("present") and pc.get("running") and not pc.get("silent")
-             and pc.get("model") == lm["model"])          # the PC bot trades the same strategy and notifies itself
     notices = list(st.get("notices") or [])
     push_res = []
     for n in sorted(candidates, key=lambda x: (x["t"], x["kind"] != "fill")) + other_notices:
         if notifier.seen(n):
             continue
-        if defer and n["kind"] in ("fill", "outcome"):
-            notifier.mark(n)
-            r = {"skipped": "PC bot notifies"}
-        else:
-            r = notifier.notify(n)
+        # entry / outcome are pushed; the PC silent and eval-timing notices stay in the app (LE_PUSH_EXTRA=1 pushes them too)
+        r = notifier.notify(n, push_it=n["kind"] in ("fill", "outcome", "test") or push.extra_on(), other_sent=pc_sent)
         push_res.append(r)
-        notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "key", "title", "body", "url", "side", "R", "usd", "exit", "qty",
-                                                 "entry", "stop", "target", "risk_usd")},
-                        "sent": int(r.get("sent") or 0), "at": now})
+        notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "account", "key", "title", "body", "url", "side", "R", "usd", "exit",
+                                                 "qty", "entry", "stop", "target", "risk_usd", "setup", "balance", "to_target", "note")},
+                        "sent": int(r.get("sent") or 0), **({"by": "PC"} if r.get("by") else {}), "at": now})
     notices = sorted(notices, key=lambda x: (x.get("t") or 0, x.get("at") or 0))[-80:]
     gone = sorted({g for r in push_res for g in r.get("gone") or []})
+    if gone:                                       # expired / made for an old key: the app re-subscribes on its next open
+        push_subs = [r for r in push_subs if r["id"] not in set(gone)]
     push_errs = [e for r in push_res for e in r.get("errors") or []]
-    push_state = push.status(pcfg)
+    # the PC bot's copy of the key: sealed to the PC's own public key from its heartbeat (only the PC can open it)
+    push_pc = st.get("push_pc") or None
+    if pc.get("push_pk") and pcfg["private"]:
+        if not push_pc or push_pc.get("pk") != pc["push_pk"] or push_pc.get("pub") != pcfg["public"]:
+            try:
+                push_pc = {"pk": pc["push_pk"], "pub": pcfg["public"], "box": push.seal(pcfg["private"].encode(), pc["push_pk"]), "t": now}
+            except Exception as e:
+                print("push: could not seal the key for the PC:", e.__class__.__name__)
+    push_state = push.status(push.config(subs_extra=[r["sub"] for r in push_subs]))
     push_state.update({"sent_this_run": sum(int(r.get("sent") or 0) for r in push_res), "new": len(push_res),
                        "gone": gone if push_res else ((st.get("push") or {}).get("gone") or []), "errors": push_errs[:5],
                        "last_sent_at": now if any(r.get("sent") for r in push_res) else (st.get("push") or {}).get("last_sent_at"),
-                       "chat": chat_on(lm), "defer_to_pc": bool(defer)})
-    if push_res:
-        print(f"push: {len(push_res)} new notice(s), sent {push_state['sent_this_run']} to {push_state['devices']} device(s)"
-              + (f", expired {gone}" if gone else "") + (f", errors {push_errs[:3]}" if push_errs else ""))
+                       "relay": relay.public(), "relay_ok": relay.error is None, "relay_msgs": len(relay_msgs),
+                       "pc_linked": bool(push_pc and pc.get("push_pk") == push_pc.get("pk")), "chat": chat_on(lm)})
+    print(f"push: {push_state['devices']} device(s), key from {push_state['source'] or 'nowhere'}, relay {'ok' if relay.error is None else relay.error}"
+          + (f", {len(push_res)} new notice(s), sent {push_state['sent_this_run']}" if push_res else "")
+          + (f", expired {len(gone)}" if gone else "") + (f", errors {push_errs[:3]}" if push_errs else ""))
     write_chart(os.path.join(out, "chart.png"), df, state, res, today)
     write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm,
                  push_state=push_state)
@@ -553,11 +576,12 @@ def run(out):
                  "levels": [{k: p.get(k) for k in ("label", "price", "side", "strength", "kind")} for p in state.get("active_pools") or []][:60]
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
-                                               "reason", "model")},
+                                               "reason", "model", "push_pk")},
                  "pc_alert_at": pc_alert_at,
                  # phone app notifications: the keys already sent (de-dup), when they started, the public status (never the
                  # private key or an endpoint) and the last 80 notices for the app's Activity feed
-                 "push_since": push_since, "pushed": notifier.keys()[-600:], "push": push_state, "notices": notices}
+                 "push_since": push_since, "pushed": notifier.keys()[-600:], "push": push_state, "notices": notices,
+                 "push_subs": push_subs, "push_pc": push_pc}
     if shadow is not None:
         new_state["shadow"] = shadow
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
@@ -649,14 +673,16 @@ def write_chart(path, df, state, res, today):
 def _push_cell(p):
     p = p or {}
     if not p.get("configured"):
-        return "app notifications not set up (docs/NOTIFICATIONS.md: secrets LE_VAPID_PRIVATE + LE_PUSH_SUBS)"
+        return "no notification key yet (the workflow makes one on its next run)"
     if not p.get("devices"):
-        return "keys set, no phone yet (add the app's code as secret LE_PUSH_SUBS)"
-    s = f"app notifications on: {p['devices']} device(s), {p.get('sender')} sender"
+        return "on, no phone yet: open the app from the Home Screen and tap Allow"
+    s = f"on: {p['devices']} phone(s), entry + outcome of every trade"
     if p.get("sent_this_run"):
         s += f"; sent {p['sent_this_run']} this run"
-    if p.get("gone"):
-        s += f"; {len(p['gone'])} expired subscription(s): turn notifications on again in the app and replace the secret"
+    if p.get("pc_linked"):
+        s += "; PC bot linked"
+    if p.get("relay_ok") is False:
+        s += "; relay unreachable this run"
     if p.get("errors"):
         s += f"; errors: {'; '.join(p['errors'][:2])}"
     return s
