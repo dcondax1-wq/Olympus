@@ -247,9 +247,9 @@ export function levelsHTML(C, { max = 14 } = {}) {
 
 // ------------------------------------------------------------------ sizing (engine/lit.py qty_for + the switches)
 export function micros(C, stop, { mode = C.sizing.mode, mult = 1, room = null } = {}) {
-  const Z = C.sizing, ref = mode === 'fast_eval' ? Z.fast_ref_stop : Z.ref_stop, budget = stop <= ref ? Z.risk_usd : Z.risk_usd * ref / stop;
+  const Z = C.sizing, ref = mode === 'fast_eval' ? Z.fast_ref_stop : mode === 'eval' ? (Z.eval_ref_stop ?? 25) : Z.ref_stop, budget = stop <= ref ? Z.risk_usd : Z.risk_usd * ref / stop;
   let m = Math.max(0, Math.min(Z.max_micros, Math.floor(budget / (stop * PV) + 1e-9)));
-  if (mode === 'safe_eval' && ok(room) && m >= 1) m = Math.max(1, Math.min(m, Math.floor(Z.safe_cap * room / (stop * PV))));
+  if ((mode === 'safe_eval' || mode === 'eval') && ok(room) && m >= 1) m = Math.max(1, Math.min(m, Math.floor(Z.safe_cap * room / (stop * PV))));
   if (mult < 1 && m >= 1) m = Math.max(1, Math.floor(m * mult));
   return { m, budget, usd: m * stop * PV, ref };
 }
@@ -316,7 +316,7 @@ export function cockpitHTML(C, sim = null) {
     <div class="lk-kv lk-3">
       <div><span>Size now</span><b>${K.z.m || 0} micros</b><em>${K.z.stop}-pt stop · ${usd(K.z.usd)} risk${K.z.mult < 1 ? ' · half (weekly stop)' : ''}</em></div>
       <div><span>Weekly stop</span><b class="${wk && wk.mult < 1 ? 'lk-wn' : ''}">${wk ? `${wk.stops} of ${wk.after ?? wkN}` : `0 of ${wkN}`}</b><em>${wk && wk.mult < 1 ? 'half size for the rest of the week' : 'stop-outs this week · full size'}</em></div>
-      <div><span>Sizing mode</span><b>${esc(K.mode === 'fast_eval' ? 'fast eval' : K.mode === 'safe_eval' ? 'safe eval' : 'normal')}</b><em>${K.mode === 'fast_eval' ? `$${C.sizing.risk_usd} up to a ${C.sizing.fast_ref_stop}-pt stop` : K.mode === 'safe_eval' ? `capped at ${Math.round(C.sizing.safe_cap * 100)}% of the room` : `$${C.sizing.risk_usd} up to a ${C.sizing.ref_stop}-pt stop`}</em></div>
+      <div><span>Sizing mode</span><b>${esc(K.mode === 'fast_eval' ? 'fast eval' : K.mode === 'safe_eval' ? 'safe eval' : K.mode === 'eval' ? 'eval' : 'normal')}</b><em>${K.mode === 'fast_eval' ? `$${C.sizing.risk_usd} up to a ${C.sizing.fast_ref_stop}-pt stop` : K.mode === 'eval' ? `$${C.sizing.risk_usd} up to a ${C.sizing.eval_ref_stop ?? 25}-pt stop, max ${Math.round(C.sizing.safe_cap * 100)}% of the room` : K.mode === 'safe_eval' ? `capped at ${Math.round(C.sizing.safe_cap * 100)}% of the room` : `$${C.sizing.risk_usd} up to a ${C.sizing.ref_stop}-pt stop`}</em></div>
     </div>
     <div class="lk-mon">${esc(monTxt)}</div>
     <div class="lk-wi"><div class="lk-wl"><span>One full stop-out</span><b class="lk-dn">${susd(-K.lossFull)}</b><em>balance ${usd(K.afterLoss.bal)} · uses ${pct(K.afterLoss.share * 100)} of the room · ${K.lossesToFail ?? '—'} in a row to fail</em></div>

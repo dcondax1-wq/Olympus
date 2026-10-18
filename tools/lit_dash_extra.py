@@ -97,7 +97,7 @@ def extra(state: dict | None, lm: dict | None, run_path: str = RUN) -> dict:
     ls = lm.get("lit_sizing") or {}
     out = {"version": 1, "plan": _plan()}
     out["sizing"] = {"risk_usd": pr.get("risk_usd", 800), "ref_stop": pr.get("risk_ref_stop", 20.0), "max_micros": pr.get("max_micros", 40),
-                     "mode": ls.get("mode", "normal"), "fast_ref_stop": ls.get("fast_ref_stop", 40.0), "safe_cap": ls.get("safe_cap", 0.6),
+                     "mode": ls.get("mode", "normal"), "fast_ref_stop": ls.get("fast_ref_stop", 40.0), "eval_ref_stop": ls.get("eval_ref_stop", 25.0), "safe_cap": ls.get("safe_cap", 0.6),
                      "wk_stop": P.get("wk_stop"), "tick": 0.25, "point_value": 2.0, "modes": ls.get("modes")}
     out["rules"] = {"window": P.get("window", [[120, 930]]), "flat_mod": P.get("flat_mod", 955), "max_per_day": P.get("max_per_day", 1),
                     "min_stop": P.get("min_stop", 8.0), "max_stop": P.get("max_stop", 80.0), "min_rr": P.get("min_rr", 1.5),
