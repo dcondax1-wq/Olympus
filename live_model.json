@@ -1,30 +1,64 @@
 {
-  "model": "engine",
+  "model": "lit",
   "sym": "NQ",
-  "params": {
-    "grade_sizing": false,
-    "conviction_step": 0,
-    "max_trades_day": 1,
-    "risk_usd": 800,
-    "dd_aware": false,
-    "risk_ref_stop": 20.0,
-    "use_fallback": false,
-    "be_at_r_trending": 3.0,
-    "memory_seed": false
-  },
-  "equity_filter": {
-    "lookback": 15,
-    "min_sum_r": 0.0,
-    "cold_mode": "half",
-    "cold_size": 0.25
-  },
-  "label": "Liquidity Engine - eval mode ($800 risk up to a 20-pt stop, less on wider stops; every setup with a real liquidity draw; quarter size in cold streaks, half size on late entries; breakeven at 3R on trending days)",
-  "chosen": "2026-10-17",
+  "label": "LIT - Liquidity Inducement (2026-tuned)",
+  "chosen": "2026-10-18",
   "locked": true,
   "rules": "STRATEGY.md",
-  "sizing": {
-    "late_mult": 0.5,
-    "press": null
+  "params": {
+    "risk_usd": 800,
+    "risk_ref_stop": 20.0,
+    "max_micros": 40,
+    "max_trades_day": 1
   },
-  "lock_note": "Locked 2026-10-17 for Monday 2026-10-19 (research/writeups/risk-summary.md, trade-construction-summary.md). Previous lock 2026-10-17 morning: cold_size 0.5, no late-entry rule, breakeven at 1R on every day."
+  "lit": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+      [
+        120,
+        930
+      ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+      1.0,
+      36,
+      1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+      "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "how_out": 1.0
+  },
+  "equity_filter": null,
+  "sizing": null,
+  "size_rule": "$800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $2/pt; max 40 micros; no trade under 1 micro (engine/lit.py qty_for). No cold-streak filter, no late-entry rule.",
+  "costs": "$1.40 per micro round trip; 1 tick slippage on market entries and on stop / breakeven / end-of-day exits (limit entries and targets fill at the price)",
+  "judged_on": "2026 only (owner order 2026-10-18): parameters picked on Jan 2 - Jun 30 2026, checked on Jul 1 - Oct 16 2026; 2021-25 is a reference line, never a gate",
+  "lock_note": "Locked 2026-10-18 (research/writeups/lit-final.md, run lit_final). 2026 (Jan 2 - Oct 16): 127 trades, 3.08/wk, 90% of weeks with 2+, win 23.6%, PF 3.06, +$38,873 ($3,963/mo), max DD -$3,097; MFFU 50K eval within 2 weeks 29.1% pass / 9.2% fail, within 1 month 48.1% / 16.0%, pass rate 79.9%, median 12 sessions to pass. H1 (picked on): PF 3.55, +$30,661. H2 (check, nothing tuned on it): PF 2.19, +$8,212 (~$2,200/mo) - expect the H2 rate, not the full-year rate. 2021-25 reference (no 1m data there, so the 1m entry cannot be checked): PF 1.03, +$3,806, max DD -$20,695. 100 of 127 trades enter 02:00-08:00 ET (London morning). Old strategy (Liquidity Engine, live_model_engine.json) 2026: PF 3.94, +$20,487; it keeps running as the cloud shadow ledger.",
+  "eval_safe_option": {
+    "how_out": 0.5,
+    "what": "half size when the sweep extreme is outside Tue 03:00 - Wed 11:30 ET; 2026 +$27.8k (PF 3.17) instead of +$38.9k, max DD -$2.3k instead of -$3.1k, no eval failed within 2 weeks, pass rate 86% instead of 80%"
+  },
+  "previous": "live_model_engine.json (Liquidity Engine lock of 2026-10-17; the cloud monitor's shadow ledger)",
+  "live": "engine/lit_live.py (PC paper bot engine/live.py and tools/cloud_monitor.py); 1m bars for the entry from data/NQ_1m.csv + Yahoo NQ=F 1m (7 days); a day without full 1m bars executes on 5m. Paper only.",
+  "live_check": "python -X utf8 -m tests.test_lit_live (results research/lit/live_check.json)"
 }

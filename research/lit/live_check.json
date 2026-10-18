@@ -1,0 +1,56 @@
+{
+ "strategy": "lit_final",
+ "params": {
+  "ref": "cisd",
+  "extra_boxes": [],
+  "window": [
+   [
+    120,
+    930
+   ]
+  ],
+  "sweep_names": null,
+  "disp": 0.8,
+  "depth": 0.5,
+  "idm_a": [
+   1.0,
+   36,
+   1
+  ],
+  "nwog_discount": false,
+  "mw_filter": false,
+  "wait": 6,
+  "tf": "1m",
+  "cisd1m": 20,
+  "stop_buf": 0.25,
+  "min_stop": 8.0,
+  "max_stop": 80.0,
+  "classes": [
+   "vix"
+  ],
+  "vix_k": 1.0,
+  "min_rr": 1.5,
+  "max_rr": 8.0,
+  "fallback_rr": null,
+  "be_r": 1.0,
+  "flat_mod": 955,
+  "max_per_day": 1,
+  "how_out": 1.0
+ },
+ "sessions": 206,
+ "backtest_trades": 127,
+ "day_end": {
+  "sessions": 206,
+  "backtest_trades": 127,
+  "matched_entries": 127,
+  "matched_exits_and_pnl": 127,
+  "missing": [],
+  "n_missing": 0,
+  "extra": [],
+  "n_extra": 0,
+  "exit_differs": [],
+  "net_backtest": 38873.34,
+  "seconds": 55
+ },
+ "seconds": 65
+}

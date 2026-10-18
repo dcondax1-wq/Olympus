@@ -161,8 +161,9 @@ def read_tv(path: str, tz: str = "America/New_York") -> list[dict]:
 
 # ------------------------------------------------------------------------------------------------ Python side
 def live_model() -> dict:
-    with open(os.path.join(ROOT, "live_model.json"), encoding="utf-8") as f:
-        return json.load(f)
+    """The Liquidity Engine lock the Pine script ports: live_model.json, or live_model_engine.json once LIT is live."""
+    from engine.lab_adapter import engine_config_raw
+    return engine_config_raw()
 
 
 def _patch_bars(bars_csv: str):

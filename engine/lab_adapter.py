@@ -19,12 +19,20 @@ import pandas as pd
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG = os.path.join(ROOT, "live_model.json")
+ENGINE_CONFIG = os.path.join(ROOT, "live_model_engine.json")     # the Liquidity Engine lock, kept when LIT went live
 ET = ZoneInfo("America/New_York")
 EXIT_NAMES = {"stop": "STOP", "target": "TARGET", "market": "EXIT", "time": "TIME", "be": "BE", "open": "OPEN"}
 
 
+def _shape(cfg: dict) -> dict:
+    return {"model": cfg.get("model") or "engine", "params": cfg.get("params") or {}, "label": cfg.get("label", ""),
+            "sym": (cfg.get("sym") or "NQ").upper(), "equity_filter": cfg.get("equity_filter"),
+            "sizing": cfg.get("sizing"), "chosen": cfg.get("chosen", ""), "lit": cfg.get("lit")}
+
+
 def live_model() -> dict:
-    """{"model": "engine" | "lab:<name>", "params": {...}}; engine with its defaults when the file is missing.
+    """{"model": "engine" | "lit" | "lab:<name>", "params": {...}, "lit": {...}}; engine with its defaults when the file
+    is missing. "lit" = engine/lit_live.py with the parameters under "lit" (live_model_lit.json).
     The LE_LIVE_MODEL environment variable (same JSON) overrides the file (tests / one-off runs)."""
     try:
         if os.environ.get("LE_LIVE_MODEL"):
@@ -32,11 +40,33 @@ def live_model() -> dict:
         else:
             with open(CONFIG, encoding="utf-8") as fh:
                 cfg = json.load(fh)
-        return {"model": cfg.get("model") or "engine", "params": cfg.get("params") or {}, "label": cfg.get("label", ""),
-                "sym": (cfg.get("sym") or "NQ").upper(), "equity_filter": cfg.get("equity_filter"),
-                "sizing": cfg.get("sizing"), "chosen": cfg.get("chosen", "")}
+        return _shape(cfg)
     except Exception:
-        return {"model": "engine", "params": {}, "label": "", "sym": "NQ", "equity_filter": None, "sizing": None}
+        return {"model": "engine", "params": {}, "label": "", "sym": "NQ", "equity_filter": None, "sizing": None, "lit": None}
+
+
+def engine_config_raw() -> dict:
+    """The Liquidity Engine's locked config (raw JSON): live_model.json while it says "engine", else live_model_engine.json
+    (the old strategy, kept as the reference and the cloud monitor's shadow ledger). LE_ENGINE_MODEL overrides it."""
+    if os.environ.get("LE_ENGINE_MODEL"):
+        return json.loads(os.environ["LE_ENGINE_MODEL"])
+    try:
+        with open(CONFIG, encoding="utf-8") as fh:
+            cfg = json.load(fh)
+    except Exception:
+        cfg = {}
+    if (cfg.get("model") or "engine") == "engine":
+        return cfg
+    try:
+        with open(ENGINE_CONFIG, encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception:
+        return {"model": "engine", "params": {}}
+
+
+def engine_model() -> dict:
+    """engine_config_raw() in the live_model() shape."""
+    return _shape(engine_config_raw())
 
 
 def lab_frame(df: pd.DataFrame) -> pd.DataFrame:

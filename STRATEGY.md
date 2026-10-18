@@ -1,11 +1,120 @@
-# The exact strategy the bot trades: Liquidity Engine, eval mode
+# The exact strategy the bot trades: LIT (Liquidity Inducement), 2026-tuned
+
+Market: NQ futures, traded as MNQ micros ($2 per point). Setups on 5-minute candles, entry and trade management on 1-minute
+candles. All times are New York (ET); the trading day runs 18:00 to 17:00.
+Settings: `live_model.json` (copy in `live_model_lit.json`) → `"model": "lit"`, parameters under `"lit"`; code `engine/lit.py`
+(rules) + `engine/lit_live.py` (the live loop: PC paper bot and cloud monitor). Paper only.
+
+**Version:** locked 2026-10-18. **Owner's order (2026-10-18): LIT is the strategy, tuned and judged on 2026 only** (Jan 2 – Oct 16).
+Picked on Jan–Jun 2026, checked on Jul–Oct 2026. 2021–25 is shown as a reference line, never as a gate. The previous strategy
+(Liquidity Engine, below) keeps running in the cloud monitor as a shadow paper ledger for comparison. Research:
+`research/writeups/lit-final.md`, run `lit_final`.
+
+## 1. Liquidity levels
+Every one of these counts as liquidity:
+- **Session highs and lows:** Asia (from 18:00, 19:00 or 20:00 to midnight), London (02:00–05:00, 03:00–04:00, 02:00–03:00),
+  New York (08:00–09:00, 08:30–09:30, 09:30–10:00, 09:30–10:30) and the premarket (04:00–09:30). A box is a level only after
+  its last candle has closed.
+- **Previous day, week and month:** high and low of each (PDH/PDL, PWH/PWL, PMH/PML).
+- **Opening gaps:** both edges of the weekly (NWOG) and the daily (NDOG) opening gap.
+- **Build-ups:** equal lows or highs, i.e. two 5m swings within 0.15 ATR, 3+ candles apart, untouched in between.
+
+## 2. The sweep
+- A new 2-hour low (the **extreme**) takes out a level nobody had traded through yet, within the 2 hours before the extreme.
+- It has to run at least **half an ATR** (14 bars, 5m) past the nearest level it took.
+- A swept low sets up a **long**, a swept high a **short** (shorts are the mirror image of everything here).
+
+## 3. The inducement
+- Before the sweep, at least **one small 5m swing low sat above the swept level**, no more than **1 ATR** above it and at most
+  **36 candles (3 hours)** old.
+- Nothing touched it until the final push into the extreme ran through it: the early buyers got trapped.
+
+## 4. Displacement and the shift (5m CISD)
+- **CISD level** = the open of the first candle in the last run of down-close 5m candles into the extreme.
+- **Trigger:** the first 5m close above the CISD level.
+- Somewhere between the extreme and the trigger, one candle body must reach **0.8 ATR or more**.
+- The candle after the trigger has to open **between 02:00 and 15:30 ET**.
+
+## 5. Entry (1-minute confirmation)
+- A **limit order at the CISD level** works for **30 minutes**.
+- Once price taps it, the bot gives it up to **20 one-minute candles** to print a 1m CISD (a 1m close back above the open of
+  the last run of 1m down-closes into the low since the tap), then buys **at the next 1m open** (+1 tick slippage).
+- The setup is dropped if the sweep extreme breaks, the target trades before the tap, 30 minutes pass without a tap,
+  20 minutes pass without the confirmation, or it is 15:55.
+- A day without clean 1m bars runs the same rules on 5m candles (4 five-minute candles for the confirmation).
+
+## 6. Stop
+- **1 tick (0.25 pt) beyond the sweep extreme.** Never a fixed distance.
+- Planned stop (limit to stop) under 8 or over 80 points: **no trade**. The size uses the real stop at the fill.
+
+## 7. Target: the VIX band
+- One **VIX move** = yesterday's VIX close ÷ 100 ÷ √252 × the 18:00 open.
+- Longs aim at the 18:00 open **plus** one move, shorts at the 18:00 open **minus** one move.
+- It has to be **1.5R or more** from the fill, else no trade. Further than **8R**: profit is banked at 8R.
+
+## 8. Managing the trade
+- Stop to **breakeven at +1R**.
+- **Flat by 15:55 ET** (the live bot flattens on the clock too).
+- **One trade a day**, never two at once.
+
+## 9. Size (size follows the stop)
+- **$800 risk up to a 20-point stop**, then 800 × 20 ÷ stop (a 40-pt stop risks $400, an 80-pt stop $200).
+- Micros = risk ÷ (stop × $2), rounded down, at most 40; under 1 micro means no trade.
+- 2026 median stop 47 points → 3 micros, about $290 at risk.
+- **No cold-streak filter, no late-entry rule.** Eval-safe switch, off: `how_out: 0.5` (half size when the sweep extreme falls
+  outside Tuesday 03:00 – Wednesday 11:30): 2026 +$27.8k instead of +$38.9k, max DD −$2.3k, no eval failed within 2 weeks.
+- Costs in every number: $1.40 per micro round trip, 1 tick slippage on market entries and on stop / breakeven / end-of-day
+  exits; limit fills and targets fill at their price.
+
+## How LIT performed (`python tools/export_backtest.py` → `research/lab/backtest_live.json`, costs included)
+
+| | 2026 (Jan 2 – Oct 16) | 2026 H1 (picked on) | 2026 H2 (check) | 2021–25 (reference only) |
+|---|---:|---:|---:|---:|
+| Trades · per week · weeks with 2+ | 127 · 3.08 · 90% | 85 · 3.32 · 89% | 42 · 2.69 · 88% | 534 · 2.49 · 78% |
+| Win rate | 23.6% | 18.8% | 33.3% | 18.4% |
+| Profit factor | **3.06** | 3.55 | 2.19 | 1.03 |
+| Net · per month | **+$38,873 · $3,963** | +$30,661 · $5,030 | +$8,212 · $2,211 | +$3,806 · $75 |
+| Max drawdown | −$3,097 | −$3,097 | −$1,741 | −$20,695 |
+| MFFU 50K eval within 2 weeks (pass / fail) | 29.1% / 9.2% | 32.8% / 14.8% | 23.1% / 0.0% | 7.1% / 16.3% |
+| Within 1 month (pass / fail) | 48.1% / 16.0% | 52.3% / 25.8% | 41.0% / 0.0% | 15.0% / 39.2% |
+| Pass rate (passed ÷ decided) · median sessions to pass | 79.9% · 12 | 66.3% · 8 | 100% · 22.5 | 31.6% · 20 |
+
+Eval columns from the research library scoring (`tools/lit_final.py`, a new eval started on every session); the dashboard's
+Results page counts only evals with a full 2-week / 1-month window inside the period, so it shows slightly different figures
+(2026: 27.4% / 9.6% and 44.4% / 17.6%).
+
+Same months, old strategy: 2026 PF 3.94, +$20,487 (H1 +$4,919, H2 +$15,568), max DD −$2,249.
+
+**Read this honestly:**
+- **Expect the H2 rate (about $2,200 a month), not the full-year $3,963.** H1 was tuned, H2 was not; the old bot did better in H2.
+- **2021–25 shows no edge** (PF 1.03, drawdown −$20.7k). Those years have no 1m data, so the 1m entry cannot be checked there.
+  On 5m candles only, the same rules make +$6.6k in 2026: **the edge needs 1-minute bars.**
+- **A few trades carry it:** the top 3 are 41% of 2026's net; there was a run of 14 trades with no winner.
+- **It is a London-morning strategy:** 100 of 127 trades enter 02:00–08:00 ET. New York alone gives 1.1 trades a week and lost
+  in H2. MFFU wants the owner present for live trading, so that clashes; paper trading is not affected.
+- Months 2026: Jan +10.8k, Feb +1.8k, Mar +5.5k, Apr +5.5k, May +4.8k, Jun +2.2k, Jul +0.5k, Aug −0.5k, Sep +1.7k, Oct (to the
+  16th) +6.5k.
+- Robust in the checks that were run: every one of 25 neighbouring settings stays profitable in both halves (2026 +$26.9k to
+  +$44.3k); 2 extra ticks of slippage still leave +$38.2k.
+
+**Live loop (paper):** the PC bot (`engine/live.py`) and the cloud monitor (`tools/cloud_monitor.py`) run `engine/lit_live.py` on
+the bars from the first day of the previous month on, plus 1m bars (stored `data/NQ_1m.csv` + Yahoo `NQ=F` 1m, 7 days).
+`tests/test_lit_live.py` replays every 2026 session through it and gets the backtest's trades. The cloud monitor runs every
+30 minutes from 02:00 to 16:25 ET, so its alerts can be up to ~30 minutes late (plus Yahoo's delay); its paper ledger still
+records every trade at the model's prices.
+
+## Previous strategy (shadow): Liquidity Engine, eval mode
+
+The strategy the bot traded until 2026-10-18. It keeps running in the cloud monitor as a shadow paper ledger (README section
+"Old strategy (shadow, paper)", no alerts) on `live_model_engine.json`; the PC bot runs it with `"model": "engine"` in its
+start settings. Its replay: `python tools/runlib.py baseline`; its last dashboard bundle: `research/lab/backtest_engine.json`.
 
 Market: NQ futures, traded as MNQ micros ($2 per point), on 5-minute candles. All times are New York (ET).
-Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1`, `risk_usd: 800`, `risk_ref_stop: 20`, `dd_aware: false`, `use_fallback: false`, `be_at_r_trending: 3.0`, `memory_seed: false`, `equity_filter: {lookback: 15, min_sum_r: 0, cold_mode: half, cold_size: 0.25}`, `sizing: {late_mult: 0.5}` (`live_model.json`).
+Settings: engine defaults + `grade_sizing: false`, `conviction_step: 0`, `max_trades_day: 1`, `risk_usd: 800`, `risk_ref_stop: 20`, `dd_aware: false`, `use_fallback: false`, `be_at_r_trending: 3.0`, `memory_seed: false`, `equity_filter: {lookback: 15, min_sum_r: 0, cold_mode: half, cold_size: 0.25}`, `sizing: {late_mult: 0.5}` (`live_model_engine.json`, the old `live_model.json`).
 
 **Version:** locked 2026-10-17 (evening) for Monday 2026-10-19. Changes from the morning lock: quarter size in cold streaks (was half), half size on late entries (new), breakeven at +3R on trending days (was +1R). Research: `research/writeups/risk-summary.md`, `trade-construction-summary.md`; every experiment: `research/runs/`.
 
-## 1. Mark the liquidity
+### 1. Mark the liquidity
 These are the pools the bot watches:
 - **Major pools:**
   - prior day high/low
@@ -17,29 +126,29 @@ These are the pools the bot watches:
   - any equal highs/lows (two levels within 6 points)
 - **Minor pools:** 15-minute swing highs/lows.
 
-## 2. Wait for a sweep
+### 2. Wait for a sweep
 - From **08:00 ET**, price trades at least **1 tick through** a pool. That pool is now "taken".
 - Sweeping a **low** arms a **long** setup; sweeping a **high** arms a **short**.
 - The lowest price of the sweep (highest for shorts) is the **extreme**. If price keeps running, the extreme moves with it.
 - The setup expires **60 minutes** after the last new extreme.
 
-## 3. Entry trigger, only inside the killzones (09:30–11:30 and 13:30–15:30)
+### 3. Entry trigger, only inside the killzones (09:30–11:30 and 13:30–15:30)
 - **IFVG:** look at the leg that ran into the sweep (from its origin, up to 120 minutes before the extreme, to the extreme). Take the first fair value gap of at least **3 points** inside that leg. The trigger is the first candle whose **body closes back through that gap** (above it for longs, below it for shorts).
 - **CISD:** used only when the leg has no fair value gap. The trigger is a candle closing back through the open of the run of candles that made the extreme.
 - **Fill:** the open of the next 5-minute candle.
 
-## 4. Confluence check (needs a score of at least 1)
+### 4. Confluence check (needs a score of at least 1)
 - **+1** if the 1H trend agrees with the trade; **−1** if it's against it.
 - **+1** if the sweep happened in **discount** of the 1H swing range for a long, or **premium** for a short.
 - **+1** for a clean path: at most 1 unswept swing between entry and target. **−1** if there are 3 or more.
 - **−1** if the 15-minute trend already points the trade's way (the entry is late).
 
-## 5. Stop
+### 5. Stop
 - **Beyond the sweep extreme + 2 points.**
 - **Minimum 10 points:** a tighter stop is widened to 10.
 - **Maximum 60 points:** if the stop would be wider, use the far side of the inverted gap instead, provided that's 10–60 points. Otherwise **skip the trade**.
 
-## 6. Target (draw on liquidity, always a real level)
+### 6. Target (draw on liquidity, always a real level)
 - The **nearest untaken major pool** at least **1.5R** away: prior day high/low, prior week high/low, overnight, London and Asia highs/lows, 1H swing highs/lows, or equal highs/lows. The exit order sits 1 tick in front of it.
 - **If that draw is more than 5R away**, the trade still aims at it, but profit is banked at **5R on the way**. Big draws like last week's high are rarely reached the same day.
 - **No major pool in range: no trade.** There are no fixed-R targets without a draw.
@@ -48,14 +157,14 @@ These are the pools the bot watches:
   - exiting at the last minor pool on the way (2026 PF 1.67)
   - draws limited to the day's reach (PF ~1.8)
 
-## 7. Managing the trade
+### 7. Managing the trade
 - **Breakeven:** at **+1R**, move the stop to entry + 1 tick. **On a trending day** (10-day efficiency above 0.45, the same test that halves the size) wait until **+3R**: reversal trades against a trend need room, and the giveback rule below still protects them.
 - **Time stop:** if the trade hasn't reached **+0.5R within 30 minutes**, close it.
 - **Giveback:** once it has been **+0.5R**, a candle closing back through the entry closes it.
 - **Close everything by 15:55 ET.**
 - **News:** close 5 minutes before a high-impact release.
 
-## 8. Risk management (size follows the stop)
+### 8. Risk management (size follows the stop)
 - **Risk $800 when the stop is 20 points or less.** With a wider stop the risk shrinks in proportion: a 40-pt stop risks $400, a 60-pt stop about $267.
   - Micros = risk ÷ (stop points × $2), rounded down, max 40.
   - Examples from 2026:
@@ -71,7 +180,7 @@ These are the pools the bot watches:
   - after 13:00 on FOMC days
   - once the day's range has reached 1.6× the 20-day average
 
-## 9. Cold-streak filter (quarter size in bad stretches)
+### 9. Cold-streak filter (quarter size in bad stretches)
 - The bot keeps a **shadow record of every signal** in rules 1–8 (`data/shadow_ledger.json`).
 - Before each entry it adds up the R of the **last 15 signals that have already finished**.
 - **Above 0R:** full size.
@@ -80,7 +189,7 @@ These are the pools the bot watches:
 - Every setup is traded, so it keeps 2–4 setups a week. Only the size changes. Cold streaks can last 13–18 weeks; during them most trades are 1 micro (about $100 at risk).
 - **When to buy or reset the MFFU eval (2026-10-17 Monte Carlo, `research/writeups/monte-carlo-evals.md`):** start it while the filter shows **full size**. An eval started at full size passed 22% within a month (failed 8%, median 20 sessions to pass); one started in a cold streak passed 4% (median 36 sessions) because quarter-size trades can neither reach +$3,000 nor lose $2,000. The best moment is **within 5 sessions of the switch back to full size** (`eval-game.md`: 2021–25 pass 26% / fail 4.5% within a month, 2026 50%); full size for 20+ sessions is the weakest start (2021–25: 7% pass / 12% fail). The dashboards and the cloud README show this as **Eval timing: GO · BEST / GO / GO · LATE / WAIT** (`eval_timing` in the cloud state, `engine/equity_filter.py`), and the cloud monitor sends an alert when it flips. It changes nothing about the trading.
 
-## How it performed (fresh rerun of the live settings on TradingView NQ1! futures data, commissions and slippage included; `python tools/export_backtest.py`)
+### How it performed (fresh rerun of its settings on TradingView NQ1! futures data, commissions and slippage included; run `baseline`)
 
 | | 2026 (Jan 2 – Oct 16) | 2021–25 | All 5 years (Nov 2021 – Oct 2026) |
 |---|---:|---:|---:|
@@ -104,7 +213,7 @@ Before this lock (half size in cold streaks, breakeven at 1R on every day): 2026
 | Passes slower than 3 weeks · median sessions to pass | 53.8% · 18 | 81.2% · 32.5 | 75.9% · 31 |
 | Back to back (new eval after each pass/fail) | 4 passed, 1 failed | 8 passed, 10 failed | 12 passed, 11 failed |
 
-**Owner's eval-speed rule (2026-10-17):** an eval should be decided within 2 weeks and never take over 3 weeks to pass. At this size most passes still take 3 weeks or more. The researched "fast-eval" press (run `risk_fast_press1000`: $800 on any stop while the eval is less than $1,000 down) halves the time to pass and decides 27% / 15% of evals within 2 weeks (2026 / 2021–25) at the same cost per funded account, but fails about twice as many evals a year. It is built in (`sizing.press` in `live_model.json`) and OFF until the owner turns it on.
+**Owner's eval-speed rule (2026-10-17):** an eval should be decided within 2 weeks and never take over 3 weeks to pass. At this size most passes still take 3 weeks or more. The researched "fast-eval" press (run `risk_fast_press1000`: $800 on any stop while the eval is less than $1,000 down) halves the time to pass and decides 27% / 15% of evals within 2 weeks (2026 / 2021–25) at the same cost per funded account, but fails about twice as many evals a year. It is built in (`sizing.press` in `live_model_engine.json`) and OFF until the owner turns it on.
 
 **Also tested and not adopted:**
 - 10–15 pt stops (structural stops are rarely that tight; fixed 15-pt stops get wicked out and lose money)

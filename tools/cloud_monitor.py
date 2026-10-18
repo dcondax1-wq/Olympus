@@ -19,6 +19,8 @@ import time
 import urllib.request
 from zoneinfo import ZoneInfo
 
+import pandas as pd
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
@@ -81,6 +83,85 @@ def load_state(path):
         return {}
 
 
+def run_model(lm, bot, df_all, now, store_1m=None):
+    """One poll of a strategy on the merged bars: the engine on the 20-day window (as LiveBot.poll_once), LIT on the
+    previous-month window with 1m bars (engine/lit_live.py), a lab module on the 20-day window."""
+    df = df_all[df_all["time"] >= df_all["time"].max() - WINDOW_DAYS * 86400]
+    if lm["model"] == "lit":
+        from engine import lit as lit_mod
+        from engine import lit_live
+        P = {**lit_mod.DEFAULTS, **(lm.get("lit") or {})}
+        try:                                   # VIX daily close (the LIT target band): data/VIX_1d.csv, refreshed from Yahoo
+            from engine import news
+            news.volatility()
+        except Exception as e:
+            print("VIX refresh failed:", e.__class__.__name__)
+        df1 = None
+        if P.get("tf") == "1m":
+            keep = dict(bot.health)
+            try:
+                df1, _ = bot._merged(SYM, "1m", now, 60, period="5d", max_days=7)     # Yahoo caps 1m at 7 days
+            except Exception as e:
+                print("1m bars unavailable:", e.__class__.__name__)
+            bot.health.clear(); bot.health.update(keep)
+            # the 1m bars of the last 12 days are kept on the dashboard branch (bars_1m.csv), so a failed fetch or the 7-day
+            # cap never takes a traded day's 1m bars away (that day would be re-simulated on 5m bars)
+            if store_1m:
+                try:
+                    old = pd.read_csv(store_1m) if os.path.exists(store_1m) else None
+                except Exception:
+                    old = None
+                parts = [x for x in (old, df1) if x is not None and len(x)]
+                if parts:
+                    df1 = pd.concat(parts).drop_duplicates("time", keep="last").sort_values("time")
+                    df1 = df1[df1["time"] >= int(df1["time"].max()) - 12 * 86400].reset_index(drop=True)
+                    df1[["time", "open", "high", "low", "close", "volume"]].to_csv(store_1m, index=False)
+        return lit_live.run(df_all, P, one_min=df1, now=now, sym=SYM)
+    if lm["model"].startswith("lab:"):
+        es_df, _ = bot._merged("ES" if SYM == "NQ" else "NQ", TF, now, SECS)     # partner index (SMT)
+        es_df = es_df[es_df["time"] >= int(df["time"].min())]
+        return lab_adapter.run(lm["model"][4:], df, lm["params"], es_df)
+    base = from_frame(SYM, TF, df)
+    partner = bot._partner(SYM, TF, now, SECS, int(df["time"].min()))
+    htf = bot._htf(SYM, now)
+    return Engine(base, htf=htf, partner=partner, params=merge_params({**lm["params"], "live": True})).run().result()
+
+
+def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, params):
+    """Paper ledger: the model's trades that entered after this ledger started watching, sized as the PC bot sizes them."""
+    for t in sorted(res["trades"], key=lambda x: x["entry_t"]):
+        if t["entry_t"] >= first_run - SECS:
+            prev = ledger.get(int(t["entry_t"]))
+            if prev and "mult" in prev:
+                mult, qty = prev["mult"], prev.get("qty", 0)
+            else:
+                cold = equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["mult"]
+                profit = sum(v["usd"] for k, v in ledger.items() if int(k) < int(t["entry_t"])) if ledger else None
+                r = sizing.route_qty(int(t.get("qty") or 0), t, cold, sizing_cfg, params, profit)
+                mult, qty = r["mult"], r["qty"]
+            ledger[int(t["entry_t"])] = {"day": tday(t["entry_t"]), "entry": f"{et(t['entry_t']):%m-%d %H:%M}",
+                                         "side": "LONG" if t["dir"] == 1 else "SHORT", "grade": t.get("grade"),
+                                         "trigger": t.get("trigger"), "exit": t.get("exit_reason"),
+                                         "exit_t": f"{et(t['exit_t']):%H:%M}" if t.get("exit_t") else None,
+                                         "R": round(float(t["pnl_r"]), 2), "taken": mult > 0, "mult": mult,
+                                         "usd": round(float(t["pnl"]) * mult, 2), "qty": qty}
+    return ledger
+
+
+def eval_track(ledger):
+    """MFFU 50K eval tracker from a paper ledger (EOD trailing max loss, locks at $50,100)."""
+    by_day = {}
+    for v in ledger.values():
+        by_day[v["day"]] = by_day.get(v["day"], 0.0) + v["usd"]
+    bal, peak, mll = START_BAL, START_BAL, START_BAL - MLL_AMT
+    for d in sorted(by_day):
+        bal += by_day[d]
+        peak = max(peak, bal)
+        mll = min(max(mll, peak - MLL_AMT), MLL_LOCK)
+    return {"balance": round(bal, 2), "profit": round(bal - START_BAL, 2), "to_target": round(START_BAL + TARGET - bal, 2),
+            "trailing_mll": round(mll, 2), "cushion": round(bal - mll, 2)}
+
+
 def run(out):
     global SYM
     lm = live_model()                    # live_model.json: same strategy and symbol as the PC paper bot
@@ -91,22 +172,24 @@ def run(out):
     first_run = int(st.get("first_run") or now)
     seen = set(tuple(k) for k in st.get("seen", []))
     ledger = {int(k): v for k, v in st.get("ledger", {}).items()}
+    # the old Liquidity Engine keeps a paper ledger next to LIT (shadow, no alerts): live_model_engine.json
+    sh_lm = lab_adapter.engine_model() if lm["model"] != "engine" else None
+    sh_st = st.get("shadow") or {}
+    prev_model = st.get("model") or "engine"          # state.json files from before LIT have no "model": the engine's
+    if prev_model != lm["model"]:
+        # strategy switch: the old ledger belongs to the old strategy -> it becomes the shadow ledger; the new one starts now
+        if sh_lm is not None and prev_model == "engine" and not sh_st:
+            sh_st = {"model": "engine", "first_run": first_run, "ledger": st.get("ledger", {}), "moved_at": now}
+        ledger, first_run = {}, now
+        print(f"strategy switch {prev_model} -> {lm['model']}: new paper ledger from now")
 
     bot = LiveBot()
     bot.cfg = {"sym": SYM, "tf": TF, "adapter": "paper", "data_source": "yahoo", "params": {}, "window_days": WINDOW_DAYS}
-    df, drops = bot._merged(SYM, TF, now, SECS)
-    if not len(df):
+    df_all, drops = bot._merged(SYM, TF, now, SECS)
+    if not len(df_all):
         raise SystemExit("no bars at all (history missing and Yahoo failed)")
-    df = df[df["time"] >= df["time"].max() - WINDOW_DAYS * 86400]
-    if lm["model"].startswith("lab:"):
-        es_df, _ = bot._merged("ES" if SYM == "NQ" else "NQ", TF, now, SECS)     # partner index (SMT)
-        es_df = es_df[es_df["time"] >= int(df["time"].min())]
-        res = lab_adapter.run(lm["model"][4:], df, lm["params"], es_df)
-    else:
-        base = from_frame(SYM, TF, df)
-        partner = bot._partner(SYM, TF, now, SECS, int(df["time"].min()))
-        htf = bot._htf(SYM, now)
-        res = Engine(base, htf=htf, partner=partner, params=merge_params({**lm["params"], "live": True})).run().result()
+    df = df_all[df_all["time"] >= df_all["time"].max() - WINDOW_DAYS * 86400]
+    res = run_model(lm, bot, df_all, now, store_1m=os.path.join(out, "bars_1m.csv"))
     state = res["state"] or {}
     state.setdefault("model_label", lm.get("label") or lm["model"])
 
@@ -123,8 +206,9 @@ def run(out):
               "stale": bool(stale and mopen), "market_open": bool(mopen), "bars_today": len(tb), "rth_bars_today": len(rth),
               "gaps_today": gaps[:10], "dropped": drops, "error": bot.health.get("last_error")}
 
-    # ---- equity-curve filter (same rule as the PC bot): every finished signal goes into the shadow ledger
-    shadow_path = os.path.join(out, "shadow_ledger.json")
+    # ---- equity-curve filter (same rule as the PC bot): every finished signal goes into the signal ledger. The engine's
+    # is shadow_ledger.json (its history since the cloud monitor began); another model keeps its own file.
+    shadow_path = os.path.join(out, "shadow_ledger.json" if lm["model"] == "engine" else f"signals_{lm['model'].replace(':', '_')}.json")
     eqf_cfg = lm.get("equity_filter")
     if eqf_cfg:
         equity_filter.record(res["trades"], shadow_path)
@@ -132,25 +216,36 @@ def run(out):
     state["equity_filter"] = eqf_now
     state["eval_timing"] = equity_filter.eval_timing(eqf_now, equity_filter.sessions_since_flip(eqf_cfg, now, shadow_path))   # when to buy/reset the eval
 
-    # ---- paper ledger: engine trades that entered after the cloud monitor started watching
+    # ---- paper ledger: model trades that entered after the cloud monitor started watching
     sizing_cfg = lm.get("sizing")
-    for t in sorted(res["trades"], key=lambda x: x["entry_t"]):
-        if t["entry_t"] >= first_run - SECS:
-            prev = ledger.get(int(t["entry_t"]))
-            if prev and "mult" in prev:
-                mult, qty = prev["mult"], prev.get("qty", 0)
-            else:
-                cold = equity_filter.status(eqf_cfg, before_t=int(t["entry_t"]), path=shadow_path)["mult"]
-                profit = sum(v["usd"] for k, v in ledger.items() if int(k) < int(t["entry_t"])) if ledger else None
-                r = sizing.route_qty(int(t.get("qty") or 0), t, cold, sizing_cfg, lm.get("params"), profit)
-                mult, qty = r["mult"], r["qty"]
-            ledger[int(t["entry_t"])] = {"day": tday(t["entry_t"]), "entry": f"{et(t['entry_t']):%m-%d %H:%M}",
-                                         "side": "LONG" if t["dir"] == 1 else "SHORT", "grade": t.get("grade"),
-                                         "trigger": t.get("trigger"), "exit": t.get("exit_reason"),
-                                         "exit_t": f"{et(t['exit_t']):%H:%M}" if t.get("exit_t") else None,
-                                         "R": round(float(t["pnl_r"]), 2), "taken": mult > 0, "mult": mult,
-                                         "usd": round(float(t["pnl"]) * mult, 2), "qty": qty}
+    update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, lm.get("params"))
     pos = state.get("position")
+
+    # ---- shadow: the old strategy on the same bars, its own paper ledger and cold-streak history, no alerts
+    shadow = None
+    if sh_lm is not None:
+        try:
+            sres = run_model(sh_lm, bot, df_all, now)
+            sstate = sres["state"] or {}
+            s_path = os.path.join(out, "shadow_ledger.json")
+            s_eqf = sh_lm.get("equity_filter")
+            if s_eqf:
+                equity_filter.record(sres["trades"], s_path)
+            s_first = int(sh_st.get("first_run") or now)
+            s_ledger = {int(k): v for k, v in (sh_st.get("ledger") or {}).items()}
+            update_ledger(s_ledger, sres, s_first, s_eqf, s_path, sh_lm.get("sizing"), sh_lm.get("params"))
+            shadow = {"model": sh_lm["model"], "label": sh_lm.get("label"), "first_run": s_first,
+                      "ledger": {str(k): v for k, v in sorted(s_ledger.items())}, "eval": eval_track(s_ledger),
+                      "model_state": sstate.get("model_state"), "position": sstate.get("position"),
+                      "equity_filter": equity_filter.status(s_eqf, path=s_path),
+                      "engine_trades": [{"day": tday(t["entry_t"]), "entry_t": int(t["entry_t"]), "dir": t["dir"],
+                                         "R": round(float(t["pnl_r"]), 2), "exit": t.get("exit_reason"), "trigger": t.get("trigger"),
+                                         "grade": t.get("grade"), "pnl": round(float(t["pnl"]), 2)} for t in sres["trades"][-10:]]}
+            if sh_st.get("moved_at"):
+                shadow["moved_at"] = sh_st["moved_at"]
+        except Exception as e:                    # the shadow must never stop the live strategy's dashboard
+            print("shadow engine failed:", e.__class__.__name__, e)
+            shadow = {**sh_st, "error": f"{e.__class__.__name__}: {e}"} if sh_st else {"error": f"{e.__class__.__name__}: {e}"}
 
     # ---- alerts for events not seen before (only events from after the monitor started, like LiveBot._emit_events)
     new_alerts = []
@@ -171,7 +266,7 @@ def run(out):
                 note += "\n(late entries, where the 15m trend already turned, are traded at half size)"
             new_alerts.append(f"{SYM} {ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
     # eval timing flipped since the last run (cold streak <-> full size): the owner buys/resets the eval on GO
-    prev_et = (st.get("eval_timing") or {}).get("verdict")
+    prev_et = (st.get("eval_timing") or {}).get("verdict") if prev_model == lm["model"] else None   # no flip alert on a switch
     now_et = state["eval_timing"]
     if prev_et and prev_et != now_et["verdict"]:
         new_alerts.append(f"{SYM} EVAL TIMING: {now_et['verdict'].upper()}\n{now_et['reason']}\n"
@@ -191,16 +286,7 @@ def run(out):
         sent = send_alert(a) or sent
 
     # ---- eval tracker from the cloud ledger (EOD trailing max loss, locks at $50,100)
-    by_day = {}
-    for v in ledger.values():
-        by_day[v["day"]] = by_day.get(v["day"], 0.0) + v["usd"]
-    bal, peak, mll = START_BAL, START_BAL, START_BAL - MLL_AMT
-    for d in sorted(by_day):
-        bal += by_day[d]
-        peak = max(peak, bal)
-        mll = min(max(mll, peak - MLL_AMT), MLL_LOCK)
-    ev_track = {"balance": round(bal, 2), "profit": round(bal - START_BAL, 2), "to_target": round(START_BAL + TARGET - bal, 2),
-                "trailing_mll": round(mll, 2), "cushion": round(bal - mll, 2)}
+    ev_track = eval_track(ledger)
 
     # ---- the always-on PC's heartbeat (engine/heartbeat.py): alert when it went silent in a session
     pc = heartbeat.read(cwd=ROOT, now=now)
@@ -212,12 +298,15 @@ def run(out):
                           f"{pc['age_s'] // 60} min ago{' WITH AN OPEN POSITION' if pc.get('position') else ''}. "
                           "Check the PC / NinjaTrader. The cloud paper bot keeps running.") or sent
     write_chart(os.path.join(out, "chart.png"), df, state, res, today)
-    write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run)
+    write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
+                 "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
                  "health": health, "eval": ev_track, "model_state": state.get("model_state"), "position": pos,
-                 "strategy": lm.get("label"), "params": lm.get("params"), "equity_filter": state.get("equity_filter"),
+                 "strategy": lm.get("label"), "params": lm.get("lit") if lm["model"] == "lit" else lm.get("params"),
+                 "equity_filter": state.get("equity_filter"),
                  "eval_timing": state.get("eval_timing"), "price": state.get("price"), "today": today,
+                 "setups": state.get("setups") or {},
                  "events": [{"t": int(e["t"]), "type": e["type"], "text": e["text"]} for e in res["events"] if tday(e["t"]) == today][-25:],
                  "engine_trades": [{"day": tday(t["entry_t"]), "entry_t": int(t["entry_t"]), "dir": t["dir"], "R": round(float(t["pnl_r"]), 2),
                                     "exit": t.get("exit_reason"), "trigger": t.get("trigger"), "risk_pts": t.get("risk_pts"),
@@ -227,9 +316,12 @@ def run(out):
                  "pools": _near_pools(state),
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host", "reason")},
                  "pc_alert_at": pc_alert_at}
+    if shadow is not None:
+        new_state["shadow"] = shadow
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
         json.dump(new_state, fh, indent=1, default=str)
-    print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}")
+    print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"
+          + (f" | shadow {shadow.get('model_state')}, ledger {len(shadow.get('ledger') or {})}" if shadow else ""))
 
 
 def _near_pools(state, n=6):
@@ -318,12 +410,16 @@ def usd_cell(v):
     return money(v["usd"]) + (f" ({v.get('mult', 1.0):g}x size: {', '.join(v.get('reasons') or ['cold streak'])})" if v.get("mult", 1.0) < 1 else "")
 
 
-def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run):
+def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
     arm = []
     for side, s in setups.items():
-        if s:
+        if s and s.get("limit") is not None:          # LIT: a working limit (or tapped, waiting for the 1m CISD)
+            arm.append(f"{side.upper()} limit {float(s['limit']):,.2f} stop {float(s['stop']):,.2f} target {float(s['target']):,.2f} "
+                       f"(placed {et(s['arm_t']):%H:%M}, until {et(s['expires_t']):%H:%M} ET, waiting for {s.get('waiting')}; "
+                       f"swept {', '.join(s.get('pools') or [])})")
+        elif s:
             arm.append(f"{side.upper()} armed {et(s['arm_t']):%H:%M} ET, extreme {float(s['ext']):,.2f} "
                        f"(pools: {', '.join(dict.fromkeys(s.get('pools') or []))})")
     sess = state.get("session") or {}
@@ -345,9 +441,15 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
          f"| Price | {price:,.2f} (last bar {health['last_bar']}, {health['age_min']} min old) |" if price else "| Price | - |",
          f"| Setups | {'<br>'.join(arm) or 'none armed'} |",
          f"| Open position | {json.dumps(state.get('position')) if state.get('position') else 'flat'} |",
-         f"| Structure | 1H {state.get('h1_trend')}, 15m {state.get('m15_trend')}; MTF {bias or '-'} |",
+         *([f"| Structure | 1H {state.get('h1_trend')}, 15m {state.get('m15_trend')}; MTF {bias or '-'} |"]
+           if state.get("h1_trend") is not None else []),
          f"| Sessions (H/L) | {sess_txt or '-'} |",
-         f"| Regime | {st_day.get('regime', '-')} (10-day eff {st_day.get('er10', '-')}, 5-day {st_day.get('er5', '-')}) |",
+         *([f"| Regime | {st_day.get('regime', '-')} (10-day eff {st_day.get('er10', '-')}, 5-day {st_day.get('er5', '-')}) |"]
+           if st_day.get("regime") else []),
+         *([f"| LIT today | 18:00 open {lt['open18']:,.2f}, VIX {lt.get('vix')} -> one-day move {lt.get('vix_move')} pts "
+            f"(target band {lt['open18'] - (lt.get('vix_move') or 0):,.2f} / {lt['open18'] + (lt.get('vix_move') or 0):,.2f}); "
+            f"{'1m' if lt.get('one_min_day') else '5m (no full 1m feed today)'} execution; "
+            f"{len(lt.get('signals_today') or [])} setups today |"] if (lt := state.get("lit")) and lt.get("open18") else []),
          f"| Feed | {feed}; {health['rth_bars_today']}/78 RTH bars today; gaps: {', '.join(health['gaps_today']) or 'none'} |",
          f"| Alerts | {', '.join(sent) if sent else ('phone alerts on' if os.environ.get('TG_TOKEN') or os.environ.get('DISCORD_WEBHOOK') else 'phone alerts off (add TG_TOKEN + TG_CHAT secrets)')} |",
          "", "## Nearest liquidity pools", "| Pool | Price | Distance |", "|---|---:|---:|"]
@@ -369,12 +471,33 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     evs = [e for e in res["events"] if tday(e["t"]) == today][-15:]
     L += ["", "## Today's events"] + ([f"- {et(e['t']):%H:%M} {e['type']}: {e['text']}" for e in evs] or ["- none yet"])
     ctx = res["trades"][-8:]
-    L += ["", "## Engine trades in the 20-day window (context, same rules)", "| Day | Entry | Side | Grade | Trigger | Exit | R | $ |",
+    L += ["", "## Model trades in the recent window (context, same rules)", "| Day | Entry | Side | Grade | Trigger | Exit | R | $ |",
           "|---|---|---|---|---|---|---:|---:|"]
     L += [f"| {tday(t['entry_t'])} | {et(t['entry_t']):%H:%M} | {'L' if t['dir'] == 1 else 'S'} | {t.get('grade')} | {t.get('trigger')} | "
           f"{t.get('exit_reason')} | {t['pnl_r']:+.2f} | {money(t['pnl'])} |" for t in ctx] or ["| - |"]
-    L += ["", "---", "Same engine and defaults as the PC paper bot (engine/model.py). Live trading, if ever enabled, runs "
-          "TradingView -> bridge, never through this job. Five-year research: see research/FIVE_YEAR_REPORT.md on main."]
+    if shadow:
+        sl = sorted((shadow.get("ledger") or {}).values(), key=lambda v: v["entry"], reverse=True)
+        se = shadow.get("eval") or {}
+        L += ["", "## Old strategy (shadow, paper)",
+              f"The previous strategy ({shadow.get('label') or shadow.get('model')}) runs on the same bars for comparison: "
+              "own paper ledger, no alerts.", "| | |", "|---|---|",
+              f"| Model | {shadow.get('model_state') or '-'} |",
+              f"| Cold-streak filter | {(shadow.get('equity_filter') or {}).get('reason', 'off')} |",
+              f"| Open position | {json.dumps(shadow.get('position')) if shadow.get('position') else 'flat'} |",
+              f"| Paper ledger | {len(sl)} trades, {money(sum(v['usd'] for v in sl))} since {et(shadow.get('first_run') or now):%b %d} |",
+              f"| Eval tracker | balance ${se.get('balance', 0):,.2f}, profit {money(se.get('profit', 0))}, cushion ${se.get('cushion', 0):,.2f} |"]
+        if shadow.get("error"):
+            L.append(f"| Error | {shadow['error']} |")
+        lit_since = [v for k, v in (shadow.get("ledger") or {}).items() if int(k) >= first_run - SECS]
+        L += ["", f"Since the new strategy started ({et(first_run):%b %d %H:%M} ET): new {money(sum(v['usd'] for v in ledger.values()))} "
+              f"in {len(ledger)} trades vs old {money(sum(v['usd'] for v in lit_since))} in {len(lit_since)} trades.", "",
+              "| Entry | Side | Grade | Trigger | Exit | R | $ |", "|---|---|---|---|---|---:|---:|"]
+        L += [f"| {v['entry']} | {v['side']} | {v['grade']} | {v['trigger']} | {v['exit']} | {v['R']:+.2f} | {usd_cell(v)} |" for v in sl[:10]] \
+            or ["| - | - | - | - | - | - | - |"]
+    model = (lm or {}).get("model", "engine")
+    L += ["", "---", ("Same LIT rules and settings as the PC paper bot (engine/lit.py via engine/lit_live.py, live_model.json)."
+                      if model == "lit" else "Same engine and defaults as the PC paper bot (engine/model.py).")
+          + " Live trading, if ever enabled, runs TradingView -> bridge, never through this job. Rules: STRATEGY.md on main."]
     with open(path, "w", encoding="utf-8") as fh:
         fh.write("\n".join(L) + "\n")
 

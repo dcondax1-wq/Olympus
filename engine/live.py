@@ -371,10 +371,10 @@ class LiveBot:
                           every_s=3600)
         return None
 
-    def _merged(self, sym, tf, now, secs, period="5d"):
+    def _merged(self, sym, tf, now, secs, period="5d", max_days=58):
         """Stored history + fresh bars, cleaned. A failing fresh fetch degrades to history (never raises for that)."""
         hist = self.read_hist(sym, tf)
-        period = _cover_gap(hist, now, period, max_days=58)   # stored history ends days ago: fetch enough to bridge it
+        period = _cover_gap(hist, now, period, max_days=max_days)   # stored history ends days ago: fetch enough to bridge it
         try:
             recent = self.fetch_recent(sym, tf, period)
             if recent is None:
@@ -610,6 +610,7 @@ class LiveBot:
         if drops["misaligned"] or drops["malformed"]:
             self._log("warn", f"dropped {drops['misaligned']} misaligned / {drops['malformed']} malformed bars from the feed")
         self._detect_revisions(df, secs)
+        df_full = df                          # LIT keeps the previous month (its levels), engine/lit_live.py trims it
         window_days = float(self.cfg.get("window_days") or 0)
         if window_days > 0:
             df = df[df["time"] >= df["time"].max() - window_days * 86400]
@@ -619,13 +620,20 @@ class LiveBot:
         stale = age > 2 * secs + 60
         mopen = market_open(now)
         et_mod = _et(now).hour * 60 + _et(now).minute
-        from .lab_adapter import live_model
+        from .lab_adapter import engine_model, live_model
         lm = live_model()                     # live_model.json: which strategy the paper bot / cloud monitor trades
         model = self.cfg.get("model") or lm["model"]
+        if model != lm["model"] and model == "engine":
+            lm = engine_model()               # cfg pins the old engine while live_model.json runs another model
         eng_params = self.cfg.get("params") or (lm["params"] if model == "engine" else {})
         params = merge_params({**eng_params, "live": True})
         self._params = params
-        in_entry_window = any(a <= et_mod < z for a, z in params["entry_windows"])
+        lit_p = None
+        if model == "lit":
+            from . import lit as _lit
+            lit_p = {**_lit.DEFAULTS, **(self.cfg.get("model_params") or lm.get("lit") or {})}
+        windows = lit_p["window"] if lit_p else params["entry_windows"]
+        in_entry_window = any(a <= et_mod < z for a, z in windows)
         was_stale = self.health["stale"]
         self.health.update({"data_age_s": int(age), "stale": bool(stale), "market_open": mopen, "last_bar_t": int(df["time"].max())})
         if stale and mopen:
@@ -645,7 +653,11 @@ class LiveBot:
             self._log("system", "Feed recovered: new entries allowed again")
         self.health["entries_blocked"] = block
         base = from_frame(sym, tf, df)
-        if model.startswith("lab:"):
+        if model == "lit":
+            from . import lit_live
+            df1 = self._lit_1m(sym, now, int(df_full["time"].min())) if lit_p.get("tf") == "1m" else None
+            res = lit_live.run(df_full, lit_p, one_min=df1, now=now, sym=sym)
+        elif model.startswith("lab:"):
             from . import lab_adapter
             es_df = None
             if PARTNER.get(sym) in YAHOO:
@@ -662,7 +674,8 @@ class LiveBot:
             res = eng.result()
         self.state = res["state"]
         self.state["strategy"] = {"model": model, "label": lm.get("label", ""),
-                                  "params": eng_params if model == "engine" else (self.cfg.get("model_params") or lm["params"])}
+                                  "params": eng_params if model == "engine" else lit_p if model == "lit"
+                                  else (self.cfg.get("model_params") or lm["params"])}
         # equity-curve filter: every finished signal goes into the shadow ledger; entries trade only while it's positive
         # (the real bot only: test harnesses run with their own state_path and must not touch the shared ledger)
         from . import equity_filter as _eqf
@@ -687,6 +700,24 @@ class LiveBot:
         self.health["ok"] = not (self.health["stale"] and mopen) and not self.health["desync"]
         self._save_state()
         return self.state
+
+    def _lit_1m(self, sym, now, t_min):
+        """1m bars for LIT's entry (stored data/<sym>_1m.csv + fresh 1m, Yahoo caps 1m at 7 days). Never raises and never
+        changes the feed-health flags of the bot's own 5m feed; None = LIT executes that day on 5m bars."""
+        keep = {k: self.health.get(k) for k in ("fallback", "fetch_ok", "last_error", "last_error_t")}
+        try:
+            df1, _ = self._merged(sym, "1m", now, 60, period="5d", max_days=7)
+            # remember what was fetched: a failed fetch or the 7-day cap must not take a traded day's 1m bars away
+            store = getattr(self, "_lit_1m_store", None)
+            if store is not None and len(store):
+                df1 = pd.concat([store, df1]).drop_duplicates("time", keep="last").sort_values("time")
+            df1 = df1[df1["time"] >= t_min].reset_index(drop=True)
+            self._lit_1m_store = df1[df1["time"] >= int(df1["time"].max()) - 12 * 86400] if len(df1) else df1
+            return df1 if len(df1) else None
+        except Exception:
+            return None
+        finally:
+            self.health.update(keep)
 
     def _refresh_guard(self):
         """Refresh the news calendar (archived into the engine's event list) and VIX; log guard transitions."""
