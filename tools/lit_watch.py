@@ -12,7 +12,7 @@ next half-hourly run, not Yahoo's own delay.
 Free-minute guard (private repo: 2,000 Actions minutes a month): --forming-budget minutes a day may be spent on forming
 setups (armed setups are always watched), --month-budget minutes a month in all (then armed only; 1.5x: no watching).
 
-    python tools/lit_watch.py --out dash [--cap 55] [--every 30] [--forming-budget 20] [--month-budget 650] [--no-publish]
+    python tools/lit_watch.py --out dash [--cap 55] [--every 30] [--forming-budget 15] [--month-budget 550] [--no-publish]
 Paper only: nothing here routes an order.
 """
 from __future__ import annotations
@@ -89,8 +89,8 @@ def main():
     ap.add_argument("--out", default="dash")
     ap.add_argument("--cap", type=float, default=55.0, help="minutes this job may watch")
     ap.add_argument("--every", type=float, default=30.0, help="seconds between polls")
-    ap.add_argument("--forming-budget", type=float, default=20.0, help="minutes a day on setups still forming")
-    ap.add_argument("--month-budget", type=float, default=650.0, help="watch minutes a month (then armed setups only)")
+    ap.add_argument("--forming-budget", type=float, default=15.0, help="minutes a day on setups still forming")
+    ap.add_argument("--month-budget", type=float, default=550.0, help="watch minutes a month (then armed setups only)")
     ap.add_argument("--no-publish", action="store_true")
     a = ap.parse_args()
     out = a.out

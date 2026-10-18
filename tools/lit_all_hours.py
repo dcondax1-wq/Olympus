@@ -177,9 +177,128 @@ def grid(jobs=None):
     return res
 
 
+# ------------------------------------------------------------------------------------------------ owner's F-BoS notes
+def market_bu():
+    """Evening candidates with the previous trading day's 16:30-17:00 build-up box as an extra liquidity level (class
+    "bu1630", known from the 18:00 open on), so a false break of one side at the 18:00 open is a LIT sweep. Research only:
+    Market.levels is wrapped on this instance (engine untouched)."""
+    M, _ = F.market("cisd", ())
+    p = os.path.join(CACHE, f"litallhours_bu1630_v1_cisd_{rl._data_key().replace(':', '_')}.pkl")
+    if os.path.exists(p):
+        return M, pickle.load(open(p, "rb"))
+    orig = M.levels
+    def levels(k):
+        L = orig(k)
+        if k > 0:
+            ps, pe = M.days[k - 1][1], M.days[k - 1][2]
+            ii = [i for i in range(max(ps, pe - 12), pe) if 990 <= M.mod[i] < 1020]
+            if len(ii) >= 2:
+                s = M.days[k][1]
+                L.append(("high", float(M.h[ii].max()), s - 1, "bu1630_h", "bu1630"))
+                L.append(("low", float(M.l[ii].min()), s - 1, "bu1630_l", "bu1630"))
+        return L
+    M.levels = levels
+    try:
+        C = lit.candidates(M, ref="cisd", evening=True)
+    finally:
+        M.levels = orig
+    pickle.dump(C, open(p, "wb"))
+    return M, C
+
+
+def _evening(z):
+    return z["mod"] >= 1080 or z["mod"] < 120
+
+
+def cycle_dir(M, C):
+    """The LIT cycle running before the Asia open: the direction of the previous trading day's last LIT setup that passed the
+    live filters (any time of that day), per trading day."""
+    P = {**LIVE, "window": [[0, 1440]]}
+    last = {}
+    for z in C:
+        if not _evening(z) and lit.setup_ok(z, P):
+            last[z["day"]] = z["dir"]
+    days = [d for d, _, _ in M.days]
+    return {days[i]: last.get(days[i - 1]) for i in range(1, len(days))}
+
+
+def fbos_variant(kind, count="1day"):
+    """kind: fbos     = live 02:00-15:30 setups + 18:00-20:00 setups that swept the 16:30-17:00 build-up (F-BoS -> Asia run)
+             fbos_all = the same with the F-BoS setups allowed 18:00-02:00
+             cycle    = live setups + 18:00-02:00 setups only in the direction of the LIT cycle before the Asia open
+             fbos_cycle = F-BoS setups (18:00-20:00) + otherwise cycle-direction setups 18:00-02:00
+    Same executor (all_hours, window 18:00-15:30), first come first served, one trade at a time."""
+    M, C = market()
+    Mb, Cb = market_bu()
+    base = [z for z in C if not _evening(z)]
+    fb = [z for z in Cb if _evening(z) and "bu1630" in z["swept_cls"]]
+    fb20 = [z for z in fb if 1080 <= z["mod"] < 1200]
+    cyc = cycle_dir(M, C)
+    ev_cyc = [z for z in C if _evening(z) and cyc.get(z["day"]) == z["dir"]]
+    if kind == "fbos":
+        CC = base + fb20
+    elif kind == "fbos_all":
+        CC = base + fb
+    elif kind == "cycle":
+        CC = base + ev_cyc
+    elif kind == "fbos_cycle":
+        fb_days = {z["day"] for z in fb20}
+        CC = base + fb20 + [z for z in ev_cyc if z["day"] not in fb_days]
+    else:
+        raise ValueError(kind)
+    CC.sort(key=lambda z: (z["entry_t"], -z["dir"]))
+    P = P_of("full", count)
+    T = lit.run_x(M, CC, P, SESS, B1=F.bars(M, "1m"), B5=F.bars(M, "5m"))
+    key = f"{kind}|{count}"
+    n_fb = sum(1 for z in fb20 if z["day"] >= "2026")
+    o = {"money": money(T), "eval": eval2wk(T, key), "n_fbos_setups_2026": n_fb}
+    return key, T, o
+
+
+def fbos_grid(jobs=(("fbos", "1day"), ("fbos_all", "1day"), ("cycle", "1day"), ("fbos_cycle", "1day"))):
+    res = json.load(open(OUT)) if os.path.exists(OUT) else {}
+    for kind, count in jobs:
+        key = f"{kind}|{count}"
+        if key in res:
+            continue
+        key, T, o = fbos_variant(kind, count)
+        res[key] = o
+        json.dump(res, open(OUT, "w"), indent=1, default=float)
+        print(line(key, o), "| F-BoS setups 2026:", o["n_fbos_setups_2026"], flush=True)
+
+
+def save(picks):
+    """picks: [(run id, win, count, status, title, why)]: store each with its trades at the LIT size."""
+    res = json.load(open(OUT))
+    for rid, win, count, status, title, why in picks:
+        key = f"{win}|{count}"
+        P = P_of(win, count)
+        T = run(P)
+        o = res[key]
+        m, e = o["money"], o["eval"]
+        h = lambda s: (f"{s}: {m[s]['n']} trades, {m[s]['tpw']}/wk, win {m[s]['win']}%, PF {m[s]['pf']}, net ${m[s]['net']:+,} "
+                       f"(${m[s]['per_month']:,}/mo), DD ${m[s]['dd']:,}, worst day ${m[s]['worst_day']:,}; two_week eval 2-wk "
+                       f"pass/fail {e[s]['p10']}/{e[s]['f10']}")
+        verdict = (why + " " + "; ".join(h(s) for s in ("H1", "H2", "2026")) +
+                   f"; Monte Carlo 2-wk H1 {e['mc_H1']['p10']}/{e['mc_H1']['f10']}, H2 {e['mc_H2']['p10']}/{e['mc_H2']['f10']}; "
+                   f"2021-25 reference (5m) PF {m['2021-25']['pf']} ${m['2021-25']['net']:+,}.")
+        rl.save(rid, title, "sessions", "Owner order 2026-10-18: the bot should always be looking for LIT trades (CME trades "
+                "18:00-17:00 ET): entry window, trades per day / session, re-arming after a target or breakeven.",
+                params={k: P[k] for k in ("window", "all_hours", "per_session", "stop_after_loss", "max_per_day")},
+                sizing={"money": "LIT rule $800/20 + weekly stop (= lit_live)", "eval": {"mode": "two_week", **TW}},
+                trades=T, scored=rl.score(T, SESS), status=status, verdict=verdict,
+                notes="tools/lit_all_hours.py (engine/lit.py candidates(evening=True) + run_x options all_hours / per_session / "
+                      "stop_after_loss). Eval numbers (exact MFFU 50K, two_week config C) in the verdict and in "
+                      "research/lit/all_hours.json; the run library's own eval columns use the LIT size. eval=" +
+                      json.dumps(e, default=float), writeup="lit-all-hours", tags=["lit", "lit_hours"])
+        print("saved", rid, flush=True)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     if cmd == "check":
         check()
     elif cmd == "grid":
         grid()
+    elif cmd == "fbos":
+        fbos_grid()

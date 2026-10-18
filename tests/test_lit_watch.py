@@ -14,7 +14,7 @@ micros. Before the first signal nothing can be armed or entered, so the forming 
 whole-history Market, spot-checked against the live window's Market) decides alone.
 
 Policies (same bars, same schedule): "now" = the half-hourly runs only (before this change), "armed" = watch armed
-setups only, "watch" = armed + forming setups with the workflow's budgets (20 min a day forming, 650 min a month).
+setups only, "watch" = armed + forming setups with the workflow's budgets (15 min a day forming, 550 min a month).
 Reports per policy the delay from the backtest entry to the first poll that shows it (+ the lag), and the Actions
 minutes a month it adds (a plain run bills 1 minute; a watching run 1 + its watch time, rounded up per job).
 Results -> research/lit/watch_check.json.
@@ -48,8 +48,8 @@ JOB_S = 58             # a plain monitor job today (checkout, install, monitor, 
 LOOK_S = 60            # the monitor's poll, after the job's start
 WATCH_EVERY = 60       # the replay polls every 60 s (the workflow every 30 s: real delays are up to 30 s shorter)
 CAP_S = 55 * 60
-FORM_BUDGET_S = 20 * 60
-MONTH_BUDGET_S = 650 * 60
+FORM_BUDGET_S = 15 * 60
+MONTH_BUDGET_S = 550 * 60
 G = {}
 
 

@@ -21,7 +21,7 @@ export function chartInto(box, t, opts = {}) {
     .catch((e) => { console.warn('trade chart', e); if (box.isConnected) box.innerHTML = '<div class="muted small">The chart could not load: run <span class="mono">python tools/export_replays.py</span>.</div>'; });
 }
 const tcBtn = (t) => (t.chart ? `<span class="nx-tcb" role="button" tabindex="0" data-chart title="Open the trade chart">${icon('chart')}Chart</span>` : '');
-function tcCss() {
+export function tcCss() {
   if (!document.getElementById('nx-tc-css')) {
     const c = document.createElement('style'); c.id = 'nx-tc-css';
     c.textContent = `.nx-sheet.nx-sheet-tc{width:min(980px,calc(100vw - 24px))}.nx-tcbox{background:var(--surface-2,#161a23);border:1px solid var(--border,rgba(160,170,220,.12));border-radius:14px;padding:12px;min-height:120px;margin-bottom:6px}

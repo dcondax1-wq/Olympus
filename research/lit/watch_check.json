@@ -1,0 +1,98 @@
+{
+ "lag_s": 600,
+ "sessions": 22,
+ "backtest_trades": 120,
+ "real_polls": 69,
+ "forming_spot_check": {
+  "checked": 5,
+  "same": 5,
+  "diff": []
+ },
+ "assumptions": {
+  "job_s": 58,
+  "look_s": 60,
+  "watch_every_s": 60,
+  "cap_min": 55.0,
+  "forming_budget_min_day": 20.0,
+  "month_budget_min": 650.0,
+  "crons": ":02 and :32 ET, 02:02-16:02 (GitHub may start a run several minutes late or skip it)"
+ },
+ "policies": {
+  "now": {
+   "trades_seen": 10,
+   "identical_to_backtest": 10,
+   "differences": [],
+   "n_differences": 0,
+   "not_seen_same_day": [],
+   "delay_min": {
+    "median": 33.0,
+    "p75": 37.8,
+    "p90": 39.1,
+    "max": 40.0,
+    "mean": 30.2,
+    "within_2_min_of_feed": 1,
+    "within_5_min_of_feed": 1,
+    "within_15": 1,
+    "within_30": 4
+   },
+   "delay_after_feed_shows_it_min": {
+    "median": 23.0,
+    "p90": 29.1
+   },
+   "actions_min_month_extra": 0,
+   "watch_min_month": 0,
+   "forming_min_month": 0
+  },
+  "armed": {
+   "trades_seen": 10,
+   "identical_to_backtest": 10,
+   "differences": [],
+   "n_differences": 0,
+   "not_seen_same_day": [],
+   "delay_min": {
+    "median": 11.5,
+    "p75": 22.5,
+    "p90": 27.8,
+    "max": 35.0,
+    "mean": 17.5,
+    "within_2_min_of_feed": 6,
+    "within_5_min_of_feed": 6,
+    "within_15": 6,
+    "within_30": 9
+   },
+   "delay_after_feed_shows_it_min": {
+    "median": 1.5,
+    "p90": 17.8
+   },
+   "actions_min_month_extra": 255,
+   "watch_min_month": 233,
+   "forming_min_month": 0
+  },
+  "watch": {
+   "trades_seen": 10,
+   "identical_to_backtest": 10,
+   "differences": [],
+   "n_differences": 0,
+   "not_seen_same_day": [],
+   "delay_min": {
+    "median": 11.5,
+    "p75": 22.5,
+    "p90": 27.8,
+    "max": 35.0,
+    "mean": 17.5,
+    "within_2_min_of_feed": 6,
+    "within_5_min_of_feed": 6,
+    "within_15": 6,
+    "within_30": 9
+   },
+   "delay_after_feed_shows_it_min": {
+    "median": 1.5,
+    "p90": 17.8
+   },
+   "actions_min_month_extra": 694,
+   "watch_min_month": 647,
+   "forming_min_month": 331
+  }
+ },
+ "seconds": 198
+}

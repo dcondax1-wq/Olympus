@@ -100,6 +100,12 @@ against verbatim copies of the Help Guide pages (see Sources). Open the official
 6. Save the workspace (Control Center > Workspaces > Save) so the chart comes back after a restart.
 7. **Quarterly roll** (next: Thursday 2026-12-10): switch the chart to **MNQ 03-27**. The bot switches its order
    instrument by itself on the same date, using the same 8-days-before-expiry rule as `engine/tradovate.py`.
+   - Do it **Wednesday 2026-12-09 after 17:00 ET** (before the 18:00 reopen), then save the workspace. If the chart
+     stays on MNQ 12-26, the bot reads December prices but sends its orders, stop and target to March, which trades
+     about 1% (~300 pts) higher: the stop and target would be in the wrong place.
+   - Until the roll fix in `research/writeups/lit-launch-audit.md` is in, do not run LIT on the PC from 2026-12-10 to
+     about 2026-12-16 (the days when NinjaTrader, Yahoo NQ=F and TradingView NQ1! sit on different contracts).
+     The cloud paper bot can keep running.
 
 What LE_BarFeed writes: `time,open,high,low,close,volume`, where time is the bar's **open** in unix seconds (UTC).
 That is the same layout the bot gets from Yahoo, in both files. It writes the chart's history once when the chart

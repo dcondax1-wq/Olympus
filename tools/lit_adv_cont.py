@@ -409,6 +409,7 @@ def _patched_candidates():
         src = src.replace(b, "if ei >= e or (955 <= mod[ei] < 1080):")
         src = src.replace("def candidates(", "def candidates_ev(")
         ns = dict(vars(lit))
+        ns["_week_context"] = _no_week
         exec(compile(src, "lit_candidates_ev", "exec"), ns)
         _S["cand_ev"] = ns["candidates_ev"]
     return _S["cand_ev"]
@@ -420,12 +421,25 @@ def pre_window_theses():
     p = os.path.join(CACHE, f"litadv_prewin_{VER}_{rl._data_key().replace(':', '_')}.pkl")
     if os.path.exists(p):
         return pickle.load(open(p, "rb"))
-    M = base()[0]
+    M = _days2026(base()[0])
     fn = _patched_candidates()
     C2 = fn(M, ref=PU["ref"], t_from=0)
     out = [z for z in C2 if (z["mod"] >= 1080 or z["mod"] < 120)]
     pickle.dump(out, open(p, "wb"))
     return out
+
+
+def _no_week(M, C):
+    for z in C:
+        z["mw_break"] = None
+
+
+def _days2026(M):
+    """M with every day before 2026 emptied (the candidate generators skip it): the new setup types are built for 2026 only
+    (the judged year); their 2021-25 reference line is therefore the base line."""
+    M2 = copy.copy(M)
+    M2.days = [(d, s_, e_) if d >= "2025-12-28" else (d, s_, s_) for d, s_, e_ in M.days]
+    return M2
 
 
 def plan(M, z, P=PU, window_free=False):
@@ -581,9 +595,14 @@ def internal_candidates():
             for p_, kn in sw[d][a:b]:
                 L.append((side, float(p_ * d), int(kn), "i15_" + side[0], "internal"))
         return L
-    M2 = copy.copy(M)
+    M2 = _days2026(M)
     M2.levels = levels
-    C2 = lit.candidates(M2, ref=PU["ref"])
+    wk0 = lit._week_context
+    lit._week_context = _no_week
+    try:
+        C2 = lit.candidates(M2, ref=PU["ref"])
+    finally:
+        lit._week_context = wk0
     pickle.dump(C2, open(p, "wb"))
     return C2
 
