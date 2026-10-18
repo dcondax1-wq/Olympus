@@ -708,7 +708,7 @@ class LiveBot:
         from . import equity_filter as _eqf
         self._eqf_cfg = lm.get("equity_filter") if self.state_path == STATE_PATH else None
         self._sizing_cfg = lm.get("sizing") if self.state_path == STATE_PATH else None   # late-entry size, fast-eval press
-        self._lit_sizing = (self.cfg.get("lit_sizing") or lm.get("lit_sizing")) if model == "lit" else None   # normal/fast_eval/safe_eval
+        self._lit_sizing = (self.cfg.get("lit_sizing") or lm.get("lit_sizing")) if model == "lit" else None   # normal/eval/fast_eval/safe_eval/two_week
         self._live_params = lm.get("params") or {}
         if self._eqf_cfg:
             try:
@@ -716,6 +716,11 @@ class LiveBot:
             except Exception as e:
                 self._note_error(f"shadow ledger update failed: {e}")
         self.state["equity_filter"] = eqf = _eqf.status(self._eqf_cfg)
+        if model == "lit":
+            try:
+                self.state["eval_2wk"] = self.eval_clock()      # the two-week eval clock and the reset reminder
+            except Exception as e:
+                self._note_error(f"eval clock failed: {e}")
         if self.state_path == STATE_PATH:
             self._narrate_filter(eqf, lm)
         self.last_poll = now
@@ -873,9 +878,14 @@ class LiveBot:
             rows[(r["day"], r["entry_t"])] = r
         return sorted(rows.values(), key=lambda r: r["exit_t"])
 
+    def eval_start(self):
+        """First session of the current eval (yyyy-mm-dd): the start cfg's "eval_start" (PC override), else live_model.json
+        lit_sizing.eval_start (LIT); "" = unknown (every ledger day counts, the two_week sizer falls back to eval)."""
+        return str(self.cfg.get("eval_start") or (getattr(self, "_lit_sizing", None) or {}).get("eval_start") or "")
+
     def eval_days(self):
-        """Routed P&L per trading day of the eval (earlier days from live_state.json + today's ledger), from cfg eval_start."""
-        start = str(self.cfg.get("eval_start") or "")
+        """Routed P&L per trading day of the eval (earlier days from live_state.json + today's ledger), from eval_start()."""
+        start = self.eval_start()
         days = {d: v for d, v in self._eval_prev.items() if not start or d >= start}
         today = trading_day(self.clock())
         days.pop(today, None)
@@ -890,10 +900,29 @@ class LiveBot:
         from . import sizing as _sz
         return _sz.mffu_eval(self.eval_days())["cushion"]
 
+    def eval_state(self):
+        """The two_week sizer's eval state (engine/sizing.eval_state): routed P&L of the eval's earlier days (live_state.json
+        eval_days), today's routed P&L so far, the session number since eval_start(). None when the eval start is unknown."""
+        from . import sizing as _sz
+        start = self.eval_start()
+        if not start:
+            return None
+        today = trading_day(self.clock())
+        days = self.eval_days()
+        return _sz.eval_state({d: v for d, v in days.items() if d < today}, float(days.get(today, 0.0)),
+                              session=max(1, _sz.eval_session(start, today) or 1))
+
+    def eval_clock(self):
+        """State key eval_2wk: session x of 10 since eval_start(), reset recommended after session 10 (engine/sizing.eval_clock)."""
+        from . import sizing as _sz
+        e = _et(self.clock())
+        over = e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60          # after the 15:55 flat: today's session is done
+        return _sz.eval_clock(self.eval_days(), self.eval_start() or None, trading_day(self.clock()), session_over=over)
+
     def eval_profit(self):
         """The eval account's routed profit ($) since cfg eval_start (yyyy-mm-dd; default: everything in the ledger).
         Used by the fast-eval press (engine/sizing.py); None when the ledger is empty."""
-        start = str(self.cfg.get("eval_start") or "")
+        start = self.eval_start()
         rows = [r for r in self.ledger if r.get("side") == "exit" and (not start or trading_day(r["t"]) >= start)]
         return round(sum(float(r.get("pnl") or 0) for r in rows), 2) if self.ledger else None
 
@@ -912,8 +941,11 @@ class LiveBot:
             if (self.state or {}).get("model") == "lit":
                 # LIT: the model's micros already carry the weekly stop; lit_sizing (normal / fast_eval / safe_eval) re-sizes
                 # from the stop with one rounding (engine/sizing.lit_qty)
-                room = self.eval_room() if (lsz or {}).get("mode") in ("safe_eval", "eval") else None
-                r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room)
+                mode = (lsz or {}).get("mode")
+                room = self.eval_room() if mode in ("safe_eval", "eval", "two_week") else None
+                r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room, state=self.eval_state() if mode == "two_week" else None)
+                if r.get("fallback"):
+                    self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET sizing: {r['fallback']}")
             else:
                 r = _sz.route_qty(int(qty), pos or {}, mult, getattr(self, "_sizing_cfg", None), getattr(self, "_live_params", None),
                                   self.eval_profit() if getattr(self, "_sizing_cfg", None) and self._sizing_cfg.get("press") else None)
@@ -1059,7 +1091,7 @@ class LiveBot:
         try:
             from . import push
             from . import sizing as _sz
-            ev = _sz.mffu_eval(self.eval_days()) if self.cfg.get("eval_start") else None
+            ev = _sz.mffu_eval(self.eval_days()) if self.eval_start() else None
             usd = float(tr.get("pnl") or 0) * qty / tr["qty"] if tr.get("qty") else float(tr.get("pnl") or 0)
             self._push_send(push.outcome_payload(
                 self._push_src(), sym, "LONG" if tr.get("dir") == 1 else "SHORT", tr.get("exit_reason"), tr.get("pnl_r"), usd,

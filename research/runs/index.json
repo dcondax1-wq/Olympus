@@ -1,7 +1,7 @@
 {
- "built": "2026-10-18 17:46",
+ "built": "2026-10-18 17:48",
  "baseline": "baseline",
- "count": 843,
+ "count": 846,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -9422,6 +9422,164 @@
      "slow_pass": 55.1,
      "pass_med": 17.0,
      "b2b": "21/33"
+    }
+   }
+  },
+  {
+   "id": "lit_u_entries_open_d0p25_to1000_half",
+   "title": "LIT untested entries - 4. LIT opening model: open d0.25 to1000 half",
+   "family": "other",
+   "question": "Owner 2026-10-18: try every untested LIT entry idea (entries group) on the live LIT signals.",
+   "status": "promising",
+   "verdict": "ADOPT-neighbour: H1 +756 $ / H2 +88 $ vs the baseline (LIT live + eval sizing). 2026 H1 (pick) n=88 3.44/wk win 21.6% PF 4.04 net +34,061 ($5,588/mo) DD -2,376 avg win $2,382 avg loss $-162; eval 2wk 34.4/3.1 1mo 54.7/6.2 pass rate 88.5% median 11.0; 2026 H2 (check) n=50 3.21/wk win 30.0% PF 2.37 net +10,553 ($2,841/mo) DD -2,152 avg win $1,216 avg loss $-220; eval 2wk 30.8/0.0 1mo 52.6/10.3 pass rate 81.3% median 15.0; 2021-25 reference only n=566 2.64/wk win 17.7% PF 0.97 net -3,190 ($-62/mo) DD -20,990 avg win $919 avg loss $-204; eval 2wk 9.9/8.0 1mo 16.1/22.3 pass rate 29.2% median 15.0",
+   "writeup": "lit-untested-entries",
+   "tags": [
+    "lit",
+    "lit_untested",
+    "lit_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "ent": "next",
+    "bs_k": 5,
+    "chase": null,
+    "smt": null,
+    "x1m": {
+     "kind": "open",
+     "sweep_win": [
+      570,
+      600
+     ],
+     "sig_end": 600,
+     "depth": 0.25,
+     "idm": true,
+     "ev_max": 60,
+     "size": 0.5
+    },
+    "size": [
+     "lit",
+     800,
+     25.0
+    ],
+    "room_k": 0.6
+   },
+   "sizing": {},
+   "built": "2026-10-18 17:46",
+   "spans": {
+    "2026": {
+     "n": 138,
+     "tpw": 3.35,
+     "wk2": 93,
+     "win": 24.6,
+     "pf": 3.42,
+     "net": 46561,
+     "dd": -2376,
+     "avg_r": 0.695,
+     "stop": 48.1,
+     "worst_day": -806,
+     "risk": 289.0,
+     "half": 38,
+     "per_month": 4747,
+     "p10": 31.6,
+     "f10": 3.4,
+     "p15": 46.1,
+     "f15": 9.2,
+     "p20": 58.7,
+     "f20": 14.1,
+     "dec10": 35.0,
+     "slow_pass": 41.0,
+     "pass_med": 13.0,
+     "b2b": "10/3"
+    },
+    "2021-25": {
+     "n": 566,
+     "tpw": 2.64,
+     "wk2": 82,
+     "win": 17.7,
+     "pf": 0.97,
+     "net": -3190,
+     "dd": -20990,
+     "avg_r": 0.011,
+     "stop": 40.0,
+     "worst_day": -855,
+     "risk": 266.0,
+     "half": 106,
+     "per_month": -62,
+     "p10": 7.4,
+     "f10": 3.5,
+     "p15": 9.3,
+     "f15": 10.5,
+     "p20": 12.6,
+     "f20": 19.9,
+     "dec10": 10.9,
+     "slow_pass": 60.8,
+     "pass_med": 19.0,
+     "b2b": "8/27"
+    },
+    "all": {
+     "n": 704,
+     "tpw": 2.75,
+     "wk2": 84,
+     "win": 19.0,
+     "pf": 1.38,
+     "net": 43371,
+     "dd": -20990,
+     "avg_r": 0.145,
+     "stop": 42.0,
+     "worst_day": -855,
+     "risk": 269.0,
+     "half": 144,
+     "per_month": 713,
+     "p10": 11.8,
+     "f10": 3.5,
+     "p15": 16.2,
+     "f15": 10.3,
+     "p20": 21.4,
+     "f20": 18.9,
+     "dec10": 15.3,
+     "slow_pass": 54.7,
+     "pass_med": 17.0,
+     "b2b": "18/31"
     }
    }
   },
@@ -46227,6 +46385,164 @@
      "slow_pass": 55.9,
      "pass_med": 17.0,
      "b2b": "18/35"
+    }
+   }
+  },
+  {
+   "id": "lit_u_entries_open_d0p25_to1000_smt",
+   "title": "LIT untested entries - 4. LIT opening model: open d0.25 to1000 smt",
+   "family": "other",
+   "question": "Owner 2026-10-18: try every untested LIT entry idea (entries group) on the live LIT signals.",
+   "status": "rejected",
+   "verdict": "REJECT: H1 -1 $ / H2 -3,357 $ vs the baseline (LIT live + eval sizing). 2026 H1 (pick) n=82 3.2/wk win 22.0% PF 4.01 net +33,304 ($5,464/mo) DD -2,376 avg win $2,465 avg loss $-173; eval 2wk 35.2/3.1 1mo 53.9/4.7 pass rate 93.3% median 11.0; 2026 H2 (check) n=42 2.69/wk win 35.7% PF 2.02 net +7,108 ($1,914/mo) DD -1,918 avg win $936 avg loss $-257; eval 2wk 30.8/0.0 1mo 61.5/0.0 pass rate 100.0% median 15.5; 2021-25 reference only n=515 2.4/wk win 17.5% PF 0.95 net -4,613 ($-90/mo) DD -17,694 avg win $910 avg loss $-204; eval 2wk 8.8/8.1 1mo 15.8/20.2 pass rate 30.6% median 16.5",
+   "writeup": "lit-untested-entries",
+   "tags": [
+    "lit",
+    "lit_untested",
+    "lit_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "ent": "next",
+    "bs_k": 5,
+    "chase": null,
+    "smt": null,
+    "x1m": {
+     "kind": "open",
+     "sweep_win": [
+      570,
+      600
+     ],
+     "sig_end": 600,
+     "depth": 0.25,
+     "idm": true,
+     "ev_max": 60,
+     "smt_req": true
+    },
+    "size": [
+     "lit",
+     800,
+     25.0
+    ],
+    "room_k": 0.6
+   },
+   "sizing": {},
+   "built": "2026-10-18 17:47",
+   "spans": {
+    "2026": {
+     "n": 124,
+     "tpw": 3.01,
+     "wk2": 88,
+     "win": 26.6,
+     "pf": 3.23,
+     "net": 40173,
+     "dd": -2376,
+     "avg_r": 0.767,
+     "stop": 46.5,
+     "worst_day": -806,
+     "risk": 274.0,
+     "half": 17,
+     "per_month": 4095,
+     "p10": 28.2,
+     "f10": 1.9,
+     "p15": 40.8,
+     "f15": 2.9,
+     "p20": 50.5,
+     "f20": 2.9,
+     "dec10": 30.1,
+     "slow_pass": 50.0,
+     "pass_med": 15.5,
+     "b2b": "9/2"
+    },
+    "2021-25": {
+     "n": 515,
+     "tpw": 2.4,
+     "wk2": 76,
+     "win": 17.5,
+     "pf": 0.95,
+     "net": -4613,
+     "dd": -17694,
+     "avg_r": 0.018,
+     "stop": 38.2,
+     "worst_day": -860,
+     "risk": 278.0,
+     "half": 40,
+     "per_month": -90,
+     "p10": 5.5,
+     "f10": 4.1,
+     "p15": 8.0,
+     "f15": 10.3,
+     "p20": 10.5,
+     "f20": 16.8,
+     "dec10": 9.6,
+     "slow_pass": 57.4,
+     "pass_med": 18.0,
+     "b2b": "6/24"
+    },
+    "all": {
+     "n": 639,
+     "tpw": 2.5,
+     "wk2": 79,
+     "win": 19.2,
+     "pf": 1.34,
+     "net": 35560,
+     "dd": -17694,
+     "avg_r": 0.163,
+     "stop": 40.2,
+     "worst_day": -860,
+     "risk": 278.0,
+     "half": 57,
+     "per_month": 584,
+     "p10": 9.5,
+     "f10": 4.1,
+     "p15": 13.7,
+     "f15": 9.8,
+     "p20": 17.4,
+     "f20": 15.6,
+     "dec10": 13.6,
+     "slow_pass": 53.5,
+     "pass_med": 17.0,
+     "b2b": "15/27"
     }
    }
   },
@@ -93342,6 +93658,163 @@
      "slow_pass": 50.2,
      "pass_med": 16.0,
      "b2b": "17/29"
+    }
+   }
+  },
+  {
+   "id": "lit_u_entries_open_d0_to1000",
+   "title": "LIT untested entries - 4. LIT opening model: open d0 to1000",
+   "family": "other",
+   "question": "Owner 2026-10-18: try every untested LIT entry idea (entries group) on the live LIT signals.",
+   "status": "info",
+   "verdict": "NEUTRAL: H1 +372 $ / H2 -133 $ vs the baseline (LIT live + eval sizing). 2026 H1 (pick) n=90 3.52/wk win 21.1% PF 3.77 net +33,677 ($5,525/mo) DD -2,624 avg win $2,413 avg loss $-171; eval 2wk 33.6/3.1 1mo 53.1/7.8 pass rate 82.7% median 10.5; 2026 H2 (check) n=51 3.27/wk win 29.4% PF 2.31 net +10,332 ($2,782/mo) DD -2,240 avg win $1,216 avg loss $-220; eval 2wk 30.8/0.0 1mo 62.8/10.3 pass rate 82.7% median 13.0; 2021-25 reference only n=576 2.69/wk win 17.5% PF 1.0 net +142 ($3/mo) DD -20,347 avg win $946 avg loss $-201; eval 2wk 10.4/8.1 1mo 17.4/24.3 pass rate 31.4% median 15.0",
+   "writeup": "lit-untested-entries",
+   "tags": [
+    "lit",
+    "lit_untested",
+    "lit_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "fills": null,
+    "ent": "next",
+    "bs_k": 5,
+    "chase": null,
+    "smt": null,
+    "x1m": {
+     "kind": "open",
+     "sweep_win": [
+      570,
+      600
+     ],
+     "sig_end": 600,
+     "depth": 0.0,
+     "idm": true,
+     "ev_max": 60
+    },
+    "size": [
+     "lit",
+     800,
+     25.0
+    ],
+    "room_k": 0.6
+   },
+   "sizing": {},
+   "built": "2026-10-18 17:48",
+   "spans": {
+    "2026": {
+     "n": 141,
+     "tpw": 3.42,
+     "wk2": 95,
+     "win": 24.1,
+     "pf": 3.22,
+     "net": 46114,
+     "dd": -2624,
+     "avg_r": 0.658,
+     "stop": 48.2,
+     "worst_day": -806,
+     "risk": 309.0,
+     "half": 21,
+     "per_month": 4701,
+     "p10": 30.1,
+     "f10": 3.4,
+     "p15": 46.1,
+     "f15": 10.2,
+     "p20": 59.7,
+     "f20": 15.0,
+     "dec10": 33.5,
+     "slow_pass": 39.9,
+     "pass_med": 13.0,
+     "b2b": "11/4"
+    },
+    "2021-25": {
+     "n": 576,
+     "tpw": 2.69,
+     "wk2": 83,
+     "win": 17.5,
+     "pf": 1.0,
+     "net": 142,
+     "dd": -20347,
+     "avg_r": 0.011,
+     "stop": 40.2,
+     "worst_day": -860,
+     "risk": 272.0,
+     "half": 57,
+     "per_month": 3,
+     "p10": 7.8,
+     "f10": 4.1,
+     "p15": 10.0,
+     "f15": 12.3,
+     "p20": 13.3,
+     "f20": 21.5,
+     "dec10": 11.9,
+     "slow_pass": 61.4,
+     "pass_med": 20.0,
+     "b2b": "11/28"
+    },
+    "all": {
+     "n": 717,
+     "tpw": 2.81,
+     "wk2": 86,
+     "win": 18.8,
+     "pf": 1.4,
+     "net": 46256,
+     "dd": -20347,
+     "avg_r": 0.138,
+     "stop": 42.2,
+     "worst_day": -860,
+     "risk": 276.0,
+     "half": 78,
+     "per_month": 760,
+     "p10": 11.8,
+     "f10": 4.3,
+     "p15": 16.2,
+     "f15": 12.7,
+     "p20": 21.2,
+     "f20": 21.6,
+     "dec10": 16.1,
+     "slow_pass": 53.3,
+     "pass_med": 17.0,
+     "b2b": "22/33"
     }
    }
   },
