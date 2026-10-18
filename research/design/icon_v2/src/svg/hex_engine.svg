@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Concept: Hex Engine. The dashboard's hexagon mark as a machined black plate with a bevelled neon rim; a
+       candle-shaped slot is cut through it and blazes with light; the lower wick crosses the cyan liquidity line. -->
+  <defs>
+    <radialGradient id="bg" cx="512" cy="470" r="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2c0b62"/><stop offset="0.45" stop-color="#120433"/><stop offset="1" stop-color="#04010b"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="200" y1="150" x2="820" y2="880" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff5fe0"/><stop offset="0.45" stop-color="#8b5cf6"/><stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="bevel" x1="250" y1="130" x2="780" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d9b8ff"/><stop offset="0.3" stop-color="#6b3fc0"/><stop offset="0.65" stop-color="#2a1260"/><stop offset="1" stop-color="#1a5d8a"/>
+    </linearGradient>
+    <linearGradient id="face" x1="0" y1="160" x2="0" y2="880" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2a1550"/><stop offset="0.5" stop-color="#140828"/><stop offset="1" stop-color="#0b0418"/>
+    </linearGradient>
+    <linearGradient id="slot" x1="0" y1="200" x2="0" y2="840" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffd2f7"/><stop offset="0.35" stop-color="#ff6ae4"/><stop offset="0.7" stop-color="#e01fc8"/><stop offset="1" stop-color="#9d2cf5"/>
+    </linearGradient>
+    <radialGradient id="hot" cx="512" cy="470" r="200" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.95"/><stop offset="0.5" stop-color="#ffd6f8" stop-opacity="0.35"/><stop offset="1" stop-color="#ff5fe0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="laser" x1="270" y1="0" x2="754" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.2"/><stop offset="0.5" stop-color="#e8fdff"/><stop offset="1" stop-color="#22d3ee" stop-opacity="0.2"/>
+    </linearGradient>
+    <clipPath id="faceclip"><path d="M512 150 L825 331 L825 693 L512 874 L199 693 L199 331 Z"/></clipPath>
+    <filter id="b60" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="b24" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="24"/></filter>
+    <filter id="b10" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="10"/></filter>
+    <filter id="b4" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <!-- outer neon glow of the plate -->
+  <path d="M512 104 L865 308 L865 716 L512 920 L159 716 L159 308 Z" fill="none" stroke="url(#rim)" stroke-width="22" stroke-linejoin="round" opacity="0.75" filter="url(#b24)"/>
+  <!-- bevel ring -->
+  <path d="M512 104 L865 308 L865 716 L512 920 L159 716 L159 308 Z" fill="url(#bevel)" stroke="url(#rim)" stroke-width="8" stroke-linejoin="round"/>
+  <!-- face -->
+  <path d="M512 150 L825 331 L825 693 L512 874 L199 693 L199 331 Z" fill="url(#face)"/>
+  <g clip-path="url(#faceclip)">
+    <!-- top sheen on the face -->
+    <path d="M199 331 L512 150 L825 331 L825 420 L199 560 Z" fill="#fff" opacity="0.05"/>
+    <!-- light spill around the slot -->
+    <ellipse cx="512" cy="480" rx="190" ry="300" fill="#e026d0" opacity="0.45" filter="url(#b60)"/>
+    <!-- liquidity line etched across the face -->
+    <rect x="199" y="690" width="626" height="16" fill="#22d3ee" opacity="0.65" filter="url(#b10)"/>
+    <rect x="199" y="693" width="626" height="10" rx="5" fill="url(#laser)"/>
+  </g>
+  <!-- the candle slot: inner wall shadow, then the light -->
+  <g transform="translate(6 8)" opacity="0.7">
+    <rect x="490" y="198" width="44" height="120" rx="14" fill="#000"/><rect x="432" y="300" width="160" height="300" rx="26" fill="#000"/><rect x="490" y="580" width="44" height="236" rx="14" fill="#000"/>
+  </g>
+  <g filter="url(#b10)" opacity="0.9">
+    <rect x="490" y="198" width="44" height="120" rx="14" fill="#ff4fe0"/><rect x="432" y="300" width="160" height="300" rx="26" fill="#ff4fe0"/><rect x="490" y="580" width="44" height="236" rx="14" fill="#ff4fe0"/>
+  </g>
+  <rect x="494" y="202" width="36" height="116" rx="12" fill="url(#slot)"/>
+  <rect x="436" y="304" width="152" height="292" rx="22" fill="url(#slot)"/>
+  <rect x="494" y="584" width="36" height="228" rx="12" fill="url(#slot)"/>
+  <ellipse cx="512" cy="440" rx="62" ry="120" fill="url(#hot)" filter="url(#b4)"/>
+  <!-- flare where the lower wick crosses the line -->
+  <circle cx="512" cy="698" r="44" fill="#bff6ff" opacity="0.6" filter="url(#b10)"/>
+  <circle cx="512" cy="698" r="13" fill="#fff"/>
+  <!-- crisp outer edge highlight -->
+  <path d="M159 308 L512 104 L865 308" fill="none" stroke="#fff" stroke-opacity="0.5" stroke-width="3" stroke-linejoin="round" filter="url(#b4)"/>
+</svg>

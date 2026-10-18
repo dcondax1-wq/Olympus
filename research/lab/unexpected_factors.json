@@ -1,0 +1,3048 @@
+{
+ "built": "2026-10-17 22:20",
+ "study": "wild",
+ "writeup": "unexpected-factors.md",
+ "baseline": {
+  "2026": {
+   "n": 89,
+   "tpw": 2.16,
+   "wk2": 71,
+   "win": 25.8,
+   "pf": 3.94,
+   "net": 20487,
+   "dd": -2249,
+   "avg_r": 0.41,
+   "stop": 44.0,
+   "worst_day": -524,
+   "risk": 213.0,
+   "half": 25,
+   "per_month": 2088,
+   "p10": 20.4,
+   "f10": 0.0,
+   "p15": 29.1,
+   "f15": 0.0,
+   "p20": 34.0,
+   "f20": 0.0,
+   "dec10": 20.4,
+   "slow_pass": 53.8,
+   "pass_med": 18.0,
+   "b2b": "4/1"
+  },
+  "2021-25": {
+   "n": 679,
+   "tpw": 3.17,
+   "wk2": 92,
+   "win": 21.1,
+   "pf": 1.27,
+   "net": 16379,
+   "dd": -9265,
+   "avg_r": 0.012,
+   "stop": 41.2,
+   "worst_day": -875,
+   "risk": 118.0,
+   "half": 348,
+   "per_month": 321,
+   "p10": 4.1,
+   "f10": 1.9,
+   "p15": 6.2,
+   "f15": 3.4,
+   "p20": 8.8,
+   "f20": 5.2,
+   "dec10": 6.0,
+   "slow_pass": 81.2,
+   "pass_med": 32.5,
+   "b2b": "8/10"
+  }
+ },
+ "factors": [
+  {
+   "key": "pd_range_adr",
+   "label": "Yesterday's range vs 20-day ADR",
+   "mechanism": "a big day yesterday leaves fewer fresh pools and a tired tape",
+   "thr": 0.917,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": 0.032,
+     "win": 20.1,
+     "pf": 1.1,
+     "net": 4877
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": -0.008,
+     "win": 22.1,
+     "pf": 0.95,
+     "net": -3014
+    },
+    "gap": 0.04,
+    "t": 0.39
+   },
+   "new": {
+    "hi": {
+     "n": 46,
+     "avg_r": 0.381,
+     "win": 26.1,
+     "pf": 2.66,
+     "net": 8772
+    },
+    "lo": {
+     "n": 43,
+     "avg_r": 0.44,
+     "win": 25.6,
+     "pf": 3.58,
+     "net": 12418
+    },
+    "gap": -0.059
+   },
+   "same_sign": false
+  },
+  {
+   "key": "on_share",
+   "label": "Overnight range vs ADR",
+   "mechanism": "a wide overnight session has already used part of the day's travel",
+   "thr": 0.593,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": 0.074,
+     "win": 21.8,
+     "pf": 1.13,
+     "net": 6324
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": -0.051,
+     "win": 20.3,
+     "pf": 0.92,
+     "net": -4462
+    },
+    "gap": 0.125,
+    "t": 1.24
+   },
+   "new": {
+    "hi": {
+     "n": 74,
+     "avg_r": 0.468,
+     "win": 28.4,
+     "pf": 3.67,
+     "net": 21792
+    },
+    "lo": {
+     "n": 15,
+     "avg_r": 0.123,
+     "win": 13.3,
+     "pf": 0.69,
+     "net": -601
+    },
+    "gap": 0.345
+   },
+   "same_sign": true
+  },
+  {
+   "key": "gap_abs_adr",
+   "label": "Size of the 09:30 gap vs ADR",
+   "mechanism": "gaps attract fills: a big gap means a fight at the open",
+   "thr": 0.263,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": 0.063,
+     "win": 22.1,
+     "pf": 1.15,
+     "net": 7484
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": -0.039,
+     "win": 20.0,
+     "pf": 0.9,
+     "net": -5621
+    },
+    "gap": 0.102,
+    "t": 1.0
+   },
+   "new": {
+    "hi": {
+     "n": 49,
+     "avg_r": 0.431,
+     "win": 24.5,
+     "pf": 3.75,
+     "net": 15928
+    },
+    "lo": {
+     "n": 40,
+     "avg_r": 0.383,
+     "win": 27.5,
+     "pf": 2.23,
+     "net": 5264
+    },
+    "gap": 0.048
+   },
+   "same_sign": true
+  },
+  {
+   "key": "gap_with_trade",
+   "label": "Gap in the trade's direction",
+   "mechanism": "trading with the gap is continuation; against it is the gap fill",
+   "thr": null,
+   "old": {
+    "hi": {
+     "n": 297,
+     "avg_r": 0.047,
+     "win": 22.2,
+     "pf": 1.17,
+     "net": 7018
+    },
+    "lo": {
+     "n": 382,
+     "avg_r": -0.016,
+     "win": 20.2,
+     "pf": 0.92,
+     "net": -5155
+    },
+    "gap": 0.063,
+    "t": 0.62
+   },
+   "new": {
+    "hi": {
+     "n": 45,
+     "avg_r": 0.324,
+     "win": 24.4,
+     "pf": 2.68,
+     "net": 9332
+    },
+    "lo": {
+     "n": 44,
+     "avg_r": 0.497,
+     "win": 27.3,
+     "pf": 3.62,
+     "net": 11858
+    },
+    "gap": -0.173
+   },
+   "same_sign": false
+  },
+  {
+   "key": "f15_adr",
+   "label": "Opening 15-minute range vs ADR",
+   "mechanism": "a wild open means the sweep was made by the opening drive",
+   "thr": 0.304,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": 0.044,
+     "win": 21.2,
+     "pf": 1.1,
+     "net": 4813
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": -0.021,
+     "win": 20.9,
+     "pf": 0.95,
+     "net": -2950
+    },
+    "gap": 0.065,
+    "t": 0.64
+   },
+   "new": {
+    "hi": {
+     "n": 61,
+     "avg_r": 0.618,
+     "win": 31.1,
+     "pf": 4.46,
+     "net": 20460
+    },
+    "lo": {
+     "n": 28,
+     "avg_r": -0.045,
+     "win": 14.3,
+     "pf": 1.18,
+     "net": 731
+    },
+    "gap": 0.663
+   },
+   "same_sign": true
+  },
+  {
+   "key": "inside_days",
+   "label": "Yesterday was an inside day",
+   "mechanism": "compression before expansion: inside days precede range days",
+   "thr": 1.0,
+   "old": {
+    "hi": {
+     "n": 78,
+     "avg_r": -0.039,
+     "win": 19.2,
+     "pf": 1.08,
+     "net": 966
+    },
+    "lo": {
+     "n": 601,
+     "avg_r": 0.018,
+     "win": 21.3,
+     "pf": 1.01,
+     "net": 896
+    },
+    "gap": -0.057,
+    "t": -0.37
+   },
+   "new": {
+    "hi": {
+     "n": 4,
+     "avg_r": 1.691,
+     "win": 75.0,
+     "pf": 64.55,
+     "net": 4766
+    },
+    "lo": {
+     "n": 85,
+     "avg_r": 0.349,
+     "win": 23.5,
+     "pf": 2.64,
+     "net": 16424
+    },
+    "gap": 1.342
+   },
+   "same_sign": false
+  },
+  {
+   "key": "close_streak_with",
+   "label": "3+ closes in a row in the trade's direction",
+   "mechanism": "a stretched streak means the sweep is a late continuation",
+   "thr": null,
+   "old": {
+    "hi": {
+     "n": 334,
+     "avg_r": 0.0,
+     "win": 20.7,
+     "pf": 1.09,
+     "net": 4544
+    },
+    "lo": {
+     "n": 345,
+     "avg_r": 0.023,
+     "win": 21.4,
+     "pf": 0.95,
+     "net": -2682
+    },
+    "gap": -0.023,
+    "t": -0.23
+   },
+   "new": {
+    "hi": {
+     "n": 39,
+     "avg_r": 0.473,
+     "win": 25.6,
+     "pf": 3.37,
+     "net": 10629
+    },
+    "lo": {
+     "n": 50,
+     "avg_r": 0.36,
+     "win": 26.0,
+     "pf": 2.89,
+     "net": 10562
+    },
+    "gap": 0.113
+   },
+   "same_sign": false
+  },
+  {
+   "key": "days_since_2pct",
+   "label": "Days since the last 2% day (recent vs old)",
+   "mechanism": "fresh shocks mean fatter tails and less respect for pools",
+   "thr": 10.0,
+   "old": {
+    "hi": {
+     "n": 353,
+     "avg_r": -0.013,
+     "win": 20.7,
+     "pf": 1.04,
+     "net": 2060
+    },
+    "lo": {
+     "n": 326,
+     "avg_r": 0.038,
+     "win": 21.5,
+     "pf": 1.0,
+     "net": -198
+    },
+    "gap": -0.051,
+    "t": -0.5
+   },
+   "new": {
+    "hi": {
+     "n": 50,
+     "avg_r": 0.509,
+     "win": 30.0,
+     "pf": 3.61,
+     "net": 14944
+    },
+    "lo": {
+     "n": 39,
+     "avg_r": 0.282,
+     "win": 20.5,
+     "pf": 2.44,
+     "net": 6247
+    },
+    "gap": 0.227
+   },
+   "same_sign": false
+  },
+  {
+   "key": "pw_range_ratio",
+   "label": "Last week's range vs the prior 4 weeks",
+   "mechanism": "a quiet week sets up a lively one",
+   "thr": 0.929,
+   "old": {
+    "hi": {
+     "n": 338,
+     "avg_r": 0.013,
+     "win": 20.4,
+     "pf": 1.05,
+     "net": 2690
+    },
+    "lo": {
+     "n": 341,
+     "avg_r": 0.01,
+     "win": 21.7,
+     "pf": 0.99,
+     "net": -828
+    },
+    "gap": 0.003,
+    "t": 0.03
+   },
+   "new": {
+    "hi": {
+     "n": 49,
+     "avg_r": 0.465,
+     "win": 24.5,
+     "pf": 3.42,
+     "net": 10750
+    },
+    "lo": {
+     "n": 40,
+     "avg_r": 0.342,
+     "win": 27.5,
+     "pf": 2.85,
+     "net": 10442
+    },
+    "gap": 0.123
+   },
+   "same_sign": true
+  },
+  {
+   "key": "pd_close_pos",
+   "label": "Where yesterday closed in its range",
+   "mechanism": "a close at the extreme means the overnight builds the next pool",
+   "thr": 0.617,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": 0.012,
+     "win": 22.1,
+     "pf": 1.01,
+     "net": 552
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": 0.011,
+     "win": 20.0,
+     "pf": 1.02,
+     "net": 1310
+    },
+    "gap": 0.001,
+    "t": 0.01
+   },
+   "new": {
+    "hi": {
+     "n": 45,
+     "avg_r": 0.513,
+     "win": 28.9,
+     "pf": 3.45,
+     "net": 13222
+    },
+    "lo": {
+     "n": 44,
+     "avg_r": 0.304,
+     "win": 22.7,
+     "pf": 2.71,
+     "net": 7970
+    },
+    "gap": 0.209
+   },
+   "same_sign": true
+  },
+  {
+   "key": "entry_vs_open",
+   "label": "Entry on the trade's side of the 09:30 open",
+   "mechanism": "buying above the open is chasing; buying below it is a discount vs the open",
+   "thr": 0.0,
+   "old": {
+    "hi": {
+     "n": 266,
+     "avg_r": -0.006,
+     "win": 21.4,
+     "pf": 0.85,
+     "net": -6048
+    },
+    "lo": {
+     "n": 413,
+     "avg_r": 0.023,
+     "win": 20.8,
+     "pf": 1.12,
+     "net": 7911
+    },
+    "gap": -0.029,
+    "t": -0.29
+   },
+   "new": {
+    "hi": {
+     "n": 34,
+     "avg_r": 0.26,
+     "win": 26.5,
+     "pf": 1.91,
+     "net": 3631
+    },
+    "lo": {
+     "n": 55,
+     "avg_r": 0.502,
+     "win": 25.5,
+     "pf": 3.89,
+     "net": 17560
+    },
+    "gap": -0.242
+   },
+   "same_sign": true
+  },
+  {
+   "key": "range_used",
+   "label": "Range already travelled before the signal vs ADR",
+   "mechanism": "the day has a budget; a late sweep has less left",
+   "thr": 0.444,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": -0.002,
+     "win": 20.9,
+     "pf": 0.97,
+     "net": -1680
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": 0.025,
+     "win": 21.2,
+     "pf": 1.06,
+     "net": 3542
+    },
+    "gap": -0.027,
+    "t": -0.27
+   },
+   "new": {
+    "hi": {
+     "n": 60,
+     "avg_r": 0.505,
+     "win": 26.7,
+     "pf": 4.57,
+     "net": 19099
+    },
+    "lo": {
+     "n": 29,
+     "avg_r": 0.211,
+     "win": 24.1,
+     "pf": 1.44,
+     "net": 2092
+    },
+    "gap": 0.294
+   },
+   "same_sign": false
+  },
+  {
+   "key": "sweep_premarket",
+   "label": "Sweep extreme made before 09:30",
+   "mechanism": "a pre-market sweep is run by the overnight book, not the cash session",
+   "thr": null,
+   "old": {
+    "hi": {
+     "n": 125,
+     "avg_r": 0.159,
+     "win": 27.2,
+     "pf": 1.43,
+     "net": 7834
+    },
+    "lo": {
+     "n": 554,
+     "avg_r": -0.022,
+     "win": 19.7,
+     "pf": 0.93,
+     "net": -5972
+    },
+    "gap": 0.181,
+    "t": 1.31
+   },
+   "new": {
+    "hi": {
+     "n": 21,
+     "avg_r": 0.688,
+     "win": 33.3,
+     "pf": 5.03,
+     "net": 9399
+    },
+    "lo": {
+     "n": 68,
+     "avg_r": 0.323,
+     "win": 23.5,
+     "pf": 2.52,
+     "net": 11792
+    },
+    "gap": 0.365
+   },
+   "same_sign": true
+  },
+  {
+   "key": "sweep_to_trigger_min",
+   "label": "Minutes from the sweep to the trigger",
+   "mechanism": "a fast reclaim means a true stop-run; a slow one is acceptance",
+   "thr": 10.0,
+   "old": {
+    "hi": {
+     "n": 310,
+     "avg_r": 0.029,
+     "win": 24.5,
+     "pf": 1.14,
+     "net": 5504
+    },
+    "lo": {
+     "n": 369,
+     "avg_r": -0.002,
+     "win": 18.2,
+     "pf": 0.95,
+     "net": -3641
+    },
+    "gap": 0.031,
+    "t": 0.31
+   },
+   "new": {
+    "hi": {
+     "n": 40,
+     "avg_r": 0.313,
+     "win": 27.5,
+     "pf": 3.7,
+     "net": 9688
+    },
+    "lo": {
+     "n": 49,
+     "avg_r": 0.489,
+     "win": 24.5,
+     "pf": 2.77,
+     "net": 11502
+    },
+    "gap": -0.176
+   },
+   "same_sign": false
+  },
+  {
+   "key": "sweep_bar_atr",
+   "label": "Size of the sweep bar vs 5m ATR",
+   "mechanism": "a climactic sweep bar flushes stops at once",
+   "thr": 1.238,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": 0.035,
+     "win": 21.8,
+     "pf": 1.07,
+     "net": 3336
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": -0.012,
+     "win": 20.3,
+     "pf": 0.97,
+     "net": -1474
+    },
+    "gap": 0.047,
+    "t": 0.46
+   },
+   "new": {
+    "hi": {
+     "n": 49,
+     "avg_r": 0.288,
+     "win": 22.4,
+     "pf": 2.45,
+     "net": 8163
+    },
+    "lo": {
+     "n": 40,
+     "avg_r": 0.559,
+     "win": 30.0,
+     "pf": 3.93,
+     "net": 13028
+    },
+    "gap": -0.271
+   },
+   "same_sign": false
+  },
+  {
+   "key": "vix_5d_chg",
+   "label": "VIX change over 5 days",
+   "mechanism": "rising fear raises the odds a pool holds",
+   "thr": 0.0,
+   "old": {
+    "hi": {
+     "n": 292,
+     "avg_r": 0.036,
+     "win": 21.2,
+     "pf": 1.12,
+     "net": 5612
+    },
+    "lo": {
+     "n": 387,
+     "avg_r": -0.006,
+     "win": 20.9,
+     "pf": 0.94,
+     "net": -3750
+    },
+    "gap": 0.042,
+    "t": 0.41
+   },
+   "new": {
+    "hi": {
+     "n": 39,
+     "avg_r": 0.488,
+     "win": 25.6,
+     "pf": 4.2,
+     "net": 13440
+    },
+    "lo": {
+     "n": 50,
+     "avg_r": 0.348,
+     "win": 26.0,
+     "pf": 2.32,
+     "net": 7752
+    },
+    "gap": 0.14
+   },
+   "same_sign": true
+  },
+  {
+   "key": "vix_vs_20d",
+   "label": "VIX vs its 20-day average",
+   "mechanism": "vol above its own norm means wider ranges, wider stops",
+   "thr": 1.0,
+   "old": {
+    "hi": {
+     "n": 273,
+     "avg_r": 0.07,
+     "win": 20.5,
+     "pf": 1.21,
+     "net": 8552
+    },
+    "lo": {
+     "n": 406,
+     "avg_r": -0.027,
+     "win": 21.4,
+     "pf": 0.9,
+     "net": -6689
+    },
+    "gap": 0.097,
+    "t": 0.91
+   },
+   "new": {
+    "hi": {
+     "n": 34,
+     "avg_r": 0.486,
+     "win": 23.5,
+     "pf": 3.55,
+     "net": 10571
+    },
+    "lo": {
+     "n": 55,
+     "avg_r": 0.362,
+     "win": 27.3,
+     "pf": 2.79,
+     "net": 10620
+    },
+    "gap": 0.124
+   },
+   "same_sign": true
+  },
+  {
+   "key": "vxn_minus_vix",
+   "label": "VXN minus VIX (tech vol premium)",
+   "mechanism": "when tech vol is dear vs the S&P, NQ is the one moving",
+   "thr": 4.25,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": 0.032,
+     "win": 20.6,
+     "pf": 1.01,
+     "net": 304
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": -0.008,
+     "win": 21.5,
+     "pf": 1.03,
+     "net": 1558
+    },
+    "gap": 0.04,
+    "t": 0.39
+   },
+   "new": {
+    "hi": {
+     "n": 72,
+     "avg_r": 0.439,
+     "win": 26.4,
+     "pf": 3.57,
+     "net": 21051
+    },
+    "lo": {
+     "n": 17,
+     "avg_r": 0.286,
+     "win": 23.5,
+     "pf": 1.07,
+     "net": 140
+    },
+    "gap": 0.153
+   },
+   "same_sign": true
+  },
+  {
+   "key": "gex_pos",
+   "label": "Dealer gamma positive (SqueezeMetrics GEX)",
+   "mechanism": "positive gamma pins price, negative gamma lets it run",
+   "thr": null,
+   "old": {
+    "hi": {
+     "n": 596,
+     "avg_r": 0.019,
+     "win": 21.8,
+     "pf": 1.01,
+     "net": 920
+    },
+    "lo": {
+     "n": 83,
+     "avg_r": -0.041,
+     "win": 15.7,
+     "pf": 1.09,
+     "net": 942
+    },
+    "gap": 0.06,
+    "t": 0.37
+   },
+   "new": {
+    "hi": {
+     "n": 85,
+     "avg_r": 0.349,
+     "win": 24.7,
+     "pf": 2.94,
+     "net": 19494
+    },
+    "lo": {
+     "n": 4,
+     "avg_r": 1.687,
+     "win": 50.0,
+     "pf": 71.69,
+     "net": 1696
+    },
+    "gap": -1.338
+   },
+   "same_sign": false
+  },
+  {
+   "key": "gex_pct",
+   "label": "GEX percentile (1 year)",
+   "mechanism": "extreme gamma = extreme pinning / extreme trend",
+   "thr": 0.628,
+   "old": {
+    "hi": {
+     "n": 338,
+     "avg_r": 0.049,
+     "win": 23.4,
+     "pf": 1.14,
+     "net": 7102
+    },
+    "lo": {
+     "n": 341,
+     "avg_r": -0.025,
+     "win": 18.8,
+     "pf": 0.91,
+     "net": -5240
+    },
+    "gap": 0.074,
+    "t": 0.73
+   },
+   "new": {
+    "hi": {
+     "n": 27,
+     "avg_r": 0.58,
+     "win": 33.3,
+     "pf": 4.14,
+     "net": 8054
+    },
+    "lo": {
+     "n": 62,
+     "avg_r": 0.335,
+     "win": 22.6,
+     "pf": 2.75,
+     "net": 13138
+    },
+    "gap": 0.245
+   },
+   "same_sign": true
+  },
+  {
+   "key": "dix",
+   "label": "DIX (dark-pool buying) above its median",
+   "mechanism": "quiet institutional buying supports the long side",
+   "thr": 0.473,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": 0.043,
+     "win": 22.1,
+     "pf": 1.08,
+     "net": 4111
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": -0.02,
+     "win": 20.0,
+     "pf": 0.96,
+     "net": -2248
+    },
+    "gap": 0.063,
+    "t": 0.62
+   },
+   "new": {
+    "hi": {
+     "n": 17,
+     "avg_r": 1.226,
+     "win": 41.2,
+     "pf": 9.09,
+     "net": 9967
+    },
+    "lo": {
+     "n": 72,
+     "avg_r": 0.217,
+     "win": 22.2,
+     "pf": 2.27,
+     "net": 11224
+    },
+    "gap": 1.009
+   },
+   "same_sign": true
+  },
+  {
+   "key": "zone_atr",
+   "label": "IFVG / CISD zone height vs 5m ATR",
+   "mechanism": "a tall gap means a violent reversal; a thin one is noise",
+   "thr": 0.347,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": 0.002,
+     "win": 22.7,
+     "pf": 1.02,
+     "net": 1272
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": 0.022,
+     "win": 19.4,
+     "pf": 1.01,
+     "net": 590
+    },
+    "gap": -0.02,
+    "t": -0.2
+   },
+   "new": {
+    "hi": {
+     "n": 32,
+     "avg_r": 0.047,
+     "win": 25.0,
+     "pf": 0.98,
+     "net": -80
+    },
+    "lo": {
+     "n": 57,
+     "avg_r": 0.613,
+     "win": 26.3,
+     "pf": 5.13,
+     "net": 21272
+    },
+    "gap": -0.566
+   },
+   "same_sign": true
+  },
+  {
+   "key": "n_pools",
+   "label": "Pools swept at once (1 vs 2+)",
+   "mechanism": "a stacked raid takes more stops and has more fuel",
+   "thr": 1.0,
+   "old": {
+    "hi": {
+     "n": 469,
+     "avg_r": 0.037,
+     "win": 20.9,
+     "pf": 1.01,
+     "net": 1008
+    },
+    "lo": {
+     "n": 210,
+     "avg_r": -0.044,
+     "win": 21.4,
+     "pf": 1.03,
+     "net": 854
+    },
+    "gap": 0.081,
+    "t": 0.76
+   },
+   "new": {
+    "hi": {
+     "n": 53,
+     "avg_r": 0.444,
+     "win": 26.4,
+     "pf": 3.58,
+     "net": 13098
+    },
+    "lo": {
+     "n": 36,
+     "avg_r": 0.359,
+     "win": 25.0,
+     "pf": 2.62,
+     "net": 8093
+    },
+    "gap": 0.085
+   },
+   "same_sign": true
+  },
+  {
+   "key": "trigger_bar_atr",
+   "label": "Trigger candle size vs 5m ATR",
+   "mechanism": "a big trigger candle means part of the move is spent",
+   "thr": 1.374,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": 0.019,
+     "win": 21.2,
+     "pf": 1.08,
+     "net": 3998
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": 0.005,
+     "win": 20.9,
+     "pf": 0.96,
+     "net": -2135
+    },
+    "gap": 0.014,
+    "t": 0.14
+   },
+   "new": {
+    "hi": {
+     "n": 35,
+     "avg_r": 0.054,
+     "win": 22.9,
+     "pf": 1.26,
+     "net": 1162
+    },
+    "lo": {
+     "n": 54,
+     "avg_r": 0.64,
+     "win": 27.8,
+     "pf": 4.53,
+     "net": 20028
+    },
+    "gap": -0.586
+   },
+   "same_sign": false
+  },
+  {
+   "key": "target_pts_atr",
+   "label": "Distance to target vs 5m ATR",
+   "mechanism": "a far pool is a long trip through noise",
+   "thr": 5.032,
+   "old": {
+    "hi": {
+     "n": 339,
+     "avg_r": -0.011,
+     "win": 21.5,
+     "pf": 1.07,
+     "net": 2808
+    },
+    "lo": {
+     "n": 340,
+     "avg_r": 0.034,
+     "win": 20.6,
+     "pf": 0.99,
+     "net": -946
+    },
+    "gap": -0.045,
+    "t": -0.44
+   },
+   "new": {
+    "hi": {
+     "n": 40,
+     "avg_r": 0.328,
+     "win": 25.0,
+     "pf": 3.7,
+     "net": 8644
+    },
+    "lo": {
+     "n": 49,
+     "avg_r": 0.476,
+     "win": 26.5,
+     "pf": 2.82,
+     "net": 12548
+    },
+    "gap": -0.148
+   },
+   "same_sign": true
+  },
+  {
+   "key": "kz_minutes",
+   "label": "Minutes into the killzone at entry",
+   "mechanism": "the first 45 minutes of a killzone are the manipulation leg",
+   "thr": 45.0,
+   "old": {
+    "hi": {
+     "n": 272,
+     "avg_r": -0.056,
+     "win": 20.6,
+     "pf": 0.89,
+     "net": -4452
+    },
+    "lo": {
+     "n": 407,
+     "avg_r": 0.057,
+     "win": 21.4,
+     "pf": 1.1,
+     "net": 6314
+    },
+    "gap": -0.113,
+    "t": -1.13
+   },
+   "new": {
+    "hi": {
+     "n": 36,
+     "avg_r": 0.92,
+     "win": 36.1,
+     "pf": 8.97,
+     "net": 20092
+    },
+    "lo": {
+     "n": 53,
+     "avg_r": 0.063,
+     "win": 18.9,
+     "pf": 1.15,
+     "net": 1100
+    },
+    "gap": 0.857
+   },
+   "same_sign": false
+  },
+  {
+   "key": "rvol",
+   "label": "Signal-bar volume vs the same clock bar (20 days)",
+   "mechanism": "a quiet trigger bar has no one behind it",
+   "thr": 1.0,
+   "old": {
+    "hi": {
+     "n": 317,
+     "avg_r": -0.024,
+     "win": 20.2,
+     "pf": 0.82,
+     "net": -8781
+    },
+    "lo": {
+     "n": 362,
+     "avg_r": 0.043,
+     "win": 21.8,
+     "pf": 1.18,
+     "net": 10644
+    },
+    "gap": -0.067,
+    "t": -0.66
+   },
+   "new": {
+    "hi": {
+     "n": 34,
+     "avg_r": 0.1,
+     "win": 17.6,
+     "pf": 1.13,
+     "net": 608
+    },
+    "lo": {
+     "n": 55,
+     "avg_r": 0.601,
+     "win": 30.9,
+     "pf": 4.75,
+     "net": 20582
+    },
+    "gap": -0.501
+   },
+   "same_sign": true
+  },
+  {
+   "key": "pool_age",
+   "label": "Swept pool is a prior-day / prior-week level",
+   "mechanism": "older levels hold more resting orders",
+   "thr": 1.0,
+   "old": {
+    "hi": {
+     "n": 101,
+     "avg_r": 0.015,
+     "win": 18.8,
+     "pf": 1.07,
+     "net": 782
+    },
+    "lo": {
+     "n": 578,
+     "avg_r": 0.011,
+     "win": 21.5,
+     "pf": 1.01,
+     "net": 1080
+    },
+    "gap": 0.004,
+    "t": 0.03
+   },
+   "new": {
+    "hi": {
+     "n": 11,
+     "avg_r": 0.285,
+     "win": 27.3,
+     "pf": 2.87,
+     "net": 790
+    },
+    "lo": {
+     "n": 78,
+     "avg_r": 0.427,
+     "win": 25.6,
+     "pf": 3.11,
+     "net": 20402
+    },
+    "gap": -0.142
+   },
+   "same_sign": false
+  },
+  {
+   "key": "trades_this_week",
+   "label": "Trades already taken this week",
+   "mechanism": "the third setup of the week is the leftover one",
+   "thr": 1.0,
+   "old": {
+    "hi": {
+     "n": 267,
+     "avg_r": -0.008,
+     "win": 21.7,
+     "pf": 0.94,
+     "net": -2522
+    },
+    "lo": {
+     "n": 412,
+     "avg_r": 0.024,
+     "win": 20.6,
+     "pf": 1.07,
+     "net": 4384
+    },
+    "gap": -0.032,
+    "t": -0.31
+   },
+   "new": {
+    "hi": {
+     "n": 19,
+     "avg_r": 1.247,
+     "win": 42.1,
+     "pf": 10.83,
+     "net": 11614
+    },
+    "lo": {
+     "n": 70,
+     "avg_r": 0.182,
+     "win": 21.4,
+     "pf": 2.08,
+     "net": 9577
+    },
+    "gap": 1.065
+   },
+   "same_sign": false
+  },
+  {
+   "key": "last10_sum_r",
+   "label": "Equity slope: last 10 trades net positive",
+   "mechanism": "hot and cold stretches cluster beyond the 15-trade filter",
+   "thr": 0.0,
+   "old": {
+    "hi": {
+     "n": 297,
+     "avg_r": 0.028,
+     "win": 21.9,
+     "pf": 1.03,
+     "net": 1324
+    },
+    "lo": {
+     "n": 372,
+     "avg_r": -0.022,
+     "win": 19.6,
+     "pf": 0.96,
+     "net": -2523
+    },
+    "gap": 0.05,
+    "t": 0.49
+   },
+   "new": {
+    "hi": {
+     "n": 62,
+     "avg_r": 0.614,
+     "win": 32.3,
+     "pf": 3.94,
+     "net": 19208
+    },
+    "lo": {
+     "n": 27,
+     "avg_r": -0.061,
+     "win": 11.1,
+     "pf": 1.56,
+     "net": 1984
+    },
+    "gap": 0.675
+   },
+   "same_sign": true
+  },
+  {
+   "key": "prev_trade_won",
+   "label": "The last trading day's trade won",
+   "mechanism": "a winner yesterday means the regime is paying",
+   "thr": null,
+   "old": {
+    "hi": {
+     "n": 142,
+     "avg_r": -0.014,
+     "win": 21.1,
+     "pf": 1.04,
+     "net": 1074
+    },
+    "lo": {
+     "n": 536,
+     "avg_r": 0.02,
+     "win": 21.1,
+     "pf": 1.01,
+     "net": 964
+    },
+    "gap": -0.034,
+    "t": -0.26
+   },
+   "new": {
+    "hi": {
+     "n": 24,
+     "avg_r": 0.356,
+     "win": 29.2,
+     "pf": 1.58,
+     "net": 2229
+    },
+    "lo": {
+     "n": 65,
+     "avg_r": 0.429,
+     "win": 24.6,
+     "pf": 4.05,
+     "net": 18962
+    },
+    "gap": -0.073
+   },
+   "same_sign": true
+  },
+  {
+   "key": "days_since_trade",
+   "label": "Days since the previous trade (gap of 2+ days)",
+   "mechanism": "a quiet spell means the market had no clean pools",
+   "thr": 1.0,
+   "old": {
+    "hi": {
+     "n": 324,
+     "avg_r": 0.08,
+     "win": 20.7,
+     "pf": 1.09,
+     "net": 4410
+    },
+    "lo": {
+     "n": 354,
+     "avg_r": -0.048,
+     "win": 21.5,
+     "pf": 0.96,
+     "net": -2371
+    },
+    "gap": 0.128,
+    "t": 1.27
+   },
+   "new": {
+    "hi": {
+     "n": 62,
+     "avg_r": 0.318,
+     "win": 25.8,
+     "pf": 2.73,
+     "net": 12504
+    },
+    "lo": {
+     "n": 27,
+     "avg_r": 0.621,
+     "win": 25.9,
+     "pf": 4.03,
+     "net": 8686
+    },
+    "gap": -0.303
+   },
+   "same_sign": false
+  },
+  {
+   "key": "mtd_r",
+   "label": "Month-to-date R positive",
+   "mechanism": "months trend",
+   "thr": 0.0,
+   "old": {
+    "hi": {
+     "n": 232,
+     "avg_r": 0.105,
+     "win": 23.7,
+     "pf": 1.27,
+     "net": 9603
+    },
+    "lo": {
+     "n": 447,
+     "avg_r": -0.037,
+     "win": 19.7,
+     "pf": 0.89,
+     "net": -7740
+    },
+    "gap": 0.142,
+    "t": 1.3
+   },
+   "new": {
+    "hi": {
+     "n": 46,
+     "avg_r": 0.589,
+     "win": 30.4,
+     "pf": 3.38,
+     "net": 14844
+    },
+    "lo": {
+     "n": 43,
+     "avg_r": 0.217,
+     "win": 20.9,
+     "pf": 2.65,
+     "net": 6346
+    },
+    "gap": 0.372
+   },
+   "same_sign": true
+  }
+ ],
+ "ranked_keys": [
+  "sweep_premarket",
+  "mtd_r",
+  "days_since_trade",
+  "on_share",
+  "kz_minutes",
+  "gap_abs_adr",
+  "vix_vs_20d",
+  "n_pools",
+  "gex_pct",
+  "rvol",
+  "f15_adr",
+  "gap_with_trade",
+  "dix",
+  "gex_pos",
+  "inside_days",
+  "days_since_2pct",
+  "last10_sum_r",
+  "sweep_bar_atr",
+  "target_pts_atr",
+  "vix_5d_chg",
+  "pd_range_adr",
+  "vxn_minus_vix",
+  "prev_trade_won",
+  "trades_this_week",
+  "sweep_to_trigger_min",
+  "entry_vs_open",
+  "range_used",
+  "close_streak_with",
+  "zone_atr",
+  "trigger_bar_atr",
+  "pool_age",
+  "pw_range_ratio",
+  "pd_close_pos"
+ ],
+ "coverage": {
+  "pd_range_adr": 768,
+  "on_share": 768,
+  "gap_abs_adr": 768,
+  "gap_with_trade": 768,
+  "f15_adr": 768,
+  "inside_days": 768,
+  "close_streak_with": 768,
+  "days_since_2pct": 768,
+  "pw_range_ratio": 768,
+  "pd_close_pos": 768,
+  "entry_vs_open": 768,
+  "range_used": 768,
+  "sweep_premarket": 768,
+  "sweep_to_trigger_min": 768,
+  "sweep_bar_atr": 768,
+  "vix_5d_chg": 768,
+  "vix_vs_20d": 768,
+  "vxn_minus_vix": 768,
+  "gex_pos": 768,
+  "gex_pct": 768,
+  "dix": 768,
+  "zone_atr": 768,
+  "n_pools": 768,
+  "trigger_bar_atr": 768,
+  "target_pts_atr": 768,
+  "kz_minutes": 768,
+  "rvol": 768,
+  "pool_age": 768,
+  "trades_this_week": 768,
+  "last10_sum_r": 758,
+  "prev_trade_won": 767,
+  "days_since_trade": 767,
+  "mtd_r": 768
+ },
+ "runs": [
+  {
+   "id": "flat_x125_ref",
+   "key": null,
+   "tag": "x125",
+   "status": "info",
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.13,
+     "net": 24282,
+     "dd": -2767,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -629,
+     "risk": 219.0,
+     "half": 25,
+     "per_month": 2475,
+     "p10": 22.8,
+     "f10": 0.0,
+     "p15": 33.0,
+     "f15": 0.0,
+     "p20": 38.3,
+     "f20": 0.0,
+     "dec10": 22.8,
+     "slow_pass": 47.7,
+     "pass_med": 15.0,
+     "b2b": "6/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.27,
+     "net": 18350,
+     "dd": -10452,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -1027,
+     "risk": 118.0,
+     "half": 348,
+     "per_month": 359,
+     "p10": 5.3,
+     "f10": 3.4,
+     "p15": 7.9,
+     "f15": 6.8,
+     "p20": 11.3,
+     "f20": 10.8,
+     "dec10": 8.7,
+     "slow_pass": 68.2,
+     "pass_med": 23.0,
+     "b2b": "9/17"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.56,
+     "net": 42632,
+     "dd": -10452,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -1027,
+     "risk": 120.0,
+     "half": 373,
+     "per_month": 701,
+     "p10": 8.1,
+     "f10": 2.8,
+     "p15": 12.0,
+     "f15": 5.7,
+     "p20": 16.0,
+     "f20": 9.1,
+     "dec10": 10.9,
+     "slow_pass": 65.3,
+     "pass_med": 22.0,
+     "b2b": "15/18"
+    }
+   }
+  },
+  {
+   "id": "wild_sweep_premarket_half",
+   "key": "sweep_premarket",
+   "tag": "half",
+   "status": "rejected",
+   "control": {
+    "delta_2021-25": -2665,
+    "p_2021-25": 0.043,
+    "delta_2026": -6198,
+    "p_2026": 0.174,
+    "p_both": 0.006
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.35,
+     "net": 13866,
+     "dd": -1519,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -262,
+     "risk": 116.0,
+     "half": 25,
+     "per_month": 1413,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 11.7,
+     "f15": 0.0,
+     "p20": 15.5,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 75.0,
+     "pass_med": 28.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.33,
+     "net": 12480,
+     "dd": -5046,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -690,
+     "risk": 102.0,
+     "half": 348,
+     "per_month": 244,
+     "p10": 2.1,
+     "f10": 0.5,
+     "p15": 3.1,
+     "f15": 1.0,
+     "p20": 4.3,
+     "f20": 1.5,
+     "dec10": 2.6,
+     "slow_pass": 83.9,
+     "pass_med": 35.0,
+     "b2b": "6/6"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.62,
+     "net": 26346,
+     "dd": -5046,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -690,
+     "risk": 104.0,
+     "half": 373,
+     "per_month": 433,
+     "p10": 2.7,
+     "f10": 0.4,
+     "p15": 4.5,
+     "f15": 0.9,
+     "p20": 6.1,
+     "f20": 1.3,
+     "dec10": 3.1,
+     "slow_pass": 82.1,
+     "pass_med": 34.0,
+     "b2b": "9/6"
+    }
+   }
+  },
+  {
+   "id": "wild_sweep_premarket_x125",
+   "key": "sweep_premarket",
+   "tag": "x125",
+   "status": "promising",
+   "control": {
+    "delta_2021-25": 2762,
+    "p_2021-25": 0.043,
+    "delta_2026": 2023,
+    "p_2026": 0.174,
+    "p_both": 0.006
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.17,
+     "net": 22223,
+     "dd": -2274,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -524,
+     "risk": 219.0,
+     "half": 25,
+     "per_month": 2265,
+     "p10": 22.3,
+     "f10": 0.0,
+     "p15": 30.6,
+     "f15": 0.0,
+     "p20": 35.9,
+     "f20": 0.0,
+     "dec10": 22.3,
+     "slow_pass": 51.5,
+     "pass_med": 16.0,
+     "b2b": "6/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.28,
+     "net": 17472,
+     "dd": -9228,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 118.0,
+     "half": 348,
+     "per_month": 342,
+     "p10": 4.4,
+     "f10": 2.1,
+     "p15": 6.7,
+     "f15": 4.0,
+     "p20": 9.1,
+     "f20": 6.2,
+     "dec10": 6.5,
+     "slow_pass": 77.6,
+     "pass_med": 32.0,
+     "b2b": "7/12"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.57,
+     "net": 39695,
+     "dd": -9228,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 120.0,
+     "half": 373,
+     "per_month": 652,
+     "p10": 7.3,
+     "f10": 1.7,
+     "p15": 10.6,
+     "f15": 3.4,
+     "p20": 13.8,
+     "f20": 5.2,
+     "dec10": 9.0,
+     "slow_pass": 72.8,
+     "pass_med": 30.0,
+     "b2b": "12/13"
+    }
+   }
+  },
+  {
+   "id": "wild_mtd_r_half",
+   "key": "mtd_r",
+   "tag": "half",
+   "status": "rejected",
+   "control": {
+    "delta_2021-25": -953,
+    "p_2021-25": 0.053,
+    "delta_2026": -3541,
+    "p_2026": 0.256,
+    "p_both": 0.013
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 3.6,
+     "net": 16803,
+     "dd": -1930,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -524,
+     "risk": 155.0,
+     "half": 25,
+     "per_month": 1713,
+     "p10": 11.2,
+     "f10": 0.0,
+     "p15": 17.5,
+     "f15": 0.0,
+     "p20": 19.9,
+     "f20": 0.0,
+     "dec10": 11.2,
+     "slow_pass": 62.9,
+     "pass_med": 27.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.29,
+     "net": 14385,
+     "dd": -7835,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -830,
+     "risk": 107.0,
+     "half": 348,
+     "per_month": 282,
+     "p10": 3.7,
+     "f10": 0.3,
+     "p15": 5.5,
+     "f15": 0.7,
+     "p20": 7.5,
+     "f20": 1.2,
+     "dec10": 4.0,
+     "slow_pass": 75.6,
+     "pass_med": 31.0,
+     "b2b": "6/7"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.56,
+     "net": 31188,
+     "dd": -7835,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -830,
+     "risk": 110.0,
+     "half": 373,
+     "per_month": 512,
+     "p10": 4.9,
+     "f10": 0.2,
+     "p15": 7.4,
+     "f15": 0.6,
+     "p20": 9.5,
+     "f20": 1.0,
+     "dec10": 5.1,
+     "slow_pass": 73.4,
+     "pass_med": 32.0,
+     "b2b": "10/7"
+    }
+   }
+  },
+  {
+   "id": "wild_mtd_r_x125",
+   "key": "mtd_r",
+   "tag": "x125",
+   "status": "promising",
+   "control": {
+    "delta_2021-25": 3618,
+    "p_2021-25": 0.053,
+    "delta_2026": 3351,
+    "p_2026": 0.256,
+    "p_both": 0.013
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 3.96,
+     "net": 22766,
+     "dd": -2718,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -629,
+     "risk": 219.0,
+     "half": 25,
+     "per_month": 2321,
+     "p10": 22.3,
+     "f10": 0.0,
+     "p15": 30.6,
+     "f15": 0.0,
+     "p20": 35.9,
+     "f20": 0.0,
+     "dec10": 22.3,
+     "slow_pass": 51.5,
+     "pass_med": 16.0,
+     "b2b": "6/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.26,
+     "net": 17087,
+     "dd": -10222,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -1027,
+     "risk": 118.0,
+     "half": 348,
+     "per_month": 335,
+     "p10": 4.9,
+     "f10": 2.9,
+     "p15": 7.3,
+     "f15": 5.4,
+     "p20": 9.9,
+     "f20": 8.1,
+     "dec10": 7.8,
+     "slow_pass": 75.5,
+     "pass_med": 31.0,
+     "b2b": "8/12"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.55,
+     "net": 39852,
+     "dd": -10222,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -1027,
+     "risk": 120.0,
+     "half": 373,
+     "per_month": 655,
+     "p10": 7.7,
+     "f10": 2.4,
+     "p15": 11.0,
+     "f15": 4.5,
+     "p20": 14.4,
+     "f20": 6.8,
+     "dec10": 10.1,
+     "slow_pass": 71.3,
+     "pass_med": 29.0,
+     "b2b": "13/13"
+    }
+   }
+  },
+  {
+   "id": "wild_days_since_trade_half",
+   "key": "days_since_trade",
+   "tag": "half",
+   "status": "rejected",
+   "control": {
+    "delta_2021-25": -3432,
+    "p_2021-25": 0.364,
+    "delta_2026": -3571,
+    "p_2026": 0.611,
+    "p_both": 0.22
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 3.69,
+     "net": 16363,
+     "dd": -2148,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -524,
+     "risk": 157.0,
+     "half": 25,
+     "per_month": 1668,
+     "p10": 14.6,
+     "f10": 0.0,
+     "p15": 22.8,
+     "f15": 0.0,
+     "p20": 28.6,
+     "f20": 0.0,
+     "dec10": 14.6,
+     "slow_pass": 61.2,
+     "pass_med": 21.0,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.25,
+     "net": 11732,
+     "dd": -6230,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 108.0,
+     "half": 348,
+     "per_month": 230,
+     "p10": 1.9,
+     "f10": 0.0,
+     "p15": 3.3,
+     "f15": 0.4,
+     "p20": 4.8,
+     "f20": 1.3,
+     "dec10": 1.9,
+     "slow_pass": 84.3,
+     "pass_med": 38.0,
+     "b2b": "6/7"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.54,
+     "net": 28095,
+     "dd": -6230,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 110.0,
+     "half": 373,
+     "per_month": 462,
+     "p10": 3.9,
+     "f10": 0.0,
+     "p15": 6.4,
+     "f15": 0.3,
+     "p20": 8.6,
+     "f20": 1.1,
+     "dec10": 3.9,
+     "slow_pass": 77.3,
+     "pass_med": 34.0,
+     "b2b": "10/8"
+    }
+   }
+  },
+  {
+   "id": "wild_days_since_trade_x125",
+   "key": "days_since_trade",
+   "tag": "x125",
+   "status": "promising",
+   "control": {
+    "delta_2021-25": 2401,
+    "p_2021-25": 0.364,
+    "delta_2026": 3336,
+    "p_2026": 0.611,
+    "p_both": 0.22
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.09,
+     "net": 23170,
+     "dd": -2542,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -629,
+     "risk": 219.0,
+     "half": 25,
+     "per_month": 2362,
+     "p10": 21.8,
+     "f10": 0.0,
+     "p15": 30.6,
+     "f15": 0.0,
+     "p20": 35.9,
+     "f20": 0.0,
+     "dec10": 21.8,
+     "slow_pass": 51.5,
+     "pass_med": 16.0,
+     "b2b": "5/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.28,
+     "net": 17778,
+     "dd": -9607,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -975,
+     "risk": 118.0,
+     "half": 348,
+     "per_month": 348,
+     "p10": 4.4,
+     "f10": 2.1,
+     "p15": 6.8,
+     "f15": 3.8,
+     "p20": 9.5,
+     "f20": 6.2,
+     "dec10": 6.5,
+     "slow_pass": 79.9,
+     "pass_med": 31.0,
+     "b2b": "8/12"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.57,
+     "net": 40948,
+     "dd": -9607,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -975,
+     "risk": 120.0,
+     "half": 373,
+     "per_month": 673,
+     "p10": 7.2,
+     "f10": 1.7,
+     "p15": 10.6,
+     "f15": 3.2,
+     "p20": 14.1,
+     "f20": 5.2,
+     "dec10": 8.9,
+     "slow_pass": 74.7,
+     "pass_med": 29.0,
+     "b2b": "12/13"
+    }
+   }
+  },
+  {
+   "id": "wild_on_share_half",
+   "key": "on_share",
+   "tag": "half",
+   "status": "promising",
+   "control": {
+    "delta_2021-25": -2363,
+    "p_2021-25": 0.279,
+    "delta_2026": 53,
+    "p_2026": 0.112,
+    "p_both": 0.033
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.3,
+     "net": 20674,
+     "dd": -1839,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -524,
+     "risk": 165.0,
+     "half": 25,
+     "per_month": 2108,
+     "p10": 20.4,
+     "f10": 0.0,
+     "p15": 29.1,
+     "f15": 0.0,
+     "p20": 34.0,
+     "f20": 0.0,
+     "dec10": 20.4,
+     "slow_pass": 53.8,
+     "pass_med": 18.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.28,
+     "net": 12669,
+     "dd": -6143,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 108.0,
+     "half": 348,
+     "per_month": 248,
+     "p10": 1.8,
+     "f10": 0.4,
+     "p15": 2.9,
+     "f15": 0.8,
+     "p20": 3.8,
+     "f20": 1.4,
+     "dec10": 2.2,
+     "slow_pass": 88.2,
+     "pass_med": 38.0,
+     "b2b": "6/7"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.64,
+     "net": 33343,
+     "dd": -6143,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 110.0,
+     "half": 373,
+     "per_month": 548,
+     "p10": 4.8,
+     "f10": 0.3,
+     "p15": 7.1,
+     "f15": 0.7,
+     "p20": 9.0,
+     "f20": 1.2,
+     "dec10": 5.1,
+     "slow_pass": 78.6,
+     "pass_med": 33.0,
+     "b2b": "10/7"
+    }
+   }
+  },
+  {
+   "id": "wild_on_share_x125",
+   "key": "on_share",
+   "tag": "x125",
+   "status": "promising",
+   "control": {
+    "delta_2021-25": 2913,
+    "p_2021-25": 0.279,
+    "delta_2026": 5148,
+    "p_2026": 0.112,
+    "p_both": 0.033
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.23,
+     "net": 24463,
+     "dd": -2617,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -629,
+     "risk": 213.0,
+     "half": 25,
+     "per_month": 2494,
+     "p10": 22.8,
+     "f10": 0.0,
+     "p15": 33.0,
+     "f15": 0.0,
+     "p20": 38.3,
+     "f20": 0.0,
+     "dec10": 22.8,
+     "slow_pass": 47.7,
+     "pass_med": 15.0,
+     "b2b": "6/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.28,
+     "net": 17919,
+     "dd": -9620,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -1014,
+     "risk": 118.0,
+     "half": 348,
+     "per_month": 351,
+     "p10": 5.1,
+     "f10": 2.5,
+     "p15": 7.9,
+     "f15": 4.2,
+     "p20": 11.3,
+     "f20": 7.0,
+     "dec10": 7.6,
+     "slow_pass": 73.9,
+     "pass_med": 27.0,
+     "b2b": "8/11"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.59,
+     "net": 42382,
+     "dd": -9620,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -1014,
+     "risk": 120.0,
+     "half": 373,
+     "per_month": 696,
+     "p10": 8.0,
+     "f10": 2.1,
+     "p15": 12.0,
+     "f15": 3.5,
+     "p20": 16.0,
+     "f20": 5.9,
+     "dec10": 10.1,
+     "slow_pass": 69.4,
+     "pass_med": 25.0,
+     "b2b": "13/12"
+    }
+   }
+  },
+  {
+   "id": "wild_kz_minutes_half",
+   "key": "kz_minutes",
+   "tag": "half",
+   "status": "rejected",
+   "control": {
+    "delta_2021-25": -2358,
+    "p_2021-25": 0.387,
+    "delta_2026": -9085,
+    "p_2026": 0.993,
+    "p_both": 0.385
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 2.77,
+     "net": 10910,
+     "dd": -2566,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -524,
+     "risk": 160.0,
+     "half": 25,
+     "per_month": 1112,
+     "p10": 2.9,
+     "f10": 0.0,
+     "p15": 7.3,
+     "f15": 0.0,
+     "p20": 12.6,
+     "f20": 0.0,
+     "dec10": 2.9,
+     "slow_pass": 81.2,
+     "pass_med": 30.5,
+     "b2b": "3/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.25,
+     "net": 12858,
+     "dd": -7746,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 110.0,
+     "half": 348,
+     "per_month": 252,
+     "p10": 2.3,
+     "f10": 1.5,
+     "p15": 4.4,
+     "f15": 2.3,
+     "p20": 6.2,
+     "f20": 2.9,
+     "dec10": 3.8,
+     "slow_pass": 82.4,
+     "pass_med": 32.0,
+     "b2b": "6/10"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.42,
+     "net": 23769,
+     "dd": -7746,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 112.0,
+     "half": 373,
+     "per_month": 391,
+     "p10": 2.4,
+     "f10": 1.3,
+     "p15": 4.9,
+     "f15": 2.0,
+     "p20": 7.5,
+     "f20": 2.4,
+     "dec10": 3.7,
+     "slow_pass": 84.1,
+     "pass_med": 33.0,
+     "b2b": "9/11"
+    }
+   }
+  },
+  {
+   "id": "wild_kz_minutes_x125",
+   "key": "kz_minutes",
+   "tag": "x125",
+   "status": "promising",
+   "control": {
+    "delta_2021-25": 2916,
+    "p_2021-25": 0.387,
+    "delta_2026": 579,
+    "p_2026": 0.993,
+    "p_both": 0.385
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 3.73,
+     "net": 20606,
+     "dd": -2680,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -629,
+     "risk": 219.0,
+     "half": 25,
+     "per_month": 2101,
+     "p10": 21.8,
+     "f10": 0.0,
+     "p15": 33.0,
+     "f15": 0.0,
+     "p20": 38.3,
+     "f20": 0.0,
+     "dec10": 21.8,
+     "slow_pass": 47.7,
+     "pass_med": 15.0,
+     "b2b": "5/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.28,
+     "net": 18312,
+     "dd": -10205,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -1014,
+     "risk": 118.0,
+     "half": 348,
+     "per_month": 359,
+     "p10": 4.9,
+     "f10": 2.5,
+     "p15": 7.7,
+     "f15": 4.9,
+     "p20": 10.8,
+     "f20": 7.6,
+     "dec10": 7.4,
+     "slow_pass": 72.3,
+     "pass_med": 26.0,
+     "b2b": "8/15"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.53,
+     "net": 38918,
+     "dd": -10205,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -1014,
+     "risk": 120.0,
+     "half": 373,
+     "per_month": 640,
+     "p10": 7.7,
+     "f10": 2.1,
+     "p15": 11.8,
+     "f15": 4.1,
+     "p20": 15.6,
+     "f20": 6.4,
+     "dec10": 9.8,
+     "slow_pass": 68.1,
+     "pass_med": 25.0,
+     "b2b": "12/16"
+    }
+   }
+  },
+  {
+   "id": "wild_gap_abs_adr_half",
+   "key": "gap_abs_adr",
+   "tag": "half",
+   "status": "rejected",
+   "control": {
+    "delta_2021-25": -1763,
+    "p_2021-25": 0.208,
+    "delta_2026": -3004,
+    "p_2026": 0.22,
+    "p_both": 0.047
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.13,
+     "net": 16879,
+     "dd": -1842,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -524,
+     "risk": 134.0,
+     "half": 25,
+     "per_month": 1721,
+     "p10": 18.4,
+     "f10": 0.0,
+     "p15": 27.2,
+     "f15": 0.0,
+     "p20": 32.0,
+     "f20": 0.0,
+     "dec10": 18.4,
+     "slow_pass": 56.2,
+     "pass_med": 19.5,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.28,
+     "net": 13178,
+     "dd": -6477,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -875,
+     "risk": 109.0,
+     "half": 348,
+     "per_month": 258,
+     "p10": 2.8,
+     "f10": 0.3,
+     "p15": 4.3,
+     "f15": 0.7,
+     "p20": 5.6,
+     "f20": 1.2,
+     "dec10": 3.1,
+     "slow_pass": 79.8,
+     "pass_med": 36.0,
+     "b2b": "6/8"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.57,
+     "net": 30057,
+     "dd": -6477,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -875,
+     "risk": 110.0,
+     "half": 373,
+     "per_month": 494,
+     "p10": 5.3,
+     "f10": 0.2,
+     "p15": 8.0,
+     "f15": 0.6,
+     "p20": 9.9,
+     "f20": 1.0,
+     "dec10": 5.5,
+     "slow_pass": 72.7,
+     "pass_med": 33.0,
+     "b2b": "10/8"
+    }
+   }
+  },
+  {
+   "id": "wild_gap_abs_adr_x125",
+   "key": "gap_abs_adr",
+   "tag": "x125",
+   "status": "promising",
+   "control": {
+    "delta_2021-25": 3213,
+    "p_2021-25": 0.208,
+    "delta_2026": 3620,
+    "p_2026": 0.22,
+    "p_both": 0.047
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.2,
+     "net": 23556,
+     "dd": -2530,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -629,
+     "risk": 213.0,
+     "half": 25,
+     "per_month": 2401,
+     "p10": 22.3,
+     "f10": 0.0,
+     "p15": 30.6,
+     "f15": 0.0,
+     "p20": 35.9,
+     "f20": 0.0,
+     "dec10": 22.3,
+     "slow_pass": 51.5,
+     "pass_med": 16.0,
+     "b2b": "5/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.27,
+     "net": 17562,
+     "dd": -9500,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -965,
+     "risk": 118.0,
+     "half": 348,
+     "per_month": 344,
+     "p10": 4.8,
+     "f10": 2.6,
+     "p15": 6.7,
+     "f15": 4.8,
+     "p20": 9.6,
+     "f20": 6.8,
+     "dec10": 7.4,
+     "slow_pass": 78.1,
+     "pass_med": 31.0,
+     "b2b": "9/11"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.57,
+     "net": 41118,
+     "dd": -9500,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -965,
+     "risk": 120.0,
+     "half": 373,
+     "per_month": 676,
+     "p10": 7.6,
+     "f10": 2.2,
+     "p15": 10.6,
+     "f15": 4.0,
+     "p20": 14.2,
+     "f20": 5.7,
+     "dec10": 9.8,
+     "slow_pass": 73.2,
+     "pass_med": 29.0,
+     "b2b": "13/12"
+    }
+   }
+  },
+  {
+   "id": "wild_vix_vs_20d_half",
+   "key": "vix_vs_20d",
+   "tag": "half",
+   "status": "rejected",
+   "control": {
+    "delta_2021-25": -4214,
+    "p_2021-25": 0.402,
+    "delta_2026": -4335,
+    "p_2026": 0.164,
+    "p_both": 0.069
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 3.99,
+     "net": 15641,
+     "dd": -1559,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -524,
+     "risk": 118.0,
+     "half": 25,
+     "per_month": 1595,
+     "p10": 11.2,
+     "f10": 0.0,
+     "p15": 18.4,
+     "f15": 0.0,
+     "p20": 23.3,
+     "f20": 0.0,
+     "dec10": 11.2,
+     "slow_pass": 64.8,
+     "pass_med": 23.5,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.25,
+     "net": 11073,
+     "dd": -5003,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -830,
+     "risk": 107.0,
+     "half": 348,
+     "per_month": 217,
+     "p10": 1.9,
+     "f10": 0.0,
+     "p15": 2.9,
+     "f15": 0.0,
+     "p20": 3.8,
+     "f20": 0.0,
+     "dec10": 1.9,
+     "slow_pass": 80.5,
+     "pass_med": 34.0,
+     "b2b": "6/6"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.54,
+     "net": 26714,
+     "dd": -5003,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -830,
+     "risk": 108.0,
+     "half": 373,
+     "per_month": 439,
+     "p10": 3.4,
+     "f10": 0.0,
+     "p15": 5.4,
+     "f15": 0.0,
+     "p20": 7.0,
+     "f20": 0.0,
+     "dec10": 3.4,
+     "slow_pass": 75.8,
+     "pass_med": 31.0,
+     "b2b": "9/6"
+    }
+   }
+  },
+  {
+   "id": "wild_vix_vs_20d_x125",
+   "key": "vix_vs_20d",
+   "tag": "x125",
+   "status": "promising",
+   "control": {
+    "delta_2021-25": 1988,
+    "p_2021-25": 0.402,
+    "delta_2026": 2954,
+    "p_2026": 0.164,
+    "p_both": 0.069
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.19,
+     "net": 23128,
+     "dd": -2355,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -629,
+     "risk": 213.0,
+     "half": 25,
+     "per_month": 2358,
+     "p10": 22.3,
+     "f10": 0.0,
+     "p15": 33.0,
+     "f15": 0.0,
+     "p20": 38.3,
+     "f20": 0.0,
+     "dec10": 22.3,
+     "slow_pass": 47.7,
+     "pass_med": 15.0,
+     "b2b": "6/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.27,
+     "net": 17093,
+     "dd": -9430,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -1027,
+     "risk": 118.0,
+     "half": 348,
+     "per_month": 335,
+     "p10": 4.8,
+     "f10": 2.9,
+     "p15": 7.2,
+     "f15": 5.1,
+     "p20": 10.0,
+     "f20": 7.5,
+     "dec10": 7.7,
+     "slow_pass": 76.2,
+     "pass_med": 31.0,
+     "b2b": "8/11"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.57,
+     "net": 40221,
+     "dd": -9430,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -1027,
+     "risk": 120.0,
+     "half": 373,
+     "per_month": 661,
+     "p10": 7.6,
+     "f10": 2.4,
+     "p15": 11.3,
+     "f15": 4.3,
+     "p20": 14.9,
+     "f20": 6.3,
+     "dec10": 10.0,
+     "slow_pass": 70.9,
+     "pass_med": 28.0,
+     "b2b": "13/12"
+    }
+   }
+  },
+  {
+   "id": "wild_n_pools_half",
+   "key": "n_pools",
+   "tag": "half",
+   "status": "rejected",
+   "control": {
+    "delta_2021-25": -2210,
+    "p_2021-25": 0.45,
+    "delta_2026": -3634,
+    "p_2026": 0.402,
+    "p_both": 0.172
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.02,
+     "net": 16300,
+     "dd": -2087,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -490,
+     "risk": 118.0,
+     "half": 25,
+     "per_month": 1662,
+     "p10": 15.5,
+     "f10": 0.0,
+     "p15": 25.7,
+     "f15": 0.0,
+     "p20": 33.0,
+     "f20": 0.0,
+     "dec10": 15.5,
+     "slow_pass": 59.2,
+     "pass_med": 19.5,
+     "b2b": "4/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.25,
+     "net": 13465,
+     "dd": -9275,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -868,
+     "risk": 112.0,
+     "half": 348,
+     "per_month": 264,
+     "p10": 2.9,
+     "f10": 0.5,
+     "p15": 4.9,
+     "f15": 2.0,
+     "p20": 6.5,
+     "f20": 3.6,
+     "dec10": 3.4,
+     "slow_pass": 82.1,
+     "pass_med": 33.0,
+     "b2b": "8/10"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.5,
+     "net": 29765,
+     "dd": -9275,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -868,
+     "risk": 114.0,
+     "half": 373,
+     "per_month": 489,
+     "p10": 4.9,
+     "f10": 0.4,
+     "p15": 8.2,
+     "f15": 1.6,
+     "p20": 10.8,
+     "f20": 3.1,
+     "dec10": 5.3,
+     "slow_pass": 76.0,
+     "pass_med": 31.0,
+     "b2b": "12/11"
+    }
+   }
+  },
+  {
+   "id": "wild_n_pools_x125",
+   "key": "n_pools",
+   "tag": "x125",
+   "status": "promising",
+   "control": {
+    "delta_2021-25": 2990,
+    "p_2021-25": 0.45,
+    "delta_2026": 3305,
+    "p_2026": 0.402,
+    "p_both": 0.172
+   },
+   "spans": {
+    "2026": {
+     "n": 89,
+     "tpw": 2.16,
+     "wk2": 71,
+     "win": 25.8,
+     "pf": 4.12,
+     "net": 22915,
+     "dd": -2462,
+     "avg_r": 0.41,
+     "stop": 44.0,
+     "worst_day": -560,
+     "risk": 213.0,
+     "half": 25,
+     "per_month": 2336,
+     "p10": 22.3,
+     "f10": 0.0,
+     "p15": 30.6,
+     "f15": 0.0,
+     "p20": 35.9,
+     "f20": 0.0,
+     "dec10": 22.3,
+     "slow_pass": 51.5,
+     "pass_med": 16.0,
+     "b2b": "5/1"
+    },
+    "2021-25": {
+     "n": 679,
+     "tpw": 3.17,
+     "wk2": 92,
+     "win": 21.1,
+     "pf": 1.26,
+     "net": 17446,
+     "dd": -10445,
+     "avg_r": 0.012,
+     "stop": 41.2,
+     "worst_day": -1027,
+     "risk": 118.0,
+     "half": 348,
+     "per_month": 342,
+     "p10": 4.9,
+     "f10": 3.1,
+     "p15": 7.3,
+     "f15": 6.0,
+     "p20": 9.9,
+     "f20": 9.6,
+     "dec10": 8.0,
+     "slow_pass": 70.5,
+     "pass_med": 25.0,
+     "b2b": "9/14"
+    },
+    "all": {
+     "n": 768,
+     "tpw": 3.0,
+     "wk2": 89,
+     "win": 21.6,
+     "pf": 1.55,
+     "net": 40361,
+     "dd": -10445,
+     "avg_r": 0.058,
+     "stop": 41.8,
+     "worst_day": -1027,
+     "risk": 120.0,
+     "half": 373,
+     "per_month": 663,
+     "p10": 7.7,
+     "f10": 2.6,
+     "p15": 11.0,
+     "f15": 5.0,
+     "p20": 14.4,
+     "f20": 8.1,
+     "dec10": 10.3,
+     "slow_pass": 67.8,
+     "pass_med": 24.5,
+     "b2b": "13/15"
+    }
+   }
+  }
+ ],
+ "shuffle_best": {
+  "key": "sweep_premarket",
+  "observed_gap": 0.181,
+  "p_single": 0.158,
+  "p_family": 0.949,
+  "factors_tested": 33
+ },
+ "shuffle_best_agreeing": null
+}

@@ -97,7 +97,7 @@ function sessionName(n = etNow()) {
 function cockpitSkeleton(el) {
   el.className = 'cockpit';
   el.innerHTML = `<div class="ck-top">
-      <div class="ck-cell ck-bot"><div class="orb off" id="ckOrb"><b>BOT</b></div><div style="min-width:0"><div class="ck-k">Liquidity Engine</div><div class="ck-v" id="ckBotTxt">CONNECTING</div><div class="ck-s" id="ckBotSub">waiting for the server…</div><div class="ck-badges" id="ckBadges"></div></div></div>
+      <div class="ck-cell ck-bot"><div class="orb off" id="ckOrb"><b>BOT</b></div><div style="min-width:0"><div class="ck-k">Paper bot</div><div class="ck-v" id="ckBotTxt">CONNECTING</div><div class="ck-s" id="ckBotSub">waiting for the server…</div><div class="ck-badges" id="ckBadges"></div></div></div>
       <div class="ck-cell ck-price"><div class="ck-k">NQ futures <span id="ckPxSrc"></span></div><div class="ck-v" id="ckPx">—</div><div class="ck-s" id="ckPxSub"></div><div id="ckSpark" style="height:30px;margin-top:4px"></div></div>
       <div class="ck-cell"><div class="ck-k">Today · paper routed</div><div class="ck-v" id="ckToday">—</div><div class="ck-s" id="ckTodaySub"></div></div>
       <div class="ck-cell"><div class="ck-k">This week · band 2–4</div><div class="ck-v sm" id="ckWeek">—</div><div class="ck-band" id="ckBand"></div><div class="ck-s" id="ckWeekSub"></div></div>

@@ -3,8 +3,9 @@
 Auto-resume record (data/autostart.json): {"cfg": <last successful /api/live/start body, secrets stripped>,
 "saved_at": unix, "mode": "paper"|"demo"|"live"|"other"}. Written by /api/live/start, deleted by /api/live/stop and
 /api/live/kill (an intentional stop stays stopped). On server start `decide_resume()` says whether to restart the bot.
-Only paper and Tradovate DEMO resume automatically; anything that could place real orders (tradovate-live, the
-generic "tradovate" adapter while TRADOVATE_ENV=live, TradersPost webhooks) never auto-resumes.
+Only paper, Tradovate DEMO and NinjaTrader on a Sim account resume automatically; anything that could place real orders
+(tradovate-live, the generic "tradovate" adapter while TRADOVATE_ENV=live, NinjaTrader on any non-Sim account,
+TradersPost webhooks) never auto-resumes.
 
 Watchdog: a daemon thread that every `interval_s` checks the bot and sends one alert per condition (rate-limited
 to once per 30 min per condition) plus one "recovered" message when it clears:
@@ -55,6 +56,9 @@ def mode_of(cfg: dict, tradovate_env: str = "demo") -> str:
         return "live" if (tradovate_env or "demo").lower() == "live" else "demo"
     if adapter == "tradovate-live":
         return "live"
+    if adapter == "ninjatrader":             # NinjaTrader's own Sim101 / SimNNN accounts are demo; any other account is live
+        from .ninjatrader import is_sim, resolve_account
+        return "demo" if is_sim(resolve_account(cfg)) else "live"
     return "other"
 
 

@@ -496,6 +496,7 @@ async def api_tv_import(req: Request, sym: str = "NQ"):
 # ---- LIVE TRADING (tradovate) ----
 from engine import golive as _golive
 from engine import tradovate as _tv
+from engine import ninjatrader as _nt
 
 _live_arm = {"armed": False, "at": None, "adapter": "paper"}     # memory only, never written to disk
 
@@ -507,6 +508,7 @@ def live_adapters():
         {"name": "paper", "label": "Paper (simulated)", "configured": True},
         {"name": "tradovate-demo", "label": "Tradovate DEMO", "configured": st["present"]},
         {"name": "tradovate-live", "label": "Tradovate LIVE (MFFU)", "configured": st["present"] and st["env"] == "live"},
+        {"name": "ninjatrader", "label": "NinjaTrader 8 (Sim101 first; ninjatrader/SETUP.md)", "configured": _nt.folder_ready()},
     ], "env": st["env"], "missing": st["missing"], "account": st["account"], "phrase": _tv.LIVE_PHRASE,
         "armed": _live_arm["armed"], "armed_at": _live_arm["at"], "bot_running": BOT.running, "bot_adapter": BOT.cfg.get("adapter")})
 
@@ -608,6 +610,7 @@ def memory_export():
 # the last successful /api/live/start; on server start a paper / Tradovate-DEMO bot resumes by itself. Live never
 # auto-resumes. /api/live/stop and /api/live/kill delete the record. A heartbeat thread alerts on stalled polls / a
 # stale feed and keeps the PC awake while the bot runs.
+from engine import heartbeat as _hb
 from engine import keepawake as _ka
 from engine import watchdog as _wd
 
@@ -668,6 +671,7 @@ class _KillClearsAutostart:
 
 app.add_middleware(_KillClearsAutostart)
 WATCHDOG = _wd.Watchdog(BOT, send=_autostart_alert, keepawake=_ka.KEEPAWAKE)
+HEARTBEAT = _hb.Heartbeat(BOT, log=lambda t: print(t, flush=True))   # pushes "I'm alive" to the heartbeat branch (LE_HEARTBEAT=1)
 
 
 def _autostart_resume():
@@ -708,6 +712,7 @@ def _autostart_startup():
     else:
         threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
     WATCHDOG.start()
+    HEARTBEAT.start()
 
 
 app.router.add_event_handler("startup", _autostart_startup)
@@ -716,7 +721,7 @@ app.router.add_event_handler("startup", _autostart_startup)
 @app.get("/api/health/ping")
 def health_ping():
     return J({"ok": True, "t": int(time.time()), "uptime_s": int(time.time() - WATCHDOG.server_started_at),
-              "bot_running": bool(BOT.running)})
+              "bot_running": bool(BOT.running), "heartbeat": HEARTBEAT.status()})
 
 
 @app.get("/api/health/watchdog")
@@ -921,13 +926,22 @@ except Exception as _dash_err:
 # ---- END DASH EXTRAS ----
 
 
+# Dashboard UI: web_next/ (the redesigned command center) is served first and falls back to web/ for every file it does
+# not override, so all page modules are shared. LE_UI=classic serves the old web/ dashboard unchanged.
+WEB_NEXT = os.path.join(ROOT, "web_next")
+UI_DIRS = [WEB] if os.environ.get("LE_UI", "next") == "classic" or not os.path.isdir(WEB_NEXT) else [WEB_NEXT, WEB]
+
+
 @app.get("/")
 def index():
-    return FileResponse(os.path.join(WEB, "index.html"))
+    return FileResponse(os.path.join(UI_DIRS[0], "index.html"))
 
 
 from engine.extras_api import router as extras_router; app.include_router(extras_router)
-app.mount("/", StaticFiles(directory=WEB), name="web")
+from engine.next_api import router as next_router; app.include_router(next_router)
+_static = StaticFiles(directory=WEB)
+_static.all_directories = list(UI_DIRS)       # first directory that has the file wins
+app.mount("/", _static, name="web")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8765))

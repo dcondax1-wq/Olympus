@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-skin="obsidian">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Liquidity Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Oxanium:wght@500;600;700;800&family=Unbounded:wght@500;600;700&family=Orbitron:wght@500;700;800&family=VT323&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/skins.css">
+  <link rel="stylesheet" href="/css/dash.css">
+  <link rel="stylesheet" href="/css/next.css">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <meta name="theme-color" content="#07080c">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Liquidity">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=drop1">
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg?v=drop1">
+  <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app nx">
+  <aside class="nx-side" id="nxSide">
+    <div class="nx-brand">
+      <div class="nx-mark" aria-hidden="true"><img src="/icons/icon-192.png?v=drop1" alt="" width="38" height="38"></div>
+      <div class="nx-brand-t"><b>Liquidity Engine</b><span>LIT · NQ · MFFU Builder 50K</span></div>
+    </div>
+    <nav id="nav" class="nx-nav" aria-label="Main"></nav>
+    <div class="nx-side-foot">
+      <div class="nx-acct" data-goto="prop">
+        <div class="nx-acct-k">Account</div>
+        <div class="nx-acct-v" id="railPlan">MFFU Builder 50K</div>
+        <div class="nx-acct-s" id="nxAcctSub">paper · eval tracker</div>
+      </div>
+      <button class="nx-collapse" id="nxCollapse" type="button" title="Collapse sidebar"></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar nx-top">
+      <div class="tb-left">
+        <div class="nx-title">
+          <div class="nx-crumb" id="nxCrumb"></div>
+          <h1 id="pageTitle">Today</h1>
+          <span class="pill nx-range" id="dataRange">loading…</span>
+        </div>
+      </div>
+      <div class="tb-right">
+        <button class="nx-search" id="nxSearch" type="button" title="Search pages and actions (Ctrl+K)"><span class="nx-search-i"></span><span class="nx-search-t">Search or jump to…</span><kbd>Ctrl K</kbd></button>
+        <a class="pill news-chip" id="newsChip" data-goto="news" title="News &amp; risk guard">news…</a>
+        <div class="seg" id="symSeg"></div>
+        <div class="clock">
+          <div class="mono" id="clockEt">--:--:--</div>
+          <div class="clock-sub" id="clockSess">ET</div>
+        </div>
+        <button class="btn ghost" id="refreshData" title="Pull the latest bars from Yahoo Finance">⟳ Data</button>
+        <button class="btn primary" id="runBtn" title="Run the backtest">▶ Run backtest</button>
+        <button class="btn ghost icon" id="soundBtn" title="Sound alerts">🔇</button>
+        <button class="btn ghost icon" id="themeBtn" title="Themes &amp; settings">⚙</button>
+      </div>
+    </header>
+    <div class="ticker" id="ticker" aria-label="Live market ticker"><div class="ticker-track" id="tickerTrack"></div></div>
+    <div class="busy" id="busy"><div class="bar"></div></div>
+    <div class="nx-sub" id="nxSub"></div>
+
+    <!-- ============================================================ COMMAND -->
+    <section class="page active" id="page-command">
+      <!-- Live Oracle: the 3D orb with the last bars and nearest pools (js/next/fx3d.js); hidden while 3D is off -->
+      <div class="card nx-glass nx-oracle" id="nxOracle" data-fx-card hidden>
+        <div class="hero3d" id="nxOrb"><span class="hero-tag">LIVE ORACLE</span></div>
+        <div class="nx-oracle-t" id="nxOracleT"></div>
+      </div>
+      <!-- mission strip (js/dash/home.js) -->
+      <div id="cockpit" class="cockpit"></div>
+      <div class="page-tools" id="cmdTools"></div>
+      <!-- week ring + liquidity map (js/next/today.js): 3D views with 2D fallbacks -->
+      <div class="nx-today3" id="nxToday3"></div>
+      <!-- every card below is a widget (js/dash/widgets.js): drag ⠿ to reorder, ⤢ expand, ⇩ export, ✕ hide; layout saved per browser -->
+      <div id="cmdGrid">
+        <div class="grid kpis" id="cmdKpis"></div>
+        <div class="card" data-adopt="equity">
+          <div class="card-h"><h3>Equity · simulated MFFU account</h3><div class="card-tools mono small" id="cmdEqNote"></div></div>
+          <div class="chart-box h260"><canvas id="cmdEquity"></canvas></div>
+        </div>
+        <div class="card" data-adopt="account">
+          <div class="card-h"><h3>MFFU Builder 50K · evaluation</h3><span class="muted small">backtest</span></div>
+          <div id="cmdAccount"></div>
+        </div>
+        <div class="card" data-adopt="state">
+          <div class="card-h"><h3>Model state · last bar</h3><span class="pill" id="cmdStateTime"></span></div>
+          <div id="cmdState"></div>
+        </div>
+        <div class="card" data-adopt="ladder">
+          <div class="card-h"><h3>Liquidity ladder</h3><span class="muted small">untaken pools around price</span></div>
+          <div id="cmdLadder"></div>
+        </div>
+        <div class="card" data-adopt="clock">
+          <div class="card-h"><h3>Session clock</h3><span class="muted small">New York time</span></div>
+          <div id="cmdClock"></div>
+        </div>
+        <div class="card" data-adopt="mtf">
+          <div class="card-h"><h3>Multi-timeframe alignment</h3><span class="muted small">FVG order flow · structure · location</span></div>
+          <div id="cmdMtf"></div>
+        </div>
+        <div class="card" data-adopt="pd">
+          <div class="card-h"><h3>Dealing range · premium / discount</h3><span class="muted small">1H swing range · midnight open</span></div>
+          <div id="cmdPd"></div>
+        </div>
+        <div class="card" data-adopt="brain">
+          <div class="card-h"><h3>Bot brain · backtest</h3><span class="muted small">latest reasoning, newest first</span></div>
+          <div class="feed" id="cmdFeed"></div>
+        </div>
+        <div class="card" data-adopt="trades">
+          <div class="card-h"><h3>Recent trades</h3><a class="link" data-goto="backtest">all trades →</a></div>
+          <div id="cmdTrades"></div>
+        </div>
+        <div class="card" id="cmdWhatIf"></div>
+        <div class="card" id="cmdEdge"></div>
+        <div class="card" id="cmdRules"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ DEEP STATS (js/dash/analytics.js renders it) -->
+    <section class="page" id="page-analytics"><div class="empty">Loading deep stats…</div></section>
+
+    <!-- ============================================================ OPS & DATA (js/dash/ops.js renders it) -->
+    <section class="page" id="page-ops"><div class="empty">Loading ops…</div></section>
+
+    <!-- ============================================================ LAUNCH CONTROL (page-launch.js renders it) -->
+    <section class="page" id="page-launch"><div class="empty">Loading launch control…</div></section>
+
+    <!-- ============================================================ CHART -->
+    <section class="page" id="page-chart">
+      <div class="toolbar">
+        <div class="seg" id="chartTf"></div>
+        <div class="seg" id="chartLayers"></div>
+        <div class="spacer"></div>
+        <button class="btn ghost" id="prevDay">◀ Day</button>
+        <select id="daySel" class="sel"></select>
+        <button class="btn ghost" id="nextDay">Day ▶</button>
+        <button class="btn ghost" id="prevTrade">◀ Trade</button>
+        <button class="btn ghost" id="nextTrade">Trade ▶</button>
+        <button class="btn ghost" id="fitAll">Fit</button>
+      </div>
+      <div class="chart-layout">
+        <div class="card chart-card"><div class="tv" id="mainChart"></div><div class="legend mono" id="mainLegend"></div></div>
+        <div class="card side" id="chartSide"></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ REPLAY -->
+    <section class="page" id="page-replay">
+      <div class="toolbar">
+        <select id="rpDay" class="sel"></select>
+        <button class="btn ghost" id="rpStart">⏮</button>
+        <button class="btn ghost" id="rpBack">◀︎ 1</button>
+        <button class="btn primary" id="rpPlay">▶ Play</button>
+        <button class="btn ghost" id="rpFwd">1 ▶︎</button>
+        <button class="btn ghost" id="rpNextEv">Next event ⏭</button>
+        <div class="seg" id="rpSpeed"></div>
+        <input type="range" id="rpScrub" min="0" max="100" value="0" class="scrub">
+        <span class="mono pill" id="rpTime">--</span>
+      </div>
+      <div class="chart-layout replay">
+        <div class="card chart-card"><div class="tv" id="rpChart"></div><div class="legend mono" id="rpLegend"></div>
+          <div class="rp-hud" id="rpHud"></div>
+        </div>
+        <div class="side-stack">
+          <div class="card">
+            <div class="card-h"><h3>Practice mode</h3><span class="muted small">trade it yourself vs the bot</span></div>
+            <div class="practice">
+              <div class="row gap"><label>Qty MNQ <input id="ppQty" type="number" value="4" min="1" max="40" class="inp sm"></label>
+                <button class="btn buy" id="ppBuy">BUY</button><button class="btn sell" id="ppSell">SELL</button><button class="btn ghost" id="ppFlat">FLAT</button></div>
+              <div class="pp-stats" id="ppStats"></div>
+            </div>
+          </div>
+          <div class="card grow">
+            <div class="card-h"><h3>Bot brain · live narration</h3></div>
+            <div class="feed" id="rpFeed"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ BACKTEST -->
+    <section class="page" id="page-backtest">
+      <div class="bt-layout">
+        <div class="card params" id="paramPanel"></div>
+        <div class="bt-main">
+          <div class="grid kpis" id="btKpis"></div>
+          <div class="grid cols-2">
+            <div class="card"><div class="card-h"><h3>Equity curve</h3><span class="muted small">closed-trade balance</span></div><div class="chart-box h220"><canvas id="btEquity"></canvas></div></div>
+            <div class="card"><div class="card-h"><h3>Drawdown from peak</h3><span class="muted small">vs $2,000 MLL</span></div><div class="chart-box h220"><canvas id="btDD"></canvas></div></div>
+          </div>
+          <div class="grid cols-3">
+            <div class="card"><div class="card-h"><h3>R-multiple distribution</h3></div><div class="chart-box h200"><canvas id="btHist"></canvas></div></div>
+            <div class="card"><div class="card-h"><h3>Net P&amp;L by entry hour (ET)</h3></div><div class="chart-box h200"><canvas id="btHour"></canvas></div></div>
+            <div class="card"><div class="card-h"><h3>Net P&amp;L by weekday</h3></div><div class="chart-box h200"><canvas id="btDow"></canvas></div></div>
+          </div>
+          <div class="grid cols-2">
+            <div class="card"><div class="card-h"><h3>Daily P&amp;L calendar</h3></div><div id="btCal"></div></div>
+            <div class="card"><div class="card-h"><h3>Edge breakdown</h3><div class="seg sm" id="bdSeg"></div></div><div id="btBreak"></div></div>
+          </div>
+          <div class="card">
+            <div class="card-h"><h3>Trade log</h3>
+              <div class="card-tools"><div class="seg sm" id="tradeFilter"></div><button class="btn ghost sm" id="exportCsv">Export CSV</button><button class="btn ghost sm" id="exportJson">Export JSON</button></div></div>
+            <div class="table-wrap"><table class="tbl" id="tradeTable"></table></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ PROP LAB -->
+    <section class="page" id="page-prop">
+      <div class="card" style="margin-bottom:14px"><div class="card-h"><h3>Compare prop firms</h3><span class="muted small">same strategy · each firm's 50K evaluation rules</span></div>
+        <div class="table-wrap" style="max-height:none"><table class="tbl" id="firmTable"><tr><td class="empty">Comparing firms…</td></tr></table></div>
+        <div class="note" id="firmNote"></div></div>
+      <div class="grid cols-3">
+        <div class="card"><div class="card-h"><h3>Plan rules</h3><select id="planSel" class="sel sm"></select></div><div id="propRules"></div></div>
+        <div class="card span-2"><div class="card-h"><h3>Evaluation path</h3>
+          <div class="card-tools"><span class="muted small">start</span><select id="evalStart" class="sel sm"></select></div></div>
+          <div class="chart-box h260"><canvas id="propEval"></canvas></div><div id="propEvalNote" class="note"></div></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>Rolling-start evaluations</h3><span class="muted small">an eval started on every historical day</span></div><div id="propRolling"></div></div>
+        <div class="card"><div class="card-h"><h3>Monte Carlo · bootstrap of trading days</h3>
+          <div class="card-tools"><label class="muted small">runs <input id="mcRuns" class="inp xs" type="number" value="3000"></label><label class="muted small">days <input id="mcDays" class="inp xs" type="number" value="60"></label><button class="btn primary sm" id="mcRun">Simulate</button></div></div>
+          <div class="chart-box h240"><canvas id="mcFan"></canvas></div><div id="mcStats" class="grid kpis small"></div></div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card"><div class="card-h"><h3>Position size calculator</h3></div><div id="sizer"></div></div>
+        <div class="card"><div class="card-h"><h3>Risk-of-ruin explorer</h3></div><div id="ruin"></div></div>
+        <div class="card"><div class="card-h"><h3>Payout rules check</h3></div><div id="payoutCheck"></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ ROBUSTNESS -->
+    <section class="page" id="page-robust">
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>Stress tests</h3><button class="btn primary sm" id="stressRun">Run</button></div><div id="stressOut"><div class="empty">Stress the strategy: slippage, commissions, outlier removal and walk-forward folds.</div></div></div>
+        <div class="card"><div class="card-h"><h3>Parameter heatmap</h3>
+          <div class="card-tools"><select id="optX" class="sel sm"></select><input id="optXv" class="inp sm" value="1, 1.5, 2, 2.5"><select id="optY" class="sel sm"></select><input id="optYv" class="inp sm" value="2, 3, 4, 5, 6"><button class="btn primary sm" id="optRun">Run</button></div></div>
+          <div id="optOut"><div class="empty">Pick two parameters and value lists. A robust edge is a plateau, not a spike.</div></div></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>Placebo test · is the edge real?</h3>
+          <div class="card-tools"><select class="sel sm" id="placeboSym"></select><button class="btn primary sm" id="placeboRun">Run 500 placebos</button></div></div>
+          <div class="chart-box h220"><canvas id="placeboChart"></canvas></div><div id="placeboOut" class="note">Random-time, random-direction trades with the exact same stops, targets and management. A real edge should beat ~99% of them.</div></div>
+        <div class="card"><div class="card-h"><h3>Real CME futures history</h3></div>
+          <div class="note" style="margin-top:0">Free futures intraday history stops at 60 days. Load more real NQ/MNQ bars with <span class="mono">data/import_futures.py</span>:</div>
+          <ul class="check small">
+            <li><b>TradingView:</b> chart MNQ1! or NQ1! (5m or 1m) → ⋯ → <i>Export chart data</i> → <span class="mono">python data/import_futures.py csv NQ export.csv</span></li>
+            <li><b>Pine port:</b> <span class="mono">tradingview/liquidity_engine.pine</span>: paste into the Pine Editor and run the Strategy Tester (Deep Backtesting for years).</li>
+            <li><b>NinjaTrader</b> (MFFU platform): Tools → Historical Data → Export → <span class="mono">import_futures.py ninjatrader NQ file.txt</span></li>
+            <li><b>Databento:</b> set <span class="mono">DATABENTO_API_KEY</span> → <span class="mono">import_futures.py databento NQ 2024-01-01 2026-08-01</span></li>
+          </ul>
+          <div class="note">Then restart the server and every page, study and test runs on the longer futures history.</div></div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card span-2"><div class="card-h"><h3>Exit lab · take profit / stop / partials / management</h3><button class="btn primary sm" id="exitRun">Run exit study</button></div>
+          <div id="exitOut"><div class="empty">Tests every exit variant one at a time around the current settings, scored before and after the split. Takes ~30s.</div></div></div>
+        <div class="card"><div class="card-h"><h3>Trade anatomy</h3><span class="muted small">how far trades run vs heat</span></div>
+          <div class="chart-box h260"><canvas id="anatomyChart"></canvas></div><div class="note" id="anatomyNote"></div></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>Out-of-sample split</h3><span class="muted small">tuned before the split, judged after</span></div><div id="oosOut"></div></div>
+        <div class="card"><div class="card-h"><h3>Long-horizon validation</h3><button class="btn primary sm" id="longRun">Run 5-year NQ futures test</button></div><div id="longOut"><div class="empty">Runs the same model over the full five-year NQ futures history (back-adjusted CME NQ1!) and splits the result by year. Quarter-by-quarter detail is on Deep Stats.</div></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ CONFLUENCE LAB -->
+    <section class="page" id="page-conf">
+      <div class="banner info">Every candidate signal, whether taken or rejected, is logged as a <b>shadow trade</b> with a virtual outcome. This lab measures which confluences actually separate winners from losers on <b>real CME futures only</b> (NQ, with ES as a cross-check), and whether each edge holds across week-block folds. An edge that flips sign is noise.</div>
+      <div class="card creg-card" id="cregCard" style="margin-bottom:14px"><div class="card-h"><h3>Confluence registry · learning loop</h3>
+          <div class="card-tools"><span class="muted small" id="cregMeta"></span><button class="btn primary sm" id="cregRun">Run learning cycle</button></div></div>
+          <div id="cregProg"></div>
+          <div id="cregSummary"><div class="empty">Loading the registry…</div></div>
+          <div class="row gap" style="margin:10px 0 6px;align-items:center;flex-wrap:wrap"><div class="seg sm" id="cregTabs"></div><span class="muted small" id="cregTabNote"></span></div>
+          <div id="cregBoard"></div>
+          <div class="note" id="cregRule"></div></div>
+      <div class="grid kpis" id="confKpis"></div>
+      <div class="card disc-card" style="margin-bottom:14px"><div class="card-h"><h3>Discovery leaderboard · every confluence, every period</h3>
+          <div class="card-tools"><span class="muted small" id="discMeta"></span>
+            <select class="sel sm" id="discFilter"><option value="signal">Stable + leaning</option><option value="all">All features</option><option value="new">New this round</option></select>
+            <button class="btn sm" id="discRun">Re-scan</button></div></div>
+          <div id="discBoard"><div class="empty">Loading discovery scan…</div></div>
+          <div class="note">Lift = avg R when the confluence is present minus when it is absent, measured separately in each period (non-futures columns are hidden: real CME futures only). <b>STABLE</b> = same sign in every period; <b>LEANING</b> = all but one agree; anything else is noise and stays out of the grade. <b>Taken</b> is the same lift on the trades the bot actually took: a confluence only earns a grade weight when both agree and a four-period re-test of the grade confirms it.</div></div>
+      <div class="card" style="margin-bottom:14px"><div class="card-h"><h3>In-trade exit signals · what the bot watches once it is in</h3>
+          <span class="muted small">first firing per trade · gain = R banked by leaving there minus R actually made</span></div>
+          <div id="exitSig"><div class="empty">Run a backtest to see exit-signal statistics.</div></div>
+          <div class="note">Every open trade is monitored for ten warning signs. Each first firing is logged with the counterfactual outcome, so the bot learns which signs are worth acting on. <b>giveback</b> (reached +0.5R, then a close back below entry) is a fixed rule: it improved every test period. The others are acted on only once the walk-forward learner has 20+ cases averaging +0.2R from leaving.</div></div>
+      <div class="card" style="margin-bottom:14px"><div class="card-h"><h3>Confluence edge · shadow trades</h3>
+          <div class="card-tools"><span class="muted small">split</span><select class="sel sm" id="confSplit"></select></div></div>
+          <div class="table-wrap" style="max-height:none"><table class="tbl" id="confTable"></table></div>
+          <div class="note" id="confNote"></div></div>
+      <div class="grid cols-3">
+        <div class="card"><div class="card-h"><h3>Avg R by MTF alignment</h3></div>
+          <div class="chart-box h240"><canvas id="confMtf"></canvas></div>
+          <div class="note">Net of 1D/4H/1H/15m FVG order flow vs the trade. Negative = fading HTF flow. Hard alignment filters removed the best reversals out-of-sample, so alignment is shown but not required.</div></div>
+        <div class="card"><div class="card-h"><h3>Avg R by premium / discount</h3></div>
+          <div class="chart-box h240"><canvas id="confPd"></canvas></div>
+          <div class="note">Where the sweep extreme sat in the 1H dealing range, adjusted for direction (low = discount for longs, premium for shorts).</div></div>
+        <div class="card"><div class="card-h"><h3>Walk-forward learner</h3><span class="pill" id="learnState"></span></div><div id="learnOut"></div></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>Shadow trade log</h3><span class="muted small">taken ● / rejected ○</span></div>
+        <div class="table-wrap"><table class="tbl" id="shadowTable"></table></div></div>
+    </section>
+
+    <!-- ============================================================ BRIEFING (pre-market game plan) -->
+    <section class="page" id="page-briefing">
+      <div class="brief-hero card" id="briefHero"><div class="empty">Building today's briefing…</div></div>
+      <div class="grid cols-3">
+        <div class="card span-2"><div class="card-h"><h3>Key levels</h3><span class="muted small">sorted by price · distance from last</span></div><div id="briefLevels"></div></div>
+        <div class="card"><div class="card-h"><h3>Scenarios</h3><span class="muted small">if → then</span></div><div id="briefScen"></div></div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card"><div class="card-h"><h3>Bias &amp; structure</h3></div><div id="briefBias"></div></div>
+        <div class="card"><div class="card-h"><h3>Today's news</h3></div><div id="briefNews"></div></div>
+        <div class="card"><div class="card-h"><h3>Regime &amp; volatility</h3></div><div id="briefRegime"></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ REGIMES -->
+    <section class="page" id="page-regime">
+      <div class="grid kpis" id="regKpis"></div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>Strategy result by regime</h3><span class="muted small">every period we have</span></div><div id="regTable"></div></div>
+        <div class="card"><div class="card-h"><h3>Regime calendar</h3><span class="muted small">each session classified before the open</span></div><div id="regCal"></div></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>How regimes are measured</h3></div><div id="regHow" class="small"></div></div>
+    </section>
+
+    <!-- ============================================================ DAILY REPORTS -->
+    <section class="page" id="page-report">
+      <div class="toolbar"><select id="repDay" class="sel"></select><button class="btn ghost" id="repCopy">Copy report</button>
+        <button class="btn ghost" id="repSend">Send to phone</button><button class="btn ghost" id="repChart">Open on chart</button></div>
+      <div class="grid kpis" id="repKpis"></div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>Trades &amp; grades</h3></div><div id="repTrades"></div></div>
+        <div class="card"><div class="card-h"><h3>What the bot saw</h3><span class="muted small">full session log</span></div><div class="feed tall" id="repFeed"></div></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>Takeaways</h3></div><div id="repNotes"></div></div>
+    </section>
+
+    <!-- ============================================================ TRADINGVIEW -->
+    <section class="page" id="page-tv">
+      <div class="banner info">TradingView has years of real <b>CME futures</b> history and its own Strategy Tester. Three ways to connect it: run the bot's rules there as a Pine strategy, bring TradingView's exported futures bars into this engine, or send TradingView alerts into the live bot.</div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>1 · Backtest the bot's rules inside TradingView</h3><span class="pill" id="tvPineState">Pine v5</span></div><div id="tvPine"></div></div>
+        <div class="card"><div class="card-h"><h3>2 · Bring TradingView's futures data here</h3><span class="pill" id="tvDataState"></span></div><div id="tvImport"></div></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>3 · TradingView alerts → live bot</h3><span class="pill" id="tvHookState"></span></div><div id="tvHook"></div></div>
+        <div class="card"><div class="card-h"><h3>What the bot knows right now</h3></div><div id="tvKnows"></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ WEEKLY REVIEW -->
+    <section class="page" id="page-review">
+      <div class="toolbar"><select id="rvWeek" class="sel"></select><button class="btn ghost" id="rvCopy">Copy review</button><span class="pill rv-week-pill" id="rvWeekPill"></span></div>
+      <div class="grid kpis" id="rvKpis"></div>
+      <div class="grid cols-3">
+        <div class="card span-2"><div class="card-h"><h3>Trades this week</h3><span class="muted small mono" id="rvTradesMeta"></span></div><div id="rvTrades"></div></div>
+        <div class="card"><div class="card-h"><h3>Exit &amp; grade mix</h3></div><div id="rvMix"></div></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>Takeaways</h3><span class="muted small">written from the data · rule-based</span></div><div id="rvTakeaways"></div></div>
+        <div class="card"><div class="card-h"><h3>Daily P&amp;L heatmap</h3><div class="card-tools"><button class="btn ghost sm" id="rvMonthPrev">◀</button><span class="mono small" id="rvMonth"></span><button class="btn ghost sm" id="rvMonthNext">▶</button></div></div><div id="rvCal"></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ MEMORY (persistent trade memory) -->
+    <section class="page" id="page-memory">
+      <div class="toolbar">
+        <select id="memSrc" class="sel"><option value="realised">Paper + live</option><option value="paper">Paper only</option><option value="live">Live only</option><option value="backtest">Backtest rows</option><option value="all">Everything</option></select>
+        <button class="btn ghost" id="memRefresh">⟳ Refresh</button>
+        <a class="btn ghost" id="memExport" href="/api/memory/export" download>Export CSV</a>
+        <span class="muted small mono" id="memMeta"></span>
+      </div>
+      <div class="grid cols-2" id="memKpis"><div class="card"><div class="empty">Loading the trade memory…</div></div></div>
+      <div class="card" style="margin-bottom:14px"><div class="card-h"><h3>What the bot has learned</h3><span class="pill" id="memLearnState"></span></div>
+        <div id="memLearned"><div class="empty">Loading…</div></div></div>
+      <div class="card" style="margin-bottom:14px"><div class="card-h"><h3>Grade calibration · backtest vs realised</h3><span class="muted small">report only · sizing unchanged</span></div>
+        <div id="memCalib"><div class="empty">Loading…</div></div></div>
+      <div class="card"><div class="card-h"><h3>Trade memory</h3><span class="muted small">every completed routed trade · notes are saved in memory.db</span></div>
+        <div id="memTrades"><div class="empty">Loading…</div></div></div>
+    </section>
+
+    <!-- ============================================================ SETTINGS -->
+    <section class="page" id="page-settings">
+      <div class="card" style="margin-bottom:14px"><div class="card-h"><h3>Open on your phone · home-screen app</h3><span class="pill" id="netState"></span></div><div id="phoneOut"><div class="empty">Looking up this computer's addresses…</div></div></div>
+      <div class="card"><div class="card-h"><h3>Themes</h3><span class="muted small">click to apply · saved in this browser</span></div><div class="skins" id="skinGallery"></div></div>
+      <div class="grid cols-2" style="margin-top:14px">
+        <div class="card"><div class="card-h"><h3>Appearance</h3></div><div id="appearanceOut"></div></div>
+        <div class="card"><div class="card-h"><h3>Interface</h3><span class="muted small">this browser</span></div><div id="nxInterface"></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ NEWS & RISK -->
+    <section class="page" id="page-news">
+      <div class="guard" id="guardBox"><div class="empty">Loading news &amp; risk…</div></div>
+      <div class="grid cols-3">
+        <div class="card span-2"><div class="card-h"><h3>Cross-market</h3><span class="muted small">today · 20/60-day correlation to NQ · 40-day path</span></div><div id="mkOut"><div class="empty">Loading markets…</div></div></div>
+        <div class="card"><div class="card-h"><h3>Divergence alerts</h3></div><div id="mkAlerts"></div></div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card"><div class="card-h"><h3>Volatility</h3><span class="pill" id="volRegime"></span></div><div id="volOut"></div>
+          <div class="chart-box h200"><canvas id="vixChart"></canvas></div></div>
+        <div class="card"><div class="card-h"><h3>Today's NQ range</h3><span class="muted small">vs 20-day average</span></div><div id="rangeOut"></div></div>
+        <div class="card"><div class="card-h"><h3>Mega-cap earnings</h3><span class="muted small">the stocks that move NQ</span></div><div id="earnOut"></div></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>Dealer gamma levels · QQQ options mapped to NQ</h3><span class="pill" id="gxRegime">loading…</span></div>
+          <div id="gxOut"><div class="empty">Computing gamma from the QQQ option chain (first load takes ~30s)…</div></div>
+          <div class="chart-box h220"><canvas id="gxChart"></canvas></div></div>
+        <div class="card"><div class="card-h"><h3>S&amp;P 500 dealer gamma history</h3><span class="muted small">SqueezeMetrics daily GEX</span></div>
+          <div id="gxHist"></div><div class="chart-box h200"><canvas id="gxHistChart"></canvas></div>
+          <div class="note">Research result: gamma regime did not separate the strategy's winning and losing periods (high gamma was the best condition in 2026 and the worst in late 2025). Use the levels as context, not a signal.</div></div>
+      </div>
+      <div class="grid cols-2">
+        <div class="card"><div class="card-h"><h3>Economic calendar · this week</h3>
+          <div class="card-tools"><div class="seg sm" id="calCcy"></div><div class="seg sm" id="calImp"></div></div></div>
+          <div class="table-wrap" style="max-height:560px"><table class="tbl" id="calTable"></table></div>
+          <div class="note">Forex Factory weekly feed (all currencies) merged with the official BLS / Federal Reserve calendar. Shaded rows fall inside the bot's blackout window.</div></div>
+        <div class="card"><div class="card-h"><h3>Headlines</h3>
+          <div class="card-tools"><div class="seg sm" id="hlFilter"></div><span class="muted small" id="hlTime"></span></div></div>
+          <div class="feed tall" id="hlOut" style="max-height:560px"></div></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>What the research says about news &amp; volatility</h3></div>
+        <ul class="check small">
+          <li>Over all three tested periods only one candidate entry ever fell inside a release window: the 09:30 killzone starts an hour after the 08:30 releases. The blackout is a <b>safety net</b> for live trading (spikes, slippage, 10:00 releases such as ISM and JOLTS), not an edge.</li>
+          <li>Results on CPI / jobs / FOMC days were no different from quiet days. VIX level did not explain why the strategy lost in late 2023 and late 2025.</li>
+          <li>The day-range guard (no new entries once NQ has already moved 1.6× its normal daily range) removed losing trend-day trades on NQ futures and never hurt elsewhere. It is on by default.</li>
+        </ul></div>
+    </section>
+
+    <!-- ============================================================ LIVE -->
+    <section class="page" id="page-live">
+      <div class="banner warn">⚠ MFFU allows automation with <b>active trader oversight</b>; fully unattended bots and HFT are restricted. Watch every session, and verify MFFU's current fair-play policy before running anything on a funded account. The bot defaults to <b>paper</b> mode.</div>
+      <div class="grid cols-3">
+        <div class="card"><div class="card-h"><h3>Bot control</h3><span class="pill" id="liveRun">stopped</span></div><div id="liveCtl"></div></div>
+        <div class="card"><div class="card-h"><h3>Model state</h3><span class="pill" id="livePoll"></span></div><div id="liveState"></div></div>
+        <div class="card"><div class="card-h"><h3>Position &amp; risk guard</h3></div><div id="livePos"></div></div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card span-2"><div class="card-h"><h3>Go-live checklist (Tradovate / MFFU 50K)</h3><div class="row gap"><span class="pill" id="glEnv">env ?</span><button class="btn ghost" id="glRun">⟳ Re-run</button><button class="btn ghost" id="glRoundtrip" title="DEMO only: place a far-away limit order and cancel it">Round-trip test (demo)</button></div></div><div id="golive"><div class="empty">Checklist runs when you open this page.</div></div></div>
+        <div class="card"><div class="card-h"><h3>Arm &amp; kill switch</h3><span class="pill" id="armPill">paper</span></div><div id="armPanel"></div></div>
+      </div>
+      <div class="grid cols-3">
+        <div class="card span-2 chart-card"><div class="tv h420" id="liveChart"></div></div>
+        <div class="card"><div class="card-h"><h3>Bot log</h3></div><div class="feed tall" id="liveLog"></div></div>
+      </div>
+      <div class="card"><div class="card-h"><h3>Order ledger</h3></div><div class="table-wrap"><table class="tbl" id="ledger"></table></div></div>
+    </section>
+
+    <!-- ============================================================ JOURNAL -->
+    <section class="page" id="page-journal">
+      <div class="grid cols-3">
+        <div class="card span-2"><div class="card-h"><h3>Trade journal</h3><span class="muted small">notes are saved in this browser</span></div><div id="journalList"></div></div>
+        <div class="card"><div class="card-h"><h3>Journal insights</h3></div><div id="journalStats"></div></div>
+      </div>
+    </section>
+
+    <!-- ============================================================ PLAYBOOK -->
+    <section class="page" id="page-playbook">
+      <div id="playbook"></div>
+    </section>
+
+    <!-- ============================================================ TRADES (js/next/trades.js) -->
+    <section class="page" id="page-trades"><div class="empty">Loading trades…</div></section>
+
+    <!-- ============================================================ MODULES (tile grid, js/next/shell.js) -->
+    <section class="page" id="page-modules"></section>
+
+    <!-- ============================================================ DATA: results / variants / learned / study (js/next/datahub.js) -->
+    <section class="page" id="page-results"><div class="empty">Loading results…</div></section>
+    <section class="page" id="page-lab"><div class="empty">Loading the run library…</div></section>
+    <section class="page" id="page-writeups"><div class="empty">Loading write-ups…</div></section>
+    <section class="page" id="page-evals"><div class="empty">Loading eval odds…</div></section>
+    <section class="page" id="page-intraday"><div class="empty">Loading the intraday heat map…</div></section>
+    <section class="page" id="page-variants"><div class="empty">Loading tested variants…</div></section>
+    <section class="page" id="page-learned"><div class="empty">Loading lessons…</div></section>
+    <section class="page" id="page-study"><div class="empty">Loading study trades…</div></section>
+
+    <!-- ============================================================ MODULES: rules / cold / risk / alerts (js/next/modpages.js) -->
+    <section class="page" id="page-strategy"><div class="empty">Loading the strategy…</div></section>
+    <section class="page" id="page-litday"><div class="empty">Loading the LIT day…</div></section>
+    <section class="page" id="page-litlevels"><div class="empty">Loading the LIT levels…</div></section>
+    <section class="page" id="page-litcockpit"><div class="empty">Loading the eval cockpit…</div></section>
+    <section class="page" id="page-archive"><div class="empty">Loading the archive…</div></section>
+    <section class="page" id="page-newshub"><div class="empty">Loading the news hub…</div></section>
+    <section class="page" id="page-rules"><div class="empty">Loading the strategy…</div></section>
+    <section class="page" id="page-cold"><div class="empty">Loading the cold-streak filter…</div></section>
+    <section class="page" id="page-risk"><div class="empty">Loading risk &amp; sizing…</div></section>
+    <section class="page" id="page-alerts">
+      <div class="card"><div class="card-h"><h3>Alerts</h3><span class="pill" id="alertState"></span></div><div id="alertsOut"></div></div>
+      <div class="note" style="margin-top:12px">PC off: the GitHub Actions cloud monitor sends the same Telegram / Discord alerts from GitHub Secrets (never stored in the repo).</div>
+    </section>
+
+  </main>
+  <nav class="nx-tabs" id="nxTabs" aria-label="Main (phone)"></nav>
+</div>
+<div class="toast" id="toast"></div>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>

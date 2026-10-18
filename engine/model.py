@@ -37,6 +37,15 @@ DEFAULTS = {
     "flat_mod": 955,            # 15:55 ET flatten (MFFU: no positions through session close)
     "max_trades_day": 2,
     "stop_after_win": True,
+    # ---- 23-hour session research (win-rate-and-sessions.md); every default keeps today's behaviour
+    "session_clock": False,     # True: entry windows, arm start and flat time are compared on the CME session clock
+                                #   (minutes since 18:00 ET), so an evening window (e.g. Asia 19:00-22:00) is "before"
+                                #   the 15:55 flat time of the same trading day. Parameters stay in ET minutes.
+    "arm_windows": None,        # list of [from, to] ET minutes in which sweeps may arm a setup (None = arm_start..flat_mod)
+    "max_trades_window": 0,     # > 0: at most this many trades per entry window (on top of max_trades_day)
+    "stop_after_loss": False,   # True: no new trade today after a losing trade
+    "eth_slip_ticks": 0,        # extra slippage ticks on fills / stop and time exits outside RTH (09:30-16:00 ET)
+    "feat_min": {}, "feat_max": {},   # research gates on the plan's features, e.g. {"disp_atr": 1.0} (pass when outside)
     "daily_max_loss": 600.0,    # internal stop well inside MFFU $1,000 soft DLL
     "risk_usd": 350.0,
     "dd_aware": True,           # cap risk at a fraction of the cushion above the trailing MLL
@@ -96,6 +105,8 @@ DEFAULTS = {
     "partial_at": "r",          # r (at partial_r) | pool (at the first opposing pool between entry and target)
     "target_mode": "major",     # major (nearest major pool >= min R: session/day/week H-L, 1H swings, EQH/EQL) | major_next | dol (nearest pool >= min R) | dol_next (the pool after it) | fixed (fallback_rr) | draw (liquidity map, see below)
     "stop_buffer_mult": 1.0,    # multiplies the instrument stop buffer beyond the sweep
+    "stop_buf_atr": 0.0,        # > 0: buffer beyond the sweep extreme = this x ATR(15) of the base bars at the signal bar
+                                #   (min 1 tick) instead of stop_buffer x stop_buffer_mult (research; 0 = off)
     "fixed_stop_pts": 0.0,      # > 0: stop exactly this many points from entry, whatever the structure (0 = off)
     "risk_ref_stop": 0.0,       # > 0: full risk_usd up to this stop (pts); wider stops risk risk_usd x ref / stop (0 = off)
     "be_at_r": 1.0,             # move stop to breakeven once price runs this many R (0 = off)
@@ -134,6 +145,10 @@ DEFAULTS = {
     "w_pd": 1,                  # sweep in discount (longs) / premium (shorts) of the 1H dealing range
     "w_midnight": 0,            # sweep below (longs) / above (shorts) the midnight true-day open
     "w_dol": 0,                 # trade points toward the nearest MAJOR untaken liquidity (HTF draw)
+    "w_pdc": 0,                 # +w when the trade fades yesterday's candle (long after a down day, short after an up day),
+                                #   -w when it follows it (research; 0 = off)
+    "w_pwmid": 0,               # +w when a long is above / a short is below the prior week's midpoint, -w otherwise
+                                #   (research; 0 = off)
     "w_disp": 0, "w_fast": 0, "w_multi": 0, "w_major": 0, "w_vol": 0, "w_shallow": 0, "w_first": 0, "w_vwap": 0,
     "w_keylevel": 0,            # sweep tapped a 1D/4H/1H FVG or inverted FVG (Blake "valid key level")
     "mtf_gate": -9,             # hard filter: minimum net MTF alignment (-9 = off)
@@ -545,8 +560,33 @@ class Engine:
             -1: (-b.o, -b.l, -b.h, -b.c),
         }
 
+        sclock = bool(p.get("session_clock"))
+        rel = (lambda m: (int(m) - 1080) % 1440) if sclock else (lambda m: m)
+        win_rel = [(rel(a), rel(a) + (z - a)) for a, z in p["entry_windows"]]
+        arm_rel = [(rel(a), rel(a) + (z - a)) for a, z in p["arm_windows"]] if p.get("arm_windows") else None
+        flat_rel = rel(p["flat_mod"])
+        mtw = int(p.get("max_trades_window") or 0)
+        eth_slip = int(p.get("eth_slip_ticks") or 0)
+        win_trades = {}
+        day_lost = False
+
         def in_window(mod):
-            return any(a <= mod < z for a, z in p["entry_windows"])
+            m = rel(mod)
+            return any(a <= m < z for a, z in win_rel)
+
+        def win_idx(mod):
+            m = rel(mod)
+            return next((k for k, (a, z) in enumerate(win_rel) if a <= m < z), -1)
+
+        def past_flat(mod, pad=0):
+            return rel(mod) >= flat_rel - pad
+
+        def slip_at(mod):
+            return (p["slippage_ticks"] + (eth_slip if not (570 <= int(mod) < 960) else 0)) * tick
+
+        def limits_hit(mod):
+            return (day_trades >= p["max_trades_day"] or day_pnl <= -p["daily_max_loss"] or (p["stop_after_win"] and day_won)
+                    or (p.get("stop_after_loss") and day_lost) or (mtw and win_trades.get(win_idx(mod), 0) >= mtw))
 
         # ---- hybrid entry (ifvg_tf "lower") helpers; inert unless _ltf_setup found usable 1m bars
         ltf_on = self._ltf_a is not None
@@ -572,7 +612,7 @@ class Engine:
                   "trigger": order["trigger"], "tags": order["conf_tags"], "grade": order["grade"],
                   "grade_points": order["grade_points"]}
             open_shadows.append(sh)
-            if day_trades >= p["max_trades_day"] or day_pnl <= -p["daily_max_loss"] or (p["stop_after_win"] and day_won):
+            if limits_hit(mod):
                 self._ev(t1, "skip", f"{order['trigger']} (1m) valid but daily limits reached - logged as shadow trade", dir=d)
                 setups[d] = None
                 return None
@@ -622,6 +662,7 @@ class Engine:
                                "dir": d, "type": order["trigger"]})
             setups[d] = None
             setups[-d] = None
+            order["win_k"] = win_idx(mod)
             return order
 
         for i in range(n):
@@ -681,6 +722,7 @@ class Engine:
                     "regime": None if rd.get("er10") is None else ("trending" if rd["er10"] > (p["regime_er10_max"] or 0.45) else "rotational"),
                 })
                 day_pnl, day_trades, day_won = 0.0, 0, False
+                day_lost, win_trades = False, {}
                 setups = {1: None, -1: None}
                 midnight_open = None
                 sess = {"ASIA": [-1e18, 1e18, False], "LON": [-1e18, 1e18, False], "ON": [-1e18, 1e18, False]}
@@ -720,7 +762,7 @@ class Engine:
             # of the window is walked in order with bar i rebuilt from the 1m bars closed so far (no lookahead); a trigger
             # on 1m bar j fills at the open of 1m bar j+1, and stop / target are checked on the window's remaining 1m bars.
             if ltf_on and pos is None and pending is None and self._ltf_a[i] >= 0 and (setups[1] or setups[-1]) \
-                    and in_window(mod) and mod < p["flat_mod"] - 10:
+                    and in_window(mod) and not past_flat(mod, 10):
                 j0 = int(self._ltf_a[i])
                 nper = self.secs // 60
                 full = (o, h, l, c, b.v[i])
@@ -756,7 +798,7 @@ class Engine:
                     ltf_carry = taken                       # next 1m open == next 5m open: the normal fill step takes it
                 elif taken is not None:
                     d, jf = td, tj + 1
-                    slip = p["slippage_ticks"] * tick
+                    slip = slip_at(mod)
                     fill = float(L1.o[jf]) + d * slip
                     risk_pts = (fill - taken["stop"]) * d
                     if risk_pts <= 0 or (taken["target"] - fill) * d <= 0:
@@ -778,6 +820,7 @@ class Engine:
                             pdw = taken.get("partial_draw")
                             pos["partial_px"] = pdw["target"] if pdw and (pdw["target"] - fill) * d > 0 else None
                         day_trades += 1
+                        win_trades[taken.get('win_k', -1)] = win_trades.get(taken.get('win_k', -1), 0) + 1
                         self._ev(int(L1.t[jf]), "entry", f"{'LONG' if d == 1 else 'SHORT'} {pos['qty_label']} @ {fill:.2f} (1m fill) | "
                                  f"SL {pos['stop']:.2f} | TP {pos['target']:.2f} ({pos['target_label']}) | {pos['rr']}R", dir=d, price=fill)
                         # stop / target on the rest of this window, 1m by 1m (stop checked first, as on 5m)
@@ -806,6 +849,8 @@ class Engine:
                             self.days[b.date_str[i]]["trades"] += 1
                             if pos["pnl"] > 0:
                                 day_won = True
+                            if pos.get("pnl_r", 0) < -0.1:
+                                day_lost = True
                             self._ev(int(L1.t[ex[2]]), "exit", f"EXIT {pos['exit_reason']} (1m) | {pos['pnl_r']:+.2f}R | ${pos['pnl']:+,.0f}",
                                      pnl=pos["pnl"])
                             if day_pnl <= -p["daily_max_loss"]:
@@ -891,11 +936,11 @@ class Engine:
             # ======================================================= fill pending order at this bar's open
             if pending is not None and pos is None:
                 d = pending["dir"]
-                slip = p["slippage_ticks"] * tick
+                slip = slip_at(mod)
                 lim, post, fill = pending.get("limit"), None, None
                 if lim is None:
                     fill = o + d * slip
-                elif i > pending["limit_exp"] or mod >= p["flat_mod"] - 10 or int(b.tday[i]) != pending["limit_tday"]:
+                elif i > pending["limit_exp"] or past_flat(mod, 10) or int(b.tday[i]) != pending["limit_tday"]:
                     self._ev(t, "skip", f"retest limit {lim:.2f} not filled within {pending['retest_bars']} bars - "
                              f"order cancelled", dir=d)
                     pending = None
@@ -929,6 +974,7 @@ class Engine:
                     if post is not None:
                         pos["ltf_post"], pos["entry_kind"] = post, "retest limit"
                     day_trades += 1
+                    win_trades[pending.get('win_k', -1)] = win_trades.get(pending.get('win_k', -1), 0) + 1
                     self._ev(t, "entry", f"{'LONG' if d == 1 else 'SHORT'} {pos['qty_label']} @ {fill:.2f}"
                              f"{' (retest limit)' if post is not None else ''} | "
                              f"SL {pos['stop']:.2f} | TP {pos['target']:.2f} ({pos['target_label']}) | {pos['rr']}R",
@@ -943,7 +989,7 @@ class Engine:
             # ======================================================= manage open position
             if pos is not None:
                 d = pos["dir"]
-                slip = p["slippage_ticks"] * tick
+                slip = slip_at(mod)
                 pos["mae"] = max(pos["mae"], ((pos["entry"] - l) if d == 1 else (h - pos["entry"])) / pos["risk_pts"])
                 mfe_now = ((h - pos["entry"]) if d == 1 else (pos["entry"] - l)) / pos["risk_pts"]
                 if mfe_now > pos["mfe"]:
@@ -982,7 +1028,7 @@ class Engine:
                     if high_d >= pos["target"] * d + p["touch_ticks"] * tick:
                         self._exit(pos, pos["remaining"], pos["target"], t, "TARGET")
                         exited = True
-                    elif mod >= p["flat_mod"] or (i == n - 1 and not p["live"]) or (i + 1 < n and b.tday[i + 1] != tday):
+                    elif past_flat(mod) or (i == n - 1 and not p["live"]) or (i + 1 < n and b.tday[i + 1] != tday):
                         self._exit(pos, pos["remaining"], c - d * slip, t, "TIME")
                         exited = True
                     elif p["news_flatten_min"] and len(self._ev_t) and \
@@ -1044,6 +1090,8 @@ class Engine:
                     self.days[b.date_str[i]]["trades"] += 1
                     if pos["pnl"] > 0:
                         day_won = True
+                    if pos.get("pnl_r", 0) < -0.1:
+                        day_lost = True
                     self._ev(t, "exit", f"EXIT {pos['exit_reason']} | {pos['pnl_r']:+.2f}R | ${pos['pnl']:+,.0f}",
                              pnl=pos["pnl"])
                     if day_pnl <= -p["daily_max_loss"]:
@@ -1076,7 +1124,10 @@ class Engine:
                 else:
                     still.append(q)
             self.active = still
-            can_arm = mod >= p["arm_start"] and mod < p["flat_mod"]
+            if arm_rel is not None:
+                can_arm = any(a <= rel(mod) < z for a, z in arm_rel)
+            else:
+                can_arm = rel(mod) >= rel(p["arm_start"]) and not past_flat(mod)
             for q in swept:
                 d = 1 if q["side"] == "L" else -1   # sell-side sweep arms longs, buy-side sweep arms shorts
                 if q["kind"] in ("ITH", "ITL") and not q["eq"] and not p["arm_minor"]:
@@ -1102,7 +1153,7 @@ class Engine:
                 trig = None
                 if s is None:
                     # no sweep armed this way: the trend-day playbook may still offer a with-trend continuation
-                    if pos is not None or pending is not None or not in_window(mod) or mod >= p["flat_mod"] - 10:
+                    if pos is not None or pending is not None or not in_window(mod) or past_flat(mod, 10):
                         continue
                     hit = self._find_continuation(d, i, O, H, L, C, h1, tday)
                     if hit is None:
@@ -1118,7 +1169,7 @@ class Engine:
                         continue
                     if pos is not None or pending is not None:
                         continue
-                    if not in_window(mod) or mod >= p["flat_mod"] - 10:
+                    if not in_window(mod) or past_flat(mod, 10):
                         continue
                     if s.get("ltf_scan_i") == i:
                         continue        # hybrid: this bar was already checked 1m by 1m; the 5m close adds nothing new
@@ -1137,7 +1188,7 @@ class Engine:
                       "trigger": order["trigger"], "tags": order["conf_tags"], "grade": order["grade"],
                       "grade_points": order["grade_points"]}
                 open_shadows.append(sh)
-                if day_trades >= p["max_trades_day"] or day_pnl <= -p["daily_max_loss"] or (p["stop_after_win"] and day_won):
+                if limits_hit(mod):
                     self._ev(t, "skip", f"{order['trigger']} valid but daily limits reached - logged as shadow trade", dir=d)
                     setups[d] = None
                     continue
@@ -1181,6 +1232,7 @@ class Engine:
                     setups[d] = None
                     continue
                 sh["taken"] = True
+                order["win_k"] = win_idx(mod)
                 pending = order
                 self.signals.append({"t": t, "dir": d, "price": float(c), "score": order["score"],
                                      "trigger": order["trigger"], "pools": [q["label"] for q in s["pools"]]})
@@ -1211,7 +1263,7 @@ class Engine:
             mstate = "IN TRADE"
         elif pending is not None:
             mstate = "ORDER PENDING"
-        elif day_trades >= p["max_trades_day"] or day_pnl <= -p["daily_max_loss"] or (p["stop_after_win"] and day_won):
+        elif limits_hit(last_mod):
             mstate = "DONE FOR DAY"
         elif not in_window(last_mod):
             mstate = "OUTSIDE KILLZONE"
@@ -1735,6 +1787,12 @@ class Engine:
             stop, risk = stop_info["stop"], stop_info["risk"]
         else:
             buf = spec["stop_buffer"] * p["stop_buffer_mult"]
+            if p["stop_buf_atr"]:
+                # research option: buffer beyond the sweep extreme scaled to the current 5m ATR (same ATR as the features)
+                k0 = max(0, i - 14)
+                pc_ = np.r_[b.c[max(0, k0 - 1)], b.c[k0:i]]
+                atr_b = float((np.maximum(b.h[k0:i + 1], pc_) - np.minimum(b.l[k0:i + 1], pc_)).mean())
+                buf = max(tick, p["stop_buf_atr"] * atr_b)
             if p["stop_mode"] == "ifvg":
                 stop = (trig["inv_low"] - buf) * d   # inv_low is in direction-space
             else:
@@ -1936,6 +1994,25 @@ class Engine:
         tgt_major = int(tpool is not None and _is_major(tpool))
         if dol_align:
             score += p["w_dol"]; tags.append("toward nearest major liquidity")
+        # ---- research bias weights (both 0 = off): yesterday's candle and the prior week's midpoint
+        if p["w_pdc"] or p["w_pwmid"]:
+            pdays = self._prev_days_ref or []
+            if p["w_pdc"] and pdays and pdays[-1]["close"] != pdays[-1]["open"]:
+                fade = (pdays[-1]["close"] - pdays[-1]["open"]) * d < 0
+                score += p["w_pdc"] if fade else -p["w_pdc"]
+                tags.append("fades yesterday's candle" if fade else "follows yesterday's candle")
+            if p["w_pwmid"] and pdays:
+                wk_ = lambda ds: _dt.date.fromisoformat(ds).isocalendar()[:2]
+                cw_ = wk_(b.date_str[i])
+                prior = [x for x in pdays if wk_(x["date"]) != cw_]
+                if prior:
+                    w0_ = wk_(prior[-1]["date"])
+                    pw_ = [x for x in prior if wk_(x["date"]) == w0_]
+                    mid_ = (max(x["high"] for x in pw_) + min(x["low"] for x in pw_)) / 2
+                    with_loc = (entry - mid_) * d > 0
+                    score += p["w_pwmid"] if with_loc else -p["w_pwmid"]
+                    tags.append(("above" if d == 1 else "below") + " prior-week midpoint" if with_loc else
+                                ("below" if d == 1 else "above") + " prior-week midpoint (against)")
 
         # ---- Quarterly Theory / AMD / gamma
         def q90(m):
@@ -2074,6 +2151,12 @@ class Engine:
             "vix_prev": nst["vix"] or 0.0, "vix_hi": int(bool(nst["vix"]) and nst["vix"] >= 20),
             **qt, **self._regime_now(i, d), **disc,
         }
+        for fk, fv in (p.get("feat_min") or {}).items():       # research gates (default none)
+            if features.get(fk) is not None and features[fk] < fv:
+                return {"skip": f"{fk} {features[fk]} < {fv} - pass (feature gate)", "consume": True}
+        for fk, fv in (p.get("feat_max") or {}).items():
+            if features.get(fk) is not None and features[fk] > fv:
+                return {"skip": f"{fk} {features[fk]} > {fv} - pass (feature gate)", "consume": True}
         grade, gmult, checklist, gpts = self._grade(features, i, d)
         if trig["type"] == "CONT":
             tags = ["trend-day continuation"] + tags

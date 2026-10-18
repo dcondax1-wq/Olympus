@@ -40,6 +40,11 @@ ABBR = {m[:3]: i for m, i in MONTHS.items()}
 def fomc_dates():
     html = urllib.request.urlopen(urllib.request.Request(
         "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm", headers=UA), timeout=30).read().decode("utf-8", "ignore")
+    return parse_fomc_html(html)
+
+
+def parse_fomc_html(html):
+    """[(YYYY-MM-DD of the decision day, has_projections)] from the Fed's FOMC calendar page (also used by tools/news_hub.py)."""
     out = []
     parts = re.split(r"(\d{4}) FOMC Meetings", html)
     for k in range(1, len(parts) - 1, 2):

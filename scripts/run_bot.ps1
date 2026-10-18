@@ -56,6 +56,7 @@ if (Test-Path -LiteralPath $envFile) {
 if ($Port -le 0) { if ($env:PORT) { $Port = [int]$env:PORT } else { $Port = 8766 } }
 $env:PORT = "$Port"
 $env:PYTHONUNBUFFERED = '1'
+if (-not $env:LE_HEARTBEAT) { $env:LE_HEARTBEAT = '1' }   # the always-on PC tells the cloud monitor it is alive (engine/heartbeat.py)
 $env:PYTHONIOENCODING = 'utf-8'
 try { [Console]::OutputEncoding = $Utf8 } catch { }
 

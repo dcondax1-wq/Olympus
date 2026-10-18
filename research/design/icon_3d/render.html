@@ -1,0 +1,50 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script></head>
+<body><script type="module">
+// Shared 3D icon renderer: ?scene=<name>&size=<px>. Scenes live in scenes/<name>.js and export default (ctx) => {scene, camera, bloom}.
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { SavePass } from 'three/addons/postprocessing/SavePass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+const q = new URLSearchParams(location.search), size = +(q.get('size') || 1024);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(size, size);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+// neon studio environment: dark room with purple / magenta / cyan light panels, for chrome + glass reflections
+function neonEnv(colors = [0x8b5cf6, 0xff2bd6, 0x22d3ee]) {
+  const s = new THREE.Scene(); s.background = new THREE.Color(0x020105);
+  const panel = (c, i, w, h, pos, rot) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(c).multiplyScalar(i), side: THREE.DoubleSide })); m.position.set(...pos); m.rotation.set(...rot); s.add(m); };
+  panel(colors[0], 6, 10, 2, [0, 6, -2], [Math.PI / 2, 0, 0]);
+  panel(colors[1], 8, 1.2, 8, [-6, 1, 0], [0, Math.PI / 2, 0]);
+  panel(colors[2], 5, 1.0, 8, [6, 1, 1], [0, -Math.PI / 2, 0]);
+  panel(0xffffff, 3, 4, 0.6, [0, 3, 6], [0, Math.PI, 0]);
+  panel(colors[0], 2, 12, 3, [0, -4, -6], [0, 0, 0]);
+  const pm = new THREE.PMREMGenerator(renderer); const t = pm.fromScene(s, 0.02).texture; pm.dispose(); return t;
+}
+const mod = await import('./scenes/' + q.get('scene') + '.js');
+const out = await mod.default({ THREE, renderer, neonEnv, size });
+const { scene, camera, bloom = {} } = out;
+const comp = new EffectComposer(renderer);
+comp.addPass(new RenderPass(scene, camera));
+// optional: out.sharp = { center: Vector3, radius } keeps that disc free of bloom (e.g. a black hole's shadow)
+let save = null;
+if (out.sharp) { save = new SavePass(new THREE.WebGLRenderTarget(size, size, { type: THREE.HalfFloatType })); comp.addPass(save); }
+comp.addPass(new UnrealBloomPass(new THREE.Vector2(size, size), bloom.strength ?? 1.1, bloom.radius ?? 0.6, bloom.threshold ?? 0.2));
+if (out.sharp) {
+  camera.updateMatrixWorld(); camera.updateProjectionMatrix();
+  const c = out.sharp.center.clone().project(camera), e = out.sharp.center.clone().add(new THREE.Vector3(out.sharp.radius, 0, 0)).project(camera);
+  const sh = new ShaderPass({ uniforms: { tDiffuse: { value: null }, tSharp: { value: null }, c: { value: new THREE.Vector2(c.x * .5 + .5, c.y * .5 + .5) }, r: { value: Math.abs(e.x - c.x) * .5 }, soft: { value: out.sharp.soft ?? 0.004 } },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+    fragmentShader: 'uniform sampler2D tDiffuse; uniform sampler2D tSharp; uniform vec2 c; uniform float r; uniform float soft; varying vec2 vUv; void main(){ float d = distance(vUv, c); float m = 1.0 - smoothstep(r - soft, r, d); gl_FragColor = mix(texture2D(tDiffuse, vUv), texture2D(tSharp, vUv), m); }' });
+  sh.uniforms.tSharp.value = save.renderTarget.texture;   // ShaderPass clones uniforms; render-target textures must be set after
+  comp.addPass(sh);
+}
+comp.addPass(new OutputPass());
+for (let i = 0; i < 3; i++) comp.render();      // transmission needs a couple of frames
+window.__done = true;
+</script></body></html>

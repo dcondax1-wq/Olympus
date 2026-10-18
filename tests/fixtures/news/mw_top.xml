@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+<channel>
+<title>MarketWatch.com - Top Stories (fixture)</title>
+<link>https://www.marketwatch.com/</link>
+<item>
+<title>Fed&#8217;s Warsh signals patience on rate cuts as inflation stays sticky</title>
+<link>https://www.marketwatch.com/story/example-1</link>
+<pubDate>Mon, 19 Oct 2026 07:45:00 GMT</pubDate>
+</item>
+<item>
+<title>Nasdaq futures slip as Treasury yields climb ahead of CPI</title>
+<link>https://www.marketwatch.com/story/example-2</link>
+<pubDate>Mon, 19 Oct 2026 11:10:00 GMT</pubDate>
+</item>
+<item>
+<title>Nasdaq futures slip as Treasury yields climb ahead of CPI</title>
+<link>https://www.marketwatch.com/story/example-2-dup</link>
+<pubDate>Mon, 19 Oct 2026 11:12:00 GMT</pubDate>
+</item>
+<item>
+<title>Celebrity chef opens new restaurant in Manhattan</title>
+<link>https://www.marketwatch.com/story/example-3</link>
+<pubDate>Sun, 18 Oct 2026 16:00:00 GMT</pubDate>
+</item>
+<item>
+<title>Stocks rally to record high on Nvidia earnings beat</title>
+<link>https://www.marketwatch.com/story/example-4</link>
+<pubDate>Sat, 17 Oct 2026 20:30:00 GMT</pubDate>
+</item>
+</channel>
+</rss>

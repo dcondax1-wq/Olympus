@@ -1,0 +1,114 @@
+{
+ "id": "lit_final",
+ "name": "LIT final (2026)",
+ "date": "2026-10-18",
+ "status": "live strategy since 2026-10-18 (paper only): live_model.json model lit, engine/lit_live.py; check tests/test_lit_live.py",
+ "how_to_run": "from tools import lit_final as F; T = F.run(F.final_params())  # engine/lit.py run_x",
+ "selection": "picked on 2026 H1 (Jan 2 - Jun 30) by H1 net without its 3 best trades (so one lucky trade cannot pick the strategy), checked on 2026 H2 (Jul 1 - Oct 16); two settings that changed neither half by more than $0.5k were set back to the simpler lit_A value; 2021-25 reference only",
+ "pieces": {
+  "entry (tools/lit_entry.py, run lit_entry_best)": [
+   "ref",
+   "disp",
+   "idm_a",
+   "tf",
+   "cisd1m",
+   "wait"
+  ],
+  "risk (tools/lit_risk.py, run lit_risk_vix_bank8)": [
+   "classes",
+   "vix_k",
+   "max_rr",
+   "stop_buf",
+   "tf"
+  ],
+  "kept from lit_A": [
+   "window",
+   "sweep_names",
+   "depth",
+   "min_stop",
+   "max_stop",
+   "min_rr",
+   "be_r",
+   "flat_mod",
+   "max_per_day",
+   "extra_boxes",
+   "fallback_rr"
+  ],
+  "dropped in the merge because they added nothing on top of the rest (removal changed 2026 H1 and H2 by < $0.5k)": [
+   "fallback_rr 4.0 (risk study)",
+   "max_stop 100 (risk study)"
+  ],
+  "tested in the merge and not used": [
+   "sessions sweep set (B1N) + Mon-Wed rule (sessions study)",
+   "NWOG discount filter (filters study)",
+   "HOW-window half size how_out 0.5 (filters study; kept as the eval-safe option)"
+  ]
+ },
+ "explain": {
+  "ref": "structure shift = 5m CISD: first 5m close beyond the open of the last run of opposite-close bars into the sweep extreme",
+  "window": "entry-bar ET minutes [[120, 930]] = 02:00-15:30",
+  "sweep_names": "null = every level counts (Asia/London/NY boxes, premarket, PDH/PDL, PWH/PWL, PMH/PML, NWOG/NDOG edges, build-ups)",
+  "disp": "biggest candle body between the extreme and the trigger >= 0.8 x ATR(14, 5m)",
+  "depth": "sweep extreme >= 0.5 ATR beyond the nearest swept level",
+  "idm_a": "[1.0, 36, 1]: at least 1 5m swing low (high for shorts) within 1.0 ATR beyond the swept level, formed <= 36 bars before the sweep, untouched until the final run into the extreme took it",
+  "wait": "the limit at the CISD level is valid for 6 five-minute bars (30 min)",
+  "cisd1m": "after the tap, up to 20 one-minute bars for a 1m CISD close, then enter at the next 1m open + 1 tick (before 2026, no 1m data: 4 five-minute bars)",
+  "tf": "2026 days with full 1m coverage are filled and managed on true 1m bars",
+  "stop_buf": "stop 0.25 pt (1 tick) beyond the 5m sweep extreme",
+  "min_stop/max_stop": "stop 8-80 pts from the planned limit price, else no trade (size follows the real stop at the fill)",
+  "classes/vix_k": "target = 18:00 open +/- 1.0 x VIX one-day move (prior VIX close / 100 / sqrt(252) x 18:00 open), on the trade's side",
+  "min_rr/max_rr/fallback_rr": "target must be >= 1.5R from the real fill, capped (banked) at 8R; no band target >= 1.5R away -> no trade (fallback_rr null)",
+  "be_r": "stop to breakeven once +1R is reached",
+  "flat_mod": "flat at 15:55 ET",
+  "max_per_day": "1 trade a day",
+  "size": "$800 risk up to a 20-pt stop, then 800x20/stop; MNQ $2/pt; max 40 micros; floor: no trade if < 1 micro",
+  "costs": "$1.40 per micro round trip; 1 tick slippage on market entries and on stop / breakeven / end-of-day exits (limit entries and targets fill at the price)"
+ },
+ "params": {
+  "ref": "cisd",
+  "extra_boxes": [],
+  "window": [
+   [
+    120,
+    930
+   ]
+  ],
+  "sweep_names": null,
+  "disp": 0.8,
+  "depth": 0.5,
+  "idm_a": [
+   1.0,
+   36,
+   1
+  ],
+  "nwog_discount": false,
+  "mw_filter": false,
+  "wait": 6,
+  "tf": "1m",
+  "cisd1m": 20,
+  "stop_buf": 0.25,
+  "min_stop": 8.0,
+  "max_stop": 80.0,
+  "classes": [
+   "vix"
+  ],
+  "vix_k": 1.0,
+  "min_rr": 1.5,
+  "max_rr": 8.0,
+  "fallback_rr": null,
+  "be_r": 1.0,
+  "flat_mod": 955,
+  "max_per_day": 1,
+  "how_out": 1.0
+ },
+ "eval_safe_option": {
+  "how_out": 0.5,
+  "what": "half size when the sweep extreme is outside Tue 03:00 - Wed 11:30 ET; 2026 +$27.8k (PF 3.17) instead of +$38.9k, max DD -$2.3k instead of -$3.1k, no eval failed within 2 weeks, pass rate 86% instead of 80%"
+ },
+ "results_2026": {
+  "H1": "85 trades, 3.32/wk, PF 3.55, +$30,661, DD -$3,097",
+  "H2": "42 trades, 2.69/wk, PF 2.19, +$8,212, DD -$1,741",
+  "2026": "127 trades, 3.08/wk, PF 3.06, +$38,873 ($3,963/mo), DD -$3,097, pass rate 79.9%",
+  "2021-25 reference": "534 trades, 2.49/wk, PF 1.03, +$3,806, DD -$20,695"
+ }
+}

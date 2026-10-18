@@ -1,0 +1,239 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="bg" cx="512" cy="512" r="720" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#2a0a4a"/>
+      <stop offset="0.45" stop-color="#12061f"/>
+      <stop offset="1" stop-color="#05030a"/>
+    </radialGradient>
+    <pattern id="dots" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="16" cy="16" r="1.6" fill="#8b5cf6" fill-opacity="0.22"/>
+    </pattern>
+    <radialGradient id="dotMask" cx="512" cy="512" r="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0.3" stop-color="#fff"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="traceFade" cx="512" cy="512" r="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0.4" stop-color="#fff"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0.18"/>
+    </radialGradient>
+    <mask id="tm" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024"><rect width="1024" height="1024" fill="url(#traceFade)"/></mask>
+    <mask id="dm" maskUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1024"><rect width="1024" height="1024" fill="url(#dotMask)"/></mask>
+
+    <!-- holographic die -->
+    <linearGradient id="holo" x1="280" y1="280" x2="744" y2="744" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="0.17" stop-color="#22d3ee"/>
+      <stop offset="0.34" stop-color="#c4b5fd"/>
+      <stop offset="0.5" stop-color="#ff2bd6"/>
+      <stop offset="0.68" stop-color="#7c3aed"/>
+      <stop offset="0.84" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#e040fb"/>
+    </linearGradient>
+    <linearGradient id="sheen" x1="744" y1="280" x2="280" y2="744" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.38" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.46" stop-color="#fff" stop-opacity="0.55"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0.1"/>
+      <stop offset="0.56" stop-color="#fff" stop-opacity="0.35"/>
+      <stop offset="0.64" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="film" x1="0" y1="0" x2="60" y2="22" gradientUnits="userSpaceOnUse" spreadMethod="repeat">
+      <stop offset="0" stop-color="#ff2bd6" stop-opacity="0.0"/>
+      <stop offset="0.5" stop-color="#22d3ee" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#ff2bd6" stop-opacity="0.0"/>
+    </linearGradient>
+    <radialGradient id="edgeDark" cx="512" cy="512" r="330" gradientUnits="userSpaceOnUse">
+      <stop offset="0.6" stop-color="#05030a" stop-opacity="0"/>
+      <stop offset="1" stop-color="#05030a" stop-opacity="0.55"/>
+    </radialGradient>
+    <linearGradient id="bevel" x1="280" y1="280" x2="744" y2="744" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0.15"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.6"/>
+    </linearGradient>
+    <linearGradient id="pin" x1="0" y1="232" x2="0" y2="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6d5a96"/>
+      <stop offset="0.5" stop-color="#e9e3ff"/>
+      <stop offset="1" stop-color="#9b8cc8"/>
+    </linearGradient>
+    <linearGradient id="win" x1="0" y1="352" x2="0" y2="672" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#140a26"/>
+      <stop offset="1" stop-color="#05030a"/>
+    </linearGradient>
+    <linearGradient id="winRim" x1="352" y1="352" x2="672" y2="672" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#000" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="candle" x1="0" y1="420" x2="0" y2="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ffd0f6"/>
+    </linearGradient>
+    <pattern id="diff" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(-35)">
+      <rect width="10" height="3" fill="#fff" fill-opacity="0.09"/>
+    </pattern>
+    <pattern id="wgrid" width="32" height="32" patternUnits="userSpaceOnUse" x="352" y="352">
+      <path d="M32 0 L0 0 L0 32" fill="none" stroke="#22d3ee" stroke-opacity="0.09" stroke-width="2"/>
+    </pattern>
+    <radialGradient id="coreGlow" cx="512" cy="500" r="190" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.75"/>
+      <stop offset="0.55" stop-color="#2a0a4a" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#05030a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="glass" x1="352" y1="352" x2="560" y2="560" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff" stop-opacity="0.16"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0.03"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="plasma" x1="447" y1="0" x2="577" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff2bd6"/>
+      <stop offset="0.3" stop-color="#ffb3f3"/>
+      <stop offset="0.5" stop-color="#ffffff"/>
+      <stop offset="0.7" stop-color="#ffb3f3"/>
+      <stop offset="1" stop-color="#ff2bd6"/>
+    </linearGradient>
+    <linearGradient id="plasmaW" x1="499" y1="0" x2="525" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff2bd6"/>
+      <stop offset="0.5" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#ff2bd6"/>
+    </linearGradient>
+    <linearGradient id="slab" x1="280" y1="0" x2="744" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3b1470"/>
+      <stop offset="0.5" stop-color="#1a0733"/>
+      <stop offset="1" stop-color="#2a0a4a"/>
+    </linearGradient>
+    <clipPath id="winClip"><rect x="352" y="352" width="320" height="320" rx="24"/></clipPath>
+    <clipPath id="chipClip"><rect x="280" y="280" width="464" height="464" rx="46"/></clipPath>
+
+    <filter id="oil" filterUnits="userSpaceOnUse" x="280" y="280" width="464" height="464">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0032 0.0065" numOctaves="2" seed="11"/>
+      <feColorMatrix type="saturate" values="6"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0" intercept="1"/></feComponentTransfer>
+    </filter>
+    <filter id="bloom" filterUnits="userSpaceOnUse" x="-100" y="-100" width="1224" height="1224">
+      <feGaussianBlur stdDeviation="40"/>
+    </filter>
+    <filter id="glow" filterUnits="userSpaceOnUse" x="-100" y="-100" width="1224" height="1224">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <filter id="soft" filterUnits="userSpaceOnUse" x="-100" y="-100" width="1224" height="1224">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <filter id="tiny" filterUnits="userSpaceOnUse" x="-100" y="-100" width="1224" height="1224">
+      <feGaussianBlur stdDeviation="1.2"/>
+    </filter>
+
+    <g id="side">
+      <path d="M336 232 L336 214 L226 104 L226 -10 M406 232 L406 196 L336 126 L336 -10 M476 232 L476 150 L444 110 L444 -10 M548 232 L548 150 L580 110 L580 -10 M618 232 L618 196 L688 126 L688 -10 M688 232 L688 214 L798 104 L798 -10 M406 196 L366 156 L366 40 M618 196 L738 76 L838 76"/>
+    </g>
+    <g id="sideVias"><circle cx="336" cy="92" r="11"/><circle cx="444" cy="70" r="11"/><circle cx="688" cy="92" r="11"/><circle cx="366" cy="40" r="11"/><circle cx="838" cy="76" r="11"/></g>
+    <g id="sidePins"><rect x="324" y="232" width="24" height="54" rx="5"/><rect x="394" y="232" width="24" height="54" rx="5"/><rect x="464" y="232" width="24" height="54" rx="5"/><rect x="536" y="232" width="24" height="54" rx="5"/><rect x="606" y="232" width="24" height="54" rx="5"/><rect x="676" y="232" width="24" height="54" rx="5"/></g>
+    <g id="sidePinHi"><rect x="324" y="232" width="8" height="48" rx="3"/><rect x="394" y="232" width="8" height="48" rx="3"/><rect x="464" y="232" width="8" height="48" rx="3"/><rect x="536" y="232" width="8" height="48" rx="3"/><rect x="606" y="232" width="8" height="48" rx="3"/><rect x="676" y="232" width="8" height="48" rx="3"/></g>
+    <g id="sidePads"><rect x="366" y="322" width="12" height="14" rx="2"/><rect x="401" y="322" width="12" height="14" rx="2"/><rect x="436" y="322" width="12" height="14" rx="2"/><rect x="471" y="322" width="12" height="14" rx="2"/><rect x="506" y="322" width="12" height="14" rx="2"/><rect x="541" y="322" width="12" height="14" rx="2"/><rect x="576" y="322" width="12" height="14" rx="2"/><rect x="611" y="322" width="12" height="14" rx="2"/><rect x="646" y="322" width="12" height="14" rx="2"/></g>
+    <g id="sidePulse"><path d="M476 232 L476 150 L444 110 L444 -10" stroke-dasharray="46 600" stroke-dashoffset="-60"/><path d="M618 232 L618 196 L688 126 L688 -10" stroke-dasharray="46 600" stroke-dashoffset="-100"/><path d="M336 232 L336 214 L226 104 L226 -10" stroke-dasharray="46 600" stroke-dashoffset="-140"/></g>
+  </defs>
+
+  <!-- BOARD -->
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <rect width="1024" height="1024" fill="url(#dots)" mask="url(#dm)"/>
+
+  <!-- traces: glow + line, 4-fold -->
+  <g mask="url(#tm)">
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g stroke="#7c3aed" stroke-width="16" stroke-opacity="0.55" filter="url(#glow)">
+      <use xlink:href="#side"/><use xlink:href="#side" transform="rotate(90 512 512)"/>
+      <use xlink:href="#side" transform="rotate(180 512 512)"/><use xlink:href="#side" transform="rotate(270 512 512)"/>
+    </g>
+    <g stroke="#8b5cf6" stroke-width="7" stroke-opacity="0.85">
+      <use xlink:href="#side"/><use xlink:href="#side" transform="rotate(90 512 512)"/>
+      <use xlink:href="#side" transform="rotate(180 512 512)"/><use xlink:href="#side" transform="rotate(270 512 512)"/>
+    </g>
+  </g>
+  <g fill="#0a0612" stroke="#a78bfa" stroke-width="5">
+    <use xlink:href="#sideVias"/><use xlink:href="#sideVias" transform="rotate(90 512 512)"/>
+    <use xlink:href="#sideVias" transform="rotate(180 512 512)"/><use xlink:href="#sideVias" transform="rotate(270 512 512)"/>
+  </g>
+  <!-- data pulses -->
+  <g fill="none" stroke-linecap="round">
+    <g stroke="#22d3ee" stroke-width="22" filter="url(#glow)">
+      <use xlink:href="#sidePulse"/><use xlink:href="#sidePulse" transform="rotate(90 512 512)"/>
+      <use xlink:href="#sidePulse" transform="rotate(180 512 512)"/><use xlink:href="#sidePulse" transform="rotate(270 512 512)"/>
+    </g>
+    <g stroke="#e6fdff" stroke-width="7">
+      <use xlink:href="#sidePulse"/><use xlink:href="#sidePulse" transform="rotate(90 512 512)"/>
+      <use xlink:href="#sidePulse" transform="rotate(180 512 512)"/><use xlink:href="#sidePulse" transform="rotate(270 512 512)"/>
+    </g>
+  </g>
+
+  </g>
+  <!-- chip glow on board -->
+  <rect x="280" y="280" width="464" height="464" rx="46" fill="#8b5cf6" filter="url(#bloom)" opacity="0.85"/>
+  <rect x="294" y="306" width="464" height="464" rx="46" fill="#000" filter="url(#glow)" opacity="0.7"/>
+
+  <!-- pins -->
+  <g fill="url(#pin)">
+    <use xlink:href="#sidePins"/><use xlink:href="#sidePins" transform="rotate(90 512 512)"/>
+    <use xlink:href="#sidePins" transform="rotate(180 512 512)"/><use xlink:href="#sidePins" transform="rotate(270 512 512)"/>
+  </g>
+  <g fill="#fff" opacity="0.55">
+    <use xlink:href="#sidePinHi"/><use xlink:href="#sidePinHi" transform="rotate(90 512 512)"/>
+    <use xlink:href="#sidePinHi" transform="rotate(180 512 512)"/><use xlink:href="#sidePinHi" transform="rotate(270 512 512)"/>
+  </g>
+
+  <!-- package thickness (extruded edge) -->
+  <rect x="280" y="294" width="464" height="464" rx="46" fill="url(#slab)"/>
+  <!-- holographic package -->
+  <g clip-path="url(#chipClip)">
+    <rect x="280" y="280" width="464" height="464" fill="url(#holo)"/>
+    <rect x="280" y="280" width="464" height="464" filter="url(#oil)" opacity="0.26" style="mix-blend-mode:overlay"/>
+    <rect x="280" y="280" width="464" height="464" fill="url(#film)"/>
+    <rect x="280" y="280" width="464" height="464" fill="url(#diff)"/>
+    <rect x="280" y="280" width="464" height="464" fill="url(#sheen)" style="mix-blend-mode:screen"/>
+    <rect x="280" y="280" width="464" height="464" fill="url(#edgeDark)"/>
+    <!-- etched micro circuitry on the die (texture) -->
+    <g fill="none" stroke="#fff" stroke-opacity="0.28" stroke-width="2.5">
+      <path d="M310 330 L340 330 L352 342 M310 360 L336 360 M694 694 L714 714 M300 700 L330 670 L340 670 M690 310 L720 310 M700 330 L730 330"/>
+      <path d="M512 300 L512 330 M300 512 L330 512 M694 512 L724 512 M512 694 L512 724"/>
+    </g>
+    <circle cx="318" cy="318" r="9" fill="#fff" fill-opacity="0.6"/>
+  </g>
+  <rect x="283" y="283" width="458" height="458" rx="44" fill="none" stroke="url(#bevel)" stroke-width="6"/>
+
+  <!-- bond pads around the die -->
+  <g fill="#f5f0ff" opacity="0.55">
+    <use xlink:href="#sidePads"/><use xlink:href="#sidePads" transform="rotate(90 512 512)"/>
+    <use xlink:href="#sidePads" transform="rotate(180 512 512)"/><use xlink:href="#sidePads" transform="rotate(270 512 512)"/>
+  </g>
+  <!-- die window -->
+  <rect x="346" y="346" width="332" height="332" rx="28" fill="none" stroke="url(#winRim)" stroke-width="10"/>
+  <rect x="352" y="352" width="320" height="320" rx="24" fill="url(#win)"/>
+  <g clip-path="url(#winClip)">
+    <rect x="352" y="352" width="320" height="320" fill="url(#coreGlow)"/>
+    <rect x="352" y="352" width="320" height="320" fill="url(#wgrid)"/>
+  </g>
+  <g clip-path="url(#chipClip)">
+    <!-- level line (liquidity pool) -->
+    <g stroke-linecap="round" fill="none">
+      <path d="M378 606 L646 606" stroke="#22d3ee" stroke-width="20" filter="url(#glow)" stroke-dasharray="22 16"/>
+      <path d="M378 606 L646 606" stroke="#a5f3fc" stroke-width="8" stroke-dasharray="22 16"/>
+    </g>
+    <!-- candle: a hammer that swept the level -->
+    <g filter="url(#bloom)">
+      <rect x="447" y="402" width="130" height="118" rx="16" fill="#ff2bd6"/>
+      <rect x="497" y="370" width="30" height="292" rx="15" fill="#ff2bd6"/>
+    </g>
+    <g filter="url(#glow)">
+      <rect x="447" y="402" width="130" height="118" rx="16" fill="#ff2bd6"/>
+      <rect x="499" y="372" width="26" height="288" rx="13" fill="#ff2bd6"/>
+    </g>
+    <rect x="499" y="372" width="26" height="288" rx="13" fill="url(#plasmaW)"/>
+    <rect x="447" y="402" width="130" height="118" rx="16" fill="url(#plasma)"/>
+    <rect x="449.5" y="404.5" width="125" height="113" rx="14" fill="none" stroke="#ff2bd6" stroke-width="5"/>
+    <rect x="470" y="411" width="84" height="7" rx="3.5" fill="#fff" opacity="0.5"/>
+    <!-- sweep flare at the wick tip -->
+    <circle cx="512" cy="654" r="32" fill="#22d3ee" filter="url(#glow)"/>
+    <circle cx="512" cy="654" r="11" fill="#fff" filter="url(#tiny)"/>
+  </g>
+  <rect x="352" y="352" width="320" height="320" rx="24" fill="url(#glass)"/>
+  <rect x="356" y="356" width="312" height="312" rx="21" fill="none" stroke="#22d3ee" stroke-opacity="0.35" stroke-width="2"/>
+</svg>

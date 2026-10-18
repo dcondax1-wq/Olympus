@@ -9,12 +9,16 @@ Adapters
   traderspost - POSTs JSON signals to YOUR TradersPost webhook (MFFU supports TradersPost-style automation).
   tradovate   - REST skeleton for Tradovate (demo endpoint by default). Requires your own API credentials in
                 environment variables; disabled unless explicitly armed. Test on demo first.
+  ninjatrader - NinjaTrader 8 ATI order files (engine/ninjatrader.py): the route into the MFFU account through
+                NinjaTrader Desktop. Sim101 by default; a real account needs armed + phrase + NINJATRADER_LIVE=1.
 
-Data: Yahoo Finance futures quotes (free, may be delayed). For real-money execution use your broker's feed.
+Data: Yahoo Finance futures quotes (free, may be delayed). For real-money execution use your broker's feed:
+data_source "ninjatrader" reads the real CME bars NinjaTrader writes (ninjatrader/LE_BarFeed.cs), Yahoo as fallback.
 """
 from __future__ import annotations
 
 import json
+import math
 import os
 import threading
 import time
@@ -138,15 +142,22 @@ class TradovateAdapter:
 
 
 from .tradovate import TradovateAdapter as _TvAdapter  # full REST adapter with live gates (engine/tradovate.py)
+from .ninjatrader import NinjaTraderAdapter as _NtAdapter  # NinjaTrader 8 order files with live gates (engine/ninjatrader.py)
 ADAPTERS = {"paper": PaperAdapter, "traderspost": TradersPostAdapter, "tradovate": _TvAdapter,
-            "tradovate-demo": _TvAdapter, "tradovate-live": _TvAdapter}
+            "tradovate-demo": _TvAdapter, "tradovate-live": _TvAdapter, "ninjatrader": _NtAdapter}
+# Optional adapter capability flags, read with getattr(adapter, flag, False) (paper and Tradovate set none of them):
+#   loop_tick         tick() is called at the start of every poll
+#   route_stop_moves  the model's stop moves (breakeven at 1R) are sent as {"side": "modify", "stop": px}
+#   route_all_exits   every model exit is routed (TIME STOP, giveback, ...), not only TIME; a flatten when flat is harmless
+#   kill_flattens_all the kill switch is routed even when the model shows no position
 
 
 STATE_PATH = os.path.join(DATA_DIR, "live_state.json")
 ET_TZ = ZoneInfo("America/New_York")
 LIVE_DEFAULTS = {
     "sym": "NQ", "tf": "5m", "poll_sec": 60, "adapter": "paper", "params": {}, "armed": False,
-    "data_source": "yahoo",     # yahoo (free, ~10 min delayed) | tradovate (engine.tradovate.TradovateData, falls back to yahoo)
+    "data_source": "yahoo",     # yahoo (free, ~10 min delayed) | tradovate (engine.tradovate.TradovateData) | ninjatrader
+                                # (LE_BarFeed CSVs, engine.ninjatrader.NinjaTraderBars); both fall back to yahoo
     "window_days": 20,          # calendar days of base bars fed to the Engine each poll (verified identical to the full run)
     "stale_polls_block": 3,     # block NEW entries once the feed has been stale this many polls in a row inside an entry window
 }
@@ -173,6 +184,23 @@ def market_open(ts) -> bool:
     if e.weekday() == 4 and mod >= 1020:
         return False
     return not (1020 <= mod < 1080)
+
+
+TICK = 0.25
+
+
+def tick_px(px, d: int = 1, target: bool = False):
+    """A price on the 0.25 tick grid before it is routed. Stops: nearest tick (LIT's stop is already 1 tick beyond the sweep
+    extreme). Targets: rounded TOWARD the entry (a long's target down, a short's up), so the broker's limit sits at or in
+    front of the model's target and fills whenever the model counts the target (LIT's VIX-band target is not a tick price)."""
+    if px is None:
+        return None
+    x = float(px) / TICK
+    if target:
+        q = math.floor(x + 1e-9) if d == 1 else math.ceil(x - 1e-9)
+    else:
+        q = round(x)
+    return round(q * TICK, 2)
 
 
 def _jsonable(o):
@@ -267,6 +295,11 @@ class LiveBot:
         self._blocked_entries = set()    # entry_t of engine entries we deliberately did not route
         self._flattened = set()          # entry_t of positions the clock-based safety flatten already closed
         self._restored = None
+        self._nt_feed = None             # engine.ninjatrader.NinjaTraderBars for data_source "ninjatrader"
+        self._nt_notes = {}              # rate limit for the ninjatrader feed notes: key -> (text, unix time logged)
+        self._modify_gaveup = set()      # (entry_t, stop) the broker refused 3 times: not retried again
+        self._week_prev = []             # LIT weekly stop: this ISO week's routed exits from earlier days (live_state.json)
+        self._eval_prev = {}             # LIT safe_eval: routed P&L per earlier trading day of the eval (live_state.json)
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -297,6 +330,10 @@ class LiveBot:
     def _fetch_recent(self, sym, interval, period="5d"):
         """Fresh bars from the configured data_source; tradovate falls back to yahoo (logged once per poll)."""
         src = self.cfg.get("data_source", "yahoo")
+        if src == "ninjatrader":
+            df = self._ninjatrader_recent(sym, interval, period)
+            if df is not None:
+                return df
         if src == "tradovate":
             try:
                 from . import tradovate as _tv
@@ -311,10 +348,53 @@ class LiveBot:
             self.health["fallback"] = True
         return _yahoo_recent(sym, interval=interval, period=period)
 
-    def _merged(self, sym, tf, now, secs, period="5d"):
+    def _nt_note(self, key, kind, text, every_s=900):
+        """Log a ninjatrader feed note when it changes, and at most every 15 min while it stays the same."""
+        prev = self._nt_notes.get(key)
+        now = int(self.clock())
+        if prev is None or prev[0] != text or now - prev[1] >= every_s:
+            self._nt_notes[key] = (text, now)
+            self._log(kind, text)
+
+    def _ninjatrader_recent(self, sym, interval, period):
+        """Real CME bars NinjaTrader writes (ninjatrader/LE_BarFeed.cs -> Documents\\NinjaTrader 8\\le_feed). None = use
+        Yahoo for this fetch (logged; health.fallback for the bot's own symbol). When the feed holds fewer days than the
+        gap to the stored history, or has holes, Yahoo fills in underneath and NinjaTrader's bars win wherever both exist."""
+        primary = sym == self.cfg.get("sym", "NQ")
+        try:
+            from . import ninjatrader as _nt
+            if self._nt_feed is None:
+                self._nt_feed = _nt.NinjaTraderBars(folder=self.cfg.get("nt_folder"), roots=self.cfg.get("nt_feed_roots"))
+            df, why, full = self._nt_feed.recent_bars(sym, interval, period, now=int(self.clock()))
+        except Exception as e:
+            df, why, full = None, f"{e.__class__.__name__}: {e}", False
+        if df is not None and len(df):
+            if full:
+                return df
+            self._nt_note(f"fill:{sym}:{interval}", "warn" if primary else "system",
+                          f"data_source=ninjatrader {sym} {interval}: {why} - Yahoo fills the gaps, NinjaTrader bars win")
+            try:
+                y = _yahoo_recent(sym, interval=interval, period=period)
+            except Exception as e:
+                self._note_error(f"Yahoo gap fill failed ({sym} {interval}): {e.__class__.__name__}: {e}")
+                y = None
+            if y is None or not len(y):
+                return df
+            return pd.concat([y, df]).drop_duplicates("time", keep="last").sort_values("time").reset_index(drop=True)
+        if primary:
+            if not self.health.get("fallback"):
+                self._nt_note(f"fallback:{sym}", "warn", f"data_source=ninjatrader {why} - falling back to Yahoo for this poll",
+                              every_s=300)
+            self.health["fallback"] = True
+        else:
+            self._nt_note(f"partner:{sym}", "system", f"data_source=ninjatrader: {sym} {interval} bars from Yahoo ({why})",
+                          every_s=3600)
+        return None
+
+    def _merged(self, sym, tf, now, secs, period="5d", max_days=58):
         """Stored history + fresh bars, cleaned. A failing fresh fetch degrades to history (never raises for that)."""
         hist = self.read_hist(sym, tf)
-        period = _cover_gap(hist, now, period, max_days=58)   # stored history ends days ago: fetch enough to bridge it
+        period = _cover_gap(hist, now, period, max_days=max_days)   # stored history ends days ago: fetch enough to bridge it
         try:
             recent = self.fetch_recent(sym, tf, period)
             if recent is None:
@@ -340,6 +420,8 @@ class LiveBot:
             old.join(timeout=3)
         self.reset()
         self.cfg = {**LIVE_DEFAULTS, **cfg}
+        if cfg.get("data") and "data_source" not in cfg:
+            self.cfg["data_source"] = cfg["data"]          # {"data": "ninjatrader"} is accepted as a short form
         if self.cfg["adapter"] != "paper" and not self.cfg.get("armed"):
             return {"ok": False, "error": "non-paper adapters must be explicitly armed (armed=true)"}
         if self.cfg["adapter"] not in ADAPTERS:
@@ -379,6 +461,10 @@ class LiveBot:
                          "entry_t": pos.get("entry_t")})
             self._flattened.add(pos.get("entry_t"))
             self._open_routed = None
+        elif getattr(self.adapter, "kill_flattens_all", False):
+            # broker adapters that can flatten the whole account (NinjaTrader FLATTENEVERYTHING) are told even when the
+            # model shows no position: the broker may still hold one (desync, manual order, late fill)
+            self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "reason": "KILL SWITCH", "entry_t": None})
         self.stop()
         self._log("risk", "KILL SWITCH: flattened and stopped")
         self._save_state()
@@ -396,6 +482,54 @@ class LiveBot:
         self._log("order", f"{action['side'].upper()} {action.get('qty', '')} {action['sym']} -> {res.get('ok')}", result=res)
         self._save_state()
         return res
+
+    def _adapter_tick(self):
+        """Adapters that manage broker orders between bars (NinjaTrader: late fill reports, bracket health, flat-time
+        safety) get one tick() per poll, before the data fetch so a failing feed cannot skip it. Never raises."""
+        ad = self.adapter
+        if self.kill or not getattr(ad, "loop_tick", False) or not callable(getattr(ad, "tick", None)):
+            return
+        try:
+            ad.tick()
+        except Exception as e:
+            self._note_error(f"adapter {getattr(ad, 'name', '?')} tick failed: {e.__class__.__name__}: {e}")
+
+    def _broker_stop(self, entry_t):
+        """The stop the broker was last given for this entry: its bracket, then every modify it accepted."""
+        stop = None
+        for r in self.ledger:
+            if r.get("entry_t") != entry_t:
+                continue
+            if r.get("side") in ("buy", "sell"):
+                stop = r.get("stop")
+            elif r.get("side") == "modify" and (r.get("result") or {}).get("ok"):
+                stop = r.get("stop")
+        return stop
+
+    def _route_stop_move(self, pos, sym):
+        """The model moved the stop of the routed position (breakeven at 1R): tell the broker once per new level. A refused
+        modify is retried on the next polls, at most 3 times per level. Stops are only ever tightened."""
+        et_, new = pos.get("entry_t"), tick_px(pos.get("stop"), 1 if pos.get("dir", 1) == 1 else -1)
+        last = self._broker_stop(et_)
+        if new is None or last is None or abs(float(new) - float(last)) < 1e-9:
+            return
+        d = 1 if pos.get("dir", 1) == 1 else -1
+        if (float(new) - float(last)) * d < 0:
+            return
+        if (et_, new) in self._modify_gaveup:
+            return
+        ready = getattr(self.adapter, "has_open_bracket", None)
+        if callable(ready) and not ready(et_):
+            return          # nothing at the broker to move yet (entry refused, or its stop not placed yet): next poll
+        tries = sum(1 for r in self.ledger if r.get("entry_t") == et_ and r.get("side") == "modify" and r.get("stop") == new)
+        if tries >= 3:
+            self._modify_gaveup.add((et_, new))
+            self._log("risk", f"Broker refused the stop move to {new:.2f} three times: the broker stop stays at {last:.2f}. "
+                              "Check the stop in the broker platform by hand.")
+            return
+        reason = "BE" if (float(new) - float(pos.get("entry") or new)) * d >= 0 else "STOP MOVE"
+        self._route({"sym": sym, "side": "modify", "qty": self._open_qty or pos.get("qty"), "stop": new, "reason": reason,
+                     "entry_t": et_})
 
     def _remember(self, tr, sym, note=None):
         """Persistent trade memory (engine/memory.py): store a completed routed trade. Never raises into routing.
@@ -425,6 +559,7 @@ class LiveBot:
                 "open_routed": self._open_routed, "open_qty": self._open_qty, "blocked_entries": sorted(self._blocked_entries),
                 "flattened": sorted(self._flattened),
                 "seen": [list(k) for k in list(self.seen)[-2000:]], "ledger": self.ledger[-300:],
+                "week_exits": self.lit_week_hist() if self.cfg else [], "eval_days": self.eval_days() if self.cfg else {},
                 "day_pnl_routed": self.day_pnl_routed(), "trades_today": self.trades_today()}
 
     def _save_state(self):
@@ -450,6 +585,12 @@ class LiveBot:
             self._log("warn", f"live_state.json unreadable ({e}) - starting clean")
             return
         today = trading_day(self.clock())
+        if s.get("sym") == self.cfg.get("sym"):
+            # kept across days: the LIT weekly stop needs this week's earlier stop-outs, safe_eval the eval's daily P&L
+            from .lit import iso_week
+            wk = iso_week(today)
+            self._week_prev = [r for r in (s.get("week_exits") or []) if r.get("day") and r["day"] != today and iso_week(r["day"]) == wk]
+            self._eval_prev = {d: float(v) for d, v in (s.get("eval_days") or {}).items() if d != today}
         if s.get("day") != today or s.get("sym") != self.cfg.get("sym") or s.get("tf") != self.cfg.get("tf"):
             self._log("system", f"Ignoring live_state.json from {s.get('day')} {s.get('sym')} {s.get('tf')} (today is {today})")
             return
@@ -487,6 +628,7 @@ class LiveBot:
         if self.last_poll is not None and now < self.last_poll - 5:
             self._log("warn", f"clock moved backwards by {self.last_poll - now}s (last poll {_et(self.last_poll):%H:%M:%S} ET, now {_et(now):%H:%M:%S})")
         self.health["fallback"] = False
+        self._adapter_tick()
         self._refresh_guard()
         df, drops = self._merged(sym, tf, now, secs)
         if len(df) == 0:
@@ -495,6 +637,7 @@ class LiveBot:
         if drops["misaligned"] or drops["malformed"]:
             self._log("warn", f"dropped {drops['misaligned']} misaligned / {drops['malformed']} malformed bars from the feed")
         self._detect_revisions(df, secs)
+        df_full = df                          # LIT keeps the previous month (its levels), engine/lit_live.py trims it
         window_days = float(self.cfg.get("window_days") or 0)
         if window_days > 0:
             df = df[df["time"] >= df["time"].max() - window_days * 86400]
@@ -504,13 +647,20 @@ class LiveBot:
         stale = age > 2 * secs + 60
         mopen = market_open(now)
         et_mod = _et(now).hour * 60 + _et(now).minute
-        from .lab_adapter import live_model
+        from .lab_adapter import engine_model, live_model
         lm = live_model()                     # live_model.json: which strategy the paper bot / cloud monitor trades
         model = self.cfg.get("model") or lm["model"]
+        if model != lm["model"] and model == "engine":
+            lm = engine_model()               # cfg pins the old engine while live_model.json runs another model
         eng_params = self.cfg.get("params") or (lm["params"] if model == "engine" else {})
         params = merge_params({**eng_params, "live": True})
         self._params = params
-        in_entry_window = any(a <= et_mod < z for a, z in params["entry_windows"])
+        lit_p = None
+        if model == "lit":
+            from . import lit as _lit
+            lit_p = {**_lit.DEFAULTS, **(self.cfg.get("model_params") or lm.get("lit") or {})}
+        windows = lit_p["window"] if lit_p else params["entry_windows"]
+        in_entry_window = any(a <= et_mod < z for a, z in windows)
         was_stale = self.health["stale"]
         self.health.update({"data_age_s": int(age), "stale": bool(stale), "market_open": mopen, "last_bar_t": int(df["time"].max())})
         if stale and mopen:
@@ -530,7 +680,11 @@ class LiveBot:
             self._log("system", "Feed recovered: new entries allowed again")
         self.health["entries_blocked"] = block
         base = from_frame(sym, tf, df)
-        if model.startswith("lab:"):
+        if model == "lit":
+            from . import lit_live
+            df1 = self._lit_1m(sym, now, int(df_full["time"].min())) if lit_p.get("tf") == "1m" else None
+            res = lit_live.run(df_full, lit_p, one_min=df1, now=now, sym=sym, week_hist=self.lit_week_hist())
+        elif model.startswith("lab:"):
             from . import lab_adapter
             es_df = None
             if PARTNER.get(sym) in YAHOO:
@@ -547,11 +701,15 @@ class LiveBot:
             res = eng.result()
         self.state = res["state"]
         self.state["strategy"] = {"model": model, "label": lm.get("label", ""),
-                                  "params": eng_params if model == "engine" else (self.cfg.get("model_params") or lm["params"])}
+                                  "params": eng_params if model == "engine" else lit_p if model == "lit"
+                                  else (self.cfg.get("model_params") or lm["params"])}
         # equity-curve filter: every finished signal goes into the shadow ledger; entries trade only while it's positive
         # (the real bot only: test harnesses run with their own state_path and must not touch the shared ledger)
         from . import equity_filter as _eqf
         self._eqf_cfg = lm.get("equity_filter") if self.state_path == STATE_PATH else None
+        self._sizing_cfg = lm.get("sizing") if self.state_path == STATE_PATH else None   # late-entry size, fast-eval press
+        self._lit_sizing = (self.cfg.get("lit_sizing") or lm.get("lit_sizing")) if model == "lit" else None   # normal/fast_eval/safe_eval
+        self._live_params = lm.get("params") or {}
         if self._eqf_cfg:
             try:
                 _eqf.record(res["trades"])
@@ -570,6 +728,24 @@ class LiveBot:
         self.health["ok"] = not (self.health["stale"] and mopen) and not self.health["desync"]
         self._save_state()
         return self.state
+
+    def _lit_1m(self, sym, now, t_min):
+        """1m bars for LIT's entry (stored data/<sym>_1m.csv + fresh 1m, Yahoo caps 1m at 7 days). Never raises and never
+        changes the feed-health flags of the bot's own 5m feed; None = LIT executes that day on 5m bars."""
+        keep = {k: self.health.get(k) for k in ("fallback", "fetch_ok", "last_error", "last_error_t")}
+        try:
+            df1, _ = self._merged(sym, "1m", now, 60, period="5d", max_days=7)
+            # remember what was fetched: a failed fetch or the 7-day cap must not take a traded day's 1m bars away
+            store = getattr(self, "_lit_1m_store", None)
+            if store is not None and len(store):
+                df1 = pd.concat([store, df1]).drop_duplicates("time", keep="last").sort_values("time")
+            df1 = df1[df1["time"] >= t_min].reset_index(drop=True)
+            self._lit_1m_store = df1[df1["time"] >= int(df1["time"].max()) - 12 * 86400] if len(df1) else df1
+            return df1 if len(df1) else None
+        except Exception:
+            return None
+        finally:
+            self.health.update(keep)
 
     def _refresh_guard(self):
         """Refresh the news calendar (archived into the engine's event list) and VIX; log guard transitions."""
@@ -670,7 +846,7 @@ class LiveBot:
         if eqf["on"]:
             text = f"Cold streak over: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Back to full size."
         elif eqf.get("mult"):
-            text = (f"Cold streak: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Still taking every setup at half size "
+            text = (f"Cold streak: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Still taking every setup at {eqf['mult']:g}x size "
                     f"until they add back up above 0R.")
         else:
             text = (f"Cold streak: last {eqf['n']} signals {eqf['sum_r']:+.2f}R. Sitting out; every setup is still tracked "
@@ -678,23 +854,76 @@ class LiveBot:
         self._log("risk", text)
         self._alert(("⏸️ " if not eqf["on"] else "▶️ ") + text, "guard")
 
-    def _equity_qty(self, entry_t, qty):
-        """Equity-curve filter for one entry: the quantity to route (0 = hold the entry back), logged when it changes it."""
+    def _exit_rows(self):
+        """This process's routed exits as weekly-stop rows (engine/lit.py week_stops)."""
+        out = []
+        for r in self.ledger:
+            if r.get("side") != "exit" or r.get("entry_t") is None:
+                continue
+            out.append({"day": trading_day(r["entry_t"]), "entry_t": int(r["entry_t"]), "exit": r.get("reason"),
+                        "exit_t": int(r.get("exit_t") or r["t"]), "pnl": float(r.get("pnl") or 0.0)})
+        return out
+
+    def lit_week_hist(self):
+        """LIT weekly stop: this ISO week's routed exits (earlier days restored from live_state.json + today's ledger)."""
+        from .lit import iso_week
+        wk = iso_week(trading_day(self.clock()))
+        rows = {(r["day"], r.get("entry_t")): r for r in self._week_prev if iso_week(r["day"]) == wk}
+        for r in self._exit_rows():
+            rows[(r["day"], r["entry_t"])] = r
+        return sorted(rows.values(), key=lambda r: r["exit_t"])
+
+    def eval_days(self):
+        """Routed P&L per trading day of the eval (earlier days from live_state.json + today's ledger), from cfg eval_start."""
+        start = str(self.cfg.get("eval_start") or "")
+        days = {d: v for d, v in self._eval_prev.items() if not start or d >= start}
+        today = trading_day(self.clock())
+        days.pop(today, None)
+        for r in self.ledger:
+            if r.get("side") == "exit" and (not start or trading_day(r["t"]) >= start):
+                d = trading_day(r["t"])
+                days[d] = round(days.get(d, 0.0) + float(r.get("pnl") or 0), 2)
+        return days
+
+    def eval_room(self):
+        """MFFU 50K room: eval balance minus the trailing max-loss floor (engine/sizing.mffu_eval)."""
+        from . import sizing as _sz
+        return _sz.mffu_eval(self.eval_days())["cushion"]
+
+    def eval_profit(self):
+        """The eval account's routed profit ($) since cfg eval_start (yyyy-mm-dd; default: everything in the ledger).
+        Used by the fast-eval press (engine/sizing.py); None when the ledger is empty."""
+        start = str(self.cfg.get("eval_start") or "")
+        rows = [r for r in self.ledger if r.get("side") == "exit" and (not start or trading_day(r["t"]) >= start)]
+        return round(sum(float(r.get("pnl") or 0) for r in rows), 2) if self.ledger else None
+
+    def _equity_qty(self, entry_t, qty, pos=None):
+        """Size to route for one entry (0 = hold it back): the engine's micros x cold-streak size x late-entry size, with
+        the fast-eval press when configured (engine/sizing.py). Logged whenever it differs from the engine's micros."""
         try:
             from . import equity_filter as _eqf
+            from . import sizing as _sz
             st = _eqf.status(getattr(self, "_eqf_cfg", None), before_t=entry_t)
+            mult = st.get("mult", 1.0 if st["on"] else 0.0)
+            if mult <= 0:
+                self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET NOT traded: {st['reason']}")
+                return 0
+            lsz = getattr(self, "_lit_sizing", None)
+            if (self.state or {}).get("model") == "lit":
+                # LIT: the model's micros already carry the weekly stop; lit_sizing (normal / fast_eval / safe_eval) re-sizes
+                # from the stop with one rounding (engine/sizing.lit_qty)
+                room = self.eval_room() if (lsz or {}).get("mode") in ("safe_eval", "eval") else None
+                r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room)
+            else:
+                r = _sz.route_qty(int(qty), pos or {}, mult, getattr(self, "_sizing_cfg", None), getattr(self, "_live_params", None),
+                                  self.eval_profit() if getattr(self, "_sizing_cfg", None) and self._sizing_cfg.get("press") else None)
         except Exception as e:
-            self._note_error(f"equity filter failed, entry allowed at full size: {e}")
+            self._note_error(f"sizing failed, entry allowed at the engine's size: {e}")
             return qty
-        mult = st.get("mult", 1.0 if st["on"] else 0.0)
-        if mult <= 0:
-            self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET NOT traded: {st['reason']}")
-            return 0
-        if mult < 1:
-            q = max(1, int(qty * mult))
-            self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET at {q} instead of {qty}: {st['reason']}")
-            return q
-        return qty
+        if r["qty"] != qty:
+            why = "; ".join(r["reasons"]) or st.get("reason", "")
+            self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET at {r['qty']} instead of {qty}: {why}")
+        return r["qty"]
 
     def _route_signals(self, res, sym, now, secs):
         """Turn the engine's position / completed trades into adapter calls, exactly once each."""
@@ -731,13 +960,17 @@ class LiveBot:
             elif age > late_after:
                 self._blocked_entries.add(pos["entry_t"])
                 self._log("risk", f"Entry at {_et(pos['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
-            elif not (q := self._equity_qty(pos["entry_t"], pos["qty"])):
+            elif not (q := self._equity_qty(pos["entry_t"], pos["qty"], pos)):
                 self._blocked_entries.add(pos["entry_t"])
             else:
                 self._open_routed = pos["entry_t"]
                 self._open_qty = q
-                self._route({"sym": sym, "side": "buy" if pos["dir"] == 1 else "sell", "qty": q,
-                             "stop": pos["stop"], "target": pos["target"], "entry": pos["entry"], "entry_t": pos["entry_t"]})
+                d = 1 if pos["dir"] == 1 else -1
+                self._route({"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
+                             "stop": tick_px(pos["stop"], d), "target": tick_px(pos["target"], d, target=True),
+                             "entry": pos["entry"], "entry_t": pos["entry_t"]})
+        if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
+            self._route_stop_move(pos, sym)
         for tr in res["trades"]:
             if tr["exit_t"] >= start - secs and ("exit", tr["entry_t"]) not in self.seen:
                 self.seen.add(("exit", tr["entry_t"]))
@@ -762,8 +995,9 @@ class LiveBot:
                 if self._open_routed == tr["entry_t"]:
                     self._open_routed = None
                     qty = self._open_qty or tr["qty"]          # what we actually routed (half size in a cold streak)
-                if self.cfg["adapter"] == "paper" or tr["exit_reason"] == "TIME":
-                    # brackets handle stop/target at the broker; the bot only flattens on time exits
+                if self.cfg["adapter"] == "paper" or tr["exit_reason"] == "TIME" or getattr(self.adapter, "route_all_exits", False):
+                    # brackets handle stop/target at the broker; the bot only flattens on time exits (adapters with
+                    # route_all_exits also get TIME STOP / giveback / news exits, and a harmless sync flatten after a bracket fill)
                     self._route({"sym": sym, "side": "exit", "qty": qty, "reason": tr["exit_reason"],
                                  "pnl": round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"],
                                  "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})

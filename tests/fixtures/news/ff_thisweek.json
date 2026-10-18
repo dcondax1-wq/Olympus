@@ -1,0 +1,13 @@
+[{"title":"Bank Holiday","country":"JPY","date":"2026-10-11T19:00:00-04:00","impact":"Holiday","forecast":"","previous":""},
+{"title":"Bank Holiday","country":"USD","date":"2026-10-12T07:00:00-04:00","impact":"Holiday","forecast":"","previous":""},
+{"title":"CPI y/y","country":"GBP","date":"2026-10-21T02:00:00-04:00","impact":"High","forecast":"3.4%","previous":"3.5%"},
+{"title":"FOMC Member Hammack Speaks","country":"USD","date":"2026-10-19T12:10:00-04:00","impact":"Low","forecast":"","previous":""},
+{"title":"Housing Starts","country":"USD","date":"2026-10-20T08:30:00-04:00","impact":"Low","forecast":"1.32M","previous":"1.31M"},
+{"title":"Core CPI m/m","country":"USD","date":"2026-10-20T08:30:00-04:00","impact":"High","forecast":"0.3%","previous":"0.3%"},
+{"title":"CPI m/m","country":"USD","date":"2026-10-20T08:30:00-04:00","impact":"High","forecast":"0.3%","previous":"0.4%"},
+{"title":"Unemployment Claims","country":"USD","date":"2026-10-22T08:30:00-04:00","impact":"Medium","forecast":"230K","previous":"228K"},
+{"title":"Philly Fed Manufacturing Index","country":"USD","date":"2026-10-22T08:30:00-04:00","impact":"Medium","forecast":"8.5","previous":"9.1"},
+{"title":"Flash Manufacturing PMI","country":"USD","date":"2026-10-23T09:45:00-04:00","impact":"Medium","forecast":"52.1","previous":"52.0"},
+{"title":"FOMC Statement","country":"USD","date":"2026-10-28T14:00:00-04:00","impact":"High","forecast":"","previous":""},
+{"title":"FOMC Press Conference","country":"USD","date":"2026-10-28T14:30:00-04:00","impact":"High","forecast":"","previous":""},
+{"title":"Core PCE Price Index m/m","country":"USD","date":"2026-10-29T08:30:00-04:00","impact":"High","forecast":"0.2%","previous":"0.3%"}]

@@ -102,7 +102,7 @@ async function loadAlerts() {
   $('#alSave').onclick = async () => { await api('/api/alerts', body()); toast('Alert settings saved'); loadAlerts(); };
   $('#alTest').onclick = async () => {
     await api('/api/alerts', body());
-    const r = await api('/api/alerts/send', { text: '✅ Liquidity Engine: test alert. Your phone alerts are working.', force: true });
+    const r = await api('/api/alerts/send', { text: '✅ NQ paper bot (LIT): test alert. Your phone alerts are working.', force: true });
     toast(r.sent ? 'Test sent: ' + JSON.stringify(r.result) : 'Nothing configured yet');
     loadAlerts();
   };

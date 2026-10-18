@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script></head>
+<body><script type="module">
+// Icon v2 renderer: ?scene=<name>&size=<px>&k=v... Scenes live in scenes/<name>.js and export default (ctx) => {scene, camera, bloom, exposure}.
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+const q = new URLSearchParams(location.search), size = +(q.get('size') || 1024);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(size, size);
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+try {
+  const mod = await import('./scenes/' + q.get('scene') + '.js');
+  const out = await mod.default({ THREE, renderer, size, q });
+  const { scene, camera, bloom = {} } = out;
+  if (out.exposure) renderer.toneMappingExposure = out.exposure;
+  if (out.toneMapping === 'agx') renderer.toneMapping = THREE.AgXToneMapping;
+  const comp = new EffectComposer(renderer, new THREE.WebGLRenderTarget(size, size, { type: THREE.HalfFloatType }));
+  comp.addPass(new RenderPass(scene, camera));
+  if (bloom.strength !== 0) comp.addPass(new UnrealBloomPass(new THREE.Vector2(size, size), bloom.strength ?? 0.8, bloom.radius ?? 0.5, bloom.threshold ?? 0.85));
+  comp.addPass(new OutputPass());
+  for (let i = 0; i < 2; i++) comp.render();
+  window.__done = true;
+} catch (e) { console.error('SCENE ERROR ' + e.message + ' ' + e.stack); window.__done = 'err'; }
+</script></body></html>
