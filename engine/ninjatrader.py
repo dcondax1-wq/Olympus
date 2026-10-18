@@ -341,6 +341,7 @@ class NinjaTraderAdapter:
     route_stop_moves = True     # LiveBot sends {"side": "modify"} when the model moves the stop (breakeven at 1R)
     route_all_exits = True      # LiveBot routes every model exit (TIME STOP, giveback, ...): a CLOSEPOSITION when flat is harmless
     kill_flattens_all = True    # the kill switch reaches NinjaTrader even when the model shows no position
+    reports_fills = True        # phone notifications: this adapter notifies the real fill (LiveBot does not send its own)
 
     def __init__(self, cfg: dict | None = None, readonly: bool = False, clock=None):
         cfg = dict(cfg or {})
@@ -424,8 +425,47 @@ class NinjaTraderAdapter:
                 return
             from .live import BOT
             BOT._alert("⚠️ NinjaTrader: " + text, "guard")
+            self._push(lambda P: P.text_payload(self._push_src(), "risk", "NinjaTrader needs a look", text,
+                                                key=f"risk:{int(self.clock()) // 60}:{abs(hash(text)) % 10**6}"))
         except Exception:
             pass
+
+    # ------------------------------------------------------------------ phone notifications (engine/push.py)
+    def _push_src(self):
+        return f"PC NinjaTrader {'Sim' if self.sim else 'LIVE'}"
+
+    def _push(self, make):
+        """Send one phone notification (background thread, once per key). Only the real bot: never the self-test or a
+        harness with its own state file. Never raises."""
+        if self._alert_fn is not None or self.readonly or self.state_path != STATE_PATH:
+            return
+        try:
+            from . import push
+            push.pc_notify(make(push))
+        except Exception:
+            pass
+
+    def _push_fill(self, lg):
+        pv = 20.0 if lg["instrument"].upper().startswith(("NQ", "ES")) and not lg["instrument"].upper().startswith(("MNQ", "MES")) else 2.0
+        risk = abs(float(lg["fill_px"] or 0) - float(lg.get("stop0") or lg["stop"]))
+        self._push(lambda P: {**P.fill_payload(self._push_src(), self.sym, "LONG" if lg["dir"] == 1 else "SHORT", lg["filled"],
+                                               lg["fill_px"], lg.get("stop0") or lg["stop"], lg["target"], lg["entry_t"], risk_pts=risk,
+                                               setup=f"{lg['filled']} {lg['instrument']} on {self.account}"
+                                                     + (f" ({lg['qty']} sent)" if lg["filled"] < lg["qty"] else "")),
+                              "risk_usd": round(lg["filled"] * risk * pv, 2)})
+
+    def _push_exit(self, lg, name, x):
+        """The bracket closed the trade (stop or target filled at NinjaTrader): the real exit price, R and $ before costs."""
+        pv = 2.0 if lg["instrument"].upper().startswith(("MNQ", "MES")) else 20.0 if lg["instrument"].upper().startswith("NQ") else 50.0
+        fill, ex = float(lg["fill_px"] or 0), float(x.get("avg") or 0)
+        risk = abs(fill - float(lg.get("stop0") or lg["stop"])) or None
+        pts = (ex - fill) * lg["dir"]
+        r = pts / risk if risk else None
+        usd = pts * int(x.get("filled") or lg["bracket_qty"] or 0) * pv
+        reason = "TARGET" if name == "TARGET" else ("BE" if abs(ex - fill) <= 1.0 else "STOP")
+        self._push(lambda P: P.outcome_payload(self._push_src(), self.sym, "LONG" if lg["dir"] == 1 else "SHORT", reason, r, usd,
+                                               lg["entry_t"], int(self.clock()), qty=x.get("filled"),
+                                               note=f"{name.lower()} filled @ {ex:,.2f} ({lg['instrument']}, before commissions)"))
 
     def _risk(self, text, alert=False):
         self.last_error = text
@@ -736,7 +776,7 @@ class NinjaTraderAdapter:
             base = f"LE{ts}{tag}{kind}"
             legs.append({"instrument": inst, "qty": qty, "side": side, "dir": d, "entry_t": ts, "stop": stop, "target": target,
                          "entry_id": base + "E", "stop_id": base + "S", "target_id": base + "T", "oco": base + "O",
-                         "status": "entry_sent", "filled": 0, "fill_px": None, "fill_mtime": None, "bracket_qty": 0,
+                         "status": "entry_sent", "filled": 0, "fill_px": None, "fill_mtime": None, "bracket_qty": 0, "stop0": stop,
                          "sent_at": self.clock()})
         r = self._send_lines([place_line(self.account, lg["instrument"], side, lg["qty"], "MARKET", order_id=lg["entry_id"])
                               for lg in legs], "ENTRY")
@@ -778,9 +818,12 @@ class NinjaTraderAdapter:
 
     def _note_fill(self, lg, st):
         if st and st["filled"] > lg["filled"]:
+            first = not lg["filled"]
             lg["filled"] = min(st["filled"], lg["qty"])
             lg["fill_px"] = st["avg"]
             lg["fill_mtime"] = st.get("mtime")
+            if first:
+                self._push_fill(lg)
 
     def _protect(self, lg) -> dict:
         """Stop (STOPMARKET) + target (LIMIT) as one OCO pair for the filled quantity."""
@@ -1072,6 +1115,7 @@ class NinjaTraderAdapter:
                 self._risk(f"{name} filled but the other leg was still working: cancel sent ({other_id})")
             self._retire([lg], f"{name.lower()} filled")
             self._log("system", f"NinjaTrader: bracket closed the trade: {name} filled {x['filled']} {lg['instrument']} @ {x['avg']}")
+            self._push_exit(lg, name, x)
             return
         dead = [name for name, x in (("stop", s), ("target", t)) if x and x["state"] in DEAD]
         if dead:
