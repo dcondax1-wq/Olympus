@@ -130,6 +130,34 @@ def run(ids):
         print(k, "|", rl.line(S, "2026"), "||", rl.line(S, "2021-25"), flush=True)
 
 
+def row(s, name):
+    if not s.get("n"):
+        return f"{name}: no trades"
+    return (f"{name}: n={s['n']} tpw={s['tpw']} wk2={s['wk2']}% win={s['win']}% PF={s['pf']} net={s['net']:+,} (${s['per_month']:,}/mo) "
+            f"DD={s['dd']:,} 1mo {s['p20']}/{s['f20']} passrate={pass_rate(s)}% 2wk {s['p10']}/{s['f10']} b2b {s['b2b']}")
+
+
+def by_window(T):
+    """Trades / win % / net $ by entry hour block (ET) of the sized trades, per period."""
+    import datetime as dt
+    from zoneinfo import ZoneInfo
+    out = {}
+    for t in T:
+        e = dt.datetime.fromtimestamp(int(t["entry_t"]), ZoneInfo("America/New_York"))
+        m = e.hour * 60 + e.minute
+        w = next((n for n, (ew, *_r) in WIN.items() if ew[0] <= m < ew[1] + 5), "ny")
+        if 570 <= m < 695 or 810 <= m < 935:
+            w = "ny"
+        per = "2026" if t["day"] >= "2026" else "21-25"
+        o = out.setdefault(f"{w} {per}", [0, 0, 0.0])
+        o[0] += 1; o[1] += t["r"] > 0.1; o[2] += t["pnl"]
+    return {k: f"n={v[0]} win={round(100 * v[1] / v[0])}% net={v[2]:+.0f}" for k, v in sorted(out.items())}
+
+
+VERDICTS = {}   # id -> (status, verdict), filled in after the runs
+RULES = {}      # id -> size rule for runs that re-size the baseline
+
+
 def pass_rate(s):
     p, f = s.get("p20") or 0, s.get("f20") or 0
     return round(100 * p / (p + f), 1) if p + f else None
@@ -140,5 +168,20 @@ if __name__ == "__main__":
     ids = sys.argv[2:] or list(V)
     if cmd == "run":
         run(ids)
+    elif cmd == "table":
+        for k in ids:
+            raw = rl.replay(V[k][3], procs=2, quiet=True)
+            T = rl.size(raw); S = rl.score(T, raw)
+            print(k, *[row(S["spans"][sp], sp) for sp in ("2026", "2021-25")], sep="\n   ")
+            if k.startswith("ses_") and "_add" in k:
+                print("   by window:", by_window(T))
+    elif cmd == "save":
+        for k, (st, verdict) in VERDICTS.items():
+            t, fam, q, prm = V[k]
+            raw = rl.replay(prm, procs=2, quiet=True)
+            T = rl.size(raw, rule=RULES.get(k)); S = rl.score(T, raw)
+            rl.save(k, t, fam, q, params=prm, trades=T, scored=S, status=st, verdict=verdict,
+                    writeup="win-rate-and-sessions", tags=["winrate-sessions-2026-10-17"])
+            print("saved", k, st)
     elif cmd == "list":
         print("\n".join(V))
