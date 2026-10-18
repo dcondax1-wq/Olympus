@@ -564,7 +564,7 @@ def score_plan(P):
             o["funded"] = {s: funded(P, rule, s) for s in ("2026", "H2")}
         out[rule] = o
     if P["firm"] == "MyFundedFutures" and P["plan"] in ("Builder", "Rapid", "Rapid EOD") and P["size"] <= 50:
-        out["skip"] = {"exact": {s: exact(P, "skip", s) for s in ("2026", "H1", "H2")},
+        out["skip"] = {"exact": {s: exact(P, "skip", s) for s in ("2026", "H1", "H2", "2021-25")},
                        "monday": {s: exact(P, "skip", s, monday=True) for s in ("2026", "H1", "H2")},
                        "mc": {s: mc(P, "skip", s) for s in ("2026", "H1", "H2")},
                        "trades_2026_fresh": trade_count(P)}
