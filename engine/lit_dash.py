@@ -122,6 +122,7 @@ def _chart_layers(M, first_day: str, trades: list):
     pools, boxes = [], []
     k_of = {}
     for k, (d, s, e) in enumerate(M.days):
+        d = str(d)
         k_of[d] = k
         if d < first_day:
             continue
@@ -142,7 +143,7 @@ def _chart_layers(M, first_day: str, trades: list):
             t_known = int(t[max(int(ki), s - 1)]) if ki >= 0 else int(t[s])
             row = {"t0": t_known, "t1": int(t[a + hit[0]]) if len(hit) else None, "t2": day_end, "price": px,
                    "side": "H" if side == "high" else "L", "kind": cls, "strength": st, "eq": cls == "buildup",
-                   "label": _level_label(nm, side), "day": d}
+                   "label": _level_label(nm, side)}
             seen[key] = row
         pools.extend(seen.values())
         mod = M.mod[s:e]
@@ -154,7 +155,7 @@ def _chart_layers(M, first_day: str, trades: list):
             ii = ii[mod[ii] >= 1080] if a_m >= 1080 else ii[mod[ii] < 1080]
             if not len(ii):
                 continue
-            boxes.append({"day": d, "key": key, "label": lab, "kind": kind, "t0": int(t[s + ii[0]]), "t1": int(t[s + ii[-1]]) + 300,
+            boxes.append({"day": str(d), "key": key, "label": lab, "kind": kind, "t0": int(t[s + ii[0]]), "t1": int(t[s + ii[-1]]) + 300,
                           "hi": round(float(hi), 2), "lo": round(float(lo), 2)})
     # the sweep bar of each trade: the last bar of its day, before the entry, that reached the sweep extreme
     sweep_t = {}
@@ -201,8 +202,9 @@ def _bars_state():
     from .data import load
     lm = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))
     P = lm.get("lit") or {}
-    df5 = pd.read_csv(D5)
-    df5 = df5[df5["time"] >= int(df5["time"].max()) - 75 * 86400].reset_index(drop=True)
+    b5 = load("NQ", "5m")                              # cached by engine.data (the server has it loaded already)
+    i = int(np.searchsorted(b5.t, int(b5.t[-1]) - 75 * 86400))
+    df5 = pd.DataFrame({"time": b5.t[i:], "open": b5.o[i:], "high": b5.h[i:], "low": b5.l[i:], "close": b5.c[i:], "volume": b5.v[i:]})
     one = None
     if P.get("tf") == "1m" and os.path.exists(D1):
         try:

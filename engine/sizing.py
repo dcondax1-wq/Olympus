@@ -397,7 +397,7 @@ def eval_clock(day_pnl: dict, start: str | None, today: str, session_over: bool 
                 f"lit_sizing.eval_start to its first session" if reset else
                 f"session {sess} of {EVAL_SESSIONS}, {max(0, EVAL_SESSIONS - done)} left")
     elif status == "not started":
-        text = f"eval starts {start}"
+        text = "not started yet"
     elif status == "unknown":
         text = "eval start unknown (lit_sizing.eval_start)"
     else:

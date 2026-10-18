@@ -2,14 +2,16 @@
 (tools/lit_ob.py) and a dashboard can draw exactly the same blocks from the same bars.
 
 What an order block is here (bullish; a bearish block is the exact mirror, with highs and lows swapped):
-  1. The block = the LAST run of down-close candles (1 to run_max, a doji inside the run is allowed) right before the first
+  1. The block = the LAST run of down-close candles (1 to run_max = 3, a doji inside the run is allowed) right before the first
      up-close candle of a move up. Doji / neutral candle = body <= doji x range (or no range); up to skip_neutral of them may
      sit between the run and the move.
   2. The move must be a displacement that, within disp_max candles of its first up candle,
        a. leaves a fair value gap: low[b] > high[b-2] with candle b-2 no earlier than the block's last candle, and
        b. breaks structure: a close above the last confirmed swing high (2-bar fractal) made before the block
-          (qualify "bos"), or, when the block's own low took sell-side liquidity, a close above the block's body top (CISD)
-          is enough (qualify "bos_or_liq", the default). qualify "liq" needs both the sweep and the CISD close.
+          (qualify "bos"; the swing must sit above the block and still be intact), or, when the block's own low took
+          sell-side liquidity, a close above the block's body top (CISD) is enough (qualify "bos_or_liq", the default).
+          qualify "liq" needs both the sweep and the CISD close. The biggest body of the move must be >= min_disp_atr
+          (0.8) x ATR(14) and the FVG >= min_fvg_atr (0.1) x ATR(14).
      and it must not trade below the block's low or close back below the block before it qualifies.
   3. The block is KNOWN at the close of the candle that completes both (conf). Nothing before that bar can use it.
   4. Zone: body = [lowest body bottom, highest body top] of the run (TTrades), wick = [lowest low, highest high].
@@ -34,7 +36,7 @@ import numpy as np
 
 DEFAULTS = {
     "doji": 0.1,          # body <= doji x range = neutral candle (also any candle with no range)
-    "run_max": 5,         # at most this many candles in the block's run
+    "run_max": 3,         # at most this many candles in the block's run (longer slow runs make useless wide zones)
     "skip_neutral": 1,    # neutral candles allowed between the run and the first candle of the move
     "disp_max": 4,        # the move has this many candles (from its first up candle) to leave the FVG and break structure
     "qualify": "bos_or_liq",   # "bos" | "bos_or_liq" | "liq" | "cisd" (close above the body top only; loosest)
@@ -42,7 +44,8 @@ DEFAULTS = {
     "swing_lb": 48,       # the swing high that must break was made at most this many candles before the run
     "liq_lb": 48,         # the swept fractal low was made at most this many candles before the run
     "leg_lb": 24,         # extreme vs decisional: lowest low of this many candles up to conf
-    "min_disp_atr": 0.0,  # biggest body of the move >= this x ATR(14) (0 = the FVG is the displacement test)
+    "min_disp_atr": 0.8,  # biggest body of the move >= this x ATR(14) of that timeframe (LIT's displacement: 0.8)
+    "min_fvg_atr": 0.1,   # the FVG must be at least this x ATR(14) tall (no 1-tick gaps in a slow grind)
 }
 TF_SECS = {"5m": 300, "15m": 900, "1h": 3600, "4h": 14400}
 
@@ -137,9 +140,15 @@ def _detect_dir(o, h, l, c, P, at, rej=None):
         seg = slice(s_run, e_run + 1)
         body_top = float(np.maximum(o[seg], c[seg]).max()); body_bot = float(np.minimum(o[seg], c[seg]).min())
         wick_top = float(h[seg].max()); wick_bot = float(l[seg].min())
-        # swing high to break: the last fractal high before the run, made within swing_lb candles
+        # swing high to break: the most recent 2-bar fractal high before the run, made within swing_lb candles, ABOVE the
+        # block's body and still intact (no close above it between the swing and the move)
         q = int(np.searchsorted(fh, s_run)) - 1
-        bos_lvl = float(h[fh[q]]) if q >= 0 and fh[q] >= s_run - P["swing_lb"] else None
+        bos_lvl = None
+        while q >= 0 and fh[q] >= s_run - P["swing_lb"]:
+            f = int(fh[q])
+            if h[f] > body_top and (f + 1 >= u or c[f + 1:u].max() <= h[f]):
+                bos_lvl = float(h[f]); break
+            q -= 1
         # sell-side taken by the block: a fractal low before the run, untaken until the run, under-cut by the run's low
         swept = False
         a = int(np.searchsorted(fl, s_run - P["liq_lb"])); b_ = int(np.searchsorted(fl, s_run))
@@ -153,7 +162,7 @@ def _detect_dir(o, h, l, c, P, at, rej=None):
         for b in range(u, min(n, u + P["disp_max"])):
             if l[b] < wick_bot or c[b] < body_bot:
                 break                                  # the move made a lower low / closed back below: not the origin
-            if fvg is None and b - 2 >= e_run and l[b] > h[b - 2]:
+            if fvg is None and b - 2 >= e_run and l[b] - h[b - 2] >= P["min_fvg_atr"] * at[b]:
                 fvg = (float(h[b - 2]), float(l[b]), b)
             if cisd_k is None and c[b] > body_top:
                 cisd_k = b
@@ -323,16 +332,16 @@ def selftest():
     bull = [x for x in obs if x["dir"] == 1]
     assert bull, obs
     ob = bull[0]
-    assert ob["s"] == 3 and ob["e"] == 6 and ob["body_top"] == 105 and ob["body_bot"] == 101, ob
+    assert ob["s"] == 4 and ob["e"] == 6 and ob["body_top"] == 104 and ob["body_bot"] == 101, ob   # run_max 3
     assert ob["conf"] >= 8 and ob["fvg"] is not None and ob["bos"] == 106.0, ob
     # mirror: the same bars upside down give the same block as a bearish one
     obs2 = detect(-o, -l, -h, -c)
     bear = [x for x in obs2 if x["dir"] == -1]
-    assert bear and bear[0]["body_bot"] == -105 and bear[0]["body_top"] == -101, bear
+    assert bear and bear[0]["body_bot"] == -104 and bear[0]["body_top"] == -101, bear
     # life cycle: touch at the top, close through the bottom -> breaker
     h2 = np.r_[h, 112, 106, 103]; l2 = np.r_[l, 104.5, 100.0, 99.0]; c2 = np.r_[c, 105, 100.5, 102]
     lifecycle(bull, h2, l2, c2)
-    assert bull[0]["mit"] == 12 and bull[0]["brk"] == 13 and bull[0]["brk_mit"] == 14, bull[0]
+    assert bull[0]["mit"] == 13 and bull[0]["brk"] == 13 and bull[0]["brk_mit"] == 14, bull[0]
     assert state_at(bull[0], 9) == "fresh" and state_at(bull[0], 13) == "breaker" and state_at(bull[0], 5) is None
     print("lit_ob selftest OK")
     return True
