@@ -43,13 +43,18 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   micros so the target covers what is left to +$3,000, capped at 60% of the eval room and the $1,000 soft daily loss, max 40,
   min 1, no weekly stop (config C, run `lit_2wk_rec`, `lit-two-week-eval.md`: 2-week pass H1 52.9% / H2 50.7%, fail 8.4 / 2.9,
   $174 / $181 per 2-week pass, max risk ~$990 a trade); sessions from `lit_sizing.eval_start` (PC start cfg `eval_start`
-  overrides), state `eval_2wk` says "reset recommended" after session 10; missing target / eval state -> eval mode. Other modes:
+  overrides); **no reset (owner 2026-10-18):** after session 10 the eval goes on in safe_eval (`two_week_until 10`, `after_mode`;
+  `tools/lit_eventual.py`: eventual pass ~80/77%); $1.90 commission; min-days 1-micro trade after an early target; mode
+  `funded` exists but is off until funded_state is wired (`lit-funded-sizing.md`); missing target / eval state -> eval mode. Other modes:
   eval ($800 up to a 25-pt stop + 60% room cap, run lit_tight_eval_800_25_room60) | normal | fast_eval ($800 up to a 40-pt
   stop) | safe_eval (micros capped at 60% of the eval room); see `lit-experiments.md`.
 - **Results LIT + pack** (run `lit_live`, costs in): 2026 120 trades, 2.91/wk, win 26.7%, PF 3.66, +$41,734 ($4,254/mo),
   DD -$2,315, eval 2 wk 26.7/1.9, 1 mo 55.3/3.9, pass rate 95.5%; H1 (picked) PF 4.44 +$32,773; **H2 (check) PF 2.46
   +$8,962 (~$2,400/mo): quote the H2 rate**; 2021-25 reference PF 1.01 +$1,275 DD -$20,462 (no 1m data there). Needs 1m bars
-  (5m only: +$6.6k in 2026). 95 of 120 trades enter 02:00-08:00 ET: NinjaTrader and the PC must be running from ~01:55 ET.
+  (5m only: +$6.6k in 2026). 95 of 120 trades enter 02:00-08:00 ET: NinjaTrader and the PC must be running from ~01:55 ET. **PC timing fix (2026-10-18):**
+  the PC bot decides on the 1m CISD close and routes ~3 s later (was ~95 s; `tests/test_lit_timing.py`, `tests/test_lit_oif.py`,
+  `lit-live-fills.md`); sizes from the forming bar's open (`le_feed\MNQ_1m_open.csv`, LE_BarFeed OnMarketData). Owner goes live
+  on the eval himself (`docs/GO_LIVE_TONIGHT.md`); never arm it for him.
 - **Live loop:** `engine/lit_live.py` (PC `engine/live.py`, cloud `tools/cloud_monitor.py`) on the bars from the previous
   month's first day + 1m bars (data/NQ_1m.csv + Yahoo NQ=F 1m, 7 days). `python -X utf8 -m tests.test_lit_live` replays every
   2026 session through it (120/120 trades identical with the pack; `python tools/lit_losses.py live` stores run `lit_live`). `tools/export_backtest.py` exports the LIT replay when the model is lit.
@@ -135,7 +140,8 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   the PC is on). The UI is the ES-module SPA in `web_next/` layered over `web/`, with the API in `engine/dash_*.py` and
   `engine/next_api.py`.
 - **PC-off:** the GitHub Actions cloud monitor runs every 15 min on market days. It is the same engine and settings as
-  `live_model.json`, keeps a paper ledger plus an MFFU eval tracker, sends Telegram/Discord alerts, and publishes README.md and
+  `live_model.json`, keeps a paper ledger plus an MFFU eval tracker, sends phone push notifications (`engine/push.py`, `docs/NOTIFICATIONS.md`: entries, outcomes, PC silent; Telegram/Discord off
+  unless `LE_ALERTS_CHAT=1`), runs the fast-entry watcher (`tools/lit_watch.py`) and the LIT day brief (`engine/lit_brief.py`), and publishes README.md and
   chart.png to the `dashboard` branch (read in the GitHub app).
 - **NinjaTrader 8 route (2026-10-17, untested on a real install):** `engine/ninjatrader.py` writes Order Instruction Files into
   NinjaTrader's `incoming` folder (bracket entry, breakeven, flatten, kill) and reads fills/positions from `outgoing`;
