@@ -513,6 +513,12 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                                    "equity_filter", "eval_timing", "eval_2wk", "price", "today", "events", "engine_trades", "bars", "pools", "pc",
                                    "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
                                    "push", "notices", "learning")}       # learning: engine/lit_learn.py summary (the "What the bot learned" card)
+    try:                                   # LIT day analyst (engine/lit_brief.py): today's news re-read from the fresh hub
+        from engine import lit_brief
+        live["brief"] = lit_brief.with_news(st.get("brief"), _load(os.path.join(ROOT, "data", "news", "hub.json"), None))
+    except Exception as e:
+        print("  brief unavailable:", e.__class__.__name__, e)
+        live["brief"] = st.get("brief")
     # phone notifications: the VAPID public key the app subscribes with (the cloud's, derived from the LE_VAPID_PRIVATE secret,
     # else tools/web_public/push_key.json from tools/push_keys.py) and the public push status (device ids, never endpoints)
     pk = (_load(os.path.join(WEB, "push_key.json"), {}) or {}).get("vapid_public")

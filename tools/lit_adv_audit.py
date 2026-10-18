@@ -282,9 +282,295 @@ def audit():
     return R
 
 
+# ================================================================================================ part 2: synchronized SMT
+_ES = {}
+
+
+def es_bars(M):
+    """ES1! 5m (data/ES_5m.csv, TradingView) on NQ's 5m timestamps only: es[o/h/l/c][j] for NQ bar j, nan where ES has no
+    bar with exactly that open time (the missing-data rule then makes the comparison unknown)."""
+    if not _ES:
+        es = pd.read_csv(os.path.join(DATA_DIR, "ES_5m.csv")).drop_duplicates("time").set_index("time")
+        idx = pd.Index(M.t)
+        for k in ("open", "high", "low", "close"):
+            _ES[k[0]] = es[k].reindex(idx).values.astype(float)
+    return _ES
+
+
+def _cov(a, lo_, hi_):
+    seg = a[lo_:hi_]
+    return 1.0 if len(seg) == 0 else float(np.isfinite(seg).mean())
+
+
+def _box_idx(M, k, nm):
+    """NQ bar indices of session box nm on day k (same rule as Market._context)."""
+    x = M.ctx[k]; s, e = x["s"], x["e"]
+    a, z = lit.SESSIONS[nm] if nm in lit.SESSIONS else lit.EXTRA_BOXES[nm][:2]
+    md = M.mod[s:e]
+    ii = np.flatnonzero((md >= a) & (md < z)) if a < z else np.flatnonzero(md >= a)
+    ii = ii[md[ii] >= 1080] if a >= 1080 else ii[md[ii] < 1080]
+    return s + ii
+
+
+def _span_days(M, k, kind):
+    """(start, end) bar range of the previous day / ISO week / month of day k."""
+    s = M.ctx[k]["s"]
+    if kind == "pd":
+        return M.days[k - 1][1], M.days[k - 1][2]
+    key = M.week_id if kind == "pw" else M.month_id
+    cur = key[s]
+    prev = [kk for kk, (d, a, e) in enumerate(M.days) if kk < k and key[a] != cur]
+    if not prev:
+        return None
+    pk = key[M.days[prev[-1]][1]]
+    ks = [kk for kk in prev if key[M.days[kk][1]] == pk]
+    return M.days[ks[0]][1], M.days[ks[-1]][2]
+
+
+def _bu_pivots(M, side, px, ki):
+    """The two fractal bars that made build-up level px (known at ki), as engine.lit.buildups finds them."""
+    arr = M.l if side == "low" else M.h
+    fr = M.fl if side == "low" else M.fh
+    j2 = ki - 2
+    tol = max(1.5, 0.15 * M.atr[j2])
+    for kk in reversed(fr[(fr < j2 - 2) & (fr >= j2 - 288)]):
+        kk = int(kk)
+        if abs(arr[j2] - arr[kk]) > tol:
+            continue
+        lev = min(arr[j2], arr[kk]) if side == "low" else max(arr[j2], arr[kk])
+        if abs(lev - px) < 1e-6:
+            return [kk, j2]
+    return None
+
+
+def es_copy(M, E, k, nm, cls, side, px, ki, d):
+    """ES's copy of NQ level (nm, px) of day k in direction space (d=1: a low-side level for a long), from the SAME
+    timestamps; None = cannot be matched (ES data missing in the defining bars, or no copy rule)."""
+    lo_ = E["l"] if side == "low" else E["h"]
+    pick = (np.nanmin if side == "low" else np.nanmax)
+    if cls in ("asia", "london", "ny", "pre", "x_ny"):
+        ii = _box_idx(M, k, nm[:-2])
+        if len(ii) < 2 or not np.isfinite(lo_[ii]).all():
+            return None
+        return float(pick(lo_[ii])) * d
+    if cls in ("pd", "pw", "pm"):
+        sp = _span_days(M, k, cls)
+        if sp is None or _cov(lo_, *sp) < 0.99:
+            return None
+        return float(pick(lo_[sp[0]:sp[1]])) * d
+    if cls == "buildup":
+        pv = _bu_pivots(M, side, px, ki)
+        if pv is None or not np.isfinite(lo_[pv]).all():
+            return None
+        return float(pick(lo_[pv])) * d
+    if cls == "gap":
+        x = M.ctx[k]; s = x["s"]
+        if nm == "ndog":
+            pe = M.days[k - 1][2]
+            ends = (pe - 1, s)
+        else:
+            sp = _span_days(M, k, "pw")
+            if sp is None:
+                return None
+            ws = [kk for kk, (dd, a, e) in enumerate(M.days) if M.week_id[a] == M.week_id[s]][0]
+            ends = (sp[1] - 1, M.days[ws][1])
+        # which edge: the prior close or the new open (same component on ES)
+        cl, op = float(M.c[ends[0]]), float(M.o[ends[1]])
+        v = E["c"][ends[0]] if abs(px - cl) < abs(px - op) else E["o"][ends[1]]
+        return float(v) * d if np.isfinite(v) else None
+    return None
+
+
+def smt_flags(M, E, z):
+    """Synchronized divergence at one LIT setup z (both feeds, same 5m timestamps, closed bars <= the trigger bar i only).
+      per swept level (z["sw"]): ES copy from the same defining bars (es_copy); ES 'took' it when its direction-space low
+      went beyond the copy between the level's known bar and the trigger. Unknown when ES misses a bar of the defining
+      window, or of the event window [sweep bar - 24, trigger] (missing-data rule), or the level has no copy rule.
+      smt   every judged swept level: NQ took it, ES held                       (classic SMT, NQ the weaker leg)
+      both  every judged swept level was taken by ES as well                     (no divergence)
+      mixed some held, some taken
+      rev   'vice versa': a level of the same day NQ held through the trigger while ES took its copy inside the sweep
+            leg (ES ran its liquidity, NQ respected it: NQ the stronger market in the trade's direction)."""
+    d, k, i, sb = z["dir"], z["k"], z["i"], z["sweep_i"]
+    lo_es = E["l"] * 1.0 if d == 1 else -E["h"]
+    lo_nq = M.l if d == 1 else -M.h
+    w0 = max(0, sb - 24)
+    if _cov(lo_es, w0, i + 1) < 1.0:
+        return {"state": "unknown", "rev": None, "levels": []}
+    L = M.levels(k)
+    want = "low" if d == 1 else "high"
+    res = []
+    swept = set(z["sw"])
+    rev = False
+    rev_known = 0
+    for side, px, ki, nm, cls in L:
+        if side != want or ki >= i:
+            continue
+        cp = es_copy(M, E, k, nm, cls, side, px, ki, d)
+        a = max(ki + 1, z["ext_i"] - 600)
+        nq_took = bool(np.nanmin(lo_nq[a:i + 1]) < px * d) if a <= i else False
+        if cp is None or _cov(lo_es, a, i + 1) < 0.99:
+            if nm in swept:
+                res.append((nm, None))
+            continue
+        es_took = bool(np.nanmin(lo_es[a:i + 1]) < cp)
+        if nm in swept and abs(px * d - z["sw"][nm]) < 1e-6:
+            res.append((nm, es_took))
+        elif not nq_took:
+            rev_known += 1
+            fresh = bool(np.nanmin(lo_es[w0:i + 1]) < cp) and not (a < w0 and np.nanmin(lo_es[a:w0]) < cp)
+            rev = rev or fresh
+    judged = [x for x in res if x[1] is not None]
+    if not judged:
+        st = "unknown"
+    elif all(not x[1] for x in judged):
+        st = "smt"
+    elif all(x[1] for x in judged):
+        st = "both"
+    else:
+        st = "mixed"
+    return {"state": st, "rev": rev if rev_known else None, "levels": res}
+
+
+def smt_rules():
+    V = collections.OrderedDict()
+    V["base"] = lambda f: 1.0
+    V["smt_x1.25"] = lambda f: 1.25 if f["state"] == "smt" else 1.0
+    V["smt_x1.25_both_x0.75"] = lambda f: 1.25 if f["state"] == "smt" else 0.75 if f["state"] == "both" else 1.0
+    V["smt_x0.75"] = lambda f: 0.75 if f["state"] == "smt" else 1.0
+    V["rev_x1.25"] = lambda f: 1.25 if f["rev"] else 1.0
+    V["rev_x0.75"] = lambda f: 0.75 if f["rev"] else 1.0
+    V["div_x1.25"] = lambda f: 1.25 if (f["state"] == "smt" or f["rev"]) else 1.0
+    V["nodiv_x0.75"] = lambda f: 0.75 if (f["state"] in ("both", "mixed") and f["rev"] is False) else 1.0
+    return V
+
+
+def _two_week(T, mult):
+    """MFFU 50K under lit_qty mode two_week (live_model.json config, tools/lit_2wk exact fresh-eval-per-session study, full
+    10 / 20 session windows only): the size multiplier is applied to the two_week micros, then the 60% room cap, the soft
+    daily loss cap and 40 micros are applied again (so a size-up is often capped)."""
+    from tools import lit_2wk as L2
+    from engine import sizing as SZ
+    cfg = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit_sizing"]["two_week"]
+    D = L2.data("live")
+    key = {(t["day"], int(t["entry_t"])): mult.get((t["day"], int(t["entry_t"])), 1.0) for t in T}
+    for ts in D["by"]:
+        for t in ts:
+            t["_m"] = key.get((t["day"], int(t["entry_t"])), 1.0)
+    orig = SZ.two_week_qty
+
+    def tw(t, st, c=None, acct=None, why=None):
+        q = orig(t, st, c, acct=acct, why=why)
+        m = t.get("_m", 1.0)
+        if q <= 0 or m == 1.0:
+            return q
+        q2 = max(1, int(q * m + 1e-9))
+        if m > 1:
+            risk = float(t["risk"])
+            loss1 = (risk + SLIP) * PV + 1.40
+            cap_room = int(float(cfg.get("room_f") or 1.0) * max(0.0, st["room"]) / (risk * PV))
+            cap_dll = int(max(0.0, 1000.0 + st["cum"]) / loss1)
+            q2 = min(q2, max(q, min(cap_room, cap_dll)), 40)
+        return q2
+    L2.S.two_week_qty = tw
+    try:
+        out = {s: L2.exact(cfg, s) for s in ("H1", "H2", "2026")}
+    finally:
+        L2.S.two_week_qty = orig
+    return {s: {k: o[k] for k in ("p10", "f10", "p20", "f20", "pass_med", "cost", "n10")} for s, o in out.items()}
+
+
+def smt():
+    M, C, B1, B5, T = live()
+    E = es_bars(M)
+    cz = {(z["day"], z["i"], z["dir"]): z for z in C}
+    T26 = [t for t in T if t["day"] >= "2026"]
+    rows = []
+    for t in T26:
+        z = cz[(t["day"], t["i"], t["dir"])]
+        f = smt_flags(M, E, z)
+        rows.append({"day": t["day"], "entry_t": int(t["entry_t"]), "pnl": t["pnl"], "r": t["r"], "exit": t["exit"], **f})
+    # descriptive: $ per trade by state and half
+    desc = {}
+    for nm, (a, z_) in (("H1", H1), ("H2", H2)):
+        for st in ("smt", "both", "mixed", "unknown"):
+            g = [r for r in rows if a <= r["day"] <= z_ and r["state"] == st]
+            desc[f"{nm}|{st}"] = {"n": len(g), "avg_usd": round(float(np.mean([r["pnl"] for r in g])), 0) if g else None,
+                                  "avg_r": round(float(np.mean([r["r"] for r in g])), 3) if g else None,
+                                  "win": round(100 * float(np.mean([r["pnl"] > 0 for r in g])), 1) if g else None}
+        for rv in (True, False, None):
+            g = [r for r in rows if a <= r["day"] <= z_ and r["rev"] is rv]
+            desc[f"{nm}|rev={rv}"] = {"n": len(g), "avg_usd": round(float(np.mean([r["pnl"] for r in g])), 0) if g else None,
+                                      "avg_r": round(float(np.mean([r["r"] for r in g])), 3) if g else None,
+                                      "win": round(100 * float(np.mean([r["pnl"] > 0 for r in g])), 1) if g else None}
+    res = collections.OrderedDict()
+    fl = {(r["day"], r["entry_t"]): r for r in rows}
+    for nm, fn in smt_rules().items():
+        mult = {k: fn(r) for k, r in fl.items()}
+        TT = []
+        for t in T:
+            m = mult.get((t["day"], int(t["entry_t"])), 1.0)
+            TT.append(lit.scale_trade(t, m) if m != 1.0 else t)
+        sc = F.score(TT, spans=("H1", "H2", "2026"))
+        res[nm] = {"normal": {s: {k: sc[s].get(k) for k in ("n", "tpw", "win", "pf", "net", "per_month", "dd", "p10", "f10")}
+                              for s in sc}, "two_week": _two_week(T26, mult), "n_changed": sum(1 for v in mult.values() if v != 1.0),
+                   "_trades": TT}
+        b = res["base"]["normal"]
+        print(f"{nm:24s} changed {res[nm]['n_changed']:3d} | " + " | ".join(
+            f"{s} net {res[nm]['normal'][s]['net']:+,} (d {res[nm]['normal'][s]['net'] - b[s]['net']:+,}) PF {res[nm]['normal'][s]['pf']} "
+            f"DD {res[nm]['normal'][s]['dd']:,} 2wk(two_week) {res[nm]['two_week'][s]['p10']}/{res[nm]['two_week'][s]['f10']}"
+            for s in ("H1", "H2")), flush=True)
+    cnt = collections.Counter(r["state"] for r in rows)
+    out = {"counts": dict(cnt), "rev_counts": dict(collections.Counter(str(r["rev"]) for r in rows)), "desc": desc,
+           "rules": {k: {kk: vv for kk, vv in v.items() if kk != "_trades"} for k, v in res.items()},
+           "rows": [{k: v for k, v in r.items()} for r in rows]}
+    json.dump(out, open(os.path.join(OUTD, "adv_smt.json"), "w"), indent=1, default=float)
+    print(json.dumps({"counts": out["counts"], "rev": out["rev_counts"]}))
+    for k, v in desc.items():
+        print(k, v)
+    return out, res
+
+
+def save():
+    out, res = smt()
+    b = res["base"]
+
+    def h(nm, s):
+        x, w = res[nm]["normal"][s], res[nm]["two_week"][s]
+        return (f"n={x['n']} {x['tpw']}/wk win {x['win']}% PF {x['pf']} net {x['net']:+,} (${x['per_month']:,}/mo) DD {x['dd']:,}; "
+                f"MFFU 50K two_week 2wk {w['p10']}/{w['f10']}, 1mo {w['p20']}/{w['f20']}, cost per 2-week pass ${w['cost']}")
+    for nm in res:
+        if nm == "base":
+            continue
+        d1 = res[nm]["normal"]["H1"]["net"] - b["normal"]["H1"]["net"]
+        d2 = res[nm]["normal"]["H2"]["net"] - b["normal"]["H2"]["net"]
+        ok = d1 > 0 and d2 > 0 and res[nm]["two_week"]["H1"]["p10"] >= b["two_week"]["H1"]["p10"] and \
+            res[nm]["two_week"]["H2"]["p10"] >= b["two_week"]["H2"]["p10"]
+        rid = "lit_adv_smt_" + nm.replace(".", "p").replace("_x", "_x")
+        TT = res[nm]["_trades"]
+        rl.save(rid, f"LIT + synchronized ES SMT size rule: {nm}", "other",
+                "Owner's LIT Advanced Decisions Report (2026-10-18) experiment 5: does NQ taking a level while ES holds its "
+                "same-time copy (or the reverse) pick better LIT trades? Size multiplier, not a skip.",
+                params={**P_LIVE, "smt_rule": nm}, trades=TT, scored=rl.score(TT, SESS),
+                status="adopt-candidate" if ok else "rejected",
+                verdict=(f"H1 (pick) {h(nm, 'H1')} (d net {d1:+,}). H2 (check) {h(nm, 'H2')} (d net {d2:+,}). Base H1 "
+                         f"{b['normal']['H1']['net']:+,} / H2 {b['normal']['H2']['net']:+,}; two_week 2wk H1 "
+                         f"{b['two_week']['H1']['p10']}/{b['two_week']['H1']['f10']} H2 {b['two_week']['H2']['p10']}/"
+                         f"{b['two_week']['H2']['f10']}."),
+                notes="tools/lit_adv_audit.py smt (wraps engine/lit.py, tools/lit_2wk.py; no engine edit). NQ1! and ES1! 5m "
+                      "TradingView, same timestamps only; $ at the LIT size ($800/20 + weekly stop) x the rule; eval odds "
+                      "under lit_qty two_week (full 10/20-session windows).", writeup="lit-adv-audit-smt",
+                tags=["lit", "lit_adv"])
+        print("saved", rid)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "audit"
     if cmd == "audit":
         audit()
+    elif cmd == "smt":
+        smt()
+    elif cmd == "save":
+        save()
     else:
         raise SystemExit(f"unknown command {cmd}")

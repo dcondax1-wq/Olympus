@@ -95,8 +95,88 @@ def mffu_eval(day_pnl: dict, plan: dict | None = None) -> dict:
             "trailing_mll": round(mll, 2), "cushion": round(bal - mll, 2)}
 
 
+GUARD_DEFAULT = {"max_per_day": 1, "stop_at_target": True, "target": 3000.0, "slip_ticks": 2, "est_pad_pts": 2.0,
+                 "breach": "skip", "dll": 1000.0, "max_micros": 40}
+EVAL_MODES = ("eval", "safe_eval", "fast_eval", "two_week")
+
+
 def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None = None, max_micros: int = 40,
             state: dict | None = None, learning="auto") -> dict:
+    """lit_qty_core below, then the day-level guard when cfg["guard"] is set (risk audit 2026-10-18,
+    research/writeups/lit-funded-sizing.md; off = exactly the old sizing). cfg["guard"] = {} (GUARD_DEFAULT) or a dict:
+      max_per_day     1: state["n_today"] (entries already routed today) >= this -> 0 (the router's own 1-a-day cap)
+      stop_at_target  True, eval modes only: state profit + cum >= target -> 0 (the eval is passed: never risk it)
+      slip_ticks      2: ticks of stop slippage in the worst-case loss; est_pad_pts 2.0: extra pts when the stop distance
+                      is an estimate (trade["est"]: the 1m CISD close, the real open can widen the stop)
+      floor           room (state["room"], else the room argument): a worst-case stop-out must stay < room;
+      dll             a worst-case stop-out must stay < dll + today's closed P&L (state["cum"])
+      breach          "skip" (default): when even 1 micro breaks the floor / dll -> 0 | "one": keep 1 micro (old rule)
+      max_micros      40
+    Unknown room / state: that check is skipped and said in the reasons."""
+    c = cfg or {}
+    r = lit_qty_core(qty, trade, c, room=room, max_micros=max_micros, state=state, learning=learning)
+    if c.get("guard") is None:
+        return r
+    return day_guard(r, trade, c, room=room, state=state)
+
+
+def day_guard(r: dict, trade: dict, cfg: dict, room: float | None = None, state: dict | None = None) -> dict:
+    """The day-level guard on one sizing result r = {"qty", "mult", "reasons"} (see lit_qty)."""
+    g = {**GUARD_DEFAULT, **(cfg.get("guard") or {})}
+    mode = cfg.get("mode") or "normal"
+    q0 = int(r.get("qty") or 0)
+    out = {**r, "reasons": list(r.get("reasons") or [])}
+    if q0 <= 0:
+        return out
+    st = state or {}
+
+    def stop(why):
+        out.update(qty=0, mult=0.0, guard=why)
+        out["reasons"].append(f"guard: {why}")
+        log.warning("lit_qty guard: %s", why)
+        return out
+    n_today = _num(st.get("n_today"))
+    if g["max_per_day"] and n_today is not None and n_today >= int(g["max_per_day"]):
+        return stop(f"{int(n_today)} entr{'y' if n_today == 1 else 'ies'} already routed today (max {int(g['max_per_day'])}): no trade")
+    cum = float(_num(st.get("cum"), 0.0))
+    prof = _num(st.get("profit"))
+    if g["stop_at_target"] and mode in EVAL_MODES and prof is not None and prof + cum >= float(g["target"]):
+        return stop(f"eval at +${prof + cum:,.0f}, target ${float(g['target']):,.0f} reached: no new trade")
+    risk = _num(trade.get("risk_pts"))
+    if risk is None and trade.get("entry") is not None and trade.get("stop0", trade.get("stop")) is not None:
+        risk = abs(float(trade["entry"]) - float(trade.get("stop0", trade.get("stop"))))
+    if not risk or risk <= 0:
+        out["reasons"].append("guard: stop distance unknown, floor / daily checks skipped")
+        return out
+    pad = float(g["est_pad_pts"]) if trade.get("est") else 0.0
+    loss1 = (risk + pad + 0.25 * float(g["slip_ticks"])) * TW_PV + TW_COMM
+    q = min(q0, int(g["max_micros"]))
+    rm = _num(st.get("room")) if st.get("room") is not None else _num(room)
+    lims = [(float(g["dll"]) + cum, f"soft daily loss (${float(g['dll']):,.0f}, day {cum:+,.0f})")]
+    if rm is not None:
+        lims.insert(0, (rm, f"${rm:,.0f} room to the max-loss floor"))
+    else:
+        out["reasons"].append("guard: room to the floor unknown, floor check skipped")
+    for lim, lab in lims:
+        cap = math.ceil(lim / loss1) - 1 if lim > 0 else 0          # largest q with q x loss1 < lim
+        if cap < q:
+            if cap < 1:
+                if g["breach"] == "skip":
+                    return stop(f"1 micro's worst-case stop-out ${loss1:,.0f} would reach the {lab}: no trade")
+                q = 1
+                out["reasons"].append(f"guard: 1 micro's worst case ${loss1:,.0f} reaches the {lab} (breach rule 'one': kept 1)")
+            else:
+                q = cap
+                out["reasons"].append(f"guard: worst case ${loss1:,.0f}/micro ({risk + pad:.1f} pts + {int(g['slip_ticks'])} ticks) "
+                                      f"inside the {lab} -> {q}")
+    if q != q0:
+        out["qty"] = q
+        out["mult"] = round(out.get("mult", 1.0) * q / q0, 4) if q0 else 0.0
+    return out
+
+
+def lit_qty_core(qty: int, trade: dict, cfg: dict | None = None, room: float | None = None, max_micros: int = 40,
+                 state: dict | None = None, learning="auto") -> dict:
     """Micros to route for one LIT entry. qty = the model's micros (engine/lit.py: $800 up to a 20-pt stop, then 800x20/stop,
     times the weekly stop, rounded once). cfg = live_model.json "lit_sizing" {"mode": "normal" | "eval" | "fast_eval" |
     "safe_eval" | "two_week"}:
@@ -613,6 +693,51 @@ def selftest() -> bool:
     assert eval_clock({"2026-10-20": -2000.0}, "2026-10-19", "2026-10-21")["status"] == "failed"
     assert eval_clock({}, "2026-10-19", "2026-10-18")["status"] == "not started"
     assert eval_clock({"2026-10-16": -900.0}, "2026-10-19", "2026-10-19")["room"] == 2000.0   # days before the start ignored
+    # ---- the day guard (opt-in lit_sizing.guard; off = the old sizing exactly)
+    G = {**C, "guard": {}}
+    assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, G, state=fresh)["qty"] == 8                 # nothing binds
+    r = lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, G, state={**fresh, "n_today": 1})
+    assert r["qty"] == 0 and "already routed today" in r["guard"], r                                   # 1 trade a day
+    r = lit_qty(3, {"risk_pts": 44.0}, {"mode": "eval", "guard": {}}, room=2000.0, state={"profit": 3050.0, "cum": 0.0, "room": 2000.0})
+    assert r["qty"] == 0 and "target" in r["guard"], r                                                 # eval passed: stop
+    assert lit_qty(3, {"risk_pts": 44.0}, {"mode": "normal", "guard": {}}, state={"profit": 3050.0, "cum": 0.0})["qty"] == 3  # not an eval mode
+    # min 1 micro vs the floor: safe_eval at $50 room, 47-pt stop: old rule 1 micro (a $96 stop-out breaks the floor)
+    assert lit_qty(3, lt, {"mode": "safe_eval"}, room=50.0)["qty"] == 1
+    r = lit_qty(3, lt, {"mode": "safe_eval", "guard": {}}, room=50.0)
+    assert r["qty"] == 0 and "would reach" in r["guard"], r
+    assert lit_qty(3, lt, {"mode": "safe_eval", "guard": {"breach": "one"}}, room=50.0)["qty"] == 1
+    # an 88-pt widened stop with 2 ticks: 1 micro = (88 + 0.5) x 2 + 1.40 = $178.40; room $500 -> 2 (3 x 178.4 = 535 > 500)
+    assert lit_qty(9, {"risk_pts": 88.0}, {"mode": "normal", "guard": {}}, room=500.0)["qty"] == 2
+    # an estimated stop (1m CISD close) is padded 2 pts: 40 + 2 + 0.5 = 42.5 x 2 + 1.4 = $86.40; room $300 -> 3 (not 3.6)
+    assert lit_qty(9, {"risk_pts": 40.0, "est": True}, {"mode": "normal", "guard": {}}, room=300.0)["qty"] == 3
+    assert lit_qty(9, {"risk_pts": 40.0}, {"mode": "normal", "guard": {}}, room=300.0)["qty"] == 3      # 300 / 82.4 = 3.6 -> 3
+    # the soft daily loss with today's loss: day -$900 -> $100 left, 1 micro of a 40-pt stop = $82.40 -> 1
+    assert lit_qty(9, {"risk_pts": 40.0}, {"mode": "normal", "guard": {}}, state={"cum": -900.0, "room": 5000.0})["qty"] == 1
+    # max 40 micros even if the mode said more
+    assert lit_qty(60, {"risk_pts": 5.0}, {"mode": "normal", "guard": {}}, max_micros=60, room=1e6)["qty"] == 40
+    # ---- funded (lit_sizing mode "funded")
+    FC = {"mode": "funded", "funded": {"pct": 0.4, "pct_min_usd": 100, "pct_max_usd": 800, "ref": 20, "room_f": None, "max_win": 1500}}
+    f0 = funded_state({})
+    assert f0 == {"balance": 0.0, "cum": 0.0, "room": 2000.0, "floor": -2000.0, "locked": False}, f0
+    # fresh: 40% of $2,000 = $800, 40-pt stop -> 800 x 20/40 = 400 / 80 = 5 micros; target 200 pts: 1500 / 398.6 = 3 -> 3
+    r = lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, FC, state=f0)
+    assert r["qty"] == 3 and any("best day" in w for w in r["reasons"]), r
+    assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 60.0}, FC, state=f0)["qty"] == 5
+    # after -$1,500: room $500 -> $200 -> 200 x 20/40 / 80 = 1 micro
+    s1 = funded_state({"d1": -1500.0})
+    assert s1["room"] == 500.0 and lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 60.0}, FC, state=s1)["qty"] == 1
+    # room below 1 micro's worst case: skip (never lose the funded account on a 1-micro trade)
+    r = lit_qty(3, {"risk_pts": 60.0, "tgt_pts": 120.0}, FC, state={"room": 100.0, "cum": 0.0, "locked": True})
+    assert r["qty"] == 0, r
+    # payouts lower the balance, never the floor: +$4,500 then a $2,000 payout -> floor locked at +$100, room $2,400
+    s2 = funded_state({"d1": 2500.0, "d2": 2000.0}, payouts={"d2": 2000.0})
+    assert s2["locked"] and s2["floor"] == 100.0 and s2["room"] == 2400.0, s2
+    # state unknown: the smallest size, fallback said
+    r = lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 60.0}, FC)
+    assert r["qty"] == 1 and "state unknown" in r["fallback"], r                  # $100 -> 100 x 0.5 / 80 = 0.6 -> 1
+    # tiers by the floor's lock
+    TC = {"mode": "funded", "funded": {"tiers": [[0, 800]], "pre_lock_usd": 400, "room_f": None}}
+    assert lit_qty(3, {"risk_pts": 20.0}, TC, state=f0)["qty"] == 10 and lit_qty(3, {"risk_pts": 20.0}, TC, state=s2)["qty"] == 20
     print("sizing selftest OK")
     return True
 

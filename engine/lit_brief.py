@@ -127,15 +127,27 @@ def market_at(df5, now, params=None, sym="NQ"):
     return M, C, P
 
 
-def level_map(M, k, last):
+def _box_open(nm, now):
+    """True while session box `nm` (engine/lit.py SESSIONS key + _h/_l) is still forming at `now` (not a level yet)."""
+    from engine import lit
+    base = nm.rsplit("_", 1)[0]
+    w = lit.SESSIONS.get(base) or (lit.EXTRA_BOXES.get(base) or (None, None))[:2]
+    if not w or w[0] is None or now is None:
+        return False
+    rn, ra, rz = _rel(_mod(now)), _rel(w[0]), _rel(w[1] % 1440)
+    return ra <= rn < rz or rn < ra
+
+
+def level_map(M, k, last, now=None):
     """Every LIT level of day k known by bar `last` and untaken when the day began: status untaken / taken (first breach
-    bar, depth beyond it in ATR so far). Duplicates by price collapse to the higher-priority name."""
+    bar, depth of the sweep leg in ATR). A session box still forming at `now` is not a level yet. Duplicates by price
+    collapse to the higher-priority name."""
     x = M.ctx[k]
     s = x["s"]
     rows, seen = [], {}
     L = sorted(M.levels(k), key=lambda z: (PRIO.index(z[3]) if z[3] in PRIO else 99))
     for side, px, ki, nm, cls in L:
-        if ki > last:
+        if ki > last or (cls in ("asia", "london", "ny", "pre", "x_ny") and _box_open(nm, now)):
             continue
         a = max(ki + 1, s - 600)
         if side == "high":
@@ -154,7 +166,11 @@ def level_map(M, k, last):
              "kind": cls, "known_t": int(M.t[ki]) + 300 if ki >= 0 else None, "taken": False, "also": []}
         if len(hit):
             j = max(a, s) + int(hit[0])
-            ext = M.h[j:last + 1].max() - px if side == "high" else px - M.l[j:last + 1].min()
+            # depth of the sweep leg: from the breach until a close back across the level (the reclaim) or 2 hours
+            z = min(last, j + 24)
+            back = np.flatnonzero(M.c[j:z + 1] < px) if side == "high" else np.flatnonzero(M.c[j:z + 1] > px)
+            z = j + int(back[0]) if len(back) else z
+            ext = M.h[j:z + 1].max() - px if side == "high" else px - M.l[j:z + 1].min()
             r.update(taken=True, taken_i=int(j), taken_t=int(M.t[j]), depth_atr=round(float(ext) / max(float(M.atr[j]), 1e-9), 2),
                      depth_pts=round(float(ext), 2))
         seen[key] = r
@@ -171,7 +187,7 @@ def boxes(M, k, last, now):
     for nm, lab, a, z in BOXES:
         ra, rz = _rel(a), _rel(z % 1440)
         b = {"key": nm, "label": lab, "window": f"{a // 60:02d}:{a % 60:02d}-{(z % 1440) // 60:02d}:{z % 60:02d}"}
-        if nm in x and x[nm][2] <= last:
+        if nm in x and x[nm][2] <= last and not _box_open(nm + "_h", now):
             hi, lo, ki = x[nm]
             hj = np.flatnonzero(M.h[ki + 1:last + 1] > hi)
             lj = np.flatnonzero(M.l[ki + 1:last + 1] < lo)
@@ -382,9 +398,9 @@ def _plan_line(price, levels, mon, band, wk, done, news_ev, open_pos=None):
 def morning(M, k, last, now, P, live=None, news=None, ev=None, clock=None, lit_sizing=None, params=None):
     from engine import lit
     x = M.ctx[k]
-    day = M.days[k][0]
+    day = str(M.days[k][0])
     price = float(M.c[last])
-    levels = level_map(M, k, last)
+    levels = level_map(M, k, last, now)
     bx = boxes(M, k, last, now)
     ovn = _overnight(levels, M, k, now)
     mon = lit.monday_state(M, k, last) if P.get("monday") else None
@@ -431,9 +447,9 @@ def morning(M, k, last, now, P, live=None, news=None, ev=None, clock=None, lit_s
 
 def _facts(M, C, k, last, now, P, live):
     """Every fact of today known at `now`, as log rows {key, t, kind, text}."""
-    day = M.days[k][0]
+    day = str(M.days[k][0])
     out = []
-    levels = level_map(M, k, last)
+    levels = level_map(M, k, last, now)
     for b in boxes(M, k, last, now):
         if b["status"] == "done":
             out.append({"key": f"box:{b['key']}", "t": b["done_t"], "kind": "box",
@@ -448,7 +464,7 @@ def _facts(M, C, k, last, now, P, live):
         side = "high" if rs[0]["side"] == "H" else "low"
         names = _join([f"{r['label']} {_px(r['price'])}" for r in rs], 4)
         out.append({"key": f"sweep:{j}:{side}", "t": int(M.t[j]), "kind": "sweep",
-                    "text": f"Swept {names} ({dep:.2f} ATR deep so far; " + ("deep enough for LIT)" if dep >= P["depth"] else
+                    "text": f"Swept {names} ({dep:.2f} ATR deep; " + ("deep enough for LIT)" if dep >= P["depth"] else
                                                                              f"LIT needs {P['depth']:g})")})
     sig = {(int(s["t"]), int(s["dir"])): s for s in (live or {}).get("signals") or []}
     st = (live or {}).get("state") or {}
@@ -515,7 +531,7 @@ def merge_log(prev_log, facts, now):
 
 def now_block(M, k, last, now, P, live):
     st = (live or {}).get("state") or {}
-    levels = level_map(M, k, last)
+    levels = level_map(M, k, last, now)
     price = float(M.c[last])
     up = sorted([r for r in levels if not r["taken"] and r["side"] == "H" and r["price"] > price], key=lambda r: r["price"])[:3]
     dn = sorted([r for r in levels if not r["taken"] and r["side"] == "L" and r["price"] < price], key=lambda r: -r["price"])[:3]
@@ -527,7 +543,7 @@ def now_block(M, k, last, now, P, live):
 
 
 def recap(M, C, k, last, now, P, live, log, ledger_today=None, learning=None):
-    day = M.days[k][0]
+    day = str(M.days[k][0])
     trades = [t for t in (live or {}).get("trades") or [] if t.get("day") == day]
     rows = []
     for t in trades:

@@ -335,7 +335,20 @@ def _cisd_level(c_d, o_d, ee, back=3):
     return float(o_d[st]), st
 
 
-def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from=60, t_to=955, ref="frac"):
+def rel_mod(m):
+    """ET minute in trading-day order: 0 = 18:00 (Globex open), 1319 = 15:59, 1380 = 17:00 (the halt)."""
+    return (np.asarray(m) - 1080) % 1440
+
+
+def _late(m, flat, evening):
+    """True once bar minute m is at/after the flat time. Default (evening False): the RTH rule m >= flat or m >= 18:00. With
+    evening (all_hours): trading-day order, so an 18:00-02:00 bar is early in the day and flat is the same day's flat time."""
+    if evening:
+        return (int(m) - 1080) % 1440 >= (int(flat) - 1080) % 1440
+    return m >= flat or m >= 1080
+
+
+def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from=60, t_to=955, ref="frac", evening=False):
     """Every LIT setup on every day, both directions. Long (mirror for shorts):
       1. sweep:      a known low-side liquidity level (session box, PDL/PWL/PML, gap edge, build-up lows) is breached for the
                      first time within `sweep_win` bars before the leg's extreme (the lowest low of the last `leg` bars)
@@ -349,7 +362,10 @@ def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from
     ref = the structure-shift level: "frac" (last 5m fractal high before the extreme, lit_A) or "cisd" (open of the last run
     of down-close bars into the extreme, TTrades CISD; the LIT entry study's pick).
     Extra features for run_x (ignored by run): sw {level name: price}, atr_ext, idm_a [(dist ATR, age bars)], nwog_side,
-    ndog_side, mw_break (see _week_context)."""
+    ndog_side, mw_break (see _week_context).
+    evening=True (all-hours study, research/writeups/lit-all-hours.md): triggers on the whole trading day from 18:30 ET
+    (6 bars after the Globex open; the leg never reaches back before 18:00) up to t_to, in trading-day order; t_from is
+    ignored. The default (False) is the RTH-only detector, unchanged."""
     o, h, l, c, mod, at = M.o, M.h, M.l, M.c, M.mod, M.atr
     out = []
     for k, (date, s, e) in enumerate(M.days):
@@ -376,10 +392,13 @@ def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from
                 j = int(np.argmax(seg)) if len(seg) else 0
                 tb.append(st + 1 + j if len(seg) and seg[j] else seg_end)
             last_e = -1
-            for i in range(s + leg, e - 1):
-                if not (t_from <= mod[i] < t_to) or mod[i] >= 1080:
+            for i in range(s + (6 if evening else leg), e - 1):
+                if evening:
+                    if (mod[i] - 1080) % 1440 >= (t_to - 1080) % 1440:
+                        continue
+                elif not (t_from <= mod[i] < t_to) or mod[i] >= 1080:
                     continue
-                a = i - leg
+                a = max(i - leg, s) if (evening and i < s + leg) else i - leg
                 ee = a + int(np.argmin(lo_d[a:i + 1]))
                 if ee == i or ee == last_e:
                     continue
@@ -437,7 +456,7 @@ def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from
                 vec = bool((M.climax[ee + 1:i + 1] & dir_bull).any())
                 vec_any = bool(((M.climax[ee + 1:i + 1] | M.above[ee + 1:i + 1]) & dir_bull).any())
                 ei = i + 1
-                if ei >= e or mod[ei] >= 955 or mod[ei] >= 1080:
+                if ei >= e or _late(mod[ei], 955, evening):
                     continue
                 entry_d = float(o_d[ei]) + SLIP
                 # targets: levels beyond entry, not touched by the trigger bar's close
@@ -702,6 +721,13 @@ DEFAULTS = {
     "fallback_rr": None,             # fixed R target when no level clears min_rr (None = no trade)
     # management
     "be_r": 1.0, "flat_mod": 955, "max_per_day": 1,
+    # all hours (research/writeups/lit-all-hours.md; all off = today's RTH-only rules)
+    "all_hours": False,          # True: the candidates were built with candidates(evening=True); the executor runs in trading-day
+                                 # order (an 18:00-02:00 entry is held at most to flat_mod of the same trading day, never through
+                                 # the 17:00 halt). Use with a window such as [[1080, 1440], [0, 930]].
+    "per_session": None,         # max trades per session [[start, end) ET minute ranges in trading-day order, n], e.g.
+                                 # [[[1080, 120], [120, 480], [480, 1080]], 1] = 1 Asia + 1 London + 1 NY (with max_per_day 3)
+    "stop_after_loss": False,    # True: no new trade on a trading day after a STOP exit (a later trade only after a TARGET / BE)
     # size (micros = $800 up to a 20-pt stop, then 800*20/stop, max 40; then these multipliers, floor 1 micro)
     "how_out": 1.0,              # multiplier when the sweep extreme is outside the high/low-of-week window (Tue 03:00-Wed 11:30)
     # loss rules (research/writeups/lit-losses.md, run lit_loss_pack; both off by default so lit_final stays reproducible)
@@ -830,6 +856,7 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     if k0 >= B.n:
         return _pending(None) if live else None
     flat = P["flat_mod"]
+    ev = bool(P.get("all_hours"))
     wait_s = P["wait"] * 300
     cis = P.get("cisd1m")
     if cis and B.secs == 300:
@@ -839,7 +866,7 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     fill = tapped = None
     k = k0
     while k < B.n:
-        if B.day[k] != s_day or B.mod[k] >= flat or B.mod[k] >= 1080:
+        if B.day[k] != s_day or _late(B.mod[k], flat, ev):
             break
         if tapped is None and B.t[k] >= t0 + wait_s:
             break
@@ -901,7 +928,7 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     k = fill
     exit_px = kind = None
     while k < B.n:
-        if B.day[k] != s_day or B.mod[k] >= 1080:
+        if B.day[k] != s_day or (not ev and B.mod[k] >= 1080):
             k -= 1; exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
         mae = max(mae, (entry - lo_d[k]) / risk)
         worst = min(worst, lo_d[k] - entry)
@@ -913,7 +940,7 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
                 exit_px, kind = tg, "TARGET"; break
             if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk:
                 cur, be_done = entry, True
-        if B.mod[k] >= flat:
+        if _late(B.mod[k], flat, ev) if ev else B.mod[k] >= flat:
             exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
         k += 1
     if exit_px is None:
@@ -1072,12 +1099,19 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
     if P["tf"] == "1m" and B1 is None and not live:
         B1 = bars_1m(M)
     out, busy, per_day = [], -1, collections.Counter()
+    per_sess, lost = collections.Counter(), set()
+    ps = P.get("per_session")
+    sess_of = (lambda m: next((q for q, (a, b) in enumerate(ps[0]) if (m - a) % 1440 < (b - a) % 1440), -1)) if ps else None
     pending, signals, enter_now = [], [], []
     buf = P["stop_buf"]
     for z in cands:
         if sset is not None and z["day"] not in sset:
             continue
         if z["entry_i"] <= busy or per_day[z["day"]] >= P["max_per_day"]:
+            continue
+        if P.get("stop_after_loss") and z["day"] in lost:
+            continue
+        if ps and per_sess[(z["day"], sess_of(z["mod"]))] >= ps[1]:
             continue
         if not setup_ok(z, P, names):
             continue
@@ -1127,6 +1161,10 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             pending.append(t)
             continue
         busy = t["exit_i"]; per_day[z["day"]] += 1
+        if ps:
+            per_sess[(z["day"], sess_of(z["mod"]))] += 1
+        if t.get("exit") == "STOP":
+            lost.add(z["day"])
         m = P["how_out"] if (P["how_out"] != 1.0 and not z["how"]) else 1.0
         why = ["outside the high/low-of-week window x%g" % m] if m != 1.0 else []
         if P.get("wk_stop"):

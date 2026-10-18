@@ -1,0 +1,726 @@
+{
+ "title": "MFFU (MyFundedFutures) rulebook: Builder 50K / 25K",
+ "built": "2026-10-18",
+ "method": "Web search on 2026-10-18; the MFFU pages could not be opened from this sandbox (proxy blocks myfundedfutures.com), so every value is from the search engine's reading of the listed page(s). status: confirmed = MFFU's own pages agree; conflict = MFFU pages (or MFFU vs third parties) disagree, the value given is the newest official one; unconfirmed = not found on an MFFU page. Re-check before the first live payout.",
+ "account": "builder_50k",
+ "builder_50k": {
+  "eval": {
+   "price": {
+    "value": {
+     "list": 153.0,
+     "list_addon_1500_mll": 125.0,
+     "owner_paid": 91.8,
+     "type": "one-time"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD",
+    "note": "Builder 50K help guide: $153 default, $125 with the $1,500-MLL add-on; plan page promo 'from $92'. Owner paid $91.80 with a code (2026-10-18)."
+   },
+   "activation_fee": {
+    "value": 0.0,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/12398151-does-myfundedfutures-charge-activation-fees"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD"
+   },
+   "renewal": {
+    "value": "none (one-time payment for purchases on/after 2026-08-25)",
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/16596524-inactivity-rule-one-time-payment-model",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18"
+   },
+   "reset_fee": {
+    "value": null,
+    "status": "unconfirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/10244720-understanding-the-difference-between-account-resets-and-renewals"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD",
+    "note": "no reset price published for one-time plans; a reset does not extend the account's date; check the dashboard"
+   },
+   "eval_expiry": {
+    "value": null,
+    "status": "unconfirmed",
+    "source": [
+     "https://myfundedfutures.com/how-it-works"
+    ],
+    "checked": "2026-10-18",
+    "note": "'no clock counting down on your eval' (How it works); the 7-day inactivity rule still applies"
+   },
+   "start_balance": {
+    "value": 50000.0,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD"
+   },
+   "profit_target": {
+    "value": 3000.0,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD"
+   },
+   "max_loss": {
+    "value": {
+     "amount": 2000.0,
+     "addon_amount": 1500.0,
+     "type": "EOD trailing",
+     "moves": "only at the session close, up only, from the end-of-day balance high",
+     "lock": "stops at start balance + $100 ($50,100) and stays there",
+     "breach": "real time: open (unrealized) losses count; equity at/below the floor at any moment fails the account"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing",
+     "https://help.myfundedfutures.com/en/articles/17035331-builder-plan-150k-comprehensive-guide"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD",
+    "note": "lock level confirmed ($100 above start); the help article says open losses count, so the floor is enforced intraday even though it only moves EOD"
+   },
+   "daily_loss_limit": {
+    "value": {
+     "amount": 1000.0,
+     "type": "soft",
+     "effect": "trading paused for the rest of that session; the account stays open; resume next session",
+     "stages": [
+      "evaluation",
+      "sim funded",
+      "live"
+     ],
+     "counts_open_pnl": null
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://myfundedfutures.com/plans/builder",
+     "https://help.myfundedfutures.com/en/articles/17035331-builder-plan-150k-comprehensive-guide"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD",
+    "note": "whether open P&L counts and whether MFFU auto-flattens the open position at the limit is not stated (an MFFU blog says new positions are blocked and open positions stay unless the max loss is hit); treat the open loss as counting"
+   },
+   "consistency_eval": {
+    "value": null,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18",
+    "note": "no consistency (best-day) rule in the Builder evaluation: one big day may pass it"
+   },
+   "min_trading_days_eval": {
+    "value": 1,
+    "status": "conflict",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/17005296-builder-plan-100k-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/17035331-builder-plan-150k-comprehensive-guide",
+     "https://myfundedfutures.com/how-it-works"
+    ],
+    "checked": "2026-10-18",
+    "unit": "days",
+    "note": "help guides: pass in as little as 1 trading day; the Builder plan page's table says 'min 2 days' (that row is about the first payout per another page). If the account is not marked passed after day 1, trade one small trade the next session."
+   },
+   "max_contracts": {
+    "value": {
+     "minis": 4,
+     "micros": 40,
+     "mix": "minis and micros count together (10 micros = 1 mini); orders above the limit are auto-rejected"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/10244682-cross-instrument-policy",
+     "https://phidiaspropfirm.com/education/myfundedfutures-scaling-plan"
+    ],
+    "checked": "2026-10-18",
+    "note": "same in the eval and sim funded; the add-on does not change it; live limit not published"
+   },
+   "scaling_plan": {
+    "value": null,
+    "status": "confirmed",
+    "source": [
+     "https://phidiaspropfirm.com/education/myfundedfutures-scaling-plan"
+    ],
+    "checked": "2026-10-18",
+    "note": "Builder has no scaling plan (third-party; only Pro has one)"
+   },
+   "news_trading": {
+    "value": {
+     "evaluation": "allowed, unrestricted",
+     "sim_funded": "allowed, unrestricted (Builder is the exception to the Tier-1 rule)",
+     "live": "allowed but MFFU strongly advises against it; orders may not be honored"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy",
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/17005296-builder-plan-100k-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/17035331-builder-plan-150k-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures"
+    ],
+    "checked": "2026-10-18",
+    "note": "Rapid and Pro sim-funded accounts must be flat 2 min before to 2 min after Tier-1 news (FOMC, FOMC minutes, NFP, CPI); NOT Builder"
+   },
+   "trading_hours": {
+    "value": {
+     "open": "18:00 ET (Globex open)",
+     "must_be_flat": "16:10 ET",
+     "auto_liquidation": "16:10 ET on regular days",
+     "late_orders": "forcing orders after 16:10 ET can disqualify the account"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/9558251-permitted-times-to-trade",
+     "https://help.myfundedfutures.com/en/articles/9735811-futures-instrument-list"
+    ],
+    "checked": "2026-10-18",
+    "unit": "ET"
+   },
+   "overnight_weekend": {
+    "value": "not allowed: intraday only; positions are closed by the platform at 16:10 ET; no weekend holds",
+    "status": "confirmed",
+    "source": [
+     "https://myfundedfutures.com/plans/builder",
+     "https://help.myfundedfutures.com/en/articles/9558251-permitted-times-to-trade"
+    ],
+    "checked": "2026-10-18"
+   },
+   "holidays_early_close": {
+    "value": {
+     "auto_liquidation": false,
+     "who_flattens": "the trader",
+     "hours": "announced by MFFU before each holiday"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/9558251-permitted-times-to-trade"
+    ],
+    "checked": "2026-10-18",
+    "note": "on CME half-days MFFU does NOT auto-flatten at the early halt: the trader must close before it"
+   },
+   "automation": {
+    "value": {
+     "bots": "allowed, set to your own parameters",
+     "forbidden": [
+      "high-frequency trading",
+      "tools that exploit simulated fills"
+     ],
+     "live": "automated trading on live accounts must follow CME rules",
+     "ninjatrader": "supported platform (NinjaTrader, Tradovate, TradingView, Quantower)",
+     "oif_atm": null
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
+     "https://help.myfundedfutures.com/en/articles/8528335-overview-of-supported-platforms-at-mffu"
+    ],
+    "checked": "2026-10-18",
+    "note": "nothing published about NinjaTrader ATM templates or Order Instruction Files specifically: allowed as automation under the fair-play rule; confirm with support in writing"
+   },
+   "copy_trading": {
+    "value": "copying between accounts / with others: prohibited where it 'mirrors, copies or coordinates trades for an unfair advantage'; no one else may trade the account; no device shared with another trader",
+    "status": "unconfirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
+     "https://myfundedfutures.com/terms",
+     "https://help.myfundedfutures.com/en/articles/8230018-can-someone-else-trade-my-account"
+    ],
+    "checked": "2026-10-18",
+    "note": "no explicit statement on copying between your OWN accounts with a trade copier; ask support before using one"
+   },
+   "vps_ip": {
+    "value": null,
+    "status": "unconfirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices"
+    ],
+    "checked": "2026-10-18",
+    "note": "no published VPS / IP rule; the same-device rule is about devices shared with another trader. Third-party (VPS sellers) say VPS is allowed"
+   },
+   "hedging": {
+    "value": "prohibited: no long and short on the same underlying at the same time (also across accounts)",
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/12011241-hedging-what-you-should-know",
+     "https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures"
+    ],
+    "checked": "2026-10-18"
+   },
+   "price_limit_rule": {
+    "value": "avoid trading within 2% of CME price limits (MNQ overnight limit 5%)",
+    "status": "unconfirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/9698984-2-price-limit-rule"
+    ],
+    "checked": "2026-10-18",
+    "note": "exact consequence not read"
+   },
+   "prohibited": {
+    "value": [
+     "high-frequency trading",
+     "exploiting simulated fills",
+     "hedging",
+     "account sharing / someone else trading",
+     "multi-account mirroring for an unfair advantage",
+     "orders after 16:10 ET"
+    ],
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
+     "https://myfundedfutures.com/terms",
+     "https://help.myfundedfutures.com/en/articles/12011241-hedging-what-you-should-know",
+     "https://help.myfundedfutures.com/en/articles/9558251-permitted-times-to-trade"
+    ],
+    "checked": "2026-10-18",
+    "note": "profits from prohibited practices can be confiscated; passed evals reviewed; accounts terminated"
+   },
+   "inactivity": {
+    "value": {
+     "days": 7,
+     "rule": "no trade for 7 consecutive calendar days -> the account could be closed (one-time-payment accounts, incl. sim funded); live: none"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/16596524-inactivity-rule-one-time-payment-model",
+     "https://help.myfundedfutures.com/en/articles/11972075-inactivity-rule",
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18",
+    "note": "older article says a breach; the one-time model article says 'could be closed'. Contact support before a break >7 days"
+   },
+   "commission_rt": {
+    "value": {
+     "MNQ": 1.9,
+     "NQ": 4.68
+    },
+    "status": "conflict",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/9735811-futures-instrument-list",
+     "https://www.eltraderfinanciado.com/en/review/myfundedfutures",
+     "https://pipback.com/firms/myfundedfutures/"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD per contract round turn",
+    "note": "MFFU instrument list shows MNQ $1.90 / NQ $4.68 per round turn (column label not visible in the search snippet); one review says MNQ $1.74"
+   },
+   "accounts": {
+    "value": {
+     "evaluations": null,
+     "sim_funded_active": 1,
+     "live": 1
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/17005296-builder-plan-100k-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/11802636-traders-evaluation-simplified"
+    ],
+    "checked": "2026-10-18",
+    "note": "Builder 50K: 1 active sim-funded account per user; general rule elsewhere: up to 5 sim funded (25K/50K only); max open evaluations not found"
+   },
+   "refund": {
+    "value": "fees fully earned once you trade",
+    "status": "confirmed",
+    "source": [
+     "https://myfundedfutures.com/cancellation"
+    ],
+    "checked": "2026-10-18"
+   }
+  },
+  "sim_funded": {
+   "start_balance": {
+    "value": 0.0,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD",
+    "note": "sim funded starts at $0 (balance shown as profit)"
+   },
+   "max_loss": {
+    "value": {
+     "amount": 2000.0,
+     "type": "EOD trailing",
+     "lock": "floor stops at +$100 above the start"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD"
+   },
+   "daily_loss_limit": {
+    "value": {
+     "amount": 1000.0,
+     "type": "soft"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD"
+   },
+   "consistency": {
+    "value": 0.5,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/11994562-consistency-rule-at-my-fundedfutures",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18",
+    "note": "at payout time: the best day in the cycle <= 50% of the cycle's profit; not a breach, you just trade more days; resets after each approved payout"
+   },
+   "buffer": {
+    "value": 2100.0,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD",
+    "note": "$1,600 with the $1,500-MLL add-on; must be cleared before a request"
+   },
+   "first_payout": {
+    "value": "at least $500 net profit above the buffer (balance >= $2,600) and 48 hours after the first trade",
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts"
+    ],
+    "checked": "2026-10-18"
+   },
+   "payout_min": {
+    "value": 500.0,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD"
+   },
+   "payout_max": {
+    "value": 2000.0,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD",
+    "note": "per cycle"
+   },
+   "payout_days_per_cycle": {
+    "value": 2,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18",
+    "unit": "days",
+    "note": "traded on at least 2 days in the current cycle; plan page says 'every 48 hours'"
+   },
+   "split": {
+    "value": 0.8,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18"
+   },
+   "max_sim_payouts": {
+    "value": 5,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18",
+    "note": "after the 5th approved sim payout you move to a live account (Blue Row Capital)"
+   },
+   "news": {
+    "value": "unrestricted",
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy",
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18"
+   },
+   "max_contracts": {
+    "value": {
+     "minis": 4,
+     "micros": 40
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18"
+   },
+   "inactivity_days": {
+    "value": 7,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/16596524-inactivity-rule-one-time-payment-model",
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18",
+    "unit": "days"
+   },
+   "breach": {
+    "value": "sim-funded max-loss breach ends the account: start a new evaluation",
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18"
+   }
+  },
+  "live": {
+   "daily_loss_limit": {
+    "value": {
+     "amount": 1000.0,
+     "type": "soft"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD"
+   },
+   "max_loss": {
+    "value": {
+     "amount": 2000.0,
+     "type": "EOD trailing",
+     "lock": "static once the floor reaches $0"
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18",
+    "unit": "USD"
+   },
+   "payouts": {
+    "value": {
+     "cycle": "daily",
+     "min": 250.0,
+     "split": 0.8,
+     "consistency": null
+    },
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://myfundedfutures.com/plans/builder"
+    ],
+    "checked": "2026-10-18"
+   },
+   "accounts": {
+    "value": 1,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18"
+   },
+   "breach_cooldown_days": {
+    "value": 21,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+     "https://help.myfundedfutures.com/en/articles/10244720-understanding-the-difference-between-account-resets-and-renewals"
+    ],
+    "checked": "2026-10-18",
+    "note": "after a live breach: no sim funded trading, no new evals or resets for 21 days"
+   },
+   "news": {
+    "value": "allowed, strongly discouraged",
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/12109396-comprehensive-faq-live-accounts-at-myfunded-futures"
+    ],
+    "checked": "2026-10-18"
+   },
+   "inactivity": {
+    "value": null,
+    "status": "confirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide"
+    ],
+    "checked": "2026-10-18",
+    "note": "no inactivity rule on live"
+   },
+   "owner_present": {
+    "value": true,
+    "status": "unconfirmed",
+    "source": [
+     "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices"
+    ],
+    "checked": "2026-10-18",
+    "note": "project rule (CLAUDE.md): never arm live trading; the owner must be present"
+   }
+  }
+ },
+ "builder_25k": {
+  "price": {
+   "value": {
+    "list": 105.0,
+    "owner_paid": 63.0,
+    "type": "one-time"
+   },
+   "status": "unconfirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
+    "https://myfundedfutures.com/plans/builder"
+   ],
+   "checked": "2026-10-18",
+   "unit": "USD",
+   "note": "list $105 is from the earlier study (search summaries); owner paid $63"
+  },
+  "profit_target": {
+   "value": 1500.0,
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
+    "https://myfundedfutures.com/plans/builder"
+   ],
+   "checked": "2026-10-18",
+   "unit": "USD"
+  },
+  "max_loss": {
+   "value": {
+    "amount": 1000.0,
+    "type": "EOD trailing",
+    "lock": "start + $100"
+   },
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
+    "https://help.myfundedfutures.com/en/articles/8348565-max-eod-trailing"
+   ],
+   "checked": "2026-10-18",
+   "unit": "USD"
+  },
+  "daily_loss_limit": {
+   "value": {
+    "amount": 600.0,
+    "type": "soft"
+   },
+   "status": "conflict",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
+    "https://myfundedfutures.com/plans/builder"
+   ],
+   "checked": "2026-10-18",
+   "unit": "USD",
+   "note": "current guide and plan page: $600 soft pause; the legacy 25K and a blog post: no DLL"
+  },
+  "consistency_eval": {
+   "value": null,
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look"
+   ],
+   "checked": "2026-10-18"
+  },
+  "max_contracts": {
+   "value": {
+    "minis": 2,
+    "micros": 20
+   },
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look"
+   ],
+   "checked": "2026-10-18"
+  },
+  "funded": {
+   "value": {
+    "buffer": 1100.0,
+    "payout_min": 250.0,
+    "payout_max": 1000.0,
+    "split": 0.8,
+    "consistency": 0.5,
+    "max_sim_payouts": 5,
+    "sim_funded_active": 2
+   },
+   "status": "confirmed",
+   "source": [
+    "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
+    "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts"
+   ],
+   "checked": "2026-10-18",
+   "note": "up to 2 active sim-funded 25K accounts per user"
+  }
+ },
+ "limits": {
+  "builder_50k": {
+   "target": 3000.0,
+   "mll": 2000.0,
+   "lock": 100.0,
+   "dll": 1000.0,
+   "max_micros": 40,
+   "max_minis": 4,
+   "flat_by_mod": 970,
+   "open_mod": 1080,
+   "buffer": 2100.0,
+   "pay_min": 500.0,
+   "pay_max": 2000.0,
+   "split": 0.8,
+   "cons": 0.5,
+   "cycle_days": 2,
+   "max_payouts": 5,
+   "inactivity_days": 7,
+   "comm_rt_micro": 1.9,
+   "comm_rt_mini": 4.68
+  },
+  "builder_25k": {
+   "target": 1500.0,
+   "mll": 1000.0,
+   "lock": 100.0,
+   "dll": 600.0,
+   "max_micros": 20,
+   "max_minis": 2,
+   "flat_by_mod": 970,
+   "buffer": 1100.0,
+   "pay_min": 250.0,
+   "pay_max": 1000.0,
+   "split": 0.8,
+   "cons": 0.5,
+   "inactivity_days": 7,
+   "comm_rt_micro": 1.9
+  }
+ }
+}

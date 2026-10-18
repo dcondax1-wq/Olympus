@@ -1,0 +1,6561 @@
+{
+ "live": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31342,
+   "per_month": 5142,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.3,
+    "avg_r": 0.791,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {},
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_sess skip": {
+  "H1": {
+   "n": 79,
+   "tpw": 3.09,
+   "wk2": 85,
+   "win": 21.5,
+   "pf": 2.98,
+   "net": 30803,
+   "per_month": 5054,
+   "dd": -3980,
+   "avg_win": 2726,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 3
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.4,
+    "f10": 6.3
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 79,
+    "tot_r": 61.86,
+    "avg_r": 0.783,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 3
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_sess": "skip"
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "skip|-|-|skipped": 6
+  },
+  "n_pre": {
+   "sess": 0,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_sess reval:vix15": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85,
+   "win": 22.2,
+   "pf": 3.01,
+   "net": 31328,
+   "per_month": 5140,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -247,
+   "exits": {
+    "BE": 30,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 81,
+    "tot_r": 63.29,
+    "avg_r": 0.781,
+    "exits": {
+     "BE": 30,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_sess": "reval:vix15"
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "reval:vix15|-|-|no fill": 3
+  },
+  "n_pre": {
+   "sess": 2,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_sess reval:vix2": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85,
+   "win": 22.2,
+   "pf": 3.01,
+   "net": 31334,
+   "per_month": 5141,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -247,
+   "exits": {
+    "BE": 30,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 81,
+    "tot_r": 63.29,
+    "avg_r": 0.781,
+    "exits": {
+     "BE": 30,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_sess": "reval:vix2"
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "reval:vix2|-|-|no fill": 3
+  },
+  "n_pre": {
+   "sess": 2,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_sess reval:pool": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85,
+   "win": 23.5,
+   "pf": 3.13,
+   "net": 33141,
+   "per_month": 5437,
+   "dd": -3980,
+   "avg_win": 2562,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 16,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 51.4,
+    "f10": 6.0
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 81,
+    "tot_r": 65.39,
+    "avg_r": 0.807,
+    "exits": {
+     "BE": 29,
+     "TARGET": 16,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_sess": "reval:pool"
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "reval:pool|-|-|no fill": 3
+  },
+  "n_pre": {
+   "sess": 2,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_tap keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31342,
+   "per_month": 5142,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.3,
+    "avg_r": 0.791,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_tap": "keep"
+  },
+  "pre_events": {
+   "-|keep|-|no fill": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|keep|-|no fill": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_tap reval:vix15": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31342,
+   "per_month": 5142,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.3,
+    "avg_r": 0.791,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_tap": "reval:vix15"
+  },
+  "pre_events": {
+   "-|reval:vix15|-|no fill": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|reval:vix15|-|no fill": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_tap reval:vix2": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31342,
+   "per_month": 5142,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.3,
+    "avg_r": 0.791,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_tap": "reval:vix2"
+  },
+  "pre_events": {
+   "-|reval:vix2|-|no fill": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|reval:vix2|-|no fill": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_tap reval:pool": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31342,
+   "per_month": 5142,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.3,
+    "avg_r": 0.791,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_tap": "reval:pool"
+  },
+  "pre_events": {
+   "-|reval:pool|-|no fill": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|reval:pool|-|no fill": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_conf cancel": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31342,
+   "per_month": 5142,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.3,
+    "avg_r": 0.791,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_conf": "cancel"
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_conf reval:vix15": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31342,
+   "per_month": 5142,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.3,
+    "avg_r": 0.791,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_conf": "reval:vix15"
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_conf reval:vix2": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31342,
+   "per_month": 5142,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.3,
+    "avg_r": 0.791,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_conf": "reval:vix2"
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "pre_conf reval:pool": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31342,
+   "per_month": 5142,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.3,
+    "avg_r": 0.791,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "pre_conf": "reval:pool"
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "no BE": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 31.2,
+   "pf": 2.55,
+   "net": 33420,
+   "per_month": 5483,
+   "dd": -3869,
+   "avg_win": 2201,
+   "avg_loss": -393,
+   "exits": {
+    "STOP": 54,
+    "TARGET": 18,
+    "EOD": 8
+   },
+   "n10": 119,
+   "p10": 54.6,
+   "f10": 11.8,
+   "n20": 109,
+   "p20": 70.6,
+   "f20": 21.1,
+   "pass_med": 4.5,
+   "cost": 168,
+   "mc": {
+    "p10": 52.7,
+    "f10": 15.7
+   },
+   "b2b": "13/4/4",
+   "unit": {
+    "n": 80,
+    "tot_r": 66.48,
+    "avg_r": 0.831,
+    "exits": {
+     "STOP": 54,
+     "TARGET": 18,
+     "EOD": 8
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 37.5,
+   "pf": 1.69,
+   "net": 9324,
+   "per_month": 2510,
+   "dd": -3123,
+   "avg_win": 1521,
+   "avg_loss": -540,
+   "exits": {
+    "STOP": 25,
+    "TARGET": 10,
+    "EOD": 5
+   },
+   "n10": 69,
+   "p10": 44.9,
+   "f10": 7.2,
+   "n20": 59,
+   "p20": 45.8,
+   "f20": 16.9,
+   "pass_med": 3.0,
+   "cost": 204,
+   "mc": {
+    "p10": 53.0,
+    "f10": 8.6
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 23.1,
+    "avg_r": 0.578,
+    "exits": {
+     "STOP": 25,
+     "TARGET": 10,
+     "EOD": 5
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": null
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 0.75R": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 21.2,
+   "pf": 3.42,
+   "net": 33141,
+   "per_month": 5437,
+   "dd": -3200,
+   "avg_win": 2756,
+   "avg_loss": -218,
+   "exits": {
+    "BE": 33,
+    "TARGET": 15,
+    "STOP": 29,
+    "EOD": 3
+   },
+   "n10": 119,
+   "p10": 53.8,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 76.1,
+   "f20": 16.5,
+   "pass_med": 5.0,
+   "cost": 171,
+   "mc": {
+    "p10": 52.4,
+    "f10": 5.7
+   },
+   "b2b": "12/2/6",
+   "unit": {
+    "n": 80,
+    "tot_r": 64.85,
+    "avg_r": 0.811,
+    "exits": {
+     "BE": 33,
+     "TARGET": 15,
+     "STOP": 29,
+     "EOD": 3
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 25.0,
+   "pf": 1.62,
+   "net": 6877,
+   "per_month": 1851,
+   "dd": -3293,
+   "avg_win": 1797,
+   "avg_loss": -370,
+   "exits": {
+    "BE": 11,
+    "STOP": 19,
+    "TARGET": 7,
+    "EOD": 3
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 4.3,
+   "n20": 59,
+   "p20": 55.9,
+   "f20": 8.5,
+   "pass_med": 5.0,
+   "cost": 181,
+   "mc": {
+    "p10": 42.1,
+    "f10": 3.5
+   },
+   "b2b": "5/0/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 11.67,
+    "avg_r": 0.292,
+    "exits": {
+     "BE": 11,
+     "STOP": 19,
+     "TARGET": 7,
+     "EOD": 3
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 0.75
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1.25R": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 2.67,
+   "net": 29256,
+   "per_month": 4800,
+   "dd": -4711,
+   "avg_win": 2599,
+   "avg_loss": -283,
+   "exits": {
+    "STOP": 37,
+    "TARGET": 15,
+    "BE": 24,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.1,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 74.3,
+   "f20": 19.3,
+   "pass_med": 5.0,
+   "cost": 176,
+   "mc": {
+    "p10": 49.6,
+    "f10": 7.3
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 58.3,
+    "avg_r": 0.729,
+    "exits": {
+     "STOP": 37,
+     "TARGET": 15,
+     "BE": 24,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.25
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1.5R": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 23.8,
+   "pf": 2.72,
+   "net": 30394,
+   "per_month": 4987,
+   "dd": -2962,
+   "avg_win": 2528,
+   "avg_loss": -289,
+   "exits": {
+    "STOP": 41,
+    "TARGET": 16,
+    "BE": 19,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 50.4,
+   "f10": 7.6,
+   "n20": 109,
+   "p20": 68.8,
+   "f20": 18.3,
+   "pass_med": 5.0,
+   "cost": 182,
+   "mc": {
+    "p10": 50.0,
+    "f10": 7.7
+   },
+   "b2b": "10/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 60.15,
+    "avg_r": 0.752,
+    "exits": {
+     "STOP": 41,
+     "TARGET": 16,
+     "BE": 19,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.5
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 2.0R": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 27.5,
+   "pf": 2.39,
+   "net": 28414,
+   "per_month": 4662,
+   "dd": -4488,
+   "avg_win": 2221,
+   "avg_loss": -352,
+   "exits": {
+    "STOP": 48,
+    "TARGET": 17,
+    "BE": 9,
+    "EOD": 6
+   },
+   "n10": 119,
+   "p10": 49.6,
+   "f10": 9.2,
+   "n20": 109,
+   "p20": 68.8,
+   "f20": 19.3,
+   "pass_med": 4.5,
+   "cost": 185,
+   "mc": {
+    "p10": 51.0,
+    "f10": 10.6
+   },
+   "b2b": "11/3/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 62.25,
+    "avg_r": 0.778,
+    "exits": {
+     "STOP": 48,
+     "TARGET": 17,
+     "BE": 9,
+     "EOD": 6
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.77,
+   "net": 9887,
+   "per_month": 2662,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -495,
+   "exits": {
+    "STOP": 23,
+    "TARGET": 10,
+    "BE": 3,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 44.9,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 52.5,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 204,
+   "mc": {
+    "p10": 53.6,
+    "f10": 6.2
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 24.96,
+    "avg_r": 0.624,
+    "exits": {
+     "STOP": 23,
+     "TARGET": 10,
+     "BE": 3,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 2.0
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 3.0R": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 30.0,
+   "pf": 2.43,
+   "net": 29732,
+   "per_month": 4878,
+   "dd": -4488,
+   "avg_win": 2103,
+   "avg_loss": -370,
+   "exits": {
+    "STOP": 51,
+    "TARGET": 17,
+    "BE": 4,
+    "EOD": 8
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 10.1,
+   "n20": 109,
+   "p20": 69.7,
+   "f20": 21.1,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 51.9,
+    "f10": 11.8
+   },
+   "b2b": "13/4/4",
+   "unit": {
+    "n": 80,
+    "tot_r": 64.67,
+    "avg_r": 0.808,
+    "exits": {
+     "STOP": 51,
+     "TARGET": 17,
+     "BE": 4,
+     "EOD": 8
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.69,
+   "net": 9325,
+   "per_month": 2510,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -516,
+   "exits": {
+    "STOP": 24,
+    "TARGET": 10,
+    "BE": 2,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 44.9,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 45.8,
+   "f20": 16.9,
+   "pass_med": 3.0,
+   "cost": 204,
+   "mc": {
+    "p10": 53.1,
+    "f10": 6.6
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 23.96,
+    "avg_r": 0.599,
+    "exits": {
+     "STOP": 24,
+     "TARGET": 10,
+     "BE": 2,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 3.0
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1R to entry + costs": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 58.8,
+   "pf": 3.32,
+   "net": 33116,
+   "per_month": 5433,
+   "dd": -3579,
+   "avg_win": 1008,
+   "avg_loss": -432,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 7.6,
+   "n20": 109,
+   "p20": 76.1,
+   "f20": 17.4,
+   "pass_med": 5.5,
+   "cost": 174,
+   "mc": {
+    "p10": 50.7,
+    "f10": 6.1
+   },
+   "b2b": "12/2/6",
+   "unit": {
+    "n": 80,
+    "tot_r": 64.13,
+    "avg_r": 0.802,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 47.5,
+   "pf": 1.94,
+   "net": 11324,
+   "per_month": 3049,
+   "dd": -3110,
+   "avg_win": 1230,
+   "avg_loss": -573,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 3.4,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.5,
+    "f10": 5.7
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 27.11,
+    "avg_r": 0.678,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.0,
+    "off": 1.0
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1.5R to entry + costs": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 47.5,
+   "pf": 2.77,
+   "net": 30713,
+   "per_month": 5039,
+   "dd": -2916,
+   "avg_win": 1264,
+   "avg_loss": -412,
+   "exits": {
+    "STOP": 41,
+    "TARGET": 16,
+    "BE": 19,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 50.4,
+   "f10": 6.7,
+   "n20": 109,
+   "p20": 68.8,
+   "f20": 18.3,
+   "pass_med": 5.0,
+   "cost": 182,
+   "mc": {
+    "p10": 50.0,
+    "f10": 7.5
+   },
+   "b2b": "10/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 60.58,
+    "avg_r": 0.757,
+    "exits": {
+     "STOP": 41,
+     "TARGET": 16,
+     "BE": 19,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 47.5,
+   "pf": 1.94,
+   "net": 11324,
+   "per_month": 3049,
+   "dd": -3110,
+   "avg_win": 1230,
+   "avg_loss": -573,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 3.4,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.5,
+    "f10": 5.7
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 27.11,
+    "avg_r": 0.678,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.5,
+    "off": 1.0
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE on sw1 only": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 15.0,
+   "pf": 2.35,
+   "net": 17408,
+   "per_month": 2856,
+   "dd": -3934,
+   "avg_win": 2525,
+   "avg_loss": -190,
+   "exits": {
+    "BE": 41,
+    "TARGET": 11,
+    "STOP": 27,
+    "EOD": 1
+   },
+   "n10": 119,
+   "p10": 43.7,
+   "f10": 4.2,
+   "n20": 109,
+   "p20": 70.6,
+   "f20": 20.2,
+   "pass_med": 7.5,
+   "cost": 210,
+   "mc": {
+    "p10": 39.8,
+    "f10": 2.9
+   },
+   "b2b": "8/1/8",
+   "unit": {
+    "n": 80,
+    "tot_r": 36.85,
+    "avg_r": 0.461,
+    "exits": {
+     "BE": 41,
+     "TARGET": 11,
+     "STOP": 27,
+     "EOD": 1
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 22.5,
+   "pf": 1.46,
+   "net": 4863,
+   "per_month": 1309,
+   "dd": -3282,
+   "avg_win": 1716,
+   "avg_loss": -341,
+   "exits": {
+    "BE": 14,
+    "STOP": 17,
+    "TARGET": 7,
+    "EOD": 2
+   },
+   "n10": 69,
+   "p10": 40.6,
+   "f10": 1.4,
+   "n20": 59,
+   "p20": 49.2,
+   "f20": 6.8,
+   "pass_med": 5.0,
+   "cost": 226,
+   "mc": {
+    "p10": 42.5,
+    "f10": 2.3
+   },
+   "b2b": "3/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 15.11,
+    "avg_r": 0.378,
+    "exits": {
+     "BE": 14,
+     "STOP": 17,
+     "TARGET": 7,
+     "EOD": 2
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": null,
+    "need": "sw1"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1R + sw1": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 2.76,
+   "net": 29000,
+   "per_month": 4758,
+   "dd": -4326,
+   "avg_win": 2525,
+   "avg_loss": -265,
+   "exits": {
+    "BE": 27,
+    "TARGET": 15,
+    "STOP": 34,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 74.3,
+   "f20": 18.3,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.0,
+    "f10": 6.5
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 61.3,
+    "avg_r": 0.766,
+    "exits": {
+     "BE": 27,
+     "TARGET": 15,
+     "STOP": 34,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.0,
+    "need": "sw1"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE on sw5 only": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 23.8,
+   "pf": 2.81,
+   "net": 31602,
+   "per_month": 5185,
+   "dd": -2836,
+   "avg_win": 2581,
+   "avg_loss": -286,
+   "exits": {
+    "STOP": 40,
+    "TARGET": 16,
+    "BE": 20,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 50.4,
+   "f10": 7.6,
+   "n20": 109,
+   "p20": 74.3,
+   "f20": 16.5,
+   "pass_med": 5.5,
+   "cost": 182,
+   "mc": {
+    "p10": 51.2,
+    "f10": 7.0
+   },
+   "b2b": "11/2/6",
+   "unit": {
+    "n": 80,
+    "tot_r": 59.76,
+    "avg_r": 0.747,
+    "exits": {
+     "STOP": 40,
+     "TARGET": 16,
+     "BE": 20,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 27.5,
+   "pf": 1.62,
+   "net": 7133,
+   "per_month": 1920,
+   "dd": -3293,
+   "avg_win": 1686,
+   "avg_loss": -394,
+   "exits": {
+    "STOP": 22,
+    "TARGET": 8,
+    "BE": 7,
+    "EOD": 3
+   },
+   "n10": 69,
+   "p10": 44.9,
+   "f10": 11.6,
+   "n20": 59,
+   "p20": 45.8,
+   "f20": 25.4,
+   "pass_med": 4.0,
+   "cost": 204,
+   "mc": {
+    "p10": 45.1,
+    "f10": 7.8
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 14.19,
+    "avg_r": 0.355,
+    "exits": {
+     "STOP": 22,
+     "TARGET": 8,
+     "BE": 7,
+     "EOD": 3
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": null,
+    "need": "sw5"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1R + sw5": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 25.0,
+   "pf": 3.04,
+   "net": 35306,
+   "per_month": 5792,
+   "dd": -2836,
+   "avg_win": 2629,
+   "avg_loss": -288,
+   "exits": {
+    "STOP": 40,
+    "TARGET": 17,
+    "BE": 19,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 53.8,
+   "f10": 7.6,
+   "n20": 109,
+   "p20": 74.3,
+   "f20": 16.5,
+   "pass_med": 5.0,
+   "cost": 171,
+   "mc": {
+    "p10": 54.4,
+    "f10": 6.8
+   },
+   "b2b": "12/2/6",
+   "unit": {
+    "n": 80,
+    "tot_r": 65.91,
+    "avg_r": 0.824,
+    "exits": {
+     "STOP": 40,
+     "TARGET": 17,
+     "BE": 19,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10418,
+   "per_month": 2805,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -474,
+   "exits": {
+    "STOP": 23,
+    "TARGET": 10,
+    "BE": 3,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 44.9,
+   "f10": 7.2,
+   "n20": 59,
+   "p20": 52.5,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 204,
+   "mc": {
+    "p10": 54.2,
+    "f10": 7.8
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 24.96,
+    "avg_r": 0.624,
+    "exits": {
+     "STOP": 23,
+     "TARGET": 10,
+     "BE": 3,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.0,
+    "need": "sw5"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE on left only": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 13.8,
+   "pf": 2.61,
+   "net": 17929,
+   "per_month": 2941,
+   "dd": -2632,
+   "avg_win": 2643,
+   "avg_loss": -162,
+   "exits": {
+    "BE": 49,
+    "TARGET": 9,
+    "STOP": 19,
+    "EOD": 3
+   },
+   "n10": 119,
+   "p10": 41.2,
+   "f10": 0.0,
+   "n20": 109,
+   "p20": 61.5,
+   "f20": 7.3,
+   "pass_med": 6.0,
+   "cost": 223,
+   "mc": {
+    "p10": 41.6,
+    "f10": 0.6
+   },
+   "b2b": "7/0/8",
+   "unit": {
+    "n": 80,
+    "tot_r": 44.42,
+    "avg_r": 0.555,
+    "exits": {
+     "BE": 49,
+     "TARGET": 9,
+     "STOP": 19,
+     "EOD": 3
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 12.5,
+   "pf": 1.92,
+   "net": 5014,
+   "per_month": 1350,
+   "dd": -3825,
+   "avg_win": 2089,
+   "avg_loss": -155,
+   "exits": {
+    "BE": 27,
+    "STOP": 8,
+    "TARGET": 3,
+    "EOD": 2
+   },
+   "n10": 69,
+   "p10": 30.4,
+   "f10": 0.0,
+   "n20": 59,
+   "p20": 39.0,
+   "f20": 0.0,
+   "pass_med": 8.0,
+   "cost": 302,
+   "mc": {
+    "p10": 23.9,
+    "f10": 0.4
+   },
+   "b2b": "3/0/7",
+   "unit": {
+    "n": 40,
+    "tot_r": 7.23,
+    "avg_r": 0.181,
+    "exits": {
+     "BE": 27,
+     "STOP": 8,
+     "TARGET": 3,
+     "EOD": 2
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": null,
+    "need": "left"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1R + left": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 2.73,
+   "net": 27798,
+   "per_month": 4561,
+   "dd": -4711,
+   "avg_win": 2435,
+   "avg_loss": -258,
+   "exits": {
+    "BE": 26,
+    "TARGET": 15,
+    "STOP": 35,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 47.1,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 68.8,
+   "f20": 19.3,
+   "pass_med": 5.0,
+   "cost": 195,
+   "mc": {
+    "p10": 48.2,
+    "f10": 7.2
+   },
+   "b2b": "9/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 60.3,
+    "avg_r": 0.754,
+    "exits": {
+     "BE": 26,
+     "TARGET": 15,
+     "STOP": 35,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.84,
+   "net": 10416,
+   "per_month": 2804,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -474,
+   "exits": {
+    "STOP": 22,
+    "TARGET": 10,
+    "BE": 4,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 44.9,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 52.5,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 204,
+   "mc": {
+    "p10": 54.5,
+    "f10": 6.0
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 25.96,
+    "avg_r": 0.649,
+    "exits": {
+     "STOP": 22,
+     "TARGET": 10,
+     "BE": 4,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.0,
+    "need": "left"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1R, not while ob50 pending": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 26.2,
+   "pf": 2.92,
+   "net": 33026,
+   "per_month": 5418,
+   "dd": -4507,
+   "avg_win": 2393,
+   "avg_loss": -292,
+   "exits": {
+    "BE": 17,
+    "TARGET": 17,
+    "STOP": 41,
+    "EOD": 5
+   },
+   "n10": 119,
+   "p10": 60.5,
+   "f10": 10.9,
+   "n20": 109,
+   "p20": 76.1,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 152,
+   "mc": {
+    "p10": 53.5,
+    "f10": 11.9
+   },
+   "b2b": "13/3/4",
+   "unit": {
+    "n": 80,
+    "tot_r": 69.35,
+    "avg_r": 0.867,
+    "exits": {
+     "BE": 17,
+     "TARGET": 17,
+     "STOP": 41,
+     "EOD": 5
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 37.5,
+   "pf": 1.85,
+   "net": 10480,
+   "per_month": 2821,
+   "dd": -3123,
+   "avg_win": 1521,
+   "avg_loss": -494,
+   "exits": {
+    "STOP": 21,
+    "BE": 4,
+    "TARGET": 10,
+    "EOD": 5
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.3
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 27.1,
+    "avg_r": 0.678,
+    "exits": {
+     "STOP": 21,
+     "BE": 4,
+     "TARGET": 10,
+     "EOD": 5
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.0,
+    "pend": "ob50"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1R, not while ob50 pending, + costs": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 47.5,
+   "pf": 2.95,
+   "net": 33234,
+   "per_month": 5452,
+   "dd": -4507,
+   "avg_win": 1322,
+   "avg_loss": -405,
+   "exits": {
+    "BE": 17,
+    "TARGET": 17,
+    "STOP": 41,
+    "EOD": 5
+   },
+   "n10": 119,
+   "p10": 60.5,
+   "f10": 10.9,
+   "n20": 109,
+   "p20": 76.1,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 152,
+   "mc": {
+    "p10": 53.5,
+    "f10": 11.7
+   },
+   "b2b": "13/3/4",
+   "unit": {
+    "n": 80,
+    "tot_r": 69.95,
+    "avg_r": 0.874,
+    "exits": {
+     "BE": 17,
+     "TARGET": 17,
+     "STOP": 41,
+     "EOD": 5
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 47.5,
+   "pf": 1.86,
+   "net": 10528,
+   "per_month": 2834,
+   "dd": -3123,
+   "avg_win": 1201,
+   "avg_loss": -586,
+   "exits": {
+    "STOP": 21,
+    "BE": 4,
+    "TARGET": 10,
+    "EOD": 5
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 3.4,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.5,
+    "f10": 5.6
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 27.23,
+    "avg_r": 0.681,
+    "exits": {
+     "STOP": 21,
+     "BE": 4,
+     "TARGET": 10,
+     "EOD": 5
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.0,
+    "pend": "ob50",
+    "off": 1.0
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1R, not while fvg1 pending": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 27.5,
+   "pf": 2.37,
+   "net": 25489,
+   "per_month": 4182,
+   "dd": -4507,
+   "avg_win": 2005,
+   "avg_loss": -321,
+   "exits": {
+    "STOP": 44,
+    "TARGET": 16,
+    "EOD": 7,
+    "BE": 13
+   },
+   "n10": 119,
+   "p10": 49.6,
+   "f10": 10.9,
+   "n20": 109,
+   "p20": 67.9,
+   "f20": 18.3,
+   "pass_med": 6.0,
+   "cost": 185,
+   "mc": {
+    "p10": 47.7,
+    "f10": 12.2
+   },
+   "b2b": "10/3/5",
+   "unit": {
+    "n": 80,
+    "tot_r": 64.78,
+    "avg_r": 0.81,
+    "exits": {
+     "STOP": 44,
+     "TARGET": 16,
+     "EOD": 7,
+     "BE": 13
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.7,
+   "net": 9389,
+   "per_month": 2528,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -514,
+   "exits": {
+    "STOP": 23,
+    "BE": 3,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 54.2,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 54.1,
+    "f10": 6.1
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 24.96,
+    "avg_r": 0.624,
+    "exits": {
+     "STOP": 23,
+     "BE": 3,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.0,
+    "pend": "fvg1"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "BE at 1R, not while fvg1 pending, + costs": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 43.8,
+   "pf": 2.4,
+   "net": 25718,
+   "per_month": 4219,
+   "dd": -4507,
+   "avg_win": 1259,
+   "avg_loss": -407,
+   "exits": {
+    "STOP": 44,
+    "TARGET": 16,
+    "EOD": 7,
+    "BE": 13
+   },
+   "n10": 119,
+   "p10": 49.6,
+   "f10": 10.9,
+   "n20": 109,
+   "p20": 70.6,
+   "f20": 18.3,
+   "pass_med": 6.0,
+   "cost": 185,
+   "mc": {
+    "p10": 47.7,
+    "f10": 12.2
+   },
+   "b2b": "10/3/5",
+   "unit": {
+    "n": 80,
+    "tot_r": 65.15,
+    "avg_r": 0.814,
+    "exits": {
+     "STOP": 44,
+     "TARGET": 16,
+     "EOD": 7,
+     "BE": 13
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 42.5,
+   "pf": 1.78,
+   "net": 10218,
+   "per_month": 2751,
+   "dd": -3110,
+   "avg_win": 1374,
+   "avg_loss": -572,
+   "exits": {
+    "STOP": 23,
+    "BE": 3,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 54.2,
+   "f20": 10.2,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 54.2,
+    "f10": 6.4
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 25.08,
+    "avg_r": 0.627,
+    "exits": {
+     "STOP": 23,
+     "BE": 3,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "be": {
+    "r": 1.0,
+    "pend": "fvg1",
+    "off": 1.0
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.5 at first leg >= 1.0R, BE keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 23.8,
+   "pf": 3.27,
+   "net": 31404,
+   "per_month": 5152,
+   "dd": -3593,
+   "avg_win": 2381,
+   "avg_loss": -227,
+   "exits": {
+    "BE": 28,
+    "TARGET": 13,
+    "STOP": 32,
+    "TARGET+P": 2,
+    "EOD": 3,
+    "BE+P": 1,
+    "EOD+P": 1
+   },
+   "n10": 119,
+   "p10": 44.5,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 67.9,
+   "f20": 16.5,
+   "pass_med": 6.0,
+   "cost": 206,
+   "mc": {
+    "p10": 45.2,
+    "f10": 6.2
+   },
+   "b2b": "10/1/8",
+   "unit": {
+    "n": 80,
+    "tot_r": 59.04,
+    "avg_r": 0.738,
+    "exits": {
+     "BE": 28,
+     "TARGET": 13,
+     "STOP": 32,
+     "TARGET+P": 2,
+     "EOD": 3,
+     "BE+P": 1,
+     "EOD+P": 1
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "leg",
+    "f": 0.5,
+    "min_r": 1.0,
+    "be": "keep"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.5 at first leg >= 1.0R, BE after": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 23.8,
+   "pf": 3.27,
+   "net": 31404,
+   "per_month": 5152,
+   "dd": -3593,
+   "avg_win": 2381,
+   "avg_loss": -227,
+   "exits": {
+    "BE": 28,
+    "TARGET": 13,
+    "STOP": 32,
+    "TARGET+P": 2,
+    "EOD": 3,
+    "BE+P": 1,
+    "EOD+P": 1
+   },
+   "n10": 119,
+   "p10": 44.5,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 67.9,
+   "f20": 16.5,
+   "pass_med": 6.0,
+   "cost": 206,
+   "mc": {
+    "p10": 45.2,
+    "f10": 6.2
+   },
+   "b2b": "10/1/8",
+   "unit": {
+    "n": 80,
+    "tot_r": 59.04,
+    "avg_r": 0.738,
+    "exits": {
+     "BE": 28,
+     "TARGET": 13,
+     "STOP": 32,
+     "TARGET+P": 2,
+     "EOD": 3,
+     "BE+P": 1,
+     "EOD+P": 1
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "leg",
+    "f": 0.5,
+    "min_r": 1.0,
+    "be": "after"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.33 at first leg >= 1.0R, BE keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 23.8,
+   "pf": 2.84,
+   "net": 28507,
+   "per_month": 4677,
+   "dd": -3593,
+   "avg_win": 2318,
+   "avg_loss": -255,
+   "exits": {
+    "BE": 28,
+    "TARGET": 13,
+    "STOP": 32,
+    "TARGET+P": 2,
+    "EOD": 3,
+    "BE+P": 1,
+    "EOD+P": 1
+   },
+   "n10": 119,
+   "p10": 49.6,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 71.6,
+   "f20": 16.5,
+   "pass_med": 6.0,
+   "cost": 185,
+   "mc": {
+    "p10": 46.4,
+    "f10": 6.2
+   },
+   "b2b": "10/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 60.49,
+    "avg_r": 0.756,
+    "exits": {
+     "BE": 28,
+     "TARGET": 13,
+     "STOP": 32,
+     "TARGET+P": 2,
+     "EOD": 3,
+     "BE+P": 1,
+     "EOD+P": 1
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "leg",
+    "f": 0.33,
+    "min_r": 1.0,
+    "be": "keep"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.33 at first leg >= 1.0R, BE after": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 23.8,
+   "pf": 2.84,
+   "net": 28507,
+   "per_month": 4677,
+   "dd": -3593,
+   "avg_win": 2318,
+   "avg_loss": -255,
+   "exits": {
+    "BE": 28,
+    "TARGET": 13,
+    "STOP": 32,
+    "TARGET+P": 2,
+    "EOD": 3,
+    "BE+P": 1,
+    "EOD+P": 1
+   },
+   "n10": 119,
+   "p10": 49.6,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 71.6,
+   "f20": 16.5,
+   "pass_med": 6.0,
+   "cost": 185,
+   "mc": {
+    "p10": 46.4,
+    "f10": 6.2
+   },
+   "b2b": "10/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 60.49,
+    "avg_r": 0.756,
+    "exits": {
+     "BE": 28,
+     "TARGET": 13,
+     "STOP": 32,
+     "TARGET+P": 2,
+     "EOD": 3,
+     "BE+P": 1,
+     "EOD+P": 1
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "leg",
+    "f": 0.33,
+    "min_r": 1.0,
+    "be": "after"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.5 at first pool >= 1.0R, BE keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 32.5,
+   "pf": 2.11,
+   "net": 16915,
+   "per_month": 2775,
+   "dd": -4385,
+   "avg_win": 1236,
+   "avg_loss": -282,
+   "exits": {
+    "BE": 21,
+    "TARGET": 3,
+    "TARGET+P": 12,
+    "STOP": 32,
+    "BE+P": 8,
+    "EOD": 3,
+    "EOD+P": 1
+   },
+   "n10": 119,
+   "p10": 28.6,
+   "f10": 7.6,
+   "n20": 109,
+   "p20": 45.0,
+   "f20": 21.1,
+   "pass_med": 8.0,
+   "cost": 321,
+   "mc": {
+    "p10": 26.9,
+    "f10": 6.1
+   },
+   "b2b": "6/2/8",
+   "unit": {
+    "n": 80,
+    "tot_r": 45.14,
+    "avg_r": 0.564,
+    "exits": {
+     "BE": 21,
+     "TARGET": 3,
+     "TARGET+P": 12,
+     "STOP": 32,
+     "BE+P": 8,
+     "EOD": 3,
+     "EOD+P": 1
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 2.31,
+   "net": 12142,
+   "per_month": 3269,
+   "dd": -2484,
+   "avg_win": 1336,
+   "avg_loss": -385,
+   "exits": {
+    "STOP": 21,
+    "BE": 3,
+    "TARGET+P": 8,
+    "EOD+P": 1,
+    "EOD": 3,
+    "BE+P": 2,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 21.7,
+   "f10": 4.3,
+   "n20": 59,
+   "p20": 35.6,
+   "f20": 18.6,
+   "pass_med": 8.0,
+   "cost": 423,
+   "mc": {
+    "p10": 29.8,
+    "f10": 5.4
+   },
+   "b2b": "3/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 19.54,
+    "avg_r": 0.489,
+    "exits": {
+     "STOP": 21,
+     "BE": 3,
+     "TARGET+P": 8,
+     "EOD+P": 1,
+     "EOD": 3,
+     "BE+P": 2,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "pool",
+    "f": 0.5,
+    "min_r": 1.0,
+    "be": "keep"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.5 at first pool >= 1.0R, BE after": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 37.5,
+   "pf": 2.06,
+   "net": 17719,
+   "per_month": 2907,
+   "dd": -3409,
+   "avg_win": 1150,
+   "avg_loss": -336,
+   "exits": {
+    "STOP": 44,
+    "TARGET": 3,
+    "TARGET+P": 13,
+    "BE+P": 10,
+    "EOD+P": 2,
+    "EOD": 3,
+    "BE": 5
+   },
+   "n10": 119,
+   "p10": 33.6,
+   "f10": 9.2,
+   "n20": 109,
+   "p20": 56.0,
+   "f20": 20.2,
+   "pass_med": 8.0,
+   "cost": 273,
+   "mc": {
+    "p10": 30.2,
+    "f10": 9.5
+   },
+   "b2b": "6/2/8",
+   "unit": {
+    "n": 80,
+    "tot_r": 44.55,
+    "avg_r": 0.557,
+    "exits": {
+     "STOP": 44,
+     "TARGET": 3,
+     "TARGET+P": 13,
+     "BE+P": 10,
+     "EOD+P": 2,
+     "EOD": 3,
+     "BE": 5
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 2.17,
+   "net": 11548,
+   "per_month": 3109,
+   "dd": -2876,
+   "avg_win": 1336,
+   "avg_loss": -410,
+   "exits": {
+    "STOP": 24,
+    "TARGET+P": 8,
+    "EOD+P": 1,
+    "EOD": 3,
+    "BE+P": 2,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 21.7,
+   "f10": 8.7,
+   "n20": 59,
+   "p20": 35.6,
+   "f20": 18.6,
+   "pass_med": 8.0,
+   "cost": 423,
+   "mc": {
+    "p10": 29.2,
+    "f10": 8.2
+   },
+   "b2b": "3/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 16.54,
+    "avg_r": 0.414,
+    "exits": {
+     "STOP": 24,
+     "TARGET+P": 8,
+     "EOD+P": 1,
+     "EOD": 3,
+     "BE+P": 2,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "pool",
+    "f": 0.5,
+    "min_r": 1.0,
+    "be": "after"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.33 at first pool >= 1.0R, BE keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 30.0,
+   "pf": 2.28,
+   "net": 18987,
+   "per_month": 3115,
+   "dd": -3980,
+   "avg_win": 1409,
+   "avg_loss": -265,
+   "exits": {
+    "BE": 21,
+    "TARGET": 3,
+    "TARGET+P": 12,
+    "STOP": 32,
+    "BE+P": 8,
+    "EOD": 3,
+    "EOD+P": 1
+   },
+   "n10": 119,
+   "p10": 37.8,
+   "f10": 9.2,
+   "n20": 109,
+   "p20": 57.8,
+   "f20": 17.4,
+   "pass_med": 8.0,
+   "cost": 243,
+   "mc": {
+    "p10": 35.2,
+    "f10": 6.2
+   },
+   "b2b": "7/3/6",
+   "unit": {
+    "n": 80,
+    "tot_r": 51.32,
+    "avg_r": 0.641,
+    "exits": {
+     "BE": 21,
+     "TARGET": 3,
+     "TARGET+P": 12,
+     "STOP": 32,
+     "BE+P": 8,
+     "EOD": 3,
+     "EOD+P": 1
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 1.65,
+   "net": 7754,
+   "per_month": 2088,
+   "dd": -3070,
+   "avg_win": 1228,
+   "avg_loss": -495,
+   "exits": {
+    "STOP": 21,
+    "BE": 3,
+    "TARGET+P": 8,
+    "EOD+P": 1,
+    "EOD": 3,
+    "BE+P": 2,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 39.1,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 59.3,
+   "f20": 16.9,
+   "pass_med": 8.0,
+   "cost": 235,
+   "mc": {
+    "p10": 37.8,
+    "f10": 5.5
+   },
+   "b2b": "4/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 22.07,
+    "avg_r": 0.552,
+    "exits": {
+     "STOP": 21,
+     "BE": 3,
+     "TARGET+P": 8,
+     "EOD+P": 1,
+     "EOD": 3,
+     "BE+P": 2,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "pool",
+    "f": 0.33,
+    "min_r": 1.0,
+    "be": "keep"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.33 at first pool >= 1.0R, BE after": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 35.0,
+   "pf": 2.02,
+   "net": 18135,
+   "per_month": 2975,
+   "dd": -3600,
+   "avg_win": 1281,
+   "avg_loss": -341,
+   "exits": {
+    "STOP": 44,
+    "TARGET": 3,
+    "TARGET+P": 13,
+    "BE+P": 10,
+    "EOD+P": 2,
+    "EOD": 3,
+    "BE": 5
+   },
+   "n10": 119,
+   "p10": 43.7,
+   "f10": 10.9,
+   "n20": 109,
+   "p20": 61.5,
+   "f20": 19.3,
+   "pass_med": 6.0,
+   "cost": 210,
+   "mc": {
+    "p10": 39.7,
+    "f10": 9.8
+   },
+   "b2b": "7/4/5",
+   "unit": {
+    "n": 80,
+    "tot_r": 50.09,
+    "avg_r": 0.626,
+    "exits": {
+     "STOP": 44,
+     "TARGET": 3,
+     "TARGET+P": 13,
+     "BE+P": 10,
+     "EOD+P": 2,
+     "EOD": 3,
+     "BE": 5
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 1.57,
+   "net": 7161,
+   "per_month": 1928,
+   "dd": -3070,
+   "avg_win": 1228,
+   "avg_loss": -520,
+   "exits": {
+    "STOP": 24,
+    "TARGET+P": 8,
+    "EOD+P": 1,
+    "EOD": 3,
+    "BE+P": 2,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 33.3,
+   "f10": 7.2,
+   "n20": 59,
+   "p20": 50.8,
+   "f20": 16.9,
+   "pass_med": 8.0,
+   "cost": 276,
+   "mc": {
+    "p10": 36.9,
+    "f10": 8.3
+   },
+   "b2b": "4/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 19.07,
+    "avg_r": 0.477,
+    "exits": {
+     "STOP": 24,
+     "TARGET+P": 8,
+     "EOD+P": 1,
+     "EOD": 3,
+     "BE+P": 2,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "pool",
+    "f": 0.33,
+    "min_r": 1.0,
+    "be": "after"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.5 at first struct >= 1.0R, BE keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 33.8,
+   "pf": 2.26,
+   "net": 17810,
+   "per_month": 2922,
+   "dd": -3409,
+   "avg_win": 1182,
+   "avg_loss": -266,
+   "exits": {
+    "BE": 20,
+    "TARGET": 3,
+    "TARGET+P": 12,
+    "STOP": 32,
+    "BE+P": 9,
+    "EOD": 2,
+    "EOD+P": 2
+   },
+   "n10": 119,
+   "p10": 26.9,
+   "f10": 7.6,
+   "n20": 109,
+   "p20": 45.0,
+   "f20": 17.4,
+   "pass_med": 9.0,
+   "cost": 341,
+   "mc": {
+    "p10": 26.2,
+    "f10": 6.1
+   },
+   "b2b": "5/1/9",
+   "unit": {
+    "n": 80,
+    "tot_r": 45.26,
+    "avg_r": 0.566,
+    "exits": {
+     "BE": 20,
+     "TARGET": 3,
+     "TARGET+P": 12,
+     "STOP": 32,
+     "BE+P": 9,
+     "EOD": 2,
+     "EOD+P": 2
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 2.31,
+   "net": 12142,
+   "per_month": 3269,
+   "dd": -2484,
+   "avg_win": 1336,
+   "avg_loss": -385,
+   "exits": {
+    "STOP": 21,
+    "BE": 3,
+    "TARGET+P": 8,
+    "EOD+P": 1,
+    "EOD": 3,
+    "BE+P": 2,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 21.7,
+   "f10": 4.3,
+   "n20": 59,
+   "p20": 35.6,
+   "f20": 18.6,
+   "pass_med": 8.0,
+   "cost": 423,
+   "mc": {
+    "p10": 29.8,
+    "f10": 5.4
+   },
+   "b2b": "3/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 19.54,
+    "avg_r": 0.489,
+    "exits": {
+     "STOP": 21,
+     "BE": 3,
+     "TARGET+P": 8,
+     "EOD+P": 1,
+     "EOD": 3,
+     "BE+P": 2,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "struct",
+    "f": 0.5,
+    "min_r": 1.0,
+    "be": "keep"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.5 at first struct >= 1.0R, BE after": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 37.5,
+   "pf": 2.11,
+   "net": 18159,
+   "per_month": 2979,
+   "dd": -3409,
+   "avg_win": 1151,
+   "avg_loss": -327,
+   "exits": {
+    "STOP": 44,
+    "TARGET": 3,
+    "TARGET+P": 13,
+    "BE+P": 10,
+    "EOD+P": 3,
+    "EOD": 2,
+    "BE": 5
+   },
+   "n10": 119,
+   "p10": 28.6,
+   "f10": 9.2,
+   "n20": 109,
+   "p20": 49.5,
+   "f20": 21.1,
+   "pass_med": 9.0,
+   "cost": 321,
+   "mc": {
+    "p10": 28.6,
+    "f10": 9.7
+   },
+   "b2b": "4/1/9",
+   "unit": {
+    "n": 80,
+    "tot_r": 42.03,
+    "avg_r": 0.525,
+    "exits": {
+     "STOP": 44,
+     "TARGET": 3,
+     "TARGET+P": 13,
+     "BE+P": 10,
+     "EOD+P": 3,
+     "EOD": 2,
+     "BE": 5
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 2.17,
+   "net": 11548,
+   "per_month": 3109,
+   "dd": -2876,
+   "avg_win": 1336,
+   "avg_loss": -410,
+   "exits": {
+    "STOP": 24,
+    "TARGET+P": 8,
+    "EOD+P": 1,
+    "EOD": 3,
+    "BE+P": 2,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 21.7,
+   "f10": 8.7,
+   "n20": 59,
+   "p20": 35.6,
+   "f20": 18.6,
+   "pass_med": 8.0,
+   "cost": 423,
+   "mc": {
+    "p10": 29.2,
+    "f10": 8.2
+   },
+   "b2b": "3/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 16.54,
+    "avg_r": 0.414,
+    "exits": {
+     "STOP": 24,
+     "TARGET+P": 8,
+     "EOD+P": 1,
+     "EOD": 3,
+     "BE+P": 2,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "struct",
+    "f": 0.5,
+    "min_r": 1.0,
+    "be": "after"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.33 at first struct >= 1.0R, BE keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 31.2,
+   "pf": 2.32,
+   "net": 19505,
+   "per_month": 3200,
+   "dd": -3600,
+   "avg_win": 1373,
+   "avg_loss": -269,
+   "exits": {
+    "BE": 20,
+    "TARGET": 3,
+    "TARGET+P": 12,
+    "STOP": 32,
+    "BE+P": 9,
+    "EOD": 2,
+    "EOD+P": 2
+   },
+   "n10": 119,
+   "p10": 37.8,
+   "f10": 9.2,
+   "n20": 109,
+   "p20": 56.9,
+   "f20": 16.5,
+   "pass_med": 8.0,
+   "cost": 243,
+   "mc": {
+    "p10": 34.8,
+    "f10": 6.2
+   },
+   "b2b": "7/3/6",
+   "unit": {
+    "n": 80,
+    "tot_r": 51.4,
+    "avg_r": 0.642,
+    "exits": {
+     "BE": 20,
+     "TARGET": 3,
+     "TARGET+P": 12,
+     "STOP": 32,
+     "BE+P": 9,
+     "EOD": 2,
+     "EOD+P": 2
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 1.65,
+   "net": 7754,
+   "per_month": 2088,
+   "dd": -3070,
+   "avg_win": 1228,
+   "avg_loss": -495,
+   "exits": {
+    "STOP": 21,
+    "BE": 3,
+    "TARGET+P": 8,
+    "EOD+P": 1,
+    "EOD": 3,
+    "BE+P": 2,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 39.1,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 59.3,
+   "f20": 16.9,
+   "pass_med": 8.0,
+   "cost": 235,
+   "mc": {
+    "p10": 37.8,
+    "f10": 5.5
+   },
+   "b2b": "4/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 22.07,
+    "avg_r": 0.552,
+    "exits": {
+     "STOP": 21,
+     "BE": 3,
+     "TARGET+P": 8,
+     "EOD+P": 1,
+     "EOD": 3,
+     "BE+P": 2,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "struct",
+    "f": 0.33,
+    "min_r": 1.0,
+    "be": "keep"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.33 at first struct >= 1.0R, BE after": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 35.0,
+   "pf": 2.02,
+   "net": 18152,
+   "per_month": 2978,
+   "dd": -3600,
+   "avg_win": 1282,
+   "avg_loss": -341,
+   "exits": {
+    "STOP": 44,
+    "TARGET": 3,
+    "TARGET+P": 13,
+    "BE+P": 10,
+    "EOD+P": 3,
+    "EOD": 2,
+    "BE": 5
+   },
+   "n10": 119,
+   "p10": 43.7,
+   "f10": 10.9,
+   "n20": 109,
+   "p20": 62.4,
+   "f20": 19.3,
+   "pass_med": 6.5,
+   "cost": 210,
+   "mc": {
+    "p10": 39.3,
+    "f10": 10.0
+   },
+   "b2b": "7/4/5",
+   "unit": {
+    "n": 80,
+    "tot_r": 48.43,
+    "avg_r": 0.605,
+    "exits": {
+     "STOP": 44,
+     "TARGET": 3,
+     "TARGET+P": 13,
+     "BE+P": 10,
+     "EOD+P": 3,
+     "EOD": 2,
+     "BE": 5
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 1.57,
+   "net": 7161,
+   "per_month": 1928,
+   "dd": -3070,
+   "avg_win": 1228,
+   "avg_loss": -520,
+   "exits": {
+    "STOP": 24,
+    "TARGET+P": 8,
+    "EOD+P": 1,
+    "EOD": 3,
+    "BE+P": 2,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 33.3,
+   "f10": 7.2,
+   "n20": 59,
+   "p20": 50.8,
+   "f20": 16.9,
+   "pass_med": 8.0,
+   "cost": 276,
+   "mc": {
+    "p10": 36.9,
+    "f10": 8.3
+   },
+   "b2b": "4/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 19.07,
+    "avg_r": 0.477,
+    "exits": {
+     "STOP": 24,
+     "TARGET+P": 8,
+     "EOD+P": 1,
+     "EOD": 3,
+     "BE+P": 2,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "struct",
+    "f": 0.33,
+    "min_r": 1.0,
+    "be": "after"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.5 at first all >= 1.0R, BE keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 35.0,
+   "pf": 2.09,
+   "net": 15402,
+   "per_month": 2527,
+   "dd": -3409,
+   "avg_win": 1055,
+   "avg_loss": -272,
+   "exits": {
+    "BE+P": 12,
+    "TARGET": 3,
+    "TARGET+P": 12,
+    "BE": 17,
+    "STOP": 32,
+    "EOD": 2,
+    "EOD+P": 2
+   },
+   "n10": 119,
+   "p10": 21.8,
+   "f10": 7.6,
+   "n20": 109,
+   "p20": 45.0,
+   "f20": 16.5,
+   "pass_med": 10.0,
+   "cost": 421,
+   "mc": {
+    "p10": 20.4,
+    "f10": 6.0
+   },
+   "b2b": "3/1/10",
+   "unit": {
+    "n": 80,
+    "tot_r": 42.02,
+    "avg_r": 0.525,
+    "exits": {
+     "BE+P": 12,
+     "TARGET": 3,
+     "TARGET+P": 12,
+     "BE": 17,
+     "STOP": 32,
+     "EOD": 2,
+     "EOD+P": 2
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 1.8,
+   "net": 7969,
+   "per_month": 2145,
+   "dd": -2965,
+   "avg_win": 1120,
+   "avg_loss": -415,
+   "exits": {
+    "STOP": 21,
+    "BE": 2,
+    "TARGET+P": 8,
+    "BE+P": 3,
+    "EOD+P": 1,
+    "EOD": 3,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 18.8,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 30.5,
+   "f20": 11.9,
+   "pass_med": 8.5,
+   "cost": 488,
+   "mc": {
+    "p10": 26.8,
+    "f10": 5.3
+   },
+   "b2b": "2/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 18.24,
+    "avg_r": 0.456,
+    "exits": {
+     "STOP": 21,
+     "BE": 2,
+     "TARGET+P": 8,
+     "BE+P": 3,
+     "EOD+P": 1,
+     "EOD": 3,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "all",
+    "f": 0.5,
+    "min_r": 1.0,
+    "be": "keep"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.5 at first all >= 1.0R, BE after": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 41.2,
+   "pf": 1.97,
+   "net": 15813,
+   "per_month": 2594,
+   "dd": -3409,
+   "avg_win": 975,
+   "avg_loss": -348,
+   "exits": {
+    "BE+P": 13,
+    "TARGET": 3,
+    "TARGET+P": 14,
+    "STOP": 42,
+    "EOD+P": 3,
+    "EOD": 2,
+    "BE": 3
+   },
+   "n10": 119,
+   "p10": 21.8,
+   "f10": 6.7,
+   "n20": 109,
+   "p20": 55.0,
+   "f20": 15.6,
+   "pass_med": 12.0,
+   "cost": 421,
+   "mc": {
+    "p10": 23.4,
+    "f10": 7.3
+   },
+   "b2b": "4/1/9",
+   "unit": {
+    "n": 80,
+    "tot_r": 43.88,
+    "avg_r": 0.549,
+    "exits": {
+     "BE+P": 13,
+     "TARGET": 3,
+     "TARGET+P": 14,
+     "STOP": 42,
+     "EOD+P": 3,
+     "EOD": 2,
+     "BE": 3
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 1.77,
+   "net": 7791,
+   "per_month": 2098,
+   "dd": -3078,
+   "avg_win": 1120,
+   "avg_loss": -422,
+   "exits": {
+    "STOP": 23,
+    "TARGET+P": 8,
+    "BE+P": 3,
+    "EOD+P": 1,
+    "EOD": 3,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 18.8,
+   "f10": 7.2,
+   "n20": 59,
+   "p20": 30.5,
+   "f20": 18.6,
+   "pass_med": 8.5,
+   "cost": 488,
+   "mc": {
+    "p10": 26.3,
+    "f10": 7.6
+   },
+   "b2b": "2/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 16.24,
+    "avg_r": 0.406,
+    "exits": {
+     "STOP": 23,
+     "TARGET+P": 8,
+     "BE+P": 3,
+     "EOD+P": 1,
+     "EOD": 3,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "all",
+    "f": 0.5,
+    "min_r": 1.0,
+    "be": "after"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.33 at first all >= 1.0R, BE keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 33.8,
+   "pf": 2.7,
+   "net": 22699,
+   "per_month": 3724,
+   "dd": -3600,
+   "avg_win": 1336,
+   "avg_loss": -252,
+   "exits": {
+    "BE+P": 12,
+    "TARGET": 3,
+    "TARGET+P": 12,
+    "BE": 17,
+    "STOP": 32,
+    "EOD": 2,
+    "EOD+P": 2
+   },
+   "n10": 119,
+   "p10": 32.8,
+   "f10": 9.2,
+   "n20": 109,
+   "p20": 55.0,
+   "f20": 16.5,
+   "pass_med": 9.0,
+   "cost": 280,
+   "mc": {
+    "p10": 32.3,
+    "f10": 6.2
+   },
+   "b2b": "6/2/8",
+   "unit": {
+    "n": 80,
+    "tot_r": 49.25,
+    "avg_r": 0.616,
+    "exits": {
+     "BE+P": 12,
+     "TARGET": 3,
+     "TARGET+P": 12,
+     "BE": 17,
+     "STOP": 32,
+     "EOD": 2,
+     "EOD+P": 2
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 1.65,
+   "net": 7744,
+   "per_month": 2085,
+   "dd": -3070,
+   "avg_win": 1227,
+   "avg_loss": -495,
+   "exits": {
+    "STOP": 21,
+    "BE": 2,
+    "TARGET+P": 8,
+    "BE+P": 3,
+    "EOD+P": 1,
+    "EOD": 3,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 33.3,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 50.8,
+   "f20": 16.9,
+   "pass_med": 8.0,
+   "cost": 276,
+   "mc": {
+    "p10": 36.4,
+    "f10": 5.5
+   },
+   "b2b": "4/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 21.21,
+    "avg_r": 0.53,
+    "exits": {
+     "STOP": 21,
+     "BE": 2,
+     "TARGET+P": 8,
+     "BE+P": 3,
+     "EOD+P": 1,
+     "EOD": 3,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "all",
+    "f": 0.33,
+    "min_r": 1.0,
+    "be": "keep"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.33 at first all >= 1.0R, BE after": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 37.5,
+   "pf": 2.47,
+   "net": 21853,
+   "per_month": 3585,
+   "dd": -3600,
+   "avg_win": 1223,
+   "avg_loss": -297,
+   "exits": {
+    "BE+P": 13,
+    "TARGET": 3,
+    "TARGET+P": 14,
+    "STOP": 42,
+    "EOD+P": 3,
+    "EOD": 2,
+    "BE": 3
+   },
+   "n10": 119,
+   "p10": 41.2,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 65.1,
+   "f20": 15.6,
+   "pass_med": 8.0,
+   "cost": 223,
+   "mc": {
+    "p10": 38.5,
+    "f10": 7.7
+   },
+   "b2b": "7/1/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 51.95,
+    "avg_r": 0.649,
+    "exits": {
+     "BE+P": 13,
+     "TARGET": 3,
+     "TARGET+P": 14,
+     "STOP": 42,
+     "EOD+P": 3,
+     "EOD": 2,
+     "BE": 3
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 1.64,
+   "net": 7680,
+   "per_month": 2068,
+   "dd": -3070,
+   "avg_win": 1227,
+   "avg_loss": -498,
+   "exits": {
+    "STOP": 23,
+    "TARGET+P": 8,
+    "BE+P": 3,
+    "EOD+P": 1,
+    "EOD": 3,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 33.3,
+   "f10": 7.2,
+   "n20": 59,
+   "p20": 50.8,
+   "f20": 16.9,
+   "pass_med": 8.0,
+   "cost": 276,
+   "mc": {
+    "p10": 35.8,
+    "f10": 7.8
+   },
+   "b2b": "4/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 19.21,
+    "avg_r": 0.48,
+    "exits": {
+     "STOP": 23,
+     "TARGET+P": 8,
+     "BE+P": 3,
+     "EOD+P": 1,
+     "EOD": 3,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "all",
+    "f": 0.33,
+    "min_r": 1.0,
+    "be": "after"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.5 at first struct >= 0.5R, BE after": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 43.8,
+   "pf": 2.27,
+   "net": 18679,
+   "per_month": 3064,
+   "dd": -3572,
+   "avg_win": 953,
+   "avg_loss": -326,
+   "exits": {
+    "STOP": 39,
+    "TARGET": 2,
+    "TARGET+P": 14,
+    "BE+P": 15,
+    "EOD+P": 3,
+    "EOD": 2,
+    "BE": 5
+   },
+   "n10": 119,
+   "p10": 23.5,
+   "f10": 5.9,
+   "n20": 109,
+   "p20": 54.1,
+   "f20": 14.7,
+   "pass_med": 11.0,
+   "cost": 391,
+   "mc": {
+    "p10": 25.4,
+    "f10": 6.3
+   },
+   "b2b": "3/1/10",
+   "unit": {
+    "n": 80,
+    "tot_r": 45.55,
+    "avg_r": 0.569,
+    "exits": {
+     "STOP": 39,
+     "TARGET": 2,
+     "TARGET+P": 14,
+     "BE+P": 15,
+     "EOD+P": 3,
+     "EOD": 2,
+     "BE": 5
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 37.5,
+   "pf": 2.12,
+   "net": 10523,
+   "per_month": 2833,
+   "dd": -2729,
+   "avg_win": 1328,
+   "avg_loss": -376,
+   "exits": {
+    "STOP": 23,
+    "TARGET+P": 8,
+    "BE+P": 4,
+    "EOD+P": 1,
+    "EOD": 2,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 23.2,
+   "f10": 8.7,
+   "n20": 59,
+   "p20": 42.4,
+   "f20": 18.6,
+   "pass_med": 10.0,
+   "cost": 396,
+   "mc": {
+    "p10": 28.1,
+    "f10": 7.1
+   },
+   "b2b": "3/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 15.72,
+    "avg_r": 0.393,
+    "exits": {
+     "STOP": 23,
+     "TARGET+P": 8,
+     "BE+P": 4,
+     "EOD+P": 1,
+     "EOD": 2,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "struct",
+    "f": 0.5,
+    "min_r": 0.5,
+    "be": "after"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.5 at first struct >= 2R, BE keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 26.2,
+   "pf": 2.46,
+   "net": 21601,
+   "per_month": 3544,
+   "dd": -3375,
+   "avg_win": 1734,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 26,
+    "TARGET": 5,
+    "TARGET+P": 10,
+    "STOP": 32,
+    "BE+P": 3,
+    "EOD": 3,
+    "EOD+P": 1
+   },
+   "n10": 119,
+   "p10": 33.6,
+   "f10": 6.7,
+   "n20": 109,
+   "p20": 52.3,
+   "f20": 17.4,
+   "pass_med": 7.0,
+   "cost": 273,
+   "mc": {
+    "p10": 33.7,
+    "f10": 6.2
+   },
+   "b2b": "6/2/8",
+   "unit": {
+    "n": 80,
+    "tot_r": 52.91,
+    "avg_r": 0.661,
+    "exits": {
+     "BE": 26,
+     "TARGET": 5,
+     "TARGET+P": 10,
+     "STOP": 32,
+     "BE+P": 3,
+     "EOD": 3,
+     "EOD+P": 1
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.56,
+   "net": 6648,
+   "per_month": 1790,
+   "dd": -3242,
+   "avg_win": 1325,
+   "avg_loss": -458,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET+P": 7,
+    "TARGET": 3,
+    "EOD+P": 1,
+    "EOD": 3
+   },
+   "n10": 69,
+   "p10": 42.0,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 59.3,
+   "f20": 18.6,
+   "pass_med": 7.0,
+   "cost": 219,
+   "mc": {
+    "p10": 40.4,
+    "f10": 5.5
+   },
+   "b2b": "4/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 22.84,
+    "avg_r": 0.571,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET+P": 7,
+     "TARGET": 3,
+     "EOD+P": 1,
+     "EOD": 3
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "struct",
+    "f": 0.5,
+    "min_r": 2.0,
+    "be": "keep"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "part 0.25 at first struct >= 1R, BE keep": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 31.2,
+   "pf": 2.28,
+   "net": 18939,
+   "per_month": 3107,
+   "dd": -3905,
+   "avg_win": 1350,
+   "avg_loss": -269,
+   "exits": {
+    "BE": 20,
+    "TARGET": 3,
+    "TARGET+P": 12,
+    "STOP": 32,
+    "BE+P": 9,
+    "EOD": 2,
+    "EOD+P": 2
+   },
+   "n10": 119,
+   "p10": 41.2,
+   "f10": 9.2,
+   "n20": 109,
+   "p20": 58.7,
+   "f20": 16.5,
+   "pass_med": 7.0,
+   "cost": 223,
+   "mc": {
+    "p10": 37.9,
+    "f10": 6.2
+   },
+   "b2b": "7/3/6",
+   "unit": {
+    "n": 80,
+    "tot_r": 54.28,
+    "avg_r": 0.679,
+    "exits": {
+     "BE": 20,
+     "TARGET": 3,
+     "TARGET+P": 12,
+     "STOP": 32,
+     "BE+P": 9,
+     "EOD": 2,
+     "EOD+P": 2
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 1.67,
+   "net": 8004,
+   "per_month": 2155,
+   "dd": -3070,
+   "avg_win": 1243,
+   "avg_loss": -495,
+   "exits": {
+    "STOP": 21,
+    "BE": 3,
+    "TARGET+P": 8,
+    "EOD+P": 1,
+    "EOD": 3,
+    "BE+P": 2,
+    "TARGET": 2
+   },
+   "n10": 69,
+   "p10": 40.6,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 59.3,
+   "f20": 16.9,
+   "pass_med": 8.0,
+   "cost": 226,
+   "mc": {
+    "p10": 38.2,
+    "f10": 5.5
+   },
+   "b2b": "4/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 23.25,
+    "avg_r": 0.581,
+    "exits": {
+     "STOP": 21,
+     "BE": 3,
+     "TARGET+P": 8,
+     "EOD+P": 1,
+     "EOD": 3,
+     "BE+P": 2,
+     "TARGET": 2
+    }
+   }
+  },
+  "X": {
+   "part": {
+    "obst": "struct",
+    "f": 0.25,
+    "min_r": 1.0,
+    "be": "keep"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel loc (struct)": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 26.2,
+   "pf": 2.61,
+   "net": 26898,
+   "per_month": 4413,
+   "dd": -4044,
+   "avg_win": 2074,
+   "avg_loss": -282,
+   "exits": {
+    "BE": 26,
+    "TARGET": 18,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 51.3,
+   "f10": 10.9,
+   "n20": 109,
+   "p20": 65.1,
+   "f20": 18.3,
+   "pass_med": 5.0,
+   "cost": 179,
+   "mc": {
+    "p10": 48.4,
+    "f10": 8.4
+   },
+   "b2b": "10/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 62.45,
+    "avg_r": 0.781,
+    "exits": {
+     "BE": 26,
+     "TARGET": 18,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.71,
+   "net": 9235,
+   "per_month": 2486,
+   "dd": -3123,
+   "avg_win": 1588,
+   "avg_loss": -500,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 11,
+    "EOD": 3
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 7.2,
+   "n20": 59,
+   "p20": 55.9,
+   "f20": 22.0,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 53.2,
+    "f10": 9.3
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 23.73,
+    "avg_r": 0.593,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 11,
+     "EOD": 3
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "loc",
+    "obst": "struct"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel near (struct)": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 30.0,
+   "pf": 2.08,
+   "net": 19535,
+   "per_month": 3205,
+   "dd": -4694,
+   "avg_win": 1568,
+   "avg_loss": -323,
+   "exits": {
+    "BE": 23,
+    "TARGET": 22,
+    "STOP": 32,
+    "EOD": 3
+   },
+   "n10": 119,
+   "p10": 38.7,
+   "f10": 13.4,
+   "n20": 109,
+   "p20": 52.3,
+   "f20": 33.9,
+   "pass_med": 6.5,
+   "cost": 237,
+   "mc": {
+    "p10": 35.0,
+    "f10": 10.4
+   },
+   "b2b": "8/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 32.31,
+    "avg_r": 0.404,
+    "exits": {
+     "BE": 23,
+     "TARGET": 22,
+     "STOP": 32,
+     "EOD": 3
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.37,
+   "net": 4719,
+   "per_month": 1270,
+   "dd": -3409,
+   "avg_win": 1241,
+   "avg_loss": -487,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 11,
+    "EOD": 3
+   },
+   "n10": 69,
+   "p10": 33.3,
+   "f10": 10.1,
+   "n20": 59,
+   "p20": 39.0,
+   "f20": 27.1,
+   "pass_med": 5.0,
+   "cost": 276,
+   "mc": {
+    "p10": 39.1,
+    "f10": 10.5
+   },
+   "b2b": "3/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 17.94,
+    "avg_r": 0.449,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 11,
+     "EOD": 3
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "near",
+    "obst": "struct"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel loc (all)": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 26.2,
+   "pf": 2.53,
+   "net": 25864,
+   "per_month": 4243,
+   "dd": -4044,
+   "avg_win": 2039,
+   "avg_loss": -287,
+   "exits": {
+    "BE": 26,
+    "TARGET": 18,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 50.4,
+   "f10": 10.9,
+   "n20": 109,
+   "p20": 64.2,
+   "f20": 18.3,
+   "pass_med": 5.0,
+   "cost": 182,
+   "mc": {
+    "p10": 48.2,
+    "f10": 8.4
+   },
+   "b2b": "10/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 61.26,
+    "avg_r": 0.766,
+    "exits": {
+     "BE": 26,
+     "TARGET": 18,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.38,
+   "net": 5002,
+   "per_month": 1347,
+   "dd": -3277,
+   "avg_win": 1290,
+   "avg_loss": -502,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 11,
+    "EOD": 3
+   },
+   "n10": 69,
+   "p10": 42.0,
+   "f10": 7.2,
+   "n20": 59,
+   "p20": 44.1,
+   "f20": 22.0,
+   "pass_med": 4.0,
+   "cost": 219,
+   "mc": {
+    "p10": 50.7,
+    "f10": 9.5
+   },
+   "b2b": "3/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 20.92,
+    "avg_r": 0.523,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 11,
+     "EOD": 3
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "loc",
+    "obst": "all"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel near (all)": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 32.5,
+   "pf": 1.99,
+   "net": 19860,
+   "per_month": 3258,
+   "dd": -3621,
+   "avg_win": 1536,
+   "avg_loss": -372,
+   "exits": {
+    "BE": 21,
+    "TARGET": 24,
+    "STOP": 32,
+    "EOD": 3
+   },
+   "n10": 119,
+   "p10": 37.8,
+   "f10": 14.3,
+   "n20": 109,
+   "p20": 53.2,
+   "f20": 28.4,
+   "pass_med": 7.0,
+   "cost": 243,
+   "mc": {
+    "p10": 33.9,
+    "f10": 10.5
+   },
+   "b2b": "7/1/8",
+   "unit": {
+    "n": 80,
+    "tot_r": 31.08,
+    "avg_r": 0.389,
+    "exits": {
+     "BE": 21,
+     "TARGET": 24,
+     "STOP": 32,
+     "EOD": 3
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 40.0,
+   "pf": 1.46,
+   "net": 6152,
+   "per_month": 1656,
+   "dd": -3277,
+   "avg_win": 1220,
+   "avg_loss": -557,
+   "exits": {
+    "STOP": 21,
+    "BE": 3,
+    "TARGET": 13,
+    "EOD": 3
+   },
+   "n10": 69,
+   "p10": 37.7,
+   "f10": 10.1,
+   "n20": 59,
+   "p20": 50.8,
+   "f20": 25.4,
+   "pass_med": 6.5,
+   "cost": 244,
+   "mc": {
+    "p10": 42.6,
+    "f10": 10.1
+   },
+   "b2b": "4/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 19.85,
+    "avg_r": 0.496,
+    "exits": {
+     "STOP": 21,
+     "BE": 3,
+     "TARGET": 13,
+     "EOD": 3
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "near",
+    "obst": "all"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel journey >= 0.75 VIX moves": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 23.8,
+   "pf": 2.37,
+   "net": 22758,
+   "per_month": 3734,
+   "dd": -3981,
+   "avg_win": 2071,
+   "avg_loss": -272,
+   "exits": {
+    "BE": 28,
+    "TARGET": 16,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 47.1,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 63.3,
+   "f20": 19.3,
+   "pass_med": 6.0,
+   "cost": 195,
+   "mc": {
+    "p10": 43.2,
+    "f10": 7.7
+   },
+   "b2b": "9/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 54.95,
+    "avg_r": 0.687,
+    "exits": {
+     "BE": 28,
+     "TARGET": 16,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.47,
+   "net": 6334,
+   "per_month": 1705,
+   "dd": -3124,
+   "avg_win": 1410,
+   "avg_loss": -515,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 11,
+    "EOD": 3
+   },
+   "n10": 69,
+   "p10": 40.6,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 49.2,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 226,
+   "mc": {
+    "p10": 51.1,
+    "f10": 5.8
+   },
+   "b2b": "3/1/6",
+   "unit": {
+    "n": 40,
+    "tot_r": 25.25,
+    "avg_r": 0.631,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 11,
+     "EOD": 3
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "journey",
+    "u": 0.75,
+    "obst": "struct"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel journey >= 1.0 VIX moves": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 23.8,
+   "pf": 3.07,
+   "net": 31678,
+   "per_month": 5197,
+   "dd": -3981,
+   "avg_win": 2473,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 28,
+    "TARGET": 16,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 74.3,
+   "f20": 18.3,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.9,
+    "f10": 7.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.5,
+    "avg_r": 0.794,
+    "exits": {
+     "BE": 28,
+     "TARGET": 16,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.76,
+   "net": 9821,
+   "per_month": 2644,
+   "dd": -3124,
+   "avg_win": 1625,
+   "avg_loss": -497,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 43.5,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 52.5,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 211,
+   "mc": {
+    "p10": 52.0,
+    "f10": 5.8
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 25.98,
+    "avg_r": 0.65,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "journey",
+    "u": 1.0,
+    "obst": "struct"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel journey >= 1.25 VIX moves": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 2.94,
+   "net": 30457,
+   "per_month": 4997,
+   "dd": -3980,
+   "avg_win": 2565,
+   "avg_loss": -253,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.2,
+    "f10": 6.3
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 61.81,
+    "avg_r": 0.773,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.84,
+   "net": 10308,
+   "per_month": 2775,
+   "dd": -3122,
+   "avg_win": 1612,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 49.3,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 5.0,
+   "cost": 186,
+   "mc": {
+    "p10": 53.0,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "journey",
+    "u": 1.25,
+    "obst": "struct"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel journey >= 1.5 VIX moves": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 2.94,
+   "net": 30457,
+   "per_month": 4997,
+   "dd": -3980,
+   "avg_win": 2565,
+   "avg_loss": -253,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.2,
+    "f10": 6.3
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 61.81,
+    "avg_r": 0.773,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10481,
+   "per_month": 2822,
+   "dd": -3122,
+   "avg_win": 1625,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "journey",
+    "u": 1.5,
+    "obst": "struct"
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel deadline c=1.0": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 23.8,
+   "pf": 2.46,
+   "net": 25694,
+   "per_month": 4215,
+   "dd": -4866,
+   "avg_win": 2279,
+   "avg_loss": -289,
+   "exits": {
+    "BE": 28,
+    "TARGET": 18,
+    "STOP": 32,
+    "EOD": 2
+   },
+   "n10": 119,
+   "p10": 51.3,
+   "f10": 6.7,
+   "n20": 109,
+   "p20": 65.1,
+   "f20": 17.4,
+   "pass_med": 4.5,
+   "cost": 179,
+   "mc": {
+    "p10": 48.5,
+    "f10": 8.0
+   },
+   "b2b": "10/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 57.08,
+    "avg_r": 0.713,
+    "exits": {
+     "BE": 28,
+     "TARGET": 18,
+     "STOP": 32,
+     "EOD": 2
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 37.5,
+   "pf": 1.79,
+   "net": 10208,
+   "per_month": 2748,
+   "dd": -3020,
+   "avg_win": 1541,
+   "avg_loss": -516,
+   "exits": {
+    "STOP": 21,
+    "BE": 4,
+    "TARGET": 13,
+    "EOD": 2
+   },
+   "n10": 69,
+   "p10": 43.5,
+   "f10": 4.3,
+   "n20": 59,
+   "p20": 49.2,
+   "f20": 11.9,
+   "pass_med": 4.0,
+   "cost": 211,
+   "mc": {
+    "p10": 52.3,
+    "f10": 5.3
+   },
+   "b2b": "4/2/4",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.75,
+    "avg_r": 0.669,
+    "exits": {
+     "STOP": 21,
+     "BE": 4,
+     "TARGET": 13,
+     "EOD": 2
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "deadline",
+    "c": 1.0
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel deadline c=1.5": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 2.93,
+   "net": 30700,
+   "per_month": 5037,
+   "dd": -3985,
+   "avg_win": 2588,
+   "avg_loss": -256,
+   "exits": {
+    "BE": 29,
+    "TARGET": 17,
+    "STOP": 32,
+    "EOD": 2
+   },
+   "n10": 119,
+   "p10": 58.0,
+   "f10": 7.6,
+   "n20": 109,
+   "p20": 78.9,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 158,
+   "mc": {
+    "p10": 53.9,
+    "f10": 7.0
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 62.6,
+    "avg_r": 0.782,
+    "exits": {
+     "BE": 29,
+     "TARGET": 17,
+     "STOP": 32,
+     "EOD": 2
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.81,
+   "net": 10120,
+   "per_month": 2725,
+   "dd": -3124,
+   "avg_win": 1613,
+   "avg_loss": -480,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "deadline",
+    "c": 1.5
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel deadline c=2.0": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31383,
+   "per_month": 5149,
+   "dd": -3651,
+   "avg_win": 2607,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 16,
+    "STOP": 32,
+    "EOD": 3
+   },
+   "n10": 119,
+   "p10": 58.8,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 78.9,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 156,
+   "mc": {
+    "p10": 54.0,
+    "f10": 6.4
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 64.62,
+    "avg_r": 0.808,
+    "exits": {
+     "BE": 29,
+     "TARGET": 16,
+     "STOP": 32,
+     "EOD": 3
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.84,
+   "net": 10290,
+   "per_month": 2770,
+   "dd": -3122,
+   "avg_win": 1606,
+   "avg_loss": -469,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.5,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "deadline",
+    "c": 2.0
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ },
+ "tsel deadline c=2.5": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85,
+   "win": 22.5,
+   "pf": 3.02,
+   "net": 31342,
+   "per_month": 5142,
+   "dd": -3980,
+   "avg_win": 2605,
+   "avg_loss": -251,
+   "exits": {
+    "BE": 29,
+    "TARGET": 15,
+    "STOP": 32,
+    "EOD": 4
+   },
+   "n10": 119,
+   "p10": 52.9,
+   "f10": 8.4,
+   "n20": 109,
+   "p20": 75.2,
+   "f20": 17.4,
+   "pass_med": 5.0,
+   "cost": 174,
+   "mc": {
+    "p10": 50.5,
+    "f10": 6.2
+   },
+   "b2b": "11/2/7",
+   "unit": {
+    "n": 80,
+    "tot_r": 63.3,
+    "avg_r": 0.791,
+    "exits": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    }
+   }
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81,
+   "win": 35.0,
+   "pf": 1.85,
+   "net": 10463,
+   "per_month": 2817,
+   "dd": -3122,
+   "avg_win": 1623,
+   "avg_loss": -472,
+   "exits": {
+    "STOP": 21,
+    "BE": 5,
+    "TARGET": 10,
+    "EOD": 4
+   },
+   "n10": 69,
+   "p10": 50.7,
+   "f10": 2.9,
+   "n20": 59,
+   "p20": 61.0,
+   "f20": 16.9,
+   "pass_med": 4.0,
+   "cost": 181,
+   "mc": {
+    "p10": 55.4,
+    "f10": 5.5
+   },
+   "b2b": "5/1/5",
+   "unit": {
+    "n": 40,
+    "tot_r": 26.96,
+    "avg_r": 0.674,
+    "exits": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    }
+   }
+  },
+  "X": {
+   "tsel": {
+    "mode": "deadline",
+    "c": 2.5
+   }
+  },
+  "pre_events": {
+   "-|cancel|-|cancelled": 2,
+   "keep|-|-|under 1.5R": 1,
+   "keep|-|-|no fill": 2,
+   "keep|cancel|-|cancelled": 1
+  },
+  "n_pre": {
+   "sess": 1,
+   "tap": 0,
+   "conf": 0
+  }
+ }
+}

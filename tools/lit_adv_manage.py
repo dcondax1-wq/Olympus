@@ -682,9 +682,220 @@ def grid(only=None):
     return res
 
 
+# ================================================================================================ diagnostics
+def wilson(k, n, zc=1.96):
+    if not n:
+        return (None, None)
+    ph = k / n
+    den = 1 + zc * zc / n
+    c = (ph + zc * zc / (2 * n)) / den
+    h = zc * math.sqrt(ph * (1 - ph) / n + zc * zc / (4 * n * n)) / den
+    return (round(100 * (c - h), 1), round(100 * (c + h), 1))
+
+
+def live_qty(U):
+    """The micros the live sizing gave each trade on the back-to-back path (H1 and H2), keyed by entry_t."""
+    q = {}
+    for s in ("H1", "H2"):
+        T, _ = b2b(U, s)
+        for t in T:
+            q[t["entry_t"]] = t["qty"]
+    return q
+
+
+def walk(t, horizon_flat=True):
+    """The market path after a live fill, ignoring every exit, to 15:55: first minute of each event (None = not by 15:55)."""
+    cx = ctx(); B = cx.B1 if t["fill_secs"] == 60 else cx.B5
+    d = t["dir"]
+    hi_d, lo_d, c_d, o_d = B.dirs(d)
+    k0 = t["fill_k"]
+    e = t["entry_px"] * d; st = t["stop_px"] * d; tg = e + t["tgt"]; r = t["risk"]
+    ob = t["obst1"][0][0] if t["obst1"] else None
+    ev = {"stop": None, "target": None, "r1": None, "obst": None, "back_after_1r": None, "tgt_after_stop": None}
+    k = k0
+    day = B.day[k0]
+    while k < B.n and B.day[k] == day and B.mod[k] < LIVE["flat_mod"] and B.mod[k] < 1080:
+        m = (B.t[k] - B.t[k0]) / 60.0
+        if ev["stop"] is None and lo_d[k] <= st:
+            ev["stop"] = m
+        if hi_d[k] >= tg:
+            if ev["target"] is None:
+                ev["target"] = m
+            if ev["stop"] is not None and ev["tgt_after_stop"] is None:
+                ev["tgt_after_stop"] = m
+        if ev["r1"] is None and hi_d[k] >= e + r:
+            ev["r1"] = m
+        elif ev["r1"] is not None and ev["back_after_1r"] is None and lo_d[k] <= e and m > ev["r1"]:
+            ev["back_after_1r"] = m
+        if ob is not None and ev["obst"] is None and hi_d[k] >= e + ob * r:
+            ev["obst"] = m
+        k += 1
+    return ev
+
+
+def diag():
+    out = {}
+    L = unit()
+    N = unit({"be": {"r": None}})
+    qmap = live_qty(L)
+    nb = {t["entry_t"]: t for t in N}
+    # ---- ch8: what breakeven changes (paired, same trades)
+    rows = []
+    for t in L:
+        y = nb.get(t["entry_t"])
+        if y is None:
+            continue
+        q = qmap.get(t["entry_t"], 1)
+        rows.append({"day": t["day"], "half": "H1" if t["day"] <= "2026-06-30" else "H2", "exit": t["exit"], "exit_nobe": y["exit"],
+                     "z_r": round(t["pts"] / t["risk"], 3), "y_r": round(y["pts"] / y["risk"], 3), "b_r": round(t["tgt"] / t["risk"], 2),
+                     "q": q, "z_usd": round(t["pts"] * PV * q - COMM * q, 2), "y_usd": round(y["pts"] * PV * q - COMM * q, 2)})
+    be = {}
+    for h in ("H1", "H2", "2026"):
+        R = [r for r in rows if (h == "2026" or r["half"] == h)]
+        ch = [r for r in R if r["exit"] == "BE"]
+        rec = [r for r in ch if r["exit_nobe"] == "TARGET"]
+        avo = [r for r in ch if r["exit_nobe"] == "STOP"]
+        mid = [r for r in ch if r["exit_nobe"] not in ("TARGET", "STOP")]
+        zbar = float(np.mean([r["z_r"] for r in ch])) if ch else 0.0
+        bbar = float(np.mean([r["b_r"] for r in ch])) if ch else 0.0
+        be[h] = {"trades": len(R), "reach_1r": sum(1 for r in R if r["exit"] == "BE" or r["exit"] == "TARGET" or r["z_r"] > 0.9),
+                 "changed": len(ch), "recoveries": len(rec), "losses_avoided": len(avo), "other": len(mid),
+                 "q_pct": round(100 * len(rec) / len(ch), 1) if ch else None, "q_ci95": wilson(len(rec), len(ch)),
+                 "recovery_usd_removed": round(sum(r["y_usd"] - r["z_usd"] for r in rec)),
+                 "loss_usd_avoided": round(sum(r["z_usd"] - r["y_usd"] for r in avo)),
+                 "other_usd": round(sum(r["z_usd"] - r["y_usd"] for r in mid)),
+                 "net_usd_be_vs_none": round(sum(r["z_usd"] - r["y_usd"] for r in ch)),
+                 "net_r_be_vs_none": round(sum(r["z_r"] - r["y_r"] for r in ch), 2),
+                 "z_mean_r": round(zbar, 3), "b_mean_r": round(bbar, 2),
+                 "q_threshold_pct": round(100 * (zbar + 1) / (bbar + 1), 1) if ch else None,
+                 "changed_list": [{k: r[k] for k in ("day", "exit_nobe", "z_r", "y_r", "q", "z_usd", "y_usd")} for r in ch]}
+    out["be_vs_none"] = be
+    # ---- ch9 / ch10: first passage after the fill (live trades, every exit ignored, to 15:55)
+    fp = {}
+    for h in ("H1", "H2", "2026"):
+        TT = [t for t in L if t["on1"] and (h == "2026" or (t["day"] <= "2026-06-30") == (h == "H1"))]
+        E = [(t, walk(t)) for t in TT]
+        n = len(E)
+        cum = {}
+        for cut in (30, 60, 120, 240, 10 ** 9):
+            tf = sum(1 for _, e in E if e["target"] is not None and e["target"] <= cut and (e["stop"] is None or e["target"] < e["stop"]))
+            sf = sum(1 for _, e in E if e["stop"] is not None and e["stop"] <= cut and (e["target"] is None or e["stop"] <= e["target"]))
+            cum["eod" if cut > 10 ** 8 else f"{cut}m"] = {"target_first": round(100 * tf / n, 1), "stop_first": round(100 * sf / n, 1),
+                                                          "open": round(100 * (n - tf - sf) / n, 1)}
+        tas = sum(1 for _, e in E if e["tgt_after_stop"] is not None)
+        # obstacle (first struct obstacle) reached before the stop: then target-before-stop?
+        ob = [(t, e) for t, e in E if t["obst1"] and e["obst"] is not None and (e["stop"] is None or e["obst"] < e["stop"])]
+        p_ok = sum(1 for t, e in ob if e["target"] is not None and (e["stop"] is None or e["target"] < e["stop"]))
+        a_ = [t["obst1"][0][0] for t, _ in ob]; b_ = [t["tgt"] / t["risk"] for t, _ in ob]
+        # 1R reached, back to entry, then target (the BE paths)
+        r1 = [(t, e) for t, e in E if e["r1"] is not None and (e["stop"] is None or e["r1"] < e["stop"])]
+        back = [(t, e) for t, e in r1 if e["back_after_1r"] is not None and (e["target"] is None or e["back_after_1r"] < e["target"])]
+        back_tgt = sum(1 for t, e in back if e["target"] is not None and (e["stop"] is None or e["target"] < e["stop"]))
+        fp[h] = {"n": n, "cumulative": cum, "target_seen_after_stop": tas,
+                 "obst_first": {"n": len(ob), "then_target_before_stop": p_ok, "p_pct": round(100 * p_ok / len(ob), 1) if ob else None,
+                                "p_ci95": wilson(p_ok, len(ob)), "a_mean_r": round(float(np.mean(a_)), 2) if a_ else None,
+                                "b_mean_r": round(float(np.mean(b_)), 2) if b_ else None,
+                                "partial_pays_if_p_below_pct": round(100 * float(np.mean([(a + 1) / (b + 1) for a, b in zip(a_, b_)])), 1) if a_ else None},
+                 "r1_first": len(r1), "back_to_entry_after_1r": len(back), "back_then_target": back_tgt,
+                 "back_then_target_ci95": wilson(back_tgt, len(back)),
+                 "obst_r_median": round(float(np.median([t["obst1"][0][0] for t in TT if t["obst1"]])), 2),
+                 "obst_kinds": dict(collections.Counter(t["obst1"][0][1] for t in TT if t["obst1"])),
+                 "no_obst": sum(1 for t in TT if not t["obst1"])}
+    out["first_passage"] = fp
+    # ---- ch6: the objective before the fill (live run)
+    pre = collections.Counter()
+    for t in L:
+        for ph in ("sess", "tap", "conf"):
+            if t["pre"][ph]:
+                pre[f"filled, {ph} {t['pre'][ph]}, exit {t['exit']}"] += 1
+    for e in _U[json.dumps({}, sort_keys=True)][1]:
+        pre[f"{e['sess'] or '-'}|{e['tap'] or '-'}|{e['conf'] or '-'}|{e.get('result')}"] += 1
+    out["pre_fill_live"] = dict(pre)
+    out["pre_sess_trades"] = [{"day": t["day"], "exit": t["exit"], "r": round(t["pts"] / t["risk"], 2)} for t in L if t["pre"]["sess"]]
+    out["pre_conf_trades"] = [{"day": t["day"], "exit": t["exit"], "r": round(t["pts"] / t["risk"], 2)} for t in L if t["pre"]["conf"]]
+    json.dump(out, open(OUT_DIAG, "w"), indent=1, default=float)
+    print(json.dumps({k: (v if k != "be_vs_none" else {h: {kk: vv for kk, vv in x.items() if kk != "changed_list"} for h, x in v.items()})
+                      for k, v in out.items()}, indent=1, default=float))
+    return out
+
+
+# ================================================================================================ save
+Q = ("LIT Advanced Decisions Report ch6/8/9/10 (owner 2026-10-18): does breakeven remove more recoveries than losses, do partials "
+     "at the first opposition pay, should the target follow the entry location / journey / deadline, and what to do when the "
+     "objective trades before the fill? Live two_week sizing, picked on 2026 H1, checked on H2.")
+SAVES = [   # run id, variant name
+    ("lit_adv_base", "live"),
+    ("lit_adv_pre_sess_skip", "pre_sess skip"), ("lit_adv_pre_sess_reval_vix15", "pre_sess reval:vix15"),
+    ("lit_adv_pre_sess_reval_pool", "pre_sess reval:pool"), ("lit_adv_pre_tap_keep", "pre_tap keep"),
+    ("lit_adv_pre_tap_reval_vix15", "pre_tap reval:vix15"), ("lit_adv_pre_conf_cancel", "pre_conf cancel"),
+    ("lit_adv_pre_conf_reval_vix15", "pre_conf reval:vix15"),
+    ("lit_adv_no_be", "no BE"), ("lit_adv_be_1p5r", "BE at 1.5R"), ("lit_adv_be_2r", "BE at 2.0R"),
+    ("lit_adv_be_costs", "BE at 1R to entry + costs"), ("lit_adv_be_sw1", "BE at 1R + sw1"), ("lit_adv_be_sw5", "BE at 1R + sw5"),
+    ("lit_adv_be_left", "BE at 1R + left"), ("lit_adv_be_pend_ob50", "BE at 1R, not while ob50 pending"),
+    ("lit_adv_be_pend_fvg1", "BE at 1R, not while fvg1 pending"),
+    ("lit_adv_part_struct_half_be_after", "part 0.5 at first struct >= 1.0R, BE after"),
+    ("lit_adv_part_struct_half_be_keep", "part 0.5 at first struct >= 1.0R, BE keep"),
+    ("lit_adv_part_all_third_be_keep", "part 0.33 at first all >= 1.0R, BE keep"),
+    ("lit_adv_tsel_loc", "tsel loc (struct)"), ("lit_adv_tsel_journey_1p25", "tsel journey >= 1.25 VIX moves"),
+    ("lit_adv_tsel_deadline_2", "tsel deadline c=2.0"),
+]
+
+
+def verdict_of(o, base):
+    up = lambda s, k: (o[s][k] or 0) > (base[s][k] or 0) + 1e-9
+    dn = lambda s, k: (o[s][k] or 0) < (base[s][k] or 0) - 1e-9
+    if all(o[s]["p10"] == base[s]["p10"] and o[s]["net"] == base[s]["net"] for s in ("H1", "H2")):
+        return "info", "no change on the live trades"
+    both_p = up("H1", "p10") and up("H2", "p10")
+    both_n = up("H1", "net") and up("H2", "net")
+    if both_p and both_n:
+        return "promising", "better 2-week pass rate and more money in both halves"
+    if (up("H1", "p10") or up("H1", "net")) and not (up("H2", "p10") or up("H2", "net")):
+        return "rejected", "H1 only"
+    if (up("H2", "p10") or up("H2", "net")) and not (up("H1", "p10") or up("H1", "net")):
+        return "rejected", "H2 only"
+    if dn("H1", "p10") and dn("H2", "p10"):
+        return "rejected", "fewer 2-week passes in both halves"
+    return "rejected", "mixed: not better in both halves"
+
+
+def save(only=None):
+    from tools import runlib as rl
+    res = _load()
+    base = res["live"]
+    V = variants()
+    for rid, nm in SAVES:
+        if only and rid not in only:
+            continue
+        X = V[nm]
+        U = unit(X)
+        o = res.get(nm) or score(U)
+        T = []
+        for sp in ("H1", "H2"):
+            T += b2b(U, sp)[0]
+        for t in T:
+            t["risk_pts"] = t["risk"]; t["r"] = round(t["pnl"] / t["risk_usd"], 3) if t["risk_usd"] else 0.0
+        S = rl.score(T, S26)
+        st, why = verdict_of(o, base) if nm != "live" else ("info", "reference: LIT live with the live two_week sizing")
+        h = lambda s: (f"n={o[s]['n']} {o[s]['tpw']}/wk win {o[s]['win']}% PF {o[s]['pf']} net {o[s]['net']:+,} (${o[s]['per_month']:,}/mo) "
+                       f"DD {o[s]['dd']:,}; 2-week pass/fail {o[s]['p10']}/{o[s]['f10']} (Monte Carlo {o[s]['mc']['p10']}/{o[s]['mc']['f10']}), "
+                       f"1 month {o[s]['p20']}/{o[s]['f20']}, unit R {o[s]['unit']['tot_r']}")
+        rl.save(rid, nm, "other", Q, params={**LIVE, **X_of(X)}, sizing={"mode": "two_week", **CFG}, trades=T, scored=S, status=st,
+                verdict=f"{why}. 2026 H1 (pick) {h('H1')}; 2026 H2 (check) {h('H2')}. 2021-25: no 1m bars, not tested.",
+                notes="tools/lit_adv_manage.py (wraps engine/lit.py; options off == the live unit trades == run lit_live). Sizing: the live "
+                      "lit_sizing mode two_week (config C). Stored trades = the back-to-back eval path per half (a new eval after a pass, "
+                      "a fail or 10 sessions); the eval columns in the verdict are fresh evals started on every session.",
+                writeup="lit-adv-management", tags=["lit", "lit_adv"])
+        print("saved", rid, st, why, flush=True)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     if cmd == "check":
         check()
     elif cmd == "grid":
         grid(sys.argv[2:] or None)
+    elif cmd == "diag":
+        diag()
+    elif cmd == "save":
+        save(sys.argv[2:] or None)

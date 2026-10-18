@@ -1652,6 +1652,15 @@ function tcMount(box, t, opts = {}) {
     .then((rec) => { if (box.isConnected) TC.mount(box, rec, opts); })
     .catch((e) => { console.warn('trade chart', e); if (box.isConnected) box.innerHTML = '<div class="note">The chart could not load (offline?). Pull to refresh and try again.</div>'; });
 }
+// a cloud paper-ledger row as a trade row (prices + entry time, so its chart can be drawn from the recent bars)
+const paperTrade = (v) => ({ day: v.day, entry_t: v.entry_t || 0, time: v.entry, side: v.side, r: v.R, pnl: v.usd, qty: v.qty, half: v.mult > 0 && v.mult < 1, trigger: v.trigger, exit: v.exit, grade: v.grade, taken: v.taken,
+  risk_pts: v.risk_pts ?? null, risk_usd: null, entry: v.entry_px ?? null, stop: v.stop_px ?? null, target: v.target_px ?? null, exit_price: v.exit_px ?? null, exit_t: v.exit_ts || null });
+// today's paper trade (Day plan, Levels): the newest ledger row of the trading day
+function todayTradeCard(day) {
+  const v = (LV().ledger || []).find(x => x.day === day && x.entry_t);
+  const t = v && paperTrade(v);
+  return t && tcLive(t) ? { t, html: `<div class="card"><div class="card-h"><h3>Today’s trade · ${esc(t.side)} ${t.entry_t ? et(t.entry_t).hm + ' ET' : ''}</h3><span class="meta">${t.exit ? esc(t.exit) + ' · ' + susd(t.pnl) : 'open · paper'}</span></div><div id="tdTC"></div></div>` } : null;
+}
 // the chart on its own, in a wide sheet (the Chart button on a trade row)
 function openChart(t) {
   const w = sheet(`<span class="side-i ${t.side === 'LONG' ? 'L' : 'S'}">${icon(t.side === 'LONG' ? 'long' : 'short')}</span>
@@ -1904,7 +1913,7 @@ const lkPhase = (C) => { if (C.closed) return 'Market closed'; const m = et(C.no
 VIEWS.day = (el) => {
   const C = lkCtx();
   if (!C) { el.innerHTML = head('Today · LIT day', 'Day plan', '') + lkWait(); loadLK(); return; }
-  const CK = LK.clockData(C);
+  const CK = LK.clockData(C), TT = todayTradeCard(C.day);
   el.innerHTML = head(`Today · LIT day · ${esc(fDate(C.day))}`, lkPhase(C), 'The LIT trading day from the 18:00 open to the 17:00 close: the session boxes LIT takes its levels from, the 02:00–15:30 entry window, USD news and the bot’s trade.')
     + howto('day', `<p>The <b>day clock</b> runs from 18:00 ET (top) clockwise to the 17:00 close; the dark wedge before the top is the daily halt.</p>
       <ul><li><b>Outer ring</b>: the session boxes (Asia violet, Frankfurt / London cyan, NY amber; the premarket and cash session are thin bands). Their highs and lows become LIT levels; a dim box had both sides taken.</li>
@@ -1914,19 +1923,23 @@ VIEWS.day = (el) => {
     + `<div class="card fx-card"><div class="card-h"><h3>Day clock</h3><div><span class="meta">ET · 18:00 → 17:00</span>${fxSeg('day-clock')}</div></div>${fxBox('day-clock', 'dayclock')}</div>
     <div class="grid g2"><div class="card"><div class="card-h"><h3>What happens next</h3><span class="meta">${esc(C.day)}</span></div>${LK.planHTML(C)}</div>
       <div class="card"><div class="card-h"><h3>Before the session</h3><span class="meta">checklist</span></div>${LK.readyHTML(C)}</div></div>
-    <div class="card"><div class="card-h"><h3>This week</h3><button class="chipbtn" type="button" data-go="news">${icon('news')}<span>News</span></button></div>${LK.weekHTML(C)}</div>`;
+    <div class="card"><div class="card-h"><h3>This week</h3><button class="chipbtn" type="button" data-go="news">${icon('news')}<span>News</span></button></div>${LK.weekHTML(C)}</div>`
+    + (TT ? TT.html : '');
+  if (TT) tcMount($('#tdTC'), TT.t);
   fxFill('day-clock', 'dayclock', CK, { onPick: lkPick }, (fb) => { fb.innerHTML = LK.clockSVG(C); });
 };
 VIEWS.levels = (el) => {
   const C = lkCtx();
   if (!C) { el.innerHTML = head('Today · LIT levels', 'Levels', '') + lkWait(); loadLK(); return; }
-  const RD = LK.railData(C), R = LK.rail(C), L = LK.levels(C).filter(r => !r.target), nTaken = L.filter(r => r.taken).length;
+  const RD = LK.railData(C), R = LK.rail(C), L = LK.levels(C).filter(r => !r.target), nTaken = L.filter(r => r.taken).length, TT = todayTradeCard(C.day);
   el.innerHTML = head(`Today · LIT levels · NQ ${num(C.price)}`, esc(R.why[0].toUpperCase() + R.why.slice(1)), `${plural(L.length, 'level')} today, ${nTaken} taken. LIT waits for one of them to be swept by half an ATR or more, then for inducement, displacement and a 5-minute CISD.`)
     + howto('levels', `<p>The <b>setup tracker</b> is where the bot is in a LIT setup: levels marked → sweep → inducement → displacement → 5m CISD (these three are confirmed together on one 5-minute close) → a limit order at the CISD level for 30 minutes → after the limit is touched, a 1-minute CISD → in the trade → done (1 trade a day).</p>
       <p>The <b>levels board</b> lists every level LIT watches today: session highs and lows, PDH/PDL, weekly and monthly highs/lows, gaps and equal highs/lows, with the distance from the price in points and in $ for one micro (MNQ, $2 a point). “Sweep ≥” is how far price must run past it to count (0.5 × the 5-minute ATR). Struck-through levels were taken already. The VIX band rows are the target the bot aims for (the 18:00 open ± one VIX day move).</p>`)
     + `<div class="card fx-card"><div class="card-h"><h3>Setup tracker</h3><div>${fxSeg('levels-rail')}</div></div>${fxBox('levels-rail', 'pipeline')}<div style="margin-top:14px">${LK.railHTML(C)}</div></div>
+    ${TT ? TT.html : ''}
     <div class="card"><div class="card-h"><h3>Levels board</h3><span class="meta">pts · $ per MNQ</span></div>${LK.levelsHTML(C, { max: 18 })}</div>
     <div class="card fx-card"><div class="card-h"><h3>Liquidity map</h3><div><span class="meta">3D ladder of the untaken levels</span>${fxSeg('levels-liqmap')}</div></div>${fxBox('levels-liqmap', 'liqmap')}</div>`;
+  if (TT) tcMount($('#tdTC'), TT.t);
   if (!fxFill('levels-rail', 'pipeline', RD, {}, () => { })) { const b = $('#fx_levels-rail'); if (b) b.style.display = 'none'; }      // 2D: the step rail below says it all
   const LQ = { price: C.price, pools: L.filter(r => !r.taken && ok(r.dist)).map(r => ({ price: r.price, side: r.side, label: r.label.split(' · ')[0], strength: r.strength })), bars: (LV().bars || []).slice(-40), position: LV().position || null };
   fxFill('levels-liqmap', 'liqmap', LQ, {}, (fb) => liqFb(fb, LQ));
@@ -2018,8 +2031,7 @@ VIEWS.trades = (el) => {
   const paper = (LV().ledger || []);
   const years = [...new Set((D.trades || []).map(t => t.day.slice(0, 4)))].sort().reverse();
   if (TS.year !== 'all' && !years.includes(TS.year)) TS.year = years[0] || 'all';
-  let rows = TS.src === 'paper' ? paper.map(v => ({ day: v.day, entry_t: v.entry_t || 0, time: v.entry, side: v.side, r: v.R, pnl: v.usd, qty: v.qty, half: v.mult > 0 && v.mult < 1, trigger: v.trigger, exit: v.exit, grade: v.grade, taken: v.taken, risk_pts: v.risk_pts ?? null, risk_usd: null,
-        entry: v.entry_px ?? null, stop: v.stop_px ?? null, target: v.target_px ?? null, exit_price: v.exit_px ?? null, exit_t: v.exit_ts || null }))
+  let rows = TS.src === 'paper' ? paper.map(paperTrade)
     : (D.trades || []).filter(t => TS.year === 'all' || t.day.startsWith(TS.year));
   const all = rows;
   rows = rows.filter(t => {
@@ -2112,6 +2124,7 @@ function periodCard(name, tag, p) {
       <div class="ev"><span>Eval within 1 month</span><div class="pf"><b class="up">${pct(m1.pass_pct)}</b><i>pass</i><b class="dn">${pct(m1.fail_pct)}</b><i>fail</i></div><div class="m2"><i class="p" style="width:${m1.pass_pct || 0}%"></i><i class="f" style="width:${m1.fail_pct || 0}%"></i></div></div>
       <div class="ev"><span>Back-to-back evals</span><div class="pf"><b class="up">${bb.passed ?? '—'}</b><i>passed</i><b class="dn">${bb.failed ?? '—'}</b><i>failed</i></div>${med != null ? `<div class="small mut">median ${med} sessions to pass · ${slow} of ${passes.length} took over 3 weeks</div>` : ''}</div></div></div>`;
 }
+let RES_TC = [];
 VIEWS.results = (el) => resultsView(el, D.results, false);
 VIEWS.oldresults = (el) => resultsView(el, D.archive?.results, true);
 function resultsView(el, R, arch) {
@@ -2139,6 +2152,9 @@ function resultsView(el, R, arch) {
     ${fxOn() ? `<div class="card fx-card"><div class="card-h"><h3>Month city · net P&amp;L of every month</h3><span class="meta">towers up = profit, down = loss · drag · tap a tower</span></div><div class="fx3d city" id="rsCity"></div></div>` : ''}
     <div class="card"><div class="card-h"><h3>Equity</h3>${segHTML('rsEq', [['2026', '2026'], ['all', '5 years']], mode, 'sm')}</div><div id="rsEqC"></div></div>
     <div class="card"><div class="card-h"><h3>Net by month</h3><span class="meta">tap a bar</span></div><div id="rsMo"></div></div>
+    ${!arch ? (() => { const T = (D.trades || []).filter(t => t.chart).sort((a, b) => b.pnl - a.pnl); if (!T.length) return '';
+      RES_TC = [...T.slice(0, 3), ...T.slice(-3).reverse()];
+      return `<div class="card"><div class="card-h"><h3>Biggest wins and losses · on the chart</h3><span class="meta">tap one for its chart</span></div><div class="tlist" id="rsTc">${RES_TC.map(t => tradeRow(t)).join('')}</div></div>`; })() : ''}
     <div class="card"><div class="card-h"><h3>By year</h3>${segHTML('rsYr', [['money', 'Money'], ['evals', 'Trades & evals']], store.get('rsYr', 'money'), 'sm')}</div><div class="tw" id="rsYrT"></div>
       <p class="card-d" style="margin:10px 0 0">Judged on 2026 and on 2021-25. Eval columns: pass % / fail % of MFFU evals started in that year.</p></div>
     <div class="card"><div class="card-h"><h3>Back-to-back MFFU evals · ${lit ? 'since 2021-11 (2026 judged)' : '5 years'}</h3><span class="meta">a new eval starts the day after each one ends</span></div>
@@ -2149,6 +2165,8 @@ function resultsView(el, R, arch) {
   drawEq();
   fx3d('results-city', $('#rsCity'), 'city', R.months || {});
   onSeg('rsEq', (v) => { store.set('resEq', v); drawEq(); });
+  $$('#rsTc .trade').forEach((b, i) => { b.dataset.k = i; });
+  $('#rsTc')?.addEventListener('click', (e) => { const b = e.target.closest('.trade'); if (!b) return; const t = RES_TC[+b.dataset.k]; if (e.target.closest('[data-chart]')) openChart(t); else openSheet(t); });
   barChart($('#rsMo'), Object.entries(R.months || {}).map(([k, v]) => ({ x: k.slice(2), y: v.net, tip: `<b>${k}</b><span>${susd(v.net)}</span><span>${v.trades} trades · ${v.wins} wins</span>` })), { h: 200 });
   const drawYr = () => {
     const money = store.get('rsYr', 'money') === 'money', ev = (e, k) => `${pct(e?.[k]?.pass_pct)} / <span class="dn">${pct(e?.[k]?.fail_pct)}</span>`;
@@ -2193,6 +2211,7 @@ VIEWS.replays = (el) => {
     + howto('replays', `<p>Pick a trade day and press <b>Play</b>: the chart builds bar by bar as the bot saw it, and the narration explains each step.</p>
       <ul><li><b>Orange</b> = the liquidity sweep (price runs an old high or low).</li><li><b>Blue</b> = the entry, <b>red</b> = the stop beyond the sweep extreme, <b>green</b> = the target.</li>
       <li><b>Next event</b> jumps straight to the next step; the slider scrubs through the day.</li></ul>`)
+    + (t.chart ? `<div class="card"><div class="card-h"><h3>Trade chart</h3><span class="meta">Long / Short drawing · 5m and 1m · exact prices</span></div><div id="rpTC"></div></div>` : '')
     + `<div class="card"><div class="rp-ctl">
         <button class="btn icon ghost" type="button" id="rpStart" title="Start" aria-label="Start">${icon('first')}</button><button class="btn icon ghost" type="button" id="rpBack" title="Back 1 bar" aria-label="Back 1 bar">${icon('left')}</button>
         <button class="btn primary" type="button" id="rpPlay" style="min-width:96px">${icon('play')}<span>Play</span></button><button class="btn icon ghost" type="button" id="rpFwd" title="Forward 1 bar" aria-label="Forward 1 bar">${icon('right')}</button>
@@ -2248,6 +2267,7 @@ VIEWS.replays = (el) => {
   onSeg('rpMode', (v) => { stopReplay(); store.set('rp3d', v === '3d'); render(true); });
   onSeg('rpSpd', (v) => { RP.speed = +v; store.set('rpSpeed', RP.speed); if (RP.timer) setPlay(true); });
   draw();
+  if (t.chart) tcMount($('#rpTC'), t);
 };
 
 // ===================================================================== TRADES: stop sizes
@@ -2510,21 +2530,25 @@ function runTradeRow(t, i) {
   return `<button type="button" class="trade ${t.pnl > 0 ? 'win' : be ? 'be' : 'loss'}" data-i="${i}">
     <span class="side-i ${L ? 'L' : 'S'}">${icon(L ? 'long' : 'short')}</span>
     <span class="tmain"><span class="ttop"><b>${esc(t.day)}</b><span class="mut">${t.entry_t ? et(t.entry_t).hm + ' ET' : ''}</span><span class="sidetxt ${L ? 'up' : 'dn'}">${L ? 'LONG' : 'SHORT'}</span>${t.half ? chip('half size', 'warn') : ''}${t.kind ? chip(esc(t.kind)) : ''}</span>
-      <span class="chips">${chip(`<i>stop</i> ${num(t.risk_pts, 1)} pts`)}${chip(`<i>micros</i> ${t.qty ?? '—'}`)}${t.trigger ? chip(esc(t.trigger)) : ''}${t.exit ? chip(esc(t.exit)) : ''}</span></span>
+      <span class="chips">${chip(`<i>stop</i> ${num(t.risk_pts, 1)} pts`)}${chip(`<i>micros</i> ${t.qty ?? '—'}`)}${t.trigger ? chip(esc(t.trigger)) : ''}${t.exit ? chip(esc(t.exit)) : ''}${tcBtn(tradeAt(t.entry_t))}</span></span>
     <span class="tres"><b class="${cls(t.r)}">${fR(t.r)}</b><span class="${cls(t.pnl)}">${susd(t.pnl)}</span></span></button>`;
 }
+// the live replay trade that entered at entry_t (a run trade's full report and chart)
+let _tbt = null, _tbd = null;
+function tradeAt(ts) { if (_tbd !== D) { _tbd = D; _tbt = new Map((D?.trades || []).map(x => [x.entry_t, x])); } return ts ? _tbt.get(ts) : null; }
 function openRunTrade(run, t) {
-  const main = (D.trades || []).find(x => x.entry_t === t.entry_t), hasRp = (D.replays?.sessions || []).some(s => s.entry_t === t.entry_t), L = t.dir === 1;
+  const main = tradeAt(t.entry_t), hasRp = (D.replays?.sessions || []).some(s => s.entry_t === t.entry_t), L = t.dir === 1;
   const w = sheet(`<span class="side-i ${L ? 'L' : 'S'}">${icon(L ? 'long' : 'short')}</span>
       <div><div class="eyebrow">${esc(t.day)}${t.entry_t ? ' · ' + et(t.entry_t).hm + ' ET' : ''} · ${esc(run.title || run.id)}</div><h3>${L ? 'LONG' : 'SHORT'} · ${esc(t.trigger || '')} · ${esc(t.exit || '')}</h3></div>
       <div class="sh-res"><b class="${cls(t.r)}">${fR(t.r)}</b><span class="${cls(t.pnl)}">${susd(t.pnl)}</span></div>`,
-    `<div class="nums">${nbox('Stop', num(t.risk_pts, 2) + ' pts')}${nbox('Micros', t.qty ?? '—')}${nbox('$ risk', usd(t.risk_usd))}${nbox('Size', t.half ? '<span class="wn">half</span>' : ok(t.mult) && t.mult !== 1 ? '×' + num(t.mult, 2) : 'full')}
+    `${main?.chart ? '<div class="tcbox" id="shTC"></div>' : ''}<div class="nums">${nbox('Stop', num(t.risk_pts, 2) + ' pts')}${nbox('Micros', t.qty ?? '—')}${nbox('$ risk', usd(t.risk_usd))}${nbox('Size', t.half ? '<span class="wn">half</span>' : ok(t.mult) && t.mult !== 1 ? '×' + num(t.mult, 2) : 'full')}
       ${nbox('Best point', fR(t.mfe))}${nbox('Worst point', ok(t.mae) ? fR(-t.mae) : '—')}${nbox('Held', ok(t.bars_held) ? t.bars_held * 5 + ' min' : '—')}${nbox('Regime', esc(t.regime || '—'))}
       ${t.exit_t ? nbox('Exit time', et(t.exit_t).hm + ' ET') : ''}${t.kind ? nbox('Loss type', esc(t.kind)) : ''}</div>
     <div class="note">Stored runs keep the key numbers of every trade. ${main ? 'This trade is also in the live replay: its full report has the plan, the reasons and the lessons.' : 'Written reports exist for the live strategy’s replay trades.'}</div>`,
     `${main ? `<button class="btn ${hasRp ? 'ghost' : 'primary'}" type="button" id="shFull">${icon('doc')}Full report</button>` : ''}${hasRp ? `<button class="btn primary" type="button" id="shRp">${icon('replay')}Replay</button>` : ''}`, 'Run trade');
   w.querySelector('#shFull')?.addEventListener('click', () => openSheet(main));
   w.querySelector('#shRp')?.addEventListener('click', () => { closeSheet(); location.hash = '#/replays/' + t.entry_t; });
+  if (main?.chart) tcMount(w.querySelector('#shTC'), main);
 }
 const RS = { id: null, tf: 'all', y: 'all', sort: 'new', shown: 40, heat: 'run', eq: 'all' };
 VIEWS.run = (el) => {
@@ -2593,7 +2617,7 @@ function drawRunTrades(run) {
   dropdown($('#rtS'), [['new', 'Newest first'], ['old', 'Oldest first'], ['best', 'Best R'], ['worst', 'Worst R'], ['wide', 'Widest stop']], RS.sort, (v) => { RS.sort = v; drawRunTrades(run); });
   onSeg('rtF', (v) => { RS.tf = v; RS.shown = 40; drawRunTrades(run); });
   $('#rtM')?.addEventListener('click', () => { RS.shown += 40; drawRunTrades(run); });
-  $('#rtL').onclick = (e) => { const b = e.target.closest('.trade[data-i]'); if (b) openRunTrade(run, rows[+b.dataset.i]); };
+  $('#rtL').onclick = (e) => { const b = e.target.closest('.trade[data-i]'); if (!b) return; const t = rows[+b.dataset.i], m = tradeAt(t.entry_t); if (e.target.closest('[data-chart]') && m) openChart(m); else openRunTrade(run, t); };
 }
 
 // ===================================================================== LAB: compare runs
@@ -2768,7 +2792,7 @@ function drawLosses(run) {
   const redraw = () => { FX?.detachAll(); drawLosses(run); };
   $('#lsK').onclick = (e) => { const c = e.target.closest('.ltype'); if (!c) return; LS2.kind = LS2.kind === c.dataset.k ? 'all' : c.dataset.k; redraw(); };
   $('#lsAll')?.addEventListener('click', () => { LS2.kind = 'all'; redraw(); });
-  $('#lsBig').onclick = (e) => { const c = e.target.closest('.trade[data-i]'); if (c) openRunTrade(run, big[+c.dataset.i]); };
+  $('#lsBig').onclick = (e) => { const c = e.target.closest('.trade[data-i]'); if (!c) return; const t = big[+c.dataset.i], m = tradeAt(t.entry_t); if (e.target.closest('[data-chart]') && m) openChart(m); else openRunTrade(run, t); };
 }
 
 // ===================================================================== LAB: lessons (what the bot learned), variants, study

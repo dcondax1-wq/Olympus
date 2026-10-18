@@ -697,6 +697,11 @@ def run(out):
                  "learning": learning}
     if shadow is not None:
         new_state["shadow"] = shadow
+    try:                    # LIT day analyst (engine/lit_brief.py): morning briefing, intraday log, recap -> state "brief" + README
+        from engine import lit_brief
+        lit_brief.cloud_hook(out, new_state, st, res, df_all, now, lm)
+    except Exception as e:  # never fails the run; no notifications
+        print("brief failed:", e.__class__.__name__, e)
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"

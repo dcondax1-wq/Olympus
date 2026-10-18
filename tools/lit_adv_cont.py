@@ -806,8 +806,7 @@ def grid(only=None):
         print(f"\n{nm}  [{v}]")
         for sp in ("H1", "H2", "2021-25"):
             print("  " + line(o, sp), flush=True)
-    if not only:
-        json.dump(out, open(OUT, "w"), indent=1, default=float)
+    json.dump(out, open(OUT if not only else OUT.replace(".json", "_" + OBT._slug(only) + ".json"), "w"), indent=1, default=float)
     return out
 
 

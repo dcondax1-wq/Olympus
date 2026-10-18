@@ -1,0 +1,3386 @@
+{
+ "counts": {
+  "mixed": 19,
+  "both": 91,
+  "smt": 10
+ },
+ "rev_counts": {
+  "False": 89,
+  "True": 26,
+  "None": 5
+ },
+ "desc": {
+  "H1|smt": {
+   "n": 4,
+   "avg_usd": -89.0,
+   "avg_r": -0.521,
+   "win": 0.0
+  },
+  "H1|both": {
+   "n": 66,
+   "avg_usd": 388.0,
+   "avg_r": 0.762,
+   "win": 22.7
+  },
+  "H1|mixed": {
+   "n": 10,
+   "avg_usd": 750.0,
+   "avg_r": 1.361,
+   "win": 30.0
+  },
+  "H1|unknown": {
+   "n": 0,
+   "avg_usd": null,
+   "avg_r": null,
+   "win": null
+  },
+  "H1|rev=True": {
+   "n": 15,
+   "avg_usd": 84.0,
+   "avg_r": 0.228,
+   "win": 13.3
+  },
+  "H1|rev=False": {
+   "n": 62,
+   "avg_usd": 509.0,
+   "avg_r": 0.943,
+   "win": 25.8
+  },
+  "H1|rev=None": {
+   "n": 3,
+   "avg_usd": -10.0,
+   "avg_r": -0.024,
+   "win": 0.0
+  },
+  "H2|smt": {
+   "n": 6,
+   "avg_usd": 175.0,
+   "avg_r": 0.232,
+   "win": 16.7
+  },
+  "H2|both": {
+   "n": 25,
+   "avg_usd": 265.0,
+   "avg_r": 0.803,
+   "win": 40.0
+  },
+  "H2|mixed": {
+   "n": 9,
+   "avg_usd": 144.0,
+   "avg_r": 0.54,
+   "win": 33.3
+  },
+  "H2|unknown": {
+   "n": 0,
+   "avg_usd": null,
+   "avg_r": null,
+   "win": null
+  },
+  "H2|rev=True": {
+   "n": 11,
+   "avg_usd": 241.0,
+   "avg_r": 0.277,
+   "win": 36.4
+  },
+  "H2|rev=False": {
+   "n": 27,
+   "avg_usd": 139.0,
+   "avg_r": 0.658,
+   "win": 33.3
+  },
+  "H2|rev=None": {
+   "n": 2,
+   "avg_usd": 1275.0,
+   "avg_r": 2.756,
+   "win": 50.0
+  }
+ },
+ "rules": {
+  "base": {
+   "normal": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 22.5,
+     "pf": 4.44,
+     "net": 32773,
+     "per_month": 5377,
+     "dd": -2315,
+     "p10": 28.9,
+     "f10": 3.1
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 35.0,
+     "pf": 2.46,
+     "net": 8962,
+     "per_month": 2413,
+     "dd": -1466,
+     "p10": 23.1,
+     "f10": 0.0
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "win": 26.7,
+     "pf": 3.66,
+     "net": 41734,
+     "per_month": 4254,
+     "dd": -2315,
+     "p10": 26.7,
+     "f10": 1.9
+    }
+   },
+   "two_week": {
+    "H1": {
+     "p10": 52.9,
+     "f10": 8.4,
+     "p20": 75.2,
+     "f20": 17.4,
+     "pass_med": 5.0,
+     "cost": 174.0,
+     "n10": 119
+    },
+    "H2": {
+     "p10": 50.7,
+     "f10": 2.9,
+     "p20": 61.0,
+     "f20": 16.9,
+     "pass_med": 4.0,
+     "cost": 181.0,
+     "n10": 69
+    },
+    "2026": {
+     "p10": 49.7,
+     "f10": 6.1,
+     "p20": 63.6,
+     "f20": 20.9,
+     "pass_med": 5.0,
+     "cost": 185.0,
+     "n10": 197
+    }
+   },
+   "n_changed": 0
+  },
+  "smt_x1.25": {
+   "normal": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 22.5,
+     "pf": 4.44,
+     "net": 32769,
+     "per_month": 5376,
+     "dd": -2315,
+     "p10": 28.9,
+     "f10": 3.1
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 35.0,
+     "pf": 2.41,
+     "net": 9042,
+     "per_month": 2434,
+     "dd": -1624,
+     "p10": 23.1,
+     "f10": 0.0
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "win": 26.7,
+     "pf": 3.62,
+     "net": 41811,
+     "per_month": 4262,
+     "dd": -2315,
+     "p10": 26.7,
+     "f10": 1.9
+    }
+   },
+   "two_week": {
+    "H1": {
+     "p10": 52.9,
+     "f10": 8.4,
+     "p20": 75.2,
+     "f20": 18.3,
+     "pass_med": 5.0,
+     "cost": 174.0,
+     "n10": 119
+    },
+    "H2": {
+     "p10": 50.7,
+     "f10": 2.9,
+     "p20": 61.0,
+     "f20": 16.9,
+     "pass_med": 4.0,
+     "cost": 181.0,
+     "n10": 69
+    },
+    "2026": {
+     "p10": 49.7,
+     "f10": 6.1,
+     "p20": 63.6,
+     "f20": 21.4,
+     "pass_med": 5.0,
+     "cost": 185.0,
+     "n10": 197
+    }
+   },
+   "n_changed": 10
+  },
+  "smt_x1.25_both_x0.75": {
+   "normal": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 22.5,
+     "pf": 4.73,
+     "net": 26090,
+     "per_month": 4280,
+     "dd": -1677,
+     "p10": 26.6,
+     "f10": 0.0
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 35.0,
+     "pf": 2.13,
+     "net": 6455,
+     "per_month": 1738,
+     "dd": -1988,
+     "p10": 15.4,
+     "f10": 0.0
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "win": 26.7,
+     "pf": 3.56,
+     "net": 32545,
+     "per_month": 3318,
+     "dd": -2144,
+     "p10": 22.3,
+     "f10": 0.0
+    }
+   },
+   "two_week": {
+    "H1": {
+     "p10": 19.3,
+     "f10": 4.2,
+     "p20": 46.8,
+     "f20": 10.1,
+     "pass_med": 12.0,
+     "cost": 476.0,
+     "n10": 119
+    },
+    "H2": {
+     "p10": 30.4,
+     "f10": 0.0,
+     "p20": 39.0,
+     "f20": 13.6,
+     "pass_med": 7.5,
+     "cost": 302.0,
+     "n10": 69
+    },
+    "2026": {
+     "p10": 22.3,
+     "f10": 2.5,
+     "p20": 40.1,
+     "f20": 12.3,
+     "pass_med": 10.0,
+     "cost": 412.0,
+     "n10": 197
+    }
+   },
+   "n_changed": 101
+  },
+  "smt_x0.75": {
+   "normal": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 22.5,
+     "pf": 4.47,
+     "net": 32845,
+     "per_month": 5389,
+     "dd": -2315,
+     "p10": 28.9,
+     "f10": 3.1
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 35.0,
+     "pf": 2.5,
+     "net": 8631,
+     "per_month": 2324,
+     "dd": -1316,
+     "p10": 16.7,
+     "f10": 0.0
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "win": 26.7,
+     "pf": 3.73,
+     "net": 41477,
+     "per_month": 4228,
+     "dd": -2315,
+     "p10": 24.3,
+     "f10": 1.9
+    }
+   },
+   "two_week": {
+    "H1": {
+     "p10": 52.9,
+     "f10": 7.6,
+     "p20": 75.2,
+     "f20": 17.4,
+     "pass_med": 5.0,
+     "cost": 174.0,
+     "n10": 119
+    },
+    "H2": {
+     "p10": 50.7,
+     "f10": 0.0,
+     "p20": 55.9,
+     "f20": 3.4,
+     "pass_med": 4.0,
+     "cost": 181.0,
+     "n10": 69
+    },
+    "2026": {
+     "p10": 49.7,
+     "f10": 4.6,
+     "p20": 62.0,
+     "f20": 16.6,
+     "pass_med": 5.0,
+     "cost": 185.0,
+     "n10": 197
+    }
+   },
+   "n_changed": 10
+  },
+  "rev_x1.25": {
+   "normal": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 22.5,
+     "pf": 4.42,
+     "net": 33129,
+     "per_month": 5435,
+     "dd": -2315,
+     "p10": 28.9,
+     "f10": 3.1
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 35.0,
+     "pf": 2.49,
+     "net": 9389,
+     "per_month": 2528,
+     "dd": -1466,
+     "p10": 23.1,
+     "f10": 0.0
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "win": 26.7,
+     "pf": 3.66,
+     "net": 42518,
+     "per_month": 4334,
+     "dd": -2315,
+     "p10": 26.7,
+     "f10": 1.9
+    }
+   },
+   "two_week": {
+    "H1": {
+     "p10": 54.6,
+     "f10": 8.4,
+     "p20": 75.2,
+     "f20": 17.4,
+     "pass_med": 5.0,
+     "cost": 168.0,
+     "n10": 119
+    },
+    "H2": {
+     "p10": 50.7,
+     "f10": 2.9,
+     "p20": 61.0,
+     "f20": 16.9,
+     "pass_med": 4.0,
+     "cost": 181.0,
+     "n10": 69
+    },
+    "2026": {
+     "p10": 50.8,
+     "f10": 6.1,
+     "p20": 63.6,
+     "f20": 20.9,
+     "pass_med": 5.0,
+     "cost": 181.0,
+     "n10": 197
+    }
+   },
+   "n_changed": 26
+  },
+  "rev_x0.75": {
+   "normal": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 22.5,
+     "pf": 4.7,
+     "net": 32488,
+     "per_month": 5330,
+     "dd": -2201,
+     "p10": 28.9,
+     "f10": 1.6
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 35.0,
+     "pf": 2.37,
+     "net": 8000,
+     "per_month": 2154,
+     "dd": -1466,
+     "p10": 15.4,
+     "f10": 0.0
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "win": 26.7,
+     "pf": 3.77,
+     "net": 40488,
+     "per_month": 4127,
+     "dd": -2201,
+     "p10": 23.8,
+     "f10": 1.0
+    }
+   },
+   "two_week": {
+    "H1": {
+     "p10": 57.1,
+     "f10": 7.6,
+     "p20": 75.2,
+     "f20": 13.8,
+     "pass_med": 5.0,
+     "cost": 161.0,
+     "n10": 119
+    },
+    "H2": {
+     "p10": 43.5,
+     "f10": 0.0,
+     "p20": 50.8,
+     "f20": 13.6,
+     "pass_med": 4.0,
+     "cost": 211.0,
+     "n10": 69
+    },
+    "2026": {
+     "p10": 49.7,
+     "f10": 4.6,
+     "p20": 60.4,
+     "f20": 15.5,
+     "pass_med": 4.5,
+     "cost": 185.0,
+     "n10": 197
+    }
+   },
+   "n_changed": 26
+  },
+  "div_x1.25": {
+   "normal": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 22.5,
+     "pf": 4.42,
+     "net": 33125,
+     "per_month": 5435,
+     "dd": -2315,
+     "p10": 28.9,
+     "f10": 3.1
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 35.0,
+     "pf": 2.44,
+     "net": 9469,
+     "per_month": 2549,
+     "dd": -1624,
+     "p10": 23.1,
+     "f10": 0.0
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "win": 26.7,
+     "pf": 3.62,
+     "net": 42594,
+     "per_month": 4342,
+     "dd": -2315,
+     "p10": 26.7,
+     "f10": 1.9
+    }
+   },
+   "two_week": {
+    "H1": {
+     "p10": 54.6,
+     "f10": 8.4,
+     "p20": 75.2,
+     "f20": 18.3,
+     "pass_med": 5.0,
+     "cost": 168.0,
+     "n10": 119
+    },
+    "H2": {
+     "p10": 50.7,
+     "f10": 2.9,
+     "p20": 61.0,
+     "f20": 16.9,
+     "pass_med": 4.0,
+     "cost": 181.0,
+     "n10": 69
+    },
+    "2026": {
+     "p10": 50.8,
+     "f10": 6.1,
+     "p20": 63.6,
+     "f20": 21.4,
+     "pass_med": 5.0,
+     "cost": 181.0,
+     "n10": 197
+    }
+   },
+   "n_changed": 36
+  },
+  "nodiv_x0.75": {
+   "normal": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "win": 22.5,
+     "pf": 4.2,
+     "net": 24389,
+     "per_month": 4001,
+     "dd": -1790,
+     "p10": 26.6,
+     "f10": 0.0
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "win": 35.0,
+     "pf": 2.24,
+     "net": 6594,
+     "per_month": 1775,
+     "dd": -1361,
+     "p10": 20.5,
+     "f10": 0.0
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "win": 26.7,
+     "pf": 3.4,
+     "net": 30982,
+     "per_month": 3158,
+     "dd": -1790,
+     "p10": 24.3,
+     "f10": 0.0
+    }
+   },
+   "two_week": {
+    "H1": {
+     "p10": 18.5,
+     "f10": 5.9,
+     "p20": 36.7,
+     "f20": 11.9,
+     "pass_med": 10.0,
+     "cost": 496.0,
+     "n10": 119
+    },
+    "H2": {
+     "p10": 27.5,
+     "f10": 0.0,
+     "p20": 42.4,
+     "f20": 3.4,
+     "pass_med": 8.0,
+     "cost": 334.0,
+     "n10": 69
+    },
+    "2026": {
+     "p10": 20.8,
+     "f10": 3.6,
+     "p20": 34.8,
+     "f20": 12.3,
+     "pass_med": 9.0,
+     "cost": 441.0,
+     "n10": 197
+    }
+   },
+   "n_changed": 80
+  }
+ },
+ "rows": [
+  {
+   "day": "2026-01-02",
+   "entry_t": 1767337440,
+   "pnl": -64.6,
+   "r": -0.083,
+   "exit": "BE",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "bu_h",
+     false
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-05",
+   "entry_t": 1767621240,
+   "pnl": 619.56,
+   "r": 2.185,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-06",
+   "entry_t": 1767683640,
+   "pnl": 5150.6,
+   "r": 6.603,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-07",
+   "entry_t": 1767778980,
+   "pnl": 4241.6,
+   "r": 6.025,
+   "exit": "TARGET",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "bu_l",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-09",
+   "entry_t": 1767946440,
+   "pnl": -5.7,
+   "r": -0.02,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-12",
+   "entry_t": 1768202700,
+   "pnl": -214.8,
+   "r": -1.018,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-13",
+   "entry_t": 1768288920,
+   "pnl": -655.2,
+   "r": -1.039,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-14",
+   "entry_t": 1768375020,
+   "pnl": -282.0,
+   "r": -1.035,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-15",
+   "entry_t": 1768462800,
+   "pnl": -245.6,
+   "r": -1.032,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-16",
+   "entry_t": 1768553880,
+   "pnl": -289.5,
+   "r": -1.034,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-19",
+   "entry_t": 1768810920,
+   "pnl": -136.9,
+   "r": -1.014,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-20",
+   "entry_t": 1768893000,
+   "pnl": -226.8,
+   "r": -1.017,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-21",
+   "entry_t": 1768987860,
+   "pnl": -1.9,
+   "r": -0.017,
+   "exit": "BE",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-22",
+   "entry_t": 1769091840,
+   "pnl": 2118.2,
+   "r": 6.438,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-28",
+   "entry_t": 1769586840,
+   "pnl": -11.4,
+   "r": -0.026,
+   "exit": "BE",
+   "state": "both",
+   "rev": null,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-29",
+   "entry_t": 1769688780,
+   "pnl": -283.2,
+   "r": -1.021,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_l",
+     true
+    ],
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-01-30",
+   "entry_t": 1769757120,
+   "pnl": -247.8,
+   "r": -1.016,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-02",
+   "entry_t": 1770016020,
+   "pnl": 990.1,
+   "r": 6.169,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-03",
+   "entry_t": 1770120720,
+   "pnl": -9.5,
+   "r": -0.025,
+   "exit": "BE",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "lon25_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-04",
+   "entry_t": 1770193200,
+   "pnl": -9.5,
+   "r": -0.025,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-11",
+   "entry_t": 1770795780,
+   "pnl": -55.1,
+   "r": -0.069,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-12",
+   "entry_t": 1770892380,
+   "pnl": -464.8,
+   "r": -1.029,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_h",
+     true
+    ],
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-13",
+   "entry_t": 1770978720,
+   "pnl": 3469.2,
+   "r": 5.614,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-17",
+   "entry_t": 1771312500,
+   "pnl": -339.6,
+   "r": -1.023,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-18",
+   "entry_t": 1771419720,
+   "pnl": -1.9,
+   "r": -0.013,
+   "exit": "BE",
+   "state": "smt",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_h",
+     false
+    ],
+    [
+     "bu_h",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-19",
+   "entry_t": 1771504800,
+   "pnl": -139.9,
+   "r": -1.014,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-20",
+   "entry_t": 1771582920,
+   "pnl": -1.9,
+   "r": -0.017,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-25",
+   "entry_t": 1772018460,
+   "pnl": -754.8,
+   "r": -1.045,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_h",
+     true
+    ],
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-26",
+   "entry_t": 1772096100,
+   "pnl": -361.6,
+   "r": -1.021,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-02-27",
+   "entry_t": 1772187720,
+   "pnl": -101.4,
+   "r": -1.019,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "lon25_l",
+     true
+    ],
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-03-03",
+   "entry_t": 1772535720,
+   "pnl": -226.8,
+   "r": -1.017,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "lon25_l",
+     true
+    ],
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "pdl",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-03-04",
+   "entry_t": 1772613600,
+   "pnl": -253.8,
+   "r": -1.015,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-03-13",
+   "entry_t": 1773411720,
+   "pnl": -132.9,
+   "r": -1.015,
+   "exit": "STOP",
+   "state": "smt",
+   "rev": false,
+   "levels": [
+    [
+     "ny89_l",
+     false
+    ],
+    [
+     "ny830_l",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-03-16",
+   "entry_t": 1773655920,
+   "pnl": 1107.72,
+   "r": 3.62,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_l",
+     true
+    ],
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-03-17",
+   "entry_t": 1773757560,
+   "pnl": -1.9,
+   "r": -0.014,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "ny89_h",
+     true
+    ],
+    [
+     "ny830_h",
+     true
+    ],
+    [
+     "pre_h",
+     true
+    ],
+    [
+     "pdh",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-03-18",
+   "entry_t": 1773833040,
+   "pnl": 4648.6,
+   "r": 7.974,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-03-20",
+   "entry_t": 1774020300,
+   "pnl": -7.6,
+   "r": -0.022,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "ny89_l",
+     true
+    ],
+    [
+     "ny830_l",
+     true
+    ],
+    [
+     "ny930_l",
+     true
+    ],
+    [
+     "ny9301030_l",
+     true
+    ],
+    [
+     "pre_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-03-23",
+   "entry_t": 1774263480,
+   "pnl": 1236.2,
+   "r": 5.645,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-03-27",
+   "entry_t": 1774595160,
+   "pnl": 985.26,
+   "r": 6.139,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-03-31",
+   "entry_t": 1774947180,
+   "pnl": -163.4,
+   "r": -1.012,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-01",
+   "entry_t": 1775065440,
+   "pnl": 918.4,
+   "r": 2.852,
+   "exit": "EOD",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-03",
+   "entry_t": 1775203500,
+   "pnl": -359.6,
+   "r": -1.022,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-07",
+   "entry_t": 1775566320,
+   "pnl": -1.9,
+   "r": -0.015,
+   "exit": "BE",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ],
+    [
+     "lon25_l",
+     true
+    ],
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-09",
+   "entry_t": 1775718300,
+   "pnl": -15.2,
+   "r": -0.03,
+   "exit": "BE",
+   "state": "smt",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     false
+    ],
+    [
+     "asia19_h",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-13",
+   "entry_t": 1776083640,
+   "pnl": 618.28,
+   "r": 2.544,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_l",
+     true
+    ],
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-15",
+   "entry_t": 1776236040,
+   "pnl": -15.2,
+   "r": -0.031,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-17",
+   "entry_t": 1776407940,
+   "pnl": 6226.2,
+   "r": 7.952,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-20",
+   "entry_t": 1776674760,
+   "pnl": -3.8,
+   "r": -0.017,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-21",
+   "entry_t": 1776755700,
+   "pnl": -449.4,
+   "r": -1.026,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "nwog",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-22",
+   "entry_t": 1776862740,
+   "pnl": -155.9,
+   "r": -1.012,
+   "exit": "STOP",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_h",
+     true
+    ],
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "pwh",
+     false
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-23",
+   "entry_t": 1776932640,
+   "pnl": -3.8,
+   "r": -0.022,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-24",
+   "entry_t": 1777017720,
+   "pnl": -19.0,
+   "r": -0.05,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon23_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-28",
+   "entry_t": 1777366380,
+   "pnl": -361.6,
+   "r": -1.021,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-04-29",
+   "entry_t": 1777451940,
+   "pnl": -51.3,
+   "r": -0.066,
+   "exit": "BE",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-01",
+   "entry_t": 1777639560,
+   "pnl": 2010.4,
+   "r": 5.878,
+   "exit": "EOD",
+   "state": "mixed",
+   "rev": true,
+   "levels": [
+    [
+     "asia18_l",
+     false
+    ],
+    [
+     "lon25_l",
+     true
+    ],
+    [
+     "bu_l",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-04",
+   "entry_t": 1777874520,
+   "pnl": -9.5,
+   "r": -0.024,
+   "exit": "BE",
+   "state": "mixed",
+   "rev": null,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     false
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-05",
+   "entry_t": 1777961820,
+   "pnl": -278.7,
+   "r": -1.021,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-07",
+   "entry_t": 1778147280,
+   "pnl": -355.6,
+   "r": -1.022,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-08",
+   "entry_t": 1778242980,
+   "pnl": -206.7,
+   "r": -1.028,
+   "exit": "STOP",
+   "state": "smt",
+   "rev": false,
+   "levels": [
+    [
+     "bu_h",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-11",
+   "entry_t": 1778493900,
+   "pnl": -212.8,
+   "r": -1.018,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "lon25_h",
+     true
+    ],
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-12",
+   "entry_t": 1778572200,
+   "pnl": -147.4,
+   "r": -1.013,
+   "exit": "STOP",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "pdl",
+     false
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-13",
+   "entry_t": 1778672760,
+   "pnl": -249.6,
+   "r": -1.031,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-14",
+   "entry_t": 1778742000,
+   "pnl": -5.7,
+   "r": -0.029,
+   "exit": "BE",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-19",
+   "entry_t": 1779171540,
+   "pnl": -1.9,
+   "r": -0.011,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-20",
+   "entry_t": 1779282660,
+   "pnl": -3.8,
+   "r": -0.015,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-22",
+   "entry_t": 1779436200,
+   "pnl": -5.7,
+   "r": -0.02,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-25",
+   "entry_t": 1779720900,
+   "pnl": -73.4,
+   "r": -0.546,
+   "exit": "EOD",
+   "state": "mixed",
+   "rev": true,
+   "levels": [
+    [
+     "ny89_h",
+     false
+    ],
+    [
+     "ny830_h",
+     true
+    ],
+    [
+     "pre_h",
+     false
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-26",
+   "entry_t": 1779782280,
+   "pnl": 3828.8,
+   "r": 7.977,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-27",
+   "entry_t": 1779866100,
+   "pnl": 1047.76,
+   "r": 4.384,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-28",
+   "entry_t": 1779970020,
+   "pnl": -1.9,
+   "r": -0.012,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_l",
+     true
+    ],
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-05-29",
+   "entry_t": 1780047960,
+   "pnl": -1.9,
+   "r": -0.013,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-06-02",
+   "entry_t": 1780399140,
+   "pnl": -345.6,
+   "r": -1.022,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-06-03",
+   "entry_t": 1780489680,
+   "pnl": -7.6,
+   "r": -0.023,
+   "exit": "BE",
+   "state": "both",
+   "rev": null,
+   "levels": [
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-06-04",
+   "entry_t": 1780559520,
+   "pnl": 2144.4,
+   "r": 6.42,
+   "exit": "TARGET",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "pwh",
+     false
+    ],
+    [
+     "pmh",
+     false
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-06-08",
+   "entry_t": 1780906980,
+   "pnl": -1.9,
+   "r": -0.015,
+   "exit": "BE",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-06-16",
+   "entry_t": 1781602020,
+   "pnl": -293.7,
+   "r": -1.02,
+   "exit": "STOP",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     false
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "pdh",
+     false
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-06-17",
+   "entry_t": 1781676720,
+   "pnl": -38.0,
+   "r": -0.048,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-06-19",
+   "entry_t": 1781884980,
+   "pnl": 939.4,
+   "r": 1.413,
+   "exit": "EOD",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "ny89_h",
+     true
+    ],
+    [
+     "ny830_h",
+     true
+    ],
+    [
+     "ny930_h",
+     true
+    ],
+    [
+     "ny9301030_h",
+     true
+    ],
+    [
+     "pre_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-06-24",
+   "entry_t": 1782289800,
+   "pnl": -152.4,
+   "r": -1.013,
+   "exit": "STOP",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_l",
+     false
+    ],
+    [
+     "lon23_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-06-25",
+   "entry_t": 1782376860,
+   "pnl": -5.7,
+   "r": -0.021,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-07-02",
+   "entry_t": 1782983820,
+   "pnl": -135.4,
+   "r": -1.014,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "lon34_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-07-03",
+   "entry_t": 1783072680,
+   "pnl": -495.2,
+   "r": -1.032,
+   "exit": "STOP",
+   "state": "smt",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_h",
+     false
+    ],
+    [
+     "lon34_h",
+     false
+    ],
+    [
+     "lon23_h",
+     false
+    ],
+    [
+     "bu_h",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-07-06",
+   "entry_t": 1783327560,
+   "pnl": -353.6,
+   "r": -1.022,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-07-07",
+   "entry_t": 1783419480,
+   "pnl": -131.4,
+   "r": -1.015,
+   "exit": "STOP",
+   "state": "smt",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_l",
+     false
+    ],
+    [
+     "lon34_l",
+     false
+    ],
+    [
+     "lon23_l",
+     false
+    ],
+    [
+     "bu_l",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-07-14",
+   "entry_t": 1784020680,
+   "pnl": -13.3,
+   "r": -0.029,
+   "exit": "BE",
+   "state": "smt",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_h",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-07-16",
+   "entry_t": 1784201280,
+   "pnl": -314.7,
+   "r": -1.018,
+   "exit": "STOP",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_l",
+     false
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-07-20",
+   "entry_t": 1784530320,
+   "pnl": 1460.5,
+   "r": 3.651,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-07-22",
+   "entry_t": 1784719560,
+   "pnl": 483.16,
+   "r": 2.047,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-07-28",
+   "entry_t": 1785221460,
+   "pnl": -1.9,
+   "r": -0.012,
+   "exit": "BE",
+   "state": "both",
+   "rev": null,
+   "levels": [
+    [
+     "asia20_l",
+     true
+    ],
+    [
+     "asia18_l",
+     true
+    ],
+    [
+     "asia19_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-08-03",
+   "entry_t": 1785736920,
+   "pnl": -634.8,
+   "r": -1.037,
+   "exit": "STOP",
+   "state": "smt",
+   "rev": false,
+   "levels": [
+    [
+     "bu_l",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-08-11",
+   "entry_t": 1786434720,
+   "pnl": -275.7,
+   "r": -1.021,
+   "exit": "STOP",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "lon23_l",
+     false
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-08-12",
+   "entry_t": 1786529760,
+   "pnl": -51.3,
+   "r": -0.066,
+   "exit": "BE",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_h",
+     true
+    ],
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "nwog",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-08-13",
+   "entry_t": 1786615620,
+   "pnl": -224.8,
+   "r": -1.017,
+   "exit": "STOP",
+   "state": "smt",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_l",
+     false
+    ],
+    [
+     "lon34_l",
+     false
+    ],
+    [
+     "bu_l",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-08-14",
+   "entry_t": 1786711800,
+   "pnl": -127.9,
+   "r": -1.015,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-08-19",
+   "entry_t": 1787132460,
+   "pnl": -149.4,
+   "r": -1.013,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-08-25",
+   "entry_t": 1787646120,
+   "pnl": 1543.0,
+   "r": 4.008,
+   "exit": "TARGET",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "lon23_l",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-08-26",
+   "entry_t": 1787763720,
+   "pnl": 309.2,
+   "r": 1.494,
+   "exit": "EOD",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-08-28",
+   "entry_t": 1787915520,
+   "pnl": -422.4,
+   "r": -1.028,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-01",
+   "entry_t": 1788244680,
+   "pnl": 1105.04,
+   "r": 4.89,
+   "exit": "TARGET",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     false
+    ],
+    [
+     "asia18_h",
+     false
+    ],
+    [
+     "asia19_h",
+     false
+    ],
+    [
+     "pdh",
+     false
+    ],
+    [
+     "nwog",
+     false
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-02",
+   "entry_t": 1788330600,
+   "pnl": -165.4,
+   "r": -1.012,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-04",
+   "entry_t": 1788506760,
+   "pnl": -468.3,
+   "r": -1.029,
+   "exit": "STOP",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "pdh",
+     false
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-07",
+   "entry_t": 1788789480,
+   "pnl": 176.8,
+   "r": 0.368,
+   "exit": "EOD",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "ny89_h",
+     true
+    ],
+    [
+     "ny830_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-09",
+   "entry_t": 1788936840,
+   "pnl": 1159.8,
+   "r": 4.135,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-14",
+   "entry_t": 1789365720,
+   "pnl": -331.6,
+   "r": -1.023,
+   "exit": "STOP",
+   "state": "mixed",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_l",
+     false
+    ],
+    [
+     "asia19_l",
+     false
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-15",
+   "entry_t": 1789475640,
+   "pnl": -440.4,
+   "r": -1.027,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_h",
+     true
+    ],
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-16",
+   "entry_t": 1789545900,
+   "pnl": -105.9,
+   "r": -1.018,
+   "exit": "STOP",
+   "state": "mixed",
+   "rev": true,
+   "levels": [
+    [
+     "asia20_h",
+     false
+    ],
+    [
+     "asia18_h",
+     false
+    ],
+    [
+     "asia19_h",
+     false
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-18",
+   "entry_t": 1789719840,
+   "pnl": -1.9,
+   "r": -0.018,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon23_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-21",
+   "entry_t": 1789989840,
+   "pnl": -353.6,
+   "r": -1.022,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-23",
+   "entry_t": 1790147220,
+   "pnl": 1236.48,
+   "r": 5.698,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "asia20_h",
+     true
+    ],
+    [
+     "asia18_h",
+     true
+    ],
+    [
+     "asia19_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-24",
+   "entry_t": 1790234100,
+   "pnl": -164.9,
+   "r": -1.012,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "pdl",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-28",
+   "entry_t": 1790589060,
+   "pnl": -1.9,
+   "r": -0.014,
+   "exit": "BE",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon25_l",
+     true
+    ],
+    [
+     "lon34_l",
+     true
+    ],
+    [
+     "lon23_l",
+     true
+    ],
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-09-30",
+   "entry_t": 1790790360,
+   "pnl": 191.6,
+   "r": 1.14,
+   "exit": "EOD",
+   "state": "mixed",
+   "rev": true,
+   "levels": [
+    [
+     "ny930_h",
+     true
+    ],
+    [
+     "ny9301030_h",
+     true
+    ],
+    [
+     "nwog",
+     false
+    ],
+    [
+     "bu_h",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-10-01",
+   "entry_t": 1790835960,
+   "pnl": 2552.2,
+   "r": 5.524,
+   "exit": "TARGET",
+   "state": "smt",
+   "rev": null,
+   "levels": [
+    [
+     "pwh",
+     false
+    ],
+    [
+     "pmh",
+     false
+    ]
+   ]
+  },
+  {
+   "day": "2026-10-02",
+   "entry_t": 1790926440,
+   "pnl": 771.0,
+   "r": 3.427,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-10-05",
+   "entry_t": 1791203700,
+   "pnl": -164.4,
+   "r": -1.012,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-10-06",
+   "entry_t": 1791275520,
+   "pnl": -394.5,
+   "r": -1.025,
+   "exit": "STOP",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-10-07",
+   "entry_t": 1791382200,
+   "pnl": 358.6,
+   "r": 2.234,
+   "exit": "EOD",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "ny89_l",
+     true
+    ],
+    [
+     "ny830_l",
+     true
+    ],
+    [
+     "pre_l",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-10-08",
+   "entry_t": 1791463500,
+   "pnl": -209.7,
+   "r": -1.028,
+   "exit": "STOP",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-10-13",
+   "entry_t": 1791885780,
+   "pnl": 3169.1,
+   "r": 5.488,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": true,
+   "levels": [
+    [
+     "lon25_h",
+     true
+    ],
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ],
+    [
+     "bu_h",
+     true
+    ]
+   ]
+  },
+  {
+   "day": "2026-10-14",
+   "entry_t": 1791969840,
+   "pnl": 579.48,
+   "r": 3.8,
+   "exit": "TARGET",
+   "state": "both",
+   "rev": false,
+   "levels": [
+    [
+     "lon34_h",
+     true
+    ],
+    [
+     "lon23_h",
+     true
+    ]
+   ]
+  }
+ ]
+}

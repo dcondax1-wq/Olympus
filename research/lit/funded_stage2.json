@@ -1,0 +1,3114 @@
+{
+ "rows": {
+  "cushC_mw800_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      250
+     ],
+     [
+      1000,
+      400
+     ],
+     [
+      2000,
+      600
+     ],
+     [
+      3000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.1,
+    "paid_3m": 725.0,
+    "paid_med_3m": 476.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.0,
+    "any_pay_3m": 59.3,
+    "lost_no_pay_3m": 0.1,
+    "loss_6m": 0.5,
+    "paid_6m": 2582.0,
+    "paid_med_6m": 2240.0,
+    "paid_p10_6m": 430.0,
+    "grad_6m": 6.4,
+    "any_pay_6m": 92.1,
+    "lost_no_pay_6m": 0.3,
+    "per_month_6m": 430.0,
+    "first_med": 51.0,
+    "max_dd_med": -983.0,
+    "max_dd_p90": -1570.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushC_mw800_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      250
+     ],
+     [
+      1000,
+      400
+     ],
+     [
+      2000,
+      600
+     ],
+     [
+      3000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.3,
+    "paid_3m": 712.0,
+    "paid_med_3m": 464.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.0,
+    "any_pay_3m": 58.4,
+    "lost_no_pay_3m": 0.3,
+    "loss_6m": 0.9,
+    "paid_6m": 2515.0,
+    "paid_med_6m": 2215.0,
+    "paid_p10_6m": 402.0,
+    "grad_6m": 6.3,
+    "any_pay_6m": 90.2,
+    "lost_no_pay_6m": 0.6,
+    "per_month_6m": 419.0,
+    "first_med": 51.0,
+    "max_dd_med": -1013.0,
+    "max_dd_p90": -1672.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushC_mw1000_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      250
+     ],
+     [
+      1000,
+      400
+     ],
+     [
+      2000,
+      600
+     ],
+     [
+      3000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.1,
+    "paid_3m": 1202.0,
+    "paid_med_3m": 700.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 75.6,
+    "lost_no_pay_3m": 0.1,
+    "loss_6m": 0.2,
+    "paid_6m": 3652.0,
+    "paid_med_6m": 3767.0,
+    "paid_p10_6m": 681.0,
+    "grad_6m": 13.6,
+    "any_pay_6m": 97.1,
+    "lost_no_pay_6m": 0.1,
+    "per_month_6m": 609.0,
+    "first_med": 41.0,
+    "max_dd_med": -1059.0,
+    "max_dd_p90": -1696.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushC_mw1000_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      250
+     ],
+     [
+      1000,
+      400
+     ],
+     [
+      2000,
+      600
+     ],
+     [
+      3000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 1178.0,
+    "paid_med_3m": 682.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 75.3,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 0.9,
+    "paid_6m": 3575.0,
+    "paid_med_6m": 3732.0,
+    "paid_p10_6m": 620.0,
+    "grad_6m": 13.2,
+    "any_pay_6m": 95.8,
+    "lost_no_pay_6m": 0.8,
+    "per_month_6m": 596.0,
+    "first_med": 41.0,
+    "max_dd_med": -1110.0,
+    "max_dd_p90": -1812.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushC_mw1200_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      250
+     ],
+     [
+      1000,
+      400
+     ],
+     [
+      2000,
+      600
+     ],
+     [
+      3000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.2,
+    "paid_3m": 1403.0,
+    "paid_med_3m": 839.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 80.9,
+    "lost_no_pay_3m": 0.1,
+    "loss_6m": 0.4,
+    "paid_6m": 3862.0,
+    "paid_med_6m": 3857.0,
+    "paid_p10_6m": 774.0,
+    "grad_6m": 15.8,
+    "any_pay_6m": 98.0,
+    "lost_no_pay_6m": 0.2,
+    "per_month_6m": 644.0,
+    "first_med": 36.0,
+    "max_dd_med": -1212.0,
+    "max_dd_p90": -1898.0,
+    "max_risk": 312.0
+   }
+  },
+  "cushC_mw1200_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      250
+     ],
+     [
+      1000,
+      400
+     ],
+     [
+      2000,
+      600
+     ],
+     [
+      3000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 1.5,
+    "paid_3m": 1344.0,
+    "paid_med_3m": 794.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 78.7,
+    "lost_no_pay_3m": 1.3,
+    "loss_6m": 2.0,
+    "paid_6m": 3674.0,
+    "paid_med_6m": 3783.0,
+    "paid_p10_6m": 595.0,
+    "grad_6m": 15.0,
+    "any_pay_6m": 94.9,
+    "lost_no_pay_6m": 1.6,
+    "per_month_6m": 612.0,
+    "first_med": 36.0,
+    "max_dd_med": -1325.0,
+    "max_dd_p90": -2001.0,
+    "max_risk": 312.0
+   }
+  },
+  "cushC_mw1500_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      250
+     ],
+     [
+      1000,
+      400
+     ],
+     [
+      2000,
+      600
+     ],
+     [
+      3000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 1852.0,
+    "paid_med_3m": 1353.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 85.2,
+    "lost_no_pay_3m": 0.2,
+    "loss_6m": 0.6,
+    "paid_6m": 4543.0,
+    "paid_med_6m": 4381.0,
+    "paid_p10_6m": 1600.0,
+    "grad_6m": 22.0,
+    "any_pay_6m": 98.6,
+    "lost_no_pay_6m": 0.3,
+    "per_month_6m": 757.0,
+    "first_med": 30.5,
+    "max_dd_med": -1368.0,
+    "max_dd_p90": -2126.0,
+    "max_risk": 340.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 0.5,
+    "paid_3m": 1224.0,
+    "paid_med_3m": 801.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.0,
+    "any_pay_3m": 67.1,
+    "lost_no_pay_3m": 0.5,
+    "loss_6m": 1.4,
+    "paid_6m": 3507.0,
+    "paid_med_6m": 3658.0,
+    "paid_p10_6m": 360.0,
+    "grad_6m": 13.7,
+    "any_pay_6m": 90.0,
+    "lost_no_pay_6m": 1.2,
+    "per_month_6m": 584.0,
+    "first_med": 40.0,
+    "max_dd_med": -1343.0,
+    "max_dd_p90": -2000.0,
+    "max_risk": 410.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 3843,
+    "per_month": 630,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1456
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 1003,
+    "per_month": 270,
+    "first_payout_sessions": [
+     75
+    ],
+    "worst_dd": -754
+   },
+   "b2b_2021_25": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 2480,
+    "per_month": 49,
+    "first_payout_sessions": [
+     137
+    ],
+    "worst_dd": -3034
+   }
+  },
+  "cushC_mw1500_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      250
+     ],
+     [
+      1000,
+      400
+     ],
+     [
+      2000,
+      600
+     ],
+     [
+      3000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 1.2,
+    "paid_3m": 1803.0,
+    "paid_med_3m": 1325.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 84.4,
+    "lost_no_pay_3m": 0.9,
+    "loss_6m": 2.0,
+    "paid_6m": 4343.0,
+    "paid_med_6m": 4267.0,
+    "paid_p10_6m": 1024.0,
+    "grad_6m": 20.9,
+    "any_pay_6m": 96.3,
+    "lost_no_pay_6m": 1.6,
+    "per_month_6m": 724.0,
+    "first_med": 30.0,
+    "max_dd_med": -1545.0,
+    "max_dd_p90": -2284.0,
+    "max_risk": 437.0
+   }
+  },
+  "cushD_mw800_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.3,
+    "paid_3m": 752.0,
+    "paid_med_3m": 487.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.0,
+    "any_pay_3m": 60.1,
+    "lost_no_pay_3m": 0.3,
+    "loss_6m": 0.6,
+    "paid_6m": 2660.0,
+    "paid_med_6m": 2302.0,
+    "paid_p10_6m": 427.0,
+    "grad_6m": 7.5,
+    "any_pay_6m": 91.7,
+    "lost_no_pay_6m": 0.5,
+    "per_month_6m": 443.0,
+    "first_med": 51.0,
+    "max_dd_med": -982.0,
+    "max_dd_p90": -1604.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushD_mw800_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 738.0,
+    "paid_med_3m": 476.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.0,
+    "any_pay_3m": 59.0,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 1.1,
+    "paid_6m": 2601.0,
+    "paid_med_6m": 2264.0,
+    "paid_p10_6m": 409.0,
+    "grad_6m": 7.3,
+    "any_pay_6m": 90.6,
+    "lost_no_pay_6m": 0.7,
+    "per_month_6m": 434.0,
+    "first_med": 51.0,
+    "max_dd_med": -1012.0,
+    "max_dd_p90": -1677.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushD_mw1000_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.2,
+    "paid_3m": 1224.0,
+    "paid_med_3m": 704.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 76.3,
+    "lost_no_pay_3m": 0.2,
+    "loss_6m": 0.5,
+    "paid_6m": 3729.0,
+    "paid_med_6m": 3796.0,
+    "paid_p10_6m": 690.0,
+    "grad_6m": 14.5,
+    "any_pay_6m": 96.6,
+    "lost_no_pay_6m": 0.4,
+    "per_month_6m": 622.0,
+    "first_med": 41.0,
+    "max_dd_med": -1060.0,
+    "max_dd_p90": -1755.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushD_mw1000_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.6,
+    "paid_3m": 1209.0,
+    "paid_med_3m": 697.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 75.7,
+    "lost_no_pay_3m": 0.6,
+    "loss_6m": 1.0,
+    "paid_6m": 3650.0,
+    "paid_med_6m": 3769.0,
+    "paid_p10_6m": 637.0,
+    "grad_6m": 14.1,
+    "any_pay_6m": 95.4,
+    "lost_no_pay_6m": 0.8,
+    "per_month_6m": 608.0,
+    "first_med": 41.0,
+    "max_dd_med": -1107.0,
+    "max_dd_p90": -1835.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushD_mw1200_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.3,
+    "paid_3m": 1529.0,
+    "paid_med_3m": 986.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 82.6,
+    "lost_no_pay_3m": 0.3,
+    "loss_6m": 0.7,
+    "paid_6m": 4040.0,
+    "paid_med_6m": 3931.0,
+    "paid_p10_6m": 886.0,
+    "grad_6m": 17.9,
+    "any_pay_6m": 97.3,
+    "lost_no_pay_6m": 0.6,
+    "per_month_6m": 673.0,
+    "first_med": 34.0,
+    "max_dd_med": -1246.0,
+    "max_dd_p90": -1973.0,
+    "max_risk": 312.0
+   }
+  },
+  "cushD_mw1200_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 1.7,
+    "paid_3m": 1484.0,
+    "paid_med_3m": 937.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 80.5,
+    "lost_no_pay_3m": 1.2,
+    "loss_6m": 2.6,
+    "paid_6m": 3869.0,
+    "paid_med_6m": 3891.0,
+    "paid_p10_6m": 675.0,
+    "grad_6m": 16.9,
+    "any_pay_6m": 95.2,
+    "lost_no_pay_6m": 1.9,
+    "per_month_6m": 645.0,
+    "first_med": 34.0,
+    "max_dd_med": -1346.0,
+    "max_dd_p90": -2056.0,
+    "max_risk": 312.0
+   }
+  },
+  "cushD_mw1500_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.9,
+    "paid_3m": 1932.0,
+    "paid_med_3m": 1519.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 87.1,
+    "lost_no_pay_3m": 0.7,
+    "loss_6m": 1.6,
+    "paid_6m": 4623.0,
+    "paid_med_6m": 4431.0,
+    "paid_p10_6m": 2133.0,
+    "grad_6m": 23.1,
+    "any_pay_6m": 97.5,
+    "lost_no_pay_6m": 1.1,
+    "per_month_6m": 770.0,
+    "first_med": 29.0,
+    "max_dd_med": -1404.0,
+    "max_dd_p90": -2222.0,
+    "max_risk": 340.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 1.2,
+    "paid_3m": 1523.0,
+    "paid_med_3m": 1036.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.0,
+    "any_pay_3m": 72.8,
+    "lost_no_pay_3m": 1.1,
+    "loss_6m": 3.0,
+    "paid_6m": 3953.0,
+    "paid_med_6m": 4097.0,
+    "paid_p10_6m": 533.0,
+    "grad_6m": 16.9,
+    "any_pay_6m": 91.3,
+    "lost_no_pay_6m": 1.9,
+    "per_month_6m": 659.0,
+    "first_med": 34.0,
+    "max_dd_med": -1383.0,
+    "max_dd_p90": -2113.0,
+    "max_risk": 410.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 5443,
+    "per_month": 893,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1456
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 1189,
+    "per_month": 320,
+    "first_payout_sessions": [
+     75
+    ],
+    "worst_dd": -836
+   },
+   "b2b_2021_25": {
+    "accounts": 2,
+    "lost": 1,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 2768,
+    "per_month": 54,
+    "first_payout_sessions": [
+     137
+    ],
+    "worst_dd": -3572
+   }
+  },
+  "cushD_mw1500_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 2.1,
+    "paid_3m": 1883.0,
+    "paid_med_3m": 1396.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 85.1,
+    "lost_no_pay_3m": 1.5,
+    "loss_6m": 2.9,
+    "paid_6m": 4409.0,
+    "paid_med_6m": 4340.0,
+    "paid_p10_6m": 1012.0,
+    "grad_6m": 22.1,
+    "any_pay_6m": 94.8,
+    "lost_no_pay_6m": 2.1,
+    "per_month_6m": 735.0,
+    "first_med": 28.0,
+    "max_dd_med": -1569.0,
+    "max_dd_p90": -2413.0,
+    "max_risk": 437.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 1.5,
+    "paid_3m": 1459.0,
+    "paid_med_3m": 1006.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.0,
+    "any_pay_3m": 71.1,
+    "lost_no_pay_3m": 1.4,
+    "loss_6m": 3.9,
+    "paid_6m": 3712.0,
+    "paid_med_6m": 3912.0,
+    "paid_p10_6m": 0.0,
+    "grad_6m": 14.9,
+    "any_pay_6m": 89.8,
+    "lost_no_pay_6m": 3.0,
+    "per_month_6m": 619.0,
+    "first_med": 35.0,
+    "max_dd_med": -1526.0,
+    "max_dd_p90": -2259.0,
+    "max_risk": 419.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 3843,
+    "per_month": 630,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1645
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 1022,
+    "per_month": 275,
+    "first_payout_sessions": [
+     75
+    ],
+    "worst_dd": -836
+   },
+   "b2b_2021_25": {
+    "accounts": 10,
+    "lost": 9,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 6833,
+    "per_month": 134,
+    "first_payout_sessions": [
+     137,
+     33,
+     11
+    ],
+    "worst_dd": -3572
+   }
+  },
+  "cushF_mw800_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.3,
+    "paid_3m": 752.0,
+    "paid_med_3m": 487.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.0,
+    "any_pay_3m": 60.1,
+    "lost_no_pay_3m": 0.3,
+    "loss_6m": 0.6,
+    "paid_6m": 2660.0,
+    "paid_med_6m": 2302.0,
+    "paid_p10_6m": 427.0,
+    "grad_6m": 7.5,
+    "any_pay_6m": 91.7,
+    "lost_no_pay_6m": 0.5,
+    "per_month_6m": 443.0,
+    "first_med": 51.0,
+    "max_dd_med": -982.0,
+    "max_dd_p90": -1604.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushF_mw800_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 738.0,
+    "paid_med_3m": 476.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.0,
+    "any_pay_3m": 59.0,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 1.1,
+    "paid_6m": 2601.0,
+    "paid_med_6m": 2264.0,
+    "paid_p10_6m": 409.0,
+    "grad_6m": 7.3,
+    "any_pay_6m": 90.6,
+    "lost_no_pay_6m": 0.7,
+    "per_month_6m": 434.0,
+    "first_med": 51.0,
+    "max_dd_med": -1012.0,
+    "max_dd_p90": -1677.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushF_mw1000_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.2,
+    "paid_3m": 1232.0,
+    "paid_med_3m": 708.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 76.3,
+    "lost_no_pay_3m": 0.2,
+    "loss_6m": 0.5,
+    "paid_6m": 3745.0,
+    "paid_med_6m": 3807.0,
+    "paid_p10_6m": 690.0,
+    "grad_6m": 14.8,
+    "any_pay_6m": 96.6,
+    "lost_no_pay_6m": 0.4,
+    "per_month_6m": 624.0,
+    "first_med": 41.0,
+    "max_dd_med": -1060.0,
+    "max_dd_p90": -1755.0,
+    "max_risk": 386.0
+   }
+  },
+  "cushF_mw1000_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.6,
+    "paid_3m": 1217.0,
+    "paid_med_3m": 700.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 75.7,
+    "lost_no_pay_3m": 0.6,
+    "loss_6m": 1.0,
+    "paid_6m": 3662.0,
+    "paid_med_6m": 3769.0,
+    "paid_p10_6m": 635.0,
+    "grad_6m": 14.5,
+    "any_pay_6m": 95.4,
+    "lost_no_pay_6m": 0.8,
+    "per_month_6m": 610.0,
+    "first_med": 41.0,
+    "max_dd_med": -1107.0,
+    "max_dd_p90": -1835.0,
+    "max_risk": 386.0
+   }
+  },
+  "cushF_mw1200_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.3,
+    "paid_3m": 1528.0,
+    "paid_med_3m": 984.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 82.6,
+    "lost_no_pay_3m": 0.3,
+    "loss_6m": 0.7,
+    "paid_6m": 4021.0,
+    "paid_med_6m": 3937.0,
+    "paid_p10_6m": 849.0,
+    "grad_6m": 17.7,
+    "any_pay_6m": 97.3,
+    "lost_no_pay_6m": 0.6,
+    "per_month_6m": 670.0,
+    "first_med": 34.0,
+    "max_dd_med": -1274.0,
+    "max_dd_p90": -1989.0,
+    "max_risk": 386.0
+   }
+  },
+  "cushF_mw1200_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 1.7,
+    "paid_3m": 1490.0,
+    "paid_med_3m": 946.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 80.5,
+    "lost_no_pay_3m": 1.2,
+    "loss_6m": 2.6,
+    "paid_6m": 3890.0,
+    "paid_med_6m": 3926.0,
+    "paid_p10_6m": 677.0,
+    "grad_6m": 17.3,
+    "any_pay_6m": 95.2,
+    "lost_no_pay_6m": 1.9,
+    "per_month_6m": 648.0,
+    "first_med": 34.0,
+    "max_dd_med": -1347.0,
+    "max_dd_p90": -2056.0,
+    "max_risk": 386.0
+   }
+  },
+  "cushF_mw1500_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.9,
+    "paid_3m": 1899.0,
+    "paid_med_3m": 1440.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 86.7,
+    "lost_no_pay_3m": 0.7,
+    "loss_6m": 1.5,
+    "paid_6m": 4526.0,
+    "paid_med_6m": 4339.0,
+    "paid_p10_6m": 1557.0,
+    "grad_6m": 21.1,
+    "any_pay_6m": 97.5,
+    "lost_no_pay_6m": 1.1,
+    "per_month_6m": 754.0,
+    "first_med": 29.0,
+    "max_dd_med": -1477.0,
+    "max_dd_p90": -2384.0,
+    "max_risk": 394.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 1.3,
+    "paid_3m": 1645.0,
+    "paid_med_3m": 1137.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 73.8,
+    "lost_no_pay_3m": 1.2,
+    "loss_6m": 3.0,
+    "paid_6m": 4037.0,
+    "paid_med_6m": 4160.0,
+    "paid_p10_6m": 534.0,
+    "grad_6m": 19.2,
+    "any_pay_6m": 91.1,
+    "lost_no_pay_6m": 1.9,
+    "per_month_6m": 673.0,
+    "first_med": 33.0,
+    "max_dd_med": -1518.0,
+    "max_dd_p90": -2321.0,
+    "max_risk": 410.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 3843,
+    "per_month": 630,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1678
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 405,
+    "per_month": 109,
+    "first_payout_sessions": [
+     71
+    ],
+    "worst_dd": -873
+   },
+   "b2b_2021_25": {
+    "accounts": 2,
+    "lost": 1,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 2655,
+    "per_month": 52,
+    "first_payout_sessions": [
+     137
+    ],
+    "worst_dd": -4363
+   }
+  },
+  "cushF_mw1500_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      400
+     ],
+     [
+      2000,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 2.2,
+    "paid_3m": 1864.0,
+    "paid_med_3m": 1373.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.5,
+    "any_pay_3m": 84.9,
+    "lost_no_pay_3m": 1.6,
+    "loss_6m": 3.1,
+    "paid_6m": 4364.0,
+    "paid_med_6m": 4290.0,
+    "paid_p10_6m": 976.0,
+    "grad_6m": 21.0,
+    "any_pay_6m": 94.8,
+    "lost_no_pay_6m": 2.2,
+    "per_month_6m": 727.0,
+    "first_med": 28.0,
+    "max_dd_med": -1604.0,
+    "max_dd_p90": -2444.0,
+    "max_risk": 437.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 1.5,
+    "paid_3m": 1552.0,
+    "paid_med_3m": 1084.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 71.8,
+    "lost_no_pay_3m": 1.4,
+    "loss_6m": 3.7,
+    "paid_6m": 3746.0,
+    "paid_med_6m": 3937.0,
+    "paid_p10_6m": 0.0,
+    "grad_6m": 15.3,
+    "any_pay_6m": 89.2,
+    "lost_no_pay_6m": 2.9,
+    "per_month_6m": 624.0,
+    "first_med": 34.0,
+    "max_dd_med": -1677.0,
+    "max_dd_p90": -2547.0,
+    "max_risk": 559.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 3843,
+    "per_month": 630,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1678
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 405,
+    "per_month": 109,
+    "first_payout_sessions": [
+     71
+    ],
+    "worst_dd": -873
+   },
+   "b2b_2021_25": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 2651,
+    "per_month": 52,
+    "first_payout_sessions": [
+     137
+    ],
+    "worst_dd": -4356
+   }
+  },
+  "cushG_mw800_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      300
+     ],
+     [
+      1500,
+      600
+     ],
+     [
+      2500,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.2,
+    "paid_3m": 802.0,
+    "paid_med_3m": 512.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 63.0,
+    "lost_no_pay_3m": 0.2,
+    "loss_6m": 0.5,
+    "paid_6m": 2727.0,
+    "paid_med_6m": 2314.0,
+    "paid_p10_6m": 434.0,
+    "grad_6m": 7.4,
+    "any_pay_6m": 92.7,
+    "lost_no_pay_6m": 0.3,
+    "per_month_6m": 454.0,
+    "first_med": 49.0,
+    "max_dd_med": -983.0,
+    "max_dd_p90": -1564.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushG_mw800_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      300
+     ],
+     [
+      1500,
+      600
+     ],
+     [
+      2500,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.5,
+    "paid_3m": 795.0,
+    "paid_med_3m": 510.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 62.5,
+    "lost_no_pay_3m": 0.5,
+    "loss_6m": 1.3,
+    "paid_6m": 2689.0,
+    "paid_med_6m": 2302.0,
+    "paid_p10_6m": 423.0,
+    "grad_6m": 7.4,
+    "any_pay_6m": 91.1,
+    "lost_no_pay_6m": 0.8,
+    "per_month_6m": 448.0,
+    "first_med": 49.0,
+    "max_dd_med": -1008.0,
+    "max_dd_p90": -1672.0,
+    "max_risk": 289.0
+   }
+  },
+  "cushG_mw1000_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      300
+     ],
+     [
+      1500,
+      600
+     ],
+     [
+      2500,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.3,
+    "paid_3m": 1275.0,
+    "paid_med_3m": 724.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 76.1,
+    "lost_no_pay_3m": 0.3,
+    "loss_6m": 0.7,
+    "paid_6m": 3740.0,
+    "paid_med_6m": 3773.0,
+    "paid_p10_6m": 660.0,
+    "grad_6m": 15.5,
+    "any_pay_6m": 96.8,
+    "lost_no_pay_6m": 0.5,
+    "per_month_6m": 623.0,
+    "first_med": 40.0,
+    "max_dd_med": -1067.0,
+    "max_dd_p90": -1710.0,
+    "max_risk": 386.0
+   }
+  },
+  "cushG_mw1000_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      300
+     ],
+     [
+      1500,
+      600
+     ],
+     [
+      2500,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.3,
+    "paid_3m": 1273.0,
+    "paid_med_3m": 723.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 76.4,
+    "lost_no_pay_3m": 0.3,
+    "loss_6m": 1.1,
+    "paid_6m": 3698.0,
+    "paid_med_6m": 3769.0,
+    "paid_p10_6m": 591.0,
+    "grad_6m": 15.0,
+    "any_pay_6m": 95.6,
+    "lost_no_pay_6m": 0.8,
+    "per_month_6m": 616.0,
+    "first_med": 39.0,
+    "max_dd_med": -1108.0,
+    "max_dd_p90": -1806.0,
+    "max_risk": 386.0
+   }
+  },
+  "cushG_mw1200_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      300
+     ],
+     [
+      1500,
+      600
+     ],
+     [
+      2500,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.2,
+    "paid_3m": 1441.0,
+    "paid_med_3m": 866.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 80.3,
+    "lost_no_pay_3m": 0.1,
+    "loss_6m": 0.6,
+    "paid_6m": 3887.0,
+    "paid_med_6m": 3845.0,
+    "paid_p10_6m": 741.0,
+    "grad_6m": 17.1,
+    "any_pay_6m": 97.1,
+    "lost_no_pay_6m": 0.3,
+    "per_month_6m": 648.0,
+    "first_med": 36.0,
+    "max_dd_med": -1254.0,
+    "max_dd_p90": -1968.0,
+    "max_risk": 386.0
+   }
+  },
+  "cushG_mw1200_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      300
+     ],
+     [
+      1500,
+      600
+     ],
+     [
+      2500,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 1.2,
+    "paid_3m": 1411.0,
+    "paid_med_3m": 848.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 78.8,
+    "lost_no_pay_3m": 1.0,
+    "loss_6m": 1.9,
+    "paid_6m": 3780.0,
+    "paid_med_6m": 3806.0,
+    "paid_p10_6m": 633.0,
+    "grad_6m": 16.4,
+    "any_pay_6m": 95.5,
+    "lost_no_pay_6m": 1.4,
+    "per_month_6m": 630.0,
+    "first_med": 36.0,
+    "max_dd_med": -1337.0,
+    "max_dd_p90": -2039.0,
+    "max_risk": 386.0
+   }
+  },
+  "cushG_mw1500_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      300
+     ],
+     [
+      1500,
+      600
+     ],
+     [
+      2500,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 1942.0,
+    "paid_med_3m": 1589.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 85.6,
+    "lost_no_pay_3m": 0.1,
+    "loss_6m": 0.9,
+    "paid_6m": 4511.0,
+    "paid_med_6m": 4330.0,
+    "paid_p10_6m": 1968.0,
+    "grad_6m": 21.9,
+    "any_pay_6m": 97.9,
+    "lost_no_pay_6m": 0.5,
+    "per_month_6m": 752.0,
+    "first_med": 29.0,
+    "max_dd_med": -1470.0,
+    "max_dd_p90": -2309.0,
+    "max_risk": 394.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 0.6,
+    "paid_3m": 1568.0,
+    "paid_med_3m": 1006.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 74.6,
+    "lost_no_pay_3m": 0.6,
+    "loss_6m": 1.5,
+    "paid_6m": 4023.0,
+    "paid_med_6m": 4087.0,
+    "paid_p10_6m": 663.0,
+    "grad_6m": 18.9,
+    "any_pay_6m": 93.2,
+    "lost_no_pay_6m": 1.1,
+    "per_month_6m": 670.0,
+    "first_med": 34.0,
+    "max_dd_med": -1463.0,
+    "max_dd_p90": -2270.0,
+    "max_risk": 410.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 4008,
+    "per_month": 658,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1522
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 1435,
+    "per_month": 386,
+    "first_payout_sessions": [
+     75
+    ],
+    "worst_dd": -999
+   },
+   "b2b_2021_25": {
+    "accounts": 7,
+    "lost": 6,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 3339,
+    "per_month": 65,
+    "first_payout_sessions": [
+     137,
+     17
+    ],
+    "worst_dd": -4138
+   }
+  },
+  "cushG_mw1500_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      300
+     ],
+     [
+      1500,
+      600
+     ],
+     [
+      2500,
+      1000
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 1.6,
+    "paid_3m": 1900.0,
+    "paid_med_3m": 1431.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 85.1,
+    "lost_no_pay_3m": 1.0,
+    "loss_6m": 2.9,
+    "paid_6m": 4363.0,
+    "paid_med_6m": 4283.0,
+    "paid_p10_6m": 1037.0,
+    "grad_6m": 21.3,
+    "any_pay_6m": 95.2,
+    "lost_no_pay_6m": 1.8,
+    "per_month_6m": 727.0,
+    "first_med": 28.0,
+    "max_dd_med": -1583.0,
+    "max_dd_p90": -2434.0,
+    "max_risk": 437.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 0.8,
+    "paid_3m": 1447.0,
+    "paid_med_3m": 914.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 72.0,
+    "lost_no_pay_3m": 0.8,
+    "loss_6m": 1.7,
+    "paid_6m": 3695.0,
+    "paid_med_6m": 3894.0,
+    "paid_p10_6m": 468.0,
+    "grad_6m": 14.8,
+    "any_pay_6m": 91.1,
+    "lost_no_pay_6m": 1.4,
+    "per_month_6m": 616.0,
+    "first_med": 35.0,
+    "max_dd_med": -1607.0,
+    "max_dd_p90": -2488.0,
+    "max_risk": 559.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 4008,
+    "per_month": 658,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1678
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 1268,
+    "per_month": 341,
+    "first_payout_sessions": [
+     75
+    ],
+    "worst_dd": -999
+   },
+   "b2b_2021_25": {
+    "accounts": 4,
+    "lost": 3,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 3193,
+    "per_month": 63,
+    "first_payout_sessions": [
+     137,
+     17
+    ],
+    "worst_dd": -4124
+   }
+  },
+  "flat800_mw800_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 910.0,
+    "paid_med_3m": 554.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 67.0,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 1.0,
+    "paid_6m": 2963.0,
+    "paid_med_6m": 2599.0,
+    "paid_p10_6m": 486.0,
+    "grad_6m": 9.5,
+    "any_pay_6m": 93.4,
+    "lost_no_pay_6m": 0.6,
+    "per_month_6m": 494.0,
+    "first_med": 46.0,
+    "max_dd_med": -1002.0,
+    "max_dd_p90": -1664.0,
+    "max_risk": 289.0
+   }
+  },
+  "flat800_mw800_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 910.0,
+    "paid_med_3m": 554.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 67.0,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 1.0,
+    "paid_6m": 2963.0,
+    "paid_med_6m": 2599.0,
+    "paid_p10_6m": 486.0,
+    "grad_6m": 9.5,
+    "any_pay_6m": 93.4,
+    "lost_no_pay_6m": 0.6,
+    "per_month_6m": 494.0,
+    "first_med": 46.0,
+    "max_dd_med": -1002.0,
+    "max_dd_p90": -1664.0,
+    "max_risk": 289.0
+   }
+  },
+  "flat800_mw1000_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 1363.0,
+    "paid_med_3m": 777.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.3,
+    "any_pay_3m": 78.6,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 1.1,
+    "paid_6m": 3899.0,
+    "paid_med_6m": 3832.0,
+    "paid_p10_6m": 709.0,
+    "grad_6m": 17.5,
+    "any_pay_6m": 95.8,
+    "lost_no_pay_6m": 0.8,
+    "per_month_6m": 650.0,
+    "first_med": 37.0,
+    "max_dd_med": -1104.0,
+    "max_dd_p90": -1855.0,
+    "max_risk": 289.0
+   }
+  },
+  "flat800_mw1000_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 1363.0,
+    "paid_med_3m": 777.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.3,
+    "any_pay_3m": 78.6,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 1.1,
+    "paid_6m": 3899.0,
+    "paid_med_6m": 3832.0,
+    "paid_p10_6m": 709.0,
+    "grad_6m": 17.5,
+    "any_pay_6m": 95.8,
+    "lost_no_pay_6m": 0.8,
+    "per_month_6m": 650.0,
+    "first_med": 37.0,
+    "max_dd_med": -1104.0,
+    "max_dd_p90": -1855.0,
+    "max_risk": 289.0
+   }
+  },
+  "flat800_mw1200_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 2.2,
+    "paid_3m": 1658.0,
+    "paid_med_3m": 1064.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 83.8,
+    "lost_no_pay_3m": 1.9,
+    "loss_6m": 2.9,
+    "paid_6m": 4117.0,
+    "paid_med_6m": 4026.0,
+    "paid_p10_6m": 776.0,
+    "grad_6m": 20.9,
+    "any_pay_6m": 94.7,
+    "lost_no_pay_6m": 2.2,
+    "per_month_6m": 686.0,
+    "first_med": 30.0,
+    "max_dd_med": -1340.0,
+    "max_dd_p90": -2051.0,
+    "max_risk": 312.0
+   }
+  },
+  "flat800_mw1200_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 2.7,
+    "paid_3m": 1625.0,
+    "paid_med_3m": 1023.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 82.7,
+    "lost_no_pay_3m": 2.1,
+    "loss_6m": 3.6,
+    "paid_6m": 4015.0,
+    "paid_med_6m": 3952.0,
+    "paid_p10_6m": 710.0,
+    "grad_6m": 20.0,
+    "any_pay_6m": 94.2,
+    "lost_no_pay_6m": 2.5,
+    "per_month_6m": 669.0,
+    "first_med": 30.0,
+    "max_dd_med": -1406.0,
+    "max_dd_p90": -2111.0,
+    "max_risk": 312.0
+   }
+  },
+  "flat800_mw1500_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 2.6,
+    "paid_3m": 2068.0,
+    "paid_med_3m": 2195.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 86.6,
+    "lost_no_pay_3m": 2.1,
+    "loss_6m": 4.2,
+    "paid_6m": 4564.0,
+    "paid_med_6m": 4596.0,
+    "paid_p10_6m": 942.0,
+    "grad_6m": 25.9,
+    "any_pay_6m": 93.3,
+    "lost_no_pay_6m": 2.6,
+    "per_month_6m": 761.0,
+    "first_med": 25.0,
+    "max_dd_med": -1568.0,
+    "max_dd_p90": -2348.0,
+    "max_risk": 340.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 3.9,
+    "paid_3m": 2154.0,
+    "paid_med_3m": 2313.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 86.7,
+    "lost_no_pay_3m": 3.1,
+    "loss_6m": 4.8,
+    "paid_6m": 4751.0,
+    "paid_med_6m": 5477.0,
+    "paid_p10_6m": 867.0,
+    "grad_6m": 26.3,
+    "any_pay_6m": 91.7,
+    "lost_no_pay_6m": 3.6,
+    "per_month_6m": 792.0,
+    "first_med": 24.0,
+    "max_dd_med": -1480.0,
+    "max_dd_p90": -2286.0,
+    "max_risk": 410.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 4173,
+    "per_month": 685,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1456
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 2619,
+    "per_month": 705,
+    "first_payout_sessions": [
+     51
+    ],
+    "worst_dd": -1003
+   },
+   "b2b_2021_25": {
+    "accounts": 5,
+    "lost": 4,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 4324,
+    "per_month": 85,
+    "first_payout_sessions": [
+     106
+    ],
+    "worst_dd": -3858
+   }
+  },
+  "flat800_mw1500_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      800
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 3.8,
+    "paid_3m": 2016.0,
+    "paid_med_3m": 2095.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 84.8,
+    "lost_no_pay_3m": 3.0,
+    "loss_6m": 5.5,
+    "paid_6m": 4397.0,
+    "paid_med_6m": 4410.0,
+    "paid_p10_6m": 729.0,
+    "grad_6m": 24.4,
+    "any_pay_6m": 91.7,
+    "lost_no_pay_6m": 3.3,
+    "per_month_6m": 733.0,
+    "first_med": 25.0,
+    "max_dd_med": -1684.0,
+    "max_dd_p90": -2527.0,
+    "max_risk": 437.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 5.4,
+    "paid_3m": 2002.0,
+    "paid_med_3m": 2167.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 83.2,
+    "lost_no_pay_3m": 4.4,
+    "loss_6m": 7.7,
+    "paid_6m": 4333.0,
+    "paid_med_6m": 4512.0,
+    "paid_p10_6m": 0.0,
+    "grad_6m": 23.1,
+    "any_pay_6m": 87.4,
+    "lost_no_pay_6m": 5.7,
+    "per_month_6m": 722.0,
+    "first_med": 24.0,
+    "max_dd_med": -1694.0,
+    "max_dd_p90": -2494.0,
+    "max_risk": 419.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 4173,
+    "per_month": 685,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1645
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 2517,
+    "per_month": 678,
+    "first_payout_sessions": [
+     51
+    ],
+    "worst_dd": -1131
+   },
+   "b2b_2021_25": {
+    "accounts": 2,
+    "lost": 1,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 4324,
+    "per_month": 85,
+    "first_payout_sessions": [
+     106
+    ],
+    "worst_dd": -3840
+   }
+  },
+  "flat600_mw800_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      600
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 806.0,
+    "paid_med_3m": 519.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 63.7,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 1.1,
+    "paid_6m": 2668.0,
+    "paid_med_6m": 2296.0,
+    "paid_p10_6m": 440.0,
+    "grad_6m": 6.8,
+    "any_pay_6m": 92.1,
+    "lost_no_pay_6m": 0.7,
+    "per_month_6m": 445.0,
+    "first_med": 49.0,
+    "max_dd_med": -1008.0,
+    "max_dd_p90": -1672.0,
+    "max_risk": 208.0
+   }
+  },
+  "flat600_mw800_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      600
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 800,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 806.0,
+    "paid_med_3m": 519.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 63.7,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 1.1,
+    "paid_6m": 2668.0,
+    "paid_med_6m": 2296.0,
+    "paid_p10_6m": 440.0,
+    "grad_6m": 6.8,
+    "any_pay_6m": 92.1,
+    "lost_no_pay_6m": 0.7,
+    "per_month_6m": 445.0,
+    "first_med": 49.0,
+    "max_dd_med": -1008.0,
+    "max_dd_p90": -1672.0,
+    "max_risk": 208.0
+   }
+  },
+  "flat600_mw1000_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      600
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 1262.0,
+    "paid_med_3m": 726.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 77.0,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 0.7,
+    "paid_6m": 3683.0,
+    "paid_med_6m": 3772.0,
+    "paid_p10_6m": 642.0,
+    "grad_6m": 14.1,
+    "any_pay_6m": 95.5,
+    "lost_no_pay_6m": 0.5,
+    "per_month_6m": 614.0,
+    "first_med": 39.0,
+    "max_dd_med": -1092.0,
+    "max_dd_p90": -1842.0,
+    "max_risk": 208.0
+   }
+  },
+  "flat600_mw1000_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      600
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 1253.0,
+    "paid_med_3m": 714.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 76.8,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 1.1,
+    "paid_6m": 3649.0,
+    "paid_med_6m": 3748.0,
+    "paid_p10_6m": 620.0,
+    "grad_6m": 13.7,
+    "any_pay_6m": 95.1,
+    "lost_no_pay_6m": 0.9,
+    "per_month_6m": 608.0,
+    "first_med": 39.0,
+    "max_dd_med": -1111.0,
+    "max_dd_p90": -1890.0,
+    "max_risk": 250.0
+   }
+  },
+  "flat600_mw1200_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      600
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 1.2,
+    "paid_3m": 1414.0,
+    "paid_med_3m": 862.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 81.1,
+    "lost_no_pay_3m": 0.9,
+    "loss_6m": 2.4,
+    "paid_6m": 3758.0,
+    "paid_med_6m": 3800.0,
+    "paid_p10_6m": 713.0,
+    "grad_6m": 14.0,
+    "any_pay_6m": 95.9,
+    "lost_no_pay_6m": 1.5,
+    "per_month_6m": 626.0,
+    "first_med": 34.0,
+    "max_dd_med": -1237.0,
+    "max_dd_p90": -2000.0,
+    "max_risk": 255.0
+   }
+  },
+  "flat600_mw1200_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      600
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 2.4,
+    "paid_3m": 1367.0,
+    "paid_med_3m": 813.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 79.6,
+    "lost_no_pay_3m": 2.0,
+    "loss_6m": 4.2,
+    "paid_6m": 3566.0,
+    "paid_med_6m": 3737.0,
+    "paid_p10_6m": 550.0,
+    "grad_6m": 12.9,
+    "any_pay_6m": 93.6,
+    "lost_no_pay_6m": 2.8,
+    "per_month_6m": 594.0,
+    "first_med": 34.0,
+    "max_dd_med": -1355.0,
+    "max_dd_p90": -2033.0,
+    "max_risk": 312.0
+   }
+  },
+  "flat600_mw1500_wk1": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      600
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": true
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 2.0,
+    "paid_3m": 1926.0,
+    "paid_med_3m": 1804.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.3,
+    "any_pay_3m": 87.1,
+    "lost_no_pay_3m": 1.7,
+    "loss_6m": 3.1,
+    "paid_6m": 4387.0,
+    "paid_med_6m": 4333.0,
+    "paid_p10_6m": 1070.0,
+    "grad_6m": 19.6,
+    "any_pay_6m": 95.0,
+    "lost_no_pay_6m": 2.3,
+    "per_month_6m": 731.0,
+    "first_med": 27.0,
+    "max_dd_med": -1405.0,
+    "max_dd_p90": -2102.0,
+    "max_risk": 312.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 2.8,
+    "paid_3m": 1484.0,
+    "paid_med_3m": 1056.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.0,
+    "any_pay_3m": 80.7,
+    "lost_no_pay_3m": 2.6,
+    "loss_6m": 4.4,
+    "paid_6m": 3688.0,
+    "paid_med_6m": 3906.0,
+    "paid_p10_6m": 660.0,
+    "grad_6m": 10.7,
+    "any_pay_6m": 92.0,
+    "lost_no_pay_6m": 3.5,
+    "per_month_6m": 615.0,
+    "first_med": 31.0,
+    "max_dd_med": -1369.0,
+    "max_dd_p90": -2124.0,
+    "max_risk": 316.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 4008,
+    "per_month": 658,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1231
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 1214,
+    "per_month": 327,
+    "first_payout_sessions": [
+     67
+    ],
+    "worst_dd": -931
+   },
+   "b2b_2021_25": {
+    "accounts": 2,
+    "lost": 1,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 2593,
+    "per_month": 51,
+    "first_payout_sessions": [
+     94
+    ],
+    "worst_dd": -5389
+   }
+  },
+  "flat600_mw1500_wk0": {
+   "cfg": {
+    "tiers": [
+     [
+      0,
+      600
+     ]
+    ],
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500,
+    "wk": false
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 3.0,
+    "paid_3m": 1849.0,
+    "paid_med_3m": 1446.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.3,
+    "any_pay_3m": 84.2,
+    "lost_no_pay_3m": 2.6,
+    "loss_6m": 4.7,
+    "paid_6m": 4150.0,
+    "paid_med_6m": 4173.0,
+    "paid_p10_6m": 720.0,
+    "grad_6m": 18.1,
+    "any_pay_6m": 92.2,
+    "lost_no_pay_6m": 3.6,
+    "per_month_6m": 692.0,
+    "first_med": 27.0,
+    "max_dd_med": -1567.0,
+    "max_dd_p90": -2334.0,
+    "max_risk": 374.0
+   }
+  },
+  "pct15_mw1000": {
+   "cfg": {
+    "pct": 0.15,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 1111.0,
+    "paid_med_3m": 693.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 73.9,
+    "lost_no_pay_3m": 0.0,
+    "loss_6m": 0.4,
+    "paid_6m": 3443.0,
+    "paid_med_6m": 3646.0,
+    "paid_p10_6m": 631.0,
+    "grad_6m": 11.2,
+    "any_pay_6m": 97.1,
+    "lost_no_pay_6m": 0.2,
+    "per_month_6m": 574.0,
+    "first_med": 43.0,
+    "max_dd_med": -950.0,
+    "max_dd_p90": -1534.0,
+    "max_risk": 289.0
+   }
+  },
+  "pct15_mw1200": {
+   "cfg": {
+    "pct": 0.15,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 1240.0,
+    "paid_med_3m": 771.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 76.7,
+    "lost_no_pay_3m": 0.0,
+    "loss_6m": 0.3,
+    "paid_6m": 3544.0,
+    "paid_med_6m": 3691.0,
+    "paid_p10_6m": 684.0,
+    "grad_6m": 11.4,
+    "any_pay_6m": 97.0,
+    "lost_no_pay_6m": 0.1,
+    "per_month_6m": 591.0,
+    "first_med": 38.0,
+    "max_dd_med": -1026.0,
+    "max_dd_p90": -1618.0,
+    "max_risk": 386.0
+   }
+  },
+  "pct15_mw1500": {
+   "cfg": {
+    "pct": 0.15,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 1463.0,
+    "paid_med_3m": 983.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 79.2,
+    "lost_no_pay_3m": 0.0,
+    "loss_6m": 0.5,
+    "paid_6m": 3946.0,
+    "paid_med_6m": 3898.0,
+    "paid_p10_6m": 843.0,
+    "grad_6m": 15.0,
+    "any_pay_6m": 97.7,
+    "lost_no_pay_6m": 0.1,
+    "per_month_6m": 658.0,
+    "first_med": 36.0,
+    "max_dd_med": -1177.0,
+    "max_dd_p90": -1865.0,
+    "max_risk": 394.0
+   }
+  },
+  "pct20_mw1000": {
+   "cfg": {
+    "pct": 0.2,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.1,
+    "paid_3m": 1150.0,
+    "paid_med_3m": 690.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 75.3,
+    "lost_no_pay_3m": 0.1,
+    "loss_6m": 0.4,
+    "paid_6m": 3559.0,
+    "paid_med_6m": 3712.0,
+    "paid_p10_6m": 622.0,
+    "grad_6m": 12.6,
+    "any_pay_6m": 97.2,
+    "lost_no_pay_6m": 0.2,
+    "per_month_6m": 593.0,
+    "first_med": 41.0,
+    "max_dd_med": -1000.0,
+    "max_dd_p90": -1606.0,
+    "max_risk": 386.0
+   }
+  },
+  "pct20_mw1200": {
+   "cfg": {
+    "pct": 0.2,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 1359.0,
+    "paid_med_3m": 835.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.1,
+    "any_pay_3m": 80.3,
+    "lost_no_pay_3m": 0.0,
+    "loss_6m": 0.6,
+    "paid_6m": 3758.0,
+    "paid_med_6m": 3808.0,
+    "paid_p10_6m": 732.0,
+    "grad_6m": 15.0,
+    "any_pay_6m": 97.6,
+    "lost_no_pay_6m": 0.3,
+    "per_month_6m": 626.0,
+    "first_med": 36.0,
+    "max_dd_med": -1127.0,
+    "max_dd_p90": -1813.0,
+    "max_risk": 386.0
+   }
+  },
+  "pct20_mw1500": {
+   "cfg": {
+    "pct": 0.2,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 1718.0,
+    "paid_med_3m": 1216.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.3,
+    "any_pay_3m": 83.5,
+    "lost_no_pay_3m": 0.0,
+    "loss_6m": 0.3,
+    "paid_6m": 4291.0,
+    "paid_med_6m": 4173.0,
+    "paid_p10_6m": 1099.0,
+    "grad_6m": 19.3,
+    "any_pay_6m": 98.0,
+    "lost_no_pay_6m": 0.2,
+    "per_month_6m": 715.0,
+    "first_med": 32.0,
+    "max_dd_med": -1301.0,
+    "max_dd_p90": -2045.0,
+    "max_risk": 394.0
+   }
+  },
+  "pct30_mw1000": {
+   "cfg": {
+    "pct": 0.3,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.2,
+    "paid_3m": 1265.0,
+    "paid_med_3m": 724.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 75.8,
+    "lost_no_pay_3m": 0.2,
+    "loss_6m": 0.8,
+    "paid_6m": 3724.0,
+    "paid_med_6m": 3770.0,
+    "paid_p10_6m": 644.0,
+    "grad_6m": 15.3,
+    "any_pay_6m": 96.6,
+    "lost_no_pay_6m": 0.6,
+    "per_month_6m": 621.0,
+    "first_med": 40.0,
+    "max_dd_med": -1077.0,
+    "max_dd_p90": -1711.0,
+    "max_risk": 386.0
+   }
+  },
+  "pct30_mw1200": {
+   "cfg": {
+    "pct": 0.3,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.3,
+    "paid_3m": 1444.0,
+    "paid_med_3m": 864.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 80.4,
+    "lost_no_pay_3m": 0.2,
+    "loss_6m": 0.5,
+    "paid_6m": 3902.0,
+    "paid_med_6m": 3839.0,
+    "paid_p10_6m": 717.0,
+    "grad_6m": 17.4,
+    "any_pay_6m": 97.3,
+    "lost_no_pay_6m": 0.2,
+    "per_month_6m": 650.0,
+    "first_med": 36.0,
+    "max_dd_med": -1259.0,
+    "max_dd_p90": -1961.0,
+    "max_risk": 386.0
+   }
+  },
+  "pct30_mw1500": {
+   "cfg": {
+    "pct": 0.3,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.1,
+    "paid_3m": 1901.0,
+    "paid_med_3m": 1462.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 85.9,
+    "lost_no_pay_3m": 0.0,
+    "loss_6m": 0.6,
+    "paid_6m": 4502.0,
+    "paid_med_6m": 4366.0,
+    "paid_p10_6m": 1304.0,
+    "grad_6m": 21.9,
+    "any_pay_6m": 97.9,
+    "lost_no_pay_6m": 0.1,
+    "per_month_6m": 750.0,
+    "first_med": 30.0,
+    "max_dd_med": -1464.0,
+    "max_dd_p90": -2286.0,
+    "max_risk": 394.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 0.4,
+    "paid_3m": 1502.0,
+    "paid_med_3m": 1013.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 73.0,
+    "lost_no_pay_3m": 0.4,
+    "loss_6m": 1.3,
+    "paid_6m": 3942.0,
+    "paid_med_6m": 4061.0,
+    "paid_p10_6m": 643.0,
+    "grad_6m": 17.9,
+    "any_pay_6m": 91.8,
+    "lost_no_pay_6m": 1.1,
+    "per_month_6m": 657.0,
+    "first_med": 36.0,
+    "max_dd_med": -1466.0,
+    "max_dd_p90": -2250.0,
+    "max_risk": 410.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 4008,
+    "per_month": 658,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1522
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 834,
+    "per_month": 225,
+    "first_payout_sessions": [
+     68
+    ],
+    "worst_dd": -827
+   },
+   "b2b_2021_25": {
+    "accounts": 2,
+    "lost": 1,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 933,
+    "per_month": 18,
+    "first_payout_sessions": [
+     137
+    ],
+    "worst_dd": -2662
+   }
+  },
+  "pct40_mw1000": {
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1000
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 1332.0,
+    "paid_med_3m": 738.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.3,
+    "any_pay_3m": 77.6,
+    "lost_no_pay_3m": 0.0,
+    "loss_6m": 0.5,
+    "paid_6m": 3846.0,
+    "paid_med_6m": 3827.0,
+    "paid_p10_6m": 723.0,
+    "grad_6m": 17.0,
+    "any_pay_6m": 96.1,
+    "lost_no_pay_6m": 0.4,
+    "per_month_6m": 641.0,
+    "first_med": 38.0,
+    "max_dd_med": -1097.0,
+    "max_dd_p90": -1772.0,
+    "max_risk": 386.0
+   }
+  },
+  "pct40_mw1200": {
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1200
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.3,
+    "paid_3m": 1606.0,
+    "paid_med_3m": 1023.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 82.4,
+    "lost_no_pay_3m": 0.3,
+    "loss_6m": 0.8,
+    "paid_6m": 4067.0,
+    "paid_med_6m": 3973.0,
+    "paid_p10_6m": 860.0,
+    "grad_6m": 19.2,
+    "any_pay_6m": 97.2,
+    "lost_no_pay_6m": 0.5,
+    "per_month_6m": 678.0,
+    "first_med": 32.0,
+    "max_dd_med": -1314.0,
+    "max_dd_p90": -2001.0,
+    "max_risk": 386.0
+   }
+  },
+  "pct40_mw1500": {
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 100,
+    "pct_max_usd": 1000,
+    "ref": 20,
+    "room_f": null,
+    "max_win": 1500
+   },
+   "hold": 0,
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.7,
+    "paid_3m": 2018.0,
+    "paid_med_3m": 2122.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.4,
+    "any_pay_3m": 86.5,
+    "lost_no_pay_3m": 0.5,
+    "loss_6m": 1.1,
+    "paid_6m": 4564.0,
+    "paid_med_6m": 4471.0,
+    "paid_p10_6m": 1423.0,
+    "grad_6m": 23.1,
+    "any_pay_6m": 96.9,
+    "lost_no_pay_6m": 0.7,
+    "per_month_6m": 761.0,
+    "first_med": 27.0,
+    "max_dd_med": -1551.0,
+    "max_dd_p90": -2442.0,
+    "max_risk": 394.0
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 0.9,
+    "paid_3m": 1974.0,
+    "paid_med_3m": 2023.0,
+    "paid_p10_3m": 0.0,
+    "grad_3m": 0.2,
+    "any_pay_3m": 81.8,
+    "lost_no_pay_3m": 0.9,
+    "loss_6m": 2.1,
+    "paid_6m": 4508.0,
+    "paid_med_6m": 4631.0,
+    "paid_p10_6m": 791.0,
+    "grad_6m": 25.5,
+    "any_pay_6m": 93.8,
+    "lost_no_pay_6m": 1.8,
+    "per_month_6m": 751.0,
+    "first_med": 26.0,
+    "max_dd_med": -1568.0,
+    "max_dd_p90": -2434.0,
+    "max_risk": 410.0
+   },
+   "b2b_H1": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 4173,
+    "per_month": 685,
+    "first_payout_sessions": [
+     4
+    ],
+    "worst_dd": -1545
+   },
+   "b2b_H2": {
+    "accounts": 1,
+    "lost": 0,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 952,
+    "per_month": 256,
+    "first_payout_sessions": [
+     67
+    ],
+    "worst_dd": -910
+   },
+   "b2b_2021_25": {
+    "accounts": 5,
+    "lost": 4,
+    "graduated": 0,
+    "open_at_end": 1,
+    "paid": 2309,
+    "per_month": 45,
+    "first_payout_sessions": [
+     137
+    ],
+    "worst_dd": -4220
+   }
+  }
+ },
+ "top": [
+  "cushD_mw1500_wk1",
+  "flat800_mw1500_wk1",
+  "pct40_mw1500",
+  "cushC_mw1500_wk1",
+  "cushF_mw1500_wk1",
+  "cushG_mw1500_wk1",
+  "pct30_mw1500",
+  "cushD_mw1500_wk0",
+  "flat800_mw1500_wk0",
+  "flat600_mw1500_wk1",
+  "cushF_mw1500_wk0",
+  "cushG_mw1500_wk0"
+ ]
+}

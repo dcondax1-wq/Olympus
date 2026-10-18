@@ -173,14 +173,16 @@ def days_of(trades, sessions):
 SPANS = (("2026", "2026-01-01", "2026-12-31"), ("2021-25", "2021-01-01", "2025-12-31"), ("all", "2000-01-01", "2100-01-01"))
 
 
-def eval_speed(days, horizon=60):
+def eval_speed(days, horizon=60, full_only=False):
     """Owner's rule (2026-10-17): on the 50K an eval should be decided within 2 weeks and never take over 3 weeks to
     pass. A fresh MFFU Builder 50K eval is started on every session and run up to `horizon` sessions:
       p10/f10, p15/f15, p20/f20  % of starts that passed / failed within 10, 15, 20 sessions
       dec10                      % decided (passed or failed) within 10 sessions
       slow_pass                  % of all passes (within the horizon) that needed more than 15 sessions
       pass_med                   median sessions of a pass
-      b2b                        back-to-back evals passed/failed (a new eval the day after each one ends)"""
+      b2b                        back-to-back evals passed/failed (a new eval the day after each one ends)
+    full_only (default False = every start, the stored runs' way): p/f within H count only the starts that can see all H
+    sessions of the span (a start 3 sessions before the data ends can only pass early or stay OPEN; tools/lit_adv_audit.py)."""
     from engine.analytics import PLANS, simulate_eval
     plan = PLANS["builder_50k"]
     pn = [d["pnl"] for d in days]; lo = [d["low"] for d in days]
@@ -190,8 +192,10 @@ def eval_speed(days, horizon=60):
     passes = [r["days"] for r in res if r["result"] == "PASS"]
     out = {}
     for H in (10, 15, 20):
-        out[f"p{H}"] = pct(sum(1 for r in res if r["result"] == "PASS" and r["days"] <= H))
-        out[f"f{H}"] = pct(sum(1 for r in res if r["result"] == "FAIL" and r["days"] <= H))
+        rr = res[:max(0, len(res) - H + 1)] if full_only else res
+        m = (len(rr) or 1) if full_only else n
+        out[f"p{H}"] = round(100 * sum(1 for r in rr if r["result"] == "PASS" and r["days"] <= H) / m, 1)
+        out[f"f{H}"] = round(100 * sum(1 for r in rr if r["result"] == "FAIL" and r["days"] <= H) / m, 1)
     out["dec10"] = round(out["p10"] + out["f10"], 1)
     out["slow_pass"] = round(100 * sum(1 for d in passes if d > 15) / len(passes), 1) if passes else None
     out["pass_med"] = float(np.median(passes)) if passes else None

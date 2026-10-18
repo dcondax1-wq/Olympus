@@ -676,12 +676,18 @@ def orun(P=None, sessions=SESS):
             C2 += [z for z in ob_cands(M, Q5["tfs"], Q5.get("zone", "body")) if (z["day"], z["dir"], z["ext_i"]) not in main]
         C = sorted(list(C) + C2, key=lambda z: (z["entry_t"], -z["dir"]))
     out, busy, per_day = [], -1, collections.Counter()
+    day_ob = collections.Counter()
     for z in C:
         if sset is not None and z["day"] not in sset:
             continue
-        if z["entry_i"] <= busy or per_day[z["day"]] >= P["max_per_day"]:
-            continue
         src = z.get("src", "main")
+        cap = P["max_per_day"] + (1 if (Q5 and Q5.get("second") and src != "main") else 0)
+        if z["entry_i"] <= busy or per_day[z["day"]] >= cap:
+            continue
+        if Q5 and Q5.get("second") and src != "main" and day_ob[z["day"]]:
+            continue                        # at most one OB trade a day
+        if Q5 and Q5.get("second") and src == "main" and per_day[z["day"]] - day_ob[z["day"]] >= 1:
+            continue                        # the main model keeps its one trade a day
         if src in ("ob", "obin"):
             if not lit.setup_ok(z, {**P, "depth": Q5.get("depth", 0.0)}, None):
                 continue
@@ -760,6 +766,7 @@ def orun(P=None, sessions=SESS):
         if t is None:
             continue
         busy = t["exit_i"]; per_day[z["day"]] += 1
+        day_ob[z["day"]] += src != "main"
         t["ob_m"] = mult; t["ob_why"] = why; t["src"] = src
         t["poi"] = list(hits) if hits else []
         out.append(t)
@@ -926,6 +933,9 @@ def variants():
             nm = f"obstacle skip: opposing {tn} OB < {rr:g}R"
             if nm not in V:
                 V[nm] = {"obx": {"tfs": tfs, "rr": rr, "mode": "skip"}}
+    for rr in (2.5, 3.0):
+        V[f"obstacle skip: opposing 15m/1h OB < {rr:g}R"] = {"obx": {"tfs": ["15m", "1h"], "rr": rr, "mode": "skip"}}
+    V["obstacle half: opposing 15m/1h OB < 2R"] = {"obx": {"tfs": ["15m", "1h"], "rr": 2.0, "mode": "half", "mult": 0.5}}
     V["obstacle skip: opposing 15m/1h/4h OB (wick zone) < 1.5R"] = {"obx": {"tfs": H3, "rr": 1.5, "mode": "skip", "zone": "wick"}}
     # ---- 5. OB-only setups (extra setup type)
     for tfs, tn in ((H2T, "1h/4h"), (H3, "15m/1h/4h")):
@@ -941,6 +951,10 @@ def variants():
         for dp in (0.25, 0.5):
             V[f"OB-inside setups {tn} depth {dp:g}"] = {"obonly": {"tfs": tfs, "mode": "inside", "depth": dp, "tol": 1.0}}
         V[f"OB-inside + OB-only setups {tn} depth 0.5"] = {"obonly": {"tfs": tfs, "mode": "inside", "both": True, "depth": 0.5, "tol": 1.0}}
+    V["OB setups (into + inside) 15m/1h/4h/1d as a 2nd trade a day"] = {"obonly": {"tfs": H3 + ["1d"], "mode": "inside", "both": True,
+                                                                                  "depth": 0.0, "tol": 0.5, "second": True}}
+    V["OB setups (into + inside) 1h/4h/1d as a 2nd trade a day"] = {"obonly": {"tfs": H4, "mode": "inside", "both": True,
+                                                                             "depth": 0.0, "tol": 0.5, "second": True}}
     return V
 
 
