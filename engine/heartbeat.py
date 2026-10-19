@@ -157,6 +157,15 @@ def _acct(bot):
         return None
 
 
+def _exec():
+    """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
+    try:
+        from engine import fill_audit
+        return fill_audit.heartbeat_block()
+    except Exception:
+        return None
+
+
 class Heartbeat:
     """Daemon thread on the PC server: pushes a heartbeat every `every_s` seconds while the server runs."""
 
@@ -191,7 +200,8 @@ class Heartbeat:
                 "position": bool(st.get("position")), "model_state": st.get("model_state"), "host": platform.node(),
                 "model": (st.get("strategy") or {}).get("model") or cfg.get("model"),
                 "push_pk": _push_pk(),          # phone notifications: the cloud seals the notification key to this (engine/push.py)
-                "every_s": int(self.every_s), "acct": _acct(self.bot), "health": _health(self.bot)}
+                "every_s": int(self.every_s), "acct": _acct(self.bot), "health": _health(self.bot),
+                "exec": _exec()}                # execution quality summary (engine/fill_audit.py), None before the first audit
 
     def beat(self) -> dict:
         files = self.bar_files()
