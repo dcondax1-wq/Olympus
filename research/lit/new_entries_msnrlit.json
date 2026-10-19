@@ -1,0 +1,419 @@
+{
+ "base (live LIT)": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85.2,
+   "win": 22.5,
+   "pf": 4.36,
+   "net": 32544,
+   "per_month": 5339,
+   "dd": -2332,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 9.2,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81.2,
+   "win": 35.0,
+   "pf": 2.43,
+   "net": 8880,
+   "per_month": 2391,
+   "dd": -1489,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 50.7,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.8,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 120,
+   "tpw": 2.91,
+   "wk2": 85.7,
+   "win": 26.7,
+   "pf": 3.61,
+   "net": 41424,
+   "per_month": 4223,
+   "dd": -2332,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 510,
+   "tpw": 2.38,
+   "wk2": 75.6,
+   "win": 17.3,
+   "pf": 0.99,
+   "net": -651,
+   "per_month": -13,
+   "dd": -21392,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "base"
+  }
+ },
+ "LIT + MSNR 15m A+V levels as liquidity (replaces live)": {
+  "H1": {
+   "n": 63,
+   "tpw": 2.46,
+   "wk2": 70.4,
+   "win": 20.6,
+   "pf": 4.39,
+   "net": 25022,
+   "per_month": 4105,
+   "dd": -1859,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 5.0,
+   "pass_med": 4.0,
+   "mc_p10": 39.2,
+   "mc_f10": 1.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 87.5,
+   "win": 26.8,
+   "pf": 2.01,
+   "net": 7741,
+   "per_month": 2084,
+   "dd": -2690,
+   "worst_day": -750,
+   "n_es": 0,
+   "p10": 36.2,
+   "f10": 7.2,
+   "pass_med": 3.0,
+   "mc_p10": 35.2,
+   "mc_f10": 12.2,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 104,
+   "tpw": 2.52,
+   "wk2": 78.6,
+   "win": 23.1,
+   "pf": 3.18,
+   "net": 32763,
+   "per_month": 3340,
+   "dd": -3047,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 495,
+   "tpw": 2.31,
+   "wk2": 72.4,
+   "win": 17.4,
+   "pf": 0.97,
+   "net": -2899,
+   "per_month": -57,
+   "dd": -16958,
+   "worst_day": -881,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "msnrlit",
+   "tf": "15m",
+   "kinds": [
+    "A",
+    "V"
+   ]
+  }
+ },
+ "LIT + MSNR 1h A+V levels as liquidity (replaces live)": {
+  "H1": {
+   "n": 79,
+   "tpw": 3.09,
+   "wk2": 81.5,
+   "win": 21.5,
+   "pf": 3.87,
+   "net": 27883,
+   "per_month": 4575,
+   "dd": -2104,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 50.4,
+   "f10": 8.4,
+   "pass_med": 4.0,
+   "mc_p10": 46.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 39,
+   "tpw": 2.5,
+   "wk2": 75.0,
+   "win": 30.8,
+   "pf": 2.01,
+   "net": 7344,
+   "per_month": 1977,
+   "dd": -1590,
+   "worst_day": -750,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 7.2,
+   "pass_med": 3.0,
+   "mc_p10": 51.6,
+   "mc_f10": 10.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 118,
+   "tpw": 2.86,
+   "wk2": 81.0,
+   "win": 24.6,
+   "pf": 3.08,
+   "net": 35227,
+   "per_month": 3591,
+   "dd": -2104,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 525,
+   "tpw": 2.45,
+   "wk2": 77.0,
+   "win": 16.0,
+   "pf": 0.92,
+   "net": -9108,
+   "per_month": -178,
+   "dd": -24989,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "msnrlit",
+   "tf": "1h",
+   "kinds": [
+    "A",
+    "V"
+   ]
+  }
+ },
+ "LIT + MSNR 1h QM levels as liquidity (replaces live)": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85.2,
+   "win": 22.5,
+   "pf": 4.36,
+   "net": 32544,
+   "per_month": 5339,
+   "dd": -2332,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 9.2,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.43,
+   "net": 8875,
+   "per_month": 2389,
+   "dd": -1489,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 50.7,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.8,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 121,
+   "tpw": 2.94,
+   "wk2": 85.7,
+   "win": 26.4,
+   "pf": 3.61,
+   "net": 41419,
+   "per_month": 4222,
+   "dd": -2332,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 515,
+   "tpw": 2.4,
+   "wk2": 76.5,
+   "win": 17.3,
+   "pf": 0.99,
+   "net": -1327,
+   "per_month": -26,
+   "dd": -21787,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "msnrlit",
+   "tf": "1h",
+   "kinds": [
+    "QM"
+   ]
+  }
+ },
+ "LIT + MSNR 4h A+V+QM levels as liquidity (replaces live)": {
+  "H1": {
+   "n": 82,
+   "tpw": 3.2,
+   "wk2": 85.2,
+   "win": 22.0,
+   "pf": 4.1,
+   "net": 31938,
+   "per_month": 5240,
+   "dd": -2347,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 9.2,
+   "pass_med": 4.0,
+   "mc_p10": 47.5,
+   "mc_f10": 6.1,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 39,
+   "tpw": 2.5,
+   "wk2": 81.2,
+   "win": 35.9,
+   "pf": 2.09,
+   "net": 6760,
+   "per_month": 1820,
+   "dd": -1489,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 50.7,
+   "f10": 2.9,
+   "pass_med": 4.0,
+   "mc_p10": 55.4,
+   "mc_f10": 6.6,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 121,
+   "tpw": 2.94,
+   "wk2": 85.7,
+   "win": 26.4,
+   "pf": 3.35,
+   "net": 38697,
+   "per_month": 3945,
+   "dd": -2347,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 513,
+   "tpw": 2.39,
+   "wk2": 76.0,
+   "win": 17.2,
+   "pf": 0.98,
+   "net": -1761,
+   "per_month": -35,
+   "dd": -21921,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "msnrlit",
+   "tf": "4h",
+   "kinds": [
+    "A",
+    "V",
+    "QM"
+   ]
+  }
+ },
+ "LIT + MSNR 1h A+V+QM+F levels as liquidity (replaces live)": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 81.5,
+   "win": 21.0,
+   "pf": 3.5,
+   "net": 26346,
+   "per_month": 4322,
+   "dd": -3023,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 43.7,
+   "f10": 8.4,
+   "pass_med": 3.0,
+   "mc_p10": 41.4,
+   "mc_f10": 7.4,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 37,
+   "tpw": 2.37,
+   "wk2": 75.0,
+   "win": 27.0,
+   "pf": 1.47,
+   "net": 3517,
+   "per_month": 947,
+   "dd": -2289,
+   "worst_day": -750,
+   "n_es": 0,
+   "p10": 44.9,
+   "f10": 7.2,
+   "pass_med": 4.0,
+   "mc_p10": 43.5,
+   "mc_f10": 10.6,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 118,
+   "tpw": 2.86,
+   "wk2": 81.0,
+   "win": 22.9,
+   "pf": 2.65,
+   "net": 29863,
+   "per_month": 3044,
+   "dd": -3023,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 532,
+   "tpw": 2.48,
+   "wk2": 79.7,
+   "win": 16.0,
+   "pf": 0.93,
+   "net": -8298,
+   "per_month": -163,
+   "dd": -21444,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "msnrlit",
+   "tf": "1h",
+   "kinds": [
+    "A",
+    "V",
+    "QM",
+    "F"
+   ]
+  }
+ }
+}

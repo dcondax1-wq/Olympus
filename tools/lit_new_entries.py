@@ -106,7 +106,10 @@ def money_trades(U):
         if m == 0:
             continue
         if m != 1:
+            q0 = q
             q = max(1, int(q * m + 1e-9)) if m < 1 else min(lit.MAX_MICROS, int(q * m + 1e-9))
+            if u.get("cap_usd") and q > q0:          # a size-up never risks more than cap_usd (full stop + 1 tick + costs)
+                q = max(q0, min(q, int(u["cap_usd"] / ((u["risk"] + SLIP) * PV + COMM))))
         pnl = u["pts"] * PV * q - COMM * q
         T.append(dict(u, qty=q, pnl=round(pnl, 2), low=round(min(0.0, u["w1"] * PV * q - COMM * q, pnl), 2)))
     return T
@@ -207,10 +210,21 @@ def put(key, U, meta=None, quiet=False):
     return o
 
 
-def dump():
-    old = json.load(open(OUT)) if os.path.exists(OUT) else {}
+def dump(part=None):
+    """Results -> research/lit/new_entries.json (or a per-family part file new_entries_<part>.json; `merge` joins them)."""
+    p = OUT if part is None else OUT.replace(".json", f"_{part}.json")
+    old = json.load(open(p)) if os.path.exists(p) else {}
     old.update(_RES)
-    json.dump(old, open(OUT, "w"), indent=1, default=float)
+    json.dump(old, open(p, "w"), indent=1, default=float)
+
+
+def merge_parts():
+    import glob
+    allr = json.load(open(OUT)) if os.path.exists(OUT) else {}
+    for q in sorted(glob.glob(OUT.replace(".json", "_*.json"))):
+        allr.update(json.load(open(q)))
+    json.dump(allr, open(OUT, "w"), indent=1, default=float)
+    return allr
 
 
 def verdict_ok(key, bkey="base (live LIT)"):
@@ -275,7 +289,7 @@ def fam_msnr(Ub, grid=True):
 
 def fam_msnrlit(Ub):
     """MSNR levels added to the LIT levels: a sweep of either is LIT liquidity (live filters otherwise)."""
-    for tf, kinds in (("1h", ("A", "V")), ("1h", ("QM",)), ("4h", ("A", "V", "QM")), ("1h", ("A", "V", "QM", "F"))):
+    for tf, kinds in (("15m", ("A", "V")), ("1h", ("A", "V")), ("1h", ("QM",)), ("4h", ("A", "V", "QM")), ("1h", ("A", "V", "QM", "F"))):
         L = levels(tf, kinds)
         tag = f"msnrlit_{tf}_{''.join(kinds)}"
         Mx, C = pool(tag, L, keep_lit=True)
@@ -463,6 +477,73 @@ def fam_grade(Ub):
         put("grade size: " + lab, U, {"family": "grade"})
 
 
+def idm_count(z, dm=1.0, age=36):
+    return sum(1 for dd, aa in z["idm_a"] if dd <= dm and aa <= age)
+
+
+def fam_idm2(Ub):
+    """Size by the number of inducements taken before the sweep (live gate: 1 within 1 ATR and 36 bars)."""
+    M, C, _, _ = base()
+    T = _S["Tb"]
+    Z = {(z["day"], z["i"], z["dir"]): z for z in C}
+    TT = [t for t in T if t["qty"]]
+    U0 = [dict(u, z=Z[(t["day"], t["i"], t["dir"])]) for u, t in zip(Ub, TT)]
+    for sp in ("H1", "H2", "ref"):
+        a, zz = LMo.SPAN[sp]
+        X = [u for u in U0 if a <= u["day"] <= zz]
+        for n in (1, 2, 3, 4):
+            w = [u["pts"] / u["risk"] for u in X if idm_count(u["z"]) == n] if n < 4 else [u["pts"] / u["risk"] for u in X if idm_count(u["z"]) >= 4]
+            print(f"  {sp} inducements {'>=4' if n == 4 else n}: n {len(w)} avg R {np.mean(w) if w else float('nan'):.3f} win {100 * np.mean([x > 0 for x in w]) if w else 0:.0f}%")
+    cap = 990.0
+    rules = []
+    for dm, age, nmin in ((1.0, 36, 2), (1.5, 48, 2), (0.75, 24, 2), (1.0, 36, 3)):
+        for mult in (1.25, 1.5, 2.0):
+            rules.append((f"inducements >= {nmin} (<= {dm} ATR, <= {age} bars) x{mult}, size-up capped ${cap:.0f}",
+                          lambda z, dm=dm, age=age, nmin=nmin, mult=mult: mult if idm_count(z, dm, age) >= nmin else 1.0, cap))
+    rules.append(("inducements >= 2 x1.5, uncapped", lambda z: 1.5 if idm_count(z) >= 2 else 1.0, None))
+    rules.append(("control: every trade x1.25, capped $990", lambda z: 1.25, cap))
+    rules.append(("risk-neutral: >= 2 x1.25 / 1 x0.8, capped $990", lambda z: 1.25 if idm_count(z) >= 2 else 0.8, cap))
+    for lab, fn, cp in rules:
+        U = [dict({k: v for k, v in u.items() if k != "z"}, g_m=fn(u["z"]), cap_usd=cp) for u in U0]
+        put("idm size: " + lab, U, {"family": "idm2"})
+
+
+# ---------------------------------------------------------------- time split: the extra source only later in the day
+def _mod(ts):
+    import datetime as dt
+    from zoneinfo import ZoneInfo
+    x = dt.datetime.fromtimestamp(int(ts), ZoneInfo("America/New_York"))
+    return x.hour * 60 + x.minute
+
+
+def sources():
+    """The extra sources that made money alone in both halves (rebuilt from the cached pools)."""
+    M = base()[0]
+    G = tags()
+    out = {}
+    for tf, kinds in (("15m", ("A", "V")), ("1h", ("A", "V")), ("1h", ("A", "V", "QM", "F"))):
+        tag = f"msnr_{tf}_{''.join(kinds)}"
+        Mx, C = pool(tag, levels(tf, kinds))
+        out[f"MSNR {tf} {'+'.join(kinds)} (live filters)"] = run_m(Mx, C, {}, tag)[1]
+    live_ok = lambda z: lit.setup_ok(z, LIVE, None)
+    Cs = [z for z in base()[1] if not live_ok(z) and grade(G[(z["day"], z["i"], z["dir"])]) >= 2]
+    out["stacked >= 2 of 8, rejected-by-live, no idm"] = run_m(M, Cs, {"idm_a": None}, "stack")[1]
+    return out
+
+
+def fam_split(Ub):
+    bd = {u["day"] for u in Ub}
+    for nm, Ux in sources().items():
+        for t0 in (480, 570, 600):
+            Uy = [u for u in Ux if _mod(u["entry_t"]) >= t0]
+            lab = f"{nm}, extra only from {t0 // 60:02d}:{t0 % 60:02d} ET"
+            put(lab + " | + live, 1 a day", LMo.merge([Ub, Uy], max_day=1), {"family": "split", "src": nm, "t0": t0, "combo": "add1"})
+            put(lab + " | + live, 2 a day", LMo.merge([Ub, Uy], max_day=2), {"family": "split", "src": nm, "t0": t0, "combo": "add2"})
+        Un = [u for u in Ux if u["day"] not in bd]
+        put(f"{nm}, only on days the live LIT has no trade (hindsight bound)", sorted(Ub + Un, key=lambda u: u["entry_t"]),
+            {"family": "split", "src": nm, "combo": "novel_bound"})
+
+
 # ================================================================================================ lookahead + check
 class _Cut:
     """A Market-like view of the first n 5m bars (for the lookahead test)."""
@@ -567,7 +648,10 @@ if __name__ == "__main__":
         check()
     elif cmd == "all":
         all_()
-    elif cmd in ("msnr", "msnrlit", "idmob", "stack", "grade"):
+    elif cmd == "merge":
+        print(len(merge_parts()), "results")
+    else:
         Ub = fam_base()
-        globals()["fam_" + cmd](Ub)
-        dump()
+        for c in cmd.split(","):
+            globals()["fam_" + c](Ub)
+            dump(cmd.replace(",", "_"))

@@ -1,0 +1,6375 @@
+{
+ "base (live LIT)": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "wk2": 85.2,
+   "win": 22.5,
+   "pf": 4.36,
+   "net": 32544,
+   "per_month": 5339,
+   "dd": -2332,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 9.2,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "wk2": 81.2,
+   "win": 35.0,
+   "pf": 2.43,
+   "net": 8880,
+   "per_month": 2391,
+   "dd": -1489,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 50.7,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.8,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 120,
+   "tpw": 2.91,
+   "wk2": 85.7,
+   "win": 26.7,
+   "pf": 3.61,
+   "net": 41424,
+   "per_month": 4223,
+   "dd": -2332,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 510,
+   "tpw": 2.38,
+   "wk2": 75.6,
+   "win": 17.3,
+   "pf": 0.99,
+   "net": -651,
+   "per_month": -13,
+   "dd": -21392,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "base"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.0, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -1338,
+   "per_month": -220,
+   "dd": -1338,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 2,
+   "tpw": 0.13,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 3.25,
+   "net": 533,
+   "per_month": 144,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 7,
+   "tpw": 0.17,
+   "wk2": 2.4,
+   "win": 14.3,
+   "pf": 0.49,
+   "net": -805,
+   "per_month": -82,
+   "dd": -1575,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 41,
+   "tpw": 0.19,
+   "wk2": 1.4,
+   "win": 17.1,
+   "pf": 0.72,
+   "net": -2992,
+   "per_month": -59,
+   "dd": -6595,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.0, live filters, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 122,
+   "tpw": 2.96,
+   "wk2": 85.7,
+   "win": 26.2,
+   "pf": 3.59,
+   "net": 41340,
+   "per_month": 4214,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 520,
+   "tpw": 2.43,
+   "wk2": 76.0,
+   "win": 17.1,
+   "pf": 0.97,
+   "net": -3647,
+   "per_month": -71,
+   "dd": -22393,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.0, live filters, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 85.7,
+   "win": 25.8,
+   "pf": 3.39,
+   "net": 40371,
+   "per_month": 4116,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 529,
+   "tpw": 2.47,
+   "wk2": 76.0,
+   "win": 17.2,
+   "pf": 0.97,
+   "net": -3099,
+   "per_month": -61,
+   "dd": -23007,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.0, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -1338,
+   "per_month": -220,
+   "dd": -1338,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 2,
+   "tpw": 0.13,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 3.25,
+   "net": 533,
+   "per_month": 144,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 7,
+   "tpw": 0.17,
+   "wk2": 2.4,
+   "win": 14.3,
+   "pf": 0.49,
+   "net": -805,
+   "per_month": -82,
+   "dd": -1575,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 43,
+   "tpw": 0.2,
+   "wk2": 1.4,
+   "win": 16.3,
+   "pf": 0.69,
+   "net": -3555,
+   "per_month": -70,
+   "dd": -7158,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.0, depth 0.25, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 122,
+   "tpw": 2.96,
+   "wk2": 85.7,
+   "win": 26.2,
+   "pf": 3.59,
+   "net": 41340,
+   "per_month": 4214,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 521,
+   "tpw": 2.43,
+   "wk2": 76.5,
+   "win": 17.1,
+   "pf": 0.97,
+   "net": -3671,
+   "per_month": -72,
+   "dd": -22393,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.0, depth 0.25, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 85.7,
+   "win": 25.8,
+   "pf": 3.39,
+   "net": 40371,
+   "per_month": 4116,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 530,
+   "tpw": 2.47,
+   "wk2": 76.5,
+   "win": 17.2,
+   "pf": 0.97,
+   "net": -3123,
+   "per_month": -61,
+   "dd": -23007,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.0, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -1338,
+   "per_month": -220,
+   "dd": -1338,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 2,
+   "tpw": 0.13,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 3.25,
+   "net": 533,
+   "per_month": 144,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 7,
+   "tpw": 0.17,
+   "wk2": 2.4,
+   "win": 14.3,
+   "pf": 0.49,
+   "net": -805,
+   "per_month": -82,
+   "dd": -1575,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 43,
+   "tpw": 0.2,
+   "wk2": 1.4,
+   "win": 16.3,
+   "pf": 0.69,
+   "net": -3555,
+   "per_month": -70,
+   "dd": -7158,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.0, depth 0, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 122,
+   "tpw": 2.96,
+   "wk2": 85.7,
+   "win": 26.2,
+   "pf": 3.59,
+   "net": 41340,
+   "per_month": 4214,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 521,
+   "tpw": 2.43,
+   "wk2": 76.5,
+   "win": 17.1,
+   "pf": 0.97,
+   "net": -3671,
+   "per_month": -72,
+   "dd": -22393,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.0, depth 0, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 85.7,
+   "win": 25.8,
+   "pf": 3.39,
+   "net": 40371,
+   "per_month": 4116,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 530,
+   "tpw": 2.47,
+   "wk2": 76.5,
+   "win": 17.2,
+   "pf": 0.97,
+   "net": -3123,
+   "per_month": -61,
+   "dd": -23007,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.5, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 6,
+   "tpw": 0.23,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2101,
+   "per_month": -345,
+   "dd": -2101,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 3,
+   "tpw": 0.19,
+   "wk2": 0.0,
+   "win": 33.3,
+   "pf": 0.98,
+   "net": -19,
+   "per_month": -5,
+   "dd": -789,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 11.2,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 9,
+   "tpw": 0.22,
+   "wk2": 2.4,
+   "win": 11.1,
+   "pf": 0.27,
+   "net": -2121,
+   "per_month": -216,
+   "dd": -2891,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 49,
+   "tpw": 0.23,
+   "wk2": 2.3,
+   "win": 18.4,
+   "pf": 0.9,
+   "net": -1238,
+   "per_month": -24,
+   "dd": -6325,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.5, live filters, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 85.7,
+   "win": 26.0,
+   "pf": 3.53,
+   "net": 41057,
+   "per_month": 4185,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 523,
+   "tpw": 2.44,
+   "wk2": 76.0,
+   "win": 17.0,
+   "pf": 0.96,
+   "net": -4218,
+   "per_month": -83,
+   "dd": -22557,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.5, live filters, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 85.7,
+   "win": 25.6,
+   "pf": 3.33,
+   "net": 40088,
+   "per_month": 4087,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 534,
+   "tpw": 2.49,
+   "wk2": 76.0,
+   "win": 17.2,
+   "pf": 0.96,
+   "net": -3849,
+   "per_month": -75,
+   "dd": -23098,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.5, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 6,
+   "tpw": 0.23,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2101,
+   "per_month": -345,
+   "dd": -2101,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 3,
+   "tpw": 0.19,
+   "wk2": 0.0,
+   "win": 33.3,
+   "pf": 0.98,
+   "net": -19,
+   "per_month": -5,
+   "dd": -789,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 11.2,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 9,
+   "tpw": 0.22,
+   "wk2": 2.4,
+   "win": 11.1,
+   "pf": 0.27,
+   "net": -2121,
+   "per_month": -216,
+   "dd": -2891,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 58,
+   "tpw": 0.27,
+   "wk2": 2.3,
+   "win": 19.0,
+   "pf": 1.16,
+   "net": 2203,
+   "per_month": 43,
+   "dd": -8054,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.5, depth 0.25, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 85.7,
+   "win": 26.0,
+   "pf": 3.53,
+   "net": 41057,
+   "per_month": 4185,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 526,
+   "tpw": 2.45,
+   "wk2": 77.0,
+   "win": 16.9,
+   "pf": 0.96,
+   "net": -4640,
+   "per_month": -91,
+   "dd": -22557,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.5, depth 0.25, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 85.7,
+   "win": 25.6,
+   "pf": 3.33,
+   "net": 40088,
+   "per_month": 4087,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 538,
+   "tpw": 2.51,
+   "wk2": 77.0,
+   "win": 17.1,
+   "pf": 0.96,
+   "net": -4282,
+   "per_month": -84,
+   "dd": -23098,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.5, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 8,
+   "tpw": 0.31,
+   "wk2": 7.4,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2499,
+   "per_month": -410,
+   "dd": -2499,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 3,
+   "tpw": 0.19,
+   "wk2": 0.0,
+   "win": 33.3,
+   "pf": 0.98,
+   "net": -19,
+   "per_month": -5,
+   "dd": -789,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 11.2,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 11,
+   "tpw": 0.27,
+   "wk2": 4.8,
+   "win": 9.1,
+   "pf": 0.23,
+   "net": -2518,
+   "per_month": -257,
+   "dd": -3289,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 60,
+   "tpw": 0.28,
+   "wk2": 2.3,
+   "win": 18.3,
+   "pf": 1.13,
+   "net": 1826,
+   "per_month": 36,
+   "dd": -8054,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.5, depth 0, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.32,
+   "net": 32457,
+   "per_month": 5325,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 47.0,
+   "mc_f10": 6.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 85.7,
+   "win": 26.0,
+   "pf": 3.48,
+   "net": 40817,
+   "per_month": 4161,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 526,
+   "tpw": 2.45,
+   "wk2": 77.0,
+   "win": 16.9,
+   "pf": 0.96,
+   "net": -4640,
+   "per_month": -91,
+   "dd": -22557,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 1.0 ATR, into block tol 0.5, depth 0, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 3.93,
+   "net": 31488,
+   "per_month": 5166,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 46.8,
+   "mc_f10": 7.8,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 85.7,
+   "win": 25.6,
+   "pf": 3.28,
+   "net": 39848,
+   "per_month": 4062,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 539,
+   "tpw": 2.51,
+   "wk2": 77.0,
+   "win": 17.1,
+   "pf": 0.96,
+   "net": -4400,
+   "per_month": -86,
+   "dd": -23098,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.0, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -1338,
+   "per_month": -220,
+   "dd": -1338,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 2,
+   "tpw": 0.13,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 3.25,
+   "net": 533,
+   "per_month": 144,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 7,
+   "tpw": 0.17,
+   "wk2": 2.4,
+   "win": 14.3,
+   "pf": 0.49,
+   "net": -805,
+   "per_month": -82,
+   "dd": -1575,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 58,
+   "tpw": 0.27,
+   "wk2": 2.3,
+   "win": 17.2,
+   "pf": 0.76,
+   "net": -3452,
+   "per_month": -68,
+   "dd": -9384,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.0, live filters, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 122,
+   "tpw": 2.96,
+   "wk2": 85.7,
+   "win": 26.2,
+   "pf": 3.59,
+   "net": 41340,
+   "per_month": 4214,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 526,
+   "tpw": 2.45,
+   "wk2": 77.0,
+   "win": 16.9,
+   "pf": 0.96,
+   "net": -4292,
+   "per_month": -84,
+   "dd": -22752,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.0, live filters, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 85.7,
+   "win": 25.8,
+   "pf": 3.39,
+   "net": 40371,
+   "per_month": 4116,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 538,
+   "tpw": 2.51,
+   "wk2": 77.4,
+   "win": 17.1,
+   "pf": 0.97,
+   "net": -3699,
+   "per_month": -72,
+   "dd": -23185,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.0, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -1338,
+   "per_month": -220,
+   "dd": -1338,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 2,
+   "tpw": 0.13,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 3.25,
+   "net": 533,
+   "per_month": 144,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 7,
+   "tpw": 0.17,
+   "wk2": 2.4,
+   "win": 14.3,
+   "pf": 0.49,
+   "net": -805,
+   "per_month": -82,
+   "dd": -1575,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 58,
+   "tpw": 0.27,
+   "wk2": 2.3,
+   "win": 17.2,
+   "pf": 0.76,
+   "net": -3452,
+   "per_month": -68,
+   "dd": -9384,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.0, depth 0.25, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 122,
+   "tpw": 2.96,
+   "wk2": 85.7,
+   "win": 26.2,
+   "pf": 3.59,
+   "net": 41340,
+   "per_month": 4214,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 526,
+   "tpw": 2.45,
+   "wk2": 77.0,
+   "win": 16.9,
+   "pf": 0.96,
+   "net": -4292,
+   "per_month": -84,
+   "dd": -22752,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.0, depth 0.25, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 85.7,
+   "win": 25.8,
+   "pf": 3.39,
+   "net": 40371,
+   "per_month": 4116,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 538,
+   "tpw": 2.51,
+   "wk2": 77.4,
+   "win": 17.1,
+   "pf": 0.97,
+   "net": -3699,
+   "per_month": -72,
+   "dd": -23185,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.0, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -1338,
+   "per_month": -220,
+   "dd": -1338,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 2,
+   "tpw": 0.13,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 3.25,
+   "net": 533,
+   "per_month": 144,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 7,
+   "tpw": 0.17,
+   "wk2": 2.4,
+   "win": 14.3,
+   "pf": 0.49,
+   "net": -805,
+   "per_month": -82,
+   "dd": -1575,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 58,
+   "tpw": 0.27,
+   "wk2": 2.3,
+   "win": 17.2,
+   "pf": 0.76,
+   "net": -3452,
+   "per_month": -68,
+   "dd": -9384,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.0, depth 0, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 122,
+   "tpw": 2.96,
+   "wk2": 85.7,
+   "win": 26.2,
+   "pf": 3.59,
+   "net": 41340,
+   "per_month": 4214,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 526,
+   "tpw": 2.45,
+   "wk2": 77.0,
+   "win": 16.9,
+   "pf": 0.96,
+   "net": -4292,
+   "per_month": -84,
+   "dd": -22752,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.0, depth 0, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 41,
+   "tpw": 2.63,
+   "wk2": 81.2,
+   "win": 34.1,
+   "pf": 2.34,
+   "net": 8643,
+   "per_month": 2327,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 46.4,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 56.4,
+   "mc_f10": 7.3,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 85.7,
+   "win": 25.8,
+   "pf": 3.39,
+   "net": 40371,
+   "per_month": 4116,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 538,
+   "tpw": 2.51,
+   "wk2": 77.4,
+   "win": 17.1,
+   "pf": 0.97,
+   "net": -3699,
+   "per_month": -72,
+   "dd": -23185,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.5, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 8,
+   "tpw": 0.31,
+   "wk2": 7.4,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2499,
+   "per_month": -410,
+   "dd": -2499,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 4,
+   "tpw": 0.26,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 1.71,
+   "net": 560,
+   "per_month": 151,
+   "dd": -789,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 15.9,
+   "f10": 0.0,
+   "pass_med": 6.0,
+   "mc_p10": 17.4,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 12,
+   "tpw": 0.29,
+   "wk2": 4.8,
+   "win": 16.7,
+   "pf": 0.41,
+   "net": -1940,
+   "per_month": -198,
+   "dd": -3289,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 80,
+   "tpw": 0.37,
+   "wk2": 5.1,
+   "win": 20.0,
+   "pf": 1.12,
+   "net": 2161,
+   "per_month": 42,
+   "dd": -9039,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.5, live filters, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.32,
+   "net": 32457,
+   "per_month": 5325,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 47.0,
+   "mc_f10": 6.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 85.7,
+   "win": 26.0,
+   "pf": 3.48,
+   "net": 40817,
+   "per_month": 4161,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 532,
+   "tpw": 2.48,
+   "wk2": 77.4,
+   "win": 16.7,
+   "pf": 0.94,
+   "net": -6114,
+   "per_month": -120,
+   "dd": -23034,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.5, live filters, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 3.93,
+   "net": 31488,
+   "per_month": 5166,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 46.8,
+   "mc_f10": 7.8,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 85.7,
+   "win": 25.6,
+   "pf": 3.28,
+   "net": 39848,
+   "per_month": 4062,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 552,
+   "tpw": 2.57,
+   "wk2": 78.3,
+   "win": 17.0,
+   "pf": 0.95,
+   "net": -5756,
+   "per_month": -113,
+   "dd": -23281,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.5, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 8,
+   "tpw": 0.31,
+   "wk2": 7.4,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2499,
+   "per_month": -410,
+   "dd": -2499,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 4,
+   "tpw": 0.26,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 1.71,
+   "net": 560,
+   "per_month": 151,
+   "dd": -789,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 15.9,
+   "f10": 0.0,
+   "pass_med": 6.0,
+   "mc_p10": 17.4,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 12,
+   "tpw": 0.29,
+   "wk2": 4.8,
+   "win": 16.7,
+   "pf": 0.41,
+   "net": -1940,
+   "per_month": -198,
+   "dd": -3289,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 83,
+   "tpw": 0.39,
+   "wk2": 5.5,
+   "win": 19.3,
+   "pf": 1.04,
+   "net": 696,
+   "per_month": 14,
+   "dd": -10154,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.5, depth 0.25, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.32,
+   "net": 32457,
+   "per_month": 5325,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 47.0,
+   "mc_f10": 6.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 85.7,
+   "win": 26.0,
+   "pf": 3.48,
+   "net": 40817,
+   "per_month": 4161,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 533,
+   "tpw": 2.49,
+   "wk2": 77.4,
+   "win": 16.7,
+   "pf": 0.94,
+   "net": -6463,
+   "per_month": -127,
+   "dd": -23034,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.5, depth 0.25, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 3.93,
+   "net": 31488,
+   "per_month": 5166,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 46.8,
+   "mc_f10": 7.8,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 85.7,
+   "win": 25.6,
+   "pf": 3.28,
+   "net": 39848,
+   "per_month": 4062,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 553,
+   "tpw": 2.58,
+   "wk2": 78.3,
+   "win": 17.0,
+   "pf": 0.95,
+   "net": -6105,
+   "per_month": -120,
+   "dd": -23281,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.5, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 8,
+   "tpw": 0.31,
+   "wk2": 7.4,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2499,
+   "per_month": -410,
+   "dd": -2499,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 4,
+   "tpw": 0.26,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 1.71,
+   "net": 560,
+   "per_month": 151,
+   "dd": -789,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 15.9,
+   "f10": 0.0,
+   "pass_med": 6.0,
+   "mc_p10": 17.4,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 12,
+   "tpw": 0.29,
+   "wk2": 4.8,
+   "win": 16.7,
+   "pf": 0.41,
+   "net": -1940,
+   "per_month": -198,
+   "dd": -3289,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 83,
+   "tpw": 0.39,
+   "wk2": 5.5,
+   "win": 19.3,
+   "pf": 1.04,
+   "net": 696,
+   "per_month": 14,
+   "dd": -10154,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.5, depth 0, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.32,
+   "net": 32457,
+   "per_month": 5325,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 47.0,
+   "mc_f10": 6.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 85.7,
+   "win": 26.0,
+   "pf": 3.48,
+   "net": 40817,
+   "per_month": 4161,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 533,
+   "tpw": 2.49,
+   "wk2": 77.4,
+   "win": 16.7,
+   "pf": 0.94,
+   "net": -6463,
+   "per_month": -127,
+   "dd": -23034,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m near 2.0 ATR, into block tol 0.5, depth 0, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 3.93,
+   "net": 31488,
+   "per_month": 5166,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 46.8,
+   "mc_f10": 7.8,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 81.2,
+   "win": 33.3,
+   "pf": 2.25,
+   "net": 8360,
+   "per_month": 2251,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 42.0,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 52.8,
+   "mc_f10": 7.4,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 85.7,
+   "win": 25.6,
+   "pf": 3.28,
+   "net": 39848,
+   "per_month": 4062,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 553,
+   "tpw": 2.58,
+   "wk2": 78.3,
+   "win": 17.0,
+   "pf": 0.95,
+   "net": -6105,
+   "per_month": -120,
+   "dd": -23281,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 1h near 1.0 ATR, into block tol 0.0, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 0,
+   "tpw": 0.0,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": null,
+   "net": 0,
+   "per_month": 0,
+   "dd": 0,
+   "worst_day": 0,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 1,
+   "tpw": 0.02,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 26,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 13,
+   "tpw": 0.06,
+   "wk2": 0.5,
+   "win": 15.4,
+   "pf": 1.14,
+   "net": 426,
+   "per_month": 8,
+   "dd": -2488,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 1.0 ATR, into block tol 0.0, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 0,
+   "tpw": 0.0,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": null,
+   "net": 0,
+   "per_month": 0,
+   "dd": 0,
+   "worst_day": 0,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 1,
+   "tpw": 0.02,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 26,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 13,
+   "tpw": 0.06,
+   "wk2": 0.5,
+   "win": 15.4,
+   "pf": 1.14,
+   "net": 426,
+   "per_month": 8,
+   "dd": -2488,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 1.0 ATR, into block tol 0.0, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 0,
+   "tpw": 0.0,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": null,
+   "net": 0,
+   "per_month": 0,
+   "dd": 0,
+   "worst_day": 0,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 1,
+   "tpw": 0.02,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 26,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 13,
+   "tpw": 0.06,
+   "wk2": 0.5,
+   "win": 15.4,
+   "pf": 1.14,
+   "net": 426,
+   "per_month": 8,
+   "dd": -2488,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 1.0 ATR, into block tol 0.5, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 0,
+   "tpw": 0.0,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": null,
+   "net": 0,
+   "per_month": 0,
+   "dd": 0,
+   "worst_day": 0,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 1,
+   "tpw": 0.02,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 26,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 13,
+   "tpw": 0.06,
+   "wk2": 0.5,
+   "win": 15.4,
+   "pf": 1.14,
+   "net": 426,
+   "per_month": 8,
+   "dd": -2488,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 1.0 ATR, into block tol 0.5, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 0,
+   "tpw": 0.0,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": null,
+   "net": 0,
+   "per_month": 0,
+   "dd": 0,
+   "worst_day": 0,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 1,
+   "tpw": 0.02,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 26,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 14,
+   "tpw": 0.07,
+   "wk2": 0.5,
+   "win": 14.3,
+   "pf": 0.94,
+   "net": -221,
+   "per_month": -4,
+   "dd": -3134,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 1.0 ATR, into block tol 0.5, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 0,
+   "tpw": 0.0,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": null,
+   "net": 0,
+   "per_month": 0,
+   "dd": 0,
+   "worst_day": 0,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 1,
+   "tpw": 0.02,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 26,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 15,
+   "tpw": 0.07,
+   "wk2": 0.5,
+   "win": 13.3,
+   "pf": 0.94,
+   "net": -224,
+   "per_month": -4,
+   "dd": -3137,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 2.0 ATR, into block tol 0.0, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 1,
+   "tpw": 0.04,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -523,
+   "per_month": -86,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 2,
+   "tpw": 0.05,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 0.49,
+   "net": -266,
+   "per_month": -27,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 17,
+   "tpw": 0.08,
+   "wk2": 0.9,
+   "win": 17.6,
+   "pf": 1.14,
+   "net": 457,
+   "per_month": 9,
+   "dd": -2703,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 2.0 ATR, into block tol 0.0, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 1,
+   "tpw": 0.04,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -523,
+   "per_month": -86,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 2,
+   "tpw": 0.05,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 0.49,
+   "net": -266,
+   "per_month": -27,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 17,
+   "tpw": 0.08,
+   "wk2": 0.9,
+   "win": 17.6,
+   "pf": 1.14,
+   "net": 457,
+   "per_month": 9,
+   "dd": -2703,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 2.0 ATR, into block tol 0.0, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 1,
+   "tpw": 0.04,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -523,
+   "per_month": -86,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 2,
+   "tpw": 0.05,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 0.49,
+   "net": -266,
+   "per_month": -27,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 17,
+   "tpw": 0.08,
+   "wk2": 0.9,
+   "win": 17.6,
+   "pf": 1.14,
+   "net": 457,
+   "per_month": 9,
+   "dd": -2703,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 2.0 ATR, into block tol 0.5, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 1,
+   "tpw": 0.04,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -523,
+   "per_month": -86,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 2,
+   "tpw": 0.05,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 0.49,
+   "net": -266,
+   "per_month": -27,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 18,
+   "tpw": 0.08,
+   "wk2": 0.9,
+   "win": 16.7,
+   "pf": 1.14,
+   "net": 454,
+   "per_month": 9,
+   "dd": -2705,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 2.0 ATR, into block tol 0.5, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 1,
+   "tpw": 0.04,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -523,
+   "per_month": -86,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 2,
+   "tpw": 0.05,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 0.49,
+   "net": -266,
+   "per_month": -27,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 19,
+   "tpw": 0.09,
+   "wk2": 0.9,
+   "win": 15.8,
+   "pf": 0.95,
+   "net": -193,
+   "per_month": -4,
+   "dd": -3352,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 1h near 2.0 ATR, into block tol 0.5, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 1,
+   "tpw": 0.04,
+   "wk2": 0.0,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -523,
+   "per_month": -86,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 1,
+   "tpw": 0.06,
+   "wk2": 0.0,
+   "win": 100.0,
+   "pf": null,
+   "net": 257,
+   "per_month": 69,
+   "dd": 0,
+   "worst_day": 257,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 2,
+   "tpw": 0.05,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 0.49,
+   "net": -266,
+   "per_month": -27,
+   "dd": -523,
+   "worst_day": -523,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 19,
+   "tpw": 0.09,
+   "wk2": 0.9,
+   "win": 15.8,
+   "pf": 0.95,
+   "net": -193,
+   "per_month": -4,
+   "dd": -3352,
+   "worst_day": -842,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.0, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -1338,
+   "per_month": -220,
+   "dd": -1338,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 3,
+   "tpw": 0.19,
+   "wk2": 0.0,
+   "win": 66.7,
+   "pf": 4.34,
+   "net": 790,
+   "per_month": 213,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 8,
+   "tpw": 0.19,
+   "wk2": 2.4,
+   "win": 25.0,
+   "pf": 0.65,
+   "net": -548,
+   "per_month": -56,
+   "dd": -1575,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 51,
+   "tpw": 0.24,
+   "wk2": 2.8,
+   "win": 15.7,
+   "pf": 0.61,
+   "net": -5070,
+   "per_month": -99,
+   "dd": -7925,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.0, live filters, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 88.1,
+   "win": 26.8,
+   "pf": 3.61,
+   "net": 41597,
+   "per_month": 4241,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 524,
+   "tpw": 2.44,
+   "wk2": 77.0,
+   "win": 17.0,
+   "pf": 0.96,
+   "net": -4192,
+   "per_month": -82,
+   "dd": -22393,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.0, live filters, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 88.1,
+   "win": 26.4,
+   "pf": 3.4,
+   "net": 40628,
+   "per_month": 4142,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 535,
+   "tpw": 2.5,
+   "wk2": 77.4,
+   "win": 17.0,
+   "pf": 0.96,
+   "net": -4084,
+   "per_month": -80,
+   "dd": -23409,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.0, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -1338,
+   "per_month": -220,
+   "dd": -1338,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 3,
+   "tpw": 0.19,
+   "wk2": 0.0,
+   "win": 66.7,
+   "pf": 4.34,
+   "net": 790,
+   "per_month": 213,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 8,
+   "tpw": 0.19,
+   "wk2": 2.4,
+   "win": 25.0,
+   "pf": 0.65,
+   "net": -548,
+   "per_month": -56,
+   "dd": -1575,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 53,
+   "tpw": 0.25,
+   "wk2": 2.8,
+   "win": 15.1,
+   "pf": 0.58,
+   "net": -5633,
+   "per_month": -110,
+   "dd": -8488,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.0, depth 0.25, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 88.1,
+   "win": 26.8,
+   "pf": 3.61,
+   "net": 41597,
+   "per_month": 4241,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 525,
+   "tpw": 2.45,
+   "wk2": 77.4,
+   "win": 17.0,
+   "pf": 0.96,
+   "net": -4216,
+   "per_month": -83,
+   "dd": -22393,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.0, depth 0.25, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 88.1,
+   "win": 26.4,
+   "pf": 3.4,
+   "net": 40628,
+   "per_month": 4142,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 536,
+   "tpw": 2.5,
+   "wk2": 77.9,
+   "win": 17.0,
+   "pf": 0.96,
+   "net": -4108,
+   "per_month": -80,
+   "dd": -23409,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.0, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -1338,
+   "per_month": -220,
+   "dd": -1338,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 3,
+   "tpw": 0.19,
+   "wk2": 0.0,
+   "win": 66.7,
+   "pf": 4.34,
+   "net": 790,
+   "per_month": 213,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 8,
+   "tpw": 0.19,
+   "wk2": 2.4,
+   "win": 25.0,
+   "pf": 0.65,
+   "net": -548,
+   "per_month": -56,
+   "dd": -1575,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 53,
+   "tpw": 0.25,
+   "wk2": 2.8,
+   "win": 15.1,
+   "pf": 0.58,
+   "net": -5633,
+   "per_month": -110,
+   "dd": -8488,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.0, depth 0, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 88.1,
+   "win": 26.8,
+   "pf": 3.61,
+   "net": 41597,
+   "per_month": 4241,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 525,
+   "tpw": 2.45,
+   "wk2": 77.4,
+   "win": 17.0,
+   "pf": 0.96,
+   "net": -4216,
+   "per_month": -83,
+   "dd": -22393,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.0, depth 0, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 88.1,
+   "win": 26.4,
+   "pf": 3.4,
+   "net": 40628,
+   "per_month": 4142,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 536,
+   "tpw": 2.5,
+   "wk2": 77.9,
+   "win": 17.0,
+   "pf": 0.96,
+   "net": -4108,
+   "per_month": -80,
+   "dd": -23409,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.5, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 6,
+   "tpw": 0.23,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2101,
+   "per_month": -345,
+   "dd": -2101,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 4,
+   "tpw": 0.26,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 1.3,
+   "net": 238,
+   "per_month": 64,
+   "dd": -553,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 11.2,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 10,
+   "tpw": 0.24,
+   "wk2": 2.4,
+   "win": 20.0,
+   "pf": 0.36,
+   "net": -1864,
+   "per_month": -190,
+   "dd": -2634,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 58,
+   "tpw": 0.27,
+   "wk2": 3.2,
+   "win": 17.2,
+   "pf": 0.78,
+   "net": -3164,
+   "per_month": -62,
+   "dd": -7602,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.5, live filters, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 88.1,
+   "win": 26.6,
+   "pf": 3.54,
+   "net": 41314,
+   "per_month": 4212,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 526,
+   "tpw": 2.45,
+   "wk2": 77.0,
+   "win": 16.9,
+   "pf": 0.96,
+   "net": -4610,
+   "per_month": -90,
+   "dd": -22610,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.5, live filters, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 126,
+   "tpw": 3.06,
+   "wk2": 88.1,
+   "win": 26.2,
+   "pf": 3.34,
+   "net": 40345,
+   "per_month": 4113,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 539,
+   "tpw": 2.51,
+   "wk2": 77.4,
+   "win": 17.1,
+   "pf": 0.96,
+   "net": -4681,
+   "per_month": -92,
+   "dd": -23553,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.5, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 6,
+   "tpw": 0.23,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2101,
+   "per_month": -345,
+   "dd": -2101,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 4,
+   "tpw": 0.26,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 1.3,
+   "net": 238,
+   "per_month": 64,
+   "dd": -553,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 11.2,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 10,
+   "tpw": 0.24,
+   "wk2": 2.4,
+   "win": 20.0,
+   "pf": 0.36,
+   "net": -1864,
+   "per_month": -190,
+   "dd": -2634,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 67,
+   "tpw": 0.31,
+   "wk2": 3.7,
+   "win": 17.9,
+   "pf": 1.02,
+   "net": 278,
+   "per_month": 5,
+   "dd": -9331,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.5, depth 0.25, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 88.1,
+   "win": 26.6,
+   "pf": 3.54,
+   "net": 41314,
+   "per_month": 4212,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 529,
+   "tpw": 2.47,
+   "wk2": 77.9,
+   "win": 16.8,
+   "pf": 0.95,
+   "net": -5032,
+   "per_month": -99,
+   "dd": -22610,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.5, depth 0.25, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 4.02,
+   "net": 31728,
+   "per_month": 5205,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 126,
+   "tpw": 3.06,
+   "wk2": 88.1,
+   "win": 26.2,
+   "pf": 3.34,
+   "net": 40345,
+   "per_month": 4113,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 543,
+   "tpw": 2.53,
+   "wk2": 78.3,
+   "win": 16.9,
+   "pf": 0.95,
+   "net": -5114,
+   "per_month": -100,
+   "dd": -23553,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.5, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 8,
+   "tpw": 0.31,
+   "wk2": 7.4,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2499,
+   "per_month": -410,
+   "dd": -2499,
+   "worst_day": -867,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 4,
+   "tpw": 0.26,
+   "wk2": 0.0,
+   "win": 50.0,
+   "pf": 1.3,
+   "net": 238,
+   "per_month": 64,
+   "dd": -553,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 11.2,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 12,
+   "tpw": 0.29,
+   "wk2": 4.8,
+   "win": 16.7,
+   "pf": 0.31,
+   "net": -2261,
+   "per_month": -231,
+   "dd": -3031,
+   "worst_day": -867,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 70,
+   "tpw": 0.33,
+   "wk2": 3.7,
+   "win": 17.1,
+   "pf": 0.99,
+   "net": -102,
+   "per_month": -2,
+   "dd": -9333,
+   "worst_day": -849,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.5, depth 0, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.32,
+   "net": 32457,
+   "per_month": 5325,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 47.0,
+   "mc_f10": 6.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 88.1,
+   "win": 26.6,
+   "pf": 3.49,
+   "net": 41074,
+   "per_month": 4187,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 529,
+   "tpw": 2.47,
+   "wk2": 77.9,
+   "win": 16.8,
+   "pf": 0.95,
+   "net": -5032,
+   "per_month": -99,
+   "dd": -22610,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 1.0 ATR, into block tol 0.5, depth 0, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 83,
+   "tpw": 3.24,
+   "wk2": 85.2,
+   "win": 21.7,
+   "pf": 3.93,
+   "net": 31488,
+   "per_month": 5166,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 46.8,
+   "mc_f10": 7.8,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 126,
+   "tpw": 3.06,
+   "wk2": 88.1,
+   "win": 26.2,
+   "pf": 3.3,
+   "net": 40105,
+   "per_month": 4088,
+   "dd": -2944,
+   "worst_day": -874,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 545,
+   "tpw": 2.54,
+   "wk2": 78.3,
+   "win": 16.9,
+   "pf": 0.95,
+   "net": -5234,
+   "per_month": -103,
+   "dd": -23553,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 1.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.0, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -994,
+   "per_month": -163,
+   "dd": -994,
+   "worst_day": -523,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 3,
+   "tpw": 0.19,
+   "wk2": 0.0,
+   "win": 66.7,
+   "pf": 4.34,
+   "net": 790,
+   "per_month": 213,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 8,
+   "tpw": 0.19,
+   "wk2": 2.4,
+   "win": 25.0,
+   "pf": 0.83,
+   "net": -204,
+   "per_month": -21,
+   "dd": -1231,
+   "worst_day": -523,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 71,
+   "tpw": 0.33,
+   "wk2": 5.1,
+   "win": 16.9,
+   "pf": 0.67,
+   "net": -5455,
+   "per_month": -107,
+   "dd": -10714,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.0, live filters, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 88.1,
+   "win": 26.8,
+   "pf": 3.61,
+   "net": 41597,
+   "per_month": 4241,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 530,
+   "tpw": 2.47,
+   "wk2": 77.9,
+   "win": 16.8,
+   "pf": 0.96,
+   "net": -4837,
+   "per_month": -95,
+   "dd": -22804,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.0, live filters, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 82,
+   "tpw": 3.2,
+   "wk2": 85.2,
+   "win": 22.0,
+   "pf": 4.38,
+   "net": 32595,
+   "per_month": 5348,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.1,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 88.1,
+   "win": 26.6,
+   "pf": 3.58,
+   "net": 41495,
+   "per_month": 4230,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 545,
+   "tpw": 2.54,
+   "wk2": 77.9,
+   "win": 16.9,
+   "pf": 0.96,
+   "net": -4688,
+   "per_month": -92,
+   "dd": -23640,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.0, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -994,
+   "per_month": -163,
+   "dd": -994,
+   "worst_day": -523,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 3,
+   "tpw": 0.19,
+   "wk2": 0.0,
+   "win": 66.7,
+   "pf": 4.34,
+   "net": 790,
+   "per_month": 213,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 8,
+   "tpw": 0.19,
+   "wk2": 2.4,
+   "win": 25.0,
+   "pf": 0.83,
+   "net": -204,
+   "per_month": -21,
+   "dd": -1231,
+   "worst_day": -523,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 71,
+   "tpw": 0.33,
+   "wk2": 5.1,
+   "win": 16.9,
+   "pf": 0.67,
+   "net": -5455,
+   "per_month": -107,
+   "dd": -10714,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.0, depth 0.25, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 88.1,
+   "win": 26.8,
+   "pf": 3.61,
+   "net": 41597,
+   "per_month": 4241,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 530,
+   "tpw": 2.47,
+   "wk2": 77.9,
+   "win": 16.8,
+   "pf": 0.96,
+   "net": -4837,
+   "per_month": -95,
+   "dd": -22804,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.0, depth 0.25, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 82,
+   "tpw": 3.2,
+   "wk2": 85.2,
+   "win": 22.0,
+   "pf": 4.38,
+   "net": 32595,
+   "per_month": 5348,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.1,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 88.1,
+   "win": 26.6,
+   "pf": 3.58,
+   "net": 41495,
+   "per_month": 4230,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 545,
+   "tpw": 2.54,
+   "wk2": 77.9,
+   "win": 16.9,
+   "pf": 0.96,
+   "net": -4688,
+   "per_month": -92,
+   "dd": -23640,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.0, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 5,
+   "tpw": 0.2,
+   "wk2": 3.7,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -994,
+   "per_month": -163,
+   "dd": -994,
+   "worst_day": -523,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 3,
+   "tpw": 0.19,
+   "wk2": 0.0,
+   "win": 66.7,
+   "pf": 4.34,
+   "net": 790,
+   "per_month": 213,
+   "dd": -237,
+   "worst_day": -237,
+   "n_es": 0,
+   "p10": 14.5,
+   "f10": 0.0,
+   "pass_med": 5.5,
+   "mc_p10": 12.1,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 8,
+   "tpw": 0.19,
+   "wk2": 2.4,
+   "win": 25.0,
+   "pf": 0.83,
+   "net": -204,
+   "per_month": -21,
+   "dd": -1231,
+   "worst_day": -523,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 71,
+   "tpw": 0.33,
+   "wk2": 5.1,
+   "win": 16.9,
+   "pf": 0.67,
+   "net": -5455,
+   "per_month": -107,
+   "dd": -10714,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.0, depth 0, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.43,
+   "net": 32697,
+   "per_month": 5364,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 48.1,
+   "mc_f10": 5.9,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 123,
+   "tpw": 2.99,
+   "wk2": 88.1,
+   "win": 26.8,
+   "pf": 3.61,
+   "net": 41597,
+   "per_month": 4241,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 530,
+   "tpw": 2.47,
+   "wk2": 77.9,
+   "win": 16.8,
+   "pf": 0.96,
+   "net": -4837,
+   "per_month": -95,
+   "dd": -22804,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.0, depth 0, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 82,
+   "tpw": 3.2,
+   "wk2": 85.2,
+   "win": 22.0,
+   "pf": 4.38,
+   "net": 32595,
+   "per_month": 5348,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 47.9,
+   "mc_f10": 7.1,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 42,
+   "tpw": 2.69,
+   "wk2": 87.5,
+   "win": 35.7,
+   "pf": 2.38,
+   "net": 8900,
+   "per_month": 2396,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 47.8,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 57.7,
+   "mc_f10": 6.8,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 88.1,
+   "win": 26.6,
+   "pf": 3.58,
+   "net": 41495,
+   "per_month": 4230,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 545,
+   "tpw": 2.54,
+   "wk2": 77.9,
+   "win": 16.9,
+   "pf": 0.96,
+   "net": -4688,
+   "per_month": -92,
+   "dd": -23640,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.0,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.5, live filters, no idm gate | alone": {
+  "H1": {
+   "n": 8,
+   "tpw": 0.31,
+   "wk2": 7.4,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2155,
+   "per_month": -354,
+   "dd": -2155,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 5,
+   "tpw": 0.32,
+   "wk2": 0.0,
+   "win": 60.0,
+   "pf": 2.03,
+   "net": 817,
+   "per_month": 220,
+   "dd": -553,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 15.9,
+   "f10": 0.0,
+   "pass_med": 6.0,
+   "mc_p10": 17.4,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 13,
+   "tpw": 0.32,
+   "wk2": 4.8,
+   "win": 23.1,
+   "pf": 0.55,
+   "net": -1339,
+   "per_month": -136,
+   "dd": -2688,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 93,
+   "tpw": 0.43,
+   "wk2": 8.3,
+   "win": 19.4,
+   "pf": 1.02,
+   "net": 307,
+   "per_month": 6,
+   "dd": -10319,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.5, live filters, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.32,
+   "net": 32457,
+   "per_month": 5325,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 47.0,
+   "mc_f10": 6.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 88.1,
+   "win": 26.6,
+   "pf": 3.49,
+   "net": 41074,
+   "per_month": 4187,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 535,
+   "tpw": 2.5,
+   "wk2": 78.3,
+   "win": 16.6,
+   "pf": 0.94,
+   "net": -6506,
+   "per_month": -127,
+   "dd": -23086,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.5, live filters, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 82,
+   "tpw": 3.2,
+   "wk2": 85.2,
+   "win": 22.0,
+   "pf": 4.28,
+   "net": 32355,
+   "per_month": 5308,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 46.8,
+   "mc_f10": 7.5,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 88.1,
+   "win": 26.4,
+   "pf": 3.47,
+   "net": 40972,
+   "per_month": 4177,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 559,
+   "tpw": 2.61,
+   "wk2": 78.8,
+   "win": 16.8,
+   "pf": 0.94,
+   "net": -6595,
+   "per_month": -129,
+   "dd": -23736,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.5, depth 0.25, no idm gate | alone": {
+  "H1": {
+   "n": 8,
+   "tpw": 0.31,
+   "wk2": 7.4,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2155,
+   "per_month": -354,
+   "dd": -2155,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 5,
+   "tpw": 0.32,
+   "wk2": 0.0,
+   "win": 60.0,
+   "pf": 2.03,
+   "net": 817,
+   "per_month": 220,
+   "dd": -553,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 15.9,
+   "f10": 0.0,
+   "pass_med": 6.0,
+   "mc_p10": 17.4,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 13,
+   "tpw": 0.32,
+   "wk2": 4.8,
+   "win": 23.1,
+   "pf": 0.55,
+   "net": -1339,
+   "per_month": -136,
+   "dd": -2688,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 96,
+   "tpw": 0.45,
+   "wk2": 8.8,
+   "win": 18.8,
+   "pf": 0.95,
+   "net": -1157,
+   "per_month": -23,
+   "dd": -11434,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.5, depth 0.25, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.32,
+   "net": 32457,
+   "per_month": 5325,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 47.0,
+   "mc_f10": 6.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 88.1,
+   "win": 26.6,
+   "pf": 3.49,
+   "net": 41074,
+   "per_month": 4187,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 536,
+   "tpw": 2.5,
+   "wk2": 78.3,
+   "win": 16.6,
+   "pf": 0.94,
+   "net": -6855,
+   "per_month": -134,
+   "dd": -23086,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.5, depth 0.25, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 82,
+   "tpw": 3.2,
+   "wk2": 85.2,
+   "win": 22.0,
+   "pf": 4.28,
+   "net": 32355,
+   "per_month": 5308,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 46.8,
+   "mc_f10": 7.5,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 88.1,
+   "win": 26.4,
+   "pf": 3.47,
+   "net": 40972,
+   "per_month": 4177,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 560,
+   "tpw": 2.61,
+   "wk2": 78.8,
+   "win": 16.8,
+   "pf": 0.94,
+   "net": -6945,
+   "per_month": -136,
+   "dd": -23736,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.25
+   },
+   "combo": "add2"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.5, depth 0, no idm gate | alone": {
+  "H1": {
+   "n": 8,
+   "tpw": 0.31,
+   "wk2": 7.4,
+   "win": 0.0,
+   "pf": 0.0,
+   "net": -2155,
+   "per_month": -354,
+   "dd": -2155,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 0.0,
+   "f10": 0.0,
+   "pass_med": null,
+   "mc_p10": 0.0,
+   "mc_f10": 0.0,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 5,
+   "tpw": 0.32,
+   "wk2": 0.0,
+   "win": 60.0,
+   "pf": 2.03,
+   "net": 817,
+   "per_month": 220,
+   "dd": -553,
+   "worst_day": -553,
+   "n_es": 0,
+   "p10": 15.9,
+   "f10": 0.0,
+   "pass_med": 6.0,
+   "mc_p10": 17.4,
+   "mc_f10": 0.0,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 13,
+   "tpw": 0.32,
+   "wk2": 4.8,
+   "win": 23.1,
+   "pf": 0.55,
+   "net": -1339,
+   "per_month": -136,
+   "dd": -2688,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 96,
+   "tpw": 0.45,
+   "wk2": 8.8,
+   "win": 18.8,
+   "pf": 0.95,
+   "net": -1157,
+   "per_month": -23,
+   "dd": -11434,
+   "worst_day": -853,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "alone"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.5, depth 0, no idm gate | + live, 1 a day": {
+  "H1": {
+   "n": 81,
+   "tpw": 3.16,
+   "wk2": 85.2,
+   "win": 22.2,
+   "pf": 4.32,
+   "net": 32457,
+   "per_month": 5325,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 7.6,
+   "pass_med": 4.0,
+   "mc_p10": 47.0,
+   "mc_f10": 6.3,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 124,
+   "tpw": 3.01,
+   "wk2": 88.1,
+   "win": 26.6,
+   "pf": 3.49,
+   "net": 41074,
+   "per_month": 4187,
+   "dd": -2457,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 536,
+   "tpw": 2.5,
+   "wk2": 78.3,
+   "win": 16.6,
+   "pf": 0.94,
+   "net": -6855,
+   "per_month": -134,
+   "dd": -23086,
+   "worst_day": -878,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add1"
+  }
+ },
+ "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.5, depth 0, no idm gate | + live, 2 a day": {
+  "H1": {
+   "n": 82,
+   "tpw": 3.2,
+   "wk2": 85.2,
+   "win": 22.0,
+   "pf": 4.28,
+   "net": 32355,
+   "per_month": 5308,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0,
+   "p10": 52.9,
+   "f10": 13.4,
+   "pass_med": 4.0,
+   "mc_p10": 46.8,
+   "mc_f10": 7.5,
+   "n_starts": 119
+  },
+  "H2": {
+   "n": 43,
+   "tpw": 2.76,
+   "wk2": 87.5,
+   "win": 34.9,
+   "pf": 2.28,
+   "net": 8617,
+   "per_month": 2320,
+   "dd": -1692,
+   "worst_day": -641,
+   "n_es": 0,
+   "p10": 43.5,
+   "f10": 2.9,
+   "pass_med": 3.0,
+   "mc_p10": 54.1,
+   "mc_f10": 6.9,
+   "n_starts": 69
+  },
+  "2026": {
+   "n": 125,
+   "tpw": 3.03,
+   "wk2": 88.1,
+   "win": 26.4,
+   "pf": 3.47,
+   "net": 40972,
+   "per_month": 4177,
+   "dd": -2559,
+   "worst_day": -763,
+   "n_es": 0
+  },
+  "ref": {
+   "n": 560,
+   "tpw": 2.61,
+   "wk2": 78.8,
+   "win": 16.8,
+   "pf": 0.94,
+   "net": -6945,
+   "per_month": -136,
+   "dd": -23736,
+   "worst_day": -1214,
+   "n_es": 0
+  },
+  "meta": {
+   "family": "idmob",
+   "tfs": [
+    "15m",
+    "1h"
+   ],
+   "near": 2.0,
+   "tol": 0.5,
+   "P": {
+    "idm_a": null,
+    "depth": 0.0
+   },
+   "combo": "add2"
+  }
+ }
+}

@@ -749,6 +749,12 @@ DEFAULTS = {
                                  # (engine/sizing.scale_in_qty: the add's open risk never above the first entry's $ risk), same
                                  # stop (breakeven) and target; once the add is + rat_k x its own risk the whole position's stop
                                  # moves to the add's price (None = never). An add needs >= min_rk pts of risk. n adds at most.
+    "idm_size": None,            # size by the inducements taken first (research/writeups/lit-new-entries.md, run lit_ent_idm_size;
+                                 # off = None): {"atr": 2.0, "bars": 48, "n": 2, "up": 1.5, "down": 0.75, "cap_usd": 990}: a setup
+                                 # whose idm_a list has >= n inducements within atr ATR of the swept level and <= bars old trades at
+                                 # up x size, else down x size (one rounding with how_out and the weekly stop; a size-up never risks
+                                 # more than cap_usd incl. 1 tick + $1.90). Normal (LIT rule) sizing only: lit_sizing two_week ignores
+                                 # the model's multiplier (two_week.wk false), so the eval cut needs engine/sizing.py to honour it.
     # execution (research only; research/writeups/lit-live-fills.md): None = the plain backtest fills above
     "fills": None,               # realistic fill model {} / {...}: engine/lit_fills.py FILL_DEFAULTS (live bot latency, market
                                  # entry at the price when the order reaches CME, stop slippage by hour and bar range, target
@@ -1249,6 +1255,18 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             if ws >= n_st:
                 m *= float(m_st)
                 why.append(f"weekly stop: {ws} stop-outs this week x{float(m_st):g}")
+        if P.get("idm_size"):
+            q_ = P["idm_size"]
+            cnt = sum(1 for dd, aa in (z.get("idm_a") or []) if dd <= q_["atr"] and aa <= q_["bars"])
+            mi = float(q_["up"]) if cnt >= int(q_["n"]) else float(q_["down"])
+            if mi != 1.0:
+                if m * mi > 1.0 and q_.get("cap_usd") and t["qty"]:
+                    # a size-up never risks more than cap_usd (full stop + 1 tick + round-trip commission)
+                    loss1 = (t["risk_pts"] + 0.25) * PV + float(q_.get("comm", 1.90))
+                    qmax = max(t["qty"], int(float(q_["cap_usd"]) / loss1))
+                    mi = min(mi, qmax / (t["qty"] * m) + 1e-9)
+                m *= mi
+                why.append(f"{cnt} inducement{'s' if cnt != 1 else ''} taken first x{mi:.3g}")
         if m != 1.0:
             t = scale_trade(t, m)
             t["size_mult"] = round(m, 6)
