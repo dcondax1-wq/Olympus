@@ -297,6 +297,24 @@ async function mountExec(force) {
 }
 
 // ------------------------------------------------------------------ Accounts page
+// extra accounts (engine/multi_account.py, start cfg "accounts"): one row each, same signals, own size / eval / lock-out
+function extraAccountsCard(ac) {
+  const rows = ac.accounts || [];
+  if (!rows.length) return '';
+  const body = rows.map((x) => {
+    if (x.error) return `<div class="pc-xacc"><b>${esc(x.name || x.id)}</b> <span class="dn small">${esc(x.error)}</span></div>`;
+    const ev = x.eval || {}, p = x.position, st = x.disabled ? `disabled: ${x.disabled}` : x.locked ? `locked: ${x.locked}` : 'ready';
+    return `<div class="pc-xacc"><div><b>${esc(x.name)}</b> ${chip(esc(x.badge || ''))} ${chip('mode ' + esc(x.mode || '—'))}
+      <span class="muted small">${esc(x.firm || '')} ${esc(x.plan || '')}${x.broker_account ? ' · ' + esc(x.broker_account) : ''}</span></div>
+      <div class="small">${p?.side ? `<span class="${p.side === 'LONG' ? 'up' : 'dn'}">${p.side} ${p.qty ?? ''} MNQ</span>` : 'flat'}
+      · today <b class="${cls(x.pnl?.today)}">${fmtS$(x.pnl?.today)}</b>
+      ${ev.balance != null ? ` · balance ${fmt$(ev.balance)}, room ${fmt$(ev.room)}, session ${ev.session ?? '—'}` : ''}
+      · <span class="${x.disabled || x.locked ? 'dn' : 'muted'}">${esc(st)}</span>
+      ${x.size?.qty != null ? ` · last size ${x.size.qty} (model ${x.size.model_qty})` : ''}</div></div>`;
+  }).join('');
+  return card(`Extra accounts · ${rows.length}`, `<div class="pc-xaccs">${body}</div>`, '', 'pc-xacc-card');
+}
+
 let acTimer = null;
 async function showAccounts(force) {
   const el = $('#page-accounts'); if (!el) return;
@@ -319,6 +337,7 @@ async function showAccounts(force) {
         ${stat('Max drawdown', fmt$(sg.max_dd), sg.streak ? `streak ${sg.streak.n} ${sg.streak.kind}` : '', sg.max_dd < 0 ? 'dn' : '')}
       </div>
       <div class="pc-acc-top">${evalCard(ev, a)}${positionCard(ac)}</div>
+      ${extraAccountsCard(ac)}
       <div class="grid cols-2">${timelineCard(ac)}
         ${card('Equity · eval account', '<div id="pcEq"></div>', `<span class="muted small">${(ac.equity || []).length - 1} sessions with a trade</span>`)}</div>
       ${card('P&L calendar · routed', '<div id="pcCal"></div>', `<div class="pc-mnav" id="pcCalNav"><button class="nx-chipbtn" type="button" data-m="-1" aria-label="Previous month">${icon('left')}</button><button class="nx-chipbtn" type="button" data-m="1" aria-label="Next month">${icon('right')}</button></div>`)}

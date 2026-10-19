@@ -327,6 +327,20 @@ def account_view(bot, now: int | None = None, lm: dict | None = None, bars: bool
            "sizing": {"mode": ls.get("mode"), "eval_start": ls.get("eval_start"), "eval_prior_pnl": ls.get("eval_prior_pnl"),
                       "two_week_until": ls.get("two_week_until"), "after_mode": ls.get("after_mode")},
            "model_state": accounts.clean_text((getattr(bot, "state", None) or {}).get("model_state"), 200)}
+    if acct.get("accounts"):                     # extra accounts (engine/multi_account.py): one compact row each
+        rows = []
+        for sub in acct["accounts"]:
+            try:
+                m = {"id": sub.get("id"), "name": sub.get("name"), "firm": sub.get("firm"), "plan": sub.get("plan"),
+                     "kind": sub.get("kind") or "eval", "source": "pc"}
+                s2 = accounts._pc_section(m, {"present": True, "t": now, "acct": sub, "running": sub.get("running")}, {}, today, now)
+                rows.append({k: s2.get(k) for k in ("id", "name", "firm", "plan", "badge", "broker_account", "position", "eval", "pnl", "stats")}
+                            | {"mode": sub.get("mode"), "locked": sub.get("locked"), "enabled": sub.get("enabled"),
+                               "disabled": (sub.get("account") or {}).get("disabled"), "size": sub.get("size"),
+                               "orders": len(sub.get("orders") or [])})
+            except Exception as e:
+                rows.append({"id": sub.get("id"), "name": sub.get("name"), "error": accounts.clean_text(f"{e.__class__.__name__}: {e}", 120)})
+        out["accounts"] = rows
     if bars:
         t_from = _session_from(today)
         if pos and pos.get("entry_t"):

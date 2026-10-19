@@ -342,6 +342,7 @@ class LiveBot:
         self._nt_last = {}               # (sym, tf) -> the last NinjaTrader frame (the heartbeat pushes it to the cloud)
         self._nt_forming_last = None     # (open time, open) of the forming 1m bar (heartbeat "bars" block)
         self._arc = {}                   # (sym, tf) -> the NinjaTrader archive in memory (data/nt_bars, engine/pcbars.py)
+        self.accts = None                # engine/multi_account.AccountRouter: the start cfg's extra accounts (None = one account)
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -583,6 +584,7 @@ class LiveBot:
         self.health["data_source"] = self.cfg.get("data_source", "yahoo")
         self.health["no_yahoo"] = self.no_yahoo
         self._restore(clear_kill=bool(cfg.get("clear_kill")))
+        self._start_accounts()
         self.running = True
         self.stop_flag.clear()
         if spawn:
@@ -619,6 +621,8 @@ class LiveBot:
             # broker adapters that can flatten the whole account (NinjaTrader FLATTENEVERYTHING) are told even when the
             # model shows no position: the broker may still hold one (desync, manual order, late fill)
             self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "reason": "KILL SWITCH", "entry_t": None})
+        if self.accts is not None:                  # every extra account is flattened too (engine/multi_account.py)
+            self.accts.kill(self.cfg.get("sym", "NQ"))
         self.stop()
         self._log("risk", "KILL SWITCH: flattened and stopped")
         self._save_state()
@@ -627,8 +631,11 @@ class LiveBot:
     def _route(self, action):
         if self.adapter is None:
             self.adapter = ADAPTERS["paper"](self.cfg)
+        hedge = self.accts.opposite_open(1 if action.get("side") == "buy" else -1) \
+            if self.accts is not None and action.get("side") in ("buy", "sell") else None
         try:
-            res = self.adapter.send(action)
+            # extra accounts: never long on one account and short on another (engine/multi_account.opposite_open)
+            res = {"ok": False, "error": "REFUSED: " + hedge} if hedge else self.adapter.send(action)
         except Exception as e:  # never let a broker error kill the loop
             res = {"ok": False, "error": str(e)}
             self._note_error(f"adapter {getattr(self.adapter, 'name', '?')} send failed: {e}")
@@ -641,6 +648,8 @@ class LiveBot:
         """Adapters that manage broker orders between bars (NinjaTrader: late fill reports, bracket health, flat-time
         safety) get one tick() per poll, before the data fetch so a failing feed cannot skip it. Never raises."""
         ad = self.adapter
+        if self.accts is not None and not self.kill:
+            self.accts.tick()                       # the extra accounts' adapters (never raises)
         if self.kill or not getattr(ad, "loop_tick", False) or not callable(getattr(ad, "tick", None)):
             return
         try:
@@ -1253,7 +1262,12 @@ class LiveBot:
                 # from the stop with one rounding (engine/sizing.lit_qty)
                 mode = (lsz or {}).get("mode")
                 room = self.eval_room() if mode in ("safe_eval", "eval", "two_week") else None
-                r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room, state=self.eval_state() if mode == "two_week" else None)
+                if mode in ("funded", "auto"):         # the funded account's balance / trailing floor / payouts
+                    from .multi_account import primary_state
+                    st_ = primary_state(self, mode)
+                else:
+                    st_ = self.eval_state() if mode == "two_week" else None
+                r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room, state=st_)
                 if r.get("learn"):             # the learning loop's multiplier at this entry (applied, or would-be in observe)
                     if not hasattr(self, "_learn_at"):
                         self._learn_at = {}
@@ -1326,7 +1340,38 @@ class LiveBot:
         f5 = bool(((self.state or {}).get("lit") or {}).get("forming_5m"))
         return int(l5) >= b5 or (f5 and int(l5) + 300 >= b5)
 
+    # ------------------------------------------------------------------ extra accounts (engine/multi_account.py, off by default)
+    def _start_accounts(self):
+        """The start cfg's "accounts" list: one router for every extra account (None without the list: one account)."""
+        self.accts = None
+        if not self.cfg.get("accounts"):
+            return
+        try:
+            from . import multi_account
+            self.accts = multi_account.build(self, self.cfg)
+        except Exception as e:
+            self.accts = None
+            self._note_error(f"extra accounts NOT started: {e.__class__.__name__}: {e}")
+            self._log("risk", f"Extra accounts NOT started ({e.__class__.__name__}: {e}): only the bot's own account trades")
+
     def _route_signals(self, res, sym, now, secs):
+        """The bot's own account (_route_primary) and, when configured, every extra account at the same time."""
+        if self.accts is None:
+            return self._route_primary(res, sym, now, secs)
+        job = None
+        try:
+            job = self.accts.begin(res, sym, now, secs, entry_block="feed stale" if self.health.get("entries_blocked") else None)
+        except Exception as e:
+            self._note_error(f"extra accounts routing failed: {e.__class__.__name__}: {e}")
+        try:
+            return self._route_primary(res, sym, now, secs)
+        finally:
+            try:
+                self.accts.finish(job)
+            except Exception as e:
+                self._note_error(f"extra accounts routing failed: {e.__class__.__name__}: {e}")
+
+    def _route_primary(self, res, sym, now, secs):
         """Turn the engine's position / completed trades into adapter calls, exactly once each."""
         start = self.started_at
         pos = self.state.get("position")
@@ -1530,7 +1575,10 @@ class LiveBot:
         return False
 
     def snapshot(self):
-        return {"running": self.running, "cfg": {k: v for k, v in self.cfg.items() if k != "webhook_url"},
+        cfg = {k: v for k, v in self.cfg.items() if k != "webhook_url"}
+        if isinstance(cfg.get("accounts"), list):    # no per-account phrase in the API answer
+            cfg["accounts"] = [{k: v for k, v in a.items() if k != "confirm"} if isinstance(a, dict) else a for a in cfg["accounts"]]
+        return {"running": self.running, "cfg": cfg,
                 "state": self.state, "log": list(self.log)[:200], "ledger": self.ledger[-100:],
                 "last_poll": self.last_poll, "started_at": self.started_at, "errors": self.errors,
                 "health": dict(self.health), "kill": self.kill,
