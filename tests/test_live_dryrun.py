@@ -487,7 +487,8 @@ def test_failure_injection(rp: Replay, ref_trades, start_t):
     orig_yahoo = live._yahoo_recent
     live._yahoo_recent = lambda sym, interval="5m", period="5d": pd.DataFrame()
     try:
-        bot4 = rp.bot({"data_source": "tradovate"}, state_path=os.path.join(rp.tmp, "fail4.json"), start_now=start_t)
+        # the old Yahoo fallback path, with no_yahoo off (live_model.json "no_yahoo" is on by default since 2026-10-19)
+        bot4 = rp.bot({"data_source": "tradovate", "no_yahoo": False}, state_path=os.path.join(rp.tmp, "fail4.json"), start_now=start_t)
         bot4.fetch_recent = bot4._fetch_recent          # use the real dispatcher
         st = rp.poll(bot4, now, errors)
         fb_log = any("falling back to Yahoo" in l["text"] for l in bot4.log)
