@@ -329,6 +329,13 @@ def eval_day_pnl(ledger, start=None):
         if start and v["day"] < str(start):
             continue
         by_day[v["day"]] = by_day.get(v["day"], 0.0) + v["usd"]
+    try:                                     # the eval's P&L before eval_start (lit_sizing.eval_prior_pnl, e.g. -$100)
+        prior = float((json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8")).get("lit_sizing") or {})
+                      .get("eval_prior_pnl") or 0.0) if start else 0.0
+    except Exception:
+        prior = 0.0
+    if prior:
+        by_day["0000-00-00"] = prior
     return by_day
 
 

@@ -525,7 +525,7 @@ def eval_clock(day_pnl: dict, start: str | None, today: str, session_over: bool 
     open / passed / failed, from the closed P&L per day since the start) and the reset reminder: an eval still open after
     session EVAL_SESSIONS (10) -> reset recommended (buy a new one, set lit_sizing.eval_start to its first session)."""
     A = {**TW_50K, **(plan or {})}
-    days = {d: float(v) for d, v in (day_pnl or {}).items() if not start or d >= str(start)}
+    days = {d: float(v) for d, v in (day_pnl or {}).items() if not start or d >= str(start) or d == "0000-00-00"}   # + the prior P&L
     sess = eval_session(start, today)
     st = eval_state({d: v for d, v in days.items() if d < today}, days.get(today, 0.0), plan)
     bal = st["profit"] + st["cum"]

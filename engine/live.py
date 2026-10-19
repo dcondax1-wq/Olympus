@@ -971,6 +971,9 @@ class LiveBot:
             if r.get("side") == "exit" and (not start or trading_day(r["t"]) >= start):
                 d = trading_day(r["t"])
                 days[d] = round(days.get(d, 0.0) + float(r.get("pnl") or 0), 2)
+        prior = float(self.cfg.get("eval_prior_pnl") or (getattr(self, "_lit_sizing", None) or {}).get("eval_prior_pnl") or 0.0)
+        if prior:                            # the eval's P&L before eval_start (owner's account, e.g. -$100): one day before all
+            days["0000-00-00"] = prior
         return days
 
     def eval_room(self):
