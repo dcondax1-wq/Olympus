@@ -14,6 +14,9 @@ learning journal and the repo's research files. Nothing here starts, arms, route
                                   timeline (refused rows flagged), routed trades, P&L per day, equity curve, stats
   GET /api/next/pc/trade/{entry_t} one routed trade with its chart: the replay chart id when the LIT replay has the same
                                   trade, else bars around it (the bot's feed, then data/NQ_5m.csv / NQ_1m.csv)
+  GET /api/next/pc/execution      execution quality (engine/fill_audit.py): every routed trade against the LIT backtest on
+                                  the same bars (latency, entry / exit slippage in ticks and $, stop / target placement, BE
+                                  timing, qty), missed trades (why, backtest $), extra trades, $ per trade / month
   GET /api/next/extras            tools/build_web_dashboard._extras(): every LIT replay trade (compact rows), the level-type
                                   leaderboard, two_week eval odds (run lit_2wk_rec), eventual pass, Monte Carlo, MFFU rules
 """
@@ -398,5 +401,16 @@ def extras():
     try:
         x = extras_view()
         return _J(x, 500 if x.get("error") else 200)
+    except Exception as e:
+        return _J({"error": f"{e.__class__.__name__}: {accounts.clean_text(e, 120)}"}, 500)
+
+
+# ------------------------------------------------------------------------------------------------ execution quality
+@router.get("/api/next/pc/execution")
+def pc_execution(rows: int = 200):
+    """engine/fill_audit.view(): the last audit (re-run when older than 30 min). Read-only towards the bot and the broker."""
+    try:
+        from . import fill_audit
+        return _J(fill_audit.view(max_rows=max(1, min(int(rows), 500))))
     except Exception as e:
         return _J({"error": f"{e.__class__.__name__}: {accounts.clean_text(e, 120)}"}, 500)
