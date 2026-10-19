@@ -119,6 +119,19 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   continuation / flip 2nd trade, costs inside the $800, Berlin-time London boxes (no 2026 change, 2021-25 +$5.8k): none adopted.
   The report's ch.21 model makes 0 trades in 2026. Beginner guide: `research/writeups/lit-playbook.md`.
 
+- **LIT studies of 2026-10-18/19 (none adopted unless noted; write-ups in research/writeups/):** HTF confluences (75,
+  chance level, `lit-htf-confluences.md`); order blocks incl. HTF OB entries and the owner's mitigation notes (84,
+  `lit-order-blocks.md`); entry precision (43, today's entry is best, `lit-entry-precision.md`); all-hours / Asia /
+  per-session / re-arm / F-BoS build-up (30, `lit-all-hours.md`); report-2 continuation, sessions, Smart Money Trap,
+  inducement speed/hierarchy (176, `lit-adv-continuation.md`); BE/partials/targets (`lit-adv-management.md`: BE at
+  entry + 1.25 pts is a small candidate); backtest honesty audit (-$500 of $41.7k, `lit-adv-audit-smt.md`); NQ/ES
+  divergence; more setups: ES/MES, 15m/30m/1h, missed fills, looser filters (95, `lit-more-setups.md`); trend-day mode,
+  volatility sizing, news setups (`lit-big-ideas.md`). **Adopt-candidates not live yet:** the 15-minute check
+  (`t_check`, `lit-loss-learning.md`; the PC route sent the cut ~3 min late in a replay, fix before switching on),
+  **scale-in after BE** (`scale_in`, `lit-big-ideas.md`: +$12.5k / +$16.3k in H1 / H2, pass rate ~flat; needs the
+  NinjaTrader add-order route), BE + costs (`be_off 1.25`). Funded plan: MFFU Builder + LucidPro 50K + FundedNext
+  Rapid Daily 50K (`lit-funded-firms.md`, ~$1,750-2,300/mo for three; one bot routes to one account today).
+
 ## Key commands (run from the repo root)
 - `python tools/export_backtest.py`: the live-settings 5-year replay → `research/lab/backtest_live.json`. Contains periods, months,
   stop buckets, eval odds, **per-trade reports** (why it entered / plan / result / lessons) and **lessons** (wins vs losses).
