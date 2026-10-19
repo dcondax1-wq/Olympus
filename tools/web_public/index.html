@@ -1731,7 +1731,7 @@ function loadFX() {
 }
 // LIT panels (litkit.js: Day clock, Setup tracker, Levels board, Eval cockpit, Week planner, checklist), loaded after the first paint
 let LK = null, LKP = null;
-const LKV = '16fe7086';
+const LKV = '5487cc77';
 function loadLK() {
   if (LKP) return LKP;
   LKP = import('./litkit.js?v=' + LKV).then((m) => { LK = m; if (D) render(true); return m; }).catch((e) => { console.warn('LIT panels unavailable', e); LK = null; });
