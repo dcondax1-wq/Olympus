@@ -139,7 +139,7 @@ export async function renderStatus(force) {
   const last = setups[setups.length - 1];
   el.className = `pc-status lvl-${lvl}`;
   el.innerHTML = `<div class="pc-st-main"><span class="pc-st-dot"></span><div class="pc-st-txt">
-        <div class="pc-st-k">PC bot · ${esc(a.name || a.adapter || 'paper')} · ${esc(a.label || '')}${h.running ? '' : ' · stopped'}</div>
+        <div class="pc-st-k">PC bot · ${esc(a.name || a.adapter || 'paper')}${a.label && String(a.label).toLowerCase() !== String(a.name || '').toLowerCase() ? ' · ' + esc(a.label) : ''}${h.running ? '' : ' · stopped'}</div>
         <h2>${esc(v.label || v.code || '—')}</h2><p>${esc(v.reason || '')}${s.model_state ? ` · ${esc(s.model_state)}` : ''}</p></div>
       <div class="pc-st-acts"><button type="button" class="btn ghost sm" data-goto="accounts">${icon('wallet')}<span>Accounts</span></button><button type="button" class="btn ghost sm" data-goto="evalhq">${icon('prop')}<span>Eval HQ</span></button></div></div>
     <div class="pc-st-grid">

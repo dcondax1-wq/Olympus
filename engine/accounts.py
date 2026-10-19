@@ -92,14 +92,21 @@ def _acct_kind(bot) -> dict:
     adapter = str(cfg.get("adapter") or getattr(ad, "name", None) or "paper")
     name = getattr(ad, "account", None)
     env = getattr(ad, "env", None)
+    if not name and adapter == "ninjatrader":
+        name = cfg.get("nt_account") or os.environ.get("NINJATRADER_ACCOUNT") or "Sim101"
+    nt_live = False
+    if adapter == "ninjatrader":
+        try:                                 # same rule as the adapter and pc_health: Sim/Playback names are SIM
+            from .ninjatrader import is_sim
+            nt_live = not is_sim(name)
+        except Exception:
+            nt_live = False
     if adapter == "paper":
         kind, label, name = "paper", "PAPER", "Paper (PC)"
-    elif env == "live" or (adapter == "traderspost"):
+    elif env == "live" or adapter == "traderspost" or nt_live:
         kind, label = "live", "LIVE ACCOUNT"
     else:
         kind, label = "sim", "SIM"
-    if not name and adapter == "ninjatrader":
-        name = cfg.get("nt_account") or os.environ.get("NINJATRADER_ACCOUNT") or "Sim101"
     return {"name": clean_text(name or adapter, 60), "adapter": adapter, "kind": kind, "label": label,
             "disabled": clean_text(getattr(ad, "disabled", None), 120)}
 
