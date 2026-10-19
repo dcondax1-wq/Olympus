@@ -4,6 +4,8 @@
   "label": "LIT - Liquidity Inducement (2026-tuned) + loss pack",
   "chosen": "2026-10-18",
   "locked": true,
+  "no_yahoo": true,
+  "no_yahoo_note": "owner 2026-10-19: bars from NinjaTrader (PC) and the TradingView exports only, never Yahoo; the cloud reads the PC's NinjaTrader bars from the heartbeat branch; VIX from CBOE (engine/pcbars.py)",
   "rules": "STRATEGY.md",
   "params": {
     "risk_usd": 800,

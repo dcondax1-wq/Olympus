@@ -72,22 +72,13 @@ def trade_pnl(t, q, qfull, st):
     if not adds:
         pnl = A.leg_pnl(t, q)
         return pnl, min(0.0, t["w1"] * PV * q - ECOMM * q, pnl), q
-    budget = min(qfull * t["risk"] * PV, 0.6 * max(0.0, st["room"]), DLL + st["cum"])
-    tot = q
+    qa = SZ.scale_in_qty(q, qfull, t["risk"], adds, f=t.get("add_f", 1.0), state=st)   # the engine's add sizing
+    tot = q + sum(qa)
     g = q * t["pts"] * PV
     lows = [q * t["w_pre"] * PV]
-    qa = []
-    for a in adds:
-        per = (a["rk"] + SLIP) * PV + ECOMM
-        open_r = sum(qq * rk * PV for qq, rk in zip(qa, a["prev_rk"]))
-        room_q = int(max(0.0, budget - open_r) / per) if per > 0 else 0
-        f = t.get("add_f", 1.0)
-        want = room_q if f == "max" else int(f * qfull + 1e-9)
-        n = max(0, min(want, room_q, 40 - tot))
-        qa.append(n)
-        tot += n
-        g += n * a["pts"] * PV
-        lows.append((q * a["w_ph"] + sum(qq * (a["w_ph"] - b["dist"]) for qq, b in zip(qa, adds))) * PV)
+    for i, a in enumerate(adds):
+        g += qa[i] * a["pts"] * PV
+        lows.append((q * a["w_ph"] + sum(qq * (a["w_ph"] - b["dist"]) for qq, b in zip(qa[:i + 1], adds))) * PV)
     pnl = g - ECOMM * tot
     return pnl, min(0.0, min(lows) - ECOMM * tot, pnl), tot
 
@@ -293,17 +284,17 @@ def padd(t, R):
         fresh_lim = False
         if pend:
             pend = False
-            px = float(o[k]) + SLIP
+            px = float(o[k]) + SLIP + R.get("xslip", 0.0)
             if px < tg and px - cur >= R.get("min_rk", 2.0):
                 _fill(px, k)
                 if R.get("rat"):
-                    rat_lvl = (px + (px - cur), px)
+                    rat_lvl = (px + R.get("rat_k", 1.0) * (px - cur), px)
         if lim is not None and lo[k] <= lim and len(adds) < nmax:
             px = min(lim, float(o[k]))
             if px - cur >= R.get("min_rk", 2.0):
                 _fill(px, k); fresh_lim = True
                 if R.get("rat"):
-                    rat_lvl = (px + (px - cur), px)
+                    rat_lvl = (px + R.get("rat_k", 1.0) * (px - cur), px)
             lim = None
         lw = float(lo[k]) - entry
         worst = min(worst, lw)
@@ -405,6 +396,50 @@ def grid1(b):
                         record(g, lab, U, {"R": RR, "start": start, "f": f, "trades_with_add": na})
     for start in (0.5, 0.75):
         record(g, f"no add, start {start}", scale_units({"trig": "none"}, start, 1.0), {"start": start})
+
+
+def grid1b(b):
+    """Neighbours and controls of the idea-1 candidates."""
+    print("== idea 1b: neighbours / controls")
+    g = "scale_nb"
+    C = {"trig": "cisd", "pb": 0.25, "rat": True, "n": 1}
+    rows = [("CTRL ratchet only, no add (f=0)", C, 1.0, 0.0), ("CTRL cisd add, no ratchet", {**C, "rat": False}, 1.0, 1.0)]
+    for pb in (0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5):
+        rows.append((f"cisd pb{pb} rat add 1.0", {**C, "pb": pb}, 1.0, 1.0))
+    for f in (0.25, 0.5, 0.75, 1.0, 1.25, 1.5):
+        rows.append((f"cisd pb0.25 rat add {f}", C, 1.0, f))
+    for rk in (0.5, 0.75, 1.5, 2.0):
+        rows.append((f"cisd pb0.25 rat_k {rk} add 1.0", {**C, "rat_k": rk}, 1.0, 1.0))
+        rows.append((f"CTRL rat_k {rk}, no add", {**C, "rat_k": rk}, 1.0, 0.0))
+    for mr in (1.0, 4.0, 6.0):
+        rows.append((f"cisd pb0.25 rat add 1.0 min_rk {mr}", {**C, "min_rk": mr}, 1.0, 1.0))
+    for st in (0.75, 0.9):
+        rows.append((f"cisd pb0.25 rat add 1.0 start {st}", C, st, 1.0))
+    I = {"trig": "imm", "rat": False, "n": 1}
+    for f in (0.75, 1.0, 1.25):
+        rows.append((f"imm add {f}", I, 1.0, f))
+    for st, f in ((0.5, 0.75), (0.5, 1.0), (0.5, 1.25), (0.6, 1.0), (0.75, 1.0)):
+        rows.append((f"imm add {f} start {st}", I, st, f))
+    for nm, R, st, f in rows:
+        U = scale_units(R, st, f)
+        o = record(g, nm, U, {"R": R, "start": st, "f": f, "trades_with_add": sum(1 for t in U if t.get("adds"))})
+        o["both"] = better(o, b)
+    print("both halves better (net and 2-week pass):", [k for k, o in RES[g].items() if o.get("both")])
+
+
+def add_diag(R, st=1.0, f=1.0):
+    """Per-trade view of the adds on the back-to-back path: how many adds, their result, $ at risk."""
+    U = scale_units(R, st, f)
+    out = {}
+    for sp in ("H1", "H2"):
+        T, _ = A.b2b(U, sp)
+        qa = {t["entry_t"]: t["qty"] for t in T}
+        a, z = A.SPANS[sp]
+        TT = [t for t in U if a <= t["day"] <= z and t.get("adds")]
+        res = collections.Counter(t["exit"] for t in TT)
+        out[sp] = {"trades_with_add": len(TT), "exits": dict(res),
+                   "add_R_unit": round(sum(sum(x["pts"] for x in t["adds"]) / t["risk"] for t in TT), 2)}
+    return out
 
 
 # ================================================================================================ idea 2: trend-day mode
@@ -614,7 +649,7 @@ def grid(which=None):
     RES = json.load(open(OUT)) if os.path.exists(OUT) else {}
     b = check()
     RES["base"] = b
-    for k, fn in (("1", grid1), ("2", grid2), ("3", grid3), ("4", grid4)):
+    for k, fn in (("1", grid1), ("1b", grid1b), ("2", grid2), ("3", grid3), ("4", grid4)):
         if which and k not in which:
             continue
         fn(b)
@@ -631,3 +666,102 @@ if __name__ == "__main__":
         check()
     elif cmd == "grid":
         grid(sys.argv[2:] or None)
+
+
+# ================================================================================================ run library
+Q = ("Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release "
+     "setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes "
+     "under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.")
+CAND = {"trig": "cisd", "pb": 0.25, "rat": True, "n": 1}
+
+
+def _units(kind, arg):
+    if kind == "base":
+        return live()
+    if kind == "scale":
+        R, st, f = arg
+        return scale_units(R, st, f)
+    if kind == "trend":
+        F = feats(); i = arg
+        tm = TMODES[i["mode"]]
+        return run(tmode=lambda z, ep, r, best: tm if np.isfinite(F[z["i"]][i["feat"]]) and (
+            (F[z["i"]][i["feat"]] >= i["th"]) if i["side"] == ">=" else (F[z["i"]][i["feat"]] <= i["th"])) else None)
+    if kind == "trend_all":
+        return run(tmode=lambda z, ep, r, best: TMODES[arg])
+    if kind == "vol":
+        return tilt_units(arg["feat"], arg["th"], arg["hi_m"], arg["lo_m"])
+    if kind == "news":
+        E = events(("high",))
+        return run(news2=lambda z, first: is_news(z, E, 15), flag=lambda z: is_news(z, E, 15),
+                   maxstop=lambda z: 160.0 if is_news(z, E, 15) else None)
+    raise ValueError(kind)
+
+
+def save():
+    from tools import runlib as rl
+    R = json.load(open(OUT))
+    trend_pick = R["trend_pick"]["h1_top"][0]
+    vol_best = "vix >= 16.9 (q0.33) hi x1.5"
+    S = [  # id, group, name, kind, arg, family, status, why
+        ("lit_big_base", "base", None, "base", None, "other", "info", "reference: LIT live (live_model.json lit) with the live sizing"),
+        ("lit_big_scale_cisd", "scale_nb", "cisd pb0.25 rat add 1.0", "scale", (CAND, 1.0, 1.0), "management", "adopt-candidate",
+         "Scale-in: after breakeven, the first 1m pullback >= 0.25R then a 1m CISD close -> add int(1.0 x micros) at the next 1m open "
+         "+ 1 tick (open risk never above the first entry's $ risk / 60% room / soft daily loss), stop at breakeven, moved to the add's "
+         "price once the add is +1 of its own risk. Better net $ and 2-week pass in both halves; every neighbour (pullback 0.1-0.4R, "
+         "add 0.75-1.5x, min risk 1-6 pts, add fills up to 2 pts worse) also better in both. The 2-week pass gain is 1 eval start per "
+         "half (H2 rests on the 2026-10-13 trade); H1 2-week fails +0.9 pt (Monte Carlo +3.7). Engine option scale_in (default off)."),
+        ("lit_big_scale_cisd_norat", "scale_nb", "CTRL cisd add, no ratchet", "scale", ({**CAND, "rat": False}, 1.0, 1.0), "management",
+         "rejected", "Same add without moving the stop to the add's price: H2 2-week pass unchanged, H1 2-week fails 9.2 -> 13.4."),
+        ("lit_big_scale_ratchet_only", "scale_nb", "CTRL ratchet only, no add (f=0)", "scale", (CAND, 1.0, 0.0), "management",
+         "rejected", "Control: the stop move alone (no add) loses H1 money and 2-week passes: the gain is the add."),
+        ("lit_big_scale_imm", "scale_nb", "imm add 1.0", "scale", ({"trig": "imm", "rat": False, "n": 1}, 1.0, 1.0), "management",
+         "rejected", "Add at the next 1m open right after breakeven: more money and passes in both halves, but 2-week fails rise "
+         "6 pts in both (9.2 -> 15.1, 2.9 -> 8.7): it adds at the top of the first push and many of those trades come back to breakeven."),
+        ("lit_big_scale_half_imm", "scale_nb", "imm add 1.0 start 0.5", "scale", ({"trig": "imm", "rat": False, "n": 1}, 0.5, 1.0),
+         "risk", "rejected", "Half the two-week size, then a full add at +1R: 2-week fails fall to 4.2% / 0.0% (from 9.2 / 2.9), "
+         "2-week pass H1 unchanged 52.9, H2 50.7 -> 55.1, but H1 net -$4.2k: fails the both-halves money test. An eval-safety idea."),
+        ("lit_big_trend_pick", "trend", trend_pick, "trend", None, "targets", "rejected",
+         "Trend-day mode, the best H1 classifier (fitted on Jan-Jun, frozen): 16 of 328 classifier x mode variants beat H1 on pass "
+         "and money; 0 of them held in Jul-Oct."),
+        ("lit_big_trend_all_be2", "trend", "ALL days be2", "trend_all", "be2", "management", "rejected",
+         "Breakeven at 2R on every day (the trend mode's ceiling for that rule): fewer 2-week passes in both halves."),
+        ("lit_big_vol_vix_hi15", "vol", vol_best, "vol", None, "risk", "rejected",
+         "Volatility tilt, the best-ranked of 160 (x1.5 when VIX prior close >= its H1 tercile): H1 pass +1.7, H2 unchanged, money "
+         "lower in both halves. 0 of 160 VIX / VXN / VIX-vs-20-day / 5m-ATR tilts beat both halves on money and passes."),
+        ("lit_big_news_wide", "news", "[high 15m] news max stop 160 + 2nd trade", "news", None, "other", "info",
+         "News-release setups (sweep 0-15 min after a 08:30 / 10:00 / 14:00 high-impact release): 4 in 2026 pass the LIT setup rules, "
+         "3 need a 154-395 pt stop (max 80) and none fills; widening the stop to 120-250 pts or allowing a 2nd trade adds 0 trades. "
+         "2021-25: 12 such setups, 11 with a stop over 80 pts, 0 trades. Not testable: the release spike makes the protected-low stop "
+         "too wide for LIT."),
+    ]
+    for rid, grp, nm, kind, arg, fam, st, why in S:
+        o = R[grp] if grp == "base" else R[grp][nm]
+        if kind == "trend":
+            arg = o["info"]
+        if kind == "vol":
+            arg = o["info"]
+        U = _units(kind, arg)
+        T = []
+        for sp in ("H1", "H2"):
+            T += A.b2b(U, sp)[0]
+        for t in T:
+            t["risk_pts"] = t["risk"]; t["r"] = round(t["pnl"] / t["risk_usd"], 3) if t["risk_usd"] else 0.0
+            t.update(half=False, trigger="LIT-1m", mfe=None, mae=None, bars_held=None, regime="", mult=None, tgt_pts=t["tgt"])
+        Sc = rl.score(T, A.S26)
+        h = lambda s: (f"{o[s]['n']} trades {o[s]['tpw']}/wk ({o[s]['wk2']}% weeks 2+) win {o[s]['win']}% PF {o[s]['pf']} net "  # noqa
+                       f"${o[s]['net']:+,} (${o[s]['per_month']:,}/mo) DD ${o[s]['dd']:,}; 2-week pass/fail {o[s]['p10']}/{o[s]['f10']} "
+                       f"(Monte Carlo {o[s]['mc_p10']}/{o[s]['mc_f10']}), 1 month {o[s]['p20']}/{o[s]['f20']}, median sessions to pass "
+                       f"{o[s]['pass_med']}, ${o[s]['cost']} per 2-week pass")
+        rl.save(rid, nm or "LIT live (reference)", fam, Q, params={"lit": "live_model.json lit (unchanged)", "variant": nm, "kind": kind,
+                                                                    "arg": arg if kind != "scale" else {"R": arg[0], "start": arg[1], "f": arg[2]}},
+                sizing={"mode": "two_week", **A.CFG}, trades=T, scored=Sc, status=st,
+                verdict=f"{why} 2026 H1 (pick): {h('H1')}. 2026 H2 (check): {h('H2')}. 2021-25: no 1m bars, not tested.",
+                notes="tools/lit_big_ideas.py (wraps tools/lit_adv_manage.py and engine/lit.py; options off == the 120 live 2026 trades). "
+                      "Stored trades = the back-to-back eval path per half (a new eval only after a pass or a fail); the eval numbers in "
+                      "the verdict are fresh evals started on every session of the half (exact MFFU Builder 50K rules).",
+                writeup="lit-big-ideas", tags=["lit", "lit_big"])
+        print("saved", rid, st, flush=True)
+
+
+if __name__ == "__main__" and len(sys.argv) > 1 and sys.argv[1] == "save":
+    save()

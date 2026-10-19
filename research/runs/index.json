@@ -1,7 +1,7 @@
 {
- "built": "2026-10-19 13:59",
+ "built": "2026-10-19 14:11",
  "baseline": "baseline",
- "count": 1041,
+ "count": 1051,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -696,6 +696,112 @@
      "slow_pass": 75.1,
      "pass_med": 31.0,
      "b2b": "12/10"
+    }
+   }
+  },
+  {
+   "id": "lit_big_scale_cisd",
+   "title": "cisd pb0.25 rat add 1.0",
+   "family": "management",
+   "question": "Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.",
+   "status": "adopt-candidate",
+   "verdict": "Scale-in: after breakeven, the first 1m pullback >= 0.25R then a 1m CISD close -> add int(1.0 x micros) at the next 1m open + 1 tick (open risk never above the first entry's $ risk / 60% room / soft daily loss), stop at breakeven, moved to the add's price once the add is +1 of its own risk. Better net $ and 2-week pass in both halves; every neighbour (pullback 0.1-0.4R, add 0.75-1.5x, min risk 1-6 pts, add fills up to 2 pts worse) also better in both. The 2-week pass gain is 1 eval start per half (H2 rests on the 2026-10-13 trade); H1 2-week fails +0.9 pt (Monte Carlo +3.7). Engine option scale_in (default off). 2026 H1 (pick): 80 trades 3.12/wk (85% weeks 2+) win 32.5% PF 3.81 net $+49,205 ($8,073/mo) DD $-3,861; 2-week pass/fail 53.8/10.1 (Monte Carlo 50.8/10.7), 1 month 76.1/21.1, median sessions to pass 5.0, $171 per 2-week pass. 2026 H2 (check): 40 trades 2.56/wk (81% weeks 2+) win 35.0% PF 3.27 net $+26,015 ($7,004/mo) DD $-2,612; 2-week pass/fail 52.2/2.9 (Monte Carlo 57.1/6.3), 1 month 50.8/8.5, median sessions to pass 4.0, $176 per 2-week pass. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-big-ideas",
+   "tags": [
+    "lit",
+    "lit_big"
+   ],
+   "params": {
+    "lit": "live_model.json lit (unchanged)",
+    "variant": "cisd pb0.25 rat add 1.0",
+    "kind": "scale",
+    "arg": {
+     "R": {
+      "trig": "cisd",
+      "pb": 0.25,
+      "rat": true,
+      "n": 1
+     },
+     "start": 1.0,
+     "f": 1.0
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-19 14:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 33.3,
+     "pf": 3.6,
+     "net": 75220,
+     "dd": -3861,
+     "avg_r": 1.097,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 464.0,
+     "half": 0,
+     "per_month": 7668,
+     "p10": 51.5,
+     "f10": 11.7,
+     "p15": 62.6,
+     "f15": 21.4,
+     "p20": 67.5,
+     "f20": 25.2,
+     "dec10": 63.2,
+     "slow_pass": 14.0,
+     "pass_med": 6.0,
+     "b2b": "18/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 33.3,
+     "pf": 3.6,
+     "net": 75220,
+     "dd": -3861,
+     "avg_r": 1.097,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 464.0,
+     "half": 0,
+     "per_month": 7668,
+     "p10": 51.5,
+     "f10": 11.7,
+     "p15": 62.6,
+     "f15": 21.4,
+     "p20": 67.5,
+     "f20": 25.2,
+     "dec10": 63.2,
+     "slow_pass": 14.0,
+     "pass_med": 6.0,
+     "b2b": "18/6"
     }
    }
   },
@@ -31787,6 +31893,420 @@
      "slow_pass": 71.7,
      "pass_med": 26.5,
      "b2b": "14/15"
+    }
+   }
+  },
+  {
+   "id": "lit_big_scale_cisd_norat",
+   "title": "CTRL cisd add, no ratchet",
+   "family": "management",
+   "question": "Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.",
+   "status": "rejected",
+   "verdict": "Same add without moving the stop to the add's price: H2 2-week pass unchanged, H1 2-week fails 9.2 -> 13.4. 2026 H1 (pick): 80 trades 3.12/wk (85% weeks 2+) win 22.5% PF 3.36 net $+45,924 ($7,534/mo) DD $-3,861; 2-week pass/fail 53.8/13.4 (Monte Carlo 52.5/13.0), 1 month 73.4/19.3, median sessions to pass 4.0, $171 per 2-week pass. 2026 H2 (check): 40 trades 2.56/wk (81% weeks 2+) win 32.5% PF 3.26 net $+25,770 ($6,938/mo) DD $-2,705; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.5/7.4), 1 month 50.8/8.5, median sessions to pass 4.0, $181 per 2-week pass. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-big-ideas",
+   "tags": [
+    "lit",
+    "lit_big"
+   ],
+   "params": {
+    "lit": "live_model.json lit (unchanged)",
+    "variant": "CTRL cisd add, no ratchet",
+    "kind": "scale",
+    "arg": {
+     "R": {
+      "trig": "cisd",
+      "pb": 0.25,
+      "rat": false,
+      "n": 1
+     },
+     "start": 1.0,
+     "f": 1.0
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-19 14:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.8,
+     "pf": 3.32,
+     "net": 71694,
+     "dd": -3861,
+     "avg_r": 1.141,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 392.0,
+     "half": 0,
+     "per_month": 7309,
+     "p10": 48.1,
+     "f10": 12.1,
+     "p15": 60.7,
+     "f15": 20.9,
+     "p20": 68.0,
+     "f20": 23.8,
+     "dec10": 60.2,
+     "slow_pass": 18.3,
+     "pass_med": 7.0,
+     "b2b": "17/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.8,
+     "pf": 3.32,
+     "net": 71694,
+     "dd": -3861,
+     "avg_r": 1.141,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 392.0,
+     "half": 0,
+     "per_month": 7309,
+     "p10": 48.1,
+     "f10": 12.1,
+     "p15": 60.7,
+     "f15": 20.9,
+     "p20": 68.0,
+     "f20": 23.8,
+     "dec10": 60.2,
+     "slow_pass": 18.3,
+     "pass_med": 7.0,
+     "b2b": "17/6"
+    }
+   }
+  },
+  {
+   "id": "lit_big_scale_imm",
+   "title": "imm add 1.0",
+   "family": "management",
+   "question": "Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.",
+   "status": "rejected",
+   "verdict": "Add at the next 1m open right after breakeven: more money and passes in both halves, but 2-week fails rise 6 pts in both (9.2 -> 15.1, 2.9 -> 8.7): it adds at the top of the first push and many of those trades come back to breakeven. 2026 H1 (pick): 80 trades 3.12/wk (85% weeks 2+) win 22.5% PF 2.79 net $+39,883 ($6,543/mo) DD $-4,839; 2-week pass/fail 54.6/15.1 (Monte Carlo 52.5/14.3), 1 month 65.1/27.5, median sessions to pass 3.0, $168 per 2-week pass. 2026 H2 (check): 40 trades 2.56/wk (81% weeks 2+) win 32.5% PF 3.04 net $+21,445 ($5,774/mo) DD $-2,493; 2-week pass/fail 53.6/8.7 (Monte Carlo 56.7/8.2), 1 month 57.6/27.1, median sessions to pass 4.0, $171 per 2-week pass. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-big-ideas",
+   "tags": [
+    "lit",
+    "lit_big"
+   ],
+   "params": {
+    "lit": "live_model.json lit (unchanged)",
+    "variant": "imm add 1.0",
+    "kind": "scale",
+    "arg": {
+     "R": {
+      "trig": "imm",
+      "rat": false,
+      "n": 1
+     },
+     "start": 1.0,
+     "f": 1.0
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-19 14:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.8,
+     "pf": 2.87,
+     "net": 61328,
+     "dd": -4840,
+     "avg_r": 1.146,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 378.0,
+     "half": 0,
+     "per_month": 6252,
+     "p10": 46.6,
+     "f10": 11.2,
+     "p15": 54.9,
+     "f15": 19.9,
+     "p20": 58.3,
+     "f20": 28.6,
+     "dec10": 57.8,
+     "slow_pass": 7.4,
+     "pass_med": 6.0,
+     "b2b": "16/7"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.8,
+     "pf": 2.87,
+     "net": 61328,
+     "dd": -4840,
+     "avg_r": 1.146,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 378.0,
+     "half": 0,
+     "per_month": 6252,
+     "p10": 46.6,
+     "f10": 11.2,
+     "p15": 54.9,
+     "f15": 19.9,
+     "p20": 58.3,
+     "f20": 28.6,
+     "dec10": 57.8,
+     "slow_pass": 7.4,
+     "pass_med": 6.0,
+     "b2b": "16/7"
+    }
+   }
+  },
+  {
+   "id": "lit_big_scale_ratchet_only",
+   "title": "CTRL ratchet only, no add (f=0)",
+   "family": "management",
+   "question": "Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.",
+   "status": "rejected",
+   "verdict": "Control: the stop move alone (no add) loses H1 money and 2-week passes: the gain is the add. 2026 H1 (pick): 80 trades 3.12/wk (85% weeks 2+) win 32.5% PF 3.74 net $+33,882 ($5,559/mo) DD $-2,668; 2-week pass/fail 51.3/7.6 (Monte Carlo 47.2/6.3), 1 month 70.6/19.3, median sessions to pass 6.0, $179 per 2-week pass. 2026 H2 (check): 40 trades 2.56/wk (81% weeks 2+) win 37.5% PF 2.14 net $+9,786 ($2,635/mo) DD $-2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.2/6.0), 1 month 49.2/6.8, median sessions to pass 4.0, $181 per 2-week pass. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-big-ideas",
+   "tags": [
+    "lit",
+    "lit_big"
+   ],
+   "params": {
+    "lit": "live_model.json lit (unchanged)",
+    "variant": "CTRL ratchet only, no add (f=0)",
+    "kind": "scale",
+    "arg": {
+     "R": {
+      "trig": "cisd",
+      "pb": 0.25,
+      "rat": true,
+      "n": 1
+     },
+     "start": 1.0,
+     "f": 0.0
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-19 14:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 34.2,
+     "pf": 3.08,
+     "net": 43668,
+     "dd": -2668,
+     "avg_r": 0.717,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 414.0,
+     "half": 0,
+     "per_month": 4452,
+     "p10": 36.9,
+     "f10": 3.4,
+     "p15": 46.6,
+     "f15": 11.7,
+     "p20": 53.4,
+     "f20": 21.4,
+     "dec10": 40.3,
+     "slow_pass": 33.3,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 34.2,
+     "pf": 3.08,
+     "net": 43668,
+     "dd": -2668,
+     "avg_r": 0.717,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 414.0,
+     "half": 0,
+     "per_month": 4452,
+     "p10": 36.9,
+     "f10": 3.4,
+     "p15": 46.6,
+     "f15": 11.7,
+     "p20": 53.4,
+     "f20": 21.4,
+     "dec10": 40.3,
+     "slow_pass": 33.3,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_big_trend_all_be2",
+   "title": "ALL days be2",
+   "family": "management",
+   "question": "Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.",
+   "status": "rejected",
+   "verdict": "Breakeven at 2R on every day (the trend mode's ceiling for that rule): fewer 2-week passes in both halves. 2026 H1 (pick): 80 trades 3.12/wk (85% weeks 2+) win 27.5% PF 2.75 net $+31,536 ($5,174/mo) DD $-3,470; 2-week pass/fail 49.6/10.1 (Monte Carlo 51.5/11.1), 1 month 65.1/15.6, median sessions to pass 4.0, $185 per 2-week pass. 2026 H2 (check): 40 trades 2.56/wk (81% weeks 2+) win 35.0% PF 2.48 net $+13,529 ($3,642/mo) DD $-2,558; 2-week pass/fail 44.9/2.9 (Monte Carlo 52.4/7.8), 1 month 42.4/13.6, median sessions to pass 3.0, $204 per 2-week pass. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-big-ideas",
+   "tags": [
+    "lit",
+    "lit_big"
+   ],
+   "params": {
+    "lit": "live_model.json lit (unchanged)",
+    "variant": "ALL days be2",
+    "kind": "trend_all",
+    "arg": "be2"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-19 14:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 30.0,
+     "pf": 2.66,
+     "net": 45066,
+     "dd": -4094,
+     "avg_r": 0.7,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 350.0,
+     "half": 0,
+     "per_month": 4594,
+     "p10": 42.7,
+     "f10": 5.3,
+     "p15": 52.4,
+     "f15": 14.6,
+     "p20": 58.3,
+     "f20": 22.8,
+     "dec10": 48.0,
+     "slow_pass": 21.2,
+     "pass_med": 8.0,
+     "b2b": "14/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 30.0,
+     "pf": 2.66,
+     "net": 45066,
+     "dd": -4094,
+     "avg_r": 0.7,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 350.0,
+     "half": 0,
+     "per_month": 4594,
+     "p10": 42.7,
+     "f10": 5.3,
+     "p15": 52.4,
+     "f15": 14.6,
+     "p20": 58.3,
+     "f20": 22.8,
+     "dec10": 48.0,
+     "slow_pass": 21.2,
+     "pass_med": 8.0,
+     "b2b": "14/6"
     }
    }
   },
@@ -87064,6 +87584,214 @@
    }
   },
   {
+   "id": "lit_big_scale_half_imm",
+   "title": "imm add 1.0 start 0.5",
+   "family": "risk",
+   "question": "Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.",
+   "status": "rejected",
+   "verdict": "Half the two-week size, then a full add at +1R: 2-week fails fall to 4.2% / 0.0% (from 9.2 / 2.9), 2-week pass H1 unchanged 52.9, H2 50.7 -> 55.1, but H1 net -$4.2k: fails the both-halves money test. An eval-safety idea. 2026 H1 (pick): 80 trades 3.12/wk (85% weeks 2+) win 22.5% PF 3.12 net $+32,508 ($5,333/mo) DD $-2,788; 2-week pass/fail 52.9/4.2 (Monte Carlo 46.1/4.4), 1 month 70.6/12.8, median sessions to pass 5.0, $174 per 2-week pass. 2026 H2 (check): 40 trades 2.56/wk (81% weeks 2+) win 32.5% PF 4.46 net $+20,613 ($5,550/mo) DD $-2,087; 2-week pass/fail 55.1/0.0 (Monte Carlo 59.4/0.1), 1 month 57.6/0.0, median sessions to pass 4.0, $167 per 2-week pass. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-big-ideas",
+   "tags": [
+    "lit",
+    "lit_big"
+   ],
+   "params": {
+    "lit": "live_model.json lit (unchanged)",
+    "variant": "imm add 1.0 start 0.5",
+    "kind": "scale",
+    "arg": {
+     "R": {
+      "trig": "imm",
+      "rat": false,
+      "n": 1
+     },
+     "start": 0.5,
+     "f": 1.0
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-19 14:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.8,
+     "pf": 3.5,
+     "net": 53121,
+     "dd": -3106,
+     "avg_r": 1.619,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 168.0,
+     "half": 0,
+     "per_month": 5415,
+     "p10": 40.8,
+     "f10": 1.9,
+     "p15": 54.4,
+     "f15": 3.9,
+     "p20": 58.7,
+     "f20": 9.2,
+     "dec10": 42.7,
+     "slow_pass": 22.2,
+     "pass_med": 9.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 25.8,
+     "pf": 3.5,
+     "net": 53121,
+     "dd": -3106,
+     "avg_r": 1.619,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 168.0,
+     "half": 0,
+     "per_month": 5415,
+     "p10": 40.8,
+     "f10": 1.9,
+     "p15": 54.4,
+     "f15": 3.9,
+     "p20": 58.7,
+     "f20": 9.2,
+     "dec10": 42.7,
+     "slow_pass": 22.2,
+     "pass_med": 9.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_big_vol_vix_hi15",
+   "title": "vix >= 16.9 (q0.33) hi x1.5",
+   "family": "risk",
+   "question": "Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.",
+   "status": "rejected",
+   "verdict": "Volatility tilt, the best-ranked of 160 (x1.5 when VIX prior close >= its H1 tercile): H1 pass +1.7, H2 unchanged, money lower in both halves. 0 of 160 VIX / VXN / VIX-vs-20-day / 5m-ATR tilts beat both halves on money and passes. 2026 H1 (pick): 80 trades 3.12/wk (85% weeks 2+) win 22.5% PF 3.09 net $+32,095 ($5,266/mo) DD $-3,713; 2-week pass/fail 54.6/9.2 (Monte Carlo 51.0/8.8), 1 month 72.5/22.9, median sessions to pass 4.5, $168 per 2-week pass. 2026 H2 (check): 40 trades 2.56/wk (81% weeks 2+) win 35.0% PF 1.72 net $+6,498 ($1,749/mo) DD $-2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 53.9/6.8), 1 month 50.8/6.8, median sessions to pass 4.0, $181 per 2-week pass. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-big-ideas",
+   "tags": [
+    "lit",
+    "lit_big"
+   ],
+   "params": {
+    "lit": "live_model.json lit (unchanged)",
+    "variant": "vix >= 16.9 (q0.33) hi x1.5",
+    "kind": "vol",
+    "arg": {
+     "feat": "vix",
+     "th": 16.88069917678833,
+     "hi_m": 1.5,
+     "lo_m": 1.0,
+     "n_hi": 59
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-19 14:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.58,
+     "net": 38592,
+     "dd": -3713,
+     "avg_r": 0.713,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 361.0,
+     "half": 0,
+     "per_month": 3934,
+     "p10": 35.4,
+     "f10": 7.8,
+     "p15": 46.1,
+     "f15": 18.0,
+     "p20": 51.5,
+     "f20": 22.3,
+     "dec10": 43.2,
+     "slow_pass": 34.5,
+     "pass_med": 10.0,
+     "b2b": "10/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.58,
+     "net": 38592,
+     "dd": -3713,
+     "avg_r": 0.713,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 361.0,
+     "half": 0,
+     "per_month": 3934,
+     "p10": 35.4,
+     "f10": 7.8,
+     "p15": 46.1,
+     "f15": 18.0,
+     "p20": 51.5,
+     "f20": 22.3,
+     "dec10": 43.2,
+     "slow_pass": 34.5,
+     "pass_med": 10.0,
+     "b2b": "10/4"
+    }
+   }
+  },
+  {
    "id": "lit_ll_model",
    "title": "3-feature logistic stop-out model (inducement age, stop/ATR, R:R), fit on H1, x0.5 on its top third",
    "family": "risk",
@@ -104746,6 +105474,110 @@
    }
   },
   {
+   "id": "lit_big_trend_pick",
+   "title": "disp <= 1.27 (q0.67) band2 be2",
+   "family": "targets",
+   "question": "Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.",
+   "status": "rejected",
+   "verdict": "Trend-day mode, the best H1 classifier (fitted on Jan-Jun, frozen): 16 of 328 classifier x mode variants beat H1 on pass and money; 0 of them held in Jul-Oct. 2026 H1 (pick): 81 trades 3.16/wk (85% weeks 2+) win 25.9% PF 3.3 net $+38,097 ($6,250/mo) DD $-3,461; 2-week pass/fail 58.0/7.6 (Monte Carlo 54.5/8.0), 1 month 75.2/18.3, median sessions to pass 4.0, $158 per 2-week pass. 2026 H2 (check): 40 trades 2.56/wk (81% weeks 2+) win 32.5% PF 2.59 net $+13,697 ($3,688/mo) DD $-2,010; 2-week pass/fail 46.4/0.0 (Monte Carlo 52.9/6.1), 1 month 40.7/13.6, median sessions to pass 3.0, $198 per 2-week pass. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-big-ideas",
+   "tags": [
+    "lit",
+    "lit_big"
+   ],
+   "params": {
+    "lit": "live_model.json lit (unchanged)",
+    "variant": "disp <= 1.27 (q0.67) band2 be2",
+    "kind": "trend",
+    "arg": {
+     "feat": "disp",
+     "th": 1.27199,
+     "side": "<=",
+     "q": 0.67,
+     "mode": "band2 be2",
+     "flagged": 84
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-19 14:11",
+   "spans": {
+    "2026": {
+     "n": 121,
+     "tpw": 2.94,
+     "wk2": 86,
+     "win": 28.1,
+     "pf": 3.06,
+     "net": 51794,
+     "dd": -3687,
+     "avg_r": 0.768,
+     "stop": 46.0,
+     "worst_day": -1005,
+     "risk": 430.0,
+     "half": 0,
+     "per_month": 5280,
+     "p10": 49.5,
+     "f10": 5.8,
+     "p15": 59.2,
+     "f15": 18.4,
+     "p20": 63.1,
+     "f20": 24.3,
+     "dec10": 55.3,
+     "slow_pass": 19.7,
+     "pass_med": 7.0,
+     "b2b": "16/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 121,
+     "tpw": 2.94,
+     "wk2": 86,
+     "win": 28.1,
+     "pf": 3.06,
+     "net": 51794,
+     "dd": -3687,
+     "avg_r": 0.768,
+     "stop": 46.0,
+     "worst_day": -1005,
+     "risk": 430.0,
+     "half": 0,
+     "per_month": 5280,
+     "p10": 49.5,
+     "f10": 5.8,
+     "p15": 59.2,
+     "f15": 18.4,
+     "p20": 63.1,
+     "f20": 24.3,
+     "dec10": 55.3,
+     "slow_pass": 19.7,
+     "pass_med": 7.0,
+     "b2b": "16/6"
+    }
+   }
+  },
+  {
    "id": "tgt_front16",
    "title": "Exit 16 ticks in front of the pool (today 1)",
    "family": "targets",
@@ -114637,6 +115469,200 @@
      "slow_pass": 29.7,
      "pass_med": 9.5,
      "b2b": "12/3"
+    }
+   }
+  },
+  {
+   "id": "lit_big_base",
+   "title": "LIT live (reference)",
+   "family": "other",
+   "question": "Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.",
+   "status": "info",
+   "verdict": "reference: LIT live (live_model.json lit) with the live sizing 2026 H1 (pick): 80 trades 3.12/wk (85% weeks 2+) win 22.5% PF 3.66 net $+36,723 ($6,025/mo) DD $-3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.5/7.0), 1 month 72.5/16.5, median sessions to pass 5.0, $174 per 2-week pass. 2026 H2 (check): 40 trades 2.56/wk (81% weeks 2+) win 35.0% PF 2.13 net $+9,674 ($2,605/mo) DD $-2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8, median sessions to pass 4.0, $181 per 2-week pass. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-big-ideas",
+   "tags": [
+    "lit",
+    "lit_big"
+   ],
+   "params": {
+    "lit": "live_model.json lit (unchanged)",
+    "variant": null,
+    "kind": "base",
+    "arg": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-19 14:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.07,
+     "net": 46397,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4730,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.07,
+     "net": 46397,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4730,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_big_news_wide",
+   "title": "[high 15m] news max stop 160 + 2nd trade",
+   "family": "other",
+   "question": "Four untested LIT ideas (2026-10-19): scale-in after breakeven, a trend-day mode, a volatility-regime size tilt, news-release setups. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ and MFFU 50K 2-week passes under the live sizing (two_week 10 sessions then safe_eval, $1.90), 2-4 trades a week.",
+   "status": "info",
+   "verdict": "News-release setups (sweep 0-15 min after a 08:30 / 10:00 / 14:00 high-impact release): 4 in 2026 pass the LIT setup rules, 3 need a 154-395 pt stop (max 80) and none fills; widening the stop to 120-250 pts or allowing a 2nd trade adds 0 trades. 2021-25: 12 such setups, 11 with a stop over 80 pts, 0 trades. Not testable: the release spike makes the protected-low stop too wide for LIT. 2026 H1 (pick): 80 trades 3.12/wk (85% weeks 2+) win 22.5% PF 3.66 net $+36,723 ($6,025/mo) DD $-3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.5/7.0), 1 month 72.5/16.5, median sessions to pass 5.0, $174 per 2-week pass. 2026 H2 (check): 40 trades 2.56/wk (81% weeks 2+) win 35.0% PF 2.13 net $+9,674 ($2,605/mo) DD $-2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8, median sessions to pass 4.0, $181 per 2-week pass. 2021-25: no 1m bars, not tested.",
+   "writeup": "lit-big-ideas",
+   "tags": [
+    "lit",
+    "lit_big"
+   ],
+   "params": {
+    "lit": "live_model.json lit (unchanged)",
+    "variant": "[high 15m] news max stop 160 + 2nd trade",
+    "kind": "news",
+    "arg": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-19 14:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.07,
+     "net": 46397,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4730,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.07,
+     "net": 46397,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4730,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
     }
    }
   },

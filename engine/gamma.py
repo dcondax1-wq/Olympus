@@ -73,6 +73,9 @@ def live_levels(nq_price=None, max_days=45):
     hit = _cache.get("live")
     if hit and time.time() - hit[0] < 900:
         return hit[1]
+    from . import pcbars
+    if pcbars.no_yahoo():           # the QQQ option chain came from Yahoo only: off with no_yahoo (owner 2026-10-19)
+        raise pcbars.YahooBlocked("live QQQ gamma needs Yahoo; switched off (no_yahoo in live_model.json)")
     import yfinance as yf
     tk = yf.Ticker("QQQ")
     spot = float(tk.history(period="1d", interval="5m")["Close"].iloc[-1])

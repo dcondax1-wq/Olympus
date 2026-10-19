@@ -9,6 +9,10 @@ decides WHEN the monitor looks (tests/test_lit_watch.py replays 2026). Yahoo NQ=
 research/NIGHT_LOG.md; every poll's lag is logged in <out>/watch.json "lag"): the watcher removes the 0-30 min wait for the
 next half-hourly run, not Yahoo's own delay.
 
+No Yahoo (live_model.json "no_yahoo", default on; engine/pcbars.py): every poll reads the PC's NinjaTrader bars from the
+heartbeat branch instead (the PC pushes every minute while a setup is armed or a trade is open, engine/heartbeat.py); PC
+bars missing or stale -> the watch ends ("waiting for NinjaTrader bars from the PC").
+
 Free-minute guard (private repo: 2,000 Actions minutes a month): --forming-budget minutes a day may be spent on forming
 setups (armed setups are always watched), --month-budget minutes a month in all (then armed only; 1.5x: no watching).
 
@@ -31,7 +35,7 @@ import pandas as pd
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
-from engine import lit, lit_live, lit_watch                 # noqa: E402
+from engine import heartbeat, lit, lit_live, lit_watch, pcbars   # noqa: E402
 from engine.lab_adapter import live_model                    # noqa: E402
 
 ET = ZoneInfo("America/New_York")
@@ -133,6 +137,17 @@ def main():
     bot = LiveBot()
     bot.cfg = {"sym": sym, "tf": "5m", "adapter": "paper", "data_source": "yahoo", "params": {}, "window_days": 20}
     now = int(time.time())
+    noy = pcbars.no_yahoo()
+    if noy:                                       # the PC's NinjaTrader bars (heartbeat branch) on the cloud's store, no Yahoo
+        feed = pcbars.CloudFeed(out, heartbeat.read(cwd=ROOT, now=now, files=pcbars.HB_FILES), now, sym=sym, save=False)
+        if not feed.status()["ok"]:
+            print(f"watch: {feed.status()['text']}; nothing to watch")
+            return
+        bot.no_yahoo = True
+        bot.cfg.update(data_source="pc-ninjatrader", no_yahoo=True)
+        bot.fetch_recent = feed.recent
+    else:
+        bot.no_yahoo = False
     base5, _ = bot._merged(sym, "5m", now, 300)
     p1 = os.path.join(out, "bars_1m.csv")
     try:
@@ -152,14 +167,33 @@ def main():
         if e.hour * 60 + e.minute >= 15 * 60 + 57:
             why_end = "15:57 ET"
             break
-        try:
-            y5 = _yahoo_recent(sym, "5m", "1d")
-            y1 = _yahoo_recent(sym, "1m", "1d")
-        except Exception as ex:
-            print("watch: Yahoo fetch failed:", ex.__class__.__name__, flush=True)
-            y5 = y1 = pd.DataFrame()
+        pc_fo = None
+        if noy:
+            f = pcbars.CloudFeed(out, heartbeat.read(cwd=ROOT, now=now, files=pcbars.HB_FILES), now, sym=sym, save=False)
+            fs = f.status()
+            if not fs["ok"]:
+                why_end = fs["text"]
+                print(f"watch: {why_end}", flush=True)
+                break
+            y1 = f.b1[f.b1["time"] >= now - 86400].reset_index(drop=True)
+            y5 = f.recent(sym, "5m")
+            y5 = y5[y5["time"] >= now - 86400].reset_index(drop=True) if y5 is not None else pd.DataFrame()
+            pc_fo = f.forming
+        else:
+            try:
+                y5 = _yahoo_recent(sym, "5m", "1d")
+                y1 = _yahoo_recent(sym, "1m", "1d")
+            except Exception as ex:
+                print("watch: Yahoo fetch failed:", ex.__class__.__name__, flush=True)
+                y5 = y1 = pd.DataFrame()
         feed_t, forming = now, None
-        if len(y1):
+        if noy and len(y1):
+            # the PC sends closed 1m bars only (LE_BarFeed); the forming minute's open comes from heartbeat.json "bars"
+            newest = int(y1["time"].max())
+            feed_t = newest + 60
+            forming = pc_fo if pc_fo and int(pc_fo[0]) == feed_t else None
+            lags.append([now, int(now - feed_t)])
+        elif len(y1):
             newest = int(y1["time"].max())
             try:
                 fo = float(y1.loc[y1["time"] == newest, "open"].iloc[-1])

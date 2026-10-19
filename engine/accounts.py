@@ -580,6 +580,7 @@ def pc_health(bot, now=None) -> dict:
         last_sig = _signal_row(sigs[-1]) if sigs else None
         src = str(cfg.get("data_source") or h.get("data_source") or "yahoo")
         fallback = bool(h.get("fallback"))
+        noy = bool(h.get("no_yahoo", getattr(bot, "no_yahoo", False)))
         tf = str(cfg.get("tf") or "5m")
         secs = 60 if tf == "1m" else 300
         last5 = _i(h.get("last_bar_t"))
@@ -593,7 +594,9 @@ def pc_health(bot, now=None) -> dict:
                         "armed": bool(cfg.get("armed")), "live_lock": os.environ.get("NINJATRADER_LIVE", "") == "1"},
             "running": bool(getattr(bot, "running", False)), "kill": bool(getattr(bot, "kill", False)),
             "model": cfg.get("model") or (st.get("strategy") or {}).get("model"),
-            "feed": {"source": src, "fallback": fallback, "used": "yahoo" if (fallback or src == "yahoo") else src,
+            "feed": {"source": src, "fallback": fallback, "used": src if noy else "yahoo" if (fallback or src == "yahoo") else src,
+                     "no_yahoo": noy, "block": clean_text(h.get("feed_block"), 160),
+                     "nt_down": clean_text(h.get("nt_down") or h.get("nt_down_1m"), 160),
                      "tf": tf, "last_5m_t": last5, "age_5m_s": (now - last5 - secs) if last5 else None,
                      "last_1m_t": last1, "age_1m_s": (now - last1 - 60) if last1 else None,
                      "stale": bool(h.get("stale")), "stale_polls": _i(h.get("stale_polls")), "market_open": h.get("market_open"),
@@ -689,6 +692,10 @@ def verdict(pc: dict | None, now=None) -> dict:
         feed_bad = f"last 1m bar {f['age_1m_s'] // 60} min old"
     elif f.get("stale"):
         feed_bad = "the bot marks the feed stale"
+    elif f.get("entries_blocked"):
+        feed_bad = "new entries blocked: " + str(f.get("block") or f.get("nt_down") or "feed stale")
+    elif f.get("no_yahoo") and f.get("nt_down"):
+        feed_bad = "NinjaTrader bars missing: " + str(f["nt_down"])
     check_feed = insess and market is not False
     checks.append(["feed", not (check_feed and feed_bad), (feed_bad or "bars fresh") + f" ({f.get('used') or f.get('source') or '?'})"])
     if check_feed and feed_bad:
