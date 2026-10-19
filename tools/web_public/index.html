@@ -884,6 +884,97 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 .br-w { border-left: 3px solid var(--line); padding-left: 10px; } .br-w.warn { border-color: var(--warn); color: var(--ink); } .br-w.good { border-color: var(--good); color: var(--ink); }
 .tag.br-n { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--ink); }
 .br-facts > div { align-items: flex-start; } .br-facts b { font-weight: 500; text-align: right; max-width: 70%; }
+/* Accounts page (engine/accounts.py -> data.json "accounts") */
+.acc-pick { display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; margin: 0 0 14px; padding: 2px; }
+.acc-pick::-webkit-scrollbar { display: none; }
+.acc-pc { flex: 1 0 170px; max-width: 300px; display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(16,19,26,.76), rgba(16,19,26,.6)); transition: border-color .18s, box-shadow .2s; min-width: 0; }
+.acc-pc.on { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent), 0 10px 30px color-mix(in srgb, var(--accent) 18%, transparent); }
+.acc-pt { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; min-width: 0; } .acc-pt b { font-size: 13px; line-height: 1.25; min-width: 0; overflow-wrap: anywhere; }
+.acc-pt .badge.acc-b { padding: 2px 7px; font-size: 9.5px; }
+.acc-pv { font: 750 19px var(--sans); letter-spacing: -.02em; } .acc-ps { font: 600 12px var(--mono); }
+.badge.acc-b { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px; font-size: 10.5px; letter-spacing: .08em; }
+.badge.acc-b.live { color: #fff; border-color: color-mix(in srgb, var(--bad) 60%, transparent); background: linear-gradient(135deg, color-mix(in srgb, var(--bad) 55%, transparent), color-mix(in srgb, var(--bad) 25%, transparent)); }
+.badge.acc-b.sim { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 45%, transparent); background: color-mix(in srgb, var(--accent-2) 10%, transparent); }
+.badge.acc-b.paper { color: var(--ink-2); }
+.acc-live { width: 7px; height: 7px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px #fff; animation: pulse 1.8s infinite; }
+.acc-head.is-live { border-color: color-mix(in srgb, var(--bad) 30%, var(--line)); }
+.acc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.acc-id h3 { margin: 4px 0 0; font-size: 20px; font-weight: 750; letter-spacing: -.02em; }
+.acc-conn { margin-top: 12px; }
+.acc-bal { display: flex; flex-direction: column; gap: 2px; margin: 16px 0 10px; } .acc-bal b { font: 800 34px var(--sans); letter-spacing: -.03em; line-height: 1.05; }
+.acc-pnl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.acc-pnl > div { padding: 9px 11px; border-radius: 12px; background: rgba(22,26,35,.7); border: 1px solid var(--line); min-width: 0; }
+.acc-pnl span { display: block; font-size: 10.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); } .acc-pnl b { font: 650 14px var(--mono); white-space: nowrap; }
+.acc-vis { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 16px 0 6px; justify-items: center; }
+.acc-ring svg { display: block; width: 140px; height: 140px; max-width: 100%; }
+.acc-rt { font: 750 17px var(--sans); fill: var(--ink); } .acc-rs { font: 600 9.5px var(--sans); fill: var(--muted); }
+.acc-arc { transition: stroke-dasharray .9s var(--ease); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--good) 45%, transparent)); }
+.acc-kv { margin: 6px 0 14px; }
+.acc-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; margin-bottom: 7px; }
+.acc-pips { display: flex; gap: 5px; } .acc-pips i { flex: 1; height: 10px; border-radius: 4px; background: var(--surface-3); }
+.acc-pips i.done { background: color-mix(in srgb, var(--accent) 60%, var(--surface-3)); } .acc-pips i.cur { background: linear-gradient(90deg, var(--accent), var(--accent-2)); box-shadow: 0 0 10px color-mix(in srgb, var(--accent-2) 60%, transparent); }
+.acc-pips i.over { background: color-mix(in srgb, var(--warn) 50%, var(--surface-3)); }
+.acc-warn { border-left: 3px solid var(--warn); padding-left: 10px; }
+.acc-empty { display: flex; align-items: center; gap: 14px; padding: 8px 2px; } .acc-empty > .ico { width: 34px; height: 34px; color: var(--accent); flex: none; opacity: .85; }
+.acc-empty b { display: block; font-size: 14px; } .acc-empty span { font-size: 12.5px; color: var(--ink-2); }
+.acc-ptop { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.acc-pm { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .acc-pm > b { font-size: 16px; }
+.acc-pr { display: flex; flex-direction: column; align-items: flex-end; } .acc-pr b { font: 750 20px var(--mono); }
+.acc-ladder { position: relative; height: 54px; margin: 6px 6px 16px; }
+.acc-ladder::before { content: ""; position: absolute; left: 0; right: 0; top: 25px; height: 4px; border-radius: 99px; background: var(--surface-3); }
+.acc-ladder .z { position: absolute; top: 25px; height: 4px; border-radius: 99px; background: linear-gradient(90deg, color-mix(in srgb, var(--bad) 70%, transparent), color-mix(in srgb, var(--good) 70%, transparent)); }
+.acc-pos.S .acc-ladder .z { background: linear-gradient(90deg, color-mix(in srgb, var(--good) 70%, transparent), color-mix(in srgb, var(--bad) 70%, transparent)); }
+.acc-ladder .m { position: absolute; top: 19px; width: 2px; height: 16px; margin-left: -1px; background: var(--ink-2); }
+.acc-ladder .m em { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; font: 650 10px var(--mono); font-style: normal; color: var(--ink-2); }
+.acc-ladder .st, .acc-ladder .tg { top: 21px; } .acc-ladder .st em, .acc-ladder .tg em { top: 18px; } .acc-ladder .en em { top: -16px; }
+.acc-ladder .st { background: var(--bad); } .acc-ladder .st em { color: var(--bad); } .acc-ladder .tg { background: var(--good); } .acc-ladder .tg em { color: var(--good-ink); }
+.acc-ladder .m.el em { transform: translateX(-4px); } .acc-ladder .m.er em { transform: translateX(calc(-100% + 4px)); }
+.acc-ladder .px { top: 18px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 12px var(--accent-2); animation: pulse 1.8s infinite; }
+.acc-pos .nums { margin-bottom: 12px; } .acc-tc { margin-top: 4px; }
+.acc-tl { list-style: none; margin: 0; padding: 0; position: relative; }
+.acc-tl::before { content: ""; position: absolute; left: 15px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(180deg, var(--line), color-mix(in srgb, var(--accent) 30%, transparent), var(--line)); }
+.acc-tl li { position: relative; display: grid; grid-template-columns: 32px 46px minmax(0, 1fr); gap: 8px; align-items: start; padding: 7px 0; }
+.acc-ti { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-2); z-index: 1; }
+.acc-ti .ico { width: 16px; height: 16px; }
+.acc-tm { font-size: 12px; color: var(--muted); padding-top: 7px; } .acc-tb { display: flex; flex-direction: column; gap: 1px; padding-top: 5px; min-width: 0; }
+.acc-tb b { font-size: 13px; } .acc-tb span { font-size: 12px; color: var(--ink-2); overflow-wrap: anywhere; }
+.acc-tl li.fill .acc-ti, .acc-tl li.win .acc-ti { color: var(--good-ink); border-color: color-mix(in srgb, var(--good) 40%, transparent); background: color-mix(in srgb, var(--good) 10%, var(--surface-2)); }
+.acc-tl li.bracket .acc-ti, .acc-tl li.be .acc-ti { color: var(--accent-2); border-color: color-mix(in srgb, var(--accent-2) 40%, transparent); }
+.acc-tl li.loss .acc-ti, .acc-tl li.bad .acc-ti { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 40%, transparent); background: color-mix(in srgb, var(--bad) 10%, var(--surface-2)); }
+.acc-tl li.warn .acc-ti { color: var(--warn); }
+.acc-cal { display: flex; flex-direction: column; gap: 14px; }
+.acc-mh { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px; } .acc-mh span { font: 600 12px var(--mono); }
+.acc-wd, .acc-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.acc-wd span { font-size: 10px; color: var(--muted); text-align: center; font-weight: 600; }
+.acc-grid i { position: relative; height: 40px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; font-style: normal; }
+.acc-grid i.pad { visibility: hidden; } .acc-grid i.fut { opacity: .35; }
+.acc-grid i.w { background: color-mix(in srgb, var(--good) calc(var(--a) * 100%), var(--surface-2)); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
+.acc-grid i.l { background: color-mix(in srgb, var(--bad) calc(var(--a) * 100%), var(--surface-2)); border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
+.acc-grid i.now { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.acc-grid em { font-style: normal; font-size: 10px; color: var(--muted); line-height: 1; } .acc-grid i.w em, .acc-grid i.l em { color: rgba(255,255,255,.75); }
+.acc-grid small { font: 700 10px var(--mono); color: #fff; margin-top: 2px; white-space: nowrap; }
+.acc-tbar.toolbar { margin: 0 0 12px; }
+.acc-tr .trade { padding-right: 34px; } .acc-an { margin-top: -3px; } .acc-chev { position: absolute; right: 10px; top: 50%; margin-top: -9px; color: var(--muted); transition: transform .2s; }
+.acc-tr.open .acc-chev { transform: rotate(180deg); }
+.acc-tr.open .trade { border-bottom-left-radius: 6px; border-bottom-right-radius: 6px; border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.acc-td { margin: 4px 0 2px; padding: 14px; border-radius: 6px 6px 16px 16px; background: rgba(22,26,35,.7); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
+.acc-td h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 6px; font-size: 11.5px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.acc-td h4 .ico { color: var(--accent); width: 15px; height: 15px; } .acc-td p { margin: 0; font-size: 13px; line-height: 1.5; } .acc-td .note { margin-top: 0; }
+.acc-ta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.acc-lines { display: flex; flex-direction: column; gap: 8px; }
+.acc-line { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); background: rgba(22,26,35,.6); color: inherit; text-decoration: none; min-width: 0; }
+.acc-line:hover { border-color: color-mix(in srgb, var(--accent) 40%, transparent); }
+.acc-ln { flex: 1; min-width: 0; display: flex; flex-direction: column; } .acc-ln b { font-size: 13.5px; } .acc-ln .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acc-lv { display: flex; flex-direction: column; align-items: flex-end; } .acc-lv b { font: 700 14px var(--mono); } .acc-lv span { font-family: var(--mono); }
+@media (max-width: 760px) {
+  .acc-bal b { font-size: 30px; } .acc-pnl b { font-size: 12.5px; } .acc-ring svg { width: 128px; height: 128px; }
+  .acc-pc { flex-basis: 158px; padding: 10px 12px; } .acc-pv { font-size: 17px; }
+  .acc-pos .nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .acc-td .nums { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .acc-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .acc-grid i { height: 36px; }
+}
 </style>
 </head>
 <body>
@@ -953,6 +1044,7 @@ const P = {
   news: '<path d="M4 5.5h12v14H5.5A1.5 1.5 0 0 1 4 18z"/><path d="M16 9.5h4v8.5a1.5 1.5 0 0 1-1.5 1.5H16"/><path d="M7 9h6M7 12.5h6M7 16h4"/>',
   sim: '<path d="M3 17c4 0 5-9 9-9s5 5 9 5"/><path d="M3 17c4 0 5-5 9-5s5 1 9 1"/><path d="M3 17c4 0 5-1 9-1s5-3 9-3"/><path d="M3 20.5h18"/>',
   heat: '<rect x="3.5" y="3.5" width="5" height="5" rx="1.2"/><rect x="9.5" y="3.5" width="5" height="5" rx="1.2"/><rect x="15.5" y="3.5" width="5" height="5" rx="1.2"/><rect x="3.5" y="9.5" width="5" height="5" rx="1.2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1.2" fill="currentColor"/><rect x="15.5" y="9.5" width="5" height="5" rx="1.2"/><rect x="3.5" y="15.5" width="5" height="5" rx="1.2"/><rect x="9.5" y="15.5" width="5" height="5" rx="1.2"/><rect x="15.5" y="15.5" width="5" height="5" rx="1.2"/>',
+  wallet: '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="3.5" y="8" width="17" height="11.5" rx="2.5"/><path d="M15.5 13.75h2"/><circle cx="16" cy="13.75" r=".6" fill="currentColor"/>',
   radar: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><path d="M12 12l6-6"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
 };
 const icon = (n, cls = '') => P[n] ? `<svg class="ico ${cls}" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>` : '';
@@ -1325,6 +1417,7 @@ function mdList(blk) {
 const GROUPS = [
   { id: 'today', label: 'Today', icon: 'today', pages: [['today', 'Today', 'today', 'Live bot, eval and today’s events'], ['brief', 'Briefing', 'doc', 'The bot’s morning briefing, intraday log and recap'], ['day', 'Day plan', 'clock', 'The LIT day: sessions, entry window, news, what’s next'],
     ['levels', 'Levels', 'target', 'Every LIT level, the setup tracker'], ['cockpit', 'Eval cockpit', 'prop', 'What a stop-out or a winner does to the eval']] },
+  { id: 'accounts', label: 'Accounts', icon: 'wallet', pages: [['accounts', 'Accounts', 'wallet', 'Every account the bot trades: position, orders, past trades']] },
   { id: 'chart', label: 'Chart', icon: 'chart', pages: [['chart', 'Chart', 'chart', 'Live 5m chart and liquidity pools']] },
   { id: 'trades', label: 'Trades', icon: 'trades', pages: [['trades', 'Trades', 'trades', 'Every trade with its report'], ['results', 'Results', 'results', 'Live settings, 5-year replay'],
     ['replays', 'Replays', 'replay', 'Step through each trade day'], ['stops', 'Stop Sizes', 'stops', 'Wide stop, smaller size']] },
@@ -1350,12 +1443,12 @@ const DETAIL = { run: { group: 'lab', label: 'Experiment', back: 'experiments' }
   oldevals: { group: 'system', label: 'Old Monte Carlo · archive', back: 'archive' }, oldheat: { group: 'system', label: 'Old intraday heat · archive', back: 'archive' } };
 const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
-const ALIAS = { modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
+const ALIAS = { account: 'accounts', positions: 'accounts', position: 'accounts', orders: 'accounts', broker: 'accounts', modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
   calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive',
   briefing: 'brief', analyst: 'brief', recap: 'brief', plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
 // 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
-const SCENE = { replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
+const SCENE = { accounts: 'eval', replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
   evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', activity: 'today', sources: 'engine', news: 'today',
   archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', brief: 'today', levels: 'chart', cockpit: 'eval' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
@@ -1856,6 +1949,7 @@ VIEWS.today = (el) => {
       ${statBox('Eval · paper', ev ? susd(ev.profit) : '—', ev ? 'of the $3,000 target' : 'no eval data yet', ev ? cls(ev.profit) : '')}
       ${statBox('2026 backtest', y ? 'PF ' + fPF(y.pf) : '—', y ? `${kusd(y.net)} · ${kusd(perMonth(y.net, y.from, y.to))} a month · ${num(y.per_week, 1)}/wk` : 'no backtest in this build')}
     </div>
+    ${accountsCard()}
     ${timingCard(lv.eval_timing)}
     ${activityCard()}
     ${lit ? briefCard() : ''}
@@ -3323,6 +3417,249 @@ VIEWS.eval = (el) => {
   fxFill('eval-reactor', 'reactor', RD, {}, (fb) => reactorFb(fb, RD));
   lineChart($('#evC'), pts.length ? [{ x: 'start', y: 50000 }, ...pts] : [], { h: 200, fmt: (v) => '$' + (v / 1000).toFixed(1) + 'k', ref: 53000, empty: '<b>No paper trades yet.</b>The line starts at $50,000 with the cloud bot’s first trade.' });
 };
+// ===================================================================== ACCOUNTS: where the bot trades (data.json "accounts", engine/accounts.py)
+//   one section per account: the MFFU 50K eval on the PC bot (from its heartbeat) and the cloud paper ledger ("Paper (cloud)")
+const ACCS = () => (D?.accounts || []).filter(a => a && a.id);
+const AS = { sel: store.get('acc.sel', null), f: 'all', fa: 'all', open: new Set(), shown: 30 };
+const PV_MNQ = 2;                                     // $ per point per micro (MNQ)
+const accBadge = (a) => { const b = a.badge || 'PAPER'; return `<span class="badge acc-b ${b === 'LIVE' ? 'live' : b === 'SIM' ? 'sim' : 'paper'}">${b === 'LIVE' ? '<i class="acc-live"></i>' : ''}${esc(b)}</span>`; };
+const hbAge = (c) => { if (!c || !c.t) return null; return Math.max(0, Math.round(Date.now() / 1000 - c.t)); };
+const fAge = (s) => s == null ? '—' : s < 90 ? `${s} s ago` : s < 5400 ? `${Math.round(s / 60)} min ago` : s < 172800 ? `${Math.round(s / 3600)} h ago` : `${Math.round(s / 86400)} days ago`;
+const fDur = (s) => { s = Math.max(0, Math.round(s)); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); return h ? `${h} h ${String(m).padStart(2, '0')} min` : `${m} min`; };
+function accConn(a) {
+  const c = a.conn || {}, age = hbAge(c);
+  if (a.source === 'cloud') return { dot: '', text: `GitHub Actions · last run ${fAge(age)}`, ok: true };
+  if (!c.present) return { dot: 'off', text: 'PC bot not reporting', ok: false };
+  const live = age != null && age < 20 * 60;
+  return { dot: c.silent ? 'bad' : live ? '' : 'warn', ok: live && !c.silent,
+    text: `${live && !c.silent ? 'Connected' : c.silent ? 'Silent' : 'Last heard'} · heartbeat ${fAge(age)}${c.host ? ' · ' + esc(c.host) : ''}${a.broker_account ? ' · ' + esc(a.broker_account) : ''}` };
+}
+function accNow(a) { const lv = LV(); const last = (lv.bars || []).slice(-1)[0]; return ok(lv.price) ? +lv.price : last ? +last[4] : null; }
+// the window LIT may enter in (02:00-15:30 ET from the strategy) for the empty-state line
+function accWindowLine() {
+  const w = litWin()[0] || [120, 930], e = et(Date.now() / 1000), m = e.h * 60 + e.mi, wk = ['Sat', 'Sun'].includes(e.wd);
+  if (wk) return `Weekend: the next session opens Sunday 18:00 ET; first LIT entries possible from ${hmM(w[0])} ET Monday.`;
+  if (m < w[0] || m >= 1080) return `Watching for LIT setups — first entries possible from ${hmM(w[0])} ET.`;
+  if (m < w[1]) return `Watching for LIT setups — entries allowed until ${hmM(w[1])} ET (1 trade a day).`;
+  return `Entries are done for today (window ${hmM(w[0])}–${hmM(w[1])} ET). The next window opens ${hmM(w[0])} ET.`;
+}
+// ---- visuals: target ring, room gauge, session pips, daily-loss meter
+function ringSVG(frac, label, sub, k = 'good') {
+  const r = 46, C = 2 * Math.PI * r, f = Math.max(0, Math.min(1, frac || 0)), id = uid('rg');
+  return `<div class="acc-ring"><svg viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="${esc(label)} ${esc(sub)}">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent-2)"/><stop offset="1" stop-color="var(--${k === 'bad' ? 'bad' : 'good'})"/></linearGradient></defs>
+    <circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--surface-3)" stroke-width="10"/>
+    <circle cx="60" cy="60" r="${r}" fill="none" stroke="url(#${id})" stroke-width="10" stroke-linecap="round" stroke-dasharray="${(C * f).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 60 60)" class="acc-arc"/>
+    <text x="60" y="58" text-anchor="middle" class="acc-rt">${esc(label)}</text><text x="60" y="76" text-anchor="middle" class="acc-rs">${esc(sub)}</text></svg></div>`;
+}
+function gaugeSVG(frac, label, sub) {
+  const f = Math.max(0, Math.min(1, frac || 0)), a0 = Math.PI, a = a0 - f * Math.PI, R = 46, cx = 60, cy = 64;
+  const pt = (ang, rr = R) => [cx + rr * Math.cos(ang), cy - rr * Math.sin(ang)];
+  const [x0, y0] = pt(a0), [x1, y1] = pt(0), [xa, ya] = pt(a), [nx, ny] = pt(a, R - 16);
+  const col = f < 0.35 ? 'var(--bad)' : f < 0.6 ? 'var(--warn)' : 'var(--good)';
+  return `<div class="acc-ring"><svg viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="${esc(label)} ${esc(sub)}">
+    <path d="M${x0} ${y0} A${R} ${R} 0 0 1 ${x1} ${y1}" fill="none" stroke="var(--surface-3)" stroke-width="10" stroke-linecap="round"/>
+    ${f > 0.005 ? `<path d="M${x0} ${y0} A${R} ${R} 0 0 1 ${xa.toFixed(2)} ${ya.toFixed(2)}" fill="none" stroke="${col}" stroke-width="10" stroke-linecap="round" class="acc-arc"/>` : ''}
+    <line x1="${cx}" y1="${cy}" x2="${nx.toFixed(2)}" y2="${ny.toFixed(2)}" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="4" fill="var(--ink)"/>
+    <text x="60" y="92" text-anchor="middle" class="acc-rt">${esc(label)}</text><text x="60" y="108" text-anchor="middle" class="acc-rs">${esc(sub)}</text></svg></div>`;
+}
+function pipsHTML(ev) {
+  const n = ev.sessions || 10, s = ev.session || 0;
+  return `<div class="acc-pips" aria-label="Session ${s} of ${n}">${Array.from({ length: Math.max(n, Math.min(s, 20)) }, (_, i) => `<i class="${i + 1 < s ? 'done' : i + 1 === s ? 'cur' : ''}${i >= n ? ' over' : ''}"></i>`).join('')}</div>`;
+}
+// ---- the account header: balance, P&L, eval visuals
+function accHeader(a) {
+  const c = accConn(a), ev = a.eval, p = a.pnl || {};
+  const evHTML = ev ? (() => {
+    const prog = ev.profit / (ev.target_balance - ev.start_balance), room = ev.room, roomF = room / (ev.mll || 2000), dllF = (ev.dll_used || 0) / (ev.dll || 1000);
+    return `<div class="acc-vis">
+        ${ringSVG(prog, prog >= 1 ? 'PASSED' : pct(Math.max(0, prog) * 100), ev.profit >= 0 ? `${usd(ev.to_target)} to go` : `${usd(-ev.profit)} below start`, ev.profit < 0 ? 'bad' : 'good')}
+        ${gaugeSVG(roomF, usd(room), 'room to the floor')}</div>
+      <div class="kv acc-kv"><div><span>Target</span><b>${usd(ev.target_balance)}</b></div><div><span>Max-loss floor</span><b>${usd(ev.floor)}${ev.locked ? ' <span class="up small">locked</span>' : ''}</b></div>
+        <div><span>Started at</span><b>${usd(ev.start_balance + (ev.prior || 0))}</b></div><div><span>Eval status</span><b class="${ev.status === 'passed' ? 'up' : ev.status === 'failed' ? 'dn' : ''}">${esc(ev.status || '—')}</b></div></div>
+      <div class="acc-row"><span>Session <b>${ev.session ?? '—'}</b> of ${ev.sessions}</span><span class="mut small">${esc(ev.clock_text || '')}</span></div>${pipsHTML(ev)}
+      <div class="acc-row" style="margin-top:12px"><span>Daily loss used</span><b class="mono ${dllF >= 0.6 ? 'dn' : ''}">${usd(ev.dll_used)} <span class="mut">/ ${usd(ev.dll)}</span></b></div>
+      <div class="meter ${dllF >= 0.6 ? 'bad' : dllF >= 0.3 ? '' : 'good'}"><i style="width:${Math.min(100, dllF * 100).toFixed(1)}%"></i></div>`;
+  })() : '';
+  return `<div class="card acc-head ${a.badge === 'LIVE' ? 'is-live' : ''}">
+    <div class="acc-top"><div class="acc-id"><div class="eyebrow">${esc([a.firm, a.plan].filter(Boolean).join(' · '))}</div><h3>${esc(a.name)}</h3></div>${accBadge(a)}</div>
+    <div class="pcline acc-conn"><span class="dot ${c.dot}"></span><span>${c.text}</span>${a.kill ? '<span class="badge bad">KILL SWITCH</span>' : ''}${a.source === 'pc' && a.running === false ? '<span class="badge warn">bot stopped</span>' : ''}</div>
+    <div class="acc-bal"><span class="mut small">Balance${a.source === 'cloud' ? ' · paper' : ''}</span><b data-count="${ev ? ev.balance : 0}" data-fmt="$">${ev ? usd(ev.balance) : '—'}</b></div>
+    <div class="acc-pnl">${[['Today', p.today], ['This week', p.week], ['Since start', p.since_start]].map(([l, v]) => `<div><span>${l}</span><b class="${cls(v)}">${susd(v)}</b></div>`).join('')}</div>
+    ${evHTML}
+    ${a.source === 'pc' && !(a.conn || {}).has_detail ? `<div class="note acc-warn">${(a.conn || {}).present ? 'The PC bot is reporting, but its version does not send positions and orders yet. On the Surface: <b>git pull</b>, then restart the bot (scripts/run_bot.ps1). Balance above = the eval’s $49,900 start until then.' : 'No heartbeat from the PC. It turns on with LE_HEARTBEAT=1 (scripts/run_bot.ps1 sets it); the cloud paper account below keeps running.'}</div>` : ''}
+  </div>`;
+}
+// ---- the open position
+function accPosition(a) {
+  const pos = a.position;
+  if (!pos || !pos.side) {
+    return `<div class="card"><div class="card-h"><h3>Position</h3><span class="meta">${pos && pos.note ? esc(pos.note) : 'flat'}</span></div>
+      <div class="acc-empty">${icon('radar')}<div><b>No open position</b><span>${esc(accWindowLine())}</span></div></div>${armedLine()}</div>`;
+  }
+  const d = pos.side === 'LONG' ? 1 : -1, px = accNow(a), q = pos.qty || 0, stop0 = pos.stop0 ?? pos.stop, risk0 = Math.abs(pos.entry - stop0);
+  const riskNow = Math.max(0, (pos.entry - pos.stop) * d) * q * PV_MNQ, rr = risk0 ? Math.abs(pos.target - pos.entry) / risk0 : null;
+  const unr = ok(px) ? (px - pos.entry) * d * q * PV_MNQ : null, unrR = ok(px) && risk0 ? (px - pos.entry) * d / risk0 : pos.unrealized_r;
+  const toStop = ok(px) ? Math.abs(px - pos.stop) : null, toTgt = ok(px) ? Math.abs(pos.target - px) : null;
+  const lo = Math.min(pos.stop, stop0, pos.target), hi = Math.max(pos.stop, stop0, pos.target), at = (v) => ((v - lo) / (hi - lo || 1) * 100).toFixed(1);
+  const edge = (v) => +at(v) < 18 ? ' el' : +at(v) > 82 ? ' er' : '';
+  return `<div class="card acc-pos ${d === 1 ? 'L' : 'S'}"><div class="card-h"><h3>Open position</h3><span class="meta">${a.source === 'cloud' ? 'paper' : esc(a.broker_account || '')}</span></div>
+    <div class="acc-ptop"><span class="side-i ${d === 1 ? 'L' : 'S'}">${icon(d === 1 ? 'long' : 'short')}</span>
+      <div class="acc-pm"><b class="${d === 1 ? 'up' : 'dn'}">${pos.side}</b> <b>${q} MNQ</b><span class="mut small">@ ${num(pos.entry)} · in the trade <span data-since="${pos.entry_t}">${fDur(Date.now() / 1000 - pos.entry_t)}</span> · since ${et(pos.entry_t).hm} ET</span></div>
+      <div class="acc-pr"><b class="${cls(unr)}">${unr == null ? '—' : susd(unr)}</b><span class="${cR(unrR)} small">${fR(unrR)}</span></div></div>
+    <div class="acc-ladder" aria-hidden="true"><i class="z" style="left:${Math.min(at(pos.stop), at(pos.target))}%;width:${Math.abs(at(pos.target) - at(pos.stop))}%"></i>
+      <span class="m st${edge(pos.stop)}" style="left:${at(pos.stop)}%"><em>SL ${num(pos.stop)}</em></span><span class="m en${edge(pos.entry)}" style="left:${at(pos.entry)}%"><em>${pos.be ? 'IN = SL' : 'IN'} ${num(pos.entry)}</em></span>
+      <span class="m tg${edge(pos.target)}" style="left:${at(pos.target)}%"><em>TP ${num(pos.target)}</em></span>${ok(px) && px >= lo && px <= hi ? `<span class="m px" style="left:${at(px)}%"></span>` : ''}</div>
+    <div class="nums">${nbox('Stop now', num(pos.stop))}${nbox('Target', num(pos.target))}${nbox('$ at risk now', pos.be ? '<strong class="up">$0 (BE)</strong>' : usd(riskNow))}${nbox('Planned risk', usd(risk0 * q * PV_MNQ) + (rr ? ` · ${num(rr, 1)}R` : ''))}
+      ${nbox('To the stop', toStop == null ? '—' : num(toStop, 2) + ' pts')}${nbox('To the target', toTgt == null ? '—' : num(toTgt, 2) + ' pts')}${nbox('Breakeven', pos.be ? '<strong class="up">done</strong>' : 'at +1R')}${nbox('Target from', esc(pos.target_label || 'VIX band'))}</div>
+    <div class="tcbox acc-tc" id="accTC"></div>
+    <div class="note">Live P&amp;L uses the cloud’s last NQ price (Yahoo NQ=F${ok(LV().last_run) ? ', ' + fAge(Math.round(Date.now() / 1000 - LV().last_run)) : ''}); the broker’s own numbers are in NinjaTrader.${pos.broker ? ` Broker: ${esc(pos.broker.status || '')}, ${pos.broker.filled ?? '—'} filled${pos.broker.instrument ? ' ' + esc(pos.broker.instrument) : ''}.` : ''}</div></div>`;
+}
+// ---- today's orders as a timeline (PC: the routed ledger; cloud: the paper entries / exits)
+function accOrderItems(a) {
+  const out = [];
+  for (const o of a.orders || []) {
+    if (a.source === 'cloud') { out.push({ t: o.t, k: o.side === 'exit' ? 'exit' : 'fill', h: o.side === 'exit' ? 'Exit (paper)' : 'Entry (paper)', s: o.text }); continue; }
+    const side = o.side;
+    if (side === 'buy' || side === 'sell') {
+      out.push({ t: o.t, k: o.ok === false ? 'bad' : 'sent', h: `Market ${side.toUpperCase()} ${o.qty ?? ''} MNQ sent`, s: o.ok === false ? `Refused: ${esc(o.error || 'not routed')}` : `model entry ${num(o.entry)}` });
+      if (o.filled) out.push({ t: o.t, k: 'fill', h: `Filled ${o.filled} @ ${num(o.fill_px)}`, s: ok(o.entry) && ok(o.fill_px) ? `slippage ${num((o.fill_px - o.entry) * (side === 'buy' ? 1 : -1), 2)} pts vs the model` : '' });
+      if (o.filled || o.bracket) out.push({ t: o.t, k: o.bracket === false ? 'bad' : 'bracket', h: o.bracket === false ? 'Stop / target NOT confirmed' : 'Stop + target placed', s: `SL ${num(o.stop)} · TP ${num(o.target)}${o.error ? ' · ' + esc(o.error) : ''}` });
+      else if (o.note || o.error) out.push({ t: o.t, k: 'warn', h: 'Waiting for the fill', s: esc(o.note || o.error) });
+    } else if (side === 'modify') {
+      out.push({ t: o.t, k: o.ok === false ? 'bad' : 'be', h: o.reason === 'BE' ? 'Stop moved to breakeven' : 'Stop moved', s: `new stop ${num(o.stop)}${o.ok === false ? ' · broker refused: ' + esc(o.error || '') : ''}` });
+    } else if (side === 'exit') {
+      out.push({ t: o.exit_t || o.t, k: (o.pnl || 0) > 0 ? 'win' : (o.pnl || 0) < 0 ? 'loss' : 'exit', h: `Exit · ${esc(o.reason || '')}`, s: `${ok(o.pnl) ? susd(o.pnl) : ''}${o.qty ? ' · ' + o.qty + ' MNQ' : ''}${o.error ? ' · ' + esc(o.error) : ''}`, usd: o.pnl });
+    }
+  }
+  return out.sort((x, y) => (x.t || 0) - (y.t || 0));
+}
+const OK_IC = { sent: 'right', fill: 'check', bracket: 'risk', be: 'flag', win: 'long', loss: 'short', exit: 'minus', bad: 'close', warn: 'clock' };
+function accOrders(a) {
+  const it = accOrderItems(a);
+  return `<div class="card"><div class="card-h"><h3>Today’s orders</h3><span class="meta">${esc(LV().today || '')} · times ET</span></div>
+    ${it.length ? `<ol class="acc-tl">${it.map(x => `<li class="${x.k}"><span class="acc-ti">${icon(OK_IC[x.k] || 'info')}</span><span class="acc-tm mono">${x.t ? et(x.t).hm : ''}</span><span class="acc-tb"><b>${x.h}</b>${x.s ? `<span>${x.s}</span>` : ''}</span></li>`).join('')}</ol>`
+      : `<div class="acc-empty">${icon('clock')}<div><b>No orders yet today</b><span>${esc(accWindowLine())}</span></div></div>`}</div>`;
+}
+// ---- equity, calendar, stats
+function accEquity(el, a) {
+  // profit vs the plan's $50,000 start (the eval's prior P&L, e.g. -$100, is the first point); dashed = the +$3,000 target
+  const ev = a.eval, sb = ev ? ev.start_balance : 0; let eq = ev ? (ev.prior || 0) : 0;
+  const pts = (a.days || []).map(([d, v]) => { eq += v; return { x: d.slice(5), y: eq, tip: `<b>${fDate(d)}</b><span>${susd(v)} · balance ${usd(sb + eq)}</span>` }; });
+  lineChart(el, pts.length ? [{ x: 'start', y: ev ? (ev.prior || 0) : 0, tip: `<b>Start</b><span>balance ${usd(sb + (ev?.prior || 0))}</span>` }, ...pts] : [], { h: 190, fmt: kfmt, ref: ev ? ev.target_balance - sb : null,
+    empty: '<b>No closed trades yet.</b>The curve starts with the first closed trade on this account.' });
+}
+function accCalendar(a) {
+  const days = new Map((a.days || []).map(([d, v]) => [d, v])), today = et(Date.now() / 1000).date;
+  const first = (a.days || [])[0]?.[0] || today, months = [];
+  let [y, m] = today.split('-').map(Number);
+  for (let i = 0; i < 3; i++) { months.unshift([y, m]); if (`${y}-${pad2(m)}` <= first.slice(0, 7)) break; m--; if (!m) { m = 12; y--; } }
+  const mx = Math.max(1, ...[...days.values()].map(Math.abs));
+  return `<div class="acc-cal">${months.map(([yy, mm]) => {
+    const n = new Date(Date.UTC(yy, mm, 0)).getUTCDate(), cells = [];
+    for (let d = 1; d <= n; d++) { const dt = new Date(Date.UTC(yy, mm - 1, d)), wd = dt.getUTCDay(); if (wd === 0 || wd === 6) continue; cells.push([`${yy}-${pad2(mm)}-${pad2(d)}`, wd, d]); }
+    const lead = cells.length ? cells[0][1] - 1 : 0, sum = cells.reduce((s, c) => s + (days.get(c[0]) || 0), 0);
+    return `<div class="acc-m"><div class="acc-mh"><b>${MONTHS[mm - 1]} ${yy}</b><span class="${cls(sum)}">${susd(sum)}</span></div><div class="acc-wd">${['M', 'T', 'W', 'T', 'F'].map(x => `<span>${x}</span>`).join('')}</div>
+      <div class="acc-grid">${'<i class="pad"></i>'.repeat(lead)}${cells.map(([k, , d]) => { const v = days.get(k), a2 = v == null ? 0 : 0.18 + 0.7 * Math.min(1, Math.abs(v) / mx);
+        return `<i class="${v == null ? '' : v > 0 ? 'w' : v < 0 ? 'l' : 'z'}${k === today ? ' now' : ''}${k > today ? ' fut' : ''}" style="--a:${a2.toFixed(2)}" title="${k}${v == null ? '' : ' · ' + susd(v)}"><em>${d}</em>${v != null ? `<small>${kusd(v)}</small>` : ''}</i>`; }).join('')}</div></div>`;
+  }).join('')}</div>`;
+}
+function accStats(a) {
+  const s = a.stats || {}, st = s.streak;
+  return `<div class="stats acc-stats">
+    ${statBox('Win rate', s.win_pct != null ? pct(s.win_pct) : '—', `${s.wins ?? 0} wins · ${s.losses ?? 0} losses · ${s.n ?? 0} trades`)}
+    ${statBox('Profit factor', s.pf != null ? fPF(s.pf) : '—', `net ${susd(s.net)}`, cls(s.net))}
+    ${statBox('Avg win', s.avg_win != null ? usd(s.avg_win) : '—', `avg loss ${s.avg_loss != null ? usd(s.avg_loss) : '—'}`, 'up')}
+    ${statBox('Streak', st ? `${st.n} ${st.kind === 'W' ? 'win' : st.kind === 'L' ? 'loss' : 'BE'}${st.n === 1 ? '' : st.kind === 'L' ? 'es' : 's'}` : '—', `best win run ${s.best_win_streak ?? 0}`, st?.kind === 'W' ? 'up' : st?.kind === 'L' ? 'dn' : '')}
+    ${statBox('Best day', s.best_day ? susd(s.best_day[1]) : '—', s.best_day ? fDate(s.best_day[0]) : 'no days yet', 'up')}
+    ${statBox('Worst day', s.worst_day ? susd(s.worst_day[1]) : '—', s.worst_day ? fDate(s.worst_day[0]) : `max drawdown ${susd(s.max_dd)}`, s.worst_day && s.worst_day[1] < 0 ? 'dn' : '')}</div>`;
+}
+// ---- past trades of every account (filter: outcome, account); a row opens the LIT reason and the chart button
+function accTrade(a, t) {
+  const rp = tradeAt(t.entry_t);
+  return { ...t, acc: a.id, acc_name: a.name, exit_price: t.exit_px ?? null, report: rp?.report || null, chart: rp?.chart || null, trigger: t.trigger || 'LIT', risk_usd: null };
+}
+function accTradeRow(x, i) {
+  const be = Math.abs(x.r || 0) < .05 && Math.abs(x.pnl || 0) < 50, open = AS.open.has(x.acc + ':' + x.entry_t), rp = x.report || {};
+  const why = [x.swept?.length ? `Swept ${x.swept.map(esc).join(', ')}` : '', x.grade ? `grade ${esc(x.grade)}` : '', x.cause ? `loss cause: ${esc(x.cause)}` : ''].filter(Boolean);
+  return `<div class="acc-tr ${open ? 'open' : ''}" data-i="${i}"><button type="button" class="trade ${x.pnl > 0 ? 'win' : be ? 'be' : 'loss'}" aria-expanded="${open}">
+      <span class="side-i ${x.side === 'LONG' ? 'L' : 'S'}">${icon(x.side === 'LONG' ? 'long' : 'short')}</span>
+      <span class="tmain"><span class="ttop"><b>${esc(fDate(x.day))}</b><span class="mut">${x.entry_t ? et(x.entry_t).hm + ' ET' : ''}</span><span class="sidetxt ${x.side === 'LONG' ? 'up' : 'dn'}">${esc(x.side)}</span></span>
+        <span class="chips">${chip(`${x.qty ?? '—'} MNQ${x.risk_pts != null ? ` <i>·</i> ${num(x.risk_pts, 1)} pt stop` : ''}`)}${x.exit ? chip(esc(x.exit), x.exit === 'TARGET' ? 'good' : x.exit === 'STOP' ? 'bad' : '') : ''}</span>${AS.fa === 'all' && ACCS().length > 1 ? `<span class="small mut acc-an">${esc(x.acc_name)}</span>` : ''}</span>
+      <span class="tres"><b class="${cls(x.pnl)}">${susd(x.pnl)}</b><span class="${cR(x.r)}">${fR(x.r)}</span></span>${icon('down', 'acc-chev')}</button>
+    ${open ? `<div class="acc-td"><div class="nums">${nbox('Entry', num(x.entry))}${nbox('Stop', num(x.stop))}${nbox('Target', num(x.target))}${x.exit_px != null ? nbox('Exit', num(x.exit_px)) : ''}${x.mfe != null ? nbox('Best point', fR(x.mfe)) : ''}${x.exit_t ? nbox('Closed', et(x.exit_t).hm + ' ET') : ''}</div>
+      ${why.length ? `<section><h4>${icon('info')}Why LIT took it</h4><p>${why.join(' · ')}</p></section>` : ''}
+      ${rp.why ? `<section><h4>${icon('info')}Report</h4><ul class="list">${rp.why.map(w => `<li>${esc(w)}</li>`).join('')}</ul></section>` : ''}
+      ${rp.result ? `<section><h4>${icon('check')}Result</h4><p>${esc(rp.result)}</p></section>` : ''}
+      ${!why.length && !rp.why ? `<div class="note">No LIT report for this trade yet: the replay export writes one after the next data refresh.</div>` : ''}
+      <div class="acc-ta">${tcAvail(x) ? `<button class="btn sm" type="button" data-acc-chart="${i}">${icon('chart')}Chart</button>` : '<span class="small mut">No chart: the recent bars do not cover this day.</span>'}${x.report ? `<button class="btn sm ghost" type="button" data-acc-rep="${i}">${icon('doc')}Full report</button>` : ''}</div></div>` : ''}</div>`;
+}
+function accTrades(el) {
+  const all = ACCS().flatMap(a => (a.trades || []).map(t => accTrade(a, t)));
+  let rows = all.filter(x => (AS.fa === 'all' || x.acc === AS.fa) && (AS.f === 'all' || (AS.f === 'win' ? x.pnl > 0 : x.pnl < 0)));
+  rows.sort((p, q) => (q.entry_t || 0) - (p.entry_t || 0));
+  const net = rows.reduce((s, x) => s + (x.pnl || 0), 0);
+  el.innerHTML = `<div class="card-h"><h3>Past trades</h3><span class="meta">${plural(rows.length, 'trade')} · ${susd(net)}</span></div>
+    <div class="toolbar acc-tbar">${segHTML('accF', [['all', 'All'], ['win', 'Wins'], ['loss', 'Losses']], AS.f)}${ACCS().length > 1 ? `<span id="accFa"></span>` : ''}</div>
+    <div class="tlist acc-list">${rows.slice(0, AS.shown).map((x, i) => accTradeRow(x, i)).join('') || emptyBox(all.length ? 'No trades match.' : 'No closed trades yet.', all.length ? 'Pick another filter.' : 'Closed trades of every account land here, newest first, with the LIT reason and a chart.')}</div>
+    ${rows.length > AS.shown ? `<div class="more"><button class="btn ghost" type="button" id="accMore">Show ${Math.min(30, rows.length - AS.shown)} more</button></div>` : ''}`;
+  onSeg('accF', (v) => { AS.f = v; AS.shown = 30; accTrades(el); });
+  if (ACCS().length > 1) dropdown($('#accFa', el), [['all', 'All accounts'], ...ACCS().map(a => [a.id, a.name])], AS.fa, (v) => { AS.fa = v; AS.shown = 30; accTrades(el); });
+  $('#accMore', el)?.addEventListener('click', () => { AS.shown += 30; accTrades(el); });
+  el.querySelector('.acc-list').onclick = (e) => {
+    const c = e.target.closest('[data-acc-chart]'), r = e.target.closest('[data-acc-rep]');
+    if (c) { openChart(rows[+c.dataset.accChart]); return; }
+    if (r) { openSheet(rows[+r.dataset.accRep]); return; }
+    const b = e.target.closest('.acc-tr > .trade'); if (!b) return;
+    const x = rows[+b.parentElement.dataset.i], k = x.acc + ':' + x.entry_t;
+    AS.open.has(k) ? AS.open.delete(k) : AS.open.add(k); accTrades(el);
+  };
+}
+// ---- the account picker (one chip per account) and the page
+function accPick(list, cur) {
+  return `<div class="acc-pick" role="tablist">${list.map(a => { const p = a.pnl || {}, ev = a.eval;
+    return `<button type="button" role="tab" class="acc-pc ${a.id === cur.id ? 'on' : ''}" data-acc="${esc(a.id)}" aria-selected="${a.id === cur.id}">
+      <span class="acc-pt"><b>${esc(a.name)}</b>${accBadge(a)}</span><span class="acc-pv">${ev ? usd(ev.balance) : '—'}</span><span class="acc-ps ${cls(p.today)}">${susd(p.today)} today${a.position?.side ? ' · <span class="wn">in a trade</span>' : ''}</span></button>`; }).join('')}</div>`;
+}
+VIEWS.accounts = (el) => {
+  const list = ACCS();
+  if (!list.length) { el.innerHTML = head('Accounts', 'No accounts yet', '') + emptyBox('No account data in this build.', 'The cloud monitor adds the accounts on its next run (data.json “accounts”).'); return; }
+  const cur = list.find(a => a.id === (ARG || AS.sel)) || list[0];
+  el.innerHTML = head('Accounts · where the bot trades', esc(cur.name), cur.source === 'cloud' ? 'The cloud monitor’s paper ledger, scored with the MFFU 50K rules. It never places orders.'
+      : 'What the PC bot routed to this account through NinjaTrader: the position, today’s orders and every closed trade. Read-only: this page never places or changes an order.')
+    + accPick(list, cur)
+    + (cur.error ? `<div class="card"><b>This account could not be read.</b><div class="note">${esc(cur.error)}</div></div>` : accHeader(cur) + accPosition(cur) + accOrders(cur)
+      + `<div class="grid g2 astart"><div class="card"><div class="card-h"><h3>Equity</h3><span class="meta">${cur.eval ? 'profit vs ' + usd(cur.eval.start_balance) + ' · dashed = +' + usd(cur.eval.target_balance - cur.eval.start_balance) + ' target' : 'cumulative'}</span></div><div id="accEq"></div></div>
+        <div class="card"><div class="card-h"><h3>Daily P&amp;L</h3><span class="meta">green = profit day</span></div>${accCalendar(cur)}</div></div>`
+      + secH('Stats · ' + esc(cur.name)) + accStats(cur))
+    + `<div class="card" id="accTrades"></div>`
+    + howto('accounts', `<p>One section per account: tap a name at the top to switch. <b>LIVE</b> = a real (eval) account through NinjaTrader, <b>SIM</b> = a NinjaTrader simulation account, <b>PAPER</b> = no broker at all.</p>
+      <ul><li><b>Ring</b>: progress to the +$3,000 target ($53,000). <b>Gauge</b>: room above the trailing max-loss floor ($2,000 below the best end-of-day balance, locked at $50,100).</li>
+      <li><b>Session N of 10</b>: the two-week eval clock (the owner’s goal: pass within 2 weeks). <b>Daily loss used</b>: today’s closed loss vs the $1,000 soft daily limit.</li>
+      <li>The PC account updates with the PC’s heartbeat (every 5 min) and the cloud run (every 15 min), so it can be up to ~20 min behind NinjaTrader.</li></ul>`);
+  if (!cur.error) {
+    accEquity($('#accEq'), cur);
+    const p = cur.position;
+    if (p && p.side) { const px = accNow(cur), d1 = p.side === 'LONG' ? 1 : -1, r0 = Math.abs(p.entry - (p.stop0 ?? p.stop)) || 1;
+      const t = { day: LV().today, entry_t: p.entry_t, side: p.side, entry: p.entry, stop: p.stop0 ?? p.stop, target: p.target, qty: p.qty, exit: null,
+        pnl: ok(px) ? (px - p.entry) * d1 * (p.qty || 0) * PV_MNQ : 0, r: ok(px) ? (px - p.entry) * d1 / r0 : null, be_t: p.be ? Date.now() / 1000 : null, target_label: p.target_label };
+      if (tcAvail(t)) tcMount($('#accTC'), t); else $('#accTC').innerHTML = '<div class="note">The chart draws once the cloud’s recent bars cover the entry.</div>'; }
+  }
+  accTrades($('#accTrades'));
+  el.querySelector('.acc-pick').onclick = (e) => { const b = e.target.closest('[data-acc]'); if (!b) return; AS.sel = b.dataset.acc; store.set('acc.sel', AS.sel); AS.fa = 'all';
+    if (ARG) location.hash = '#/accounts'; else render(true); };
+};
+// time in trade ticks without a redraw
+setInterval(() => { $$('[data-since]').forEach(s => { s.textContent = fDur(Date.now() / 1000 - +s.dataset.since); }); }, 30000);
+// the compact card on Today: one line per account
+function accountsCard() {
+  const list = ACCS();
+  if (!list.length) return '';
+  return `<div class="card acc-card"><div class="card-h"><h3>Accounts</h3><button class="chipbtn" type="button" data-go="accounts"><span>Open</span>${icon('right')}</button></div>
+    <div class="acc-lines">${list.map(a => { const c = accConn(a), p = a.pnl || {}, pos = a.position;
+      return `<a class="acc-line" href="#/accounts/${encodeURIComponent(a.id)}"><span class="dot ${c.dot}"></span><span class="acc-ln"><b>${esc(a.name)}</b><span class="small mut">${pos?.side ? `<span class="${pos.side === 'LONG' ? 'up' : 'dn'}">${pos.side} ${pos.qty ?? ''} MNQ</span>` : 'flat'} · ${a.eval ? `session ${a.eval.session ?? '—'} of ${a.eval.sessions}` : ''}</span></span>
+        ${accBadge(a)}<span class="acc-lv"><b>${a.eval ? usd(a.eval.balance) : '—'}</b><span class="small ${cls(p.today)}">${susd(p.today)}</span></span></a>`; }).join('')}</div></div>`;
+}
 // LIT's own size rules (weekly stop, Monday rule): on Risk & Sizing
 function litRulesHTML() {
     const wk = litWeek(), mon = litMonday(), L = D.strategy?.lit || {};

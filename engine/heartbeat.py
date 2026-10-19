@@ -6,7 +6,10 @@ repo, replacing the previous one (orphan commit, force push: no history grows). 
 that branch on every run and alerts when the bot said it was running but has been silent for 20 minutes in a session.
 
 heartbeat.json: {"t": unix seconds, "running": bot running, "adapter": paper|ninjatrader|tradovate, "position": bool,
-                 "model_state": str, "host": computer name, "every_s": N}
+                 "model_state": str, "host": computer name, "every_s": N,
+                 "acct": the Accounts page's view of the routed activity (engine/accounts.pc_activity: account name + SIM/LIVE,
+                         open position, today's orders, last 60 closed routed trades, the eval's P&L per day; secret-free,
+                         under 48 KB; older cloud monitors ignore it)}
 
 On by default only when LE_HEARTBEAT=1 (scripts/run_bot.ps1 sets it; a dev shell does not push anything). Needs git
 with push rights in the project folder (the owner's PC has them). Never raises into the server; failures are logged
@@ -89,6 +92,15 @@ def _push_pk():
         return None
 
 
+def _acct(bot):
+    """The Accounts page block (engine/accounts.pc_activity). Never raises; None when unavailable."""
+    try:
+        from engine import accounts
+        return accounts.pc_activity(bot)
+    except Exception:
+        return None
+
+
 class Heartbeat:
     """Daemon thread on the PC server: pushes a heartbeat every `every_s` seconds while the server runs."""
 
@@ -106,7 +118,7 @@ class Heartbeat:
                 "position": bool(st.get("position")), "model_state": st.get("model_state"), "host": platform.node(),
                 "model": (st.get("strategy") or {}).get("model") or cfg.get("model"),
                 "push_pk": _push_pk(),          # phone notifications: the cloud seals the notification key to this (engine/push.py)
-                "every_s": int(self.every_s)}
+                "every_s": int(self.every_s), "acct": _acct(self.bot)}
 
     def beat(self) -> dict:
         res = push(self.payload())

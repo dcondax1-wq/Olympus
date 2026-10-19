@@ -2,6 +2,9 @@
 
 The site is one page (tools/web_public/index.html) that reads everything from data.json; nothing runs on a server.
 data.json holds:
+  accounts  the Accounts page (engine/accounts.build_accounts): per account (the MFFU eval on the PC bot from its heartbeat,
+            then "Paper (cloud)") the header, eval numbers, P&L today / week / since start, position, today's orders, closed
+            trades, P&L per day and stats
   live      the cloud monitor's state (model state, eval tracker, cold-streak filter, paper ledger, recent bars, pools,
             `pc`: the always-on PC bot's heartbeat {present, t, age_s, silent, running, adapter, position, model_state, host, reason},
             `notices`: the last 80 phone notifications (fills, outcomes, PC silent, eval timing) for the app's Activity feed, and
@@ -529,6 +532,17 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     for k in ("private", "vapid_private", "subs", "push_subs", "box"):   # never public (status() has none of these; belt and braces)
         live["push"].pop(k, None)
     live["ledger"] = ledger[:200]
+    # Accounts page: one section per account (live_model.json "accounts", default the MFFU 50K eval on the PC bot, from the
+    # heartbeat's "acct" block) + the cloud paper ledger (engine/accounts.py); the raw block stays out of live.pc
+    lm_acc = _load(os.path.join(ROOT, "live_model.json"), {}) or {}
+    try:
+        from engine import accounts as _accounts
+        accounts = _accounts.build_accounts(st, lm_acc)
+    except Exception as e:
+        print("  accounts unavailable:", e.__class__.__name__, e)
+        accounts = []
+    if isinstance(live.get("pc"), dict):
+        live["pc"] = {k: v for k, v in live["pc"].items() if k != "acct"}
     results = None
     if bt:
         results = {"meta": {k: bt.get("meta", {}).get(k) for k in ("built", "strategy", "data", "costs", "method", "equity_filter")},
@@ -568,6 +582,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         "docs": docs,
         "archive": _archive(st, state_path, cfg) if lab_scope.is_lit_model(lm) else None,
         "lit_extra": _lit_extra(st, lm),
+        "accounts": accounts,
     }
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
