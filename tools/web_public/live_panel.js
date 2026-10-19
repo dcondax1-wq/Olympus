@@ -68,7 +68,7 @@ export function openTrade(D, now = now_()) {
   const r = ok(p.unrealized_r) ? +p.unrealized_r : ok(L.px) ? (L.px - p.entry) * d / risk : null;
   return { day: D.live?.today, entry_t: +p.entry_t, side: p.side, dir: d, entry: +p.entry, stop: stop0, stop_now: ok(p.stop) ? +p.stop : stop0,
     target: +p.target, qty: p.qty, be: !!p.be, be_px: +p.entry, exit: null, pnl, r, px: L.px, px_t: L.t, since: now - +p.entry_t,
-    target_label: p.target_label || '', risk_pts: Math.abs(p.entry - stop0), broker: p.broker || null };
+    target_label: p.target_label || '', risk_pts: Math.abs(p.entry - stop0), risk_usd: Math.abs(p.entry - stop0) * PV * (p.qty || 0), broker: p.broker || null };
 }
 export function todayClosed(D) {
   const a = pcAcct(D), today = D.live?.today;
@@ -104,7 +104,7 @@ export function html(D, { where = 'today', now = now_() } = {}) {
   const last = L.last_setup;
   const T = openTrade(D, now), C = todayClosed(D);
   const built = D.built ? Date.parse(D.built) / 1000 : null;
-  return `<div class="card lp lp-${v.level}" data-lp="${esc(where)}">
+  return `<div class="card lp lp-${v.level}${v.code === 'SILENT' ? ' lp-old' : ''}" data-lp="${esc(where)}">
     <div class="lp-v"><span class="lp-vi">${icon}</span><div class="lp-vt"><span class="lp-eye">PC bot · ${esc(pc.host || 'PC')} · ${esc(h?.model || pc.model || '—').toUpperCase()}</span>
       <b>${esc(v.label)}</b><span class="lp-vr">${esc(v.reason || '')}</span></div></div>
     <div class="lp-chips">
@@ -144,7 +144,7 @@ function tradeBox(T) {
 // ------------------------------------------------------------------ mount (HTML + charts) and the 15 s age ticker
 function chartRec(TC, t, D, live) {
   const b5 = bars5(D), b1 = bars1(D);
-  const rec = TC.fromTrade({ ...t, id: (live ? 'lpopen_' : 'lpday_') + t.entry_t, exit_price: t.exit_px ?? null }, b5);
+  const rec = TC.fromTrade({ ...t, risk_usd: t.risk_usd ?? (ok(t.risk_pts) && t.qty ? t.risk_pts * PV * t.qty : 0), id: (live ? 'lpopen_' : 'lpday_') + t.entry_t, exit_price: t.exit_px ?? null }, b5);
   rec._bars1 = b1.map(toObj).filter((b) => b.t >= (rec._bars5[0]?.t ?? 0) - 3600);
   if (live) {
     rec.levels = [{ label: 'stop now', px: t.stop_now }].concat(Math.abs(t.stop_now - t.entry) > 0.1 ? [{ label: 'breakeven', px: t.entry }] : []);
@@ -229,6 +229,8 @@ export function css() {
 .lp-chart{margin-top:12px;min-height:40px}
 .lp-ct{margin-top:10px}.lp-cth{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12.5px;align-items:baseline}.lp-cth>b:last-child{margin-left:auto;font-family:var(--mono)}
 .lp-note{font-size:12px;color:var(--muted);padding:8px 0}
+.lp-old .lp-chips,.lp-old .lp-grid,.lp-old .lp-steps,.lp-old .lp-stage,.lp-old .lp-sig{opacity:.45}
+.lp-old .lp-grid .lp-kv:first-child{opacity:1}
 .lp-foot{margin-top:12px;font-size:10.5px;color:var(--muted)}`;
   document.head.appendChild(s);
 }
