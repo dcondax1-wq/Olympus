@@ -174,7 +174,7 @@ def record(group, nm, U, extra=None, quiet=False):
 
 
 # ================================================================================================ executor (arun copy + hooks)
-def run(tmode=None, news2=None, flag=None):
+def run(tmode=None, news2=None, flag=None, maxstop=None):
     """lit_adv_manage.arun on 2026 with hooks.
     tmode(z, ep, risk, best) -> None (live) or {"tgt_add": pts beyond the band, "max_rr": R or None, "be": R}
     news2(z, first) -> True to allow this setup as the day's second trade (first = the day's first trade, already exited)
@@ -198,7 +198,8 @@ def run(tmode=None, news2=None, flag=None):
         ep = min(float(z["ref_d"]), z["trig_c"])
         stop0 = z["ext_d"] - P["stop_buf"]
         risk = ep - stop0
-        if not (P["min_stop"] <= risk <= P["max_stop"]):
+        mx = (maxstop(z) or P["max_stop"]) if maxstop else P["max_stop"]
+        if not (P["min_stop"] <= risk <= mx):
             continue
         sh = z["entry_d"] - ep
         TT = {c: [x + sh for x in v] for c, v in lit.targets_x(M, z, P).items()}
@@ -573,6 +574,18 @@ def grid4(b):
                         seen.add(t["day"])
                         V.append({**t, "m": m if second else 1.0})
                     record(g, f"[{imp_lab} {win}m] + 2nd trade if news ({cond}) x{m}", V, {"extra": n_x}, quiet=True)
+            for mxs in (120.0, 160.0, 250.0):
+                ms = lambda z, E=E, win=win, mxs=mxs: mxs if is_news(z, E, win) else None   # noqa: E731
+                U3 = run(flag=fl, maxstop=ms)
+                n3 = sum(1 for t in U3 if t["tag"])
+                record(g, f"[{imp_lab} {win}m] news setups max stop {mxs:g}", U3, {"news_trades": n3}, quiet=True)
+                def n2b(z, first, E=E, win=win):
+                    return is_news(z, E, win)
+                U4 = run(news2=n2b, flag=fl, maxstop=ms)
+                n4 = sum(1 for t in U4 if t["tag"])
+                record(g, f"[{imp_lab} {win}m] news max stop {mxs:g} + 2nd trade", U4, {"news_trades": n4}, quiet=True)
+                print(f"   max stop {mxs:g}: news trades {n3} (1/day), {n4} (2nd allowed); "
+                      f"{[(t['day'], t['exit'], round(t['pts'] / t['risk'], 2)) for t in U4 if t['tag']]}", flush=True)
             print(f"[{imp_lab} {win}m] news-flagged live trades {nn}", flush=True)
     R = RES[g]
     for k in R:
