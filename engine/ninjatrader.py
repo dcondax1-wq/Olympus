@@ -360,6 +360,9 @@ class NinjaTraderAdapter:
         self.incoming = os.path.join(self.folder, "incoming")
         self.outgoing = os.path.join(self.folder, "outgoing")
         self.write_mode = "move" if cfg.get("nt_write_mode") == "move" else "direct"
+        # several accounts on one bot (engine/multi_account.py): each adapter's order files carry its own tag, so two
+        # accounts writing in the same millisecond never collide ("" = the single-account names, unchanged)
+        self.file_tag = re.sub(r"[^A-Za-z0-9_]", "", str(cfg.get("nt_file_tag") or ""))[:24]
         self.inst_override = {"micro": cfg.get("nt_instrument"), "mini": cfg.get("nt_instrument_mini")}
         # the guide says CLOSEPOSITION wants "the instrument name including the exchange name": if NinjaTrader ignores
         # "CLOSEPOSITION;Sim101;MNQ 12-26" on your install (--sim-roundtrip step 3 fails), set nt_close_suffix " Globex"
@@ -538,7 +541,7 @@ class NinjaTraderAdapter:
         err = None
         for attempt in range(3):
             self._seq += 1
-            name = f"oif_le_{time.time_ns() // 1_000_000}_{self._seq}.txt"
+            name = f"oif_le_{self.file_tag}{time.time_ns() // 1_000_000}_{self._seq}.txt"
             path = os.path.join(self.incoming, name)
             try:
                 if self.write_mode == "move":
@@ -1449,6 +1452,8 @@ def main(argv=None):
                     help="owner opt-in (once): the bot comes back on this exact real --account by itself after a crash, an update "
                          "or a reboot; needs --account and --confirm; every live lock still applies (engine/autoresume.py)")
     ap.add_argument("--disable-auto-resume", action="store_true", help="turn the real-account auto-resume off")
+    ap.add_argument("--extra", action="store_true", help="with --enable-auto-resume: --account is one of the EXTRA accounts "
+                                                          "(data/accounts.json); the bot's own account opt-in stays as it is")
     ap.add_argument("--account", default=None, help="NinjaTrader account name (Accounts tab 'Name'), default Sim101")
     ap.add_argument("--folder", default=None, help="Documents\\NinjaTrader 8 folder if not the default")
     ap.add_argument("--data", default="ninjatrader", choices=["ninjatrader", "yahoo"], help="bar source for --start (no_yahoo on, the default in live_model.json: always ninjatrader)")
@@ -1480,6 +1485,10 @@ def main(argv=None):
         body = {"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "armed": True, "present": True, "poll_sec": 60,
                 "data_source": a.data, **{k: v for k, v in cfg.items() if k.startswith("nt_")}}
         try:
+            if a.extra:
+                rec = autoresume.enable_extra(a.account or "", a.confirm)
+                print(f"Auto-resume is ON for the extra account {a.account} too (with the bot's own account {rec['account']}).")
+                return 0
             rec = autoresume.enable(a.account or "", a.confirm, body)
         except ValueError as e:
             print(f"Auto-resume NOT enabled: {e}.")
@@ -1503,6 +1512,13 @@ def main(argv=None):
                 "data_source": a.data, **{k: v for k, v in cfg.items() if k.startswith("nt_")}}
         if a.confirm:
             body["confirm"] = a.confirm
+        try:                                             # extra accounts (data/accounts.json, engine/multi_account.py)
+            from . import multi_account
+            body = multi_account.merge_into_start(body, a.confirm)
+            if body.get("accounts"):
+                print(f"Extra accounts: {', '.join(str(x.get('id')) for x in body['accounts'])} (python -m engine.multi_account --list)")
+        except Exception as e:
+            print(f"Extra accounts not read ({e.__class__.__name__}: {e}): starting the one account only")
         try:
             r = _http(a.port, "/api/live/start", body)
         except Exception as e:
