@@ -742,7 +742,8 @@ DEFAULTS = {
                                  # fill, if the trade never reached +mfe R, the breakeven has not moved the stop and that close is
                                  # more than x R below the entry, exit at the next 1m open - 1 tick ("CUT_T15"). 1m bars only.
     "scale_in": None,            # scale-in after breakeven (research/writeups/lit-big-ideas.md, run lit_big_scale_cisd; off = None;
-                                 # backtest on 1m bars only, ignored by the live loop until the route can send an add):
+                                 # 1m bars only; live: the open position carries "adds" and, when the add's CISD candle
+                                 # is the last closed bar, "add_now" for engine/live.py to route at market at once):
                                  # {"pb": 0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1}: once the breakeven moved the stop,
                                  # the first 1m pullback of >= pb R (from the high since the breakeven bar) followed by a 1m close
                                  # above that pullback's CISD level -> add at the next 1m open + 1 tick, int(f x micros) micros
@@ -945,8 +946,12 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
                 "exit_i": 10 ** 12, "tf": B.secs // 60, "limit_fill": False, "swept": cand["swept"]}
     be_r = P["be_r"]
     tc = P.get("t_check") if B.secs == 60 else None
-    si = P.get("scale_in") if (B.secs == 60 and not live) else None
+    si = P.get("scale_in") if B.secs == 60 else None
     adds, add_pend, add_base, rat_lvl, w_pre = [], False, None, None, 0.0
+    add_now = None                           # live + scale_in: the add decided at the close of the last bar (route at market now)
+    cut_now = False                          # live + t_check: the cut decided at the close of the last bar (route at market now)
+    nx = getattr(B, "next_open", None) if live else None
+    nx_ok = nx is not None and B.n > 0 and int(nx[0]) == int(B.t[B.n - 1]) + B.secs   # the forming bar's open is known
     cur, be_done, mfe, mae, worst = stop, False, 0.0, 0.0, 0.0
     k = fill
     exit_px = kind = None
@@ -995,12 +1000,24 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
                     if cz is not None and c_d[k] > cz[0] and k + 1 < B.n and B.day[k + 1] == s_day:
                         add_pend = True
                         add_base = k + 1
+                    elif live and cz is not None and c_d[k] > cz[0] and k + 1 == B.n and _next_bar_same_day(B, k, cand["day"]):
+                        # live: the add's CISD candle k has just CLOSED and the backtest's add fill bar (k + 1) is forming:
+                        # decide now (a market order sent within seconds of k + 1's open gets the backtest's "next open + 1
+                        # tick"), priced from k + 1's open when the feed shows it, else from k's close (estimate)
+                        px = (d * float(nx[1]) if nx_ok else float(c_d[k])) + SLIP
+                        if px < tg and px - cur >= float(si.get("min_rk", 2.0)):
+                            add_now = {"n": len(adds) + 1, "t": int(B.t[k]) + B.secs, "cisd_t": int(B.t[k]), "px_d": px,
+                                       "est": not nx_ok, "rk": px - cur, "prev_rk": [a["px"] - cur for a in adds],
+                                       "dist": px - entry}
         if tc and not be_done and round((B.t[k] - B.t[fill]) / 60.0) + 1 == int(tc.get("at", 15)) \
                 and mfe < float(tc.get("mfe", 0.5)) and c_d[k] < entry - float(tc.get("x", 0.3)) * risk:
             if k + 1 < B.n and B.day[k + 1] == s_day:
                 cut = "CUT_T15"                  # exit at the next 1m open
-            elif live and k + 1 >= B.n:          # live: the check bar is the last closed bar -> exit at market now
-                exit_px, kind = float(c_d[k]) - SLIP, "CUT_T15"; break
+            elif live and k + 1 >= B.n and _next_bar_same_day(B, k, cand["day"]):
+                # live: the check bar is the last closed bar -> exit at market now (the backtest exits at k + 1's open - 1
+                # tick, which a market order sent within seconds of that open gets); priced from that open when the feed
+                # shows it (B.next_open), else from k's close (estimate); reported like the backtest's exit (bar k + 1)
+                exit_px, kind, cut_now = (d * float(nx[1]) if nx_ok else float(c_d[k])) - SLIP, "CUT_T15", True; break
         k += 1
     if exit_px is None:
         if not live:
@@ -1023,22 +1040,31 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
         add_out = [{"t": int(B.t[a["k"]]), "px": round(a["px"] * d, 2), "dist": round(a["dist"], 4), "rk": round(a["rk"], 4),
                     "prev_rk": [round(x, 4) for x in a["prev_rk"]], "w_ph": round(a["w_ph"], 4), "pts": round(a["pts"], 4),
                     "qty": int(qa[i])} for i, a in enumerate(adds)]
-    xi5 = int(np.searchsorted(M.t, B.t[k], side="right") - 1)
+    t_x = int(B.t[k]) + (B.secs if cut_now else 0)    # the bar the exit fills in (cut_now: the one forming after bar k)
+    xi5 = int(np.searchsorted(M.t, t_x, side="right") - 1)
     ei5 = int(np.searchsorted(M.t, B.t[fill], side="right") - 1)
-    out = {"day": cand["day"], "entry_t": int(B.t[fill]), "exit_t": int(B.t[k]) + B.secs, "exit_i": xi5, "dir": d,
+    out = {"day": cand["day"], "entry_t": int(B.t[fill]), "exit_t": t_x + B.secs, "exit_i": xi5, "dir": d,
             "r": round(pnl / (risk * PV * q), 3), "pnl": round(pnl, 2), "risk_pts": round(risk, 2), "qty": q,
             "risk_usd": round(risk * PV * q, 2), "half": False, "exit": kind, "trigger": "LIT-" + ("1m" if B.secs == 60 else "5m"),
-            "mfe": round(mfe, 3), "mae": round(min(mae, 1.0 + SLIP / risk), 3), "bars_held": int(k - fill + 1), "regime": "",
+            "mfe": round(mfe, 3), "mae": round(min(mae, 1.0 + SLIP / risk), 3), "bars_held": int(k - fill + 1 + cut_now), "regime": "",
             "mult": 1.0, "low": round(low, 2), "entry_px": round(entry * d, 2), "stop_px": round(stop * d, 2),
             "target_px": round(tg * d, 2), "swept": cand["swept"], "ind_n": cand["ind_n"], "vec": cand["vec"], "i": cand["i"],
             "ext_i": cand["ext_i"], "ref_i": cand["ref_i"], "sweep_i": cand["sweep_i"], "entry_i": ei5, "tf": B.secs // 60,
             **({"exit_px": round(exit_px * d, 2), "stop_now": round(cur * d, 2), "be_done": be_done,
-                "limit_fill": limit_fill, "last_t": int(B.t[k])} if live else {})}
+                "limit_fill": limit_fill, "last_t": int(B.t[k]),
+                **({"exit_now": True, "exit_est": not nx_ok} if cut_now else {})} if live else {})}
     if add_out is not None:              # scale_in: pnl / low include the adds; qty stays the first entry's micros
         out.update(adds=add_out, pts=round(exit_px - entry, 4), w_pre=round(w_pre, 4), w1=round(worst, 4),
                    qty_total=q + sum(a["qty"] for a in add_out))
     if kind == "OPEN":
         out.update(exit_t=None, exit_i=10 ** 12)
+        if add_now is not None:          # live + scale_in: the add to route at market now, sized as the backtest sizes it
+            from engine.sizing import scale_in_qty
+            prev = [{"rk": a["rk"], "prev_rk": a["prev_rk"]} for a in adds]
+            qn = scale_in_qty(q, q, risk, prev + [{"rk": add_now["rk"], "prev_rk": add_now["prev_rk"]}], f=si.get("f", 1.0))[-1]
+            out["add_now"] = {"n": add_now["n"], "t": add_now["t"], "cisd_t": add_now["cisd_t"], "px": round(add_now["px_d"] * d, 2),
+                              "est": add_now["est"], "rk": round(add_now["rk"], 4), "prev_rk": [round(x, 4) for x in add_now["prev_rk"]],
+                              "dist": round(add_now["dist"], 4), "qty": int(qn), "f": si.get("f", 1.0)}
     return out
 
 
@@ -1056,11 +1082,15 @@ def scale_trade(t, m):
         pnl = t["pts"] * PV * q - cm * q + sum(a["qty"] * (a["pts"] * PV - cm) for a in A_)
         x.update(qty=q, adds=A_, qty_total=q + sum(a["qty"] for a in A_), pnl=round(pnl, 2), risk_usd=round(t["risk_usd"] * f, 2),
                  half=f < 1, mult=round(f, 3), low=round(min(t["low"] * f, pnl), 2))
+        if t.get("add_now"):
+            x["add_now"] = dict(t["add_now"], qty=int(t["add_now"]["qty"] * f + 1e-9))
         return x
     per = (t["pnl"] + cm * q0) / q0
     x = dict(t)
     x.update(qty=q, pnl=round(per * q - cm * q, 2), risk_usd=round(t["risk_usd"] * f, 2), half=f < 1, mult=round(f, 3),
              low=round(t["low"] * f, 2))
+    if t.get("add_now"):                 # live + scale_in, no fill yet: the add scales with the trade (rounded down, as above)
+        x["add_now"] = dict(t["add_now"], qty=int(t["add_now"]["qty"] * f + 1e-9))
     if "pnl_model" in t:                 # realistic-fill trades: the model's own P&L at the same size ($1.40 commission)
         x["pnl_model"] = round((t["pnl_model"] + COMM * q0) / q0 * q - COMM * q, 2)
     return x

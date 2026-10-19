@@ -1,0 +1,1223 @@
+{
+ "cand": {
+  "pb": 0.25,
+  "f": 1.0,
+  "rat_k": 1.0,
+  "min_rk": 2.0,
+  "n": 1
+ },
+ "rows": [
+  {
+   "day": "2026-01-05",
+   "dir": 1,
+   "qty": 3,
+   "routed_qty": 3,
+   "add_bt": [
+    3,
+    26370.5,
+    "09:12:00"
+   ],
+   "add_routed": [
+    3,
+    26370.5,
+    "09:12:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 6,
+   "bt_pnl": 1014.12,
+   "routed_pnl": 1014.12,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-01-06",
+   "dir": -1,
+   "qty": 26,
+   "routed_qty": 26,
+   "add_bt": [
+    14,
+    26410.25,
+    "02:51:00"
+   ],
+   "add_routed": [
+    14,
+    26410.25,
+    "02:51:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 40,
+   "bt_pnl": 7504.0,
+   "routed_pnl": 7504.0,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-01-07",
+   "dir": 1,
+   "qty": 16,
+   "routed_qty": 16,
+   "add_bt": [
+    10,
+    26545.5,
+    "07:11:00"
+   ],
+   "add_routed": [
+    10,
+    26545.5,
+    "07:11:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 26,
+   "bt_pnl": 942.6,
+   "routed_pnl": 942.6,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-01-09",
+   "dir": 1,
+   "qty": 3,
+   "routed_qty": 3,
+   "add_bt": [
+    2,
+    26512.75,
+    "07:03:00"
+   ],
+   "add_routed": [
+    2,
+    26512.75,
+    "07:03:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 5,
+   "bt_pnl": 275.5,
+   "routed_pnl": 275.5,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-01-21",
+   "dir": -1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    1,
+    25923.75,
+    "05:22:00"
+   ],
+   "add_routed": [
+    1,
+    25923.75,
+    "05:22:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 2,
+   "bt_pnl": 63.2,
+   "routed_pnl": 63.2,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-01-22",
+   "dir": -1,
+   "qty": 7,
+   "routed_qty": 7,
+   "add_bt": [
+    5,
+    26455.5,
+    "09:33:00"
+   ],
+   "add_routed": [
+    5,
+    26455.5,
+    "09:33:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 12,
+   "bt_pnl": 351.7,
+   "routed_pnl": 351.7,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-02-04",
+   "dir": -1,
+   "qty": 5,
+   "routed_qty": 5,
+   "add_bt": [
+    3,
+    26185.0,
+    "03:27:00"
+   ],
+   "add_routed": [
+    3,
+    26185.0,
+    "03:27:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 8,
+   "bt_pnl": 557.3,
+   "routed_pnl": 557.3,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-02-13",
+   "dir": -1,
+   "qty": 12,
+   "routed_qty": 12,
+   "add_bt": [
+    12,
+    25525.75,
+    "05:40:00"
+   ],
+   "add_routed": [
+    12,
+    25525.75,
+    "05:40:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 24,
+   "bt_pnl": 6398.4,
+   "routed_pnl": 6398.4,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-02-18",
+   "dir": -1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    1,
+    25600.25,
+    "09:12:00"
+   ],
+   "add_routed": [
+    1,
+    25600.25,
+    "09:12:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 2,
+   "bt_pnl": 104.7,
+   "routed_pnl": 104.7,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-02-20",
+   "dir": -1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    0,
+    25628.0,
+    "06:20:00"
+   ],
+   "add_routed": null,
+   "add_delay_s": null,
+   "n_add_routes": 0,
+   "exit": "BE",
+   "exit_qty": 1,
+   "bt_pnl": 133.6,
+   "routed_pnl": 133.6,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-03-16",
+   "dir": 1,
+   "qty": 3,
+   "routed_qty": 3,
+   "add_bt": [
+    3,
+    25334.5,
+    "06:40:00"
+   ],
+   "add_routed": [
+    3,
+    25334.5,
+    "06:40:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 6,
+   "bt_pnl": 1975.44,
+   "routed_pnl": 1975.44,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-03-17",
+   "dir": -1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    1,
+    25535.5,
+    "12:01:00"
+   ],
+   "add_routed": [
+    1,
+    25535.5,
+    "12:01:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 2,
+   "bt_pnl": -133.3,
+   "routed_pnl": -133.3,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-03-18",
+   "dir": -1,
+   "qty": 11,
+   "routed_qty": 11,
+   "add_bt": [
+    7,
+    25683.25,
+    "07:47:00"
+   ],
+   "add_routed": [
+    7,
+    25683.25,
+    "07:47:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 18,
+   "bt_pnl": 7057.3,
+   "routed_pnl": 7057.3,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-03-20",
+   "dir": 1,
+   "qty": 4,
+   "routed_qty": 4,
+   "add_bt": [
+    3,
+    24873.5,
+    "12:02:00"
+   ],
+   "add_routed": [
+    3,
+    24873.5,
+    "12:02:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 7,
+   "bt_pnl": -307.3,
+   "routed_pnl": -307.3,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-03-27",
+   "dir": -1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    0,
+    24353.25,
+    "04:28:00"
+   ],
+   "add_routed": null,
+   "add_delay_s": null,
+   "n_add_routes": 0,
+   "exit": "TARGET",
+   "exit_qty": 1,
+   "bt_pnl": 985.26,
+   "routed_pnl": 985.26,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-04-09",
+   "dir": -1,
+   "qty": 8,
+   "routed_qty": 8,
+   "add_bt": [
+    6,
+    25539.5,
+    "03:41:00"
+   ],
+   "add_routed": [
+    6,
+    25539.5,
+    "03:41:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 14,
+   "bt_pnl": -491.6,
+   "routed_pnl": -491.6,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-04-13",
+   "dir": 1,
+   "qty": 2,
+   "routed_qty": 2,
+   "add_bt": [
+    1,
+    25748.75,
+    "09:27:00"
+   ],
+   "add_routed": [
+    1,
+    25748.75,
+    "09:27:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 3,
+   "bt_pnl": 798.92,
+   "routed_pnl": 798.92,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-04-15",
+   "dir": 1,
+   "qty": 8,
+   "routed_qty": 8,
+   "add_bt": [
+    6,
+    26583.5,
+    "04:55:00"
+   ],
+   "add_routed": [
+    6,
+    26583.5,
+    "04:55:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 14,
+   "bt_pnl": -470.6,
+   "routed_pnl": -470.6,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-04-17",
+   "dir": 1,
+   "qty": 27,
+   "routed_qty": 27,
+   "add_bt": [
+    13,
+    27023.75,
+    "03:03:00"
+   ],
+   "add_routed": [
+    13,
+    27023.75,
+    "03:03:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 40,
+   "bt_pnl": 8730.0,
+   "routed_pnl": 8730.0,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-04-20",
+   "dir": 1,
+   "qty": 2,
+   "routed_qty": 2,
+   "add_bt": [
+    2,
+    27272.75,
+    "06:18:00"
+   ],
+   "add_routed": [
+    2,
+    27272.75,
+    "06:18:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 4,
+   "bt_pnl": 184.4,
+   "routed_pnl": 184.4,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-04-23",
+   "dir": -1,
+   "qty": 2,
+   "routed_qty": 2,
+   "add_bt": [
+    1,
+    27474.75,
+    "04:49:00"
+   ],
+   "add_routed": [
+    1,
+    27474.75,
+    "04:49:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 3,
+   "bt_pnl": -98.2,
+   "routed_pnl": -98.2,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-04-24",
+   "dir": -1,
+   "qty": 10,
+   "routed_qty": 10,
+   "add_bt": [
+    9,
+    27636.0,
+    "04:10:00"
+   ],
+   "add_routed": [
+    9,
+    27636.0,
+    "04:10:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 19,
+   "bt_pnl": -225.1,
+   "routed_pnl": -225.1,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-05-01",
+   "dir": 1,
+   "qty": 4,
+   "routed_qty": 4,
+   "add_bt": [
+    3,
+    28178.25,
+    "09:29:00"
+   ],
+   "add_routed": [
+    3,
+    28178.25,
+    "09:29:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "EOD",
+   "exit_qty": 7,
+   "bt_pnl": 3224.2,
+   "routed_pnl": 3224.2,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-05-04",
+   "dir": -1,
+   "qty": 5,
+   "routed_qty": 5,
+   "add_bt": [
+    4,
+    28435.5,
+    "03:01:00"
+   ],
+   "add_routed": [
+    4,
+    28435.5,
+    "03:01:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 9,
+   "bt_pnl": -347.1,
+   "routed_pnl": -347.1,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-05-14",
+   "dir": -1,
+   "qty": 3,
+   "routed_qty": 3,
+   "add_bt": [
+    2,
+    30117.25,
+    "04:03:00"
+   ],
+   "add_routed": [
+    2,
+    30117.25,
+    "04:03:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 5,
+   "bt_pnl": -176.5,
+   "routed_pnl": -176.5,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-05-19",
+   "dir": 1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    0,
+    29620.5,
+    "03:39:00"
+   ],
+   "add_routed": null,
+   "add_delay_s": null,
+   "n_add_routes": 0,
+   "exit": "BE",
+   "exit_qty": 1,
+   "bt_pnl": -1.9,
+   "routed_pnl": -1.9,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-05-22",
+   "dir": 1,
+   "qty": 3,
+   "routed_qty": 3,
+   "add_bt": [
+    2,
+    30182.25,
+    "04:18:00"
+   ],
+   "add_routed": [
+    2,
+    30182.25,
+    "04:18:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 5,
+   "bt_pnl": -229.5,
+   "routed_pnl": -229.5,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-05-26",
+   "dir": 1,
+   "qty": 8,
+   "routed_qty": 8,
+   "add_bt": [
+    7,
+    30355.5,
+    "04:52:00"
+   ],
+   "add_routed": [
+    7,
+    30355.5,
+    "04:52:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 15,
+   "bt_pnl": 6741.5,
+   "routed_pnl": 6741.5,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-05-27",
+   "dir": 1,
+   "qty": 2,
+   "routed_qty": 2,
+   "add_bt": [
+    1,
+    30733.75,
+    "05:11:00"
+   ],
+   "add_routed": [
+    1,
+    30733.75,
+    "05:11:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 3,
+   "bt_pnl": 1435.64,
+   "routed_pnl": 1435.64,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-05-28",
+   "dir": 1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    0,
+    30576.75,
+    "08:45:00"
+   ],
+   "add_routed": null,
+   "add_delay_s": null,
+   "n_add_routes": 0,
+   "exit": "BE",
+   "exit_qty": 1,
+   "bt_pnl": 163.1,
+   "routed_pnl": 163.1,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-05-29",
+   "dir": 1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    0,
+    30984.75,
+    "09:38:00"
+   ],
+   "add_routed": null,
+   "add_delay_s": null,
+   "n_add_routes": 0,
+   "exit": "BE",
+   "exit_qty": 1,
+   "bt_pnl": 189.6,
+   "routed_pnl": 189.6,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-06-03",
+   "dir": -1,
+   "qty": 4,
+   "routed_qty": 4,
+   "add_bt": [
+    3,
+    31258.75,
+    "08:40:00"
+   ],
+   "add_routed": [
+    3,
+    31258.75,
+    "08:40:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 7,
+   "bt_pnl": -310.3,
+   "routed_pnl": -310.3,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-06-04",
+   "dir": -1,
+   "qty": 4,
+   "routed_qty": 4,
+   "add_bt": [
+    3,
+    31000.75,
+    "04:08:00"
+   ],
+   "add_routed": [
+    3,
+    31000.75,
+    "04:08:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 7,
+   "bt_pnl": 3436.2,
+   "routed_pnl": 3436.2,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-06-19",
+   "dir": -1,
+   "qty": 14,
+   "routed_qty": 14,
+   "add_bt": [
+    12,
+    30951.25,
+    "12:59:00"
+   ],
+   "add_routed": [
+    12,
+    30951.25,
+    "12:59:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "EOD",
+   "exit_qty": 26,
+   "bt_pnl": 1120.6,
+   "routed_pnl": 1120.6,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-06-25",
+   "dir": -1,
+   "qty": 3,
+   "routed_qty": 3,
+   "add_bt": [
+    2,
+    30420.0,
+    "04:57:00"
+   ],
+   "add_routed": [
+    2,
+    30420.0,
+    "04:57:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 5,
+   "bt_pnl": -205.5,
+   "routed_pnl": -205.5,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-07-14",
+   "dir": -1,
+   "qty": 7,
+   "routed_qty": 7,
+   "add_bt": [
+    6,
+    29866.0,
+    "07:09:00"
+   ],
+   "add_routed": [
+    6,
+    29866.0,
+    "07:09:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 13,
+   "bt_pnl": -432.7,
+   "routed_pnl": -432.7,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-07-20",
+   "dir": 1,
+   "qty": 5,
+   "routed_qty": 5,
+   "add_bt": [
+    4,
+    29145.0,
+    "03:26:00"
+   ],
+   "add_routed": [
+    4,
+    29145.0,
+    "03:26:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 9,
+   "bt_pnl": 2280.9,
+   "routed_pnl": 2280.9,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-07-22",
+   "dir": -1,
+   "qty": 2,
+   "routed_qty": 2,
+   "add_bt": [
+    1,
+    29319.5,
+    "08:18:00"
+   ],
+   "add_routed": [
+    1,
+    29319.5,
+    "08:18:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 3,
+   "bt_pnl": 543.74,
+   "routed_pnl": 543.74,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-07-28",
+   "dir": 1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    0,
+    28304.75,
+    "04:35:00"
+   ],
+   "add_routed": null,
+   "add_delay_s": null,
+   "n_add_routes": 0,
+   "exit": "BE",
+   "exit_qty": 1,
+   "bt_pnl": -1.9,
+   "routed_pnl": -1.9,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-08-25",
+   "dir": 1,
+   "qty": 5,
+   "routed_qty": 5,
+   "add_bt": [
+    4,
+    29586.5,
+    "04:46:00"
+   ],
+   "add_routed": [
+    4,
+    29586.5,
+    "04:46:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 9,
+   "bt_pnl": 2455.4,
+   "routed_pnl": 2455.4,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-08-26",
+   "dir": 1,
+   "qty": 2,
+   "routed_qty": 2,
+   "add_bt": [
+    1,
+    29577.25,
+    "13:51:00"
+   ],
+   "add_routed": [
+    1,
+    29577.25,
+    "13:51:03"
+   ],
+   "add_delay_s": 3,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 3,
+   "bt_pnl": 234.3,
+   "routed_pnl": 234.3,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-09-01",
+   "dir": -1,
+   "qty": 2,
+   "routed_qty": 2,
+   "add_bt": [
+    1,
+    29741.5,
+    "03:57:00"
+   ],
+   "add_routed": [
+    1,
+    29741.5,
+    "03:57:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 3,
+   "bt_pnl": 1519.06,
+   "routed_pnl": 1519.06,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-09-07",
+   "dir": -1,
+   "qty": 8,
+   "routed_qty": 8,
+   "add_bt": [
+    7,
+    29880.75,
+    "11:19:00"
+   ],
+   "add_routed": [
+    7,
+    29880.75,
+    "11:19:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "EOD",
+   "exit_qty": 15,
+   "bt_pnl": -95.5,
+   "routed_pnl": -95.5,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-09-09",
+   "dir": -1,
+   "qty": 3,
+   "routed_qty": 3,
+   "add_bt": [
+    3,
+    29858.0,
+    "05:01:00"
+   ],
+   "add_routed": [
+    3,
+    29858.0,
+    "05:01:03"
+   ],
+   "add_delay_s": 3,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 6,
+   "bt_pnl": 2169.6,
+   "routed_pnl": 2169.6,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-09-18",
+   "dir": -1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    1,
+    29868.5,
+    "06:26:00"
+   ],
+   "add_routed": [
+    1,
+    29868.5,
+    "06:26:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "BE",
+   "exit_qty": 2,
+   "bt_pnl": 88.7,
+   "routed_pnl": 88.7,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-09-23",
+   "dir": -1,
+   "qty": 2,
+   "routed_qty": 2,
+   "add_bt": [
+    1,
+    30942.5,
+    "09:32:00"
+   ],
+   "add_routed": [
+    1,
+    30942.5,
+    "09:32:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 3,
+   "bt_pnl": 1658.22,
+   "routed_pnl": 1658.22,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-09-28",
+   "dir": 1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    0,
+    30737.75,
+    "09:33:00"
+   ],
+   "add_routed": null,
+   "add_delay_s": null,
+   "n_add_routes": 0,
+   "exit": "BE",
+   "exit_qty": 1,
+   "bt_pnl": -1.9,
+   "routed_pnl": -1.9,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-10-01",
+   "dir": -1,
+   "qty": 7,
+   "routed_qty": 7,
+   "add_bt": [
+    3,
+    31057.25,
+    "02:40:00"
+   ],
+   "add_routed": [
+    3,
+    31057.25,
+    "02:40:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 10,
+   "bt_pnl": 3277.0,
+   "routed_pnl": 3277.0,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-10-02",
+   "dir": 1,
+   "qty": 2,
+   "routed_qty": 2,
+   "add_bt": [
+    1,
+    30973.75,
+    "06:28:00"
+   ],
+   "add_routed": [
+    1,
+    30973.75,
+    "06:28:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 3,
+   "bt_pnl": 1000.0,
+   "routed_pnl": 1000.0,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-10-07",
+   "dir": 1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    0,
+    31307.25,
+    "11:17:00"
+   ],
+   "add_routed": null,
+   "add_delay_s": null,
+   "n_add_routes": 0,
+   "exit": "EOD",
+   "exit_qty": 1,
+   "bt_pnl": 358.6,
+   "routed_pnl": 358.6,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-10-13",
+   "dir": -1,
+   "qty": 11,
+   "routed_qty": 11,
+   "add_bt": [
+    8,
+    30714.0,
+    "06:53:00"
+   ],
+   "add_routed": [
+    8,
+    30714.0,
+    "06:53:02"
+   ],
+   "add_delay_s": 2,
+   "n_add_routes": 1,
+   "exit": "TARGET",
+   "exit_qty": 19,
+   "bt_pnl": 4937.9,
+   "routed_pnl": 4937.9,
+   "errors": [],
+   "ok": true
+  },
+  {
+   "day": "2026-10-14",
+   "dir": -1,
+   "qty": 1,
+   "routed_qty": 1,
+   "add_bt": [
+    0,
+    30623.5,
+    "08:34:00"
+   ],
+   "add_routed": null,
+   "add_delay_s": null,
+   "n_add_routes": 0,
+   "exit": "TARGET",
+   "exit_qty": 1,
+   "bt_pnl": 579.48,
+   "routed_pnl": 579.48,
+   "errors": [],
+   "ok": true
+  }
+ ]
+}

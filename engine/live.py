@@ -324,6 +324,7 @@ class LiveBot:
         self._last_bars = {}             # time -> (o,h,l,c) of the last closed bars seen (revision detector)
         self._open_routed = None         # entry_t of the entry we routed and still believe is open
         self._open_qty = None
+        self._open_adds = []             # LIT scale_in: adds routed to the open position [{"entry_t", "n", "qty", "px", "t"}]
         self._blocked_entries = set()    # entry_t of engine entries we deliberately did not route
         self._flattened = set()          # entry_t of positions the clock-based safety flatten already closed
         self._restored = None
@@ -609,6 +610,7 @@ class LiveBot:
         if self.state and self.state.get("position"):
             pos = self.state["position"]
             qty = self._open_qty if self._open_routed == pos.get("entry_t") and self._open_qty else pos.get("qty")
+            qty = int(qty or 0) + self._adds_qty(pos.get("entry_t"))
             self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "qty": qty, "reason": "KILL SWITCH",
                          "entry_t": pos.get("entry_t")})
             self._flattened.add(pos.get("entry_t"))
@@ -683,6 +685,101 @@ class LiveBot:
         self._route({"sym": sym, "side": "modify", "qty": self._open_qty or pos.get("qty"), "stop": new, "reason": reason,
                      "entry_t": et_})
 
+    # ------------------------------------------------------------------ LIT scale-in (engine/lit.py "scale_in", default off)
+    def _adds_qty(self, entry_t) -> int:
+        """Micros of the scale-in adds routed to the position of entry_t (0 without adds)."""
+        return sum(int(a.get("qty") or 0) for a in self._open_adds if a.get("entry_t") == entry_t)
+
+    def _routed_pnl(self, tr, qty):
+        """$ P&L of a finished trade at the routed size: the first entry's qty, plus every scale-in add routed to it at its
+        own price (the model's add qty may differ from the routed one: the eval caps size the routed adds)."""
+        adds = [a for a in self._open_adds if a.get("entry_t") == tr["entry_t"]]
+        if not tr.get("adds") and not adds:
+            return round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"]
+        from . import lit as _lit
+        d = 1 if tr.get("dir", 1) == 1 else -1
+        xp = float(tr["exit_price"])
+        pts = float(tr["pts"]) if tr.get("pts") is not None else d * (xp - float(tr["entry"]))
+        pnl = qty * (pts * _lit.PV - _lit.COMM)
+        for a in adds:
+            pnl += int(a["qty"]) * (d * (xp - float(a["px"])) * _lit.PV - _lit.COMM)
+        return round(pnl, 2)
+
+    def _add_qty(self, pos, an) -> int:
+        """Micros for a scale-in add, as the backtest sizes it.
+        Normal mode (the LIT rule, no eval caps): the model's add (engine/lit.py simulate_x + scale_trade, i.e. what run_x
+        books) at the routed size: int(model add x routed micros / model micros), = the model's add when the bot routes the
+        model's size. Eval modes (two_week / eval / safe_eval, as the research eval path tools/lit_big_ideas.py sizes them):
+        engine/sizing.scale_in_qty at the ROUTED size: the add's open risk inside the first entry's $ risk, 60% of the room
+        to the trailing floor and the $1,000 soft daily loss left today. The whole position at most max_micros.
+        Fails closed (0) in an eval mode."""
+        from . import sizing as _sz
+        lsz = getattr(self, "_lit_sizing", None) or {}
+        mode = str(lsz.get("mode") or "")
+        try:
+            si = ((self.state or {}).get("strategy") or {}).get("params", {}).get("scale_in") or {}
+            q0 = int(self._open_qty or pos.get("qty") or 0)
+            maxq = min(40, int((self.cfg.get("params") or {}).get("max_micros") or 40))
+            if mode not in ("two_week", "eval", "safe_eval", "funded"):
+                qm = int(pos.get("qty") or 0)
+                n = int(int(an.get("qty") or 0) * q0 / qm + 1e-9) if qm else 0
+                return max(0, min(n, maxq - q0 - self._adds_qty(pos.get("entry_t"))))
+            state = None
+            if mode in ("two_week", "eval", "safe_eval"):
+                st = self.eval_state() or {}
+                state = {"room": self.eval_room(), "cum": float(st.get("cum", self.day_pnl_routed()) or 0.0)}
+            prev = [{"rk": float(a["rk"]), "prev_rk": list(a.get("prev_rk") or [])} for a in (pos.get("adds") or [])][:int(an["n"]) - 1]
+            qa = _sz.scale_in_qty(q0, q0, float(pos["risk_pts"]), prev + [{"rk": float(an["rk"]), "prev_rk": list(an.get("prev_rk") or [])}],
+                                  f=si.get("f", an.get("f", 1.0)), state=state, max_micros=maxq)
+            return int(qa[-1])
+        except Exception as e:
+            self._note_error(f"scale-in sizing failed ({mode or 'normal'}): {e.__class__.__name__}: {e}")
+            return 0
+
+    def _route_add(self, pos, sym):
+        """LIT scale_in: the model decided an add on the close of its 1m CISD candle (position "add_now"): route it at market
+        at once, exactly once (the backtest fills it at the next 1m open + 1 tick). The stop and target then cover the whole
+        position (NinjaTrader: the bracket's quantity grows, engine/ninjatrader.py add_to_position). An add the model filled
+        before this process saw its decision is never chased."""
+        et_ = pos.get("entry_t")
+        for i, a in enumerate(pos.get("adds") or []):
+            key = ("add", et_, i + 1)
+            if key not in self.seen:
+                self.seen.add(key)
+                self._log("risk", f"Scale-in add {i + 1} at {_et(int(a['t'])):%H:%M} ET NOT routed: seen after its fill bar - not chasing")
+        routed_n = {int(a["n"]) for a in self._open_adds if a.get("entry_t") == et_}
+        if len(pos.get("adds") or []) < max(routed_n or {0}) and not pos.get("add_now") and not getattr(self, "_add_warned", None) == et_:
+            self._add_warned = et_
+            self._log("warn", f"Scale-in: an add was routed for the {_et(et_):%H:%M} ET entry but the model's trade has none once its "
+                              "fill bar closed (priced from an estimate); the broker keeps it under the same stop/target")
+        an = pos.get("add_now")
+        if not an:
+            return
+        key = ("add", et_, int(an["n"]))
+        if key in self.seen:
+            return
+        self.seen.add(key)
+        if not (self.cfg.get("adapter") == "paper" or getattr(self.adapter, "route_adds", False)):
+            self._log("risk", f"Scale-in add NOT routed: adapter {self.cfg.get('adapter')} cannot add to a position")
+            return
+        if self.health.get("entries_blocked"):
+            self._log("risk", f"Scale-in add at {_et(int(an['t'])):%H:%M} ET NOT routed: feed stale")
+            return
+        q = self._add_qty(pos, an)
+        if q < 1:
+            self._log("risk", f"Scale-in add at {_et(int(an['t'])):%H:%M} ET skipped: 0 micros inside the risk budget / eval caps")
+            return
+        d = 1 if pos.get("dir", 1) == 1 else -1
+        self._log("system", f"LIT scale-in: CISD closed at {_et(int(an['cisd_t'])):%H:%M} ET, MARKET add of {q} sent at once "
+                            f"({int(self.clock()) - int(an['t'])} s after the close)" + ("; priced from the CISD close" if an.get("est") else ""))
+        rr = self._route({"sym": sym, "side": "add", "qty": q, "dir": d, "stop": tick_px(pos.get("stop"), d),
+                          "target": tick_px(pos.get("target"), d, target=True), "entry": an["px"], "entry_t": et_,
+                          "n": int(an["n"]), "add_t": int(an["t"])})
+        if rr.get("ok") or rr.get("pending"):
+            self._open_adds.append({"entry_t": et_, "n": int(an["n"]), "qty": q, "px": float(an["px"]), "t": int(an["t"]),
+                                    "est": bool(an.get("est"))})
+            self._save_state()
+
     def _learn_es(self, sym, tf, now, secs):
         """ES 5m bars for the learning loop's ES features, fetched at most every 5 minutes; None when unavailable."""
         if self.state_path != STATE_PATH:      # test harnesses: no extra feed (the ES features are then unknown)
@@ -745,7 +842,8 @@ class LiveBot:
         return {"version": STATE_VERSION, "saved_at": int(self.clock()), "day": trading_day(self.clock()),
                 "sym": self.cfg.get("sym"), "tf": self.cfg.get("tf"), "adapter": self.cfg.get("adapter"),
                 "started_at": self.started_at, "kill": self.kill, "eod_sent": self._eod_sent, "guard_key": self._guard_key,
-                "open_routed": self._open_routed, "open_qty": self._open_qty, "blocked_entries": sorted(self._blocked_entries),
+                "open_routed": self._open_routed, "open_qty": self._open_qty, "open_adds": self._open_adds,
+                "blocked_entries": sorted(self._blocked_entries),
                 "flattened": sorted(self._flattened), "provisional": {str(k): v for k, v in self._provisional.items()},
                 "seen": [list(k) for k in list(self.seen)[-2000:]], "ledger": self.ledger[-300:],
                 "week_exits": self.lit_week_hist() if self.cfg else [], "eval_days": self.eval_days() if self.cfg else {},
@@ -789,6 +887,7 @@ class LiveBot:
         self._guard_key = s.get("guard_key")
         self._open_routed = s.get("open_routed")
         self._open_qty = s.get("open_qty")
+        self._open_adds = [a for a in (s.get("open_adds") or []) if isinstance(a, dict)]
         self._blocked_entries = set(s.get("blocked_entries") or [])
         self._flattened = set(s.get("flattened") or [])
         self._provisional = {int(k): v for k, v in (s.get("provisional") or {}).items()}
@@ -1255,8 +1354,8 @@ class LiveBot:
             self._log("risk", f"SAFETY FLATTEN: {e:%H:%M} ET is past flat time {flat_mod // 60:02d}:{flat_mod % 60:02d} and the model still shows "
                               f"the position (feed age {self.health.get('data_age_s')}s) - flattening from the clock")
             self._flattened.add(self._open_routed)
-            self._route({"sym": sym, "side": "exit", "qty": self._open_qty or pos.get("qty"), "reason": "TIME SAFETY",
-                         "entry_t": self._open_routed})
+            self._route({"sym": sym, "side": "exit", "qty": int(self._open_qty or pos.get("qty") or 0) + self._adds_qty(self._open_routed),
+                         "reason": "TIME SAFETY", "entry_t": self._open_routed})
             self._open_routed = None
         ent = pos or en
         if ent and ent["entry_t"] >= start - secs and ("entry", ent["entry_t"]) not in self.seen:
@@ -1273,6 +1372,7 @@ class LiveBot:
             else:
                 self._open_routed = ent["entry_t"]
                 self._open_qty = q
+                self._open_adds = []
                 d = 1 if ent["dir"] == 1 else -1
                 if ent is en:
                     self._provisional[int(en["entry_t"])] = {"qty": q, "model_qty": int(en["qty"]), "dir": d, "est": bool(en.get("est")),
@@ -1286,6 +1386,8 @@ class LiveBot:
                 self._push_fill(ent, q, sym, rr)
         if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._route_stop_move(pos, sym)
+        if pos and self._open_routed == pos.get("entry_t") and (pos.get("add_now") or pos.get("adds")):
+            self._route_add(pos, sym)
         for tr in res["trades"]:
             if tr["exit_t"] >= start - secs and ("exit", tr["entry_t"]) not in self.seen:
                 self.seen.add(("exit", tr["entry_t"]))
@@ -1310,11 +1412,12 @@ class LiveBot:
                 if self._open_routed == tr["entry_t"]:
                     self._open_routed = None
                     qty = self._open_qty or tr["qty"]          # what we actually routed (half size in a cold streak)
+                pnl_x = self._routed_pnl(tr, qty)
+                q_add = self._adds_qty(tr["entry_t"])          # LIT scale_in: the adds routed to this position
                 if self.cfg["adapter"] == "paper" or tr["exit_reason"] == "TIME" or getattr(self.adapter, "route_all_exits", False):
                     # brackets handle stop/target at the broker; the bot only flattens on time exits (adapters with
                     # route_all_exits also get TIME STOP / giveback / news exits, and a harmless sync flatten after a bracket fill)
-                    self._route({"sym": sym, "side": "exit", "qty": qty, "reason": tr["exit_reason"],
-                                 "pnl": round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"],
+                    self._route({"sym": sym, "side": "exit", "qty": qty + q_add, "reason": tr["exit_reason"], "pnl": pnl_x,
                                  "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})
                 if routed:
                     self._remember(tr, sym)      # every completed routed trade feeds the persistent memory

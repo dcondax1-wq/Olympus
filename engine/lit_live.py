@@ -287,6 +287,8 @@ def _trade(t):
             "swept": _sweep_names(t.get("swept")), "sweep_ext": t.get("sweep_ext"), "tf": f"{t.get('tf', 5)}m",
             "mfe": t.get("mfe"), "bars_held": t.get("bars_held"), "entry_kind": "limit" if t.get("limit_fill") else "1m CISD",
             "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+            **({"adds": t["adds"], "pts": t.get("pts"), "qty_total": t.get("qty_total")} if t.get("adds") else {}),
+            **({"exit_now": True} if t.get("exit_now") else {}),
             **({"mae": t.get("mae"), "learn": t["learn"], "post": t.get("post")} if t.get("learn") else {})}
 
 
@@ -382,7 +384,11 @@ def _close_at_session_end(t):
     d, q = int(t["dir"]), int(t["qty"])
     exit_px = float(t["exit_px"]) - d * lit.SLIP
     pnl = (d * (exit_px - float(t["entry_px"])) * lit.PV - lit.COMM) * q
+    pnl += sum((d * (exit_px - float(a["px"])) * lit.PV - lit.COMM) * int(a["qty"]) for a in (t.get("adds") or []))   # scale_in
     x = dict(t)
+    if t.get("adds"):                    # scale_in: the points of the entry and of each add at the session-end price
+        x["pts"] = round(d * (exit_px - float(t["entry_px"])), 4)
+        x["adds"] = [dict(a, pts=round(d * (exit_px - float(a["px"])), 4)) for a in t["adds"]]
     x.update(exit="EOD", exit_px=round(exit_px, 2), pnl=round(pnl, 2), r=round(pnl / (float(t["risk_pts"]) * lit.PV * q), 3),
              exit_t=int(t["last_t"]) + 60 * int(t.get("tf", 5)))
     return x
@@ -431,6 +437,8 @@ def _shape(M, R, P, now, B1):
                         "trigger": "LIT", "risk_pts": float(t["risk_pts"]), "be": bool(t.get("be_done")),
                         "unrealized": float(t["pnl"]), "unrealized_r": float(t["r"]), "target_label": t.get("target_label"),
                         "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+                        **({"adds": t["adds"]} if t.get("adds") else {}),
+                        **({"add_now": t["add_now"]} if t.get("add_now") else {}),
                         **({"learn": t["learn"]} if t.get("learn") else {})}
             continue
         tr = _trade(t)
