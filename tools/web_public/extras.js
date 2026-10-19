@@ -286,7 +286,7 @@
     ['pc', 'PC on, plugged in, awake by 01:55 ET', 'Most LIT trades enter 02:00–08:00 ET. Sleep or hibernate settings off.'],
     ['nt', 'NinjaTrader open and connected', 'Control Center: the Tradovate connection is green. Accounts tab shows the eval account.'],
     ['ati', 'Automated Trading Interface on', 'Control Center > Tools > Options > Automated trading interface > AT Interface ticked.'],
-    ['feed', 'LE_BarFeed chart open on MNQ', 'It writes le_feed\\MNQ_1m.csv; the bot falls back to Yahoo (slower) when it is stale.'],
+    ['feed', 'LE_BarFeed chart open on MNQ', 'It writes le_feed\\MNQ_1m.csv; without fresh bars the bot opens no new trade (FEED STALE; no Yahoo).'],
     ['bot', 'The bot is running and says ready', 'Dashboard log: "NinjaTrader adapter: account …, ready". The Accounts page shows the account.'],
     ['news', 'Looked at today’s news', 'Red USD events (CPI, NFP, FOMC) move NQ hard. MFFU allows news trading on Builder.'],
     ['push', 'Phone notifications on', 'Settings > Notifications: one notice for every entry and result.'],
@@ -300,7 +300,7 @@
       ['Cloud paper bot', age == null ? 'no run yet' : `last run ${ago(lv.last_run)}`, age == null ? 'bad' : mkt ? (age < 45 * 60 ? 'good' : age < 90 * 60 ? 'warn' : 'bad') : 'good',
         mkt ? 'Runs every 30 min 02:00–16:25 ET on market days (GitHub Actions).' : 'Outside market hours the cloud bot sleeps; that is normal.'],
       ['Price feed', H.error ? 'error' : H.stale ? `stale · last bar ${esc(H.last_bar || '')}` : `last bar ${esc(H.last_bar || '—')}${ok(H.age_min) ? ` (${num(H.age_min, 0)} min)` : ''}`,
-        H.error ? 'bad' : H.stale && mkt ? 'warn' : 'good', `Yahoo NQ=F for the cloud bot; ${H.bars_today ?? '—'} bars today${(H.gaps_today || []).length ? `, ${H.gaps_today.length} gaps` : ''}.`],
+        H.error ? 'bad' : (H.stale || H.waiting) && mkt ? 'warn' : 'good', `${H.waiting ? esc(H.waiting) + '. ' : ''}${H.source === 'yahoo' ? 'Yahoo NQ=F' : "The PC's NinjaTrader bars (no Yahoo)"} for the cloud bot; ${H.bars_today ?? '—'} bars today${(H.gaps_today || []).length ? `, ${H.gaps_today.length} gaps` : ''}.`],
       ['PC bot heartbeat', pc.present ? (pc.silent ? 'silent' : `reporting${ok(pc.age_s) ? ` · ${Math.round(pc.age_s / 60)} min ago` : ''}`) : 'not reporting',
         pc.present ? (pc.silent ? 'bad' : 'good') : mkt ? 'warn' : '', pc.present ? `${esc(pc.adapter || '')} ${esc(pc.host || '')}` : `The PC bot sends a heartbeat when LE_HEARTBEAT=1 (${esc(pc.reason || 'none')}).`],
       ['Phone notifications', push.configured ? `${push.devices ?? 0} device${push.devices === 1 ? '' : 's'}` : 'off', push.configured && push.devices ? 'good' : 'warn',
@@ -325,7 +325,7 @@
         <div><span><code>fill not reported yet</code></span><b>stop and target go in at the next poll; cancelled after 45 s</b></div>
         <div><span><code>… REJECTED …: flattening</code></span><b>stop or target refused: position closed, read the Log tab</b></div>
         <div><span><code>FLATTEN NOT CONFIRMED</code></span><b>look at NinjaTrader now; the bot retries every 30 s</b></div>
-        <div><span><code>falling back to Yahoo</code></span><b>LE_BarFeed chart closed or disconnected</b></div></div></div>
+        <div><span><code>FEED STALE: NinjaTrader …</code></span><b>LE_BarFeed chart closed or disconnected: no new trade until it is back</b></div></div></div>
       <div class="card lex-kill"><div class="card-h"><h3>Stop or kill</h3></div><ol>
         <li><b>Stop</b> (no new trades): dashboard <b>Stop</b>. An open trade keeps its stop and target; the bot no longer moves the stop.</li>
         <li><b>Kill</b>: dashboard <b>HOLD TO KILL</b>, or NinjaTrader right-click &gt; <b>Flatten Everything</b>. It flattens every account connected in NinjaTrader.</li>

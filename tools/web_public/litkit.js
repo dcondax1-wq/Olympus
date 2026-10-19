@@ -446,7 +446,7 @@ export function ready(C) {
   const h = C.health || {}, pc = C.pc || {}, ev = cockpit(C), news = newsToday(C).filter((e) => e.impact === 'high');
   const age = C.last_run ? C.now - C.last_run : null;
   add(age == null ? 'bad' : age < 40 * 60 || C.closed ? 'ok' : 'warn', C.src === 'pc' ? 'Paper bot (this PC)' : 'Cloud paper bot', age == null ? 'no run yet' : `last run ${cd(age)} ago${C.closed ? ' (market closed)' : ''}`);
-  add(h.error ? 'bad' : h.stale ? 'warn' : 'ok', 'Price feed', h.error ? String(h.error) : h.stale ? `stale · last bar ${h.last_bar || '?'}` : `fresh · last bar ${h.last_bar || '—'}${C.src === 'pc' ? '' : ' (Yahoo NQ=F)'}`);
+  add(h.error ? 'bad' : h.stale ? 'warn' : 'ok', 'Price feed', h.error ? String(h.error) : h.stale ? `stale · last bar ${h.last_bar || '?'}` : `fresh · last bar ${h.last_bar || '—'}${C.src === 'pc' ? '' : h.source === 'yahoo' ? ' (Yahoo NQ=F)' : ' (PC NinjaTrader bars)'}`);
   add(pc.present ? (pc.silent ? 'bad' : pc.running === false ? 'warn' : 'ok') : 'warn', 'PC bot + NinjaTrader', pc.present ? (pc.silent ? `silent for ${cd(pc.age_s || 0)}` : `${pc.adapter || 'paper'} · ${pc.running === false ? 'stopped' : 'running'}`)
     : 'no heartbeat: start the PC by 01:55 ET (most LIT entries come 02:00-08:00)');
   add(C.lit?.one_min_day === false ? 'warn' : 'ok', '1-minute bars', C.lit?.one_min_day === false ? 'today runs on 5m bars only (fewer, worse fills)' : 'LIT enters on a 1m CISD');

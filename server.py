@@ -339,6 +339,10 @@ async def api_opt(req: Request):
 def api_refresh():
     if _refresh["running"]:
         return J({"ok": False, "error": "refresh already running"})
+    from engine import pcbars
+    if pcbars.no_yahoo():               # data/fetch.py appends Yahoo bars to data/*.csv: off with no_yahoo (owner 2026-10-19)
+        return J({"ok": False, "error": "no Yahoo (live_model.json no_yahoo): refresh the history with the TradingView export "
+                                        "(tools/grab_tv_export.py); NinjaTrader's bars come in by themselves"})
 
     def work():
         _refresh.update(running=True, log="")

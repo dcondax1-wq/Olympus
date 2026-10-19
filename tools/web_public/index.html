@@ -1897,7 +1897,7 @@ function armedLine() {
   if (!a || !a.text || lv.position) return '';
   if (ok(a.until_t) && a.until_t > 0 && Date.now() / 1000 > a.until_t) return '';
   const k = ARM_KIND[a.kind] || [String(a.kind || 'setup').toUpperCase(), ''], lag = lv.watch?.yahoo_lag_1m_s;
-  const sub = [lag && ok(lag.median) ? `Yahoo 1m lag ~${Math.round(lag.median)} s (median of ${lag.n})` : '', 'paper only'].filter(Boolean).join(' · ');
+  const sub = [lag && ok(lag.median) ? `feed 1m lag ~${Math.round(lag.median)} s (median of ${lag.n})` : '', 'paper only'].filter(Boolean).join(' · ');
   return `<div class="armline ${a.side === 'LONG' ? 'L' : a.side === 'SHORT' ? 'S' : ''}"><span class="badge ${k[1]}">${esc(k[0])}</span><span class="al-m">${esc(a.text)}<span class="al-s">${esc(sub)}</span></span></div>`;
 }
 function evalMini(ev) {

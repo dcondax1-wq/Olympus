@@ -365,9 +365,17 @@ class LiveBot:
         if not os.path.exists(path):
             df = pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume"])
         else:
-            df = pd.read_csv(path)
-            # same hygiene as engine.data.load(): weekend/maintenance junk bars never reach the live engine either
-            df = df[~((df["high"] == df["low"]) & (df["volume"] <= 0))]
+            st_ = os.stat(path)
+            hit = getattr(self, "_hist_cache", {}).get(path)
+            if hit and hit[0] == (st_.st_mtime_ns, st_.st_size):
+                df = hit[1]                              # the export only changes when the owner refreshes it
+            else:
+                df = pd.read_csv(path)
+                # same hygiene as engine.data.load(): weekend/maintenance junk bars never reach the live engine either
+                df = df[~((df["high"] == df["low"]) & (df["volume"] <= 0))]
+                if self.no_yahoo:
+                    df = pcbars.tidy(df)
+                    self._hist_cache = {**getattr(self, "_hist_cache", {}), path: ((st_.st_mtime_ns, st_.st_size), df)}
         if self.no_yahoo and tf in ("1m", "5m"):
             # TradingView export + the bot's own NinjaTrader archive (bridges the export's end once LE_BarFeed's 30 days move on)
             arc = self._archive(sym, tf)
@@ -934,7 +942,8 @@ class LiveBot:
         return self.state
 
     def _lit_1m(self, sym, now, t_min):
-        """1m bars for LIT's entry (stored data/<sym>_1m.csv + fresh 1m, Yahoo caps 1m at 7 days). Never raises and never
+        """1m bars for LIT's entry (stored data/<sym>_1m.csv + the NinjaTrader archive + NinjaTrader's 1m file; with no_yahoo
+        off: + Yahoo 1m, capped at 7 days). Never raises and never
         changes the feed-health flags of the bot's own 5m feed; None = LIT executes that day on 5m bars."""
         keep = {k: self.health.get(k) for k in ("fallback", "fetch_ok", "last_error", "last_error_t")}
         try:

@@ -80,10 +80,21 @@ def _empty() -> pd.DataFrame:
     return pd.DataFrame(columns=COLS)
 
 
+def _is_tidy(df) -> bool:
+    try:
+        return list(df.columns) == COLS and df["time"].dtype == "int64" and all(df[c].dtype == "float64" for c in COLS[1:]) \
+            and df["time"].is_monotonic_increasing and df["time"].is_unique and not df[COLS[1:5]].isna().to_numpy().any()
+    except Exception:
+        return False
+
+
 def tidy(df) -> pd.DataFrame:
-    """time int64 (bar open, unix s), float OHLCV, de-duplicated (last wins), sorted. Bad rows dropped."""
+    """time int64 (bar open, unix s), float OHLCV, de-duplicated (last wins), sorted. Bad rows dropped. A frame that is
+    already tidy is returned as it is (no copy)."""
     if df is None or not len(df):
         return _empty()
+    if _is_tidy(df):
+        return df
     df = df[[c for c in COLS if c in df.columns]].copy()
     if "volume" not in df.columns:
         df["volume"] = 0.0

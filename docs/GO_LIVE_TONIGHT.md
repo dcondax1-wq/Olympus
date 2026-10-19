@@ -3,6 +3,21 @@
 You switch it on yourself. Claude gets everything ready but never arms a real account.
 Do the Sim test first; only go to the eval when the Sim test is clean.
 
+## No Yahoo (update 2026-10-19): do this on the Surface now
+The bot no longer uses Yahoo anywhere (`"no_yahoo": true` in `live_model.json`). It trades only on NinjaTrader's MNQ bars
+plus the TradingView history in `data/`, and the cloud paper bot trades on the bars your PC sends it.
+1. Stop the bot: `powershell -ExecutionPolicy Bypass -File scripts\stop_bot.ps1`.
+2. `git pull`
+3. Start it again: `powershell -ExecutionPolicy Bypass -File scripts\run_bot.ps1`, then the same `--start` command you use
+   (step 8 for Sim, step 11 for the eval). The Live page log shows `data=ninjatrader (no Yahoo)`.
+4. Within ~5 minutes the cloud README's Feed line says `OK ... (PC NinjaTrader bars, no Yahoo)` instead of
+   `WAITING - waiting for NinjaTrader bars from the PC`.
+What changes for you:
+- If NinjaTrader's chart stops writing bars (closed, disconnected), the bot opens **no new trade** and the phone says
+  **FEED STALE**. An open trade keeps its stop and target at the broker. Fix NinjaTrader and it trades again by itself.
+- The cloud paper bot needs the PC's bars: with the PC off it waits and takes no paper trades.
+- Keep the NinjaTrader chart at **30 days loaded**. The bot also keeps its own copy of every bar (`data\nt_bars\`).
+
 ## Before you start (once)
 1. **Merge the PR** Claude sends (GitHub app, "Merge"). The cloud app and the phone notifications run from main.
 2. On the Surface, run the Claude task **"Set up the NQ LIT paper bot on this Surface"** if it isn't done yet
@@ -28,7 +43,7 @@ Do the Sim test first; only go to the eval when the Sim test is clean.
    in the bot folder.
 6. `python -m engine.ninjatrader --selftest` → it must say PASS.
 7. `python -m engine.ninjatrader --status` → `Bar feed 5m` and `Bar feed 1m` lines with a `last open` a few minutes
-   ago (that is `MNQ_5m.csv` and `MNQ_1m.csv`; not `NOT USABLE`); then
+   ago (that is `MNQ_5m.csv` and `MNQ_1m.csv`; not `NOT USABLE`: with no Yahoo the bot takes no trade without them); then
    `python -m engine.ninjatrader --sim-check` → OK; then
    `python -m engine.ninjatrader --sim-roundtrip` → three `OK` lines and `FLAT`
    (if only the close fails, retry with `--close-suffix " Globex"` and add that to step 11).

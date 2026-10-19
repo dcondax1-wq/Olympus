@@ -89,7 +89,7 @@ function stepper(h) {
     return `<span role="listitem" class="${on ? 'on' : done ? 'done' : ''}" title="${esc(lab)}"><i></i><em>${esc(lab)}</em></span>`; }).join('')}</div>`;
 }
 function feedLine(h, now) {
-  const f = h?.feed || {}, src = f.used === 'ninjatrader' ? 'NinjaTrader' : f.source === 'ninjatrader' ? 'Yahoo (NinjaTrader missing)' : 'Yahoo';
+  const f = h?.feed || {}, src = f.used === 'ninjatrader' ? 'NinjaTrader' : f.no_yahoo ? 'NinjaTrader (stale: no new trades)' : f.source === 'ninjatrader' ? 'Yahoo (NinjaTrader missing)' : 'Yahoo';
   const age = ok(f.age_1m_s) ? f.age_1m_s : f.age_5m_s, tf = ok(f.age_1m_s) ? '1m' : '5m';
   const at = ok(h?.t) ? now - h.t : 0;
   return { src, tf, age: ok(age) ? age + at : null, bad: f.stale || f.fallback };
@@ -160,7 +160,7 @@ function mountChart(TC, box, t, D, live) {
     const rec = chartRec(TC, t, D, live);
     TC.mount(box, rec, { tf: rec._bars1.length && covers(b1, t.entry_t) ? '1m' : '5m' });
     const h2 = box.querySelector('.tc-h2');
-    if (h2 && live) h2.textContent = `entry ${num(t.entry)} · stop now ${num(t.stop_now)} (first ${num(t.stop)}) · target ${num(t.target)} · breakeven ${num(t.entry)} · price ${num(t.px)} · cloud bars (Yahoo NQ=F), NinjaTrader fills`;
+    if (h2 && live) h2.textContent = `entry ${num(t.entry)} · stop now ${num(t.stop_now)} (first ${num(t.stop)}) · target ${num(t.target)} · breakeven ${num(t.entry)} · price ${num(t.px)} · cloud bars (the PC's NinjaTrader bars), NinjaTrader fills`;
   } catch (e) { console.warn('live chart', e); box.innerHTML = '<div class="lp-note">The chart could not be drawn.</div>'; }
 }
 export function mount(el, D, { where = 'today', loadTC = null } = {}) {

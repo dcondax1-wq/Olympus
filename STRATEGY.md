@@ -168,10 +168,15 @@ Same months, old strategy: 2026 PF 3.94, +$20,487 (H1 +$4,919, H2 +$15,568), max
   +$26.9k to +$44.3k); 2 extra ticks of slippage still leave +$38.2k.
 
 **Live loop (paper):** the PC bot (`engine/live.py`) and the cloud monitor (`tools/cloud_monitor.py`) run `engine/lit_live.py` on
-the bars from the first day of the previous month on, plus 1m bars (stored `data/NQ_1m.csv` + Yahoo `NQ=F` 1m, 7 days).
+the bars from the first day of the previous month on, plus 1m bars. **No Yahoo (owner 2026-10-19):** the bars are the
+TradingView exports (`data/NQ_5m.csv`, `data/NQ_1m.csv`) + NinjaTrader's MNQ bars (LE_BarFeed on the PC, kept in the PC's
+archive `data/nt_bars/`); the cloud monitor trades on the bars the PC pushes with its heartbeat (`engine/pcbars.py`). VIX for
+the target band comes from CBOE's own daily file. A stale NinjaTrader feed blocks new entries (FEED STALE) instead of
+falling back to another source; with the PC's bars missing the cloud paper bot takes no new entries ("waiting for
+NinjaTrader bars from the PC"). The rules, the size and the orders are unchanged.
 `tests/test_lit_live.py` replays every 2026 session through it (with the loss pack) and gets the backtest's trades. The cloud monitor runs every
-30 minutes from 02:00 to 16:25 ET, so its alerts can be up to ~30 minutes late (plus Yahoo's delay); its paper ledger still
-records every trade at the model's prices.
+30 minutes from 02:00 to 16:25 ET (plus the fast-entry watcher while a setup is armed), and its bars are up to ~5 minutes
+behind the PC's (1 minute while a setup is armed); its paper ledger still records every trade at the model's prices.
 
 ## Previous strategy (shadow): Liquidity Engine, eval mode
 

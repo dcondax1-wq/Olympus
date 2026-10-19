@@ -1447,7 +1447,7 @@ def main(argv=None):
     ap.add_argument("--kill", action="store_true", help="kill switch: server kill, or FLATTENEVERYTHING directly when the server is down")
     ap.add_argument("--account", default=None, help="NinjaTrader account name (Accounts tab 'Name'), default Sim101")
     ap.add_argument("--folder", default=None, help="Documents\\NinjaTrader 8 folder if not the default")
-    ap.add_argument("--data", default="ninjatrader", choices=["ninjatrader", "yahoo"], help="bar source for --start")
+    ap.add_argument("--data", default="ninjatrader", choices=["ninjatrader", "yahoo"], help="bar source for --start (no_yahoo on, the default in live_model.json: always ninjatrader)")
     ap.add_argument("--confirm", default="", help=f"LIVE accounts only: the phrase '{LIVE_PHRASE}'")
     ap.add_argument("--instrument", default=None, help="force the instrument name, e.g. 'MNQ 12-26'")
     ap.add_argument("--contract", default=None, choices=["micro", "auto"], help="micro = MNQ only (default); auto = 10+ micros as NQ minis")
