@@ -553,6 +553,68 @@ def _nt_status(ad) -> dict:
     return out
 
 
+def _auto_status() -> dict:
+    """Running version + auto-update result + real-account auto-resume (engine/autoupdate.py, engine/autoresume.py)."""
+    out = {}
+    try:
+        from . import autoupdate
+        u = autoupdate.status()
+        out["version"] = clean_text(u.get("sha"), 12)
+        out["branch"] = clean_text(u.get("branch"), 40)
+        out["update"] = {"on": bool(u.get("on")), "result": u.get("result"), "reason": clean_text(u.get("reason"), 160),
+                         "last_check_t": _i(u.get("last_check_t")), "updated_at": _i(u.get("updated_at")),
+                         "bad_sha": clean_text(u.get("bad_sha"), 12)}
+    except Exception as e:
+        out["update"] = {"error": clean_text(f"{e.__class__.__name__}: {e}", 120)}
+    try:
+        from . import autoresume
+        r = autoresume.status()
+        out["resume"] = {"on": bool(r.get("on")), "account": clean_text(r.get("account"), 60), "off_reason": clean_text(r.get("off_reason"), 120),
+                         "last_t": _i(r.get("last_t")), "last_result": r.get("last_result"), "last_reason": clean_text(r.get("last_reason"), 160)}
+    except Exception as e:
+        out["resume"] = {"error": clean_text(f"{e.__class__.__name__}: {e}", 120)}
+    return out
+
+
+def auto_text(hl: dict | None) -> str:
+    """One line for the README / phone: 'running version abc1234, updated 17:05 ET; auto-update on; auto-resume on (ACCT)'."""
+    a = (hl or {}).get("auto") if isinstance(hl, dict) else None
+    if not isinstance(a, dict):
+        return "no version info (PC bot older than the auto-update)"
+    u, r = a.get("update") or {}, a.get("resume") or {}
+    s = f"running version {a.get('version') or '?'}"
+    if u.get("updated_at"):
+        s += f", updated {_et(u['updated_at']):%a %H:%M} ET"
+    s += "; auto-update " + ("on" if u.get("on") else "off")
+    if u.get("result") and u.get("result") not in ("off",):
+        s += f" (last: {u['result']}" + (f", {u['reason']}" if u.get("result") in ("failed", "rolled_back", "skipped") and u.get("reason") else "") + ")"
+    s += "; auto-resume " + (f"on ({r.get('account')})" if r.get("on") else "off")
+    if r.get("last_result") in ("refused", "failed"):
+        s += f" (last {r['last_result']}: {r.get('last_reason')})"
+    return s
+
+
+def auto_notices(hl: dict | None, now) -> list:
+    """Cloud side: phone pushes for a failed / rolled-back update and a refused / failed auto-resume, from the health block.
+    The keys are the PC's own (engine/autoupdate.alert_for, autoresume.resume_live): when the PC already pushed one, the
+    relay's sent markers stop the cloud from pushing it twice."""
+    from . import push
+    a = (hl or {}).get("auto") if isinstance(hl, dict) else None
+    out = []
+    if not isinstance(a, dict):
+        return out
+    u, r = a.get("update") or {}, a.get("resume") or {}
+    if u.get("result") in ("failed", "rolled_back") and u.get("last_check_t"):
+        out.append(push.text_payload("Cloud", "pc", "PC bot update failed" + (", rolled back" if u["result"] == "rolled_back" else ""),
+                                     f"{u.get('reason') or ''} (running {a.get('version') or '?'})",
+                                     key=f"auto:update:{u['result']}:{u['last_check_t']}", t=int(now), url="#/accounts"))
+    if r.get("last_result") == "refused" and r.get("last_t") and int(now) - int(r["last_t"]) < 6 * 3600:
+        out.append(push.text_payload("Cloud", "pc", f"Bot NOT resumed on {r.get('account') or 'your eval'}",
+                                     f"{r.get('last_reason') or ''}. Start it by hand.",
+                                     key=f"auto:refused:{int(r['last_t']) // 60}", t=int(now), url="#/accounts"))
+    return out
+
+
 def pc_health(bot, now=None) -> dict:
     """The heartbeat's "health" block: is the bot able to trade the eval, is it seeing the market, where is LIT today.
     Never raises: on any error {"v", "error"}."""
@@ -621,6 +683,7 @@ def pc_health(bot, now=None) -> dict:
         }
         if adapter == "ninjatrader" and ad is not None:
             out["nt"] = _nt_status(ad)
+        out["auto"] = _auto_status()
         return out
     except Exception as e:
         return {"v": HEALTH_VERSION, "error": f"{e.__class__.__name__}: {clean_text(e, 120)}"}

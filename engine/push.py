@@ -611,7 +611,7 @@ def pc_notify(payload: dict) -> dict | None:
     try:
         if pc_notifier().seen(payload):
             return {"dup": True}
-        push_it = payload.get("kind") in ("fill", "outcome", "test") or extra_on()
+        push_it = payload.get("kind") in ("fill", "outcome", "test", "pc") or extra_on()   # pc: update / auto-resume notices
         threading.Thread(target=_pc_send, args=(payload, push_it), name="push", daemon=True).start()
         return {"queued": True}
     except Exception:

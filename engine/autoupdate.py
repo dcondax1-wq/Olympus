@@ -211,7 +211,7 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
         return done("failed", f"git status failed: {dirty.strip()[:200]}", alert=True)
     if dirty.strip():
         return done("skipped", "local changes in tracked files (not touched): " + ", ".join(
-            ln[3:] for ln in dirty.strip().splitlines()[:4]), alert=True)
+            ln[3:] for ln in dirty.rstrip().splitlines()[:4]), alert=True)
     c, out = sh.git("fetch", "-q", "origin", branch, timeout=180)
     if c != 0:
         return done("skipped", f"git fetch failed: {out.strip()[-200:]}")
@@ -324,7 +324,7 @@ def alert_for(res: dict, sync=False):
         return
     st = res.get("status")
     title = {"rolled_back": "Bot update failed, rolled back", "failed": "Bot update FAILED"}.get(st, "Bot update skipped")
-    notify(title, str(res.get("reason") or "")[:300], key=f"auto:update:{st}:{(res.get('new') or '')[:10]}:{res['t'] // 3600}", sync=sync)
+    notify(title, str(res.get("reason") or "")[:300], key=f"auto:update:{st}:{res['t']}", sync=sync)
 
 
 _VER = {"t": 0, "sha": None, "branch": None}
@@ -357,8 +357,8 @@ class DailyUpdater:
     """Daemon thread in server.py: once per ET date in 17:02-17:50 ET, when flat, run_update; on success exit the server
     with RESTART_CODE (scripts/run_bot.ps1 starts the new code at once)."""
 
-    def __init__(self, bot, every_s: float = 60.0, exit_fn=None, clock=time.time):
-        self.bot, self.every_s, self.clock = bot, every_s, clock
+    def __init__(self, bot, every_s: float = 60.0, exit_fn=None, clock=time.time, state_path: str = STATE_PATH):
+        self.bot, self.every_s, self.clock, self.state_path = bot, every_s, clock, state_path
         self.exit_fn = exit_fn or (lambda code: os._exit(code))
         self._stop = threading.Event()
         self._thread = None
@@ -366,7 +366,7 @@ class DailyUpdater:
 
     def due(self, now=None) -> bool:
         now = self.clock() if now is None else now
-        s = load_state()
+        s = load_state(self.state_path)
         return is_enabled(s) and window_reason(now, "daily", s.get("last_check_day")) is None
 
     def check_once(self, now=None, sh: Shell | None = None, tests=TESTS) -> dict | None:
@@ -379,8 +379,8 @@ class DailyUpdater:
         self.busy = True
         try:
             file_log("daily check (server)")
-            res = run_update(sh or Shell(log=file_log), "daily", now, None, tests=tests)
-            record(res)
+            res = run_update(sh or Shell(log=file_log), "daily", now, None, state=load_state(self.state_path), tests=tests)
+            record(res, path=self.state_path)
             alert_for(res)
             if res.get("restart"):
                 file_log(f"restarting the server on {res['new'][:7]}")

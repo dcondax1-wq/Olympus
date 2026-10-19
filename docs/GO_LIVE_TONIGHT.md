@@ -92,8 +92,40 @@ What changes for you:
 - The stop and target are placed at the broker right after the fill (a few seconds; up to ~1 minute if NinjaTrader is
   slow to report the fill). After that, a dropped PC can't leave the trade unprotected, but it can't move the stop to
   breakeven or flatten at 15:55 either (MFFU auto-closes at 16:10).
-  A real-account bot does **not** restart by itself after a crash or reboot: if the PC restarts, start step 11 again.
+  A real-account bot does **not** restart by itself after a crash or reboot unless you turned on auto-resume
+  ("Make it run on its own" below): without it, if the PC restarts, start step 11 again.
 - Phone: entries and results arrive as notifications (tap **Turn on** in the app once).
+
+## Make it run on its own (optional, you turn it on once)
+Two switches, both off until you type them on the Surface (PowerShell in the bot folder). Nothing else changes.
+
+**1. Auto-update** (new code from GitHub without you):
+`python -m engine.autoupdate --enable`
+- It checks once a day at 17:02-17:50 ET (the CME halt) and whenever `run_bot.ps1` starts (e.g. after a reboot).
+- Only when the bot is **flat** (no trade, no limit or 1m entry waiting) and never 01:50-16:00 ET on a weekday.
+- Only a clean fast-forward of `main`. If you edited a file or the bot's folder has its own commits, it changes
+  nothing and your phone says why.
+- It runs the self-tests; if one fails it goes straight back to the version it had and tells your phone
+  ("Bot update failed, rolled back"). On success the server restarts by itself (a few seconds).
+- The phone app and the cloud README show `running version abc1234, updated Tue 17:05 ET; auto-update on`.
+- Off: `python -m engine.autoupdate --disable`. Log: `logs\update-YYYYMMDD.log`.
+
+**2. Auto-resume on your eval** (the bot comes back on the eval after its own crash, an update or a Windows restart):
+`python -m engine.ninjatrader --enable-auto-resume --account "<your eval account Name>" --confirm "<the phrase from step 11>"`
+- It remembers that exact account and today's date (in `data\auto_resume.json`, which is never uploaded; the phrase
+  itself is not stored). If the bot is not running it also starts it now, like step 11.
+- It comes back only when: `NINJATRADER_LIVE = "1"` is still in `.env.local.ps1`, the account is exactly the same,
+  NinjaTrader shows a connected connection (after a reboot it waits up to 30 min for NinjaTrader), the kill switch was
+  not used today, there was no daily loss of $1,000+ today, and no start failed in the last 10 minutes.
+- Every time it comes back your phone says **"Bot resumed on <account> after <reason>"**; when it refuses, the phone says
+  why and you start it by hand (step 11).
+- It does **not** come back after you press **Stop** (a stop stays a stop) or after the kill switch.
+- Off: `python -m engine.ninjatrader --disable-auto-resume`. The kill switch (**HOLD TO KILL** or `--kill`) also turns it
+  off; to have it again, type the enable command again.
+- With auto-resume off, after an auto-update your phone says "Updated to abc1234: bot is stopped on your eval, type
+  the start command to resume" and you type step 11.
+- For a reboot to bring everything back you also need `setup_dedicated_pc.ps1` (step 13: the logon task, NinjaTrader at
+  logon) and automatic sign-in (Autologon, printed by that script).
 
 ## Know this
 - **Your call on being present.** The project rule says MFFU wants the owner present for automated trading; MFFU's help

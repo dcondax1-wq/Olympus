@@ -254,6 +254,7 @@ def resume_live(bot, autostart_cfg, marker=None, notify=None, log=print, sleep=t
             note(path, last_fail_at=int(now), last_resume={"t": int(now), "result": "failed", "reason": err[:160]})
             log(f"auto-resume: start FAILED on {d['account']}: {err}")
             if tries >= 3:
+                note(path, last_resume={"t": int(now), "result": "refused", "reason": f"start failed 3 times: {err}"[:160]})
                 notify(f"Bot NOT resumed on {d['account']}", f"after {why}: start failed 3 times ({err[:160]}). Start it by hand.",
                        f"auto:refused:{int(now) // 60}")
                 return {**d, "resume": False, "cfg": None, "reason": err}

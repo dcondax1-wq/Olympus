@@ -376,6 +376,12 @@ def live_stop():
 
 @app.post("/api/live/kill")
 def live_kill():
+    try:                                 # the kill switch (HOLD TO KILL) also turns the real-account auto-resume off
+        from engine import autoresume as _ar
+        if _ar.disable("kill switch"):
+            _autostart_log("auto-resume turned OFF by the kill switch")
+    except Exception as e:
+        print(f"[autostart] could not turn auto-resume off: {e}", flush=True)
     return J(BOT.kill_switch())
 
 
@@ -645,6 +651,8 @@ def memory_export():
 # the last successful /api/live/start; on server start a paper / Tradovate-DEMO bot resumes by itself. Live never
 # auto-resumes. /api/live/stop and /api/live/kill delete the record. A heartbeat thread alerts on stalled polls / a
 # stale feed and keeps the PC awake while the bot runs.
+from engine import autoresume as _ar
+from engine import autoupdate as _au
 from engine import heartbeat as _hb
 from engine import keepawake as _ka
 from engine import watchdog as _wd
@@ -706,17 +714,33 @@ class _KillClearsAutostart:
 
 app.add_middleware(_KillClearsAutostart)
 WATCHDOG = _wd.Watchdog(BOT, send=_autostart_alert, keepawake=_ka.KEEPAWAKE)
+AUTOUPDATE = _au.DailyUpdater(BOT)       # owner opt-in: python -m engine.autoupdate --enable
 HEARTBEAT = _hb.Heartbeat(BOT, log=lambda t: print(t, flush=True))   # pushes "I'm alive" to the heartbeat branch (LE_HEARTBEAT=1)
 
 
 def _autostart_resume():
     rec = _wd.load(_AUTOSTART["path"])
+    marker = _au.take_restart_marker()   # set when this restart follows an auto-update (engine/autoupdate.py)
     d = _wd.decide_resume(rec, time.time(), _tv.env_status()["env"])
     info = {"checked_at": int(time.time()), "record": bool(rec), "mode": d["mode"], "reason": d["reason"],
-            "resumed": False, "result": None}
+            "resumed": False, "result": None, "after_update": (marker or {}).get("sha")}
     if rec and isinstance(rec.get("cfg"), dict):
         info.update(adapter=rec["cfg"].get("adapter", "paper"), saved_at=rec.get("saved_at"))
     WATCHDOG.autostart_info = info
+    if not d["resume"] and d["mode"] == "live" and rec and isinstance(rec.get("cfg"), dict):
+        # a real account: only with the owner's opt-in (engine/autoresume.py, every live lock still applies)
+        optin = _ar.load()
+        if optin and optin.get("enabled"):
+            r = _ar.resume_live(BOT, rec["cfg"], marker, notify=_au.notify, log=_autostart_log)
+            info.update(resumed=bool((r.get("result") or {}).get("ok")), reason=r.get("reason"), result=r.get("result"),
+                        auto_resume=True)
+            return
+        if marker:
+            acct = rec["cfg"].get("nt_account") or "your eval"
+            _au.notify(f"Updated to {str(marker.get('sha'))[:7]}",
+                       f"Bot is stopped on your eval ({acct}): type the start command to resume "
+                       f"(python -m engine.ninjatrader --start --account \"{acct}\" --confirm ...)",
+                       key=f"auto:stopped:{str(marker.get('sha'))[:10]}")
     if not d["resume"]:
         _autostart_log(f"no resume: {d['reason']}")
         if rec:
@@ -748,6 +772,7 @@ def _autostart_startup():
         threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
     WATCHDOG.start()
     HEARTBEAT.start()
+    AUTOUPDATE.start()                   # daily check in the CME halt; does nothing until the owner runs --enable
 
 
 app.router.add_event_handler("startup", _autostart_startup)

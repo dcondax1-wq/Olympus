@@ -670,6 +670,8 @@ def run(out):
     v_due, pc_verdict_alerts = _accounts.alert_due(pc_verdict, now, st.get("pc_verdict_alerts"))
     if v_due and not (pc_verdict["code"] == "SILENT" and pc.get("silent")):
         other_notices.append(_accounts.verdict_notice(pc_verdict, pc, now))
+    # a failed / rolled-back PC auto-update, a refused real-account auto-resume (same keys as the PC's own pushes)
+    other_notices += _accounts.auto_notices(pc.get("health") if pc.get("present") else None, now)
     if prev_et and prev_et != now_et["verdict"]:
         other_notices.append(push.text_payload("Cloud", "timing", f"Eval timing: {now_et['verdict'].upper()}",
                                                f"{now_et['reason']} " + ("Good time to buy or reset the MFFU eval." if now_et["verdict"] == "go"
@@ -737,7 +739,7 @@ def run(out):
           + (f", expired {len(gone)}" if gone else "") + (f", errors {push_errs[:3]}" if push_errs else ""))
     write_chart(os.path.join(out, "chart.png"), df, state, res, today)
     write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm,
-                 push_state=push_state)
+                 push_state=push_state, pc_health=pc.get("health") if pc.get("present") else None)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
@@ -885,6 +887,14 @@ def write_chart(path, df, state, res, today):
         print("chart failed:", e)
 
 
+def _accounts_auto_text(hl):
+    try:
+        from engine import accounts
+        return accounts.auto_text(hl)
+    except Exception as e:
+        return f"unknown ({e.__class__.__name__})"
+
+
 def _push_cell(p):
     p = p or {}
     if not p.get("configured"):
@@ -911,7 +921,8 @@ def usd_cell(v):
     return money(v["usd"]) + (f" ({v.get('mult', 1.0):g}x size: {', '.join(v.get('reasons') or ['cold streak'])})" if v.get("mult", 1.0) < 1 else "")
 
 
-def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None):
+def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None,
+                 pc_health=None):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
     arm = []
@@ -962,6 +973,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
             f"{'1m' if lt.get('one_min_day') else '5m (no full 1m feed today)'} execution; "
             f"{len(lt.get('signals_today') or [])} setups today |"] if (lt := state.get("lit")) and lt.get("open18") else []),
          f"| Feed | {feed}; {health['rth_bars_today']}/78 RTH bars today; gaps: {', '.join(health['gaps_today']) or 'none'} |",
+         *([f"| PC bot version | {_accounts_auto_text(pc_health)} |"] if isinstance(pc_health, dict) else []),
          f"| Notifications | {_push_cell(push_state)} |",
          f"| Telegram / Discord | {', '.join(sent) if sent else ('on' if chat_on(lm) and (os.environ.get('TG_TOKEN') or os.environ.get('DISCORD_WEBHOOK')) else 'off (the app notifies; LE_ALERTS_CHAT=1 turns chat alerts back on)')} |",
          "", "## Nearest liquidity pools", "| Pool | Price | Distance |", "|---|---:|---:|"]

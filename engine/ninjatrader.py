@@ -1445,6 +1445,10 @@ def main(argv=None):
     ap.add_argument("--start", action="store_true", help="start the PC bot (server.py running) on NinjaTrader")
     ap.add_argument("--stop", action="store_true", help="stop the PC bot")
     ap.add_argument("--kill", action="store_true", help="kill switch: server kill, or FLATTENEVERYTHING directly when the server is down")
+    ap.add_argument("--enable-auto-resume", action="store_true",
+                    help="owner opt-in (once): the bot comes back on this exact real --account by itself after a crash, an update "
+                         "or a reboot; needs --account and --confirm; every live lock still applies (engine/autoresume.py)")
+    ap.add_argument("--disable-auto-resume", action="store_true", help="turn the real-account auto-resume off")
     ap.add_argument("--account", default=None, help="NinjaTrader account name (Accounts tab 'Name'), default Sim101")
     ap.add_argument("--folder", default=None, help="Documents\\NinjaTrader 8 folder if not the default")
     ap.add_argument("--data", default="ninjatrader", choices=["ninjatrader", "yahoo"], help="bar source for --start (no_yahoo on, the default in live_model.json: always ninjatrader)")
@@ -1465,6 +1469,35 @@ def main(argv=None):
         return _cli_status(cfg)
     if a.sim_check or a.sim_roundtrip:
         return _cli_sim_check(cfg, roundtrip=a.sim_roundtrip)
+    if a.disable_auto_resume:
+        from . import autoresume
+        was = autoresume.disable("owner: --disable-auto-resume")
+        print("Auto-resume is OFF" + (" (it was on)." if was else " (it was not on).")
+              + " The bot keeps running until you stop it; after a crash or reboot you start it by hand.")
+        return 0
+    if a.enable_auto_resume:
+        from . import autoresume
+        body = {"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "armed": True, "present": True, "poll_sec": 60,
+                "data_source": a.data, **{k: v for k, v in cfg.items() if k.startswith("nt_")}}
+        try:
+            rec = autoresume.enable(a.account or "", a.confirm, body)
+        except ValueError as e:
+            print(f"Auto-resume NOT enabled: {e}.")
+            return 1
+        print(f"Auto-resume is ON for account {rec['account']} (accepted {rec['accepted_on']}). After a crash, an update or a "
+              "Windows restart the bot starts again on this account by itself, only when NINJATRADER_LIVE=1 is in "
+              ".env.local.ps1, NinjaTrader is connected, the kill switch was not used and there was no daily loss today.")
+        print("Turn it off: python -m engine.ninjatrader --disable-auto-resume (the kill switch also turns it off).")
+        try:
+            st = _http(a.port, "/api/live/state")
+        except Exception:
+            print(f"The server is not running on port {a.port}: start scripts\\run_bot.ps1, then run this command again "
+                  "(or --start with the same account) so the bot runs now.")
+            return 0
+        if st.get("running"):
+            print("The bot is already running: nothing else to do (it was not restarted).")
+            return 0
+        a.start = True                                   # start it now, exactly as --start would
     if a.start:
         body = {"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "armed": True, "present": True, "poll_sec": 60,
                 "data_source": a.data, **{k: v for k, v in cfg.items() if k.startswith("nt_")}}
@@ -1490,6 +1523,12 @@ def main(argv=None):
             print(f"Server not reachable ({e})")
             return 2
     if a.kill:
+        try:
+            from . import autoresume
+            if autoresume.disable("kill switch (command line)"):
+                print("Auto-resume turned OFF by the kill switch.")
+        except Exception:
+            pass
         try:
             print("Server kill switch:", _http(a.port, "/api/live/kill", {}))
             return 0
