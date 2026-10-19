@@ -26,8 +26,8 @@ Scoring (every variant, both 2026 halves, costs in):
            2-4 trades a week (to ~5 with a strong case). 2021-25 = reference only (5m execution; ES has no 2021-24).
 
   python tools/lit_more.py check      # base == run lit_live (120 trades 2026) and eval == lit_eventual "C 10 then safe_eval"
-  python tools/lit_more.py all        # every family -> research/lit/more_setups.json
-  python tools/lit_more.py save       # rl.save the runs lit_more_*
+  python tools/lit_more.py all        # every family -> research/lit/more_setups.json, then rl.save the runs lit_more_*
+  python tools/lit_more.py es|htf|htf_grid|mtf|miss|loose|native   # one family
 One process. Paper only.
 """
 from __future__ import annotations
@@ -652,12 +652,74 @@ def fam_mtf(Ub):
             put(f"5m + {tf} LIT {lab}, 1 a day", merge([Ub, Ux], max_day=1), {"family": "htf", "P": P})
 
 
+
+# ================================================================================================ save
+SAVE = [  # run id, result key, status, family
+    ("lit_more_base", "base (live LIT)", "info", "other"),
+    ("lit_more_es_alone", "ES LIT (stops 2.2-22.4) alone", "rejected", "other"),
+    ("lit_more_nq_es_both", "NQ + ES, 1 per instrument a day", "rejected", "other"),
+    ("lit_more_nq_es_1day", "NQ + ES, 1 a day (first fill)", "rejected", "other"),
+    ("lit_more_nq_5m_exec", "NQ LIT 5m exec only (fair ES comparison)", "info", "other"),
+    ("lit_more_15m_add", "5m + 15m LIT (live filters, idm 12 bars), 1 a day", "rejected", "other"),
+    ("lit_more_15m_add_best", "htf grid: 15m add d0.4 disp0.7 idm12 stop100, 1 a day", "rejected", "other"),
+    ("lit_more_15m_add_2", "5m + 15m LIT relaxed (depth 0.4, disp 0.7, idm 24, stop 100), 1 per tf a day", "rejected", "other"),
+    ("lit_more_30m_add", "5m + 30m LIT no inducement gate, 1 a day", "rejected", "other"),
+    ("lit_more_miss_retap", "miss: re-tap after a failed 1m CISD window (+30 min)", "rejected", "other"),
+    ("lit_more_miss_rearm", "miss: re-arm both (+60 min)", "rejected", "other"),
+    ("lit_more_miss_limit60", "miss: limit 60 min", "rejected", "other"),
+    ("lit_more_miss_cisd30", "miss: 1m CISD window 30 bars", "rejected", "other"),
+    ("lit_more_loose_disp07", "loose: disp 0.7", "rejected", "filters"),
+    ("lit_more_loose_depth04_disp07", "loose: depth 0.4 + disp 0.7", "rejected", "filters"),
+    ("lit_more_loose_stop100_min1", "loose: stop 8-100, min 1 micro", "rejected", "filters"),
+    ("lit_more_loose_idm24", "loose: idm age 24", "rejected", "filters"),
+    ("lit_more_loose_noidm", "loose: no inducement gate", "rejected", "filters"),
+    ("lit_more_native_pdwm2", "native: 2nd trade only for pdwm sweeps", "rejected", "other"),
+    ("lit_more_2day", "native: 2 a day, any setup (reference)", "rejected", "other"),
+]
+
+
+def save():
+    for rid, key, status, fam in SAVE:
+        U = _S["U"][key]
+        floor = bool(_RES[key].get("meta", {}).get("qty_floor"))
+        if floor:
+            with qty_floor():
+                MT = money_trades(U)
+        else:
+            MT = money_trades(U)
+        T = []
+        for t in MT:
+            ru = t["risk"] * PV * t["qty"]
+            T.append({"day": t["day"], "entry_t": t["entry_t"], "exit_t": t["exit_t"], "dir": t["dir"], "r": round(t["pnl"] / ru, 3) if ru else 0.0,
+                      "pnl": t["pnl"], "low": t["low"], "risk_pts": round(t["risk"], 2), "qty": t["qty"], "risk_usd": round(ru, 2),
+                      "half": t["wk_m"] < 1, "exit": t["exit"], "trigger": f"LIT-{t['src']}-{t['inst']}", "mfe": None, "mae": None,
+                      "bars_held": None, "regime": "", "mult": t["wk_m"]})
+        o = _RES[key]
+        h = lambda s: (f"{s}: {o[s]['n']} trades, {o[s]['tpw']}/wk, win {o[s]['win']}%, PF {o[s]['pf']}, net ${o[s]['net']:+,} "
+                       f"(${o[s]['per_month']:,}/mo), DD ${o[s]['dd']:,}; live eval sizing 2-wk pass/fail {o[s]['p10']}/{o[s]['f10']} "
+                       f"(MC {o[s]['mc_p10']}/{o[s]['mc_f10']})")
+        verdict = "; ".join(h(s) for s in ("H1", "H2")) + f"; 2021-25 reference (5m) PF {o['ref']['pf']} ${o['ref']['net']:+,}."
+        rl.save(rid, "LIT more setups: " + key, fam, "Owner 2026-10-19: there are more LIT setups a week, look harder (ES/MES, "
+                "15m/30m/1h setups, missed fills, filter loosening, LIT-native extras).", params={"variant": key, **o.get("meta", {})},
+                sizing={"money": "LIT rule $800/20 + weekly stop, $1.90/micro", "eval": "lit_sizing two_week (10 sessions) then safe_eval"},
+                trades=T, scored=rl.score(T, SESS), status=status, verdict=verdict,
+                notes="tools/lit_more.py; ES trades in MNQ-equivalent points (x2.5, MES $5/pt). Results: research/lit/more_setups.json",
+                writeup="lit-more-setups", tags=["lit", "lit_more"])
+        print("saved", rid, flush=True)
+
+
+def all_save():
+    all_()
+    Ub = _S["U"]["base (live LIT)"]
+    fam_htf_grid(Ub); fam_mtf(Ub); dump()
+    save()
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     if cmd == "check":
         check()
     elif cmd == "all":
-        all_()
+        all_save()
     elif cmd in ("es", "htf", "miss", "loose", "native", "htf_grid", "mtf"):
         Ub = fam_base()
         globals()["fam_" + cmd](Ub)

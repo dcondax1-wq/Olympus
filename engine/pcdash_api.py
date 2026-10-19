@@ -307,6 +307,15 @@ def account_view(bot, now: int | None = None, lm: dict | None = None, bars: bool
         cum += float(v)
         eq.append([d, round(cum, 2)])
     pos = _position_view(bot, sec.get("position"), now)
+    # the badge from the bot's health block (accounts._acct_kind calls every non-paper NinjaTrader account SIM; pc_health
+    # tells a real account from Sim101 / Playback by its name, the same rule as the Today status header)
+    hacct = (accounts.pc_health(bot, now) or {}).get("account") or {}
+    if hacct.get("label"):
+        sec["badge"] = hacct["label"]
+    if pos is not None:
+        be_rows = [o for o in acct.get("orders") or [] if o.get("side") == "modify" and o.get("ok") and o.get("entry_t") == pos.get("entry_t")]
+        if be_rows:
+            pos["be_t"] = be_rows[-1].get("t")
     out = {"t": now, "today": today, "account": {k: sec.get(k) for k in ("id", "name", "firm", "plan", "kind", "badge", "broker_account",
                                                                         "adapter", "kill", "running")},
            "eval": sec.get("eval"), "pnl": sec.get("pnl"), "stats": sec.get("stats"), "position": pos,

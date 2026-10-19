@@ -123,8 +123,7 @@ function stageRail(lit) {
   // the bot reports sweep + inducement + CISD together once the 5m CISD closed: a setup (limit) lights the first four
   return `<div class="pc-rail">${STAGES.map(([k, l], j) => `<span class="${j < i ? 'done' : j === i ? 'now' : ''}" title="${esc(l)}"><i></i><em>${esc(l)}</em></span>`).join('')}</div>`;
 }
-function feedAge(f) {
-  const now = Date.now() / 1000;
+function feedAge(f, now) {
   const a1 = f.last_1m_t ? now - f.last_1m_t - 60 : null, a5 = f.last_5m_t ? now - f.last_5m_t - (f.tf === '1m' ? 60 : 300) : null;
   return { a1, a5 };
 }
@@ -133,7 +132,8 @@ export async function renderStatus(force) {
   const s = await getStatus(force);
   if (!s || s.error) { el.className = 'pc-status lvl-bad'; el.innerHTML = `<div class="pc-st-main"><span class="pc-st-dot"></span><div><div class="pc-st-k">PC BOT</div><h2>NO ANSWER</h2><p>${esc(s?.error || '/api/next/pc/status failed')}</p></div></div>`; return; }
   const v = s.verdict || {}, h = s.health || {}, a = h.account || {}, f = h.feed || {}, p = h.poll || {}, lit = h.lit || {}, ec = s.eval_clock || {};
-  const { a1, a5 } = feedAge(f), now = Date.now() / 1000;
+  const now = (s.t || Date.now() / 1000) + (Date.now() - D.stAt) / 1000;   // the bot's clock (ages stay right with a skewed PC clock)
+  const { a1, a5 } = feedAge(f, now);
   const lvl = v.level || 'warn';
   const setups = s.setups_today || [];
   const last = setups[setups.length - 1];
@@ -169,7 +169,7 @@ function evalCard(ev, acct) {
 }
 function posTrade(p, ac) {
   return { day: p.day, entry_t: +p.entry_t, side: p.side, dir: p.dir, entry: +p.entry, stop: +(p.stop0 ?? p.stop), target: +p.target, qty: p.qty,
-    risk_usd: p.risk_usd, pnl: p.unrealized_usd || 0, exit: 'OPEN', id: 'pos_' + p.entry_t, target_label: p.target_label || '' };
+    risk_usd: p.risk_usd, pnl: p.unrealized_usd || 0, exit: 'OPEN', id: 'pos_' + p.entry_t, target_label: p.target_label || '', be_t: p.be ? p.be_t : null };
 }
 function positionCard(ac) {
   const p = ac.position;
@@ -195,10 +195,8 @@ function mountPosition(ac) {
   if (!(ac.bars5 || []).length) { box.innerHTML = empty('No bars from the bot yet.'); return; }
   loadTC().then((TC) => {
     if (!box.isConnected) return;
-    const lv = [];
-    if (ok(p.stop) && ok(p.stop0) && Math.abs(p.stop - p.stop0) > 0.01) lv.push({ label: p.be ? 'Stop now (BE)' : 'Stop now', px: +p.stop });
-    if (!p.be && ok(p.be_trigger)) lv.push({ label: 'BE at +1R', px: +p.be_trigger });
-    const rec = TC.fromTrade(posTrade(p, ac), ac.bars5, { bars1: ac.bars1, levels: lv });
+    // the planned stop / target box; the stop now, breakeven trigger and $ sit in the panel above (levels would read as swept)
+    const rec = TC.fromTrade(posTrade(p, ac), ac.bars5, { bars1: ac.bars1 });
     TC.mount(box, rec, { tf: ac.bars1 ? '1m' : '5m' });
   }).catch(() => { box.innerHTML = empty('Chart unavailable.'); });
 }
@@ -273,7 +271,7 @@ async function showAccounts(force) {
   const open = $$('.pc-tr.open', el).map((r) => +r.dataset.et);
   el.innerHTML = hero(`Accounts · ${esc(a.firm || 'MFFU')} · ${esc(a.badge || '')}`, `${esc(a.name || 'MFFU 50K Eval')}${a.broker_account ? ` <span class="muted">· ${esc(a.broker_account)}</span>` : ''}`,
       `The PC bot’s own account from its live state (ledger, live_state.json, LIT journal). Read-only: this page never starts, arms or routes anything. ${a.running ? 'Bot running.' : 'Bot not running in this server.'}${a.kill ? ' KILL SWITCH ON.' : ''}`,
-      `<div class="pc-hero-chips">${chip('mode ' + esc(ac.sizing?.mode || '—'))}${chip('eval from ' + fDate(ac.sizing?.eval_start))}</div>`)
+      `<div class="pc-hero-chips">${chip('mode ' + esc(ac.sizing?.mode || '—'))}${chip('eval from ' + fDate(ev?.start || ac.sizing?.eval_start))}</div>`)
     + `<div class="nx-stats">
         ${stat('Today', fmtS$(pn.today), ev ? `${fmt$(ev.dll_used)} of the ${fmt$(ev.dll)} daily loss used` : '', cls(pn.today))}
         ${stat('This week', fmtS$(pn.week), 'routed exits', cls(pn.week))}
@@ -290,8 +288,9 @@ async function showAccounts(force) {
   const eq = ac.equity || [];
   lineChart($('#pcEq'), eq.map(([d, v]) => ({ x: d === 'start' ? 'start' : fDate(d), y: v })), { h: 220, color: 'var(--accent)', ref: 3000 });
   // calendar of routed P&L per day
-  const nOf = (d) => (ac.trades || []).filter((t) => t.day === d).length || 1;
-  const by = new Map((ac.days || []).map(([d, v]) => [d, { pnl: v, n: nOf(d) }]));
+  // every routed trade by its trading day (also the days before eval_start)
+  const by = new Map();
+  for (const t of ac.trades || []) { if (!t.day) continue; const v = by.get(t.day) || { pnl: 0, n: 0 }; v.pnl += +t.pnl || 0; v.n += 1; by.set(t.day, v); }
   const months = [...new Set([...by.keys(), ac.today].map((k) => k.slice(0, 7)))].sort();
   let cm = store.get('pc.calm', ac.today.slice(0, 7)); if (!months.includes(cm)) cm = months[months.length - 1];
   const drawCal = () => { const g = calGrid(by, cm, ac.today, 1500); $('#pcCal').innerHTML = `<div class="pc-cal-h"><b>${MONTHS[+cm.slice(5) - 1]} ${cm.slice(0, 4)}</b><span class="muted small">${g.n ? `<b class="${cls(g.net)}">${fmtS$(g.net)}</b> · ${plural(g.n, 'day')} traded · ${g.g} green` : 'no routed trades this month'}</span></div>${g.html}`; };
