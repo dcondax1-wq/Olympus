@@ -94,7 +94,10 @@ def replay(T, live, n=8):
     import numpy as np
     from engine.live import tick_px
     from tests.test_lit_exit_route import Harness, hm, rows_for
-    if "--all" not in sys.argv:
+    only = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)
+    if only:
+        T = [t for t in T if t["day"] in only]
+    elif "--all" not in sys.argv:
         T = [T[i] for i in sorted(set(np.linspace(0, len(T) - 1, n).round().astype(int)))]
     P = {**live, "scale_in": CAND}
     print(f"-- live loop vs backtest: {len(T)} trades with an add", flush=True)
@@ -104,7 +107,9 @@ def replay(T, live, n=8):
         for t in T:
             ent, xt, a = int(t["entry_t"]), int(t["exit_t"]), t["adds"][0]
             at = int(a["t"])                      # the backtest's add bar opens when its 1m CISD candle closes
-            bot = H.run([(ent - 360, ent + 40), (at - 90, at + 40), (xt - 60, xt + 40)])
+            from engine.lit_live import early_close
+            # a CME early-close day: the live loop closes the position 5 min after the halt (the backtest at its last bar)
+            bot = H.run([(ent - 360, ent + 40), (at - 90, at + 40), (xt - 60, xt + (400 if early_close(t["day"]) else 40))])
             e_row, _, add_rows, x_row = rows_for(bot, ent)
             q_add = int(add_rows[0]["qty"]) if add_rows else 0
             row = {"day": t["day"], "dir": t["dir"], "qty": t["qty"], "routed_qty": e_row and e_row["qty"], "add_bt": [a["qty"], a["px"], hm(at)],

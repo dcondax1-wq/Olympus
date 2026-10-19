@@ -4,7 +4,7 @@ family: management
 date: 2026-10-19
 status: one adopt-candidate (scale-in on a 1m CISD after breakeven, with the stop moved to the add); trend-day mode and volatility sizing rejected; news-release setups not testable
 summary: Four ideas never tested on LIT were scored by the LIT rule (2026 only, pick on Jan-Jun, check on Jul-Oct; adopt only if both halves gain net $ AND MFFU 50K 2-week passes under the live sizing, two_week then safe_eval, $1.90, true 1m fills, stop before target in a bar). (1) Scale-in passes. After breakeven, wait for the first 1m pullback of at least 0.25R, then a 1m CISD close back up, and add the same number of micros at the next 1m open. The add uses the same breakeven stop and the same target, and its open risk is never above the first entry's $ risk, 60% of the room or the soft daily loss left. Once the add is +1 of its own risk, the whole position's stop moves to the add's price. Results: H1 net +$36,723 to +$49,205, H2 +$9,674 to +$26,015, 2-week pass 52.9 to 53.8 (H1) and 50.7 to 52.2 (H2), H2 fails unchanged at 2.9, H1 fails 9.2 to 10.1. Every neighbour holds in both halves (pullback 0.1-0.4R, add 0.75-1.5x, add fills up to 2 pts worse). The control (stop move with no add) does not. But the pass-rate gain is one eval start per half, and in H2 it rests on one trade, so the money is solid and the pass rate is thin. Starting at half size and adding at +1R cuts 2-week fails to 4.2 / 0.0%, but H1 loses $4.2k: rejected. (2) Trend-day mode: 0 of 16 H1-fitted classifiers held in H2. (3) Volatility tilts: 0 of 160 better in both halves. (4) News-release sweeps need a 94-395 pt stop: 0 trades in 2026 and in 2021-25. Engine option scale_in (default off; backtest only, the live route cannot send an add yet). Paper only.
-runs: lit_big_base, lit_big_scale_cisd, lit_big_scale_cisd_norat, lit_big_scale_ratchet_only, lit_big_scale_imm, lit_big_scale_half_imm, lit_big_trend_pick, lit_big_trend_all_be2, lit_big_vol_vix_hi15, lit_big_news_wide
+runs: lit_big_base, lit_big_scale_cisd, lit_big_scale_cisd_norat, lit_big_scale_ratchet_only, lit_big_scale_imm, lit_big_scale_half_imm, lit_big_trend_pick, lit_big_trend_all_be2, lit_big_vol_vix_hi15, lit_big_news_wide, lit_adopt_all3, lit_adopt_all3_eval, lit_adopt_t15_be_off, lit_adopt_t15_be_off_eval
 ---
 
 ## In one minute (owner summary)
@@ -228,3 +228,24 @@ A news setup is a LIT setup whose sweep extreme prints 0-15 minutes after an 08:
     price, exit P&L).
   - To switch it on: the config change above. Run Sim101 for a week first.
 - Commands: `python -X utf8 tools/lit_big_ideas.py check | grid [1 1b 2 3 4] | save`. Results: `research/lit/big_ideas.json`.
+
+## The three adopt-candidates together (2026-10-19, runs `lit_adopt_all3`, `lit_adopt_all3_eval`)
+
+`tools/lit_adopt_combo.py` runs the engine itself (`engine/lit.py run_x`, the code the live loop runs) with t_check +
+scale_in + be_off on top of the live settings. Options off it reproduces `lit_live` and the research executor (120/120).
+Costs in. 2021-25 has no 1m bars, so only be_off acts there (reference: PF 1.01, +$1.2k, as before).
+
+| 2026 | lit_live H1 | all three H1 | lit_live H2 | all three H2 |
+|---|---:|---:|---:|---:|
+| Trades / week (weeks 2+) | 3.12 (85%) | 3.12 (85%) | 2.56 (81%) | 2.56 (81%) |
+| LIT size rule: PF | 4.44 | 4.94 | 2.46 | 3.48 |
+| LIT size rule: net · $/month | +$32,773 · $5,377 | +$44,507 · $7,302 | +$8,962 · $2,413 | +$15,192 · $4,090 |
+| LIT size rule: max DD | -$2,315 | -$2,510 | -$1,466 | -$1,451 |
+| Eval path (two_week): net · $/month | +$36,723 · $6,025 | +$53,116 · $8,714 | +$9,674 · $2,605 | +$17,262 · $4,647 |
+| Eval path: max DD | -$3,612 | -$3,059 | -$2,493 | -$3,076 |
+| MFFU 50K 2-week pass / fail | 52.9 / 9.2 | 58.0 / 2.5 | 50.7 / 2.9 | 52.2 / 0.0 |
+| Monte Carlo 2-week pass / fail | 50.5 / 7.0 | 51.9 / 3.2 | 54.0 / 6.8 | 58.1 / 3.2 |
+
+Better in both halves on every line except the eval-path drawdown in H2 (-$2.5k to -$3.1k). Honest note: on the eval path
+H2 makes less with all three (+$17.3k) than with scale_in alone (+$26.0k): the 15-minute check cuts trades that the add would
+later have carried. The pass / fail numbers favour all three; the H2 money favours scale_in alone. Thin sample (13 cuts, 52 adds).

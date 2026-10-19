@@ -386,6 +386,9 @@ def _close_at_session_end(t):
     pnl = (d * (exit_px - float(t["entry_px"])) * lit.PV - lit.COMM) * q
     pnl += sum((d * (exit_px - float(a["px"])) * lit.PV - lit.COMM) * int(a["qty"]) for a in (t.get("adds") or []))   # scale_in
     x = dict(t)
+    if t.get("adds"):                    # scale_in: the points of the entry and of each add at the session-end price
+        x["pts"] = round(d * (exit_px - float(t["entry_px"])), 4)
+        x["adds"] = [dict(a, pts=round(d * (exit_px - float(a["px"])), 4)) for a in t["adds"]]
     x.update(exit="EOD", exit_px=round(exit_px, 2), pnl=round(pnl, 2), r=round(pnl / (float(t["risk_pts"]) * lit.PV * q), 3),
              exit_t=int(t["last_t"]) + 60 * int(t.get("tf", 5)))
     return x
