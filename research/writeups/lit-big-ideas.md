@@ -207,7 +207,9 @@ A news setup is a LIT setup whose sweep extreme prints 0-15 minutes after an 08:
   - `DEFAULTS["scale_in"] = None`.
   - With `{"pb": 0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1}`, `simulate_x` adds the scale-in on 1m days in the backtest.
     The trade gets `adds` (time, price, points, micros), `qty_total`, and pnl / low with the adds. `qty` stays the first entry's.
-  - The live loop ignores the option (`live=True`).
+  - Live (2026-10-19): the open position carries `adds`, and when the add's 1m CISD candle is the last closed bar it carries
+    `add_now` (price from the forming bar's open when the feed shows it, micros as the backtest sizes them) for the PC bot to
+    route at market at once.
   - `scale_trade` (the weekly stop) scales the adds too.
 - **engine/sizing.py:** `scale_in_qty(q_base, q_full, risk_pts, adds, f, state)` gives the add micros under the caps. The research
   harness uses the same function.
@@ -217,6 +219,12 @@ A news setup is a LIT setup whose sweep extreme prints 0-15 minutes after an 08:
   - `python -X utf8 -m tests.test_lit_live --days`: 120/120 identical at the default.
 - **Config change, to try it in a backtest only:** add `"scale_in": {"pb": 0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1}`
   to `live_model.json` "lit".
-- **Not done yet:** routing an add to NinjaTrader (a second bracket on the same stop and target, then one stop move for both), and
-  `lit_qty` sizing the add from the eval state at the add's time. Until both exist, the option changes backtests only.
+- **Live route (done 2026-10-19, paper / Sim tested, see `lit-live-fills.md` "Exits and adds on the route"):**
+  - `engine/live.py` routes `add_now` once, 2 s after the add's CISD close (`_route_add`); add micros: the model's add at the
+    routed size in normal mode, `scale_in_qty` with the eval state (60% room, soft daily loss left, 40 micros) in the eval modes.
+  - `engine/ninjatrader.py add_to_position`: a MARKET add, then CHANGE of the quantity of the one OCO stop + target to the
+    whole position (no second bracket). Self-test `python -m engine.ninjatrader --selftest` section 16.
+  - `python -X utf8 -m tests.test_lit_scale_in --all`: every 2026 add trade through the PC bot = the backtest (time, micros,
+    price, exit P&L).
+  - To switch it on: the config change above. Run Sim101 for a week first.
 - Commands: `python -X utf8 tools/lit_big_ideas.py check | grid [1 1b 2 3 4] | save`. Results: `research/lit/big_ideas.json`.
