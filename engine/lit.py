@@ -754,8 +754,9 @@ DEFAULTS = {
                                  # off = None): {"atr": 2.0, "bars": 48, "n": 2, "up": 1.5, "down": 0.75, "cap_usd": 990}: a setup
                                  # whose idm_a list has >= n inducements within atr ATR of the swept level and <= bars old trades at
                                  # up x size, else down x size (one rounding with how_out and the weekly stop; a size-up never risks
-                                 # more than cap_usd incl. 1 tick + $1.90). Normal (LIT rule) sizing only: lit_sizing two_week ignores
-                                 # the model's multiplier (two_week.wk false), so the eval cut needs engine/sizing.py to honour it.
+                                 # more than cap_usd incl. 1 tick + $1.90). Each trade then carries idm_m (raw multiplier), idm_cap,
+                                 # idm_n and wk_m (the rest of the multiplier): engine/sizing.py applies idm_m in two_week / eval /
+                                 # fast_eval / funded before the eval caps (2026-10-19, tools/lit_idm_eval.py).
     # execution (research only; research/writeups/lit-live-fills.md): None = the plain backtest fills above
     "fills": None,               # realistic fill model {} / {...}: engine/lit_fills.py FILL_DEFAULTS (live bot latency, market
                                  # entry at the price when the order reaches CME, stop slippage by hour and bar range, target
@@ -1285,10 +1286,13 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             if ws >= n_st:
                 m *= float(m_st)
                 why.append(f"weekly stop: {ws} stop-outs this week x{float(m_st):g}")
+        idm_f = None
         if P.get("idm_size"):
             q_ = P["idm_size"]
             cnt = sum(1 for dd, aa in (z.get("idm_a") or []) if dd <= q_["atr"] and aa <= q_["bars"])
             mi = float(q_["up"]) if cnt >= int(q_["n"]) else float(q_["down"])
+            # for engine/sizing.py (eval / funded sizing re-sizes from the stop): the raw multiplier, its $ cap and the rest
+            idm_f = {"idm_m": mi, "idm_cap": float(q_["cap_usd"]) if q_.get("cap_usd") else None, "idm_n": int(cnt), "wk_m": round(m, 6)}
             if mi != 1.0:
                 if m * mi > 1.0 and q_.get("cap_usd") and t["qty"]:
                     # a size-up never risks more than cap_usd (full stop + 1 tick + round-trip commission)
@@ -1301,6 +1305,8 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             t = scale_trade(t, m)
             t["size_mult"] = round(m, 6)
             t["size_why"] = why
+        if idm_f:
+            t = {**t, **idm_f}
         if live:
             t["target_label"] = signals[-1]["target_label"]
             t["sweep_ext"] = signals[-1]["sweep_ext"]

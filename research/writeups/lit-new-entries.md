@@ -2,9 +2,9 @@
 title: LIT new entries and confluences - MSNR levels, inducement into order blocks, stacked confluence, confluence as size
 family: other
 date: 2026-10-19
-status: one adopt-candidate (size by the number of inducements taken first, default-off option idm_size); every new entry type rejected
-summary: The owner asked for more LIT entry types and confluences (MSNR, IDM, build-ups, 15m order blocks, smart money trap, stacked setups) and 3+ trades a week. 362 variants on the exact live LIT, picked on Jan-Jun 2026 and checked on Jul-Oct 2026, scored in $ at the LIT size and on the MFFU 50K 2-week eval under the live two_week sizing. No new entry type adds money in both halves next to today's LIT. MSNR 15m support/resistance setups make money on their own (H1 PF 4.19 +$23.7k, H2 PF 2.65 +$8.6k), but most of them are the same days and moves as today's trades: added as a 2nd trade a day they cost $1.6k in Jan-Jun and push the Jul-Oct 2-week fails from 2.9% to 10.1%. SMC inducement into a 15m/1h order block gives 13 trades in 2026 and loses in Jan-Jun. Stacked confluence (2+ of OB, SMT, MSNR, 2+ inducements, build-up, major level, 4h storyline) on setups the live filters reject adds +$3.3k / +$0.6k but doubles the Jul-Oct 2-week fails. One sizing rule holds: trades whose sweep took 2+ inducements (within 2 ATR, 48 bars) earn 1.0-1.2 R against 0.0-0.2 R for the rest in Jan-Jun, Jul-Oct and 2021-25; 1.5x on those and 0.75x on the rest (risk capped at $990) makes H1 +$40.2k (vs +$32.5k) and H2 +$12.7k (vs +$8.9k), 2-week fails 9.2 -> 6.7% and 2.9 -> 0.0%, but drawdown is about 30% bigger. Paper only.
-runs: lit_ent_base, lit_ent_idm_size, lit_ent_idm_size_up, lit_ent_ctrl_125, lit_ent_msnr15_alone, lit_ent_msnr15_add1, lit_ent_msnr15_add2, lit_ent_msnr1h_add2, lit_ent_msnr1h_all_add2, lit_ent_msnr15_qm_add2, lit_ent_msnrlit_15m, lit_ent_msnrlit_1h, lit_ent_idmob_add1, lit_ent_stack2_add2, lit_ent_stack3_add1, lit_ent_stack_2nd, lit_ent_split08, lit_ent_grade3
+status: inducement-count size (option idm_size) is a candidate for the LIT size rule / funded only - on the eval path (two_week) it is rejected; every new entry type rejected
+summary: The owner asked for more LIT entry types and confluences (MSNR, IDM, build-ups, 15m order blocks, smart money trap, stacked setups) and 3+ trades a week. 362 variants on the exact live LIT, picked on Jan-Jun 2026 and checked on Jul-Oct 2026, scored in $ at the LIT size and on the MFFU 50K 2-week eval under the live two_week sizing. No new entry type adds money in both halves next to today's LIT. MSNR 15m support/resistance setups make money on their own (H1 PF 4.19 +$23.7k, H2 PF 2.65 +$8.6k), but most of them are the same days and moves as today's trades: added as a 2nd trade a day they cost $1.6k in Jan-Jun and push the Jul-Oct 2-week fails from 2.9% to 10.1%. SMC inducement into a 15m/1h order block gives 13 trades in 2026 and loses in Jan-Jun. Stacked confluence (2+ of OB, SMT, MSNR, 2+ inducements, build-up, major level, 4h storyline) on setups the live filters reject adds +$3.3k / +$0.6k but doubles the Jul-Oct 2-week fails. One sizing rule holds: trades whose sweep took 2+ inducements (within 2 ATR, 48 bars) earn 1.0-1.2 R against 0.0-0.2 R for the rest in Jan-Jun, Jul-Oct and 2021-25; 1.5x on those and 0.75x on the rest (risk capped at $990) makes H1 +$40.2k (vs +$32.5k) and H2 +$12.7k (vs +$8.9k), 2-week fails 9.2 -> 6.7% and 2.9 -> 0.0%, but drawdown is about 30% bigger. Paper only. On the real eval path (two_week 10 sessions then safe_eval, $1.90, true 1m; engine/sizing.py now applies the multiplier) it does not hold: H1 net -$0.5k, 2-week fails 9.2 -> 10.1%, H2 2-week pass 50.7 -> 49.3%, and on top of t_check + scale_in + be_off it costs $12.9k in H1. For the eval keep it off; the best eval combination stays t_check + scale_in + be_off.
+runs: lit_ent_base, lit_ent_idm_size, lit_ent_idm_size_up, lit_ent_ctrl_125, lit_ent_msnr15_alone, lit_ent_msnr15_add1, lit_ent_msnr15_add2, lit_ent_msnr1h_add2, lit_ent_msnr1h_all_add2, lit_ent_msnr15_qm_add2, lit_ent_msnrlit_15m, lit_ent_msnrlit_1h, lit_ent_idmob_add1, lit_ent_stack2_add2, lit_ent_stack3_add1, lit_ent_stack_2nd, lit_ent_split08, lit_ent_grade3, lit_idm_eval_base, lit_idm_eval_idm, lit_idm_eval_idm_cut, lit_idm_eval_all3, lit_idm_eval_idm_all3, lit_idm_eval_t15_be_off, lit_idm_eval_idm_t15_be_off, lit_idm_eval_idm_cut_all3
 ---
 
 ## In one minute (owner summary)
@@ -62,9 +62,8 @@ runs: lit_ent_base, lit_ent_idm_size, lit_ent_idm_size_up, lit_ent_ctrl_125, lit
   - Check: with the option on, `engine/lit.py` gives the same 630 trades (2021-26) and the same micros as this study, 630 of
     630. At the engine's $1.40 commission, 2026 is +$53,270 vs +$41,734 (H1 +$40,434, H2 +$12,835). The biggest risk on one
     trade is $935.
-  - That changes the micros in **normal / funded** sizing only. Today's eval sizing (two_week) ignores the model's size
-    multiplier, so the eval part (the 0.75x cut that lowers the fails) also needs a small change in `engine/sizing.py`.
-    That file is another agent's, so it is not done here.
+  - Done 2026-10-19: `engine/sizing.py` now applies the multiplier in two_week / eval / funded too. **On that real eval
+    path it does not hold** (next section): keep it off for the eval.
   - No route change: same orders, just a different number of micros.
 - **3+ trades a week:** I found no LIT-based entry that gets there without costing money or eval safety in one of the halves.
   The honest answer stays: about 2.9 a week (3.1 in H1, 2.6 in H2), with 85% / 81% of weeks at 2+.
@@ -165,11 +164,59 @@ Average R per trade with / without each tag (1 micro, costs in). Trade counts ar
 - More confluences do **not** mean a better trade: 3+ of 8 earns less R than the rest in both halves.
 - The inducement count is the one tag that is better in all three periods, at every definition tried.
 
+## On the eval path (2026-10-19)
+
+The numbers above size the eval with only the 0.75x cut, after the fact. Now `engine/sizing.py` applies the multiplier
+itself, so this is what the bot would really do on the MFFU 50K: two_week for 10 sessions, then safe_eval, no reset, $1.90 a
+micro, true 1m bars. The 1.5x size-up and the 0.75x cut both come before the eval caps (60% of the room, the $1,000 soft daily
+loss, 40 micros, $990 a trade), so a size-up can never pass them. `tools/lit_idm_eval.py`, runs `lit_idm_eval_*`.
+Check: options off gives exactly run `lit_live` on this path (and t_check + scale_in + be_off gives exactly `lit_adopt_all3_eval`).
+
+Back-to-back eval path per half, costs in (H1 = Jan-Jun pick, H2 = Jul-Oct check; trades a week 3.12 / 2.56, unchanged):
+
+| Variant | H1 PF | H1 net ($/mo) | H1 DD | H1 2-wk pass / fail (MC) | H2 PF | H2 net ($/mo) | H2 DD | H2 2-wk pass / fail (MC) | max $ risk H1 / H2 |
+|---|---|---|---|---|---|---|---|---|---|
+| **lit_live (today)** | 3.66 | +36,723 (6,025) | −3,612 | 52.9 / 9.2 (50.5 / 7.0) | 2.13 | +9,674 (2,605) | −2,493 | 50.7 / 2.9 (54.0 / 6.8) | 969 / 989 |
+| idm_size | 3.19 | +36,263 (5,949) | −3,632 | 54.6 / 10.1 (49.0 / 8.4) | 2.99 | +13,911 (3,745) | −2,008 | 49.3 / 0.0 (50.0 / 5.5) | 987 / 989 |
+| idm_size, eval takes only the 0.75x cut | 3.09 | +29,378 (4,820) | −3,356 | 53.8 / 5.9 (48.5 / 5.8) | 2.49 | +10,398 (2,799) | −3,080 | 52.2 / 0.0 (53.5 / 4.0) | 987 / 899 |
+| **t_check + scale_in + be_off** | **4.85** | **+53,116 (8,714)** | −3,059 | **58.0 / 2.5** (51.9 / 3.2) | 2.85 | +17,262 (4,647) | −3,076 | **52.2 / 0.0** (58.1 / 3.2) | 969 / 995 |
+| idm_size + all three | 3.45 | +40,205 (6,596) | −3,844 | 56.3 / 5.9 (46.0 / 4.2) | 3.46 | +18,692 (5,032) | −3,033 | 49.3 / 0.0 (52.5 / 2.5) | 969 / 995 |
+| idm_size (cut only) + all three | 3.40 | +33,858 (5,555) | −3,446 | 56.3 / 2.5 (49.9 / 3.0) | 3.44 | +18,650 (5,021) | −3,075 | 52.2 / 0.0 (57.0 / 2.0) | 987 / 995 |
+| t_check + be_off (no scale-in) | 4.02 | +34,234 (5,617) | −3,314 | 57.1 / 5.9 (52.8 / 2.6) | 2.20 | +9,059 (2,439) | −3,073 | 52.2 / 0.0 (55.1 / 3.5) | 969 / 951 |
+| idm_size + t_check + be_off | 4.03 | +37,293 (6,118) | −3,397 | 63.9 / 7.6 (53.3 / 3.6) | 2.52 | +10,644 (2,866) | −3,026 | 49.3 / 0.0 (51.0 / 3.3) | 983 / 899 |
+
+What it means, in plain words:
+
+- **On the eval the rule does not hold in both halves.** Alone: H2 makes +$4.2k more, but H1 makes $0.5k less, the H1 2-week
+  fails go up (9.2% → 10.1%) and the H2 2-week passes go down (50.7% → 49.3%). The Monte Carlo agrees (H1 pass 50.5 → 49.0%).
+- **Why:** two_week sizing already sizes each trade so one winner passes. A 1.5x size-up then only risks more (median risk
+  H1 $482 → $574) without passing faster, and the 0.75x cut makes some winners too small to pass, so the next trade has to try again.
+- **With the three adopt-candidates it hurts:** H1 +$40.2k instead of +$53.1k, 2-week fails 2.5% → 5.9%, H2 passes 52.2% → 49.3%.
+  The cut-only version keeps the fails, but H1 loses $19k.
+- **Max $ risk per trade stays under $1,000 in every variant** ($899-$995, full stop + 1 tick + $1.90). The caps work.
+- **For the owner's eval, the best combination is t_check + scale_in + be_off without idm_size** (H1 +$53.1k, 2-week
+  58.0 / 2.5; H2 +$17.3k, 52.2 / 0.0). That still needs the switch-on work listed in CLAUDE.md (t_check route timing,
+  NinjaTrader add-order route for scale_in).
+- **Where idm_size can still help:** the LIT size rule (normal) and a funded account, where it adds money in both halves
+  (sections above). It is off by default. Turning it on in live_model.json "lit" would also change the eval sizing now, so
+  keep it off while the eval runs (or set `lit_sizing.idm: "off"` to keep it out of the eval sizing).
+
+Code: `engine/lit.py` writes `idm_m` / `idm_cap` / `idm_n` / `wk_m` on each trade (only when the option is on).
+`engine/lit_live.py` carries them on the trades, the open position and the enter-now entry. `engine/live.py` (primary) and
+`engine/multi_account.py` (extra accounts) hand that dict to `engine/sizing.lit_qty` unchanged. In `engine/sizing.py`, two_week,
+eval, fast_eval and funded apply `idm_m` to their own base and re-check `idm_cap`, then the caps. normal and safe_eval route the
+model's micros, which already carry it. `lit_sizing.idm` can be "both" (default), "cut" or "off". No `idm_m` gives the old
+sizing exactly. Scale-in adds are sized from the routed micros (`scale_in_qty(q, q, ...)`), so they follow the multiplier
+with no change. Tests: `python -X utf8 -m tests.test_lit_idm_sizing` (18 checks; `--quick` 13) and the new idm block in
+`python -m engine.sizing`.
+
 ## Files
 
 - `engine/lit_entries.py`: MSNR levels (A/V, QM, flips), storyline, LevelMarket, IDM-in-front-of-OB levels. Pure functions,
   with a selftest: `python -X utf8 -m engine.lit_entries`.
 - `engine/lit.py`: the new option `idm_size` (default None; `tests.test_lit_live` unchanged).
+- `engine/sizing.py`: applies `idm_m` in two_week / eval / fast_eval / funded (2026-10-19); `tools/lit_idm_eval.py` scores the eval
+  path -> `research/lit/idm_eval.json`, runs `lit_idm_eval_*`.
 - `tools/lit_new_entries.py`: commands `check` (base == lit_live + look-ahead test), `msnr`, `msnrlit`, `idmob`, `stack`,
   `grade`, `idm2`, `split`, `save` (reruns the families and stores the runs `lit_ent_*`).
 - `research/lit/new_entries.json`: every variant.

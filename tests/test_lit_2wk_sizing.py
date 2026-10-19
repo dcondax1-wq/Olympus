@@ -72,9 +72,12 @@ def main():
         r.append(check("study: A0 H1 2-week pass/fail", (o["p10"], o["f10"]), (58.0, 17.6)))
         o = W.exact(W.FINAL["eval_today"][1], "H1")
         r.append(check("study: today's eval mode H1 (all starts) == 37.5 / 3.1", (o["p10_all"], o["f10_all"]), (37.5, 3.1)))
+        skipped = 0
     else:
-        print("skip study regression (no unit-trade cache)")
-    print(f"{sum(r)}/{len(r)} passed")
+        # the cache is gitignored (research/runs/_cache/): a fresh tree runs 20 checks, a tree with the cache 22
+        skipped = 2
+        print("skip study regression (no unit-trade cache: python tools/lit_2wk.py build)")
+    print(f"{sum(r)}/{len(r)} passed" + (f" ({skipped} study checks skipped)" if skipped else ""))
     return all(r)
 
 

@@ -1,7 +1,7 @@
 {
- "built": "2026-10-19 16:53",
+ "built": "2026-10-19 18:11",
  "baseline": "baseline",
- "count": 1088,
+ "count": 1096,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -6262,6 +6262,158 @@
      "slow_pass": 82.1,
      "pass_med": 33.0,
      "b2b": "6/4"
+    }
+   }
+  },
+  {
+   "id": "lit_idm_eval_all3",
+   "title": "t_check + scale_in + be_off on the eval path",
+   "family": "risk",
+   "question": "Owner 2026-10-19: the inducement-count size only acted in normal sizing; make engine/sizing.py honour it on the eval path and score it alone and with the adopt-candidates vs lit_live.",
+   "status": "adopt-candidate",
+   "verdict": "Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) n=80 PF 4.85 net +53,116 ($8,714/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 51.9/3.2), 1 month 78.0/11.9; max risk $969 (median $418). 2026 H2 (check) n=40 PF 2.85 net +17,262 ($4,647/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 58.1/3.2), 1 month 54.2/0.0; max risk $995 (median $348). lit_live on the same path: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9.",
+   "writeup": "lit-new-entries",
+   "tags": [
+    "lit",
+    "lit_idm_eval"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "idm": "both"
+   },
+   "built": "2026-10-19 18:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.04,
+     "net": 70378,
+     "dd": -3424,
+     "avg_r": 1.105,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 7174,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.04,
+     "net": 70378,
+     "dd": -3424,
+     "avg_r": 1.105,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 7174,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
     }
    }
   },
@@ -15861,6 +16013,152 @@
      "slow_pass": 88.7,
      "pass_med": 36.5,
      "b2b": "6/1"
+    }
+   }
+  },
+  {
+   "id": "lit_idm_eval_t15_be_off",
+   "title": "t_check + be_off on the eval path",
+   "family": "risk",
+   "question": "Owner 2026-10-19: the inducement-count size only acted in normal sizing; make engine/sizing.py honour it on the eval path and score it alone and with the adopt-candidates vs lit_live.",
+   "status": "promising",
+   "verdict": "Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) n=80 PF 4.02 net +34,234 ($5,617/mo) DD -3,314; 2-week pass/fail 57.1/5.9 (Monte Carlo 52.8/2.6), 1 month 74.3/11.9; max risk $969 (median $436). 2026 H2 (check) n=40 PF 2.2 net +9,059 ($2,439/mo) DD -3,073; 2-week pass/fail 52.2/0.0 (Monte Carlo 55.1/3.5), 1 month 50.8/0.0; max risk $951 (median $221). lit_live on the same path: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9.",
+   "writeup": "lit-new-entries",
+   "tags": [
+    "lit",
+    "lit_idm_eval"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "idm": "both"
+   },
+   "built": "2026-10-19 18:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 55.0,
+     "pf": 3.29,
+     "net": 43293,
+     "dd": -3837,
+     "avg_r": 0.792,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 385.0,
+     "half": 0,
+     "per_month": 4413,
+     "p10": 35.9,
+     "f10": 3.4,
+     "p15": 47.1,
+     "f15": 8.3,
+     "p20": 53.9,
+     "f20": 14.1,
+     "dec10": 39.3,
+     "slow_pass": 32.6,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 55.0,
+     "pf": 3.29,
+     "net": 43293,
+     "dd": -3837,
+     "avg_r": 0.792,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 385.0,
+     "half": 0,
+     "per_month": 4413,
+     "p10": 35.9,
+     "f10": 3.4,
+     "p15": 47.1,
+     "f15": 8.3,
+     "p20": 53.9,
+     "f20": 14.1,
+     "dec10": 39.3,
+     "slow_pass": 32.6,
+     "pass_med": 10.0,
+     "b2b": "13/4"
     }
    }
   },
@@ -90589,6 +90887,775 @@
    }
   },
   {
+   "id": "lit_idm_eval_idm",
+   "title": "inducement-count size (idm_size) on the eval path",
+   "family": "risk",
+   "question": "Owner 2026-10-19: the inducement-count size only acted in normal sizing; make engine/sizing.py honour it on the eval path and score it alone and with the adopt-candidates vs lit_live.",
+   "status": "rejected",
+   "verdict": "Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) n=80 PF 3.19 net +36,263 ($5,949/mo) DD -3,632; 2-week pass/fail 54.6/10.1 (Monte Carlo 49.0/8.4), 1 month 72.5/19.3; max risk $987 (median $574). 2026 H2 (check) n=40 PF 2.99 net +13,911 ($3,745/mo) DD -2,008; 2-week pass/fail 49.3/0.0 (Monte Carlo 50.0/5.5), 1 month 50.8/10.2; max risk $989 (median $274). lit_live on the same path: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9.",
+   "writeup": "lit-new-entries",
+   "tags": [
+    "lit",
+    "lit_idm_eval"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": {
+     "atr": 2.0,
+     "bars": 48,
+     "n": 2,
+     "up": 1.5,
+     "down": 0.75,
+     "cap_usd": 990
+    },
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "idm": "both"
+   },
+   "built": "2026-10-19 18:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.13,
+     "net": 50174,
+     "dd": -3632,
+     "avg_r": 0.719,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 374.0,
+     "half": 0,
+     "per_month": 5115,
+     "p10": 40.3,
+     "f10": 6.8,
+     "p15": 55.8,
+     "f15": 16.0,
+     "p20": 61.2,
+     "f20": 21.4,
+     "dec10": 47.1,
+     "slow_pass": 27.2,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.13,
+     "net": 50174,
+     "dd": -3632,
+     "avg_r": 0.719,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 374.0,
+     "half": 0,
+     "per_month": 5115,
+     "p10": 40.3,
+     "f10": 6.8,
+     "p15": 55.8,
+     "f15": 16.0,
+     "p20": 61.2,
+     "f20": 21.4,
+     "dec10": 47.1,
+     "slow_pass": 27.2,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_idm_eval_idm_all3",
+   "title": "idm_size + t_check + scale_in + be_off on the eval path",
+   "family": "risk",
+   "question": "Owner 2026-10-19: the inducement-count size only acted in normal sizing; make engine/sizing.py honour it on the eval path and score it alone and with the adopt-candidates vs lit_live.",
+   "status": "rejected",
+   "verdict": "Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) n=80 PF 3.45 net +40,205 ($6,596/mo) DD -3,844; 2-week pass/fail 56.3/5.9 (Monte Carlo 46.0/4.2), 1 month 76.1/15.6; max risk $969 (median $444). 2026 H2 (check) n=40 PF 3.46 net +18,692 ($5,032/mo) DD -3,033; 2-week pass/fail 49.3/0.0 (Monte Carlo 52.5/2.5), 1 month 50.8/15.3; max risk $995 (median $226). lit_live on the same path: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9.",
+   "writeup": "lit-new-entries",
+   "tags": [
+    "lit",
+    "lit_idm_eval"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": {
+     "atr": 2.0,
+     "bars": 48,
+     "n": 2,
+     "up": 1.5,
+     "down": 0.75,
+     "cap_usd": 990
+    },
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "idm": "both"
+   },
+   "built": "2026-10-19 18:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 43.3,
+     "pf": 3.46,
+     "net": 58897,
+     "dd": -3844,
+     "avg_r": 1.04,
+     "stop": 45.8,
+     "worst_day": -1012,
+     "risk": 349.0,
+     "half": 0,
+     "per_month": 6004,
+     "p10": 42.7,
+     "f10": 4.9,
+     "p15": 55.8,
+     "f15": 9.7,
+     "p20": 62.1,
+     "f20": 16.5,
+     "dec10": 47.6,
+     "slow_pass": 18.4,
+     "pass_med": 8.0,
+     "b2b": "12/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 43.3,
+     "pf": 3.46,
+     "net": 58897,
+     "dd": -3844,
+     "avg_r": 1.04,
+     "stop": 45.8,
+     "worst_day": -1012,
+     "risk": 349.0,
+     "half": 0,
+     "per_month": 6004,
+     "p10": 42.7,
+     "f10": 4.9,
+     "p15": 55.8,
+     "f15": 9.7,
+     "p20": 62.1,
+     "f20": 16.5,
+     "dec10": 47.6,
+     "slow_pass": 18.4,
+     "pass_med": 8.0,
+     "b2b": "12/5"
+    }
+   }
+  },
+  {
+   "id": "lit_idm_eval_idm_cut",
+   "title": "idm_size, eval sizing takes only the 0.75x cut",
+   "family": "risk",
+   "question": "Owner 2026-10-19: the inducement-count size only acted in normal sizing; make engine/sizing.py honour it on the eval path and score it alone and with the adopt-candidates vs lit_live.",
+   "status": "rejected",
+   "verdict": "Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) n=80 PF 3.09 net +29,378 ($4,820/mo) DD -3,356; 2-week pass/fail 53.8/5.9 (Monte Carlo 48.5/5.8), 1 month 73.4/14.7; max risk $987 (median $432). 2026 H2 (check) n=40 PF 2.49 net +10,398 ($2,799/mo) DD -3,080; 2-week pass/fail 52.2/0.0 (Monte Carlo 53.5/4.0), 1 month 50.8/3.4; max risk $899 (median $212). lit_live on the same path: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9.",
+   "writeup": "lit-new-entries",
+   "tags": [
+    "lit",
+    "lit_idm_eval"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": {
+     "atr": 2.0,
+     "bars": 48,
+     "n": 2,
+     "up": 1.5,
+     "down": 0.75,
+     "cap_usd": 990
+    },
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "idm": "cut"
+   },
+   "built": "2026-10-19 18:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.89,
+     "net": 39776,
+     "dd": -3854,
+     "avg_r": 0.723,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 332.0,
+     "half": 0,
+     "per_month": 4055,
+     "p10": 35.0,
+     "f10": 4.4,
+     "p15": 48.1,
+     "f15": 9.7,
+     "p20": 55.8,
+     "f20": 13.1,
+     "dec10": 39.4,
+     "slow_pass": 41.4,
+     "pass_med": 13.0,
+     "b2b": "10/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.89,
+     "net": 39776,
+     "dd": -3854,
+     "avg_r": 0.723,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 332.0,
+     "half": 0,
+     "per_month": 4055,
+     "p10": 35.0,
+     "f10": 4.4,
+     "p15": 48.1,
+     "f15": 9.7,
+     "p20": 55.8,
+     "f20": 13.1,
+     "dec10": 39.4,
+     "slow_pass": 41.4,
+     "pass_med": 13.0,
+     "b2b": "10/3"
+    }
+   }
+  },
+  {
+   "id": "lit_idm_eval_idm_cut_all3",
+   "title": "idm_size (cut only on the eval) + t_check + scale_in + be_off on the eval path",
+   "family": "risk",
+   "question": "Owner 2026-10-19: the inducement-count size only acted in normal sizing; make engine/sizing.py honour it on the eval path and score it alone and with the adopt-candidates vs lit_live.",
+   "status": "rejected",
+   "verdict": "Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) n=80 PF 3.4 net +33,858 ($5,555/mo) DD -3,446; 2-week pass/fail 56.3/2.5 (Monte Carlo 49.9/3.0), 1 month 77.1/10.1; max risk $987 (median $390). 2026 H2 (check) n=40 PF 3.44 net +18,650 ($5,021/mo) DD -3,075; 2-week pass/fail 52.2/0.0 (Monte Carlo 57.0/2.0), 1 month 54.2/3.4; max risk $995 (median $226). lit_live on the same path: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9.",
+   "writeup": "lit-new-entries",
+   "tags": [
+    "lit",
+    "lit_idm_eval"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": {
+     "atr": 2.0,
+     "bars": 48,
+     "n": 2,
+     "up": 1.5,
+     "down": 0.75,
+     "cap_usd": 990
+    },
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "idm": "cut"
+   },
+   "built": "2026-10-19 18:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 3.42,
+     "net": 52508,
+     "dd": -3446,
+     "avg_r": 1.032,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 332.0,
+     "half": 0,
+     "per_month": 5353,
+     "p10": 34.5,
+     "f10": 0.0,
+     "p15": 48.1,
+     "f15": 5.8,
+     "p20": 57.8,
+     "f20": 14.6,
+     "dec10": 34.5,
+     "slow_pass": 32.2,
+     "pass_med": 11.0,
+     "b2b": "9/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 3.42,
+     "net": 52508,
+     "dd": -3446,
+     "avg_r": 1.032,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 332.0,
+     "half": 0,
+     "per_month": 5353,
+     "p10": 34.5,
+     "f10": 0.0,
+     "p15": 48.1,
+     "f15": 5.8,
+     "p20": 57.8,
+     "f20": 14.6,
+     "dec10": 34.5,
+     "slow_pass": 32.2,
+     "pass_med": 11.0,
+     "b2b": "9/3"
+    }
+   }
+  },
+  {
+   "id": "lit_idm_eval_idm_t15_be_off",
+   "title": "idm_size + t_check + be_off on the eval path",
+   "family": "risk",
+   "question": "Owner 2026-10-19: the inducement-count size only acted in normal sizing; make engine/sizing.py honour it on the eval path and score it alone and with the adopt-candidates vs lit_live.",
+   "status": "rejected",
+   "verdict": "Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) n=80 PF 4.03 net +37,293 ($6,118/mo) DD -3,397; 2-week pass/fail 63.9/7.6 (Monte Carlo 53.3/3.6), 1 month 78.0/12.8; max risk $983 (median $424). 2026 H2 (check) n=40 PF 2.52 net +10,644 ($2,866/mo) DD -3,026; 2-week pass/fail 49.3/0.0 (Monte Carlo 51.0/3.3), 1 month 50.8/6.8; max risk $899 (median $213). lit_live on the same path: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9.",
+   "writeup": "lit-new-entries",
+   "tags": [
+    "lit",
+    "lit_idm_eval"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": {
+     "atr": 2.0,
+     "bars": 48,
+     "n": 2,
+     "up": 1.5,
+     "down": 0.75,
+     "cap_usd": 990
+    },
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "idm": "both"
+   },
+   "built": "2026-10-19 18:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 55.0,
+     "pf": 3.49,
+     "net": 47937,
+     "dd": -3397,
+     "avg_r": 0.79,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 338.0,
+     "half": 0,
+     "per_month": 4887,
+     "p10": 37.9,
+     "f10": 3.9,
+     "p15": 48.1,
+     "f15": 5.8,
+     "p20": 56.8,
+     "f20": 8.3,
+     "dec10": 41.8,
+     "slow_pass": 34.9,
+     "pass_med": 10.0,
+     "b2b": "11/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 55.0,
+     "pf": 3.49,
+     "net": 47937,
+     "dd": -3397,
+     "avg_r": 0.79,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 338.0,
+     "half": 0,
+     "per_month": 4887,
+     "p10": 37.9,
+     "f10": 3.9,
+     "p15": 48.1,
+     "f15": 5.8,
+     "p20": 56.8,
+     "f20": 8.3,
+     "dec10": 41.8,
+     "slow_pass": 34.9,
+     "pass_med": 10.0,
+     "b2b": "11/3"
+    }
+   }
+  },
+  {
    "id": "lit_ll_model",
    "title": "3-feature logistic stop-out model (inducement age, stop/ATR, R:R), fit on H1, x0.5 on its top third",
    "family": "risk",
@@ -128038,6 +129105,148 @@
      "slow_pass": 84.7,
      "pass_med": 34.0,
      "b2b": "5/4"
+    }
+   }
+  },
+  {
+   "id": "lit_idm_eval_base",
+   "title": "LIT live (lit_live) on the eval path - executor check",
+   "family": "risk",
+   "question": "Owner 2026-10-19: the inducement-count size only acted in normal sizing; make engine/sizing.py honour it on the eval path and score it alone and with the adopt-candidates vs lit_live.",
+   "status": "info",
+   "verdict": "Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) n=80 PF 3.66 net +36,723 ($6,025/mo) DD -3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.5/7.0), 1 month 72.5/16.5; max risk $969 (median $482). 2026 H2 (check) n=40 PF 2.13 net +9,674 ($2,605/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8; max risk $989 (median $303). lit_live on the same path: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9.",
+   "writeup": "lit-new-entries",
+   "tags": [
+    "lit",
+    "lit_idm_eval"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "idm": "both"
+   },
+   "built": "2026-10-19 18:11",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.07,
+     "net": 46397,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4730,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.07,
+     "net": 46397,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4730,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
     }
    }
   },
