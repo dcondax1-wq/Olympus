@@ -61,6 +61,3 @@ data/push_pc_key.json
 data/autoupdate.json
 data/auto_resume.json
 data/_nt_probe_state.json
-
-# Claude "remember" plugin: per-project chat memory, may quote secrets; never commit
-.remember/
