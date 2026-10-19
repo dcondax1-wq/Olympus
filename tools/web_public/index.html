@@ -1747,6 +1747,11 @@ function loadTC() {
   TCP = import('./tradechart.js?v=' + TCV).then((m) => { TC = m; return m; }).catch((e) => { console.warn('trade chart unavailable', e); TCP = null; throw e; });
   return TCP;
 }
+// live status panel (live_panel.js): is the PC bot trading the eval (verdict, account, feed, LIT stage), the open trade's chart
+let LPP = null;
+const LPV = 'lp1';
+function loadLP() { if (!LPP) LPP = import('./live_panel.js?v=' + LPV).catch((e) => { console.warn('live panel unavailable', e); LPP = null; throw e; }); return LPP; }
+function lpMount(box, where) { if (!box) return; loadLP().then((m) => { if (box.isConnected && D) m.mount(box, D, { where, loadTC }); }).catch(() => { if (box.isConnected) box.innerHTML = ''; }); }
 // a paper / live trade has no replay record: its chart is drawn from the recent 5m bars in data.json when they cover the entry
 const tcLive = (t) => !!(t && !t.chart && t.entry_t && t.entry != null && t.stop != null && (LV().bars || []).length && LV().bars[0][0] <= t.entry_t);
 const tcAvail = (t) => !!(t && (t.chart || tcLive(t)));
@@ -1927,7 +1932,7 @@ VIEWS.today = (el) => {
   const idx = stepIdx(lv), pos = lv.position, lit = isLIT(), wk = litWeek(), mon = litMonday();
   const todays = (lv.ledger || []).filter(v => v.day === lv.today), dayPnl = todays.reduce((a, v) => a + (v.usd || 0), 0);
   const y = D.results?.periods?.['2026 YTD'], RD = reactorData(), WK = weekData(), LQ = liqData();
-  el.innerHTML = `
+  el.innerHTML = `<div id="lpToday" class="lp-slot"></div>
     <div class="card hero-card"><div class="hero3d" id="tdOrb"><img class="hero-fallback" src="icons/icon-512.png?v=drop1" alt="">
         <span class="hero-tag">${icon('engine')}LIVE ORACLE · last ${Math.min(12, (lv.bars || []).length)} bars</span></div>
       <div class="state">
@@ -1950,6 +1955,7 @@ VIEWS.today = (el) => {
       ${statBox('2026 backtest', y ? 'PF ' + fPF(y.pf) : '—', y ? `${kusd(y.net)} · ${kusd(perMonth(y.net, y.from, y.to))} a month · ${num(y.per_week, 1)}/wk` : 'no backtest in this build')}
     </div>
     ${accountsCard()}
+    ${window.LEX ? LEX.todayCard() : ''}
     ${timingCard(lv.eval_timing)}
     ${activityCard()}
     ${lit ? briefCard() : ''}
@@ -1969,6 +1975,7 @@ VIEWS.today = (el) => {
       ${labTeaser()}
     </div>
     ${lit ? shadowCard() : ''}`;
+  lpMount($('#lpToday'), 'today');
   liveChart($('#tdChart'), 220, 120);
   fx3d('today-orb', $('#tdOrb'), 'orb', { bars: (lv.bars || []).slice(-12), pools: lv.pools || [], price: lv.price, mood: moodNow() });
   fxFill('today-reactor', 'reactor', RD, {}, (fb) => reactorFb(fb, RD));
@@ -3627,7 +3634,7 @@ VIEWS.accounts = (el) => {
   const cur = list.find(a => a.id === (ARG || AS.sel)) || list[0];
   el.innerHTML = head('Accounts · where the bot trades', esc(cur.name), cur.source === 'cloud' ? 'The cloud monitor’s paper ledger, scored with the MFFU 50K rules. It never places orders.'
       : 'What the PC bot routed to this account through NinjaTrader: the position, today’s orders and every closed trade. Read-only: this page never places or changes an order.')
-    + accPick(list, cur)
+    + accPick(list, cur) + (cur.source === 'pc' && !cur.error ? '<div id="lpAcc" class="lp-slot"></div>' : '')
     + (cur.error ? `<div class="card"><b>This account could not be read.</b><div class="note">${esc(cur.error)}</div></div>` : accHeader(cur) + accPosition(cur) + accOrders(cur)
       + `<div class="grid g2 astart"><div class="card"><div class="card-h"><h3>Equity</h3><span class="meta">${cur.eval ? 'profit vs ' + usd(cur.eval.start_balance) + ' · dashed = +' + usd(cur.eval.target_balance - cur.eval.start_balance) + ' target' : 'cumulative'}</span></div><div id="accEq"></div></div>
         <div class="card"><div class="card-h"><h3>Daily P&amp;L</h3><span class="meta">green = profit day</span></div>${accCalendar(cur)}</div></div>`
@@ -3637,6 +3644,7 @@ VIEWS.accounts = (el) => {
       <ul><li><b>Ring</b>: progress to the +$3,000 target ($53,000). <b>Gauge</b>: room above the trailing max-loss floor ($2,000 below the best end-of-day balance, locked at $50,100).</li>
       <li><b>Session N of 10</b>: the two-week eval clock (the owner’s goal: pass within 2 weeks). <b>Daily loss used</b>: today’s closed loss vs the $1,000 soft daily limit.</li>
       <li>The PC account updates with the PC’s heartbeat (every 5 min) and the cloud run (every 15 min), so it can be up to ~20 min behind NinjaTrader.</li></ul>`);
+  lpMount($('#lpAcc'), 'accounts');
   if (!cur.error) {
     accEquity($('#accEq'), cur);
     const p = cur.position;
@@ -4285,5 +4293,6 @@ applyLook(); nav(); route(); load('boot'); schedule(); loadFX(); loadLK();
 setInterval(() => FX && D && FX.mood(moodNow()), 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => null);
 </script>
+<script src="extras.js?v=1" defer></script>
 </body>
 </html>

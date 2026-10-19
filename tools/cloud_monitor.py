@@ -602,6 +602,13 @@ def run(out):
         sent = send_alert("PC BOT SILENT: " + silent_txt) or sent
         other_notices.append(push.text_payload("Cloud", "pc", "PC bot silent" + (" with a position" if pc.get("position") else ""),
                                                silent_txt, key=f"pc_silent:{now}", t=now))
+    # ---- is the PC bot trading the eval? (engine/accounts.verdict) one push per reason per hour, 01:50-15:55 ET weekdays,
+    # whenever it is not green (a silent PC that said it was running already has the alert above)
+    from engine import accounts as _accounts
+    pc_verdict = _accounts.verdict(pc, now)
+    v_due, pc_verdict_alerts = _accounts.alert_due(pc_verdict, now, st.get("pc_verdict_alerts"))
+    if v_due and not (pc_verdict["code"] == "SILENT" and pc.get("silent")):
+        other_notices.append(_accounts.verdict_notice(pc_verdict, pc, now))
     if prev_et and prev_et != now_et["verdict"]:
         other_notices.append(push.text_payload("Cloud", "timing", f"Eval timing: {now_et['verdict'].upper()}",
                                                f"{now_et['reason']} " + ("Good time to buy or reset the MFFU eval." if now_et["verdict"] == "go"
@@ -688,6 +695,8 @@ def run(out):
                  # for the web dashboard's Chart tab: the last ~2 sessions of 5m bars and the untaken pools around price
                  "bars": [[int(r.time), float(r.open), float(r.high), float(r.low), float(r.close)] for r in df.tail(200).itertuples()],
                  "pools": _near_pools(state),
+                 # the last ~6 hours of 1m bars (bars_1m.csv) for the live trade chart (tools/web_public/live_panel.js)
+                 "bars1": _bars_1m_tail(out),
                  # LIT panels (tools/web_public/litkit.js): the day context (18:00 open, VIX band, today's signals), the session
                  # boxes' highs / lows and every untaken LIT level (the Levels board marks a level taken when it leaves this list)
                  "lit": state.get("lit") if lm["model"] == "lit" else None,
@@ -695,7 +704,9 @@ def run(out):
                  "levels": [{k: p.get(k) for k in ("label", "price", "side", "strength", "kind")} for p in state.get("active_pools") or []][:60]
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
-                                               "reason", "model", "push_pk", "acct")},
+                                               "reason", "model", "push_pk", "acct", "health", "every_s")},
+                 # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
+                 "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
                  "pc_alert_at": pc_alert_at,
                  # phone app notifications: the keys already sent (de-dup), when they started, the public status (never the
                  # private key or an endpoint) and the last 80 notices for the app's Activity feed
@@ -714,6 +725,20 @@ def run(out):
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"
           + (f" | shadow {shadow.get('model_state')}, ledger {len(shadow.get('ledger') or {})}" if shadow else ""))
+
+
+def _bars_1m_tail(out, n=360):
+    """The newest n 1m bars of <out>/bars_1m.csv as [[t, o, h, l, c], ...]; [] when there is none. Never raises."""
+    try:
+        p = os.path.join(out, "bars_1m.csv")
+        if not os.path.exists(p):
+            return []
+        b = pd.read_csv(p).tail(n)
+        return [[int(r.time), round(float(r.open), 2), round(float(r.high), 2), round(float(r.low), 2), round(float(r.close), 2)]
+                for r in b.itertuples()]
+    except Exception as e:
+        print("1m bars for the chart unavailable:", e.__class__.__name__)
+        return []
 
 
 def _near_pools(state, n=6):

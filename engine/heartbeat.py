@@ -9,7 +9,11 @@ heartbeat.json: {"t": unix seconds, "running": bot running, "adapter": paper|nin
                  "model_state": str, "host": computer name, "every_s": N,
                  "acct": the Accounts page's view of the routed activity (engine/accounts.pc_activity: account name + SIM/LIVE,
                          open position, today's orders, last 60 closed routed trades, the eval's P&L per day; secret-free,
-                         under 48 KB; older cloud monitors ignore it)}
+                         under 48 KB; older cloud monitors ignore it),
+                 "health": is the bot really trading the eval (engine/accounts.pc_health: account name + LIVE/SIM, adapter
+                           enabled or the DISABLED reason, armed, NINJATRADER_LIVE set (a bool), NinjaTrader connection,
+                           feed source + age of the last 1m / 5m bar, last poll + errors, the LIT stage, setups seen today,
+                           orders today, kill flag, uptime; secret-free, ~2 KB; the cloud's verdict: accounts.verdict)}
 
 On by default only when LE_HEARTBEAT=1 (scripts/run_bot.ps1 sets it; a dev shell does not push anything). Needs git
 with push rights in the project folder (the owner's PC has them). Never raises into the server; failures are logged
@@ -101,6 +105,15 @@ def _push_pk():
         return None
 
 
+def _health(bot):
+    """The "health" block (engine/accounts.pc_health). Never raises; None when unavailable."""
+    try:
+        from engine import accounts
+        return accounts.pc_health(bot)
+    except Exception:
+        return None
+
+
 def _acct(bot):
     """The Accounts page block (engine/accounts.pc_activity). Never raises; None when unavailable."""
     try:
@@ -127,7 +140,7 @@ class Heartbeat:
                 "position": bool(st.get("position")), "model_state": st.get("model_state"), "host": platform.node(),
                 "model": (st.get("strategy") or {}).get("model") or cfg.get("model"),
                 "push_pk": _push_pk(),          # phone notifications: the cloud seals the notification key to this (engine/push.py)
-                "every_s": int(self.every_s), "acct": _acct(self.bot)}
+                "every_s": int(self.every_s), "acct": _acct(self.bot), "health": _health(self.bot)}
 
     def beat(self) -> dict:
         res = push(self.payload())

@@ -465,3 +465,264 @@ def build_accounts(state: dict, lm: dict | None = None, now=None) -> list:
         except Exception as e:
             out.append({**meta, "error": f"{e.__class__.__name__}: {clean_text(e, 120)}"})
     return out
+
+
+# ---------------------------------------------------------------------------------------------------------------- bot health
+# The heartbeat's "health" block (PC side, pc_health) and the cloud's verdict on it (verdict / alert_due): is the PC bot
+# really trading the owner's eval right now? Read-only, never raises, secret-free (no paths, no keys; NINJATRADER_LIVE is
+# reported as a bool only).
+HEALTH_VERSION = 1
+STAGES = ["levels", "sweep", "inducement", "cisd", "limit", "cisd1m", "trade", "done"]
+STAGE_LABEL = {"levels": "Levels", "sweep": "Sweep", "inducement": "Inducement", "cisd": "5m CISD", "limit": "Limit",
+               "cisd1m": "1m CISD", "trade": "In trade", "done": "Done", "closed": "Market closed"}
+ALERT_FROM, ALERT_TO = 110, 955                # 01:50-15:55 ET on weekdays: LIT's entries run 02:00-15:30, flat 15:55
+ALERT_EVERY_S = 3600                           # at most one push per reason per hour
+FEED_STALE_1M_S = 4 * 60                       # the 1m bar closed more than 4 min before the heartbeat: the feed is behind
+FEED_STALE_5M_S = 11 * 60                      # 5m: two bars + a minute (engine/live.py stale rule)
+POLL_STALE_S = 5 * 60                          # no completed poll for 5 min while the bot says it runs
+_PROC_T0 = int(time.time())                    # this process (the PC server) started about now: uptime
+
+
+def _sim_name(name) -> bool:
+    try:
+        from .ninjatrader import is_sim
+        return is_sim(name)
+    except Exception:
+        return bool(re.match(r"^(Sim|Playback)\d+$", str(name or "").strip()))
+
+
+def _lit_stage(st: dict) -> dict:
+    """Where today's LIT setup is: levels -> sweep -> inducement -> CISD -> limit -> 1m CISD -> in trade -> done.
+    The bot reports a setup once its 5m CISD closed (sweep + inducement + CISD come together then); before that it is
+    watching the levels."""
+    st = st or {}
+    ms = str(st.get("model_state") or "")
+    lit = st.get("lit") or {}
+    sig = list(lit.get("signals_today") or [])
+    setups = st.get("setups") or {}
+    if st.get("position"):
+        return {"stage": "trade", "i": 6, "text": clean_text(ms, 160)}
+    if st.get("enter_now"):
+        return {"stage": "trade", "i": 6, "text": clean_text(ms, 160), "entering": True}
+    if "market closed" in ms:
+        return {"stage": "closed", "i": -1, "text": clean_text(ms, 160)}
+    if "done for today" in ms or (int(st.get("day_trades") or 0) >= 1):
+        return {"stage": "done", "i": 7, "text": clean_text(ms, 160)}
+    if setups:
+        s = next(iter(setups.values()))
+        return ({"stage": "cisd1m", "i": 5, "text": clean_text(ms, 160)} if s.get("tapped_t")
+                else {"stage": "limit", "i": 4, "text": clean_text(ms, 160)})
+    if "entry window closed" in ms:
+        return {"stage": "done", "i": 7, "text": clean_text(ms, 160), "window_closed": True}
+    return {"stage": "levels", "i": 0, "text": clean_text(ms, 160), "signals": len(sig)}
+
+
+def _signal_row(s: dict) -> dict:
+    try:
+        from .lit_live import _sweep_names
+        names = _sweep_names(s.get("swept") or [])
+    except Exception:
+        names = [str(x) for x in (s.get("swept") or [])]
+    return {"t": _i(s.get("t")), "side": "LONG" if int(s.get("dir") or 1) == 1 else "SHORT",
+            "level": clean_text(", ".join(names[:3]), 60), "limit": _f(s.get("limit_px")), "stop": _f(s.get("stop_px")),
+            "target": _f(s.get("target_px")), "risk_pts": _f(s.get("risk_pts")), "rr": _f(s.get("rr")),
+            "status": clean_text(s.get("status"), 20)}
+
+
+def _nt_status(ad) -> dict:
+    """NinjaTrader connection files (outgoing/<connection>.txt CONNECTED / DISCONNECTED) + the adapter's last error."""
+    out = {"connections": None, "connected": None, "last_error": clean_text(getattr(ad, "last_error", None), 160),
+           "killed": bool(getattr(ad, "killed", False)), "open_brackets": len(list(getattr(ad, "legs", None) or []))}
+    try:
+        if callable(getattr(ad, "connections", None)):
+            c = ad.connections()
+            out["connections"] = {clean_text(k, 40): str(v) for k, v in list(c.items())[:6]}
+            out["connected"] = (any(v == "CONNECTED" for v in c.values()) if c else None)
+        if callable(getattr(ad, "folder_status", None)):
+            fs = ad.folder_status()
+            out["folder_ok"] = bool(fs.get("incoming")) and bool(fs.get("outgoing"))
+    except Exception as e:
+        out["error"] = clean_text(f"{e.__class__.__name__}: {e}", 120)
+    return out
+
+
+def pc_health(bot, now=None) -> dict:
+    """The heartbeat's "health" block: is the bot able to trade the eval, is it seeing the market, where is LIT today.
+    Never raises: on any error {"v", "error"}."""
+    try:
+        now = int(now or time.time())
+        cfg = getattr(bot, "cfg", None) or {}
+        ad = getattr(bot, "adapter", None)
+        h = dict(getattr(bot, "health", None) or {})
+        st = getattr(bot, "state", None) or {}
+        adapter = str(cfg.get("adapter") or getattr(ad, "name", None) or "paper")
+        name = getattr(ad, "account", None)
+        if not name and adapter == "ninjatrader":
+            name = cfg.get("nt_account") or os.environ.get("NINJATRADER_ACCOUNT") or "Sim101"
+        is_live = bool(adapter == "ninjatrader" and name and not _sim_name(name)) or \
+            bool(adapter not in ("paper", "ninjatrader") and getattr(ad, "env", None) == "live")
+        disabled = clean_text(getattr(ad, "disabled", None), 160) if ad is not None else None
+        if adapter != "paper" and ad is None and getattr(bot, "running", False):
+            disabled = "adapter not created"
+        ledger = list(getattr(bot, "ledger", None) or [])
+        today = trading_day(now)
+        led_today = [r for r in ledger if r.get("t") and trading_day(r["t"]) == today]
+        sent = [r for r in led_today if r.get("side") in ("buy", "sell", "exit", "modify")]
+        last = sent[-1] if sent else None
+        last_order = None
+        if last:
+            res = last.get("result") or {}
+            last_order = {"t": _i(last.get("t")), "side": str(last.get("side")), "ok": bool(res.get("ok")),
+                          "error": clean_text(res.get("error"), 120)}
+        entries = [r for r in led_today if r.get("side") in ("buy", "sell")]
+        lit = st.get("lit") or {}
+        sigs = [s for s in (lit.get("signals_today") or []) if isinstance(s, dict)]
+        last_sig = _signal_row(sigs[-1]) if sigs else None
+        src = str(cfg.get("data_source") or h.get("data_source") or "yahoo")
+        fallback = bool(h.get("fallback"))
+        tf = str(cfg.get("tf") or "5m")
+        secs = 60 if tf == "1m" else 300
+        last5 = _i(h.get("last_bar_t"))
+        last1 = _i(h.get("last_1m_bar_t"))
+        lp = _i(getattr(bot, "last_poll", None))
+        out = {
+            "v": HEALTH_VERSION, "t": now,
+            "account": {"name": clean_text(name or adapter, 60), "adapter": adapter, "is_live": is_live,
+                        "label": "PAPER" if adapter == "paper" else "LIVE" if is_live else "SIM",
+                        "enabled": disabled is None, "disabled": disabled,
+                        "armed": bool(cfg.get("armed")), "live_lock": os.environ.get("NINJATRADER_LIVE", "") == "1"},
+            "running": bool(getattr(bot, "running", False)), "kill": bool(getattr(bot, "kill", False)),
+            "model": cfg.get("model") or (st.get("strategy") or {}).get("model"),
+            "feed": {"source": src, "fallback": fallback, "used": "yahoo" if (fallback or src == "yahoo") else src,
+                     "tf": tf, "last_5m_t": last5, "age_5m_s": (now - last5 - secs) if last5 else None,
+                     "last_1m_t": last1, "age_1m_s": (now - last1 - 60) if last1 else None,
+                     "stale": bool(h.get("stale")), "stale_polls": _i(h.get("stale_polls")), "market_open": h.get("market_open"),
+                     "entries_blocked": bool(h.get("entries_blocked")), "bar_1m_behind": bool(h.get("bar_1m_behind"))},
+            "poll": {"last_t": lp, "age_s": (now - lp) if lp else None, "last_ok_t": _i(h.get("last_ok_poll")),
+                     "errors": _i(getattr(bot, "errors", 0)), "consecutive_errors": _i(h.get("consecutive_errors")),
+                     "last_error": clean_text(h.get("last_error"), 160), "last_error_t": _i(h.get("last_error_t")),
+                     "poll_ms": _i(h.get("poll_ms"))},
+            "lit": {**_lit_stage(st), "setups_today": len(sigs), "last_setup": last_sig,
+                    "day_trades": _i(st.get("day_trades")), "price": _f(st.get("price"))},
+            "orders": {"today": len(sent), "entries_today": len(entries), "last": last_order,
+                       "last_entry_t": _i(entries[-1].get("t")) if entries else None},
+            "uptime": {"server_s": max(0, now - _PROC_T0),
+                       "bot_s": max(0, now - int(bot.started_at)) if getattr(bot, "started_at", None) else None},
+        }
+        if adapter == "ninjatrader" and ad is not None:
+            out["nt"] = _nt_status(ad)
+        return out
+    except Exception as e:
+        return {"v": HEALTH_VERSION, "error": f"{e.__class__.__name__}: {clean_text(e, 120)}"}
+
+
+def _in_alert_window(now) -> bool:
+    e = _et(now)
+    m = e.hour * 60 + e.minute
+    return e.weekday() < 5 and ALERT_FROM <= m <= ALERT_TO
+
+
+def verdict(pc: dict | None, now=None) -> dict:
+    """The cloud's verdict on the PC heartbeat (state "pc" from engine/heartbeat.read, with "health"):
+    {"code", "label", "level" good|warn|bad, "reason", "in_session", "checks": [[name, ok, text], ...]}.
+    Codes: TRADING (TRADING YOUR EVAL), SIM (ON SIM), PAPER (PAPER ONLY), DISABLED (DISABLED: <reason>), SILENT (PC SILENT),
+    FEED (FEED STALE), OLD (the PC bot sends no health block yet: update it)."""
+    now = int(now or time.time())
+    pc = pc or {}
+    hb_t = _i(pc.get("t"))
+    age = max(0, now - hb_t) if hb_t else None
+    every = float(pc.get("every_s") or 300)
+    insess = _in_alert_window(now)
+    checks = []
+
+    def out(code, label, level, reason):
+        return {"code": code, "label": label, "level": level, "reason": reason, "in_session": insess, "hb_age_s": age,
+                "checks": checks, "t": now}
+
+    fresh = bool(pc.get("present")) and age is not None and age <= max(20 * 60, 3 * every)
+    checks.append(["heartbeat", fresh, "no heartbeat from the PC" if not pc.get("present") else
+                   f"last heartbeat {age // 60 if age is not None else '?'} min ago"])
+    if not fresh:
+        return out("SILENT", "PC SILENT", "bad", "the PC bot has not reported" + (f" for {age // 60} min" if age is not None else ""))
+    hl = pc.get("health") if isinstance(pc.get("health"), dict) else None
+    running = pc.get("running") if hl is None else hl.get("running")
+    checks.append(["running", bool(running), "bot running" if running else "bot stopped"])
+    if not running:
+        return out("DISABLED", "DISABLED: bot stopped", "bad", "the PC server is up but the bot is stopped")
+    if hl is None or hl.get("error"):
+        adapter = pc.get("adapter")
+        if adapter in (None, "paper"):
+            checks.append(["adapter", False, "adapter paper"])
+            return out("PAPER", "PAPER ONLY", "warn", "the PC bot trades paper: no orders reach NinjaTrader")
+        return out("OLD", "CAN'T CONFIRM", "warn", "the PC bot sends no health report yet (update the PC bot: git pull, restart)"
+                   + (f"; {hl.get('error')}" if hl and hl.get("error") else ""))
+    a = hl.get("account") or {}
+    if hl.get("kill"):
+        checks.append(["kill", False, "kill switch on"])
+        return out("DISABLED", "DISABLED: kill switch on", "bad", "the kill switch is on for today: no orders are routed")
+    checks.append(["kill", True, "kill switch off"])
+    adapter = a.get("adapter") or pc.get("adapter")
+    checks.append(["adapter", adapter == "ninjatrader", f"adapter {adapter}"])
+    if adapter in (None, "paper"):
+        return out("PAPER", "PAPER ONLY", "warn", "the PC bot trades paper: no orders reach NinjaTrader")
+    checks.append(["account", bool(a.get("is_live")), f"account {a.get('name') or '?'} ({a.get('label') or '?'})"])
+    if not a.get("is_live"):
+        return out("SIM", "ON SIM", "warn", f"orders go to {a.get('name') or 'a Sim account'}, not your eval")
+    checks.append(["enabled", bool(a.get("enabled")), "orders enabled" if a.get("enabled") else f"disabled: {a.get('disabled')}"])
+    if not a.get("enabled"):
+        return out("DISABLED", "DISABLED: " + str(a.get("disabled") or "adapter refused")[:80], "bad", str(a.get("disabled") or ""))
+    nt = hl.get("nt") or {}
+    if nt.get("connected") is False:
+        checks.append(["ninjatrader", False, "NinjaTrader reports DISCONNECTED"])
+        return out("DISABLED", "DISABLED: NinjaTrader disconnected", "bad", "NinjaTrader's connection file says DISCONNECTED")
+    if nt.get("connected"):
+        checks.append(["ninjatrader", True, "NinjaTrader connected"])
+    f = hl.get("feed") or {}
+    p = hl.get("poll") or {}
+    market = f.get("market_open")
+    feed_bad = None
+    if p.get("age_s") is not None and p["age_s"] > POLL_STALE_S:
+        feed_bad = f"no poll for {p['age_s'] // 60} min"
+    elif f.get("tf") == "5m" and f.get("age_5m_s") is not None and f["age_5m_s"] > FEED_STALE_5M_S:
+        feed_bad = f"last 5m bar {f['age_5m_s'] // 60} min old"
+    elif (hl.get("model") == "lit") and f.get("age_1m_s") is not None and f["age_1m_s"] > FEED_STALE_1M_S:
+        feed_bad = f"last 1m bar {f['age_1m_s'] // 60} min old"
+    elif f.get("stale"):
+        feed_bad = "the bot marks the feed stale"
+    check_feed = insess and market is not False
+    checks.append(["feed", not (check_feed and feed_bad), (feed_bad or "bars fresh") + f" ({f.get('used') or f.get('source') or '?'})"])
+    if check_feed and feed_bad:
+        return out("FEED", "FEED STALE", "bad", feed_bad)
+    return out("TRADING", "TRADING YOUR EVAL", "good", f"routing to {a.get('name')} through NinjaTrader"
+               + (" (feed from Yahoo: NinjaTrader bars missing)" if f.get("fallback") else ""))
+
+
+def alert_due(v: dict, now, prev: dict | None) -> tuple[bool, dict]:
+    """One push per reason per hour while the verdict is not green inside 01:50-15:55 ET on weekdays.
+    prev = state "pc_verdict_alerts" {label: unix time last pushed}. Returns (push?, new prev)."""
+    now = int(now)
+    prev = {k: int(t) for k, t in (prev or {}).items() if now - int(t or 0) < 6 * 3600}
+    if not v or v.get("level") == "good" or not _in_alert_window(now):
+        return False, prev
+    key = str(v.get("label"))
+    if now - prev.get(key, 0) < ALERT_EVERY_S:
+        return False, prev
+    prev[key] = now
+    return True, prev
+
+
+def verdict_notice(v: dict, pc: dict | None, now) -> dict:
+    """The phone push for a non-green verdict (engine/push.text_payload, kind "pc": always pushed)."""
+    from . import push
+    now = int(now)
+    pc = pc or {}
+    acct = ((pc.get("health") or {}).get("account") or {}) if isinstance(pc.get("health"), dict) else {}
+    if v.get("code") == "OLD":
+        title = "Can't confirm the bot trades your eval"
+    else:
+        title = f"Bot NOT trading your eval: {v.get('label')}"
+    pos = (pc.get("health") or {}).get("lit", {}).get("stage") == "trade" if isinstance(pc.get("health"), dict) else bool(pc.get("position"))
+    body = (f"{v.get('reason') or ''}. PC {clean_text(pc.get('host'), 40) or '?'}"
+            + (f", account {acct.get('name')} ({acct.get('label')})" if acct.get("name") else "")
+            + (". A POSITION IS OPEN: check NinjaTrader now." if pos else ". Check the PC and NinjaTrader."))
+    return push.text_payload("Cloud", "pc", title, body, key=f"pc_verdict:{v.get('code')}:{now}", t=now, url="#/accounts")
