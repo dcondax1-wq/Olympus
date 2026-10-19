@@ -59,6 +59,9 @@ runs: lit_ent_base, lit_ent_idm_size, lit_ent_idm_size_up, lit_ent_ctrl_125, lit
 - **What it needs to go live:**
   - Engine option `"idm_size": {"atr": 2.0, "bars": 48, "n": 2, "up": 1.5, "down": 0.75, "cap_usd": 990}` in
     `live_model.json` "lit". It is off by default; the 120 live trades are unchanged.
+  - Check: with the option on, `engine/lit.py` gives the same 630 trades (2021-26) and the same micros as this study, 630 of
+    630. At the engine's $1.40 commission, 2026 is +$53,270 vs +$41,734 (H1 +$40,434, H2 +$12,835). The biggest risk on one
+    trade is $935.
   - That changes the micros in **normal / funded** sizing only. Today's eval sizing (two_week) ignores the model's size
     multiplier, so the eval part (the 0.75x cut that lowers the fails) also needs a small change in `engine/sizing.py`.
     That file is another agent's, so it is not done here.
