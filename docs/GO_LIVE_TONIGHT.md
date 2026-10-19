@@ -11,7 +11,15 @@ Do the Sim test first; only go to the eval when the Sim test is clean.
 3. NinjaTrader 8: log in, connect your MFFU account (Tradovate connection), **Tools > Options > Automated trading
    interface > AT Interface** ticked. Control Center > Accounts: write down your eval account's **Name** exactly.
 4. The `LE_BarFeed` indicator is on an **MNQ 12-26, 5 minute** chart, and `Documents\NinjaTrader 8\le_feed\` has
-   `MNQ_5m.csv` and `MNQ_1m.csv` with today's time.
+   `MNQ_5m.csv` and `MNQ_1m.csv` with today's time. On a Surface, Documents is often inside OneDrive
+   (`C:\Users\<you>\OneDrive\Documents\NinjaTrader 8`); the bot finds that by itself, and step 7's first line
+   (`NinjaTrader folder : ...  (exists True, incoming True, outgoing True)`) shows which folder it uses.
+   If that line says `incoming False`, the folder is somewhere else: find the `NinjaTrader 8` folder that holds
+   `le_feed` in File Explorer, then
+   `Add-Content .env.local.ps1 '$env:NINJATRADER_FOLDER = "C:\full\path\to\NinjaTrader 8"'`, restart run_bot.ps1 and
+   add `--folder "C:\full\path\to\NinjaTrader 8"` to every `python -m engine.ninjatrader` command below.
+   **If Documents is in OneDrive: OneDrive tray icon > Pause syncing > 24 hours** before you go to bed (OneDrive can
+   briefly lock the order and bar files while it uploads them; NinjaTrader itself advises against syncing its folder).
 
 ## 21:00 ET: Sim test (10 minutes)
 5. Start the bot: in a PowerShell window in the bot folder run
@@ -24,6 +32,10 @@ Do the Sim test first; only go to the eval when the Sim test is clean.
    `python -m engine.ninjatrader --sim-check` → OK; then
    `python -m engine.ninjatrader --sim-roundtrip` → three `OK` lines and `FLAT`
    (if only the close fails, retry with `--close-suffix " Globex"` and add that to step 11).
+   If step 2 or 3 shows `position None` while NinjaTrader shows the position, check Windows Settings > Time & language >
+   Language & region > Regional format: it must use a dot for decimals (English (United States)); restart NinjaTrader
+   after changing it. If an order file can't be written (`PermissionError`), Windows Security > Ransomware protection >
+   Controlled folder access is on: allow `python.exe` there.
    **This is the first time the NinjaTrader route runs on a real install: if any of these fail, stay on Sim tonight
    and send Claude a photo.**
 8. `python -m engine.ninjatrader --start` → the Live page log shows
@@ -42,6 +54,8 @@ Do the Sim test first; only go to the eval when the Sim test is clean.
     the cloud push "PC bot silent" to your phone if the PC dies; the cloud checks every 30 min from about 02:00 ET.)
     Only your eval account should be connected in NinjaTrader: the kill switch flattens every connected account.
 11. Run: `python -m engine.ninjatrader --start --account <your eval account Name> --confirm "I ACCEPT LIVE RISK"`
+    Type the Name exactly as the Accounts tab shows it (same capitals, dashes kept) and in quotes, e.g.
+    `--account "MFFUEV12345"`; NinjaTrader ignores orders for an account name it doesn't know.
 12. The command prints `Bot start: OK` and the line
     `NinjaTrader adapter: account <your eval Name> (LIVE ACCOUNT), MNQ 12-26, folder ..., ready`.
     If that line says `DISABLED (...)` instead of `ready`, the bot runs but every order is refused: the text says which
@@ -49,9 +63,9 @@ Do the Sim test first; only go to the eval when the Sim test is clean.
     `Strategy locked: LIT - Liquidity Inducement (2026-tuned) + loss pack`. The sizing and the eval session are not in the
     log; check them with
     `$s = Invoke-RestMethod http://localhost:8766/api/live/state; $s.state.strategy.model; $s.state.eval_2wk.text`
-    → `lit` and `session 1 of 10, 10 left, $3,000 to go` (Sunday evening counts as Monday Oct 19; sizing `two_week`
+    → `lit` and `session 1 of 10, 10 left, $3,100 to go` (Sunday evening counts as Monday Oct 19; sizing `two_week`
     and eval start 2026-10-19 come from `live_model.json`). If `--start` says `already running`, press **Stop** first.
-    The sizing assumes the eval starts tonight at $50,000 with no trades. If it already has P&L, tell Claude first.
+    The sizing assumes the eval starts tonight at $49,900 (-$100, live_model.json lit_sizing.eval_prior_pnl). If the balance is different, tell Claude first.
 13. Windows: pause updates for a week (Settings > Windows Update > Pause), and in a PowerShell opened with
     **Run as administrator**, in the bot folder, run
     `powershell -ExecutionPolicy Bypass -File scripts\setup_dedicated_pc.ps1 -NinjaTrader "C:\Program Files\NinjaTrader 8\bin\NinjaTrader.exe"`
