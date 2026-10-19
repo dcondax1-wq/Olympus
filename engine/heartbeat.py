@@ -81,6 +81,14 @@ def read(cwd: str = ROOT, remote: str = "origin", branch: str = BRANCH, now: flo
     return hb
 
 
+def _push_pk():
+    try:
+        from engine import push
+        return push.pc_public_key()
+    except Exception:
+        return None
+
+
 class Heartbeat:
     """Daemon thread on the PC server: pushes a heartbeat every `every_s` seconds while the server runs."""
 
@@ -96,6 +104,8 @@ class Heartbeat:
         cfg = getattr(self.bot, "cfg", None) or {}
         return {"t": int(time.time()), "running": bool(getattr(self.bot, "running", False)), "adapter": cfg.get("adapter", "paper"),
                 "position": bool(st.get("position")), "model_state": st.get("model_state"), "host": platform.node(),
+                "model": (st.get("strategy") or {}).get("model") or cfg.get("model"),
+                "push_pk": _push_pk(),          # phone notifications: the cloud seals the notification key to this (engine/push.py)
                 "every_s": int(self.every_s)}
 
     def beat(self) -> dict:

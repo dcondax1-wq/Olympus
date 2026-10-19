@@ -16,6 +16,7 @@ Scenarios are cumulative steps from the plain backtest to the live bot as coded 
                 (~31.5 s on average: a 60 s wait not aligned to the minute) + 3 s compute + routing; breakeven and model exits
                 reach the broker one poll late; the clock flatten at the first poll after 15:55   == THE REALISTIC MODEL
   live_fixed  live_today with the two code fixes: decide on the CISD bar's close and poll ~2 s after each minute
+  live_now    the bot as coded since 2026-10-18 (the fixes in engine/live.py / lit_live.py; measured compute 1.5 s)
   stress      live_today with 2x the stop slippage (+1 base tick, 5% of the range), +1 tick spread, target 2 ticks through
   inside1     live_today with the target limit 1 tick inside the level
   fixed_in1   live_fixed with the target limit 1 tick inside the level
@@ -57,10 +58,14 @@ S3 = {**S2, "stop_base_ticks": None, "stop_k": 0.025}
 S4 = {**S3, "spread_ticks": None}
 LIVE_TODAY = {}                                            # = engine/lit_fills.py FILL_DEFAULTS
 LIVE_FIXED = {"detect": "bar_close", "poll_s": 4.0}
+# the bot as coded since 2026-10-18 (engine/live.py next_wake + lit_live early / enter_now): the entry is decided when the
+# 1m CISD candle closes, polls run 2 s after each minute (poll_s x phase = 2 s, a fixed offset), one poll computes in ~1.5 s
+# (tests/test_lit_oif.py: the MARKET order file is written 2.6-3.9 s after the close on a quiet box)
+LIVE_NOW = {"detect": "bar_close", "poll_s": 4.0, "phase": 0.5, "compute_s": 1.5}
 STRESS = {"stop_base_ticks": [3.0, 2.5, 2.0, 2.0], "stop_k": 0.05, "spread_ticks": [3.0, 2.5, 2.0, 2.0], "tgt_thr": 2}
 SCEN = {
     "base": None, "n0": N0, "s1_comm": S1, "s2_target": S2, "s3_stops": S3, "s4_spread": S4,
-    "live_today": LIVE_TODAY, "lat_nobe": {"be_lag": False}, "live_fixed": LIVE_FIXED, "stress": STRESS,
+    "live_today": LIVE_TODAY, "lat_nobe": {"be_lag": False}, "live_fixed": LIVE_FIXED, "live_now": LIVE_NOW, "stress": STRESS,
     "inside1": {"tgt_inside": 1}, "fixed_in1": {**LIVE_FIXED, "tgt_inside": 1},
 }
 TITLES = {
@@ -72,6 +77,7 @@ TITLES = {
     "live_today": "REALISTIC: + the PC bot's timing as coded today (entry seen after the next 1m bar closes, 60 s poll)",
     "lat_nobe": "REALISTIC as today but breakeven reaches the broker at once (isolates the breakeven lag)",
     "live_fixed": "REALISTIC with the bot fixed (decide on the CISD bar close, poll 2 s after each minute)",
+    "live_now": "REALISTIC, the bot as coded since 2026-10-18 (CISD-close entry, polls 2 s after each minute, 1.5 s compute)",
     "stress": "REALISTIC stress: 2x stop slippage, +1 tick spread, target 2 ticks through",
     "inside1": "REALISTIC with the target limit 1 tick inside the level",
     "fixed_in1": "REALISTIC, bot fixed, target limit 1 tick inside the level",
@@ -154,6 +160,7 @@ def lit_fills_params(cfg):
 # ------------------------------------------------------------------------------------------------ diagnostics
 def diag(T, spans=("2026", "H1", "H2")):
     out = {}
+    base = {t["day"]: t for t in run("base")}
     for s in spans:
         a, z = F.SPAN[s]
         X = [t for t in T if a <= t["day"] <= z]
@@ -171,7 +178,16 @@ def diag(T, spans=("2026", "H1", "H2")):
              "exits_model": dict(collections.Counter(t["exit_model_kind"] for t in R)),
              "model_targets": len(tg_m), "model_targets_missed_by_limit": sum(1 for t in tg_m if t["exit"] != "TARGET"),
              "pnl_diff_vs_model": round(sum(t["pnl"] - t["pnl_model"] for t in R)),
-             "outcome_flips": sum(1 for t in R if (t["pnl"] > 0) != (t["pnl_model"] > 0))}
+             "outcome_flips": sum(1 for t in R if (t["pnl"] > 0) != (t["pnl_model"] > 0)),
+             "pnl_diff_vs_backtest": round(sum(t["pnl"] - base[t["day"]]["pnl"] for t in R if t["day"] in base)),
+             "diff_by_exit": {}}
+        for kd in ("STOP", "BE", "TARGET", "EOD"):
+            Z = [t for t in R if t["day"] in base and base[t["day"]]["exit"] == kd]
+            d["diff_by_exit"][kd] = [len(Z), round(sum(t["pnl"] - base[t["day"]]["pnl"] for t in Z))]
+        s_ = np.array([t["slip_entry_pts"] for t in R])
+        d["entry_slip_pts_sd"] = round(float(s_.std()), 2)
+        d["entry_slip_abs_gt5"] = int((np.abs(s_) > 5).sum())
+        d["real_vs_planned_risk_max"] = round(float(max((t["risk_pts"] + t["slip_entry_pts"]) / t["risk_pts"] for t in R)), 2)
         st = [t for t in R if t["exit"] in ("STOP", "BE")]
         if st:
             sl = [(t["stop_px"] - t["exit_px"]) * t["dir"] if t["exit"] == "STOP" else (t["entry_model"] - t["exit_px"]) * t["dir"]

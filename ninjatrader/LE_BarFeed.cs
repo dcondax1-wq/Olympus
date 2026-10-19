@@ -6,6 +6,9 @@
 // same instrument to a second file in the same folder and format:
 //     Documents\NinjaTrader 8\le_feed\<ROOT>_1m.csv            e.g. MNQ_1m.csv   (LIT enters on 1-minute bars)
 // one line per bar:  time,open,high,low,close,volume   with time = the bar's OPEN time in unix seconds (UTC).
+// It also keeps ONE line in <ROOT>_1m_open.csv: "time,open" of the minute that has just started (its first trade), rewritten
+// once a minute. LIT decides an entry when its 1-minute CISD candle closes and sends a market order at once; the bot sizes
+// that order from this open, the price the backtest fills at (research/writeups/lit-live-fills.md).
 // The Python bot (engine/ninjatrader.py, data_source "ninjatrader") reads these files instead of Yahoo, so it trades on
 // the same real CME bars NinjaTrader shows.
 //
@@ -18,18 +21,32 @@
 // Use: ONE MNQ 5-minute chart, Trading hours "CME US Index Futures ETH", 30 days loaded: it writes MNQ_5m.csv and
 // MNQ_1m.csv (the 1-minute series is added by the indicator itself). Do not also run it on a separate 1-minute chart of
 // the same instrument (two writers on MNQ_1m.csv), or switch "Also write 1-minute bars" off there.
-// Only standard NinjaScript: OnStateChange / OnBarUpdate, Calculate.OnBarClose, File.AppendAllText.
+// Only standard NinjaScript: OnStateChange / OnBarUpdate / OnMarketData, Calculate.OnBarClose, File.AppendAllText; C# 5 syntax only
+// (no $"..." strings, no ?. or =>), so it compiles on every NinjaTrader 8 version.
 
 #region Using declarations
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Xml.Serialization;
 using NinjaTrader.Cbi;
+using NinjaTrader.Gui;
+using NinjaTrader.Gui.Chart;
+using NinjaTrader.Gui.SuperDom;
+using NinjaTrader.Gui.Tools;
 using NinjaTrader.Data;
 using NinjaTrader.NinjaScript;
+using NinjaTrader.Core.FloatingPoint;
+using NinjaTrader.NinjaScript.DrawingTools;
 #endregion
 
 namespace NinjaTrader.NinjaScript.Indicators
@@ -37,6 +54,7 @@ namespace NinjaTrader.NinjaScript.Indicators
     public class LE_BarFeed : Indicator
     {
         private const string Header = "time,open,high,low,close,volume";
+        private static readonly object FileLock = new object();   // one writer at a time, across every LE_BarFeed in NinjaTrader
         private static readonly long EpochTicks = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
 
         // One output file per bar series: [0] = the chart's own bars, [1] = the added 1-minute series (when there is one).
@@ -52,8 +70,11 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         private Feed[] feeds;
         private bool active;                  // a minute chart and the le_feed folder exists
-        private bool addOneMinute;            // the chart is > 1 minute and the 1-minute file is wanted: series 1 = 1m
+        private bool addOneMinute;            // the chart is > 1 minute and the 1-minute file is wanted: series 1 is written
         private int problems;
+        private string openPath;              // <ROOT>_1m_open.csv: "time,open" of the minute that has just started
+        private long lastOpenMinute = long.MinValue;
+        private bool realtime;
 
         protected override void OnStateChange()
         {
@@ -74,13 +95,14 @@ namespace NinjaTrader.NinjaScript.Indicators
             }
             else if (State == State.Configure)
             {
-                addOneMinute = WriteOneMinute && BarsPeriod.BarsPeriodType == BarsPeriodType.Minute && BarsPeriod.Value > 1;
-                if (addOneMinute)
-                    AddDataSeries(BarsPeriodType.Minute, 1);   // same instrument and trading hours as the chart
+                // Always added, with fixed arguments: the Help Guide says AddDataSeries() must not depend on run-time values
+                // (chart period, inputs). Whether series 1 is written is decided at State.DataLoaded.
+                AddDataSeries(BarsPeriodType.Minute, 1);       // same instrument and trading hours as the chart
             }
             else if (State == State.DataLoaded)
             {
                 active = BarsPeriod.BarsPeriodType == BarsPeriodType.Minute && BarsPeriod.Value >= 1;
+                addOneMinute = active && WriteOneMinute && BarsPeriod.Value > 1 && BarsArray.Length > 1;
                 if (!active)
                 {
                     Print("LE_BarFeed: only minute charts are supported (this chart: " + BarsPeriod.ToString() + "). Nothing is written.");
@@ -96,6 +118,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                     feeds[1] = new Feed { Minutes = 1, MaxBars = MaxBars1m };
                     feeds[1].FilePath = Path.Combine(folder, root + "_1m.csv");
                 }
+                if (addOneMinute || BarsPeriod.Value == 1)
+                    openPath = Path.Combine(folder, root + "_1m_open.csv");
                 try
                 {
                     Directory.CreateDirectory(folder);
@@ -108,6 +132,7 @@ namespace NinjaTrader.NinjaScript.Indicators
             }
             else if (State == State.Realtime)
             {
+                realtime = true;
                 if (active && feeds != null)
                     foreach (Feed f in feeds)
                         if (f.History != null)
@@ -144,16 +169,68 @@ namespace NinjaTrader.NinjaScript.Indicators
                     f.History.Dequeue();
                 return;
             }
-            try
+            lock (FileLock)
             {
-                File.AppendAllText(f.FilePath, line + "\n");
-                f.LinesInFile++;
+                try
+                {
+                    File.AppendAllText(f.FilePath, line + "\n");
+                    f.LinesInFile++;
+                }
+                catch (Exception e)
+                {
+                    Report(f, "append failed (" + e.Message + "); this bar is missing from the feed");
+                    return;
+                }
                 if (f.LinesInFile > f.MaxBars + TrimEvery)
                     Trim(f);
             }
-            catch (Exception e)
+        }
+
+        // The first trade of every new minute = that 1-minute bar's open: one line "time,open" (time = the minute's start in
+        // unix seconds, UTC) replaces <ROOT>_1m_open.csv. It arrives with the tick that closes the previous bar (OnBarClose),
+        // so the bot reads the closed bar and the new bar's open in the same poll. Realtime only; one tiny write a minute.
+        protected override void OnMarketData(MarketDataEventArgs marketDataUpdate)
+        {
+            if (!active || !realtime || openPath == null || BarsInProgress != 0 || marketDataUpdate.MarketDataType != MarketDataType.Last)
+                return;
+            long minute;
+            try
             {
-                Report(f, "append failed (" + e.Message + "); this bar is missing from the feed");
+                DateTime local = DateTime.SpecifyKind(marketDataUpdate.Time, DateTimeKind.Unspecified);
+                DateTime utc = TimeZoneInfo.ConvertTimeToUtc(local, NinjaTrader.Core.Globals.GeneralOptions.TimeZoneInfo);
+                long secs = (utc.Ticks - EpochTicks) / TimeSpan.TicksPerSecond;
+                minute = secs - secs % 60;
+            }
+            catch (Exception)
+            {
+                return;
+            }
+            if (minute <= lastOpenMinute)
+                return;
+            lastOpenMinute = minute;
+            string line = minute.ToString(CultureInfo.InvariantCulture) + "," + marketDataUpdate.Price.ToString("0.########", CultureInfo.InvariantCulture) + "\n";
+            string tmp = openPath + ".tmp";
+            lock (FileLock)
+            {
+                try
+                {
+                    File.WriteAllText(tmp, line);
+                    if (File.Exists(openPath))
+                        File.Replace(tmp, openPath, null);   // one atomic swap: the bot never reads half a line
+                    else
+                        File.Move(tmp, openPath);
+                }
+                catch (Exception)
+                {
+                    try
+                    {
+                        File.Copy(tmp, openPath, true);
+                    }
+                    catch (Exception e2)
+                    {
+                        Report(null, "could not write " + openPath + ": " + e2.Message);
+                    }
+                }
             }
         }
 
@@ -184,9 +261,14 @@ namespace NinjaTrader.NinjaScript.Indicators
             int n = f.History.Count;
             f.History.Clear();
             f.History = null;
-            if (Swap(f, sb.ToString()))
+            bool ok;
+            lock (FileLock)
+                ok = Swap(f, sb.ToString());
+            if (ok)
+            {
                 f.LinesInFile = n;
-            Print("LE_BarFeed: " + n + " bars written to " + f.FilePath + "; appending each new bar");
+                Print("LE_BarFeed: " + n + " bars written to " + f.FilePath + "; appending each new bar");
+            }
         }
 
         private void Trim(Feed f)

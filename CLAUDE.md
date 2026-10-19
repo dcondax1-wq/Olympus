@@ -24,6 +24,11 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   - The strategy is written in plain language in its own area of the dashboard (Strategy page, versioned, with its numbers).
 - **Stops** go beyond the sweep extreme, i.e. the high/low made before the IFVG, never at a fixed distance. **Wide stop means less
   risk**: size follows the stop.
+- **Owner's trading principles (2026-10-18, keep them):** the stop sits at the protected low/high (1 tick beyond the
+  sweep extreme), never a random or fixed distance; a bigger stop means fewer micros (de-risk), a small stop allows more;
+  one clear target (the VIX-band objective, banked at 8R), no greed; size follows the stop and the target. Under two_week
+  sizing (fresh eval, 2026) micros fall from a median 14 at <20-pt stops to 4 at 60+ pts; $ at risk stays $450-$660 median,
+  capped near $1,000 by the 60% room and the soft daily loss.
 - Every result is judged on 2026 **and** on 2021-25 (5 years). A change is adopted only if it holds in both and keeps 2+/week.
   Report trades/week, % weeks with 2+, PF, net, max DD, and MFFU eval pass/fail within 2 weeks and 1 month.
 
@@ -39,12 +44,22 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   cold-streak filter. Eval-safe switch (off): `how_out 0.5`.
 - **Loss pack (on, 2026-10-18, `research/writeups/lit-losses.md`):** weekly stop (after 2 stop-outs in a calendar week, half
   size for the rest of it: `wk_stop`) and the Monday rule (once Monday took Friday's high only shorts, Friday's low only longs:
-  `monday`). Sizing `lit_sizing.mode` **eval (ON 2026-10-18: $800 up to a 25-pt stop + 60% room cap, run lit_tight_eval_800_25_room60, 2-wk passes 37.5/29.5 vs 28.9/23.1)** | normal | fast_eval ($800 up to a 40-pt stop) | safe_eval (micros capped
-  at 60% of the eval room); see `lit-experiments.md`.
+  `monday`). Sizing `lit_sizing.mode` **two_week (ON 2026-10-18, owner: pass evals within 2 weeks)** = "one winner passes":
+  micros so the target covers what is left to +$3,000, capped at 60% of the eval room and the $1,000 soft daily loss, max 40,
+  min 1, no weekly stop (config C, run `lit_2wk_rec`, `lit-two-week-eval.md`: 2-week pass H1 52.9% / H2 50.7%, fail 8.4 / 2.9,
+  $174 / $181 per 2-week pass, max risk ~$990 a trade); sessions from `lit_sizing.eval_start` (PC start cfg `eval_start`
+  overrides); **no reset (owner 2026-10-18):** after session 10 the eval goes on in safe_eval (`two_week_until 10`, `after_mode`;
+  `tools/lit_eventual.py`: eventual pass ~80/77%); $1.90 commission; min-days 1-micro trade after an early target; mode
+  `funded` exists but is off until funded_state is wired (`lit-funded-sizing.md`); missing target / eval state -> eval mode. Other modes:
+  eval ($800 up to a 25-pt stop + 60% room cap, run lit_tight_eval_800_25_room60) | normal | fast_eval ($800 up to a 40-pt
+  stop) | safe_eval (micros capped at 60% of the eval room); see `lit-experiments.md`.
 - **Results LIT + pack** (run `lit_live`, costs in): 2026 120 trades, 2.91/wk, win 26.7%, PF 3.66, +$41,734 ($4,254/mo),
   DD -$2,315, eval 2 wk 26.7/1.9, 1 mo 55.3/3.9, pass rate 95.5%; H1 (picked) PF 4.44 +$32,773; **H2 (check) PF 2.46
   +$8,962 (~$2,400/mo): quote the H2 rate**; 2021-25 reference PF 1.01 +$1,275 DD -$20,462 (no 1m data there). Needs 1m bars
-  (5m only: +$6.6k in 2026). 95 of 120 trades enter 02:00-08:00 ET: NinjaTrader and the PC must be running from ~01:55 ET.
+  (5m only: +$6.6k in 2026). 95 of 120 trades enter 02:00-08:00 ET: NinjaTrader and the PC must be running from ~01:55 ET. **PC timing fix (2026-10-18):**
+  the PC bot decides on the 1m CISD close and routes ~3 s later (was ~95 s; `tests/test_lit_timing.py`, `tests/test_lit_oif.py`,
+  `lit-live-fills.md`); sizes from the forming bar's open (`le_feed\MNQ_1m_open.csv`, LE_BarFeed OnMarketData). Owner goes live
+  on the eval himself (`docs/GO_LIVE_TONIGHT.md`); never arm it for him.
 - **Live loop:** `engine/lit_live.py` (PC `engine/live.py`, cloud `tools/cloud_monitor.py`) on the bars from the previous
   month's first day + 1m bars (data/NQ_1m.csv + Yahoo NQ=F 1m, 7 days). `python -X utf8 -m tests.test_lit_live` replays every
   2026 session through it (120/120 trades identical with the pack; `python tools/lit_losses.py live` stores run `lit_live`). `tools/export_backtest.py` exports the LIT replay when the model is lit.
@@ -56,6 +71,8 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   numbers and the switch-back steps; old Monte Carlo/heat files; `tools/research_mc.py` / `research_intra.py` write there).
 - `tools/runlib.py`, `tools/pine_parity.py`, `tests/test_live_dryrun.py` read the engine lock from `live_model_engine.json`
   (engine.lab_adapter.engine_config_raw) while live_model.json says lit.
+
+- **Prop-firm prices: use the owner's real prices, not list prices.** MFFU runs discount codes; the owner pays Builder 25K $63 and Builder 50K $91.80 (2026-10-18, one-time, $0 activation). Look for current codes before quoting any firm's price. LIT on 60 plans: `research/writeups/lit-prop-firms.md` (eval best-day rules fail LIT; Builder 50K ~$116 per funded account).
 
 ## Previous strategy (shadow): Liquidity Engine, eval mode (`live_model_engine.json`, locked 2026-10-17)
 - **Liquidity Engine, eval mode** (`engine/model.py`):
@@ -128,7 +145,8 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   the PC is on). The UI is the ES-module SPA in `web_next/` layered over `web/`, with the API in `engine/dash_*.py` and
   `engine/next_api.py`.
 - **PC-off:** the GitHub Actions cloud monitor runs every 15 min on market days. It is the same engine and settings as
-  `live_model.json`, keeps a paper ledger plus an MFFU eval tracker, sends Telegram/Discord alerts, and publishes README.md and
+  `live_model.json`, keeps a paper ledger plus an MFFU eval tracker, sends phone push notifications (`engine/push.py`, `docs/NOTIFICATIONS.md`: entries, outcomes, PC silent; Telegram/Discord off
+  unless `LE_ALERTS_CHAT=1`), runs the fast-entry watcher (`tools/lit_watch.py`) and the LIT day brief (`engine/lit_brief.py`), and publishes README.md and
   chart.png to the `dashboard` branch (read in the GitHub app).
 - **NinjaTrader 8 route (2026-10-17, untested on a real install):** `engine/ninjatrader.py` writes Order Instruction Files into
   NinjaTrader's `incoming` folder (bracket entry, breakeven, flatten, kill) and reads fills/positions from `outgoing`;

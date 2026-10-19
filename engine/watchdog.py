@@ -114,7 +114,7 @@ def decide_resume(rec, now: float | None = None, tradovate_env: str = "demo") ->
 # ---------------------------------------------------------------------- heartbeat
 def _in_rth(now: float) -> bool:
     e = dt.datetime.fromtimestamp(now, ET)
-    return e.weekday() < 5 and 9 * 60 <= e.hour * 60 + e.minute < 16 * 60
+    return e.weekday() < 5 and 2 * 60 <= e.hour * 60 + e.minute < 16 * 60   # LIT trades from 02:00 ET
 
 
 class Watchdog:

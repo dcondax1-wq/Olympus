@@ -315,8 +315,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -56,
+    "pnl_diff_vs_model": -26,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -26,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      0
+     ],
+     "BE": [
+      34,
+      -20
+     ],
+     "TARGET": [
+      25,
+      -6
+     ],
+     "EOD": [
+      8,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.256,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -343,8 +365,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -498,
+    "pnl_diff_vs_model": -22,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -22,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      0
+     ],
+     "BE": [
+      29,
+      -20
+     ],
+     "TARGET": [
+      15,
+      -2
+     ],
+     "EOD": [
+      4,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.258,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -371,8 +415,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 442,
+    "pnl_diff_vs_model": -3,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -3,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      0
+     ],
+     "BE": [
+      5,
+      0
+     ],
+     "TARGET": [
+      10,
+      -3
+     ],
+     "EOD": [
+      4,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.25,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.25
@@ -554,8 +620,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -366,
+    "pnl_diff_vs_model": -336,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -336,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -96
+     ],
+     "BE": [
+      34,
+      -134
+     ],
+     "TARGET": [
+      25,
+      -88
+     ],
+     "EOD": [
+      8,
+      -18
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.256,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -582,8 +670,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -727,
+    "pnl_diff_vs_model": -251,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -251,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -58
+     ],
+     "BE": [
+      29,
+      -116
+     ],
+     "TARGET": [
+      15,
+      -65
+     ],
+     "EOD": [
+      4,
+      -12
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.258,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -610,8 +720,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 360,
+    "pnl_diff_vs_model": -85,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -85,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -38
+     ],
+     "BE": [
+      5,
+      -18
+     ],
+     "TARGET": [
+      10,
+      -23
+     ],
+     "EOD": [
+      4,
+      -6
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.25,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.25
@@ -793,8 +925,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -366,
+    "pnl_diff_vs_model": -336,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -336,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -96
+     ],
+     "BE": [
+      34,
+      -134
+     ],
+     "TARGET": [
+      25,
+      -88
+     ],
+     "EOD": [
+      8,
+      -18
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.256,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -821,8 +975,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -727,
+    "pnl_diff_vs_model": -251,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -251,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -58
+     ],
+     "BE": [
+      29,
+      -116
+     ],
+     "TARGET": [
+      15,
+      -65
+     ],
+     "EOD": [
+      4,
+      -12
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.258,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.75
@@ -849,8 +1025,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 360,
+    "pnl_diff_vs_model": -85,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -85,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -38
+     ],
+     "BE": [
+      5,
+      -18
+     ],
+     "TARGET": [
+      10,
+      -23
+     ],
+     "EOD": [
+      4,
+      -6
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.25,
     "stop_slip_pts_p90": 0.25,
     "stop_slip_pts_worst": 0.25
@@ -1032,8 +1230,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -546,
+    "pnl_diff_vs_model": -516,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -516,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -183
+     ],
+     "BE": [
+      34,
+      -227
+     ],
+     "TARGET": [
+      25,
+      -88
+     ],
+     "EOD": [
+      8,
+      -18
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.612,
     "stop_slip_pts_p90": 1.088,
     "stop_slip_pts_worst": 2.84
@@ -1060,8 +1280,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -857,
+    "pnl_diff_vs_model": -381,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -381,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -113
+     ],
+     "BE": [
+      29,
+      -191
+     ],
+     "TARGET": [
+      15,
+      -65
+     ],
+     "EOD": [
+      4,
+      -12
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.633,
     "stop_slip_pts_p90": 1.13,
     "stop_slip_pts_worst": 2.84
@@ -1088,8 +1330,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 310,
+    "pnl_diff_vs_model": -135,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -135,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -69
+     ],
+     "BE": [
+      5,
+      -36
+     ],
+     "TARGET": [
+      10,
+      -23
+     ],
+     "EOD": [
+      4,
+      -6
+     ]
+    },
+    "entry_slip_pts_sd": 0.0,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -1271,8 +1535,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -450,
+    "pnl_diff_vs_model": -420,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -420,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -157
+     ],
+     "BE": [
+      34,
+      -197
+     ],
+     "TARGET": [
+      25,
+      -66
+     ],
+     "EOD": [
+      8,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.03,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.612,
     "stop_slip_pts_p90": 1.088,
     "stop_slip_pts_worst": 2.84
@@ -1299,8 +1585,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -787,
+    "pnl_diff_vs_model": -311,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -311,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -98
+     ],
+     "BE": [
+      29,
+      -165
+     ],
+     "TARGET": [
+      15,
+      -48
+     ],
+     "EOD": [
+      4,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.03,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.633,
     "stop_slip_pts_p90": 1.13,
     "stop_slip_pts_worst": 2.84
@@ -1327,8 +1635,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 337,
+    "pnl_diff_vs_model": -109,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -109,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -59
+     ],
+     "BE": [
+      5,
+      -32
+     ],
+     "TARGET": [
+      10,
+      -18
+     ],
+     "EOD": [
+      4,
+      0
+     ]
+    },
+    "entry_slip_pts_sd": 0.03,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.0,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -1393,14 +1723,14 @@
     "wk2": 76,
     "win": 23.7,
     "pf": 0.96,
-    "net": -4217,
-    "per_month": -83,
-    "dd": -21396,
+    "net": -3789,
+    "per_month": -74,
+    "dd": -21728,
     "p10": 6.8,
-    "f10": 8.5,
+    "f10": 8.1,
     "p20": 12.5,
-    "f20": 30.7,
-    "pass_rate": 29.1,
+    "f20": 29.4,
+    "pass_rate": 29.0,
     "pass_med": 20.0
    }
   },
@@ -1461,16 +1791,16 @@
     "tpw": 2.38,
     "wk2": 76,
     "win": 23.7,
-    "pf": 0.94,
-    "net": -5230,
-    "per_month": -102,
-    "dd": -15891,
-    "p10": 8.5,
+    "pf": 0.97,
+    "net": -2155,
+    "per_month": -42,
+    "dd": -13699,
+    "p10": 8.3,
     "f10": 0.1,
-    "p20": 15.1,
+    "p20": 15.2,
     "f20": 7.4,
-    "pass_rate": 31.0,
-    "pass_med": 16.0,
+    "pass_rate": 31.3,
+    "pass_med": 16.5,
     "worst_day": -915
    }
   },
@@ -1497,8 +1827,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1233,
+    "pnl_diff_vs_model": -1203,
     "outcome_flips": 12,
+    "pnl_diff_vs_backtest": -1203,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      761
+     ],
+     "BE": [
+      34,
+      -1099
+     ],
+     "TARGET": [
+      25,
+      -878
+     ],
+     "EOD": [
+      8,
+      13
+     ]
+    },
+    "entry_slip_pts_sd": 7.49,
+    "entry_slip_abs_gt5": 47,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.755,
     "stop_slip_pts_p90": 1.182,
     "stop_slip_pts_worst": 13.38
@@ -1525,8 +1877,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -2050,
+    "pnl_diff_vs_model": -1575,
     "outcome_flips": 8,
+    "pnl_diff_vs_backtest": -1575,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      356
+     ],
+     "BE": [
+      29,
+      -1138
+     ],
+     "TARGET": [
+      15,
+      -759
+     ],
+     "EOD": [
+      4,
+      -33
+     ]
+    },
+    "entry_slip_pts_sd": 6.52,
+    "entry_slip_abs_gt5": 30,
+    "real_vs_planned_risk_max": 1.56,
     "stop_slip_pts_mean": 0.838,
     "stop_slip_pts_p90": 1.34,
     "stop_slip_pts_worst": 13.38
@@ -1553,8 +1927,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 818,
+    "pnl_diff_vs_model": 372,
     "outcome_flips": 4,
+    "pnl_diff_vs_backtest": 372,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      405
+     ],
+     "BE": [
+      5,
+      39
+     ],
+     "TARGET": [
+      10,
+      -119
+     ],
+     "EOD": [
+      4,
+      46
+     ]
+    },
+    "entry_slip_pts_sd": 8.86,
+    "entry_slip_abs_gt5": 17,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -1725,8 +2121,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -734,
+    "pnl_diff_vs_model": -703,
     "outcome_flips": 13,
+    "pnl_diff_vs_backtest": -703,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      761
+     ],
+     "BE": [
+      34,
+      -600
+     ],
+     "TARGET": [
+      25,
+      -878
+     ],
+     "EOD": [
+      8,
+      13
+     ]
+    },
+    "entry_slip_pts_sd": 7.49,
+    "entry_slip_abs_gt5": 47,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.612,
     "stop_slip_pts_p90": 1.088,
     "stop_slip_pts_worst": 2.84
@@ -1753,8 +2171,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1551,
+    "pnl_diff_vs_model": -1076,
     "outcome_flips": 9,
+    "pnl_diff_vs_backtest": -1076,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      356
+     ],
+     "BE": [
+      29,
+      -639
+     ],
+     "TARGET": [
+      15,
+      -759
+     ],
+     "EOD": [
+      4,
+      -33
+     ]
+    },
+    "entry_slip_pts_sd": 6.52,
+    "entry_slip_abs_gt5": 30,
+    "real_vs_planned_risk_max": 1.56,
     "stop_slip_pts_mean": 0.633,
     "stop_slip_pts_p90": 1.13,
     "stop_slip_pts_worst": 2.84
@@ -1781,8 +2221,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 818,
+    "pnl_diff_vs_model": 372,
     "outcome_flips": 4,
+    "pnl_diff_vs_backtest": 372,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      405
+     ],
+     "BE": [
+      5,
+      39
+     ],
+     "TARGET": [
+      10,
+      -119
+     ],
+     "EOD": [
+      4,
+      46
+     ]
+    },
+    "entry_slip_pts_sd": 8.86,
+    "entry_slip_abs_gt5": 17,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -1801,15 +2263,15 @@
     "tpw": 3.12,
     "wk2": 85,
     "win": 22.5,
-    "pf": 4.1,
-    "net": 31937,
-    "per_month": 5240,
+    "pf": 4.31,
+    "net": 32436,
+    "per_month": 5321,
     "dd": -2347,
     "p10": 28.1,
     "f10": 3.1,
-    "p20": 60.2,
+    "p20": 60.9,
     "f20": 6.2,
-    "pass_rate": 92.2,
+    "pass_rate": 92.3,
     "pass_med": 14.0
    },
    "H2": {
@@ -1833,32 +2295,32 @@
     "tpw": 2.91,
     "wk2": 86,
     "win": 26.7,
-    "pf": 3.47,
-    "net": 40780,
-    "per_month": 4157,
+    "pf": 3.58,
+    "net": 41280,
+    "per_month": 4208,
     "dd": -2347,
     "p10": 26.2,
     "f10": 1.9,
-    "p20": 54.4,
+    "p20": 54.9,
     "f20": 3.9,
-    "pass_rate": 95.4,
+    "pass_rate": 95.5,
     "pass_med": 16.0
    },
    "2021-25": {
     "n": 510,
     "tpw": 2.38,
     "wk2": 76,
-    "win": 17.3,
+    "win": 16.9,
     "pf": 0.96,
-    "net": -4145,
-    "per_month": -81,
-    "dd": -22386,
+    "net": -3777,
+    "per_month": -74,
+    "dd": -22781,
     "p10": 6.7,
-    "f10": 10.4,
+    "f10": 10.1,
     "p20": 12.4,
-    "f20": 30.2,
-    "pass_rate": 31.4,
-    "pass_med": 23.0
+    "f20": 29.3,
+    "pass_rate": 30.2,
+    "pass_med": 22.0
    }
   },
   "eval": {
@@ -1867,16 +2329,16 @@
     "tpw": 3.12,
     "wk2": 85,
     "win": 22.5,
-    "pf": 3.72,
-    "net": 32240,
-    "per_month": 5289,
+    "pf": 3.91,
+    "net": 32939,
+    "per_month": 5404,
     "dd": -2543,
     "p10": 37.5,
     "f10": 3.9,
-    "p20": 60.2,
+    "p20": 61.7,
     "f20": 6.2,
-    "pass_rate": 92.2,
-    "pass_med": 10.0,
+    "pass_rate": 92.3,
+    "pass_med": 10.5,
     "worst_day": -813
    },
    "H2": {
@@ -1901,15 +2363,15 @@
     "tpw": 2.91,
     "wk2": 86,
     "win": 26.7,
-    "pf": 3.33,
-    "net": 42789,
-    "per_month": 4362,
+    "pf": 3.39,
+    "net": 43423,
+    "per_month": 4427,
     "dd": -2543,
     "p10": 34.5,
     "f10": 2.4,
-    "p20": 55.3,
+    "p20": 56.3,
     "f20": 3.9,
-    "pass_rate": 82.9,
+    "pass_rate": 84.8,
     "pass_med": 12.0,
     "worst_day": -813
    },
@@ -1917,18 +2379,18 @@
     "n": 510,
     "tpw": 2.38,
     "wk2": 76,
-    "win": 17.3,
-    "pf": 0.87,
-    "net": -10731,
-    "per_month": -210,
-    "dd": -19360,
+    "win": 16.9,
+    "pf": 0.88,
+    "net": -10158,
+    "per_month": -199,
+    "dd": -19786,
     "p10": 8.4,
     "f10": 0.2,
     "p20": 15.2,
     "f20": 9.7,
     "pass_rate": 31.5,
     "pass_med": 17.0,
-    "worst_day": -967
+    "worst_day": -894
    }
   },
   "diag": {
@@ -1954,11 +2416,33 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -984,
+    "pnl_diff_vs_model": -455,
     "outcome_flips": 0,
-    "stop_slip_pts_mean": 0.755,
-    "stop_slip_pts_p90": 1.182,
-    "stop_slip_pts_worst": 13.38
+    "pnl_diff_vs_backtest": -455,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -113
+     ],
+     "BE": [
+      34,
+      -213
+     ],
+     "TARGET": [
+      25,
+      -105
+     ],
+     "EOD": [
+      8,
+      -24
+     ]
+    },
+    "entry_slip_pts_sd": 0.6,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
+    "stop_slip_pts_mean": 0.612,
+    "stop_slip_pts_p90": 1.088,
+    "stop_slip_pts_worst": 2.84
    },
    "H1": {
     "model_trades": 80,
@@ -1982,11 +2466,33 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1312,
+    "pnl_diff_vs_model": -337,
     "outcome_flips": 0,
-    "stop_slip_pts_mean": 0.838,
-    "stop_slip_pts_p90": 1.34,
-    "stop_slip_pts_worst": 13.38
+    "pnl_diff_vs_backtest": -337,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -91
+     ],
+     "BE": [
+      29,
+      -175
+     ],
+     "TARGET": [
+      15,
+      -90
+     ],
+     "EOD": [
+      4,
+      19
+     ]
+    },
+    "entry_slip_pts_sd": 0.55,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
+    "stop_slip_pts_mean": 0.633,
+    "stop_slip_pts_p90": 1.13,
+    "stop_slip_pts_worst": 2.84
    },
    "H2": {
     "model_trades": 40,
@@ -2010,8 +2516,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 328,
+    "pnl_diff_vs_model": -118,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -118,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -21
+     ],
+     "BE": [
+      5,
+      -37
+     ],
+     "TARGET": [
+      10,
+      -15
+     ],
+     "EOD": [
+      4,
+      -44
+     ]
+    },
+    "entry_slip_pts_sd": 0.68,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -2089,15 +2617,15 @@
     "n": 510,
     "tpw": 2.38,
     "wk2": 76,
-    "win": 20.8,
+    "win": 20.6,
     "pf": 0.92,
-    "net": -9312,
-    "per_month": -182,
-    "dd": -24166,
+    "net": -8917,
+    "per_month": -175,
+    "dd": -24512,
     "p10": 6.1,
-    "f10": 10.4,
-    "p20": 11.4,
-    "f20": 32.6,
+    "f10": 10.0,
+    "p20": 11.3,
+    "f20": 31.5,
     "pass_rate": 24.7,
     "pass_med": 19.0
    }
@@ -2158,18 +2686,18 @@
     "n": 510,
     "tpw": 2.38,
     "wk2": 76,
-    "win": 20.8,
-    "pf": 0.92,
-    "net": -7135,
-    "per_month": -140,
-    "dd": -18997,
-    "p10": 8.4,
+    "win": 20.6,
+    "pf": 0.9,
+    "net": -8651,
+    "per_month": -169,
+    "dd": -18943,
+    "p10": 8.2,
     "f10": 0.5,
     "p20": 14.4,
-    "f20": 9.7,
-    "pass_rate": 28.5,
-    "pass_med": 16.0,
-    "worst_day": -1129
+    "f20": 9.6,
+    "pass_rate": 29.1,
+    "pass_med": 17.0,
+    "worst_day": -977
    }
   },
   "diag": {
@@ -2195,8 +2723,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1695,
+    "pnl_diff_vs_model": -1664,
     "outcome_flips": 12,
+    "pnl_diff_vs_backtest": -1664,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      562
+     ],
+     "BE": [
+      34,
+      -1302
+     ],
+     "TARGET": [
+      25,
+      -919
+     ],
+     "EOD": [
+      8,
+      -4
+     ]
+    },
+    "entry_slip_pts_sd": 7.49,
+    "entry_slip_abs_gt5": 47,
+    "real_vs_planned_risk_max": 1.66,
     "stop_slip_pts_mean": 1.291,
     "stop_slip_pts_p90": 2.362,
     "stop_slip_pts_worst": 13.62
@@ -2223,8 +2773,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -2381,
+    "pnl_diff_vs_model": -1906,
     "outcome_flips": 8,
+    "pnl_diff_vs_backtest": -1906,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      233
+     ],
+     "BE": [
+      29,
+      -1303
+     ],
+     "TARGET": [
+      15,
+      -791
+     ],
+     "EOD": [
+      4,
+      -45
+     ]
+    },
+    "entry_slip_pts_sd": 6.52,
+    "entry_slip_abs_gt5": 31,
+    "real_vs_planned_risk_max": 1.56,
     "stop_slip_pts_mean": 1.389,
     "stop_slip_pts_p90": 2.67,
     "stop_slip_pts_worst": 13.62
@@ -2251,8 +2823,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 687,
+    "pnl_diff_vs_model": 242,
     "outcome_flips": 4,
+    "pnl_diff_vs_backtest": 242,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      329
+     ],
+     "BE": [
+      5,
+      1
+     ],
+     "TARGET": [
+      10,
+      -129
+     ],
+     "EOD": [
+      4,
+      40
+     ]
+    },
+    "entry_slip_pts_sd": 8.86,
+    "entry_slip_abs_gt5": 16,
+    "real_vs_planned_risk_max": 1.66,
     "stop_slip_pts_mean": 1.061,
     "stop_slip_pts_p90": 1.91,
     "stop_slip_pts_worst": 2.88
@@ -2319,15 +2913,15 @@
     "wk2": 76,
     "win": 23.7,
     "pf": 0.96,
-    "net": -4408,
-    "per_month": -86,
-    "dd": -21460,
+    "net": -3980,
+    "per_month": -78,
+    "dd": -21792,
     "p10": 6.2,
-    "f10": 8.5,
+    "f10": 8.1,
     "p20": 11.9,
-    "f20": 30.7,
-    "pass_rate": 29.1,
-    "pass_med": 22.0
+    "f20": 29.4,
+    "pass_rate": 29.0,
+    "pass_med": 21.0
    }
   },
   "eval": {
@@ -2387,16 +2981,16 @@
     "tpw": 2.38,
     "wk2": 76,
     "win": 23.7,
-    "pf": 0.93,
-    "net": -5380,
-    "per_month": -105,
-    "dd": -15935,
-    "p10": 8.5,
+    "pf": 0.97,
+    "net": -2309,
+    "per_month": -45,
+    "dd": -13746,
+    "p10": 8.3,
     "f10": 0.1,
-    "p20": 15.1,
+    "p20": 15.2,
     "f20": 7.1,
-    "pass_rate": 31.0,
-    "pass_med": 16.0,
+    "pass_rate": 31.3,
+    "pass_med": 16.5,
     "worst_day": -915
    }
   },
@@ -2423,8 +3017,30 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1315,
+    "pnl_diff_vs_model": -1285,
     "outcome_flips": 12,
+    "pnl_diff_vs_backtest": -1285,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      761
+     ],
+     "BE": [
+      34,
+      -1099
+     ],
+     "TARGET": [
+      25,
+      -960
+     ],
+     "EOD": [
+      8,
+      13
+     ]
+    },
+    "entry_slip_pts_sd": 7.49,
+    "entry_slip_abs_gt5": 47,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.755,
     "stop_slip_pts_p90": 1.182,
     "stop_slip_pts_worst": 13.38
@@ -2451,8 +3067,30 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -2113,
+    "pnl_diff_vs_model": -1637,
     "outcome_flips": 8,
+    "pnl_diff_vs_backtest": -1637,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      356
+     ],
+     "BE": [
+      29,
+      -1138
+     ],
+     "TARGET": [
+      15,
+      -822
+     ],
+     "EOD": [
+      4,
+      -33
+     ]
+    },
+    "entry_slip_pts_sd": 6.52,
+    "entry_slip_abs_gt5": 30,
+    "real_vs_planned_risk_max": 1.56,
     "stop_slip_pts_mean": 0.838,
     "stop_slip_pts_p90": 1.34,
     "stop_slip_pts_worst": 13.38
@@ -2479,8 +3117,30 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 798,
+    "pnl_diff_vs_model": 352,
     "outcome_flips": 4,
+    "pnl_diff_vs_backtest": 352,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      405
+     ],
+     "BE": [
+      5,
+      39
+     ],
+     "TARGET": [
+      10,
+      -139
+     ],
+     "EOD": [
+      4,
+      46
+     ]
+    },
+    "entry_slip_pts_sd": 8.86,
+    "entry_slip_abs_gt5": 17,
+    "real_vs_planned_risk_max": 1.65,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44
@@ -2500,15 +3160,15 @@
     "tpw": 3.12,
     "wk2": 85,
     "win": 22.5,
-    "pf": 4.1,
-    "net": 31874,
-    "per_month": 5229,
+    "pf": 4.31,
+    "net": 32373,
+    "per_month": 5311,
     "dd": -2347,
     "p10": 28.1,
     "f10": 3.1,
-    "p20": 60.2,
+    "p20": 60.9,
     "f20": 6.2,
-    "pass_rate": 92.2,
+    "pass_rate": 92.3,
     "pass_med": 14.0
    },
    "H2": {
@@ -2532,32 +3192,32 @@
     "tpw": 2.91,
     "wk2": 86,
     "win": 26.7,
-    "pf": 3.47,
-    "net": 40698,
-    "per_month": 4149,
+    "pf": 3.58,
+    "net": 41197,
+    "per_month": 4200,
     "dd": -2347,
     "p10": 26.2,
     "f10": 1.9,
-    "p20": 54.4,
+    "p20": 54.9,
     "f20": 3.9,
-    "pass_rate": 95.4,
+    "pass_rate": 95.5,
     "pass_med": 16.0
    },
    "2021-25": {
     "n": 510,
     "tpw": 2.38,
     "wk2": 76,
-    "win": 17.3,
+    "win": 16.9,
     "pf": 0.96,
-    "net": -4336,
-    "per_month": -85,
-    "dd": -22450,
+    "net": -3967,
+    "per_month": -78,
+    "dd": -22845,
     "p10": 6.7,
-    "f10": 10.4,
+    "f10": 10.1,
     "p20": 12.4,
-    "f20": 30.2,
-    "pass_rate": 31.4,
-    "pass_med": 23.0
+    "f20": 29.3,
+    "pass_rate": 30.2,
+    "pass_med": 22.0
    }
   },
   "eval": {
@@ -2566,16 +3226,16 @@
     "tpw": 3.12,
     "wk2": 85,
     "win": 22.5,
-    "pf": 3.72,
-    "net": 32175,
-    "per_month": 5279,
+    "pf": 3.9,
+    "net": 32874,
+    "per_month": 5393,
     "dd": -2543,
     "p10": 37.5,
     "f10": 3.9,
-    "p20": 60.2,
+    "p20": 61.7,
     "f20": 6.2,
-    "pass_rate": 92.2,
-    "pass_med": 10.0,
+    "pass_rate": 92.3,
+    "pass_med": 10.5,
     "worst_day": -813
    },
    "H2": {
@@ -2600,15 +3260,15 @@
     "tpw": 2.91,
     "wk2": 86,
     "win": 26.7,
-    "pf": 3.33,
-    "net": 42702,
-    "per_month": 4353,
+    "pf": 3.39,
+    "net": 43335,
+    "per_month": 4418,
     "dd": -2543,
     "p10": 34.5,
     "f10": 2.4,
-    "p20": 55.3,
+    "p20": 56.3,
     "f20": 3.9,
-    "pass_rate": 82.9,
+    "pass_rate": 84.8,
     "pass_med": 12.0,
     "worst_day": -813
    },
@@ -2616,18 +3276,18 @@
     "n": 510,
     "tpw": 2.38,
     "wk2": 76,
-    "win": 17.3,
+    "win": 16.9,
     "pf": 0.88,
-    "net": -9787,
-    "per_month": -192,
-    "dd": -18334,
+    "net": -10273,
+    "per_month": -201,
+    "dd": -19818,
     "p10": 8.4,
     "f10": 0.2,
     "p20": 15.2,
     "f20": 9.7,
-    "pass_rate": 31.3,
+    "pass_rate": 31.4,
     "pass_med": 17.0,
-    "worst_day": -967
+    "worst_day": -894
    }
   },
   "diag": {
@@ -2653,11 +3313,33 @@
     },
     "model_targets": 25,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1067,
+    "pnl_diff_vs_model": -537,
     "outcome_flips": 0,
-    "stop_slip_pts_mean": 0.755,
-    "stop_slip_pts_p90": 1.182,
-    "stop_slip_pts_worst": 13.38
+    "pnl_diff_vs_backtest": -537,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -113
+     ],
+     "BE": [
+      34,
+      -213
+     ],
+     "TARGET": [
+      25,
+      -187
+     ],
+     "EOD": [
+      8,
+      -24
+     ]
+    },
+    "entry_slip_pts_sd": 0.6,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
+    "stop_slip_pts_mean": 0.612,
+    "stop_slip_pts_p90": 1.088,
+    "stop_slip_pts_worst": 2.84
    },
    "H1": {
     "model_trades": 80,
@@ -2681,11 +3363,33 @@
     },
     "model_targets": 15,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": -1374,
+    "pnl_diff_vs_model": -399,
     "outcome_flips": 0,
-    "stop_slip_pts_mean": 0.838,
-    "stop_slip_pts_p90": 1.34,
-    "stop_slip_pts_worst": 13.38
+    "pnl_diff_vs_backtest": -399,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -91
+     ],
+     "BE": [
+      29,
+      -175
+     ],
+     "TARGET": [
+      15,
+      -152
+     ],
+     "EOD": [
+      4,
+      19
+     ]
+    },
+    "entry_slip_pts_sd": 0.55,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
+    "stop_slip_pts_mean": 0.633,
+    "stop_slip_pts_p90": 1.13,
+    "stop_slip_pts_worst": 2.84
    },
    "H2": {
     "model_trades": 40,
@@ -2709,8 +3413,327 @@
     },
     "model_targets": 10,
     "model_targets_missed_by_limit": 0,
-    "pnl_diff_vs_model": 308,
+    "pnl_diff_vs_model": -138,
     "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -138,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -21
+     ],
+     "BE": [
+      5,
+      -37
+     ],
+     "TARGET": [
+      10,
+      -35
+     ],
+     "EOD": [
+      4,
+      -44
+     ]
+    },
+    "entry_slip_pts_sd": 0.68,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.03,
+    "stop_slip_pts_mean": 0.561,
+    "stop_slip_pts_p90": 0.955,
+    "stop_slip_pts_worst": 1.44
+   }
+  }
+ },
+ "live_now": {
+  "title": "REALISTIC, the bot as coded since 2026-10-18 (CISD-close entry, polls 2 s after each minute, 1.5 s compute)",
+  "fills": {
+   "detect": "bar_close",
+   "poll_s": 4.0,
+   "phase": 0.5,
+   "compute_s": 1.5
+  },
+  "normal": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 22.5,
+    "pf": 4.31,
+    "net": 32447,
+    "per_month": 5323,
+    "dd": -2347,
+    "p10": 28.1,
+    "f10": 3.1,
+    "p20": 60.9,
+    "f20": 6.2,
+    "pass_rate": 92.3,
+    "pass_med": 14.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 35.0,
+    "pf": 2.42,
+    "net": 8834,
+    "per_month": 2378,
+    "dd": -1487,
+    "p10": 23.1,
+    "f10": 0.0,
+    "p20": 44.9,
+    "f20": 0.0,
+    "pass_rate": 100.0,
+    "pass_med": 21.0
+   },
+   "2026": {
+    "n": 120,
+    "tpw": 2.91,
+    "wk2": 86,
+    "win": 26.7,
+    "pf": 3.58,
+    "net": 41281,
+    "per_month": 4208,
+    "dd": -2347,
+    "p10": 26.2,
+    "f10": 1.9,
+    "p20": 54.9,
+    "f20": 3.9,
+    "pass_rate": 95.5,
+    "pass_med": 16.0
+   },
+   "2021-25": {
+    "n": 510,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 16.9,
+    "pf": 0.96,
+    "net": -3776,
+    "per_month": -74,
+    "dd": -22798,
+    "p10": 6.7,
+    "f10": 10.1,
+    "p20": 12.4,
+    "f20": 29.3,
+    "pass_rate": 30.2,
+    "pass_med": 22.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 22.5,
+    "pf": 3.91,
+    "net": 32947,
+    "per_month": 5405,
+    "dd": -2543,
+    "p10": 37.5,
+    "f10": 3.1,
+    "p20": 61.7,
+    "f20": 6.2,
+    "pass_rate": 92.3,
+    "pass_med": 10.5,
+    "worst_day": -813
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 35.0,
+    "pf": 2.48,
+    "net": 10333,
+    "per_month": 2782,
+    "dd": -2195,
+    "p10": 29.5,
+    "f10": 0.0,
+    "p20": 47.4,
+    "f20": 0.0,
+    "pass_rate": 95.7,
+    "pass_med": 17.5,
+    "worst_day": -687
+   },
+   "2026": {
+    "n": 120,
+    "tpw": 2.91,
+    "wk2": 86,
+    "win": 26.7,
+    "pf": 3.39,
+    "net": 43419,
+    "per_month": 4426,
+    "dd": -2543,
+    "p10": 34.5,
+    "f10": 1.9,
+    "p20": 56.3,
+    "f20": 3.9,
+    "pass_rate": 84.8,
+    "pass_med": 12.0,
+    "worst_day": -813
+   },
+   "2021-25": {
+    "n": 510,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 16.9,
+    "pf": 0.89,
+    "net": -9016,
+    "per_month": -177,
+    "dd": -19822,
+    "p10": 8.4,
+    "f10": 0.3,
+    "p20": 15.4,
+    "f20": 9.5,
+    "pass_rate": 31.4,
+    "pass_med": 17.0,
+    "worst_day": -893
+   }
+  },
+  "diag": {
+   "2026": {
+    "model_trades": 120,
+    "skipped": 0,
+    "skipped_model_pnl": 0,
+    "lat_s_med": 4.3,
+    "entry_slip_pts_mean": -0.095,
+    "entry_slip_pts_p90": 0.417,
+    "entry_slip_pts_worst": 1.16,
+    "exits_live": {
+     "BE": 34,
+     "TARGET": 25,
+     "STOP": 53,
+     "EOD": 8
+    },
+    "exits_model": {
+     "BE": 34,
+     "TARGET": 25,
+     "STOP": 53,
+     "EOD": 8
+    },
+    "model_targets": 25,
+    "model_targets_missed_by_limit": 0,
+    "pnl_diff_vs_model": -453,
+    "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -453,
+    "diff_by_exit": {
+     "STOP": [
+      53,
+      -124
+     ],
+     "BE": [
+      34,
+      -209
+     ],
+     "TARGET": [
+      25,
+      -95
+     ],
+     "EOD": [
+      8,
+      -26
+     ]
+    },
+    "entry_slip_pts_sd": 0.45,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.02,
+    "stop_slip_pts_mean": 0.612,
+    "stop_slip_pts_p90": 1.088,
+    "stop_slip_pts_worst": 2.84
+   },
+   "H1": {
+    "model_trades": 80,
+    "skipped": 0,
+    "skipped_model_pnl": 0,
+    "lat_s_med": 4.3,
+    "entry_slip_pts_mean": -0.054,
+    "entry_slip_pts_p90": 0.369,
+    "entry_slip_pts_worst": 1.16,
+    "exits_live": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    },
+    "exits_model": {
+     "BE": 29,
+     "TARGET": 15,
+     "STOP": 32,
+     "EOD": 4
+    },
+    "model_targets": 15,
+    "model_targets_missed_by_limit": 0,
+    "pnl_diff_vs_model": -326,
+    "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -326,
+    "diff_by_exit": {
+     "STOP": [
+      32,
+      -93
+     ],
+     "BE": [
+      29,
+      -173
+     ],
+     "TARGET": [
+      15,
+      -79
+     ],
+     "EOD": [
+      4,
+      19
+     ]
+    },
+    "entry_slip_pts_sd": 0.41,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.02,
+    "stop_slip_pts_mean": 0.633,
+    "stop_slip_pts_p90": 1.13,
+    "stop_slip_pts_worst": 2.84
+   },
+   "H2": {
+    "model_trades": 40,
+    "skipped": 0,
+    "skipped_model_pnl": 0,
+    "lat_s_med": 4.3,
+    "entry_slip_pts_mean": -0.176,
+    "entry_slip_pts_p90": 0.462,
+    "entry_slip_pts_worst": 0.78,
+    "exits_live": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    },
+    "exits_model": {
+     "STOP": 21,
+     "BE": 5,
+     "TARGET": 10,
+     "EOD": 4
+    },
+    "model_targets": 10,
+    "model_targets_missed_by_limit": 0,
+    "pnl_diff_vs_model": -128,
+    "outcome_flips": 0,
+    "pnl_diff_vs_backtest": -128,
+    "diff_by_exit": {
+     "STOP": [
+      21,
+      -31
+     ],
+     "BE": [
+      5,
+      -36
+     ],
+     "TARGET": [
+      10,
+      -16
+     ],
+     "EOD": [
+      4,
+      -45
+     ]
+    },
+    "entry_slip_pts_sd": 0.51,
+    "entry_slip_abs_gt5": 0,
+    "real_vs_planned_risk_max": 1.02,
     "stop_slip_pts_mean": 0.561,
     "stop_slip_pts_p90": 0.955,
     "stop_slip_pts_worst": 1.44

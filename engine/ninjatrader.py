@@ -341,6 +341,7 @@ class NinjaTraderAdapter:
     route_stop_moves = True     # LiveBot sends {"side": "modify"} when the model moves the stop (breakeven at 1R)
     route_all_exits = True      # LiveBot routes every model exit (TIME STOP, giveback, ...): a CLOSEPOSITION when flat is harmless
     kill_flattens_all = True    # the kill switch reaches NinjaTrader even when the model shows no position
+    reports_fills = True        # phone notifications: this adapter notifies the real fill (LiveBot does not send its own)
 
     def __init__(self, cfg: dict | None = None, readonly: bool = False, clock=None):
         cfg = dict(cfg or {})
@@ -424,8 +425,49 @@ class NinjaTraderAdapter:
                 return
             from .live import BOT
             BOT._alert("⚠️ NinjaTrader: " + text, "guard")
+            self._push(lambda P: P.text_payload("PC", "risk", "NinjaTrader needs a look", text,
+                                                key=f"risk:{int(self.clock()) // 60}:{abs(hash(text)) % 10**6}"))
         except Exception:
             pass
+
+    # ------------------------------------------------------------------ phone notifications (engine/push.py)
+    def _push_account(self):
+        if self.sim:
+            return self.account                  # "Sim101"
+        try:
+            from . import push
+            from .lab_adapter import live_model
+            return push.account_label(live_model(), "live")
+        except Exception:
+            return "MFFU 50K"
+
+    def _push(self, make):
+        """Send one phone notification (background thread, once per key). Only the real bot: never the self-test or a
+        harness with its own state file. Never raises."""
+        if self._alert_fn is not None or self.readonly or self.state_path != STATE_PATH:
+            return
+        try:
+            from . import push
+            push.pc_notify(make(push))
+        except Exception:
+            pass
+
+    def _push_fill(self, lg):
+        """ENTRY: NinjaTrader reported the entry fill."""
+        inst = lg["instrument"].split(" ")[0]
+        self._push(lambda P: P.entry_payload(self._push_account(), "LONG" if lg["dir"] == 1 else "SHORT", lg["filled"], lg["entry_t"],
+                                             src="pc", contract=inst, entry=lg["fill_px"], stop=lg.get("stop0") or lg["stop"],
+                                             target=lg["target"]))
+
+    def _push_exit(self, lg, name, x):
+        """OUTCOME: the bracket closed the trade (stop or target filled at NinjaTrader): $ from the real fills, before costs."""
+        u = lg["instrument"].upper()
+        pv = 2.0 if u.startswith("MNQ") else 5.0 if u.startswith("MES") else 20.0 if u.startswith("NQ") else 50.0
+        fill, ex = float(lg["fill_px"] or 0), float(x.get("avg") or 0)
+        usd = (ex - fill) * lg["dir"] * int(x.get("filled") or lg["bracket_qty"] or 0) * pv
+        reason = "TARGET" if name == "TARGET" else ("BE" if abs(ex - fill) <= 1.0 else "STOP")
+        self._push(lambda P: P.outcome_payload(self._push_account(), "LONG" if lg["dir"] == 1 else "SHORT", reason, usd,
+                                               lg["entry_t"], int(self.clock()), src="pc", exit_px=ex, qty=x.get("filled")))
 
     def _risk(self, text, alert=False):
         self.last_error = text
@@ -736,7 +778,7 @@ class NinjaTraderAdapter:
             base = f"LE{ts}{tag}{kind}"
             legs.append({"instrument": inst, "qty": qty, "side": side, "dir": d, "entry_t": ts, "stop": stop, "target": target,
                          "entry_id": base + "E", "stop_id": base + "S", "target_id": base + "T", "oco": base + "O",
-                         "status": "entry_sent", "filled": 0, "fill_px": None, "fill_mtime": None, "bracket_qty": 0,
+                         "status": "entry_sent", "filled": 0, "fill_px": None, "fill_mtime": None, "bracket_qty": 0, "stop0": stop,
                          "sent_at": self.clock()})
         r = self._send_lines([place_line(self.account, lg["instrument"], side, lg["qty"], "MARKET", order_id=lg["entry_id"])
                               for lg in legs], "ENTRY")
@@ -778,9 +820,12 @@ class NinjaTraderAdapter:
 
     def _note_fill(self, lg, st):
         if st and st["filled"] > lg["filled"]:
+            first = not lg["filled"]
             lg["filled"] = min(st["filled"], lg["qty"])
             lg["fill_px"] = st["avg"]
             lg["fill_mtime"] = st.get("mtime")
+            if first:
+                self._push_fill(lg)
 
     def _protect(self, lg) -> dict:
         """Stop (STOPMARKET) + target (LIMIT) as one OCO pair for the filled quantity."""
@@ -1072,6 +1117,7 @@ class NinjaTraderAdapter:
                 self._risk(f"{name} filled but the other leg was still working: cancel sent ({other_id})")
             self._retire([lg], f"{name.lower()} filled")
             self._log("system", f"NinjaTrader: bracket closed the trade: {name} filled {x['filled']} {lg['instrument']} @ {x['avg']}")
+            self._push_exit(lg, name, x)
             return
         dead = [name for name, x in (("stop", s), ("target", t)) if x and x["state"] in DEAD]
         if dead:
@@ -1255,6 +1301,28 @@ class NinjaTraderBars:
             full = False
             why = f"feed is missing {gaps:.0%} of the bars of the last 3 days (ETH trading hours on the chart?)"
         return df.reset_index(drop=True), why, full
+
+    def forming_open(self, sym, now=None):
+        """(open time, open) of the 1-minute bar forming now, from LE_BarFeed's <ROOT>_1m_open.csv (one line "time,open",
+        rewritten on the first trade of every minute), or None (no file, unreadable, or not the current minute). The live
+        loop sizes a LIT entry decided on the 1m CISD close from it (the backtest fills at that bar's open + 1 tick)."""
+        now = int(now if now is not None else time.time())
+        for root in self.roots.get(sym, [sym]):
+            p = os.path.join(self.dir, f"{root}_1m_open.csv")
+            if os.path.exists(p):
+                break
+        else:
+            return None
+        try:
+            with open(p, encoding="utf-8") as fh:
+                lines = [x.strip() for x in fh.read().splitlines() if x.strip()]
+            t_s, px_s = lines[-1].split(",")[:2]
+            t, px = int(float(t_s)), float(px_s)
+        except (OSError, ValueError, IndexError):
+            return None
+        if t % 60 or not (t <= now < t + 60) or not (px > 0):
+            return None
+        return (t, px)
 
     @staticmethod
     def _gap_ratio(df, secs, market_open):
@@ -2053,12 +2121,18 @@ def selftest(verbose=True) -> bool:
             [{"time": 60, "open": 1.0, "high": 1.0, "low": 1.0, "close": 1.0, "volume": 0.0}])
         try:
             now[0] = f1now
+            with open(os.path.join(feed_dir, "MNQ_1m_open.csv"), "w") as fh:
+                fh.write(f"{last1 + 60},25123.5\n")             # LE_BarFeed: the forming minute's first trade
             got1 = lbot._lit_1m("NQ", f1now, f1now - 5 * 86400)
             ok1 = got1 is not None and int(got1["time"].iloc[-1]) == last1 and not calls and len(got1) == len([r_ for r_ in rows1 if r_[0] >= f1now - 5 * 86400])
+            fo1 = lbot._forming.get(("NQ", 60))
             now[0] = f1now + 1800
             got2 = lbot._lit_1m("NQ", f1now + 1800, f1now - 5 * 86400)
             check("LIT: 1m bars from NinjaTrader's MNQ_1m.csv (no Yahoo call); a stale 1m file -> Yahoo 1m, bot health untouched",
                   ok1 and calls == [("NQ", "1m")] and got2 is not None and not lbot.health.get("fallback"), f"calls={calls}")
+            check("LIT: the forming minute's open from MNQ_1m_open.csv (sizes an entry decided on the 1m CISD close); an old "
+                  "minute in it is ignored", fo1 == (last1 + 60, 25123.5) and lbot._forming.get(("NQ", 60)) is None
+                  and NinjaTraderBars(folder=folder).forming_open("NQ", now=f1now + 1800) is None, f"{fo1}")
         finally:
             live._yahoo_recent = orig_y
         blob = open(os.path.join(tmp, "oif.log"), encoding="utf-8").read() + json.dumps(list(ad.trace))

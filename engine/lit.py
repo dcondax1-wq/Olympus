@@ -335,7 +335,20 @@ def _cisd_level(c_d, o_d, ee, back=3):
     return float(o_d[st]), st
 
 
-def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from=60, t_to=955, ref="frac"):
+def rel_mod(m):
+    """ET minute in trading-day order: 0 = 18:00 (Globex open), 1319 = 15:59, 1380 = 17:00 (the halt)."""
+    return (np.asarray(m) - 1080) % 1440
+
+
+def _late(m, flat, evening):
+    """True once bar minute m is at/after the flat time. Default (evening False): the RTH rule m >= flat or m >= 18:00. With
+    evening (all_hours): trading-day order, so an 18:00-02:00 bar is early in the day and flat is the same day's flat time."""
+    if evening:
+        return (int(m) - 1080) % 1440 >= (int(flat) - 1080) % 1440
+    return m >= flat or m >= 1080
+
+
+def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from=60, t_to=955, ref="frac", evening=False):
     """Every LIT setup on every day, both directions. Long (mirror for shorts):
       1. sweep:      a known low-side liquidity level (session box, PDL/PWL/PML, gap edge, build-up lows) is breached for the
                      first time within `sweep_win` bars before the leg's extreme (the lowest low of the last `leg` bars)
@@ -349,7 +362,10 @@ def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from
     ref = the structure-shift level: "frac" (last 5m fractal high before the extreme, lit_A) or "cisd" (open of the last run
     of down-close bars into the extreme, TTrades CISD; the LIT entry study's pick).
     Extra features for run_x (ignored by run): sw {level name: price}, atr_ext, idm_a [(dist ATR, age bars)], nwog_side,
-    ndog_side, mw_break (see _week_context)."""
+    ndog_side, mw_break (see _week_context).
+    evening=True (all-hours study, research/writeups/lit-all-hours.md): triggers on the whole trading day from 18:30 ET
+    (6 bars after the Globex open; the leg never reaches back before 18:00) up to t_to, in trading-day order; t_from is
+    ignored. The default (False) is the RTH-only detector, unchanged."""
     o, h, l, c, mod, at = M.o, M.h, M.l, M.c, M.mod, M.atr
     out = []
     for k, (date, s, e) in enumerate(M.days):
@@ -376,10 +392,13 @@ def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from
                 j = int(np.argmax(seg)) if len(seg) else 0
                 tb.append(st + 1 + j if len(seg) and seg[j] else seg_end)
             last_e = -1
-            for i in range(s + leg, e - 1):
-                if not (t_from <= mod[i] < t_to) or mod[i] >= 1080:
+            for i in range(s + (6 if evening else leg), e - 1):
+                if evening:
+                    if (mod[i] - 1080) % 1440 >= (t_to - 1080) % 1440:
+                        continue
+                elif not (t_from <= mod[i] < t_to) or mod[i] >= 1080:
                     continue
-                a = i - leg
+                a = max(i - leg, s) if (evening and i < s + leg) else i - leg
                 ee = a + int(np.argmin(lo_d[a:i + 1]))
                 if ee == i or ee == last_e:
                     continue
@@ -437,7 +456,7 @@ def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from
                 vec = bool((M.climax[ee + 1:i + 1] & dir_bull).any())
                 vec_any = bool(((M.climax[ee + 1:i + 1] | M.above[ee + 1:i + 1]) & dir_bull).any())
                 ei = i + 1
-                if ei >= e or mod[ei] >= 955 or mod[ei] >= 1080:
+                if ei >= e or _late(mod[ei], 955, evening):
                     continue
                 entry_d = float(o_d[ei]) + SLIP
                 # targets: levels beyond entry, not touched by the trigger bar's close
@@ -702,6 +721,15 @@ DEFAULTS = {
     "fallback_rr": None,             # fixed R target when no level clears min_rr (None = no trade)
     # management
     "be_r": 1.0, "flat_mod": 955, "max_per_day": 1,
+    "be_off": 0.0,               # breakeven stop = entry + be_off pts (research/writeups/lit-adv-management.md; 0.0 = today's stop
+                                 # at the entry exactly; 1.25 = entry + costs: $1.90 commission + 1 tick of exit slippage, 5 ticks)
+    # all hours (research/writeups/lit-all-hours.md; all off = today's RTH-only rules)
+    "all_hours": False,          # True: the candidates were built with candidates(evening=True); the executor runs in trading-day
+                                 # order (an 18:00-02:00 entry is held at most to flat_mod of the same trading day, never through
+                                 # the 17:00 halt). Use with a window such as [[1080, 1440], [0, 930]].
+    "per_session": None,         # max trades per session [[start, end) ET minute ranges in trading-day order, n], e.g.
+                                 # [[[1080, 120], [120, 480], [480, 1080]], 1] = 1 Asia + 1 London + 1 NY (with max_per_day 3)
+    "stop_after_loss": False,    # True: no new trade on a trading day after a STOP exit (a later trade only after a TARGET / BE)
     # size (micros = $800 up to a 20-pt stop, then 800*20/stop, max 40; then these multipliers, floor 1 micro)
     "how_out": 1.0,              # multiplier when the sweep extreme is outside the high/low-of-week window (Tue 03:00-Wed 11:30)
     # loss rules (research/writeups/lit-losses.md, run lit_loss_pack; both off by default so lit_final stays reproducible)
@@ -709,6 +737,10 @@ DEFAULTS = {
                                  # low (PDL) only longs (both taken / neither: no rule); a skipped setup leaves the day free
     "wk_stop": None,             # weekly stop [n, mult]: after n STOP exits in the calendar week (ISO week of the trading day,
                                  # Mon-Fri) the rest of that week trades at mult x size (one rounding with how_out, floor 1 micro)
+    "t_check": None,             # 15-minute check (research/writeups/lit-loss-learning.md, run lit_ll_t15; off = None):
+                                 # {"at": 15, "x": 0.3, "mfe": 0.5}: at the close of the 1m bar that ends `at` minutes after the
+                                 # fill, if the trade never reached +mfe R, the breakeven has not moved the stop and that close is
+                                 # more than x R below the entry, exit at the next 1m open - 1 tick ("CUT_T15"). 1m bars only.
     # execution (research only; research/writeups/lit-live-fills.md): None = the plain backtest fills above
     "fills": None,               # realistic fill model {} / {...}: engine/lit_fills.py FILL_DEFAULTS (live bot latency, market
                                  # entry at the price when the order reaches CME, stop slippage by hour and bar range, target
@@ -723,6 +755,7 @@ class XBars:
         self.t, self.o, self.h, self.l, self.c, self.mod, self.day, self.secs = t, o, h, l, c, mod, np.asarray(day), secs
         self.n = len(t)
         self.full = full                  # Market day indices with full coverage (1m only)
+        self.next_open = None             # live only: (time, open) of the bar forming after the last one (engine/lit_live.py)
         self._d = {1: (h, l, c, o), -1: (-l, -h, -c, -o)}
 
     def dirs(self, d):
@@ -731,6 +764,11 @@ class XBars:
 
 def bars_5m(M: Market):
     return XBars(M.t, M.o, M.h, M.l, M.c, M.mod, M.day_of, 300)
+
+
+def closed_bars(B: XBars, n):
+    """The first n bars of B (engine/lit_live.py early mode: the forming 5m bar in the market is never an executor bar)."""
+    return XBars(B.t[:n], B.o[:n], B.h[:n], B.l[:n], B.c[:n], B.mod[:n], B.day[:n], B.secs, B.full)
 
 
 def bars_1m(M: Market, cover=0.97, src=None, tol=None, tail=False):
@@ -756,7 +794,8 @@ def bars_1m(M: Market, cover=0.97, src=None, tol=None, tail=False):
     ends = np.r_[starts[1:], len(t5)]
     keep = np.zeros(len(t5), bool)
     shift = np.zeros(len(t5))
-    last5 = int(M.t[-1]) if M.n else -1
+    n5 = getattr(M, "n_closed", M.n)        # engine/lit_live.py early mode: M ends with the forming 5m bar (not checked)
+    last5 = int(M.t[n5 - 1]) if n5 else -1
     for a, z in zip(starts, ends):
         j = j5c[a]
         if tail and t5[a] > last5:
@@ -777,8 +816,22 @@ def bars_1m(M: Market, cover=0.97, src=None, tol=None, tail=False):
     dmap = {d: k for k, (d, s, e) in enumerate(M.days)}
     day = np.array([dmap.get(x, -1) for x in np.asarray(b.date_str)[ix]])
     cnt = np.bincount(day[day >= 0], minlength=len(M.days))
-    full = {k for k, (d, s, e) in enumerate(M.days) if cnt[k] >= cover * 5 * (e - s)}
+    full = {k for k, (d, s, e) in enumerate(M.days) if cnt[k] >= cover * 5 * (min(e, n5) - s)}
     return XBars(b.t[ix], b.o[ix] - sh, b.h[ix] - sh, b.l[ix] - sh, b.c[ix] - sh, b.mod[ix], day, 60, full)
+
+
+def _next_bar_same_day(B: XBars, k, day):
+    """Live: the bar after B's last bar k (still forming) belongs to the same session (no 18:00 roll, no CME early-close
+    halt in between), so the backtest would fill there."""
+    m = int(B.mod[k]) + B.secs // 60
+    if 1020 <= m <= 1080:                # the 17:00-18:00 ET halt (the setup walk itself stops at the flat time)
+        return False
+    try:
+        from engine.lit_live import early_close
+        ec = early_close(str(day))
+    except Exception:
+        ec = None
+    return ec is None or m < ec
 
 
 def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
@@ -788,7 +841,10 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     re-measured from the fill). Ported from tools/lit_entry.py sim() (identical to simulate() on 5m bars).
     Returns a trade dict (runlib columns) or None. live=True (engine/lit_live.py): when the bars end before the setup is
     decided, returns {"pending": True, ...} (limit still working / tapped and waiting for the 1m CISD), and when they end
-    inside the trade, the trade with exit "OPEN" (stop_now = the stop after a breakeven move). live=False never does."""
+    inside the trade, the trade with exit "OPEN" (stop_now = the stop after a breakeven move), and when the 1m CISD candle
+    is the last closed bar, {"enter_now": True, ...}: the entry decided at that close, to route at market at once (the
+    backtest fills at the next bar's open; entry/qty from B.next_open when the feed shows the forming bar, else "est" from
+    the CISD close). live=False never does any of this."""
     if P.get("fills") is not None and not live:
         from engine import lit_fills
         return lit_fills.simulate(M, B, cand, entry_px, tgt, stop, P)
@@ -806,6 +862,7 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     if k0 >= B.n:
         return _pending(None) if live else None
     flat = P["flat_mod"]
+    ev = bool(P.get("all_hours"))
     wait_s = P["wait"] * 300
     cis = P.get("cisd1m")
     if cis and B.secs == 300:
@@ -815,7 +872,7 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     fill = tapped = None
     k = k0
     while k < B.n:
-        if B.day[k] != s_day or B.mod[k] >= flat or B.mod[k] >= 1080:
+        if B.day[k] != s_day or _late(B.mod[k], flat, ev):
             break
         if tapped is None and B.t[k] >= t0 + wait_s:
             break
@@ -837,6 +894,13 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
             cz = _cisd_level(c_d, o_d, lowk)
             if cz is not None and k > lowk and c_d[k] > cz[0] and k + 1 < B.n and B.day[k + 1] == s_day:
                 fill = k + 1; entry = float(o_d[k + 1]) + SLIP; limit_fill = False; break
+            if live and cz is not None and k > lowk and c_d[k] > cz[0] and k + 1 == B.n and _next_bar_same_day(B, k, cand["day"]):
+                # live: the CISD candle k has just CLOSED and the backtest's fill bar (k + 1) is the one forming now.
+                # Decide now (a market order sent within seconds of k + 1's open gets the backtest's "next open"),
+                # sized from k + 1's open when the feed already shows it (B.next_open), else from k's close (estimate).
+                nx = getattr(B, "next_open", None)
+                exact = nx is not None and int(nx[0]) == int(B.t[k]) + B.secs
+                fill = k + 1; entry = (d * float(nx[1]) if exact else float(c_d[k])) + SLIP; limit_fill = False; break
         k += 1
     else:
         if live and fill is None:           # the data ended before the setup was decided
@@ -859,13 +923,23 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     q = qty_for(risk)
     if q < 1:
         return None
+    if fill >= B.n:                          # live only: enter now (see above); the open trade appears once k + 1 closes
+        return {"enter_now": True, "est": not exact, "day": cand["day"], "dir": d, "entry_t": int(B.t[fill - 1]) + B.secs,
+                "cisd_t": int(B.t[fill - 1]), "entry_px": round(entry * d, 2), "stop_px": round(stop * d, 2),
+                "target_px": round(tg * d, 2), "risk_pts": round(risk, 2), "qty": q, "risk_usd": round(risk * PV * q, 2),
+                "pnl": 0.0, "r": 0.0, "low": 0.0, "half": False, "mult": 1.0, "exit": "OPEN", "exit_t": None,
+                "exit_i": 10 ** 12, "tf": B.secs // 60, "limit_fill": False, "swept": cand["swept"]}
     be_r = P["be_r"]
+    tc = P.get("t_check") if B.secs == 60 else None
     cur, be_done, mfe, mae, worst = stop, False, 0.0, 0.0, 0.0
     k = fill
     exit_px = kind = None
+    cut = None                               # the 15-minute check fired at the close of the previous bar
     while k < B.n:
-        if B.day[k] != s_day or B.mod[k] >= 1080:
+        if B.day[k] != s_day or (not ev and B.mod[k] >= 1080):
             k -= 1; exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
+        if cut is not None:
+            exit_px, kind = float(o_d[k]) - SLIP, cut; break
         mae = max(mae, (entry - lo_d[k]) / risk)
         worst = min(worst, lo_d[k] - entry)
         if lo_d[k] <= cur:
@@ -875,9 +949,15 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
             if hi_d[k] >= tg:
                 exit_px, kind = tg, "TARGET"; break
             if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk:
-                cur, be_done = entry, True
-        if B.mod[k] >= flat:
+                cur, be_done = entry + float(P.get("be_off") or 0.0), True
+        if _late(B.mod[k], flat, ev) if ev else B.mod[k] >= flat:
             exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
+        if tc and not be_done and round((B.t[k] - B.t[fill]) / 60.0) + 1 == int(tc.get("at", 15)) \
+                and mfe < float(tc.get("mfe", 0.5)) and c_d[k] < entry - float(tc.get("x", 0.3)) * risk:
+            if k + 1 < B.n and B.day[k + 1] == s_day:
+                cut = "CUT_T15"                  # exit at the next 1m open
+            elif live and k + 1 >= B.n:          # live: the check bar is the last closed bar -> exit at market now
+                exit_px, kind = float(c_d[k]) - SLIP, "CUT_T15"; break
         k += 1
     if exit_px is None:
         if not live:
@@ -915,6 +995,8 @@ def scale_trade(t, m):
     x = dict(t)
     x.update(qty=q, pnl=round(per * q - cm * q, 2), risk_usd=round(t["risk_usd"] * f, 2), half=f < 1, mult=round(f, 3),
              low=round(t["low"] * f, 2))
+    if "pnl_model" in t:                 # realistic-fill trades: the model's own P&L at the same size ($1.40 commission)
+        x["pnl_model"] = round((t["pnl_model"] + COMM * q0) / q0 * q - COMM * q, 2)
     return x
 
 
@@ -1019,7 +1101,9 @@ def run_live(M: Market, cands, P=None, B1=None, B5=None, week_hist=None):
     every setup that passed the filters and was sent to the executor (limit placed), with its plan}. A pending setup does
     not block a later one: whichever fills first is the day's trade (the backtest decides in setup order; the two differ
     only when a later setup fills while an earlier limit is still working and that earlier limit fills afterwards).
-    week_hist: the live ledger's finished trades of this week for the weekly stop (see week_stops); None = the run's own."""
+    week_hist: the live ledger's finished trades of this week for the weekly stop (see week_stops); None = the run's own.
+    "enter_now": at most one entry decided on the 1m CISD close that just happened (simulate_x live), to route at market
+    at once; it becomes the open trade in "trades" once its fill bar has closed."""
     return _run_core(M, cands, P, None, B1, B5, live=True, week_hist=week_hist)
 
 
@@ -1031,12 +1115,19 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
     if P["tf"] == "1m" and B1 is None and not live:
         B1 = bars_1m(M)
     out, busy, per_day = [], -1, collections.Counter()
-    pending, signals = [], []
+    per_sess, lost = collections.Counter(), set()
+    ps = P.get("per_session")
+    sess_of = (lambda m: next((q for q, (a, b) in enumerate(ps[0]) if (m - a) % 1440 < (b - a) % 1440), -1)) if ps else None
+    pending, signals, enter_now = [], [], []
     buf = P["stop_buf"]
     for z in cands:
         if sset is not None and z["day"] not in sset:
             continue
         if z["entry_i"] <= busy or per_day[z["day"]] >= P["max_per_day"]:
+            continue
+        if P.get("stop_after_loss") and z["day"] in lost:
+            continue
+        if ps and per_sess[(z["day"], sess_of(z["mod"]))] >= ps[1]:
             continue
         if not setup_ok(z, P, names):
             continue
@@ -1077,7 +1168,8 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
                                                                              if P["max_rr"] and best and best > P["max_rr"] * risk else ""),
                             "swept": z["swept"], "sweep_ext": round(z["ext_d"] * d, 2), "ind": len(z.get("idm_a") or []),
                             "disp": z["disp"], "tf": B.secs // 60, "how": z["how"],
-                            "status": "pending" if (t and t.get("pending")) else ("filled" if t else "no fill")})
+                            "status": "pending" if (t and t.get("pending")) else "entering" if (t and t.get("enter_now"))
+                            else ("filled" if t else "no fill")})
         if t is None:
             continue
         if t.get("pending"):
@@ -1085,6 +1177,10 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             pending.append(t)
             continue
         busy = t["exit_i"]; per_day[z["day"]] += 1
+        if ps:
+            per_sess[(z["day"], sess_of(z["mod"]))] += 1
+        if t.get("exit") == "STOP":
+            lost.add(z["day"])
         m = P["how_out"] if (P["how_out"] != 1.0 and not z["how"]) else 1.0
         why = ["outside the high/low-of-week window x%g" % m] if m != 1.0 else []
         if P.get("wk_stop"):
@@ -1100,6 +1196,10 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
         if live:
             t["target_label"] = signals[-1]["target_label"]
             t["sweep_ext"] = signals[-1]["sweep_ext"]
+            if t.get("enter_now"):           # decided on the CISD close, sized like the trade: routed at market now
+                t["sig_t"] = int(M.t[z["entry_i"]])
+                enter_now.append(t)
+                continue
         out.append(t)
     if not live:
         return {"trades": out}
@@ -1111,4 +1211,4 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
         week = {"week": "%d-W%02d" % iso_week(today), "stops": int(ws), "after": int(P["wk_stop"][0]),
                 "mult": float(P["wk_stop"][1]) if ws >= P["wk_stop"][0] else 1.0, "ledger_days": sorted({r["day"] for r in (week_hist or [])
                                                                                                         if r.get("day") and iso_week(r["day"]) == iso_week(today)})}
-    return {"trades": out, "pending": pending, "signals": signals, "week": week}
+    return {"trades": out, "pending": pending, "signals": signals, "week": week, "enter_now": enter_now}

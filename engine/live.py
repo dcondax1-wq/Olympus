@@ -253,6 +253,33 @@ def clean_bars(df: pd.DataFrame, secs: int, now: int, grid: bool = True):
     return df.reset_index(drop=True), drops
 
 
+def forming_open(df, secs: int, now: int):
+    """(open time, open) of the bar still forming at `now` in a fresh fetch (Yahoo shows it from its first trade), or None.
+    clean_bars drops that bar; only its open is used (LIT sizes an entry decided on the 1m CISD close from it)."""
+    try:
+        if df is None or not len(df) or "time" not in df or "open" not in df:
+            return None
+        t = df["time"].astype("int64")
+        r = df[(t % secs == 0) & (t <= now) & (t + secs > now)]
+        if not len(r):
+            return None
+        o = float(r["open"].iloc[-1])
+        return (int(r["time"].iloc[-1]), o) if o > 0 and math.isfinite(o) else None
+    except Exception:
+        return None
+
+
+def next_wake(now: float, offsets=(2.0, 32.0)) -> float:
+    """The next poll time after `now`: `offsets` seconds after each minute boundary (2 s after a bar closes, and a mid-minute
+    poll). The old loop slept 60 s after each poll (not aligned to the minute, ~31 s late on average)."""
+    m = math.floor(now / 60.0) * 60.0
+    for base in (m, m + 60.0):
+        for o in sorted(float(x) for x in offsets):
+            if base + o > now + 0.05:
+                return base + o
+    return m + 120.0
+
+
 class LiveBot:
     """Same Engine as the backtester, re-run on a rolling window every poll; decisions are a pure function of the bars.
 
@@ -299,7 +326,12 @@ class LiveBot:
         self._nt_notes = {}              # rate limit for the ninjatrader feed notes: key -> (text, unix time logged)
         self._modify_gaveup = set()      # (entry_t, stop) the broker refused 3 times: not retried again
         self._week_prev = []             # LIT weekly stop: this ISO week's routed exits from earlier days (live_state.json)
-        self._eval_prev = {}             # LIT safe_eval: routed P&L per earlier trading day of the eval (live_state.json)
+        self._forming = {}               # (sym, secs) -> (open time, open) of the bar forming at the last fetch (LIT sizing)
+        self._nt_forming = {}            # (sym, secs) -> the same from NinjaTrader's LE_BarFeed open file
+        self._provisional = {}           # entry_t -> what was routed for a LIT entry decided on the 1m CISD close
+        self._nt_repoll = None           # minute boundary already re-polled for a late NinjaTrader 1m bar
+        self._eval_prev = {}             # LIT safe_eval / eval / two_week: routed P&L per earlier trading day of the eval (live_state.json)
+        self._lit_sizing = None          # live_model.json lit_sizing (or the start cfg's), set on every poll
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -366,6 +398,8 @@ class LiveBot:
             if self._nt_feed is None:
                 self._nt_feed = _nt.NinjaTraderBars(folder=self.cfg.get("nt_folder"), roots=self.cfg.get("nt_feed_roots"))
             df, why, full = self._nt_feed.recent_bars(sym, interval, period, now=int(self.clock()))
+            if interval == "1m" and df is not None and callable(getattr(self._nt_feed, "forming_open", None)):
+                self._nt_forming[(sym, 60)] = self._nt_feed.forming_open(sym, now=int(self.clock()))
         except Exception as e:
             df, why, full = None, f"{e.__class__.__name__}: {e}", False
         if df is not None and len(df):
@@ -406,6 +440,7 @@ class LiveBot:
             self._note_error(f"data refresh failed ({sym} {tf}): {e.__class__.__name__}: {e}")
         frames = [f for f in (hist, recent) if f is not None and len(f)]
         df = pd.concat(frames) if frames else pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume"])
+        self._forming[(sym, secs)] = self._nt_forming.pop((sym, secs), None) or forming_open(recent, secs, now)
         return clean_bars(df, secs, now)
 
     # ------------------------------------------------------------------ lifecycle
@@ -531,6 +566,41 @@ class LiveBot:
         self._route({"sym": sym, "side": "modify", "qty": self._open_qty or pos.get("qty"), "stop": new, "reason": reason,
                      "entry_t": et_})
 
+    def _learn_es(self, sym, tf, now, secs):
+        """ES 5m bars for the learning loop's ES features, fetched at most every 5 minutes; None when unavailable."""
+        if self.state_path != STATE_PATH:      # test harnesses: no extra feed (the ES features are then unknown)
+            return None
+        c = getattr(self, "_es_cache", None)
+        if c and now - c[0] < 300:
+            return c[1]
+        es = None
+        if PARTNER.get(sym) in YAHOO:
+            keep = dict(self.health)
+            try:
+                es, _ = self._merged(PARTNER[sym], tf, now, secs)
+            except Exception as e:
+                self._note_error(f"partner {PARTNER.get(sym)} unavailable (learning features): {e}")
+            self.health.clear(); self.health.update(keep)
+        self._es_cache = (now, es)
+        return es
+
+    def _journal(self, tr, qty):
+        """The LIT learning loop's journal (engine/lit_learn.py): one record per routed LIT exit, source "pc", with the
+        routed micros and $ (the real bot only; test harnesses run with their own state_path). Never raises into routing."""
+        if self.state_path != STATE_PATH or (self.state or {}).get("model") != "lit":
+            return
+        try:
+            from . import lit_learn
+            lr = tr.get("learn") or {}
+            pnl = round(tr["pnl"] * qty / tr["qty"], 2) if tr.get("qty") else tr["pnl"]
+            rec = lit_learn.record(tr, "pc", f=lr.get("f"), post=tr.get("post"), qty=qty, pnl=pnl,
+                                   learn=getattr(self, "_learn_at", {}).get(tr["entry_t"]))
+            if lit_learn.append_journal([rec]):
+                self._log("system", f"Learning journal: {rec['exit']} {rec['r']:+.2f}R"
+                                    + (f", cause {rec['cause']}" if rec.get("cause") else ""))
+        except Exception as e:
+            self._note_error(f"learning journal failed: {e}")
+
     def _remember(self, tr, sym, note=None):
         """Persistent trade memory (engine/memory.py): store a completed routed trade. Never raises into routing.
         Source: 'live' only for a real-money adapter (Tradovate env=live, TradersPost); paper and demo are 'paper'."""
@@ -557,7 +627,7 @@ class LiveBot:
                 "sym": self.cfg.get("sym"), "tf": self.cfg.get("tf"), "adapter": self.cfg.get("adapter"),
                 "started_at": self.started_at, "kill": self.kill, "eod_sent": self._eod_sent, "guard_key": self._guard_key,
                 "open_routed": self._open_routed, "open_qty": self._open_qty, "blocked_entries": sorted(self._blocked_entries),
-                "flattened": sorted(self._flattened),
+                "flattened": sorted(self._flattened), "provisional": {str(k): v for k, v in self._provisional.items()},
                 "seen": [list(k) for k in list(self.seen)[-2000:]], "ledger": self.ledger[-300:],
                 "week_exits": self.lit_week_hist() if self.cfg else [], "eval_days": self.eval_days() if self.cfg else {},
                 "day_pnl_routed": self.day_pnl_routed(), "trades_today": self.trades_today()}
@@ -602,6 +672,7 @@ class LiveBot:
         self._open_qty = s.get("open_qty")
         self._blocked_entries = set(s.get("blocked_entries") or [])
         self._flattened = set(s.get("flattened") or [])
+        self._provisional = {int(k): v for k, v in (s.get("provisional") or {}).items()}
         if s.get("started_at"):
             self.started_at = min(self.started_at, int(s["started_at"]))
         self.kill = bool(s.get("kill")) and not clear_kill
@@ -683,7 +754,14 @@ class LiveBot:
         if model == "lit":
             from . import lit_live
             df1 = self._lit_1m(sym, now, int(df_full["time"].min())) if lit_p.get("tf") == "1m" else None
-            res = lit_live.run(df_full, lit_p, one_min=df1, now=now, sym=sym, week_hist=self.lit_week_hist())
+            # forming / early: an entry is decided the moment its 1m CISD candle closes and routed at market at once
+            # (state "enter_now"), sized from the forming 1m bar's open when the feed shows it (research/writeups/lit-live-fills.md)
+            res = lit_live.run(df_full, lit_p, one_min=df1, now=now, sym=sym, week_hist=self.lit_week_hist(),
+                               forming=self._forming.get((sym, 60)) if df1 is not None else None, early=True,
+                               learn=True, es_df=self._learn_es(sym, tf, now, secs))   # learning loop (engine/lit_learn.py)
+            last1 = int(df1["time"].max()) if df1 is not None and len(df1) else None
+            self.health["last_1m_bar_t"] = last1
+            self.health["bar_1m_behind"] = bool(last1 is not None and mopen and last1 + 60 < now - now % 60)
         elif model.startswith("lab:"):
             from . import lab_adapter
             es_df = None
@@ -708,7 +786,7 @@ class LiveBot:
         from . import equity_filter as _eqf
         self._eqf_cfg = lm.get("equity_filter") if self.state_path == STATE_PATH else None
         self._sizing_cfg = lm.get("sizing") if self.state_path == STATE_PATH else None   # late-entry size, fast-eval press
-        self._lit_sizing = (self.cfg.get("lit_sizing") or lm.get("lit_sizing")) if model == "lit" else None   # normal/fast_eval/safe_eval
+        self._lit_sizing = (self.cfg.get("lit_sizing") or lm.get("lit_sizing")) if model == "lit" else None   # normal/eval/fast_eval/safe_eval/two_week
         self._live_params = lm.get("params") or {}
         if self._eqf_cfg:
             try:
@@ -716,6 +794,11 @@ class LiveBot:
             except Exception as e:
                 self._note_error(f"shadow ledger update failed: {e}")
         self.state["equity_filter"] = eqf = _eqf.status(self._eqf_cfg)
+        if model == "lit":
+            try:
+                self.state["eval_2wk"] = self.eval_clock()      # the two-week eval clock and the reset reminder
+            except Exception as e:
+                self._note_error(f"eval clock failed: {e}")
         if self.state_path == STATE_PATH:
             self._narrate_filter(eqf, lm)
         self.last_poll = now
@@ -873,9 +956,14 @@ class LiveBot:
             rows[(r["day"], r["entry_t"])] = r
         return sorted(rows.values(), key=lambda r: r["exit_t"])
 
+    def eval_start(self):
+        """First session of the current eval (yyyy-mm-dd): the start cfg's "eval_start" (PC override), else live_model.json
+        lit_sizing.eval_start (LIT); "" = unknown (every ledger day counts, the two_week sizer falls back to eval)."""
+        return str(self.cfg.get("eval_start") or (getattr(self, "_lit_sizing", None) or {}).get("eval_start") or "")
+
     def eval_days(self):
-        """Routed P&L per trading day of the eval (earlier days from live_state.json + today's ledger), from cfg eval_start."""
-        start = str(self.cfg.get("eval_start") or "")
+        """Routed P&L per trading day of the eval (earlier days from live_state.json + today's ledger), from eval_start()."""
+        start = self.eval_start()
         days = {d: v for d, v in self._eval_prev.items() if not start or d >= start}
         today = trading_day(self.clock())
         days.pop(today, None)
@@ -883,6 +971,9 @@ class LiveBot:
             if r.get("side") == "exit" and (not start or trading_day(r["t"]) >= start):
                 d = trading_day(r["t"])
                 days[d] = round(days.get(d, 0.0) + float(r.get("pnl") or 0), 2)
+        prior = float(self.cfg.get("eval_prior_pnl") or (getattr(self, "_lit_sizing", None) or {}).get("eval_prior_pnl") or 0.0)
+        if prior:                            # the eval's P&L before eval_start (owner's account, e.g. -$100): one day before all
+            days["0000-00-00"] = prior
         return days
 
     def eval_room(self):
@@ -890,10 +981,29 @@ class LiveBot:
         from . import sizing as _sz
         return _sz.mffu_eval(self.eval_days())["cushion"]
 
+    def eval_state(self):
+        """The two_week sizer's eval state (engine/sizing.eval_state): routed P&L of the eval's earlier days (live_state.json
+        eval_days), today's routed P&L so far, the session number since eval_start(). None when the eval start is unknown."""
+        from . import sizing as _sz
+        start = self.eval_start()
+        if not start:
+            return None
+        today = trading_day(self.clock())
+        days = self.eval_days()
+        return _sz.eval_state({d: v for d, v in days.items() if d < today}, float(days.get(today, 0.0)),
+                              session=max(1, _sz.eval_session(start, today) or 1))
+
+    def eval_clock(self):
+        """State key eval_2wk: session x of 10 since eval_start(), reset recommended after session 10 (engine/sizing.eval_clock)."""
+        from . import sizing as _sz
+        e = _et(self.clock())
+        over = e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60          # after the 15:55 flat: today's session is done
+        return _sz.eval_clock(self.eval_days(), self.eval_start() or None, trading_day(self.clock()), session_over=over)
+
     def eval_profit(self):
         """The eval account's routed profit ($) since cfg eval_start (yyyy-mm-dd; default: everything in the ledger).
         Used by the fast-eval press (engine/sizing.py); None when the ledger is empty."""
-        start = str(self.cfg.get("eval_start") or "")
+        start = self.eval_start()
         rows = [r for r in self.ledger if r.get("side") == "exit" and (not start or trading_day(r["t"]) >= start)]
         return round(sum(float(r.get("pnl") or 0) for r in rows), 2) if self.ledger else None
 
@@ -912,12 +1022,26 @@ class LiveBot:
             if (self.state or {}).get("model") == "lit":
                 # LIT: the model's micros already carry the weekly stop; lit_sizing (normal / fast_eval / safe_eval) re-sizes
                 # from the stop with one rounding (engine/sizing.lit_qty)
-                room = self.eval_room() if (lsz or {}).get("mode") in ("safe_eval", "eval") else None
-                r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room)
+                mode = (lsz or {}).get("mode")
+                room = self.eval_room() if mode in ("safe_eval", "eval", "two_week") else None
+                r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room, state=self.eval_state() if mode == "two_week" else None)
+                if r.get("learn"):             # the learning loop's multiplier at this entry (applied, or would-be in observe)
+                    if not hasattr(self, "_learn_at"):
+                        self._learn_at = {}
+                    self._learn_at[entry_t] = {k: r["learn"].get(k) for k in ("mode", "mult", "would", "skip", "would_skip", "buckets")}
+                if r.get("fallback"):
+                    self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET sizing: {r['fallback']}")
             else:
                 r = _sz.route_qty(int(qty), pos or {}, mult, getattr(self, "_sizing_cfg", None), getattr(self, "_live_params", None),
                                   self.eval_profit() if getattr(self, "_sizing_cfg", None) and self._sizing_cfg.get("press") else None)
         except Exception as e:
+            mode = str((getattr(self, "_lit_sizing", None) or {}).get("mode") or "")
+            if (self.state or {}).get("model") == "lit" and mode in ("two_week", "eval", "safe_eval", "funded"):
+                # an eval / funded account: never route without the room caps (fail closed)
+                self._note_error(f"sizing failed ({mode}): {e.__class__.__name__}: {e}")
+                self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET NOT traded: the {mode} sizing failed, so the eval room caps "
+                                  "could not be applied")
+                return 0
             self._note_error(f"sizing failed, entry allowed at the engine's size: {e}")
             return qty
         if r["qty"] != qty:
@@ -925,14 +1049,67 @@ class LiveBot:
             self._log("risk", f"Entry at {_et(entry_t):%H:%M} ET at {r['qty']} instead of {qty}: {why}")
         return r["qty"]
 
+    def _confirm_provisional(self, pos, en, res, sym):
+        """A LIT entry routed on its 1m CISD close (before its fill bar existed), checked once the model has that bar: the
+        same trade -> nothing to do (micros / target compared when the size came from an estimate); no trade any more (the
+        real open failed a check the estimate passed, e.g. the 1.5R minimum) -> the routed position is flattened at once."""
+        et_ = self._open_routed
+        pv = self._provisional.get(et_) if et_ is not None else None
+        if not pv or pv.get("done") or (en and en.get("entry_t") == et_):
+            return
+        cur = pos if pos and pos.get("entry_t") == et_ else next((t for t in res["trades"] if t["entry_t"] == et_), None)
+        if cur is None and not self._fill_bar_seen(et_):
+            # the feed has not shown the fill bar yet (LE_BarFeed / Yahoo writes it on the next minute's first tick; at a 5m
+            # boundary the 5m bar can lag too, and then the setup itself is out of the model's window): no verdict yet, the
+            # broker bracket keeps protecting the position; checked again on the next poll
+            self._pv_wait = et_
+            if not pv.get("wait_logged"):
+                pv["wait_logged"] = True
+                self._log("warn", f"LIT entry {_et(et_):%H:%M} ET: its fill bar is not in the feed yet; the routed position is "
+                                  "kept (stop/target at the broker) until the model can check it")
+            return
+        self._pv_wait = None
+        pv["done"] = True
+        if cur is None:
+            self._log("risk", f"LIT entry routed at the {_et(et_):%H:%M} ET 1m CISD close is not the model's trade once its fill bar "
+                              "closed (sized from an estimate): flattening the routed position")
+            self._flattened.add(et_)
+            self._route({"sym": sym, "side": "exit", "qty": self._open_qty, "reason": "NO TRADE", "entry_t": et_, "pnl": 0.0})
+            self._open_routed = None
+            return
+        d = pv["dir"]
+        if int(cur["qty"]) != int(pv["model_qty"]):
+            self._log("warn", f"LIT entry {_et(et_):%H:%M} ET: routed {pv['qty']} micros sized from the CISD close; the model's trade "
+                              f"(sized from the real open) has {int(cur['qty'])}. The broker keeps {pv['qty']}.")
+        tg = tick_px(cur["target"], d, target=True)
+        if tg is not None and abs(float(tg) - float(pv["target"])) > 1e-9:
+            self._log("warn", f"LIT entry {_et(et_):%H:%M} ET: broker target {pv['target']:.2f} (from the estimate), the model's "
+                              f"target is {tg:.2f}; the model's exit is still routed when it comes")
+
+    def _fill_bar_seen(self, et_):
+        """True when this poll's model had the bars to decide the LIT entry with fill bar et_: the 1m feed holds that bar
+        (closed) and the 5m bars reach the 5m bar containing it (closed, or added as the forming 5m bar in early mode)."""
+        l1 = self.health.get("last_1m_bar_t")
+        l5 = self.health.get("last_bar_t")
+        if l1 is None or l5 is None or int(l1) < int(et_):
+            return False
+        b5 = int(et_) - int(et_) % 300
+        f5 = bool(((self.state or {}).get("lit") or {}).get("forming_5m"))
+        return int(l5) >= b5 or (f5 and int(l5) + 300 >= b5)
+
     def _route_signals(self, res, sym, now, secs):
         """Turn the engine's position / completed trades into adapter calls, exactly once each."""
         start = self.started_at
         pos = self.state.get("position")
+        # LIT: an entry decided on its 1m CISD close (lit_live state "enter_now"), routed at market at once; the open
+        # position with the same entry_t appears once its fill bar has closed (then it is already routed, and checked)
+        en = self.state.get("enter_now") if not pos else None
         late_after = 2 * secs + 60
+        self._confirm_provisional(pos, en, res, sym)
         # desync: we routed an entry the engine no longer knows about (no open position, no completed trade with it)
         if self._open_routed is not None:
-            known = (pos and pos.get("entry_t") == self._open_routed) or any(t["entry_t"] == self._open_routed for t in res["trades"])
+            known = (pos and pos.get("entry_t") == self._open_routed) or (en and en.get("entry_t") == self._open_routed) \
+                or getattr(self, "_pv_wait", None) == self._open_routed or any(t["entry_t"] == self._open_routed for t in res["trades"])
             if not known and not self.health["desync"]:
                 self.health["desync"] = True
                 self._log("risk", f"DESYNC: entry routed at {_et(self._open_routed):%H:%M} ET is no longer in the model (feed revision?). "
@@ -951,24 +1128,32 @@ class LiveBot:
             self._route({"sym": sym, "side": "exit", "qty": self._open_qty or pos.get("qty"), "reason": "TIME SAFETY",
                          "entry_t": self._open_routed})
             self._open_routed = None
-        if pos and pos["entry_t"] >= start - secs and ("entry", pos["entry_t"]) not in self.seen:
-            self.seen.add(("entry", pos["entry_t"]))
-            age = now - (pos["entry_t"] + secs)
+        ent = pos or en
+        if ent and ent["entry_t"] >= start - secs and ("entry", ent["entry_t"]) not in self.seen:
+            self.seen.add(("entry", ent["entry_t"]))
+            age = now - (ent["entry_t"] + secs)
             if self.health["entries_blocked"]:
-                self._blocked_entries.add(pos["entry_t"])
-                self._log("risk", f"Entry at {_et(pos['entry_t']):%H:%M} ET NOT routed: feed stale")
+                self._blocked_entries.add(ent["entry_t"])
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: feed stale")
             elif age > late_after:
-                self._blocked_entries.add(pos["entry_t"])
-                self._log("risk", f"Entry at {_et(pos['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
-            elif not (q := self._equity_qty(pos["entry_t"], pos["qty"], pos)):
-                self._blocked_entries.add(pos["entry_t"])
+                self._blocked_entries.add(ent["entry_t"])
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
+            elif not (q := self._equity_qty(ent["entry_t"], ent["qty"], ent)):
+                self._blocked_entries.add(ent["entry_t"])
             else:
-                self._open_routed = pos["entry_t"]
+                self._open_routed = ent["entry_t"]
                 self._open_qty = q
-                d = 1 if pos["dir"] == 1 else -1
-                self._route({"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
-                             "stop": tick_px(pos["stop"], d), "target": tick_px(pos["target"], d, target=True),
-                             "entry": pos["entry"], "entry_t": pos["entry_t"]})
+                d = 1 if ent["dir"] == 1 else -1
+                if ent is en:
+                    self._provisional[int(en["entry_t"])] = {"qty": q, "model_qty": int(en["qty"]), "dir": d, "est": bool(en.get("est")),
+                                                             "target": tick_px(en["target"], d, target=True), "t": int(self.clock())}
+                    self._log("system", f"LIT 1m CISD closed at {_et(en['entry_t']):%H:%M} ET: MARKET entry sent at once "
+                                        f"({int(self.clock()) - int(en['entry_t'])} s after the close; the backtest fills at this bar's open)"
+                                        + ("; size from the CISD close, the feed did not show this bar's open yet" if en.get("est") else ""))
+                rr = self._route({"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
+                                  "stop": tick_px(ent["stop"], d), "target": tick_px(ent["target"], d, target=True),
+                                  "entry": ent["entry"], "entry_t": ent["entry_t"]})
+                self._push_fill(ent, q, sym, rr)
         if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._route_stop_move(pos, sym)
         for tr in res["trades"]:
@@ -1003,6 +1188,59 @@ class LiveBot:
                                  "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})
                 if routed:
                     self._remember(tr, sym)      # every completed routed trade feeds the persistent memory
+                    self._journal(tr, qty)       # and the LIT learning loop's journal (data/lit_journal.jsonl)
+                    self._push_outcome(tr, qty, sym)
+
+    # ------------------------------------------------------------------ phone notifications (engine/push.py, Web Push)
+    def _push_account(self):
+        """The account label of a PC notification: "Paper", the NinjaTrader account name ("Sim101"), or live_model.json
+        "account": {"name"} (default "MFFU 50K") for a real account."""
+        from . import push
+        from .lab_adapter import live_model
+        name = str(self.cfg.get("adapter") or "paper")
+        if name == "paper":
+            return "Paper"
+        env = getattr(self.adapter, "env", None)
+        acct = getattr(self.adapter, "account", None)
+        if env != "live":
+            return str(acct or "Demo")
+        try:
+            return push.account_label(live_model(), "live")
+        except Exception:
+            return "MFFU 50K"
+
+    def _push_send(self, payload):
+        """Only the real bot sends (harnesses run with their own state_path). Never raises into routing."""
+        if self.state_path != STATE_PATH:
+            return None
+        try:
+            from . import push
+            return push.pc_notify(payload)
+        except Exception as e:
+            self._log("warn", f"phone notification failed: {e.__class__.__name__}")
+            return None
+
+    def _push_fill(self, pos, qty, sym, res):
+        """ENTRY notice for a routed entry (paper: the fill; NinjaTrader notifies its own real fill)."""
+        try:
+            from . import push
+            res = res or {}
+            if getattr(self.adapter, "reports_fills", False) or res.get("ok") is False:
+                return
+            self._push_send(push.entry_payload(self._push_account(), "LONG" if pos.get("dir") == 1 else "SHORT", qty, pos["entry_t"],
+                                               src="pc", contract="MNQ" if sym == "NQ" else "MES" if sym == "ES" else sym,
+                                               entry=pos.get("entry"), stop=pos.get("stop0", pos.get("stop")), target=pos.get("target")))
+        except Exception as e:
+            self._log("warn", f"phone notification failed: {e.__class__.__name__}")
+
+    def _push_outcome(self, tr, qty, sym):
+        try:
+            from . import push
+            usd = float(tr.get("pnl") or 0) * qty / tr["qty"] if tr.get("qty") else float(tr.get("pnl") or 0)
+            self._push_send(push.outcome_payload(self._push_account(), "LONG" if tr.get("dir") == 1 else "SHORT", tr.get("exit_reason"),
+                                                 usd, tr["entry_t"], tr.get("exit_t"), src="pc", R=tr.get("pnl_r"), qty=qty))
+        except Exception as e:
+            self._log("warn", f"phone notification failed: {e.__class__.__name__}")
 
     # ------------------------------------------------------------------ background loop
     def _loop(self, gen=None):
@@ -1018,7 +1256,45 @@ class LiveBot:
                 self._note_error(f"poll failed: {e.__class__.__name__}: {e}")
                 self.health["ok"] = False
                 traceback.print_exc()
-            self.stop_flag.wait(self.cfg.get("poll_sec", 60))
+            self.stop_flag.wait(self._sleep_s())
+
+    def _sleep_s(self):
+        """Seconds to the next poll: aligned to the minute (cfg poll_offsets, default 2 s and 32 s after each minute boundary,
+        so a closed 1m bar is acted on ~2 s after it closes and exits get a mid-minute look). cfg poll_align false, or a
+        poll_sec under 30 (test harnesses), keeps the plain poll_sec sleep. With NinjaTrader's 1m feed, a 1m bar not yet in
+        the file at the 2 s poll (LE_BarFeed writes it on the first tick of the next minute) is re-polled the moment the file
+        changes (up to 20 s after the boundary)."""
+        ps = float(self.cfg.get("poll_sec", 60) or 60)
+        if self.cfg.get("poll_align") is False or ps < 30:
+            return ps
+        now = float(self.clock())
+        if self._await_nt_bar(now):
+            return 0.0
+        return max(0.0, next_wake(now, self.cfg.get("poll_offsets") or (2.0, 32.0)) - now)
+
+    def _await_nt_bar(self, now, limit_s=20.0, step=0.25):
+        """True (poll again now) once NinjaTrader's 1m file changed after the poll found the minute's bar missing."""
+        boundary = int(now // 60 * 60)
+        if self.cfg.get("data_source") != "ninjatrader" or not self.health.get("bar_1m_behind") or self._nt_repoll == boundary \
+                or now - boundary >= limit_s or self._nt_feed is None:
+            return False
+        self._nt_repoll = boundary
+        path = self._nt_feed.file_for(self.cfg.get("sym", "NQ"), 1)
+        if not path:
+            return False
+        try:
+            m0 = os.stat(path).st_mtime_ns
+        except OSError:
+            return False
+        t_end = time.time() + max(0.0, limit_s - (now - boundary))
+        while time.time() < t_end and not self.stop_flag.is_set():
+            self.stop_flag.wait(step)
+            try:
+                if os.stat(path).st_mtime_ns != m0:
+                    return True
+            except OSError:
+                return False
+        return False
 
     def snapshot(self):
         return {"running": self.running, "cfg": {k: v for k, v in self.cfg.items() if k != "webhook_url"},

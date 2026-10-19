@@ -77,13 +77,18 @@ against verbatim copies of the Help Guide pages (see Sources). Open the official
 1. Copy `ninjatrader\LE_BarFeed.cs` from the repo into `Documents\NinjaTrader 8\bin\Custom\Indicators\`.
 2. Control Center > **New > NinjaScript Editor** > Indicators > double-click **LE_BarFeed** > press **F5** (compile).
    A message at the bottom says whether it compiled. The editor adds a block called "NinjaScript generated code" at
-   the end of the file. That is normal.
+   the end of the file. That is normal. If the bottom panel lists errors, check which file each one names: an error
+   in another script (any file other than `LE_BarFeed.cs`) also stops the compile. Send a photo of the error list.
 3. **New > Chart**: instrument **MNQ 12-26** (the front month; the bot uses the same one), Type **Minute**,
    Value **5**, **Days to load 30**, Trading hours **CME US Index Futures ETH** (the default for MNQ; RTH-only bars
    would miss the overnight pools and every London trade). Then right-click the chart > **Indicators** >
    **LE_BarFeed** > Add. In its settings leave **Also write 1-minute bars** ticked (the default) > OK.
    This one chart is all you need: the indicator adds a 1-minute series of the same instrument by itself (you do not
-   see it on the chart) and writes it to a second file.
+   see it on the chart) and writes it to a second file. (It always loads that 1-minute series, even with the box
+   unticked; unticked it just does not write the file.)
+   To see that it works: Control Center > **New > NinjaScript Output**. After the chart has loaded it shows
+   `LE_BarFeed: 8000 bars written to ...MNQ_5m.csv` and `LE_BarFeed: 20000 bars written to ...MNQ_1m.csv`
+   (fewer bars at first is fine).
 4. Do **not** add LE_BarFeed to a separate 1-minute MNQ chart as well: two writers on `MNQ_1m.csv` would fight. (If you
    ever want a 1-minute chart with LE_BarFeed for something else, untick "Also write 1-minute bars" on the 5-minute
    one.)
@@ -95,6 +100,12 @@ against verbatim copies of the Help Guide pages (see Sources). Open the official
 6. Save the workspace (Control Center > Workspaces > Save) so the chart comes back after a restart.
 7. **Quarterly roll** (next: Thursday 2026-12-10): switch the chart to **MNQ 03-27**. The bot switches its order
    instrument by itself on the same date, using the same 8-days-before-expiry rule as `engine/tradovate.py`.
+   - Do it **Wednesday 2026-12-09 after 17:00 ET** (before the 18:00 reopen), then save the workspace. If the chart
+     stays on MNQ 12-26, the bot reads December prices but sends its orders, stop and target to March, which trades
+     about 1% (~300 pts) higher: the stop and target would be in the wrong place.
+   - Until the roll fix in `research/writeups/lit-launch-audit.md` is in, do not run LIT on the PC from 2026-12-10 to
+     about 2026-12-16 (the days when NinjaTrader, Yahoo NQ=F and TradingView NQ1! sit on different contracts).
+     The cloud paper bot can keep running.
 
 What LE_BarFeed writes: `time,open,high,low,close,volume`, where time is the bar's **open** in unix seconds (UTC).
 That is the same layout the bot gets from Yahoo, in both files. It writes the chart's history once when the chart
@@ -111,8 +122,12 @@ every poll (the 5-minute file for the setups, the 1-minute file for LIT's entry)
 
 ES bars (the partner market) come from Yahoo unless you also put LE_BarFeed on an MES 5-minute chart.
 
-**If it does not compile.** NinjaScript cannot be compiled outside NinjaTrader. It was compiled here only against
-stand-ins for the NinjaTrader parts, and it compiled and ran. Check these lines first:
+**If it does not compile.** NinjaScript cannot be compiled outside NinjaTrader. It was compiled here (2026-10-18)
+against stand-ins for the NinjaTrader parts with the Help Guide's signatures, together with the editor's
+"generated code" block and NinjaTrader's standard `using` lines, as C# 5 (the oldest compiler any NinjaTrader 8
+has used): no errors, no warnings. A test then ran it through every chart state with 13 days of 5- and 1-minute
+bars across both daylight-saving changes and with NinjaTrader set to New York, Chicago, Berlin and UTC time: the files
+held exactly the right bars, and the bot's own reader accepted them. Check these lines first:
 
 - `NinjaTrader.Core.Globals.GeneralOptions.TimeZoneInfo`: NinjaTrader's display time zone **[doc: "Application
   TimeZoneInfo"]**. Only if this line errors, replace it with `TimeZoneInfo.Local`. That is correct only while
@@ -243,7 +258,9 @@ connection = `CONNECTED` or `DISCONNECTED`. The outgoing folder is emptied when 
 All three locks are needed at once, or every order is refused:
 
 1. The server runs with `NINJATRADER_LIVE=1`. Add `$env:NINJATRADER_LIVE = '1'` to `.env.local.ps1` (gitignored),
-   then restart `scripts\run_bot.ps1`.
+   then stop everything with `scripts\stop_bot.ps1` and start `scripts\run_bot.ps1` again (it reads the file only when
+   it starts; `stop_bot.ps1 -RestartServer` keeps the old environment). Run both as
+   `powershell -ExecutionPolicy Bypass -File scripts\<name>.ps1`.
 2. The start says armed.
 3. The start carries the phrase `I ACCEPT LIVE RISK`.
 
@@ -251,7 +268,23 @@ Command:
 `python -m engine.ninjatrader --start --account <the MFFU account Name> --confirm "I ACCEPT LIVE RISK"`
 
 A real-account bot never restarts by itself after a crash or reboot; you start it by hand. Stay present, as MFFU
-requires. Size caps stay on: 40 micros or 4 minis at most. To go back to testing, start again with
+requires. LIT trades from 02:00 ET (most trades 02:00-08:00), so "present" means awake then.
+
+Before the first live start, check:
+- The account Name is exactly as in NinjaTrader's Accounts tab. Any name that is not `Sim...` / `Playback...` counts
+  as live.
+- Only the eval account is connected. The kill switch (`FLATTENEVERYTHING`) flattens **every** connected account.
+- The plan's maximum position size. The bot can send up to 40 micros. If MFFU allows fewer on your plan, the bot has to
+  be capped below that (ask Claude) before you arm it.
+- `lit_sizing.eval_start` in `live_model.json` (or `eval_start` in the start config) is the first session of *this*
+  eval. The two_week size counts the eval's profit from the bot's own trades since that day, not from the broker's
+  statement.
+- Windows Update is paused (Settings > Windows Update > Pause), and `scripts\setup_dedicated_pc.ps1` was run again as
+  Administrator after 2026-10-18, so restarts can only land 17:00-01:00 ET.
+- Steps 5.2 and 5.3 passed on Sim101 on this PC, and the first Sim101 trade showed the stop and target as one OCO pair
+  (section 13 item 6).
+- Both legs are sent `DAY`. If the PC dies with a trade open, the stop and target stay at the broker until they fill or the
+  17:00 ET close, but nobody flattens at 15:55 ET. Then flatten in the MFFU / Tradovate app yourself. Size caps stay on: 40 micros or 4 minis at most. To go back to testing, start again with
 `--account Sim101`, and remove the line from `.env.local.ps1`.
 
 ## 12. Settings (start-config keys; defaults in brackets)
@@ -267,7 +300,8 @@ requires. Size caps stay on: 40 micros or 4 minis at most. To go back to testing
 | `nt_ack_wait_s` [4] / `nt_fill_wait_s` [6] / `nt_verify_wait_s` [4] / `nt_pending_timeout_s` [45] | How long to wait for NinjaTrader at each step |
 | `data_source` (or `data`) [`yahoo`] | `ninjatrader` reads LE_BarFeed's files (5m and 1m); Yahoo is the fallback |
 | `nt_session_from` [LIT: 120 = 02:00 ET; engine: 480 = 08:00 ET] | First ET minute (after midnight) an entry is accepted; a bot trade still open before it is closed |
-| `lit_sizing` [from `live_model.json`: `{"mode": "normal"}`] | LIT size switch: `normal`, `fast_eval` ($800 up to a 40-pt stop) or `safe_eval` (at most 60% of the room to the eval's max-loss floor). Off (`normal`) unless you set it. |
+| `lit_sizing` [from `live_model.json`: `{"mode": "two_week", "eval_start": "2026-10-19"}`] | LIT size switch: `two_week` (on since 2026-10-18: micros so the target covers what is left to +$3,000, at most 60% of the room to the max-loss floor and the $1,000 soft daily loss, max 40, min 1; it counts sessions from `eval_start`), `eval`, `normal`, `fast_eval` or `safe_eval`. Without a known eval state it falls back to `eval`. |
+| `eval_start` [`live_model.json` `lit_sizing.eval_start`] | First session (yyyy-mm-dd, the trading day; Sunday evening counts as Monday) of the eval this account is on. Set it again after every eval reset, or the size is worked out from the wrong balance. |
 
 ## 13. Assumptions to verify on a real install
 

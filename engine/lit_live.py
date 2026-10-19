@@ -124,36 +124,136 @@ def _slice_bars(b: Bars, t_from: int) -> Bars:
 
 
 def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | None = None, sym: str = "NQ",
-        week_hist: list | None = None) -> dict:
+        week_hist: list | None = None, learn: bool = False, es_df: pd.DataFrame | None = None,
+        learn_after: int | None = None, forming: tuple | None = None, early: bool = False) -> dict:
     """week_hist: the caller's ledger of this week's finished trades ({"day", "exit", "exit_t"}) for the weekly stop
     ("wk_stop"): the cloud monitor's LIT ledger, the PC bot's routed exits; a day it does not cover counts the model's own
-    trade (engine/lit.py week_stops)."""
+    trade (engine/lit.py week_stops).
+    learn=True (the learning loop, engine/lit_learn.py): every trade that finished after learn_after (default: the last 3
+    days) and the open position carry "learn" = the 50 causal features at entry + buckets + grade, and finished trades the
+    hindsight facts "post" (journal + cause codes). es_df = ES 5m bars for the ES features (None: unknown). Off by default:
+    the trades and every decision are identical either way.
+    forming = (open time, open price) of the 1m bar forming now, when the feed shows it (Yahoo's last row, NinjaTrader's
+    LE_BarFeed open file): state["enter_now"] (an entry decided on the 1m CISD close that just happened) is then sized from
+    the backtest's own fill price (that bar's open + 1 tick) instead of an estimate from the CISD close.
+    early=True (the PC bot, engine/live.py; needs `now`): a setup whose trigger is the last closed 5m bar is seen at once,
+    while its entry bar is still forming (the backtest fills inside that bar; without this the loop only sees the setup
+    when that bar closes, up to 5 min after the 1m CISD). The forming 5m bar is added to the market as a flat bar at its
+    open (from the 1m feed, on the 5m basis): it is never a trigger, never an executor bar, and no level, swing or box
+    a decision uses can come from it (tests/test_lit_live.py checks the trades stay the backtest's)."""
     P = {**lit.DEFAULTS, **(params or {})}
     df5 = _clean5(df5)
     if not len(df5):
         raise ValueError("LIT: no 5m bars")
     last_t = int(df5["time"].max())
     w = df5[df5["time"] >= window_start(last_t)]
-    b5 = from_frame(sym, "5m", w)
-    M = lit.Market(bars=b5, extra_boxes=P.get("extra_boxes") or [])
-    C = lit.candidates(M, ref=P["ref"])
-    B5 = lit.bars_5m(M)
-    B1 = None
+    src = tol = None
     if P["tf"] == "1m" and one_min is not None:
         if isinstance(one_min, Bars):
-            src, tol = _slice_bars(one_min, int(M.t[0])), None          # research-clean bars: the backtest rule exactly
+            src, tol = _slice_bars(one_min, int(w["time"].min())), None          # research-clean bars: the backtest rule exactly
         else:
-            src, tol = feed_1m(one_min, int(M.t[0])), LIVE_TOL_1M
-        if src is not None and len(src):
-            B1 = lit.bars_1m(M, src=src, tol=tol, tail=True)
+            src, tol = feed_1m(one_min, int(w["time"].min())), LIVE_TOL_1M
+    n_closed = len(w)
+    if early and now is not None:
+        pv = _forming_5m(w, src, tol, forming, int(now))
+        if pv is not None:
+            w = pd.concat([w, pd.DataFrame([pv])], ignore_index=True)
+    b5 = from_frame(sym, "5m", w)
+    M = lit.Market(bars=b5, extra_boxes=P.get("extra_boxes") or [])
+    M.n_closed = n_closed if len(b5) == n_closed + 1 else M.n
+    C = lit.candidates(M, ref=P["ref"])
+    B5 = lit.bars_5m(M) if M.n_closed == M.n else lit.closed_bars(lit.bars_5m(M), M.n_closed)
+    B1 = None
+    if src is not None and len(src):
+        B1 = lit.bars_1m(M, src=src, tol=tol, tail=True)
     if P["tf"] == "1m" and B1 is not None and B1.full and not isinstance(one_min, Bars):
         # A feed keeps only recent 1m bars (Yahoo: 7 days). Days before the first one it fully covers are history: they are
         # not re-simulated on 5m (that would invent a different trade for a day that was traded on 1m), so they drop out.
         k1 = min(B1.full)
         C = [z for z in C if z["k"] >= k1]
+    _set_next_open(B1, B5, forming, src if B1 is not None else None)
     R = lit.run_live(M, C, P, B1=B1, B5=B5, week_hist=week_hist)
     now = int(now) if now is not None else last_t + 300
-    return _shape(M, R, P, now, B1)
+    if learn:
+        _attach_learn(M, C, R, P, es_df, learn_after if learn_after is not None else now - 3 * 86400)
+    out = _shape(M, R, P, now, B1)
+    out["state"]["lit"]["forming_5m"] = M.n_closed < M.n
+    if R.get("learn_error"):
+        out["learn_error"] = R["learn_error"]
+    return out
+
+
+def _forming_5m(w: pd.DataFrame, src, tol, forming, now: int):
+    """The 5m bar forming at `now` as a flat bar at its open (5m basis), or None: its open from the 1m feed's bar at that
+    time (closed) or the forming 1m bar's open (`forming`, when the 5m bar has just started); the 1m basis is checked on
+    the last closed 5m bar (the rule of lit.bars_1m: all four prices off by one constant = shifted, within tol = same)."""
+    t_last = int(w["time"].iloc[-1])
+    t5 = t_last + 300
+    if not (t5 <= now < t5 + 300) or src is None or not len(src):
+        return None
+    e = _et(t5)
+    if 1020 <= e.hour * 60 + e.minute < 1080 or trading_date(t5) != trading_date(t_last):
+        return None
+    o1 = None
+    j = int(np.searchsorted(src.t, t5))
+    if j < len(src.t) and int(src.t[j]) == t5:
+        o1 = float(src.o[j])
+    elif forming and int(forming[0]) == t5:
+        o1 = float(forming[1])
+    if o1 is None:
+        return None
+    a = int(np.searchsorted(src.t, t_last))
+    if a + 5 > len(src.t) or int(src.t[a]) != t_last or int(src.t[a + 4]) != t_last + 240:
+        return None
+    last = w.iloc[-1]
+    dd = np.array([src.o[a] - last["open"], src.c[a + 4] - last["close"], src.h[a:a + 5].max() - last["high"],
+                   src.l[a:a + 5].min() - last["low"]], dtype=float)
+    if np.abs(dd - dd[0]).max() < 0.01:
+        sh = float(dd[0]) if abs(dd[0]) >= 0.01 else 0.0
+    elif tol is not None and np.abs(dd).max() <= tol:
+        sh = 0.0
+    else:
+        return None
+    px = round(o1 - sh, 2)
+    return {"time": t5, "open": px, "high": px, "low": px, "close": px, "volume": 0.0}
+
+
+def _set_next_open(B1, B5, forming, src):
+    """The forming bar's open on the executor bars (lit.XBars.next_open), on the 5m basis of the 1m bars (bars_1m shifts a
+    window whose 1m bars sit on another contract's basis)."""
+    if not forming:
+        return
+    try:
+        ft, fo = int(forming[0]), float(forming[1])
+    except (TypeError, ValueError, IndexError):
+        return
+    sh = 0.0
+    if B1 is not None and B1.n:
+        if src is not None and len(src):
+            j = int(np.searchsorted(src.t, B1.t[-1]))
+            if j < len(src.t) and int(src.t[j]) == int(B1.t[-1]):
+                sh = float(src.c[j]) - float(B1.c[-1])
+        if ft == int(B1.t[-1]) + 60:
+            B1.next_open = (ft, fo - sh)
+    if B5 is not None and B5.n and ft % 300 == 0 and ft == int(B5.t[-1]) + 300:
+        B5.next_open = (ft, fo - sh)
+
+
+def _attach_learn(M, C, R, P, es_df, after):
+    """The learning loop's inputs on the executor's trades (engine/lit_learn.py live_features / post_facts)."""
+    try:
+        from engine import lit_learn
+        F = lit_learn.live_features(M, C, R["trades"], P, es_df=es_df, only_after=after)
+        for t in R["trades"]:
+            x = F.get((t["day"], int(t.get("i", -1)), int(t["dir"])))
+            if x:
+                t["learn"] = x
+                if t["exit"] != "OPEN":
+                    t["post"] = lit_learn.post_facts(M, {**t, "target_px": t.get("target_px")})
+        if F.get("_error"):
+            R["learn_error"] = F["_error"]
+    except Exception as e:                       # never stops the live loop
+        R["learn_error"] = f"{e.__class__.__name__}: {e}"
 
 
 # ------------------------------------------------------------------------------------------------ output shape
@@ -186,7 +286,8 @@ def _trade(t):
             "risk_pts": float(t["risk_pts"]), "risk_usd": float(t["risk_usd"]), "target_label": t.get("target_label"),
             "swept": _sweep_names(t.get("swept")), "sweep_ext": t.get("sweep_ext"), "tf": f"{t.get('tf', 5)}m",
             "mfe": t.get("mfe"), "bars_held": t.get("bars_held"), "entry_kind": "limit" if t.get("limit_fill") else "1m CISD",
-            "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or []}
+            "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+            **({"mae": t.get("mae"), "learn": t["learn"], "post": t.get("post")} if t.get("learn") else {})}
 
 
 def _levels(M, k, upto):
@@ -294,8 +395,22 @@ def _closed(now):
     return wd == 5 or (wd == 6 and m < 1080) or (wd == 4 and m >= 1020) or (1020 <= m < 1080)
 
 
+def _enter_now(t):
+    """lit.run_live "enter_now" in the position's shape: the entry decided on the 1m CISD close, for the live loop to route
+    at market at once (engine/live.py); entry = the backtest's fill (the forming bar's open + 1 tick), or est = True when
+    the feed did not show that open yet (CISD close + 1 tick: the micros may then differ from the model's by a few)."""
+    return {"entry_t": int(t["entry_t"]), "cisd_t": int(t["cisd_t"]), "dir": int(t["dir"]), "qty": int(t["qty"]),
+            "stop": float(t["stop_px"]), "stop0": float(t["stop_px"]), "target": float(t["target_px"]), "entry": float(t["entry_px"]),
+            "est": bool(t.get("est")), "setup": "LIT", "trigger": "LIT", "risk_pts": float(t["risk_pts"]), "be": False,
+            "target_label": t.get("target_label"), "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+            "tf": f"{t.get('tf', 1)}m"}
+
+
 def _shape(M, R, P, now, B1):
     trades, events, position = [], [], None
+    nc = getattr(M, "n_closed", M.n)          # early mode: M ends with the forming 5m bar, which is not shown as a bar
+    en = (R.get("enter_now") or [None])[0]
+    enter_now = _enter_now(en) if en and not _session_over(en["day"], now, int(M.t[nc - 1]) + 300) else None
     for s in R["signals"]:
         events.append({"t": s["t"], "type": "signal", "dir": s["dir"],
                        "text": f"LIT {_side(s['dir'])} setup: swept {', '.join(_sweep_names(s['swept']))} (extreme {s['sweep_ext']:,.2f}); "
@@ -308,14 +423,15 @@ def _shape(M, R, P, now, B1):
                        "text": f"{side} LIT @ {t['entry_px']:,.2f} stop {t['stop_px']:,.2f} target {t['target_px']:,.2f} qty {t['qty']} "
                                f"({kind} entry, {t.get('tf', 5)}m bars)"
                                + (f" - {'; '.join(t['size_why'])}" if t.get("size_why") else "")})
-        if t["exit"] == "OPEN" and _session_over(t["day"], now, int(M.t[M.n - 1]) + 300):
+        if t["exit"] == "OPEN" and _session_over(t["day"], now, int(M.t[nc - 1]) + 300):
             t = _close_at_session_end(t)       # early-close holiday: the backtest exits at the day's last bar
         if t["exit"] == "OPEN":
             position = {"entry_t": int(t["entry_t"]), "dir": int(t["dir"]), "qty": int(t["qty"]), "stop": float(t["stop_now"]),
                         "stop0": float(t["stop_px"]), "target": float(t["target_px"]), "entry": float(t["entry_px"]), "setup": "LIT",
                         "trigger": "LIT", "risk_pts": float(t["risk_pts"]), "be": bool(t.get("be_done")),
                         "unrealized": float(t["pnl"]), "unrealized_r": float(t["r"]), "target_label": t.get("target_label"),
-                        "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or []}
+                        "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+                        **({"learn": t["learn"]} if t.get("learn") else {})}
             continue
         tr = _trade(t)
         trades.append(tr)
@@ -328,7 +444,7 @@ def _shape(M, R, P, now, B1):
         d["pnl"] += t["pnl"]; d["trades"] += 1
     k = len(M.days) - 1
     today = M.days[k][0]
-    last = M.n - 1
+    last = nc - 1
     price = float(M.c[last])
     x = M.ctx[k]
     setups = {}
@@ -356,6 +472,9 @@ def _shape(M, R, P, now, B1):
     elif position:
         ms = (f"LIT: IN TRADE {_side(position['dir'])} @ {position['entry']:,.2f} | stop {position['stop']:,.2f}"
               f"{' (breakeven)' if position['be'] else ''} | target {position['target']:,.2f}")
+    elif enter_now:
+        ms = (f"LIT: ENTERING {_side(enter_now['dir'])} at market now (1m CISD closed {_hm(enter_now['entry_t'])} ET) | "
+              f"{enter_now['qty']} micros | stop {enter_now['stop']:,.2f} | target {enter_now['target']:,.2f}")
     elif len(day_tr) >= P["max_per_day"] and str(trading_date(now)) == today:
         t = day_tr[-1]
         ms = f"LIT: done for today ({t['exit_reason']} {t['pnl_r']:+.2f}R, ${t['pnl']:+,.0f}); 1 trade a day"
@@ -387,7 +506,8 @@ def _shape(M, R, P, now, B1):
         rules["weekly_stop"] = {**w, "on": True,
                                 "text": (f"weekly stop ON: {w['stops']} stop-outs this week, {w['mult']:g}x size for the rest of the week"
                                          if w["mult"] < 1 else f"{w['stops']} of {w['after']} stop-outs this week: full size")}
-    state = {"model": "lit", "model_state": ms, "lit_rules": rules, "position": position, "setups": setups, "active_pools": _levels(M, k, last),
+    state = {"model": "lit", "model_state": ms, "lit_rules": rules, "position": position, "enter_now": enter_now, "setups": setups,
+             "active_pools": _levels(M, k, last),
              "session": sess, "price": price, "t": int(M.t[last]), "day_trades": len(day_tr),
              "day_pnl": round(sum(t["pnl"] for t in day_tr), 2),
              "lit": {"today": today, "open18": x.get("open18"), "vix": round(x["vix"], 2) if x.get("vix") else None, "vix_move": round(x["vix_move"], 2) if x.get("vix_move") else None,

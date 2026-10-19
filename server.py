@@ -279,6 +279,37 @@ async def api_alerts_send(req: Request):
     return J(alerts.send(body.get("text", "Liquidity Engine test alert ✅"), body.get("kind", "signal"), force=bool(body.get("force"))))
 
 
+# phone app notifications (Web Push, engine/push.py): data/push.json holds the VAPID private key + the app's subscription
+# codes (gitignored); the API never returns the private key or an endpoint
+@app.get("/api/push")
+def api_push_get():
+    from engine import push
+    sync = push.pc_sync()
+    return J({**push.status(push.pc_config(sync)), "linked": bool(sync.get("private")), "sync_error": push._PC.get("sync_err"),
+              "heartbeat_key": bool(push.pc_public_key()), "recent": push.pc_notifier().log[-10:]})
+
+
+@app.post("/api/push")
+async def api_push_save(req: Request):
+    from engine import push
+    try:
+        return J({"ok": True, **push.save_pc_config(await req.json())})
+    except ValueError as e:
+        return J({"ok": False, "error": str(e)}, 400)
+
+
+@app.post("/api/push/test")
+def api_push_test():
+    from engine import push
+    cfg = push.pc_config(push.pc_sync(force=True))
+    if not push.enabled(cfg):
+        return J({"ok": False, "error": "not linked yet: keep the heartbeat on (LE_HEARTBEAT=1) and allow notifications in the phone app; the cloud links this PC on its next run"}, 400)
+    n = push.pc_notifier()
+    n.cfg = cfg
+    r = n.notify(push.text_payload("PC", "test", "Test · PC bot", "Notifications from the PC bot work.", key=f"test:{int(time.time())}"))
+    return J({"ok": bool(r.get("sent")), **{k: r.get(k) for k in ("sent", "devices", "gone", "errors")}})
+
+
 @app.get("/api/gamma")
 def api_gamma():
     from engine import gamma
@@ -939,6 +970,16 @@ def index():
 
 from engine.extras_api import router as extras_router; app.include_router(extras_router)
 from engine.next_api import router as next_router; app.include_router(next_router)
+# the PC pages' LIT backtest (/api/next/lit_backtest: LIT replay + levels / session boxes of every 2026 day, ~5-25 s) is built
+# in the background at start, so the first dashboard load does not wait for it (LE_PREWARM=0 skips it)
+if os.environ.get("LE_PREWARM", "1") != "0":
+    def _prewarm_lit():
+        try:
+            from engine import lit_dash
+            lit_dash.backtest("2026")
+        except Exception as e:
+            print(f"[lit_dash] prewarm failed: {e}")
+    threading.Thread(target=_prewarm_lit, name="lit-prewarm", daemon=True).start()
 _static = StaticFiles(directory=WEB)
 _static.all_directories = list(UI_DIRS)       # first directory that has the file wins
 app.mount("/", _static, name="web")

@@ -1,14 +1,29 @@
 # Cloud paper monitor: runs the live paper bot's decision loop on a schedule so it works with the PC off.
 # Publishes README.md + chart.png + state.json to the `dashboard` branch (open it in the GitHub app), and the web dashboard
 # (tools/web_public + data.json, a Home Screen app) to demetrades2000-coder.github.io/nq-dashboard.
-# Paper only - never places orders. Free: about 1,200-1,500 of the 2,000 monthly Actions minutes for private repos.
-# Optional phone alerts: repository secrets TG_TOKEN + TG_CHAT (Telegram) and/or DISCORD_WEBHOOK.
+# Paper only - never places orders. Free: about 1,200-1,500 of the 2,000 monthly Actions minutes for private repos, plus the
+# fast-entry watcher (last step) capped at 550 a month (~1,800 in all, tests/test_lit_watch.py).
+# Phone notifications (free Web Push to the Home Screen app, docs/NOTIFICATIONS.md): automatic. The app posts its subscription
+# to the ntfy.sh relay when the owner taps Allow; this job reads it, keeps it in state.json and sends an entry and an outcome
+# notice for every trade. The notification key is made on the first run and kept in the Actions cache (never committed or
+# printed); a secret LE_VAPID_PRIVATE overrides it. Telegram / Discord (TG_TOKEN + TG_CHAT, DISCORD_WEBHOOK) stay off unless
+# the repository variable LE_ALERTS_CHAT is 1.
 name: cloud-monitor
 
 on:
   schedule:
     - cron: "2,32 6-21 * * 1-5"      # UTC, half-hourly; covers 02:00-16:25 ET in summer (EDT) and winter (EST) time (LIT trades London); ~32 jobs a day, ~2 of them exit at the guard
-  workflow_dispatch: {}
+    - cron: "47 21 * * 0"            # Sunday ~17:47 ET: the learning loop's weekly review (engine/lit_learn.py); Monday's first run catches up if it is skipped
+  workflow_dispatch:
+    inputs:
+      push_test:
+        description: "Send a test notification to the phone app"
+        type: boolean
+        default: false
+      learn_review:
+        description: "Run the learning loop's review now (normally every Sunday)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -20,7 +35,7 @@ concurrency:
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 70              # a normal run ~1 min; the fast-entry watcher (tools/lit_watch.py) may add up to 55
     steps:
       - name: Market-hours guard (ET)
         id: guard
@@ -28,6 +43,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "go=1" >> "$GITHUB_OUTPUT"; exit 0; fi
           dow=$(TZ=America/New_York date +%u); h=$(TZ=America/New_York date +%-H); m=$(TZ=America/New_York date +%-M)
           mod=$((h*60+m)); go=0
+          if [ "${{ github.event.schedule }}" = "47 21 * * 0" ]; then go=1; fi   # Sunday: the learning loop's weekly review
           if [ "$dow" -le 5 ]; then
             # LIT (live_model.json since 2026-10-18) enters 02:00-15:30 ET, mostly London: half-hourly from 02:00 keeps the
             # run count (~30 a day) and the free Actions minutes where they were with the old 15-min killzone cadence
@@ -53,13 +69,20 @@ jobs:
             /live_model_lit.json
             /data/VIX_1d.csv
             /data/VXN_1d.csv
+            /data/lit_journal.jsonl
+            /data/lit_learning.json
             /requirements-cloud.txt
+            /scripts/cloud_publish.sh
             /research/lab/backtest_live.json
             /research/lab/replays.json
             /research/lab/variant_results.json
             /research/lab/montecarlo.json
             /research/lab/intraday_heat.json
             /research/lab/calendar_effects.json
+            /research/lab/backtest_engine.json
+            /research/lit/*.md
+            /research/lit/mffu_rules.json
+            /research/archive/engine-2026-10-17/
             /research/study/
             /research/runs/*.json
             /research/writeups/
@@ -67,6 +90,15 @@ jobs:
             /research/lab/*.md
             /STRATEGY.md
             /web/icons/
+
+      - name: Notification key (Actions cache; made by the monitor on the first run, refreshed every run)
+        if: steps.guard.outputs.go == '1'
+        uses: actions/cache@v4
+        with:
+          path: .le_push
+          key: le-vapid-v1-${{ github.run_id }}
+          restore-keys: |
+            le-vapid-v1-
 
       - name: Python
         if: steps.guard.outputs.go == '1'
@@ -78,7 +110,10 @@ jobs:
 
       - name: Install
         if: steps.guard.outputs.go == '1'
-        run: pip install -q -r requirements-cloud.txt
+        run: |
+          pip install -q -r requirements-cloud.txt
+          # Web Push sender; engine/push.py has a built-in sender (cryptography only) if this ever fails to install
+          pip install -q pywebpush==2.5.0 || echo "pywebpush not installed: engine/push.py uses its built-in sender"
 
       - name: Load previous dashboard state
         if: steps.guard.outputs.go == '1'
@@ -88,11 +123,24 @@ jobs:
             git show FETCH_HEAD:state.json > dash/state.json 2>/dev/null || rm -f dash/state.json
             git show FETCH_HEAD:shadow_ledger.json > dash/shadow_ledger.json 2>/dev/null || rm -f dash/shadow_ledger.json
             git show FETCH_HEAD:bars_1m.csv > dash/bars_1m.csv 2>/dev/null || rm -f dash/bars_1m.csv     # LIT 1m bars (12 days)
+            git show FETCH_HEAD:watch.json > dash/watch.json 2>/dev/null || rm -f dash/watch.json        # fast-entry watcher record
+            # the learning loop (engine/lit_learn.py): the append-only trade journal and the learned knobs / decisions log
+            git show FETCH_HEAD:lit_journal.jsonl > dash/lit_journal.jsonl 2>/dev/null || rm -f dash/lit_journal.jsonl
+            git show FETCH_HEAD:lit_learning.json > dash/lit_learning.json 2>/dev/null || rm -f dash/lit_learning.json
           fi
 
       - name: Run paper monitor
         if: steps.guard.outputs.go == '1'
         env:
+          LE_VAPID_PRIVATE: ${{ secrets.LE_VAPID_PRIVATE }}
+          LE_VAPID_KEY_FILE: .le_push/vapid.json
+          LE_PUSH_SUBS: ${{ secrets.LE_PUSH_SUBS }}
+          LE_PUSH_SUBS_2: ${{ secrets.LE_PUSH_SUBS_2 }}
+          LE_PUSH_SUBS_3: ${{ secrets.LE_PUSH_SUBS_3 }}
+          LE_PUSH_TEST: ${{ github.event_name == 'workflow_dispatch' && inputs.push_test && '1' || '' }}
+          LE_LEARN_REVIEW: ${{ github.event_name == 'workflow_dispatch' && inputs.learn_review && '1' || '' }}
+          LE_PUSH_EXTRA: ${{ vars.LE_PUSH_EXTRA }}
+          LE_ALERTS_CHAT: ${{ vars.LE_ALERTS_CHAT }}
           TG_TOKEN: ${{ secrets.TG_TOKEN }}
           TG_CHAT: ${{ secrets.TG_CHAT }}
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
@@ -101,6 +149,8 @@ jobs:
 
       - name: News hub (USD calendar + headlines, free sources; never fails the run)
         if: steps.guard.outputs.go == '1'
+        timeout-minutes: 5
+        continue-on-error: true
         run: python tools/news_hub.py --out data/news/hub.json || true
 
       - name: Publish dashboard branch
@@ -132,3 +182,27 @@ jobs:
           git commit -q -m "dashboard $(TZ=America/New_York date '+%Y-%m-%d %H:%M ET')"
           GIT_SSH_COMMAND="ssh -i ~/.ssh/dash_key -o IdentitiesOnly=yes" git push -q -f git@github.com:demetrades2000-coder/nq-dashboard.git main
           rm -f ~/.ssh/dash_key
+
+      # Fast entries (owner 2026-10-18: "when there's a signal, it needs to send an entry"): when this run found a LIT setup
+      # armed (limit working / tapped) or forming, keep polling Yahoo NQ=F every 30 s until it fills or goes away (max 55 min),
+      # and on every change run the monitor again (ledger + phone notification) and publish (scripts/cloud_publish.sh).
+      # Costs minutes only on those stretches: at most 15 min a day on forming setups, 550 a month in all.
+      - name: Watch an armed / forming LIT setup (fast entry notice)
+        if: steps.guard.outputs.go == '1' && github.event.schedule != '47 21 * * 0'
+        timeout-minutes: 62          # cap 55 + the last full run / publish; a hang or a kill never fails the job (cache still saved)
+        continue-on-error: true
+        env:
+          LE_VAPID_PRIVATE: ${{ secrets.LE_VAPID_PRIVATE }}
+          LE_VAPID_KEY_FILE: .le_push/vapid.json
+          LE_PUSH_SUBS: ${{ secrets.LE_PUSH_SUBS }}
+          LE_PUSH_SUBS_2: ${{ secrets.LE_PUSH_SUBS_2 }}
+          LE_PUSH_SUBS_3: ${{ secrets.LE_PUSH_SUBS_3 }}
+          LE_PUSH_EXTRA: ${{ vars.LE_PUSH_EXTRA }}
+          LE_ALERTS_CHAT: ${{ vars.LE_ALERTS_CHAT }}
+          TG_TOKEN: ${{ secrets.TG_TOKEN }}
+          TG_CHAT: ${{ secrets.TG_CHAT }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          GH_TOKEN: ${{ github.token }}
+          DASH_KEY: ${{ secrets.DASH_DEPLOY_KEY }}
+          MPLBACKEND: Agg
+        run: python tools/lit_watch.py --out dash --cap 55 --every 30 --forming-budget 15 --month-budget 550 || true

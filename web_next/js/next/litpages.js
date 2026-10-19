@@ -30,6 +30,19 @@ const card = (title, body, tools = '') => `<div class="card nx-glass"><div class
 const hero = (eyebrow, title, desc) => `<div class="nx-hero"><div><div class="nx-eyebrow">${eyebrow}</div><h2>${title}</h2><p class="muted">${desc}</p></div></div>`;
 const noBot = () => !L.live?.state || L.live.state.model !== 'lit'
   ? `<div class="card nx-glass"><div class="muted">The PC paper bot is not running LIT right now (Modules → Paper Bot). The panels show the rules and the 2026 numbers; levels and setups appear once it runs.</div></div>` : '';
+// today's open paper position drawn like TradingView's Long / Short Position tool (tradechart.js) on the bot's 5m bars
+function posTrade(C) {
+  const p = C.position; if (!p || !p.entry_t) return null;
+  const entry = p.entry ?? p.entry_px ?? p.fill, stop = p.stop ?? p.stop_px, target = p.target ?? p.target_px;
+  if (entry == null || stop == null || target == null || !C.bars.length || C.bars[0][0] > p.entry_t) return null;
+  const side = p.side ? (/buy|long/i.test(p.side) ? 'LONG' : 'SHORT') : (p.dir < 0 ? 'SHORT' : 'LONG');
+  return { day: C.day, entry_t: +p.entry_t, side, entry: +entry, stop: +stop, target: +target, qty: p.qty, risk_usd: p.risk_usd, pnl: +(p.unrealized ?? 0), exit: 'OPEN', id: 'pos_' + p.entry_t };
+}
+const posCard = (t) => (t ? card(`Today’s trade · ${t.side} · paper`, '<div class="nx-tcbox" id="nxLitTC"></div>', '<span class="muted small">open position · 5m bars</span>') : '');
+function posMount(t, C) {
+  const box = $('#nxLitTC'); if (!t || !box) return;
+  import('../tradechart.js?v=b1526d92').then((TC) => { if (box.isConnected) TC.mount(box, TC.fromTrade(t, C.bars)); }).catch(() => { box.innerHTML = '<div class="muted small">Chart unavailable.</div>'; });
+}
 function phase(C) { if (C.closed) return 'Market closed'; const p = LK.et(C.now), m = p.min; return m >= 1080 || m < 120 ? 'Asia session' : m < 300 ? 'London session' : m < 570 ? 'Pre-market' : m < 690 ? 'New York AM' : m < 810 ? 'New York lunch' : m < 960 ? 'New York PM' : m < 1020 ? 'After hours' : 'Daily halt'; }
 
 // ------------------------------------------------------------------ pages
@@ -41,7 +54,8 @@ async function showDay() {
     + noBot()
     + card('Day clock', fxBox('nxLitClock', 'dayclock', 440, LK.clockSVG(C)), '<span class="muted small">18:00 → 17:00 ET</span>')
     + `<div class="grid cols-2">${card('What happens next', LK.planHTML(C))}${card('Before the session', LK.readyHTML(C))}</div>`
-    + card('This week', LK.weekHTML(C));
+    + card('This week', LK.weekHTML(C)) + posCard(posTrade(C));
+  posMount(posTrade(C), C);
   mount3d('pc-litclock', $('#nxLitClock'), 'dayclock', LK.clockData(C), {});
 }
 async function showLevels() {
@@ -52,8 +66,10 @@ async function showLevels() {
       `${Lv.length} levels today, ${Lv.filter((r) => r.taken).length} taken. LIT waits for one to be swept by half an ATR or more, then for inducement, displacement and a 5-minute CISD; then a limit at the CISD level for 30 minutes and a 1-minute CISD.`)
     + noBot()
     + card('Setup tracker', `<div class="nx-fxwrap"><div class="fx3d pipeline" id="nxLitRail" style="height:300px"></div><div class="nx-2d"></div></div><div style="margin-top:14px">${LK.railHTML(C)}</div>`)
+    + posCard(posTrade(C))
     + `<div class="grid cols-2">${card('Levels board', LK.levelsHTML(C, { max: 20 }), '<span class="muted small">pts · $ per MNQ</span>')}
       ${card('Liquidity map', fxBox('nxLitLiq', 'liqmap', 520, '<div class="muted small">3D is off: the board on the left has every level.</div>'))}</div>`;
+  posMount(posTrade(C), C);
   mount3d('pc-litrail', $('#nxLitRail'), 'pipeline', LK.railData(C), {});
   const pools = Lv.filter((r) => !r.taken && Number.isFinite(r.dist)).map((r) => ({ price: r.price, side: r.side, label: r.label.split(' · ')[0], strength: r.strength }));
   mount3d('pc-litliq', $('#nxLitLiq'), 'liqmap', { price: C.price, pools, bars: C.bars.slice(-40), position: C.position }, {});

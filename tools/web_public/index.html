@@ -261,6 +261,11 @@ th.sticky { z-index: 2; }
 .ttop { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13.5px; }
 .sidetxt { font-weight: 700; font-size: 11px; letter-spacing: .08em; }
 .tres { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex: none; }
+/* trade charts (tradechart.js): the Chart button on trade rows and the chart box at the top of a trade sheet */
+.tcb { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px 3px 8px; border-radius: 999px; font: 600 12px var(--sans); color: var(--ink); background: color-mix(in srgb, var(--accent) 16%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent); cursor: pointer; }
+.tcb svg { width: 13px; height: 13px; } .tcb:hover { background: color-mix(in srgb, var(--accent) 26%, transparent); }
+.tcbox { flex: none; background: var(--surface-2); border: 1px solid var(--line); border-radius: 16px; padding: 12px; min-height: 120px; }
+@media (min-width: 760px) { .sheet.tc-wide { width: min(980px, calc(100vw - 24px)); } }
 .tres b { font-size: 18px; font-weight: 750; } .tres span { font: 600 12.5px var(--mono); }
 .more { display: flex; justify-content: center; margin: 16px 0; }
 
@@ -739,6 +744,14 @@ table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-
 .pcline .badge { padding: 3px 9px; font-size: 11px; }
 .dot.bad { background: var(--bad); animation: none; box-shadow: 0 0 10px var(--bad); }
 
+/* the armed / forming LIT setup line (state.armed from engine/lit_watch.py armed_line; Today hero + Briefing) */
+.armline { display: flex; align-items: flex-start; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: 12px; font-size: 13px; line-height: 1.45; color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 9%, rgba(22,26,35,.6)); border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--line)); border-left: 3px solid var(--accent); }
+.armline.L { border-left-color: var(--good); } .armline.S { border-left-color: var(--bad); }
+.armline .badge { padding: 3px 9px; font-size: 10.5px; letter-spacing: .06em; margin-top: 1px; }
+.armline .badge.acc { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 22%, transparent); }
+.armline .al-m { flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; } .armline .al-s { display: block; margin-top: 3px; font-size: 11.5px; color: var(--muted); }
+.card > .armline:first-child { margin-top: 0; }
 /* system tiles: live badge row */
 .tile-live { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font: 600 11.5px var(--mono); color: var(--ink-2); }
 .tile-live .dot { width: 7px; height: 7px; }
@@ -856,6 +869,21 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 }
 :root[data-motion="off"] *, :root[data-motion="off"] *::before { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+/* activity feed + phone notifications */
+.act-list > .act-day { display: block; padding: 14px 0 4px; border-bottom: 0; font: 650 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.act-list > .act-day:first-child { padding-top: 2px; }
+.act.act-hl { margin: 0 -10px; padding-left: 10px; padding-right: 10px; border-radius: 12px; background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.act .act-s { white-space: normal; }
+.act .sl-r { line-height: 1.5; }
+.row-btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 6px; }
+.btn.sm { min-height: 32px; padding: 0 11px; font-size: 12px; border-radius: 10px; }
+#nav a .nb { margin-left: auto; font: 700 10.5px var(--mono); font-style: normal; padding: 2px 7px; border-radius: 99px; color: #fff; background: var(--accent); }
+/* Briefing (engine/lit_brief.py) */
+.br-plan { font-size: 15px; line-height: 1.5; margin: 0 0 10px; color: var(--ink); }
+.br-log { max-height: none; } .br-log .evt.br-new { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.br-w { border-left: 3px solid var(--line); padding-left: 10px; } .br-w.warn { border-color: var(--warn); color: var(--ink); } .br-w.good { border-color: var(--good); color: var(--ink); }
+.tag.br-n { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--ink); }
+.br-facts > div { align-items: flex-start; } .br-facts b { font-weight: 500; text-align: right; max-width: 70%; }
 </style>
 </head>
 <body>
@@ -1295,7 +1323,7 @@ function mdList(blk) {
 
 // ===================================================================== routes: five groups, the same on the phone tab bar and the desktop sidebar
 const GROUPS = [
-  { id: 'today', label: 'Today', icon: 'today', pages: [['today', 'Today', 'today', 'Live bot, eval and today’s events'], ['day', 'Day plan', 'clock', 'The LIT day: sessions, entry window, news, what’s next'],
+  { id: 'today', label: 'Today', icon: 'today', pages: [['today', 'Today', 'today', 'Live bot, eval and today’s events'], ['brief', 'Briefing', 'doc', 'The bot’s morning briefing, intraday log and recap'], ['day', 'Day plan', 'clock', 'The LIT day: sessions, entry window, news, what’s next'],
     ['levels', 'Levels', 'target', 'Every LIT level, the setup tracker'], ['cockpit', 'Eval cockpit', 'prop', 'What a stop-out or a winner does to the eval']] },
   { id: 'chart', label: 'Chart', icon: 'chart', pages: [['chart', 'Chart', 'chart', 'Live 5m chart and liquidity pools']] },
   { id: 'trades', label: 'Trades', icon: 'trades', pages: [['trades', 'Trades', 'trades', 'Every trade with its report'], ['results', 'Results', 'results', 'Live settings, 5-year replay'],
@@ -1307,7 +1335,8 @@ const GROUPS = [
   { id: 'system', label: 'System', icon: 'modules', pages: [['system', 'Overview', 'modules', 'Every part of the bot'], ['strategy', 'Strategy', 'rules', 'The locked strategy in plain words'],
     ['engine', 'Paper bot', 'engine', 'LIT cloud paper bot: state, position, events'], ['eval', 'MFFU Eval', 'prop', 'Balance, target, trailing max loss'],
     ['news', 'News', 'news', 'USD events, the bot’s blackouts, headlines'],
-    ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop, weekly stop'], ['alerts', 'Alerts', 'alerts', 'Telegram / Discord from the cloud'],
+    ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop, weekly stop'], ['activity', 'Activity', 'trades', 'Every fill and outcome, newest first'],
+    ['alerts', 'Notifications', 'alerts', 'Phone notifications for every fill and outcome'],
     ['sources', 'Data Sources', 'sources', 'Where every number comes from'], ['archive', 'Archive', 'archive', 'Previous strategy: Liquidity Engine, Oct 17'],
     ['settings', 'Settings', 'settings', 'Home Screen app, refresh, 3D']] },
 ];
@@ -1323,12 +1352,12 @@ const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
 const ALIAS = { modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
   calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive',
-  plan: 'day', clock: 'day', session: 'day', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
+  briefing: 'brief', analyst: 'brief', recap: 'brief', plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
 // 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
 const SCENE = { replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
-  evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', sources: 'engine', news: 'today',
-  archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', levels: 'chart', cockpit: 'eval' };
+  evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', activity: 'today', sources: 'engine', news: 'today',
+  archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', brief: 'today', levels: 'chart', cockpit: 'eval' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
 const titleOf = (p) => DETAIL[p]?.label || (p === 'lab' ? 'Lab' : p === 'system' ? 'System' : PAGES[p]?.label) || 'Today';
 let D = null, PAGE = null, ARG = null, RTOK = 0, routed = false;
@@ -1616,6 +1645,46 @@ function loadLK() {
   return LKP;
 }
 const lkCtx = () => (LK && D ? LK.fromCloud(D, Date.now() / 1000) : null);
+// trade charts (tradechart.js: a trade drawn like TradingView's Long / Short Position tool on the real candles), loaded on demand;
+// the replay trades' bars + markers are in replays/<id>.json (tools/export_replays.py -> tools/build_web_dashboard.py)
+let TC = null, TCP = null;
+const TCV = 'b1526d92';
+function loadTC() {
+  if (TCP) return TCP;
+  TCP = import('./tradechart.js?v=' + TCV).then((m) => { TC = m; return m; }).catch((e) => { console.warn('trade chart unavailable', e); TCP = null; throw e; });
+  return TCP;
+}
+// a paper / live trade has no replay record: its chart is drawn from the recent 5m bars in data.json when they cover the entry
+const tcLive = (t) => !!(t && !t.chart && t.entry_t && t.entry != null && t.stop != null && (LV().bars || []).length && LV().bars[0][0] <= t.entry_t);
+const tcAvail = (t) => !!(t && (t.chart || tcLive(t)));
+const tcBtn = (t) => (tcAvail(t) ? `<span class="tcb" role="button" tabindex="0" data-chart aria-label="Open the trade chart">${icon('chart')}Chart</span>` : '');
+function tcMount(box, t, opts = {}) {
+  if (!box) return;
+  if (!tcAvail(t)) { box.innerHTML = `<div class="note">No chart for this trade: charts are drawn for the ${esc(isLIT() ? 'LIT' : '')} replay trades of 2026 (1-minute data) and for paper trades inside the recent bars.</div>`; return; }
+  box.innerHTML = skLines(4);
+  loadTC().then((m) => (t.chart ? m.load(t.chart, { base: 'replays/' }) : m.fromTrade({ ...t, id: 'live_' + t.entry_t }, LV().bars || [])))
+    .then((rec) => { if (box.isConnected) TC.mount(box, rec, opts); })
+    .catch((e) => { console.warn('trade chart', e); if (box.isConnected) box.innerHTML = '<div class="note">The chart could not load (offline?). Pull to refresh and try again.</div>'; });
+}
+// a cloud paper-ledger row as a trade row (prices + entry time, so its chart can be drawn from the recent bars)
+const paperTrade = (v) => ({ day: v.day, entry_t: v.entry_t || 0, time: v.entry, side: v.side, r: v.R, pnl: v.usd, qty: v.qty, half: v.mult > 0 && v.mult < 1, trigger: v.trigger, exit: v.exit, grade: v.grade, taken: v.taken,
+  risk_pts: v.risk_pts ?? null, risk_usd: null, entry: v.entry_px ?? null, stop: v.stop_px ?? null, target: v.target_px ?? null, exit_price: v.exit_px ?? null, exit_t: v.exit_ts || null });
+// today's paper trade (Day plan, Levels): the newest ledger row of the trading day
+function todayTradeCard(day) {
+  const v = (LV().ledger || []).find(x => x.day === day && x.entry_t);
+  const t = v && paperTrade(v);
+  return t && tcLive(t) ? { t, html: `<div class="card"><div class="card-h"><h3>Today’s trade · ${esc(t.side)} ${t.entry_t ? et(t.entry_t).hm + ' ET' : ''}</h3><span class="meta">${t.exit ? esc(t.exit) + ' · ' + susd(t.pnl) : 'open · paper'}</span></div><div id="tdTC"></div></div>` } : null;
+}
+// the chart on its own, in a wide sheet (the Chart button on a trade row)
+function openChart(t) {
+  const w = sheet(`<span class="side-i ${t.side === 'LONG' ? 'L' : 'S'}">${icon(t.side === 'LONG' ? 'long' : 'short')}</span>
+      <div><div class="eyebrow">${esc(t.day)} · ${t.entry_t ? et(t.entry_t).hm + ' ET' : esc(t.time || '')} · trade chart</div><h3>${esc(t.side)} · ${esc(t.trigger || '')} · ${esc(t.exit || '')}</h3></div>
+      <div class="sh-res"><b class="${cls(t.r)}">${fR(t.r)}</b><span class="${cls(t.pnl)}">${susd(t.pnl)}</span></div>`,
+    `<div class="tcbox" id="shTC"></div>`, t.report ? `<button class="btn primary" type="button" id="shFull">${icon('doc')}Full report</button>` : '', 'Trade chart');
+  w.querySelector('.sheet')?.classList.add('tc-wide');
+  tcMount(w.querySelector('#shTC'), t);
+  w.querySelector('#shFull')?.addEventListener('click', () => openSheet(t));
+}
 const lkWait = () => `<div class="card">${skLines(6)}</div>`;
 const LK_PAGES = ['today', 'day', 'levels', 'cockpit', 'eval'];
 // the LIT panels say "next in 43m": redraw them softly every minute while one is on screen (3D views are kept)
@@ -1723,6 +1792,16 @@ function pcLine() {
   return `<div class="pcline"${tip ? ` title="${esc(tip)}"` : ''}><span class="dot ${pc.silent ? 'bad' : pc.running === false ? 'off' : ''}"></span><span>PC bot · ${esc(pc.host || 'PC')} · ${esc(pc.adapter || '—')} · ${seen}</span>
     ${pc.silent ? '<span class="badge bad">SILENT</span>' : ''}${pc.running === false ? '<span class="badge warn">stopped</span>' : ''}</div>`;
 }
+// the armed / forming LIT setup (live.armed, engine/lit_watch.py armed_line) and the fast watcher's Yahoo lag (live.watch); '' when none or past its time
+const ARM_KIND = { armed: ['ARMED', 'acc'], tapped: ['TAPPED', 'warn'], entering: ['ENTERING', 'good'], forming: ['FORMING', ''] };
+function armedLine() {
+  const lv = LV(), a = lv.armed;
+  if (!a || !a.text || lv.position) return '';
+  if (ok(a.until_t) && a.until_t > 0 && Date.now() / 1000 > a.until_t) return '';
+  const k = ARM_KIND[a.kind] || [String(a.kind || 'setup').toUpperCase(), ''], lag = lv.watch?.yahoo_lag_1m_s;
+  const sub = [lag && ok(lag.median) ? `Yahoo 1m lag ~${Math.round(lag.median)} s (median of ${lag.n})` : '', 'paper only'].filter(Boolean).join(' · ');
+  return `<div class="armline ${a.side === 'LONG' ? 'L' : a.side === 'SHORT' ? 'S' : ''}"><span class="badge ${k[1]}">${esc(k[0])}</span><span class="al-m">${esc(a.text)}<span class="al-s">${esc(sub)}</span></span></div>`;
+}
 function evalMini(ev) {
   if (!ev) return emptyBox('No eval data yet.', 'The cloud monitor starts the tracker with its first run.');
   const lock = (ev.trailing_mll ?? 0) >= 50100 - 0.01;
@@ -1762,7 +1841,7 @@ VIEWS.today = (el) => {
         <div><div class="eyebrow">Cloud paper bot · ${esc(stratName())} · ${s.inkz ? esc(s.inkz[2]) + ' live' : s.next ? `${esc(s.next[0])} in ${Math.floor(s.next[1] / 60)}h ${String(s.next[1] % 60).padStart(2, '0')}m` : s.wk ? 'session over' : 'weekend'}</div>
           <h2>${esc(lv.model_state || '—')}</h2><p>${pos ? `In ${pos.dir === 1 ? 'LONG' : 'SHORT'} ${esc(pos.qty_label || '')} @ ${num(pos.entry)} → TP ${num(pos.target)} / SL ${num(pos.stop)}` : 'Flat. Paper only: it never places real orders.'}</p></div>
         <div class="px"><span class="small mut">NQ futures (Yahoo NQ=F)</span><b>${num(lv.price)}</b><span class="small mut">${esc(lv.health?.last_bar || '')}</span></div></div>
-      <div class="steps">${stepLabels().map((t, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${t}</span>`).join('')}</div>${pcLine()}
+      ${armedLine()}<div class="steps">${stepLabels().map((t, i) => `<span class="${i === idx ? 'on' : i < idx ? 'done' : ''}">${t}</span>`).join('')}</div>${pcLine()}
       <div class="hero-links"><button class="chipbtn" type="button" data-go="strategy">${icon('rules')}<span>The strategy · ${esc(stratName())}</span></button><button class="chipbtn" type="button" data-go="engine">${icon('engine')}<span>Bot details</span></button><button class="chipbtn" type="button" data-go="results">${icon('results')}<span>${lit ? 'Results' : '5-year results'}</span></button>${newsChip()}</div></div>
     ${howto('today', `<p>The top card is the cloud paper bot right now: its state, the NQ price and the five steps of a setup (the lit step is where it is). The <b>News</b> chip is the next USD event and how long until it; tap it for the blackouts.</p>
       <ul><li><b>Today · paper</b>: profit or loss of today’s paper trades.</li>${lit ? `<li><b>Size now</b>: LIT’s weekly stop. After 2 stop-outs in a calendar week the rest of that week trades at half size; Monday starts at full size again.</li>` : `<li><b>Size now</b>: the cold-streak size. When the last 15 finished signals add up to 0R or less, the bot trades at ${esc(sizeWord(sizeRules().cold))} size.</li>`}
@@ -1778,6 +1857,8 @@ VIEWS.today = (el) => {
       ${statBox('2026 backtest', y ? 'PF ' + fPF(y.pf) : '—', y ? `${kusd(y.net)} · ${kusd(perMonth(y.net, y.from, y.to))} a month · ${num(y.per_week, 1)}/wk` : 'no backtest in this build')}
     </div>
     ${timingCard(lv.eval_timing)}
+    ${activityCard()}
+    ${lit ? briefCard() : ''}
     ${lit ? todayLit() : ''}
     <div class="grid g2">
       <div class="card fx-card"><div class="card-h"><h3>This week · ${esc(WK.week)}</h3><div>${fxSeg('today-week')}</div></div>${fxBox('today-week', 'weekring')}</div>
@@ -1800,6 +1881,7 @@ VIEWS.today = (el) => {
   fxFill('today-week', 'weekring', WK, {}, (fb) => weekFb(fb, WK));
   fxFill('today-liqmap', 'liqmap', LQ, {}, (fb) => liqFb(fb, LQ));
   if (lit) todayLitFill();
+  pushPromptFill();
 };
 // the paper trades of the current ET week, Monday to Friday (cloud ledger: day, side, R, usd, entry, qty, mult, taken)
 function weekData() {
@@ -1856,7 +1938,7 @@ const lkPhase = (C) => { if (C.closed) return 'Market closed'; const m = et(C.no
 VIEWS.day = (el) => {
   const C = lkCtx();
   if (!C) { el.innerHTML = head('Today · LIT day', 'Day plan', '') + lkWait(); loadLK(); return; }
-  const CK = LK.clockData(C);
+  const CK = LK.clockData(C), TT = todayTradeCard(C.day);
   el.innerHTML = head(`Today · LIT day · ${esc(fDate(C.day))}`, lkPhase(C), 'The LIT trading day from the 18:00 open to the 17:00 close: the session boxes LIT takes its levels from, the 02:00–15:30 entry window, USD news and the bot’s trade.')
     + howto('day', `<p>The <b>day clock</b> runs from 18:00 ET (top) clockwise to the 17:00 close; the dark wedge before the top is the daily halt.</p>
       <ul><li><b>Outer ring</b>: the session boxes (Asia violet, Frankfurt / London cyan, NY amber; the premarket and cash session are thin bands). Their highs and lows become LIT levels; a dim box had both sides taken.</li>
@@ -1866,19 +1948,23 @@ VIEWS.day = (el) => {
     + `<div class="card fx-card"><div class="card-h"><h3>Day clock</h3><div><span class="meta">ET · 18:00 → 17:00</span>${fxSeg('day-clock')}</div></div>${fxBox('day-clock', 'dayclock')}</div>
     <div class="grid g2"><div class="card"><div class="card-h"><h3>What happens next</h3><span class="meta">${esc(C.day)}</span></div>${LK.planHTML(C)}</div>
       <div class="card"><div class="card-h"><h3>Before the session</h3><span class="meta">checklist</span></div>${LK.readyHTML(C)}</div></div>
-    <div class="card"><div class="card-h"><h3>This week</h3><button class="chipbtn" type="button" data-go="news">${icon('news')}<span>News</span></button></div>${LK.weekHTML(C)}</div>`;
+    <div class="card"><div class="card-h"><h3>This week</h3><button class="chipbtn" type="button" data-go="news">${icon('news')}<span>News</span></button></div>${LK.weekHTML(C)}</div>`
+    + (TT ? TT.html : '');
+  if (TT) tcMount($('#tdTC'), TT.t);
   fxFill('day-clock', 'dayclock', CK, { onPick: lkPick }, (fb) => { fb.innerHTML = LK.clockSVG(C); });
 };
 VIEWS.levels = (el) => {
   const C = lkCtx();
   if (!C) { el.innerHTML = head('Today · LIT levels', 'Levels', '') + lkWait(); loadLK(); return; }
-  const RD = LK.railData(C), R = LK.rail(C), L = LK.levels(C).filter(r => !r.target), nTaken = L.filter(r => r.taken).length;
+  const RD = LK.railData(C), R = LK.rail(C), L = LK.levels(C).filter(r => !r.target), nTaken = L.filter(r => r.taken).length, TT = todayTradeCard(C.day);
   el.innerHTML = head(`Today · LIT levels · NQ ${num(C.price)}`, esc(R.why[0].toUpperCase() + R.why.slice(1)), `${plural(L.length, 'level')} today, ${nTaken} taken. LIT waits for one of them to be swept by half an ATR or more, then for inducement, displacement and a 5-minute CISD.`)
     + howto('levels', `<p>The <b>setup tracker</b> is where the bot is in a LIT setup: levels marked → sweep → inducement → displacement → 5m CISD (these three are confirmed together on one 5-minute close) → a limit order at the CISD level for 30 minutes → after the limit is touched, a 1-minute CISD → in the trade → done (1 trade a day).</p>
       <p>The <b>levels board</b> lists every level LIT watches today: session highs and lows, PDH/PDL, weekly and monthly highs/lows, gaps and equal highs/lows, with the distance from the price in points and in $ for one micro (MNQ, $2 a point). “Sweep ≥” is how far price must run past it to count (0.5 × the 5-minute ATR). Struck-through levels were taken already. The VIX band rows are the target the bot aims for (the 18:00 open ± one VIX day move).</p>`)
     + `<div class="card fx-card"><div class="card-h"><h3>Setup tracker</h3><div>${fxSeg('levels-rail')}</div></div>${fxBox('levels-rail', 'pipeline')}<div style="margin-top:14px">${LK.railHTML(C)}</div></div>
+    ${TT ? TT.html : ''}
     <div class="card"><div class="card-h"><h3>Levels board</h3><span class="meta">pts · $ per MNQ</span></div>${LK.levelsHTML(C, { max: 18 })}</div>
     <div class="card fx-card"><div class="card-h"><h3>Liquidity map</h3><div><span class="meta">3D ladder of the untaken levels</span>${fxSeg('levels-liqmap')}</div></div>${fxBox('levels-liqmap', 'liqmap')}</div>`;
+  if (TT) tcMount($('#tdTC'), TT.t);
   if (!fxFill('levels-rail', 'pipeline', RD, {}, () => { })) { const b = $('#fx_levels-rail'); if (b) b.style.display = 'none'; }      // 2D: the step rail below says it all
   const LQ = { price: C.price, pools: L.filter(r => !r.taken && ok(r.dist)).map(r => ({ price: r.price, side: r.side, label: r.label.split(' · ')[0], strength: r.strength })), bars: (LV().bars || []).slice(-40), position: LV().position || null };
   fxFill('levels-liqmap', 'liqmap', LQ, {}, (fb) => liqFb(fb, LQ));
@@ -1919,6 +2005,55 @@ function todayLit() {
       ${fxBox('today-clock', 'dayclock', 'mini')}<div style="margin-top:12px">${LK.planHTML(C, { compact: true })}</div></div>
     <div class="card"><div class="card-h"><h3>Setup tracker</h3><button class="chipbtn" type="button" data-go="levels"><span>Levels</span>${icon('right')}</button></div>${LK.railHTML(C)}</div></div>`;
 }
+// ===================================================================== BRIEFING (engine/lit_brief.py via live.brief): morning plan, intraday log, recap
+const BRV = () => LV().brief || null;
+const brKind = { sweep: ['SWEEP', 'sweep'], box: ['BOX', ''], cisd: ['CISD', 'signal'], armed: ['ARMED', 'entry'], rejected: ['REJECTED', ''], tap: ['TAP', 'signal'],
+  expired: ['EXPIRED', ''], entry: ['ENTRY', 'entry'], exit: ['EXIT', 'exit'] };
+function brLog(log, n) {
+  const L = (log || []).slice(0, n || 999);
+  if (!L.length) return emptyBox('Nothing yet today.', 'Sweeps, 5m CISDs, armed and rejected setups, entries and exits show up here, newest first, every 30 minutes.');
+  return `<div class="feed br-log">${L.map(r => { const k = brKind[r.kind] || [String(r.kind).toUpperCase(), '']; return `<div class="evt${r.new ? ' br-new' : ''}"><div class="t">${et(r.t).hm}</div><div><span class="tag ${k[1]}">${k[0]}</span>${r.new ? '<span class="tag br-n">NEW</span>' : ''}${esc(r.text)}</div></div>`; }).join('')}</div>`;
+}
+function brLevels(mo, max) {
+  const px = mo.price, L = [...(mo.levels || [])].filter(r => r.kind !== 'buildup' || !r.taken).sort((a, b) => b.price - a.price).slice(0, max || 40);
+  return `<div class="kv one">${L.map(r => `<div><span><b style="color:${r.side === 'H' ? 'var(--bsl)' : 'var(--ssl)'}">${r.side === 'H' ? 'BSL' : 'SSL'}</b> ${r.taken ? `<s class="mut">${esc(r.label)}</s>` : esc(r.label)}${r.taken ? ` <span class="mut">· taken ${et(r.taken_t).hm} · ${num(r.depth_atr, 1)} ATR</span>` : ''}</span>
+    <b class="mono">${num(r.price)} <span class="mut">${ok(px) ? (r.price > px ? '+' : '') + num(r.price - px, 0) : ''}</span></b></div>`).join('')}</div>`;
+}
+function brBoxes(mo) {
+  return `<div class="kv">${(mo.boxes || []).map(b => `<div><span>${esc(b.label)} <span class="mut">${esc(b.window)}</span></span><b>${b.status === 'done' ? `${num(b.high)} / ${num(b.low)}` : esc(b.status)}${b.status === 'done' ? `<small class="mut" style="display:block;font-weight:500">${b.high_taken_t ? 'high taken ' + et(b.high_taken_t).hm : 'high untaken'} · ${b.low_taken_t ? 'low taken ' + et(b.low_taken_t).hm : 'low untaken'}</small>` : ''}</b></div>`).join('')}</div>`;
+}
+const brWarn = (B, all) => (B.mffu || []).filter(w => all || w.level !== 'info').map(w => `<div class="note br-w ${esc(w.level)}">${esc(w.text)}</div>`).join('');
+function briefCard() {
+  const B = BRV(); if (!B) return '';
+  const mo = B.morning, rc = B.recap;
+  return `<div class="card"><div class="card-h"><h3>Briefing · ${esc(B.day || '')}</h3><button class="chipbtn" type="button" data-go="brief"><span>Open</span>${icon('right')}</button></div>
+    ${mo ? `<p class="br-plan">${esc(mo.plan)}</p><div class="note">${esc(mo.overnight?.text || '')} ${esc(mo.eval?.text || '')}</div>` : `<div class="note">${esc(B.waiting ? 'Waiting for the ' + B.waiting.replace('next session ', '') + ' session.' : 'The morning briefing is built on the first run after 01:30 ET.')}</div>`}
+    ${brWarn(B)}
+    ${rc ? `<div class="note"><b>End of day:</b> ${esc(rc.text)} ${esc(rc.lesson || '')}</div>` : ''}
+    <div style="margin-top:10px">${brLog(B.log, 4)}</div></div>`;
+}
+VIEWS.brief = (el) => {
+  const B = BRV();
+  if (!B) { el.innerHTML = head('Today · LIT day analyst', 'Briefing', '') + (armedLine() ? `<div class="card"><div class="card-h"><h3>Setup now</h3><span class="meta">in-app only</span></div>${armedLine()}</div>` : '') + emptyBox('No briefing yet.', 'The cloud monitor writes it on its first run after 01:30 ET on a market day.'); return; }
+  const mo = B.morning, rc = B.recap, pv = B.prev, nw = B.now || {};
+  el.innerHTML = head(`Today · LIT day analyst · ${esc(fDate(B.day || ''))}`, mo ? 'Game plan' : 'Briefing', mo ? `Built ${esc(mo.built)} ET${mo.stage === 'full' ? ' (refreshed after 07:30)' : ' (refreshed after 07:30 ET)'} · updated ${esc(B.at || '')} · paper only, no notifications` : esc(B.at || ''))
+    + howto('brief', `<p>The bot’s own analysis of the LIT day. The <b>game plan</b> is written on the first cloud run after 01:30 ET and refreshed once after 07:30 ET: which levels are untaken, which side was taken overnight, the target band and the eval size.</p>
+      <ul><li><b>Intraday log</b>: every 30 minutes, what changed: a level swept (how deep in ATR; LIT needs 0.5), a box closed, a 5-minute CISD with its inducement and displacement, a setup armed or rejected (and the rule), a limit tapped, the entry and the exit. NEW marks what the last run added.</li>
+      <li><b>End of day</b> (after 16:00 ET): the result, what the setups did and one lesson.</li></ul><p>Nothing here sends a notification; pushes are only for entries and outcomes.</p>`)
+    + (armedLine() ? `<div class="card"><div class="card-h"><h3>Setup now</h3><span class="meta">${esc(LV().armed.side || '')} · in-app only</span></div>${armedLine()}</div>` : '')
+    + (mo ? `<div class="card"><div class="card-h"><h3>Game plan</h3><span class="meta">NQ ${num(mo.price)} at ${esc(mo.built)}</span></div><p class="br-plan">${esc(mo.plan)}</p>
+      <div class="kv one br-facts"><div><span>Overnight</span><b>${esc(mo.overnight?.text || '')}</b></div><div><span>Target band</span><b>${esc(mo.vix?.text || '')}</b></div>
+      <div><span>News</span><b class="${(mo.news || []).length ? 'wn' : ''}">${esc(mo.news_text || '')}</b></div>
+      ${mo.monday?.text ? `<div><span>Monday rule</span><b>${esc(mo.monday.text)}</b></div>` : ''}${mo.weekly_stop?.text ? `<div><span>Weekly stop</span><b>${esc(mo.weekly_stop.text)}</b></div>` : ''}
+      <div><span>Eval</span><b>${esc(mo.eval?.text || '')}</b></div></div></div>` : '')
+    + ((B.mffu || []).length ? `<div class="card"><div class="card-h"><h3>MFFU rules today</h3><span class="meta">in-app only</span></div>${brWarn(B, true)}</div>` : '')
+    + (rc ? `<div class="card"><div class="card-h"><h3>End of day</h3><span class="meta ${cls(rc.pnl)}">${susd(rc.pnl)}</span></div><p class="br-plan">${esc(rc.text)}</p><div class="note">${esc(rc.setups)}</div><div class="note"><b>Lesson:</b> ${esc(rc.lesson || '')}</div></div>` : '')
+    + `<div class="card"><div class="card-h"><h3>Intraday log</h3><span class="meta">${plural((B.log || []).length, 'entry')}${B.new ? ` · ${B.new} new` : ''}</span></div>
+      ${nw.model_state ? `<div class="note" style="margin-bottom:10px">Now (${esc(nw.at || '')}): ${esc(nw.model_state)}</div>` : ''}${brLog(B.log)}</div>`
+    + (mo ? `<div class="grid g2"><div class="card"><div class="card-h"><h3>Trap boxes</h3><span class="meta">ET</span></div>${brBoxes(mo)}</div>
+      <div class="card"><div class="card-h"><h3>LIT map</h3><span class="meta">${mo.untaken?.above ?? 0} above · ${mo.untaken?.below ?? 0} below untaken</span></div>${brLevels(mo, 24)}</div></div>` : '')
+    + (pv?.recap ? `<div class="card"><div class="card-h"><h3>Yesterday · ${esc(pv.day || '')}</h3></div><div class="note">${esc(pv.recap.text)} ${esc(pv.recap.lesson || '')}</div></div>` : '');
+};
 function todayLitFill() {
   const C = lkCtx(); if (!C) return;
   fxFill('today-clock', 'dayclock', LK.clockData(C), { onPick: lkPick }, (fb) => { fb.innerHTML = LK.clockSVG(C); });
@@ -1970,7 +2105,7 @@ VIEWS.trades = (el) => {
   const paper = (LV().ledger || []);
   const years = [...new Set((D.trades || []).map(t => t.day.slice(0, 4)))].sort().reverse();
   if (TS.year !== 'all' && !years.includes(TS.year)) TS.year = years[0] || 'all';
-  let rows = TS.src === 'paper' ? paper.map(v => ({ day: v.day, entry_t: 0, time: v.entry, side: v.side, r: v.R, pnl: v.usd, qty: v.qty, half: v.mult > 0 && v.mult < 1, trigger: v.trigger, exit: v.exit, grade: v.grade, taken: v.taken, risk_pts: null, risk_usd: null }))
+  let rows = TS.src === 'paper' ? paper.map(paperTrade)
     : (D.trades || []).filter(t => TS.year === 'all' || t.day.startsWith(TS.year));
   const all = rows;
   rows = rows.filter(t => {
@@ -2013,7 +2148,7 @@ VIEWS.trades = (el) => {
   onSeg('trF', (v) => { TS.f = v; TS.shown = 50; render(true); });
   let qt; $('#trQ').oninput = (e) => { clearTimeout(qt); qt = setTimeout(() => { TS.q = e.target.value.trim().toLowerCase(); TS.shown = 50; render(true); const q = $('#trQ'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }, 250); };
   $('#trMore')?.addEventListener('click', () => { TS.shown += 50; render(true); });
-  $('#trList').onclick = (e) => { const b = e.target.closest('.trade'); if (b) openSheet(rows[+b.dataset.k]); };
+  $('#trList').onclick = (e) => { const b = e.target.closest('.trade'); if (!b) return; const t = rows[+b.dataset.k]; if (e.target.closest('[data-chart]')) openChart(t); else openSheet(t); };
   $$('#trList .trade').forEach((b, i) => { b.dataset.k = i; });
 };
 function tradeRow(t) {
@@ -2022,7 +2157,7 @@ function tradeRow(t) {
     <span class="side-i ${t.side === 'LONG' ? 'L' : 'S'}">${icon(t.side === 'LONG' ? 'long' : 'short')}</span>
     <span class="tmain"><span class="ttop"><b>${esc(t.day)}</b><span class="mut">${t.entry_t ? et(t.entry_t).hm + ' ET' : esc(t.time || '')}</span><span class="sidetxt ${t.side === 'LONG' ? 'up' : 'dn'}">${esc(t.side)}</span>
       ${t.half ? chip('half size', 'warn') : ''}${t.taken === false ? chip('not taken', 'bad') : ''}</span>
-      <span class="chips">${t.risk_pts != null ? chip(`<i>stop</i> ${num(t.risk_pts, 1)} pts`) : ''}${chip(`<i>micros</i> ${t.qty ?? '—'}`)}${t.risk_usd != null ? chip(`<i>risk</i> ${usd(t.risk_usd)}`) : ''}${t.trigger ? chip(esc(t.trigger)) : ''}${t.exit ? chip(esc(t.exit)) : ''}</span></span>
+      <span class="chips">${t.risk_pts != null ? chip(`<i>stop</i> ${num(t.risk_pts, 1)} pts`) : ''}${chip(`<i>micros</i> ${t.qty ?? '—'}`)}${t.risk_usd != null ? chip(`<i>risk</i> ${usd(t.risk_usd)}`) : ''}${t.trigger ? chip(esc(t.trigger)) : ''}${t.exit ? chip(esc(t.exit)) : ''}${tcBtn(t)}</span></span>
     <span class="tres"><b class="${cls(t.r)}">${fR(t.r)}</b><span class="${cls(t.pnl)}">${susd(t.pnl)}</span></span></button>`;
 }
 function openSheet(t) {
@@ -2031,7 +2166,7 @@ function openSheet(t) {
   const w = sheet(`<span class="side-i ${t.side === 'LONG' ? 'L' : 'S'}">${icon(t.side === 'LONG' ? 'long' : 'short')}</span>
       <div><div class="eyebrow">${esc(t.day)} · ${esc(rp.time || (t.entry_t ? et(t.entry_t).hm + ' ET' : t.time || ''))}</div><h3>${esc(t.side)} · ${esc(t.trigger || '')} · ${esc(t.exit || '')}</h3></div>
       <div class="sh-res"><b class="${cls(t.r)}">${fR(t.r)}</b><span class="${cls(t.pnl)}">${susd(t.pnl)}</span></div>`,
-    `<div class="nums">${nbox('Stop', t.risk_pts != null ? num(t.risk_pts, 2) + ' pts' : '—')}${nbox('Micros', t.qty ?? '—')}${nbox('$ risk', usd(t.risk_usd))}${nbox('Size', t.half ? '<span class="wn">half</span>' : 'full')}
+    `${tcAvail(t) ? '<div class="tcbox" id="shTC"></div>' : ''}<div class="nums">${nbox('Stop', t.risk_pts != null ? num(t.risk_pts, 2) + ' pts' : '—')}${nbox('Micros', t.qty ?? '—')}${nbox('$ risk', usd(t.risk_usd))}${nbox('Size', t.half ? '<span class="wn">half</span>' : 'full')}
         ${t.entry != null ? nbox('Entry', num(t.entry)) + nbox('Stop price', num(t.stop)) + nbox('Target', num(t.target)) + nbox('Exit', num(t.exit_price)) : ''}
         ${t.mfe != null ? nbox('Best point', fR(t.mfe)) : ''}${t.bars_held != null ? nbox('Bars held', t.bars_held) : ''}${t.regime ? nbox('Regime', esc(t.regime)) : ''}${t.grade ? nbox('Grade', esc(t.grade)) : ''}</div>
       ${rp.plan ? `<section><h4>${icon('target')}Plan</h4><p>${esc(rp.plan)}</p></section>` : ''}
@@ -2043,6 +2178,7 @@ function openSheet(t) {
       ${!rp.plan && !rp.why ? '<div class="note">Cloud paper trade: the full report is written into the backtest replay after the next export.</div>' : ''}`,
     hasReplay ? `<button class="btn primary" type="button" id="shRp">${icon('replay')}Replay this session</button>` : '', 'Trade report');
   w.querySelector('#shRp')?.addEventListener('click', () => { closeSheet(); location.hash = '#/replays/' + t.entry_t; });
+  if (tcAvail(t)) tcMount(w.querySelector('#shTC'), t);
 }
 
 // ===================================================================== TRADES: results
@@ -2062,6 +2198,7 @@ function periodCard(name, tag, p) {
       <div class="ev"><span>Eval within 1 month</span><div class="pf"><b class="up">${pct(m1.pass_pct)}</b><i>pass</i><b class="dn">${pct(m1.fail_pct)}</b><i>fail</i></div><div class="m2"><i class="p" style="width:${m1.pass_pct || 0}%"></i><i class="f" style="width:${m1.fail_pct || 0}%"></i></div></div>
       <div class="ev"><span>Back-to-back evals</span><div class="pf"><b class="up">${bb.passed ?? '—'}</b><i>passed</i><b class="dn">${bb.failed ?? '—'}</b><i>failed</i></div>${med != null ? `<div class="small mut">median ${med} sessions to pass · ${slow} of ${passes.length} took over 3 weeks</div>` : ''}</div></div></div>`;
 }
+let RES_TC = [];
 VIEWS.results = (el) => resultsView(el, D.results, false);
 VIEWS.oldresults = (el) => resultsView(el, D.archive?.results, true);
 function resultsView(el, R, arch) {
@@ -2089,6 +2226,9 @@ function resultsView(el, R, arch) {
     ${fxOn() ? `<div class="card fx-card"><div class="card-h"><h3>Month city · net P&amp;L of every month</h3><span class="meta">towers up = profit, down = loss · drag · tap a tower</span></div><div class="fx3d city" id="rsCity"></div></div>` : ''}
     <div class="card"><div class="card-h"><h3>Equity</h3>${segHTML('rsEq', [['2026', '2026'], ['all', '5 years']], mode, 'sm')}</div><div id="rsEqC"></div></div>
     <div class="card"><div class="card-h"><h3>Net by month</h3><span class="meta">tap a bar</span></div><div id="rsMo"></div></div>
+    ${!arch ? (() => { const T = (D.trades || []).filter(t => t.chart).sort((a, b) => b.pnl - a.pnl); if (!T.length) return '';
+      RES_TC = [...T.slice(0, 3), ...T.slice(-3).reverse()];
+      return `<div class="card"><div class="card-h"><h3>Biggest wins and losses · on the chart</h3><span class="meta">tap one for its chart</span></div><div class="tlist" id="rsTc">${RES_TC.map(t => tradeRow(t)).join('')}</div></div>`; })() : ''}
     <div class="card"><div class="card-h"><h3>By year</h3>${segHTML('rsYr', [['money', 'Money'], ['evals', 'Trades & evals']], store.get('rsYr', 'money'), 'sm')}</div><div class="tw" id="rsYrT"></div>
       <p class="card-d" style="margin:10px 0 0">Judged on 2026 and on 2021-25. Eval columns: pass % / fail % of MFFU evals started in that year.</p></div>
     <div class="card"><div class="card-h"><h3>Back-to-back MFFU evals · ${lit ? 'since 2021-11 (2026 judged)' : '5 years'}</h3><span class="meta">a new eval starts the day after each one ends</span></div>
@@ -2099,6 +2239,8 @@ function resultsView(el, R, arch) {
   drawEq();
   fx3d('results-city', $('#rsCity'), 'city', R.months || {});
   onSeg('rsEq', (v) => { store.set('resEq', v); drawEq(); });
+  $$('#rsTc .trade').forEach((b, i) => { b.dataset.k = i; });
+  $('#rsTc')?.addEventListener('click', (e) => { const b = e.target.closest('.trade'); if (!b) return; const t = RES_TC[+b.dataset.k]; if (e.target.closest('[data-chart]')) openChart(t); else openSheet(t); });
   barChart($('#rsMo'), Object.entries(R.months || {}).map(([k, v]) => ({ x: k.slice(2), y: v.net, tip: `<b>${k}</b><span>${susd(v.net)}</span><span>${v.trades} trades · ${v.wins} wins</span>` })), { h: 200 });
   const drawYr = () => {
     const money = store.get('rsYr', 'money') === 'money', ev = (e, k) => `${pct(e?.[k]?.pass_pct)} / <span class="dn">${pct(e?.[k]?.fail_pct)}</span>`;
@@ -2143,6 +2285,7 @@ VIEWS.replays = (el) => {
     + howto('replays', `<p>Pick a trade day and press <b>Play</b>: the chart builds bar by bar as the bot saw it, and the narration explains each step.</p>
       <ul><li><b>Orange</b> = the liquidity sweep (price runs an old high or low).</li><li><b>Blue</b> = the entry, <b>red</b> = the stop beyond the sweep extreme, <b>green</b> = the target.</li>
       <li><b>Next event</b> jumps straight to the next step; the slider scrubs through the day.</li></ul>`)
+    + (t.chart ? `<div class="card"><div class="card-h"><h3>Trade chart</h3><span class="meta">Long / Short drawing · 5m and 1m · exact prices</span></div><div id="rpTC"></div></div>` : '')
     + `<div class="card"><div class="rp-ctl">
         <button class="btn icon ghost" type="button" id="rpStart" title="Start" aria-label="Start">${icon('first')}</button><button class="btn icon ghost" type="button" id="rpBack" title="Back 1 bar" aria-label="Back 1 bar">${icon('left')}</button>
         <button class="btn primary" type="button" id="rpPlay" style="min-width:96px">${icon('play')}<span>Play</span></button><button class="btn icon ghost" type="button" id="rpFwd" title="Forward 1 bar" aria-label="Forward 1 bar">${icon('right')}</button>
@@ -2198,6 +2341,7 @@ VIEWS.replays = (el) => {
   onSeg('rpMode', (v) => { stopReplay(); store.set('rp3d', v === '3d'); render(true); });
   onSeg('rpSpd', (v) => { RP.speed = +v; store.set('rpSpeed', RP.speed); if (RP.timer) setPlay(true); });
   draw();
+  if (t.chart) tcMount($('#rpTC'), t);
 };
 
 // ===================================================================== TRADES: stop sizes
@@ -2460,21 +2604,25 @@ function runTradeRow(t, i) {
   return `<button type="button" class="trade ${t.pnl > 0 ? 'win' : be ? 'be' : 'loss'}" data-i="${i}">
     <span class="side-i ${L ? 'L' : 'S'}">${icon(L ? 'long' : 'short')}</span>
     <span class="tmain"><span class="ttop"><b>${esc(t.day)}</b><span class="mut">${t.entry_t ? et(t.entry_t).hm + ' ET' : ''}</span><span class="sidetxt ${L ? 'up' : 'dn'}">${L ? 'LONG' : 'SHORT'}</span>${t.half ? chip('half size', 'warn') : ''}${t.kind ? chip(esc(t.kind)) : ''}</span>
-      <span class="chips">${chip(`<i>stop</i> ${num(t.risk_pts, 1)} pts`)}${chip(`<i>micros</i> ${t.qty ?? '—'}`)}${t.trigger ? chip(esc(t.trigger)) : ''}${t.exit ? chip(esc(t.exit)) : ''}</span></span>
+      <span class="chips">${chip(`<i>stop</i> ${num(t.risk_pts, 1)} pts`)}${chip(`<i>micros</i> ${t.qty ?? '—'}`)}${t.trigger ? chip(esc(t.trigger)) : ''}${t.exit ? chip(esc(t.exit)) : ''}${tcBtn(tradeAt(t.entry_t))}</span></span>
     <span class="tres"><b class="${cls(t.r)}">${fR(t.r)}</b><span class="${cls(t.pnl)}">${susd(t.pnl)}</span></span></button>`;
 }
+// the live replay trade that entered at entry_t (a run trade's full report and chart)
+let _tbt = null, _tbd = null;
+function tradeAt(ts) { if (_tbd !== D) { _tbd = D; _tbt = new Map((D?.trades || []).map(x => [x.entry_t, x])); } return ts ? _tbt.get(ts) : null; }
 function openRunTrade(run, t) {
-  const main = (D.trades || []).find(x => x.entry_t === t.entry_t), hasRp = (D.replays?.sessions || []).some(s => s.entry_t === t.entry_t), L = t.dir === 1;
+  const main = tradeAt(t.entry_t), hasRp = (D.replays?.sessions || []).some(s => s.entry_t === t.entry_t), L = t.dir === 1;
   const w = sheet(`<span class="side-i ${L ? 'L' : 'S'}">${icon(L ? 'long' : 'short')}</span>
       <div><div class="eyebrow">${esc(t.day)}${t.entry_t ? ' · ' + et(t.entry_t).hm + ' ET' : ''} · ${esc(run.title || run.id)}</div><h3>${L ? 'LONG' : 'SHORT'} · ${esc(t.trigger || '')} · ${esc(t.exit || '')}</h3></div>
       <div class="sh-res"><b class="${cls(t.r)}">${fR(t.r)}</b><span class="${cls(t.pnl)}">${susd(t.pnl)}</span></div>`,
-    `<div class="nums">${nbox('Stop', num(t.risk_pts, 2) + ' pts')}${nbox('Micros', t.qty ?? '—')}${nbox('$ risk', usd(t.risk_usd))}${nbox('Size', t.half ? '<span class="wn">half</span>' : ok(t.mult) && t.mult !== 1 ? '×' + num(t.mult, 2) : 'full')}
+    `${main?.chart ? '<div class="tcbox" id="shTC"></div>' : ''}<div class="nums">${nbox('Stop', num(t.risk_pts, 2) + ' pts')}${nbox('Micros', t.qty ?? '—')}${nbox('$ risk', usd(t.risk_usd))}${nbox('Size', t.half ? '<span class="wn">half</span>' : ok(t.mult) && t.mult !== 1 ? '×' + num(t.mult, 2) : 'full')}
       ${nbox('Best point', fR(t.mfe))}${nbox('Worst point', ok(t.mae) ? fR(-t.mae) : '—')}${nbox('Held', ok(t.bars_held) ? t.bars_held * 5 + ' min' : '—')}${nbox('Regime', esc(t.regime || '—'))}
       ${t.exit_t ? nbox('Exit time', et(t.exit_t).hm + ' ET') : ''}${t.kind ? nbox('Loss type', esc(t.kind)) : ''}</div>
     <div class="note">Stored runs keep the key numbers of every trade. ${main ? 'This trade is also in the live replay: its full report has the plan, the reasons and the lessons.' : 'Written reports exist for the live strategy’s replay trades.'}</div>`,
     `${main ? `<button class="btn ${hasRp ? 'ghost' : 'primary'}" type="button" id="shFull">${icon('doc')}Full report</button>` : ''}${hasRp ? `<button class="btn primary" type="button" id="shRp">${icon('replay')}Replay</button>` : ''}`, 'Run trade');
   w.querySelector('#shFull')?.addEventListener('click', () => openSheet(main));
   w.querySelector('#shRp')?.addEventListener('click', () => { closeSheet(); location.hash = '#/replays/' + t.entry_t; });
+  if (main?.chart) tcMount(w.querySelector('#shTC'), main);
 }
 const RS = { id: null, tf: 'all', y: 'all', sort: 'new', shown: 40, heat: 'run', eq: 'all' };
 VIEWS.run = (el) => {
@@ -2543,7 +2691,7 @@ function drawRunTrades(run) {
   dropdown($('#rtS'), [['new', 'Newest first'], ['old', 'Oldest first'], ['best', 'Best R'], ['worst', 'Worst R'], ['wide', 'Widest stop']], RS.sort, (v) => { RS.sort = v; drawRunTrades(run); });
   onSeg('rtF', (v) => { RS.tf = v; RS.shown = 40; drawRunTrades(run); });
   $('#rtM')?.addEventListener('click', () => { RS.shown += 40; drawRunTrades(run); });
-  $('#rtL').onclick = (e) => { const b = e.target.closest('.trade[data-i]'); if (b) openRunTrade(run, rows[+b.dataset.i]); };
+  $('#rtL').onclick = (e) => { const b = e.target.closest('.trade[data-i]'); if (!b) return; const t = rows[+b.dataset.i], m = tradeAt(t.entry_t); if (e.target.closest('[data-chart]') && m) openChart(m); else openRunTrade(run, t); };
 }
 
 // ===================================================================== LAB: compare runs
@@ -2718,7 +2866,7 @@ function drawLosses(run) {
   const redraw = () => { FX?.detachAll(); drawLosses(run); };
   $('#lsK').onclick = (e) => { const c = e.target.closest('.ltype'); if (!c) return; LS2.kind = LS2.kind === c.dataset.k ? 'all' : c.dataset.k; redraw(); };
   $('#lsAll')?.addEventListener('click', () => { LS2.kind = 'all'; redraw(); });
-  $('#lsBig').onclick = (e) => { const c = e.target.closest('.trade[data-i]'); if (c) openRunTrade(run, big[+c.dataset.i]); };
+  $('#lsBig').onclick = (e) => { const c = e.target.closest('.trade[data-i]'); if (!c) return; const t = big[+c.dataset.i], m = tradeAt(t.entry_t); if (e.target.closest('[data-chart]') && m) openChart(m); else openRunTrade(run, t); };
 }
 
 // ===================================================================== LAB: lessons (what the bot learned), variants, study
@@ -3353,9 +3501,22 @@ VIEWS.strategy = (el) => {
       <li>MFFU evals should be decided within 2 weeks, and no pass should take more than 3 weeks.</li></ul></div>`;
 };
 VIEWS.alerts = (el) => {
-  el.innerHTML = head('System · alerts', 'Phone alerts with the PC off', 'The cloud monitor sends sweeps, entries, exits and an end-of-day summary to Telegram and/or Discord.')
-    + `<div class="card"><div class="card-h"><h3>Setup</h3><span class="meta">keys live in GitHub Secrets only</span></div><div class="kv one"><div><span>Telegram</span><b>secrets TG_TOKEN + TG_CHAT</b></div><div><span>Discord</span><b>secret DISCORD_WEBHOOK</b></div><div><span>Sent for</span><b>sweep · signal · entry · exit · end of day</b></div>
-      ${isLIT() ? `<div><span>Strategy</span><b>${esc(stratName())} · entries 02:00–15:30 ET</b></div><div><span>Weekly stop</span><b>entries after 2 stop-outs in the week show their half size</b></div><div><span>Previous strategy</span><b>paper shadow, no alerts</b></div>` : `<div><span>Cold streak</span><b>entries are marked HALF SIZE</b></div>`}<div><span>Where</span><b>GitHub repo → Settings → Secrets → Actions</b></div></div></div>`;
+  const P = LV().push || {};
+  el.innerHTML = head('System · notifications', 'A notification for every trade', 'Free notifications to this Home Screen app: one when a trade is entered, and the same one turns into the result when it ends. Tap Allow once; the rest is automatic.')
+    + `<div class="card" id="pushCardN">${pushShell()}</div>
+    <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>What you get</h3></div><ul class="list">
+      <li><b>Entry</b>: “LONG · MFFU 50K” · “Entered 4 MNQ”.</li>
+      <li><b>Result</b>: the same notification becomes “+$1,812”, “−$366”, “$0 breakeven” or “+$212 closed 15:55”.</li>
+      <li>The account: <b>Paper</b> for the cloud paper bot, the NinjaTrader account (e.g. <b>Sim101</b>) for the PC bot. Each trade is notified once, even when both run.</li>
+      <li>Nothing else pushes. The PC bot going silent and eval-timing changes show here in <a href="#/activity">Activity</a>.</li></ul>
+      <div class="note">The cloud paper bot checks every 30 min (market days 02:00–16:25 ET), so its notices come up to ~30 min after the fill; the PC bot’s within seconds.</div></div>
+      <div class="card"><div class="card-h"><h3>How it works</h3><span class="meta">free, no keys to copy</span></div><div class="kv one">
+        <div><span>Cloud</span><b>${P.configured ? `${P.devices || 0} phone${P.devices === 1 ? '' : 's'} on · ${esc(P.sender || '')}` : 'makes its key on the next run'}</b></div>
+        <div><span>PC bot</span><b>${P.pc_linked ? 'linked (gets the key from the cloud, sealed to the PC)' : 'not linked (needs the PC heartbeat on)'}</b></div>
+        <div><span>Relay</span><b>${P.relay?.topic ? 'ntfy.sh topic (passes the phone’s subscription to the cloud)' : '—'}</b></div>
+        <div><span>Telegram / Discord</span><b>${P.chat ? 'on (LE_ALERTS_CHAT)' : 'off: the app notifies instead'}</b></div></div>
+        <div class="note">Step by step and troubleshooting: docs/NOTIFICATIONS.md in the repo.</div></div></div>`;
+  pushFill('pushCardN');
 };
 VIEWS.sources = (el) => {
   const m = D.results?.meta || {}, lv = LV(), h = lv.health || {}, L = LAB(), docs = D.docs || {};
@@ -3408,11 +3569,230 @@ VIEWS.archive = (el) => {
       <div class="card"><div class="card-h"><h3>Switch back</h3><span class="meta">paper only either way</span></div><ol class="list">${(A.switch_back || []).map(x => `<li><span class="mono">${esc(x)}</span></li>`).join('')}</ol></div></div>`;
 };
 
+// ===================================================================== NOTIFICATIONS + ACTIVITY
+// Activity: every fill and every outcome of the cloud paper bot (live.ledger + the open position) merged with the notices the
+// cloud monitor sent (live.notices: fills, outcomes, PC silent, eval timing), newest first. It works before notifications are
+// set up. Notifications: free Web Push (engine/push.py) from the cloud monitor and the PC bot to this Home Screen app; a tap
+// opens #/activity/<key>. The app badge counts what this device has not seen yet.
+const ACT_K = { fill: 'Fill', outcome: 'Outcome', pc: 'PC bot', timing: 'Eval timing', test: 'Test', risk: 'Needs a look', system: 'System' };
+function activity() {
+  const lv = LV(), M = new Map();
+  for (const v of lv.ledger || []) {
+    const t0 = +v.entry_t; if (!t0) continue;
+    M.set('fill:' + t0, { key: 'fill:' + t0, kind: 'fill', t: t0, side: v.side, qty: v.qty, entry: v.entry_px, stop: v.stop_px, target: v.target_px, src: 'Cloud paper', taken: v.taken !== false, reasons: v.reasons });
+    if (v.exit_ts && v.exit && v.exit !== 'OPEN') M.set('out:' + t0, { key: 'out:' + t0, kind: 'outcome', t: +v.exit_ts, side: v.side, exit: v.exit, R: v.R, usd: v.usd, qty: v.qty, src: 'Cloud paper', taken: v.taken !== false, reasons: v.reasons, entry_t: t0 });
+  }
+  const p = lv.position;
+  if (p && p.entry_t && !M.has('fill:' + p.entry_t)) M.set('fill:' + p.entry_t, { key: 'fill:' + p.entry_t, kind: 'fill', t: +p.entry_t, side: p.dir === 1 ? 'LONG' : 'SHORT', qty: p.qty, entry: p.entry, stop: p.stop0 ?? p.stop, target: p.target, src: 'Cloud paper', open: true });
+  if (p && p.entry_t && M.has('fill:' + p.entry_t)) M.get('fill:' + p.entry_t).open = true;
+  for (const n of lv.notices || []) {
+    if (!n || !n.key) continue;
+    const d = M.get(n.key), nn = Object.fromEntries(Object.entries(n).filter(([, x]) => x != null && x !== ''));
+    // the ledger is the truth for R / $ / time; the notice adds its words (and the sized micros of a still-open trade)
+    M.set(n.key, d ? { ...d, ...nn, t: d.t, R: d.R ?? n.R, usd: d.usd ?? n.usd, exit: d.exit ?? n.exit, side: d.side || n.side, open: d.open } : { ...nn, kind: n.kind || 'info' });
+  }
+  return [...M.values()].filter(x => ok(x.t)).sort((a, b) => b.t - a.t || (a.kind === 'fill' ? 1 : -1));
+}
+const SW_BADGE = './__badge';
+const swCount = () => (window.caches ? caches.open('le-badge').then(c => c.match(SW_BADGE)).then(r => r ? r.text() : '0').then(t => +t || 0).catch(() => 0) : Promise.resolve(0));
+const swCountSet = (n) => { try { if (window.caches) caches.open('le-badge').then(c => c.put(SW_BADGE, new Response(String(n)))).catch(() => null); } catch { } };
+function actUnseen(A = activity()) { const s = store.get('act.seen', null); return s == null ? 0 : A.filter(x => x.t > s).length; }
+async function actBadge() {
+  const A = activity();
+  if (store.get('act.seen', null) == null) store.set('act.seen', A[0]?.t || 0);      // first launch: nothing old counts as new
+  const n = Math.max(actUnseen(A), PAGE === 'activity' ? 0 : await swCount());
+  try { if (n && navigator.setAppBadge) await navigator.setAppBadge(n); else if (!n && navigator.clearAppBadge) await navigator.clearAppBadge(); } catch { }
+  const a = $('#nav a[data-p="activity"]');
+  if (a) { a.querySelector('.nb')?.remove(); if (n) a.insertAdjacentHTML('beforeend', `<em class="nb">${n > 99 ? '99+' : n}</em>`); }
+  return n;
+}
+function actMarkSeen() { const A = activity(); store.set('act.seen', Math.max(A[0]?.t || 0, store.get('act.seen', 0) || 0)); swCountSet(0); actBadge(); }
+const actDay = (t) => { const e = et(t), td = et(Date.now() / 1000).date; return e.date === td ? 'Today' : `${e.wd} ${fDate(e.date)}`; };
+const mic = (n) => +n === 1 ? '1 micro' : `${n} micros`;
+const noteR = (rs) => (rs || []).filter(r => !/^(eval size|fast eval|two week|one winner)/i.test(r));      // the size mode's usual line is not news
+function actRow(x, hl = '') {
+  const L = x.side === 'LONG', side = x.side ? `<b class="${L ? 'up' : 'dn'}" style="font-size:11px;letter-spacing:.08em">${esc(x.side)}</b>` : '';
+  const src = x.src ? `<span class="mut">${esc(x.src)}</span>` : '';
+  let ic, title, sub, right = '';
+  if (x.kind === 'fill') {
+    ic = `<span class="side-i ${L ? 'L' : 'S'}" style="width:32px;height:32px;border-radius:10px">${icon(L ? 'long' : 'short')}</span>`;
+    title = `${side}<span>filled${ok(x.qty) ? ` · ${mic(x.qty)}` : ''}${ok(x.entry) ? ` @ ${num(x.entry)}` : ''}</span>${x.open ? chip('open', 'good') : ''}${x.taken === false ? chip('not taken', 'warn') : ''}`;
+    sub = [ok(x.stop) ? `stop ${num(x.stop)}` : '', ok(x.target) ? `target ${num(x.target)}` : '', ok(x.risk_usd) ? `${usd(x.risk_usd)} at risk` : '', x.setup || '', noteR(x.reasons).join('; ')].filter(Boolean).join(' · ');
+  } else if (x.kind === 'outcome') {
+    ic = `<span class="side-i ${(x.usd ?? x.R ?? 0) >= 0 ? 'L' : 'S'}" style="width:32px;height:32px;border-radius:10px">${icon((x.usd ?? x.R ?? 0) >= 0 ? 'check' : 'minus')}</span>`;
+    title = `${side}<b>${esc(x.exit || 'EXIT')}</b>${x.taken === false ? chip('paper only', 'warn') : ''}`;
+    sub = [ok(x.qty) ? mic(x.qty) : '', ok(x.balance) ? `eval ${usd(x.balance)}` : '', noteR(x.reasons).join('; ')].filter(Boolean).join(' · ');
+    right = `<span class="sl-r ${cR(x.R)}">${fR(x.R)}<br><span class="${cls(x.usd)}">${susd(x.usd)}</span></span>`;
+  } else {
+    ic = `<span class="side-i" style="width:32px;height:32px;border-radius:10px;border:1px solid var(--line)">${icon(x.kind === 'timing' ? 'prop' : x.kind === 'pc' ? 'phone' : x.kind === 'risk' ? 'risk' : 'alerts')}</span>`;
+    title = `<b>${esc(String(x.title || ACT_K[x.kind] || 'Notice').replace(/^[^·]*·\s*/, ''))}</b>`;
+    sub = x.body || '';
+  }
+  return `<div class="act ${hl === x.key ? 'act-hl' : ''}" data-key="${esc(x.key)}">${ic}<span class="sl-m"><span class="sl-t">${title}</span><span class="sl-s act-s">${esc(sub)}</span>
+    <span class="sl-s"><span class="mono">${et(x.t).hm} ET</span> · ${esc(ACT_K[x.kind] || x.kind || '')} · ${src}${x.sent ? ' · <span class="up">notified</span>' : ''}</span></span>${right}</div>`;
+}
+function actList(A, hl = '', grouped = true) {
+  if (!A.length) return emptyBox('Nothing yet.', 'Every fill and every outcome of the paper bot shows up here, newest first, with a phone notification once they are on.');
+  let out = '', day = null;
+  for (const x of A) { const d = actDay(x.t); if (grouped && d !== day) { day = d; out += `<div class="act-day">${esc(d)}</div>`; } out += actRow(x, hl); }
+  return `<div class="slist act-list">${out}</div>`;
+}
+function activityCard() {
+  const A = activity(), n = actUnseen(A);
+  return `<div class="card"><div class="card-h"><h3>Activity</h3><div>${n ? chip(n + ' new', 'good') : ''}<button class="chipbtn" type="button" data-go="activity"><span>All</span>${icon('right')}</button></div></div>
+    ${actList(A.slice(0, 5), '', false)}<div id="pushPrompt"></div></div>`;
+}
+VIEWS.activity = (el) => {
+  const A = activity(), f = store.get('act.f', 'all');
+  const rows = A.filter(x => f === 'all' || (f === 'other' ? !['fill', 'outcome'].includes(x.kind) : x.kind === f));
+  const outs = A.filter(x => x.kind === 'outcome'), net = outs.reduce((a, x) => a + (x.usd || 0), 0);
+  el.innerHTML = head('System · activity', 'Every fill and every outcome', 'The paper bot’s trades as they happen, newest first, with the notices sent to this phone. A notification tap opens the trade here.')
+    + `<div class="stats">${statBox('Fills', A.filter(x => x.kind === 'fill').length)}${statBox('Outcomes', outs.length, `${outs.filter(x => (x.usd || 0) > 0).length} won`)}${statBox('Net · paper', susd(net), 'all outcomes listed', cls(net))}${statBox('Notifications', LV().push?.devices ? `${LV().push.devices} device${LV().push.devices === 1 ? '' : 's'}` : 'off', LV().push?.devices ? 'cloud sends them' : 'set up in Settings')}</div>
+    <div class="card"><div class="card-h"><h3>Activity</h3>${segHTML('actF', [['all', 'All'], ['fill', 'Fills'], ['outcome', 'Outcomes'], ['other', 'Other']], f, 'sm')}</div>${actList(rows, ARG || '')}</div>
+    <div class="card" id="pushCardA">${pushShell()}</div>`;
+  onSeg('actF', (v) => { store.set('act.f', v); render(true); });
+  pushFill('pushCardA');
+  actMarkSeen();
+  if (ARG) { const r = el.querySelector(`.act[data-key="${CSS.escape(ARG)}"]`); if (r) setTimeout(() => r.scrollIntoView({ block: 'center', behavior: motionOn() ? 'smooth' : 'auto' }), 60); }
+};
+
+// ---- Web Push on this device. Owner: tap Allow once, nothing else. The app subscribes with the cloud's public key
+// (data.json live.push.vapid_public) and posts the subscription to the relay (an ntfy.sh topic, live.push.relay); the
+// cloud monitor picks it up on its next run and lists this phone (live.push.device_ids). On every open the app checks:
+// a new key -> subscribe again; not listed yet -> post again (ntfy keeps a message ~12 h).
+const b64uBytes = (s) => { const b = atob(String(s).replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - String(s).length % 4) % 4)); return Uint8Array.from(b, c => c.charCodeAt(0)); };
+const pushSupport = () => 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const PUSH = { file: undefined, relayFile: undefined, run: null, needTap: false, last: null };
+async function pushKey() {
+  const k = LV().push?.vapid_public; if (k) return k;
+  if (PUSH.file === undefined) { try { PUSH.file = (await getJSON('push_key.json?t=' + Date.now())).vapid_public || null; } catch { PUSH.file = null; } }
+  return PUSH.file;
+}
+async function pushRelay() {
+  const r = LV().push?.relay; if (r?.topic) return r;
+  if (PUSH.relayFile === undefined) { try { PUSH.relayFile = await getJSON('push_relay.json?t=' + Date.now()); } catch { PUSH.relayFile = null; } }
+  return PUSH.relayFile?.topic ? PUSH.relayFile : null;
+}
+async function swReg() {
+  let r = await navigator.serviceWorker.getRegistration();
+  if (!r) r = await navigator.serviceWorker.register('sw.js');
+  if (!r.active) await navigator.serviceWorker.ready;
+  return r;
+}
+const sameKey = (sub, key) => { try { const a = new Uint8Array(sub.options.applicationServerKey), b = b64uBytes(key); return a.length === b.length && a.every((v, i) => v === b[i]); } catch { return true; } };
+async function pushSub() { try { const r = await navigator.serviceWorker.getRegistration(); return r ? await r.pushManager.getSubscription() : null; } catch { return null; } }
+async function devId(ep) { const h = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ep)); return [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 12); }
+async function relayPost(obj) {
+  const r = await pushRelay(); if (!r) throw new Error('no relay');
+  const res = await fetch(`${String(r.ntfy || 'https://ntfy.sh').replace(/\/$/, '')}/${encodeURIComponent(r.topic)}`, { method: 'POST', body: JSON.stringify(obj) });
+  if (!res.ok) throw new Error('relay HTTP ' + res.status);
+}
+// make sure this phone is subscribed with today's key and that the cloud has (or will get) its subscription. tap = from a tap.
+function pushEnsure(tap = false) {
+  if (!pushSupport()) return Promise.resolve(PUSH.last);
+  if (PUSH.run && !tap) return PUSH.run;                // one check at a time; a tap always runs (it needs the gesture)
+  const run = pushEnsure_(tap);
+  PUSH.run = run; run.finally(() => { if (PUSH.run === run) PUSH.run = null; }).catch(() => null);
+  return run;
+}
+async function pushEnsure_(tap) {
+  {
+    if (tap) store.set('push.off', false);
+    else if (store.get('push.off', false)) return (PUSH.last = { state: 'off' });      // turned off here: stays off until a tap
+    if (tap && Notification.permission !== 'granted') {
+      const perm = await Notification.requestPermission();          // the prompt must come straight from the tap (iPhone)
+      if (perm !== 'granted') throw new Error(perm === 'denied' ? 'Notifications are blocked. iPhone: Settings → Notifications → Liquidity → Allow Notifications.' : 'Notifications were not allowed.');
+    }
+    if (Notification.permission !== 'granted') return (PUSH.last = { state: Notification.permission === 'denied' ? 'blocked' : 'off' });
+    const key = await pushKey();
+    if (!key) return (PUSH.last = { state: 'nokey' });                // the cloud makes the key on its next run
+    const reg = await swReg();
+    let sub = await reg.pushManager.getSubscription();
+    if (sub && !sameKey(sub, key)) { try { await sub.unsubscribe(); } catch { } sub = null; }
+    let fresh = false;
+    if (!sub) {
+      fresh = true;
+      try { sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64uBytes(key) }); }
+      catch (e) { PUSH.needTap = true; if (tap) throw e; return (PUSH.last = { state: 'tap' }); }
+    }
+    PUSH.needTap = false;
+    const id = await devId(sub.endpoint), P = LV().push || {};
+    const listed = !fresh && (P.device_ids || []).includes(id) && P.vapid_public === key;
+    const done = store.get('push.posted', null);
+    if (!listed && (tap || fresh || !done || done.id !== id || done.key !== key || Date.now() - done.t > 10 * 60e3)) {
+      const j = sub.toJSON();
+      try { await relayPost({ le: 'sub', sub: { endpoint: j.endpoint, keys: { p256dh: j.keys.p256dh, auth: j.keys.auth } }, key, id, t: Math.round(Date.now() / 1000) }); store.set('push.posted', { id, key, t: Date.now() }); }
+      catch (e) { if (tap) throw new Error('Could not reach the relay (offline?). The app tries again next time it opens.'); }
+    }
+    return (PUSH.last = { state: listed ? 'on' : 'waiting', id });
+  }
+}
+async function pushOff() {
+  store.set('push.off', true);
+  const s = await pushSub(); if (!s) return;
+  const id = await devId(s.endpoint);
+  await s.unsubscribe();
+  store.set('push.posted', null);
+  try { await relayPost({ le: 'unsub', id, t: Math.round(Date.now() / 1000) }); } catch { }
+}
+const PUSH_WORD = { on: ['on', 'good'], waiting: ['waiting for the cloud', 'warn'], off: ['off', ''], blocked: ['blocked', 'bad'], nokey: ['waiting for the cloud', 'warn'], tap: ['tap to finish', 'warn'] };
+const pushShell = () => `<div class="card-h"><h3>Phone notifications</h3><span class="meta" id="pushChip"></span></div><div id="pushBox">${skLines(3)}</div>`;
+async function pushFill(cardId) {
+  const box = () => $('#' + cardId + ' #pushBox'), draw = still((h, c) => { const b = box(); if (b) b.innerHTML = h; const ch = $('#' + cardId + ' #pushChip'); if (ch && c != null) ch.innerHTML = c; });
+  if (!pushSupport()) {
+    draw(isIOS() && !isStandalone()
+      ? `<ol class="list"><li>On iPhone, notifications work in the <b>Home Screen app</b> (iOS 16.4 or later), not in a Safari tab.</li><li>In Safari tap <b>Share</b> ${icon('share')} → <b>Add to Home Screen</b>.</li><li>Open <b>Liquidity</b> from the Home Screen and tap <b>Turn on notifications</b>.</li></ol>`
+      : emptyBox('This browser cannot receive notifications.', ' Use the Home Screen app on your iPhone. The Activity list works everywhere.'), chip('not available'));
+    return;
+  }
+  let st; try { st = await pushEnsure(false); } catch { st = PUSH.last; }
+  st = st || { state: 'off' };
+  const w = PUSH_WORD[st.state] || PUSH_WORD.off, P = LV().push || {};
+  const say = { on: 'This phone gets a notification when a trade is <b>entered</b> and when it <b>ends</b> (side, account, $). Nothing else to do.',
+    waiting: 'Allowed. The cloud bot picks this phone up on its next run (every 30 min on market days, 02:00–16:25 ET); nothing else to do.',
+    nokey: 'Allowed. The cloud bot makes its notification key on its next run (market days); open the app again after that and it finishes by itself.',
+    tap: 'One more tap: the phone wants a tap to finish the subscription.', blocked: 'Notifications are blocked for this app. iPhone: Settings → Notifications → Liquidity → Allow Notifications, then tap Turn on.',
+    off: 'Tap <b>Turn on notifications</b> and then <b>Allow</b>. That is all: the app tells the cloud bot by itself.' }[st.state] || '';
+  draw(`<div class="note" style="margin-top:0">${say}</div>
+    <div class="kv" style="margin:12px 0"><div><span>This phone</span><b class="${w[1] === 'good' ? 'up' : w[1] === 'bad' ? 'dn' : ''}">${esc(w[0])}</b></div><div><span>Phones on</span><b>${P.devices || 0}</b></div>
+      <div><span>Last sent</span><b>${P.last_sent_at ? ago(P.last_sent_at) : '—'}</b></div><div><span>PC bot</span><b>${P.pc_linked ? 'linked' : 'cloud only'}</b></div></div>
+    <div class="row-btns">${['off', 'tap', 'blocked'].includes(st.state) ? `<button class="btn primary" type="button" id="puOn">${icon('alerts')}Turn on notifications</button>` : ''}
+      ${['on', 'waiting'].includes(st.state) ? `<button class="btn ghost" type="button" id="puTest">${icon('check')}Test on this phone</button><button class="btn ghost" type="button" id="puOff">${icon('close')}Turn off</button>` : ''}</div>
+    <div class="note">Two kinds only: <b>LONG · MFFU 50K</b> “Entered 4 MNQ”, then the same notification turns into the result, e.g. “+$1,812”. The cloud paper bot says <b>Paper</b>, the PC bot the account (e.g. <b>Sim101</b>). Details are in <a href="#/activity">Activity</a>.</div>`, chip(w[0], w[1]));
+  const b = box(); if (!b) return;
+  b.querySelector('#puOn')?.addEventListener('click', async () => { try { const r = await pushEnsure(true); toast(r?.state === 'on' ? 'Notifications on' : 'Allowed: the cloud picks this phone up on its next run'); haptic(14); } catch (e) { toast(e.message || String(e), 5200); } pushFill(cardId); });
+  b.querySelector('#puTest')?.addEventListener('click', async () => {
+    try { const r = await swReg(); await r.showNotification('LONG · MFFU 50K', { body: 'Entered 4 MNQ (test on this phone)', icon: 'icons/icon-192.png?v=drop1', badge: 'icons/icon-192.png?v=drop1', tag: 'le-local-test', data: { url: '#/activity' } }); toast('Test shown'); } catch (e) { toast(e.message || String(e)); }
+  });
+  b.querySelector('#puOff')?.addEventListener('click', async () => { try { await pushOff(); toast('Notifications off on this phone'); } catch (e) { toast(e.message || String(e)); } pushFill(cardId); });
+}
+// Today: a one-tap card until this phone is set up (dismissed for a week with Not now)
+async function pushPromptFill() {
+  const el = $('#pushPrompt'); if (!el) return;
+  if (store.get('push.later', 0) > Date.now()) return;
+  const draw = still((h) => { const x = $('#pushPrompt'); if (x) x.innerHTML = h; });
+  if (pushSupport() && Notification.permission === 'granted' && !PUSH.needTap) return;
+  if (!pushSupport() && !isIOS()) return;
+  draw(`<div class="ownr" style="margin:12px 0 0">${icon('alerts')}<span><b>Get a notification for every trade</b>: when it is entered and when it ends. ${pushSupport() ? 'One tap.' : 'Open the app from your Home Screen first.'}
+    <span class="row-btns" style="margin-top:8px">${pushSupport() ? `<button class="btn primary sm" type="button" id="puPrompt">Turn on</button>` : ''}<button class="btn ghost sm" type="button" id="puLater">Not now</button></span></span></div>`);
+  $('#puPrompt')?.addEventListener('click', async () => { try { await pushEnsure(true); toast('Notifications on'); $('#pushPrompt').innerHTML = ''; } catch (e) { toast(e.message || String(e), 5200); } });
+  $('#puLater')?.addEventListener('click', () => { store.set('push.later', Date.now() + 7 * 864e5); $('#pushPrompt').innerHTML = ''; });
+}
+// the service worker asks the page to open a notification's trade, and tells it a push arrived (fetch the new data)
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', (e) => {
+  const m = e.data || {};
+  if (m.type === 'open' && /^#\/[\w\-/:.%]*$/.test(m.hash || '')) { if (location.hash === m.hash) route(); else location.hash = m.hash; }
+  else if (m.type === 'push') { load(); actBadge(); }
+});
+
 // ===================================================================== SETTINGS
 VIEWS.settings = (el) => {
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent), standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   el.innerHTML = head('System · settings', 'Make it yours', 'Saved on this device only.')
-    + `<div class="grid g2"><div class="card"><div class="card-h"><h3>Home Screen app</h3>${standalone ? chip('installed', 'good') : ''}</div>
+    + `<div class="card" id="pushCardS">${pushShell()}</div>
+    <div class="grid g2"><div class="card"><div class="card-h"><h3>Home Screen app</h3>${standalone ? chip('installed', 'good') : ''}</div>
         ${standalone ? '<div class="note" style="margin-top:0">Running as a Home Screen app. It opens full screen and refreshes by itself.</div>' :
           `<ol class="list"><li>${ios ? `In Safari tap <b>Share</b> ${icon('share')}` : 'In Chrome tap the <b>⋮ menu</b>'}</li><li>${ios ? 'Choose <b>Add to Home Screen</b>' : 'Choose <b>Install app</b> or <b>Add to Home screen</b>'}</li><li>Open <b>Liquidity</b> from your Home Screen: full screen, no browser bars</li></ol>
           ${INSTALL ? `<div style="margin-top:14px"><button class="btn primary" type="button" id="inst">${icon('phone')}Install app</button></div>` : ''}`}
@@ -3448,6 +3828,7 @@ VIEWS.settings = (el) => {
     store.set('gyro', okG); if (!okG) { e.target.checked = false; toast('Motion sensors not available or not allowed'); } else toast('Tilt your phone to look around');
   };
   $('#inst')?.addEventListener('click', async () => { INSTALL.prompt(); await INSTALL.userChoice; INSTALL = null; render(true); });
+  pushFill('pushCardS');
 };
 let INSTALL = null;
 addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); INSTALL = e; });
@@ -3461,7 +3842,7 @@ async function load(manual = false) {
     const r = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const nd = await r.json(), changed = !D || nd.built !== D.built, first = !D;
-    D = nd; status();
+    D = nd; status(); actBadge(); if (pushSupport() && Notification.permission === 'granted') pushEnsure(false).catch(() => null);
     if (first) subBar(PAGE, groupOf(PAGE));        // detail pages show previous / next once the lists are known
     if (FX) { FX.mood(moodNow()); if (changed && manual !== 'boot') FX.pulse(); }
     if (changed && !(PAGE === 'replays' && RP?.timer)) render(!first);

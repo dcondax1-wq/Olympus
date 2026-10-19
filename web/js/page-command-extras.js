@@ -107,10 +107,33 @@ function scenario(res, risk, maxT) {
   return { ratio, base, pnls, ev, roll, n, net, worst, best, dllHits, weeks: res.days.length / 5 };
 }
 
+// LIT (web_next: S.res.model 'lit'): $800 base risk, 1 trade a day; the Monte Carlo resamples the LIT replay days locally
+function litRanges(res) {
+  const lit = res.model === 'lit', r = $('#wiRisk'), m = $('#wiMax');
+  if (!r || r.dataset.mode === (lit ? 'lit' : 'eng')) return;
+  r.dataset.mode = lit ? 'lit' : 'eng';
+  Object.assign(r, lit ? { min: 400, max: 1200, step: 50 } : { min: 200, max: 600, step: 25 });
+  Object.assign(m, lit ? { min: 1, max: 1 } : { min: 1, max: 4 });
+  m.disabled = lit;
+}
+function mcLocal(pnls, lows, plan, runs = 1500, horizon = 60) {
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  let pass = 0, fail = 0; const dtp = [];
+  for (let k = 0; k < runs; k++) {
+    const p = [], l = [];
+    for (let j = 0; j < horizon; j++) { const i = Math.floor(rnd() * pnls.length); p.push(pnls[i]); l.push(lows[i]); }
+    const r = simEval(p, plan, l);
+    if (r.result === 'PASS') { pass++; dtp.push(r.days); } else if (r.result === 'FAIL') fail++;
+  }
+  dtp.sort((a, b) => a - b);
+  return { pass_prob: Math.round(pass / runs * 1000) / 10, fail_prob: Math.round(fail / runs * 1000) / 10, median_days_to_pass: dtp.length ? dtp[Math.floor(dtp.length / 2)] : null };
+}
+
 function renderWhatIf(res) {
   if (!res || !$('#wiRisk')) return;
+  litRanges(res);
   const cur = Number(res.params?.risk_usd || effective().risk_usd || 350);
-  if (W.risk == null) { W.risk = Math.max(200, Math.min(600, Math.round(cur / 25) * 25)); $('#wiRisk').value = W.risk; }
+  if (W.risk == null) { const [lo, hi, st] = res.model === 'lit' ? [400, 1200, 50] : [200, 600, 25]; W.risk = Math.max(lo, Math.min(hi, Math.round(cur / st) * st)); $('#wiRisk').value = W.risk; }
   if (W.maxT == null) { W.maxT = Math.max(1, Math.min(4, Number(res.params?.max_trades_day || effective().max_trades_day || 2))); $('#wiMax').value = W.maxT; }
   $('#wiRiskV').textContent = fmt$(W.risk); $('#wiMaxV').textContent = String(W.maxT);
   const sc = scenario(res, W.risk, W.maxT);
@@ -127,7 +150,7 @@ function renderWhatIf(res) {
   $('#wiPill').textContent = mc ? 'Monte Carlo' : 'rescaled locally';
   const dn = sc.net - base.net, dw = sc.worst - base.worst;
   $('#wiCmp').innerHTML = `At <b>${fmt$(W.risk)}</b> risk and <b>${W.maxT}</b> trade${W.maxT > 1 ? 's' : ''}/day the sample nets <b class="${cls(sc.net)}">${fmtS$(sc.net)}</b> over ${sc.n} trades (${fmtN(sc.n / sc.weeks, 1)}/wk), ${dn === 0 && dw === 0 ? 'the current setting' : `<b class="${cls(dn)}">${fmtS$(dn)}</b> vs now with the worst day <b class="${cls(dw)}">${fmtS$(dw)}</b> different`}.
-    Best day ${fmt$(sc.best)} is ${sc.net > 0 ? Math.round(sc.best / sc.net * 100) + '% of profit' : 'n/a'}${sc.net > 0 && sc.best / sc.net > 0.5 ? ' <span class="dn">(over the 50% rule)</span>' : ''}. Local numbers rescale the backtest days; the Monte Carlo re-runs the model with these settings.`;
+    Best day ${fmt$(sc.best)} is ${sc.net > 0 ? Math.round(sc.best / sc.net * 100) + '% of profit' : 'n/a'}${sc.net > 0 && sc.best / sc.net > 0.5 ? ' <span class="dn">(over the 50% rule)</span>' : ''}. ${res.model === 'lit' ? `Local numbers rescale the LIT replay days (${esc(res.range?.[0] || '')} → ${esc(res.range?.[1] || '')}); the Monte Carlo resamples those days. LIT sizes $800 up to a 20-pt stop and takes 1 trade a day.` : 'Local numbers rescale the backtest days; the Monte Carlo re-runs the model with these settings.'}`;
 }
 
 function scheduleMC() {
@@ -135,6 +158,13 @@ function scheduleMC() {
   W.mcTimer = setTimeout(async () => {
     if (!S.res) return;
     const key = `${W.risk}|${W.maxT}`, seq = ++W.mcSeq;
+    if (S.res.model === 'lit') {
+      const sc = scenario(S.res, W.risk, W.maxT);
+      const lows = S.res.days.map(d => Math.min(0, (d.low_intraday ?? Math.min(0, d.pnl)) * sc.ratio));
+      W.mc = mcLocal(sc.pnls, lows, S.res.plan); W.mcKey = key;
+      renderWhatIf(S.res);
+      return;
+    }
     try {
       const r = await api('/api/montecarlo', { sym: S.sym, tf: S.tf, plan: S.plan, params: { ...S.params, risk_usd: W.risk, max_trades_day: W.maxT }, runs: 1500, horizon: 60 });
       if (seq !== W.mcSeq) return;
@@ -224,7 +254,7 @@ function renderRules(res) {
   const issues = [];
   if (used >= .8) issues.push([bad, `Today's loss is ${Math.round(used * 100)}% of the daily stop: no new entries.`]);
   if (cfrac < .3) issues.push([bad, `Only ${fmt$(cushion)} above the max-loss line: one bad day ends the eval.`]);
-  else if (cfrac < .6) issues.push([warn, `${fmt$(cushion)} of cushion: drawdown-aware sizing is shrinking contracts.`]);
+  else if (cfrac < .6) issues.push([warn, res.model === 'lit' ? `${fmt$(cushion)} of cushion: about ${Math.max(1, Math.floor(cushion / 800))} full-size LIT stop-out${cushion >= 1600 ? 's' : ''} from the line (Modules → Risk & Sizing: safe_eval caps the size).` : `${fmt$(cushion)} of cushion: drawdown-aware sizing is shrinking contracts.`]);
   if (pct != null && pct > 50) issues.push([warn, `Best day is ${pct}% of total profit: a payout would be refused until quieter days catch up.`]);
   const verdict = issues.length ? issues.map(([c, t]) => `<div class="gg-verdict"><span class="dot" style="color:${c}"></span><span>${t}</span></div>`).join('')
     : `<div class="gg-verdict"><span class="dot" style="color:${good}"></span><span>All three MFFU constraints are green on the last session.</span></div>`;

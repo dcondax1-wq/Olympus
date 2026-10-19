@@ -126,7 +126,7 @@ function renderNews() {
     const ins = evs.filter(e => e.t >= s0 && e.t <= s1);
     const pre = evs.filter(e => e.t >= s0 - 11 * 3600 && e.t < s0 && e.imp === 'high');
     const mins = (t) => (t - s0) / 60 + A0;
-    const kz = [[570, 690], [810, 930]].map(([a, b]) => `<div class="kz" style="left:${pct(a)}%;width:${pct(b) - pct(a)}%"></div>`).join('');
+    const kz = [[A0, 930]].map(([a, b]) => `<div class="kz" style="left:${pct(a)}%;width:${pct(b) - pct(a)}%"></div>`).join('');   // LIT entry window (02:00-15:30; this track starts 07:00)
     const bo = ins.filter(e => e.bs).map(e => `<div class="bo" style="left:${pct(Math.max(A0, mins(e.bs)))}%;width:${Math.max(.5, pct(Math.min(A1, mins(e.be))) - pct(Math.max(A0, mins(e.bs))))}%" title="blackout ${etStr(e.bs)}–${etStr(e.be)} ET${e.pine ? ' · in the Pine list' : ''}"></div>`).join('');
     const ev = ins.map(e => `<span class="ev ${e.imp}" style="left:${pct(mins(e.t))}%" title="${etStr(e.t)} ET · ${esc(e.ev)} (${e.imp})${e.pine ? ' · Pine blackout' : ''}"></span>`).join('');
     const nowM = now >= s0 && now <= s1 ? `<div class="now" style="left:${pct(mins(now))}%"></div>` : '';
@@ -136,7 +136,7 @@ function renderNews() {
   const nextBo = evs.filter(e => e.be && e.be > now).sort((a, b) => a.bs - b.bs)[0];
   el.innerHTML = `${nextBo ? `<div class="acct-row" style="margin:0 0 8px"><span>Next blackout · ${esc(nextBo.ev)}</span><b>${etStr(nextBo.t, true).slice(5)} ET · ${now >= nextBo.bs ? '<span class="dn">ACTIVE</span>' : 'in ' + dur(nextBo.bs - now, { short: true })}</b></div>` : ''}
     <div class="nt">${rows}<div class="nt-axis"><i></i><div>${[8, 9.5, 11.5, 13.5, 15.5].map(h => `<span style="left:${pct(h * 60)}%">${String(Math.floor(h)).padStart(2, '0')}:${h % 1 ? '30' : '00'}</span>`).join('')}</div></div></div>
-    <div class="tl-legend" style="margin-top:8px"><span><i style="background:color-mix(in srgb,var(--gold) 30%,transparent)"></i>killzones</span><span><i style="background:var(--bad)"></i>high</span><span><i style="background:var(--warn)"></i>medium</span><span><i style="background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--bad) 45%,transparent) 0 4px,transparent 4px 8px)"></i>blackout −${before / 60}/+${after / 60} min</span></div>`;
+    <div class="tl-legend" style="margin-top:8px"><span><i style="background:color-mix(in srgb,var(--gold) 30%,transparent)"></i>LIT entry window (from 02:00)</span><span><i style="background:var(--bad)"></i>high</span><span><i style="background:var(--warn)"></i>medium</span><span><i style="background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--bad) 45%,transparent) 0 4px,transparent 4px 8px)"></i>blackout −${before / 60}/+${after / 60} min</span></div>`;
 }
 
 // ------------------------------------------------------------------ paper vs backtest drift
@@ -205,7 +205,7 @@ async function renderPrep() {
       ${api.checklist?.length ? `<ul class="check small">${api.checklist.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}`;
     return;
   }
-  // fallback: next trading day, its killzones, blackout entries that day, regime from the backtest, nearest pools
+  // fallback: next trading day, its LIT entry window, blackout entries that day, regime from the backtest, nearest pools
   const date = tradingDate();
   const [y, mo, d] = date.split('-').map(Number);
   const wd = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][new Date(Date.UTC(y, mo - 1, d)).getUTCDay()];
@@ -216,9 +216,9 @@ async function renderPrep() {
   const up = pools.filter(p => p.price > price).sort((a, b) => a.price - b.price).slice(0, 2), dn = pools.filter(p => p.price < price).sort((a, b) => b.price - a.price).slice(0, 2);
   const risk = bos.length ? 'HIGH' : 'NORMAL';
   el.innerHTML = `<div class="rdy-head"><div><div class="mini-label">Next session · ${wd} ${date}</div><div class="ck-v sm ${bos.length ? 'dn' : 'up'}">${risk}</div><div class="muted small">${bos.length ? `${bos.length} Pine blackout${bos.length > 1 ? 's' : ''}: ${bos.map(b => b.slice(11)).join(', ')} ET` : 'no high-impact USD release in the Pine list'}</div></div></div>
-    <div class="kst-row" style="margin-top:8px">${stat('Killzones', '09:30 · 13:30', 'ET · flat 15:55')}${stat('Regime', esc(last?.regime || '—'), last?.er10 != null ? `ER10 ${fmtN(last.er10, 2)}` : '')}${stat('Launch', Date.now() / 1000 < LAUNCH_TS ? 'Sun 18:00' : 'live', 'ET · alerts on')}</div>
-    ${up.length || dn.length ? `<div class="mini-label" style="margin-top:8px">Draws on liquidity</div>${up.reverse().map(p => `<div class="acct-row"><span style="color:var(--bsl)">BSL ${esc(p.label)}</span><b>${fmtN(p.price, 2)} · +${fmtN(p.price - price, 1)}</b></div>`).join('')}${dn.map(p => `<div class="acct-row"><span style="color:var(--ssl)">SSL ${esc(p.label)}</span><b>${fmtN(p.price, 2)} · −${fmtN(price - p.price, 1)}</b></div>`).join('')}` : ''}
-    <ul class="check small" style="margin-bottom:0"><li>Paper bot running, adapter=paper</li><li>TradingView alert active on MNQ1!</li><li>Max 2 trades, stop after a winner, $600 bot daily stop</li></ul>`;
+    <div class="kst-row" style="margin-top:8px">${stat('Entry window', '02:00–15:30', 'ET · flat 15:55')}${stat('Trades', '1 a day', 'LIT · 2-4 a week')}${stat('Launch', Date.now() / 1000 < LAUNCH_TS ? 'Sun 18:00' : 'live', 'ET · alerts on')}</div>
+    ${up.length || dn.length ? `<div class="mini-label" style="margin-top:8px">Nearest LIT levels</div>${up.reverse().map(p => `<div class="acct-row"><span style="color:var(--bsl)">BSL ${esc(p.label)}</span><b>${fmtN(p.price, 2)} · +${fmtN(p.price - price, 1)}</b></div>`).join('')}${dn.map(p => `<div class="acct-row"><span style="color:var(--ssl)">SSL ${esc(p.label)}</span><b>${fmtN(p.price, 2)} · −${fmtN(price - p.price, 1)}</b></div>`).join('')}` : ''}
+    <ul class="check small" style="margin-bottom:0"><li>Paper bot running LIT, adapter=paper, PC and NinjaTrader up from ~01:55 ET</li><li>1m bars arriving (LIT enters on a 1m CISD)</li><li>1 trade a day · $800 up to a 20-pt stop · weekly stop after 2 stop-outs</li></ul>`;
 }
 
 // ------------------------------------------------------------------ init

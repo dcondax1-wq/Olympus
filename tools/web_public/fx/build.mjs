@@ -1,7 +1,8 @@
 // Bundle the 3D / particle effects into one ES module for both dashboards.
 //   cd tools/web_public/fx && npm install && npm run build
 // Outputs: tools/web_public/fx.js (phone dashboard, published by the cloud monitor) and web_next/js/fx.js (PC dashboard);
-// it also copies tools/web_public/litkit.js (the LIT panels) to web_next/js/litkit.js.
+// it also copies tools/web_public/litkit.js (the LIT panels) to web_next/js/litkit.js and tools/web_public/tradechart.js (the
+// TradingView-style trade chart) to web_next/js/tradechart.js.
 // The bundle's content hash is stamped into both pages' import URL (fx.js?v=<hash>), so a phone's service worker, which
 // keeps versioned files forever, fetches the new bundle after every rebuild.
 import { build } from 'esbuild';
@@ -17,10 +18,12 @@ await build({ entryPoints: [path.join(here, 'src', 'index.js')], bundle: true, f
 copyFileSync(out, path.join(root, 'web_next', 'js', 'fx.js'));
 // the LIT panels (plain ES module, not bundled): one source for both dashboards
 copyFileSync(path.join(here, '..', 'litkit.js'), path.join(root, 'web_next', 'js', 'litkit.js'));
+// the trade chart (plain ES module, not bundled): one source for both dashboards
+copyFileSync(path.join(here, '..', 'tradechart.js'), path.join(root, 'web_next', 'js', 'tradechart.js'));
 const v = createHash('sha1').update(readFileSync(out)).digest('hex').slice(0, 8);
-const stamp = (file, re, rep) => {
+const stamp = (file, re, rep, soft = false) => {
   const p = path.join(root, file), s = readFileSync(p, 'utf8'), t = s.replace(re, rep);
-  if (!re.test(s)) throw new Error('version stamp not found in ' + file);
+  if (!re.test(s)) { if (soft) { console.warn('version stamp not found in ' + file + ' (skipped)'); return; } throw new Error('version stamp not found in ' + file); }
   if (t !== s) writeFileSync(p, t);
 };
 if (process.env.STAMP !== '0') {     // STAMP=0 npm run build: bundle only, leave the pages alone (parallel page edits)
@@ -30,5 +33,12 @@ if (process.env.STAMP !== '0') {     // STAMP=0 npm run build: bundle only, leav
   const lv = createHash('sha1').update(readFileSync(path.join(here, '..', 'litkit.js'))).digest('hex').slice(0, 8);
   stamp('tools/web_public/index.html', /const LKV = '?[\w]*'?;/, `const LKV = '${lv}';`);
   stamp('web_next/js/next/litpages.js', /\.\.\/litkit\.js\?v=[\w]*/, `../litkit.js?v=${lv}`);
+  // the trade chart module (tradechart.js): its content hash in the phone page (const TCV) and in every PC page that imports it
+  const tv = createHash('sha1').update(readFileSync(path.join(here, '..', 'tradechart.js'))).digest('hex').slice(0, 8);
+  stamp('tools/web_public/index.html', /const TCV = '?[\w]*'?;/, `const TCV = '${tv}';`, true);
+  for (const f of ['web_next/js/next/trades.js', 'web_next/js/next/litpages.js']) {
+    try { readFileSync(path.join(root, f)); } catch { continue; }
+    stamp(f, /\.\.\/tradechart\.js\?v=[\w]*/g, `../tradechart.js?v=${tv}`, true);
+  }
 }
 console.log(`fx.js ${(statSync(out).size / 1024).toFixed(0)} KB, v=${v} -> tools/web_public/fx.js + web_next/js/fx.js`);

@@ -67,19 +67,19 @@ async function showRules() {
     el.innerHTML = `
       <div class="nx-hero"><div><div class="nx-eyebrow">Strategy rules · locked ${esc(lm.chosen || '')}${lm.locked ? ' · ' + icon('check') + ' locked' : ''}</div>
         <h2>${esc((lm.label || 'Liquidity Engine').split(' (')[0])}</h2><p class="muted">${esc(lm.label || '')}</p></div>
-        <button class="btn ghost" data-goto="playbook">${icon('playbook')}Playbook</button></div>
+        <button class="btn ghost" data-goto="${isLit ? 'strategy' : 'playbook'}">${icon(isLit ? 'strategy' : 'playbook')}${isLit ? 'Strategy' : 'Playbook'}</button></div>
       <div class="nx-steps">${STEPS
         .map(([t, s], i) => `<div class="nx-step"><span class="nx-step-n">${i + 1}</span><b>${t}</b><span>${s}</span></div>`).join('')}</div>
       <div class="grid cols-3">
-        <div class="card nx-glass span-2 nx-md">${md(d.markdown || 'STRATEGY.md not found.')}</div>
+        <div class="card nx-glass span-2 nx-md">${md(isLit ? litRulesMd(d.markdown) + '\n\nThe previous strategy (Liquidity Engine, Oct 17) is kept in **Modules → Archive**.' : (d.markdown || 'STRATEGY.md not found.'))}</div>
         <div class="nx-col">
           <div class="card nx-glass"><div class="card-h"><h3>live_model.json</h3><span class="muted small">what the bot and cloud monitor trade</span></div>
             <div class="nx-kv one">${Object.entries(kv).map(([k, v]) => `<div><span class="mono">${esc(k)}</span><b class="mono">${esc(JSON.stringify(v))}</b></div>`).join('')}
-            ${Object.entries(ef).map(([k, v]) => `<div><span class="mono">equity_filter.${esc(k)}</span><b class="mono">${esc(JSON.stringify(v))}</b></div>`).join('')}</div></div>
+            ${Object.entries(isLit ? {} : ef).map(([k, v]) => `<div><span class="mono">equity_filter.${esc(k)}</span><b class="mono">${esc(JSON.stringify(v))}</b></div>`).join('')}</div></div>
           <div class="card nx-glass"><div class="card-h"><h3>Hard rules</h3></div><ul class="nx-list">
             <li>Futures data only (TradingView CME NQ1!)</li><li>Paper only: never arm live trading</li><li>2–4 setups a week, never fewer than 2</li><li>Evals decided within 2 weeks, never over 3 weeks to pass</li>
             <li>Stop beyond the sweep extreme, never fixed</li><li>Wide stop means less risk: size follows the stop</li>
-            <li>Judged on 2026 and 2021-25: adopted only if it holds in both</li></ul></div>
+            <li>${isLit ? 'LIT is tuned and judged on 2026: picked on Jan-Jun, checked on Jul-Oct; 2021-25 is a reference' : 'Judged on 2026 and 2021-25: adopted only if it holds in both'}</li></ul></div>
         </div>
       </div>`;
   } catch (e) { fail(el, e); }

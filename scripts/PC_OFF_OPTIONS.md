@@ -8,7 +8,7 @@ only places orders while it is running on a Windows machine. So:
 | Option | PC | Orders | Cost | Status |
 |---|---|---|---|---|
 | **A. TradingView brain + one tap on the phone** | truly off | TradingView alert pushes the exact order ("LONG 12 MNQ · stop 29,880.25 · target 29,990.50 · risk $780"); you place it in TradingView's Tradovate panel or the Tradovate app | free (TradingView Plus already paid) | `tradingview/liquidity_engine.pine` + `BRIDGE_SETUP.md` (phone-text alert format) |
-| **B. PC acts like it's off** | wakes itself 07:50 ET, hibernates 16:35 ET, screen off | the PC bot through NinjaTrader 8 on the MFFU account (`ninjatrader/SETUP.md`), real CME bars from NinjaTrader | free | `scripts/schedule_pc.ps1` (this folder) + `scripts/install_autostart.ps1` |
+| **B. PC acts like it's off** | wakes itself 01:30 ET (LIT trades from 02:00), hibernates 16:35 ET, screen off | the PC bot through NinjaTrader 8 on the MFFU account (`ninjatrader/SETUP.md`), real CME bars from NinjaTrader | free | `scripts/schedule_pc.ps1` (this folder) + `scripts/install_autostart.ps1` |
 | **C. TradingView brain + webhook bridge** | truly off | PickMyTrade or TradersPost places the order in the Tradovate account | about $50/month (7-day trials) | `tradingview/BRIDGE_SETUP.md` |
 | **D. NinjaTrader on a rented Windows server** | truly off | same as B, on a small Windows VPS running 24/5 | about $15-25/month | same scripts as B on the VPS |
 | **E. A spare PC that never sleeps (the Surface)** | main PC off; the Surface is on 24/7 in a drawer, screen off | the bot through NinjaTrader on the Surface, real CME bars from NinjaTrader; it comes back by itself after restarts and reports a heartbeat to the cloud, which alerts your phone if it goes quiet | free | `scripts/setup_dedicated_pc.ps1` (one run) |
@@ -52,6 +52,6 @@ Requirements: a 64-bit Surface with Windows 10/11 (not Windows RT, not S mode; S
    (the Sleep task hibernates it at 16:35 ET instead); laptops: lid close = do nothing.
 4. Test once: put the PC to sleep, fire the Wake task a few minutes ahead (the script prints the command), and watch
    `logs\schedule-YYYYMMDD.log` and the dashboard.
-5. Weekday rhythm: 07:50 ET wake, bot + NinjaTrader start, 08:00 sweeps arm, killzones trade, 15:55 flat, 16:35 hibernate.
+5. Weekday rhythm (LIT): 01:30 ET wake, bot + NinjaTrader start, 02:00-15:30 entries (most before 08:00), 15:55 flat, 16:35 hibernate.
    If the PC was fully shut down instead of hibernated, a wake timer cannot start it: enable "Power On By RTC Alarm" in
    the BIOS for 07:45 local time, or let the Sleep task do the hibernating.

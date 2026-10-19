@@ -68,7 +68,37 @@ Every one of these counts as liquidity:
 - **No cold-streak filter, no late-entry rule.** Eval-safe switch, off: `how_out: 0.5` (half size when the sweep extreme falls
   outside Tuesday 03:00 – Wednesday 11:30; LIT final numbers): 2026 +$27.8k instead of +$38.9k, max DD −$2.3k, no eval failed
   within 2 weeks.
-- **Eval sizing (ON since 2026-10-18, `"lit_sizing": {"mode": "eval"}`):** $800 up to a **25-point** stop, then 800 × 25 ÷ stop
+- **Two-week eval sizing (ON since 2026-10-18, `"lit_sizing": {"mode": "two_week"}`, config C of
+  `research/writeups/lit-two-week-eval.md`, run `lit_2wk_rec`).** Owner's order: an eval must be passed within 2 weeks
+  (10 sessions). In plain words: **"one winner passes"**.
+  1. When LIT enters, the target is already known (the VIX band, 1.5R to 8R).
+  2. The bot buys enough micros that, if this one trade reaches its target, the eval reaches +$3,000.
+  3. Then it caps the size so a full stop-out (stop + 1 tick + commission) stays inside **60% of the room** between the eval
+     balance and the trailing max-loss floor, and inside MFFU's **$1,000 soft daily loss**; at most 40 micros, at least 1.
+  4. No new trade once the day already reached the eval target. The weekly stop's half size does **not** apply in this mode
+     (the Monday rule still does). Near the target the size shrinks by itself.
+  - Results (the 120 real LIT trades of 2026, a fresh eval on every session, MFFU 50K at $91.80):
+
+    | | Jan–Jun starts (picked) | Jul–Oct starts (check) |
+    |---|---|---|
+    | Passed within 2 weeks | **52.9%** | **50.7%** |
+    | Failed within 2 weeks | 8.4% | 2.9% |
+    | Still open after 10 sessions | 38.7% | 46.4% |
+    | Cost per 2-week pass ($91.80 ÷ pass rate) | **$174** | **$181** |
+    | Monte Carlo 2-week pass (fail) | 50.5% (6.2%) | 55.4% (5.5%) |
+
+    The previous eval mode passed 40% / 25% ($228 / $373 per 2-week pass). Back to back on 2026 (a new eval after each pass,
+    fail or 10 open sessions): 15 passes in 32 evals, $196 a pass; the eval accounts made +$42,211 ($4,303/month, PF 2.50).
+    2021-25 reference (5m entries, never a gate): 15.4% pass / 5.6% fail.
+  - **Risk:** the first trade of a fresh eval can risk up to **~$990** (a full stop-out); the worst day in the study was
+    **−$1,008** (the soft daily loss plus 1 tick). Typical trade size is larger than before on purpose.
+  - **Reset at session 10.** Sessions are counted from `lit_sizing.eval_start` in `live_model.json` (now `2026-10-19`; the PC
+    start cfg `"eval_start"` overrides it). An eval still open after session 10 shows **"reset recommended"** (README "Eval
+    clock", state key `eval_2wk`): buy a new eval and set `eval_start` to its first session. A pass or a fail needs the same.
+  - If the target, the stop or the eval state is missing at an entry, the bot sizes it with the eval mode below and logs why.
+  - Code: `engine/sizing.py` (`two_week_qty`, `eval_state`, `eval_session`, `eval_clock`, `lit_qty` mode `two_week`), settings
+    `lit_sizing.two_week` (`base need`, `room_f 0.6`, `wk false`, `dll_cap true`, `stop_at_target true`).
+- **Eval sizing (on 2026-10-18 until the two-week mode replaced it; `"mode": "eval"` switches back):** $800 up to a **25-point** stop, then 800 × 25 ÷ stop
   (times the weekly stop's half, rounded down once), then never more than **60% of the room** between the eval balance and the
   trailing max-loss floor. Typical trade: about 4 micros, about $330 at risk (the LIT rule alone: 3 micros, $275). Run
   `lit_tight_eval_800_25_room60` (`research/writeups/lit-tight-stops-size.md`): 2-week passes H1 37.5% / H2 29.5% (the LIT rule

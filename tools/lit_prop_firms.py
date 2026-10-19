@@ -116,6 +116,8 @@ def F(trail="eod", lock=100.0, buffer=None, pay_min=500.0, pay_max=None, pay_pct
 def plans():
     P = []
     BOT_MFFU = "automation allowed with active oversight (policy unchanged Sep 2026; confirm with MFFU)"
+    # the owner's real prices (MFFU discount code, 2026-10-18; CLAUDE.md): stored as owner_price next to the list price
+    OWNER_PRICE = {"mffu_builder_25k": 63.0, "mffu_builder_50k": 91.80}
     # ---- MyFundedFutures Builder (one-time since 2026-08-25, $0 activation; EOD trailing, soft DLL; funded 50% consistency)
     for sz, pr, tg, ml, dl, mn, pmin, pmax, unc in (
             (25, 105, 1500, 1000, 600, 2, 250, 1000, ["DLL: $600 soft per the current help center, none on the legacy 25K"]),
@@ -126,9 +128,12 @@ def plans():
                                                          "payout min/max assumed", "the plan page lists only 25K and 50K for sale"])):
         P.append(plan(f"mffu_builder_{sz}k", "MyFundedFutures", "Builder", sz, pr, "one", tg, ml, dll=dl, minis=mn, cons=None,
                       min_days=1, funded=F(trail="eod", buffer=ml + 100, pay_min=pmin, pay_max=pmax, split=0.8, cons=0.5,
-                                           cycle_days=2, max_payouts=5, first_wait=2),
+                                           cycle_days=2, max_payouts=5, first_wait=2, dll=dl),   # sim funded keeps the soft DLL (mffu_rules.json)
                       bot=BOT_MFFU, news="allowed", src=S_MFFU, unconf=unc + ["price: list (coupons 40-50% off are common)"],
                       sold=sz <= 50, note="5 sim payouts, then live (80/20, daily, no consistency)"))
+    for _p in P:
+        if _p["id"] in OWNER_PRICE:
+            _p["owner_price"] = OWNER_PRICE[_p["id"]]
     # ---- MyFundedFutures Rapid (EOD in the eval, INTRADAY trailing once funded; 50% eval consistency, 2 days; daily payouts 90/10)
     for sz, pr, tg, ml, mn in ((25, 145, 1500, 1000, 3), (50, 209, 3000, 2000, 5), (100, 356, 6000, 3000, 8), (150, 463, 9000, 4500, 10)):
         P.append(plan(f"mffu_rapid_{sz}k", "MyFundedFutures", "Rapid", sz, pr, "one", tg, ml, dll=None, minis=mn, cons=0.5,
@@ -564,7 +569,7 @@ def score_plan(P):
             o["funded"] = {s: funded(P, rule, s) for s in ("2026", "H2")}
         out[rule] = o
     if P["firm"] == "MyFundedFutures" and P["plan"] in ("Builder", "Rapid", "Rapid EOD") and P["size"] <= 50:
-        out["skip"] = {"exact": {s: exact(P, "skip", s) for s in ("2026", "H1", "H2")},
+        out["skip"] = {"exact": {s: exact(P, "skip", s) for s in ("2026", "H1", "H2", "2021-25")},
                        "monday": {s: exact(P, "skip", s, monday=True) for s in ("2026", "H1", "H2")},
                        "mc": {s: mc(P, "skip", s) for s in ("2026", "H1", "H2")},
                        "trades_2026_fresh": trade_count(P)}

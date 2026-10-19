@@ -1720,5 +1720,825 @@
    "net_d": -7348,
    "fires": 21
   }
+ },
+ "p_bos body>=1.5 after 1R be1R=True": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 18,
+   "winners_killed": 7,
+   "lost": -15199,
+   "be": 30,
+   "be_cut": 11,
+   "be_d": 2446,
+   "net_d": -12753,
+   "fires": 18
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 14,
+   "winners_killed": 5,
+   "lost": -2429,
+   "be": 5,
+   "be_cut": 2,
+   "be_d": 168,
+   "net_d": -2261,
+   "fires": 8
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 32,
+   "winners_killed": 12,
+   "lost": -17627,
+   "be": 35,
+   "be_cut": 13,
+   "be_d": 2614,
+   "net_d": -15014,
+   "fires": 26
+  }
+ },
+ "p_lvl o18 min 1.0R": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 18,
+   "winners_killed": 4,
+   "lost": -3452,
+   "be": 30,
+   "be_cut": 4,
+   "be_d": 1597,
+   "net_d": -1854,
+   "fires": 9
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 14,
+   "winners_killed": 1,
+   "lost": -123,
+   "be": 5,
+   "be_cut": 1,
+   "be_d": 320,
+   "net_d": 198,
+   "fires": 2
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 32,
+   "winners_killed": 5,
+   "lost": -3574,
+   "be": 35,
+   "be_cut": 5,
+   "be_d": 1918,
+   "net_d": -1657,
+   "fires": 11
+  }
+ },
+ "p_lvl o18 min 2.0R": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 18,
+   "winners_killed": 3,
+   "lost": -2234,
+   "be": 30,
+   "be_cut": 1,
+   "be_d": 1035,
+   "net_d": -1199,
+   "fires": 4
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 14,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 5,
+   "be_cut": 1,
+   "be_d": 320,
+   "net_d": 320,
+   "fires": 1
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 32,
+   "winners_killed": 3,
+   "lost": -2234,
+   "be": 35,
+   "be_cut": 2,
+   "be_d": 1356,
+   "net_d": -878,
+   "fires": 5
+  }
+ },
+ "p_lvl o00 min 1.0R": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 18,
+   "winners_killed": 3,
+   "lost": -8820,
+   "be": 30,
+   "be_cut": 4,
+   "be_d": 1032,
+   "net_d": -7788,
+   "fires": 8
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 14,
+   "winners_killed": 2,
+   "lost": -2577,
+   "be": 5,
+   "be_cut": 2,
+   "be_d": 440,
+   "net_d": -2136,
+   "fires": 4
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 32,
+   "winners_killed": 5,
+   "lost": -11396,
+   "be": 35,
+   "be_cut": 6,
+   "be_d": 1472,
+   "net_d": -9924,
+   "fires": 12
+  }
+ },
+ "p_lvl box min 2.0R": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 18,
+   "winners_killed": 4,
+   "lost": -8378,
+   "be": 30,
+   "be_cut": 1,
+   "be_d": 1035,
+   "net_d": -7344,
+   "fires": 6
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 14,
+   "winners_killed": 1,
+   "lost": -1316,
+   "be": 5,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": -1316,
+   "fires": 1
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 32,
+   "winners_killed": 5,
+   "lost": -9694,
+   "be": 35,
+   "be_cut": 1,
+   "be_d": 1035,
+   "net_d": -8660,
+   "fires": 7
+  }
+ },
+ "p_be 1R within 5min -> BE at None": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 18,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 30,
+   "be_cut": 4,
+   "be_d": 232,
+   "net_d": 232,
+   "fires": 4
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 14,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 5,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 0,
+   "fires": 0
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 32,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 35,
+   "be_cut": 4,
+   "be_d": 232,
+   "net_d": 232,
+   "fires": 4
+  }
+ },
+ "p_lvl o18 min 1.5R": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 18,
+   "winners_killed": 3,
+   "lost": -2234,
+   "be": 30,
+   "be_cut": 4,
+   "be_d": 1597,
+   "net_d": -637,
+   "fires": 7
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 14,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 5,
+   "be_cut": 1,
+   "be_d": 320,
+   "net_d": 320,
+   "fires": 1
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 0,
+   "saved": 0,
+   "winners": 32,
+   "winners_killed": 3,
+   "lost": -2234,
+   "be": 35,
+   "be_cut": 5,
+   "be_d": 1918,
+   "net_d": -316,
+   "fires": 8
+  }
+ },
+ "x_es close mfe<0.25": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 1,
+   "saved": 55,
+   "winners": 18,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 30,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 55,
+   "fires": 1
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 3,
+   "saved": 511,
+   "winners": 14,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 5,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 511,
+   "fires": 3
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 4,
+   "saved": 566,
+   "winners": 32,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 35,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 566,
+   "fires": 4
+  }
+ },
+ "x_es low mfe<0.5": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 3,
+   "saved": 168,
+   "winners": 18,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 30,
+   "be_cut": 2,
+   "be_d": 192,
+   "net_d": 360,
+   "fires": 5
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 6,
+   "saved": 1091,
+   "winners": 14,
+   "winners_killed": 1,
+   "lost": -368,
+   "be": 5,
+   "be_cut": 1,
+   "be_d": -130,
+   "net_d": 592,
+   "fires": 8
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 9,
+   "saved": 1258,
+   "winners": 32,
+   "winners_killed": 1,
+   "lost": -368,
+   "be": 35,
+   "be_cut": 3,
+   "be_d": 62,
+   "net_d": 952,
+   "fires": 13
+  }
+ },
+ "x_es low mfe<0.5 + 1m CISD": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 3,
+   "saved": 168,
+   "winners": 18,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 30,
+   "be_cut": 2,
+   "be_d": 92,
+   "net_d": 260,
+   "fires": 5
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 6,
+   "saved": 1147,
+   "winners": 14,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 5,
+   "be_cut": 1,
+   "be_d": -130,
+   "net_d": 1017,
+   "fires": 7
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 9,
+   "saved": 1314,
+   "winners": 32,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 35,
+   "be_cut": 3,
+   "be_d": -38,
+   "net_d": 1276,
+   "fires": 12
+  }
+ },
+ "x_es close mfe<0.5": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 1,
+   "saved": 55,
+   "winners": 18,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 30,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 55,
+   "fires": 1
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 4,
+   "saved": 814,
+   "winners": 14,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 5,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 814,
+   "fires": 4
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 5,
+   "saved": 869,
+   "winners": 32,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 35,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 869,
+   "fires": 5
+  }
+ },
+ "x_es low mfe<0.75": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 6,
+   "saved": 552,
+   "winners": 18,
+   "winners_killed": 1,
+   "lost": -5400,
+   "be": 30,
+   "be_cut": 2,
+   "be_d": 192,
+   "net_d": -4656,
+   "fires": 9
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 7,
+   "saved": 1398,
+   "winners": 14,
+   "winners_killed": 1,
+   "lost": -368,
+   "be": 5,
+   "be_cut": 1,
+   "be_d": -130,
+   "net_d": 900,
+   "fires": 9
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 13,
+   "saved": 1950,
+   "winners": 32,
+   "winners_killed": 2,
+   "lost": -5768,
+   "be": 35,
+   "be_cut": 3,
+   "be_d": 62,
+   "net_d": -3756,
+   "fires": 18
+  }
+ },
+ "x_es close mfe<0.75": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 3,
+   "saved": 458,
+   "winners": 18,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 30,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 458,
+   "fires": 3
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 5,
+   "saved": 1122,
+   "winners": 14,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 5,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 1122,
+   "fires": 5
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 8,
+   "saved": 1579,
+   "winners": 32,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 35,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 1579,
+   "fires": 8
+  }
+ },
+ "x_es close mfe<0.75 + 1m CISD": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 3,
+   "saved": 458,
+   "winners": 18,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 30,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 458,
+   "fires": 3
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 5,
+   "saved": 1178,
+   "winners": 14,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 5,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 1178,
+   "fires": 5
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 8,
+   "saved": 1635,
+   "winners": 32,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 35,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 1635,
+   "fires": 8
+  }
+ },
+ "x_es close mfe<99 + 1m CISD": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 3,
+   "saved": 458,
+   "winners": 18,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 30,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 458,
+   "fires": 3
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 7,
+   "saved": 1232,
+   "winners": 14,
+   "winners_killed": 2,
+   "lost": -932,
+   "be": 5,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 300,
+   "fires": 9
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 10,
+   "saved": 1690,
+   "winners": 32,
+   "winners_killed": 2,
+   "lost": -932,
+   "be": 35,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": 758,
+   "fires": 12
+  }
+ },
+ "half-cut x_cisd mfe<0.25": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 22,
+   "saved": 2917,
+   "winners": 18,
+   "winners_killed": 2,
+   "lost": -1762,
+   "be": 30,
+   "be_cut": 12,
+   "be_d": -489,
+   "net_d": 666,
+   "fires": 36
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 15,
+   "saved": 1934,
+   "winners": 14,
+   "winners_killed": 6,
+   "lost": -5312,
+   "be": 5,
+   "be_cut": 2,
+   "be_d": -179,
+   "net_d": -3557,
+   "fires": 23
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 37,
+   "saved": 4852,
+   "winners": 32,
+   "winners_killed": 8,
+   "lost": -7075,
+   "be": 35,
+   "be_cut": 14,
+   "be_d": -668,
+   "net_d": -2891,
+   "fires": 59
+  }
+ },
+ "half-cut x_newlow conf 15min close": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 27,
+   "saved": 3702,
+   "winners": 18,
+   "winners_killed": 1,
+   "lost": -1280,
+   "be": 30,
+   "be_cut": 13,
+   "be_d": -478,
+   "net_d": 1945,
+   "fires": 41
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 13,
+   "saved": 1735,
+   "winners": 14,
+   "winners_killed": 7,
+   "lost": -6440,
+   "be": 5,
+   "be_cut": 2,
+   "be_d": -172,
+   "net_d": -4877,
+   "fires": 22
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 40,
+   "saved": 5438,
+   "winners": 32,
+   "winners_killed": 8,
+   "lost": -7720,
+   "be": 35,
+   "be_cut": 15,
+   "be_d": -649,
+   "net_d": -2932,
+   "fires": 63
+  }
+ },
+ "half-cut x_opp mfe<0.5 touch": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 27,
+   "saved": 3363,
+   "winners": 18,
+   "winners_killed": 5,
+   "lost": -7396,
+   "be": 30,
+   "be_cut": 14,
+   "be_d": -253,
+   "net_d": -4286,
+   "fires": 46
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 18,
+   "saved": 2214,
+   "winners": 14,
+   "winners_killed": 5,
+   "lost": -3011,
+   "be": 5,
+   "be_cut": 4,
+   "be_d": -215,
+   "net_d": -1012,
+   "fires": 27
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 45,
+   "saved": 5578,
+   "winners": 32,
+   "winners_killed": 10,
+   "lost": -10407,
+   "be": 35,
+   "be_cut": 18,
+   "be_d": -468,
+   "net_d": -5297,
+   "fires": 73
+  }
+ },
+ "half-cut x_vol vol>=3 body>=0.5": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 11,
+   "saved": 1158,
+   "winners": 18,
+   "winners_killed": 2,
+   "lost": -3846,
+   "be": 30,
+   "be_cut": 3,
+   "be_d": -17,
+   "net_d": -2704,
+   "fires": 16
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 8,
+   "saved": 658,
+   "winners": 14,
+   "winners_killed": 1,
+   "lost": -853,
+   "be": 5,
+   "be_cut": 0,
+   "be_d": 0,
+   "net_d": -194,
+   "fires": 9
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 19,
+   "saved": 1816,
+   "winners": 32,
+   "winners_killed": 3,
+   "lost": -4698,
+   "be": 35,
+   "be_cut": 3,
+   "be_d": -17,
+   "net_d": -2898,
+   "fires": 25
+  }
+ },
+ "x_es close 0.5 + p_lvl o18 2R": {
+  "H1": {
+   "losers": 32,
+   "losers_cut": 1,
+   "saved": 55,
+   "winners": 18,
+   "winners_killed": 3,
+   "lost": -2234,
+   "be": 30,
+   "be_cut": 1,
+   "be_d": 1035,
+   "net_d": -1144,
+   "fires": 5
+  },
+  "H2": {
+   "losers": 21,
+   "losers_cut": 4,
+   "saved": 814,
+   "winners": 14,
+   "winners_killed": 0,
+   "lost": 0,
+   "be": 5,
+   "be_cut": 1,
+   "be_d": 320,
+   "net_d": 1134,
+   "fires": 5
+  },
+  "2026": {
+   "losers": 53,
+   "losers_cut": 5,
+   "saved": 869,
+   "winners": 32,
+   "winners_killed": 3,
+   "lost": -2234,
+   "be": 35,
+   "be_cut": 2,
+   "be_d": 1356,
+   "net_d": -10,
+   "fires": 10
+  }
  }
 }

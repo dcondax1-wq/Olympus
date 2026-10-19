@@ -5,6 +5,7 @@ import { go } from '../app.js';
 import { icon } from './icons.js';
 import { lineChart, barChart, countAll } from './viz.js';
 import { mount3d } from './fx3d.js';
+import { openSheet, openChart, tcCss } from './trades.js';
 
 let RES = null;
 async function results$() { if (!RES) RES = await api('/api/next/results'); return RES; }
@@ -84,8 +85,19 @@ async function showResults() {
       </div>
       <div class="card nx-glass"><div class="card-h"><h3>Back-to-back MFFU evals</h3><span class="muted small">start a new eval the day after each one ends · ${m.model === 'lit' ? 'since 2021-11' : '5 years'}</span></div>
         ${runsStrip(P['All years'].eval?.back_to_back?.runs)}</div>
+      <div class="card nx-glass"><div class="card-h"><h3>Biggest wins and losses · on the chart</h3><span class="muted small">2026 · click one for its chart</span></div><div class="nx-trades" id="resTc"><div class="nx-skel"><i></i></div></div></div>
       <div class="note">${esc(m.method || '')}</div>`;
     countAll(el);
+    api('/api/next/trades?year=2026').then((tr) => {
+      const box = $('#resTc'); if (!box) return;
+      tcCss();
+      const T = (tr.trades || []).filter((t) => t.chart).sort((a, b) => b.pnl - a.pnl), pick = [...T.slice(0, 3), ...T.slice(-3).reverse()];
+      if (!pick.length) { box.innerHTML = '<div class="muted small">No trade charts: run <span class="mono">python tools/export_replays.py</span>.</div>'; return; }
+      box.innerHTML = pick.map((t, i) => `<button type="button" class="nx-trade ${t.pnl > 0 ? 'win' : 'loss'}" data-i="${i}"><span class="nx-trade-side ${t.side === 'LONG' ? 'L' : 'S'}">${icon(t.side === 'LONG' ? 'long' : 'short')}</span>
+        <span class="nx-trade-main"><span class="nx-trade-top"><b>${esc(t.day)}</b><span class="nx-side-txt ${t.side === 'LONG' ? 'up' : 'dn'}">${t.side}</span></span><span class="nx-trade-meta"><span class="nx-chip">${esc(t.exit)}</span><span class="nx-chip"><i>micros</i> ${t.qty}</span><span class="nx-tcb" data-chart>${icon('chart')}Chart</span></span></span>
+        <span class="nx-trade-res"><b class="${cls(t.r)}">${fmtR(t.r)}</b><span class="${cls(t.pnl)}">${fmtS$(t.pnl)}</span></span></button>`).join('');
+      box.onclick = (e) => { const b = e.target.closest('.nx-trade'); if (!b) return; const t = pick[+b.dataset.i]; if (e.target.closest('[data-chart]')) openChart(t); else openSheet(t); };
+    }).catch(() => { const box = $('#resTc'); if (box) box.innerHTML = '<div class="muted small">Trades unavailable.</div>'; });
     drawEq(d);
     const months = Object.entries(d.months || {});
     mount3d('results-city', $('#resCity'), 'city', d.months || {});

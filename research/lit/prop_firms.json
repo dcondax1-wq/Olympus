@@ -1,5 +1,5 @@
 {
- "built": "2026-10-18 15:43",
+ "built": "2026-10-18 15:52",
  "study": "lit_prop_firms",
  "writeup": "research/writeups/lit-prop-firms.md",
  "rules_searched": "2026-10-18",
@@ -56,7 +56,7 @@
     "first_wait": 2,
     "split_first": null,
     "since_last": 0.0,
-    "dll": null
+    "dll": 600
    },
    "bot": "automation allowed with active oversight (policy unchanged Sep 2026; confirm with MFFU)",
    "news": "allowed",
@@ -79,7 +79,8 @@
    ],
    "unconfirmed": [
     "DLL: $600 soft per the current help center, none on the legacy 25K",
-    "price: list (coupons 40-50% off are common)"
+    "price: list (coupons 40-50% off are common)",
+    "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)"
    ],
    "sold": true,
    "note": "5 sim payouts, then live (80/20, daily, no consistency)",
@@ -432,8 +433,163 @@
        "cost_per_funded": 187.0
       }
      }
+    },
+    "skip": {
+     "exact": {
+      "2026": {
+       "n": 206,
+       "pass_2w": 35.0,
+       "fail_2w": 0.0,
+       "pass_1m": 56.3,
+       "fail_1m": 0.0,
+       "pass_60": 80.6,
+       "fail_60": 0.0,
+       "open_60": 19.4,
+       "pass_med": 12.0,
+       "evals_per_pass": 1.24,
+       "fee_per_attempt": 105.0,
+       "cost_per_funded": 130.0
+      },
+      "H1": {
+       "n": 128,
+       "pass_2w": 42.2,
+       "fail_2w": 0.0,
+       "pass_1m": 62.5,
+       "fail_1m": 0.0,
+       "pass_60": 76.6,
+       "fail_60": 0.0,
+       "open_60": 23.4,
+       "pass_med": 9.5,
+       "evals_per_pass": 1.31,
+       "fee_per_attempt": 105.0,
+       "cost_per_funded": 137.0
+      },
+      "H2": {
+       "n": 78,
+       "pass_2w": 23.1,
+       "fail_2w": 0.0,
+       "pass_1m": 46.2,
+       "fail_1m": 0.0,
+       "pass_60": 87.2,
+       "fail_60": 0.0,
+       "open_60": 12.8,
+       "pass_med": 19.0,
+       "evals_per_pass": 1.15,
+       "fee_per_attempt": 105.0,
+       "cost_per_funded": 120.0
+      },
+      "2021-25": {
+       "n": 1072,
+       "pass_2w": 7.6,
+       "fail_2w": 3.3,
+       "pass_1m": 13.3,
+       "fail_1m": 8.7,
+       "pass_60": 21.8,
+       "fail_60": 26.5,
+       "open_60": 51.7,
+       "pass_med": 15.0,
+       "evals_per_pass": 4.59,
+       "fee_per_attempt": 105.0,
+       "cost_per_funded": 482.0
+      }
+     },
+     "monday": {
+      "2026": {
+       "n": 41,
+       "pass_2w": 34.1,
+       "fail_2w": 0.0,
+       "pass_1m": 58.5,
+       "fail_1m": 0.0,
+       "pass_60": 80.5,
+       "fail_60": 0.0,
+       "open_60": 19.5,
+       "pass_med": 13.0,
+       "evals_per_pass": 1.24,
+       "fee_per_attempt": 105.0,
+       "cost_per_funded": 130.0
+      },
+      "H1": {
+       "n": 26,
+       "pass_2w": 38.5,
+       "fail_2w": 0.0,
+       "pass_1m": 61.5,
+       "fail_1m": 0.0,
+       "pass_60": 73.1,
+       "fail_60": 0.0,
+       "open_60": 26.9,
+       "pass_med": 10.0,
+       "evals_per_pass": 1.37,
+       "fee_per_attempt": 105.0,
+       "cost_per_funded": 144.0
+      },
+      "H2": {
+       "n": 15,
+       "pass_2w": 26.7,
+       "fail_2w": 0.0,
+       "pass_1m": 53.3,
+       "fail_1m": 0.0,
+       "pass_60": 93.3,
+       "fail_60": 0.0,
+       "open_60": 6.7,
+       "pass_med": 18.5,
+       "evals_per_pass": 1.07,
+       "fee_per_attempt": 105.0,
+       "cost_per_funded": 113.0
+      }
+     },
+     "mc": {
+      "2026": {
+       "n": 4000,
+       "pass_2w": 33.5,
+       "fail_2w": 0.1,
+       "pass_1m": 54.6,
+       "fail_1m": 0.3,
+       "pass_60": 76.3,
+       "fail_60": 0.6,
+       "open_60": 23.1,
+       "pass_med": 12.0,
+       "evals_per_pass": 1.31,
+       "fee_per_attempt": 105.0,
+       "cost_per_funded": 138.0
+      },
+      "H1": {
+       "n": 4000,
+       "pass_2w": 39.2,
+       "fail_2w": 0.0,
+       "pass_1m": 61.7,
+       "fail_1m": 0.0,
+       "pass_60": 81.1,
+       "fail_60": 0.0,
+       "open_60": 18.9,
+       "pass_med": 11.0,
+       "evals_per_pass": 1.23,
+       "fee_per_attempt": 105.0,
+       "cost_per_funded": 129.0
+      },
+      "H2": {
+       "n": 4000,
+       "pass_2w": 26.1,
+       "fail_2w": 0.3,
+       "pass_1m": 45.9,
+       "fail_1m": 0.8,
+       "pass_60": 69.7,
+       "fail_60": 1.6,
+       "open_60": 28.7,
+       "pass_med": 14.0,
+       "evals_per_pass": 1.43,
+       "fee_per_attempt": 105.0,
+       "cost_per_funded": 151.0
+      }
+     },
+     "trades_2026_fresh": {
+      "scaled": 2.7,
+      "skip": 2.67
+     }
     }
-   }
+   },
+   "price_paid": 63.0,
+   "price_note": "owner price with MFFU code, 2026-10-18 (list $105)",
+   "owner_price": 63.0
   },
   {
    "id": "mffu_builder_50k",
@@ -471,7 +627,7 @@
     "first_wait": 2,
     "split_first": null,
     "since_last": 0.0,
-    "dll": null
+    "dll": 1000
    },
    "bot": "automation allowed with active oversight (policy unchanged Sep 2026; confirm with MFFU)",
    "news": "allowed",
@@ -493,7 +649,8 @@
     "https://pipback.com/blog/my-funded-futures-review"
    ],
    "unconfirmed": [
-    "price: list (coupons 40-50% off are common)"
+    "price: list (coupons 40-50% off are common)",
+    "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)"
    ],
    "sold": true,
    "note": "5 sim payouts, then live (80/20, daily, no consistency)",
@@ -846,8 +1003,163 @@
        "cost_per_funded": 197.0
       }
      }
+    },
+    "skip": {
+     "exact": {
+      "2026": {
+       "n": 206,
+       "pass_2w": 34.5,
+       "fail_2w": 0.0,
+       "pass_1m": 55.3,
+       "fail_1m": 0.0,
+       "pass_60": 74.3,
+       "fail_60": 0.0,
+       "open_60": 25.7,
+       "pass_med": 11.0,
+       "evals_per_pass": 1.35,
+       "fee_per_attempt": 153.0,
+       "cost_per_funded": 206.0
+      },
+      "H1": {
+       "n": 128,
+       "pass_2w": 37.5,
+       "fail_2w": 0.0,
+       "pass_1m": 60.2,
+       "fail_1m": 0.0,
+       "pass_60": 78.1,
+       "fail_60": 0.0,
+       "open_60": 21.9,
+       "pass_med": 11.0,
+       "evals_per_pass": 1.28,
+       "fee_per_attempt": 153.0,
+       "cost_per_funded": 196.0
+      },
+      "H2": {
+       "n": 78,
+       "pass_2w": 29.5,
+       "fail_2w": 0.0,
+       "pass_1m": 47.4,
+       "fail_1m": 0.0,
+       "pass_60": 67.9,
+       "fail_60": 0.0,
+       "open_60": 32.1,
+       "pass_med": 12.0,
+       "evals_per_pass": 1.47,
+       "fee_per_attempt": 153.0,
+       "cost_per_funded": 225.0
+      },
+      "2021-25": {
+       "n": 1072,
+       "pass_2w": 7.9,
+       "fail_2w": 3.3,
+       "pass_1m": 15.3,
+       "fail_1m": 9.0,
+       "pass_60": 27.7,
+       "fail_60": 19.4,
+       "open_60": 52.9,
+       "pass_med": 18.0,
+       "evals_per_pass": 3.61,
+       "fee_per_attempt": 153.0,
+       "cost_per_funded": 552.0
+      }
+     },
+     "monday": {
+      "2026": {
+       "n": 41,
+       "pass_2w": 36.6,
+       "fail_2w": 0.0,
+       "pass_1m": 56.1,
+       "fail_1m": 0.0,
+       "pass_60": 73.2,
+       "fail_60": 0.0,
+       "open_60": 26.8,
+       "pass_med": 11.0,
+       "evals_per_pass": 1.37,
+       "fee_per_attempt": 153.0,
+       "cost_per_funded": 209.0
+      },
+      "H1": {
+       "n": 26,
+       "pass_2w": 38.5,
+       "fail_2w": 0.0,
+       "pass_1m": 57.7,
+       "fail_1m": 0.0,
+       "pass_60": 73.1,
+       "fail_60": 0.0,
+       "open_60": 26.9,
+       "pass_med": 10.0,
+       "evals_per_pass": 1.37,
+       "fee_per_attempt": 153.0,
+       "cost_per_funded": 209.0
+      },
+      "H2": {
+       "n": 15,
+       "pass_2w": 33.3,
+       "fail_2w": 0.0,
+       "pass_1m": 53.3,
+       "fail_1m": 0.0,
+       "pass_60": 73.3,
+       "fail_60": 0.0,
+       "open_60": 26.7,
+       "pass_med": 12.0,
+       "evals_per_pass": 1.36,
+       "fee_per_attempt": 153.0,
+       "cost_per_funded": 209.0
+      }
+     },
+     "mc": {
+      "2026": {
+       "n": 4000,
+       "pass_2w": 33.5,
+       "fail_2w": 0.2,
+       "pass_1m": 54.6,
+       "fail_1m": 0.4,
+       "pass_60": 76.4,
+       "fail_60": 0.8,
+       "open_60": 22.8,
+       "pass_med": 12.0,
+       "evals_per_pass": 1.31,
+       "fee_per_attempt": 153.0,
+       "cost_per_funded": 200.0
+      },
+      "H1": {
+       "n": 4000,
+       "pass_2w": 37.0,
+       "fail_2w": 0.0,
+       "pass_1m": 60.2,
+       "fail_1m": 0.0,
+       "pass_60": 80.2,
+       "fail_60": 0.0,
+       "open_60": 19.8,
+       "pass_med": 11.0,
+       "evals_per_pass": 1.25,
+       "fee_per_attempt": 153.0,
+       "cost_per_funded": 191.0
+      },
+      "H2": {
+       "n": 4000,
+       "pass_2w": 28.8,
+       "fail_2w": 0.4,
+       "pass_1m": 51.2,
+       "fail_1m": 1.4,
+       "pass_60": 76.4,
+       "fail_60": 2.4,
+       "open_60": 21.2,
+       "pass_med": 14.0,
+       "evals_per_pass": 1.31,
+       "fee_per_attempt": 153.0,
+       "cost_per_funded": 200.0
+      }
+     },
+     "trades_2026_fresh": {
+      "scaled": 2.7,
+      "skip": 2.68
+     }
     }
-   }
+   },
+   "price_paid": 91.8,
+   "price_note": "owner price with MFFU code, 2026-10-18 (list $153)",
+   "owner_price": 91.8
   },
   {
    "id": "mffu_builder_100k",
@@ -885,7 +1197,7 @@
     "first_wait": 2,
     "split_first": null,
     "since_last": 0.0,
-    "dll": null
+    "dll": 1750
    },
    "bot": "automation allowed with active oversight (policy unchanged Sep 2026; confirm with MFFU)",
    "news": "allowed",
@@ -910,7 +1222,8 @@
     "price not found",
     "payout min/max assumed (50K x 1.5)",
     "the plan page lists only 25K and 50K for sale",
-    "price: list (coupons 40-50% off are common)"
+    "price: list (coupons 40-50% off are common)",
+    "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)"
    ],
    "sold": false,
    "note": "5 sim payouts, then live (80/20, daily, no consistency)",
@@ -1302,7 +1615,7 @@
     "first_wait": 2,
     "split_first": null,
     "since_last": 0.0,
-    "dll": null
+    "dll": 2500
    },
    "bot": "automation allowed with active oversight (policy unchanged Sep 2026; confirm with MFFU)",
    "news": "allowed",
@@ -1328,7 +1641,8 @@
     "max contracts not found (8 minis assumed)",
     "payout min/max assumed",
     "the plan page lists only 25K and 50K for sale",
-    "price: list (coupons 40-50% off are common)"
+    "price: list (coupons 40-50% off are common)",
+    "funded.dll set from research/lit/mffu_rules.json on 2026-10-18; results not re-simulated (rerun: python tools/lit_prop_firms.py all)"
    ],
    "sold": false,
    "note": "5 sim payouts, then live (80/20, daily, no consistency)",
@@ -2097,6 +2411,158 @@
        "cost_per_funded": 308.0
       }
      }
+    },
+    "skip": {
+     "exact": {
+      "2026": {
+       "n": 206,
+       "pass_2w": 2.9,
+       "fail_2w": 0.0,
+       "pass_1m": 8.7,
+       "fail_1m": 0.0,
+       "pass_60": 63.6,
+       "fail_60": 0.0,
+       "open_60": 36.4,
+       "pass_med": 38.0,
+       "evals_per_pass": 1.57,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 228.0
+      },
+      "H1": {
+       "n": 128,
+       "pass_2w": 3.9,
+       "fail_2w": 0.0,
+       "pass_1m": 4.7,
+       "fail_1m": 0.0,
+       "pass_60": 57.0,
+       "fail_60": 0.0,
+       "open_60": 43.0,
+       "pass_med": 41.0,
+       "evals_per_pass": 1.75,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 254.0
+      },
+      "H2": {
+       "n": 78,
+       "pass_2w": 1.3,
+       "fail_2w": 0.0,
+       "pass_1m": 15.4,
+       "fail_1m": 0.0,
+       "pass_60": 74.4,
+       "fail_60": 0.0,
+       "open_60": 25.6,
+       "pass_med": 32.5,
+       "evals_per_pass": 1.34,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 195.0
+      },
+      "2021-25": {
+       "n": 1072,
+       "pass_2w": 0.6,
+       "fail_2w": 7.4,
+       "pass_1m": 2.0,
+       "fail_1m": 14.8,
+       "pass_60": 5.9,
+       "fail_60": 33.0,
+       "open_60": 61.1,
+       "pass_med": 27.0,
+       "evals_per_pass": 16.95,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 2458.0
+      }
+     },
+     "monday": {
+      "2026": {
+       "n": 41,
+       "pass_2w": 4.9,
+       "fail_2w": 0.0,
+       "pass_1m": 9.8,
+       "fail_1m": 0.0,
+       "pass_60": 61.0,
+       "fail_60": 0.0,
+       "open_60": 39.0,
+       "pass_med": 39.0,
+       "evals_per_pass": 1.64,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 238.0
+      },
+      "H1": {
+       "n": 26,
+       "pass_2w": 7.7,
+       "fail_2w": 0.0,
+       "pass_1m": 7.7,
+       "fail_1m": 0.0,
+       "pass_60": 50.0,
+       "fail_60": 0.0,
+       "open_60": 50.0,
+       "pass_med": 40.0,
+       "evals_per_pass": 2.0,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 290.0
+      },
+      "H2": {
+       "n": 15,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 13.3,
+       "fail_1m": 0.0,
+       "pass_60": 80.0,
+       "fail_60": 0.0,
+       "open_60": 20.0,
+       "pass_med": 33.0,
+       "evals_per_pass": 1.25,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 181.0
+      }
+     },
+     "mc": {
+      "2026": {
+       "n": 4000,
+       "pass_2w": 3.9,
+       "fail_2w": 0.1,
+       "pass_1m": 18.6,
+       "fail_1m": 0.3,
+       "pass_60": 60.6,
+       "fail_60": 0.6,
+       "open_60": 38.8,
+       "pass_med": 30.0,
+       "evals_per_pass": 1.65,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 239.0
+      },
+      "H1": {
+       "n": 4000,
+       "pass_2w": 5.3,
+       "fail_2w": 0.0,
+       "pass_1m": 20.4,
+       "fail_1m": 0.0,
+       "pass_60": 66.8,
+       "fail_60": 0.0,
+       "open_60": 33.2,
+       "pass_med": 28.0,
+       "evals_per_pass": 1.5,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 217.0
+      },
+      "H2": {
+       "n": 4000,
+       "pass_2w": 4.0,
+       "fail_2w": 0.3,
+       "pass_1m": 19.6,
+       "fail_1m": 0.8,
+       "pass_60": 59.5,
+       "fail_60": 1.7,
+       "open_60": 38.8,
+       "pass_med": 27.0,
+       "evals_per_pass": 1.68,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 244.0
+      }
+     },
+     "trades_2026_fresh": {
+      "scaled": 2.79,
+      "skip": 2.75
+     }
     }
    }
   },
@@ -2512,6 +2978,158 @@
        "fee_per_attempt": 209.0,
        "cost_per_funded": 329.0
       }
+     }
+    },
+    "skip": {
+     "exact": {
+      "2026": {
+       "n": 206,
+       "pass_2w": 3.4,
+       "fail_2w": 0.0,
+       "pass_1m": 12.6,
+       "fail_1m": 0.0,
+       "pass_60": 55.8,
+       "fail_60": 0.0,
+       "open_60": 44.2,
+       "pass_med": 34.0,
+       "evals_per_pass": 1.79,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 375.0
+      },
+      "H1": {
+       "n": 128,
+       "pass_2w": 3.9,
+       "fail_2w": 0.0,
+       "pass_1m": 3.9,
+       "fail_1m": 0.0,
+       "pass_60": 54.7,
+       "fail_60": 0.0,
+       "open_60": 45.3,
+       "pass_med": 40.5,
+       "evals_per_pass": 1.83,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 382.0
+      },
+      "H2": {
+       "n": 78,
+       "pass_2w": 2.6,
+       "fail_2w": 0.0,
+       "pass_1m": 26.9,
+       "fail_1m": 0.0,
+       "pass_60": 57.7,
+       "fail_60": 0.0,
+       "open_60": 42.3,
+       "pass_med": 21.0,
+       "evals_per_pass": 1.73,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 362.0
+      },
+      "2021-25": {
+       "n": 1072,
+       "pass_2w": 0.6,
+       "fail_2w": 8.0,
+       "pass_1m": 2.1,
+       "fail_1m": 16.3,
+       "pass_60": 7.5,
+       "fail_60": 30.3,
+       "open_60": 62.2,
+       "pass_med": 33.0,
+       "evals_per_pass": 13.33,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 2787.0
+      }
+     },
+     "monday": {
+      "2026": {
+       "n": 41,
+       "pass_2w": 4.9,
+       "fail_2w": 0.0,
+       "pass_1m": 14.6,
+       "fail_1m": 0.0,
+       "pass_60": 53.7,
+       "fail_60": 0.0,
+       "open_60": 46.3,
+       "pass_med": 29.0,
+       "evals_per_pass": 1.86,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 389.0
+      },
+      "H1": {
+       "n": 26,
+       "pass_2w": 7.7,
+       "fail_2w": 0.0,
+       "pass_1m": 7.7,
+       "fail_1m": 0.0,
+       "pass_60": 50.0,
+       "fail_60": 0.0,
+       "open_60": 50.0,
+       "pass_med": 39.0,
+       "evals_per_pass": 2.0,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 418.0
+      },
+      "H2": {
+       "n": 15,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 26.7,
+       "fail_1m": 0.0,
+       "pass_60": 60.0,
+       "fail_60": 0.0,
+       "open_60": 40.0,
+       "pass_med": 23.0,
+       "evals_per_pass": 1.67,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 348.0
+      }
+     },
+     "mc": {
+      "2026": {
+       "n": 4000,
+       "pass_2w": 3.7,
+       "fail_2w": 0.2,
+       "pass_1m": 17.9,
+       "fail_1m": 0.4,
+       "pass_60": 61.0,
+       "fail_60": 0.9,
+       "open_60": 38.1,
+       "pass_med": 30.0,
+       "evals_per_pass": 1.64,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 343.0
+      },
+      "H1": {
+       "n": 4000,
+       "pass_2w": 5.0,
+       "fail_2w": 0.0,
+       "pass_1m": 18.3,
+       "fail_1m": 0.0,
+       "pass_60": 65.3,
+       "fail_60": 0.0,
+       "open_60": 34.7,
+       "pass_med": 30.0,
+       "evals_per_pass": 1.53,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 320.0
+      },
+      "H2": {
+       "n": 4000,
+       "pass_2w": 4.7,
+       "fail_2w": 0.4,
+       "pass_1m": 24.0,
+       "fail_1m": 1.4,
+       "pass_60": 66.8,
+       "fail_60": 2.7,
+       "open_60": 30.5,
+       "pass_med": 26.0,
+       "evals_per_pass": 1.5,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 313.0
+      }
+     },
+     "trades_2026_fresh": {
+      "scaled": 2.73,
+      "skip": 2.73
      }
     }
    }
@@ -3759,6 +4377,158 @@
        "cost_per_funded": 585.0
       }
      }
+    },
+    "skip": {
+     "exact": {
+      "2026": {
+       "n": 206,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 6.8,
+       "fail_60": 0.0,
+       "open_60": 93.2,
+       "pass_med": 55.5,
+       "evals_per_pass": 14.71,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 2132.0
+      },
+      "H1": {
+       "n": 128,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 10.9,
+       "fail_60": 0.0,
+       "open_60": 89.1,
+       "pass_med": 55.5,
+       "evals_per_pass": 9.17,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 1330.0
+      },
+      "H2": {
+       "n": 78,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 0.0,
+       "fail_60": 0.0,
+       "open_60": 100.0,
+       "pass_med": null,
+       "evals_per_pass": null,
+       "fee_per_attempt": null,
+       "cost_per_funded": null
+      },
+      "2021-25": {
+       "n": 1072,
+       "pass_2w": 0.0,
+       "fail_2w": 7.4,
+       "pass_1m": 0.0,
+       "fail_1m": 14.8,
+       "pass_60": 0.9,
+       "fail_60": 33.4,
+       "open_60": 65.7,
+       "pass_med": 48.5,
+       "evals_per_pass": 111.11,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 16111.0
+      }
+     },
+     "monday": {
+      "2026": {
+       "n": 41,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 7.3,
+       "fail_60": 0.0,
+       "open_60": 92.7,
+       "pass_med": 56.0,
+       "evals_per_pass": 13.7,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 1986.0
+      },
+      "H1": {
+       "n": 26,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 11.5,
+       "fail_60": 0.0,
+       "open_60": 88.5,
+       "pass_med": 56.0,
+       "evals_per_pass": 8.7,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 1261.0
+      },
+      "H2": {
+       "n": 15,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 0.0,
+       "fail_60": 0.0,
+       "open_60": 100.0,
+       "pass_med": null,
+       "evals_per_pass": null,
+       "fee_per_attempt": null,
+       "cost_per_funded": null
+      }
+     },
+     "mc": {
+      "2026": {
+       "n": 4000,
+       "pass_2w": 0.0,
+       "fail_2w": 0.1,
+       "pass_1m": 1.0,
+       "fail_1m": 0.3,
+       "pass_60": 26.2,
+       "fail_60": 0.6,
+       "open_60": 73.2,
+       "pass_med": 44.0,
+       "evals_per_pass": 3.82,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 553.0
+      },
+      "H1": {
+       "n": 4000,
+       "pass_2w": 0.1,
+       "fail_2w": 0.0,
+       "pass_1m": 1.6,
+       "fail_1m": 0.0,
+       "pass_60": 35.6,
+       "fail_60": 0.0,
+       "open_60": 64.4,
+       "pass_med": 43.0,
+       "evals_per_pass": 2.81,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 407.0
+      },
+      "H2": {
+       "n": 4000,
+       "pass_2w": 0.0,
+       "fail_2w": 0.3,
+       "pass_1m": 1.1,
+       "fail_1m": 0.8,
+       "pass_60": 27.4,
+       "fail_60": 1.8,
+       "open_60": 70.8,
+       "pass_med": 43.0,
+       "evals_per_pass": 3.65,
+       "fee_per_attempt": 145.0,
+       "cost_per_funded": 529.0
+      }
+     },
+     "trades_2026_fresh": {
+      "scaled": 2.83,
+      "skip": 2.79
+     }
     }
    }
   },
@@ -4173,6 +4943,158 @@
        "fee_per_attempt": 209.0,
        "cost_per_funded": 833.0
       }
+     }
+    },
+    "skip": {
+     "exact": {
+      "2026": {
+       "n": 206,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 6.8,
+       "fail_60": 0.0,
+       "open_60": 93.2,
+       "pass_med": 56.0,
+       "evals_per_pass": 14.71,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 3074.0
+      },
+      "H1": {
+       "n": 128,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 10.9,
+       "fail_60": 0.0,
+       "open_60": 89.1,
+       "pass_med": 56.0,
+       "evals_per_pass": 9.17,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 1917.0
+      },
+      "H2": {
+       "n": 78,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 0.0,
+       "fail_60": 0.0,
+       "open_60": 100.0,
+       "pass_med": null,
+       "evals_per_pass": null,
+       "fee_per_attempt": null,
+       "cost_per_funded": null
+      },
+      "2021-25": {
+       "n": 1072,
+       "pass_2w": 0.0,
+       "fail_2w": 8.0,
+       "pass_1m": 0.0,
+       "fail_1m": 16.3,
+       "pass_60": 1.1,
+       "fail_60": 30.8,
+       "open_60": 68.1,
+       "pass_med": 49.5,
+       "evals_per_pass": 90.91,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 19000.0
+      }
+     },
+     "monday": {
+      "2026": {
+       "n": 41,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 7.3,
+       "fail_60": 0.0,
+       "open_60": 92.7,
+       "pass_med": 56.0,
+       "evals_per_pass": 13.7,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 2863.0
+      },
+      "H1": {
+       "n": 26,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 11.5,
+       "fail_60": 0.0,
+       "open_60": 88.5,
+       "pass_med": 56.0,
+       "evals_per_pass": 8.7,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 1817.0
+      },
+      "H2": {
+       "n": 15,
+       "pass_2w": 0.0,
+       "fail_2w": 0.0,
+       "pass_1m": 0.0,
+       "fail_1m": 0.0,
+       "pass_60": 0.0,
+       "fail_60": 0.0,
+       "open_60": 100.0,
+       "pass_med": null,
+       "evals_per_pass": null,
+       "fee_per_attempt": null,
+       "cost_per_funded": null
+      }
+     },
+     "mc": {
+      "2026": {
+       "n": 4000,
+       "pass_2w": 0.0,
+       "fail_2w": 0.2,
+       "pass_1m": 1.1,
+       "fail_1m": 0.4,
+       "pass_60": 26.2,
+       "fail_60": 0.9,
+       "open_60": 72.9,
+       "pass_med": 44.0,
+       "evals_per_pass": 3.82,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 798.0
+      },
+      "H1": {
+       "n": 4000,
+       "pass_2w": 0.1,
+       "fail_2w": 0.0,
+       "pass_1m": 1.8,
+       "fail_1m": 0.0,
+       "pass_60": 34.1,
+       "fail_60": 0.0,
+       "open_60": 65.9,
+       "pass_med": 43.0,
+       "evals_per_pass": 2.93,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 613.0
+      },
+      "H2": {
+       "n": 4000,
+       "pass_2w": 0.0,
+       "fail_2w": 0.4,
+       "pass_1m": 1.8,
+       "fail_1m": 1.4,
+       "pass_60": 35.0,
+       "fail_60": 2.7,
+       "open_60": 62.3,
+       "pass_med": 42.0,
+       "evals_per_pass": 2.86,
+       "fee_per_attempt": 209.0,
+       "cost_per_funded": 597.0
+      }
+     },
+     "trades_2026_fresh": {
+      "scaled": 2.8,
+      "skip": 2.79
      }
     }
    }
@@ -16813,7 +17735,7 @@
     "lock": 0.0,
     "buffer": 0.0,
     "pay_min": 200,
-    "pay_max": null,
+    "pay_max": 2000,
     "pay_pct": 0.5,
     "split": 0.9,
     "cons": 0.4,
@@ -16841,7 +17763,7 @@
     "50K price not found",
     "150K price $349 vs $419",
     "max contracts not found (size/10 minis assumed)",
-    "funded payout rules assumed"
+    "funded payout rules assumed (cap = max loss per payout)"
    ],
    "sold": true,
    "note": "",
@@ -17022,20 +17944,20 @@
        "p_payout": 75.2,
        "first_med": 49.0,
        "blown_before_payout": 24.8,
-       "blown_year": 26.4,
-       "paid_year_mean": 25677.0,
-       "paid_year_med": 27938.0,
-       "payouts_mean": 2.71
+       "blown_year": 25.4,
+       "paid_year_mean": 4912.0,
+       "paid_year_med": 5400.0,
+       "payouts_mean": 2.73
       },
       "H2": {
        "paths": 1000,
        "p_payout": 76.4,
        "first_med": 43.0,
        "blown_before_payout": 23.6,
-       "blown_year": 26.8,
-       "paid_year_mean": 19323.0,
-       "paid_year_med": 21283.0,
-       "payouts_mean": 3.11
+       "blown_year": 25.0,
+       "paid_year_mean": 5652.0,
+       "paid_year_med": 7200.0,
+       "payouts_mean": 3.14
       }
      }
     },
@@ -17221,7 +18143,7 @@
     "lock": 0.0,
     "buffer": 0.0,
     "pay_min": 200,
-    "pay_max": null,
+    "pay_max": 3000,
     "pay_pct": 0.5,
     "split": 0.9,
     "cons": 0.4,
@@ -17249,7 +18171,7 @@
     "50K price not found",
     "150K price $349 vs $419",
     "max contracts not found (size/10 minis assumed)",
-    "funded payout rules assumed"
+    "funded payout rules assumed (cap = max loss per payout)"
    ],
    "sold": true,
    "note": "",
@@ -17430,20 +18352,20 @@
        "p_payout": 75.3,
        "first_med": 48.0,
        "blown_before_payout": 24.6,
-       "blown_year": 26.3,
-       "paid_year_mean": 40076.0,
-       "paid_year_med": 42720.0,
-       "payouts_mean": 2.83
+       "blown_year": 25.5,
+       "paid_year_mean": 7680.0,
+       "paid_year_med": 8100.0,
+       "payouts_mean": 2.85
       },
       "H2": {
        "paths": 1000,
        "p_payout": 74.9,
        "first_med": 42.0,
        "blown_before_payout": 25.0,
-       "blown_year": 28.0,
-       "paid_year_mean": 27851.0,
-       "paid_year_med": 30494.0,
-       "payouts_mean": 2.98
+       "blown_year": 26.0,
+       "paid_year_mean": 8162.0,
+       "paid_year_med": 10800.0,
+       "payouts_mean": 3.02
       }
      }
     },
@@ -17629,7 +18551,7 @@
     "lock": 0.0,
     "buffer": 0.0,
     "pay_min": 200,
-    "pay_max": null,
+    "pay_max": 4500,
     "pay_pct": 0.5,
     "split": 0.9,
     "cons": 0.4,
@@ -17657,7 +18579,7 @@
     "50K price not found",
     "150K price $349 vs $419",
     "max contracts not found (size/10 minis assumed)",
-    "funded payout rules assumed"
+    "funded payout rules assumed (cap = max loss per payout)"
    ],
    "sold": true,
    "note": "",
@@ -17838,20 +18760,20 @@
        "p_payout": 74.8,
        "first_med": 48.0,
        "blown_before_payout": 25.0,
-       "blown_year": 26.8,
-       "paid_year_mean": 59698.0,
-       "paid_year_med": 63306.0,
-       "payouts_mean": 2.78
+       "blown_year": 25.9,
+       "paid_year_mean": 11310.0,
+       "paid_year_med": 12150.0,
+       "payouts_mean": 2.79
       },
       "H2": {
        "paths": 1000,
        "p_payout": 73.4,
        "first_med": 40.0,
        "blown_before_payout": 26.6,
-       "blown_year": 29.7,
-       "paid_year_mean": 42637.0,
-       "paid_year_med": 46573.0,
-       "payouts_mean": 3.0
+       "blown_year": 28.1,
+       "paid_year_mean": 12284.0,
+       "paid_year_med": 12150.0,
+       "payouts_mean": 3.03
       }
      }
     },
@@ -18037,7 +18959,7 @@
     "lock": 0.0,
     "buffer": 0.0,
     "pay_min": 200,
-    "pay_max": null,
+    "pay_max": 2000,
     "pay_pct": 0.5,
     "split": 0.9,
     "cons": 0.4,
@@ -18245,20 +19167,20 @@
        "p_payout": 75.2,
        "first_med": 49.0,
        "blown_before_payout": 24.8,
-       "blown_year": 26.4,
-       "paid_year_mean": 25677.0,
-       "paid_year_med": 27938.0,
-       "payouts_mean": 2.71
+       "blown_year": 25.4,
+       "paid_year_mean": 4912.0,
+       "paid_year_med": 5400.0,
+       "payouts_mean": 2.73
       },
       "H2": {
        "paths": 1000,
        "p_payout": 76.4,
        "first_med": 43.0,
        "blown_before_payout": 23.6,
-       "blown_year": 26.8,
-       "paid_year_mean": 19323.0,
-       "paid_year_med": 21283.0,
-       "payouts_mean": 3.11
+       "blown_year": 25.0,
+       "paid_year_mean": 5652.0,
+       "paid_year_med": 7200.0,
+       "payouts_mean": 3.14
       }
      }
     },
@@ -18444,7 +19366,7 @@
     "lock": 0.0,
     "buffer": 0.0,
     "pay_min": 200,
-    "pay_max": null,
+    "pay_max": 1750,
     "pay_pct": 0.5,
     "split": 0.9,
     "cons": null,
@@ -18652,10 +19574,10 @@
        "p_payout": 87.5,
        "first_med": 5.0,
        "blown_before_payout": 12.5,
-       "blown_year": 99.7,
-       "paid_year_mean": 7150.0,
-       "paid_year_med": 3584.0,
-       "payouts_mean": 5.91
+       "blown_year": 89.5,
+       "paid_year_mean": 10448.0,
+       "paid_year_med": 3481.0,
+       "payouts_mean": 8.45
       },
       "H2": {
        "paths": 1000,
@@ -18663,9 +19585,9 @@
        "first_med": 5.0,
        "blown_before_payout": 11.0,
        "blown_year": 100.0,
-       "paid_year_mean": 3702.0,
-       "paid_year_med": 2872.0,
-       "payouts_mean": 5.05
+       "paid_year_mean": 3762.0,
+       "paid_year_med": 2885.0,
+       "payouts_mean": 5.12
       }
      }
     },

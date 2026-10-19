@@ -1,5 +1,5 @@
 import { $, seg, esc, fmtN, fmtS$, cls, etStr, store, toast, tradingDay } from './util.js';
-import { S, on, loadBars } from './state.js';
+import { S, on, loadBars, litStart } from './state.js';
 import { TradeChart } from './chart.js';
 import { feed } from './app.js';
 
@@ -41,12 +41,13 @@ export function retheme() { tc?.applyTheme(); }
 async function setupDays() {
   if (!S.res || !tc) return;
   stale = false;
-  bars = await loadBars(S.sym, S.tf);
+  bars = await loadBars(S.res?.model === 'lit' ? 'NQ' : S.sym, S.tf, litStart());   // LIT trades NQ
   const days = S.res.days;
   $('#rpDay').innerHTML = days.map(d => `<option value="${d.date}">${d.date} ${d.trades ? (d.pnl > 0 ? '★ +' : '☆ ') + Math.round(d.pnl) : ''}</option>`).reverse().join('');
   const pick = S.res.trades.length ? S.res.trades.at(-1).day : days.at(-1).date;
   $('#rpDay').value = pick;
-  tc.setAnnotations({ pools: S.res.pools, ifvgs: S.res.ifvgs, trades: S.res.trades, profiles: S.res.profiles, htf_fvgs: S.res.htf_fvgs, sweeps: S.res.events.filter(e => e.type === 'sweep' && e.dir && !e.text.startsWith('Also')) });
+  tc.setAnnotations({ pools: S.res.pools, ifvgs: S.res.ifvgs, trades: S.res.trades, profiles: S.res.profiles, htf_fvgs: S.res.htf_fvgs, sweeps: S.res.events.filter(e => e.type === 'sweep' && e.dir && !e.text.startsWith('Also')),
+    mode: S.res.model === 'lit' ? 'lit' : null, boxes: S.res.boxes || [] });
   loadDay(pick);
 }
 
@@ -57,7 +58,9 @@ function loadDay(d) {
   bars.forEach((b, i) => { if (b.d === d) idx.push(i); });
   if (!idx.length) return;
   ctx0 = Math.max(0, idx[0] - Math.round(13 * 3600 / secs()));
-  start = idx.find(i => bars[i].mod >= 480 && bars[i].mod < 1080) ?? idx[0];
+  // LIT enters 02:00-15:30 ET (most trades 02:00-08:00): the replay starts at 01:00; the previous engine's at 08:00
+  const from = S.res?.model === 'lit' ? 60 : 480;
+  start = idx.find(i => bars[i].mod >= from && bars[i].mod < 1080) ?? idx[0];
   end = idx.at(-1);
   evs = S.res.events.filter(e => tradingDay(e.t) === d);
   pp = { pos: null, realized: 0, n: 0, wins: 0 };
@@ -70,7 +73,7 @@ function jump(i, fit = false) {
   k = Math.max(start, Math.min(end, i));
   tc.setBars(bars.slice(ctx0, k + 1), secs());
   tc.setCursor(bars[k].t);
-  tc.setLegendBase(`<b>REPLAY</b> ${S.sym} ${day}`);
+  tc.setLegendBase(`<b>REPLAY</b> ${S.res?.model === 'lit' ? 'NQ · LIT' : S.sym} ${day}`);
   if (fit || true) tc.scrollToEnd(Math.round(12 * 3600 / secs()));
   lastShown = 0;
   update();

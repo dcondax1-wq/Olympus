@@ -1,10 +1,10 @@
 import { $, esc, fmtN, fmt$, fmtS$, fmtR, cls, store, css, api, busy, toast } from './util.js';
-import { S, on, cj, baseOpts } from './state.js';
+import { S, ENG, on, cj, baseOpts } from './state.js';
 
 const NUMERIC = ['min_rr', 'max_rr', 'fallback_rr', 'risk_usd', 'min_score', 'arm_expiry_min', 'leg_lookback_min', 'max_trades_day', 'daily_max_loss', 'partial_pct', 'partial_r', 'slippage_ticks', 'cushion_frac', 'w_htf', 'w_lrl', 'w_amt', 'w_smt'];
 
 export function init() {
-  on(renderOOS);
+  on(() => renderOOS(ENG()));
   $('#optX').innerHTML = NUMERIC.map(k => `<option ${k === 'min_rr' ? 'selected' : ''}>${k}</option>`).join('');
   $('#optY').innerHTML = NUMERIC.map(k => `<option ${k === 'max_rr' ? 'selected' : ''}>${k}</option>`).join('');
   $('#stressRun').onclick = runStress;
@@ -114,7 +114,7 @@ async function runOpt() {
     const r = await api('/api/optimize', { sym: S.sym, tf: S.tf, params: S.params, x, y });
     const all = r.grid.flat();
     const max = Math.max(1, ...all.map(c => Math.abs(c.net)));
-    const cur = { x: S.res.params[x.name], y: S.res.params[y.name] };
+    const cur = { x: ENG().params[x.name], y: ENG().params[y.name] };
     let html = `<div class="heat" style="grid-template-columns:70px repeat(${r.xs.length},1fr)"><div class="ax">${esc(y.name)} ↓ / ${esc(x.name)} →</div>${r.xs.map(v => `<div class="ax">${v}</div>`).join('')}`;
     for (const row of r.grid.slice().reverse()) {
       html += `<div class="ax">${row[0].y}</div>`;
@@ -142,7 +142,7 @@ function renderOOS(res) {
   $('#oosOut').innerHTML = `<div class="row gap" style="margin-bottom:8px"><span class="muted small">split at</span><select class="sel sm" id="oosSel">${days.map(d => `<option ${d === oosSplit ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
     <table class="tbl">${head}${statRow('In-sample (before split)', summ(ins))}${statRow('Out-of-sample (after split)', summ(oos))}${statRow('Longs', summ(res.trades.filter(t => t.dir === 1)))}${statRow('Shorts', summ(res.trades.filter(t => t.dir === -1)))}</table>
     <div class="note">Default split 2026-09-22: the robust defaults came from a 384-config grid scored only on data before this date. With the current defaults NQ is profitable out-of-sample in 363 of 384 grid configs; ES in 0 of 384, so ES is not recommended. Caveat: several study rounds have now looked at the after-split window, so forward paper trading is the real test.</div>`;
-  $('#oosSel').onchange = (e) => { oosSplit = e.target.value; renderOOS(S.res); };
+  $('#oosSel').onchange = (e) => { oosSplit = e.target.value; renderOOS(ENG()); };
 }
 
 // owner rule: real CME futures only. The long-horizon check runs the full NQ futures history (five years, back-adjusted NQ1!).
@@ -150,7 +150,7 @@ async function runLong() {
   if (!S.meta.available.NQ?.includes('5m')) { $('#longOut').innerHTML = '<div class="empty">No NQ futures 5m history loaded.</div>'; return; }
   busy(true);
   try {
-    const r = S.res && S.sym === 'NQ' && S.tf === '5m' ? S.res : await api('/api/backtest', { sym: 'NQ', tf: '5m', params: S.params, plan: S.plan });
+    const r = ENG() && S.sym === 'NQ' && S.tf === '5m' ? ENG() : await api('/api/backtest', { sym: 'NQ', tf: '5m', params: S.params, plan: S.plan });
     const s = r.stats;
     const byM = {};
     for (const t of r.trades) { const m = t.day.slice(0, 7); (byM[m] ||= []).push(t); }

@@ -1,0 +1,98 @@
+{
+ "live|H1": {
+  "starts": 119,
+  "trades_per_10": 6.72,
+  "p_target": 18.8,
+  "p_win": 22.5,
+  "target_in_10": 67.2,
+  "winner_in_10": 83.2,
+  "oracle_in_10": 73.1,
+  "analytic": 71.6,
+  "med_tgt_r": 6.06,
+  "med_tgt_usd_at_1000_risk": 6003
+ },
+ "live|H2": {
+  "starts": 69,
+  "trades_per_10": 5.8,
+  "p_target": 25.0,
+  "p_win": 35.0,
+  "target_in_10": 73.9,
+  "winner_in_10": 73.9,
+  "oracle_in_10": 71.0,
+  "analytic": 76.5,
+  "med_tgt_r": 4.97,
+  "med_tgt_usd_at_1000_risk": 4949
+ },
+ "live|2026": {
+  "starts": 197,
+  "trades_per_10": 6.09,
+  "p_target": 20.8,
+  "p_win": 26.7,
+  "target_in_10": 66.5,
+  "winner_in_10": 77.2,
+  "oracle_in_10": 69.0,
+  "analytic": 71.9,
+  "med_tgt_r": 5.73,
+  "med_tgt_usd_at_1000_risk": 5701
+ },
+ "live|2021-25": {
+  "starts": 1063,
+  "trades_per_10": 4.8,
+  "p_target": 10.2,
+  "p_win": 17.5,
+  "target_in_10": 39.9,
+  "winner_in_10": 61.9,
+  "oracle_in_10": 32.7,
+  "analytic": 38.7,
+  "med_tgt_r": 4.68,
+  "med_tgt_usd_at_1000_risk": 4636
+ },
+ "two|H1": {
+  "starts": 119,
+  "trades_per_10": 7.73,
+  "p_target": 16.3,
+  "p_win": 20.7,
+  "target_in_10": 67.2,
+  "winner_in_10": 84.0,
+  "oracle_in_10": 73.1,
+  "analytic": 71.6,
+  "med_tgt_r": 5.96,
+  "med_tgt_usd_at_1000_risk": 5923
+ },
+ "two|H2": {
+  "starts": 69,
+  "trades_per_10": 6.52,
+  "p_target": 24.4,
+  "p_win": 33.3,
+  "target_in_10": 88.4,
+  "winner_in_10": 88.4,
+  "oracle_in_10": 85.5,
+  "analytic": 79.7,
+  "med_tgt_r": 5.1,
+  "med_tgt_usd_at_1000_risk": 5072
+ },
+ "two|2026": {
+  "starts": 197,
+  "trades_per_10": 6.95,
+  "p_target": 19.0,
+  "p_win": 24.8,
+  "target_in_10": 71.6,
+  "winner_in_10": 82.7,
+  "oracle_in_10": 74.1,
+  "analytic": 73.3,
+  "med_tgt_r": 5.75,
+  "med_tgt_usd_at_1000_risk": 5718
+ },
+ "two|2021-25": {
+  "starts": 1063,
+  "trades_per_10": 5.28,
+  "p_target": 10.2,
+  "p_win": 18.0,
+  "target_in_10": 42.9,
+  "winner_in_10": 65.7,
+  "oracle_in_10": 35.2,
+  "analytic": 41.5,
+  "med_tgt_r": 4.64,
+  "med_tgt_usd_at_1000_risk": 4609
+ }
+}

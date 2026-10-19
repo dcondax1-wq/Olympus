@@ -3,6 +3,7 @@
 Mounted by server.py with  app.include_router(router).  Everything is served from files already in the repo:
   research/lab/backtest_live.json   tools/export_backtest.py  (5-year live-loop replay, per-trade reports, lessons)
   research/lab/variant_results.json every variant tested, 2026 and 5-year columns
+  research/lab/replays.json         session bars + LIT trade chart records (tools/export_replays.py): /api/next/tradechart/<id>
   research/study/                   trades the owner is reviewing (json + png pairs)
   research/runs/                    the research run library (tools/runlib.py): every backtest with its trades and days
   research/writeups/ + research/*.md  research write-ups (front matter + markdown) and the older reports
@@ -82,9 +83,43 @@ def trades(year: str = "2026"):
     rows = d.get("trades") or []
     if year != "all":
         rows = [t for t in rows if str(t.get("day", "")).startswith(year)]
+    ix = _chart_index()
+    if ix:
+        rows = [{**t, "chart": ix[(t.get("day"), int(t.get("entry_t") or 0))]} if (t.get("day"), int(t.get("entry_t") or 0)) in ix else t
+                for t in rows]
     years = sorted({str(t.get("day", ""))[:4] for t in d.get("trades") or [] if t.get("day")})
     return _J({"year": year, "years": years, "built": d.get("meta", {}).get("built"), "model": d.get("meta", {}).get("model") or "engine",
                "strategy": d.get("meta", {}).get("strategy"), "trades": rows[::-1]})
+
+
+def _replays():
+    return _read(os.path.join(LAB, "replays.json"))
+
+
+def _chart_index():
+    """(day, entry_t) -> chart id of every LIT trade chart record in research/lab/replays.json."""
+    rp = _replays() or {}
+    ch = rp.get("charts") or {}
+    with _lock:
+        hit = _cache.get("_chart_index")
+        if hit and hit[0] is ch:
+            return hit[1]
+    ix = {(r.get("day"), int((r.get("entry") or {}).get("t") or 0)): k for k, r in ch.items()}
+    with _lock:
+        _cache["_chart_index"] = (ch, ix)
+    return ix
+
+
+@router.get("/api/next/tradechart/{cid}")
+def tradechart(cid: str):
+    """One LIT trade's chart record (bars + every marker; tools/lit_chart_data.py) for web_next/js/tradechart.js."""
+    rp = _replays()
+    if not rp:
+        return _J({"error": "research/lab/replays.json missing: run python tools/export_replays.py"}, 404)
+    rec = (rp.get("charts") or {}).get(cid)
+    if not rec:
+        return _J({"error": f"no chart for {cid}"}, 404)
+    return _J(rec)
 
 
 @router.get("/api/next/variants")
@@ -297,4 +332,19 @@ def lit_extra():
         from tools import lit_dash_extra
         return _J(lit_dash_extra.extra({}, lm))
     except Exception as e:                                   # never 500 the dashboard over a panel
+        return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
+
+
+@router.get("/api/next/lit_backtest")
+def lit_backtest(period: str = "2026"):
+    """The LIT replay (research/lab/backtest_live.json) in /api/backtest's shape for the PC pages that show the live strategy
+    (Today widgets, Chart overlays, Replays, Journal, Reports, Weekly Review): trades, days with the MFFU balance / trailing
+    MLL, stats, eval, LIT levels + session boxes per day, events, and the LIT state (the PC bot's when it runs LIT, else
+    the state at the last bar of the data files). period = 2026 (default) | all. /api/backtest stays for the Archive."""
+    try:
+        from . import lit_dash
+        return _J(lit_dash.backtest(period))
+    except FileNotFoundError:
+        return _J({"error": "research/lab/backtest_live.json missing: run python tools/export_backtest.py"}, 404)
+    except Exception as e:                                   # never 500 the dashboard
         return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)

@@ -3,11 +3,14 @@
 // new version of a file (fx.js?v=<hash> after a rebuild, runs/<id>.json?v=<hash> and writeups/<slug>.md?v=<hash> after a
 // new backtest or write-up) drops the old one from the cache, so a run or write-up opened once stays readable offline.
 // Everything else: cached copy at once, refreshed in the background.
-const CACHE = 'le-public-v9';
+// Phone notifications (Web Push from the cloud monitor and the PC bot, engine/push.py): every push shows a notification and
+// counts on the app badge; a tap opens the app at the notice (#/activity/<key>).
+const CACHE = 'le-public-v10';
+const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))));
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE && k !== BADGE).map((k) => caches.delete(k)))));
   self.clients.claim();
 });
 const prune = (u) => caches.open(CACHE).then((c) => c.keys().then((ks) => ks.forEach((k) => {
@@ -25,4 +28,38 @@ self.addEventListener('fetch', (e) => {
   }
   if (url.search.includes('v=')) { e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((r) => { prune(url); return put(req, r); }))); return; }
   e.respondWith(caches.match(req).then((hit) => { const net = fetch(req).then((r) => put(req, r)).catch(() => hit); return hit || net; }));
+});
+
+// ---- notifications
+const badgeGet = () => caches.open(BADGE).then((c) => c.match(BADGE_URL)).then((r) => (r ? r.text() : '0')).then((t) => +t || 0).catch(() => 0);
+const badgeSet = (n) => caches.open(BADGE).then((c) => c.put(BADGE_URL, new Response(String(n)))).catch(() => null);
+const safeHash = (u) => (typeof u === 'string' && /^#\/[\w\-/:.%]*$/.test(u) ? u : '#/activity');
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data ? e.data.text() : '' }; }
+  const title = String(d.title || 'Liquidity Engine').slice(0, 120);
+  const opts = { body: String(d.body || '').slice(0, 600), icon: 'icons/icon-192.png?v=drop1', badge: 'icons/icon-192.png?v=drop1',
+    data: { url: safeHash(d.url), key: d.key || null, t: d.t || null }, timestamp: d.t ? d.t * 1000 : Date.now() };
+  if (d.tag) { opts.tag = String(d.tag); opts.renotify = true; }
+  e.waitUntil(Promise.all([
+    self.registration.showNotification(title, opts),
+    badgeGet().then((n) => badgeSet(n + 1).then(() => (self.navigator && self.navigator.setAppBadge ? self.navigator.setAppBadge(n + 1) : null))).catch(() => null),
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cs) => cs.forEach((c) => c.postMessage({ type: 'push', d }))).catch(() => null),
+  ]));
+});
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const hash = safeHash(e.notification.data && e.notification.data.url);
+  const url = new URL('./' + hash, self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cs) => {
+    const c = cs.find((x) => x.url.startsWith(self.registration.scope));
+    if (c) { c.postMessage({ type: 'open', hash }); return c.focus ? c.focus() : null; }
+    return self.clients.openWindow(url);
+  }));
+});
+// the push service replaced this phone's subscription: subscribe again with the same key (the app then shows the new code)
+self.addEventListener('pushsubscriptionchange', (e) => {
+  const key = e.oldSubscription && e.oldSubscription.options && e.oldSubscription.options.applicationServerKey;
+  if (!key) return;
+  e.waitUntil(self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }).catch(() => null));
 });

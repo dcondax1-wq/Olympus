@@ -3,7 +3,7 @@
 hibernates after the close. Nothing to touch, screen off, no power bill overnight. Free.
 
 Creates two Task Scheduler tasks (times are given in New York time and converted to this PC's clock):
-  LiquidityEngineWake   Mon-Fri at -WakeEt (default 07:50 ET): wakes the PC ("wake to run"), starts the LiquidityEngine
+  LiquidityEngineWake   Mon-Fri at -WakeEt (default 01:30 ET; LIT enters from 02:00 ET, 95 of 120 2026 trades before 08:00): wakes the PC ("wake to run"), starts the LiquidityEngine
                         supervisor task (scripts\install_autostart.ps1 must have been run once) and, if -NinjaTrader is
                         given, NinjaTrader 8 (ninjatrader\SETUP.md: auto-connect to the MFFU account on start).
   LiquidityEngineSleep  Mon-Fri at -SleepEt (default 16:35 ET): hibernates the PC, unless the bot still has an open
@@ -21,7 +21,7 @@ the Sleep task to it. Laptops: keep the lid open or set "lid close" to "do nothi
 The cloud monitor (GitHub Actions) alerts your phone when the PC bot is not polling during a session.
 #>
 param(
-    [string]$WakeEt = "07:50",
+    [string]$WakeEt = "01:30",          # LIT (live since 2026-10-18) trades London from 02:00 ET: the old 07:50 missed it
     [string]$SleepEt = "16:35",
     [string]$NinjaTrader = "",
     [int]$Port = 8766,
@@ -37,7 +37,8 @@ $WakeTask, $SleepTask, $BotTask = 'LiquidityEngineWake', 'LiquidityEngineSleep',
 $Helper = Join-Path $PSScriptRoot 'schedule_pc_run.ps1'
 
 function Convert-EtToLocal([string]$hhmm) {
-    # today's ET wall time -> this PC's wall time (same offset every day: every US zone changes DST on the same dates)
+    # today's ET wall time -> this PC's wall time. Fixed at install: a PC outside the US sees the offset move for a week or
+    # three a year (Europe: Oct 25-Nov 1 2026, Mar 14-28 2027): re-run this script after each of those clock changes.
     $et = [TimeZoneInfo]::FindSystemTimeZoneById('Eastern Standard Time')
     $h, $m = $hhmm.Split(':') | ForEach-Object { [int]$_ }
     $todayEt = [DateTime]::SpecifyKind((Get-Date).Date.AddHours($h).AddMinutes($m), 'Unspecified')

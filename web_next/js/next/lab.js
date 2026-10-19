@@ -1,5 +1,6 @@
 // Lab pages: the research run library (every backtest stored with its trades and days, tools/runlib.py) and the research
 // write-ups. Sources: /api/next/runs, /api/next/run/<id>, /api/next/writeups (engine/next_api.py, read-only).
+import { openChart, tcCss } from './trades.js';
 import { $, $$, api, esc, fmt$, fmtS$, fmtN, fmtR, cls, store } from '../util.js';
 import { go } from '../app.js';
 import { icon } from './icons.js';
@@ -146,11 +147,19 @@ async function renderDetail(el, id) {
     <div class="card nx-glass"><div class="card-h"><h3>By year</h3></div><div class="table-wrap"><table class="tbl"><tr><th>Year</th><th>Trades</th><th>Win</th><th>PF</th><th>Net</th></tr>
       ${Object.entries(r.years || {}).map(([y, v]) => `<tr><td class="mono"><b>${y}</b></td><td>${v.n}</td><td>${pct(v.win)}</td><td class="${(v.pf || 0) >= 1 ? 'up' : 'dn'}">${fmtN(v.pf)}</td><td class="mono ${cls(v.net)}">${fmtS$(v.net)}</td></tr>`).join('')}</table></div></div>
     <div class="card nx-glass"><div class="card-h"><h3>Trades · ${tr.length}</h3><span class="muted small">newest first</span></div>
-      <div class="table-wrap"><table class="tbl"><tr><th>Day</th><th>Side</th><th>Trigger</th><th>Stop</th><th>Micros</th><th>Exit</th><th>R</th><th>$</th></tr>
+      <div class="table-wrap"><table class="tbl"><tr><th>Day</th><th>Side</th><th>Trigger</th><th>Stop</th><th>Micros</th><th>Exit</th><th>R</th><th>$</th><th>Chart</th></tr>
       ${tr.slice(-120).reverse().map(t => `<tr><td class="mono">${esc(t.day)}</td><td class="${t.dir === 1 ? 'up' : 'dn'}">${t.dir === 1 ? 'LONG' : 'SHORT'}${t.half ? ' ½' : ''}</td><td>${esc(t.trigger || '')}</td>
-        <td class="mono">${fmtN(t.risk_pts, 1)}</td><td>${t.qty}</td><td class="small">${esc(t.exit || '')}</td><td class="mono ${cls(t.r)}">${fmtR(t.r)}</td><td class="mono ${cls(t.pnl)}">${fmtS$(t.pnl)}</td></tr>`).join('')}</table></div>
+        <td class="mono">${fmtN(t.risk_pts, 1)}</td><td>${t.qty}</td><td class="small">${esc(t.exit || '')}</td><td class="mono ${cls(t.r)}">${fmtR(t.r)}</td><td class="mono ${cls(t.pnl)}">${fmtS$(t.pnl)}</td><td data-tc="${t.entry_t || ''}"></td></tr>`).join('')}</table></div>
       ${tr.length > 120 ? `<p class="muted small">Showing the newest 120 of ${tr.length}.</p>` : ''}</div>`;
   $('#labBack').onclick = () => { st.sel = null; render(); };
+  // a run trade that is also a live replay trade (same entry time) gets the replay's trade chart
+  if (tr.some(t => t.entry_t)) api('/api/next/trades?year=all').then((d) => {
+    const by = new Map((d.trades || []).filter(x => x.chart).map(x => [String(x.entry_t), x]));
+    if (!by.size) return;
+    tcCss();
+    el.querySelectorAll('td[data-tc]').forEach((c) => { if (by.has(c.dataset.tc)) c.innerHTML = `<span class="nx-tcb" role="button" tabindex="0" data-chart>${icon('chart')}Chart</span>`; });
+    el.querySelector('.tbl td[data-tc]')?.closest('table')?.addEventListener('click', (e) => { const c = e.target.closest('td[data-tc]'); if (c && e.target.closest('[data-chart]')) openChart(by.get(c.dataset.tc)); });
+  }).catch(() => null);
   el.querySelector('[data-wu]')?.addEventListener('click', (e) => { wst.sel = e.currentTarget.dataset.wu; go('writeups'); });
   const series = [{ label: r.title, color: '#7c8cff', days: r.days.map(d => [d[0], d[1]]) }];
   if (b) series.push({ label: bid === 'baseline' && liveStrat() === 'lit' ? 'Previous strategy (archive lock)' : 'Live strategy', color: '#3ee0c8', days: b.days.map(d => [d[0], d[1]]) });

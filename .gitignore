@@ -29,8 +29,10 @@ data/clean/*.csv
 data/_pre_clean_backup/
 data/NQ_5m.yahoo_backup.csv
 
-# large rendered chart images (rebuild with tools/trade_gallery.py)
+# large rendered chart images (rebuild with tools/trade_gallery.py; LIT trade charts with tools/lit_trade_charts.py,
+# 12 curated examples are committed in research/study/lit_charts/)
 research/lab/gallery/
+research/lab/trade_charts/
 
 # raw fetches of the news hub (tools/news_hub.py saves every source here; --offline rebuilds from them)
 data/news/raw/
@@ -45,3 +47,10 @@ tools/web_public/fx/*.png
 research/runs/_cache/
 research/runs/*.tmp
 research/design/icon_v2/src/node_modules/
+*.tmp.*
+
+# phone notifications (engine/push.py): the VAPID private key + subscriptions and the PC's sent-notice keys
+data/push.json
+data/push_sent.json
+.le_push/
+data/push_pc_key.json

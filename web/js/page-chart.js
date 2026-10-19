@@ -1,6 +1,6 @@
 import { $, $$, seg, esc, fmtN, fmt$, fmtS$, fmtR, cls, etStr, store, tradingDay } from './util.js';
-import { S, on, loadBars } from './state.js';
-import { TradeChart, LAYERS } from './chart.js';
+import { S, on, loadBars, litStart } from './state.js';
+import { TradeChart, LAYERS, LAYERS_LIT } from './chart.js';
 import { feed } from './app.js';
 
 let tc = null;
@@ -34,9 +34,12 @@ export function show() {
 }
 export function retheme() { tc?.applyTheme(); }
 
+const litMode = () => S.res?.model === 'lit';
 function renderLayerSeg() {
   const el = $('#chartLayers');
-  el.innerHTML = LAYERS.map(([k, label]) => `<button data-k="${k}" class="${tc.layers[k] ? 'on' : ''}">${label}</button>`).join('');
+  el.dataset.mode = litMode() ? 'lit' : 'eng';
+  if (litMode() && !store.get('layersLit', false)) { tc.layers.fvg = false; tc.setLayer?.('fvg', false); store.set('layersLit', true); }   // LIT: auto FVG boxes off by default
+  el.innerHTML = (litMode() ? LAYERS_LIT : LAYERS).map(([k, label]) => `<button data-k="${k}" class="${tc.layers[k] ? 'on' : ''}">${label}</button>`).join('');
   el.onclick = (e) => {
     const b = e.target.closest('button'); if (!b) return;
     const k = b.dataset.k; tc.setLayer(k, !tc.layers[k]); b.classList.toggle('on', tc.layers[k]);
@@ -47,7 +50,8 @@ function renderLayerSeg() {
 async function refresh() {
   if (!S.res || !tc) return;
   stale = false;
-  const avail = (S.meta.available[S.sym] || []).filter(x => TF_SECS[x]);
+  if ($('#chartLayers').dataset.mode !== (litMode() ? 'lit' : 'eng')) renderLayerSeg();
+  const avail = (S.meta.available[litMode() ? 'NQ' : S.sym] || []).filter(x => TF_SECS[x]);
   if (!avail.includes(tf)) tf = '5m';
   seg($('#chartTf'), avail.map(x => [x, x]), tf, async (v) => { tf = v; store.set('chartTf', v); await loadInto(); });
   tc.minFvg = S.meta.instruments[S.sym]?.min_fvg ?? 3;
@@ -60,11 +64,12 @@ async function refresh() {
 }
 
 async function loadInto() {
-  const bars = await loadBars(S.sym, tf);
+  const bars = await loadBars(litMode() ? 'NQ' : S.sym, tf, litStart());   // LIT trades NQ
   tc.setBars(bars, TF_SECS[tf]);
   const r = S.res;
-  tc.setAnnotations({ pools: r.pools, ifvgs: r.ifvgs, trades: r.trades, profiles: r.profiles, htf_fvgs: r.htf_fvgs, sweeps: r.events.filter(e => e.type === 'sweep' && e.dir && !e.text.startsWith('Also')) });
-  tc.setLegendBase(`<b>${S.sym}</b> ${tf} · ET`);
+  tc.setAnnotations({ pools: r.pools, ifvgs: r.ifvgs, trades: r.trades, profiles: r.profiles, htf_fvgs: r.htf_fvgs, sweeps: r.events.filter(e => e.type === 'sweep' && e.dir && !e.text.startsWith('Also')),
+    mode: r.model === 'lit' ? 'lit' : null, boxes: r.boxes || [] });
+  tc.setLegendBase(r.model === 'lit' ? `<b>NQ</b> ${tf} · ET · LIT` : `<b>${S.sym}</b> ${tf} · ET`);
   if (S.sym === 'NQ' && window.LE_GAMMA) tc.setAnnotations({ gamma: window.LE_GAMMA.live });
   if (pendingFocus) { const f = pendingFocus; pendingFocus = null; f(); }
   else focusDay(curDay || lastTradeDay());
@@ -80,7 +85,8 @@ export function focusDay(d) {
   const idx = bars.map((b, i) => [b, i]).filter(([b]) => b.d === d);
   if (!idx.length) return;
   // show from prior evening 18:00 through the session
-  const a = idx.find(([b]) => b.mod >= 480)?.[1] ?? idx[0][1];
+  const from = litMode() ? 60 : 480;
+  const a = idx.find(([b]) => b.mod >= from && b.mod < 1080)?.[1] ?? idx[0][1];
   const z = idx.at(-1)[1];
   tc.focusRange(bars[a].t, bars[Math.min(z, bars.length - 1)].t, Math.round(60 * 300 / TF_SECS[tf]));
   renderSide(d);
@@ -119,7 +125,7 @@ function renderSide(d, sel = null) {
   const day = r.days.find(x => x.date === d) || {};
   const trs = r.trades.filter(t => t.day === d);
   const evs = r.events.filter(e => tradingDay(e.t) === d);
-  const pf = r.profiles[d];
+  const pf = r.profiles?.[d];
   let html = `<div class="card-h"><h3>${d}</h3><span class="pill ${day.pnl > 0 ? 'good' : day.pnl < 0 ? 'bad' : ''}">${fmtS$(day.pnl || 0)}</span></div>`;
   if (pf) html += `<div class="state-grid" style="margin-bottom:10px"><div class="st"><div class="k">prior POC</div><div class="v">${fmtN(pf.poc, 2)}</div></div><div class="st"><div class="k">prior VA</div><div class="v small">${fmtN(pf.val, 0)} – ${fmtN(pf.vah, 0)}</div></div></div>`;
   for (const t of (sel ? [sel] : trs)) html += tradeCard(t);
@@ -129,7 +135,26 @@ function renderSide(d, sel = null) {
   feed($('#sideFeed'), evs);
 }
 
+function litCard(t) {
+  const L = t.dir === 1, rep = t.report || {};
+  return `<div class="card" style="box-shadow:none;background:var(--surface-2);margin-bottom:10px">
+    <div class="card-h"><span class="dir ${L ? 'L' : 'S'}">${L ? 'LONG' : 'SHORT'} · ${esc(t.qty_label)}</span><b class="mono ${cls(t.pnl)}">${fmtS$(t.pnl)} · ${fmtR(t.pnl_r)}</b></div>
+    <div class="state-grid">
+      <div class="st"><div class="k">Entry · ${esc(t.entry_kind || 'LIT')}</div><div class="v">${fmtN(t.entry)} <span class="muted small">${etStr(t.entry_t)}</span></div></div>
+      <div class="st"><div class="k">Exit · ${esc(t.exit_reason)}</div><div class="v">${fmtN(t.exit_price)} <span class="muted small">${etStr(t.exit_t)}</span></div></div>
+      <div class="st"><div class="k">Stop · beyond the sweep</div><div class="v dn">${fmtN(t.stop0 ?? t.stop)}</div></div>
+      <div class="st"><div class="k">Target · ${fmtN(t.rr, 2)}R</div><div class="v up">${fmtN(t.target)}</div></div>
+      <div class="st"><div class="k">Risk</div><div class="v">${fmtN(t.risk_pts, 2)} pts · ${fmt$(t.risk_usd)}</div></div>
+      <div class="st"><div class="k">Best point</div><div class="v">${t.mfe != null ? fmtR(t.mfe) : '—'}</div></div>
+    </div>
+    <div class="note"><b>Swept</b> ${esc(t.pools.join(', ') || '—')}${t.sweep_ext != null ? ` (extreme ${fmtN(t.sweep_ext)})` : ''}<br>5m CISD ${t.cisd_level != null ? fmtN(t.cisd_level) : '—'} · target <b>${esc(t.target_label)}</b>${t.half || t.weekly_stop ? ' · <span class="dn">half size (weekly stop)</span>' : ''}</div>
+    ${(rep.why || []).length ? `<div class="small" style="margin-top:6px;line-height:1.55">${rep.why.map(w => `• ${esc(w)}`).join('<br>')}</div>` : ''}
+    ${rep.result ? `<div class="small muted" style="margin-top:6px">${esc(rep.result)}${(rep.lessons || []).length ? ' · ' + esc(rep.lessons.join('; ')) : ''}</div>` : ''}
+    <div style="margin-top:6px">${(t.conf_tags || []).map(x => `<span class="tag-chip">${esc(x)}</span>`).join('')}</div>
+  </div>`;
+}
 export function tradeCard(t) {
+  if (t.trigger === 'LIT') return litCard(t);
   const L = t.dir === 1;
   return `<div class="card" style="box-shadow:none;background:var(--surface-2);margin-bottom:10px">
     <div class="card-h"><span class="dir ${L ? 'L' : 'S'}">${L ? 'LONG' : 'SHORT'} · ${esc(t.qty_label)}</span><b class="mono ${cls(t.pnl)}">${fmtS$(t.pnl)} · ${fmtR(t.pnl_r)}</b></div>

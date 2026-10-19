@@ -23,8 +23,9 @@ What the plain backtest (engine/lit.py simulate_x) assumes, and what this module
                                                       only when the bar trades >= thr ticks THROUGH it (a touch can sit in the
                                                       queue unfilled); inside = place it n ticks inside the level.
   breakeven from the bar after +1R                    the bot sees +1R when that 1m bar closes, then polls: the CHANGE reaches
-                                                      the broker ~35 s into the next bar, so the old stop guards that whole
-                                                      next bar (conservative) and the breakeven stop works from the bar after.
+                                                      the broker ~35 s into the next bar (today's 60 s loop), so the old stop
+                                                      guards that whole next bar and the breakeven stop works from the bar
+                                                      after; a move that lands in the first half of a bar counts for that bar.
   model exits                                         every model exit (target the broker limit missed, breakeven, EOD) is
                                                       routed as CLOSEPOSITION at the next poll: market at the price then.
   flat 15:55 = close of the 15:55 bar - 1 tick        the NinjaTrader adapter flattens on its first poll at/after 15:55:00.
@@ -192,7 +193,7 @@ def simulate(M, B, cand, entry_px, tgt, stop, P):
             if hi_d[k] >= tg:
                 k_x, kind_m, xpx_m = k, "TARGET", tg; break
             if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk:
-                cur, be_done, k_be = entry, True, k
+                cur, be_done, k_be = entry + float(P.get("be_off") or 0.0), True, k
         stop_at[k] = cur
         if B.mod[k] >= flat:
             k_x, kind_m, xpx_m = k, "EOD", float(c_d[k]) - SLIP; break
@@ -267,7 +268,7 @@ def simulate(M, B, cand, entry_px, tgt, stop, P):
         return out("TARGET", j, max(L, e_real - 2 * hs(T_e)), e_real, w1)
     lat_poll = Fp["poll_s"] * Fp["phase"] + Fp["compute_s"] + Fp["route_s"] + Fp["feed_s"]
     T_be = None
-    if k_be is not None and (int(B.t[k_be]) + secs + lat_poll) > T_e - 1e-9 and stop_at.get(last_closed, stop) != entry:
+    if k_be is not None and (int(B.t[k_be]) + secs + lat_poll) > T_e - 1e-9 and stop_at.get(last_closed, stop) != entry + float(P.get("be_off") or 0.0):
         T_be = int(B.t[k_be]) + secs + (lat_poll if Fp["be_lag"] else 0.0)
     T_x = int(B.t[k_x]) + secs + lat_poll if Fp["route_model_exits"] else None
     T_eod = None
@@ -276,14 +277,14 @@ def simulate(M, B, cand, entry_px, tgt, stop, P):
         if len(fl):
             T_eod = int(B.t[fl[0]]) + Fp["poll_s"] * Fp["phase"] + Fp["route_s"]
     cur_r = s_r
-    be_px = round(entry / TICK) * TICK
+    be_px = round((entry + float(P.get("be_off") or 0.0)) / TICK) * TICK
     b = j
     while b < B.n:
         if B.day[b] != s_day or B.mod[b] >= 1080:
             b -= 1
             return out("EOD", b, float(c_d[b]) - hs(B.t[b]), e_real, w1)
         tb = int(B.t[b])
-        if T_be is not None and tb >= T_be:
+        if T_be is not None and tb + 0.5 * secs >= T_be:      # the move landed in the first half of this bar (or before it)
             cur_r = max(cur_r, be_px); T_be = None
         routed = [(T_, nm) for T_, nm in ((T_x, "MODEL_" + str(kind_m)), (T_eod, "EOD")) if T_ is not None and T_ >= T_e]
         # a routed exit / clock flatten that fell in a gap between bars: market at this bar's open
