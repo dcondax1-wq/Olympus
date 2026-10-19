@@ -1,7 +1,7 @@
 {
- "built": "2026-10-19 14:36",
+ "built": "2026-10-19 16:19",
  "baseline": "baseline",
- "count": 1053,
+ "count": 1056,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -4028,6 +4028,148 @@
      "slow_pass": 52.5,
      "pass_med": 16.0,
      "b2b": "18/28"
+    }
+   }
+  },
+  {
+   "id": "lit_25k_rec",
+   "title": "MFFU Builder 25K eval sizing: room 50% + after 10 safe 30%",
+   "family": "risk",
+   "question": "Owner 2026-10-19: a Builder 25K ($63) next to the Builder 50K on the same LIT signals; best 25K eval sizing for pass within 2 weeks, no reset.",
+   "status": "adopt-candidate",
+   "verdict": "Picked on H1 (score p10 - 1.5 dead10 + 0.5 (MC pass - not passed)): room 50% + after 10 safe 30%. H1 (pick) p10/f10 53.8/1.7, dec10 55.5, p15/f15 62.3/1.8, eventual pass/fail/stuck 77.3/2.5/9.2, dead10 10.9, pass_med 6.0, slow_pass 22.8%, $117 per 2-week pass, $82 per pass; H2 (check) p10/f10 47.8/0.0, dec10 47.8, p15/f15 54.7/3.1, eventual 91.3/2.9/1.4, dead10 4.3, pass_med 10.0, slow_pass 36.5%, $132 per 2-week pass, $69 per pass; Monte Carlo 2,000 x 120 sessions: H1 eventual 79.3/6.2, H2 77.3/6.0; max $ at risk 503. Back-to-back no-reset path on 2026: {'PASS': 4, 'FAIL': 0, 'OPEN': 1}.",
+   "writeup": "lit-builder-25k",
+   "tags": [
+    "lit",
+    "lit_25k"
+   ],
+   "params": {
+    "account": "MFFU Builder 25K",
+    "lit_sizing": {
+     "two_week": {
+      "base": "need",
+      "need_buf": 1.0,
+      "room_f": 0.5,
+      "wk": false,
+      "dll_cap": true,
+      "stop_at_target": true,
+      "max_usd": null,
+      "press_at": null,
+      "press_mult": 1.0,
+      "press_room": null,
+      "protect_over": null,
+      "protect_keep": 0.0,
+      "acct": {
+       "target": 1500.0,
+       "mll": 1000.0,
+       "lock": 100.0,
+       "dll": 600.0,
+       "max_micros": 20,
+       "scale": 0.5
+      }
+     },
+     "safe_cap": 0.3,
+     "eval_ref_stop": 25.0,
+     "fast_ref_stop": 40.0,
+     "two_week_until": 10,
+     "after_mode": "safe_eval",
+     "mode": "two_week",
+     "guard": {
+      "target": 1500.0,
+      "dll": 600.0,
+      "max_micros": 20
+     }
+    }
+   },
+   "sizing": {
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.5,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0,
+     "acct": {
+      "target": 1500.0,
+      "mll": 1000.0,
+      "lock": 100.0,
+      "dll": 600.0,
+      "max_micros": 20,
+      "scale": 0.5
+     }
+    },
+    "safe_cap": 0.3,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "mode": "two_week",
+    "guard": {
+     "target": 1500.0,
+     "dll": 600.0,
+     "max_micros": 20
+    }
+   },
+   "built": "2026-10-19 16:19",
+   "spans": {
+    "2026": {
+     "n": 51,
+     "tpw": 1.24,
+     "wk2": 36,
+     "win": 23.5,
+     "pf": 2.85,
+     "net": 6452,
+     "dd": -992,
+     "avg_r": 0.831,
+     "stop": 40.2,
+     "worst_day": -356,
+     "risk": 146.0,
+     "half": 9,
+     "per_month": 658,
+     "p10": 1.0,
+     "f10": 0.0,
+     "p15": 2.4,
+     "f15": 0.0,
+     "p20": 4.9,
+     "f20": 0.0,
+     "dec10": 1.0,
+     "slow_pass": 90.2,
+     "pass_med": 36.0,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 51,
+     "tpw": 0.2,
+     "wk2": 6,
+     "win": 23.5,
+     "pf": 2.85,
+     "net": 6452,
+     "dd": -992,
+     "avg_r": 0.831,
+     "stop": 40.2,
+     "worst_day": -356,
+     "risk": 146.0,
+     "half": 9,
+     "per_month": 106,
+     "p10": 0.6,
+     "f10": 0.0,
+     "p15": 1.3,
+     "f15": 0.0,
+     "p20": 2.0,
+     "f20": 0.0,
+     "dec10": 0.6,
+     "slow_pass": 85.0,
+     "pass_med": 34.0,
+     "b2b": "2/0"
     }
    }
   },
@@ -123744,6 +123886,277 @@
      "slow_pass": 72.5,
      "pass_med": 31.0,
      "b2b": "9/14"
+    }
+   }
+  },
+  {
+   "id": "lit_25k_c_scaled",
+   "title": "MFFU Builder 25K eval sizing: C25 (config C scaled)",
+   "family": "risk",
+   "question": "Owner 2026-10-19: a Builder 25K ($63) next to the Builder 50K on the same LIT signals; best 25K eval sizing for pass within 2 weeks, no reset.",
+   "status": "info",
+   "verdict": "The 50K config C scaled to the Builder 25K. H1 (pick) p10/f10 54.6/0.8, dec10 55.4, p15/f15 63.2/0.9, eventual pass/fail/stuck 73.9/2.5/14.3, dead10 13.4, pass_med 5.5, slow_pass 18.2%, $115 per 2-week pass, $85 per pass; H2 (check) p10/f10 50.7/0.0, dec10 50.7, p15/f15 54.7/3.1, eventual 63.8/4.3/11.6, dead10 7.2, pass_med 5.0, slow_pass 11.4%, $124 per 2-week pass, $99 per pass; Monte Carlo 2,000 x 120 sessions: H1 eventual 76.8/6.2, H2 72.2/7.6; max $ at risk 581. Back-to-back no-reset path on 2026: {'PASS': 2, 'FAIL': 0, 'OPEN': 1}.",
+   "writeup": "lit-builder-25k",
+   "tags": [
+    "lit",
+    "lit_25k"
+   ],
+   "params": {
+    "account": "MFFU Builder 25K",
+    "lit_sizing": {
+     "two_week": {
+      "base": "need",
+      "need_buf": 1.0,
+      "room_f": 0.6,
+      "wk": false,
+      "dll_cap": true,
+      "stop_at_target": true,
+      "max_usd": null,
+      "press_at": null,
+      "press_mult": 1.0,
+      "press_room": null,
+      "protect_over": null,
+      "protect_keep": 0.0,
+      "acct": {
+       "target": 1500.0,
+       "mll": 1000.0,
+       "lock": 100.0,
+       "dll": 600.0,
+       "max_micros": 20,
+       "scale": 0.5
+      }
+     },
+     "safe_cap": 0.6,
+     "eval_ref_stop": 25.0,
+     "fast_ref_stop": 40.0,
+     "two_week_until": 10,
+     "after_mode": "safe_eval",
+     "mode": "two_week",
+     "guard": {
+      "target": 1500.0,
+      "dll": 600.0,
+      "max_micros": 20
+     }
+    }
+   },
+   "sizing": {
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0,
+     "acct": {
+      "target": 1500.0,
+      "mll": 1000.0,
+      "lock": 100.0,
+      "dll": 600.0,
+      "max_micros": 20,
+      "scale": 0.5
+     }
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "mode": "two_week",
+    "guard": {
+     "target": 1500.0,
+     "dll": 600.0,
+     "max_micros": 20
+    }
+   },
+   "built": "2026-10-19 16:18",
+   "spans": {
+    "2026": {
+     "n": 16,
+     "tpw": 0.39,
+     "wk2": 7,
+     "win": 25.0,
+     "pf": 2.67,
+     "net": 2204,
+     "dd": -994,
+     "avg_r": 0.791,
+     "stop": 27.6,
+     "worst_day": -356,
+     "risk": 196.0,
+     "half": 4,
+     "per_month": 225,
+     "p10": 1.0,
+     "f10": 0.0,
+     "p15": 1.0,
+     "f15": 0.0,
+     "p20": 1.0,
+     "f20": 0.0,
+     "dec10": 1.0,
+     "slow_pass": 0.0,
+     "pass_med": 3.5,
+     "b2b": "1/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 16,
+     "tpw": 0.06,
+     "wk2": 1,
+     "win": 25.0,
+     "pf": 2.67,
+     "net": 2204,
+     "dd": -994,
+     "avg_r": 0.791,
+     "stop": 27.6,
+     "worst_day": -356,
+     "risk": 196.0,
+     "half": 4,
+     "per_month": 36,
+     "p10": 0.6,
+     "f10": 0.0,
+     "p15": 1.0,
+     "f15": 0.0,
+     "p20": 1.4,
+     "f20": 0.0,
+     "dec10": 0.6,
+     "slow_pass": 77.6,
+     "pass_med": 31.5,
+     "b2b": "1/0"
+    }
+   }
+  },
+  {
+   "id": "lit_25k_copy",
+   "title": "Copy trading: MFFU Builder 50K + 25K on the same LIT signals",
+   "family": "risk",
+   "question": "Owner 2026-10-19: both evals on one bot (same entry / stop / target, each sized on its own room).",
+   "status": "info",
+   "verdict": "Same day: H1 both pass in 2 weeks 52.5%, one 2.5%, both fail 10.2% (pass corr 0.95); H2 47.1 / 4.4 / 0.0% (corr 0.92). 25K one week later: H1 32.7 / 43.4 / 1.8%, H2 27.0 / 44.400000000000006 / 0.0%. 2026 no-reset paths: 50K {'PASS': 15, 'FAIL': 4, 'OPEN': 1}, 25K {'PASS': 4, 'FAIL': 0, 'OPEN': 1}.",
+   "writeup": "lit-builder-25k",
+   "tags": [
+    "lit",
+    "lit_25k"
+   ],
+   "params": {
+    "cfg_50k": {
+     "two_week": {
+      "base": "need",
+      "need_buf": 1.0,
+      "room_f": 0.6,
+      "wk": false,
+      "dll_cap": true,
+      "stop_at_target": true,
+      "max_usd": null,
+      "press_at": null,
+      "press_mult": 1.0,
+      "press_room": null,
+      "protect_over": null,
+      "protect_keep": 0.0
+     },
+     "safe_cap": 0.6,
+     "eval_ref_stop": 25.0,
+     "fast_ref_stop": 40.0,
+     "two_week_until": 10,
+     "after_mode": "safe_eval",
+     "mode": "two_week"
+    },
+    "cfg_25k": {
+     "two_week": {
+      "base": "need",
+      "need_buf": 1.0,
+      "room_f": 0.5,
+      "wk": false,
+      "dll_cap": true,
+      "stop_at_target": true,
+      "max_usd": null,
+      "press_at": null,
+      "press_mult": 1.0,
+      "press_room": null,
+      "protect_over": null,
+      "protect_keep": 0.0,
+      "acct": {
+       "target": 1500.0,
+       "mll": 1000.0,
+       "lock": 100.0,
+       "dll": 600.0,
+       "max_micros": 20,
+       "scale": 0.5
+      }
+     },
+     "safe_cap": 0.3,
+     "eval_ref_stop": 25.0,
+     "fast_ref_stop": 40.0,
+     "two_week_until": 10,
+     "after_mode": "safe_eval",
+     "mode": "two_week",
+     "guard": {
+      "target": 1500.0,
+      "dll": 600.0,
+      "max_micros": 20
+     }
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-19 16:19",
+   "spans": {
+    "2026": {
+     "n": 171,
+     "tpw": 4.15,
+     "wk2": 88,
+     "win": 25.7,
+     "pf": 3.27,
+     "net": 55564,
+     "dd": -3896,
+     "avg_r": 0.757,
+     "stop": 43.5,
+     "worst_day": -1095,
+     "risk": 264.0,
+     "half": 26,
+     "per_month": 5664,
+     "p10": 45.1,
+     "f10": 7.3,
+     "p15": 57.8,
+     "f15": 12.6,
+     "p20": 60.7,
+     "f20": 13.1,
+     "dec10": 52.4,
+     "slow_pass": 27.0,
+     "pass_med": 9.0,
+     "b2b": "14/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 171,
+     "tpw": 0.67,
+     "wk2": 14,
+     "win": 25.7,
+     "pf": 3.27,
+     "net": 55564,
+     "dd": -3896,
+     "avg_r": 0.757,
+     "stop": 43.5,
+     "worst_day": -1095,
+     "risk": 264.0,
+     "half": 26,
+     "per_month": 913,
+     "p10": 7.9,
+     "f10": 1.2,
+     "p15": 10.3,
+     "f15": 2.0,
+     "p20": 11.2,
+     "f20": 2.1,
+     "dec10": 9.1,
+     "slow_pass": 40.3,
+     "pass_med": 12.0,
+     "b2b": "14/5"
     }
    }
   },
