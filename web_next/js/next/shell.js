@@ -8,7 +8,7 @@ import { fxLevel, setFxLevel } from './fx3d.js';
 const root = document.documentElement;
 const pref = { get: (k, d) => store.get('nx.' + k, d), set: (k, v) => store.set('nx.' + k, v) };
 
-const PINS = ['strategy', 'live', 'briefing', 'results', 'evals'];
+const PINS = ['evalhq', 'strategy', 'live', 'briefing', 'results', 'evals'];
 
 function navLink(p, extra = '') {
   // label span first: the command palette reads the first <span> of each #nav link as the page name (CSS puts the icon first)
@@ -130,7 +130,7 @@ function interfaceCard() {
   const row = (id, label, sub, on) => `<label class="nx-switch-row"><span><b>${label}</b><span class="muted small">${sub}</span></span>
     <input type="checkbox" class="nx-switch" id="${id}" ${on ? 'checked' : ''}></label>`;
   el.innerHTML = row('nxOptCollapse', 'Compact sidebar', 'Icons only on desktop', pref.get('collapsed', false)) +
-    row('nxOptPins', 'Pinned shortcuts', 'Strategy, Paper Bot (LIT), Briefing, Results, Evals in the sidebar', pref.get('pins', true)) +
+    row('nxOptPins', 'Pinned shortcuts', 'Eval HQ, Strategy, Paper Bot (LIT), Briefing, Results, Evals in the sidebar', pref.get('pins', true)) +
     `<div class="nx-switch-row"><span><b>3D effects</b><span class="muted small">Galaxy background, card glow, tap sparks, Live Oracle, trade galaxy, month city. Lite saves battery.</span></span>
       <div class="seg sm" id="nxOptFx">${[['max', 'Max'], ['lite', 'Lite'], ['off', 'Off']].map(([v, l]) => `<button type="button" data-v="${v}" class="${fxLevel() === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>` +
     `<div class="note">Classic dashboard: start the server with <span class="mono">LE_UI=classic</span> to get the previous look. Every page is shared, so both stay in sync.</div>`;

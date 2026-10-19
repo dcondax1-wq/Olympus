@@ -540,6 +540,24 @@ def fam_loose(Ub):
     G.append(("depth 0.3 + disp 0.6 + idm 48 + stop 6-100", {"depth": 0.3, "disp": 0.6, "idm_a": [1.0, 48, 1], "min_stop": 6.0, "max_stop": 100.0}))
     for lab, P in G:
         put("loose: " + lab, unit(run_on("nq", P)), {"family": "loose", "P": P})
+    # wide stops get 0 micros under 800x20/stop beyond ~89 pts (8000 / stop^2 < 1): the same ranges with a 1-micro floor
+    for lo, hi in ((8, 100), (8, 120), (6, 120), (8, 150)):
+        P = {"min_stop": float(lo), "max_stop": float(hi)}
+        with qty_floor():
+            put(f"loose: stop {lo}-{hi}, min 1 micro", unit(run_on("nq", P)), {"family": "loose", "P": P, "qty_floor": 1})
+
+
+_ORIG_QTY = lit.qty_for
+
+
+class qty_floor:
+    """Size follows the stop, but never below 1 micro (this process only: lit.qty_for patched for the engine and the scoring)."""
+    def __enter__(self):
+        lit.qty_for = lambda risk_pts, risk_usd=800.0, ref_stop=20.0, max_micros=lit.MAX_MICROS: max(1, _ORIG_QTY(risk_pts, risk_usd, ref_stop, max_micros))
+        return self
+
+    def __exit__(self, *a):
+        lit.qty_for = _ORIG_QTY
 
 
 def fam_native(Ub):
@@ -578,13 +596,69 @@ def all_():
     fam_native(Ub); dump()
 
 
+
+# ================================================================================================ more HTF (15m grid, 30m / 1h)
+def fam_htf_grid(Ub):
+    """Neighbours of the 15m add-on (1 a day across 5m + 15m)."""
+    for dep in (0.4, 0.5):
+        for dis in (0.7, 0.8):
+            for age in (12, 24):
+                for mx in (80.0, 100.0):
+                    P = {"depth": dep, "disp": dis, "idm_a": [1.0, age, 1], "max_stop": mx}
+                    lab = f"15m add d{dep} disp{dis} idm{age} stop{mx:.0f}"
+                    U15 = unit(run_on("m15", P), "NQ", "m15")
+                    put("htf grid: " + lab + ", 1 a day", merge([Ub, U15], max_day=1), {"family": "htf", "P": P})
+
+
+def _candidates_short_days():
+    """engine/lit.candidates with the 50-bar day minimum lowered to 10 (a 1h day has 23 bars): research copy, this process."""
+    import inspect
+    src = inspect.getsource(lit.candidates).replace("e - s < 50", "e - s < 10")
+    ns = dict(vars(lit))
+    exec(compile(src, "lit_candidates_short", "exec"), ns)
+    return ns["candidates"]
+
+
+def mtf(tf):
+    key = "m" + tf
+    if key not in _S:
+        M, C, B1, B5 = nq()
+        from engine import data as _data
+        _data.TF_SECONDS.setdefault("30m", 1800)          # research only, this process
+        Mx = lit.Market(bars=resample(load("NQ", "5m"), tf))
+        k = {"30m": 6, "1h": 12}[tf]
+        p = os.path.join(CACHE, f"litmore_{tf}_cands_v1_{rl._data_key().replace(':', '_')}.pkl")
+        if os.path.exists(p):
+            Cx = pickle.load(open(p, "rb"))
+        else:
+            cf = _candidates_short_days()
+            Cx = cf(Mx, leg=max(2, 24 // k), sweep_win=max(2, 24 // k), ref_back=max(3, 36 // k), ind_back=max(3, 36 // k), ref="cisd")
+            pickle.dump(Cx, open(p, "wb"))
+        _S[key] = (Mx, Cx, remap(B1, M, Mx), remap(B5, M, Mx))
+    return _S[key]
+
+
+def fam_mtf(Ub):
+    for tf in ("30m", "1h"):
+        Mx, Cx, B1x, B5x = mtf(tf)
+        k = {"30m": 6, "1h": 12}[tf]
+        for lab, P in (("live filters", {"idm_a": [1.0, max(3, 36 // k), 1]}),
+                       ("no inducement gate", {"idm_a": None}),
+                       ("relaxed depth 0.4 disp 0.7 stop 100", {"idm_a": [1.0, max(3, 72 // k), 1], "depth": 0.4, "disp": 0.7, "max_stop": 100.0})):
+            PP = {**LIVE, **P}
+            T = lit.run_x(Mx, Cx, PP, SESS, B1=B1x, B5=B5x)
+            Ux = unit(T, "NQ", "m" + tf)
+            put(f"{tf} LIT {lab} alone", Ux, {"family": "htf", "P": P})
+            put(f"5m + {tf} LIT {lab}, 1 a day", merge([Ub, Ux], max_day=1), {"family": "htf", "P": P})
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "check"
     if cmd == "check":
         check()
     elif cmd == "all":
         all_()
-    elif cmd in ("es", "htf", "miss", "loose", "native"):
+    elif cmd in ("es", "htf", "miss", "loose", "native", "htf_grid", "mtf"):
         Ub = fam_base()
         globals()["fam_" + cmd](Ub)
         dump()

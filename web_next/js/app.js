@@ -44,6 +44,7 @@ import { evals as evalsPage, intraday as intradayPage } from './next/evals.js';
 import { initToday } from './next/today.js';
 import { archive as archivePage } from './next/archive.js';
 import { litday, litlevels, litcockpit, initLitToday } from './next/litpages.js';
+import * as pc from './next/pcpages.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -56,6 +57,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   trades: tradesPage, results: hub.results, variants: hub.variants, learned: hub.learned, study: hub.study,
   lab: lab.experiments, writeups: lab.writeups, evals: evalsPage, intraday: intradayPage,
   strategy: strategyPage, newshub: newshubPage, archive: archivePage, litday, litlevels, litcockpit,
+  accounts: pc.accounts, evalhq: pc.evalhq, edge: pc.edge, pnlcal: pc.pnlcal, mffurules: pc.mffurules,
   rules: mods.rules, cold: mods.cold, risk: mods.risk, alerts: { show: () => settingsPage.show() }, modules: { show: () => {} },
   playbook: { show: () => {} } };
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };
@@ -545,7 +547,7 @@ async function boot() {
   for (const p of Object.values(PAGES)) p.init?.();
   initCommandExtras(); initPalette(); initVoice();
   // dashboard layer: ops registers the command 'prep' widget, so it runs before the command grid is built
-  initOps(); initHome(); initAnalytics(); initUX(go); addPaletteItems(paletteActions); startLive(); initToday(); initLitToday();
+  initOps(); initHome(); initAnalytics(); initUX(go); addPaletteItems(paletteActions); startLive(); initToday(); initLitToday(); pc.initPCStatus();
   renderPlaybook($('#playbook'));
   const want = new URLSearchParams(location.search).get('page');
   go(want && TITLES[want] ? want : store.get('page', 'command'));

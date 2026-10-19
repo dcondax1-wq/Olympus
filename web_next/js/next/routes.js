@@ -3,6 +3,7 @@
 // Modules (tile grid). Page ids stay the same as the classic dashboard so every page module and go('x') call still works.
 export const TOP = [
   { id: 'command', label: 'Today', icon: 'today' },
+  { id: 'accounts', label: 'Accounts', icon: 'wallet' },
   { id: 'chart', label: 'Chart', icon: 'chart' },
   { id: 'trades', label: 'Trades', icon: 'trades' },
   { id: 'data', label: 'Data', icon: 'data' },
@@ -13,6 +14,8 @@ export const TOP = [
 // LIT is the live strategy since 2026-10-18: Results, Lab, Evals, Intraday, Lessons, Strategy and Risk read LIT's files.
 // The previous strategy's pages (Liquidity Engine, Oct 17: they run or read the old engine) live under Modules → Archive.
 export const DATA = [
+  { id: 'edge', label: 'Edge', icon: 'heat', desc: 'Where LIT makes its money: R, exits, MFE / MAE, stop size, hour, weekday, levels' },
+  { id: 'pnlcal', label: 'P&L Calendar', icon: 'calendar', desc: 'Daily P&L month grid (backtest or the PC bot), streaks, this week vs the backtest' },
   { id: 'results', label: 'Results', icon: 'results', desc: 'LIT replay: 2026 (H1 picked, H2 check), 2021-25 reference, eval odds' },
   { id: 'lab', label: 'Experiments', icon: 'variants', desc: 'Research run library: every LIT backtest with its data' },
   { id: 'writeups', label: 'Write-ups', icon: 'reports', desc: 'Plain-language research reports, LIT first' },
@@ -38,6 +41,8 @@ export const ARCHIVE = [
 ];
 
 export const MODULES = [
+  { id: 'evalhq', label: 'Eval HQ', icon: 'prop', desc: 'The 2-week pass path: $ to go, $ per session, what one winner pays, the odds' },
+  { id: 'mffurules', label: 'MFFU rules', icon: 'rules', desc: 'The Builder 50K rulebook with how sure each rule is, and how LIT fits it' },
   { id: 'litday', label: 'LIT Day plan', icon: 'clock', desc: 'Day clock 18:00-17:00 ET, what happens next, pre-session checklist, week planner' },
   { id: 'litlevels', label: 'LIT Levels', icon: 'target', desc: 'Setup tracker (sweep → CISD → limit → 1m CISD) and every LIT level with its distance' },
   { id: 'litcockpit', label: 'Eval cockpit', icon: 'wallet', desc: 'What one stop-out or winner does to the MFFU eval; pass / fail odds from this balance' },
@@ -58,7 +63,7 @@ export const MODULES = [
   { id: 'archive', label: 'Archive', icon: 'archive', desc: 'Previous strategy: Liquidity Engine, Oct 17 (paper shadow), kept so it can come back' },
 ];
 
-export const TITLES = { data: 'Data', command: 'Today', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
+export const TITLES = { data: 'Data', command: 'Today', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
 

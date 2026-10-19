@@ -159,6 +159,16 @@ def plans():
         bot="API bots allowed on Combine / XFA (TopstepX), banned on Live; no VPS; NinjaTrader not offered to new sign-ups",
         ok=False, why="the bot's NinjaTrader route is not available to new Topstep accounts (TopstepX API only)", news="allowed",
         accounts="5 XFA", src=S_TOP, unconf=["50% vs 55% eval best day", "XFA payout rules"])
+    LIVE_EVAL = {"base": "need", "until": 10, "room_f": 0.6, "max_usd": None, "margin": 0.95}   # live two_week -> safe_eval
+    FUNDED_MODE = {"pct": 0.4, "pct_min_usd": 100, "pct_max_usd": 800, "ref": 20, "wk": True, "room_f": None, "max_win": 1500,
+                   "slip_ticks": 2, "skip_breach": True}                                    # lit-funded-sizing.md, mode funded
+    for p in P:
+        if p["id"] == "mffu_builder_50k":
+            p["fixed_eval"], p["fixed_funded"] = LIVE_EVAL, FUNDED_MODE
+    for pid in ("mffu_rapid_50k", "mffu_rapid_eod_50k"):
+        b = next(p for p in P if p["id"] == pid)
+        P.append({**b, "id": pid + "_news", "plan": b["plan"] + " (news worst case)", "funded": {**b["funded"], "news_skip": True},
+                  "news": "worst case: every trade open at 08:30 ET skipped on the funded account (the real ban covers Tier-1 days only)"})
     return P
 
 
@@ -176,6 +186,22 @@ EXCLUDED = [  # not simulated again (lit-prop-firms.md has their eval numbers); 
 
 # ================================================================================================ trades
 _D = {}
+_NEWS = set()
+
+
+def NEWS_IDS():
+    """entry_t of every trade open at 08:30 ET (+/- 2 min): the worst case of a funded Tier-1 news ban (every day counted)."""
+    if not _NEWS:
+        from zoneinfo import ZoneInfo
+        ny = ZoneInfo("America/New_York")
+        for t in data()["trades"]:
+            e = dt.datetime.fromtimestamp(t["entry_t"], ny)
+            x = dt.datetime.fromtimestamp(t["exit_t"], ny)
+            k = e.replace(hour=8, minute=30, second=0, microsecond=0)
+            if e <= k + dt.timedelta(minutes=2) and x >= k - dt.timedelta(minutes=2):
+                _NEWS.add(t["entry_t"])
+        _NEWS.add(-1)
+    return _NEWS
 
 
 def data():
@@ -362,6 +388,7 @@ def run_funded(P, cfg, seq, by, start=0, keep=None):
     mll, dll, lockv, intra = P["mll"], Fd["dll"], A["lock"], Fd["trail"] == "intra"
     buf = Fd["buffer"] if Fd["buffer"] is not None else mll + 100
     cfgx = {**cfg, "dll_cap": bool(dll)}
+    skip = NEWS_IDS() if Fd.get("news_skip") else None
     bal = peak = 0.0
     floor = -mll
     paid = gross = 0.0
@@ -374,6 +401,8 @@ def run_funded(P, cfg, seq, by, start=0, keep=None):
         for t in by[si]:
             if dll and cum <= -dll:
                 break
+            if skip and t["entry_t"] in skip:      # news rule (worst case): no trade open at 08:30 ET
+                continue
             st = {"room": bal + cum - floor, "cum": cum, "locked": floor >= lockv - 1e-9}
             q = SZ.funded_qty(t, st, cfgx, acct=A)
             if q <= 0:
@@ -573,11 +602,13 @@ def pick_funded(P, cpf):
 def study_plan(P, log=print):
     t0 = dt.datetime.now()
     ce, eg = pick_eval(P)
+    ce = P.get("fixed_eval") or ce
     ev = {s: eval_exact(P, ce, s) for s in ("H1", "H2", "2026", "2021-25")}
     ev_mc = {s: eval_mc(P, ce, s) for s in ("H1", "H2")}
     scaled = {s: eval_exact(P, eval_grid()[0], s) for s in ("H1", "H2")}
     cpf = {s: cost_per_funded(P, ev_mc[s]) for s in ("H1", "H2")}
     cf, fg = pick_funded(P, cpf["H1"])
+    cf = P.get("fixed_funded") or cf
     fu = {s: funded_mc(P, cf, s, n=1500, cpf=cpf.get(s) or cpf["H1"]) for s in ("H1", "H2", "2021-25")}
     fu_def = {s: funded_mc(P, {"pct": 0.4, "pct_min_usd": 100, "pct_max_usd": 800, "ref": 20, "wk": True, "room_f": None,
                                "max_win": 1500, "slip_ticks": 2, "skip_breach": True}, s, n=1500, cpf=cpf.get(s) or cpf["H1"])
