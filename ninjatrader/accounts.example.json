@@ -1,0 +1,26 @@
+{
+ "v": 1,
+ "_note": "Copy to data/accounts.json (or use python -m engine.multi_account --add). Extra accounts next to the bot's own account (--account at --start). Never put the live phrase in this file: it is typed at --start and given in memory to accounts with armed true. Every rule below overrides the preset (python -m engine.multi_account --presets).",
+ "accounts": [
+  {
+   "id": "mffu25k",
+   "name": "MFFU 25K Eval",
+   "adapter": "ninjatrader",
+   "nt_account": "Sim102",
+   "preset": "mffu_builder_25k",
+   "mode": "two_week",
+   "eval_start": "2026-10-21",
+   "eval_prior_pnl": 0.0,
+   "enabled": true,
+   "armed": false,
+   "rules": {"start": 25000, "target": 1500, "mll": 1000, "lock": 100, "dll": 600, "max_micros": 20, "scale": 0.5,
+             "min_room": 100, "max_risk_usd": null, "trail": "eod", "best_day": null, "news_ban": false},
+   "lit_sizing": {"_source": "research/writeups/lit-builder-25k.md (picked on Jan-Jun 2026)",
+                  "two_week": {"base": "need", "need_buf": 1.0, "room_f": 0.5, "wk": false, "dll_cap": true, "stop_at_target": true,
+                               "max_usd": null, "press_at": null, "press_mult": 1.0, "press_room": null, "protect_over": null,
+                               "protect_keep": 0.0},
+                  "guard": {"target": 1500.0, "dll": 600.0, "max_micros": 20},
+                  "two_week_until": 10, "after_mode": "safe_eval", "safe_cap": 0.3, "eval_ref_stop": 25.0, "fast_ref_stop": 40.0}
+  }
+ ]
+}
