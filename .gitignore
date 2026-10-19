@@ -9,6 +9,8 @@ data/alerts.json
 data/autostart.json
 data/live_state.json
 data/ninjatrader_state.json
+# the PC bot's archive of NinjaTrader bars (engine/pcbars.py), machine-local
+data/nt_bars/
 
 # runtime
 logs/
@@ -54,3 +56,8 @@ data/push.json
 data/push_sent.json
 .le_push/
 data/push_pc_key.json
+
+# PC bot automation (engine/autoupdate.py, engine/autoresume.py): owner opt-ins + results, machine-local
+data/autoupdate.json
+data/auto_resume.json
+data/_nt_probe_state.json

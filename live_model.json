@@ -4,6 +4,8 @@
   "label": "LIT - Liquidity Inducement (2026-tuned) + loss pack",
   "chosen": "2026-10-18",
   "locked": true,
+  "no_yahoo": true,
+  "no_yahoo_note": "owner 2026-10-19: bars from NinjaTrader (PC) and the TradingView exports only, never Yahoo; the cloud reads the PC's NinjaTrader bars from the heartbeat branch; VIX from CBOE (engine/pcbars.py)",
   "rules": "STRATEGY.md",
   "params": {
     "risk_usd": 800,
@@ -111,5 +113,8 @@
   },
   "previous": "live_model_engine.json (Liquidity Engine lock of 2026-10-17; the cloud monitor's shadow ledger)",
   "live": "engine/lit_live.py (PC paper bot engine/live.py and tools/cloud_monitor.py); 1m bars for the entry from data/NQ_1m.csv + Yahoo NQ=F 1m (7 days); a day without full 1m bars executes on 5m. Paper only.",
-  "live_check": "python -X utf8 -m tests.test_lit_live (results research/lit/live_check.json)"
+  "live_check": "python -X utf8 -m tests.test_lit_live (results research/lit/live_check.json)",
+  "accounts": [
+    {"id": "mffu50k_eval", "name": "MFFU 50K Eval", "firm": "MFFU", "plan": "Builder 50K", "kind": "eval", "source": "pc"}
+  ]
 }

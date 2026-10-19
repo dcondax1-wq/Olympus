@@ -12,8 +12,11 @@ Adapters
   ninjatrader - NinjaTrader 8 ATI order files (engine/ninjatrader.py): the route into the MFFU account through
                 NinjaTrader Desktop. Sim101 by default; a real account needs armed + phrase + NINJATRADER_LIVE=1.
 
-Data: Yahoo Finance futures quotes (free, may be delayed). For real-money execution use your broker's feed:
-data_source "ninjatrader" reads the real CME bars NinjaTrader writes (ninjatrader/LE_BarFeed.cs), Yahoo as fallback.
+Data: no Yahoo by default (owner 2026-10-19, "no_yahoo": live_model.json / start cfg, engine/pcbars.py): history from
+the TradingView exports (data/NQ_5m.csv, data/NQ_1m.csv) + the bot's own archive of NinjaTrader bars (data/nt_bars/), fresh
+bars from NinjaTrader only (data_source "ninjatrader": the real CME bars ninjatrader/LE_BarFeed.cs writes). When that feed
+is missing or stale, NEW entries are blocked (FEED STALE) and an open trade keeps its broker brackets; nothing falls back
+to Yahoo. With "no_yahoo": false the old behaviour returns (data_source "yahoo", or Yahoo as the NinjaTrader fallback).
 """
 from __future__ import annotations
 
@@ -31,6 +34,7 @@ import pandas as pd
 from .data import DATA_DIR, from_frame, load
 from .instruments import PARTNER
 from .model import Engine, merge_params
+from . import pcbars
 import datetime as _dt
 from zoneinfo import ZoneInfo
 
@@ -157,7 +161,8 @@ ET_TZ = ZoneInfo("America/New_York")
 LIVE_DEFAULTS = {
     "sym": "NQ", "tf": "5m", "poll_sec": 60, "adapter": "paper", "params": {}, "armed": False,
     "data_source": "yahoo",     # yahoo (free, ~10 min delayed) | tradovate (engine.tradovate.TradovateData) | ninjatrader
-                                # (LE_BarFeed CSVs, engine.ninjatrader.NinjaTraderBars); both fall back to yahoo
+                                # (LE_BarFeed CSVs, engine.ninjatrader.NinjaTraderBars); both fall back to yahoo only with
+                                # no_yahoo off. no_yahoo on (the default, engine/pcbars.py): "yahoo" becomes "ninjatrader"
     "window_days": 20,          # calendar days of base bars fed to the Engine each poll (verified identical to the full run)
     "stale_polls_block": 3,     # block NEW entries once the feed has been stale this many polls in a row inside an entry window
 }
@@ -332,6 +337,10 @@ class LiveBot:
         self._nt_repoll = None           # minute boundary already re-polled for a late NinjaTrader 1m bar
         self._eval_prev = {}             # LIT safe_eval / eval / two_week: routed P&L per earlier trading day of the eval (live_state.json)
         self._lit_sizing = None          # live_model.json lit_sizing (or the start cfg's), set on every poll
+        self.no_yahoo = pcbars.no_yahoo()  # no Yahoo anywhere (engine/pcbars.py); start() reads the start cfg's "no_yahoo" too
+        self._nt_last = {}               # (sym, tf) -> the last NinjaTrader frame (the heartbeat pushes it to the cloud)
+        self._nt_forming_last = None     # (open time, open) of the forming 1m bar (heartbeat "bars" block)
+        self._arc = {}                   # (sym, tf) -> the NinjaTrader archive in memory (data/nt_bars, engine/pcbars.py)
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -354,14 +363,79 @@ class LiveBot:
     def _read_hist(self, sym, tf):
         path = os.path.join(DATA_DIR, f"{sym}_{tf}.csv")
         if not os.path.exists(path):
-            return pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume"])
-        df = pd.read_csv(path)
-        # same hygiene as engine.data.load(): weekend/maintenance junk bars never reach the live engine either
-        return df[~((df["high"] == df["low"]) & (df["volume"] <= 0))]
+            df = pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume"])
+        else:
+            st_ = os.stat(path)
+            hit = getattr(self, "_hist_cache", {}).get(path)
+            if hit and hit[0] == (st_.st_mtime_ns, st_.st_size):
+                df = hit[1]                              # the export only changes when the owner refreshes it
+            else:
+                df = pd.read_csv(path)
+                # same hygiene as engine.data.load(): weekend/maintenance junk bars never reach the live engine either
+                df = df[~((df["high"] == df["low"]) & (df["volume"] <= 0))]
+                if self.no_yahoo:
+                    df = pcbars.tidy(df)
+                    self._hist_cache = {**getattr(self, "_hist_cache", {}), path: ((st_.st_mtime_ns, st_.st_size), df)}
+        if self.no_yahoo and tf in ("1m", "5m"):
+            # TradingView export + the bot's own NinjaTrader archive (bridges the export's end once LE_BarFeed's 30 days move on)
+            arc = self._archive(sym, tf)
+            if len(arc):
+                df, sh = pcbars.merge_basis(df, arc)
+                if sh:
+                    self._nt_note(f"basis:{sym}:{tf}", "warn", f"{sym} {tf}: the TradingView history sits {-sh:+.2f} pts from "
+                                  "NinjaTrader's bars (a contract roll): history back-adjusted onto NinjaTrader's contract", every_s=86400)
+        return df
+
+    def _arc_root(self):
+        """Where the NinjaTrader archive lives: cfg "nt_archive", else data/nt_bars for the real bot only (test harnesses
+        run with their own state_path and never write into data/)."""
+        return self.cfg.get("nt_archive") or (pcbars.ARCHIVE_DIR if self.state_path == STATE_PATH else None)
+
+    def _archive(self, sym, tf):
+        """The NinjaTrader archive (data/nt_bars/<sym>_<tf>.csv) in memory; read from disk once per bot start."""
+        root = self._arc_root()
+        if root is None:
+            return pcbars.tidy(None)
+        if (sym, tf) not in self._arc:
+            self._arc[(sym, tf)] = pcbars.archive_read(sym, tf, root)
+        return self._arc[(sym, tf)]
+
+    def _archive_add(self, sym, tf, df):
+        if tf not in ("1m", "5m") or df is None or not len(df) or self._arc_root() is None:
+            return
+        secs = TF_SECONDS[tf]
+        closed = df[df["time"] + secs <= int(self.clock())]
+        old = self._archive(sym, tf)
+        if len(old) and len(closed) and int(closed["time"].max()) <= int(old["time"].max()):
+            return                                       # nothing new since the last poll
+        r = pcbars.archive_add(sym, tf, closed, root=self._arc_root(), now=int(self.clock()), prev=old)
+        if r.get("error"):
+            self._nt_note(f"archive:{sym}:{tf}", "warn", f"NinjaTrader archive {sym} {tf} not written: {r['error']}", every_s=3600)
+            return
+        if r.get("rewritten") or r.get("shift"):
+            self._arc.pop((sym, tf), None)               # re-read the rewritten file next time
+        else:
+            new = closed[closed["time"] > (int(old["time"].max()) if len(old) else -1)]
+            self._arc[(sym, tf)] = pcbars.tidy(pd.concat([old, new])) if len(new) else old
 
     def _fetch_recent(self, sym, interval, period="5d"):
-        """Fresh bars from the configured data_source; tradovate falls back to yahoo (logged once per poll)."""
+        """Fresh bars from the configured data_source; tradovate falls back to yahoo (logged once per poll).
+        no_yahoo on: NinjaTrader (or Tradovate) only; None when it has no usable bars (never Yahoo)."""
         src = self.cfg.get("data_source", "yahoo")
+        if self.no_yahoo:
+            if src == "tradovate":
+                try:
+                    from . import tradovate as _tv
+                    df = _tv.TradovateData().recent_bars(sym, interval, period)
+                    if df is not None and len(df):
+                        return df
+                    why = "returned no bars"
+                except Exception as e:
+                    why = f"{e.__class__.__name__}: {e}"
+                if sym == self.cfg.get("sym", "NQ"):
+                    self.health["nt_down" if interval != "1m" else "nt_down_1m"] = f"Tradovate feed {why}"
+                return None
+            return self._ninjatrader_recent(sym, interval, period)
         if src == "ninjatrader":
             df = self._ninjatrader_recent(sym, interval, period)
             if df is not None:
@@ -400,8 +474,30 @@ class LiveBot:
             df, why, full = self._nt_feed.recent_bars(sym, interval, period, now=int(self.clock()))
             if interval == "1m" and df is not None and callable(getattr(self._nt_feed, "forming_open", None)):
                 self._nt_forming[(sym, 60)] = self._nt_feed.forming_open(sym, now=int(self.clock()))
+                if primary:
+                    self._nt_forming_last = self._nt_forming[(sym, 60)]
         except Exception as e:
             df, why, full = None, f"{e.__class__.__name__}: {e}", False
+        if self.no_yahoo:
+            # NinjaTrader only: its bars (kept in the archive, pushed to the cloud), or None + the reason (entries blocked)
+            if df is not None and len(df):
+                if interval in ("1m", "5m"):
+                    self._nt_last[(sym, interval)] = df
+                    self._archive_add(sym, interval, df)
+                if not full:
+                    self._nt_note(f"fill:{sym}:{interval}", "system",
+                                  f"data_source=ninjatrader {sym} {interval}: {why} - no Yahoo (no_yahoo): the TradingView "
+                                  "history + the NinjaTrader archive cover the rest", every_s=3600)
+                return df
+            if primary:
+                self.health["nt_down" if interval != "1m" else "nt_down_1m"] = why
+                self._nt_note(f"down:{sym}:{interval}", "warn",
+                              f"FEED STALE: NinjaTrader {sym} {interval}: {why} - no Yahoo fallback (no_yahoo): new entries blocked "
+                              "until NinjaTrader's bars are fresh again (an open trade keeps its brackets at the broker)", every_s=300)
+            else:
+                self._nt_note(f"partner:{sym}", "system", f"data_source=ninjatrader: no {sym} {interval} bars ({why}); no Yahoo "
+                              "(no_yahoo): features that need them are unknown", every_s=3600)
+            return None
         if df is not None and len(df):
             if full:
                 return df
@@ -438,8 +534,25 @@ class LiveBot:
             recent = pd.DataFrame()
             self.health["fetch_ok"] = False
             self._note_error(f"data refresh failed ({sym} {tf}): {e.__class__.__name__}: {e}")
-        frames = [f for f in (hist, recent) if f is not None and len(f)]
-        df = pd.concat(frames) if frames else pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume"])
+        if self.no_yahoo:
+            # back-adjust the history onto the feed's contract when they sit a constant offset apart (a roll), and note a
+            # hole between the history's end and the feed's first bar (TradingView export end vs NinjaTrader's 30 days)
+            if sym == self.cfg.get("sym", "NQ") and tf in ("1m", "5m"):
+                gap = pcbars.hist_gap(hist, recent, secs)
+                key = f"gap:{sym}:{tf}"
+                self.health.setdefault("hist_gap", {})[tf] = None if gap is None else \
+                    {"from": int(gap[0]), "to": int(gap[1]), "bars": int(gap[2])}
+                if gap is not None:
+                    self._nt_note(key, "warn", f"{sym} {tf}: {gap[2]} bars missing between the stored history "
+                                  f"({_et(gap[0]):%m-%d %H:%M} ET) and the NinjaTrader feed ({_et(gap[1]):%m-%d %H:%M} ET): "
+                                  "load more days on the NinjaTrader chart, or refresh the TradingView export", every_s=6 * 3600)
+            df, sh = pcbars.merge_basis(hist, recent)
+            if sh:
+                self._nt_note(f"basis:{sym}:{tf}:feed", "warn", f"{sym} {tf}: the stored history sits {-sh:+.2f} pts from the "
+                              "feed's contract (a roll): back-adjusted onto the feed's prices", every_s=86400)
+        else:
+            frames = [f for f in (hist, recent) if f is not None and len(f)]
+            df = pd.concat(frames) if frames else pd.DataFrame(columns=["time", "open", "high", "low", "close", "volume"])
         self._forming[(sym, secs)] = self._nt_forming.pop((sym, secs), None) or forming_open(recent, secs, now)
         return clean_bars(df, secs, now)
 
@@ -457,6 +570,9 @@ class LiveBot:
         self.cfg = {**LIVE_DEFAULTS, **cfg}
         if cfg.get("data") and "data_source" not in cfg:
             self.cfg["data_source"] = cfg["data"]          # {"data": "ninjatrader"} is accepted as a short form
+        self.no_yahoo = pcbars.no_yahoo(cfg)
+        if self.no_yahoo and self.cfg.get("data_source", "yahoo") == "yahoo":
+            self.cfg["data_source"] = "ninjatrader"          # no Yahoo (owner 2026-10-19): NinjaTrader's bars are the feed
         if self.cfg["adapter"] != "paper" and not self.cfg.get("armed"):
             return {"ok": False, "error": "non-paper adapters must be explicitly armed (armed=true)"}
         if self.cfg["adapter"] not in ADAPTERS:
@@ -464,6 +580,7 @@ class LiveBot:
         self.adapter = ADAPTERS[self.cfg["adapter"]](self.cfg)
         self.started_at = int(self.clock())
         self.health["data_source"] = self.cfg.get("data_source", "yahoo")
+        self.health["no_yahoo"] = self.no_yahoo
         self._restore(clear_kill=bool(cfg.get("clear_kill")))
         self.running = True
         self.stop_flag.clear()
@@ -471,7 +588,7 @@ class LiveBot:
             self.thread = threading.Thread(target=self._loop, args=(self._gen,), daemon=True)
             self.thread.start()
         self._log("system", f"Bot started | {self.cfg['sym']} {self.cfg['tf']} | adapter={self.cfg['adapter']} | "
-                            f"data={self.cfg['data_source']} | window={self.cfg['window_days']}d")
+                            f"data={self.cfg['data_source']}{' (no Yahoo)' if self.no_yahoo else ''} | window={self.cfg['window_days']}d")
         if self.kill:
             self._log("risk", "KILL flag restored from a previous run today: no orders will be routed. "
                               "Start again with clear_kill=true (or delete data/live_state.json) to re-arm.")
@@ -581,6 +698,8 @@ class LiveBot:
             except Exception as e:
                 self._note_error(f"partner {PARTNER.get(sym)} unavailable (learning features): {e}")
             self.health.clear(); self.health.update(keep)
+            if self.no_yahoo and es is not None and (not len(es) or (market_open(now) and int(es["time"].max()) + 1800 < now)):
+                es = None                      # no fresh ES without Yahoo (no MES chart in NinjaTrader): features unknown, not stale
         self._es_cache = (now, es)
         return es
 
@@ -699,6 +818,7 @@ class LiveBot:
         if self.last_poll is not None and now < self.last_poll - 5:
             self._log("warn", f"clock moved backwards by {self.last_poll - now}s (last poll {_et(self.last_poll):%H:%M:%S} ET, now {_et(now):%H:%M:%S})")
         self.health["fallback"] = False
+        self.health["nt_down"] = self.health["nt_down_1m"] = None      # set by this poll's NinjaTrader fetches (no_yahoo)
         self._adapter_tick()
         self._refresh_guard()
         df, drops = self._merged(sym, tf, now, secs)
@@ -744,11 +864,10 @@ class LiveBot:
                 self._log("system", f"Data fresh again (age {age}s)")
             self.health["stale_polls"] = 0
         block = bool(stale and mopen and in_entry_window and self.health["stale_polls"] > int(self.cfg.get("stale_polls_block", 3)))
-        if block and not self.health["entries_blocked"]:
+        was_blocked = self.health["entries_blocked"]
+        if block and not was_blocked:
             self._log("risk", f"Feed stale for {self.health['stale_polls']} polls inside an entry window: NEW entries blocked "
                               "(open positions are still managed)")
-        if not block and self.health["entries_blocked"]:
-            self._log("system", "Feed recovered: new entries allowed again")
         self.health["entries_blocked"] = block
         base = from_frame(sym, tf, df)
         if model == "lit":
@@ -778,6 +897,16 @@ class LiveBot:
             eng = Engine(base, htf=htf, partner=partner, params=params).run()
             res = eng.result()
         self.state = res["state"]
+        # no Yahoo: a NinjaTrader feed that is down blocks NEW entries at once (no 3-poll grace, nothing to fall back to)
+        nt_why = (self.health.get("nt_down") or (self.health.get("nt_down_1m") if model == "lit" else None)) if self.no_yahoo else None
+        nt_block = bool(nt_why and mopen and in_entry_window)
+        if nt_block and not self.health["entries_blocked"] and not was_blocked:
+            self._log("risk", f"FEED STALE: NinjaTrader bars missing or stale ({nt_why}) - NEW entries blocked, no Yahoo fallback "
+                              "(an open position keeps its broker stop / target and is still managed)")
+        self.health["feed_block"] = nt_why if nt_block else (f"feed stale for {self.health['stale_polls']} polls" if block else None)
+        self.health["entries_blocked"] = block = bool(block or nt_block)
+        if not block and was_blocked:
+            self._log("system", "Feed recovered: new entries allowed again")
         self.state["strategy"] = {"model": model, "label": lm.get("label", ""),
                                   "params": eng_params if model == "engine" else lit_p if model == "lit"
                                   else (self.cfg.get("model_params") or lm["params"])}
@@ -813,7 +942,8 @@ class LiveBot:
         return self.state
 
     def _lit_1m(self, sym, now, t_min):
-        """1m bars for LIT's entry (stored data/<sym>_1m.csv + fresh 1m, Yahoo caps 1m at 7 days). Never raises and never
+        """1m bars for LIT's entry (stored data/<sym>_1m.csv + the NinjaTrader archive + NinjaTrader's 1m file; with no_yahoo
+        off: + Yahoo 1m, capped at 7 days). Never raises and never
         changes the feed-health flags of the bot's own 5m feed; None = LIT executes that day on 5m bars."""
         keep = {k: self.health.get(k) for k in ("fallback", "fetch_ok", "last_error", "last_error_t")}
         try:

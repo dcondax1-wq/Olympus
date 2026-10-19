@@ -470,6 +470,35 @@ def two_week_qty(trade: dict, state: dict, cfg: dict | None = None, acct: dict |
     return int(min(q, maxq))
 
 
+def scale_in_qty(q_base: int, q_full: int, risk_pts: float, adds: list, f=1.0, state: dict | None = None,
+                 room_f: float = 0.6, dll: float = TW_50K["dll"], max_micros: int = 40) -> list:
+    """Micros for each add of a scaled-in LIT trade (engine/lit.py option "scale_in", research/writeups/lit-big-ideas.md;
+    off by default). q_base = the micros of the first entry, q_full = the micros the sizing gave before any start multiplier
+    (= q_base normally), risk_pts = the first entry's stop distance. adds = the trade's adds in order, each {"rk": the add's
+    stop distance at its fill (pts), "prev_rk": [the open risk pts of every earlier add at that moment]}.
+    Each add wants int(f x q_full) micros (f "max" = as many as the budget allows) and gets at most what keeps the open risk
+    of all adds (a full stop-out incl. 1 tick + commission) inside the budget = the first entry's $ risk (q_full x stop x $2),
+    and with an eval state also inside room_f x the room to the trailing floor and the soft daily loss left today
+    (dll + state["cum"]); the whole position never above max_micros. 0 = that add is skipped."""
+    PV, COMM, SLIP = TW_PV, TW_COMM, TW_SLIP
+    budget = float(q_full) * float(risk_pts) * PV
+    if state is not None:
+        if _num(state.get("room")) is not None:
+            budget = min(budget, float(room_f) * max(0.0, float(state["room"])))
+        budget = min(budget, float(dll) + float(_num(state.get("cum"), 0.0)))
+    tot = int(q_base)
+    out: list = []
+    for a in adds or []:
+        per = (float(a["rk"]) + SLIP) * PV + COMM
+        open_r = sum(qq * float(rk) * PV for qq, rk in zip(out, a.get("prev_rk") or []))
+        cap = int(max(0.0, budget - open_r) / per) if per > 0 else 0
+        want = cap if f == "max" else int(float(f) * q_full + 1e-9)
+        n = max(0, min(want, cap, int(max_micros) - tot))
+        out.append(n)
+        tot += n
+    return out
+
+
 def eval_state(day_pnl: dict, today_cum: float = 0.0, plan: dict | None = None, session: int | None = None) -> dict:
     """state for two_week_qty from the eval's closed P&L per earlier session since the eval started (sorted keys) + today's
     closed P&L. Same floor rule as mffu_eval: EOD high - max loss, locked at start + lock. session = today's eval session

@@ -4,13 +4,16 @@
 "order instruction files" into a folder that NinjaTrader 8 watches. NinjaTrader places the orders on the account you
 name, for example `Sim101` for testing or the MFFU account through its Tradovate connection. NinjaTrader writes back
 fills and positions, and the bot reads them. A small NinjaTrader indicator, `LE_BarFeed`, also hands the bot the real
-CME bars from your chart, so the bot no longer depends on Yahoo's delayed bars.
+CME bars from your chart. **No Yahoo (owner 2026-10-19, `"no_yahoo": true` in `live_model.json`, the default):** the bot
+trades only on NinjaTrader's bars plus the TradingView exports in `data/`; it never calls Yahoo, and the cloud paper bot
+trades on the bars this PC pushes with its heartbeat.
 
 ```
 PC bot (server.py) --order files--> Documents\NinjaTrader 8\incoming --> NinjaTrader 8 --Tradovate connection--> account
 NinjaTrader  ------fills/positions--> Documents\NinjaTrader 8\outgoing --> PC bot
-MNQ 5m chart + LE_BarFeed --bars--> Documents\NinjaTrader 8\le_feed\MNQ_5m.csv --> PC bot (instead of Yahoo)
+MNQ 5m chart + LE_BarFeed --bars--> Documents\NinjaTrader 8\le_feed\MNQ_5m.csv --> PC bot (the only live feed)
                          \-1m bars-> Documents\NinjaTrader 8\le_feed\MNQ_1m.csv --> PC bot (LIT's 1-minute entry)
+PC bot --keeps every bar in data\nt_bars\ (its own archive) and pushes the last days with the heartbeat--> cloud paper bot
 ```
 
 **LIT needs the 1-minute file.** LIT finds its setups on 5-minute bars but enters on a 1-minute confirmation. On 5-minute
@@ -96,7 +99,7 @@ against verbatim copies of the Help Guide pages (see Sources). Open the official
    - `MNQ_5m.csv` gets one new line every 5 minutes;
    - `MNQ_1m.csv` gets one new line every minute (a minute with no trade has no line; that is normal).
    `python -m engine.ninjatrader --status` shows `Bar feed 5m: ... bars, last open ...` and `Bar feed 1m: ...`.
-   The bot's log says `data_source=ninjatrader ... falling back to Yahoo` when one of them is missing or stale.
+   The bot's log says `FEED STALE: NinjaTrader ... new entries blocked` when one of them is missing or stale.
 6. Save the workspace (Control Center > Workspaces > Save) so the chart comes back after a restart.
 7. **Quarterly roll** (next: Thursday 2026-12-10): switch the chart to **MNQ 03-27**. The bot switches its order
    instrument by itself on the same date, using the same 8-days-before-expiry rule as `engine/tradovate.py`.
@@ -104,23 +107,31 @@ against verbatim copies of the Help Guide pages (see Sources). Open the official
      stays on MNQ 12-26, the bot reads December prices but sends its orders, stop and target to March, which trades
      about 1% (~300 pts) higher: the stop and target would be in the wrong place.
    - Until the roll fix in `research/writeups/lit-launch-audit.md` is in, do not run LIT on the PC from 2026-12-10 to
-     about 2026-12-16 (the days when NinjaTrader, Yahoo NQ=F and TradingView NQ1! sit on different contracts).
-     The cloud paper bot can keep running.
+     about 2026-12-16 (the days when NinjaTrader and the TradingView NQ1! export sit on different contracts).
+     The bot checks every overlap between the TradingView history, its NinjaTrader archive and the live files: when
+     the newer bars sit a constant amount away (a roll, 100-300 pts) it shifts the older ones onto the new contract and
+     logs `... back-adjusted onto NinjaTrader's contract`. MNQ and NQ1! on the same contract need no shift (same prices).
 
 What LE_BarFeed writes: `time,open,high,low,close,volume`, where time is the bar's **open** in unix seconds (UTC).
-That is the same layout the bot gets from Yahoo, in both files. It writes the chart's history once when the chart
+That is the bot's bar layout, in both files. It writes the chart's history once when the chart
 loads, then one short line per closed bar. It rewrites a file only every 1,000 bars (keeping 8,000 five-minute bars,
 about 29 days, and 20,000 one-minute bars, about 14 days), so it is cheap on a small PC. The bot checks each file on
 every poll (the 5-minute file for the setups, the 1-minute file for LIT's entry):
 
 | The bot sees | It does |
 |---|---|
-| file fresh | uses NinjaTrader's bars (Yahoo is not called) |
-| file shorter than the history gap, or missing more than 10% of the last 3 days' bars | fills the holes from Yahoo; NinjaTrader's bars win wherever both have one |
-| file missing, or stale during market hours (last bar more than 7 minutes old) | uses Yahoo for that poll and logs `data_source=ninjatrader ... falling back to Yahoo` (for the 1-minute file: LIT takes Yahoo's 1-minute bars; a day without full 1-minute bars runs on 5-minute bars, as in the backtest) |
-| bars stamped 17:00-17:59 ET (CME is closed then) or in the future | treats the times as wrong (time zone or close-stamped bars) and uses Yahoo |
+| file fresh | uses NinjaTrader's bars and adds them to its archive `data\nt_bars\NQ_5m.csv` / `NQ_1m.csv` |
+| file shorter than the history gap, or missing more than 10% of the last 3 days' bars | uses what it has: the TradingView export (`data\NQ_5m.csv`, `data\NQ_1m.csv`, ends 2026-10-16) + the archive + the file; NinjaTrader's bars win wherever both have one. A real hole between them is logged (`... bars missing between the stored history and the NinjaTrader feed`): load more days on the chart |
+| file missing, or stale during market hours (last bar more than 7 minutes old) | **FEED STALE**: no new entries from that poll on (no Yahoo fallback); an open trade keeps its stop and target at the broker and is still managed. The log says `FEED STALE: NinjaTrader ... new entries blocked`, the health block and the phone say FEED STALE. Fresh bars again: `Feed recovered` |
+| bars stamped 17:00-17:59 ET (CME is closed then) or in the future | treats the times as wrong (time zone or close-stamped bars): FEED STALE as above |
 
-ES bars (the partner market) come from Yahoo unless you also put LE_BarFeed on an MES 5-minute chart.
+ES bars (the partner market, only for the learning loop's ES notes) come only from an MES 5-minute chart with LE_BarFeed;
+without one those notes are "unknown" (no trade decision uses them).
+
+**The history the bot needs.** LIT looks back to the first day of the previous month. Today that is the TradingView
+export (to 2026-10-16) plus NinjaTrader's 30 days (the chart's "Days to load"), which overlap. From then on the bot's
+own archive (`data\nt_bars\`, kept 120 days of 5m and 40 days of 1m, never committed) carries the history forward, so
+leave the bot running (or refresh the TradingView export) and keep "Days to load" at 30 or more.
 
 **If it does not compile.** NinjaScript cannot be compiled outside NinjaTrader. It was compiled here (2026-10-18)
 against stand-ins for the NinjaTrader parts with the Help Guide's signatures, together with the editor's
@@ -208,7 +219,7 @@ connection = `CONNECTED` or `DISCONNECTED`. The outgoing folder is emptied when 
 | `fill not reported yet` | The entry went in but no fill report came within 6 s. The stop and target go in at the next poll. After 45 s the entry is cancelled and you get an alert. |
 | `... REJECTED ...: flattening at once` | NinjaTrader refused the stop or target. The position was closed. Read NinjaTrader's Log tab for the reason. |
 | `FLATTEN NOT CONFIRMED` (also a phone alert) | NinjaTrader still shows a position. The stop stays, and the bot retries every 30 s. Look at NinjaTrader now. |
-| `data_source=ninjatrader ... falling back to Yahoo` | The chart with LE_BarFeed is closed or disconnected. Check NinjaTrader. |
+| `FEED STALE: NinjaTrader ... new entries blocked` | The chart with LE_BarFeed is closed or disconnected. Check NinjaTrader; no trade opens until its bars are fresh. |
 | `NinjaTrader outgoing file ... not understood` | NinjaTrader wrote something unexpected. The bot ignores it. Send the line to Claude. |
 
 ## 8. Stop and kill
@@ -298,7 +309,8 @@ Before the first live start, check:
 | `nt_close_suffix` [empty] | Text added to the instrument in CLOSEPOSITION, for example `" Globex"` (step 5.3; `--close-suffix`) |
 | `nt_write_mode` [`direct`] | `direct` writes each file in one go; `move` writes it next door, then moves it into incoming (the guide allows both; `--write-mode`) |
 | `nt_ack_wait_s` [4] / `nt_fill_wait_s` [6] / `nt_verify_wait_s` [4] / `nt_pending_timeout_s` [45] | How long to wait for NinjaTrader at each step |
-| `data_source` (or `data`) [`yahoo`] | `ninjatrader` reads LE_BarFeed's files (5m and 1m); Yahoo is the fallback |
+| `data_source` (or `data`) [`ninjatrader` while `no_yahoo` is on] | `ninjatrader` reads LE_BarFeed's files (5m and 1m). `yahoo` is turned into `ninjatrader` while `no_yahoo` is on |
+| `no_yahoo` [`live_model.json` `no_yahoo`: true] | true: no Yahoo anywhere (FEED STALE blocks entries instead of a fallback). false: the old behaviour (Yahoo NQ=F as the feed or the fallback) |
 | `nt_session_from` [LIT: 120 = 02:00 ET; engine: 480 = 08:00 ET] | First ET minute (after midnight) an entry is accepted; a bot trade still open before it is closed |
 | `lit_sizing` [from `live_model.json`: `{"mode": "two_week", "eval_start": "2026-10-19"}`] | LIT size switch: `two_week` (on since 2026-10-18: micros so the target covers what is left to +$3,000, at most 60% of the room to the max-loss floor and the $1,000 soft daily loss, max 40, min 1; it counts sessions from `eval_start`), `eval`, `normal`, `fast_eval` or `safe_eval`. Without a known eval state it falls back to `eval`. |
 | `eval_start` [`live_model.json` `lit_sizing.eval_start`] | First session (yyyy-mm-dd, the trading day; Sunday evening counts as Monday) of the eval this account is on. Set it again after every eval reset, or the size is worked out from the wrong balance. |

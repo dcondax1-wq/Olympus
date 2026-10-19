@@ -2,6 +2,9 @@
 
 The site is one page (tools/web_public/index.html) that reads everything from data.json; nothing runs on a server.
 data.json holds:
+  accounts  the Accounts page (engine/accounts.build_accounts): per account (the MFFU eval on the PC bot from its heartbeat,
+            then "Paper (cloud)") the header, eval numbers, P&L today / week / since start, position, today's orders, closed
+            trades, P&L per day and stats
   live      the cloud monitor's state (model state, eval tracker, cold-streak filter, paper ledger, recent bars, pools,
             `pc`: the always-on PC bot's heartbeat {present, t, age_s, silent, running, adapter, position, model_state, host, reason},
             `notices`: the last 80 phone notifications (fills, outcomes, PC silent, eval timing) for the app's Activity feed, and
@@ -502,6 +505,139 @@ def _learning_fallback():
         return None
 
 
+# ===================================================================================================== extras (extras.js)
+# The phone app's extra pages (tools/web_public/extras.js: Eval HQ, Edge, P&L calendar, Ops check, MFFU rules). Everything
+# here is read from files that are in the cloud checkout (.github/workflows/cloud-monitor.yml sparse-checkout); a missing
+# file leaves its part out (None), and the whole block is None if anything unexpected happens: it never breaks the build.
+EX_LEVELS = (("bu", "Equal highs / lows (build-up)"), ("asia18", "Asia 18-00"), ("asia19", "Tokyo"), ("asia20", "Asia 20-00"),
+             ("lon23", "Frankfurt 02-03"), ("lon34", "London 03-04"), ("lon25", "London 02-05"), ("pre", "Premarket"),
+             ("ny830", "NY 08:30"), ("ny89", "NY 08-09"), ("ny9301030", "NY 1st hour"), ("ny930", "NY 09:30-10"),
+             ("pd", "Prior day"), ("pw", "Prior week"), ("pm", "Prior month"), ("nwog", "Weekly opening gap"),
+             ("ndog", "Daily opening gap"))
+EX_TCOLS = ["day", "min", "wd", "dir", "r", "pnl", "risk_pts", "qty", "exit", "mfe", "mae", "rr", "lv", "half"]
+
+
+def _ex_family(key):
+    """a swept-level key (engine/lit.py names: bu_h, asia19_l, pdh, nwog ...) -> its family id in EX_LEVELS"""
+    k = str(key or "").lower()
+    k = re.sub(r"_(h|l)$", "", k)
+    if k in ("pdh", "pdl"):
+        return "pd"
+    if k in ("pwh", "pwl"):
+        return "pw"
+    if k in ("pmh", "pml"):
+        return "pm"
+    return k if any(k == f for f, _ in EX_LEVELS) else "other"
+
+
+def _ex_stats(rows):
+    """n, win %, avg R, net R, net $, PF ($) of trade rows (dicts with r, pnl)"""
+    n = len(rows)
+    if not n:
+        return {"n": 0}
+    won = sum(t["pnl"] for t in rows if t["pnl"] > 0)
+    lost = -sum(t["pnl"] for t in rows if t["pnl"] < 0)
+    return {"n": n, "win": round(100 * sum(1 for t in rows if t["pnl"] > 0) / n, 1),
+            "avg_r": round(sum(t["r"] for t in rows) / n, 3), "net_r": round(sum(t["r"] for t in rows), 2),
+            "net": round(sum(t["pnl"] for t in rows)), "pf": round(won / lost, 2) if lost > 0 else None}
+
+
+def _extras(st, lm, bt):
+    try:
+        from zoneinfo import ZoneInfo
+        NY = ZoneInfo("America/New_York")
+        out = {"version": 1, "sources": {}}
+        # ---- every LIT replay trade (backtest_live.json, live settings, normal sizing $800 / 20-pt) + MAE from run lit_live
+        mae = {}
+        rl = _load(os.path.join(RUNS, "lit_live.json"), None)
+        if rl and rl.get("trade_cols"):
+            c = rl["trade_cols"]
+            for row in rl.get("trades") or []:
+                t = dict(zip(c, row))
+                if t.get("entry_t"):
+                    mae[int(t["entry_t"])] = t.get("mae")
+        rows = []
+        for t in (bt or {}).get("trades") or []:
+            if t.get("r") is None or not t.get("entry_t"):
+                continue
+            e = dt.datetime.fromtimestamp(int(t["entry_t"]), NY)
+            fam = sorted({_ex_family(s) for s in (t.get("swept") or [])})
+            rows.append({"day": t["day"], "min": e.hour * 60 + e.minute, "wd": e.weekday(), "dir": 1 if t.get("side") == "LONG" else -1,
+                         "r": round(float(t["r"]), 3), "pnl": round(float(t.get("pnl") or 0), 2), "risk_pts": t.get("risk_pts"),
+                         "qty": t.get("qty"), "exit": t.get("exit"), "mfe": t.get("mfe"), "mae": mae.get(int(t["entry_t"])),
+                         "rr": t.get("plan_rr"), "lv": fam, "half": 1 if t.get("half") or t.get("weekly_stop") else 0})
+        rows.sort(key=lambda x: (x["day"], x["min"]))
+        out["tcols"] = EX_TCOLS
+        out["trades"] = [[x[k] for k in EX_TCOLS] for x in rows]
+        out["sources"]["trades"] = ("research/lab/backtest_live.json (LIT replay, live rules, normal sizing $800 up to a 20-pt stop; "
+                                    f"built {(bt or {}).get('meta', {}).get('built')}) + MAE from research/runs/lit_live.json")
+        # ---- level-type leaderboard: a trade that swept 2 families counts for both
+        spans = {"2026": lambda d: d >= "2026", "H1": lambda d: "2026-01-01" <= d <= "2026-06-30", "H2": lambda d: d >= "2026-07-01",
+                 "2021-25": lambda d: d < "2026"}
+        names = dict(EX_LEVELS)
+        board = {}
+        for sp, f in spans.items():
+            sub = [x for x in rows if f(x["day"])]
+            fams = sorted({k for x in sub for k in x["lv"]})
+            board[sp] = sorted(({"id": k, "name": names.get(k, "Other"), **_ex_stats([x for x in sub if k in x["lv"]])} for k in fams),
+                               key=lambda r: -r.get("net", 0))
+        out["levels"] = board
+        # ---- eval odds under the live sizing (two_week, run lit_2wk_rec = config C; numbers from its notes' eval_path)
+        r2 = _load(os.path.join(RUNS, "lit_2wk_rec.json"), None)
+        if r2:
+            ep = None
+            n = r2.get("notes") or ""
+            i = n.find("eval_path=")
+            if i >= 0:
+                try:
+                    ep, _ = json.JSONDecoder().raw_decode(n[i + len("eval_path="):])
+                except ValueError:
+                    ep = None
+            sp2 = r2.get("spans") or {}
+            out["two_week"] = {"run": r2.get("id"), "title": r2.get("title"), "built": r2.get("built"), "sizing": r2.get("sizing"),
+                               "eval": (ep or {}).get("50k"), "b2b_2026": (ep or {}).get("b2b_2026"), "b2b_2021_25": (ep or {}).get("b2b_2021_25"),
+                               "money": {k: {kk: (sp2.get(k) or {}).get(kk) for kk in ("n", "tpw", "wk2", "pf", "net", "per_month", "dd", "worst_day", "risk")}
+                                         for k in ("2026", "2021-25")}}
+            out["sources"]["two_week"] = "research/runs/lit_2wk_rec.json (two-week sizing, MFFU Builder 50K, exact eval replay + Monte Carlo)"
+        ev = _load(os.path.join(LIT_DOCS, "eventual.json"), None)       # local only unless the workflow checks it out
+        if isinstance(ev, dict) and ev.get("C 10 sessions, then safe_eval"):
+            out["eventual"] = {"label": "10 sessions two-week, then safe_eval (live rule)", **ev["C 10 sessions, then safe_eval"]}
+            out["sources"]["eventual"] = "research/lit/eventual.json (tools/lit_eventual.py)"
+        mc = _load(os.path.join(LAB, "montecarlo.json"), None)
+        if mc:
+            out["mc_normal"] = {"built": mc.get("built"), "strategy": mc.get("strategy"), "prob": mc.get("prob"), "halves": mc.get("halves"),
+                                "exact": next((x for x in mc.get("exact") or [] if x.get("mode") == "live"), None)}
+            out["sources"]["mc_normal"] = "research/lab/montecarlo.json (sizing mode normal, 2026 sessions)"
+        # ---- MFFU rules (research/lit/mffu_rules.json), flattened for the rules card
+        mr = _load(os.path.join(LIT_DOCS, "mffu_rules.json"), None)
+        if mr:
+            acct = mr.get(mr.get("account") or "builder_50k") or {}
+            stages = []
+            for stage in ("eval", "sim_funded", "live"):
+                items = []
+                for k, v in (acct.get(stage) or {}).items():
+                    if isinstance(v, dict) and "value" in v:
+                        items.append({"k": k, "value": v.get("value"), "status": v.get("status"), "note": v.get("note"), "checked": v.get("checked")})
+                stages.append({"stage": stage, "items": items})
+            out["mffu"] = {"title": mr.get("title"), "built": mr.get("built"), "method": mr.get("method"), "stages": stages}
+            out["sources"]["mffu"] = "research/lit/mffu_rules.json"
+        # ---- links (the repo this build runs in)
+        repo = os.environ.get("GITHUB_REPOSITORY")
+        if not repo:
+            try:
+                import subprocess
+                u = subprocess.run(["git", "-C", ROOT, "remote", "get-url", "origin"], capture_output=True, text=True, timeout=5).stdout
+                m = re.search(r"github\.com[:/]([^/\s]+/[^/\s]+?)(?:\.git)?\s*$", u)
+                repo = m.group(1) if m else None
+            except Exception:
+                repo = None
+        out["repo"] = repo
+        return out
+    except Exception as e:                          # extras must never break the build
+        print("  extras unavailable:", e.__class__.__name__, e)
+        return None
+
+
 def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     os.makedirs(out, exist_ok=True)
     st = _load(state_path, {}) or {}
@@ -510,7 +646,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     ledger = sorted(({**v, "entry_t": int(k)} if str(k).isdigit() else dict(v) for k, v in (st.get("ledger") or {}).items()),
                     key=lambda v: (v.get("day", ""), v.get("entry", "")), reverse=True)
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
-                                   "equity_filter", "eval_timing", "eval_2wk", "price", "today", "events", "engine_trades", "bars", "pools", "pc",
+                                   "equity_filter", "eval_timing", "eval_2wk", "price", "today", "events", "engine_trades", "bars", "bars1", "pools", "pc",
+                                   "pc_verdict",                        # engine/accounts.verdict: is the PC bot trading the eval
                                    "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
                                    "push", "notices", "learning",       # learning: engine/lit_learn.py summary (the "What the bot learned" card)
                                    "armed", "watch")}                  # armed: engine/lit_watch.py armed_line; watch: tools/lit_watch.py summary (Yahoo lag)
@@ -529,6 +666,22 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     for k in ("private", "vapid_private", "subs", "push_subs", "box"):   # never public (status() has none of these; belt and braces)
         live["push"].pop(k, None)
     live["ledger"] = ledger[:200]
+    # Accounts page: one section per account (live_model.json "accounts", default the MFFU 50K eval on the PC bot, from the
+    # heartbeat's "acct" block) + the cloud paper ledger (engine/accounts.py); the raw block stays out of live.pc
+    lm_acc = _load(os.path.join(ROOT, "live_model.json"), {}) or {}
+    try:
+        from engine import accounts as _accounts
+        accounts = _accounts.build_accounts(st, lm_acc)
+    except Exception as e:
+        print("  accounts unavailable:", e.__class__.__name__, e)
+        accounts = []
+    if isinstance(live.get("pc"), dict):
+        live["pc"] = {k: v for k, v in live["pc"].items() if k != "acct"}
+        try:                       # the verdict again at build time (the heartbeat age grows between cloud runs)
+            from engine import accounts as _acc_v
+            live["pc_verdict"] = _acc_v.verdict(st.get("pc"), st.get("last_run") or None)
+        except Exception as e:
+            print("  pc verdict unavailable:", e.__class__.__name__, e)
     results = None
     if bt:
         results = {"meta": {k: bt.get("meta", {}).get(k) for k in ("built", "strategy", "data", "costs", "method", "equity_filter")},
@@ -568,6 +721,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         "docs": docs,
         "archive": _archive(st, state_path, cfg) if lab_scope.is_lit_model(lm) else None,
         "lit_extra": _lit_extra(st, lm),
+        "accounts": accounts,
     }
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
@@ -588,6 +742,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     data["lab_files"] = have
     # the learning loop (engine/lit_learn.py): the cloud's summary from state.json, else the repo's learning file + journal
     data["learning"] = st.get("learning") or _learning_fallback()
+    data["extras"] = _extras(st, lm, bt)          # extras.js pages (Eval HQ, Edge, Calendar, Ops, MFFU rules)
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # the page, the home-screen app files and its icons

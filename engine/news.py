@@ -175,8 +175,54 @@ def headlines(limit=60):
 
 
 # ------------------------------------------------------------------ volatility
+CBOE_URL = "https://cdn.cboe.com/api/global/us_indices/daily_prices/{name}_History.csv"
+
+
+def _cboe_parse(raw: bytes) -> pd.DataFrame:
+    """CBOE's index history file (DATE,OPEN,HIGH,LOW,CLOSE with MM/DD/YYYY dates) -> date-indexed open/high/low/close."""
+    import io
+    df = pd.read_csv(io.BytesIO(raw))
+    df.columns = [str(c).strip().lower() for c in df.columns]
+    df["date"] = pd.to_datetime(df["date"], format="mixed").dt.strftime("%Y-%m-%d")
+    df = df.set_index("date")[["open", "high", "low", "close"]].apply(pd.to_numeric, errors="coerce").dropna()
+    return df[df["close"] > 0]
+
+
+def _cboe_daily(name, path=None, fetch=None):
+    """VIX / VXN daily closes from CBOE's own history file (no Yahoo, owner 2026-10-19; engine/pcbars.py). Same closes as
+    Yahoo's ^VIX (Yahoo republishes CBOE's). New dates are added to data/<name>_1d.csv; stored rows are kept. A failed
+    download keeps the stored file."""
+    path = path or os.path.join(DATA, f"{name}_1d.csv")
+    try:
+        raw = (fetch or (lambda u: urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=30).read()))(
+            CBOE_URL.format(name=name))
+        df = _cboe_parse(raw)
+        if not len(df):
+            raise ValueError("empty CBOE file")
+        df.index.name = "date"
+        if os.path.exists(path):
+            old = pd.read_csv(path, index_col="date")
+            # CBOE's rows win for the last 10 stored dates (a partial "today" row written during a session gets its final
+            # close) and add every newer date; older stored rows are never rewritten
+            cut = sorted(old.index.astype(str))[-10] if len(old) >= 10 else ""
+            new = df[df.index >= cut]
+            df = pd.concat([old[~old.index.isin(new.index)], new]).sort_index()
+        tmp = path + ".tmp"
+        df.to_csv(tmp)
+        os.replace(tmp, path)
+    except Exception:
+        df = pd.read_csv(path, index_col="date") if os.path.exists(path) else pd.DataFrame()
+    return df
+
+
 def _yf_daily(sym, name):
     path = os.path.join(DATA, f"{name}_1d.csv")
+    try:
+        from . import pcbars
+        if pcbars.no_yahoo():
+            return _cboe_daily(name, path)
+    except ImportError:
+        pass
     try:
         import yfinance as yf
         df = yf.download(sym, period="2y" if os.path.exists(path) else "5y", interval="1d", progress=False, auto_adjust=False)
@@ -234,6 +280,9 @@ def nq_range_state(bars):
 def earnings():
     def load():
         out = []
+        from . import pcbars
+        if pcbars.no_yahoo():                 # megacap earnings dates came from Yahoo: off with no_yahoo
+            return out
         try:
             import yfinance as yf
             for s in MEGACAPS:

@@ -69,6 +69,8 @@ jobs:
             /live_model_lit.json
             /data/VIX_1d.csv
             /data/VXN_1d.csv
+            /data/NQ_5m.csv
+            /data/NQ_1m.csv
             /data/lit_journal.jsonl
             /data/lit_learning.json
             /requirements-cloud.txt
@@ -82,6 +84,7 @@ jobs:
             /research/lab/backtest_engine.json
             /research/lit/*.md
             /research/lit/mffu_rules.json
+            /research/lit/eventual.json
             /research/archive/engine-2026-10-17/
             /research/study/
             /research/runs/*.json
@@ -123,6 +126,8 @@ jobs:
             git show FETCH_HEAD:state.json > dash/state.json 2>/dev/null || rm -f dash/state.json
             git show FETCH_HEAD:shadow_ledger.json > dash/shadow_ledger.json 2>/dev/null || rm -f dash/shadow_ledger.json
             git show FETCH_HEAD:bars_1m.csv > dash/bars_1m.csv 2>/dev/null || rm -f dash/bars_1m.csv     # LIT 1m bars (12 days)
+            # no Yahoo: the PC's NinjaTrader 5m bars the cloud has received so far (engine/pcbars.py CloudFeed store, 75 days)
+            git show FETCH_HEAD:pc_bars_5m.csv > dash/pc_bars_5m.csv 2>/dev/null || rm -f dash/pc_bars_5m.csv
             git show FETCH_HEAD:watch.json > dash/watch.json 2>/dev/null || rm -f dash/watch.json        # fast-entry watcher record
             # the learning loop (engine/lit_learn.py): the append-only trade journal and the learned knobs / decisions log
             git show FETCH_HEAD:lit_journal.jsonl > dash/lit_journal.jsonl 2>/dev/null || rm -f dash/lit_journal.jsonl
@@ -184,7 +189,8 @@ jobs:
           rm -f ~/.ssh/dash_key
 
       # Fast entries (owner 2026-10-18: "when there's a signal, it needs to send an entry"): when this run found a LIT setup
-      # armed (limit working / tapped) or forming, keep polling Yahoo NQ=F every 30 s until it fills or goes away (max 55 min),
+      # armed (limit working / tapped) or forming, keep reading the PC's NinjaTrader bars from the heartbeat branch every 30 s
+      # (no Yahoo, engine/pcbars.py; Yahoo NQ=F only with live_model.json "no_yahoo": false) until it fills or goes away (max 55 min),
       # and on every change run the monitor again (ledger + phone notification) and publish (scripts/cloud_publish.sh).
       # Costs minutes only on those stretches: at most 15 min a day on forming setups, 550 a month in all.
       - name: Watch an armed / forming LIT setup (fast entry notice)

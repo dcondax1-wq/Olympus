@@ -215,6 +215,10 @@ def job_5y(spec):
 def job_es_fresh(spec):
     """Fresh ES 5m bars from Yahoo ES=F (CME futures), in this subprocess so yfinance never runs beside the bot."""
     from engine.live import _yahoo_recent
+    from engine import pcbars
+    if pcbars.no_yahoo():           # no Yahoo (owner 2026-10-19): the stored CME ES history only
+        _progress(1, 1, "no_yahoo: stored ES history only")
+        return {"rows": []}
     _progress(0, 1, "yahoo ES=F 5m")
     df = _yahoo_recent("ES", "5m", "5d")
     rows = [] if df is None or df.empty else df[["time", "open", "high", "low", "close", "volume"]].values.tolist()

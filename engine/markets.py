@@ -18,6 +18,10 @@ def snapshot():
     hit = _cache.get("snap")
     if hit and time.time() - hit[0] < 600:
         return hit[1]
+    from . import pcbars
+    if pcbars.no_yahoo():           # cross-market quotes came from Yahoo only: off with no_yahoo (owner 2026-10-19)
+        return {"rows": [], "alerts": [], "off": True,
+                "error": "cross-market quotes need Yahoo: switched off (no_yahoo in live_model.json)"}
     import yfinance as yf
     tickers = [t for _, t, _ in ASSETS]
     df = yf.download(tickers, period="6mo", interval="1d", progress=False, auto_adjust=False, group_by="column")

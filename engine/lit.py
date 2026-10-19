@@ -741,6 +741,14 @@ DEFAULTS = {
                                  # {"at": 15, "x": 0.3, "mfe": 0.5}: at the close of the 1m bar that ends `at` minutes after the
                                  # fill, if the trade never reached +mfe R, the breakeven has not moved the stop and that close is
                                  # more than x R below the entry, exit at the next 1m open - 1 tick ("CUT_T15"). 1m bars only.
+    "scale_in": None,            # scale-in after breakeven (research/writeups/lit-big-ideas.md, run lit_big_scale_cisd; off = None;
+                                 # backtest on 1m bars only, ignored by the live loop until the route can send an add):
+                                 # {"pb": 0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1}: once the breakeven moved the stop,
+                                 # the first 1m pullback of >= pb R (from the high since the breakeven bar) followed by a 1m close
+                                 # above that pullback's CISD level -> add at the next 1m open + 1 tick, int(f x micros) micros
+                                 # (engine/sizing.scale_in_qty: the add's open risk never above the first entry's $ risk), same
+                                 # stop (breakeven) and target; once the add is + rat_k x its own risk the whole position's stop
+                                 # moves to the add's price (None = never). An add needs >= min_rk pts of risk. n adds at most.
     # execution (research only; research/writeups/lit-live-fills.md): None = the plain backtest fills above
     "fills": None,               # realistic fill model {} / {...}: engine/lit_fills.py FILL_DEFAULTS (live bot latency, market
                                  # entry at the price when the order reaches CME, stop slippage by hour and bar range, target
@@ -931,6 +939,8 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
                 "exit_i": 10 ** 12, "tf": B.secs // 60, "limit_fill": False, "swept": cand["swept"]}
     be_r = P["be_r"]
     tc = P.get("t_check") if B.secs == 60 else None
+    si = P.get("scale_in") if (B.secs == 60 and not live) else None
+    adds, add_pend, add_base, rat_lvl, w_pre = [], False, None, None, 0.0
     cur, be_done, mfe, mae, worst = stop, False, 0.0, 0.0, 0.0
     k = fill
     exit_px = kind = None
@@ -940,18 +950,45 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
             k -= 1; exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
         if cut is not None:
             exit_px, kind = float(o_d[k]) - SLIP, cut; break
+        if add_pend:                         # scale_in: the add decided at the last close fills at this open + 1 tick
+            add_pend = False
+            px = float(o_d[k]) + SLIP
+            if px < tg and px - cur >= float(si.get("min_rk", 2.0)):
+                adds.append({"k": k, "px": px, "dist": px - entry, "rk": px - cur, "prev_rk": [a["px"] - cur for a in adds],
+                             "w_ph": 0.0})
+                if si.get("rat_k", 1.0) is not None:
+                    rat_lvl = (px + float(si.get("rat_k", 1.0)) * (px - cur), px)
         mae = max(mae, (entry - lo_d[k]) / risk)
         worst = min(worst, lo_d[k] - entry)
+        if si is not None:
+            if adds:
+                adds[-1]["w_ph"] = min(adds[-1]["w_ph"], float(lo_d[k]) - entry)
+            else:
+                w_pre = min(w_pre, float(lo_d[k]) - entry)
         if lo_d[k] <= cur:
             exit_px, kind = cur - SLIP, ("BE" if be_done else "STOP"); break
+        be_now = False
         if not (k == fill and limit_fill):
             mfe = max(mfe, (hi_d[k] - entry) / risk)
             if hi_d[k] >= tg:
                 exit_px, kind = tg, "TARGET"; break
             if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk:
                 cur, be_done = entry + float(P.get("be_off") or 0.0), True
+                be_now = True
+                add_base = k
         if _late(B.mod[k], flat, ev) if ev else B.mod[k] >= flat:
             exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
+        if si is not None and be_done:
+            # end of bar k: the add's own breakeven (acts from bar k + 1), then the next add's trigger (fills at k + 1's open)
+            if not be_now and rat_lvl is not None and hi_d[k] >= rat_lvl[0]:
+                cur = max(cur, rat_lvl[1]); rat_lvl = None
+            if len(adds) < int(si.get("n", 1)) and not add_pend and k > add_base:
+                lowk = add_base + 1 + int(np.argmin(lo_d[add_base + 1:k + 1]))
+                if k > lowk and float(hi_d[add_base:lowk + 1].max()) - lo_d[lowk] >= float(si.get("pb", 0.25)) * risk:
+                    cz = _cisd_level(c_d, o_d, lowk)
+                    if cz is not None and c_d[k] > cz[0] and k + 1 < B.n and B.day[k + 1] == s_day:
+                        add_pend = True
+                        add_base = k + 1
         if tc and not be_done and round((B.t[k] - B.t[fill]) / 60.0) + 1 == int(tc.get("at", 15)) \
                 and mfe < float(tc.get("mfe", 0.5)) and c_d[k] < entry - float(tc.get("x", 0.3)) * risk:
             if k + 1 < B.n and B.day[k + 1] == s_day:
@@ -967,6 +1004,19 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
         exit_px = float(c_d[k])
     pnl = (exit_px - entry) * PV * q - COMM * q
     low = min(0.0, worst * PV * q - COMM * q, pnl)
+    add_out = None
+    if adds:
+        from engine.sizing import scale_in_qty
+        qa = scale_in_qty(q, q, risk, adds, f=si.get("f", 1.0))
+        lows = [q * w_pre * PV]
+        for i, a in enumerate(adds):
+            a["pts"] = exit_px - a["px"]
+            pnl += qa[i] * a["pts"] * PV - COMM * qa[i]
+            lows.append((q * a["w_ph"] + sum(qq * (a["w_ph"] - b["dist"]) for qq, b in zip(qa[:i + 1], adds))) * PV)
+        low = min(0.0, min(lows) - COMM * (q + sum(qa)), pnl)
+        add_out = [{"t": int(B.t[a["k"]]), "px": round(a["px"] * d, 2), "dist": round(a["dist"], 4), "rk": round(a["rk"], 4),
+                    "prev_rk": [round(x, 4) for x in a["prev_rk"]], "w_ph": round(a["w_ph"], 4), "pts": round(a["pts"], 4),
+                    "qty": int(qa[i])} for i, a in enumerate(adds)]
     xi5 = int(np.searchsorted(M.t, B.t[k], side="right") - 1)
     ei5 = int(np.searchsorted(M.t, B.t[fill], side="right") - 1)
     out = {"day": cand["day"], "entry_t": int(B.t[fill]), "exit_t": int(B.t[k]) + B.secs, "exit_i": xi5, "dir": d,
@@ -978,6 +1028,9 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
             "ext_i": cand["ext_i"], "ref_i": cand["ref_i"], "sweep_i": cand["sweep_i"], "entry_i": ei5, "tf": B.secs // 60,
             **({"exit_px": round(exit_px * d, 2), "stop_now": round(cur * d, 2), "be_done": be_done,
                 "limit_fill": limit_fill, "last_t": int(B.t[k])} if live else {})}
+    if add_out is not None:              # scale_in: pnl / low include the adds; qty stays the first entry's micros
+        out.update(adds=add_out, pts=round(exit_px - entry, 4), w_pre=round(w_pre, 4), w1=round(worst, 4),
+                   qty_total=q + sum(a["qty"] for a in add_out))
     if kind == "OPEN":
         out.update(exit_t=None, exit_i=10 ** 12)
     return out
@@ -991,6 +1044,13 @@ def scale_trade(t, m):
     q = max(1, int(q0 * m + 1e-9)) if m < 1 else min(MAX_MICROS, int(q0 * m + 1e-9))
     f = q / q0
     cm = t.get("comm_rt", COMM)
+    if t.get("adds"):                    # scale_in trade: the first entry and every add scale together (adds rounded down)
+        x = dict(t)
+        A_ = [dict(a, qty=int(a["qty"] * f + 1e-9)) for a in t["adds"]]
+        pnl = t["pts"] * PV * q - cm * q + sum(a["qty"] * (a["pts"] * PV - cm) for a in A_)
+        x.update(qty=q, adds=A_, qty_total=q + sum(a["qty"] for a in A_), pnl=round(pnl, 2), risk_usd=round(t["risk_usd"] * f, 2),
+                 half=f < 1, mult=round(f, 3), low=round(min(t["low"] * f, pnl), 2))
+        return x
     per = (t["pnl"] + cm * q0) / q0
     x = dict(t)
     x.update(qty=q, pnl=round(per * q - cm * q, 2), risk_usd=round(t["risk_usd"] * f, 2), half=f < 1, mult=round(f, 3),

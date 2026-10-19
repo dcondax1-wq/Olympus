@@ -205,7 +205,8 @@ def ticker(n=78):
             "day_high": float(today["high"].max()), "day_low": float(today["low"].min()), "day_open": float(today["open"].iloc[0]),
             "spark": [float(x) for x in spark["close"]], "spark_t0": int(spark["time"].iloc[0]), "spark_step_s": 300,
             "data_age_s": int(time.time() - (int(last["time"]) + 300)), "market_open": market_open(time.time()),
-            "bot_fresh": bool(bot.bars_tail), "source": "stored CME NQ1! history + live bot bars (Yahoo NQ=F)"}
+            "bot_fresh": bool(bot.bars_tail), "source": "stored CME NQ1! history + live bot bars ("
+            + ("NinjaTrader" if getattr(bot, "no_yahoo", False) else "Yahoo NQ=F") + ")"}
 
 
 # ------------------------------------------------------------------ clock / killzones

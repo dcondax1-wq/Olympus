@@ -69,6 +69,8 @@
 
     <!-- ============================================================ COMMAND -->
     <section class="page active" id="page-command">
+      <!-- PC bot status header (js/next/pcpages.js): TRADING YOUR EVAL / ON SIM / PAPER ONLY / DISABLED / FEED STALE -->
+      <div class="pc-status" id="pcStatus" role="status" aria-live="polite"></div>
       <!-- Live Oracle: the 3D orb with the last bars and nearest pools (js/next/fx3d.js); hidden while 3D is off -->
       <div class="card nx-glass nx-oracle" id="nxOracle" data-fx-card hidden>
         <div class="hero3d" id="nxOrb"><span class="hero-tag">LIVE ORACLE</span></div>
@@ -472,6 +474,13 @@
 
     <!-- ============================================================ TRADES (js/next/trades.js) -->
     <section class="page" id="page-trades"><div class="empty">Loading trades…</div></section>
+
+    <!-- ============================================================ PC BOT: accounts, eval HQ, edge, P&L calendar, MFFU rules (js/next/pcpages.js) -->
+    <section class="page" id="page-accounts"><div class="empty">Loading the account…</div></section>
+    <section class="page" id="page-evalhq"><div class="empty">Loading Eval HQ…</div></section>
+    <section class="page" id="page-edge"><div class="empty">Loading the edge…</div></section>
+    <section class="page" id="page-pnlcal"><div class="empty">Loading the P&amp;L calendar…</div></section>
+    <section class="page" id="page-mffurules"><div class="empty">Loading the MFFU rules…</div></section>
 
     <!-- ============================================================ MODULES (tile grid, js/next/shell.js) -->
     <section class="page" id="page-modules"></section>

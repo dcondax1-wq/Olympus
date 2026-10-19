@@ -1,8 +1,14 @@
 """Cloud paper monitor: the live paper bot's decision loop as a scheduled job (GitHub Actions), so it runs with the PC off.
 
-Each run does what LiveBot.poll_once does - stored history + fresh Yahoo bars, 20-day window, 1h HTF, ES partner,
+Each run does what LiveBot.poll_once does - stored history + fresh bars, 20-day window, 1h HTF, ES partner,
 live params - then writes a dashboard (README.md + chart.png + state.json) into --out, which the workflow publishes on
 the repo's `dashboard` branch. Paper only: it never routes an order anywhere.
+
+No Yahoo (live_model.json "no_yahoo", default on; owner 2026-10-19; engine/pcbars.py): the fresh bars are the PC's
+NinjaTrader bars, pushed with its heartbeat (branch `heartbeat`: bars_1m.csv.gz, bars_5m.csv.gz), on top of the
+TradingView exports (data/NQ_5m.csv, data/NQ_1m.csv) and the cloud's own store of what the PC sent (pc_bars_5m.csv,
+bars_1m.csv on the dashboard branch). PC bars missing or stale: no new paper entries ("waiting for NinjaTrader bars from
+the PC"); the rest of the run (ledger exits, push, brief, accounts) goes on. "no_yahoo": false brings Yahoo NQ=F back.
 
 Phone notifications: Web Push to the Home Screen app (engine/push.py) for every fill and every outcome, the PC heartbeat
 going silent and eval-timing flips; secrets LE_VAPID_PRIVATE + LE_PUSH_SUBS (docs/NOTIFICATIONS.md). Telegram / Discord
@@ -31,6 +37,7 @@ from engine import heartbeat                   # noqa: E402
 from engine import push                        # noqa: E402
 from engine import sizing                      # noqa: E402
 from engine import lab_adapter                 # noqa: E402
+from engine import pcbars                      # noqa: E402
 from engine.data import from_frame             # noqa: E402
 from engine.lab_adapter import live_model      # noqa: E402
 from engine.live import LiveBot, market_open   # noqa: E402
@@ -112,7 +119,7 @@ def run_model(lm, bot, df_all, now, store_1m=None, week_hist=None):
         from engine import lit as lit_mod
         from engine import lit_live
         P = {**lit_mod.DEFAULTS, **(lm.get("lit") or {})}
-        try:                                   # VIX daily close (the LIT target band): data/VIX_1d.csv, refreshed from Yahoo
+        try:                                   # VIX daily close (the LIT target band): data/VIX_1d.csv, from CBOE (Yahoo with no_yahoo off)
             from engine import news
             news.volatility()
         except Exception as e:
@@ -121,7 +128,7 @@ def run_model(lm, bot, df_all, now, store_1m=None, week_hist=None):
         if P.get("tf") == "1m":
             keep = dict(bot.health)
             try:
-                df1, _ = bot._merged(SYM, "1m", now, 60, period="5d", max_days=7)     # Yahoo caps 1m at 7 days
+                df1, _ = bot._merged(SYM, "1m", now, 60, period="5d", max_days=7)     # PC NinjaTrader 1m (Yahoo: 7-day cap)
             except Exception as e:
                 print("1m bars unavailable:", e.__class__.__name__)
             bot.health.clear(); bot.health.update(keep)
@@ -144,6 +151,8 @@ def run_model(lm, bot, df_all, now, store_1m=None, week_hist=None):
         except Exception as e:
             print("ES bars unavailable (learning features):", e.__class__.__name__)
         bot.health.clear(); bot.health.update(keep)
+        if es_df is not None and (not len(es_df) or int(es_df["time"].max()) + 1800 < int(df_all["time"].max())):
+            es_df = None                       # no fresh ES (no Yahoo, the PC sends NQ only): the ES features are unknown
         return lit_live.run(df_all, P, one_min=df1, now=now, sym=SYM, week_hist=week_hist, learn=True, es_df=es_df)
     if lm["model"].startswith("lab:"):
         es_df, _ = bot._merged("ES" if SYM == "NQ" else "NQ", TF, now, SECS)     # partner index (SMT)
@@ -171,14 +180,37 @@ def week_rows(ledger):
     return [{"day": v["day"], "exit": v.get("exit"), "exit_t": v.get("exit_ts")} for v in ledger.values()]
 
 
-def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, params, lit_sizing=None):
+def in_pause(t, pauses) -> bool:
+    """Did entry time t fall in a stretch without the PC's NinjaTrader bars (state "feed_pauses": [[from, to|None], ...])?"""
+    return any(int(a) <= int(t) and (b is None or int(t) < int(b)) for a, b in (pauses or []))
+
+
+def update_pauses(pauses, fstat, now):
+    """Open a pause when the PC bars stop (from the minute after the newest bar the cloud had), close it when they are
+    fresh again. Keeps the last 30."""
+    pauses = [list(p) for p in (pauses or [])]
+    open_ = bool(pauses) and pauses[-1][1] is None
+    if fstat is not None and not fstat.get("ok"):
+        if not open_:
+            last = fstat.get("last_1m_t")
+            pauses.append([int(min(now, (last + 60) if last else now)), None])
+    elif open_:
+        pauses[-1][1] = int(now)
+    return pauses[-30:]
+
+
+def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, params, lit_sizing=None, pauses=None):
     """Paper ledger: the model's trades that entered after this ledger started watching, sized as the PC bot sizes them.
+    pauses (no Yahoo): a trade that would ENTER inside a stretch without the PC's NinjaTrader bars is not added (no new paper
+    entries while waiting; the PC bot did not route it either: it blocks entries on a stale feed and never chases late ones).
     lit_sizing (LIT only): live_model.json "lit_sizing" -> engine/sizing.lit_qty (normal / eval / fast_eval / safe_eval /
     two_week; the room and the two_week eval state from this ledger's MFFU eval tracker at the entry, from
     lit_sizing.eval_start); the model's micros already carry the weekly stop."""
     for t in sorted(res["trades"], key=lambda x: x["entry_t"]):
         if t["entry_t"] >= first_run - SECS:
             prev = ledger.get(int(t["entry_t"]))
+            if prev is None and pauses and in_pause(t["entry_t"], pauses):
+                continue
             if prev and prev.get("exit_ts") and prev.get("exit") not in (None, "OPEN"):
                 # a finished paper trade is the decision made on the bars available then (LIT report ch.27): a later re-run on
                 # revised bars (Yahoo corrections, late 1m bars) never rewrites it; the difference is only noted
@@ -454,9 +486,31 @@ def run(out):
 
     bot = LiveBot()
     bot.cfg = {"sym": SYM, "tf": TF, "adapter": "paper", "data_source": "yahoo", "params": {}, "window_days": WINDOW_DAYS}
+    # ---- the bars: no Yahoo -> the PC's NinjaTrader bars from its heartbeat (engine/pcbars.py)
+    noy = pcbars.no_yahoo()
+    pc = fstat = None
+    pauses = st.get("feed_pauses") or []
+    if noy:
+        if st.get("bars_src") != "pc-ninjatrader":      # the 1m store was filled from Yahoo before: start it again from the PC
+            for f in (pcbars.STORE_1M, pcbars.STORE_5M):
+                try:
+                    os.remove(os.path.join(out, f))
+                except OSError:
+                    pass
+        pc = heartbeat.read(cwd=ROOT, now=now, files=pcbars.HB_FILES)
+        feed = pcbars.CloudFeed(out, pc, now, sym=SYM)
+        fstat = feed.status()
+        bot.no_yahoo = True
+        bot.cfg.update(data_source="pc-ninjatrader", no_yahoo=True)
+        bot.fetch_recent = feed.recent
+        pauses = update_pauses(pauses, fstat, now)
+        print(f"bars: {fstat['text']} (1m {fstat['n_1m']}, 5m store {fstat['n_5m']}"
+              + (f", newest 1m {et(fstat['last_1m_t']):%a %H:%M} ET" if fstat.get("last_1m_t") else "") + ")")
+    else:
+        bot.no_yahoo = False
     df_all, drops = bot._merged(SYM, TF, now, SECS)
     if not len(df_all):
-        raise SystemExit("no bars at all (history missing and Yahoo failed)")
+        raise SystemExit("no bars at all (history missing and " + (pcbars.WAITING if noy else "Yahoo failed") + ")")
     df = df_all[df_all["time"] >= df_all["time"].max() - WINDOW_DAYS * 86400]
     res = run_model(lm, bot, df_all, now, store_1m=os.path.join(out, "bars_1m.csv"),
                     week_hist=week_rows(ledger) if lm["model"] == "lit" else None)
@@ -469,6 +523,8 @@ def run(out):
             _P = {**_lit.DEFAULTS, **(lm.get("lit") or {})}
             _brew = [] if (state.get("position") or state.get("day_trades")) else lit_watch.brewing(lit_watch.market(df_all, _P, SYM), _P)
             state["armed"] = lit_watch.armed_line(state, _brew, _P.get("cisd1m") or 20)
+            if fstat is not None and not fstat["ok"] and not state.get("position"):
+                state["armed"] = None            # no PC bars: nothing new can enter, so the watcher has nothing to watch
         except Exception as e:
             print("armed line failed:", e.__class__.__name__, e)
             state["armed"] = None
@@ -484,7 +540,10 @@ def run(out):
     gaps = [f"{et(a):%H:%M}-{et(b):%H:%M}" for a, b in zip(tb, tb[1:]) if b - a > SECS and mopen]
     health = {"fetch_ok": bool(bot.health.get("fetch_ok")), "last_bar": f"{et(last_bar):%a %H:%M} ET", "age_min": round(age / 60, 1),
               "stale": bool(stale and mopen), "market_open": bool(mopen), "bars_today": len(tb), "rth_bars_today": len(rth),
-              "gaps_today": gaps[:10], "dropped": drops, "error": bot.health.get("last_error")}
+              "gaps_today": gaps[:10], "dropped": drops, "error": bot.health.get("last_error"),
+              "source": "pc-ninjatrader" if noy else "yahoo", "no_yahoo": noy}
+    if fstat is not None:
+        health.update(pc_bars=fstat, waiting=None if fstat["ok"] else fstat["text"], fetch_ok=bool(fstat["ok"]))
 
     # ---- equity-curve filter (same rule as the PC bot): every finished signal goes into the signal ledger. The engine's
     # is shadow_ledger.json (its history since the cloud monitor began); another model keeps its own file.
@@ -501,7 +560,7 @@ def run(out):
     # ---- paper ledger: model trades that entered after the cloud monitor started watching
     sizing_cfg = lm.get("sizing")
     update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, lm.get("params"),
-                  lit_sizing=lm.get("lit_sizing") if lm["model"] == "lit" else None)
+                  lit_sizing=lm.get("lit_sizing") if lm["model"] == "lit" else None, pauses=pauses if noy else None)
     pos = state.get("position")
     learning = None
     if lm["model"] == "lit":                     # the learning loop (journal + Sunday review); never stops the dashboard
@@ -525,7 +584,8 @@ def run(out):
                 equity_filter.record(sres["trades"], s_path)
             s_first = int(sh_st.get("first_run") or now)
             s_ledger = {int(k): v for k, v in (sh_st.get("ledger") or {}).items()}
-            update_ledger(s_ledger, sres, s_first, s_eqf, s_path, sh_lm.get("sizing"), sh_lm.get("params"))
+            update_ledger(s_ledger, sres, s_first, s_eqf, s_path, sh_lm.get("sizing"), sh_lm.get("params"),
+                          pauses=pauses if noy else None)
             shadow = {"model": sh_lm["model"], "label": sh_lm.get("label"), "first_run": s_first,
                       "ledger": {str(k): v for k, v in sorted(s_ledger.items())}, "eval": eval_track(s_ledger),
                       "model_state": sstate.get("model_state"), "position": sstate.get("position"),
@@ -591,7 +651,8 @@ def run(out):
     state["eval_2wk"] = eval_clock(ledger, lm, now)
 
     # ---- the always-on PC's heartbeat (engine/heartbeat.py): alert when it went silent in a session
-    pc = heartbeat.read(cwd=ROOT, now=now)
+    if pc is None:
+        pc = heartbeat.read(cwd=ROOT, now=now)
     pc_alert_at = st.get("pc_alert_at")
     in_session = et_now.weekday() < 5 and 110 <= et_now.hour * 60 + et_now.minute <= 990   # 01:50-16:30 ET: LIT trades from 02:00
     other_notices = []
@@ -602,6 +663,15 @@ def run(out):
         sent = send_alert("PC BOT SILENT: " + silent_txt) or sent
         other_notices.append(push.text_payload("Cloud", "pc", "PC bot silent" + (" with a position" if pc.get("position") else ""),
                                                silent_txt, key=f"pc_silent:{now}", t=now))
+    # ---- is the PC bot trading the eval? (engine/accounts.verdict) one push per reason per hour, 01:50-15:55 ET weekdays,
+    # whenever it is not green (a silent PC that said it was running already has the alert above)
+    from engine import accounts as _accounts
+    pc_verdict = _accounts.verdict(pc, now)
+    v_due, pc_verdict_alerts = _accounts.alert_due(pc_verdict, now, st.get("pc_verdict_alerts"))
+    if v_due and not (pc_verdict["code"] == "SILENT" and pc.get("silent")):
+        other_notices.append(_accounts.verdict_notice(pc_verdict, pc, now))
+    # a failed / rolled-back PC auto-update, a refused real-account auto-resume (same keys as the PC's own pushes)
+    other_notices += _accounts.auto_notices(pc.get("health") if pc.get("present") else None, now)
     if prev_et and prev_et != now_et["verdict"]:
         other_notices.append(push.text_payload("Cloud", "timing", f"Eval timing: {now_et['verdict'].upper()}",
                                                f"{now_et['reason']} " + ("Good time to buy or reset the MFFU eval." if now_et["verdict"] == "go"
@@ -669,7 +739,7 @@ def run(out):
           + (f", expired {len(gone)}" if gone else "") + (f", errors {push_errs[:3]}" if push_errs else ""))
     write_chart(os.path.join(out, "chart.png"), df, state, res, today)
     write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm,
-                 push_state=push_state)
+                 push_state=push_state, pc_health=pc.get("health") if pc.get("present") else None)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
@@ -688,6 +758,8 @@ def run(out):
                  # for the web dashboard's Chart tab: the last ~2 sessions of 5m bars and the untaken pools around price
                  "bars": [[int(r.time), float(r.open), float(r.high), float(r.low), float(r.close)] for r in df.tail(200).itertuples()],
                  "pools": _near_pools(state),
+                 # the last ~6 hours of 1m bars (bars_1m.csv) for the live trade chart (tools/web_public/live_panel.js)
+                 "bars1": _bars_1m_tail(out),
                  # LIT panels (tools/web_public/litkit.js): the day context (18:00 open, VIX band, today's signals), the session
                  # boxes' highs / lows and every untaken LIT level (the Levels board marks a level taken when it leaves this list)
                  "lit": state.get("lit") if lm["model"] == "lit" else None,
@@ -695,8 +767,13 @@ def run(out):
                  "levels": [{k: p.get(k) for k in ("label", "price", "side", "strength", "kind")} for p in state.get("active_pools") or []][:60]
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
-                                               "reason", "model", "push_pk")},
+                                               "reason", "model", "push_pk", "acct", "health", "every_s")},
+                 # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
+                 "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
                  "pc_alert_at": pc_alert_at,
+                 # no Yahoo: where the bars came from, the stretches without PC bars (no new paper entries in them)
+                 "bars_src": "pc-ninjatrader" if noy else "yahoo", "feed_pauses": pauses if noy else [],
+                 "feed_wait": (None if fstat["ok"] else fstat["text"]) if fstat is not None else None,
                  # phone app notifications: the keys already sent (de-dup), when they started, the public status (never the
                  # private key or an endpoint) and the last 80 notices for the app's Activity feed
                  "push_since": push_since, "pushed": notifier.keys()[-600:], "push": push_state, "notices": notices,
@@ -714,6 +791,20 @@ def run(out):
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"
           + (f" | shadow {shadow.get('model_state')}, ledger {len(shadow.get('ledger') or {})}" if shadow else ""))
+
+
+def _bars_1m_tail(out, n=360):
+    """The newest n 1m bars of <out>/bars_1m.csv as [[t, o, h, l, c], ...]; [] when there is none. Never raises."""
+    try:
+        p = os.path.join(out, "bars_1m.csv")
+        if not os.path.exists(p):
+            return []
+        b = pd.read_csv(p).tail(n)
+        return [[int(r.time), round(float(r.open), 2), round(float(r.high), 2), round(float(r.low), 2), round(float(r.close), 2)]
+                for r in b.itertuples()]
+    except Exception as e:
+        print("1m bars for the chart unavailable:", e.__class__.__name__)
+        return []
 
 
 def _near_pools(state, n=6):
@@ -796,6 +887,14 @@ def write_chart(path, df, state, res, today):
         print("chart failed:", e)
 
 
+def _accounts_auto_text(hl):
+    try:
+        from engine import accounts
+        return accounts.auto_text(hl)
+    except Exception as e:
+        return f"unknown ({e.__class__.__name__})"
+
+
 def _push_cell(p):
     p = p or {}
     if not p.get("configured"):
@@ -822,7 +921,8 @@ def usd_cell(v):
     return money(v["usd"]) + (f" ({v.get('mult', 1.0):g}x size: {', '.join(v.get('reasons') or ['cold streak'])})" if v.get("mult", 1.0) < 1 else "")
 
 
-def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None):
+def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None,
+                 pc_health=None):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
     arm = []
@@ -840,7 +940,11 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     bias = ", ".join(f"{x['tf']} {'bull' if x['bias'] > 0 else 'bear' if x['bias'] < 0 else 'flat'}" for x in mtf.get("tfs", []))
     price = state.get("price")
     pools = sorted(state.get("active_pools") or [], key=lambda p: abs(float(p["price"]) - float(price or 0)))[:8]
-    feed = "OK" if health["fetch_ok"] and not health["stale"] else ("STALE" if health["stale"] else "Yahoo fetch failed, using stored history")
+    if health.get("waiting"):
+        feed = "**WAITING** - " + str(health["waiting"]) + " (no new paper entries)"
+    else:
+        feed = ("OK" if health["fetch_ok"] and not health["stale"] else ("STALE" if health["stale"] else "Yahoo fetch failed, using stored history")) \
+            + (" (PC NinjaTrader bars, no Yahoo)" if health.get("no_yahoo") else "")
     L = [f"# {SYM} {'LIT' if (lm or {}).get('model') == 'lit' else 'Liquidity Engine'} - cloud paper monitor",   # the strategy's name (LIT since 2026-10-18)
          f"Updated **{et(now):%a %b %d %H:%M} ET** - runs every 30 min, 02:00-16:25 ET, on market days (GitHub Actions) - "
          f"**paper only, never places orders** - watching since {et(first_run):%b %d %H:%M} ET",
@@ -869,6 +973,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
             f"{'1m' if lt.get('one_min_day') else '5m (no full 1m feed today)'} execution; "
             f"{len(lt.get('signals_today') or [])} setups today |"] if (lt := state.get("lit")) and lt.get("open18") else []),
          f"| Feed | {feed}; {health['rth_bars_today']}/78 RTH bars today; gaps: {', '.join(health['gaps_today']) or 'none'} |",
+         *([f"| PC bot version | {_accounts_auto_text(pc_health)} |"] if isinstance(pc_health, dict) else []),
          f"| Notifications | {_push_cell(push_state)} |",
          f"| Telegram / Discord | {', '.join(sent) if sent else ('on' if chat_on(lm) and (os.environ.get('TG_TOKEN') or os.environ.get('DISCORD_WEBHOOK')) else 'off (the app notifies; LE_ALERTS_CHAT=1 turns chat alerts back on)')} |",
          "", "## Nearest liquidity pools", "| Pool | Price | Distance |", "|---|---:|---:|"]

@@ -6,7 +6,7 @@
 //   Today (command): a strip with the day clock and the setup tracker above the command grid
 // Data: the PC bot's LIT state (/api/live/state: state.lit, state.session, state.active_pools, setups, position, lit_rules, ledger,
 // bars), /api/next/lit_extra (plan, size rule, rules, boxes, 2026 stats), /api/dash/eval (the paper eval), /api/next/news?compact=1.
-import * as LK from '../litkit.js?v=16fe7086';
+import * as LK from '../litkit.js?v=5487cc77';
 import { $, api, esc, fmt$ } from '../util.js';
 import { L, onLive } from '../dash/live.js';
 import { mount3d } from './fx3d.js';

@@ -101,6 +101,11 @@ Get-ChildItem -LiteralPath $LogDir -Filter 'server-*.log' -ErrorAction SilentlyC
     Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item -ErrorAction SilentlyContinue
 
 Write-Sup "supervisor pid $PID starting; port $Port; python $Python; $envNote"
+# auto-update on start (engine/autoupdate.py): does nothing until the owner ran `python -m engine.autoupdate --enable`;
+# only when flat, outside 01:50-16:00 ET on a weekday, fast-forward of main only, self-tests or roll back
+try {
+    & $Python -X utf8 -m engine.autoupdate --on-start 2>&1 | ForEach-Object { Write-Log ("{0} {1}" -f (Get-Date -Format 'HH:mm:ss'), "$_") }
+} catch { Write-Sup "auto-update check could not run: $($_.Exception.Message)" }
 $delays = @(5, 15, 60)
 $fail = 0
 try {
@@ -119,6 +124,12 @@ try {
         $code = $LASTEXITCODE
         $ran = [int]((Get-Date) - $t0).TotalSeconds
         if (Test-Path -LiteralPath $StopFile) { Write-Sup "server exited (code $code) after stop request; exiting"; break }
+        if ($code -eq 75) {
+            # exit code 75 = the server updated itself (engine/autoupdate.py): start the new code at once
+            Write-Sup "server updated itself (code 75); starting the new version now"
+            $fail = 0
+            continue
+        }
         if ($ran -ge 600) { $fail = 0 }
         $wait = $delays[[Math]::Min($fail, $delays.Count - 1)]
         $fail++

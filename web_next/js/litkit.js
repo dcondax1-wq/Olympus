@@ -42,6 +42,7 @@ export const hm = (m) => { m = ((Math.round(m) % 1440) + 1440) % 1440; return `$
 const MINUS = '−';
 const px = (v) => (ok(v) ? (+v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—');
 const usd = (v) => (ok(v) ? (v < 0 ? MINUS : '') + '$' + Math.round(Math.abs(v)).toLocaleString('en-US') : '—');
+const num = (v, d = 2) => (ok(v) ? Number(v).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }) : '—');
 const susd = (v) => (ok(v) ? (v < 0 ? MINUS : v > 0 ? '+' : '') + '$' + Math.round(Math.abs(v)).toLocaleString('en-US') : '—');
 const spts = (v, d = 1) => (ok(v) ? (v < 0 ? MINUS : v > 0 ? '+' : '') + Math.abs(v).toFixed(d) : '—');
 const pct = (v) => (ok(v) ? (Math.abs(v) < 9.95 && v % 1 ? (+v).toFixed(1) : Math.round(v)) + '%' : '—');
@@ -71,7 +72,7 @@ export function fromCloud(D, now = Date.now() / 1000) {
   const ledger = (lv.ledger || []).map((v) => ({ ...v, t: v.entry_t || ledgerT(v), exit_t: v.exit_ts || null }));
   return mk({ src: 'cloud', now, model: lv.model || S.model, model_state: lv.model_state, price: lv.price, last_run: lv.last_run, bars: lv.bars || [],
     levels: X.levels || lv.levels || lv.pools || [], levelsFull: !!(X.levels || lv.levels), lit: { ...(X.lit || {}), ...(lv.lit || {}) }, session: lv.session || X.lit?.session || {},
-    setups: lv.setups || {}, position: lv.position || null, rules: lv.lit_rules || {}, eval: lv.eval || null, ledger, events: lv.events || [],
+    setups: lv.setups || {}, position: lv.position || null, rules: lv.lit_rules || {}, eval: lv.eval || null, eval2wk: lv.eval_2wk || null, ledger, events: lv.events || [],
     news: news ? (news.events || []) : [], newsRules: news?.bot_now?.rules || null, newsDays: news?.days || [],
     sizing: { ...(X.sizing || {}), mode: lv.lit_sizing || X.sizing?.mode || S.lit_sizing?.mode || 'normal', risk_usd: X.sizing?.risk_usd ?? S.params?.risk_usd ?? 800,
       ref_stop: X.sizing?.ref_stop ?? S.params?.risk_ref_stop ?? 20, max_micros: X.sizing?.max_micros ?? S.params?.max_micros ?? 40,
@@ -94,7 +95,7 @@ export function fromPC(live, extra = {}, now = Date.now() / 1000) {
   const bars = (extra.bars || st.bars || []).map((b) => (Array.isArray(b) ? b : [b.time ?? b.t, b.open ?? b.o, b.high ?? b.h, b.low ?? b.l, b.close ?? b.c]));
   return mk({ src: 'pc', now, model: st.model || 'lit', model_state: st.model_state, price: st.price, last_run: live?.last_poll ?? st.t, bars,
     levels: st.active_pools || extra.levels || [], levelsFull: !!st.active_pools, lit: st.lit || {}, session: st.session || {}, setups: st.setups || {}, position: st.position || null,
-    rules: st.lit_rules || {}, eval: extra.eval || null, ledger: extra.ledger || [], events: extra.events || [], news: extra.news || [], newsRules: extra.newsRules || null,
+    rules: st.lit_rules || {}, eval: extra.eval || null, eval2wk: extra.eval2wk || st.eval_2wk || null, ledger: extra.ledger || [], events: extra.events || [], news: extra.news || [], newsRules: extra.newsRules || null,
     newsDays: extra.newsDays || [], sizing: extra.sizing || {}, plan: extra.plan || null, litRules: extra.rules || { window: [[120, 930]] }, boxes: extra.boxes || null,
     stats: extra.stats || null, timing: extra.timing || null, periods: extra.periods || null, engineTrades: extra.engineTrades || [],
     pc: { present: true, running: !!live?.running, silent: false, adapter: live?.cfg?.adapter, age_s: live?.last_poll ? now - live.last_poll : null }, health: live?.health || null });
@@ -253,23 +254,60 @@ export function micros(C, stop, { mode = C.sizing.mode, mult = 1, room = null } 
   if (mult < 1 && m >= 1) m = Math.max(1, Math.floor(m * mult));
   return { m, budget, usd: m * stop * PV, ref };
 }
+// two_week (engine/sizing.py two_week_qty, same numbers): one winner passes, capped at room_f of the room and a full stop
+// inside the soft daily loss; at least 1, at most max_micros. st = { profit (eval profit now, $), cum (today's closed $), room }
+const TW = { COMM: 1.9, SLIP: 0.25, DSLIP: 0.5 };
+export function twQty(C, stop, tgt, st) {
+  const c = { need_buf: 1, room_f: 0.6, dll_cap: true, stop_at_target: true, ...(C.sizing.two_week || {}) }, P = C.plan, maxq = C.sizing.max_micros || 40;
+  const need = P.target - N(st.profit, 0), risk1 = (stop + TW.SLIP) * PV + TW.COMM;
+  if (c.stop_at_target && need <= 0) return { m: 0, why: 'target reached: no new trade', need, usd: 0, risk: 0, win: 0 };
+  let m = Math.max(1, Math.ceil(need * (c.need_buf || 1) / (tgt * PV - TW.COMM) - 1e-9)), why = `one winner passes: ${m} micros cover ${usd(need)}`;
+  const caps = [];
+  if (c.max_usd) caps.push([Math.floor(c.max_usd / risk1), `max ${usd(c.max_usd)} a trade`]);
+  if (c.room_f && ok(st.room)) caps.push([Math.floor(c.room_f * Math.max(0, st.room) / (stop * PV)), `${Math.round(c.room_f * 100)}% of the ${usd(st.room)} room`]);
+  if (c.dll_cap) caps.push([Math.floor(Math.max(0, P.dll + N(st.cum, 0)) / ((stop + TW.DSLIP) * PV + TW.COMM)), `${usd(P.dll)} soft daily loss`]);
+  for (const [cap, lab] of caps) if (cap < m) { m = Math.max(1, cap); why = lab; }
+  if (m > maxq) { m = maxq; why = `max ${maxq} micros`; }
+  return { m, why, need, usd: m * stop * PV, risk: m * risk1, win: m * (tgt * PV - TW.COMM) };
+}
+// the mode that sizes the next trade: two_week until session two_week_until, then after_mode (owner 2026-10-18: no reset)
+export function modeNow(C) {
+  const Z = C.sizing, ses = N(C.eval2wk?.session, NaN);
+  if (Z.mode === 'two_week' && Z.two_week_until && ok(ses) && ses > Z.two_week_until) return { mode: Z.after_mode || 'eval', after: true, session: ses };
+  return { mode: Z.mode, after: false, session: ok(ses) ? ses : null };
+}
+export const modeLabel = (m) => ({ two_week: 'two-week eval', fast_eval: 'fast eval', safe_eval: 'safe eval', eval: 'eval', normal: 'normal', funded: 'funded' }[m] || m);
+// eval numbers: the cloud's eval (the prior P&L is already in it), else the plan start + lit_sizing.eval_prior_pnl
+function evalNums(C) {
+  const P = C.plan, ev = C.eval || {}, prior = ok(ev.balance) ? 0 : N(C.sizing.eval_prior_pnl, 0);
+  const bal = N(ev.balance, P.start + prior), floor = N(ev.trailing_mll, P.start - P.mll);
+  return { bal, floor, profit: ok(ev.profit) ? +ev.profit : bal - P.start, room: bal - floor };
+}
 function sizeNow(C, stop) {
-  const st = stop ?? N(C.stats?.spans?.['2026']?.med_stop, 46), wk = C.rules?.weekly_stop, mult = wk && N(wk.mult, 1) < 1 ? +wk.mult : 1;
-  const ev = C.eval, room = ev ? N(ev.balance, C.plan.start) - N(ev.trailing_mll, C.plan.start - C.plan.mll) : null;
-  return { ...micros(C, st, { mult, room }), stop: st, mult };
+  const st = stop ?? N(C.stats?.spans?.['2026']?.med_stop, 46), wk = C.rules?.weekly_stop, M = modeNow(C), E = evalNums(C);
+  if (M.mode === 'two_week') {
+    // target distance: today's setup if there is one, else the typical winner (2026 H2 average winner R x the stop)
+    const sig = (C.lit?.signals_today || []).slice(-1)[0], S = C.stats?.spans || {};
+    const tgt = stop == null && sig && ok(sig.limit_px) && ok(sig.target_px) ? Math.abs(sig.target_px - sig.limit_px) : st * N((S.H2 || S['2026'] || {}).avg_win_r, 3.4);
+    const cum = C.dayTrades.reduce((s, v) => s + N(v.usd, 0), 0);
+    const z = twQty(C, st, tgt, { profit: E.profit, cum, room: E.room });
+    return { ...z, stop: st, tgt, mult: 1, mode: M.mode, tw: true };
+  }
+  const mult = wk && N(wk.mult, 1) < 1 ? +wk.mult : 1;
+  return { ...micros(C, st, { mode: M.mode, mult, room: E.room }), stop: st, mult, mode: M.mode };
 }
 
 // ------------------------------------------------------------------ eval cockpit
 export function cockpit(C) {
-  const P = C.plan, ev = C.eval || {}, bal = N(ev.balance, P.start), floor = N(ev.trailing_mll, P.start - P.mll), target = P.start + P.target;
+  const P = C.plan, E0 = evalNums(C), bal = E0.bal, floor = E0.floor, target = P.start + P.target;
   const locked = floor >= P.lock_at - 0.5, cushion = bal - floor, toTarget = Math.max(0, target - bal);
   const dayPnl = C.dayTrades.reduce((s, v) => s + N(v.usd, 0), 0) + N(C.position?.unrealized, 0);
   const dllLeft = P.dll ? P.dll + Math.min(0, dayPnl) : null;
-  const S = C.stats?.spans || {}, st = S.H2 || S['2026'] || {}, z = sizeNow(C), cost = 1.4 * z.m;
-  const lossFull = z.usd + cost, winTyp = N(st.avg_win_r, 3.4) * z.usd - cost;
+  const S = C.stats?.spans || {}, st = S.H2 || S['2026'] || {}, z = sizeNow(C), cost = 1.9 * z.m;
+  const lossFull = z.tw ? z.risk : z.usd + cost, winTyp = z.tw ? z.win : N(st.avg_win_r, 3.4) * z.usd - cost;
   const wk = C.rules?.weekly_stop || null, mon = C.rules?.monday || null;
   const passed = bal >= target, failed = bal <= floor;
-  return { bal, floor, target, locked, cushion, toTarget, dayPnl, dllLeft, z, lossFull, winTyp, wk, mon, passed, failed, st, mode: C.sizing.mode,
+  return { bal, floor, target, locked, cushion, toTarget, dayPnl, dllLeft, z, lossFull, winTyp, wk, mon, passed, failed, st, mode: z.mode || C.sizing.mode, M: modeNow(C),
     afterLoss: { bal: bal - lossFull, cushion: cushion - lossFull, share: cushion > 0 ? lossFull / cushion : 1 },
     afterWin: { bal: bal + winTyp, toTarget: Math.max(0, toTarget - winTyp) },
     lossesToFail: lossFull > 0 ? Math.max(0, Math.ceil(cushion / lossFull)) : null, winsToPass: winTyp > 0 ? Math.ceil(toTarget / winTyp) : null,
@@ -314,13 +352,13 @@ export function cockpitHTML(C, sim = null) {
     ${gauge(K.room < 0.35 ? 'bad' : 'room', K.room, `Room above the floor ${usd(K.floor)}${K.locked ? ' (locked)' : ''}`, `${usd(K.cushion)} left`)}
     ${P.dll ? gauge(K.dllLeft != null && K.dllLeft < P.dll * 0.4 ? 'bad' : 'day', Math.max(0, K.dllLeft) / P.dll, `Today’s soft limit ${usd(-P.dll)}`, `${susd(K.dayPnl)} today · ${usd(Math.max(0, K.dllLeft))} left`) : ''}
     <div class="lk-kv lk-3">
-      <div><span>Size now</span><b>${K.z.m || 0} micros</b><em>${K.z.stop}-pt stop · ${usd(K.z.usd)} risk${K.z.mult < 1 ? ' · half (weekly stop)' : ''}</em></div>
+      <div><span>Size now</span><b>${K.z.m || 0} micros</b><em>${K.z.stop}-pt stop · ${usd(K.z.tw ? K.z.risk : K.z.usd)} risk${K.z.tw ? ` · ${esc(K.z.why)}` : ''}${K.z.mult < 1 ? ' · half (weekly stop)' : ''}</em></div>
       <div><span>Weekly stop</span><b class="${wk && wk.mult < 1 ? 'lk-wn' : ''}">${wk ? `${wk.stops} of ${wk.after ?? wkN}` : `0 of ${wkN}`}</b><em>${wk && wk.mult < 1 ? 'half size for the rest of the week' : 'stop-outs this week · full size'}</em></div>
-      <div><span>Sizing mode</span><b>${esc(K.mode === 'fast_eval' ? 'fast eval' : K.mode === 'safe_eval' ? 'safe eval' : K.mode === 'eval' ? 'eval' : 'normal')}</b><em>${K.mode === 'fast_eval' ? `$${C.sizing.risk_usd} up to a ${C.sizing.fast_ref_stop}-pt stop` : K.mode === 'eval' ? `$${C.sizing.risk_usd} up to a ${C.sizing.eval_ref_stop ?? 25}-pt stop, max ${Math.round(C.sizing.safe_cap * 100)}% of the room` : K.mode === 'safe_eval' ? `capped at ${Math.round(C.sizing.safe_cap * 100)}% of the room` : `$${C.sizing.risk_usd} up to a ${C.sizing.ref_stop}-pt stop`}</em></div>
+      <div><span>Sizing mode</span><b>${esc(modeLabel(K.mode))}</b><em>${K.mode === 'two_week' ? `one winner passes: micros so the target covers what is left, max ${Math.round((C.sizing.two_week?.room_f ?? 0.6) * 100)}% of the room, a full stop inside ${usd(P.dll)}/day${K.M.session ? ` · session ${K.M.session} of ${C.sizing.two_week_until || 10}` : ''}` : K.M.after ? `session ${K.M.session} &gt; ${C.sizing.two_week_until}: the eval goes on in ${esc(modeLabel(K.mode))} (no reset) · ` : ''}${K.mode === 'fast_eval' ? `$${C.sizing.risk_usd} up to a ${C.sizing.fast_ref_stop}-pt stop` : K.mode === 'eval' ? `$${C.sizing.risk_usd} up to a ${C.sizing.eval_ref_stop ?? 25}-pt stop, max ${Math.round(C.sizing.safe_cap * 100)}% of the room` : K.mode === 'safe_eval' ? `capped at ${Math.round(C.sizing.safe_cap * 100)}% of the room` : K.mode === 'two_week' ? '' : `$${C.sizing.risk_usd} up to a ${C.sizing.ref_stop}-pt stop`}</em></div>
     </div>
     <div class="lk-mon">${esc(monTxt)}</div>
     <div class="lk-wi"><div class="lk-wl"><span>One full stop-out</span><b class="lk-dn">${susd(-K.lossFull)}</b><em>balance ${usd(K.afterLoss.bal)} · uses ${pct(K.afterLoss.share * 100)} of the room · ${K.lossesToFail ?? '—'} in a row to fail</em></div>
-      <div class="lk-ww"><span>One typical winner</span><b class="lk-up">${susd(K.winTyp)}</b><em>${ok(st.avg_win_r) ? st.avg_win_r + 'R (2026 H2 average winner)' : ''} · ${usd(K.afterWin.toTarget)} left · ${K.winsToPass ?? '—'} to pass</em></div></div>
+      <div class="lk-ww"><span>One typical winner</span><b class="lk-up">${susd(K.winTyp)}</b><em>${K.z.tw ? `${Math.round(K.z.tgt)}-pt target (${num(K.z.tgt / K.z.stop, 1)}R) at ${K.z.m} micros` : ok(st.avg_win_r) ? st.avg_win_r + 'R (2026 H2 average winner)' : ''} · ${usd(K.afterWin.toTarget)} left · ${K.winsToPass ?? '—'} to pass</em></div></div>
     ${sim ? `<div class="lk-sim"><div class="lk-k">From this balance · ${sim.n.toLocaleString('en-US')} simulated evals (2026 ${sim.span === 'H2' ? 'H2, Jul-Oct' : 'sessions'} resampled)</div>
       <div class="lk-kv lk-4"><div><span>Pass in 2 weeks</span><b class="lk-up">${pct(sim.pass10)}</b></div><div><span>Fail in 2 weeks</span><b class="lk-dn">${pct(sim.fail10)}</b></div>
       <div><span>Pass in 3 weeks</span><b class="lk-up">${pct(sim.pass15)}</b></div><div><span>Median to pass</span><b>${sim.med != null ? sim.med + ' sessions' : '—'}</b></div></div>
@@ -408,13 +446,13 @@ export function ready(C) {
   const h = C.health || {}, pc = C.pc || {}, ev = cockpit(C), news = newsToday(C).filter((e) => e.impact === 'high');
   const age = C.last_run ? C.now - C.last_run : null;
   add(age == null ? 'bad' : age < 40 * 60 || C.closed ? 'ok' : 'warn', C.src === 'pc' ? 'Paper bot (this PC)' : 'Cloud paper bot', age == null ? 'no run yet' : `last run ${cd(age)} ago${C.closed ? ' (market closed)' : ''}`);
-  add(h.error ? 'bad' : h.stale ? 'warn' : 'ok', 'Price feed', h.error ? String(h.error) : h.stale ? `stale · last bar ${h.last_bar || '?'}` : `fresh · last bar ${h.last_bar || '—'}${C.src === 'pc' ? '' : ' (Yahoo NQ=F)'}`);
+  add(h.error ? 'bad' : h.stale ? 'warn' : 'ok', 'Price feed', h.error ? String(h.error) : h.stale ? `stale · last bar ${h.last_bar || '?'}` : `fresh · last bar ${h.last_bar || '—'}${C.src === 'pc' ? '' : h.source === 'yahoo' ? ' (Yahoo NQ=F)' : ' (PC NinjaTrader bars)'}`);
   add(pc.present ? (pc.silent ? 'bad' : pc.running === false ? 'warn' : 'ok') : 'warn', 'PC bot + NinjaTrader', pc.present ? (pc.silent ? `silent for ${cd(pc.age_s || 0)}` : `${pc.adapter || 'paper'} · ${pc.running === false ? 'stopped' : 'running'}`)
     : 'no heartbeat: start the PC by 01:55 ET (most LIT entries come 02:00-08:00)');
   add(C.lit?.one_min_day === false ? 'warn' : 'ok', '1-minute bars', C.lit?.one_min_day === false ? 'today runs on 5m bars only (fewer, worse fills)' : 'LIT enters on a 1m CISD');
   add(ev.failed ? 'bad' : ev.passed ? 'ok' : ev.room < 0.35 ? 'warn' : 'ok', 'Eval room', ev.passed ? 'target reached' : `${usd(ev.cushion)} above the floor · ${usd(ev.toTarget)} to the target`);
   add(ev.dllLeft != null && ev.dllLeft <= 0 ? 'bad' : 'ok', 'Daily loss limit', ev.dllLeft == null ? 'none' : `${usd(Math.max(0, ev.dllLeft))} left today`);
-  add(ev.wk && ev.wk.mult < 1 ? 'warn' : 'ok', 'Size', `${ev.z.m} micros on a ${ev.z.stop}-pt stop · mode ${C.sizing.mode}${ev.wk && ev.wk.mult < 1 ? ' · weekly stop: half size' : ''}`);
+  add(ev.wk && ev.wk.mult < 1 ? 'warn' : 'ok', 'Size', `${ev.z.m} micros on a ${ev.z.stop}-pt stop · mode ${modeLabel(ev.z.mode || C.sizing.mode)}${ev.wk && ev.wk.mult < 1 ? ' · weekly stop: half size' : ''}`);
   add(news.length ? 'warn' : 'ok', 'High-impact news', news.length ? news.map((e) => `${hm(et(e.t).min)} ${e.title}`).join(' · ') : 'none today');
   if (ev.mon?.today && ev.mon.today !== 'none') add('warn', 'Monday rule', ev.mon.text || '');
   return out;

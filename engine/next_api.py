@@ -348,3 +348,9 @@ def lit_backtest(period: str = "2026"):
         return _J({"error": "research/lab/backtest_live.json missing: run python tools/export_backtest.py"}, 404)
     except Exception as e:                                   # never 500 the dashboard
         return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
+
+
+# ------------------------------------------------------------------ the PC bot's own account / status + the phone extras
+# /api/next/pc/status, /api/next/pc/account, /api/next/pc/trade/<entry_t>, /api/next/extras (engine/pcdash_api.py, read-only)
+from .pcdash_api import router as _pc_router  # noqa: E402
+router.include_router(_pc_router)

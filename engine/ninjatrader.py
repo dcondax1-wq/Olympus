@@ -37,7 +37,8 @@ Safety gates (non-negotiable, same spirit as engine/tradovate.py):
 
 Bar feed: NinjaTraderBars reads the CSVs that ninjatrader/LE_BarFeed.cs writes (Documents\\NinjaTrader 8\\le_feed\\
 MNQ_5m.csv ...) and returns the same frame as live._yahoo_recent (time = bar OPEN, unix seconds). engine/live.py uses
-it for data_source "ninjatrader" and falls back to Yahoo, with a logged warning, when the file is missing or stale.
+it for data_source "ninjatrader". When the file is missing or stale the bot blocks NEW entries (FEED STALE; no Yahoo,
+owner 2026-10-19, engine/pcbars.py); only with "no_yahoo": false does it fall back to Yahoo, with a logged warning.
 
   python -m engine.ninjatrader --selftest       offline self-test: simulated NinjaTrader folders, no network
   python -m engine.ninjatrader --help           status, Sim101 checks, start / stop / kill the PC bot
@@ -1444,9 +1445,13 @@ def main(argv=None):
     ap.add_argument("--start", action="store_true", help="start the PC bot (server.py running) on NinjaTrader")
     ap.add_argument("--stop", action="store_true", help="stop the PC bot")
     ap.add_argument("--kill", action="store_true", help="kill switch: server kill, or FLATTENEVERYTHING directly when the server is down")
+    ap.add_argument("--enable-auto-resume", action="store_true",
+                    help="owner opt-in (once): the bot comes back on this exact real --account by itself after a crash, an update "
+                         "or a reboot; needs --account and --confirm; every live lock still applies (engine/autoresume.py)")
+    ap.add_argument("--disable-auto-resume", action="store_true", help="turn the real-account auto-resume off")
     ap.add_argument("--account", default=None, help="NinjaTrader account name (Accounts tab 'Name'), default Sim101")
     ap.add_argument("--folder", default=None, help="Documents\\NinjaTrader 8 folder if not the default")
-    ap.add_argument("--data", default="ninjatrader", choices=["ninjatrader", "yahoo"], help="bar source for --start")
+    ap.add_argument("--data", default="ninjatrader", choices=["ninjatrader", "yahoo"], help="bar source for --start (no_yahoo on, the default in live_model.json: always ninjatrader)")
     ap.add_argument("--confirm", default="", help=f"LIVE accounts only: the phrase '{LIVE_PHRASE}'")
     ap.add_argument("--instrument", default=None, help="force the instrument name, e.g. 'MNQ 12-26'")
     ap.add_argument("--contract", default=None, choices=["micro", "auto"], help="micro = MNQ only (default); auto = 10+ micros as NQ minis")
@@ -1464,6 +1469,35 @@ def main(argv=None):
         return _cli_status(cfg)
     if a.sim_check or a.sim_roundtrip:
         return _cli_sim_check(cfg, roundtrip=a.sim_roundtrip)
+    if a.disable_auto_resume:
+        from . import autoresume
+        was = autoresume.disable("owner: --disable-auto-resume")
+        print("Auto-resume is OFF" + (" (it was on)." if was else " (it was not on).")
+              + " The bot keeps running until you stop it; after a crash or reboot you start it by hand.")
+        return 0
+    if a.enable_auto_resume:
+        from . import autoresume
+        body = {"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "armed": True, "present": True, "poll_sec": 60,
+                "data_source": a.data, **{k: v for k, v in cfg.items() if k.startswith("nt_")}}
+        try:
+            rec = autoresume.enable(a.account or "", a.confirm, body)
+        except ValueError as e:
+            print(f"Auto-resume NOT enabled: {e}.")
+            return 1
+        print(f"Auto-resume is ON for account {rec['account']} (accepted {rec['accepted_on']}). After a crash, an update or a "
+              "Windows restart the bot starts again on this account by itself, only when NINJATRADER_LIVE=1 is in "
+              ".env.local.ps1, NinjaTrader is connected, the kill switch was not used and there was no daily loss today.")
+        print("Turn it off: python -m engine.ninjatrader --disable-auto-resume (the kill switch also turns it off).")
+        try:
+            st = _http(a.port, "/api/live/state")
+        except Exception:
+            print(f"The server is not running on port {a.port}: start scripts\\run_bot.ps1, then run this command again "
+                  "(or --start with the same account) so the bot runs now.")
+            return 0
+        if st.get("running"):
+            print("The bot is already running: nothing else to do (it was not restarted).")
+            return 0
+        a.start = True                                   # start it now, exactly as --start would
     if a.start:
         body = {"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "armed": True, "present": True, "poll_sec": 60,
                 "data_source": a.data, **{k: v for k, v in cfg.items() if k.startswith("nt_")}}
@@ -1489,6 +1523,12 @@ def main(argv=None):
             print(f"Server not reachable ({e})")
             return 2
     if a.kill:
+        try:
+            from . import autoresume
+            if autoresume.disable("kill switch (command line)"):
+                print("Auto-resume turned OFF by the kill switch.")
+        except Exception:
+            pass
         try:
             print("Server kill switch:", _http(a.port, "/api/live/kill", {}))
             return 0
@@ -1959,7 +1999,7 @@ def selftest(verbose=True) -> bool:
               and float(hrow["high"].iloc[0]) == float(sub["high"].max()) and float(hrow["close"].iloc[0]) == float(sub["close"].iloc[-1])
               and float(hrow["volume"].iloc[0]) == float(sub["volume"].sum()), why1)
         st_df, st_why, _ = feed.recent_bars("NQ", "5m", "2d", now=fnow + 1800)
-        check("feed: stale during market hours -> None with the reason (the bot falls back to Yahoo)", st_df is None and "stale" in st_why, st_why)
+        check("feed: stale during market hours -> None with the reason (the bot blocks new entries; no Yahoo)", st_df is None and "stale" in st_why, st_why)
         es_df, es_why, _ = feed.recent_bars("ES", "5m", "2d", now=fnow)
         check("feed: no file for a symbol -> None with the file name to create", es_df is None and "MES_5m.csv" in es_why, es_why)
         shifted = "time,open,high,low,close,volume\n" + "".join(f"{a + 3600},{b},{c},{d},{e},{f}\n" for a, b, c, d, e, f in rows)
@@ -2032,18 +2072,26 @@ def selftest(verbose=True) -> bool:
         calls = []
         live._yahoo_recent = lambda sym, interval="5m", period="5d": calls.append((sym, interval)) or pd.DataFrame(
             [{"time": 1, "open": 1.0, "high": 1.0, "low": 1.0, "close": 1.0, "volume": 0.0}])
+        noy0 = bot.no_yahoo
         try:
             now[0] = fnow
+            bot.no_yahoo = True
             got = bot._fetch_recent("NQ", "5m", "2d")
             fresh_ok = len(got) == len(df) and not calls and not bot.health.get("fallback")
             now[0] = fnow + 1800
-            bot.health["fallback"] = False
+            bot.health.update(fallback=False, nt_down=None)
+            got_ny = bot._fetch_recent("NQ", "5m", "2d")
+            ny_ok = got_ny is None and not calls and "stale" in str(bot.health.get("nt_down")) and not bot.health["fallback"] \
+                and any("FEED STALE" in x["text"] and "no Yahoo" in x["text"] for x in bot.log)
+            bot.no_yahoo = False                      # "no_yahoo": false (the old behaviour): Yahoo is the fallback
             got2 = bot._fetch_recent("NQ", "5m", "2d")
-            check("LiveBot: data_source ninjatrader serves the feed (no Yahoo call); stale -> Yahoo fallback + warning + flag",
-                  fresh_ok and calls == [("NQ", "5m")] and len(got2) == 1 and bot.health["fallback"]
-                  and any("falling back to Yahoo" in x["text"] for x in bot.log), f"calls={calls}")
+            check("LiveBot: data_source ninjatrader serves the feed (no Yahoo call); stale -> no_yahoo: None + FEED STALE, "
+                  "no Yahoo call; no_yahoo off: Yahoo fallback + warning + flag",
+                  fresh_ok and ny_ok and calls == [("NQ", "5m")] and len(got2) == 1 and bot.health["fallback"]
+                  and any("falling back to Yahoo" in x["text"] for x in bot.log), f"calls={calls} ny={ny_ok}")
         finally:
             live._yahoo_recent = orig_y
+            bot.no_yahoo = noy0
         now[0] = dt.datetime(2026, 10, 22, 11, 0, tzinfo=ET).timestamp()
         k = len(fake.files)
         bot.state = {"position": None}
@@ -2106,7 +2154,7 @@ def selftest(verbose=True) -> bool:
         lbot._route_signals({"trades": [ltr], "events": []}, "NQ", int(now[0]), 300)
         check("LIT: the 15:55 flat (model exit EOD -> TIME) is routed as CLOSEPOSITION and the bracket is retired",
               lines_since(k)[:1] == ["CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;"] and not lad.legs, json.dumps(lines_since(k)))
-        # 1m bars for LIT's entry come from LE_BarFeed's MNQ_1m.csv (data_source ninjatrader), Yahoo only when it is stale
+        # 1m bars for LIT's entry come from LE_BarFeed's MNQ_1m.csv (data_source ninjatrader); stale -> no Yahoo (no_yahoo)
         f1now = int(dt.datetime(2026, 10, 22, 3, 7, 30, tzinfo=ET).timestamp())
         last1 = f1now - f1now % 60 - 60
         rows1 = [(t, 25000 + i * 0.25, 25000.5 + i * 0.25, 24999.75 + i * 0.25, 25000.25 + i * 0.25, 10 + i)
@@ -2127,9 +2175,13 @@ def selftest(verbose=True) -> bool:
             ok1 = got1 is not None and int(got1["time"].iloc[-1]) == last1 and not calls and len(got1) == len([r_ for r_ in rows1 if r_[0] >= f1now - 5 * 86400])
             fo1 = lbot._forming.get(("NQ", 60))
             now[0] = f1now + 1800
+            lbot.no_yahoo = True
+            lbot.health["nt_down_1m"] = None
             got2 = lbot._lit_1m("NQ", f1now + 1800, f1now - 5 * 86400)
-            check("LIT: 1m bars from NinjaTrader's MNQ_1m.csv (no Yahoo call); a stale 1m file -> Yahoo 1m, bot health untouched",
-                  ok1 and calls == [("NQ", "1m")] and got2 is not None and not lbot.health.get("fallback"), f"calls={calls}")
+            check("LIT: 1m bars from NinjaTrader's MNQ_1m.csv (no Yahoo call); a stale 1m file -> no Yahoo call, the bars "
+                  "already seen are kept, nt_down_1m flagged (entries blocked), fallback flag untouched",
+                  ok1 and not calls and got2 is not None and len(got2) == len(got1) and "stale" in str(lbot.health.get("nt_down_1m"))
+                  and not lbot.health.get("fallback"), f"calls={calls}")
             check("LIT: the forming minute's open from MNQ_1m_open.csv (sizes an entry decided on the 1m CISD close); an old "
                   "minute in it is ignored", fo1 == (last1 + 60, 25123.5) and lbot._forming.get(("NQ", 60)) is None
                   and NinjaTraderBars(folder=folder).forming_open("NQ", now=f1now + 1800) is None, f"{fo1}")
