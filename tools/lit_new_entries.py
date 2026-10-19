@@ -500,6 +500,10 @@ def fam_idm2(Ub):
         for mult in (1.25, 1.5, 2.0):
             rules.append((f"inducements >= {nmin} (<= {dm} ATR, <= {age} bars) x{mult}, size-up capped ${cap:.0f}",
                           lambda z, dm=dm, age=age, nmin=nmin, mult=mult: mult if idm_count(z, dm, age) >= nmin else 1.0, cap))
+    for dm, age in ((1.0, 48), (1.25, 42), (1.5, 36), (1.5, 48), (1.5, 60), (2.0, 48), (2.0, 72), (3.0, 72)):
+        for mult, cut in ((1.5, 1.0), (1.5, 0.75)):
+            rules.append((f"({dm} ATR, {age} bars) >= 2 x{mult} / else x{cut}, capped ${cap:.0f}",
+                          lambda z, dm=dm, age=age, mult=mult, cut=cut: mult if idm_count(z, dm, age) >= 2 else cut, cap))
     rules.append(("inducements >= 2 x1.5, uncapped", lambda z: 1.5 if idm_count(z) >= 2 else 1.0, None))
     rules.append(("control: every trade x1.25, capped $990", lambda z: 1.25, cap))
     rules.append(("risk-neutral: >= 2 x1.25 / 1 x0.8, capped $990", lambda z: 1.25 if idm_count(z) >= 2 else 0.8, cap))
@@ -632,6 +636,36 @@ def save(picks):
         print("saved", rid, flush=True)
 
 
+PICKS = [  # run id, result key, status, family
+    ("lit_ent_base", "base (live LIT)", "info", "other"),
+    ("lit_ent_msnr15_alone", "MSNR 15m A+V standalone, live filters | alone", "info", "other"),
+    ("lit_ent_msnr15_add1", "MSNR 15m A+V standalone, live filters | + live, 1 a day", "rejected", "other"),
+    ("lit_ent_msnr15_add2", "MSNR 15m A+V standalone, live filters | + live, 2 a day", "rejected", "other"),
+    ("lit_ent_msnr1h_add2", "MSNR 1h A+V standalone, live filters | + live, 2 a day", "rejected", "other"),
+    ("lit_ent_msnr1h_all_add2", "MSNR 1h A+V+QM+F standalone, live filters | + live, 2 a day", "rejected", "other"),
+    ("lit_ent_msnr15_qm_add2", "MSNR 15m QM standalone, live filters | + live, 2 a day", "rejected", "other"),
+    ("lit_ent_msnrlit_15m", "LIT + MSNR 15m A+V levels as liquidity (replaces live)", "rejected", "other"),
+    ("lit_ent_msnrlit_1h", "LIT + MSNR 1h A+V levels as liquidity (replaces live)", "rejected", "other"),
+    ("lit_ent_idmob_add1", "IDM->OB 15m+1h near 2.0 ATR, into block tol 0.5, live filters, no idm gate | + live, 1 a day", "rejected", "other"),
+    ("lit_ent_stack2_add2", "stacked >= 2 of all 8, rejected-by-live setups, no idm | + live, 2 a day", "rejected", "other"),
+    ("lit_ent_stack3_add1", "stacked >= 3 of all 8, rejected-by-live setups, depth 0.25 disp 0.5 no idm | + live, 1 a day", "rejected", "other"),
+    ("lit_ent_stack_2nd", "2nd trade: live-filter setup with >= 2 of all 8 after the day's trade | + live, 2 a day", "rejected", "other"),
+    ("lit_ent_split08", "stacked >= 2 of 8, rejected-by-live, no idm, extra only from 08:00 ET | + live, 1 a day", "promising", "other"),
+    ("lit_ent_grade3", "grade size: all 8: grade >= 3 x1.5", "rejected", "risk"),
+    ("lit_ent_idm_size", "idm size: (2.0 ATR, 48 bars) >= 2 x1.5 / else x0.75, capped $990", "adopt-candidate", "risk"),
+    ("lit_ent_idm_size_up", "idm size: (2.0 ATR, 48 bars) >= 2 x1.5 / else x1.0, capped $990", "promising", "risk"),
+    ("lit_ent_ctrl_125", "idm size: control: every trade x1.25, capped $990", "info", "risk"),
+]
+
+
+def save_all():
+    Ub = fam_base()
+    fam_msnr(Ub, grid=False); fam_msnrlit(Ub); fam_idmob(Ub); fam_stack(Ub); fam_split(Ub); fam_grade(Ub); fam_idm2(Ub)
+    dump("save")
+    merge_parts()
+    save(PICKS)
+
+
 def all_():
     Ub = fam_base()
     fam_msnr(Ub); dump()
@@ -648,6 +682,8 @@ if __name__ == "__main__":
         check()
     elif cmd == "all":
         all_()
+    elif cmd == "save":
+        save_all()
     elif cmd == "merge":
         print(len(merge_parts()), "results")
     else:
