@@ -46,7 +46,10 @@ def push(payload: dict, cwd: str = ROOT, remote: str = "origin", branch: str = B
         if r.returncode:
             return {"ok": False, "error": r.stderr.strip()[:200] or "hash-object failed"}
         blob = r.stdout.strip()
-        r = _git(["mktree"], cwd, inp=f"100644 blob {blob}\theartbeat.json\n")
+        # bytes, not text: on Windows text-mode stdin turns "\n" into "\r\n" and the file was named "heartbeat.json\r"
+        r = subprocess.run(["git", "mktree"], cwd=cwd, input=f"100644 blob {blob}\theartbeat.json\n".encode(),
+                           capture_output=True, timeout=60)
+        r.stdout, r.stderr = r.stdout.decode(errors="replace"), r.stderr.decode(errors="replace")
         if r.returncode:
             return {"ok": False, "error": r.stderr.strip()[:200] or "mktree failed"}
         tree = r.stdout.strip()
@@ -73,6 +76,12 @@ def read(cwd: str = ROOT, remote: str = "origin", branch: str = BRANCH, now: flo
         if r.returncode:
             return {"present": False, "reason": "no heartbeat branch"}
         r = _git(["show", f"FETCH_HEAD:heartbeat.json"], cwd)
+        if r.returncode:
+            # older Windows PCs wrote the name as "heartbeat.json\r" (text-mode stdin): read that blob by its id
+            t = _git(["ls-tree", "FETCH_HEAD"], cwd)
+            ids = [ln.split()[2] for ln in (t.stdout or "").splitlines()
+                   if len(ln.split()) >= 4 and "heartbeat.json" in ln.split("\t", 1)[-1]]
+            r = _git(["cat-file", "-p", ids[0]], cwd) if ids else r
         if r.returncode:
             return {"present": False, "reason": "no heartbeat.json"}
         hb = json.loads(r.stdout)
