@@ -1055,6 +1055,17 @@ class LiveBot:
         if not pv or pv.get("done") or (en and en.get("entry_t") == et_):
             return
         cur = pos if pos and pos.get("entry_t") == et_ else next((t for t in res["trades"] if t["entry_t"] == et_), None)
+        if cur is None and not self._fill_bar_seen(et_):
+            # the feed has not shown the fill bar yet (LE_BarFeed / Yahoo writes it on the next minute's first tick; at a 5m
+            # boundary the 5m bar can lag too, and then the setup itself is out of the model's window): no verdict yet, the
+            # broker bracket keeps protecting the position; checked again on the next poll
+            self._pv_wait = et_
+            if not pv.get("wait_logged"):
+                pv["wait_logged"] = True
+                self._log("warn", f"LIT entry {_et(et_):%H:%M} ET: its fill bar is not in the feed yet; the routed position is "
+                                  "kept (stop/target at the broker) until the model can check it")
+            return
+        self._pv_wait = None
         pv["done"] = True
         if cur is None:
             self._log("risk", f"LIT entry routed at the {_et(et_):%H:%M} ET 1m CISD close is not the model's trade once its fill bar "
@@ -1072,6 +1083,17 @@ class LiveBot:
             self._log("warn", f"LIT entry {_et(et_):%H:%M} ET: broker target {pv['target']:.2f} (from the estimate), the model's "
                               f"target is {tg:.2f}; the model's exit is still routed when it comes")
 
+    def _fill_bar_seen(self, et_):
+        """True when this poll's model had the bars to decide the LIT entry with fill bar et_: the 1m feed holds that bar
+        (closed) and the 5m bars reach the 5m bar containing it (closed, or added as the forming 5m bar in early mode)."""
+        l1 = self.health.get("last_1m_bar_t")
+        l5 = self.health.get("last_bar_t")
+        if l1 is None or l5 is None or int(l1) < int(et_):
+            return False
+        b5 = int(et_) - int(et_) % 300
+        f5 = bool(((self.state or {}).get("lit") or {}).get("forming_5m"))
+        return int(l5) >= b5 or (f5 and int(l5) + 300 >= b5)
+
     def _route_signals(self, res, sym, now, secs):
         """Turn the engine's position / completed trades into adapter calls, exactly once each."""
         start = self.started_at
@@ -1084,7 +1106,7 @@ class LiveBot:
         # desync: we routed an entry the engine no longer knows about (no open position, no completed trade with it)
         if self._open_routed is not None:
             known = (pos and pos.get("entry_t") == self._open_routed) or (en and en.get("entry_t") == self._open_routed) \
-                or any(t["entry_t"] == self._open_routed for t in res["trades"])
+                or getattr(self, "_pv_wait", None) == self._open_routed or any(t["entry_t"] == self._open_routed for t in res["trades"])
             if not known and not self.health["desync"]:
                 self.health["desync"] = True
                 self._log("risk", f"DESYNC: entry routed at {_et(self._open_routed):%H:%M} ET is no longer in the model (feed revision?). "
