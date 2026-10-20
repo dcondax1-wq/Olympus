@@ -139,7 +139,6 @@ def trade_pnl(t, q, room, cum, dll, max_micros, win_cap=None, adds_on=True, diag
     if diag is not None:
         diag["adds"] += 1
         diag["want"] += want * len(adds)
-        diag["got"] += sum(qa)
         diag["mm_hit"] += int(q + want > max_micros)
     n0 = sum(qa)
     if win_cap is not None:                      # never let the adds break a best-day rule at the target
@@ -151,6 +150,8 @@ def trade_pnl(t, q, room, cum, dll, max_micros, win_cap=None, adds_on=True, diag
                 qa[i] -= 1
         if diag is not None:
             diag["cap_cut"] += n0 - sum(qa)
+    if diag is not None:
+        diag["got"] += sum(qa)                   # after the best-day trim
     tot = q + sum(qa)
     g = q * t["pts"] * PV
     lows = [q * t.get("w_pre", t["w1"]) * PV]

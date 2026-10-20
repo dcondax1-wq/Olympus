@@ -1,7 +1,7 @@
 {
- "built": "2026-10-20 00:07",
+ "built": "2026-10-20 01:58",
  "baseline": "baseline",
- "count": 1108,
+ "count": 1118,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -4859,6 +4859,776 @@
      "slow_pass": 42.7,
      "pass_med": 14.0,
      "b2b": "22/46"
+    }
+   }
+  },
+  {
+   "id": "lit_fc_fn_rapid_daily_50k",
+   "title": "LIT combo on FundedNext Futures Rapid Daily 50K (eval + funded)",
+   "family": "risk",
+   "question": "The funded-account plan re-run on the new live LIT (t_check + scale_in + be_off): what does each account pay?",
+   "status": "adopt-candidate",
+   "verdict": "FundedNext Futures Rapid Daily 50K on the new live LIT (t_check + scale_in + be_off): eval p10/f10 H1 46.1/0.0 H2 51.3/0.0, eventual pass 85.9 / 91.0%, pass_med 9.5 / 6.0; funded MC $820 / $736 a month, lost in 6 months 0.9 / 0.9%; 6 months from purchase net of fees $1076 / $929 a month (H1 / H2). Can the bot run there: yes.",
+   "writeup": "lit-funded-combo",
+   "tags": [
+    "lit",
+    "lit_funded_combo"
+   ],
+   "params": {
+    "plan": {
+     "target": 3000.0,
+     "mll": 2000.0,
+     "trail": "eod",
+     "lock": 100.0,
+     "dll": 1000,
+     "cons": null,
+     "min_days": 1,
+     "max_micros": 40,
+     "price": 169.99,
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 1000,
+      "buffer": 2100,
+      "pay_min": 250,
+      "pay_max": 1200,
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 1,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": null,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 1
+     }
+    },
+    "lit": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    }
+   },
+   "sizing": {
+    "eval": {
+     "base": "need",
+     "until": 999,
+     "room_f": 0.4,
+     "max_usd": 600,
+     "margin": 0.95
+    },
+    "funded": {
+     "pct": 0.4,
+     "pct_min_usd": 100,
+     "pct_max_usd": 800,
+     "ref": 20,
+     "wk": true,
+     "room_f": null,
+     "max_win": null,
+     "slip_ticks": 2,
+     "skip_breach": true,
+     "add_cap": true,
+     "pay_min": null
+    },
+    "adds": "engine.sizing.scale_in_qty, 60% room"
+   },
+   "built": "2026-10-20 01:57",
+   "spans": {
+    "2026": {
+     "n": 74,
+     "tpw": 1.8,
+     "wk2": 57,
+     "win": 47.3,
+     "pf": 4.39,
+     "net": 32456,
+     "dd": -1976,
+     "avg_r": 0.678,
+     "stop": 47.1,
+     "worst_day": -763,
+     "risk": 292.0,
+     "half": 8,
+     "per_month": 3309,
+     "p10": 23.3,
+     "f10": 0.0,
+     "p15": 32.5,
+     "f15": 0.0,
+     "p20": 42.7,
+     "f20": 0.0,
+     "dec10": 23.3,
+     "slow_pass": 53.5,
+     "pass_med": 17.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 179,
+     "tpw": 0.83,
+     "wk2": 26,
+     "win": 49.2,
+     "pf": 0.68,
+     "net": -5273,
+     "dd": -7943,
+     "avg_r": -0.026,
+     "stop": 38.0,
+     "worst_day": -1014,
+     "risk": 128.0,
+     "half": 15,
+     "per_month": -103,
+     "p10": 0.4,
+     "f10": 0.0,
+     "p15": 0.8,
+     "f15": 0.0,
+     "p20": 1.3,
+     "f20": 0.0,
+     "dec10": 0.4,
+     "slow_pass": 64.0,
+     "pass_med": 19.0,
+     "b2b": "0/3"
+    },
+    "all": {
+     "n": 253,
+     "tpw": 0.99,
+     "wk2": 31,
+     "win": 48.6,
+     "pf": 2.04,
+     "net": 27183,
+     "dd": -8128,
+     "avg_r": 0.18,
+     "stop": 40.5,
+     "worst_day": -1014,
+     "risk": 150.0,
+     "half": 23,
+     "per_month": 447,
+     "p10": 4.1,
+     "f10": 0.0,
+     "p15": 5.9,
+     "f15": 0.0,
+     "p20": 8.0,
+     "f20": 0.0,
+     "dec10": 4.1,
+     "slow_pass": 61.6,
+     "pass_med": 20.0,
+     "b2b": "5/3"
+    }
+   }
+  },
+  {
+   "id": "lit_fc_fn_rapid_pro_50k",
+   "title": "LIT combo on FundedNext Futures Rapid Pro 50K (eval + funded)",
+   "family": "risk",
+   "question": "The funded-account plan re-run on the new live LIT (t_check + scale_in + be_off): what does each account pay?",
+   "status": "adopt-candidate",
+   "verdict": "FundedNext Futures Rapid Pro 50K on the new live LIT (t_check + scale_in + be_off): eval p10/f10 H1 46.1/0.0 H2 51.3/0.0, eventual pass 85.9 / 91.0%, pass_med 9.5 / 6.0; funded MC $519 / $561 a month, lost in 6 months 0.4 / 1.3%; 6 months from purchase net of fees $396 / $443 a month (H1 / H2). Can the bot run there: yes.",
+   "writeup": "lit-funded-combo",
+   "tags": [
+    "lit",
+    "lit_funded_combo"
+   ],
+   "params": {
+    "plan": {
+     "target": 3000.0,
+     "mll": 2000.0,
+     "trail": "eod",
+     "lock": 100.0,
+     "dll": null,
+     "cons": null,
+     "min_days": 1,
+     "max_micros": 40,
+     "price": 169.99,
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": null,
+      "buffer": 2100,
+      "pay_min": 250,
+      "pay_max": 1200,
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 3,
+      "days": 3,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.4,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 1
+     }
+    },
+    "lit": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    }
+   },
+   "sizing": {
+    "eval": {
+     "base": "need",
+     "until": 999,
+     "room_f": 0.4,
+     "max_usd": 600,
+     "margin": 0.95
+    },
+    "funded": {
+     "pct": 0.6,
+     "pct_min_usd": 100,
+     "pct_max_usd": 1200,
+     "ref": 20,
+     "wk": true,
+     "room_f": null,
+     "max_win": 1500,
+     "slip_ticks": 2,
+     "skip_breach": true,
+     "add_cap": true,
+     "pay_min": null
+    },
+    "adds": "engine.sizing.scale_in_qty, 60% room"
+   },
+   "built": "2026-10-20 01:57",
+   "spans": {
+    "2026": {
+     "n": 101,
+     "tpw": 2.45,
+     "wk2": 74,
+     "win": 54.5,
+     "pf": 3.44,
+     "net": 19452,
+     "dd": -1512,
+     "avg_r": 0.754,
+     "stop": 46.0,
+     "worst_day": -634,
+     "risk": 184.0,
+     "half": 11,
+     "per_month": 1983,
+     "p10": 10.2,
+     "f10": 0.0,
+     "p15": 19.4,
+     "f15": 0.0,
+     "p20": 32.5,
+     "f20": 0.0,
+     "dec10": 10.2,
+     "slow_pass": 75.3,
+     "pass_med": 25.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 235,
+     "tpw": 1.1,
+     "wk2": 35,
+     "win": 49.4,
+     "pf": 0.99,
+     "net": -156,
+     "dd": -10067,
+     "avg_r": -0.011,
+     "stop": 36.5,
+     "worst_day": -593,
+     "risk": 207.0,
+     "half": 18,
+     "per_month": -3,
+     "p10": 0.4,
+     "f10": 0.0,
+     "p15": 1.3,
+     "f15": 0.7,
+     "p20": 2.0,
+     "f20": 2.6,
+     "dec10": 0.4,
+     "slow_pass": 89.0,
+     "pass_med": 33.0,
+     "b2b": "3/5"
+    },
+    "all": {
+     "n": 336,
+     "tpw": 1.31,
+     "wk2": 41,
+     "win": 50.9,
+     "pf": 1.55,
+     "net": 19296,
+     "dd": -10718,
+     "avg_r": 0.219,
+     "stop": 39.8,
+     "worst_day": -634,
+     "risk": 202.0,
+     "half": 29,
+     "per_month": 317,
+     "p10": 2.0,
+     "f10": 0.0,
+     "p15": 4.2,
+     "f15": 0.6,
+     "p20": 6.9,
+     "f20": 2.2,
+     "dec10": 2.0,
+     "slow_pass": 81.7,
+     "pass_med": 30.0,
+     "b2b": "8/6"
+    }
+   }
+  },
+  {
+   "id": "lit_fc_lucid_pro_50k",
+   "title": "LIT combo on Lucid Trading LucidPro 50K (daily loss option on) (eval + funded)",
+   "family": "risk",
+   "question": "The funded-account plan re-run on the new live LIT (t_check + scale_in + be_off): what does each account pay?",
+   "status": "adopt-candidate",
+   "verdict": "Lucid Trading LucidPro 50K (daily loss option on) on the new live LIT (t_check + scale_in + be_off): eval p10/f10 H1 46.1/0.0 H2 51.3/0.0, eventual pass 85.9 / 91.0%, pass_med 9.5 / 6.0; funded MC $971 / $1079 a month, lost in 6 months 0.5 / 1.5%; 6 months from purchase net of fees $772 / $880 a month (H1 / H2). Can the bot run there: yes.",
+   "writeup": "lit-funded-combo",
+   "tags": [
+    "lit",
+    "lit_funded_combo"
+   ],
+   "params": {
+    "plan": {
+     "target": 3000.0,
+     "mll": 2000.0,
+     "trail": "eod",
+     "lock": 100.0,
+     "dll": 1200,
+     "cons": null,
+     "min_days": 1,
+     "max_micros": 40,
+     "price": 115.4,
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 1200,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": [
+       2000,
+       2500
+      ],
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 3,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.4,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 1
+     }
+    },
+    "lit": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    }
+   },
+   "sizing": {
+    "eval": {
+     "base": "need",
+     "until": 999,
+     "room_f": 0.4,
+     "max_usd": 600,
+     "margin": 0.95
+    },
+    "funded": {
+     "pct": 0.6,
+     "pct_min_usd": 100,
+     "pct_max_usd": 1200,
+     "ref": 20,
+     "wk": true,
+     "room_f": null,
+     "max_win": 1500,
+     "slip_ticks": 2,
+     "skip_breach": true,
+     "add_cap": true,
+     "pay_min": 1500.0
+    },
+    "adds": "engine.sizing.scale_in_qty, 60% room"
+   },
+   "built": "2026-10-20 01:57",
+   "spans": {
+    "2026": {
+     "n": 101,
+     "tpw": 2.45,
+     "wk2": 74,
+     "win": 54.5,
+     "pf": 3.44,
+     "net": 19452,
+     "dd": -1512,
+     "avg_r": 0.754,
+     "stop": 46.0,
+     "worst_day": -634,
+     "risk": 184.0,
+     "half": 11,
+     "per_month": 1983,
+     "p10": 10.2,
+     "f10": 0.0,
+     "p15": 19.4,
+     "f15": 0.0,
+     "p20": 32.5,
+     "f20": 0.0,
+     "dec10": 10.2,
+     "slow_pass": 75.3,
+     "pass_med": 25.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 123,
+     "tpw": 0.57,
+     "wk2": 18,
+     "win": 51.2,
+     "pf": 1.15,
+     "net": 2318,
+     "dd": -6391,
+     "avg_r": -0.035,
+     "stop": 36.8,
+     "worst_day": -1201,
+     "risk": 240.0,
+     "half": 6,
+     "per_month": 45,
+     "p10": 0.4,
+     "f10": 0.0,
+     "p15": 1.3,
+     "f15": 0.3,
+     "p20": 2.0,
+     "f20": 0.8,
+     "dec10": 0.4,
+     "slow_pass": 88.7,
+     "pass_med": 32.0,
+     "b2b": "2/2"
+    },
+    "all": {
+     "n": 224,
+     "tpw": 0.88,
+     "wk2": 28,
+     "win": 52.7,
+     "pf": 1.91,
+     "net": 21770,
+     "dd": -7042,
+     "avg_r": 0.321,
+     "stop": 41.6,
+     "worst_day": -1201,
+     "risk": 218.0,
+     "half": 17,
+     "per_month": 358,
+     "p10": 2.0,
+     "f10": 0.0,
+     "p15": 4.2,
+     "f15": 0.2,
+     "p20": 6.9,
+     "f20": 0.7,
+     "dec10": 2.0,
+     "slow_pass": 81.5,
+     "pass_med": 30.0,
+     "b2b": "7/3"
+    }
+   }
+  },
+  {
+   "id": "lit_fc_mffu_builder_50k",
+   "title": "LIT combo on MyFundedFutures Builder 50K (the owner's eval) (eval + funded)",
+   "family": "risk",
+   "question": "The funded-account plan re-run on the new live LIT (t_check + scale_in + be_off): what does each account pay?",
+   "status": "adopt-candidate",
+   "verdict": "MyFundedFutures Builder 50K (the owner's eval) on the new live LIT (t_check + scale_in + be_off): eval p10/f10 H1 54.7/2.3 H2 55.1/0.0, eventual pass 79.7 / 91.0%, pass_med 6.0 / 6.0; funded MC $834 / $884 a month, lost in 6 months 0.3 / 0.9%; 6 months from purchase net of fees $682 / $721 a month (H1 / H2). Can the bot run there: yes (the owner's eval).",
+   "writeup": "lit-funded-combo",
+   "tags": [
+    "lit",
+    "lit_funded_combo"
+   ],
+   "params": {
+    "plan": {
+     "target": 3000.0,
+     "mll": 2000.0,
+     "trail": "eod",
+     "lock": 100.0,
+     "dll": 1000,
+     "cons": null,
+     "min_days": 2,
+     "max_micros": 40,
+     "price": 91.8,
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 1000,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": 2000,
+      "pay_pct": null,
+      "cyc_min": 0.0,
+      "every": 1,
+      "days": 2,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.5,
+      "split": 0.8,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 2
+     }
+    },
+    "lit": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    }
+   },
+   "sizing": {
+    "eval": {
+     "base": "need",
+     "until": 10,
+     "room_f": 0.6,
+     "max_usd": null,
+     "margin": 0.95
+    },
+    "funded": {
+     "pct": 0.4,
+     "pct_min_usd": 100,
+     "pct_max_usd": 800,
+     "ref": 20,
+     "wk": true,
+     "room_f": null,
+     "max_win": 1500,
+     "slip_ticks": 2,
+     "skip_breach": true,
+     "add_cap": true,
+     "pay_min": 1500.0
+    },
+    "adds": "engine.sizing.scale_in_qty, 60% room"
+   },
+   "built": "2026-10-20 01:57",
+   "spans": {
+    "2026": {
+     "n": 99,
+     "tpw": 2.4,
+     "wk2": 71,
+     "win": 52.5,
+     "pf": 3.28,
+     "net": 16957,
+     "dd": -1705,
+     "avg_r": 0.77,
+     "stop": 45.5,
+     "worst_day": -440,
+     "risk": 174.0,
+     "half": 11,
+     "per_month": 1729,
+     "p10": 7.8,
+     "f10": 0.0,
+     "p15": 14.1,
+     "f15": 0.0,
+     "p20": 19.9,
+     "f20": 0.0,
+     "dec10": 7.8,
+     "slow_pass": 81.5,
+     "pass_med": 29.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 179,
+     "tpw": 0.83,
+     "wk2": 28,
+     "win": 49.2,
+     "pf": 0.77,
+     "net": -3641,
+     "dd": -6600,
+     "avg_r": -0.199,
+     "stop": 38.0,
+     "worst_day": -1004,
+     "risk": 152.0,
+     "half": 12,
+     "per_month": -71,
+     "p10": 0.3,
+     "f10": 0.0,
+     "p15": 0.7,
+     "f15": 0.0,
+     "p20": 1.2,
+     "f20": 0.0,
+     "dec10": 0.3,
+     "slow_pass": 85.2,
+     "pass_med": 34.5,
+     "b2b": "1/4"
+    },
+    "all": {
+     "n": 278,
+     "tpw": 1.09,
+     "wk2": 35,
+     "win": 50.4,
+     "pf": 1.58,
+     "net": 13315,
+     "dd": -6600,
+     "avg_r": 0.146,
+     "stop": 41.8,
+     "worst_day": -1004,
+     "risk": 167.0,
+     "half": 23,
+     "per_month": 219,
+     "p10": 1.5,
+     "f10": 0.0,
+     "p15": 2.9,
+     "f15": 0.0,
+     "p20": 4.2,
+     "f20": 0.0,
+     "dec10": 1.5,
+     "slow_pass": 84.6,
+     "pass_med": 32.0,
+     "b2b": "5/4"
+    }
+   }
+  },
+  {
+   "id": "lit_fc_stack_current",
+   "title": "LIT combo stack: current: B50+Lucid+FN",
+   "family": "risk",
+   "question": "Which accounts together, net of fees over 6 months, on the new live LIT?",
+   "status": "adopt-candidate",
+   "verdict": "current: B50+Lucid+FN: 6 months from buying, net of fees $2530 / $2530 a month (H1 / H2), months 4-6 $3214 / $3182, 6 months lose money 3.0 / 2.6%, all pay $0 in months 4-6 5.9 / 5.1%, cash up front $377.19; 2021-25 reference $-101 a month.",
+   "writeup": "lit-funded-combo",
+   "tags": [
+    "lit",
+    "lit_funded_combo"
+   ],
+   "params": {
+    "accounts": [
+     [
+      "mffu_builder_50k",
+      0
+     ],
+     [
+      "lucid_pro_50k",
+      0
+     ],
+     [
+      "fn_rapid_daily_50k",
+      0
+     ]
+    ],
+    "lit": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-20 01:58",
+   "spans": {
+    "2026": {
+     "n": 274,
+     "tpw": 6.65,
+     "wk2": 79,
+     "win": 51.8,
+     "pf": 3.76,
+     "net": 68864,
+     "dd": -4024,
+     "avg_r": 0.739,
+     "stop": 46.1,
+     "worst_day": -1478,
+     "risk": 184.0,
+     "half": 30,
+     "per_month": 7020,
+     "p10": 41.3,
+     "f10": 11.7,
+     "p15": 53.9,
+     "f15": 14.6,
+     "p20": 57.3,
+     "f20": 16.0,
+     "dec10": 53.0,
+     "slow_pass": 30.2,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 481,
+     "tpw": 2.24,
+     "wk2": 48,
+     "win": 49.7,
+     "pf": 0.86,
+     "net": -6596,
+     "dd": -19422,
+     "avg_r": -0.093,
+     "stop": 37.8,
+     "worst_day": -2202,
+     "risk": 170.0,
+     "half": 33,
+     "per_month": -129,
+     "p10": 2.1,
+     "f10": 4.6,
+     "p15": 3.6,
+     "f15": 7.3,
+     "p20": 5.3,
+     "f20": 10.1,
+     "dec10": 6.7,
+     "slow_pass": 78.1,
+     "pass_med": 27.5,
+     "b2b": "4/12"
+    },
+    "all": {
+     "n": 755,
+     "tpw": 2.95,
+     "wk2": 53,
+     "win": 50.5,
+     "pf": 1.85,
+     "net": 62268,
+     "dd": -19422,
+     "avg_r": 0.209,
+     "stop": 41.5,
+     "worst_day": -2202,
+     "risk": 176.0,
+     "half": 63,
+     "per_month": 1023,
+     "p10": 8.7,
+     "f10": 5.7,
+     "p15": 12.4,
+     "f15": 8.5,
+     "p20": 14.8,
+     "f20": 11.0,
+     "dec10": 14.4,
+     "slow_pass": 59.3,
+     "pass_med": 21.0,
+     "b2b": "17/16"
     }
    }
   },
@@ -130427,6 +131197,743 @@
      "slow_pass": 47.1,
      "pass_med": 15.0,
      "b2b": "22/51"
+    }
+   }
+  },
+  {
+   "id": "lit_fc_mffu_builder_25k",
+   "title": "LIT combo on MyFundedFutures Builder 25K (eval + funded)",
+   "family": "risk",
+   "question": "The funded-account plan re-run on the new live LIT (t_check + scale_in + be_off): what does each account pay?",
+   "status": "info",
+   "verdict": "MyFundedFutures Builder 25K on the new live LIT (t_check + scale_in + be_off): eval p10/f10 H1 45.3/4.7 H2 50.0/0.0, eventual pass 75.0 / 87.2%, pass_med 8.0 / 9.0; funded MC $392 / $381 a month, lost in 6 months 2.6 / 2.9%; 6 months from purchase net of fees $311 / $301 a month (H1 / H2). Can the bot run there: only if MFFU allows it next to the 50K (sources conflict).",
+   "writeup": "lit-funded-combo",
+   "tags": [
+    "lit",
+    "lit_funded_combo"
+   ],
+   "params": {
+    "plan": {
+     "target": 1500.0,
+     "mll": 1000.0,
+     "trail": "eod",
+     "lock": 100.0,
+     "dll": 600,
+     "cons": null,
+     "min_days": 2,
+     "max_micros": 20,
+     "price": 63.0,
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 600,
+      "buffer": 1100,
+      "pay_min": 250,
+      "pay_max": 1000,
+      "pay_pct": null,
+      "cyc_min": 0.0,
+      "every": 1,
+      "days": 2,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.5,
+      "split": 0.8,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 2
+     }
+    },
+    "lit": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    }
+   },
+   "sizing": {
+    "eval": {
+     "base": "need",
+     "until": 10,
+     "room_f": 0.6,
+     "max_usd": 600,
+     "margin": 0.95
+    },
+    "funded": {
+     "pct": 0.4,
+     "pct_min_usd": 100,
+     "pct_max_usd": 1200,
+     "ref": 20,
+     "wk": true,
+     "room_f": null,
+     "max_win": 2500,
+     "slip_ticks": 2,
+     "skip_breach": true,
+     "add_cap": true,
+     "pay_min": null
+    },
+    "adds": "engine.sizing.scale_in_qty, 60% room"
+   },
+   "built": "2026-10-20 01:57",
+   "spans": {
+    "2026": {
+     "n": 98,
+     "tpw": 2.38,
+     "wk2": 71,
+     "win": 53.1,
+     "pf": 2.86,
+     "net": 11162,
+     "dd": -1310,
+     "avg_r": 0.725,
+     "stop": 45.8,
+     "worst_day": -377,
+     "risk": 149.0,
+     "half": 11,
+     "per_month": 1138,
+     "p10": 1.0,
+     "f10": 0.0,
+     "p15": 7.3,
+     "f15": 0.0,
+     "p20": 11.7,
+     "f20": 0.0,
+     "dec10": 1.0,
+     "slow_pass": 87.7,
+     "pass_med": 36.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 90,
+     "tpw": 0.42,
+     "wk2": 12,
+     "win": 57.8,
+     "pf": 1.02,
+     "net": 96,
+     "dd": -2559,
+     "avg_r": -0.027,
+     "stop": 41.8,
+     "worst_day": -600,
+     "risk": 125.0,
+     "half": 3,
+     "per_month": 2,
+     "p10": 0.0,
+     "f10": 0.0,
+     "p15": 0.0,
+     "f15": 0.0,
+     "p20": 0.0,
+     "f20": 0.0,
+     "dec10": 0.0,
+     "slow_pass": null,
+     "pass_med": null,
+     "b2b": "0/1"
+    },
+    "all": {
+     "n": 188,
+     "tpw": 0.74,
+     "wk2": 22,
+     "win": 55.3,
+     "pf": 1.96,
+     "net": 11258,
+     "dd": -2559,
+     "avg_r": 0.365,
+     "stop": 43.6,
+     "worst_day": -600,
+     "risk": 140.0,
+     "half": 14,
+     "per_month": 185,
+     "p10": 0.2,
+     "f10": 0.0,
+     "p15": 1.2,
+     "f15": 0.0,
+     "p20": 1.9,
+     "f20": 0.0,
+     "dec10": 0.2,
+     "slow_pass": 88.0,
+     "pass_med": 36.0,
+     "b2b": "3/1"
+    }
+   }
+  },
+  {
+   "id": "lit_fc_mffu_rapid_50k",
+   "title": "LIT combo on MyFundedFutures Rapid 50K (eval + funded)",
+   "family": "risk",
+   "question": "The funded-account plan re-run on the new live LIT (t_check + scale_in + be_off): what does each account pay?",
+   "status": "info",
+   "verdict": "MyFundedFutures Rapid 50K on the new live LIT (t_check + scale_in + be_off): eval p10/f10 H1 6.2/0.0 H2 11.5/0.0, eventual pass 76.6 / 85.9%, pass_med 26.5 / 26.0; funded MC $3964 / $1926 a month, lost in 6 months 16.7 / 14.7%; 6 months from purchase net of fees $3045 / $1361 a month (H1 / H2). Can the bot run there: as Rapid EOD; intraday trailing floor when funded.",
+   "writeup": "lit-funded-combo",
+   "tags": [
+    "lit",
+    "lit_funded_combo"
+   ],
+   "params": {
+    "plan": {
+     "target": 3000.0,
+     "mll": 2000.0,
+     "trail": "eod",
+     "lock": 100.0,
+     "dll": null,
+     "cons": 0.5,
+     "min_days": 2,
+     "max_micros": 50,
+     "price": 94.2,
+     "funded": {
+      "trail": "intra",
+      "lock": 100.0,
+      "dll": null,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": null,
+      "pay_pct": null,
+      "cyc_min": 0.0,
+      "every": 1,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": null,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": null,
+      "first_wait": 1
+     }
+    },
+    "lit": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    }
+   },
+   "sizing": {
+    "eval": {
+     "base": "need",
+     "until": 999,
+     "room_f": 0.4,
+     "max_usd": 600,
+     "margin": 0.95
+    },
+    "funded": {
+     "pct": 0.6,
+     "pct_min_usd": 100,
+     "pct_max_usd": 800,
+     "ref": 20,
+     "wk": true,
+     "room_f": null,
+     "max_win": null,
+     "slip_ticks": 2,
+     "skip_breach": true,
+     "add_cap": true,
+     "pay_min": 1500.0
+    },
+    "adds": "engine.sizing.scale_in_qty, 60% room"
+   },
+   "built": "2026-10-20 01:58",
+   "spans": {
+    "2026": {
+     "n": 73,
+     "tpw": 1.77,
+     "wk2": 52,
+     "win": 45.2,
+     "pf": 4.84,
+     "net": 37183,
+     "dd": -2138,
+     "avg_r": 0.658,
+     "stop": 45.5,
+     "worst_day": -763,
+     "risk": 332.0,
+     "half": 5,
+     "per_month": 3790,
+     "p10": 25.2,
+     "f10": 0.0,
+     "p15": 35.9,
+     "f15": 0.5,
+     "p20": 45.6,
+     "f20": 1.0,
+     "dec10": 25.2,
+     "slow_pass": 56.5,
+     "pass_med": 18.0,
+     "b2b": "6/1"
+    },
+    "2021-25": {
+     "n": 87,
+     "tpw": 0.41,
+     "wk2": 12,
+     "win": 58.6,
+     "pf": 1.27,
+     "net": 2656,
+     "dd": -3685,
+     "avg_r": 0.026,
+     "stop": 44.2,
+     "worst_day": -817,
+     "risk": 220.0,
+     "half": 3,
+     "per_month": 52,
+     "p10": 0.5,
+     "f10": 0.0,
+     "p15": 0.9,
+     "f15": 0.0,
+     "p20": 1.4,
+     "f20": 0.0,
+     "dec10": 0.5,
+     "slow_pass": 83.3,
+     "pass_med": 35.5,
+     "b2b": "1/1"
+    },
+    "all": {
+     "n": 160,
+     "tpw": 0.63,
+     "wk2": 18,
+     "win": 52.5,
+     "pf": 3.02,
+     "net": 39839,
+     "dd": -3685,
+     "avg_r": 0.315,
+     "stop": 44.5,
+     "worst_day": -817,
+     "risk": 261.0,
+     "half": 8,
+     "per_month": 655,
+     "p10": 4.5,
+     "f10": 0.0,
+     "p15": 6.6,
+     "f15": 0.1,
+     "p20": 8.5,
+     "f20": 0.2,
+     "dec10": 4.5,
+     "slow_pass": 64.4,
+     "pass_med": 23.0,
+     "b2b": "7/2"
+    }
+   }
+  },
+  {
+   "id": "lit_fc_mffu_rapid_eod_50k",
+   "title": "LIT combo on MyFundedFutures Rapid EOD 50K (eval + funded)",
+   "family": "risk",
+   "question": "The funded-account plan re-run on the new live LIT (t_check + scale_in + be_off): what does each account pay?",
+   "status": "info",
+   "verdict": "MyFundedFutures Rapid EOD 50K on the new live LIT (t_check + scale_in + be_off): eval p10/f10 H1 0.0/0.0 H2 0.0/0.0, eventual pass 47.7 / 64.1%, pass_med 45.0 / 38.0; funded MC $4296 / $2264 a month, lost in 6 months 3.9 / 5.1%; 6 months from purchase net of fees $2184 / $1265 a month (H1 / H2). Can the bot run there: only if MFFU allows it next to the Builder 50K (not stated); funded Tier-1 news ban.",
+   "writeup": "lit-funded-combo",
+   "tags": [
+    "lit",
+    "lit_funded_combo"
+   ],
+   "params": {
+    "plan": {
+     "target": 3000.0,
+     "mll": 2000.0,
+     "trail": "eod",
+     "lock": 100.0,
+     "dll": null,
+     "cons": 0.3,
+     "min_days": 4,
+     "max_micros": 30,
+     "price": 94.2,
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": null,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": null,
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 1,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": null,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": null,
+      "first_wait": 1
+     }
+    },
+    "lit": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    }
+   },
+   "sizing": {
+    "eval": {
+     "base": "need",
+     "until": 999,
+     "room_f": 0.4,
+     "max_usd": 600,
+     "margin": 0.9
+    },
+    "funded": {
+     "pct": 0.6,
+     "pct_min_usd": 100,
+     "pct_max_usd": 800,
+     "ref": 20,
+     "wk": true,
+     "room_f": null,
+     "max_win": null,
+     "slip_ticks": 2,
+     "skip_breach": true,
+     "add_cap": true,
+     "pay_min": 1500.0
+    },
+    "adds": "engine.sizing.scale_in_qty, 60% room"
+   },
+   "built": "2026-10-20 01:58",
+   "spans": {
+    "2026": {
+     "n": 52,
+     "tpw": 1.26,
+     "wk2": 38,
+     "win": 42.3,
+     "pf": 5.26,
+     "net": 29961,
+     "dd": -2138,
+     "avg_r": 0.774,
+     "stop": 44.1,
+     "worst_day": -503,
+     "risk": 343.0,
+     "half": 3,
+     "per_month": 3054,
+     "p10": 21.4,
+     "f10": 0.0,
+     "p15": 32.0,
+     "f15": 0.5,
+     "p20": 41.7,
+     "f20": 1.0,
+     "dec10": 21.4,
+     "slow_pass": 59.3,
+     "pass_med": 19.0,
+     "b2b": "5/1"
+    },
+    "2021-25": {
+     "n": 22,
+     "tpw": 0.1,
+     "wk2": 3,
+     "win": 40.9,
+     "pf": 1.02,
+     "net": 100,
+     "dd": -2278,
+     "avg_r": 0.088,
+     "stop": 32.4,
+     "worst_day": -781,
+     "risk": 362.0,
+     "half": 3,
+     "per_month": 2,
+     "p10": 0.0,
+     "f10": 0.4,
+     "p15": 0.4,
+     "f15": 0.8,
+     "p20": 0.4,
+     "f20": 0.8,
+     "dec10": 0.4,
+     "slow_pass": 20.0,
+     "pass_med": 14.0,
+     "b2b": "0/1"
+    },
+    "all": {
+     "n": 74,
+     "tpw": 0.29,
+     "wk2": 9,
+     "win": 41.9,
+     "pf": 3.57,
+     "net": 30061,
+     "dd": -2407,
+     "avg_r": 0.57,
+     "stop": 42.9,
+     "worst_day": -781,
+     "risk": 347.0,
+     "half": 6,
+     "per_month": 494,
+     "p10": 3.4,
+     "f10": 0.3,
+     "p15": 5.5,
+     "f15": 0.8,
+     "p20": 7.0,
+     "f20": 0.9,
+     "dec10": 3.7,
+     "slow_pass": 59.5,
+     "pass_med": 20.0,
+     "b2b": "5/2"
+    }
+   }
+  },
+  {
+   "id": "lit_fc_stack_25k_week",
+   "title": "LIT combo stack: current + 25K a week later",
+   "family": "risk",
+   "question": "Which accounts together, net of fees over 6 months, on the new live LIT?",
+   "status": "info",
+   "verdict": "current + 25K a week later: 6 months from buying, net of fees $2828 / $2816 a month (H1 / H2), months 4-6 $3624 / $3583, 6 months lose money 2.9 / 2.3%, all pay $0 in months 4-6 5.4 / 4.5%, cash up front $440.19; 2021-25 reference $-127 a month.",
+   "writeup": "lit-funded-combo",
+   "tags": [
+    "lit",
+    "lit_funded_combo"
+   ],
+   "params": {
+    "accounts": [
+     [
+      "mffu_builder_50k",
+      0
+     ],
+     [
+      "lucid_pro_50k",
+      0
+     ],
+     [
+      "fn_rapid_daily_50k",
+      0
+     ],
+     [
+      "mffu_builder_25k",
+      5
+     ]
+    ],
+    "lit": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-20 01:58",
+   "spans": {
+    "2026": {
+     "n": 372,
+     "tpw": 9.03,
+     "wk2": 79,
+     "win": 52.2,
+     "pf": 3.58,
+     "net": 80027,
+     "dd": -4962,
+     "avg_r": 0.735,
+     "stop": 46.0,
+     "worst_day": -1760,
+     "risk": 170.0,
+     "half": 41,
+     "per_month": 8158,
+     "p10": 46.1,
+     "f10": 15.0,
+     "p15": 54.4,
+     "f15": 17.5,
+     "p20": 56.8,
+     "f20": 18.0,
+     "dec10": 61.1,
+     "slow_pass": 28.7,
+     "pass_med": 8.0,
+     "b2b": "15/7"
+    },
+    "2021-25": {
+     "n": 571,
+     "tpw": 2.66,
+     "wk2": 52,
+     "win": 51.0,
+     "pf": 0.88,
+     "net": -6500,
+     "dd": -20469,
+     "avg_r": -0.082,
+     "stop": 39.0,
+     "worst_day": -2802,
+     "risk": 158.0,
+     "half": 36,
+     "per_month": -127,
+     "p10": 3.3,
+     "f10": 4.7,
+     "p15": 5.0,
+     "f15": 8.2,
+     "p20": 6.8,
+     "f20": 11.7,
+     "dec10": 8.0,
+     "slow_pass": 70.7,
+     "pass_med": 23.0,
+     "b2b": "7/14"
+    },
+    "all": {
+     "n": 943,
+     "tpw": 3.69,
+     "wk2": 56,
+     "win": 51.4,
+     "pf": 1.87,
+     "net": 73527,
+     "dd": -20469,
+     "avg_r": 0.24,
+     "stop": 41.8,
+     "worst_day": -2802,
+     "risk": 166.0,
+     "half": 77,
+     "per_month": 1208,
+     "p10": 10.6,
+     "f10": 6.3,
+     "p15": 13.8,
+     "f15": 9.7,
+     "p20": 16.1,
+     "f20": 12.7,
+     "dec10": 16.9,
+     "slow_pass": 55.4,
+     "pass_med": 19.0,
+     "b2b": "21/20"
+    }
+   }
+  },
+  {
+   "id": "lit_fc_stack_rapid_eod",
+   "title": "LIT combo stack: current + 1 Rapid EOD",
+   "family": "risk",
+   "question": "Which accounts together, net of fees over 6 months, on the new live LIT?",
+   "status": "info",
+   "verdict": "current + 1 Rapid EOD: 6 months from buying, net of fees $4714 / $3795 a month (H1 / H2), months 4-6 $6721 / $5172, 6 months lose money 2.9 / 2.6%, all pay $0 in months 4-6 5.2 / 4.7%, cash up front $471.39; 2021-25 reference $-118 a month.",
+   "writeup": "lit-funded-combo",
+   "tags": [
+    "lit",
+    "lit_funded_combo"
+   ],
+   "params": {
+    "accounts": [
+     [
+      "mffu_builder_50k",
+      0
+     ],
+     [
+      "lucid_pro_50k",
+      0
+     ],
+     [
+      "fn_rapid_daily_50k",
+      0
+     ],
+     [
+      "mffu_rapid_eod_50k",
+      0
+     ]
+    ],
+    "lit": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-20 01:58",
+   "spans": {
+    "2026": {
+     "n": 326,
+     "tpw": 7.91,
+     "wk2": 79,
+     "win": 50.3,
+     "pf": 4.09,
+     "net": 98825,
+     "dd": -5355,
+     "avg_r": 0.745,
+     "stop": 46.0,
+     "worst_day": -1901,
+     "risk": 202.0,
+     "half": 33,
+     "per_month": 10074,
+     "p10": 50.5,
+     "f10": 13.1,
+     "p15": 57.8,
+     "f15": 14.1,
+     "p20": 60.2,
+     "f20": 14.1,
+     "dec10": 63.6,
+     "slow_pass": 27.9,
+     "pass_med": 8.0,
+     "b2b": "16/6"
+    },
+    "2021-25": {
+     "n": 503,
+     "tpw": 2.35,
+     "wk2": 48,
+     "win": 49.3,
+     "pf": 0.88,
+     "net": -6496,
+     "dd": -21700,
+     "avg_r": -0.085,
+     "stop": 37.2,
+     "worst_day": -2202,
+     "risk": 173.0,
+     "half": 36,
+     "per_month": -127,
+     "p10": 2.5,
+     "f10": 5.5,
+     "p15": 3.8,
+     "f15": 8.3,
+     "p20": 5.1,
+     "f20": 11.4,
+     "dec10": 8.0,
+     "slow_pass": 74.7,
+     "pass_med": 29.0,
+     "b2b": "5/14"
+    },
+    "all": {
+     "n": 829,
+     "tpw": 3.24,
+     "wk2": 53,
+     "win": 49.7,
+     "pf": 2.09,
+     "net": 92329,
+     "dd": -21700,
+     "avg_r": 0.241,
+     "stop": 41.5,
+     "worst_day": -2202,
+     "risk": 178.0,
+     "half": 69,
+     "per_month": 1517,
+     "p10": 10.6,
+     "f10": 6.7,
+     "p15": 13.2,
+     "f15": 9.2,
+     "p20": 15.1,
+     "f20": 11.8,
+     "dec10": 17.3,
+     "slow_pass": 55.6,
+     "pass_med": 20.0,
+     "b2b": "21/20"
     }
    }
   },
