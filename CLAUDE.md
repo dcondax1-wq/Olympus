@@ -131,11 +131,18 @@ asking; show evidence (backtest numbers, charts) and be honest when something do
   inducement speed/hierarchy (176, `lit-adv-continuation.md`); BE/partials/targets (`lit-adv-management.md`: BE at
   entry + 1.25 pts is a small candidate); backtest honesty audit (-$500 of $41.7k, `lit-adv-audit-smt.md`); NQ/ES
   divergence; more setups: ES/MES, 15m/30m/1h, missed fills, looser filters (95, `lit-more-setups.md`); trend-day mode,
-  volatility sizing, news setups (`lit-big-ideas.md`). **Adopt-candidates not live yet:** the 15-minute check
-  (`t_check`, `lit-loss-learning.md`; the PC route sent the cut ~3 min late in a replay, fix before switching on),
-  **scale-in after BE** (`scale_in`, `lit-big-ideas.md`: +$12.5k / +$16.3k in H1 / H2, pass rate ~flat; needs the
-  NinjaTrader add-order route), BE + costs (`be_off 1.25`). Funded plan: MFFU Builder + LucidPro 50K + FundedNext
-  Rapid Daily 50K (`lit-funded-firms.md`, ~$1,750-2,300/mo for three; one bot routes to one account today).
+  volatility sizing, news setups (`lit-big-ideas.md`). **Adopt-candidates, route-ready, OFF (2026-10-19):** the 15-minute check
+  (`t_check {"at":15,"x":0.3,"mfe":0.5}`, `lit-loss-learning.md`; route fixed: all 13 2026 cuts routed 2 s after the
+  check-bar close, priced from the forming bar's open, `tests/test_lit_exit_route.py`), **scale-in after BE**
+  (`scale_in {"pb":0.25,"f":1.0,"rat_k":1.0,"min_rk":2.0,"n":1}`, `lit-big-ideas.md`; NinjaTrader MARKET add + resize
+  of the one OCO bracket, `add_to_position`, 52/52 2026 adds match the backtest), BE + costs (`be_off 1.25`). All three
+  on the eval path (run `lit_adopt_all3_eval`, `tools/lit_adopt_combo.py`): H1 +$53.1k / H2 +$17.3k ($4,647/mo) vs live
+  +$36.7k / +$9.7k, 2-week pass/fail 58.0/2.5 and 52.2/0.0 (live 52.9/9.2, 50.7/2.9); scale-in alone makes more in H2
+  (+$26.0k) but fails more. Thin samples (13 cuts, 52 adds); untested on a real NinjaTrader: a week on Sim first, then the
+  owner switches them on in live_model.json "lit". `idm_size` (inducement-count size) helps the LIT size rule but not the
+  eval path: keep it off for evals (`lit-new-entries.md`). Funded plan: MFFU Builder + LucidPro 50K + FundedNext
+  Rapid Daily 50K (`lit-funded-firms.md`, ~$1,750-2,300/mo for three); one bot can now route to several accounts
+  (`engine/multi_account.py`, off by default, `data/accounts.json`).
 
 ## Key commands (run from the repo root)
 - `python tools/export_backtest.py`: the live-settings 5-year replay → `research/lab/backtest_live.json`. Contains periods, months,

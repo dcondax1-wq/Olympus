@@ -218,6 +218,10 @@ under water. Every idea was rerun on top of it.
     after slippage). The live loop routes the model's `stop_now`, so the broker stop
     follows automatically (reason "BE", since it is above the entry).
   - **Config change:** `live_model.json` `"lit": {..., "be_off": 1.25}`.
+  - **Route check (2026-10-19):** `tests/test_lit_exit_route.py` replays 6 breakeven trades (3 long, 3 short) through the PC
+    bot: one CHANGE to exactly entry +/- 1.25 on the tick grid, 2 s after the +1R bar closed, BE exit P&L = backtest.
+    NinjaTrader self-test: `CHANGE;;;;0;;0;25021.25;;;<id>S;;` for a 25020 long. A stop that close to the market is a little
+    more likely to be refused if price has already come back; the bot retries 3 times and the model's BE exit is routed anyway.
   - **Honest size of it:** about $15-25 per breakeven trade on the eval path ($2.50 a micro). 2026 had 34 breakeven exits, about $760 in the eval path, almost
     all in H1 (29 of the 34 breakevens). In H2 it adds $80 (5 breakevens). The 2-week pass rate does not move. Take it as
     free money, not as an edge.

@@ -14,6 +14,9 @@
     "max_trades_day": 1
   },
   "lit": {
+    "t_check": {"at": 15, "x": 0.3, "mfe": 0.5},
+    "scale_in": {"pb": 0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1},
+    "be_off": 1.25,
     "ref": "cisd",
     "extra_boxes": [],
     "window": [
