@@ -159,9 +159,13 @@ def _vix(name="VIX"):
 class Market:
     """All LIT components for the whole NQ 5m history, computed once."""
 
-    def __init__(self, tol_atr=0.15, extra_boxes=None, bars=None):
-        """bars: an engine.data.Bars 5m window (the live loop, engine/lit_live.py); None = the whole data/NQ_5m.csv."""
+    def __init__(self, tol_atr=0.15, extra_boxes=None, bars=None, extra_levels=None):
+        """bars: an engine.data.Bars 5m window (the live loop, engine/lit_live.py); None = the whole data/NQ_5m.csv.
+        extra_levels (research, tools/lit_gaps.py; None = today's levels): extra liquidity levels of their own class, known at
+        the start of the trading day: "mon" = Monday's high/low on Wednesday-Friday, "d10" / "d20" = the highest high / lowest
+        low of the prior 10 / 20 trading days (turtle-soup levels)."""
         self.extra = {nm: EXTRA_BOXES[nm] for nm in (extra_boxes or ())}
+        self.extra_levels = list(extra_levels or ())
         b = bars if bars is not None else load("NQ", "5m")
         self.b = b
         self.t, self.o, self.h, self.l, self.c, self.v = b.t, b.o, b.h, b.l, b.c, b.v
@@ -260,6 +264,30 @@ class Market:
             ctx.append(x)
             prev = (s, e)
         self.ctx = ctx
+        if self.extra_levels:
+            self._extra_levels_ctx()
+
+    def _extra_levels_ctx(self):
+        """Research levels (extra_levels): each known at the start of its trading day (prior days only, no look-ahead)."""
+        h, l = self.h, self.l
+        dh = np.array([float(h[s:e].max()) for d, s, e in self.days])
+        dl = np.array([float(l[s:e].min()) for d, s, e in self.days])
+        for k, x in enumerate(self.ctx):
+            s = x["s"]
+            for nm in self.extra_levels:
+                if nm.startswith("d") and nm[1:].isdigit():
+                    n = int(nm[1:])
+                    if k >= n:
+                        x[nm] = (float(dh[k - n:k].max()), float(dl[k - n:k].min()))
+                elif nm == "mon" and x["dow"] >= 2:
+                    wid = int(self.week_id[s])
+                    for j in range(k - 1, max(-1, k - 6), -1):
+                        sj = self.ctx[j]["s"]
+                        if int(self.week_id[sj]) != wid:
+                            break
+                        if self.ctx[j]["dow"] == 0:
+                            x[nm] = (float(dh[j]), float(dl[j]))
+                            break
 
     # ---- levels of one day (side, price, known_index, name, cls)
     def levels(self, k):
@@ -276,6 +304,9 @@ class Market:
         for p in DAILY:
             if p + "h" in x:
                 L.append(("high", x[p + "h"], s - 1, p + "h", p)); L.append(("low", x[p + "l"], s - 1, p + "l", p))
+        for nm in self.extra_levels:
+            if nm in x:
+                L.append(("high", x[nm][0], s - 1, nm + "h", nm)); L.append(("low", x[nm][1], s - 1, nm + "l", nm))
         for g in ("nwog", "ndog"):
             if x.get(g):
                 for px in x[g]:
@@ -766,6 +797,24 @@ DEFAULTS = {
     "fills": None,               # realistic fill model {} / {...}: engine/lit_fills.py FILL_DEFAULTS (live bot latency, market
                                  # entry at the price when the order reaches CME, stop slippage by hour and bar range, target
                                  # limit needs a trade-through, breakeven lag, MFFU commission). Ignored by the live loop.
+    # gap audit (research only, research/writeups/lit-gap-audit.md, tools/lit_gaps.py; all off = today's LIT). The live loop
+    # does not route any of them (TX exits, market-entry / pre-filtered candidates are backtest only).
+    "kz": None,                  # killzone parameters: [[from, to, {overrides}], ...]: a setup whose entry-bar ET minute is in
+                                 # [from, to) uses these keys instead (disp, depth, idm_a, vix_k, min_rr, max_rr, be_r, wait,
+                                 # cisd1m, min_stop, max_stop, stop_atr, depth_max, sd_tgt, tx); first match wins
+    "stop_atr": None,            # [lo, hi]: skip a setup whose planned stop is < lo x or > hi x the 5m ATR(14) at the trigger
+    "depth_max": None,           # skip a sweep deeper than this many ATR beyond the nearest swept level (a breakout, not a sweep)
+    "sd_tgt": None,              # Asia-range projection target: {"box": "asia20", "k": 2.0, "mode": "replace" | "near" | "far"}:
+                                 # the box extreme on the target side +/- k x the box range (box known before the trigger);
+                                 # replace = instead of the VIX band, near / far = the nearer / farther of the two
+    "tx": None,                  # time exits [{"at": ET minute, "lo": R or None, "hi": R or None, "pre": ET minute or None,
+                                 # "be": None | True | False}, ...]: at the close of the bar that ends at minute `at`, if the
+                                 # trade entered before `pre`, its close is >= lo R and < hi R and its breakeven state matches,
+                                 # exit at that close - 1 tick ("TX")
+    "re_be": None,               # re-entry after a scratch: {"side": "same" | "any", "kinds": ["BE"]}: once the day's trade ended
+                                 # with one of `kinds`, one more trade that day (a later setup of that side)
+    "cisd_nth": 1,               # 2 = enter on the 2nd 1m CISD after the tap (a pullback low after the first one, then a close
+                                 # above its CISD level), inside cisd1m x 2 bars from the tap
 }
 
 
@@ -892,6 +941,14 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     limit_fill = True
     fill = tapped = None
     k = k0
+    mk = cand.get("mkt")                     # research: a market entry at a given bar's open (tools/lit_gaps.py)
+    nth, n_cz, base = int(P.get("cisd_nth") or 1), 0, None
+    if mk:
+        kf = int(np.searchsorted(B.t, int(mk["t"])))
+        if kf >= B.n or int(B.t[kf]) != int(mk["t"]) or B.day[kf] != s_day:
+            return None
+        fill, entry, limit_fill = kf, float(mk["entry_d"]), False
+        k = B.n                              # skip the limit walk
     while k < B.n:
         if B.day[k] != s_day or _late(B.mod[k], flat, ev):
             break
@@ -909,10 +966,17 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
         if tapped is None and hi_d[k] >= tgt_cancel:
             break
         if tapped is not None:
-            if k - tapped > cis:
+            if k - tapped > cis * (2 if nth > 1 else 1):
                 break
-            lowk = tapped + int(np.argmin(lo_d[tapped:k + 1]))
+            b0 = tapped if base is None else base
+            lowk = b0 + int(np.argmin(lo_d[b0:k + 1]))
             cz = _cisd_level(c_d, o_d, lowk)
+            if nth > 1 and cz is not None and cz[1] < b0:
+                cz = None                    # cisd_nth: the 2nd CISD's run must start after the first CISD
+            if cz is not None and k > lowk and c_d[k] > cz[0] and n_cz + 1 < nth:
+                n_cz += 1; base = k + 1      # cisd_nth: the first CISD seen; wait for a pullback and the next one
+                k += 1
+                continue
             if cz is not None and k > lowk and c_d[k] > cz[0] and k + 1 < B.n and B.day[k + 1] == s_day:
                 fill = k + 1; entry = float(o_d[k + 1]) + SLIP; limit_fill = False; break
             if live and cz is not None and k > lowk and c_d[k] > cz[0] and k + 1 == B.n and _next_bar_same_day(B, k, cand["day"]):
@@ -962,6 +1026,7 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     if ov and "be_r" in ov:                  # ctx_day: the day's breakeven trigger (R; None = no breakeven)
         be_r = ov["be_r"]
     tc = P.get("t_check") if B.secs == 60 else None
+    txs = P.get("tx")
     si = P.get("scale_in") if B.secs == 60 else None
     adds, add_pend, add_base, rat_lvl, w_pre = [], False, None, None, 0.0
     add_now = None                           # live + scale_in: the add decided at the close of the last bar (route at market now)
@@ -1005,6 +1070,13 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
                 add_base = k
         if _late(B.mod[k], flat, ev) if ev else B.mod[k] >= flat:
             exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
+        if txs:                              # tx (gap audit): time exits at a bar close
+            m_end = int(B.mod[k]) + B.secs // 60
+            r_ = (float(c_d[k]) - entry) / risk
+            if any(m_end == int(x_["at"]) and (x_.get("pre") is None or int(B.mod[fill]) < int(x_["pre"]))
+                   and (x_.get("lo") is None or r_ >= x_["lo"]) and (x_.get("hi") is None or r_ < x_["hi"])
+                   and (x_.get("be") is None or bool(x_["be"]) == be_done) for x_ in txs):
+                exit_px, kind = float(c_d[k]) - SLIP, "TX"; break
         if si is not None and be_done:
             # end of bar k: the add's own breakeven (acts from bar k + 1), then the next add's trigger (fills at k + 1's open)
             if not be_now and rat_lvl is not None and hi_d[k] >= rat_lvl[0]:
@@ -1125,6 +1197,8 @@ def setup_ok(z, P, names=None):
             return False
     if z["disp"] < P["disp"]:
         return False
+    if P.get("depth_max") is not None and z["depth_atr"] > P["depth_max"]:
+        return False
     if P.get("idm_a"):
         dm, age, cnt = P["idm_a"]
         if sum(1 for dd, aa in z["idm_a"] if dd <= dm and aa <= age) < cnt:
@@ -1199,6 +1273,23 @@ def targets_x(M: Market, z, P):
             p = x["open18"] * z["dir"] + P["vix_k"] * vm
             if p > z["entry_d"]:
                 T["vix"] = [round(p - z["entry_d"], 2)]
+        sd = P.get("sd_tgt")
+        bx = x.get(sd["box"]) if sd else None
+        if bx and bx[2] <= z["i"]:
+            hi, lo = bx[0], bx[1]
+            dsd = round((hi if z["dir"] == 1 else -lo) + float(sd["k"]) * (hi - lo) - z["entry_d"], 2)
+            cur, mode = T.get("vix"), sd.get("mode", "replace")
+            if dsd > 0:
+                if mode == "replace":
+                    T["vix"] = [dsd]
+                elif not cur:
+                    pass
+                elif mode == "near":
+                    T["vix"] = [min(cur[0], dsd)]
+                elif mode == "far":
+                    T["vix"] = [max(cur[0], dsd)]
+            elif mode == "replace":
+                T.pop("vix", None)
     return T
 
 
@@ -1232,23 +1323,40 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
     sess_of = (lambda m: next((q for q, (a, b) in enumerate(ps[0]) if (m - a) % 1440 < (b - a) % 1440), -1)) if ps else None
     pending, signals, enter_now = [], [], []
     buf = P["stop_buf"]
+    P0, rb, last = P, P.get("re_be"), {}
     for z in cands:
         if sset is not None and z["day"] not in sset:
             continue
-        if z["entry_i"] <= busy or per_day[z["day"]] >= P["max_per_day"]:
+        P = P0
+        if P0.get("kz"):                     # killzone parameters (gap audit): the first window holding the entry minute
+            for a_, b_, ov_ in P0["kz"]:
+                if a_ <= z["mod"] < b_:
+                    P = {**P0, **ov_}
+                    break
+        if z["entry_i"] <= busy:
             continue
+        if per_day[z["day"]] >= P["max_per_day"]:
+            # re_be (gap audit): one more trade once the day's trade ended as a scratch (BE), on the allowed side
+            lt = last.get(z["day"])
+            if not (rb and lt is not None and per_day[z["day"]] == P["max_per_day"] and not lt.get("_re")
+                    and lt["exit"] in rb.get("kinds", ["BE"]) and (rb.get("side", "same") == "any" or lt["dir"] == z["dir"])):
+                continue
         if P.get("stop_after_loss") and z["day"] in lost:
             continue
         if ps and per_sess[(z["day"], sess_of(z["mod"]))] >= ps[1]:
             continue
-        if not setup_ok(z, P, names):
+        if not z.get("pre_ok") and not setup_ok(z, P, names):
             continue
         if P.get("monday") and monday_block(M, z):
             continue
-        ep = min(float(z["ref_d"]), z["trig_c"])
-        stop = z["ext_d"] - buf
+        mk = z.get("mkt")                    # a market-entry candidate (research: tools/lit_gaps.py opening model)
+        ep = mk["entry_d"] if mk else min(float(z["ref_d"]), z["trig_c"])
+        stop = mk["stop_d"] if mk else z["ext_d"] - buf
         risk = ep - stop
         if not (P["min_stop"] <= risk <= P["max_stop"]):
+            continue
+        sa = P.get("stop_atr")
+        if sa and ((sa[0] is not None and risk < sa[0] * z["atr"]) or (sa[1] is not None and risk > sa[1] * z["atr"])):
             continue
         sh = z["entry_d"] - ep
         TT = {c: [x + sh for x in v] for c, v in targets_x(M, z, P).items()}
@@ -1269,6 +1377,8 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             tp = min(best, P["max_rr"] * risk) if P["max_rr"] else best
         use1 = P["tf"] == "1m" and B1 is not None and int(M.day_of[z["entry_i"]]) in B1.full
         B = B1 if use1 else B5
+        if mk and mk.get("tf", 1) == 1 and not use1:
+            continue
         tgt = ("lvl", ep + tp, fb) if P.get("cisd1m") else ("pts", tp)
         t = simulate_x(M, B, z, ep, tgt, stop, P, live=live)
         if live:
@@ -1288,6 +1398,9 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             t.update(target_px=round((ep + tp) * z["dir"], 2), swept=z["swept"], sig_t=int(M.t[z["entry_i"]]))
             pending.append(t)
             continue
+        if rb:
+            t["_re"] = per_day[z["day"]] >= 1
+            last[z["day"]] = t
         busy = t["exit_i"]; per_day[z["day"]] += 1
         if ps:
             per_sess[(z["day"], sess_of(z["mod"]))] += 1
@@ -1330,6 +1443,7 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
                 enter_now.append(t)
                 continue
         out.append(t)
+    P = P0
     if not live:
         return {"trades": out}
     pending = [x for x in pending if per_day[x["day"]] < P["max_per_day"] and busy < 10 ** 12]
