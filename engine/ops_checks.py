@@ -453,6 +453,21 @@ def check_disk(path: str = ROOT, usage=shutil.disk_usage) -> dict:
     return _c("disk", "Disk space", OK, f"{free:.0f} GB free")
 
 
+def check_data(summary=None) -> dict:
+    """The data files the backtests and the live window read (tools/data_check.py: order, OHLC, gaps, spikes, rolls, 1m vs 5m,
+    VIX/VXN cover). ~3 s."""
+    try:
+        if summary is None:
+            from tools import data_check
+            summary = data_check.summary
+        lvl, txt = summary()
+    except Exception as e:
+        return _c("data", "Data files", SKIP, f"could not check ({e.__class__.__name__})")
+    lv = {"ok": OK, "warn": WARN, "fix": BAD}.get(lvl, WARN)
+    return _c("data", "Data files", lv, txt, "Run python -X utf8 tools/data_check.py for the details; a bad file comes back with "
+              "a fresh TradingView export (tools/grab_tv_export.py).")
+
+
 def check_clock(net: dict) -> dict:
     d = net.get("drift_s")
     if not net.get("up"):
@@ -736,6 +751,7 @@ def run_checks(ctx: dict) -> list:
         checks += check_versions()
         checks += check_auto()
         checks.append(check_backup(ctx["state"], now))
+        checks.append(check_data())
         checks += check_logs(scan_logs(now=now))
     return checks
 
