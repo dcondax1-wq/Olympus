@@ -974,7 +974,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     lab_dir = os.path.join(out, "lab"); os.makedirs(lab_dir, exist_ok=True)
     # live files from research/lab (LIT's while live_model.json says lit: tools/lit_dash_data.py); the previous strategy's
     # versions from the archive as <name>_engine (calendar_effects is an engine study, so it is archive-only)
-    LAB_FILES = [(n, os.path.join(LAB, n + ".json")) for n in ("montecarlo", "intraday_heat")]
+    LAB_FILES = [(n, os.path.join(LAB, n + ".json")) for n in ("montecarlo", "intraday_heat", "rejections")]   # rejections: tools/lit_rejections.py
     if lab_scope.is_lit_model(lm):
         LAB_FILES += [(n + "_engine", os.path.join(ARCHIVE, n + ".json")) for n in ("montecarlo", "intraday_heat")]
         LAB_FILES += [("calendar_effects_engine", os.path.join(LAB, "calendar_effects.json"))]

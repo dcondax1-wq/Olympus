@@ -47,6 +47,7 @@ import { litday, litlevels, litcockpit, initLitToday } from './next/litpages.js'
 import * as pc from './next/pcpages.js';
 import { botctl as botctlPage, initBotControl } from './next/botctl.js';
 import * as hubp from './next/hubpages.js';
+import { setups as setupsPage, sensitivity as sensPage } from './next/insights.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -61,6 +62,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   strategy: strategyPage, newshub: newshubPage, archive: archivePage, litday, litlevels, litcockpit,
   firms: hubp.firms, business: hubp.business, market: hubp.market, learn: hubp.learn, system: hubp.system,
   botctl: botctlPage, accounts: pc.accounts, evalhq: pc.evalhq, edge: pc.edge, pnlcal: pc.pnlcal, mffurules: pc.mffurules,
+  setups: setupsPage, sensitivity: sensPage,
   rules: mods.rules, cold: mods.cold, risk: mods.risk, alerts: { show: () => settingsPage.show() }, modules: { show: () => {} },
   playbook: { show: () => {} } };
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };

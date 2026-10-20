@@ -23,6 +23,8 @@ export const DATA = [
   { id: 'evals', label: 'Evals', icon: 'evals', desc: 'MFFU eval odds on LIT 2026: Monte Carlo paths, live vs fast-eval' },
   { id: 'intraday', label: 'Intraday', icon: 'heat', desc: 'Weekday × hour heat map of every LIT trade (01:00-16:00)' },
   { id: 'replay', label: 'Replays', icon: 'replay', desc: 'Step through a session bar by bar' },
+  { id: 'setups', label: 'Rejected setups', icon: 'variants', desc: 'Every LIT 5m CISD and the first rule it failed: last 20 sessions, 2026 H1 / H2, 2021-25' },
+  { id: 'sensitivity', label: 'Sensitivity', icon: 'robust', desc: 'Heat maps of the live LIT knobs: depth x displacement, stop range, 15-minute check, BE offset' },
   { id: 'learned', label: 'What the Bot Learned', icon: 'learned', desc: 'Lessons from the LIT replay trades' },
   { id: 'ops', label: 'Data Sources', icon: 'sources', desc: 'Data files, coverage, health' },
 ];
