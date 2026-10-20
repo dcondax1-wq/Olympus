@@ -1,7 +1,7 @@
 {
- "built": "2026-10-20 03:01",
+ "built": "2026-10-20 03:22",
  "baseline": "baseline",
- "count": 1200,
+ "count": 1241,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -17330,6 +17330,448 @@
      "slow_pass": 53.8,
      "pass_med": 17.0,
      "b2b": "23/48"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_followup_amd_wide_1_25",
+   "title": "LIT + all3 + bias followup: amd wide 1.25",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion (see lit-bias-discretion).",
+   "status": "promising",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 6.23 net +70,277 ($11,530/mo) DD -2,983; 2-week pass/fail 58.0/0.0 (Monte Carlo 52.8/2.7), 1 month 78.0/8.3. H2 (check) n=40 2.56/wk PF 2.93 net +18,051 ($4,860/mo) DD -3,055; 2-week pass/fail 56.5/0.0 (Monte Carlo 60.4/3.1), 1 month 57.6/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +27,349 H2 +2,377, 2021-25 reference -314. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "298 days (amd wide 1.25: target x1.25, no 8R bank on trades with the bias)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:03",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.88,
+     "net": 88329,
+     "dd": -3403,
+     "avg_r": 1.52,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 341.0,
+     "half": 0,
+     "per_month": 9004,
+     "p10": 42.7,
+     "f10": 1.0,
+     "p15": 55.3,
+     "f15": 8.7,
+     "p20": 62.6,
+     "f20": 18.9,
+     "dec10": 43.7,
+     "slow_pass": 17.4,
+     "pass_med": 8.0,
+     "b2b": "15/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.88,
+     "net": 88329,
+     "dd": -3403,
+     "avg_r": 1.52,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 341.0,
+     "half": 0,
+     "per_month": 9004,
+     "p10": 42.7,
+     "f10": 1.0,
+     "p15": 55.3,
+     "f15": 8.7,
+     "p20": 62.6,
+     "f20": 18.9,
+     "dec10": 43.7,
+     "slow_pass": 17.4,
+     "pass_med": 8.0,
+     "b2b": "15/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_followup_amd_wide_1_25",
+   "title": "LIT live + bias followup: amd wide 1.25",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion (see lit-bias-discretion).",
+   "status": "promising",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.57 net +48,059 ($7,885/mo) DD -3,632; 2-week pass/fail 52.1/7.6 (Monte Carlo 50.4/5.4), 1 month 72.5/16.5. H2 (check) n=40 2.56/wk PF 2.43 net +12,741 ($3,430/mo) DD -2,009; 2-week pass/fail 50.7/0.0 (Monte Carlo 55.1/5.7), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +19,181 H2 +1,518, 2021-25 reference -427. Strict test: False; neighbours hold: True.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": "298 days (amd wide 1.25: target x1.25, no 8R bank on trades with the bias)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:02",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.71,
+     "net": 60800,
+     "dd": -3632,
+     "avg_r": 1.024,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 394.0,
+     "half": 0,
+     "per_month": 6198,
+     "p10": 37.4,
+     "f10": 4.4,
+     "p15": 51.9,
+     "f15": 11.7,
+     "p20": 58.7,
+     "f20": 18.9,
+     "dec10": 41.8,
+     "slow_pass": 31.4,
+     "pass_med": 11.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.71,
+     "net": 60800,
+     "dd": -3632,
+     "avg_r": 1.024,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 394.0,
+     "half": 0,
+     "per_month": 6198,
+     "p10": 37.4,
+     "f10": 4.4,
+     "p15": 51.9,
+     "f15": 11.7,
+     "p20": 58.7,
+     "f20": 18.9,
+     "dec10": 41.8,
+     "slow_pass": 31.4,
+     "pass_med": 11.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_followup_or_dpd_amd_wide_1_25",
+   "title": "LIT live + bias followup: or_dpd_amd wide 1.25",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "promising",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.25 net +39,334 ($6,453/mo) DD -3,644; 2-week pass/fail 56.3/7.6 (Monte Carlo 52.8/5.2), 1 month 70.6/17.4. H2 (check) n=40 2.56/wk PF 2.25 net +10,292 ($2,771/mo) DD -2,009; 2-week pass/fail 52.2/0.0 (Monte Carlo 50.9/5.2), 1 month 47.5/3.4. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +16,857 H2 +159, 2021-25 reference -65. Strict test: True; neighbours hold: True.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": "455 days (or_dpd_amd wide 1.25: target x1.25, no 8R bank on trades with the bias)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:55",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 24.2,
+     "pf": 3.44,
+     "net": 49626,
+     "dd": -3644,
+     "avg_r": 0.942,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 369.0,
+     "half": 0,
+     "per_month": 5059,
+     "p10": 37.4,
+     "f10": 2.9,
+     "p15": 48.5,
+     "f15": 9.2,
+     "p20": 55.3,
+     "f20": 14.6,
+     "dec10": 40.3,
+     "slow_pass": 40.8,
+     "pass_med": 12.0,
+     "b2b": "12/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 24.2,
+     "pf": 3.44,
+     "net": 49626,
+     "dd": -3644,
+     "avg_r": 0.942,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 369.0,
+     "half": 0,
+     "per_month": 5059,
+     "p10": 37.4,
+     "f10": 2.9,
+     "p15": 48.5,
+     "f15": 9.2,
+     "p20": 55.3,
+     "f20": 14.6,
+     "dec10": 40.3,
+     "slow_pass": 40.8,
+     "pass_med": 12.0,
+     "b2b": "12/3"
     }
    }
   },
@@ -37839,6 +38281,900 @@
      "slow_pass": 16.7,
      "pass_med": 7.0,
      "b2b": "15/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_target_d_fvg_target_wide_w_1_25",
+   "title": "LIT + all3 + bias target: d_fvg target wide_w 1.25",
+   "family": "management",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.92 net +64,987 ($10,662/mo) DD -2,949; 2-week pass/fail 58.0/1.7 (Monte Carlo 51.9/3.1), 1 month 76.1/9.2. H2 (check) n=40 2.56/wk PF 3.36 net +22,726 ($6,119/mo) DD -2,765; 2-week pass/fail 58.0/0.0 (Monte Carlo 60.5/3.4), 1 month 59.3/3.4. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +24,914 H2 -3,204, 2021-25 reference +1,227. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "298 days (d_fvg target wide_w 1.25)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:52",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.84,
+     "net": 87713,
+     "dd": -3113,
+     "avg_r": 1.378,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 380.0,
+     "half": 0,
+     "per_month": 8942,
+     "p10": 43.7,
+     "f10": 1.0,
+     "p15": 56.3,
+     "f15": 9.2,
+     "p20": 62.1,
+     "f20": 19.4,
+     "dec10": 44.7,
+     "slow_pass": 14.7,
+     "pass_med": 7.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.84,
+     "net": 87713,
+     "dd": -3113,
+     "avg_r": 1.378,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 380.0,
+     "half": 0,
+     "per_month": 8942,
+     "p10": 43.7,
+     "f10": 1.0,
+     "p15": 56.3,
+     "f15": 9.2,
+     "p20": 62.1,
+     "f20": 19.4,
+     "dec10": 44.7,
+     "slow_pass": 14.7,
+     "pass_med": 7.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_target_vote2_target_wide_w_1_25",
+   "title": "LIT + all3 + bias target: vote2 target wide_w 1.25",
+   "family": "management",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.82 net +64,144 ($10,524/mo) DD -2,949; 2-week pass/fail 57.1/2.5 (Monte Carlo 51.0/3.1), 1 month 75.2/11.9. H2 (check) n=40 2.56/wk PF 3.2 net +20,739 ($5,584/mo) DD -2,823; 2-week pass/fail 56.5/0.0 (Monte Carlo 58.3/3.5), 1 month 55.9/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +18,378 H2 -3,822, 2021-25 reference +1,208. Strict test: False; neighbours hold: True.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "183 days (vote2 target wide_w 1.25)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:53",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.73,
+     "net": 84883,
+     "dd": -3171,
+     "avg_r": 1.252,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 383.0,
+     "half": 0,
+     "per_month": 8653,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 55.3,
+     "f15": 7.3,
+     "p20": 61.2,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 14.9,
+     "pass_med": 7.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.73,
+     "net": 84883,
+     "dd": -3171,
+     "avg_r": 1.252,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 383.0,
+     "half": 0,
+     "per_month": 8653,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 55.3,
+     "f15": 7.3,
+     "p20": 61.2,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 14.9,
+     "pass_med": 7.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_target_vote2_target_wide_w_1_5",
+   "title": "LIT + all3 + bias target: vote2 target wide_w 1.5",
+   "family": "management",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 6.15 net +68,503 ($11,239/mo) DD -2,839; 2-week pass/fail 58.8/1.7 (Monte Carlo 51.2/3.0), 1 month 76.1/11.9. H2 (check) n=40 2.56/wk PF 3.4 net +21,616 ($5,820/mo) DD -2,673; 2-week pass/fail 56.5/0.0 (Monte Carlo 58.6/3.5), 1 month 57.6/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +23,856 H2 -3,407, 2021-25 reference +4,024. Strict test: False; neighbours hold: True.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "183 days (vote2 target wide_w 1.5)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:53",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 5.04,
+     "net": 90119,
+     "dd": -3021,
+     "avg_r": 1.324,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 9187,
+     "p10": 43.2,
+     "f10": 1.0,
+     "p15": 55.3,
+     "f15": 7.3,
+     "p20": 61.2,
+     "f20": 17.0,
+     "dec10": 44.2,
+     "slow_pass": 14.9,
+     "pass_med": 7.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 5.04,
+     "net": 90119,
+     "dd": -3021,
+     "avg_r": 1.324,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 9187,
+     "p10": 43.2,
+     "f10": 1.0,
+     "p15": 55.3,
+     "f15": 7.3,
+     "p20": 61.2,
+     "f20": 17.0,
+     "dec10": 44.2,
+     "slow_pass": 14.9,
+     "pass_med": 7.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_target_amd_target_wide_w_1_25",
+   "title": "LIT live + bias target: amd target wide_w 1.25",
+   "family": "management",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.57 net +48,059 ($7,885/mo) DD -3,632; 2-week pass/fail 52.1/7.6 (Monte Carlo 50.4/5.4), 1 month 72.5/16.5. H2 (check) n=40 2.56/wk PF 2.43 net +12,741 ($3,430/mo) DD -2,009; 2-week pass/fail 50.7/0.0 (Monte Carlo 55.1/5.7), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +19,181 H2 +1,518, 2021-25 reference -427. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": "298 days (amd target wide_w 1.25)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:51",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.71,
+     "net": 60800,
+     "dd": -3632,
+     "avg_r": 1.024,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 394.0,
+     "half": 0,
+     "per_month": 6198,
+     "p10": 37.4,
+     "f10": 4.4,
+     "p15": 51.9,
+     "f15": 11.7,
+     "p20": 58.7,
+     "f20": 18.9,
+     "dec10": 41.8,
+     "slow_pass": 31.4,
+     "pass_med": 11.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.71,
+     "net": 60800,
+     "dd": -3632,
+     "avg_r": 1.024,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 394.0,
+     "half": 0,
+     "per_month": 6198,
+     "p10": 37.4,
+     "f10": 4.4,
+     "p15": 51.9,
+     "f15": 11.7,
+     "p20": 58.7,
+     "f20": 18.9,
+     "dec10": 41.8,
+     "slow_pass": 31.4,
+     "pass_med": 11.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_target_owk_target_wide_w_1_5",
+   "title": "LIT live + bias target: owk target wide_w 1.5",
+   "family": "management",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.96 net +47,482 ($7,790/mo) DD -3,020; 2-week pass/fail 44.5/5.9 (Monte Carlo 46.1/5.5), 1 month 60.6/22.9. H2 (check) n=40 2.56/wk PF 2.23 net +12,981 ($3,495/mo) DD -2,706; 2-week pass/fail 52.2/2.9 (Monte Carlo 53.9/6.0), 1 month 50.8/5.1. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +14,072 H2 -1,225, 2021-25 reference +11,092. Strict test: False; neighbours hold: True.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": "269 days (owk target wide_w 1.5)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:51",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 23.3,
+     "pf": 3.69,
+     "net": 60463,
+     "dd": -3020,
+     "avg_r": 0.871,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 394.0,
+     "half": 0,
+     "per_month": 6164,
+     "p10": 35.4,
+     "f10": 6.8,
+     "p15": 44.2,
+     "f15": 17.5,
+     "p20": 46.6,
+     "f20": 27.2,
+     "dec10": 42.2,
+     "slow_pass": 15.0,
+     "pass_med": 6.0,
+     "b2b": "14/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 23.3,
+     "pf": 3.69,
+     "net": 60463,
+     "dd": -3020,
+     "avg_r": 0.871,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 394.0,
+     "half": 0,
+     "per_month": 6164,
+     "p10": 35.4,
+     "f10": 6.8,
+     "p15": 44.2,
+     "f15": 17.5,
+     "p20": 46.6,
+     "f20": 27.2,
+     "dec10": 42.2,
+     "slow_pass": 15.0,
+     "pass_med": 6.0,
+     "b2b": "14/5"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_target_pdz_20d_target_wide_w_1_5",
+   "title": "LIT live + bias target: pdz_20d target wide_w 1.5",
+   "family": "management",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.0 net +39,700 ($6,513/mo) DD -3,356; 2-week pass/fail 52.9/6.7 (Monte Carlo 52.4/6.8), 1 month 74.3/16.5. H2 (check) n=40 2.56/wk PF 2.29 net +13,681 ($3,683/mo) DD -2,706; 2-week pass/fail 52.2/2.9 (Monte Carlo 56.3/6.1), 1 month 50.8/8.5. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +1,373 H2 +733, 2021-25 reference +1,898. Strict test: False; neighbours hold: True.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": "111 days (pdz_20d target wide_w 1.5)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:52",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.24,
+     "net": 53381,
+     "dd": -3356,
+     "avg_r": 0.787,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 457.0,
+     "half": 0,
+     "per_month": 5442,
+     "p10": 38.8,
+     "f10": 6.8,
+     "p15": 51.0,
+     "f15": 17.0,
+     "p20": 52.4,
+     "f20": 27.7,
+     "dec10": 45.6,
+     "slow_pass": 4.5,
+     "pass_med": 5.0,
+     "b2b": "16/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.24,
+     "net": 53381,
+     "dd": -3356,
+     "avg_r": 0.787,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 457.0,
+     "half": 0,
+     "per_month": 5442,
+     "p10": 38.8,
+     "f10": 6.8,
+     "p15": 51.0,
+     "f15": 17.0,
+     "p20": 52.4,
+     "f20": 27.7,
+     "dec10": 45.6,
+     "slow_pass": 4.5,
+     "pass_med": 5.0,
+     "b2b": "16/5"
     }
    }
   },
@@ -101513,6 +102849,4504 @@
    }
   },
   {
+   "id": "lit_bias_all3_aplus_a_score_1_cut_1_0_0_5",
+   "title": "LIT + all3 + bias aplus: A+ score >= 1 cut 1.0/0.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.85 net +53,116 ($8,714/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 51.9/3.2), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 2.85 net +17,262 ($4,647/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 58.0/3.2), 1 month 52.5/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +0 H2 -117, 2021-25 reference +544. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "A+ score >= 1 cut 1.0/0.5"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.04,
+     "net": 70378,
+     "dd": -3424,
+     "avg_r": 1.105,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 7174,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.04,
+     "net": 70378,
+     "dd": -3424,
+     "avg_r": 1.105,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 7174,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_aplus_a_score_1_step_strong_1_5_0_5",
+   "title": "LIT + all3 + bias aplus: A+ score >= 1 step_strong 1.5/0.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.33 net +50,348 ($8,260/mo) DD -3,823; 2-week pass/fail 56.3/6.7 (Monte Carlo 48.5/5.0), 1 month 77.1/17.4. H2 (check) n=40 2.56/wk PF 2.08 net +13,363 ($3,598/mo) DD -3,417; 2-week pass/fail 46.4/5.8 (Monte Carlo 54.7/7.1), 1 month 44.1/20.3. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +20,532 H2 +5,160, 2021-25 reference +2,756. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "A+ score >= 1 step_strong 1.5/0.5"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 43.3,
+     "pf": 3.31,
+     "net": 63711,
+     "dd": -3823,
+     "avg_r": 0.963,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 486.0,
+     "half": 0,
+     "per_month": 6495,
+     "p10": 40.3,
+     "f10": 11.7,
+     "p15": 50.0,
+     "f15": 22.8,
+     "p20": 55.8,
+     "f20": 30.1,
+     "dec10": 52.0,
+     "slow_pass": 11.2,
+     "pass_med": 7.0,
+     "b2b": "11/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 43.3,
+     "pf": 3.31,
+     "net": 63711,
+     "dd": -3823,
+     "avg_r": 0.963,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 486.0,
+     "half": 0,
+     "per_month": 6495,
+     "p10": 40.3,
+     "f10": 11.7,
+     "p15": 50.0,
+     "f15": 22.8,
+     "p20": 55.8,
+     "f20": 30.1,
+     "dec10": 52.0,
+     "slow_pass": 11.2,
+     "pass_med": 7.0,
+     "b2b": "11/6"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_aplus_a_score_6_up_1_5_1_0",
+   "title": "LIT + all3 + bias aplus: A+ score >= 6 up 1.5/1.0",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.06 net +55,968 ($9,182/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 51.9/3.2), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 2.91 net +17,814 ($4,796/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 58.1/3.2), 1 month 55.9/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +4,499 H2 +1,275, 2021-25 reference -1,438. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "A+ score >= 6 up 1.5/1.0"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.19,
+     "net": 73782,
+     "dd": -3424,
+     "avg_r": 1.082,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 7521,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.19,
+     "net": 73782,
+     "dd": -3424,
+     "avg_r": 1.082,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 7521,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_filter_o830_filter",
+   "title": "LIT + all3 + bias filter: o830 filter",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=76 2.97/wk PF 4.7 net +49,568 ($8,132/mo) DD -3,059; 2-week pass/fail 55.5/2.5 (Monte Carlo 51.5/3.5), 1 month 78.0/13.8. H2 (check) n=36 2.31/wk PF 2.43 net +12,485 ($3,361/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 56.6/3.4), 1 month 50.8/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 -2,024 H2 -690, 2021-25 reference +3,687. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": "557 setups against o830",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:53",
+   "spans": {
+    "2026": {
+     "n": 112,
+     "tpw": 2.72,
+     "wk2": 83,
+     "win": 42.0,
+     "pf": 3.81,
+     "net": 62053,
+     "dd": -3817,
+     "avg_r": 1.102,
+     "stop": 46.1,
+     "worst_day": -1004,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 6326,
+     "p10": 42.7,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 63.1,
+     "f20": 17.0,
+     "dec10": 43.7,
+     "slow_pass": 18.7,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 112,
+     "tpw": 2.72,
+     "wk2": 83,
+     "win": 42.0,
+     "pf": 3.81,
+     "net": 62053,
+     "dd": -3817,
+     "avg_r": 1.102,
+     "stop": 46.1,
+     "worst_day": -1004,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 6326,
+     "p10": 42.7,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 63.1,
+     "f20": 17.0,
+     "dec10": 43.7,
+     "slow_pass": 18.7,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_filter_o930_filter",
+   "title": "LIT + all3 + bias filter: o930 filter",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=77 3.01/wk PF 4.71 net +49,619 ($8,141/mo) DD -3,059; 2-week pass/fail 56.3/2.5 (Monte Carlo 51.7/3.5), 1 month 78.0/11.9. H2 (check) n=38 2.44/wk PF 2.43 net +12,553 ($3,380/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 56.5/3.4), 1 month 52.5/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 -1,674 H2 -551, 2021-25 reference +1,851. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": "414 setups against o930",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:53",
+   "spans": {
+    "2026": {
+     "n": 115,
+     "tpw": 2.79,
+     "wk2": 86,
+     "win": 42.6,
+     "pf": 3.81,
+     "net": 62172,
+     "dd": -3817,
+     "avg_r": 1.09,
+     "stop": 46.0,
+     "worst_day": -1004,
+     "risk": 384.0,
+     "half": 0,
+     "per_month": 6338,
+     "p10": 42.7,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 63.1,
+     "f20": 17.0,
+     "dec10": 43.7,
+     "slow_pass": 18.7,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 115,
+     "tpw": 2.79,
+     "wk2": 86,
+     "win": 42.6,
+     "pf": 3.81,
+     "net": 62172,
+     "dd": -3817,
+     "avg_r": 1.09,
+     "stop": 46.0,
+     "worst_day": -1004,
+     "risk": 384.0,
+     "half": 0,
+     "per_month": 6338,
+     "p10": 42.7,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 63.1,
+     "f20": 17.0,
+     "dec10": 43.7,
+     "slow_pass": 18.7,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_filter_smt_pd_filter",
+   "title": "LIT + all3 + bias filter: smt_pd filter",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.15 net +48,270 ($7,919/mo) DD -3,059; 2-week pass/fail 54.6/3.4 (Monte Carlo 50.3/3.2), 1 month 73.4/12.8. H2 (check) n=38 2.44/wk PF 3.63 net +23,488 ($6,324/mo) DD -2,012; 2-week pass/fail 52.2/0.0 (Monte Carlo 59.0/1.5), 1 month 55.9/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 -3,505 H2 +263, 2021-25 reference +882. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": "32 setups against smt_pd",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:53",
+   "spans": {
+    "2026": {
+     "n": 118,
+     "tpw": 2.86,
+     "wk2": 83,
+     "win": 43.2,
+     "pf": 3.96,
+     "net": 71758,
+     "dd": -3059,
+     "avg_r": 1.061,
+     "stop": 44.6,
+     "worst_day": -1007,
+     "risk": 453.0,
+     "half": 0,
+     "per_month": 7315,
+     "p10": 49.5,
+     "f10": 1.9,
+     "p15": 60.7,
+     "f15": 5.8,
+     "p20": 66.5,
+     "f20": 14.1,
+     "dec10": 51.4,
+     "slow_pass": 18.8,
+     "pass_med": 7.0,
+     "b2b": "16/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 118,
+     "tpw": 2.86,
+     "wk2": 83,
+     "win": 43.2,
+     "pf": 3.96,
+     "net": 71758,
+     "dd": -3059,
+     "avg_r": 1.061,
+     "stop": 44.6,
+     "worst_day": -1007,
+     "risk": 453.0,
+     "half": 0,
+     "per_month": 7315,
+     "p10": 49.5,
+     "f10": 1.9,
+     "p15": 60.7,
+     "f15": 5.8,
+     "p20": 66.5,
+     "f20": 14.1,
+     "dec10": 51.4,
+     "slow_pass": 18.8,
+     "pass_med": 7.0,
+     "b2b": "16/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_followup_draw_all_wide_1_1",
+   "title": "LIT + all3 + bias followup: draw_all wide 1.1",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.9 net +67,357 ($11,051/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 52.4/3.0), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 3.44 net +22,795 ($6,137/mo) DD -3,076; 2-week pass/fail 56.5/0.0 (Monte Carlo 59.1/2.5), 1 month 57.6/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +14,934 H2 +1,345, 2021-25 reference +74. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "318 days (draw_all wide 1.1: target x1.1, no 8R bank on trades with the bias)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:55",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.9,
+     "net": 90152,
+     "dd": -3424,
+     "avg_r": 1.316,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 395.0,
+     "half": 0,
+     "per_month": 9190,
+     "p10": 43.7,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 44.7,
+     "slow_pass": 18.1,
+     "pass_med": 7.0,
+     "b2b": "15/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.9,
+     "net": 90152,
+     "dd": -3424,
+     "avg_r": 1.316,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 395.0,
+     "half": 0,
+     "per_month": 9190,
+     "p10": 43.7,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 44.7,
+     "slow_pass": 18.1,
+     "pass_med": 7.0,
+     "b2b": "15/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_followup_draw_pd_wide_1_1",
+   "title": "LIT + all3 + bias followup: draw_pd wide 1.1",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.58 net +62,349 ($10,229/mo) DD -3,076; 2-week pass/fail 58.0/2.5 (Monte Carlo 52.5/3.1), 1 month 78.0/8.3. H2 (check) n=40 2.56/wk PF 3.48 net +22,912 ($6,169/mo) DD -3,076; 2-week pass/fail 56.5/0.0 (Monte Carlo 59.3/2.5), 1 month 57.6/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +16,616 H2 +1,345, 2021-25 reference +761. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "340 days (draw_pd wide 1.1: target x1.1, no 8R bank on trades with the bias)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:55",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.73,
+     "net": 85261,
+     "dd": -3424,
+     "avg_r": 1.335,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 383.0,
+     "half": 0,
+     "per_month": 8692,
+     "p10": 43.7,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 44.7,
+     "slow_pass": 18.1,
+     "pass_med": 7.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.73,
+     "net": 85261,
+     "dd": -3424,
+     "avg_r": 1.335,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 383.0,
+     "half": 0,
+     "per_month": 8692,
+     "p10": 43.7,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 44.7,
+     "slow_pass": 18.1,
+     "pass_med": 7.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_followup_draw_pdpw_wide_1_1",
+   "title": "LIT + all3 + bias followup: draw_pdpw wide 1.1",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.6 net +63,327 ($10,390/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 52.2/3.0), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 3.41 net +22,704 ($6,112/mo) DD -3,076; 2-week pass/fail 56.5/0.0 (Monte Carlo 59.2/2.6), 1 month 57.6/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +14,233 H2 +1,345, 2021-25 reference +392. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "316 days (draw_pdpw wide 1.1: target x1.1, no 8R bank on trades with the bias)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:55",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.71,
+     "net": 86031,
+     "dd": -3424,
+     "avg_r": 1.298,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 392.0,
+     "half": 0,
+     "per_month": 8770,
+     "p10": 43.7,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 44.7,
+     "slow_pass": 18.1,
+     "pass_med": 7.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.71,
+     "net": 86031,
+     "dd": -3424,
+     "avg_r": 1.298,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 392.0,
+     "half": 0,
+     "per_month": 8770,
+     "p10": 43.7,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 44.7,
+     "slow_pass": 18.1,
+     "pass_med": 7.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_followup_or_dpd_amd_wide_1_25",
+   "title": "LIT + all3 + bias followup: or_dpd_amd wide 1.25",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion (see lit-bias-discretion).",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 6.41 net +66,316 ($10,880/mo) DD -2,053; 2-week pass/fail 58.8/0.0 (Monte Carlo 53.2/2.6), 1 month 78.0/7.3. H2 (check) n=40 2.56/wk PF 2.48 net +13,705 ($3,690/mo) DD -3,055; 2-week pass/fail 56.5/0.0 (Monte Carlo 56.0/3.0), 1 month 57.6/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +27,337 H2 +597, 2021-25 reference +1,225. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "455 days (or_dpd_amd wide 1.25: target x1.25, no 8R bank on trades with the bias)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:03",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.8,
+     "pf": 4.71,
+     "net": 80021,
+     "dd": -3403,
+     "avg_r": 1.491,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 330.0,
+     "half": 0,
+     "per_month": 8157,
+     "p10": 37.4,
+     "f10": 1.0,
+     "p15": 51.0,
+     "f15": 6.3,
+     "p20": 62.6,
+     "f20": 14.1,
+     "dec10": 38.4,
+     "slow_pass": 30.5,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.8,
+     "pf": 4.71,
+     "net": 80021,
+     "dd": -3403,
+     "avg_r": 1.491,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 330.0,
+     "half": 0,
+     "per_month": 8157,
+     "p10": 37.4,
+     "f10": 1.0,
+     "p15": 51.0,
+     "f15": 6.3,
+     "p20": 62.6,
+     "f20": 14.1,
+     "dec10": 38.4,
+     "slow_pass": 30.5,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_meta_b_gbm_1_25_0_75",
+   "title": "LIT + all3 + bias meta: B gbm 1.25/0.75",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.85 net +53,116 ($8,714/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 51.9/3.2), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 3.23 net +18,835 ($5,071/mo) DD -3,005; 2-week pass/fail 53.6/0.0 (Monte Carlo 56.6/1.2), 1 month 50.8/3.4. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +0 H2 -2,105, 2021-25 reference +0. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "B gbm 1.25/0.75"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.24,
+     "net": 71950,
+     "dd": -3354,
+     "avg_r": 1.152,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 378.0,
+     "half": 0,
+     "per_month": 7335,
+     "p10": 40.3,
+     "f10": 0.0,
+     "p15": 52.4,
+     "f15": 5.3,
+     "p20": 62.1,
+     "f20": 16.0,
+     "dec10": 40.3,
+     "slow_pass": 22.3,
+     "pass_med": 8.0,
+     "b2b": "15/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.24,
+     "net": 71950,
+     "dd": -3354,
+     "avg_r": 1.152,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 378.0,
+     "half": 0,
+     "per_month": 7335,
+     "p10": 40.3,
+     "f10": 0.0,
+     "p15": 52.4,
+     "f15": 5.3,
+     "p20": 62.1,
+     "f20": 16.0,
+     "dec10": 40.3,
+     "slow_pass": 22.3,
+     "pass_med": 8.0,
+     "b2b": "15/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_meta_b_logistic_1_25_0_75",
+   "title": "LIT + all3 + bias meta: B logistic 1.25/0.75",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.85 net +53,116 ($8,714/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 51.9/3.2), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 4.0 net +23,725 ($6,388/mo) DD -2,094; 2-week pass/fail 52.2/0.0 (Monte Carlo 56.6/1.1), 1 month 49.2/3.4. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +0 H2 -4,168, 2021-25 reference +0. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "B logistic 1.25/0.75"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.54,
+     "net": 76841,
+     "dd": -3059,
+     "avg_r": 1.168,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 381.0,
+     "half": 0,
+     "per_month": 7833,
+     "p10": 43.2,
+     "f10": 0.0,
+     "p15": 54.9,
+     "f15": 3.9,
+     "p20": 64.6,
+     "f20": 12.1,
+     "dec10": 43.2,
+     "slow_pass": 29.8,
+     "pass_med": 9.0,
+     "b2b": "16/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.54,
+     "net": 76841,
+     "dd": -3059,
+     "avg_r": 1.168,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 381.0,
+     "half": 0,
+     "per_month": 7833,
+     "p10": 43.2,
+     "f10": 0.0,
+     "p15": 54.9,
+     "f15": 3.9,
+     "p20": 64.6,
+     "f20": 12.1,
+     "dec10": 43.2,
+     "slow_pass": 29.8,
+     "pass_med": 9.0,
+     "b2b": "16/3"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_meta_b_logistic_1_5_0_5",
+   "title": "LIT + all3 + bias meta: B logistic 1.5/0.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.85 net +53,116 ($8,714/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 51.9/3.2), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 4.15 net +23,165 ($6,237/mo) DD -2,059; 2-week pass/fail 50.7/0.0 (Monte Carlo 51.2/1.2), 1 month 49.2/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +0 H2 -5,904, 2021-25 reference +0. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "B logistic 1.5/0.5"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.61,
+     "net": 76281,
+     "dd": -3059,
+     "avg_r": 1.199,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 370.0,
+     "half": 0,
+     "per_month": 7776,
+     "p10": 44.2,
+     "f10": 0.0,
+     "p15": 56.8,
+     "f15": 3.9,
+     "p20": 63.1,
+     "f20": 12.1,
+     "dec10": 44.2,
+     "slow_pass": 27.3,
+     "pass_med": 9.0,
+     "b2b": "16/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.61,
+     "net": 76281,
+     "dd": -3059,
+     "avg_r": 1.199,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 370.0,
+     "half": 0,
+     "per_month": 7776,
+     "p10": 44.2,
+     "f10": 0.0,
+     "p15": 56.8,
+     "f15": 3.9,
+     "p20": 63.1,
+     "f20": 12.1,
+     "dec10": 44.2,
+     "slow_pass": 27.3,
+     "pass_med": 9.0,
+     "b2b": "16/3"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_size_ms_4h_size_up_0_5",
+   "title": "LIT + all3 + bias size: ms_4h size up 0.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.78 net +53,957 ($8,852/mo) DD -3,313; 2-week pass/fail 56.3/4.2 (Monte Carlo 48.8/4.0), 1 month 76.1/15.6. H2 (check) n=40 2.56/wk PF 2.91 net +18,213 ($4,903/mo) DD -3,076; 2-week pass/fail 46.4/0.0 (Monte Carlo 56.5/3.6), 1 month 47.5/13.6. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +16,182 H2 +2,069, 2021-25 reference +4,601. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "ms_4h with x1.5 / against x1.0"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:52",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.03,
+     "net": 72170,
+     "dd": -3424,
+     "avg_r": 1.053,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 380.0,
+     "half": 0,
+     "per_month": 7357,
+     "p10": 39.3,
+     "f10": 1.5,
+     "p15": 52.9,
+     "f15": 10.2,
+     "p20": 60.7,
+     "f20": 17.5,
+     "dec10": 40.8,
+     "slow_pass": 18.7,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.03,
+     "net": 72170,
+     "dd": -3424,
+     "avg_r": 1.053,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 380.0,
+     "half": 0,
+     "per_month": 7357,
+     "p10": 39.3,
+     "f10": 1.5,
+     "p15": 52.9,
+     "f15": 10.2,
+     "p20": 60.7,
+     "f20": 17.5,
+     "dec10": 40.8,
+     "slow_pass": 18.7,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_size_smt_pd_size_rev_0_25",
+   "title": "LIT + all3 + bias size: smt_pd size rev 0.25",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.29 net +54,040 ($8,866/mo) DD -2,096; 2-week pass/fail 58.0/1.7 (Monte Carlo 52.0/2.9), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 3.44 net +19,360 ($5,212/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 56.4/2.2), 1 month 49.2/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +798 H2 -2,594, 2021-25 reference +232. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "smt_pd with x0.75 / against x1.25"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:52",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.8,
+     "pf": 4.58,
+     "net": 73400,
+     "dd": -3425,
+     "avg_r": 1.14,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 352.0,
+     "half": 0,
+     "per_month": 7483,
+     "p10": 42.7,
+     "f10": 1.0,
+     "p15": 56.3,
+     "f15": 4.9,
+     "p20": 64.6,
+     "f20": 14.1,
+     "dec10": 43.7,
+     "slow_pass": 18.9,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.8,
+     "pf": 4.58,
+     "net": 73400,
+     "dd": -3425,
+     "avg_r": 1.14,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 352.0,
+     "half": 0,
+     "per_month": 7483,
+     "p10": 42.7,
+     "f10": 1.0,
+     "p15": 56.3,
+     "f15": 4.9,
+     "p20": 64.6,
+     "f20": 14.1,
+     "dec10": 43.7,
+     "slow_pass": 18.9,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_all3_size_vote2_size_up_0_5",
+   "title": "LIT + all3 + bias size: vote2 size up 0.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.05 net +55,071 ($9,035/mo) DD -3,059; 2-week pass/fail 56.3/4.2 (Monte Carlo 50.3/3.6), 1 month 77.1/13.8. H2 (check) n=40 2.56/wk PF 2.88 net +17,708 ($4,767/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 58.0/3.3), 1 month 54.2/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +7,665 H2 +2,531, 2021-25 reference +2,820. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "vote2 with x1.5 / against x1.0"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:52",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.16,
+     "net": 72779,
+     "dd": -3424,
+     "avg_r": 1.078,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 378.0,
+     "half": 0,
+     "per_month": 7419,
+     "p10": 40.3,
+     "f10": 1.0,
+     "p15": 53.4,
+     "f15": 7.3,
+     "p20": 61.2,
+     "f20": 17.0,
+     "dec10": 41.3,
+     "slow_pass": 18.5,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.16,
+     "net": 72779,
+     "dd": -3424,
+     "avg_r": 1.078,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 378.0,
+     "half": 0,
+     "per_month": 7419,
+     "p10": 40.3,
+     "f10": 1.0,
+     "p15": 53.4,
+     "f15": 7.3,
+     "p20": 61.2,
+     "f20": 17.0,
+     "dec10": 41.3,
+     "slow_pass": 18.5,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_aplus_a_score_4_up_1_5_1_0",
+   "title": "LIT live + bias aplus: A+ score >= 4 up 1.5/1.0",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.43 net +38,160 ($6,261/mo) DD -3,671; 2-week pass/fail 52.9/9.2 (Monte Carlo 51.2/8.2), 1 month 72.5/18.3. H2 (check) n=40 2.56/wk PF 2.16 net +10,564 ($2,844/mo) DD -2,493; 2-week pass/fail 50.7/4.3 (Monte Carlo 53.2/7.3), 1 month 49.2/8.5. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +13,668 H2 +3,841, 2021-25 reference -5,281. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "A+ score >= 4 up 1.5/1.0"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:53",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.96,
+     "net": 48724,
+     "dd": -3671,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 420.0,
+     "half": 0,
+     "per_month": 4967,
+     "p10": 36.9,
+     "f10": 8.3,
+     "p15": 51.9,
+     "f15": 18.4,
+     "p20": 56.8,
+     "f20": 22.3,
+     "dec10": 45.2,
+     "slow_pass": 27.2,
+     "pass_med": 10.0,
+     "b2b": "12/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.96,
+     "net": 48724,
+     "dd": -3671,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 420.0,
+     "half": 0,
+     "per_month": 4967,
+     "p10": 36.9,
+     "f10": 8.3,
+     "p15": 51.9,
+     "f15": 18.4,
+     "p20": 56.8,
+     "f20": 22.3,
+     "dec10": 45.2,
+     "slow_pass": 27.2,
+     "pass_med": 10.0,
+     "b2b": "12/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_aplus_a_score_6_up_1_5_1_0",
+   "title": "LIT live + bias aplus: A+ score >= 6 up 1.5/1.0",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.76 net +38,155 ($6,260/mo) DD -3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.5/7.0), 1 month 72.5/16.5. H2 (check) n=40 2.56/wk PF 2.24 net +10,612 ($2,857/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +3,095 H2 +939, 2021-25 reference -1,505. Strict test: False; neighbours hold: True.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "A+ score >= 6 up 1.5/1.0"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:53",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.18,
+     "net": 48767,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 436.0,
+     "half": 0,
+     "per_month": 4971,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 52.4,
+     "f15": 12.6,
+     "p20": 59.2,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 26.5,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.18,
+     "net": 48767,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 436.0,
+     "half": 0,
+     "per_month": 4971,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 52.4,
+     "f15": 12.6,
+     "p20": 59.2,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 26.5,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_aplus_a_without_disp_above_below_the_h1_median_3",
+   "title": "LIT live + bias aplus: A+ without disp: above / below the H1 median 3",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.92 net +39,143 ($6,422/mo) DD -3,358; 2-week pass/fail 51.3/5.0 (Monte Carlo 46.9/4.5), 1 month 70.6/10.1. H2 (check) n=40 2.56/wk PF 2.89 net +13,177 ($3,548/mo) DD -2,131; 2-week pass/fail 52.2/0.0 (Monte Carlo 54.2/2.9), 1 month 47.5/3.4. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +4,876 H2 +1,571, 2021-25 reference -2,675. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "A+ without disp: above / below the H1 median 3"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:53",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.96,
+     "net": 39103,
+     "dd": -3230,
+     "avg_r": 0.726,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 301.0,
+     "half": 0,
+     "per_month": 3986,
+     "p10": 31.1,
+     "f10": 1.9,
+     "p15": 45.1,
+     "f15": 2.9,
+     "p20": 53.9,
+     "f20": 4.9,
+     "dec10": 33.0,
+     "slow_pass": 42.6,
+     "pass_med": 13.0,
+     "b2b": "9/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.96,
+     "net": 39103,
+     "dd": -3230,
+     "avg_r": 0.726,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 301.0,
+     "half": 0,
+     "per_month": 3986,
+     "p10": 31.1,
+     "f10": 1.9,
+     "p15": 45.1,
+     "f15": 2.9,
+     "p20": 53.9,
+     "f20": 4.9,
+     "dec10": 33.0,
+     "slow_pass": 42.6,
+     "pass_med": 13.0,
+     "b2b": "9/3"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_filter_amd_ny_filter",
+   "title": "LIT live + bias filter: amd_ny filter",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=77 3.01/wk PF 3.56 net +35,286 ($5,789/mo) DD -3,612; 2-week pass/fail 51.3/9.2 (Monte Carlo 49.6/7.1), 1 month 72.5/16.5. H2 (check) n=36 2.31/wk PF 3.37 net +15,273 ($4,112/mo) DD -2,493; 2-week pass/fail 52.2/2.9 (Monte Carlo 55.2/3.0), 1 month 45.8/3.4. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 -2,178 H2 +503, 2021-25 reference +1,180. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": "240 setups against amd_ny",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:52",
+   "spans": {
+    "2026": {
+     "n": 113,
+     "tpw": 2.74,
+     "wk2": 86,
+     "win": 24.8,
+     "pf": 3.5,
+     "net": 50559,
+     "dd": -3612,
+     "avg_r": 0.732,
+     "stop": 45.5,
+     "worst_day": -1004,
+     "risk": 438.0,
+     "half": 0,
+     "per_month": 5154,
+     "p10": 39.8,
+     "f10": 5.3,
+     "p15": 52.4,
+     "f15": 13.6,
+     "p20": 56.8,
+     "f20": 22.3,
+     "dec10": 45.1,
+     "slow_pass": 28.5,
+     "pass_med": 9.0,
+     "b2b": "16/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 113,
+     "tpw": 2.74,
+     "wk2": 86,
+     "win": 24.8,
+     "pf": 3.5,
+     "net": 50559,
+     "dd": -3612,
+     "avg_r": 0.732,
+     "stop": 45.5,
+     "worst_day": -1004,
+     "risk": 438.0,
+     "half": 0,
+     "per_month": 5154,
+     "p10": 39.8,
+     "f10": 5.3,
+     "p15": 52.4,
+     "f15": 13.6,
+     "p20": 56.8,
+     "f20": 22.3,
+     "dec10": 45.1,
+     "slow_pass": 28.5,
+     "pass_med": 9.0,
+     "b2b": "16/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_filter_o930_filter",
+   "title": "LIT live + bias filter: o930 filter",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=77 3.01/wk PF 3.3 net +32,655 ($5,358/mo) DD -3,612; 2-week pass/fail 51.3/9.2 (Monte Carlo 49.6/7.2), 1 month 72.5/16.5. H2 (check) n=38 2.44/wk PF 2.03 net +8,540 ($2,299/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 52.6/7.0), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 -1,881 H2 -551, 2021-25 reference +1,853. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": "414 setups against o930",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:52",
+   "spans": {
+    "2026": {
+     "n": 115,
+     "tpw": 2.79,
+     "wk2": 86,
+     "win": 24.3,
+     "pf": 2.83,
+     "net": 41196,
+     "dd": -3612,
+     "avg_r": 0.691,
+     "stop": 46.0,
+     "worst_day": -1004,
+     "risk": 435.0,
+     "half": 0,
+     "per_month": 4200,
+     "p10": 35.9,
+     "f10": 5.3,
+     "p15": 48.5,
+     "f15": 13.6,
+     "p20": 52.9,
+     "f20": 22.3,
+     "dec10": 41.2,
+     "slow_pass": 30.1,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 115,
+     "tpw": 2.79,
+     "wk2": 86,
+     "win": 24.3,
+     "pf": 2.83,
+     "net": 41196,
+     "dd": -3612,
+     "avg_r": 0.691,
+     "stop": 46.0,
+     "worst_day": -1004,
+     "risk": 435.0,
+     "half": 0,
+     "per_month": 4200,
+     "p10": 35.9,
+     "f10": 5.3,
+     "p15": 48.5,
+     "f15": 13.6,
+     "p20": 52.9,
+     "f20": 22.3,
+     "dec10": 41.2,
+     "slow_pass": 30.1,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_filter_smt_d_filter",
+   "title": "LIT live + bias filter: smt_d filter",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=78 3.05/wk PF 3.75 net +37,394 ($6,135/mo) DD -3,423; 2-week pass/fail 52.9/8.4 (Monte Carlo 50.6/6.5), 1 month 73.4/12.8. H2 (check) n=36 2.31/wk PF 1.57 net +4,694 ($1,264/mo) DD -2,493; 2-week pass/fail 49.3/2.9 (Monte Carlo 49.0/5.9), 1 month 47.5/3.4. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 -393 H2 -3,679, 2021-25 reference -3,550. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": "154 setups against smt_d",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:52",
+   "spans": {
+    "2026": {
+     "n": 114,
+     "tpw": 2.77,
+     "wk2": 81,
+     "win": 25.4,
+     "pf": 2.93,
+     "net": 42087,
+     "dd": -3424,
+     "avg_r": 0.695,
+     "stop": 44.6,
+     "worst_day": -1004,
+     "risk": 436.0,
+     "half": 0,
+     "per_month": 4290,
+     "p10": 32.5,
+     "f10": 5.3,
+     "p15": 46.1,
+     "f15": 12.1,
+     "p20": 51.0,
+     "f20": 18.4,
+     "dec10": 37.8,
+     "slow_pass": 28.0,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 114,
+     "tpw": 2.77,
+     "wk2": 81,
+     "win": 25.4,
+     "pf": 2.93,
+     "net": 42087,
+     "dd": -3424,
+     "avg_r": 0.695,
+     "stop": 44.6,
+     "worst_day": -1004,
+     "risk": 436.0,
+     "half": 0,
+     "per_month": 4290,
+     "p10": 32.5,
+     "f10": 5.3,
+     "p15": 46.1,
+     "f15": 12.1,
+     "p20": 51.0,
+     "f20": 18.4,
+     "dec10": 37.8,
+     "slow_pass": 28.0,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_followup_amd_wide_1_3",
+   "title": "LIT live + bias followup: amd wide 1.3",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.64 net +48,991 ($8,038/mo) DD -3,632; 2-week pass/fail 52.1/7.6 (Monte Carlo 50.2/5.4), 1 month 72.5/16.5. H2 (check) n=40 2.56/wk PF 2.43 net +12,828 ($3,454/mo) DD -2,009; 2-week pass/fail 49.3/0.0 (Monte Carlo 50.3/5.5), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +20,766 H2 +1,388, 2021-25 reference +937. Strict test: False; neighbours hold: True.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": "298 days (amd wide 1.3: target x1.3, no 8R bank on trades with the bias)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:55",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.76,
+     "net": 61819,
+     "dd": -3632,
+     "avg_r": 1.035,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 394.0,
+     "half": 0,
+     "per_month": 6302,
+     "p10": 37.4,
+     "f10": 4.4,
+     "p15": 51.9,
+     "f15": 11.7,
+     "p20": 58.7,
+     "f20": 18.9,
+     "dec10": 41.8,
+     "slow_pass": 31.4,
+     "pass_med": 11.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.76,
+     "net": 61819,
+     "dd": -3632,
+     "avg_r": 1.035,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 394.0,
+     "half": 0,
+     "per_month": 6302,
+     "p10": 37.4,
+     "f10": 4.4,
+     "p15": 51.9,
+     "f15": 11.7,
+     "p20": 58.7,
+     "f20": 18.9,
+     "dec10": 41.8,
+     "slow_pass": 31.4,
+     "pass_med": 11.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_followup_or_dpd_amd_wide_1_3",
+   "title": "LIT live + bias followup: or_dpd_amd wide 1.3",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.33 net +39,976 ($6,559/mo) DD -3,649; 2-week pass/fail 56.3/7.6 (Monte Carlo 52.5/5.2), 1 month 70.6/17.4. H2 (check) n=40 2.56/wk PF 2.78 net +12,913 ($3,477/mo) DD -2,009; 2-week pass/fail 50.7/0.0 (Monte Carlo 45.1/5.3), 1 month 45.8/3.4. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +18,529 H2 +67, 2021-25 reference +417. Strict test: True; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": "455 days (or_dpd_amd wide 1.3: target x1.3, no 8R bank on trades with the bias)",
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:55",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 24.2,
+     "pf": 3.74,
+     "net": 52889,
+     "dd": -3649,
+     "avg_r": 0.957,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 357.0,
+     "half": 0,
+     "per_month": 5392,
+     "p10": 37.4,
+     "f10": 2.9,
+     "p15": 48.5,
+     "f15": 9.2,
+     "p20": 53.4,
+     "f20": 14.6,
+     "dec10": 40.3,
+     "slow_pass": 40.8,
+     "pass_med": 12.0,
+     "b2b": "12/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 24.2,
+     "pf": 3.74,
+     "net": 52889,
+     "dd": -3649,
+     "avg_r": 0.957,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 357.0,
+     "half": 0,
+     "per_month": 5392,
+     "p10": 37.4,
+     "f10": 2.9,
+     "p15": 48.5,
+     "f15": 9.2,
+     "p20": 53.4,
+     "f20": 14.6,
+     "dec10": 40.3,
+     "slow_pass": 40.8,
+     "pass_med": 12.0,
+     "b2b": "12/3"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_meta_c_gbm_1_25_0_75",
+   "title": "LIT live + bias meta: C gbm 1.25/0.75",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.66 net +36,723 ($6,025/mo) DD -3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.5/7.0), 1 month 72.5/16.5. H2 (check) n=40 2.56/wk PF 2.56 net +11,395 ($3,068/mo) DD -2,109; 2-week pass/fail 50.7/0.0 (Monte Carlo 52.4/1.8), 1 month 50.8/0.0. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +0 H2 -185, 2021-25 reference +0. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "C gbm 1.25/0.75"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.28,
+     "net": 48117,
+     "dd": -3612,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -1003,
+     "risk": 420.0,
+     "half": 0,
+     "per_month": 4905,
+     "p10": 39.8,
+     "f10": 3.9,
+     "p15": 53.9,
+     "f15": 6.8,
+     "p20": 59.2,
+     "f20": 15.5,
+     "dec10": 43.7,
+     "slow_pass": 26.5,
+     "pass_med": 9.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.28,
+     "net": 48117,
+     "dd": -3612,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -1003,
+     "risk": 420.0,
+     "half": 0,
+     "per_month": 4905,
+     "p10": 39.8,
+     "f10": 3.9,
+     "p15": 53.9,
+     "f15": 6.8,
+     "p20": 59.2,
+     "f20": 15.5,
+     "dec10": 43.7,
+     "slow_pass": 26.5,
+     "pass_med": 9.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_meta_c_logistic_1_25_0_75",
+   "title": "LIT live + bias meta: C logistic 1.25/0.75",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.66 net +36,723 ($6,025/mo) DD -3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.5/7.0), 1 month 72.5/16.5. H2 (check) n=40 2.56/wk PF 2.58 net +11,959 ($3,220/mo) DD -2,054; 2-week pass/fail 50.7/0.0 (Monte Carlo 46.5/1.9), 1 month 50.8/0.0. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +0 H2 -43, 2021-25 reference +0. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "C logistic 1.25/0.75"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.28,
+     "net": 48682,
+     "dd": -3612,
+     "avg_r": 0.722,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 413.0,
+     "half": 0,
+     "per_month": 4963,
+     "p10": 42.7,
+     "f10": 3.9,
+     "p15": 55.8,
+     "f15": 6.3,
+     "p20": 60.7,
+     "f20": 13.6,
+     "dec10": 46.6,
+     "slow_pass": 23.8,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.28,
+     "net": 48682,
+     "dd": -3612,
+     "avg_r": 0.722,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 413.0,
+     "half": 0,
+     "per_month": 4963,
+     "p10": 42.7,
+     "f10": 3.9,
+     "p15": 55.8,
+     "f15": 6.3,
+     "p20": 60.7,
+     "f20": 13.6,
+     "dec10": 46.6,
+     "slow_pass": 23.8,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_meta_c_logistic_1_5_0_5",
+   "title": "LIT live + bias meta: C logistic 1.5/0.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.66 net +36,723 ($6,025/mo) DD -3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.5/7.0), 1 month 72.5/16.5. H2 (check) n=40 2.56/wk PF 2.62 net +12,338 ($3,322/mo) DD -2,012; 2-week pass/fail 50.7/0.0 (Monte Carlo 46.4/1.3), 1 month 49.2/0.0. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +0 H2 +2,292, 2021-25 reference +0. Strict test: False; neighbours hold: None.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "C logistic 1.5/0.5"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:54",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.29,
+     "net": 49060,
+     "dd": -3612,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -1003,
+     "risk": 401.0,
+     "half": 0,
+     "per_month": 5001,
+     "p10": 39.3,
+     "f10": 3.9,
+     "p15": 53.4,
+     "f15": 6.3,
+     "p20": 58.3,
+     "f20": 12.6,
+     "dec10": 43.2,
+     "slow_pass": 23.6,
+     "pass_med": 9.0,
+     "b2b": "15/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.29,
+     "net": 49060,
+     "dd": -3612,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -1003,
+     "risk": 401.0,
+     "half": 0,
+     "per_month": 5001,
+     "p10": 39.3,
+     "f10": 3.9,
+     "p15": 53.4,
+     "f15": 6.3,
+     "p20": 58.3,
+     "f20": 12.6,
+     "dec10": 43.2,
+     "slow_pass": 23.6,
+     "pass_med": 9.0,
+     "b2b": "15/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_size_amd_ny_size_up_0_25",
+   "title": "LIT live + bias size: amd_ny size up 0.25",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.68 net +36,961 ($6,064/mo) DD -3,612; 2-week pass/fail 54.6/9.2 (Monte Carlo 51.9/7.5), 1 month 72.5/18.3. H2 (check) n=40 2.56/wk PF 2.13 net +9,718 ($2,616/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +728 H2 +44, 2021-25 reference +170. Strict test: False; neighbours hold: True.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "amd_ny with x1.25 / against x1.0"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:51",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.09,
+     "net": 46678,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 436.0,
+     "half": 0,
+     "per_month": 4758,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 13.1,
+     "p20": 54.4,
+     "f20": 22.3,
+     "dec10": 43.2,
+     "slow_pass": 28.8,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.09,
+     "net": 46678,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 436.0,
+     "half": 0,
+     "per_month": 4758,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 13.1,
+     "p20": 54.4,
+     "f20": 22.3,
+     "dec10": 43.2,
+     "slow_pass": 28.8,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_size_amd_ny_size_up_0_5",
+   "title": "LIT live + bias size: amd_ny size up 0.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.66 net +36,882 ($6,051/mo) DD -3,612; 2-week pass/fail 58.8/9.2 (Monte Carlo 53.9/7.4), 1 month 76.1/18.3. H2 (check) n=40 2.56/wk PF 2.14 net +9,761 ($2,628/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +1,386 H2 +88, 2021-25 reference +148. Strict test: False; neighbours hold: True.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "amd_ny with x1.5 / against x1.0"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:51",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.08,
+     "net": 46643,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 436.0,
+     "half": 0,
+     "per_month": 4755,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 13.1,
+     "p20": 54.4,
+     "f20": 22.3,
+     "dec10": 43.2,
+     "slow_pass": 28.8,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.08,
+     "net": 46643,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 436.0,
+     "half": 0,
+     "per_month": 4755,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 13.1,
+     "p20": 54.4,
+     "f20": 22.3,
+     "dec10": 43.2,
+     "slow_pass": 28.8,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_size_draw_pd_size_tilt_0_4",
+   "title": "LIT live + bias size: draw_pd size tilt 0.4",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.25 net +38,086 ($6,248/mo) DD -2,433; 2-week pass/fail 28.6/0.0 (Monte Carlo 33.0/2.7), 1 month 45.9/6.4. H2 (check) n=40 2.56/wk PF 2.47 net +10,299 ($2,773/mo) DD -2,532; 2-week pass/fail 40.6/0.0 (Monte Carlo 42.9/1.5), 1 month 39.0/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 -3,535 H2 -576, 2021-25 reference -2,545. Strict test: False; neighbours hold: False.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "bias_size": "draw_pd with x1.4 / against x0.6"
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:51",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 4.03,
+     "net": 48384,
+     "dd": -2695,
+     "avg_r": 0.719,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 223.0,
+     "half": 0,
+     "per_month": 4932,
+     "p10": 35.0,
+     "f10": 0.0,
+     "p15": 47.6,
+     "f15": 0.0,
+     "p20": 52.9,
+     "f20": 3.4,
+     "dec10": 35.0,
+     "slow_pass": 28.5,
+     "pass_med": 10.0,
+     "b2b": "10/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 4.03,
+     "net": 48384,
+     "dd": -2695,
+     "avg_r": 0.719,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 223.0,
+     "half": 0,
+     "per_month": 4932,
+     "p10": 35.0,
+     "f10": 0.0,
+     "p15": 47.6,
+     "f15": 0.0,
+     "p20": 52.9,
+     "f20": 3.4,
+     "dec10": 35.0,
+     "slow_pass": 28.5,
+     "pass_med": 10.0,
+     "b2b": "10/3"
+    }
+   }
+  },
+  {
    "id": "lit_big_scale_half_imm",
    "title": "imm add 1.0 start 0.5",
    "family": "risk",
@@ -143406,6 +149240,304 @@
      "slow_pass": 40.3,
      "pass_med": 12.0,
      "b2b": "14/5"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_ref_all3",
+   "title": "LIT + all3 on the eval path (bias study reference)",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "info",
+   "verdict": "H1 n=80 3.12/wk PF 4.85 net +53,116 ($8,714/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 51.9/3.2), 1 month 78.0/11.9. H2 n=40 2.56/wk PF 2.85 net +17,262 ($4,647/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 58.1/3.2), 1 month 54.2/0.0.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:51",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.04,
+     "net": 70378,
+     "dd": -3424,
+     "avg_r": 1.105,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 7174,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.04,
+     "net": 70378,
+     "dd": -3424,
+     "avg_r": 1.105,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 7174,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_bias_ref_base",
+   "title": "LIT live on the eval path (bias study reference)",
+   "family": "risk",
+   "question": "Owner 2026-10-20: trading with bias and discretion - daily-bias methods, an A+ checklist and meta-labeling as size, target or filter on today's LIT, on the real eval path, alone and on top of t_check + scale_in + be_off.",
+   "status": "info",
+   "verdict": "H1 n=80 3.12/wk PF 3.66 net +36,723 ($6,025/mo) DD -3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.5/7.0), 1 month 72.5/16.5. H2 n=40 2.56/wk PF 2.13 net +9,674 ($2,605/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8.",
+   "writeup": "lit-bias-discretion",
+   "tags": [
+    "lit",
+    "lit_bias"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:51",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.07,
+     "net": 46397,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4730,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.07,
+     "net": 46397,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4730,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
     }
    }
   },

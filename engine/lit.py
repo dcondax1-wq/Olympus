@@ -807,6 +807,14 @@ DEFAULTS = {
                                  # open - 1 tick, "TARGET"). The day read is made outside from bars that closed before t.
     "entry_delay": 0,            # research only (robustness, tools/lit_batch3b.py): the 1m-CISD entry fills n bars later (at the
                                  # open of bar k + 1 + n; a stop / target touch in between = no trade). 0 = today.
+    "bias_tgt": None,            # wider target with the daily bias (research/writeups/lit-bias-discretion.md; off = None; NOT adopted,
+                                 # a lead for a forward paper check): {"feat": "or_dpd_amd", "tgt_m": 1.25, "max_rr": None}: when
+                                 # the setup is WITH the bias at its trigger bar (bias_with below), the VIX-band distance x tgt_m
+                                 # and the bank at max_rr R (None = no bank), set after the fill like ctx_day (the setup, limit,
+                                 # cancel and 1.5R check stay on today's band, so the trade list does not change)
+    "skip_keys": None,           # research only (tools/lit_bias.py, research/writeups/lit-bias-discretion.md; off = None): a list of
+                                 # [day, trigger bar i, dir] setups to skip (a bias filter decided before the entry); a skipped
+                                 # setup leaves the day free, like the Monday rule
     "fills": None,               # realistic fill model {} / {...}: engine/lit_fills.py FILL_DEFAULTS (live bot latency, market
                                  # entry at the price when the order reaches CME, stop slippage by hour and bar range, target
                                  # limit needs a trade-through, breakeven lag, MFFU commission). Ignored by the live loop.
@@ -1278,6 +1286,41 @@ def monday_block(M: Market, z):
     return (took_hi and z["dir"] == 1) or (took_lo and z["dir"] == -1)
 
 
+def bias_with(M: Market, z, feat="or_dpd_amd"):
+    """Daily bias at the setup's trigger bar i (bars <= i only) vs the setup's direction: +1 with, -1 against, 0 none
+    (tools/lit_bias.py features draw_pd / amd; research/writeups/lit-bias-discretion.md).
+      draw_pd     the nearer of the still-untaken PDH / PDL (from the close of bar i) is on the target side
+      amd         Power of 3: after the 18:00-00:00 Asia box, the session took the Asia low (and not the high) = bullish,
+                  the high (and not the low) = bearish
+      or_dpd_amd  +1 when either says with, else -1 when either says against, else 0"""
+    if feat == "or_dpd_amd":
+        a, b = bias_with(M, z, "draw_pd"), bias_with(M, z, "amd")
+        return 1 if (a > 0 or b > 0) else (-1 if (a < 0 or b < 0) else 0)
+    x = M.ctx[z["k"]]
+    i, d, s = int(z["i"]), int(z["dir"]), x["s"]
+    if feat == "draw_pd":
+        if "pdh" not in x:
+            return 0
+        px = float(M.c[i])
+        hi, lo = float(M.h[s:i + 1].max()), float(M.l[s:i + 1].min())
+        up = [abs(x["pdh"] - px)] if not hi > x["pdh"] else []
+        dn = [abs(px - x["pdl"])] if not lo < x["pdl"] else []
+        if not up and not dn:
+            return 0
+        tg, op = (up, dn) if d == 1 else (dn, up)
+        return 1 if (min(tg) if tg else np.inf) < (min(op) if op else np.inf) else -1
+    if feat == "amd":
+        a18 = x.get("asia18")
+        if not a18 or i <= a18[2]:
+            return 0
+        took_hi = bool(M.h[a18[2] + 1:i + 1].max() > a18[0])
+        took_lo = bool(M.l[a18[2] + 1:i + 1].min() < a18[1])
+        if took_hi == took_lo:
+            return 0
+        return d if took_lo else -d
+    raise ValueError(feat)
+
+
 def monday_state(M: Market, k, upto):
     """Today's Monday rule for the dashboards: None (not Monday / no Friday levels), "both", "none", "high" (Friday's high
     taken: shorts only) or "low" (Friday's low taken: longs only), seen by bar `upto`."""
@@ -1378,6 +1421,7 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
     pending, signals, enter_now = [], [], []
     buf = P["stop_buf"]
     P0, rb, last = P, P.get("re_be"), {}
+    skip = {(str(a), int(b), int(c)) for a, b, c in P["skip_keys"]} if P.get("skip_keys") else None
     for z in cands:
         if sset is not None and z["day"] not in sset:
             continue
@@ -1402,6 +1446,8 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
         if not z.get("pre_ok") and not setup_ok(z, P, names):
             continue
         if P.get("monday") and monday_block(M, z):
+            continue
+        if skip and (z["day"], int(z["i"]), int(z["dir"])) in skip:
             continue
         mk = z.get("mkt")                    # a market-entry candidate (research: tools/lit_gaps.py opening model)
         ep = mk["entry_d"] if mk else min(float(z["ref_d"]), z["trig_c"])
@@ -1434,7 +1480,12 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
         if mk and mk.get("tf", 1) == 1 and not use1:
             continue
         tgt = ("lvl", ep + tp, fb) if P.get("cisd1m") else ("pts", tp)
-        t = simulate_x(M, B, z, ep, tgt, stop, P, live=live)
+        Pz = P
+        if P.get("bias_tgt") and not fb and bias_with(M, z, P["bias_tgt"].get("feat", "or_dpd_amd")) > 0:
+            bt = P["bias_tgt"]                 # with the bias: the day's target re-set after the fill (as ctx_day does)
+            Pz = {**P, "ctx_day": {**(P.get("ctx_day") or {}),
+                                   z["day"]: {"tgt_m": float(bt.get("tgt_m", 1.25)), "max_rr": bt.get("max_rr")}}}
+        t = simulate_x(M, B, z, ep, tgt, stop, Pz, live=live)
         if live:
             d = z["dir"]
             signals.append({"t": int(M.t[z["entry_i"]]), "day": z["day"], "dir": d, "limit_px": round(ep * d, 2),

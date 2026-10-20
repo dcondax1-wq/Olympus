@@ -297,11 +297,12 @@ def _load():
 
 def check():
     T = run_v({}, "live")
-    r = rl.load("lit_live")
+    # the live run without the three upgrades: lit_live itself has them on since 2026-10-20
+    r = rl.load("lit_live_2026-10-18")
     Tr = [dict(zip(r["trade_cols"], a)) for a in r["trades"]]
     ka = [(t["day"], int(t["entry_t"]), round(t["pnl"], 2)) for t in Tr]
     kb = [(t["day"], int(t["entry_t"]), round(t["pnl"], 2)) for t in T]
-    print(f"options off: {len(kb)} trades vs lit_live {len(ka)}; identical {ka == kb}", flush=True)
+    print(f"options off: {len(kb)} trades vs lit_live_2026-10-18 {len(ka)}; identical {ka == kb}", flush=True)
     b = score_T(T)
     ref = json.load(open(AC.OUT, encoding="utf-8"))
     ok = all(b["eval"][s][k] == ref["base"]["eval"][s][k] for s in ("H1", "H2") for k in ("net", "p10", "f10", "mc_p10", "mc_f10"))
