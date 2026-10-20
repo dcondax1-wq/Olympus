@@ -611,11 +611,26 @@ def pc_notify(payload: dict) -> dict | None:
     try:
         if pc_notifier().seen(payload):
             return {"dup": True}
-        push_it = payload.get("kind") in ("fill", "outcome", "test", "pc") or extra_on()   # pc: update / auto-resume notices
+        # pc: update / auto-resume notices; ops: the owner's PC helpers (engine/ops_checks.py: pre-session, day / week
+        # summary, internet / NinjaTrader drops, MFFU inactivity, eval passed / failed, contract roll)
+        push_it = payload.get("kind") in ("fill", "outcome", "test", "pc", "ops") or extra_on()
         threading.Thread(target=_pc_send, args=(payload, push_it), name="push", daemon=True).start()
         return {"queued": True}
     except Exception:
         return None
+
+
+def pc_send_now(payload: dict, sync=None, sender=None) -> dict:
+    """PC side, synchronous, for a script or a scheduled task (no server thread to wait for): push one notice now. No
+    de-duplication here (engine/ops_checks keeps its own keys in data/ops_state.json). sync = pc_sync() result, for
+    tests. Never raises."""
+    try:
+        cfg = pc_config(sync)
+        if not enabled(cfg):
+            return {"sent": 0, "skipped": "not configured"}
+        return send(payload, cfg=cfg, sender=sender)
+    except Exception as e:
+        return {"sent": 0, "errors": [e.__class__.__name__]}
 
 
 def save_pc_config(patch: dict, path: str | None = None) -> dict:

@@ -1,0 +1,900 @@
+{
+ "combo": {
+  "src": "research/lit/adopt_combo.json (tools/lit_adopt_combo.py)",
+  "rows": [
+   {
+    "id": "base",
+    "label": "LIT today (live)",
+    "params": {},
+    "lit": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 22.5,
+      "pf": 4.44,
+      "net": 32773,
+      "per_month": 5377,
+      "dd": -2315,
+      "p10": 28.9,
+      "f10": 3.1,
+      "p20": 61.7,
+      "f20": 6.2,
+      "pass_med": 13.5,
+      "pass_rate": 92.3,
+      "cost": null
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 35.0,
+      "pf": 2.46,
+      "net": 8962,
+      "per_month": 2413,
+      "dd": -1466,
+      "p10": 23.1,
+      "f10": 0.0,
+      "p20": 44.9,
+      "f20": 0.0,
+      "pass_med": 21.0,
+      "pass_rate": 100.0,
+      "cost": null
+     },
+     "2026": {
+      "n": 120,
+      "tpw": 2.91,
+      "win": 26.7,
+      "pf": 3.66,
+      "net": 41734,
+      "per_month": 4254,
+      "dd": -2315,
+      "p10": 26.7,
+      "f10": 1.9,
+      "p20": 55.3,
+      "f20": 3.9,
+      "pass_med": 16.0,
+      "pass_rate": 95.5,
+      "cost": null
+     },
+     "2021-25": {
+      "n": 510,
+      "tpw": 2.38,
+      "win": 17.5,
+      "pf": 1.01,
+      "net": 1275,
+      "per_month": 25,
+      "dd": -20462,
+      "p10": 6.6,
+      "f10": 14.3,
+      "p20": 12.9,
+      "f20": 34.4,
+      "pass_med": 20.0,
+      "pass_rate": 28.4,
+      "cost": null
+     }
+    },
+    "eval": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 22.5,
+      "pf": 3.66,
+      "net": 36723,
+      "per_month": 6025,
+      "dd": -3612,
+      "p10": 52.9,
+      "f10": 9.2,
+      "p20": 72.5,
+      "f20": 16.5,
+      "pass_med": 5.0,
+      "pass_rate": null,
+      "cost": 174
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 35.0,
+      "pf": 2.13,
+      "net": 9674,
+      "per_month": 2605,
+      "dd": -2493,
+      "p10": 50.7,
+      "f10": 2.9,
+      "p20": 49.2,
+      "f20": 6.8,
+      "pass_med": 4.0,
+      "pass_rate": null,
+      "cost": 181
+     }
+    },
+    "exits": {
+     "BE": 34,
+     "TARGET": 25,
+     "STOP": 53,
+     "EOD": 8
+    },
+    "adds": 0
+   },
+   {
+    "id": "t15",
+    "label": "15-minute check",
+    "params": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     }
+    },
+    "lit": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 22.5,
+      "pf": 4.76,
+      "net": 33411,
+      "per_month": 5482,
+      "dd": -2201,
+      "p10": 31.2,
+      "f10": 1.6,
+      "p20": 58.6,
+      "f20": 7.8,
+      "pass_med": 11.0,
+      "pass_rate": 83.7,
+      "cost": null
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 35.0,
+      "pf": 2.65,
+      "net": 9401,
+      "per_month": 2531,
+      "dd": -1466,
+      "p10": 23.1,
+      "f10": 0.0,
+      "p20": 46.2,
+      "f20": 0.0,
+      "pass_med": 20.5,
+      "pass_rate": 100.0,
+      "cost": null
+     },
+     "2026": {
+      "n": 120,
+      "tpw": 2.91,
+      "win": 26.7,
+      "pf": 3.94,
+      "net": 42812,
+      "per_month": 4364,
+      "dd": -2201,
+      "p10": 28.2,
+      "f10": 1.0,
+      "p20": 53.9,
+      "f20": 4.9,
+      "pass_med": 15.0,
+      "pass_rate": 90.8,
+      "cost": null
+     },
+     "2021-25": {
+      "n": 510,
+      "tpw": 2.38,
+      "win": 17.5,
+      "pf": 1.02,
+      "net": 1527,
+      "per_month": 30,
+      "dd": -20462,
+      "p10": 6.6,
+      "f10": 13.8,
+      "p20": 12.9,
+      "f20": 33.0,
+      "pass_med": 20.0,
+      "pass_rate": 29.7,
+      "cost": null
+     }
+    },
+    "eval": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 22.5,
+      "pf": 3.95,
+      "net": 33306,
+      "per_month": 5464,
+      "dd": -3537,
+      "p10": 57.1,
+      "f10": 6.7,
+      "p20": 74.3,
+      "f20": 11.9,
+      "pass_med": 5.0,
+      "pass_rate": null,
+      "cost": 161
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 35.0,
+      "pf": 2.2,
+      "net": 9039,
+      "per_month": 2434,
+      "dd": -3088,
+      "p10": 52.2,
+      "f10": 0.0,
+      "p20": 49.2,
+      "f20": 3.4,
+      "pass_med": 4.0,
+      "pass_rate": null,
+      "cost": 176
+     }
+    },
+    "exits": {
+     "BE": 34,
+     "TARGET": 25,
+     "STOP": 40,
+     "CUT_T15": 13,
+     "EOD": 8
+    },
+    "adds": 0
+   },
+   {
+    "id": "scale",
+    "label": "Scale-in after breakeven",
+    "params": {
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     }
+    },
+    "lit": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 32.5,
+      "pf": 4.56,
+      "net": 44134,
+      "per_month": 7241,
+      "dd": -2283,
+      "p10": 39.1,
+      "f10": 4.7,
+      "p20": 63.3,
+      "f20": 14.8,
+      "pass_med": 9.0,
+      "pass_rate": 78.2,
+      "cost": null
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 35.0,
+      "pf": 3.2,
+      "net": 14647,
+      "per_month": 3943,
+      "dd": -1863,
+      "p10": 29.5,
+      "f10": 0.0,
+      "p20": 53.8,
+      "f20": 3.8,
+      "pass_med": 17.5,
+      "pass_rate": 96.0,
+      "cost": null
+     },
+     "2026": {
+      "n": 120,
+      "tpw": 2.91,
+      "win": 33.3,
+      "pf": 4.09,
+      "net": 58782,
+      "per_month": 5992,
+      "dd": -2283,
+      "p10": 35.4,
+      "f10": 2.9,
+      "p20": 59.7,
+      "f20": 15.5,
+      "pass_med": 11.5,
+      "pass_rate": 77.8,
+      "cost": null
+     },
+     "2021-25": {
+      "n": 510,
+      "tpw": 2.38,
+      "win": 17.5,
+      "pf": 1.01,
+      "net": 1275,
+      "per_month": 25,
+      "dd": -20462,
+      "p10": 6.6,
+      "f10": 14.3,
+      "p20": 12.9,
+      "f20": 34.4,
+      "pass_med": 20.0,
+      "pass_rate": 28.4,
+      "cost": null
+     }
+    },
+    "eval": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 32.5,
+      "pf": 3.81,
+      "net": 49205,
+      "per_month": 8073,
+      "dd": -3861,
+      "p10": 53.8,
+      "f10": 10.1,
+      "p20": 76.1,
+      "f20": 21.1,
+      "pass_med": 5.0,
+      "pass_rate": null,
+      "cost": 171
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 35.0,
+      "pf": 3.27,
+      "net": 26015,
+      "per_month": 7004,
+      "dd": -2612,
+      "p10": 52.2,
+      "f10": 2.9,
+      "p20": 50.8,
+      "f20": 8.5,
+      "pass_med": 4.0,
+      "pass_rate": null,
+      "cost": 176
+     }
+    },
+    "exits": {
+     "BE": 37,
+     "TARGET": 23,
+     "STOP": 53,
+     "EOD": 7
+    },
+    "adds": 52
+   },
+   {
+    "id": "be_off",
+    "label": "Breakeven + 1.25 pts",
+    "params": {
+     "be_off": 1.25
+    },
+    "lit": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 58.8,
+      "pf": 4.63,
+      "net": 33253,
+      "per_month": 5456,
+      "dd": -2310,
+      "p10": 34.4,
+      "f10": 3.1,
+      "p20": 67.2,
+      "f20": 6.2,
+      "pass_med": 11.5,
+      "pass_rate": 92.3,
+      "cost": null
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 47.5,
+      "pf": 2.49,
+      "net": 9054,
+      "per_month": 2438,
+      "dd": -1426,
+      "p10": 23.1,
+      "f10": 0.0,
+      "p20": 44.9,
+      "f20": 0.0,
+      "pass_med": 21.0,
+      "pass_rate": 100.0,
+      "cost": null
+     },
+     "2026": {
+      "n": 120,
+      "tpw": 2.91,
+      "win": 55.0,
+      "pf": 3.78,
+      "net": 42307,
+      "per_month": 4313,
+      "dd": -2310,
+      "p10": 30.1,
+      "f10": 1.9,
+      "p20": 58.7,
+      "f20": 3.9,
+      "pass_med": 15.0,
+      "pass_rate": 95.5,
+      "cost": null
+     },
+     "2021-25": {
+      "n": 510,
+      "tpw": 2.38,
+      "win": 53.7,
+      "pf": 1.01,
+      "net": 959,
+      "per_month": 19,
+      "dd": -19436,
+      "p10": 6.0,
+      "f10": 13.8,
+      "p20": 13.2,
+      "f20": 34.4,
+      "pass_med": 20.0,
+      "pass_rate": 28.7,
+      "cost": null
+     }
+    },
+    "eval": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 58.8,
+      "pf": 3.87,
+      "net": 37404,
+      "per_month": 6137,
+      "dd": -3522,
+      "p10": 52.9,
+      "f10": 8.4,
+      "p20": 72.5,
+      "f20": 16.5,
+      "pass_med": 5.0,
+      "pass_rate": null,
+      "cost": 174
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 47.5,
+      "pf": 2.15,
+      "net": 9754,
+      "per_month": 2626,
+      "dd": -2491,
+      "p10": 50.7,
+      "f10": 2.9,
+      "p20": 50.8,
+      "f20": 3.4,
+      "pass_med": 4.0,
+      "pass_rate": null,
+      "cost": 181
+     }
+    },
+    "exits": {
+     "BE": 34,
+     "TARGET": 25,
+     "STOP": 53,
+     "EOD": 8
+    },
+    "adds": 0
+   },
+   {
+    "id": "t15_be_off",
+    "label": "15-min check + BE + 1.25",
+    "params": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "be_off": 1.25
+    },
+    "lit": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 58.8,
+      "pf": 4.98,
+      "net": 33891,
+      "per_month": 5560,
+      "dd": -2196,
+      "p10": 36.7,
+      "f10": 1.6,
+      "p20": 64.1,
+      "f20": 7.8,
+      "pass_med": 10.0,
+      "pass_rate": 83.7,
+      "cost": null
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 47.5,
+      "pf": 2.69,
+      "net": 9493,
+      "per_month": 2556,
+      "dd": -1396,
+      "p10": 23.1,
+      "f10": 0.0,
+      "p20": 46.2,
+      "f20": 0.0,
+      "pass_med": 20.5,
+      "pass_rate": 100.0,
+      "cost": null
+     },
+     "2026": {
+      "n": 120,
+      "tpw": 2.91,
+      "win": 55.0,
+      "pf": 4.07,
+      "net": 43385,
+      "per_month": 4423,
+      "dd": -2196,
+      "p10": 31.6,
+      "f10": 1.0,
+      "p20": 57.3,
+      "f20": 4.9,
+      "pass_med": 14.0,
+      "pass_rate": 90.8,
+      "cost": null
+     },
+     "2021-25": {
+      "n": 510,
+      "tpw": 2.38,
+      "win": 53.7,
+      "pf": 1.01,
+      "net": 1211,
+      "per_month": 24,
+      "dd": -19436,
+      "p10": 6.0,
+      "f10": 13.3,
+      "p20": 13.2,
+      "f20": 33.0,
+      "pass_med": 20.0,
+      "pass_rate": 30.0,
+      "cost": null
+     }
+    },
+    "eval": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 58.8,
+      "pf": 4.02,
+      "net": 34234,
+      "per_month": 5617,
+      "dd": -3314,
+      "p10": 57.1,
+      "f10": 5.9,
+      "p20": 74.3,
+      "f20": 11.9,
+      "pass_med": 5.0,
+      "pass_rate": null,
+      "cost": 161
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 47.5,
+      "pf": 2.2,
+      "net": 9059,
+      "per_month": 2439,
+      "dd": -3073,
+      "p10": 52.2,
+      "f10": 0.0,
+      "p20": 50.8,
+      "f20": 0.0,
+      "pass_med": 4.0,
+      "pass_rate": null,
+      "cost": 176
+     }
+    },
+    "exits": {
+     "BE": 34,
+     "TARGET": 25,
+     "STOP": 40,
+     "CUT_T15": 13,
+     "EOD": 8
+    },
+    "adds": 0
+   },
+   {
+    "id": "all3",
+    "label": "All three together",
+    "params": {
+     "t_check": {
+      "at": 15,
+      "x": 0.3,
+      "mfe": 0.5
+     },
+     "scale_in": {
+      "pb": 0.25,
+      "f": 1.0,
+      "rat_k": 1.0,
+      "min_rk": 2.0,
+      "n": 1
+     },
+     "be_off": 1.25
+    },
+    "lit": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 45.0,
+      "pf": 4.94,
+      "net": 44507,
+      "per_month": 7302,
+      "dd": -2510,
+      "p10": 40.6,
+      "f10": 2.3,
+      "p20": 68.0,
+      "f20": 8.6,
+      "pass_med": 9.0,
+      "pass_rate": 85.5,
+      "cost": null
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 42.5,
+      "pf": 3.48,
+      "net": 15192,
+      "per_month": 4090,
+      "dd": -1451,
+      "p10": 32.1,
+      "f10": 0.0,
+      "p20": 60.3,
+      "f20": 0.0,
+      "pass_med": 17.0,
+      "pass_rate": 100.0,
+      "cost": null
+     },
+     "2026": {
+      "n": 120,
+      "tpw": 2.91,
+      "win": 44.2,
+      "pf": 4.43,
+      "net": 59698,
+      "per_month": 6086,
+      "dd": -2510,
+      "p10": 37.4,
+      "f10": 1.5,
+      "p20": 65.0,
+      "f20": 6.8,
+      "pass_med": 12.0,
+      "pass_rate": 84.7,
+      "cost": null
+     },
+     "2021-25": {
+      "n": 510,
+      "tpw": 2.38,
+      "win": 53.7,
+      "pf": 1.01,
+      "net": 1211,
+      "per_month": 24,
+      "dd": -19436,
+      "p10": 6.0,
+      "f10": 13.3,
+      "p20": 13.2,
+      "f20": 33.0,
+      "pass_med": 20.0,
+      "pass_rate": 30.0,
+      "cost": null
+     }
+    },
+    "eval": {
+     "H1": {
+      "n": 80,
+      "tpw": 3.12,
+      "win": 46.2,
+      "pf": 4.85,
+      "net": 53116,
+      "per_month": 8714,
+      "dd": -3059,
+      "p10": 58.0,
+      "f10": 2.5,
+      "p20": 78.0,
+      "f20": 11.9,
+      "pass_med": 5.0,
+      "pass_rate": null,
+      "cost": 158
+     },
+     "H2": {
+      "n": 40,
+      "tpw": 2.56,
+      "win": 40.0,
+      "pf": 2.85,
+      "net": 17262,
+      "per_month": 4647,
+      "dd": -3076,
+      "p10": 52.2,
+      "f10": 0.0,
+      "p20": 54.2,
+      "f20": 0.0,
+      "pass_med": 4.0,
+      "pass_rate": null,
+      "cost": 176
+     }
+    },
+    "exits": {
+     "BE": 38,
+     "TARGET": 22,
+     "STOP": 40,
+     "CUT_T15": 13,
+     "EOD": 7
+    },
+    "adds": 52
+   }
+  ]
+ },
+ "funded": {
+  "src": "research/lit/funded_firms.json (research/writeups/lit-funded-firms.md)",
+  "built": "2026-10-19 13:57",
+  "plans": [
+   {
+    "id": "mffu_builder_50k",
+    "firm": "MyFundedFutures",
+    "plan": "Builder 50K (the owner's eval)",
+    "price": 91.8,
+    "target": 3000.0,
+    "mll": 2000.0
+   },
+   {
+    "id": "lucid_pro_50k",
+    "firm": "Lucid Trading",
+    "plan": "LucidPro 50K (daily loss option on)",
+    "price": 115.4,
+    "target": 3000.0,
+    "mll": 2000.0
+   },
+   {
+    "id": "fn_rapid_daily_50k",
+    "firm": "FundedNext Futures",
+    "plan": "Rapid Daily 50K",
+    "price": 169.99,
+    "target": 3000.0,
+    "mll": 2000.0
+   }
+  ],
+  "trio": {
+   "H1": {
+    "net_6m": 13888,
+    "net_per_month": 2315,
+    "net_med_6m": 12999,
+    "neg_6m": 4.5,
+    "months4_6_per_month": 2944,
+    "p_months4_6_ge_2000": 66.5,
+    "all_lost_one_funded": 0.1
+   },
+   "H2": {
+    "net_6m": 10523,
+    "net_per_month": 1754,
+    "net_med_6m": 10354,
+    "neg_6m": 7.8,
+    "months4_6_per_month": 2373,
+    "p_months4_6_ge_2000": 54.8,
+    "all_lost_one_funded": 0.1
+   },
+   "2021-25": {
+    "net_6m": -551,
+    "net_per_month": -92,
+    "net_med_6m": -870,
+    "neg_6m": 86.3,
+    "months4_6_per_month": 94,
+    "p_months4_6_ge_2000": 0.5,
+    "all_lost_one_funded": 4.9
+   }
+  }
+ },
+ "changelog": [
+  {
+   "t": 1792420730,
+   "date": "2026-10-19",
+   "title": "MFFU Rapid / Rapid EOD stacking study: evals too slow for the 2-week rule; 1 Rapid EOD + Lucid + FundedNext ~$2,400/mo (H2)"
+  },
+  {
+   "t": 1792419534,
+   "date": "2026-10-19",
+   "title": "PC dashboard: status header, Accounts, Eval HQ, Edge, P&L calendar, MFFU rules (read-only); real NinjaTrader accounts labelled LIVE"
+  },
+  {
+   "t": 1792419275,
+   "date": "2026-10-19",
+   "title": "Big ideas: scale-in after BE is an adopt-candidate (backtest option, default off); trend-day, volatility sizing rejected; news setups not testable"
+  },
+  {
+   "t": 1792418535,
+   "date": "2026-10-19",
+   "title": "More LIT setups study: 95 variants (ES/MES, 15m/30m/1h, re-arms, loosened filters); none adopted"
+  },
+  {
+   "t": 1792418510,
+   "date": "2026-10-19",
+   "title": "Funded firms study: MFFU Builder + LucidPro 50K + FundedNext Rapid Daily 50K (~$1,750-2,300/mo for three)"
+  },
+  {
+   "t": 1792417822,
+   "date": "2026-10-19",
+   "title": "Live-proof panel: TRADING YOUR EVAL verdict, health block in the heartbeat, alerts, active-trade charts"
+  },
+  {
+   "t": 1792416272,
+   "date": "2026-10-19",
+   "title": "Eval cockpit sizes with the live two_week rule (and safe_eval after session 10, -$100 prior); eventual.json in the cloud checkout"
+  },
+  {
+   "t": 1792375682,
+   "date": "2026-10-19",
+   "title": "Go-live doc: OneDrive Documents / folder override, regional format, Controlled Folder Access, exact account name; eval starts at $49,900"
+  },
+  {
+   "t": 1792368895,
+   "date": "2026-10-19",
+   "title": "Eval starts at -$100 (balance $49,900): lit_sizing.eval_prior_pnl, counted on the PC bot, the cloud ledger and the eval clock (needs $3,100, room $1,900)"
+  },
+  {
+   "t": 1792368099,
+   "date": "2026-10-19",
+   "title": "PC bot: don't flatten a market entry as NO TRADE before the fill bar is in the feed (lagging 1m/5m bar at the 5m boundary); test 5/5"
+  },
+  {
+   "t": 1792367532,
+   "date": "2026-10-18",
+   "title": "Cloud workflow: check out the LIT notes, MFFU rules and Archive files; time limits on the watcher and news steps"
+  },
+  {
+   "t": 1792367458,
+   "date": "2026-10-18",
+   "title": "Go-live docs: exact Windows commands (ExecutionPolicy, stop/restart for the live env, Add-Content, state check)"
+  },
+  {
+   "t": 1792362395,
+   "date": "2026-10-18",
+   "title": "Report-2 audit (backtest honest, -$500 of $41.7k), divergence rejected, management study (BE stays; BE+costs candidate), inventory of 117 items"
+  },
+  {
+   "t": 1792360869,
+   "date": "2026-10-18",
+   "title": "Phone app: armed setup line on Today and Briefing"
+  },
+  {
+   "t": 1792360151,
+   "date": "2026-10-18",
+   "title": "Engine: 15-minute check option t_check (default None = unchanged)"
+  },
+  {
+   "t": 1792359163,
+   "date": "2026-10-18",
+   "title": "Final launch checks: timing 11/11"
+  },
+  {
+   "t": 1792358805,
+   "date": "2026-10-18",
+   "title": "PC bot timing fix: LIT entry ~3 s after the 1m CISD close (was ~95 s), aligned polls, forming-bar open feed; sizing fails closed on the eval"
+  },
+  {
+   "t": 1792358540,
+   "date": "2026-10-18",
+   "title": "No-reset eval: two_week for 10 sessions then safe_eval; funded sizing mode (off); $1.90 commission; min-days trade; opt-in day guard"
+  },
+  {
+   "t": 1792358324,
+   "date": "2026-10-18",
+   "title": "LIT learning loop (observe mode), noise guardrail, tests 14/14"
+  },
+  {
+   "t": 1792357550,
+   "date": "2026-10-18",
+   "title": "Cloud fast-entry watcher (armed/forming setups, 30 s polls, minute budget) + proof"
+  },
+  {
+   "t": 1792357223,
+   "date": "2026-10-18",
+   "title": "Trade charts, LIT day briefing, checkpoint"
+  },
+  {
+   "t": 1792356404,
+   "date": "2026-10-18",
+   "title": "LIT all-hours + report-2 continuation/sessions/trap studies (none adopted; engine options default off)"
+  },
+  {
+   "t": 1792355807,
+   "date": "2026-10-18",
+   "title": "LIT order blocks study: detector (engine/lit_ob.py), 84 variants, 18 runs; nothing adopted"
+  },
+  {
+   "t": 1792355744,
+   "date": "2026-10-18",
+   "title": "Go-live doc: exact bracket timing and what a dropped PC can't do"
+  }
+ ]
+}

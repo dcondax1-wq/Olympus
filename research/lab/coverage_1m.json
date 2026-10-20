@@ -1,0 +1,48 @@
+{
+ "year": 2026,
+ "cover_rule": 0.97,
+ "symbols": {
+  "NQ": {
+   "sessions_5m": 206,
+   "sessions_with_1m_file": 206,
+   "first_1m_session": "2026-01-02",
+   "missing_minutes": 12,
+   "median_cover": 1.0,
+   "under_97": [],
+   "lit_full_days": 205,
+   "lit_fail_days": [
+    "2026-04-03"
+   ],
+   "lit_trades": {
+    "n": 120,
+    "by_trigger": {
+     "LIT-1m": 119,
+     "LIT-5m": 1
+    },
+    "on_fail_days": [
+     {
+      "day": "2026-04-03",
+      "trigger": "LIT-5m",
+      "r": -1.022,
+      "pnl": -359.6
+     }
+    ]
+   }
+  },
+  "ES": {
+   "sessions_5m": 206,
+   "sessions_with_1m_file": 22,
+   "first_1m_session": "2026-09-17",
+   "missing_minutes": 1553,
+   "median_cover": 0.9898550724637681,
+   "under_97": [
+    {
+     "day": "2026-10-16",
+     "cover": 0.0913,
+     "missing": 1254,
+     "holiday": ""
+    }
+   ]
+  }
+ }
+}

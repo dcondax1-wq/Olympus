@@ -53,6 +53,7 @@ PUSH_MAX_AGE_S = 2 * 86400    # a fill / outcome older than this is never notifi
 _LM = None                    # live_model.json of this run (send_alert's chat switch)
 _LEARN = None                 # the learning loop's state (engine/lit_learn.py, <out>/lit_learning.json) for lit_qty
 _LEARN_AT = {}                # entry_t -> lit_qty's "learn" block (the multiplier in force / would be), for the ledger row
+_LIT_IN = {}                  # the live LIT run's 1m bars (run_model), reused by the lit_base ledger (same bars, no refetch)
 
 
 def et(t):
@@ -153,6 +154,7 @@ def run_model(lm, bot, df_all, now, store_1m=None, week_hist=None):
         bot.health.clear(); bot.health.update(keep)
         if es_df is not None and (not len(es_df) or int(es_df["time"].max()) + 1800 < int(df_all["time"].max())):
             es_df = None                       # no fresh ES (no Yahoo, the PC sends NQ only): the ES features are unknown
+        _LIT_IN["df1"] = df1
         return lit_live.run(df_all, P, one_min=df1, now=now, sym=SYM, week_hist=week_hist, learn=True, es_df=es_df)
     if lm["model"].startswith("lab:"):
         es_df, _ = bot._merged("ES" if SYM == "NQ" else "NQ", TF, now, SECS)     # partner index (SMT)
@@ -632,6 +634,9 @@ def run(out):
             print("shadow engine failed:", e.__class__.__name__, e)
             shadow = {**sh_st, "error": f"{e.__class__.__name__}: {e}"} if sh_st else {"error": f"{e.__class__.__name__}: {e}"}
 
+    # ---- lit_base: LIT without the three upgrades (t_check, scale_in, be_off), same bars, own paper ledger, no alerts
+    lit_base, upgrades_live = lit_base_step(lm, st, df_all, now, ledger, res, first_run, pauses if noy else None)
+
     # ---- alerts for events not seen before (only events from after the monitor started, like LiveBot._emit_events)
     new_alerts = []
     for ev in res["events"]:
@@ -772,7 +777,8 @@ def run(out):
           + (f", expired {len(gone)}" if gone else "") + (f", errors {push_errs[:3]}" if push_errs else ""))
     write_chart(os.path.join(out, "chart.png"), df, state, res, today)
     write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm,
-                 push_state=push_state, pc_health=pc.get("health") if pc.get("present") else None)
+                 push_state=push_state, pc_health=pc.get("health") if pc.get("present") else None,
+                 pc_ops=pc.get("ops") if pc.get("present") else None, upgrades_live=upgrades_live)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
@@ -800,7 +806,7 @@ def run(out):
                  "levels": [{k: p.get(k) for k in ("label", "price", "side", "strength", "kind")} for p in state.get("active_pools") or []][:60]
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
-                                               "reason", "model", "push_pk", "acct", "health", "every_s", "exec")},
+                                               "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "ops")},
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
                  "pc_alert_at": pc_alert_at,
@@ -815,6 +821,8 @@ def run(out):
                  "learning": learning}
     if shadow is not None:
         new_state["shadow"] = shadow
+    if lit_base is not None:
+        new_state["lit_base"], new_state["upgrades_live"] = lit_base, upgrades_live
     try:                    # LIT day analyst (engine/lit_brief.py): morning briefing, intraday log, recap -> state "brief" + README
         from engine import lit_brief
         lit_brief.cloud_hook(out, new_state, st, res, df_all, now, lm)
@@ -824,6 +832,43 @@ def run(out):
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"
           + (f" | shadow {shadow.get('model_state')}, ledger {len(shadow.get('ledger') or {})}" if shadow else ""))
+
+
+def lit_base_step(lm, st, df_all, now, ledger, res, first_run, pauses=None):
+    """(lit_base, upgrades_live): LIT without t_check / scale_in / be_off on the live run's bars (tools/upgrade_shadow.py),
+    sized like the live ledger (lit_sizing on its own eval state), no alerts. (None, None) when the live model is not LIT or
+    none of the three is on. Never raises: an error is reported in both blocks."""
+    from tools import upgrade_shadow as us
+    if lm.get("model") != "lit":
+        return None, None
+    on = us.upgrades_on(lm.get("lit"))
+    if not on:
+        return None, None
+    b_st = st.get("lit_base") or {}
+    try:
+        from engine import lit as lit_mod
+        from engine import lit_live
+        P = us.base_params({**lit_mod.DEFAULTS, **(lm.get("lit") or {})})
+        since = int(b_st.get("since") or now)
+        # first run: the live ledger's finished rows (both start from the same eval balance); then its own ledger
+        b_ledger = {int(k): v for k, v in (b_st.get("ledger") or {}).items()} if b_st.get("since") else us.seed(ledger)
+        bres = lit_live.run(df_all, P, one_min=_LIT_IN.get("df1"), now=now, sym=SYM, week_hist=week_rows(b_ledger))
+        bres["model"] = "lit"
+        update_ledger(b_ledger, bres, first_run, None, None, None, None, lit_sizing=lm.get("lit_sizing"), pauses=pauses)
+        bst = bres.get("state") or {}
+        cmp_ = us.compare(ledger, b_ledger, since, on, live_trades=res.get("trades"),
+                          scale_in_live=any(t.get("adds") for t in res.get("trades") or []))
+        start = (lm.get("lit_sizing") or {}).get("eval_start")
+        cmp_["eval_live"], cmp_["eval_base"] = eval_track(ledger, start), eval_track(b_ledger, start)
+        base = {"since": since, "upgrades_off": on, "model_state": bst.get("model_state"), "position": bst.get("position"),
+                "ledger": {str(k): v for k, v in sorted(b_ledger.items())}, "eval": cmp_["eval_base"]}
+        print(f"lit_base: {cmp_['trades_base']} trades {money(cmp_['usd_base'])} vs live {cmp_['trades_live']} "
+              f"{money(cmp_['usd_live'])} since {cmp_['since_et']} (upgrades {money(cmp_['delta'])})")
+        return base, cmp_
+    except Exception as e:                        # the comparison must never stop the live strategy's dashboard
+        print("lit_base failed:", e.__class__.__name__, e)
+        err = f"{e.__class__.__name__}: {e}"
+        return {**b_st, "error": err}, {"on": on, "error": err}
 
 
 def _bars_1m_tail(out, n=360):
@@ -928,6 +973,24 @@ def _accounts_auto_text(hl):
         return f"unknown ({e.__class__.__name__})"
 
 
+def _ops_cell(o):
+    """README row "PC checks": the owner's PC helpers (engine/ops_checks.hb_fields, in the heartbeat's "ops" block)."""
+    try:
+        parts = []
+        if o.get("checks_t"):
+            parts.append(f"{int(o.get('bad') or 0)} red, {int(o.get('warn') or 0)} yellow ({et(o['checks_t']):%a %H:%M} ET)")
+            if o.get("first_fix"):
+                parts.append(f"fix: {o['first_fix']}")
+        else:
+            parts.append("no health check run yet (HEALTH_CHECK.bat / the ops task)")
+        parts.append(f"backup {et(o['backup_t']):%a %H:%M} ET" if o.get("backup_t") else "no backup yet")
+        if o.get("disk_free_gb") is not None:
+            parts.append(f"disk {o['disk_free_gb']:.0f} GB free")
+        return "; ".join(parts)
+    except Exception as e:
+        return f"unknown ({e.__class__.__name__})"
+
+
 def _push_cell(p):
     p = p or {}
     if not p.get("configured"):
@@ -955,7 +1018,7 @@ def usd_cell(v):
 
 
 def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None,
-                 pc_health=None):
+                 pc_health=None, pc_ops=None, upgrades_live=None):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
     arm = []
@@ -1007,6 +1070,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
             f"{len(lt.get('signals_today') or [])} setups today |"] if (lt := state.get("lit")) and lt.get("open18") else []),
          f"| Feed | {feed}; {health['rth_bars_today']}/78 RTH bars today; gaps: {', '.join(health['gaps_today']) or 'none'} |",
          *([f"| PC bot version | {_accounts_auto_text(pc_health)} |"] if isinstance(pc_health, dict) else []),
+         *([f"| PC checks | {_ops_cell(pc_ops)} |"] if isinstance(pc_ops, dict) and pc_ops else []),
          f"| Notifications | {_push_cell(push_state)} |",
          f"| Telegram / Discord | {', '.join(sent) if sent else ('on' if chat_on(lm) and (os.environ.get('TG_TOKEN') or os.environ.get('DISCORD_WEBHOOK')) else 'off (the app notifies; LE_ALERTS_CHAT=1 turns chat alerts back on)')} |",
          "", "## Nearest liquidity pools", "| Pool | Price | Distance |", "|---|---:|---:|"]
@@ -1053,6 +1117,9 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
               "| Entry | Side | Grade | Trigger | Exit | R | $ |", "|---|---|---|---|---|---:|---:|"]
         L += [f"| {v['entry']} | {v['side']} | {v['grade']} | {v['trigger']} | {v['exit']} | {v['R']:+.2f} | {usd_cell(v)} |" for v in sl[:10]] \
             or ["| - | - | - | - | - | - | - |"]
+    if upgrades_live:                         # the three LIT upgrades vs LIT without them (tools/upgrade_shadow.py)
+        from tools import upgrade_shadow
+        L += upgrade_shadow.readme_rows(upgrades_live)
     model = (lm or {}).get("model", "engine")
     L += ["", "---", ("Same LIT rules and settings as the PC paper bot (engine/lit.py via engine/lit_live.py, live_model.json)."
                       if model == "lit" else "Same engine and defaults as the PC paper bot (engine/model.py).")

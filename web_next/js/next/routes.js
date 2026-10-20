@@ -3,6 +3,7 @@
 // Modules (tile grid). Page ids stay the same as the classic dashboard so every page module and go('x') call still works.
 export const TOP = [
   { id: 'command', label: 'Today', icon: 'today' },
+  { id: 'botctl', label: 'Bot', icon: 'power' },
   { id: 'accounts', label: 'Accounts', icon: 'wallet' },
   { id: 'chart', label: 'Chart', icon: 'chart' },
   { id: 'trades', label: 'Trades', icon: 'trades' },
@@ -40,7 +41,17 @@ export const ARCHIVE = [
   { id: 'playbook', label: 'Playbook', icon: 'playbook', desc: 'The engine’s setup cards and checklists' },
 ];
 
+// Hub pages (js/next/hubpages.js): the business side and the context around the bot, grouped in five pages.
+export const HUB = [
+  { id: 'firms', label: 'Prop Firms', icon: 'prop', desc: 'Every plan compared: rules, prices, codes, payouts, bots, live accounts, LIT fit, what to buy next' },
+  { id: 'business', label: 'Business', icon: 'wallet', desc: 'Eval odds now, floor gauge, MFFU rules check, payout calendar, fees and net P&L, tax, Z06 goal, planners' },
+  { id: 'market', label: 'Market', icon: 'regime', desc: 'VIX regime + target band, overnight recap, levels map, week calendar, earnings, holidays, roll' },
+  { id: 'learn', label: 'Learn', icon: 'learned', desc: 'LIT step by step, glossary, research library with verdicts, strategy versions, trade gallery' },
+  { id: 'system', label: 'System', icon: 'sources', desc: 'Upgrades with vs without, PC uptime, discipline log, data quality' },
+];
+
 export const MODULES = [
+  ...HUB,
   { id: 'evalhq', label: 'Eval HQ', icon: 'prop', desc: 'The 2-week pass path: $ to go, $ per session, what one winner pays, the odds' },
   { id: 'mffurules', label: 'MFFU rules', icon: 'rules', desc: 'The Builder 50K rulebook with how sure each rule is, and how LIT fits it' },
   { id: 'litday', label: 'LIT Day plan', icon: 'clock', desc: 'Day clock 18:00-17:00 ET, what happens next, pre-session checklist, week planner' },
@@ -63,7 +74,7 @@ export const MODULES = [
   { id: 'archive', label: 'Archive', icon: 'archive', desc: 'Previous strategy: Liquidity Engine, Oct 17 (paper shadow), kept so it can come back' },
 ];
 
-export const TITLES = { data: 'Data', command: 'Today', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
+export const TITLES = { data: 'Data', command: 'Today', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
 

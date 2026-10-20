@@ -783,6 +783,24 @@ def _autostart_startup():
 app.router.add_event_handler("startup", _autostart_startup)
 
 
+# ---- BOT CONTROL ----
+# Bot Control center (engine/botctl.py, web_next/js/next/botctl.js): its Start / Stop run exactly what POST /api/live/start
+# and /api/live/stop do (BOT.start + the autostart record with the phrase stripped; Stop clears it). The kill switch stays
+# POST /api/live/kill. Every live lock (armed + exact phrase + the live env flag, the adapter's _live_gate) is unchanged.
+from engine import botctl as _bc
+
+
+def _botctl_start(body):
+    res = BOT.start(body)
+    if res.get("ok"):
+        _autostart_save(body)
+    return res
+
+
+_bc.HOOKS.update(start=_botctl_start, stop=live_stop, heartbeat=HEARTBEAT.status)
+# ---- END BOT CONTROL ----
+
+
 @app.get("/api/health/ping")
 def health_ping():
     return J({"ok": True, "t": int(time.time()), "uptime_s": int(time.time() - WATCHDOG.server_started_at),
