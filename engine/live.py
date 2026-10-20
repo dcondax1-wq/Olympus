@@ -696,12 +696,14 @@ class LiveBot:
 
     # ------------------------------------------------------------------ LIT scale-in (engine/lit.py "scale_in", default off)
     def _adds_qty(self, entry_t) -> int:
-        """Micros of the scale-in adds routed to the position of entry_t (0 without adds)."""
+        """Micros of the scale-in adds routed to the position of entry_t (0 without adds), from the broker's real fills."""
+        self._sync_adds(entry_t)
         return sum(int(a.get("qty") or 0) for a in self._open_adds if a.get("entry_t") == entry_t)
 
     def _routed_pnl(self, tr, qty):
         """$ P&L of a finished trade at the routed size: the first entry's qty, plus every scale-in add routed to it at its
         own price (the model's add qty may differ from the routed one: the eval caps size the routed adds)."""
+        self._sync_adds(tr["entry_t"])
         adds = [a for a in self._open_adds if a.get("entry_t") == tr["entry_t"]]
         if not tr.get("adds") and not adds:
             return round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"]
@@ -710,7 +712,7 @@ class LiveBot:
         xp = float(tr["exit_price"])
         pts = float(tr["pts"]) if tr.get("pts") is not None else d * (xp - float(tr["entry"]))
         pnl = qty * (pts * _lit.PV - _lit.COMM)
-        for a in adds:
+        for a in adds:                     # a["px"]: the broker's fill when reported (_sync_adds), else the model's price
             pnl += int(a["qty"]) * (d * (xp - float(a["px"])) * _lit.PV - _lit.COMM)
         return round(pnl, 2)
 
@@ -768,25 +770,79 @@ class LiveBot:
         if key in self.seen:
             return
         self.seen.add(key)
+        self._save_state()          # marked done BEFORE the broker call: a crash / restart mid-call never sends this add again
         if not (self.cfg.get("adapter") == "paper" or getattr(self.adapter, "route_adds", False)):
             self._log("risk", f"Scale-in add NOT routed: adapter {self.cfg.get('adapter')} cannot add to a position")
             return
         if self.health.get("entries_blocked"):
             self._log("risk", f"Scale-in add at {_et(int(an['t'])):%H:%M} ET NOT routed: feed stale")
             return
+        age = int(self.clock()) - int(an["t"])
+        max_age = float(self.cfg.get("add_max_age_s", 20))
+        if age > max_age:            # the backtest fills the add at the open of the bar after its CISD candle: never chase it
+            self._log("risk", f"Scale-in add at {_et(int(an['t'])):%H:%M} ET NOT routed: seen {age} s after its 1m CISD candle "
+                              f"closed (limit {max_age:.0f} s) - not chasing")
+            return
+        d = 1 if pos.get("dir", 1) == 1 else -1
+        if getattr(self.adapter, "route_stop_moves", False):
+            # the add is sized at the breakeven risk: the broker's stop must be at the model's (breakeven incl. be_off) stop
+            want, have = tick_px(pos.get("stop"), d), self._broker_stop(et_)
+            if have is None or want is None or abs(float(have) - float(want)) > 1e-9:
+                msg = (f"Scale-in add at {_et(int(an['t'])):%H:%M} ET NOT routed: the broker stop is "
+                       f"{'unknown' if have is None else f'{float(have):.2f}'}, the add was sized at the breakeven stop "
+                       f"{'?' if want is None else f'{float(want):.2f}'} (stop move refused or not sent yet)")
+                self._log("risk", msg)
+                try:
+                    from . import push
+                    self._push_send(push.text_payload("PC", "risk", "Scale-in add skipped", msg, key=f"addbe:{et_}:{int(an['n'])}"))
+                except Exception:
+                    pass
+                return
         q = self._add_qty(pos, an)
         if q < 1:
             self._log("risk", f"Scale-in add at {_et(int(an['t'])):%H:%M} ET skipped: 0 micros inside the risk budget / eval caps")
             return
-        d = 1 if pos.get("dir", 1) == 1 else -1
         self._log("system", f"LIT scale-in: CISD closed at {_et(int(an['cisd_t'])):%H:%M} ET, MARKET add of {q} sent at once "
                             f"({int(self.clock()) - int(an['t'])} s after the close)" + ("; priced from the CISD close" if an.get("est") else ""))
         rr = self._route({"sym": sym, "side": "add", "qty": q, "dir": d, "stop": tick_px(pos.get("stop"), d),
                           "target": tick_px(pos.get("target"), d, target=True), "entry": an["px"], "entry_t": et_,
                           "n": int(an["n"]), "add_t": int(an["t"])})
-        if rr.get("ok") or rr.get("pending"):
-            self._open_adds.append({"entry_t": et_, "n": int(an["n"]), "qty": q, "px": float(an["px"]), "t": int(an["t"]),
-                                    "est": bool(an.get("est"))})
+        if rr.get("ok") or rr.get("pending") or (rr.get("add_id") and int(rr.get("filled") or 0) > 0):
+            # the broker's real fill when it reported one (qty, price); a pending / partial add is corrected from the
+            # adapter's fills later (_sync_adds: late fill, cancel after 45 s, partial)
+            fq = int(rr.get("filled") or 0)
+            self._open_adds.append({"entry_t": et_, "n": int(an["n"]), "qty": fq if fq > 0 else q,
+                                    "px": float(rr["fill_px"]) if fq > 0 and rr.get("fill_px") else float(an["px"]),
+                                    "t": int(an["t"]), "est": bool(an.get("est")), "asked": q,
+                                    "real": fq > 0 and bool(rr.get("fill_px"))})
+            self._save_state()
+
+    def _sync_adds(self, entry_t):
+        """The adds of entry_t from the adapter's real fills (NinjaTrader add_fills): a late fill, a partial fill, an add
+        cancelled unfilled after 45 s (-> 0 micros). Paper / adapters without fill reports: unchanged. Never raises."""
+        fn = getattr(self.adapter, "add_fills", None)
+        if not callable(fn):
+            return
+        try:
+            real = {int(a["n"]): a for a in fn(entry_t) or []}
+        except Exception as e:
+            self._note_error(f"scale-in fills not read: {e.__class__.__name__}: {e}")
+            return
+        changed = False
+        for a in self._open_adds:
+            if a.get("entry_t") != entry_t or int(a.get("n") or 0) not in real:
+                continue
+            r = real[int(a["n"])]
+            if int(r.get("filled") or 0) > 0 and r.get("fill_px"):
+                new = {"qty": int(r["filled"]), "px": float(r["fill_px"]), "real": True}
+            elif r.get("status") in ("rejected", "cancelled"):
+                new = {"qty": 0, "real": True}
+            else:
+                continue                                  # still working: keep the asked size until the broker says more
+            if any(a.get(k) != v for k, v in new.items()):
+                a.update(new)
+                changed = True
+        if changed:
             self._save_state()
 
     def _learn_es(self, sym, tf, now, secs):

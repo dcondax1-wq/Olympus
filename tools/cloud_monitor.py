@@ -199,13 +199,14 @@ def update_pauses(pauses, fstat, now):
     return pauses[-30:]
 
 
-def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, params, lit_sizing=None, pauses=None):
+def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, params, lit_sizing=None, pauses=None, scale_in=None):
     """Paper ledger: the model's trades that entered after this ledger started watching, sized as the PC bot sizes them.
     pauses (no Yahoo): a trade that would ENTER inside a stretch without the PC's NinjaTrader bars is not added (no new paper
     entries while waiting; the PC bot did not route it either: it blocks entries on a stale feed and never chases late ones).
     lit_sizing (LIT only): live_model.json "lit_sizing" -> engine/sizing.lit_qty (normal / eval / fast_eval / safe_eval /
     two_week; the room and the two_week eval state from this ledger's MFFU eval tracker at the entry, from
-    lit_sizing.eval_start); the model's micros already carry the weekly stop."""
+    lit_sizing.eval_start); the model's micros already carry the weekly stop. scale_in (live_model.json lit.scale_in): a
+    trade with adds books them as the PC bot sizes them (lit_add_usd)."""
     for t in sorted(res["trades"], key=lambda x: x["entry_t"]):
         if t["entry_t"] >= first_run - SECS:
             prev = ledger.get(int(t["entry_t"]))
@@ -227,12 +228,15 @@ def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, para
                 reasons = prev.get("reasons")
             else:
                 mult, qty, reasons = paper_size(ledger, t, res.get("model"), eqf_cfg, shadow_path, sizing_cfg, params, lit_sizing)
+            usd, add_q = round(float(t["pnl"]) * mult, 2), None
+            if res.get("model") == "lit" and t.get("adds") and t.get("qty") and qty:
+                usd, add_q = lit_add_usd(ledger, t, int(qty), lit_sizing, (scale_in or {}).get("f", 1.0))
             ledger[int(t["entry_t"])] = {"day": tday(t["entry_t"]), "entry": f"{et(t['entry_t']):%m-%d %H:%M}",
                                          "side": "LONG" if t["dir"] == 1 else "SHORT", "grade": t.get("grade"),
                                          "trigger": t.get("trigger"), "exit": t.get("exit_reason"),
                                          "exit_t": f"{et(t['exit_t']):%H:%M}" if t.get("exit_t") else None,
                                          "R": round(float(t["pnl_r"]), 2), "taken": mult > 0, "mult": mult,
-                                         "usd": round(float(t["pnl"]) * mult, 2), "qty": qty,
+                                         "usd": usd, "qty": qty, **({"add_qty": add_q} if add_q is not None else {}),
                                          "exit_ts": int(t["exit_t"]) if t.get("exit_t") else None,
                                          # prices for the app's Activity feed and the notifications
                                          **{k: (round(float(t[s]), 2) if t.get(s) is not None else None) for k, s in
@@ -241,6 +245,34 @@ def update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, para
                                          **({"reasons": reasons} if reasons else {}),
                                          **({"learn": _learn_row(prev, t)} if _learn_row(prev, t) else {})}
     return ledger
+
+
+def lit_add_usd(ledger, t, qty, lit_sizing=None, f=1.0, max_micros=40):
+    """($ of a scale-in trade at the paper size, [micros of each add]) sized as the PC bot sizes the add (engine/live.py
+    _add_qty): eval modes (two_week / eval / safe_eval) = engine/sizing.scale_in_qty at the paper size on this ledger's own
+    eval state at the entry (room to the floor, today's closed P&L; one trade a day, so it is the state at the add too);
+    normal = the model's add x paper micros / model micros (rounded down). The whole position at most max_micros.
+    Remaining difference to the PC: the PC books the broker's real add fill price, the paper ledger the model's."""
+    from engine import lit as _lit
+    mode = str((lit_sizing or {}).get("mode") or "normal")
+    adds = t.get("adds") or []
+    cm = float(t.get("comm_rt", _lit.COMM))
+    q0, qm = int(qty), int(t["qty"])
+    if mode in ("two_week", "eval", "safe_eval"):
+        start = (lit_sizing or {}).get("eval_start")
+        before = {k: v for k, v in ledger.items() if int(k) < int(t["entry_t"])}
+        state = {"room": eval_track(before, start)["cushion"],
+                 "cum": float(eval_day_pnl(before, start).get(tday(t["entry_t"]), 0.0))}
+        qa = sizing.scale_in_qty(q0, q0, float(t["risk_pts"]), [{"rk": float(a["rk"]), "prev_rk": list(a.get("prev_rk") or [])}
+                                                                 for a in adds], f=f, state=state, max_micros=max_micros)
+    else:
+        qa, tot = [], q0
+        for a in adds:
+            n = max(0, min(int(int(a.get("qty") or 0) * q0 / qm + 1e-9), int(max_micros) - tot))
+            qa.append(n)
+            tot += n
+    usd = q0 * (float(t["pts"]) * _lit.PV - cm) + sum(n * (float(a["pts"]) * _lit.PV - cm) for n, a in zip(qa, adds))
+    return round(usd, 2), [int(n) for n in qa]
 
 
 def _learn_row(prev, t):
@@ -560,7 +592,8 @@ def run(out):
     # ---- paper ledger: model trades that entered after the cloud monitor started watching
     sizing_cfg = lm.get("sizing")
     update_ledger(ledger, res, first_run, eqf_cfg, shadow_path, sizing_cfg, lm.get("params"),
-                  lit_sizing=lm.get("lit_sizing") if lm["model"] == "lit" else None, pauses=pauses if noy else None)
+                  lit_sizing=lm.get("lit_sizing") if lm["model"] == "lit" else None, pauses=pauses if noy else None,
+                  scale_in=(lm.get("lit") or {}).get("scale_in") if lm["model"] == "lit" else None)
     pos = state.get("position")
     learning = None
     if lm["model"] == "lit":                     # the learning loop (journal + Sunday review); never stops the dashboard
