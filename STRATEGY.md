@@ -5,15 +5,17 @@ candles. All times are New York (ET); the trading day runs 18:00 to 17:00.
 Settings: `live_model.json` (copy in `live_model_lit.json`) → `"model": "lit"`, parameters under `"lit"`; code `engine/lit.py`
 (rules) + `engine/lit_live.py` (the live loop: PC paper bot and cloud monitor). Paper only.
 
-**Version:** locked 2026-10-18, **loss pack adopted 2026-10-18** (rule 10: Monday rule + weekly stop), **three upgrades ON
-since 2026-10-20** (rule 11: the 15-minute check, scale-in after breakeven, breakeven at entry + 1.25 pts; owner approved).
+**Version:** locked 2026-10-18, **loss pack adopted 2026-10-18** (rule 10: Monday rule + weekly stop), **15-minute check +
+breakeven + costs ON since 2026-10-20** (rule 11; owner approved). **Scale-in after breakeven is built and safety-reviewed but
+OFF** (`"scale_in": null`) until the owner's Sim101 roundtrip passes (`python -m engine.ninjatrader --sim-roundtrip-add`,
+`docs/DAILY_CHECKLIST.md` "Switch on scale-in").
 **Owner's order
 (2026-10-18): LIT is the strategy, tuned and judged on 2026 only** (Jan 2 – Oct 16). Picked on Jan–Jun 2026, checked on
 Jul–Oct 2026. 2021–25 is shown as a reference line, never as a gate. The previous strategy (Liquidity Engine, below) keeps
 running in the cloud monitor as a shadow paper ledger for comparison. Research: `research/writeups/lit-final.md` (run
 `lit_final`), `research/writeups/lit-losses.md` (run `lit_loss_pack`), `research/writeups/lit-big-ideas.md` (runs
-`lit_adopt_all3`, `lit_adopt_all3_eval`); the live settings are run `lit_live` (the 2026-10-18 version without the upgrades:
-run `lit_live_2026-10-18`).
+`lit_adopt_t15_be_off`, `lit_adopt_t15_be_off_eval`; with scale-in `lit_adopt_all3`, `lit_adopt_all3_eval`); the live
+settings are run `lit_live` (= `lit_adopt_t15_be_off`; the 2026-10-18 version without the upgrades: run `lit_live_2026-10-18`).
 
 ## 1. Liquidity levels
 Every one of these counts as liquidity:
@@ -62,8 +64,8 @@ Every one of these counts as liquidity:
   exit tick), so a breakeven exit no longer loses the costs (rule 11).
 - **15-minute check** (1m days, since 2026-10-20, rule 11): 15 minutes after the fill, a trade that never reached +0.5R and
   closes more than 0.3R under water is closed at the next 1m open.
-- **Scale-in after breakeven** (1m days, since 2026-10-20, rule 11): one add on the first pullback after breakeven, then the
-  stop moves up to the add once the add is +1 of its own risk.
+- **Scale-in after breakeven: OFF** (built, rule 11; switched on only after the Sim roundtrip passes): one add on the first
+  pullback after breakeven, then the stop moves up to the add once the add is +1 of its own risk.
 - **Flat by 15:55 ET** (the live bot flattens on the clock too). On a CME early-close day (US holidays 13:00 ET, the day after
   Thanksgiving and Christmas Eve 13:15 ET) the NinjaTrader route stops new entries 15 minutes and flattens 5 minutes before the
   halt (execution safety, 2026-10-18; the backtest exits at the day's last bar).
@@ -87,7 +89,7 @@ Every one of these counts as liquidity:
   4. No new trade once the day already reached the eval target. The weekly stop's half size does **not** apply in this mode
      (the Monday rule still does). Near the target the size shrinks by itself.
   - Results **before the 2026-10-20 upgrades** (the 120 real LIT trades of 2026, a fresh eval on every session, MFFU 50K at
-    $91.80; with the upgrades see rule 11: 2-week pass 58.0% / 52.2%, fail 2.5% / 0.0%):
+    $91.80; live now, with the 15-minute check + breakeven + costs, see rule 11: 2-week pass 57.1% / 52.2%, fail 5.9% / 0.0%):
 
     | | Jan–Jun starts (picked) | Jul–Oct starts (check) |
     |---|---|---|
@@ -106,7 +108,7 @@ Every one of these counts as liquidity:
     the PC start cfg `"eval_start"` overrides it). After session 10 an eval still open keeps going in **safe_eval** sizing
     (`two_week_until 10`, `after_mode safe_eval`; `tools/lit_eventual.py`: eventual pass ~80% / 77% H1 / H2). After a pass or
     a fail, buy the next eval and set `eval_start` to its first session.
-  - **Scale-in on the eval (since 2026-10-20):** the add is sized by `engine/sizing.scale_in_qty`: its open risk never above
+  - **Scale-in on the eval (OFF until the Sim roundtrip):** the add is sized by `engine/sizing.scale_in_qty`: its open risk never above
     the first entry's, inside 60% of the room and the soft daily loss that is left.
   - If the target, the stop or the eval state is missing at an entry, the bot sizes it with the eval mode below and logs why.
   - Code: `engine/sizing.py` (`two_week_qty`, `eval_state`, `eval_session`, `eval_clock`, `lit_qty` mode `two_week`), settings
@@ -140,64 +142,75 @@ Both were picked on Jan–Jun 2026 and helped Jul–Oct too (`engine/lit.py` opt
   starts at full size again. The live bots count the week's stop-outs from their own ledger (cloud: its LIT paper ledger; PC:
   its routed exits), and the model's own replay for any day the ledger does not cover.
 
-## 11. Three upgrades (ON since 2026-10-20, owner approved; `research/writeups/lit-big-ideas.md`)
-Each was picked on Jan–Jun 2026 and helped Jul–Oct too; together they were scored on the engine itself (`tools/lit_adopt_combo.py`,
-runs `lit_adopt_all3` and `lit_adopt_all3_eval`). Settings in `live_model.json` `"lit"`; the first two act only on days with
-1-minute bars (all of 2026, none of 2021–25).
-- **15-minute check** (`t_check {"at": 15, "x": 0.3, "mfe": 0.5}`, `lit-loss-learning.md`): 15 minutes after the fill, if the
+## 11. Upgrades of 2026-10-20 (`research/writeups/lit-big-ideas.md`): two ON, scale-in OFF until the Sim check
+Each was picked on Jan–Jun 2026 and helped Jul–Oct too; they were scored on the engine itself (`tools/lit_adopt_combo.py`,
+runs `lit_adopt_t15_be_off` / `lit_adopt_t15_be_off_eval` for the live pair, `lit_adopt_all3` / `lit_adopt_all3_eval` with
+scale-in). Settings in `live_model.json` `"lit"`; the 15-minute check and the scale-in act only on days with 1-minute bars
+(all of 2026, none of 2021–25).
+- **15-minute check: ON** (`t_check {"at": 15, "x": 0.3, "mfe": 0.5}`, `lit-loss-learning.md`): 15 minutes after the fill, if the
   trade never reached +0.5R, the stop is still the original one and the 1m candle closes more than 0.3R under water, close it at
   the next 1m open. A trade that never got going costs about −0.4R instead of a full −1R. 2026: 13 trades cut.
-- **Scale-in after breakeven** (`scale_in {"pb": 0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1}`): once the stop is at
-  breakeven, wait for the first 1m pullback of at least 0.25R, then a 1m close back above that pullback's CISD level: add the
-  same number of micros at the next 1m open (+1 tick), same stop and target. The add's open risk is never above the first
-  entry's $ risk (and on the eval inside 60% of the room and the soft daily loss left); an add needs at least 2 points of risk.
-  Once the add is +1 of its own risk, the whole position's stop moves up to the add's price. One add at most. 2026: 52 adds.
-  The PC bot routes the add at market on the CISD close (NinjaTrader); trade reports show it as "scale-in after breakeven".
-- **Breakeven + costs** (`be_off 1.25`, `lit-adv-management.md`): the breakeven stop sits at entry + 1.25 points (5 ticks:
+- **Breakeven + costs: ON** (`be_off 1.25`, `lit-adv-management.md`): the breakeven stop sits at entry + 1.25 points (5 ticks:
   the commission, $1.40 in the backtest / $1.90 real, and the exit tick), so a breakeven exit ends about flat instead of a small loss.
+- **Scale-in after breakeven: OFF** (`"scale_in": null`; built and passed two safety reviews). It goes on only after the owner
+  runs `python -m engine.ninjatrader --sim-roundtrip-add` on Sim101 with the market open and NinjaTrader's Orders tab shows the
+  stop and the target at quantity 2 at unchanged prices: the quantity-only OIF CHANGE line is unconfirmed on a real install
+  (`docs/DAILY_CHECKLIST.md` "Switch on scale-in"). The rule, for when it goes on (`{"pb": 0.25, "f": 1.0, "rat_k": 1.0,
+  "min_rk": 2.0, "n": 1}`): once the stop is at breakeven, wait for the first 1m pullback of at least 0.25R, then a 1m close
+  back above that pullback's CISD level: add the same number of micros at the next 1m open (+1 tick), same stop and target.
+  The add's open risk is never above the first entry's $ risk (and on the eval inside 60% of the room and the soft daily loss
+  left); an add needs at least 2 points of risk. Once the add is +1 of its own risk, the whole position's stop moves up to the
+  add's price. One add at most (2026: 52 adds). The PC bot routes the add at market on the CISD close (NinjaTrader).
 
-| 2026 | Before (run `lit_live_2026-10-18`) H1 | With the upgrades H1 | Before H2 | With the upgrades H2 |
-|---|---:|---:|---:|---:|
-| Trades / week (weeks 2+) | 3.12 (85%) | 3.12 (85%) | 2.56 (81%) | 2.56 (81%) |
-| LIT size rule: PF | 4.44 | **4.94** | 2.46 | **3.48** |
-| LIT size rule: net · $/month | +$32,773 · $5,377 | **+$44,507 · $7,302** | +$8,962 · $2,413 | **+$15,192 · $4,090** |
-| LIT size rule: max DD | −$2,315 | −$2,510 | −$1,466 | −$1,451 |
-| Eval path (two_week sizing): net · $/month | +$36,723 · $6,025 | **+$53,116 · $8,714** | +$9,674 · $2,605 | **+$17,262 · $4,647** |
-| Eval path: max DD | −$3,612 | −$3,059 | −$2,493 | −$3,076 |
-| MFFU 50K 2-week pass / fail (eval path) | 52.9% / 9.2% | **58.0% / 2.5%** | 50.7% / 2.9% | **52.2% / 0.0%** |
-| Monte Carlo 2-week pass / fail (eval path) | 50.5% / 7.0% | 51.9% / 3.2% | 54.0% / 6.8% | 58.1% / 3.2% |
+| 2026 | Before (`lit_live_2026-10-18`) H1 | **Live now** H1 | With scale-in H1 | Before H2 | **Live now** H2 | With scale-in H2 |
+|---|---:|---:|---:|---:|---:|---:|
+| Trades / week (weeks 2+) | 3.12 (85%) | 3.12 (85%) | 3.12 (85%) | 2.56 (81%) | 2.56 (81%) | 2.56 (81%) |
+| LIT size rule: PF | 4.44 | **4.98** | 4.94 | 2.46 | **2.69** | 3.48 |
+| LIT size rule: net · $/month | +$32,773 · $5,377 | **+$33,891 · $5,560** | +$44,507 · $7,302 | +$8,962 · $2,413 | **+$9,493 · $2,556** | +$15,192 · $4,090 |
+| LIT size rule: max DD | −$2,315 | −$2,196 | −$2,510 | −$1,466 | −$1,396 | −$1,451 |
+| Eval path (two_week sizing): PF | 3.66 | **4.02** | 4.85 | 2.13 | **2.20** | 2.85 |
+| Eval path: net · $/month | +$36,723 · $6,025 | **+$34,234 · $5,617** | +$53,116 · $8,714 | +$9,674 · $2,605 | **+$9,059 · $2,439** | +$17,262 · $4,647 |
+| Eval path: max DD | −$3,612 | −$3,314 | −$3,059 | −$2,493 | −$3,073 | −$3,076 |
+| MFFU 50K 2-week pass / fail (eval path) | 52.9% / 9.2% | **57.1% / 5.9%** | 58.0% / 2.5% | 50.7% / 2.9% | **52.2% / 0.0%** | 52.2% / 0.0% |
+| Monte Carlo 2-week pass / fail (eval path) | 50.5% / 7.0% | 52.8% / 2.6% | 51.9% / 3.2% | 54.0% / 6.8% | 55.1% / 3.5% | 58.1% / 3.2% |
 
 2021–25 reference (5m entries, only the breakeven + costs acts): PF 1.01, +$1,211, max DD −$19,436 (before: PF 1.01, +$1,275,
 −$20,462).
 
-**Read this honestly:** the sample is thin: 13 cuts and 52 adds in 2026, and the 2-week pass gain is a few eval starts per half.
-The money gain is solid in both halves (every scale-in neighbour holds). On the eval path H2 makes less with all three
-(+$17.3k) than with scale-in alone (+$26.0k): the 15-minute check cuts some trades the add would later have carried. The H2
-drawdown on the eval path is a bit deeper (−$2.5k → −$3.1k). Expect the H2 rate.
+**Read this honestly:** the live pair adds little money on the LIT size rule (+$1.1k H1, +$0.5k H2); what it buys is fewer
+eval fails in H1 (2-week fails 9.2% → 5.9%) and a higher 2-week pass rate (52.9% → 57.1% H1, 50.7% → 52.2% H2). On the eval
+path its net is a bit lower than before (H1 −$2.5k, H2 −$0.6k): the cut trades include a few that would have come back. The
+sample is thin (13 cuts in 2026). Most of the money of the 2026-10-20 package is in the scale-in (+$10.6k H1, +$5.7k H2 on
+the LIT size rule), which waits for the Sim check. Expect the H2 rate.
 
-**Switch one back off:** delete its key (`t_check`, `scale_in` or `be_off`) from `"lit"` in `live_model.json` and
-`live_model_lit.json` (all three gone = the 2026-10-18 strategy, run `lit_live_2026-10-18`), restart the PC bot, then rerun
-`python tools/lit_losses.py live` and the dashboard data (`tools/export_backtest.py`, `tools/lit_dash_data.py`,
-`tools/export_replays.py`).
+**Switch one off / on:** delete `t_check` or `be_off` (or set it to `null`) in `"lit"` of `live_model.json` and
+`live_model_lit.json` (both gone = the 2026-10-18 strategy, run `lit_live_2026-10-18`); scale-in on = set `"scale_in": {"pb":
+0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1}` in both. Restart the PC bot, then rerun `python tools/lit_losses.py live`
+(it checks the trades against the stored run of that switch set) and the dashboard data (`tools/export_backtest.py`,
+`tools/lit_dash_data.py`, `tools/export_replays.py`).
 
 ## How LIT performed (`python tools/export_backtest.py` → `research/lab/backtest_live.json`, costs included, run `lit_live`)
 
-LIT with the loss pack and the three upgrades (rules 1–11, exactly what the bots trade), on the LIT size rule ($800 up to a
-20-pt stop; the live eval sizing is in rules 9 and 11):
+LIT with the loss pack, the 15-minute check and breakeven + costs (rules 1–11 with scale-in off, exactly what the bots trade),
+on the LIT size rule ($800 up to a 20-pt stop; the live eval sizing is in rules 9 and 11):
 
 | | 2026 (Jan 2 – Oct 16) | 2026 H1 (picked on) | 2026 H2 (check) | 2021–25 (reference only) |
 |---|---:|---:|---:|---:|
 | Trades · per week · weeks with 2+ | 120 · 2.91 · 86% | 80 · 3.12 · 85% | 40 · 2.56 · 81% | 510 · 2.38 · 76% |
-| Win rate (a breakeven exit now counts as a small win) | 44.2% | 45.0% | 42.5% | 53.7% |
-| Profit factor | **4.43** | 4.94 | 3.48 | 1.01 |
-| Net · per month | **+$59,698 · $6,086** | +$44,507 · $7,302 | +$15,192 · $4,090 | +$1,211 · $24 |
-| Max drawdown | −$2,510 | −$2,510 | −$1,451 | −$19,436 |
-| MFFU 50K eval within 2 weeks (pass / fail) | 37.4% / 1.5% | 40.6% / 2.3% | 32.1% / 0.0% | 6.0% / 13.3% |
-| Within 1 month (pass / fail) | 65.0% / 6.8% | 68.0% / 8.6% | 60.3% / 0.0% | 13.2% / 33.0% |
-| Pass rate (passed ÷ decided) · median sessions to pass | **84.7%** · 12 | 85.5% · 9 | 100% · 17 | 30.0% · 20 |
+| Win rate (a breakeven exit now counts as a small win) | 55.0% | 58.8% | 47.5% | 53.7% |
+| Profit factor | **4.07** | 4.98 | 2.69 | 1.01 |
+| Net · per month | **+$43,385 · $4,423** | +$33,891 · $5,560 | +$9,493 · $2,556 | +$1,211 · $24 |
+| Max drawdown | −$2,196 | −$2,196 | −$1,396 | −$19,436 |
+| MFFU 50K eval within 2 weeks (pass / fail) | 31.6% / 1.0% | 36.7% / 1.6% | 23.1% / 0.0% | 6.0% / 13.3% |
+| Within 1 month (pass / fail) | 57.3% / 4.9% | 64.1% / 7.8% | 46.2% / 0.0% | 13.2% / 33.0% |
+| Pass rate (passed ÷ decided) · median sessions to pass | **90.8%** · 14 | 83.7% · 10 | 100% · 20.5 | 30.0% · 20 |
 
-2026 exits: 40 stops, 38 breakevens, 22 targets, 13 cuts (15-minute check), 7 at 15:55. Dashboard Results page (full windows
-only): 2026 2-week 36.0% / 1.5%, 1-month 63.1% / 7.5%; back to back 9 passed, 4 failed.
+2026 exits: 40 stops, 34 breakevens, 25 targets, 13 cuts (15-minute check), 8 at 15:55. Dashboard Results page (full windows
+only): 2026 2-week 29.9% / 1.0%, 1-month 54.5% / 5.3%; back to back 9 passed, 3 failed. Eval path (live two_week sizing):
+H1 PF 4.02 +$34,234, 2-week 57.1% / 5.9%; H2 PF 2.20 +$9,059, 2-week 52.2% / 0.0% (rule 11).
+
+With scale-in as well (after the Sim check; run `lit_adopt_all3`): 2026 PF 4.43, +$59,698 ($6,086/mo), max DD −$2,510,
+2-week 37.4% / 1.5%, pass rate 84.7%; H1 PF 4.94 +$44,507; H2 PF 3.48 +$15,192.
 
 Before the upgrades (the 2026-10-18 version, run `lit_live_2026-10-18`, rules 1–10):
 
@@ -225,17 +238,17 @@ sessions instead of 12, 86% of weeks with 2+ trades instead of 90%; 2021–25 $2
 Same months, old strategy: 2026 PF 3.94, +$20,487 (H1 +$4,919, H2 +$15,568), max DD −$2,249.
 
 **Read this honestly:**
-- **Expect the H2 rate (about $4,100 a month with the upgrades; $2,400 before), not the full-year $6,086.** H1 was tuned, H2 was
+- **Expect the H2 rate (about $2,550 a month live now; $4,100 with scale-in; $2,400 before), not the full-year $4,423.** H1 was tuned, H2 was
   not; the old bot did better in H2.
 - **2021–25 shows no edge** (PF 1.01, drawdown −$19.4k). Those years have no 1m data, so the 1m entry, the 15-minute check and
   the scale-in cannot be checked there. On 5m candles only, the same rules (LIT final) make +$6.6k in 2026: **the edge needs
   1-minute bars.**
-- **A few trades carry it:** the top 3 are 39% of 2026's net; the longest run without a 1R+ winner is 12 trades.
+- **A few trades carry it:** the top 3 are 37% of 2026's net; the longest run without a 1R+ winner is 12 trades.
 - **It is a London-morning strategy:** 95 of 120 trades enter 02:00–08:00 ET. LIT's own New York entries (08:00–15:30 ET) are
-  25 of 120, 0.61 a week, +$5.7k in 2026 but H2 PF 0.63 (−$463) (before the upgrades H2 PF 1.10, +$94). MFFU wants the owner
+  25 of 120, 0.61 a week, +$6.3k in 2026 but H2 PF 0.90 (−$116) (before the upgrades H2 PF 1.10, +$94). MFFU wants the owner
   present for live trading, so that clashes; paper trading is not affected.
-- Months 2026: Jan +8.1k, Feb +6.0k, Mar +9.5k, Apr +8.4k, May +9.2k, Jun +3.3k, Jul +1.4k, Aug +0.9k, Sep +3.6k, Oct (to the
-  16th) +9.4k: every month up (before the upgrades August was −$0.03k).
+- Months 2026: Jan +10.0k, Feb +2.3k, Mar +7.4k, Apr +6.7k, May +5.1k, Jun +2.3k, Jul +0.9k, Aug +0.03k, Sep +1.9k, Oct (to
+  the 16th) +6.7k: every month up (before the upgrades August was −$0.03k).
 - Robust in the checks that were run (LIT final): every one of 23 neighbouring settings stays profitable in both halves (2026
   +$26.9k to +$44.3k); 2 extra ticks of slippage still leave +$38.2k.
 

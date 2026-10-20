@@ -51,6 +51,26 @@ One page for every day. The long first-time steps are in `docs/GO_LIVE_TONIGHT.m
 - [ ] NinjaTrader: restart it once (it frees memory), reconnect, check the LE_BarFeed chart, then **LE HEALTH CHECK**.
 - [ ] Before Sunday 18:00 ET the bot should be running again for Monday.
 
+## Switch on scale-in (once, when you have 15 minutes with the market open)
+Scale-in (one add after breakeven, `STRATEGY.md` rule 11) is built but **OFF** until this check passes on a real
+NinjaTrader. The 15-minute check and breakeven + costs are already on.
+1. **First, recompile LE_BarFeed** (it now also writes `le_feed\MNQ_instrument.txt`, the roll guard that refuses an entry
+   when the chart and the order contract differ): NinjaTrader → New → NinjaScript Editor → open `LE_BarFeed` → press
+   **F5**. No red errors at the bottom. Then remove and re-add LE_BarFeed on the MNQ chart (30 days loaded).
+2. Bot **stopped**, NinjaTrader on **Sim101**, market **open** (not 17:00-18:00 ET, not the weekend).
+3. In a command window in the bot folder: `python -m engine.ninjatrader --sim-roundtrip-add`
+4. It buys 1 MNQ with a stop and a target, moves the stop up, refuses one bad add, then **adds 1 MNQ** and stops at
+   "Press Enter to flatten". **Before you press Enter**, open NinjaTrader's **Orders** tab:
+   - the stop shows **quantity 2** (Sell 2, Stop Market) at the price the window printed,
+   - the target shows **quantity 2** (Sell 2, Limit) at the price the window printed,
+   - prices **unchanged**, quantity **not 0**, no third order, the position (Positions tab) **Long 2**.
+   Take a phone photo of the Orders tab.
+5. Press Enter: it flattens. Every line (1 to 5) must start with OK, no FAIL; Sim101 flat, no orders left.
+6. All OK: **tell Claude** ("scale-in Sim check passed", with the photo), or set it yourself in **both**
+   `live_model.json` and `live_model_lit.json`, under `"lit"`:
+   `"scale_in": {"pb": 0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1}` — then restart the bot (LE UPDATE).
+   Any FAIL, quantity 0 or a wrong price: leave it off and send Claude the window text and the photo.
+
 ## Rules that never change
 - The bot never arms a real account by itself. You start the eval bot yourself (dashboard, your phrase).
 - **No trade for 5 days**: place 1 MNQ by hand (in and out) or let the min-days trade run (MFFU's 7-day rule).

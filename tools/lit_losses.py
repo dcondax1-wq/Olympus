@@ -1384,13 +1384,14 @@ def save():
         print("saved", rid, F.fmt(o), flush=True)
 
 
-UPGRADES = ("t_check", "scale_in", "be_off")   # switched on 2026-10-20 (tools/lit_adopt_combo.py, runs lit_adopt_all3*)
+UPGRADES = ("t_check", "scale_in", "be_off")   # built 2026-10-20 (tools/lit_adopt_combo.py); t_check + be_off ON, scale_in OFF until the Sim roundtrip
 
 
 def save_live():
     """The live LIT settings (live_model.json "lit") stored as run lit_live, the Lab's reference (engine/lab_scope.py).
     Checks first: (1) with the 2026-10-20 upgrades (t_check, scale_in, be_off) taken out, the engine options (monday +
-    wk_stop) equal build(lit_loss_pack) trade for trade; (2) with all three in, the trades equal run lit_adopt_all3.
+    wk_stop) equal build(lit_loss_pack) trade for trade; (2) with the switch set in live_model.json the trades equal its stored run
+    (t_check + be_off: lit_adopt_t15_be_off; all three: lit_adopt_all3).
     The previous reference (2026-10-18, no upgrades) is kept as run lit_live_2026-10-18."""
     lm = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))
     P = {**lit.DEFAULTS, **lm["lit"]}
@@ -1405,14 +1406,19 @@ def save_live():
         raise SystemExit("the engine options do not reproduce lit_loss_pack")
     T = F.run(P)
     on = [k for k in UPGRADES if lm["lit"].get(k)]
-    if len(on) == 3 and os.path.exists(os.path.join(rl.RUNS, "lit_adopt_all3.json")):
-        ref = rl.load("lit_adopt_all3")
+    # the stored run each switch set must reproduce (2026-10-20: scale_in off until the Sim roundtrip passes)
+    REF = {("be_off", "scale_in", "t_check"): "lit_adopt_all3", ("be_off", "t_check"): "lit_adopt_t15_be_off"}
+    rid_ref = REF.get(tuple(sorted(on)))
+    if on and not rid_ref:
+        raise SystemExit(f"no reference run for the upgrade set {on}: add one to REF in tools/lit_losses.py save_live")
+    if rid_ref and os.path.exists(os.path.join(rl.RUNS, rid_ref + ".json")):
+        ref = rl.load(rid_ref)
         c = ref["trade_cols"]
         kr = [(r[c.index("day")], r[c.index("entry_t")], round(r[c.index("pnl")], 2), r[c.index("exit")]) for r in ref["trades"]]
         ok = key(T, qty=False) == kr
-        print("live (3 upgrades) == run lit_adopt_all3:", ok, len(T), len(kr), flush=True)
+        print(f"live ({', '.join(on)}) == run {rid_ref}:", ok, len(T), len(kr), flush=True)
         if not ok:
-            raise SystemExit("live_model.json lit does not reproduce run lit_adopt_all3")
+            raise SystemExit(f"live_model.json lit does not reproduce run {rid_ref}")
     S = rl.score(T, F.SESS)
     o = F.score(T)
     h = lambda s: (f"n={s['n']} {s['tpw']}/wk win {s['win']}% PF {s['pf']} net {s['net']:+,} (${s['per_month']:,}/mo) DD {s['dd']:,} "  # noqa
@@ -1423,12 +1429,13 @@ def save_live():
             "The live LIT settings (live_model.json lit): the loss pack (2026-10-18) and the upgrades t_check, scale_in and "
             "be_off 1.25 (2026-10-20) inside engine/lit.py",
             params=P, trades=clean, scored=S, status="adopt-candidate",
-            verdict=f"LIVE since 2026-10-20 (loss pack{up}; the 2026-10-18 version is run lit_live_2026-10-18). LIT size rule: "
+            verdict=f"LIVE since 2026-10-20 (loss pack{up}; scale_in built but OFF until the Sim roundtrip passes; the 2026-10-18 "
+                    f"version is run lit_live_2026-10-18; = run {rid_ref or 'lit_loss_pack'}). LIT size rule: "
                     f"2026 H1 (pick) {h(o['H1'])}; 2026 H2 (check) {h(o['H2'])}; 2026 {h(o['2026'])}; 2021-25 reference only "
-                    f"{h(o['2021-25'])}. Eval path (live two_week sizing): run lit_adopt_all3_eval.",
-            notes="engine/lit.py run_x on live_model.json lit (monday, wk_stop, t_check, scale_in, be_off); with the 2026-10-20 "
-                  "upgrades off identical to lit_loss_pack (tools/lit_losses.py build), with them on identical to lit_adopt_all3 "
-                  "(tools/lit_adopt_combo.py). Scale-in trades: pnl includes the add, qty is the first entry's micros. The live "
+                    f"{h(o['2021-25'])}. Eval path (live two_week sizing): run {(rid_ref or 'lit_adopt_all3') + '_eval'}.",
+            notes="engine/lit.py run_x on live_model.json lit (monday, wk_stop + the upgrades switched on); with the 2026-10-20 "
+                  "upgrades off identical to lit_loss_pack (tools/lit_losses.py build), with t_check + be_off identical to "
+                  "lit_adopt_t15_be_off, with all three identical to lit_adopt_all3 (tools/lit_adopt_combo.py). Scale-in trades: pnl includes the add, qty is the first entry's micros. The live "
                   "loop (engine/lit_live.py) runs the same code: tests/test_lit_live.py.",
             writeup="lit-big-ideas", tags=["lit", "lit_loss", "live"])
     print("saved lit_live", F.fmt(o), flush=True)

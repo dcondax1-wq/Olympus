@@ -39,7 +39,7 @@ def check(name, ok, info=""):
 def main():
     r = []
     live_cfg = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]
-    # the engine default stays off; live_model.json switches it on (owner, 2026-10-20) with exactly CAND
+    # the engine default stays off; live_model.json has it null (off until the Sim roundtrip, 2026-10-20) or exactly CAND
     r.append(check("engine default off, live = CAND", lit.DEFAULTS.get("scale_in") is None
                    and live_cfg.get("scale_in") in (None, CAND), live_cfg.get("scale_in")))
     # base = the live params without the three upgrades, so the add is compared on its own

@@ -435,11 +435,12 @@ function switchesHTML(sw) {
   if (!sw || sw.error) return empty('No adopt-candidate numbers.', esc(sw?.error || ''));
   const b = sw.base?.rule || {};
   const cell = (r, k) => (r?.[k] ? `<b class="${cls((r[k].net || 0) - (b[k]?.net || 0))}">${fmtS$((r[k].net || 0) - (b[k]?.net || 0))}</b><em>PF ${fmtN(r[k].pf, 2)} · ${fmt$(r[k].per_month)}/mo</em>` : '—');
-  return `<div class="bc-sws">${sw.switches.map((s) => `<div class="bc-swr"><div class="bc-swr-h"><b>${esc(s.name)}</b>${chip(s.on ? 'ON' : 'OFF', s.on ? 'good' : '')}<span class="muted small mono">${esc(s.key)}</span></div>
+  return `<div class="bc-sws">${sw.switches.map((s) => `<div class="bc-swr"><div class="bc-swr-h"><b>${esc(s.name)}</b>${chip(s.on ? 'ON' : s.waiting ? 'OFF · waiting for the Sim check' : 'OFF', s.on ? 'good' : s.waiting ? 'warn' : '')}<span class="muted small mono">${esc(s.key)}</span></div>
       <p>${esc(s.what)}</p><div class="bc-swn"><div><span>H1 2026 (picked)</span>${cell(s.rule, 'H1')}</div><div><span>H2 2026 (check)</span>${cell(s.rule, 'H2')}</div>
       <div><span>2-week pass H2</span><b>${s.eval?.H2?.p10 != null ? fmtN(s.eval.H2.p10, 1) + '%' : '—'}</b><em>base ${sw.base?.eval?.H2?.p10 != null ? fmtN(sw.base.eval.H2.p10, 1) + '%' : '—'}</em></div></div>
       <p class="muted small">${icon('info')} ${esc(s.note)} · ${esc(s.writeup)}</p></div>`).join('')}</div>
-    <p class="muted small">Net vs today's LIT (base H1 ${fmtS$(b.H1?.net)} / H2 ${fmtS$(b.H2?.net)}). Read-only: ${esc(sw.how)}.</p>`;
+    ${sw.live?.rule?.H1 ? `<p class="small"><b>Live now (${esc(sw.switches.filter((s) => s.on).map((s) => s.key).join(' + ') || 'none')}):</b> H1 ${fmtS$(sw.live.rule.H1.net)} PF ${fmtN(sw.live.rule.H1.pf, 2)} · H2 ${fmtS$(sw.live.rule.H2?.net)} PF ${fmtN(sw.live.rule.H2?.pf, 2)} · eval 2-week pass/fail H1 ${fmtN(sw.live.eval?.H1?.p10, 1)}/${fmtN(sw.live.eval?.H1?.f10, 1)} · H2 ${fmtN(sw.live.eval?.H2?.p10, 1)}/${fmtN(sw.live.eval?.H2?.f10, 1)}</p>` : ''}
+    <p class="muted small">Net vs the 2026-10-18 LIT without upgrades (base H1 ${fmtS$(b.H1?.net)} / H2 ${fmtS$(b.H2?.net)}). Read-only: ${esc(sw.how)}.</p>`;
 }
 function alertsHTML(ins) {
   const rows = ins?.alerts?.rows || [];

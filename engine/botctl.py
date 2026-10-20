@@ -659,13 +659,17 @@ def do_restart(bot) -> dict:
 SWITCHES = [
     {"key": "t_check", "combo": "t15", "name": "15-minute check", "param": "t_check",
      "what": "15 minutes after the entry, cut a trade that is under +0.3R and never reached +0.5R",
-     "note": "the PC route sent the cut ~3 min late in a replay: fix before switching on", "writeup": "lit-loss-learning.md"},
+     "note": "route fixed: all 13 2026 cuts routed 2 s after the check-bar close (tests/test_lit_exit_route.py)",
+     "note_on": "ON since 2026-10-20 (owner approved)", "writeup": "lit-loss-learning.md"},
     {"key": "scale_in", "combo": "scale", "name": "Scale-in after breakeven", "param": "scale_in",
      "what": "add one more position (same size) on a pull-back after the stop is at breakeven",
-     "note": "needs the NinjaTrader add-order route", "writeup": "lit-big-ideas.md"},
+     "note": "built and safety-reviewed; NinjaTrader MARKET add + bracket resize (52/52 2026 adds match the backtest)",
+     "note_off": "OFF: waiting for the Sim check (python -m engine.ninjatrader --sim-roundtrip-add on Sim101, market open: "
+                 "stop + target qty 2 at unchanged prices; docs/DAILY_CHECKLIST.md)", "writeup": "lit-big-ideas.md"},
     {"key": "be_off", "combo": "be_off", "name": "Breakeven + costs", "param": "be_off",
      "what": "the breakeven stop sits 1.25 pts beyond entry so a BE exit pays its commission",
-     "note": "small candidate", "writeup": "lit-adv-management.md"},
+     "note": "a breakeven exit ends about flat instead of a small loss",
+     "note_on": "ON since 2026-10-20 (owner approved)", "writeup": "lit-adv-management.md"},
 ]
 
 
@@ -688,9 +692,14 @@ def switches_view(lm: dict | None = None) -> dict:
     rows = []
     for s in SWITCHES:
         c = combo.get(s["combo"]) or {}
-        rows.append({**{k: s[k] for k in ("key", "name", "what", "note", "writeup")}, "on": lit.get(s["param"]) not in (None, False, 0, {}),
-                     "params": c.get("params"), **nums(c)})
-    return {"base": nums(combo.get("base")), "switches": rows,
+        on = lit.get(s["param"]) not in (None, False, 0, {})
+        note = "; ".join(x for x in ((s.get("note_on") if on else s.get("note_off")), s["note"]) if x)
+        rows.append({**{k: s[k] for k in ("key", "name", "what", "writeup")}, "note": note, "on": on,
+                     "waiting": (not on) and bool(s.get("note_off")), "params": c.get("params"), **nums(c)})
+    live_set = tuple(sorted(r["key"] for r in rows if r["on"]))
+    live_id = {(): "base", ("be_off", "t_check"): "t15_be_off", ("be_off", "scale_in", "t_check"): "all3",
+               ("t_check",): "t15", ("scale_in",): "scale", ("be_off",): "be_off"}.get(live_set)
+    return {"base": nums(combo.get("base")), "switches": rows, "live_id": live_id, "live": nums(combo.get(live_id)) if live_id else None,
             "combos": {k: nums(combo.get(k)) for k in ("t15_be_off", "all3") if combo.get(k)},
             "source": "research/lit/adopt_combo.json", "read_only": True,
             "how": "switching one on is a change to live_model.json \"lit\" after the research checks; this panel only shows them"}

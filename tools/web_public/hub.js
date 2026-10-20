@@ -14,7 +14,7 @@
 //                payout calendar, business P&L;  Home > Market: news week, CME holidays, the roll countdown, the VIX band
 //   Money        $ a month (the Jul-Oct rate), the owner's monthly goal, the funded three-account plan, the payout tracker,
 //                the accounts table;  Money > What if: the next trade at target / at the stop / at breakeven
-//   Strategy     the live rules in plain words, the upgrade combo (t_check + scale_in + be_off; ON/OFF read from live_model.json, ON since 2026-10-20), the research
+//   Strategy     the live rules in plain words, the upgrade combo (t_check + scale_in + be_off; ON/OFF read from live_model.json: t_check + be_off ON since 2026-10-20, scale_in OFF until the Sim check), the research
 //                scoreboard, the changelog
 //   Settings     + monthly goal, compact mode, light theme (all stored on this phone only)
 // Classic script that uses the main page's helpers (D, VIEWS, GROUPS, icon, esc, usd ...). Paper only, read-only.
@@ -531,11 +531,13 @@
     const rows = C.rows || [], base = rows.find((r) => r.id === 'base'), sw = C.switches || [];
     const d = (v, b) => ok(v) && ok(b) && b !== v ? `<small class="${v > b ? 'up' : 'dn'}">${v > b ? '+' : '−'}${kabs(Math.abs(v - b))}</small>` : '';
     const anyOn = sw.some((s) => s.on), allOn = sw.length > 0 && sw.every((s) => s.on), since = C.on_since ? ' since ' + fDate(C.on_since) : '';
+    const onTxt = sw.filter((s) => s.on).map((s) => s.key).join(' + '), waitS = sw.filter((s) => !s.on && s.wait);
+    const live = C.live_id || (allOn ? 'all3' : '');
     return `<div class="card"><div class="card-h"><h3>${icon('layers')}Upgrade: 15-min check + scale-in + BE+1.25</h3>${allOn ? chip('ON' + since, 'good') : anyOn ? chip('partly ON' + since, 'warn') : chip('OFF', 'bad')}</div>
-      <p class="lead" style="margin-top:0">Three upgrades, tested alone and together on the real LIT engine. ${allOn ? `<b>Live (paper) since ${esc(fDate(C.on_since) || '2026-10-20')}</b>: all three are on in live_model.json.` : anyOn ? '<b>Partly live</b> (see the switches below).' : '<b>Not live.</b>'} Judged the LIT way: picked on Jan–Jun, checked on Jul–Oct.</p>
-      <div class="chips" style="margin-bottom:12px">${sw.map((s) => `<span class="chip ${s.on ? 'good' : ''}" title="${esc(s.text)}">${esc(s.key)} · ${s.on ? 'on' : 'off'}</span>`).join('')}</div>
+      <p class="lead" style="margin-top:0">Three upgrades, tested alone and together on the real LIT engine. ${allOn ? `<b>Live (paper) since ${esc(fDate(C.on_since) || '2026-10-20')}</b>: all three are on in live_model.json.` : anyOn ? `<b>Partly live${esc(since)}</b>: ${esc(onTxt)} on in live_model.json${waitS.length ? '; ' + waitS.map((s) => `${esc(s.key)} off, ${esc(s.wait)}`).join('; ') : ''}.` : '<b>Not live.</b>'} Judged the LIT way: picked on Jan–Jun, checked on Jul–Oct.</p>
+      <div class="chips" style="margin-bottom:12px">${sw.map((s) => `<span class="chip ${s.on ? 'good' : s.wait ? 'warn' : ''}" title="${esc(s.wait || s.text)}">${esc(s.key)} · ${s.on ? 'on' : s.wait ? 'off · waiting for the Sim check' : 'off'}</span>`).join('')}</div>
       <div class="tw"><table class="ht hb-ct"><tr><th>Variant</th><th class="c">Net Jan–Jun</th><th class="c">Net Jul–Oct</th><th class="c">PF H1 / H2</th><th class="c">Eval 2-wk pass H1 / H2</th><th class="c">Eval 2-wk fail H1 / H2</th></tr>
-        ${rows.map((r) => `<tr class="${r.id === 'all3' ? 'hb-hi' : ''}"><td class="k">${esc(r.label)}</td><td class="v">${kusd(r.lit.H1?.net)}${r.id !== 'base' ? d(r.lit.H1?.net, base?.lit.H1?.net) : ''}</td><td class="v">${kusd(r.lit.H2?.net)}${r.id !== 'base' ? d(r.lit.H2?.net, base?.lit.H2?.net) : ''}</td>
+        ${rows.map((r) => `<tr class="${r.id === live ? 'hb-hi' : ''}"><td class="k">${esc(r.label)}${r.id === live && r.id !== 'base' ? ' <small class="up">live</small>' : ''}</td><td class="v">${kusd(r.lit.H1?.net)}${r.id !== 'base' ? d(r.lit.H1?.net, base?.lit.H1?.net) : ''}</td><td class="v">${kusd(r.lit.H2?.net)}${r.id !== 'base' ? d(r.lit.H2?.net, base?.lit.H2?.net) : ''}</td>
           <td class="v">${fPF(r.lit.H1?.pf)} / ${fPF(r.lit.H2?.pf)}</td><td class="v">${pct(r.eval.H1?.p10)} / ${pct(r.eval.H2?.p10)}</td><td class="v">${pct(r.eval.H1?.f10)} / ${pct(r.eval.H2?.f10)}</td></tr>`).join('')}</table></div>
       <ul class="list" style="margin-top:12px">${sw.map((s) => `<li>${esc(s.text)}.</li>`).join('')}</ul>
       <p class="small mut">Net = LIT size rule; eval = the live two-week sizing on the MFFU 50K. ${allOn || anyOn ? 'The cloud keeps a paper ledger without them (lit_base) to show what they add live. ' : 'Before switching on: the 15-minute cut must route on time on the PC, and scale-in needs the NinjaTrader add-order route. '}${esc(C.src || '')}</p></div>`;

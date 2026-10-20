@@ -655,13 +655,17 @@ def _extras(st, lm, bt):
 # research scoreboard and the changelog. research/lit/*.json and the git history are not in the cloud checkout (sparse,
 # fetch-depth 1), so every local build that can read them refreshes tools/web_hub_snapshot.json and the cloud reads that.
 HUB_SNAPSHOT = os.path.join(ROOT, "tools", "web_hub_snapshot.json")
-COMBO = (("base", "LIT today (live)"), ("t15", "15-minute check"), ("scale", "Scale-in after breakeven"), ("be_off", "Breakeven + 1.25 pts"),
+COMBO = (("base", "LIT 2026-10-18 (no upgrades)"), ("t15", "15-minute check"), ("scale", "Scale-in after breakeven"), ("be_off", "Breakeven + 1.25 pts"),
          ("t15_be_off", "15-min check + BE + 1.25"), ("all3", "All three together"))
 COMBO_KEYS = ("n", "tpw", "win", "pf", "net", "per_month", "dd", "p10", "f10", "p20", "f20", "pass_med", "pass_rate", "cost")
 COMBO_PARAMS = (("t_check", "15-minute check: at 15 min, out if the trade is below +0.3R and never reached +0.5R"),
                 ("scale_in", "Scale-in: one add on a 1m CISD after breakeven, stop moved to the add"),
                 ("be_off", "Breakeven at entry + 1.25 pts (covers costs) instead of the entry"))
-UPGRADES_ON_SINCE = "2026-10-20"   # owner switched t_check + scale_in + be_off on in live_model.json (commit 2719955)
+UPGRADES_ON_SINCE = "2026-10-20"   # owner switched t_check + be_off on in live_model.json (scale_in built, OFF until the Sim roundtrip)
+# why a switch is off while the research says on (shown next to the chip on the phone's Strategy page)
+UPGRADE_WAIT = {"scale_in": "waiting for the Sim check (python -m engine.ninjatrader --sim-roundtrip-add on Sim101)"}
+COMBO_LIVE = {(): "base", ("t_check",): "t15", ("scale_in",): "scale", ("be_off",): "be_off", ("be_off", "t_check"): "t15_be_off",
+              ("be_off", "scale_in", "t_check"): "all3"}   # the adopt_combo row that equals the live switch set
 FUNDED_TRIO = ("mffu_builder_50k", "lucid_pro_50k", "fn_rapid_daily_50k")
 # the scoreboard: what the latest research found, in one line with its $ (write-up slug -> [verdict, line])
 SCORE = {
@@ -828,8 +832,12 @@ def _hub_research(lm):
     L = (lm or {}).get("lit") or {}
     if out.get("combo"):
         sw = [{"key": k, "text": t, "on": (float(L.get(k) or 0.0) != 0.0) if k == "be_off" else bool(L.get(k))} for k, t in COMBO_PARAMS]
+        for x in sw:
+            if not x["on"] and UPGRADE_WAIT.get(x["key"]):
+                x["wait"] = UPGRADE_WAIT[x["key"]]
         out["combo"] = {**out["combo"], "switches": sw, "all_on": all(x["on"] for x in sw), "any_on": any(x["on"] for x in sw),
-                        "on_since": UPGRADES_ON_SINCE if any(x["on"] for x in sw) else None}
+                        "on_since": UPGRADES_ON_SINCE if any(x["on"] for x in sw) else None,
+                        "live_id": COMBO_LIVE.get(tuple(sorted(x["key"] for x in sw if x["on"])))}
     return out
 
 
