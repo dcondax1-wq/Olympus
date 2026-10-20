@@ -1822,7 +1822,7 @@ def main(argv=None):
     ap.add_argument("--instrument", default=None, help="force the instrument name, e.g. 'MNQ 12-26'")
     ap.add_argument("--contract", default=None, choices=["micro", "auto"], help="micro = MNQ only (default); auto = 10+ micros as NQ minis")
     ap.add_argument("--close-suffix", default=None, help="text added to the CLOSEPOSITION instrument, e.g. ' Globex'")
-    ap.add_argument("--write-mode", default=None, choices=["direct", "move"], help="how order files reach incoming (default direct)")
+    ap.add_argument("--write-mode", default=None, choices=["direct", "move"], help="how order files reach incoming (default move)")
     ap.add_argument("--port", type=int, default=int(os.environ.get("PORT", 8766)))
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
