@@ -88,7 +88,8 @@ Write-Host "Runs as      : $User (only when logged on; keep the user logged in, 
 if ($DryRun) { Write-Host "Dry run: nothing changed."; exit 0 }
 
 # power settings: hibernation + wake timers (needs Administrator; warn instead of failing when it is not)
-$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+$isAdmin = $false
+try { $isAdmin = [bool]([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) } catch { }
 if ($isAdmin) {
     & powercfg /hibernate on | Out-Null
     & powercfg /setacvalueindex SCHEME_CURRENT SUB_SLEEP RTCWAKE 1 | Out-Null

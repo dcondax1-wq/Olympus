@@ -3,8 +3,17 @@ rem Liquidity Engine: update the bot (double-click). Stops the bot server, pulls
 rem server again in its own window, runs the self-tests and the health check. It never arms or starts a real account:
 rem a Sim / paper bot resumes by itself; the eval bot resumes only if you turned auto-resume on yourself.
 setlocal EnableExtensions
-title Liquidity Engine - UPDATE
+rem cmd.exe reads a running .bat line by line from its byte offset, and the pull below can rewrite this very file:
+rem so the update runs from a copy in %TEMP% (one line: call the copy, then exit; nothing here is read after the pull).
+if /i "%~1"=="--from-temp" goto :main
+copy /y "%~f0" "%TEMP%\le_update_run.bat" >nul 2>&1 || goto :main
+call "%TEMP%\le_update_run.bat" --from-temp "%~dp0." & exit /b
+
+:main
 cd /d "%~dp0"
+if /i "%~1"=="--from-temp" cd /d "%~2"
+set "HERE=%CD%\"
+title Liquidity Engine - UPDATE
 set "PY=python"
 if defined LE_PYTHON set "PY=%LE_PYTHON%"
 set "PYTHONIOENCODING=utf-8"
@@ -36,7 +45,7 @@ if /i not "%BR%"=="main" goto :notmain
 
 rem ---- 3. stop the bot server (keeps the auto-resume record, so a Sim / paper bot comes back by itself)
 echo  [..] Stopping the bot server
-powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\stop_bot.ps1" -KeepAutostart
+powershell -NoProfile -ExecutionPolicy Bypass -File "%HERE%scripts\stop_bot.ps1" -KeepAutostart
 
 rem ---- 4. get the new code
 echo  [..] Getting the new version (git pull)
@@ -53,7 +62,7 @@ if not errorlevel 1 echo  [OK]  Packages installed
 
 rem ---- 6. start the server again in its own window
 echo  [..] Starting the bot server in its own window
-start "Liquidity Engine bot" powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\run_bot.ps1"
+start "Liquidity Engine bot" powershell -NoProfile -ExecutionPolicy Bypass -File "%HERE%scripts\run_bot.ps1"
 "%PY%" -X utf8 -m engine.ops_checks --wait-server 120
 if errorlevel 1 echo  [FIX] The server did not answer in 2 min: look at the "Liquidity Engine bot" window.
 

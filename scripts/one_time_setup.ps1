@@ -54,12 +54,30 @@ function Say-Fix([string]$Text) {
 function Say-Info([string]$Text) { Write-Host "        $Text" }
 function Step([string]$Text) { Write-Host ""; Write-Host "== $Text" -ForegroundColor Cyan }
 
+function Test-PythonExe([string]$Exe, [string[]]$Pre = @()) {
+    # the real python.exe behind a name (a Store python in WindowsApps, the py launcher); $null when it does not run
+    try {
+        $out = & $Exe @Pre -c "import sys; print(sys.executable)" 2>$null | Select-Object -Last 1
+        if ($LASTEXITCODE -eq 0 -and $out -and (Test-Path -LiteralPath "$out".Trim())) { return "$out".Trim() }
+    } catch { }
+    return $null
+}
+
 function Find-Python {
     if ($Python -and (Test-Path -LiteralPath $Python)) { return $Python }
     if ($env:LE_PYTHON -and (Test-Path -LiteralPath $env:LE_PYTHON)) { return $env:LE_PYTHON }
-    $c = Get-Command python -ErrorAction SilentlyContinue
-    if ($c -and $c.Source -notlike '*\WindowsApps\*') { return $c.Source }
+    $c = Get-Command python -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($c) { $r = Test-PythonExe $c.Source; if ($r) { return $r } }           # the empty Store alias does not run: skipped
+    $c = Get-Command py -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($c) { $r = Test-PythonExe $c.Source @('-3'); if ($r) { return $r } }   # python.org without "Add to PATH": the py launcher
     return $null
+}
+
+function Get-StartupFolder {
+    $d = [Environment]::GetFolderPath('Startup')
+    if (-not $d) { $d = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Startup' }
+    if (-not (Test-Path -LiteralPath $d)) { New-Item -ItemType Directory -Path $d -Force | Out-Null }
+    return $d
 }
 
 function Find-NinjaTrader {
@@ -120,7 +138,8 @@ function Invoke-AdminPart([string]$User, [string]$Py) {
         # pause updates for 35 days (the most Windows allows from Settings; afterwards it installs, then you can pause again)
         $from = (Get-Date).ToUniversalTime()
         $until = $from.AddDays(35)
-        $f = $from.ToString('yyyy-MM-ddTHH:mm:ssZ'); $u = $until.ToString('yyyy-MM-ddTHH:mm:ssZ')
+        $inv = [Globalization.CultureInfo]::InvariantCulture      # ':' stays ':' whatever the PC's language
+        $f = $from.ToString('yyyy-MM-ddTHH:mm:ssZ', $inv); $u = $until.ToString('yyyy-MM-ddTHH:mm:ssZ', $inv)
         foreach ($n in @('PauseUpdatesStartTime', 'PauseFeatureUpdatesStartTime', 'PauseQualityUpdatesStartTime')) { Set-ItemProperty -Path $ux -Name $n -Value $f -Type String }
         foreach ($n in @('PauseUpdatesExpiryTime', 'PauseFeatureUpdatesEndTime', 'PauseQualityUpdatesEndTime')) { Set-ItemProperty -Path $ux -Name $n -Value $u -Type String }
         # no forced restart while you are signed in (the automatic sign-in keeps you signed in)
@@ -158,7 +177,8 @@ Write-Host ""
 Write-Host "  ==== Liquidity Engine: ONE TIME SETUP ====" -ForegroundColor Cyan
 Write-Host "  About 5 minutes. Green [OK] = done, red [FIX] = the one thing to do. Take a photo of the end if anything is red."
 $Me = "$env:USERDOMAIN\$env:USERNAME"
-$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+$isAdmin = $false
+try { $isAdmin = [bool]([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) } catch { }
 $Py = Find-Python
 if (-not $Py) { Say-Fix "Python not found: install Python 3.12 from python.org (tick 'Add python.exe to PATH'), then run ONE_TIME_SETUP again"; exit 1 }
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) { Say-Fix "Git not found: install Git for Windows from git-scm.com, then run ONE_TIME_SETUP again"; exit 1 }
@@ -194,16 +214,16 @@ if ($br -ne 'main') {
         Say-Info ((($dirty -split "`n") | Select-Object -First 5) -join '; ')
         exit 1
     }
-    & git fetch -q origin main 2>&1 | Out-Host
-    & git checkout main 2>&1 | Out-Host
+    & git fetch -q origin main 2>&1 | ForEach-Object { "$_" } | Out-Host
+    & git checkout main 2>&1 | ForEach-Object { "$_" } | Out-Host
     $br = (& git rev-parse --abbrev-ref HEAD 2>$null | Out-String).Trim()
     if ($br -eq 'main') { Say-Ok "Switched the bot folder to the main branch" }
     else { Say-Fix "Could not switch to main (still on '$br'). Send a photo of this window to Claude."; exit 1 }
 }
-& git pull --ff-only origin main 2>&1 | Out-Host
+& git pull --ff-only origin main 2>&1 | ForEach-Object { "$_" } | Out-Host
 if ($LASTEXITCODE -eq 0) { Say-Ok "Code is up to date (main)" }
 else { Say-Fix "git pull failed: the version you have stays. Send a photo of this window to Claude (the rest of the setup still runs)" }
-& $Py -m pip install -r requirements.txt --disable-pip-version-check -q 2>&1 | Out-Host
+& $Py -m pip install -r requirements.txt --disable-pip-version-check -q 2>&1 | ForEach-Object { "$_" } | Out-Host
 if ($LASTEXITCODE -eq 0) { Say-Ok "Packages installed" } else { Say-Fix "pip install failed: check the internet, then run ONE_TIME_SETUP again" }
 
 # ---------------------------------------------------------------------------------------------- b, c, d (tasks): Administrator
@@ -249,7 +269,7 @@ Step "d. NinjaTrader starts at logon"
 $Nt = Find-NinjaTrader
 if ($Nt) {
     try {
-        $lnk = Join-Path ([Environment]::GetFolderPath('Startup')) 'NinjaTrader 8 (Liquidity Engine).lnk'
+        $lnk = Join-Path (Get-StartupFolder) 'NinjaTrader 8 (Liquidity Engine).lnk'
         $sh = New-Object -ComObject WScript.Shell
         $s = $sh.CreateShortcut($lnk); $s.TargetPath = $Nt; $s.WorkingDirectory = Split-Path -Parent $Nt; $s.Save()
         Say-Ok "NinjaTrader starts at logon ($Nt)"
