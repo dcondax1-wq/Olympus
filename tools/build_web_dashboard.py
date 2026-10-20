@@ -742,6 +742,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     data["lab_files"] = have
     # the learning loop (engine/lit_learn.py): the cloud's summary from state.json, else the repo's learning file + journal
     data["learning"] = st.get("learning") or _learning_fallback()
+    # the three LIT upgrades live (tools/upgrade_shadow.py via the cloud monitor's lit_base ledger): with vs without, per upgrade
+    data["upgrades_live"] = st.get("upgrades_live")
     data["extras"] = _extras(st, lm, bt)          # extras.js pages (Eval HQ, Edge, Calendar, Ops, MFFU rules)
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
