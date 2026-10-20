@@ -246,7 +246,9 @@ The PC route was not tested with it.
 - Other `feat` values: "draw_pd" and "or_dpd_amd".
 - `engine/lit.py bias_with()` reads the bias at the trigger bar. It matches the research features on 8,091 of 8,091 reads.
 - The engine option equals the research path trade for trade (630 / 630, both references; `python -X utf8 tools/lit_bias.py engine`).
-- Off by default. `tests.test_lit_live` stays 120 / 120 identical.
+- Off by default. `tests.test_lit_live` passes: day-end replay 120 / 120 identical; 10,041 intraday polls with 0
+  differences, plus the 29 already known on Good Friday 2026-04-03 (the old engine shows the same 29); the paper bot
+  routes 2 / 2 entries and exits.
 - NOT recommended for the live eval.
 
 ## Files
