@@ -872,6 +872,14 @@ def _hub(st, lm, docs):
             h["auto_text"] = _a.auto_text(hl) if hl else None
         except Exception:
             h["auto_text"] = None
+        try:                                      # the business tools (tools/business.py): statement, payouts, tax, planner,
+            from tools import business as _biz    # scaling calendar, goal, ROI; the watchers' last run from the PC heartbeat
+            h["biz"] = _biz.view()
+            ow = (pc.get("ops") or {}).get("watch") if isinstance(pc.get("ops"), dict) else None
+            if ow:
+                h["biz"]["watch_pc"] = ow
+        except Exception as e:
+            print("  business tools unavailable:", e.__class__.__name__, e)
         return h
     except Exception as e:
         print("  hub unavailable:", e.__class__.__name__, e)

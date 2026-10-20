@@ -153,6 +153,11 @@ def business_raw() -> dict:
         except Exception as e:                               # noqa: BLE001
             b["source_error"] = f"prop_business.xlsx unreadable: {e.__class__.__name__}"
     b.setdefault("source", "research/props/business.json")
+    try:                                                     # the owner's CSV logs (tools/business.py, item 7 of the business tools)
+        from tools import business as _biz
+        b = _biz.merge_logs(b)
+    except Exception as e:                                   # noqa: BLE001
+        b["logs_error"] = f"{e.__class__.__name__}: {str(e)[:120]}"
     return b
 
 
@@ -596,6 +601,14 @@ def business_view(acct=None, now=None) -> dict:
                          "mffu": {"min": 500, "max": 2000, "split": 0.8, "buffer": 2100, "cycle_days": 2, "cons": 0.5},
                          "default_month": base_plan},
             "accounts": b.get("accounts"), "source": b.get("source"), "disclaimer": "Estimates from paper results. Not financial or tax advice."}
+
+
+def biz_view(acct=None, now=None) -> dict:
+    """The business tools (tools/business.py): statement, tax year, payout reminders, eval planner, scaling calendar, Z06
+    goal, ROI per account, the rule / code watchers."""
+    from tools import business as _biz
+    ev = (acct or {}).get("eval") if acct and not acct.get("error") else None
+    return _biz.view(now=now, pc_eval=ev)
 
 
 # ------------------------------------------------------------------------------------------------ 3. market
@@ -1226,7 +1239,7 @@ def export(fetch=True) -> dict:
     lr["gallery"] = g
     return {"built": dt.datetime.now(ET).strftime("%Y-%m-%d %H:%M ET"), "version": VERSION, "firms": fv,
             "business": business_view(), "market": market_view(fetch=fetch), "learn": lr,
-            "system": {"dataq": safe(dataq_view)}, "odds_grid": safe(odds_grid),
+            "system": {"dataq": safe(dataq_view)}, "odds_grid": safe(odds_grid), "biz": safe(biz_view),
             "note": "PC dashboard hub data (tools/hub_data.py). Read-only, paper only."}
 
 

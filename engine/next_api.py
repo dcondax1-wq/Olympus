@@ -363,3 +363,6 @@ router.include_router(_botctl_router)
 # Hub pages (Prop Firms, Business, Market, Learn, System): read-only GETs over research/props + repo files (engine/hub_api.py)
 from .hub_api import router as _hub_router  # noqa: E402
 router.include_router(_hub_router)
+# Business tools (statement, tax year, payout + eval-purchase reminders, scaling calendar, goal, ROI, watchers): engine/biz_api.py
+from .biz_api import router as _biz_router  # noqa: E402
+router.include_router(_biz_router)

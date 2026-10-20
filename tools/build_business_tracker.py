@@ -341,11 +341,97 @@ def build(out):
     return out
 
 
+def _xl_rows(ws, date_col, usd_col):
+    """Filled input rows of a tracker sheet (header row 3): [(row number, {header: value})]."""
+    hdr = [str(c.value or "").strip() for c in ws[3]]
+    out = []
+    for r in range(4, ws.max_row + 1):
+        rec = {h: ws.cell(row=r, column=j + 1).value for j, h in enumerate(hdr) if h}
+        if rec.get(date_col) is not None and isinstance(rec.get(usd_col), (int, float)):
+            out.append((r, rec))
+    return hdr, out
+
+
+def _first_free(ws, cols=(1, 6)):
+    for r in range(4, 4 + N_ROWS):
+        if all(ws.cell(row=r, column=c).value in (None, "") for c in cols):
+            return r
+    return ws.max_row + 1
+
+
+def sync(path=OUT, exp_csv=None, pay_csv=None) -> dict:
+    """Keep the Excel tracker and the CSV logs (research/business/expenses.csv, payouts.csv) equal: a row in one and not the
+    other (same date + amount) is copied across. Never deletes or edits a row; formulas and the owner's typing stay."""
+    from openpyxl import load_workbook
+    from tools import business as biz
+    exp_csv, pay_csv = exp_csv or biz.EXPENSES_CSV, pay_csv or biz.PAYOUTS_CSV
+    if not os.path.exists(path):
+        return {"skipped": f"{os.path.relpath(path, ROOT)} not found (build it: python tools/build_business_tracker.py)"}
+    wb = load_workbook(path)
+    res = {"to_xlsx_fees": 0, "to_xlsx_payouts": 0, "to_csv_expenses": 0, "to_csv_payouts": 0}
+
+    def missing(base, extra):                       # the rows of extra that base does not hold (by date + amount)
+        return biz.union(base, extra)[len(base):]
+
+    def put(ws, vals, fmts):
+        n = _first_free(ws, (1, max(fmts)))
+        for j, v in vals.items():
+            if v not in (None, ""):
+                ws.cell(row=n, column=j, value=v).font = font(BLUE)
+        for j, f in fmts.items():
+            ws.cell(row=n, column=j).number_format = f
+
+    # ---- Fees <-> expenses.csv
+    fe = wb["Fees"]
+    xl = [{"date": biz._date(rec["Date"]), "usd": float(rec["Amount ($)"]), "rec": rec} for _, rec in _xl_rows(fe, "Date", "Amount ($)")[1]]
+    cs = [{"date": biz._date(r["date"]), "usd": biz._f(r["amount_usd"]), "row": r}
+          for r in biz.read_csv(exp_csv, biz.EXP_COLS) if biz._f(r["amount_usd"]) is not None]
+    for r in missing(xl, cs):
+        e = r["row"]
+        put(fe, {1: dt.date.fromisoformat(r["date"]), 2: e["firm"], 3: e["account"], 4: e["type"], 5: e["description"], 6: r["usd"],
+                 7: e["code"], 8: e["note"] or "from expenses.csv"}, {1: DATE, 6: USD})
+        res["to_xlsx_fees"] += 1
+    for r in missing(cs, xl):
+        rec = r["rec"]
+        biz.append_row(exp_csv, biz.EXP_COLS, {"date": r["date"], "firm": rec.get("Firm"), "account": rec.get("Account / nickname"),
+                                                "type": rec.get("Type"), "description": rec.get("Description"), "amount_usd": r["usd"],
+                                                "code": rec.get("Code used"), "note": "from prop_business.xlsx"})
+        res["to_csv_expenses"] += 1
+    # ---- Payouts <-> payouts.csv
+    po = wb["Payouts"]
+    xl = [{"date": biz._date(rec["Date received"]), "usd": float(rec["Received ($)"]), "rec": rec}
+          for _, rec in _xl_rows(po, "Date received", "Received ($)")[1]]
+    cs = [{"date": biz._date(r["date"]), "usd": biz._f(r["received_usd"]), "row": r}
+          for r in biz.read_csv(pay_csv, biz.PAY_COLS) if biz._f(r["received_usd"]) is not None]
+    for r in missing(xl, cs):
+        p = r["row"]
+        put(po, {1: dt.date.fromisoformat(r["date"]), 2: p["firm"], 3: p["account"], 4: biz._f(p["requested_usd"]), 5: r["usd"],
+                 7: p["method"], 8: p["note"] or "from payouts.csv"}, {1: DATE, 4: USD, 5: USD})
+        res["to_xlsx_payouts"] += 1
+    for r in missing(cs, xl):
+        rec = r["rec"]
+        req = rec.get("Requested ($)")
+        biz.append_row(pay_csv, biz.PAY_COLS, {"date": r["date"], "firm": rec.get("Firm"), "account": rec.get("Account / nickname"),
+                                               "requested_usd": req if isinstance(req, (int, float)) else "", "received_usd": r["usd"],
+                                               "method": rec.get("Method"), "note": "from prop_business.xlsx"})
+        res["to_csv_payouts"] += 1
+    if res["to_xlsx_fees"] or res["to_xlsx_payouts"]:
+        wb.save(path)
+    return res
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=OUT)
     ap.add_argument("--force", action="store_true", help="overwrite an existing tracker (wipes what was typed in it)")
+    ap.add_argument("--sync", action="store_true", help="copy rows between the tracker and research/business/expenses.csv / "
+                                                        "payouts.csv (adds only, never deletes)")
     a = ap.parse_args()
+    if a.sync:
+        if ROOT not in sys.path:
+            sys.path.insert(0, ROOT)
+        print("sync:", sync(a.out))
+        sys.exit(0)
     if os.path.exists(a.out) and not a.force:
         sys.exit(f"{a.out} exists: it may hold your entries. Use --force to rebuild it from scratch.")
     print("wrote", build(a.out))

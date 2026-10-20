@@ -473,9 +473,50 @@
           ${f.note || f.summary ? `<p class="small mut" style="margin:0 0 8px">${esc(f.note || f.summary)}</p>` : ''}${(f.plans || []).map((p) => planCard(f, p)).join('')}</div>`).join(''))
       + `<div class="card"><div class="card-h"><h3>${icon('star')}What to buy next</h3></div>
           <p class="lead" style="margin-top:0">${nxt ? esc(typeof nxt === 'string' ? nxt : nxt.text || '') : FU ? `Next to the Builder 50K: a <b>LucidPro 50K</b> and a <b>FundedNext Rapid Daily 50K</b> (~${usd(FU.trio?.H2?.net_per_month)} a month for the three on Jul–Oct trades, ${usd(FU.trio?.H2?.months4_6_per_month)} once all are funded). One bot routes to one account today.` : 'See the funded-firms write-up.'}</p></div>`
-      + payoutCal(P) + bizPnl(P);
+      + payoutCal(P) + bizPnl(P) + bizTools();
+    const tx = el.querySelector('#bzTaxCsv');
+    if (tx) tx.onclick = () => { const t = (HUBD().biz || {}).tax || {}; const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const csv = [`Prop business tax-year summary ${t.year} - ${t.label || 'NOT tax advice'}`, 'date,type,firm,account,description,amount_usd', ...(t.rows || []).map((r) => [r.date, r.type, r.firm, r.account, r.description, r.amount_usd].map(q).join(',')),
+        '', `summary,,,,total fees,${t.fees}`, `summary,,,,total payouts,${t.payouts}`, `summary,,,,net,${t.net}`, `summary,,,,set-aside estimate at ${t.pct}% (not tax advice),${t.set_aside}`].join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `tax_${t.year}.csv`; document.body.appendChild(a); a.click(); a.remove(); };
     el.querySelectorAll('[data-code]').forEach((b) => { b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.code); toast(`Copied ${b.dataset.code} · verify at checkout`); } catch { toast(b.dataset.code); } }; });
   };
+  // business tools (tools/business.py view(), carried as data.hub.biz): statement, payout eligibility, tax year, eval planner,
+  // scaling calendar, Z06 savings, ROI, the weekly rule-page / discount-code watchers
+  function bizTools() {
+    const V = HUBD().biz;
+    if (!V || V.error) return '';
+    const S = V.statement?.business || {}, T = V.statement?.trading || {}, tax = V.tax || {}, pl = V.planner || {}, ca = V.calendar || {}, g = V.goal || {}, roi = V.roi || {};
+    const w = (V.watch?.rules?.updated || (V.watch?.codes?.rows || []).length) ? V.watch : (V.watch_pc ? { rules: { updated: V.watch_pc.rules_t, ok: V.watch_pc.rules_ok, pages: V.watch_pc.rules_pages, changes: V.watch_pc.changes || [] }, codes: { rows: V.watch_pc.codes || [] } } : V.watch || {});
+    const tbl = (h, rows) => rows.length ? `<div class="tw"><table class="ht"><tr>${h.map((x, i) => `<th${i ? ' class="c"' : ''}>${x}</th>`).join('')}</tr>${rows.join('')}</table></div>` : '<p class="small mut" style="margin:0">None yet.</p>';
+    const ST = { ready: ['up', 'can request'], allowed_wait: ['wn', 'allowed · habit: wait'], not_yet: ['', 'not yet'], not_funded: ['', 'eval first'], unknown: ['wn', 'balance missing'] };
+    const months = (x) => ok(x) ? `${num(x, 0)} months` : 'never on this rate';
+    const nx = (pl.steps || [])[0];
+    return `<div class="card"><div class="card-h"><h3>${icon('doc')}Statement · ${esc(V.statement?.month || '')}</h3><span class="meta">PDF on the PC Business page</span></div>
+        <div class="hb-tiles">${tile('Fees', usd(S.fees_total, 2))}${tile('Payouts', usd(S.payouts_total, 2))}${tile('Net', susd(S.net, 2), `YTD ${susd(S.ytd_net, 2)}`, cls(S.net))}${tile('Bot trades', String(T.trades || 0), `account P&L ${susd(T.pnl, 2)}`)}</div></div>
+      <div class="card"><div class="card-h"><h3>${icon('clock')}Payout eligibility</h3></div>
+        ${tbl(['Account', 'Status', 'Ask at profit'], (V.payouts?.rows || []).map((r) => { const s = ST[r.status] || ['', r.status]; return `<tr><td class="k">${esc((r.firm || '').replace('MyFundedFutures', 'MFFU'))} ${esc(r.plan || '')}<br><span class="small mut">${esc(r.text || '')}</span></td><td class="v ${s[0]}">${esc(s[1])}</td><td class="v">${usd(r.need_habit)}</td></tr>`; }))}
+        <p class="small mut" style="margin:6px 0 0">${esc(V.payouts?.how || '')}</p></div>
+      <div class="card"><div class="card-h"><h3>${icon('wallet')}Tax year ${esc(tax.year || '')}</h3>${chip('not tax advice', 'warn')}</div>
+        <div class="hb-tiles">${tile('Fees', usd(tax.fees, 2))}${tile('Payouts', usd(tax.payouts, 2))}${tile('Net', susd(tax.net, 2), '', cls(tax.net))}${tile('Set aside', usd(tax.set_aside, 2), `${num(tax.pct, 0)}% of positive net`)}</div>
+        <button type="button" class="chipbtn" id="bzTaxCsv"><span>Download tax_${esc(tax.year || '')}.csv</span></button><p class="small mut" style="margin:6px 0 0"><b>${esc(tax.label || '')}</b> ${esc(tax.note || '')}</p></div>
+      <div class="card"><div class="card-h"><h3>${icon('star')}Next eval to buy</h3><span class="meta">cash ${usd(pl.cash, 2)}</span></div>
+        ${nx ? `<p class="lead" style="margin-top:0"><b>${esc(nx.name)}</b> · ${usd(nx.price, 2)} (${esc(nx.price_basis || '')}) · ${nx.due ? '<b class="up">buy now</b>' : esc(nx.wait || 'later')}</p>` : ''}
+        ${tbl(['Plan', 'From', 'Price'], (pl.steps || []).map((x) => `<tr><td class="k">${esc(x.name || x.plan)}${(x.codes || []).length ? `<br><span class="small mut">codes: ${x.codes.map((c) => esc(c.code) + (c.st === 'confirmed' ? '' : ' (unverified)')).join(', ')}</span>` : ''}</td><td class="v">${esc(fDate(x.date) || x.date || '')}</td><td class="v">${usd(x.price, 2)}</td></tr>`))}
+        <p class="small mut" style="margin:6px 0 0">${esc(pl.rule || '')}</p></div>
+      <div class="card"><div class="card-h"><h3>${icon('results')}Funded scaling calendar</h3><span class="meta">expected vs downside</span></div>
+        ${tbl(['Month', 'Accounts', 'Cumulative', 'Downside'], (ca.rows || []).map((r) => `<tr><td class="k">${esc(r.month)}${(r.buy || []).length ? `<br><span class="small mut">buy ${esc(r.buy.join(', '))}</span>` : ''}</td><td class="v">${r.accounts}</td><td class="v ${cls(r.cum)}">${susd(r.cum)}</td><td class="v ${cls(r.down_cum)}">${susd(r.down_cum)}</td></tr>`))}
+        <p class="small mut" style="margin:6px 0 0">${esc(ca.warn || '')}</p></div>
+      <div class="card"><div class="card-h"><h3>${icon('target')}${esc(g.name || 'Goal')}</h3><span class="meta">${usd(g.target)}${g.placeholder ? ' · placeholder' : ''}</span></div>
+        <div class="hb-tiles">${tile('Saved', usd(g.saved), `${num(g.pct, 1)}%`)}${tile('Expected', months(g.months_h2), `${usd(g.rate_h2)}/mo, 3 accounts`)}${tile('Conservative', months(g.months_cons), `${usd(g.rate_cons)}/mo, Builder 50K`)}</div>
+        <p class="small mut" style="margin:0">${esc(g.how || '')}</p></div>
+      <div class="card"><div class="card-h"><h3>${icon('results')}ROI per account</h3><span class="meta">net ${susd(roi.total?.net, 2)}</span></div>
+        ${tbl(['Account', 'Fees', 'Payouts', 'Net'], (roi.accounts || []).map((a) => `<tr><td class="k">${esc((a.firm || '').replace('MyFundedFutures', 'MFFU'))} ${esc(a.plan || '')}<br><span class="small mut">${esc(a.stage || '')}${ok(a.roi_pct) ? ' · ROI ' + num(a.roi_pct, 0) + '%' : ''}</span></td><td class="v">${usd(a.fees, 2)}</td><td class="v">${usd(a.payouts, 2)}</td><td class="v ${cls(a.net)}">${susd(a.net, 2)}</td></tr>`))}</div>
+      <div class="card"><div class="card-h"><h3>${icon('news')}Weekly watchers</h3><span class="meta">${w.rules?.updated ? 'rules ' + esc(w.rules.updated) : 'not run yet'}</span></div>
+        <p class="small" style="margin:0 0 6px">Rule pages read OK: <b>${w.rules?.ok || 0}</b> of ${w.rules?.pages || 0}. ${(w.rules?.changes || []).length ? `Changed: ${w.rules.changes.map((c) => esc(c.firm + ' ' + c.key + ' (' + c.seen + ')')).join(', ')}.` : 'No change seen.'}</p>
+        ${tbl(['New code (unverified)', 'Firm', 'Seen'], (w.codes?.rows || []).map((c) => `<tr><td class="k"><button type="button" class="hb-code" data-code="${esc(c.code)}"><b>${esc(c.code)}</b>${c.off ? `<span>${esc(c.off)}</span>` : ''}</button></td><td class="v">${esc(c.firm_name || c.firm || '')}</td><td class="v">${esc(c.seen || '')}</td></tr>`))}
+        <p class="small mut" style="margin:6px 0 0">Weekly from the PC ops task. Codes are from third-party pages: verify at checkout.</p></div>`;
+  }
   function payoutCal(P) {
     const rows = P.payouts?.calendar || P.payouts?.rows || (Array.isArray(P.payouts) ? P.payouts : []);
     return `<div class="card"><div class="card-h"><h3>${icon('clock')}Payout calendar</h3></div>${rows.length
