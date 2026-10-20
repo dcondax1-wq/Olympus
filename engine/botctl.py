@@ -588,7 +588,10 @@ def do_start(bot, account: str, confirm: str = "", present: bool = False, env=No
 def do_stop(bot) -> dict:
     fn = HOOKS.get("stop")
     try:
-        return dict((fn() if callable(fn) else bot.stop()) or {"ok": True})
+        res = fn() if callable(fn) else bot.stop()
+        if hasattr(res, "body") and not isinstance(res, dict):     # a route's Response (server.py live_stop returns J(...))
+            res = json.loads(bytes(res.body).decode() or "{}")
+        return dict(res or {"ok": True})
     except Exception as e:
         return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
 
