@@ -1,7 +1,7 @@
 {
- "built": "2026-10-19 18:11",
+ "built": "2026-10-20 00:07",
  "baseline": "baseline",
- "count": 1096,
+ "count": 1108,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -33829,6 +33829,888 @@
      "slow_pass": 21.2,
      "pass_med": 8.0,
      "b2b": "14/6"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_all3_all_days_bank12",
+   "title": "LIT + all3 + context mgmt: ALL days -> bank12",
+   "family": "management",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 5.33 net +58,867 ($9,658/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 52.2/3.3), 1 month 78.0/11.9. H2 (check) n=40 PF 2.89 net +17,397 ($4,684/mo) DD -3,076; 2-week pass/fail 53.6/0.0 (Monte Carlo 59.1/3.3), 1 month 55.9/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +9,116 H2 +0, 2021-25 reference +0. Flagged trades 80/40; neighbours hold: None.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "630 days (ALL days -> bank12)",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.35,
+     "net": 76264,
+     "dd": -3424,
+     "avg_r": 1.219,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 373.0,
+     "half": 0,
+     "per_month": 7774,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.35,
+     "net": 76264,
+     "dd": -3424,
+     "avg_r": 1.219,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 373.0,
+     "half": 0,
+     "per_month": 7774,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_all3_all_days_nobank",
+   "title": "LIT + all3 + context mgmt: ALL days -> nobank",
+   "family": "management",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 5.85 net +65,927 ($10,816/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 52.3/3.3), 1 month 78.0/11.9. H2 (check) n=40 PF 2.89 net +17,397 ($4,684/mo) DD -3,076; 2-week pass/fail 53.6/0.0 (Monte Carlo 59.1/3.3), 1 month 55.9/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +16,176 H2 +0, 2021-25 reference +0. Flagged trades 80/40; neighbours hold: None.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "630 days (ALL days -> nobank)",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.66,
+     "net": 83324,
+     "dd": -3424,
+     "avg_r": 1.294,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 373.0,
+     "half": 0,
+     "per_month": 8494,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.66,
+     "net": 83324,
+     "dd": -3424,
+     "avg_r": 1.294,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 373.0,
+     "half": 0,
+     "per_month": 8494,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_all3_post_opex_be1_5",
+   "title": "LIT + all3 + context mgmt: post_opex -> be1.5",
+   "family": "management",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 5.13 net +57,066 ($9,362/mo) DD -4,296; 2-week pass/fail 61.3/5.0 (Monte Carlo 54.4/4.2), 1 month 75.2/21.1. H2 (check) n=40 PF 2.88 net +17,598 ($4,738/mo) DD -3,076; 2-week pass/fail 53.6/0.0 (Monte Carlo 58.4/3.2), 1 month 54.2/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 -94 H2 -189, 2021-25 reference +9,677. Flagged trades 19/8; neighbours hold: None.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": "151 days (post_opex -> be1.5)",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 41.7,
+     "pf": 4.23,
+     "net": 74664,
+     "dd": -4296,
+     "avg_r": 1.11,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 7611,
+     "p10": 48.5,
+     "f10": 4.9,
+     "p15": 59.2,
+     "f15": 12.6,
+     "p20": 63.6,
+     "f20": 22.3,
+     "dec10": 53.4,
+     "slow_pass": 7.6,
+     "pass_med": 6.0,
+     "b2b": "16/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 41.7,
+     "pf": 4.23,
+     "net": 74664,
+     "dd": -4296,
+     "avg_r": 1.11,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 7611,
+     "p10": 48.5,
+     "f10": 4.9,
+     "p15": 59.2,
+     "f15": 12.6,
+     "p20": 63.6,
+     "f20": 22.3,
+     "dec10": 53.4,
+     "slow_pass": 7.6,
+     "pass_med": 6.0,
+     "b2b": "16/6"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_d1_q0_67_nobe",
+   "title": "LIT live + context mgmt: d1 <= q0.67 -> nobe",
+   "family": "management",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 3.44 net +39,097 ($6,414/mo) DD -2,748; 2-week pass/fail 55.5/10.9 (Monte Carlo 57.2/9.3), 1 month 67.9/15.6. H2 (check) n=40 PF 2.5 net +13,594 ($3,660/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 53.0/7.2), 1 month 49.2/13.6. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 -1,054 H2 -159, 2021-25 reference +21,135. Flagged trades 53/18; neighbours hold: False.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": "272 days (d1 <= q0.67 -> nobe)",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 32.5,
+     "pf": 3.1,
+     "net": 52691,
+     "dd": -2748,
+     "avg_r": 0.819,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 371.0,
+     "half": 0,
+     "per_month": 5371,
+     "p10": 49.0,
+     "f10": 5.3,
+     "p15": 58.7,
+     "f15": 11.2,
+     "p20": 65.5,
+     "f20": 17.0,
+     "dec10": 54.3,
+     "slow_pass": 23.9,
+     "pass_med": 7.0,
+     "b2b": "18/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 32.5,
+     "pf": 3.1,
+     "net": 52691,
+     "dd": -2748,
+     "avg_r": 0.819,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 371.0,
+     "half": 0,
+     "per_month": 5371,
+     "p10": 49.0,
+     "f10": 5.3,
+     "p15": 58.7,
+     "f15": 11.2,
+     "p20": 65.5,
+     "f20": 17.0,
+     "dec10": 54.3,
+     "slow_pass": 23.9,
+     "pass_med": 7.0,
+     "b2b": "18/5"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_vvix_q0_5_be2",
+   "title": "LIT live + context mgmt: vvix >= q0.5 -> be2",
+   "family": "management",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 3.92 net +39,402 ($6,464/mo) DD -2,748; 2-week pass/fail 49.6/10.1 (Monte Carlo 50.1/7.6), 1 month 66.1/16.5. H2 (check) n=40 PF 2.5 net +13,594 ($3,660/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 53.0/7.2), 1 month 49.2/13.6. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 -1,588 H2 -159, 2021-25 reference +5,841. Flagged trades 40/2; neighbours hold: False.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": "214 days (vvix >= q0.5 -> be2)",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 28.3,
+     "pf": 3.35,
+     "net": 52996,
+     "dd": -2748,
+     "avg_r": 0.712,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 407.0,
+     "half": 0,
+     "per_month": 5403,
+     "p10": 47.6,
+     "f10": 4.9,
+     "p15": 57.8,
+     "f15": 9.7,
+     "p20": 64.6,
+     "f20": 18.4,
+     "dec10": 52.5,
+     "slow_pass": 20.7,
+     "pass_med": 7.0,
+     "b2b": "17/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 28.3,
+     "pf": 3.35,
+     "net": 52996,
+     "dd": -2748,
+     "avg_r": 0.712,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 407.0,
+     "half": 0,
+     "per_month": 5403,
+     "p10": 47.6,
+     "f10": 4.9,
+     "p15": 57.8,
+     "f15": 9.7,
+     "p20": 64.6,
+     "f20": 18.4,
+     "dec10": 52.5,
+     "slow_pass": 20.7,
+     "pass_med": 7.0,
+     "b2b": "17/5"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_vvix_q0_5_nobe",
+   "title": "LIT live + context mgmt: vvix >= q0.5 -> nobe",
+   "family": "management",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 3.78 net +39,865 ($6,540/mo) DD -3,300; 2-week pass/fail 51.3/12.6 (Monte Carlo 51.8/10.7), 1 month 68.8/18.3. H2 (check) n=40 PF 2.5 net +13,594 ($3,660/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 53.0/7.2), 1 month 49.2/13.6. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 -485 H2 -159, 2021-25 reference +10,301. Flagged trades 40/2; neighbours hold: False.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": "214 days (vvix >= q0.5 -> nobe)",
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 29.2,
+     "pf": 3.29,
+     "net": 53459,
+     "dd": -3300,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 404.0,
+     "half": 0,
+     "per_month": 5450,
+     "p10": 48.1,
+     "f10": 6.3,
+     "p15": 58.3,
+     "f15": 11.2,
+     "p20": 64.6,
+     "f20": 19.4,
+     "dec10": 54.4,
+     "slow_pass": 20.0,
+     "pass_med": 7.0,
+     "b2b": "17/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 29.2,
+     "pf": 3.29,
+     "net": 53459,
+     "dd": -3300,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1005,
+     "risk": 404.0,
+     "half": 0,
+     "per_month": 5450,
+     "p10": 48.1,
+     "f10": 6.3,
+     "p15": 58.3,
+     "f15": 11.2,
+     "p20": 64.6,
+     "f20": 19.4,
+     "dec10": 54.4,
+     "slow_pass": 20.0,
+     "pass_med": 7.0,
+     "b2b": "17/5"
     }
    }
   },
@@ -90784,6 +91666,888 @@
      "slow_pass": 34.5,
      "pass_med": 10.0,
      "b2b": "10/4"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_all3_dix_pct_q0_8_0_481_hi_x0_75_lo_x1_25",
+   "title": "LIT + all3 + context size: dix_pct >= q0.8 (0.481) hi x0.75/lo x1.25",
+   "family": "risk",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 5.26 net +54,226 ($8,896/mo) DD -3,090; 2-week pass/fail 57.1/3.4 (Monte Carlo 48.9/3.8), 1 month 78.9/11.0. H2 (check) n=40 PF 3.97 net +19,509 ($5,252/mo) DD -2,116; 2-week pass/fail 55.1/0.0 (Monte Carlo 55.8/0.6), 1 month 50.8/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +999 H2 -4,613, 2021-25 reference +1,988. Flagged trades 80/40; neighbours hold: False.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.8,
+     "pf": 4.82,
+     "net": 73735,
+     "dd": -3090,
+     "avg_r": 1.165,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 318.0,
+     "half": 0,
+     "per_month": 7517,
+     "p10": 44.7,
+     "f10": 1.5,
+     "p15": 57.8,
+     "f15": 6.8,
+     "p20": 65.0,
+     "f20": 12.1,
+     "dec10": 46.2,
+     "slow_pass": 27.4,
+     "pass_med": 9.0,
+     "b2b": "13/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.8,
+     "pf": 4.82,
+     "net": 73735,
+     "dd": -3090,
+     "avg_r": 1.165,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 318.0,
+     "half": 0,
+     "per_month": 7517,
+     "p10": 44.7,
+     "f10": 1.5,
+     "p15": 57.8,
+     "f15": 6.8,
+     "p20": 65.0,
+     "f20": 12.1,
+     "dec10": 46.2,
+     "slow_pass": 27.4,
+     "pass_med": 9.0,
+     "b2b": "13/3"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_all3_gex_q0_5_5_345e_09_lo_x1_5",
+   "title": "LIT + all3 + context size: gex >= q0.5 (5.345e+09) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 4.73 net +54,926 ($9,011/mo) DD -3,313; 2-week pass/fail 58.0/3.4 (Monte Carlo 49.6/4.0), 1 month 77.1/12.8. H2 (check) n=40 PF 2.89 net +17,740 ($4,776/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 58.1/3.2), 1 month 55.9/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +7,471 H2 +1,363, 2021-25 reference +1,271. Flagged trades 40/7; neighbours hold: False.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.01,
+     "net": 72667,
+     "dd": -3424,
+     "avg_r": 1.085,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 406.0,
+     "half": 0,
+     "per_month": 7408,
+     "p10": 41.3,
+     "f10": 1.5,
+     "p15": 54.4,
+     "f15": 10.2,
+     "p20": 62.1,
+     "f20": 17.5,
+     "dec10": 42.8,
+     "slow_pass": 18.2,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.01,
+     "net": 72667,
+     "dd": -3424,
+     "avg_r": 1.085,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 406.0,
+     "half": 0,
+     "per_month": 7408,
+     "p10": 41.3,
+     "f10": 1.5,
+     "p15": 54.4,
+     "f15": 10.2,
+     "p20": 62.1,
+     "f20": 17.5,
+     "dec10": 42.8,
+     "slow_pass": 18.2,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_all3_tom_x1_5",
+   "title": "LIT + all3 + context size: tom x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 4.94 net +53,785 ($8,824/mo) DD -3,059; 2-week pass/fail 56.3/2.5 (Monte Carlo 50.4/3.4), 1 month 77.1/11.9. H2 (check) n=40 PF 2.91 net +17,814 ($4,796/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 57.4/3.2), 1 month 54.2/3.4. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. LIT size rule change H1 +1,774 H2 +1,956, 2021-25 reference +2,218. Flagged trades 13/7; neighbours hold: None.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.11,
+     "net": 71599,
+     "dd": -3424,
+     "avg_r": 1.109,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 383.0,
+     "half": 0,
+     "per_month": 7299,
+     "p10": 41.3,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 42.3,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.11,
+     "net": 71599,
+     "dd": -3424,
+     "avg_r": 1.109,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 383.0,
+     "half": 0,
+     "per_month": 7299,
+     "p10": 41.3,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 42.3,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_d1_q0_5_0_7505_lo_x1_5",
+   "title": "LIT live + context size: d1 >= q0.5 (0.7505) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 3.49 net +36,972 ($6,066/mo) DD -3,695; 2-week pass/fail 53.8/10.1 (Monte Carlo 51.8/8.7), 1 month 70.6/22.9. H2 (check) n=40 PF 2.23 net +10,496 ($2,826/mo) DD -2,704; 2-week pass/fail 50.7/2.9 (Monte Carlo 53.5/7.3), 1 month 49.2/10.2. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +8,882 H2 +1,423, 2021-25 reference +7,017. Flagged trades 40/14; neighbours hold: False.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.03,
+     "net": 47468,
+     "dd": -3695,
+     "avg_r": 0.723,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 4839,
+     "p10": 34.5,
+     "f10": 8.3,
+     "p15": 48.1,
+     "f15": 19.4,
+     "p20": 53.4,
+     "f20": 25.2,
+     "dec10": 42.8,
+     "slow_pass": 33.1,
+     "pass_med": 11.0,
+     "b2b": "12/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.03,
+     "net": 47468,
+     "dd": -3695,
+     "avg_r": 0.723,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 4839,
+     "p10": 34.5,
+     "f10": 8.3,
+     "p15": 48.1,
+     "f15": 19.4,
+     "p20": 53.4,
+     "f20": 25.2,
+     "dec10": 42.8,
+     "slow_pass": 33.1,
+     "pass_med": 11.0,
+     "b2b": "12/4"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_gex_chg_dir_q0_67_0_06473_hi_x1_5",
+   "title": "LIT live + context size: gex_chg@dir >= q0.67 (0.06473) hi x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 3.72 net +39,021 ($6,402/mo) DD -3,612; 2-week pass/fail 57.1/8.4 (Monte Carlo 53.2/7.2), 1 month 75.2/19.3. H2 (check) n=40 PF 2.27 net +11,112 ($2,992/mo) DD -2,704; 2-week pass/fail 50.7/7.2 (Monte Carlo 52.8/10.2), 1 month 49.2/15.3. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +10,535 H2 +1,423, 2021-25 reference +1,013. Flagged trades 27/15; neighbours hold: False.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.17,
+     "net": 50134,
+     "dd": -3612,
+     "avg_r": 0.723,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 395.0,
+     "half": 0,
+     "per_month": 5111,
+     "p10": 38.3,
+     "f10": 8.7,
+     "p15": 51.0,
+     "f15": 18.4,
+     "p20": 56.3,
+     "f20": 22.3,
+     "dec10": 47.0,
+     "slow_pass": 32.7,
+     "pass_med": 10.0,
+     "b2b": "12/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.17,
+     "net": 50134,
+     "dd": -3612,
+     "avg_r": 0.723,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 395.0,
+     "half": 0,
+     "per_month": 5111,
+     "p10": 38.3,
+     "f10": 8.7,
+     "p15": 51.0,
+     "f15": 18.4,
+     "p20": 56.3,
+     "f20": 22.3,
+     "dec10": 47.0,
+     "slow_pass": 32.7,
+     "pass_med": 10.0,
+     "b2b": "12/4"
+    }
+   }
+  },
+  {
+   "id": "lit_ctx_spx_chg_q0_2_0_534_lo_x1_5",
+   "title": "LIT live + context size: spx_chg >= q0.2 (-0.534) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-19: does market context (GEX / DIX, vanna proxies, VIX term structure / VVIX, options calendar, 0DTE move) help LIT as a size tilt or a target / breakeven change, with trades/week and the rules unchanged?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 PF 4.09 net +42,839 ($7,028/mo) DD -3,606; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.0/7.7), 1 month 73.4/17.4. H2 (check) n=40 PF 2.17 net +10,060 ($2,709/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 53.6/6.8), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. LIT size rule change H1 +3,631 H2 +965, 2021-25 reference -3,545. Flagged trades 16/6; neighbours hold: False.",
+   "writeup": "lit-market-context",
+   "tags": [
+    "lit",
+    "lit_ctx"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 00:07",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.36,
+     "net": 52900,
+     "dd": -3606,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 449.0,
+     "half": 0,
+     "per_month": 5393,
+     "p10": 41.7,
+     "f10": 5.3,
+     "p15": 56.3,
+     "f15": 12.1,
+     "p20": 61.7,
+     "f20": 18.9,
+     "dec10": 47.0,
+     "slow_pass": 24.7,
+     "pass_med": 9.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.36,
+     "net": 52900,
+     "dd": -3606,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 449.0,
+     "half": 0,
+     "per_month": 5393,
+     "p10": 41.7,
+     "f10": 5.3,
+     "p15": 56.3,
+     "f15": 12.1,
+     "p20": 61.7,
+     "f20": 18.9,
+     "dec10": 47.0,
+     "slow_pass": 24.7,
+     "pass_med": 9.0,
+     "b2b": "14/4"
     }
    }
   },

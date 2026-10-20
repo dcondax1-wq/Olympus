@@ -758,6 +758,11 @@ DEFAULTS = {
                                  # idm_n and wk_m (the rest of the multiplier): engine/sizing.py applies idm_m in two_week / eval /
                                  # fast_eval / funded before the eval caps (2026-10-19, tools/lit_idm_eval.py).
     # execution (research only; research/writeups/lit-live-fills.md): None = the plain backtest fills above
+    "ctx_day": None,             # research only (tools/lit_context.py, research/writeups/lit-market-context.md; off = None):
+                                 # {"YYYY-MM-DD": {"tgt_add": pts added to the band distance, "tgt_m": x the distance, "max_rr": bank R
+                                 # or None, "be_r": breakeven R or None}}: that day's target / bank / breakeven, applied after the
+                                 # fill only (setup, limit, cancel and the 1.5R check stay live, so no trade is added or skipped;
+                                 # never below 1.5R from the fill). 1m-CISD (level) targets only.
     "fills": None,               # realistic fill model {} / {...}: engine/lit_fills.py FILL_DEFAULTS (live bot latency, market
                                  # entry at the price when the order reaches CME, stop slippage by hour and bar range, target
                                  # limit needs a trade-through, breakeven lag, MFFU commission). Ignored by the live loop.
@@ -936,6 +941,13 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
             if dist < P["min_rr"] * risk:
                 return None
             tg = entry + (min(dist, P["max_rr"] * risk) if P["max_rr"] else dist)
+            ov = (P.get("ctx_day") or {}).get(cand["day"])
+            if ov and ("tgt_add" in ov or "tgt_m" in ov or "max_rr" in ov):
+                # ctx_day (research, tools/lit_context.py): the day's target re-set AFTER the fill; the setup, the limit, the
+                # pre-fill cancel and the 1.5R check above stay on the live band, so the trade list does not change
+                dist = (dist + float(ov.get("tgt_add", 0.0))) * float(ov.get("tgt_m", 1.0))
+                mr = ov.get("max_rr", P["max_rr"])
+                tg = entry + max(P["min_rr"] * risk, min(dist, mr * risk) if mr else dist)
     q = qty_for(risk)
     if q < 1:
         return None
@@ -946,6 +958,9 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
                 "pnl": 0.0, "r": 0.0, "low": 0.0, "half": False, "mult": 1.0, "exit": "OPEN", "exit_t": None,
                 "exit_i": 10 ** 12, "tf": B.secs // 60, "limit_fill": False, "swept": cand["swept"]}
     be_r = P["be_r"]
+    ov = (P.get("ctx_day") or {}).get(cand["day"])
+    if ov and "be_r" in ov:                  # ctx_day: the day's breakeven trigger (R; None = no breakeven)
+        be_r = ov["be_r"]
     tc = P.get("t_check") if B.secs == 60 else None
     si = P.get("scale_in") if B.secs == 60 else None
     adds, add_pend, add_base, rat_lvl, w_pre = [], False, None, None, 0.0
