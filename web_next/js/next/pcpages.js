@@ -101,7 +101,7 @@ function scatter(el, pts, { h = 260, xlab = '', ylab = '', refY = null, xfmt = (
 }
 
 // P&L month grid (Mon-Fri): byDay Map(day -> {pnl, n, text}); returns html + the month's totals
-function calGrid(byDay, month, today, scale = 2500) {
+export function calGrid(byDay, month, today, scale = 2500) {
   const [Y, M] = month.split('-').map(Number), nd = new Date(Date.UTC(Y, M, 0)).getUTCDate();
   let cells = '', first = true, net = 0, n = 0, g = 0;
   for (let d = 1; d <= nd; d++) {
@@ -168,7 +168,7 @@ function evalCard(ev, acct) {
     <div class="pc-prog"><div class="pc-prog-h"><span>Soft daily loss used today</span><b class="${ev.dll_used ? 'dn' : ''}">${fmt$(ev.dll_used)} of ${fmt$(ev.dll)}</b></div>${meter(ev.dll_used / (ev.dll || 1000), ev.dll_used > 700 ? 'bad' : 'warn')}</div>`,
   `${chip(esc(String(ev.status || 'open').toUpperCase()), k)}${chip(esc(acct.badge || ''), acct.badge === 'LIVE' ? 'good' : acct.badge === 'SIM' ? 'warn' : '')}`);
 }
-function posTrade(p, ac) {
+export function posTrade(p, ac) {
   return { day: p.day, entry_t: +p.entry_t, side: p.side, dir: p.dir, entry: +p.entry, stop: +(p.stop0 ?? p.stop), target: +p.target, qty: p.qty,
     risk_usd: p.risk_usd, pnl: p.unrealized_usd || 0, exit: 'OPEN', id: 'pos_' + p.entry_t, target_label: p.target_label || '', be_t: p.be ? p.be_t : null };
 }
@@ -263,7 +263,7 @@ async function tradeChart(et, ac, box) {
 // timing, qty; missed trades (why, backtest $) and extra trades. GET /api/next/pc/execution, refreshed every 2 min.
 let EX = null, exAt = 0;
 const tk = (v) => (ok(v) ? (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(Math.abs(v) % 1 ? 1 : 0) + ' t' : '—');
-function execBody(x) {
+export function execBody(x) {
   if (!x || x.error) return empty('Execution audit unavailable.', esc(x?.error || ''));
   const S = x.summary || {}, rows = x.rows || [], lim = x.alert_ticks || 4;
   if (!rows.length) return empty('No live trades to audit yet.', 'Once the bot routes a trade, it is compared with the backtest on the same bars: fill vs backtest price, latency, breakeven timing, qty, and every trade the backtest took that the bot missed.');
@@ -298,7 +298,7 @@ async function mountExec(force) {
 
 // ------------------------------------------------------------------ Accounts page
 // extra accounts (engine/multi_account.py, start cfg "accounts"): one row each, same signals, own size / eval / lock-out
-function extraAccountsCard(ac) {
+export function extraAccountsCard(ac) {
   const rows = ac.accounts || [];
   if (!rows.length) return '';
   const body = rows.map((x) => {
