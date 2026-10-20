@@ -763,6 +763,19 @@ DEFAULTS = {
                                  # or None, "be_r": breakeven R or None}}: that day's target / bank / breakeven, applied after the
                                  # fill only (setup, limit, cancel and the 1.5R check stay live, so no trade is added or skipped;
                                  # never below 1.5R from the fill). 1m-CISD (level) targets only.
+    "be_swing": None,            # research only (tools/lit_batch3b.py, research/writeups/lit-batch3b.md; off = None): structure
+                                 # breakeven {"k": 2, "mode": "or" | "only" | "and", "side": "low" | "high", "min_r": 0.0}: move
+                                 # the stop to breakeven (entry + be_off) at the close of the bar that confirms the first new 1m
+                                 # swing beyond the entry (side low: a k-bar pivot low formed after the fill, above entry + min_r R;
+                                 # side high: a k-bar pivot high above entry + min_r R, with that close still above the BE stop);
+                                 # mode or = swing or be_r (whichever first), only = swing alone (no be_r), and = swing once be_r
+                                 # was reached. 1m bars only (5m fall-back days keep be_r).
+    "day_mgmt": None,            # research only (tools/lit_batch3b.py; off = None): {"YYYY-MM-DD": {"t": unix secs, "max_rr": R}}:
+                                 # a trade filled before t and still open at the first bar starting at/after t gets its bank
+                                 # moved to max_rr R (only nearer, never below min_rr; already beyond it -> exit at that bar's
+                                 # open - 1 tick, "TARGET"). The day read is made outside from bars that closed before t.
+    "entry_delay": 0,            # research only (robustness, tools/lit_batch3b.py): the 1m-CISD entry fills n bars later (at the
+                                 # open of bar k + 1 + n; a stop / target touch in between = no trade). 0 = today.
     "fills": None,               # realistic fill model {} / {...}: engine/lit_fills.py FILL_DEFAULTS (live bot latency, market
                                  # entry at the price when the order reaches CME, stop slippage by hour and bar range, target
                                  # limit needs a trade-through, breakeven lag, MFFU commission). Ignored by the live loop.
@@ -914,6 +927,12 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
             lowk = tapped + int(np.argmin(lo_d[tapped:k + 1]))
             cz = _cisd_level(c_d, o_d, lowk)
             if cz is not None and k > lowk and c_d[k] > cz[0] and k + 1 < B.n and B.day[k + 1] == s_day:
+                nd = int(P.get("entry_delay") or 0) if not live else 0
+                if nd:                       # research: the entry fills nd bars late (a stop / target touch in between: none)
+                    f2 = k + 1 + nd
+                    if f2 >= B.n or B.day[f2] != s_day or lo_d[k + 1:f2].min() <= stop or hi_d[k + 1:f2].max() >= tgt_cancel:
+                        break
+                    fill = f2; entry = float(o_d[f2]) + SLIP; limit_fill = False; break
                 fill = k + 1; entry = float(o_d[k + 1]) + SLIP; limit_fill = False; break
             if live and cz is not None and k > lowk and c_d[k] > cz[0] and k + 1 == B.n and _next_bar_same_day(B, k, cand["day"]):
                 # live: the CISD candle k has just CLOSED and the backtest's fill bar (k + 1) is the one forming now.
@@ -942,7 +961,13 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
                 return None
             tg = entry + (min(dist, P["max_rr"] * risk) if P["max_rr"] else dist)
             ov = (P.get("ctx_day") or {}).get(cand["day"])
-            if ov and ("tgt_add" in ov or "tgt_m" in ov or "max_rr" in ov):
+            if ov and "tgt_px" in ov:
+                # ctx_day tgt_px (research, tools/lit_batch3b.py): an absolute target price set after the fill (never nearer
+                # than min_rr R; capped at the day's / the live bank)
+                mr = ov.get("max_rr", P["max_rr"])
+                dist = float(ov["tgt_px"]) * d - entry
+                tg = entry + max(P["min_rr"] * risk, min(dist, mr * risk) if mr else dist)
+            elif ov and ("tgt_add" in ov or "tgt_m" in ov or "max_rr" in ov):
                 # ctx_day (research, tools/lit_context.py): the day's target re-set AFTER the fill; the setup, the limit, the
                 # pre-fill cancel and the 1.5R check above stay on the live band, so the trade list does not change
                 dist = (dist + float(ov.get("tgt_add", 0.0))) * float(ov.get("tgt_m", 1.0))
@@ -961,6 +986,12 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
     ov = (P.get("ctx_day") or {}).get(cand["day"])
     if ov and "be_r" in ov:                  # ctx_day: the day's breakeven trigger (R; None = no breakeven)
         be_r = ov["be_r"]
+    bsw = P.get("be_swing") if B.secs == 60 else None
+    if bsw and bsw.get("mode", "or") == "only":
+        be_r = None
+    bsw_need = bsw is not None and bsw.get("mode", "or") == "and"
+    dm = (P.get("day_mgmt") or {}).get(cand["day"])
+    dm_done = dm is None
     tc = P.get("t_check") if B.secs == 60 else None
     si = P.get("scale_in") if B.secs == 60 else None
     adds, add_pend, add_base, rat_lvl, w_pre = [], False, None, None, 0.0
@@ -977,6 +1008,14 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
             k -= 1; exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
         if cut is not None:
             exit_px, kind = float(o_d[k]) - SLIP, cut; break
+        if not dm_done and B.t[k] >= int(dm["t"]):
+            dm_done = True
+            if k > fill and B.t[fill] < int(dm["t"]):
+                mr = dm.get("max_rr")
+                if mr is not None:
+                    tg = min(tg, entry + max(P["min_rr"], float(mr)) * risk)
+                if o_d[k] >= tg:
+                    exit_px, kind = float(o_d[k]) - SLIP, "TARGET"; break
         if add_pend:                         # scale_in: the add decided at the last close fills at this open + 1 tick
             add_pend = False
             px = float(o_d[k]) + SLIP
@@ -999,10 +1038,25 @@ def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):
             mfe = max(mfe, (hi_d[k] - entry) / risk)
             if hi_d[k] >= tg:
                 exit_px, kind = tg, "TARGET"; break
-            if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk:
+            if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk and not bsw_need:
                 cur, be_done = entry + float(P.get("be_off") or 0.0), True
                 be_now = True
                 add_base = k
+            if bsw is not None and not be_done and (not bsw_need or mfe >= float(P["be_r"] or 1.0)):
+                kk_ = int(bsw.get("k", 2))
+                j_ = k - kk_
+                if j_ > fill and j_ - kk_ >= 0:
+                    lim = entry + float(bsw.get("min_r", 0.0)) * risk
+                    bo = entry + float(P.get("be_off") or 0.0)
+                    if bsw.get("side", "low") == "low":
+                        ok = lo_d[j_] > lim and lo_d[j_] > bo and lo_d[j_] < lo_d[j_ - kk_:j_].min() and lo_d[j_] < lo_d[j_ + 1:k + 1].min()
+                    else:
+                        ok = hi_d[j_] >= lim and hi_d[j_] > hi_d[j_ - kk_:j_].max() and hi_d[j_] > hi_d[j_ + 1:k + 1].max() \
+                            and c_d[k] > bo + TICK
+                    if ok:
+                        cur, be_done = bo, True
+                        be_now = True
+                        add_base = k
         if _late(B.mod[k], flat, ev) if ev else B.mod[k] >= flat:
             exit_px, kind = float(c_d[k]) - SLIP, "EOD"; break
         if si is not None and be_done:
