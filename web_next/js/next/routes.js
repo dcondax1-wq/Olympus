@@ -50,7 +50,18 @@ export const HUB = [
   { id: 'system', label: 'System', icon: 'sources', desc: 'Upgrades with vs without, PC uptime, discipline log, data quality' },
 ];
 
+// Operator tools (js/next/pcops.js, read-only: engine/pcops_api.py)
+export const OPS = [
+  { id: 'morning', label: 'Morning report', icon: 'sun', desc: 'What happened overnight: trades, alerts, feed gaps, restarts, errors, then today ahead' },
+  { id: 'livechart', label: 'Live chart', icon: 'chart', desc: 'Today\'s bars with the LIT levels the bot watches, swept levels and the open trade lines' },
+  { id: 'botlog', label: 'Bot log', icon: 'reports', desc: 'Today\'s bot, order, NinjaTrader and server log with filters and search' },
+  { id: 'ntpanel', label: 'NinjaTrader', icon: 'sources', desc: 'Connection, bar ages, order files sent / received, positions, a fix for every red row' },
+  { id: 'timeline', label: 'Session timeline', icon: 'clock', desc: '18:00 → 17:00 ET: killzones, news, setups, entries / exits, restarts, updates' },
+  { id: 'livesettings', label: 'Live settings', icon: 'settings', desc: 'Every live_model.json switch in plain words with its tested numbers (read-only)' },
+];
+
 export const MODULES = [
+  ...OPS,
   ...HUB,
   { id: 'evalhq', label: 'Eval HQ', icon: 'prop', desc: 'The 2-week pass path: $ to go, $ per session, what one winner pays, the odds' },
   { id: 'mffurules', label: 'MFFU rules', icon: 'rules', desc: 'The Builder 50K rulebook with how sure each rule is, and how LIT fits it' },

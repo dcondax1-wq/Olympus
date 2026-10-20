@@ -363,3 +363,8 @@ router.include_router(_botctl_router)
 # Hub pages (Prop Firms, Business, Market, Learn, System): read-only GETs over research/props + repo files (engine/hub_api.py)
 from .hub_api import router as _hub_router  # noqa: E402
 router.include_router(_hub_router)
+
+# Operator tools (pulse for sound / desktop alerts + tab badge, live chart with the LIT levels, log viewer, NinjaTrader
+# panel, session timeline, settings viewer, morning report): read-only GETs (engine/pcops_api.py)
+from .pcops_api import router as _ops_router  # noqa: E402
+router.include_router(_ops_router)

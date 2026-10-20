@@ -375,6 +375,97 @@ def ok_num(v):
     return v is not None and not (isinstance(v, float) and v != v)
 
 
+def ops_checks(tmp, check, live_bot, now):
+    """Operator tools (engine/pcops_api.py): pulse (sound / desktop alerts, tab badge), live chart with the LIT levels + trade
+    lines, log viewer over logs/ (filters, search, fixed file names only), NinjaTrader panel, session timeline, settings viewer,
+    morning report. Read-only GETs; no phrase, webhook URL or file path in any answer."""
+    from engine import pcops_api
+    from engine.tradovate import LIVE_PHRASE
+    folder = fake_nt_folder(os.path.join(tmp, "ops"))
+    logs = os.path.join(tmp, "ops_logs")
+    os.makedirs(logs, exist_ok=True)
+    stamp = dt.datetime.fromtimestamp(now, ET).strftime("%Y%m%d")
+    with open(os.path.join(logs, f"server-{stamp}.log"), "w", encoding="utf-8") as fh:
+        fh.write("2026-10-20 07:00:01 [supervisor] server started\n")
+        fh.write('INFO:     127.0.0.1:5000 - "GET /api/live/state HTTP/1.1" 200 OK\n')
+        fh.write("2026-10-20 07:10:00 ERROR webhook=https://hooks.example/SECRET-TOKEN failed for C:\\Users\\Owner\\x.txt\n")
+        fh.write(f"2026-10-20 07:11:00 phrase typed {LIVE_PHRASE}\n")
+    with open(os.path.join(logs, "ninjatrader_oif.log"), "w", encoding="utf-8") as fh:
+        fh.write("2026-10-20 08:35:03 ET  MFFUEVAL123  oif_LE_7.txt  PLACE;MFFUEVAL123;MNQ 12-26;SELL;8;LIMIT;25070;0;DAY;;LE7;;\n")
+    old = {"logs": pcops_api.LOGS, "env": os.environ.get("NINJATRADER_FOLDER")}
+    before = copy.deepcopy(live_bot.ledger)
+    try:
+        pcops_api.LOGS = logs
+        os.environ["NINJATRADER_FOLDER"] = folder
+        app = FastAPI()
+        app.include_router(pcops_api.router)
+        cl = TestClient(app)
+        texts = []
+
+        def get(path):
+            r = cl.get(path)
+            texts.append(r.text)
+            return r, (r.json() if r.headers.get("content-type", "").startswith("application/json") else {})
+
+        r, p = get("/api/next/pc/pulse")
+        check("ops pulse 200: running, position, realized / unrealized, day P&L", r.status_code == 200 and p["running"] and p["position"]["side"] == "SHORT"
+              and p["realized"] == -22.8 and p["unrealized"] is not None and abs(p["day_pnl"] - (p["realized"] + p["unrealized"])) < 0.01, r.text[:300])
+        ids = [e["id"] for e in p["events"]]
+        check("ops pulse: entry / exit / stale events with unique ids", len(ids) == len(set(ids)) and {"entry", "exit", "stale"} <= {e["kind"] for e in p["events"]}, p["events"])
+        r, c = get("/api/next/pc/chart?tf=5m")
+        check("ops chart 200: bars, LIT levels, entry / stop / target lines, killzones", r.status_code == 200 and c["bars"] and c["levels"]
+              and {"entry", "stop", "target"} <= {x["id"] for x in c["lines"]} and c["killzones"], {k: c.get(k) for k in ("source", "plan_error", "lines")})
+        r, c1 = get("/api/next/pc/chart?tf=1m")
+        r2, cx = get("/api/next/pc/chart?tf=../../etc")
+        check("ops chart: 1m bars; an unknown tf falls back to 5m", c1["tf"] == "1m" and len(c1["bars"]) > len(c["bars"]) and cx["tf"] == "5m")
+        r, lg = get("/api/next/pc/logs")
+        srcs = {x["src"] for x in lg["rows"]}
+        check("ops logs 200: bot log + ledger + server log + OIF audit, access lines counted not listed", r.status_code == 200
+              and {"bot", "ledger", "server", "oif"} <= srcs and lg["access_lines"] == 1 and not any("GET /api" in x["text"] for x in lg["rows"]), (srcs, lg.get("files")))
+        check("ops logs: counts per category, OIF rows are orders", set(lg["counts"]) == set(pcops_api.CATS)
+              and all(x["cat"] == "orders" for x in lg["rows"] if x["src"] == "oif"), lg["counts"])
+        r, le = get("/api/next/pc/logs?cat=errors&q=stale")
+        check("ops logs: filter + search", le["matched"] >= 1 and all(x["cat"] == "errors" and "stale" in x["text"].lower() for x in le["rows"]), le["rows"])
+        r, lt = get("/api/next/pc/logs?day=../../secrets")
+        check("ops logs: a bad day falls back to today (fixed file names only)", r.status_code == 200 and lt["day"] == "2026-10-20")
+        blob = json.dumps(lg)
+        check("ops logs: URLs, credentials, Windows paths and the phrase redacted", "SECRET-TOKEN" not in blob and "hooks.example" not in blob
+              and LIVE_PHRASE not in blob and "Users\\\\Owner" not in blob, [x["text"] for x in lg["rows"] if x["src"] == "server"])
+        r, nt = get("/api/next/pc/nt")
+        rid = {x["id"]: x for x in nt.get("rows") or []}
+        check("ops NinjaTrader 200: folder, ATI, connection, LE_BarFeed 5m + 1m, bot bars, positions rows", r.status_code == 200
+              and {"folder", "ati", "connection", "feed5m", "feed1m", "bot5m", "bot1m", "positions"} <= set(rid), sorted(rid))
+        check("ops NinjaTrader: green folder / ATI / connection / fresh feed files", all(rid[k]["ok"] for k in ("folder", "ati", "connection", "feed5m", "feed1m")),
+              {k: rid[k] for k in ("folder", "ati", "connection", "feed5m", "feed1m")})
+        check("ops NinjaTrader: every red row has its plain fix; last OIF files sent + reports received", all(x["fix"] for x in nt["rows"] if x["ok"] is False)
+              and nt["sent"] and nt["sent"][0]["action"] == "PLACE" and nt["received"], (nt["sent"], nt["received"]))
+        check("ops NinjaTrader: the position mismatch (NinjaTrader flat, bot short) is red", rid["positions"]["ok"] is False, rid["positions"])
+        r, tl = get("/api/next/pc/timeline")
+        check("ops timeline 200: 18:00 -> 17:00, killzones, entry window, events", r.status_code == 200 and tl["t1"] - tl["t0"] == 23 * 3600
+              and any(b["kind"] == "killzone" for b in tl["bands"]) and any(b["id"] == "window" for b in tl["bands"])
+              and {"entry", "exit", "signal"} <= {e["kind"] for e in tl["events"]}, [e["kind"] for e in tl.get("events") or []])
+        r, se = get("/api/next/pc/settings")
+        names = {x["path"]: x for x in se.get("rows") or []}
+        check("ops settings 200: read-only, switches with on/off and tested numbers", r.status_code == 200 and se["read_only"]
+              and {"lit.t_check", "lit.be_off", "lit.scale_in"} <= set(names) and names["lit.scale_in"]["on"] is False
+              and names["lit.t_check"]["on"] is True and all(names[k]["tested"] for k in ("lit.t_check", "lit.be_off")), sorted(names)[:8])
+        check("ops settings: every row explained, live_model.json = live_model_lit.json", all(x["what"] for x in se["rows"]) and se["drift"] == [], se.get("drift"))
+        r, mo = get("/api/next/pc/morning")
+        check("ops morning 200: headline, trades, feed stale, restarts, verdict, position", r.status_code == 200 and mo["headline"].startswith("Overnight")
+              and mo["feed_stale"] and mo["position"] and mo["verdict"], mo.get("headline"))
+        gaps = pcops_api.bar_gaps([[now - 3600 + 60 * i] for i in range(30)] + [[now - 3600 + 60 * 40]], 60, now - 4000, now)
+        check("ops morning: a 10-minute hole in the 1m bars is a feed gap", len(gaps) == 1 and gaps[0]["missing"] == 10, gaps)
+        check("ops: every route is a GET", all(getattr(rt, "methods", {"GET"}) <= {"GET", "HEAD"} for rt in pcops_api.router.routes))
+        check("ops: no phrase, webhook token or bot file path in any answer", not any(LIVE_PHRASE in t or "SECRET-TOKEN" in t or "oif_LE_1.txt" in t for t in texts))
+        check("ops read-only: ledger, kill flag and state file untouched", live_bot.ledger == before and not live_bot.kill and not os.path.exists(live_bot.state_path))
+    finally:
+        pcops_api.LOGS = old["logs"]
+        if old["env"] is None:
+            os.environ.pop("NINJATRADER_FOLDER", None)
+        else:
+            os.environ["NINJATRADER_FOLDER"] = old["env"]
+
+
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="le_pcdash_")
     results = []
@@ -486,6 +577,7 @@ def main() -> int:
 
         botctl_checks(tmp, check, bot)
         hub_checks(tmp, check, bot)
+        ops_checks(tmp, check, bot, now)
     finally:
         pcdash_api._bot, lit_learn.JOURNAL_PATH = old_bot, old_jp
         shutil.rmtree(tmp, ignore_errors=True)
