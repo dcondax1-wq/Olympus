@@ -110,7 +110,7 @@ def main():
             while wake <= z:
                 rp.now = int(wake)
                 cur["wake"] = wake
-                clock.base, clock.t0, clock.running = wake, time.perf_counter(), True
+                clock.base, clock.t0, clock.running = wake, clock.src(), True
                 last = int(wake) - int(wake) % 60 - 60
                 if last in c1:
                     fake.move(c1[last])                       # NinjaTrader fills a market order at the last price

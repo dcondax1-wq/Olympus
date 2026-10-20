@@ -115,7 +115,7 @@ class Harness:
             wake = live.next_wake(a)
             while wake <= z:
                 rp.now = int(wake)
-                clock.base, clock.t0, clock.running = wake, time.perf_counter(), True
+                clock.base, clock.t0, clock.running = wake, clock.src(), True
                 try:
                     bot.poll_once()
                 except Exception as e:

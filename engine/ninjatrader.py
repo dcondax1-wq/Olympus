@@ -772,6 +772,10 @@ class NinjaTraderAdapter:
         insts = self._instruments()
         plan = [(insts["mini"], sp["minis"], "N"), (insts["micro"], sp["micros"], "M")]
         plan = [x for x in plan if x[1] > 0]
+        bad = self._contract_mismatch([inst for inst, _, _ in plan])
+        if bad:
+            self._risk(bad, alert=True)
+            return {"ok": False, "error": "REFUSED: " + bad}
         for inst, _, _ in plan:
             p = self.position_for(inst)
             if p and p["side"] != "FLAT":
@@ -802,6 +806,19 @@ class NinjaTraderAdapter:
         for lg in legs:
             st = self.read_order(lg["entry_id"])
             self._note_fill(lg, st)
+            gap = abs(float(lg["fill_px"] or 0) - float(ref)) if ref and lg["filled"] > 0 and lg["fill_px"] else 0.0
+            if gap > float(self.cfg.get("nt_max_fill_gap_pct", 0.6)) / 100.0 * float(ref or 0):
+                # the roll guard's backstop: filled a roll gap away from the price the stop / target were computed on (the
+                # chart on the old contract): never place that bracket, flatten at once
+                self._risk(f"Chart is on the old contract? {lg['instrument']} filled @ {lg['fill_px']}, {gap:.2f} pts from the "
+                           f"chart's price {float(ref):.2f}: stop/target not placed, flattening. Switch the LE_BarFeed chart to "
+                           f"{lg['instrument']}.", alert=True)
+                fl = self._close([lg], why="fill a roll gap away from the chart price")
+                errors.append(f"{lg['instrument']}: fill {gap:.0f} pts from the chart price, flattened"
+                              + ("" if fl["ok"] else " (flatten NOT confirmed)"))
+                out.append({"instrument": lg["instrument"], "qty": lg["qty"], "ok": False, "filled": lg["filled"],
+                            "fill_px": lg["fill_px"], "note": "fill gap: flattened"})
+                continue
             if lg["filled"] > 0:
                 res = self._protect(lg)
                 out.append({"instrument": lg["instrument"], "qty": lg["qty"], "filled": lg["filled"], "fill_px": lg["fill_px"], **res})
@@ -821,6 +838,29 @@ class NinjaTraderAdapter:
         ok = not errors
         return {"ok": ok, "adapter": self.name, "account": self.account, "env": self.env, "side": side,
                 "legs": out, **({} if ok else {"error": "; ".join(errors)})}
+
+    def _contract_mismatch(self, insts) -> str | None:
+        """The roll guard: the LE_BarFeed chart's contract (le_feed/<ROOT>_instrument.txt) must be the one the orders go to,
+        or the stop/target (priced from the chart's bars) land a roll gap (~300 pts) off the fill. Unknown chart contract
+        (older LE_BarFeed): no check (the fill-gap guard in place_bracket still applies)."""
+        try:
+            chart = NinjaTraderBars(self.folder).chart_instrument(self.sym)
+        except Exception:
+            chart = None
+        if not chart:
+            return None
+
+        def exp(name):
+            m = re.search(r"(\d{2})-(\d{2})$", name or "")
+            return (int(m.group(2)), int(m.group(1))) if m else None
+        for inst in insts:
+            ce, oe = exp(chart), exp(inst)
+            if ce and oe and ce != oe:
+                want = f"{chart.split(' ')[0]} {inst.split(' ')[-1]}"
+                if ce < oe:
+                    return f"Chart is on the old contract ({chart}): switch it to {want}. Entry not sent (orders go to {inst})."
+                return f"Chart is on {chart} but orders go to {inst}: switch the chart to {want}. Entry not sent."
+        return None
 
     def _entry_settled(self, lg) -> bool:
         st = self.read_order(lg["entry_id"])
@@ -909,16 +949,26 @@ class NinjaTraderAdapter:
           1. PLACE <account>;<inst>;BUY|SELL;<n>;MARKET;0;0;DAY;;<entry id minus E>A<k>;;   - the add, same side as the entry
           2. once NinjaTrader reports its fill: CHANGE;;;;<total>;;0;0;;;<stop id>;; and the same for the target id - the one
              OCO pair (STOPMARKET + LIMIT) now covers the whole position at the stop / target already working
-        The bracket is grown only after the fill (never before: a stop bigger than the position would reverse it). A fill
-        reported late is protected by tick() on the next poll (the same path as a partial entry fill). Refused: no protected
-        bracket for that entry, the kill switch / outside the session (entry gate), a side that does not match, the position
-        file disagreeing with the bracket, the whole position above max_micros, an all-minis bracket (adds are micros)."""
+        The bracket is grown only after the fill, never before: a stop/target bigger than the position would REVERSE it if
+        it filled before the add did (an add that is late, cancelled after pending_timeout or only partly filled leaves the
+        position smaller than the bracket). The cost is a short window (add fill -> CHANGE picked up) in which the bracket
+        covers only the old quantity; if a leg fills in that window, tick() closes the remainder at once (CLOSEPOSITION +
+        alert). CHANGE with QUANTITY only and 0 in LIMIT/STOP PRICE: the help guide's CHANGE text is "pass in zero (0) values
+        for price and quantity if you do not wish to change these order parameters" (quoted on the NinjaTrader forum).
+        A fill reported late is protected by tick() on the next poll (the same path as a partial entry fill). Refused: no
+        protected bracket for that entry, the kill switch / outside the session (entry gate), no stop in the action or the
+        live bracket's stop not at or better than it (the add is sized at the breakeven risk: never add while the broker stop
+        is still the first stop), an add number already sent for this entry (a restart re-sending it; the add numbers live in
+        the state file), a side that does not match, the position file disagreeing with the bracket, the whole position above
+        max_micros, an all-minis bracket (adds are micros)."""
         g = self._gate("entry")
         if g:
             return g
         qty = int(action.get("qty") or 0)
         if qty < 1:
             return {"ok": False, "error": "REFUSED: add qty < 1"}
+        if not action.get("stop"):
+            return {"ok": False, "error": "REFUSED: an add needs the stop it was sized at (breakeven)"}
         et_ = action.get("entry_t")
         legs = [lg for lg in self.legs if lg["status"] == "protected" and (not et_ or lg["entry_t"] == int(et_))]
         if not legs:
@@ -930,6 +980,13 @@ class NinjaTraderAdapter:
         d = 1 if int(action.get("dir") or lg["dir"]) == 1 else -1
         if d != lg["dir"]:
             return {"ok": False, "error": "REFUSED: the add's side does not match the open position"}
+        want_stop = _tick(action["stop"])
+        if (float(lg["stop"]) - want_stop) * d < -1e-9:
+            return {"ok": False, "error": f"REFUSED: the broker stop is {lg['stop']}, the add was sized at a stop of {want_stop} "
+                                          "(breakeven): not adding while the stop is not there"}
+        n_req = int(action.get("n") or 0)
+        if n_req and any(int(a.get("n") or 0) == n_req for a in lg.get("adds") or []):
+            return {"ok": False, "error": f"REFUSED: add {n_req} was already sent for this entry (restart?): not adding twice"}
         tot = sum(self._total(x) * (10 if x["instrument"] != inst else 1) for x in legs)
         if tot + qty > min(self.max_micros, MAX_MICROS_HARD):
             return {"ok": False, "error": f"REFUSED: {tot} + {qty} micros exceeds max_micros {self.max_micros}"}
@@ -991,6 +1048,20 @@ class NinjaTraderAdapter:
         lg["bracket_qty"] = q
         self._save()
         return {"ok": True}
+
+    def add_fills(self, entry_t) -> list:
+        """The real state of the scale-in adds of one entry (open legs, then closed ones): [{"n", "id", "qty" (asked),
+        "filled", "fill_px", "status"}] for LiveBot's ledger P&L and the eval state. [] when the adapter never saw that entry."""
+        out = []
+        for lg in list(self.legs) + list(self.history):
+            if int(lg.get("entry_t") or 0) != int(entry_t or 0):
+                continue
+            for a in lg.get("adds") or []:
+                if any(o["id"] == a["id"] for o in out):
+                    continue
+                out.append({"n": int(a.get("n") or 0), "id": a["id"], "qty": int(a.get("qty") or 0),
+                            "filled": int(a.get("filled") or 0), "fill_px": a.get("fill_px"), "status": a.get("status")})
+        return out
 
     def _close(self, legs: list, why: str) -> dict:
         """CLOSEPOSITION for the legs' instruments; once NinjaTrader shows them flat, cancel any leg still working."""
@@ -1232,6 +1303,18 @@ class NinjaTraderAdapter:
             if other and other["state"] in LIVE_STATES:
                 self._send_lines([cancel_line(other_id)], "CANCEL (OCO leftover)")
                 self._risk(f"{name} filled but the other leg was still working: cancel sent ({other_id})")
+            # the leg filled for less than the position (a scale-in add filled before the bracket was resized): the rest
+            # has no stop. Close it at once. Also when NinjaTrader's position file, written after that fill, is not flat.
+            rest = self._total(lg) - int(x.get("filled") or 0)
+            p = self.position_for(lg["instrument"])
+            after = p is not None and (p.get("mtime") or 0) >= (x.get("mtime") or 0) - 0.001
+            if rest > 0 or (after and p["side"] != "FLAT"):
+                self._risk(f"{name} filled {x['filled']} {lg['instrument']} but the bot's position was {self._total(lg)} "
+                           f"(NinjaTrader shows {p and p['side']} {p and p['qty']}): the rest had no stop - CLOSEPOSITION sent",
+                           alert=True)
+                self._close([lg], why=f"{name.lower()} filled, remainder closed")
+                self._push_exit(lg, name, x)
+                return
             self._retire([lg], f"{name.lower()} filled")
             self._log("system", f"NinjaTrader: bracket closed the trade: {name} filled {x['filled']} {lg['instrument']} @ {x['avg']}")
             self._push_exit(lg, name, x)
@@ -1333,6 +1416,15 @@ class NinjaTraderBars:
             p = os.path.join(self.dir, f"{root}_{minutes}m.csv")
             if os.path.exists(p):
                 return p
+        return None
+
+    def chart_instrument(self, sym="NQ"):
+        """The contract the LE_BarFeed chart is on ("MNQ 12-26", from <ROOT>_instrument.txt), None when unknown (an older
+        LE_BarFeed that does not write the file)."""
+        for root in self.roots.get(sym, [sym]):
+            txt = _read_text(os.path.join(self.dir, f"{root}_instrument.txt"))
+            if txt and txt.strip():
+                return txt.strip().splitlines()[0].strip()
         return None
 
     def load(self, path):
@@ -1499,7 +1591,7 @@ def _cli_status(cfg):
     return 0
 
 
-def _cli_sim_check(cfg, roundtrip=False):
+def _cli_sim_check(cfg, roundtrip=False, add=False):
     ad = NinjaTraderAdapter(cfg)
     if not ad.sim:
         print(f"REFUSED: --sim-check / --sim-roundtrip run on Sim accounts only (got {ad.account})")
@@ -1541,6 +1633,8 @@ def _cli_sim_check(cfg, roundtrip=False):
         return 1
     lg = ad.legs[0]
     fill = lg["fill_px"] or px
+    if add:
+        return _cli_roundtrip_add(ad, lg, fill)
     m = ad.send({"side": "modify", "stop": fill - 20})
     print(("OK  " if m["ok"] else "FAIL") + f" 2. stop moved {lg['stop'] if m['ok'] else ''} -> {fill - 20:.2f}: {m.get('legs')} {m.get('error') or ''}")
     p = ad.position_for(lg["instrument"])
@@ -1551,6 +1645,37 @@ def _cli_sim_check(cfg, roundtrip=False):
     return 0 if r["ok"] and m["ok"] and x["ok"] else 1
 
 
+def _cli_roundtrip_add(ad, lg, fill):
+    """--sim-roundtrip-add, after step 1 (1 MNQ + stop/target): the scale-in route on Sim101. 2. the stop moves up (stands in
+    for the breakeven: 10 pts under the fill, so a Sim stop cannot trigger at once), 3. a refused add (stop not yet where it
+    was sized), 4. add 1 MNQ at market -> the one OCO pair resized to 2, 5. CLOSEPOSITION. Check NinjaTrader's Orders tab at
+    step 4: the stop and the target both show quantity 2."""
+    be = _tick(fill - 10)
+    m = ad.send({"side": "modify", "stop": be, "entry_t": lg["entry_t"]})
+    print(("OK  " if m["ok"] else "FAIL") + f" 2. stop moved to {be:.2f} (stands in for breakeven): {m.get('legs')} {m.get('error') or ''}")
+    bad = ad.send({"side": "add", "qty": 1, "dir": 1, "entry_t": lg["entry_t"], "n": 1, "stop": _tick(fill + 5)})
+    print(("OK  " if not bad["ok"] else "FAIL") + f" 3. add sized at a stop the broker does not have -> refused: {bad.get('error')}")
+    a = ad.send({"side": "add", "qty": 1, "dir": 1, "entry_t": lg["entry_t"], "n": 1, "stop": be, "target": lg["target"]})
+    pos = ad.position_for(lg["instrument"])
+    print(("OK  " if a["ok"] else "FAIL") + f" 4. add 1 MNQ: filled {a.get('filled')} @ {a.get('fill_px')}, bracket qty "
+          f"{lg.get('bracket_qty')} {a.get('error') or a.get('note') or ''}")
+    print(f"   position file: {pos}  (expected LONG 2)")
+    print(f"   stop {ad.read_order(lg['stop_id'])}, target {ad.read_order(lg['target_id'])}")
+    print(f"   EXPECTED in NinjaTrader's Orders tab now: Sell 2 Stop Market @ {be:.2f} (id {lg['stop_id']}) and Sell 2 Limit "
+          f"@ {lg['target']:.2f} (id {lg['target_id']}), one OCO group. Look before pressing Enter.")
+    try:
+        input("   Press Enter to flatten ... ")
+    except EOFError:
+        pass
+    x = ad.send({"side": "exit", "reason": "SIM ROUNDTRIP ADD", "entry_t": lg["entry_t"]})
+    print(("OK  " if x["ok"] else "FAIL") + f" 5. CLOSEPOSITION: flat confirmed {x.get('flat_confirmed')}, leftovers cancelled "
+          f"{x.get('cancelled_leftovers')} {x.get('error') or ''}")
+    print(f"   position {ad.position_for(lg['instrument'])}")
+    ok = m["ok"] and not bad["ok"] and a["ok"] and pos and pos["side"] == "LONG" and int(pos["qty"]) == 2 \
+        and lg.get("bracket_qty") == 2 and x["ok"]
+    return 0 if ok else 1
+
+
 def main(argv=None):
     import argparse
     ap = argparse.ArgumentParser(prog="python -m engine.ninjatrader", description="NinjaTrader 8 route for the Liquidity Engine bot")
@@ -1558,6 +1683,8 @@ def main(argv=None):
     ap.add_argument("--status", action="store_true", help="what the bot sees in NinjaTrader's folders and the bar feed")
     ap.add_argument("--sim-check", action="store_true", help="Sim only: far-away 1-lot MNQ limit order, then cancel it")
     ap.add_argument("--sim-roundtrip", action="store_true", help="Sim only, market open: 1 MNQ + stop/target, move the stop, flatten")
+    ap.add_argument("--sim-roundtrip-add", action="store_true",
+                    help="Sim only, market open: 1 MNQ + stop/target, stop up, scale-in add 1 (stop/target qty -> 2), flatten")
     ap.add_argument("--start", action="store_true", help="start the PC bot (server.py running) on NinjaTrader")
     ap.add_argument("--stop", action="store_true", help="stop the PC bot")
     ap.add_argument("--kill", action="store_true", help="kill switch: server kill, or FLATTENEVERYTHING directly when the server is down")
@@ -1585,8 +1712,10 @@ def main(argv=None):
         return 0 if selftest(verbose=not a.quiet) else 1
     if a.status:
         return _cli_status(cfg)
-    if a.sim_check or a.sim_roundtrip:
-        return _cli_sim_check(cfg, roundtrip=a.sim_roundtrip)
+    if a.sim_check or a.sim_roundtrip or a.sim_roundtrip_add:
+        if a.sim_roundtrip_add:
+            cfg["nt_state_path"] = os.path.join(ROOT, "data", "ninjatrader_state_simcheck.json")   # never the bot's own state
+        return _cli_sim_check(cfg, roundtrip=a.sim_roundtrip or a.sim_roundtrip_add, add=a.sim_roundtrip_add)
     if a.disable_auto_resume:
         from . import autoresume
         was = autoresume.disable("owner: --disable-auto-resume")
@@ -2340,14 +2469,14 @@ def selftest(verbose=True) -> bool:
               and fake.pos.get(("Sim101", "MNQ 12-26"), [0])[0] == 5 and fake.orders[S_]["qty"] == 5 and fake.orders[T_]["qty"] == 5
               and sl.get("bracket_qty") == 5 and r_add.get("fill_px") == 25040.0, json.dumps([lines_since(k), r_add]))
         k = len(fake.files)
-        r_big = sad.send({"side": "add", "qty": 36, "dir": 1, "entry_t": t_s})
-        r_side = sad.send({"side": "add", "qty": 1, "dir": -1, "entry_t": t_s})
+        r_big = sad.send({"side": "add", "qty": 36, "dir": 1, "entry_t": t_s, "stop": 25021.25})
+        r_side = sad.send({"side": "add", "qty": 1, "dir": -1, "entry_t": t_s, "stop": 25021.25})
         fake._do("PLACE;Sim101;MNQ 12-26;BUY;1;MARKET;0;0;DAY;;BYHAND2;;")      # a hand-placed micro: position 6, bracket 5
-        r_desync = sad.send({"side": "add", "qty": 1, "dir": 1, "entry_t": t_s})
+        r_desync = sad.send({"side": "add", "qty": 1, "dir": 1, "entry_t": t_s, "stop": 25021.25})
         fake._do("PLACE;Sim101;MNQ 12-26;SELL;1;MARKET;0;0;DAY;;BYHAND3;;")
         now_save = now[0]
         now[0] = dt.datetime(2026, 10, 22, 15, 56, 3, tzinfo=ET).timestamp()
-        r_late = sad.send({"side": "add", "qty": 1, "dir": 1, "entry_t": t_s})
+        r_late = sad.send({"side": "add", "qty": 1, "dir": 1, "entry_t": t_s, "stop": 25021.25})
         now[0] = now_save
         check("scale-in: refused (no order file) above max_micros (5 + 36 > 40), on the other side, when NinjaTrader's position "
               "disagrees with the bracket, and after the entry cutoff",
@@ -2359,7 +2488,7 @@ def selftest(verbose=True) -> bool:
         sad.tick()
         check("scale-in: the resized stop closes the whole position (5) -> flat, bracket retired",
               fake.pos.get(("Sim101", "MNQ 12-26"), [0])[0] == 0 and not sad.legs and fake.orders[S_]["filled"] == 5)
-        r_none = sad.send({"side": "add", "qty": 1, "dir": 1, "entry_t": t_s})
+        r_none = sad.send({"side": "add", "qty": 1, "dir": 1, "entry_t": t_s, "stop": 25021.25})
         check("scale-in: no protected bracket -> refused", not r_none["ok"] and "no protected bracket" in r_none["error"])
         # an add whose fill NinjaTrader reports late: pending, then tick() grows the bracket
         t_s2 = t_s + 1800
@@ -2367,8 +2496,13 @@ def selftest(verbose=True) -> bool:
         fake.move(25000.0)
         sad.send({"sym": "NQ", "side": "sell", "qty": 2, "stop": 25030.0, "target": 24900.0, "entry": 25000.0, "entry_t": t_s2})
         sl2 = sad.legs[0] if sad.legs else {}
+        fake.move(24985.0)
+        r_nobe = sad.send({"side": "add", "qty": 2, "dir": -1, "entry_t": t_s2, "n": 1, "stop": 24998.75})
+        sad.send({"side": "modify", "stop": 24998.75, "entry_t": t_s2})          # breakeven (entry - 1.25) for the short
+        check("scale-in: an add sized at breakeven is refused while the broker stop is still the first stop (25030)",
+              not r_nobe["ok"] and "not adding while the stop" in r_nobe["error"] and not sl2.get("adds"), json.dumps(r_nobe))
         fake.hold_market = True
-        r_p = sad.send({"side": "add", "qty": 2, "dir": -1, "entry_t": t_s2, "n": 1})
+        r_p = sad.send({"side": "add", "qty": 2, "dir": -1, "entry_t": t_s2, "n": 1, "stop": 24998.75})
         fake.hold_market = False
         aid2 = f"{sl2.get('entry_id', 'X')[:-1]}A1"
         k = len(fake.files)
@@ -2437,9 +2571,10 @@ def selftest(verbose=True) -> bool:
         sbot._route_signals({"trades": [btr], "events": []}, "NQ", int(now[0]), 300)
         xr = [x for x in sbot.ledger if x["side"] == "exit"][-1]
         from . import lit as _lit
-        want_pnl = round(4 * (40.0 * _lit.PV - _lit.COMM) + 4 * ((25060.0 - 25045.25) * _lit.PV - _lit.COMM), 2)
+        want_pnl = round(4 * (40.0 * _lit.PV - _lit.COMM) + 4 * ((25060.0 - 25045.0) * _lit.PV - _lit.COMM), 2)
         check("LiveBot: a model exit (CUT_T15) after an add is routed as CLOSEPOSITION for the whole position (qty 8) with the "
-              "add's P&L in the ledger", lines_since(k)[:1] == ["CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;"] and xr["qty"] == 8
+              "add's P&L at its REAL fill (25045.00, the model priced 25045.25) in the ledger",
+              lines_since(k)[:1] == ["CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;"] and xr["qty"] == 8
               and abs(xr["pnl"] - want_pnl) < 0.01 and not bad2.legs, json.dumps([xr, want_pnl, lines_since(k)]))
         blob = open(os.path.join(tmp, "oif.log"), encoding="utf-8").read() + json.dumps(list(ad.trace))
         check("secrets: no confirm phrase or credential in the OIF audit log / trace", LIVE_PHRASE not in blob)
