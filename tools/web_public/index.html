@@ -729,6 +729,15 @@ table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-
 @media (min-width: 1101px) { .sub.grp { display: none; } }
 @media (min-width: 761px) and (max-width: 1100px) { .nav .kids { display: none !important; } .nav a.g.cur { background: color-mix(in srgb, var(--accent) 16%, transparent); } }
 
+/* remote control page (VIEWS.remote) */
+.rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.rc-cmd { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; border-radius: 14px; text-align: left; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); min-height: 86px; }
+.rc-cmd b { font-size: 14px; } .rc-cmd span { font-size: 12px; color: var(--ink-2); line-height: 1.4; }
+.rc-cmd.on { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+.rc-cmd.danger b { color: var(--bad); } .rc-cmd.gated b::after { content: ' · only when flat'; font-weight: 500; font-size: 11px; color: var(--muted); }
+.rc-json { font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap; word-break: break-all; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); margin: 10px 0; user-select: all; -webkit-user-select: all; }
+.rc-act { display: flex; gap: 8px; flex-wrap: wrap; } .rc-act .btn { flex: 1 1 160px; }
+.rc-big { min-height: 52px; font-size: 15px; }
 /* hero links, the owner's rules line, lesson money */
 .hero-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .ownr { display: flex; gap: 10px; align-items: flex-start; margin: -6px 0 18px; padding: 10px 14px; border-radius: 14px; font-size: 12.5px; line-height: 1.5; color: var(--ink-2);
@@ -1430,6 +1439,7 @@ const GROUPS = [
     ['news', 'News', 'news', 'USD events, the bot’s blackouts, headlines'],
     ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop, weekly stop'], ['activity', 'Activity', 'trades', 'Every fill and outcome, newest first'],
     ['alerts', 'Notifications', 'alerts', 'Phone notifications for every fill and outcome'],
+    ['remote', 'Remote', 'radar', 'Kill, stop, flatten or check the PC bot from the phone (through GitHub)'],
     ['sources', 'Data Sources', 'sources', 'Where every number comes from'], ['archive', 'Archive', 'archive', 'Previous strategy: Liquidity Engine, Oct 17'],
     ['settings', 'Settings', 'settings', 'Home Screen app, refresh, 3D']] },
 ];
@@ -1445,11 +1455,11 @@ const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
 const ALIAS = { account: 'accounts', positions: 'accounts', position: 'accounts', orders: 'accounts', broker: 'accounts', modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
   calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive',
-  briefing: 'brief', analyst: 'brief', recap: 'brief', plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
+  briefing: 'brief', analyst: 'brief', recap: 'brief', plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', control: 'remote', kill: 'remote', remotecontrol: 'remote', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
 // 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
 const SCENE = { accounts: 'eval', replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
-  evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', activity: 'today', sources: 'engine', news: 'today',
+  evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', remote: 'engine', activity: 'today', sources: 'engine', news: 'today',
   archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', brief: 'today', levels: 'chart', cockpit: 'eval' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
 const titleOf = (p) => DETAIL[p]?.label || (p === 'lab' ? 'Lab' : p === 'system' ? 'System' : PAGES[p]?.label) || 'Today';
@@ -4136,6 +4146,72 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
 });
 
 // ===================================================================== SETTINGS
+// ===================================================================== REMOTE CONTROL (engine/remote_ctl.py, docs/REMOTE_CONTROL.md)
+// The PC bot reads control/command.json on the repo's `control` branch every ~60 s. This page builds the exact JSON (a
+// fresh id + ts) and opens GitHub's editor for that file; the owner pastes and commits. Nothing here talks to the PC or
+// holds a token: GitHub (the owner's own login) carries the command. A command expires 15 min after it is made.
+const RC_CMDS = [
+  ['status', 'Status', 'A fresh heartbeat now and a phone notice with what the bot is doing', ''],
+  ['flatten', 'Flatten', 'Close the open position now. The bot keeps running; no new entry until the next trading day', ''],
+  ['stop', 'Stop after flat', 'Stop the bot once the trade or armed setup is finished', ''],
+  ['stopnow', 'Stop now', 'Close the position, then stop the bot', ''],
+  ['kill', 'KILL', 'Same as HOLD TO KILL: flatten everything, stop, auto-resume off. Restart only at the PC', 'danger'],
+  ['update', 'Update', 'Run the auto-update now (main only, self-tests, rolls back on failure), outside 01:50-16:00 ET', 'gated'],
+  ['restart', 'Restart server', 'Restart the PC server; the eval comes back only with auto-resume on', 'gated'],
+  ['start', 'Start on Sim101', 'Start the bot on the Sim101 practice account (never a real account)', ''],
+];
+const RC = { cmd: store.get('rcCmd', 'status'), made: null };
+const rcRepo = () => D?.extras?.repo || 'demetrades2000-coder/nq-liquidity-engine';
+const rcEdit = () => `https://github.com/${rcRepo()}/edit/control/control/command.json`;
+function rcBuild(cmd) {
+  const ts = Math.floor(Date.now() / 1000), rnd = Math.random().toString(36).slice(2, 6);
+  const c = cmd === 'stopnow' ? 'stop' : cmd;
+  const o = { id: `${c}-${ts}-${rnd}`, ts, cmd: c };
+  if (cmd === 'stopnow') o.now = true;
+  if (cmd === 'stop') o.now = false;
+  if (cmd === 'start') o.account = 'Sim101';
+  RC.made = { cmd, ts, json: JSON.stringify(o, null, 1) };
+  return RC.made;
+}
+VIEWS.remote = (el) => {
+  const pc = LV().pc || {}, rm = pc.remote || null;
+  const hbAge = pc.present && pc.t ? Math.max(0, Date.now() / 1000 - pc.t) : null;
+  const pcOk = hbAge != null && hbAge < 30 * 60;
+  if (!RC.made || RC.made.cmd !== RC.cmd || Date.now() / 1000 - RC.made.ts > 10 * 60) rcBuild(RC.cmd);
+  const m = RC.made, until = new Date((m.ts + 15 * 60) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const state = !pc.present ? ['no heartbeat from the PC yet', 'warn'] : !rm ? ['PC bot is on an older version (no remote yet)', 'warn']
+    : !rm.on ? ['off on the PC (LE_REMOTE=1 turns it on)', 'warn'] : [rm.last || 'on · no command yet', 'good'];
+  el.innerHTML = head('System · remote', 'Remote control', 'Send one safe command to the PC bot through GitHub. Free, from anywhere; the PC picks it up within about a minute.')
+    + `<div class="card"><div class="card-h"><h3>PC bot</h3>${chip(pcOk ? 'heartbeat ' + Math.round(hbAge / 60) + ' min ago' : 'PC silent', pcOk ? 'good' : 'warn')}</div>
+      <div class="pcline"><span class="dot ${state[1] === 'good' ? '' : 'warn'}"></span><span>${esc(state[0])}</span></div>
+      ${rm?.pending_stop ? '<div class="note">A stop is waiting for the bot to be flat.</div>' : ''}
+      ${rm?.error ? `<div class="note">Last fetch: ${esc(rm.error)}</div>` : ''}
+      <div class="note">The result also comes as a phone notification, and shows here after the next cloud run.</div></div>
+    <div class="card"><div class="card-h"><h3>1 · Pick a command</h3></div>
+      <div class="rc-grid" id="rcGrid">${RC_CMDS.map(([id, l, d, k]) => `<button type="button" class="rc-cmd ${k} ${id === RC.cmd ? 'on' : ''}" data-rc="${id}"><b>${esc(l)}</b><span>${esc(d)}</span></button>`).join('')}</div></div>
+    <div class="card"><div class="card-h"><h3>2 · Copy it and open GitHub</h3>${chip('valid until ' + until)}</div>
+      <div class="rc-json" id="rcJson">${esc(m.json)}</div>
+      <div class="rc-act"><button class="btn primary rc-big" type="button" id="rcGo">${icon('ext')}Copy and open GitHub</button>
+        <button class="btn ghost" type="button" id="rcCopy">${icon('check')}Copy only</button>
+        <button class="btn ghost" type="button" id="rcNew">${icon('refresh')}New id</button></div>
+      <div class="note">Opens <span class="mono">${esc(rcEdit().replace('https://', ''))}</span> (sign in once; the GitHub app works too: branch <b>control</b>, file <b>control/command.json</b>, edit).</div></div>
+    <div class="card"><div class="card-h"><h3>3 · Paste and commit</h3></div>
+      <ol class="list"><li>In the editor, select all the text and paste (replace everything).</li>
+        <li>Tap <b>Commit changes</b> (straight to the <b>control</b> branch).</li>
+        <li>Wait about a minute: the phone gets “Remote ${esc(m.cmd === 'stopnow' ? 'stop' : m.cmd)}: done” (or why it was refused).</li></ol>
+      <div class="note">Safety: each command runs once and expires after 15 minutes. Kill, stop, flatten and status only lower risk or read. Update and restart run only when the bot is flat. No command can start a real account or change the strategy or settings. Paper / Sim only for remote starts.</div></div>`;
+  $('#rcGrid').onclick = (e) => { const b = e.target.closest('[data-rc]'); if (!b) return; RC.cmd = b.dataset.rc; store.set('rcCmd', RC.cmd); rcBuild(RC.cmd); haptic(10); render(true); };
+  const fresh = () => { if (Date.now() / 1000 - RC.made.ts > 60) rcBuild(RC.cmd); $('#rcJson').textContent = RC.made.json; return RC.made.json; };
+  const copy = (t) => navigator.clipboard?.writeText ? navigator.clipboard.writeText(t) : Promise.reject(new Error('no clipboard'));
+  $('#rcGo').onclick = () => {                 // copy and open in the same tap (a popup after an await is blocked on iOS)
+    const t = fresh();
+    copy(t).then(() => toast('Copied: paste it in the editor and commit')).catch(() => toast('Copy the text above by hand', 4000));
+    window.open(rcEdit(), '_blank', 'noopener');
+  };
+  $('#rcCopy').onclick = () => { const t = fresh(); copy(t).then(() => toast('Copied')).catch(() => toast('Select the text above and copy it', 4000)); };
+  $('#rcNew').onclick = () => { rcBuild(RC.cmd); $('#rcJson').textContent = RC.made.json; toast('New id and time'); };
+};
+
 VIEWS.settings = (el) => {
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent), standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   el.innerHTML = head('System · settings', 'Make it yours', 'Saved on this device only.')

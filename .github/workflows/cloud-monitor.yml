@@ -124,6 +124,11 @@ jobs:
           # Web Push sender; engine/push.py has a built-in sender (cryptography only) if this ever fails to install
           pip install -q pywebpush==2.5.0 || echo "pywebpush not installed: engine/push.py uses its built-in sender"
 
+      - name: Control branch for the phone remote control (made once; never overwritten)
+        if: steps.guard.outputs.go == '1'
+        continue-on-error: true
+        run: python tools/init_control_branch.py || true     # engine/remote_ctl.py, docs/REMOTE_CONTROL.md
+
       - name: Load previous dashboard state
         if: steps.guard.outputs.go == '1'
         run: |

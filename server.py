@@ -801,6 +801,36 @@ _bc.HOOKS.update(start=_botctl_start, stop=live_stop, heartbeat=HEARTBEAT.status
 # ---- END BOT CONTROL ----
 
 
+# ---- REMOTE CONTROL ----
+# Phone remote control through GitHub (engine/remote_ctl.py, docs/REMOTE_CONTROL.md; LE_REMOTE=1, set by run_bot.ps1): reads
+# control/command.json on branch `control` every ~60 s. kill = the HOLD TO KILL path; stop = POST /api/live/stop; flatten =
+# BOT.flatten_now; start = Sim / paper only (built inside remote_ctl, never a real account); update / restart only when flat.
+from engine import remote_ctl as _rc
+
+
+def _remote_kill():
+    try:
+        if _ar.disable("remote kill"):
+            _autostart_log("auto-resume turned OFF by the remote kill")
+    except Exception as e:
+        print(f"[remote] could not turn auto-resume off: {e}", flush=True)
+    res = BOT.kill_switch()
+    _autostart_clear("remote kill")
+    return res
+
+
+def _remote_stop():
+    _autostart_clear("remote stop")
+    return BOT.stop()
+
+
+REMOTE = _rc.RemoteControl(BOT, hooks={"kill": _remote_kill, "stop": _remote_stop, "flatten": BOT.flatten_now,
+                                       "start": _botctl_start, "beat": HEARTBEAT.beat},
+                           log=lambda t: print(t, flush=True))
+app.router.add_event_handler("startup", REMOTE.start)
+# ---- END REMOTE CONTROL ----
+
+
 @app.get("/api/health/ping")
 def health_ping():
     return J({"ok": True, "t": int(time.time()), "uptime_s": int(time.time() - WATCHDOG.server_started_at),
