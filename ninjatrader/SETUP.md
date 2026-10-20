@@ -314,6 +314,51 @@ Before the first live start, check:
 | `nt_session_from` [LIT: 120 = 02:00 ET; engine: 480 = 08:00 ET] | First ET minute (after midnight) an entry is accepted; a bot trade still open before it is closed |
 | `lit_sizing` [from `live_model.json`: `{"mode": "two_week", "eval_start": "2026-10-19"}`] | LIT size switch: `two_week` (on since 2026-10-18: micros so the target covers what is left to +$3,000, at most 60% of the room to the max-loss floor and the $1,000 soft daily loss, max 40, min 1; it counts sessions from `eval_start`), `eval`, `normal`, `fast_eval` or `safe_eval`. Without a known eval state it falls back to `eval`. |
 | `eval_start` [`live_model.json` `lit_sizing.eval_start`] | First session (yyyy-mm-dd, the trading day; Sunday evening counts as Monday) of the eval this account is on. Set it again after every eval reset, or the size is worked out from the wrong balance. |
+| `accounts` [none: one account] | Extra accounts that trade the same LIT signals, each with its own size, eval clock and daily-loss lock-out (section 12b). |
+
+## 12b. Several accounts on one bot (off until you add one)
+
+The bot's own account (`--account`) trades exactly as before. Every account you add trades the same entry, stop and
+target with its own orders and its own micros (worked out from its own balance, floor and eval session). One account
+locked out (daily loss, max-loss floor reached) never stops the others; the kill switch flattens all of them.
+
+1. Add the account once (it goes into `data/accounts.json`, which stays on the PC):
+   `python -m engine.multi_account --add --id lucid50k --nt-account "<Name in the Accounts tab>" --preset lucid_pro_50k --eval-start 2026-10-21`
+   Presets: `python -m engine.multi_account --presets` (mffu_builder_50k, lucid_pro_50k, fn_rapid_daily_50k,
+   mffu_rapid_50k, mffu_rapid_eod_50k, paper_50k). Check: `python -m engine.multi_account --list`.
+2. Test on a Sim account first: `--nt-account Sim102`, then the usual `python -m engine.ninjatrader --start`. The log
+   shows `[lucid50k] SIM Sim102 ... ready`; the Accounts page shows a row per extra account.
+3. A real account trades only with all three locks for that account: `python -m engine.multi_account --set --id lucid50k --armed yes`,
+   the live phrase typed at `--start` (it is given to every account marked armed, in memory only), and `NINJATRADER_LIVE=1`.
+4. After the pass: `python -m engine.multi_account --set --id lucid50k --mode funded --funded-start <first funded day>`;
+   record each payout with `--payout 2026-12-01=1000` (the room to the floor is worked out after it).
+5. Auto-resume after a restart: each extra real account needs its own opt-in,
+   `python -m engine.ninjatrader --enable-auto-resume --extra --account "<Name>" --confirm "<the live phrase>"`;
+   one without it is left out of the resume (you get a push saying so) while the others come back.
+6. Off again: `python -m engine.multi_account --disable --id lucid50k` (or `--remove`), then Stop and `--start`.
+
+### Add the 25K (MFFU Builder 25K eval next to the 50K)
+
+How the copy works: the bot writes one NinjaTrader order file per account (`PLACE;<account>;MNQ ...`), each with its own
+micros, stop and target, and reads each account's own fills and positions back. Nothing is copied inside NinjaTrader
+(no trade copier). The extra accounts' orders are sent at the same moment as the 50K's (one thread each), so they
+reach NinjaTrader within milliseconds of each other; each account then waits for its own fill report (up to ~6 s).
+
+1. In NinjaTrader, Control Center > Accounts: wait until the new 25K account shows (its Name, e.g. `MFFUEVAL25xxxx`).
+2. Add it (first session = the trading day of its first trade, e.g. 2026-10-21):
+   `python -m engine.multi_account --add --id mffu25k --name "MFFU 25K Eval" --nt-account "<the 25K Name>" --preset mffu_builder_25k --eval-start 2026-10-21`
+   (or copy `ninjatrader/accounts.example.json` to `data/accounts.json` and put the Name in `nt_account`).
+   Its rules ($1,500 target, $1,000 trailing max loss locking at $25,100, $600 soft daily loss, 20 micros) are the
+   preset's; change any of them in the file's `"rules"` if MFFU says otherwise. If the 25K already has P&L, add `--prior-pnl -50`.
+   Sizing (research/writeups/lit-builder-25k.md): "one winner passes" on the 25K's own +$1,500, at most 50% of its room
+   and its $600 daily loss, max 20 micros (about half the 50K's micros on the same signal); safe_eval at 30% of the room
+   after session 10. When its room falls under $100 it stops trading and your phone gets "25K stuck: room $X, buy a new one".
+   Tip from the research: starting the 25K a week after the 50K makes the two evals far less likely to die together.
+   The bot never holds a long on one account and a short on another (MFFU's hedging rule).
+3. Real account, so it needs its own locks: `python -m engine.multi_account --set --id mffu25k --armed yes`, then Stop and
+   `python -m engine.ninjatrader --start --account "<the 50K Name>" --confirm "<the live phrase>"` (with NINJATRADER_LIVE=1).
+   The log shows `[MFFU 25K Eval] LIVE ... ready`; if it says DISABLED it names the missing lock.
+4. Auto-resume for it too: `python -m engine.ninjatrader --enable-auto-resume --extra --account "<the 25K Name>" --confirm "<the live phrase>"`.
 
 ## 13. Assumptions to verify on a real install
 

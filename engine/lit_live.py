@@ -278,6 +278,15 @@ def _sweep_names(names):
     return list(dict.fromkeys(out))
 
 
+IDM_KEYS = ("idm_m", "idm_cap", "idm_n", "wk_m")
+
+
+def _idm(t):
+    """The inducement-count size fields (engine/lit.py option idm_size; absent when it is off) for engine/sizing.lit_qty:
+    idm_m = the raw multiplier, idm_cap = its $ cap on a size-up, wk_m = the rest of the model's multiplier (weekly stop)."""
+    return {k: t[k] for k in IDM_KEYS if k in t}
+
+
 def _trade(t):
     reason = "TIME" if t["exit"] == "EOD" else t["exit"]        # the live loop flattens on TIME at 15:55
     return {"entry_t": int(t["entry_t"]), "exit_t": int(t["exit_t"]), "dir": int(t["dir"]), "entry": float(t["entry_px"]),
@@ -286,7 +295,9 @@ def _trade(t):
             "risk_pts": float(t["risk_pts"]), "risk_usd": float(t["risk_usd"]), "target_label": t.get("target_label"),
             "swept": _sweep_names(t.get("swept")), "sweep_ext": t.get("sweep_ext"), "tf": f"{t.get('tf', 5)}m",
             "mfe": t.get("mfe"), "bars_held": t.get("bars_held"), "entry_kind": "limit" if t.get("limit_fill") else "1m CISD",
-            "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+            "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [], **_idm(t),
+            **({"adds": t["adds"], "pts": t.get("pts"), "qty_total": t.get("qty_total")} if t.get("adds") else {}),
+            **({"exit_now": True} if t.get("exit_now") else {}),
             **({"mae": t.get("mae"), "learn": t["learn"], "post": t.get("post")} if t.get("learn") else {})}
 
 
@@ -382,7 +393,11 @@ def _close_at_session_end(t):
     d, q = int(t["dir"]), int(t["qty"])
     exit_px = float(t["exit_px"]) - d * lit.SLIP
     pnl = (d * (exit_px - float(t["entry_px"])) * lit.PV - lit.COMM) * q
+    pnl += sum((d * (exit_px - float(a["px"])) * lit.PV - lit.COMM) * int(a["qty"]) for a in (t.get("adds") or []))   # scale_in
     x = dict(t)
+    if t.get("adds"):                    # scale_in: the points of the entry and of each add at the session-end price
+        x["pts"] = round(d * (exit_px - float(t["entry_px"])), 4)
+        x["adds"] = [dict(a, pts=round(d * (exit_px - float(a["px"])), 4)) for a in t["adds"]]
     x.update(exit="EOD", exit_px=round(exit_px, 2), pnl=round(pnl, 2), r=round(pnl / (float(t["risk_pts"]) * lit.PV * q), 3),
              exit_t=int(t["last_t"]) + 60 * int(t.get("tf", 5)))
     return x
@@ -402,7 +417,7 @@ def _enter_now(t):
     return {"entry_t": int(t["entry_t"]), "cisd_t": int(t["cisd_t"]), "dir": int(t["dir"]), "qty": int(t["qty"]),
             "stop": float(t["stop_px"]), "stop0": float(t["stop_px"]), "target": float(t["target_px"]), "entry": float(t["entry_px"]),
             "est": bool(t.get("est")), "setup": "LIT", "trigger": "LIT", "risk_pts": float(t["risk_pts"]), "be": False,
-            "target_label": t.get("target_label"), "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+            "target_label": t.get("target_label"), "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [], **_idm(t),
             "tf": f"{t.get('tf', 1)}m"}
 
 
@@ -430,7 +445,9 @@ def _shape(M, R, P, now, B1):
                         "stop0": float(t["stop_px"]), "target": float(t["target_px"]), "entry": float(t["entry_px"]), "setup": "LIT",
                         "trigger": "LIT", "risk_pts": float(t["risk_pts"]), "be": bool(t.get("be_done")),
                         "unrealized": float(t["pnl"]), "unrealized_r": float(t["r"]), "target_label": t.get("target_label"),
-                        "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [],
+                        "size_mult": t.get("size_mult", 1.0), "size_why": t.get("size_why") or [], **_idm(t),
+                        **({"adds": t["adds"]} if t.get("adds") else {}),
+                        **({"add_now": t["add_now"]} if t.get("add_now") else {}),
                         **({"learn": t["learn"]} if t.get("learn") else {})}
             continue
         tr = _trade(t)
