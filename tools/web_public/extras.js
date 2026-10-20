@@ -100,6 +100,15 @@
     return { lv, ev, e2, P, bal, floor, profit, toGo, room, today, cum, limit, done, session, left, mode: lv.lit_sizing || D.lit_extra?.sizing?.mode || 'normal',
       tradedToday: today.length >= ((D.lit_extra?.rules?.max_per_day) || 1), status: e2.status || (profit >= P.target ? 'passed' : bal <= floor ? 'failed' : 'open') };
   }
+  // eval lifecycle (engine/eval_life.py): the PC bot's (heartbeat health.eval_life, the real account) when it reports one,
+  // else the cloud paper eval's (state eval_life): passed / failed / min-days and the weekly loss stop off / armed / tripped
+  function lifeLine(lv) {
+    const pc = lv.pc?.health?.eval_life, cl = lv.eval_life;
+    if (!pc && !cl) return '';
+    const st = pc ? pc.wk_stop : cl.wk_stop?.state, txt = pc ? pc.wk_text : cl.wk_stop?.text, tr = pc ? pc.trading : cl.trading;
+    const k = st === 'tripped' ? 'bad' : st === 'armed' ? 'warn' : '';
+    return `<p class="small" style="margin:8px 0 0">${tag('Weekly loss stop: ' + esc(st || 'off'), k)} <span class="mut">${esc(txt || '')}${tr ? ' · ' + esc(tr) : ''}${pc ? ' · PC bot' : ' · cloud paper'}</span></p>`;
+  }
   function typical() {
     const t = span('2026'), st = med(t.map((x) => x.risk_pts)), tg = med(t.filter((x) => ok(x.rr)).map((x) => x.rr * x.risk_pts)), rr = med(t.map((x) => x.rr));
     return { stop: st || 46, tgt: tg || 230, rr: rr || 5 };
@@ -131,6 +140,7 @@
         <p class="small mut" style="margin:6px 0 12px">${esc(E.e2.text || (E.session ? `session ${E.session} of ${E.limit}` : 'eval clock not started'))}${E.e2.reset === false || E.e2.reset == null ? ' · no reset: after session 10 it keeps going in safe_eval' : ''}</p>
         <div class="lex-prog"><div class="meter good"><i style="width:${Math.max(0, Math.min(100, E.profit / E.P.target * 100)).toFixed(1)}%"></i></div><div class="small"><span>To the $${E.P.target.toLocaleString('en-US')} target</span><b>${usd(E.toGo)} to go</b></div></div>
         <div class="lex-prog"><div class="meter"><i style="width:${Math.max(0, Math.min(100, E.room / E.P.mll * 100)).toFixed(1)}%"></i></div><div class="small"><span>Room above the floor ${usd(E.floor)}${E.floor >= E.P.lock_at - .5 ? ' (locked)' : ''}</span><b>${usd(E.room)}</b></div></div>
+        ${lifeLine(E.lv)}
       </div>
       <div class="stats">
         ${statBox('Needed / session', perSess != null ? usd(perSess) : '—', E.left != null ? `${usd(E.toGo)} over ${plural(E.left, 'session')}` : 'eval clock missing')}

@@ -776,6 +776,9 @@ class LiveBot:
             state = None
             if mode in ("two_week", "eval", "safe_eval"):
                 st = self.eval_state() or {}
+                if st and lsz.get("pass_lock") is not False and float(st.get("profit") or 0) + float(st.get("cum") or 0) \
+                        >= float(((lsz.get("two_week") or {}).get("acct") or {}).get("target", _sz.TW_50K["target"])):
+                    return 0                      # a passed eval (the 1-micro minimum-days trade): never add to it
                 state = {"room": self.eval_room(), "cum": float(st.get("cum", self.day_pnl_routed()) or 0.0)}
             prev = [{"rk": float(a["rk"]), "prev_rk": list(a.get("prev_rk") or [])} for a in (pos.get("adds") or [])][:int(an["n"]) - 1]
             qa = _sz.scale_in_qty(q0, q0, float(pos["risk_pts"]), prev + [{"rk": float(an["rk"]), "prev_rk": list(an.get("prev_rk") or [])}],
@@ -1142,6 +1145,7 @@ class LiveBot:
                 self.state["eval_2wk"] = self.eval_clock()      # the two-week eval clock and the reset reminder
             except Exception as e:
                 self._note_error(f"eval clock failed: {e}")
+            self._eval_life_tick()                              # pass / fail day, min-days, weekly loss stop
         if self.state_path == STATE_PATH:
             self._narrate_filter(eqf, lm)
         self.last_poll = now
@@ -1335,8 +1339,44 @@ class LiveBot:
             return None
         today = trading_day(self.clock())
         days = self.eval_days()
-        return _sz.eval_state({d: v for d, v in days.items() if d < today}, float(days.get(today, 0.0)),
-                              session=max(1, _sz.eval_session(start, today) or 1))
+        st = _sz.eval_state({d: v for d, v in days.items() if d < today}, float(days.get(today, 0.0)),
+                            session=max(1, _sz.eval_session(start, today) or 1), today=today)   # today: wk_pnl (wk_loss_usd)
+        st["n_today"] = int(self.trades_today())
+        return st
+
+    def eval_life(self):
+        """State key eval_life (engine/eval_life.view): eval open / passed / failed, the minimum-days trade, the eval weekly
+        loss stop (off / armed / tripped). None when the eval start is unknown or the sizing is not an eval mode."""
+        from . import eval_life as _el
+        lsz = getattr(self, "_lit_sizing", None) or {}
+        start = self.eval_start()
+        if not start or (lsz.get("mode") or "") not in _el.EVAL_MODES:
+            return None
+        e = _et(self.clock())
+        over = e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60
+        return _el.view(self.eval_days(), start, trading_day(self.clock()), lsz, session_over=over, n_today=self.trades_today())
+
+    def _eval_life_tick(self):
+        """Every poll (LIT): the eval lifecycle into the state, a log line + one push on the pass day, the fail day and when
+        the weekly loss stop trips (each push once: engine/push keeps the keys)."""
+        try:
+            v = self.eval_life()
+        except Exception as e:
+            self._note_error(f"eval lifecycle failed: {e}")
+            return
+        self.state["eval_life"] = v
+        if not v:
+            return
+        from . import eval_life as _el
+        seen = getattr(self, "_eval_life_seen", None)
+        if seen is None:
+            seen = self._eval_life_seen = set()
+        for p in _el.notices(v, self._push_account(), self.clock()):
+            if p["key"] in seen:
+                continue
+            seen.add(p["key"])
+            self._log("risk", f"{p['title']}: {v['trading']}")
+            self._push_send(p)
 
     def eval_clock(self):
         """State key eval_2wk: session x of 10 since eval_start(), reset recommended after session 10 (engine/sizing.eval_clock)."""
@@ -1373,7 +1413,9 @@ class LiveBot:
                     from .multi_account import primary_state
                     st_ = primary_state(self, mode)
                 else:
-                    st_ = self.eval_state() if mode == "two_week" else None
+                    # every eval mode gets the eval state (2026-10-20): the pass / fail lock and the weekly loss stop
+                    # (engine/sizing.eval_lock, wk_loss_usd); eval / safe_eval / fast_eval size from the room as before
+                    st_ = self.eval_state() if mode in ("two_week", "eval", "safe_eval", "fast_eval") else None
                 r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room, state=st_)
                 if r.get("learn"):             # the learning loop's multiplier at this entry (applied, or would-be in observe)
                     if not hasattr(self, "_learn_at"):

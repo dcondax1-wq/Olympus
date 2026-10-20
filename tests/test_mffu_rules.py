@@ -106,6 +106,19 @@ def main():
     check("trailing floor locks at $50,100 (EOD high $53,000)", ev["trailing_mll"] == 50000.0 + L50["lock"], f"{ev['trailing_mll']:,.0f}")
     ev = sizing.mffu_eval({"d1": 1000.0, "d2": -500.0})
     check("trailing floor moves only up from the EOD high", ev["trailing_mll"] == 49000.0, f"{ev['trailing_mll']:,.0f}")
+    # minimum trading days (rulebook: 1, status conflict: the plan page says 2) -> the bot assumes the stricter one, and a
+    # passed eval trades only the 1-micro minimum-days trade, then nothing (engine/sizing.eval_lock, engine/eval_life.py)
+    md = R["builder_50k"]["eval"].get("min_trading_days_eval") or {}
+    mind = (S.get("two_week") or {}).get("min_days", sizing.TW_DEFAULT["min_days"])
+    check("minimum trading days: bot assumes >= the rulebook's (2 if the rulebook conflicts)",
+          mind is not None and int(mind) >= int(md.get("value") or 1) and (md.get("status") != "conflict" or int(mind) >= 2),
+          f"bot {mind}, rulebook {md.get('value')} ({md.get('status')})")
+    s_md = sizing.eval_state({"2026-10-19": 3050.0}, 0.0, session=2, today="2026-10-20")
+    s_dn = sizing.eval_state({"2026-10-16": 1000.0, "2026-10-19": 2050.0}, 0.0, session=3, today="2026-10-20")
+    tr = {"risk_pts": 30.0, "tgt_pts": 200.0, "size_mult": 1.0}
+    q_md = sizing.lit_qty(13, tr, S, room=s_md["room"], state=s_md, learning=None)["qty"]
+    q_dn = sizing.lit_qty(13, tr, S, room=s_dn["room"], state=s_dn, learning=None)["qty"]
+    check("passed eval: 1-micro minimum-days trade with 1 traded day, nothing with 2", q_md == 1 and q_dn == 0, f"{q_md} / {q_dn}")
     check("two_week caps on (dll_cap, room_f <= 1)", bool((S.get("two_week") or {}).get("dll_cap", True))
           and float((S.get("two_week") or {}).get("room_f") or 1.0) <= 1.0)
 

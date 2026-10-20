@@ -950,16 +950,25 @@ def eval_result_notice(view: dict, now) -> dict | None:
     failed = ev.get("status") == "failed" or (ev.get("room") is not None and ev.get("room") <= 0)
     if passed:
         body = ("Next: 1) the bot stops trading this eval by itself; do not trade it more. 2) Next morning check MFFU shows "
-                "it passed; if not, place one 1-MNQ trade (minimum days). 3) Sign MFFU's funded agreement. 4) Add the funded "
-                "account in NinjaTrader. 5) Tell Claude: switch sizing to funded before the bot trades it.")
+                "it passed; if not, place one 1-MNQ trade (minimum days). 3) Sign MFFU's funded agreement. 4) Note the funded "
+                "account Name in NinjaTrader. 5) Add it with funded sizing: python -X utf8 -m engine.eval_life --to-funded "
+                "--account \"<Name>\" --start <first funded day>, restart the bot. 6) Payouts: ask once the balance is $53,600+ "
+                "($1,500 above the $2,100 buffer), up to $2,000.")
         return _payload("eval", f"EVAL PASSED: {_money(ev.get('profit'))}", body, f"ops:eval:passed:{start}", now)
     if failed:
         body = (f"Next: 1) Stop the bot on this account. 2) Buy a new MFFU Builder 50K with your discount code (you paid "
-                f"{OWNER_PRICE}; check for a current code first). 3) Tell Claude the new account name and its first session "
-                "(eval_start). Stagger rule: if you run two evals, start the second 5-10 sessions after the first, never the "
+                f"{OWNER_PRICE}; check for a current code first, verify it at checkout). 3) Tell Claude the new account name and its first session "
+                "(eval_start). Stagger rule: if you run two evals, start the second 5 sessions after the first, never the "
                 "same day (same trades, same result).")
         return _payload("eval", "Eval failed: max loss reached", body, f"ops:eval:failed:{start}", now)
     return None
+
+
+def bot_pushes_eval(hb: dict, view: dict) -> bool:
+    """True when the running PC bot sends the eval pass / fail notice itself (heartbeat health.eval_life, engine/eval_life.py)
+    and its heartbeat is fresh: the scheduled task then stays quiet (the fallback for an older or stopped bot)."""
+    hl = (hb or {}).get("health") if isinstance((hb or {}).get("health"), dict) else {}
+    return bool((hl.get("eval_life") or {}).get("pushes") and view.get("fresh"))
 
 
 def roll_notice(now) -> dict | None:
@@ -1219,8 +1228,8 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
         if D["weekly"] and real:
             notes += watch_notices(state, now)
         n = eval_result_notice(view, now)
-        if n:
-            notes.append(n)
+        if n and not bot_pushes_eval(ctx["hb"], view):
+            notes.append(n)            # the running bot pushes its own pass / fail notice (engine/eval_life.py): no double push
         for p in notes:
             r = send(p, state, sender=sender)
             out.append({"key": p["key"], "title": p["title"], **{k: r.get(k) for k in ("sent", "dup", "skipped", "error")}})

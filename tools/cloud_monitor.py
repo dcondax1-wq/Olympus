@@ -296,7 +296,8 @@ def paper_size(ledger, t, model, eqf_cfg, shadow_path, sizing_cfg, params, lit_s
         before = {k: v for k, v in ledger.items() if int(k) < int(t["entry_t"])}
         mode = ls.get("mode")
         room = eval_track(before, start)["cushion"] if mode in ("safe_eval", "eval", "two_week") else None
-        state = lit_eval_state(before, start, tday(t["entry_t"])) if mode == "two_week" else None
+        # every eval mode gets the eval state (2026-10-20): the pass / fail lock and the weekly loss stop (wk_loss_usd)
+        state = lit_eval_state(before, start, tday(t["entry_t"])) if mode in ("two_week", "eval", "safe_eval", "fast_eval") else None
         r = sizing.lit_qty(int(t.get("qty") or 0), t, lit_sizing, room=room, state=state, learning=_LEARN)
         if r.get("learn"):
             _LEARN_AT[int(t["entry_t"])] = r["learn"]
@@ -412,8 +413,28 @@ def lit_eval_state(before, start, day):
     if not start:
         return None
     pnl = eval_day_pnl(before, start)
-    return sizing.eval_state({d: v for d, v in pnl.items() if d < day}, pnl.get(day, 0.0),
-                             session=max(1, sizing.eval_session(start, day) or 1))
+    st = sizing.eval_state({d: v for d, v in pnl.items() if d < day}, pnl.get(day, 0.0),
+                           session=max(1, sizing.eval_session(start, day) or 1), today=day)   # today: wk_pnl (wk_loss_usd)
+    st["n_today"] = sum(1 for v in before.values() if v.get("day") == day)
+    return st
+
+
+def eval_life(ledger, lm, now):
+    """State key eval_life (engine/eval_life.view) of the cloud paper eval: open / passed / failed, the minimum-days trade
+    and the eval weekly loss stop (off / armed / tripped). Display only: the pass / fail / weekly-stop pushes come from
+    the PC bot (the real account). None for the old engine or an unknown eval start."""
+    if lm.get("model") != "lit":
+        return None
+    ls = lm.get("lit_sizing") or {}
+    start = ls.get("eval_start")
+    if not start or (ls.get("mode") or "") not in ("two_week", "eval", "safe_eval", "fast_eval"):
+        return None
+    from engine import eval_life as _el
+    e = et(now)
+    over = e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60
+    day = tday(now)
+    return _el.view(eval_day_pnl(ledger, start), start, day, ls, session_over=over,
+                    n_today=sum(1 for v in ledger.values() if v.get("day") == day))
 
 
 def eval_clock(ledger, lm, now):
@@ -687,6 +708,11 @@ def run(out):
     ev_start = (lm.get("lit_sizing") or {}).get("eval_start") if lm["model"] == "lit" else None
     ev_track = {**eval_track(ledger, ev_start), **({"start": ev_start} if ev_start else {})}
     state["eval_2wk"] = eval_clock(ledger, lm, now)
+    try:
+        state["eval_life"] = eval_life(ledger, lm, now)
+    except Exception as e:
+        state["eval_life"] = None
+        print(f"eval lifecycle failed: {e.__class__.__name__}: {e}")
 
     # ---- the always-on PC's heartbeat (engine/heartbeat.py): alert when it went silent in a session
     if pc is None:
@@ -787,7 +813,7 @@ def run(out):
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
                  "lit_rules": state.get("lit_rules"), "lit_sizing": (lm.get("lit_sizing") or {}).get("mode") if lm["model"] == "lit" else None,
-                 "health": health, "eval": ev_track, "eval_2wk": state.get("eval_2wk"), "model_state": state.get("model_state"), "position": pos,
+                 "health": health, "eval": ev_track, "eval_2wk": state.get("eval_2wk"), "eval_life": state.get("eval_life"), "model_state": state.get("model_state"), "position": pos,
                  "strategy": lm.get("label"), "params": lm.get("lit") if lm["model"] == "lit" else lm.get("params"),
                  "equity_filter": state.get("equity_filter"),
                  "eval_timing": state.get("eval_timing"), "price": state.get("price"), "today": today,
@@ -1081,7 +1107,9 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
             f"| Monday rule | {((state.get('lit_rules') or {}).get('monday') or {}).get('text') or ('on (applies on Mondays)' if ((state.get('lit_rules') or {}).get('monday') or {}).get('on') else 'off')} |",
             f"| Sizing mode | {((lm or {}).get('lit_sizing') or {}).get('mode') or 'normal'} |",
             *([f"| Eval clock | {'**RESET RECOMMENDED** - ' if ck.get('reset') else ''}{ck.get('text')} (eval start {ck.get('start') or '?'}) |"]
-              if (ck := state.get("eval_2wk")) else [])]),
+              if (ck := state.get("eval_2wk")) else []),
+            *([f"| Eval loss stop | {(el.get('wk_stop') or {}).get('text') or 'off'} ({el.get('trading')}) |"]
+              if (el := state.get("eval_life")) else [])]),
          f"| Eval timing | **{(state.get('eval_timing') or {}).get('verdict', '?').upper()}**: {(state.get('eval_timing') or {}).get('reason', '')} |",
          f"| Model | **{state.get('model_state', '?')}** |",
          f"| Price | {price:,.2f} (last bar {health['last_bar']}, {health['age_min']} min old) |" if price else "| Price | - |",

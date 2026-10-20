@@ -886,7 +886,7 @@ def _hub(st, lm, docs):
         return None
 
 
-HOME_LIVE = ("last_run", "runs", "health", "eval", "eval_2wk", "eval_timing", "model_state", "position", "strategy", "price", "today",
+HOME_LIVE = ("last_run", "runs", "health", "eval", "eval_2wk", "eval_life", "eval_timing", "model_state", "position", "strategy", "price", "today",
              "events", "pc", "pc_verdict", "pc_outage", "pc_checkin", "model", "lit_rules", "lit_sizing", "lit", "setups", "armed", "levels", "session", "notices")
 
 
@@ -898,7 +898,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     ledger = sorted(({**v, "entry_t": int(k)} if str(k).isdigit() else dict(v) for k, v in (st.get("ledger") or {}).items()),
                     key=lambda v: (v.get("day", ""), v.get("entry", "")), reverse=True)
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
-                                   "equity_filter", "eval_timing", "eval_2wk", "price", "today", "events", "engine_trades", "bars", "bars1", "pools", "pc",
+                                   "equity_filter", "eval_timing", "eval_2wk", "eval_life", "price", "today", "events", "engine_trades", "bars", "bars1", "pools", "pc",
                                    "pc_verdict",                        # engine/accounts.verdict: is the PC bot trading the eval
                                    "pc_outage", "pc_checkin",           # engine/push.pc_outage / pc_checkin_line: the Surface-offline line
                                    "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
