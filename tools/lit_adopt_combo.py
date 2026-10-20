@@ -31,7 +31,10 @@ OUT = os.path.join(ROOT, "research", "lit", "adopt_combo.json")
 T15 = {"at": 15, "x": 0.3, "mfe": 0.5}
 SCALE = {"pb": 0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1}
 BE_OFF = 1.25
-LIVE = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]
+# the live LIT params WITHOUT the three upgrades: they are switched on in live_model.json since 2026-10-20, and every variant
+# here (base / t15 / scale / be_off / all3) adds them on top of this base explicitly
+LIVE = {k: v for k, v in json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"].items()
+        if k not in ("t_check", "scale_in", "be_off")}
 V = {"base": {}, "t15": {"t_check": T15}, "scale": {"scale_in": SCALE}, "be_off": {"be_off": BE_OFF},
      "t15_be_off": {"t_check": T15, "be_off": BE_OFF}, "all3": {"t_check": T15, "scale_in": SCALE, "be_off": BE_OFF}}
 

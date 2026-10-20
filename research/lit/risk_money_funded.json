@@ -1,0 +1,1330 @@
+{
+ "_meta": {
+  "built": "2026-10-20 01:14",
+  "note": "MFFU Builder 50K funded (tools/lit_money2.py model), 1,000 MC paths x 126 sessions, same paths as lit-funded-sizing / lit-money-batch2; $1.90"
+ },
+ "base": {
+  "_kelly": {
+   "H1": {
+    "f_star": 0.213,
+    "n": 80,
+    "mean_r": 0.725,
+    "win": 0.225,
+    "half_kelly": 0.107
+   },
+   "H2": {
+    "f_star": 0.199,
+    "n": 40,
+    "mean_r": 0.632,
+    "win": 0.35,
+    "half_kelly": 0.1
+   }
+  },
+  "live funded | asap (today)": {
+   "H1": {
+    "loss_3m": 0.6,
+    "paid_3m": 2012,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.0,
+    "paid_6m": 4613,
+    "paid_p10_6m": 1358,
+    "per_month": 769,
+    "first_med": 27.0,
+    "max_risk": 342,
+    "npay": 3.28,
+    "grad_6m": 24.5
+   },
+   "H2": {
+    "loss_3m": 0.6,
+    "paid_3m": 1919,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.5,
+    "paid_6m": 4433,
+    "paid_p10_6m": 776,
+    "per_month": 739,
+    "first_med": 26.0,
+    "max_risk": 412,
+    "npay": 3.15,
+    "grad_6m": 23.8
+   }
+  },
+  "live funded | wait for $1,500+ (adopt-candidate)": {
+   "H1": {
+    "loss_3m": 0.5,
+    "paid_3m": 2140,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.8,
+    "paid_6m": 4788,
+    "paid_p10_6m": 1600,
+    "per_month": 798,
+    "first_med": 36.0,
+    "max_risk": 342,
+    "npay": 3.06,
+    "grad_6m": 19.4
+   },
+   "H2": {
+    "loss_3m": 0.6,
+    "paid_3m": 2033,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.4,
+    "paid_6m": 4622,
+    "paid_p10_6m": 1294,
+    "per_month": 770,
+    "first_med": 34.0,
+    "max_risk": 412,
+    "npay": 2.96,
+    "grad_6m": 19.5
+   }
+  },
+  "pct 0.2 of the room | $1,500+": {
+   "H1": {
+    "loss_3m": 0.1,
+    "paid_3m": 1754,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.3,
+    "paid_6m": 4410,
+    "paid_p10_6m": 1576,
+    "per_month": 735,
+    "first_med": 43.0,
+    "max_risk": 342,
+    "npay": 2.83,
+    "grad_6m": 13.5
+   },
+   "H2": {
+    "loss_3m": 0.0,
+    "paid_3m": 994,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 3092,
+    "paid_p10_6m": 0,
+    "per_month": 515,
+    "first_med": 57.5,
+    "max_risk": 412,
+    "npay": 2.01,
+    "grad_6m": 6.3
+   }
+  },
+  "pct 0.3 of the room | $1,500+": {
+   "H1": {
+    "loss_3m": 0.2,
+    "paid_3m": 1992,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.4,
+    "paid_6m": 4710,
+    "paid_p10_6m": 1600,
+    "per_month": 785,
+    "first_med": 38.0,
+    "max_risk": 342,
+    "npay": 3.01,
+    "grad_6m": 17.5
+   },
+   "H2": {
+    "loss_3m": 0.2,
+    "paid_3m": 1596,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.0,
+    "paid_6m": 4075,
+    "paid_p10_6m": 0,
+    "per_month": 679,
+    "first_med": 43.0,
+    "max_risk": 412,
+    "npay": 2.62,
+    "grad_6m": 13.6
+   }
+  },
+  "pct 0.5 of the room | $1,500+": {
+   "H1": {
+    "loss_3m": 0.7,
+    "paid_3m": 2184,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.4,
+    "paid_6m": 4804,
+    "paid_p10_6m": 1600,
+    "per_month": 801,
+    "first_med": 35.0,
+    "max_risk": 342,
+    "npay": 3.07,
+    "grad_6m": 19.6
+   },
+   "H2": {
+    "loss_3m": 0.5,
+    "paid_3m": 2158,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.7,
+    "paid_6m": 4788,
+    "paid_p10_6m": 1349,
+    "per_month": 798,
+    "first_med": 32.0,
+    "max_risk": 412,
+    "npay": 3.06,
+    "grad_6m": 21.0
+   }
+  },
+  "pct 0.6 of the room | $1,500+": {
+   "H1": {
+    "loss_3m": 1.1,
+    "paid_3m": 2187,
+    "paid_p10_3m": 0,
+    "loss_6m": 2.0,
+    "paid_6m": 4792,
+    "paid_p10_6m": 1600,
+    "per_month": 799,
+    "first_med": 34.0,
+    "max_risk": 342,
+    "npay": 3.06,
+    "grad_6m": 19.7
+   },
+   "H2": {
+    "loss_3m": 1.7,
+    "paid_3m": 2201,
+    "paid_p10_3m": 0,
+    "loss_6m": 3.0,
+    "paid_6m": 4859,
+    "paid_p10_6m": 1413,
+    "per_month": 810,
+    "first_med": 31.0,
+    "max_risk": 412,
+    "npay": 3.11,
+    "grad_6m": 21.6
+   }
+  },
+  "max $600 a trade | $1,500+": {
+   "H1": {
+    "loss_3m": 0.4,
+    "paid_3m": 1970,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.8,
+    "paid_6m": 4585,
+    "paid_p10_6m": 1600,
+    "per_month": 764,
+    "first_med": 37.0,
+    "max_risk": 314,
+    "npay": 2.94,
+    "grad_6m": 15.6
+   },
+   "H2": {
+    "loss_3m": 0.5,
+    "paid_3m": 1472,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.6,
+    "paid_6m": 3663,
+    "paid_p10_6m": 0,
+    "per_month": 610,
+    "first_med": 41.0,
+    "max_risk": 318,
+    "npay": 2.38,
+    "grad_6m": 7.1
+   }
+  },
+  "max $1,000 a trade | $1,500+": {
+   "H1": {
+    "loss_3m": 0.5,
+    "paid_3m": 2098,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.0,
+    "paid_6m": 4722,
+    "paid_p10_6m": 1600,
+    "per_month": 787,
+    "first_med": 36.0,
+    "max_risk": 396,
+    "npay": 3.02,
+    "grad_6m": 18.2
+   },
+   "H2": {
+    "loss_3m": 0.6,
+    "paid_3m": 2053,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.5,
+    "paid_6m": 4642,
+    "paid_p10_6m": 1294,
+    "per_month": 774,
+    "first_med": 33.0,
+    "max_risk": 412,
+    "npay": 2.97,
+    "grad_6m": 21.1
+   }
+  },
+  "max $1,200 a trade | $1,500+": {
+   "H1": {
+    "loss_3m": 0.5,
+    "paid_3m": 2114,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.9,
+    "paid_6m": 4785,
+    "paid_p10_6m": 1600,
+    "per_month": 798,
+    "first_med": 36.0,
+    "max_risk": 484,
+    "npay": 3.06,
+    "grad_6m": 19.6
+   },
+   "H2": {
+    "loss_3m": 0.6,
+    "paid_3m": 2122,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.4,
+    "paid_6m": 4762,
+    "paid_p10_6m": 1291,
+    "per_month": 794,
+    "first_med": 33.0,
+    "max_risk": 412,
+    "npay": 3.04,
+    "grad_6m": 23.5
+   }
+  },
+  "best-day cap $1,000 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 1322,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.5,
+    "paid_6m": 3889,
+    "paid_p10_6m": 1284,
+    "per_month": 648,
+    "first_med": 53.0,
+    "max_risk": 291,
+    "npay": 2.53,
+    "grad_6m": 10.3
+   },
+   "H2": {
+    "loss_3m": 0.4,
+    "paid_3m": 1383,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.2,
+    "paid_6m": 3914,
+    "paid_p10_6m": 0,
+    "per_month": 652,
+    "first_med": 49.0,
+    "max_risk": 247,
+    "npay": 2.61,
+    "grad_6m": 13.5
+   }
+  },
+  "best-day cap $2,000 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.8,
+    "paid_3m": 2265,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.4,
+    "paid_6m": 4710,
+    "paid_p10_6m": 1600,
+    "per_month": 785,
+    "first_med": 30.0,
+    "max_risk": 404,
+    "npay": 2.98,
+    "grad_6m": 16.3
+   },
+   "H2": {
+    "loss_3m": 1.2,
+    "paid_3m": 1902,
+    "paid_p10_3m": 0,
+    "loss_6m": 2.4,
+    "paid_6m": 4195,
+    "paid_p10_6m": 0,
+    "per_month": 699,
+    "first_med": 33.0,
+    "max_risk": 443,
+    "npay": 2.68,
+    "grad_6m": 12.5
+   }
+  },
+  "no weekly stop | $1,500+": {
+   "H1": {
+    "loss_3m": 0.5,
+    "paid_3m": 2075,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.1,
+    "paid_6m": 4615,
+    "paid_p10_6m": 1448,
+    "per_month": 769,
+    "first_med": 36.0,
+    "max_risk": 440,
+    "npay": 2.95,
+    "grad_6m": 18.5
+   },
+   "H2": {
+    "loss_3m": 0.5,
+    "paid_3m": 1929,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.4,
+    "paid_6m": 4353,
+    "paid_p10_6m": 0,
+    "per_month": 726,
+    "first_med": 34.0,
+    "max_risk": 422,
+    "npay": 2.79,
+    "grad_6m": 16.3
+   }
+  },
+  "ramp +$100 max a payout (cap $1,200) | $1,500+": {
+   "H1": {
+    "loss_3m": 0.5,
+    "paid_3m": 2123,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.8,
+    "paid_6m": 4751,
+    "paid_p10_6m": 1600,
+    "per_month": 792,
+    "first_med": 36.0,
+    "max_risk": 484,
+    "npay": 3.04,
+    "grad_6m": 19.0
+   },
+   "H2": {
+    "loss_3m": 0.6,
+    "paid_3m": 2037,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.3,
+    "paid_6m": 4635,
+    "paid_p10_6m": 1283,
+    "per_month": 772,
+    "first_med": 34.0,
+    "max_risk": 412,
+    "npay": 2.97,
+    "grad_6m": 20.9
+   }
+  },
+  "ramp +$200 max a payout (cap $1,400) | $1,500+": {
+   "H1": {
+    "loss_3m": 0.5,
+    "paid_3m": 2116,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.8,
+    "paid_6m": 4770,
+    "paid_p10_6m": 1600,
+    "per_month": 795,
+    "first_med": 36.0,
+    "max_risk": 581,
+    "npay": 3.05,
+    "grad_6m": 19.6
+   },
+   "H2": {
+    "loss_3m": 0.6,
+    "paid_3m": 2087,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.3,
+    "paid_6m": 4731,
+    "paid_p10_6m": 1284,
+    "per_month": 788,
+    "first_med": 34.0,
+    "max_risk": 482,
+    "npay": 3.03,
+    "grad_6m": 23.3
+   }
+  },
+  "ramp +$400 max a payout (cap $2,000) | $1,500+": {
+   "H1": {
+    "loss_3m": 0.5,
+    "paid_3m": 2118,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.9,
+    "paid_6m": 4791,
+    "paid_p10_6m": 1600,
+    "per_month": 798,
+    "first_med": 36.0,
+    "max_risk": 678,
+    "npay": 3.06,
+    "grad_6m": 20.0
+   },
+   "H2": {
+    "loss_3m": 0.6,
+    "paid_3m": 2123,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.3,
+    "paid_6m": 4723,
+    "paid_p10_6m": 1284,
+    "per_month": 787,
+    "first_med": 34.0,
+    "max_risk": 602,
+    "npay": 3.02,
+    "grad_6m": 23.1
+   }
+  },
+  "ramp +$200 max and +$250 best day a payout | $1,500+": {
+   "H1": {
+    "loss_3m": 0.4,
+    "paid_3m": 2044,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.1,
+    "paid_6m": 4570,
+    "paid_p10_6m": 1569,
+    "per_month": 762,
+    "first_med": 36.0,
+    "max_risk": 593,
+    "npay": 2.92,
+    "grad_6m": 16.6
+   },
+   "H2": {
+    "loss_3m": 0.7,
+    "paid_3m": 2021,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.8,
+    "paid_6m": 4582,
+    "paid_p10_6m": 1283,
+    "per_month": 764,
+    "first_med": 34.0,
+    "max_risk": 659,
+    "npay": 2.93,
+    "grad_6m": 19.9
+   }
+  },
+  "room < $1,500: pct 0.25 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.2,
+    "paid_3m": 2083,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.3,
+    "paid_6m": 4763,
+    "paid_p10_6m": 1600,
+    "per_month": 794,
+    "first_med": 37.0,
+    "max_risk": 342,
+    "npay": 3.05,
+    "grad_6m": 19.2
+   },
+   "H2": {
+    "loss_3m": 0.9,
+    "paid_3m": 1948,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.5,
+    "paid_6m": 4516,
+    "paid_p10_6m": 1284,
+    "per_month": 753,
+    "first_med": 34.0,
+    "max_risk": 412,
+    "npay": 2.89,
+    "grad_6m": 18.4
+   }
+  },
+  "room < $1,200: pct 0.2 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.4,
+    "paid_3m": 2098,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.9,
+    "paid_6m": 4736,
+    "paid_p10_6m": 1600,
+    "per_month": 789,
+    "first_med": 37.0,
+    "max_risk": 342,
+    "npay": 3.03,
+    "grad_6m": 19.2
+   },
+   "H2": {
+    "loss_3m": 0.7,
+    "paid_3m": 1972,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.3,
+    "paid_6m": 4549,
+    "paid_p10_6m": 1269,
+    "per_month": 758,
+    "first_med": 34.0,
+    "max_risk": 412,
+    "npay": 2.91,
+    "grad_6m": 18.7
+   }
+  },
+  "cold: last 5 R <= 0 -> x0.5 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 1635,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.7,
+    "paid_6m": 3945,
+    "paid_p10_6m": 1367,
+    "per_month": 658,
+    "first_med": 42.0,
+    "max_risk": 342,
+    "npay": 2.54,
+    "grad_6m": 8.2
+   },
+   "H2": {
+    "loss_3m": 0.5,
+    "paid_3m": 1579,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.4,
+    "paid_6m": 3826,
+    "paid_p10_6m": 1201,
+    "per_month": 638,
+    "first_med": 43.0,
+    "max_risk": 334,
+    "npay": 2.49,
+    "grad_6m": 9.8
+   }
+  },
+  "cold: last 10 R <= 0 -> x0.5 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 1486,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.2,
+    "paid_6m": 3655,
+    "paid_p10_6m": 1255,
+    "per_month": 609,
+    "first_med": 44.0,
+    "max_risk": 342,
+    "npay": 2.36,
+    "grad_6m": 6.6
+   },
+   "H2": {
+    "loss_3m": 0.4,
+    "paid_3m": 1422,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.5,
+    "paid_6m": 3535,
+    "paid_p10_6m": 0,
+    "per_month": 589,
+    "first_med": 42.0,
+    "max_risk": 334,
+    "npay": 2.3,
+    "grad_6m": 7.1
+   }
+  },
+  "hot: last 10 R >= 5 -> x1.5 | $1,500+": {
+   "H1": {
+    "loss_3m": 1.2,
+    "paid_3m": 2299,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.9,
+    "paid_6m": 4750,
+    "paid_p10_6m": 1600,
+    "per_month": 792,
+    "first_med": 29.0,
+    "max_risk": 512,
+    "npay": 2.99,
+    "grad_6m": 16.3
+   },
+   "H2": {
+    "loss_3m": 0.6,
+    "paid_3m": 2077,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.7,
+    "paid_6m": 4427,
+    "paid_p10_6m": 1284,
+    "per_month": 738,
+    "first_med": 32.0,
+    "max_risk": 500,
+    "npay": 2.79,
+    "grad_6m": 13.6
+   }
+  },
+  "hot: last 20 R >= 10 -> x1.5 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.7,
+    "paid_3m": 2280,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.3,
+    "paid_6m": 4768,
+    "paid_p10_6m": 1600,
+    "per_month": 795,
+    "first_med": 30.0,
+    "max_risk": 512,
+    "npay": 3.01,
+    "grad_6m": 16.8
+   },
+   "H2": {
+    "loss_3m": 0.9,
+    "paid_3m": 2148,
+    "paid_p10_3m": 0,
+    "loss_6m": 2.1,
+    "paid_6m": 4499,
+    "paid_p10_6m": 0,
+    "per_month": 750,
+    "first_med": 30.0,
+    "max_risk": 577,
+    "npay": 2.83,
+    "grad_6m": 15.3
+   }
+  },
+  "R drawdown >= 5R -> x0.5 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.1,
+    "paid_3m": 1532,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.8,
+    "paid_6m": 3941,
+    "paid_p10_6m": 1373,
+    "per_month": 657,
+    "first_med": 44.0,
+    "max_risk": 342,
+    "npay": 2.55,
+    "grad_6m": 7.5
+   },
+   "H2": {
+    "loss_3m": 0.5,
+    "paid_3m": 1645,
+    "paid_p10_3m": 0,
+    "loss_6m": 2.1,
+    "paid_6m": 3830,
+    "paid_p10_6m": 0,
+    "per_month": 638,
+    "first_med": 39.0,
+    "max_risk": 334,
+    "npay": 2.48,
+    "grad_6m": 11.1
+   }
+  }
+ },
+ "all3": {
+  "_kelly": {
+   "H1": {
+    "f_star": 0.289,
+    "n": 80,
+    "mean_r": 0.715,
+    "win": 0.588,
+    "half_kelly": 0.145
+   },
+   "H2": {
+    "f_star": 0.244,
+    "n": 40,
+    "mean_r": 0.702,
+    "win": 0.475,
+    "half_kelly": 0.122
+   }
+  },
+  "live funded | asap (today)": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 2165,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 4697,
+    "paid_p10_6m": 1600,
+    "per_month": 783,
+    "first_med": 32.0,
+    "max_risk": 440,
+    "npay": 2.99,
+    "grad_6m": 14.5
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2689,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 5653,
+    "paid_p10_6m": 3168,
+    "per_month": 942,
+    "first_med": 25.0,
+    "max_risk": 422,
+    "npay": 3.56,
+    "grad_6m": 29.8
+   }
+  },
+  "live funded | wait for $1,500+ (adopt-candidate)": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 2183,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 4729,
+    "paid_p10_6m": 1600,
+    "per_month": 788,
+    "first_med": 32.0,
+    "max_risk": 440,
+    "npay": 2.96,
+    "grad_6m": 14.3
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2689,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 5659,
+    "paid_p10_6m": 3200,
+    "per_month": 943,
+    "first_med": 25.0,
+    "max_risk": 422,
+    "npay": 3.55,
+    "grad_6m": 29.6
+   }
+  },
+  "pct 0.2 of the room | $1,500+": {
+   "H1": {
+    "loss_3m": 0.0,
+    "paid_3m": 1920,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.0,
+    "paid_6m": 4472,
+    "paid_p10_6m": 1600,
+    "per_month": 745,
+    "first_med": 39.0,
+    "max_risk": 440,
+    "npay": 2.8,
+    "grad_6m": 11.4
+   },
+   "H2": {
+    "loss_3m": 0.0,
+    "paid_3m": 1527,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.1,
+    "paid_6m": 4307,
+    "paid_p10_6m": 1573,
+    "per_month": 718,
+    "first_med": 47.0,
+    "max_risk": 422,
+    "npay": 2.72,
+    "grad_6m": 12.5
+   }
+  },
+  "pct 0.3 of the room | $1,500+": {
+   "H1": {
+    "loss_3m": 0.2,
+    "paid_3m": 2085,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.3,
+    "paid_6m": 4630,
+    "paid_p10_6m": 1600,
+    "per_month": 772,
+    "first_med": 35.0,
+    "max_risk": 440,
+    "npay": 2.9,
+    "grad_6m": 12.9
+   },
+   "H2": {
+    "loss_3m": 0.0,
+    "paid_3m": 2289,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.1,
+    "paid_6m": 5232,
+    "paid_p10_6m": 1600,
+    "per_month": 872,
+    "first_med": 32.0,
+    "max_risk": 422,
+    "npay": 3.29,
+    "grad_6m": 23.6
+   }
+  },
+  "pct 0.5 of the room | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 2215,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.0,
+    "paid_6m": 4746,
+    "paid_p10_6m": 1600,
+    "per_month": 791,
+    "first_med": 32.0,
+    "max_risk": 440,
+    "npay": 2.97,
+    "grad_6m": 14.7
+   },
+   "H2": {
+    "loss_3m": 0.5,
+    "paid_3m": 2782,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.0,
+    "paid_6m": 5742,
+    "paid_p10_6m": 3200,
+    "per_month": 957,
+    "first_med": 25.0,
+    "max_risk": 422,
+    "npay": 3.6,
+    "grad_6m": 30.1
+   }
+  },
+  "pct 0.6 of the room | $1,500+": {
+   "H1": {
+    "loss_3m": 0.6,
+    "paid_3m": 2223,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.9,
+    "paid_6m": 4755,
+    "paid_p10_6m": 1600,
+    "per_month": 792,
+    "first_med": 31.0,
+    "max_risk": 440,
+    "npay": 2.98,
+    "grad_6m": 15.0
+   },
+   "H2": {
+    "loss_3m": 1.0,
+    "paid_3m": 2819,
+    "paid_p10_3m": 1390,
+    "loss_6m": 1.5,
+    "paid_6m": 5769,
+    "paid_p10_6m": 3200,
+    "per_month": 962,
+    "first_med": 24.0,
+    "max_risk": 422,
+    "npay": 3.61,
+    "grad_6m": 30.3
+   }
+  },
+  "max $600 a trade | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 1988,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.4,
+    "paid_6m": 4397,
+    "paid_p10_6m": 1600,
+    "per_month": 733,
+    "first_med": 35.0,
+    "max_risk": 377,
+    "npay": 2.76,
+    "grad_6m": 9.9
+   },
+   "H2": {
+    "loss_3m": 0.4,
+    "paid_3m": 2095,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.8,
+    "paid_6m": 4635,
+    "paid_p10_6m": 1600,
+    "per_month": 772,
+    "first_med": 31.0,
+    "max_risk": 352,
+    "npay": 2.92,
+    "grad_6m": 10.5
+   }
+  },
+  "max $1,000 a trade | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 2180,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 4684,
+    "paid_p10_6m": 1600,
+    "per_month": 781,
+    "first_med": 32.0,
+    "max_risk": 440,
+    "npay": 2.94,
+    "grad_6m": 14.1
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2713,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 5710,
+    "paid_p10_6m": 3200,
+    "per_month": 952,
+    "first_med": 25.0,
+    "max_risk": 563,
+    "npay": 3.58,
+    "grad_6m": 32.2
+   }
+  },
+  "max $1,200 a trade | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 2222,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 4778,
+    "paid_p10_6m": 1600,
+    "per_month": 796,
+    "first_med": 32.0,
+    "max_risk": 484,
+    "npay": 2.99,
+    "grad_6m": 16.1
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2806,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 5853,
+    "paid_p10_6m": 3200,
+    "per_month": 976,
+    "first_med": 25.0,
+    "max_risk": 634,
+    "npay": 3.67,
+    "grad_6m": 35.8
+   }
+  },
+  "best-day cap $1,000 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.1,
+    "paid_3m": 1673,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.2,
+    "paid_6m": 4142,
+    "paid_p10_6m": 1459,
+    "per_month": 690,
+    "first_med": 41.0,
+    "max_risk": 291,
+    "npay": 2.68,
+    "grad_6m": 9.1
+   },
+   "H2": {
+    "loss_3m": 0.2,
+    "paid_3m": 2136,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.3,
+    "paid_6m": 5008,
+    "paid_p10_6m": 1600,
+    "per_month": 835,
+    "first_med": 36.0,
+    "max_risk": 422,
+    "npay": 3.21,
+    "grad_6m": 20.5
+   }
+  },
+  "best-day cap $2,000 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.7,
+    "paid_3m": 1955,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.0,
+    "paid_6m": 4288,
+    "paid_p10_6m": 1600,
+    "per_month": 715,
+    "first_med": 36.0,
+    "max_risk": 503,
+    "npay": 2.68,
+    "grad_6m": 8.9
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2429,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.7,
+    "paid_6m": 5233,
+    "paid_p10_6m": 1600,
+    "per_month": 872,
+    "first_med": 27.0,
+    "max_risk": 443,
+    "npay": 3.28,
+    "grad_6m": 21.1
+   }
+  },
+  "no weekly stop | $1,500+": {
+   "H1": {
+    "loss_3m": 0.5,
+    "paid_3m": 2147,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.9,
+    "paid_6m": 4645,
+    "paid_p10_6m": 1600,
+    "per_month": 774,
+    "first_med": 32.0,
+    "max_risk": 440,
+    "npay": 2.91,
+    "grad_6m": 14.4
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2666,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.8,
+    "paid_6m": 5613,
+    "paid_p10_6m": 3119,
+    "per_month": 936,
+    "first_med": 25.0,
+    "max_risk": 422,
+    "npay": 3.52,
+    "grad_6m": 28.7
+   }
+  },
+  "ramp +$100 max a payout (cap $1,200) | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 2182,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 4694,
+    "paid_p10_6m": 1600,
+    "per_month": 782,
+    "first_med": 32.0,
+    "max_risk": 484,
+    "npay": 2.94,
+    "grad_6m": 14.5
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2685,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 5704,
+    "paid_p10_6m": 3168,
+    "per_month": 951,
+    "first_med": 25.0,
+    "max_risk": 634,
+    "npay": 3.58,
+    "grad_6m": 32.8
+   }
+  },
+  "ramp +$200 max a payout (cap $1,400) | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 2196,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 4738,
+    "paid_p10_6m": 1600,
+    "per_month": 790,
+    "first_med": 32.0,
+    "max_risk": 581,
+    "npay": 2.97,
+    "grad_6m": 15.9
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2750,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 5856,
+    "paid_p10_6m": 3200,
+    "per_month": 976,
+    "first_med": 25.0,
+    "max_risk": 634,
+    "npay": 3.67,
+    "grad_6m": 37.8
+   }
+  },
+  "ramp +$400 max a payout (cap $2,000) | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 2228,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 4846,
+    "paid_p10_6m": 1600,
+    "per_month": 808,
+    "first_med": 32.0,
+    "max_risk": 678,
+    "npay": 3.04,
+    "grad_6m": 17.1
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2835,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 5935,
+    "paid_p10_6m": 3200,
+    "per_month": 989,
+    "first_med": 25.0,
+    "max_risk": 634,
+    "npay": 3.72,
+    "grad_6m": 39.3
+   }
+  },
+  "ramp +$200 max and +$250 best day a payout | $1,500+": {
+   "H1": {
+    "loss_3m": 0.3,
+    "paid_3m": 2103,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 4531,
+    "paid_p10_6m": 1600,
+    "per_month": 755,
+    "first_med": 32.0,
+    "max_risk": 755,
+    "npay": 2.84,
+    "grad_6m": 13.0
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2648,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 5609,
+    "paid_p10_6m": 3200,
+    "per_month": 935,
+    "first_med": 25.0,
+    "max_risk": 845,
+    "npay": 3.52,
+    "grad_6m": 29.2
+   }
+  },
+  "room < $1,500: pct 0.25 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.0,
+    "paid_3m": 2149,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.0,
+    "paid_6m": 4705,
+    "paid_p10_6m": 1600,
+    "per_month": 784,
+    "first_med": 34.0,
+    "max_risk": 440,
+    "npay": 2.95,
+    "grad_6m": 13.8
+   },
+   "H2": {
+    "loss_3m": 0.2,
+    "paid_3m": 2603,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.8,
+    "paid_6m": 5561,
+    "paid_p10_6m": 2841,
+    "per_month": 927,
+    "first_med": 26.0,
+    "max_risk": 422,
+    "npay": 3.49,
+    "grad_6m": 29.1
+   }
+  },
+  "room < $1,200: pct 0.2 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.0,
+    "paid_3m": 2167,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.1,
+    "paid_6m": 4709,
+    "paid_p10_6m": 1600,
+    "per_month": 785,
+    "first_med": 33.0,
+    "max_risk": 440,
+    "npay": 2.95,
+    "grad_6m": 14.0
+   },
+   "H2": {
+    "loss_3m": 0.0,
+    "paid_3m": 2621,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.0,
+    "paid_6m": 5564,
+    "paid_p10_6m": 2827,
+    "per_month": 927,
+    "first_med": 25.0,
+    "max_risk": 422,
+    "npay": 3.49,
+    "grad_6m": 29.1
+   }
+  },
+  "cold: last 5 R <= 0 -> x0.5 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.2,
+    "paid_3m": 1772,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.3,
+    "paid_6m": 4040,
+    "paid_p10_6m": 1600,
+    "per_month": 673,
+    "first_med": 39.0,
+    "max_risk": 342,
+    "npay": 2.54,
+    "grad_6m": 6.9
+   },
+   "H2": {
+    "loss_3m": 0.2,
+    "paid_3m": 2091,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.4,
+    "paid_6m": 4621,
+    "paid_p10_6m": 1600,
+    "per_month": 770,
+    "first_med": 34.0,
+    "max_risk": 422,
+    "npay": 2.9,
+    "grad_6m": 14.0
+   }
+  },
+  "cold: last 10 R <= 0 -> x0.5 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.5,
+    "paid_3m": 1820,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.9,
+    "paid_6m": 4008,
+    "paid_p10_6m": 1600,
+    "per_month": 668,
+    "first_med": 37.0,
+    "max_risk": 440,
+    "npay": 2.52,
+    "grad_6m": 7.1
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2471,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.6,
+    "paid_6m": 5348,
+    "paid_p10_6m": 2984,
+    "per_month": 891,
+    "first_med": 28.0,
+    "max_risk": 422,
+    "npay": 3.36,
+    "grad_6m": 23.6
+   }
+  },
+  "hot: last 10 R >= 5 -> x1.5 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.4,
+    "paid_3m": 2271,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.5,
+    "paid_6m": 4785,
+    "paid_p10_6m": 1600,
+    "per_month": 798,
+    "first_med": 31.0,
+    "max_risk": 512,
+    "npay": 2.99,
+    "grad_6m": 15.7
+   },
+   "H2": {
+    "loss_3m": 0.8,
+    "paid_3m": 2492,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.0,
+    "paid_6m": 5339,
+    "paid_p10_6m": 1600,
+    "per_month": 890,
+    "first_med": 26.0,
+    "max_risk": 634,
+    "npay": 3.34,
+    "grad_6m": 23.4
+   }
+  },
+  "hot: last 20 R >= 10 -> x1.5 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.8,
+    "paid_3m": 2320,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.3,
+    "paid_6m": 4845,
+    "paid_p10_6m": 1600,
+    "per_month": 808,
+    "first_med": 31.0,
+    "max_risk": 629,
+    "npay": 3.03,
+    "grad_6m": 18.0
+   },
+   "H2": {
+    "loss_3m": 1.0,
+    "paid_3m": 2423,
+    "paid_p10_3m": 0,
+    "loss_6m": 1.5,
+    "paid_6m": 5183,
+    "paid_p10_6m": 1600,
+    "per_month": 864,
+    "first_med": 26.0,
+    "max_risk": 634,
+    "npay": 3.24,
+    "grad_6m": 21.1
+   }
+  },
+  "R drawdown >= 5R -> x0.5 | $1,500+": {
+   "H1": {
+    "loss_3m": 0.1,
+    "paid_3m": 1711,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.2,
+    "paid_6m": 4003,
+    "paid_p10_6m": 1600,
+    "per_month": 667,
+    "first_med": 39.0,
+    "max_risk": 440,
+    "npay": 2.54,
+    "grad_6m": 6.5
+   },
+   "H2": {
+    "loss_3m": 0.3,
+    "paid_3m": 2214,
+    "paid_p10_3m": 0,
+    "loss_6m": 0.7,
+    "paid_6m": 4870,
+    "paid_p10_6m": 1600,
+    "per_month": 812,
+    "first_med": 30.0,
+    "max_risk": 422,
+    "npay": 3.06,
+    "grad_6m": 16.4
+   }
+  }
+ }
+}
