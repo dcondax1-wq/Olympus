@@ -17,8 +17,12 @@ With `no_yahoo` on (live_model.json "no_yahoo", default true; a start cfg "no_ya
 
 Price basis: TradingView NQ1! (the exports) and NinjaTrader MNQ on the same contract month print the same prices (a tick
 apart at most on a bar's extremes, the same closes). merge_basis() checks every overlap: when the newer source sits a
-constant amount away from the older one (a contract roll: 100-250 points), the older bars are shifted by it (back-adjusted)
-so levels from before the roll stay on the traded contract's prices; otherwise nothing is shifted.
+constant amount away from the older one (a contract roll: 100-300 points), the older bars are shifted by it (back-adjusted)
+so levels from before the roll stay on the traded contract's prices; otherwise nothing is shifted. NinjaTrader's "Merge back
+adjusted" history is exactly constant; two contracts' own prices (the chart switched after NinjaTrader's rollover date, or
+merge policy "Do not merge") drift a few points a day with the price, so a roll-sized offset (>= ROLL_MIN) that is steady
+over the last ROLL_TAIL shared bars counts too (fixed 2026-10-20: the 1-pt rule missed it and left a ~300-pt step in the
+window; tests/test_roll.py scenario C). The December 2026 roll, step by step: docs/ROLL_DEC_2026.md.
 """
 from __future__ import annotations
 
@@ -50,6 +54,9 @@ STORE_1M = "bars_1m.csv"              # the cloud's 1m store (dashboard branch, 
 STORE_5M_DAYS = 75
 CLOUD_STALE_S = 15 * 60               # the PC's newest 1m bar closed more than this ago in a session: waiting for the PC
 WAITING = "waiting for NinjaTrader bars from the PC"
+ROLL_MIN = 40.0                       # a quarterly roll gap is ~1% of NQ (Sep 2026: 295.75 pts); one contract: a tick or two
+ROLL_TAIL = 120                       # two contracts' own prices: judge the offset on the last 120 shared bars only ...
+ROLL_TOL = 0.03                       # ... where it may wander 3% of itself (the spread moves with the price, carry ~ price)
 
 
 class YahooBlocked(RuntimeError):
@@ -137,9 +144,17 @@ def basis_shift(old, new, min_overlap: int = 20) -> float:
     med = float(np.median(d))
     if abs(med) < 2.0:                                   # same contract: MNQ and NQ a tick or two apart at most
         return 0.0
-    if float(np.mean(np.abs(d - med) <= 1.0)) < 0.7:     # no constant offset: not a roll, never shift on noise
-        return 0.0
-    return round(med * 4) / 4.0                          # on the tick grid
+    if float(np.mean(np.abs(d - med) <= 1.0)) >= 0.7:    # a constant offset: NinjaTrader's back-adjusted merge, a re-anchor
+        return round(med * 4) / 4.0                      # on the tick grid
+    # Two contracts' own prices (the chart switched after NinjaTrader's rollover date, or merge policy "Do not merge"):
+    # their spread is the carry, ~1% of the price, so it moves with the price (a few points a day) and is never constant
+    # to 1 pt over 600 bars. A roll-sized offset that is steady over the last ROLL_TAIL shared bars is still a roll.
+    tail = d[-ROLL_TAIL:]
+    mt = float(np.median(tail))
+    if abs(mt) >= ROLL_MIN and len(tail) >= min_overlap and \
+            float(np.mean(np.abs(tail - mt) <= max(1.0, ROLL_TOL * abs(mt)))) >= 0.8:
+        return round(mt * 4) / 4.0
+    return 0.0                                           # no steady offset: not a roll, never shift on noise
 
 
 def merge_basis(old, new, min_overlap: int = 20):

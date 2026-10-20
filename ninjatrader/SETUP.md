@@ -106,11 +106,14 @@ against verbatim copies of the Help Guide pages (see Sources). Open the official
    - Do it **Wednesday 2026-12-09 after 17:00 ET** (before the 18:00 reopen), then save the workspace. If the chart
      stays on MNQ 12-26, the bot reads December prices but sends its orders, stop and target to March, which trades
      about 1% (~300 pts) higher: the stop and target would be in the wrong place.
-   - Until the roll fix in `research/writeups/lit-launch-audit.md` is in, do not run LIT on the PC from 2026-12-10 to
-     about 2026-12-16 (the days when NinjaTrader and the TradingView NQ1! export sit on different contracts).
-     The bot checks every overlap between the TradingView history, its NinjaTrader archive and the live files: when
-     the newer bars sit a constant amount away (a roll, 100-300 pts) it shifts the older ones onto the new contract and
-     logs `... back-adjusted onto NinjaTrader's contract`. MNQ and NQ1! on the same contract need no shift (same prices).
+   - Before that, once: **Tools > Options > Market data > Merge policy = "Merge back adjusted"** (normally the
+     default; check it). With "Merge non back adjusted" the chart's own history jumps ~300 pts at the rollover and the bot cannot
+     repair it.
+   - The bot checks every overlap between the TradingView history, its NinjaTrader archive and the live files: when
+     the newer bars sit a roll gap away (100-300 pts) it shifts the older ones onto the new contract and logs
+     `... back-adjusted onto NinjaTrader's contract`. MNQ and NQ1! on the same contract need no shift (same prices).
+     Tested end to end in `tests/test_roll.py`. After switching, run `python tools/roll_check.py` (it should say OK).
+     The full December plan, day by day: `docs/ROLL_DEC_2026.md`.
 
 What LE_BarFeed writes: `time,open,high,low,close,volume`, where time is the bar's **open** in unix seconds (UTC).
 That is the bot's bar layout, in both files. It writes the chart's history once when the chart
