@@ -278,6 +278,103 @@ def botctl_checks(tmp, check, live_bot):
                 os.environ[k] = v
 
 
+def hub_checks(tmp, check, live_bot):
+    """The hub pages' API (engine/hub_api.py: Prop Firms, Business, Market, Learn, System): read-only GETs, data shapes,
+    every fact of research/props/firms.json marked and sourced, eval odds that rise with the balance, the gallery route
+    refusing paths outside research/lab/gallery, and the phone export (tools/hub_data.export)."""
+    from engine import hub_api
+    from tools import hub_data
+    app = FastAPI()
+    app.include_router(hub_api.router)
+    cl = TestClient(app)
+    before = copy.deepcopy(live_bot.ledger)
+
+    r = cl.get("/api/next/hub/firms")
+    f = r.json()
+    check("hub firms 200 with firms, table, sources, next steps", r.status_code == 200 and len(f.get("firms") or []) >= 5
+          and len(f.get("table") or []) >= 8 and f.get("sources") and (f.get("next") or {}).get("steps"), r.text[:200])
+    ids = {x["firm_id"] for x in f.get("table") or []}
+    check("hub firms: MFFU, Lucid, FundedNext + 3 others", {"mffu", "lucid", "fundednext"} <= ids and len(ids) >= 6, ids)
+    mffu = {x["plan_id"]: x for x in f.get("table") or [] if x["firm_id"] == "mffu"}
+    check("hub firms: MFFU Builder 25K / 50K, Rapid, Rapid EOD with the owner's prices",
+          {"mffu_builder_25k", "mffu_builder_50k", "mffu_rapid_50k", "mffu_rapid_eod_50k"} <= set(mffu)
+          and mffu["mffu_builder_50k"]["price_real"] == 91.8 and mffu["mffu_builder_25k"]["price_real"] == 63.0, list(mffu))
+    facts = list(hub_data._iter_facts(hub_data.firms_raw().get("firms")))
+    bad_st = [x for x in facts if x.get("st") not in ("confirmed", "unconfirmed", "conflict")]
+    srcs = hub_data.firms_raw().get("sources") or {}
+    bad_src = sorted({s for x in facts for s in x.get("src") or [] if s not in srcs})
+    check("hub firms: every fact confirmed / unconfirmed / conflict, every source key resolves", facts and not bad_st and not bad_src,
+          (len(bad_st), bad_src[:5]))
+    lv = [fm for fm in f["firms"] if all(k in (fm.get("live") or {}) for k in ("when", "how", "changes", "closes_others", "risk_rules", "reports"))]
+    check("hub firms: a live-account section for every firm", len(lv) == len(f["firms"]), [fm["id"] for fm in f["firms"]])
+    b50 = next(p for fm in f["firms"] for p in fm["plans"] if p["id"] == "mffu_builder_50k")
+    check("hub firms: LIT fit from funded_firms.json (H2 p10, funded $/month)",
+          not os.path.exists(os.path.join(hub_data.LIT_DOCS, "funded_firms.json")) or (ok_num((b50.get("lit") or {}).get("H2", {}).get("p10"))
+                                                                                   and ok_num(b50["lit"]["H2"].get("funded_month"))), b50.get("lit"))
+    codes = [c for fm in f["firms"] for c in fm.get("codes") or []]
+    check("hub firms: discount codes with date + status", codes and all(c.get("seen") and c.get("st") for c in codes), len(codes))
+
+    r = cl.get("/api/next/hub/business")
+    b = r.json()
+    ev = b.get("eval") or {}
+    check("hub business 200: eval from the PC bot's account", r.status_code == 200 and "PC bot" in str(b.get("eval_source"))
+          and ev.get("balance") == 50000 - 100 + 1450 - 22.8, (b.get("eval_source"), ev.get("balance")))
+    check("hub business: odds, floor gauge, compliance, payouts, P&L, tax, goal, planners",
+          all(k in b for k in ("odds", "floor", "compliance", "payouts", "live", "pnl", "tax", "goal", "scaling", "withdraw"))
+          and not (b["odds"] or {}).get("error") and b["compliance"].get("rows"), [k for k in b if isinstance(b[k], dict) and b[k].get("error")])
+    rows = {x["rule"]: x for x in b["compliance"]["rows"]}
+    check("hub business: compliance sees the open 8 micros and today's $22.80 daily loss",
+          rows["Max contracts"]["ok"] is True and "8 micros" in rows["Max contracts"]["now"] and rows["Daily loss (soft)"]["ok"] is True
+          and "$23" in rows["Daily loss (soft)"]["now"], rows.get("Max contracts"))
+    check("hub business: tax labelled not advice", "not tax advice" in str(b["tax"].get("label", "")).lower(), b["tax"])
+    lo = cl.get("/api/next/hub/odds?profit=-1500&session=3").json()
+    hi = cl.get("/api/next/hub/odds?profit=2500&session=3").json()
+    check("hub odds: pass chance rises with the balance, fail chance falls", hi.get("pass_left", 0) > lo.get("pass_left", 100)
+          and hi.get("fail_ever", 100) < lo.get("fail_ever", 0), (lo.get("pass_left"), hi.get("pass_left")))
+
+    r = cl.get("/api/next/hub/market")
+    m = r.json()
+    check("hub market 200: calendar, earnings, holidays, roll, VIX, overnight, levels", r.status_code == 200
+          and all(k in m for k in ("calendar", "earnings", "holidays", "roll", "vix", "overnight", "levels")), r.text[:200])
+    check("hub market: 8 mega-caps, roll to the next quarterly contract", {x["sym"] for x in m["earnings"].get("rows") or []}
+          >= {"AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "TSLA", "AVGO"} and m["roll"].get("days_to_roll") is not None, m["roll"])
+    check("hub market: CME holidays list early closes and closures", any(x["kind"] == "early" for x in m["holidays"].get("rows") or [])
+          and any(x["kind"] == "closed" for x in m["holidays"].get("rows") or []), len(m["holidays"].get("rows") or []))
+
+    r = cl.get("/api/next/hub/learn")
+    le = r.json()
+    check("hub learn 200: versions, library with verdicts, glossary, gallery, upgrades", r.status_code == 200
+          and (le.get("library") or {}).get("rows") and (le.get("learn") or {}).get("glossary") and "upgrades" in le, r.text[:200])
+    check("hub learn: verdicts are known buckets", all(x["verdict"] in ("adopted", "candidate", "rejected", "promising", "finding", "info")
+                                                     for x in le["library"]["rows"]))
+    check("hub learn: upgrades tracker shows a placeholder until lit_base exists", (le["upgrades"].get("live") or {}).get("placeholder")
+          or (le["upgrades"].get("live") or {}).get("with") is not None, le["upgrades"].get("live"))
+
+    r = cl.get("/api/next/hub/system")
+    s = r.json()
+    check("hub system 200: discipline, uptime, data quality", r.status_code == 200 and all(k in s for k in ("discipline", "uptime", "dataq")), r.text[:200])
+    check("hub system: the bot log's kill / start lines reach the discipline log", any(x["src"] == "bot log" for x in s["discipline"].get("rows") or [])
+          or not any("kill" in str(x.get("text", "")).lower() or "start" in str(x.get("text", "")).lower() for x in live_bot.log), s["discipline"].get("counts"))
+
+    check("hub gallery: a path outside research/lab/gallery -> 404", cl.get("/api/next/hub/gallery/../../live_model.json").status_code == 404
+          and cl.get("/api/next/hub/gallery/x.txt").status_code == 404)
+    texts = [cl.get(p).text for p in ("/api/next/hub/firms", "/api/next/hub/business", "/api/next/hub/system")]
+    check("hub: no secrets or webhook tokens in any response", all("SECRET" not in t and "hooks.example" not in t for t in texts))
+    check("hub read-only: every route is a GET", all(getattr(rt, "methods", {"GET"}) <= {"GET", "HEAD"} for rt in hub_api.router.routes))
+    check("hub read-only: the bot's ledger, kill flag and state file untouched", live_bot.ledger == before and not live_bot.kill
+          and not os.path.exists(live_bot.state_path))
+
+    out = os.path.join(tmp, "hub.json")
+    rc = hub_data.main(["--out", out, "--no-fetch"])
+    d = json.load(open(out, encoding="utf-8"))
+    check("hub export: research/props/hub.json shape for the phone (firms, business, market, learn, odds grid)",
+          rc == 0 and all(k in d for k in ("firms", "business", "market", "learn", "odds_grid")) and d["odds_grid"].get("rows"), list(d))
+
+
+def ok_num(v):
+    return v is not None and not (isinstance(v, float) and v != v)
+
+
 def main() -> int:
     tmp = tempfile.mkdtemp(prefix="le_pcdash_")
     results = []
@@ -388,6 +485,7 @@ def main() -> int:
               and not os.path.exists(bot.state_path), "")
 
         botctl_checks(tmp, check, bot)
+        hub_checks(tmp, check, bot)
     finally:
         pcdash_api._bot, lit_learn.JOURNAL_PATH = old_bot, old_jp
         shutil.rmtree(tmp, ignore_errors=True)

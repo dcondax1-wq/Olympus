@@ -749,6 +749,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # trade / month against the backtest, missed and extra trades (live_panel.js execution card)
     data["exec"] = (st.get("pc") or {}).get("exec") if isinstance(st.get("pc"), dict) else None
     data["extras"] = _extras(st, lm, bt)          # extras.js pages (Eval HQ, Edge, Calendar, Ops, MFFU rules)
+    # hub pages' data (prop firms, business, market, learn, system): research/props/hub.json, built by tools/hub_data.py
+    data["hub"] = _load(os.path.join(ROOT, "research", "props", "hub.json"), None)
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # the page, the home-screen app files and its icons

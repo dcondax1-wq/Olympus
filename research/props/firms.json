@@ -1,0 +1,437 @@
+{
+  "title": "Prop firm hub: rules, prices, codes, payouts, bots and live accounts for the LIT bot",
+  "built": "2026-10-20",
+  "searched": "2026-10-18 to 2026-10-20 (web search; the firms' own pages could not be opened from this machine, DNS blocked, so values are the search engine's reading of the listed pages)",
+  "writeup": "research/writeups/prop-firms-hub.md",
+  "how_to_read": "Every fact is {v: value, st: confirmed | unconfirmed | conflict, src: [source keys], n: note}. confirmed = the firm's own page (or several independent sources) agree; conflict = sources disagree, the newest firm-page value is given; unconfirmed = one third-party source or not found. Prices and codes change weekly: always verify at checkout. LIT numbers come from research/lit/funded_firms.json (exact live LIT trades of 2026, H1 = Jan-Jun picked, H2 = Jul-Oct check: quote H2). Paper only: nothing here changes trading.",
+  "owner": {
+    "has": [
+      {"plan": "mffu_builder_50k", "stage": "eval", "bought": "2026-10-18", "paid": 91.8, "eval_start": "2026-10-19"}
+    ],
+    "planned": [
+      {"plan": "mffu_builder_25k", "price": 63.0, "start": "2026-10-26", "why": "start one week after the 50K so the two evals decouple (lit-builder-25k.md)"}
+    ],
+    "goal": "2-3 funded accounts paying about $2,000-2,300 a month (owner, 2026-10-19)"
+  },
+  "sources": {
+    "mffu_b50": "https://help.myfundedfutures.com/en/articles/14290805-builder-plan-50k-a-comprehensive-guide",
+    "mffu_builder": "https://myfundedfutures.com/plans/builder",
+    "mffu_rapid": "https://myfundedfutures.com/plans/rapid",
+    "mffu_rapid_eod_page": "https://myfundedfutures.com/plans/rapid-eod",
+    "mffu_rapid_eod": "https://help.myfundedfutures.com/en/articles/16158363-rapid-eod-50k-a-comprehensive-look",
+    "mffu_rapid_pay": "https://help.myfundedfutures.com/en/articles/13745661",
+    "mffu_news": "https://help.myfundedfutures.com/en/articles/8230009-news-trading-policy",
+    "mffu_fair": "https://help.myfundedfutures.com/en/articles/8444599-fair-play-and-prohibited-trading-practices",
+    "mffu_live": "https://help.myfundedfutures.com/en/articles/10101257-understanding-live-funded-account-at-myfundedfutures",
+    "mffu_pro_live": "https://help.myfundedfutures.com/en/articles/17573707-comprehensive-look-into-redesigned-pro-plan",
+    "mffu_inact": "https://help.myfundedfutures.com/en/articles/16596524-inactivity-rule-one-time-payment-model",
+    "mffu_act": "https://help.myfundedfutures.com/en/articles/12398151-does-myfundedfutures-charge-activation-fees",
+    "ft_mffu": "https://www.fundedtrading.com/propfirm/my-funded-futures/",
+    "ptv_mffu_codes": "https://proptradingvibes.com/blog/myfundedfutures-discount-codes",
+    "ptv_mffu_rules": "https://proptradingvibes.com/blog/myfundedfutures-rules-overview",
+    "ptv_mffu_types": "https://proptradingvibes.com/blog/myfundedfutures-account-types",
+    "ptv_mffu_rapid": "https://proptradingvibes.com/blog/myfundedfutures-rapid-plan",
+    "ptv_mffu_rapid_eod": "https://proptradingvibes.com/blog/myfundedfutures-rapid-eod",
+    "ptv_mffu_news": "https://proptradingvibes.com/blog/myfundedfutures-news-trading-policy",
+    "etf_mffu": "https://www.eltraderfinanciado.com/nl/discounts/myfundedfutures",
+    "etf_rapid_eod": "https://www.eltraderfinanciado.com/en/news/myfundedfutures/my-funded-futures-launches-rapid-eod-50k-august-2026",
+    "fm_rapid_eod": "https://www.financemagnates.com/forex/myfundedfutures-trades-intraday-drawdown-for-a-30-consistency-rule/",
+    "phidias_count": "https://phidiaspropfirm.com/education/how-many-myfundedfutures-accounts",
+    "phidias_rapid": "https://phidiaspropfirm.com/education/myfundedfutures-rapid-plan",
+    "pdl_mffu_pay": "https://propdatalab.com/myfundedfutures-payout-rules/",
+    "damn_mffu": "https://damnpropfirms.com/futures-prop-firms/my-funded-futures/",
+    "waves_propft": "https://www.waves.com/studioverse/creator/myfundedfuturesdiscountcode",
+    "thor_copy": "https://thortradecopier.com/blog/can-you-copy-trade-multiple-prop-firm-accounts",
+    "lucid_test": "https://lucidtrading.com/product/lucidtest-50k/",
+    "ptv_lucid_pro": "https://proptradingvibes.com/blog/lucidpro-funded-account-rules",
+    "ptv_lucid_caps": "https://proptradingvibes.com/blog/lucid-trading-payout-caps",
+    "ptv_lucid_pay": "https://www.proptradingvibes.com/blog/lucid-trading-payout-rules",
+    "ptv_lucid_live": "https://proptradingvibes.com/blog/lucid-trading-live-account-transition",
+    "ptv_lucid_disc": "https://proptradingvibes.com/blog/lucid-trading-discount",
+    "qv_lucid_pay": "https://www.quantvps.com/blog/lucid-trading-prop-firm-payout-rules",
+    "etf_lucid_dll": "https://www.eltraderfinanciado.com/en/news/lucid-trading/lucid-trading-optional-daily-loss-limit",
+    "pmt_auto": "https://blog.pickmytrade.trade/best-prop-firms-that-allow-automated-trading-on-tradingview/",
+    "damn_lucid_disc": "https://damnpropfirms.com/futures-prop-firms/lucid-trading/discount/",
+    "tanto_lucid": "https://tradetanto.com/learn/lucid-trading-rules-explained-every-plan-rule-and-limit",
+    "dtz_lucid": "https://daytradingz.com/lucid-trading-review/",
+    "flux_lucid": "https://www.flux.ai/lucid-trading-discount-code-2026",
+    "fn_rd_rules": "https://helpfutures.fundednext.com/en/articles/17229762-fundednext-futures-rapid-daily-challenge-all-rules",
+    "fn_dll": "https://helpfutures.fundednext.com/en/articles/17230292-daily-loss-limit-and-maximum-loss-limit-at-fundednext-futures",
+    "fn_rd_funded": "https://helpfutures.fundednext.com/en/articles/17229779-fundednext-futures-rapid-daily-fundednext-account-all-rules",
+    "fn_rp_funded": "https://helpfutures.fundednext.com/en/articles/17229713-fundednext-futures-rapid-pro-fundednext-account-all-rules",
+    "fn_terms": "https://fundednext.com/futures-challenge-terms",
+    "fn_bots": "https://helpfutures.fundednext.com/en/articles/14298560-is-the-usage-of-automated-trading-systems-eas-and-bots-allowed-in-fundednext-futures",
+    "fn_platforms": "https://helpfutures.fundednext.com/en/articles/17225732-what-trading-platforms-does-fundednext-futures-offer",
+    "fn_live_new": "https://helpfutures.fundednext.com/en/articles/16522296-road-to-live-trading-rapid-flex-direct",
+    "fn_live_rapid": "https://helpfutures.fundednext.com/en/articles/15900277-road-to-live-trading-rapid-challenge",
+    "fn_live_old": "https://helpfutures.fundednext.com/en/articles/14283903-road-to-live-trading-legacy-challenge-rapid-challenge-former",
+    "propscope_fn": "https://propscope.net/en/prices/funded-next/",
+    "ft_fn": "https://fundedtrading.com/propfirm/fundednext-futures/",
+    "jp_fn": "https://www.jptradingcapital.com/blog/en/fundednext-discount-codes",
+    "pfm_fn": "https://propfirmmatch.com/futures/offers/fnf-50kdirect",
+    "waves_fn": "https://www.waves.com/studioverse/creator/fundednextfuturescodepropvault",
+    "tf_fn_bf": "https://tradingfinder.com/promo/b975e429-15-fundednext-discount-blkfrdy-nov-2025/",
+    "tf_fn_bf2": "https://tradingfinder.com/promo/a83b98e6-25-fundednext-discount-fnbl250-nov-2025/",
+    "pmt_bf": "https://blog.pickmytrade.io/black-friday-2025-prop-firm-deals-funded-account-discounts/",
+    "tradeify_guide": "https://help.tradeify.co/en/articles/10468318-guidelines-for-traders",
+    "phidias_tradeify": "https://phidiaspropfirm.com/education/tradeify-payout-rules",
+    "ptv_tradeify_live": "https://proptradingvibes.com/blog/tradeify-live-funded-accounts",
+    "curved_tradeify": "https://curvedtrading.com/articles/en/reviews/tradeify-review/",
+    "nexus_tradeify": "https://nexusfi.com/showthread.php?p=911202",
+    "tf_bulenox": "https://tradingfinder.com/props/bulenox/rules/",
+    "ptv_bulenox": "https://proptradingvibes.com/blog/bulenox-rules-overview",
+    "tfu_bulenox": "https://tradingfunder.com/bulenox-rules/",
+    "pff_bulenox": "https://propfirmsfinder.com/prop-firm/bulenox/payouts/",
+    "aero_bulenox": "https://futures.aeromir.com/bulenox-master",
+    "topstep_pay": "https://help.topstep.com/en/articles/8284233",
+    "h2t_topstep": "https://h2tfunding.com/does-topstep-allow-automated-trading/",
+    "tg_auto": "https://tradegreater.com/blog-tradingview-ninjatrader-prop-firm-automation",
+    "nexus_topstep": "https://nexusfi.com/showthread.php?p=911770",
+    "tp_topstep": "https://ca.trustpilot.com/review/topstep.com?page=3",
+    "ptv_topstep_pay": "https://proptradingvibes.com/de/blog/topstep-payout-rules",
+    "qv_apex": "https://www.quantvps.com/blog/apex-trader-funding-automated-trading-bots",
+    "pmt_tpt": "https://blog.pickmytrade.trade/take-profit-trader-automation-rules-payouts/",
+    "ft_alpha": "https://fundedtrading.com/propfirm/alpha-futures/",
+    "tp_elite": "https://blog.traderspost.io/article/elite-trader-funding-review"
+  },
+  "firms": [
+    {
+      "id": "mffu",
+      "name": "MyFundedFutures (MFFU)",
+      "site": "https://myfundedfutures.com",
+      "bot_friendly": "yes",
+      "summary": "Your firm. Builder 50K is the eval the bot trades now. Bots allowed when they run your own settings; NinjaTrader supported. 1 sim-funded Builder 50K per person.",
+      "bots": {"v": "allowed when set to your own parameters, with oversight; HFT and sim-fill exploits banned. A few third-party guides say 'semi-automated only'", "st": "conflict", "src": ["mffu_fair", "mffu_b50", "ptv_mffu_rules"]},
+      "copy_trading": {"v": "copying between your own accounts is reported as allowed by third parties; MFFU's page bans copying other traders and copying that 'mirrors, copies or coordinates trades for an unfair advantage'. Hedging across accounts banned.", "st": "unconfirmed", "src": ["mffu_fair", "thor_copy"], "n": "ask support in writing before the 25K copies the 50K"},
+      "platforms": {"v": "NinjaTrader, Tradovate, TradingView, Quantower", "st": "confirmed", "src": ["mffu_b50"]},
+      "account_caps": {"v": "1 active sim-funded Builder 50K per person; up to 5 sim-funded on 25K/50K plans (Rapid page); 3 sim-funded Rapid EOD (MFFU on X); whether the caps are shared across plans is not stated anywhere", "st": "unconfirmed", "src": ["phidias_count", "mffu_rapid", "ptv_mffu_types"]},
+      "codes": [
+        {"code": "(your own MFFU code)", "off": "40%", "applies": "Builder 25K $63, Builder 50K $91.80 (owner paid 2026-10-18)", "seen": "2026-10-18", "st": "confirmed", "src": [], "n": "the owner's real price; use it again"},
+        {"code": "ETFPROMO", "off": "20% Rapid EOD (Aug 2026); one page claims 50% on all plans", "seen": "2026-08 (affiliate pages)", "st": "unconfirmed", "src": ["etf_mffu"]},
+        {"code": "PROPFT", "off": "claims 60%", "seen": "2026 (user-made page)", "st": "unconfirmed", "src": ["waves_propft"], "n": "very large claim, no official backing"},
+        {"code": "JAN40 / JAN20", "off": "40% / 20%", "seen": "January 2025 (expired 2025-01-31)", "st": "confirmed", "src": ["ptv_mffu_codes"], "n": "shows MFFU runs a January sale"}
+      ],
+      "sales": {"v": "codes run all year (5-50% off); January sales (JAN40 in 2025); Black Friday / Cyber Monday is when most futures firms run their biggest codes (late Nov - early Dec). No MFFU Black Friday code was found for 2025.", "st": "unconfirmed", "src": ["ptv_mffu_codes", "pmt_bf"]},
+      "live": {
+        "when": {"v": "Builder: after 5 sim payouts (the sim-funded stage ends at payout 5); one source says 5 sim payouts totalling $10K. Rapid: a $10,000 day triggers a risk review and a possible move (profit above it forfeited). Pro: 3 consecutive payouts or a profit milestone. Otherwise a Risk Manager invites you after consistent profit.", "st": "conflict", "src": ["mffu_live", "ft_mffu", "ptv_mffu_rapid"]},
+        "how": {"v": "a Risk Manager reaches out with an invitation; KYC (identity) is required; live trading needs the owner present (MFFU requires the trader to be present for live; automated trading on live must follow CME rules)", "st": "confirmed", "src": ["mffu_live", "ft_mffu"]},
+        "changes": {"v": "Builder live: daily payouts, $250 minimum, 80% split, no consistency rule; soft daily loss $1,000 stays; $2,000 EOD trailing max loss that becomes static once the floor reaches $0; 'The Reserve' = sim-funded profit MFFU holds while you trade live; you pay the live account's costs (data, commissions); 1 live account; a live breach means a 21-day wait before a new live account; news allowed but strongly discouraged (orders may not be honoured)", "st": "confirmed", "src": ["mffu_live", "mffu_pro_live", "mffu_b50"], "n": "from research/lit/mffu_rules.json (2026-10-18)"},
+        "closes_others": {"v": "not stated by MFFU or any source found", "st": "unconfirmed", "src": [], "n": "ask support: does a live move end my other sim-funded accounts?"},
+        "risk_rules": {"v": "$1,000 soft daily loss; $2,000 EOD trailing max loss (static at $0); contract cap set by the risk team (not published); intraday only, flat by 16:10 ET", "st": "unconfirmed", "src": ["mffu_live"]},
+        "reports": {"v": "third-party guides say rules tighten after the move and KYC is required; no complaints pattern found in this search", "st": "unconfirmed", "src": ["ft_mffu"]}
+      },
+      "plans": [
+        {
+          "id": "mffu_builder_50k", "name": "Builder 50K", "size": 50000, "lit_id": "mffu_builder_50k", "status": "owner's eval (running since 2026-10-19)",
+          "price": {"list": {"v": 153, "st": "confirmed", "src": ["mffu_b50"]}, "owner": 91.8, "type": "one-time, $0 activation", "renewal": "none (one-time plans bought on/after 2026-08-25)"},
+          "eval": {
+            "target": {"v": 3000, "st": "confirmed", "src": ["mffu_b50", "mffu_builder"]},
+            "max_loss": {"v": "$2,000 EOD trailing (moves only at the close, from the closing-balance high); locks at $50,100; open losses count in real time", "st": "confirmed", "src": ["mffu_b50"]},
+            "daily_loss": {"v": "$1,000 soft: trading paused for the rest of the session, account stays open", "st": "confirmed", "src": ["mffu_b50"]},
+            "consistency": {"v": "none in the eval", "st": "confirmed", "src": ["mffu_b50"]},
+            "min_days": {"v": "1 (some guides: 2)", "st": "conflict", "src": ["mffu_b50", "pdl_mffu_pay"]},
+            "contracts": {"v": "4 minis / 40 micros (10 micros = 1 mini)", "st": "confirmed", "src": ["mffu_b50"]},
+            "inactivity": {"v": "no trade for 7 calendar days can close the account", "st": "confirmed", "src": ["mffu_inact"]},
+            "hours": {"v": "flat by 16:10 ET, no overnight, no weekend; you flatten yourself on holiday early closes", "st": "confirmed", "src": ["mffu_b50"]}
+          },
+          "funded": {
+            "max_loss": {"v": "$2,000 EOD trailing, floor stops at +$100", "st": "confirmed", "src": ["mffu_b50"]},
+            "daily_loss": {"v": "$1,000 soft", "st": "confirmed", "src": ["mffu_b50"]},
+            "contracts": {"v": "4 minis / 40 micros", "st": "confirmed", "src": ["mffu_b50"]}
+          },
+          "payouts": {
+            "buffer": {"v": "$2,100 (first payout needs $500 above it: balance +$2,600, and 48 h after the first trade)", "st": "confirmed", "src": ["mffu_b50", "pdl_mffu_pay"]},
+            "min_max": {"v": "$500 - $2,000 a request", "st": "confirmed", "src": ["pdl_mffu_pay"]},
+            "split": {"v": "80%", "st": "confirmed", "src": ["mffu_b50"]},
+            "frequency": {"v": "2 trading days a cycle", "st": "confirmed", "src": ["mffu_b50"]},
+            "consistency": {"v": "best day <= 50% of the cycle's profit", "st": "confirmed", "src": ["mffu_b50"]},
+            "count": {"v": "5 sim payouts, then live", "st": "confirmed", "src": ["mffu_b50"]}
+          },
+          "news": {"v": "allowed in eval and sim-funded (Builder is the exception to the Tier-1 rule)", "st": "confirmed", "src": ["mffu_news"]}
+        },
+        {
+          "id": "mffu_builder_25k", "name": "Builder 25K", "size": 25000, "lit_id": "mffu_builder_25k", "status": "planned: start 2026-10-26 (one week after the 50K)",
+          "price": {"list": {"v": 105, "st": "confirmed", "src": ["mffu_builder"]}, "owner": 63.0, "type": "one-time, $0 activation"},
+          "eval": {
+            "target": {"v": 1500, "st": "confirmed", "src": ["mffu_builder"]},
+            "max_loss": {"v": "$1,000 EOD trailing, locks at $25,100", "st": "confirmed", "src": ["mffu_builder"]},
+            "daily_loss": {"v": "$600 soft (current guide; an older 'legacy' page says none)", "st": "conflict", "src": ["mffu_builder", "ptv_mffu_rules"]},
+            "consistency": {"v": "none in the eval", "st": "confirmed", "src": ["mffu_builder"]},
+            "min_days": {"v": "1", "st": "confirmed", "src": ["mffu_builder"]},
+            "contracts": {"v": "2 minis / 20 micros", "st": "confirmed", "src": ["mffu_builder"]},
+            "inactivity": {"v": "7 calendar days", "st": "confirmed", "src": ["mffu_inact"]}
+          },
+          "funded": {"max_loss": {"v": "$1,000 EOD trailing, locks at +$100", "st": "confirmed", "src": ["mffu_builder"]}},
+          "payouts": {
+            "buffer": {"v": "$1,100", "st": "confirmed", "src": ["pdl_mffu_pay"]},
+            "min_max": {"v": "$250 - $1,000 a request", "st": "unconfirmed", "src": ["pdl_mffu_pay"]},
+            "split": {"v": "80%", "st": "confirmed", "src": ["mffu_builder"]},
+            "consistency": {"v": "best day <= 50%", "st": "confirmed", "src": ["mffu_builder"]},
+            "count": {"v": "5 sim payouts, then live", "st": "unconfirmed", "src": ["pdl_mffu_pay"]}
+          },
+          "news": {"v": "allowed", "st": "confirmed", "src": ["mffu_news"]},
+          "caveat": "can it sit next to the 50K, and may the same bot copy both? Ask MFFU in writing. The live code sizes every account as a 50K today: the 25K needs per-account sizing first (lit-builder-25k.md)."
+        },
+        {
+          "id": "mffu_rapid_50k", "name": "Rapid 50K", "size": 50000, "lit_id": "mffu_rapid_50k", "status": "held: ask MFFU first",
+          "price": {"list": {"v": 157, "st": "conflict", "src": ["mffu_rapid", "ptv_mffu_rapid"], "n": "$157 list; one Aug-2026 guide says a 30-day renewal; older list $209"}, "with_code": 94.2, "type": "one-time or monthly (conflict)"},
+          "eval": {
+            "target": {"v": 3000, "st": "confirmed", "src": ["mffu_rapid"]},
+            "max_loss": {"v": "$2,000 EOD trailing", "st": "confirmed", "src": ["mffu_rapid"]},
+            "daily_loss": {"v": "none", "st": "confirmed", "src": ["mffu_rapid"]},
+            "consistency": {"v": "best day <= 50% of the eval profit (one source: none)", "st": "conflict", "src": ["mffu_rapid", "phidias_rapid"]},
+            "min_days": {"v": "2", "st": "confirmed", "src": ["mffu_rapid"]},
+            "contracts": {"v": "5 minis / 50 micros", "st": "unconfirmed", "src": ["ptv_mffu_rapid"]}
+          },
+          "funded": {
+            "max_loss": {"v": "INTRADAY trailing $2,000 (open profit counts), locks at +$100", "st": "confirmed", "src": ["mffu_rapid", "ft_mffu"]},
+            "daily_loss": {"v": "none", "st": "confirmed", "src": ["mffu_rapid"]}
+          },
+          "payouts": {
+            "buffer": {"v": "$2,100", "st": "confirmed", "src": ["mffu_rapid_pay"]},
+            "min_max": {"v": "$500 minimum, no stated cap", "st": "conflict", "src": ["mffu_rapid_pay", "ptv_mffu_rapid"]},
+            "split": {"v": "90%", "st": "confirmed", "src": ["mffu_rapid_pay"]},
+            "frequency": {"v": "daily", "st": "confirmed", "src": ["mffu_rapid_pay"]},
+            "consistency": {"v": "none", "st": "confirmed", "src": ["mffu_rapid_pay"]}
+          },
+          "news": {"v": "funded: no position or working order from 2 min before to 2 min after Tier-1 releases (CPI, NFP, FOMC statement, FOMC minutes); evals allowed. Real 2026 cost to LIT: 5 of 120 trades touched", "st": "confirmed", "src": ["mffu_news", "ptv_mffu_news"]},
+          "caveat": "eval best-day rule: median pass 22-27 sessions, breaks the owner's 2-week rule"
+        },
+        {
+          "id": "mffu_rapid_eod_50k", "name": "Rapid EOD 50K", "size": 50000, "lit_id": "mffu_rapid_eod_50k", "status": "held: ask MFFU first",
+          "price": {"list": {"v": 157, "st": "confirmed", "src": ["etf_rapid_eod"]}, "with_code": 94.2, "type": "one-time, 365 days"},
+          "eval": {
+            "target": {"v": 3000, "st": "confirmed", "src": ["mffu_rapid_eod"]},
+            "max_loss": {"v": "$2,000 EOD trailing", "st": "confirmed", "src": ["mffu_rapid_eod"]},
+            "daily_loss": {"v": "none", "st": "confirmed", "src": ["mffu_rapid_eod"]},
+            "consistency": {"v": "best day <= 30% of the eval profit (eval only)", "st": "confirmed", "src": ["mffu_rapid_eod", "fm_rapid_eod"]},
+            "min_days": {"v": "4", "st": "confirmed", "src": ["mffu_rapid_eod"]},
+            "contracts": {"v": "3 minis / 30 micros", "st": "confirmed", "src": ["mffu_rapid_eod"]}
+          },
+          "funded": {"max_loss": {"v": "$2,000 EOD trailing", "st": "confirmed", "src": ["mffu_rapid_eod"]}, "daily_loss": {"v": "none", "st": "confirmed", "src": ["mffu_rapid_eod"]}},
+          "payouts": {
+            "buffer": {"v": "$2,100 first, then >= $500 profit since the last payout", "st": "confirmed", "src": ["mffu_rapid_eod"]},
+            "min_max": {"v": "$500 minimum, no stated cap", "st": "confirmed", "src": ["mffu_rapid_eod"]},
+            "split": {"v": "90%", "st": "confirmed", "src": ["mffu_rapid_eod"]},
+            "frequency": {"v": "daily", "st": "confirmed", "src": ["mffu_rapid_eod"]},
+            "consistency": {"v": "none", "st": "confirmed", "src": ["mffu_rapid_eod"]}
+          },
+          "news": {"v": "same Tier-1 ban as Rapid on the funded account", "st": "confirmed", "src": ["mffu_news"]},
+          "caveat": "30% eval best-day rule: median pass 41-43 sessions (about 2 months); beats Rapid once funded (EOD floor, account lost 9-12% vs 16-22% in 6 months)"
+        }
+      ]
+    },
+    {
+      "id": "lucid",
+      "name": "Lucid Trading (LucidPro)",
+      "site": "https://lucidtrading.com",
+      "bot_friendly": "yes",
+      "summary": "Best second firm for the bot: 'automated systems and trade copiers are permitted', NinjaTrader 8, no eval consistency rule, 90% split, payouts up to $2,000 then $2,500.",
+      "bots": {"v": "automated systems and trade copiers permitted (Other Trading Activities, edited 2026-08-26); HFT / microscalping banned", "st": "confirmed", "src": ["pmt_auto", "ptv_lucid_pro"]},
+      "copy_trading": {"v": "trade copiers permitted; the same bot at other firms is not banned", "st": "unconfirmed", "src": ["pmt_auto"]},
+      "platforms": {"v": "NinjaTrader 8 (and others)", "st": "confirmed", "src": ["ptv_lucid_pro"]},
+      "account_caps": {"v": "5 funded per household (one source; another says 10)", "st": "conflict", "src": ["ptv_lucid_pro", "tanto_lucid"]},
+      "codes": [
+        {"code": "DGT", "off": "about 40% (LucidPro 50K $115.40)", "seen": "2026-10-19", "st": "unconfirmed", "src": ["damn_lucid_disc"]},
+        {"code": "VIBES", "off": "about 35% (Lucid adjusts it; stacks with holiday sales)", "seen": "2026-10", "st": "unconfirmed", "src": ["ptv_lucid_disc"]},
+        {"code": "PFD", "off": "30-50% (pages disagree)", "seen": "2026", "st": "unconfirmed", "src": ["flux_lucid"], "n": "low-quality pages, try last"}
+      ],
+      "sales": {"v": "holiday sales (Black Friday, New Year) stack with the base code, per one review", "st": "unconfirmed", "src": ["ptv_lucid_disc"]},
+      "live": {
+        "when": {"v": "LucidPro: after 5 payouts you enter the live review pool (was 6 until Feb 2026); a review, not automatic", "st": "conflict", "src": ["ptv_lucid_live", "tanto_lucid", "dtz_lucid"], "n": "Lucid's own articles disagree: one says 5 payouts means live, another says it is the last payout level and live is the risk team's choice"},
+        "how": {"v": "the risk team decides; LucidLive is a live brokerage account", "st": "unconfirmed", "src": ["ptv_lucid_live"]},
+        "changes": {"v": "LucidLive (rebuilt Feb-Mar 2026): $0 starting balance plus a cash bonus, 90/10 split, daily payouts on real capital, no payout windows", "st": "unconfirmed", "src": ["ptv_lucid_live"]},
+        "closes_others": {"v": "not found", "st": "unconfirmed", "src": []},
+        "risk_rules": {"v": "not published in the sources found", "st": "unconfirmed", "src": []},
+        "reports": {"v": "reviewers advise planning for a review, not a guaranteed live account", "st": "unconfirmed", "src": ["ptv_lucid_live"]}
+      },
+      "plans": [
+        {
+          "id": "lucid_pro_50k", "name": "LucidPro 50K", "size": 50000, "lit_id": "lucid_pro_50k", "status": "recommended next (after the 25K)",
+          "price": {"list": {"v": 192, "st": "conflict", "src": ["lucid_test", "ptv_lucid_disc"], "n": "sources show $192, $140 and $129.50"}, "with_code": 115.4, "type": "one-time, no activation fee", "n": "the daily-loss version is cheaper"},
+          "eval": {
+            "target": {"v": 3000, "st": "confirmed", "src": ["lucid_test"]},
+            "max_loss": {"v": "$2,000 EOD trailing, locks at +$100", "st": "confirmed", "src": ["lucid_test"]},
+            "daily_loss": {"v": "$1,200 soft (optional at checkout)", "st": "confirmed", "src": ["etf_lucid_dll"]},
+            "consistency": {"v": "none in the eval", "st": "confirmed", "src": ["ptv_lucid_pro"]},
+            "contracts": {"v": "4 minis / 40 micros", "st": "confirmed", "src": ["ptv_lucid_pro"]}
+          },
+          "funded": {"max_loss": {"v": "$2,000 EOD trailing, buffer $52,100", "st": "confirmed", "src": ["ptv_lucid_pro"]}},
+          "payouts": {
+            "buffer": {"v": "$52,100 (balance) and >= $500 profit in the cycle", "st": "confirmed", "src": ["ptv_lucid_pro", "qv_lucid_pay"]},
+            "min_max": {"v": "up to $2,000 then $2,500 (rising cap)", "st": "confirmed", "src": ["ptv_lucid_caps"]},
+            "split": {"v": "90%", "st": "confirmed", "src": ["qv_lucid_pay"]},
+            "frequency": {"v": "every 3 days (some pages: any day)", "st": "conflict", "src": ["ptv_lucid_pay", "tanto_lucid"]},
+            "consistency": {"v": "best day <= 40% of the cycle (some pages 30%); about 3 contributing days a payout", "st": "conflict", "src": ["ptv_lucid_pro", "tanto_lucid"]},
+            "count": {"v": "5 payouts, then live review", "st": "confirmed", "src": ["ptv_lucid_live"]}
+          },
+          "news": {"v": "no news ban found", "st": "unconfirmed", "src": []}
+        }
+      ]
+    },
+    {
+      "id": "fundednext",
+      "name": "FundedNext Futures",
+      "site": "https://fundednext.com/futures",
+      "bot_friendly": "yes",
+      "summary": "Bots allowed in the Futures terms (2026-09-25). Rapid Daily: no consistency rule at all, payouts any day ($250-$1,200), but the account ends after 5 rewards.",
+      "bots": {"v": "EAs / bots / AI allowed in the Challenge and the funded account (Futures Challenge Terms 2026-09-25)", "st": "confirmed", "src": ["fn_terms", "fn_bots"]},
+      "copy_trading": {"v": "copying your own accounts only", "st": "confirmed", "src": ["fn_terms"]},
+      "platforms": {"v": "NinjaTrader, Tradovate, TradingView", "st": "confirmed", "src": ["fn_platforms"]},
+      "account_caps": {"v": "no futures cap found; up to 5 live accounts", "st": "unconfirmed", "src": ["fn_live_new"]},
+      "codes": [
+        {"code": "FT", "off": "55% (affiliate 'standing' code)", "seen": "2026-08/10", "st": "unconfirmed", "src": ["ft_fn"]},
+        {"code": "PROPVAULT", "off": "10%", "seen": "2026-09", "st": "unconfirmed", "src": ["waves_fn"]},
+        {"code": "(no code)", "off": "20% + a free account, ends 2026-10-26", "seen": "2026-10", "st": "unconfirmed", "src": ["pfm_fn"]},
+        {"code": "LUMI / USA250", "off": "30% / up to 40% (past)", "seen": "2026 (past)", "st": "unconfirmed", "src": ["jp_fn"]},
+        {"code": "BLKFRDY / FNBL250 / BF2025", "off": "15-25% (Black Friday 2025, Nov 19 - Dec 1)", "seen": "2025-11", "st": "unconfirmed", "src": ["tf_fn_bf", "tf_fn_bf2", "pmt_bf"], "n": "the pattern to expect again in late Nov 2026"}
+      ],
+      "sales": {"v": "Black Friday 2025 ran Nov 19 - Dec 1 (15-25% plus reward boosts); FundedNext's own Aug 2026 promo was 47% off Flex", "st": "unconfirmed", "src": ["tf_fn_bf", "ft_fn"]},
+      "live": {
+        "when": {"v": "new structure (Rapid bought after 2026-07-10): live review pool after 15 Performance Rewards; returning live traders after every 5; not guaranteed", "st": "confirmed", "src": ["fn_live_new", "fn_live_rapid"], "n": "a Rapid Daily account 'concludes after 5 rewards', so 15 rewards means about 3 accounts"},
+        "how": {"v": "the move happens at the end of the current payout cycle; accounts with >= 1 withdrawal convert to live, 0-payout accounts are closed and refunded; 1 live account per eligible account, max 5", "st": "confirmed", "src": ["fn_live_new"]},
+        "changes": {"v": "per-payout caps lift once live; old structure: settlement withdrawal + live deposit capped at $50,000 + a reserve", "st": "conflict", "src": ["fn_live_old", "fn_live_new"]},
+        "closes_others": {"v": "old structure: all active FundedNext accounts disabled at the move; new structure: payout accounts convert, 0-payout accounts closed and refunded", "st": "confirmed", "src": ["fn_live_old", "fn_live_new"]},
+        "risk_rules": {"v": "not published in the sources found", "st": "unconfirmed", "src": []},
+        "reports": {"v": "refund timing differs between articles (24 h vs 3-5 business days)", "st": "unconfirmed", "src": ["fn_live_new"]}
+      },
+      "plans": [
+        {
+          "id": "fn_rapid_daily_50k", "name": "Rapid Daily 50K", "size": 50000, "lit_id": "fn_rapid_daily_50k", "status": "recommended third account",
+          "price": {"list": {"v": 299.98, "st": "unconfirmed", "src": ["propscope_fn"]}, "with_code": 169.99, "type": "one-time"},
+          "eval": {
+            "target": {"v": 3000, "st": "confirmed", "src": ["fn_rd_rules"]},
+            "max_loss": {"v": "$2,000 EOD trailing, locks at $50,100", "st": "confirmed", "src": ["fn_dll"]},
+            "daily_loss": {"v": "$1,000 soft (eval and funded)", "st": "confirmed", "src": ["fn_dll"]},
+            "consistency": {"v": "none", "st": "confirmed", "src": ["fn_rd_rules"]},
+            "min_days": {"v": "no time limit", "st": "confirmed", "src": ["fn_rd_rules"]}
+          },
+          "funded": {"max_loss": {"v": "$2,000 EOD, buffer $52,100", "st": "confirmed", "src": ["fn_rd_funded"]}},
+          "payouts": {
+            "buffer": {"v": "$52,100 and >= $500 cycle profit", "st": "confirmed", "src": ["fn_rd_funded"]},
+            "min_max": {"v": "$250 - $1,200 a request", "st": "confirmed", "src": ["fn_rd_funded"]},
+            "split": {"v": "90%", "st": "confirmed", "src": ["fn_rd_funded"]},
+            "frequency": {"v": "any day", "st": "confirmed", "src": ["fn_rd_funded"]},
+            "consistency": {"v": "none", "st": "confirmed", "src": ["fn_rd_funded"]},
+            "count": {"v": "account ends after 5 rewards (about $5,400 to you)", "st": "confirmed", "src": ["fn_rd_funded"]}
+          },
+          "news": {"v": "no news ban found", "st": "unconfirmed", "src": []}
+        },
+        {
+          "id": "fn_rapid_pro_50k", "name": "Rapid Pro 50K", "size": 50000, "lit_id": "fn_rapid_pro_50k", "status": "reference",
+          "price": {"list": {"v": 299.98, "st": "unconfirmed", "src": ["propscope_fn"], "n": "assumed = Rapid Daily"}, "with_code": 169.99, "type": "one-time"},
+          "eval": {"daily_loss": {"v": "none (optional add-on)", "st": "confirmed", "src": ["fn_rp_funded"]}, "consistency": {"v": "none", "st": "confirmed", "src": ["fn_rp_funded"]}},
+          "payouts": {
+            "min_max": {"v": "up to $1,200", "st": "confirmed", "src": ["fn_rp_funded"]},
+            "frequency": {"v": "every 3 days", "st": "confirmed", "src": ["fn_rp_funded"]},
+            "consistency": {"v": "best day <= 40%", "st": "confirmed", "src": ["fn_rp_funded"]},
+            "count": {"v": "5 rewards", "st": "confirmed", "src": ["fn_rp_funded"]}
+          }
+        }
+      ]
+    },
+    {
+      "id": "tradeify",
+      "name": "Tradeify",
+      "site": "https://tradeify.co",
+      "bot_friendly": "no (for this bot)",
+      "summary": "Rules fit LIT, but Tradeify allows only your own bot with proof and says running it at other firms is against its policy. Ruled out while the bot trades MFFU.",
+      "bots": {"v": "own bot only, proof of ownership + live video; 'using it across multiple firms is against Tradeify's policy'", "st": "confirmed", "src": ["tradeify_guide"]},
+      "copy_trading": {"v": "the same bot at another firm: not allowed", "st": "confirmed", "src": ["tradeify_guide"]},
+      "account_caps": {"v": "5 sim-funded", "st": "unconfirmed", "src": ["tradeify_guide"]},
+      "codes": [{"code": "(50% codes seen)", "off": "about 50% (Growth 50K $72.50)", "seen": "2026-10", "st": "unconfirmed", "src": []}],
+      "live": {
+        "when": {"v": "Elite Live review after 3 payouts on one account or 10 in total (other pages: 5 in total); at Tradeify's discretion, mandatory once selected", "st": "conflict", "src": ["nexus_tradeify", "ptv_tradeify_live"]},
+        "how": {"v": "Tradeify selects you", "st": "unconfirmed", "src": ["ptv_tradeify_live"]},
+        "changes": {"v": "split 80/20 live (90/10 sim); EOD drawdown locked from day one", "st": "unconfirmed", "src": ["curved_tradeify", "ptv_tradeify_live"]},
+        "closes_others": {"v": "one guide: accepting Elite Live ends every active sim-funded account; another: each sim account with >= 1 payout becomes its own Elite account", "st": "conflict", "src": ["ptv_tradeify_live"]},
+        "risk_rules": {"v": "not published", "st": "unconfirmed", "src": []},
+        "reports": {"v": "forum posts say the move is mandatory once selected", "st": "unconfirmed", "src": ["nexus_tradeify"]}
+      },
+      "plans": [
+        {
+          "id": "tradeify_growth_50k", "name": "Growth 50K", "size": 50000, "lit_id": "tradeify_growth_50k", "status": "ruled out (bot policy)",
+          "price": {"list": {"v": 145, "st": "unconfirmed", "src": []}, "with_code": 72.5, "type": "one-time"},
+          "eval": {"target": {"v": 3000, "st": "confirmed", "src": []}, "daily_loss": {"v": "$1,250 soft", "st": "unconfirmed", "src": []}, "consistency": {"v": "none", "st": "confirmed", "src": []}},
+          "payouts": {"consistency": {"v": "best day <= 35%, 5 winning days", "st": "unconfirmed", "src": ["phidias_tradeify"]}, "buffer": {"v": "$3,000", "st": "unconfirmed", "src": ["phidias_tradeify"]}, "min_max": {"v": "caps $1,500 rising to $3,000", "st": "unconfirmed", "src": ["phidias_tradeify"]}}
+        }
+      ]
+    },
+    {
+      "id": "bulenox",
+      "name": "Bulenox",
+      "site": "https://bulenox.com",
+      "bot_friendly": "not yet",
+      "summary": "Fastest eval for LIT on paper, but algorithms need Bulenox's written approval, copying across your own accounts is banned, and it charges monthly.",
+      "bots": {"v": "algorithms must be approved by Bulenox; commercial / shared bots banned since Sep 2026", "st": "unconfirmed", "src": ["tf_bulenox", "ptv_bulenox"]},
+      "copy_trading": {"v": "copying across your own accounts prohibited", "st": "unconfirmed", "src": ["tf_bulenox"]},
+      "account_caps": {"v": "3-11 Master accounts (sources conflict)", "st": "conflict", "src": ["tf_bulenox", "ptv_bulenox"]},
+      "codes": [],
+      "live": {
+        "when": {"v": "after 3 Master-account payouts, at the Risk Management Department's discretion (one source says automatic)", "st": "conflict", "src": ["tfu_bulenox", "ptv_bulenox"]},
+        "how": {"v": "all active Master accounts are consolidated into one Funded (real) account; accepting is mandatory to continue", "st": "unconfirmed", "src": ["tfu_bulenox"]},
+        "changes": {"v": "payout minimum changes (one table: 5 trading days); after the 3rd payout no maximum", "st": "unconfirmed", "src": ["pff_bulenox"]},
+        "closes_others": {"v": "yes: every Master account is merged into one Funded account; declining closes the Master with no payout", "st": "unconfirmed", "src": ["tfu_bulenox"]},
+        "risk_rules": {"v": "not published", "st": "unconfirmed", "src": []},
+        "reports": {"v": "conflicting reports on automatic vs discretionary moves", "st": "unconfirmed", "src": ["tfu_bulenox"]}
+      },
+      "plans": [
+        {
+          "id": "bulenox_eod_50k", "name": "Qualification EOD 50K", "size": 50000, "lit_id": "bulenox_eod_50k", "status": "reference (bot approval needed)",
+          "price": {"list": {"v": 175, "st": "unconfirmed", "src": ["tf_bulenox"]}, "type": "monthly, plus an activation fee ($98-$220; one page $148)"},
+          "eval": {"max_loss": {"v": "$2,500 EOD", "st": "unconfirmed", "src": ["tf_bulenox"]}, "daily_loss": {"v": "$1,100 soft", "st": "unconfirmed", "src": ["tf_bulenox"]}, "consistency": {"v": "none", "st": "confirmed", "src": ["tf_bulenox"]}},
+          "payouts": {
+            "frequency": {"v": "weekly (processed Wednesdays), after 10 trading days", "st": "unconfirmed", "src": ["tfu_bulenox", "pff_bulenox"]},
+            "min_max": {"v": ">= $1,000; first 3 payouts capped ($1,500 on 50K), then no cap", "st": "unconfirmed", "src": ["pff_bulenox"]},
+            "consistency": {"v": "best day <= 40% on every payout", "st": "confirmed", "src": ["tfu_bulenox"]},
+            "split": {"v": "100% of the first $10,000, then 90%", "st": "confirmed", "src": ["tfu_bulenox"]}
+          }
+        }
+      ]
+    },
+    {
+      "id": "topstep",
+      "name": "Topstep",
+      "site": "https://topstep.com",
+      "bot_friendly": "no (NinjaTrader)",
+      "summary": "API bots allowed on the Combine and Express Funded Account, banned on Live; NinjaTrader is not offered to new sign-ups (TopstepX only), so this bot cannot run there today.",
+      "bots": {"v": "API bots on Combine / XFA, banned on Live Funded; no VPS", "st": "unconfirmed", "src": ["h2t_topstep", "tg_auto"]},
+      "copy_trading": {"v": "not checked", "st": "unconfirmed", "src": []},
+      "platforms": {"v": "TopstepX for new sign-ups (NinjaTrader not offered)", "st": "unconfirmed", "src": ["tg_auto"]},
+      "codes": [],
+      "live": {
+        "when": {"v": "XFA to Live Funded Account (LFA) at Topstep's discretion", "st": "unconfirmed", "src": ["topstep_pay"]},
+        "how": {"v": "Topstep invites you", "st": "unconfirmed", "src": []},
+        "changes": {"v": "LFA payouts not capped (XFA caps $2,000 on 50K); 30 winning days in the LFA unlock daily access up to 100% of profits; before that, one guide says 50% of the balance a request; $125 minimum, 90/10 split", "st": "conflict", "src": ["topstep_pay", "ptv_topstep_pay"]},
+        "closes_others": {"v": "not found in official text", "st": "unconfirmed", "src": []},
+        "risk_rules": {"v": "bots banned on Live (critical for LIT)", "st": "unconfirmed", "src": ["h2t_topstep"]},
+        "reports": {"v": "Trustpilot: one trader started live with $10,000 instead of the expected $50,000 after a rule change; forum: April 2026 XFA cap cut, hedging detection", "st": "unconfirmed", "src": ["tp_topstep", "nexus_topstep"]}
+      },
+      "plans": [
+        {
+          "id": "topstep_50k", "name": "Combine 50K", "size": 50000, "lit_id": "topstep_50k", "status": "ruled out (platform)",
+          "price": {"list": {"v": 49, "st": "unconfirmed", "src": [], "n": "$49 a month + $149 activation"}, "type": "monthly + activation"},
+          "eval": {"consistency": {"v": "best day <= 50% (some 55%)", "st": "conflict", "src": []}},
+          "payouts": {"min_max": {"v": "$125 minimum; XFA caps $2,000 (50K)", "st": "confirmed", "src": ["topstep_pay"]}, "split": {"v": "90%", "st": "confirmed", "src": ["topstep_pay"]}, "frequency": {"v": "XFA: 5 winning days", "st": "unconfirmed", "src": []}}
+        }
+      ]
+    }
+  ],
+  "excluded": [
+    {"firm": "Apex Trader Funding", "why": "automation banned on every account type; the eval expires after 30 days", "src": ["qv_apex"]},
+    {"firm": "Take Profit Trader", "why": "no bots or algos, every trade manual", "src": ["pmt_tpt"]},
+    {"firm": "Alpha Futures", "why": "fully automated banned; NinjaTrader / Tradovate gone for new accounts (2026-07-12)", "src": ["ft_alpha"]},
+    {"firm": "Elite Trader Funding", "why": "semi-automated only", "src": ["tp_elite"]}
+  ],
+  "next": {
+    "title": "What to buy next",
+    "steps": [
+      {"plan": "mffu_builder_25k", "when": "Mon 2026-10-26", "cash": 63.0, "why": "same firm, same bot, $63; a week after the 50K so the two evals do not pass or fail together. First ask MFFU in writing: may the same bot copy my 50K? (and wire per-account sizing first)", "h2_per_month": 278},
+      {"plan": "lucid_pro_50k", "when": "after the 50K eval is decided (pass or fail)", "cash": 115.4, "why": "bots and copiers allowed in writing, no eval consistency rule, 90% split, highest funded $/month of the bot-friendly plans", "h2_per_month": 631},
+      {"plan": "fn_rapid_daily_50k", "when": "once two accounts are funded or by month 2", "cash": 169.99, "why": "bots allowed in the terms, no consistency rule even at payout, daily payouts (first money sooner)", "h2_per_month": 561},
+      {"plan": "mffu_rapid_eod_50k", "when": "only after MFFU answers in writing (caps shared? copy allowed? news rule detail)", "cash": 94.2, "why": "adds about $660 a month (H2) next to Lucid + FundedNext, but the eval takes about 2 months", "h2_per_month": 659}
+    ],
+    "combo": "MFFU Builder 50K + LucidPro 50K + FundedNext Rapid Daily 50K: $1,754 a month on Jul-Oct trades over 6 months net of fees ($2,373 in months 4-6), $377 up front; 2021-25 reference: -$92 a month (LIT has no edge there). Adding 1 Rapid EOD: $2,413 a month.",
+    "source": "research/writeups/lit-funded-firms.md, lit-mffu-rapid-stack.md, lit-builder-25k.md"
+  }
+}

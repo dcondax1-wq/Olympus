@@ -359,3 +359,7 @@ router.include_router(_pc_router)
 # call the same functions as the CLI (server.py fills botctl.HOOKS with the /api/live/start and /api/live/stop code paths).
 from .botctl import router as _botctl_router  # noqa: E402
 router.include_router(_botctl_router)
+
+# Hub pages (Prop Firms, Business, Market, Learn, System): read-only GETs over research/props + repo files (engine/hub_api.py)
+from .hub_api import router as _hub_router  # noqa: E402
+router.include_router(_hub_router)
