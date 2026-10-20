@@ -12,6 +12,10 @@ How it fits (a router layer, so engine/live.py only calls a few hooks):
     entry naming the primary's NinjaTrader account is ignored (no double routing).
   * Same entry / stop / target / breakeven / exits as the primary (the model's), separate orders per account; each
     account computes its own micros with engine/sizing.lit_qty from its own day P&L and eval / funded state.
+  * LIT scale-in (live_model.json lit.scale_in): ONLY the primary account adds after breakeven. Extra accounts never
+    receive an add (no {"side": "add"} is routed to them); they trade the first entry alone with the model's stop /
+    target / breakeven / exits, so their P&L on a scaled-in trade is the first entry's only (smaller than the primary's
+    and than the backtest's). Routing adds per account (own scale_in_qty on its own state) is open work.
   * Kill switch: every account is flattened (NinjaTrader FLATTENEVERYTHING per adapter, paper exits) and stopped.
   * One account locked out (daily loss, max-loss floor, disabled by its live gate, news ban) never stops the others.
   * Live locks per account: a non-Sim NinjaTrader account trades only with its own "armed": true AND the exact confirm
@@ -656,6 +660,9 @@ class Account:
                 self.open_t = None
                 qty = self.open_qty or tr["qty"]
             pnl = round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"]
+            if tr.get("adds") and tr.get("pts") is not None:     # extra accounts never scale in: the first entry's P&L only
+                from . import lit as _lit
+                pnl = round(qty * (float(tr["pts"]) * _lit.PV - float(tr.get("comm_rt", _lit.COMM))), 2)
             if self.spec["adapter"] == "paper" or tr["exit_reason"] == "TIME" or getattr(self.adapter, "route_all_exits", False):
                 self.route({"sym": sym, "side": "exit", "qty": qty, "reason": tr["exit_reason"], "pnl": pnl,
                             "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})
