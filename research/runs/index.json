@@ -1,7 +1,7 @@
 {
- "built": "2026-10-20 00:07",
+ "built": "2026-10-20 02:26",
  "baseline": "baseline",
- "count": 1108,
+ "count": 1135,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -15789,6 +15789,154 @@
    }
   },
   {
+   "id": "lit_b3a_10_rn50_8pt_x1_5_litrule",
+   "title": "LIT live + round-number size (level within 8.3 pts of a 00/50 handle x1.5), LIT size rule",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: round numbers near the swept level as a size tilt.",
+   "status": "promising",
+   "verdict": "LIT size rule (normal sizing, as lit_live is scored). H1 n=80 3.12/wk win 22.5% PF 5.03 net +42,750 ($7,014/mo) DD -2,428 eval 2wk 35.2/3.1; H2 n=40 2.56/wk win 35.0% PF 2.73 net +11,411 ($3,072/mo) DD -1,620 eval 2wk 23.1/0.0; 2021-25 n=510 2.38/wk win 17.5% PF 1.08 net +9,521 ($187/mo) DD -21,127 eval 2wk 9.0/17.3. lit_live: H1 net +32,773, H2 +8,962, 2021-25 +1,275. Beats a flat 1.175x in all three; neighbours 11.5 / 16 / 20 pts hold. LOSES on the live eval path (two_week): H1 -6,678, H2 +951 (run lit_b3a_10_*): not for the eval; a candidate for a future funded sizing only.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 10,
+     "rn50_lt": 8.268,
+     "mult": 1.5
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-20 02:26",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 4.14,
+     "net": 54161,
+     "dd": -2428,
+     "avg_r": 0.734,
+     "stop": 45.8,
+     "worst_day": -958,
+     "risk": 316.0,
+     "half": 11,
+     "per_month": 5521,
+     "p10": 30.6,
+     "f10": 1.9,
+     "p15": 45.6,
+     "f15": 3.9,
+     "p20": 56.3,
+     "f20": 7.8,
+     "dec10": 32.5,
+     "slow_pass": 43.0,
+     "pass_med": 14.0,
+     "b2b": "9/4"
+    },
+    "2021-25": {
+     "n": 510,
+     "tpw": 2.38,
+     "wk2": 76,
+     "win": 17.5,
+     "pf": 1.08,
+     "net": 9521,
+     "dd": -21127,
+     "avg_r": 0.019,
+     "stop": 38.1,
+     "worst_day": -1238,
+     "risk": 404.0,
+     "half": 23,
+     "per_month": 187,
+     "p10": 9.0,
+     "f10": 17.3,
+     "p15": 12.0,
+     "f15": 29.3,
+     "p20": 16.0,
+     "f20": 39.5,
+     "dec10": 26.3,
+     "slow_pass": 59.3,
+     "pass_med": 19.0,
+     "b2b": "14/44"
+    },
+    "all": {
+     "n": 630,
+     "tpw": 2.46,
+     "wk2": 78,
+     "win": 19.2,
+     "pf": 1.48,
+     "net": 63682,
+     "dd": -21127,
+     "avg_r": 0.155,
+     "stop": 40.0,
+     "worst_day": -1238,
+     "risk": 378.0,
+     "half": 34,
+     "per_month": 1046,
+     "p10": 12.9,
+     "f10": 14.8,
+     "p15": 17.8,
+     "f15": 25.2,
+     "p20": 22.9,
+     "f20": 34.4,
+     "dec10": 27.7,
+     "slow_pass": 53.8,
+     "pass_med": 17.0,
+     "b2b": "23/48"
+    }
+   }
+  },
+  {
    "id": "lit_ent_idm_size_up",
    "title": "LIT new entries: idm size: (2.0 ATR, 48 bars) >= 2 x1.5 / else x1.0, capped $990",
    "family": "risk",
@@ -24179,6 +24327,457 @@
      "slow_pass": 77.0,
      "pass_med": 32.0,
      "b2b": "12/11"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_09_levels_bu_lookback_12_h",
+   "title": "LIT live + batch 3a #9 equal highs / lows (build-ups): levels: bu lookback 12 h",
+   "family": "filters",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=79 3.09/wk PF 3.75 net +36,705 ($6,022/mo) DD -3,612; 2-week pass/fail 52.9/6.7 (Monte Carlo 50.6/5.0), 1 month 72.5/12.8. H2 (check) n=40 2.56/wk PF 2.13 net +9,674 ($2,605/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net -18 / +0, 2-week fail -2.5 / +0.0, LIT size rule +206 / +0, 2021-25 reference -3,877. Trades touched 1/0; strict test False; neighbours None.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 9,
+     "group": "levels",
+     "variant": "levels: bu lookback 12 h"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:22",
+   "spans": {
+    "2026": {
+     "n": 119,
+     "tpw": 2.89,
+     "wk2": 86,
+     "win": 26.9,
+     "pf": 3.11,
+     "net": 46379,
+     "dd": -3612,
+     "avg_r": 0.742,
+     "stop": 46.0,
+     "worst_day": -1004,
+     "risk": 418.0,
+     "half": 0,
+     "per_month": 4728,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 56.8,
+     "f20": 18.0,
+     "dec10": 43.2,
+     "slow_pass": 33.3,
+     "pass_med": 10.5,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 119,
+     "tpw": 2.89,
+     "wk2": 86,
+     "win": 26.9,
+     "pf": 3.11,
+     "net": 46379,
+     "dd": -3612,
+     "avg_r": 0.742,
+     "stop": 46.0,
+     "worst_day": -1004,
+     "risk": 418.0,
+     "half": 0,
+     "per_month": 4728,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 56.8,
+     "f20": 18.0,
+     "dec10": 43.2,
+     "slow_pass": 33.3,
+     "pass_med": 10.5,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_12_filter_cn_kind_true",
+   "title": "LIT live + batch 3a #12 consecutive-day sweeps: filter cn_kind == True",
+   "family": "filters",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=76 2.97/wk PF 3.58 net +34,169 ($5,606/mo) DD -3,608; 2-week pass/fail 53.8/8.4 (Monte Carlo 49.3/6.2), 1 month 75.2/12.8. H2 (check) n=37 2.37/wk PF 2.12 net +9,074 ($2,443/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 53.1/5.5), 1 month 49.2/3.4. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net -2,554 / -600, 2-week fail -0.8 / +0.0, LIT size rule +3,315 / -454, 2021-25 reference +1,329. Trades touched 6/3; strict test False; neighbours None.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 12,
+     "group": "filter",
+     "variant": "filter cn_kind == True"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:23",
+   "spans": {
+    "2026": {
+     "n": 113,
+     "tpw": 2.74,
+     "wk2": 83,
+     "win": 26.5,
+     "pf": 3.03,
+     "net": 43243,
+     "dd": -3608,
+     "avg_r": 0.765,
+     "stop": 45.0,
+     "worst_day": -1004,
+     "risk": 420.0,
+     "half": 0,
+     "per_month": 4408,
+     "p10": 40.8,
+     "f10": 5.3,
+     "p15": 52.9,
+     "f15": 12.1,
+     "p20": 62.1,
+     "f20": 15.0,
+     "dec10": 46.1,
+     "slow_pass": 31.9,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 113,
+     "tpw": 2.74,
+     "wk2": 83,
+     "win": 26.5,
+     "pf": 3.03,
+     "net": 43243,
+     "dd": -3608,
+     "avg_r": 0.765,
+     "stop": 45.0,
+     "worst_day": -1004,
+     "risk": 420.0,
+     "half": 0,
+     "per_month": 4408,
+     "p10": 40.8,
+     "f10": 5.3,
+     "p15": 52.9,
+     "f15": 12.1,
+     "p20": 62.1,
+     "f20": 15.0,
+     "dec10": 46.1,
+     "slow_pass": 31.9,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_09_levels_bu_tol_0_10_atr",
+   "title": "LIT + all3 + batch 3a #9 equal highs / lows (build-ups): levels: bu tol 0.10 ATR",
+   "family": "filters",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=77 3.01/wk PF 4.56 net +49,515 ($8,124/mo) DD -3,108; 2-week pass/fail 57.1/2.5 (Monte Carlo 49.4/2.9), 1 month 77.1/8.3. H2 (check) n=38 2.44/wk PF 3.1 net +16,388 ($4,412/mo) DD -3,575; 2-week pass/fail 31.9/0.0 (Monte Carlo 47.0/4.4), 1 month 28.8/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net -3,601 / -874, 2-week fail +0.0 / +0.0, LIT size rule -855 / -3,441, 2021-25 reference -1,077. Trades touched 5/4; strict test False; neighbours None.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 9,
+     "group": "levels",
+     "variant": "levels: bu tol 0.10 ATR"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:25",
+   "spans": {
+    "2026": {
+     "n": 115,
+     "tpw": 2.79,
+     "wk2": 79,
+     "win": 43.5,
+     "pf": 4.03,
+     "net": 65903,
+     "dd": -3923,
+     "avg_r": 1.027,
+     "stop": 46.2,
+     "worst_day": -1004,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 6718,
+     "p10": 34.5,
+     "f10": 1.0,
+     "p15": 45.6,
+     "f15": 9.2,
+     "p20": 52.9,
+     "f20": 19.4,
+     "dec10": 35.5,
+     "slow_pass": 31.9,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 115,
+     "tpw": 2.79,
+     "wk2": 79,
+     "win": 43.5,
+     "pf": 4.03,
+     "net": 65903,
+     "dd": -3923,
+     "avg_r": 1.027,
+     "stop": 46.2,
+     "worst_day": -1004,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 6718,
+     "p10": 34.5,
+     "f10": 1.0,
+     "p15": 45.6,
+     "f15": 9.2,
+     "p20": 52.9,
+     "f20": 19.4,
+     "dec10": 35.5,
+     "slow_pass": 31.9,
+     "pass_med": 10.0,
+     "b2b": "14/4"
     }
    }
   },
@@ -91458,6 +92057,3507 @@
      "slow_pass": 51.5,
      "pass_med": 16.0,
      "b2b": "23/37"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_01_mac_fill_w10_x1_5",
+   "title": "LIT live + batch 3a #1 ICT macro windows: mac_fill_w10 x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.12 net +43,837 ($7,192/mo) DD -3,612; 2-week pass/fail 57.1/9.2 (Monte Carlo 53.0/7.9), 1 month 74.3/20.2. H2 (check) n=40 2.56/wk PF 2.36 net +12,015 ($3,235/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 53.6/6.8), 1 month 50.8/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net +7,114 / +2,341, 2-week fail +0.0 / +0.0, LIT size rule +6,264 / +3,868, 2021-25 reference -4,696. Trades touched 27/17; strict test False; neighbours None; shuffle p = 0.0.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 1,
+     "group": "size",
+     "variant": "mac_fill_w10 x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:21",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.44,
+     "net": 55853,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 442.0,
+     "half": 0,
+     "per_month": 5694,
+     "p10": 37.9,
+     "f10": 6.3,
+     "p15": 52.9,
+     "f15": 17.0,
+     "p20": 59.2,
+     "f20": 24.3,
+     "dec10": 44.2,
+     "slow_pass": 24.8,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.44,
+     "net": 55853,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 442.0,
+     "half": 0,
+     "per_month": 5694,
+     "p10": 37.9,
+     "f10": 6.3,
+     "p15": 52.9,
+     "f15": 17.0,
+     "p20": 59.2,
+     "f20": 24.3,
+     "dec10": 44.2,
+     "slow_pass": 24.8,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_02_rv_ext3_q0_67_1_349_lo_x1_5",
+   "title": "LIT live + batch 3a #2 relative volume at the sweep: rv_ext3 >= q0.67 (1.349) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.36 net +36,418 ($5,975/mo) DD -3,613; 2-week pass/fail 54.6/9.2 (Monte Carlo 51.4/8.3), 1 month 75.2/21.1. H2 (check) n=40 2.56/wk PF 2.14 net +9,310 ($2,507/mo) DD -2,704; 2-week pass/fail 49.3/8.7 (Monte Carlo 48.7/10.6), 1 month 49.2/16.9. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net -305 / -364, 2-week fail +0.0 / +5.8, LIT size rule +14,343 / +1,639, 2021-25 reference +7,751. Trades touched 53/29; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 2,
+     "group": "size",
+     "variant": "rv_ext3 >= q0.67 (1.349) lo x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:22",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.94,
+     "net": 45728,
+     "dd": -3613,
+     "avg_r": 0.717,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 4662,
+     "p10": 41.3,
+     "f10": 7.8,
+     "p15": 52.9,
+     "f15": 17.0,
+     "p20": 57.8,
+     "f20": 21.4,
+     "dec10": 49.1,
+     "slow_pass": 31.0,
+     "pass_med": 9.5,
+     "b2b": "12/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.94,
+     "net": 45728,
+     "dd": -3613,
+     "avg_r": 0.717,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 4662,
+     "p10": 41.3,
+     "f10": 7.8,
+     "p15": 52.9,
+     "f15": 17.0,
+     "p20": 57.8,
+     "f20": 21.4,
+     "dec10": 49.1,
+     "slow_pass": 31.0,
+     "pass_med": 9.5,
+     "b2b": "12/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_03_rv_disp_q0_67_1_381_lo_x1_5",
+   "title": "LIT live + batch 3a #3 displacement volume: rv_disp >= q0.67 (1.381) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.34 net +36,519 ($5,991/mo) DD -3,619; 2-week pass/fail 50.4/10.1 (Monte Carlo 48.2/8.7), 1 month 71.6/23.9. H2 (check) n=40 2.56/wk PF 2.14 net +9,310 ($2,507/mo) DD -2,704; 2-week pass/fail 49.3/8.7 (Monte Carlo 48.5/10.6), 1 month 49.2/16.9. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net -204 / -364, 2-week fail +0.9 / +5.8, LIT size rule +15,211 / +1,626, 2021-25 reference +5,235. Trades touched 53/30; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 3,
+     "group": "size",
+     "variant": "rv_disp >= q0.67 (1.381) lo x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:22",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.93,
+     "net": 45829,
+     "dd": -3619,
+     "avg_r": 0.717,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 392.0,
+     "half": 0,
+     "per_month": 4672,
+     "p10": 37.9,
+     "f10": 7.8,
+     "p15": 49.5,
+     "f15": 17.0,
+     "p20": 54.4,
+     "f20": 23.8,
+     "dec10": 45.7,
+     "slow_pass": 32.5,
+     "pass_med": 10.0,
+     "b2b": "12/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.93,
+     "net": 45829,
+     "dd": -3619,
+     "avg_r": 0.717,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 392.0,
+     "half": 0,
+     "per_month": 4672,
+     "p10": 37.9,
+     "f10": 7.8,
+     "p15": 49.5,
+     "f15": 17.0,
+     "p20": 54.4,
+     "f20": 23.8,
+     "dec10": 45.7,
+     "slow_pass": 32.5,
+     "pass_med": 10.0,
+     "b2b": "12/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_04_dl_ext3_q0_2_0_1743_hi_x1_25_lo_x0_75",
+   "title": "LIT live + batch 3a #4 bar-delta proxy: dl_ext3 >= q0.2 (-0.1743) hi x1.25/lo x0.75",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.87 net +38,871 ($6,377/mo) DD -3,543; 2-week pass/fail 58.0/7.6 (Monte Carlo 52.8/6.2), 1 month 72.5/14.7. H2 (check) n=40 2.56/wk PF 2.54 net +13,380 ($3,602/mo) DD -2,598; 2-week pass/fail 37.7/2.9 (Monte Carlo 40.4/4.5), 1 month 33.9/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net +2,148 / +3,706, 2-week fail -1.6 / +0.0, LIT size rule +7,561 / -104, 2021-25 reference +1,846. Trades touched 80/40; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 4,
+     "group": "size",
+     "variant": "dl_ext3 >= q0.2 (-0.1743) hi x1.25/lo x0.75"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:22",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.35,
+     "net": 52251,
+     "dd": -3543,
+     "avg_r": 0.726,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 420.0,
+     "half": 0,
+     "per_month": 5327,
+     "p10": 42.2,
+     "f10": 4.9,
+     "p15": 54.9,
+     "f15": 13.1,
+     "p20": 62.1,
+     "f20": 15.5,
+     "dec10": 47.1,
+     "slow_pass": 31.5,
+     "pass_med": 10.0,
+     "b2b": "13/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.35,
+     "net": 52251,
+     "dd": -3543,
+     "avg_r": 0.726,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 420.0,
+     "half": 0,
+     "per_month": 5327,
+     "p10": 42.2,
+     "f10": 4.9,
+     "p15": 54.9,
+     "f15": 13.1,
+     "p20": 62.1,
+     "f20": 15.5,
+     "dec10": 47.1,
+     "slow_pass": 31.5,
+     "pass_med": 10.0,
+     "b2b": "13/3"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_05_rj_back_x0_5",
+   "title": "LIT live + batch 3a #5 sweep rejection quality: rj_back x0.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.81 net +37,252 ($6,112/mo) DD -3,078; 2-week pass/fail 52.9/5.9 (Monte Carlo 50.6/5.8), 1 month 72.5/16.5. H2 (check) n=40 2.56/wk PF 2.2 net +10,111 ($2,722/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.4/6.2), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net +529 / +437, 2-week fail -3.3 / +0.0, LIT size rule -391 / +0, 2021-25 reference -1,827. Trades touched 5/1; strict test False; neighbours None.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 5,
+     "group": "size",
+     "variant": "rj_back x0.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:22",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.18,
+     "net": 47363,
+     "dd": -3078,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 445.0,
+     "half": 0,
+     "per_month": 4828,
+     "p10": 37.9,
+     "f10": 4.4,
+     "p15": 52.4,
+     "f15": 12.1,
+     "p20": 58.3,
+     "f20": 20.9,
+     "dec10": 42.3,
+     "slow_pass": 26.5,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.18,
+     "net": 47363,
+     "dd": -3078,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 445.0,
+     "half": 0,
+     "per_month": 4828,
+     "p10": 37.9,
+     "f10": 4.4,
+     "p15": 52.4,
+     "f15": 12.1,
+     "p20": 58.3,
+     "f20": 20.9,
+     "dec10": 42.3,
+     "slow_pass": 26.5,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_06_sp_ext_q0_67_5_93_hi_x1_5",
+   "title": "LIT live + batch 3a #6 displacement speed: sp_ext >= q0.67 (5.93) hi x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.55 net +36,833 ($6,043/mo) DD -3,612; 2-week pass/fail 58.8/9.2 (Monte Carlo 53.8/7.3), 1 month 76.1/17.4. H2 (check) n=40 2.56/wk PF 2.08 net +9,601 ($2,585/mo) DD -2,493; 2-week pass/fail 50.7/4.3 (Monte Carlo 53.9/6.9), 1 month 49.2/8.5. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net +110 / -73, 2-week fail +0.0 / +1.4, LIT size rule +10,638 / +239, 2021-25 reference -3,614. Trades touched 27/10; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 6,
+     "group": "size",
+     "variant": "sp_ext >= q0.67 (5.93) hi x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:22",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.99,
+     "net": 46434,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 373.0,
+     "half": 0,
+     "per_month": 4734,
+     "p10": 35.4,
+     "f10": 8.3,
+     "p15": 47.6,
+     "f15": 18.0,
+     "p20": 53.9,
+     "f20": 24.8,
+     "dec10": 43.7,
+     "slow_pass": 32.4,
+     "pass_med": 10.0,
+     "b2b": "12/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.99,
+     "net": 46434,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 373.0,
+     "half": 0,
+     "per_month": 4734,
+     "p10": 35.4,
+     "f10": 8.3,
+     "p15": 47.6,
+     "f15": 18.0,
+     "p20": 53.9,
+     "f20": 24.8,
+     "dec10": 43.7,
+     "slow_pass": 32.4,
+     "pass_med": 10.0,
+     "b2b": "12/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_07_age_h_q0_2_2_083_lo_x1_5",
+   "title": "LIT live + batch 3a #7 level age: age_h >= q0.2 (2.083) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.62 net +37,923 ($6,222/mo) DD -3,612; 2-week pass/fail 52.1/10.1 (Monte Carlo 49.5/8.1), 1 month 72.5/19.3. H2 (check) n=40 2.56/wk PF 2.08 net +9,494 ($2,556/mo) DD -2,493; 2-week pass/fail 49.3/2.9 (Monte Carlo 51.5/6.8), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net +1,200 / -180, 2-week fail +0.9 / +0.0, LIT size rule +4,239 / -183, 2021-25 reference +2,170. Trades touched 15/8; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 7,
+     "group": "size",
+     "variant": "age_h >= q0.2 (2.083) lo x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:22",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.04,
+     "net": 47418,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 443.0,
+     "half": 0,
+     "per_month": 4834,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 14.1,
+     "p20": 53.9,
+     "f20": 23.3,
+     "dec10": 43.2,
+     "slow_pass": 28.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.04,
+     "net": 47418,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 443.0,
+     "half": 0,
+     "per_month": 4834,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 14.1,
+     "p20": 53.9,
+     "f20": 23.3,
+     "dec10": 43.2,
+     "slow_pass": 28.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_08_tc2_q0_5_3_5_lo_x1_5",
+   "title": "LIT live + batch 3a #8 level touches: tc2 >= q0.5 (3.5) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.35 net +37,591 ($6,167/mo) DD -3,612; 2-week pass/fail 52.1/9.2 (Monte Carlo 49.2/7.8), 1 month 71.6/20.2. H2 (check) n=40 2.56/wk PF 2.29 net +11,025 ($2,968/mo) DD -2,493; 2-week pass/fail 49.3/2.9 (Monte Carlo 50.4/7.0), 1 month 50.8/10.2. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net +868 / +1,351, 2-week fail +0.0 / +0.0, LIT size rule +8,779 / +2,836, 2021-25 reference -1,606. Trades touched 40/22; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 8,
+     "group": "size",
+     "variant": "tc2 >= q0.5 (3.5) lo x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:22",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.98,
+     "net": 48615,
+     "dd": -3612,
+     "avg_r": 0.722,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 462.0,
+     "half": 0,
+     "per_month": 4956,
+     "p10": 41.7,
+     "f10": 8.7,
+     "p15": 53.9,
+     "f15": 18.4,
+     "p20": 56.8,
+     "f20": 22.8,
+     "dec10": 50.4,
+     "slow_pass": 28.4,
+     "pass_med": 9.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.98,
+     "net": 48615,
+     "dd": -3612,
+     "avg_r": 0.722,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 462.0,
+     "half": 0,
+     "per_month": 4956,
+     "p10": 41.7,
+     "f10": 8.7,
+     "p15": 53.9,
+     "f15": 18.4,
+     "p20": 56.8,
+     "f20": 22.8,
+     "dec10": 50.4,
+     "slow_pass": 28.4,
+     "pass_med": 9.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_10_rn100_q0_2_9_7_lo_x1_5",
+   "title": "LIT live + batch 3a #10 round numbers: rn100 >= q0.2 (9.7) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.81 net +39,121 ($6,418/mo) DD -3,707; 2-week pass/fail 52.9/9.2 (Monte Carlo 49.8/8.1), 1 month 72.5/20.2. H2 (check) n=40 2.56/wk PF 2.3 net +11,153 ($3,003/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 53.8/6.8), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net +2,398 / +1,479, 2-week fail +0.0 / +0.0, LIT size rule +3,787 / +2,763, 2021-25 reference +3,606. Trades touched 16/6; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 10,
+     "group": "size",
+     "variant": "rn100 >= q0.2 (9.7) lo x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:22",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.23,
+     "net": 50274,
+     "dd": -3707,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1010,
+     "risk": 420.0,
+     "half": 0,
+     "per_month": 5125,
+     "p10": 37.9,
+     "f10": 7.3,
+     "p15": 52.4,
+     "f15": 13.1,
+     "p20": 58.3,
+     "f20": 21.8,
+     "dec10": 45.2,
+     "slow_pass": 26.5,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.23,
+     "net": 50274,
+     "dd": -3707,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1010,
+     "risk": 420.0,
+     "half": 0,
+     "per_month": 5125,
+     "p10": 37.9,
+     "f10": 7.3,
+     "p15": 52.4,
+     "f15": 13.1,
+     "p20": 58.3,
+     "f20": 21.8,
+     "dec10": 45.2,
+     "slow_pass": 26.5,
+     "pass_med": 10.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_11_sw_pw_x1_5",
+   "title": "LIT live + batch 3a #11 level type: sw_pw x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.78 net +38,329 ($6,288/mo) DD -3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.5/7.0), 1 month 73.4/17.4. H2 (check) n=40 2.56/wk PF 2.25 net +10,767 ($2,899/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net +1,606 / +1,093, 2-week fail +0.0 / +0.0, LIT size rule +1,072 / +1,093, 2021-25 reference -1,053. Trades touched 2/1; strict test False; neighbours None.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 11,
+     "group": "size",
+     "variant": "sw_pw x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:22",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.19,
+     "net": 49096,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 5005,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 51.0,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 28.6,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.19,
+     "net": 49096,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 5005,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 51.0,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 28.6,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_13_cell_weights_n_8_d_0_75_1_5_1_0",
+   "title": "LIT live + batch 3a #13 level type x session matrix: cell weights n>=8 d=0.75 1.5/1.0",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 3.79 net +38,250 ($6,275/mo) DD -3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.8/7.3), 1 month 72.5/18.3. H2 (check) n=40 2.56/wk PF 2.09 net +9,478 ($2,552/mo) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 53.9/6.8), 1 month 49.2/6.8. Reference base: H1 net +36,723 2-week 52.9/9.2, H2 net +9,674 2-week 50.7/2.9. Change: net +1,527 / -196, 2-week fail +0.0 / +0.0, LIT size rule +1,808 / +173, 2021-25 reference -1,279. Trades touched 8/5; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 13,
+     "group": "weights",
+     "variant": "cell weights n>=8 d=0.75 1.5/1.0"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:23",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.13,
+     "net": 47728,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4865,
+     "p10": 38.3,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.4,
+     "f20": 21.8,
+     "dec10": 43.6,
+     "slow_pass": 28.8,
+     "pass_med": 9.5,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.13,
+     "net": 47728,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4865,
+     "p10": 38.3,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.4,
+     "f20": 21.8,
+     "dec10": 43.6,
+     "slow_pass": 28.8,
+     "pass_med": 9.5,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_01_mac_ext_x1_5",
+   "title": "LIT + all3 + batch 3a #1 ICT macro windows: mac_ext x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.02 net +55,428 ($9,094/mo) DD -3,059; 2-week pass/fail 58.0/2.5 (Monte Carlo 51.5/3.6), 1 month 78.0/10.1. H2 (check) n=40 2.56/wk PF 2.98 net +18,459 ($4,970/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 57.8/3.1), 1 month 54.2/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net +2,312 / +1,197, 2-week fail +0.0 / +0.0, LIT size rule +1,960 / +2,386, 2021-25 reference -687. Trades touched 16/9; strict test False; neighbours None; shuffle p = 0.0.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 1,
+     "group": "size",
+     "variant": "mac_ext x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:24",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.2,
+     "net": 73887,
+     "dd": -3424,
+     "avg_r": 1.096,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 7532,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.2,
+     "net": 73887,
+     "dd": -3424,
+     "avg_r": 1.096,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 7532,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_02_rv_ext3_q0_67_1_349_hi_x0_75_lo_x1_25",
+   "title": "LIT + all3 + batch 3a #2 relative volume at the sweep: rv_ext3 >= q0.67 (1.349) hi x0.75/lo x1.25",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 5.1 net +54,810 ($8,992/mo) DD -3,042; 2-week pass/fail 47.1/1.7 (Monte Carlo 45.2/3.4), 1 month 78.9/4.6. H2 (check) n=40 2.56/wk PF 3.6 net +22,380 ($6,025/mo) DD -2,673; 2-week pass/fail 55.1/4.3 (Monte Carlo 55.8/6.5), 1 month 50.8/8.5. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net +1,694 / +5,118, 2-week fail -0.8 / +4.3, LIT size rule +8,571 / -2,365, 2021-25 reference +6,419. Trades touched 80/40; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 2,
+     "group": "size",
+     "variant": "rv_ext3 >= q0.67 (1.349) hi x0.75/lo x1.25"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:24",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.51,
+     "net": 77190,
+     "dd": -3042,
+     "avg_r": 1.124,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 408.0,
+     "half": 0,
+     "per_month": 7869,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 53.9,
+     "f15": 7.3,
+     "p20": 61.7,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 20.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.51,
+     "net": 77190,
+     "dd": -3042,
+     "avg_r": 1.124,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 408.0,
+     "half": 0,
+     "per_month": 7869,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 53.9,
+     "f15": 7.3,
+     "p20": 61.7,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 20.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_03_rv_disp_q0_33_0_7889_lo_x1_5",
+   "title": "LIT + all3 + batch 3a #3 displacement volume: rv_disp >= q0.33 (0.7889) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.77 net +54,705 ($8,975/mo) DD -3,192; 2-week pass/fail 56.3/2.5 (Monte Carlo 49.9/3.9), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 2.85 net +17,651 ($4,752/mo) DD -3,076; 2-week pass/fail 46.4/4.3 (Monte Carlo 56.0/6.7), 1 month 44.1/18.6. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net +1,589 / +389, 2-week fail +0.0 / +4.3, LIT size rule +13,773 / +987, 2021-25 reference +3,870. Trades touched 27/14; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 3,
+     "group": "size",
+     "variant": "rv_disp >= q0.33 (0.7889) lo x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:24",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.01,
+     "net": 72356,
+     "dd": -3424,
+     "avg_r": 1.075,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 7376,
+     "p10": 41.3,
+     "f10": 1.5,
+     "p15": 54.9,
+     "f15": 9.7,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 42.8,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.01,
+     "net": 72356,
+     "dd": -3424,
+     "avg_r": 1.075,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 7376,
+     "p10": 41.3,
+     "f10": 1.5,
+     "p15": 54.9,
+     "f15": 9.7,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 42.8,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_04_dl_ext_q0_8_0_1625_hi_x1_5",
+   "title": "LIT + all3 + batch 3a #4 bar-delta proxy: dl_ext >= q0.8 (0.1625) hi x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.9 net +53,417 ($8,764/mo) DD -3,074; 2-week pass/fail 58.0/2.5 (Monte Carlo 50.0/4.0), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 2.79 net +17,082 ($4,599/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 57.8/3.2), 1 month 54.2/3.4. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net +301 / -180, 2-week fail +0.0 / +0.0, LIT size rule +4,134 / -207, 2021-25 reference +7,407. Trades touched 16/7; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 4,
+     "group": "size",
+     "variant": "dl_ext >= q0.8 (0.1625) hi x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:24",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.04,
+     "net": 70499,
+     "dd": -3424,
+     "avg_r": 1.109,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 383.0,
+     "half": 0,
+     "per_month": 7187,
+     "p10": 41.3,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 42.3,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.04,
+     "net": 70499,
+     "dd": -3424,
+     "avg_r": 1.109,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 383.0,
+     "half": 0,
+     "per_month": 7187,
+     "p10": 41.3,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 42.3,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_05_rj_cloc_q0_67_0_5666_hi_x1_5",
+   "title": "LIT + all3 + batch 3a #5 sweep rejection quality: rj_cloc >= q0.67 (0.5666) hi x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.68 net +53,926 ($8,847/mo) DD -3,395; 2-week pass/fail 58.0/4.2 (Monte Carlo 49.8/4.5), 1 month 77.1/15.6. H2 (check) n=40 2.56/wk PF 2.88 net +17,735 ($4,775/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 57.5/3.1), 1 month 55.9/3.4. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net +810 / +473, 2-week fail +1.7 / +0.0, LIT size rule +6,459 / +550, 2021-25 reference +6,873. Trades touched 27/13; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 5,
+     "group": "size",
+     "variant": "rj_cloc >= q0.67 (0.5666) hi x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:24",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 3.97,
+     "net": 71660,
+     "dd": -3424,
+     "avg_r": 1.082,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 386.0,
+     "half": 0,
+     "per_month": 7305,
+     "p10": 41.3,
+     "f10": 1.5,
+     "p15": 54.4,
+     "f15": 10.2,
+     "p20": 62.1,
+     "f20": 17.5,
+     "dec10": 42.8,
+     "slow_pass": 18.2,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 3.97,
+     "net": 71660,
+     "dd": -3424,
+     "avg_r": 1.082,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 386.0,
+     "half": 0,
+     "per_month": 7305,
+     "p10": 41.3,
+     "f10": 1.5,
+     "p15": 54.4,
+     "f15": 10.2,
+     "p20": 62.1,
+     "f20": 17.5,
+     "dec10": 42.8,
+     "slow_pass": 18.2,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_06_sp_ext_q0_8_7_hi_x0_75_lo_x1_25",
+   "title": "LIT + all3 + batch 3a #6 displacement speed: sp_ext >= q0.8 (7) hi x0.75/lo x1.25",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.77 net +51,780 ($8,495/mo) DD -3,356; 2-week pass/fail 54.6/2.5 (Monte Carlo 48.5/3.7), 1 month 70.6/11.9. H2 (check) n=40 2.56/wk PF 3.32 net +25,325 ($6,818/mo) DD -3,404; 2-week pass/fail 56.5/4.3 (Monte Carlo 57.8/6.2), 1 month 54.2/5.1. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net -1,336 / +8,063, 2-week fail +0.0 / +4.3, LIT size rule -1,600 / +1,298, 2021-25 reference +6,578. Trades touched 80/40; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 6,
+     "group": "size",
+     "variant": "sp_ext >= q0.8 (7) hi x0.75/lo x1.25"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:25",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.13,
+     "net": 77105,
+     "dd": -3404,
+     "avg_r": 1.154,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 428.0,
+     "half": 0,
+     "per_month": 7860,
+     "p10": 43.7,
+     "f10": 3.4,
+     "p15": 57.3,
+     "f15": 9.7,
+     "p20": 62.1,
+     "f20": 17.5,
+     "dec10": 47.1,
+     "slow_pass": 13.2,
+     "pass_med": 7.0,
+     "b2b": "14/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 45.0,
+     "pf": 4.13,
+     "net": 77105,
+     "dd": -3404,
+     "avg_r": 1.154,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 428.0,
+     "half": 0,
+     "per_month": 7860,
+     "p10": 43.7,
+     "f10": 3.4,
+     "p15": 57.3,
+     "f15": 9.7,
+     "p20": 62.1,
+     "f20": 17.5,
+     "dec10": 47.1,
+     "slow_pass": 13.2,
+     "pass_med": 7.0,
+     "b2b": "14/5"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_07_age_h_q0_2_2_083_lo_x1_5",
+   "title": "LIT + all3 + batch 3a #7 level age: age_h >= q0.2 (2.083) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.97 net +55,317 ($9,075/mo) DD -3,059; 2-week pass/fail 58.0/5.9 (Monte Carlo 50.0/4.5), 1 month 77.1/13.8. H2 (check) n=40 2.56/wk PF 2.87 net +17,753 ($4,780/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 57.4/3.3), 1 month 54.2/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net +2,201 / +491, 2-week fail +3.4 / +0.0, LIT size rule +6,453 / -310, 2021-25 reference +2,372. Trades touched 15/8; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 7,
+     "group": "size",
+     "variant": "age_h >= q0.2 (2.083) lo x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:25",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.12,
+     "net": 73071,
+     "dd": -3424,
+     "avg_r": 1.096,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 417.0,
+     "half": 0,
+     "per_month": 7449,
+     "p10": 45.6,
+     "f10": 2.9,
+     "p15": 58.3,
+     "f15": 9.2,
+     "p20": 63.6,
+     "f20": 18.9,
+     "dec10": 48.5,
+     "slow_pass": 10.4,
+     "pass_med": 7.0,
+     "b2b": "15/5"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.12,
+     "net": 73071,
+     "dd": -3424,
+     "avg_r": 1.096,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 417.0,
+     "half": 0,
+     "per_month": 7449,
+     "p10": 45.6,
+     "f10": 2.9,
+     "p15": 58.3,
+     "f15": 9.2,
+     "p20": 63.6,
+     "f20": 18.9,
+     "dec10": 48.5,
+     "slow_pass": 10.4,
+     "pass_med": 7.0,
+     "b2b": "15/5"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_08_tc1_q0_33_1_lo_x1_5",
+   "title": "LIT + all3 + batch 3a #8 level touches: tc1 >= q0.33 (1) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.69 net +53,501 ($8,777/mo) DD -3,212; 2-week pass/fail 58.0/5.0 (Monte Carlo 51.4/4.3), 1 month 78.0/13.8. H2 (check) n=40 2.56/wk PF 2.91 net +18,297 ($4,926/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 57.4/3.2), 1 month 55.9/3.4. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net +385 / +1,035, 2-week fail +2.5 / +0.0, LIT size rule +10,112 / +3,072, 2021-25 reference +2,615. Trades touched 25/16; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 8,
+     "group": "size",
+     "variant": "tc1 >= q0.33 (1) lo x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:25",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 3.98,
+     "net": 71798,
+     "dd": -3424,
+     "avg_r": 1.088,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 7319,
+     "p10": 40.3,
+     "f10": 1.5,
+     "p15": 54.9,
+     "f15": 9.7,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 41.8,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 3.98,
+     "net": 71798,
+     "dd": -3424,
+     "avg_r": 1.088,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 388.0,
+     "half": 0,
+     "per_month": 7319,
+     "p10": 40.3,
+     "f10": 1.5,
+     "p15": 54.9,
+     "f15": 9.7,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 41.8,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_10_rn_near50_5_x1_5",
+   "title": "LIT + all3 + batch 3a #10 round numbers: rn_near50_5 x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.61 net +51,851 ($8,507/mo) DD -3,212; 2-week pass/fail 58.0/2.5 (Monte Carlo 51.4/3.9), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 2.91 net +17,841 ($4,803/mo) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 58.1/3.1), 1 month 54.2/3.4. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net -1,265 / +579, 2-week fail +0.0 / +0.0, LIT size rule +10,703 / +618, 2021-25 reference +11,350. Trades touched 19/6; strict test False; neighbours None.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 10,
+     "group": "size",
+     "variant": "rn_near50_5 x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:25",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 3.94,
+     "net": 69692,
+     "dd": -3424,
+     "avg_r": 1.088,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 378.0,
+     "half": 0,
+     "per_month": 7105,
+     "p10": 40.3,
+     "f10": 1.5,
+     "p15": 54.9,
+     "f15": 9.7,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 41.8,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 3.94,
+     "net": 69692,
+     "dd": -3424,
+     "avg_r": 1.088,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 378.0,
+     "half": 0,
+     "per_month": 7105,
+     "p10": 40.3,
+     "f10": 1.5,
+     "p15": 54.9,
+     "f15": 9.7,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 41.8,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_11_n_cls_q0_33_1_07_lo_x1_5",
+   "title": "LIT + all3 + batch 3a #11 level type: n_cls >= q0.33 (1.07) lo x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.78 net +54,520 ($8,945/mo) DD -3,446; 2-week pass/fail 58.0/5.0 (Monte Carlo 50.1/4.7), 1 month 78.0/16.5. H2 (check) n=40 2.56/wk PF 2.96 net +18,475 ($4,974/mo) DD -3,076; 2-week pass/fail 53.6/0.0 (Monte Carlo 57.4/3.3), 1 month 54.2/3.4. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net +1,404 / +1,213, 2-week fail +2.5 / +0.0, LIT size rule +7,085 / +1,664, 2021-25 reference +4,317. Trades touched 27/17; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 11,
+     "group": "size",
+     "variant": "n_cls >= q0.33 (1.07) lo x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:25",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.06,
+     "net": 72995,
+     "dd": -3446,
+     "avg_r": 1.083,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 382.0,
+     "half": 0,
+     "per_month": 7441,
+     "p10": 40.3,
+     "f10": 1.5,
+     "p15": 54.4,
+     "f15": 10.2,
+     "p20": 62.1,
+     "f20": 17.5,
+     "dec10": 41.8,
+     "slow_pass": 18.2,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 4.06,
+     "net": 72995,
+     "dd": -3446,
+     "avg_r": 1.083,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 382.0,
+     "half": 0,
+     "per_month": 7441,
+     "p10": 40.3,
+     "f10": 1.5,
+     "p15": 54.4,
+     "f15": 10.2,
+     "p20": 62.1,
+     "f20": 17.5,
+     "dec10": 41.8,
+     "slow_pass": 18.2,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_12_cn_kind_x1_5",
+   "title": "LIT + all3 + batch 3a #12 consecutive-day sweeps: cn_kind x1.5",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.25 net +49,094 ($8,055/mo) DD -3,823; 2-week pass/fail 56.3/6.7 (Monte Carlo 48.2/4.8), 1 month 77.1/16.5. H2 (check) n=40 2.56/wk PF 2.08 net +13,363 ($3,598/mo) DD -3,417; 2-week pass/fail 46.4/5.8 (Monte Carlo 54.5/7.3), 1 month 44.1/16.9. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net -4,022 / -3,899, 2-week fail +4.2 / +5.8, LIT size rule +20,845 / +5,507, 2021-25 reference +1,175. Trades touched 75/37; strict test False; neighbours None.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 12,
+     "group": "size",
+     "variant": "cn_kind x1.5"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:25",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 43.3,
+     "pf": 3.27,
+     "net": 62457,
+     "dd": -3823,
+     "avg_r": 0.987,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 486.0,
+     "half": 0,
+     "per_month": 6367,
+     "p10": 40.3,
+     "f10": 11.7,
+     "p15": 51.9,
+     "f15": 22.8,
+     "p20": 55.8,
+     "f20": 30.1,
+     "dec10": 52.0,
+     "slow_pass": 7.8,
+     "pass_med": 7.0,
+     "b2b": "12/6"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 43.3,
+     "pf": 3.27,
+     "net": 62457,
+     "dd": -3823,
+     "avg_r": 0.987,
+     "stop": 45.8,
+     "worst_day": -1008,
+     "risk": 486.0,
+     "half": 0,
+     "per_month": 6367,
+     "p10": 40.3,
+     "f10": 11.7,
+     "p15": 51.9,
+     "f15": 22.8,
+     "p20": 55.8,
+     "f20": 30.1,
+     "dec10": 52.0,
+     "slow_pass": 7.8,
+     "pass_med": 7.0,
+     "b2b": "12/6"
+    }
+   }
+  },
+  {
+   "id": "lit_b3a_all3_13_cell_weights_n_5_d_0_5_1_5_1_0",
+   "title": "LIT + all3 + batch 3a #13 level type x session matrix: cell weights n>=5 d=0.5 1.5/1.0",
+   "family": "risk",
+   "question": "Owner 2026-10-20 batch 3a: do ICT macros, relative volume, a delta proxy, sweep rejection, displacement speed, level age / touches, equal highs/lows, round numbers, level type, consecutive-day sweeps or a level x session matrix help LIT (size tilt, management or a filter that keeps >= 2.5 trades/week)?",
+   "status": "rejected",
+   "verdict": "Eval path (two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). H1 (pick) n=80 3.12/wk PF 4.63 net +53,427 ($8,765/mo) DD -3,203; 2-week pass/fail 56.3/2.5 (Monte Carlo 50.4/3.4), 1 month 78.0/11.9. H2 (check) n=40 2.56/wk PF 2.85 net +17,262 ($4,648/mo) DD -3,076; 2-week pass/fail 46.4/0.0 (Monte Carlo 57.4/3.3), 1 month 45.8/0.0. Reference all3: H1 net +53,116 2-week 58.0/2.5, H2 net +17,262 2-week 52.2/0.0. Change: net +311 / +0, 2-week fail +0.0 / +0.0, LIT size rule +3,644 / -317, 2021-25 reference +3,570. Trades touched 6/4; strict test False; neighbours False.",
+   "writeup": "lit-batch3a",
+   "tags": [
+    "lit",
+    "lit_b3a"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null,
+    "b3a": {
+     "item": 13,
+     "group": "weights",
+     "variant": "cell weights n>=5 d=0.5 1.5/1.0"
+    }
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 02:25",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 3.94,
+     "net": 70689,
+     "dd": -3424,
+     "avg_r": 1.094,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 7206,
+     "p10": 41.3,
+     "f10": 3.4,
+     "p15": 54.4,
+     "f15": 10.7,
+     "p20": 62.1,
+     "f20": 17.5,
+     "dec10": 44.7,
+     "slow_pass": 18.2,
+     "pass_med": 8.0,
+     "b2b": "13/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 44.2,
+     "pf": 3.94,
+     "net": 70689,
+     "dd": -3424,
+     "avg_r": 1.094,
+     "stop": 45.8,
+     "worst_day": -1007,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 7206,
+     "p10": 41.3,
+     "f10": 3.4,
+     "p15": 54.4,
+     "f15": 10.7,
+     "p20": 62.1,
+     "f20": 17.5,
+     "dec10": 44.7,
+     "slow_pass": 18.2,
+     "pass_med": 8.0,
+     "b2b": "13/4"
     }
    }
   },
