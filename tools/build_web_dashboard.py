@@ -748,6 +748,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # execution quality of the live eval (engine/fill_audit.py on the PC, carried by its heartbeat as "exec"): slippage $ per
     # trade / month against the backtest, missed and extra trades (live_panel.js execution card)
     data["exec"] = (st.get("pc") or {}).get("exec") if isinstance(st.get("pc"), dict) else None
+    # the three LIT upgrades live (tools/upgrade_shadow.py via the cloud monitor's lit_base ledger): with vs without, per upgrade
+    data["upgrades_live"] = st.get("upgrades_live")
     data["extras"] = _extras(st, lm, bt)          # extras.js pages (Eval HQ, Edge, Calendar, Ops, MFFU rules)
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
