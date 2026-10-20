@@ -227,7 +227,7 @@
     el.innerHTML = `${surfaceLine()}${banner()}${verdictCard(M)}${kpiRow(M)}${tradeCard()}
       <div class="grid g2 astart">${evalCard(M)}${healthCard()}</div>
       ${planTeaser()}
-      <div class="hb-links">${[['trades', 'trades', 'Trades'], ['money', 'wallet', 'Money'], ['strategy', 'rules', 'Strategy'], ['accounts', 'wallet', 'Accounts'], ['market', 'news', 'Market'], ['props', 'prop', 'Prop firms'], ['live', 'engine', 'Live detail'], ['activity', 'alerts', 'Activity']]
+      <div class="hb-links">${[['trades', 'trades', 'Trades'], ['recaps', 'replay', 'Recaps'], ['weekly', 'results', 'Weekly'], ['money', 'wallet', 'Money'], ['strategy', 'rules', 'Strategy'], ['accounts', 'wallet', 'Accounts'], ['market', 'news', 'Market'], ['props', 'prop', 'Prop firms'], ['live', 'engine', 'Live detail'], ['activity', 'alerts', 'Activity']]
         .map(([g, ic, l]) => `<button class="chipbtn" type="button" data-go="${g}">${icon(ic)}<span>${l}</span></button>`).join('')}</div>
       <p class="small mut hb-foot">Paper / eval monitor · read-only · built ${HD()?.built ? esc(new Date(HD().built).toLocaleString()) : '—'}${HD()?.home_only ? ' · loading the rest…' : ''}</p>`;
   };
@@ -616,7 +616,7 @@
     const NEW = [
       { id: 'today', label: 'Home', icon: 'today', pages: [P('today', 'Home', 'today', 'Is the bot trading my eval, today, the open trade, health'), P('plan', 'LIT plan', 'target', 'Today’s levels, the target band, sweeps seen'), P('market', 'Market', 'news', 'News week, CME holidays, the roll, the VIX band'),
         P('live', 'Live detail', 'engine', 'Live Oracle, week ring, liquidity map, signals'), P('brief'), P('day'), P('levels'), P('cockpit'), P('ops')] },
-      { id: 'trades', label: 'Trades', icon: 'trades', pages: [P('trades'), P('journal', 'Journal', 'doc', 'Search, filter, notes, CSV export'), P('stats', 'Stats', 'results', 'Key stats, streaks, R histogram, time of day'),
+      { id: 'trades', label: 'Trades', icon: 'trades', pages: [P('trades'), P('recaps'), P('weekly'), P('journal', 'Journal', 'doc', 'Search, filter, notes, CSV export'), P('stats', 'Stats', 'results', 'Key stats, streaks, R histogram, time of day'),
         P('accounts'), P('execq', 'Execution', 'check', 'Slippage, missed and extra trades vs the backtest'), P('edge'), P('pnlcal'), P('results'), P('replays'), P('stops'), P('activity')] },
       { id: 'money', label: 'Money', icon: 'wallet', pages: [P('money', 'Money', 'wallet', '$ a month, goal, funded plan, payouts'), P('whatif', 'What if', 'sim', 'The next trade: target, stop or breakeven'), P('props', 'Prop firms', 'prop', 'Prices, codes, rules, LIT fit, what to buy next'), P('evalhq'), P('eval'), P('evals')] },
       { id: 'strategy', label: 'Strategy', icon: 'rules', pages: [P('strategy', 'Strategy', 'rules', 'The rules in plain words, upgrades, scoreboard'), P('lab'), P('experiments'), P('writeups'), P('losses'), P('intraday'), P('learned')] },

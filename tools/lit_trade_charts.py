@@ -40,9 +40,13 @@ C = {"page": "#07080c", "panel": "#0d1016", "grid": "#1a1f2b", "ink": "#eef1f8",
      "up": "#2ebd8f", "dn": "#f0506e", "good": "#2ee59d", "bad": "#ff5a7a", "warn": "#f7b955", "gold": "#f2c35b",
      "accent": "#6d7cff", "teal": "#3ee0c8", "bsl": "#ff9b5c", "ssl": "#6d9bff", "entry": "#d7dbe6"}
 BOX_C = {"Asia": "#6d7cff", "London": "#f7b955", "NY": "#3ee0c8"}
-EXIT_C = {"TARGET": C["good"], "STOP": C["bad"], "BE": C["ink2"], "EOD": C["warn"]}
+EXIT_C = {"TARGET": C["good"], "STOP": C["bad"], "BE": C["ink2"], "EOD": C["warn"], "TIME": C["warn"], "CUT_T15": C["warn"]}
 plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 7.5, "axes.edgecolor": C["grid"], "text.color": C["ink"],
                      "axes.labelcolor": C["ink2"], "xtick.color": C["muted"], "ytick.color": C["muted"]})
+
+
+def kind_txt(k: str) -> str:
+    return "CUT 15m" if k == "CUT_T15" else k
 
 
 def fpx(p: float) -> str:
@@ -223,25 +227,34 @@ def draw_panel(ax, r, bars, secs, main=True):
         if main:
             label(ax, x0, z["px"], "IDM", C["gold"], ha="center", va="top" if d == 1 else "bottom", dy=-4 if d == 1 else 4, fs=6.2, bg=False, mx=2)
     # sweep extreme
-    xs = X(r["sweep"]["ext_t"]) + 0.5
-    ax.plot([xs], [r["sweep"]["ext_px"]], marker="o", ms=5, mfc="none", mec=C["warn"], mew=1.2, zorder=9, clip_on=True)
-    if main:
-        label(ax, xs, r["sweep"]["ext_px"], f"sweep {fpx(r['sweep']['ext_px'])}", C["warn"], ha="center",
-              va="top" if d == 1 else "bottom", dy=-6 if d == 1 else 6)
+    if r.get("sweep"):
+        xs = X(r["sweep"]["ext_t"]) + 0.5
+        ax.plot([xs], [r["sweep"]["ext_px"]], marker="o", ms=5, mfc="none", mec=C["warn"], mew=1.2, zorder=9, clip_on=True)
+        if main:
+            label(ax, xs, r["sweep"]["ext_px"], f"sweep {fpx(r['sweep']['ext_px'])}", C["warn"], ha="center",
+                  va="top" if d == 1 else "bottom", dy=-6 if d == 1 else 6)
     # 5m CISD level (from the run's open to the trigger close)
-    c5 = r["cisd5"]
-    x0, x1 = X(c5["ref_t"]), X(c5["t"]) + 1
-    ax.plot([x0, x1], [c5["px"], c5["px"]], color=C["accent"], lw=1.1, zorder=6)
-    if main:
-        label(ax, x1, c5["px"], f"CISD 5m {fpx(c5['px'])}", C["accent"], ha="right", va="top" if d == 1 else "bottom", dy=-2 if d == 1 else 2)
+    c5 = r.get("cisd5")
+    if c5:
+        x0, x1 = X(c5["ref_t"]), X(c5["t"]) + 1
+        ax.plot([x0, x1], [c5["px"], c5["px"]], color=C["accent"], lw=1.1, zorder=6)
+        if main:
+            label(ax, x1, c5["px"], f"CISD 5m {fpx(c5['px'])}", C["accent"], ha="right", va="top" if d == 1 else "bottom", dy=-2 if d == 1 else 2)
+        if main and r.get("disp_mark"):          # recap cards: the displacement candle (the 5m CISD close, body in ATR)
+            xd = X(c5["t"]) + 0.5
+            b = bars[min(max(int(xd), 0), n - 1)]
+            ax.add_patch(Rectangle((int(xd) + 0.1, b[3]), 0.8, b[2] - b[3], facecolor="none", edgecolor=C["accent"], lw=0.9, zorder=8))
+            label(ax, xd, b[2] if d == 1 else b[3], f"displacement {c5.get('disp', 0):.2f} ATR", C["accent"], ha="center",
+                  va="bottom" if d == 1 else "top", dy=3 if d == 1 else -3, fs=6.0, prio=3, mx=3)
     # limit at the CISD level: from its placement to the tap (or the expiry)
-    lim = r["limit"]
-    x0 = X(lim["t0"]); x1 = X(lim["tap_t"] or lim["t1"]) + (0.5 if lim.get("tap_t") else 0)
-    ax.plot([x0, x1], [lim["px"], lim["px"]], color=C["teal"], lw=0.9, ls=(0, (2, 1.5)), zorder=6)
-    if lim.get("tap_t"):
-        ax.plot([x1], [lim["px"]], marker="D", ms=3.2, color=C["teal"], zorder=9, clip_on=True)
-    if not main:
-        label(ax, x0, lim["px"], f"limit {fpx(lim['px'])}", C["teal"], ha="left", va="bottom" if d == -1 else "top", dy=2 if d == -1 else -2)
+    lim = r.get("limit")
+    if lim:
+        x0 = X(lim["t0"]); x1 = X(lim["tap_t"] or lim["t1"]) + (0.5 if lim.get("tap_t") else 0)
+        ax.plot([x0, x1], [lim["px"], lim["px"]], color=C["teal"], lw=0.9, ls=(0, (2, 1.5)), zorder=6)
+        if lim.get("tap_t"):
+            ax.plot([x1], [lim["px"]], marker="D", ms=3.2, color=C["teal"], zorder=9, clip_on=True)
+        if not main:
+            label(ax, x0, lim["px"], f"limit {fpx(lim['px'])}", C["teal"], ha="left", va="bottom" if d == -1 else "top", dy=2 if d == -1 else -2)
     # 1m CISD confirmation
     c1 = r.get("cisd1")
     if c1 and secs == 60:
@@ -255,17 +268,33 @@ def draw_panel(ax, r, bars, secs, main=True):
     # breakeven move
     if r.get("be"):
         xb = X(r["be"]["t"]) + 0.5
+        bp = r.get("be_px")
+        if bp is not None:                      # recap cards: the breakeven stop line (entry + be_off, the costs) to the exit
+            x2 = max(X(r["exit"]["t"]) + 0.5, xb + 0.5)
+            ax.plot([xb, x2], [bp, bp], color=C["ink"], lw=0.8, ls=(0, (1, 1.2)), zorder=7)
+            if main:
+                label(ax, xb + 0.8, bp, f"BE stop {fpx(bp)}", C["ink"], ha="left", va="top" if d == -1 else "bottom",
+                      dy=-3 if d == -1 else 3, fs=6.0, prio=3, mx=3)
         if 0 <= xb <= n + 0.6:
             ax.plot([xb], [ent], marker="s", ms=3.6, color=C["ink"], zorder=10, clip_on=True)
             if main:
                 label(ax, xb, ent, "BE", C["ink"], ha="center", va="bottom" if d == -1 else "top", dy=4 if d == -1 else -4, fs=6.2, bg=False, mx=2)
+    # recap cards: the 15-minute check (close of the 1m bar ending 15 min after the fill): passed / cut
+    tc = r.get("tcheck")
+    if tc and tc.get("t"):
+        xc = X(tc["t"])
+        if 0 <= xc <= n + 0.6:
+            col = C["warn"] if tc.get("cut") else C["teal"]
+            ax.axvline(xc, color=col, lw=0.8, ls=(0, (2, 2)), zorder=4)
+            label(ax, xc, ax.get_ylim()[1], ("15-min check: cut" if tc.get("cut") else "15-min check: passed") if main or secs == 60 else "15m",
+                  col, ha="center", va="top", dy=-2, fs=5.8, prio=3, mx=4)
     # exit
     xk = X(r["exit"]["t"]) + 0.5
     ec = EXIT_C.get(r["exit_kind"], C["ink2"])
     if 0 <= xk <= n + 0.6:
         ax.plot([xk], [r["exit"]["px"]], marker="X", ms=5.5, color=ec, mec=C["page"], mew=0.6, zorder=11, clip_on=True)
         if main:
-            res = f"{r['exit_kind']} {fusd(r['pnl'])} · {fr(r['r'])}"
+            res = f"{kind_txt(r['exit_kind'])} {fusd(r['pnl'])} · {fr(r['r'])}"
             right = xk > 0.7 * (n + 6)
             label(ax, xk, r["exit"]["px"], res, "#0b0d12", ha="right" if right else "left", va="center", dy=0, dx=-7 if right else 7,
                   fs=7, bold=True, prio=0, box=dict(boxstyle="round,pad=0.3,rounding_size=0.3", fc=ec, ec="none"))
@@ -287,10 +316,10 @@ def row(fig, x, y, parts, gap=0.012):
         x += t.get_window_extent(rr).width / W + gap
 
 
-def render(r, path, dpi=220):
+def render(r, path, dpi=220, size=(8.0, 4.6)):
     b5 = unpack(r["b5"]); b1 = unpack(r.get("b1"))
     two = bool(b1)
-    fig = plt.figure(figsize=(8.0, 4.6), dpi=dpi, facecolor=C["page"])
+    fig = plt.figure(figsize=size, dpi=dpi, facecolor=C["page"])
     if two:
         gs = fig.add_gridspec(1, 2, width_ratios=[2.35, 1], wspace=0.2, left=0.012, right=0.915, top=0.84, bottom=0.075)
         ax = fig.add_subplot(gs[0]); ax1 = fig.add_subplot(gs[1])
@@ -311,18 +340,23 @@ def render(r, path, dpi=220):
     res_c = EXIT_C.get(r["exit_kind"], C["ink"])
     x = 0.014
     row(fig, x, 0.955, [(f"{e:%a %Y-%m-%d} · {e:%H:%M} ET", C["ink"], 10, "bold"), (r["side"], side_c, 10, "bold"),
-                         (f"{r['qty']} MNQ · ${r['risk_usd']:,.0f} at risk", C["ink2"], 9, "normal")])
-    fig.text(0.985, 0.955, f"{r['exit_kind']}  {fusd(r['pnl'])} · {fr(r['r'])}", fontsize=10, fontweight="bold", color=res_c,
+                         (f"{r['qty']} MNQ · ${r['risk_usd']:,.0f} at risk", C["ink2"], 9, "normal")]
+        + ([(r["src_label"], C["accent"], 9, "bold")] if r.get("src_label") else []))
+    fig.text(0.985, 0.955, f"{kind_txt(r['exit_kind'])}  {fusd(r['pnl'])} · {fr(r['r'])}", fontsize=10, fontweight="bold", color=res_c,
              va="center", ha="right")
     lv = r["levels"]
     swept = ", ".join(f"{z['label']} {fpx(z['px'])}" for z in lv[:3]) + (f" (+{len(lv) - 3})" if len(lv) > 3 else "")
-    sub = (f"LIT · swept {swept} · sweep {fpx(r['sweep']['ext_px'])} ({r['sweep']['depth_atr']:.2f} ATR) · "
-           f"{len(r['idm'])} IDM · {r['entry_kind']} entry · target {r['target_label']}")
+    if r.get("sub"):                   # recap cards without the setup (the bars could not rebuild it): their own line
+        sub = r["sub"]
+    else:
+        sub = (f"LIT · swept {swept} · sweep {fpx(r['sweep']['ext_px'])} ({r['sweep']['depth_atr']:.2f} ATR) · "
+               f"{len(r['idm'])} IDM · {r['entry_kind']} entry · target {r['target_label']}")
     if r.get("size_why"):
         sub += " · " + "; ".join(r["size_why"])
     fs = 6.6 if len(sub) <= 150 else max(5.4, 6.6 * 150 / len(sub))
     fig.text(x, 0.905, sub, fontsize=fs, color=C["muted"], va="center")
-    fig.text(0.985, 0.022, "CME NQ1! futures (TradingView export) · times ET · paper backtest", fontsize=5.6, color=C["muted"], ha="right")
+    fig.text(0.985, 0.022, r.get("footer") or "CME NQ1! futures (TradingView export) · times ET · paper backtest", fontsize=5.6,
+             color=C["muted"], ha="right")
     declutter(fig, FIXED)
     FIXED.clear()
     fig.savefig(path, dpi=dpi, facecolor=C["page"])

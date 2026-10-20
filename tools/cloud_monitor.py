@@ -833,6 +833,28 @@ def run(out):
         lit_brief.cloud_hook(out, new_state, st, res, df_all, now, lm)
     except Exception as e:  # never fails the run; no notifications
         print("brief failed:", e.__class__.__name__, e)
+    # ---- learn from every trade (tools/recap.py, read-only): a recap card PNG per finished trade (paper ledger + the PC's
+    # routed trades), the morning brief as one image, the Sunday weekly review -> <out>/recaps/ + state "recaps" / "weekly";
+    # their notices (recap / brief / weekly) go out through the same notifier (de-duplicated, nothing older than 2 days)
+    try:
+        from tools import recap
+        try:
+            with open(os.path.join(ROOT, "data", "news", "hub.json"), encoding="utf-8") as fh:
+                hub = json.load(fh)
+        except Exception:
+            hub = None
+        rres = recap.cloud_hook(out, new_state, st, df_all, _LIT_IN.get("df1"), lm, now, hub=hub)
+        for n in rres.get("notices") or []:
+            if notifier.seen(n):
+                continue
+            r = notifier.notify(n, push_it=now - int(n.get("t") or 0) <= PUSH_MAX_AGE_S, other_sent=pc_sent)
+            new_state["notices"].append({**{k: n.get(k) for k in ("t", "kind", "src", "account", "key", "title", "body", "url", "image",
+                                                                  "side", "R", "usd", "exit")},
+                                         "sent": int(r.get("sent") or 0), "at": now})
+        new_state["notices"] = sorted(new_state["notices"], key=lambda x: (x.get("t") or 0, x.get("at") or 0))[-80:]
+        new_state["pushed"] = notifier.keys()[-600:]
+    except Exception as e:  # never fails the run
+        print("recap failed:", e.__class__.__name__, e)
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"

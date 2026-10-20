@@ -472,10 +472,14 @@ def pc_outage(prev: dict | None, hb: dict | None, now) -> tuple[dict, list]:
 
 def wire(payload: dict) -> bytes:
     """What goes to the phone (well under the 4 KB push limit): title, body, tag, url, kind, key, t (+ require: the
-    notification stays on screen until tapped, the Surface-offline alert)."""
+    notification stays on screen until tapped, the Surface-offline alert; + image: a recap card / brief PNG on the app's
+    site, shown by phones that support notification images, e.g. Android Chrome; iPhone shows the text and the tap opens it)."""
     keep = {k: payload.get(k) for k in ("title", "body", "tag", "url", "kind", "key", "t")}
     if payload.get("require"):
         keep["require"] = True
+    img = payload.get("image")
+    if isinstance(img, str) and img.startswith(APP_URL) and len(img) < 300:
+        keep["image"] = img           # recap card / brief PNG on the app's own site (tools/recap.py); phones that show images do
     return json.dumps(keep, separators=(",", ":"), ensure_ascii=False).encode()
 
 

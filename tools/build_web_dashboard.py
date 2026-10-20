@@ -895,7 +895,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                                    "pc_outage", "pc_checkin",           # engine/push.pc_outage / pc_checkin_line: the Surface-offline line
                                    "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
                                    "push", "notices", "learning",       # learning: engine/lit_learn.py summary (the "What the bot learned" card)
-                                   "armed", "watch")}                  # armed: engine/lit_watch.py armed_line; watch: tools/lit_watch.py summary (Yahoo lag)
+                                   "armed", "watch",                   # armed: engine/lit_watch.py armed_line; watch: tools/lit_watch.py summary (Yahoo lag)
+                                   "recaps", "weekly")}                # tools/recap.py: recap cards + brief image (PNGs in recaps/), weekly review
     try:                                   # LIT day analyst (engine/lit_brief.py): today's news re-read from the fresh hub
         from engine import lit_brief
         live["brief"] = lit_brief.with_news(st.get("brief"), _load(os.path.join(ROOT, "data", "news", "hub.json"), None))
@@ -1025,6 +1026,24 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             shutil.copy(os.path.join(ICONS, name), os.path.join(out, "icons", name))
     if chart_path and os.path.exists(chart_path):
         shutil.copy(chart_path, os.path.join(out, "chart.png"))
+    # recap cards + the brief image (tools/recap.py, <dash>/recaps/*.png): the ones the state lists, nothing else
+    rc_src = os.path.join(os.path.dirname(state_path) or ".", "recaps")
+    rc_dst = os.path.join(out, "recaps")
+    shutil.rmtree(rc_dst, ignore_errors=True)
+    rc = live.get("recaps") or {}
+    want = [c.get("png") for c in rc.get("cards") or [] if isinstance(c, dict)] + [(rc.get("brief") or {}).get("png")]
+    n_rc = 0
+    for rel in want:
+        name = str(rel or "")[len("recaps/"):]
+        if not str(rel or "").startswith("recaps/") or not name.endswith(".png") or "/" in name or "\\" in name or ".." in name:
+            continue
+        src = os.path.join(rc_src, name)
+        if os.path.exists(src):
+            os.makedirs(rc_dst, exist_ok=True)
+            shutil.copy(src, os.path.join(rc_dst, name))
+            n_rc += 1
+    if n_rc:
+        print(f"  recaps: {n_rc} PNGs -> recaps/")
     open(os.path.join(out, ".nojekyll"), "w").close()
     kb = os.path.getsize(os.path.join(out, "data.json")) // 1024
     print(f"site -> {out}: data.json {kb} KB, {len(ledger)} paper trades, {len(data['trades'])} replay trades, "

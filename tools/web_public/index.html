@@ -327,6 +327,15 @@ th.sticky { z-index: 2; }
 .lb > div { padding: 9px 10px; border-radius: 11px; background: rgba(22,26,35,.7); display: flex; flex-direction: column; gap: 1px; }
 .lb span { font-size: 10.5px; font-weight: 600; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; } .lb b { font-size: 17px; font-weight: 700; } .lb i { font-style: normal; font-size: 11.5px; color: var(--ink-2); }
 .study { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+/* recap cards, brief image, weekly review (tools/recap.py) */
+.rc-img { display: block; width: 100%; height: auto; border-radius: 10px; background: #07080c; }
+.rc-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.rc-list .card { margin: 0; padding: 12px; } .rc-list .card h3 { margin: 8px 0 4px; font-size: 15px; }
+.rc-txt h4 { margin: 12px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.rc-txt ul { margin: 0; padding-left: 18px; } .rc-txt li { margin: 2px 0; } .rc-txt p { margin: 0; }
+.wk-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line, #1a1f2b); align-items: baseline; }
+.wk-row:first-child { border-top: 0; } .wk-row a { color: inherit; }
+@media (max-width: 760px) { .rc-list { grid-template-columns: 1fr; } }
 .study .card { padding: 0; overflow: hidden; margin: 0; }
 .study img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #000; }
 .study .sb { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 12px; } .study h3 { margin: 0; font-size: 16px; text-transform: capitalize; }
@@ -1419,7 +1428,8 @@ const GROUPS = [
     ['levels', 'Levels', 'target', 'Every LIT level, the setup tracker'], ['cockpit', 'Eval cockpit', 'prop', 'What a stop-out or a winner does to the eval']] },
   { id: 'accounts', label: 'Accounts', icon: 'wallet', pages: [['accounts', 'Accounts', 'wallet', 'Every account the bot trades: position, orders, past trades']] },
   { id: 'chart', label: 'Chart', icon: 'chart', pages: [['chart', 'Chart', 'chart', 'Live 5m chart and liquidity pools']] },
-  { id: 'trades', label: 'Trades', icon: 'trades', pages: [['trades', 'Trades', 'trades', 'Every trade with its report'], ['results', 'Results', 'results', 'Live settings, 5-year replay'],
+  { id: 'trades', label: 'Trades', icon: 'trades', pages: [['trades', 'Trades', 'trades', 'Every trade with its report'], ['recaps', 'Recaps', 'replay', 'Every live trade: chart, why it entered, the lesson'],
+    ['weekly', 'Weekly', 'results', 'Sunday review: trades, $, R, what to watch next week'], ['results', 'Results', 'results', 'Live settings, 5-year replay'],
     ['replays', 'Replays', 'replay', 'Step through each trade day'], ['stops', 'Stop Sizes', 'stops', 'Wide stop, smaller size']] },
   { id: 'lab', label: 'Lab', icon: 'lab', pages: [['lab', 'Overview', 'layers', 'Latest findings and every run'], ['experiments', 'Experiments', 'lab', 'Every backtest, stored with its data'],
     ['writeups', 'Write-ups', 'doc', 'Findings in plain words, plus the archive'], ['losses', 'Losses', 'loss', 'Why the bot loses, and how much'],
@@ -1445,12 +1455,12 @@ const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
 const ALIAS = { account: 'accounts', positions: 'accounts', position: 'accounts', orders: 'accounts', broker: 'accounts', modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
   calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive',
-  briefing: 'brief', analyst: 'brief', recap: 'brief', plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
+  briefing: 'brief', analyst: 'brief', recap: 'brief', plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit', cards: 'recaps', review: 'weekly', weekreview: 'weekly' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
 // 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
 const SCENE = { accounts: 'eval', replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
   evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', activity: 'today', sources: 'engine', news: 'today',
-  archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', brief: 'today', levels: 'chart', cockpit: 'eval' };
+  archive: 'engine', recaps: 'trades', weekly: 'results', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', brief: 'today', levels: 'chart', cockpit: 'eval' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
 const titleOf = (p) => DETAIL[p]?.label || (p === 'lab' ? 'Lab' : p === 'system' ? 'System' : PAGES[p]?.label) || 'Today';
 let D = null, PAGE = null, ARG = null, RTOK = 0, routed = false;
@@ -2143,7 +2153,8 @@ VIEWS.brief = (el) => {
   el.innerHTML = head(`Today · LIT day analyst · ${esc(fDate(B.day || ''))}`, mo ? 'Game plan' : 'Briefing', mo ? `Built ${esc(mo.built)} ET${mo.stage === 'full' ? ' (refreshed after 07:30)' : ' (refreshed after 07:30 ET)'} · updated ${esc(B.at || '')} · paper only, no notifications` : esc(B.at || ''))
     + howto('brief', `<p>The bot’s own analysis of the LIT day. The <b>game plan</b> is written on the first cloud run after 01:30 ET and refreshed once after 07:30 ET: which levels are untaken, which side was taken overnight, the target band and the eval size.</p>
       <ul><li><b>Intraday log</b>: every 30 minutes, what changed: a level swept (how deep in ATR; LIT needs 0.5), a box closed, a 5-minute CISD with its inducement and displacement, a setup armed or rejected (and the rule), a limit tapped, the entry and the exit. NEW marks what the last run added.</li>
-      <li><b>End of day</b> (after 16:00 ET): the result, what the setups did and one lesson.</li></ul><p>Nothing here sends a notification; pushes are only for entries and outcomes.</p>`)
+      <li><b>End of day</b> (after 16:00 ET): the result, what the setups did and one lesson.</li></ul><p>The <b>brief image</b> (today’s levels map, the VIX target band, news and the eval) is pushed to the phone once a morning; the rest stays in the app.</p>`)
+    + ((RC().brief && RC().brief.day === B.day) ? `<div class="card"><div class="card-h"><h3>Brief image</h3><span class="meta">built ${esc(RC().brief.built || '')} ET · tap for full size</span></div>${rcImg(RC().brief, 'LIT brief')}</div>` : '')
     + (armedLine() ? `<div class="card"><div class="card-h"><h3>Setup now</h3><span class="meta">${esc(LV().armed.side || '')} · in-app only</span></div>${armedLine()}</div>` : '')
     + (mo ? `<div class="card"><div class="card-h"><h3>Game plan</h3><span class="meta">NQ ${num(mo.price)} at ${esc(mo.built)}</span></div><p class="br-plan">${esc(mo.plan)}</p>
       <div class="kv one br-facts"><div><span>Overnight</span><b>${esc(mo.overnight?.text || '')}</b></div><div><span>Target band</span><b>${esc(mo.vix?.text || '')}</b></div>
@@ -2228,6 +2239,7 @@ VIEWS.trades = (el) => {
       <ul><li><b>Green bar</b> on the left = a win, red = a loss, grey = breakeven.</li><li><b>Half size</b> = ${isLIT() ? 'the weekly stop: taken after 2 stop-outs in the same calendar week' : 'taken during a cold streak (the last 15 signals summed to 0R or less)'}.</li>
       <li><b>Stop</b> = points from entry to the stop, which sits beyond the sweep’s high or low. Wider stops trade fewer micros.</li></ul>
       <p>Tap a trade for its full report. The galaxy shows every trade as a star: higher = better R, further back = wider stop.</p>`)
+    + recapStrip()
     + `<div class="stats">
       ${statBox('Trades', `<span data-count="${s.n}">${s.n}</span>`, `${num(s.tpw, 1)} a week`)}
       ${statBox('Net', `<span data-count="${s.net}" data-fmt="s$">${susd(s.net)}</span>`, `${kusd(s.pm)} a month · win ${num(s.win, 1)}%`, cls(s.net))}
@@ -2303,6 +2315,68 @@ function periodCard(name, tag, p) {
       <div class="ev"><span>Back-to-back evals</span><div class="pf"><b class="up">${bb.passed ?? '—'}</b><i>passed</i><b class="dn">${bb.failed ?? '—'}</b><i>failed</i></div>${med != null ? `<div class="small mut">median ${med} sessions to pass · ${slow} of ${passes.length} took over 3 weeks</div>` : ''}</div></div></div>`;
 }
 let RES_TC = [];
+// ===================================================================== RECAPS + WEEKLY (tools/recap.py: one PNG + words per finished live trade; the Sunday review)
+const RC = () => LV().recaps || {};
+const rcImg = (c, alt) => c?.png ? `<a href="${esc(c.png)}?v=${esc(c.h || '')}" target="_blank" rel="noopener"><img class="rc-img" loading="lazy" src="${esc(c.png)}?v=${esc(c.h || '')}" alt="${esc(alt || '')}"></a>` : '';
+const rcExit = (x) => ({ CUT_T15: 'cut at the 15-min check', EOD: 'closed 15:55', TIME: 'closed 15:55', BE: 'breakeven', TARGET: 'target', STOP: 'stop' }[x] || x || '');
+function rcText(c) {
+  return `<div class="rc-txt"><h4>Why it entered</h4><ul>${(c.why || []).map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+    <h4>The plan</h4><p>${esc(c.plan || '')}</p><h4>What happened</h4><p>${esc(c.result || '')}</p>
+    <h4>Lesson</h4><ul>${(c.lessons || []).map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>`;
+}
+const rcHead = (c) => `${esc(fDate(c.day))} · ${esc(c.side)} · <span class="${cls(c.usd)}">${susd(c.usd)} · ${fR(c.r)}</span>`;
+function rcTile(c) {
+  return `<article class="card">${rcImg(c, c.key)}<h3>${rcHead(c)}</h3><div class="small mut">${esc(c.account)} · ${esc(rcExit(c.exit))} · ${c.qty ?? '—'} micros · ${num(c.risk_pts, 1)}-pt stop</div>
+    <div class="note" style="margin-top:6px"><b>Lesson:</b> ${esc((c.lessons || [])[0] || '')}</div>
+    <div style="margin-top:8px"><button class="chipbtn" type="button" data-go="recaps" data-arg="${esc(c.key)}"><span>Open the recap</span>${icon('right')}</button></div></article>`;
+}
+function recapStrip() {
+  const cs = RC().cards || []; if (!cs.length) return '';
+  return `<div class="card"><div class="card-h"><h3>Latest live trade</h3><span class="meta">${plural(cs.length, 'recap card')} · <a href="#/recaps">all</a></span></div>
+    ${rcImg(cs[0], cs[0].key)}<div style="margin-top:8px"><b>${rcHead(cs[0])}</b> <span class="small mut">${esc(cs[0].account)} · ${esc(rcExit(cs[0].exit))}</span></div>
+    <div class="note" style="margin-top:6px"><b>Lesson:</b> ${esc((cs[0].lessons || [])[0] || '')}</div>
+    <div style="margin-top:8px"><button class="chipbtn" type="button" data-go="recaps" data-arg="${esc(cs[0].key)}"><span>Why it entered, what happened</span>${icon('right')}</button></div></div>`;
+}
+VIEWS.recaps = (el) => {
+  const cs = RC().cards || [];
+  const one = ARG ? cs.find(c => c.key === ARG) : null;
+  if (one) {
+    const i = cs.indexOf(one), nx = cs[i + 1], pr = cs[i - 1];
+    el.innerHTML = head(`Trades · recap · ${esc(one.account)}`, rcHead(one), `${esc(rcExit(one.exit))} · ${one.qty ?? '—'} micros · entry ${num(one.entry)} · stop ${num(one.stop)} (${num(one.risk_pts, 2)} pts, $${num(one.risk_usd, 0)}) · target ${num(one.target)} · exit ${num(one.exit_px)}`)
+      + `<div class="card">${rcImg(one, one.key)}<div class="small mut" style="margin-top:6px">Tap the chart for full size. 5m left, 1m right: swept level, IDM (inducement), displacement, 5m CISD, limit, 1m CISD, fill, stop, BE stop, target, the 15-minute check and the exit.${one.matched === false ? ' The setup could not be rebuilt from the cloud’s bars: only the trade’s own prices are drawn.' : ''}</div></div>`
+      + `<div class="card">${rcText(one)}</div>`
+      + `<div class="modbar">${pr ? `<button class="chipbtn" type="button" data-go="recaps" data-arg="${esc(pr.key)}">${icon('left')}<span>Newer</span></button>` : ''}<span style="flex:1"></span>
+        <button class="chipbtn" type="button" data-go="recaps">${icon('trades')}<span>All recaps</span></button><span style="flex:1"></span>
+        ${nx ? `<button class="chipbtn" type="button" data-go="recaps" data-arg="${esc(nx.key)}"><span>Older</span>${icon('right')}</button>` : ''}</div>`;
+    return;
+  }
+  const wins = cs.filter(c => c.usd > 0).length, net = cs.reduce((a, c) => a + (c.usd || 0), 0);
+  el.innerHTML = head('Trades · live recaps', 'Every live trade, explained', 'One card per finished trade of the PC bot (NinjaTrader) and the cloud paper ledger: the chart around the trade, why it entered, what happened and the lesson. Newest first, the last 30.')
+    + howto('recaps', `<p>The cloud monitor draws a card on its first run after a trade closes and sends it to your phone (the notification replaces the trade’s outcome notice; tap it to open the card).</p>
+      <ul><li><b>Chart</b>: the swept level (dashed), the inducement swing (IDM), the displacement candle and the 5m CISD (purple), the limit (teal), the 1m CISD, the fill, the red stop box and the green target box, the BE stop line after +1R, the 15-minute check (dashed vertical) and the exit (X).</li>
+      <li><b>Words</b>: the same per-trade report as the backtest replay, with this trade’s own size, prices and result. PC cards also show how many ticks the fill was off the model’s price.</li></ul><p>Read-only: nothing here changes the bot.</p>`)
+    + (cs.length ? `<div class="stats">${statBox('Cards', cs.length, plural(wins, 'winner'))}${statBox('Net of these', susd(net), 'live / paper $', cls(net))}${statBox('Newest', esc(fDate(cs[0].day)), esc(cs[0].account))}</div>
+      <div class="rc-list">${cs.map(rcTile).join('')}</div>` : `<div class="card">${emptyBox('No recap cards yet.', 'The first card appears on the cloud run after the next live or paper trade closes.')}</div>`);
+};
+VIEWS.weekly = (el) => {
+  const W = LV().weekly;
+  if (!W || !W.week) { el.innerHTML = head('Trades · weekly review', 'Weekly review', '') + `<div class="card">${emptyBox('No weekly review yet.', 'The cloud monitor writes it on Sunday evening (or the first run of the week) for the week before.')}</div>`; return; }
+  const S = W.sources || {}, M = S[W.main] || null, ex = W.execution || {};
+  const srcCard = (k) => { const s = S[k]; if (!s) return ''; return `<div class="card"><div class="card-h"><h3>${esc(s.account)}</h3><span class="meta">${plural(s.n, 'trade')} · win ${num(s.win_rate, 0)}%</span></div>
+    <div class="kv"><div><span>Net</span><b class="${cls(s.net)}">${susd(s.net)}</b></div><div><span>R</span><b class="${cls(s.R)}">${fR(s.R)}</b></div><div><span>Wins / losses</span><b>${s.wins} / ${s.losses}</b></div>
+    <div><span>Best</span><b class="${cls(s.best.usd)}"><a href="#/recaps/${esc(s.best.key)}">${esc(fDate(s.best.day))} ${susd(s.best.usd)}</a></b></div><div><span>Worst</span><b class="${cls(s.worst.usd)}"><a href="#/recaps/${esc(s.worst.key)}">${esc(fDate(s.worst.day))} ${susd(s.worst.usd)}</a></b></div>
+    <div><span>Exits</span><b>${Object.entries(s.exits || {}).map(([k, v]) => `${v} ${esc(rcExit(k))}`).join(', ')}</b></div></div></div>`; };
+  el.innerHTML = head(`Trades · weekly review · built ${esc(new Date((W.built_t || 0) * 1000).toLocaleString())}`, `Week of ${esc(W.label)}`, esc(W.head))
+    + howto('weekly', `<p>Written every Sunday evening for the Mon–Fri week before, from the PC bot’s routed trades and the cloud paper ledger. <b>Execution</b> compares the PC’s fills with the model’s trade of the same day. <b>What to watch</b> is built from the data: next week’s high-impact news, the new PWH / PWL, Friday’s high / low for the Monday rule, the eval clock and this week’s loss pattern.</p>`)
+    + (M ? `<div class="stats">${statBox('Trades', M.n, esc(M.account))}${statBox('Net', susd(M.net), `${fR(M.R)} · win ${num(M.win_rate, 0)}%`, cls(M.net))}${statBox('Best', susd(M.best.usd), esc(fDate(M.best.day)), cls(M.best.usd))}${statBox('Worst', susd(M.worst.usd), esc(fDate(M.worst.day)), cls(M.worst.usd))}</div>` : '')
+    + `<div class="card"><div class="card-h"><h3>What to watch next week</h3><span class="meta">from the data</span></div><ul>${(W.watch || []).map(w => `<li>${esc(w.text)}</li>`).join('')}</ul></div>`
+    + `<div class="card"><div class="card-h"><h3>The week’s trades</h3><span class="meta">${plural((W.trades || []).length, 'trade')}</span></div>${(W.trades || []).length ? (W.trades || []).map(t => `<div class="wk-row"><div>${t.card ? `<a href="#/recaps/${esc(t.key)}">` : ''}<b>${esc(fDate(t.day))} ${esc(t.time)} ${esc(t.side)}</b>${t.card ? '</a>' : ''} <span class="small mut">${esc(t.account)} · ${esc(rcExit(t.exit))}</span>${t.lesson ? `<div class="small mut">${esc(t.lesson)}</div>` : ''}</div><b class="${cls(t.r)}">${fR(t.r)}</b><b class="${cls(t.usd)}">${susd(t.usd)}</b></div>`).join('') : emptyBox('No trades this week.', '')}</div>`
+    + `<div class="grid g2">${srcCard('pc')}${srcCard('paper')}</div>`
+    + `<div class="card"><div class="card-h"><h3>Execution quality</h3><span class="meta">PC fills vs the model</span></div><p>${esc(ex.text || '')}</p>
+      ${(ex.pairs || []).length ? `<div class="kv one">${ex.pairs.map(p => `<div><span>${esc(fDate(p.day))} ${esc(p.side)}</span><b>${p.entry_slip_ticks > 0 ? '+' : ''}${p.entry_slip_ticks} ticks · ${p.same_exit ? 'same exit' : `PC ${esc(rcExit(p.exit_pc))} vs model ${esc(rcExit(p.exit_model))}`}</b></div>`).join('')}</div>` : ''}
+      ${ex.audit?.text ? `<div class="note" style="margin-top:8px">PC fill audit: ${esc(ex.audit.text)}</div>` : ''}</div>`
+    + (W.eval?.text ? `<div class="card"><div class="card-h"><h3>Eval</h3></div><p>${esc(W.eval.text)}</p></div>` : '');
+};
 VIEWS.results = (el) => resultsView(el, D.results, false);
 VIEWS.oldresults = (el) => resultsView(el, D.archive?.results, true);
 function resultsView(el, R, arch) {
@@ -3922,7 +3996,7 @@ VIEWS.archive = (el) => {
 // cloud monitor sent (live.notices: fills, outcomes, PC silent, eval timing), newest first. It works before notifications are
 // set up. Notifications: free Web Push (engine/push.py) from the cloud monitor and the PC bot to this Home Screen app; a tap
 // opens #/activity/<key>. The app badge counts what this device has not seen yet.
-const ACT_K = { fill: 'Fill', outcome: 'Outcome', pc: 'PC bot', timing: 'Eval timing', test: 'Test', risk: 'Needs a look', system: 'System' };
+const ACT_K = { fill: 'Fill', outcome: 'Outcome', pc: 'PC bot', timing: 'Eval timing', test: 'Test', risk: 'Needs a look', system: 'System', recap: 'Recap card', brief: 'Brief', weekly: 'Weekly review' };
 function activity() {
   const lv = LV(), M = new Map();
   for (const v of lv.ledger || []) {
@@ -3975,6 +4049,7 @@ function actRow(x, hl = '') {
     ic = `<span class="side-i" style="width:32px;height:32px;border-radius:10px;border:1px solid var(--line)">${icon(x.kind === 'timing' ? 'prop' : x.kind === 'pc' ? 'phone' : x.kind === 'risk' ? 'risk' : 'alerts')}</span>`;
     title = `<b>${esc(String(x.title || ACT_K[x.kind] || 'Notice').replace(/^[^·]*·\s*/, ''))}</b>`;
     sub = x.body || '';
+    if (/^#\/(recaps|brief|weekly)(\/[\w\-:.]*)?$/.test(x.url || '')) title = `<a href="${esc(x.url)}">${title} ${icon('right')}</a>`;   // tools/recap.py notices open their page
   }
   return `<div class="act ${hl === x.key ? 'act-hl' : ''}" data-key="${esc(x.key)}">${ic}<span class="sl-m"><span class="sl-t">${title}</span><span class="sl-s act-s">${esc(sub)}</span>
     <span class="sl-s"><span class="mono">${et(x.t).hm} ET</span> · ${esc(ACT_K[x.kind] || x.kind || '')} · ${src}${x.sent ? ' · <span class="up">notified</span>' : ''}</span></span>${right}</div>`;
