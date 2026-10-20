@@ -1752,7 +1752,7 @@ function loadTC() {
 }
 // live status panel (live_panel.js): is the PC bot trading the eval (verdict, account, feed, LIT stage), the open trade's chart
 let LPP = null;
-const LPV = 'lp2';
+const LPV = 'lp3';
 function loadLP() { if (!LPP) LPP = import('./live_panel.js?v=' + LPV).catch((e) => { console.warn('live panel unavailable', e); LPP = null; throw e; }); return LPP; }
 function lpMount(box, where) { if (!box) return; loadLP().then((m) => { if (box.isConnected && D) m.mount(box, D, { where, loadTC }); }).catch(() => { if (box.isConnected) box.innerHTML = ''; }); }
 // a paper / live trade has no replay record: its chart is drawn from the recent 5m bars in data.json when they cover the entry

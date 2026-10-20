@@ -152,6 +152,7 @@ export function execBox(x) {
       ${kv('Latency', ok(x.latency_s_med) ? x.latency_s_med + ' s' : '—', 'CISD close → order')}
       ${kv('This month', mo ? susd(mo.slip_usd) : '—', mo ? `${mo.trades} trades · missed ${susd(mo.missed_usd)}` : '', mo ? cls(mo.slip_usd) : '')}</div>
     ${rec.map((r) => `<div class="lp-ct">${row(r)}</div>`).join('')}
+    ${(x.nightly || []).slice(0, 3).map((n) => `<div class="lp-ct"><div class="lp-cth"><b class="${n.verdict === 'differs' ? 'dn' : n.verdict === 'same' ? 'up' : ''}">${esc(String(n.verdict || '').toUpperCase())}</b><span>night check · ${esc(n.text || '')}</span></div></div>`).join('')}
     <div class="lp-note">${esc(x.text || '')}${x.text ? '.' : ''} Ticks: positive = worse than the backtest. Push above 4 ticks and for a trade missed while the PC was on.</div></div>`;
 }
 function tradeBox(T) {
