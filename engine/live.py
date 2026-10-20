@@ -327,6 +327,7 @@ class LiveBot:
         self._open_adds = []             # LIT scale_in: adds routed to the open position [{"entry_t", "n", "qty", "px", "t"}]
         self._blocked_entries = set()    # entry_t of engine entries we deliberately did not route
         self._flattened = set()          # entry_t of positions the clock-based safety flatten already closed
+        self._no_entries_day = None      # trading day a remote "flatten" ended (engine/remote_ctl.py): no new entries that day
         self._restored = None
         self._nt_feed = None             # engine.ninjatrader.NinjaTraderBars for data_source "ninjatrader"
         self._nt_notes = {}              # rate limit for the ninjatrader feed notes: key -> (text, unix time logged)
@@ -628,6 +629,43 @@ class LiveBot:
         self._save_state()
         return {"ok": True}
 
+    def flatten_now(self, reason: str = "REMOTE FLATTEN"):
+        """Close the open position now and keep the bot running (engine/remote_ctl.py "flatten"). No kill flag; no new
+        entries for the rest of this trading day (the bot trades again on the next one); the model's own later exit of this
+        entry is not sent again (_flattened). With no model position but an order of ours still working at the broker (a
+        pending entry, a desync), that order / position is closed too. Extra accounts are flattened as well."""
+        sym = (self.cfg or {}).get("sym", "NQ")
+        self._no_entries_day = trading_day(self.clock())
+        pos = (self.state or {}).get("position")
+        res = {"ok": True, "note": "flat: nothing to close"}
+        legs = [lg for lg in (getattr(self.adapter, "legs", None) or []) if isinstance(lg, dict)
+                and lg.get("status") in ("entry_sent", "pending", "cancel_pending", "protected", "unprotected")]
+        if pos:
+            qty = self._open_qty if self._open_routed == pos.get("entry_t") and self._open_qty else pos.get("qty")
+            qty = int(qty or 0) + self._adds_qty(pos.get("entry_t"))
+            res = self._route({"sym": sym, "side": "exit", "qty": qty, "reason": reason, "entry_t": pos.get("entry_t")})
+            self._flattened.add(pos.get("entry_t"))
+            self._open_routed = None
+        elif self._open_routed is not None or legs:
+            res = self._route({"sym": sym, "side": "exit", "qty": self._open_qty, "reason": reason, "entry_t": self._open_routed})
+            if self._open_routed is not None:
+                self._flattened.add(self._open_routed)
+            self._open_routed = None
+        extras = []
+        if self.accts is not None:                  # the extra accounts (engine/multi_account.py), without their kill flag
+            for acc in list(getattr(self.accts, "accounts", None) or []):
+                if getattr(acc, "adapter", None) is not None and getattr(acc, "open_t", None) is not None:
+                    r = acc.kill(sym)
+                    extras.append({"id": acc.id, "ok": bool(r.get("ok")), "error": r.get("error")})
+            try:
+                self.accts.save()
+            except Exception:
+                pass
+        self._log("risk", f"{reason}: " + ("position closed" if pos else "no open position") +
+                  "; the bot keeps running, no new entries until the next trading day")
+        self._save_state()
+        return {"ok": bool(res.get("ok")), "had_position": bool(pos), "result": res, "extras": extras}
+
     def _route(self, action):
         if self.adapter is None:
             self.adapter = ADAPTERS["paper"](self.cfg)
@@ -920,7 +958,7 @@ class LiveBot:
                 "started_at": self.started_at, "kill": self.kill, "eod_sent": self._eod_sent, "guard_key": self._guard_key,
                 "open_routed": self._open_routed, "open_qty": self._open_qty, "open_adds": self._open_adds,
                 "blocked_entries": sorted(self._blocked_entries),
-                "flattened": sorted(self._flattened), "provisional": {str(k): v for k, v in self._provisional.items()},
+                "flattened": sorted(self._flattened), "no_entries_day": self._no_entries_day, "provisional": {str(k): v for k, v in self._provisional.items()},
                 "seen": [list(k) for k in list(self.seen)[-2000:]], "ledger": self.ledger[-300:],
                 "week_exits": self.lit_week_hist() if self.cfg else [], "eval_days": self.eval_days() if self.cfg else {},
                 "day_pnl_routed": self.day_pnl_routed(), "trades_today": self.trades_today()}
@@ -966,6 +1004,7 @@ class LiveBot:
         self._open_adds = [a for a in (s.get("open_adds") or []) if isinstance(a, dict)]
         self._blocked_entries = set(s.get("blocked_entries") or [])
         self._flattened = set(s.get("flattened") or [])
+        self._no_entries_day = s.get("no_entries_day")
         self._provisional = {int(k): v for k, v in (s.get("provisional") or {}).items()}
         if s.get("started_at"):
             self.started_at = min(self.started_at, int(s["started_at"]))
@@ -1476,6 +1515,10 @@ class LiveBot:
             if self.health["entries_blocked"]:
                 self._blocked_entries.add(ent["entry_t"])
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: feed stale")
+            elif self._no_entries_day is not None and self._no_entries_day == trading_day(now):
+                self._blocked_entries.add(ent["entry_t"])
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: the owner flattened remotely today "
+                                  "(no new entries until the next trading day)")
             elif age > late_after:
                 self._blocked_entries.add(ent["entry_t"])
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")

@@ -57,6 +57,7 @@ if ($Port -le 0) { if ($env:PORT) { $Port = [int]$env:PORT } else { $Port = 8766
 $env:PORT = "$Port"
 $env:PYTHONUNBUFFERED = '1'
 if (-not $env:LE_HEARTBEAT) { $env:LE_HEARTBEAT = '1' }   # the always-on PC tells the cloud monitor it is alive (engine/heartbeat.py)
+if (-not $env:LE_REMOTE) { $env:LE_REMOTE = '1' }         # phone remote control: reads control/command.json on branch control (engine/remote_ctl.py, docs/REMOTE_CONTROL.md); set LE_REMOTE=0 in .env.local.ps1 to turn it off
 $env:PYTHONIOENCODING = 'utf-8'
 $env:LE_SUPERVISED = '1'   # the dashboard's Restart server button: this supervisor brings the server back (engine/botctl.py)
 try { [Console]::OutputEncoding = $Utf8 } catch { }

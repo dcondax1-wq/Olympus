@@ -9,6 +9,8 @@ data/alerts.json
 data/autostart.json
 data/live_state.json
 data/ninjatrader_state.json
+# phone remote control: the command ids already handled (engine/remote_ctl.py)
+data/remote_done.json
 # the PC bot's archive of NinjaTrader bars (engine/pcbars.py), machine-local
 data/nt_bars/
 
