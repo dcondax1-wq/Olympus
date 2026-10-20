@@ -612,9 +612,15 @@ class LiveBot:
         if self.state and self.state.get("position"):
             pos = self.state["position"]
             qty = self._open_qty if self._open_routed == pos.get("entry_t") and self._open_qty else pos.get("qty")
-            qty = int(qty or 0) + self._adds_qty(pos.get("entry_t"))
+            q1 = int(qty or 0)
+            qty = q1 + self._adds_qty(pos.get("entry_t"))
+            # book the flatten's P&L (marked at the market now) like every other exit: without it the kill exit counted
+            # $0 in day_pnl_routed / eval_days, so the eval clock, the next trade's two_week size and the soft daily
+            # loss all saw a loss that never happened as flat
+            pnl = self._kill_pnl(pos, q1)
             self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "qty": qty, "reason": "KILL SWITCH",
-                         "entry_t": pos.get("entry_t")})
+                         "entry_t": pos.get("entry_t"), "exit_t": int(self.clock()),
+                         **({"pnl": pnl, "pnl_est": True} if pnl is not None else {})})
             self._flattened.add(pos.get("entry_t"))
             self._open_routed = None
         elif getattr(self.adapter, "kill_flattens_all", False):
@@ -627,6 +633,43 @@ class LiveBot:
         self._log("risk", "KILL SWITCH: flattened and stopped")
         self._save_state()
         return {"ok": True}
+
+    def _kill_mark_px(self, pos):
+        """The market at the kill: the forming 1m bar's open (NinjaTrader LE_BarFeed), else the model's last close."""
+        sym = self.cfg.get("sym", "NQ")
+        try:
+            fo = self._nt_feed.forming_open(sym, now=int(self.clock())) if self._nt_feed is not None else None
+            if fo:
+                return float(fo[1])
+        except Exception:
+            pass
+        px = (self.state or {}).get("price")
+        if px:
+            return float(px)
+        q, u = pos.get("qty"), pos.get("unrealized")
+        if q and u is not None and pos.get("entry") is not None:
+            from . import lit as _lit
+            d = 1 if pos.get("dir", 1) == 1 else -1
+            return float(pos["entry"]) + d * (float(u) / float(q) + _lit.COMM) / _lit.PV
+        return None
+
+    def _kill_pnl(self, pos, qty):
+        """$ of the kill-switch flatten at the routed size (first entry + every routed add), at the market now, costs in."""
+        try:
+            from . import lit as _lit
+            px = self._kill_mark_px(pos)
+            if px is None or pos.get("entry") is None or not qty:
+                return None
+            d = 1 if pos.get("dir", 1) == 1 else -1
+            pnl = int(qty) * (d * (px - float(pos["entry"])) * _lit.PV - _lit.COMM)
+            self._sync_adds(pos.get("entry_t"))
+            for a in self._open_adds:
+                if a.get("entry_t") == pos.get("entry_t"):
+                    pnl += int(a["qty"]) * (d * (px - float(a["px"])) * _lit.PV - _lit.COMM)
+            return round(pnl, 2)
+        except Exception as e:
+            self._note_error(f"kill switch P&L not booked: {e.__class__.__name__}: {e}")
+            return None
 
     def _route(self, action):
         if self.adapter is None:

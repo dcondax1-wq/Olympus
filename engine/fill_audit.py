@@ -478,7 +478,9 @@ def compare(bt: dict | None, lv: dict | None, notes: dict | None = None, live_da
         return {"status": "extra", "day": lv["day"], "entry_t": lv["entry_t"], "side": "LONG" if d == 1 else "SHORT",
                 "routed_t": lv["t_route"], "fill_entry": lv["fill_entry"], "live_qty": lv["qty"], "live_exit": lv["exit_px"],
                 "live_exit_kind": lv["exit_kind"], "live_pnl": real if real is not None else lv.get("model_pnl"),
-                "reason": "the backtest on the same bars has no trade here (feed revision, restart, or a different 1m bar)"}
+                "reason": ("closed by the kill switch: the bot stopped, so its bar archive ends with the backtest's trade still "
+                           "open (no backtest exit to compare with)") if str(lv.get("exit_kind") or "").upper() == "KILL SWITCH" else
+                          "the backtest on the same bars has no trade here (feed revision, restart, or a different 1m bar)"}
     d = int(bt["dir"])
     q = int(lv["qty"] or 0)
     row = {"status": "matched", "day": lv["day"], "entry_t": int(bt["entry_t"]), "side": "LONG" if d == 1 else "SHORT",

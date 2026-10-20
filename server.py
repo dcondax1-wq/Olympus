@@ -797,7 +797,14 @@ def _botctl_start(body):
     return res
 
 
-_bc.HOOKS.update(start=_botctl_start, stop=live_stop, heartbeat=HEARTBEAT.status)
+def _botctl_stop():
+    # live_stop() returns a Starlette Response (J(...)); botctl.do_stop needs the dict (dict(Response) raised TypeError, so
+    # the Bot Control STOP showed an error although the bot had stopped)
+    _autostart_clear("stop")
+    return BOT.stop()
+
+
+_bc.HOOKS.update(start=_botctl_start, stop=_botctl_stop, heartbeat=HEARTBEAT.status)
 # ---- END BOT CONTROL ----
 
 
