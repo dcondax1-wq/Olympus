@@ -49,7 +49,10 @@ def check(name, ok, detail=""):
 
 
 def live_lit():
-    return json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]
+    """The live LIT params with the three upgrades stripped, so each one is replayed on its own (they are switched on
+    together in live_model.json since 2026-10-20; tests.test_lit_live checks the combination)."""
+    P = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]
+    return {k: v for k, v in P.items() if k not in ("t_check", "scale_in", "be_off")}
 
 
 def backtest(P, days=None):

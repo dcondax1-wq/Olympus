@@ -2,7 +2,7 @@
 
     python -X utf8 -m tests.test_lit_scale_in
 
-1. Off by default: lit.DEFAULTS["scale_in"] is None and live_model.json "lit" does not set it.
+1. Off by default in the engine: lit.DEFAULTS["scale_in"] is None; live_model.json sets it to CAND (on since 2026-10-20).
 2. Sizing: scale_in_qty caps (the first entry's $ risk, 60% of the room, the soft daily loss left, 40 micros, earlier adds).
 3. Engine == research: run_x on the live LIT params with scale_in on gives the same 2026 trades (entry, first-entry exit
    unchanged where no add happened) and, for every trade with an add, the same add price, add points and exit as the
@@ -38,8 +38,12 @@ def check(name, ok, info=""):
 
 def main():
     r = []
-    live = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]
-    r.append(check("default off", lit.DEFAULTS.get("scale_in") is None and "scale_in" not in live))
+    live_cfg = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]
+    # the engine default stays off; live_model.json switches it on (owner, 2026-10-20) with exactly CAND
+    r.append(check("engine default off, live = CAND", lit.DEFAULTS.get("scale_in") is None
+                   and live_cfg.get("scale_in") in (None, CAND), live_cfg.get("scale_in")))
+    # base = the live params without the three upgrades, so the add is compared on its own
+    live = {k: v for k, v in live_cfg.items() if k not in ("t_check", "scale_in", "be_off")}
     # ---- sizing: 10 micros, 20-pt stop -> budget $400; add risk 22 pts -> (22.25 x 2 + 1.90) = $46.40 / micro -> 8
     r.append(check("budget = first entry's $ risk", scale_in_qty(10, 10, 20.0, [{"rk": 22.0, "prev_rk": []}]) == [8],
                    scale_in_qty(10, 10, 20.0, [{"rk": 22.0, "prev_rk": []}])))
