@@ -390,6 +390,8 @@ class NinjaTraderAdapter:
         self.killed = False
         self._flat_tries: dict = {}
         self._outside_flat: dict = {}
+        self._cont_warned = None
+        self.watch: list = []                          # retired legs with an order that may still fill (late add / slow cancel)
         self._seq = 0
         self.sim = is_sim(self.account)
         self.env = "demo" if self.sim else "live"      # LiveBot._remember: memory source paper / live
@@ -791,7 +793,7 @@ class NinjaTraderAdapter:
             legs.append({"instrument": inst, "qty": qty, "side": side, "dir": d, "entry_t": ts, "stop": stop, "target": target,
                          "entry_id": base + "E", "stop_id": base + "S", "target_id": base + "T", "oco": base + "O",
                          "status": "entry_sent", "filled": 0, "fill_px": None, "fill_mtime": None, "bracket_qty": 0, "stop0": stop,
-                         "sent_at": self.clock()})
+                         "sent_at": self.clock(), "ref": float(ref) if ref else None})
         r = self._send_lines([place_line(self.account, lg["instrument"], side, lg["qty"], "MARKET", order_id=lg["entry_id"])
                               for lg in legs], "ENTRY")
         if not r["ok"]:
@@ -806,14 +808,9 @@ class NinjaTraderAdapter:
         for lg in legs:
             st = self.read_order(lg["entry_id"])
             self._note_fill(lg, st)
-            gap = abs(float(lg["fill_px"] or 0) - float(ref)) if ref and lg["filled"] > 0 and lg["fill_px"] else 0.0
-            if gap > float(self.cfg.get("nt_max_fill_gap_pct", 0.6)) / 100.0 * float(ref or 0):
-                # the roll guard's backstop: filled a roll gap away from the price the stop / target were computed on (the
-                # chart on the old contract): never place that bracket, flatten at once
-                self._risk(f"Chart is on the old contract? {lg['instrument']} filled @ {lg['fill_px']}, {gap:.2f} pts from the "
-                           f"chart's price {float(ref):.2f}: stop/target not placed, flattening. Switch the LE_BarFeed chart to "
-                           f"{lg['instrument']}.", alert=True)
-                fl = self._close([lg], why="fill a roll gap away from the chart price")
+            gap = self._fill_gap(lg)
+            if gap is not None:
+                fl = self._gap_flatten(lg, gap)
                 errors.append(f"{lg['instrument']}: fill {gap:.0f} pts from the chart price, flattened"
                               + ("" if fl["ok"] else " (flatten NOT confirmed)"))
                 out.append({"instrument": lg["instrument"], "qty": lg["qty"], "ok": False, "filled": lg["filled"],
@@ -839,6 +836,34 @@ class NinjaTraderAdapter:
         return {"ok": ok, "adapter": self.name, "account": self.account, "env": self.env, "side": side,
                 "legs": out, **({} if ok else {"error": "; ".join(errors)})}
 
+    def _fill_gap(self, lg):
+        """The roll guard's backstop: pts between the entry fill and the chart price the stop / target were computed on
+        (lg["ref"]) when that is more than nt_max_fill_gap_pct (default 0.3%) of the price, else None. Normal LIT fills sit
+        within 0.08% of the model price (2026: worst 1m entry bar incl. the CISD close, 120 trades, p99 0.07%); the last
+        8 NQ rolls were 0.86-1.36% (one weekend open jump 0.56%): 0.3% catches a 0.5% gap with a 3.7x margin over the
+        worst normal fill."""
+        ref = lg.get("ref")
+        if not ref or not lg.get("filled") or not lg.get("fill_px"):
+            return None
+        gap = abs(float(lg["fill_px"]) - float(ref))
+        return gap if gap > float(self.cfg.get("nt_max_fill_gap_pct", 0.3)) / 100.0 * float(ref) else None
+
+    def _gap_flatten(self, lg, gap) -> dict:
+        """Filled a roll gap away from the chart price (the chart on the old contract): never place that bracket (its stop
+        / target are priced on the other contract), flatten at once + alert."""
+        self._risk(f"Chart is on the old contract? {lg['instrument']} filled @ {lg['fill_px']}, {gap:.2f} pts from the "
+                   f"chart's price {float(lg['ref']):.2f}: stop/target not placed, flattening. Switch the LE_BarFeed chart to "
+                   f"{lg['instrument']}.", alert=True)
+        return self._close([lg], why="fill a roll gap away from the chart price")
+
+    def _protect_late(self, lg):
+        """A fill reported after place_bracket returned (pending / cancel pending / withdrawn): the same fill-gap check as
+        the first fill, then the stop and target."""
+        gap = self._fill_gap(lg)
+        if gap is not None:
+            return self._gap_flatten(lg, gap)
+        return self._protect(lg)
+
     def _contract_mismatch(self, insts) -> str | None:
         """The roll guard: the LE_BarFeed chart's contract (le_feed/<ROOT>_instrument.txt) must be the one the orders go to,
         or the stop/target (priced from the chart's bars) land a roll gap (~300 pts) off the fill. Unknown chart contract
@@ -853,6 +878,15 @@ class NinjaTraderAdapter:
         def exp(name):
             m = re.search(r"(\d{2})-(\d{2})$", name or "")
             return (int(m.group(2)), int(m.group(1))) if m else None
+        if exp(chart) is None:
+            # a continuous contract ("MNQ ##-##"): the contract check cannot run, only the fill-gap backstop guards a roll
+            day = _trading_day(self.clock())
+            if self._cont_warned != (chart, day):
+                self._cont_warned = (chart, day)
+                self._risk(f"The LE_BarFeed chart is on a continuous contract ({chart}): the roll check is OFF (only the fill "
+                           f"gap backstop is left). Put the chart on the dated contract the orders go to ({', '.join(insts)}).",
+                           alert=True)
+            return None
         for inst in insts:
             ce, oe = exp(chart), exp(inst)
             if ce and oe and ce != oe:
@@ -1002,13 +1036,19 @@ class NinjaTraderAdapter:
             return {"ok": False, "error": f"REFUSED: NinjaTrader reports every connection DISCONNECTED ({', '.join(conn)})"}
         n = len(lg.get("adds") or []) + 1
         aid = f"{lg['entry_id'][:-1]}A{n}"
-        r = self._send_lines([place_line(self.account, lg["instrument"], lg["side"], qty, "MARKET", order_id=aid)], "ADD")
-        if not r["ok"]:
-            return {"ok": False, "adapter": self.name, "error": r["error"], "oif": r.get("file")}
         a = {"id": aid, "qty": qty, "filled": 0, "fill_px": None, "status": "sent", "sent_at": self.clock(),
              "n": int(action.get("n") or n), "add_t": action.get("add_t")}
+        # saved BEFORE the order file is written: a crash in between leaves an add the next process watches (tick: its
+        # fill grows the bracket, the ledger reads it through add_fills; never filled -> cancelled after pending_timeout)
         lg.setdefault("adds", []).append(a)
         self._save()
+        r = self._send_lines([place_line(self.account, lg["instrument"], lg["side"], qty, "MARKET", order_id=aid)], "ADD")
+        if not r["ok"]:
+            if r.get("withdrawn") or not r.get("file"):    # withdrawn unprocessed / never written: it cannot run
+                a["status"] = "rejected"
+                a["note"] = "not delivered"
+            self._save()
+            return {"ok": False, "adapter": self.name, "error": r["error"], "oif": r.get("file")}
         self._wait(lambda: self._add_settled(a), self.fill_wait)
         self._note_add(lg, a)
         if a["filled"] > 0:
@@ -1115,6 +1155,78 @@ class NinjaTraderAdapter:
             if lg in self.legs:
                 self.legs.remove(lg)
             self.history.append({**lg, "closed": why, "closed_at": int(self.clock())})
+            self._start_watch(lg, why)
+
+    # ------------------------------------------------------------------ retired legs whose orders can still fill
+    def _watch_ids(self, lg) -> list:
+        return [lg["entry_id"], lg["stop_id"], lg["target_id"]] + [a["id"] for a in lg.get("adds") or []]
+
+    def _start_watch(self, lg, why):
+        """A retired leg stays watched while one of its orders can still fill: an add still 'sent' / 'cancel_sent' (its
+        cancel may come too late: NinjaTrader keeps a MARKET order working in a thin market) or a stop / target / entry
+        NinjaTrader still shows working (a slow cancel). Every fill seen after the retirement leaves a position nobody
+        protects: _tick_watch closes it at once (CLOSEPOSITION) + alert, and cancels what is still working."""
+        if any(w is lg for w in self.watch):
+            return
+        snap = {}
+        live = False
+        for oid in self._watch_ids(lg):
+            st = self.read_order(oid)
+            snap[oid] = int(st["filled"]) if st else 0
+            live = live or bool(st and st["state"] in LIVE_STATES | {PARTFILLED})
+        unresolved = any(a.get("status") in ("sent", "cancel_sent") for a in lg.get("adds") or [])
+        if live or unresolved:
+            lg["watch"] = {"since": self.clock(), "why": why, "filled": snap, "cancel_at": 0.0, "close_at": 0.0, "leftover": 0}
+            self.watch.append(lg)
+
+    def _tick_watch(self, now):
+        keep = []
+        for lg in self.watch:
+            w = lg.setdefault("watch", {"since": now, "why": "?", "filled": {}, "cancel_at": 0.0, "close_at": 0.0, "leftover": 0})
+            inst = lg["instrument"]
+            for a in lg.get("adds") or []:
+                if a.get("status") in ("sent", "cancel_sent"):
+                    self._note_add(lg, a)
+            late, live = [], []
+            for oid in self._watch_ids(lg):
+                st = self.read_order(oid)
+                if not st:
+                    continue
+                if int(st["filled"]) > int(w["filled"].get(oid, 0)):
+                    late.append(f"{oid} +{int(st['filled']) - int(w['filled'].get(oid, 0))} @ {st['avg']}")
+                    w["filled"][oid] = int(st["filled"])
+                if st["state"] in LIVE_STATES | {PARTFILLED}:
+                    live.append(oid)
+            open_same = any(x["instrument"] == inst and x["status"] in OPEN_STATUSES for x in self.legs)
+            p = self.position_for(inst)
+            held = bool(p and p["side"] != "FLAT")
+            if late:
+                w["leftover"] = 1
+                w["close_at"] = 0.0
+                self._risk(f"an order of the closed {lg['side']} trade ({lg['entry_id']}) filled AFTER the bot closed it "
+                           f"({'; '.join(late)}): NinjaTrader shows {p and p['side']} {p and p['qty']} {inst} with no stop - "
+                           + ("CLOSEPOSITION sent at once" if held and not open_same else "watching"), alert=True)
+            if w["leftover"] and held and not open_same and now - float(w["close_at"] or 0) >= 30:
+                w["close_at"] = now
+                self._send_lines([close_line(self.account, inst + self.close_suffix)], "CLOSE (late fill after the exit)")
+                p = self.position_for(inst)
+                held = bool(p and p["side"] != "FLAT")
+            if w["leftover"] and not held:
+                w["leftover"] = 0
+                self._log("system", f"NinjaTrader: the late-fill leftover on {inst} is closed")
+            if live and now - float(w["cancel_at"] or 0) >= 30:
+                w["cancel_at"] = now
+                self._send_lines([cancel_line(i) for i in live], "CANCEL (closed trade's order still working)")
+            if not live and not w["leftover"] and not any(a.get("status") in ("sent", "cancel_sent") for a in lg.get("adds") or []):
+                lg.pop("watch", None)
+                continue
+            if now - float(w["since"]) > 4 * 3600:
+                self._risk(f"stopped watching the closed trade {lg['entry_id']} after 4 h: orders {live or 'none'} still "
+                           f"reported working, {p and p['side']} {p and p['qty']} {inst}: check NinjaTrader", alert=bool(held or live))
+                lg.pop("watch", None)
+                continue
+            keep.append(lg)
+        self.watch = keep
 
     def flatten(self, action: dict | None = None) -> dict:
         if self.disabled or self.readonly:
@@ -1193,6 +1305,7 @@ class NinjaTraderAdapter:
                 self._tick_withdrawn(now)
                 for lg in list(self.legs):
                     self._tick_leg(lg, now)
+                self._tick_watch(now)
                 self._tick_flat_time(now)
                 self._save()
                 return {"ok": True, "legs": len(self.legs)}
@@ -1221,7 +1334,7 @@ class NinjaTraderAdapter:
         if lg["status"] in ("pending", "entry_sent"):
             if lg["filled"] > 0:
                 self._log("system", f"NinjaTrader: entry {lg['entry_id']} filled {lg['filled']} @ {lg['fill_px']}: placing the stop and target")
-                self._protect(lg)
+                self._protect_late(lg)
             elif st and st["state"] in DEAD:
                 self._retire([lg], f"entry {st['state'].lower()}")
                 self._log("risk", f"NinjaTrader: entry {lg['entry_id']} {st['state']}: nothing was opened")
@@ -1237,7 +1350,7 @@ class NinjaTraderAdapter:
             if lg["filled"] > 0:
                 self._risk(f"NinjaTrader: entry {lg['entry_id']} filled {lg['filled']} @ {lg['fill_px']} while its cancel was pending: "
                            "placing the stop and target", alert=True)
-                self._protect(lg)
+                self._protect_late(lg)
             elif st and st["state"] in DEAD:
                 self._retire([lg], f"entry {st['state'].lower()} (cancel confirmed)")
                 self._log("system", f"NinjaTrader: entry {lg['entry_id']} {st['state']}: nothing was opened")
@@ -1305,10 +1418,13 @@ class NinjaTraderAdapter:
                 self._risk(f"{name} filled but the other leg was still working: cancel sent ({other_id})")
             # the leg filled for less than the position (a scale-in add filled before the bracket was resized): the rest
             # has no stop. Close it at once. Also when NinjaTrader's position file, written after that fill, is not flat.
-            rest = self._total(lg) - int(x.get("filled") or 0)
+            # what the other leg filled first (a partial exit: it was resized to the rest) is gone too
+            rest = self._total(lg) - int(x.get("filled") or 0) - int((other or {}).get("filled") or 0)
             p = self.position_for(lg["instrument"])
             after = p is not None and (p.get("mtime") or 0) >= (x.get("mtime") or 0) - 0.001
-            if rest > 0 or (after and p["side"] != "FLAT"):
+            if after:
+                rest = 0 if p["side"] == "FLAT" else max(rest, int(p["qty"]))   # the position file, written after the fill, decides
+            if rest > 0:
                 self._risk(f"{name} filled {x['filled']} {lg['instrument']} but the bot's position was {self._total(lg)} "
                            f"(NinjaTrader shows {p and p['side']} {p and p['qty']}): the rest had no stop - CLOSEPOSITION sent",
                            alert=True)
@@ -1360,7 +1476,7 @@ class NinjaTraderAdapter:
         if self.readonly:
             return
         blob = {"version": 1, "day": _trading_day(self.clock()), "account": self.account, "saved_at": int(self.clock()),
-                "legs": self.legs, "withdrawn": self.withdrawn, "killed": self.killed}
+                "legs": self.legs, "withdrawn": self.withdrawn, "watch": self.watch, "killed": self.killed}
         try:
             os.makedirs(os.path.dirname(self.state_path), exist_ok=True)
             tmp = self.state_path + ".tmp"
@@ -1383,6 +1499,7 @@ class NinjaTraderAdapter:
             return
         self.legs = [lg for lg in (s.get("legs") or []) if isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES]
         self.withdrawn = [w for w in (s.get("withdrawn") or []) if isinstance(w, dict)]
+        self.watch = [lg for lg in (s.get("watch") or []) if isinstance(lg, dict) and isinstance(lg.get("watch"), dict)]
 
     def status(self) -> dict:
         fs = self.folder_status()
