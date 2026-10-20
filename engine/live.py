@@ -1575,7 +1575,7 @@ class LiveBot:
         return False
 
     def snapshot(self):
-        cfg = {k: v for k, v in self.cfg.items() if k != "webhook_url"}
+        cfg = {k: v for k, v in self.cfg.items() if k not in ("webhook_url", "confirm")}   # never the typed phrase
         if isinstance(cfg.get("accounts"), list):    # no per-account phrase in the API answer
             cfg["accounts"] = [{k: v for k, v in a.items() if k != "confirm"} if isinstance(a, dict) else a for a in cfg["accounts"]]
         return {"running": self.running, "cfg": cfg,
