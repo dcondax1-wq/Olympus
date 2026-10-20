@@ -70,3 +70,9 @@ data/ninjatrader_state_*.json
 # owner PC helpers (engine/ops_checks.py): sent-notice keys + drop timers, and the nightly state backups (14 days)
 data/ops_state.json
 backups/
+
+# prop business (tools/business.py, tools/prop_watch.py): machine-local watcher state + generated statements / tax CSVs
+research/props/rule_hashes.json
+research/props/code_watch.json
+research/business/statements/
+research/business/tax_*.csv

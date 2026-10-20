@@ -5,7 +5,10 @@
   python -X utf8 -m engine.ops_checks --tick       the scheduled task (scripts/install_ops_task.ps1, every 5 min): whatever
                                                    is due now (pre-session check 01:40 ET, end-of-day 16:05 ET, weekly
                                                    Sunday evening, internet / NinjaTrader drop + recovery, MFFU inactivity,
-                                                   eval passed / failed, contract roll, nightly backup + log rotation)
+                                                   eval passed / failed, contract roll, nightly backup + log rotation;
+                                                   prop business: payout can be requested / time to buy the next eval
+                                                   (tools/business.py), weekly rule-page + discount-code watch
+                                                   (tools/prop_watch.py))
   python -X utf8 -m engine.ops_checks --presession | --eod | --weekly [--send]   build one of the phone notices now
                                                    (prints it; --send also pushes it)
   python -X utf8 -m engine.ops_checks --backup     back up the state files now (backups/, kept 14 days) + rotate logs/
@@ -1120,13 +1123,36 @@ def due(now) -> dict:
             "daily": (wd < 5 and (100 <= mod <= 135 or 965 <= mod <= 1020)) or (wd == 6 and 1020 <= mod <= 1439)}
 
 
+def business_notices(view: dict, now) -> list:
+    """The prop-business reminders (tools/business.py): a funded account can request a payout, time to buy the next eval.
+    Each pushed once by its key. Never raises."""
+    try:
+        from tools import business
+        return [_payload(n["sub"], n["title"], n["body"], n["key"], now) for n in business.notices(now, pc_eval=view.get("eval"))]
+    except Exception as e:
+        ops_log(f"business notices failed: {e.__class__.__name__}: {scrub(str(e), 120)}")
+        return []
+
+
+def watch_notices(state: dict, now) -> list:
+    """Weekly (Sunday evening window, once per ISO week): the firms' rule pages and discount codes (tools/prop_watch.py).
+    Fetch failures (DNS, 403, timeout) are recorded there and never push. Never raises."""
+    try:
+        from tools import prop_watch
+        return [_payload(n["sub"], n["title"], n["body"], n["key"], now) for n in prop_watch.weekly(now, state)]
+    except Exception as e:
+        ops_log(f"prop watch failed: {e.__class__.__name__}: {scrub(str(e), 120)}")
+        return []
+
+
 def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PATH, do_backup=True) -> list:
     """One scheduled run: every notice that is due, sent once. Returns the results."""
     now = time.time() if now is None else now
     state = load_state(state_path) if state is None else state
     D = due(now)
     full = D["presession"] or D["weekly"]
-    ctx = ctx or gather(now, state=state, light=not full)
+    real = ctx is None                       # the scheduled run gathers its own facts; a ctx handed in is a replay / test:
+    ctx = ctx or gather(now, state=state, light=not full)    # no business reminders and no weekly web fetches then
     out = []
     try:
         notes = watch(ctx, state, now)
@@ -1144,6 +1170,10 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
             for n in (inactivity_notice(view, now), roll_notice(now)):
                 if n:
                     notes.append(n)
+            if real:
+                notes += business_notices(view, now)
+        if D["weekly"] and real:
+            notes += watch_notices(state, now)
         n = eval_result_notice(view, now)
         if n:
             notes.append(n)
@@ -1172,8 +1202,17 @@ def hb_fields(state_path: str = STATE_PATH) -> dict:
             free = round(shutil.disk_usage(ROOT).free / 1e9, 1)
         except Exception:
             free = None
+        try:                                     # the weekly rule-page / discount-code watcher, small (tools/prop_watch.py)
+            from tools import prop_watch
+            w = prop_watch.summary()
+            watch = {"rules_t": w["rules"]["updated"], "rules_ok": w["rules"]["ok"], "rules_pages": w["rules"]["pages"],
+                     "changes": [{k: c.get(k) for k in ("firm", "key", "seen")} for c in w["rules"]["changes"][:3]],
+                     "codes_t": w["codes"]["updated"], "codes": [{k: c.get(k) for k in ("firm_name", "code", "off", "seen", "new")}
+                                                                 for c in w["codes"]["rows"][:8]]}
+        except Exception:
+            watch = None
         return {"checks_t": lc.get("t"), "bad": lc.get("bad"), "warn": lc.get("warn"), "first_fix": scrub(lc.get("first_fix"), 160) or None,
-                "backup_t": s.get("last_backup_t"), "tick_t": s.get("last_tick_t"), "disk_free_gb": free}
+                "backup_t": s.get("last_backup_t"), "tick_t": s.get("last_tick_t"), "disk_free_gb": free, "watch": watch}
     except Exception:
         return {}
 

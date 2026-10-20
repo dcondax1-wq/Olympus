@@ -1,22 +1,94 @@
 {
   "title": "Prop business ledger (owner-maintained)",
-  "how": "Edit this file (or put research/business/prop_business.xlsx with sheets 'expenses' and 'payouts', columns date, item, usd) to keep the Business page current. Amounts in USD. Nothing here changes trading.",
+  "how": "Settings and accounts for the Business page (tools/business.py). Log every payment in research/business/expenses.csv and every payout in research/business/payouts.csv (or: python tools/business.py add-expense / add-payout); python tools/build_business_tracker.py --sync copies them into prop_business.xlsx and back. A funded account: set stage 'funded', funded_start, and its balance (+ optional best_day, cycle_profit, payouts_n) for the payout reminder. Amounts in USD. Nothing here changes trading.",
   "updated": "2026-10-20",
   "accounts": [
-    {"id": "mffu_50k", "firm": "MyFundedFutures", "plan": "Builder 50K", "lit_id": "mffu_builder_50k", "stage": "eval", "start": "2026-10-19", "prior_pnl": -100, "funded_start": null, "payouts": 0},
-    {"id": "mffu_25k", "firm": "MyFundedFutures", "plan": "Builder 25K", "lit_id": "mffu_builder_25k", "stage": "planned", "start": "2026-10-26", "prior_pnl": 0, "funded_start": null, "payouts": 0}
+    {
+      "id": "mffu_50k",
+      "firm": "MyFundedFutures",
+      "plan": "Builder 50K",
+      "lit_id": "mffu_builder_50k",
+      "stage": "eval",
+      "start": "2026-10-19",
+      "prior_pnl": -100,
+      "funded_start": null,
+      "payouts": 0,
+      "aliases": [
+        "MFFU 50K eval #1",
+        "MFFU 50K Eval"
+      ],
+      "pc_bot": true
+    },
+    {
+      "id": "mffu_25k",
+      "firm": "MyFundedFutures",
+      "plan": "Builder 25K",
+      "lit_id": "mffu_builder_25k",
+      "stage": "planned",
+      "start": "2026-10-26",
+      "prior_pnl": 0,
+      "funded_start": null,
+      "payouts": 0
+    }
   ],
   "expenses": [
-    {"date": "2026-10-18", "item": "MFFU Builder 50K eval (with code)", "usd": 91.8, "kind": "eval"},
-    {"date": "2026-10-26", "item": "MFFU Builder 25K eval (planned, with code)", "usd": 63.0, "kind": "eval", "planned": true}
+    {
+      "date": "2026-10-18",
+      "item": "MFFU Builder 50K eval (with code)",
+      "usd": 91.8,
+      "kind": "eval"
+    },
+    {
+      "date": "2026-10-26",
+      "item": "MFFU Builder 25K eval (planned, with code)",
+      "usd": 63.0,
+      "kind": "eval",
+      "planned": true
+    }
   ],
   "payouts": [],
   "recurring": [
-    {"item": "NinjaTrader 8 (free license for sim / prop routing)", "usd_month": 0},
-    {"item": "Market data (through the prop firm's connection)", "usd_month": 0},
-    {"item": "GitHub Actions cloud monitor (free tier)", "usd_month": 0}
+    {
+      "item": "NinjaTrader 8 (free license for sim / prop routing)",
+      "usd_month": 0
+    },
+    {
+      "item": "Market data (through the prop firm's connection)",
+      "usd_month": 0
+    },
+    {
+      "item": "GitHub Actions cloud monitor (free tier)",
+      "usd_month": 0
+    }
   ],
-  "goal": {"name": "Corvette Z06", "usd": 115000, "note": "estimate of a new Z06 with tax and fees; set your own number here", "down_payment_usd": 23000},
-  "tax": {"set_aside_pct": 30, "note": "Not tax advice. Prop-firm payouts are usually paid as contractor income (1099), so income tax and self-employment tax apply; 25-35% set aside is a common rule of thumb. Ask a tax professional."},
-  "withdraw": {"keep_pct": 50, "reinvest_pct": 20, "note": "default payout habit: of each payout after tax, keep 50% (goal fund), 20% back into evals, the rest spending"}
+  "goal": {
+    "name": "Corvette Z06",
+    "usd": 115000,
+    "note": "placeholder: about a new Z06 with tax and fees; set your own number here (usd)",
+    "down_payment_usd": 23000,
+    "saved_extra_usd": 0,
+    "conservative_rate": "builder_alone"
+  },
+  "tax": {
+    "set_aside_pct": 30,
+    "note": "Not tax advice. Prop-firm payouts are usually paid as contractor income (1099), so income tax and self-employment tax apply; 25-35% set aside is a common rule of thumb. Ask a tax professional."
+  },
+  "withdraw": {
+    "keep_pct": 50,
+    "reinvest_pct": 20,
+    "note": "default payout habit: of each payout after tax, keep 50% (goal fund), 20% back into evals, the rest spending"
+  },
+  "payout_habit": {
+    "mffu_builder_50k": 1500,
+    "mffu_builder_25k": 1500,
+    "lucid_pro_50k": 1500,
+    "fn_rapid_daily_50k": 0,
+    "note": "ask for a funded payout only once this much sits above the buffer (lit-money-batch2.md; FundedNext 0: its $1,200 cap makes waiting worthless)"
+  },
+  "planner": {
+    "budget_usd": 300,
+    "stagger_sessions": 5,
+    "variant": "t15_be_off",
+    "note": "cash budget for evals (payouts add to it, fees take from it); next eval at least 5 sessions after the last start; variant t15_be_off = live LIT now (scale-in off), all3 = after the Sim check. Order: research/writeups/lit-funded-combo.md (ladder optional here)"
+  }
 }

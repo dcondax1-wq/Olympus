@@ -1,0 +1,1793 @@
+{
+ "built": "2026-10-20 16:02 ET",
+ "from": "research/lit/funded_combo.json",
+ "study_built": "2026-10-20 01:31",
+ "writeup": "research/writeups/lit-funded-combo.md",
+ "how": "per plan: eval pass median sessions, funded $/month, first payout sessions after funding, 6-month life (net of every fee, re-buys included) per span. H2 = Jul-Oct 2026 (quote it), 2021-25 = downside reference.",
+ "variants": {
+  "t15_be_off": {
+   "plans": {
+    "mffu_builder_50k": {
+     "firm": "MyFundedFutures",
+     "plan": "Builder 50K (the owner's eval)",
+     "price": 91.8,
+     "list": 153,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": 1000,
+     "eligible": "yes (the owner's eval)",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 1000,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": 2000,
+      "pay_pct": null,
+      "cyc_min": 0.0,
+      "every": 1,
+      "days": 2,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.5,
+      "split": 0.8,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 2
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 7.0,
+       "p10": 53.1,
+       "f10": 5.5,
+       "p60": 76.6,
+       "funded_month": 874,
+       "first_pay": 34.0,
+       "lost_6m": 0.7,
+       "net_month": 724,
+       "m46": 989,
+       "neg_6m": 6.1
+      },
+      "H2": {
+       "pass_med": 7.0,
+       "p10": 53.8,
+       "f10": 0.0,
+       "p60": 91.0,
+       "funded_month": 797,
+       "first_pay": 34.0,
+       "lost_6m": 0.7,
+       "net_month": 608,
+       "m46": 844,
+       "neg_6m": 12.3
+      },
+      "2021-25": {
+       "pass_med": 9.0,
+       "p10": 15.1,
+       "f10": 5.8,
+       "p60": 26.2,
+       "funded_month": 42,
+       "first_pay": 55.0,
+       "lost_6m": 36.7,
+       "net_month": -26,
+       "m46": 29,
+       "neg_6m": 92.7
+      }
+     }
+    },
+    "lucid_pro_50k": {
+     "firm": "Lucid Trading",
+     "plan": "LucidPro 50K (daily loss option on)",
+     "price": 115.4,
+     "list": 192,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": 1200,
+     "eligible": "yes",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 1200,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": [
+       2000,
+       2500
+      ],
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 3,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.4,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 1
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 8.0,
+       "p10": 47.7,
+       "f10": 0.0,
+       "p60": 78.9,
+       "funded_month": 989,
+       "first_pay": 32.0,
+       "lost_6m": 0.6,
+       "net_month": 784,
+       "m46": 1084,
+       "neg_6m": 7.3
+      },
+      "H2": {
+       "pass_med": 14.5,
+       "p10": 42.3,
+       "f10": 0.0,
+       "p60": 89.7,
+       "funded_month": 938,
+       "first_pay": 32.0,
+       "lost_6m": 1.3,
+       "net_month": 663,
+       "m46": 939,
+       "neg_6m": 14.1
+      },
+      "2021-25": {
+       "pass_med": 9.0,
+       "p10": 11.2,
+       "f10": 0.8,
+       "p60": 20.7,
+       "funded_month": 53,
+       "first_pay": 55.0,
+       "lost_6m": 43.7,
+       "net_month": -30,
+       "m46": 24,
+       "neg_6m": 94.5
+      }
+     }
+    },
+    "fn_rapid_daily_50k": {
+     "firm": "FundedNext Futures",
+     "plan": "Rapid Daily 50K",
+     "price": 169.99,
+     "list": 299.98,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": 1000,
+     "eligible": "yes",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 1000,
+      "buffer": 2100,
+      "pay_min": 250,
+      "pay_max": 1200,
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 1,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": null,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 1
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 8.0,
+       "p10": 47.7,
+       "f10": 0.0,
+       "p60": 78.9,
+       "funded_month": 805,
+       "first_pay": 15.0,
+       "lost_6m": 0.8,
+       "net_month": 1080,
+       "m46": 1220,
+       "neg_6m": 4.7
+      },
+      "H2": {
+       "pass_med": 14.5,
+       "p10": 42.3,
+       "f10": 0.0,
+       "p60": 89.7,
+       "funded_month": 630,
+       "first_pay": 23.0,
+       "lost_6m": 1.4,
+       "net_month": 606,
+       "m46": 771,
+       "neg_6m": 14.9
+      },
+      "2021-25": {
+       "pass_med": 10.0,
+       "p10": 11.2,
+       "f10": 0.8,
+       "p60": 22.3,
+       "funded_month": 60,
+       "first_pay": 19.0,
+       "lost_6m": 46.3,
+       "net_month": -48,
+       "m46": 24,
+       "neg_6m": 91.7
+      }
+     }
+    },
+    "fn_rapid_pro_50k": {
+     "firm": "FundedNext Futures",
+     "plan": "Rapid Pro 50K",
+     "price": 169.99,
+     "list": 299.98,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": null,
+     "eligible": "yes",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": null,
+      "buffer": 2100,
+      "pay_min": 250,
+      "pay_max": 1200,
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 3,
+      "days": 3,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.4,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 1
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 8.0,
+       "p10": 47.7,
+       "f10": 0.0,
+       "p60": 78.9,
+       "funded_month": 525,
+       "first_pay": 30.0,
+       "lost_6m": 0.7,
+       "net_month": 403,
+       "m46": 552,
+       "neg_6m": 7.1
+      },
+      "H2": {
+       "pass_med": 14.5,
+       "p10": 42.3,
+       "f10": 0.0,
+       "p60": 89.7,
+       "funded_month": 499,
+       "first_pay": 30.0,
+       "lost_6m": 1.2,
+       "net_month": 341,
+       "m46": 484,
+       "neg_6m": 13.6
+      },
+      "2021-25": {
+       "pass_med": 11.0,
+       "p10": 11.2,
+       "f10": 3.8,
+       "p60": 22.9,
+       "funded_month": 38,
+       "first_pay": 56.0,
+       "lost_6m": 41.8,
+       "net_month": -57,
+       "m46": 18,
+       "neg_6m": 93.3
+      }
+     }
+    },
+    "mffu_builder_25k": {
+     "firm": "MyFundedFutures",
+     "plan": "Builder 25K",
+     "price": 63.0,
+     "list": 105,
+     "target": 1500.0,
+     "mll": 1000.0,
+     "dll": 600,
+     "eligible": "only if MFFU allows it next to the 50K (sources conflict)",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 600,
+      "buffer": 1100,
+      "pay_min": 250,
+      "pay_max": 1000,
+      "pay_pct": null,
+      "cyc_min": 0.0,
+      "every": 1,
+      "days": 2,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.5,
+      "split": 0.8,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 2
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 6.0,
+       "p10": 55.5,
+       "f10": 10.2,
+       "p60": 72.7,
+       "funded_month": 415,
+       "first_pay": 26.0,
+       "lost_6m": 3.7,
+       "net_month": 356,
+       "m46": 441,
+       "neg_6m": 11.9
+      },
+      "H2": {
+       "pass_med": 6.0,
+       "p10": 51.3,
+       "f10": 5.1,
+       "p60": 73.1,
+       "funded_month": 343,
+       "first_pay": 27.0,
+       "lost_6m": 6.4,
+       "net_month": 282,
+       "m46": 368,
+       "neg_6m": 13.5
+      },
+      "2021-25": {
+       "pass_med": 12.0,
+       "p10": 14.5,
+       "f10": 6.9,
+       "p60": 32.2,
+       "funded_month": 21,
+       "first_pay": 37.5,
+       "lost_6m": 49.9,
+       "net_month": -20,
+       "m46": 20,
+       "neg_6m": 89.5
+      }
+     }
+    },
+    "mffu_rapid_eod_50k": {
+     "firm": "MyFundedFutures",
+     "plan": "Rapid EOD 50K",
+     "price": 94.2,
+     "list": 157.0,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": null,
+     "eligible": "only if MFFU allows it next to the Builder 50K (not stated); funded Tier-1 news ban",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": null,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": null,
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 1,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": null,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": null,
+      "first_wait": 1
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 43.0,
+       "p10": 0.0,
+       "f10": 0.0,
+       "p60": 47.7,
+       "funded_month": 4271,
+       "first_pay": 16.0,
+       "lost_6m": 7.1,
+       "net_month": 2438,
+       "m46": 3654,
+       "neg_6m": 17.7
+      },
+      "H2": {
+       "pass_med": 40.0,
+       "p10": 0.0,
+       "f10": 0.0,
+       "p60": 59.0,
+       "funded_month": 1584,
+       "first_pay": 23.0,
+       "lost_6m": 7.1,
+       "net_month": 779,
+       "m46": 1270,
+       "neg_6m": 36.1
+      },
+      "2021-25": {
+       "pass_med": 44.5,
+       "p10": 0.0,
+       "f10": 0.0,
+       "p60": 0.6,
+       "funded_month": 123,
+       "first_pay": 16.0,
+       "lost_6m": 63.6,
+       "net_month": -17,
+       "m46": 7,
+       "neg_6m": 98.6
+      }
+     }
+    },
+    "mffu_rapid_50k": {
+     "firm": "MyFundedFutures",
+     "plan": "Rapid 50K",
+     "price": 94.2,
+     "list": 157.0,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": null,
+     "eligible": "as Rapid EOD; intraday trailing floor when funded",
+     "funded": {
+      "trail": "intra",
+      "lock": 100.0,
+      "dll": null,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": null,
+      "pay_pct": null,
+      "cyc_min": 0.0,
+      "every": 1,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": null,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": null,
+      "first_wait": 1
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 23.0,
+       "p10": 9.4,
+       "f10": 0.0,
+       "p60": 66.4,
+       "funded_month": 3941,
+       "first_pay": 18.0,
+       "lost_6m": 12.5,
+       "net_month": 3013,
+       "m46": 4033,
+       "neg_6m": 14.6
+      },
+      "H2": {
+       "pass_med": 26.0,
+       "p10": 6.4,
+       "f10": 0.0,
+       "p60": 83.3,
+       "funded_month": 1318,
+       "first_pay": 23.0,
+       "lost_6m": 17.0,
+       "net_month": 881,
+       "m46": 1293,
+       "neg_6m": 35.7
+      },
+      "2021-25": {
+       "pass_med": 42.0,
+       "p10": 0.9,
+       "f10": 0.0,
+       "p60": 24.2,
+       "funded_month": 75,
+       "first_pay": 18.0,
+       "lost_6m": 69.1,
+       "net_month": -76,
+       "m46": 28,
+       "neg_6m": 96.2
+      }
+     }
+    }
+   },
+   "stacks": [
+    {
+     "stack": "B50",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0"
+     ],
+     "net_month": 724,
+     "m46": 989,
+     "neg_6m": 6.1,
+     "p10_6m": 1277,
+     "all_zero_m46": 10.9,
+     "cash": 91.8
+    },
+    {
+     "stack": "B50+Lucid",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1"
+     ],
+     "net_month": 1508,
+     "m46": 2073,
+     "neg_6m": 5.1,
+     "p10_6m": 2683,
+     "all_zero_m46": 8.7,
+     "cash": 207.2
+    },
+    {
+     "stack": "current: B50+Lucid+FN",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2"
+     ],
+     "net_month": 2588,
+     "m46": 3293,
+     "neg_6m": 3.1,
+     "p10_6m": 4848,
+     "all_zero_m46": 5.5,
+     "cash": 377.19
+    },
+    {
+     "stack": "current + 1 Rapid EOD",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3"
+     ],
+     "net_month": 5026,
+     "m46": 6947,
+     "neg_6m": 2.9,
+     "p10_6m": 5681,
+     "all_zero_m46": 4.9,
+     "cash": 471.39
+    },
+    {
+     "stack": "current + 25K a week later",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@5#3"
+     ],
+     "net_month": 2923,
+     "m46": 3725,
+     "neg_6m": 2.6,
+     "p10_6m": 5482,
+     "all_zero_m46": 4.7,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + 25K same day",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@0#3"
+     ],
+     "net_month": 2945,
+     "m46": 3734,
+     "neg_6m": 2.7,
+     "p10_6m": 5482,
+     "all_zero_m46": 4.8,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + Rapid EOD + 25K a week later",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3",
+      "mffu_builder_25k@5#4"
+     ],
+     "net_month": 5361,
+     "m46": 7379,
+     "neg_6m": 2.7,
+     "p10_6m": 6608,
+     "all_zero_m46": 4.5,
+     "cash": 534.39
+    },
+    {
+     "stack": "current + 2nd Lucid a week later",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "lucid_pro_50k@5#3"
+     ],
+     "net_month": 3327,
+     "m46": 4361,
+     "neg_6m": 2.9,
+     "p10_6m": 6146,
+     "all_zero_m46": 4.9,
+     "cash": 492.59
+    },
+    {
+     "stack": "current, Lucid + FN a week later",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@5#1",
+      "fn_rapid_daily_50k@5#2"
+     ],
+     "net_month": 2489,
+     "m46": 3286,
+     "neg_6m": 3.1,
+     "p10_6m": 4692,
+     "all_zero_m46": 5.4,
+     "cash": 377.19
+    },
+    {
+     "stack": "B50",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0"
+     ],
+     "net_month": 608,
+     "m46": 844,
+     "neg_6m": 12.3,
+     "p10_6m": -92,
+     "all_zero_m46": 17.2,
+     "cash": 91.8
+    },
+    {
+     "stack": "B50+Lucid",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1"
+     ],
+     "net_month": 1271,
+     "m46": 1784,
+     "neg_6m": 9.2,
+     "p10_6m": 941,
+     "all_zero_m46": 12.9,
+     "cash": 207.2
+    },
+    {
+     "stack": "current: B50+Lucid+FN",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2"
+     ],
+     "net_month": 1877,
+     "m46": 2555,
+     "neg_6m": 8.3,
+     "p10_6m": 819,
+     "all_zero_m46": 11.3,
+     "cash": 377.19
+    },
+    {
+     "stack": "current + 1 Rapid EOD",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3"
+     ],
+     "net_month": 2657,
+     "m46": 3825,
+     "neg_6m": 8.1,
+     "p10_6m": 820,
+     "all_zero_m46": 11.0,
+     "cash": 471.39
+    },
+    {
+     "stack": "current + 25K a week later",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@5#3"
+     ],
+     "net_month": 2145,
+     "m46": 2915,
+     "neg_6m": 6.3,
+     "p10_6m": 1072,
+     "all_zero_m46": 9.0,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + 25K same day",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@0#3"
+     ],
+     "net_month": 2160,
+     "m46": 2923,
+     "neg_6m": 6.8,
+     "p10_6m": 1080,
+     "all_zero_m46": 9.1,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + Rapid EOD + 25K a week later",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3",
+      "mffu_builder_25k@5#4"
+     ],
+     "net_month": 2924,
+     "m46": 4185,
+     "neg_6m": 6.2,
+     "p10_6m": 1181,
+     "all_zero_m46": 8.7,
+     "cash": 534.39
+    },
+    {
+     "stack": "current + 2nd Lucid a week later",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "lucid_pro_50k@5#3"
+     ],
+     "net_month": 2505,
+     "m46": 3475,
+     "neg_6m": 6.5,
+     "p10_6m": 1098,
+     "all_zero_m46": 9.6,
+     "cash": 492.59
+    },
+    {
+     "stack": "current, Lucid + FN a week later",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@5#1",
+      "fn_rapid_daily_50k@5#2"
+     ],
+     "net_month": 1811,
+     "m46": 2523,
+     "neg_6m": 6.7,
+     "p10_6m": 1109,
+     "all_zero_m46": 10.6,
+     "cash": 377.19
+    },
+    {
+     "stack": "B50",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0"
+     ],
+     "net_month": -26,
+     "m46": 29,
+     "neg_6m": 92.7,
+     "p10_6m": -459,
+     "all_zero_m46": 94.7,
+     "cash": 91.8
+    },
+    {
+     "stack": "B50+Lucid",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1"
+     ],
+     "net_month": -55,
+     "m46": 53,
+     "neg_6m": 91.3,
+     "p10_6m": -829,
+     "all_zero_m46": 93.1,
+     "cash": 207.2
+    },
+    {
+     "stack": "current: B50+Lucid+FN",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2"
+     ],
+     "net_month": -103,
+     "m46": 77,
+     "neg_6m": 88.7,
+     "p10_6m": -1485,
+     "all_zero_m46": 90.1,
+     "cash": 377.19
+    },
+    {
+     "stack": "current + 1 Rapid EOD",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3"
+     ],
+     "net_month": -121,
+     "m46": 84,
+     "neg_6m": 89.1,
+     "p10_6m": -1607,
+     "all_zero_m46": 90.0,
+     "cash": 471.39
+    },
+    {
+     "stack": "current + 25K a week later",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@5#3"
+     ],
+     "net_month": -123,
+     "m46": 96,
+     "neg_6m": 87.0,
+     "p10_6m": -1732,
+     "all_zero_m46": 87.3,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + 25K same day",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@0#3"
+     ],
+     "net_month": -124,
+     "m46": 96,
+     "neg_6m": 87.5,
+     "p10_6m": -1761,
+     "all_zero_m46": 87.5,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + Rapid EOD + 25K a week later",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3",
+      "mffu_builder_25k@5#4"
+     ],
+     "net_month": -141,
+     "m46": 103,
+     "neg_6m": 88.0,
+     "p10_6m": -1918,
+     "all_zero_m46": 87.3,
+     "cash": 534.39
+    },
+    {
+     "stack": "current + 2nd Lucid a week later",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "lucid_pro_50k@5#3"
+     ],
+     "net_month": -133,
+     "m46": 102,
+     "neg_6m": 88.5,
+     "p10_6m": -1855,
+     "all_zero_m46": 89.1,
+     "cash": 492.59
+    },
+    {
+     "stack": "current, Lucid + FN a week later",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@5#1",
+      "fn_rapid_daily_50k@5#2"
+     ],
+     "net_month": -102,
+     "m46": 78,
+     "neg_6m": 88.2,
+     "p10_6m": -1417,
+     "all_zero_m46": 90.0,
+     "cash": 377.19
+    }
+   ]
+  },
+  "all3": {
+   "plans": {
+    "mffu_builder_50k": {
+     "firm": "MyFundedFutures",
+     "plan": "Builder 50K (the owner's eval)",
+     "price": 91.8,
+     "list": 153,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": 1000,
+     "eligible": "yes (the owner's eval)",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 1000,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": 2000,
+      "pay_pct": null,
+      "cyc_min": 0.0,
+      "every": 1,
+      "days": 2,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.5,
+      "split": 0.8,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 2
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 6.0,
+       "p10": 54.7,
+       "f10": 2.3,
+       "p60": 79.7,
+       "funded_month": 834,
+       "first_pay": 36.0,
+       "lost_6m": 0.3,
+       "net_month": 682,
+       "m46": 918,
+       "neg_6m": 7.2
+      },
+      "H2": {
+       "pass_med": 6.0,
+       "p10": 55.1,
+       "f10": 0.0,
+       "p60": 91.0,
+       "funded_month": 884,
+       "first_pay": 29.0,
+       "lost_6m": 0.9,
+       "net_month": 721,
+       "m46": 959,
+       "neg_6m": 5.9
+      },
+      "2021-25": {
+       "pass_med": 9.0,
+       "p10": 15.1,
+       "f10": 5.8,
+       "p60": 26.2,
+       "funded_month": 42,
+       "first_pay": 55.0,
+       "lost_6m": 36.7,
+       "net_month": -26,
+       "m46": 29,
+       "neg_6m": 92.7
+      }
+     }
+    },
+    "lucid_pro_50k": {
+     "firm": "Lucid Trading",
+     "plan": "LucidPro 50K (daily loss option on)",
+     "price": 115.4,
+     "list": 192,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": 1200,
+     "eligible": "yes",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 1200,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": [
+       2000,
+       2500
+      ],
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 3,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.4,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 1
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 9.5,
+       "p10": 46.1,
+       "f10": 0.0,
+       "p60": 85.9,
+       "funded_month": 971,
+       "first_pay": 33.0,
+       "lost_6m": 0.5,
+       "net_month": 772,
+       "m46": 1072,
+       "neg_6m": 8.3
+      },
+      "H2": {
+       "pass_med": 6.0,
+       "p10": 51.3,
+       "f10": 0.0,
+       "p60": 91.0,
+       "funded_month": 1079,
+       "first_pay": 28.0,
+       "lost_6m": 1.5,
+       "net_month": 880,
+       "m46": 1146,
+       "neg_6m": 5.1
+      },
+      "2021-25": {
+       "pass_med": 21.0,
+       "p10": 6.2,
+       "f10": 0.8,
+       "p60": 29.9,
+       "funded_month": 52,
+       "first_pay": 52.0,
+       "lost_6m": 45.5,
+       "net_month": -28,
+       "m46": 26,
+       "neg_6m": 94.3
+      }
+     }
+    },
+    "fn_rapid_daily_50k": {
+     "firm": "FundedNext Futures",
+     "plan": "Rapid Daily 50K",
+     "price": 169.99,
+     "list": 299.98,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": 1000,
+     "eligible": "yes",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 1000,
+      "buffer": 2100,
+      "pay_min": 250,
+      "pay_max": 1200,
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 1,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": null,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 1
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 9.5,
+       "p10": 46.1,
+       "f10": 0.0,
+       "p60": 85.9,
+       "funded_month": 820,
+       "first_pay": 14.0,
+       "lost_6m": 0.9,
+       "net_month": 1076,
+       "m46": 1225,
+       "neg_6m": 5.0
+      },
+      "H2": {
+       "pass_med": 6.0,
+       "p10": 51.3,
+       "f10": 0.0,
+       "p60": 91.0,
+       "funded_month": 736,
+       "first_pay": 17.0,
+       "lost_6m": 0.9,
+       "net_month": 929,
+       "m46": 1077,
+       "neg_6m": 5.3
+      },
+      "2021-25": {
+       "pass_med": 21.0,
+       "p10": 6.2,
+       "f10": 0.8,
+       "p60": 29.8,
+       "funded_month": 60,
+       "first_pay": 19.0,
+       "lost_6m": 46.3,
+       "net_month": -46,
+       "m46": 26,
+       "neg_6m": 91.9
+      }
+     }
+    },
+    "fn_rapid_pro_50k": {
+     "firm": "FundedNext Futures",
+     "plan": "Rapid Pro 50K",
+     "price": 169.99,
+     "list": 299.98,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": null,
+     "eligible": "yes",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": null,
+      "buffer": 2100,
+      "pay_min": 250,
+      "pay_max": 1200,
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 3,
+      "days": 3,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.4,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 1
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 9.5,
+       "p10": 46.1,
+       "f10": 0.0,
+       "p60": 85.9,
+       "funded_month": 519,
+       "first_pay": 31.0,
+       "lost_6m": 0.4,
+       "net_month": 396,
+       "m46": 545,
+       "neg_6m": 8.0
+      },
+      "H2": {
+       "pass_med": 6.0,
+       "p10": 51.3,
+       "f10": 0.0,
+       "p60": 91.0,
+       "funded_month": 561,
+       "first_pay": 28.0,
+       "lost_6m": 1.3,
+       "net_month": 443,
+       "m46": 577,
+       "neg_6m": 5.1
+      },
+      "2021-25": {
+       "pass_med": 20.0,
+       "p10": 6.2,
+       "f10": 3.8,
+       "p60": 27.9,
+       "funded_month": 37,
+       "first_pay": 53.5,
+       "lost_6m": 42.9,
+       "net_month": -55,
+       "m46": 18,
+       "neg_6m": 93.5
+      }
+     }
+    },
+    "mffu_builder_25k": {
+     "firm": "MyFundedFutures",
+     "plan": "Builder 25K",
+     "price": 63.0,
+     "list": 105,
+     "target": 1500.0,
+     "mll": 1000.0,
+     "dll": 600,
+     "eligible": "only if MFFU allows it next to the 50K (sources conflict)",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": 600,
+      "buffer": 1100,
+      "pay_min": 250,
+      "pay_max": 1000,
+      "pay_pct": null,
+      "cyc_min": 0.0,
+      "every": 1,
+      "days": 2,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": 0.5,
+      "split": 0.8,
+      "split_first": null,
+      "max_payouts": 5,
+      "first_wait": 2
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 8.0,
+       "p10": 45.3,
+       "f10": 4.7,
+       "p60": 75.0,
+       "funded_month": 392,
+       "first_pay": 29.0,
+       "lost_6m": 2.6,
+       "net_month": 311,
+       "m46": 408,
+       "neg_6m": 11.3
+      },
+      "H2": {
+       "pass_med": 9.0,
+       "p10": 50.0,
+       "f10": 0.0,
+       "p60": 87.2,
+       "funded_month": 381,
+       "first_pay": 27.0,
+       "lost_6m": 2.9,
+       "net_month": 301,
+       "m46": 405,
+       "neg_6m": 9.5
+      },
+      "2021-25": {
+       "pass_med": 18.0,
+       "p10": 6.0,
+       "f10": 5.7,
+       "p60": 22.0,
+       "funded_month": 18,
+       "first_pay": 43.0,
+       "lost_6m": 45.9,
+       "net_month": -26,
+       "m46": 11,
+       "neg_6m": 94.6
+      }
+     }
+    },
+    "mffu_rapid_eod_50k": {
+     "firm": "MyFundedFutures",
+     "plan": "Rapid EOD 50K",
+     "price": 94.2,
+     "list": 157.0,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": null,
+     "eligible": "only if MFFU allows it next to the Builder 50K (not stated); funded Tier-1 news ban",
+     "funded": {
+      "trail": "eod",
+      "lock": 100.0,
+      "dll": null,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": null,
+      "pay_pct": null,
+      "cyc_min": 500,
+      "every": 1,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": null,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": null,
+      "first_wait": 1
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 45.0,
+       "p10": 0.0,
+       "f10": 0.0,
+       "p60": 47.7,
+       "funded_month": 4296,
+       "first_pay": 15.0,
+       "lost_6m": 3.9,
+       "net_month": 2184,
+       "m46": 3507,
+       "neg_6m": 20.8
+      },
+      "H2": {
+       "pass_med": 38.0,
+       "p10": 0.0,
+       "f10": 0.0,
+       "p60": 64.1,
+       "funded_month": 2264,
+       "first_pay": 20.0,
+       "lost_6m": 5.1,
+       "net_month": 1265,
+       "m46": 1990,
+       "neg_6m": 20.5
+      },
+      "2021-25": {
+       "pass_med": 55.0,
+       "p10": 0.0,
+       "f10": 0.0,
+       "p60": 0.1,
+       "funded_month": 111,
+       "first_pay": 23.0,
+       "lost_6m": 64.2,
+       "net_month": -17,
+       "m46": 9,
+       "neg_6m": 98.9
+      }
+     }
+    },
+    "mffu_rapid_50k": {
+     "firm": "MyFundedFutures",
+     "plan": "Rapid 50K",
+     "price": 94.2,
+     "list": 157.0,
+     "target": 3000.0,
+     "mll": 2000.0,
+     "dll": null,
+     "eligible": "as Rapid EOD; intraday trailing floor when funded",
+     "funded": {
+      "trail": "intra",
+      "lock": 100.0,
+      "dll": null,
+      "buffer": 2100,
+      "pay_min": 500,
+      "pay_max": null,
+      "pay_pct": null,
+      "cyc_min": 0.0,
+      "every": 1,
+      "days": 0,
+      "win_days": 0,
+      "win_min": 0.0,
+      "cons": null,
+      "split": 0.9,
+      "split_first": null,
+      "max_payouts": null,
+      "first_wait": 1
+     },
+     "spans": {
+      "H1": {
+       "pass_med": 26.5,
+       "p10": 6.2,
+       "f10": 0.0,
+       "p60": 76.6,
+       "funded_month": 3964,
+       "first_pay": 16.0,
+       "lost_6m": 16.7,
+       "net_month": 3045,
+       "m46": 4195,
+       "neg_6m": 17.1
+      },
+      "H2": {
+       "pass_med": 26.0,
+       "p10": 11.5,
+       "f10": 0.0,
+       "p60": 85.9,
+       "funded_month": 1926,
+       "first_pay": 20.0,
+       "lost_6m": 14.7,
+       "net_month": 1361,
+       "m46": 1955,
+       "neg_6m": 21.3
+      },
+      "2021-25": {
+       "pass_med": 42.0,
+       "p10": 0.9,
+       "f10": 0.0,
+       "p60": 24.2,
+       "funded_month": 73,
+       "first_pay": 22.0,
+       "lost_6m": 64.5,
+       "net_month": -79,
+       "m46": 25,
+       "neg_6m": 96.3
+      }
+     }
+    }
+   },
+   "stacks": [
+    {
+     "stack": "B50",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0"
+     ],
+     "net_month": 682,
+     "m46": 918,
+     "neg_6m": 7.2,
+     "p10_6m": 1177,
+     "all_zero_m46": 13.6,
+     "cash": 91.8
+    },
+    {
+     "stack": "B50+Lucid",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1"
+     ],
+     "net_month": 1454,
+     "m46": 1989,
+     "neg_6m": 5.1,
+     "p10_6m": 2442,
+     "all_zero_m46": 9.8,
+     "cash": 207.2
+    },
+    {
+     "stack": "current: B50+Lucid+FN",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2"
+     ],
+     "net_month": 2530,
+     "m46": 3214,
+     "neg_6m": 3.0,
+     "p10_6m": 4839,
+     "all_zero_m46": 5.9,
+     "cash": 377.19
+    },
+    {
+     "stack": "current + 1 Rapid EOD",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3"
+     ],
+     "net_month": 4714,
+     "m46": 6721,
+     "neg_6m": 2.9,
+     "p10_6m": 5533,
+     "all_zero_m46": 5.2,
+     "cash": 471.39
+    },
+    {
+     "stack": "current + 25K a week later",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@5#3"
+     ],
+     "net_month": 2828,
+     "m46": 3624,
+     "neg_6m": 2.9,
+     "p10_6m": 5110,
+     "all_zero_m46": 5.4,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + 25K same day",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@0#3"
+     ],
+     "net_month": 2840,
+     "m46": 3622,
+     "neg_6m": 2.9,
+     "p10_6m": 5128,
+     "all_zero_m46": 5.3,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + Rapid EOD + 25K a week later",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3",
+      "mffu_builder_25k@5#4"
+     ],
+     "net_month": 5013,
+     "m46": 7131,
+     "neg_6m": 2.8,
+     "p10_6m": 5807,
+     "all_zero_m46": 4.9,
+     "cash": 534.39
+    },
+    {
+     "stack": "current + 2nd Lucid a week later",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "lucid_pro_50k@5#3"
+     ],
+     "net_month": 3261,
+     "m46": 4260,
+     "neg_6m": 2.7,
+     "p10_6m": 5779,
+     "all_zero_m46": 5.7,
+     "cash": 492.59
+    },
+    {
+     "stack": "current, Lucid + FN a week later",
+     "span": "H1",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@5#1",
+      "fn_rapid_daily_50k@5#2"
+     ],
+     "net_month": 2442,
+     "m46": 3199,
+     "neg_6m": 3.1,
+     "p10_6m": 4409,
+     "all_zero_m46": 6.1,
+     "cash": 377.19
+    },
+    {
+     "stack": "B50",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0"
+     ],
+     "net_month": 721,
+     "m46": 959,
+     "neg_6m": 5.9,
+     "p10_6m": 1272,
+     "all_zero_m46": 10.2,
+     "cash": 91.8
+    },
+    {
+     "stack": "B50+Lucid",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1"
+     ],
+     "net_month": 1601,
+     "m46": 2105,
+     "neg_6m": 3.2,
+     "p10_6m": 2833,
+     "all_zero_m46": 6.9,
+     "cash": 207.2
+    },
+    {
+     "stack": "current: B50+Lucid+FN",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2"
+     ],
+     "net_month": 2530,
+     "m46": 3182,
+     "neg_6m": 2.6,
+     "p10_6m": 4518,
+     "all_zero_m46": 5.1,
+     "cash": 377.19
+    },
+    {
+     "stack": "current + 1 Rapid EOD",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3"
+     ],
+     "net_month": 3795,
+     "m46": 5172,
+     "neg_6m": 2.6,
+     "p10_6m": 4825,
+     "all_zero_m46": 4.7,
+     "cash": 471.39
+    },
+    {
+     "stack": "current + 25K a week later",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@5#3"
+     ],
+     "net_month": 2816,
+     "m46": 3583,
+     "neg_6m": 2.3,
+     "p10_6m": 4919,
+     "all_zero_m46": 4.5,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + 25K same day",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@0#3"
+     ],
+     "net_month": 2831,
+     "m46": 3587,
+     "neg_6m": 2.5,
+     "p10_6m": 4868,
+     "all_zero_m46": 4.6,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + Rapid EOD + 25K a week later",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3",
+      "mffu_builder_25k@5#4"
+     ],
+     "net_month": 4081,
+     "m46": 5573,
+     "neg_6m": 2.3,
+     "p10_6m": 5339,
+     "all_zero_m46": 4.3,
+     "cash": 534.39
+    },
+    {
+     "stack": "current + 2nd Lucid a week later",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "lucid_pro_50k@5#3"
+     ],
+     "net_month": 3373,
+     "m46": 4341,
+     "neg_6m": 2.4,
+     "p10_6m": 5974,
+     "all_zero_m46": 4.5,
+     "cash": 492.59
+    },
+    {
+     "stack": "current, Lucid + FN a week later",
+     "span": "H2",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@5#1",
+      "fn_rapid_daily_50k@5#2"
+     ],
+     "net_month": 2449,
+     "m46": 3183,
+     "neg_6m": 2.3,
+     "p10_6m": 4311,
+     "all_zero_m46": 5.1,
+     "cash": 377.19
+    },
+    {
+     "stack": "B50",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0"
+     ],
+     "net_month": -26,
+     "m46": 29,
+     "neg_6m": 92.7,
+     "p10_6m": -459,
+     "all_zero_m46": 94.7,
+     "cash": 91.8
+    },
+    {
+     "stack": "B50+Lucid",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1"
+     ],
+     "net_month": -54,
+     "m46": 54,
+     "neg_6m": 91.1,
+     "p10_6m": -829,
+     "all_zero_m46": 92.9,
+     "cash": 207.2
+    },
+    {
+     "stack": "current: B50+Lucid+FN",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2"
+     ],
+     "net_month": -101,
+     "m46": 80,
+     "neg_6m": 89.1,
+     "p10_6m": -1431,
+     "all_zero_m46": 90.4,
+     "cash": 377.19
+    },
+    {
+     "stack": "current + 1 Rapid EOD",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3"
+     ],
+     "net_month": -118,
+     "m46": 90,
+     "neg_6m": 89.1,
+     "p10_6m": -1605,
+     "all_zero_m46": 90.2,
+     "cash": 471.39
+    },
+    {
+     "stack": "current + 25K a week later",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@5#3"
+     ],
+     "net_month": -127,
+     "m46": 89,
+     "neg_6m": 89.1,
+     "p10_6m": -1732,
+     "all_zero_m46": 89.4,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + 25K same day",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_builder_25k@0#3"
+     ],
+     "net_month": -126,
+     "m46": 91,
+     "neg_6m": 89.2,
+     "p10_6m": -1732,
+     "all_zero_m46": 89.3,
+     "cash": 440.19
+    },
+    {
+     "stack": "current + Rapid EOD + 25K a week later",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "mffu_rapid_eod_50k@0#3",
+      "mffu_builder_25k@5#4"
+     ],
+     "net_month": -144,
+     "m46": 99,
+     "neg_6m": 89.3,
+     "p10_6m": -1910,
+     "all_zero_m46": 89.3,
+     "cash": 534.39
+    },
+    {
+     "stack": "current + 2nd Lucid a week later",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@0#1",
+      "fn_rapid_daily_50k@0#2",
+      "lucid_pro_50k@5#3"
+     ],
+     "net_month": -130,
+     "m46": 105,
+     "neg_6m": 89.1,
+     "p10_6m": -1833,
+     "all_zero_m46": 89.7,
+     "cash": 492.59
+    },
+    {
+     "stack": "current, Lucid + FN a week later",
+     "span": "2021-25",
+     "accounts": [
+      "mffu_builder_50k@0#0",
+      "lucid_pro_50k@5#1",
+      "fn_rapid_daily_50k@5#2"
+     ],
+     "net_month": -101,
+     "m46": 79,
+     "neg_6m": 88.7,
+     "p10_6m": -1407,
+     "all_zero_m46": 89.7,
+     "cash": 377.19
+    }
+   ]
+  }
+ }
+}

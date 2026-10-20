@@ -8,9 +8,10 @@
 //   Learn      (#page-learn)    LIT learning center (steps + diagram + glossary), research library, strategy versions,
 //                               trade gallery
 //   System     (#page-system)   upgrades tracker, PC uptime, discipline log, data quality
-// API (GETs only): /api/next/hub/firms|business|market|learn|system, /api/next/hub/odds. Nothing here touches the bot.
+// API (GETs only): /api/next/hub/firms|business|biz|market|learn|system, /api/next/hub/odds (biz: bizpages.js). Nothing here touches the bot.
 import { $, $$, api, esc, fmt$, fmtS$, fmtN, cls, etStr, toast } from '../util.js';
 import { icon } from './icons.js';
+import { bizSections, watchCard } from './bizpages.js';
 
 const H = {};
 const ok = (v) => v != null && v !== '' && !Number.isNaN(+v);
@@ -170,7 +171,7 @@ function combosHTML(d) {
 }
 async function renderFirms(force) {
   const el = $('#page-firms'); if (!el || !isActive('firms')) return;
-  const d = await get('firms', '/api/next/hub/firms', force);
+  const [d, bz] = await Promise.all([get('firms', '/api/next/hub/firms', force), get('bizx', '/api/next/hub/biz', force)]);
   if (!d || d.error) { el.innerHTML = hero('Prop firms', 'Prop firm hub', '') + empty('No firm data.', d?.error || ''); return; }
   const c = d.counts || {};
   const firms = [['all', 'All plans'], ['bot', 'Bot allowed'], ['nocons', 'No eval best-day rule'], ...(d.firms || []).map((f) => [f.id, f.name.replace(/ \(.+\)/, '').replace('MyFundedFutures', 'MFFU')])];
@@ -179,6 +180,7 @@ async function renderFirms(force) {
       `<div class="nx-chips">${chip(`${c.facts || 0} facts`)}${chip(`${c.confirmed || 0} confirmed`, 'good')}${chip(`${c.unconfirmed || 0} unconfirmed`, 'warn')}${chip(`${c.conflict || 0} conflict`, 'high')}</div>`)}
     <div class="grid cols-2">${card('What to buy next', nextHTML(d), `<span class="muted small">from the funded write-ups</span>`)}${card('Discount codes', codesHTML(d), '<span class="muted small">copy, then verify at checkout</span>')}</div>
     ${card('Compare every plan', `<div class="nx-toolbar">${segH('hbFirmF', firms, F.filter)}<label class="nx-field">${icon('search')}<input id="hbFirmQ" class="inp" placeholder="Search rules" value="${esc(F.q)}" autocomplete="off"></label></div><div id="hbFirmT">${tableHTML(d)}</div>`)}
+    ${watchCard(bz)}
     ${sec('Firms')}<div class="hb-firms">${(d.firms || []).map(firmCard).join('')}</div>
     ${sec('Live accounts: moving from sim-funded to real money')}${card('When and how each firm moves you live', liveHTML(d), '<span class="muted small">never arm live for the bot: MFFU needs you present</span>')}
     ${sec('Combinations')}${card('Two or three accounts together', combosHTML(d))}
@@ -280,7 +282,7 @@ function drawWithdraw(b) {
 }
 async function renderBusiness(force) {
   const el = $('#page-business'); if (!el || !isActive('business')) return;
-  const b = await get('biz', '/api/next/hub/business', force);
+  const [b, bz] = await Promise.all([get('biz', '/api/next/hub/business', force), get('bizx', '/api/next/hub/biz', force)]);
   if (!b || b.error) { el.innerHTML = hero('Business', 'Prop business', '') + empty('No business data.', b?.error || ''); return; }
   const ev = b.eval || {};
   el.innerHTML = `<div class="hb-page">${hero(`${icon('wallet')} Business · paper`, 'The eval, the payouts and the money',
@@ -296,7 +298,8 @@ async function renderBusiness(force) {
     ${sec('Money')}
     <div class="grid cols-2">${card('Fees, payouts and net business P&amp;L', pnlHTML(b.pnl || {}, b.tax))}${card('Tax set-aside · not tax advice', taxHTML(b.tax))}</div>
     <div class="grid cols-2">${card('Goal tracker · Z06', goalHTML(b.goal, b.goal_full_plan))}${card('Withdrawal planner · payout habit', withdrawHTML(b.withdraw))}</div>
-    ${card('Funded scaling planner · budget → which evals when', scalingHTML(b.scaling))}</div>`;
+    ${card('Funded scaling planner · budget → which evals when', scalingHTML(b.scaling))}
+    ${bizSections(bz)}</div>`;
   bindBusiness(el, b);
 }
 function bindBusiness(el, b) {
