@@ -143,6 +143,8 @@ jobs:
             # the learning loop (engine/lit_learn.py): the append-only trade journal and the learned knobs / decisions log
             git show FETCH_HEAD:lit_journal.jsonl > dash/lit_journal.jsonl 2>/dev/null || rm -f dash/lit_journal.jsonl
             git show FETCH_HEAD:lit_learning.json > dash/lit_learning.json 2>/dev/null || rm -f dash/lit_learning.json
+            # recap cards + brief image + their index (tools/recap.py): each drawn once, the newest 30 kept
+            git archive --format=tar FETCH_HEAD recaps 2>/dev/null | tar -x -C dash 2>/dev/null || true
           fi
 
       - name: Run paper monitor

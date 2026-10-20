@@ -42,6 +42,8 @@ self.addEventListener('push', (e) => {
     data: { url: safeHash(d.url), key: d.key || null, t: d.t || null }, timestamp: d.t ? d.t * 1000 : Date.now() };
   if (d.tag) { opts.tag = String(d.tag); opts.renotify = true; }
   if (d.require) { opts.requireInteraction = true; opts.vibrate = [400, 150, 400, 150, 400]; }   // the Surface-offline alert stays until tapped
+  // recap card / brief image (tools/recap.py): only a PNG on this app's own site; phones without notification images ignore it
+  if (typeof d.image === 'string' && d.image.length < 300) { try { const iu = new URL(d.image); if (iu.origin === location.origin && /\.png$/.test(iu.pathname)) opts.image = iu.href; } catch (_) {} }
   e.waitUntil(Promise.all([
     self.registration.showNotification(title, opts),
     badgeGet().then((n) => badgeSet(n + 1).then(() => (self.navigator && self.navigator.setAppBadge ? self.navigator.setAppBadge(n + 1) : null))).catch(() => null),
