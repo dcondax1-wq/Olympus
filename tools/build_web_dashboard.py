@@ -9,6 +9,9 @@ data.json holds:
             `pc`: the always-on PC bot's heartbeat {present, t, age_s, silent, running, adapter, position, model_state, host, reason},
             `notices`: the last 80 phone notifications (fills, outcomes, PC silent, eval timing) for the app's Activity feed, and
             `push`: the public notification status {configured, vapid_public, devices, device_ids, sent_this_run, gone, ...})
+  exec      execution quality of the live eval (engine/fill_audit.heartbeat_block from the PC heartbeat): slippage $ per trade /
+            month against the backtest on the same bars, missed trades (why, backtest $) and extra trades; null before the
+            PC's first audit
   results   the live-settings 5-year replay (periods, months, daily P&L, stop buckets, eval odds, lessons)
   trades    every replay trade with its report (why it entered / plan / result / lessons); 2026 with full detail
   replays   5m session bars for each replay trade day (tools/export_replays.py); LIT trade charts (bars + every marker of
@@ -676,7 +679,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         print("  accounts unavailable:", e.__class__.__name__, e)
         accounts = []
     if isinstance(live.get("pc"), dict):
-        live["pc"] = {k: v for k, v in live["pc"].items() if k != "acct"}
+        live["pc"] = {k: v for k, v in live["pc"].items() if k not in ("acct", "exec")}
         try:                       # the verdict again at build time (the heartbeat age grows between cloud runs)
             from engine import accounts as _acc_v
             live["pc_verdict"] = _acc_v.verdict(st.get("pc"), st.get("last_run") or None)
@@ -742,6 +745,9 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     data["lab_files"] = have
     # the learning loop (engine/lit_learn.py): the cloud's summary from state.json, else the repo's learning file + journal
     data["learning"] = st.get("learning") or _learning_fallback()
+    # execution quality of the live eval (engine/fill_audit.py on the PC, carried by its heartbeat as "exec"): slippage $ per
+    # trade / month against the backtest, missed and extra trades (live_panel.js execution card)
+    data["exec"] = (st.get("pc") or {}).get("exec") if isinstance(st.get("pc"), dict) else None
     data["extras"] = _extras(st, lm, bt)          # extras.js pages (Eval HQ, Edge, Calendar, Ops, MFFU rules)
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)

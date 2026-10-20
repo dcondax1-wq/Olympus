@@ -1022,3 +1022,8 @@ kbd, .nx-search kbd { font: 600 10.5px var(--mono); padding: 3px 6px; border-rad
   .pc-hq-stats, .pc-wk { grid-template-columns: 1fr; }
   .pc-hb .r { grid-template-columns: 70px minmax(40px, 1fr) 64px; }
 }
+
+/* extra accounts card (engine/multi_account.py) */
+.pc-xaccs { display: grid; gap: 10px; }
+.pc-xacc { padding: 8px 0; border-top: 1px solid var(--line, rgba(255,255,255,.08)); }
+.pc-xacc:first-child { border-top: 0; }
