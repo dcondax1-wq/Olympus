@@ -366,3 +366,8 @@ router.include_router(_hub_router)
 # Business tools (statement, tax year, payout + eval-purchase reminders, scaling calendar, goal, ROI, watchers): engine/biz_api.py
 from .biz_api import router as _biz_router  # noqa: E402
 router.include_router(_biz_router)
+
+# Operator tools (pulse for sound / desktop alerts + tab badge, live chart with the LIT levels, log viewer, NinjaTrader
+# panel, session timeline, settings viewer, morning report): read-only GETs (engine/pcops_api.py)
+from .pcops_api import router as _ops_router  # noqa: E402
+router.include_router(_ops_router)

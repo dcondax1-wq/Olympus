@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="/css/dash.css">
   <link rel="stylesheet" href="/css/next.css">
   <link rel="stylesheet" href="/css/hub.css">
+  <link rel="stylesheet" href="/css/ops.css">
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#07080c">
   <meta name="mobile-web-app-capable" content="yes">
@@ -403,6 +404,7 @@
         <div class="card"><div class="card-h"><h3>Appearance</h3></div><div id="appearanceOut"></div></div>
         <div class="card"><div class="card-h"><h3>Interface</h3><span class="muted small">this browser</span></div><div id="nxInterface"></div></div>
       </div>
+      <div class="card" style="margin-top:14px"><div class="card-h"><h3>Alerts on this PC</h3><span class="muted small">sound · desktop notifications · tab badge</span></div><div id="nxAlerts"></div></div>
     </section>
 
     <!-- ============================================================ NEWS & RISK -->
@@ -485,6 +487,14 @@
     <section class="page" id="page-edge"><div class="empty">Loading the edge…</div></section>
     <section class="page" id="page-pnlcal"><div class="empty">Loading the P&amp;L calendar…</div></section>
     <section class="page" id="page-mffurules"><div class="empty">Loading the MFFU rules…</div></section>
+
+    <!-- ============================================================ OPERATOR TOOLS (js/next/pcops.js, read-only) -->
+    <section class="page" id="page-morning"><div class="empty">Loading the morning report…</div></section>
+    <section class="page" id="page-livechart"><div class="empty">Loading the live chart…</div></section>
+    <section class="page" id="page-botlog"><div class="empty">Loading the bot log…</div></section>
+    <section class="page" id="page-ntpanel"><div class="empty">Loading the NinjaTrader panel…</div></section>
+    <section class="page" id="page-timeline"><div class="empty">Loading the session timeline…</div></section>
+    <section class="page" id="page-livesettings"><div class="empty">Loading the live settings…</div></section>
 
     <!-- ============================================================ HUB: prop firms, business, market, learn, system (js/next/hubpages.js) -->
     <section class="page" id="page-firms"><div class="empty">Loading the prop firms…</div></section>
