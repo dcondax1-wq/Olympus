@@ -131,11 +131,50 @@ def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None =
         if w is None:
             r0 = lit_qty_core(qty, trade, c, room=room, max_micros=max_micros, state=state, learning=learning)
             r0["reasons"] = list(r0.get("reasons") or []) + ["eval weekly loss stop: week P&L unknown (eval_state today=), not applied"]
-            return r0 if c.get("guard") is None else day_guard(r0, trade, c, room=room, state=state)
+            r0 = r0 if c.get("guard") is None else day_guard(r0, trade, c, room=room, state=state)
+            return eval_lock(r0, c, state)
     r = lit_qty_core(qty, trade, c, room=room, max_micros=max_micros, state=state, learning=learning)
-    if c.get("guard") is None:
+    if c.get("guard") is not None:
+        r = day_guard(r, trade, c, room=room, state=state)
+    return eval_lock(r, c, state)
+
+
+def eval_lock(r: dict, cfg: dict, state: dict | None) -> dict:
+    """Pass / fail lock of an eval account (2026-10-20, engine/eval_life.py), every eval mode incl. two_week's after_mode
+    (safe_eval after session 10, which has no stop_at_target of its own). Acts only with a known eval state:
+      passed  profit (earlier sessions) + today's closed P&L >= the target: no normal-size trade. While the eval has fewer
+              than min_days traded days (two_week.min_days, default 2) and the target came on an EARLIER session, the
+              session's first entry trades 1 micro (the MFFU minimum-days trade); otherwise 0.
+      failed  room to the trailing max-loss floor <= 0: 0 (the min-1-micro rule of the room caps never trades a failed eval).
+    cfg "pass_lock": false switches it off (then exactly the sizing before 2026-10-20). Sessions <= two_week_until in
+    two_week mode already did this inside two_week_qty, so the result there is unchanged."""
+    c = cfg or {}
+    if c.get("pass_lock") is False or state is None or (c.get("mode") or "normal") not in EVAL_MODES:
         return r
-    return day_guard(r, trade, c, room=room, state=state)
+    q = int(r.get("qty") or 0)
+    if q <= 0:
+        return r
+    tw = c.get("two_week") or {}
+    tgt = float((tw.get("acct") or {}).get("target", TW_50K["target"]))
+    prof, cum, room = _num(state.get("profit")), float(_num(state.get("cum"), 0.0)), _num(state.get("room"))
+    out = {**r, "reasons": list(r.get("reasons") or [])}
+    if room is not None and room <= 0:
+        out.update(qty=0, mult=0.0, lock="failed")
+        out["reasons"].append(f"eval failed: room ${room:,.0f} to the max-loss floor: no new trade")
+        return out
+    if prof is None or prof + cum < tgt:
+        return r
+    mind = tw.get("min_days", TW_DEFAULT["min_days"])
+    dtr = _num(state.get("days_traded"), 1.0)
+    if mind and prof >= tgt and cum == 0 and not state.get("n_today") and dtr < float(mind):
+        if q != 1:
+            out.update(qty=1, mult=round(out.get("mult", 1.0) / q, 4) if q else 0.0)
+            out["reasons"].append(f"eval passed: minimum-days trade ({int(dtr)} of {int(mind)} trading days) -> 1 micro")
+        out["lock"] = "min_days"
+        return out
+    out.update(qty=0, mult=0.0, lock="passed")
+    out["reasons"].append(f"eval passed (+${prof + cum:,.0f} >= ${tgt:,.0f}): no new trade on this eval")
+    return out
 
 
 def day_guard(r: dict, trade: dict, cfg: dict, room: float | None = None, state: dict | None = None) -> dict:

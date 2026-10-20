@@ -279,6 +279,10 @@ eval, over 6 months, per month:
     limits for this study);
   - `tools/cloud_monitor.py` `lit_eval_state()`: pass `today=day` the same way.
   - Without that, the option logs "week P&L unknown" and changes nothing. Run `lit_risk_m_wk1200`.
+  - **Wired 2026-10-20** (`engine/eval_life.py`, `tests/test_eval_lifecycle.py`): both callers pass `today=`, every eval mode
+    (also safe_eval after session 10) gets the state, the PC Today page / phone Eval HQ show "weekly loss stop: off / armed /
+    tripped" and the PC bot pushes once when it trips. Still OFF in `live_model.json`: the switch is the one line above, in
+    `live_model.json` and `live_model_lit.json`.
 - **Everything else:** no change. Live funded sizing and the $1,500+ payout habit stay.
 
 ## Files

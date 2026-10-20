@@ -151,7 +151,17 @@ export async function renderStatus(force) {
       <div><span>LIT stage</span><b>${esc((STAGES.find(([k]) => k === lit.stage) || [0, lit.stage === 'closed' ? 'Market closed' : '—'])[1])}</b><em>${lit.price ? 'NQ ' + px(lit.price) : ''}${s.rules?.monday ? ' · ' + esc(s.rules.monday) : ''}</em></div>
       <div><span>Setups today</span><b>${setups.length}</b><em>${last ? `${esc(last.side)} ${esc(last.level || '')} ${last.t ? '@ ' + etStr(last.t) : ''}${last.rr ? ` · ${fmtN(last.rr, 1)}R` : ''}` : (s.pending || []).length ? 'limit armed' : 'none yet'}</em></div>
       <div><span>Eval</span><b>${ec.session ? `Session ${ec.session} of ${ec.limit || 10}` : '—'}</b><em>${esc(ec.text || '')}</em></div>
+      ${evalLifeCell(s.eval_life)}
     </div>${stageRail(lit)}`;
+}
+
+// eval lifecycle (engine/eval_life.py, read-only): passed / failed / min-days and the weekly loss stop off / armed / tripped
+function evalLifeCell(el) {
+  if (!el) return '';
+  const wk = el.wk_stop || {}, st = String(el.status || 'open');
+  const lvl = st === 'failed' || wk.state === 'tripped' ? 'bad' : st === 'passed' ? 'good' : '';
+  const head = st === 'passed' ? 'PASSED' : st === 'failed' ? 'FAILED' : wk.state === 'tripped' ? 'Weekly stop: no trade till Mon' : 'Trading';
+  return `<div class="${lvl}"><span>Eval state · weekly loss stop: ${esc(wk.state || 'off')}</span><b>${esc(head)}</b><em>${esc(st === 'passed' || st === 'failed' ? (el.trading || '') : (wk.text || ''))}</em></div>`;
 }
 
 // ------------------------------------------------------------------ eval card + position (Accounts)

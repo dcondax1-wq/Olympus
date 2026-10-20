@@ -712,6 +712,13 @@ def pc_health(bot, now=None) -> dict:
             "uptime": {"server_s": max(0, now - _PROC_T0),
                        "bot_s": max(0, now - int(bot.started_at)) if getattr(bot, "started_at", None) else None},
         }
+        el = st.get("eval_life")
+        if isinstance(el, dict):                      # engine/eval_life.py: the bot itself pushes the pass / fail / weekly-stop notices
+            wk = el.get("wk_stop") or {}
+            out["eval_life"] = {"status": clean_text(el.get("status"), 20), "trading": clean_text(el.get("trading"), 120),
+                                "min_days_left": _i(el.get("min_days_left")), "wk_stop": clean_text(wk.get("state"), 10),
+                                "wk_text": clean_text(wk.get("text"), 120), "wk_pnl": _f(wk.get("wk_pnl")),
+                                "wk_limit": _f(wk.get("limit")), "pushes": True}
         if adapter == "ninjatrader" and ad is not None:
             out["nt"] = _nt_status(ad)
         out["auto"] = _auto_status()
