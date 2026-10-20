@@ -165,6 +165,11 @@ Run these in a PowerShell window in the project folder, with NinjaTrader open an
    chart. If step 3 says "flat not confirmed", NinjaTrader may want the exchange in the CLOSEPOSITION instrument.
    Flatten by hand, run `python -m engine.ninjatrader --sim-roundtrip --close-suffix " Globex"`, and if that passes,
    add `--close-suffix " Globex"` to every `--start` below.
+   **Scale-in check (needed before the add after breakeven runs on a real account):**
+   `python -m engine.ninjatrader --sim-roundtrip-add` (market open, Sim101 only). Buys 1 MNQ with stop and target,
+   moves the stop up, shows one refused add (stop not where it was sized), then adds 1 MNQ. It pauses: in the
+   **Orders** tab the stop (Stop Market) and the target (Limit) must BOTH show quantity **2**, and Positions LONG 2.
+   Press Enter: it flattens. Expect five `OK` lines. If the quantity stayed 1, tell Claude: the add route is not safe.
 4. Start the bot on Sim101. The server must be running (`scripts\run_bot.ps1`, or `python server.py`). Then run
    `python -m engine.ninjatrader --start`. That starts adapter `ninjatrader` on account `Sim101` with NinjaTrader's
    bars. The dashboard's Execution menu does not list NinjaTrader yet; use this command. The dashboard's **Stop**

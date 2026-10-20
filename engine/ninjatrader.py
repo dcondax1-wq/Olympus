@@ -772,6 +772,10 @@ class NinjaTraderAdapter:
         insts = self._instruments()
         plan = [(insts["mini"], sp["minis"], "N"), (insts["micro"], sp["micros"], "M")]
         plan = [x for x in plan if x[1] > 0]
+        bad = self._contract_mismatch([inst for inst, _, _ in plan])
+        if bad:
+            self._risk(bad, alert=True)
+            return {"ok": False, "error": "REFUSED: " + bad}
         for inst, _, _ in plan:
             p = self.position_for(inst)
             if p and p["side"] != "FLAT":
@@ -802,6 +806,19 @@ class NinjaTraderAdapter:
         for lg in legs:
             st = self.read_order(lg["entry_id"])
             self._note_fill(lg, st)
+            gap = abs(float(lg["fill_px"] or 0) - float(ref)) if ref and lg["filled"] > 0 and lg["fill_px"] else 0.0
+            if gap > float(self.cfg.get("nt_max_fill_gap_pct", 0.6)) / 100.0 * float(ref or 0):
+                # the roll guard's backstop: filled a roll gap away from the price the stop / target were computed on (the
+                # chart on the old contract): never place that bracket, flatten at once
+                self._risk(f"Chart is on the old contract? {lg['instrument']} filled @ {lg['fill_px']}, {gap:.2f} pts from the "
+                           f"chart's price {float(ref):.2f}: stop/target not placed, flattening. Switch the LE_BarFeed chart to "
+                           f"{lg['instrument']}.", alert=True)
+                fl = self._close([lg], why="fill a roll gap away from the chart price")
+                errors.append(f"{lg['instrument']}: fill {gap:.0f} pts from the chart price, flattened"
+                              + ("" if fl["ok"] else " (flatten NOT confirmed)"))
+                out.append({"instrument": lg["instrument"], "qty": lg["qty"], "ok": False, "filled": lg["filled"],
+                            "fill_px": lg["fill_px"], "note": "fill gap: flattened"})
+                continue
             if lg["filled"] > 0:
                 res = self._protect(lg)
                 out.append({"instrument": lg["instrument"], "qty": lg["qty"], "filled": lg["filled"], "fill_px": lg["fill_px"], **res})
@@ -821,6 +838,29 @@ class NinjaTraderAdapter:
         ok = not errors
         return {"ok": ok, "adapter": self.name, "account": self.account, "env": self.env, "side": side,
                 "legs": out, **({} if ok else {"error": "; ".join(errors)})}
+
+    def _contract_mismatch(self, insts) -> str | None:
+        """The roll guard: the LE_BarFeed chart's contract (le_feed/<ROOT>_instrument.txt) must be the one the orders go to,
+        or the stop/target (priced from the chart's bars) land a roll gap (~300 pts) off the fill. Unknown chart contract
+        (older LE_BarFeed): no check (the fill-gap guard in place_bracket still applies)."""
+        try:
+            chart = NinjaTraderBars(self.folder).chart_instrument(self.sym)
+        except Exception:
+            chart = None
+        if not chart:
+            return None
+
+        def exp(name):
+            m = re.search(r"(\d{2})-(\d{2})$", name or "")
+            return (int(m.group(2)), int(m.group(1))) if m else None
+        for inst in insts:
+            ce, oe = exp(chart), exp(inst)
+            if ce and oe and ce != oe:
+                want = f"{chart.split(' ')[0]} {inst.split(' ')[-1]}"
+                if ce < oe:
+                    return f"Chart is on the old contract ({chart}): switch it to {want}. Entry not sent (orders go to {inst})."
+                return f"Chart is on {chart} but orders go to {inst}: switch the chart to {want}. Entry not sent."
+        return None
 
     def _entry_settled(self, lg) -> bool:
         st = self.read_order(lg["entry_id"])
@@ -1376,6 +1416,15 @@ class NinjaTraderBars:
             p = os.path.join(self.dir, f"{root}_{minutes}m.csv")
             if os.path.exists(p):
                 return p
+        return None
+
+    def chart_instrument(self, sym="NQ"):
+        """The contract the LE_BarFeed chart is on ("MNQ 12-26", from <ROOT>_instrument.txt), None when unknown (an older
+        LE_BarFeed that does not write the file)."""
+        for root in self.roots.get(sym, [sym]):
+            txt = _read_text(os.path.join(self.dir, f"{root}_instrument.txt"))
+            if txt and txt.strip():
+                return txt.strip().splitlines()[0].strip()
         return None
 
     def load(self, path):

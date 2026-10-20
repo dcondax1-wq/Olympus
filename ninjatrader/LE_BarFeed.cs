@@ -129,6 +129,19 @@ namespace NinjaTrader.NinjaScript.Indicators
                     active = false;
                     Report(null, "cannot create the folder " + folder + ": " + e.Message);
                 }
+                // <ROOT>_instrument.txt: the chart's contract ("MNQ 12-26"). The bot refuses an entry when its order contract
+                // differs (the chart left on the old contract after the roll: December prices on a March order)
+                if (active)
+                {
+                    try
+                    {
+                        File.WriteAllText(Path.Combine(folder, root + "_instrument.txt"), Instrument.FullName);
+                    }
+                    catch (Exception e)
+                    {
+                        Report(null, "cannot write " + root + "_instrument.txt: " + e.Message);
+                    }
+                }
             }
             else if (State == State.Realtime)
             {
