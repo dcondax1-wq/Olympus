@@ -61,3 +61,12 @@ data/push_pc_key.json
 data/autoupdate.json
 data/auto_resume.json
 data/_nt_probe_state.json
+data/accounts.json
+data/live_state_accounts.json
+data/ninjatrader_state_*.json
+
+.claude/worktrees/
+
+# owner PC helpers (engine/ops_checks.py): sent-notice keys + drop timers, and the nightly state backups (14 days)
+data/ops_state.json
+backups/

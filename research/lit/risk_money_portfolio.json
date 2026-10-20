@@ -1,0 +1,1076 @@
+{
+ "_meta": {
+  "built": "2026-10-20 01:19",
+  "paths": 500,
+  "length": 126,
+  "note": "Monte Carlo of 126-session (6-month) paths in 5-session blocks of the half; every eval and funded account trades the same LIT trades (correlation built in); eval = live two_week config C then safe_eval, funded = live funded sizing + payouts once $1,500+ is available; $91.80 an eval; graduation (5 payouts -> live) frees the slot and the live account is not counted"
+ },
+ "base": {
+  "A serial: 1 eval, the next only after a fail or when the funded account ends (today)": {
+   "H1": {
+    "net_mo": 641,
+    "net_p10_mo": 183,
+    "p_loss": 9.4,
+    "paid_6m": 3980,
+    "fees_6m": 132,
+    "buys": 1.44,
+    "wasted": 0.0,
+    "funded_share": 84.4,
+    "first_funded_med": 10.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 608,
+    "net_p10_mo": -15,
+    "p_loss": 14.8,
+    "paid_6m": 3786,
+    "fees_6m": 140,
+    "buys": 1.52,
+    "wasted": 0.0,
+    "funded_share": 81.6,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   }
+  },
+  "B one eval always running (passes wasted while the slot is full)": {
+   "H1": {
+    "net_mo": 498,
+    "net_p10_mo": 31,
+    "p_loss": 9.8,
+    "paid_6m": 3967,
+    "fees_6m": 981,
+    "buys": 10.69,
+    "wasted": 6.61,
+    "funded_share": 84.3,
+    "first_funded_med": 10.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 491,
+    "net_p10_mo": -78,
+    "p_loss": 14.6,
+    "paid_6m": 3789,
+    "fees_6m": 846,
+    "buys": 9.21,
+    "wasted": 5.2,
+    "funded_share": 81.5,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   }
+  },
+  "C 2 evals bought the same day": {
+   "H1": {
+    "net_mo": 619,
+    "net_p10_mo": 153,
+    "p_loss": 9.4,
+    "paid_6m": 3980,
+    "fees_6m": 264,
+    "buys": 2.88,
+    "wasted": 1.08,
+    "funded_share": 84.4,
+    "first_funded_med": 10.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 584,
+    "net_p10_mo": -31,
+    "p_loss": 14.8,
+    "paid_6m": 3786,
+    "fees_6m": 279,
+    "buys": 3.04,
+    "wasted": 1.06,
+    "funded_share": 81.6,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   }
+  },
+  "D 2 evals staggered 3 sessions": {
+   "H1": {
+    "net_mo": 654,
+    "net_p10_mo": 175,
+    "p_loss": 8.0,
+    "paid_6m": 4142,
+    "fees_6m": 216,
+    "buys": 2.36,
+    "wasted": 0.65,
+    "funded_share": 88.1,
+    "first_funded_med": 8.0,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 632,
+    "net_p10_mo": -15,
+    "p_loss": 11.0,
+    "paid_6m": 4020,
+    "fees_6m": 229,
+    "buys": 2.49,
+    "wasted": 0.67,
+    "funded_share": 86.6,
+    "first_funded_med": 7.5,
+    "no_funded": 0.0
+   }
+  },
+  "E 2 evals staggered 5 sessions": {
+   "H1": {
+    "net_mo": 662,
+    "net_p10_mo": 185,
+    "p_loss": 7.4,
+    "paid_6m": 4179,
+    "fees_6m": 204,
+    "buys": 2.23,
+    "wasted": 0.55,
+    "funded_share": 89.0,
+    "first_funded_med": 9.0,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 653,
+    "net_p10_mo": 159,
+    "p_loss": 9.8,
+    "paid_6m": 4120,
+    "fees_6m": 199,
+    "buys": 2.17,
+    "wasted": 0.48,
+    "funded_share": 89.0,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "F 2 evals staggered 10 sessions": {
+   "H1": {
+    "net_mo": 654,
+    "net_p10_mo": 175,
+    "p_loss": 8.4,
+    "paid_6m": 4106,
+    "fees_6m": 181,
+    "buys": 1.97,
+    "wasted": 0.36,
+    "funded_share": 87.1,
+    "first_funded_med": 10.0,
+    "no_funded": 0.2
+   },
+   "H2": {
+    "net_mo": 653,
+    "net_p10_mo": 171,
+    "p_loss": 8.8,
+    "paid_6m": 4095,
+    "fees_6m": 174,
+    "buys": 1.9,
+    "wasted": 0.28,
+    "funded_share": 88.5,
+    "first_funded_med": 10.0,
+    "no_funded": 0.0
+   }
+  },
+  "G 3 evals staggered 5 sessions": {
+   "H1": {
+    "net_mo": 662,
+    "net_p10_mo": 175,
+    "p_loss": 7.4,
+    "paid_6m": 4221,
+    "fees_6m": 248,
+    "buys": 2.7,
+    "wasted": 0.88,
+    "funded_share": 89.3,
+    "first_funded_med": 9.0,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 665,
+    "net_p10_mo": 167,
+    "p_loss": 8.6,
+    "paid_6m": 4216,
+    "fees_6m": 226,
+    "buys": 2.46,
+    "wasted": 0.68,
+    "funded_share": 90.9,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "H serial + standby eval when the funded room < $1,000": {
+   "H1": {
+    "net_mo": 623,
+    "net_p10_mo": 118,
+    "p_loss": 9.8,
+    "paid_6m": 3964,
+    "fees_6m": 224,
+    "buys": 2.44,
+    "wasted": 0.67,
+    "funded_share": 84.4,
+    "first_funded_med": 10.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 594,
+    "net_p10_mo": -46,
+    "p_loss": 14.8,
+    "paid_6m": 3786,
+    "fees_6m": 221,
+    "buys": 2.41,
+    "wasted": 0.56,
+    "funded_share": 81.5,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   }
+  },
+  "I serial + standby eval when the funded room < $1,500": {
+   "H1": {
+    "net_mo": 611,
+    "net_p10_mo": 113,
+    "p_loss": 9.6,
+    "paid_6m": 3974,
+    "fees_6m": 308,
+    "buys": 3.35,
+    "wasted": 1.27,
+    "funded_share": 84.5,
+    "first_funded_med": 10.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 581,
+    "net_p10_mo": -61,
+    "p_loss": 14.6,
+    "paid_6m": 3792,
+    "fees_6m": 307,
+    "buys": 3.34,
+    "wasted": 1.19,
+    "funded_share": 81.6,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   }
+  },
+  "J 1 eval always running, passes queue (if MFFU let a pass wait)": {
+   "H1": {
+    "net_mo": 502,
+    "net_p10_mo": 37,
+    "p_loss": 9.6,
+    "paid_6m": 3994,
+    "fees_6m": 981,
+    "buys": 10.69,
+    "wasted": 0.0,
+    "funded_share": 85.2,
+    "first_funded_med": 10.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 493,
+    "net_p10_mo": -78,
+    "p_loss": 14.6,
+    "paid_6m": 3801,
+    "fees_6m": 846,
+    "buys": 9.21,
+    "wasted": 0.0,
+    "funded_share": 82.4,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   }
+  },
+  "K2 2 slots, 1 eval at a time": {
+   "H1": {
+    "net_mo": 1161,
+    "net_p10_mo": 186,
+    "p_loss": 8.6,
+    "paid_6m": 7225,
+    "fees_6m": 259,
+    "buys": 2.82,
+    "wasted": 0.0,
+    "funded_share": 77.6,
+    "first_funded_med": 10.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 1089,
+    "net_p10_mo": -31,
+    "p_loss": 12.6,
+    "paid_6m": 6795,
+    "fees_6m": 263,
+    "buys": 2.87,
+    "wasted": 0.0,
+    "funded_share": 74.1,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   }
+  },
+  "K2 2 slots, 2 evals staggered 5": {
+   "H1": {
+    "net_mo": 1262,
+    "net_p10_mo": 192,
+    "p_loss": 6.8,
+    "paid_6m": 7897,
+    "fees_6m": 325,
+    "buys": 3.54,
+    "wasted": 0.49,
+    "funded_share": 84.4,
+    "first_funded_med": 9.0,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 1233,
+    "net_p10_mo": 173,
+    "p_loss": 8.0,
+    "paid_6m": 7728,
+    "fees_6m": 329,
+    "buys": 3.58,
+    "wasted": 0.5,
+    "funded_share": 84.2,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "K3 3 slots, 1 eval at a time": {
+   "H1": {
+    "net_mo": 1577,
+    "net_p10_mo": 159,
+    "p_loss": 8.2,
+    "paid_6m": 9837,
+    "fees_6m": 375,
+    "buys": 4.08,
+    "wasted": 0.0,
+    "funded_share": 71.4,
+    "first_funded_med": 10.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 1442,
+    "net_p10_mo": -46,
+    "p_loss": 12.2,
+    "paid_6m": 9028,
+    "fees_6m": 378,
+    "buys": 4.12,
+    "wasted": 0.0,
+    "funded_share": 67.4,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   }
+  },
+  "K3 3 slots, 2 evals staggered 5": {
+   "H1": {
+    "net_mo": 1781,
+    "net_p10_mo": 191,
+    "p_loss": 6.2,
+    "paid_6m": 11140,
+    "fees_6m": 454,
+    "buys": 4.94,
+    "wasted": 0.51,
+    "funded_share": 80.1,
+    "first_funded_med": 9.0,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 1731,
+    "net_p10_mo": 170,
+    "p_loss": 7.2,
+    "paid_6m": 10836,
+    "fees_6m": 452,
+    "buys": 4.93,
+    "wasted": 0.54,
+    "funded_share": 79.7,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "K3 3 slots, 3 evals staggered 5": {
+   "H1": {
+    "net_mo": 1828,
+    "net_p10_mo": 347,
+    "p_loss": 6.4,
+    "paid_6m": 11475,
+    "fees_6m": 505,
+    "buys": 5.5,
+    "wasted": 0.91,
+    "funded_share": 82.4,
+    "first_funded_med": 9.0,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 1820,
+    "net_p10_mo": 373,
+    "p_loss": 5.6,
+    "paid_6m": 11425,
+    "fees_6m": 505,
+    "buys": 5.5,
+    "wasted": 0.94,
+    "funded_share": 83.4,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "K3 3 slots, 3 evals same day": {
+   "H1": {
+    "net_mo": 1924,
+    "net_p10_mo": 550,
+    "p_loss": 9.4,
+    "paid_6m": 11941,
+    "fees_6m": 397,
+    "buys": 4.32,
+    "wasted": 0.0,
+    "funded_share": 84.4,
+    "first_funded_med": 10.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 1823,
+    "net_p10_mo": -46,
+    "p_loss": 14.8,
+    "paid_6m": 11358,
+    "fees_6m": 419,
+    "buys": 4.57,
+    "wasted": 0.0,
+    "funded_share": 81.6,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   }
+  },
+  "K3 3 slots, 3 evals staggered 5, max 2 buys a month ($184)": {
+   "H1": {
+    "net_mo": 1715,
+    "net_p10_mo": 163,
+    "p_loss": 6.2,
+    "paid_6m": 10752,
+    "fees_6m": 463,
+    "buys": 5.04,
+    "wasted": 0.63,
+    "funded_share": 77.7,
+    "first_funded_med": 9.0,
+    "no_funded": 0.2
+   },
+   "H2": {
+    "net_mo": 1681,
+    "net_p10_mo": 205,
+    "p_loss": 6.0,
+    "paid_6m": 10560,
+    "fees_6m": 473,
+    "buys": 5.16,
+    "wasted": 0.69,
+    "funded_share": 77.7,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "K3 3 slots, 3 evals staggered 5, max 1 buy a month ($92)": {
+   "H1": {
+    "net_mo": 1340,
+    "net_p10_mo": 142,
+    "p_loss": 8.4,
+    "paid_6m": 8431,
+    "fees_6m": 390,
+    "buys": 4.25,
+    "wasted": 0.16,
+    "funded_share": 62.9,
+    "first_funded_med": 10.0,
+    "no_funded": 0.2
+   },
+   "H2": {
+    "net_mo": 1274,
+    "net_p10_mo": 125,
+    "p_loss": 9.0,
+    "paid_6m": 8047,
+    "fees_6m": 402,
+    "buys": 4.38,
+    "wasted": 0.2,
+    "funded_share": 61.9,
+    "first_funded_med": 10.0,
+    "no_funded": 0.2
+   }
+  },
+  "A serial + eval weekly loss stop -$1,200": {
+   "H1": {
+    "net_mo": 639,
+    "net_p10_mo": 175,
+    "p_loss": 9.8,
+    "buys": 1.39,
+    "funded_share": 84.4
+   },
+   "H2": {
+    "net_mo": 605,
+    "net_p10_mo": -15,
+    "p_loss": 14.4,
+    "buys": 1.44,
+    "funded_share": 81.2
+   }
+  },
+  "E 2 evals staggered 5 sessions + eval weekly loss stop -$1,200": {
+   "H1": {
+    "net_mo": 662,
+    "net_p10_mo": 185,
+    "p_loss": 7.8,
+    "buys": 2.18,
+    "funded_share": 88.8
+   },
+   "H2": {
+    "net_mo": 653,
+    "net_p10_mo": 172,
+    "p_loss": 9.6,
+    "buys": 2.13,
+    "funded_share": 88.6
+   }
+  },
+  "A serial + eval weekly loss stop -$800": {
+   "H1": {
+    "net_mo": 635,
+    "net_p10_mo": -15,
+    "p_loss": 10.4,
+    "buys": 1.33,
+    "funded_share": 84.4
+   },
+   "H2": {
+    "net_mo": 600,
+    "net_p10_mo": -15,
+    "p_loss": 14.6,
+    "buys": 1.36,
+    "funded_share": 80.5
+   }
+  },
+  "E 2 evals staggered 5 sessions + eval weekly loss stop -$800": {
+   "H1": {
+    "net_mo": 660,
+    "net_p10_mo": 182,
+    "p_loss": 8.0,
+    "buys": 2.1,
+    "funded_share": 88.7
+   },
+   "H2": {
+    "net_mo": 649,
+    "net_p10_mo": -15,
+    "p_loss": 10.6,
+    "buys": 2.06,
+    "funded_share": 88.1
+   }
+  }
+ },
+ "all3": {
+  "A serial: 1 eval, the next only after a fail or when the funded account ends (today)": {
+   "H1": {
+    "net_mo": 639,
+    "net_p10_mo": 236,
+    "p_loss": 7.2,
+    "paid_6m": 3956,
+    "fees_6m": 124,
+    "buys": 1.35,
+    "wasted": 0.0,
+    "funded_share": 84.7,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 793,
+    "net_p10_mo": 251,
+    "p_loss": 4.4,
+    "paid_6m": 4892,
+    "fees_6m": 132,
+    "buys": 1.44,
+    "wasted": 0.0,
+    "funded_share": 83.9,
+    "first_funded_med": 8.0,
+    "no_funded": 0.2
+   }
+  },
+  "B one eval always running (passes wasted while the slot is full)": {
+   "H1": {
+    "net_mo": 509,
+    "net_p10_mo": 114,
+    "p_loss": 7.4,
+    "paid_6m": 3953,
+    "fees_6m": 898,
+    "buys": 9.78,
+    "wasted": 6.2,
+    "funded_share": 84.7,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 659,
+    "net_p10_mo": 160,
+    "p_loss": 4.4,
+    "paid_6m": 4888,
+    "fees_6m": 932,
+    "buys": 10.15,
+    "wasted": 6.57,
+    "funded_share": 83.8,
+    "first_funded_med": 8.0,
+    "no_funded": 0.2
+   }
+  },
+  "C 2 evals bought the same day": {
+   "H1": {
+    "net_mo": 618,
+    "net_p10_mo": 205,
+    "p_loss": 7.2,
+    "paid_6m": 3956,
+    "fees_6m": 249,
+    "buys": 2.71,
+    "wasted": 1.03,
+    "funded_share": 84.7,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 771,
+    "net_p10_mo": 236,
+    "p_loss": 4.4,
+    "paid_6m": 4892,
+    "fees_6m": 264,
+    "buys": 2.88,
+    "wasted": 1.1,
+    "funded_share": 83.9,
+    "first_funded_med": 8.0,
+    "no_funded": 0.2
+   }
+  },
+  "D 2 evals staggered 3 sessions": {
+   "H1": {
+    "net_mo": 647,
+    "net_p10_mo": 221,
+    "p_loss": 6.0,
+    "paid_6m": 4091,
+    "fees_6m": 207,
+    "buys": 2.25,
+    "wasted": 0.7,
+    "funded_share": 87.7,
+    "first_funded_med": 8.0,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 817,
+    "net_p10_mo": 236,
+    "p_loss": 2.8,
+    "paid_6m": 5122,
+    "fees_6m": 219,
+    "buys": 2.38,
+    "wasted": 0.71,
+    "funded_share": 87.9,
+    "first_funded_med": 6.5,
+    "no_funded": 0.0
+   }
+  },
+  "E 2 evals staggered 5 sessions": {
+   "H1": {
+    "net_mo": 657,
+    "net_p10_mo": 236,
+    "p_loss": 5.4,
+    "paid_6m": 4126,
+    "fees_6m": 185,
+    "buys": 2.01,
+    "wasted": 0.52,
+    "funded_share": 89.5,
+    "first_funded_med": 7.5,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 837,
+    "net_p10_mo": 251,
+    "p_loss": 2.4,
+    "paid_6m": 5215,
+    "fees_6m": 196,
+    "buys": 2.13,
+    "wasted": 0.52,
+    "funded_share": 89.8,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "F 2 evals staggered 10 sessions": {
+   "H1": {
+    "net_mo": 654,
+    "net_p10_mo": 221,
+    "p_loss": 6.2,
+    "paid_6m": 4091,
+    "fees_6m": 166,
+    "buys": 1.8,
+    "wasted": 0.35,
+    "funded_share": 88.1,
+    "first_funded_med": 9.0,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 827,
+    "net_p10_mo": 251,
+    "p_loss": 2.8,
+    "paid_6m": 5130,
+    "fees_6m": 167,
+    "buys": 1.82,
+    "wasted": 0.31,
+    "funded_share": 89.7,
+    "first_funded_med": 8.0,
+    "no_funded": 0.0
+   }
+  },
+  "G 3 evals staggered 5 sessions": {
+   "H1": {
+    "net_mo": 660,
+    "net_p10_mo": 221,
+    "p_loss": 5.0,
+    "paid_6m": 4180,
+    "fees_6m": 218,
+    "buys": 2.37,
+    "wasted": 0.8,
+    "funded_share": 90.3,
+    "first_funded_med": 7.5,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 839,
+    "net_p10_mo": 425,
+    "p_loss": 2.8,
+    "paid_6m": 5256,
+    "fees_6m": 222,
+    "buys": 2.42,
+    "wasted": 0.75,
+    "funded_share": 91.3,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "H serial + standby eval when the funded room < $1,000": {
+   "H1": {
+    "net_mo": 630,
+    "net_p10_mo": 210,
+    "p_loss": 7.4,
+    "paid_6m": 3953,
+    "fees_6m": 174,
+    "buys": 1.89,
+    "wasted": 0.37,
+    "funded_share": 84.7,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 787,
+    "net_p10_mo": 236,
+    "p_loss": 4.4,
+    "paid_6m": 4889,
+    "fees_6m": 168,
+    "buys": 1.83,
+    "wasted": 0.3,
+    "funded_share": 83.9,
+    "first_funded_med": 8.0,
+    "no_funded": 0.2
+   }
+  },
+  "I serial + standby eval when the funded room < $1,500": {
+   "H1": {
+    "net_mo": 620,
+    "net_p10_mo": 190,
+    "p_loss": 7.4,
+    "paid_6m": 3953,
+    "fees_6m": 234,
+    "buys": 2.55,
+    "wasted": 0.83,
+    "funded_share": 84.7,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 777,
+    "net_p10_mo": 221,
+    "p_loss": 4.4,
+    "paid_6m": 4892,
+    "fees_6m": 230,
+    "buys": 2.5,
+    "wasted": 0.85,
+    "funded_share": 83.9,
+    "first_funded_med": 8.0,
+    "no_funded": 0.2
+   }
+  },
+  "J 1 eval always running, passes queue (if MFFU let a pass wait)": {
+   "H1": {
+    "net_mo": 510,
+    "net_p10_mo": 114,
+    "p_loss": 7.4,
+    "paid_6m": 3956,
+    "fees_6m": 898,
+    "buys": 9.78,
+    "wasted": 0.0,
+    "funded_share": 85.3,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 667,
+    "net_p10_mo": 160,
+    "p_loss": 4.4,
+    "paid_6m": 4932,
+    "fees_6m": 932,
+    "buys": 10.15,
+    "wasted": 0.0,
+    "funded_share": 84.9,
+    "first_funded_med": 8.0,
+    "no_funded": 0.2
+   }
+  },
+  "K2 2 slots, 1 eval at a time": {
+   "H1": {
+    "net_mo": 1153,
+    "net_p10_mo": 236,
+    "p_loss": 6.4,
+    "paid_6m": 7160,
+    "fees_6m": 244,
+    "buys": 2.66,
+    "wasted": 0.0,
+    "funded_share": 77.6,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 1453,
+    "net_p10_mo": 486,
+    "p_loss": 4.0,
+    "paid_6m": 8964,
+    "fees_6m": 245,
+    "buys": 2.67,
+    "wasted": 0.0,
+    "funded_share": 78.3,
+    "first_funded_med": 8.0,
+    "no_funded": 0.2
+   }
+  },
+  "K2 2 slots, 2 evals staggered 5": {
+   "H1": {
+    "net_mo": 1254,
+    "net_p10_mo": 440,
+    "p_loss": 4.8,
+    "paid_6m": 7827,
+    "fees_6m": 301,
+    "buys": 3.28,
+    "wasted": 0.49,
+    "funded_share": 85.4,
+    "first_funded_med": 7.5,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 1602,
+    "net_p10_mo": 704,
+    "p_loss": 2.2,
+    "paid_6m": 9934,
+    "fees_6m": 320,
+    "buys": 3.49,
+    "wasted": 0.56,
+    "funded_share": 85.7,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "K3 3 slots, 1 eval at a time": {
+   "H1": {
+    "net_mo": 1559,
+    "net_p10_mo": 221,
+    "p_loss": 6.4,
+    "paid_6m": 9709,
+    "fees_6m": 353,
+    "buys": 3.84,
+    "wasted": 0.0,
+    "funded_share": 70.7,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 1994,
+    "net_p10_mo": 472,
+    "p_loss": 4.0,
+    "paid_6m": 12323,
+    "fees_6m": 357,
+    "buys": 3.89,
+    "wasted": 0.0,
+    "funded_share": 72.6,
+    "first_funded_med": 8.0,
+    "no_funded": 0.2
+   }
+  },
+  "K3 3 slots, 2 evals staggered 5": {
+   "H1": {
+    "net_mo": 1772,
+    "net_p10_mo": 455,
+    "p_loss": 4.4,
+    "paid_6m": 11051,
+    "fees_6m": 421,
+    "buys": 4.59,
+    "wasted": 0.48,
+    "funded_share": 81.0,
+    "first_funded_med": 7.5,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 2279,
+    "net_p10_mo": 754,
+    "p_loss": 1.8,
+    "paid_6m": 14105,
+    "fees_6m": 432,
+    "buys": 4.7,
+    "wasted": 0.56,
+    "funded_share": 81.9,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "K3 3 slots, 3 evals staggered 5": {
+   "H1": {
+    "net_mo": 1828,
+    "net_p10_mo": 472,
+    "p_loss": 4.0,
+    "paid_6m": 11435,
+    "fees_6m": 465,
+    "buys": 5.06,
+    "wasted": 0.89,
+    "funded_share": 83.6,
+    "first_funded_med": 7.5,
+    "no_funded": 0.0
+   },
+   "H2": {
+    "net_mo": 2346,
+    "net_p10_mo": 990,
+    "p_loss": 1.8,
+    "paid_6m": 14556,
+    "fees_6m": 480,
+    "buys": 5.23,
+    "wasted": 0.92,
+    "funded_share": 84.8,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "K3 3 slots, 3 evals same day": {
+   "H1": {
+    "net_mo": 1916,
+    "net_p10_mo": 708,
+    "p_loss": 7.2,
+    "paid_6m": 11868,
+    "fees_6m": 373,
+    "buys": 4.06,
+    "wasted": 0.0,
+    "funded_share": 84.7,
+    "first_funded_med": 9.0,
+    "no_funded": 0.4
+   },
+   "H2": {
+    "net_mo": 2380,
+    "net_p10_mo": 754,
+    "p_loss": 4.4,
+    "paid_6m": 14677,
+    "fees_6m": 397,
+    "buys": 4.32,
+    "wasted": 0.0,
+    "funded_share": 83.9,
+    "first_funded_med": 8.0,
+    "no_funded": 0.2
+   }
+  },
+  "K3 3 slots, 3 evals staggered 5, max 2 buys a month ($184)": {
+   "H1": {
+    "net_mo": 1719,
+    "net_p10_mo": 426,
+    "p_loss": 4.0,
+    "paid_6m": 10750,
+    "fees_6m": 436,
+    "buys": 4.75,
+    "wasted": 0.64,
+    "funded_share": 79.0,
+    "first_funded_med": 7.0,
+    "no_funded": 0.2
+   },
+   "H2": {
+    "net_mo": 2207,
+    "net_p10_mo": 956,
+    "p_loss": 1.8,
+    "paid_6m": 13688,
+    "fees_6m": 445,
+    "buys": 4.85,
+    "wasted": 0.7,
+    "funded_share": 80.0,
+    "first_funded_med": 7.0,
+    "no_funded": 0.0
+   }
+  },
+  "K3 3 slots, 3 evals staggered 5, max 1 buy a month ($92)": {
+   "H1": {
+    "net_mo": 1375,
+    "net_p10_mo": 205,
+    "p_loss": 5.4,
+    "paid_6m": 8620,
+    "fees_6m": 373,
+    "buys": 4.07,
+    "wasted": 0.18,
+    "funded_share": 64.7,
+    "first_funded_med": 9.0,
+    "no_funded": 0.2
+   },
+   "H2": {
+    "net_mo": 1763,
+    "net_p10_mo": 457,
+    "p_loss": 2.6,
+    "paid_6m": 10957,
+    "fees_6m": 381,
+    "buys": 4.15,
+    "wasted": 0.22,
+    "funded_share": 65.8,
+    "first_funded_med": 8.0,
+    "no_funded": 0.0
+   }
+  },
+  "A serial + eval weekly loss stop -$1,200": {
+   "H1": {
+    "net_mo": 638,
+    "net_p10_mo": 235,
+    "p_loss": 7.8,
+    "buys": 1.3,
+    "funded_share": 84.8
+   },
+   "H2": {
+    "net_mo": 797,
+    "net_p10_mo": 251,
+    "p_loss": 4.0,
+    "buys": 1.39,
+    "funded_share": 83.9
+   }
+  },
+  "E 2 evals staggered 5 sessions + eval weekly loss stop -$1,200": {
+   "H1": {
+    "net_mo": 654,
+    "net_p10_mo": 236,
+    "p_loss": 6.0,
+    "buys": 1.98,
+    "funded_share": 89.3
+   },
+   "H2": {
+    "net_mo": 837,
+    "net_p10_mo": 413,
+    "p_loss": 2.6,
+    "buys": 2.11,
+    "funded_share": 89.7
+   }
+  },
+  "A serial + eval weekly loss stop -$800": {
+   "H1": {
+    "net_mo": 630,
+    "net_p10_mo": 236,
+    "p_loss": 8.2,
+    "buys": 1.25,
+    "funded_share": 84.0
+   },
+   "H2": {
+    "net_mo": 795,
+    "net_p10_mo": 251,
+    "p_loss": 3.6,
+    "buys": 1.34,
+    "funded_share": 84.5
+   }
+  },
+  "E 2 evals staggered 5 sessions + eval weekly loss stop -$800": {
+   "H1": {
+    "net_mo": 646,
+    "net_p10_mo": 221,
+    "p_loss": 6.8,
+    "buys": 1.95,
+    "funded_share": 88.7
+   },
+   "H2": {
+    "net_mo": 834,
+    "net_p10_mo": 251,
+    "p_loss": 2.6,
+    "buys": 2.06,
+    "funded_share": 89.7
+   }
+  }
+ }
+}

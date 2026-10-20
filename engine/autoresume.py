@@ -91,6 +91,69 @@ def enable(account: str, confirm: str, cfg: dict | None = None, now=None, path: 
     return rec
 
 
+def enable_extra(account: str, confirm: str, now=None, path: str = OPTIN_PATH) -> dict:
+    """Several accounts (engine/multi_account.py): add one EXTRA real account to the opt-in, with its own proof. The bot's
+    own account must be opted in first. Raises ValueError when the account or the phrase is not right."""
+    now = time.time() if now is None else now
+    rec = load(path)
+    if not valid(rec):
+        raise ValueError("turn auto-resume on for the bot's own account first (--enable-auto-resume --account <eval Name>)")
+    account = (account or "").strip()
+    if not account or any(c in account for c in ";\r\n|"):
+        raise ValueError("give the exact NinjaTrader account Name with --account")
+    if _is_sim(account):
+        raise ValueError(f"{account} is a Sim account: it already resumes by itself, nothing to enable")
+    if account == rec.get("account"):
+        raise ValueError(f"{account} is the bot's own account (already on)")
+    if (confirm or "").strip() != _phrase():
+        raise ValueError("the confirm phrase is missing or not exact")
+    day = _et_day(now)
+    rec["extra"] = [x for x in (rec.get("extra") or []) if isinstance(x, dict) and x.get("account") != account] + \
+        [{"account": account, "accepted_on": day, "proof": _proof(account, day, _phrase())}]
+    _write(rec, path)
+    return rec
+
+
+def extra_ok(rec, account: str) -> bool:
+    """True when this extra real account is in a valid opt-in with its own proof."""
+    if not valid(rec):
+        return False
+    for x in rec.get("extra") or []:
+        if isinstance(x, dict) and x.get("account") == account and x.get("accepted_on") \
+                and x.get("proof") == _proof(account, str(x["accepted_on"]), _phrase()):
+            return True
+    return False
+
+
+def resume_accounts(optin, cfg: dict) -> tuple:
+    """The start cfg's extra accounts on a resume: Sim / paper ones come back as they were; a real one only when its entry
+    says "armed": true AND it is opted in itself (enable_extra) - then it gets the phrase in memory for its adapter's own
+    gate; any other real account is left out (enabled false) and named in the refusals. Returns (accounts, refused)."""
+    out, refused = [], []
+    for e in (cfg or {}).get("accounts") or []:
+        if not isinstance(e, dict):
+            continue
+        e = dict(e)
+        e.pop("confirm", None)
+        adapter = e.get("adapter") or cfg.get("adapter") or "paper"
+        name = str(e.get("nt_account") or "").strip()
+        if e.get("enabled", True) is False or adapter != "ninjatrader" or (name and _is_sim(name)):
+            out.append(e)
+            continue
+        if e.get("armed") is not True:
+            why = "not armed in its account entry"
+        elif not extra_ok(optin, name):
+            why = "not opted in (python -m engine.ninjatrader --enable-auto-resume --extra --account <Name>)"
+        else:
+            e["confirm"] = _phrase()                  # in memory only, for its adapter's own live gate
+            out.append(e)
+            continue
+        e["enabled"] = False
+        refused.append({"id": e.get("id"), "account": name, "reason": why})
+        out.append(e)
+    return out, refused
+
+
 def disable(reason: str, now=None, path: str = OPTIN_PATH) -> bool:
     """Turn it off (the proof is dropped: turning it on again needs the owner's command). True when it was on."""
     now = time.time() if now is None else now
@@ -170,6 +233,8 @@ def decide(optin, autostart_cfg: dict | None, live_state: dict | None, env=None,
         return no("NinjaTrader shows no CONNECTED connection" + (" (no connection files yet)" if connected is None else ""), wait=True)
     cfg.pop("clear_kill", None)
     cfg.update(armed=True, confirm=_phrase())          # in memory only, for the adapter's own live gate
+    if cfg.get("accounts"):                            # extra accounts: each real one needs its own opt-in
+        cfg["accounts"], out["refused_accounts"] = resume_accounts(optin, cfg)
     out.update(resume=True, cfg=cfg, reason=f"resuming {acct}")
     return out
 
@@ -244,6 +309,11 @@ def resume_live(bot, autostart_cfg, marker=None, notify=None, log=print, sleep=t
                 log(f"auto-resume: RESUMED {d['account']} after {why}")
                 notify(f"Bot resumed on {d['account']}", f"after {why}. Restored: {res.get('restored')}",
                        f"auto:resumed:{int(now) // 60}")
+                ref = d.get("refused_accounts") or []
+                if ref:
+                    txt = "; ".join(f"{x.get('account') or x.get('id')}: {x.get('reason')}" for x in ref)[:300]
+                    log(f"auto-resume: extra accounts NOT resumed: {txt}")
+                    notify("Extra accounts NOT resumed", f"{txt}. Start them by hand.", f"auto:refused_extra:{int(now) // 60}")
                 return {**d, "cfg": None, "result": res}
             err = res.get("error") or f"adapter DISABLED ({dis})"
             if res.get("ok"):

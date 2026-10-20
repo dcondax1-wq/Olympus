@@ -354,3 +354,12 @@ def lit_backtest(period: str = "2026"):
 # /api/next/pc/status, /api/next/pc/account, /api/next/pc/trade/<entry_t>, /api/next/extras (engine/pcdash_api.py, read-only)
 from .pcdash_api import router as _pc_router  # noqa: E402
 router.include_router(_pc_router)
+
+# Bot Control center (engine/botctl.py): START with the preflight checklist, status strip, safety switches. Its POST routes
+# call the same functions as the CLI (server.py fills botctl.HOOKS with the /api/live/start and /api/live/stop code paths).
+from .botctl import router as _botctl_router  # noqa: E402
+router.include_router(_botctl_router)
+
+# Hub pages (Prop Firms, Business, Market, Learn, System): read-only GETs over research/props + repo files (engine/hub_api.py)
+from .hub_api import router as _hub_router  # noqa: E402
+router.include_router(_hub_router)

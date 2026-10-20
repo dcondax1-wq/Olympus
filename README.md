@@ -5,6 +5,13 @@ multi-timeframe context, AMT-derived location and evidence-based confluence scor
 command center, chart, replay, backtest lab, prop lab, robustness + exit lab, confluence lab, live/paper bot,
 journal and playbook.
 
+## Owner: daily use (Windows PC bot)
+
+Double-click in the bot folder (or the desktop icons `SETUP_SHORTCUTS.bat` makes once): **START_DASHBOARD**,
+**HEALTH_CHECK** (green / red checks with the fix), **UPDATE** (stop, pull, pip, restart, self-test), **STOP_BOT**.
+Every day: [docs/DAILY_CHECKLIST.md](docs/DAILY_CHECKLIST.md). Something red: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
+First-time go-live steps: [docs/GO_LIVE_TONIGHT.md](docs/GO_LIVE_TONIGHT.md).
+
 ## Quick start
 
 ```bash

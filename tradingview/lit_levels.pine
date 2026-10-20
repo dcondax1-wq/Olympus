@@ -1,0 +1,909 @@
+//@version=5
+// =====================================================================================================================
+//  LIT LEVELS - see what the LIT bot sees (engine/lit.py, live_model.json "lit", STRATEGY.md). VISUAL ONLY.
+//  An indicator: it never places, sends or bridges an order. Alerts are plain text (or a JSON line to compare with the
+//  bot's own signal log); there is no order bridge.
+//  Chart: CME_MINI:NQ1! or CME_MINI:MNQ1!, 5 minutes, electronic session (ETH, the default), exchange time zone any
+//  (the script works in America/New_York itself).
+//  Python twin of this file: tools/pine_lit_check.py (same steps, checked bar for bar against engine/lit.py on 2026).
+//  How to read it: tradingview/LIT_LEVELS.md.
+//
+//  Steps on every CLOSED 5m bar (barstate.isconfirmed, so nothing repaints):
+//   1 new trading day at 18:00 ET: PDH/PDL, PWH/PWL, PMH/PML, NDOG, NWOG, 18:00 open, VIX one-day move
+//   2 session boxes (11 boxes, the bot's list): a box is a level after its last candle closed
+//   3 k=2 swings (confirmed 2 bars late) and build-ups (equal highs / lows)
+//   4 first breach of every level
+//   5 limit slots + the 5m trade walk (the bot confirms on 1m candles; this shows its 5m fallback)
+//   6 trigger: 5m close beyond the CISD level after a sweep -> the bot's filters -> "LIT setup armed"
+// =====================================================================================================================
+indicator("LIT Levels", shorttitle="LIT", overlay=true, max_lines_count=500, max_boxes_count=200, max_labels_count=500, max_bars_back=1000)
+
+TZ = "America/New_York"
+
+// ------------------------------------------------------------------------------------------------ inputs
+gL = "Levels (default: the key ones only)"
+iKey = input.bool(true, "PDH/PDL, PWH/PWL, PMH/PML", group=gL)
+iAsia = input.bool(true, "Asia box", inline="as", group=gL)
+iAsiaDef = input.string("20:00-00:00", "", options=["18:00-00:00", "19:00-00:00", "20:00-00:00"], inline="as", group=gL)
+iLon = input.bool(true, "London box", inline="lo", group=gL)
+iLonDef = input.string("02:00-05:00", "", options=["02:00-05:00", "03:00-04:00", "02:00-03:00"], inline="lo", group=gL)
+iNY = input.bool(false, "New York boxes (08-09, 08:30-09:30, 09:30-10:00, 09:30-10:30)", group=gL)
+iPre = input.bool(false, "Premarket box 04:00-09:30", group=gL)
+iGaps = input.bool(false, "NWOG / NDOG gap edges", group=gL)
+iBU = input.bool(false, "Build-ups (equal highs / lows)", group=gL)
+iToday = input.bool(true, "Only today's levels (older ones are removed)", group=gL)
+
+gS = "Setup"
+iSetup = input.bool(true, "Armed setups (sweep, inducement, displacement, CISD, stop, target)", group=gS)
+iEarly = input.bool(true, "Sweep markers (a level run >= 0.5 ATR, before the CISD)", group=gS)
+iRaw = input.bool(false, "Rejected sweeps (passed the CISD close, failed a bot filter)", group=gS)
+iTrade = input.bool(true, "5m entry / exit (approximation of the bot's 1m entry)", group=gS)
+iWin = input.bool(true, "Shade the entry window 02:00-15:30 ET", group=gS)
+iMonday = input.bool(true, "Monday rule (bot: on)", group=gS)
+iPanel = input.bool(true, "Step panel", inline="pn", group=gS)
+iPanelPos = input.string("top_right", "", options=["top_right", "bottom_right", "top_left", "bottom_left"], inline="pn", group=gS)
+
+gC = "Confluence tags (shown only; the bot does not filter on them)"
+iTags = input.bool(true, "Show tags on setups and the A+ score", group=gC)
+iES = input.symbol("CME_MINI:ES1!", "SMT symbol", group=gC)
+iRnd = input.float(5.0, "Round number 00/50 within (pts)", minval=0.25, group=gC)
+iNews = input.text_area("", "News days (yyyy-mm-dd, comma separated)", group=gC)
+
+gA = "Alerts"
+iMode = input.string("Text", "alert() message", options=["Text", "JSON"], group=gA)
+iVix = input.symbol("CBOE:VIX", "VIX symbol", group=gA)
+
+// ------------------------------------------------------------------------------------------------ the bot's rules (engine/lit.py, live_model.json "lit")
+LEG = 24            // the extreme = lowest low of the last 24 bars (2 h)
+SWEEP_WIN = 24      // the level was first broken <= 24 bars before the extreme
+DEPTH = 0.5         // ATR
+DISP = 0.8          // ATR
+IDM_DIST = 1.0      // ATR
+IDM_AGE = 36        // bars
+WAIT = 6            // 5m bars the limit works (30 min)
+CIS5 = 4            // 5m bars for the confirmation (the bot's 5m fallback of 20 1m bars)
+BUF = 0.25          // stop 1 tick beyond the extreme
+MIN_STOP = 8.0
+MAX_STOP = 80.0
+MIN_RR = 1.5
+MAX_RR = 8.0
+WIN_A = 120         // entry bar 02:00 ..
+WIN_Z = 930         // .. 15:30 ET
+FLAT = 955          // 15:55 ET
+SLIP = 0.25
+
+// ------------------------------------------------------------------------------------------------ colours
+cLong = color.new(#26a69a, 0)
+cShort = color.new(#ef5350, 0)
+cPD = color.new(#ff9800, 0)
+cPW = color.new(#ab47bc, 0)
+cPM = color.new(#42a5f5, 0)
+cAsia = color.new(#fdd835, 0)
+cLon = color.new(#29b6f6, 0)
+cNY = color.new(#9575cd, 0)
+cGap = color.new(#b0bec5, 0)
+cBU = color.new(#78909c, 0)
+cCisd = color.new(#ffffff, 0)
+cDead = color.new(#787b86, 0)
+
+// ------------------------------------------------------------------------------------------------ series computed on every bar
+atrv = ta.rma(ta.tr(true), 14)
+etm = hour(time, TZ) * 60 + minute(time, TZ)
+t6 = time + 6 * 3600000
+tY = year(t6, TZ)
+tM = month(t6, TZ)
+tD = dayofmonth(t6, TZ)
+tDow = dayofweek(t6, TZ)
+tday = int(math.floor(timestamp("UTC", tY, tM, tD, 0, 0) / 86400000))
+weekId = int(math.floor((tday + 3) / 7))
+monthId = tY * 100 + tM
+newDay = bar_index == 0 or tday != tday[1]
+dateStr = str.tostring(tY) + "-" + (tM < 10 ? "0" : "") + str.tostring(tM) + "-" + (tD < 10 ? "0" : "") + str.tostring(tD)
+
+esLow = request.security(iES, timeframe.period, low, lookahead=barmerge.lookahead_off)
+esHigh = request.security(iES, timeframe.period, high, lookahead=barmerge.lookahead_off)
+// VIX: the last daily close strictly before the trading day. lookahead_on returns the containing daily bar; its close is
+// used only when that bar has already closed (time_close <= now), else the bar before. Never a value from the future.
+[vC, vC1, vTC] = request.security(iVix, "D", [close, close[1], time_close], lookahead=barmerge.lookahead_on) // lint: guarded
+vixPrev = not na(vTC) and vTC <= time ? vC : vC1
+[secPWH, secPWL] = request.security(syminfo.tickerid, "W", [high[1], low[1]], lookahead=barmerge.lookahead_on)
+[secPMH, secPML] = request.security(syminfo.tickerid, "M", [high[1], low[1]], lookahead=barmerge.lookahead_on)
+[dC1, dO1] = request.security(syminfo.tickerid, "D", [close[1], open[1]], lookahead=barmerge.lookahead_on)
+
+f_ob() =>
+    var float bT = na
+    var float bB = na
+    var float sT = na
+    var float sB = na
+    if close > high[1] and close[1] < open[1]
+        bT := high[1]
+        bB := low[1]
+    if close < low[1] and close[1] > open[1]
+        sT := high[1]
+        sB := low[1]
+    [bT[1], bB[1], sT[1], sB[1]]
+
+[ob15bT, ob15bB, ob15sT, ob15sB] = request.security(syminfo.tickerid, "15", f_ob(), lookahead=barmerge.lookahead_on) // lint: guarded ([1] in f_ob)
+[ob60bT, ob60bB, ob60sT, ob60sB] = request.security(syminfo.tickerid, "60", f_ob(), lookahead=barmerge.lookahead_on) // lint: guarded ([1] in f_ob)
+
+// ------------------------------------------------------------------------------------------------ direction-space helpers
+// d = 1 long, -1 short. Shorts are the mirror: lows become -highs, so every rule is written once, for longs.
+f_lo(d, off) => d == 1 ? low[off] : -high[off]
+f_hi(d, off) => d == 1 ? high[off] : -low[off]
+f_cl(d, off) => d * close[off]
+f_op(d, off) => d * open[off]
+f_down(d, off) => f_cl(d, off) < f_op(d, off)
+
+// CISD (TTrades): open of the first candle of the last run of down-closes into the extreme ee (absolute bar index)
+f_cisd(d, ee) =>
+    int jj = ee
+    while jj > ee - 3 and not f_down(d, bar_index - jj)
+        jj -= 1
+    float lvl = na
+    int st = na
+    if f_down(d, bar_index - jj)
+        st := jj
+        while st > ee - 30 and st >= 1
+            if not f_down(d, bar_index - (st - 1))
+                break
+            st -= 1
+        lvl := f_op(d, bar_index - st)
+    [lvl, st]
+
+f_qty(risk) =>
+    r = risk <= 20 ? 800.0 : 800.0 * 20 / risk
+    math.min(40, math.floor(r / (risk * 2.0)))
+
+f_short(nm) =>
+    switch nm
+        "pdh" => "PDH"
+        "pdl" => "PDL"
+        "pwh" => "PWH"
+        "pwl" => "PWL"
+        "pmh" => "PMH"
+        "pml" => "PML"
+        "nwog" => "NWOG"
+        "ndog" => "NDOG"
+        "bu_h" => "EQH"
+        "bu_l" => "EQL"
+        => str.replace_all(str.replace_all(str.replace_all(str.replace_all(str.replace_all(str.replace_all(nm, "asia", "Asia"), "lon", "Lon"), "ny", "NY"), "pre", "Pre"), "_h", " H"), "_l", " L")
+
+f_inwin(m) => m >= WIN_A and m < WIN_Z
+
+// ------------------------------------------------------------------------------------------------ state
+// levels: one row per level (today's session / daily / gap levels + build-ups of the last 576 bars)
+var lvP = array.new_float()
+var lvSide = array.new_int()        // 1 high side (short setups), -1 low side (long setups)
+var lvKnown = array.new_int()       // bar index the level is known at (breach counts from the bar after)
+var lvFb = array.new_int()          // first breach bar index, -1 none
+var lvName = array.new_string()
+var lvBu = array.new_bool()
+var lvSw = array.new_bool()         // sweep marker already shown
+var lvLine = array.new_line()
+var lvLab = array.new_label()
+
+// session boxes: the bot's 11 definitions (engine/lit.py SESSIONS), all used as liquidity whatever is drawn
+var sName = array.from("asia20", "asia18", "asia19", "lon25", "lon34", "lon23", "ny89", "ny830", "ny930", "ny9301030", "pre")
+var sA = array.from(1200, 1080, 1140, 120, 180, 120, 480, 510, 570, 570, 240)
+var sZ = array.from(1440, 1440, 1440, 300, 240, 180, 540, 570, 600, 630, 570)
+var bxHi = array.new_float(11, na)
+var bxLo = array.new_float(11, na)
+var bxCnt = array.new_int(11, 0)
+var bxLast = array.new_int(11, -1)
+var bxDone = array.new_bool(11, false)
+var bxBox = array.new_box(11)
+
+var fhIdx = array.new_int()         // confirmed swing highs (bar index)
+var flIdx = array.new_int()         // confirmed swing lows
+
+var int dayStart = na
+var float dH = na
+var float dL = na
+var float wH = na
+var float wL = na
+var float mH = na
+var float mL = na
+var bool wFull = false
+var bool mFull = false
+var float pdh = na
+var float pdl = na
+var float pwh = na
+var float pwl = na
+var float pmh = na
+var float pml = na
+var float open18 = na
+var float vixMove = na
+var int lastE1 = -1
+var int lastE2 = -1
+var bool locked = false
+var string dayResult = ""
+var int prevWeek = na
+var int prevMonth = na
+
+// limit slots (up to 3 setups working at once; like the live bot, the first one to fill is the day's trade)
+var qDir = array.new_int()
+var qEp = array.new_float()
+var qStop = array.new_float()
+var qTgt = array.new_float()
+var qPv = array.new_float()
+var qT0 = array.new_int()
+var qTap = array.new_int()
+var qFill = array.new_bool()
+var qRe = array.new_bool()
+var qDay = array.new_int()
+var qLnC = array.new_line()
+var qLnS = array.new_line()
+var qLnT = array.new_line()
+var qLab = array.new_label()
+
+// the open 5m-approximation trade
+var bool tOn = false
+var int tDir = 0
+var float tEntry = na
+var float tRisk = na
+var float tTg = na
+var float tCur = na
+var bool tBe = false
+var int tDay = na
+
+// panel state (the latest setup the bot evaluated)
+var int pDir = 0
+var string pSweep = "waiting for a sweep"
+var string pIdm = "-"
+var string pDisp = "-"
+var string pCisd = "-"
+var string pRisk = "-"
+var string pLimit = "-"
+var string pTags = ""
+var int pScore = 0
+var int pScoreMax = 14
+
+// alert flags (set on the closing tick of a bar)
+armedNow = false
+sweepNow = false
+string msgArmed = ""
+string msgSweep = ""
+
+f_mkline(p, x, c, nm, show) =>
+    line ln = na
+    label lb = na
+    if show
+        ln := line.new(x, p, x + 1, p, color=c, width=1, extend=extend.right)
+        lb := label.new(x, p, f_short(nm), style=label.style_none, textcolor=c, size=size.small)
+    [ln, lb]
+
+f_add(p, side, known, nm, isBu, c, show) =>
+    [ln, lb] = f_mkline(p, known, c, nm, show)
+    array.push(lvP, p)
+    array.push(lvSide, side)
+    array.push(lvKnown, known)
+    array.push(lvFb, -1)
+    array.push(lvName, nm)
+    array.push(lvBu, isBu)
+    array.push(lvSw, false)
+    array.push(lvLine, ln)
+    array.push(lvLab, lb)
+
+f_droplevel(k, endx) =>
+    ln = array.get(lvLine, k)
+    lb = array.get(lvLab, k)
+    if not na(ln)
+        if iToday
+            line.delete(ln)
+            label.delete(lb)
+        else if array.get(lvFb, k) == -1
+            line.set_extend(ln, extend.none)
+            line.set_x2(ln, endx)
+    array.remove(lvP, k)
+    array.remove(lvSide, k)
+    array.remove(lvKnown, k)
+    array.remove(lvFb, k)
+    array.remove(lvName, k)
+    array.remove(lvBu, k)
+    array.remove(lvSw, k)
+    array.remove(lvLine, k)
+    array.remove(lvLab, k)
+
+f_sessShow(k) =>
+    nm = array.get(sName, k)
+    sh = false
+    if k <= 2
+        sh := iAsia and nm == (iAsiaDef == "18:00-00:00" ? "asia18" : iAsiaDef == "19:00-00:00" ? "asia19" : "asia20")
+    else if k <= 5
+        sh := iLon and nm == (iLonDef == "02:00-05:00" ? "lon25" : iLonDef == "03:00-04:00" ? "lon34" : "lon23")
+    else if k <= 9
+        sh := iNY
+    else
+        sh := iPre
+    sh
+
+f_sessCol(k) => k <= 2 ? cAsia : k <= 5 ? cLon : k <= 9 ? cNY : cGap
+
+// =====================================================================================================================
+if barstate.isconfirmed
+    // ---------------------------------------------------------------------------------------- step 1: new trading day
+    if newDay
+        if bar_index > 0
+            pdh := dH
+            pdl := dL
+            if weekId != prevWeek
+                pwh := wFull ? wH : secPWH
+                pwl := wFull ? wL : secPWL
+                wH := na
+                wL := na
+                wFull := true
+            if monthId != prevMonth
+                pmh := mFull ? mH : secPMH
+                pml := mFull ? mL : secPML
+                mH := na
+                mL := na
+                mFull := true
+        // yesterday's levels out (build-ups older than 576 bars too)
+        int k = array.size(lvP) - 1
+        while k >= 0
+            if not array.get(lvBu, k) or array.get(lvKnown, k) < bar_index - 576
+                f_droplevel(k, bar_index - 1)
+            k -= 1
+        dayStart := bar_index
+        dH := na
+        dL := na
+        open18 := open
+        vixMove := na(vixPrev) ? na : vixPrev / 100.0 / math.sqrt(252.0) * open18
+        lastE1 := -1
+        lastE2 := -1
+        locked := false
+        dayResult := ""
+        for q = 0 to 10
+            array.set(bxHi, q, na)
+            array.set(bxLo, q, na)
+            array.set(bxCnt, q, 0)
+            array.set(bxLast, q, -1)
+            array.set(bxDone, q, false)
+        if bar_index > 0
+            f_add(pdh, 1, bar_index - 1, "pdh", false, cPD, iKey)
+            f_add(pdl, -1, bar_index - 1, "pdl", false, cPD, iKey)
+            if not na(pwh)
+                f_add(pwh, 1, bar_index - 1, "pwh", false, cPW, iKey)
+                f_add(pwl, -1, bar_index - 1, "pwl", false, cPW, iKey)
+            if not na(pmh)
+                f_add(pmh, 1, bar_index - 1, "pmh", false, cPM, iKey)
+                f_add(pml, -1, bar_index - 1, "pml", false, cPM, iKey)
+            // NDOG every day; NWOG all week (gap between the last close of last week and this week's first open)
+            gA1 = math.min(close[1], open)
+            gB1 = math.max(close[1], open)
+            if gB1 - gA1 >= 0.25
+                f_add(gA1, gA1 > open18 ? 1 : -1, bar_index - 1, "ndog", false, cGap, iGaps)
+                f_add(gB1, gB1 > open18 ? 1 : -1, bar_index - 1, "ndog", false, cGap, iGaps)
+        prevWeek := weekId
+        prevMonth := monthId
+    var float nwA = na
+    var float nwB = na
+    if newDay and bar_index > 0 and weekId != weekId[1]
+        nwA := math.abs(open - close[1]) >= 0.25 ? math.min(close[1], open) : na
+        nwB := math.abs(open - close[1]) >= 0.25 ? math.max(close[1], open) : na
+    if newDay and bar_index > 0 and not na(nwA) and not na(pwh)
+        f_add(nwA, nwA > open18 ? 1 : -1, bar_index - 1, "nwog", false, cGap, iGaps)
+        f_add(nwB, nwB > open18 ? 1 : -1, bar_index - 1, "nwog", false, cGap, iGaps)
+    dH := na(dH) ? high : math.max(dH, high)
+    dL := na(dL) ? low : math.min(dL, low)
+    wH := na(wH) ? high : math.max(wH, high)
+    wL := na(wL) ? low : math.min(wL, low)
+    mH := na(mH) ? high : math.max(mH, high)
+    mL := na(mL) ? low : math.min(mL, low)
+
+    // ---------------------------------------------------------------------------------------- step 2: session boxes
+    for q = 0 to 10
+        a = array.get(sA, q)
+        z = array.get(sZ, q)
+        inb = (a < z ? (etm >= a and etm < z) : etm >= a) and (a >= 1080 ? etm >= 1080 : etm < 1080)
+        if inb
+            if array.get(bxCnt, q) == 0 and f_sessShow(q)
+                array.set(bxBox, q, box.new(bar_index, high, bar_index, low, border_color=color.new(f_sessCol(q), 40), bgcolor=color.new(f_sessCol(q), 90)))
+            array.set(bxHi, q, na(array.get(bxHi, q)) ? high : math.max(array.get(bxHi, q), high))
+            array.set(bxLo, q, na(array.get(bxLo, q)) ? low : math.min(array.get(bxLo, q), low))
+            array.set(bxCnt, q, array.get(bxCnt, q) + 1)
+            array.set(bxLast, q, bar_index)
+            if f_sessShow(q) and not na(array.get(bxBox, q))
+                bx = array.get(bxBox, q)
+                box.set_right(bx, bar_index)
+                box.set_top(bx, array.get(bxHi, q))
+                box.set_bottom(bx, array.get(bxLo, q))
+        else if array.get(bxCnt, q) >= 1 and not array.get(bxDone, q)
+            array.set(bxDone, q, true)
+            if array.get(bxCnt, q) >= 2
+                nm = array.get(sName, q)
+                f_add(array.get(bxHi, q), 1, array.get(bxLast, q), nm + "_h", false, f_sessCol(q), f_sessShow(q))
+                f_add(array.get(bxLo, q), -1, array.get(bxLast, q), nm + "_l", false, f_sessCol(q), f_sessShow(q))
+
+    // ---------------------------------------------------------------------------------------- step 3: swings + build-ups
+    if bar_index >= 4
+        j = bar_index - 2
+        if high[2] > math.max(high[4], high[3]) and high[2] >= math.max(high[1], high[0])
+            tol = math.max(1.5, 0.15 * atrv[2])
+            int r = array.size(fhIdx) - 1
+            while r >= 0
+                kk = array.get(fhIdx, r)
+                if j - kk > 288
+                    break
+                if j - kk >= 3 and math.abs(high[2] - high[bar_index - kk]) <= tol
+                    lev = math.max(high[2], high[bar_index - kk])
+                    float mx = high[bar_index - kk - 1]
+                    for q = kk + 1 to j - 1
+                        mx := math.max(mx, high[bar_index - q])
+                    if mx < lev
+                        f_add(lev, 1, bar_index, "bu_h", true, cBU, iBU)
+                        break
+                r -= 1
+            array.push(fhIdx, j)
+            if array.size(fhIdx) > 400
+                array.shift(fhIdx)
+        if low[2] < math.min(low[4], low[3]) and low[2] <= math.min(low[1], low[0])
+            tol = math.max(1.5, 0.15 * atrv[2])
+            int r = array.size(flIdx) - 1
+            while r >= 0
+                kk = array.get(flIdx, r)
+                if j - kk > 288
+                    break
+                if j - kk >= 3 and math.abs(low[2] - low[bar_index - kk]) <= tol
+                    lev = math.min(low[2], low[bar_index - kk])
+                    float mn = low[bar_index - kk - 1]
+                    for q = kk + 1 to j - 1
+                        mn := math.min(mn, low[bar_index - q])
+                    if mn > lev
+                        f_add(lev, -1, bar_index, "bu_l", true, cBU, iBU)
+                        break
+                r -= 1
+            array.push(flIdx, j)
+            if array.size(flIdx) > 400
+                array.shift(flIdx)
+
+    // ---------------------------------------------------------------------------------------- step 4: first breach
+    int nL = array.size(lvP)
+    if nL > 0
+        for q = 0 to nL - 1
+            if array.get(lvFb, q) == -1 and array.get(lvKnown, q) < bar_index
+                p = array.get(lvP, q)
+                sd = array.get(lvSide, q)
+                if (sd == -1 and low < p) or (sd == 1 and high > p)
+                    array.set(lvFb, q, bar_index)
+                    ln = array.get(lvLine, q)
+                    if not na(ln)
+                        line.set_extend(ln, extend.none)
+                        line.set_x2(ln, bar_index)
+                        line.set_style(ln, line.style_dotted)
+            // sweep marker: the level is run >= 0.5 ATR by a new 24-bar extreme within 24 bars of its first breach
+            fb = array.get(lvFb, q)
+            if fb != -1 and bar_index - fb <= SWEEP_WIN and not array.get(lvSw, q)
+                d = -array.get(lvSide, q)
+                lo0 = f_lo(d, 0)
+                float mnl = lo0
+                for o = 1 to LEG
+                    mnl := math.min(mnl, f_lo(d, o))
+                if lo0 <= mnl and array.get(lvP, q) * d - lo0 >= DEPTH * atrv
+                    array.set(lvSw, q, true)
+                    sweepNow := true
+                    nmS = f_short(array.get(lvName, q))
+                    pDir := d
+                    pSweep := nmS + " run " + str.tostring((array.get(lvP, q) * d - lo0) / atrv, "#.#") + " ATR"
+                    pIdm := "-"
+                    pDisp := "-"
+                    pCisd := "waiting for the 5m CISD close"
+                    pRisk := "-"
+                    if iEarly
+                        label.new(bar_index, d == 1 ? low : high, "x " + nmS, style=d == 1 ? label.style_label_up : label.style_label_down, color=color.new(d == 1 ? cLong : cShort, 75), textcolor=color.white, size=size.tiny)
+                    msgSweep := iMode == "JSON" ? "{\"src\":\"tv_lit\",\"ev\":\"sweep\",\"sym\":\"" + syminfo.ticker + "\",\"day\":\"" + dateStr + "\",\"t\":" + str.tostring(time / 1000 + 300, "#") + ",\"dir\":" + str.tostring(d) + ",\"level\":\"" + array.get(lvName, q) + "\",\"level_px\":" + str.tostring(array.get(lvP, q), "#.##") + ",\"ext\":" + str.tostring(d * lo0, "#.##") + ",\"depth\":" + str.tostring((array.get(lvP, q) * d - lo0) / atrv, "#.###") + "}" : "LIT sweep " + (d == 1 ? "LONG side: " : "SHORT side: ") + nmS + " " + str.tostring(array.get(lvP, q), "#.##") + " run " + str.tostring((array.get(lvP, q) * d - lo0) / atrv, "#.#") + " ATR - watch for the 5m CISD close"
+
+    // ---------------------------------------------------------------------------------------- step 5: limits + 5m trade
+    int qi = 0
+    while qi < array.size(qDir)
+        string dead = ""
+        if tOn
+            dead := "day used"
+        else
+            d = array.get(qDir, qi)
+            same = tday == array.get(qDay, qi)
+            ep = array.get(qEp, qi)
+            stp = array.get(qStop, qi)
+            tgt = array.get(qTgt, qi)
+            if not array.get(qRe, qi)
+                array.set(qRe, qi, true)
+                if not same or etm >= FLAT or etm >= 1080
+                    dead := "no next bar"
+                else if not f_inwin(etm)
+                    dead := "entry bar outside 02:00-15:30"
+                else if not (array.get(qPv, qi) > f_op(d, 0) + SLIP)
+                    dead := "opened past the target"
+            if dead == "" and array.get(qFill, qi)
+                if same
+                    en = f_op(d, 0) + SLIP
+                    rk = en - stp
+                    dist = tgt - en
+                    if rk > 0 and dist >= MIN_RR * rk and f_qty(rk) >= 1
+                        tOn := true
+                        tDir := d
+                        tEntry := en
+                        tRisk := rk
+                        tTg := en + math.min(dist, MAX_RR * rk)
+                        tCur := stp
+                        tBe := false
+                        tDay := tday
+                        locked := true
+                        dead := "filled"
+                        pLimit := "filled (5m approx) " + str.tostring(d * en, "#.##")
+                        if iTrade
+                            label.new(bar_index, d * en, (d == 1 ? "BUY " : "SELL ") + str.tostring(d * en, "#.##") + " (5m)", style=label.style_label_left, color=color.new(d == 1 ? cLong : cShort, 20), textcolor=color.white, size=size.small)
+                    else
+                        dead := "fill too close to the target"
+                else
+                    dead := "day ended"
+            else if dead == ""
+                if not same or etm >= FLAT or etm >= 1080
+                    dead := "15:55 / day end"
+                else if array.get(qTap, qi) == -1 and bar_index >= array.get(qT0, qi) + WAIT
+                    dead := "30 min, no tap"
+                else if f_lo(d, 0) <= stp
+                    dead := "extreme broken"
+                else
+                    if array.get(qTap, qi) == -1 and f_lo(d, 0) <= ep
+                        array.set(qTap, qi, bar_index)
+                        pLimit := "tapped " + str.tostring(d * ep, "#.##") + ", waiting for a CISD close (bot: 1m)"
+                    if array.get(qTap, qi) == -1 and f_hi(d, 0) >= tgt
+                        dead := "target traded first"
+                    else if array.get(qTap, qi) != -1
+                        tp = array.get(qTap, qi)
+                        if bar_index - tp > CIS5
+                            dead := "no CISD confirmation"
+                        else
+                            int lowk = tp
+                            for q = tp to bar_index
+                                if f_lo(d, bar_index - q) < f_lo(d, bar_index - lowk)
+                                    lowk := q
+                            [cz, czs] = f_cisd(d, lowk)
+                            if not na(cz) and bar_index > lowk and f_cl(d, 0) > cz
+                                array.set(qFill, qi, true)
+        if dead != ""
+            if dead != "filled"
+                line.set_color(array.get(qLnC, qi), cDead)
+                line.set_color(array.get(qLnS, qi), cDead)
+                line.set_color(array.get(qLnT, qi), cDead)
+                pLimit := "dropped: " + dead
+            line.set_x2(array.get(qLnC, qi), bar_index)
+            line.set_x2(array.get(qLnS, qi), bar_index)
+            line.set_x2(array.get(qLnT, qi), bar_index)
+            label.set_tooltip(array.get(qLab, qi), "setup end: " + dead)
+            array.remove(qDir, qi)
+            array.remove(qEp, qi)
+            array.remove(qStop, qi)
+            array.remove(qTgt, qi)
+            array.remove(qPv, qi)
+            array.remove(qT0, qi)
+            array.remove(qTap, qi)
+            array.remove(qFill, qi)
+            array.remove(qRe, qi)
+            array.remove(qDay, qi)
+            array.remove(qLnC, qi)
+            array.remove(qLnS, qi)
+            array.remove(qLnT, qi)
+            array.remove(qLab, qi)
+        else
+            qi += 1
+    if tOn
+        string kind = ""
+        float px = na
+        d = tDir
+        if tday != tDay
+            kind := "EOD"
+            px := f_cl(d, 1) - SLIP
+        else if f_lo(d, 0) <= tCur
+            kind := tBe ? "BE" : "STOP"
+            px := tCur - SLIP
+        else
+            if f_hi(d, 0) >= tTg
+                kind := "TARGET"
+                px := tTg
+            else
+                if not tBe and f_hi(d, 0) >= tEntry + tRisk
+                    tCur := tEntry
+                    tBe := true
+                if etm >= FLAT
+                    kind := "EOD"
+                    px := f_cl(d, 0) - SLIP
+        if kind != ""
+            tOn := false
+            rr = (px - tEntry) / tRisk
+            dayResult := kind + " " + str.tostring(rr, "#.#") + "R"
+            pLimit := "trade closed: " + dayResult + " (5m approx)"
+            if iTrade
+                label.new(bar_index, d * px, kind + " " + str.tostring(rr, "+#.#;-#.#") + "R", style=label.style_label_left, color=color.new(kind == "TARGET" ? cLong : kind == "STOP" ? cShort : cDead, 20), textcolor=color.white, size=size.small)
+
+    // ---------------------------------------------------------------------------------------- step 6: trigger + filters
+    if not na(pdh) and not na(dayStart) and bar_index >= dayStart + LEG and etm >= 60 and etm < FLAT and etm < 1080
+        for side = 0 to 1
+            d = side == 0 ? 1 : -1
+            int ee = bar_index - LEG
+            for q = bar_index - LEG + 1 to bar_index
+                if f_lo(d, bar_index - q) < f_lo(d, bar_index - ee)
+                    ee := q
+            lastE = d == 1 ? lastE1 : lastE2
+            if ee != bar_index and ee != lastE
+                [rp, rst] = f_cisd(d, ee)
+                bool trig = not na(rp) and f_cl(d, 0) > rp
+                if trig
+                    for q = ee to bar_index - 1
+                        if f_cl(d, bar_index - q) > rp
+                            trig := false
+                            break
+                if trig
+                    ext = f_lo(d, bar_index - ee)
+                    names = array.new_string()
+                    int sb = bar_index
+                    float levNear = na
+                    bool hasBu = false
+                    bool hasHtf = false
+                    nL2 = array.size(lvP)
+                    if nL2 > 0
+                        for q = 0 to nL2 - 1
+                            fb = array.get(lvFb, q)
+                            pq = array.get(lvP, q) * d
+                            if array.get(lvSide, q) == -d and array.get(lvKnown, q) < ee and fb != -1 and fb >= ee - SWEEP_WIN and fb <= ee and ext < pq
+                                nmq = array.get(lvName, q)
+                                if not array.includes(names, nmq)
+                                    array.push(names, nmq)
+                                sb := math.min(sb, fb)
+                                levNear := na(levNear) ? pq : math.max(levNear, pq)
+                                hasBu := hasBu or array.get(lvBu, q)
+                                hasHtf := hasHtf or (str.length(nmq) == 3 and str.startswith(nmq, "p"))
+                    if array.size(names) > 0
+                        if d == 1
+                            lastE1 := ee
+                        else
+                            lastE2 := ee
+                        if (etm + 5) % 1440 < FLAT
+                            depth = (levNear - ext) / atrv[bar_index - ee]
+                            // displacement: biggest body (trade's direction) between the extreme and the trigger
+                            float disp = 0.0
+                            int dispBar = ee + 1
+                            for q = ee + 1 to bar_index
+                                bq = (f_cl(d, bar_index - q) - f_op(d, bar_index - q)) / atrv[bar_index - q]
+                                if bq > disp
+                                    disp := bq
+                                    dispBar := q
+                            // inducement: swing lows above the swept level, untouched until the final run took them
+                            sw = flIdx
+                            if d == -1
+                                sw := fhIdx
+                            int legTop = ee - 36
+                            for q = ee - 36 to ee
+                                if f_hi(d, bar_index - q) >= f_hi(d, bar_index - legTop)
+                                    legTop := q
+                            int nIdm = 0
+                            int idmBar = na
+                            int idmTk = na
+                            float idmPx = na
+                            int r = array.size(sw) - 1
+                            while r >= 0
+                                mm = array.get(sw, r)
+                                if mm < sb - 72
+                                    break
+                                if mm < ee and f_lo(d, bar_index - mm) > levNear
+                                    pm0 = f_lo(d, bar_index - mm)
+                                    int tk = -1
+                                    for q = mm + 1 to ee
+                                        if f_lo(d, bar_index - q) < pm0
+                                            tk := q
+                                            break
+                                    if tk != -1 and tk >= math.max(legTop, mm + 3) and tk <= ee
+                                        if (pm0 - levNear) / atrv[bar_index - sb] <= IDM_DIST and sb - mm <= IDM_AGE
+                                            nIdm += 1
+                                            if na(idmBar)
+                                                idmBar := mm
+                                                idmTk := tk
+                                                idmPx := d * pm0
+                                r -= 1
+                            // the bot's filters
+                            ep = math.min(rp, f_cl(d, 0))
+                            stp = ext - BUF
+                            risk = ep - stp
+                            string why = ""
+                            if not f_inwin((etm + 5) % 1440)
+                                why += "window "
+                            if depth < DEPTH
+                                why += "depth " + str.tostring(depth, "#.##") + " "
+                            if disp < DISP
+                                why += "displacement " + str.tostring(disp, "#.##") + " "
+                            if nIdm < 1
+                                why += "no inducement "
+                            if iMonday and tDow == dayofweek.monday and (high[0] >= 0)
+                                tookHi = dH > pdh
+                                tookLo = dL < pdl
+                                if tookHi != tookLo and ((tookHi and d == 1) or (tookLo and d == -1))
+                                    why += "Monday rule "
+                            if risk < MIN_STOP or risk > MAX_STOP
+                                why += "stop " + str.tostring(risk, "#") + " pts "
+                            float tgt = na
+                            float pv = na
+                            if not na(vixMove)
+                                pv := open18 * d + vixMove
+                                if pv > f_cl(d, 0) + SLIP and pv - ep >= MIN_RR * risk
+                                    tgt := ep + math.min(pv - ep, MAX_RR * risk)
+                            if na(tgt)
+                                why += "VIX band < 1.5R "
+                            // confluence tags (never a filter)
+                            tags = array.new_string()
+                            if nIdm >= 2
+                                array.push(tags, "2IDM")
+                            if hasBu
+                                array.push(tags, "EQL")
+                            if hasHtf
+                                array.push(tags, "HTF-LVL")
+                            bool fvg = false
+                            if bar_index >= ee + 2
+                                for q = ee + 2 to bar_index
+                                    if f_lo(d, bar_index - q) > f_hi(d, bar_index - q + 2)
+                                        fvg := true
+                            if fvg
+                                array.push(tags, "FVG")
+                            bool ifvg = false
+                            for q = ee - 12 to ee
+                                gTop = f_lo(d, bar_index - q + 2)
+                                if f_hi(d, bar_index - q) < gTop and f_cl(d, 0) > gTop
+                                    ifvg := true
+                            if ifvg
+                                array.push(tags, "IFVG")
+                            extP = d * ext
+                            if d == 1 and not na(ob15bT) and extP <= ob15bT and extP >= ob15bB - 0.1 * atrv
+                                array.push(tags, "OB15")
+                            if d == -1 and not na(ob15sT) and extP >= ob15sB and extP <= ob15sT + 0.1 * atrv
+                                array.push(tags, "OB15")
+                            if d == 1 and not na(ob60bT) and extP <= ob60bT and extP >= ob60bB - 0.1 * atrv
+                                array.push(tags, "OB1h")
+                            if d == -1 and not na(ob60sT) and extP >= ob60sB and extP <= ob60sT + 0.1 * atrv
+                                array.push(tags, "OB1h")
+                            rn = math.round(extP / 50.0) * 50.0
+                            if math.abs(extP - rn) <= iRnd
+                                array.push(tags, "RND" + str.tostring(rn % 100 == 0 ? 0 : 50))
+                            // SMT: NQ made the new 24-bar extreme, ES did not
+                            float esEx = d == 1 ? esLow[bar_index - ee] : esHigh[bar_index - ee]
+                            float esPrev = esEx
+                            for q = ee - LEG to ee - 1
+                                esPrev := d == 1 ? math.min(esPrev, esLow[bar_index - q]) : math.max(esPrev, esHigh[bar_index - q])
+                            if not na(esEx) and ((d == 1 and esEx > esPrev) or (d == -1 and esEx < esPrev))
+                                array.push(tags, "SMT")
+                            if not na(dC1) and ((d == 1 and dC1 > dO1) or (d == -1 and dC1 < dO1))
+                                array.push(tags, "D-BIAS")
+                            pdMid = (pdh + pdl) / 2
+                            if (d == 1 and d * ep < pdMid) or (d == -1 and d * ep > pdMid)
+                                array.push(tags, d == 1 ? "DISC" : "PREM")
+                            bool dol = false
+                            for q = 0 to nL2 - 1
+                                nmq = array.get(lvName, q)
+                                pq = array.get(lvP, q) * d
+                                if array.get(lvSide, q) == d and array.get(lvFb, q) == -1 and (nmq == "pdh" or nmq == "pdl" or nmq == "pwh" or nmq == "pwl") and pq > f_cl(d, 0) and (na(tgt) or pq <= tgt)
+                                    dol := true
+                            if dol
+                                array.push(tags, "DOL")
+                            em = (etm + 5) % 1440
+                            if (em >= 120 and em < 300) or (em >= 420 and em < 600) or (em >= 810 and em < 930)
+                                array.push(tags, "KZ")
+                            if (em >= 153 and em < 180) or (em >= 243 and em < 270) or (em >= 530 and em < 550) or (em >= 590 and em < 610) or (em >= 650 and em < 670) or (em >= 710 and em < 730) or (em >= 790 and em < 820) or (em >= 915 and em < 945)
+                                array.push(tags, "MACRO")
+                            if not na(tgt) and (tgt - ep) / risk >= 3
+                                array.push(tags, "VIX3R+")
+                            score = array.size(tags)
+                            string ctx = ""
+                            if tDow == dayofweek.friday and tD >= 15 and tD <= 21
+                                ctx += " OPEX"
+                            if tDow == dayofweek.friday and tD <= 7
+                                ctx += " NFP?"
+                            if str.contains(iNews, dateStr)
+                                ctx += " NEWS"
+                            tagStr = array.join(tags, " ")
+                            swStr = ""
+                            for q = 0 to array.size(names) - 1
+                                swStr += (q > 0 ? "+" : "") + f_short(array.get(names, q))
+                            // panel: the latest setup the bot evaluated
+                            pDir := d
+                            pSweep := swStr + " " + str.tostring(depth, "#.#") + " ATR" + (depth >= DEPTH ? " ✓" : " ✗")
+                            pIdm := str.tostring(nIdm) + " swing(s) taken" + (nIdm >= 1 ? " ✓" : " ✗")
+                            pDisp := str.tostring(disp, "#.#") + " ATR" + (disp >= DISP ? " ✓" : " ✗")
+                            pCisd := "close beyond " + str.tostring(d * rp, "#.##") + " ✓"
+                            pRisk := "SL " + str.tostring(risk, "#") + " pts" + (na(tgt) ? " · no VIX target ✗" : " · TP " + str.tostring((tgt - ep) / risk, "#.#") + "R ✓")
+                            pTags := tagStr + ctx
+                            pScore := score
+                            if why == ""
+                                if locked or tOn or array.size(qDir) >= 3
+                                    pLimit := "valid, not armed (today's trade used)"
+                                else
+                                    pLimit := "armed " + str.tostring(d * ep, "#.##") + " for 30 min"
+                                    armedNow := true
+                                    col = d == 1 ? cLong : cShort
+                                    ln1 = line.new(rst, d * rp, bar_index + 1 + WAIT, d * rp, color=iSetup ? cCisd : na, style=line.style_solid, width=1)
+                                    ln2 = line.new(ee, d * stp, bar_index + 1 + WAIT, d * stp, color=iSetup ? cShort : na, style=line.style_dashed, width=1)
+                                    ln3 = line.new(bar_index, d * tgt, bar_index + 1 + WAIT, d * tgt, color=iSetup ? cLong : na, style=line.style_dashed, width=1)
+                                    lbt = "LIT " + (d == 1 ? "LONG" : "SHORT") + " · " + swStr + "\nCISD " + str.tostring(d * rp, "#.##") + " · SL " + str.tostring(risk, "#") + "p · " + str.tostring((tgt - ep) / risk, "#.#") + "R" + (iTags and score > 0 ? "\nA+ " + str.tostring(score) + ": " + tagStr : "") + ctx
+                                    lb = label.new(bar_index, d == 1 ? low : high, iSetup ? lbt : "", style=d == 1 ? label.style_label_up : label.style_label_down, color=iSetup ? color.new(col, 15) : na, textcolor=color.white, size=size.small, tooltip="sweep " + swStr + " · extreme " + str.tostring(d * ext, "#.##") + " · depth " + str.tostring(depth, "#.##") + " ATR · displacement " + str.tostring(disp, "#.##") + " ATR · inducements " + str.tostring(nIdm) + " · stop " + str.tostring(d * stp, "#.##") + " · target " + str.tostring(d * tgt, "#.##") + " (VIX band, banked at 8R)")
+                                    if iSetup
+                                        label.new(ee, d == 1 ? low[bar_index - ee] : high[bar_index - ee], "SWEEP", style=d == 1 ? label.style_triangleup : label.style_triangledown, color=col, textcolor=col, size=size.tiny)
+                                        label.new(bar_index + 1 + WAIT, d * stp, "SL", style=label.style_none, textcolor=cShort, size=size.small)
+                                        label.new(bar_index + 1 + WAIT, d * tgt, "TP", style=label.style_none, textcolor=cLong, size=size.small)
+                                        label.new(bar_index + 1 + WAIT, d * rp, "CISD", style=label.style_none, textcolor=cCisd, size=size.small)
+                                        label.new(dispBar, d == 1 ? high[bar_index - dispBar] : low[bar_index - dispBar], "D " + str.tostring(disp, "#.#"), style=label.style_none, textcolor=col, size=size.tiny)
+                                        if not na(idmBar)
+                                            line.new(idmBar, idmPx, idmTk, idmPx, color=color.new(col, 30), style=line.style_dotted, width=1)
+                                            label.new(idmBar, idmPx, "IDM" + (nIdm >= 2 ? " x" + str.tostring(nIdm) : ""), style=label.style_none, textcolor=col, size=size.tiny)
+                                    array.push(qDir, d)
+                                    array.push(qEp, ep)
+                                    array.push(qStop, stp)
+                                    array.push(qTgt, tgt)
+                                    array.push(qPv, pv)
+                                    array.push(qT0, bar_index + 1)
+                                    array.push(qTap, -1)
+                                    array.push(qFill, false)
+                                    array.push(qRe, false)
+                                    array.push(qDay, tday)
+                                    array.push(qLnC, ln1)
+                                    array.push(qLnS, ln2)
+                                    array.push(qLnT, ln3)
+                                    array.push(qLab, lb)
+                                    tagsJ = array.size(tags) > 0 ? "\"" + array.join(tags, "\",\"") + "\"" : ""
+                                    namesJ = "\"" + array.join(names, "\",\"") + "\""
+                                    msgArmed := iMode == "JSON" ? "{\"src\":\"tv_lit\",\"ev\":\"armed\",\"sym\":\"" + syminfo.ticker + "\",\"day\":\"" + dateStr + "\",\"t\":" + str.tostring(time / 1000 + 300, "#") + ",\"dir\":" + str.tostring(d) + ",\"swept\":[" + namesJ + "],\"sweep_ext\":" + str.tostring(d * ext, "#.##") + ",\"cisd_px\":" + str.tostring(d * rp, "#.##") + ",\"limit_px\":" + str.tostring(d * ep, "#.##") + ",\"stop_px\":" + str.tostring(d * stp, "#.##") + ",\"target_px\":" + str.tostring(d * tgt, "#.##") + ",\"risk_pts\":" + str.tostring(risk, "#.##") + ",\"rr\":" + str.tostring((tgt - ep) / risk, "#.##") + ",\"depth\":" + str.tostring(depth, "#.###") + ",\"disp\":" + str.tostring(disp, "#.###") + ",\"ind\":" + str.tostring(nIdm) + ",\"tags\":[" + tagsJ + "],\"score\":" + str.tostring(score) + "}" : "LIT setup armed " + (d == 1 ? "LONG" : "SHORT") + " " + syminfo.ticker + ": swept " + swStr + ", limit " + str.tostring(d * ep, "#.##") + " for 30 min, stop " + str.tostring(d * stp, "#.##") + " (" + str.tostring(risk, "#") + " pts), target " + str.tostring(d * tgt, "#.##") + " (" + str.tostring((tgt - ep) / risk, "#.#") + "R). The bot enters only after a 1m CISD close."
+                            else
+                                pLimit := "not armed: " + why
+                                if iRaw
+                                    label.new(bar_index, d == 1 ? low : high, "·", style=label.style_none, textcolor=cDead, size=size.small, tooltip="LIT sweep " + swStr + " rejected: " + why)
+
+    // ---------------------------------------------------------------------------------------- alerts (closed bars only)
+    if armedNow
+        alert(msgArmed, alert.freq_once_per_bar_close)
+    if sweepNow
+        alert(msgSweep, alert.freq_once_per_bar_close)
+
+alertcondition(armedNow, "LIT setup armed", "LIT setup armed on {{ticker}}: limit at the CISD level for 30 min (see the chart label)")
+alertcondition(sweepNow, "LIT sweep", "LIT sweep on {{ticker}}: a level was run >= 0.5 ATR - watch for the 5m CISD close")
+
+// ------------------------------------------------------------------------------------------------ entry window shading
+bgcolor(iWin and etm >= WIN_A and etm < WIN_Z ? color.new(#787b86, 95) : na, title="LIT entry window")
+
+// ------------------------------------------------------------------------------------------------ step panel
+var table tb = table.new(iPanelPos == "top_right" ? position.top_right : iPanelPos == "bottom_right" ? position.bottom_right : iPanelPos == "top_left" ? position.top_left : position.bottom_left, 2, 15, bgcolor=color.new(#131722, 10), border_color=color.new(#787b86, 60), border_width=1, frame_color=color.new(#787b86, 40), frame_width=1)
+
+f_row(r, a, b, c) =>
+    table.cell(tb, 0, r, a, text_color=color.new(#d1d4dc, 0), text_size=size.small, text_halign=text.align_left)
+    table.cell(tb, 1, r, b, text_color=c, text_size=size.small, text_halign=text.align_left)
+
+if iPanel and barstate.islast
+    biasC = pDir == 1 ? cLong : pDir == -1 ? cShort : color.new(#d1d4dc, 0)
+    // next level to watch: the nearest untouched level above and below the price
+    float upP = na
+    float dnP = na
+    string upN = ""
+    string dnN = ""
+    nP = array.size(lvP)
+    if nP > 0
+        for q = 0 to nP - 1
+            if array.get(lvFb, q) == -1 and array.get(lvKnown, q) < bar_index
+                p = array.get(lvP, q)
+                if p > close and (na(upP) or p < upP)
+                    upP := p
+                    upN := f_short(array.get(lvName, q))
+                if p < close and (na(dnP) or p > dnP)
+                    dnP := p
+                    dnN := f_short(array.get(lvName, q))
+    winOpen = etm >= WIN_A and etm < WIN_Z
+    mon = tDow == dayofweek.monday and not na(pdh) ? (dH > pdh and not (dL < pdl) ? "Friday high taken: shorts only" : dL < pdl and not (dH > pdh) ? "Friday low taken: longs only" : "no rule today") : "not Monday"
+    f_row(0, "LIT", pDir == 1 ? "LONG bias" : pDir == -1 ? "SHORT bias" : "no setup yet", biasC)
+    f_row(1, "1 Sweep", pSweep, biasC)
+    f_row(2, "2 Inducement", pIdm, color.new(#d1d4dc, 0))
+    f_row(3, "3 Displacement", pDisp, color.new(#d1d4dc, 0))
+    f_row(4, "4 CISD close", pCisd, color.new(#d1d4dc, 0))
+    f_row(5, "5 Stop / target", pRisk, color.new(#d1d4dc, 0))
+    f_row(6, "6 Limit", pLimit, color.new(#fdd835, 0))
+    f_row(7, "Entry window", winOpen ? "open (02:00-15:30 ET)" : "closed", winOpen ? cLong : cDead)
+    f_row(8, "Trade today", tOn ? "in a trade (5m approx)" : locked ? "used: " + dayResult : "free (1 a day)", locked ? cDead : cLong)
+    f_row(9, "Monday rule", iMonday ? mon : "off", color.new(#d1d4dc, 0))
+    f_row(10, "Next level up", na(upP) ? "-" : upN + " " + str.tostring(upP, "#.##") + " (+" + str.tostring(upP - close, "#") + ")", cShort)
+    f_row(11, "Next level down", na(dnP) ? "-" : dnN + " " + str.tostring(dnP, "#.##") + " (-" + str.tostring(close - dnP, "#") + ")", cLong)
+    f_row(12, "VIX band", na(vixMove) ? "no VIX" : str.tostring(open18 + vixMove, "#.##") + " / " + str.tostring(open18 - vixMove, "#.##"), color.new(#d1d4dc, 0))
+    f_row(13, "A+ score", iTags ? str.tostring(pScore) + "/" + str.tostring(pScoreMax) + " " + pTags : "off", color.new(#d1d4dc, 0))
+    f_row(14, "Note", "visual only · bot enters on 1m", cDead)

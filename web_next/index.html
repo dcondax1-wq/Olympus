@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/css/skins.css">
   <link rel="stylesheet" href="/css/dash.css">
   <link rel="stylesheet" href="/css/next.css">
+  <link rel="stylesheet" href="/css/hub.css">
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#07080c">
   <meta name="mobile-web-app-capable" content="yes">
@@ -69,6 +70,8 @@
 
     <!-- ============================================================ COMMAND -->
     <section class="page active" id="page-command">
+      <!-- Bot Control strip + START / STOP + preflight summary + eval meter (js/next/botctl.js) -->
+      <div id="bcToday" class="bc-today-w"></div>
       <!-- PC bot status header (js/next/pcpages.js): TRADING YOUR EVAL / ON SIM / PAPER ONLY / DISABLED / FEED STALE -->
       <div class="pc-status" id="pcStatus" role="status" aria-live="polite"></div>
       <!-- Live Oracle: the 3D orb with the last bars and nearest pools (js/next/fx3d.js); hidden while 3D is off -->
@@ -476,11 +479,19 @@
     <section class="page" id="page-trades"><div class="empty">Loading trades…</div></section>
 
     <!-- ============================================================ PC BOT: accounts, eval HQ, edge, P&L calendar, MFFU rules (js/next/pcpages.js) -->
+    <section class="page" id="page-botctl"><div class="empty">Loading Bot Control…</div></section>
     <section class="page" id="page-accounts"><div class="empty">Loading the account…</div></section>
     <section class="page" id="page-evalhq"><div class="empty">Loading Eval HQ…</div></section>
     <section class="page" id="page-edge"><div class="empty">Loading the edge…</div></section>
     <section class="page" id="page-pnlcal"><div class="empty">Loading the P&amp;L calendar…</div></section>
     <section class="page" id="page-mffurules"><div class="empty">Loading the MFFU rules…</div></section>
+
+    <!-- ============================================================ HUB: prop firms, business, market, learn, system (js/next/hubpages.js) -->
+    <section class="page" id="page-firms"><div class="empty">Loading the prop firms…</div></section>
+    <section class="page" id="page-business"><div class="empty">Loading the business…</div></section>
+    <section class="page" id="page-market"><div class="empty">Loading the market…</div></section>
+    <section class="page" id="page-learn"><div class="empty">Loading Learn…</div></section>
+    <section class="page" id="page-system"><div class="empty">Loading System…</div></section>
 
     <!-- ============================================================ MODULES (tile grid, js/next/shell.js) -->
     <section class="page" id="page-modules"></section>

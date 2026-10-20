@@ -1,7 +1,7 @@
 {
   "model": "lit",
   "sym": "NQ",
-  "label": "LIT - Liquidity Inducement (2026-tuned) + loss pack",
+  "label": "LIT - Liquidity Inducement (2026-tuned) + loss pack + 15-minute check + BE+costs",
   "chosen": "2026-10-18",
   "locked": true,
   "no_yahoo": true,
@@ -14,6 +14,9 @@
     "max_trades_day": 1
   },
   "lit": {
+    "t_check": {"at": 15, "x": 0.3, "mfe": 0.5},
+    "scale_in": null,
+    "be_off": 1.25,
     "ref": "cisd",
     "extra_boxes": [],
     "window": [
@@ -103,16 +106,16 @@
     "eval_prior_pnl": -100.0,
     "eval_prior_note": "owner 2026-10-18: the Builder 50K eval was at -$100 (balance $49,900) when the bot went live; counted as one day before eval_start (needs $3,100, room $1,900)"
   },
-  "size_rule": "$800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $2/pt; max 40 micros; no trade under 1 micro (engine/lit.py qty_for). Weekly stop: after 2 STOP exits in the calendar week, half size for the rest of it (one rounding, floor 1 micro). No cold-streak filter, no late-entry rule. Switch lit_sizing.mode (normal / eval / fast_eval / safe_eval / two_week); live: two_week (one winner passes, 60% of the eval room, $1,000 soft daily loss cap, 40 micros, min 1).",
+  "size_rule": "$800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $2/pt; max 40 micros; no trade under 1 micro (engine/lit.py qty_for). Weekly stop: after 2 STOP exits in the calendar week, half size for the rest of it (one rounding, floor 1 micro). No cold-streak filter, no late-entry rule. Switch lit_sizing.mode (normal / eval / fast_eval / safe_eval / two_week); live: two_week (one winner passes, 60% of the eval room, $1,000 soft daily loss cap, 40 micros, min 1). Scale-in (built and safety-reviewed 2026-10-20, OFF: \"scale_in\": null until the owner's Sim101 roundtrip, python -m engine.ninjatrader --sim-roundtrip-add, passes): one add after breakeven, sized by engine/sizing.scale_in_qty (its open risk never above the first entry's).",
   "costs": "$1.40 per micro round trip; 1 tick slippage on market entries and on stop / breakeven / end-of-day exits (limit entries and targets fill at the price)",
   "judged_on": "2026 only (owner order 2026-10-18): parameters picked on Jan 2 - Jun 30 2026, checked on Jul 1 - Oct 16 2026; 2021-25 is a reference line, never a gate",
-  "lock_note": "Locked 2026-10-18, loss pack adopted 2026-10-18 (research/writeups/lit-losses.md, run lit_loss_pack = lit_live): LIT final + Monday rule + weekly stop. 2026 (Jan 2 - Oct 16): 120 trades, 2.91/wk, 86% of weeks with 2+, win 26.7%, PF 3.66, +$41,734 ($4,254/mo), max DD -$2,315; MFFU 50K eval within 2 weeks 26.7% pass / 1.9% fail, within 1 month 55.3% / 3.9%, pass rate 95.5%, median 16 sessions to pass. H1 (picked on): PF 4.44, +$32,773. H2 (check): PF 2.46, +$8,962 (~$2,400/mo) - expect the H2 rate. 2021-25 reference (no 1m data there): PF 1.01, +$1,275, max DD -$20,462. Without the pack (run lit_final): 2026 PF 3.06 +$38,873 DD -$3,097, pass rate 79.9%. Old strategy (Liquidity Engine, live_model_engine.json) 2026: PF 3.94, +$20,487; it keeps running as the cloud shadow ledger.",
+  "lock_note": "Locked 2026-10-18, loss pack adopted 2026-10-18 (research/writeups/lit-losses.md). 15-minute check + BE+costs ON since 2026-10-20 (owner approved; research/writeups/lit-big-ideas.md, runs lit_adopt_t15_be_off = lit_live, lit_adopt_t15_be_off_eval / lit_idm_eval_t15_be_off): the 15-minute check (t_check: at 15 min, cut when the trade is 0.3R against and never reached +0.5R) and breakeven at entry + 1.25 pts (be_off). Scale-in after breakeven (scale_in) built and safety-reviewed, OFF until the Sim roundtrip passes (python -m engine.ninjatrader --sim-roundtrip-add on Sim101, market open; the quantity-only OIF CHANGE is unconfirmed on a real install; docs/DAILY_CHECKLIST.md 'Switch on scale-in'). LIT size rule, 2026 (Jan 2 - Oct 16): 120 trades, 2.91/wk, 86% of weeks with 2+, win 55.0%, PF 4.07, +$43,385 ($4,423/mo), max DD -$2,196; MFFU 50K eval within 2 weeks 31.6% pass / 1.0% fail, within 1 month 57.3% / 4.9%, pass rate 90.8%, median 14 sessions. H1 (picked on): PF 4.98, +$33,891. H2 (check): PF 2.69, +$9,493 (~$2,550/mo) - expect the H2 rate; thin sample (13 cuts in 2026). Eval path (two_week sizing): H1 PF 4.02 +$34,234, 2-week pass/fail 57.1/5.9; H2 PF 2.20 +$9,059, 2-week pass/fail 52.2/0.0. 2021-25 reference (no 1m data there, only be_off acts): PF 1.01, +$1,211, max DD -$19,436. With scale-in (after the Sim check; runs lit_adopt_all3, lit_adopt_all3_eval): 2026 PF 4.43 +$59,698, H1 PF 4.94 +$44,507, H2 PF 3.48 +$15,192; eval path 2-week pass/fail H1 58.0/2.5, H2 52.2/0.0, net H1 +$53,116, H2 +$17,262. Before the upgrades (run lit_live_2026-10-18): 2026 PF 3.66 +$41,734, H1 +$32,773, H2 +$8,962, eval path 2-week pass/fail H1 52.9/9.2, H2 50.7/2.9. Switch an upgrade off: delete its key (t_check / be_off) or set it to null in live_model.json lit and live_model_lit.json; switch scale-in on: set \"scale_in\": {\"pb\": 0.25, \"f\": 1.0, \"rat_k\": 1.0, \"min_rk\": 2.0, \"n\": 1} in both. Old strategy (Liquidity Engine, live_model_engine.json) 2026: PF 3.94, +$20,487; it keeps running as the cloud shadow ledger.",
   "eval_safe_option": {
     "how_out": 0.5,
     "what": "half size when the sweep extreme is outside Tue 03:00 - Wed 11:30 ET; 2026 +$27.8k (PF 3.17) instead of +$38.9k, max DD -$2.3k instead of -$3.1k, no eval failed within 2 weeks, pass rate 86% instead of 80%"
   },
   "previous": "live_model_engine.json (Liquidity Engine lock of 2026-10-17; the cloud monitor's shadow ledger)",
-  "live": "engine/lit_live.py (PC paper bot engine/live.py and tools/cloud_monitor.py); 1m bars for the entry from data/NQ_1m.csv + Yahoo NQ=F 1m (7 days); a day without full 1m bars executes on 5m. Paper only.",
+  "live": "engine/lit_live.py (PC paper bot engine/live.py and tools/cloud_monitor.py); 1m bars for the entry from data/NQ_1m.csv + NinjaTrader MNQ 1m (no Yahoo; the cloud uses the PC's pushed bars); a day without full 1m bars executes on 5m. Paper only.",
   "live_check": "python -X utf8 -m tests.test_lit_live (results research/lit/live_check.json)",
   "accounts": [
     {"id": "mffu50k_eval", "name": "MFFU 50K Eval", "firm": "MFFU", "plan": "Builder 50K", "kind": "eval", "source": "pc"}

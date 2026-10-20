@@ -14,6 +14,9 @@ learning journal and the repo's research files. Nothing here starts, arms, route
                                   timeline (refused rows flagged), routed trades, P&L per day, equity curve, stats
   GET /api/next/pc/trade/{entry_t} one routed trade with its chart: the replay chart id when the LIT replay has the same
                                   trade, else bars around it (the bot's feed, then data/NQ_5m.csv / NQ_1m.csv)
+  GET /api/next/pc/execution      execution quality (engine/fill_audit.py): every routed trade against the LIT backtest on
+                                  the same bars (latency, entry / exit slippage in ticks and $, stop / target placement, BE
+                                  timing, qty), missed trades (why, backtest $), extra trades, $ per trade / month
   GET /api/next/extras            tools/build_web_dashboard._extras(): every LIT replay trade (compact rows), the level-type
                                   leaderboard, two_week eval odds (run lit_2wk_rec), eventual pass, Monte Carlo, MFFU rules
 """
@@ -324,6 +327,20 @@ def account_view(bot, now: int | None = None, lm: dict | None = None, bars: bool
            "sizing": {"mode": ls.get("mode"), "eval_start": ls.get("eval_start"), "eval_prior_pnl": ls.get("eval_prior_pnl"),
                       "two_week_until": ls.get("two_week_until"), "after_mode": ls.get("after_mode")},
            "model_state": accounts.clean_text((getattr(bot, "state", None) or {}).get("model_state"), 200)}
+    if acct.get("accounts"):                     # extra accounts (engine/multi_account.py): one compact row each
+        rows = []
+        for sub in acct["accounts"]:
+            try:
+                m = {"id": sub.get("id"), "name": sub.get("name"), "firm": sub.get("firm"), "plan": sub.get("plan"),
+                     "kind": sub.get("kind") or "eval", "source": "pc"}
+                s2 = accounts._pc_section(m, {"present": True, "t": now, "acct": sub, "running": sub.get("running")}, {}, today, now)
+                rows.append({k: s2.get(k) for k in ("id", "name", "firm", "plan", "badge", "broker_account", "position", "eval", "pnl", "stats")}
+                            | {"mode": sub.get("mode"), "locked": sub.get("locked"), "enabled": sub.get("enabled"),
+                               "disabled": (sub.get("account") or {}).get("disabled"), "size": sub.get("size"),
+                               "orders": len(sub.get("orders") or [])})
+            except Exception as e:
+                rows.append({"id": sub.get("id"), "name": sub.get("name"), "error": accounts.clean_text(f"{e.__class__.__name__}: {e}", 120)})
+        out["accounts"] = rows
     if bars:
         t_from = _session_from(today)
         if pos and pos.get("entry_t"):
@@ -398,5 +415,16 @@ def extras():
     try:
         x = extras_view()
         return _J(x, 500 if x.get("error") else 200)
+    except Exception as e:
+        return _J({"error": f"{e.__class__.__name__}: {accounts.clean_text(e, 120)}"}, 500)
+
+
+# ------------------------------------------------------------------------------------------------ execution quality
+@router.get("/api/next/pc/execution")
+def pc_execution(rows: int = 200):
+    """engine/fill_audit.view(): the last audit (re-run when older than 30 min). Read-only towards the bot and the broker."""
+    try:
+        from . import fill_audit
+        return _J(fill_audit.view(max_rows=max(1, min(int(rows), 500))))
     except Exception as e:
         return _J({"error": f"{e.__class__.__name__}: {accounts.clean_text(e, 120)}"}, 500)

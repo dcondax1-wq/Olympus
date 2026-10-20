@@ -2,7 +2,7 @@
 // search button and the Settings > Interface card. app.js calls initShell() at boot and onPage(id) on every navigation.
 import { $, $$, store, esc } from '../util.js';
 import { icon } from './icons.js';
-import { TOP, DATA, MODULES, ARCHIVE, TITLES, groupOf } from './routes.js';
+import { TOP, DATA, MODULES, ARCHIVE, HUB, TITLES, groupOf } from './routes.js';
 import { fxLevel, setFxLevel } from './fx3d.js';
 
 const root = document.documentElement;
@@ -19,9 +19,10 @@ function buildNav() {
   const nav = $('#nav');
   // visible: the six top-level pages. Hidden: every sub page, so the command palette (reads #nav a[data-page]) lists them.
   nav.innerHTML = TOP.map(p => navLink(p)).join('') +
+    `<div class="nx-nav-sec">Hub</div>` + HUB.map(p => navLink(p, 'class="nx-pin"')).join('') +
     `<div class="nx-nav-sec">Pinned</div>` +
     PINS.map(id => [...DATA, ...MODULES].find(p => p.id === id)).map(p => navLink(p, 'class="nx-pin"')).join('') +
-    `<div class="nx-nav-all" hidden>${[...DATA, ...MODULES].filter(p => !PINS.includes(p.id)).map(p => `<a data-page="${p.id}"><span>${esc(p.label)}</span></a>`).join('')}${ARCHIVE.map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id])}</span></a>`).join('')}</div>`;
+    `<div class="nx-nav-all" hidden>${[...DATA, ...MODULES].filter(p => !PINS.includes(p.id) && !HUB.some(h => h.id === p.id)).map(p => `<a data-page="${p.id}"><span>${esc(p.label)}</span></a>`).join('')}${ARCHIVE.map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id])}</span></a>`).join('')}</div>`;
   $('#nxTabs').innerHTML = TOP.filter(p => p.id !== 'settings').map(p =>
     `<button type="button" data-goto="${p.id}" class="nx-tab" data-tab="${p.id}"><span class="nx-ti">${icon(p.icon)}</span><span>${p.label}</span></button>`).join('');
   $('#nxCollapse').innerHTML = icon('collapse') + '<span>Collapse</span>';

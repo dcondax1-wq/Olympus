@@ -13,7 +13,10 @@ heartbeat.json: {"t": unix seconds, "running": bot running, "adapter": paper|nin
                  "health": is the bot really trading the eval (engine/accounts.pc_health: account name + LIVE/SIM, adapter
                            enabled or the DISABLED reason, armed, NINJATRADER_LIVE set (a bool), NinjaTrader connection,
                            feed source + age of the last 1m / 5m bar, last poll + errors, the LIT stage, setups seen today,
-                           orders today, kill flag, uptime; secret-free, ~2 KB; the cloud's verdict: accounts.verdict)}
+                           orders today, kill flag, uptime; secret-free, ~2 KB; the cloud's verdict: accounts.verdict),
+                 "ops": the owner's PC helpers (engine/ops_checks.hb_fields: last check red / yellow count + first fix,
+                        last backup, free disk; ~200 bytes)}
+Every beat also writes the payload to logs/heartbeat_last.json (local, gitignored) for HEALTH_CHECK and the ops task.
 
 No Yahoo (engine/pcbars.py, owner 2026-10-19): next to heartbeat.json the commit carries the PC's NinjaTrader bars,
 bars_1m.csv.gz (last 3 days of 1m, every push) and bars_5m.csv.gz (last 40 days of 5m, rebuilt hourly; unchanged = the
@@ -37,6 +40,7 @@ import time
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BRANCH = "heartbeat"
 SILENT_AFTER_S = 20 * 60
+LAST_PATH = os.path.join(ROOT, "logs", "heartbeat_last.json")   # the last payload, for engine/ops_checks (logs/ is gitignored)
 FAST_EVERY_S = 60
 FAST_STAGES = ("limit", "cisd1m", "trade")       # engine/accounts._lit_stage: a setup armed, or in a trade
 
@@ -148,6 +152,28 @@ def _health(bot):
         return None
 
 
+def _ops():
+    """The owner's PC helpers' last result (engine/ops_checks.hb_fields: checks red / yellow, last backup, free disk)."""
+    try:
+        from . import ops_checks
+        return ops_checks.hb_fields()
+    except Exception:
+        return None
+
+
+def save_last(payload: dict, res: dict, path: str = LAST_PATH):
+    """The last payload + push result, for HEALTH_CHECK / the ops task (engine/ops_checks reads it). Never raises."""
+    try:
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        tmp = path + ".tmp"
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump({"saved_t": int(time.time()), "push": {"at": int(time.time()), **(res or {})}, "payload": payload}, fh,
+                      separators=(",", ":"), default=str)
+        os.replace(tmp, path)
+    except Exception:
+        pass
+
+
 def _acct(bot):
     """The Accounts page block (engine/accounts.pc_activity). Never raises; None when unavailable."""
     try:
@@ -157,11 +183,20 @@ def _acct(bot):
         return None
 
 
+def _exec():
+    """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
+    try:
+        from engine import fill_audit
+        return fill_audit.heartbeat_block()
+    except Exception:
+        return None
+
+
 class Heartbeat:
     """Daemon thread on the PC server: pushes a heartbeat every `every_s` seconds while the server runs."""
 
-    def __init__(self, bot, every_s: float = 300.0, log=print):
-        self.bot, self.every_s, self.log = bot, every_s, log
+    def __init__(self, bot, every_s: float = 300.0, log=print, last_path: str = LAST_PATH):
+        self.bot, self.every_s, self.log, self.last_path = bot, every_s, log, last_path
         self.last: dict = {}
         self._stop = threading.Event()
         self._thread = None
@@ -191,7 +226,8 @@ class Heartbeat:
                 "position": bool(st.get("position")), "model_state": st.get("model_state"), "host": platform.node(),
                 "model": (st.get("strategy") or {}).get("model") or cfg.get("model"),
                 "push_pk": _push_pk(),          # phone notifications: the cloud seals the notification key to this (engine/push.py)
-                "every_s": int(self.every_s), "acct": _acct(self.bot), "health": _health(self.bot)}
+                "every_s": int(self.every_s), "acct": _acct(self.bot), "health": _health(self.bot), "ops": _ops(),
+                "exec": _exec()}                # execution quality summary (engine/fill_audit.py), None before the first audit
 
     def beat(self) -> dict:
         files = self.bar_files()
@@ -201,6 +237,7 @@ class Heartbeat:
             pl["bars"] = pcbars.PCBars.meta(files, self.bot)
         res = push(pl, files=files)
         self.last = {"at": int(time.time()), **res}
+        save_last(pl, res, self.last_path)
         if not res["ok"] and time.time() - self._err_at > 3600:
             self._err_at = time.time()
             self.log(f"[heartbeat] push failed: {res['error']}")

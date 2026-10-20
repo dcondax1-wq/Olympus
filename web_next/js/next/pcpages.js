@@ -4,11 +4,12 @@
 //   Accounts      (#page-accounts)   eval card (balance incl. the -$100 before eval_start, trailing floor, room, progress to
 //                 +$3,000, session N of 10, daily loss used), open position + live chart, today's order timeline, equity curve,
 //                 P&L calendar, every routed trade with its chart and filters
+//                 + Execution quality: every routed trade vs the backtest on the same bars, missed / extra trades ($)
 //   Eval HQ       (#page-evalhq)     the 2-week pass path: $ to go, $ per session, what one winner pays (two_week sizing), odds
 //   Edge          (#page-edge)       where LIT makes its money (backtest): R, exits, MFE / MAE, stop size, hour, weekday, levels
 //   P&L calendar  (#page-pnlcal)     daily P&L month grid (backtest or the PC bot), streaks, this week vs the backtest
 //   MFFU rules    (#page-mffurules)  the Builder 50K rulebook (research/lit/mffu_rules.json) and how LIT fits it
-// Data (all read-only GETs): /api/next/pc/status, /api/next/pc/account, /api/next/pc/trade/<entry_t>, /api/next/extras (the phone's
+// Data (all read-only GETs): /api/next/pc/status, /api/next/pc/account, /api/next/pc/execution, /api/next/pc/trade/<entry_t>, /api/next/extras (the phone's
 // data.json "extras" shapes), /api/next/lit_extra, /api/next/results. Nothing on these pages starts, arms, routes or stops the bot.
 import { $, $$, api, esc, fmt$, fmtS$, fmtN, fmtR, cls, etStr, store } from '../util.js';
 import { lineChart } from './viz.js';
@@ -100,7 +101,7 @@ function scatter(el, pts, { h = 260, xlab = '', ylab = '', refY = null, xfmt = (
 }
 
 // P&L month grid (Mon-Fri): byDay Map(day -> {pnl, n, text}); returns html + the month's totals
-function calGrid(byDay, month, today, scale = 2500) {
+export function calGrid(byDay, month, today, scale = 2500) {
   const [Y, M] = month.split('-').map(Number), nd = new Date(Date.UTC(Y, M, 0)).getUTCDate();
   let cells = '', first = true, net = 0, n = 0, g = 0;
   for (let d = 1; d <= nd; d++) {
@@ -167,7 +168,7 @@ function evalCard(ev, acct) {
     <div class="pc-prog"><div class="pc-prog-h"><span>Soft daily loss used today</span><b class="${ev.dll_used ? 'dn' : ''}">${fmt$(ev.dll_used)} of ${fmt$(ev.dll)}</b></div>${meter(ev.dll_used / (ev.dll || 1000), ev.dll_used > 700 ? 'bad' : 'warn')}</div>`,
   `${chip(esc(String(ev.status || 'open').toUpperCase()), k)}${chip(esc(acct.badge || ''), acct.badge === 'LIVE' ? 'good' : acct.badge === 'SIM' ? 'warn' : '')}`);
 }
-function posTrade(p, ac) {
+export function posTrade(p, ac) {
   return { day: p.day, entry_t: +p.entry_t, side: p.side, dir: p.dir, entry: +p.entry, stop: +(p.stop0 ?? p.stop), target: +p.target, qty: p.qty,
     risk_usd: p.risk_usd, pnl: p.unrealized_usd || 0, exit: 'OPEN', id: 'pos_' + p.entry_t, target_label: p.target_label || '', be_t: p.be ? p.be_t : null };
 }
@@ -257,7 +258,63 @@ async function tradeChart(et, ac, box) {
   } catch (e) { box.innerHTML = empty('Chart unavailable.', esc(e.message)); }
 }
 
+// ------------------------------------------------------------------ execution quality (engine/fill_audit.py)
+// Every routed trade against the LIT backtest on the same bars: latency, entry / exit slippage (ticks, $), stop / target, BE
+// timing, qty; missed trades (why, backtest $) and extra trades. GET /api/next/pc/execution, refreshed every 2 min.
+let EX = null, exAt = 0;
+const tk = (v) => (ok(v) ? (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(Math.abs(v) % 1 ? 1 : 0) + ' t' : '—');
+export function execBody(x) {
+  if (!x || x.error) return empty('Execution audit unavailable.', esc(x?.error || ''));
+  const S = x.summary || {}, rows = x.rows || [], lim = x.alert_ticks || 4;
+  if (!rows.length) return empty('No live trades to audit yet.', 'Once the bot routes a trade, it is compared with the backtest on the same bars: fill vs backtest price, latency, breakeven timing, qty, and every trade the backtest took that the bot missed.');
+  const st = (r) => r.status === 'missed' ? `<span class="pc-side dn">MISSED</span>` : r.status === 'extra' ? `<span class="pc-side">EXTRA</span>` : `<span class="pc-side ${r.side === 'LONG' ? 'up' : 'dn'}">${esc(r.side)}</span>`;
+  const bad = (t) => ok(t) && t > lim;
+  const line = (r) => r.status === 'missed'
+    ? `<span>${esc(r.reason || '')}${r.pc_on === true ? ' · PC was on' : r.pc_on === false ? ' · PC off' : ''}</span><b class="${cls(-(r.missed_usd || 0))}">${fmtS$(r.missed_usd)} not taken</b>`
+    : r.status === 'extra' ? `<span>${esc(r.reason || '')}</span><b class="${cls(r.live_pnl)}">${fmtS$(r.live_pnl)}</b>`
+    : `<span>latency ${ok(r.latency_s) ? r.latency_s + ' s' : '—'} · entry <b class="${bad(r.entry_slip_ticks) ? 'dn' : ''}">${tk(r.entry_slip_ticks)}</b> · exit <b class="${bad(r.exit_slip_ticks) ? 'dn' : ''}">${tk(r.exit_slip_ticks)}</b>
+        · ${r.live_qty ?? '—'} vs ${r.bt_qty ?? '—'} micros${ok(r.be_delay_s) ? ` · BE ${r.be_delay_s >= 0 ? '+' : ''}${r.be_delay_s} s` : ''}${(r.notes || []).length ? ` · ${esc(r.notes.join('; '))}` : ''}</span>
+        <b class="${cls(r.slip_usd)}">${fmtS$(r.slip_usd)}${ok(r.exec_usd) && Math.abs(r.exec_usd - r.slip_usd) > 0.5 ? ` <em class="muted">exec ${fmtS$(r.exec_usd)}</em>` : ''}</b>`;
+  const months = (S.months || []).slice().reverse();
+  return `<div class="nx-stats">
+      ${stat('Slippage', fmtS$(S.slip_usd), ok(S.slip_usd_per_trade) ? `${fmtS$(S.slip_usd_per_trade)} a trade · ${S.trades} trades` : `${S.trades || 0} trades`, cls(S.slip_usd))}
+      ${stat('Execution vs backtest', fmtS$(S.exec_usd), 'real P&L − backtest at the routed qty', cls(S.exec_usd))}
+      ${stat('Missed trades', String(S.missed || 0), `${fmtS$(S.missed_usd)} in the backtest${S.missed_pc_on ? ` · ${S.missed_pc_on} with the PC on` : ''}`, S.missed ? 'dn' : '')}
+      ${stat('Extra trades', String(S.extra || 0), fmtS$(S.extra_usd))}
+      ${stat('Median', `${tk(S.entry_slip_ticks_med)} / ${tk(S.exit_slip_ticks_med)}`, `entry / exit · latency ${ok(S.latency_s_med) ? S.latency_s_med + ' s' : '—'}`)}
+    </div>
+    ${months.length ? `<p class="muted small" style="margin:8px 0">${months.map((m) => `<b>${MONTHS[+m.month.slice(5) - 1].slice(0, 3)}</b> ${m.trades} trades · slippage <b class="${cls(m.slip_usd)}">${fmtS$(m.slip_usd)}</b> · missed ${m.missed} (${fmtS$(m.missed_usd)})${m.extra ? ` · extra ${m.extra} (${fmtS$(m.extra_usd)})` : ''}`).join(' &nbsp;·&nbsp; ')}</p>` : ''}
+    <div class="pc-tl">${rows.slice(0, 40).map((r) => `<div class="pc-tl-r ${r.status === 'missed' || bad(r.entry_slip_ticks) || bad(r.exit_slip_ticks) ? 'bad' : ''}">
+        <span class="pc-tl-t mono">${fDate(r.day)}<br>${etStr(r.entry_t)}</span><span class="pc-tl-i">${st(r)}</span><div>${line(r)}</div></div>`).join('')}</div>
+    ${src(`Each day is re-run through the LIT backtest on the same bars (TradingView file + the PC’s NinjaTrader archive). Ticks: positive = worse than the backtest’s price (which already assumes 1 tick). $ is the P&L effect, negative = lost. A push goes out above ${lim} ticks and for a trade missed while the PC was on.`)}`;
+}
+async function mountExec(force) {
+  const box = document.getElementById('pcExec'); if (!box) return;
+  if (force || !EX || Date.now() - exAt > 120000) {
+    try { EX = await api('/api/next/pc/execution'); exAt = Date.now(); } catch (e) { EX = EX || { error: e.message }; }
+  }
+  if (box.isConnected) box.innerHTML = execBody(EX);
+}
+
 // ------------------------------------------------------------------ Accounts page
+// extra accounts (engine/multi_account.py, start cfg "accounts"): one row each, same signals, own size / eval / lock-out
+export function extraAccountsCard(ac) {
+  const rows = ac.accounts || [];
+  if (!rows.length) return '';
+  const body = rows.map((x) => {
+    if (x.error) return `<div class="pc-xacc"><b>${esc(x.name || x.id)}</b> <span class="dn small">${esc(x.error)}</span></div>`;
+    const ev = x.eval || {}, p = x.position, st = x.disabled ? `disabled: ${x.disabled}` : x.locked ? `locked: ${x.locked}` : 'ready';
+    return `<div class="pc-xacc"><div><b>${esc(x.name)}</b> ${chip(esc(x.badge || ''))} ${chip('mode ' + esc(x.mode || '—'))}
+      <span class="muted small">${esc(x.firm || '')} ${esc(x.plan || '')}${x.broker_account ? ' · ' + esc(x.broker_account) : ''}</span></div>
+      <div class="small">${p?.side ? `<span class="${p.side === 'LONG' ? 'up' : 'dn'}">${p.side} ${p.qty ?? ''} MNQ</span>` : 'flat'}
+      · today <b class="${cls(x.pnl?.today)}">${fmtS$(x.pnl?.today)}</b>
+      ${ev.balance != null ? ` · balance ${fmt$(ev.balance)}, room ${fmt$(ev.room)}, session ${ev.session ?? '—'}` : ''}
+      · <span class="${x.disabled || x.locked ? 'dn' : 'muted'}">${esc(st)}</span>
+      ${x.size?.qty != null ? ` · last size ${x.size.qty} (model ${x.size.model_qty})` : ''}</div></div>`;
+  }).join('');
+  return card(`Extra accounts · ${rows.length}`, `<div class="pc-xaccs">${body}</div>`, '', 'pc-xacc-card');
+}
+
 let acTimer = null;
 async function showAccounts(force) {
   const el = $('#page-accounts'); if (!el) return;
@@ -280,11 +337,14 @@ async function showAccounts(force) {
         ${stat('Max drawdown', fmt$(sg.max_dd), sg.streak ? `streak ${sg.streak.n} ${sg.streak.kind}` : '', sg.max_dd < 0 ? 'dn' : '')}
       </div>
       <div class="pc-acc-top">${evalCard(ev, a)}${positionCard(ac)}</div>
+      ${extraAccountsCard(ac)}
       <div class="grid cols-2">${timelineCard(ac)}
         ${card('Equity · eval account', '<div id="pcEq"></div>', `<span class="muted small">${(ac.equity || []).length - 1} sessions with a trade</span>`)}</div>
       ${card('P&L calendar · routed', '<div id="pcCal"></div>', `<div class="pc-mnav" id="pcCalNav"><button class="nx-chipbtn" type="button" data-m="-1" aria-label="Previous month">${icon('left')}</button><button class="nx-chipbtn" type="button" data-m="1" aria-label="Next month">${icon('right')}</button></div>`)}
+      ${card('Execution quality · vs the backtest', '<div id="pcExec"><div class="muted small">Loading the execution audit…</div></div>', '<span class="muted small">engine/fill_audit.py</span>')}
       ${tradesCard(ac)}`;
   mountPosition(ac);
+  mountExec(force);
   const eq = ac.equity || [];
   lineChart($('#pcEq'), eq.map(([d, v]) => ({ x: d === 'start' ? 'start' : fDate(d), y: v })), { h: 220, color: 'var(--accent)', ref: 3000 });
   // calendar of routed P&L per day

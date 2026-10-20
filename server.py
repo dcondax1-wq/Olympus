@@ -716,6 +716,10 @@ app.add_middleware(_KillClearsAutostart)
 WATCHDOG = _wd.Watchdog(BOT, send=_autostart_alert, keepawake=_ka.KEEPAWAKE)
 AUTOUPDATE = _au.DailyUpdater(BOT)       # owner opt-in: python -m engine.autoupdate --enable
 HEARTBEAT = _hb.Heartbeat(BOT, log=lambda t: print(t, flush=True))   # pushes "I'm alive" to the heartbeat branch (LE_HEARTBEAT=1)
+from engine import fill_audit as _fa
+# execution quality (engine/fill_audit.py): copies the ledger / NinjaTrader fills each minute, compares them with the LIT backtest
+# on the same bars after each exit and each session, pushes slipped fills / missed trades; read-only (LE_EXEC_AUDIT=0 = off)
+EXEC_AUDIT = _fa.Watcher(BOT, log=lambda t: print(t, flush=True))
 
 
 def _autostart_resume():
@@ -772,10 +776,29 @@ def _autostart_startup():
         threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
     WATCHDOG.start()
     HEARTBEAT.start()
+    EXEC_AUDIT.start()
     AUTOUPDATE.start()                   # daily check in the CME halt; does nothing until the owner runs --enable
 
 
 app.router.add_event_handler("startup", _autostart_startup)
+
+
+# ---- BOT CONTROL ----
+# Bot Control center (engine/botctl.py, web_next/js/next/botctl.js): its Start / Stop run exactly what POST /api/live/start
+# and /api/live/stop do (BOT.start + the autostart record with the phrase stripped; Stop clears it). The kill switch stays
+# POST /api/live/kill. Every live lock (armed + exact phrase + the live env flag, the adapter's _live_gate) is unchanged.
+from engine import botctl as _bc
+
+
+def _botctl_start(body):
+    res = BOT.start(body)
+    if res.get("ok"):
+        _autostart_save(body)
+    return res
+
+
+_bc.HOOKS.update(start=_botctl_start, stop=live_stop, heartbeat=HEARTBEAT.status)
+# ---- END BOT CONTROL ----
 
 
 @app.get("/api/health/ping")

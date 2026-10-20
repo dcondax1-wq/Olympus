@@ -324,6 +324,7 @@ class LiveBot:
         self._last_bars = {}             # time -> (o,h,l,c) of the last closed bars seen (revision detector)
         self._open_routed = None         # entry_t of the entry we routed and still believe is open
         self._open_qty = None
+        self._open_adds = []             # LIT scale_in: adds routed to the open position [{"entry_t", "n", "qty", "px", "t"}]
         self._blocked_entries = set()    # entry_t of engine entries we deliberately did not route
         self._flattened = set()          # entry_t of positions the clock-based safety flatten already closed
         self._restored = None
@@ -341,6 +342,7 @@ class LiveBot:
         self._nt_last = {}               # (sym, tf) -> the last NinjaTrader frame (the heartbeat pushes it to the cloud)
         self._nt_forming_last = None     # (open time, open) of the forming 1m bar (heartbeat "bars" block)
         self._arc = {}                   # (sym, tf) -> the NinjaTrader archive in memory (data/nt_bars, engine/pcbars.py)
+        self.accts = None                # engine/multi_account.AccountRouter: the start cfg's extra accounts (None = one account)
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -582,6 +584,7 @@ class LiveBot:
         self.health["data_source"] = self.cfg.get("data_source", "yahoo")
         self.health["no_yahoo"] = self.no_yahoo
         self._restore(clear_kill=bool(cfg.get("clear_kill")))
+        self._start_accounts()
         self.running = True
         self.stop_flag.clear()
         if spawn:
@@ -609,6 +612,7 @@ class LiveBot:
         if self.state and self.state.get("position"):
             pos = self.state["position"]
             qty = self._open_qty if self._open_routed == pos.get("entry_t") and self._open_qty else pos.get("qty")
+            qty = int(qty or 0) + self._adds_qty(pos.get("entry_t"))
             self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "qty": qty, "reason": "KILL SWITCH",
                          "entry_t": pos.get("entry_t")})
             self._flattened.add(pos.get("entry_t"))
@@ -617,6 +621,8 @@ class LiveBot:
             # broker adapters that can flatten the whole account (NinjaTrader FLATTENEVERYTHING) are told even when the
             # model shows no position: the broker may still hold one (desync, manual order, late fill)
             self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "reason": "KILL SWITCH", "entry_t": None})
+        if self.accts is not None:                  # every extra account is flattened too (engine/multi_account.py)
+            self.accts.kill(self.cfg.get("sym", "NQ"))
         self.stop()
         self._log("risk", "KILL SWITCH: flattened and stopped")
         self._save_state()
@@ -625,8 +631,11 @@ class LiveBot:
     def _route(self, action):
         if self.adapter is None:
             self.adapter = ADAPTERS["paper"](self.cfg)
+        hedge = self.accts.opposite_open(1 if action.get("side") == "buy" else -1) \
+            if self.accts is not None and action.get("side") in ("buy", "sell") else None
         try:
-            res = self.adapter.send(action)
+            # extra accounts: never long on one account and short on another (engine/multi_account.opposite_open)
+            res = {"ok": False, "error": "REFUSED: " + hedge} if hedge else self.adapter.send(action)
         except Exception as e:  # never let a broker error kill the loop
             res = {"ok": False, "error": str(e)}
             self._note_error(f"adapter {getattr(self.adapter, 'name', '?')} send failed: {e}")
@@ -639,6 +648,8 @@ class LiveBot:
         """Adapters that manage broker orders between bars (NinjaTrader: late fill reports, bracket health, flat-time
         safety) get one tick() per poll, before the data fetch so a failing feed cannot skip it. Never raises."""
         ad = self.adapter
+        if self.accts is not None and not self.kill:
+            self.accts.tick()                       # the extra accounts' adapters (never raises)
         if self.kill or not getattr(ad, "loop_tick", False) or not callable(getattr(ad, "tick", None)):
             return
         try:
@@ -682,6 +693,168 @@ class LiveBot:
         reason = "BE" if (float(new) - float(pos.get("entry") or new)) * d >= 0 else "STOP MOVE"
         self._route({"sym": sym, "side": "modify", "qty": self._open_qty or pos.get("qty"), "stop": new, "reason": reason,
                      "entry_t": et_})
+
+    # ------------------------------------------------------------------ LIT scale-in (engine/lit.py "scale_in", default off)
+    def _adds_qty(self, entry_t) -> int:
+        """Micros of the scale-in adds routed to the position of entry_t (0 without adds), from the broker's real fills."""
+        self._sync_adds(entry_t)
+        return sum(int(a.get("qty") or 0) for a in self._open_adds if a.get("entry_t") == entry_t)
+
+    def _routed_pnl(self, tr, qty):
+        """$ P&L of a finished trade at the routed size: the first entry's qty, plus every scale-in add routed to it at its
+        own price (the model's add qty may differ from the routed one: the eval caps size the routed adds)."""
+        self._sync_adds(tr["entry_t"])
+        adds = [a for a in self._open_adds if a.get("entry_t") == tr["entry_t"]]
+        if not tr.get("adds") and not adds:
+            return round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"]
+        from . import lit as _lit
+        d = 1 if tr.get("dir", 1) == 1 else -1
+        xp = float(tr["exit_price"])
+        pts = float(tr["pts"]) if tr.get("pts") is not None else d * (xp - float(tr["entry"]))
+        pnl = qty * (pts * _lit.PV - _lit.COMM)
+        for a in adds:                     # a["px"]: the broker's fill when reported (_sync_adds), else the model's price
+            pnl += int(a["qty"]) * (d * (xp - float(a["px"])) * _lit.PV - _lit.COMM)
+        return round(pnl, 2)
+
+    def _add_qty(self, pos, an) -> int:
+        """Micros for a scale-in add, as the backtest sizes it.
+        Normal mode (the LIT rule, no eval caps): the model's add (engine/lit.py simulate_x + scale_trade, i.e. what run_x
+        books) at the routed size: int(model add x routed micros / model micros), = the model's add when the bot routes the
+        model's size. Eval modes (two_week / eval / safe_eval, as the research eval path tools/lit_big_ideas.py sizes them):
+        engine/sizing.scale_in_qty at the ROUTED size: the add's open risk inside the first entry's $ risk, 60% of the room
+        to the trailing floor and the $1,000 soft daily loss left today. The whole position at most max_micros.
+        Fails closed (0) in an eval mode."""
+        from . import sizing as _sz
+        lsz = getattr(self, "_lit_sizing", None) or {}
+        mode = str(lsz.get("mode") or "")
+        try:
+            si = ((self.state or {}).get("strategy") or {}).get("params", {}).get("scale_in") or {}
+            q0 = int(self._open_qty or pos.get("qty") or 0)
+            maxq = min(40, int((self.cfg.get("params") or {}).get("max_micros") or 40))
+            if mode not in ("two_week", "eval", "safe_eval", "funded"):
+                qm = int(pos.get("qty") or 0)
+                n = int(int(an.get("qty") or 0) * q0 / qm + 1e-9) if qm else 0
+                return max(0, min(n, maxq - q0 - self._adds_qty(pos.get("entry_t"))))
+            state = None
+            if mode in ("two_week", "eval", "safe_eval"):
+                st = self.eval_state() or {}
+                state = {"room": self.eval_room(), "cum": float(st.get("cum", self.day_pnl_routed()) or 0.0)}
+            prev = [{"rk": float(a["rk"]), "prev_rk": list(a.get("prev_rk") or [])} for a in (pos.get("adds") or [])][:int(an["n"]) - 1]
+            qa = _sz.scale_in_qty(q0, q0, float(pos["risk_pts"]), prev + [{"rk": float(an["rk"]), "prev_rk": list(an.get("prev_rk") or [])}],
+                                  f=si.get("f", an.get("f", 1.0)), state=state, max_micros=maxq)
+            return int(qa[-1])
+        except Exception as e:
+            self._note_error(f"scale-in sizing failed ({mode or 'normal'}): {e.__class__.__name__}: {e}")
+            return 0
+
+    def _route_add(self, pos, sym):
+        """LIT scale_in: the model decided an add on the close of its 1m CISD candle (position "add_now"): route it at market
+        at once, exactly once (the backtest fills it at the next 1m open + 1 tick). The stop and target then cover the whole
+        position (NinjaTrader: the bracket's quantity grows, engine/ninjatrader.py add_to_position). An add the model filled
+        before this process saw its decision is never chased."""
+        et_ = pos.get("entry_t")
+        for i, a in enumerate(pos.get("adds") or []):
+            key = ("add", et_, i + 1)
+            if key not in self.seen:
+                self.seen.add(key)
+                self._log("risk", f"Scale-in add {i + 1} at {_et(int(a['t'])):%H:%M} ET NOT routed: seen after its fill bar - not chasing")
+        routed_n = {int(a["n"]) for a in self._open_adds if a.get("entry_t") == et_}
+        if len(pos.get("adds") or []) < max(routed_n or {0}) and not pos.get("add_now") and not getattr(self, "_add_warned", None) == et_:
+            self._add_warned = et_
+            self._log("warn", f"Scale-in: an add was routed for the {_et(et_):%H:%M} ET entry but the model's trade has none once its "
+                              "fill bar closed (priced from an estimate); the broker keeps it under the same stop/target")
+        an = pos.get("add_now")
+        if not an:
+            return
+        key = ("add", et_, int(an["n"]))
+        if key in self.seen:
+            return
+        self.seen.add(key)
+        self._save_state()          # marked done BEFORE the broker call: a crash / restart mid-call never sends this add again
+        if not (self.cfg.get("adapter") == "paper" or getattr(self.adapter, "route_adds", False)):
+            self._log("risk", f"Scale-in add NOT routed: adapter {self.cfg.get('adapter')} cannot add to a position")
+            return
+        if self.health.get("entries_blocked"):
+            self._log("risk", f"Scale-in add at {_et(int(an['t'])):%H:%M} ET NOT routed: feed stale")
+            return
+        age = int(self.clock()) - int(an["t"])
+        max_age = float(self.cfg.get("add_max_age_s", 20))
+        if age > max_age:            # the backtest fills the add at the open of the bar after its CISD candle: never chase it
+            self._log("risk", f"Scale-in add at {_et(int(an['t'])):%H:%M} ET NOT routed: seen {age} s after its 1m CISD candle "
+                              f"closed (limit {max_age:.0f} s) - not chasing")
+            return
+        d = 1 if pos.get("dir", 1) == 1 else -1
+        if getattr(self.adapter, "route_stop_moves", False):
+            # the add is sized at the breakeven risk: the broker's stop must be at the model's (breakeven incl. be_off) stop
+            want, have = tick_px(pos.get("stop"), d), self._broker_stop(et_)
+            if have is None or want is None or abs(float(have) - float(want)) > 1e-9:
+                msg = (f"Scale-in add at {_et(int(an['t'])):%H:%M} ET NOT routed: the broker stop is "
+                       f"{'unknown' if have is None else f'{float(have):.2f}'}, the add was sized at the breakeven stop "
+                       f"{'?' if want is None else f'{float(want):.2f}'} (stop move refused or not sent yet)")
+                self._log("risk", msg)
+                try:
+                    from . import push
+                    self._push_send(push.text_payload("PC", "risk", "Scale-in add skipped", msg, key=f"addbe:{et_}:{int(an['n'])}"))
+                except Exception:
+                    pass
+                return
+        q = self._add_qty(pos, an)
+        if q < 1:
+            self._log("risk", f"Scale-in add at {_et(int(an['t'])):%H:%M} ET skipped: 0 micros inside the risk budget / eval caps")
+            return
+        self._log("system", f"LIT scale-in: CISD closed at {_et(int(an['cisd_t'])):%H:%M} ET, MARKET add of {q} sent at once "
+                            f"({int(self.clock()) - int(an['t'])} s after the close)" + ("; priced from the CISD close" if an.get("est") else ""))
+        rr = self._route({"sym": sym, "side": "add", "qty": q, "dir": d, "stop": tick_px(pos.get("stop"), d),
+                          "target": tick_px(pos.get("target"), d, target=True), "entry": an["px"], "entry_t": et_,
+                          "n": int(an["n"]), "add_t": int(an["t"])})
+        if rr.get("ok") or rr.get("pending") or (rr.get("add_id") and int(rr.get("filled") or 0) > 0):
+            # the broker's real fill when it reported one (qty, price); a pending / partial add is corrected from the
+            # adapter's fills later (_sync_adds: late fill, cancel after 45 s, partial)
+            fq = int(rr.get("filled") or 0)
+            self._open_adds.append({"entry_t": et_, "n": int(an["n"]), "qty": fq if fq > 0 else q,
+                                    "px": float(rr["fill_px"]) if fq > 0 and rr.get("fill_px") else float(an["px"]),
+                                    "t": int(an["t"]), "est": bool(an.get("est")), "asked": q,
+                                    "real": fq > 0 and bool(rr.get("fill_px"))})
+            self._save_state()
+
+    def _sync_adds(self, entry_t):
+        """The adds of entry_t from the adapter's real fills (NinjaTrader add_fills): a late fill, a partial fill, an add
+        cancelled unfilled after 45 s (-> 0 micros). Paper / adapters without fill reports: unchanged. Never raises."""
+        fn = getattr(self.adapter, "add_fills", None)
+        if not callable(fn):
+            return
+        try:
+            real = {int(a["n"]): a for a in fn(entry_t) or []}
+        except Exception as e:
+            self._note_error(f"scale-in fills not read: {e.__class__.__name__}: {e}")
+            return
+        changed = False
+        known = {int(a.get("n") or 0) for a in self._open_adds if a.get("entry_t") == entry_t}
+        for n, r in sorted(real.items()):
+            # an add the broker has but this ledger lost (a crash between the adapter's order file and LiveBot's save):
+            # booked from the broker's real fill, never at a guessed size
+            if n not in known and int(r.get("filled") or 0) > 0 and r.get("fill_px"):
+                self._open_adds.append({"entry_t": entry_t, "n": n, "qty": int(r["filled"]), "px": float(r["fill_px"]),
+                                        "t": None, "est": False, "asked": int(r.get("qty") or 0), "real": True,
+                                        "restored": True})
+                self._log("risk", f"Scale-in add {n} for the {_et(int(entry_t)):%H:%M} ET entry found in NinjaTrader's fills "
+                                  f"({int(r['filled'])} @ {float(r['fill_px']):.2f}) but not in the ledger: booked from the fill")
+                changed = True
+        for a in self._open_adds:
+            if a.get("entry_t") != entry_t or int(a.get("n") or 0) not in real:
+                continue
+            r = real[int(a["n"])]
+            if int(r.get("filled") or 0) > 0 and r.get("fill_px"):
+                new = {"qty": int(r["filled"]), "px": float(r["fill_px"]), "real": True}
+            elif r.get("status") in ("rejected", "cancelled"):
+                new = {"qty": 0, "real": True}
+            else:
+                continue                                  # still working: keep the asked size until the broker says more
+            if any(a.get(k) != v for k, v in new.items()):
+                a.update(new)
+                changed = True
+        if changed:
+            self._save_state()
 
     def _learn_es(self, sym, tf, now, secs):
         """ES 5m bars for the learning loop's ES features, fetched at most every 5 minutes; None when unavailable."""
@@ -745,7 +918,8 @@ class LiveBot:
         return {"version": STATE_VERSION, "saved_at": int(self.clock()), "day": trading_day(self.clock()),
                 "sym": self.cfg.get("sym"), "tf": self.cfg.get("tf"), "adapter": self.cfg.get("adapter"),
                 "started_at": self.started_at, "kill": self.kill, "eod_sent": self._eod_sent, "guard_key": self._guard_key,
-                "open_routed": self._open_routed, "open_qty": self._open_qty, "blocked_entries": sorted(self._blocked_entries),
+                "open_routed": self._open_routed, "open_qty": self._open_qty, "open_adds": self._open_adds,
+                "blocked_entries": sorted(self._blocked_entries),
                 "flattened": sorted(self._flattened), "provisional": {str(k): v for k, v in self._provisional.items()},
                 "seen": [list(k) for k in list(self.seen)[-2000:]], "ledger": self.ledger[-300:],
                 "week_exits": self.lit_week_hist() if self.cfg else [], "eval_days": self.eval_days() if self.cfg else {},
@@ -789,6 +963,7 @@ class LiveBot:
         self._guard_key = s.get("guard_key")
         self._open_routed = s.get("open_routed")
         self._open_qty = s.get("open_qty")
+        self._open_adds = [a for a in (s.get("open_adds") or []) if isinstance(a, dict)]
         self._blocked_entries = set(s.get("blocked_entries") or [])
         self._flattened = set(s.get("flattened") or [])
         self._provisional = {int(k): v for k, v in (s.get("provisional") or {}).items()}
@@ -1154,7 +1329,12 @@ class LiveBot:
                 # from the stop with one rounding (engine/sizing.lit_qty)
                 mode = (lsz or {}).get("mode")
                 room = self.eval_room() if mode in ("safe_eval", "eval", "two_week") else None
-                r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room, state=self.eval_state() if mode == "two_week" else None)
+                if mode in ("funded", "auto"):         # the funded account's balance / trailing floor / payouts
+                    from .multi_account import primary_state
+                    st_ = primary_state(self, mode)
+                else:
+                    st_ = self.eval_state() if mode == "two_week" else None
+                r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room, state=st_)
                 if r.get("learn"):             # the learning loop's multiplier at this entry (applied, or would-be in observe)
                     if not hasattr(self, "_learn_at"):
                         self._learn_at = {}
@@ -1227,7 +1407,38 @@ class LiveBot:
         f5 = bool(((self.state or {}).get("lit") or {}).get("forming_5m"))
         return int(l5) >= b5 or (f5 and int(l5) + 300 >= b5)
 
+    # ------------------------------------------------------------------ extra accounts (engine/multi_account.py, off by default)
+    def _start_accounts(self):
+        """The start cfg's "accounts" list: one router for every extra account (None without the list: one account)."""
+        self.accts = None
+        if not self.cfg.get("accounts"):
+            return
+        try:
+            from . import multi_account
+            self.accts = multi_account.build(self, self.cfg)
+        except Exception as e:
+            self.accts = None
+            self._note_error(f"extra accounts NOT started: {e.__class__.__name__}: {e}")
+            self._log("risk", f"Extra accounts NOT started ({e.__class__.__name__}: {e}): only the bot's own account trades")
+
     def _route_signals(self, res, sym, now, secs):
+        """The bot's own account (_route_primary) and, when configured, every extra account at the same time."""
+        if self.accts is None:
+            return self._route_primary(res, sym, now, secs)
+        job = None
+        try:
+            job = self.accts.begin(res, sym, now, secs, entry_block="feed stale" if self.health.get("entries_blocked") else None)
+        except Exception as e:
+            self._note_error(f"extra accounts routing failed: {e.__class__.__name__}: {e}")
+        try:
+            return self._route_primary(res, sym, now, secs)
+        finally:
+            try:
+                self.accts.finish(job)
+            except Exception as e:
+                self._note_error(f"extra accounts routing failed: {e.__class__.__name__}: {e}")
+
+    def _route_primary(self, res, sym, now, secs):
         """Turn the engine's position / completed trades into adapter calls, exactly once each."""
         start = self.started_at
         pos = self.state.get("position")
@@ -1255,8 +1466,8 @@ class LiveBot:
             self._log("risk", f"SAFETY FLATTEN: {e:%H:%M} ET is past flat time {flat_mod // 60:02d}:{flat_mod % 60:02d} and the model still shows "
                               f"the position (feed age {self.health.get('data_age_s')}s) - flattening from the clock")
             self._flattened.add(self._open_routed)
-            self._route({"sym": sym, "side": "exit", "qty": self._open_qty or pos.get("qty"), "reason": "TIME SAFETY",
-                         "entry_t": self._open_routed})
+            self._route({"sym": sym, "side": "exit", "qty": int(self._open_qty or pos.get("qty") or 0) + self._adds_qty(self._open_routed),
+                         "reason": "TIME SAFETY", "entry_t": self._open_routed})
             self._open_routed = None
         ent = pos or en
         if ent and ent["entry_t"] >= start - secs and ("entry", ent["entry_t"]) not in self.seen:
@@ -1273,6 +1484,7 @@ class LiveBot:
             else:
                 self._open_routed = ent["entry_t"]
                 self._open_qty = q
+                self._open_adds = []
                 d = 1 if ent["dir"] == 1 else -1
                 if ent is en:
                     self._provisional[int(en["entry_t"])] = {"qty": q, "model_qty": int(en["qty"]), "dir": d, "est": bool(en.get("est")),
@@ -1286,6 +1498,8 @@ class LiveBot:
                 self._push_fill(ent, q, sym, rr)
         if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._route_stop_move(pos, sym)
+        if pos and self._open_routed == pos.get("entry_t") and (pos.get("add_now") or pos.get("adds")):
+            self._route_add(pos, sym)
         for tr in res["trades"]:
             if tr["exit_t"] >= start - secs and ("exit", tr["entry_t"]) not in self.seen:
                 self.seen.add(("exit", tr["entry_t"]))
@@ -1310,11 +1524,12 @@ class LiveBot:
                 if self._open_routed == tr["entry_t"]:
                     self._open_routed = None
                     qty = self._open_qty or tr["qty"]          # what we actually routed (half size in a cold streak)
+                pnl_x = self._routed_pnl(tr, qty)
+                q_add = self._adds_qty(tr["entry_t"])          # LIT scale_in: the adds routed to this position
                 if self.cfg["adapter"] == "paper" or tr["exit_reason"] == "TIME" or getattr(self.adapter, "route_all_exits", False):
                     # brackets handle stop/target at the broker; the bot only flattens on time exits (adapters with
                     # route_all_exits also get TIME STOP / giveback / news exits, and a harmless sync flatten after a bracket fill)
-                    self._route({"sym": sym, "side": "exit", "qty": qty, "reason": tr["exit_reason"],
-                                 "pnl": round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"],
+                    self._route({"sym": sym, "side": "exit", "qty": qty + q_add, "reason": tr["exit_reason"], "pnl": pnl_x,
                                  "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})
                 if routed:
                     self._remember(tr, sym)      # every completed routed trade feeds the persistent memory
@@ -1427,7 +1642,10 @@ class LiveBot:
         return False
 
     def snapshot(self):
-        return {"running": self.running, "cfg": {k: v for k, v in self.cfg.items() if k != "webhook_url"},
+        cfg = {k: v for k, v in self.cfg.items() if k not in ("webhook_url", "confirm")}   # never the typed phrase
+        if isinstance(cfg.get("accounts"), list):    # no per-account phrase in the API answer
+            cfg["accounts"] = [{k: v for k, v in a.items() if k != "confirm"} if isinstance(a, dict) else a for a in cfg["accounts"]]
+        return {"running": self.running, "cfg": cfg,
                 "state": self.state, "log": list(self.log)[:200], "ledger": self.ledger[-100:],
                 "last_poll": self.last_poll, "started_at": self.started_at, "errors": self.errors,
                 "health": dict(self.health), "kill": self.kill,

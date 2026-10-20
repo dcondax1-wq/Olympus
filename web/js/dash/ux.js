@@ -160,8 +160,11 @@ function statusBar() {
   const upd = () => {
     const s = L.live, h = s?.health || {}, now = Date.now() / 1000;
     const ad = s?.cfg?.adapter || 'paper';
-    $('#sbMode').textContent = s?.cfg?.armed ? 'LIVE ARMED' : ad.toUpperCase();
-    $('#sbMode').className = 'sb-mode ' + (ad === 'paper' && !s?.cfg?.armed ? 'paper' : '');
+    // the start command sets armed=true for every NinjaTrader start: only a non-Sim account is LIVE (Sim101 / Playback = SIM)
+    const simAcct = ad === 'ninjatrader' && /^(Sim|Playback)\d+$/.test(String(s?.cfg?.nt_account || '').trim());
+    const liveArmed = !!s?.cfg?.armed && !simAcct && ad !== 'paper';
+    $('#sbMode').textContent = liveArmed ? 'LIVE ARMED' : simAcct ? 'SIM · ' + String(s?.cfg?.nt_account || 'Sim101') : ad.toUpperCase();
+    $('#sbMode').className = 'sb-mode ' + (ad === 'paper' || simAcct ? 'paper' : '');
     $('#sbSrv').innerHTML = `<span class="dot-live ${L.online ? '' : L.online === false ? 'bad' : 'off'}"></span> ${L.online ? `<b>${fmtN(L.lat.at(-1)?.ms, 0)}</b> ms` : L.online === false ? 'offline' : 'server'}`;
     $('#sbBot').innerHTML = s ? `bot <b>${s.running ? esc(s.state?.model_state || 'running') : 'stopped'}</b>` : 'bot —';
     const age = h.data_age_s != null ? h.data_age_s + (L.liveAt ? now - L.liveAt : 0) : null;

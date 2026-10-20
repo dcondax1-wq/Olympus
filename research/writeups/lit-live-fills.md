@@ -195,6 +195,44 @@ The remaining -$453 against the backtest is costs, not timing: $1.90 commission,
 The fill model places the "seen late" trades at the CISD close too, so the old column was even a little optimistic for the
 18 trades the old loop saw 1-3 minutes late.
 
+## Exits and adds on the route: the adopt-candidates (2026-10-19, all OFF in live_model.json)
+
+The three adopt-candidates now go through the PC route exactly as the backtest books them. Switching one on is a
+`live_model.json` "lit" change only.
+
+| Option (live_model.json "lit") | What the bot sends | When | Test |
+|---|---|---|---|
+| `"t_check": {"at": 15, "x": 0.3, "mfe": 0.5}` (15-minute check) | the model's exit CUT_T15: CLOSEPOSITION (NinjaTrader `route_all_exits`) | the poll 2 s after the check bar's close = the open of the backtest's exit bar | `tests/test_lit_exit_route.py`: 13/13 cuts of 2026 routed 2 s after the close, exit time and P&L = backtest |
+| `"be_off": 1.25` (breakeven at entry + 1.25 pts) | one CHANGE of the stop to entry + 1.25 (long) / entry - 1.25 (short), tick-exact | 2 s after the +1R bar's close | same test: 6/6 breakeven trades (3 long, 3 short), stop and BE-exit P&L = backtest |
+| `"scale_in": {"pb": 0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1}` | a MARKET add, then CHANGE of the quantity of the one OCO stop + target to the whole position; the later stop move to the add's price is a normal CHANGE | 2 s after the add's 1m CISD candle closes = the open of the backtest's add bar | `tests/test_lit_scale_in.py` part 5: every 2026 add trade (`--all`) routed 2 s after the close with the backtest's micros and price; exit flattens entry + add with the backtest's P&L |
+
+**Why the cut looked "~3 min late".** In the replay before this fix the cut itself was already sent 2-3 s after the check
+bar closed (all 13 trades). What was off: the live loop priced it from the check bar's **close** (the paper ledger's exit
+price and P&L were an estimate, up to $26 a trade away from the backtest) and reported its exit **one bar early**. Now the
+live loop prices it from the forming bar's open (LE_BarFeed `MNQ_1m_open.csv` / the feed's last row), the same trick as the
+entry, and reports the backtest's exit bar, so ledger = backtest to the cent. (A 1-minute "late" also appears if the cut is
+compared with the backtest's `exit_t`, which is the close of the exit bar, not the moment of the exit.)
+
+**How the add goes to NinjaTrader (`engine/ninjatrader.py` `add_to_position`).** NinjaTrader ATI has no "add to bracket"
+command, so the cleanest route is: (1) `PLACE ... BUY|SELL n MARKET ... <id>A1` (same side, own order id, no OCO), (2) once
+NinjaTrader reports the fill, `CHANGE;;;;<total>;;0;0;;;<stop id>;;` and the same for the target id: the one OCO pair now
+covers the whole position at the stop and target already working. The bracket grows only after the fill (a stop bigger than
+the position would reverse it). A fill reported late is picked up by `tick()` on the next poll; an add never filled within
+45 s is cancelled. Refused (no order file): no protected bracket, kill switch / outside the session, other side, NinjaTrader's
+position file disagreeing with the bracket, the whole position above 40 micros. A second bracket was not used: two OCO
+groups on one position can both fill on a fast bar and leave a reverse position.
+
+**Add size on the route** (`engine/live.py _add_qty`). Normal mode: the model's add at the routed size (= the backtest's).
+Eval modes (two_week / eval / safe_eval): `engine/sizing.scale_in_qty` at the routed size with the eval state, as the eval-path
+research does: the add's open risk inside the first entry's $ risk, 60% of the room to the trailing floor and the $1,000 soft
+daily loss left today, the whole position at most 40 micros; a sizing error means no add. The exit and the paper ledger count
+entry + adds (`_routed_pnl`), and the kill switch / safety flatten close the whole position.
+
+Gaps, honestly: other adapters (Tradovate, TradersPost) do not add (logged "cannot add"); the cloud paper ledger re-sizes a
+scale-in trade by the entry's size ratio (close, not exact); an add priced from an estimate (feed without the forming bar's
+open) that the model later does not book stays at the broker under the same stop and target (logged). Not tested on a real
+NinjaTrader install yet: run it on Sim101 first.
+
 ## What changes a decision
 
 1. **Fix the entry timing in the live loop (recommended; not done here, because it changes `engine/lit.py` live mode and

@@ -157,7 +157,7 @@ function renderCockpit() {
   const orb = $('#ckOrb');
   if (L.online === false) { orb.className = 'orb bad'; $('#ckBotTxt').textContent = 'OFFLINE'; $('#ckBotSub').textContent = 'server not reachable'; }
   else if (s) {
-    const ad = s.cfg?.adapter || L.ov?.bot?.adapter || 'paper', armed = !!(s.cfg?.armed || L.ov?.bot?.armed_live);
+    const ad = s.cfg?.adapter || L.ov?.bot?.adapter || 'paper', simAcct = ad === 'ninjatrader' && /^(Sim|Playback)\d+$/.test(String(s.cfg?.nt_account || '').trim()), armed = !simAcct && !!(s.cfg?.armed || L.ov?.bot?.armed_live);
     const issue = s.kill || (s.health && !s.health.ok) || s.health?.stale;
     orb.className = 'orb ' + (!s.running ? 'off' : s.kill ? 'bad' : issue ? 'warn' : 'run');
     orb.querySelector('b').textContent = ad === 'paper' ? 'PAPER' : ad.toUpperCase().slice(0, 5);

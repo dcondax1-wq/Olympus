@@ -290,6 +290,12 @@ def pc_activity(bot, now=None, journal_path=None, max_trades=MAX_TRADES, max_ord
                "day_pnl": round(sum(float(r.get("pnl") or 0) for r in ledger if r.get("side") == "exit" and r.get("t")
                                     and trading_day(r["t"]) == today), 2),
                "since_t": start_t or None}
+        ra = getattr(bot, "accts", None)              # extra accounts (engine/multi_account.py): one sub-block each
+        if ra is not None:
+            try:
+                out["accounts"] = ra.summary(now)
+            except Exception as e:
+                out["accounts"] = [{"error": f"{e.__class__.__name__}: {clean_text(e, 120)}"}]
         return fit(out)
     except Exception as e:
         return {"v": VERSION, "error": f"{e.__class__.__name__}: {clean_text(e, 120)}"}
@@ -304,6 +310,13 @@ def fit(acct: dict, max_bytes=MAX_BYTES) -> dict:
         acct["trimmed"] = True
     while size() > max_bytes and len(acct.get("orders") or []) > 5:
         acct["orders"] = acct["orders"][max(1, len(acct["orders"]) // 5):]
+        acct["trimmed"] = True
+    subs = [a for a in (acct.get("accounts") or []) if isinstance(a, dict)]
+    while size() > max_bytes and any(len(a.get("trades") or []) > 5 or len(a.get("orders") or []) > 5 for a in subs):
+        for a in subs:
+            for k in ("trades", "orders"):
+                if len(a.get(k) or []) > 5:
+                    a[k] = a[k][max(1, len(a[k]) // 5):]
         acct["trimmed"] = True
     days = (acct.get("eval") or {}).get("days") or {}
     while size() > max_bytes and len(days) > 30:
@@ -401,7 +414,8 @@ def _pc_section(meta: dict, pc: dict, lm: dict, today: str, now: int) -> dict:
     if pos and pos.get("note"):
         pos = {**pos}
     return {**meta, "badge": "LIVE" if badge == "LIVE ACCOUNT" else badge, "broker_account": ak.get("name"), "adapter": adapter,
-            "conn": conn, "eval": eval_view(days, start, today, now) if meta.get("kind") in ("eval", "funded") else None,
+            "conn": conn, "eval": eval_view(days, start, today, now, plan=(acct or {}).get("plan_rules"))
+            if meta.get("kind") in ("eval", "funded") else None,
             "pnl": _pnl_views(days, today), "position": pos, "orders": list((acct or {}).get("orders") or []),
             "trades": trades, "days": [[d, round(v, 2)] for d, v in sorted(days.items()) if d != "0000-00-00"],
             "stats": stats(trades, days), "kill": bool((acct or {}).get("kill")), "running": (acct or {}).get("running")}
@@ -463,12 +477,29 @@ def build_accounts(state: dict, lm: dict | None = None, now=None) -> list:
     now = int(now or state.get("last_run") or time.time())
     today = trading_day(now)
     out = []
-    for meta in accounts_cfg(lm) + [dict(CLOUD_PAPER)]:
+    pc = state.get("pc") or {}
+    subs = [a for a in (((pc.get("acct") or {}) if isinstance(pc.get("acct"), dict) else {}).get("accounts") or [])
+            if isinstance(a, dict) and a.get("id")]
+    by_id = {str(a["id"]): a for a in subs}
+    metas = accounts_cfg(lm)
+    known = {m["id"] for m in metas}
+    for a in subs:                                     # extra accounts the PC routes but live_model.json does not list
+        if str(a["id"]) not in known:
+            metas.append({"id": str(a["id"]), "name": clean_text(a.get("name"), 60) or str(a["id"]), "firm": clean_text(a.get("firm"), 40),
+                          "plan": clean_text(a.get("plan"), 60), "kind": a.get("kind") or "eval", "source": "pc"})
+    for meta in metas + [dict(CLOUD_PAPER)]:
         try:
             if meta.get("source") == "cloud":
                 out.append(_cloud_section(meta, state, lm or {}, today, now))
+            elif meta["id"] in by_id:                  # an extra account: its own sub-block of the heartbeat
+                sub = by_id[meta["id"]]
+                if sub.get("error"):
+                    raise RuntimeError(sub["error"])
+                sec = _pc_section(meta, {**pc, "acct": sub}, {}, today, now)
+                sec.update(mode=sub.get("mode"), locked=sub.get("locked"), enabled=sub.get("enabled"), extra=True)
+                out.append(sec)
             else:
-                out.append(_pc_section(meta, state.get("pc") or {}, lm or {}, today, now))
+                out.append(_pc_section(meta, pc, lm or {}, today, now))
         except Exception as e:
             out.append({**meta, "error": f"{e.__class__.__name__}: {clean_text(e, 120)}"})
     return out
@@ -684,6 +715,12 @@ def pc_health(bot, now=None) -> dict:
         if adapter == "ninjatrader" and ad is not None:
             out["nt"] = _nt_status(ad)
         out["auto"] = _auto_status()
+        ra = getattr(bot, "accts", None)
+        if ra is not None:                            # extra accounts (engine/multi_account.py): one row each
+            try:
+                out["accounts"] = [{k: (clean_text(v, 160) if isinstance(v, str) else v) for k, v in r.items()} for r in ra.health(now)]
+            except Exception as e:
+                out["accounts"] = [{"error": clean_text(f"{e.__class__.__name__}: {e}", 120)}]
         return out
     except Exception as e:
         return {"v": HEALTH_VERSION, "error": f"{e.__class__.__name__}: {clean_text(e, 120)}"}

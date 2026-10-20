@@ -8,7 +8,9 @@ tools/build_web_dashboard.py for the phone site) so the Lab shows LIT first and 
 """
 from __future__ import annotations
 
-LIT_BASELINE = "lit_live"          # tools/lit_losses.py live: the live LIT settings, stored like every other run
+LIT_BASELINE = "lit_live"          # tools/lit_losses.py live: the live LIT settings, stored like every other run; re-stored
+#                                    on every change of live_model.json lit (2026-10-20: + t_check, scale_in, be_off), the
+#                                    version it replaces kept as lit_live_<date> (lit_live_2026-10-18)
 ENGINE_BASELINE = "baseline"       # tools/runlib.py baseline: the Liquidity Engine lock of 2026-10-17 (evening)
 ENGINE_PREV = "live_2026-10-17am"  # its morning lock
 ARCHIVE_DIR = "research/archive/engine-2026-10-17"

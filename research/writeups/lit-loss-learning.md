@@ -159,6 +159,10 @@ Change vs live in 2-week pass (points), with the eval-path $ change, H1 / H2:
   - With it on, the engine's 2026 trades must equal `tools/lit_loss_learn.py` variant(T15): 13 CUT_T15 exits on the dates above.
 - **Routing:** it is a market exit. The PC / NinjaTrader route needs `route_all_exits`, and the cloud ledger must accept the new
   exit kind.
+  - **Done 2026-10-19:** the live loop decides the cut on the check bar's close and the bot sends it in the poll 2 s later,
+    priced from the forming bar's open = the backtest's exit (`tests/test_lit_exit_route.py`: 13/13 cuts of 2026, 2 s, exit
+    time and P&L = backtest). The "~3 min late" seen earlier was the estimate price and an exit time one bar early, not the
+    order (details: `lit-live-fills.md` "Exits and adds on the route").
   - The weekly stop counts STOP exits only. It is off under config C anyway.
 
 ## Honest caveats

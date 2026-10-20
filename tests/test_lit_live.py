@@ -82,7 +82,8 @@ def ref_exit(t):
 
 def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15")):
     """LiveBot.poll_once with live_model = LIT, PaperAdapter, a frozen clock and a bar source that only shows closed bars
-    (tests/test_live_dryrun.Replay). Polls at every 5m close (every minute from 10 min before to 5 min after each entry).
+    (tests/test_live_dryrun.Replay). Polls at every 5m close (every minute from 10 min before each entry to 5 min after its
+    exit, as the PC bot polls each minute: scale-in adds and 15-minute cuts are decided on 1m closes).
     The bot reads the raw data/NQ_1m.csv like a feed (engine/lit_live.feed_1m), not the research-cleaned 1m."""
     from tests.test_live_dryrun import Replay
     from engine.live import tick_px
@@ -106,7 +107,9 @@ def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15")):
     t_start = at(sessions[0], 18, 0)
     times = set(range(t_start + 300, day_close(sessions[-1]) + 1, 300))
     for t in want:
-        times |= set(range(int(t["entry_t"]) - 600, int(t["entry_t"]) + 301, 60))
+        # every minute from 10 min before the entry to 5 min after the exit, like the PC bot (it polls each minute): a
+        # scale-in add or a 15-minute cut is decided on a 1m close and routed only while its fill bar is forming
+        times |= set(range(int(t["entry_t"]) - 600, max(int(t["entry_t"]), int(t.get("exit_t") or 0)) + 301, 60))
     errors, ms = [], []
     try:
         bot = rp.bot(start_now=t_start)

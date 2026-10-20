@@ -118,6 +118,20 @@ def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None =
       max_micros      40
     Unknown room / state: that check is skipped and said in the reasons."""
     c = cfg or {}
+    wl = c.get("wk_loss_usd")
+    if wl and (c.get("mode") or "normal") in EVAL_MODES and state is not None and qty > 0:
+        # eval weekly loss stop (default off; research/writeups/lit-risk-money.md, run lit_risk_m_wk1200): once this eval's
+        # closed P&L of the current calendar week (state["wk_pnl"], from eval_state(..., today=)) is <= -wk_loss_usd, no new
+        # entry until the next week. Week P&L unknown: no effect (reason logged).
+        w = _num(state.get("wk_pnl"))
+        if w is not None and w <= -float(wl):
+            why = f"eval weekly loss stop: this week ${w:,.0f} <= -${float(wl):,.0f}: no new trade until next week"
+            log.info("lit_qty %s", why)
+            return {"qty": 0, "mult": 0.0, "reasons": list(trade.get("size_why") or []) + [why]}
+        if w is None:
+            r0 = lit_qty_core(qty, trade, c, room=room, max_micros=max_micros, state=state, learning=learning)
+            r0["reasons"] = list(r0.get("reasons") or []) + ["eval weekly loss stop: week P&L unknown (eval_state today=), not applied"]
+            return r0 if c.get("guard") is None else day_guard(r0, trade, c, room=room, state=state)
     r = lit_qty_core(qty, trade, c, room=room, max_micros=max_micros, state=state, learning=learning)
     if c.get("guard") is None:
         return r
@@ -257,8 +271,8 @@ def lit_qty_core(qty: int, trade: dict, cfg: dict | None = None, room: float | N
             acct = {**(tw.get("acct") or {})}
             acct.setdefault("max_micros", int(max_micros))
             why: list = []
-            q = two_week_qty({"risk_pts": float(risk), "tgt_pts": float(tgt), "size_mult": trade.get("size_mult", 1.0)},
-                             st, tw, acct=acct, why=why)
+            q = two_week_qty({"risk_pts": float(risk), "tgt_pts": float(tgt), "size_mult": _wk_of(trade), **_idm_keys(trade)},
+                             st, {**tw, **({"idm": c["idm"]} if "idm" in c else {})}, acct=acct, why=why)
             reasons += [f"two week: {w}" for w in why]
             if q <= 0:
                 return {"qty": 0, "mult": 0.0, "reasons": reasons}
@@ -281,8 +295,8 @@ def lit_qty_core(qty: int, trade: dict, cfg: dict | None = None, room: float | N
             fallback = "funded: account state unknown -> smallest size, no room cap"
             log.warning("lit_qty %s", fallback)
         q = funded_qty({"risk_pts": _num(risk), "tgt_pts": trade.get("tgt_pts", trade.get("tgt")), "entry": trade.get("entry"),
-                        "target": trade.get("target"), "size_mult": trade.get("size_mult", 1.0)}, st, c.get("funded"),
-                       acct=acct, why=why)
+                        "target": trade.get("target"), "size_mult": _wk_of(trade), **_idm_keys(trade)}, st,
+                       {**(c.get("funded") or {}), **({"idm": c["idm"]} if "idm" in c else {})}, acct=acct, why=why)
         reasons += [f"funded: {w}" for w in why] + ([fallback] if fallback else [])
         if q <= 0:
             out = {"qty": 0, "mult": 0.0, "reasons": reasons}
@@ -302,16 +316,14 @@ def lit_qty_core(qty: int, trade: dict, cfg: dict | None = None, room: float | N
     if mode == "fast_eval" and risk:
         from .lit import qty_for
         base = qty_for(float(risk), 800.0, float(c.get("fast_ref_stop", 40.0)), max_micros)
-        m = float(trade.get("size_mult") or 1.0) * lm
-        q = _one_round(base, m, lm, risk, max_micros)
+        q = _idm_round(base, trade, lm, risk, max_micros, c.get("idm", "both"), reasons)
         reasons.append(f"fast eval: $800 up to a {float(c.get('fast_ref_stop', 40.0)):g}-pt stop -> {q} micros")
     if mode == "eval" and risk:
         # the eval mode (2026-10-18, run lit_tight_eval_800_25_room60): $800 up to an eval_ref_stop (25) pt stop, then
         # 800x25/stop, times the weekly stop, rounded once; then the safe_eval room cap below
         from .lit import qty_for
         base = qty_for(float(risk), 800.0, float(c.get("eval_ref_stop", 25.0)), max_micros)
-        m = float(trade.get("size_mult") or 1.0) * lm
-        q = _one_round(base, m, lm, risk, max_micros)
+        q = _idm_round(base, trade, lm, risk, max_micros, c.get("idm", "both"), reasons)
         reasons.append(f"eval size: $800 up to a {float(c.get('eval_ref_stop', 25.0)):g}-pt stop -> {q} micros")
     if mode in ("normal", "safe_eval") and risk and abs(lm - 1.0) > 1e-9:
         from .lit import qty_for
@@ -343,6 +355,66 @@ def _one_round(base, m, lm, risk, max_micros):
     if lm > 1.0 + 1e-9 and risk:
         q = min(q, int(LEARN_RISK_CAP / (float(risk) * 2.0 + 1.40)))
     return max(1, q)
+
+
+# ------------------------------------------------------------------------------------------------ inducement-count size
+# engine/lit.py option idm_size (research/writeups/lit-new-entries.md; off = None) puts on each trade "idm_m" (the raw
+# multiplier: up on 2+ inducements taken first, down on the rest), "idm_cap" (a size-up never risks more than this, full stop
+# + 1 tick + $1.90) and "wk_m" (the rest of the model's multiplier: how_out x weekly stop). The model's "size_mult" is their
+# product (capped at the LIT size). Modes that re-size from the stop (two_week, eval, fast_eval, funded) apply idm_m to their
+# own base and re-check idm_cap, BEFORE their eval / account caps (60% room, soft daily loss, max micros), so a size-up can
+# never pass those. normal / safe_eval route the model's micros, which already carry it. No "idm_m" on the trade = exactly
+# the old sizing. lit_sizing "idm" (or two_week / funded "idm"): "both" (default) | "cut" (only the < 1x cut) | "off".
+def _idm_keys(trade):
+    return {k: trade[k] for k in ("idm_m", "idm_cap") if trade.get(k) is not None}
+
+
+def _wk_of(trade):
+    """The model's multiplier without the inducement part (= size_mult when the trade has no idm_m)."""
+    if trade.get("idm_m") is not None:
+        return _num(trade.get("wk_m"), 1.0)
+    return trade.get("size_mult", 1.0)
+
+
+def _idm_mult(trade, mode="both"):
+    """(multiplier, $ cap) of the inducement-count size on this trade, or None (absent / 1x / switched off)."""
+    m = _num(trade.get("idm_m"))
+    if m is None or abs(m - 1.0) < 1e-9 or mode in (None, False, "off") or (mode == "cut" and m > 1.0):
+        return None
+    return m, _num(trade.get("idm_cap"))
+
+
+def idm_apply(q: int, trade: dict, risk, max_micros: int = 40, mode="both", why: list | None = None) -> int:
+    """q micros x the inducement-count multiplier (floor 1 on a cut; a size-up at most max_micros and never more than
+    idm_cap at risk, but never below q). Unchanged when the trade has no idm_m."""
+    I = _idm_mult(trade, mode)
+    if I is None or q <= 0:
+        return q
+    m, cap = I
+    if m < 1.0:
+        q2 = max(1, int(q * m + 1e-9))
+    else:
+        q2 = min(int(max_micros), int(q * m + 1e-9))
+        if cap and risk:
+            q2 = min(q2, max(int(q), int(float(cap) / ((float(risk) + TW_SLIP) * TW_PV + TW_COMM))))
+    if why is not None:
+        why.append(f"inducements taken first x{m:g} -> {q2}")
+    return q2
+
+
+def _idm_round(base, trade, lm, risk, max_micros, mode, reasons):
+    """eval / fast_eval: base x (weekly stop x learned x inducement) in one rounding, the size-up capped at idm_cap."""
+    I = _idm_mult(trade, mode)
+    wk = float(_wk_of(trade) or 1.0)
+    q0 = _one_round(base, wk * lm, lm, risk, max_micros)
+    if I is None:
+        return q0
+    m, cap = I
+    q = _one_round(base, wk * lm * m, lm, risk, max_micros)
+    if m > 1.0 and cap and risk:
+        q = min(q, max(q0, int(float(cap) / ((float(risk) + TW_SLIP) * TW_PV + TW_COMM))))
+    reasons.append(f"inducements taken first x{m:g} -> {q}")
+    return q
 
 
 def _learn(trade, learning):
@@ -451,6 +523,7 @@ def two_week_qty(trade: dict, state: dict, cfg: dict | None = None, acct: dict |
         if c["press_room"] is not None:
             room_f = c["press_room"]
             note(f"clock press from session {int(c['press_at'])}: room cap {float(room_f) * 100:.0f}%")
+    q = idm_apply(q, trade, risk, maxq, c.get("idm", "both"), why)   # inducement-count size (idm_m; absent = unchanged)
     # ---- caps (never below 1 micro)
     caps = []
     if c["max_usd"]:
@@ -499,7 +572,8 @@ def scale_in_qty(q_base: int, q_full: int, risk_pts: float, adds: list, f=1.0, s
     return out
 
 
-def eval_state(day_pnl: dict, today_cum: float = 0.0, plan: dict | None = None, session: int | None = None) -> dict:
+def eval_state(day_pnl: dict, today_cum: float = 0.0, plan: dict | None = None, session: int | None = None,
+               today: str | None = None) -> dict:
     """state for two_week_qty from the eval's closed P&L per earlier session since the eval started (sorted keys) + today's
     closed P&L. Same floor rule as mffu_eval: EOD high - max loss, locked at start + lock. session = today's eval session
     number (eval_session()); None = len(day_pnl) + 1, i.e. day_pnl holds every earlier session (0 on days without a trade)."""
@@ -510,9 +584,30 @@ def eval_state(day_pnl: dict, today_cum: float = 0.0, plan: dict | None = None, 
         bal += float(day_pnl[d])
         peak = max(peak, bal)
         floor = min(max(floor, peak - float(A["mll"])), float(A["lock"]))
-    return {"profit": round(bal, 2), "cum": float(today_cum), "room": round(bal + today_cum - floor, 2),
-            "session": int(session) if session is not None else len(day_pnl) + 1, "n_today": 0,
-            "days_traded": sum(1 for v in day_pnl.values() if abs(float(v)) > 1e-9)}   # earlier sessions with a closed trade
+    out = {"profit": round(bal, 2), "cum": float(today_cum), "room": round(bal + today_cum - floor, 2),
+           "session": int(session) if session is not None else len(day_pnl) + 1, "n_today": 0,
+           "days_traded": sum(1 for v in day_pnl.values() if abs(float(v)) > 1e-9)}   # earlier sessions with a closed trade
+    if today:
+        # this calendar (ISO) week's closed eval P&L incl. today (lit_sizing "wk_loss_usd"); only when today is given
+        out["wk_pnl"] = round(eval_week_pnl(day_pnl, today, today_cum), 2)
+    return out
+
+
+def eval_week_pnl(day_pnl: dict, today: str, today_cum: float = 0.0) -> float:
+    """The eval's closed P&L of today's ISO calendar week: the earlier sessions of that week in day_pnl (yyyy-mm-dd keys)
+    + today's closed P&L."""
+    try:
+        wk = _dt.date.fromisoformat(str(today)[:10]).isocalendar()[:2]
+    except ValueError:
+        return float(today_cum)
+    s = float(today_cum)
+    for d, v in (day_pnl or {}).items():
+        try:
+            if str(d)[:10] < str(today)[:10] and _dt.date.fromisoformat(str(d)[:10]).isocalendar()[:2] == wk:
+                s += float(v)
+        except ValueError:
+            continue
+    return s
 
 
 def _full_closures(y: int) -> set:
@@ -652,6 +747,7 @@ def funded_qty(trade: dict, state: dict | None, cfg: dict | None = None, acct: d
         if m < 1:
             q = max(1, int(q * m + 1e-9))
             note(f"weekly stop x{m:g} -> {q}")
+    q = idm_apply(q, trade, risk, int(A["max_micros"]), c.get("idm", "both"), why)   # inducement-count size (absent = unchanged)
     loss1 = (risk + 0.25 * float(c["slip_ticks"])) * TW_PV + TW_COMM        # a full stop-out of 1 micro, $
     if c["max_win"] and tgt and tgt * TW_PV - TW_COMM > 0:
         cap = int(float(c["max_win"]) * sc / (tgt * TW_PV - TW_COMM))
@@ -828,6 +924,40 @@ def selftest() -> bool:
     es = eval_state({"a": 3100.0, "b": 0.0}, 0.0, session=3)
     assert es["days_traded"] == 1 and lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 200.0}, C, state=es)["qty"] == 1   # min-days trade
     assert eval_state({"a": 2000.0, "b": 0.0, "c": 1100.0}, 0.0)["days_traded"] == 2
+    # ---- inducement-count size (engine/lit.py idm_size: idm_m / idm_cap / wk_m on the trade; absent = the old sizing)
+    UP, DN = {"idm_m": 1.5, "idm_cap": 990.0, "wk_m": 1.0, "size_mult": 1.5}, {"idm_m": 0.75, "idm_cap": 990.0, "wk_m": 1.0, "size_mult": 0.75}
+    t40 = {"risk_pts": 40.0, "tgt_pts": 200.0}
+    assert lit_qty(3, {**t40, **UP}, C, state=fresh)["qty"] == 12        # 8 x 1.5 = 12; cap 990 / 82.4 = 12; dll 12
+    assert lit_qty(3, {**t40, **DN}, C, state=fresh)["qty"] == 6         # 8 x 0.75 = 6
+    r = lit_qty(3, {**t40, **UP}, C, state=fresh)
+    assert any("inducements taken first x1.5" in w for w in r["reasons"]), r
+    assert lit_qty(3, {**t40, **UP}, {**C, "idm": "cut"}, state=fresh)["qty"] == 8     # cut only: the size-up is ignored
+    assert lit_qty(3, {**t40, **DN}, {**C, "idm": "cut"}, state=fresh)["qty"] == 6
+    assert lit_qty(3, {**t40, **DN}, {**C, "idm": "off"}, state=fresh)["qty"] == 8
+    # a size-up never passes the eval caps: 1.5R target wants 26, x1.5 = 39 -> $990 cap 12, room 15, dll 12 -> 12
+    assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 60.0, **UP}, C, state=fresh)["qty"] == 12
+    assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 60.0, **UP}, C, state=st)["qty"] == 7    # after -$1,000: 60% room 7
+    t20 = {"risk_pts": 20.0, "tgt_pts": 200.0}                            # need 8; $400 cap: 400 / 42.4 = 9; $200 cap: never < 8
+    assert lit_qty(3, {**t20, **UP, "idm_cap": 400.0}, C, state=fresh)["qty"] == 9
+    assert lit_qty(3, {**t20, **UP, "idm_cap": 200.0}, C, state=fresh)["qty"] == 8
+    # the weekly part (wk_m) still works with two_week wk on, and size_mult (the product) is not double-counted
+    CW = {**C, "two_week": {**C["two_week"], "wk": True}}
+    assert lit_qty(3, {**t40, **DN, "wk_m": 0.5, "size_mult": 0.375}, CW, state=fresh)["qty"] == 3      # 8 -> 4 -> 3
+    assert lit_qty(3, {**t40, "size_mult": 0.5}, CW, state=fresh)["qty"] == 4                          # no idm_m: old rule
+    # eval: 44-pt stop -> 5 micros; x1.5 = 7 (cap 990 / 90.4 = 10, room 13); x0.75 = 3; fast_eval 47-pt: 7 -> 10 (cap 10)
+    assert lit_qty(3, {"risk_pts": 44.0, **UP}, {"mode": "eval"}, room=2000.0)["qty"] == 7
+    assert lit_qty(3, {"risk_pts": 44.0, **DN}, {"mode": "eval"}, room=2000.0)["qty"] == 3
+    assert lit_qty(3, {"risk_pts": 44.0, **UP}, {"mode": "eval"}, room=300.0)["qty"] == 2              # 60% room still caps
+    assert lit_qty(3, {"risk_pts": 47.0, **UP}, {"mode": "fast_eval"})["qty"] == 10
+    # funded: 40-pt stop, 60-pt target -> 5; x0.75 = 3; x1.5 = 7 (cap 12, dll 12)
+    assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 60.0, **DN}, FC, state=f0)["qty"] == 3
+    assert lit_qty(3, {"risk_pts": 40.0, "tgt_pts": 60.0, **UP}, FC, state=f0)["qty"] == 7
+    # normal / safe_eval: the model's micros already carry it
+    assert lit_qty(6, {"risk_pts": 40.0, **UP}, {"mode": "normal"})["qty"] == 6
+    assert lit_qty(6, {"risk_pts": 40.0, **UP}, {"mode": "safe_eval"}, room=300.0)["qty"] == 2          # 180 / 80
+    # absent / None / 1x: unchanged
+    assert lit_qty(3, {**t40, "idm_m": None}, C, state=fresh)["qty"] == 8 and lit_qty(3, {**t40, "idm_m": 1.0}, C, state=fresh)["qty"] == 8
+    assert idm_apply(5, {"risk_pts": 40.0}, 40.0) == 5 and idm_apply(5, {"idm_m": 0.5}, 40.0) == 2 and idm_apply(1, {"idm_m": 0.5}, 40.0) == 1
     print("sizing selftest OK")
     return True
 

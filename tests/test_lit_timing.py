@@ -97,13 +97,17 @@ def units():
 
 
 class Clock:
-    """Fake wall clock: frozen at the wake time between polls, running on (real elapsed time) during a poll."""
+    """Fake wall clock: frozen at the wake time between polls, running on during a poll. It runs on the poll's own CPU
+    time (time.process_time), not wall time, so other processes loading the machine (a parallel test run) cannot push a
+    route past LIMIT_S; LE_TEST_WALL_CLOCK=1 measures wall time (perf_counter) as before. Callers start it with
+    clock.t0 = clock.src()."""
+    src = staticmethod(time.perf_counter if os.environ.get("LE_TEST_WALL_CLOCK") == "1" else time.process_time)
 
     def __init__(self):
         self.base, self.t0, self.running = 0.0, 0.0, False
 
     def __call__(self):
-        return self.base + ((time.perf_counter() - self.t0) if self.running else 0.0)
+        return self.base + ((self.src() - self.t0) if self.running else 0.0)
 
 
 def replay(P, trades):
@@ -152,7 +156,7 @@ def replay(P, trades):
                 wake = live.next_wake(a)
                 while wake <= z:
                     rp.now = int(wake)
-                    clock.base, clock.t0, clock.running = wake, time.perf_counter(), True
+                    clock.base, clock.t0, clock.running = wake, clock.src(), True
                     try:
                         bot.poll_once()
                     except Exception as e:
