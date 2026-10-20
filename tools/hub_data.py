@@ -916,7 +916,7 @@ def verdict_of(status: str) -> str:
 def library_view() -> dict:
     def build():
         rows = []
-        for p in sorted(glob.glob(os.path.join(WRITEUPS, "*.md"))):
+        for p in [q for q in sorted(glob.glob(os.path.join(WRITEUPS, "*.md"))) if os.path.basename(q).upper() != "INDEX.MD"]:   # INDEX: tools/writeups_index.py
             try:
                 with open(p, encoding="utf-8") as fh:
                     fm, body = _front(fh.read())

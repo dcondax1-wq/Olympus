@@ -386,7 +386,7 @@ def _docs(out, writeups_dir):
     writeups = []
     extra = [(p, "lit-" + os.path.splitext(os.path.basename(p))[0]) for p in sorted(glob.glob(os.path.join(LIT_DOCS, "*.md")))]
     extra += [(p, "archive-engine-2026-10-17") for p in glob.glob(os.path.join(ARCHIVE, "README.md"))]
-    for p, stem0 in [(p, None) for p in sorted(glob.glob(os.path.join(writeups_dir, "*.md")))] + extra:
+    for p, stem0 in [(p, None) for p in sorted(glob.glob(os.path.join(writeups_dir, "*.md"))) if os.path.basename(p).upper() != "INDEX.MD"] + extra:
         try:
             with open(p, encoding="utf-8") as fh:
                 raw = fh.read()
