@@ -49,23 +49,27 @@ def _cfg(lit_sizing):
     return c
 
 
-def play(cfg, seq, by, session0, profit, floor, peak, rules=None):
-    """One path from today's state: ("PASS" | "FAIL" | "OPEN", eval session it ended on)."""
+def play(cfg, seq, by, session0, profit, floor, peak, rules=None, days=None):
+    """One path from today's state: ("PASS" | "FAIL" | "OPEN", eval session it ended on). days = the sample's session dates
+    (the eval weekly loss stop lit_sizing.wk_loss_usd needs the calendar week; a path's k-th session counts as week k // 5)."""
     from engine import sizing as SZ
     from engine.lit import qty_for
     A = {**SZ.TW_50K, **(rules or {})}
     tgt, mll, dll, lock = float(A["target"]), float(A["mll"]), float(A["dll"]), float(A["lock"])
     bal = float(profit)
+    wk_pnl = {}
     for k, si in enumerate(seq):
         sess = session0 + k
         cum = 0.0
+        wk = k // 5
         for j, t in enumerate(by[si]):
             if cum <= -dll:
                 break
-            st = {"profit": bal, "cum": cum, "room": bal + cum - floor, "session": sess, "n_today": j}
-            m0 = qty_for(t["risk"])
-            q = SZ.lit_qty(m0, {"risk_pts": t["risk"], "tgt_pts": t["tgt"], "size_mult": 1.0}, cfg, room=st["room"], state=st,
-                           learning=None)["qty"] if m0 else 0
+            st = {"profit": bal, "cum": cum, "room": bal + cum - floor, "session": sess, "n_today": j, "wk_pnl": wk_pnl.get(wk, 0.0) + cum}
+            m0 = int(t["q"]) if "q" in t else qty_for(t["risk"])        # the model's micros (weekly stop, idm_size) as live
+            tr = {"risk_pts": t["risk"], "tgt_pts": t["tgt"], "size_mult": t.get("sm", 1.0),
+                  **{k: t[k] for k in ("idm_m", "idm_cap", "wk_m") if k in t}}
+            q = SZ.lit_qty(m0, tr, cfg, room=st["room"], state=st, learning=None)["qty"] if m0 else 0
             if q <= 0:
                 continue
             pnl = t["pts"] * PV * q
@@ -77,6 +81,7 @@ def play(cfg, seq, by, session0, profit, floor, peak, rules=None):
                 return "FAIL", sess
             cum += pnl
         bal += cum
+        wk_pnl[wk] = wk_pnl.get(wk, 0.0) + cum
         if bal <= floor:
             return "FAIL", sess
         peak = max(peak, bal)
@@ -98,12 +103,17 @@ def _seqs(ix, n, length, rng):
     return out
 
 
-def simulate(session, profit, room, lit_sizing=None, n=N_PATHS, horizon=HORIZON, seed=None, span="2026", rules=None):
+def simulate(session, profit, room, lit_sizing=None, n=N_PATHS, horizon=HORIZON, seed=None, span="2026", rules=None, D=None):
     """Odds from today's state. session = today's eval session (1 = first), profit = closed eval P&L before today, room =
     profit - trailing floor. Returns {p10, f10, pass, fail, open, pass_med, n, span, ...} in % / sessions."""
     from engine import sizing as SZ
     A = {**SZ.TW_50K, **(rules or {})}
-    D = sample()
+    D = D or sample()
+    if "by" not in D:
+        by = {}
+        for t in D["trades"]:
+            by.setdefault(t["day"], []).append(t)
+        D = {**D, "by": [by.get(s, []) for s in D["sess"]]}
     lim = int(getattr(SZ, "EVAL_SESSIONS", 10))
     floor = float(profit) - float(room)
     peak = max(float(profit), floor + float(A["mll"])) if floor < float(A["lock"]) else float(profit)
