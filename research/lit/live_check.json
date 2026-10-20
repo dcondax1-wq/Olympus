@@ -1,6 +1,19 @@
 {
  "strategy": "lit_live (live_model.json)",
  "params": {
+  "t_check": {
+   "at": 15,
+   "x": 0.3,
+   "mfe": 0.5
+  },
+  "scale_in": {
+   "pb": 0.25,
+   "f": 1.0,
+   "rat_k": 1.0,
+   "min_rk": 2.0,
+   "n": 1
+  },
+  "be_off": 1.25,
   "ref": "cisd",
   "extra_boxes": [],
   "window": [
@@ -54,8 +67,8 @@
   "extra": [],
   "n_extra": 0,
   "exit_differs": [],
-  "net_backtest": 41734.34,
-  "seconds": 127
+  "net_backtest": 59698.32,
+  "seconds": 171
  },
  "bot": {
   "sessions": [
@@ -63,7 +76,7 @@
    "2026-10-14",
    "2026-10-15"
   ],
-  "polls": 878,
+  "polls": 1265,
   "want": 2,
   "entries_ok": 2,
   "exits_ok": 2,
@@ -81,7 +94,7 @@
      -1,
      11,
      "TARGET",
-     3169.1
+     4937.9
     ],
     "routed_entry": {
      "side": "sell",
@@ -92,8 +105,8 @@
     },
     "routed_exit": {
      "reason": "TARGET",
-     "pnl": 3169.1,
-     "t": 1791898503
+     "pnl": 4937.9,
+     "t": 1791898383
     }
    },
    {
@@ -114,17 +127,17 @@
     "routed_exit": {
      "reason": "TARGET",
      "pnl": 579.48,
-     "t": 1791986403
+     "t": 1791986283
     }
    }
   ],
   "last_model_state": "LIT: market closed (next session 18:00 ET; entries 02:00-15:30 ET)",
-  "poll_ms": 1235,
+  "poll_ms": 1072,
   "modify_routes": 0,
   "states_seen": [
    "LIT: market closed (next session 18:00 E"
   ],
   "ok": true
  },
- "seconds": 1310
+ "seconds": 1574
 }

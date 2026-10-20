@@ -179,11 +179,17 @@ def build(since: str = "2026-01-01", until: str = "9999", params: dict | None = 
         entry = w["entry"]
         tg = t["target_px"] * d
         be_k, xk = _manage(B, d, w["fill"], entry, stop, tg, P["be_r"], w["limit_fill"])
+        if (P.get("be_off") or (B.secs == 60 and (P.get("t_check") or P.get("scale_in")))) and int(B.t[xk]) + B.secs != int(t["exit_t"]):
+            # the 2026-10-20 options (breakeven at entry + be_off, the 15-minute cut, scale-in's stop to the add) end some
+            # trades earlier than the plain walk: the exit bar is the engine's own (exit_t), the breakeven bar the plain rule's
+            xk = int(np.searchsorted(B.t, int(t["exit_t"]) - B.secs))
+            if be_k is not None and be_k > xk:
+                be_k = None
         if int(B.t[xk]) + B.secs != int(t["exit_t"]):
             bad.append((t["day"], t["entry_t"], "exit", int(B.t[xk]) + B.secs, t["exit_t"]))
             continue
         q = int(t["qty"])
-        pts = (t["pnl"] / q + lit.COMM) / lit.PV
+        pts = float(t["pts"]) if t.get("adds") else (t["pnl"] / q + lit.COMM) / lit.PV   # scale-in: pnl includes the add
         exit_px = q4(t["entry_px"] + d * pts)
         kind = t["exit"]
         # swept levels, with the bar each became known (session boxes) or None (prior day / week / month, gaps, build-ups)
@@ -246,6 +252,7 @@ def build(since: str = "2026-01-01", until: str = "9999", params: dict | None = 
             "target_label": "VIX band" + (" (banked at %gR)" % P["max_rr"] if P.get("max_rr") and abs(tp - P["max_rr"] * risk_plan) < 1e-6 else ""),
             "be": {"t": int(B.t[be_k])} if be_k is not None else None,
             "exit": {"t": int(B.t[xk]), "t_end": int(t["exit_t"]), "px": exit_px, "kind": kind},
+            "adds": [{"t": int(a["t"]), "px": a["px"], "qty": int(a["qty"])} for a in (t.get("adds") or [])],
             "levels": lv,
             "sweep": {"t": sweep_t, "ext_px": round(z["ext_d"] * d, 2), "ext_t": int(M.t[z["ext_i"]]), "depth_atr": z["depth_atr"]},
             "idm": idm,

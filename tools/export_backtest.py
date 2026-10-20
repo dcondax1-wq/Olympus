@@ -252,13 +252,26 @@ def _report_lit(t, strategy):
         why.append("inside the high/low-of-week window (Tue 03:00 - Wed 11:30 ET)")
     entry = ("limit at the CISD level, filled on the tap" if t["entry_kind"] == "limit" else
              f"limit tapped, then a 1m CISD: market entry at the next {t['trigger_tf']} open + 1 tick")
+    bo = float(t.get("be_off") or 0.0)
+    tc = t.get("t_check") if t["trigger_tf"] == "1m" else None
     plan = (f"{entry}. Stop {t['stop']:,.2f}, 1 tick beyond the sweep extreme ({t['risk_pts']:.2f} pts) -> {t['qty']} micros, "
-            f"${t['risk_usd']:,.0f} at risk; target {t['target']:,.2f} ({t['target_label']}, {t['plan_rr']:.2f}R); breakeven at 1R, "
-            "flat at 15:55 ET" + (f" ({'; '.join(t['size_why'])})" if t.get("size_why") else ""))
+            f"${t['risk_usd']:,.0f} at risk; target {t['target']:,.2f} ({t['target_label']}, {t['plan_rr']:.2f}R); breakeven at 1R"
+            + (f" (stop to entry + {bo:g} pts, the costs)" if bo else "")
+            + (f"; {tc.get('at', 15)}-minute check (cut if never +{tc.get('mfe', 0.5):g}R and over {tc.get('x', 0.3):g}R under water)"
+               if tc else "")
+            + "; flat at 15:55 ET" + (f" ({'; '.join(t['size_why'])})" if t.get("size_why") else ""))
     mfe = t.get("mfe") or 0.0
-    res = (f"{t['exit']} at {_et(t['exit_t']):%H:%M} after {t.get('bars_held') or '?'} {t['trigger_tf']} bars: {t['r']:+.2f}R, "
+    ex = "CUT (15-minute check)" if t["exit"] == "CUT_T15" else t["exit"]
+    res = (f"{ex} at {_et(t['exit_t']):%H:%M} after {t.get('bars_held') or '?'} {t['trigger_tf']} bars: {t['r']:+.2f}R, "
            f"${t['pnl']:+,.0f}; best point +{mfe:.2f}R")
+    for a in t.get("adds") or []:
+        res += (f"; scale-in after breakeven: +{a['qty']} micros at {a['px']:,.2f} ({_et(a['t']):%H:%M}, "
+                f"{a['risk_pts']:.2f} pts to the stop), ${a['pnl']:+,.0f} of the total")
     lessons = []
+    if t["exit"] == "CUT_T15":
+        lessons.append("cut by the 15-minute check: never got going, out before the full stop")
+    if t.get("adds"):
+        lessons.append("pressed the winner: added on the first pullback after breakeven")
     if t["r"] < 0:
         if (t.get("bars_held") or 99) <= 3 and t["exit"] == "STOP":
             lessons.append("stopped almost at once: the sweep extreme did not hold")
@@ -273,7 +286,7 @@ def _report_lit(t, strategy):
             lessons.append("the VIX one-day move was reached" if "VIX" in t["target_label"] and "banked" not in t["target_label"]
                            else "banked at 8R on the way to the VIX band")
         if t["exit"] == "BE":
-            lessons.append("breakeven after +1R: no loss")
+            lessons.append("breakeven after +1R: no loss" + (", costs covered" if t.get("be_off") else ""))
         if t["exit"] == "TIME" and t["r"] > 0:
             lessons.append("closed at 15:55 in profit, target not reached")
     if d == 1 and t.get("how") is False:
@@ -343,7 +356,8 @@ def main_lit(lm):
     for t in T:
         z = cand[(t["i"], t["dir"])]
         d, q = int(t["dir"]), int(t["qty"])
-        pts = (t["pnl"] / q + lit.COMM) / lit.PV
+        # a scale-in trade's pnl includes the add: its exit price comes from the first entry's points (t["pts"])
+        pts = float(t["pts"]) if t.get("adds") else (t["pnl"] / q + lit.COMM) / lit.PV
         exit_px = round((t["entry_px"] + d * pts) * 4) / 4
         rr = (t["target_px"] - t["entry_px"]) * d / t["risk_pts"]
         banked = bool(P.get("max_rr")) and abs(rr - P["max_rr"]) < 0.01
@@ -362,9 +376,17 @@ def main_lit(lm):
              "checklist": [], "trigger_tf": f"{t.get('tf', 5)}m", "score": None, "smc": {},
              "depth_atr": z["depth_atr"], "disp": z["disp"], "idm_n": sum(1 for dd, aa in z["idm_a"] if dd <= (P["idm_a"] or [9, 999])[0] and aa <= (P["idm_a"] or [9, 999])[1]),
              "how": bool(z["how"]), "cisd_level": round(float(z["ref_d"]) * d, 2), "entry_kind": "limit" if fill_limit else "1m CISD",
-             "size_why": t.get("size_why") or [], "weekly_stop": any("weekly stop" in w for w in (t.get("size_why") or []))}
+             "size_why": t.get("size_why") or [], "weekly_stop": any("weekly stop" in w for w in (t.get("size_why") or [])),
+             "be_off": float(P.get("be_off") or 0.0), "t_check": P.get("t_check"),
+             "adds": [{"t": int(a["t"]), "px": a["px"], "qty": int(a["qty"]), "risk_pts": round(a["rk"], 2),
+                       "pnl": round(a["qty"] * (a["pts"] * lit.PV - lit.COMM), 2)} for a in (t.get("adds") or [])],
+             "qty_total": int(t.get("qty_total") or q)}
         if x["weekly_stop"]:
             x["conf_tags"].append("weekly stop: half size")
+        if x["adds"]:
+            x["conf_tags"].append(f"scale-in: +{sum(a['qty'] for a in x['adds'])} micros after breakeven")
+        if x["exit"] == "CUT_T15":
+            x["conf_tags"].append("15-minute check: cut")
         x["report"] = _report_lit(x, label)
         trades.append(x)
     by = collections.defaultdict(list)
@@ -415,6 +437,12 @@ def main_lit(lm):
                  "loss_rules": {"monday": bool(P.get("monday")), "wk_stop": P.get("wk_stop"),
                                 "text": "Monday rule: once Monday took Friday's high only shorts, once it took Friday's low only longs; "
                                         "weekly stop: after 2 stop-outs in a calendar week, half size for the rest of it"},
+                 "management": {"t_check": P.get("t_check"), "scale_in": P.get("scale_in"), "be_off": P.get("be_off"),
+                                "text": "since 2026-10-20 (1m bars only for the first two): 15-minute check (cut a trade that never "
+                                        "reached +0.5R and closes over 0.3R under water 15 min after the fill); scale-in after "
+                                        "breakeven (one add on the first 0.25R pullback + 1m CISD, its risk never above the first "
+                                        "entry's; trades carry 'adds', qty = the first entry, pnl = all of it); breakeven stop at "
+                                        "entry + 1.25 pts (the costs)"},
                  "method": "LIT replay (engine/lit.py run_x, every value known at the close of its bar). The live loop runs the same "
                            "code on the recent bars (engine/lit_live.py): tests/test_lit_live.py replays every 2026 session and gets the "
                            "same trades. 2026 days with full 1m bars enter and are managed on 1m bars; 2021-25 (no 1m data) on 5m bars, "
