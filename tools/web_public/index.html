@@ -2150,7 +2150,7 @@ VIEWS.brief = (el) => {
       <div class="kv one br-facts"><div><span>Overnight</span><b>${esc(mo.overnight?.text || '')}</b></div><div><span>Target band</span><b>${esc(mo.vix?.text || '')}</b></div>
       <div><span>News</span><b class="${(mo.news || []).length ? 'wn' : ''}">${esc(mo.news_text || '')}</b></div>
       ${mo.monday?.text ? `<div><span>Monday rule</span><b>${esc(mo.monday.text)}</b></div>` : ''}${mo.weekly_stop?.text ? `<div><span>Weekly stop</span><b>${esc(mo.weekly_stop.text)}</b></div>` : ''}
-      <div><span>Eval</span><b>${esc(mo.eval?.text || '')}</b></div></div></div>` : '')
+      <div><span>Eval</span><b>${esc(mo.eval?.text || '')}</b></div>${mo.eval?.mc?.text ? `<div><span>Eval odds</span><b>${esc(mo.eval.mc.text)}</b></div>` : ''}</div></div>` : '')
     + ((B.mffu || []).length ? `<div class="card"><div class="card-h"><h3>MFFU rules today</h3><span class="meta">in-app only</span></div>${brWarn(B, true)}</div>` : '')
     + (rc ? `<div class="card"><div class="card-h"><h3>End of day</h3><span class="meta ${cls(rc.pnl)}">${susd(rc.pnl)}</span></div><p class="br-plan">${esc(rc.text)}</p><div class="note">${esc(rc.setups)}</div><div class="note"><b>Lesson:</b> ${esc(rc.lesson || '')}</div></div>` : '')
     + `<div class="card"><div class="card-h"><h3>Intraday log</h3><span class="meta">${plural((B.log || []).length, 'entry')}${B.new ? ` · ${B.new} new` : ''}</span></div>

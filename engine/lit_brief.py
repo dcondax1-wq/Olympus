@@ -490,6 +490,13 @@ def morning(M, k, last, now, P, live=None, news=None, ev=None, clock=None, lit_s
     else:
         evl["text"] = (f"Eval {(clock or {}).get('text') or 'clock unknown'}. Size at a typical {stop:g}-pt stop: {sz['qty']} micros, "
                        f"{_usd(sz['risk_usd'])} at risk.")
+    try:                                        # live Monte Carlo of this eval from today's state (engine/eval_mc.py, ~1 s)
+        from engine import eval_mc
+        mc = eval_mc.from_clock(clock, lit_sizing, seed=int(day.replace("-", "")))
+    except Exception as e:                      # the odds must never break the brief
+        mc = {"error": e.__class__.__name__, "text": f"eval Monte Carlo unavailable ({e.__class__.__name__})"}
+    if mc:
+        evl["mc"] = mc
     pos = st.get("position")
     done = bool(st.get("day_trades")) and not pos
     plan = _plan_line(price, levels, mon, band, wk, done, nev, pos)
@@ -736,6 +743,8 @@ def readme_lines(b) -> list:
         L += [f"**Game plan** ({'refreshed' if mo['stage'] == 'full' else 'built'} {mo['built']} ET): {mo['plan']}", "",
               f"- Overnight: {mo['overnight']['text']}", f"- Target: {mo['vix']['text']}", f"- News: {mo['news_text']}",
               f"- Eval: {mo['eval']['text']}"]
+        if (mo["eval"].get("mc") or {}).get("text"):
+            L.append(f"- Eval odds: {mo['eval']['mc']['text']}")
         L += [f"- {'**' if w['level'] in ('warn', 'good') else ''}{w['text']}{'**' if w['level'] in ('warn', 'good') else ''}"
               for w in b.get("mffu") or []]
         if mo["monday"].get("text"):
