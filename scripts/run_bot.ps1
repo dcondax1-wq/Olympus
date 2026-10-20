@@ -63,8 +63,14 @@ try { [Console]::OutputEncoding = $Utf8 } catch { }
 
 if (-not $Python) { if ($env:LE_PYTHON) { $Python = $env:LE_PYTHON } }
 if (-not $Python) {
-    $cmd = Get-Command python -ErrorAction SilentlyContinue
-    if ($cmd) { $Python = $cmd.Source }
+    # from PATH: ask it for the real python.exe (the empty Microsoft Store alias does not run), else the py launcher
+    foreach ($cand in @(@('python'), @('py', '-3'))) {
+        $cmd = Get-Command $cand[0] -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+        if (-not $cmd) { continue }
+        $pre = @($cand | Select-Object -Skip 1)
+        try { $exe = & $cmd.Source @pre -c "import sys; print(sys.executable)" 2>$null | Select-Object -Last 1 } catch { $exe = $null }
+        if ($LASTEXITCODE -eq 0 -and $exe -and (Test-Path -LiteralPath "$exe".Trim())) { $Python = "$exe".Trim(); break }
+    }
 }
 if (-not $Python -or -not (Test-Path -LiteralPath $Python)) {
     Write-Sup "python not found (pass -Python <path> or set LE_PYTHON); exiting"
