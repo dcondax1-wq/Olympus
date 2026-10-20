@@ -14,6 +14,13 @@ Each trade is notified once, even when the cloud and the PC both trade it. One m
 Eval-timing changes appear only in the app's **Activity** page (System -> Activity, and a card on Today), next to every
 entry and result with its details (prices, stop, target, R, eval balance). The app icon shows a badge with the new ones.
 
+**From the PC's helper task** (`SETUP_SHORTCUTS.bat` adds the task `LiquidityEngineOps`, `engine/ops_checks.py`; each
+notice once, tagged "ops"): **All green for tonight** or **Fix before 02:00 ET: ...** at 01:40 ET, a **Day summary** at
+16:05 ET (trades, P&L, $ to go, session X of 10), a **Week** report on Sunday evening, **Internet was down N min** /
+**NinjaTrader disconnected** / **reconnected**, the MFFU **no trade for 5 days** reminder, **EVAL PASSED** / **Eval failed**
+with the next steps, and the **contract roll** reminder a week and a day before. They need the PC linked (below) and the
+PC on; `LE_OPS_PUSH=0` turns them off. Daily routine: `docs/DAILY_CHECKLIST.md`.
+
 Free. Telegram and Discord are off.
 
 How fast: the cloud paper bot checks every 30 minutes on market days (02:00-16:25 ET), so its notices arrive up to ~30

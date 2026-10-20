@@ -739,7 +739,8 @@ def run(out):
           + (f", expired {len(gone)}" if gone else "") + (f", errors {push_errs[:3]}" if push_errs else ""))
     write_chart(os.path.join(out, "chart.png"), df, state, res, today)
     write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm,
-                 push_state=push_state, pc_health=pc.get("health") if pc.get("present") else None)
+                 push_state=push_state, pc_health=pc.get("health") if pc.get("present") else None,
+                 pc_ops=pc.get("ops") if pc.get("present") else None)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
@@ -767,7 +768,7 @@ def run(out):
                  "levels": [{k: p.get(k) for k in ("label", "price", "side", "strength", "kind")} for p in state.get("active_pools") or []][:60]
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
-                                               "reason", "model", "push_pk", "acct", "health", "every_s")},
+                                               "reason", "model", "push_pk", "acct", "health", "every_s", "ops")},
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
                  "pc_alert_at": pc_alert_at,
@@ -895,6 +896,24 @@ def _accounts_auto_text(hl):
         return f"unknown ({e.__class__.__name__})"
 
 
+def _ops_cell(o):
+    """README row "PC checks": the owner's PC helpers (engine/ops_checks.hb_fields, in the heartbeat's "ops" block)."""
+    try:
+        parts = []
+        if o.get("checks_t"):
+            parts.append(f"{int(o.get('bad') or 0)} red, {int(o.get('warn') or 0)} yellow ({et(o['checks_t']):%a %H:%M} ET)")
+            if o.get("first_fix"):
+                parts.append(f"fix: {o['first_fix']}")
+        else:
+            parts.append("no health check run yet (HEALTH_CHECK.bat / the ops task)")
+        parts.append(f"backup {et(o['backup_t']):%a %H:%M} ET" if o.get("backup_t") else "no backup yet")
+        if o.get("disk_free_gb") is not None:
+            parts.append(f"disk {o['disk_free_gb']:.0f} GB free")
+        return "; ".join(parts)
+    except Exception as e:
+        return f"unknown ({e.__class__.__name__})"
+
+
 def _push_cell(p):
     p = p or {}
     if not p.get("configured"):
@@ -922,7 +941,7 @@ def usd_cell(v):
 
 
 def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None,
-                 pc_health=None):
+                 pc_health=None, pc_ops=None):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
     arm = []
@@ -974,6 +993,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
             f"{len(lt.get('signals_today') or [])} setups today |"] if (lt := state.get("lit")) and lt.get("open18") else []),
          f"| Feed | {feed}; {health['rth_bars_today']}/78 RTH bars today; gaps: {', '.join(health['gaps_today']) or 'none'} |",
          *([f"| PC bot version | {_accounts_auto_text(pc_health)} |"] if isinstance(pc_health, dict) else []),
+         *([f"| PC checks | {_ops_cell(pc_ops)} |"] if isinstance(pc_ops, dict) and pc_ops else []),
          f"| Notifications | {_push_cell(push_state)} |",
          f"| Telegram / Discord | {', '.join(sent) if sent else ('on' if chat_on(lm) and (os.environ.get('TG_TOKEN') or os.environ.get('DISCORD_WEBHOOK')) else 'off (the app notifies; LE_ALERTS_CHAT=1 turns chat alerts back on)')} |",
          "", "## Nearest liquidity pools", "| Pool | Price | Distance |", "|---|---:|---:|"]

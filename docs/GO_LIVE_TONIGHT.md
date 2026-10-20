@@ -3,6 +3,11 @@
 You switch it on yourself. Claude gets everything ready but never arms a real account.
 Do the Sim test first; only go to the eval when the Sim test is clean.
 
+**Daily use after the first night:** the one-page [DAILY_CHECKLIST.md](DAILY_CHECKLIST.md) (night before / morning /
+after close / weekly) replaces these steps; problems: [TROUBLESHOOTING.md](TROUBLESHOOTING.md). Double-click
+`SETUP_SHORTCUTS.bat` once for the desktop icons (UPDATE, DASHBOARD, HEALTH CHECK, STOP BOT) and the phone notices
+(01:40 pre-session check, 16:05 day summary, Sunday week report, drops, MFFU reminders) with the nightly backup.
+
 ## No Yahoo (update 2026-10-19): do this on the Surface now
 The bot no longer uses Yahoo anywhere (`"no_yahoo": true` in `live_model.json`). It trades only on NinjaTrader's MNQ bars
 plus the TradingView history in `data/`, and the cloud paper bot trades on the bars your PC sends it.
