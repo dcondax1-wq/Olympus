@@ -363,7 +363,11 @@ class NinjaTraderAdapter:
         self.folder = cfg.get("nt_folder") or default_folder()
         self.incoming = os.path.join(self.folder, "incoming")
         self.outgoing = os.path.join(self.folder, "outgoing")
-        self.write_mode = "move" if cfg.get("nt_write_mode") == "move" else "direct"
+        # "move" (default since the 2026-10-20 rehearsal): the order file is written in le_outbox\ and moved into incoming\
+        # whole. "direct" creates the file in incoming\ and then writes it: in between, NinjaTrader's folder watcher can read
+        # an EMPTY file and delete it, so the order (a bracket!) is lost silently (seen in the rehearsal under load: an entry
+        # filled with no stop / target at the broker for 94 minutes). nt_write_mode "direct" keeps the old way.
+        self.write_mode = "direct" if cfg.get("nt_write_mode") == "direct" else "move"
         # several accounts on one bot (engine/multi_account.py): each adapter's order files carry its own tag, so two
         # accounts writing in the same millisecond never collide ("" = the single-account names, unchanged)
         self.file_tag = re.sub(r"[^A-Za-z0-9_]", "", str(cfg.get("nt_file_tag") or ""))[:24]
@@ -561,7 +565,7 @@ class NinjaTraderAdapter:
                 else:
                     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0))
                     try:
-                        os.write(fd, data)                   # one write, then close: NinjaTrader never sees half a file
+                        os.write(fd, data)                   # one write, then close (the file exists empty before it)
                     finally:
                         os.close(fd)
                 self._audit(name, lines)

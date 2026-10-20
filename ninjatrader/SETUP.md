@@ -315,7 +315,7 @@ Before the first live start, check:
 | `nt_instrument` [front month, for example `MNQ 12-26`] | Force the instrument name |
 | `nt_contract` [`micro`] | `micro` = MNQ only. `auto` = 10 or more micros go as NQ minis, as the backtest's commission model does (two brackets). |
 | `nt_close_suffix` [empty] | Text added to the instrument in CLOSEPOSITION, for example `" Globex"` (step 5.3; `--close-suffix`) |
-| `nt_write_mode` [`direct`] | `direct` writes each file in one go; `move` writes it next door, then moves it into incoming (the guide allows both; `--write-mode`) |
+| `nt_write_mode` [`move`] | `move` (default since 2026-10-20) writes each file in `le_outbox` next door, then moves it into incoming whole; `direct` creates it in incoming and then writes it, so NinjaTrader can read it empty and lose the order (seen in the rehearsal) (the guide allows both; `--write-mode`) |
 | `nt_ack_wait_s` [4] / `nt_fill_wait_s` [6] / `nt_verify_wait_s` [4] / `nt_pending_timeout_s` [45] | How long to wait for NinjaTrader at each step |
 | `data_source` (or `data`) [`ninjatrader` while `no_yahoo` is on] | `ninjatrader` reads LE_BarFeed's files (5m and 1m). `yahoo` is turned into `ninjatrader` while `no_yahoo` is on |
 | `no_yahoo` [`live_model.json` `no_yahoo`: true] | true: no Yahoo anywhere (FEED STALE blocks entries instead of a fallback). false: the old behaviour (Yahoo NQ=F as the feed or the fallback) |
@@ -371,9 +371,10 @@ reach NinjaTrader within milliseconds of each other; each account then waits for
 ## 13. Assumptions to verify on a real install
 
 1. The order-file format matches the official pages (it was checked against copies). Steps 5.2 and 5.3 prove it.
-2. NinjaTrader picks up files the bot writes straight into `incoming`. A field report says a temp file *inside*
-   `incoming` is rejected as "Unknown OIF file type"; the bot never does that. If 5.2 says "did not pick up" while
-   NinjaTrader runs with AT Interface on, try `nt_write_mode` `move`.
+2. NinjaTrader picks up files the bot moves into `incoming` (written whole in `le_outbox` first, `nt_write_mode` `move`,
+   the default). A field report says a temp file *inside* `incoming` is rejected as "Unknown OIF file type"; the bot
+   never does that. If 5.2 says "did not pick up" while NinjaTrader runs with AT Interface on, try `nt_write_mode`
+   `direct`.
 3. The order report is `outgoing\<ORDER ID>.txt`, with states spelled like `FILLED`, `PARTFILLED`, `WORKING`,
    `ACCEPTED`, `CANCELLED`, `REJECTED`. The bot ignores case and spaces. Step 5.2 prints the real text.
 4. The position file is `<instrument> <exchange>_<account>_Position.txt`. `--status` lists it after a fill.

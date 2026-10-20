@@ -2,7 +2,7 @@
 from data/NQ_1m.csv + data/NQ_5m.csv, a fake NinjaTrader that fills the order files, and the owner's clicks over HTTP.
 
     python -X utf8 -m tests.test_rehearsal                 # every rehearsal day (~10 sessions, see DAYS), ~1 h on one core
-    python -X utf8 -m tests.test_rehearsal --days=2026-08-28,2026-09-02 [--jobs=5] [--keep]
+    python -X utf8 -m tests.test_rehearsal --days=2026-08-28,2026-09-02 [--jobs=5] [--fast] [--keep]
 
 What it does (Paper / Sim101 only; no real account is ever armed, the live phrase is never written anywhere):
   sandbox    a temp copy of the code (engine, tools, tests, web, server.py, live_model.json exactly as committed) with its own
@@ -357,6 +357,8 @@ def make_nt(folder, vc):
                 super().process()
                 for name, lines in self.files[n0:]:
                     self.log.append((self.vt(), name, lines))
+                    if not lines:                # NinjaTrader read the file before it was written: that order is lost
+                        self.errors.append((name, "empty order file read (the writer is not atomic)"))
 
         def bar(self, o, h, l, c):
             """One 1m bar of market: stops first (gap through the stop: filled at the open), then the limits, 1 tick of
@@ -497,11 +499,12 @@ def expected_qty(t, lm):
 
 # ================================================================================================ the rehearsal
 class Rehearsal:
-    def __init__(self, days, keep=False):
+    def __init__(self, days, keep=False, fast=False):
         from engine.ninjatrader import nt_instrument
         self.nt_instrument = nt_instrument
         self.days = days
         self.keep = keep
+        self.fast = fast
         self.base = tempfile.mkdtemp(prefix="le_rehearsal_")
         print(f"sandbox {self.base}", flush=True)
         self.repo = build_sandbox(self.base)
@@ -601,13 +604,19 @@ class Rehearsal:
         i = self.S26.index(day)
         self.hist.cut(et_at(self.S26[i - 2], 17, 0))           # the export ends two sessions before today
         self.set_eval_start(day)
+        bt = [t for t in self.T if t["day"] == day]
+        bt_off = [t for t in self.T_off if t["day"] == day]
         t0 = et_at(day, 1, 50)
+        t_end = et_at(day, 16, 5)
+        if self.fast and bt:
+            # --fast: START 40 min before the backtest entry (the live loop rebuilds the day from the bars, as after a late
+            # START) and stop 20 min after its exit; no-trade days always run the whole session
+            t0 = max(t0, (int(bt[0]["entry_t"]) - 40 * 60) // 60 * 60)
+            t_end = min(t_end, (int(bt[0]["exit_t"]) + 20 * 60) // 60 * 60)
         self.feed.reset(t0 + 2, self.nt_instrument("MNQ", dt.date.fromisoformat(day)))
         self.vc.set(t0 + 2)
         if not self.server.proc:
             self.server.start()
-        bt = [t for t in self.T if t["day"] == day]
-        bt_off = [t for t in self.T_off if t["day"] == day]
         n0 = len(self.nt.log)
         # the cloud monitor's first look of the day (its paper ledger counts trades after its first run)
         rc, out = self.server.cloud(self.cloud_out)
@@ -622,7 +631,6 @@ class Rehearsal:
             restart_at = int(bt[0]["entry_t"]) + 60 * RESTART_AFTER_MIN
         running = True
         info = {"day": day, "what": what}
-        t_end = et_at(day, 16, 5)
         m = t0 + 60
         ev_mid = None
         while m <= t_end:
@@ -823,10 +831,23 @@ class Rehearsal:
             from engine import lit as _lit
             bpnl = round(q * ((xp - fill_px) * d * _lit.PV - _lit.COMM), 2)
             want_pnl = round(t["pnl"] * int(e["qty"]) / t["qty"], 2)
-            out.update(broker_pnl=bpnl, broker_exit_px=xp, broker_exit_t=hm(xs[0][0]), broker_exit_type=xs[0][2])
-            ok = abs(bpnl - want_pnl) <= 0.01
-            check(f"{day} broker fills: exit {xs[0][2]} {q} @ {xp:.2f} at {hm(xs[0][0])}, P&L ${bpnl} vs backtest ${want_pnl}", ok,
-                  f"diff ${bpnl - want_pnl:+.2f}")
+            out.update(broker_pnl=bpnl, broker_exit_px=xp, broker_exit_t=hm(xs[0][0]), broker_exit_type=xs[0][2],
+                       broker_vs_bt=round(bpnl - want_pnl, 2))
+            if xs[0][2] == "MARKET":
+                # a flatten (15-min cut / 15:55 / the early-close flat) fills at the market after the decision: the backtest books
+                # the decision bar's close. Checked: the flatten went out on time (cut / EOD: within LIMIT_S of the model's
+                # exit; early close: 5 min before the halt, after the last entry); the $ gap is reported, not a failure.
+                early = t["exit"] in ("EOD", "TIME") and int(t["exit_t"]) < et_at(day, 15, 0)
+                lag = xs[0][0] - int(t["exit_t"])
+                # 15:55 flat: the clock flat can go at the 15:55:32 poll, before the model's 15:56 bar-close exit
+                ok = (-330 <= lag <= 0) if early else (-60 <= lag <= LIMIT_S + 30)
+                check(f"{day} broker fills: flatten MARKET {q} @ {xp:.2f} at {hm(xs[0][0])} ({lag:+.0f} s vs the model's exit"
+                      f"{', early-close flat 5 min before the halt' if early else ''}); P&L ${bpnl} vs backtest ${want_pnl} "
+                      f"(${bpnl - want_pnl:+.2f} market vs bar close)", ok, f"lag {lag}")
+            else:
+                ok = abs(bpnl - want_pnl) <= q * TICK * _lit.PV + 0.01      # the backtest target is not tick-rounded
+                check(f"{day} broker fills: exit {xs[0][2]} {q} @ {xp:.2f} at {hm(xs[0][0])}, P&L ${bpnl} vs backtest ${want_pnl}", ok,
+                      f"diff ${bpnl - want_pnl:+.2f}")
         if t["exit"] == "CUT_T15" and x is not None:
             ct = [(tt, ln) for tt, ln in lines if ln.startswith("CLOSEPOSITION")]
             lag = (ct[0][0] - (int(t["exit_t"]))) if ct else None
@@ -842,8 +863,10 @@ class Rehearsal:
         check(f"{day} eval clock at the start: session {ev0.get('session')} of {ev0.get('sessions')}, ${ev0.get('to_target')} to go "
               f"(= $3,000 - (${prior:+.0f} prior)), room ${ev0.get('room')}", ok0, json.dumps(ev0)[:300])
         day_pnl = float(snap.get("day_pnl_routed") or 0.0)
-        ok1 = abs(float(ev1.get("to_target") or 0) - (need0 - day_pnl)) < 0.01
-        check(f"{day} eval clock after the session: ${ev1.get('to_target')} to go = ${need0:,.0f} - day ${day_pnl:+,.2f}", ok1, json.dumps(ev1)[:300])
+        ok1 = abs(float(ev1.get("to_target") or 0) - max(0.0, need0 - day_pnl)) < 0.01 and \
+            (ev1.get("status") == "passed") == (day_pnl >= need0)
+        check(f"{day} eval clock after the session: ${ev1.get('to_target')} to go = max(0, ${need0:,.0f} - day ${day_pnl:+,.2f})"
+              f"{' - PASSED in 1 session' if ev1.get('status') == 'passed' else ''}", ok1, json.dumps(ev1)[:300])
         e2 = (snap.get("state") or {}).get("eval_2wk") or {}
         return {"start": {k: ev0.get(k) for k in ("session", "sessions", "to_target", "room", "balance", "prior")},
                 "end": {k: ev1.get(k) for k in ("session", "sessions", "to_target", "room", "balance")}, "eval_2wk": e2.get("text") or e2}
@@ -893,8 +916,8 @@ class Rehearsal:
         while True:
             v = self.server.get("/api/next/pc/execution") or {}
             rows = [r for r in v.get("rows") or [] if r.get("day") == day]
-            if rows or _real_time() > t_end:
-                break
+            if (rows and (not killed or rows[0].get("live_exit_kind"))) or _real_time() > t_end:
+                break                                # killed: until the audit has seen the kill-switch exit too
             _real_sleep(3)
         if not bt:
             check(f"{day} execution tracker: no trade, no missed / extra row", not [r for r in rows if r.get("status") in ("missed", "extra")],
@@ -1002,7 +1025,7 @@ def main(argv):
             part = a.split("=", 1)[1]
     if jobs > 1:
         return run_parallel(days, jobs, argv)
-    rh = Rehearsal(days, keep="--keep" in argv)
+    rh = Rehearsal(days, keep="--keep" in argv, fast="--fast" in argv)
     try:
         rh.run()
         ok = summary(rh, out=part)
@@ -1019,7 +1042,7 @@ def run_parallel(days, jobs, argv):
     tmp = tempfile.mkdtemp(prefix="le_rehearsal_parts_")
     procs, done = [], []
     queue = list(days)
-    keep = [a for a in argv if a == "--keep"]
+    keep = [a for a in argv if a in ("--keep", "--fast")]
     while queue or procs:
         while queue and len(procs) < jobs:
             d = queue.pop(0)
