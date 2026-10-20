@@ -181,7 +181,8 @@ def main() -> int:
           "function surfaceLine()" in hub and "${surfaceLine()}${banner()}" in hub and "Surface OFFLINE since" in hub
           and "30 * 60" in hub and "mod >= 90 && mod <= 960" in hub and ".hb-surface.bad" in hub)
     sw = read("tools/web_public/sw.js")
-    check("service worker: cache bumped (v12), 'require' -> requireInteraction", "le-public-v12" in sw and "requireInteraction" in sw)
+    check("service worker: cache bumped (v12 or later), 'require' -> requireInteraction",
+          int((re.search(r"le-public-v(\d+)", sw) or [0, 0])[1]) >= 12 and "requireInteraction" in sw)
     check("index.html loads the new hub.js (v=2)", 'hub.js?v=2' in read("tools/web_public/index.html"))
     bw = read("tools/build_web_dashboard.py")
     check("data.json + home.json carry pc_outage / pc_checkin", bw.count('"pc_outage", "pc_checkin"') >= 2)

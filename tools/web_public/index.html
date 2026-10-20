@@ -4265,7 +4265,7 @@ const RC_CMDS = [
   ['restart', 'Restart server', 'Restart the PC server; the eval comes back only with auto-resume on', 'gated'],
   ['start', 'Start on Sim101', 'Start the bot on the Sim101 practice account (never a real account)', ''],
 ];
-const RC = { cmd: store.get('rcCmd', 'status'), made: null };
+const RCTL = { cmd: store.get('rcCmd', 'status'), made: null };
 const rcRepo = () => D?.extras?.repo || 'demetrades2000-coder/nq-liquidity-engine';
 const rcEdit = () => `https://github.com/${rcRepo()}/edit/control/control/command.json`;
 function rcBuild(cmd) {
@@ -4275,15 +4275,15 @@ function rcBuild(cmd) {
   if (cmd === 'stopnow') o.now = true;
   if (cmd === 'stop') o.now = false;
   if (cmd === 'start') o.account = 'Sim101';
-  RC.made = { cmd, ts, json: JSON.stringify(o, null, 1) };
-  return RC.made;
+  RCTL.made = { cmd, ts, json: JSON.stringify(o, null, 1) };
+  return RCTL.made;
 }
 VIEWS.remote = (el) => {
   const pc = LV().pc || {}, rm = pc.remote || null;
   const hbAge = pc.present && pc.t ? Math.max(0, Date.now() / 1000 - pc.t) : null;
   const pcOk = hbAge != null && hbAge < 30 * 60;
-  if (!RC.made || RC.made.cmd !== RC.cmd || Date.now() / 1000 - RC.made.ts > 10 * 60) rcBuild(RC.cmd);
-  const m = RC.made, until = new Date((m.ts + 15 * 60) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  if (!RCTL.made || RCTL.made.cmd !== RCTL.cmd || Date.now() / 1000 - RCTL.made.ts > 10 * 60) rcBuild(RCTL.cmd);
+  const m = RCTL.made, until = new Date((m.ts + 15 * 60) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const state = !pc.present ? ['no heartbeat from the PC yet', 'warn'] : !rm ? ['PC bot is on an older version (no remote yet)', 'warn']
     : !rm.on ? ['off on the PC (LE_REMOTE=1 turns it on)', 'warn'] : [rm.last || 'on · no command yet', 'good'];
   el.innerHTML = head('System · remote', 'Remote control', 'Send one safe command to the PC bot through GitHub. Free, from anywhere; the PC picks it up within about a minute.')
@@ -4293,7 +4293,7 @@ VIEWS.remote = (el) => {
       ${rm?.error ? `<div class="note">Last fetch: ${esc(rm.error)}</div>` : ''}
       <div class="note">The result also comes as a phone notification, and shows here after the next cloud run.</div></div>
     <div class="card"><div class="card-h"><h3>1 · Pick a command</h3></div>
-      <div class="rc-grid" id="rcGrid">${RC_CMDS.map(([id, l, d, k]) => `<button type="button" class="rc-cmd ${k} ${id === RC.cmd ? 'on' : ''}" data-rc="${id}"><b>${esc(l)}</b><span>${esc(d)}</span></button>`).join('')}</div></div>
+      <div class="rc-grid" id="rcGrid">${RC_CMDS.map(([id, l, d, k]) => `<button type="button" class="rc-cmd ${k} ${id === RCTL.cmd ? 'on' : ''}" data-rc="${id}"><b>${esc(l)}</b><span>${esc(d)}</span></button>`).join('')}</div></div>
     <div class="card"><div class="card-h"><h3>2 · Copy it and open GitHub</h3>${chip('valid until ' + until)}</div>
       <div class="rc-json" id="rcJson">${esc(m.json)}</div>
       <div class="rc-act"><button class="btn primary rc-big" type="button" id="rcGo">${icon('ext')}Copy and open GitHub</button>
@@ -4305,8 +4305,8 @@ VIEWS.remote = (el) => {
         <li>Tap <b>Commit changes</b> (straight to the <b>control</b> branch).</li>
         <li>Wait about a minute: the phone gets “Remote ${esc(m.cmd === 'stopnow' ? 'stop' : m.cmd)}: done” (or why it was refused).</li></ol>
       <div class="note">Safety: each command runs once and expires after 15 minutes. Kill, stop, flatten and status only lower risk or read. Update and restart run only when the bot is flat. No command can start a real account or change the strategy or settings. Paper / Sim only for remote starts.</div></div>`;
-  $('#rcGrid').onclick = (e) => { const b = e.target.closest('[data-rc]'); if (!b) return; RC.cmd = b.dataset.rc; store.set('rcCmd', RC.cmd); rcBuild(RC.cmd); haptic(10); render(true); };
-  const fresh = () => { if (Date.now() / 1000 - RC.made.ts > 60) rcBuild(RC.cmd); $('#rcJson').textContent = RC.made.json; return RC.made.json; };
+  $('#rcGrid').onclick = (e) => { const b = e.target.closest('[data-rc]'); if (!b) return; RCTL.cmd = b.dataset.rc; store.set('rcCmd', RCTL.cmd); rcBuild(RCTL.cmd); haptic(10); render(true); };
+  const fresh = () => { if (Date.now() / 1000 - RCTL.made.ts > 60) rcBuild(RCTL.cmd); $('#rcJson').textContent = RCTL.made.json; return RCTL.made.json; };
   const copy = (t) => navigator.clipboard?.writeText ? navigator.clipboard.writeText(t) : Promise.reject(new Error('no clipboard'));
   $('#rcGo').onclick = () => {                 // copy and open in the same tap (a popup after an await is blocked on iOS)
     const t = fresh();
@@ -4314,7 +4314,7 @@ VIEWS.remote = (el) => {
     window.open(rcEdit(), '_blank', 'noopener');
   };
   $('#rcCopy').onclick = () => { const t = fresh(); copy(t).then(() => toast('Copied')).catch(() => toast('Select the text above and copy it', 4000)); };
-  $('#rcNew').onclick = () => { rcBuild(RC.cmd); $('#rcJson').textContent = RC.made.json; toast('New id and time'); };
+  $('#rcNew').onclick = () => { rcBuild(RCTL.cmd); $('#rcJson').textContent = RCTL.made.json; toast('New id and time'); };
 };
 
 VIEWS.settings = (el) => {
