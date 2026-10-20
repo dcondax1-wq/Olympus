@@ -713,6 +713,43 @@ PROPS = os.path.join(ROOT, "research", "props")
 SECRETY = re.compile(r"(api[_-]?key|secret|password|token|bearer)", re.I)
 
 
+def _props_norm(name, obj):
+    """firms.json as tools/hub_data.py's study writes it (plan price {list: {v}, owner}, codes on the firm with "off" / "seen")
+    -> also the flat fields hub.js planCard reads (price_owner, price_list, codes[{code, pct, source, date}]). Adds, never
+    removes; anything else passes through."""
+    if name == "business" and isinstance(obj, dict):    # the same source as the PC Business page: the tracker xlsx when here
+        try:
+            from tools import hub_data
+            obj = hub_data.business_raw()
+        except Exception as e:                  # noqa: BLE001
+            print("  props: business tracker not read:", e.__class__.__name__, e)
+        if "fees" not in obj:                   # hub.js bizPnl reads fees / payouts as {item, usd, date}
+            obj = {**obj, "fees": [e for e in obj.get("expenses") or [] if not e.get("planned")]}
+        return obj
+    if name != "firms" or not isinstance(obj, dict):
+        return obj
+    def num(v):
+        v = v.get("v") if isinstance(v, dict) else v
+        return float(v) if isinstance(v, (int, float)) else None
+    for f in obj.get("firms") or []:
+        fc = []
+        for c in f.get("codes") or []:
+            if not isinstance(c, dict) or not c.get("code") or str(c["code"]).startswith("("):
+                continue
+            m = re.search(r"(\d+(?:\.\d+)?)\s*%", str(c.get("off") or c.get("pct") or ""))
+            fc.append({"code": c["code"], "pct": c.get("pct") if isinstance(c.get("pct"), (int, float)) else float(m.group(1)) if m else None,
+                       "source": c.get("source") or c.get("applies") or c.get("n"), "date": c.get("date") or c.get("seen"), "st": c.get("st")})
+        for p in f.get("plans") or []:
+            pr = p.get("price") if isinstance(p.get("price"), dict) else {}
+            if p.get("price_owner") is None and num(pr.get("owner")) is not None:
+                p["price_owner"] = num(pr.get("owner"))
+            if p.get("price_list") is None and num(pr.get("list")) is not None:
+                p["price_list"] = num(pr.get("list"))
+            if not p.get("codes") and fc:
+                p["codes"] = fc
+    return obj
+
+
 def _props():
     """research/props/*.json (prop-firm research): firms.json -> "firms" (firms[].name, plans[].{name, price_list, price_owner,
     codes[{code, pct, source, date}], eval, funded, payouts, live, lit_fit}), every other small file under its own name
@@ -729,7 +766,9 @@ def _props():
                 print("  props: skipped (looks like it holds a secret):", os.path.basename(path))
                 continue
             name = os.path.splitext(os.path.basename(path))[0]
-            out["firms" if name == "firms" else name] = json.loads(txt)
+            if name == "hub":                      # tools/hub_data.py's PC export: carried as data["hub"], not twice
+                continue
+            out["firms" if name == "firms" else name] = _props_norm(name, json.loads(txt))
         except Exception as e:
             print("  props: skipped", os.path.basename(path), e.__class__.__name__)
     return out or None
@@ -945,8 +984,11 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # the three LIT upgrades live (tools/upgrade_shadow.py via the cloud monitor's lit_base ledger): with vs without, per upgrade
     data["upgrades_live"] = st.get("upgrades_live")
     data["extras"] = _extras(st, lm, bt)          # extras.js pages (Eval HQ, Edge, Calendar, Ops, MFFU rules)
-    data["hub"] = _hub(st, lm, docs)              # hub.js pages (Home, LIT plan, Strategy upgrades + scoreboard, Money, changelog)
-    data["props"] = (data["hub"] or {}).pop("props", None)   # Prop Firms / payouts / business / market (research/props/*.json)
+    hub = _hub(st, lm, docs)                      # hub.js pages (Home, LIT plan, Strategy upgrades + scoreboard, Money, changelog)
+    data["props"] = (hub or {}).pop("props", None)   # Prop Firms / payouts / business / market (research/props/*.json)
+    # the PC hub pages' data (prop firms, business, market, learn, system): research/props/hub.json, built by tools/hub_data.py;
+    # its keys sit next to the phone's (combo / funded / changelog / scoreboard win on a clash), home.json keeps the phone's only
+    data["hub"] = {**(_load(os.path.join(ROOT, "research", "props", "hub.json"), None) or {}), **(hub or {})}
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # home.json: the small file the Home screen draws from first (~100 KB instead of the 4 MB data.json), same build
@@ -955,7 +997,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             "live": {**{k: live.get(k) for k in HOME_LIVE}, "bars": (live.get("bars") or [])[-120:], "brief": live.get("brief"),
                      "ledger": (live.get("ledger") or [])[:20], "push": {k: (live.get("push") or {}).get(k) for k in ("configured", "devices")}},
             "accounts": [{k: v for k, v in a.items() if k not in ("trades", "days", "orders")} for a in accounts],
-            "exec": data["exec"], "hub": data["hub"],
+            "exec": data["exec"], "hub": hub,
             "strategy": {k: (data["strategy"] or {}).get(k) for k in ("label", "chosen", "model", "lit", "lit_sizing")},
             "lit_extra": {k: (data.get("lit_extra") or {}).get(k) for k in ("plan", "sizing")} if data.get("lit_extra") else None,
             "extras": {"two_week": ex.get("two_week"), "eventual": ex.get("eventual")},
