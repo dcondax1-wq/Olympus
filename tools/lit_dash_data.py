@@ -99,7 +99,8 @@ def montecarlo(n=4000, seed=7):
     out = {
         "built": dt.datetime.now().strftime("%Y-%m-%d %H:%M"), "study": "lit_mc", "strategy_model": "lit",
         "writeup": "research/writeups/lit-final.md",
-        "strategy": "LIT (live_model.json, locked 2026-10-18): lit_final + loss pack (weekly stop, Monday rule), sizing mode normal",
+        "strategy": ("LIT (live_model.json): lit_final + loss pack (weekly stop, Monday rule, 2026-10-18) + 15-minute check, "
+                     "scale-in after breakeven, breakeven at entry + 1.25 pts (2026-10-20); LIT size rule ($800 up to a 20-pt stop)"),
         "plan": "MFFU Builder 50K: +$3,000 target, $2,000 EOD trailing max loss (intraday low checked), locks at $50,100",
         "method": (f"{n} resampled 60-session evals drawn in blocks of 5 consecutive sessions from LIT's 2026 sessions "
                    f"(run {LIVE_RUN}, Jan 2 - Oct 16 2026, {sum(1 for d in D['sessions'] if d.startswith('2026'))} sessions, costs in). "
@@ -109,7 +110,8 @@ def montecarlo(n=4000, seed=7):
         "paths": _pick(main["paths"]), "paths_pool": "2026, block5, LIT live sizing",
         "hist": main["hist"], "prob": _prob(main), "press": _prob(press),
         "press_rule": (f"fast-eval sizing switch (lit_sizing.mode fast_eval, run {FAST_RUN}): $800 of risk up to a 40-point stop, "
-                       "then $800 x 40 / stop; OFF in the live settings"),
+                       "then $800 x 40 / stop; OFF in the live settings (stored on the LIT final rules, without the loss pack "
+                       "and the 2026-10-20 upgrades)"),
         "chain": chain, "cases": cases, "exact": exact,
         "halves": {k: _prob(next(c for c in cases if c["sizing"] == "live" and c["pool"] == k and c["scheme"] == "block5"))
                    for k in ("2026 H1", "2026 H2")},
