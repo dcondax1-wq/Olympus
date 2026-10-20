@@ -2392,8 +2392,12 @@ def selftest(verbose=True) -> bool:
         r0 = bot.start({"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "nt_folder": folder}, spawn=False)
         check("LiveBot: adapter ninjatrader refused unless armed", not r0["ok"] and "armed" in r0["error"])
         now[0] = dt.datetime(2026, 10, 22, 10, 5, 3, tzinfo=ET).timestamp()
+        # this self-test checks the adapter's own refusals: engine/guards.py would refuse its synthetic entries first (a 2nd
+        # entry the same day, a 1.35R target), so those two guards are off here (tests/test_guards.py covers them)
+        st_guards = {"dup_entry": False, "order_sanity": False}
         r1 = bot.start({"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "armed": True, "data": "ninjatrader", "nt_folder": folder,
-                        "nt_state_path": os.path.join(tmp, "nt_state2.json"), "nt_audit_log": os.path.join(tmp, "oif.log")}, spawn=False)
+                        "nt_state_path": os.path.join(tmp, "nt_state2.json"), "nt_audit_log": os.path.join(tmp, "oif.log"),
+                        "guards": st_guards}, spawn=False)
         bad = bot.adapter
         check("LiveBot: ADAPTERS['ninjatrader'] selected, 'data' alias -> data_source ninjatrader",
               r1["ok"] and type(bad).__name__ == "NinjaTraderAdapter" and bot.cfg["data_source"] == "ninjatrader",
@@ -2488,7 +2492,7 @@ def selftest(verbose=True) -> bool:
         lbot.state_path = os.path.join(tmp, "live_state_lit.json")
         lbot._remember = lambda *a, **kw: None
         r2 = lbot.start({"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "armed": True, "data": "ninjatrader", "nt_folder": folder,
-                         "model": "lit", "model_params": {"window": [[120, 930]]},
+                         "model": "lit", "model_params": {"window": [[120, 930]]}, "guards": st_guards,
                          "nt_state_path": os.path.join(tmp, "nt_state3.json"), "nt_audit_log": os.path.join(tmp, "oif.log")}, spawn=False)
         lad = lbot.adapter
         lad.clock = lambda: now[0]

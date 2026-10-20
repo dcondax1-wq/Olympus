@@ -1110,6 +1110,7 @@ class LiveBot:
         self._emit_events(res, sym)
         self._eod_summary(res, sym, now)
         self._route_signals(res, sym, now, secs)
+        self._guards_tick(now)
         self.health["poll_ms"] = int((time.perf_counter() - t0) * 1000)
         self.health["last_ok_poll"] = now
         self.health["ok"] = not (self.health["stale"] and mopen) and not self.health["desync"]
@@ -1481,6 +1482,9 @@ class LiveBot:
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
             elif not (q := self._equity_qty(ent["entry_t"], ent["qty"], ent)):
                 self._blocked_entries.add(ent["entry_t"])
+            elif (gb := self._guard_entry(ent, q, sym, now)):
+                self._blocked_entries.add(ent["entry_t"])          # engine/guards.py: only ever blocks
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: GUARD {gb}")
             else:
                 self._open_routed = ent["entry_t"]
                 self._open_qty = q
@@ -1492,9 +1496,8 @@ class LiveBot:
                     self._log("system", f"LIT 1m CISD closed at {_et(en['entry_t']):%H:%M} ET: MARKET entry sent at once "
                                         f"({int(self.clock()) - int(en['entry_t'])} s after the close; the backtest fills at this bar's open)"
                                         + ("; size from the CISD close, the feed did not show this bar's open yet" if en.get("est") else ""))
-                rr = self._route({"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
-                                  "stop": tick_px(ent["stop"], d), "target": tick_px(ent["target"], d, target=True),
-                                  "entry": ent["entry"], "entry_t": ent["entry_t"]})
+                rr = self._route(self._entry_action(ent, q, sym))
+                self._guard_routed(ent["entry_t"])
                 self._push_fill(ent, q, sym, rr)
         if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._route_stop_move(pos, sym)
@@ -1535,6 +1538,38 @@ class LiveBot:
                     self._remember(tr, sym)      # every completed routed trade feeds the persistent memory
                     self._journal(tr, qty)       # and the LIT learning loop's journal (data/lit_journal.jsonl)
                     self._push_outcome(tr, qty, sym)
+
+    # ------------------------------------------------------------------ safety guards (engine/guards.py: block / close only)
+    @staticmethod
+    def _entry_action(ent, q, sym):
+        d = 1 if ent["dir"] == 1 else -1
+        return {"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
+                "stop": tick_px(ent["stop"], d), "target": tick_px(ent["target"], d, target=True),
+                "entry": ent["entry"], "entry_t": ent["entry_t"]}
+
+    def _guard_entry(self, ent, q, sym, now):
+        """A reason not to route this entry (order sanity, duplicate, daily loss, clock, news, calendar), else None."""
+        try:
+            from . import guards
+            return guards.entry_block(self, ent, self._entry_action(ent, q, sym), q, now)
+        except Exception as e:
+            self._note_error(f"guards failed: {e.__class__.__name__}: {e}")
+            return None
+
+    def _guard_routed(self, entry_t):
+        try:
+            from . import guards
+            guards.note_routed(self, entry_t)
+        except Exception as e:
+            self._note_error(f"guards failed: {e.__class__.__name__}: {e}")
+
+    def _guards_tick(self, now):
+        """Once per poll, after routing: room alarm, NinjaTrader reconcile, 17:00 P&L reconcile, clock probe."""
+        try:
+            from . import guards
+            guards.tick(self, now)
+        except Exception as e:
+            self._note_error(f"guards failed: {e.__class__.__name__}: {e}")
 
     # ------------------------------------------------------------------ phone notifications (engine/push.py, Web Push)
     def _push_account(self):
