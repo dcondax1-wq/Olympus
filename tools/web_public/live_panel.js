@@ -128,8 +128,31 @@ export function html(D, { where = 'today', now = now_() } = {}) {
     ${C.length ? `<div class="lp-closed"><div class="lp-eye">Today’s closed trade${C.length > 1 ? 's' : ''}${C[0].src === 'paper' ? ' · cloud paper' : ''}</div>${C.map((t, i) => `<div class="lp-ct">
         <div class="lp-cth"><b class="${t.side === 'LONG' ? 'up' : 'dn'}">${esc(t.side)}</b><span>${t.qty ?? '—'} MNQ · ${hm(t.entry_t)}–${hm(t.exit_t)} ET</span><span>${esc(t.exit || '')}</span><b class="${cls(t.pnl)}">${susd(t.pnl)} · ${fR(t.r)}</b></div>
         <div class="lp-chart" data-lp-closed="${i}"></div></div>`).join('')}</div>` : ''}
+    ${where === 'accounts' ? execBox(D.exec) : ''}
     <div class="lp-foot">Cloud check ${built ? dur(now - built) + ' ago' : '—'} · the PC reports every ${dur(+pc.every_s || 300)} · read-only</div>
   </div>`;
+}
+// ------------------------------------------------------------------ execution quality (engine/fill_audit.py via the heartbeat "exec")
+// slippage $ against the LIT backtest on the same bars, per trade and per month; missed trades (why, backtest $) and extras
+const tks = (v) => (ok(v) ? (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(Math.abs(v) % 1 ? 1 : 0) + ' ticks' : '—');
+export function execBox(x) {
+  if (!x) return '';
+  const rec = (x.recent || []).slice(0, 5), mo = (x.months || []).slice(-1)[0];
+  const row = (r) => r.status === 'missed'
+    ? `<div class="lp-cth"><b class="dn">MISSED</b><span>${esc(r.day || '')} ${hm(r.entry_t)} ET · ${esc(r.reason || '')}</span><b>${susd(r.missed_usd)} not taken</b></div>`
+    : r.status === 'extra'
+      ? `<div class="lp-cth"><b>EXTRA</b><span>${esc(r.day || '')} ${hm(r.entry_t)} ET</span><b class="${cls(r.live_pnl)}">${susd(r.live_pnl)}</b></div>`
+      : `<div class="lp-cth"><b class="${r.side === 'LONG' ? 'up' : 'dn'}">${esc(r.side || '')}</b><span>${esc(r.day || '')} ${hm(r.entry_t)} ET · entry ${tks(r.entry_slip_ticks)} · exit ${tks(r.exit_slip_ticks)}${ok(r.latency_s) ? ` · ${r.latency_s} s` : ''}</span><b class="${cls(r.slip_usd)}">${susd(r.slip_usd)}</b></div>`;
+  return `<div class="lp-closed"><div class="lp-eye">Execution vs the backtest${x.from ? ` · since ${esc(x.from)}` : ''}</div>
+    <div class="lp-grid">
+      ${kv('Slippage', susd(x.slip_usd), ok(x.slip_usd_per_trade) ? `${susd(x.slip_usd_per_trade)} a trade · ${x.trades} trades` : `${x.trades || 0} trades`, cls(x.slip_usd))}
+      ${kv('Missed', String(x.missed || 0), `${susd(x.missed_usd)} in the backtest${x.missed_pc_on ? ` · ${x.missed_pc_on} with the PC on` : ''}`, x.missed ? 'dn' : '')}
+      ${kv('Extra', String(x.extra || 0), susd(x.extra_usd))}
+      ${kv('Median slip', tks(x.entry_slip_ticks_med), `entry · exit ${tks(x.exit_slip_ticks_med)}`)}
+      ${kv('Latency', ok(x.latency_s_med) ? x.latency_s_med + ' s' : '—', 'CISD close → order')}
+      ${kv('This month', mo ? susd(mo.slip_usd) : '—', mo ? `${mo.trades} trades · missed ${susd(mo.missed_usd)}` : '', mo ? cls(mo.slip_usd) : '')}</div>
+    ${rec.map((r) => `<div class="lp-ct">${row(r)}</div>`).join('')}
+    <div class="lp-note">${esc(x.text || '')}${x.text ? '.' : ''} Ticks: positive = worse than the backtest. Push above 4 ticks and for a trade missed while the PC was on.</div></div>`;
 }
 function tradeBox(T) {
   const beHit = T.be || (ok(T.stop_now) && (T.stop_now - T.entry) * T.dir >= 0);

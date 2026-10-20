@@ -9,6 +9,9 @@ data.json holds:
             `pc`: the always-on PC bot's heartbeat {present, t, age_s, silent, running, adapter, position, model_state, host, reason},
             `notices`: the last 80 phone notifications (fills, outcomes, PC silent, eval timing) for the app's Activity feed, and
             `push`: the public notification status {configured, vapid_public, devices, device_ids, sent_this_run, gone, ...})
+  exec      execution quality of the live eval (engine/fill_audit.heartbeat_block from the PC heartbeat): slippage $ per trade /
+            month against the backtest on the same bars, missed trades (why, backtest $) and extra trades; null before the
+            PC's first audit
   results   the live-settings 5-year replay (periods, months, daily P&L, stop buckets, eval odds, lessons)
   trades    every replay trade with its report (why it entered / plan / result / lessons); 2026 with full detail
   replays   5m session bars for each replay trade day (tools/export_replays.py); LIT trade charts (bars + every marker of
@@ -22,6 +25,15 @@ data.json holds:
             file (all its trades, days, months, years) is copied to runs/<id>.json and fetched by the run page on demand
   docs      research write-ups (research/writeups/*.md, front matter + markdown) and an archive of the older result
             reports (research/*.md, research/lab/*.md); the text goes to writeups/<slug>.md, fetched by the reader
+  hub       the Home / Strategy / Money pages (tools/web_public/hub.js): the tested upgrade combo (adopt_combo.json) with its
+            live switches, the funded three-account plan (funded_firms.json), the research scoreboard (latest LIT write-ups,
+            one line + verdict each), the changelog (commit titles of main) and the PC's auto-update / auto-resume line; the
+            research files and git history are not in the cloud checkout, so tools/web_hub_snapshot.json carries them there
+  props     prop-firm research (research/props/*.json when another study writes it: firms.json -> props.firms, other files
+            by name: payouts, business, market ...) for the Prop Firms / Market pages; None until the files exist (also
+            carried by the snapshot, since research/props is not in the cloud checkout)
+home.json is the small first-paint file of the Home screen (live state without the long bar lists, accounts without their
+trade lists, exec, hub, eval odds); data.json is loaded right after it.
 Only results go public: no code (code blocks are dropped from every document), no secrets (a document that looks like it
 holds one is skipped), no STRATEGY.md text.
 
@@ -638,6 +650,188 @@ def _extras(st, lm, bt):
         return None
 
 
+# ===================================================================================================== hub (hub.js)
+# The phone app's Home / Strategy / Money pages (tools/web_public/hub.js): the tested upgrade combo, the funded plan, the
+# research scoreboard and the changelog. research/lit/*.json and the git history are not in the cloud checkout (sparse,
+# fetch-depth 1), so every local build that can read them refreshes tools/web_hub_snapshot.json and the cloud reads that.
+HUB_SNAPSHOT = os.path.join(ROOT, "tools", "web_hub_snapshot.json")
+COMBO = (("base", "LIT today (live)"), ("t15", "15-minute check"), ("scale", "Scale-in after breakeven"), ("be_off", "Breakeven + 1.25 pts"),
+         ("t15_be_off", "15-min check + BE + 1.25"), ("all3", "All three together"))
+COMBO_KEYS = ("n", "tpw", "win", "pf", "net", "per_month", "dd", "p10", "f10", "p20", "f20", "pass_med", "pass_rate", "cost")
+COMBO_PARAMS = (("t_check", "15-minute check: at 15 min, out if the trade is below +0.3R and never reached +0.5R"),
+                ("scale_in", "Scale-in: one add on a 1m CISD after breakeven, stop moved to the add"),
+                ("be_off", "Breakeven at entry + 1.25 pts (covers costs) instead of the entry"))
+FUNDED_TRIO = ("mffu_builder_50k", "lucid_pro_50k", "fn_rapid_daily_50k")
+# the scoreboard: what the latest research found, in one line with its $ (write-up slug -> [verdict, line])
+SCORE = {
+    "lit-market-context": ["rejected", "2,520 market-context tilts (gamma, vanna, VIX term, OPEX): none held. The textbook gamma target idea loses $16.9k (Jan-Jun) / $5.3k (Jul-Oct)."],
+    "lit-new-entries": ["rejected", "362 new entry types (MSNR, IDM into OB, stacked confluence): none adds money next to LIT. MSNR as a 2nd trade: -$1.6k Jan-Jun, 2-week fails 2.9% -> 10.1%."],
+    "lit-money-batch2": ["candidate", "7 money ideas. One keeper, a habit: ask for a funded payout only once $1,500+ is above the buffer: +$29 / +$32 a month per account. Minis +$36 / +$12 a month (tiny)."],
+    "lit-funded-firms": ["candidate", "MFFU Builder 50K + LucidPro 50K + FundedNext Rapid Daily 50K: ~$1,754 a month on Jul-Oct trades ($2,373 once all three are funded), ~$377 up front."],
+    "lit-big-ideas": ["candidate", "Scale-in after breakeven: +$12.5k Jan-Jun / +$16.3k Jul-Oct, pass rate about flat. Needs the NinjaTrader add-order route before it can go live."],
+    "lit-builder-25k": ["candidate", "Builder 25K ($63) on the same LIT signals: passes 54% / 48% in 2 weeks (Jan-Jun / Jul-Oct) at 50% of the room, ~79% / 77% in the end; 12-16% of evals can get stuck when the room falls under $100."],
+    "lit-more-setups": ["rejected", "95 more setups (ES/MES, 15m/30m/1h, missed fills, looser filters): none beats LIT in both halves."],
+    "lit-untested-targets": ["candidate", "Take the profit at 12:00 ET when the trade is +0.5R or better: a small candidate; every other target change rejected."],
+    "lit-untested-stops": ["rejected", "Every other stop placement loses against 1 tick beyond the sweep extreme."],
+    "lit-losses": ["adopted", "The loss pack (weekly stop + Monday rule) is live: 2026 PF 3.66, +$41.7k; Jul-Oct PF 2.46, +$9.0k."],
+}
+CHANGELOG_SKIP = re.compile(r"^(heartbeat|merge|wip|dashboard|bars|auto[- ]?update tick)\b", re.I)
+
+
+def _git(*args):
+    try:
+        import subprocess
+        r = subprocess.run(["git", "-C", ROOT, *args], capture_output=True, text=True, timeout=10)
+        return r.stdout if r.returncode == 0 else ""
+    except Exception:
+        return ""
+
+
+def _changelog(n=24):
+    """The bot's recent changes: commit titles of main (else HEAD), newest first; heartbeats, merges and WIP left out."""
+    out, seen = [], set()
+    for ref in ("origin/main", "main", "HEAD"):
+        txt = _git("log", ref, "-n", "300", "--format=%ct\x1f%s")
+        if txt:
+            break
+    for line in txt.splitlines():
+        t, _, s = line.partition("\x1f")
+        s = s.strip()
+        if not s or CHANGELOG_SKIP.match(s) or s in seen or not t.isdigit():
+            continue
+        if re.search(r"(secret|token|password|api[_ -]?key|claude code plugin|\bplugins?\b|^(CLAUDE|AGENTS)\.md)", s, re.I):
+            continue
+        seen.add(s)
+        out.append({"t": int(t), "date": dt.datetime.fromtimestamp(int(t), dt.timezone.utc).strftime("%Y-%m-%d"), "title": s[:160]})
+        if len(out) >= n:
+            break
+    return out
+
+
+PROPS = os.path.join(ROOT, "research", "props")
+SECRETY = re.compile(r"(api[_-]?key|secret|password|token|bearer)", re.I)
+
+
+def _props():
+    """research/props/*.json (prop-firm research): firms.json -> "firms" (firms[].name, plans[].{name, price_list, price_owner,
+    codes[{code, pct, source, date}], eval, funded, payouts, live, lit_fit}), every other small file under its own name
+    (payouts, business, market ...). Files over 400 KB or that look like they hold a secret are left out. None when absent."""
+    if not os.path.isdir(PROPS):
+        return None
+    out = {}
+    for path in sorted(glob.glob(os.path.join(PROPS, "*.json"))):
+        try:
+            if os.path.getsize(path) > 400 * 1024:
+                continue
+            txt = open(path, encoding="utf-8").read()
+            if SECRETY.search(txt) and not os.path.basename(path).startswith("firms"):
+                print("  props: skipped (looks like it holds a secret):", os.path.basename(path))
+                continue
+            name = os.path.splitext(os.path.basename(path))[0]
+            out["firms" if name == "firms" else name] = json.loads(txt)
+        except Exception as e:
+            print("  props: skipped", os.path.basename(path), e.__class__.__name__)
+    return out or None
+
+
+def _hub_research(lm):
+    """combo (research/lit/adopt_combo.json), funded (research/lit/funded_firms.json), changelog (git): fresh when the files are
+    here, else the snapshot. Never raises."""
+    fresh = {}
+    try:
+        ac = _load(os.path.join(LIT_DOCS, "adopt_combo.json"), None)
+        if isinstance(ac, dict) and ac.get("base"):
+            rows = []
+            for k, label in COMBO:
+                v = ac.get(k) or {}
+                if not v:
+                    continue
+                rows.append({"id": k, "label": label, "params": v.get("params") or {},
+                             "lit": {s: {kk: (v.get("lit_rule") or {}).get(s, {}).get(kk) for kk in COMBO_KEYS} for s in ("H1", "H2", "2026", "2021-25")},
+                             "eval": {s: {kk: (v.get("eval") or {}).get(s, {}).get(kk) for kk in COMBO_KEYS} for s in ("H1", "H2")},
+                             "exits": v.get("exits_2026"), "adds": v.get("adds_2026")})
+            fresh["combo"] = {"src": "research/lit/adopt_combo.json (tools/lit_adopt_combo.py)", "rows": rows}
+        ff = _load(os.path.join(LIT_DOCS, "funded_firms.json"), None)
+        if isinstance(ff, dict) and ff.get("combos"):
+            plans = {p.get("id"): p for p in ff.get("plans") or []}
+            trio = {}
+            for c in ff["combos"]:
+                if sorted(c.get("plans") or []) == sorted(FUNDED_TRIO):
+                    trio[c.get("span")] = {k: c.get(k) for k in ("net_6m", "net_per_month", "net_med_6m", "neg_6m", "months4_6_per_month",
+                                                                  "p_months4_6_ge_2000", "all_lost_one_funded")}
+            fresh["funded"] = {"src": "research/lit/funded_firms.json (research/writeups/lit-funded-firms.md)", "built": ff.get("built"),
+                               "plans": [{"id": i, "firm": (plans.get(i) or {}).get("firm"), "plan": (plans.get(i) or {}).get("plan"),
+                                          "price": (plans.get(i) or {}).get("price"), "target": (plans.get(i) or {}).get("target"),
+                                          "mll": (plans.get(i) or {}).get("mll")} for i in FUNDED_TRIO],
+                               "trio": trio}
+        cl = _changelog()
+        if len(cl) >= 5:
+            fresh["changelog"] = cl
+        props = _props()
+        if props:
+            fresh["props"] = props
+    except Exception as e:
+        print("  hub research unavailable:", e.__class__.__name__, e)
+    snap = _load(HUB_SNAPSHOT, {}) or {}
+    if fresh and any(fresh.get(k) != snap.get(k) for k in fresh):      # a local build: keep the snapshot current for the cloud
+        try:
+            new = {**snap, **fresh}
+            with open(HUB_SNAPSHOT, "w", encoding="utf-8") as fh:
+                json.dump(new, fh, indent=1, ensure_ascii=False)
+                fh.write("\n")
+            print("  hub snapshot refreshed:", ", ".join(sorted(k for k in fresh if fresh.get(k) != snap.get(k))))
+        except Exception as e:
+            print("  hub snapshot not written:", e.__class__.__name__, e)
+    out = {}
+    for k in ("combo", "funded", "changelog", "props"):
+        out[k] = fresh.get(k) or snap.get(k)
+    L = (lm or {}).get("lit") or {}
+    if out.get("combo"):
+        out["combo"] = {**out["combo"], "switches": [{"key": k, "text": t, "on": bool(L.get(k))} for k, t in COMBO_PARAMS]}
+    return out
+
+
+def _scoreboard(docs):
+    """The research scoreboard: the latest LIT write-ups as short cards (curated line + verdict when known)."""
+    rows = [w for w in (docs or {}).get("writeups") or [] if str(w.get("slug", "")).startswith("lit-") and w.get("strategy", "lit") == "lit"]
+    rows.sort(key=lambda w: (w.get("date") or "", w.get("slug") in SCORE), reverse=True)
+    out = []
+    for w in rows:
+        st = str(w.get("status") or "").lower()
+        cur = SCORE.get(w["slug"])
+        if not cur and st in ("knowledge", "finding", "info", "promising"):
+            continue
+        verdict = cur[0] if cur else ("rejected" if st.startswith("rejected") else "candidate" if "adopt" in st or "candidate" in st else "info")
+        m = re.search(r"([\d,]{2,}) (?:\w+ )?variants", w.get("summary") or "")
+        out.append({"slug": w["slug"], "title": w.get("title"), "date": w.get("date"), "verdict": verdict,
+                    "line": cur[1] if cur else _plain(w.get("summary") or "")[:220], "tested": m.group(1) if m else None,
+                    "status": str(w.get("status") or "")[:160]})
+        if len(out) >= 12:
+            break
+    return out
+
+
+def _hub(st, lm, docs):
+    try:
+        h = _hub_research(lm)
+        h["scoreboard"] = _scoreboard(docs)
+        pc = st.get("pc") if isinstance(st.get("pc"), dict) else {}
+        hl = pc.get("health") if isinstance(pc.get("health"), dict) else None
+        try:
+            from engine import accounts as _a
+            h["auto_text"] = _a.auto_text(hl) if hl else None
+        except Exception:
+            h["auto_text"] = None
+        return h
+    except Exception as e:
+        print("  hub unavailable:", e.__class__.__name__, e)
+        return None
+
+
+HOME_LIVE = ("last_run", "runs", "health", "eval", "eval_2wk", "eval_timing", "model_state", "position", "strategy", "price", "today",
+             "events", "pc", "pc_verdict", "model", "lit_rules", "lit_sizing", "lit", "setups", "armed", "levels", "session", "notices")
+
+
 def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     os.makedirs(out, exist_ok=True)
     st = _load(state_path, {}) or {}
@@ -676,7 +870,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         print("  accounts unavailable:", e.__class__.__name__, e)
         accounts = []
     if isinstance(live.get("pc"), dict):
-        live["pc"] = {k: v for k, v in live["pc"].items() if k != "acct"}
+        live["pc"] = {k: v for k, v in live["pc"].items() if k not in ("acct", "exec")}
         try:                       # the verdict again at build time (the heartbeat age grows between cloud runs)
             from engine import accounts as _acc_v
             live["pc_verdict"] = _acc_v.verdict(st.get("pc"), st.get("last_run") or None)
@@ -742,9 +936,28 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     data["lab_files"] = have
     # the learning loop (engine/lit_learn.py): the cloud's summary from state.json, else the repo's learning file + journal
     data["learning"] = st.get("learning") or _learning_fallback()
+    # execution quality of the live eval (engine/fill_audit.py on the PC, carried by its heartbeat as "exec"): slippage $ per
+    # trade / month against the backtest, missed and extra trades (live_panel.js execution card)
+    data["exec"] = (st.get("pc") or {}).get("exec") if isinstance(st.get("pc"), dict) else None
     data["extras"] = _extras(st, lm, bt)          # extras.js pages (Eval HQ, Edge, Calendar, Ops, MFFU rules)
+    data["hub"] = _hub(st, lm, docs)              # hub.js pages (Home, LIT plan, Strategy upgrades + scoreboard, Money, changelog)
+    data["props"] = (data["hub"] or {}).pop("props", None)   # Prop Firms / payouts / business / market (research/props/*.json)
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
+    # home.json: the small file the Home screen draws from first (~100 KB instead of the 4 MB data.json), same build
+    ex = data.get("extras") or {}
+    home = {"built": data["built"], "home_only": True,
+            "live": {**{k: live.get(k) for k in HOME_LIVE}, "bars": (live.get("bars") or [])[-120:], "brief": live.get("brief"),
+                     "ledger": (live.get("ledger") or [])[:20], "push": {k: (live.get("push") or {}).get(k) for k in ("configured", "devices")}},
+            "accounts": [{k: v for k, v in a.items() if k not in ("trades", "days", "orders")} for a in accounts],
+            "exec": data["exec"], "hub": data["hub"],
+            "strategy": {k: (data["strategy"] or {}).get(k) for k in ("label", "chosen", "model", "lit", "lit_sizing")},
+            "lit_extra": {k: (data.get("lit_extra") or {}).get(k) for k in ("plan", "sizing")} if data.get("lit_extra") else None,
+            "extras": {"two_week": ex.get("two_week"), "eventual": ex.get("eventual")},
+            "results": {"periods": {k: v for k, v in ((results or {}).get("periods") or {}).items()
+                                    if k in ("2026 YTD", "2026 H1 (picked on)", "2026 H2 (check)", "2021-25 (reference)")}}}
+    with open(os.path.join(out, "home.json"), "w", encoding="utf-8") as fh:
+        json.dump(home, fh, separators=(",", ":"), default=str)
     # the page, the home-screen app files and its icons
     for name in os.listdir(WEB):
         src = os.path.join(WEB, name)

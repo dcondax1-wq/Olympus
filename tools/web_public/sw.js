@@ -1,11 +1,11 @@
 // Home Screen app service worker: works offline with the last data it saw.
-// Page + data.json: network-first (fresh when online, cached copy offline). Versioned files (?v=...): cache-first, and a
+// Page + data.json + home.json: network-first (fresh when online, cached copy offline). Versioned files (?v=...): cache-first, and a
 // new version of a file (fx.js?v=<hash> after a rebuild, runs/<id>.json?v=<hash> and writeups/<slug>.md?v=<hash> after a
 // new backtest or write-up) drops the old one from the cache, so a run or write-up opened once stays readable offline.
 // Everything else: cached copy at once, refreshed in the background.
 // Phone notifications (Web Push from the cloud monitor and the PC bot, engine/push.py): every push shows a notification and
 // counts on the app badge; a tap opens the app at the notice (#/activity/<key>).
-const CACHE = 'le-public-v10';
+const CACHE = 'le-public-v11';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
@@ -20,9 +20,9 @@ self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== location.origin) return;
   const put = (key, res) => { if (res && res.ok) { const c = res.clone(); caches.open(CACHE).then((x) => x.put(key, c)); } return res; };
-  const isData = url.pathname.endsWith('data.json'), isPage = req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html');
+  const isData = url.pathname.endsWith('data.json') || url.pathname.endsWith('home.json'), isPage = req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html');
   if (isData || isPage) {
-    const key = isData ? './data.json' : './index.html';
+    const key = isData ? (url.pathname.endsWith('home.json') ? './home.json' : './data.json') : './index.html';
     e.respondWith(fetch(req).then((r) => put(key, r)).catch(() => caches.match(key)));
     return;
   }
