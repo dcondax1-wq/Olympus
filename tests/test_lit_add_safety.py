@@ -11,6 +11,13 @@ _FakeNT) and a LiveBot with a stub adapter. Regression tests for the 2026-10-20 
 4. Real fills: a pending add later cancelled -> 0 micros in the ledger; a partial / repriced fill -> the broker's qty / price.
 5. Age limit: an add seen > 20 s after its 1m CISD candle closed is not routed.
 6. Cloud paper ledger: an add is sized like the PC (engine/sizing.scale_in_qty on the ledger's own eval state).
+Second review (A-C):
+A. A partial stop fill then the resized target filling the rest -> flat: no false "rest had no stop" CLOSEPOSITION / alert
+   (the other leg's fill is subtracted; the position file written after the fill decides).
+B. An add that fills after the model's exit (its cancel too late): the retired leg stays watched (also across a restart,
+   state file "watch") and the leftover is closed at once + alert.
+C. A crash between the add's order file and the state save: the add is saved first; LiveBot books an add it lost from
+   the adapter's add_fills.
 """
 from __future__ import annotations
 
@@ -248,9 +255,166 @@ def cloud_tests():
     check("6. cloud ledger normal mode: the model's add x paper micros / model micros (10 x 5 / 10 = 5)", qa_n == [5], qa_n)
 
 
+def _lines(fake, k):
+    return [ln for _, ls in fake.files[k:] for ln in ls]
+
+
+def _be_with_add(w, sp, held=True):
+    """Long 2 @ 25020, stop at BE 25021.25, then an add of 3 sent while the market holds (pending)."""
+    f = w.fake
+    f.move(25020.0)
+    ad = w.make(sp)
+    t = int(w.now[0]) - 3
+    ad.send({"sym": "NQ", "side": "buy", "qty": 2, "stop": 24990.0, "target": 25100.0, "entry": 25020.0, "entry_t": t})
+    ad.send({"side": "modify", "stop": 25021.25, "entry_t": t})
+    f.move(25040.0)
+    f.hold_market = held
+    r = ad.send({"side": "add", "qty": 3, "dir": 1, "entry_t": t, "n": 1, "stop": 25021.25, "target": 25100.0})
+    return ad, t, r
+
+
+def review2_tests():
+    """Second safety review (2026-10-20): A false 'rest had no stop', B late add fill after the exit, C crash between the
+    add's order file and the state save."""
+    # ---- A. stop fills 1 of 4, the target is resized to 3, the target fills 3 -> flat: no CLOSEPOSITION, no alert
+    w = World()
+    f = w.fake
+    f.move(25020.0)
+    ad = w.make("ra.json")
+    t = int(w.now[0]) - 3
+    ad.send({"sym": "NQ", "side": "buy", "qty": 4, "stop": 24990.0, "target": 25100.0, "entry": 25020.0, "entry_t": t})
+    lg = ad.legs[0]
+    f._fill(lg["stop_id"], 1, 24990.0)
+    ad.tick()
+    tq = f.orders[lg["target_id"]]["qty"]
+    f.move(25100.0)
+    na, k = len(w.alerts), len(f.files)
+    ad.tick()
+    ln = _lines(f, k)
+    check("A. partial stop 1/4 then target 3/3 -> flat: no CLOSEPOSITION, no 'had no stop' alert, retired as target filled",
+          tq == 3 and f.pos[P][0] == 0 and not any(x.startswith("CLOSEPOSITION") for x in ln) and len(w.alerts) == na
+          and ad.history[-1]["closed"] == "target filled" and not ad.legs, json.dumps([tq, ln, w.alerts[na:]]))
+    # A2. the same with the position file NOT flat after the target fill (a real leftover) -> still closed + alert
+    w = World()
+    f = w.fake
+    f.move(25020.0)
+    ad = w.make("ra2.json")
+    t = int(w.now[0]) - 3
+    ad.send({"sym": "NQ", "side": "buy", "qty": 4, "stop": 24990.0, "target": 25100.0, "entry": 25020.0, "entry_t": t})
+    lg = ad.legs[0]
+    f._fill(lg["stop_id"], 1, 24990.0)
+    ad.tick()
+    f.pos[P][0] += 2                                   # 2 more long that the bracket does not cover (e.g. a fill nobody saw)
+    f.move(25100.0)
+    na = len(w.alerts)
+    ad.tick()
+    check("A. target filled but NinjaTrader still shows a position afterwards -> CLOSEPOSITION + alert",
+          f.pos[P][0] == 0 and len(w.alerts) > na and "no stop" in w.alerts[-1], json.dumps([f.pos[P], w.alerts[na:]]))
+    # ---- B. add pending, the model exits (CUT_T15), the add fills after its cancel -> closed at once + alert
+    w = World()
+    f = w.fake
+    f.close_cancels = False
+    ad, t, r = _be_with_add(w, "rb.json")
+    f.slow_cancel = True
+    x = ad.send({"side": "exit", "reason": "CUT_T15", "entry_t": t})
+    aid = ad.history[-1]["adds"][0]["id"]
+    watched = len(ad.watch)
+    f.hold_market = False
+    f._fill(aid, 3, 25041.0)                            # NinjaTrader filled the add after all: 3 long, no stop
+    w.now[0] += 60
+    na, k = len(w.alerts), len(f.files)
+    ad.tick()
+    ln = _lines(f, k)
+    check("B. late add fill after the exit: the retired leg is watched, the 3 left are closed at once, alert",
+          x.get("ok") and watched == 1 and f.pos[P][0] == 0 and any(z.startswith("CLOSEPOSITION") for z in ln)
+          and len(w.alerts) > na and "AFTER the bot closed it" in w.alerts[na], json.dumps([watched, f.pos[P], ln, w.alerts[na:]]))
+    fl = ad.add_fills(t)
+    check("B. add_fills still reports the late add (3 @ 25041) for the ledger",
+          fl and fl[0]["filled"] == 3 and fl[0]["fill_px"] == 25041.0, fl)
+    # B2. the same late fill seen only by a NEW process (restart after the exit): the watch is in the state file
+    w = World()
+    f = w.fake
+    f.close_cancels = False
+    ad, t, r = _be_with_add(w, "rb2.json")
+    f.slow_cancel = True
+    ad.send({"side": "exit", "reason": "TIME", "entry_t": t})
+    aid = ad.history[-1]["adds"][0]["id"]
+    ad2 = w.make("rb2.json")
+    restored = len(ad2.watch)
+    f.hold_market = False
+    f._fill(aid, 3, 25041.0)
+    w.now[0] += 60
+    na = len(w.alerts)
+    ad2.tick()
+    check("B. restart after the exit: the new adapter still watches the add and closes its late fill",
+          restored == 1, restored)
+    check("B. ... position flat, alert", f.pos[P][0] == 0 and len(w.alerts) > na, json.dumps([f.pos[P], w.alerts[na:]]))
+    # B3. the add's cancel works (no fill): the watch ends, nothing closed
+    w = World()
+    f = w.fake
+    ad, t, r = _be_with_add(w, "rb3.json")
+    ad.send({"side": "exit", "reason": "CUT_T15", "entry_t": t})
+    k = len(f.files)
+    w.now[0] += 60
+    ad.tick()
+    check("B. add cancelled cleanly with the exit -> no watch left, no CLOSEPOSITION",
+          not ad.watch and not any(z.startswith("CLOSEPOSITION") for z in _lines(f, k)) and f.pos[P][0] == 0,
+          json.dumps([ad.watch, _lines(f, k)]))
+    # ---- C. crash after the add's order file, before anything else: the add is in the state file already
+    w = World()
+    f = w.fake
+    f.move(25020.0)
+    ad = w.make("rc.json")
+    t = int(w.now[0]) - 3
+    ad.send({"sym": "NQ", "side": "buy", "qty": 2, "stop": 24990.0, "target": 25100.0, "entry": 25020.0, "entry_t": t})
+    ad.send({"side": "modify", "stop": 25021.25, "entry_t": t})
+    f.move(25040.0)
+    orig = ad._send_lines
+
+    def crash(lines, label):
+        res = orig(lines, label)
+        if label == "ADD":
+            raise RuntimeError("process killed")
+        return res
+    ad._send_lines = crash
+    ad.send({"side": "add", "qty": 3, "dir": 1, "entry_t": t, "n": 1, "stop": 25021.25, "target": 25100.0})
+    ad2 = w.make("rc.json")
+    ad2.tick()
+    lg = ad2.legs[0] if ad2.legs else {}
+    check("C. crash right after the add's order file: the restarted adapter knows the add, grows the bracket to 5",
+          f.pos[P][0] == 5 and lg.get("bracket_qty") == 5 and f.orders[lg["stop_id"]]["qty"] == 5
+          and f.orders[lg["target_id"]]["qty"] == 5, json.dumps([f.pos[P], lg.get("bracket_qty")]))
+    r2 = ad2.send({"side": "add", "qty": 3, "dir": 1, "entry_t": t, "n": 1, "stop": 25021.25, "target": 25100.0})
+    fl = ad2.add_fills(t)
+    check("C. ... the same add is refused again; add_fills reports it (3 @ 25040)",
+          not r2["ok"] and "already sent" in r2["error"] and fl and fl[0]["filled"] == 3 and fl[0]["fill_px"] == 25040.0,
+          json.dumps([r2, fl]))
+    f.move(25021.0)
+    ad2.tick()
+    check("C. ... the BE stop closes all 5", f.pos[P][0] == 0, f.pos[P])
+    # C. LiveBot lost the add (crash before its own save): the ledger books it from the adapter's fills
+    tmp = tempfile.mkdtemp()
+    now = [t + 600]
+    b = make_bot(tmp, now)
+    b._open_routed, b._open_qty = t, 2
+    b.adapter.fills = [{"n": 1, "id": "X1", "qty": 3, "filled": 3, "fill_px": 25040.0, "status": "filled"}]
+    q = b._adds_qty(t)
+    tr = {"entry_t": t, "exit_t": t + 1800, "exit_reason": "TARGET", "qty": 2, "pnl": 0.0, "dir": 1, "entry": 25020.0,
+          "exit_price": 25100.0, "pts": 80.0}
+    from engine import lit as _lit
+    want = round(2 * (80.0 * _lit.PV - _lit.COMM) + 3 * ((25100.0 - 25040.0) * _lit.PV - _lit.COMM), 2)
+    pnl = b._routed_pnl(tr, 2)
+    check("C. LiveBot restart without the add in its ledger: booked from NinjaTrader's fill (3 @ 25040) in qty and P&L",
+          q == 3 and abs(pnl - want) < 0.01 and b._open_adds and b._open_adds[0].get("restored"), f"{q} {pnl} {want} {b._open_adds}")
+    b2 = make_bot(tmp, now)
+    b2.adapter.fills = [{"n": 2, "id": "X2", "qty": 3, "filled": 0, "fill_px": None, "status": "sent"}]
+    check("C. ... an unfilled adapter add is not booked", b2._adds_qty(t) == 0)
+
+
 def main():
     adapter_tests()
     bot_tests()
+    review2_tests()
     cloud_tests()
     n = sum(RES)
     print(f"\nscale-in add safety: {n}/{len(RES)} {'PASS' if n == len(RES) else 'FAIL'}")

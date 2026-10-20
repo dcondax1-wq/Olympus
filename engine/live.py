@@ -829,6 +829,17 @@ class LiveBot:
             self._note_error(f"scale-in fills not read: {e.__class__.__name__}: {e}")
             return
         changed = False
+        known = {int(a.get("n") or 0) for a in self._open_adds if a.get("entry_t") == entry_t}
+        for n, r in sorted(real.items()):
+            # an add the broker has but this ledger lost (a crash between the adapter's order file and LiveBot's save):
+            # booked from the broker's real fill, never at a guessed size
+            if n not in known and int(r.get("filled") or 0) > 0 and r.get("fill_px"):
+                self._open_adds.append({"entry_t": entry_t, "n": n, "qty": int(r["filled"]), "px": float(r["fill_px"]),
+                                        "t": None, "est": False, "asked": int(r.get("qty") or 0), "real": True,
+                                        "restored": True})
+                self._log("risk", f"Scale-in add {n} for the {_et(int(entry_t)):%H:%M} ET entry found in NinjaTrader's fills "
+                                  f"({int(r['filled'])} @ {float(r['fill_px']):.2f}) but not in the ledger: booked from the fill")
+                changed = True
         for a in self._open_adds:
             if a.get("entry_t") != entry_t or int(a.get("n") or 0) not in real:
                 continue
