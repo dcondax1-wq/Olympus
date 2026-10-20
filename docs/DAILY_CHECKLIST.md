@@ -3,6 +3,9 @@
 One page for every day. The long first-time steps are in `docs/GO_LIVE_TONIGHT.md`. Something red?
 `docs/TROUBLESHOOTING.md`.
 
+**Last visit to the Surface:** `docs/ONE_TIME_SETUP.md` (one line to paste, then `ONE_TIME_SETUP.bat` does the rest:
+no sleep, no update restarts, starts at logon, auto-update, the phone says "Surface offline" if it goes quiet).
+
 **Your desktop icons** (made once by double-clicking `SETUP_SHORTCUTS.bat` in the bot folder):
 
 | Icon | What it does |
@@ -20,7 +23,7 @@ One page for every day. The long first-time steps are in `docs/GO_LIVE_TONIGHT.m
 | every trade | entry, then the result |
 | 16:05 | **Day summary**: trades, P&L, $ to go, session X of 10 |
 | Sunday evening | **Week** report: trades, P&L, eval, PC health |
-| when it happens | internet back after a drop, NinjaTrader disconnected / reconnected, PC silent |
+| when it happens | internet back after a drop, NinjaTrader disconnected / reconnected, **Surface offline since HH:MM ET** (once per outage, 01:30-16:00 ET) and **Surface back online** |
 | day 5 without a trade | MFFU inactivity: place 1 MNQ by hand (MFFU closes the account at 7 days) |
 | eval passed / failed | what to do next |
 | a week + a day before a roll | switch the NinjaTrader chart to the new contract (steps in the notice) |

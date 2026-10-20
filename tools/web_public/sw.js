@@ -5,7 +5,7 @@
 // Everything else: cached copy at once, refreshed in the background.
 // Phone notifications (Web Push from the cloud monitor and the PC bot, engine/push.py): every push shows a notification and
 // counts on the app badge; a tap opens the app at the notice (#/activity/<key>).
-const CACHE = 'le-public-v11';
+const CACHE = 'le-public-v12';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
@@ -41,6 +41,7 @@ self.addEventListener('push', (e) => {
   const opts = { body: String(d.body || '').slice(0, 600), icon: 'icons/icon-192.png?v=drop1', badge: 'icons/icon-192.png?v=drop1',
     data: { url: safeHash(d.url), key: d.key || null, t: d.t || null }, timestamp: d.t ? d.t * 1000 : Date.now() };
   if (d.tag) { opts.tag = String(d.tag); opts.renotify = true; }
+  if (d.require) { opts.requireInteraction = true; opts.vibrate = [400, 150, 400, 150, 400]; }   // the Surface-offline alert stays until tapped
   e.waitUntil(Promise.all([
     self.registration.showNotification(title, opts),
     badgeGet().then((n) => badgeSet(n + 1).then(() => (self.navigator && self.navigator.setAppBadge ? self.navigator.setAppBadge(n + 1) : null))).catch(() => null),

@@ -123,6 +123,21 @@
       <p>${silent ? 'Turn the Surface on (or wake it), then' : 'On the Surface:'} <b>Bot Control → Start</b>. ${auto} This app is read-only and cannot start it.</p>
       ${v.reason ? `<p class="small mut">${esc(v.reason)}</p>` : ''}</div></div>`;
   }
+  // the Surface's last check-in (heartbeat), always on top of Home: red "OFFLINE since ..." when it is older than 30 min on a
+  // weekday 01:30-16:00 ET (the cloud pushes the same alert once per outage: engine/push.pc_outage)
+  function surfaceLine() {
+    const pc = pcHB(), t = ok(pc.t) && pc.t > 0 ? pc.t : null, n = now();
+    const e = et(n), mod = e.h * 60 + e.mi, inHours = !['Sat', 'Sun'].includes(e.wd) && mod >= 90 && mod <= 960;
+    const age = t ? n - t : null, stale = age == null || age > 30 * 60;
+    const since = t ? (et(t).date === e.date ? et(t).hm : `${et(t).wd} ${et(t).hm}`) : null;
+    const lvl = !stale ? 'good' : inHours ? 'bad' : 'warn';
+    const txt = !t ? 'Surface: no check-in yet (no heartbeat)'
+      : stale && inHours ? `Surface OFFLINE since ${since} ET`
+      : `Surface last check-in ${since} ET`;
+    const sub = !t ? 'the PC bot does not report to the cloud' : stale && inHours ? `${ageTxt(age)} ago: the bot can't trade. Check it's awake and NinjaTrader is connected.`
+      : `${ageTxt(age)} ago${stale ? ' · offline (outside trading hours)' : ''}`;
+    return `<div class="hb-surface ${lvl}" role="${lvl === 'bad' ? 'alert' : 'status'}">${light(lvl)}<div><b>${esc(txt)}</b><em>${esc(sub)}</em></div></div>`;
+  }
   function verdictCard(M) {
     const v = HL().pc_verdict || {}, pc = pcHB(), hl = health(), a = hl?.account || {};
     const lvl = v.level || (pc.present ? 'warn' : 'bad'), hb = ok(pc.t) && pc.t > 0 ? now() - pc.t : pc.age_s;
@@ -197,7 +212,7 @@
         ${row(nt.connected === false ? 'bad' : nt.connected ? 'good' : '', 'NinjaTrader', nt.connected === false ? 'DISCONNECTED' : nt.connected ? 'connected' : '—', nt.last_error ? esc(nt.last_error) : '')}
         ${row(A.version ? (u.result === 'failed' || u.result === 'rolled_back' ? 'bad' : 'good') : '', 'Version', A.version ? esc(A.version) : '—', A.version ? `auto-update <b>${u.on ? 'on' : 'off'}</b>${u.result && u.result !== 'off' ? ` · last ${esc(u.result)}` : ''}${u.updated_at ? ` · updated ${et(u.updated_at).wd} ${et(u.updated_at).hm} ET` : ''}` : 'the PC bot sends no version yet (update it)')}
         ${row(r.on ? 'good' : A.version ? 'warn' : '', 'Auto-resume', A.version ? (r.on ? 'on' : 'off') : '—', r.on ? esc(r.account || '') : r.off_reason ? esc(r.off_reason) : r.last_result ? `last ${esc(r.last_result)}` : '')}
-        ${row(cloudAge != null && cloudAge < 3600 ? 'good' : 'warn', 'Cloud check', cloudAge != null ? ageTxt(cloudAge) + ' ago' : '—', 'GitHub Actions · every 15 min on market days')}
+        ${row(cloudAge != null && cloudAge < 3600 ? 'good' : 'warn', 'Cloud check', cloudAge != null ? ageTxt(cloudAge) + ' ago' : '—', 'GitHub Actions · every 30 min on market days, from 01:30 ET')}
       </div></div>`;
   }
   function planTeaser() {
@@ -209,7 +224,7 @@
   }
   VIEWS.today = (el) => {
     const M = mainAcct();
-    el.innerHTML = `${banner()}${verdictCard(M)}${kpiRow(M)}${tradeCard()}
+    el.innerHTML = `${surfaceLine()}${banner()}${verdictCard(M)}${kpiRow(M)}${tradeCard()}
       <div class="grid g2 astart">${evalCard(M)}${healthCard()}</div>
       ${planTeaser()}
       <div class="hb-links">${[['trades', 'trades', 'Trades'], ['money', 'wallet', 'Money'], ['strategy', 'rules', 'Strategy'], ['accounts', 'wallet', 'Accounts'], ['market', 'news', 'Market'], ['props', 'prop', 'Prop firms'], ['live', 'engine', 'Live detail'], ['activity', 'alerts', 'Activity']]
@@ -625,6 +640,11 @@
   }
 
   const CSS = `
+.hb-surface{display:flex;gap:12px;align-items:center;padding:12px 16px;margin-bottom:12px;border-radius:var(--r);border:1px solid color-mix(in srgb,var(--good) 40%,transparent);background:color-mix(in srgb,var(--good) 8%,transparent)}
+.hb-surface b{display:block;font-size:16px}.hb-surface em{display:block;font-style:normal;font-size:13px;opacity:.8;margin-top:2px}
+.hb-surface.warn{border-color:color-mix(in srgb,var(--warn) 45%,transparent);background:color-mix(in srgb,var(--warn) 8%,transparent)}
+.hb-surface.bad{border-color:var(--bad);background:linear-gradient(135deg,color-mix(in srgb,var(--bad) 30%,transparent),color-mix(in srgb,var(--bad) 10%,transparent))}
+.hb-surface.bad b{color:var(--bad);font-size:18px}
 .hb-banner{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;margin-bottom:14px;border-radius:var(--r);border:1px solid color-mix(in srgb,var(--bad) 55%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--bad) 22%,transparent),color-mix(in srgb,var(--bad) 6%,transparent))}
 .hb-banner b{font-size:16px}.hb-banner p{margin:4px 0 0;font-size:13.5px;line-height:1.5}.hb-bi{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--bad);color:#fff}
 .hb-hero{display:flex;gap:18px;align-items:stretch;flex-wrap:wrap}.hb-hero .hb-hl{flex:1 1 300px;min-width:0}

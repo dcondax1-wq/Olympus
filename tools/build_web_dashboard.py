@@ -879,7 +879,7 @@ def _hub(st, lm, docs):
 
 
 HOME_LIVE = ("last_run", "runs", "health", "eval", "eval_2wk", "eval_timing", "model_state", "position", "strategy", "price", "today",
-             "events", "pc", "pc_verdict", "model", "lit_rules", "lit_sizing", "lit", "setups", "armed", "levels", "session", "notices")
+             "events", "pc", "pc_verdict", "pc_outage", "pc_checkin", "model", "lit_rules", "lit_sizing", "lit", "setups", "armed", "levels", "session", "notices")
 
 
 def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
@@ -892,6 +892,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
                                    "equity_filter", "eval_timing", "eval_2wk", "price", "today", "events", "engine_trades", "bars", "bars1", "pools", "pc",
                                    "pc_verdict",                        # engine/accounts.verdict: is the PC bot trading the eval
+                                   "pc_outage", "pc_checkin",           # engine/push.pc_outage / pc_checkin_line: the Surface-offline line
                                    "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
                                    "push", "notices", "learning",       # learning: engine/lit_learn.py summary (the "What the bot learned" card)
                                    "armed", "watch")}                  # armed: engine/lit_watch.py armed_line; watch: tools/lit_watch.py summary (Yahoo lag)

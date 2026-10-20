@@ -13,6 +13,7 @@ name: cloud-monitor
 on:
   schedule:
     - cron: "2,32 6-21 * * 1-5"      # UTC, half-hourly; covers 02:00-16:25 ET in summer (EDT) and winter (EST) time (LIT trades London); ~32 jobs a day, ~2 of them exit at the guard
+    - cron: "32 5 * * 1-5"           # 05:32 UTC = 01:32 ET in summer (EDT): the night check that the Surface is awake before 02:00 ET (in winter 06:02 / 06:32 UTC = 01:02 / 01:32 ET already do it); +1 job a day
     - cron: "47 21 * * 0"            # Sunday ~17:47 ET: the learning loop's weekly review (engine/lit_learn.py); Monday's first run catches up if it is skipped
   workflow_dispatch:
     inputs:
@@ -45,10 +46,15 @@ jobs:
           mod=$((h*60+m)); go=0
           if [ "${{ github.event.schedule }}" = "47 21 * * 0" ]; then go=1; fi   # Sunday: the learning loop's weekly review
           if [ "$dow" -le 5 ]; then
-            # LIT (live_model.json since 2026-10-18) enters 02:00-15:30 ET, mostly London: half-hourly from 02:00 keeps the
-            # run count (~30 a day) and the free Actions minutes where they were with the old 15-min killzone cadence
-            if [ $mod -ge 965 ] && [ $mod -le 985 ]; then go=1; fi            # 16:05-16:25 end-of-day summary
-            if [ $mod -ge 120 ] && [ $mod -le 985 ] && [ $((m % 30)) -lt 15 ]; then go=1; fi   # 02:00-16:25 half-hourly
+            # LIT (live_model.json since 2026-10-18) enters 02:00-15:30 ET, mostly London: half-hourly from 01:30 (the night
+            # check that the Surface is awake, engine/push.pc_outage) to 16:25 (end-of-day summary), ~31 runs a day.
+            # Every scheduled run inside the window goes: GitHub starts scheduled runs 5-28 min late, and the old
+            # "minute % 30 < 15" test dropped about half of them (2026-10-20: the 02:21 ET run was skipped, so the first
+            # "PC silent" push came at 03:13 ET). Each cron firing starts one run, so there are no duplicates to drop.
+            # Minutes (private repo, 2,000 free a month): ~29 full runs x ~2 billed min x 22 days = ~1,300 + the watcher's 550 cap.
+            if [ $mod -ge 90 ] && [ $mod -le 1000 ]; then go=1; fi            # 01:30-16:40 ET (a late 16:02 run still makes the summary)
+            # the midday lull 11:30-13:30 ET (no killzone) keeps the old filter: about one run an hour there
+            if [ $mod -ge 690 ] && [ $mod -lt 810 ] && [ $((m % 30)) -ge 15 ]; then go=0; fi
           fi
           echo "ET $(TZ=America/New_York date '+%a %H:%M') -> go=$go"
           echo "go=$go" >> "$GITHUB_OUTPUT"

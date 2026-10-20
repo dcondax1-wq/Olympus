@@ -692,21 +692,24 @@ def run(out):
     if pc is None:
         pc = heartbeat.read(cwd=ROOT, now=now)
     pc_alert_at = st.get("pc_alert_at")
-    in_session = et_now.weekday() < 5 and 110 <= et_now.hour * 60 + et_now.minute <= 990   # 01:50-16:30 ET: LIT trades from 02:00
     other_notices = []
-    if pc.get("present") and pc.get("silent") and in_session and now - float(pc_alert_at or 0) > 3600:
-        pc_alert_at = now
-        silent_txt = (f"The {pc.get('host') or 'PC'} bot ({pc.get('adapter')}) last reported {pc['age_s'] // 60} min ago"
-                      f"{' WITH AN OPEN POSITION' if pc.get('position') else ''}. Check the PC / NinjaTrader. The cloud paper bot keeps running.")
-        sent = send_alert("PC BOT SILENT: " + silent_txt) or sent
-        other_notices.append(push.text_payload("Cloud", "pc", "PC bot silent" + (" with a position" if pc.get("position") else ""),
-                                               silent_txt, key=f"pc_silent:{now}", t=now))
+    # loud, once per outage (engine/push.pc_outage): heartbeat older than 30 min inside 01:30-16:00 ET on a weekday ->
+    # "Surface offline since HH:MM ET" (key = the last check-in, so it is never repeated), and "back online" when it reports
+    # again. Replaces the hourly "PC bot silent" repeat, which also needed the PC to have said it was running.
+    pc_outage, outage_notices = push.pc_outage(st.get("pc_outage"), pc, now)
+    for n in outage_notices:
+        if n["key"].startswith("pc_offline:"):
+            pc_alert_at = now
+            sent = send_alert("SURFACE OFFLINE: " + n["body"]) or sent
+        other_notices.append(n)
+    pc_line = push.pc_checkin_line(pc, now)
+    print(f"surface: {pc_line['text']}" + (f" -> {', '.join(n['key'] for n in outage_notices)}" if outage_notices else ""))
     # ---- is the PC bot trading the eval? (engine/accounts.verdict) one push per reason per hour, 01:50-15:55 ET weekdays,
     # whenever it is not green (a silent PC that said it was running already has the alert above)
     from engine import accounts as _accounts
     pc_verdict = _accounts.verdict(pc, now)
     v_due, pc_verdict_alerts = _accounts.alert_due(pc_verdict, now, st.get("pc_verdict_alerts"))
-    if v_due and not (pc_verdict["code"] == "SILENT" and pc.get("silent")):
+    if v_due and pc_verdict["code"] != "SILENT":          # silence has its own once-per-outage alert above
         other_notices.append(_accounts.verdict_notice(pc_verdict, pc, now))
     # a failed / rolled-back PC auto-update, a refused real-account auto-resume (same keys as the PC's own pushes)
     other_notices += _accounts.auto_notices(pc.get("health") if pc.get("present") else None, now)
@@ -746,7 +749,7 @@ def run(out):
     for n in sorted(candidates, key=lambda x: (x["t"], x["kind"] != "fill")) + other_notices:
         if notifier.seen(n):
             continue
-        # entry / outcome are pushed, and "PC bot silent" (the PC may be trading a real eval overnight); eval-timing
+        # entry / outcome are pushed, and "Surface offline" / "back online" (the PC may be trading a real eval overnight); eval-timing
         # notices stay in the app (LE_PUSH_EXTRA=1 pushes them too)
         r = notifier.notify(n, push_it=n["kind"] in ("fill", "outcome", "test", "pc") or push.extra_on(), other_sent=pc_sent)
         push_res.append(r)
@@ -778,7 +781,7 @@ def run(out):
     write_chart(os.path.join(out, "chart.png"), df, state, res, today)
     write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm,
                  push_state=push_state, pc_health=pc.get("health") if pc.get("present") else None,
-                 pc_ops=pc.get("ops") if pc.get("present") else None, upgrades_live=upgrades_live)
+                 pc_ops=pc.get("ops") if pc.get("present") else None, upgrades_live=upgrades_live, pc_line=pc_line)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
@@ -810,6 +813,8 @@ def run(out):
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
                  "pc_alert_at": pc_alert_at,
+                 # the Surface-offline tracker (engine/push.pc_outage) and the README / app line (push.pc_checkin_line)
+                 "pc_outage": pc_outage, "pc_checkin": pc_line,
                  # no Yahoo: where the bars came from, the stretches without PC bars (no new paper entries in them)
                  "bars_src": "pc-ninjatrader" if noy else "yahoo", "feed_pauses": pauses if noy else [],
                  "feed_wait": (None if fstat["ok"] else fstat["text"]) if fstat is not None else None,
@@ -1018,7 +1023,7 @@ def usd_cell(v):
 
 
 def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None,
-                 pc_health=None, pc_ops=None, upgrades_live=None):
+                 pc_health=None, pc_ops=None, upgrades_live=None, pc_line=None):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
     arm = []
@@ -1046,6 +1051,7 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
          f"**paper only, never places orders** - watching since {et(first_run):%b %d %H:%M} ET",
          "", "![NQ 5m today](chart.png)", "",
          "## Status", "| | |", "|---|---|",
+         *([f"| Surface | {pc_line['text']} |"] if isinstance(pc_line, dict) else []),
          f"| Strategy | {state.get('model_label', 'engine')} |",
          *([f"| Cold-streak filter | {(state.get('equity_filter') or {}).get('reason', 'off')} |"] if (lm or {}).get("model") != "lit" else
            [f"| Weekly stop | {((state.get('lit_rules') or {}).get('weekly_stop') or {}).get('text') or 'off'} |",

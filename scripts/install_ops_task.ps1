@@ -12,6 +12,7 @@ Log: logs\ops-YYYYMMDD.log. Turn the phone pushes off without removing the task:
 #>
 param(
     [string]$Python = "",
+    [string]$User = "",          # DOMAIN\name the task runs as (ONE_TIME_SETUP passes the signed-in owner from its elevated part); default: you
     [switch]$DryRun,
     [switch]$Remove
 )
@@ -20,7 +21,7 @@ $ErrorActionPreference = 'Stop'
 $TaskName = 'LiquidityEngineOps'
 $Root = Split-Path -Parent $PSScriptRoot
 $Tick = Join-Path $PSScriptRoot 'ops_tick.py'
-$User = "$env:USERDOMAIN\$env:USERNAME"
+if (-not $User) { $User = "$env:USERDOMAIN\$env:USERNAME" }
 
 if ($Remove) {
     if ($DryRun) { Write-Host "would remove the task $TaskName"; exit 0 }

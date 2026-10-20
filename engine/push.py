@@ -378,9 +378,104 @@ def text_payload(src: str, kind: str, title: str, body: str, key: str, t=None, u
             "tag": f"le-{kind}", "url": url}
 
 
+# ---------------------------------------------------------------------------------------------- PC offline (the Surface)
+# The cloud monitor's loud "Surface offline" push (owner 2026-10-20: the Surface slept at 20:46 ET and the bot could not trade):
+# heartbeat older than 30 min inside 01:30-16:00 ET on a weekday (the cloud's ~01:32 ET run is the night check) -> ONE push per
+# outage (key = the last check-in time, so a later run never repeats it) and one "back online" push when it reports again.
+PC_OFFLINE_AFTER_S = 30 * 60
+PC_OFFLINE_WINDOW = (90, 960)          # 01:30-16:00 ET, minutes after midnight, weekdays
+
+
+def _et_dt(t):
+    import datetime as _dt
+    from zoneinfo import ZoneInfo
+    return _dt.datetime.fromtimestamp(int(t), ZoneInfo("America/New_York"))
+
+
+def pc_offline_window(now) -> bool:
+    """True on a weekday 01:30-16:00 ET (LIT enters 02:00-15:30 ET; the 01:30 run checks the PC before the session)."""
+    e = _et_dt(now)
+    mod = e.hour * 60 + e.minute
+    return e.weekday() < 5 and PC_OFFLINE_WINDOW[0] <= mod <= PC_OFFLINE_WINDOW[1]
+
+
+def pc_since_text(t, now) -> str:
+    """'20:46' for today (ET), 'Mon 20:46' for an earlier day."""
+    e, n = _et_dt(t), _et_dt(now)
+    return e.strftime("%H:%M") if e.date() == n.date() else e.strftime("%a %H:%M")
+
+
+def pc_checkin_line(hb: dict | None, now) -> dict:
+    """The README / app line for the PC's last heartbeat: {"t", "age_s", "offline", "in_window", "text"}."""
+    hb = hb or {}
+    now = int(now)
+    t = int(hb.get("t") or 0) if hb.get("present") else 0
+    if not t:
+        return {"t": None, "age_s": None, "offline": True, "in_window": pc_offline_window(now),
+                "text": "no check-in from the Surface yet (no heartbeat)"}
+    age = max(0, now - t)
+    off = age > PC_OFFLINE_AFTER_S
+    win = pc_offline_window(now)
+    a = f"{age // 60} min" if age < 5400 else f"{age / 3600:.1f} h"
+    txt = f"last check-in {pc_since_text(t, now)} ET ({a} ago)"
+    if off and win:
+        txt = f"**OFFLINE since {pc_since_text(t, now)} ET** ({a}): the bot can't trade"
+    elif off:
+        txt += ", offline (outside trading hours)"
+    return {"t": t, "age_s": age, "offline": off, "in_window": win, "text": txt}
+
+
+def pc_offline_payload(since_t, now, host: str | None = None, position: bool = False) -> dict:
+    s = pc_since_text(since_t, now)
+    body = (f"Surface offline since {s} ET — the bot can't trade. Check it's awake and NinjaTrader is connected."
+            + (" A POSITION WAS OPEN: check NinjaTrader / MFFU now." if position else ""))
+    p = text_payload("Cloud", "pc", f"Surface offline since {s} ET", body, key=f"pc_offline:{int(since_t)}", t=now, url="#/today")
+    p.update(tag="le-pc-offline", require=True)
+    return p
+
+
+def pc_back_payload(since_t, back_t, now) -> dict:
+    s, b = pc_since_text(since_t, now), pc_since_text(back_t, now)
+    p = text_payload("Cloud", "pc", "Surface back online",
+                     f"Surface back online at {b} ET (offline since {s} ET). The bot can trade again; check the Home page is green.",
+                     key=f"pc_back:{int(since_t)}", t=now, url="#/today")
+    p["tag"] = "le-pc-offline"                 # replaces the offline notice on the phone
+    return p
+
+
+def pc_outage(prev: dict | None, hb: dict | None, now) -> tuple[dict, list]:
+    """One step of the cloud's outage tracker. prev = state.json "pc_outage" ({"since", "alerted_at", "back_at"} or {}),
+    hb = engine/heartbeat.read(). Returns (new state, notices to push). An outage starts when the last check-in is older than
+    30 min; its key is that check-in time, so it is pushed once (only inside 01:30-16:00 ET on a weekday, the first run there
+    when it started earlier) and, if it was pushed, closed with one "back online" notice. No heartbeat branch at all (the
+    fetch failed) changes nothing."""
+    now = int(now)
+    prev = dict(prev or {})
+    hb = hb or {}
+    if not hb.get("present") or not hb.get("t"):
+        return prev, []
+    t = int(hb["t"])
+    age = now - t
+    out = []
+    if age > PC_OFFLINE_AFTER_S:
+        cur = prev if prev.get("since") == t and not prev.get("back_at") else {"since": t}
+        if not cur.get("alerted_at") and pc_offline_window(now):
+            out.append(pc_offline_payload(t, now, hb.get("host"), bool(hb.get("position"))))
+            cur["alerted_at"] = now
+        return cur, out
+    if prev.get("since") and not prev.get("back_at"):
+        if prev.get("alerted_at"):
+            out.append(pc_back_payload(prev["since"], t, now))
+        return {"since": prev["since"], "alerted_at": prev.get("alerted_at"), "back_at": t}, out
+    return prev, out
+
+
 def wire(payload: dict) -> bytes:
-    """What goes to the phone (well under the 4 KB push limit): title, body, tag, url, kind, key, t."""
+    """What goes to the phone (well under the 4 KB push limit): title, body, tag, url, kind, key, t (+ require: the
+    notification stays on screen until tapped, the Surface-offline alert)."""
     keep = {k: payload.get(k) for k in ("title", "body", "tag", "url", "kind", "key", "t")}
+    if payload.get("require"):
+        keep["require"] = True
     return json.dumps(keep, separators=(",", ":"), ensure_ascii=False).encode()
 
 
