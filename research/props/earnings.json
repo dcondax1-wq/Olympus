@@ -1,0 +1,16 @@
+{
+  "title": "NQ mega-cap earnings (maintained)",
+  "updated": "2026-10-20",
+  "how": "Dates searched 2026-10-20. 'confirmed' = the company announced it; 'estimate' = calendar sites' projection from past patterns. tools/hub_data.py tries a free calendar (Nasdaq) at build time and keeps these rows when the fetch fails. All report after the close (AMC) unless noted, so the move lands in the next morning's LIT session.",
+  "tickers": ["AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "TSLA", "AVGO"],
+  "rows": [
+    {"sym": "TSLA", "date": "2026-10-21", "time": "AMC", "st": "estimate", "src": "pattern: Q3 2025 reported 2025-10-22; days.to projects 2026-10-28", "alt": "2026-10-28"},
+    {"sym": "GOOGL", "date": "2026-10-27", "time": "AMC", "st": "conflict", "src": "https://www.tipranks.com/stocks/mx:goog/earnings (27th, marked confirmed); other calendars 2026-10-28", "alt": "2026-10-28"},
+    {"sym": "MSFT", "date": "2026-10-28", "time": "AMC", "st": "estimate", "src": "https://www.cmelitegroup.com/knowledge-hub/microsoft-earnings-date-fiscal-q1-2027-report-time-estimates-and-expected-move/"},
+    {"sym": "META", "date": "2026-10-28", "time": "AMC", "st": "estimate", "src": "https://days.to/meta-earnings"},
+    {"sym": "AAPL", "date": "2026-10-29", "time": "AMC", "st": "estimate", "src": "pattern: last Thursday of October (Q4 FY25 on 2025-10-30)"},
+    {"sym": "AMZN", "date": "2026-10-29", "time": "AMC", "st": "estimate", "src": "pattern: Thursday with Apple (Q3 2025 on 2025-10-30)"},
+    {"sym": "NVDA", "date": "2026-11-18", "time": "AMC", "st": "estimate", "src": "pattern: Q3 FY26 on 2025-11-19; Q2 FY27 on 2026-08-26"},
+    {"sym": "AVGO", "date": "2026-12-10", "time": "AMC", "st": "estimate", "src": "pattern: Q4 FY25 on 2025-12-11; Q3 FY26 on 2026-09-03"}
+  ]
+}

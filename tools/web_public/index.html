@@ -1523,7 +1523,10 @@ function render(soft = false) {
   const el = $('#page');
   RTOK++;
   FX?.detachAll();                      // 3D views are kept and re-attached by key when the page draws again
-  if (!D) { el.innerHTML = skel(3); return; }
+  if (!D) {                             // Home draws from the small home.json (hub.js) while data.json is still on its way
+    if (PAGE === 'today' && window.HOMEJ && window.HUB) { try { VIEWS.today(el); } catch (err) { console.error(err); el.innerHTML = skel(3); } return; }
+    el.innerHTML = skel(3); return;
+  }
   if (!soft) { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }
   try { (VIEWS[PAGE] || VIEWS.today)(el); }
   catch (err) { console.error(err); el.innerHTML = `<div class="card"><b>Could not draw this page.</b><div class="note">${esc(err.message)}</div></div>`; }
@@ -4177,7 +4180,8 @@ VIEWS.settings = (el) => {
 };
 let INSTALL = null;
 addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); INSTALL = e; });
-function applyLook() { const r = document.documentElement; r.dataset.accent = store.get('accent', 'indigo'); r.dataset.motion = store.get('motion', true) ? 'on' : 'off'; FX?.retheme(); }
+function applyLook() { const r = document.documentElement; r.dataset.accent = store.get('accent', 'indigo'); r.dataset.motion = store.get('motion', true) ? 'on' : 'off';
+  r.dataset.theme = store.get('theme', 'dark'); r.dataset.compact = store.get('compact', false) ? 'on' : 'off'; FX?.retheme(); }
 
 // ===================================================================== data loading
 let timer = null;
@@ -4289,10 +4293,16 @@ addEventListener('scroll', () => { if (!pxQ) { pxQ = true; requestAnimationFrame
   addEventListener('touchend', end); addEventListener('touchcancel', end);
 })();
 
+// home.json: the Home screen's small first-paint file (same build as data.json); data.json follows at once
+window.HOMEP = fetch('home.json?t=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
+  if (j && !D) { window.HOMEJ = j; if (window.HUB && PAGE === 'today') { render(true); splashDone(); } }
+  return j;
+}).catch(() => null);
 applyLook(); nav(); route(); load('boot'); schedule(); loadFX(); loadLK();
 setInterval(() => FX && D && FX.mood(moodNow()), 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => null);
 </script>
 <script src="extras.js?v=1" defer></script>
+<script src="hub.js?v=1" defer></script>
 </body>
 </html>

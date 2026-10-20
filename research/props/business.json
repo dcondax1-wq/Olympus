@@ -1,0 +1,22 @@
+{
+  "title": "Prop business ledger (owner-maintained)",
+  "how": "Edit this file (or put research/business/prop_business.xlsx with sheets 'expenses' and 'payouts', columns date, item, usd) to keep the Business page current. Amounts in USD. Nothing here changes trading.",
+  "updated": "2026-10-20",
+  "accounts": [
+    {"id": "mffu_50k", "firm": "MyFundedFutures", "plan": "Builder 50K", "lit_id": "mffu_builder_50k", "stage": "eval", "start": "2026-10-19", "prior_pnl": -100, "funded_start": null, "payouts": 0},
+    {"id": "mffu_25k", "firm": "MyFundedFutures", "plan": "Builder 25K", "lit_id": "mffu_builder_25k", "stage": "planned", "start": "2026-10-26", "prior_pnl": 0, "funded_start": null, "payouts": 0}
+  ],
+  "expenses": [
+    {"date": "2026-10-18", "item": "MFFU Builder 50K eval (with code)", "usd": 91.8, "kind": "eval"},
+    {"date": "2026-10-26", "item": "MFFU Builder 25K eval (planned, with code)", "usd": 63.0, "kind": "eval", "planned": true}
+  ],
+  "payouts": [],
+  "recurring": [
+    {"item": "NinjaTrader 8 (free license for sim / prop routing)", "usd_month": 0},
+    {"item": "Market data (through the prop firm's connection)", "usd_month": 0},
+    {"item": "GitHub Actions cloud monitor (free tier)", "usd_month": 0}
+  ],
+  "goal": {"name": "Corvette Z06", "usd": 115000, "note": "estimate of a new Z06 with tax and fees; set your own number here", "down_payment_usd": 23000},
+  "tax": {"set_aside_pct": 30, "note": "Not tax advice. Prop-firm payouts are usually paid as contractor income (1099), so income tax and self-employment tax apply; 25-35% set aside is a common rule of thumb. Ask a tax professional."},
+  "withdraw": {"keep_pct": 50, "reinvest_pct": 20, "note": "default payout habit: of each payout after tax, keep 50% (goal fund), 20% back into evals, the rest spending"}
+}

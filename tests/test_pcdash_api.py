@@ -21,7 +21,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from engine import lit_learn, pcdash_api
-from engine.live import LiveBot
+from engine.live import LiveBot, market_open
 
 ET = ZoneInfo("America/New_York")
 
@@ -74,6 +74,305 @@ def fake_bot(tmp, account="MFFUEVAL123", env="live", kill=False, stale=False, ru
                    for t in range(now - 6 * 3600, now - 300, 300)]
     b._lit_1m_store = bars
     return b, now
+
+
+def fake_nt_folder(tmp, account="MFFUEVAL123"):
+    """A Documents\\NinjaTrader 8 look-alike: incoming / outgoing, a CONNECTED connection, a position file for the real
+    account and fresh LE_BarFeed MNQ 5m + 1m files ending now."""
+    import time as _t
+    f = os.path.join(tmp, "NinjaTrader 8")
+    for d in ("incoming", "outgoing", "le_feed"):
+        os.makedirs(os.path.join(f, d), exist_ok=True)
+    open(os.path.join(f, "outgoing", "Tradovate.txt"), "w").write("CONNECTED")
+    open(os.path.join(f, "outgoing", f"MNQ 12-26 Globex_{account}_Position.txt"), "w").write("FLAT;0;0")
+    now = int(_t.time())
+    for m in (5, 1):
+        s = m * 60
+        last = now - now % s - s
+        with open(os.path.join(f, "le_feed", f"MNQ_{m}m.csv"), "w") as fh:
+            fh.write("time,open,high,low,close,volume\n")
+            for i in range(400, -1, -1):
+                if market_open(last - i * s):                   # no bars in the 17:00 ET halt / weekend
+                    fh.write(f"{last - i * s},25000,25002,24998,25001,10\n")
+    return f
+
+
+def botctl_checks(tmp, check, live_bot):
+    """Bot Control center (engine/botctl.py): preflight, accounts, Start (Sim one click; a real account only with the typed
+    phrase + present + the live env flag), the phrase never echoed / stored, auto-update / auto-resume, restart, read-only
+    switches, insights."""
+    from engine import autoresume, autoupdate, botctl
+    from engine.tradovate import LIVE_PHRASE
+    folder = fake_nt_folder(tmp)
+    old = {"bot": botctl._bot, "hooks": dict(botctl.HOOKS), "env": os.environ.get("NINJATRADER_FOLDER"),
+           "ar_en": autoresume.enable, "ar_dis": autoresume.disable, "au_load": autoupdate.load_state, "au_save": autoupdate.save_state,
+           "au_log": autoupdate.file_log, "sup": os.environ.get(botctl.SUPERVISED_ENV), "live": os.environ.get(botctl.LIVE_ENV)}
+    calls = []
+
+    def _start(body):
+        calls.append(copy.deepcopy(body))
+        fb.running = True
+        fb.cfg = dict(body)
+        return {"ok": True, "restored": False}
+
+    fb = SimpleNamespace(running=False, kill=False, cfg={}, adapter=None, state={}, log=[], ledger=[], health={}, started_at=None,
+                         last_poll=None, errors=0, start=_start, stop=lambda: {"ok": True}, clock=lambda: int(__import__("time").time()),
+                         day_pnl_routed=lambda: 0.0, bars_tail=[])
+    optin = os.path.join(tmp, "auto_resume.json")
+    au_path = os.path.join(tmp, "autoupdate.json")
+    texts = []
+    try:
+        os.environ["NINJATRADER_FOLDER"] = folder
+        os.environ.pop(botctl.LIVE_ENV, None)
+        os.environ.pop(botctl.SUPERVISED_ENV, None)
+        autoresume.enable = lambda a, c, cfg=None: old["ar_en"](a, c, cfg, path=optin)
+        autoresume.disable = lambda reason, now=None: old["ar_dis"](reason, now, path=optin)
+        autoupdate.load_state = lambda path=au_path: old["au_load"](au_path)
+        autoupdate.save_state = lambda s, path=au_path: old["au_save"](s, au_path)
+        autoupdate.file_log = lambda text: None
+        botctl.HOOKS.update(start=None, stop=None, heartbeat=lambda: {"enabled": True, "last": {"at": int(fb.clock()) - 30, "ok": True}})
+        botctl._bot = lambda: fb
+        app = FastAPI()
+        app.include_router(botctl.router)
+        cl = TestClient(app)
+
+        def call(method, path, body=None):
+            r = cl.post(path, json=body) if method == "POST" else cl.get(path)
+            texts.append(r.text)
+            return r, (r.json() if r.headers.get("content-type", "").startswith("application/json") else {})
+
+        st = botctl.selftest(start=True, wait=True)
+        check("botctl: self-test runs in a subprocess and passes", st.get("ok") is True and not st.get("running"), st)
+        check("botctl: the self-test left the server's live env flag alone", os.environ.get(botctl.LIVE_ENV) is None)
+
+        # ---- status + preflight
+        r, s = call("GET", "/api/next/botctl/status")
+        check("botctl status 200", r.status_code == 200, r.text[:300])
+        rows = {x["id"]: x for x in s["preflight"]["rows"]}
+        need = ("strategy", "folder", "ati", "connection", "feed5m", "feed1m", "noyahoo", "selftest", "livelock", "kill", "sizing", "auto", "version")
+        check("preflight: every row of the checklist", all(k in rows for k in need), sorted(rows))
+        check("preflight: folder, ATI, CONNECTED, 5m + 1m feed, self-test green on a good NinjaTrader",
+              all(rows[k]["ok"] is True for k in ("folder", "ati", "connection", "selftest", "strategy"))
+              and all(rows[k]["ok"] is True or (rows[k]["ok"] is None and not market_open(fb.clock())) for k in ("feed5m", "feed1m")),
+              {k: (rows[k]["ok"], rows[k]["detail"]) for k in ("folder", "ati", "connection", "feed5m", "feed1m", "selftest")})
+        check("preflight: Sim101 is startable (no red row)", s["preflight"]["ok"] and s["preflight"]["account"] == "Sim101", s["preflight"]["red"])
+        check("preflight: every red row carries its fix", all(x["fix"] for x in s["preflight"]["rows"] if x["ok"] is False))
+        names = {a["name"]: a for a in s["accounts"]}
+        check("accounts: Sim101 + the real account NinjaTrader reports", "Sim101" in names and names.get("MFFUEVAL123", {}).get("label") == "LIVE", names)
+        r, s2 = call("GET", "/api/next/botctl/status?account=MFFUEVAL123")
+        rows2 = {x["id"]: x for x in s2["preflight"]["rows"]}
+        check("preflight (real account): the live env flag missing is RED with its fix", rows2["livelock"]["ok"] is False and rows2["livelock"]["fix"]
+              and s2["preflight"]["needs_phrase"] and not s2["preflight"]["ok"], rows2["livelock"])
+        check("strip: window, heartbeat pushed, eval meter", s["strip"]["window"].get("text") and abs(s["strip"]["heartbeat"]["age_s"] - 30) <= 2
+              and "to_target" in (s.get("eval") or {}), (s["strip"]["window"], s["strip"]["heartbeat"], s.get("eval")))
+        os.environ["NINJATRADER_FOLDER"] = os.path.join(tmp, "nowhere")
+        r, s3 = call("GET", "/api/next/botctl/status")
+        rows3 = {x["id"]: x for x in s3["preflight"]["rows"]}
+        check("preflight: no NinjaTrader -> red folder / ATI / connection / feed rows, Start blocked",
+              all(rows3[k]["ok"] is False for k in ("folder", "ati", "connection", "feed5m", "feed1m")) and not s3["preflight"]["ok"])
+        os.environ["NINJATRADER_FOLDER"] = folder
+
+        # ---- start
+        r, j = call("POST", "/api/next/botctl/start", {"account": "Sim101"})
+        cli = {"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "armed": True, "present": True, "poll_sec": 60, "data_source": "ninjatrader",
+               "nt_account": "Sim101"}
+        check("start: Sim101 with one click", r.status_code == 200 and j.get("ok") and len(calls) == 1, j)
+        check("start: the same body as `python -m engine.ninjatrader --start --account Sim101`",
+              {k: v for k, v in calls[0].items() if k != "accounts"} == cli, calls[0])
+        r, j = call("POST", "/api/next/botctl/start", {"account": "Sim101"})
+        check("start: refused while already running", r.status_code == 400 and len(calls) == 1, j)
+        fb.running = False
+        n0 = len(calls)
+        r, j = call("POST", "/api/next/botctl/start", {"account": "MFFUEVAL123", "present": True})
+        check("start: a real account WITHOUT the phrase is refused (nothing started)", r.status_code == 400 and j.get("refused") and len(calls) == n0, j)
+        typed = "i accept something else 7731"
+        r, j = call("POST", "/api/next/botctl/start", {"account": "MFFUEVAL123", "confirm": typed, "present": True})
+        check("start: a wrong phrase is refused and not echoed", r.status_code == 400 and len(calls) == n0 and typed not in r.text, j)
+        r, j = call("POST", "/api/next/botctl/start", {"account": "MFFUEVAL123", "confirm": LIVE_PHRASE, "present": True})
+        check("start: the exact phrase without the server's live env flag is refused", r.status_code == 400 and len(calls) == n0, j)
+        r, j = call("POST", "/api/next/botctl/start", {"account": "MFFUEVAL123", "confirm": LIVE_PHRASE, "present": False})
+        check("start: the exact phrase without 'I am at the PC' is refused", r.status_code == 400 and len(calls) == n0, j)
+        res = botctl.do_start(fb, "MFFUEVAL123", LIVE_PHRASE, present=True, env={botctl.LIVE_ENV: "1"})
+        check("start: real account with phrase + present + live env flag -> the start route gets the CLI body with the phrase "
+              "(in memory, for the adapter's own gate)", res.get("ok") and len(calls) == n0 + 1 and calls[-1].get("confirm") == LIVE_PHRASE
+              and calls[-1].get("nt_account") == "MFFUEVAL123" and calls[-1].get("armed") is True, {k: v for k, v in calls[-1].items() if k != "confirm"})
+        check("start: the answer never carries the phrase", LIVE_PHRASE not in json.dumps(botctl.scrub(res)), "")
+        lb = LiveBot()
+        lb.cfg = {"adapter": "ninjatrader", "confirm": LIVE_PHRASE, "webhook_url": "https://x/SECRET"}
+        check("snapshot (/api/live/state) never returns the typed phrase", LIVE_PHRASE not in json.dumps(lb.snapshot(), default=str))
+        check("scrub(): phrase keys dropped, phrase text redacted",
+              botctl.scrub({"confirm": LIVE_PHRASE, "a": [f"x {LIVE_PHRASE} y"], "phrase": 1}) == {"a": [f"x {botctl.REDACT} y"]})
+        fb.running = True
+        r, j = call("POST", "/api/next/botctl/stop")
+        check("stop: the bot's stop", r.status_code == 200 and j.get("ok"), j)
+        fb.running = False
+
+        # ---- auto-update / auto-resume
+        r, j = call("POST", "/api/next/botctl/autoupdate", {"on": True})
+        check("auto-update on (same state file switch as --enable)", j.get("ok") and j.get("on") and json.load(open(au_path))["enabled"] is True, j)
+        r, j = call("POST", "/api/next/botctl/autoupdate", {"on": False})
+        check("auto-update off", j.get("ok") and j.get("on") is False and json.load(open(au_path))["enabled"] is False, j)
+        n0 = len(calls)
+        r, j = call("POST", "/api/next/botctl/autoresume", {"on": True, "account": "MFFUEVAL123"})
+        check("auto-resume on without the phrase is refused (nothing written)", r.status_code == 400 and not os.path.exists(optin), j)
+        r, j = call("POST", "/api/next/botctl/autoresume", {"on": True, "account": "MFFUEVAL123", "confirm": LIVE_PHRASE})
+        rec = json.load(open(optin)) if os.path.exists(optin) else {}
+        check("auto-resume on with the phrase: engine.autoresume.enable (proof only)", r.status_code == 200 and j.get("on") and rec.get("enabled")
+              and rec.get("account") == "MFFUEVAL123" and autoresume.valid(rec), j)
+        check("auto-resume on: then the CLI's start (refused here: the live env flag is not set)", len(calls) == n0 and (j.get("start") or {}).get("refused"), j.get("start"))
+        r, j = call("POST", "/api/next/botctl/autoresume", {"on": False})
+        check("auto-resume off", j.get("ok") and j.get("on") is False and not json.load(open(optin)).get("enabled"), j)
+
+        # ---- restart
+        r, j = call("POST", "/api/next/botctl/restart")
+        check("restart: refused when no supervisor (run_bot.ps1) would bring the server back", r.status_code == 400 and "run_bot" in (j.get("error") or ""), j)
+        os.environ[botctl.SUPERVISED_ENV] = "1"
+        fb.state = {"position": {"entry_t": 1, "dir": 1, "qty": 1, "entry": 1.0, "stop": 0.0}}
+        fb._open_routed = None
+        r, j = call("POST", "/api/next/botctl/restart")
+        check("restart: refused while not flat", r.status_code == 400 and "flat" in (j.get("error") or ""), j)
+        exited = []
+        botctl.HOOKS["exit"] = exited.append
+        fb.state = {}
+        r, j = call("POST", "/api/next/botctl/restart")
+        __import__("time").sleep(1.3)
+        check("restart: flat + supervised -> exit code 75 (run_bot.ps1 restarts at once)", r.status_code == 200 and exited == [75], (j, exited))
+
+        # ---- read-only panels
+        r, j = call("GET", "/api/next/botctl/switches")
+        sw = {x["key"]: x for x in j.get("switches") or []}
+        check("switches: t_check, scale_in, be_off with H1 / H2 numbers and on/off", set(sw) == {"t_check", "scale_in", "be_off"}
+              and all("H1" in x["rule"] and "H2" in x["rule"] and x["on"] in (True, False) for x in sw.values()) and j.get("read_only"), list(sw))
+        check("switches: no route can change them", not any("switch" in getattr(rt, "path", "") and "POST" in getattr(rt, "methods", set())
+                                                        for rt in botctl.router.routes))
+        if os.path.exists(os.path.join(pcdash_api.DATA, "NQ_5m.csv")):
+            r, j = call("GET", "/api/next/botctl/plan")
+            check("plan: today's LIT levels (watched / swept) from lit_brief", r.status_code == 200 and isinstance(j.get("watched"), list)
+                  and "_brief" not in j, r.text[:200])
+        r, j = call("GET", "/api/next/botctl/insights")
+        check("insights: rule checklist, why-no-trade, radar, killzones, news, alerts, timeline, changelog",
+              r.status_code == 200 and len(j.get("checklist") or []) == 6 and j.get("why", {}).get("headline") and "levels" in j.get("radar", {})
+              and len(j.get("killzones") or []) == 3 and "events" in j.get("news", {}) and "rows" in j.get("alerts", {})
+              and isinstance(j.get("timeline"), list) and "commits" in j.get("changelog", {}), r.text[:300])
+
+        # ---- the phrase: never echoed, never stored
+        check("phrase: in no response of any botctl route", not any(LIVE_PHRASE in t for t in texts))
+        blob = ""
+        for dp, _dn, fns in os.walk(tmp):
+            for fn in fns:
+                try:
+                    blob += open(os.path.join(dp, fn), encoding="utf-8", errors="ignore").read()
+                except OSError:
+                    pass
+        check("phrase: in no file written (auto-resume opt-in, auto-update state)", LIVE_PHRASE not in blob)
+    finally:
+        botctl._bot = old["bot"]
+        botctl.HOOKS.clear()
+        botctl.HOOKS.update(old["hooks"])
+        autoresume.enable, autoresume.disable = old["ar_en"], old["ar_dis"]
+        autoupdate.load_state, autoupdate.save_state, autoupdate.file_log = old["au_load"], old["au_save"], old["au_log"]
+        for k, v in (("NINJATRADER_FOLDER", old["env"]), (botctl.SUPERVISED_ENV, old["sup"]), (botctl.LIVE_ENV, old["live"])):
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+def hub_checks(tmp, check, live_bot):
+    """The hub pages' API (engine/hub_api.py: Prop Firms, Business, Market, Learn, System): read-only GETs, data shapes,
+    every fact of research/props/firms.json marked and sourced, eval odds that rise with the balance, the gallery route
+    refusing paths outside research/lab/gallery, and the phone export (tools/hub_data.export)."""
+    from engine import hub_api
+    from tools import hub_data
+    app = FastAPI()
+    app.include_router(hub_api.router)
+    cl = TestClient(app)
+    before = copy.deepcopy(live_bot.ledger)
+
+    r = cl.get("/api/next/hub/firms")
+    f = r.json()
+    check("hub firms 200 with firms, table, sources, next steps", r.status_code == 200 and len(f.get("firms") or []) >= 5
+          and len(f.get("table") or []) >= 8 and f.get("sources") and (f.get("next") or {}).get("steps"), r.text[:200])
+    ids = {x["firm_id"] for x in f.get("table") or []}
+    check("hub firms: MFFU, Lucid, FundedNext + 3 others", {"mffu", "lucid", "fundednext"} <= ids and len(ids) >= 6, ids)
+    mffu = {x["plan_id"]: x for x in f.get("table") or [] if x["firm_id"] == "mffu"}
+    check("hub firms: MFFU Builder 25K / 50K, Rapid, Rapid EOD with the owner's prices",
+          {"mffu_builder_25k", "mffu_builder_50k", "mffu_rapid_50k", "mffu_rapid_eod_50k"} <= set(mffu)
+          and mffu["mffu_builder_50k"]["price_real"] == 91.8 and mffu["mffu_builder_25k"]["price_real"] == 63.0, list(mffu))
+    facts = list(hub_data._iter_facts(hub_data.firms_raw().get("firms")))
+    bad_st = [x for x in facts if x.get("st") not in ("confirmed", "unconfirmed", "conflict")]
+    srcs = hub_data.firms_raw().get("sources") or {}
+    bad_src = sorted({s for x in facts for s in x.get("src") or [] if s not in srcs})
+    check("hub firms: every fact confirmed / unconfirmed / conflict, every source key resolves", facts and not bad_st and not bad_src,
+          (len(bad_st), bad_src[:5]))
+    lv = [fm for fm in f["firms"] if all(k in (fm.get("live") or {}) for k in ("when", "how", "changes", "closes_others", "risk_rules", "reports"))]
+    check("hub firms: a live-account section for every firm", len(lv) == len(f["firms"]), [fm["id"] for fm in f["firms"]])
+    b50 = next(p for fm in f["firms"] for p in fm["plans"] if p["id"] == "mffu_builder_50k")
+    check("hub firms: LIT fit from funded_firms.json (H2 p10, funded $/month)",
+          not os.path.exists(os.path.join(hub_data.LIT_DOCS, "funded_firms.json")) or (ok_num((b50.get("lit") or {}).get("H2", {}).get("p10"))
+                                                                                   and ok_num(b50["lit"]["H2"].get("funded_month"))), b50.get("lit"))
+    codes = [c for fm in f["firms"] for c in fm.get("codes") or []]
+    check("hub firms: discount codes with date + status", codes and all(c.get("seen") and c.get("st") for c in codes), len(codes))
+
+    r = cl.get("/api/next/hub/business")
+    b = r.json()
+    ev = b.get("eval") or {}
+    check("hub business 200: eval from the PC bot's account", r.status_code == 200 and "PC bot" in str(b.get("eval_source"))
+          and ev.get("balance") == 50000 - 100 + 1450 - 22.8, (b.get("eval_source"), ev.get("balance")))
+    check("hub business: odds, floor gauge, compliance, payouts, P&L, tax, goal, planners",
+          all(k in b for k in ("odds", "floor", "compliance", "payouts", "live", "pnl", "tax", "goal", "scaling", "withdraw"))
+          and not (b["odds"] or {}).get("error") and b["compliance"].get("rows"), [k for k in b if isinstance(b[k], dict) and b[k].get("error")])
+    rows = {x["rule"]: x for x in b["compliance"]["rows"]}
+    check("hub business: compliance sees the open 8 micros and today's $22.80 daily loss",
+          rows["Max contracts"]["ok"] is True and "8 micros" in rows["Max contracts"]["now"] and rows["Daily loss (soft)"]["ok"] is True
+          and "$23" in rows["Daily loss (soft)"]["now"], rows.get("Max contracts"))
+    check("hub business: tax labelled not advice", "not tax advice" in str(b["tax"].get("label", "")).lower(), b["tax"])
+    lo = cl.get("/api/next/hub/odds?profit=-1500&session=3").json()
+    hi = cl.get("/api/next/hub/odds?profit=2500&session=3").json()
+    check("hub odds: pass chance rises with the balance, fail chance falls", hi.get("pass_left", 0) > lo.get("pass_left", 100)
+          and hi.get("fail_ever", 100) < lo.get("fail_ever", 0), (lo.get("pass_left"), hi.get("pass_left")))
+
+    r = cl.get("/api/next/hub/market")
+    m = r.json()
+    check("hub market 200: calendar, earnings, holidays, roll, VIX, overnight, levels", r.status_code == 200
+          and all(k in m for k in ("calendar", "earnings", "holidays", "roll", "vix", "overnight", "levels")), r.text[:200])
+    check("hub market: 8 mega-caps, roll to the next quarterly contract", {x["sym"] for x in m["earnings"].get("rows") or []}
+          >= {"AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "TSLA", "AVGO"} and m["roll"].get("days_to_roll") is not None, m["roll"])
+    check("hub market: CME holidays list early closes and closures", any(x["kind"] == "early" for x in m["holidays"].get("rows") or [])
+          and any(x["kind"] == "closed" for x in m["holidays"].get("rows") or []), len(m["holidays"].get("rows") or []))
+
+    r = cl.get("/api/next/hub/learn")
+    le = r.json()
+    check("hub learn 200: versions, library with verdicts, glossary, gallery, upgrades", r.status_code == 200
+          and (le.get("library") or {}).get("rows") and (le.get("learn") or {}).get("glossary") and "upgrades" in le, r.text[:200])
+    check("hub learn: verdicts are known buckets", all(x["verdict"] in ("adopted", "candidate", "rejected", "promising", "finding", "info")
+                                                     for x in le["library"]["rows"]))
+    check("hub learn: upgrades tracker shows a placeholder until lit_base exists", (le["upgrades"].get("live") or {}).get("placeholder")
+          or (le["upgrades"].get("live") or {}).get("with") is not None, le["upgrades"].get("live"))
+
+    r = cl.get("/api/next/hub/system")
+    s = r.json()
+    check("hub system 200: discipline, uptime, data quality", r.status_code == 200 and all(k in s for k in ("discipline", "uptime", "dataq")), r.text[:200])
+    check("hub system: the bot log's kill / start lines reach the discipline log", any(x["src"] == "bot log" for x in s["discipline"].get("rows") or [])
+          or not any("kill" in str(x.get("text", "")).lower() or "start" in str(x.get("text", "")).lower() for x in live_bot.log), s["discipline"].get("counts"))
+
+    check("hub gallery: a path outside research/lab/gallery -> 404", cl.get("/api/next/hub/gallery/../../live_model.json").status_code == 404
+          and cl.get("/api/next/hub/gallery/x.txt").status_code == 404)
+    texts = [cl.get(p).text for p in ("/api/next/hub/firms", "/api/next/hub/business", "/api/next/hub/system")]
+    check("hub: no secrets or webhook tokens in any response", all("SECRET" not in t and "hooks.example" not in t for t in texts))
+    check("hub read-only: every route is a GET", all(getattr(rt, "methods", {"GET"}) <= {"GET", "HEAD"} for rt in hub_api.router.routes))
+    check("hub read-only: the bot's ledger, kill flag and state file untouched", live_bot.ledger == before and not live_bot.kill
+          and not os.path.exists(live_bot.state_path))
+
+    out = os.path.join(tmp, "hub.json")
+    rc = hub_data.main(["--out", out, "--no-fetch"])
+    d = json.load(open(out, encoding="utf-8"))
+    check("hub export: research/props/hub.json shape for the phone (firms, business, market, learn, odds grid)",
+          rc == 0 and all(k in d for k in ("firms", "business", "market", "learn", "odds_grid")) and d["odds_grid"].get("rows"), list(d))
+
+
+def ok_num(v):
+    return v is not None and not (isinstance(v, float) and v != v)
 
 
 def main() -> int:
@@ -184,6 +483,9 @@ def main() -> int:
         check("read-only: every route is a GET", all(getattr(rt, "methods", {"GET"}) <= {"GET", "HEAD"} for rt in pcdash_api.router.routes))
         check("read-only: the bot's ledger, kill flag and state file untouched", bot.ledger == before and not bot.kill
               and not os.path.exists(bot.state_path), "")
+
+        botctl_checks(tmp, check, bot)
+        hub_checks(tmp, check, bot)
     finally:
         pcdash_api._bot, lit_learn.JOURNAL_PATH = old_bot, old_jp
         shutil.rmtree(tmp, ignore_errors=True)
