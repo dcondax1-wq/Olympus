@@ -1,7 +1,7 @@
 {
- "built": "2026-10-20 00:07",
+ "built": "2026-10-20 01:31",
  "baseline": "baseline",
- "count": 1108,
+ "count": 1118,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -6511,6 +6511,292 @@
      "slow_pass": 81.5,
      "pass_med": 30.0,
      "b2b": "5/0"
+    }
+   }
+  },
+  {
+   "id": "lit_risk_m_portfolio_stagger5",
+   "title": "portfolio: a 2nd eval 5 sessions after the 1st (while no funded account)",
+   "family": "risk",
+   "question": "LIT risk & money (2026-10-20): equity-curve sizing, eval-game refinements, weekly loss / profit stops, funded-phase risk and a portfolio of evals - what was not tested yet. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; eval: 2-week pass not down and fail not up in both halves; funded: $ up and accounts lost not up; scored on live LIT and on top of t_check + scale_in + be_off.",
+   "status": "adopt-candidate",
+   "verdict": "MFFU allows 1 sim-funded Builder 50K. 500 paths x 6 months, payouts minus $91.80 evals. Live LIT: serial H1 $641/mo net (p10 $183), no money in 6 months 9.4%, 1.44 evals / H2 $608/mo net (p10 $-15), no money in 6 months 14.8%, 1.52 evals; staggered H1 $662/mo net (p10 $185), no money in 6 months 7.4%, 2.23 evals / H2 $653/mo net (p10 $159), no money in 6 months 9.8%, 2.17 evals. On the combo: serial H1 $639/mo net (p10 $236), no money in 6 months 7.2%, 1.35 evals / H2 $793/mo net (p10 $251), no money in 6 months 4.4%, 1.44 evals; staggered H1 $657/mo net (p10 $236), no money in 6 months 5.4%, 2.01 evals / H2 $837/mo net (p10 $251), no money in 6 months 2.4%, 2.13 evals. Same-day copies are the same eval twice (worse). Neighbours 3 / 10 sessions and 3 evals also beat serial.",
+   "writeup": "lit-risk-money",
+   "tags": [
+    "lit",
+    "lit_risk_m",
+    "portfolio"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-20 01:31",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.07,
+     "net": 46397,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4730,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.07,
+     "net": 46397,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 434.0,
+     "half": 0,
+     "per_month": 4730,
+     "p10": 37.9,
+     "f10": 5.3,
+     "p15": 50.5,
+     "f15": 12.6,
+     "p20": 54.9,
+     "f20": 21.4,
+     "dec10": 43.2,
+     "slow_pass": 29.3,
+     "pass_med": 10.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_risk_m_wk1200",
+   "title": "eval weekly loss stop -$1,200 (no new trade until next week)",
+   "family": "risk",
+   "question": "LIT risk & money (2026-10-20): equity-curve sizing, eval-game refinements, weekly loss / profit stops, funded-phase risk and a portfolio of evals - what was not tested yet. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; eval: 2-week pass not down and fail not up in both halves; funded: $ up and accounts lost not up; scored on live LIT and on top of t_check + scale_in + be_off.",
+   "status": "adopt-candidate",
+   "verdict": "Holds on live LIT in both halves (2-week pass never down, fails down in H1, pass up in H2), on the combo it is non-worse (fails down in H1), its neighbours -$700 to -$1,500 all cut fails, 2021-25 reference fails 5.6 -> 5.2%. Money-neutral in the 6-month MFFU portfolio (-$2 / -$3 a month). Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) PF 3.14 eval-path net +24,676 ($4,048/mo, eval account P&L, not cash) DD -3,456; 2-week pass/fail 52.9/5.0 (Monte Carlo 50.5/5.3), 1 month 71.6/12.8, 2.97 trades/wk; eventual pass/fail (no reset) 72.0/19.5 (MC 80.2/19.8) [live: 2-week 52.9/9.2, MC 50.5/7.0, eventual 72.9/18.6]. 2026 H2 (check) PF 2.43 eval-path net +11,542 ($3,108/mo, eval account P&L, not cash) DD -2,493; 2-week pass/fail 52.2/2.9 (Monte Carlo 54.3/4.5), 1 month 49.2/3.4, 2.44 trades/wk; eventual pass/fail (no reset) 91.2/8.8 (MC 79.8/19.9) [live: 2-week 50.7/2.9, MC 54.0/6.8, eventual 88.2/11.8].",
+   "writeup": "lit-risk-money",
+   "tags": [
+    "lit",
+    "lit_risk_m"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "rule": "eval weekly loss stop -$1,200 (no new trade until next week)"
+   },
+   "built": "2026-10-20 01:28",
+   "spans": {
+    "2026": {
+     "n": 114,
+     "tpw": 2.77,
+     "wk2": 86,
+     "win": 27.2,
+     "pf": 2.84,
+     "net": 36218,
+     "dd": -3456,
+     "avg_r": 0.774,
+     "stop": 46.5,
+     "worst_day": -1008,
+     "risk": 336.0,
+     "half": 0,
+     "per_month": 3692,
+     "p10": 32.5,
+     "f10": 3.9,
+     "p15": 38.8,
+     "f15": 12.6,
+     "p20": 45.6,
+     "f20": 19.4,
+     "dec10": 36.4,
+     "slow_pass": 37.5,
+     "pass_med": 10.0,
+     "b2b": "11/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 114,
+     "tpw": 2.77,
+     "wk2": 86,
+     "win": 27.2,
+     "pf": 2.84,
+     "net": 36218,
+     "dd": -3456,
+     "avg_r": 0.774,
+     "stop": 46.5,
+     "worst_day": -1008,
+     "risk": 336.0,
+     "half": 0,
+     "per_month": 3692,
+     "p10": 32.5,
+     "f10": 3.9,
+     "p15": 38.8,
+     "f15": 12.6,
+     "p20": 45.6,
+     "f20": 19.4,
+     "dec10": 36.4,
+     "slow_pass": 37.5,
+     "pass_med": 10.0,
+     "b2b": "11/3"
     }
    }
   },
@@ -16254,6 +16540,445 @@
      "slow_pass": 32.7,
      "pass_med": 10.5,
      "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_risk_m_after10_safe40",
+   "title": "after session 10: safe_eval at 40% of the room (live 60%)",
+   "family": "risk",
+   "question": "LIT risk & money (2026-10-20): equity-curve sizing, eval-game refinements, weekly loss / profit stops, funded-phase risk and a portfolio of evals - what was not tested yet. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; eval: 2-week pass not down and fail not up in both halves; funded: $ up and accounts lost not up; scored on live LIT and on top of t_check + scale_in + be_off.",
+   "status": "promising",
+   "verdict": "Eventual pass (no reset) up 1.5-3 pts in both halves on live LIT, slower passes, on the combo H1 exact eventual pass -0.9, 2021-25 eventual pass 31.0 -> 28.3%. Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) PF 3.08 eval-path net +28,294 ($4,642/mo, eval account P&L, not cash) DD -3,612; 2-week pass/fail 52.9/9.2 (Monte Carlo 50.5/7.0), 1 month 69.7/14.7, 3.12 trades/wk; eventual pass/fail (no reset) 74.6/15.3 (MC 79.7/20.2) [live: 2-week 52.9/9.2, MC 50.5/7.0, eventual 72.9/18.6]. 2026 H2 (check) PF 2.06 eval-path net +9,077 ($2,444/mo, eval account P&L, not cash) DD -2,493; 2-week pass/fail 50.7/2.9 (Monte Carlo 54.0/6.8), 1 month 49.2/6.8, 2.56 trades/wk; eventual pass/fail (no reset) 91.2/8.8 (MC 77.9/21.6) [live: 2-week 50.7/2.9, MC 54.0/6.8, eventual 88.2/11.8].",
+   "writeup": "lit-risk-money",
+   "tags": [
+    "lit",
+    "lit_risk_m"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "rule": "after session 10: safe_eval at 40% of the room (live 60%)"
+   },
+   "built": "2026-10-20 01:30",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.68,
+     "net": 37371,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 395.0,
+     "half": 0,
+     "per_month": 3810,
+     "p10": 34.0,
+     "f10": 5.3,
+     "p15": 46.1,
+     "f15": 13.1,
+     "p20": 55.3,
+     "f20": 18.4,
+     "dec10": 39.3,
+     "slow_pass": 39.1,
+     "pass_med": 12.0,
+     "b2b": "12/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.68,
+     "net": 37371,
+     "dd": -3612,
+     "avg_r": 0.727,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 395.0,
+     "half": 0,
+     "per_month": 3810,
+     "p10": 34.0,
+     "f10": 5.3,
+     "p15": 46.1,
+     "f15": 13.1,
+     "p20": 55.3,
+     "f20": 18.4,
+     "dec10": 39.3,
+     "slow_pass": 39.1,
+     "pass_med": 12.0,
+     "b2b": "12/4"
+    }
+   }
+  },
+  {
+   "id": "lit_risk_m_wk1200_all3",
+   "title": "eval weekly loss stop -$1,200 on t_check + scale_in + be_off",
+   "family": "risk",
+   "question": "LIT risk & money (2026-10-20): equity-curve sizing, eval-game refinements, weekly loss / profit stops, funded-phase risk and a portfolio of evals - what was not tested yet. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; eval: 2-week pass not down and fail not up in both halves; funded: $ up and accounts lost not up; scored on live LIT and on top of t_check + scale_in + be_off.",
+   "status": "promising",
+   "verdict": "On the combo: H1 fails 2.5 -> 0.8% at the same pass, H2 unchanged. Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) PF 4.88 eval-path net +53,265 ($8,739/mo, eval account P&L, not cash) DD -3,059; 2-week pass/fail 58.0/0.8 (Monte Carlo 52.1/2.6), 1 month 78.0/8.3, 3.09 trades/wk; eventual pass/fail (no reset) 84.7/8.5 (MC 83.1/16.9) [live: 2-week 58.0/2.5, MC 51.9/3.2, eventual 81.4/11.9]. 2026 H2 (check) PF 3.05 eval-path net +17,038 ($4,587/mo, eval account P&L, not cash) DD -3,076; 2-week pass/fail 52.2/0.0 (Monte Carlo 58.3/1.6), 1 month 54.2/0.0, 2.44 trades/wk; eventual pass/fail (no reset) 95.6/4.4 (MC 85.3/14.5) [live: 2-week 52.2/0.0, MC 58.1/3.2, eventual 95.6/4.4].",
+   "writeup": "lit-risk-money",
+   "tags": [
+    "lit",
+    "lit_risk_m"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": {
+     "pb": 0.25,
+     "f": 1.0,
+     "rat_k": 1.0,
+     "min_rk": 2.0,
+     "n": 1
+    },
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "rule": "eval weekly loss stop -$1,200 on t_check + scale_in + be_off"
+   },
+   "built": "2026-10-20 01:29",
+   "spans": {
+    "2026": {
+     "n": 117,
+     "tpw": 2.84,
+     "wk2": 86,
+     "win": 44.4,
+     "pf": 4.19,
+     "net": 70303,
+     "dd": -3424,
+     "avg_r": 1.12,
+     "stop": 46.0,
+     "worst_day": -1004,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 7167,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 117,
+     "tpw": 2.84,
+     "wk2": 86,
+     "win": 44.4,
+     "pf": 4.19,
+     "net": 70303,
+     "dd": -3424,
+     "avg_r": 1.12,
+     "stop": 46.0,
+     "worst_day": -1004,
+     "risk": 391.0,
+     "half": 0,
+     "per_month": 7167,
+     "p10": 42.2,
+     "f10": 1.0,
+     "p15": 54.9,
+     "f15": 7.3,
+     "p20": 62.6,
+     "f20": 17.0,
+     "dec10": 43.2,
+     "slow_pass": 18.1,
+     "pass_med": 8.0,
+     "b2b": "14/4"
+    }
+   }
+  },
+  {
+   "id": "lit_risk_m_wk800",
+   "title": "eval weekly loss stop -$800 (= after one full stop-out)",
+   "family": "risk",
+   "question": "LIT risk & money (2026-10-20): equity-curve sizing, eval-game refinements, weekly loss / profit stops, funded-phase risk and a portfolio of evals - what was not tested yet. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; eval: 2-week pass not down and fail not up in both halves; funded: $ up and accounts lost not up; scored on live LIT and on top of t_check + scale_in + be_off.",
+   "status": "promising",
+   "verdict": "Bigger fail cut on live LIT, but on the combo the H1 2-week pass drops 58.0 -> 55.5%. Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) PF 3.62 eval-path net +29,115 ($4,777/mo, eval account P&L, not cash) DD -3,437; 2-week pass/fail 52.9/4.2 (Monte Carlo 50.7/4.2), 1 month 72.5/9.2, 2.85 trades/wk; eventual pass/fail (no reset) 76.3/15.3 (MC 83.3/16.7) [live: 2-week 52.9/9.2, MC 50.5/7.0, eventual 72.9/18.6]. 2026 H2 (check) PF 2.24 eval-path net +9,234 ($2,486/mo, eval account P&L, not cash) DD -3,096; 2-week pass/fail 52.2/0.0 (Monte Carlo 54.7/2.6), 1 month 49.2/0.0, 2.37 trades/wk; eventual pass/fail (no reset) 94.1/5.9 (MC 83.1/16.5) [live: 2-week 50.7/2.9, MC 54.0/6.8, eventual 88.2/11.8].",
+   "writeup": "lit-risk-money",
+   "tags": [
+    "lit",
+    "lit_risk_m"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "rule": "eval weekly loss stop -$800 (= after one full stop-out)"
+   },
+   "built": "2026-10-20 01:29",
+   "spans": {
+    "2026": {
+     "n": 110,
+     "tpw": 2.67,
+     "wk2": 83,
+     "win": 29.1,
+     "pf": 3.06,
+     "net": 38349,
+     "dd": -3437,
+     "avg_r": 0.846,
+     "stop": 46.5,
+     "worst_day": -1008,
+     "risk": 345.0,
+     "half": 0,
+     "per_month": 3909,
+     "p10": 31.1,
+     "f10": 0.0,
+     "p15": 36.4,
+     "f15": 3.4,
+     "p20": 44.7,
+     "f20": 10.7,
+     "dec10": 31.1,
+     "slow_pass": 44.4,
+     "pass_med": 12.0,
+     "b2b": "11/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 110,
+     "tpw": 2.67,
+     "wk2": 83,
+     "win": 29.1,
+     "pf": 3.06,
+     "net": 38349,
+     "dd": -3437,
+     "avg_r": 0.846,
+     "stop": 46.5,
+     "worst_day": -1008,
+     "risk": 345.0,
+     "half": 0,
+     "per_month": 3909,
+     "p10": 31.1,
+     "f10": 0.0,
+     "p15": 36.4,
+     "f15": 3.4,
+     "p20": 44.7,
+     "f20": 10.7,
+     "dec10": 31.1,
+     "slow_pass": 44.4,
+     "pass_med": 12.0,
+     "b2b": "11/3"
     }
    }
   },
@@ -93887,6 +94612,531 @@
    }
   },
   {
+   "id": "lit_risk_m_cold5",
+   "title": "equity-curve cold filter: last 5 LIT R <= 0 -> half size",
+   "family": "risk",
+   "question": "LIT risk & money (2026-10-20): equity-curve sizing, eval-game refinements, weekly loss / profit stops, funded-phase risk and a portfolio of evals - what was not tested yet. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; eval: 2-week pass not down and fail not up in both halves; funded: $ up and accounts lost not up; scored on live LIT and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "The old engine's cold filter re-tested on LIT: costs money in both halves, both variants and 2021-25. Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) PF 3.56 eval-path net +30,482 ($5,001/mo, eval account P&L, not cash) DD -3,002; 2-week pass/fail 52.9/9.2 (Monte Carlo 47.5/4.9), 1 month 74.3/16.5, 3.12 trades/wk; eventual pass/fail (no reset) 75.4/16.1 (MC 80.8/19.2) [live: 2-week 52.9/9.2, MC 50.5/7.0, eventual 72.9/18.6]. 2026 H2 (check) PF 2.42 eval-path net +8,938 ($2,406/mo, eval account P&L, not cash) DD -1,672; 2-week pass/fail 49.3/0.0 (Monte Carlo 44.1/3.0), 1 month 49.2/0.0, 2.56 trades/wk; eventual pass/fail (no reset) 100.0/0.0 (MC 80.0/19.4) [live: 2-week 50.7/2.9, MC 54.0/6.8, eventual 88.2/11.8]. LIT size rule ($800 to 20 pts): H1 +28,577 (live +32,773, 3.12/wk), H2 +7,296 (live +8,962, 2.56/wk), 2021-25 -2,407 (live +1,275, 2.38/wk).",
+   "writeup": "lit-risk-money",
+   "tags": [
+    "lit",
+    "lit_risk_m"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "rule": "equity-curve cold filter: last 5 LIT R <= 0 -> half size"
+   },
+   "built": "2026-10-20 01:29",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.17,
+     "net": 39420,
+     "dd": -3002,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -782,
+     "risk": 331.0,
+     "half": 0,
+     "per_month": 4019,
+     "p10": 31.6,
+     "f10": 2.9,
+     "p15": 44.2,
+     "f15": 2.9,
+     "p20": 51.0,
+     "f20": 5.3,
+     "dec10": 34.5,
+     "slow_pass": 43.8,
+     "pass_med": 13.0,
+     "b2b": "11/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 3.17,
+     "net": 39420,
+     "dd": -3002,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -782,
+     "risk": 331.0,
+     "half": 0,
+     "per_month": 4019,
+     "p10": 31.6,
+     "f10": 2.9,
+     "p15": 44.2,
+     "f15": 2.9,
+     "p20": 51.0,
+     "f20": 5.3,
+     "dec10": 34.5,
+     "slow_pass": 43.8,
+     "pass_med": 13.0,
+     "b2b": "11/3"
+    }
+   }
+  },
+  {
+   "id": "lit_risk_m_funded_ramp400",
+   "title": "funded: ramp +$400 max a payout (cap $2,000) | $1,500+",
+   "family": "risk",
+   "question": "LIT risk & money (2026-10-20): equity-curve sizing, eval-game refinements, weekly loss / profit stops, funded-phase risk and a portfolio of evals - what was not tested yet. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; eval: 2-week pass not down and fail not up in both halves; funded: $ up and accounts lost not up; scored on live LIT and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Risk ramp after each payout: +$3 / +$101 per 6 months on live LIT (noise), +$117 / +$276 on the combo, max risk a trade +60-100%. H1 (pick): MC 6 months: lost 0.9% (ref 0.8%), paid $4,791 ($798/mo; ref $4,788), max risk $678; real path {'accounts': 1, 'open': 1, 'paid': 6162}. H2 (check): MC 6 months: lost 1.3% (ref 1.4%), paid $4,723 ($787/mo; ref $4,622), max risk $602; real path {'accounts': 1, 'open': 1, 'paid': 1540}.",
+   "writeup": "lit-risk-money",
+   "tags": [
+    "lit",
+    "lit_risk_m",
+    "funded"
+   ],
+   "params": {
+    "funded": {
+     "pct": 0.4,
+     "pct_min_usd": 100,
+     "pct_max_usd": 800,
+     "ref": 20,
+     "wk": true,
+     "room_f": null,
+     "max_win": 1500,
+     "slip_ticks": 2,
+     "skip_breach": true
+    },
+    "variant": "ramp +$400 max a payout (cap $2,000) | $1,500+"
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.4,
+    "pct_min_usd": 100,
+    "pct_max_usd": 800,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1500,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-10-20 01:31",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.85,
+     "net": 19173,
+     "dd": -1664,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -440,
+     "risk": 175.0,
+     "half": 0,
+     "per_month": 1955,
+     "p10": 7.3,
+     "f10": 0.0,
+     "p15": 14.6,
+     "f15": 0.0,
+     "p20": 27.7,
+     "f20": 0.0,
+     "dec10": 7.3,
+     "slow_pass": 79.5,
+     "pass_med": 26.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.85,
+     "net": 19173,
+     "dd": -1664,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -440,
+     "risk": 175.0,
+     "half": 0,
+     "per_month": 1955,
+     "p10": 7.3,
+     "f10": 0.0,
+     "p15": 14.6,
+     "f15": 0.0,
+     "p20": 27.7,
+     "f20": 0.0,
+     "dec10": 7.3,
+     "slow_pass": 79.5,
+     "pass_med": 26.0,
+     "b2b": "5/0"
+    }
+   }
+  },
+  {
+   "id": "lit_risk_m_hot10",
+   "title": "hot hand: last 10 LIT R >= +5 -> x1.5",
+   "family": "risk",
+   "question": "LIT risk & money (2026-10-20): equity-curve sizing, eval-game refinements, weekly loss / profit stops, funded-phase risk and a portfolio of evals - what was not tested yet. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; eval: 2-week pass not down and fail not up in both halves; funded: $ up and accounts lost not up; scored on live LIT and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "More money at the plain LIT size in 2026, but more 2-week fails on the eval path and less money in 2021-25. Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) PF 3.39 eval-path net +37,926 ($6,222/mo, eval account P&L, not cash) DD -3,619; 2-week pass/fail 52.9/10.9 (Monte Carlo 50.6/9.2), 1 month 72.5/20.2, 3.12 trades/wk; eventual pass/fail (no reset) 72.0/21.2 (MC 72.5/27.5) [live: 2-week 52.9/9.2, MC 50.5/7.0, eventual 72.9/18.6]. 2026 H2 (check) PF 1.74 eval-path net +6,673 ($1,797/mo, eval account P&L, not cash) DD -2,493; 2-week pass/fail 50.7/7.2 (Monte Carlo 53.8/10.0), 1 month 49.2/11.9, 2.56 trades/wk; eventual pass/fail (no reset) 75.0/25.0 (MC 72.9/26.9) [live: 2-week 50.7/2.9, MC 54.0/6.8, eventual 88.2/11.8]. LIT size rule ($800 to 20 pts): H1 +40,898 (live +32,773, 3.12/wk), H2 +11,268 (live +8,962, 2.56/wk), 2021-25 +336 (live +1,275, 2.38/wk).",
+   "writeup": "lit-risk-money",
+   "tags": [
+    "lit",
+    "lit_risk_m"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "rule": "hot hand: last 10 LIT R >= +5 -> x1.5"
+   },
+   "built": "2026-10-20 01:30",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.79,
+     "net": 44599,
+     "dd": -3619,
+     "avg_r": 0.713,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 423.0,
+     "half": 0,
+     "per_month": 4547,
+     "p10": 35.0,
+     "f10": 7.3,
+     "p15": 48.5,
+     "f15": 16.5,
+     "p20": 52.9,
+     "f20": 20.9,
+     "dec10": 42.3,
+     "slow_pass": 32.9,
+     "pass_med": 11.0,
+     "b2b": "11/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.79,
+     "net": 44599,
+     "dd": -3619,
+     "avg_r": 0.713,
+     "stop": 45.8,
+     "worst_day": -1006,
+     "risk": 423.0,
+     "half": 0,
+     "per_month": 4547,
+     "p10": 35.0,
+     "f10": 7.3,
+     "p15": 48.5,
+     "f15": 16.5,
+     "p20": 52.9,
+     "f20": 20.9,
+     "dec10": 42.3,
+     "slow_pass": 32.9,
+     "pass_med": 11.0,
+     "b2b": "11/4"
+    }
+   }
+  },
+  {
+   "id": "lit_risk_m_wkprofit3",
+   "title": "weekly profit stop: no trade after +3R closed in the week",
+   "family": "risk",
+   "question": "LIT risk & money (2026-10-20): equity-curve sizing, eval-game refinements, weekly loss / profit stops, funded-phase risk and a portfolio of evals - what was not tested yet. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; eval: 2-week pass not down and fail not up in both halves; funded: $ up and accounts lost not up; scored on live LIT and on top of t_check + scale_in + be_off.",
+   "status": "rejected",
+   "verdict": "Stops the trades after a target: costs H1 money and 2-week passes, trades/week 2.7 / 2.05. Eval path (live two_week 10 sessions then safe_eval, no reset, $1.90, true 1m). 2026 H1 (pick) PF 2.48 eval-path net +19,470 ($3,194/mo, eval account P&L, not cash) DD -3,612; 2-week pass/fail 46.2/10.1 (Monte Carlo 41.6/7.0), 1 month 67.9/17.4, 2.7 trades/wk; eventual pass/fail (no reset) 71.2/19.5 (MC 71.3/28.7) [live: 2-week 52.9/9.2, MC 50.5/7.0, eventual 72.9/18.6]. 2026 H2 (check) PF 2.27 eval-path net +8,921 ($2,402/mo, eval account P&L, not cash) DD -2,493; 2-week pass/fail 42.0/2.9 (Monte Carlo 48.8/6.8), 1 month 40.7/6.8, 2.05 trades/wk; eventual pass/fail (no reset) 88.2/10.3 (MC 74.5/25.2) [live: 2-week 50.7/2.9, MC 54.0/6.8, eventual 88.2/11.8]. LIT size rule ($800 to 20 pts): H1 +21,887 (live +32,773, 2.7/wk), H2 +8,040 (live +8,962, 2.05/wk), 2021-25 +2,693 (live +1,275, 2.22/wk).",
+   "writeup": "lit-risk-money",
+   "tags": [
+    "lit",
+    "lit_risk_m"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 0.0,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": null,
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "fills": null
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "rule": "weekly profit stop: no trade after +3R closed in the week"
+   },
+   "built": "2026-10-20 01:30",
+   "spans": {
+    "2026": {
+     "n": 101,
+     "tpw": 2.45,
+     "wk2": 69,
+     "win": 23.8,
+     "pf": 2.4,
+     "net": 28391,
+     "dd": -3612,
+     "avg_r": 0.554,
+     "stop": 44.2,
+     "worst_day": -1005,
+     "risk": 418.0,
+     "half": 0,
+     "per_month": 2894,
+     "p10": 28.2,
+     "f10": 6.3,
+     "p15": 39.8,
+     "f15": 13.6,
+     "p20": 45.6,
+     "f20": 22.3,
+     "dec10": 34.5,
+     "slow_pass": 43.1,
+     "pass_med": 13.0,
+     "b2b": "9/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 101,
+     "tpw": 2.45,
+     "wk2": 69,
+     "win": 23.8,
+     "pf": 2.4,
+     "net": 28391,
+     "dd": -3612,
+     "avg_r": 0.554,
+     "stop": 44.2,
+     "worst_day": -1005,
+     "risk": 418.0,
+     "half": 0,
+     "per_month": 2894,
+     "p10": 28.2,
+     "f10": 6.3,
+     "p15": 39.8,
+     "f15": 13.6,
+     "p20": 45.6,
+     "f20": 22.3,
+     "dec10": 34.5,
+     "slow_pass": 43.1,
+     "pass_med": 13.0,
+     "b2b": "9/4"
+    }
+   }
+  },
+  {
    "id": "losscut_against1h_ifvg_half",
    "title": "Half size on IFVG trades against the 1H trend",
    "family": "risk",
@@ -131298,6 +132548,102 @@
      "slow_pass": 71.1,
      "pass_med": 25.5,
      "b2b": "4/2"
+    }
+   }
+  },
+  {
+   "id": "lit_risk_m_funded_ref",
+   "title": "funded: live funded | wait for $1,500+ (adopt-candidate)",
+   "family": "risk",
+   "question": "LIT risk & money (2026-10-20): equity-curve sizing, eval-game refinements, weekly loss / profit stops, funded-phase risk and a portfolio of evals - what was not tested yet. LIT rule: 2026 only, pick on Jan-Jun, check on Jul-Oct; eval: 2-week pass not down and fail not up in both halves; funded: $ up and accounts lost not up; scored on live LIT and on top of t_check + scale_in + be_off.",
+   "status": "info",
+   "verdict": "Reference: live funded sizing + ask for a payout once $1,500+ is above the buffer (lit-money-batch2). H1 (pick): MC 6 months: lost 0.8% (ref 0.8%), paid $4,788 ($798/mo; ref $4,788), max risk $342; real path {'accounts': 1, 'open': 1, 'paid': 4562}. H2 (check): MC 6 months: lost 1.4% (ref 1.4%), paid $4,622 ($770/mo; ref $4,622), max risk $412; real path {'accounts': 1, 'open': 1, 'paid': 1540}.",
+   "writeup": "lit-risk-money",
+   "tags": [
+    "lit",
+    "lit_risk_m",
+    "funded"
+   ],
+   "params": {
+    "funded": {
+     "pct": 0.4,
+     "pct_min_usd": 100,
+     "pct_max_usd": 800,
+     "ref": 20,
+     "wk": true,
+     "room_f": null,
+     "max_win": 1500,
+     "slip_ticks": 2,
+     "skip_breach": true
+    },
+    "variant": "live funded | wait for $1,500+ (adopt-candidate)"
+   },
+   "sizing": {
+    "mode": "funded",
+    "pct": 0.4,
+    "pct_min_usd": 100,
+    "pct_max_usd": 800,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1500,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "built": "2026-10-20 01:31",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.83,
+     "net": 18331,
+     "dd": -1470,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -342,
+     "risk": 173.0,
+     "half": 0,
+     "per_month": 1869,
+     "p10": 6.8,
+     "f10": 0.0,
+     "p15": 13.1,
+     "f15": 0.0,
+     "p20": 24.3,
+     "f20": 0.0,
+     "dec10": 6.8,
+     "slow_pass": 81.9,
+     "pass_med": 29.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 26.7,
+     "pf": 2.83,
+     "net": 18331,
+     "dd": -1470,
+     "avg_r": 0.728,
+     "stop": 45.8,
+     "worst_day": -342,
+     "risk": 173.0,
+     "half": 0,
+     "per_month": 1869,
+     "p10": 6.8,
+     "f10": 0.0,
+     "p15": 13.1,
+     "f15": 0.0,
+     "p20": 24.3,
+     "f20": 0.0,
+     "dec10": 6.8,
+     "slow_pass": 81.9,
+     "pass_med": 29.0,
+     "b2b": "5/0"
     }
    }
   },

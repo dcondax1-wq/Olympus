@@ -118,6 +118,20 @@ def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None =
       max_micros      40
     Unknown room / state: that check is skipped and said in the reasons."""
     c = cfg or {}
+    wl = c.get("wk_loss_usd")
+    if wl and (c.get("mode") or "normal") in EVAL_MODES and state is not None and qty > 0:
+        # eval weekly loss stop (default off; research/writeups/lit-risk-money.md, run lit_risk_m_wk1200): once this eval's
+        # closed P&L of the current calendar week (state["wk_pnl"], from eval_state(..., today=)) is <= -wk_loss_usd, no new
+        # entry until the next week. Week P&L unknown: no effect (reason logged).
+        w = _num(state.get("wk_pnl"))
+        if w is not None and w <= -float(wl):
+            why = f"eval weekly loss stop: this week ${w:,.0f} <= -${float(wl):,.0f}: no new trade until next week"
+            log.info("lit_qty %s", why)
+            return {"qty": 0, "mult": 0.0, "reasons": list(trade.get("size_why") or []) + [why]}
+        if w is None:
+            r0 = lit_qty_core(qty, trade, c, room=room, max_micros=max_micros, state=state, learning=learning)
+            r0["reasons"] = list(r0.get("reasons") or []) + ["eval weekly loss stop: week P&L unknown (eval_state today=), not applied"]
+            return r0 if c.get("guard") is None else day_guard(r0, trade, c, room=room, state=state)
     r = lit_qty_core(qty, trade, c, room=room, max_micros=max_micros, state=state, learning=learning)
     if c.get("guard") is None:
         return r
@@ -558,7 +572,8 @@ def scale_in_qty(q_base: int, q_full: int, risk_pts: float, adds: list, f=1.0, s
     return out
 
 
-def eval_state(day_pnl: dict, today_cum: float = 0.0, plan: dict | None = None, session: int | None = None) -> dict:
+def eval_state(day_pnl: dict, today_cum: float = 0.0, plan: dict | None = None, session: int | None = None,
+               today: str | None = None) -> dict:
     """state for two_week_qty from the eval's closed P&L per earlier session since the eval started (sorted keys) + today's
     closed P&L. Same floor rule as mffu_eval: EOD high - max loss, locked at start + lock. session = today's eval session
     number (eval_session()); None = len(day_pnl) + 1, i.e. day_pnl holds every earlier session (0 on days without a trade)."""
@@ -569,9 +584,30 @@ def eval_state(day_pnl: dict, today_cum: float = 0.0, plan: dict | None = None, 
         bal += float(day_pnl[d])
         peak = max(peak, bal)
         floor = min(max(floor, peak - float(A["mll"])), float(A["lock"]))
-    return {"profit": round(bal, 2), "cum": float(today_cum), "room": round(bal + today_cum - floor, 2),
-            "session": int(session) if session is not None else len(day_pnl) + 1, "n_today": 0,
-            "days_traded": sum(1 for v in day_pnl.values() if abs(float(v)) > 1e-9)}   # earlier sessions with a closed trade
+    out = {"profit": round(bal, 2), "cum": float(today_cum), "room": round(bal + today_cum - floor, 2),
+           "session": int(session) if session is not None else len(day_pnl) + 1, "n_today": 0,
+           "days_traded": sum(1 for v in day_pnl.values() if abs(float(v)) > 1e-9)}   # earlier sessions with a closed trade
+    if today:
+        # this calendar (ISO) week's closed eval P&L incl. today (lit_sizing "wk_loss_usd"); only when today is given
+        out["wk_pnl"] = round(eval_week_pnl(day_pnl, today, today_cum), 2)
+    return out
+
+
+def eval_week_pnl(day_pnl: dict, today: str, today_cum: float = 0.0) -> float:
+    """The eval's closed P&L of today's ISO calendar week: the earlier sessions of that week in day_pnl (yyyy-mm-dd keys)
+    + today's closed P&L."""
+    try:
+        wk = _dt.date.fromisoformat(str(today)[:10]).isocalendar()[:2]
+    except ValueError:
+        return float(today_cum)
+    s = float(today_cum)
+    for d, v in (day_pnl or {}).items():
+        try:
+            if str(d)[:10] < str(today)[:10] and _dt.date.fromisoformat(str(d)[:10]).isocalendar()[:2] == wk:
+                s += float(v)
+        except ValueError:
+            continue
+    return s
 
 
 def _full_closures(y: int) -> set:
