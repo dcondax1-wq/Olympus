@@ -447,10 +447,13 @@ def main():
         l10 = lines_since(k2)
         legs = r10.get("legs") or [{}]
         fill = legs[0].get("fill_px")
+        # (2026-10-20 roll guard) an LE_BarFeed that writes le_feed/MNQ_instrument.txt refuses this entry before it is sent
+        # (tests/test_nt_roll_guard.py); without that file the fill-gap backstop catches it: no December-priced bracket
         check("Thu 12-10, chart NOT switched: the order goes to MNQ 03-27 and fills ~280 pts above the December-priced plan; "
-              "the stop (24950) and target (25100) land 330 / 180 pts under the fill: wrong (roll_check says ACTION, below)",
+              "the fill-gap guard places NO stop (24950) / target (25100) and flattens at once",
               any(";MNQ 03-27;" in x for x in l10 if x.startswith("PLACE")) and fill and fill - 24950.0 > 300
-              and any("STOPMARKET" in x and "24950" in x for x in l10), (r10, l10[:4]))
+              and not r10.get("ok") and not any("STOPMARKET" in x for x in l10)
+              and any(x.startswith("CLOSEPOSITION") for x in l10), (r10, l10[:4]))
         ad2.flatten({})
         ad3 = make({"nt_instrument": "MNQ 12-26"})
         check("nt_instrument 'MNQ 12-26' (start cfg / --instrument) pins the order contract on Thu 12-10",
