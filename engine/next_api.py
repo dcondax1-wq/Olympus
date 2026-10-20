@@ -260,7 +260,7 @@ def writeups():
         except OSError:
             continue
         for n in names:
-            if not n.endswith(".md") or n.upper().startswith("STRATEGY"):
+            if not n.endswith(".md") or n.upper().startswith("STRATEGY") or n.upper() == "INDEX.MD":   # INDEX: tools/writeups_index.py
                 continue
             path = os.path.join(folder, n)
             if os.path.getsize(path) > 400_000:

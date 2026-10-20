@@ -1,0 +1,172 @@
+{
+ "note": "frozen by tests/test_golden.py --update; see its doc for when to update",
+ "data_key": "17519777:1",
+ "params_lit": {
+  "t_check": {
+   "at": 15,
+   "x": 0.3,
+   "mfe": 0.5
+  },
+  "scale_in": null,
+  "be_off": 1.25,
+  "ref": "cisd",
+  "extra_boxes": [],
+  "window": [
+   [
+    120,
+    930
+   ]
+  ],
+  "sweep_names": null,
+  "disp": 0.8,
+  "depth": 0.5,
+  "idm_a": [
+   1.0,
+   36,
+   1
+  ],
+  "nwog_discount": false,
+  "mw_filter": false,
+  "wait": 6,
+  "tf": "1m",
+  "cisd1m": 20,
+  "stop_buf": 0.25,
+  "min_stop": 8.0,
+  "max_stop": 80.0,
+  "classes": [
+   "vix"
+  ],
+  "vix_k": 1.0,
+  "min_rr": 1.5,
+  "max_rr": 8.0,
+  "fallback_rr": null,
+  "be_r": 1.0,
+  "flat_mod": 955,
+  "max_per_day": 1,
+  "how_out": 1.0,
+  "monday": true,
+  "wk_stop": [
+   2,
+   0.5
+  ]
+ },
+ "params_lit_sizing": {
+  "mode": "two_week",
+  "two_week": {
+   "base": "need",
+   "need_buf": 1.0,
+   "room_f": 0.6,
+   "wk": false,
+   "dll_cap": true,
+   "stop_at_target": true,
+   "max_usd": null,
+   "press_at": null,
+   "press_mult": 1.0,
+   "press_room": null,
+   "protect_over": null,
+   "protect_keep": 0.0
+  },
+  "eval_start": "2026-10-19",
+  "modes": {
+   "normal": "the LIT rule: $800 up to a 20-pt stop, then 800x20/stop, max 40 micros (then the weekly stop)",
+   "fast_eval": "eval speed: $800 up to a 40-pt stop, then 800x40/stop (run lit_x_fast_eval: 2-week passes H1 52% / H2 47%, but 21-27% of evals fail in 2 weeks)",
+   "safe_eval": "never risk more than 60% of the room between the eval balance and the trailing max-loss floor: micros capped at 0.6 x room / (stop x $2), min 1 (run lit_x_room_cap60: 1-month fails H1 25.8% -> 10.2%)",
+   "eval": "eval (on since 2026-10-18): $800 up to a 25-pt stop, then 800x25/stop, then never more than 60% of the room to the trailing max-loss floor (run lit_tight_eval_800_25_room60: 2-week passes H1 37.5% / H2 29.5% vs 28.9 / 23.1, fails 3.1 / 0.0 unchanged)",
+   "two_week": "two-week eval (on since 2026-10-18, owner order: pass within 10 sessions): one winner passes - micros so the trade's target covers what is still needed to +$3,000, capped at 60% of the room to the trailing max-loss floor (room_f 0.6), a full stop-out inside the $1,000 soft daily loss, 40 micros, min 1; no weekly stop; no new trade once the day reached the target; sessions counted from eval_start; no reset (owner 2026-10-18): after session 10 the eval keeps going in safe_eval (two_week_until 10, after_mode safe_eval; tools/lit_eventual.py: eventual pass ~80/77% H1/H2, median 7/5 sessions) (run lit_2wk_rec = config C: 2-week pass H1 52.9% / H2 50.7%, fail 8.4% / 2.9%, $174 / $181 per 2-week pass at $91.80; max risk ~$990 a trade, worst day ~-$1,008). Missing target / eval state: the eval mode",
+   "funded": "funded (after the pass; NOT on yet: needs funded_state wiring in live.py / cloud_monitor): risk 40% of the room to the floor, at most $800 (800x20/stop beyond 20 pts), target pays at most $1,500 (50% best-day payout rule), weekly stop, skip when 1 micro could reach the floor (run lit_funded_rec: lost in 6 months ~1%, ~$740-770/mo paid)"
+  },
+  "safe_cap": 0.6,
+  "fast_ref_stop": 40.0,
+  "note": "two_week mode ON (2026-10-18, owner order: an eval must pass within 2 weeks); eval / normal / fast_eval / safe_eval stay available; applied by the cloud monitor ledger and the PC bot (engine/sizing.py lit_qty), eval_start = the first session of the current eval (set it on every new purchase; the PC start cfg \"eval_start\" overrides it)",
+  "eval_ref_stop": 25.0,
+  "eval_mode_note": "mode eval ($800 up to a 25-pt stop + 60% room cap) stays available: set mode back to \"eval\"",
+  "two_week_until": 10,
+  "after_mode": "safe_eval",
+  "funded": {
+   "pct": 0.4,
+   "pct_min_usd": 100,
+   "pct_max_usd": 800,
+   "ref": 20,
+   "wk": true,
+   "room_f": null,
+   "max_win": 1500,
+   "slip_ticks": 2,
+   "skip_breach": true
+  },
+  "eval_prior_pnl": -100.0,
+  "eval_prior_note": "owner 2026-10-18: the Builder 50K eval was at -$100 (balance $49,900) when the bot went live; counted as one day before eval_start (needs $3,100, room $1,900)"
+ },
+ "lit_rule": {
+  "H1": {
+   "n": 80,
+   "tpw": 3.12,
+   "win": 58.8,
+   "pf": 4.98,
+   "net": 33891,
+   "dd": -2196,
+   "per_month": 5560,
+   "p10": 36.7,
+   "f10": 1.6
+  },
+  "H2": {
+   "n": 40,
+   "tpw": 2.56,
+   "win": 47.5,
+   "pf": 2.69,
+   "net": 9493,
+   "dd": -1396,
+   "per_month": 2556,
+   "p10": 23.1,
+   "f10": 0.0
+  },
+  "2026": {
+   "n": 120,
+   "tpw": 2.91,
+   "win": 55.0,
+   "pf": 4.07,
+   "net": 43385,
+   "dd": -2196,
+   "per_month": 4423,
+   "p10": 31.6,
+   "f10": 1.0
+  },
+  "2021-25": {
+   "n": 510,
+   "tpw": 2.38,
+   "win": 53.7,
+   "pf": 1.01,
+   "net": 1211,
+   "dd": -19436,
+   "per_month": 24,
+   "p10": 6.0,
+   "f10": 13.3
+  }
+ },
+ "eval_path": {
+  "H1": {
+   "n": 80,
+   "pf": 4.02,
+   "net": 34234,
+   "dd": -3314,
+   "p10": 57.1,
+   "f10": 5.9,
+   "mc_p10": 52.8,
+   "mc_f10": 2.6
+  },
+  "H2": {
+   "n": 40,
+   "pf": 2.2,
+   "net": 9059,
+   "dd": -3073,
+   "p10": 52.2,
+   "f10": 0.0,
+   "mc_p10": 55.1,
+   "mc_f10": 3.5
+  }
+ },
+ "trades": {
+  "n": 630,
+  "sha1": "7a0511dbdcbb7cd2",
+  "n_2026": 120
+ }
+}

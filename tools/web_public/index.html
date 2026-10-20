@@ -1443,6 +1443,7 @@ const GROUPS = [
   { id: 'lab', label: 'Lab', icon: 'lab', pages: [['lab', 'Overview', 'layers', 'Latest findings and every run'], ['experiments', 'Experiments', 'lab', 'Every backtest, stored with its data'],
     ['writeups', 'Write-ups', 'doc', 'Findings in plain words, plus the archive'], ['losses', 'Losses', 'loss', 'Why the bot loses, and how much'],
     ['evals', 'Evals', 'sim', 'Simulated MFFU evals: odds and paths'], ['intraday', 'Intraday', 'heat', 'When the bot wins: weekday × hour'],
+    ['setups', 'Rejected setups', 'loss', 'Every LIT setup and the rule that stopped it'],
     ['learned', 'Lessons', 'learned', 'What the replay trades teach']] },
   { id: 'system', label: 'System', icon: 'modules', pages: [['system', 'Overview', 'modules', 'Every part of the bot'], ['strategy', 'Strategy', 'rules', 'The locked strategy in plain words'],
     ['engine', 'Paper bot', 'engine', 'LIT cloud paper bot: state, position, events'], ['eval', 'MFFU Eval', 'prop', 'Balance, target, trailing max loss'],
@@ -1464,12 +1465,12 @@ const DETAIL = { run: { group: 'lab', label: 'Experiment', back: 'experiments' }
 const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
 const ALIAS = { account: 'accounts', positions: 'accounts', position: 'accounts', orders: 'accounts', broker: 'accounts', modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
-  calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive',
+  calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', rejected: 'setups', rejections: 'setups', reasons: 'setups', previous: 'archive', old: 'archive', engine_archive: 'archive',
   briefing: 'brief', analyst: 'brief', recap: 'brief', plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', control: 'remote', kill: 'remote', remotecontrol: 'remote', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit', cards: 'recaps', review: 'weekly', weekreview: 'weekly' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
 // 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
 const SCENE = { accounts: 'eval', replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
-  evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', remote: 'engine', activity: 'today', sources: 'engine', news: 'today',
+  evals: 'eval', intraday: 'lab', setups: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', remote: 'engine', activity: 'today', sources: 'engine', news: 'today',
   archive: 'engine', recaps: 'trades', weekly: 'results', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', brief: 'today', levels: 'chart', cockpit: 'eval' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
 const titleOf = (p) => DETAIL[p]?.label || (p === 'lab' ? 'Lab' : p === 'system' ? 'System' : PAGES[p]?.label) || 'Today';
@@ -1772,7 +1773,7 @@ function loadTC() {
 }
 // live status panel (live_panel.js): is the PC bot trading the eval (verdict, account, feed, LIT stage), the open trade's chart
 let LPP = null;
-const LPV = 'lp2';
+const LPV = 'lp3';
 function loadLP() { if (!LPP) LPP = import('./live_panel.js?v=' + LPV).catch((e) => { console.warn('live panel unavailable', e); LPP = null; throw e; }); return LPP; }
 function lpMount(box, where) { if (!box) return; loadLP().then((m) => { if (box.isConnected && D) m.mount(box, D, { where, loadTC }); }).catch(() => { if (box.isConnected) box.innerHTML = ''; }); }
 // a paper / live trade has no replay record: its chart is drawn from the recent 5m bars in data.json when they cover the entry
@@ -2170,7 +2171,7 @@ VIEWS.brief = (el) => {
       <div class="kv one br-facts"><div><span>Overnight</span><b>${esc(mo.overnight?.text || '')}</b></div><div><span>Target band</span><b>${esc(mo.vix?.text || '')}</b></div>
       <div><span>News</span><b class="${(mo.news || []).length ? 'wn' : ''}">${esc(mo.news_text || '')}</b></div>
       ${mo.monday?.text ? `<div><span>Monday rule</span><b>${esc(mo.monday.text)}</b></div>` : ''}${mo.weekly_stop?.text ? `<div><span>Weekly stop</span><b>${esc(mo.weekly_stop.text)}</b></div>` : ''}
-      <div><span>Eval</span><b>${esc(mo.eval?.text || '')}</b></div></div></div>` : '')
+      <div><span>Eval</span><b>${esc(mo.eval?.text || '')}</b></div>${mo.eval?.mc?.text ? `<div><span>Eval odds</span><b>${esc(mo.eval.mc.text)}</b></div>` : ''}</div></div>` : '')
     + ((B.mffu || []).length ? `<div class="card"><div class="card-h"><h3>MFFU rules today</h3><span class="meta">in-app only</span></div>${brWarn(B, true)}</div>` : '')
     + (rc ? `<div class="card"><div class="card-h"><h3>End of day</h3><span class="meta ${cls(rc.pnl)}">${susd(rc.pnl)}</span></div><p class="br-plan">${esc(rc.text)}</p><div class="note">${esc(rc.setups)}</div><div class="note"><b>Lesson:</b> ${esc(rc.lesson || '')}</div></div>` : '')
     + `<div class="card"><div class="card-h"><h3>Intraday log</h3><span class="meta">${plural((B.log || []).length, 'entry')}${B.new ? ` · ${B.new} new` : ''}</span></div>
@@ -3247,6 +3248,35 @@ function histSVG(el, hist) {
     <text class="ax" x="${L - 5}" y="${T + 10}" text-anchor="end" fill="#4ef0b0">pass</text><text class="ax" x="${L - 5}" y="${H - B - 3}" text-anchor="end" fill="#ff7ad9">fail</text></svg><div class="tip" hidden></div></div>`;
   const box = el.firstChild, svg = box.firstChild;
   hover(box, svg, W, (sx) => { const i = Math.max(0, Math.min(n - 1, Math.floor((sx - L) / bw))); return { x: L + i * bw, html: `<b>session ${i}</b><span class="up">${Pd[i] || 0} passed</span><span class="dn">${Fd[i] || 0} failed</span>` }; });
+}
+
+// ===================================================================== LAB: rejected setups (research/lab/rejections.json, tools/lit_rejections.py)
+const RJS = { span: store.get('rjSpan', 'last') };
+VIEWS.setups = (el) => {
+  el.innerHTML = head(`Lab · ${esc(stratName())} · setups`, 'Why setups were rejected', 'Every 5-minute CISD the LIT engine saw, with the first rule it failed (the same verdict as the day brief). A setup that passes every rule is traded, blocked by the 1-trade-a-day rule, or never filled.')
+    + howto('setups', `<p>The table counts setups by the <b>first</b> rule they failed, in the engine's order: entry window, sweep depth, displacement, inducement, NWOG / Mon-Wed, Monday rule, stop range, 1.5R target.</p>
+      <ul><li><b>Passed, no fill</b>: every rule held, but the limit was not tapped in 30 minutes, no 1-minute CISD came, or the 1.5R check failed at the fill.</li>
+      <li><b>Last 20 sessions</b> is what the bot saw lately; <b>H1</b> is where the settings were picked, <b>H2</b> the check; 2021-25 is a reference (5-minute bars).</li></ul>`)
+    + `<div id="rjBody">${skel(1)}${skel(1, 'lg')}</div>`;
+  getLab('rejections').then(still(drawRej)).catch(still((e) => { $('#rjBody').innerHTML = `<div class="card">${emptyBox('No rejected-setups file in this build.', `${esc(e.message)}. python -X utf8 tools/lit_rejections.py writes research/lab/rejections.json; the cloud monitor copies it on its next run.`)}</div>`; }));
+};
+function drawRej(R) {
+  const box = $('#rjBody'); if (!box) return;
+  const spans = [['last', `Last ${R.last_n || 20}`], ['H1', 'H1'], ['H2', 'H2'], ['2026', '2026'], ['2021-25', '2021-25 ref']].filter(([k]) => R.spans?.[k]);
+  if (!R.spans?.[RJS.span]) RJS.span = 'last';
+  const S = R.spans[RJS.span], rows = (S.rules || []).filter(r => r.n || r.rule === 'traded'), mx = Math.max(1, ...rows.map(r => r.n || 0));
+  const top = rows.filter(r => r.rule !== 'traded').sort((a, b) => b.n - a.n)[0];
+  const col = (r) => r.rule === 'traded' ? 'var(--good, #3ecf8e)' : (r.rule === 'no_fill' || r.rule === 'day') ? 'var(--gold, #e0b04a)' : 'var(--accent, #7aa2ff)';
+  const hm = (t) => new Date(t * 1000).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false });
+  box.innerHTML = `<div class="toolbar" style="margin-top:0">${segHTML('rjSp', spans, RJS.span)}</div>
+    <div class="stats">${statBox('Setups', S.setups, `${S.sessions} sessions · ${num(S.per_session, 1)} a session`)}${statBox('Traded', S.traded, S.setups ? num(100 * S.traded / S.setups, 1) + '% of setups' : '', 'up')}
+      ${statBox('Rejected', S.rejected, 'by a rule, the day rule or no fill')}${statBox('Top reason', esc(top?.label || '—'), top ? `${top.n} · ${top.pct}% of the rejected` : '', 'dn')}</div>
+    <div class="card"><div class="card-h"><h3>Reasons</h3><span class="meta">${esc(S.from || '')} → ${esc(S.to || '')}</span></div><div class="tw"><table class="ht"><tr><th>Reason</th><th class="num">Setups</th><th class="num">%</th><th class="hide-sm" style="width:35%"></th></tr>
+      ${rows.map(r => `<tr><td>${esc(r.label)}</td><td class="num">${r.n}</td><td class="num">${r.pct == null ? '—' : r.pct + '%'}</td><td class="hide-sm"><div style="height:8px;border-radius:4px;background:${col(r)};width:${Math.round(100 * (r.n || 0) / mx)}%"></div></td></tr>`).join('')}</table></div></div>
+    <div class="card"><div class="card-h"><h3>Latest setups</h3><span class="meta">newest first</span></div><div class="tw"><table class="ht"><tr><th>Day</th><th>CISD</th><th>Side</th><th>Verdict</th></tr>
+      ${(R.recent || []).slice(0, 30).map(r => `<tr><td>${esc(r.day.slice(5))}</td><td>${hm(r.t)}</td><td class="${r.dir > 0 ? 'up' : 'dn'}">${r.dir > 0 ? 'Long' : 'Short'}</td><td>${esc(r.label)}</td></tr>`).join('')}</table></div></div>
+    ${R.built ? `<div class="note">Built ${esc(R.built)}. ${esc(R.source || '')}</div>` : ''}`;
+  onSeg('rjSp', (v) => { RJS.span = v; store.set('rjSpan', v); drawRej(R); });
 }
 
 // ===================================================================== LAB: intraday heat (research/lab/intraday_heat.json: weekday × hour of the live strategy's trades)

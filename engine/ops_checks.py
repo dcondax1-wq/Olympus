@@ -456,6 +456,21 @@ def check_disk(path: str = ROOT, usage=shutil.disk_usage) -> dict:
     return _c("disk", "Disk space", OK, f"{free:.0f} GB free")
 
 
+def check_data(summary=None) -> dict:
+    """The data files the backtests and the live window read (tools/data_check.py: order, OHLC, gaps, spikes, rolls, 1m vs 5m,
+    VIX/VXN cover). ~3 s."""
+    try:
+        if summary is None:
+            from tools import data_check
+            summary = data_check.summary
+        lvl, txt = summary()
+    except Exception as e:
+        return _c("data", "Data files", SKIP, f"could not check ({e.__class__.__name__})")
+    lv = {"ok": OK, "warn": WARN, "fix": BAD}.get(lvl, WARN)
+    return _c("data", "Data files", lv, txt, "Run python -X utf8 tools/data_check.py for the details; a bad file comes back with "
+              "a fresh TradingView export (tools/grab_tv_export.py).")
+
+
 def check_clock(net: dict) -> dict:
     d = net.get("drift_s")
     if not net.get("up"):
@@ -739,6 +754,7 @@ def run_checks(ctx: dict) -> list:
         checks += check_versions()
         checks += check_auto()
         checks.append(check_backup(ctx["state"], now))
+        checks.append(check_data())
         checks += check_logs(scan_logs(now=now))
     return checks
 
@@ -1090,6 +1106,33 @@ def backup_due(state: dict, now) -> bool:
     return not blackout and now - last > 26 * 3600
 
 
+def backlog_notices(state: dict, now, runner=None) -> list:
+    """Sunday: re-check the research watch-list once per ISO week (tools/backlog_recheck.py, ~10-90 s; result in
+    logs/backlog_check.json) and return a notice for each lead that crossed its adopt bar (key per lead + data version, so
+    one push each). Never raises; a failure is logged and retried next Sunday."""
+    wk = "%d-W%02d" % _et(now).isocalendar()[:2]
+    if state.get("backlog_wk") == wk:
+        return []
+    state["backlog_wk"] = wk
+    try:
+        if runner is None:
+            from tools import backlog_recheck as BR
+            res = BR.score_all(log=lambda *_: None)
+            os.makedirs(os.path.dirname(BR.LOCAL), exist_ok=True)
+            with open(BR.LOCAL, "w", encoding="utf-8") as fh:
+                json.dump(res, fh, indent=1)
+            out = BR.notices(res, now)
+        else:
+            out = runner(now)
+        n = sum(1 for _ in out)
+        ops_log(f"backlog re-check {wk}: {n} lead(s) crossed their bar")
+        state["backlog_last"] = {"wk": wk, "t": int(now), "crossed": n}
+        return out
+    except Exception as e:
+        ops_log(f"backlog re-check {wk} failed: {e.__class__.__name__}: {scrub(str(e), 160)}")
+        return []
+
+
 # ================================================================================================ sending + the tick
 def send(payload: dict, state: dict, sender=None) -> dict:
     """Push once by key (state["sent"]); LE_OPS_PUSH=0: record only. sender(payload) -> result, for tests."""
@@ -1166,6 +1209,7 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
                 notes.append(eod_notice(view, now))
             if D["weekly"]:
                 notes.append(weekly_notice(view, state, checks, now))
+                notes += backlog_notices(state, now)
         if D["daily"]:
             for n in (inactivity_notice(view, now), roll_notice(now)):
                 if n:
