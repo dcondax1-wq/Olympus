@@ -140,9 +140,10 @@
 .bz-tile{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;border-color:color-mix(in srgb,var(--accent) 45%,transparent)}.bz-tt{font-size:16px;font-weight:650;line-height:1.4}`;
   function install() {
     if (typeof P !== 'undefined' && !P.brain) P.brain = '<path d="M12 5.2a3 3 0 0 0-5.6-1A3 3 0 0 0 4.5 9a3.2 3.2 0 0 0 .3 5.6A3 3 0 0 0 9 19.3a3 3 0 0 0 3-1.3z"/><path d="M12 5.2a3 3 0 0 1 5.6-1A3 3 0 0 1 19.5 9a3.2 3.2 0 0 1-.3 5.6A3 3 0 0 1 15 19.3a3 3 0 0 1-3-1.3"/><path d="M12 5.2V18"/>';
-    const Gt = GROUPS.find((g) => g.id === 'today'); if (!Gt) return;
-    if (!Gt.pages.some((p) => p[0] === 'brain')) Gt.pages.splice(1, 0, ['brain', 'Bot Brain', 'brain', 'What the bot is thinking: stage, levels, setups and the rule that stopped each one']);
-    PAGES.brain = { id: 'brain', label: 'Bot Brain', icon: 'brain', desc: 'What the bot is thinking', group: 'today' };
+    // its own main tab on the bottom bar, right after Home (owner 2026-10-21)
+    GROUPS.forEach((g) => { g.pages = g.pages.filter((p) => p[0] !== 'brain'); });
+    if (!GROUPS.some((g) => g.id === 'brain')) GROUPS.splice(1, 0, { id: 'brain', label: 'Brain', icon: 'brain', pages: [['brain', 'Bot Brain', 'brain', 'What the bot is thinking: stage, levels, setups and the rule that stopped each one']] });
+    PAGES.brain = { id: 'brain', label: 'Bot Brain', icon: 'brain', desc: 'What the bot is thinking', group: 'brain' };
     VIEWS.brain = view;
     if (typeof SCENE !== 'undefined') SCENE.brain = 'today';
     if (typeof ALIAS !== 'undefined') Object.assign(ALIAS, { thinking: 'brain', thoughts: 'brain', mind: 'brain' });
