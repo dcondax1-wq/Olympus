@@ -368,7 +368,7 @@ def test_static():
     check("phone: #/ack page with Got it -> relay {le: 'ack'}, levels -> {le: 'prefs'}, stale-cloud banner",
           "DETAIL.ack" in js and "le: 'ack'" in js and "le: 'prefs'" in js and "Cloud monitor: no publish for" in js and "STALE_S = 45 * 60" in js)
     sw = read("tools/web_public/sw.js")
-    check("service worker: cache bumped, silent, 'Got it' action posts the ack", "le-public-v18" in sw and "d.silent" in sw
+    check("service worker: cache bumped, silent, 'Got it' action posts the ack", int((re.search(r"le-public-v(\d+)", sw) or [0, 0])[1]) >= 18 and "d.silent" in sw
           and "action: 'ack'" in sw and "e.action === 'ack'" in sw)
     gi = read(".gitignore")
     check("gitignore: data/alerts_plus.json, data/push_prefs.json", "data/alerts_plus.json" in gi and "data/push_prefs.json" in gi)
