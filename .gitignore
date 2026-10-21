@@ -16,6 +16,8 @@ data/remote_done.json
 data/nt_bars/
 # the phone live.json push's scratch git dir (engine/live_publish.py)
 data/live_pub.git/
+# the Bot Brain's thought log, one JSONL per trading day (engine/brain.py BrainLog)
+data/brain/
 
 # runtime
 logs/

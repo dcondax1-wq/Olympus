@@ -203,6 +203,19 @@ def _live_pub():
         return None
 
 
+def _brain(bot, max_bytes: int = 16_000):
+    """The heartbeat's "brain" block: engine/brain.compact of the bot's last Bot Brain (stage, what it waits for, nearest
+    levels, today's setups with their checks, sizing, management, guards, the last 30 log lines). Never raises."""
+    try:
+        b = getattr(bot, "brain", None)
+        if not b:
+            return None
+        from engine import brain
+        return brain.compact(b, max_bytes=max_bytes)
+    except Exception:
+        return None
+
+
 def _exec():
     """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
     try:
@@ -249,7 +262,8 @@ class Heartbeat:
                 "every_s": int(self.every_s), "acct": _acct(self.bot), "health": _health(self.bot), "ops": _ops(),
                 "exec": _exec(),                # execution quality summary (engine/fill_audit.py), None before the first audit
                 "remote": _remote(),            # phone remote control (engine/remote_ctl.py): the last command and its result
-                "live_pub": _live_pub()}        # the phone's live.json push (engine/live_publish.py): last result, None before it
+                "live_pub": _live_pub(),        # the phone's live.json push (engine/live_publish.py): last result, None before it
+                "brain": _brain(self.bot)}      # the Bot Brain, phone cut (engine/brain.compact; None before the first LIT poll)
 
     def beat(self) -> dict:
         files = self.bar_files()

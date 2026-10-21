@@ -344,6 +344,8 @@ class LiveBot:
         self._nt_forming_last = None     # (open time, open) of the forming 1m bar (heartbeat "bars" block)
         self._arc = {}                   # (sym, tf) -> the NinjaTrader archive in memory (data/nt_bars, engine/pcbars.py)
         self.accts = None                # engine/multi_account.AccountRouter: the start cfg's extra accounts (None = one account)
+        self.brain = None                # engine/brain.py: the Bot Brain snapshot of the last poll (read-only, built after routing)
+        self._brain_log = None           # engine/brain.BrainLog: today's thought log (data/brain/YYYY-MM-DD.jsonl for the real bot)
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -1135,9 +1137,11 @@ class LiveBot:
             df1 = self._lit_1m(sym, now, int(df_full["time"].min())) if lit_p.get("tf") == "1m" else None
             # forming / early: an entry is decided the moment its 1m CISD candle closes and routed at market at once
             # (state "enter_now"), sized from the forming 1m bar's open when the feed shows it (research/writeups/lit-live-fills.md)
+            brain_keep = {}                   # the Bot Brain reads this run's market after the poll (engine/brain.py)
             res = lit_live.run(df_full, lit_p, one_min=df1, now=now, sym=sym, week_hist=self.lit_week_hist(),
                                forming=self._forming.get((sym, 60)) if df1 is not None else None, early=True,
-                               learn=True, es_df=self._learn_es(sym, tf, now, secs))   # learning loop (engine/lit_learn.py)
+                               learn=True, es_df=self._learn_es(sym, tf, now, secs),   # learning loop (engine/lit_learn.py)
+                               keep=brain_keep)
             last1 = int(df1["time"].max()) if df1 is not None and len(df1) else None
             self.health["last_1m_bar_t"] = last1
             self.health["bar_1m_behind"] = bool(last1 is not None and mopen and last1 + 60 < now - now % 60)
@@ -1201,7 +1205,20 @@ class LiveBot:
         self.health["last_ok_poll"] = now
         self.health["ok"] = not (self.health["stale"] and mopen) and not self.health["desync"]
         self._save_state()
+        if model == "lit":                    # after routing and the state save: never delays an order
+            self._brain_tick(res, lit_p, now, brain_keep)
         return self.state
+
+    def _brain_tick(self, res, P, now, keep):
+        """The Bot Brain (engine/brain.py): what LIT is thinking at this poll, read from this poll's result. Read-only,
+        built after the routing; a failure only logs an error. The real bot keeps the thought log in data/brain/."""
+        try:
+            from . import brain
+            if self._brain_log is None:
+                self._brain_log = brain.BrainLog(brain.BRAIN_DIR if self.state_path == STATE_PATH else None)
+            self.brain = brain.build(res, P, now, keep=keep, ctx=brain.bot_ctx(self, now), log=self._brain_log)
+        except Exception as e:
+            self._note_error(f"bot brain failed: {e.__class__.__name__}: {e}")
 
     def _lit_1m(self, sym, now, t_min):
         """1m bars for LIT's entry (stored data/<sym>_1m.csv + the NinjaTrader archive + NinjaTrader's 1m file; with no_yahoo

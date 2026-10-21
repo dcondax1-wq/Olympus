@@ -125,7 +125,7 @@ def _slice_bars(b: Bars, t_from: int) -> Bars:
 
 def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | None = None, sym: str = "NQ",
         week_hist: list | None = None, learn: bool = False, es_df: pd.DataFrame | None = None,
-        learn_after: int | None = None, forming: tuple | None = None, early: bool = False) -> dict:
+        learn_after: int | None = None, forming: tuple | None = None, early: bool = False, keep: dict | None = None) -> dict:
     """week_hist: the caller's ledger of this week's finished trades ({"day", "exit", "exit_t"}) for the weekly stop
     ("wk_stop"): the cloud monitor's LIT ledger, the PC bot's routed exits; a day it does not cover counts the model's own
     trade (engine/lit.py week_stops).
@@ -140,7 +140,10 @@ def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | 
     while its entry bar is still forming (the backtest fills inside that bar; without this the loop only sees the setup
     when that bar closes, up to 5 min after the 1m CISD). The forming 5m bar is added to the market as a flat bar at its
     open (from the 1m feed, on the 5m basis): it is never a trigger, never an executor bar, and no level, swing or box
-    a decision uses can come from it (tests/test_lit_live.py checks the trades stay the backtest's)."""
+    a decision uses can come from it (tests/test_lit_live.py checks the trades stay the backtest's).
+    keep (the Bot Brain, engine/brain.py; None = nothing): a dict that receives this run's market, candidates and the
+    executor's raw result (M, C, R, B1, P) after every decision is made, so the Brain reads them without recomputing.
+    Read-only: the result is the same with or without it."""
     P = {**lit.DEFAULTS, **(params or {})}
     df5 = _clean5(df5)
     if not len(df5):
@@ -178,6 +181,8 @@ def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | 
         _attach_learn(M, C, R, P, es_df, learn_after if learn_after is not None else now - 3 * 86400)
     out = _shape(M, R, P, now, B1)
     out["state"]["lit"]["forming_5m"] = M.n_closed < M.n
+    if keep is not None:
+        keep.update(M=M, C=C, R=R, B1=B1, P=P)
     if R.get("learn_error"):
         out["learn_error"] = R["learn_error"]
     return out
