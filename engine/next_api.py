@@ -302,6 +302,17 @@ def intel(compact: int = 0):
     return _J(TI.compact(full) if compact else full)
 
 
+@router.get("/api/next/perf")
+def perf():
+    """Performance pages (engine/perf.py, read-only): expected range, live vs backtest, exit efficiency, robustness, months,
+    status (uptime + incidents), look-ahead audit. From research/lab/*.json + the PC's journal, fill audit and uptime log."""
+    try:
+        from engine import perf as PF
+        return _J(PF.pc_view())
+    except Exception as e:                                   # never 500 the dashboard over a page
+        return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
+
+
 @router.get("/api/next/archive")
 def archive():
     """The previous strategy (Liquidity Engine, locked 2026-10-17) for the Archive page: its lock, its last bundle's periods
@@ -387,3 +398,7 @@ router.include_router(_biz_router)
 # panel, session timeline, settings viewer, morning report): read-only GETs (engine/pcops_api.py)
 from .pcops_api import router as _ops_router  # noqa: E402
 router.include_router(_ops_router)
+
+# Bot Brain (engine/brain.py): what the bot is thinking now, its thought log, any past 2026 day replayed (engine/brain_api.py)
+from .brain_api import router as _brain_router  # noqa: E402
+router.include_router(_brain_router)

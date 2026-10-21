@@ -36,6 +36,7 @@ no sleep, no update restarts, starts at logon, auto-update, the phone says "Surf
 - [ ] Double-click **LE HEALTH CHECK**: no red lines.
 - [ ] Dashboard shows the bot **running** on your **eval** account (not Sim101), unless you want Sim tonight.
 - [ ] At 01:40 the phone says **All green for tonight**. If it says **Fix ...**, do that one thing.
+- [ ] At the desk: tap **I'm here** (Bot page, or phone Remote page) so the presence log shows you watching (MFFU); **Pause until tomorrow** / **Resume entries** sit on the same pages, and the weekly **Hands-off score** shows each time you stepped in.
 
 ## Morning (any time)
 - [ ] Glance at the phone: entries / results overnight. Nothing to do unless a notice says so.

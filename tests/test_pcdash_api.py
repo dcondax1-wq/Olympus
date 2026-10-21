@@ -316,6 +316,74 @@ def intel_checks(tmp, check):
         TI._journal = old
 
 
+def brain_checks(check, live_bot):
+    """Bot Brain (/api/next/brain*, engine/brain_api.py mounted by engine/next_api.py): the bot's Brain, the phone cut, a
+    replayed 2026 minute, the sessions list. Read-only GETs (tests/test_brain.py checks the content against the engine)."""
+    from engine import brain, brain_api, next_api
+    app = FastAPI()
+    app.include_router(next_api.router)
+    cl = TestClient(app)
+    old = brain_api._bot
+    try:
+        live_bot.brain = None
+        brain_api._bot = lambda: live_bot
+        r = cl.get("/api/next/brain")
+        check("brain: no Brain yet -> empty + a day to replay", r.status_code == 200 and r.json().get("empty"), r.text[:200])
+        if not os.path.exists(os.path.join(pcdash_api.DATA, "NQ_5m.csv")):
+            return
+        rb = cl.get("/api/next/brain/day/2026-10-13?hm=06:10")
+        j = rb.json()
+        check("brain: replay 2026-10-13 06:10 = in the SHORT trade, BE trigger and 15-minute check shown",
+              rb.status_code == 200 and j["stage"]["key"] == "trade" and j["trade"]["side"] == "SHORT" and j["trade"]["t_check"]["at_hm"] == "06:18",
+              (rb.status_code, (j.get("stage") or {}).get("key"), j.get("error")))
+        live_bot.brain = j
+        r = cl.get("/api/next/brain?compact=1")
+        c = r.json()
+        check("brain: the live Brain's phone cut (stage, waiting, setups with checks) < 16 KB",
+              r.status_code == 200 and c.get("compact") and c["stage"]["waiting"] and c["setups"] and len(r.text) < 16_500, len(r.text))
+        check("brain: GET only, the bot untouched", all(getattr(rt, "methods", {"GET"}) <= {"GET", "HEAD"} for rt in brain_api.router.routes)
+              and not live_bot.kill)
+        check("brain: days list", len(cl.get("/api/next/brain/days").json().get("days") or []) > 150)
+    finally:
+        brain_api._bot = old
+        live_bot.brain = None
+        _ = brain
+
+
+def perf_checks(tmp, check):
+    """Data > Performance (/api/next/perf, engine/next_api.py -> engine/perf.pc_view): expected range, live vs backtest from
+    the fill audit's report, exit efficiency, robustness, months, status (the PC's uptime log), look-ahead audit. GET only."""
+    from engine import fill_audit as FA
+    from engine import next_api
+    from engine import uptime as UP
+    app = FastAPI()
+    app.include_router(next_api.router)
+    cl = TestClient(app)
+    store, old_store, old_up = os.path.join(tmp, "perf_exec"), FA.STORE, UP.PC_PATH
+    FA.STORE, UP.PC_PATH = store, os.path.join(tmp, "uptime_pc.json")
+    try:
+        FA._write_json(os.path.join(store, "report.json"), {"v": 1, "t": 1, "rows": [
+            {"status": "matched", "day": "2026-10-20", "entry_t": ts(2026, 10, 20, 3, 5), "bt_pnl": 600.0, "bt_pnl_live_qty": 600.0,
+             "live_pnl": 585.0, "slip_usd": -15.0, "exec_usd": -15.0},
+            {"status": "missed", "day": "2026-10-21", "entry_t": ts(2026, 10, 21, 9, 50), "bt_pnl": -300.0, "missed_usd": -300.0, "reason": "feed stale"}]})
+        UP.pc_hook({"t": ts(2026, 10, 20, 9, 40), "running": True, "health": {"feed": {"market_open": True, "age_1m_s": 20}}})
+        r = cl.get("/api/next/perf")
+        d = r.json()
+        check("perf 200: every block", r.status_code == 200 and all(k in d for k in ("range", "exec", "exit", "robust", "months", "status", "lookahead")), r.text[:200])
+        ex = d.get("exec") or {}
+        check("perf: live vs backtest from the fill audit's report (gap = slippage + missed)", ex.get("live") == 585.0 and ex.get("bt") == 300.0
+              and ex.get("gap") == 285.0 and (ex.get("parts") or {}).get("missed trades") == 300.0, ex.get("parts"))
+        sf = next((p for p in (d.get("status") or {}).get("parts") or [] if p["id"] == "surface"), {})
+        check("perf: status from the PC's uptime log", sf.get("uptime") == 100.0, sf)
+        check("perf: range band, exit efficiency, robustness card, months, look-ahead summary",
+              (d.get("range") or {}).get("bands") and (d.get("exit") or {}).get("y2026") and (d.get("robust") or {}).get("card")
+              and (d.get("months") or {}).get("rows") and (d.get("lookahead") or {}).get("summary"), {k: bool(v) for k, v in d.items()})
+        check("perf: GET only", all(getattr(rt, "methods", {"GET"}) <= {"GET", "HEAD"} for rt in next_api.router.routes
+                                    if getattr(rt, "path", "") == "/api/next/perf"))
+    finally:
+        FA.STORE, UP.PC_PATH = old_store, old_up
+
+
 def hub_checks(tmp, check, live_bot):
     """The hub pages' API (engine/hub_api.py: Prop Firms, Business, Market, Learn, System): read-only GETs, data shapes,
     every fact of research/props/firms.json marked and sourced, eval odds that rise with the balance, the gallery route
@@ -617,6 +685,8 @@ def main() -> int:
         hub_checks(tmp, check, bot)
         ops_checks(tmp, check, bot, now)
         intel_checks(tmp, check)
+        brain_checks(check, bot)
+        perf_checks(tmp, check)
     finally:
         pcdash_api._bot, lit_learn.JOURNAL_PATH = old_bot, old_jp
         shutil.rmtree(tmp, ignore_errors=True)

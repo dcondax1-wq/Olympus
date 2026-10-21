@@ -143,7 +143,8 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
     """live.json from a heartbeat payload (engine/heartbeat.Heartbeat.payload). Never raises (a broken part is left out)."""
     now = int(now or time.time())
     hb = dict(hb_payload or {})
-    pc = {k: hb.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "health", "ops", "remote", "acct")}
+    pc = {k: hb.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "health", "ops", "remote", "acct",
+                                 "brain")}       # brain: the Bot Brain's phone cut (engine/brain.compact, < 16 KB)
     pc.update(present=True, t=now, age_s=0, silent=False, every_s=int(every_s), live=True)
     out = {"v": 1, "kind": KIND, "t": now, "every_s": int(every_s), "host": hb.get("host"), "model_state": hb.get("model_state")}
     try:
@@ -178,7 +179,13 @@ def fit(p: dict, max_bytes: int = MAX_BYTES) -> dict:
                 if len(a.get(key) or []) > keep:
                     a[key] = a[key][len(a[key]) // 2:]
             p["trimmed"] = True
-    for k in ("ops", "remote"):
+    br = (p.get("pc") or {}).get("brain") if isinstance(p.get("pc"), dict) else None
+    if isinstance(br, dict):                 # the Bot Brain: its log, then its levels, then the whole block
+        for key, keep in (("log", 8), ("levels", 6)):
+            while size() > max_bytes and len(br.get(key) or []) > keep:
+                br[key] = br[key][:max(keep, len(br[key]) // 2)]
+                p["trimmed"] = True
+    for k in ("ops", "remote", "brain"):
         if size() > max_bytes and isinstance(p.get("pc"), dict):
             p["pc"].pop(k, None)
             p["trimmed"] = True

@@ -31,6 +31,11 @@ Guards and defaults (live_model.json "guards" and the start cfg "guards" overrid
   9. calendar      ON   no entry on a CME full-closure day (New Year, Christmas), on a weekend / the 17:00-18:00 break, before
                         the session start (02:00), at or after the flat time, or within 15 min of a CME early close
                         (engine/lit_live.early_close). 2026 replay: 0 blocked (6 early-close days traded, all before cutoff).
+ 11. presence_required  OFF  no new entry without an "I'm here" check-in in the last presence_hours (4 h) + a
+                        "Check in to keep trading" push (engine/presence.py). Off: it could cut trades (frequency rule).
+ 12. entry pause  always  the owner's own "pause until" (engine/entry_pause.py: phone remote "pause" / PC dashboard): no new
+                        entry until then; open trades keep their stop / target. Nothing is paused unless the owner asked.
+Hands-off events (engine/handsoff.py): the reconcile mismatches are also logged as manual trade / close / size.
 Guard 6 (stale data) is the existing FEED STALE logic in engine/live.py (tests/test_guards.py covers the 1m feed and the
 1m-open file). Guard 10 is docs/PANIC.md.
 """
@@ -59,6 +64,7 @@ DEFAULTS = {
     "clock": True, "clock_max_s": 5.0, "clock_every_s": 900,
     "news": False, "news_min": 2,
     "calendar": True,
+    "presence_required": False, "presence_hours": 4.0,
 }
 
 
@@ -347,6 +353,28 @@ def entry_problems(bot, ent: dict, action: dict, plan_qty, now: int, c: dict | N
         h = news_hit(now, int(c.get("news_min") or 2))
         if h:
             out.append(f"Tier-1 news within {int(c.get('news_min') or 2)} min: {h}")
+    out += _owner_blocks(bot, c, now)
+    return out
+
+
+def _owner_blocks(bot, c, now) -> list:
+    """The owner's own pause (always) and the presence check-in guard (OFF by default). Never raises."""
+    out = []
+    try:
+        from . import entry_pause
+        p = entry_pause.problem(bot, now)
+        if p:
+            out.append(p)
+    except Exception as e:
+        bot._note_error(f"guards: pause check failed: {e.__class__.__name__}")
+    if c.get("presence_required"):
+        try:
+            from . import presence
+            p = presence.problem(c, now, presence.path_for(bot))
+            if p:
+                out.append(p)
+        except Exception as e:
+            bot._note_error(f"guards: presence check failed: {e.__class__.__name__}")
     return out
 
 
@@ -473,6 +501,12 @@ def reconcile_tick(bot, c, now: int):
         _notify(bot, f"recon:{day}:{exp}:{net}", "Position mismatch",
                 f"NinjaTrader {getattr(ad, 'account', '')} shows {', '.join(held) or 'flat'}; the bot's ledger says "
                 f"{_txt(exp)}.{act}")
+        try:                                     # the weekly hands-off score (engine/handsoff.py)
+            from . import handsoff
+            handsoff.record("manual_trade" if exp == 0 else "manual_close" if net == 0 else "manual_size", "reconcile",
+                            f"account {', '.join(held) or 'flat'}, bot ledger {_txt(exp)}", now=now, path=handsoff.path_for(bot))
+        except Exception:
+            pass
     if exp == 0 and net != 0 and c.get("reconcile_flatten") and now - rc["flat_at"] >= 60:
         if rc["flat_tries"] >= 3:
             if rc["flat_tries"] == 3:
@@ -547,13 +581,25 @@ def pnl_tick(bot, c, now: int, s: dict) -> bool:
 
 
 # ---------------------------------------------------------------------------------------------- the poll hook
+def _presence_tick(bot, c, now):
+    if c.get("presence_required"):
+        from . import presence
+        presence.tick(bot, c, now)
+
+
+def _handsoff_tick(bot, now):
+    from . import handsoff
+    handsoff.tick(bot, now)
+
+
 def tick(bot, now: int):
     """LiveBot hook, once per poll after routing. Never raises."""
     try:
         c = bot._guards_cfg = config(bot)
     except Exception:
         return
-    for name, fn in (("clock", lambda: clock_tick(bot, c)), ("reconcile", lambda: reconcile_tick(bot, c, now))):
+    for name, fn in (("clock", lambda: clock_tick(bot, c)), ("reconcile", lambda: reconcile_tick(bot, c, now)),
+                     ("presence", lambda: _presence_tick(bot, c, now)), ("handsoff", lambda: _handsoff_tick(bot, now))):
         try:
             fn()
         except Exception as e:

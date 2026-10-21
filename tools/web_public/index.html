@@ -4264,19 +4264,36 @@ const RC_CMDS = [
   ['update', 'Update', 'Run the auto-update now (main only, self-tests, rolls back on failure), outside 01:50-16:00 ET', 'gated'],
   ['restart', 'Restart server', 'Restart the PC server; the eval comes back only with auto-resume on', 'gated'],
   ['start', 'Start on Sim101', 'Start the bot on the Sim101 practice account (never a real account)', ''],
+  ['present', "I'm here", 'Check in for 4 hours: MFFU wants you watching while the bot trades (presence log)', ''],
+  ['pausetom', 'Pause until tomorrow', 'No new entries for the rest of today; an open trade keeps its stop and target', ''],
+  ['pauseat', 'Pause until a time', 'No new entries until the time below (New York time); open trades keep their rules', ''],
+  ['resume', 'Resume entries', 'Lift the pause: new entries allowed again', ''],
 ];
 const RCTL = { cmd: store.get('rcCmd', 'status'), made: null };
 const rcRepo = () => D?.extras?.repo || 'demetrades2000-coder/nq-liquidity-engine';
 const rcEdit = () => `https://github.com/${rcRepo()}/edit/control/control/command.json`;
 function rcBuild(cmd) {
   const ts = Math.floor(Date.now() / 1000), rnd = Math.random().toString(36).slice(2, 6);
-  const c = cmd === 'stopnow' ? 'stop' : cmd;
+  const c = { stopnow: 'stop', pausetom: 'pause', pauseat: 'pause', resume: 'resume_entries' }[cmd] || cmd;
   const o = { id: `${c}-${ts}-${rnd}`, ts, cmd: c };
+  if (cmd === 'pausetom') o.until = 'tomorrow';
+  if (cmd === 'pauseat') o.until = store.get('rcPauseAt', '10:00');
   if (cmd === 'stopnow') o.now = true;
   if (cmd === 'stop') o.now = false;
   if (cmd === 'start') o.account = 'Sim101';
   RCTL.made = { cmd, ts, json: JSON.stringify(o, null, 1) };
   return RCTL.made;
+}
+// presence, pause and this week's hands-off score: engine/remote_ctl.hb_field (heartbeat / live.json "remote")
+function rcYouCard(rm) {
+  if (!rm || !(rm.presence || rm.handsoff || 'pause' in rm)) return '';
+  const pr = rm.presence || {}, ho = rm.handsoff || null, pz = rm.pause;
+  const sc = ho ? ho.score : null, k = sc == null ? '' : sc >= 80 ? 'good' : sc >= 50 ? 'warn' : 'bad';
+  const ev = (ho?.events || []).slice().reverse().map((i) => `<li><b>${esc(i.label)}</b> −${i.points} · ${esc(i.when)}<br><span class="small mut">${esc(i.note || '')}</span></li>`).join('');
+  return `<div class="card"><div class="card-h"><h3>You · presence and hands-off</h3>${sc != null ? chip('hands-off ' + sc + '/100', k) : ''}</div>
+    <div class="pcline"><span class="dot ${pr.present ? '' : 'warn'}"></span><span>${esc(pr.line || 'Not checked in yet')}${pr.guard ? ' · check-in required to trade' : ''}</span></div>
+    <div class="pcline"><span class="dot ${pz ? 'warn' : ''}"></span><span>${pz ? 'New entries paused until ' + esc(pz.label || '') : 'New entries allowed'}</span></div>
+    ${ho ? `<div class="note">${esc(ho.verdict)} (${esc(ho.week)} week)${ho.usd != null ? ' · cost vs backtest ' + (ho.usd < 0 ? '−' : '+') + '$' + Math.abs(Math.round(ho.usd)) : ''}</div>${ev ? `<ol class="list">${ev}</ol>` : ''}` : ''}</div>`;
 }
 VIEWS.remote = (el) => {
   const pc = LV().pc || {}, rm = pc.remote || null;
@@ -4292,8 +4309,10 @@ VIEWS.remote = (el) => {
       ${rm?.pending_stop ? '<div class="note">A stop is waiting for the bot to be flat.</div>' : ''}
       ${rm?.error ? `<div class="note">Last fetch: ${esc(rm.error)}</div>` : ''}
       <div class="note">The result also comes as a phone notification, and shows here after the next cloud run.</div></div>
+    ${rcYouCard(rm)}
     <div class="card"><div class="card-h"><h3>1 · Pick a command</h3></div>
-      <div class="rc-grid" id="rcGrid">${RC_CMDS.map(([id, l, d, k]) => `<button type="button" class="rc-cmd ${k} ${id === RCTL.cmd ? 'on' : ''}" data-rc="${id}"><b>${esc(l)}</b><span>${esc(d)}</span></button>`).join('')}</div></div>
+      <div class="rc-grid" id="rcGrid">${RC_CMDS.map(([id, l, d, k]) => `<button type="button" class="rc-cmd ${k} ${id === RCTL.cmd ? 'on' : ''}" data-rc="${id}"><b>${esc(l)}</b><span>${esc(d)}</span></button>`).join('')}</div>
+      ${RCTL.cmd === 'pauseat' ? `<label class="row"><span><b>Pause until (New York time)</b></span><input type="time" id="rcPauseAt" value="${esc(store.get('rcPauseAt', '10:00'))}"></label>` : ''}</div>
     <div class="card"><div class="card-h"><h3>2 · Copy it and open GitHub</h3>${chip('valid until ' + until)}</div>
       <div class="rc-json" id="rcJson">${esc(m.json)}</div>
       <div class="rc-act"><button class="btn primary rc-big" type="button" id="rcGo">${icon('ext')}Copy and open GitHub</button>
@@ -4303,8 +4322,10 @@ VIEWS.remote = (el) => {
     <div class="card"><div class="card-h"><h3>3 · Paste and commit</h3></div>
       <ol class="list"><li>In the editor, select all the text and paste (replace everything).</li>
         <li>Tap <b>Commit changes</b> (straight to the <b>control</b> branch).</li>
-        <li>Wait about a minute: the phone gets “Remote ${esc(m.cmd === 'stopnow' ? 'stop' : m.cmd)}: done” (or why it was refused).</li></ol>
+        <li>Wait about a minute: the phone gets “Remote ${esc(JSON.parse(m.json).cmd)}: done” (or why it was refused).</li></ol>
       <div class="note">Safety: each command runs once and expires after 15 minutes. Kill, stop, flatten and status only lower risk or read. Update and restart run only when the bot is flat. No command can start a real account or change the strategy or settings. Paper / Sim only for remote starts.</div></div>`;
+  const pa = $('#rcPauseAt');
+  if (pa) pa.onchange = () => { store.set('rcPauseAt', pa.value || '10:00'); rcBuild(RCTL.cmd); $('#rcJson').textContent = RCTL.made.json; };
   $('#rcGrid').onclick = (e) => { const b = e.target.closest('[data-rc]'); if (!b) return; RCTL.cmd = b.dataset.rc; store.set('rcCmd', RCTL.cmd); rcBuild(RCTL.cmd); haptic(10); render(true); };
   const fresh = () => { if (Date.now() / 1000 - RCTL.made.ts > 60) rcBuild(RCTL.cmd); $('#rcJson').textContent = RCTL.made.json; return RCTL.made.json; };
   const copy = (t) => navigator.clipboard?.writeText ? navigator.clipboard.writeText(t) : Promise.reject(new Error('no clipboard'));
@@ -4489,5 +4510,9 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.se
 <script src="more.js?v=2" defer></script>
 <script src="live.js?v=1" defer></script>
 <script src="intel.js?v=1" defer></script>
+<script src="brain.js?v=2" defer></script>
+<script src="alerts.js?v=1" defer></script>
+<script src="perfcore.js?v=1" defer></script>
+<script src="perf.js?v=1" defer></script>
 </body>
 </html>

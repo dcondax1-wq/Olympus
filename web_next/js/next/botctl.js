@@ -482,6 +482,8 @@ async function renderPage(force) {
       <div class="nx-hero"><div><div class="nx-eyebrow">Bot Control · LIT · NinjaTrader</div><h2>Start, watch, stop</h2><p class="muted">Pick the account, let the checklist go green, press START. Sim starts with one click; a real account needs the confirm phrase you type each time. Paper and Sim by default.</p></div></div>
       <div id="bcStrip"></div>
       <div class="bc-grid2"><div id="bcStart"></div><div id="bcRight"></div></div>
+      <div class="bc-sec">You · presence and hands-off</div>
+      <div id="bcPresence"></div>
       <div class="bc-sec">Live</div>
       <div class="bc-grid2"><div id="bcTrade"></div><div id="bcRules"></div></div>
       <div class="bc-sec">Today</div>
@@ -508,6 +510,7 @@ async function renderPage(force) {
     put('bcTimeline', card('System health', timelineHTML(ins)));
     put('bcChangelog', card('Version + changes', changelogHTML(ins)));
   }
+  import('./presence.js').then((m) => m.mount(document.getElementById('bcPresence'), force)).catch(() => null);
   getPlan(force).then((pl) => put('bcPlan', card('Today’s LIT plan', planHTML(pl))));
   getAccount(force).then((ac) => {
     if (!ac || ac.error) return;

@@ -8,7 +8,7 @@ import { fxLevel, setFxLevel } from './fx3d.js';
 const root = document.documentElement;
 const pref = { get: (k, d) => store.get('nx.' + k, d), set: (k, v) => store.set('nx.' + k, v) };
 
-const PINS = ['morning', 'livechart', 'evalhq', 'strategy', 'live', 'briefing', 'results', 'evals'];
+const PINS = ['morning', 'livechart', 'perf', 'evalhq', 'strategy', 'live', 'briefing', 'results', 'evals'];
 
 function navLink(p, extra = '') {
   // label span first: the command palette reads the first <span> of each #nav link as the page name (CSS puts the icon first)

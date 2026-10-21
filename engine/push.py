@@ -204,6 +204,11 @@ def parse_subs(text) -> list:
 
 
 # ---------------------------------------------------------------------------------------------- relay (ntfy.sh)
+# sub / unsub: the app's push subscription; sent: a notice the cloud / PC already pushed; ack: the app's "Got it" on a
+# critical alert; prefs: the app's on / silent / off levels; crit: a sender's open critical alerts (engine/alerts_plus.py)
+RELAY_KINDS = ("sub", "unsub", "sent", "ack", "prefs", "crit")
+
+
 class Relay:
     """The free ntfy.sh topic: the app posts {"le": "sub", ...}; the cloud / PC post {"le": "sent", "key"}. ntfy keeps
     messages about 12 h, so the app posts again on each open until the cloud lists the phone. Never raises."""
@@ -245,7 +250,7 @@ class Relay:
                 if m.get("event") not in (None, "message"):
                     continue
                 body = json.loads(m.get("message") or "")
-                if isinstance(body, dict) and body.get("le") in ("sub", "unsub", "sent"):
+                if isinstance(body, dict) and body.get("le") in RELAY_KINDS:
                     body["_t"] = int(m.get("time") or 0)
                     out.append(body)
             except Exception:
@@ -477,6 +482,10 @@ def wire(payload: dict) -> bytes:
     keep = {k: payload.get(k) for k in ("title", "body", "tag", "url", "kind", "key", "t")}
     if payload.get("require"):
         keep["require"] = True
+    if payload.get("silent"):
+        keep["silent"] = True         # level "silent" (engine/alerts_plus.py): shown without sound
+    if payload.get("ack"):
+        keep["ack"] = str(payload["ack"])[:80]    # a critical alert: the app's "Got it" posts this id to the relay
     img = payload.get("image")
     if isinstance(img, str) and img.startswith(APP_URL) and len(img) < 300:
         keep["image"] = img           # recap card / brief PNG on the app's own site (tools/recap.py); phones that show images do

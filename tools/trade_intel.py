@@ -24,6 +24,11 @@ lit-new-entries.md, lit-trade-selection.md) and none passed; buckets of 10-20 tr
     python -X utf8 tools/trade_intel.py            # rebuild research/lab/trade_intel.json if run lit_live changed
     python -X utf8 tools/trade_intel.py --force    # rebuild anyway (~1 min)
     python -X utf8 tools/trade_intel.py --check    # say whether the file is current (exit 1 when stale)
+    python -X utf8 tools/trade_intel.py --exit-eff # add / refresh the exit-efficiency block in the stored file (no engine run)
+Exit efficiency (competitor-features #11, exit_eff()): per trade the share of the best move it kept (capture = exit R / MFE R),
+the giveback after +1R (MFE - exit R on trades that reached +1R), how far a loser was up before its stop, and the heat
+taken before +1R; by exit type, by month (the trend line) and by span. It explains why BE / the 15-minute check / the 8R
+bank behave as they do. It is not a rule.
 The cloud build (tools/build_web_dashboard.py) only appends the paper / live rows (merge_live, a few ms): no engine run.
 Read-only: no trading logic, nothing in live_model.json changes.
 """
@@ -714,6 +719,62 @@ def build(force=False):
     return data
 
 
+def _med(xs):
+    xs = sorted(x for x in xs if x is not None)
+    if not xs:
+        return None
+    n = len(xs)
+    return xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2
+
+
+def _eff_stats(R):
+    """Exit efficiency of a set of trade rows (dicts with r, mfe, mae, heat, exit)."""
+    R = [r for r in R if r.get("r") is not None and r.get("mfe") is not None]
+    up = [r for r in R if r["mfe"] >= 1.0]                              # reached +1R (BE moves there)
+    pos = [r for r in R if r["mfe"] > 0.25]
+    cap = [max(-1.0, min(1.0, r["r"] / r["mfe"])) for r in pos]         # share of the best move kept (clipped -100..100%)
+    loss = [r for r in R if r["r"] <= LOSS_R]
+    rnd = lambda v, nd=2: None if v is None else round(float(v), nd)
+    return {"n": len(R), "capture_med": rnd(100 * _med(cap), 1) if cap else None,
+            "capture_avg": rnd(100 * sum(cap) / len(cap), 1) if cap else None,
+            "capture_sum": rnd(100 * sum(r["r"] for r in pos) / sum(r["mfe"] for r in pos), 1) if pos else None,
+            "mfe_avg": rnd(sum(r["mfe"] for r in R) / len(R)) if R else None, "r_avg": rnd(sum(r["r"] for r in R) / len(R)) if R else None,
+            "capture_up1": rnd(100 * _med([max(-1.0, min(1.0, r["r"] / r["mfe"])) for r in up]), 1) if up else None,
+            "capture_up1_sum": rnd(100 * sum(r["r"] for r in up) / sum(r["mfe"] for r in up), 1) if up else None,
+            "n_up1": len(up), "giveback_avg": rnd(sum(r["mfe"] - r["r"] for r in up) / len(up)) if up else None,
+            "gave_back": sum(1 for r in up if r["r"] < 0.5),
+            "loss_n": len(loss), "loss_mfe_avg": rnd(sum(r["mfe"] for r in loss) / len(loss)) if loss else None,
+            "heat_avg": rnd(sum(r["heat"] for r in R if r.get("heat") is not None) / max(1, sum(1 for r in R if r.get("heat") is not None)))
+            if any(r.get("heat") is not None for r in R) else None}
+
+
+def exit_eff(rows):
+    """rows: dict rows (backtest + paper / live). -> spans, by exit type (2026), by month (2026 + paper / live: the trend),
+    the 2026 trade list (for the scatter) and a plain-language summary."""
+    span = lambda s: [r for r in rows if r.get("span") == s]
+    r26 = [r for r in rows if r.get("source") == "backtest" and r.get("span") in ("H1", "H2")]
+    out = {"spans": {s: _eff_stats(span(s)) for s in ("H1", "H2", "2021-25", "paper", "live")},
+           "y2026": _eff_stats(r26)}
+    ex = collections.defaultdict(list)
+    for r in r26:
+        ex[r.get("exit") or "?"].append(r)
+    out["by_exit"] = [{"exit": k, **_eff_stats(v)} for k, v in sorted(ex.items(), key=lambda kv: -len(kv[1]))]
+    mo = collections.defaultdict(list)
+    for r in rows:
+        if r.get("day") and (r.get("source") != "backtest" or r.get("span") in ("H1", "H2")):
+            mo[(r["day"][:7], "backtest" if r.get("source") == "backtest" else r.get("source"))].append(r)
+    out["by_month"] = [{"month": m, "source": s, **_eff_stats(v)} for (m, s), v in sorted(mo.items())]
+    out["trades"] = [[r["day"], r.get("source"), r.get("exit"), r.get("r"), r.get("mfe"), r.get("mae")]
+                     for r in r26 + [r for r in rows if r.get("source") != "backtest"] if r.get("mfe") is not None]
+    y = out["y2026"]
+    if y["n"]:
+        out["text"] = (f"2026: the trades kept {y['capture_sum']:.0f}% of all the open profit they saw (exit R / best R, summed). "
+                       f"{y['n_up1']} of {y['n']} reached +1R: they kept {y['capture_up1_sum']:.0f}% of their best move (median trade "
+                       f"{y['capture_up1']:.0f}%) and gave back {y['giveback_avg']:.1f}R on average; {y['gave_back']} of them ended "
+                       f"under +0.5R (mostly breakeven exits). Losers were up {y['loss_mfe_avg']:.2f}R on average before the stop.")
+    return out
+
+
 def assemble(rows, meta):
     sg = signs(rows)
     ch = chance_level(rows)
@@ -721,7 +782,8 @@ def assemble(rows, meta):
                      "spans": {k: list(v) for k, v in SPANS.items()}, "min_side": MIN_SIDE,
                      "sources": dict(collections.Counter(r["source"] for r in rows))},
             "cols": [{"key": k, "label": l, "kind": kd, "when": w, "group": g, "desc": d} for k, l, kd, w, g, d in COLS],
-            "rows": [[r.get(k) for k in KEYS] for r in rows], "signs": sg, "summary": summary(sg, rows, ch), "totals": span_totals(rows)}
+            "rows": [[r.get(k) for k in KEYS] for r in rows], "signs": sg, "summary": summary(sg, rows, ch), "totals": span_totals(rows),
+            "exit_eff": exit_eff(rows)}
 
 
 def _load(p):
@@ -750,6 +812,7 @@ def merge_live(data, state=None, journal=None):
     out["meta"] = meta
     dicts = [dict(zip(keys, r)) for r in rows]
     out["totals"] = span_totals(dicts)
+    out["exit_eff"] = exit_eff(dicts)
     return out
 
 
@@ -764,7 +827,8 @@ def compact(full):
     return {"meta": full["meta"], "totals": full["totals"], "summary": full["summary"],
             "top": [{k: s[k] for k in ("key", "label", "kind", "better", "a", "b", "gap_h1", "gap_h2", "gap_5y", "held_5y", "why", "buckets", "cuts")}
                     for s in cons],
-            "cols": keys, "live_rows": [r for r in full["rows"] if r[si] != "backtest"][-60:], "full": "intel.json"}
+            "cols": keys, "live_rows": [r for r in full["rows"] if r[si] != "backtest"][-60:], "full": "intel.json",
+            "exit_eff": {k: v for k, v in (full.get("exit_eff") or {}).items() if k != "trades"} or None}
 
 
 def main(argv):
@@ -774,6 +838,16 @@ def main(argv):
         ok = (old.get("meta") or {}).get("run_stamp") == stamp
         print(f"trade_intel: {'current' if ok else 'STALE'} (run {RUN_ID} {stamp}, file {(old.get('meta') or {}).get('run_stamp')})")
         return 0 if ok else 1
+    if "--exit-eff" in argv:
+        d = _load(OUT)
+        if not d:
+            raise SystemExit("research/lab/trade_intel.json missing: run python -X utf8 tools/trade_intel.py")
+        keys = [c["key"] for c in d["cols"]]
+        d["exit_eff"] = exit_eff([dict(zip(keys, r)) for r in d["rows"]])
+        with open(OUT, "w", encoding="utf-8") as fh:
+            json.dump(d, fh, separators=(",", ":"))
+        print(d["exit_eff"].get("text"))
+        return 0
     build(force="--force" in argv)
     return 0
 

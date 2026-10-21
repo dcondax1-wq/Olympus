@@ -87,7 +87,7 @@
     if (!j || j.kind !== 'le-live' || !okN(+j.t)) throw new Error('not a live.json');
     return { j, src };
   }
-  const LIVE_PAGES = ['today', 'accounts', 'money', 'whatif', 'live', 'cockpit', 'trades'];
+  const LIVE_PAGES = ['today', 'accounts', 'money', 'whatif', 'live', 'cockpit', 'trades', 'brain'];
   function redraw() {
     try {
       if (typeof D === 'undefined') return;

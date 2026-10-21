@@ -9,7 +9,12 @@
 // A data.json / home.json served from the cache because the network failed carries "x-le-cache: 1" (the app's offline banner).
 // v15 (2026-10-21): live.js + the PC's live.json (network-only, see the fetch handler).
 // v16 (2026-10-21): intel.js (Trades > Trade intel) + intel.json (versioned by the build time, like runs/<id>.json).
-const CACHE = 'le-public-v17';
+// v18 (2026-10-21): brain.js (Today > Bot Brain + the Home tile), live.pc.brain from live.json.
+// v19 (2026-10-21): alerts.js; a push with "silent" (level silent, engine/alerts_plus.py) rings no sound; a critical push
+// with "ack" gets a "Got it" action (where the phone shows actions) that posts the ack to the relay; a tap opens #/ack/<id>.
+// v20 (2026-10-21): perfcore.js + perf.js (Money > Performance).
+// v21 (2026-10-21): Bot Brain is its own bottom tab (brain.js v2).
+const CACHE = 'le-public-v21';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
@@ -54,6 +59,8 @@ self.addEventListener('push', (e) => {
     data: { url: safeHash(d.url), key: d.key || null, t: d.t || null }, timestamp: d.t ? d.t * 1000 : Date.now() };
   if (d.tag) { opts.tag = String(d.tag); opts.renotify = true; }
   if (d.require) { opts.requireInteraction = true; opts.vibrate = [400, 150, 400, 150, 400]; }   // the Surface-offline alert stays until tapped
+  if (typeof d.ack === 'string' && d.ack.length < 90) { opts.data.ack = d.ack; opts.actions = [{ action: 'ack', title: 'Got it' }]; }
+  if (d.silent) { opts.silent = true; opts.renotify = false; delete opts.vibrate; }
   // recap card / brief image (tools/recap.py): only a PNG on this app's own site; phones without notification images ignore it
   if (typeof d.image === 'string' && d.image.length < 300) { try { const iu = new URL(d.image); if (iu.origin === location.origin && /\.png$/.test(iu.pathname)) opts.image = iu.href; } catch (_) {} }
   e.waitUntil(prefsGet().then((p) => {
@@ -66,8 +73,13 @@ self.addEventListener('push', (e) => {
     ]);
   }));
 });
+const ackPost = (id) => fetch('./push_relay.json', { cache: 'no-store' }).then((r) => r.json()).then((r) => fetch(
+  `${String(r.ntfy || 'https://ntfy.sh').replace(/\/$/, '')}/${encodeURIComponent(r.topic)}`,
+  { method: 'POST', body: JSON.stringify({ le: 'ack', id, t: Math.round(Date.now() / 1000) }) })).catch(() => null);
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();
+  const ackId = e.notification.data && e.notification.data.ack;
+  if (e.action === 'ack' && ackId) { e.waitUntil(ackPost(ackId)); return; }     // "Got it" on the notification itself
   const hash = safeHash(e.notification.data && e.notification.data.url);
   const url = new URL('./' + hash, self.registration.scope).href;
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cs) => {

@@ -313,6 +313,9 @@ def main():
         out = c.tick()
         check("kill: the kill hook, done notice", out[0][2] == "done" and names(calls)[0] == "kill" and "KILL" in w.notes[-1][1], out)
 
+        # ---- pause / resume_entries / present (engine/entry_pause.py, engine/presence.py)
+        pause_tests(w, bot, hooks, calls)
+
         # ---- off without LE_REMOTE
         co = w.ctl(bot, hooks, env={})
         check("off unless LE_REMOTE=1 (no thread)", co.start() is False and not rc.enabled({}) and rc.enabled({"LE_REMOTE": "1"}))
@@ -335,6 +338,51 @@ def main():
     n, ok = len(RES), sum(RES)
     print(f"\n{ok}/{n} remote-control checks passed")
     return 0 if ok == n else 1
+
+
+def pause_tests(w, bot, hooks, calls):
+    from engine import entry_pause, handsoff, presence
+    wed = dt.datetime(2026, 10, 21, 10, 0, tzinfo=ET).timestamp()       # Wednesday 10:00 ET
+    c = w.ctl(bot, hooks, clock=lambda: wed)
+    calls.clear()
+    n_ho = len(handsoff.events(c.handsoff_path))
+    w.send(cmd("pause", ts=wed, until="tomorrow"))
+    out = c.tick()
+    p = entry_pause.load(c.pause_path)
+    mid = dt.datetime(2026, 10, 22, 0, 0, tzinfo=ET).timestamp()
+    check("pause until tomorrow: done, data file until 00:00 ET tonight, notice says so, no order hook called",
+          out and out[0][2] == "done" and p and p["until"] == mid and "no new entries until tomorrow" in w.notes[-1][1]
+          and not [x for x in calls if x[0] != "beat"], (out, p, calls))
+    pauses = lambda: [e for e in handsoff.events(c.handsoff_path) if e["kind"] == "pause" and e["src"] == "phone"]
+    check("pause is a hands-off event (phone)", len(handsoff.events(c.handsoff_path)) == n_ho + 1 and len(pauses()) == 1)
+    hb = rc.hb_field(w.done, env={"LE_REMOTE": "1"})
+    check("heartbeat 'remote' block carries the pause, presence and the hands-off score",
+          (hb.get("pause") or {}).get("until") == mid and "presence" in hb and isinstance(hb.get("handsoff"), dict)
+          and hb["handsoff"]["score"] <= 100, hb)
+    w.send(cmd("pause", ts=wed, until="14:30"))
+    out = c.tick()
+    p = entry_pause.load(c.pause_path)
+    check("pause until 14:30: today 14:30 ET (the later command replaces the first)",
+          out[0][2] == "done" and p["until"] == dt.datetime(2026, 10, 21, 14, 30, tzinfo=ET).timestamp(), (out, p))
+    w.send({"commands": [cmd("pause", ts=wed, until="25:00"), cmd("pause", ts=wed), cmd("pause", ts=wed, until="2027-06-01")]})
+    out = c.tick()
+    check("pause with a bad time / no until / more than 14 days ahead: refused, the running pause is kept",
+          [o[2] for o in out] == ["refused"] * 3 and entry_pause.load(c.pause_path)["until"] == p["until"], out)
+    w.send(cmd("resume_entries", ts=wed))
+    out = c.tick()
+    check("resume_entries: done 'pause lifted', file gone", out[0][2] == "done" and "pause lifted" in out[0][3]
+          and entry_pause.load(c.pause_path) is None, out)
+    w.send(cmd("resume_entries", ts=wed))
+    out = c.tick()
+    check("resume_entries with no pause: done 'no pause was running'", "no pause was running" in out[0][3], out)
+    w.send(cmd("present", ts=wed, hours=2))
+    out = c.tick()
+    ev = presence.events(c.presence_path)
+    check("present: a phone check-in line in presence.jsonl (2 h), notice 'present until 12:00 ET', no order hook",
+          out[0][2] == "done" and ev and ev[-1]["src"] == "phone" and ev[-1]["hours"] == 2.0 and "12:00 ET" in out[0][3]
+          and not [x for x in calls if x[0] not in ("beat",)], (out, ev))
+    check("present / resume_entries / status are not hands-off events",
+          len(handsoff.events(c.handsoff_path)) == n_ho + 2 and len(pauses()) == 2, handsoff.events(c.handsoff_path))
 
 
 def live_tests(w):
@@ -397,6 +445,27 @@ def live_tests(w):
     bot._route_signals({"trades": [], "events": []}, "NQ", int(now[0]), 300)
     check("a new model entry later the same day is NOT routed (remote flatten = done for today)",
           len(fake.files) == k and fake.pos.get(P, [0])[0] == 0 and t2 in bot._blocked_entries, fake.pos.get(P))
+
+    # pause mid-trade: the open trade keeps its bracket, a new entry is blocked by the guard; resume lifts only the pause
+    from engine import guards, entry_pause
+    now[0] += 3600
+    fake.move(25020.0)
+    bot = make_bot("p")
+    k = len(fake.files)
+    c = w.ctl(bot, {"kill": bot.kill_switch, "stop": bot.stop, "flatten": bot.flatten_now, "beat": lambda: {"ok": True}},
+              clock=lambda: now[0])
+    w.send(cmd("pause", ts=now[0], until="tomorrow"))
+    out = c.tick()
+    ent = {"entry_t": int(now[0]) + 600, "dir": 1, "qty": 1, "entry": 25020.0, "stop": 24990.0, "target": 25080.0}
+    why = guards.entry_block(bot, ent, bot._entry_action(ent, 1, "NQ"), 1, int(now[0]) + 610) or ""
+    check("LiveBot: remote pause mid-trade -> done, nothing sent to NinjaTrader, position still 2, bot running",
+          out and out[0][2] == "done" and len(fake.files) == k and fake.pos.get(P, [0])[0] == 2 and bot.running
+          and c.pause_path == entry_pause.path_for(bot) and "open trade keeps its stop and target" in out[0][3], (out, fake.pos.get(P)))
+    check("LiveBot: a new entry while paused -> GUARD 'paused by you until tomorrow'", "paused by you until tomorrow" in why, why)
+    w.send(cmd("resume_entries", ts=now[0]))
+    out = c.tick()
+    why = guards.entry_block(bot, ent, bot._entry_action(ent, 1, "NQ"), 1, int(now[0]) + 610) or ""
+    check("LiveBot: resume_entries -> the pause no longer blocks (other guards unchanged)", out[0][2] == "done" and "paused" not in why, why)
 
 
 if __name__ == "__main__":
