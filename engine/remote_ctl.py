@@ -19,6 +19,12 @@ own git credentials (the same ones the heartbeat pushes with), reads the file an
   status    push a fresh heartbeat now + a phone notice with the bot's status
   start     Sim / paper ONLY: {"cmd": "start", "account": "Sim101"}. A real account is always refused (MFFU: live trading
             only with the owner present). The start body is built here from scratch: no other field of the command is used.
+  pause     {"cmd": "pause", "until": "HH:MM" | "tomorrow" | "YYYY-MM-DD"}: no NEW entries until then (engine/entry_pause.py,
+            checked in engine/guards.entry_problems); an open trade keeps its stop / target. Only ever blocks.
+  resume_entries   lift the pause (it does not undo a remote flatten's "no new entry today", nor start a stopped bot)
+  present   "I'm at the desk" check-in from the phone ({"hours": N} optional, default 4): one line in data/presence.jsonl
+            (engine/presence.py). With the optional presence_required guard (OFF) it lets entries through again.
+kill / stop / flatten / pause are also logged for the weekly hands-off score (engine/handsoff.py).
 
 Never accepted: a start on a real account, any change of config / strategy / sizing / switches (no such command exists).
 
@@ -53,7 +59,8 @@ FUTURE_S = 5 * 60
 EVERY_S = 60.0
 KEEP_IDS = 300
 MAX_FILE = 16 * 1024
-COMMANDS = ("kill", "stop", "flatten", "update", "restart", "status", "start")
+COMMANDS = ("kill", "stop", "flatten", "update", "restart", "status", "start", "pause", "resume_entries", "present")
+HANDSOFF_CMDS = ("kill", "stop", "flatten", "pause")
 ID_RE = re.compile(r"^[A-Za-z0-9._:\-]{1,64}$")
 
 
@@ -172,8 +179,35 @@ def hb_field(path: str | None = None, env=None) -> dict:
     line = None
     if last.get("cmd"):
         line = f"remote: last cmd {last['cmd']} {last.get('status') or 'done'} at {_hm(last.get('t') or 0)} ET"
-    return {"on": enabled(env), "last": line, "status": last.get("status"), "t": last.get("t"),
-            "pending_stop": bool(d.get("pending_stop")), "error": (d.get("fetch") or {}).get("error")}
+    out = {"on": enabled(env), "last": line, "status": last.get("status"), "t": last.get("t"),
+           "pending_stop": bool(d.get("pending_stop")), "error": (d.get("fetch") or {}).get("error")}
+    out.update(_extras(os.path.dirname(path or DONE_PATH)))
+    return out
+
+
+def _extras(folder: str) -> dict:
+    """The pause, presence and hands-off blocks that ride with "remote" to the cloud and the phone's live.json (small).
+    Never raises."""
+    out = {}
+    try:
+        from . import entry_pause
+        p = entry_pause.active(path=os.path.join(folder, entry_pause.NAME))
+        out["pause"] = {"until": p["until"], "label": p.get("label"), "src": p.get("src")} if p else None
+    except Exception:
+        pass
+    try:
+        from . import presence, guards
+        cfg = guards.config(None)
+        out["presence"] = presence.compact(path=os.path.join(folder, "presence.jsonl"), cfg=cfg)
+    except Exception:
+        pass
+    try:
+        from . import handsoff
+        out["handsoff"] = handsoff.compact(path=os.path.join(folder, "handsoff.jsonl"),
+                                           presence_path=os.path.join(folder, "presence.jsonl"))
+    except Exception:
+        pass
+    return out
 
 
 # ---------------------------------------------------------------------- the controller
@@ -236,6 +270,12 @@ class RemoteControl:
         self.bot, self.hooks, self.cwd, self.remote, self.branch = bot, dict(hooks or {}), cwd, remote, branch
         self.done_path, self.clock, self.notify, self.log, self.every_s = done_path, clock, notify or default_notify, log, every_s
         self.env = env
+        folder = os.path.dirname(done_path)            # data/ on the PC: presence.jsonl, handsoff.jsonl
+        self.presence_path = os.path.join(folder, "presence.jsonl")
+        sp = getattr(bot, "state_path", None)
+        from . import entry_pause, handsoff
+        self.pause_path = entry_pause.path_for(bot) if sp else os.path.join(folder, entry_pause.NAME)
+        self.handsoff_path = handsoff.path_for(bot) if sp else os.path.join(folder, "handsoff.jsonl")
         self._stop = threading.Event()
         self._thread = None
         self._err_at = 0.0
@@ -264,6 +304,9 @@ class RemoteControl:
         d["last"] = {"id": cid, **rec}
         save_done(d, self.done_path)
         self.log(f"[remote] {cmd} ({cid}): {status}: {msg}")
+        if cmd in HANDSOFF_CMDS and status == "done" and not re.search(r"already stopped|never started", str(msg)):
+            from . import handsoff
+            handsoff.record(cmd, "phone", str(msg)[:160], now=now, path=self.handsoff_path)
         self.notify(title or f"Remote {cmd}: {status}", str(msg)[:500], f"remote:{cid}:{status}")
 
     # ---- the commands
@@ -303,6 +346,8 @@ class RemoteControl:
             return "done", bot_status_text(bot)          # the fresh heartbeat goes out right after (tick)
         if cmd == "start":
             return self._start(c)
+        if cmd in ("pause", "resume_entries", "present"):
+            return self._owner(cmd, c, now)
         if cmd in ("update", "restart"):
             return self._gated(cmd, now)
         return "refused", "unknown command"
@@ -325,6 +370,27 @@ class RemoteControl:
                                "you at the PC). Remote start works on Sim accounts only.")
         r = self._hook("start", body)
         return ("done", f"started on {acct}") if r.get("ok") else ("failed", f"start failed: {r.get('error')}")
+
+    def _owner(self, cmd: str, c: dict, now: float) -> tuple:
+        """pause / resume_entries / present: files only (engine/entry_pause.py, engine/presence.py); no order is sent."""
+        from . import entry_pause, presence
+        if cmd == "pause":
+            r = entry_pause.set_pause(c.get("until"), now, self.pause_path, src="phone", cid=str(c.get("id")))
+            if not r.get("ok"):
+                return "refused", f"pause not set: {r.get('error')}"
+            open_ = isinstance((getattr(self.bot, "state", None) or {}).get("position"), dict)
+            return "done", (f"no new entries until {r['label']}" + ("; the open trade keeps its stop and target" if open_ else "")
+                            + ". Send resume_entries to lift it.")
+        if cmd == "resume_entries":
+            was = entry_pause.clear(self.pause_path)
+            extra = ""
+            if getattr(self.bot, "_no_entries_day", None):
+                extra = " (a remote flatten earlier today still holds new entries until the next trading day)"
+            if not getattr(self.bot, "running", False):
+                extra += " The bot is stopped: start it at the PC."
+            return "done", ("pause lifted: new entries allowed again" if was else "no pause was running") + extra
+        row = presence.check_in("phone", c.get("hours"), now, self.presence_path)
+        return "done", f"checked in from the phone: present until {presence._hm(row['t'] + int(row['hours'] * 3600))} ET"
 
     def _gated(self, cmd: str, now: float) -> tuple:
         from . import autoupdate as au
