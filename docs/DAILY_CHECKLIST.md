@@ -3,6 +3,9 @@
 One page for every day. The long first-time steps are in `docs/GO_LIVE_TONIGHT.md`. Something red?
 `docs/TROUBLESHOOTING.md`.
 
+**Last visit to the Surface:** `docs/ONE_TIME_SETUP.md` (one line to paste, then `ONE_TIME_SETUP.bat` does the rest:
+no sleep, no update restarts, starts at logon, auto-update, the phone says "Surface offline" if it goes quiet).
+
 **Your desktop icons** (made once by double-clicking `SETUP_SHORTCUTS.bat` in the bot folder):
 
 | Icon | What it does |
@@ -20,7 +23,7 @@ One page for every day. The long first-time steps are in `docs/GO_LIVE_TONIGHT.m
 | every trade | entry, then the result |
 | 16:05 | **Day summary**: trades, P&L, $ to go, session X of 10 |
 | Sunday evening | **Week** report: trades, P&L, eval, PC health |
-| when it happens | internet back after a drop, NinjaTrader disconnected / reconnected, PC silent |
+| when it happens | internet back after a drop, NinjaTrader disconnected / reconnected, **Surface offline since HH:MM ET** (once per outage, 01:30-16:00 ET) and **Surface back online** |
 | day 5 without a trade | MFFU inactivity: place 1 MNQ by hand (MFFU closes the account at 7 days) |
 | eval passed / failed | what to do next |
 | a week + a day before a roll | switch the NinjaTrader chart to the new contract (steps in the notice) |
@@ -70,6 +73,26 @@ NinjaTrader. The 15-minute check and breakeven + costs are already on.
    `live_model.json` and `live_model_lit.json`, under `"lit"`:
    `"scale_in": {"pb": 0.25, "f": 1.0, "rat_k": 1.0, "min_rk": 2.0, "n": 1}` — then restart the bot (LE UPDATE).
    Any FAIL, quantity 0 or a wrong price: leave it off and send Claude the window text and the photo.
+
+## Pass day / fail day (the bot handles it, `engine/eval_life.py`)
+- **Pass** (eval balance $53,000 = +$3,000): the bot stops trading that eval by itself. If MFFU still needs a 2nd traded
+  day, it takes one 1-micro trade the next session, then nothing. Your phone gets **"EVAL PASSED 🎉 next steps"**:
+  1. Check MFFU shows the eval PASSED. 2. Sign the funded agreement. 3. Note the funded account's Name (NinjaTrader,
+     Accounts tab). 4. One command adds it with funded sizing (40% of the room, max $800, a winner <= $1,500):
+     `python -X utf8 -m engine.eval_life --to-funded --account "<Name>" --start <first funded day>`, then restart the bot.
+     It is disarmed: a real account trades only after you arm it yourself (as for the eval).
+  5. Payouts: ask only once the balance is **$53,600+** ($1,500 above the $2,100 buffer), up to $2,000 a request. Record
+     each one: `python -X utf8 -m engine.eval_life --payout 2026-12-01=2000`. Check: `--funded-status`.
+- **Fail** (the max-loss floor reached): the bot stops trading that eval. The phone says **"EVAL FAILED"**: stop the bot
+  on it, buy a new Builder 50K at your price ($91.80 with a code last time; verify the code at checkout), tell Claude the
+  new account and its first session. A 2nd eval starts 5 sessions after the first, never the same day.
+
+## Optional: the eval weekly loss stop (OFF)
+Research (`research/writeups/lit-risk-money.md`): once the eval is down $1,200 in a calendar week, no new trade until
+Monday. 2-week fails 9.2 -> 5.0% (Jan-Jun) with the same passes, money-neutral. Switch it on with one line in **both**
+`live_model.json` and `live_model_lit.json`, under `"lit_sizing"`: `"wk_loss_usd": 1200` (remove it to switch off), then
+restart the bot. The PC Today page and the phone's Eval HQ show it: weekly loss stop off / armed / tripped; the phone gets
+one push when it trips.
 
 ## Rules that never change
 - The bot never arms a real account by itself. You start the eval bot yourself (dashboard, your phrase).

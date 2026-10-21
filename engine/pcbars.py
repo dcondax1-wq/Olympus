@@ -279,6 +279,19 @@ class PCBars:
             live = (getattr(bot, "_nt_last", None) or {}).get((self.sym, tf))
         except Exception:
             live = None
+        if bot is not None and not getattr(bot, "running", False):
+            # bot stopped (Stop, kill switch, before START): its polls no longer refresh _nt_last / the archive, so read
+            # LE_BarFeed's files directly. Without this the cloud saw the PC's bars freeze at the stop ("waiting for
+            # NinjaTrader bars from the PC") and its paper trade of the day was never finished. NinjaTrader bars only.
+            try:
+                from . import ninjatrader as _nt
+                cfg = getattr(bot, "cfg", None) or {}
+                df, _why, _full = _nt.NinjaTraderBars(folder=cfg.get("nt_folder"), roots=cfg.get("nt_feed_roots")) \
+                    .recent_bars(self.sym, tf, "5d")
+                if df is not None and len(df):
+                    live = df
+            except Exception:
+                pass
         arc = archive_read(self.sym, tf, self.root)
         out, _ = merge_basis(arc, live)
         return out

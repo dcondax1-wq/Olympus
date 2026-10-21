@@ -12,6 +12,7 @@ Remove it again:                                            ... uninstall_autost
 param(
     [int]$Port = 8766,
     [string]$Python = "",
+    [string]$User = "",          # DOMAIN\name the task runs as (ONE_TIME_SETUP passes the signed-in owner from its elevated part); default: you
     [switch]$DryRun
 )
 
@@ -20,7 +21,7 @@ $TaskName = 'LiquidityEngine'
 $Root = Split-Path -Parent $PSScriptRoot
 $RunBot = Join-Path $PSScriptRoot 'run_bot.ps1'
 $PsExe = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-$User = "$env:USERDOMAIN\$env:USERNAME"
+if (-not $User) { $User = "$env:USERDOMAIN\$env:USERNAME" }
 
 if (-not $Python) {
     $cmd = Get-Command python -ErrorAction SilentlyContinue

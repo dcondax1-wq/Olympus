@@ -5,7 +5,10 @@
   python -X utf8 -m engine.ops_checks --tick       the scheduled task (scripts/install_ops_task.ps1, every 5 min): whatever
                                                    is due now (pre-session check 01:40 ET, end-of-day 16:05 ET, weekly
                                                    Sunday evening, internet / NinjaTrader drop + recovery, MFFU inactivity,
-                                                   eval passed / failed, contract roll, nightly backup + log rotation)
+                                                   eval passed / failed, contract roll, nightly backup + log rotation;
+                                                   prop business: payout can be requested / time to buy the next eval
+                                                   (tools/business.py), weekly rule-page + discount-code watch
+                                                   (tools/prop_watch.py))
   python -X utf8 -m engine.ops_checks --presession | --eod | --weekly [--send]   build one of the phone notices now
                                                    (prints it; --send also pushes it)
   python -X utf8 -m engine.ops_checks --backup     back up the state files now (backups/, kept 14 days) + rotate logs/
@@ -453,6 +456,21 @@ def check_disk(path: str = ROOT, usage=shutil.disk_usage) -> dict:
     return _c("disk", "Disk space", OK, f"{free:.0f} GB free")
 
 
+def check_data(summary=None) -> dict:
+    """The data files the backtests and the live window read (tools/data_check.py: order, OHLC, gaps, spikes, rolls, 1m vs 5m,
+    VIX/VXN cover). ~3 s."""
+    try:
+        if summary is None:
+            from tools import data_check
+            summary = data_check.summary
+        lvl, txt = summary()
+    except Exception as e:
+        return _c("data", "Data files", SKIP, f"could not check ({e.__class__.__name__})")
+    lv = {"ok": OK, "warn": WARN, "fix": BAD}.get(lvl, WARN)
+    return _c("data", "Data files", lv, txt, "Run python -X utf8 tools/data_check.py for the details; a bad file comes back with "
+              "a fresh TradingView export (tools/grab_tv_export.py).")
+
+
 def check_clock(net: dict) -> dict:
     d = net.get("drift_s")
     if not net.get("up"):
@@ -736,6 +754,7 @@ def run_checks(ctx: dict) -> list:
         checks += check_versions()
         checks += check_auto()
         checks.append(check_backup(ctx["state"], now))
+        checks.append(check_data())
         checks += check_logs(scan_logs(now=now))
     return checks
 
@@ -931,16 +950,25 @@ def eval_result_notice(view: dict, now) -> dict | None:
     failed = ev.get("status") == "failed" or (ev.get("room") is not None and ev.get("room") <= 0)
     if passed:
         body = ("Next: 1) the bot stops trading this eval by itself; do not trade it more. 2) Next morning check MFFU shows "
-                "it passed; if not, place one 1-MNQ trade (minimum days). 3) Sign MFFU's funded agreement. 4) Add the funded "
-                "account in NinjaTrader. 5) Tell Claude: switch sizing to funded before the bot trades it.")
+                "it passed; if not, place one 1-MNQ trade (minimum days). 3) Sign MFFU's funded agreement. 4) Note the funded "
+                "account Name in NinjaTrader. 5) Add it with funded sizing: python -X utf8 -m engine.eval_life --to-funded "
+                "--account \"<Name>\" --start <first funded day>, restart the bot. 6) Payouts: ask once the balance is $53,600+ "
+                "($1,500 above the $2,100 buffer), up to $2,000.")
         return _payload("eval", f"EVAL PASSED: {_money(ev.get('profit'))}", body, f"ops:eval:passed:{start}", now)
     if failed:
         body = (f"Next: 1) Stop the bot on this account. 2) Buy a new MFFU Builder 50K with your discount code (you paid "
-                f"{OWNER_PRICE}; check for a current code first). 3) Tell Claude the new account name and its first session "
-                "(eval_start). Stagger rule: if you run two evals, start the second 5-10 sessions after the first, never the "
+                f"{OWNER_PRICE}; check for a current code first, verify it at checkout). 3) Tell Claude the new account name and its first session "
+                "(eval_start). Stagger rule: if you run two evals, start the second 5 sessions after the first, never the "
                 "same day (same trades, same result).")
         return _payload("eval", "Eval failed: max loss reached", body, f"ops:eval:failed:{start}", now)
     return None
+
+
+def bot_pushes_eval(hb: dict, view: dict) -> bool:
+    """True when the running PC bot sends the eval pass / fail notice itself (heartbeat health.eval_life, engine/eval_life.py)
+    and its heartbeat is fresh: the scheduled task then stays quiet (the fallback for an older or stopped bot)."""
+    hl = (hb or {}).get("health") if isinstance((hb or {}).get("health"), dict) else {}
+    return bool((hl.get("eval_life") or {}).get("pushes") and view.get("fresh"))
 
 
 def roll_notice(now) -> dict | None:
@@ -1087,6 +1115,33 @@ def backup_due(state: dict, now) -> bool:
     return not blackout and now - last > 26 * 3600
 
 
+def backlog_notices(state: dict, now, runner=None) -> list:
+    """Sunday: re-check the research watch-list once per ISO week (tools/backlog_recheck.py, ~10-90 s; result in
+    logs/backlog_check.json) and return a notice for each lead that crossed its adopt bar (key per lead + data version, so
+    one push each). Never raises; a failure is logged and retried next Sunday."""
+    wk = "%d-W%02d" % _et(now).isocalendar()[:2]
+    if state.get("backlog_wk") == wk:
+        return []
+    state["backlog_wk"] = wk
+    try:
+        if runner is None:
+            from tools import backlog_recheck as BR
+            res = BR.score_all(log=lambda *_: None)
+            os.makedirs(os.path.dirname(BR.LOCAL), exist_ok=True)
+            with open(BR.LOCAL, "w", encoding="utf-8") as fh:
+                json.dump(res, fh, indent=1)
+            out = BR.notices(res, now)
+        else:
+            out = runner(now)
+        n = sum(1 for _ in out)
+        ops_log(f"backlog re-check {wk}: {n} lead(s) crossed their bar")
+        state["backlog_last"] = {"wk": wk, "t": int(now), "crossed": n}
+        return out
+    except Exception as e:
+        ops_log(f"backlog re-check {wk} failed: {e.__class__.__name__}: {scrub(str(e), 160)}")
+        return []
+
+
 # ================================================================================================ sending + the tick
 def send(payload: dict, state: dict, sender=None) -> dict:
     """Push once by key (state["sent"]); LE_OPS_PUSH=0: record only. sender(payload) -> result, for tests."""
@@ -1120,13 +1175,36 @@ def due(now) -> dict:
             "daily": (wd < 5 and (100 <= mod <= 135 or 965 <= mod <= 1020)) or (wd == 6 and 1020 <= mod <= 1439)}
 
 
+def business_notices(view: dict, now) -> list:
+    """The prop-business reminders (tools/business.py): a funded account can request a payout, time to buy the next eval.
+    Each pushed once by its key. Never raises."""
+    try:
+        from tools import business
+        return [_payload(n["sub"], n["title"], n["body"], n["key"], now) for n in business.notices(now, pc_eval=view.get("eval"))]
+    except Exception as e:
+        ops_log(f"business notices failed: {e.__class__.__name__}: {scrub(str(e), 120)}")
+        return []
+
+
+def watch_notices(state: dict, now) -> list:
+    """Weekly (Sunday evening window, once per ISO week): the firms' rule pages and discount codes (tools/prop_watch.py).
+    Fetch failures (DNS, 403, timeout) are recorded there and never push. Never raises."""
+    try:
+        from tools import prop_watch
+        return [_payload(n["sub"], n["title"], n["body"], n["key"], now) for n in prop_watch.weekly(now, state)]
+    except Exception as e:
+        ops_log(f"prop watch failed: {e.__class__.__name__}: {scrub(str(e), 120)}")
+        return []
+
+
 def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PATH, do_backup=True) -> list:
     """One scheduled run: every notice that is due, sent once. Returns the results."""
     now = time.time() if now is None else now
     state = load_state(state_path) if state is None else state
     D = due(now)
     full = D["presession"] or D["weekly"]
-    ctx = ctx or gather(now, state=state, light=not full)
+    real = ctx is None                       # the scheduled run gathers its own facts; a ctx handed in is a replay / test:
+    ctx = ctx or gather(now, state=state, light=not full)    # no business reminders and no weekly web fetches then
     out = []
     try:
         notes = watch(ctx, state, now)
@@ -1140,13 +1218,18 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
                 notes.append(eod_notice(view, now))
             if D["weekly"]:
                 notes.append(weekly_notice(view, state, checks, now))
+                notes += backlog_notices(state, now)
         if D["daily"]:
             for n in (inactivity_notice(view, now), roll_notice(now)):
                 if n:
                     notes.append(n)
+            if real:
+                notes += business_notices(view, now)
+        if D["weekly"] and real:
+            notes += watch_notices(state, now)
         n = eval_result_notice(view, now)
-        if n:
-            notes.append(n)
+        if n and not bot_pushes_eval(ctx["hb"], view):
+            notes.append(n)            # the running bot pushes its own pass / fail notice (engine/eval_life.py): no double push
         for p in notes:
             r = send(p, state, sender=sender)
             out.append({"key": p["key"], "title": p["title"], **{k: r.get(k) for k in ("sent", "dup", "skipped", "error")}})
@@ -1172,8 +1255,17 @@ def hb_fields(state_path: str = STATE_PATH) -> dict:
             free = round(shutil.disk_usage(ROOT).free / 1e9, 1)
         except Exception:
             free = None
+        try:                                     # the weekly rule-page / discount-code watcher, small (tools/prop_watch.py)
+            from tools import prop_watch
+            w = prop_watch.summary()
+            watch = {"rules_t": w["rules"]["updated"], "rules_ok": w["rules"]["ok"], "rules_pages": w["rules"]["pages"],
+                     "changes": [{k: c.get(k) for k in ("firm", "key", "seen")} for c in w["rules"]["changes"][:3]],
+                     "codes_t": w["codes"]["updated"], "codes": [{k: c.get(k) for k in ("firm_name", "code", "off", "seen", "new")}
+                                                                 for c in w["codes"]["rows"][:8]]}
+        except Exception:
+            watch = None
         return {"checks_t": lc.get("t"), "bad": lc.get("bad"), "warn": lc.get("warn"), "first_fix": scrub(lc.get("first_fix"), 160) or None,
-                "backup_t": s.get("last_backup_t"), "tick_t": s.get("last_tick_t"), "disk_free_gb": free}
+                "backup_t": s.get("last_backup_t"), "tick_t": s.get("last_tick_t"), "disk_free_gb": free, "watch": watch}
     except Exception:
         return {}
 

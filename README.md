@@ -11,6 +11,7 @@ Double-click in the bot folder (or the desktop icons `SETUP_SHORTCUTS.bat` makes
 **HEALTH_CHECK** (green / red checks with the fix), **UPDATE** (stop, pull, pip, restart, self-test), **STOP_BOT**.
 Every day: [docs/DAILY_CHECKLIST.md](docs/DAILY_CHECKLIST.md). Something red: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
 First-time go-live steps: [docs/GO_LIVE_TONIGHT.md](docs/GO_LIVE_TONIGHT.md).
+Last visit to the Surface (no sleep, no update restarts, starts at logon, offline alert): [docs/ONE_TIME_SETUP.md](docs/ONE_TIME_SETUP.md) (`ONE_TIME_SETUP.bat`).
 
 ## Quick start
 

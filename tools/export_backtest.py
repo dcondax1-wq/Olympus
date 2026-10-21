@@ -339,6 +339,46 @@ def _lessons_lit(trades):
     return {"summary": summary, "factors": out}
 
 
+def lit_row(t, z, P, label="LIT"):
+    """One LIT trade row of the bundle (engine/lit.py trade t + its candidate z, live parameters P) with its plain-language
+    report. main_lit uses it for the replay; tools/recap.py for the live recap cards."""
+    from engine import lit
+    d, q = int(t["dir"]), int(t["qty"])
+    # a scale-in trade's pnl includes the add: its exit price comes from the first entry's points (t["pts"])
+    pts = float(t["pts"]) if t.get("adds") else (t["pnl"] / q + lit.COMM) / lit.PV
+    exit_px = round((t["entry_px"] + d * pts) * 4) / 4
+    rr = (t["target_px"] - t["entry_px"]) * d / t["risk_pts"]
+    banked = bool(P.get("max_rr")) and abs(rr - P["max_rr"]) < 0.01
+    tl = ("VIX band" if "vix" in P["classes"] else "level") + (f" (banked at {P['max_rr']:g}R)" if banked else "")
+    fill_limit = abs(t["entry_px"] - min(float(z["ref_d"]), z["trig_c"]) * d) < 1e-6
+    x = {"day": t["day"], "entry_t": int(t["entry_t"]), "exit_t": int(t["exit_t"]), "side": "LONG" if d == 1 else "SHORT",
+         "entry": t["entry_px"], "stop": t["stop_px"], "target": t["target_px"], "exit_price": exit_px,
+         "exit": "TIME" if t["exit"] == "EOD" else t["exit"], "trigger": "LIT", "grade": None, "regime": None,
+         "risk_pts": round(t["risk_pts"], 2), "qty": q, "risk_usd": round(t["risk_usd"], 2), "r": round(t["r"], 3),
+         "pnl": round(t["pnl"], 2), "half": bool(t.get("half")), "low": t["low"],
+         "pools": [_lit_name(n) for n in z["swept"]], "swept": z["swept"], "sweep_ext": round(z["ext_d"] * d, 2), "zone": None,
+         "target_label": tl, "plan_rr": round(rr, 2),
+         "conf_tags": [f"inducement x{len(z['idm_a'])}", f"displacement {z['disp']:.2f} ATR", f"sweep depth {z['depth_atr']:.2f} ATR"]
+                      + (["high/low-of-week window"] if z["how"] else []) + ([f"{t.get('tf', 5)}m execution"]),
+         "htf_trend": None, "m15_trend": None, "pd_pos": None, "open_loc": None, "mfe": t.get("mfe"), "bars_held": t.get("bars_held"),
+         "checklist": [], "trigger_tf": f"{t.get('tf', 5)}m", "score": None, "smc": {},
+         "depth_atr": z["depth_atr"], "disp": z["disp"], "idm_n": sum(1 for dd, aa in z["idm_a"] if dd <= (P["idm_a"] or [9, 999])[0] and aa <= (P["idm_a"] or [9, 999])[1]),
+         "how": bool(z["how"]), "cisd_level": round(float(z["ref_d"]) * d, 2), "entry_kind": "limit" if fill_limit else "1m CISD",
+         "size_why": t.get("size_why") or [], "weekly_stop": any("weekly stop" in w for w in (t.get("size_why") or [])),
+         "be_off": float(P.get("be_off") or 0.0), "t_check": P.get("t_check"),
+         "adds": [{"t": int(a["t"]), "px": a["px"], "qty": int(a["qty"]), "risk_pts": round(a["rk"], 2),
+                   "pnl": round(a["qty"] * (a["pts"] * lit.PV - lit.COMM), 2)} for a in (t.get("adds") or [])],
+         "qty_total": int(t.get("qty_total") or q)}
+    if x["weekly_stop"]:
+        x["conf_tags"].append("weekly stop: half size")
+    if x["adds"]:
+        x["conf_tags"].append(f"scale-in: +{sum(a['qty'] for a in x['adds'])} micros after breakeven")
+    if x["exit"] == "CUT_T15":
+        x["conf_tags"].append("15-minute check: cut")
+    x["report"] = _report_lit(x, label)
+    return x
+
+
 def main_lit(lm):
     """The LIT replay (engine/lit.py run_x on the whole history = what engine/lit_live.py does every poll, checked by
     tests/test_lit_live.py) in the same bundle shape as the engine's."""
@@ -354,41 +394,7 @@ def main_lit(lm):
     label = lm.get("label") or "LIT"
     trades = []
     for t in T:
-        z = cand[(t["i"], t["dir"])]
-        d, q = int(t["dir"]), int(t["qty"])
-        # a scale-in trade's pnl includes the add: its exit price comes from the first entry's points (t["pts"])
-        pts = float(t["pts"]) if t.get("adds") else (t["pnl"] / q + lit.COMM) / lit.PV
-        exit_px = round((t["entry_px"] + d * pts) * 4) / 4
-        rr = (t["target_px"] - t["entry_px"]) * d / t["risk_pts"]
-        banked = bool(P.get("max_rr")) and abs(rr - P["max_rr"]) < 0.01
-        tl = ("VIX band" if "vix" in P["classes"] else "level") + (f" (banked at {P['max_rr']:g}R)" if banked else "")
-        fill_limit = abs(t["entry_px"] - min(float(z["ref_d"]), z["trig_c"]) * d) < 1e-6
-        x = {"day": t["day"], "entry_t": int(t["entry_t"]), "exit_t": int(t["exit_t"]), "side": "LONG" if d == 1 else "SHORT",
-             "entry": t["entry_px"], "stop": t["stop_px"], "target": t["target_px"], "exit_price": exit_px,
-             "exit": "TIME" if t["exit"] == "EOD" else t["exit"], "trigger": "LIT", "grade": None, "regime": None,
-             "risk_pts": round(t["risk_pts"], 2), "qty": q, "risk_usd": round(t["risk_usd"], 2), "r": round(t["r"], 3),
-             "pnl": round(t["pnl"], 2), "half": bool(t.get("half")), "low": t["low"],
-             "pools": [_lit_name(n) for n in z["swept"]], "swept": z["swept"], "sweep_ext": round(z["ext_d"] * d, 2), "zone": None,
-             "target_label": tl, "plan_rr": round(rr, 2),
-             "conf_tags": [f"inducement x{len(z['idm_a'])}", f"displacement {z['disp']:.2f} ATR", f"sweep depth {z['depth_atr']:.2f} ATR"]
-                          + (["high/low-of-week window"] if z["how"] else []) + ([f"{t.get('tf', 5)}m execution"]),
-             "htf_trend": None, "m15_trend": None, "pd_pos": None, "open_loc": None, "mfe": t.get("mfe"), "bars_held": t.get("bars_held"),
-             "checklist": [], "trigger_tf": f"{t.get('tf', 5)}m", "score": None, "smc": {},
-             "depth_atr": z["depth_atr"], "disp": z["disp"], "idm_n": sum(1 for dd, aa in z["idm_a"] if dd <= (P["idm_a"] or [9, 999])[0] and aa <= (P["idm_a"] or [9, 999])[1]),
-             "how": bool(z["how"]), "cisd_level": round(float(z["ref_d"]) * d, 2), "entry_kind": "limit" if fill_limit else "1m CISD",
-             "size_why": t.get("size_why") or [], "weekly_stop": any("weekly stop" in w for w in (t.get("size_why") or [])),
-             "be_off": float(P.get("be_off") or 0.0), "t_check": P.get("t_check"),
-             "adds": [{"t": int(a["t"]), "px": a["px"], "qty": int(a["qty"]), "risk_pts": round(a["rk"], 2),
-                       "pnl": round(a["qty"] * (a["pts"] * lit.PV - lit.COMM), 2)} for a in (t.get("adds") or [])],
-             "qty_total": int(t.get("qty_total") or q)}
-        if x["weekly_stop"]:
-            x["conf_tags"].append("weekly stop: half size")
-        if x["adds"]:
-            x["conf_tags"].append(f"scale-in: +{sum(a['qty'] for a in x['adds'])} micros after breakeven")
-        if x["exit"] == "CUT_T15":
-            x["conf_tags"].append("15-minute check: cut")
-        x["report"] = _report_lit(x, label)
-        trades.append(x)
+        trades.append(lit_row(t, cand[(t["i"], t["dir"])], P, label))
     by = collections.defaultdict(list)
     for t in trades:
         by[t["day"]].append(t)

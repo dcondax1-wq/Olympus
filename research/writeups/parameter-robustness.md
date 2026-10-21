@@ -388,7 +388,7 @@ neighbourhood says +$8k to +$17k, with 2022 negative and a flat stretch of over 
 - The 1-month eval columns start a fresh MFFU Builder 50K eval on every trading day; they move with size, so they are
   the honest side of every "more money" row.
 - Runs: every row of the first table is stored in the research library (ids above) with all its trades; the grids are in
-  `research/lab/sensitivity.json`; the code is `tools/research_sens.py`.
+  `research/archive/engine-2026-10-17/sensitivity.json` (moved 2026-10-20: research/lab/sensitivity.json is now LIT's, tools/lit_sensitivity.py); the code is `tools/research_sens.py`.
 
 ## Next
 

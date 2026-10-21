@@ -386,7 +386,7 @@ def _docs(out, writeups_dir):
     writeups = []
     extra = [(p, "lit-" + os.path.splitext(os.path.basename(p))[0]) for p in sorted(glob.glob(os.path.join(LIT_DOCS, "*.md")))]
     extra += [(p, "archive-engine-2026-10-17") for p in glob.glob(os.path.join(ARCHIVE, "README.md"))]
-    for p, stem0 in [(p, None) for p in sorted(glob.glob(os.path.join(writeups_dir, "*.md")))] + extra:
+    for p, stem0 in [(p, None) for p in sorted(glob.glob(os.path.join(writeups_dir, "*.md"))) if os.path.basename(p).upper() != "INDEX.MD"] + extra:
         try:
             with open(p, encoding="utf-8") as fh:
                 raw = fh.read()
@@ -872,14 +872,22 @@ def _hub(st, lm, docs):
             h["auto_text"] = _a.auto_text(hl) if hl else None
         except Exception:
             h["auto_text"] = None
+        try:                                      # the business tools (tools/business.py): statement, payouts, tax, planner,
+            from tools import business as _biz    # scaling calendar, goal, ROI; the watchers' last run from the PC heartbeat
+            h["biz"] = _biz.view()
+            ow = (pc.get("ops") or {}).get("watch") if isinstance(pc.get("ops"), dict) else None
+            if ow:
+                h["biz"]["watch_pc"] = ow
+        except Exception as e:
+            print("  business tools unavailable:", e.__class__.__name__, e)
         return h
     except Exception as e:
         print("  hub unavailable:", e.__class__.__name__, e)
         return None
 
 
-HOME_LIVE = ("last_run", "runs", "health", "eval", "eval_2wk", "eval_timing", "model_state", "position", "strategy", "price", "today",
-             "events", "pc", "pc_verdict", "model", "lit_rules", "lit_sizing", "lit", "setups", "armed", "levels", "session", "notices")
+HOME_LIVE = ("last_run", "runs", "health", "eval", "eval_2wk", "eval_life", "eval_timing", "model_state", "position", "strategy", "price", "today",
+             "events", "pc", "pc_verdict", "pc_outage", "pc_checkin", "model", "lit_rules", "lit_sizing", "lit", "setups", "armed", "levels", "session", "notices")
 
 
 def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
@@ -890,11 +898,13 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     ledger = sorted(({**v, "entry_t": int(k)} if str(k).isdigit() else dict(v) for k, v in (st.get("ledger") or {}).items()),
                     key=lambda v: (v.get("day", ""), v.get("entry", "")), reverse=True)
     live = {k: st.get(k) for k in ("last_run", "first_run", "runs", "health", "eval", "model_state", "position", "strategy",
-                                   "equity_filter", "eval_timing", "eval_2wk", "price", "today", "events", "engine_trades", "bars", "bars1", "pools", "pc",
+                                   "equity_filter", "eval_timing", "eval_2wk", "eval_life", "price", "today", "events", "engine_trades", "bars", "bars1", "pools", "pc",
                                    "pc_verdict",                        # engine/accounts.verdict: is the PC bot trading the eval
+                                   "pc_outage", "pc_checkin",           # engine/push.pc_outage / pc_checkin_line: the Surface-offline line
                                    "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
                                    "push", "notices", "learning",       # learning: engine/lit_learn.py summary (the "What the bot learned" card)
-                                   "armed", "watch")}                  # armed: engine/lit_watch.py armed_line; watch: tools/lit_watch.py summary (Yahoo lag)
+                                   "armed", "watch",                   # armed: engine/lit_watch.py armed_line; watch: tools/lit_watch.py summary (Yahoo lag)
+                                   "recaps", "weekly")}                # tools/recap.py: recap cards + brief image (PNGs in recaps/), weekly review
     try:                                   # LIT day analyst (engine/lit_brief.py): today's news re-read from the fresh hub
         from engine import lit_brief
         live["brief"] = lit_brief.with_news(st.get("brief"), _load(os.path.join(ROOT, "data", "news", "hub.json"), None))
@@ -973,7 +983,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     lab_dir = os.path.join(out, "lab"); os.makedirs(lab_dir, exist_ok=True)
     # live files from research/lab (LIT's while live_model.json says lit: tools/lit_dash_data.py); the previous strategy's
     # versions from the archive as <name>_engine (calendar_effects is an engine study, so it is archive-only)
-    LAB_FILES = [(n, os.path.join(LAB, n + ".json")) for n in ("montecarlo", "intraday_heat")]
+    LAB_FILES = [(n, os.path.join(LAB, n + ".json")) for n in ("montecarlo", "intraday_heat", "rejections")]   # rejections: tools/lit_rejections.py
     if lab_scope.is_lit_model(lm):
         LAB_FILES += [(n + "_engine", os.path.join(ARCHIVE, n + ".json")) for n in ("montecarlo", "intraday_heat")]
         LAB_FILES += [("calendar_effects_engine", os.path.join(LAB, "calendar_effects.json"))]
@@ -1024,6 +1034,24 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             shutil.copy(os.path.join(ICONS, name), os.path.join(out, "icons", name))
     if chart_path and os.path.exists(chart_path):
         shutil.copy(chart_path, os.path.join(out, "chart.png"))
+    # recap cards + the brief image (tools/recap.py, <dash>/recaps/*.png): the ones the state lists, nothing else
+    rc_src = os.path.join(os.path.dirname(state_path) or ".", "recaps")
+    rc_dst = os.path.join(out, "recaps")
+    shutil.rmtree(rc_dst, ignore_errors=True)
+    rc = live.get("recaps") or {}
+    want = [c.get("png") for c in rc.get("cards") or [] if isinstance(c, dict)] + [(rc.get("brief") or {}).get("png")]
+    n_rc = 0
+    for rel in want:
+        name = str(rel or "")[len("recaps/"):]
+        if not str(rel or "").startswith("recaps/") or not name.endswith(".png") or "/" in name or "\\" in name or ".." in name:
+            continue
+        src = os.path.join(rc_src, name)
+        if os.path.exists(src):
+            os.makedirs(rc_dst, exist_ok=True)
+            shutil.copy(src, os.path.join(rc_dst, name))
+            n_rc += 1
+    if n_rc:
+        print(f"  recaps: {n_rc} PNGs -> recaps/")
     open(os.path.join(out, ".nojekyll"), "w").close()
     kb = os.path.getsize(os.path.join(out, "data.json")) // 1024
     print(f"site -> {out}: data.json {kb} KB, {len(ledger)} paper trades, {len(data['trades'])} replay trades, "

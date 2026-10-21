@@ -29,6 +29,9 @@ Phone push (engine/push.pc_notify, kind "pc"): a fill more than 4 ticks worse th
 backtest trade missed while the PC bot was running (at once from the bot's own blocked entries, and again from the replay).
 
   python -m engine.fill_audit report [--days N]     # collect + replay + write report / summary, print the summary
+  python -m engine.fill_audit nightly [--day D]     # the nightly verdict (same / differs) -> logs/exec_audit/nightly/<day>.json
+                                                    # + nightly.json; one push only when the day differs (the Watcher runs it
+                                                    # after 16:05 ET; tests/test_drift_nightly.py)
   python -m engine.fill_audit selftest              # see tests/test_fill_audit.py
 Slippage is in ticks (0.25 pt), positive = worse for us. The backtest's own prices already include 1 tick each way.
 """
@@ -478,7 +481,9 @@ def compare(bt: dict | None, lv: dict | None, notes: dict | None = None, live_da
         return {"status": "extra", "day": lv["day"], "entry_t": lv["entry_t"], "side": "LONG" if d == 1 else "SHORT",
                 "routed_t": lv["t_route"], "fill_entry": lv["fill_entry"], "live_qty": lv["qty"], "live_exit": lv["exit_px"],
                 "live_exit_kind": lv["exit_kind"], "live_pnl": real if real is not None else lv.get("model_pnl"),
-                "reason": "the backtest on the same bars has no trade here (feed revision, restart, or a different 1m bar)"}
+                "reason": ("closed by the kill switch: the bot stopped, so its bar archive ends with the backtest's trade still "
+                           "open (no backtest exit to compare with)") if str(lv.get("exit_kind") or "").upper() == "KILL SWITCH" else
+                          "the backtest on the same bars has no trade here (feed revision, restart, or a different 1m bar)"}
     d = int(bt["dir"])
     q = int(lv["qty"] or 0)
     row = {"status": "matched", "day": lv["day"], "entry_t": int(bt["entry_t"]), "side": "LONG" if d == 1 else "SHORT",
@@ -761,6 +766,120 @@ def session_alerts(bot, store=None, now=None, notify=None) -> list:
     return send_alerts(uniq, store, notify)
 
 
+# ================================================================================================ nightly drift summary
+# Each night (Watcher, once after 16:05 ET; or `python -m engine.fill_audit nightly`) the day's live / paper trades are compared
+# with the backtest on the same bars (audit() above) and summed up in one verdict: "same" (every backtest trade taken the same
+# way), "differs" (a reason list) or "no trades". One phone push, only when the day differs (key drift:<day>, sent once).
+# A trade missed while the PC was OFF is listed but not pushed (the cloud already sends "Surface offline"); a qty difference
+# is the sizer's choice (eval sizing / weekly stop), listed as info, never a drift.
+DRIFT_USD = 50.0                     # |execution $| of one trade above this = drift (slippage beyond the backtest's 1 tick)
+NIGHTLY_KEEP = 30
+
+
+def _prev_trading_day(day: str) -> str:
+    d = dt.date.fromisoformat(day) - dt.timedelta(days=1)
+    while d.weekday() >= 5:
+        d -= dt.timedelta(days=1)
+    return d.isoformat()
+
+
+def nightly_day(now=None) -> str:
+    """The session the nightly summary is about: today after 16:05 ET, else the previous trading day."""
+    e = _et(int(now or time.time()))
+    if e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60 + 5:
+        return e.date().isoformat()
+    return _prev_trading_day(e.date().isoformat())
+
+
+def drift_reasons(r: dict) -> tuple[list, list]:
+    """(drift reasons, info notes) of one audit row."""
+    why, info = [], []
+    side = f"{r.get('side', '')} {_hm(r.get('entry_t'))} ET".strip()
+    if r["status"] == "missed":
+        if r.get("pc_on") is False:
+            info.append(f"{side}: missed with the PC off ({r.get('reason')})")
+        else:
+            why.append(f"{side}: the backtest traded, the bot did not ({r.get('reason')}; {_usd(r.get('missed_usd'))} in the backtest)")
+    elif r["status"] == "extra":
+        why.append(f"{side}: the bot traded, the backtest did not ({_usd(r.get('live_pnl'))})")
+    else:
+        for n in r.get("notes") or []:
+            if n.startswith("qty "):
+                info.append(f"{side}: {n}")
+            elif n.startswith(("outcome differs", "entry time differs", "the backtest moved the stop")):
+                why.append(f"{side}: {n}")
+            else:
+                info.append(f"{side}: {n}")
+        for k, lab in (("entry_slip_ticks", "entry"), ("exit_slip_ticks", "exit")):
+            v = r.get(k)
+            if v is not None and abs(v) > SLIP_ALERT_TICKS:
+                why.append(f"{side}: {lab} {v:+.0f} ticks vs the backtest")
+        ex = r.get("exec_usd")
+        if ex is not None and abs(ex) > DRIFT_USD:
+            why.append(f"{side}: execution {_usd(ex)} vs the backtest at the same size")
+    return why, info
+
+
+def nightly_summary(rows: list, day: str, day_info: dict | None = None, now=None) -> dict:
+    """The verdict for one day from its audit rows (pure: tests feed synthetic rows)."""
+    R = [r for r in rows if r.get("day") == day]
+    why, info = [], []
+    for r in R:
+        w, i = drift_reasons(r)
+        why += w; info += i
+    di = (day_info or {}).get(day) or {}
+    M = [r for r in R if r["status"] == "matched"]
+    S = {"v": VERSION, "day": day, "t": int(now or time.time()), "bt_trades": di.get("bt_trades", sum(1 for r in R if r["status"] != "extra")),
+         "live_trades": di.get("live_trades", sum(1 for r in R if r["status"] != "missed")), "matched": len(M),
+         "missed": sum(1 for r in R if r["status"] == "missed"), "extra": sum(1 for r in R if r["status"] == "extra"),
+         "bt_usd": round(sum(float(r.get("bt_pnl") or 0) for r in R if r["status"] != "extra"), 2),
+         "live_usd": round(sum(float(r.get("live_pnl") or 0) for r in R if r.get("live_pnl") is not None), 2),
+         "exec_usd": round(sum(float(r.get("exec_usd") or 0) for r in M), 2),
+         "slip_usd": round(sum(float(r.get("slip_usd") or 0) for r in M), 2),
+         "reasons": why, "info": info, "bars": di.get("bars")}
+    if di and di.get("bars") is False and not R:
+        S["verdict"] = "no data"
+        S["text"] = f"{day}: no bars for this day in data/ (backtest not run)."
+    elif not R:
+        S["verdict"] = "no trades"
+        S["text"] = f"{day}: no trade in the backtest, none by the bot."
+    elif not why and not M and all(r["status"] == "missed" and r.get("pc_on") is False for r in R):
+        S["verdict"] = "pc off"
+        S["text"] = (f"{day}: the PC was off: {len(R)} backtest trade{'s' if len(R) != 1 else ''} not taken "
+                     f"({_usd(S['bt_usd'])} in the backtest).")
+    elif why:
+        S["verdict"] = "differs"
+        S["text"] = f"{day}: live differs from the backtest on the same bars: " + "; ".join(why[:3]) + ("; ..." if len(why) > 3 else "")
+    else:
+        S["verdict"] = "same"
+        S["text"] = (f"{day}: live = backtest ({len(M)} trade{'s' if len(M) != 1 else ''}, execution {_usd(S['exec_usd'])})"
+                     + (f"; note: {info[0]}" if info else ""))
+    return S
+
+
+def nightly_payload(S: dict) -> dict:
+    from engine import push
+    body = "; ".join(S["reasons"][:3]) + (f" (+{len(S['reasons']) - 3} more)" if len(S["reasons"]) > 3 else "")
+    return push.text_payload("PC", "pc", f"Live vs backtest · {S['day']}: differs", body or S["text"], key=f"drift:{S['day']}",
+                             t=S["t"], url="#/accounts")
+
+
+def nightly(day: str | None = None, store=None, now=None, rep: dict | None = None, notify=None, push_it=True, write=True,
+            **audit_kw) -> dict:
+    """Build (and store) the nightly summary of `day`; push once when it differs. rep = an audit() result to reuse."""
+    now = int(now or time.time())
+    day = day or nightly_day(now)
+    if rep is None:
+        rep = audit(store=store, days=[day], now=now, write=write, **audit_kw)
+    S = nightly_summary(rep.get("rows") or [], day, rep.get("days"), now)
+    if write:
+        _write_json(_p(store, os.path.join("nightly", f"{day}.json")), {**S, "rows": [compact(r) for r in rep.get("rows") or [] if r.get("day") == day]})
+        hist = [x for x in (_read_json(_p(store, "nightly.json"), []) or []) if x.get("day") != day]
+        _write_json(_p(store, "nightly.json"), sorted(hist + [{k: v for k, v in S.items() if k != "info"}], key=lambda x: x["day"])[-NIGHTLY_KEEP:])
+    S["pushed"] = send_alerts([nightly_payload(S)], store, notify) if (push_it and S["verdict"] == "differs") else []
+    return S
+
+
 # ================================================================================================ views
 def view(store=None, max_rows=200, refresh_s=1800, now=None) -> dict:
     """The PC dashboard's /api/next/pc/execution: the last report (re-run when older than refresh_s or missing)."""
@@ -773,7 +892,8 @@ def view(store=None, max_rows=200, refresh_s=1800, now=None) -> dict:
             if not rep:
                 return {"v": VERSION, "error": f"{e.__class__.__name__}: {str(e)[:160]}", "rows": [], "summary": summarize([], now, [])}
     return {"v": VERSION, "t": rep.get("t"), "summary": rep.get("summary"), "rows": (rep.get("rows") or [])[-max_rows:][::-1],
-            "days": rep.get("days"), "alert_ticks": SLIP_ALERT_TICKS, "tick_usd": TICK_USD, "comm": COMM}
+            "days": rep.get("days"), "alert_ticks": SLIP_ALERT_TICKS, "tick_usd": TICK_USD, "comm": COMM,
+            "nightly": (_read_json(_p(store, "nightly.json"), []) or [])[-10:][::-1]}
 
 
 def heartbeat_block(store=None) -> dict | None:
@@ -787,6 +907,9 @@ def heartbeat_block(store=None) -> dict | None:
     out = {k: S.get(k) for k in keep}
     out["months"] = (S.get("months") or [])[-3:]
     out["recent"] = (S.get("recent") or [])[:5]
+    nh = _read_json(_p(store, "nightly.json"), []) or []
+    if nh:                                   # the last nightly verdicts (live vs backtest on the same bars)
+        out["nightly"] = [{k: x.get(k) for k in ("day", "verdict", "text", "matched", "missed", "extra", "exec_usd")} for x in nh[-5:]][::-1]
     return out
 
 
@@ -816,6 +939,10 @@ class Watcher:
             res["audit"] = rep["summary"]["text"]
             res["alerts"] = send_alerts(alert_payloads(rep["rows"], now), self.store)
             if after:
+                try:                 # the nightly live-vs-backtest verdict (one push only when the day differs)
+                    res["nightly"] = nightly(e.date().isoformat(), store=self.store, now=now, rep=rep)["verdict"]
+                except Exception as ex:
+                    self.log(f"[exec audit] nightly: {ex.__class__.__name__}: {ex}")
                 self._done_day = day
         self.last = {"t": now, **res}
         return res
@@ -849,12 +976,24 @@ class Watcher:
 def main(argv=None):
     import argparse
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", choices=["report", "selftest"])
+    ap.add_argument("cmd", choices=["report", "selftest", "nightly"])
     ap.add_argument("--days", type=int, default=None, help="audit the last N trading days")
+    ap.add_argument("--day", default=None, help="nightly: the session (default: today after 16:05 ET, else the last one)")
+    ap.add_argument("--no-push", action="store_true", help="nightly: never push")
     a = ap.parse_args(argv)
     if a.cmd == "selftest":
         from tests import test_fill_audit
         raise SystemExit(0 if test_fill_audit.main() else 1)
+    if a.cmd == "nightly":
+        collect(None)
+        S = nightly(a.day, push_it=not a.no_push)
+        print(S["text"])
+        for w in S["reasons"]:
+            print("  differs: " + w)
+        for w in S["info"]:
+            print("  info: " + w)
+        print("pushed:", ", ".join(S["pushed"]) or "nothing", "| ->", _p(None, os.path.join("nightly", S["day"] + ".json")))
+        return
     collect(None)
     days = None
     if a.days:

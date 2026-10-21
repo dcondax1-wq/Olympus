@@ -21,7 +21,8 @@ param(
 )
 $ErrorActionPreference = 'Continue'
 $Root = Split-Path -Parent $PSScriptRoot
-$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+$isAdmin = $false
+try { $isAdmin = [bool]([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator) } catch { }
 $warn = @()
 
 Write-Host "== Machine check"
@@ -90,6 +91,8 @@ Write-Host "== Bot supervisor at logon (scripts\install_autostart.ps1)"
 if ($NinjaTrader) {
     Write-Host "== NinjaTrader starts at logon (Startup folder shortcut)"
     $startup = [Environment]::GetFolderPath('Startup')
+    if (-not $startup) { $startup = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\Startup' }
+    if (-not (Test-Path -LiteralPath $startup)) { New-Item -ItemType Directory -Path $startup -Force | Out-Null }
     $lnk = Join-Path $startup 'NinjaTrader 8 (Liquidity Engine).lnk'
     $sh = New-Object -ComObject WScript.Shell
     $s = $sh.CreateShortcut($lnk); $s.TargetPath = $NinjaTrader; $s.WorkingDirectory = Split-Path -Parent $NinjaTrader; $s.Save()

@@ -190,7 +190,7 @@ def status_view(bot, now: int | None = None) -> dict:
                      "pools": [accounts.clean_text(x, 40) for x in (s.get("pools") or [])][:4]})
     rules = st.get("lit_rules") or {}
     return {"t": now, "verdict": v, "health": h, "model_state": accounts.clean_text(st.get("model_state"), 200),
-            "setups_today": sigs, "pending": pend, "eval_clock": st.get("eval_2wk"),
+            "setups_today": sigs, "pending": pend, "eval_clock": st.get("eval_2wk"), "eval_life": st.get("eval_life"),
             "rules": {k: (rules.get(k) or {}).get("text") for k in ("monday", "weekly_stop")},
             "price": accounts._f(st.get("price")), "bar_t": accounts._i(st.get("t")),
             "started_at": accounts._i(getattr(bot, "started_at", None))}

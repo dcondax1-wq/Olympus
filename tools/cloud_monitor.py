@@ -296,7 +296,8 @@ def paper_size(ledger, t, model, eqf_cfg, shadow_path, sizing_cfg, params, lit_s
         before = {k: v for k, v in ledger.items() if int(k) < int(t["entry_t"])}
         mode = ls.get("mode")
         room = eval_track(before, start)["cushion"] if mode in ("safe_eval", "eval", "two_week") else None
-        state = lit_eval_state(before, start, tday(t["entry_t"])) if mode == "two_week" else None
+        # every eval mode gets the eval state (2026-10-20): the pass / fail lock and the weekly loss stop (wk_loss_usd)
+        state = lit_eval_state(before, start, tday(t["entry_t"])) if mode in ("two_week", "eval", "safe_eval", "fast_eval") else None
         r = sizing.lit_qty(int(t.get("qty") or 0), t, lit_sizing, room=room, state=state, learning=_LEARN)
         if r.get("learn"):
             _LEARN_AT[int(t["entry_t"])] = r["learn"]
@@ -412,8 +413,28 @@ def lit_eval_state(before, start, day):
     if not start:
         return None
     pnl = eval_day_pnl(before, start)
-    return sizing.eval_state({d: v for d, v in pnl.items() if d < day}, pnl.get(day, 0.0),
-                             session=max(1, sizing.eval_session(start, day) or 1))
+    st = sizing.eval_state({d: v for d, v in pnl.items() if d < day}, pnl.get(day, 0.0),
+                           session=max(1, sizing.eval_session(start, day) or 1), today=day)   # today: wk_pnl (wk_loss_usd)
+    st["n_today"] = sum(1 for v in before.values() if v.get("day") == day)
+    return st
+
+
+def eval_life(ledger, lm, now):
+    """State key eval_life (engine/eval_life.view) of the cloud paper eval: open / passed / failed, the minimum-days trade
+    and the eval weekly loss stop (off / armed / tripped). Display only: the pass / fail / weekly-stop pushes come from
+    the PC bot (the real account). None for the old engine or an unknown eval start."""
+    if lm.get("model") != "lit":
+        return None
+    ls = lm.get("lit_sizing") or {}
+    start = ls.get("eval_start")
+    if not start or (ls.get("mode") or "") not in ("two_week", "eval", "safe_eval", "fast_eval"):
+        return None
+    from engine import eval_life as _el
+    e = et(now)
+    over = e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60
+    day = tday(now)
+    return _el.view(eval_day_pnl(ledger, start), start, day, ls, session_over=over,
+                    n_today=sum(1 for v in ledger.values() if v.get("day") == day))
 
 
 def eval_clock(ledger, lm, now):
@@ -687,26 +708,34 @@ def run(out):
     ev_start = (lm.get("lit_sizing") or {}).get("eval_start") if lm["model"] == "lit" else None
     ev_track = {**eval_track(ledger, ev_start), **({"start": ev_start} if ev_start else {})}
     state["eval_2wk"] = eval_clock(ledger, lm, now)
+    try:
+        state["eval_life"] = eval_life(ledger, lm, now)
+    except Exception as e:
+        state["eval_life"] = None
+        print(f"eval lifecycle failed: {e.__class__.__name__}: {e}")
 
     # ---- the always-on PC's heartbeat (engine/heartbeat.py): alert when it went silent in a session
     if pc is None:
         pc = heartbeat.read(cwd=ROOT, now=now)
     pc_alert_at = st.get("pc_alert_at")
-    in_session = et_now.weekday() < 5 and 110 <= et_now.hour * 60 + et_now.minute <= 990   # 01:50-16:30 ET: LIT trades from 02:00
     other_notices = []
-    if pc.get("present") and pc.get("silent") and in_session and now - float(pc_alert_at or 0) > 3600:
-        pc_alert_at = now
-        silent_txt = (f"The {pc.get('host') or 'PC'} bot ({pc.get('adapter')}) last reported {pc['age_s'] // 60} min ago"
-                      f"{' WITH AN OPEN POSITION' if pc.get('position') else ''}. Check the PC / NinjaTrader. The cloud paper bot keeps running.")
-        sent = send_alert("PC BOT SILENT: " + silent_txt) or sent
-        other_notices.append(push.text_payload("Cloud", "pc", "PC bot silent" + (" with a position" if pc.get("position") else ""),
-                                               silent_txt, key=f"pc_silent:{now}", t=now))
+    # loud, once per outage (engine/push.pc_outage): heartbeat older than 30 min inside 01:30-16:00 ET on a weekday ->
+    # "Surface offline since HH:MM ET" (key = the last check-in, so it is never repeated), and "back online" when it reports
+    # again. Replaces the hourly "PC bot silent" repeat, which also needed the PC to have said it was running.
+    pc_outage, outage_notices = push.pc_outage(st.get("pc_outage"), pc, now)
+    for n in outage_notices:
+        if n["key"].startswith("pc_offline:"):
+            pc_alert_at = now
+            sent = send_alert("SURFACE OFFLINE: " + n["body"]) or sent
+        other_notices.append(n)
+    pc_line = push.pc_checkin_line(pc, now)
+    print(f"surface: {pc_line['text']}" + (f" -> {', '.join(n['key'] for n in outage_notices)}" if outage_notices else ""))
     # ---- is the PC bot trading the eval? (engine/accounts.verdict) one push per reason per hour, 01:50-15:55 ET weekdays,
     # whenever it is not green (a silent PC that said it was running already has the alert above)
     from engine import accounts as _accounts
     pc_verdict = _accounts.verdict(pc, now)
     v_due, pc_verdict_alerts = _accounts.alert_due(pc_verdict, now, st.get("pc_verdict_alerts"))
-    if v_due and not (pc_verdict["code"] == "SILENT" and pc.get("silent")):
+    if v_due and pc_verdict["code"] != "SILENT":          # silence has its own once-per-outage alert above
         other_notices.append(_accounts.verdict_notice(pc_verdict, pc, now))
     # a failed / rolled-back PC auto-update, a refused real-account auto-resume (same keys as the PC's own pushes)
     other_notices += _accounts.auto_notices(pc.get("health") if pc.get("present") else None, now)
@@ -746,7 +775,7 @@ def run(out):
     for n in sorted(candidates, key=lambda x: (x["t"], x["kind"] != "fill")) + other_notices:
         if notifier.seen(n):
             continue
-        # entry / outcome are pushed, and "PC bot silent" (the PC may be trading a real eval overnight); eval-timing
+        # entry / outcome are pushed, and "Surface offline" / "back online" (the PC may be trading a real eval overnight); eval-timing
         # notices stay in the app (LE_PUSH_EXTRA=1 pushes them too)
         r = notifier.notify(n, push_it=n["kind"] in ("fill", "outcome", "test", "pc") or push.extra_on(), other_sent=pc_sent)
         push_res.append(r)
@@ -778,12 +807,13 @@ def run(out):
     write_chart(os.path.join(out, "chart.png"), df, state, res, today)
     write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm,
                  push_state=push_state, pc_health=pc.get("health") if pc.get("present") else None,
-                 pc_ops=pc.get("ops") if pc.get("present") else None, upgrades_live=upgrades_live)
+                 pc_ops=pc.get("ops") if pc.get("present") else None,
+                 pc_remote=pc.get("remote") if pc.get("present") else None, upgrades_live=upgrades_live, pc_line=pc_line)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
                  "lit_rules": state.get("lit_rules"), "lit_sizing": (lm.get("lit_sizing") or {}).get("mode") if lm["model"] == "lit" else None,
-                 "health": health, "eval": ev_track, "eval_2wk": state.get("eval_2wk"), "model_state": state.get("model_state"), "position": pos,
+                 "health": health, "eval": ev_track, "eval_2wk": state.get("eval_2wk"), "eval_life": state.get("eval_life"), "model_state": state.get("model_state"), "position": pos,
                  "strategy": lm.get("label"), "params": lm.get("lit") if lm["model"] == "lit" else lm.get("params"),
                  "equity_filter": state.get("equity_filter"),
                  "eval_timing": state.get("eval_timing"), "price": state.get("price"), "today": today,
@@ -806,10 +836,12 @@ def run(out):
                  "levels": [{k: p.get(k) for k in ("label", "price", "side", "strength", "kind")} for p in state.get("active_pools") or []][:60]
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
-                                               "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "ops")},
+                                               "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "ops", "remote")},
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
                  "pc_alert_at": pc_alert_at,
+                 # the Surface-offline tracker (engine/push.pc_outage) and the README / app line (push.pc_checkin_line)
+                 "pc_outage": pc_outage, "pc_checkin": pc_line,
                  # no Yahoo: where the bars came from, the stretches without PC bars (no new paper entries in them)
                  "bars_src": "pc-ninjatrader" if noy else "yahoo", "feed_pauses": pauses if noy else [],
                  "feed_wait": (None if fstat["ok"] else fstat["text"]) if fstat is not None else None,
@@ -828,6 +860,28 @@ def run(out):
         lit_brief.cloud_hook(out, new_state, st, res, df_all, now, lm)
     except Exception as e:  # never fails the run; no notifications
         print("brief failed:", e.__class__.__name__, e)
+    # ---- learn from every trade (tools/recap.py, read-only): a recap card PNG per finished trade (paper ledger + the PC's
+    # routed trades), the morning brief as one image, the Sunday weekly review -> <out>/recaps/ + state "recaps" / "weekly";
+    # their notices (recap / brief / weekly) go out through the same notifier (de-duplicated, nothing older than 2 days)
+    try:
+        from tools import recap
+        try:
+            with open(os.path.join(ROOT, "data", "news", "hub.json"), encoding="utf-8") as fh:
+                hub = json.load(fh)
+        except Exception:
+            hub = None
+        rres = recap.cloud_hook(out, new_state, st, df_all, _LIT_IN.get("df1"), lm, now, hub=hub)
+        for n in rres.get("notices") or []:
+            if notifier.seen(n):
+                continue
+            r = notifier.notify(n, push_it=now - int(n.get("t") or 0) <= PUSH_MAX_AGE_S, other_sent=pc_sent)
+            new_state["notices"].append({**{k: n.get(k) for k in ("t", "kind", "src", "account", "key", "title", "body", "url", "image",
+                                                                  "side", "R", "usd", "exit")},
+                                         "sent": int(r.get("sent") or 0), "at": now})
+        new_state["notices"] = sorted(new_state["notices"], key=lambda x: (x.get("t") or 0, x.get("at") or 0))[-80:]
+        new_state["pushed"] = notifier.keys()[-600:]
+    except Exception as e:  # never fails the run
+        print("recap failed:", e.__class__.__name__, e)
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"
@@ -1018,7 +1072,7 @@ def usd_cell(v):
 
 
 def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None,
-                 pc_health=None, pc_ops=None, upgrades_live=None):
+                 pc_health=None, pc_ops=None, pc_remote=None, upgrades_live=None, pc_line=None):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
     arm = []
@@ -1046,13 +1100,16 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
          f"**paper only, never places orders** - watching since {et(first_run):%b %d %H:%M} ET",
          "", "![NQ 5m today](chart.png)", "",
          "## Status", "| | |", "|---|---|",
+         *([f"| Surface | {pc_line['text']} |"] if isinstance(pc_line, dict) else []),
          f"| Strategy | {state.get('model_label', 'engine')} |",
          *([f"| Cold-streak filter | {(state.get('equity_filter') or {}).get('reason', 'off')} |"] if (lm or {}).get("model") != "lit" else
            [f"| Weekly stop | {((state.get('lit_rules') or {}).get('weekly_stop') or {}).get('text') or 'off'} |",
             f"| Monday rule | {((state.get('lit_rules') or {}).get('monday') or {}).get('text') or ('on (applies on Mondays)' if ((state.get('lit_rules') or {}).get('monday') or {}).get('on') else 'off')} |",
             f"| Sizing mode | {((lm or {}).get('lit_sizing') or {}).get('mode') or 'normal'} |",
             *([f"| Eval clock | {'**RESET RECOMMENDED** - ' if ck.get('reset') else ''}{ck.get('text')} (eval start {ck.get('start') or '?'}) |"]
-              if (ck := state.get("eval_2wk")) else [])]),
+              if (ck := state.get("eval_2wk")) else []),
+            *([f"| Eval loss stop | {(el.get('wk_stop') or {}).get('text') or 'off'} ({el.get('trading')}) |"]
+              if (el := state.get("eval_life")) else [])]),
          f"| Eval timing | **{(state.get('eval_timing') or {}).get('verdict', '?').upper()}**: {(state.get('eval_timing') or {}).get('reason', '')} |",
          f"| Model | **{state.get('model_state', '?')}** |",
          f"| Price | {price:,.2f} (last bar {health['last_bar']}, {health['age_min']} min old) |" if price else "| Price | - |",
@@ -1071,6 +1128,9 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
          f"| Feed | {feed}; {health['rth_bars_today']}/78 RTH bars today; gaps: {', '.join(health['gaps_today']) or 'none'} |",
          *([f"| PC bot version | {_accounts_auto_text(pc_health)} |"] if isinstance(pc_health, dict) else []),
          *([f"| PC checks | {_ops_cell(pc_ops)} |"] if isinstance(pc_ops, dict) and pc_ops else []),
+         *([f"| Remote control | {(pc_remote.get('last') or 'on, no command yet') if pc_remote.get('on') else 'off (LE_REMOTE=1)'}"
+            f"{' · a stop waits for flat' if pc_remote.get('pending_stop') else ''}"
+            f"{(' · ' + str(pc_remote['error'])[:80]) if pc_remote.get('error') else ''} |"] if isinstance(pc_remote, dict) else []),
          f"| Notifications | {_push_cell(push_state)} |",
          f"| Telegram / Discord | {', '.join(sent) if sent else ('on' if chat_on(lm) and (os.environ.get('TG_TOKEN') or os.environ.get('DISCORD_WEBHOOK')) else 'off (the app notifies; LE_ALERTS_CHAT=1 turns chat alerts back on)')} |",
          "", "## Nearest liquidity pools", "| Pool | Price | Distance |", "|---|---:|---:|"]

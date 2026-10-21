@@ -1,0 +1,2494 @@
+{
+ "t": 1792532484,
+ "checks": [
+  {
+   "name": "2026-06-19 preflight on Sim101: every row green (15 green, 0 amber, 0 red)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 exactly one entry routed (backtest: one)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 entry SELL at 12:03:09 = the backtest's fill bar 12:03:00 + 9 s",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 micros 9 = two_week sizing of the backtest trade (9; backtest LIT size 14)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 stop 31001.0 / target 30787.25 = backtest 31001.0 / 30787.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 OIF: one MARKET SELL 9 placed; NinjaTrader fill 30977.25 = backtest entry 30977.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 OIF bracket: STOPMARKET @ 31001.0 + LIMIT @ 30787.25, qty 9, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 exit TIME at 13:00:00 = backtest EOD 13:00:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 routed P&L $603.9 = backtest $939.4 at 9 micros ($603.9)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 broker fills: flatten MARKET 9 @ 30955.25 at 12:55:02 (-298 s vs the model's exit, early-close flat 5 min before the halt); P&L $383.4 vs backtest $603.9 ($-220.50 market vs bar close)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 every routed order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 eval clock at the start: session 1 of 10, $3100.0 to go (= $3,000 - ($-100 prior)), room $1900.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 eval clock after the session: $2496.1 to go = max(0, $3,100 - day $+603.90)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 heartbeat pushed to the (local) heartbeat branch, payload t 13:20:04 = virtual now",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 heartbeat health block: v1, account Sim101 SIM, adapter enabled, feed ninjatrader no Yahoo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 health: auto-update / auto-resume state reported ({\"version\": \"0b6b7e4\", \"branch\": \"main\", \"update\": {\"on\": false, \"result\": null, \"reason\": \"\", \"last_check_t\": null, \"updated_at\": null, \"bad_sha\": null}, \"resu)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 heartbeat branch carries heartbeat.json + the PC's bars (bars_1m.csv.gz, bars_5m.csv.gz, heartbeat.json)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 cloud verdict on the heartbeat: SIM (ON SIM)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 execution tracker: matched (entry slip 0.0 t, exit slip None t, latency 9 s, live $599.4)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 cloud monitor (PC's pushed bars): same paper trade 12:03:00 TIME 9 micros (PC 9), $603.94",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-06-19 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 preflight on Sim101: every row green (15 green, 0 amber, 0 red)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 exactly one entry routed (backtest: one)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 entry SELL at 06:16:07 = the backtest's fill bar 06:16:00 + 7 s",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 micros 14 = two_week sizing of the backtest trade (14; backtest LIT size 27)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 stop 30144.25 / target 30013.75 = backtest 30144.25 / 30013.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 OIF: one MARKET SELL 14 placed; NinjaTrader fill 30129.75 = backtest entry 30129.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 OIF bracket: STOPMARKET @ 30144.25 + LIMIT @ 30013.75, qty 14, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 breakeven: 1 stop move routed to 30128.5 (entry - 1.25 = 30128.5); OIF CHANGE CHANGE;;;;0;;0;30128.50;;;LE1786529760KFUHMS;;",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 exit BE at 07:10:00 = backtest BE 07:10:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 routed P&L $8.4 = backtest $16.2 at 14 micros ($8.4)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 broker fills: exit STOPMARKET 14 @ 30128.75 at 07:09:33, P&L $8.4 vs backtest $8.4",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 every routed order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 eval clock at the start: session 1 of 10, $3100.0 to go (= $3,000 - ($-100 prior)), room $1900.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 eval clock after the session: $3091.6 to go = max(0, $3,100 - day $+8.40)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 heartbeat pushed to the (local) heartbeat branch, payload t 07:29:02 = virtual now",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 heartbeat health block: v1, account Sim101 SIM, adapter enabled, feed ninjatrader no Yahoo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 health: auto-update / auto-resume state reported ({\"version\": \"0b6b7e4\", \"branch\": \"main\", \"update\": {\"on\": false, \"result\": null, \"reason\": \"\", \"last_check_t\": null, \"updated_at\": null, \"bad_sha\": null}, \"resu)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 heartbeat branch carries heartbeat.json + the PC's bars (bars_1m.csv.gz, bars_5m.csv.gz, heartbeat.json)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 cloud verdict on the heartbeat: SIM (ON SIM)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 execution tracker: matched (entry slip 0.0 t, exit slip None t, latency 7 s, live $1.4)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 cloud monitor (PC's pushed bars): same paper trade 06:16:00 BE 14 micros (PC 14), $8.4",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-12 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 preflight on Sim101: every row green (15 green, 0 amber, 0 red)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 no backtest trade -> no order routed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 Monday rule live: without it the backtest trades (STOP long 09:54:00), with it nothing is routed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 eval clock at the start: session 1 of 10, $3100.0 to go (= $3,000 - ($-100 prior)), room $1900.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 eval clock after the session: $3100.0 to go = $3,100 - day $+0.00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 heartbeat pushed to the (local) heartbeat branch, payload t 16:05:02 = virtual now",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 heartbeat health block: v1, account Sim101 SIM, adapter enabled, feed ninjatrader no Yahoo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 health: auto-update / auto-resume state reported ({\"version\": \"e56f7da\", \"branch\": \"main\", \"update\": {\"on\": false, \"result\": null, \"reason\": \"\", \"last_check_t\": null, \"updated_at\": null, \"bad_sha\": null}, \"resu)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 heartbeat branch carries heartbeat.json + the PC's bars (bars_1m.csv.gz, bars_5m.csv.gz, heartbeat.json)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 cloud verdict on the heartbeat: SIM (ON SIM)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 execution tracker: no trade, no missed / extra row",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 cloud monitor on the pushed PC bars: no paper trade either",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-17 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 preflight on Sim101: every row green (15 green, 0 amber, 0 red)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 exactly one entry routed (backtest: one)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 entry BUY at 04:22:04 = the backtest's fill bar 04:22:00 + 4 s",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 micros 11 = two_week sizing of the backtest trade (11; backtest LIT size 5)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 stop 29507.75 / target 29701.25 = backtest 29507.75 / 29701.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 OIF: one MARKET BUY 11 placed; NinjaTrader fill 29546.25 = backtest entry 29546.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 OIF bracket: STOPMARKET @ 29507.75 + LIMIT @ 29701.25, qty 11, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 breakeven: 1 stop move routed to 29547.5 (entry + 1.25 = 29547.5); OIF CHANGE CHANGE;;;;0;;0;29547.50;;;LE1787646120Z883MS;;",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 exit TARGET at 05:56:00 = backtest TARGET 05:56:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 routed P&L $3394.6 = backtest $1543.0 at 11 micros ($3394.6)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 broker fills: exit LIMIT 11 @ 29701.25 at 05:55:32, P&L $3394.6 vs backtest $3394.6",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 every routed order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 eval clock at the start: session 1 of 10, $3100.0 to go (= $3,000 - ($-100 prior)), room $1900.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 eval clock after the session: $0.0 to go = max(0, $3,100 - day $+3,394.60) - PASSED in 1 session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 heartbeat pushed to the (local) heartbeat branch, payload t 06:16:03 = virtual now",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 heartbeat health block: v1, account Sim101 SIM, adapter enabled, feed ninjatrader no Yahoo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 health: auto-update / auto-resume state reported ({\"version\": \"4324bb3\", \"branch\": \"main\", \"update\": {\"on\": false, \"result\": null, \"reason\": \"\", \"last_check_t\": null, \"updated_at\": null, \"bad_sha\": null}, \"resu)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 heartbeat branch carries heartbeat.json + the PC's bars (bars_1m.csv.gz, bars_5m.csv.gz, heartbeat.json)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 cloud verdict on the heartbeat: SIM (ON SIM)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 execution tracker: matched (entry slip 0.0 t, exit slip 0.0 t, latency 4 s, live $3389.1)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 cloud monitor (PC's pushed bars): same paper trade 04:22:00 TARGET 11 micros (PC 11), $3394.6",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-25 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 preflight on Sim101: every row green (15 green, 0 amber, 0 red)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 exactly one entry routed (backtest: one)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 entry BUY at 13:02:03 = the backtest's fill bar 13:02:00 + 3 s",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 micros 5 = two_week sizing of the backtest trade (5; backtest LIT size 2)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 stop 29465.5 / target 29861.5 = backtest 29465.5 / 29861.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 OIF: one MARKET BUY 5 placed; NinjaTrader fill 29517.25 = backtest entry 29517.25",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 OIF bracket: STOPMARKET @ 29465.5 + LIMIT @ 29861.5, qty 5, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 breakeven: 1 stop move routed to 29518.5 (entry + 1.25 = 29518.5); OIF CHANGE CHANGE;;;;0;;0;29518.50;;;LE17877637205GM2MS;;",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 exit TIME at 15:56:00 = backtest EOD 15:56:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 routed P&L $773.0 = backtest $309.2 at 5 micros ($773.0)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 broker fills: flatten MARKET 5 @ 29586.25 at 15:55:32 (-28 s vs the model's exit); P&L $683.0 vs backtest $773.0 ($-90.00 market vs bar close)",
+   "ok": true,
+   "detail": "re-scored: the 15:55 clock flat went at the 15:55:32 poll (-28 s), inside the -60 s tolerance the test now uses"
+  },
+  {
+   "name": "2026-08-26 every routed order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 eval clock at the start: session 1 of 10, $3100.0 to go (= $3,000 - ($-100 prior)), room $1900.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 eval clock after the session: $2327.0 to go = max(0, $3,100 - day $+773.00)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 heartbeat pushed to the (local) heartbeat branch, payload t 16:04:02 = virtual now",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 heartbeat health block: v1, account Sim101 SIM, adapter enabled, feed ninjatrader no Yahoo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 health: auto-update / auto-resume state reported ({\"version\": \"4324bb3\", \"branch\": \"main\", \"update\": {\"on\": false, \"result\": null, \"reason\": \"\", \"last_check_t\": null, \"updated_at\": null, \"bad_sha\": null}, \"resu)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 heartbeat branch carries heartbeat.json + the PC's bars (bars_1m.csv.gz, bars_5m.csv.gz, heartbeat.json)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 cloud verdict on the heartbeat: SIM (ON SIM)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 execution tracker: matched (entry slip 0.0 t, exit slip None t, latency 3 s, live $770.5)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 cloud monitor (PC's pushed bars): same paper trade 13:02:00 TIME 5 micros (PC 5), $773.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-26 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 preflight on Sim101: every row green (15 green, 0 amber, 0 red)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 no backtest trade -> no order routed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 eval clock at the start: session 1 of 10, $3100.0 to go (= $3,000 - ($-100 prior)), room $1900.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 eval clock after the session: $3100.0 to go = $3,100 - day $+0.00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 heartbeat pushed to the (local) heartbeat branch, payload t 16:04:02 = virtual now",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 heartbeat health block: v1, account Sim101 SIM, adapter enabled, feed ninjatrader no Yahoo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 health: auto-update / auto-resume state reported ({\"version\": \"e56f7da\", \"branch\": \"main\", \"update\": {\"on\": false, \"result\": null, \"reason\": \"\", \"last_check_t\": null, \"updated_at\": null, \"bad_sha\": null}, \"resu)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 heartbeat branch carries heartbeat.json + the PC's bars (bars_1m.csv.gz, bars_5m.csv.gz, heartbeat.json)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 cloud verdict on the heartbeat: SIM (ON SIM)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 execution tracker: no trade, no missed / extra row",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 cloud monitor on the pushed PC bars: no paper trade either",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-27 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 preflight on Sim101: every row green (15 green, 0 amber, 0 red)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 exactly one entry routed (backtest: one)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 entry SELL at 07:12:06 = the backtest's fill bar 07:12:00 + 6 s",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 micros 7 = two_week sizing of the backtest trade (7; backtest LIT size 6)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 stop 29930.75 / target 29657.75 = backtest 29930.75 / 29657.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 OIF: one MARKET SELL 7 placed; NinjaTrader fill 29896.5 = backtest entry 29896.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 OIF bracket: STOPMARKET @ 29930.75 + LIMIT @ 29657.75, qty 7, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 exit STOP at 07:24:00 = backtest STOP 07:24:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 routed P&L $-492.8 = backtest $-422.4 at 7 micros ($-492.8)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 broker fills: exit STOPMARKET 7 @ 29931.00 at 07:23:32, P&L $-492.8 vs backtest $-492.8",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 every routed order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 eval clock at the start: session 1 of 10, $3100.0 to go (= $3,000 - ($-100 prior)), room $1900.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 eval clock after the session: $3592.8 to go = max(0, $3,100 - day $-492.80)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 heartbeat pushed to the (local) heartbeat branch, payload t 07:44:03 = virtual now",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 heartbeat health block: v1, account Sim101 SIM, adapter enabled, feed ninjatrader no Yahoo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 health: auto-update / auto-resume state reported ({\"version\": \"65890b5\", \"branch\": \"main\", \"update\": {\"on\": false, \"result\": null, \"reason\": \"\", \"last_check_t\": null, \"updated_at\": null, \"bad_sha\": null}, \"resu)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 heartbeat branch carries heartbeat.json + the PC's bars (bars_1m.csv.gz, bars_5m.csv.gz, heartbeat.json)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 cloud verdict on the heartbeat: SIM (ON SIM)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 execution tracker: matched (entry slip 0.0 t, exit slip None t, latency 6 s, live $-496.3)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 cloud monitor (PC's pushed bars): same paper trade 07:12:00 STOP 7 micros (PC 7), $-492.81",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-08-28 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 preflight on Sim101: every row green (15 green, 0 amber, 0 red)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 exactly one entry routed (backtest: one)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 entry SELL at 02:30:04 = the backtest's fill bar 02:30:00 + 4 s",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 micros 6 = two_week sizing of the backtest trade (6; backtest LIT size 1)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 stop 29400.25 / target 29129.5 = backtest 29400.25 / 29129.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 OIF: one MARKET SELL 6 placed; NinjaTrader fill 29318.5 = backtest entry 29318.5",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 OIF bracket: STOPMARKET @ 29400.25 + LIMIT @ 29129.5, qty 6, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 exit CUT_T15 at 02:46:00 = backtest CUT_T15 02:46:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 routed P&L $-623.4 = backtest $-103.4 at 6 micros ($-620.4)",
+   "ok": false,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 broker fills: flatten MARKET 6 @ 29364.75 at 02:46:03 (+4 s vs the model's exit); P&L $-563.4 vs backtest $-620.4 ($+57.00 market vs bar close)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 15-minute cut: CLOSEPOSITION routed 3.5657286643981934 s after the check bar closed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 every routed order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 eval clock at the start: session 1 of 10, $3100.0 to go (= $3,000 - ($-100 prior)), room $1900.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 eval clock after the session: $3723.4 to go = max(0, $3,100 - day $-623.40)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 heartbeat pushed to the (local) heartbeat branch, payload t 03:06:04 = virtual now",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 heartbeat health block: v1, account Sim101 SIM, adapter enabled, feed ninjatrader no Yahoo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 health: auto-update / auto-resume state reported ({\"version\": \"0b6b7e4\", \"branch\": \"main\", \"update\": {\"on\": false, \"result\": null, \"reason\": \"\", \"last_check_t\": null, \"updated_at\": null, \"bad_sha\": null}, \"resu)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 heartbeat branch carries heartbeat.json + the PC's bars (bars_1m.csv.gz, bars_5m.csv.gz, heartbeat.json)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 cloud verdict on the heartbeat: SIM (ON SIM)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 execution tracker: matched (entry slip 0.0 t, exit slip None t, latency 4 s, live $-626.4)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 cloud monitor (PC's pushed bars): same paper trade 02:30:00 CUT_T15 6 micros (PC 6), $-620.4",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-02 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 preflight on Sim101: every row green (15 green, 0 amber, 0 red)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 KILL 03:06:02: the kill endpoint answered ok",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 KILL: FLATTENEVERYTHING written to incoming and processed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 KILL: NinjaTrader flat on every account",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 KILL: bot stopped, kill flag on",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 KILL: real-account auto-resume turned OFF (it was ON)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 KILL: autostart.json cleared (a Sim restart does not resume either)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 exactly one entry routed (backtest: one)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 entry SELL at 02:54:04 = the backtest's fill bar 02:54:00 + 4 s",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 micros 9 = two_week sizing of the backtest trade (9; backtest LIT size 3)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 stop 29929.75 / target 29689.0 = backtest 29929.75 / 29689.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 OIF: one MARKET SELL 9 placed; NinjaTrader fill 29883.0 = backtest entry 29883.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 OIF bracket: STOPMARKET @ 29929.75 + LIMIT @ 29689.0, qty 9, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 KILL: the only exit is the kill switch; nothing routed after it",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 KILL: the flatten's P&L is booked ($-161.1; broker fill 29891.50 -> $-165.6), so the eval clock counts it",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 eval clock at the start: session 1 of 10, $3100.0 to go (= $3,000 - ($-100 prior)), room $1900.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 eval clock after the session: $3261.1 to go = max(0, $3,100 - day $-161.10)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 heartbeat pushed to the (local) heartbeat branch, payload t 06:19:33 = virtual now",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 heartbeat health block: v1, account Sim101 SIM, adapter enabled, feed ninjatrader no Yahoo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 health: auto-update / auto-resume state reported ({\"version\": \"a66158c\", \"branch\": \"main\", \"update\": {\"on\": false, \"result\": null, \"reason\": \"\", \"last_check_t\": null, \"updated_at\": null, \"bad_sha\": null}, \"resu)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 heartbeat branch carries heartbeat.json + the PC's bars (bars_1m.csv.gz, bars_5m.csv.gz, heartbeat.json)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 cloud verdict on the heartbeat: DISABLED (DISABLED: bot stopped)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 execution tracker: extra (entry slip None t, exit slip None t, latency None s, live $-161.1) - closed by the kill switch: the bot stopped, so its bar archive ends with the backtest's trade still open (no backtest exit to compare with)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-09 cloud monitor (PC's pushed bars): same paper trade 02:54:00 TARGET 9 micros (PC 9), $3479.4",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 preflight on Sim101: every row green (15 green, 0 amber, 0 red)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 START on Sim101 via Bot Control",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 RESTART 03:13:02: server back, the Sim bot auto-resumed",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 RESTART: today's state restored (open routed position)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 RESTART: the model still shows the same open position",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 exactly one entry routed (backtest: one)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 entry SELL at 03:07:07 = the backtest's fill bar 03:07:00 + 7 s",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 micros 6 = two_week sizing of the backtest trade (6; backtest LIT size 2)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 stop 31095.0 / target 30731.0 = backtest 31095.0 / 30731.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 OIF: one MARKET SELL 6 placed; NinjaTrader fill 31040.75 = backtest entry 31040.75",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 OIF bracket: STOPMARKET @ 31095.0 + LIMIT @ 30731.0, qty 6, one OCO",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 RESTART: no duplicate entry (1 MARKET entry order in the day)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 breakeven: 1 stop move routed to 31039.5 (entry - 1.25 = 31039.5); OIF CHANGE CHANGE;;;;0;;0;31039.50;;;LE1790147220E9FGMS;;",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 RESTART: the breakeven CHANGE was routed after the restart (stop still managed)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 exit TARGET at 10:12:00 = backtest TARGET 10:12:00",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 routed P&L $3709.44 = backtest $1236.48 at 6 micros ($3709.44)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 broker fills: exit LIMIT 6 @ 30731.00 at 10:11:32, P&L $3708.6 vs backtest $3709.44",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 every routed order accepted",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 fake NinjaTrader: every OIF line valid",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 eval clock at the start: session 1 of 10, $3100.0 to go (= $3,000 - ($-100 prior)), room $1900.0",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 eval clock after the session: $0.0 to go = max(0, $3,100 - day $+3,709.44) - PASSED in 1 session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 heartbeat pushed to the (local) heartbeat branch, payload t 10:31:02 = virtual now",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 heartbeat health block: v1, account Sim101 SIM, adapter enabled, feed ninjatrader no Yahoo",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 health: auto-update / auto-resume state reported ({\"version\": \"39fb9f6\", \"branch\": \"main\", \"update\": {\"on\": false, \"result\": null, \"reason\": \"\", \"last_check_t\": null, \"updated_at\": null, \"bad_sha\": null}, \"resu)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 heartbeat branch carries heartbeat.json + the PC's bars (bars_1m.csv.gz, bars_5m.csv.gz, heartbeat.json)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 cloud verdict on the heartbeat: SIM (ON SIM)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 execution tracker: matched (entry slip 0.0 t, exit slip None t, latency 7 s, live $3706.44)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 cloud monitor (PC's pushed bars): same paper trade 03:07:00 TARGET 6 micros (PC 6), $3709.44",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "2026-09-23 STOP after the session",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "server logs: no traceback",
+   "ok": true,
+   "detail": ""
+  }
+ ],
+ "days": [
+  {
+   "day": "2026-06-19",
+   "what": "early close (CME halt 13:00): short, flat before the halt",
+   "bt": [
+    {
+     "entry_t": 1781884980,
+     "exit_t": 1781888400,
+     "dir": -1,
+     "pnl": 939.4,
+     "risk_pts": 23.75,
+     "qty": 14,
+     "exit": "EOD",
+     "entry_px": 30977.25,
+     "stop_px": 31001.0,
+     "target_px": 30787.25
+    }
+   ],
+   "routed": [
+    {
+     "t": 1781884989,
+     "side": "sell",
+     "qty": 9,
+     "stop": 31001.0,
+     "target": 30787.25,
+     "entry": 30977.25,
+     "entry_t": 1781884980,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1781888734,
+     "side": "exit",
+     "qty": 9,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1781884980,
+     "reason": "TIME",
+     "pnl": 603.9,
+     "exit_t": 1781888400
+    }
+   ],
+   "oif": [
+    "12:03:09 PLACE;Sim101;MNQ 09-26;SELL;9;MARKET;0;0;DAY;;LE1781884980D7BWME;;",
+    "12:03:09 PLACE;Sim101;MNQ 09-26;BUY;9;STOPMARKET;0;31001.00;DAY;LE1781884980D7BWMO;LE1781884980D7BWMS;;",
+    "12:03:09 PLACE;Sim101;MNQ 09-26;BUY;9;LIMIT;30787.25;0;DAY;LE1781884980D7BWMO;LE1781884980D7BWMT;;",
+    "12:55:02 CLOSEPOSITION;Sim101;MNQ 09-26;;;;;;;;;;",
+    "13:05:33 CLOSEPOSITION;Sim101;MNQ 09-26;;;;;;;;;;"
+   ],
+   "want_qty": 9,
+   "room": 1900.0,
+   "broker_pnl": 383.4,
+   "broker_exit_px": 30955.25,
+   "broker_exit_t": "12:55:02",
+   "broker_exit_type": "MARKET",
+   "broker_vs_bt": -220.5,
+   "eval": {
+    "start": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0,
+     "prior": -100.0
+    },
+    "end": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 2496.1,
+     "room": 2000.0,
+     "balance": 50503.9
+    },
+    "eval_2wk": "session 1 of 10, 10 left, $2,496 to go"
+   },
+   "heartbeat": {
+    "t": "13:20:04",
+    "push": true,
+    "health_v": 1,
+    "auto": {
+     "version": "0b6b7e4",
+     "branch": "main",
+     "update": {
+      "on": false,
+      "result": null,
+      "reason": "",
+      "last_check_t": null,
+      "updated_at": null,
+      "bad_sha": null
+     },
+     "resume": {
+      "on": false,
+      "account": null,
+      "off_reason": null,
+      "last_t": null,
+      "last_result": null,
+      "last_reason": null
+     }
+    },
+    "bars": {
+     "files": [
+      "bars_1m.csv.gz",
+      "bars_5m.csv.gz"
+     ],
+     "last_1m_t": 1781888340,
+     "n_1m": 4119
+    },
+    "verdict": "SIM",
+    "exec": "1 trade audited: slippage $0 ($0 a trade)"
+   },
+   "exec": {
+    "status": "matched",
+    "entry_slip_ticks": 0.0,
+    "exit_slip_ticks": null,
+    "slip_usd": 0.0,
+    "latency_s": 9,
+    "live_qty": 9,
+    "bt_qty": 14,
+    "reason": null,
+    "live_be_t": null,
+    "bt_be_t": 1781888100,
+    "live_exit_kind": "EOD",
+    "live_pnl": 599.4,
+    "notes": [
+     "the backtest moved the stop to breakeven; the bot's move is not in the ledger",
+     "exit was a CLOSEPOSITION: its price is not in outgoing\\ (export NinjaTrader Executions to price it)",
+     "qty 9 vs the backtest's 14 (eval sizing / weekly stop: not an execution cost)"
+    ]
+   },
+   "cloud": {
+    "trades": 1,
+    "entry": "12:03:00",
+    "exit": "TIME",
+    "qty": 9,
+    "usd": 603.94,
+    "bars": "waiting for NinjaTrader bars from the PC (the PC's newest NinjaTrader 1m bar closed 20 min ago)"
+   }
+  },
+  {
+   "day": "2026-08-12",
+   "what": "breakeven exit (be_off: stop to entry - 1.25)",
+   "bt": [
+    {
+     "entry_t": 1786529760,
+     "exit_t": 1786533000,
+     "dir": -1,
+     "pnl": 16.2,
+     "risk_pts": 14.5,
+     "qty": 27,
+     "exit": "BE",
+     "entry_px": 30129.75,
+     "stop_px": 30144.25,
+     "target_px": 30013.75
+    }
+   ],
+   "routed": [
+    {
+     "t": 1786529767,
+     "side": "sell",
+     "qty": 14,
+     "stop": 30144.25,
+     "target": 30013.75,
+     "entry": 30129.75,
+     "entry_t": 1786529760,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1786531774,
+     "side": "modify",
+     "qty": 14,
+     "stop": 30128.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1786529760,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1786533034,
+     "side": "exit",
+     "qty": 14,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1786529760,
+     "reason": "BE",
+     "pnl": 8.4,
+     "exit_t": 1786533000
+    }
+   ],
+   "oif": [
+    "06:16:07 PLACE;Sim101;MNQ 09-26;SELL;14;MARKET;0;0;DAY;;LE1786529760KFUHME;;",
+    "06:16:07 PLACE;Sim101;MNQ 09-26;BUY;14;STOPMARKET;0;30144.25;DAY;LE1786529760KFUHMO;LE1786529760KFUHMS;;",
+    "06:16:07 PLACE;Sim101;MNQ 09-26;BUY;14;LIMIT;30013.75;0;DAY;LE1786529760KFUHMO;LE1786529760KFUHMT;;",
+    "06:49:34 CHANGE;;;;0;;0;30128.50;;;LE1786529760KFUHMS;;",
+    "07:10:33 CLOSEPOSITION;Sim101;MNQ 09-26;;;;;;;;;;"
+   ],
+   "want_qty": 14,
+   "room": 1900.0,
+   "broker_pnl": 8.4,
+   "broker_exit_px": 30128.75,
+   "broker_exit_t": "07:09:33",
+   "broker_exit_type": "STOPMARKET",
+   "broker_vs_bt": 0.0,
+   "eval": {
+    "start": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0,
+     "prior": -100.0
+    },
+    "end": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3091.6,
+     "room": 1908.4,
+     "balance": 49908.4
+    },
+    "eval_2wk": "session 1 of 10, 10 left, $3,092 to go"
+   },
+   "heartbeat": {
+    "t": "07:29:02",
+    "push": true,
+    "health_v": 1,
+    "auto": {
+     "version": "0b6b7e4",
+     "branch": "main",
+     "update": {
+      "on": false,
+      "result": null,
+      "reason": "",
+      "last_check_t": null,
+      "updated_at": null,
+      "bad_sha": null
+     },
+     "resume": {
+      "on": false,
+      "account": null,
+      "off_reason": null,
+      "last_t": null,
+      "last_result": null,
+      "last_reason": null
+     }
+    },
+    "bars": {
+     "files": [
+      "bars_1m.csv.gz",
+      "bars_5m.csv.gz"
+     ],
+     "last_1m_t": 1786534020,
+     "n_1m": 3568,
+     "forming_1m": [
+      1786534140,
+      30108.0
+     ]
+    },
+    "verdict": "SIM",
+    "exec": "No live trades to audit yet."
+   },
+   "exec": {
+    "status": "matched",
+    "entry_slip_ticks": 0.0,
+    "exit_slip_ticks": null,
+    "slip_usd": 0.0,
+    "latency_s": 7,
+    "live_qty": 14,
+    "bt_qty": 27,
+    "reason": null,
+    "live_be_t": 1786531774,
+    "bt_be_t": 1786531740,
+    "live_exit_kind": "BE",
+    "live_pnl": 1.4,
+    "notes": [
+     "exit was a CLOSEPOSITION: its price is not in outgoing\\ (export NinjaTrader Executions to price it)",
+     "qty 14 vs the backtest's 27 (eval sizing / weekly stop: not an execution cost)"
+    ]
+   },
+   "cloud": {
+    "trades": 1,
+    "entry": "06:16:00",
+    "exit": "BE",
+    "qty": 14,
+    "usd": 8.4,
+    "bars": "PC NinjaTrader bars"
+   }
+  },
+  {
+   "day": "2026-08-17",
+   "what": "Monday rule: Monday took Friday's low -> the long setup is blocked, no trade",
+   "bt": [],
+   "routed": [],
+   "oif": [],
+   "eval": {
+    "start": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0,
+     "prior": -100.0
+    },
+    "end": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0
+    },
+    "eval_2wk": "session 1 of 10, 9 left, $3,100 to go"
+   },
+   "heartbeat": {
+    "t": "16:05:02",
+    "push": true,
+    "health_v": 1,
+    "auto": {
+     "version": "e56f7da",
+     "branch": "main",
+     "update": {
+      "on": false,
+      "result": null,
+      "reason": "",
+      "last_check_t": null,
+      "updated_at": null,
+      "bad_sha": null
+     },
+     "resume": {
+      "on": false,
+      "account": null,
+      "off_reason": null,
+      "last_t": null,
+      "last_result": null,
+      "last_reason": null
+     }
+    },
+    "bars": {
+     "files": [
+      "bars_1m.csv.gz",
+      "bars_5m.csv.gz"
+     ],
+     "last_1m_t": 1786996980,
+     "n_1m": 1378,
+     "forming_1m": [
+      1786997040,
+      30377.25
+     ]
+    },
+    "verdict": "SIM",
+    "exec": "No live trades to audit yet."
+   },
+   "exec": {
+    "rows": 0
+   },
+   "cloud": {
+    "trades": 0,
+    "bars": "PC NinjaTrader bars"
+   }
+  },
+  {
+   "day": "2026-08-25",
+   "what": "target",
+   "bt": [
+    {
+     "entry_t": 1787646120,
+     "exit_t": 1787651760,
+     "dir": 1,
+     "pnl": 1543.0,
+     "risk_pts": 38.5,
+     "qty": 5,
+     "exit": "TARGET",
+     "entry_px": 29546.25,
+     "stop_px": 29507.75,
+     "target_px": 29701.25
+    }
+   ],
+   "routed": [
+    {
+     "t": 1787646124,
+     "side": "buy",
+     "qty": 11,
+     "stop": 29507.75,
+     "target": 29701.25,
+     "entry": 29546.25,
+     "entry_t": 1787646120,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1787646307,
+     "side": "modify",
+     "qty": 11,
+     "stop": 29547.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1787646120,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1787651823,
+     "side": "exit",
+     "qty": 11,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1787646120,
+     "reason": "TARGET",
+     "pnl": 3394.6,
+     "exit_t": 1787651760
+    }
+   ],
+   "oif": [
+    "04:22:04 PLACE;Sim101;MNQ 09-26;BUY;11;MARKET;0;0;DAY;;LE1787646120Z883ME;;",
+    "04:22:04 PLACE;Sim101;MNQ 09-26;SELL;11;STOPMARKET;0;29507.75;DAY;LE1787646120Z883MO;LE1787646120Z883MS;;",
+    "04:22:04 PLACE;Sim101;MNQ 09-26;SELL;11;LIMIT;29701.25;0;DAY;LE1787646120Z883MO;LE1787646120Z883MT;;",
+    "04:25:07 CHANGE;;;;0;;0;29547.50;;;LE1787646120Z883MS;;",
+    "05:57:03 CLOSEPOSITION;Sim101;MNQ 09-26;;;;;;;;;;"
+   ],
+   "want_qty": 11,
+   "room": 1900.0,
+   "broker_pnl": 3394.6,
+   "broker_exit_px": 29701.25,
+   "broker_exit_t": "05:55:32",
+   "broker_exit_type": "LIMIT",
+   "broker_vs_bt": 0.0,
+   "eval": {
+    "start": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0,
+     "prior": -100.0
+    },
+    "end": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 0.0,
+     "room": 3194.6,
+     "balance": 53294.6
+    },
+    "eval_2wk": "eval passed in 1 sessions: buy the next one and set lit_sizing.eval_start"
+   },
+   "heartbeat": {
+    "t": "06:16:03",
+    "push": true,
+    "health_v": 1,
+    "auto": {
+     "version": "4324bb3",
+     "branch": "main",
+     "update": {
+      "on": false,
+      "result": null,
+      "reason": "",
+      "last_check_t": null,
+      "updated_at": null,
+      "bad_sha": null
+     },
+     "resume": {
+      "on": false,
+      "account": null,
+      "off_reason": null,
+      "last_t": null,
+      "last_result": null,
+      "last_reason": null
+     }
+    },
+    "bars": {
+     "files": [
+      "bars_1m.csv.gz",
+      "bars_5m.csv.gz"
+     ],
+     "last_1m_t": 1787652900,
+     "n_1m": 2116,
+     "forming_1m": [
+      1787652960,
+      29683.75
+     ]
+    },
+    "verdict": "SIM",
+    "exec": "1 trade audited: slippage $0 ($0 a trade)"
+   },
+   "exec": {
+    "status": "matched",
+    "entry_slip_ticks": 0.0,
+    "exit_slip_ticks": 0.0,
+    "slip_usd": 0.0,
+    "latency_s": 4,
+    "live_qty": 11,
+    "bt_qty": 5,
+    "reason": null,
+    "live_be_t": 1787646307,
+    "bt_be_t": 1787646240,
+    "live_exit_kind": "TARGET",
+    "live_pnl": 3389.1,
+    "notes": [
+     "qty 11 vs the backtest's 5 (eval sizing / weekly stop: not an execution cost)"
+    ]
+   },
+   "cloud": {
+    "trades": 1,
+    "entry": "04:22:00",
+    "exit": "TARGET",
+    "qty": 11,
+    "usd": 3394.6,
+    "bars": "PC NinjaTrader bars"
+   }
+  },
+  {
+   "day": "2026-08-26",
+   "what": "15:55 flat (EOD)",
+   "bt": [
+    {
+     "entry_t": 1787763720,
+     "exit_t": 1787774160,
+     "dir": 1,
+     "pnl": 309.2,
+     "risk_pts": 51.75,
+     "qty": 2,
+     "exit": "EOD",
+     "entry_px": 29517.25,
+     "stop_px": 29465.5,
+     "target_px": 29861.5
+    }
+   ],
+   "routed": [
+    {
+     "t": 1787763723,
+     "side": "buy",
+     "qty": 5,
+     "stop": 29465.5,
+     "target": 29861.5,
+     "entry": 29517.25,
+     "entry_t": 1787763720,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1787765764,
+     "side": "modify",
+     "qty": 5,
+     "stop": 29518.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1787763720,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1787774193,
+     "side": "exit",
+     "qty": 5,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1787763720,
+     "reason": "TIME",
+     "pnl": 773.0,
+     "exit_t": 1787774160
+    }
+   ],
+   "oif": [
+    "13:02:03 PLACE;Sim101;MNQ 09-26;BUY;5;MARKET;0;0;DAY;;LE17877637205GM2ME;;",
+    "13:02:03 PLACE;Sim101;MNQ 09-26;SELL;5;STOPMARKET;0;29465.50;DAY;LE17877637205GM2MO;LE17877637205GM2MS;;",
+    "13:02:03 PLACE;Sim101;MNQ 09-26;SELL;5;LIMIT;29861.50;0;DAY;LE17877637205GM2MO;LE17877637205GM2MT;;",
+    "13:36:04 CHANGE;;;;0;;0;29518.50;;;LE17877637205GM2MS;;",
+    "15:55:32 CLOSEPOSITION;Sim101;MNQ 09-26;;;;;;;;;;",
+    "15:56:32 CLOSEPOSITION;Sim101;MNQ 09-26;;;;;;;;;;"
+   ],
+   "want_qty": 5,
+   "room": 1900.0,
+   "broker_pnl": 683.0,
+   "broker_exit_px": 29586.25,
+   "broker_exit_t": "15:55:32",
+   "broker_exit_type": "MARKET",
+   "broker_vs_bt": -90.0,
+   "eval": {
+    "start": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0,
+     "prior": -100.0
+    },
+    "end": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 2327.0,
+     "room": 2000.0,
+     "balance": 50673.0
+    },
+    "eval_2wk": "session 1 of 10, 9 left, $2,327 to go"
+   },
+   "heartbeat": {
+    "t": "16:04:02",
+    "push": true,
+    "health_v": 1,
+    "auto": {
+     "version": "4324bb3",
+     "branch": "main",
+     "update": {
+      "on": false,
+      "result": null,
+      "reason": "",
+      "last_check_t": null,
+      "updated_at": null,
+      "bad_sha": null
+     },
+     "resume": {
+      "on": false,
+      "account": null,
+      "off_reason": null,
+      "last_t": null,
+      "last_result": null,
+      "last_reason": null
+     }
+    },
+    "bars": {
+     "files": [
+      "bars_1m.csv.gz",
+      "bars_5m.csv.gz"
+     ],
+     "last_1m_t": 1787774520,
+     "n_1m": 4083,
+     "forming_1m": [
+      1787774640,
+      29635.0
+     ]
+    },
+    "verdict": "SIM",
+    "exec": "No live trades to audit yet."
+   },
+   "exec": {
+    "status": "matched",
+    "entry_slip_ticks": 0.0,
+    "exit_slip_ticks": null,
+    "slip_usd": 0.0,
+    "latency_s": 3,
+    "live_qty": 5,
+    "bt_qty": 2,
+    "reason": null,
+    "live_be_t": 1787765764,
+    "bt_be_t": 1787765700,
+    "live_exit_kind": "EOD",
+    "live_pnl": 770.5,
+    "notes": [
+     "exit was a CLOSEPOSITION: its price is not in outgoing\\ (export NinjaTrader Executions to price it)",
+     "qty 5 vs the backtest's 2 (eval sizing / weekly stop: not an execution cost)"
+    ]
+   },
+   "cloud": {
+    "trades": 1,
+    "entry": "13:02:00",
+    "exit": "TIME",
+    "qty": 5,
+    "usd": 773.0,
+    "bars": "PC NinjaTrader bars"
+   }
+  },
+  {
+   "day": "2026-08-27",
+   "what": "no-trade day",
+   "bt": [],
+   "routed": [],
+   "oif": [],
+   "eval": {
+    "start": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0,
+     "prior": -100.0
+    },
+    "end": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0
+    },
+    "eval_2wk": "session 1 of 10, 9 left, $3,100 to go"
+   },
+   "heartbeat": {
+    "t": "16:04:02",
+    "push": true,
+    "health_v": 1,
+    "auto": {
+     "version": "e56f7da",
+     "branch": "main",
+     "update": {
+      "on": false,
+      "result": null,
+      "reason": "",
+      "last_check_t": null,
+      "updated_at": null,
+      "bad_sha": null
+     },
+     "resume": {
+      "on": false,
+      "account": null,
+      "off_reason": null,
+      "last_t": null,
+      "last_result": null,
+      "last_reason": null
+     }
+    },
+    "bars": {
+     "files": [
+      "bars_1m.csv.gz",
+      "bars_5m.csv.gz"
+     ],
+     "last_1m_t": 1787860980,
+     "n_1m": 4139,
+     "forming_1m": [
+      1787861040,
+      29971.25
+     ]
+    },
+    "verdict": "SIM",
+    "exec": "No live trades to audit yet."
+   },
+   "exec": {
+    "rows": 0
+   },
+   "cloud": {
+    "trades": 0,
+    "bars": "PC NinjaTrader bars"
+   }
+  },
+  {
+   "day": "2026-08-28",
+   "what": "stop-out",
+   "bt": [
+    {
+     "entry_t": 1787915520,
+     "exit_t": 1787916240,
+     "dir": -1,
+     "pnl": -422.4,
+     "risk_pts": 34.25,
+     "qty": 6,
+     "exit": "STOP",
+     "entry_px": 29896.5,
+     "stop_px": 29930.75,
+     "target_px": 29657.67
+    }
+   ],
+   "routed": [
+    {
+     "t": 1787915526,
+     "side": "sell",
+     "qty": 7,
+     "stop": 29930.75,
+     "target": 29657.75,
+     "entry": 29896.5,
+     "entry_t": 1787915520,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1787916245,
+     "side": "exit",
+     "qty": 7,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1787915520,
+     "reason": "STOP",
+     "pnl": -492.8,
+     "exit_t": 1787916240
+    }
+   ],
+   "oif": [
+    "07:12:06 PLACE;Sim101;MNQ 09-26;SELL;7;MARKET;0;0;DAY;;LE1787915520WJVUME;;",
+    "07:12:06 PLACE;Sim101;MNQ 09-26;BUY;7;STOPMARKET;0;29930.75;DAY;LE1787915520WJVUMO;LE1787915520WJVUMS;;",
+    "07:12:06 PLACE;Sim101;MNQ 09-26;BUY;7;LIMIT;29657.75;0;DAY;LE1787915520WJVUMO;LE1787915520WJVUMT;;",
+    "07:24:05 CLOSEPOSITION;Sim101;MNQ 09-26;;;;;;;;;;"
+   ],
+   "want_qty": 7,
+   "room": 1900.0,
+   "broker_pnl": -492.8,
+   "broker_exit_px": 29931.0,
+   "broker_exit_t": "07:23:32",
+   "broker_exit_type": "STOPMARKET",
+   "broker_vs_bt": 0.0,
+   "eval": {
+    "start": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0,
+     "prior": -100.0
+    },
+    "end": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3592.8,
+     "room": 1407.2,
+     "balance": 49407.2
+    },
+    "eval_2wk": "session 1 of 10, 10 left, $3,593 to go"
+   },
+   "heartbeat": {
+    "t": "07:44:03",
+    "push": true,
+    "health_v": 1,
+    "auto": {
+     "version": "65890b5",
+     "branch": "main",
+     "update": {
+      "on": false,
+      "result": null,
+      "reason": "",
+      "last_check_t": null,
+      "updated_at": null,
+      "bad_sha": null
+     },
+     "resume": {
+      "on": false,
+      "account": null,
+      "off_reason": null,
+      "last_t": null,
+      "last_result": null,
+      "last_reason": null
+     }
+    },
+    "bars": {
+     "files": [
+      "bars_1m.csv.gz",
+      "bars_5m.csv.gz"
+     ],
+     "last_1m_t": 1787917380,
+     "n_1m": 4139,
+     "forming_1m": [
+      1787917440,
+      29910.75
+     ]
+    },
+    "verdict": "SIM",
+    "exec": "No live trades to audit yet."
+   },
+   "exec": {
+    "status": "matched",
+    "entry_slip_ticks": 0.0,
+    "exit_slip_ticks": null,
+    "slip_usd": 0.0,
+    "latency_s": 6,
+    "live_qty": 7,
+    "bt_qty": 6,
+    "reason": null,
+    "live_be_t": null,
+    "bt_be_t": null,
+    "live_exit_kind": "STOP",
+    "live_pnl": -496.3,
+    "notes": [
+     "exit was a CLOSEPOSITION: its price is not in outgoing\\ (export NinjaTrader Executions to price it)",
+     "qty 7 vs the backtest's 6 (eval sizing / weekly stop: not an execution cost)"
+    ]
+   },
+   "cloud": {
+    "trades": 1,
+    "entry": "07:12:00",
+    "exit": "STOP",
+    "qty": 7,
+    "usd": -492.81,
+    "bars": "PC NinjaTrader bars"
+   }
+  },
+  {
+   "day": "2026-09-02",
+   "what": "15-minute cut (t_check)",
+   "bt": [
+    {
+     "entry_t": 1788330600,
+     "exit_t": 1788331560,
+     "dir": -1,
+     "pnl": -103.4,
+     "risk_pts": 81.75,
+     "qty": 1,
+     "exit": "CUT_T15",
+     "entry_px": 29318.5,
+     "stop_px": 29400.25,
+     "target_px": 29129.3
+    }
+   ],
+   "routed": [
+    {
+     "t": 1788330604,
+     "side": "sell",
+     "qty": 6,
+     "stop": 29400.25,
+     "target": 29129.5,
+     "entry": 29318.5,
+     "entry_t": 1788330600,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1788331563,
+     "side": "exit",
+     "qty": 6,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1788330600,
+     "reason": "CUT_T15",
+     "pnl": -623.4,
+     "exit_t": 1788331560
+    }
+   ],
+   "oif": [
+    "02:30:03 PLACE;Sim101;MNQ 09-26;SELL;6;MARKET;0;0;DAY;;LE17883306007DTGME;;",
+    "02:30:03 PLACE;Sim101;MNQ 09-26;BUY;6;STOPMARKET;0;29400.25;DAY;LE17883306007DTGMO;LE17883306007DTGMS;;",
+    "02:30:03 PLACE;Sim101;MNQ 09-26;BUY;6;LIMIT;29129.50;0;DAY;LE17883306007DTGMO;LE17883306007DTGMT;;",
+    "02:46:03 CLOSEPOSITION;Sim101;MNQ 09-26;;;;;;;;;;"
+   ],
+   "want_qty": 6,
+   "room": 1900.0,
+   "broker_pnl": -563.4,
+   "broker_exit_px": 29364.75,
+   "broker_exit_t": "02:46:03",
+   "broker_exit_type": "MARKET",
+   "broker_vs_bt": 57.0,
+   "eval": {
+    "start": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0,
+     "prior": -100.0
+    },
+    "end": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3723.4,
+     "room": 1276.6,
+     "balance": 49276.6
+    },
+    "eval_2wk": "session 1 of 10, 10 left, $3,723 to go"
+   },
+   "heartbeat": {
+    "t": "03:06:04",
+    "push": true,
+    "health_v": 1,
+    "auto": {
+     "version": "0b6b7e4",
+     "branch": "main",
+     "update": {
+      "on": false,
+      "result": null,
+      "reason": "",
+      "last_check_t": null,
+      "updated_at": null,
+      "bad_sha": null
+     },
+     "resume": {
+      "on": false,
+      "account": null,
+      "off_reason": null,
+      "last_t": null,
+      "last_result": null,
+      "last_reason": null
+     }
+    },
+    "bars": {
+     "files": [
+      "bars_1m.csv.gz",
+      "bars_5m.csv.gz"
+     ],
+     "last_1m_t": 1788332700,
+     "n_1m": 3306,
+     "forming_1m": [
+      1788332760,
+      29394.5
+     ]
+    },
+    "verdict": "SIM",
+    "exec": "1 trade audited: slippage $0 ($0 a trade)"
+   },
+   "exec": {
+    "status": "matched",
+    "entry_slip_ticks": 0.0,
+    "exit_slip_ticks": null,
+    "slip_usd": 0.0,
+    "latency_s": 4,
+    "live_qty": 6,
+    "bt_qty": 1,
+    "reason": null,
+    "live_be_t": null,
+    "bt_be_t": null,
+    "live_exit_kind": "CUT_T15",
+    "live_pnl": -626.4,
+    "notes": [
+     "exit was a CLOSEPOSITION: its price is not in outgoing\\ (export NinjaTrader Executions to price it)",
+     "qty 6 vs the backtest's 1 (eval sizing / weekly stop: not an execution cost)"
+    ]
+   },
+   "cloud": {
+    "trades": 1,
+    "entry": "02:30:00",
+    "exit": "CUT_T15",
+    "qty": 6,
+    "usd": -620.4,
+    "bars": "PC NinjaTrader bars"
+   }
+  },
+  {
+   "day": "2026-09-09",
+   "what": "KILL SWITCH mid-trade (HOLD TO KILL)",
+   "kill": {
+    "t": "03:06:02",
+    "flatten": true,
+    "auto_resume_after": false,
+    "running_after": false,
+    "lines": [
+     "FLATTENEVERYTHING;;;;;;;;;;;;"
+    ]
+   },
+   "bt": [
+    {
+     "entry_t": 1788936840,
+     "exit_t": 1788947940,
+     "dir": -1,
+     "pnl": 1159.8,
+     "risk_pts": 46.75,
+     "qty": 3,
+     "exit": "TARGET",
+     "entry_px": 29883.0,
+     "stop_px": 29929.75,
+     "target_px": 29689.0
+    }
+   ],
+   "routed": [
+    {
+     "t": 1788936844,
+     "side": "sell",
+     "qty": 9,
+     "stop": 29929.75,
+     "target": 29689.0,
+     "entry": 29883.0,
+     "entry_t": 1788936840,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1788937564,
+     "side": "exit",
+     "qty": 9,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1788936840,
+     "reason": "KILL SWITCH",
+     "pnl": -161.1,
+     "exit_t": 1788937563
+    }
+   ],
+   "oif": [
+    "02:54:04 PLACE;Sim101;MNQ 09-26;SELL;9;MARKET;0;0;DAY;;LE178893684039C6ME;;",
+    "02:54:04 PLACE;Sim101;MNQ 09-26;BUY;9;STOPMARKET;0;29929.75;DAY;LE178893684039C6MO;LE178893684039C6MS;;",
+    "02:54:04 PLACE;Sim101;MNQ 09-26;BUY;9;LIMIT;29689.00;0;DAY;LE178893684039C6MO;LE178893684039C6MT;;",
+    "03:06:03 FLATTENEVERYTHING;;;;;;;;;;;;"
+   ],
+   "want_qty": 9,
+   "room": 1900.0,
+   "kill_pnl": -161.1,
+   "broker_pnl": -165.6,
+   "eval": {
+    "start": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0,
+     "prior": -100.0
+    },
+    "end": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3261.1,
+     "room": 1738.9,
+     "balance": 49738.9
+    },
+    "eval_2wk": "session 1 of 10, 10 left, $3,100 to go"
+   },
+   "heartbeat": {
+    "t": "06:19:33",
+    "push": true,
+    "health_v": 1,
+    "auto": {
+     "version": "a66158c",
+     "branch": "main",
+     "update": {
+      "on": false,
+      "result": null,
+      "reason": "",
+      "last_check_t": null,
+      "updated_at": null,
+      "bad_sha": null
+     },
+     "resume": {
+      "on": false,
+      "account": "MFFUEVAL",
+      "off_reason": "kill switch",
+      "last_t": null,
+      "last_result": null,
+      "last_reason": null
+     }
+    },
+    "bars": {
+     "files": [
+      "bars_1m.csv.gz",
+      "bars_5m.csv.gz"
+     ],
+     "last_1m_t": 1788949080,
+     "n_1m": 3259,
+     "forming_1m": [
+      1788937560,
+      29891.25
+     ]
+    },
+    "verdict": "DISABLED",
+    "exec": "No live trades to audit yet."
+   },
+   "exec": {
+    "status": "extra",
+    "entry_slip_ticks": null,
+    "exit_slip_ticks": null,
+    "slip_usd": null,
+    "latency_s": null,
+    "live_qty": 9,
+    "bt_qty": null,
+    "reason": "closed by the kill switch: the bot stopped, so its bar archive ends with the backtest's trade still open (no backtest exit to compare with)",
+    "live_be_t": null,
+    "bt_be_t": null,
+    "live_exit_kind": "KILL SWITCH",
+    "live_pnl": -161.1,
+    "notes": null
+   },
+   "cloud": {
+    "trades": 1,
+    "entry": "02:54:00",
+    "exit": "TARGET",
+    "qty": 9,
+    "usd": 3479.4,
+    "bars": "PC NinjaTrader bars"
+   }
+  },
+  {
+   "day": "2026-09-23",
+   "what": "server RESTART mid-trade (Sim auto-resume)",
+   "restart": {
+    "t": "03:13:02",
+    "restored": "Restored live state from live_state.json (saved 03:13:04 ET): 1 ledger rows, open routed position @03:07, kill=off, day P&L routed $+0, 1 trades today",
+    "n_place_before": 1,
+    "health_ok": true
+   },
+   "bt": [
+    {
+     "entry_t": 1790147220,
+     "exit_t": 1790172720,
+     "dir": -1,
+     "pnl": 1236.48,
+     "risk_pts": 54.25,
+     "qty": 2,
+     "exit": "TARGET",
+     "entry_px": 31040.75,
+     "stop_px": 31095.0,
+     "target_px": 30730.93
+    }
+   ],
+   "routed": [
+    {
+     "t": 1790147227,
+     "side": "sell",
+     "qty": 6,
+     "stop": 31095.0,
+     "target": 30731.0,
+     "entry": 31040.75,
+     "entry_t": 1790147220,
+     "reason": null,
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1790162553,
+     "side": "modify",
+     "qty": 6,
+     "stop": 31039.5,
+     "target": null,
+     "entry": null,
+     "entry_t": 1790147220,
+     "reason": "BE",
+     "pnl": null,
+     "exit_t": null
+    },
+    {
+     "t": 1790172752,
+     "side": "exit",
+     "qty": 6,
+     "stop": null,
+     "target": null,
+     "entry": null,
+     "entry_t": 1790147220,
+     "reason": "TARGET",
+     "pnl": 3709.44,
+     "exit_t": 1790172720
+    }
+   ],
+   "oif": [
+    "03:07:06 PLACE;Sim101;MNQ 12-26;SELL;6;MARKET;0;0;DAY;;LE1790147220E9FGME;;",
+    "03:07:07 PLACE;Sim101;MNQ 12-26;BUY;6;STOPMARKET;0;31095.00;DAY;LE1790147220E9FGMO;LE1790147220E9FGMS;;",
+    "03:07:07 PLACE;Sim101;MNQ 12-26;BUY;6;LIMIT;30731.00;0;DAY;LE1790147220E9FGMO;LE1790147220E9FGMT;;",
+    "07:22:33 CHANGE;;;;0;;0;31039.50;;;LE1790147220E9FGMS;;",
+    "10:12:32 CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;"
+   ],
+   "want_qty": 6,
+   "room": 1900.0,
+   "broker_pnl": 3708.6,
+   "broker_exit_px": 30731.0,
+   "broker_exit_t": "10:11:32",
+   "broker_exit_type": "LIMIT",
+   "broker_vs_bt": -0.84,
+   "eval": {
+    "start": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 3100.0,
+     "room": 1900.0,
+     "balance": 49900.0,
+     "prior": -100.0
+    },
+    "end": {
+     "session": 1,
+     "sessions": 10,
+     "to_target": 0.0,
+     "room": 3509.44,
+     "balance": 53609.44
+    },
+    "eval_2wk": "eval passed in 1 sessions: buy the next one and set lit_sizing.eval_start"
+   },
+   "heartbeat": {
+    "t": "10:31:02",
+    "push": true,
+    "health_v": 1,
+    "auto": {
+     "version": "39fb9f6",
+     "branch": "main",
+     "update": {
+      "on": false,
+      "result": null,
+      "reason": "",
+      "last_check_t": null,
+      "updated_at": null,
+      "bad_sha": null
+     },
+     "resume": {
+      "on": false,
+      "account": null,
+      "off_reason": null,
+      "last_t": null,
+      "last_result": null,
+      "last_reason": null
+     }
+    },
+    "bars": {
+     "files": [
+      "bars_1m.csv.gz",
+      "bars_5m.csv.gz"
+     ],
+     "last_1m_t": 1790173800,
+     "n_1m": 3751,
+     "forming_1m": [
+      1790173860,
+      30683.0
+     ]
+    },
+    "verdict": "SIM",
+    "exec": "0 trades audited: slippage $0; 1 extra ($0)"
+   },
+   "exec": {
+    "status": "matched",
+    "entry_slip_ticks": 0.0,
+    "exit_slip_ticks": null,
+    "slip_usd": 0.0,
+    "latency_s": 7,
+    "live_qty": 6,
+    "bt_qty": 2,
+    "reason": null,
+    "live_be_t": 1790162553,
+    "bt_be_t": 1790162520,
+    "live_exit_kind": "TARGET",
+    "live_pnl": 3706.44,
+    "notes": [
+     "exit was a CLOSEPOSITION: its price is not in outgoing\\ (export NinjaTrader Executions to price it)",
+     "qty 6 vs the backtest's 2 (eval sizing / weekly stop: not an execution cost)"
+    ]
+   },
+   "cloud": {
+    "trades": 1,
+    "entry": "03:07:00",
+    "exit": "TARGET",
+    "qty": 6,
+    "usd": 3709.44,
+    "bars": "PC NinjaTrader bars"
+   }
+  }
+ ],
+ "bugs": []
+}

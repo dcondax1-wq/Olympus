@@ -4,8 +4,10 @@
 // new backtest or write-up) drops the old one from the cache, so a run or write-up opened once stays readable offline.
 // Everything else: cached copy at once, refreshed in the background.
 // Phone notifications (Web Push from the cloud monitor and the PC bot, engine/push.py): every push shows a notification and
-// counts on the app badge; a tap opens the app at the notice (#/activity/<key>).
-const CACHE = 'le-public-v11';
+// counts on the app badge; a tap opens the app at the notice (#/activity/<key>). A kind muted in Settings (more.js, stored at
+// ./__notify-prefs in the badge cache) is still shown (a phone must show every push) but silently and without the badge.
+// A data.json / home.json served from the cache because the network failed carries "x-le-cache: 1" (the app's offline banner).
+const CACHE = 'le-public-v14';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
@@ -23,7 +25,11 @@ self.addEventListener('fetch', (e) => {
   const isData = url.pathname.endsWith('data.json') || url.pathname.endsWith('home.json'), isPage = req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html');
   if (isData || isPage) {
     const key = isData ? (url.pathname.endsWith('home.json') ? './home.json' : './data.json') : './index.html';
-    e.respondWith(fetch(req).then((r) => put(key, r)).catch(() => caches.match(key)));
+    e.respondWith(fetch(req).then((r) => put(key, r)).catch(() => caches.match(key).then((hit) => {
+      if (!hit || !isData) return hit;
+      const h = new Headers(hit.headers); h.set('x-le-cache', '1');
+      return hit.blob().then((b) => new Response(b, { status: 200, headers: h }));
+    })));
     return;
   }
   if (url.search.includes('v=')) { e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((r) => { prune(url); return put(req, r); }))); return; }
@@ -33,6 +39,8 @@ self.addEventListener('fetch', (e) => {
 // ---- notifications
 const badgeGet = () => caches.open(BADGE).then((c) => c.match(BADGE_URL)).then((r) => (r ? r.text() : '0')).then((t) => +t || 0).catch(() => 0);
 const badgeSet = (n) => caches.open(BADGE).then((c) => c.put(BADGE_URL, new Response(String(n)))).catch(() => null);
+const PREFS_URL = './__notify-prefs';
+const prefsGet = () => caches.open(BADGE).then((c) => c.match(PREFS_URL)).then((r) => (r ? r.json() : null)).catch(() => null);
 const safeHash = (u) => (typeof u === 'string' && /^#\/[\w\-/:.%]*$/.test(u) ? u : '#/activity');
 self.addEventListener('push', (e) => {
   let d = {};
@@ -41,11 +49,18 @@ self.addEventListener('push', (e) => {
   const opts = { body: String(d.body || '').slice(0, 600), icon: 'icons/icon-192.png?v=drop1', badge: 'icons/icon-192.png?v=drop1',
     data: { url: safeHash(d.url), key: d.key || null, t: d.t || null }, timestamp: d.t ? d.t * 1000 : Date.now() };
   if (d.tag) { opts.tag = String(d.tag); opts.renotify = true; }
-  e.waitUntil(Promise.all([
+  if (d.require) { opts.requireInteraction = true; opts.vibrate = [400, 150, 400, 150, 400]; }   // the Surface-offline alert stays until tapped
+  // recap card / brief image (tools/recap.py): only a PNG on this app's own site; phones without notification images ignore it
+  if (typeof d.image === 'string' && d.image.length < 300) { try { const iu = new URL(d.image); if (iu.origin === location.origin && /\.png$/.test(iu.pathname)) opts.image = iu.href; } catch (_) {} }
+  e.waitUntil(prefsGet().then((p) => {
+    const muted = p && d.kind && p[d.kind] === false && !d.require;
+    if (muted) { opts.silent = true; opts.renotify = false; }
+    return Promise.all([
     self.registration.showNotification(title, opts),
-    badgeGet().then((n) => badgeSet(n + 1).then(() => (self.navigator && self.navigator.setAppBadge ? self.navigator.setAppBadge(n + 1) : null))).catch(() => null),
+    muted ? null : badgeGet().then((n) => badgeSet(n + 1).then(() => (self.navigator && self.navigator.setAppBadge ? self.navigator.setAppBadge(n + 1) : null))).catch(() => null),
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((cs) => cs.forEach((c) => c.postMessage({ type: 'push', d }))).catch(() => null),
-  ]));
+    ]);
+  }));
 });
 self.addEventListener('notificationclick', (e) => {
   e.notification.close();

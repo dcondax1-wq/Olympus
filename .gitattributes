@@ -1,3 +1,5 @@
 # Windows batch files need CRLF line endings (cmd.exe misreads labels in LF-only files)
 *.bat text eol=crlf
 *.cmd text eol=crlf
+# shell scripts (the Windows-script test harness) keep LF even in a Windows checkout
+*.sh text eol=lf

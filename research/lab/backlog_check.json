@@ -1,0 +1,377 @@
+{
+ "built": "2026-10-20 20:27",
+ "data_key": "17519777-13967504",
+ "data_to": "2026-10-16",
+ "live": {
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "pf": 4.98,
+    "net": 33891,
+    "dd": -2196
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "pf": 2.69,
+    "net": 9493,
+    "dd": -1396
+   },
+   "2026": {
+    "n": 120,
+    "tpw": 2.91,
+    "pf": 4.07,
+    "net": 43385,
+    "dd": -2196
+   }
+  },
+  "eval": {
+   "H1": {
+    "p10": 52.4,
+    "f10": 2.2,
+    "pass": 83.2,
+    "fail": 14.7,
+    "pass_med": 7.0
+   },
+   "H2": {
+    "p10": 56.4,
+    "f10": 2.0,
+    "pass": 79.7,
+    "fail": 14.8,
+    "pass_med": 5.0
+   }
+  }
+ },
+ "leads": {
+  "midday_take": {
+   "lit": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "pf": 5.04,
+     "net": 34474,
+     "dd": -2196
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 2.77,
+     "net": 9954,
+     "dd": -1396
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "pf": 4.14,
+     "net": 44429,
+     "dd": -2196
+    }
+   },
+   "eval": {
+    "H1": {
+     "p10": 52.4,
+     "f10": 2.2,
+     "pass": 83.5,
+     "fail": 14.6,
+     "pass_med": 7.0
+    },
+    "H2": {
+     "p10": 57.4,
+     "f10": 1.7,
+     "pass": 82.8,
+     "fail": 12.0,
+     "pass_med": 5.0
+    }
+   },
+   "have": 7,
+   "need": 20,
+   "checks": {
+    "H1 net above live": true,
+    "H2 net above live": true,
+    "2+ trades a week": true,
+    "eval H1 2-week pass not lower": true,
+    "eval H1 2-week fail within +1": true,
+    "eval H2 2-week pass not lower": true,
+    "eval H2 2-week fail within +1": true,
+    "2026 trades the rule changes >= 20": false
+   },
+   "crossed": false,
+   "gated": null
+  },
+  "pow3_wide": {
+   "lit": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "pf": 6.96,
+     "net": 50774,
+     "dd": -2196
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 2.72,
+     "net": 9665,
+     "dd": -1507
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "pf": 5.27,
+     "net": 60439,
+     "dd": -2196
+    }
+   },
+   "eval": {
+    "H1": {
+     "p10": 54.4,
+     "f10": 1.9,
+     "pass": 84.2,
+     "fail": 14.5,
+     "pass_med": 7.0
+    },
+    "H2": {
+     "p10": 52.6,
+     "f10": 1.9,
+     "pass": 78.4,
+     "fail": 15.4,
+     "pass_med": 6.0
+    }
+   },
+   "have": 19,
+   "need": 30,
+   "checks": {
+    "H1 net above live": true,
+    "H2 net above live": true,
+    "2+ trades a week": true,
+    "eval H1 2-week pass not lower": true,
+    "eval H1 2-week fail within +1": true,
+    "eval H2 2-week pass not lower": false,
+    "eval H2 2-week fail within +1": true,
+    "2026 trades the rule changes >= 30": false
+   },
+   "crossed": false,
+   "gated": null
+  },
+  "idm_size": {
+   "lit": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "pf": 5.1,
+     "net": 42134,
+     "dd": -2826
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 3.45,
+     "net": 13505,
+     "dd": -1916
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "pf": 4.52,
+     "net": 55639,
+     "dd": -2826
+    }
+   },
+   "eval": {
+    "H1": {
+     "p10": 53.5,
+     "f10": 3.8,
+     "pass": 81.2,
+     "fail": 17.4,
+     "pass_med": 6.0
+    },
+    "H2": {
+     "p10": 52.6,
+     "f10": 1.8,
+     "pass": 82.8,
+     "fail": 14.3,
+     "pass_med": 7.0
+    }
+   },
+   "have": 82,
+   "need": 60,
+   "checks": {
+    "H1 net above live": true,
+    "H2 net above live": true,
+    "2+ trades a week": true,
+    "eval H1 2-week pass not lower": true,
+    "eval H1 2-week fail within +1": false,
+    "eval H2 2-week pass not lower": false,
+    "eval H2 2-week fail within +1": true,
+    "2026 trades the rule changes >= 60": true
+   },
+   "crossed": false,
+   "gated": null
+  },
+  "eval_wk_loss_1200": {
+   "lit": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "pf": 4.98,
+     "net": 33891,
+     "dd": -2196
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 2.69,
+     "net": 9493,
+     "dd": -1396
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "pf": 4.07,
+     "net": 43385,
+     "dd": -2196
+    }
+   },
+   "eval": {
+    "H1": {
+     "p10": 52.5,
+     "f10": 1.6,
+     "pass": 85.2,
+     "fail": 12.8,
+     "pass_med": 7.0
+    },
+    "H2": {
+     "p10": 56.5,
+     "f10": 0.8,
+     "pass": 80.8,
+     "fail": 13.0,
+     "pass_med": 5.0
+    }
+   },
+   "have": 120,
+   "need": 200,
+   "checks": {
+    "2+ trades a week": true,
+    "eval H1 2-week pass not lower": true,
+    "eval H1 2-week fail within +1": true,
+    "eval H2 2-week pass not lower": true,
+    "eval H2 2-week fail within +1": true,
+    "2026 trades in the sample >= 200": false
+   },
+   "crossed": false,
+   "gated": null
+  },
+  "vix20_up": {
+   "lit": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "pf": 5.27,
+     "net": 38656,
+     "dd": -2549
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 2.69,
+     "net": 9493,
+     "dd": -1396
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "pf": 4.28,
+     "net": 48150,
+     "dd": -2549
+    }
+   },
+   "eval": {
+    "H1": {
+     "p10": 52.4,
+     "f10": 2.2,
+     "pass": 83.0,
+     "fail": 14.9,
+     "pass_med": 7.0
+    },
+    "H2": {
+     "p10": 56.4,
+     "f10": 2.0,
+     "pass": 79.7,
+     "fail": 14.8,
+     "pass_med": 5.0
+    }
+   },
+   "have": 0,
+   "need": 10,
+   "checks": {
+    "H1 net above live": true,
+    "H2 net above live": false,
+    "2+ trades a week": true,
+    "eval H1 2-week pass not lower": true,
+    "eval H1 2-week fail within +1": true,
+    "eval H2 2-week pass not lower": true,
+    "eval H2 2-week fail within +1": true,
+    "H2 2026 trades on VIX >= 20 days >= 10": false
+   },
+   "crossed": false,
+   "gated": null
+  },
+  "scale_in": {
+   "lit": {
+    "H1": {
+     "n": 80,
+     "tpw": 3.12,
+     "pf": 4.94,
+     "net": 44507,
+     "dd": -2510
+    },
+    "H2": {
+     "n": 40,
+     "tpw": 2.56,
+     "pf": 3.48,
+     "net": 15192,
+     "dd": -1451
+    },
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "pf": 4.43,
+     "net": 59698,
+     "dd": -2510
+    }
+   },
+   "eval": {
+    "H1": {
+     "p10": 51.9,
+     "f10": 2.9,
+     "pass": 80.1,
+     "fail": 18.1,
+     "pass_med": 6.0
+    },
+    "H2": {
+     "p10": 60.0,
+     "f10": 1.8,
+     "pass": 84.8,
+     "fail": 13.0,
+     "pass_med": 5.0
+    }
+   },
+   "have": 47,
+   "need": 52,
+   "checks": {
+    "H1 net above live": true,
+    "H2 net above live": true,
+    "2+ trades a week": true,
+    "eval H1 2-week pass not lower": false,
+    "eval H1 2-week fail within +1": true,
+    "eval H2 2-week pass not lower": true,
+    "eval H2 2-week fail within +1": true,
+    "2026 trades the rule changes >= 52": false
+   },
+   "crossed": false,
+   "gated": "owner's Sim101 roundtrip: python -m engine.ninjatrader --sim-roundtrip-add (docs/DAILY_CHECKLIST.md 'Switch on scale-in')"
+  }
+ },
+ "seconds": 9
+}

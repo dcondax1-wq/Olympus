@@ -14,6 +14,8 @@ heartbeat.json: {"t": unix seconds, "running": bot running, "adapter": paper|nin
                            enabled or the DISABLED reason, armed, NINJATRADER_LIVE set (a bool), NinjaTrader connection,
                            feed source + age of the last 1m / 5m bar, last poll + errors, the LIT stage, setups seen today,
                            orders today, kill flag, uptime; secret-free, ~2 KB; the cloud's verdict: accounts.verdict),
+                 "remote": the phone remote control (engine/remote_ctl.hb_field: on, "remote: last cmd X done at HH:MM ET",
+                           a stop waiting for flat, the last fetch error),
                  "ops": the owner's PC helpers (engine/ops_checks.hb_fields: last check red / yellow count + first fix,
                         last backup, free disk; ~200 bytes)}
 Every beat also writes the payload to logs/heartbeat_last.json (local, gitignored) for HEALTH_CHECK and the ops task.
@@ -183,6 +185,15 @@ def _acct(bot):
         return None
 
 
+def _remote():
+    """The remote-control block (engine/remote_ctl.hb_field: "remote: last cmd X done at HH:MM ET"). Never raises."""
+    try:
+        from . import remote_ctl
+        return remote_ctl.hb_field()
+    except Exception:
+        return None
+
+
 def _exec():
     """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
     try:
@@ -227,7 +238,8 @@ class Heartbeat:
                 "model": (st.get("strategy") or {}).get("model") or cfg.get("model"),
                 "push_pk": _push_pk(),          # phone notifications: the cloud seals the notification key to this (engine/push.py)
                 "every_s": int(self.every_s), "acct": _acct(self.bot), "health": _health(self.bot), "ops": _ops(),
-                "exec": _exec()}                # execution quality summary (engine/fill_audit.py), None before the first audit
+                "exec": _exec(),                # execution quality summary (engine/fill_audit.py), None before the first audit
+                "remote": _remote()}            # phone remote control (engine/remote_ctl.py): the last command and its result
 
     def beat(self) -> dict:
         files = self.bar_files()

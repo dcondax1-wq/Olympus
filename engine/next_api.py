@@ -260,7 +260,7 @@ def writeups():
         except OSError:
             continue
         for n in names:
-            if not n.endswith(".md") or n.upper().startswith("STRATEGY"):
+            if not n.endswith(".md") or n.upper().startswith("STRATEGY") or n.upper() == "INDEX.MD":   # INDEX: tools/writeups_index.py
                 continue
             path = os.path.join(folder, n)
             if os.path.getsize(path) > 400_000:
@@ -363,3 +363,11 @@ router.include_router(_botctl_router)
 # Hub pages (Prop Firms, Business, Market, Learn, System): read-only GETs over research/props + repo files (engine/hub_api.py)
 from .hub_api import router as _hub_router  # noqa: E402
 router.include_router(_hub_router)
+# Business tools (statement, tax year, payout + eval-purchase reminders, scaling calendar, goal, ROI, watchers): engine/biz_api.py
+from .biz_api import router as _biz_router  # noqa: E402
+router.include_router(_biz_router)
+
+# Operator tools (pulse for sound / desktop alerts + tab badge, live chart with the LIT levels, log viewer, NinjaTrader
+# panel, session timeline, settings viewer, morning report): read-only GETs (engine/pcops_api.py)
+from .pcops_api import router as _ops_router  # noqa: E402
+router.include_router(_ops_router)

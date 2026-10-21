@@ -151,122 +151,131 @@ def build(since: str = "2026-01-01", until: str = "9999", params: dict | None = 
     for t in T:
         if not (since <= t["day"] <= until):
             continue
-        z = cand[(t["i"], t["dir"])]
-        d = int(z["dir"])
-        side = "LONG" if d == 1 else "SHORT"
-        kday = int(M.day_of[z["entry_i"]])
-        use1 = B1 is not None and kday in B1.full
-        B = B1 if use1 else B5
-        # the plan, exactly as _run_core builds it
-        ep = min(float(z["ref_d"]), z["trig_c"])
-        stop = z["ext_d"] - P["stop_buf"]
-        risk_plan = ep - stop
-        sh = z["entry_d"] - ep
-        TT = {c: [x + sh for x in v] for c, v in lit.targets_x(M, z, P).items()}
-        best = None
-        for c in P["classes"]:
-            for dist in TT.get(c, []):
-                if dist >= P["min_rr"] * risk_plan:
-                    if best is None or dist < best:
-                        best = dist
-                    break
-        tp = (P["fallback_rr"] * risk_plan) if best is None else (min(best, P["max_rr"] * risk_plan) if P["max_rr"] else best)
-        w = _walk(M, B, z, ep, ep + tp, stop, P)
-        entry_t = int(B.t[w["fill"]]) if w else None
-        if not w or entry_t != int(t["entry_t"]) or abs(w["entry"] * d - t["entry_px"]) > 1e-6:
-            bad.append((t["day"], t["entry_t"], entry_t))
+        rec, miss = record_of(M, B5, B1, cand[(t["i"], t["dir"])], t, P)
+        if rec is None:
+            bad.append(miss)
             continue
-        entry = w["entry"]
-        tg = t["target_px"] * d
-        be_k, xk = _manage(B, d, w["fill"], entry, stop, tg, P["be_r"], w["limit_fill"])
-        if (P.get("be_off") or (B.secs == 60 and (P.get("t_check") or P.get("scale_in")))) and int(B.t[xk]) + B.secs != int(t["exit_t"]):
-            # the 2026-10-20 options (breakeven at entry + be_off, the 15-minute cut, scale-in's stop to the add) end some
-            # trades earlier than the plain walk: the exit bar is the engine's own (exit_t), the breakeven bar the plain rule's
-            xk = int(np.searchsorted(B.t, int(t["exit_t"]) - B.secs))
-            if be_k is not None and be_k > xk:
-                be_k = None
-        if int(B.t[xk]) + B.secs != int(t["exit_t"]):
-            bad.append((t["day"], t["entry_t"], "exit", int(B.t[xk]) + B.secs, t["exit_t"]))
-            continue
-        q = int(t["qty"])
-        pts = float(t["pts"]) if t.get("adds") else (t["pnl"] / q + lit.COMM) / lit.PV   # scale-in: pnl includes the add
-        exit_px = q4(t["entry_px"] + d * pts)
-        kind = t["exit"]
-        # swept levels, with the bar each became known (session boxes) or None (prior day / week / month, gaps, build-ups)
-        L = M.levels(z["k"])
-        lv = []
-        for nm, pd_ in sorted(z["sw"].items(), key=lambda kv: -kv[1]):
-            px = pd_ * d
-            ki = next((x[2] for x in L if x[3] == nm and abs(x[1] - px) < 1e-6), None)
-            lv.append({"k": nm, "label": level_label(nm), "px": round(px, 2),
-                       "t": int(M.t[ki]) if ki is not None and ki >= z["k"] and ki >= 0 and nm[:2] not in ("pd", "pw", "pm") else None})
-        # inducement swings that count (P["idm_a"] = [max dist ATR, max age bars, min count])
-        hi5, lo5, c5, o5 = B5.dirs(d)
-        gate = P.get("idm_a") or [9e9, 10 ** 9, 0]
-        idm = []
-        for dist, age in z.get("idm_a") or []:
-            if dist <= gate[0] and age <= gate[1]:
-                m = z["sweep_i"] - age
-                seg = lo5[m + 1:z["ext_i"] + 1] < lo5[m]
-                tk = m + 1 + int(np.argmax(seg)) if seg.any() else None
-                idm.append({"t": int(M.t[m]), "px": round(float(lo5[m]) * d, 2), "taken_t": int(M.t[tk]) if tk is not None else None})
-        # window: 5m from 2 h before the sweep to 1 h after the exit
-        sweep_t = int(M.t[z["sweep_i"]])
-        a5 = int(np.searchsorted(M.t, sweep_t - 7200))
-        z5 = int(np.searchsorted(M.t, int(t["exit_t"]) + 3600))
-        rec_b1 = None
-        if use1:
-            a1 = int(np.searchsorted(B1.t, w["t0"] - 1200))
-            z1 = int(np.searchsorted(B1.t, max(entry_t + 1200, min(int(t["exit_t"]) + 300, entry_t + 3600))))
-            rec_b1 = _pack(B1, a1, z1)
-        w0, w1 = int(M.t[a5]), int(M.t[z5 - 1]) + 300
-        boxes = []
-        x = M.ctx[z["k"]]
-        for lab, nm, ma, mb in BOXES:
-            if nm not in x:
-                continue
-            hi, lo, ki = x[nm]
-            e_t = int(M.t[ki]) + 300
-            s_t = e_t - 300 * ((mb - ma) // 5) if mb > ma else e_t
-            # exact start = first bar of the box inside the day
-            s, e = x["s"], x["e"]
-            md = M.mod[s:e]
-            ii = np.flatnonzero((md >= ma) & (md < mb))
-            ii = ii[md[ii] >= 1080] if ma >= 1080 else ii[md[ii] < 1080]
-            if len(ii):
-                s_t = int(M.t[s + ii[0]])
-            if e_t > w0 and s_t < w1:
-                boxes.append({"k": lab, "t0": s_t, "t1": e_t, "hi": round(hi, 2), "lo": round(lo, 2)})
-        off = int(dt.datetime.fromtimestamp(entry_t, ET).utcoffset().total_seconds())
-        rid = trade_id(t["day"], entry_t, side)
-        lim = {"px": round(ep * d, 2), "t0": w["t0"], "t1": w["t0"] + P["wait"] * 300,
-               "tap_t": int(B.t[w["tapped"]]) if w["tapped"] is not None else None}
-        rec = {
-            "id": rid, "day": t["day"], "side": side, "d": d, "tf": int(B.secs // 60), "off": off,
-            "qty": q, "risk_usd": round(t["risk_usd"], 2), "risk_pts": round(t["risk_pts"], 2), "pnl": round(t["pnl"], 2),
-            "r": round(t["r"], 3), "exit_kind": kind, "entry_kind": "limit" if w["limit_fill"] else ("1m CISD" if B.secs == 60 else "5m CISD"),
-            "size_why": t.get("size_why") or [],
-            "entry": {"t": entry_t, "px": round(entry * d, 2)},
-            "stop": round(stop * d, 2), "target": round(t["target_px"], 2),
-            "plan_rr": round((t["target_px"] - t["entry_px"]) * d / t["risk_pts"], 2),
-            "target_label": "VIX band" + (" (banked at %gR)" % P["max_rr"] if P.get("max_rr") and abs(tp - P["max_rr"] * risk_plan) < 1e-6 else ""),
-            "be": {"t": int(B.t[be_k])} if be_k is not None else None,
-            "exit": {"t": int(B.t[xk]), "t_end": int(t["exit_t"]), "px": exit_px, "kind": kind},
-            "adds": [{"t": int(a["t"]), "px": a["px"], "qty": int(a["qty"])} for a in (t.get("adds") or [])],
-            "levels": lv,
-            "sweep": {"t": sweep_t, "ext_px": round(z["ext_d"] * d, 2), "ext_t": int(M.t[z["ext_i"]]), "depth_atr": z["depth_atr"]},
-            "idm": idm,
-            "cisd5": {"px": round(float(z["ref_d"]) * d, 2), "ref_t": int(M.t[z["ref_i"]]), "t": int(M.t[z["i"]]), "disp": z["disp"]},
-            "limit": lim,
-            "cisd1": ({"px": round(w["cz"][0] * d, 2), "ref_t": int(B.t[w["cz"][1]]), "t": int(B.t[w["conf"]])} if w["cz"] else None),
-            "boxes": boxes, "b5": _pack(B5, a5, z5), "b1": rec_b1,
-        }
-        out[rid] = rec
+        out[rec["id"]] = rec
     if verbose:
         print(f"chart records: {len(out)} trades ({since} .. {until})" + (f", {len(bad)} not matched: {bad[:5]}" if bad else ""))
     if bad:
         raise RuntimeError(f"{len(bad)} trades did not reproduce exactly: {bad[:5]}")
     return out
+
+
+def record_of(M, B5, B1, z, t, P):
+    """(chart record, None) of one engine trade t (engine/lit.py run_x / run_live row) and its candidate z on market M
+    (B5 / B1 = the executor bars, B1 None on 5m), or (None, why) when the walk does not reproduce the trade exactly.
+    Used by build() (research data) and tools/recap.py (the cloud's live bars)."""
+    from engine import lit
+    d = int(z["dir"])
+    side = "LONG" if d == 1 else "SHORT"
+    kday = int(M.day_of[z["entry_i"]])
+    use1 = B1 is not None and kday in B1.full
+    B = B1 if use1 else B5
+    # the plan, exactly as _run_core builds it
+    ep = min(float(z["ref_d"]), z["trig_c"])
+    stop = z["ext_d"] - P["stop_buf"]
+    risk_plan = ep - stop
+    sh = z["entry_d"] - ep
+    TT = {c: [x + sh for x in v] for c, v in lit.targets_x(M, z, P).items()}
+    best = None
+    for c in P["classes"]:
+        for dist in TT.get(c, []):
+            if dist >= P["min_rr"] * risk_plan:
+                if best is None or dist < best:
+                    best = dist
+                break
+    tp = (P["fallback_rr"] * risk_plan) if best is None else (min(best, P["max_rr"] * risk_plan) if P["max_rr"] else best)
+    w = _walk(M, B, z, ep, ep + tp, stop, P)
+    entry_t = int(B.t[w["fill"]]) if w else None
+    if not w or entry_t != int(t["entry_t"]) or abs(w["entry"] * d - t["entry_px"]) > 1e-6:
+        return None, (t["day"], t["entry_t"], entry_t)
+    entry = w["entry"]
+    tg = t["target_px"] * d
+    be_k, xk = _manage(B, d, w["fill"], entry, stop, tg, P["be_r"], w["limit_fill"])
+    if (P.get("be_off") or (B.secs == 60 and (P.get("t_check") or P.get("scale_in")))) and int(B.t[xk]) + B.secs != int(t["exit_t"]):
+        # the 2026-10-20 options (breakeven at entry + be_off, the 15-minute cut, scale-in's stop to the add) end some
+        # trades earlier than the plain walk: the exit bar is the engine's own (exit_t), the breakeven bar the plain rule's
+        xk = int(np.searchsorted(B.t, int(t["exit_t"]) - B.secs))
+        if be_k is not None and be_k > xk:
+            be_k = None
+    if int(B.t[xk]) + B.secs != int(t["exit_t"]):
+        return None, (t["day"], t["entry_t"], "exit", int(B.t[xk]) + B.secs, t["exit_t"])
+    q = int(t["qty"])
+    pts = float(t["pts"]) if t.get("adds") else (t["pnl"] / q + lit.COMM) / lit.PV   # scale-in: pnl includes the add
+    exit_px = q4(t["entry_px"] + d * pts)
+    kind = t["exit"]
+    # swept levels, with the bar each became known (session boxes) or None (prior day / week / month, gaps, build-ups)
+    L = M.levels(z["k"])
+    lv = []
+    for nm, pd_ in sorted(z["sw"].items(), key=lambda kv: -kv[1]):
+        px = pd_ * d
+        ki = next((x[2] for x in L if x[3] == nm and abs(x[1] - px) < 1e-6), None)
+        lv.append({"k": nm, "label": level_label(nm), "px": round(px, 2),
+                   "t": int(M.t[ki]) if ki is not None and ki >= z["k"] and ki >= 0 and nm[:2] not in ("pd", "pw", "pm") else None})
+    # inducement swings that count (P["idm_a"] = [max dist ATR, max age bars, min count])
+    hi5, lo5, c5, o5 = B5.dirs(d)
+    gate = P.get("idm_a") or [9e9, 10 ** 9, 0]
+    idm = []
+    for dist, age in z.get("idm_a") or []:
+        if dist <= gate[0] and age <= gate[1]:
+            m = z["sweep_i"] - age
+            seg = lo5[m + 1:z["ext_i"] + 1] < lo5[m]
+            tk = m + 1 + int(np.argmax(seg)) if seg.any() else None
+            idm.append({"t": int(M.t[m]), "px": round(float(lo5[m]) * d, 2), "taken_t": int(M.t[tk]) if tk is not None else None})
+    # window: 5m from 2 h before the sweep to 1 h after the exit
+    sweep_t = int(M.t[z["sweep_i"]])
+    a5 = int(np.searchsorted(M.t, sweep_t - 7200))
+    z5 = int(np.searchsorted(M.t, int(t["exit_t"]) + 3600))
+    rec_b1 = None
+    if use1:
+        a1 = int(np.searchsorted(B1.t, w["t0"] - 1200))
+        z1 = int(np.searchsorted(B1.t, max(entry_t + 1200, min(int(t["exit_t"]) + 300, entry_t + 3600))))
+        rec_b1 = _pack(B1, a1, z1)
+    w0, w1 = int(M.t[a5]), int(M.t[z5 - 1]) + 300
+    boxes = []
+    x = M.ctx[z["k"]]
+    for lab, nm, ma, mb in BOXES:
+        if nm not in x:
+            continue
+        hi, lo, ki = x[nm]
+        e_t = int(M.t[ki]) + 300
+        s_t = e_t - 300 * ((mb - ma) // 5) if mb > ma else e_t
+        # exact start = first bar of the box inside the day
+        s, e = x["s"], x["e"]
+        md = M.mod[s:e]
+        ii = np.flatnonzero((md >= ma) & (md < mb))
+        ii = ii[md[ii] >= 1080] if ma >= 1080 else ii[md[ii] < 1080]
+        if len(ii):
+            s_t = int(M.t[s + ii[0]])
+        if e_t > w0 and s_t < w1:
+            boxes.append({"k": lab, "t0": s_t, "t1": e_t, "hi": round(hi, 2), "lo": round(lo, 2)})
+    off = int(dt.datetime.fromtimestamp(entry_t, ET).utcoffset().total_seconds())
+    rid = trade_id(t["day"], entry_t, side)
+    lim = {"px": round(ep * d, 2), "t0": w["t0"], "t1": w["t0"] + P["wait"] * 300,
+           "tap_t": int(B.t[w["tapped"]]) if w["tapped"] is not None else None}
+    rec = {
+        "id": rid, "day": t["day"], "side": side, "d": d, "tf": int(B.secs // 60), "off": off,
+        "qty": q, "risk_usd": round(t["risk_usd"], 2), "risk_pts": round(t["risk_pts"], 2), "pnl": round(t["pnl"], 2),
+        "r": round(t["r"], 3), "exit_kind": kind, "entry_kind": "limit" if w["limit_fill"] else ("1m CISD" if B.secs == 60 else "5m CISD"),
+        "size_why": t.get("size_why") or [],
+        "entry": {"t": entry_t, "px": round(entry * d, 2)},
+        "stop": round(stop * d, 2), "target": round(t["target_px"], 2),
+        "plan_rr": round((t["target_px"] - t["entry_px"]) * d / t["risk_pts"], 2),
+        "target_label": "VIX band" + (" (banked at %gR)" % P["max_rr"] if P.get("max_rr") and abs(tp - P["max_rr"] * risk_plan) < 1e-6 else ""),
+        "be": {"t": int(B.t[be_k])} if be_k is not None else None,
+        "exit": {"t": int(B.t[xk]), "t_end": int(t["exit_t"]), "px": exit_px, "kind": kind},
+        "adds": [{"t": int(a["t"]), "px": a["px"], "qty": int(a["qty"])} for a in (t.get("adds") or [])],
+        "levels": lv,
+        "sweep": {"t": sweep_t, "ext_px": round(z["ext_d"] * d, 2), "ext_t": int(M.t[z["ext_i"]]), "depth_atr": z["depth_atr"]},
+        "idm": idm,
+        "cisd5": {"px": round(float(z["ref_d"]) * d, 2), "ref_t": int(M.t[z["ref_i"]]), "t": int(M.t[z["i"]]), "disp": z["disp"]},
+        "limit": lim,
+        "cisd1": ({"px": round(w["cz"][0] * d, 2), "ref_t": int(B.t[w["cz"][1]]), "t": int(B.t[w["conf"]])} if w["cz"] else None),
+        "boxes": boxes, "b5": _pack(B5, a5, z5), "b1": rec_b1,
+    }
+    return rec, None
 
 
 def unpack(b):

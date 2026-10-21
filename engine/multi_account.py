@@ -324,7 +324,7 @@ def sizing_state(mode: str, closes: list, today: str, start: str | None, rules: 
     if not start and mode in EVAL_MODES + ("auto",):
         return None
     sess = session if session is not None else max(1, sz.eval_session(start, today) or 1)
-    st = sz.eval_state(prev, cum, plan=_plan(rules), session=sess)
+    st = sz.eval_state(prev, cum, plan=_plan(rules), session=sess, today=today)    # today: wk_pnl (wk_loss_usd)
     st["n_today"] = int(n_today)
     st["days_traded"] = len({d for d, _, p in rows if d < today and abs(p) > 1e-9})
     if mode == "auto":
@@ -524,7 +524,8 @@ class Account:
             room = _num((st or {}).get("room")) if mode in EVAL_MODES and st is not None else None
             if mode == "funded":
                 room = _num((st or {}).get("room"))
-            r = sz.lit_qty(int(ent["qty"]), ent, lsz, room=room, state=st if mode in ("two_week", "funded", "auto") else None,
+            # every eval mode gets its state (2026-10-20): the pass / fail lock (sizing.eval_lock) and the weekly loss stop
+            r = sz.lit_qty(int(ent["qty"]), ent, lsz, room=room, state=st if mode in EVAL_MODES + ("funded", "auto") else None,
                            max_micros=int(R["max_micros"]))
         except Exception as e:
             if mode in EVAL_MODES + ("funded", "auto"):

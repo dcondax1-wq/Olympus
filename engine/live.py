@@ -327,6 +327,7 @@ class LiveBot:
         self._open_adds = []             # LIT scale_in: adds routed to the open position [{"entry_t", "n", "qty", "px", "t"}]
         self._blocked_entries = set()    # entry_t of engine entries we deliberately did not route
         self._flattened = set()          # entry_t of positions the clock-based safety flatten already closed
+        self._no_entries_day = None      # trading day a remote "flatten" ended (engine/remote_ctl.py): no new entries that day
         self._restored = None
         self._nt_feed = None             # engine.ninjatrader.NinjaTraderBars for data_source "ninjatrader"
         self._nt_notes = {}              # rate limit for the ninjatrader feed notes: key -> (text, unix time logged)
@@ -612,9 +613,15 @@ class LiveBot:
         if self.state and self.state.get("position"):
             pos = self.state["position"]
             qty = self._open_qty if self._open_routed == pos.get("entry_t") and self._open_qty else pos.get("qty")
-            qty = int(qty or 0) + self._adds_qty(pos.get("entry_t"))
+            q1 = int(qty or 0)
+            qty = q1 + self._adds_qty(pos.get("entry_t"))
+            # book the flatten's P&L (marked at the market now) like every other exit: without it the kill exit counted
+            # $0 in day_pnl_routed / eval_days, so the eval clock, the next trade's two_week size and the soft daily
+            # loss all saw a loss that never happened as flat
+            pnl = self._kill_pnl(pos, q1)
             self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "qty": qty, "reason": "KILL SWITCH",
-                         "entry_t": pos.get("entry_t")})
+                         "entry_t": pos.get("entry_t"), "exit_t": int(self.clock()),
+                         **({"pnl": pnl, "pnl_est": True} if pnl is not None else {})})
             self._flattened.add(pos.get("entry_t"))
             self._open_routed = None
         elif getattr(self.adapter, "kill_flattens_all", False):
@@ -627,6 +634,80 @@ class LiveBot:
         self._log("risk", "KILL SWITCH: flattened and stopped")
         self._save_state()
         return {"ok": True}
+
+    def flatten_now(self, reason: str = "REMOTE FLATTEN"):
+        """Close the open position now and keep the bot running (engine/remote_ctl.py "flatten"). No kill flag; no new
+        entries for the rest of this trading day (the bot trades again on the next one); the model's own later exit of this
+        entry is not sent again (_flattened). With no model position but an order of ours still working at the broker (a
+        pending entry, a desync), that order / position is closed too. Extra accounts are flattened as well."""
+        sym = (self.cfg or {}).get("sym", "NQ")
+        self._no_entries_day = trading_day(self.clock())
+        pos = (self.state or {}).get("position")
+        res = {"ok": True, "note": "flat: nothing to close"}
+        legs = [lg for lg in (getattr(self.adapter, "legs", None) or []) if isinstance(lg, dict)
+                and lg.get("status") in ("entry_sent", "pending", "cancel_pending", "protected", "unprotected")]
+        if pos:
+            qty = self._open_qty if self._open_routed == pos.get("entry_t") and self._open_qty else pos.get("qty")
+            qty = int(qty or 0) + self._adds_qty(pos.get("entry_t"))
+            res = self._route({"sym": sym, "side": "exit", "qty": qty, "reason": reason, "entry_t": pos.get("entry_t")})
+            self._flattened.add(pos.get("entry_t"))
+            self._open_routed = None
+        elif self._open_routed is not None or legs:
+            res = self._route({"sym": sym, "side": "exit", "qty": self._open_qty, "reason": reason, "entry_t": self._open_routed})
+            if self._open_routed is not None:
+                self._flattened.add(self._open_routed)
+            self._open_routed = None
+        extras = []
+        if self.accts is not None:                  # the extra accounts (engine/multi_account.py), without their kill flag
+            for acc in list(getattr(self.accts, "accounts", None) or []):
+                if getattr(acc, "adapter", None) is not None and getattr(acc, "open_t", None) is not None:
+                    r = acc.kill(sym)
+                    extras.append({"id": acc.id, "ok": bool(r.get("ok")), "error": r.get("error")})
+            try:
+                self.accts.save()
+            except Exception:
+                pass
+        self._log("risk", f"{reason}: " + ("position closed" if pos else "no open position") +
+                  "; the bot keeps running, no new entries until the next trading day")
+        self._save_state()
+        return {"ok": bool(res.get("ok")), "had_position": bool(pos), "result": res, "extras": extras}
+
+    def _kill_mark_px(self, pos):
+        """The market at the kill: the forming 1m bar's open (NinjaTrader LE_BarFeed), else the model's last close."""
+        sym = self.cfg.get("sym", "NQ")
+        try:
+            fo = self._nt_feed.forming_open(sym, now=int(self.clock())) if self._nt_feed is not None else None
+            if fo:
+                return float(fo[1])
+        except Exception:
+            pass
+        px = (self.state or {}).get("price")
+        if px:
+            return float(px)
+        q, u = pos.get("qty"), pos.get("unrealized")
+        if q and u is not None and pos.get("entry") is not None:
+            from . import lit as _lit
+            d = 1 if pos.get("dir", 1) == 1 else -1
+            return float(pos["entry"]) + d * (float(u) / float(q) + _lit.COMM) / _lit.PV
+        return None
+
+    def _kill_pnl(self, pos, qty):
+        """$ of the kill-switch flatten at the routed size (first entry + every routed add), at the market now, costs in."""
+        try:
+            from . import lit as _lit
+            px = self._kill_mark_px(pos)
+            if px is None or pos.get("entry") is None or not qty:
+                return None
+            d = 1 if pos.get("dir", 1) == 1 else -1
+            pnl = int(qty) * (d * (px - float(pos["entry"])) * _lit.PV - _lit.COMM)
+            self._sync_adds(pos.get("entry_t"))
+            for a in self._open_adds:
+                if a.get("entry_t") == pos.get("entry_t"):
+                    pnl += int(a["qty"]) * (d * (px - float(a["px"])) * _lit.PV - _lit.COMM)
+            return round(pnl, 2)
+        except Exception as e:
+            self._note_error(f"kill switch P&L not booked: {e.__class__.__name__}: {e}")
+            return None
 
     def _route(self, action):
         if self.adapter is None:
@@ -738,6 +819,9 @@ class LiveBot:
             state = None
             if mode in ("two_week", "eval", "safe_eval"):
                 st = self.eval_state() or {}
+                if st and lsz.get("pass_lock") is not False and float(st.get("profit") or 0) + float(st.get("cum") or 0) \
+                        >= float(((lsz.get("two_week") or {}).get("acct") or {}).get("target", _sz.TW_50K["target"])):
+                    return 0                      # a passed eval (the 1-micro minimum-days trade): never add to it
                 state = {"room": self.eval_room(), "cum": float(st.get("cum", self.day_pnl_routed()) or 0.0)}
             prev = [{"rk": float(a["rk"]), "prev_rk": list(a.get("prev_rk") or [])} for a in (pos.get("adds") or [])][:int(an["n"]) - 1]
             qa = _sz.scale_in_qty(q0, q0, float(pos["risk_pts"]), prev + [{"rk": float(an["rk"]), "prev_rk": list(an.get("prev_rk") or [])}],
@@ -920,7 +1004,7 @@ class LiveBot:
                 "started_at": self.started_at, "kill": self.kill, "eod_sent": self._eod_sent, "guard_key": self._guard_key,
                 "open_routed": self._open_routed, "open_qty": self._open_qty, "open_adds": self._open_adds,
                 "blocked_entries": sorted(self._blocked_entries),
-                "flattened": sorted(self._flattened), "provisional": {str(k): v for k, v in self._provisional.items()},
+                "flattened": sorted(self._flattened), "no_entries_day": self._no_entries_day, "provisional": {str(k): v for k, v in self._provisional.items()},
                 "seen": [list(k) for k in list(self.seen)[-2000:]], "ledger": self.ledger[-300:],
                 "week_exits": self.lit_week_hist() if self.cfg else [], "eval_days": self.eval_days() if self.cfg else {},
                 "day_pnl_routed": self.day_pnl_routed(), "trades_today": self.trades_today()}
@@ -966,6 +1050,7 @@ class LiveBot:
         self._open_adds = [a for a in (s.get("open_adds") or []) if isinstance(a, dict)]
         self._blocked_entries = set(s.get("blocked_entries") or [])
         self._flattened = set(s.get("flattened") or [])
+        self._no_entries_day = s.get("no_entries_day")
         self._provisional = {int(k): v for k, v in (s.get("provisional") or {}).items()}
         if s.get("started_at"):
             self.started_at = min(self.started_at, int(s["started_at"]))
@@ -1103,6 +1188,7 @@ class LiveBot:
                 self.state["eval_2wk"] = self.eval_clock()      # the two-week eval clock and the reset reminder
             except Exception as e:
                 self._note_error(f"eval clock failed: {e}")
+            self._eval_life_tick()                              # pass / fail day, min-days, weekly loss stop
         if self.state_path == STATE_PATH:
             self._narrate_filter(eqf, lm)
         self.last_poll = now
@@ -1110,6 +1196,7 @@ class LiveBot:
         self._emit_events(res, sym)
         self._eod_summary(res, sym, now)
         self._route_signals(res, sym, now, secs)
+        self._guards_tick(now)
         self.health["poll_ms"] = int((time.perf_counter() - t0) * 1000)
         self.health["last_ok_poll"] = now
         self.health["ok"] = not (self.health["stale"] and mopen) and not self.health["desync"]
@@ -1295,8 +1382,44 @@ class LiveBot:
             return None
         today = trading_day(self.clock())
         days = self.eval_days()
-        return _sz.eval_state({d: v for d, v in days.items() if d < today}, float(days.get(today, 0.0)),
-                              session=max(1, _sz.eval_session(start, today) or 1))
+        st = _sz.eval_state({d: v for d, v in days.items() if d < today}, float(days.get(today, 0.0)),
+                            session=max(1, _sz.eval_session(start, today) or 1), today=today)   # today: wk_pnl (wk_loss_usd)
+        st["n_today"] = int(self.trades_today())
+        return st
+
+    def eval_life(self):
+        """State key eval_life (engine/eval_life.view): eval open / passed / failed, the minimum-days trade, the eval weekly
+        loss stop (off / armed / tripped). None when the eval start is unknown or the sizing is not an eval mode."""
+        from . import eval_life as _el
+        lsz = getattr(self, "_lit_sizing", None) or {}
+        start = self.eval_start()
+        if not start or (lsz.get("mode") or "") not in _el.EVAL_MODES:
+            return None
+        e = _et(self.clock())
+        over = e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60
+        return _el.view(self.eval_days(), start, trading_day(self.clock()), lsz, session_over=over, n_today=self.trades_today())
+
+    def _eval_life_tick(self):
+        """Every poll (LIT): the eval lifecycle into the state, a log line + one push on the pass day, the fail day and when
+        the weekly loss stop trips (each push once: engine/push keeps the keys)."""
+        try:
+            v = self.eval_life()
+        except Exception as e:
+            self._note_error(f"eval lifecycle failed: {e}")
+            return
+        self.state["eval_life"] = v
+        if not v:
+            return
+        from . import eval_life as _el
+        seen = getattr(self, "_eval_life_seen", None)
+        if seen is None:
+            seen = self._eval_life_seen = set()
+        for p in _el.notices(v, self._push_account(), self.clock()):
+            if p["key"] in seen:
+                continue
+            seen.add(p["key"])
+            self._log("risk", f"{p['title']}: {v['trading']}")
+            self._push_send(p)
 
     def eval_clock(self):
         """State key eval_2wk: session x of 10 since eval_start(), reset recommended after session 10 (engine/sizing.eval_clock)."""
@@ -1333,7 +1456,9 @@ class LiveBot:
                     from .multi_account import primary_state
                     st_ = primary_state(self, mode)
                 else:
-                    st_ = self.eval_state() if mode == "two_week" else None
+                    # every eval mode gets the eval state (2026-10-20): the pass / fail lock and the weekly loss stop
+                    # (engine/sizing.eval_lock, wk_loss_usd); eval / safe_eval / fast_eval size from the room as before
+                    st_ = self.eval_state() if mode in ("two_week", "eval", "safe_eval", "fast_eval") else None
                 r = _sz.lit_qty(int(qty), pos or {}, lsz, room=room, state=st_)
                 if r.get("learn"):             # the learning loop's multiplier at this entry (applied, or would-be in observe)
                     if not hasattr(self, "_learn_at"):
@@ -1476,11 +1601,18 @@ class LiveBot:
             if self.health["entries_blocked"]:
                 self._blocked_entries.add(ent["entry_t"])
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: feed stale")
+            elif self._no_entries_day is not None and self._no_entries_day == trading_day(now):
+                self._blocked_entries.add(ent["entry_t"])
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: the owner flattened remotely today "
+                                  "(no new entries until the next trading day)")
             elif age > late_after:
                 self._blocked_entries.add(ent["entry_t"])
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
             elif not (q := self._equity_qty(ent["entry_t"], ent["qty"], ent)):
                 self._blocked_entries.add(ent["entry_t"])
+            elif (gb := self._guard_entry(ent, q, sym, now)):
+                self._blocked_entries.add(ent["entry_t"])          # engine/guards.py: only ever blocks
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: GUARD {gb}")
             else:
                 self._open_routed = ent["entry_t"]
                 self._open_qty = q
@@ -1492,9 +1624,8 @@ class LiveBot:
                     self._log("system", f"LIT 1m CISD closed at {_et(en['entry_t']):%H:%M} ET: MARKET entry sent at once "
                                         f"({int(self.clock()) - int(en['entry_t'])} s after the close; the backtest fills at this bar's open)"
                                         + ("; size from the CISD close, the feed did not show this bar's open yet" if en.get("est") else ""))
-                rr = self._route({"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
-                                  "stop": tick_px(ent["stop"], d), "target": tick_px(ent["target"], d, target=True),
-                                  "entry": ent["entry"], "entry_t": ent["entry_t"]})
+                rr = self._route(self._entry_action(ent, q, sym))
+                self._guard_routed(ent["entry_t"])
                 self._push_fill(ent, q, sym, rr)
         if pos and self._open_routed == pos.get("entry_t") and getattr(self.adapter, "route_stop_moves", False):
             self._route_stop_move(pos, sym)
@@ -1535,6 +1666,38 @@ class LiveBot:
                     self._remember(tr, sym)      # every completed routed trade feeds the persistent memory
                     self._journal(tr, qty)       # and the LIT learning loop's journal (data/lit_journal.jsonl)
                     self._push_outcome(tr, qty, sym)
+
+    # ------------------------------------------------------------------ safety guards (engine/guards.py: block / close only)
+    @staticmethod
+    def _entry_action(ent, q, sym):
+        d = 1 if ent["dir"] == 1 else -1
+        return {"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
+                "stop": tick_px(ent["stop"], d), "target": tick_px(ent["target"], d, target=True),
+                "entry": ent["entry"], "entry_t": ent["entry_t"]}
+
+    def _guard_entry(self, ent, q, sym, now):
+        """A reason not to route this entry (order sanity, duplicate, daily loss, clock, news, calendar), else None."""
+        try:
+            from . import guards
+            return guards.entry_block(self, ent, self._entry_action(ent, q, sym), q, now)
+        except Exception as e:
+            self._note_error(f"guards failed: {e.__class__.__name__}: {e}")
+            return None
+
+    def _guard_routed(self, entry_t):
+        try:
+            from . import guards
+            guards.note_routed(self, entry_t)
+        except Exception as e:
+            self._note_error(f"guards failed: {e.__class__.__name__}: {e}")
+
+    def _guards_tick(self, now):
+        """Once per poll, after routing: room alarm, NinjaTrader reconcile, 17:00 P&L reconcile, clock probe."""
+        try:
+            from . import guards
+            guards.tick(self, now)
+        except Exception as e:
+            self._note_error(f"guards failed: {e.__class__.__name__}: {e}")
 
     # ------------------------------------------------------------------ phone notifications (engine/push.py, Web Push)
     def _push_account(self):

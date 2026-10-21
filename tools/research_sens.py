@@ -13,7 +13,7 @@ cached exact live-loop replay (tools/runlib.replay) and is exact:
     breakeven rule, then the lock's sizing
   * risk_usd 700/900: tools/research_risk post-hoc re-sizing from the engine's own rule (a setup under 1 micro is skipped)
 Rolling 6-month windows, the longest flat stretch and the year table compare the lock (run baseline) with the morning
-rules (run live_2026-10-17am). Output: runs research/runs/sens_*.json, research/lab/sensitivity.json, and the tables for
+rules (run live_2026-10-17am). Output: runs research/runs/sens_*.json, research/archive/engine-2026-10-17/sensitivity.json, and the tables for
 research/writeups/parameter-robustness.md (printed and written to the scratch folder).
 No look-ahead anywhere: every rule uses the setup fields and trades finished before entry only.
 """
@@ -35,7 +35,7 @@ from tools import runlib as rl  # noqa: E402
 
 SCRATCH = os.environ.get("SENS_SCRATCH") or os.path.join(
     "/tmp/claude-0/-home-user-nq-liquidity-engine/1c5df1a3-c52b-5e3b-a05e-7ae8d672b70d/scratchpad/sprint/sens")
-LAB_JSON = os.path.join(ROOT, "research", "lab", "sensitivity.json")
+LAB_JSON = os.path.join(ROOT, "research", "archive", "engine-2026-10-17", "sensitivity.json")   # old engine (LIT: research/lab/sensitivity.json, tools/lit_sensitivity.py)
 WRITEUP = "research/writeups/parameter-robustness.md"
 LOCK_EQF = dict(rl.LIVE_EQF)                         # lookback 15, min_sum_r 0, half mode, cold_size 0.25
 LOCK_SZ = {**(rl.LIVE_SIZING or {}), "press": None}  # late_mult 0.5

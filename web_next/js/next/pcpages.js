@@ -151,7 +151,17 @@ export async function renderStatus(force) {
       <div><span>LIT stage</span><b>${esc((STAGES.find(([k]) => k === lit.stage) || [0, lit.stage === 'closed' ? 'Market closed' : '—'])[1])}</b><em>${lit.price ? 'NQ ' + px(lit.price) : ''}${s.rules?.monday ? ' · ' + esc(s.rules.monday) : ''}</em></div>
       <div><span>Setups today</span><b>${setups.length}</b><em>${last ? `${esc(last.side)} ${esc(last.level || '')} ${last.t ? '@ ' + etStr(last.t) : ''}${last.rr ? ` · ${fmtN(last.rr, 1)}R` : ''}` : (s.pending || []).length ? 'limit armed' : 'none yet'}</em></div>
       <div><span>Eval</span><b>${ec.session ? `Session ${ec.session} of ${ec.limit || 10}` : '—'}</b><em>${esc(ec.text || '')}</em></div>
+      ${evalLifeCell(s.eval_life)}
     </div>${stageRail(lit)}`;
+}
+
+// eval lifecycle (engine/eval_life.py, read-only): passed / failed / min-days and the weekly loss stop off / armed / tripped
+function evalLifeCell(el) {
+  if (!el) return '';
+  const wk = el.wk_stop || {}, st = String(el.status || 'open');
+  const lvl = st === 'failed' || wk.state === 'tripped' ? 'bad' : st === 'passed' ? 'good' : '';
+  const head = st === 'passed' ? 'PASSED' : st === 'failed' ? 'FAILED' : wk.state === 'tripped' ? 'Weekly stop: no trade till Mon' : 'Trading';
+  return `<div class="${lvl}"><span>Eval state · weekly loss stop: ${esc(wk.state || 'off')}</span><b>${esc(head)}</b><em>${esc(st === 'passed' || st === 'failed' ? (el.trading || '') : (wk.text || ''))}</em></div>`;
 }
 
 // ------------------------------------------------------------------ eval card + position (Accounts)
@@ -276,7 +286,12 @@ export function execBody(x) {
         · ${r.live_qty ?? '—'} vs ${r.bt_qty ?? '—'} micros${ok(r.be_delay_s) ? ` · BE ${r.be_delay_s >= 0 ? '+' : ''}${r.be_delay_s} s` : ''}${(r.notes || []).length ? ` · ${esc(r.notes.join('; '))}` : ''}</span>
         <b class="${cls(r.slip_usd)}">${fmtS$(r.slip_usd)}${ok(r.exec_usd) && Math.abs(r.exec_usd - r.slip_usd) > 0.5 ? ` <em class="muted">exec ${fmtS$(r.exec_usd)}</em>` : ''}</b>`;
   const months = (S.months || []).slice().reverse();
-  return `<div class="nx-stats">
+  // the nightly verdict (engine/fill_audit.nightly): live vs the backtest on the same bars, one push only when a day differs
+  const NV = { same: 'up', differs: 'dn', 'pc off': '', 'no trades': '', 'no data': '' };
+  const nightly = (x.nightly || []).slice(0, 5);
+  const nightHTML = nightly.length ? `<div class="pc-tl" style="margin-bottom:10px">${nightly.map((n) => `<div class="pc-tl-r ${n.verdict === 'differs' ? 'bad' : ''}"><span class="pc-tl-t mono">${fDate(n.day)}<br>night</span>
+      <span class="pc-tl-i"><span class="pc-side ${NV[n.verdict] ?? ''}">${esc(String(n.verdict || '').toUpperCase())}</span></span><div><span>${esc(n.text || '')}</span></div></div>`).join('')}</div>` : '';
+  return `${nightHTML}<div class="nx-stats">
       ${stat('Slippage', fmtS$(S.slip_usd), ok(S.slip_usd_per_trade) ? `${fmtS$(S.slip_usd_per_trade)} a trade · ${S.trades} trades` : `${S.trades || 0} trades`, cls(S.slip_usd))}
       ${stat('Execution vs backtest', fmtS$(S.exec_usd), 'real P&L − backtest at the routed qty', cls(S.exec_usd))}
       ${stat('Missed trades', String(S.missed || 0), `${fmtS$(S.missed_usd)} in the backtest${S.missed_pc_on ? ` · ${S.missed_pc_on} with the PC on` : ''}`, S.missed ? 'dn' : '')}

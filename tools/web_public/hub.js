@@ -123,6 +123,21 @@
       <p>${silent ? 'Turn the Surface on (or wake it), then' : 'On the Surface:'} <b>Bot Control → Start</b>. ${auto} This app is read-only and cannot start it.</p>
       ${v.reason ? `<p class="small mut">${esc(v.reason)}</p>` : ''}</div></div>`;
   }
+  // the Surface's last check-in (heartbeat), always on top of Home: red "OFFLINE since ..." when it is older than 30 min on a
+  // weekday 01:30-16:00 ET (the cloud pushes the same alert once per outage: engine/push.pc_outage)
+  function surfaceLine() {
+    const pc = pcHB(), t = ok(pc.t) && pc.t > 0 ? pc.t : null, n = now();
+    const e = et(n), mod = e.h * 60 + e.mi, inHours = !['Sat', 'Sun'].includes(e.wd) && mod >= 90 && mod <= 960;
+    const age = t ? n - t : null, stale = age == null || age > 30 * 60;
+    const since = t ? (et(t).date === e.date ? et(t).hm : `${et(t).wd} ${et(t).hm}`) : null;
+    const lvl = !stale ? 'good' : inHours ? 'bad' : 'warn';
+    const txt = !t ? 'Surface: no check-in yet (no heartbeat)'
+      : stale && inHours ? `Surface OFFLINE since ${since} ET`
+      : `Surface last check-in ${since} ET`;
+    const sub = !t ? 'the PC bot does not report to the cloud' : stale && inHours ? `${ageTxt(age)} ago: the bot can't trade. Check it's awake and NinjaTrader is connected.`
+      : `${ageTxt(age)} ago${stale ? ' · offline (outside trading hours)' : ''}`;
+    return `<div class="hb-surface ${lvl}" role="${lvl === 'bad' ? 'alert' : 'status'}">${light(lvl)}<div><b>${esc(txt)}</b><em>${esc(sub)}</em></div></div>`;
+  }
   function verdictCard(M) {
     const v = HL().pc_verdict || {}, pc = pcHB(), hl = health(), a = hl?.account || {};
     const lvl = v.level || (pc.present ? 'warn' : 'bad'), hb = ok(pc.t) && pc.t > 0 ? now() - pc.t : pc.age_s;
@@ -197,7 +212,7 @@
         ${row(nt.connected === false ? 'bad' : nt.connected ? 'good' : '', 'NinjaTrader', nt.connected === false ? 'DISCONNECTED' : nt.connected ? 'connected' : '—', nt.last_error ? esc(nt.last_error) : '')}
         ${row(A.version ? (u.result === 'failed' || u.result === 'rolled_back' ? 'bad' : 'good') : '', 'Version', A.version ? esc(A.version) : '—', A.version ? `auto-update <b>${u.on ? 'on' : 'off'}</b>${u.result && u.result !== 'off' ? ` · last ${esc(u.result)}` : ''}${u.updated_at ? ` · updated ${et(u.updated_at).wd} ${et(u.updated_at).hm} ET` : ''}` : 'the PC bot sends no version yet (update it)')}
         ${row(r.on ? 'good' : A.version ? 'warn' : '', 'Auto-resume', A.version ? (r.on ? 'on' : 'off') : '—', r.on ? esc(r.account || '') : r.off_reason ? esc(r.off_reason) : r.last_result ? `last ${esc(r.last_result)}` : '')}
-        ${row(cloudAge != null && cloudAge < 3600 ? 'good' : 'warn', 'Cloud check', cloudAge != null ? ageTxt(cloudAge) + ' ago' : '—', 'GitHub Actions · every 15 min on market days')}
+        ${row(cloudAge != null && cloudAge < 3600 ? 'good' : 'warn', 'Cloud check', cloudAge != null ? ageTxt(cloudAge) + ' ago' : '—', 'GitHub Actions · every 30 min on market days, from 01:30 ET')}
       </div></div>`;
   }
   function planTeaser() {
@@ -209,10 +224,10 @@
   }
   VIEWS.today = (el) => {
     const M = mainAcct();
-    el.innerHTML = `${banner()}${verdictCard(M)}${kpiRow(M)}${tradeCard()}
+    el.innerHTML = `${surfaceLine()}${banner()}${verdictCard(M)}${kpiRow(M)}${tradeCard()}
       <div class="grid g2 astart">${evalCard(M)}${healthCard()}</div>
       ${planTeaser()}
-      <div class="hb-links">${[['trades', 'trades', 'Trades'], ['money', 'wallet', 'Money'], ['strategy', 'rules', 'Strategy'], ['accounts', 'wallet', 'Accounts'], ['market', 'news', 'Market'], ['props', 'prop', 'Prop firms'], ['live', 'engine', 'Live detail'], ['activity', 'alerts', 'Activity']]
+      <div class="hb-links">${[['trades', 'trades', 'Trades'], ['recaps', 'replay', 'Recaps'], ['weekly', 'results', 'Weekly'], ['money', 'wallet', 'Money'], ['strategy', 'rules', 'Strategy'], ['accounts', 'wallet', 'Accounts'], ['market', 'news', 'Market'], ['props', 'prop', 'Prop firms'], ['live', 'engine', 'Live detail'], ['activity', 'alerts', 'Activity']]
         .map(([g, ic, l]) => `<button class="chipbtn" type="button" data-go="${g}">${icon(ic)}<span>${l}</span></button>`).join('')}</div>
       <p class="small mut hb-foot">Paper / eval monitor · read-only · built ${HD()?.built ? esc(new Date(HD().built).toLocaleString()) : '—'}${HD()?.home_only ? ' · loading the rest…' : ''}</p>`;
   };
@@ -458,9 +473,50 @@
           ${f.note || f.summary ? `<p class="small mut" style="margin:0 0 8px">${esc(f.note || f.summary)}</p>` : ''}${(f.plans || []).map((p) => planCard(f, p)).join('')}</div>`).join(''))
       + `<div class="card"><div class="card-h"><h3>${icon('star')}What to buy next</h3></div>
           <p class="lead" style="margin-top:0">${nxt ? esc(typeof nxt === 'string' ? nxt : nxt.text || '') : FU ? `Next to the Builder 50K: a <b>LucidPro 50K</b> and a <b>FundedNext Rapid Daily 50K</b> (~${usd(FU.trio?.H2?.net_per_month)} a month for the three on Jul–Oct trades, ${usd(FU.trio?.H2?.months4_6_per_month)} once all are funded). One bot routes to one account today.` : 'See the funded-firms write-up.'}</p></div>`
-      + payoutCal(P) + bizPnl(P);
+      + payoutCal(P) + bizPnl(P) + bizTools();
+    const tx = el.querySelector('#bzTaxCsv');
+    if (tx) tx.onclick = () => { const t = (HUBD().biz || {}).tax || {}; const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const csv = [`Prop business tax-year summary ${t.year} - ${t.label || 'NOT tax advice'}`, 'date,type,firm,account,description,amount_usd', ...(t.rows || []).map((r) => [r.date, r.type, r.firm, r.account, r.description, r.amount_usd].map(q).join(',')),
+        '', `summary,,,,total fees,${t.fees}`, `summary,,,,total payouts,${t.payouts}`, `summary,,,,net,${t.net}`, `summary,,,,set-aside estimate at ${t.pct}% (not tax advice),${t.set_aside}`].join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `tax_${t.year}.csv`; document.body.appendChild(a); a.click(); a.remove(); };
     el.querySelectorAll('[data-code]').forEach((b) => { b.onclick = async () => { try { await navigator.clipboard.writeText(b.dataset.code); toast(`Copied ${b.dataset.code} · verify at checkout`); } catch { toast(b.dataset.code); } }; });
   };
+  // business tools (tools/business.py view(), carried as data.hub.biz): statement, payout eligibility, tax year, eval planner,
+  // scaling calendar, Z06 savings, ROI, the weekly rule-page / discount-code watchers
+  function bizTools() {
+    const V = HUBD().biz;
+    if (!V || V.error) return '';
+    const S = V.statement?.business || {}, T = V.statement?.trading || {}, tax = V.tax || {}, pl = V.planner || {}, ca = V.calendar || {}, g = V.goal || {}, roi = V.roi || {};
+    const w = (V.watch?.rules?.updated || (V.watch?.codes?.rows || []).length) ? V.watch : (V.watch_pc ? { rules: { updated: V.watch_pc.rules_t, ok: V.watch_pc.rules_ok, pages: V.watch_pc.rules_pages, changes: V.watch_pc.changes || [] }, codes: { rows: V.watch_pc.codes || [] } } : V.watch || {});
+    const tbl = (h, rows) => rows.length ? `<div class="tw"><table class="ht"><tr>${h.map((x, i) => `<th${i ? ' class="c"' : ''}>${x}</th>`).join('')}</tr>${rows.join('')}</table></div>` : '<p class="small mut" style="margin:0">None yet.</p>';
+    const ST = { ready: ['up', 'can request'], allowed_wait: ['wn', 'allowed · habit: wait'], not_yet: ['', 'not yet'], not_funded: ['', 'eval first'], unknown: ['wn', 'balance missing'] };
+    const months = (x) => ok(x) ? `${num(x, 0)} months` : 'never on this rate';
+    const nx = (pl.steps || [])[0];
+    return `<div class="card"><div class="card-h"><h3>${icon('doc')}Statement · ${esc(V.statement?.month || '')}</h3><span class="meta">PDF on the PC Business page</span></div>
+        <div class="hb-tiles">${tile('Fees', usd(S.fees_total, 2))}${tile('Payouts', usd(S.payouts_total, 2))}${tile('Net', susd(S.net, 2), `YTD ${susd(S.ytd_net, 2)}`, cls(S.net))}${tile('Bot trades', String(T.trades || 0), `account P&L ${susd(T.pnl, 2)}`)}</div></div>
+      <div class="card"><div class="card-h"><h3>${icon('clock')}Payout eligibility</h3></div>
+        ${tbl(['Account', 'Status', 'Ask at profit'], (V.payouts?.rows || []).map((r) => { const s = ST[r.status] || ['', r.status]; return `<tr><td class="k">${esc((r.firm || '').replace('MyFundedFutures', 'MFFU'))} ${esc(r.plan || '')}<br><span class="small mut">${esc(r.text || '')}</span></td><td class="v ${s[0]}">${esc(s[1])}</td><td class="v">${usd(r.need_habit)}</td></tr>`; }))}
+        <p class="small mut" style="margin:6px 0 0">${esc(V.payouts?.how || '')}</p></div>
+      <div class="card"><div class="card-h"><h3>${icon('wallet')}Tax year ${esc(tax.year || '')}</h3>${chip('not tax advice', 'warn')}</div>
+        <div class="hb-tiles">${tile('Fees', usd(tax.fees, 2))}${tile('Payouts', usd(tax.payouts, 2))}${tile('Net', susd(tax.net, 2), '', cls(tax.net))}${tile('Set aside', usd(tax.set_aside, 2), `${num(tax.pct, 0)}% of positive net`)}</div>
+        <button type="button" class="chipbtn" id="bzTaxCsv"><span>Download tax_${esc(tax.year || '')}.csv</span></button><p class="small mut" style="margin:6px 0 0"><b>${esc(tax.label || '')}</b> ${esc(tax.note || '')}</p></div>
+      <div class="card"><div class="card-h"><h3>${icon('star')}Next eval to buy</h3><span class="meta">cash ${usd(pl.cash, 2)}</span></div>
+        ${nx ? `<p class="lead" style="margin-top:0"><b>${esc(nx.name)}</b> · ${usd(nx.price, 2)} (${esc(nx.price_basis || '')}) · ${nx.due ? '<b class="up">buy now</b>' : esc(nx.wait || 'later')}</p>` : ''}
+        ${tbl(['Plan', 'From', 'Price'], (pl.steps || []).map((x) => `<tr><td class="k">${esc(x.name || x.plan)}${(x.codes || []).length ? `<br><span class="small mut">codes: ${x.codes.map((c) => esc(c.code) + (c.st === 'confirmed' ? '' : ' (unverified)')).join(', ')}</span>` : ''}</td><td class="v">${esc(fDate(x.date) || x.date || '')}</td><td class="v">${usd(x.price, 2)}</td></tr>`))}
+        <p class="small mut" style="margin:6px 0 0">${esc(pl.rule || '')}</p></div>
+      <div class="card"><div class="card-h"><h3>${icon('results')}Funded scaling calendar</h3><span class="meta">expected vs downside</span></div>
+        ${tbl(['Month', 'Accounts', 'Cumulative', 'Downside'], (ca.rows || []).map((r) => `<tr><td class="k">${esc(r.month)}${(r.buy || []).length ? `<br><span class="small mut">buy ${esc(r.buy.join(', '))}</span>` : ''}</td><td class="v">${r.accounts}</td><td class="v ${cls(r.cum)}">${susd(r.cum)}</td><td class="v ${cls(r.down_cum)}">${susd(r.down_cum)}</td></tr>`))}
+        <p class="small mut" style="margin:6px 0 0">${esc(ca.warn || '')}</p></div>
+      <div class="card"><div class="card-h"><h3>${icon('target')}${esc(g.name || 'Goal')}</h3><span class="meta">${usd(g.target)}${g.placeholder ? ' · placeholder' : ''}</span></div>
+        <div class="hb-tiles">${tile('Saved', usd(g.saved), `${num(g.pct, 1)}%`)}${tile('Expected', months(g.months_h2), `${usd(g.rate_h2)}/mo, 3 accounts`)}${tile('Conservative', months(g.months_cons), `${usd(g.rate_cons)}/mo, Builder 50K`)}</div>
+        <p class="small mut" style="margin:0">${esc(g.how || '')}</p></div>
+      <div class="card"><div class="card-h"><h3>${icon('results')}ROI per account</h3><span class="meta">net ${susd(roi.total?.net, 2)}</span></div>
+        ${tbl(['Account', 'Fees', 'Payouts', 'Net'], (roi.accounts || []).map((a) => `<tr><td class="k">${esc((a.firm || '').replace('MyFundedFutures', 'MFFU'))} ${esc(a.plan || '')}<br><span class="small mut">${esc(a.stage || '')}${ok(a.roi_pct) ? ' · ROI ' + num(a.roi_pct, 0) + '%' : ''}</span></td><td class="v">${usd(a.fees, 2)}</td><td class="v">${usd(a.payouts, 2)}</td><td class="v ${cls(a.net)}">${susd(a.net, 2)}</td></tr>`))}</div>
+      <div class="card"><div class="card-h"><h3>${icon('news')}Weekly watchers</h3><span class="meta">${w.rules?.updated ? 'rules ' + esc(w.rules.updated) : 'not run yet'}</span></div>
+        <p class="small" style="margin:0 0 6px">Rule pages read OK: <b>${w.rules?.ok || 0}</b> of ${w.rules?.pages || 0}. ${(w.rules?.changes || []).length ? `Changed: ${w.rules.changes.map((c) => esc(c.firm + ' ' + c.key + ' (' + c.seen + ')')).join(', ')}.` : 'No change seen.'}</p>
+        ${tbl(['New code (unverified)', 'Firm', 'Seen'], (w.codes?.rows || []).map((c) => `<tr><td class="k"><button type="button" class="hb-code" data-code="${esc(c.code)}"><b>${esc(c.code)}</b>${c.off ? `<span>${esc(c.off)}</span>` : ''}</button></td><td class="v">${esc(c.firm_name || c.firm || '')}</td><td class="v">${esc(c.seen || '')}</td></tr>`))}
+        <p class="small mut" style="margin:6px 0 0">Weekly from the PC ops task. Codes are from third-party pages: verify at checkout.</p></div>`;
+  }
   function payoutCal(P) {
     const rows = P.payouts?.calendar || P.payouts?.rows || (Array.isArray(P.payouts) ? P.payouts : []);
     return `<div class="card"><div class="card-h"><h3>${icon('clock')}Payout calendar</h3></div>${rows.length
@@ -601,7 +657,7 @@
     const NEW = [
       { id: 'today', label: 'Home', icon: 'today', pages: [P('today', 'Home', 'today', 'Is the bot trading my eval, today, the open trade, health'), P('plan', 'LIT plan', 'target', 'Today’s levels, the target band, sweeps seen'), P('market', 'Market', 'news', 'News week, CME holidays, the roll, the VIX band'),
         P('live', 'Live detail', 'engine', 'Live Oracle, week ring, liquidity map, signals'), P('brief'), P('day'), P('levels'), P('cockpit'), P('ops')] },
-      { id: 'trades', label: 'Trades', icon: 'trades', pages: [P('trades'), P('journal', 'Journal', 'doc', 'Search, filter, notes, CSV export'), P('stats', 'Stats', 'results', 'Key stats, streaks, R histogram, time of day'),
+      { id: 'trades', label: 'Trades', icon: 'trades', pages: [P('trades'), P('recaps'), P('weekly'), P('journal', 'Journal', 'doc', 'Search, filter, notes, CSV export'), P('stats', 'Stats', 'results', 'Key stats, streaks, R histogram, time of day'),
         P('accounts'), P('execq', 'Execution', 'check', 'Slippage, missed and extra trades vs the backtest'), P('edge'), P('pnlcal'), P('results'), P('replays'), P('stops'), P('activity')] },
       { id: 'money', label: 'Money', icon: 'wallet', pages: [P('money', 'Money', 'wallet', '$ a month, goal, funded plan, payouts'), P('whatif', 'What if', 'sim', 'The next trade: target, stop or breakeven'), P('props', 'Prop firms', 'prop', 'Prices, codes, rules, LIT fit, what to buy next'), P('evalhq'), P('eval'), P('evals')] },
       { id: 'strategy', label: 'Strategy', icon: 'rules', pages: [P('strategy', 'Strategy', 'rules', 'The rules in plain words, upgrades, scoreboard'), P('lab'), P('experiments'), P('writeups'), P('losses'), P('intraday'), P('learned')] },
@@ -625,6 +681,11 @@
   }
 
   const CSS = `
+.hb-surface{display:flex;gap:12px;align-items:center;padding:12px 16px;margin-bottom:12px;border-radius:var(--r);border:1px solid color-mix(in srgb,var(--good) 40%,transparent);background:color-mix(in srgb,var(--good) 8%,transparent)}
+.hb-surface b{display:block;font-size:16px}.hb-surface em{display:block;font-style:normal;font-size:13px;opacity:.8;margin-top:2px}
+.hb-surface.warn{border-color:color-mix(in srgb,var(--warn) 45%,transparent);background:color-mix(in srgb,var(--warn) 8%,transparent)}
+.hb-surface.bad{border-color:var(--bad);background:linear-gradient(135deg,color-mix(in srgb,var(--bad) 30%,transparent),color-mix(in srgb,var(--bad) 10%,transparent))}
+.hb-surface.bad b{color:var(--bad);font-size:18px}
 .hb-banner{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;margin-bottom:14px;border-radius:var(--r);border:1px solid color-mix(in srgb,var(--bad) 55%,transparent);background:linear-gradient(135deg,color-mix(in srgb,var(--bad) 22%,transparent),color-mix(in srgb,var(--bad) 6%,transparent))}
 .hb-banner b{font-size:16px}.hb-banner p{margin:4px 0 0;font-size:13.5px;line-height:1.5}.hb-bi{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--bad);color:#fff}
 .hb-hero{display:flex;gap:18px;align-items:stretch;flex-wrap:wrap}.hb-hero .hb-hl{flex:1 1 300px;min-width:0}

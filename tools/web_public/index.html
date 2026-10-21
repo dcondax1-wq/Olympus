@@ -327,6 +327,15 @@ th.sticky { z-index: 2; }
 .lb > div { padding: 9px 10px; border-radius: 11px; background: rgba(22,26,35,.7); display: flex; flex-direction: column; gap: 1px; }
 .lb span { font-size: 10.5px; font-weight: 600; color: var(--muted); letter-spacing: .05em; text-transform: uppercase; } .lb b { font-size: 17px; font-weight: 700; } .lb i { font-style: normal; font-size: 11.5px; color: var(--ink-2); }
 .study { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+/* recap cards, brief image, weekly review (tools/recap.py) */
+.rc-img { display: block; width: 100%; height: auto; border-radius: 10px; background: #07080c; }
+.rc-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+.rc-list .card { margin: 0; padding: 12px; } .rc-list .card h3 { margin: 8px 0 4px; font-size: 15px; }
+.rc-txt h4 { margin: 12px 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.rc-txt ul { margin: 0; padding-left: 18px; } .rc-txt li { margin: 2px 0; } .rc-txt p { margin: 0; }
+.wk-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line, #1a1f2b); align-items: baseline; }
+.wk-row:first-child { border-top: 0; } .wk-row a { color: inherit; }
+@media (max-width: 760px) { .rc-list { grid-template-columns: 1fr; } }
 .study .card { padding: 0; overflow: hidden; margin: 0; }
 .study img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #000; }
 .study .sb { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 12px; } .study h3 { margin: 0; font-size: 16px; text-transform: capitalize; }
@@ -729,6 +738,15 @@ table.cmp th.rn span { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-
 @media (min-width: 1101px) { .sub.grp { display: none; } }
 @media (min-width: 761px) and (max-width: 1100px) { .nav .kids { display: none !important; } .nav a.g.cur { background: color-mix(in srgb, var(--accent) 16%, transparent); } }
 
+/* remote control page (VIEWS.remote) */
+.rc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.rc-cmd { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; border-radius: 14px; text-align: left; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); min-height: 86px; }
+.rc-cmd b { font-size: 14px; } .rc-cmd span { font-size: 12px; color: var(--ink-2); line-height: 1.4; }
+.rc-cmd.on { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent); }
+.rc-cmd.danger b { color: var(--bad); } .rc-cmd.gated b::after { content: ' · only when flat'; font-weight: 500; font-size: 11px; color: var(--muted); }
+.rc-json { font-family: var(--mono); font-size: 12.5px; white-space: pre-wrap; word-break: break-all; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); margin: 10px 0; user-select: all; -webkit-user-select: all; }
+.rc-act { display: flex; gap: 8px; flex-wrap: wrap; } .rc-act .btn { flex: 1 1 160px; }
+.rc-big { min-height: 52px; font-size: 15px; }
 /* hero links, the owner's rules line, lesson money */
 .hero-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 .ownr { display: flex; gap: 10px; align-items: flex-start; margin: -6px 0 18px; padding: 10px 14px; border-radius: 14px; font-size: 12.5px; line-height: 1.5; color: var(--ink-2);
@@ -1419,17 +1437,20 @@ const GROUPS = [
     ['levels', 'Levels', 'target', 'Every LIT level, the setup tracker'], ['cockpit', 'Eval cockpit', 'prop', 'What a stop-out or a winner does to the eval']] },
   { id: 'accounts', label: 'Accounts', icon: 'wallet', pages: [['accounts', 'Accounts', 'wallet', 'Every account the bot trades: position, orders, past trades']] },
   { id: 'chart', label: 'Chart', icon: 'chart', pages: [['chart', 'Chart', 'chart', 'Live 5m chart and liquidity pools']] },
-  { id: 'trades', label: 'Trades', icon: 'trades', pages: [['trades', 'Trades', 'trades', 'Every trade with its report'], ['results', 'Results', 'results', 'Live settings, 5-year replay'],
+  { id: 'trades', label: 'Trades', icon: 'trades', pages: [['trades', 'Trades', 'trades', 'Every trade with its report'], ['recaps', 'Recaps', 'replay', 'Every live trade: chart, why it entered, the lesson'],
+    ['weekly', 'Weekly', 'results', 'Sunday review: trades, $, R, what to watch next week'], ['results', 'Results', 'results', 'Live settings, 5-year replay'],
     ['replays', 'Replays', 'replay', 'Step through each trade day'], ['stops', 'Stop Sizes', 'stops', 'Wide stop, smaller size']] },
   { id: 'lab', label: 'Lab', icon: 'lab', pages: [['lab', 'Overview', 'layers', 'Latest findings and every run'], ['experiments', 'Experiments', 'lab', 'Every backtest, stored with its data'],
     ['writeups', 'Write-ups', 'doc', 'Findings in plain words, plus the archive'], ['losses', 'Losses', 'loss', 'Why the bot loses, and how much'],
     ['evals', 'Evals', 'sim', 'Simulated MFFU evals: odds and paths'], ['intraday', 'Intraday', 'heat', 'When the bot wins: weekday × hour'],
+    ['setups', 'Rejected setups', 'loss', 'Every LIT setup and the rule that stopped it'],
     ['learned', 'Lessons', 'learned', 'What the replay trades teach']] },
   { id: 'system', label: 'System', icon: 'modules', pages: [['system', 'Overview', 'modules', 'Every part of the bot'], ['strategy', 'Strategy', 'rules', 'The locked strategy in plain words'],
     ['engine', 'Paper bot', 'engine', 'LIT cloud paper bot: state, position, events'], ['eval', 'MFFU Eval', 'prop', 'Balance, target, trailing max loss'],
     ['news', 'News', 'news', 'USD events, the bot’s blackouts, headlines'],
     ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop, weekly stop'], ['activity', 'Activity', 'trades', 'Every fill and outcome, newest first'],
     ['alerts', 'Notifications', 'alerts', 'Phone notifications for every fill and outcome'],
+    ['remote', 'Remote', 'radar', 'Kill, stop, flatten or check the PC bot from the phone (through GitHub)'],
     ['sources', 'Data Sources', 'sources', 'Where every number comes from'], ['archive', 'Archive', 'archive', 'Previous strategy: Liquidity Engine, Oct 17'],
     ['settings', 'Settings', 'settings', 'Home Screen app, refresh, 3D']] },
 ];
@@ -1444,13 +1465,13 @@ const DETAIL = { run: { group: 'lab', label: 'Experiment', back: 'experiments' }
 const PAGES = {};
 GROUPS.forEach(g => g.pages.forEach(([id, label, ic, desc]) => { PAGES[id] = { id, label, icon: ic, desc, group: g.id }; }));
 const ALIAS = { account: 'accounts', positions: 'accounts', position: 'accounts', orders: 'accounts', broker: 'accounts', modules: 'system', home: 'today', overview: 'lab', lessons: 'learned', runs: 'experiments', docs: 'writeups', loss: 'losses', mffu: 'eval', rules: 'strategy',
-  calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', previous: 'archive', old: 'archive', engine_archive: 'archive',
-  briefing: 'brief', analyst: 'brief', recap: 'brief', plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit' };
+  calendar: 'news', events: 'news', headlines: 'news', montecarlo: 'evals', heat: 'intraday', hours: 'intraday', rejected: 'setups', rejections: 'setups', reasons: 'setups', previous: 'archive', old: 'archive', engine_archive: 'archive',
+  briefing: 'brief', analyst: 'brief', recap: 'brief', plan: 'day', clock: 'day', session: 'day', notifications: 'alerts', notify: 'alerts', control: 'remote', kill: 'remote', remotecontrol: 'remote', push: 'alerts', feed: 'activity', fills: 'activity', week: 'day', checklist: 'day', level: 'levels', setup: 'levels', tracker: 'levels', whatif: 'cockpit', cards: 'recaps', review: 'weekly', weekreview: 'weekly' };
 const OLD_DATA = ['results', 'replays', 'variants', 'learned', 'study', 'stops', 'sources'];      // the old Data tab (#/data opens the last one)
 // 3D background presets: today, chart, trades, results, lab, losses, eval, engine, settings (each page uses its group's)
 const SCENE = { accounts: 'eval', replays: 'trades', stops: 'results', experiments: 'lab', run: 'lab', compare: 'lab', writeups: 'lab', writeup: 'lab', learned: 'lab', variants: 'lab', study: 'lab',
-  evals: 'eval', intraday: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', activity: 'today', sources: 'engine', news: 'today',
-  archive: 'engine', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', brief: 'today', levels: 'chart', cockpit: 'eval' };
+  evals: 'eval', intraday: 'lab', setups: 'lab', system: 'engine', strategy: 'engine', cold: 'engine', risk: 'engine', alerts: 'engine', remote: 'engine', activity: 'today', sources: 'engine', news: 'today',
+  archive: 'engine', recaps: 'trades', weekly: 'results', oldresults: 'results', oldevals: 'eval', oldheat: 'lab', day: 'today', brief: 'today', levels: 'chart', cockpit: 'eval' };
 const groupOf = (p) => PAGES[p]?.group || DETAIL[p]?.group || 'today';
 const titleOf = (p) => DETAIL[p]?.label || (p === 'lab' ? 'Lab' : p === 'system' ? 'System' : PAGES[p]?.label) || 'Today';
 let D = null, PAGE = null, ARG = null, RTOK = 0, routed = false;
@@ -1752,7 +1773,7 @@ function loadTC() {
 }
 // live status panel (live_panel.js): is the PC bot trading the eval (verdict, account, feed, LIT stage), the open trade's chart
 let LPP = null;
-const LPV = 'lp2';
+const LPV = 'lp3';
 function loadLP() { if (!LPP) LPP = import('./live_panel.js?v=' + LPV).catch((e) => { console.warn('live panel unavailable', e); LPP = null; throw e; }); return LPP; }
 function lpMount(box, where) { if (!box) return; loadLP().then((m) => { if (box.isConnected && D) m.mount(box, D, { where, loadTC }); }).catch(() => { if (box.isConnected) box.innerHTML = ''; }); }
 // a paper / live trade has no replay record: its chart is drawn from the recent 5m bars in data.json when they cover the entry
@@ -2143,13 +2164,14 @@ VIEWS.brief = (el) => {
   el.innerHTML = head(`Today · LIT day analyst · ${esc(fDate(B.day || ''))}`, mo ? 'Game plan' : 'Briefing', mo ? `Built ${esc(mo.built)} ET${mo.stage === 'full' ? ' (refreshed after 07:30)' : ' (refreshed after 07:30 ET)'} · updated ${esc(B.at || '')} · paper only, no notifications` : esc(B.at || ''))
     + howto('brief', `<p>The bot’s own analysis of the LIT day. The <b>game plan</b> is written on the first cloud run after 01:30 ET and refreshed once after 07:30 ET: which levels are untaken, which side was taken overnight, the target band and the eval size.</p>
       <ul><li><b>Intraday log</b>: every 30 minutes, what changed: a level swept (how deep in ATR; LIT needs 0.5), a box closed, a 5-minute CISD with its inducement and displacement, a setup armed or rejected (and the rule), a limit tapped, the entry and the exit. NEW marks what the last run added.</li>
-      <li><b>End of day</b> (after 16:00 ET): the result, what the setups did and one lesson.</li></ul><p>Nothing here sends a notification; pushes are only for entries and outcomes.</p>`)
+      <li><b>End of day</b> (after 16:00 ET): the result, what the setups did and one lesson.</li></ul><p>The <b>brief image</b> (today’s levels map, the VIX target band, news and the eval) is pushed to the phone once a morning; the rest stays in the app.</p>`)
+    + ((RC().brief && RC().brief.day === B.day) ? `<div class="card"><div class="card-h"><h3>Brief image</h3><span class="meta">built ${esc(RC().brief.built || '')} ET · tap for full size</span></div>${rcImg(RC().brief, 'LIT brief')}</div>` : '')
     + (armedLine() ? `<div class="card"><div class="card-h"><h3>Setup now</h3><span class="meta">${esc(LV().armed.side || '')} · in-app only</span></div>${armedLine()}</div>` : '')
     + (mo ? `<div class="card"><div class="card-h"><h3>Game plan</h3><span class="meta">NQ ${num(mo.price)} at ${esc(mo.built)}</span></div><p class="br-plan">${esc(mo.plan)}</p>
       <div class="kv one br-facts"><div><span>Overnight</span><b>${esc(mo.overnight?.text || '')}</b></div><div><span>Target band</span><b>${esc(mo.vix?.text || '')}</b></div>
       <div><span>News</span><b class="${(mo.news || []).length ? 'wn' : ''}">${esc(mo.news_text || '')}</b></div>
       ${mo.monday?.text ? `<div><span>Monday rule</span><b>${esc(mo.monday.text)}</b></div>` : ''}${mo.weekly_stop?.text ? `<div><span>Weekly stop</span><b>${esc(mo.weekly_stop.text)}</b></div>` : ''}
-      <div><span>Eval</span><b>${esc(mo.eval?.text || '')}</b></div></div></div>` : '')
+      <div><span>Eval</span><b>${esc(mo.eval?.text || '')}</b></div>${mo.eval?.mc?.text ? `<div><span>Eval odds</span><b>${esc(mo.eval.mc.text)}</b></div>` : ''}</div></div>` : '')
     + ((B.mffu || []).length ? `<div class="card"><div class="card-h"><h3>MFFU rules today</h3><span class="meta">in-app only</span></div>${brWarn(B, true)}</div>` : '')
     + (rc ? `<div class="card"><div class="card-h"><h3>End of day</h3><span class="meta ${cls(rc.pnl)}">${susd(rc.pnl)}</span></div><p class="br-plan">${esc(rc.text)}</p><div class="note">${esc(rc.setups)}</div><div class="note"><b>Lesson:</b> ${esc(rc.lesson || '')}</div></div>` : '')
     + `<div class="card"><div class="card-h"><h3>Intraday log</h3><span class="meta">${plural((B.log || []).length, 'entry')}${B.new ? ` · ${B.new} new` : ''}</span></div>
@@ -2228,6 +2250,7 @@ VIEWS.trades = (el) => {
       <ul><li><b>Green bar</b> on the left = a win, red = a loss, grey = breakeven.</li><li><b>Half size</b> = ${isLIT() ? 'the weekly stop: taken after 2 stop-outs in the same calendar week' : 'taken during a cold streak (the last 15 signals summed to 0R or less)'}.</li>
       <li><b>Stop</b> = points from entry to the stop, which sits beyond the sweep’s high or low. Wider stops trade fewer micros.</li></ul>
       <p>Tap a trade for its full report. The galaxy shows every trade as a star: higher = better R, further back = wider stop.</p>`)
+    + recapStrip()
     + `<div class="stats">
       ${statBox('Trades', `<span data-count="${s.n}">${s.n}</span>`, `${num(s.tpw, 1)} a week`)}
       ${statBox('Net', `<span data-count="${s.net}" data-fmt="s$">${susd(s.net)}</span>`, `${kusd(s.pm)} a month · win ${num(s.win, 1)}%`, cls(s.net))}
@@ -2303,6 +2326,68 @@ function periodCard(name, tag, p) {
       <div class="ev"><span>Back-to-back evals</span><div class="pf"><b class="up">${bb.passed ?? '—'}</b><i>passed</i><b class="dn">${bb.failed ?? '—'}</b><i>failed</i></div>${med != null ? `<div class="small mut">median ${med} sessions to pass · ${slow} of ${passes.length} took over 3 weeks</div>` : ''}</div></div></div>`;
 }
 let RES_TC = [];
+// ===================================================================== RECAPS + WEEKLY (tools/recap.py: one PNG + words per finished live trade; the Sunday review)
+const RC = () => LV().recaps || {};
+const rcImg = (c, alt) => c?.png ? `<a href="${esc(c.png)}?v=${esc(c.h || '')}" target="_blank" rel="noopener"><img class="rc-img" loading="lazy" src="${esc(c.png)}?v=${esc(c.h || '')}" alt="${esc(alt || '')}"></a>` : '';
+const rcExit = (x) => ({ CUT_T15: 'cut at the 15-min check', EOD: 'closed 15:55', TIME: 'closed 15:55', BE: 'breakeven', TARGET: 'target', STOP: 'stop' }[x] || x || '');
+function rcText(c) {
+  return `<div class="rc-txt"><h4>Why it entered</h4><ul>${(c.why || []).map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+    <h4>The plan</h4><p>${esc(c.plan || '')}</p><h4>What happened</h4><p>${esc(c.result || '')}</p>
+    <h4>Lesson</h4><ul>${(c.lessons || []).map(w => `<li>${esc(w)}</li>`).join('')}</ul></div>`;
+}
+const rcHead = (c) => `${esc(fDate(c.day))} · ${esc(c.side)} · <span class="${cls(c.usd)}">${susd(c.usd)} · ${fR(c.r)}</span>`;
+function rcTile(c) {
+  return `<article class="card">${rcImg(c, c.key)}<h3>${rcHead(c)}</h3><div class="small mut">${esc(c.account)} · ${esc(rcExit(c.exit))} · ${c.qty ?? '—'} micros · ${num(c.risk_pts, 1)}-pt stop</div>
+    <div class="note" style="margin-top:6px"><b>Lesson:</b> ${esc((c.lessons || [])[0] || '')}</div>
+    <div style="margin-top:8px"><button class="chipbtn" type="button" data-go="recaps" data-arg="${esc(c.key)}"><span>Open the recap</span>${icon('right')}</button></div></article>`;
+}
+function recapStrip() {
+  const cs = RC().cards || []; if (!cs.length) return '';
+  return `<div class="card"><div class="card-h"><h3>Latest live trade</h3><span class="meta">${plural(cs.length, 'recap card')} · <a href="#/recaps">all</a></span></div>
+    ${rcImg(cs[0], cs[0].key)}<div style="margin-top:8px"><b>${rcHead(cs[0])}</b> <span class="small mut">${esc(cs[0].account)} · ${esc(rcExit(cs[0].exit))}</span></div>
+    <div class="note" style="margin-top:6px"><b>Lesson:</b> ${esc((cs[0].lessons || [])[0] || '')}</div>
+    <div style="margin-top:8px"><button class="chipbtn" type="button" data-go="recaps" data-arg="${esc(cs[0].key)}"><span>Why it entered, what happened</span>${icon('right')}</button></div></div>`;
+}
+VIEWS.recaps = (el) => {
+  const cs = RC().cards || [];
+  const one = ARG ? cs.find(c => c.key === ARG) : null;
+  if (one) {
+    const i = cs.indexOf(one), nx = cs[i + 1], pr = cs[i - 1];
+    el.innerHTML = head(`Trades · recap · ${esc(one.account)}`, rcHead(one), `${esc(rcExit(one.exit))} · ${one.qty ?? '—'} micros · entry ${num(one.entry)} · stop ${num(one.stop)} (${num(one.risk_pts, 2)} pts, $${num(one.risk_usd, 0)}) · target ${num(one.target)} · exit ${num(one.exit_px)}`)
+      + `<div class="card">${rcImg(one, one.key)}<div class="small mut" style="margin-top:6px">Tap the chart for full size. 5m left, 1m right: swept level, IDM (inducement), displacement, 5m CISD, limit, 1m CISD, fill, stop, BE stop, target, the 15-minute check and the exit.${one.matched === false ? ' The setup could not be rebuilt from the cloud’s bars: only the trade’s own prices are drawn.' : ''}</div></div>`
+      + `<div class="card">${rcText(one)}</div>`
+      + `<div class="modbar">${pr ? `<button class="chipbtn" type="button" data-go="recaps" data-arg="${esc(pr.key)}">${icon('left')}<span>Newer</span></button>` : ''}<span style="flex:1"></span>
+        <button class="chipbtn" type="button" data-go="recaps">${icon('trades')}<span>All recaps</span></button><span style="flex:1"></span>
+        ${nx ? `<button class="chipbtn" type="button" data-go="recaps" data-arg="${esc(nx.key)}"><span>Older</span>${icon('right')}</button>` : ''}</div>`;
+    return;
+  }
+  const wins = cs.filter(c => c.usd > 0).length, net = cs.reduce((a, c) => a + (c.usd || 0), 0);
+  el.innerHTML = head('Trades · live recaps', 'Every live trade, explained', 'One card per finished trade of the PC bot (NinjaTrader) and the cloud paper ledger: the chart around the trade, why it entered, what happened and the lesson. Newest first, the last 30.')
+    + howto('recaps', `<p>The cloud monitor draws a card on its first run after a trade closes and sends it to your phone (the notification replaces the trade’s outcome notice; tap it to open the card).</p>
+      <ul><li><b>Chart</b>: the swept level (dashed), the inducement swing (IDM), the displacement candle and the 5m CISD (purple), the limit (teal), the 1m CISD, the fill, the red stop box and the green target box, the BE stop line after +1R, the 15-minute check (dashed vertical) and the exit (X).</li>
+      <li><b>Words</b>: the same per-trade report as the backtest replay, with this trade’s own size, prices and result. PC cards also show how many ticks the fill was off the model’s price.</li></ul><p>Read-only: nothing here changes the bot.</p>`)
+    + (cs.length ? `<div class="stats">${statBox('Cards', cs.length, plural(wins, 'winner'))}${statBox('Net of these', susd(net), 'live / paper $', cls(net))}${statBox('Newest', esc(fDate(cs[0].day)), esc(cs[0].account))}</div>
+      <div class="rc-list">${cs.map(rcTile).join('')}</div>` : `<div class="card">${emptyBox('No recap cards yet.', 'The first card appears on the cloud run after the next live or paper trade closes.')}</div>`);
+};
+VIEWS.weekly = (el) => {
+  const W = LV().weekly;
+  if (!W || !W.week) { el.innerHTML = head('Trades · weekly review', 'Weekly review', '') + `<div class="card">${emptyBox('No weekly review yet.', 'The cloud monitor writes it on Sunday evening (or the first run of the week) for the week before.')}</div>`; return; }
+  const S = W.sources || {}, M = S[W.main] || null, ex = W.execution || {};
+  const srcCard = (k) => { const s = S[k]; if (!s) return ''; return `<div class="card"><div class="card-h"><h3>${esc(s.account)}</h3><span class="meta">${plural(s.n, 'trade')} · win ${num(s.win_rate, 0)}%</span></div>
+    <div class="kv"><div><span>Net</span><b class="${cls(s.net)}">${susd(s.net)}</b></div><div><span>R</span><b class="${cls(s.R)}">${fR(s.R)}</b></div><div><span>Wins / losses</span><b>${s.wins} / ${s.losses}</b></div>
+    <div><span>Best</span><b class="${cls(s.best.usd)}"><a href="#/recaps/${esc(s.best.key)}">${esc(fDate(s.best.day))} ${susd(s.best.usd)}</a></b></div><div><span>Worst</span><b class="${cls(s.worst.usd)}"><a href="#/recaps/${esc(s.worst.key)}">${esc(fDate(s.worst.day))} ${susd(s.worst.usd)}</a></b></div>
+    <div><span>Exits</span><b>${Object.entries(s.exits || {}).map(([k, v]) => `${v} ${esc(rcExit(k))}`).join(', ')}</b></div></div></div>`; };
+  el.innerHTML = head(`Trades · weekly review · built ${esc(new Date((W.built_t || 0) * 1000).toLocaleString())}`, `Week of ${esc(W.label)}`, esc(W.head))
+    + howto('weekly', `<p>Written every Sunday evening for the Mon–Fri week before, from the PC bot’s routed trades and the cloud paper ledger. <b>Execution</b> compares the PC’s fills with the model’s trade of the same day. <b>What to watch</b> is built from the data: next week’s high-impact news, the new PWH / PWL, Friday’s high / low for the Monday rule, the eval clock and this week’s loss pattern.</p>`)
+    + (M ? `<div class="stats">${statBox('Trades', M.n, esc(M.account))}${statBox('Net', susd(M.net), `${fR(M.R)} · win ${num(M.win_rate, 0)}%`, cls(M.net))}${statBox('Best', susd(M.best.usd), esc(fDate(M.best.day)), cls(M.best.usd))}${statBox('Worst', susd(M.worst.usd), esc(fDate(M.worst.day)), cls(M.worst.usd))}</div>` : '')
+    + `<div class="card"><div class="card-h"><h3>What to watch next week</h3><span class="meta">from the data</span></div><ul>${(W.watch || []).map(w => `<li>${esc(w.text)}</li>`).join('')}</ul></div>`
+    + `<div class="card"><div class="card-h"><h3>The week’s trades</h3><span class="meta">${plural((W.trades || []).length, 'trade')}</span></div>${(W.trades || []).length ? (W.trades || []).map(t => `<div class="wk-row"><div>${t.card ? `<a href="#/recaps/${esc(t.key)}">` : ''}<b>${esc(fDate(t.day))} ${esc(t.time)} ${esc(t.side)}</b>${t.card ? '</a>' : ''} <span class="small mut">${esc(t.account)} · ${esc(rcExit(t.exit))}</span>${t.lesson ? `<div class="small mut">${esc(t.lesson)}</div>` : ''}</div><b class="${cls(t.r)}">${fR(t.r)}</b><b class="${cls(t.usd)}">${susd(t.usd)}</b></div>`).join('') : emptyBox('No trades this week.', '')}</div>`
+    + `<div class="grid g2">${srcCard('pc')}${srcCard('paper')}</div>`
+    + `<div class="card"><div class="card-h"><h3>Execution quality</h3><span class="meta">PC fills vs the model</span></div><p>${esc(ex.text || '')}</p>
+      ${(ex.pairs || []).length ? `<div class="kv one">${ex.pairs.map(p => `<div><span>${esc(fDate(p.day))} ${esc(p.side)}</span><b>${p.entry_slip_ticks > 0 ? '+' : ''}${p.entry_slip_ticks} ticks · ${p.same_exit ? 'same exit' : `PC ${esc(rcExit(p.exit_pc))} vs model ${esc(rcExit(p.exit_model))}`}</b></div>`).join('')}</div>` : ''}
+      ${ex.audit?.text ? `<div class="note" style="margin-top:8px">PC fill audit: ${esc(ex.audit.text)}</div>` : ''}</div>`
+    + (W.eval?.text ? `<div class="card"><div class="card-h"><h3>Eval</h3></div><p>${esc(W.eval.text)}</p></div>` : '');
+};
 VIEWS.results = (el) => resultsView(el, D.results, false);
 VIEWS.oldresults = (el) => resultsView(el, D.archive?.results, true);
 function resultsView(el, R, arch) {
@@ -3165,6 +3250,35 @@ function histSVG(el, hist) {
   hover(box, svg, W, (sx) => { const i = Math.max(0, Math.min(n - 1, Math.floor((sx - L) / bw))); return { x: L + i * bw, html: `<b>session ${i}</b><span class="up">${Pd[i] || 0} passed</span><span class="dn">${Fd[i] || 0} failed</span>` }; });
 }
 
+// ===================================================================== LAB: rejected setups (research/lab/rejections.json, tools/lit_rejections.py)
+const RJS = { span: store.get('rjSpan', 'last') };
+VIEWS.setups = (el) => {
+  el.innerHTML = head(`Lab · ${esc(stratName())} · setups`, 'Why setups were rejected', 'Every 5-minute CISD the LIT engine saw, with the first rule it failed (the same verdict as the day brief). A setup that passes every rule is traded, blocked by the 1-trade-a-day rule, or never filled.')
+    + howto('setups', `<p>The table counts setups by the <b>first</b> rule they failed, in the engine's order: entry window, sweep depth, displacement, inducement, NWOG / Mon-Wed, Monday rule, stop range, 1.5R target.</p>
+      <ul><li><b>Passed, no fill</b>: every rule held, but the limit was not tapped in 30 minutes, no 1-minute CISD came, or the 1.5R check failed at the fill.</li>
+      <li><b>Last 20 sessions</b> is what the bot saw lately; <b>H1</b> is where the settings were picked, <b>H2</b> the check; 2021-25 is a reference (5-minute bars).</li></ul>`)
+    + `<div id="rjBody">${skel(1)}${skel(1, 'lg')}</div>`;
+  getLab('rejections').then(still(drawRej)).catch(still((e) => { $('#rjBody').innerHTML = `<div class="card">${emptyBox('No rejected-setups file in this build.', `${esc(e.message)}. python -X utf8 tools/lit_rejections.py writes research/lab/rejections.json; the cloud monitor copies it on its next run.`)}</div>`; }));
+};
+function drawRej(R) {
+  const box = $('#rjBody'); if (!box) return;
+  const spans = [['last', `Last ${R.last_n || 20}`], ['H1', 'H1'], ['H2', 'H2'], ['2026', '2026'], ['2021-25', '2021-25 ref']].filter(([k]) => R.spans?.[k]);
+  if (!R.spans?.[RJS.span]) RJS.span = 'last';
+  const S = R.spans[RJS.span], rows = (S.rules || []).filter(r => r.n || r.rule === 'traded'), mx = Math.max(1, ...rows.map(r => r.n || 0));
+  const top = rows.filter(r => r.rule !== 'traded').sort((a, b) => b.n - a.n)[0];
+  const col = (r) => r.rule === 'traded' ? 'var(--good, #3ecf8e)' : (r.rule === 'no_fill' || r.rule === 'day') ? 'var(--gold, #e0b04a)' : 'var(--accent, #7aa2ff)';
+  const hm = (t) => new Date(t * 1000).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false });
+  box.innerHTML = `<div class="toolbar" style="margin-top:0">${segHTML('rjSp', spans, RJS.span)}</div>
+    <div class="stats">${statBox('Setups', S.setups, `${S.sessions} sessions · ${num(S.per_session, 1)} a session`)}${statBox('Traded', S.traded, S.setups ? num(100 * S.traded / S.setups, 1) + '% of setups' : '', 'up')}
+      ${statBox('Rejected', S.rejected, 'by a rule, the day rule or no fill')}${statBox('Top reason', esc(top?.label || '—'), top ? `${top.n} · ${top.pct}% of the rejected` : '', 'dn')}</div>
+    <div class="card"><div class="card-h"><h3>Reasons</h3><span class="meta">${esc(S.from || '')} → ${esc(S.to || '')}</span></div><div class="tw"><table class="ht"><tr><th>Reason</th><th class="num">Setups</th><th class="num">%</th><th class="hide-sm" style="width:35%"></th></tr>
+      ${rows.map(r => `<tr><td>${esc(r.label)}</td><td class="num">${r.n}</td><td class="num">${r.pct == null ? '—' : r.pct + '%'}</td><td class="hide-sm"><div style="height:8px;border-radius:4px;background:${col(r)};width:${Math.round(100 * (r.n || 0) / mx)}%"></div></td></tr>`).join('')}</table></div></div>
+    <div class="card"><div class="card-h"><h3>Latest setups</h3><span class="meta">newest first</span></div><div class="tw"><table class="ht"><tr><th>Day</th><th>CISD</th><th>Side</th><th>Verdict</th></tr>
+      ${(R.recent || []).slice(0, 30).map(r => `<tr><td>${esc(r.day.slice(5))}</td><td>${hm(r.t)}</td><td class="${r.dir > 0 ? 'up' : 'dn'}">${r.dir > 0 ? 'Long' : 'Short'}</td><td>${esc(r.label)}</td></tr>`).join('')}</table></div></div>
+    ${R.built ? `<div class="note">Built ${esc(R.built)}. ${esc(R.source || '')}</div>` : ''}`;
+  onSeg('rjSp', (v) => { RJS.span = v; store.set('rjSpan', v); drawRej(R); });
+}
+
 // ===================================================================== LAB: intraday heat (research/lab/intraday_heat.json: weekday × hour of the live strategy's trades)
 const HS = { per: store.get('heatPer', 'all'), m: store.get('heatM', 'net'), pick: null };
 const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -3922,7 +4036,7 @@ VIEWS.archive = (el) => {
 // cloud monitor sent (live.notices: fills, outcomes, PC silent, eval timing), newest first. It works before notifications are
 // set up. Notifications: free Web Push (engine/push.py) from the cloud monitor and the PC bot to this Home Screen app; a tap
 // opens #/activity/<key>. The app badge counts what this device has not seen yet.
-const ACT_K = { fill: 'Fill', outcome: 'Outcome', pc: 'PC bot', timing: 'Eval timing', test: 'Test', risk: 'Needs a look', system: 'System' };
+const ACT_K = { fill: 'Fill', outcome: 'Outcome', pc: 'PC bot', timing: 'Eval timing', test: 'Test', risk: 'Needs a look', system: 'System', recap: 'Recap card', brief: 'Brief', weekly: 'Weekly review' };
 function activity() {
   const lv = LV(), M = new Map();
   for (const v of lv.ledger || []) {
@@ -3975,6 +4089,7 @@ function actRow(x, hl = '') {
     ic = `<span class="side-i" style="width:32px;height:32px;border-radius:10px;border:1px solid var(--line)">${icon(x.kind === 'timing' ? 'prop' : x.kind === 'pc' ? 'phone' : x.kind === 'risk' ? 'risk' : 'alerts')}</span>`;
     title = `<b>${esc(String(x.title || ACT_K[x.kind] || 'Notice').replace(/^[^·]*·\s*/, ''))}</b>`;
     sub = x.body || '';
+    if (/^#\/(recaps|brief|weekly)(\/[\w\-:.]*)?$/.test(x.url || '')) title = `<a href="${esc(x.url)}">${title} ${icon('right')}</a>`;   // tools/recap.py notices open their page
   }
   return `<div class="act ${hl === x.key ? 'act-hl' : ''}" data-key="${esc(x.key)}">${ic}<span class="sl-m"><span class="sl-t">${title}</span><span class="sl-s act-s">${esc(sub)}</span>
     <span class="sl-s"><span class="mono">${et(x.t).hm} ET</span> · ${esc(ACT_K[x.kind] || x.kind || '')} · ${src}${x.sent ? ' · <span class="up">notified</span>' : ''}</span></span>${right}</div>`;
@@ -4136,6 +4251,72 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
 });
 
 // ===================================================================== SETTINGS
+// ===================================================================== REMOTE CONTROL (engine/remote_ctl.py, docs/REMOTE_CONTROL.md)
+// The PC bot reads control/command.json on the repo's `control` branch every ~60 s. This page builds the exact JSON (a
+// fresh id + ts) and opens GitHub's editor for that file; the owner pastes and commits. Nothing here talks to the PC or
+// holds a token: GitHub (the owner's own login) carries the command. A command expires 15 min after it is made.
+const RC_CMDS = [
+  ['status', 'Status', 'A fresh heartbeat now and a phone notice with what the bot is doing', ''],
+  ['flatten', 'Flatten', 'Close the open position now. The bot keeps running; no new entry until the next trading day', ''],
+  ['stop', 'Stop after flat', 'Stop the bot once the trade or armed setup is finished', ''],
+  ['stopnow', 'Stop now', 'Close the position, then stop the bot', ''],
+  ['kill', 'KILL', 'Same as HOLD TO KILL: flatten everything, stop, auto-resume off. Restart only at the PC', 'danger'],
+  ['update', 'Update', 'Run the auto-update now (main only, self-tests, rolls back on failure), outside 01:50-16:00 ET', 'gated'],
+  ['restart', 'Restart server', 'Restart the PC server; the eval comes back only with auto-resume on', 'gated'],
+  ['start', 'Start on Sim101', 'Start the bot on the Sim101 practice account (never a real account)', ''],
+];
+const RCTL = { cmd: store.get('rcCmd', 'status'), made: null };
+const rcRepo = () => D?.extras?.repo || 'demetrades2000-coder/nq-liquidity-engine';
+const rcEdit = () => `https://github.com/${rcRepo()}/edit/control/control/command.json`;
+function rcBuild(cmd) {
+  const ts = Math.floor(Date.now() / 1000), rnd = Math.random().toString(36).slice(2, 6);
+  const c = cmd === 'stopnow' ? 'stop' : cmd;
+  const o = { id: `${c}-${ts}-${rnd}`, ts, cmd: c };
+  if (cmd === 'stopnow') o.now = true;
+  if (cmd === 'stop') o.now = false;
+  if (cmd === 'start') o.account = 'Sim101';
+  RCTL.made = { cmd, ts, json: JSON.stringify(o, null, 1) };
+  return RCTL.made;
+}
+VIEWS.remote = (el) => {
+  const pc = LV().pc || {}, rm = pc.remote || null;
+  const hbAge = pc.present && pc.t ? Math.max(0, Date.now() / 1000 - pc.t) : null;
+  const pcOk = hbAge != null && hbAge < 30 * 60;
+  if (!RCTL.made || RCTL.made.cmd !== RCTL.cmd || Date.now() / 1000 - RCTL.made.ts > 10 * 60) rcBuild(RCTL.cmd);
+  const m = RCTL.made, until = new Date((m.ts + 15 * 60) * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const state = !pc.present ? ['no heartbeat from the PC yet', 'warn'] : !rm ? ['PC bot is on an older version (no remote yet)', 'warn']
+    : !rm.on ? ['off on the PC (LE_REMOTE=1 turns it on)', 'warn'] : [rm.last || 'on · no command yet', 'good'];
+  el.innerHTML = head('System · remote', 'Remote control', 'Send one safe command to the PC bot through GitHub. Free, from anywhere; the PC picks it up within about a minute.')
+    + `<div class="card"><div class="card-h"><h3>PC bot</h3>${chip(pcOk ? 'heartbeat ' + Math.round(hbAge / 60) + ' min ago' : 'PC silent', pcOk ? 'good' : 'warn')}</div>
+      <div class="pcline"><span class="dot ${state[1] === 'good' ? '' : 'warn'}"></span><span>${esc(state[0])}</span></div>
+      ${rm?.pending_stop ? '<div class="note">A stop is waiting for the bot to be flat.</div>' : ''}
+      ${rm?.error ? `<div class="note">Last fetch: ${esc(rm.error)}</div>` : ''}
+      <div class="note">The result also comes as a phone notification, and shows here after the next cloud run.</div></div>
+    <div class="card"><div class="card-h"><h3>1 · Pick a command</h3></div>
+      <div class="rc-grid" id="rcGrid">${RC_CMDS.map(([id, l, d, k]) => `<button type="button" class="rc-cmd ${k} ${id === RCTL.cmd ? 'on' : ''}" data-rc="${id}"><b>${esc(l)}</b><span>${esc(d)}</span></button>`).join('')}</div></div>
+    <div class="card"><div class="card-h"><h3>2 · Copy it and open GitHub</h3>${chip('valid until ' + until)}</div>
+      <div class="rc-json" id="rcJson">${esc(m.json)}</div>
+      <div class="rc-act"><button class="btn primary rc-big" type="button" id="rcGo">${icon('ext')}Copy and open GitHub</button>
+        <button class="btn ghost" type="button" id="rcCopy">${icon('check')}Copy only</button>
+        <button class="btn ghost" type="button" id="rcNew">${icon('refresh')}New id</button></div>
+      <div class="note">Opens <span class="mono">${esc(rcEdit().replace('https://', ''))}</span> (sign in once; the GitHub app works too: branch <b>control</b>, file <b>control/command.json</b>, edit).</div></div>
+    <div class="card"><div class="card-h"><h3>3 · Paste and commit</h3></div>
+      <ol class="list"><li>In the editor, select all the text and paste (replace everything).</li>
+        <li>Tap <b>Commit changes</b> (straight to the <b>control</b> branch).</li>
+        <li>Wait about a minute: the phone gets “Remote ${esc(m.cmd === 'stopnow' ? 'stop' : m.cmd)}: done” (or why it was refused).</li></ol>
+      <div class="note">Safety: each command runs once and expires after 15 minutes. Kill, stop, flatten and status only lower risk or read. Update and restart run only when the bot is flat. No command can start a real account or change the strategy or settings. Paper / Sim only for remote starts.</div></div>`;
+  $('#rcGrid').onclick = (e) => { const b = e.target.closest('[data-rc]'); if (!b) return; RCTL.cmd = b.dataset.rc; store.set('rcCmd', RCTL.cmd); rcBuild(RCTL.cmd); haptic(10); render(true); };
+  const fresh = () => { if (Date.now() / 1000 - RCTL.made.ts > 60) rcBuild(RCTL.cmd); $('#rcJson').textContent = RCTL.made.json; return RCTL.made.json; };
+  const copy = (t) => navigator.clipboard?.writeText ? navigator.clipboard.writeText(t) : Promise.reject(new Error('no clipboard'));
+  $('#rcGo').onclick = () => {                 // copy and open in the same tap (a popup after an await is blocked on iOS)
+    const t = fresh();
+    copy(t).then(() => toast('Copied: paste it in the editor and commit')).catch(() => toast('Copy the text above by hand', 4000));
+    window.open(rcEdit(), '_blank', 'noopener');
+  };
+  $('#rcCopy').onclick = () => { const t = fresh(); copy(t).then(() => toast('Copied')).catch(() => toast('Select the text above and copy it', 4000)); };
+  $('#rcNew').onclick = () => { rcBuild(RCTL.cmd); $('#rcJson').textContent = RCTL.made.json; toast('New id and time'); };
+};
+
 VIEWS.settings = (el) => {
   const ios = /iphone|ipad|ipod/i.test(navigator.userAgent), standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
   el.innerHTML = head('System · settings', 'Make it yours', 'Saved on this device only.')
@@ -4303,6 +4484,7 @@ setInterval(() => FX && D && FX.mood(moodNow()), 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => null);
 </script>
 <script src="extras.js?v=1" defer></script>
-<script src="hub.js?v=1" defer></script>
+<script src="hub.js?v=2" defer></script>
+<script src="more.js?v=1" defer></script>
 </body>
 </html>
