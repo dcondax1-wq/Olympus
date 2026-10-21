@@ -886,6 +886,25 @@ def _hub(st, lm, docs):
         return None
 
 
+def _intel(out, st, state_path):
+    """Trade Intelligence (tools/trade_intel.py): research/lab/trade_intel.json (the backtest rows + win / loss signs, rebuilt
+    on the PC when run lit_live changes) + the paper / live rows of now from the cloud state and the learning journal, written
+    whole to intel.json (the phone's Trade intel page loads it lazily); data.json gets the compact cut. A few ms, no engine."""
+    try:
+        from tools import trade_intel as TI
+        base = TI._load(TI.OUT)
+        if not base:
+            return None
+        jp = os.path.join(os.path.dirname(state_path) or ".", "lit_journal.jsonl")
+        full = TI.merge_live(base, st, TI._journal(jp) if os.path.exists(jp) else TI._journal(os.path.join(ROOT, "data", "lit_journal.jsonl")))
+        with open(os.path.join(out, "intel.json"), "w", encoding="utf-8") as fh:
+            json.dump(full, fh, separators=(",", ":"), default=str)
+        return TI.compact(full)
+    except Exception as e:
+        print("  trade intel unavailable:", e.__class__.__name__, e)
+        return None
+
+
 HOME_LIVE = ("last_run", "runs", "health", "eval", "eval_2wk", "eval_life", "eval_timing", "model_state", "position", "strategy", "price", "today",
              "events", "pc", "pc_verdict", "pc_outage", "pc_checkin", "model", "lit_rules", "lit_sizing", "lit", "setups", "armed", "levels", "session", "notices")
 
@@ -977,6 +996,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         "lit_extra": _lit_extra(st, lm),
         "accounts": accounts,
     }
+    data["intel"] = _intel(out, st, state_path)
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # research data files for the Lab's 3D views (Monte Carlo cloud, intraday heat, calendar): lab/<name>.json

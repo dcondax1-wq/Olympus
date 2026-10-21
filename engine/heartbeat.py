@@ -194,6 +194,15 @@ def _remote():
         return None
 
 
+def _live_pub():
+    """The phone live.json push's last result (engine/live_publish.hb_field). Never raises."""
+    try:
+        from . import live_publish
+        return live_publish.hb_field()
+    except Exception:
+        return None
+
+
 def _exec():
     """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
     try:
@@ -239,7 +248,8 @@ class Heartbeat:
                 "push_pk": _push_pk(),          # phone notifications: the cloud seals the notification key to this (engine/push.py)
                 "every_s": int(self.every_s), "acct": _acct(self.bot), "health": _health(self.bot), "ops": _ops(),
                 "exec": _exec(),                # execution quality summary (engine/fill_audit.py), None before the first audit
-                "remote": _remote()}            # phone remote control (engine/remote_ctl.py): the last command and its result
+                "remote": _remote(),            # phone remote control (engine/remote_ctl.py): the last command and its result
+                "live_pub": _live_pub()}        # the phone's live.json push (engine/live_publish.py): last result, None before it
 
     def beat(self) -> dict:
         files = self.bar_files()

@@ -49,6 +49,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%HERE%scripts\stop_bot.ps1"
 
 rem ---- 4. get the new code
 echo  [..] Getting the new version (git pull)
+rem bot-made tracked files (cache/dash, GEX/VIX, check reports: engine/generated_files.py) that main changes go back to
+rem HEAD first, so they never block the pull; a file changed by hand still blocks it
+"%PY%" -X utf8 -m engine.generated_files --prepare-pull
 git pull --ff-only origin main
 if errorlevel 1 set "PULLFAIL=1"
 if defined PULLFAIL echo  [FIX] git pull failed: the old version stays. Send this window to Claude.

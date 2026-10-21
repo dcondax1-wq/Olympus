@@ -6,12 +6,20 @@
   python -m engine.autoupdate --on-start     scripts/run_bot.ps1 runs this before it starts server.py
   python -m engine.autoupdate --check        one check now (same rules; the server's daily check does this in-process)
 
+"Pull all the time" (owner 2026-10-21): besides the main daily check in the halt, the server checks for a new main once an
+hour outside trading time (weekdays 16:00-01:20 ET, i.e. never within 30 min of the 01:50 blackout, and all weekend), with
+the same rules plus two more: no setup armed (bot_flat_reason), and a restart must be safe: a bot on a real account without
+the owner's auto-resume opt-in waits for the 17:02 halt check (an hourly update at night would leave it stopped until he
+types the start command). Hourly checks never push "update skipped" alerts (only failures / rollbacks).
+
 Rules (never broken):
   * only when the bot is FLAT: no model position, no routed position, no open NinjaTrader bracket, no LIT limit / 1m-CISD
     entry pending; never between 01:50 and 16:00 ET on a weekday (LIT trades 02:00-15:55). The daily check runs in the
     CME halt (17:02-17:50 ET) once per ET date; --on-start runs at any other allowed time.
   * only on branch main, only a FAST-FORWARD (git merge --ff-only): never a merge, rebase or reset of local work. A dirty
-    tree (tracked files changed) or a main that is not a fast-forward of HEAD is skipped with an alert.
+    tree (tracked files changed by hand) or a main that is not a fast-forward of HEAD is skipped with an alert.
+  * bot-made tracked files (engine/generated_files.py: cache/dash/*, data/GEX_1d.csv, VIX/VXN, check reports) never
+    count as dirty; the ones the update changes are put back to HEAD right before the fast-forward (and before a rollback).
   * after the fast-forward: pip install -r requirements.txt when it changed, then the quick self-tests
     (engine.ninjatrader --selftest, engine.sizing, tests.test_no_yahoo). Any failure rolls back with
     `git reset --keep <old sha>` (the tree was clean, so nothing local can be lost; --keep refuses otherwise), remembers
@@ -32,6 +40,8 @@ import threading
 import time
 from zoneinfo import ZoneInfo
 
+from . import generated_files
+
 ET = ZoneInfo("America/New_York")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE_PATH = os.path.join(ROOT, "data", "autoupdate.json")          # gitignored
@@ -40,6 +50,7 @@ BRANCH = os.environ.get("LE_AUTOUPDATE_BRANCH", "main")
 RESTART_CODE = 75                                                    # server exit code: "restart me now, I updated"
 HALT_FROM, HALT_TO = 17 * 60 + 2, 17 * 60 + 50                      # daily check window (ET minutes)
 BLACKOUT_FROM, BLACKOUT_TO = 1 * 60 + 50, 16 * 60                    # never on a weekday 01:50-16:00 ET
+HOURLY_MARGIN = 30                                                   # hourly checks stop 30 min before the blackout (01:20 ET)
 PENDING_STAGES = ("limit", "cisd1m", "trade")                        # engine/accounts._lit_stage
 OPEN_LEG = ("entry_sent", "pending", "cancel_pending", "protected", "unprotected", "closing")   # ninjatrader.OPEN_STATUSES
 TESTS = (["-m", "engine.ninjatrader", "--selftest", "--quiet"], ["-X", "utf8", "-m", "engine.sizing"],
@@ -87,10 +98,24 @@ def in_halt(now) -> bool:
     return HALT_FROM <= e.hour * 60 + e.minute <= HALT_TO
 
 
-def window_reason(now, mode: str, last_check_day: str | None = None):
-    """None when an update may run now, else why not. mode 'daily' (the server's halt check) | 'start' | 'manual'."""
+def hour_key(now) -> str:
+    return _et(now).strftime("%Y-%m-%dT%H")
+
+
+def window_reason(now, mode: str, last_check_day: str | None = None, last_hour: str | None = None):
+    """None when an update may run now, else why not. mode 'daily' (the server's halt check) | 'hourly' (the extra checks
+    outside trading time) | 'start' | 'manual'."""
     if in_blackout(now):
         return "trading hours (no update 01:50-16:00 ET on a weekday)"
+    if mode == "hourly":
+        e = _et(now)
+        m = e.hour * 60 + e.minute
+        if e.weekday() < 5 and BLACKOUT_FROM - HOURLY_MARGIN <= m < BLACKOUT_TO:
+            return "too close to the 01:50 ET trading start (hourly checks stop at 01:20 ET)"
+        if in_halt(now):
+            return "the daily check runs in the halt"
+        if last_hour == hour_key(now):
+            return "already checked this hour"
     if mode == "daily":
         if not in_halt(now):
             return "outside the daily window 17:02-17:50 ET"
@@ -195,7 +220,7 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
 
     if not is_enabled(state, env):
         return done("off", "auto-update is off (python -m engine.autoupdate --enable)")
-    w = window_reason(now, mode, state.get("last_check_day"))
+    w = window_reason(now, mode, state.get("last_check_day"), state.get("last_hourly"))
     if w:
         return done("skipped", w)
     if flat:
@@ -209,9 +234,9 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
     c, dirty = sh.git("status", "--porcelain", "--untracked-files=no")
     if c != 0:
         return done("failed", f"git status failed: {dirty.strip()[:200]}", alert=True)
-    if dirty.strip():
-        return done("skipped", "local changes in tracked files (not touched): " + ", ".join(
-            ln[3:] for ln in dirty.rstrip().splitlines()[:4]), alert=True)
+    gen_dirty, other = generated_files.split_dirty(dirty)
+    if other:
+        return done("skipped", "local changes in tracked files (not touched): " + ", ".join(other[:4]), alert=True)
     c, out = sh.git("fetch", "-q", "origin", branch, timeout=180)
     if c != 0:
         return done("skipped", f"git fetch failed: {out.strip()[-200:]}")
@@ -229,6 +254,11 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
         return done("skipped", f"origin/{branch} {new[:7]} is not a fast-forward of {old[:7]} (local commits?): not touched", alert=True)
     c, changed = sh.git("diff", "--name-only", old, new)
     changed = changed.split() if c == 0 else []
+    hit = [p for p in gen_dirty if p in changed]        # bot-made files the update replaces: back to HEAD, else the ff fails
+    if hit:
+        c, out = generated_files.discard(sh.git, hit)
+        sh.log(f"reset {len(hit)} bot-made file(s) the update replaces: {', '.join(hit[:6])}"
+               + (f" (git: {out.strip()[-120:]})" if c else ""))
     c, out = sh.git("merge", "--ff-only", "-q", new)
     if c != 0:
         sh.git("reset", "--keep", old)                  # a refused ff leaves HEAD alone; this is a no-op then
@@ -236,6 +266,10 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
     sh.log(f"fast-forwarded {old[:7]} -> {new[:7]} ({len(changed)} files)")
 
     def rollback(why):
+        # the self-tests may rewrite bot-made files; --keep refuses on a locally changed file the ff changed
+        c2, st2 = sh.git("status", "--porcelain", "--untracked-files=no")
+        if c2 == 0:
+            generated_files.discard(sh.git, [p for p in generated_files.split_dirty(st2)[0] if p in changed])
         rc, rout = sh.git("reset", "--keep", old)
         back = git_head(sh) == old
         if "requirements.txt" in changed:
@@ -263,6 +297,8 @@ def record(res: dict, state: dict | None = None, path: str = STATE_PATH) -> dict
     s["last"] = {k: res.get(k) for k in ("t", "mode", "status", "reason", "old", "new")}
     if res.get("mode") == "daily" and res.get("checked"):
         s["last_check_day"] = _et(res["t"]).date().isoformat()
+    if res.get("mode") == "hourly" and res.get("checked"):
+        s["last_hourly"] = hour_key(res["t"])
     if res.get("status") not in ("skipped", "off") or res.get("alert"):
         s["history"] = (list(s.get("history") or []) + [s["last"]])[-20:]
     if res.get("bad_sha"):
@@ -349,13 +385,39 @@ def status(path: str = STATE_PATH) -> dict:
     last = s.get("last") or {}
     return {"on": is_enabled(s), **version(), "updated_at": s.get("updated_at"),
             "last_check_t": last.get("t"), "result": last.get("status"), "reason": str(last.get("reason") or "")[:160],
-            "bad_sha": (s.get("bad_sha") or "")[:7] or None}
+            "bad_sha": (s.get("bad_sha") or "")[:7] or None, "last_hourly": s.get("last_hourly")}
 
 
 # ---------------------------------------------------------------------- in-server daily check
+def restart_safe_reason(bot, optin=None, tradovate_env=None) -> str | None:
+    """None when restarting the server now brings the bot back by itself: not running, paper / Sim, or a real account with
+    the owner's auto-resume opt-in (engine/autoresume.py). Else why the hourly check waits for the halt check."""
+    try:
+        if not getattr(bot, "running", False):
+            return None
+        from .watchdog import AUTO_MODES, mode_of
+        tenv = tradovate_env
+        if tenv is None:
+            try:
+                from .tradovate import env_status
+                tenv = env_status().get("env", "demo")
+            except Exception:
+                tenv = "demo"
+        if mode_of(getattr(bot, "cfg", None) or {}, tenv) in AUTO_MODES:
+            return None
+        from . import autoresume
+        rec = autoresume.load() if optin is None else optin
+        if autoresume.valid(rec):
+            return None
+        return "a real-account bot without auto-resume: waits for the 17:02 ET halt check"
+    except Exception as e:
+        return f"cannot tell if a restart is safe ({e.__class__.__name__})"
+
+
 class DailyUpdater:
-    """Daemon thread in server.py: once per ET date in 17:02-17:50 ET, when flat, run_update; on success exit the server
-    with RESTART_CODE (scripts/run_bot.ps1 starts the new code at once)."""
+    """Daemon thread in server.py: once per ET date in 17:02-17:50 ET, when flat, run_update; plus once an hour outside
+    trading time (weekdays 16:00-01:20 ET, all weekend) when flat, nothing armed and a restart is safe. On success exit the
+    server with RESTART_CODE (scripts/run_bot.ps1 starts the new code at once)."""
 
     def __init__(self, bot, every_s: float = 60.0, exit_fn=None, clock=time.time, state_path: str = STATE_PATH):
         self.bot, self.every_s, self.clock, self.state_path = bot, every_s, clock, state_path
@@ -364,22 +426,39 @@ class DailyUpdater:
         self._thread = None
         self.busy = False
 
-    def due(self, now=None) -> bool:
+    def due_mode(self, now=None) -> str | None:
+        """'daily' (the halt check), 'hourly' (an extra check outside trading time) or None."""
         now = self.clock() if now is None else now
         s = load_state(self.state_path)
-        return is_enabled(s) and window_reason(now, "daily", s.get("last_check_day")) is None
+        if not is_enabled(s):
+            return None
+        if window_reason(now, "daily", s.get("last_check_day")) is None:
+            return "daily"
+        if window_reason(now, "hourly", s.get("last_check_day"), s.get("last_hourly")) is None:
+            return "hourly"
+        return None
 
-    def check_once(self, now=None, sh: Shell | None = None, tests=TESTS) -> dict | None:
+    def due(self, now=None) -> bool:
+        return self.due_mode(now) is not None
+
+    def check_once(self, now=None, sh: Shell | None = None, tests=TESTS, optin=None) -> dict | None:
         now = self.clock() if now is None else now
-        if not self.due(now) or self.busy:
+        mode = self.due_mode(now)
+        if mode is None or self.busy:
             return None
         flat = bot_flat_reason(self.bot)
         if flat:                                       # try again next minute while the window is open
-            return {"status": "skipped", "reason": f"not flat: {flat}"}
+            return {"status": "skipped", "mode": mode, "reason": f"not flat: {flat}"}
+        if mode == "hourly":
+            why = restart_safe_reason(self.bot, optin)
+            if why:
+                return {"status": "skipped", "mode": mode, "reason": why}
         self.busy = True
         try:
-            file_log("daily check (server)")
-            res = run_update(sh or Shell(log=file_log), "daily", now, None, state=load_state(self.state_path), tests=tests)
+            file_log(f"{mode} check (server)")
+            res = run_update(sh or Shell(log=file_log), mode, now, None, state=load_state(self.state_path), tests=tests)
+            if mode == "hourly" and res.get("status") == "skipped":
+                res["alert"] = False                   # the halt check alerts about a dirty tree etc.; not every hour
             record(res, path=self.state_path)
             alert_for(res)
             if res.get("restart"):
@@ -426,7 +505,8 @@ def main(argv=None) -> int:
         save_state(s)
         file_log(f"auto-update turned {'ON' if a.enable else 'OFF'} by the owner")
         print(f"Auto-update is {'ON' if a.enable else 'OFF'}." + (
-            " Daily in 17:02-17:50 ET and when run_bot.ps1 starts; only when flat; only fast-forwards of main." if a.enable else ""))
+            " Daily in 17:02-17:50 ET, hourly outside trading time (weekdays 16:00-01:20 ET, all weekend) and when"
+            " run_bot.ps1 starts; only when flat; only fast-forwards of main." if a.enable else ""))
         return 0
     if a.on_start or a.check:
         res = run_update(Shell(log=file_log), "start" if a.on_start else "manual", flat=files_flat_reason())

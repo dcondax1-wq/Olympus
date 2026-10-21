@@ -7,7 +7,9 @@
 // counts on the app badge; a tap opens the app at the notice (#/activity/<key>). A kind muted in Settings (more.js, stored at
 // ./__notify-prefs in the badge cache) is still shown (a phone must show every push) but silently and without the badge.
 // A data.json / home.json served from the cache because the network failed carries "x-le-cache: 1" (the app's offline banner).
-const CACHE = 'le-public-v14';
+// v15 (2026-10-21): live.js + the PC's live.json (network-only, see the fetch handler).
+// v16 (2026-10-21): intel.js (Trades > Trade intel) + intel.json (versioned by the build time, like runs/<id>.json).
+const CACHE = 'le-public-v17';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
@@ -20,7 +22,9 @@ const prune = (u) => caches.open(CACHE).then((c) => c.keys().then((ks) => ks.for
 }))).catch(() => null);
 self.addEventListener('fetch', (e) => {
   const req = e.request, url = new URL(req.url);
-  if (req.method !== 'GET' || url.origin !== location.origin) return;
+  // live.json (live.js: the PC's minute-by-minute file on api.github.com / raw.githubusercontent.com) is network-only:
+  // never cached, never answered from a cache (an old copy would look live). Cross-origin requests are not touched anyway.
+  if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.endsWith('live.json')) return;
   const put = (key, res) => { if (res && res.ok) { const c = res.clone(); caches.open(CACHE).then((x) => x.put(key, c)); } return res; };
   const isData = url.pathname.endsWith('data.json') || url.pathname.endsWith('home.json'), isPage = req.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('index.html');
   if (isData || isPage) {

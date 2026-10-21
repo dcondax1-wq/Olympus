@@ -716,6 +716,10 @@ app.add_middleware(_KillClearsAutostart)
 WATCHDOG = _wd.Watchdog(BOT, send=_autostart_alert, keepawake=_ka.KEEPAWAKE)
 AUTOUPDATE = _au.DailyUpdater(BOT)       # owner opt-in: python -m engine.autoupdate --enable
 HEARTBEAT = _hb.Heartbeat(BOT, log=lambda t: print(t, flush=True))   # pushes "I'm alive" to the heartbeat branch (LE_HEARTBEAT=1)
+from engine import live_publish as _lp
+# the phone app's live.json (engine/live_publish.py): the Home essentials pushed to branch `live` of the public Pages repo
+# every 60 s while the bot runs (5 min otherwise), read by tools/web_public/live.js; on with the heartbeat (LE_HEARTBEAT=1)
+LIVEPUB = _lp.Publisher(BOT, HEARTBEAT, log=lambda t: print(t, flush=True))
 from engine import fill_audit as _fa
 # execution quality (engine/fill_audit.py): copies the ledger / NinjaTrader fills each minute, compares them with the LIT backtest
 # on the same bars after each exit and each session, pushes slipped fills / missed trades; read-only (LE_EXEC_AUDIT=0 = off)
@@ -776,8 +780,9 @@ def _autostart_startup():
         threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
     WATCHDOG.start()
     HEARTBEAT.start()
+    LIVEPUB.start()                      # phone live.json every minute (engine/live_publish.py)
     EXEC_AUDIT.start()
-    AUTOUPDATE.start()                   # daily check in the CME halt; does nothing until the owner runs --enable
+    AUTOUPDATE.start()                   # daily check in the CME halt + hourly outside trading time; nothing until --enable
 
 
 app.router.add_event_handler("startup", _autostart_startup)
@@ -841,7 +846,7 @@ app.router.add_event_handler("startup", REMOTE.start)
 @app.get("/api/health/ping")
 def health_ping():
     return J({"ok": True, "t": int(time.time()), "uptime_s": int(time.time() - WATCHDOG.server_started_at),
-              "bot_running": bool(BOT.running), "heartbeat": HEARTBEAT.status()})
+              "bot_running": bool(BOT.running), "heartbeat": HEARTBEAT.status(), "live_publish": LIVEPUB.status()})
 
 
 @app.get("/api/health/watchdog")

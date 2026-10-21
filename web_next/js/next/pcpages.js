@@ -550,9 +550,11 @@ async function showRules() {
 
 // ------------------------------------------------------------------ wiring
 export const accounts = { show: () => { showAccounts(true); clearInterval(acTimer); acTimer = setInterval(() => { if (!document.hidden && isActive('accounts')) showAccounts(); }, 15000); } };
-export const evalhq = { show: showEvalHQ };
+// pages with the PC account's live numbers redraw themselves every 15 s while on screen (owner 2026-10-21: no manual reload)
+let evTimer = null, calTimer = null;
+export const evalhq = { show: () => { showEvalHQ(); clearInterval(evTimer); evTimer = setInterval(() => { if (!document.hidden && isActive('evalhq')) showEvalHQ(); else if (!isActive('evalhq')) clearInterval(evTimer); }, 15000); } };
 export const edge = { show: showEdge };
-export const pnlcal = { show: showPnlCal };
+export const pnlcal = { show: () => { showPnlCal(); clearInterval(calTimer); calTimer = setInterval(() => { if (!document.hidden && isActive('pnlcal')) showPnlCal(); else if (!isActive('pnlcal')) clearInterval(calTimer); }, 15000); } };
 export const mffurules = { show: showRules };
 export function initPCStatus() {
   renderStatus(true);

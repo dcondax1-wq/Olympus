@@ -4372,7 +4372,8 @@ async function load(manual = false) {
     const r = await fetch('data.json?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const nd = await r.json(), changed = !D || nd.built !== D.built, first = !D;
-    D = nd; status(); actBadge(); if (pushSupport() && Notification.permission === 'granted') pushEnsure(false).catch(() => null);
+    D = nd; if (window.LIVE) window.LIVE.apply(D);   // the PC's live.json (live.js) over the cloud's data.json
+    status(); actBadge(); if (pushSupport() && Notification.permission === 'granted') pushEnsure(false).catch(() => null);
     if (first) subBar(PAGE, groupOf(PAGE));        // detail pages show previous / next once the lists are known
     if (FX) { FX.mood(moodNow()); if (changed && manual !== 'boot') FX.pulse(); }
     if (changed && !(PAGE === 'replays' && RP?.timer)) render(!first);
@@ -4476,7 +4477,7 @@ addEventListener('scroll', () => { if (!pxQ) { pxQ = true; requestAnimationFrame
 
 // home.json: the Home screen's small first-paint file (same build as data.json); data.json follows at once
 window.HOMEP = fetch('home.json?t=' + Date.now(), { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).then((j) => {
-  if (j && !D) { window.HOMEJ = j; if (window.HUB && PAGE === 'today') { render(true); splashDone(); } }
+  if (j && !D) { window.HOMEJ = j; if (window.LIVE) window.LIVE.apply(j); if (window.HUB && PAGE === 'today') { render(true); splashDone(); } }
   return j;
 }).catch(() => null);
 applyLook(); nav(); route(); load('boot'); schedule(); loadFX(); loadLK();
@@ -4484,7 +4485,9 @@ setInterval(() => FX && D && FX.mood(moodNow()), 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => null);
 </script>
 <script src="extras.js?v=1" defer></script>
-<script src="hub.js?v=2" defer></script>
-<script src="more.js?v=1" defer></script>
+<script src="hub.js?v=4" defer></script>
+<script src="more.js?v=2" defer></script>
+<script src="live.js?v=1" defer></script>
+<script src="intel.js?v=1" defer></script>
 </body>
 </html>

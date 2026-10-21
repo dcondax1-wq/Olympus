@@ -123,19 +123,22 @@
       <p>${silent ? 'Turn the Surface on (or wake it), then' : 'On the Surface:'} <b>Bot Control → Start</b>. ${auto} This app is read-only and cannot start it.</p>
       ${v.reason ? `<p class="small mut">${esc(v.reason)}</p>` : ''}</div></div>`;
   }
-  // the Surface's last check-in (heartbeat), always on top of Home: red "OFFLINE since ..." when it is older than 30 min on a
+  // the Surface's last check-in (the newest of the heartbeat in data.json and the PC's live.json, live.js), always on top of Home: red "OFFLINE since ..." when it is older than 30 min on a
   // weekday 01:30-16:00 ET (the cloud pushes the same alert once per outage: engine/push.pc_outage)
   function surfaceLine() {
     const pc = pcHB(), t = ok(pc.t) && pc.t > 0 ? pc.t : null, n = now();
     const e = et(n), mod = e.h * 60 + e.mi, inHours = !['Sat', 'Sun'].includes(e.wd) && mod >= 90 && mod <= 960;
-    const age = t ? n - t : null, stale = age == null || age > 30 * 60;
+    // judge the check-in against the time this phone's data was built (unless the PC's live.json is in): old cloud data is
+    // "phone data is old", never "Surface offline"
+    const bms = Date.parse(HD()?.built || ''), ref = pc.live || !Number.isFinite(bms) ? n : Math.min(n, bms / 1000);
+    const age = t ? n - t : null, stale = !t || ref - t > 30 * 60;
     const since = t ? (et(t).date === e.date ? et(t).hm : `${et(t).wd} ${et(t).hm}`) : null;
     const lvl = !stale ? 'good' : inHours ? 'bad' : 'warn';
     const txt = !t ? 'Surface: no check-in yet (no heartbeat)'
       : stale && inHours ? `Surface OFFLINE since ${since} ET`
       : `Surface last check-in ${since} ET`;
     const sub = !t ? 'the PC bot does not report to the cloud' : stale && inHours ? `${ageTxt(age)} ago: the bot can't trade. Check it's awake and NinjaTrader is connected.`
-      : `${ageTxt(age)} ago${stale ? ' · offline (outside trading hours)' : ''}`;
+      : `${ageTxt(age)} ago${stale ? ' · offline (outside trading hours)' : pc.live ? ' · live from the PC' : age > 30 * 60 ? ' · it was fine when this data was built; pull down to refresh' : ' · via the cloud check'}`;
     return `<div class="hb-surface ${lvl}" role="${lvl === 'bad' ? 'alert' : 'status'}">${light(lvl)}<div><b>${esc(txt)}</b><em>${esc(sub)}</em></div></div>`;
   }
   function verdictCard(M) {
@@ -206,6 +209,9 @@
     return `<div class="card"><div class="card-h"><h3>${icon('engine')}PC &amp; feed health</h3><button class="chipbtn" type="button" data-go="ops"><span>Ops check</span>${icon('right')}</button></div>
       <div class="hb-health">
         ${row(!pc.present ? 'bad' : hb != null && hb < 20 * 60 ? 'good' : 'bad', 'Heartbeat', pc.present ? ageTxt(hb) + ' ago' : 'none', pc.present ? `every ${ageTxt(+pc.every_s || 300)} · ${esc(pc.host || '')}` : 'the PC bot does not report')}
+        ${(() => { const la = window.LIVE && window.LIVE.age ? window.LIVE.age() : null, lp = pc.live_pub || {};
+          return row(la != null && la < 600 ? 'good' : lp.ok === false ? 'bad' : '', 'Live feed (PC → phone)', la != null ? ageTxt(la) + ' ago' : lp.ok === false ? 'failing' : '—',
+            la != null && la < 600 ? 'every minute while the bot runs' : lp.ok === false ? esc(lp.error || 'push failed') + ' · on the Surface: python -m engine.live_publish --once' : 'starts with the PC bot update'); })()}
         ${row(pc.running === false ? 'bad' : pc.present ? 'good' : '', 'Bot', pc.running === false ? 'stopped' : pc.present ? 'running' : '—', hl?.kill ? 'kill switch ON' : '')}
         ${row(barLvl(age1, 240), 'NinjaTrader 1m bars', ok(age1) ? ageTxt(Math.max(0, age1)) + ' old' : pcb.age_1m_s != null ? ageTxt(pcb.age_1m_s) + ' old' : '—', f.entries_blocked ? 'new entries blocked: ' + esc(f.block || 'feed stale') : f.source ? esc(f.source) + (f.no_yahoo ? ' · no Yahoo' : '') : esc(pcb.text || ''))}
         ${row(barLvl(age5, 660), 'NinjaTrader 5m bars', ok(age5) ? ageTxt(Math.max(0, age5)) + ' old' : '—')}
