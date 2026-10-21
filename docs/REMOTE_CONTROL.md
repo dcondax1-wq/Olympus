@@ -28,6 +28,9 @@ saying so) and nothing happens later by surprise.
 | `update` | the auto-update now (`engine/autoupdate.py`: main only, fast-forward only, self-tests, roll back on failure), then a restart when it updated. Does not need the daily auto-update to be switched on. | flat, nothing pending, outside 01:50-16:00 ET on a weekday, server run by `run_bot.ps1` |
 | `restart` | restart the server (exit 75; `run_bot.ps1` starts it again). The eval comes back only with auto-resume on; a Sim bot resumes by itself. | flat, nothing pending, server run by `run_bot.ps1`; while the bot runs also outside 01:50-16:00 ET on a weekday |
 | `start` | start on a **Sim** account (`"account": "Sim101"`) or paper. A real account is always refused. | bot stopped |
+| `pause` | no NEW entries until `"until"`: `"HH:MM"` (New York), `"tomorrow"` (00:00 ET tonight) or `"YYYY-MM-DD"` (max 14 days). Open trades keep stop / target. | always |
+| `resume_entries` | lift the pause (not a remote flatten's "done for today"; does not start a stopped bot) | always |
+| `present` | "I'm here" check-in for 4 h (`"hours"` optional) in the presence log (`engine/presence.py`) | always |
 
 Example: `{"id": "kill-1760983320-ab12", "ts": 1760983320, "cmd": "kill"}`. Several at once:
 `{"commands": [{...}, {...}]}`. `ts` is unix seconds (or ms, or an ISO time like `2026-10-20T14:02:00-04:00`).

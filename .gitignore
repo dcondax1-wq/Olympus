@@ -12,6 +12,14 @@ data/guards_state.json
 data/ninjatrader_state.json
 # phone remote control: the command ids already handled (engine/remote_ctl.py)
 data/remote_done.json
+# presence check-ins, the entry pause, hands-off events (engine/presence.py, entry_pause.py, handsoff.py)
+data/presence.jsonl
+data/entry_pause.json
+data/*_pause.json
+data/handsoff.jsonl
+data/handsoff_state.json
+data/*_handsoff.jsonl
+data/*_handsoff_state.json
 # the PC bot's archive of NinjaTrader bars (engine/pcbars.py), machine-local
 data/nt_bars/
 # the phone live.json push's scratch git dir (engine/live_publish.py)

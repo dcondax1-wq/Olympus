@@ -368,9 +368,20 @@ async def live_start(req: Request):
     return J(res)
 
 
+def _handsoff(kind, detail):
+    """The weekly hands-off score (engine/handsoff.py): a person pressed stop / kill. Never raises."""
+    try:
+        from engine import handsoff as _ho
+        _ho.record(kind, "dashboard", detail, path=_ho.path_for(BOT))
+    except Exception:
+        pass
+
+
 @app.post("/api/live/stop")
 def live_stop():
     _autostart_clear("stop")             # AUTOSTART block: an intentional stop stays stopped
+    if BOT.running:
+        _handsoff("stop", "Stop on the PC dashboard")
     return J(BOT.stop())
 
 
@@ -382,6 +393,7 @@ def live_kill():
             _autostart_log("auto-resume turned OFF by the kill switch")
     except Exception as e:
         print(f"[autostart] could not turn auto-resume off: {e}", flush=True)
+    _handsoff("kill", "HOLD TO KILL on the PC dashboard")
     return J(BOT.kill_switch())
 
 
@@ -729,6 +741,11 @@ EXEC_AUDIT = _fa.Watcher(BOT, log=lambda t: print(t, flush=True))
 def _autostart_resume():
     rec = _wd.load(_AUTOSTART["path"])
     marker = _au.take_restart_marker()   # set when this restart follows an auto-update (engine/autoupdate.py)
+    try:                                 # hands-off score: a restart nobody asked for (engine/handsoff.py)
+        from engine import handsoff as _ho
+        _ho.note_server_start(marker, path=_ho.path_for(BOT))
+    except Exception:
+        pass
     d = _wd.decide_resume(rec, time.time(), _tv.env_status()["env"])
     info = {"checked_at": int(time.time()), "record": bool(rec), "mode": d["mode"], "reason": d["reason"],
             "resumed": False, "result": None, "after_update": (marker or {}).get("sha")}
@@ -806,6 +823,8 @@ def _botctl_stop():
     # live_stop() returns a Starlette Response (J(...)); botctl.do_stop needs the dict (dict(Response) raised TypeError, so
     # the Bot Control STOP showed an error although the bot had stopped)
     _autostart_clear("stop")
+    if BOT.running:
+        _handsoff("stop", "STOP on Bot Control")
     return BOT.stop()
 
 
@@ -840,6 +859,13 @@ REMOTE = _rc.RemoteControl(BOT, hooks={"kill": _remote_kill, "stop": _remote_sto
                                        "start": _botctl_start, "beat": HEARTBEAT.beat},
                            log=lambda t: print(t, flush=True))
 app.router.add_event_handler("startup", REMOTE.start)
+# "I'm here" check-in, pause until, hands-off score (engine/presence_api.py: /api/next/presence|pause|handsoff; files only)
+try:
+    from engine import presence_api as _pa
+    _pa.bind(BOT)
+    app.include_router(_pa.router)
+except Exception as _pa_err:
+    print(f"[presence] /api/next/presence disabled: {_pa_err.__class__.__name__}: {_pa_err}", flush=True)
 # ---- END REMOTE CONTROL ----
 
 
