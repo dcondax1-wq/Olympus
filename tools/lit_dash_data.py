@@ -3,6 +3,8 @@
   python tools/lit_dash_data.py            # both files
   python tools/lit_dash_data.py mc         # research/lab/montecarlo.json only
   python tools/lit_dash_data.py heat       # research/lab/intraday_heat.json only
+  python tools/lit_dash_data.py intel      # research/lab/trade_intel.json only (tools/trade_intel.py; "all" rebuilds it only
+                                           # when run lit_live changed)
 
 montecarlo.json   MFFU Builder 50K Monte Carlo on LIT's 2026 sessions (stored run lit_live = the live settings, costs in):
                   4,000 resampled 60-session paths in 5-session blocks (tools/research_mc.py's eval engine: $3,000 target,
@@ -172,3 +174,6 @@ if __name__ == "__main__":
         heat()
     if what in ("all", "mc"):
         montecarlo()
+    if what in ("all", "intel"):
+        from tools import trade_intel
+        trade_intel.build()

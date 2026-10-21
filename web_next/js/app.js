@@ -51,6 +51,7 @@ import { pages as ops } from './next/pcops.js';
 import { initPulse } from './next/pulse.js';
 import { initKeys } from './next/keys.js';
 import { setups as setupsPage, sensitivity as sensPage } from './next/insights.js';
+import { intel as intelPage } from './next/intel.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -66,7 +67,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   firms: hubp.firms, business: hubp.business, market: hubp.market, learn: hubp.learn, system: hubp.system,
   botctl: botctlPage, accounts: pc.accounts, evalhq: pc.evalhq, edge: pc.edge, pnlcal: pc.pnlcal, mffurules: pc.mffurules,
   morning: ops.morning, livechart: ops.livechart, botlog: ops.botlog, ntpanel: ops.ntpanel, timeline: ops.timeline, livesettings: ops.livesettings,
-  setups: setupsPage, sensitivity: sensPage,
+  setups: setupsPage, sensitivity: sensPage, intel: intelPage,
   rules: mods.rules, cold: mods.cold, risk: mods.risk, alerts: { show: () => settingsPage.show() }, modules: { show: () => {} },
   playbook: { show: () => {} } };
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };

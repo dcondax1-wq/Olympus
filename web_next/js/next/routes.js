@@ -16,6 +16,7 @@ export const TOP = [
 // The previous strategy's pages (Liquidity Engine, Oct 17: they run or read the old engine) live under Modules → Archive.
 export const DATA = [
   { id: 'results', label: 'Results', icon: 'results', desc: 'LIT replay: 2026 (H1 picked, H2 check), 2021-25 reference, eval odds' },
+  { id: 'intel', label: 'Trade intel', icon: 'stats', desc: 'Every trade (backtest, paper, live) with ~60 facts, the signs of winners vs losers, MFE / MAE' },
   { id: 'edge', label: 'Edge', icon: 'heat', desc: 'Where LIT makes its money: R, exits, MFE / MAE, stop size, hour, weekday, levels' },
   { id: 'pnlcal', label: 'P&L Calendar', icon: 'calendar', desc: 'Daily P&L month grid (backtest or the PC bot), streaks, this week vs the backtest' },
   { id: 'lab', label: 'Experiments', icon: 'variants', desc: 'Research run library: every LIT backtest with its data' },

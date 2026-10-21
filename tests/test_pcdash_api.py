@@ -278,6 +278,44 @@ def botctl_checks(tmp, check, live_bot):
                 os.environ[k] = v
 
 
+def intel_checks(tmp, check):
+    """Data > Trade intel (/api/next/intel, engine/next_api.py -> tools/trade_intel.py): the stored backtest rows + the PC
+    journal's paper / live trades, the signs and the compact cut. Read-only (a GET over research/lab/trade_intel.json)."""
+    from engine import next_api
+    from tools import trade_intel as TI
+    if not os.path.exists(TI.OUT):
+        check("intel: research/lab/trade_intel.json exists (python -X utf8 tools/trade_intel.py)", False)
+        return
+    app = FastAPI()
+    app.include_router(next_api.router)
+    cl = TestClient(app)
+    jp = os.path.join(tmp, "intel_journal.jsonl")
+    with open(jp, "w", encoding="utf-8") as fh:
+        fh.write(json.dumps({"source": "pc", "key": "x", "day": "2026-10-20", "entry_t": ts(2026, 10, 20, 3, 5), "exit_t": ts(2026, 10, 20, 4, 0),
+                             "side": "LONG", "entry_px": 25000.0, "stop_px": 24970.0, "target_px": 25150.0, "risk_pts": 30.0, "qty": 5,
+                             "exit": "STOP", "r": -1.02, "pnl": -306.0, "mfe": 0.2, "mae": 1.0, "f": {"disp": 1.1, "idm_n": 2, "vix": 18.2}}) + "\n")
+    old = TI._journal
+    TI._journal = lambda path, _o=old: _o(jp)          # the PC's journal -> the temp one
+    try:
+        r = cl.get("/api/next/intel")
+        d = r.json()
+        keys = [c["key"] for c in d.get("cols") or []]
+        rows = [dict(zip(keys, x)) for x in d.get("rows") or []]
+        check("intel 200: cols, rows, signs, summary", r.status_code == 200 and len(keys) >= 60 and d.get("signs") and d.get("summary"), r.text[:200])
+        check("intel: backtest rows + the journal's live trade", sum(1 for x in rows if x["source"] == "backtest") >= 600
+              and [x["source"] for x in rows if x["source"] != "backtest"] == ["live"], (d.get("meta") or {}).get("sources"))
+        lv = next((x for x in rows if x["source"] == "live"), {})
+        check("intel: the live row carries the journal features + outcome", lv.get("disp") == 1.1 and lv.get("idm_n") == 2
+              and lv.get("r") == -1.02 and lv.get("outcome") == "loss" and lv.get("rr") == 5.0, lv)
+        rc = cl.get("/api/next/intel?compact=1").json()
+        check("intel compact: summary, top signs, the live row, small", rc.get("summary") and isinstance(rc.get("top"), list)
+              and len(rc.get("live_rows") or []) == 1 and len(json.dumps(rc)) < 80_000, len(json.dumps(rc)))
+        check("intel: GET only", all(getattr(rt, "methods", {"GET"}) <= {"GET", "HEAD"} for rt in next_api.router.routes
+                                     if getattr(rt, "path", "") == "/api/next/intel"))
+    finally:
+        TI._journal = old
+
+
 def hub_checks(tmp, check, live_bot):
     """The hub pages' API (engine/hub_api.py: Prop Firms, Business, Market, Learn, System): read-only GETs, data shapes,
     every fact of research/props/firms.json marked and sourced, eval odds that rise with the balance, the gallery route
@@ -578,6 +616,7 @@ def main() -> int:
         botctl_checks(tmp, check, bot)
         hub_checks(tmp, check, bot)
         ops_checks(tmp, check, bot, now)
+        intel_checks(tmp, check)
     finally:
         pcdash_api._bot, lit_learn.JOURNAL_PATH = old_bot, old_jp
         shutil.rmtree(tmp, ignore_errors=True)

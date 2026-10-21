@@ -286,6 +286,22 @@ def lab_file(name: str):
     return _J(d) if d is not None else _J({"error": "not found"}, 404)
 
 
+@router.get("/api/next/intel")
+def intel(compact: int = 0):
+    """Trade Intelligence (tools/trade_intel.py): every LIT trade (backtest run lit_live + the PC's paper / live trades from
+    its learning journal, data/lit_journal.jsonl) with ~60 columns, the win / loss signs per feature and the summary.
+    compact=1: the phone's cut (summary, consistent signs, paper / live rows)."""
+    try:
+        from tools import trade_intel as TI
+    except Exception as e:                                   # never 500 the dashboard over a page
+        return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
+    base = _read(TI.OUT)
+    if not base:
+        return _J({"error": "research/lab/trade_intel.json missing: run python -X utf8 tools/trade_intel.py"}, 404)
+    full = TI.merge_live(base, {}, TI._journal(os.path.join(ROOT, "data", "lit_journal.jsonl")))
+    return _J(TI.compact(full) if compact else full)
+
+
 @router.get("/api/next/archive")
 def archive():
     """The previous strategy (Liquidity Engine, locked 2026-10-17) for the Archive page: its lock, its last bundle's periods
