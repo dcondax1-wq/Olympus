@@ -170,7 +170,7 @@ def armed_payload(src: str, s: dict, stage: str, now, size=(None, None)) -> dict
     from . import push
     side = _side(s["dir"])
     q, usd = size
-    sz = f" · ~{q} micros (${usd:,.0f} risk)" if q else ""
+    sz = f" · ~{q} micro{'s' if q != 1 else ''} (${usd:,.0f} risk)" if q else ""
     tgt = f" · target {px(s['target'])}" if s.get("target") is not None else ""
     if stage == "1m":
         line = f"{side} limit {px(s['limit'])} tapped, waiting for a 1m CISD · stop {px(s['stop'])}{tgt}{sz} · valid until {_hm(s['valid'])}"
