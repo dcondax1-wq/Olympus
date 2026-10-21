@@ -258,6 +258,11 @@ class Heartbeat:
             from . import pcbars
             pl["bars"] = pcbars.PCBars.meta(files, self.bot)
         res = push(pl, files=files)
+        try:                                    # the Status page's uptime samples (engine/uptime.py, logs/uptime_pc.json)
+            from . import uptime
+            uptime.pc_hook(pl)
+        except Exception:
+            pass
         self.last = {"at": int(time.time()), **res}
         save_last(pl, res, self.last_path)
         if not res["ok"] and time.time() - self._err_at > 3600:

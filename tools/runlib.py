@@ -275,6 +275,9 @@ def save(id, title, family, question, params=None, sizing=None, trades=None, sco
            "day_cols": ["date", "pnl", "low", "trades"], "days": [[d["date"], d["pnl"], d["low"], d["trades"]] for d in S["days"]]}
     _dump(rec, os.path.join(RUNS, id + ".json"), separators=(",", ":"))
     index()
+    if os.environ.get("LE_LOOKAHEAD") == "1":       # look-ahead check of the new run's top trades (tools/lookahead_audit.py)
+        from tools import lookahead_audit
+        lookahead_audit.hook(id)
     return rec
 
 

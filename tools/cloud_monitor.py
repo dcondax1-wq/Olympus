@@ -855,6 +855,8 @@ def run(out):
         new_state["shadow"] = shadow
     if lit_base is not None:
         new_state["lit_base"], new_state["upgrades_live"] = lit_base, upgrades_live
+    from engine import uptime as _uptime        # status page: 30-day uptime per part + incidents -> state "uptime" (never raises)
+    _uptime.cloud_hook(new_state, st, pc, now)
     try:                    # LIT day analyst (engine/lit_brief.py): morning briefing, intraday log, recap -> state "brief" + README
         from engine import lit_brief
         lit_brief.cloud_hook(out, new_state, st, res, df_all, now, lm)
