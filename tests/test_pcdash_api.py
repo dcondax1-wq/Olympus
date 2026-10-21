@@ -316,6 +316,40 @@ def intel_checks(tmp, check):
         TI._journal = old
 
 
+def brain_checks(check, live_bot):
+    """Bot Brain (/api/next/brain*, engine/brain_api.py mounted by engine/next_api.py): the bot's Brain, the phone cut, a
+    replayed 2026 minute, the sessions list. Read-only GETs (tests/test_brain.py checks the content against the engine)."""
+    from engine import brain, brain_api, next_api
+    app = FastAPI()
+    app.include_router(next_api.router)
+    cl = TestClient(app)
+    old = brain_api._bot
+    try:
+        live_bot.brain = None
+        brain_api._bot = lambda: live_bot
+        r = cl.get("/api/next/brain")
+        check("brain: no Brain yet -> empty + a day to replay", r.status_code == 200 and r.json().get("empty"), r.text[:200])
+        if not os.path.exists(os.path.join(pcdash_api.DATA, "NQ_5m.csv")):
+            return
+        rb = cl.get("/api/next/brain/day/2026-10-13?hm=06:10")
+        j = rb.json()
+        check("brain: replay 2026-10-13 06:10 = in the SHORT trade, BE trigger and 15-minute check shown",
+              rb.status_code == 200 and j["stage"]["key"] == "trade" and j["trade"]["side"] == "SHORT" and j["trade"]["t_check"]["at_hm"] == "06:18",
+              (rb.status_code, (j.get("stage") or {}).get("key"), j.get("error")))
+        live_bot.brain = j
+        r = cl.get("/api/next/brain?compact=1")
+        c = r.json()
+        check("brain: the live Brain's phone cut (stage, waiting, setups with checks) < 16 KB",
+              r.status_code == 200 and c.get("compact") and c["stage"]["waiting"] and c["setups"] and len(r.text) < 16_500, len(r.text))
+        check("brain: GET only, the bot untouched", all(getattr(rt, "methods", {"GET"}) <= {"GET", "HEAD"} for rt in brain_api.router.routes)
+              and not live_bot.kill)
+        check("brain: days list", len(cl.get("/api/next/brain/days").json().get("days") or []) > 150)
+    finally:
+        brain_api._bot = old
+        live_bot.brain = None
+        _ = brain
+
+
 def hub_checks(tmp, check, live_bot):
     """The hub pages' API (engine/hub_api.py: Prop Firms, Business, Market, Learn, System): read-only GETs, data shapes,
     every fact of research/props/firms.json marked and sourced, eval odds that rise with the balance, the gallery route
@@ -617,6 +651,7 @@ def main() -> int:
         hub_checks(tmp, check, bot)
         ops_checks(tmp, check, bot, now)
         intel_checks(tmp, check)
+        brain_checks(check, bot)
     finally:
         pcdash_api._bot, lit_learn.JOURNAL_PATH = old_bot, old_jp
         shutil.rmtree(tmp, ignore_errors=True)

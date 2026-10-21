@@ -905,7 +905,7 @@ def _intel(out, st, state_path):
         return None
 
 
-HOME_LIVE = ("last_run", "runs", "health", "eval", "eval_2wk", "eval_life", "eval_timing", "model_state", "position", "strategy", "price", "today",
+HOME_LIVE = ("last_run", "runs", "health", "eval", "eval_2wk", "eval_life", "eval_timing", "model_state", "position", "strategy", "price", "today", "brain",
              "events", "pc", "pc_verdict", "pc_outage", "pc_checkin", "model", "lit_rules", "lit_sizing", "lit", "setups", "armed", "levels", "session", "notices")
 
 
@@ -923,7 +923,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                                    "model", "shadow", "lit_rules", "lit_sizing", "lit", "session", "levels", "setups",
                                    "push", "notices", "learning",       # learning: engine/lit_learn.py summary (the "What the bot learned" card)
                                    "armed", "watch",                   # armed: engine/lit_watch.py armed_line; watch: tools/lit_watch.py summary (Yahoo lag)
-                                   "recaps", "weekly")}                # tools/recap.py: recap cards + brief image (PNGs in recaps/), weekly review
+                                   "recaps", "weekly",                 # tools/recap.py: recap cards + brief image (PNGs in recaps/), weekly review
+                                   "brain")}                           # the cloud paper bot's Bot Brain (engine/brain.py compact)
     try:                                   # LIT day analyst (engine/lit_brief.py): today's news re-read from the fresh hub
         from engine import lit_brief
         live["brief"] = lit_brief.with_news(st.get("brief"), _load(os.path.join(ROOT, "data", "news", "hub.json"), None))
@@ -1019,6 +1020,12 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # execution quality of the live eval (engine/fill_audit.py on the PC, carried by its heartbeat as "exec"): slippage $ per
     # trade / month against the backtest, missed and extra trades (live_panel.js execution card)
     data["exec"] = (st.get("pc") or {}).get("exec") if isinstance(st.get("pc"), dict) else None
+    # Bot Brain (engine/brain.py): the plain-English explainers once here (the live cuts in live.pc.brain / live.brain skip them)
+    try:
+        from engine import brain as _brain
+        data["brain_help"] = _brain.HELP
+    except Exception as e:
+        print("  brain help unavailable:", e.__class__.__name__, e)
     # the three LIT upgrades live (tools/upgrade_shadow.py via the cloud monitor's lit_base ledger): with vs without, per upgrade
     data["upgrades_live"] = st.get("upgrades_live")
     data["extras"] = _extras(st, lm, bt)          # extras.js pages (Eval HQ, Edge, Calendar, Ops, MFFU rules)

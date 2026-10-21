@@ -9,7 +9,8 @@
 // A data.json / home.json served from the cache because the network failed carries "x-le-cache: 1" (the app's offline banner).
 // v15 (2026-10-21): live.js + the PC's live.json (network-only, see the fetch handler).
 // v16 (2026-10-21): intel.js (Trades > Trade intel) + intel.json (versioned by the build time, like runs/<id>.json).
-const CACHE = 'le-public-v17';
+// v18 (2026-10-21): brain.js (Today > Bot Brain + the Home tile), live.pc.brain from live.json.
+const CACHE = 'le-public-v18';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

@@ -387,3 +387,7 @@ router.include_router(_biz_router)
 # panel, session timeline, settings viewer, morning report): read-only GETs (engine/pcops_api.py)
 from .pcops_api import router as _ops_router  # noqa: E402
 router.include_router(_ops_router)
+
+# Bot Brain (engine/brain.py): what the bot is thinking now, its thought log, any past 2026 day replayed (engine/brain_api.py)
+from .brain_api import router as _brain_router  # noqa: E402
+router.include_router(_brain_router)

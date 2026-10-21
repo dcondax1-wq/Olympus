@@ -3,6 +3,7 @@
 // Modules (tile grid). Page ids stay the same as the classic dashboard so every page module and go('x') call still works.
 export const TOP = [
   { id: 'command', label: 'Today', icon: 'today' },
+  { id: 'brain', label: 'Bot Brain', icon: 'brain' },          // js/next/brain.js: what the bot is thinking (read-only)
   { id: 'botctl', label: 'Bot', icon: 'power' },
   { id: 'accounts', label: 'Accounts', icon: 'wallet' },
   { id: 'chart', label: 'Chart', icon: 'chart' },
@@ -88,7 +89,7 @@ export const MODULES = [
   { id: 'archive', label: 'Archive', icon: 'archive', desc: 'Previous strategy: Liquidity Engine, Oct 17 (paper shadow), kept so it can come back' },
 ];
 
-export const TITLES = { data: 'Data', command: 'Today', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
+export const TITLES = { data: 'Data', command: 'Today', brain: 'Bot Brain', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
 

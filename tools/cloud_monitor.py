@@ -155,7 +155,9 @@ def run_model(lm, bot, df_all, now, store_1m=None, week_hist=None):
         if es_df is not None and (not len(es_df) or int(es_df["time"].max()) + 1800 < int(df_all["time"].max())):
             es_df = None                       # no fresh ES (no Yahoo, the PC sends NQ only): the ES features are unknown
         _LIT_IN["df1"] = df1
-        return lit_live.run(df_all, P, one_min=df1, now=now, sym=SYM, week_hist=week_hist, learn=True, es_df=es_df)
+        _LIT_IN["keep"] = {}                  # the Bot Brain (engine/brain.py) reads this run's market afterwards
+        return lit_live.run(df_all, P, one_min=df1, now=now, sym=SYM, week_hist=week_hist, learn=True, es_df=es_df,
+                            keep=_LIT_IN["keep"])
     if lm["model"].startswith("lab:"):
         es_df, _ = bot._merged("ES" if SYM == "NQ" else "NQ", TF, now, SECS)     # partner index (SMT)
         es_df = es_df[es_df["time"] >= int(df["time"].min())]
@@ -836,7 +838,8 @@ def run(out):
                  "levels": [{k: p.get(k) for k in ("label", "price", "side", "strength", "kind")} for p in state.get("active_pools") or []][:60]
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
-                                               "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "ops", "remote", "live_pub")},
+                                               "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "ops", "remote", "live_pub",
+                                               "brain")},           # the PC bot's Bot Brain (engine/brain.py compact)
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
                  "pc_alert_at": pc_alert_at,
@@ -860,6 +863,18 @@ def run(out):
         lit_brief.cloud_hook(out, new_state, st, res, df_all, now, lm)
     except Exception as e:  # never fails the run; no notifications
         print("brief failed:", e.__class__.__name__, e)
+    try:                    # Bot Brain (engine/brain.py, read-only): the cloud paper bot's thoughts (the phone shows the PC's first)
+        if lm["model"] == "lit" and _LIT_IN.get("keep"):
+            from engine import brain
+            ls = lm.get("lit_sizing") or {}
+            day0 = tday(now)
+            led = new_state.get("ledger") or {}
+            bctx = {"lit_sizing": ls, "eval_clock": new_state.get("eval_2wk"), "eval_life": new_state.get("eval_life"),
+                    "eval_state": lit_eval_state({k: v for k, v in led.items()}, ls.get("eval_start"), day0),
+                    "news": brain._news(str(et(now).date()))}
+            new_state["brain"] = brain.compact(brain.build(res, lm.get("lit") or {}, now, keep=_LIT_IN["keep"], ctx=bctx, mode="cloud"))
+    except Exception as e:  # never fails the run
+        print("brain failed:", e.__class__.__name__, e)
     # ---- learn from every trade (tools/recap.py, read-only): a recap card PNG per finished trade (paper ledger + the PC's
     # routed trades), the morning brief as one image, the Sunday weekly review -> <out>/recaps/ + state "recaps" / "weekly";
     # their notices (recap / brief / weekly) go out through the same notifier (de-duplicated, nothing older than 2 days)

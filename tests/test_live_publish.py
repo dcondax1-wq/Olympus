@@ -100,6 +100,14 @@ def main(argv=None) -> int:
         big = lp.build(hb_payload(now, n_trades=60), now, lm=lm)
         sz = len(json.dumps(big, separators=(",", ":")))
         check("size: under 64 KB with 60 trades of long notes (trimmed to the last 25)", sz < lp.MAX_BYTES and len(big["accounts"][0]["trades"]) <= 25, sz)
+        # the Bot Brain's phone cut (engine/brain.compact, < 16 KB) rides in pc.brain: with 60 trades it still fits
+        hbb = hb_payload(now, n_trades=60)
+        hbb["brain"] = {"v": 1, "kind": "le-brain", "compact": True, "stage": {"key": "limit", "waiting": "x" * 200},
+                        "levels": [{"label": f"L{i}", "price": 30000 + i} for i in range(20)], "setups": [{"id": str(i), "checks": [["depth", True, "y" * 120]] * 8} for i in range(8)],
+                        "log": [{"hm": "04:00", "kind": "sweep", "text": "z" * 150} for _ in range(30)]}
+        bb = lp.build(hbb, now, lm=lm)
+        szb = len(json.dumps(bb, separators=(",", ":")))
+        check("size: under 64 KB with the Bot Brain in pc.brain", szb < lp.MAX_BYTES and (bb["pc"].get("brain") or {}).get("stage"), szb)
         bad = lp.build({"t": "x", "running": True, "health": "not a dict"}, now, lm=lm)
         check("payload: junk heartbeat input -> still a valid live.json (never raises)", bad["kind"] == "le-live" and isinstance(bad["pc"], dict))
 
