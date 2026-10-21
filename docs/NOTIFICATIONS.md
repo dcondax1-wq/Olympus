@@ -21,6 +21,26 @@ notice once, tagged "ops"): **All green for tonight** or **Fix before 02:00 ET: 
 with the next steps, and the **contract roll** reminder a week and a day before. They need the PC linked (below) and the
 PC on; `LE_OPS_PUSH=0` turns them off. Daily routine: `docs/DAILY_CHECKLIST.md`.
 
+**Before the trade, and alerts you can't miss** (`engine/alerts_plus.py`, 2026-10-21):
+
+| When | Text |
+|---|---|
+| the LIT limit arms | `LIT setup armed: LONG limit 29,842 · stop 29,807.5 · target 30,118 · ~6 micros ($414 risk) · valid until 03:15` |
+| the limit is tapped (the 1m-CISD wait starts) | `LIT setup armed: LONG limit 29,842 tapped, waiting for a 1m CISD · ... · valid until 03:20` |
+| it lapses without a fill | `Setup expired — no fill` |
+| **critical** (repeats every 10 min, at most 6 times, until you tap **Got it** or it clears by itself) | Surface offline (cloud), FEED STALE, position mismatch / flatten by hand, kill switch fired, eval room below $400, clock drift, bot update failed |
+| the cloud monitor has not published for 45+ min (weekdays 02:15-16:30 ET; pushed by the PC) | `Cloud monitor has not run for 52 min`, later `Cloud monitor back` |
+| the PC and the cloud run different LIT rules (once per difference) | `PC and cloud run different rules: PC a1b2c3 / cloud d4e5f6 — update the Surface` |
+
+**Got it**: tap the notification (it opens System → Alerts to acknowledge) and tap the big **Got it**; Android also shows a
+Got it button on the notification itself. The app posts the acknowledgement to the same free relay; the PC's ops task
+(every 5 min) and the cloud monitor (every run) read it and stop repeating. When the problem clears by itself, one quiet
+"Resolved" notice replaces the alert. **Levels**: Settings → Alert levels, per kind **On** / **Silent** (no sound, no
+repeats) / **Off** (not pushed). A red banner on every page shows open critical alerts; a yellow one says when the cloud
+monitor is stale while the PC's live feed keeps the app fresh. The PC's critical alerts need the ops task (SETUP SHORTCUTS)
+and the heartbeat; the cloud repeats the Surface-offline alert on its own runs (every 30 min, more often while a setup is
+armed). Tests: `python -X utf8 -m tests.test_alerts_plus`.
+
 Free. Telegram and Discord are off.
 
 How fast: the cloud paper bot checks every 30 minutes on market days (02:00-16:25 ET), so its notices arrive up to ~30

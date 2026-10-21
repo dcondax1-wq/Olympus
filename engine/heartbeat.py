@@ -212,6 +212,15 @@ def _exec():
         return None
 
 
+def _alerts_plus(bot):
+    """{"rules", "crit"} (engine/alerts_plus.hb_block). Never raises."""
+    try:
+        from . import alerts_plus
+        return alerts_plus.hb_block(bot)
+    except Exception:
+        return {"rules": None, "crit": []}
+
+
 class Heartbeat:
     """Daemon thread on the PC server: pushes a heartbeat every `every_s` seconds while the server runs."""
 
@@ -249,7 +258,8 @@ class Heartbeat:
                 "every_s": int(self.every_s), "acct": _acct(self.bot), "health": _health(self.bot), "ops": _ops(),
                 "exec": _exec(),                # execution quality summary (engine/fill_audit.py), None before the first audit
                 "remote": _remote(),            # phone remote control (engine/remote_ctl.py): the last command and its result
-                "live_pub": _live_pub()}        # the phone's live.json push (engine/live_publish.py): last result, None before it
+                "live_pub": _live_pub(),        # the phone's live.json push (engine/live_publish.py): last result, None before it
+                **_alerts_plus(self.bot)}       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
 
     def beat(self) -> dict:
         files = self.bar_files()

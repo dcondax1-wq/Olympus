@@ -1197,6 +1197,7 @@ class LiveBot:
         self._eod_summary(res, sym, now)
         self._route_signals(res, sym, now, secs)
         self._guards_tick(now)
+        self._alerts_tick(now)
         self.health["poll_ms"] = int((time.perf_counter() - t0) * 1000)
         self.health["last_ok_poll"] = now
         self.health["ok"] = not (self.health["stale"] and mopen) and not self.health["desync"]
@@ -1698,6 +1699,17 @@ class LiveBot:
             guards.tick(self, now)
         except Exception as e:
             self._note_error(f"guards failed: {e.__class__.__name__}: {e}")
+
+    def _alerts_tick(self, now):
+        """After routing: the "LIT setup armed" / "Setup expired" pushes (engine/alerts_plus.py). Real bot only; read-only
+        (the push goes out in a thread); never raises."""
+        if self.state_path != STATE_PATH:
+            return
+        try:
+            from . import alerts_plus
+            alerts_plus.pc_setup_tick(self, now)
+        except Exception as e:
+            self._note_error(f"setup alerts failed: {e.__class__.__name__}: {e}")
 
     # ------------------------------------------------------------------ phone notifications (engine/push.py, Web Push)
     def _push_account(self):
