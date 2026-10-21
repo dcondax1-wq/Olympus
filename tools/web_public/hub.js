@@ -128,14 +128,17 @@
   function surfaceLine() {
     const pc = pcHB(), t = ok(pc.t) && pc.t > 0 ? pc.t : null, n = now();
     const e = et(n), mod = e.h * 60 + e.mi, inHours = !['Sat', 'Sun'].includes(e.wd) && mod >= 90 && mod <= 960;
-    const age = t ? n - t : null, stale = age == null || age > 30 * 60;
+    // judge the check-in against the time this phone's data was built (unless the PC's live.json is in): old cloud data is
+    // "phone data is old", never "Surface offline"
+    const bms = Date.parse(HD()?.built || ''), ref = pc.live || !Number.isFinite(bms) ? n : Math.min(n, bms / 1000);
+    const age = t ? n - t : null, stale = !t || ref - t > 30 * 60;
     const since = t ? (et(t).date === e.date ? et(t).hm : `${et(t).wd} ${et(t).hm}`) : null;
     const lvl = !stale ? 'good' : inHours ? 'bad' : 'warn';
     const txt = !t ? 'Surface: no check-in yet (no heartbeat)'
       : stale && inHours ? `Surface OFFLINE since ${since} ET`
       : `Surface last check-in ${since} ET`;
     const sub = !t ? 'the PC bot does not report to the cloud' : stale && inHours ? `${ageTxt(age)} ago: the bot can't trade. Check it's awake and NinjaTrader is connected.`
-      : `${ageTxt(age)} ago${stale ? ' · offline (outside trading hours)' : pc.live ? ' · live from the PC' : ' · via the cloud check'}`;
+      : `${ageTxt(age)} ago${stale ? ' · offline (outside trading hours)' : pc.live ? ' · live from the PC' : age > 30 * 60 ? ' · it was fine when this data was built; pull down to refresh' : ' · via the cloud check'}`;
     return `<div class="hb-surface ${lvl}" role="${lvl === 'bad' ? 'alert' : 'status'}">${light(lvl)}<div><b>${esc(txt)}</b><em>${esc(sub)}</em></div></div>`;
   }
   function verdictCard(M) {
