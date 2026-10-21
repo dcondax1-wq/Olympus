@@ -3,6 +3,8 @@
 The owner trades a **MyFundedFutures (MFFU) Builder 50K** eval and is building this NQ futures bot. They are not a coder and
 usually write from a phone. Reply short, plain and result-first: what changed, the numbers, what's next. Do the work instead of
 asking; show evidence (backtest numbers, charts) and be honest when something doesn't work.
+**Steps for the owner (2026-10-20): at most 3 numbered steps, one copy-paste line, no options or side notes; do every other
+part yourself or fold it into a script.**
 
 ## Hard rules (never break)
 - **Futures data only:** TradingView CME `NQ1!` / `ES1!` exports in `data/` (5m 2021-11 → 2026-10-16; 1m for 2026). Never CFD,
