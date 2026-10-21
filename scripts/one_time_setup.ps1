@@ -207,8 +207,15 @@ if ($LASTEXITCODE -eq 1 -or $LASTEXITCODE -eq 2) {
 & $PsExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'stop_bot.ps1') -KeepAutostart | Out-Host
 Say-Ok "Bot stopped (it restarts at the end of this setup)"
 $br = (& git rev-parse --abbrev-ref HEAD 2>$null | Out-String).Trim()
+# bot-made tracked files (cache/dash, GEX/VIX, check reports: engine/generated_files.py) never block the switch or the pull
+$HasGen = Test-Path (Join-Path $Root 'engine\generated_files.py')
 if ($br -ne 'main') {
-    $dirty = (& git status --porcelain --untracked-files=no 2>$null | Out-String).Trim()
+    if ($HasGen) {
+        & $Py -X utf8 -m engine.generated_files --discard-all 2>&1 | ForEach-Object { "$_" } | Out-Host
+        $dirty = (& $Py -X utf8 -m engine.generated_files --dirty 2>$null | Out-String).Trim()
+    } else {
+        $dirty = (& git status --porcelain --untracked-files=no 2>$null | Out-String).Trim()
+    }
     if ($dirty) {
         Say-Fix "The bot folder is on branch '$br' with files changed by hand, so it was not switched to main. Send a photo of this window to Claude."
         Say-Info ((($dirty -split "`n") | Select-Object -First 5) -join '; ')
@@ -220,6 +227,7 @@ if ($br -ne 'main') {
     if ($br -eq 'main') { Say-Ok "Switched the bot folder to the main branch" }
     else { Say-Fix "Could not switch to main (still on '$br'). Send a photo of this window to Claude."; exit 1 }
 }
+if ($HasGen) { & $Py -X utf8 -m engine.generated_files --prepare-pull 2>&1 | ForEach-Object { "$_" } | Out-Host }
 & git pull --ff-only origin main 2>&1 | ForEach-Object { "$_" } | Out-Host
 if ($LASTEXITCODE -eq 0) { Say-Ok "Code is up to date (main)" }
 else { Say-Fix "git pull failed: the version you have stays. Send a photo of this window to Claude (the rest of the setup still runs)" }

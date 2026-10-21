@@ -11,7 +11,9 @@ Rules (never broken):
     entry pending; never between 01:50 and 16:00 ET on a weekday (LIT trades 02:00-15:55). The daily check runs in the
     CME halt (17:02-17:50 ET) once per ET date; --on-start runs at any other allowed time.
   * only on branch main, only a FAST-FORWARD (git merge --ff-only): never a merge, rebase or reset of local work. A dirty
-    tree (tracked files changed) or a main that is not a fast-forward of HEAD is skipped with an alert.
+    tree (tracked files changed by hand) or a main that is not a fast-forward of HEAD is skipped with an alert.
+  * bot-made tracked files (engine/generated_files.py: cache/dash/*, data/GEX_1d.csv, VIX/VXN, check reports) never
+    count as dirty; the ones the update changes are put back to HEAD right before the fast-forward (and before a rollback).
   * after the fast-forward: pip install -r requirements.txt when it changed, then the quick self-tests
     (engine.ninjatrader --selftest, engine.sizing, tests.test_no_yahoo). Any failure rolls back with
     `git reset --keep <old sha>` (the tree was clean, so nothing local can be lost; --keep refuses otherwise), remembers
@@ -31,6 +33,8 @@ import sys
 import threading
 import time
 from zoneinfo import ZoneInfo
+
+from . import generated_files
 
 ET = ZoneInfo("America/New_York")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -209,9 +213,9 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
     c, dirty = sh.git("status", "--porcelain", "--untracked-files=no")
     if c != 0:
         return done("failed", f"git status failed: {dirty.strip()[:200]}", alert=True)
-    if dirty.strip():
-        return done("skipped", "local changes in tracked files (not touched): " + ", ".join(
-            ln[3:] for ln in dirty.rstrip().splitlines()[:4]), alert=True)
+    gen_dirty, other = generated_files.split_dirty(dirty)
+    if other:
+        return done("skipped", "local changes in tracked files (not touched): " + ", ".join(other[:4]), alert=True)
     c, out = sh.git("fetch", "-q", "origin", branch, timeout=180)
     if c != 0:
         return done("skipped", f"git fetch failed: {out.strip()[-200:]}")
@@ -229,6 +233,11 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
         return done("skipped", f"origin/{branch} {new[:7]} is not a fast-forward of {old[:7]} (local commits?): not touched", alert=True)
     c, changed = sh.git("diff", "--name-only", old, new)
     changed = changed.split() if c == 0 else []
+    hit = [p for p in gen_dirty if p in changed]        # bot-made files the update replaces: back to HEAD, else the ff fails
+    if hit:
+        c, out = generated_files.discard(sh.git, hit)
+        sh.log(f"reset {len(hit)} bot-made file(s) the update replaces: {', '.join(hit[:6])}"
+               + (f" (git: {out.strip()[-120:]})" if c else ""))
     c, out = sh.git("merge", "--ff-only", "-q", new)
     if c != 0:
         sh.git("reset", "--keep", old)                  # a refused ff leaves HEAD alone; this is a no-op then
@@ -236,6 +245,10 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
     sh.log(f"fast-forwarded {old[:7]} -> {new[:7]} ({len(changed)} files)")
 
     def rollback(why):
+        # the self-tests may rewrite bot-made files; --keep refuses on a locally changed file the ff changed
+        c2, st2 = sh.git("status", "--porcelain", "--untracked-files=no")
+        if c2 == 0:
+            generated_files.discard(sh.git, [p for p in generated_files.split_dirty(st2)[0] if p in changed])
         rc, rout = sh.git("reset", "--keep", old)
         back = git_head(sh) == old
         if "requirements.txt" in changed:

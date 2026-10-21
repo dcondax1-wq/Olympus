@@ -232,6 +232,95 @@ def main() -> int:
         check("git: a local commit (not a fast-forward) is never merged or reset",
               r["status"] == "skipped" and "fast-forward" in r["reason"] and git(work, "rev-parse", "HEAD") == mine)
 
+        # ------------------------------------------------------------------ bot-made tracked files (engine/generated_files.py)
+        # the Surface 2026-10-20: "skipped: local changes in tracked files: cache/dash/5y_NQ.json, ..., data/GEX_1d.csv"
+        sh = FakeShell(); sh.dirty = " M cache/dash/5y_NQ.json\n M data/GEX_1d.csv\n M research/lit/live_check.json\n"
+        r = au.run_update(sh, "start", EVENING, None, state=ON, env={})
+        check("update: only bot-made files changed -> not dirty, updated", r["status"] == "updated", r)
+        sh = FakeShell(changed="data/GEX_1d.csv\nengine/x.py"); sh.dirty = " M data/GEX_1d.csv\n M cache/dash/coverage.json\n"
+        r = au.run_update(sh, "start", EVENING, None, state=ON, env={})
+        co = [c for c in sh.calls if c[:2] == ("git", "checkout")]
+        check("update: only the bot-made files the update changes are reset, before the merge",
+              r["status"] == "updated" and co == [("git", "checkout", "HEAD", "--", "data/GEX_1d.csv")]
+              and sh.calls.index(co[0]) < next(i for i, c in enumerate(sh.calls) if c[:2] == ("git", "merge")), sh.calls)
+        sh = FakeShell(); sh.dirty = " M cache/dash/5y_NQ.json\n M engine/live.py\n"
+        r = au.run_update(sh, "start", EVENING, None, state=ON, env={})
+        check("update: a hand edit next to bot-made files still blocks (reason names only the hand edit)",
+              r["status"] == "skipped" and "engine/live.py" in r["reason"] and "cache/dash" not in r["reason"]
+              and not any(c[1] in ("fetch", "merge", "checkout") for c in sh.calls if c[0] == "git"), r)
+        from engine import generated_files as gf
+        check("generated: list covers the Surface's files, never code or the model",
+              all(gf.is_generated(p) for p in ("cache/dash/5y_NQ.json", "cache/dash/bt_NQ_default.json", "cache/dash/coverage.json",
+                                               "data/GEX_1d.csv", "data/VIX_1d.csv", "data/VXN_1d.csv", "research/lit/live_check.json",
+                                               "research/lit/live_timing.json", "research/lit/live_exit_route.json",
+                                               "research/lit/rehearsal.json", "tools/web_hub_snapshot.json", "cache\\dash\\es_fresh.json"))
+              and not any(gf.is_generated(p) for p in ("engine/live.py", "live_model.json", "live_model_lit.json", "data/NQ_5m.csv",
+                                                       "UPDATE.bat", "research/lit/lit_final.json", "cache/other.json")))
+
+        here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        upd = open(os.path.join(here, "UPDATE.bat"), encoding="utf-8").read()
+        ots = open(os.path.join(here, "scripts", "one_time_setup.ps1"), encoding="utf-8").read()
+        check("scripts: UPDATE.bat and one_time_setup.ps1 reset bot-made files (--prepare-pull) right before git pull",
+              0 < upd.find("engine.generated_files --prepare-pull") < upd.find("git pull --ff-only origin main")
+              and 0 < ots.find("--prepare-pull") < ots.find("& git pull --ff-only origin main")
+              and ots.find("--discard-all") < ots.find("& git checkout main"))
+
+        bare2, w2, d2 =(os.path.join(tmp, n) for n in ("g.git", "gw", "gdev"))
+        subprocess.run(["git", "init", "-q", "--bare", "-b", "main", bare2], check=True)
+        subprocess.run(["git", "clone", "-q", bare2, d2], check=True, capture_output=True)
+        git(d2, "config", "user.email", "t@t"); git(d2, "config", "user.name", "t")
+        git(d2, "checkout", "-q", "-b", "main")
+
+        def put(root, rel, text):
+            p = os.path.join(root, *rel.split("/"))
+            os.makedirs(os.path.dirname(p), exist_ok=True)
+            with open(p, "w") as fh:
+                fh.write(text)
+
+        def get(root, rel):
+            with open(os.path.join(root, *rel.split("/"))) as fh:
+                return fh.read()
+
+        for rel in ("cache/dash/5y_NQ.json", "cache/dash/coverage.json", "data/GEX_1d.csv", "engine/x.py"):
+            put(d2, rel, "v1\n")
+        git(d2, "add", "."); git(d2, "commit", "-qm", "g1"); git(d2, "push", "-q", "origin", "main")
+        subprocess.run(["git", "clone", "-q", "-b", "main", bare2, w2], check=True, capture_output=True)
+        git(w2, "config", "user.email", "t@t"); git(w2, "config", "user.name", "t")
+        g_old = git(w2, "rev-parse", "HEAD")
+        put(d2, "engine/x.py", "v2\n"); put(d2, "data/GEX_1d.csv", "upstream\n")
+        git(d2, "commit", "-qam", "g2"); git(d2, "push", "-q", "origin", "main")
+        g_new = git(d2, "rev-parse", "HEAD")
+        # the bot rewrote its files on the PC (one of them main changes too)
+        put(w2, "cache/dash/5y_NQ.json", "bot\n"); put(w2, "cache/dash/coverage.json", "bot\n"); put(w2, "data/GEX_1d.csv", "bot\n")
+        rewrite_fail = [["-c", "open('data/GEX_1d.csv','w').write('test\\n'); import sys; sys.exit(3)"]]
+        r = au.run_update(au.Shell(w2), "start", EVENING, None, state=ON, tests=rewrite_fail, env={})
+        check("git: bot-made files + a failing test that rewrites one -> still rolled back cleanly to the old sha",
+              r["status"] == "rolled_back" and git(w2, "rev-parse", "HEAD") == g_old and get(w2, "engine/x.py") == "v1\n"
+              and get(w2, "cache/dash/5y_NQ.json") == "bot\n", r)
+        put(w2, "data/GEX_1d.csv", "bot\n")
+        r = au.run_update(au.Shell(w2), "start", EVENING, None, state=ON, tests=ok_t, env={})
+        check("git: modified cache/dash + GEX no longer block: fast-forwarded (GEX = main's, untouched caches kept)",
+              r["status"] == "updated" and git(w2, "rev-parse", "HEAD") == g_new and get(w2, "engine/x.py") == "v2\n"
+              and get(w2, "data/GEX_1d.csv") == "upstream\n" and get(w2, "cache/dash/5y_NQ.json") == "bot\n", r)
+        put(d2, "engine/x.py", "v3\n"); git(d2, "commit", "-qam", "g3"); git(d2, "push", "-q", "origin", "main")
+        put(w2, "engine/x.py", "hand edit\n")
+        r = au.run_update(au.Shell(w2), "start", EVENING, None, state=ON, tests=ok_t, env={})
+        check("git: a modified engine/*.py still blocks (edit kept, HEAD kept)",
+              r["status"] == "skipped" and "engine/x.py" in r["reason"] and get(w2, "engine/x.py") == "hand edit\n"
+              and git(w2, "rev-parse", "HEAD") == g_new, r)
+        git(w2, "checkout", "-q", "--", "engine/x.py")
+        # UPDATE.bat on a PC without the fix: plain `git pull --ff-only` with bot-made files dirty that main does not change
+        pr = subprocess.run(["git", "pull", "-q", "--ff-only", "origin", "main"], cwd=w2, capture_output=True, text=True)
+        check("git: plain pull --ff-only succeeds with dirty bot-made files main does not change (first LE UPDATE gets the fix)",
+              pr.returncode == 0 and get(w2, "engine/x.py") == "v3\n" and get(w2, "cache/dash/5y_NQ.json") == "bot\n", pr.stderr)
+        put(d2, "cache/dash/coverage.json", "upstream2\n"); git(d2, "commit", "-qam", "g4"); git(d2, "push", "-q", "origin", "main")
+        put(w2, "cache/dash/coverage.json", "bot2\n")
+        hit = gf.prepare_pull(lambda *a: au.Shell(w2).git(*a))
+        pr = subprocess.run(["git", "pull", "-q", "--ff-only", "origin", "main"], cwd=w2, capture_output=True, text=True)
+        check("git: UPDATE.bat's --prepare-pull resets only what main changes, then the pull succeeds",
+              hit == ["cache/dash/coverage.json"] and pr.returncode == 0 and get(w2, "cache/dash/coverage.json") == "upstream2\n"
+              and get(w2, "cache/dash/5y_NQ.json") == "bot\n", (hit, pr.stderr))
+
         # ------------------------------------------------------------------ auto-resume: opt-in record
         op = os.path.join(tmp, "auto_resume.json")
         for acct, phrase, why in (("Sim101", LIVE_PHRASE, "Sim"), (ACCT, "", "phrase"), (ACCT, LIVE_PHRASE.lower(), "phrase"),
