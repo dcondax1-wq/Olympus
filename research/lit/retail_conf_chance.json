@@ -1,0 +1,156 @@
+{
+ "rounds": 20,
+ "per_round": [
+  {
+   "works": 11,
+   "both_net": 98,
+   "sign_both": 18,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 12,
+   "both_net": 96,
+   "sign_both": 17,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 14,
+   "both_net": 100,
+   "sign_both": 18,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 18,
+   "both_net": 101,
+   "sign_both": 12,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 16,
+   "both_net": 93,
+   "sign_both": 14,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 14,
+   "both_net": 96,
+   "sign_both": 12,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 15,
+   "both_net": 87,
+   "sign_both": 9,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 14,
+   "both_net": 94,
+   "sign_both": 11,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 14,
+   "both_net": 102,
+   "sign_both": 9,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 19,
+   "both_net": 96,
+   "sign_both": 12,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 14,
+   "both_net": 97,
+   "sign_both": 6,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 15,
+   "both_net": 102,
+   "sign_both": 15,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 22,
+   "both_net": 100,
+   "sign_both": 16,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 16,
+   "both_net": 95,
+   "sign_both": 12,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 15,
+   "both_net": 98,
+   "sign_both": 12,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 16,
+   "both_net": 95,
+   "sign_both": 12,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 18,
+   "both_net": 87,
+   "sign_both": 11,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 16,
+   "both_net": 98,
+   "sign_both": 12,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 22,
+   "both_net": 92,
+   "sign_both": 10,
+   "n": 252,
+   "n_feat": 63
+  },
+  {
+   "works": 11,
+   "both_net": 95,
+   "sign_both": 8,
+   "n": 252,
+   "n_feat": 63
+  }
+ ],
+ "mean_works": 15.6,
+ "mean_both_net": 96.1,
+ "mean_sign_both": 12.3,
+ "p_works_ge_real": 0.0,
+ "real_works": 23,
+ "real_both_net": 80,
+ "real_sign_both": 3,
+ "n_tests": 252,
+ "n_features": 63,
+ "p_both_net_ge_real": 1.0,
+ "p_sign_ge_real": 1.0
+}
