@@ -83,3 +83,5 @@ research/props/rule_hashes.json
 research/props/code_watch.json
 research/business/statements/
 research/business/tax_*.csv
+data/alerts_plus.json
+data/push_prefs.json

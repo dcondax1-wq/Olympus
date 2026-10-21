@@ -1233,6 +1233,13 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
         for p in notes:
             r = send(p, state, sender=sender)
             out.append({"key": p["key"], "title": p["title"], **{k: r.get(k) for k in ("sent", "dup", "skipped", "error")}})
+        # critical alerts that repeat until "Got it" (the heartbeat's "crit"), the stale-cloud alarm, the app's levels
+        # (engine/alerts_plus.py; a replay / test ctx only with its own relay_msgs / cloud_ref, never the network)
+        try:
+            from . import alerts_plus
+            out += alerts_plus.ops_tick(ctx, state, now, lambda p: send(p, state, sender=sender), real)
+        except Exception as e:
+            ops_log(f"alerts plus failed: {e.__class__.__name__}: {scrub(str(e), 120)}")
         if do_backup and backup_due(state, now):
             b = backup(now=now)
             r = rotate_logs(now=now)

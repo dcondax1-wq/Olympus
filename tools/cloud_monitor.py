@@ -34,6 +34,7 @@ sys.path.insert(0, ROOT)
 
 from engine import equity_filter               # noqa: E402
 from engine import heartbeat                   # noqa: E402
+from engine import alerts_plus                 # noqa: E402
 from engine import push                        # noqa: E402
 from engine import sizing                      # noqa: E402
 from engine import lab_adapter                 # noqa: E402
@@ -310,6 +311,53 @@ def paper_size(ledger, t, model, eqf_cfg, shadow_path, sizing_cfg, params, lit_s
     profit = sum(v["usd"] for k, v in ledger.items() if int(k) < int(t["entry_t"])) if ledger else None
     r = sizing.route_qty(int(t.get("qty") or 0), t, cold, sizing_cfg, params, profit)
     return r["mult"], r["qty"], None
+
+
+def _armed_size(ledger, lm):
+    """The paper ledger's own sizing for a "setup armed" estimate (as paper_size, without the learning record)."""
+    def f(tr):
+        from engine import lit as _lit
+        ls = lm.get("lit_sizing") or {}
+        start, mode = ls.get("eval_start"), ls.get("mode")
+        room = eval_track(ledger, start)["cushion"] if mode in ("safe_eval", "eval", "two_week") else None
+        est = lit_eval_state(ledger, start, tday(tr["entry_t"])) if mode in ("two_week", "eval", "safe_eval", "fast_eval") else None
+        return sizing.lit_qty(int(_lit.qty_for(tr["risk_pts"])), tr, ls, room=room, state=est, learning=None)["qty"]
+    return f
+
+
+def alerts_plus_step(st, state, res, ledger, lm, pc, pc_outage, relay, relay_msgs, now, feed_ok=True, mopen=True):
+    """engine/alerts_plus.py on the cloud: the app's levels and acks from the relay, "setup armed" / "expired" for the paper
+    bot, the Surface-offline alert repeated until "Got it", the PC-vs-cloud rules check. Never raises."""
+    out = {"notices": [], "prefs": {}, "prefs_state": st.get("push_prefs"), "crit": st.get("crit") or {},
+           "setups_seen": st.get("setups_seen"), "rules": None, "rules_check": st.get("rules_check")}
+    try:
+        pst = alerts_plus.prefs_from(relay_msgs, st.get("push_prefs"))
+        out["prefs_state"], out["prefs"] = pst, pst.get("prefs") or {}
+        acks = alerts_plus.acks_from(relay_msgs)
+        if lm["model"] == "lit":
+            cis = (lm.get("lit") or {}).get("cisd1m") or 20
+            out["setups_seen"], ns = alerts_plus.setup_step(st.get("setups_seen"), state, now, trades=res.get("trades"),
+                                                            size_fn=_armed_size(ledger, lm), src="Cloud", cisd1m=cis,
+                                                            enabled=bool(feed_ok and mopen))
+            out["notices"] += ns
+        active = []
+        o = pc_outage or {}
+        if o.get("since") and o.get("alerted_at") and not o.get("back_at") and push.pc_offline_window(now):
+            p0 = push.pc_offline_payload(o["since"], now, (pc or {}).get("host"), bool((pc or {}).get("position")))
+            active.append({"id": f"pc_offline:{int(o['since'])}", "kind": "pc_offline", "title": p0["title"], "body": p0["body"],
+                           "sent_at": o["alerted_at"]})
+        before = st.get("crit") or {}
+        out["crit"], cn = alerts_plus.crit_step(before, active, acks, now, out["prefs"], src="Cloud")
+        out["notices"] += cn
+        if cn or alerts_plus.crit_open(before) != alerts_plus.crit_open(out["crit"]):
+            relay.post({"le": "crit", "src": "cloud", "open": alerts_plus.crit_open(out["crit"]), "t": int(now)})
+        out["rules"] = alerts_plus.model_rules(lm)
+        fresh = bool((pc or {}).get("present")) and int((pc or {}).get("age_s") or 1e9) <= 30 * 60
+        out["rules_check"], rn = alerts_plus.rules_step(st.get("rules_check"), (pc or {}).get("rules"), out["rules"], now, fresh)
+        out["notices"] += rn
+    except Exception as e:
+        print("alerts plus failed:", e.__class__.__name__, e)
+    return out
 
 
 def _setup_line(res, entry_t, d, trade=None):
@@ -784,6 +832,22 @@ def run(out):
         notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "account", "key", "title", "body", "url", "side", "R", "usd", "exit",
                                                  "qty", "entry", "stop", "target", "risk_usd", "setup", "balance", "to_target", "note")},
                         "sent": int(r.get("sent") or 0), **({"by": "PC"} if r.get("by") else {}), "at": now})
+    plus = alerts_plus_step(st, state, res, ledger, lm, pc, pc_outage, relay, relay_msgs, now,
+                            feed_ok=fstat is None or bool(fstat["ok"]), mopen=market_open(now))
+    for n in plus["notices"]:
+        if notifier.seen(n):
+            continue
+        q = alerts_plus.apply_level(n, plus["prefs"])
+        if q is None:                              # level "off" in the app: recorded, not pushed
+            notifier.mark(n)
+            r = {"sent": 0, "skipped": "off"}
+        else:
+            r = notifier.notify(q, push_it=True, other_sent=pc_sent)
+            if r.get("sent") and n["kind"] == "armed":
+                relay.post({"le": "sent", "key": n["key"], "src": "cloud", "t": now})   # the PC skips the same setup notice
+        push_res.append(r)
+        notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "key", "title", "body", "url", "side", "entry", "stop", "target",
+                                                 "qty", "risk_usd", "setup")}, "sent": int(r.get("sent") or 0), "at": now})
     notices = sorted(notices, key=lambda x: (x.get("t") or 0, x.get("at") or 0))[-80:]
     gone = sorted({g for r in push_res for g in r.get("gone") or []})
     if gone:                                       # expired / made for an old key: the app re-subscribes on its next open
@@ -852,6 +916,10 @@ def run(out):
                  # private key or an endpoint) and the last 80 notices for the app's Activity feed
                  "push_since": push_since, "pushed": notifier.keys()[-600:], "push": push_state, "notices": notices,
                  "push_subs": push_subs, "push_pc": push_pc,
+                 # engine/alerts_plus.py: the app's on / silent / off levels, the repeating critical alerts (Surface offline),
+                 # the LIT setups seen (armed / expired pushes), this run's rules fingerprint and the PC-vs-cloud check
+                 "push_prefs": plus["prefs_state"], "crit": plus["crit"], "crit_open": alerts_plus.crit_open(plus["crit"]),
+                 "setups_seen": plus["setups_seen"], "rules": plus["rules"], "rules_check": plus["rules_check"],
                  # the learning loop (engine/lit_learn.py): mode, knobs, last review, decisions, this month's loss causes
                  "learning": learning}
     if shadow is not None:
