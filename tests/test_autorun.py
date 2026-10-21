@@ -191,6 +191,64 @@ def main() -> int:
         check("daily updater: success -> server exits with code 75 (run_bot.ps1 restarts it), then not again today",
               r["status"] == "updated" and exits == [au.RESTART_CODE] and r2 is None, (r, exits))
 
+        # ------------------------------------------------------------------ hourly checks outside trading time ("pull all the time")
+        W = {"Tue 20:00": EVENING, "Tue 23:40": ts(2026, 10, 20, 23, 40), "Wed 01:10": ts(2026, 10, 21, 1, 10),
+             "Sat 11:00": ts(2026, 10, 24, 11, 0), "Sun 19:30": ts(2026, 10, 25, 19, 30), "Tue 16:20": ts(2026, 10, 20, 16, 20)}
+        check("hourly: allowed weekdays 16:00-01:20 ET and all weekend",
+              all(au.window_reason(t, "hourly") is None for t in W.values()), {k: au.window_reason(t, "hourly") for k, t in W.items()})
+        NO = {"Wed 01:25 (30 min margin)": ts(2026, 10, 21, 1, 25), "Wed 01:55": ts(2026, 10, 21, 1, 55),
+              "Tue 10:00": TRADING, "Tue 15:59": ts(2026, 10, 20, 15, 59), "Mon 01:30 (Sunday night)": ts(2026, 10, 26, 1, 30)}
+        check("hourly: never 01:20-16:00 ET on a weekday",
+              all(au.window_reason(t, "hourly") for t in NO.values()), {k: au.window_reason(t, "hourly") for k, t in NO.items()})
+        check("hourly: the halt keeps the daily check (no hourly inside 17:02-17:50)",
+              "daily check runs in the halt" in (au.window_reason(HALT, "hourly") or ""))
+        check("hourly: once per clock hour", "already checked this hour" in (au.window_reason(EVENING, "hourly", None, au.hour_key(EVENING)) or "")
+              and au.window_reason(EVENING + 3600, "hourly", None, au.hour_key(EVENING)) is None)
+        sp3 = os.path.join(tmp, "au3.json")
+        au.save_state(dict(ON), sp3)
+        ex3 = []
+        orig_sleep = au.time.sleep
+        au.time.sleep = lambda s: None
+        try:
+            hu = au.DailyUpdater(flat_bot, exit_fn=ex3.append, clock=lambda: EVENING, state_path=sp3)
+            check("hourly: due_mode at 20:00 ET = hourly, at 17:10 = daily, at 10:00 = none",
+                  hu.due_mode(EVENING) == "hourly" and hu.due_mode(HALT) == "daily" and hu.due_mode(TRADING) is None)
+            sh_up = FakeShell(); sh_up.remote = sh_up.head
+            r = hu.check_once(sh=sh_up, optin={})
+            r_again = hu.check_once(sh=FakeShell(), optin={})
+            check("hourly: up to date -> no restart, recorded for the hour, not again this hour",
+                  r["status"] == "up_to_date" and r["mode"] == "hourly" and not ex3 and r_again is None
+                  and au.load_state(sp3).get("last_hourly") == au.hour_key(EVENING) and not au.load_state(sp3).get("last_check_day"), r)
+            hu2 = au.DailyUpdater(flat_bot, exit_fn=ex3.append, clock=lambda: EVENING + 3600, state_path=sp3)
+            r = hu2.check_once(sh=FakeShell(), optin={})
+            check("hourly: the next hour a new main fast-forwards, self-tests, then exit 75",
+                  r["status"] == "updated" and ex3 == [au.RESTART_CODE], (r, ex3))
+            armed = SimpleNamespace(state={"setups": {"k": {"limit": 1}}}, running=True, _open_routed=None, adapter=SimpleNamespace(legs=[]))
+            sp4 = os.path.join(tmp, "au4.json")
+            au.save_state(dict(ON), sp4)
+            sh4 = FakeShell()
+            r = au.DailyUpdater(armed, exit_fn=ex3.append, clock=lambda: EVENING, state_path=sp4).check_once(sh=sh4, optin={})
+            check("hourly: a setup armed -> skipped, no git call, retried next minute",
+                  r["status"] == "skipped" and "pending" in r["reason"] and not sh4.calls and not au.load_state(sp4).get("last_hourly"), r)
+            live_bot = SimpleNamespace(state={}, running=True, _open_routed=None, adapter=SimpleNamespace(legs=[]),
+                                       cfg={"adapter": "ninjatrader", "nt_account": ACCT})
+            sh5 = FakeShell()
+            r = au.DailyUpdater(live_bot, exit_fn=ex3.append, clock=lambda: EVENING, state_path=sp4).check_once(sh=sh5, optin={})
+            check("hourly: a real-account bot without auto-resume waits for the halt check (no git call, no restart)",
+                  r["status"] == "skipped" and "17:02" in r["reason"] and not sh5.calls and ex3 == [au.RESTART_CODE], r)
+            check("hourly: paper / Sim bots and a stopped bot restart safely",
+                  au.restart_safe_reason(flat_bot) is None
+                  and au.restart_safe_reason(SimpleNamespace(running=True, cfg={"adapter": "ninjatrader", "nt_account": "Sim101"}), {}) is None
+                  and au.restart_safe_reason(SimpleNamespace(running=False, cfg={"adapter": "ninjatrader", "nt_account": ACCT}), {}) is None)
+            sh6 = FakeShell(); sh6.dirty = " M engine/live.py\n"
+            sp6 = os.path.join(tmp, "au6.json")
+            au.save_state(dict(ON), sp6)
+            r = au.DailyUpdater(flat_bot, exit_fn=ex3.append, clock=lambda: EVENING, state_path=sp6).check_once(sh=sh6, optin={})
+            check("hourly: a dirty tree is skipped without the hourly alert (the halt check still alerts)",
+                  r["status"] == "skipped" and not r["alert"] and not (au.load_state(sp6).get("history") or []), r)
+        finally:
+            au.time.sleep = orig_sleep
+
         # ------------------------------------------------------------------ real git: fast-forward, rollback, untouched
         def git(cwd, *a):
             return subprocess.run(["git", *a], cwd=cwd, capture_output=True, text=True, check=True).stdout.strip()

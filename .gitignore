@@ -14,6 +14,8 @@ data/ninjatrader_state.json
 data/remote_done.json
 # the PC bot's archive of NinjaTrader bars (engine/pcbars.py), machine-local
 data/nt_bars/
+# the phone live.json push's scratch git dir (engine/live_publish.py)
+data/live_pub.git/
 
 # runtime
 logs/

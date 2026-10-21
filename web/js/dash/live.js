@@ -131,7 +131,7 @@ export function startLive() {
   if (started) return; started = true;
   badge();
   const every = (fn, ms) => { fn(); setInterval(() => { if (!document.hidden) fn(); }, ms); };
-  every(pollLive, 10000);
+  every(pollLive, 5000);                 // the bot state every 5 s (owner 2026-10-21: "everything needs to refresh")
   every(pollOverview, 15000);
   every(pollSlow, 30000);
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { pollLive(); pollOverview(); } });

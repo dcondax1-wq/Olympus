@@ -183,7 +183,7 @@ def main() -> int:
     sw = read("tools/web_public/sw.js")
     check("service worker: cache bumped (v12 or later), 'require' -> requireInteraction",
           int((re.search(r"le-public-v(\d+)", sw) or [0, 0])[1]) >= 12 and "requireInteraction" in sw)
-    check("index.html loads the new hub.js (v=2)", 'hub.js?v=2' in read("tools/web_public/index.html"))
+    check("index.html loads the new hub.js (v=2 or later)", int((re.search(r"hub\.js\?v=(\d+)", read("tools/web_public/index.html")) or [0, 0])[1]) >= 2)
     bw = read("tools/build_web_dashboard.py")
     check("data.json + home.json carry pc_outage / pc_checkin", bw.count('"pc_outage", "pc_checkin"') >= 2)
 
