@@ -1,0 +1,369 @@
+{
+ "v": 1,
+ "built": "2026-10-21T14:37:07+00:00",
+ "seconds": 47,
+ "grid": {
+  "t_at": [
+   10,
+   15,
+   20
+  ],
+  "be_off": [
+   0.75,
+   1.25,
+   1.75
+  ],
+  "disp": [
+   0.7,
+   0.8,
+   0.9
+  ],
+  "depth": [
+   0.4,
+   0.5,
+   0.6
+  ],
+  "vix_k": [
+   0.8,
+   1.0,
+   1.2
+  ],
+  "min_rr": [
+   1.25,
+   1.5,
+   2.0
+  ]
+ },
+ "n_points": 729,
+ "live_point": {
+  "t_at": 15,
+  "be_off": 1.25,
+  "disp": 0.8,
+  "depth": 0.5,
+  "vix_k": 1.0,
+  "min_rr": 1.5
+ },
+ "months": [
+  "2026-01",
+  "2026-02",
+  "2026-03",
+  "2026-04",
+  "2026-05",
+  "2026-06",
+  "2026-07",
+  "2026-08",
+  "2026-09",
+  "2026-10"
+ ],
+ "backtest": {
+  "2026-01": {
+   "n": 17,
+   "net": 10040,
+   "pf": 5.74,
+   "win": 47.1
+  },
+  "2026-02": {
+   "n": 13,
+   "net": 2322,
+   "pf": 2.07,
+   "win": 53.8
+  },
+  "2026-03": {
+   "n": 10,
+   "net": 7427,
+   "pf": 14.41,
+   "win": 60.0
+  },
+  "2026-04": {
+   "n": 14,
+   "net": 6703,
+   "pf": 7.12,
+   "win": 71.4
+  },
+  "2026-05": {
+   "n": 17,
+   "net": 5091,
+   "pf": 3.82,
+   "win": 58.8
+  },
+  "2026-06": {
+   "n": 9,
+   "net": 2309,
+   "pf": 3.92,
+   "win": 66.7
+  },
+  "2026-07": {
+   "n": 9,
+   "net": 898,
+   "pf": 1.85,
+   "win": 44.4
+  },
+  "2026-08": {
+   "n": 9,
+   "net": 33,
+   "pf": 1.02,
+   "win": 33.3
+  },
+  "2026-09": {
+   "n": 14,
+   "net": 1903,
+   "pf": 1.97,
+   "win": 50.0
+  },
+  "2026-10": {
+   "n": 8,
+   "net": 6660,
+   "pf": 9.64,
+   "win": 62.5
+  }
+ },
+ "eval_path": {
+  "2026-01": {
+   "n": 17,
+   "net": 6674,
+   "pf": 3.59,
+   "win": 47.1
+  },
+  "2026-02": {
+   "n": 13,
+   "net": 5046,
+   "pf": 3.12,
+   "win": 53.8
+  },
+  "2026-03": {
+   "n": 10,
+   "net": 11590,
+   "pf": 8.45,
+   "win": 60.0
+  },
+  "2026-04": {
+   "n": 14,
+   "net": 6998,
+   "pf": 5.19,
+   "win": 71.4
+  },
+  "2026-05": {
+   "n": 17,
+   "net": 2257,
+   "pf": 2.29,
+   "win": 58.8
+  },
+  "2026-06": {
+   "n": 9,
+   "net": 1671,
+   "pf": 2.19,
+   "win": 66.7
+  },
+  "2026-07": {
+   "n": 9,
+   "net": -1057,
+   "pf": 0.42,
+   "win": 44.4
+  },
+  "2026-08": {
+   "n": 9,
+   "net": 390,
+   "pf": 1.17,
+   "win": 33.3
+  },
+  "2026-09": {
+   "n": 14,
+   "net": 552,
+   "pf": 1.21,
+   "win": 50.0
+  },
+  "2026-10": {
+   "n": 8,
+   "net": 9173,
+   "pf": 12.81,
+   "win": 62.5
+  }
+ },
+ "walk_forward": {
+  "months": [
+   {
+    "month": "2026-02",
+    "train": "2026-01..2026-01",
+    "pick": {
+     "t_at": 10,
+     "be_off": 1.75,
+     "disp": 0.9,
+     "depth": 0.4,
+     "vix_k": 1.0,
+     "min_rr": 1.25
+    },
+    "pick_is_live": false,
+    "train_net": 12691,
+    "wf": -245,
+    "live": 2322
+   },
+   {
+    "month": "2026-03",
+    "train": "2026-01..2026-02",
+    "pick": {
+     "t_at": 10,
+     "be_off": 1.75,
+     "disp": 0.8,
+     "depth": 0.6,
+     "vix_k": 1.0,
+     "min_rr": 1.25
+    },
+    "pick_is_live": false,
+    "train_net": 15397,
+    "wf": 7192,
+    "live": 7427
+   },
+   {
+    "month": "2026-04",
+    "train": "2026-01..2026-03",
+    "pick": {
+     "t_at": 10,
+     "be_off": 1.75,
+     "disp": 0.8,
+     "depth": 0.6,
+     "vix_k": 1.2,
+     "min_rr": 1.25
+    },
+    "pick_is_live": false,
+    "train_net": 22634,
+    "wf": 6777,
+    "live": 6703
+   },
+   {
+    "month": "2026-05",
+    "train": "2026-01..2026-04",
+    "pick": {
+     "t_at": 10,
+     "be_off": 1.75,
+     "disp": 0.7,
+     "depth": 0.6,
+     "vix_k": 1.2,
+     "min_rr": 1.25
+    },
+    "pick_is_live": false,
+    "train_net": 29425,
+    "wf": 4180,
+    "live": 5091
+   },
+   {
+    "month": "2026-06",
+    "train": "2026-01..2026-05",
+    "pick": {
+     "t_at": 10,
+     "be_off": 1.75,
+     "disp": 0.7,
+     "depth": 0.6,
+     "vix_k": 0.8,
+     "min_rr": 1.25
+    },
+    "pick_is_live": false,
+    "train_net": 34503,
+    "wf": 2277,
+    "live": 2309
+   },
+   {
+    "month": "2026-07",
+    "train": "2026-01..2026-06",
+    "pick": {
+     "t_at": 10,
+     "be_off": 1.75,
+     "disp": 0.8,
+     "depth": 0.6,
+     "vix_k": 1.0,
+     "min_rr": 1.25
+    },
+    "pick_is_live": false,
+    "train_net": 36926,
+    "wf": 727,
+    "live": 898
+   },
+   {
+    "month": "2026-08",
+    "train": "2026-01..2026-07",
+    "pick": {
+     "t_at": 10,
+     "be_off": 1.75,
+     "disp": 0.8,
+     "depth": 0.6,
+     "vix_k": 1.0,
+     "min_rr": 1.25
+    },
+    "pick_is_live": false,
+    "train_net": 37653,
+    "wf": 120,
+    "live": 33
+   },
+   {
+    "month": "2026-09",
+    "train": "2026-01..2026-08",
+    "pick": {
+     "t_at": 10,
+     "be_off": 1.75,
+     "disp": 0.8,
+     "depth": 0.6,
+     "vix_k": 1.0,
+     "min_rr": 1.25
+    },
+    "pick_is_live": false,
+    "train_net": 37773,
+    "wf": 1649,
+    "live": 1903
+   },
+   {
+    "month": "2026-10",
+    "train": "2026-01..2026-09",
+    "pick": {
+     "t_at": 10,
+     "be_off": 1.75,
+     "disp": 0.8,
+     "depth": 0.6,
+     "vix_k": 1.0,
+     "min_rr": 1.25
+    },
+    "pick_is_live": false,
+    "train_net": 39422,
+    "wf": 6662,
+    "live": 6660
+   }
+  ],
+  "wf": 29339,
+  "live": 33346,
+  "beats_live": 3,
+  "picked_live": 0
+ },
+ "live_rank": {
+  "2026-01": 298,
+  "2026-02": 289,
+  "2026-03": 307,
+  "2026-04": 310,
+  "2026-05": 397,
+  "2026-06": 352,
+  "2026-07": 13,
+  "2026-08": 91,
+  "2026-09": 226,
+  "2026-10": 163
+ },
+ "batch3b": {
+  "lit": {
+   "wf": 35061,
+   "fixed": 36121,
+   "live": 22859,
+   "from": "2026-04",
+   "to": "2026-10"
+  },
+  "eval": {
+   "wf": 32535,
+   "fixed": 41430,
+   "live": 26145,
+   "from": "2026-04",
+   "to": "2026-10"
+  }
+ },
+ "expect": {
+  "h1_per_month": 5560,
+  "h2_per_month": 2556,
+  "note": "run lit_live LIT size rule: H1 (picked) $5,560/mo, H2 (check) $2,556/mo"
+ },
+ "method": "Anchored walk-forward on 2026: for month k+1 the grid point with the best $ over Jan..k (LIT size rule) trades month k+1. Grid: 15-minute check at 10 / 15 / 20 min, breakeven offset 0.75 / 1.25 / 1.75 pts, displacement 0.7 / 0.8 / 0.9 ATR, sweep depth 0.4 / 0.5 / 0.6 ATR, VIX band 0.8 / 1.0 / 1.2 x, minimum R:R 1.25 / 1.5 / 2.0. Ties go to the live point.",
+ "text": "Walk-forward Feb-Oct 2026 (re-pick every month on all months before): +29,339 vs the fixed live config +33,346; re-picking beat the fixed config in 3 of 9 months and picked the live point itself 0 times."
+}

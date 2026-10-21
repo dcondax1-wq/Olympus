@@ -1,7 +1,7 @@
 {
- "built": "2026-10-20 03:57",
+ "built": "2026-10-21 14:59",
  "baseline": "baseline",
- "count": 1241,
+ "count": 1249,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -144891,6 +144891,1135 @@
      "slow_pass": 33.2,
      "pass_med": 11.0,
      "b2b": "33/81"
+    }
+   }
+  },
+  {
+   "id": "lit_robust_delay1",
+   "title": "LIT robustness: Entry 1 minute late (median copy)",
+   "family": "other",
+   "question": "Competitor-features #12: how much of the live LIT's 2026 money survives noisy prices, slippage, missed trades and a late entry?",
+   "status": "info",
+   "verdict": "1 copies: keeps 91.8% of the 2026 $ (p10 91.8%, p90 91.8%), PF 3.88 (3.88-3.88), 2-week pass/fail 27.7/1.0% (range 27.7-27.7 / 1.0-1.0); H1 keeps 81.4%, H2 128.9%. Live: 2026 +43,385 PF 4.07. The stored trades are the median copy.",
+   "writeup": "lit-robust",
+   "tags": [
+    "lit",
+    "robust"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1,
+    "robust": {
+     "entry_delay": 1
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-21 14:59",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 83,
+     "win": 55.8,
+     "pf": 3.88,
+     "net": 39823,
+     "dd": -2012,
+     "avg_r": 0.678,
+     "stop": 43.8,
+     "worst_day": -734,
+     "risk": 300.0,
+     "half": 12,
+     "per_month": 4060,
+     "p10": 27.7,
+     "f10": 1.0,
+     "p15": 40.8,
+     "f15": 2.9,
+     "p20": 53.4,
+     "f20": 2.9,
+     "dec10": 28.7,
+     "slow_pass": 53.3,
+     "pass_med": 17.0,
+     "b2b": "7/2"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 83,
+     "win": 55.8,
+     "pf": 3.88,
+     "net": 39823,
+     "dd": -2012,
+     "avg_r": 0.678,
+     "stop": 43.8,
+     "worst_day": -734,
+     "risk": 300.0,
+     "half": 12,
+     "per_month": 4060,
+     "p10": 27.7,
+     "f10": 1.0,
+     "p15": 40.8,
+     "f15": 2.9,
+     "p20": 53.4,
+     "f20": 2.9,
+     "dec10": 28.7,
+     "slow_pass": 53.3,
+     "pass_med": 17.0,
+     "b2b": "7/2"
+    }
+   }
+  },
+  {
+   "id": "lit_robust_delay2",
+   "title": "LIT robustness: Entry 2 minutes late (median copy)",
+   "family": "other",
+   "question": "Competitor-features #12: how much of the live LIT's 2026 money survives noisy prices, slippage, missed trades and a late entry?",
+   "status": "info",
+   "verdict": "1 copies: keeps 67.7% of the 2026 $ (p10 67.7%, p90 67.7%), PF 2.96 (2.96-2.96), 2-week pass/fail 22.3/0.0% (range 22.3-22.3 / 0.0-0.0); H1 keeps 76.4%, H2 36.7%. Live: 2026 +43,385 PF 4.07. The stored trades are the median copy.",
+   "writeup": "lit-robust",
+   "tags": [
+    "lit",
+    "robust"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1,
+    "robust": {
+     "entry_delay": 2
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-21 14:59",
+   "spans": {
+    "2026": {
+     "n": 118,
+     "tpw": 2.86,
+     "wk2": 81,
+     "win": 55.9,
+     "pf": 2.96,
+     "net": 29377,
+     "dd": -3586,
+     "avg_r": 0.572,
+     "stop": 42.0,
+     "worst_day": -861,
+     "risk": 302.0,
+     "half": 9,
+     "per_month": 2995,
+     "p10": 22.3,
+     "f10": 0.0,
+     "p15": 32.0,
+     "f15": 6.8,
+     "p20": 39.8,
+     "f20": 9.7,
+     "dec10": 22.3,
+     "slow_pass": 45.5,
+     "pass_med": 13.0,
+     "b2b": "7/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 118,
+     "tpw": 2.86,
+     "wk2": 81,
+     "win": 55.9,
+     "pf": 2.96,
+     "net": 29377,
+     "dd": -3586,
+     "avg_r": 0.572,
+     "stop": 42.0,
+     "worst_day": -861,
+     "risk": 302.0,
+     "half": 9,
+     "per_month": 2995,
+     "p10": 22.3,
+     "f10": 0.0,
+     "p15": 32.0,
+     "f15": 6.8,
+     "p20": 39.8,
+     "f20": 9.7,
+     "dec10": 22.3,
+     "slow_pass": 45.5,
+     "pass_med": 13.0,
+     "b2b": "7/3"
+    }
+   }
+  },
+  {
+   "id": "lit_robust_miss10",
+   "title": "LIT robustness: 10% of trades missed at random (median copy)",
+   "family": "other",
+   "question": "Competitor-features #12: how much of the live LIT's 2026 money survives noisy prices, slippage, missed trades and a late entry?",
+   "status": "info",
+   "verdict": "500 copies: keeps 90.0% of the 2026 $ (p10 76.6%, p90 100.7%), PF 4.09 (3.57-4.55), 2-week pass/fail 28.6/1.0% (range 22.8-31.6 / 0.0-1.0); H1 keeps 90.1%, H2 89.6%. Live: 2026 +43,385 PF 4.07. The stored trades are the median copy.",
+   "writeup": "lit-robust",
+   "tags": [
+    "lit",
+    "robust"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1,
+    "robust": {
+     "miss": 0.1
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-21 14:59",
+   "spans": {
+    "2026": {
+     "n": 109,
+     "tpw": 2.65,
+     "wk2": 86,
+     "win": 56.9,
+     "pf": 4.36,
+     "net": 39811,
+     "dd": -1840,
+     "avg_r": 0.824,
+     "stop": 45.0,
+     "worst_day": -635,
+     "risk": 285.0,
+     "half": 12,
+     "per_month": 4058,
+     "p10": 26.2,
+     "f10": 1.0,
+     "p15": 40.3,
+     "f15": 1.5,
+     "p20": 53.4,
+     "f20": 1.5,
+     "dec10": 27.2,
+     "slow_pass": 56.1,
+     "pass_med": 18.0,
+     "b2b": "9/1"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 109,
+     "tpw": 2.65,
+     "wk2": 86,
+     "win": 56.9,
+     "pf": 4.36,
+     "net": 39811,
+     "dd": -1840,
+     "avg_r": 0.824,
+     "stop": 45.0,
+     "worst_day": -635,
+     "risk": 285.0,
+     "half": 12,
+     "per_month": 4058,
+     "p10": 26.2,
+     "f10": 1.0,
+     "p15": 40.3,
+     "f15": 1.5,
+     "p20": 53.4,
+     "f20": 1.5,
+     "dec10": 27.2,
+     "slow_pass": 56.1,
+     "pass_med": 18.0,
+     "b2b": "9/1"
+    }
+   }
+  },
+  {
+   "id": "lit_robust_miss20",
+   "title": "LIT robustness: 20% of trades missed at random (median copy)",
+   "family": "other",
+   "question": "Competitor-features #12: how much of the live LIT's 2026 money survives noisy prices, slippage, missed trades and a late entry?",
+   "status": "info",
+   "verdict": "500 copies: keeps 79.5% of the 2026 $ (p10 63.3%, p90 95.3%), PF 4.07 (3.34-4.8), 2-week pass/fail 25.2/0.0% (range 18.4-30.15 / 0.0-1.0); H1 keeps 79.4%, H2 79.8%. Live: 2026 +43,385 PF 4.07. The stored trades are the median copy.",
+   "writeup": "lit-robust",
+   "tags": [
+    "lit",
+    "robust"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1,
+    "robust": {
+     "miss": 0.2
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-21 14:59",
+   "spans": {
+    "2026": {
+     "n": 101,
+     "tpw": 2.45,
+     "wk2": 76,
+     "win": 50.5,
+     "pf": 3.65,
+     "net": 35157,
+     "dd": -2359,
+     "avg_r": 0.73,
+     "stop": 46.0,
+     "worst_day": -755,
+     "risk": 278.0,
+     "half": 10,
+     "per_month": 3584,
+     "p10": 26.2,
+     "f10": 1.0,
+     "p15": 39.3,
+     "f15": 2.4,
+     "p20": 50.5,
+     "f20": 7.8,
+     "dec10": 27.2,
+     "slow_pass": 46.7,
+     "pass_med": 15.0,
+     "b2b": "8/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 101,
+     "tpw": 2.45,
+     "wk2": 76,
+     "win": 50.5,
+     "pf": 3.65,
+     "net": 35157,
+     "dd": -2359,
+     "avg_r": 0.73,
+     "stop": 46.0,
+     "worst_day": -755,
+     "risk": 278.0,
+     "half": 10,
+     "per_month": 3584,
+     "p10": 26.2,
+     "f10": 1.0,
+     "p15": 39.3,
+     "f15": 2.4,
+     "p20": 50.5,
+     "f20": 7.8,
+     "dec10": 27.2,
+     "slow_pass": 46.7,
+     "pass_med": 15.0,
+     "b2b": "8/3"
+    }
+   }
+  },
+  {
+   "id": "lit_robust_noise1",
+   "title": "LIT robustness: Prices +/-1 tick (every 5m / 1m OHLC) (median copy)",
+   "family": "other",
+   "question": "Competitor-features #12: how much of the live LIT's 2026 money survives noisy prices, slippage, missed trades and a late entry?",
+   "status": "info",
+   "verdict": "50 copies: keeps 92.0% of the 2026 $ (p10 83.2%, p90 99.5%), PF 3.67 (3.24-3.99), 2-week pass/fail 29.35/2.4% (range 24.7-32.55 / 1.0-4.9); H1 keeps 91.2%, H2 94.9%. Live: 2026 +43,385 PF 4.07. The stored trades are the median copy.",
+   "writeup": "lit-robust",
+   "tags": [
+    "lit",
+    "robust"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1,
+    "robust": {
+     "noise": 1
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-21 14:58",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 52.5,
+     "pf": 3.57,
+     "net": 40231,
+     "dd": -2470,
+     "avg_r": 0.76,
+     "stop": 44.1,
+     "worst_day": -806,
+     "risk": 284.0,
+     "half": 16,
+     "per_month": 4101,
+     "p10": 28.6,
+     "f10": 3.4,
+     "p15": 39.3,
+     "f15": 6.3,
+     "p20": 49.5,
+     "f20": 11.2,
+     "dec10": 32.0,
+     "slow_pass": 49.4,
+     "pass_med": 15.0,
+     "b2b": "8/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 52.5,
+     "pf": 3.57,
+     "net": 40231,
+     "dd": -2470,
+     "avg_r": 0.76,
+     "stop": 44.1,
+     "worst_day": -806,
+     "risk": 284.0,
+     "half": 16,
+     "per_month": 4101,
+     "p10": 28.6,
+     "f10": 3.4,
+     "p15": 39.3,
+     "f15": 6.3,
+     "p20": 49.5,
+     "f20": 11.2,
+     "dec10": 32.0,
+     "slow_pass": 49.4,
+     "pass_med": 15.0,
+     "b2b": "8/3"
+    }
+   }
+  },
+  {
+   "id": "lit_robust_noise2",
+   "title": "LIT robustness: Prices +/-2 ticks (every 5m / 1m OHLC) (median copy)",
+   "family": "other",
+   "question": "Competitor-features #12: how much of the live LIT's 2026 money survives noisy prices, slippage, missed trades and a late entry?",
+   "status": "info",
+   "verdict": "50 copies: keeps 84.6% of the 2026 $ (p10 72.8%, p90 96.2%), PF 3.31 (2.95-3.83), 2-week pass/fail 27.2/3.4% (range 22.75-32.05 / 1.45-5.85); H1 keeps 82.3%, H2 92.6%. Live: 2026 +43,385 PF 4.07. The stored trades are the median copy.",
+   "writeup": "lit-robust",
+   "tags": [
+    "lit",
+    "robust"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1,
+    "robust": {
+     "noise": 2
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-21 14:58",
+   "spans": {
+    "2026": {
+     "n": 115,
+     "tpw": 2.79,
+     "wk2": 86,
+     "win": 53.0,
+     "pf": 3.45,
+     "net": 36937,
+     "dd": -2024,
+     "avg_r": 0.679,
+     "stop": 44.8,
+     "worst_day": -781,
+     "risk": 282.0,
+     "half": 13,
+     "per_month": 3765,
+     "p10": 21.8,
+     "f10": 0.0,
+     "p15": 35.0,
+     "f15": 1.9,
+     "p20": 44.2,
+     "f20": 6.8,
+     "dec10": 21.8,
+     "slow_pass": 47.8,
+     "pass_med": 15.0,
+     "b2b": "7/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 115,
+     "tpw": 2.79,
+     "wk2": 86,
+     "win": 53.0,
+     "pf": 3.45,
+     "net": 36937,
+     "dd": -2024,
+     "avg_r": 0.679,
+     "stop": 44.8,
+     "worst_day": -781,
+     "risk": 282.0,
+     "half": 13,
+     "per_month": 3765,
+     "p10": 21.8,
+     "f10": 0.0,
+     "p15": 35.0,
+     "f15": 1.9,
+     "p20": 44.2,
+     "f20": 6.8,
+     "dec10": 21.8,
+     "slow_pass": 47.8,
+     "pass_med": 15.0,
+     "b2b": "7/3"
+    }
+   }
+  },
+  {
+   "id": "lit_robust_slip03",
+   "title": "LIT robustness: Random slippage 0-3 ticks on every fill (median copy)",
+   "family": "other",
+   "question": "Competitor-features #12: how much of the live LIT's 2026 money survives noisy prices, slippage, missed trades and a late entry?",
+   "status": "info",
+   "verdict": "500 copies: keeps 97.8% of the 2026 $ (p10 97.6%, p90 98.0%), PF 3.89 (3.87-3.91), 2-week pass/fail 27.7/1.5% (range 27.7-27.7 / 1.0-1.5); H1 keeps 97.9%, H2 97.4%. Live: 2026 +43,385 PF 4.07. The stored trades are the median copy.",
+   "writeup": "lit-robust",
+   "tags": [
+    "lit",
+    "robust"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1,
+    "robust": {
+     "slip": [
+      0,
+      3
+     ]
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-21 14:59",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 31.7,
+     "pf": 3.89,
+     "net": 42428,
+     "dd": -2259,
+     "avg_r": 0.803,
+     "stop": 45.8,
+     "worst_day": -797,
+     "risk": 282.0,
+     "half": 12,
+     "per_month": 4325,
+     "p10": 27.7,
+     "f10": 1.0,
+     "p15": 40.8,
+     "f15": 2.4,
+     "p20": 52.9,
+     "f20": 4.9,
+     "dec10": 28.7,
+     "slow_pass": 49.4,
+     "pass_med": 15.0,
+     "b2b": "9/3"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 86,
+     "win": 31.7,
+     "pf": 3.89,
+     "net": 42428,
+     "dd": -2259,
+     "avg_r": 0.803,
+     "stop": 45.8,
+     "worst_day": -797,
+     "risk": 282.0,
+     "half": 12,
+     "per_month": 4325,
+     "p10": 27.7,
+     "f10": 1.0,
+     "p15": 40.8,
+     "f15": 2.4,
+     "p20": 52.9,
+     "f20": 4.9,
+     "dec10": 28.7,
+     "slow_pass": 49.4,
+     "pass_med": 15.0,
+     "b2b": "9/3"
+    }
+   }
+  },
+  {
+   "id": "lit_robust_worst",
+   "title": "LIT robustness: All at once: +/-1 tick, slip 0-2, 10% missed, 1 min late (median copy)",
+   "family": "other",
+   "question": "Competitor-features #12: how much of the live LIT's 2026 money survives noisy prices, slippage, missed trades and a late entry?",
+   "status": "info",
+   "verdict": "50 copies: keeps 76.2% of the 2026 $ (p10 61.6%, p90 91.6%), PF 3.37 (2.9-3.99), 2-week pass/fail 25.7/2.4% (range 20.85-30.15 / 0.0-4.9); H1 keeps 66.7%, H2 109.9%. Live: 2026 +43,385 PF 4.07. The stored trades are the median copy.",
+   "writeup": "lit-robust",
+   "tags": [
+    "lit",
+    "robust"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1,
+    "robust": {
+     "noise": 1,
+     "slip": [
+      0,
+      2
+     ],
+     "miss": 0.1,
+     "entry_delay": 1
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-21 14:59",
+   "spans": {
+    "2026": {
+     "n": 105,
+     "tpw": 2.55,
+     "wk2": 71,
+     "win": 36.2,
+     "pf": 3.66,
+     "net": 32722,
+     "dd": -3001,
+     "avg_r": 0.712,
+     "stop": 43.5,
+     "worst_day": -780,
+     "risk": 308.0,
+     "half": 9,
+     "per_month": 3336,
+     "p10": 23.8,
+     "f10": 2.4,
+     "p15": 35.9,
+     "f15": 2.4,
+     "p20": 46.1,
+     "f20": 2.4,
+     "dec10": 26.2,
+     "slow_pass": 56.5,
+     "pass_med": 18.0,
+     "b2b": "7/1"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 105,
+     "tpw": 2.55,
+     "wk2": 71,
+     "win": 36.2,
+     "pf": 3.66,
+     "net": 32722,
+     "dd": -3001,
+     "avg_r": 0.712,
+     "stop": 43.5,
+     "worst_day": -780,
+     "risk": 308.0,
+     "half": 9,
+     "per_month": 3336,
+     "p10": 23.8,
+     "f10": 2.4,
+     "p15": 35.9,
+     "f15": 2.4,
+     "p20": 46.1,
+     "f20": 2.4,
+     "dec10": 26.2,
+     "slow_pass": 56.5,
+     "pass_med": 18.0,
+     "b2b": "7/1"
     }
    }
   },

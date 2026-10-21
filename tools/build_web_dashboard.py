@@ -905,6 +905,22 @@ def _intel(out, st, state_path):
         return None
 
 
+def _perf(st, state_path):
+    """Performance pages (engine/perf.py): expected range, live vs backtest (the PC's heartbeat exec curve), exit efficiency,
+    robustness, months, status (state "uptime"), look-ahead audit. Reads research/lab/*.json; a few ms, no engine run."""
+    try:
+        from engine import perf as PF
+        from tools import trade_intel as TI
+        jp = os.path.join(os.path.dirname(state_path) or ".", "lit_journal.jsonl")
+        J = TI._journal(jp) if os.path.exists(jp) else []
+        base = TI._load(TI.OUT)
+        full = TI.merge_live(base, st, J) if base else None
+        return PF.view(st, J, None, st.get("uptime"), intel_full=full, compact=True)
+    except Exception as e:
+        print("  perf unavailable:", e.__class__.__name__, e)
+        return None
+
+
 HOME_LIVE = ("last_run", "runs", "health", "eval", "eval_2wk", "eval_life", "eval_timing", "model_state", "position", "strategy", "price", "today", "brain",
              "events", "pc", "pc_verdict", "pc_outage", "pc_checkin", "model", "lit_rules", "lit_sizing", "lit", "setups", "armed", "levels", "session", "notices")
 
@@ -998,6 +1014,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         "accounts": accounts,
     }
     data["intel"] = _intel(out, st, state_path)
+    data["perf"] = _perf(st, state_path)
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # research data files for the Lab's 3D views (Monte Carlo cloud, intraday heat, calendar): lab/<name>.json

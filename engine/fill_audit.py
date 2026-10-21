@@ -907,6 +907,15 @@ def heartbeat_block(store=None) -> dict | None:
     out = {k: S.get(k) for k in keep}
     out["months"] = (S.get("months") or [])[-3:]
     out["recent"] = (S.get("recent") or [])[:5]
+    try:                                     # the phone's live-vs-backtest chart (engine/perf.exec_curve): per day, <= 45 days
+        rep = _read_json(_p(store, "report.json"), None) or {}
+        from .perf import exec_curve
+        c = exec_curve(rep.get("rows") or [])
+        if c:
+            out["curve"] = {"days": c["days"][-MAX_DAYS:], "missed": c["missed"], "extra": c["extra"], "matched": c["matched"],
+                            "missed_reasons": c["missed_reasons"]}
+    except Exception:
+        pass
     nh = _read_json(_p(store, "nightly.json"), []) or []
     if nh:                                   # the last nightly verdicts (live vs backtest on the same bars)
         out["nightly"] = [{k: x.get(k) for k in ("day", "verdict", "text", "matched", "missed", "extra", "exec_usd")} for x in nh[-5:]][::-1]
