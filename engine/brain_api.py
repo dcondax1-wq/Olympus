@@ -66,7 +66,7 @@ def brain_second():
         ri = bot.second_route_info() if callable(getattr(bot, "second_route_info", None)) else None
         if not run:
             return _J({"empty": True, "strategies": {}, "route": ri,
-                       "reason": "The PC bot has not run the second strategies yet (they run after each LIT poll while the bot runs)."})
+                       "reason": "The PC bot has not run ATLAS yet (it runs after each LIT poll while the bot runs)."})
         return _J({**S.compact(run, max_trades=3, route=ri), "running": bool(getattr(bot, "running", False))})
     except Exception as e:
         return _J({"error": f"{e.__class__.__name__}: {e}", "strategies": {}}, 500)

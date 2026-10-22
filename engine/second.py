@@ -1185,6 +1185,40 @@ def dashboard_block(state: dict | None = None, cfg: dict | None = None, pc: dict
         out["scorecard"] = {k: sc[k] for k in ("account_b", "rule", "source", "built")}
     except Exception as e:
         out["scorecard"] = {"error": f"{e.__class__.__name__}: {e}"}
+    out["atlas"] = atlas_info()            # ATLAS = the members on the 25K (display name; internal key stays "second")
+    return out
+
+
+ATLAS_KEYS = ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"]
+
+
+def atlas_info() -> dict:
+    """ATLAS (owner 2026-10-22: the second strategy, EMA + MACD + S/R pooled on the 25K; internal key "second"): its name,
+    members, rules and research numbers for the dashboards (data.json second.atlas, /api/next/second). From
+    research/second/atlas.json (the tuning job: keys name, members, rules, numbers, eval25k) when it exists, else the
+    account-B research (research/second/account_b.json, plan builder25k, sizing need: second-account-b.md). Display only."""
+    p = os.path.join(ROOT, "research", "second", "atlas.json")
+    try:
+        if os.path.exists(p):
+            d = json.load(open(p, encoding="utf-8"))
+            if isinstance(d, dict):
+                d.setdefault("name", "ATLAS")
+                d.setdefault("members", ATLAS_KEYS)
+                d.setdefault("source", "research/second/atlas.json")
+                return d
+    except Exception as e:
+        return {"name": "ATLAS", "members": ATLAS_KEYS, "error": f"atlas.json: {e.__class__.__name__}: {e}"}
+    out = {"name": "ATLAS", "members": ATLAS_KEYS, "source": "research/second/account_b.json (Builder 25K, need sizing)",
+           "writeup": "second-account-b", "numbers_label": "Builder 25K, need sizing, costs in"}
+    try:
+        ab = json.load(open(os.path.join(ROOT, "research", "second", "account_b.json"), encoding="utf-8"))
+        x = (ab.get("plans") or {}).get("builder25k|need") or {}
+        out["numbers"] = {k: {kk: v.get(kk) for kk in ("n", "tpw", "win", "pf", "net", "per_month", "dd") if v.get(kk) is not None}
+                          for k, v in x.items() if isinstance(v, dict)}
+        out["eval25k"] = {k: {kk: v.get(kk) for kk in ("p10", "f10", "p20", "f20", "dead10", "pass_med", "ev_eval_3m") if v.get(kk) is not None}
+                          for k, v in x.items() if isinstance(v, dict)}
+    except Exception as e:
+        out["error"] = f"account_b.json: {e.__class__.__name__}: {e}"
     return out
 
 
@@ -1258,12 +1292,13 @@ def ledger_update(prev: dict | None, res: dict, now: int, pauses=None, in_pause=
 
 
 def readme_lines(block: dict | None, money=None) -> list:
-    """README section "Second strategies (paper)" (cloud monitor, dashboard branch)."""
+    """README section "ATLAS (paper)" (cloud monitor, dashboard branch; ATLAS = the second strategy, internal key "second")."""
     money = money or (lambda x: f"{'+' if x >= 0 else '-'}${abs(x):,.0f}")
-    L = ["", "## Second strategies (paper)",
-         "Two research winners run next to LIT on the same bars, **paper only** (engine/second.py, second_model.json): nothing is "
-         "traded, LIT and the eval account are unchanged. \"With LIT\" = LIT first on one account, no second entry while LIT "
-         "is in a trade, max 2 trades a day."]
+    L = ["", "## ATLAS (paper)",
+         "ATLAS = the second strategy for the 25K (EMA London pullback + MACD sweep divergence + S/R NY reclaim), run next to "
+         "LIT on the same bars, **paper only** (engine/second.py, second_model.json): nothing is traded, LIT and the eval "
+         "account are unchanged. Never opposite to LIT, LIT first; \"With LIT\" = LIT first on one account, no ATLAS entry "
+         "while LIT is in a trade, max 2 trades a day."]
     if not block or not block.get("strategies"):
         return L + ["", "Not running yet (second_model.json missing or every strategy off)."]
     for key, s in block["strategies"].items():

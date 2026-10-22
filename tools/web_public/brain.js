@@ -103,7 +103,7 @@
   function view(el) {
     const src = pick();
     el.innerHTML = head('Bot Brain', 'What the bot is thinking', 'Live from the bot: what it waits for, every level, every setup today and the rule that stopped it. Tap i for a one-line explainer. Read-only.');
-    el.insertAdjacentHTML('beforeend', `<div class="bz-tabs" style="margin:8px 0">${segHTML('brWho', [['lit', 'LIT brain'], ['second', 'Second-strategy brain']], S.who || 'lit')}</div>`);
+    el.insertAdjacentHTML('beforeend', `<div class="bz-tabs" style="margin:8px 0">${segHTML('brWho', [['lit', 'LIT brain'], ['second', 'ATLAS brain']], S.who || 'lit')}</div>`);
     onSeg('brWho', (v) => { S.who = v; view(el); });
     if (S.who === 'second') {
       const box = document.createElement('div'); el.appendChild(box);

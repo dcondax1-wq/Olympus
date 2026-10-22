@@ -107,7 +107,7 @@ def normalize(ab: dict | None, scfg: dict | None = None, lit_account: str | None
     out["preset"] = (P or {}).get("preset") or "mffu_builder_50k"
     out["plan_label"] = (P or {}).get("label") or plan
     out["rules"] = MA.rules_of({"preset": out["preset"]})
-    out["label"] = f"Account B {out['account'] or '?'}"
+    out["label"] = f"ATLAS {out['account'] or '?'}"      # ATLAS = the second strategy's account (was "Account B")
     S = scfg.get("strategies") or {}
     bad = [k for k in keys if not isinstance(S.get(k), dict)]
     co = [k for k in keys if isinstance(S.get(k), dict) and S[k].get("cloud_only")]
