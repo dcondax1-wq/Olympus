@@ -1020,6 +1020,11 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         data["second"] = _second.dashboard_block(st.get("second"), pc=(st.get("pc") or {}).get("second"))
     except Exception as e:
         data["second"] = {"error": f"{e.__class__.__name__}: {e}", "strategies": []}
+    try:                                   # scaling plan (engine/scale_plan.py, read-only): step N, the next account, the ladder
+        from engine import scale_plan as _scale
+        data["scale"] = _scale.cloud_view(st)
+    except Exception as e:
+        data["scale"] = {"error": f"{e.__class__.__name__}: {e}"}
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # research data files for the Lab's 3D views (Monte Carlo cloud, intraday heat, calendar): lab/<name>.json

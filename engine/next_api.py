@@ -336,6 +336,22 @@ def second_view():
         return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
 
 
+@router.get("/api/next/scale")
+def scale_view():
+    """Scaling plan (engine/scale_plan.py, read-only): the step on the ladder (2 -> 10 accounts, LIT + ATLAS), the next step,
+    its trigger and progress, the research table (research/second/scale.json). From business.json + the running PC bot's
+    LIT eval, extra accounts and account B; the bot not running: business.json only."""
+    try:
+        from . import scale_plan as SP
+        try:
+            from .live import BOT
+        except Exception:
+            BOT = None
+        return _J(SP.pc_view(BOT))
+    except Exception as e:                                   # never 500 the dashboard over a page
+        return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
+
+
 @router.get("/api/next/archive")
 def archive():
     """The previous strategy (Liquidity Engine, locked 2026-10-17) for the Archive page: its lock, its last bundle's periods
