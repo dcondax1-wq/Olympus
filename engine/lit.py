@@ -836,6 +836,12 @@ DEFAULTS = {
                                  # with one of `kinds`, one more trade that day (a later setup of that side)
     "cisd_nth": 1,               # 2 = enter on the 2nd 1m CISD after the tap (a pullback low after the first one, then a close
                                  # above its CISD level), inside cisd1m x 2 bars from the tap
+    # retail-tool entries (research/writeups/lit-retail-entries.md, engine/lit_retail.py, tools/lit_retail.py; off = None)
+    "retail": None,              # a family cfg {"kind": "levels" | "sd" | "brt" | "ema" | "macd", ...} or a list of them: extra
+                                 # setups (z["src"] != "lit") added to the LIT candidates by engine/lit_retail.apply (the live
+                                 # loop calls it after lit.candidates); they end in the same LIT executor and size rule
+    "src_cap": None,             # max trades a day per setup source (z["src"], "lit" for LIT's own): with max_per_day 2 and
+                                 # src_cap 1 = one LIT + one retail trade a day, one at a time (None = no per-source cap)
 }
 
 
@@ -1415,7 +1421,7 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
     if P["tf"] == "1m" and B1 is None and not live:
         B1 = bars_1m(M)
     out, busy, per_day = [], -1, collections.Counter()
-    per_sess, lost = collections.Counter(), set()
+    per_sess, lost, per_src = collections.Counter(), set(), collections.Counter()
     ps = P.get("per_session")
     sess_of = (lambda m: next((q for q, (a, b) in enumerate(ps[0]) if (m - a) % 1440 < (b - a) % 1440), -1)) if ps else None
     pending, signals, enter_now = [], [], []
@@ -1439,6 +1445,8 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             if not (rb and lt is not None and per_day[z["day"]] == P["max_per_day"] and not lt.get("_re")
                     and lt["exit"] in rb.get("kinds", ["BE"]) and (rb.get("side", "same") == "any" or lt["dir"] == z["dir"])):
                 continue
+        if P.get("src_cap") and per_src[(z["day"], z.get("src", "lit"))] >= P["src_cap"]:
+            continue
         if P.get("stop_after_loss") and z["day"] in lost:
             continue
         if ps and per_sess[(z["day"], sess_of(z["mod"]))] >= ps[1]:
@@ -1507,6 +1515,7 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             t["_re"] = per_day[z["day"]] >= 1
             last[z["day"]] = t
         busy = t["exit_i"]; per_day[z["day"]] += 1
+        per_src[(z["day"], z.get("src", "lit"))] += 1
         if ps:
             per_sess[(z["day"], sess_of(z["mod"]))] += 1
         if t.get("exit") == "STOP":
