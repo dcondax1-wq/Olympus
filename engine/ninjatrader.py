@@ -266,11 +266,35 @@ def _session_from(cfg: dict) -> int:
         model = cfg.get("model") or lm.get("model")
         if model == "lit":
             from . import lit as _lit
-            w = (cfg.get("model_params") or lm.get("lit") or {}).get("window") or _lit.DEFAULTS["window"]
+            lp = cfg.get("model_params") or lm.get("lit") or {}
+            w = lp.get("window") or _lit.DEFAULTS["window"]
+            if _all_hours(cfg):               # the window's first minute in trading-day order (18:00 for the Asia slot)
+                return int(min((int(a) for a, _ in w), key=_tday))
             return int(min(a for a, _ in w))
     except Exception:
         pass
     return 480
+
+
+def _all_hours(cfg: dict) -> bool:
+    """LIT all_hours on (the Asia slot, research/writeups/lit-more-entries.md): cfg nt_all_hours, else the LIT params the bot
+    trades (cfg model_params, else live_model.json "lit"). Then the session is the CME trading day 18:00 -> 17:00 (entries
+    and the flat check in trading-day order); off (today) = the clock-day rules, unchanged."""
+    if cfg.get("nt_all_hours") is not None:
+        return bool(cfg["nt_all_hours"])
+    try:
+        from .lab_adapter import live_model
+        lm = live_model()
+        if (cfg.get("model") or lm.get("model")) == "lit":
+            return bool((cfg.get("model_params") or lm.get("lit") or {}).get("all_hours"))
+    except Exception:
+        pass
+    return False
+
+
+def _tday(mod: int) -> int:
+    """ET minute in CME trading-day order (18:00 = 0)."""
+    return (int(mod) - 1080) % 1440
 
 
 def is_sim(account: str) -> bool:
@@ -356,6 +380,7 @@ class NinjaTraderAdapter:
         self.sym = cfg.get("sym", "NQ")
         self.flat_mod = int(p.get("flat_mod", 955))
         self.session_from = _session_from(cfg)          # first ET minute an entry may go in (LIT 02:00, the engine 08:00)
+        self.all_hours = _all_hours(cfg)                # LIT all_hours: sessions are CME trading days 18:00 -> 17:00
         self.max_micros = min(MAX_MICROS_HARD, int(p.get("max_micros", cfg.get("max_micros", MAX_MICROS_HARD))))
         mode = str(cfg.get("nt_contract") or "micro").lower()
         self.contract_mode = mode if mode in ("micro", "auto") else "auto"   # micro: MNQ only | auto: 10+ micros as NQ minis
@@ -716,7 +741,13 @@ class NinjaTraderAdapter:
             e = _et(self.clock())
             mod = e.hour * 60 + e.minute
             cut = self._flat_today(e, entry=True)
-            if e.weekday() >= 5 or mod >= cut or mod < self.session_from:
+            if self.all_hours:                # trading-day order: Sun 18:00 opens Monday; the 17:00-18:00 halt is closed
+                wd = e.weekday()
+                shut = wd == 5 or (wd == 6 and mod < 1080) or (wd == 4 and mod >= 1020) or 1020 <= mod < 1080
+                refuse = shut or _tday(mod) >= _tday(cut) or _tday(mod) < _tday(self.session_from)
+            else:
+                refuse = e.weekday() >= 5 or mod >= cut or mod < self.session_from
+            if refuse:
                 return {"ok": False, "error": f"REFUSED: entry outside the session ({e:%a %H:%M} ET; entries "
                                               f"{self.session_from // 60:02d}:{self.session_from % 60:02d}-"
                                               f"{cut // 60:02d}:{cut % 60:02d} ET on weekdays"
@@ -1462,7 +1493,9 @@ class NinjaTraderAdapter:
             return
         flat = self._flat_today(e)
         for lg in [x for x in self.legs if x["status"] in ("protected", "unprotected", "pending", "cancel_pending")]:
-            if mod >= flat or mod < self.session_from:
+            past = (_tday(mod) >= _tday(flat) or _tday(mod) < _tday(self.session_from)) if self.all_hours \
+                else (mod >= flat or mod < self.session_from)
+            if past:
                 self._risk(f"flat time {flat // 60:02d}:{flat % 60:02d} ET{' (CME early close)' if flat < self.flat_mod else ''} "
                            f"passed with the bot's {lg['instrument']} trade open: flattening", alert=False)
                 self._close([lg], why="flat time")
@@ -2489,6 +2522,37 @@ def selftest(verbose=True) -> bool:
         check("LIT: the adapter's session starts at the LIT window (02:00 ET) for model lit, 08:00 for the engine",
               _session_from({"model": "lit", "model_params": {"window": [[120, 930]]}}) == 120 and _session_from({"model": "engine"}) == 480
               and _session_from({"nt_session_from": 300}) == 300)
+        # LIT all_hours (the Asia slot, research/writeups/lit-more-entries.md; off by default): CME trading day 18:00 -> 17:00
+        ah_p = {"window": [[1080, 1440], [0, 930]], "all_hours": True}
+        keep_now = now[0]
+
+        def gate_at(ad_, *ymdhm):
+            now[0] = dt.datetime(*ymdhm, tzinfo=ET).timestamp()
+            return ad_._gate("entry")
+        aad = make({"model": "lit", "model_params": ah_p, "nt_state_path": os.path.join(tmp, "nt_state_ah.json")})
+        oad = make({"model": "lit", "model_params": {"window": [[120, 930]]}, "nt_state_path": os.path.join(tmp, "nt_state_off.json")})
+        check("LIT all_hours: the adapter's session starts 18:00 ET (trading-day order); off: 02:00 and the clock-day gate",
+              aad.all_hours and aad.session_from == 1080 and not oad.all_hours and oad.session_from == 120
+              and _session_from({"model": "lit", "model_params": ah_p}) == 1080)
+        check("LIT all_hours: entries allowed Tue 20:41, Tue 23:28, Wed 00:37, Wed 10:00 and Sun 18:30 ET (Monday's session)",
+              all(gate_at(aad, *x) is None for x in ((2026, 9, 1, 20, 41), (2026, 9, 1, 23, 28), (2026, 9, 2, 0, 37),
+                                                     (2026, 9, 2, 10, 0), (2026, 10, 25, 18, 30))))
+        check("LIT all_hours: refused 15:55 / 16:30 / 17:30 ET, Fri 20:00, Sat, Sun 17:30; today's adapter still refuses 20:41",
+              all(gate_at(aad, *x) for x in ((2026, 9, 1, 15, 55), (2026, 9, 1, 16, 30), (2026, 9, 1, 17, 30), (2026, 10, 23, 20, 0),
+                                             (2026, 10, 24, 10, 0), (2026, 10, 25, 17, 30)))
+              and gate_at(oad, 2026, 9, 1, 20, 41) and gate_at(oad, 2026, 9, 2, 10, 0) is None)
+        closed_ = []
+        aad._close = lambda legs, why="": closed_.append(why)
+        aad.legs = [{"status": "protected", "instrument": "MNQ 12-26", "entry_id": "x"}]
+        aad._our_instruments = lambda: []
+        for x in ((2026, 9, 1, 20, 45), (2026, 9, 2, 1, 0), (2026, 9, 2, 10, 0)):
+            aad._tick_flat_time(dt.datetime(*x, tzinfo=ET).timestamp())
+        quiet = not closed_
+        aad._tick_flat_time(dt.datetime(2026, 9, 2, 15, 55, tzinfo=ET).timestamp())
+        check("LIT all_hours: the flat-time watch leaves a 20:45 / 01:00 / 10:00 ET Asia trade open and flattens it at 15:55",
+              quiet and closed_ == ["flat time"], closed_)
+        aad.legs = []
+        now[0] = keep_now
         fake.move(25020.0)
         now[0] = dt.datetime(2026, 10, 22, 2, 35, 3, tzinfo=ET).timestamp()        # Thursday 02:35 ET (London)
         lbot = live.LiveBot()

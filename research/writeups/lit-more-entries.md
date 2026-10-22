@@ -3,7 +3,7 @@ title: LIT more entries - all hours, 2-3 trades a day, re-arming, sizes, looser 
 family: sessions
 date: 2026-10-22
 status: rejected
-summary: The owner asked for more LIT trades ("entries all the time, not one window"), at least 3 a week, adding money in both 2026 halves without more MFFU eval fails. 498 variants on the exact live LIT with today's upgrades on (15-minute check, BE + costs, Monday rule, weekly stop), scored at the LIT size and on the real two_week eval path, picked on Jan-Jun and checked on Jul-Oct. None passes every gate. Two leads. (1) Asia as its own slot with its own 3R bank (1 Asia trade 18:00-02:00 + the normal day trade) is new and gets 4.8 / 4.1 trades a week, more money in both halves (H1 +$34.7k vs +$33.9k, H2 +$13.7k vs +$9.5k), but the eval fail rate rises 1-3 points, the H1 gain is small and comes from February, 2021-25 loses $15.5k, and the PC route blocks Asia entries before midnight. (2) One London + one NY trade, the NY one 2+ hours after the first exit: no rise in eval fails (H1 2-week fails fall from 5.9% to 3.4%) and a little more money, but only 11 extra trades in 2026, one of them carries the gain, and Jul-Oct stays at 2.8 trades a week. 13 of 498 variants add money in both halves on both views, far fewer than chance would give: most extra LIT trades cost money. Today's LIT stays. Engine options are built (default off), wired through the live loop and tested. Paper only.
+summary: The owner asked for more LIT trades ("entries all the time, not one window"), at least 3 a week, adding money in both 2026 halves without more MFFU eval fails. 498 variants on the exact live LIT with today's upgrades on (15-minute check, BE + costs, Monday rule, weekly stop), scored at the LIT size and on the real two_week eval path, picked on Jan-Jun and checked on Jul-Oct. None passes every gate. Two leads. (1) Asia as its own slot with its own 3R bank (1 Asia trade 18:00-02:00 + the normal day trade) is new and gets 4.8 / 4.1 trades a week, more money in both halves (H1 +$34.7k vs +$33.9k, H2 +$13.7k vs +$9.5k), but the eval fail rate rises 1-3 points, the H1 gain is small and comes from February, 2021-25 loses $15.5k; the PC route for it was fixed on 2026-10-22 (it stays off). (2) One London + one NY trade, the NY one 2+ hours after the first exit: no rise in eval fails (H1 2-week fails fall from 5.9% to 3.4%) and a little more money, but only 11 extra trades in 2026, one of them carries the gain, and Jul-Oct stays at 2.8 trades a week. 13 of 498 variants add money in both halves on both views, far fewer than chance would give: most extra LIT trades cost money. Today's LIT stays. Engine options are built (default off), wired through the live loop and tested. Paper only.
 runs: lit_more_ent_asia_slot_rr3, lit_more_ent_asia_slot_rr3_eval, lit_more_ent_lonny_c120, lit_more_ent_lonny_c120_eval, lit_more_ent_asia_slot_rr3_depth075, lit_more_ent_asia_slot_rr275, lit_more_ent_asia_slot_rr3_w20, lit_more_ent_asia_slot_rr8, lit_more_ent_win_full, lit_more_ent_win_24h, lit_more_ent_n2_any, lit_more_ent_n2_any_half, lit_more_ent_n2_cool120, lit_more_ent_n2_flip_stop, lit_more_ent_full_n2_any_half, lit_more_ent_full_asia_half, lit_more_ent_kz_out_disp06
 ---
 
@@ -22,8 +22,8 @@ runs: lit_more_ent_asia_slot_rr3, lit_more_ent_asia_slot_rr3_eval, lit_more_ent_
   - Trades: 4.8 a week (H1) and 4.1 (H2); 89% / 75% of weeks have 3+.
   - Money (LIT size): H1 +$34,661 (+$770), H2 +$13,686 (+$4,193). Eval path: H1 +$41,006, H2 +$12,385.
   - Eval fails go UP a little: 2-week H1 5.9 -> 6.7%, H2 0.0 -> 2.9%; 1 month H2 0.0 -> 3.4%. 2-week passes H2 52.2 -> 59.4%.
-  - Why not: fails rise, the H1 gain is small and all from February, 2021-25 loses $15.5k (vs +$1.2k), and the PC guards block
-    Asia entries before 00:00 today.
+  - Why not: fails rise, the H1 gain is small and all from February, 2021-25 loses $15.5k (vs +$1.2k). (The PC route that
+    blocked Asia entries before 00:00 is fixed since 2026-10-22: see "PC route: fixed".)
 - **Lead 2: 1 London + 1 NY trade, the NY one 2+ hours after the first exit** (`lonny_c120_x1.0`).
   - Money: H1 +$34,464 (+$573), H2 +$9,524 (+$31). Eval path: H1 +$36,389, H2 +$14,724.
   - Eval fails go DOWN in H1: 2-week 5.9 -> 3.4%, 1 month 11.9 -> 5.5%. H2 unchanged at 0.0 / 0.0.
@@ -188,7 +188,7 @@ Every one of the 498 variants is in the appendix below and in `research/lit/more
 - The H1 pick of the study (the best H1 among the variants that pass the H1 gates with 3+ a week) is this slot with a sweep
   depth of 0.75 ATR for Asia (`asiaslotn_rr3_depth075`: H1 +$35,224, 2-week fails 5.0%). It fails the H2 check: 2-week fails
   0.0 -> 4.3%, 1 month 0.0 -> 5.1%.
-- Not ready on the PC either (see "PC route" below).
+- PC route: fixed 2026-10-22 (see "PC route: fixed" below); the switch stays off.
 
 ### Lead 2: 1 London + 1 NY trade, the NY one 2+ hours after the first exit (`lonny_c120_x1.0`)
 
@@ -228,8 +228,8 @@ Every one of the 498 variants is in the appendix below and in `research/lit/more
   exist (Asia, 2nd trades), but on today's hours they are few and edgeless, and at night they need their own bank to make
   money, which is a narrow and 2026-only result.
 - **Lead 1 (Asia slot, 3R bank)** is worth a paper shadow before anything else: it is the first Asia version positive in
-  both 2026 halves, at 4-5 trades a week. It needs (a) more data (the H1 gain is February), (b) the PC guards changed for
-  18:00-24:00 entries, (c) the late-route case below explained.
+  both 2026 halves, at 4-5 trades a week. It needs more data (the H1 gain is February); the PC route
+  (18:00-24:00 entries, the late sighting) is fixed since 2026-10-22.
 - **Lead 2 (London + NY, 2 h cool-down)** is safe and route-tested but tiny: it does not reach 3 a week.
 
 ### Switch JSON (for the owner's decision only; NOT applied)
@@ -242,7 +242,7 @@ Lead 2 (PC-route ready), in `live_model.json` and `live_model_lit.json`, inside 
 
 and at the top level of `live_model.json`: `"guards": {"max_per_day": 2}` (the PC guard allows 1 entry a day by default).
 
-Lead 1 (NOT route ready: the PC guards block 18:00-24:00 entries today), inside "lit":
+Lead 1 (PC route fixed 2026-10-22), inside "lit":
 
 ```json
 "window": [[1080, 1440], [0, 930]], "all_hours": true, "max_per_day": 2,
@@ -250,7 +250,8 @@ Lead 1 (NOT route ready: the PC guards block 18:00-24:00 entries today), inside 
 "kz": [[1080, 1440, {"max_rr": 3.0}], [0, 120, {"max_rr": 3.0}]]
 ```
 
-plus `"guards": {"max_per_day": 2}` and a guard change for evening entries; NinjaTrader and the PC must run from 18:00 ET.
+plus `"guards": {"max_per_day": 2}` at the top level of `live_model.json`; NinjaTrader and the PC must run from 18:00 ET
+(`scripts/schedule_pc.ps1` wakes at 01:30 ET and hibernates at 16:35 ET: with the Asia slot the PC must stay on from 18:00).
 
 ## What was built (all default off: today's trades unchanged)
 
@@ -279,6 +280,33 @@ plus `"guards": {"max_per_day": 2}` and a guard change for evening entries; Ninj
     00:00": `engine/guards.calendar` refuses every entry from 18:00 to 24:00). The 20:41 ET Asia entry was first seen 79 min
     late in the replay and not chased: not explained yet. Both must be fixed before Asia could go live.
   - The test reports lead 1's LiveBot part as a known gap (not failed) and fails only on lead 2 or the day-end replays.
+
+### PC route: fixed (2026-10-22, still OFF until the owner switches it)
+
+- **Root causes.**
+  1. `engine/guards.calendar` refused every 18:00-24:00 entry ("before the session start"). Now, only when LIT `all_hours` is
+     on, it follows the CME trading day (18:00 opens the next date's session, its holiday / early close; 17:00-18:00 halt
+     closed; session start = the window's first minute in that order = 18:00). Off: the same code path as before.
+  2. The 79-min-late sighting: `lit.candidates(evening=True)` skips a day with fewer than 50 bars. Live, the forming day
+     has fewer than 50 bars until 22:10 ET (18:00 + 50 x 5 min), so every evening setup was invisible until then (the
+     backtest always sees the whole day). The rule now applies to finished days only (backtest unchanged; RTH detector
+     unchanged).
+  3. Found on the way: `lit._next_bar_same_day` treated 18:00-24:00 on an early-close day (e.g. the evening before
+     Presidents' Day) as after the 13:00 halt, so the 1m CISD entry was routed a minute late (not at the CISD close).
+  4. The NinjaTrader adapter refused evening / Sunday-evening entries and would have flattened an Asia trade at once
+     ("before the session start"); the LiveBot clock safety flatten fired at any time after 15:58 (incl. 20:00). Both now
+     use the trading-day order when all_hours is on.
+- **Also checked / fixed for the evening:** daily counters and the max-2-a-day guard are per CME day (`trading_day`);
+  weekly stop / Monday rule use the trading day (Sunday evening = Monday's week); the two_week eval clock counted the
+  session as over from 16:00 into the evening (now only 16:00-18:00; text only); end-of-day summary covers the whole CME day
+  with all_hours; heartbeat / Bot Brain texts show 18:00-15:30; auto-update hourly checks with all_hours run only 16:00-17:30
+  ET on weekdays and at the weekend (they already wait while a position / bracket / armed setup exists). Cloud health
+  alert window (01:50-15:55) is unchanged: alerts only.
+- **Tests** (`python -X utf8 -m tests.test_lit_more_entries`): LiveBot (paper, guards on, max 2 a day) on 2026-09-01/02
+  4/4 entries + 4/4 exits, 09-03/04 3/3 (incl. a 19:03 entry), Labor Day 09-07 2/2, Sunday evening 06-01 1/1, Presidents' Day 02-16 (Sunday evening, 13:00 halt) 1/1: 11/11 entries and exits; every
+  entry routed 3 s after its 1m CISD close. Today's config: `tests.test_lit_live --days --bot` 120/120 and the LiveBot
+  checks unchanged; tests.test_guards, test_autorun, test_eval_lifecycle, test_ops, test_brain, engine.ninjatrader
+  --selftest (69/69) pass; day-end replays 187/187 (Asia slot) and 131/131 (London + NY) unchanged.
 
 ## Caveats
 

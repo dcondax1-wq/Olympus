@@ -10,8 +10,12 @@ Variants (the two closest candidates of the study, switch JSON in the write-up):
   lonny_c120  02:00-15:30, 1 London trade (02:00-08:00) + 1 NY trade (08:00-15:30) that starts >= 120 min after the first exit
 Option off (live_model.json as it is) = today: python -X utf8 -m tests.test_lit_live --days (120/120).
 The LiveBot part runs engine/live.py (PaperAdapter, guards on, "guards": {"max_per_day": 2}) on sessions with 2 trades: both
-entries are routed once, in order, one position at a time, and both exits are routed once (asia_slot: reported only, the
-PC calendar guard refuses 18:00-24:00 entries today). One process.
+entries are routed once, in order, one position at a time, and both exits are routed once. asia_slot on evening sessions
+(BOT_SESSIONS): 18:00-24:00 and 00:00-02:00 entries, a 19:03 entry (the session's 13th bar), a Sunday-evening entry, the
+Labor Day early close, a Sunday-evening entry on Presidents' Day (13:00 halt: lit._next_bar_same_day now treats
+18:00-24:00 as before the halt, so the 1m CISD is routed at once instead of a minute late). Fixed 2026-10-22 ("PC route: fixed" in the write-up): the guards / NinjaTrader gate follow the CME
+trading day when all_hours is on, and lit.candidates no longer skips the forming day before its 50th bar (22:10 ET), which
+made the bot see a 20:41 Asia entry 79 min late. One process.
 """
 from __future__ import annotations
 
@@ -32,7 +36,10 @@ from tests import test_lit_live as TL  # noqa: E402
 from tools import lit_more_entries as X  # noqa: E402
 
 VARIANTS = {"asia_slot": "asiaslotn_rr3_x1.0", "lonny_c120": "lonny_c120_x1.0"}
-ROUTE_READY = {"lonny_c120"}      # asia_slot: the LiveBot part is reported only (guards block evening entries today)
+# LiveBot sessions per variant (None: the first two 2-trade days from 2026-08-17)
+BOT_SESSIONS = {"asia_slot": [("2026-09-01", "2026-09-02"), ("2026-09-03", "2026-09-04"), ("2026-09-07",), ("2026-06-01",),
+                              ("2026-02-16",)],
+                "lonny_c120": None}
 
 
 def day_end(P, REF, sess, df5, b1):
@@ -86,16 +93,16 @@ def main():
         by_day = collections.defaultdict(list)
         for t in REF:
             by_day[t["day"]].append(t)
-        two = [d for d, v in sorted(by_day.items()) if len(v) >= 2 and d >= "2026-08-17"][:2]
-        if not two:
-            continue
-        b = TL.bot_replay(P, by_day, tuple(two), lm_extra={"guards": {"max_per_day": 2}})
-        print(f"  LiveBot (paper, guards max 2 a day) on {two}: entries {b['entries_ok']}/{b['want']} exits {b['exits_ok']}/{b['want']}, "
-              f"extra {b['extra']}, not routed {b['not_routed']}, errors {b['errors']}", flush=True)
-        if lab in ROUTE_READY:
-            ok &= bool(b["ok"])
-        else:
-            print("   (known gap, not failed: the PC guards refuse 18:00-24:00 entries; see lit-more-entries.md 'PC route')")
+        groups = BOT_SESSIONS.get(lab)
+        if groups is None:
+            two = [d for d, v in sorted(by_day.items()) if len(v) >= 2 and d >= "2026-08-17"][:2]
+            groups = [tuple(two)] if two else []
+        for g in groups:
+            b = TL.bot_replay(P, by_day, tuple(g), lm_extra={"guards": {"max_per_day": 2}})
+            print(f"  LiveBot (paper, guards max 2 a day) on {list(g)}: entries {b['entries_ok']}/{b['want']} exits {b['exits_ok']}/{b['want']}, "
+                  f"extra {b['extra']}, not routed {b['not_routed']}, errors {b['errors']}, route delay {b['entry_route_delay_s']} s",
+                  flush=True)
+            ok &= bool(b["ok"]) and b["want"] > 0
     print("OK" if ok else "DIFFERENCES")
     sys.exit(0 if ok else 1)
 

@@ -204,7 +204,25 @@ def main() -> int:
               "daily check runs in the halt" in (au.window_reason(HALT, "hourly") or ""))
         check("hourly: once per clock hour", "already checked this hour" in (au.window_reason(EVENING, "hourly", None, au.hour_key(EVENING)) or "")
               and au.window_reason(EVENING + 3600, "hourly", None, au.hour_key(EVENING)) is None)
-        sp3 = os.path.join(tmp, "au3.json")
+        # LIT all_hours (the Asia slot trades from 18:00 ET): the hourly checks leave the evening / overnight session alone
+        AH_OK = {"Tue 16:20": ts(2026, 10, 20, 16, 20), "Tue 16:50": ts(2026, 10, 20, 16, 50), "Fri 20:00": ts(2026, 10, 23, 20, 0),
+                 "Sat 11:00": ts(2026, 10, 24, 11, 0), "Sun 17:00": ts(2026, 10, 25, 17, 0)}
+        AH_NO = {"Tue 17:55": ts(2026, 10, 20, 17, 55), "Tue 20:00": EVENING, "Tue 23:40": ts(2026, 10, 20, 23, 40),
+                 "Wed 01:10": ts(2026, 10, 21, 1, 10), "Sun 19:30": ts(2026, 10, 25, 19, 30), "Thu 18:30": ts(2026, 10, 22, 18, 30)}
+        check("hourly, LIT all_hours: only 16:00-17:30 ET on weekdays and the weekend (Fri 16:00 -> Sun 17:30); never 18:00-16:00",
+              all(au.window_reason(t, "hourly", all_hours=True) is None for t in AH_OK.values())
+              and all(au.window_reason(t, "hourly", all_hours=True) for t in AH_NO.values())
+              and all(au.window_reason(t, "hourly") is None for k, t in AH_NO.items() if k != "Tue 17:55" and k != "Thu 18:30"),
+              {k: au.window_reason(t, "hourly", all_hours=True) for k, t in {**AH_OK, **AH_NO}.items()})
+        ah_bot = SimpleNamespace(state={"strategy": {"model": "lit", "params": {"all_hours": True}}}, running=True, _open_routed=None,
+                                 adapter=None, _lit_all_hours=lambda: True)
+        sp4 = os.path.join(tmp, "au4.json")
+        au.save_state(dict(ON), sp4)
+        hu4 = au.DailyUpdater(ah_bot, exit_fn=lambda c: None, clock=lambda: EVENING, state_path=sp4)
+        check("hourly, LIT all_hours: a flat bot at 20:00 ET gets no hourly update (due none), the halt check still runs",
+              hu4.due_mode(EVENING) is None and hu4.due_mode(HALT) == "daily" and au.bot_all_hours(ah_bot)
+              and not au.bot_all_hours(flat_bot))
+        sp3 =os.path.join(tmp, "au3.json")
         au.save_state(dict(ON), sp3)
         ex3 = []
         orig_sleep = au.time.sleep
