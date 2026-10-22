@@ -78,6 +78,28 @@
 .sc-stat span{display:block;font-size:11.5px;opacity:.7}.sc-stat b{display:block;font-size:19px;margin-top:2px}.sc-stat em{display:block;font-style:normal;font-size:11.5px;opacity:.7;margin-top:2px}
 .sc-up{color:${C.good}}.sc-dn{color:${C.bad}}.sc-tw{overflow-x:auto;max-width:100%}.sc-t{width:100%;border-collapse:collapse;font-size:12.5px}.sc-t th,.sc-t td{padding:6px 8px;border-bottom:1px solid ${C.line};text-align:left;white-space:nowrap}.sc-t th{font-weight:600;opacity:.8}
 .sc-rules{margin:8px 0 4px;padding-left:20px;font-size:13px;line-height:1.55}.sc-rules li{margin:3px 0}.sc-card details{margin:8px 0}.sc-card summary{cursor:pointer;font-size:13.5px}`;
+  // ---------------------------------------------------------------- Account B (engine/account_b.py): its own account + eval
+  // ab = LiveBot.second_route_info().account_b: {label, account, plan_label, kind, sizing, keys, eval: {balance, floor, room,
+  // target, to_target, session, status}, open, routed, day_pnl, entries_today, locked, disabled}
+  const EVST = { open: ['Eval running', C.acc], passed: ['Eval PASSED', C.good], failed: ['Eval FAILED', C.bad], stuck: ['Stuck: buy a new one', C.warn] };
+  function acctB(ab) {
+    if (!ab) return '';
+    const ev = ab.eval || {};
+    const [lab, col] = EVST[ev.status] || [ev.status || '—', C.mut];
+    const op = ab.open;
+    const rows = (ab.routed || []).slice().reverse().map((r) => `<tr><td>${hm(r.t)}</td><td>${esc(String(r.side || '').toUpperCase())}</td><td>${n0(r.qty)}</td><td>${esc(r.strategy || r.src || '')}</td><td>${esc(r.reason || '')}</td><td class="${cl(r.pnl)}">${r.pnl == null ? '' : usd(r.pnl)}</td></tr>`).join('');
+    return `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.acc}">${esc(ab.kind || '')} · ${esc(ab.label || 'Account B')} · ${esc(ab.plan_label || '')}</div>
+      <h3>${esc(ab.label || 'Account B')}: ${esc((ab.keys || []).join(' + '))}</h3>
+      ${ab.disabled ? `<p class="sc-note" style="color:${C.bad}">Not trading: ${esc(ab.disabled)}</p>` : ''}
+      <div class="sc-state" style="border-color:${col}"><span class="sc-pill" style="background:${col}">${esc(lab)}</span>
+        <b>${op ? `In a trade: ${esc(op.side)} ${n0(op.qty)} MNQ (${esc(op.strategy || '')}) from ${px(op.entry)}, stop ${px(op.stop)}, target ${px(op.target)}` : 'Flat'}${ab.locked ? ' · locked today: ' + esc(ab.locked) : ''}</b>
+        <em>Own eval${ev.start ? ' from ' + esc(ev.start) : ''}${ev.session ? ' · session ' + n0(ev.session) : ''} · size ${esc(ab.sizing || 'need')} · ${esc(ab.note || '')}</em></div>
+      <div class="sc-stats"><div class="sc-stat"><span>Balance</span><b>$${n0(ev.balance)}</b><em>today ${usd(ab.day_pnl)}</em></div>
+        <div class="sc-stat"><span>Pass target</span><b>$${n0(ev.target)}</b><em>${ev.to_target != null ? usd(ev.to_target) + ' to go' : ''}</em></div>
+        <div class="sc-stat"><span>Room to the max-loss floor</span><b>${usd(ev.room)}</b><em>floor $${n0(ev.floor)}</em></div>
+        <div class="sc-stat"><span>Trades today</span><b>${n0(ab.entries_today)}</b><em>max 2 a day</em></div></div>
+      ${rows ? `<details><summary><b>Orders on ${esc(ab.account || '')}</b></summary><div class="sc-tw"><table class="sc-t"><thead><tr><th>Time</th><th>Side</th><th>Micros</th><th>Strategy</th><th>Reason</th><th>$</th></tr></thead><tbody>${rows}</tbody></table></div></details>` : ''}</div>`;
+  }
   function css() { if (!document.getElementById('sc-css')) { const s = document.createElement('style'); s.id = 'sc-css'; s.textContent = CSS; document.head.appendChild(s); } }
   function render(el, S, opts) {
     css();
@@ -89,6 +111,7 @@
       }
       const anyR = S.strategies.some((s) => routeOf(s, opts.live).on);
       el.innerHTML = `<div class="sc-banner"><b>${anyR ? 'ROUTED + PAPER.' : 'PAPER ONLY.'}</b> ${esc(S.note || 'Nothing is traded. LIT and the eval account are unchanged.')}${S.source ? ' Source: ' + esc(S.source) + '.' : ''}</div>`
+        + acctB((opts.live && opts.live.route && opts.live.route.account_b) || S.account_b || (S.route && S.route.account_b))
         + S.strategies.map((s) => strat(s, opts.live)).join('');
     } catch (e) { el.innerHTML = `<div class="sc-card"><b>This page failed to draw</b><p class="sc-note">${esc(String(e && e.message || e))}</p></div>`; }
   }
@@ -143,14 +166,15 @@
       }
       const nR = L.filter((s) => s.route).length;
       el.innerHTML = `<div class="sc-banner"><b>Second-strategy brain.</b> ${nR ? `${nR} routed to the account next to LIT (LIT first, one position at a time, max 2 trades a day); the rest paper.` : 'All paper: nothing here is traded.'} Each card: what it waits for and every rule in the engine's order (✓ passed · ✗ failed: the first ✗ is why there is no trade · · not decided yet).${data.src ? ' Source: ' + esc(data.src) + (data.t ? ' · ' + hm(data.t) + ' ET' : '') + '.' : ''}</div>`
-        + L.map(brainCard).join('');
+        + acctB(data.account_b) + L.map(brainCard).join('');
     } catch (e) { el.innerHTML = `<div class="sc-card"><b>The second brain failed to draw</b><p class="sc-note">${esc(String(e && e.message || e))}</p></div>`; }
   }
   // the list from a compact (heartbeat / live.json / /api/next/brain/second) or a dashboard block (data.json "second")
   function brainList(x, src) {
     if (!x) return null;
-    if (Array.isArray(x.strategies)) return { src, t: x.t, strategies: x.strategies.map((s) => ({ ...s, src })) };
-    return { src, t: x.t, strategies: Object.entries(x.strategies || {}).map(([key, s]) => ({ key, ...s, src })) };
+    const account_b = (x.route && x.route.account_b) || x.account_b || null;
+    if (Array.isArray(x.strategies)) return { src, t: x.t, account_b, strategies: x.strategies.map((s) => ({ ...s, src })) };
+    return { src, t: x.t, account_b, strategies: Object.entries(x.strategies || {}).map(([key, s]) => ({ key, ...s, src })) };
   }
-  window.SecondUI = { render, brain, brainList, version: 2 };
+  window.SecondUI = { render, brain, brainList, acctB, version: 3 };
 })();
