@@ -105,6 +105,9 @@ part yourself or fold it into a script.**
   it; `live_model*.json` untouched): `ema_lon_vix` (London EMA pullback, `second-ema.md`, run ema2_lon_vix), `macd_sweep`
   (MACD divergence at a sweep, `second-md.md`, md2_best), `sr_nyreclaim` (S/R NY sweep-and-reclaim, `second-sr.md`,
   sr2_nyreclaim_*; "own account recommended": with LIT it slightly worsens LIT's H2 eval path). $500 risk a trade each.
+  Fourth, cloud only (`"cloud_only": true`, never on the PC route): `lit_asia` = LIT + Asia slot paper shadow
+  (`lit-more-entries.md` lead 1, run lit_more_ent_asia_slot_rr3: lit_live.run with live_model.json "lit" + all hours,
+  2 a day, 1 per session, Asia banked at 3R; LIT size rule), also under state key `lit_asia`.
 - Same code as the research: engine/second.py calls tools/second_ema.py / second_md.py / second_sr.py on LIT's live
   window (retail_standalone.load_frame live_cut, the simulators' live/OPEN mode). "With LIT" view = LIT first, no entry
   while LIT is in a trade, max 2 a day (MACD closed when LIT enters).

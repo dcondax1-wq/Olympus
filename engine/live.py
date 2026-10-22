@@ -1231,6 +1231,7 @@ class LiveBot:
         def run():
             try:
                 cfg = _second.load_cfg()
+                cfg["strategies"] = {k: v for k, v in cfg["strategies"].items() if not v.get("cloud_only")}   # e.g. LIT + Asia
                 if any(s.get("on", True) for s in cfg["strategies"].values()):
                     self.second = _second.run(df5, one_min=df1, now=now, cfg=cfg, lit=lit_w)
                 else:

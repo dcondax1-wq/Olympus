@@ -44,6 +44,20 @@
            "win": "ny12", "maxpd": 1, "max_stop": 80.0, "min_rr": 1.5, "tg": 2.0, "bk": null, "be": null, "tc": true},
    "usd": 500,
    "research": {"best": "research/second/sr_best.json", "report": "research/second/sr_final.json"}
+  },
+  "lit_asia": {
+   "on": true,
+   "kind": "lit_variant",
+   "cloud_only": true,
+   "label": "LIT + Asia slot (paper shadow)",
+   "short": "LIT+Asia",
+   "summary": "LIT itself with one extra Asia trade (18:00-02:00 ET, banked at 3R) next to the normal LIT day trade: all hours, max 2 a day, 1 per session. Cloud paper shadow only, never on the PC route.",
+   "with_lit_label": "this is LIT plus the Asia trade (shadow of the live LIT)",
+   "run": "lit_more_ent_asia_slot_rr3",
+   "writeup": "lit-more-entries",
+   "rules": ["Every LIT rule as live (live_model.json \"lit\"), plus:", "Entries all session: 18:00-24:00 and 00:00-15:30 ET (LIT setups from the evening too).", "Max 2 trades a day, 1 per session part: Asia (18:00-02:00) and the LIT day (02:00-18:00).", "Asia trades bank at 3R (instead of 8R); the day trade is unchanged.", "Size: LIT's own size rule; costs in. Paper only, cloud only."],
+   "overrides": {"window": [[1080, 1440], [0, 930]], "all_hours": true, "max_per_day": 2,
+                 "per_session": [[[1080, 120], [120, 1080]], 1], "kz": [[1080, 1440, {"max_rr": 3.0}], [0, 120, {"max_rr": 3.0}]]}
   }
  }
 }

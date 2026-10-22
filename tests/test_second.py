@@ -81,6 +81,11 @@ class Data:
         self.lit = sorted(({"entry_t": int(t["entry_t"]), "exit_t": int(t["exit_t"])} for t in lt), key=lambda x: x["entry_t"])
         self.ref = {k: [t for t in json.load(open(os.path.join(ROOT, f), encoding="utf-8"))["trades"]
                         if "2026-01-01" <= t["day"] <= "2026-10-16"] for k, f in REF_FILE.items()}
+        # LIT + Asia slot (cloud paper shadow): the stored research run (LIT executor, LIT size rule)
+        ra = json.load(open(os.path.join(ROOT, "research", "runs", "lit_more_ent_asia_slot_rr3.json"), encoding="utf-8"))
+        self.ref_asia = [{**dict(zip(ra["trade_cols"], a)), "exit_kind": ("TIME" if a[ra["trade_cols"].index("exit")] == "EOD"
+                                                                         else a[ra["trade_cols"].index("exit")])}
+                         for a in ra["trades"] if "2026-01-01" <= a[0] <= "2026-10-16"]
 
     def poll(self, now, lit=True, only=None):
         cfg = self.cfg if only is None else {**self.cfg, "strategies": {only: self.cfg["strategies"][only]}}
@@ -104,6 +109,19 @@ def day_end(D):
             got[k] += [t for t in s["trades"] if t["day"] == d]
             alt[k] += [a for a in (s.get("state") or {}).get("lit_alt") or [] if a["day"] == d]
     out = {}
+    ga = {int(t["entry_t"]): t for t in got["lit_asia"]}
+    same_a, bad_a = 0, []
+    for w in D.ref_asia:
+        t = ga.pop(int(w["entry_t"]), None)
+        if t and (t["exit_kind"], t["exit_t"], t["qty"], t["dir"]) == (w["exit_kind"], int(w["exit_t"]), int(w["qty"]), int(w["dir"])) \
+                and abs(t["usd"] - w["pnl"]) <= 0.6 * max(1, t["qty"]):
+            same_a += 1
+        else:
+            bad_a.append((w["day"], w["entry_t"], t and (t["exit_kind"], t["exit_t"], t["qty"], t["usd"]), (w["exit_kind"], w["exit_t"], w["qty"], w["pnl"])))
+    out["lit_asia"] = (same_a, len(D.ref_asia))
+    check(f"lit_asia (LIT + Asia slot, cloud shadow): day-end replay {same_a}/{len(D.ref_asia)} trades of run lit_more_ent_asia_slot_rr3 "
+          f"identical (exit, time, micros, $ within the commission rounding), extra {len(ga)}", same_a == len(D.ref_asia) and not ga,
+          {"bad": bad_a[:5], "extra": list(ga)[:5]})
     for k, ref in D.ref.items():
         g = {key(t): t for t in got[k]}
         same = entries = 0
@@ -354,9 +372,9 @@ def cloud(D):
               r2 is not None and r2["exit_kind"] == row["exit_kind"] and (r2.get("revised_replay") or {}).get("exit_kind") == "TARGET", r2)
         blk = second.dashboard_block(sec)
         check("dashboard block: every strategy with rules, backtest H1/H2/2025/2021-24 + with-LIT tables and paper trades",
-              len(blk["strategies"]) == len(REF_FILE) and all(s["rules"] and s["backtest"]["own"].get("H2") and s["backtest"]["with_lit"].get("H1")
+              len(blk["strategies"]) == len(REF_FILE) + 1 and all(s["rules"] and s["backtest"]["own"].get("H2") and s["backtest"]["with_lit"].get("H1")
                                                   and s["backtest"]["own"].get("2021-24") for s in blk["strategies"])
-              and all(s["trades"] for s in blk["strategies"] if s["key"] != "sr_nyreclaim"),
+              and all(s["trades"] for s in blk["strategies"] if s["key"] not in ("sr_nyreclaim", "lit_asia")),
               [(s["key"], bool(s["rules"]), list(s["backtest"]["own"]), s["backtest"].get("error")) for s in blk["strategies"]])
     finally:
         heartbeat.read, push.Relay.read, cm.time.time, live.LiveBot._read_hist, urllib.request.urlopen, subprocess.run = saved

@@ -951,6 +951,8 @@ def run(out):
         new_state["lit_base"], new_state["upgrades_live"] = lit_base, upgrades_live
     if second_block is not None:
         new_state["second"] = second_block
+        if (second_block.get("strategies") or {}).get("lit_asia"):     # LIT + Asia slot paper shadow: its own state key too
+            new_state["lit_asia"] = second_block["strategies"]["lit_asia"]
     from engine import uptime as _uptime        # status page: 30-day uptime per part + incidents -> state "uptime" (never raises)
     _uptime.cloud_hook(new_state, st, pc, now)
     try:                    # LIT day analyst (engine/lit_brief.py): morning briefing, intraday log, recap -> state "brief" + README

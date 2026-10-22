@@ -227,6 +227,46 @@ def _ema_state(SE, d, E, X, now, last_t, U):
     return st
 
 
+# ============================================================================================ LIT variant (paper shadow)
+@plugin("lit_variant")
+def _litv_run(df5, one_min, cfg, now, lit):
+    """LIT itself with extra settings (e.g. the Asia slot of research/writeups/lit-more-entries.md: all hours, 2 a day,
+    1 per session, Asia banked at 3R) through engine/lit_live.run = the same executor as the backtest, on the same bars.
+    Cloud only ("cloud_only": the PC bot never runs it: its guards block evening entries and it must not trade). LIT's
+    size rule from the model's own micros; the "with LIT" view does not apply (it is LIT plus)."""
+    from engine import lit as L
+    from engine import lit_live
+    with open(os.path.join(ROOT, "live_model.json"), encoding="utf-8") as fh:
+        base = json.load(fh).get("lit") or {}
+    P = {**L.DEFAULTS, **base, **(cfg.get("overrides") or {})}
+    res = lit_live.run(df5, P, one_min=one_min, now=now)
+    asia = cfg.get("tag_window") or [1080, 120]
+    trades = []
+    for t in res.get("trades") or []:
+        m = _mod(t["entry_t"])
+        tag = "Asia" if (m >= asia[0] or m < asia[1]) else "day"
+        trades.append({"day": trading_day(t["entry_t"]), "entry_t": int(t["entry_t"]), "exit_t": int(t["exit_t"]) if t.get("exit_t") else None,
+                       "dir": int(t["dir"]), "entry": _r2(t.get("entry")), "stop": _r2(t.get("stop")), "target": _r2(t.get("target")),
+                       "exit": _r2(t.get("exit_price")), "exit_kind": str(t.get("exit_reason") or "").upper(), "r": round(float(t.get("pnl_r") or 0), 3),
+                       "qty": int(t.get("qty") or 0), "usd": round(float(t.get("pnl") or 0), 2), "risk_pts": _r2(t.get("risk_pts")),
+                       "risk_usd": None, "setup": f"LIT ({tag} slot)", "last": None, "stop_now": None, "lit": None, "note": f"{tag} slot"})
+    pos = (res.get("state") or {}).get("position")
+    if pos and pos.get("entry_t") is not None and not any(x["entry_t"] == int(pos["entry_t"]) for x in trades):
+        m = _mod(pos["entry_t"])
+        tag = "Asia" if (m >= asia[0] or m < asia[1]) else "day"
+        trades.append({"day": trading_day(pos["entry_t"]), "entry_t": int(pos["entry_t"]), "exit_t": None, "dir": int(pos["dir"]),
+                       "entry": _r2(pos.get("entry")), "stop": _r2(pos.get("stop0") or pos.get("stop")), "target": _r2(pos.get("target")),
+                       "exit": None, "exit_kind": "OPEN", "r": 0.0, "qty": int(pos.get("qty") or 0), "usd": 0.0,
+                       "risk_pts": _r2(pos.get("risk_pts")), "risk_usd": None, "setup": f"LIT ({tag} slot)", "last": None,
+                       "stop_now": _r2(pos.get("stop")), "lit": None, "note": f"{tag} slot"})
+    trades.sort(key=lambda x: x["entry_t"])
+    st = {"day": trading_day(now), "stage": "in_trade" if pos else "waiting", "text": res["state"].get("model_state") or "-",
+          "window": "18:00-15:30 ET (Asia 18:00-02:00 banked at 3R, then the normal LIT day trade)"}
+    if not pos and any(t["day"] == st["day"] for t in trades) and "done for today" in str(st["text"]).lower():
+        st["stage"] = "done"
+    return {"trades": trades, "state": st}
+
+
 # ============================================================================================ S/R: NY sweep-and-reclaim
 @plugin("sr_reclaim")
 def _sr_run(df5, one_min, cfg, now, lit):
@@ -543,6 +583,18 @@ def backtest(key: str, sc: dict) -> dict:
             ev = rep.get("eval") or {}
             out["eval_with_lit"] = {k: (ev.get("with_lit_max2") or {}).get(k) for k in ("H1", "H2")}
             out["eval_lit_only"] = {k: (ev.get("lit_alone") or {}).get(k) for k in ("H1", "H2")}
+        elif sc.get("kind") == "lit_variant":        # a stored run (research/runs/<id>.json) vs lit_live, per period
+            from tools import runlib as rl
+            sess = [d[0] for d in rl.load("lit_live")["days"]]
+            for side, rid in (("own", sc.get("run")), ("lit_only", "lit_live")):
+                r = rl.load(rid)
+                T = [dict(zip(r["trade_cols"], a)) for a in r["trades"]]
+                for p, a, b in (("H1", "2026-01-01", "2026-06-30"), ("H2", "2026-07-01", "2026-10-16"), ("2026", "2026-01-01", "2026-10-16"),
+                                ("2025", "2025-01-01", "2025-12-31"), ("2021-24", "2021-11-01", "2024-12-31")):
+                    TT = [t for t in T if a <= t["day"] <= b]
+                    S_ = [s for s in sess if a <= s <= b]
+                    out[side][p] = _row(rl._compact(TT, rl.days_of(TT, S_))) if TT else None
+            out["with_lit"] = out["own"]
         elif rs.get("summary"):                      # a plugin strategy: its research JSON gives the same tables
             rep = json.load(open(os.path.join(ROOT, rs["summary"]), encoding="utf-8"))
             for k in ("own", "with_lit", "lit_only"):
