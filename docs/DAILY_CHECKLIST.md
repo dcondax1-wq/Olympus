@@ -95,6 +95,18 @@ Monday. 2-week fails 9.2 -> 5.0% (Jan-Jun) with the same passes, money-neutral. 
 restart the bot. The PC Today page and the phone's Eval HQ show it: weekly loss stop off / armed / tripped; the phone gets
 one push when it trips.
 
+## Optional: second strategies on this account (OFF)
+The bot can also trade the EMA London pullback (`ema_lon_vix`), the MACD sweep (`macd_sweep`) or the S/R NY reclaim
+(`sr_nyreclaim`) on the same NinjaTrader account as LIT. Built and tested on Sim, **OFF**. Research
+(`research/writeups/second-route.md`): on the eval it adds little (H2 +$11.2k vs LIT alone +$9.1k) and more H1 fails
+(10.9% vs 5.9% in 2 weeks), so leave it off on the eval.
+1. Switch one on (it checks NinjaTrader's self-test first and refuses if it fails):
+   `python -m engine.second --route ema_lon_vix on`
+2. The bot picks it up on its next poll. LIT always comes first: one position at a time, no second-strategy entry while
+   LIT is in a trade or has a setup armed, a second trade is closed at market when LIT enters, max 2 trades a day.
+   Pushes for it say the account name like LIT's, with "(EMA)" in the text; the paper ones keep "PAPER".
+3. Switch it off the same way: `python -m engine.second --route ema_lon_vix off`
+
 ## Rules that never change
 - The bot never arms a real account by itself. You start the eval bot yourself (dashboard, your phrase).
 - **No trade for 5 days**: place 1 MNQ by hand (in and out) or let the min-days trade run (MFFU's 7-day rule).

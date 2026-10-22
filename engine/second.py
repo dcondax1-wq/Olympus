@@ -3,9 +3,12 @@
     EMA   London EMA trend pullback (research/writeups/second-ema.md, tools/second_ema.py, run ema2_lon_vix)
     MACD  MACD divergence at a liquidity sweep (research/writeups/second-md.md, tools/second_md.py, run md2_best)
 
-PAPER ONLY. This module computes signals and keeps no orders: it has no broker / adapter / NinjaTrader import and never
-writes an order file (tests/test_second.py asserts it). Config: second_model.json ({"paper": true, "strategies": {...}});
-live_model.json / live_model_lit.json are never read or changed here, so LIT and the eval account are untouched.
+This module computes signals and keeps no orders: it has no broker / adapter / NinjaTrader import and never writes an
+order file (tests/test_second.py asserts it). Config: second_model.json ({"paper": true, "strategies": {...}});
+live_model.json / live_model_lit.json are never read or changed here. A strategy with "route": true (default false; the
+owner's switch `python -m engine.second --route <key> on|off`, below) is ROUTED by the PC bot on LIT's account: that
+lives in engine/live.py (LiveBot._second_route_tick: LIT first, one position, max 2 trades a day, eval-safe size);
+everything else stays paper. Each strategy also returns its "brain" (rule checks in the engine's order, closed bars only).
 
 Same code as the research: every signal and every exit comes from the research modules themselves
 (tools/second_ema.py candidates / simulate / trades_of on tools/retail_standalone.load_frame, tools/second_md.py Ctx /
@@ -27,6 +30,8 @@ Plugin slot for a third strategy (e.g. the S/R levels study, research/second/sr_
 """
 from __future__ import annotations
 
+import bisect
+import collections
 import datetime as dt
 import importlib
 import json
@@ -63,9 +68,19 @@ def load_cfg(path: str | None = None) -> dict:
             raise ValueError("not an object")
     except Exception as e:
         return {"paper": True, "strategies": {}, "error": f"{e.__class__.__name__}: {e}"}
-    c["paper"] = True                 # paper only, whatever the file says
+    c["paper"] = True                 # this module never routes, whatever the file says (engine/live.py routes "route" ones)
     c.setdefault("strategies", {})
+    for sc in c["strategies"].values():
+        if isinstance(sc, dict):      # "route": false = paper (default); never for a cloud-only strategy
+            sc["route"] = bool(sc.get("route", False)) and bool(sc.get("on", True)) and not sc.get("cloud_only")
     return c
+
+
+def routed(cfg: dict | None = None) -> list:
+    """Keys of the strategies the PC bot routes to its account (second_model.json "on" and "route" true, not cloud_only).
+    Routing itself lives in engine/live.py (LiveBot._second_route_tick); this module only computes signals."""
+    cfg = cfg or load_cfg()
+    return [k for k, s in (cfg.get("strategies") or {}).items() if isinstance(s, dict) and s.get("route")]
 
 
 def _et(t):
@@ -136,6 +151,7 @@ def _ema_run(df5, one_min, cfg, now, lit):
             d = _ema_load(RS, SE, w, now, last_t)
             U = SE.trades_of(E, X, span=(str(d["days"][0]), "9999"))
             st = _ema_state(SE, d, E, X, now, last_t, U)
+            brain = _safe_brain(lambda: _ema_brain(SE, d, E, X, U, st, SE.candidates(), last_t), st)
             # a CISD on the last closed bar enters at the next 5m open: seen by adding that bar flat at the last close
             # (an estimate for the state line only; the trade itself comes from the real bar on the next poll)
             wx = pd.concat([w, pd.DataFrame([{"time": last_t + 300, **{k: float(w["close"].iloc[-1]) for k in ("open", "high", "low", "close")},
@@ -147,6 +163,16 @@ def _ema_run(df5, one_min, cfg, now, lit):
                 if sig and not any(u["day"] == sig[0]["day"] and u["ei"] < n2 for u in U):
                     st["signal"] = {"dir": sig[0]["dir"], "enter_at": _hm(last_t + 300), "stop": sig[0]["stop"],
                                     "entry_est": sig[0]["entry"], "target_est": sig[0]["target"]}
+
+                    st.update(stage="armed", text=f"Signal ({'long' if sig[0]['dir'] > 0 else 'short'}): 5m CISD after a pullback to "
+                                                  f"the EMA 50 on the {_hm(last_t)} ET bar; entry at the {_hm(last_t + 300)} ET open, "
+                                                  f"stop {sig[0]['stop']:,.2f}")
+
+                    def _sb(d2=d2, n2=n2, dr=int(sig[0]["dir"])):
+                        c2 = SE.candidates()
+                        row = next(r for r in (x for _, x in c2.iterrows()) if int(r["ei"]) == n2 and int(r["dir"]) == dr)
+                        return _ema_brain(SE, d2, E, X, U, st, c2, last_t, row, d2)
+                    brain = _safe_brain(_sb, st)
         finally:
             RS.D.clear()
             RS.D.update(saved)
@@ -171,7 +197,7 @@ def _ema_run(df5, one_min, cfg, now, lit):
             t["lit"].update(usd=0.0, why="LIT was in a trade")
         trades.append(t)
     _session_end(trades, now, last_t)
-    return {"trades": trades, "state": st}
+    return {"trades": trades, "state": st, "brain": brain}
 
 
 def _ema_load(RS, SE, w, now, last_t):
@@ -264,7 +290,7 @@ def _litv_run(df5, one_min, cfg, now, lit):
           "window": "18:00-15:30 ET (Asia 18:00-02:00 banked at 3R, then the normal LIT day trade)"}
     if not pos and any(t["day"] == st["day"] for t in trades) and "done for today" in str(st["text"]).lower():
         st["stage"] = "done"
-    return {"trades": trades, "state": st}
+    return {"trades": trades, "state": st, "brain": basic_brain(st, "LIT + Asia slot (cloud paper shadow): its state line")}
 
 
 # ============================================================================================ S/R: NY sweep-and-reclaim
@@ -301,6 +327,7 @@ def _sr_run(df5, one_min, cfg, now, lit):
             a, z = SR.WINDOWS[key["win"]]
             sig = [c for c in SR.gen(d, key["setup"], g) if c[0] == n - 1 and a <= _mod(last_t + 300) < z]
             st = _sr_state(d, key, TT, sig, now, last_t)
+            brain = _safe_brain(lambda: _sr_brain(SR, d, key, st, TT, now, last_t), st)
         finally:
             RS.D.clear(); RS.D.update(saved)
             SR.D.clear(); SR.D.update(saved_sr)
@@ -318,6 +345,8 @@ def _sr_run(df5, one_min, cfg, now, lit):
              "exit_kind": "OPEN" if open_ else str(u["exit_kind"]).upper(), "r": u["r"], "qty": int(u["qty"]), "usd": u["pnl_usd"],
              "risk_pts": u["risk_pts"], "risk_usd": u["risk_usd"], "setup": "S/R sweep-and-reclaim (NY)",
              "last": u["exit"] if open_ else None, "stop_now": u["stop"] if open_ else None}
+        if str(u["exit_kind"]) == "OPEN_CUT":          # the 15-minute check failed on the last close: exits at the next open
+            t.update(cut_now="T15", note="15-minute check failed: exits at the next open")
         lt = lmap.pop(t["entry_t"], None)
         t["lit"] = {"taken": lt is not None, "usd": round(float(lt["pnl_usd"]), 2) if lt else 0.0, "exit_kind": t["exit_kind"] if lt else None,
                     "note": "own account recommended"}
@@ -328,7 +357,7 @@ def _sr_run(df5, one_min, cfg, now, lit):
         st["lit_alt"] = [{"day": u["day"], "entry_t": int(u["entry_t"]), "dir": int(u["dir"]), "r": u["r"], "usd": u["pnl_usd"],
                           "exit_kind": str(u["exit_kind"]).upper()} for u in lmap.values()][-5:]
     _session_end(trades, now, last_t)
-    return {"trades": trades, "state": st}
+    return {"trades": trades, "state": st, "brain": brain}
 
 
 def _sr_state(d, key, TT, sig, now, last_t):
@@ -399,7 +428,8 @@ def _md_run(df5, one_min, cfg, now, lit):
         t["lit"] = _md_lit(SM, X, z, r, sim, usd, lit, trades)
     st = _md_state(SM, X, C, T, flt, gen, now, last_t, trades)
     _session_end(trades, now, last_t)
-    return {"trades": trades, "state": st}
+    brain = _safe_brain(lambda: _md_brain(SM, X, C, outs, flt, sim, st, now, last_t, trades, gen), st)
+    return {"trades": trades, "state": st, "brain": brain}
 
 
 def _md_trade(SM, X, z, r, q):
@@ -412,6 +442,7 @@ def _md_trade(SM, X, z, r, q):
          "last": round(r["ex"], 2) if open_ else None, "stop_now": round(r["stop_now"], 2) if open_ else None}
     if open_ and r.get("cut"):
         t["note"] = "15-minute check failed: exits at the next open"
+        t["cut_now"] = "CUT"
     return t
 
 
@@ -505,6 +536,501 @@ def _session_end(trades, now, last_t):
                      usd=round(t["qty"] * per, 2), stop_now=None, note="session ended early (holiday)")
 
 
+# ============================================================================================ the second-strategy brain
+# One compact dict per strategy (owner 2026-10-22: "one brain is LIT, one brain shows whatever strategy you came with"):
+#   stage / text      the strategy's own state line (waiting / armed / in_trade / done / off)
+#   focus             which bar the checks are about: the live bar (last close), a signal, or today's trade's signal bar
+#   checks            the strategy's rules in the engine's order, each {"k", "name", "ok" (True / False / None = not yet),
+#                     "val", "need"}; the first False is why there is no trade
+#   plan              entry / stop / target / risk / micros ($500) when armed or in a trade
+#   log               today's evaluated setups (one line each: TRADE or the first failed rule)
+# Built from the strategy's own arrays on closed bars only (inside its run, same data as the decision).
+def _safe_brain(fn, st):
+    """A brain bug never touches the strategy's trades: the error is shown in the brain instead."""
+    try:
+        return fn()
+    except Exception as e:
+        return {**basic_brain(st), "error": f"{e.__class__.__name__}: {e}"}
+
+
+def _ck(k, name, ok, val=None, need=None):
+    return {"k": k, "name": name, "ok": None if ok is None else bool(ok), **({"val": val} if val is not None else {}),
+            **({"need": need} if need is not None else {})}
+
+
+def _hhmm(m):
+    m = int(m) % 1440
+    return f"{m // 60:02d}:{m % 60:02d}"
+
+
+def first_fail(checks):
+    """The engine's reason: the first rule that failed (None = nothing failed)."""
+    return next((c["k"] for c in checks or [] if c.get("ok") is False), None)
+
+
+def _brain(st, focus, checks, plan=None, log=None, extra=None):
+    b = {"stage": (st or {}).get("stage"), "text": (st or {}).get("text"), "focus": focus, "checks": checks,
+         "first_fail": first_fail(checks), "plan": plan, "log": _trim_log(log, 12), "closed_bars_only": True}
+    if extra:
+        b.update(extra)
+    return b
+
+
+def _trim_log(log, n):
+    """At most n lines: today's trade / signal lines always stay; setups outside the strategy's hours are summarised
+    first, then the oldest of the rest go."""
+    log = list(log or [])
+    if len(log) <= n:
+        return log
+    keep = [x for x in log if x.get("trade") or x.get("signal")]
+    rest = [x for x in log if not (x.get("trade") or x.get("signal"))]
+    inw = [x for x in rest if x.get("ff") != "window" and x.get("t") is not None]
+    nw = len(rest) - len(inw)
+    room = max(0, n - len(keep) - (1 if nw else 0))
+    out = sorted(keep + inw[-room:] if room else keep, key=lambda x: x.get("t") or 0)
+    return ([{"t": None, "ok": False, "ff": "window", "text": f"{nw + max(0, len(inw) - room)} more setups (outside its hours / earlier)"}]
+            if nw or len(inw) > room else []) + out
+
+
+def brain_compact(b, max_log=6):
+    """The heartbeat / live.json cut (about 2 KB per strategy): checks, plan, the last log lines, the S/R levels."""
+    if not isinstance(b, dict):
+        return None
+    out = {k: b.get(k) for k in ("stage", "text", "focus", "first_fail", "plan", "error") if b.get(k) is not None}
+    out["checks"] = [{k: v for k, v in c.items() if k in ("k", "name", "ok", "val", "need")} for c in b.get("checks") or []]
+    out["log"] = [{k: v for k, v in x.items() if k in ("t", "ok", "text", "trade", "signal")} for x in _trim_log(b.get("log"), max_log)]
+    if isinstance(b.get("levels"), list):
+        out["levels"] = [{k: x.get(k) for k in ("name", "px", "known", "stage")} for x in b["levels"][:14]]
+    return out
+
+
+def _plan(dr, entry, stop, target, usd=500.0, when=None, est=False):
+    if entry is None or stop is None:
+        return None
+    rp = abs(float(entry) - float(stop))
+    q = max(1, min(40, int(float(usd) / (rp * PV)))) if rp > 0 else 0
+    return {"dir": int(dr), "side": "long" if dr > 0 else "short", "entry": _r2(entry), "stop": _r2(stop), "target": _r2(target),
+            "risk_pts": _r2(rp), "qty_500": q, "risk_usd": _r2(q * rp * PV), "when": when, "estimate": bool(est),
+            "rr": _r2(abs(float(target) - float(entry)) / rp) if target is not None and rp > 0 else None}
+
+
+# ---- EMA
+def _ema_row_checks(SE, d, E, X, row, taken_before):
+    a, z = SE.WINS[E["win"]]
+    dr = int(row["dir"])
+    lo = "low" if dr > 0 else "high"
+    m = int(row['mod']) + 5
+    C = [_ck("window", f"Entry {_hhmm(a)}-{_hhmm(z)} ET", a <= m < z, f"{_hhmm(m)} ET")]
+    tr = E["trend"]
+    if tr in ("t15", "t15_60", "all3"):
+        C.append(_ck("t15", "15m EMA 21 vs EMA 50 points the trade's way", row["t15"] > 0, "with" if row["t15"] > 0 else "against"))
+    if tr in ("t60", "t15_60", "t60_240", "all3"):
+        C.append(_ck("t60", "1h EMA 21 vs EMA 50 points the trade's way", row["t60"] > 0, "with" if row["t60"] > 0 else "against"))
+    if E["pull"] in ("e50", "e21"):
+        k = "touch50" if E["pull"] == "e50" else "touch21"
+        C.append(_ck("pull", f"Pullback reached the 5m EMA {E['pull'][1:]} (within 0.1 ATR)", row[k] > 0,
+                     f"{float(row['depth']):.2f} ATR run"))
+    if E.get("sweep"):
+        C.append(_ck("sweep", f"Pullback {lo} swept a confirmed 5m swing {lo} (< 1.5 ATR)", row["swept"] > 0,
+                     f"{float(row['sdepth']):.2f} ATR past it" if row["swept"] > 0 else "no swing taken"))
+    if E.get("disp", 0) > 0:
+        C.append(_ck("disp", f"CISD candle body >= {E['disp']} ATR", row["disp"] >= E["disp"], f"{float(row['disp']):.2f} ATR"))
+    if E.get("reg") == "nomon":
+        C.append(_ck("monday", "Not a Monday", int(row["dow"]) != 0, DOW[int(row["dow"])]))
+    C.append(_ck("cisd", f"5m CISD close back {'up' if dr > 0 else 'down'} through the run's open", True, f"{dr * float(row['lvl']):,.2f}"))
+    C.append(_ck("stop", "Stop 6-80 pts, 1 tick beyond the sweep wick", True, f"{float(row['risk']):.2f} pts"))
+    C.append(_ck("one", "First trade of the day (max 1)", not taken_before))
+    sim = SE.simulate(row, X, d) if first_fail(C) is None else None
+    if first_fail(C) is None:
+        C.append(_ck("target", "VIX-band target >= 1.5R away", sim is not None,
+                     (f"{dr * float(sim[5]):,.2f}" if sim is not None and sim[5] is not None else "under 1.5R / no VIX")))
+    else:
+        C.append(_ck("target", "VIX-band target >= 1.5R away", None))
+    return C, sim
+
+
+def _ema_live_pull(SE, d, dr, i_last):
+    """The counter-trend run in progress at the last closed bar (direction dr), tracked exactly as candidates() does."""
+    n = d["n"]
+    sid = d["sid"]
+    s0 = sid[i_last]
+    fh, fl = SE.fractal_masks(d["h"], d["l"])
+    if dr > 0:
+        O, H, L, C = d["o"], d["h"], d["l"], d["c"]
+        FL = fl
+    else:
+        O, H, L, C = -d["o"], -d["l"], -d["h"], -d["c"]
+        FL = fh
+    bear = C < O
+    start, lvl, low, active, last_s, prev_bear = -1, 0.0, 0.0, False, -1, -9
+    swl = collections.deque(maxlen=20)
+    for i in range(max(0, i_last - 300), min(n, i_last + 1)):
+        s = sid[i]
+        if s != last_s:
+            active = False; last_s = s
+        q = i - 2
+        if q >= 0 and FL[q]:
+            swl.append((q, L[q]))
+        if bear[i]:
+            if not active:
+                start, lvl, low, active = i, O[i], L[i], True
+            elif i != prev_bear + 1 and L[i] < low:
+                lvl = O[i]
+            prev_bear = i
+            low = min(low, L[i])
+            continue
+        if not active:
+            continue
+        low = min(low, L[i])
+        if i - start > 24:
+            active = False
+            continue
+        if C[i] > lvl:
+            active = False
+    if not active or sid[start] != s0:
+        return None
+    a = d["atr"][i_last]
+    sw = [p for (qq, p) in swl if qq + 2 < start and qq >= i_last - 48 and p > low and p - low < 1.5 * a]
+    lowbar = start + int(np.argmin(L[start:i_last + 1]))
+    e50 = dr * d["e50"][lowbar]
+    return {"start_t": int(d["t"][start]), "lvl": float(dr * lvl), "low": float(dr * low), "touch50": bool(low <= e50 + 0.1 * a),
+            "swept": bool(sw), "sdepth": float((max(sw) - low) / a) if sw else 0.0, "e50": float(d["e50"][i_last]),
+            "close": float(d["c"][i_last])}
+
+
+def _ema_brain(SE, d, E, X, U, st, cand, last_t, sig_row=None, d_sig=None):
+    day = st.get("day")
+    a, z = SE.WINS[E["win"]]
+    today = cand[cand["day"] == day] if len(cand) else cand
+    taken = {int(u["sig_i"]) for u in U if u["day"] == day}
+    log, seen_trade = [], False
+    for row in (x for _, x in today.iterrows()):
+        C, _sim = _ema_row_checks(SE, d, E, X, row, seen_trade)
+        ff = first_fail(C)
+        is_t = int(row["sig"]) in taken
+        pend = sig_row is not None and int(row["sig"]) == int(sig_row["sig"]) and int(row["dir"]) == int(sig_row["dir"])
+        side = "long" if row["dir"] > 0 else "short"
+        log.append({"t": int(d["t"][int(row["sig"])]) + 300, "ok": is_t or pend, "ff": ff, "dir": int(row["dir"]), "entry_t": int(d["t"][int(row["sig"])]) + 300, "trade": bool(is_t), "signal": bool(pend),
+                    "text": f"{_hm(int(d['t'][int(row['sig'])]) + 300)} CISD {side}: " + ("TRADE" if is_t else "signal, enters at the next open"
+                                                                                          if pend else f"no - {ff or 'no valid exit'}")})
+        if is_t:
+            seen_trade = True
+    tr_today = [u for u in U if u["day"] == day]
+    if tr_today:
+        u = tr_today[0]
+        row = next((r for r in (x for _, x in cand.iterrows()) if int(r["sig"]) == int(u["sig_i"]) and int(r["dir"]) == int(u["dir"])), None)
+        C = _ema_row_checks(SE, d, E, X, row, False)[0] if row is not None else []
+        return _brain(st, {"kind": "trade", "t": int(u["entry_t"]), "label": f"today's trade: signal {_hm(int(u['entry_t']))} ET"}, C,
+                      _plan(u["dir"], u["entry"], u["stop"], u["target"], when=_hm(u["entry_t"])), log)
+    if sig_row is not None and d_sig is not None:
+        C, sim = _ema_row_checks(SE, d_sig, E, X, sig_row, False)
+        dr = int(sig_row["dir"])
+        tgt = dr * float(sim[5]) if sim is not None and sim[5] is not None else None
+        return _brain(st, {"kind": "signal", "t": int(last_t) + 300, "label": f"signal on the {_hm(int(last_t) + 300)} ET close"}, C,
+                      _plan(dr, dr * float(sig_row["e"]), dr * float(sig_row["stop"]), tgt, when=_hm(int(last_t) + 300), est=True), log)
+    # live: the bar that just closed
+    i = d["n"] - 1
+    m_next = _mod(last_t + 300)
+    t15, t60 = float(d["t15"][i]), float(d["t60"][i])
+    dr = 1 if (t15 > 0 if t15 != 0 else t60 >= 0) else -1
+    dow = dt.date.fromisoformat(trading_day(last_t + 300)).weekday()
+    lo = "low" if dr > 0 else "high"
+    run_ = _ema_live_pull(SE, d, dr, i)
+    C = [_ck("window", f"Entry {_hhmm(a)}-{_hhmm(z)} ET", a <= m_next < z, f"next bar {_hhmm(m_next)} ET")]
+    C.append(_ck("t15", "15m EMA 21 vs EMA 50 points the trade's way", t15 * dr > 0, {1: "up", -1: "down", 0: "flat"}[int(np.sign(t15))]))
+    C.append(_ck("t60", "1h EMA 21 vs EMA 50 points the trade's way", t60 * dr > 0, {1: "up", -1: "down", 0: "flat"}[int(np.sign(t60))]))
+    e50 = float(d["e50"][i])
+    if run_ is None:
+        C.append(_ck("pull", "Pullback reached the 5m EMA 50 (within 0.1 ATR)", None,
+                     f"EMA 50 {e50:,.2f}, price {float(d['c'][i]):,.2f} ({abs(float(d['c'][i]) - e50):,.0f} pts away)",
+                     need=f"a run of {'red' if dr > 0 else 'green'} 5m candles down to it"))
+        C.append(_ck("sweep", f"Pullback {lo} swept a confirmed 5m swing {lo} (< 1.5 ATR)", None))
+        C.append(_ck("cisd", "5m CISD close back through the run's open", None))
+    else:
+        C.append(_ck("pull", "Pullback reached the 5m EMA 50 (within 0.1 ATR)", True if run_["touch50"] else None,
+                     f"EMA 50 {e50:,.2f}, run {lo} {run_['low']:,.2f} ({abs(run_['low'] - e50):,.0f} pts away)"))
+        C.append(_ck("sweep", f"Pullback {lo} swept a confirmed 5m swing {lo} (< 1.5 ATR)", True if run_["swept"] else None,
+                     f"{run_['sdepth']:.2f} ATR past it" if run_["swept"] else "not yet"))
+        C.append(_ck("cisd", "5m CISD close back through the run's open", None, need=f"a 5m close {'above' if dr > 0 else 'below'} "
+                                                                                  f"{run_['lvl']:,.2f}"))
+    if E.get("reg") == "nomon":
+        C.insert(3, _ck("monday", "Not a Monday", dow != 0, DOW[dow]))
+    C += [_ck("stop", "Stop 6-80 pts, 1 tick beyond the sweep wick", None), _ck("one", "First trade of the day (max 1)", True),
+          _ck("target", "VIX-band target >= 1.5R away", None)]
+    return _brain(st, {"kind": "live", "t": int(last_t) + 300, "label": f"live: the {_hm(int(last_t) + 300)} ET close"}, C, None, log,
+                  {"side": "long" if dr > 0 else "short"})
+
+
+# ---- MACD
+def _md_brain(SM, X, C, outs, flt, sim, st, now, last_t, trades, gen):
+    n = X.n
+    day_i = int(X.day[n - 1])
+    kz = SM.KZ[flt["kz"]]
+    win = ", ".join(f"{_hhmm(a)}-{_hhmm(b)}" for a, b in kz) + " ET"
+    fil = SM.md_filter(flt)
+    busy, cnt, info = -1, collections.Counter(), {}
+    for idx, (z, r) in enumerate(zip(C, outs)):
+        why = None
+        if r is None:
+            why = "pending" if z["j"] == n - 1 else "fill"
+        elif r["x0"] <= busy:
+            why = "busy"
+        elif not fil(z["f"]):
+            why = "depth"
+        elif not SM.in_kz(int(X.Xm[r["x0"]]), flt["kz"]):
+            why = "window"
+        elif cnt[int(X.Xday[r["x0"]])] >= flt["maxpd"]:
+            why = "one"
+        else:
+            cnt[int(X.Xday[r["x0"]])] += 1
+            busy = r["x1"]
+        info[idx] = why
+
+    def checks(z, r, why):
+        dr = z["dir"]
+        lo = "low" if dr > 0 else "high"
+        dv = z.get("div") or {}
+        m = int(X.Xm[r["x0"]]) if r is not None else _mod(int(X.t[z["j"]]) + 300)
+        out = [_ck("swept", f"A LIT level ({lo}) taken", True, f"{float(z.get('level', z['ext'])):,.2f} at {_hm(int(X.t[z.get('sweep_i', z['j'])]))} ET"),
+               _ck("cisd", "5m CISD close back", True, f"{float(z['cisd']):,.2f}"),
+               _ck("div", f"MACD line divergence at the {lo} (weaker than at the prior swing)", True,
+                   f"MACD {dv.get('osc_ext', float('nan')):.2f} vs {dv.get('osc_prior', float('nan')):.2f} at {dv.get('px_prior', float('nan')):,.2f}"),
+               _ck("fill", "Fill at the next open, stop 6-80 pts, VIX target >= 1.5R", None if why == "pending" else why != "fill",
+                   f"{r['risk']:.2f} pts" if r is not None else None),
+               _ck("busy", "Not inside an earlier trade", None if why in ("pending", "fill") else why != "busy"),
+               _ck("depth", f"Sweep depth >= {flt['depth']} ATR", z["f"]["depth"] >= flt["depth"], f"{z['f']['depth']:.2f} ATR"),
+               _ck("window", f"Entry {win}", SM.in_kz(m, flt["kz"]), f"{_hhmm(m)} ET"),
+               _ck("one", f"Max {flt['maxpd']} a day", None if why in ("pending", "fill", "busy", "depth", "window") else why != "one")]
+        return out
+    log = []
+    today = [(i, z) for i, z in enumerate(C) if int(X.day[z["j"]]) == day_i]
+    for i, z in today:
+        why = info[i]
+        side = "long" if z["dir"] > 0 else "short"
+        log.append({"t": int(X.t[z["j"]]) + 300, "ok": why is None, "ff": None if why == "pending" else why, "dir": int(z["dir"]), "entry_t": int(X.t[z["j"]]) + 300, "trade": why is None, "signal": why == "pending",
+                    "text": f"{_hm(int(X.t[z['j']]) + 300)} MACD-div {side}: " + ("TRADE" if why is None else
+                                                                                 "signal, enters at the next open" if why == "pending" else f"no - {why}")})
+    td = [t for t in trades if t["day"] == X.dates[day_i]]
+    if td:
+        t = td[-1]
+        k = next((i for i, z in today if info[i] is None and outs[i] is not None and int(X.Xt[outs[i]["x0"]]) == int(t["entry_t"])), None)
+        Cc = checks(C[k], outs[k], None) if k is not None else []
+        return _brain(st, {"kind": "trade", "t": int(t["entry_t"]), "label": f"today's trade: {_hm(int(t['entry_t']))} ET"}, Cc,
+                      _plan(t["dir"], t["entry"], t["stop"], t["target"], when=_hm(t["entry_t"])), log)
+    last = [(i, z) for i, z in today if z["j"] == n - 1]
+    if last:
+        i, z = last[0]
+        Cc = checks(z, outs[i], info[i])
+        e = float(X.c[n - 1])
+        cx = X.M.ctx[day_i] if day_i < len(X.M.ctx) else {}
+        tp = None
+        if cx.get("vix_move") and sim.get("tgt") == "vix":            # the VIX band from the next open (estimate: the last close)
+            dist = (cx["open18"] + z["dir"] * cx["vix_move"] - e) * z["dir"]
+            rk = abs(e - z["stops"]["ext"])
+            tp = e + z["dir"] * min(dist, 8.0 * rk) if rk > 0 and dist >= 1.5 * rk else None
+        return _brain(st, {"kind": "signal", "t": int(last_t) + 300, "label": f"signal on the {_hm(int(last_t) + 300)} ET close"}, Cc,
+                      _plan(z["dir"], e, z["stops"]["ext"], tp, when=_hm(int(last_t) + 300), est=True), log)
+    if today:                                           # the latest setup of today (rejected): its checks
+        i, z = today[-1]
+        Cc = checks(z, outs[i], info[i])
+        return _brain(st, {"kind": "setup", "t": int(X.t[z["j"]]) + 300, "label": f"last setup: {_hm(int(X.t[z['j']]) + 300)} ET"}, Cc,
+                      None, log)
+    # live: an armed sweep (a level taken >= depth in the last 2 hours) waiting for the CISD + divergence
+    m_next = _mod(last_t + 300)
+    s0 = X.M.days[day_i][1]
+    best = None
+    for i, dr, px in SM.sweep_events(X, SM.LV[gen["lv"]]):
+        if s0 <= i < n and i >= n - 24:
+            ext = float(X.l[i:n].min()) if dr > 0 else float(X.h[i:n].max())
+            dep = (px - ext) * dr / X.atr[i] if X.atr[i] > 0 else 0.0
+            best = (i, dr, px, ext, dep)
+    Cc = [_ck("window", f"Entry {win}", SM.in_kz(m_next, flt["kz"]), f"next bar {_hhmm(m_next)} ET")]
+    if best:
+        i, dr, px, ext, dep = best
+        lo = "low" if dr > 0 else "high"
+        Cc += [_ck("swept", f"A LIT level ({lo}) taken", True, f"{px:,.2f} at {_hm(int(X.t[i]))} ET, extreme {ext:,.2f}"),
+               _ck("depth", f"Sweep depth >= {flt['depth']} ATR", True if dep >= flt["depth"] else None, f"{dep:.2f} ATR"),
+               _ck("cisd", "5m CISD close back", None, need=f"until {_hm(int(X.t[i]) + 24 * 300)} ET"),
+               _ck("div", "MACD line divergence at the extreme", None)]
+    else:
+        Cc += [_ck("swept", "A LIT level taken", None, need="session high/low, PDH/PDL, PWH/PWL, equal highs/lows..."),
+               _ck("depth", f"Sweep depth >= {flt['depth']} ATR", None), _ck("cisd", "5m CISD close back", None),
+               _ck("div", "MACD line divergence at the extreme", None)]
+    Cc.append(_ck("one", f"Max {flt['maxpd']} a day", True))
+    return _brain(st, {"kind": "live", "t": int(last_t) + 300, "label": f"live: the {_hm(int(last_t) + 300)} ET close"}, Cc, None, log)
+
+
+# ---- S/R
+SR_NAMES = {"pdh": "yesterday's RTH high", "pdl": "yesterday's RTH low", "onh": "overnight high", "onl": "overnight low",
+            "ash": "Asia high", "asl": "Asia low", "loh": "London high", "lol": "London low", "orh": "opening-range high",
+            "orl": "opening-range low", "pwh": "last week's high", "pwl": "last week's low"}
+
+
+def sr_scan(SR, d, key, s=None):
+    """Every level of a session (default the last) through gen_reclaim's steps in its order, recorded instead of skipped:
+    known yet -> swept (first trade-through from the other side) -> reclaim close within W bars -> depth -> body >= disp
+    ATR -> inducement swing taken first. Same arithmetic as tools/second_sr.gen_reclaim (tests/test_second.py checks it)."""
+    o, h, l, c, atr, rel = d["o"], d["h"], d["l"], d["c"], d["atr"], d["rel"]
+    n = d["n"]
+    sess = [x for x in d["sess"] if s is None or x[0] == s]
+    if not sess:
+        return []
+    s, a, b = sess[-1]
+    L = SR.levels(d, SR.LV_SETS[key["lv"]]).get(s) or []
+    fl, fh = d["fl"], d["fh"]
+    b2 = min(b, n)
+    out = []
+    for p, nm, fr in L:
+        rec = {"name": nm, "label": SR_NAMES.get(nm, nm), "px": _r2(p), "known": bool(rel[b2 - 1] >= fr), "steps": []}
+        out.append(rec)
+        if not rec["known"]:
+            continue
+        j0 = a + int(np.searchsorted(rel[a:b2], fr + 5)) if fr > 0 else a + 1
+        j0 = max(j0, a + 1)
+        jj = None
+        for j in range(j0, b2):
+            if rel[j] >= 1315:
+                break
+            if c[j - 1] > p and l[j] < p:
+                jj, dr = j, 1; break
+            if c[j - 1] < p and h[j] > p:
+                jj, dr = j, -1; break
+        if jj is None:
+            rec["stage"] = "not swept"
+            continue
+        j = jj
+        A = atr[j - 1]
+        if dr > 0:
+            cd, od, ld, pp = c, o, l, p
+        else:
+            cd, od, ld, pp = -c, -o, -h, -p
+        rec.update(dir=dr, swept_t=int(d["t"][j]))
+        ext = ld[j]; r = None
+        for q in range(j, min(j + key["W"], b2)):
+            if rel[q] >= 1315:
+                break
+            ext = min(ext, ld[q])
+            if cd[q] > pp:
+                r = q; break
+        if r is None:
+            rec["stage"] = "swept, no reclaim close" + (" yet" if j + key["W"] > b2 - 1 else f" within {key['W']} bars")
+            rec["wait"] = j + key["W"] > b2 - 1
+            continue
+        rec["reclaim_t"] = int(d["t"][r])
+        rec["sig"] = int(r)
+        rec["depth_ok"] = bool(pp - ext >= key["depth"] * A)
+        rec["body"] = round(float((cd[r] - od[r]) / A), 2) if A > 0 else 0.0
+        rec["body_ok"] = not (key["disp"] > 0 and (cd[r] - od[r]) < key["disp"] * A)
+        ok = False
+        if key["idm"]:
+            F = fl if dr > 0 else fh
+            lo_i = bisect.bisect_left(F, j - 36); hi_i = bisect.bisect_left(F, j - 2)
+            for f in F[lo_i:hi_i]:
+                fp = l[f] if dr > 0 else -h[f]
+                if pp < fp <= pp + A and f >= a:
+                    ok = True; break
+        rec["idm_ok"] = ok if key["idm"] else True
+        rec["stop"] = _r2(dr * (ext - TICK))
+        rec["gen_ok"] = rec["depth_ok"] and rec["body_ok"] and rec["idm_ok"]
+        rec["stage"] = "reclaimed" if rec["gen_ok"] else ("reclaimed, rejected: " + ("depth" if not rec["depth_ok"] else
+                                                                                   "body" if not rec["body_ok"] else "inducement"))
+    return out
+
+
+def _sr_brain(SR, d, key, st, TT, now, last_t):
+    n = d["n"]
+    a, z = SR.WINDOWS[key["win"]]
+    win = f"{_hhmm(a)}-{_hhmm(z)} ET"
+    scan = sr_scan(SR, d, key)
+    oc = SR.oc_of(key)
+    cb = (key["tg"], key["bk"], key["be"], key["tc"])
+    busy, cnt, why = -1, collections.Counter(), {}
+    for x in oc:                                                  # tools/second_sr.select's order, the reason recorded
+        k = (int(x["sig"]), int(x["dir"]), x["nm"])
+        if x["k0"] <= busy:
+            why[k] = "busy"; continue
+        if x["risk"] > key.get("max_stop", 80.0):
+            why[k] = "stop"; continue
+        if not (a <= x["mod"] < z):
+            why[k] = "window"; continue
+        r = x["tab"].get(cb)
+        if r is None:
+            why[k] = "target"; continue
+        if cnt[x["s"]] >= key["maxpd"]:
+            why[k] = "one"; continue
+        why[k] = None
+        busy = x["k0"] + r[1]
+        cnt[x["s"]] += 1
+    in_oc = {(int(x["sig"]), int(x["dir"]), x["nm"]): x for x in oc}
+
+    def checks(rec):
+        dr = rec.get("dir") or 1
+        lo = "low" if dr > 0 else "high"
+        k = (rec.get("sig", -1), dr, rec["name"])
+        x = in_oc.get(k)
+        w = why.get(k, "fill" if rec.get("gen_ok") and rec.get("sig", -1) < n - 1 else None)
+        pend = rec.get("gen_ok") and rec.get("sig") == n - 1
+        m = int(x["mod"]) if x else (_mod(int(d["t"][rec["sig"]]) + 300) if rec.get("sig") is not None else _mod(last_t + 300))
+        C = [_ck("known", "Level known (from closed bars)", rec["known"], f"{rec['label']} {rec['px']:,.2f}"),
+             _ck("swept", f"Swept from the other side ({lo} taken)", True if rec.get("swept_t") else None,
+                 _hm(rec["swept_t"]) + " ET" if rec.get("swept_t") else None),
+             _ck("reclaim", f"5m close back {'above' if dr > 0 else 'below'} it within {key['W']} bars", True if rec.get("reclaim_t") else
+                 (False if rec.get("swept_t") and not rec.get("wait") else None), _hm(rec["reclaim_t"]) + " ET" if rec.get("reclaim_t") else None),
+             _ck("body", f"Reclaim candle body >= {key['disp']} ATR", rec.get("body_ok") if rec.get("reclaim_t") else None,
+                 f"{rec['body']:.2f} ATR" if rec.get("reclaim_t") else None),
+             _ck("idm", "Inducement swing (within 1 ATR beyond) taken first", rec.get("idm_ok") if rec.get("reclaim_t") else None),
+             _ck("fill", "Fill at the next open, stop 6-120 pts", None if not rec.get("gen_ok") or pend else (x is not None),
+                 f"{x['risk']:.2f} pts" if x else None),
+             _ck("busy", "Not inside an earlier trade (one position at a time)", None if x is None else w != "busy"),
+             _ck("stop", f"Stop <= {key.get('max_stop', 80.0):.0f} pts", None if x is None or w == "busy" else w != "stop"),
+             _ck("window", f"Entry {win}", (a <= m < z) if rec.get("reclaim_t") else None, f"{_hhmm(m)} ET" if rec.get("reclaim_t") else None),
+             _ck("one", f"Max {key['maxpd']} a day", None if x is None or w in ("busy", "stop", "window", "target") else w != "one")]
+        if key["depth"] > 0:
+            C.insert(3, _ck("depth", f"Sweep depth >= {key['depth']} ATR", rec.get("depth_ok") if rec.get("reclaim_t") else None))
+        return C, w, pend
+    log, best = [], None
+    for rec in sorted([r for r in scan if r.get("swept_t")], key=lambda r: r.get("reclaim_t") or r["swept_t"]):
+        C, w, pend = checks(rec)
+        ff = first_fail(C)
+        taken = rec.get("gen_ok") and w is None and not pend and (rec.get("sig", -1), rec.get("dir"), rec["name"]) in in_oc
+        side = "long" if (rec.get("dir") or 1) > 0 else "short"
+        log.append({"t": int(rec.get("reclaim_t") or rec["swept_t"]) + 300, "ok": bool(taken), "ff": ff, "dir": int(rec.get("dir") or 1), "entry_t": (int(rec["reclaim_t"]) + 300) if rec.get("reclaim_t") else None, "trade": bool(taken), "signal": bool(pend), "level": rec["name"],
+                    "text": f"{_hm(int(rec.get('reclaim_t') or rec['swept_t']) + 300)} {rec['label']} swept ({side}): "
+                            + ("TRADE" if taken else "signal, enters at the next open" if pend else f"no - {ff}" if ff else rec.get("stage", ""))})
+        best = (rec, C, pend) if best is None or taken or pend or not best[2] else best
+    levels = [{"name": r["name"], "label": r["label"], "px": r["px"], "known": r["known"], "stage": r.get("stage") or ("waiting" if r["known"] else "not known yet")}
+              for r in scan]
+    td = [t for t in TT if t["day"] == str(d["days"][int(d["sid"][n - 1])])]
+    plan = None
+    if td:
+        t = td[-1]
+        plan = _plan(t["dir"], t["entry"], t["stop"], t["target"], when=_hm(t["entry_t"]))
+        rec = next((r for r in scan if r.get("sig") is not None and int(d["t"][r["sig"]]) + 300 == int(t["entry_t"])), None)
+        Cc = checks(rec)[0] if rec else []
+        focus = {"kind": "trade", "t": int(t["entry_t"]), "label": f"today's trade: {_hm(int(t['entry_t']))} ET"}
+    elif best is not None:
+        rec, Cc, pend = best
+        focus = {"kind": "signal" if pend else "setup", "t": int(rec.get("reclaim_t") or rec["swept_t"]) + 300,
+                 "label": (f"signal on the {_hm(int(rec['reclaim_t']) + 300)} ET close" if pend else f"last setup: {rec['label']}")}
+        if pend:
+            e = float(d["c"][n - 1])
+            sp = float(rec["stop"])
+            plan = _plan(rec["dir"], e, sp, e + rec["dir"] * key["tg"] * abs(e - sp), when=_hm(int(last_t) + 300), est=True)
+    else:
+        m_next = _mod(last_t + 300)
+        Cc = [_ck("window", f"Entry {win}", a <= m_next < z, f"next bar {_hhmm(m_next)} ET"),
+              _ck("known", "Levels of the day known", any(r["known"] for r in scan), f"{sum(1 for r in scan if r['known'])} of {len(scan)}"),
+              _ck("swept", "A level swept from the other side", None), _ck("reclaim", "5m close back over it", None),
+              _ck("body", f"Reclaim candle body >= {key['disp']} ATR", None), _ck("idm", "Inducement swing taken first", None)]
+        focus = {"kind": "live", "t": int(last_t) + 300, "label": f"live: the {_hm(int(last_t) + 300)} ET close"}
+    return _brain(st, focus, Cc, plan, log, {"levels": levels})
+
+
+def basic_brain(st, label=None):
+    """A strategy without its own brain (e.g. the LIT + Asia shadow): its stage and plain state line only."""
+    return _brain(st, {"kind": "live", "label": label or "state"}, [], None, [])
+
+
 # ============================================================================================ one poll, all strategies
 def run(df5: pd.DataFrame, one_min=None, now: int | None = None, cfg: dict | None = None, lit: list | None = None) -> dict:
     """One poll: every strategy of second_model.json that is on. df5 = the merged 5m history LIT's loop uses, one_min =
@@ -517,7 +1043,8 @@ def run(df5: pd.DataFrame, one_min=None, now: int | None = None, cfg: dict | Non
     lit = lit or []
     out = {"paper": True, "t": now, "day": trading_day(now), "strategies": {}}
     for key, sc in (cfg.get("strategies") or {}).items():
-        base = {"label": sc.get("label") or key, "short": sc.get("short") or key, "on": bool(sc.get("on", True))}
+        base = {"label": sc.get("label") or key, "short": sc.get("short") or key, "on": bool(sc.get("on", True)),
+                "route": bool(sc.get("route"))}
         if not base["on"]:
             out["strategies"][key] = {**base, "trades": [], "state": {"stage": "off", "text": "Switched off in second_model.json"}}
             continue
@@ -527,7 +1054,7 @@ def run(df5: pd.DataFrame, one_min=None, now: int | None = None, cfg: dict | Non
             else:
                 fn = PLUGINS[sc["kind"]]
             r = fn(df5, one_min, sc, now, lit)
-            out["strategies"][key] = {**base, "trades": r["trades"], "state": r["state"]}
+            out["strategies"][key] = {**base, "trades": r["trades"], "state": r["state"], **({"brain": r["brain"]} if r.get("brain") else {})}
         except Exception as e:                       # never stops LIT or the other strategies
             out["strategies"][key] = {**base, "trades": [], "state": {"stage": "error", "text": f"error: {e.__class__.__name__}: {e}"},
                                       "error": f"{e.__class__.__name__}: {e}"}
@@ -605,13 +1132,18 @@ def backtest(key: str, sc: dict) -> dict:
     return out
 
 
-def dashboard_block(state: dict | None = None, cfg: dict | None = None, pc: dict | None = None) -> dict:
+def dashboard_block(state: dict | None = None, cfg: dict | None = None, pc: dict | None = None, route: dict | None = None) -> dict:
     """data.json "second" / /api/next/second: per strategy its rules, backtest tables, today's state and the paper
-    trades (cloud ledger; the PC's live view when given)."""
+    trades (cloud ledger; the PC's live view when given). route = LiveBot.second_route_info() or the heartbeat's
+    second.route: which strategies the PC routes to its account ("ROUTED on <account>"), else "paper"."""
     cfg = cfg or load_cfg()
     st = state or {}
-    out = {"paper": True, "note": "Paper only: nothing is traded. LIT and the eval account are unchanged.",
-           "t": st.get("t"), "first_run": st.get("first_run"), "strategies": [], "pc_t": (pc or {}).get("t")}
+    route = route or (pc or {}).get("route") or None
+    rk = set((route or {}).get("keys") or [])
+    out = {"paper": not rk, "note": ("Paper only: nothing is traded. LIT and the eval account are unchanged." if not rk else
+                                     f"{', '.join(sorted(rk))} ROUTED on {(route or {}).get('account') or 'the bot account'} next to LIT "
+                                     "(LIT first, one position at a time, max 2 trades a day); the others are paper."),
+           "route": route, "t": st.get("t"), "first_run": st.get("first_run"), "strategies": [], "pc_t": (pc or {}).get("t")}
     for key, sc in (cfg.get("strategies") or {}).items():
         s = (st.get("strategies") or {}).get(key) or {}
         led = s.get("ledger") or {}
@@ -629,20 +1161,35 @@ def dashboard_block(state: dict | None = None, cfg: dict | None = None, pc: dict
                                             "wins": sum(1 for v in fin if (v.get("usd") or 0) > 0),
                                             "with_lit_n": len(lit_fin), "with_lit_usd": round(sum((v.get("lit") or {}).get("usd") or 0 for v in lit_fin), 2)},
             "pc_today": [t for t in (pcs.get("trades") or []) if t.get("day") == (pcs.get("state") or {}).get("day")][-5:],
+            "route": key in rk, "route_label": route_label(key in rk, (route or {}).get("account")),
+            "brain": pcs.get("brain") or s.get("brain"),
         })
     return out
 
 
-def compact(res: dict | None, max_trades: int = 6) -> dict | None:
-    """The heartbeat / live.json cut of one run(): today's state + the last trades per strategy (small)."""
+def route_label(route: bool, account: str | None) -> str:
+    """"ROUTED on Sim101" / "paper": what the dashboards and the heartbeat show per strategy."""
+    return f"ROUTED on {account or 'the bot account'}" if route else "paper"
+
+
+def compact(res: dict | None, max_trades: int = 6, route: dict | None = None) -> dict | None:
+    """The heartbeat / live.json cut of one run(): today's state + the last trades per strategy (small) + its second brain.
+    route = LiveBot.second_route_info() ({"keys": [...], "account": "Sim101", "open": {...}, "routed": [...]}): which
+    strategies the PC bot routes to its account ("ROUTED on <account>") and which stay paper."""
     if not res:
         return None
-    out = {"t": res.get("t"), "day": res.get("day"), "paper": True, "strategies": {}}
+    rk = set((route or {}).get("keys") or [])
+    acct = (route or {}).get("account")
+    out = {"t": res.get("t"), "day": res.get("day"), "paper": not rk, "strategies": {},
+           **({"route": {k: v for k, v in route.items() if k in ("keys", "account", "open", "routed", "note")}} if route else {})}
     for k, s in (res.get("strategies") or {}).items():
         tr = [{kk: t.get(kk) for kk in ("day", "entry_t", "exit_t", "dir", "entry", "stop", "stop_now", "target", "exit", "exit_kind",
                                         "r", "qty", "usd", "last", "lit")} for t in (s.get("trades") or [])[-max_trades:]]
+        on_route = k in rk
         out["strategies"][k] = {"label": s.get("label"), "short": s.get("short"), "on": s.get("on"), "state": s.get("state"),
-                                "trades": tr, **({"error": s["error"]} if s.get("error") else {})}
+                                "route": on_route, "route_label": route_label(on_route, acct), "trades": tr,
+                                **({"brain": brain_compact(s.get("brain"))} if s.get("brain") else {}),
+                                **({"error": s["error"]} if s.get("error") else {})}
     return out
 
 
@@ -677,7 +1224,9 @@ def ledger_update(prev: dict | None, res: dict, now: int, pauses=None, in_pause=
                     p.pop("revised_replay", None)
                 continue
             led[k] = row
-        out["strategies"][key] = {kk: s.get(kk) for kk in ("label", "short", "on", "state", "error")}
+        out["strategies"][key] = {kk: s.get(kk) for kk in ("label", "short", "on", "state", "error", "route")}
+        if s.get("brain"):
+            out["strategies"][key]["brain"] = brain_compact(s["brain"])
         out["strategies"][key]["ledger"] = dict(sorted(led.items())[-200:])
     for key, s in old.items():                        # a strategy switched off / removed keeps its ledger
         if key not in out["strategies"]:
@@ -699,7 +1248,7 @@ def readme_lines(block: dict | None, money=None) -> list:
         fin = [v for v in led if v.get("exit_kind") not in (None, "OPEN")]
         lt = [v for v in fin if (v.get("lit") or {}).get("taken")]
         st = s.get("state") or {}
-        L += ["", f"### {s.get('label') or key} ({s.get('short') or key})" + ("" if s.get("on", True) else " - OFF"),
+        L += ["", f"### {s.get('label') or key} ({s.get('short') or key})" + ("" if s.get("on", True) else " - OFF") + (" - ROUTED on the PC account (LIVE pushes come from the PC)" if s.get("route") else " - paper"),
               "| | |", "|---|---|", f"| Now | {st.get('text') or '-'} |",
               f"| Paper ledger | {len(fin)} finished trades, {money(sum(v.get('usd') or 0 for v in fin))} since "
               f"{_et(block.get('first_run') or block.get('t') or 0):%b %d} |",
@@ -715,3 +1264,92 @@ def readme_lines(block: dict | None, money=None) -> list:
                         f"{'yes' if lit.get('taken') else 'no (' + str(lit.get('why') or '-') + ')'} |")
         L += rows or ["| - | - | - | - | - | - | - |"]
     return L
+
+
+# ============================================================================================ the owner's switch
+def _selftest_ok(timeout=600) -> tuple:
+    """engine.ninjatrader --selftest in its own process (this module imports no adapter): (passed, last line)."""
+    import subprocess
+    import sys
+    try:
+        p = subprocess.run([sys.executable, "-X", "utf8", "-m", "engine.ninjatrader", "--selftest"], cwd=ROOT, capture_output=True,
+                           text=True, timeout=timeout)
+        lines = [x for x in (p.stdout or "").splitlines() if x.strip()]
+        return p.returncode == 0, (lines[-1] if lines else (p.stderr or "").strip()[-200:])
+    except Exception as e:
+        return False, f"{e.__class__.__name__}: {e}"
+
+
+def set_route(key: str, on: bool, path: str | None = None, selftest=_selftest_ok) -> dict:
+    """second_model.json strategies.<key>.route = on (the one line of the file, the rest untouched). Refused: an unknown /
+    cloud-only / switched-off strategy, or (switching on) a failing engine.ninjatrader --selftest."""
+    import re
+    path = path or CFG_PATH
+    with open(path, encoding="utf-8") as fh:
+        raw = fh.read()
+    c = json.loads(raw)
+    sc = (c.get("strategies") or {}).get(key)
+    if not isinstance(sc, dict):
+        return {"ok": False, "error": f"unknown strategy {key!r} (known: {', '.join(c.get('strategies') or {})})"}
+    if sc.get("cloud_only"):
+        return {"ok": False, "error": f"{key} is cloud only (a paper shadow): it is never routed"}
+    if on and not sc.get("on", True):
+        return {"ok": False, "error": f"{key} is switched off (\"on\": false): switch it on first"}
+    old = bool(sc.get("route", False))
+    if on:
+        ok, line = selftest()
+        if not ok:
+            return {"ok": False, "error": f"engine.ninjatrader --selftest failed ({line}): route NOT switched on"}
+    m = re.search(r'"%s"\s*:\s*\{' % re.escape(key), raw)
+    nxt = re.search(r'\n  "[^"]+"\s*:\s*\{', raw[m.end():])
+    a, b = m.end(), m.end() + (nxt.start() if nxt else len(raw) - m.end())
+    blk = raw[a:b]
+    val = "true" if on else "false"
+    if re.search(r'"route"\s*:\s*(true|false)', blk):
+        blk = re.sub(r'"route"\s*:\s*(true|false)', f'"route": {val}', blk, count=1)
+    else:
+        blk = re.sub(r'("on"\s*:\s*(true|false),)', r'\1 "route": ' + val + ',', blk, count=1)
+    new = raw[:a] + blk + raw[b:]
+    chk = json.loads(new)
+    if bool(chk["strategies"][key].get("route")) != bool(on) or any(
+            json.dumps(v, sort_keys=True) != json.dumps(c["strategies"][k], sort_keys=True)
+            for k, v in chk["strategies"].items() if k != key):
+        return {"ok": False, "error": "second_model.json edit check failed: nothing written"}
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        fh.write(new)
+    os.replace(tmp, path)
+    return {"ok": True, "key": key, "from": old, "to": bool(on), "label": sc.get("label") or key}
+
+
+def main(argv=None):
+    import argparse
+    ap = argparse.ArgumentParser(prog="python -m engine.second", description="Second strategies next to LIT (paper / routed).")
+    ap.add_argument("--route", nargs=2, metavar=("KEY", "on|off"), help="route a second strategy to the PC bot's account (on) or "
+                                                                          "back to paper (off)")
+    ap.add_argument("--status", action="store_true", help="show every strategy: on / routed / paper")
+    a = ap.parse_args(argv)
+    if a.route:
+        key, st = a.route[0], a.route[1].lower()
+        if st not in ("on", "off"):
+            print("use: python -m engine.second --route <key> on|off")
+            return 2
+        r = set_route(key, st == "on")
+        if not r["ok"]:
+            print("REFUSED: " + r["error"])
+            return 1
+        word = lambda v: "ROUTED (the PC bot trades it on its account next to LIT)" if v else "paper"
+        print(f"{r['key']} ({r['label']}): route {'on' if r['from'] else 'off'} -> {'on' if r['to'] else 'off'}: "
+              f"{word(r['from'])} -> {word(r['to'])}")
+        print("The PC bot reads second_model.json every poll: the change applies on its next poll (no restart needed)."
+              + (" LIT stays first; one position at a time; max 2 trades a day." if r["to"] else ""))
+        return 0
+    cfg = load_cfg()
+    for k, sc in cfg["strategies"].items():
+        print(f"{k:14s} {'on ' if sc.get('on', True) else 'OFF'} {'ROUTED' if sc.get('route') else 'cloud only' if sc.get('cloud_only') else 'paper'}"
+              f"  {sc.get('label') or ''}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

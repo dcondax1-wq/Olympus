@@ -6,7 +6,7 @@
 (function () {
   'use strict';
   if (typeof GROUPS === 'undefined' || typeof VIEWS === 'undefined') return;
-  const S = { tab: 'now' };
+  const S = { tab: 'now', who: 'lit' };
   const FRESH_S = 20 * 60;
   const p2 = (x) => (x == null ? '—' : num(x, 2));
   const sg = (x, d = 1) => (x == null ? '—' : (x > 0 ? '+' : '') + num(x, d));
@@ -91,9 +91,26 @@
     return `<div class="card"><h3>Thought log · ${esc(b.day || '')}</h3><p class="small mut">Newest first · last ${R.length} lines (the full log is on the PC: Bot Brain → Thought log)</p>
       <ol class="bz-log">${R.map((r) => `<li class="k-${esc(r.kind || '')}"><b>${esc(r.hm || '')}</b><span>${esc(r.text || '')}</span></li>`).join('') || '<li>nothing yet</li>'}</ol></div>`;
   }
+  // the second-strategy brain (engine/second.py brain): the PC's live cut (live.pc.second) while fresh, else the cloud's
+  // data.json "second" (its own run of the same strategies, incl. the LIT + Asia shadow)
+  function pickSecond() {
+    if (typeof D === 'undefined' || !D || !window.SecondUI || !window.SecondUI.brainList) return null;
+    const pc = ((D.live || {}).pc || {}).second, now = Date.now() / 1000;
+    if (pc && pc.strategies && Object.keys(pc.strategies).length && now - (+pc.t || 0) < FRESH_S) return window.SecondUI.brainList(pc, 'PC bot');
+    if (D.second && (D.second.strategies || []).length) return window.SecondUI.brainList(D.second, 'cloud run');
+    return pc ? window.SecondUI.brainList(pc, 'PC bot (not live)') : null;
+  }
   function view(el) {
     const src = pick();
     el.innerHTML = head('Bot Brain', 'What the bot is thinking', 'Live from the bot: what it waits for, every level, every setup today and the rule that stopped it. Tap i for a one-line explainer. Read-only.');
+    el.insertAdjacentHTML('beforeend', `<div class="bz-tabs" style="margin:8px 0">${segHTML('brWho', [['lit', 'LIT brain'], ['second', 'Second-strategy brain']], S.who || 'lit')}</div>`);
+    onSeg('brWho', (v) => { S.who = v; view(el); });
+    if (S.who === 'second') {
+      const box = document.createElement('div'); el.appendChild(box);
+      if (!window.SecondUI || !window.SecondUI.brain) { box.innerHTML = emptyBox('Second brain not loaded.', 'secondcore.js did not load.'); return; }
+      window.SecondUI.brain(box, pickSecond() || { strategies: [] });
+      return;
+    }
     if (!src) { el.insertAdjacentHTML('beforeend', emptyBox('No Bot Brain yet.', 'It appears once the PC bot (or the cloud paper bot) has run a LIT poll with this version.')); return; }
     const b = src.b;
     el.insertAdjacentHTML('beforeend', `<div class="bz-tabs" style="margin:8px 0">${segHTML('brTab', [['now', 'Now'], ['levels', 'Levels'], ['setups', 'Setups'], ['log', 'Log']], S.tab)}</div>

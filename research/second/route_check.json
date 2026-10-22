@@ -1,0 +1,475 @@
+{
+ "days": [
+  {
+   "day": "2026-10-01",
+   "key": "ema_lon_vix",
+   "rows": [
+    {
+     "entry": "05:00:00",
+     "routed": true,
+     "delay_s": 2.0,
+     "qty": 4,
+     "exit": "BE",
+     "pnl": 0.42
+    }
+   ],
+   "lit": 1,
+   "seconds": 185
+  },
+  {
+   "day": "2026-10-06",
+   "key": "ema_lon_vix",
+   "rows": [
+    {
+     "entry": "04:10:00",
+     "routed": true,
+     "delay_s": 2.0,
+     "qty": 4,
+     "exit": "LIT PRIORITY",
+     "pnl": -237.6
+    }
+   ],
+   "lit": 1,
+   "seconds": 484
+  },
+  {
+   "day": "2026-09-18",
+   "key": "ema_lon_vix",
+   "rows": [
+    {
+     "entry": "07:05:00",
+     "routed": false,
+     "why": "LIT is in a trade"
+    }
+   ],
+   "lit": 1,
+   "seconds": 577
+  },
+  {
+   "day": "2026-09-15",
+   "key": "ema_lon_vix",
+   "rows": [
+    {
+     "entry": "03:45:00",
+     "routed": true,
+     "delay_s": 2.0,
+     "qty": 3,
+     "exit": "BE",
+     "pnl": 0.28
+    }
+   ],
+   "lit": 1,
+   "seconds": 233
+  },
+  {
+   "day": "2026-09-04",
+   "key": "ema_lon_vix",
+   "rows": [
+    {
+     "entry": "03:10:00",
+     "routed": false,
+     "why": "LIT is waiting for its 1m CISD"
+    }
+   ],
+   "lit": 1,
+   "seconds": 284
+  },
+  {
+   "day": "2026-09-10",
+   "key": "ema_lon_vix",
+   "rows": [
+    {
+     "entry": "07:05:00",
+     "routed": true,
+     "delay_s": 2.0,
+     "qty": 3,
+     "exit": "TARGET",
+     "pnl": 1177.91
+    }
+   ],
+   "lit": 0,
+   "seconds": 186
+  },
+  {
+   "day": "2026-09-22",
+   "key": "ema_lon_vix",
+   "rows": [
+    {
+     "entry": "03:10:00",
+     "routed": true,
+     "delay_s": 3.0,
+     "qty": 15,
+     "exit": "STOP",
+     "pnl": -523.48
+    }
+   ],
+   "lit": 0,
+   "seconds": 180
+  },
+  {
+   "day": "2026-07-10",
+   "key": "macd_sweep",
+   "rows": [
+    {
+     "entry": "04:15:00",
+     "routed": true,
+     "delay_s": 3.0,
+     "qty": 4,
+     "exit": "CUT",
+     "pnl": -241.6
+    }
+   ],
+   "lit": 0,
+   "seconds": 255
+  },
+  {
+   "day": "2026-09-28",
+   "key": "macd_sweep",
+   "rows": [
+    {
+     "entry": "03:50:00",
+     "routed": true,
+     "delay_s": 3.0,
+     "qty": 4,
+     "exit": "STOP",
+     "pnl": -411.6
+    }
+   ],
+   "lit": 1,
+   "seconds": 630
+  },
+  {
+   "day": "2026-09-16",
+   "key": "sr_nyreclaim",
+   "rows": [
+    {
+     "entry": "10:05:00",
+     "routed": true,
+     "delay_s": 2.0,
+     "qty": 5,
+     "exit": "T15",
+     "pnl": -357.0
+    }
+   ],
+   "lit": 1,
+   "seconds": 239
+  }
+ ],
+ "results": [
+  {
+   "name": "sizing: engine/sizing.second_qty == the research eval-safe size (ema_eval_qty usd500) on 5 stops",
+   "ok": true
+  },
+  {
+   "name": "sizing: normal mode = $500 / (stop x $2), 1-40",
+   "ok": true
+  },
+  {
+   "name": "sizing: a failed eval (room <= 0) -> 0",
+   "ok": true
+  },
+  {
+   "name": "sizing: a passed eval (pass lock) -> 0",
+   "ok": true
+  },
+  {
+   "name": "sizing: eval mode with the room unknown -> 0 (fails closed)",
+   "ok": true
+  },
+  {
+   "name": "sizing: the $1,000 soft daily loss is shared (today -$900 -> at most 2 micros at a 20-pt stop)",
+   "ok": true
+  },
+  {
+   "name": "sizing: LiveBot._second_qty uses LIT's eval state (room $1,200, today $-380) = research size",
+   "ok": true
+  },
+  {
+   "name": "guards: max_per_day 2 when a routed second strategy is on (1 otherwise)",
+   "ok": true
+  },
+  {
+   "name": "guards: after 1 second-strategy entry: another second strategy blocked, LIT allowed",
+   "ok": true
+  },
+  {
+   "name": "guards: after LIT + 1 second: a 3rd entry blocked (2 a day)",
+   "ok": true
+  },
+  {
+   "name": "guards: after LIT's trade: LIT's own 2nd blocked (LIT max 1), a second strategy allowed",
+   "ok": true
+  },
+  {
+   "name": "switch: refused when engine.ninjatrader --selftest fails (file untouched)",
+   "ok": true
+  },
+  {
+   "name": "switch: --route ema_lon_vix on edits that one flag; off restores the file byte for byte",
+   "ok": true
+  },
+  {
+   "name": "switch: a cloud-only strategy can never be routed",
+   "ok": true
+  },
+  {
+   "name": "second_model.json ships with \"route\": false for every strategy (nothing switched on)",
+   "ok": true
+  },
+  {
+   "name": "engine/second.py imports no adapter (routing lives in engine/live.py)",
+   "ok": true
+  },
+  {
+   "name": "tests.test_lit_live --days --bot passes (120/120 day-end, LiveBot entries 2/2 exits 2/2)",
+   "ok": true
+  },
+  {
+   "name": "a. 2026-10-01 route off: LIT routed (1), 0 second-strategy routes (the EMA trade of that day stays paper)",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-01: LIT's 1 trade(s) routed and exited as run lit_live",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-01: ema_lon_vix 05:00:00 entry routed like the research trade (side, 4 micros, stop, target) 2.0 s after its 5m open",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-01: ema_lon_vix 05:00:00 exit BE routed with the research $ (+0.42)",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-01: ema_lon_vix 05:00:00 breakeven move routed (stop -> 30,845.50)",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-01: one position at a time (ledger + fake NinjaTrader), <= 2 entries a day",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-01: no error, no RECONCILE flatten, no DESYNC",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-06: LIT's 1 trade(s) routed and exited as run lit_live",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-06: ema_lon_vix 04:10:00 entry routed like the research trade (side, 4 micros, stop, target) 2.0 s after its 5m open",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-06: ema_lon_vix 04:10:00 closed at market when LIT entered 04:32:00, before LIT's order",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-06: one position at a time (ledger + fake NinjaTrader), <= 2 entries a day",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-10-06: no error, no RECONCILE flatten, no DESYNC",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-18: LIT's 1 trade(s) routed and exited as run lit_live",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-18: ema_lon_vix 07:05:00 NOT routed: LIT is in a trade (LIT first)",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-18: one position at a time (ledger + fake NinjaTrader), <= 2 entries a day",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-18: no error, no RECONCILE flatten, no DESYNC",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-15: LIT's 1 trade(s) routed and exited as run lit_live",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-15: ema_lon_vix 03:45:00 entry routed like the research trade (side, 3 micros, stop, target) 2.0 s after its 5m open",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-15: ema_lon_vix 03:45:00 exit BE routed with the research $ (+0.28)",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-15: ema_lon_vix 03:45:00 breakeven move routed (stop -> 29,314.75)",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-15: one position at a time (ledger + fake NinjaTrader), <= 2 entries a day",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-15: no error, no RECONCILE flatten, no DESYNC",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-04: LIT's 1 trade(s) routed and exited as run lit_live",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-04: ema_lon_vix 03:10:00 NOT routed: LIT is waiting for its 1m CISD (LIT first)",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-04: one position at a time (ledger + fake NinjaTrader), <= 2 entries a day",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-04: no error, no RECONCILE flatten, no DESYNC",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-10: LIT's 0 trade(s) routed and exited as run lit_live",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-10: ema_lon_vix 07:05:00 entry routed like the research trade (side, 3 micros, stop, target) 2.0 s after its 5m open",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-10: ema_lon_vix 07:05:00 exit TARGET routed with the research $ (+1,177.91)",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-10: one position at a time (ledger + fake NinjaTrader), <= 2 entries a day",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-10: no error, no RECONCILE flatten, no DESYNC",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-22: LIT's 0 trade(s) routed and exited as run lit_live",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-22: ema_lon_vix 03:10:00 entry routed like the research trade (side, 15 micros, stop, target) 3.0 s after its 5m open",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-22: ema_lon_vix 03:10:00 exit STOP routed with the research $ (-523.48)",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-22: one position at a time (ledger + fake NinjaTrader), <= 2 entries a day",
+   "ok": true
+  },
+  {
+   "name": "b. 2026-09-22: no error, no RECONCILE flatten, no DESYNC",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-07-10: LIT's 0 trade(s) routed and exited as run lit_live",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-07-10: macd_sweep 04:15:00 entry routed like the research trade (side, 4 micros, stop, target) 3.0 s after its 5m open",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-07-10: macd_sweep 04:15:00 exit CUT routed with the research $ (-241.60)",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-07-10: one position at a time (ledger + fake NinjaTrader), <= 2 entries a day",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-07-10: no error, no RECONCILE flatten, no DESYNC",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-09-28: LIT's 1 trade(s) routed and exited as run lit_live",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-09-28: macd_sweep 03:50:00 entry routed like the research trade (side, 4 micros, stop, target) 3.0 s after its 5m open",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-09-28: macd_sweep 03:50:00 exit STOP routed with the research $ (-411.60)",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-09-28: one position at a time (ledger + fake NinjaTrader), <= 2 entries a day",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-09-28: no error, no RECONCILE flatten, no DESYNC",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-09-16: LIT's 1 trade(s) routed and exited as run lit_live",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-09-16: sr_nyreclaim 10:05:00 entry routed like the research trade (side, 5 micros, stop, target) 2.0 s after its 5m open",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-09-16: sr_nyreclaim 10:05:00 exit T15 routed with the research $ (-357.00)",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-09-16: one position at a time (ledger + fake NinjaTrader), <= 2 entries a day",
+   "ok": true
+  },
+  {
+   "name": "c. 2026-09-16: no error, no RECONCILE flatten, no DESYNC",
+   "ok": true
+  },
+  {
+   "name": "d. 2026-10-01: second-strategy code raising every poll -> LIT's entries / exits identical to route off (1 entries, delay [2] s vs [2] s), the error logged, no poll failed",
+   "ok": true
+  },
+  {
+   "name": "e. 2026-10-01: restart at 05:20:00 with the EMA trade open -> recognised (ema_lon_vix @ 05:00:00)",
+   "ok": true
+  },
+  {
+   "name": "e. after the restart the EMA trade is managed to its exit (BE) and never reconciled as a manual trade",
+   "ok": true
+  },
+  {
+   "name": "f. engine.ninjatrader --selftest (1 s):   kill     FLATTENEVERYTHING;;;;;;;;;;;;",
+   "ok": true
+  },
+  {
+   "name": "f. tests.test_guards  (8 s): guards test: PASS (69/69)",
+   "ok": true
+  },
+  {
+   "name": "f. tests.test_eval_lifecycle  (1 s): eval lifecycle: 41/41 ALL PASS",
+   "ok": true
+  },
+  {
+   "name": "f. tests.test_second --quick (132 s): second strategies: PASS (31/31) in 131s; lit_asia 187/187, ema_lon_vix 86/86, macd_sweep 44/44, sr_nyreclaim 45/45",
+   "ok": true
+  },
+  {
+   "name": "f. tests.test_pcdash_api  (7 s): pcdash api: 130/130 ALL PASS",
+   "ok": true
+  },
+  {
+   "name": "f. tests.test_alerts_plus  (6 s): alerts plus: 92/92 ALL PASS",
+   "ok": true
+  },
+  {
+   "name": "f. tests.test_no_yahoo  (8 s): no-Yahoo test: PASS (23/23)",
+   "ok": true
+  }
+ ],
+ "passed": 78,
+ "total": 78,
+ "seconds": 4819
+}

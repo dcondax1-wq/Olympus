@@ -1016,6 +1016,8 @@ def second_notices(block, since):
     """Push payloads (kind "second", marked PAPER) for each new paper entry and exit of the second strategies."""
     out = []
     for key, s in ((block or {}).get("strategies") or {}).items():
+        if s.get("route"):
+            continue                 # routed on the PC account: the PC sends its LIVE pushes (no PAPER duplicate)
         nm = s.get("short") or key
         for v in (s.get("ledger") or {}).values():
             et_ = int(v.get("entry_t") or 0)

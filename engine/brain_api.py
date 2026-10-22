@@ -54,6 +54,24 @@ def brain_now(compact: int = 0):
     return _J({**out, "running": bool(getattr(bot, "running", False))})
 
 
+@router.get("/api/next/brain/second")
+def brain_second():
+    """The second-strategy brain (engine/second.py brain, closed bars only): per strategy ROUTED on <account> / paper, its
+    stage, the waiting sentence, every rule check, the plan and today's log, from the PC bot's last run (LiveBot.second, the
+    paper thread after LIT's routing). Read-only."""
+    try:
+        from . import second as S
+        bot = _bot()
+        run = getattr(bot, "second", None)
+        ri = bot.second_route_info() if callable(getattr(bot, "second_route_info", None)) else None
+        if not run:
+            return _J({"empty": True, "strategies": {}, "route": ri,
+                       "reason": "The PC bot has not run the second strategies yet (they run after each LIT poll while the bot runs)."})
+        return _J({**S.compact(run, max_trades=3, route=ri), "running": bool(getattr(bot, "running", False))})
+    except Exception as e:
+        return _J({"error": f"{e.__class__.__name__}: {e}", "strategies": {}}, 500)
+
+
 @router.get("/api/next/brain/log")
 def brain_log(day: str = ""):
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day or ""):

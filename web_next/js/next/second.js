@@ -9,7 +9,7 @@ function core() {
   if (window.SecondUI) return Promise.resolve();
   if (!loading) loading = new Promise((ok, bad) => {
     const s = document.createElement('script');
-    s.src = new URL('./secondcore.js?v=1', import.meta.url).href;
+    s.src = new URL('./secondcore.js?v=2', import.meta.url).href;
     s.onload = () => ok(); s.onerror = () => { loading = null; bad(new Error('secondcore.js did not load')); };
     document.head.appendChild(s);
   });

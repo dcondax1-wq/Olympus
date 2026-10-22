@@ -830,6 +830,58 @@ def funded_state(day_pnl: dict, today_cum: float = 0.0, payouts: dict | None = N
             "floor": round(floor, 2), "locked": floor >= float(A["lock"]) - 1e-9}
 
 
+SECOND_TICK, SECOND_COMM = 0.25, 1.90
+
+
+def second_qty(risk_pts: float, usd: float = 500.0, cfg: dict | None = None, state: dict | None = None,
+               room: float | None = None, max_micros: int = 40) -> dict:
+    """Micros for a ROUTED second-strategy trade (engine/second.py, routed by engine/live.py on LIT's account), exactly as
+    the research eval path sizes it (tools/second_ema.ema_eval_qty, base usd500; research/writeups/second-ema.md):
+      base      max(1, min(40, int(usd / (stop x $2))))
+      eval      (lit_sizing.mode two_week / eval / safe_eval / fast_eval, any session): capped at int(0.6 x room / (stop x $2))
+                and by the $1,000 soft daily loss shared with LIT: int((1000 + today's closed P&L) / ((stop + 1 tick) x $2
+                + $1.90)); a failed eval (room <= 0) or a passed one (eval_lock, also the minimum-days case: that trade is
+                LIT's) -> 0; the eval weekly loss stop (wk_loss_usd, off by default) -> 0; room unknown in an eval mode -> 0
+      normal    the base only.
+    Returns {"qty", "reasons", "lock"}. Never more than max_micros."""
+    c = cfg or {}
+    mode = c.get("mode") or "normal"
+    rp = float(risk_pts)
+    why = []
+    if not (rp > 0):
+        return {"qty": 0, "reasons": ["no stop distance"], "lock": None}
+    q = max(1, min(int(max_micros), int(float(usd) / (rp * 2.0))))
+    why.append(f"${float(usd):,.0f} / ({rp:.2f} pts x $2) -> {q}")
+    if mode not in EVAL_MODES:
+        return {"qty": q, "reasons": why, "lock": None}
+    st = dict(state or {})
+    rm = _num(st.get("room"), room)
+    if rm is None:
+        return {"qty": 0, "reasons": why + [f"{mode}: eval room unknown - not traded"], "lock": None}
+    st["room"] = rm
+    wl = c.get("wk_loss_usd")
+    w = _num(st.get("wk_pnl"))
+    if wl and w is not None and w <= -float(wl):
+        return {"qty": 0, "reasons": why + [f"eval weekly loss stop: this week ${w:,.0f} <= -${float(wl):,.0f}"], "lock": "week"}
+    lk = eval_lock({"qty": q, "mult": 1.0, "reasons": []}, {**c, "mode": mode}, st if st.get("profit") is not None else None)
+    if lk.get("lock") in ("failed", "passed", "min_days"):
+        return {"qty": 0, "reasons": why + (lk.get("reasons") or []) + (["the minimum-days trade is LIT's"] if lk["lock"] == "min_days" else []),
+                "lock": lk["lock"]}
+    if rm <= 0:
+        return {"qty": 0, "reasons": why + [f"eval failed: room ${rm:,.0f}"], "lock": "failed"}
+    cap = int(0.6 * max(0.0, rm) / (rp * 2.0))
+    if cap < q:
+        why.append(f"60% of the room ${rm:,.0f} -> {cap}")
+        q = cap
+    cum = float(_num(st.get("cum"), 0.0))
+    dll = float((c.get("two_week") or {}).get("dll") or TW_50K["dll"])
+    dq = int(max(0.0, dll + cum) / ((rp + SECOND_TICK) * 2.0 + SECOND_COMM))
+    if dq < q:
+        why.append(f"soft daily loss ${dll:,.0f} (today ${cum:+,.0f}) -> {dq}")
+        q = dq
+    return {"qty": max(0, q), "reasons": why, "lock": None}
+
+
 def selftest() -> bool:
     t_late ={"dir": 1, "m15_trend": 1, "risk_pts": 44.0}
     t_ok = {"dir": -1, "m15_trend": 1, "risk_pts": 44.0}

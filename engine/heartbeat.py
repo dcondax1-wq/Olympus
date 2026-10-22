@@ -221,10 +221,12 @@ def _second(bot):
     of LiveBot.second). Paper only. Never raises."""
     try:
         s = getattr(bot, "second", None)
+        ri = bot.second_route_info() if callable(getattr(bot, "second_route_info", None)) else None
         if not s:
-            return None
+            # nothing computed yet by the paper thread: the routed strategies still show ("ROUTED on <account>")
+            return {"t": None, "paper": not (ri or {}).get("keys"), "strategies": {}, "route": ri} if ri else None
         from engine import second
-        return second.compact(s)
+        return second.compact(s, route=ri)
     except Exception:
         return None
 
