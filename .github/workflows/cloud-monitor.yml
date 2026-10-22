@@ -73,6 +73,9 @@ jobs:
             /live_model.json
             /live_model_engine.json
             /live_model_lit.json
+            /second_model.json
+            /data/NQ_rolls.json
+            /research/second/*.json
             /data/VIX_1d.csv
             /data/VXN_1d.csv
             /data/NQ_5m.csv
