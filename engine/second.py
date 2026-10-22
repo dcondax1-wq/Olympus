@@ -244,7 +244,8 @@ def _sr_run(df5, one_min, cfg, now, lit):
             RS.load_frame(w, live_cut=True)
             SR.D.clear()
             SR._OC.clear()
-            d = SR.data()
+            SR.data()
+            d = SR.D                     # data() returns a copy on its first call; run_key / trades_of read SR.D
             s_last = int(d["sid"][-1])
             m = d["mod"][d["sid"] == s_last]
             has_flat = bool(((m >= 950) & (m < 1080)).any())
