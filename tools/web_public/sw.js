@@ -16,7 +16,8 @@
 // v21 (2026-10-21): Bot Brain is its own bottom tab (brain.js v2).
 // v22 (2026-10-22): secondcore.js + second.js (System > Second strategies, PAPER), alerts.js v2 (kind "second").
 // v24 (2026-10-22): secondcore.js v3 (Account B card: its own account + eval tracker).
-const CACHE = 'le-public-v24';
+// v25 (2026-10-22): secondcore.js v4 (go / no-go scorecard: paper result vs the expected range, engine/second_scorecard.py).
+const CACHE = 'le-public-v25';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

@@ -1170,6 +1170,21 @@ def dashboard_block(state: dict | None = None, cfg: dict | None = None, pc: dict
             "route": key in rk or key in bk, "route_label": route_label(key in rk or key in bk, ab["label"] if key in bk else (route or {}).get("account")),
             "brain": pcs.get("brain") or s.get("brain"),
         })
+    try:                                   # go / no-go scorecard (engine/second_scorecard.py): paper result vs the expected range
+        from . import second_scorecard as SC
+        rows = {}
+        for key in SC.KEYS:
+            s = (st.get("strategies") or {}).get(key) or {}
+            pcs = ((pc or {}).get("strategies") or {}).get(key) or {}
+            rows[key] = SC.merge_rows(list((s.get("ledger") or {}).values()), pcs.get("trades"))
+        src = (f"cloud paper ledger since {_et(st['first_run']):%b %d}" if st.get("first_run") else
+               "the PC bot's live window (its trades of the last weeks, replayed)" if st else "no paper trades yet")
+        sc = SC.card(rows, keys_b=(ab or {}).get("keys") or None, source=src)
+        for x in out["strategies"]:
+            x["scorecard"] = sc["strategies"].get(x["key"])
+        out["scorecard"] = {k: sc[k] for k in ("account_b", "rule", "source", "built")}
+    except Exception as e:
+        out["scorecard"] = {"error": f"{e.__class__.__name__}: {e}"}
     return out
 
 
@@ -1271,6 +1286,13 @@ def readme_lines(block: dict | None, money=None) -> list:
                         f"{(v.get('r') or 0):+.2f} | {money(v.get('usd') or 0)} | "
                         f"{'yes' if lit.get('taken') else 'no (' + str(lit.get('why') or '-') + ')'} |")
         L += rows or ["| - | - | - | - | - | - | - |"]
+    try:                                   # go / no-go scorecard on the paper ledger (engine/second_scorecard.py)
+        from . import second_scorecard as SC
+        led = {k: list(((block["strategies"].get(k) or {}).get("ledger") or {}).values()) for k in SC.KEYS}
+        L += SC.readme_lines(SC.card(led, source="cloud paper ledger"),
+                             labels={k: (block["strategies"].get(k) or {}).get("short") or k for k in SC.KEYS})
+    except Exception as e:
+        L += ["", f"Scorecard unavailable: {e.__class__.__name__}: {e}"]
     return L
 
 
