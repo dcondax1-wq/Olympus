@@ -1015,6 +1015,11 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     }
     data["intel"] = _intel(out, st, state_path)
     data["perf"] = _perf(st, state_path)
+    try:                                   # second strategies, PAPER (engine/second.py): rules, backtest tables, state, trades
+        from engine import second as _second
+        data["second"] = _second.dashboard_block(st.get("second"), pc=(st.get("pc") or {}).get("second"))
+    except Exception as e:
+        data["second"] = {"error": f"{e.__class__.__name__}: {e}", "strategies": []}
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # research data files for the Lab's 3D views (Monte Carlo cloud, intraday heat, calendar): lab/<name>.json

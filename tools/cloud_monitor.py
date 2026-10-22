@@ -708,6 +708,16 @@ def run(out):
     # ---- lit_base: LIT without the three upgrades (t_check, scale_in, be_off), same bars, own paper ledger, no alerts
     lit_base, upgrades_live = lit_base_step(lm, st, df_all, now, ledger, res, first_run, pauses if noy else None)
 
+    # ---- second strategies (paper only, engine/second.py + second_model.json): EMA / MACD next to LIT on the same bars,
+    # own frozen paper ledger, "PAPER" pushes of kind "second" (the app's on / silent / off); never stops the LIT run
+    second_block = None
+    try:
+        second_block = second_step(st, df_all, _LIT_IN.get("df1") if lm["model"] == "lit" else None,
+                                   res if lm["model"] == "lit" else None, now, pauses if noy else None)
+    except Exception as e:
+        print("second strategies failed:", e.__class__.__name__, e)
+        second_block = {**(st.get("second") or {}), "error": f"{e.__class__.__name__}: {e}"}
+
     # ---- alerts for events not seen before (only events from after the monitor started, like LiveBot._emit_events)
     new_alerts = []
     for ev in res["events"]:
@@ -848,6 +858,18 @@ def run(out):
         push_res.append(r)
         notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "key", "title", "body", "url", "side", "entry", "stop", "target",
                                                  "qty", "risk_usd", "setup")}, "sent": int(r.get("sent") or 0), "at": now})
+    for n in second_notices(second_block, max(push_since - 60, now - PUSH_MAX_AGE_S)):   # PAPER entries / exits, kind "second"
+        if notifier.seen(n):
+            continue
+        q = alerts_plus.apply_level(n, plus["prefs"])
+        if q is None:
+            notifier.mark(n)
+            r = {"sent": 0, "skipped": "off"}
+        else:
+            r = notifier.notify(q, push_it=True, other_sent=pc_sent)
+        push_res.append(r)
+        notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "key", "title", "body", "url", "side", "entry", "stop", "target",
+                                                 "qty", "usd", "exit", "setup")}, "sent": int(r.get("sent") or 0), "at": now})
     notices = sorted(notices, key=lambda x: (x.get("t") or 0, x.get("at") or 0))[-80:]
     gone = sorted({g for r in push_res for g in r.get("gone") or []})
     if gone:                                       # expired / made for an old key: the app re-subscribes on its next open
@@ -874,7 +896,8 @@ def run(out):
     write_readme(os.path.join(out, "README.md"), now, state, res, health, ledger, ev_track, today, sent, first_run, shadow, lm,
                  push_state=push_state, pc_health=pc.get("health") if pc.get("present") else None,
                  pc_ops=pc.get("ops") if pc.get("present") else None,
-                 pc_remote=pc.get("remote") if pc.get("present") else None, upgrades_live=upgrades_live, pc_line=pc_line)
+                 pc_remote=pc.get("remote") if pc.get("present") else None, upgrades_live=upgrades_live, pc_line=pc_line,
+                 second=second_block)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
@@ -903,7 +926,7 @@ def run(out):
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
                                                "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "ops", "remote", "live_pub",
-                                               "brain")},           # the PC bot's Bot Brain (engine/brain.py compact)
+                                               "brain", "second")},  # the PC bot's Bot Brain (engine/brain.py compact), second strategies (paper)
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
                  "pc_alert_at": pc_alert_at,
@@ -926,6 +949,10 @@ def run(out):
         new_state["shadow"] = shadow
     if lit_base is not None:
         new_state["lit_base"], new_state["upgrades_live"] = lit_base, upgrades_live
+    if second_block is not None:
+        new_state["second"] = second_block
+        if (second_block.get("strategies") or {}).get("lit_asia"):     # LIT + Asia slot paper shadow: its own state key too
+            new_state["lit_asia"] = second_block["strategies"]["lit_asia"]
     from engine import uptime as _uptime        # status page: 30-day uptime per part + incidents -> state "uptime" (never raises)
     _uptime.cloud_hook(new_state, st, pc, now)
     try:                    # LIT day analyst (engine/lit_brief.py): morning briefing, intraday log, recap -> state "brief" + README
@@ -971,6 +998,44 @@ def run(out):
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"
           + (f" | shadow {shadow.get('model_state')}, ledger {len(shadow.get('ledger') or {})}" if shadow else ""))
+
+
+def second_step(st, df_all, df1, res, now, pauses=None):
+    """Second strategies (paper only): engine/second.run on the LIT run's bars (5m history + the 1m bars), LIT's trades of
+    the window for the "with LIT" view, then the frozen paper ledger (engine/second.ledger_update). None when
+    second_model.json has nothing on and nothing was ever recorded."""
+    from engine import second
+    cfg = second.load_cfg()
+    if not any(s.get("on", True) for s in cfg["strategies"].values()) and not st.get("second"):
+        return None
+    r = second.run(df_all, one_min=df1, now=now, cfg=cfg, lit=second.lit_windows(res))
+    return second.ledger_update(st.get("second"), r, now, pauses, in_pause)
+
+
+def second_notices(block, since):
+    """Push payloads (kind "second", marked PAPER) for each new paper entry and exit of the second strategies."""
+    out = []
+    for key, s in ((block or {}).get("strategies") or {}).items():
+        nm = s.get("short") or key
+        for v in (s.get("ledger") or {}).values():
+            et_ = int(v.get("entry_t") or 0)
+            side = v.get("side") or ("LONG" if (v.get("dir") or 0) > 0 else "SHORT")
+            lit = v.get("lit") or {}
+            extra = "" if lit.get("taken", True) else f" On LIT's account it would be skipped ({lit.get('why')})."
+            if et_ >= since:
+                p = push.text_payload("Cloud", "second", f"PAPER {nm} {side}",
+                                      f"Paper entry {v.get('qty')} MNQ at {float(v.get('entry') or 0):,.2f}, stop {float(v.get('stop') or 0):,.2f}, "
+                                      f"target {float(v.get('target') or 0):,.2f}. Not traded.{extra}",
+                                      key=f"second:{key}:fill:{et_}", t=et_, url="#/second")
+                out.append({**p, "side": side, "entry": v.get("entry"), "stop": v.get("stop"), "target": v.get("target"),
+                            "qty": v.get("qty"), "setup": s.get("label")})
+            xt = v.get("exit_t")
+            if xt and v.get("exit_kind") not in (None, "OPEN") and int(xt) >= since:
+                p = push.text_payload("Cloud", "second", f"PAPER {nm} {side} {v.get('exit_kind')}",
+                                      f"{money(float(v.get('usd') or 0))} on paper ({float(v.get('r') or 0):+.2f}R). Not traded.",
+                                      key=f"second:{key}:out:{et_}", t=int(xt), url="#/second")
+                out.append({**p, "side": side, "usd": v.get("usd"), "exit": v.get("exit_kind"), "setup": s.get("label")})
+    return sorted(out, key=lambda n: n["t"])
 
 
 def lit_base_step(lm, st, df_all, now, ledger, res, first_run, pauses=None):
@@ -1157,7 +1222,7 @@ def usd_cell(v):
 
 
 def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None,
-                 pc_health=None, pc_ops=None, pc_remote=None, upgrades_live=None, pc_line=None):
+                 pc_health=None, pc_ops=None, pc_remote=None, upgrades_live=None, pc_line=None, second=None):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
     arm = []
@@ -1265,6 +1330,9 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     if upgrades_live:                         # the three LIT upgrades vs LIT without them (tools/upgrade_shadow.py)
         from tools import upgrade_shadow
         L += upgrade_shadow.readme_rows(upgrades_live)
+    if second is not None:                    # second strategies, paper only (engine/second.py)
+        from engine import second as _second
+        L += _second.readme_lines(second, money)
     model = (lm or {}).get("model", "engine")
     L += ["", "---", ("Same LIT rules and settings as the PC paper bot (engine/lit.py via engine/lit_live.py, live_model.json)."
                       if model == "lit" else "Same engine and defaults as the PC paper bot (engine/model.py).")

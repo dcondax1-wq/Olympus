@@ -143,7 +143,7 @@ def pause_tests(tmp):
     check("problem while paused", "paused by you until tomorrow" in (entry_pause.problem(bot, now + 60) or ""))
     check("an expired pause: no problem, file removed", entry_pause.problem(bot, u + 1) is None and not os.path.exists(pp))
     entry_pause.set_pause("14:30", now, pp)
-    check("clear: True when a pause was running, then nothing", entry_pause.clear(pp) is True and entry_pause.clear(pp) is False)
+    check("clear: True when a pause was running, then nothing", entry_pause.clear(pp, now) is True and entry_pause.clear(pp, now) is False)
 
 
 # ---------------------------------------------------------------------------------------------- guards

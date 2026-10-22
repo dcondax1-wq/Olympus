@@ -348,6 +348,9 @@ def outcomes(d, cands, max_stop=120.0, min_stop=6.0, min_rr=1.5):
         if k0 >= n or d["sid"][k0] != s:
             continue
         kf = flat[s]
+        live = d.get("open_sid") is not None and s == d["open_sid"]   # live (engine/second.py): 15:55 flat not reached yet
+        if live:
+            kf = n - 1
         if kf < k0:
             continue
         if dr > 0:
@@ -384,7 +387,7 @@ def outcomes(d, cands, max_stop=120.0, min_stop=6.0, min_rr=1.5):
                 T = min(base, e + bk * risk) if bk else base
                 for be in BES:
                     for tc in TCS:
-                        tab[(tg, bk, be, tc)] = _walk(seg_o, seg_h, seg_l, seg_c, e, sp, risk, T, be, tc, lim)
+                        tab[(tg, bk, be, tc)] = _walk(seg_o, seg_h, seg_l, seg_c, e, sp, risk, T, be, tc, lim, live)
         if not tab:
             continue
         res.append({"sig": sig, "k0": k0, "dir": dr, "kind": kind, "e": e, "stop": sp, "risk": risk, "s": s, "nm": nm,
@@ -392,8 +395,9 @@ def outcomes(d, cands, max_stop=120.0, min_stop=6.0, min_rr=1.5):
     return res
 
 
-def _walk(O, H, L, C, e, sp, risk, T, be, tc, lim):
-    """One trade in direction space. Returns (pts, exit_offset, kind, worst_pts, mfe_R)."""
+def _walk(O, H, L, C, e, sp, risk, T, be, tc, lim, live=False):
+    """One trade in direction space. Returns (pts, exit_offset, kind, worst_pts, mfe_R). live=True (engine/second.py): the
+    bars end inside the trade -> kind "OPEN" at the last close (the research default live=False is unchanged)."""
     cur = sp; moved = False; worst = 0.0; mfe = 0.0
     nb = len(O)
     cut = False
@@ -415,6 +419,8 @@ def _walk(O, H, L, C, e, sp, risk, T, be, tc, lim):
         if tc and k == 2 and not moved and mfe < 0.5 and C[k] < e - 0.3 * risk and k + 1 < nb:
             cut = True
         if k == nb - 1:
+            if live:
+                return (C[k] - e, k, "OPEN_BE" if moved else "OPEN", min(worst, C[k] - e), mfe)
             px = C[k] - TICK
             return (px - e, k, "FLAT", min(worst, px - e), mfe)
     px = C[-1] - TICK

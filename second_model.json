@@ -1,0 +1,63 @@
+{
+ "paper": true,
+ "note": "Second strategies next to LIT, PAPER ONLY (engine/second.py). Nothing here can route an order; LIT (live_model.json) and the eval account are untouched. Switch one off: \"on\": false.",
+ "strategies": {
+  "ema_lon_vix": {
+   "on": true,
+   "kind": "ema_pullback",
+   "label": "London EMA trend pullback",
+   "short": "EMA",
+   "summary": "London hours (03:00-09:30 ET, no Mondays): 15m and 1h EMA 21 above the 50, a pullback to the 5m EMA 50 sweeps a swing low, a 5m CISD back up; stop beyond the sweep wick, VIX-band target, breakeven + costs at 1R.",
+   "run": "ema2_lon_vix",
+   "writeup": "second-ema",
+   "entry": {"win": "lon", "trend": "t15_60", "pull": "e50", "sweep": 1, "disp": 0.0, "reg": "nomon"},
+   "exit": {"tgt": "vix", "be": 1.0, "beo": 1.25, "tchk": null, "ride": null},
+   "usd": 500,
+   "research": {"best": "research/second/ema_best.json", "report": "research/second/ema_report.json"}
+  },
+  "macd_sweep": {
+   "on": true,
+   "kind": "macd_sweep",
+   "label": "MACD divergence at a liquidity sweep",
+   "short": "MACD",
+   "summary": "London (02:00-05:00 ET) and NY open (09:30-11:00): a LIT level is swept by 0.5 ATR, a 5m CISD closes back with MACD-line divergence; market entry, stop beyond the sweep extreme, VIX-band target, 15-minute check.",
+   "run": "md2_best",
+   "writeup": "second-md",
+   "gen": {"tf": 5, "osc": "line", "lv": "all"},
+   "sim": {"ent": "mkt", "tgt": "vix", "be": null, "tc": true},
+   "flt": {"depth": 0.5, "reg": "none", "kz": "lon_ny", "maxpd": 1},
+   "usd": 500,
+   "research": {"best": "research/second/md_best.json"}
+  },
+  "sr_nyreclaim": {
+   "on": true,
+   "kind": "sr_reclaim",
+   "name": "nyreclaim",
+   "label": "NY sweep-and-reclaim of the day's levels (S/R)",
+   "short": "S/R",
+   "summary": "NY 09:30-12:00 ET: a level of the day (yesterday's RTH high/low, overnight, Asia / London box, last week, opening range) is swept after an inducement, a strong 5m close reclaims it; market entry, stop beyond the sweep extreme, 2R target, 15-minute check, 1 a day.",
+   "with_lit_label": "own account recommended",
+   "with_lit_note": "With LIT on one account it slightly worsens LIT's eval path in 2026 H2: shown for reference, own account recommended.",
+   "run": "sr2_nyreclaim_usd500",
+   "writeup": "second-sr",
+   "key": {"setup": "reclaim", "lv": "all_or", "depth": 0.0, "W": 4, "conf": "close", "disp": 0.3, "idm": true, "entry": "mkt",
+           "win": "ny12", "maxpd": 1, "max_stop": 80.0, "min_rr": 1.5, "tg": 2.0, "bk": null, "be": null, "tc": true},
+   "usd": 500,
+   "research": {"best": "research/second/sr_best.json", "report": "research/second/sr_final.json"}
+  },
+  "lit_asia": {
+   "on": true,
+   "kind": "lit_variant",
+   "cloud_only": true,
+   "label": "LIT + Asia slot (paper shadow)",
+   "short": "LIT+Asia",
+   "summary": "LIT itself with one extra Asia trade (18:00-02:00 ET, banked at 3R) next to the normal LIT day trade: all hours, max 2 a day, 1 per session. Cloud paper shadow only, never on the PC route.",
+   "with_lit_label": "this is LIT plus the Asia trade (shadow of the live LIT)",
+   "run": "lit_more_ent_asia_slot_rr3",
+   "writeup": "lit-more-entries",
+   "rules": ["Every LIT rule as live (live_model.json \"lit\"), plus:", "Entries all session: 18:00-24:00 and 00:00-15:30 ET (LIT setups from the evening too).", "Max 2 trades a day, 1 per session part: Asia (18:00-02:00) and the LIT day (02:00-18:00).", "Asia trades bank at 3R (instead of 8R); the day trade is unchanged.", "Size: LIT's own size rule; costs in. Paper only, cloud only."],
+   "overrides": {"window": [[1080, 1440], [0, 930]], "all_hours": true, "max_per_day": 2,
+                 "per_session": [[[1080, 120], [120, 1080]], 1], "kz": [[1080, 1440, {"max_rr": 3.0}], [0, 120, {"max_rr": 3.0}]]}
+  }
+ }
+}

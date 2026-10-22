@@ -107,9 +107,9 @@ def set_pause(until, now=None, path: str = PATH, src: str = "pc", cid: str | Non
     return {"ok": True, **rec}
 
 
-def clear(path: str = PATH) -> bool:
+def clear(path: str = PATH, now=None) -> bool:
     """True when a pause that was still running was lifted."""
-    was = active(path=path) is not None
+    was = active(now, path=path) is not None
     try:
         os.remove(path)
     except FileNotFoundError:

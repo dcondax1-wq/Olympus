@@ -382,7 +382,7 @@ class RemoteControl:
             return "done", (f"no new entries until {r['label']}" + ("; the open trade keeps its stop and target" if open_ else "")
                             + ". Send resume_entries to lift it.")
         if cmd == "resume_entries":
-            was = entry_pause.clear(self.pause_path)
+            was = entry_pause.clear(self.pause_path, now)
             extra = ""
             if getattr(self.bot, "_no_entries_day", None):
                 extra = " (a remote flatten earlier today still holds new entries until the next trading day)"

@@ -144,7 +144,7 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
     now = int(now or time.time())
     hb = dict(hb_payload or {})
     pc = {k: hb.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "health", "ops", "remote", "acct",
-                                 "brain")}       # brain: the Bot Brain's phone cut (engine/brain.compact, < 16 KB)
+                                 "brain", "second")}   # brain: the Bot Brain's phone cut (< 16 KB); second: paper EMA / MACD
     pc.update(present=True, t=now, age_s=0, silent=False, every_s=int(every_s), live=True)
     out = {"v": 1, "kind": KIND, "t": now, "every_s": int(every_s), "host": hb.get("host"), "model_state": hb.get("model_state")}
     try:
@@ -185,7 +185,7 @@ def fit(p: dict, max_bytes: int = MAX_BYTES) -> dict:
             while size() > max_bytes and len(br.get(key) or []) > keep:
                 br[key] = br[key][:max(keep, len(br[key]) // 2)]
                 p["trimmed"] = True
-    for k in ("ops", "remote", "brain"):
+    for k in ("second", "ops", "remote", "brain"):
         if size() > max_bytes and isinstance(p.get("pc"), dict):
             p["pc"].pop(k, None)
             p["trimmed"] = True

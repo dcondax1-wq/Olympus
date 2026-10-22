@@ -406,9 +406,11 @@ def sd_cands(X, tf, imp, bos, sw, W=24, max_age=10):
 
 
 # ------------------------------------------------------------------------------------------------ executor
-def sim_one(X, z, ent, tgt, be, tc, stop_key, force_t=None):
+def sim_one(X, z, ent, tgt, be, tc, stop_key, force_t=None, live=False):
     """One trade per micro. Returns dict (x0 fill exec index, x1 exit exec index, entry, exit, risk, pts, worst, kind,
-    target) or None (no fill / stop out of range / target too close)."""
+    target) or None (no fill / stop out of range / target too close). live=True (engine/second.py): when the bars end
+    inside the trade, kind "OPEN" (x1 = the last bar, ex = its close, stop_now = the stop now, cut = a 15-minute cut
+    decided at the last close, it exits at the next open); live=False never does this (the research result is unchanged)."""
     j, dr = z["j"], z["dir"]
     stop = z["stops"][stop_key]
     if j + 1 >= X.n or X.day[j + 1] != X.day[j]:
@@ -493,7 +495,13 @@ def sim_one(X, z, ent, tgt, be, tc, stop_key, force_t=None):
                 cut = True
         k += 1
     if ex is None:
-        return None
+        if not live or k <= x0:
+            return None
+        cl = float(Xc[N - 1])
+        pts = (cl - e) * dr
+        return {"x0": int(x0), "x1": int(N - 1), "e": float(e), "ex": cl, "risk": float(risk), "pts": float(pts),
+                "worst": float(min(worst, pts)), "kind": "OPEN", "tp": float(tp), "stop": float(stop), "stop_now": float(cur),
+                "be_done": bool(be_done), "cut": bool(cut)}
     pts = (ex - e) * dr
     return {"x0": int(x0), "x1": int(k), "e": float(e), "ex": float(ex), "risk": float(risk), "pts": float(pts),
             "worst": float(min(worst, pts)), "kind": kind, "tp": float(tp), "stop": float(stop)}
@@ -598,9 +606,9 @@ def run_gen(job):
     return rows
 
 
-def sim_x(X, z, sp, force_t=None):
+def sim_x(X, z, sp, force_t=None, live=False):
     """sp: ent, tgt, be (None = off, else breakeven at +1R with the stop to entry + be pts), tc, stop."""
-    return sim_one(X, z, sp["ent"], sp["tgt"], sp["be"], sp["tc"], sp.get("stop", "ext"), force_t)
+    return sim_one(X, z, sp["ent"], sp["tgt"], sp["be"], sp["tc"], sp.get("stop", "ext"), force_t, live)
 
 
 # ------------------------------------------------------------------------------------------------ run + pick

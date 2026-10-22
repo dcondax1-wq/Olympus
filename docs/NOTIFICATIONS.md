@@ -31,6 +31,7 @@ PC on; `LE_OPS_PUSH=0` turns them off. Daily routine: `docs/DAILY_CHECKLIST.md`.
 | **critical** (repeats every 10 min, at most 6 times, until you tap **Got it** or it clears by itself) | Surface offline (cloud), FEED STALE, position mismatch / flatten by hand, kill switch fired, eval room below $400, clock drift, bot update failed |
 | the cloud monitor has not published for 45+ min (weekdays 02:15-16:30 ET; pushed by the PC) | `Cloud monitor has not run for 52 min`, later `Cloud monitor back` |
 | the PC and the cloud run different LIT rules (once per difference) | `PC and cloud run different rules: PC a1b2c3 / cloud d4e5f6 — update the Surface` |
+| a second strategy (EMA / MACD / S/R, **paper only**, engine/second.py) enters or exits on paper (cloud; kind `second`, Settings → Alert levels "Second strategies (PAPER)") | `PAPER EMA LONG: Paper entry 7 MNQ at 29,800.25, stop 29,764, target 29,930. Not traded.` then `PAPER EMA LONG TARGET: +$912 on paper (+1.83R). Not traded.` |
 
 **Got it**: tap the notification (it opens System → Alerts to acknowledge) and tap the big **Got it**; Android also shows a
 Got it button on the notification itself. The app posts the acknowledgement to the same free relay; the PC's ops task
