@@ -1,7 +1,7 @@
 {
- "built": "2026-10-22 02:09",
+ "built": "2026-10-22 02:20",
  "baseline": "baseline",
- "count": 1637,
+ "count": 1654,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -31835,6 +31835,740 @@
      "slow_pass": 53.8,
      "pass_med": 17.0,
      "b2b": "22/43"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_asia_slot_rr3",
+   "title": "LIT more entries: Asia as its own slot (18:00-02:00, bank 3R) + the live day trade",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "promising",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 4.8/wk (3+ in 89% of weeks) win 59.3% PF 3.4 net +34,661 ($5,687/mo) DD -2,755; eval path net +41,006, 2-week pass/fail 56.3/6.7, 1 month 71.6/11.0. H2 (check) 4.1/wk (3+ in 75% of weeks) win 51.6% PF 2.43 net +13,686 ($3,685/mo) DD -1,643; eval path net +12,385, 2-week pass/fail 59.4/2.9, 1 month 69.5/3.4. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -15,505 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": [
+     [
+      [
+       1080,
+       120
+      ],
+      [
+       120,
+       1080
+      ]
+     ],
+     1
+    ],
+    "stop_after_loss": false,
+    "second": {},
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": [
+     [
+      1080,
+      1440,
+      {
+       "max_rr": 3.0
+      }
+     ],
+     [
+      0,
+      120,
+      {
+       "max_rr": 3.0
+      }
+     ]
+    ],
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 01:59",
+   "spans": {
+    "2026": {
+     "n": 187,
+     "tpw": 4.54,
+     "wk2": 95,
+     "win": 56.7,
+     "pf": 3.01,
+     "net": 48347,
+     "dd": -2755,
+     "avg_r": 0.616,
+     "stop": 43.5,
+     "worst_day": -859,
+     "risk": 298.0,
+     "half": 26,
+     "per_month": 4929,
+     "p10": 34.5,
+     "f10": 1.0,
+     "p15": 51.9,
+     "f15": 4.9,
+     "p20": 66.5,
+     "f20": 9.7,
+     "dec10": 35.5,
+     "slow_pass": 37.8,
+     "pass_med": 12.0,
+     "b2b": "11/2"
+    },
+    "2021-25": {
+     "n": 694,
+     "tpw": 3.24,
+     "wk2": 88,
+     "win": 51.3,
+     "pf": 0.9,
+     "net": -15505,
+     "dd": -23399,
+     "avg_r": -0.026,
+     "stop": 33.6,
+     "worst_day": -1658,
+     "risk": 385.0,
+     "half": 95,
+     "per_month": -304,
+     "p10": 4.6,
+     "f10": 23.6,
+     "p15": 6.3,
+     "f15": 39.1,
+     "p20": 8.4,
+     "f20": 53.5,
+     "dec10": 28.2,
+     "slow_pass": 53.7,
+     "pass_med": 17.0,
+     "b2b": "11/49"
+    },
+    "all": {
+     "n": 881,
+     "tpw": 3.45,
+     "wk2": 90,
+     "win": 52.4,
+     "pf": 1.18,
+     "net": 32842,
+     "dd": -23399,
+     "avg_r": 0.11,
+     "stop": 35.8,
+     "worst_day": -1658,
+     "risk": 372.0,
+     "half": 121,
+     "per_month": 540,
+     "p10": 9.7,
+     "f10": 20.0,
+     "p15": 14.0,
+     "f15": 33.6,
+     "p20": 18.1,
+     "f20": 46.4,
+     "dec10": 29.7,
+     "slow_pass": 44.6,
+     "pass_med": 13.0,
+     "b2b": "22/51"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_asia_slot_rr3_eval",
+   "title": "LIT more entries: Asia as its own slot (18:00-02:00, bank 3R) + the live day trade (eval path, two_week sizing)",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "promising",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 4.8/wk (3+ in 89% of weeks) win 59.3% PF 3.4 net +34,661 ($5,687/mo) DD -2,755; eval path net +41,006, 2-week pass/fail 56.3/6.7, 1 month 71.6/11.0. H2 (check) 4.1/wk (3+ in 75% of weeks) win 51.6% PF 2.43 net +13,686 ($3,685/mo) DD -1,643; eval path net +12,385, 2-week pass/fail 59.4/2.9, 1 month 69.5/3.4. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -15,505 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": [
+     [
+      [
+       1080,
+       120
+      ],
+      [
+       120,
+       1080
+      ]
+     ],
+     1
+    ],
+    "stop_after_loss": false,
+    "second": {},
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": [
+     [
+      1080,
+      1440,
+      {
+       "max_rr": 3.0
+      }
+     ],
+     [
+      0,
+      120,
+      {
+       "max_rr": 3.0
+      }
+     ]
+    ],
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-22 01:59",
+   "spans": {
+    "2026": {
+     "n": 185,
+     "tpw": 4.49,
+     "wk2": 95,
+     "win": 57.3,
+     "pf": 2.83,
+     "net": 53391,
+     "dd": -3388,
+     "avg_r": 0.624,
+     "stop": 43.5,
+     "worst_day": -1010,
+     "risk": 405.0,
+     "half": 0,
+     "per_month": 5443,
+     "p10": 44.2,
+     "f10": 6.8,
+     "p15": 56.3,
+     "f15": 10.7,
+     "p20": 59.7,
+     "f20": 15.5,
+     "dec10": 51.0,
+     "slow_pass": 23.7,
+     "pass_med": 8.0,
+     "b2b": "19/4"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 185,
+     "tpw": 4.49,
+     "wk2": 95,
+     "win": 57.3,
+     "pf": 2.83,
+     "net": 53391,
+     "dd": -3388,
+     "avg_r": 0.624,
+     "stop": 43.5,
+     "worst_day": -1010,
+     "risk": 405.0,
+     "half": 0,
+     "per_month": 5443,
+     "p10": 44.2,
+     "f10": 6.8,
+     "p15": 56.3,
+     "f15": 10.7,
+     "p20": 59.7,
+     "f20": 15.5,
+     "dec10": 51.0,
+     "slow_pass": 23.7,
+     "pass_med": 8.0,
+     "b2b": "19/4"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_lonny_c120",
+   "title": "LIT more entries: 1 London + 1 NY trade, the NY one >= 120 min after the first exit",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "promising",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 3.4/wk (3+ in 70% of weeks) win 59.8% PF 4.66 net +34,464 ($5,654/mo) DD -2,522; eval path net +36,389, 2-week pass/fail 57.1/3.4, 1 month 78.0/5.5. H2 (check) 2.82/wk (3+ in 50% of weeks) win 50.0% PF 2.6 net +9,524 ($2,564/mo) DD -1,230; eval path net +14,724, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -732 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": [
+     [
+      [
+       120,
+       480
+      ],
+      [
+       480,
+       1080
+      ]
+     ],
+     1
+    ],
+    "stop_after_loss": false,
+    "second": {
+     "cool": 120,
+     "m": 1.0
+    },
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 01:59",
+   "spans": {
+    "2026": {
+     "n": 131,
+     "tpw": 3.18,
+     "wk2": 86,
+     "win": 56.5,
+     "pf": 3.86,
+     "net": 43988,
+     "dd": -2522,
+     "avg_r": 0.784,
+     "stop": 46.0,
+     "worst_day": -851,
+     "risk": 280.0,
+     "half": 14,
+     "per_month": 4484,
+     "p10": 31.6,
+     "f10": 1.0,
+     "p15": 44.7,
+     "f15": 1.0,
+     "p20": 57.3,
+     "f20": 3.4,
+     "dec10": 32.6,
+     "slow_pass": 44.6,
+     "pass_med": 14.0,
+     "b2b": "9/2"
+    },
+    "2021-25": {
+     "n": 561,
+     "tpw": 2.62,
+     "wk2": 77,
+     "win": 53.3,
+     "pf": 0.99,
+     "net": -732,
+     "dd": -19311,
+     "avg_r": 0.003,
+     "stop": 39.8,
+     "worst_day": -1458,
+     "risk": 342.0,
+     "half": 51,
+     "per_month": -14,
+     "p10": 5.9,
+     "f10": 13.7,
+     "p15": 9.0,
+     "f15": 25.7,
+     "p20": 12.2,
+     "f20": 37.6,
+     "dec10": 19.6,
+     "slow_pass": 59.4,
+     "pass_med": 19.0,
+     "b2b": "11/33"
+    },
+    "all": {
+     "n": 692,
+     "tpw": 2.71,
+     "wk2": 79,
+     "win": 53.9,
+     "pf": 1.36,
+     "net": 43256,
+     "dd": -19311,
+     "avg_r": 0.151,
+     "stop": 41.6,
+     "worst_day": -1458,
+     "risk": 336.0,
+     "half": 65,
+     "per_month": 711,
+     "p10": 10.6,
+     "f10": 11.7,
+     "p15": 15.7,
+     "f15": 21.8,
+     "p20": 20.8,
+     "f20": 32.1,
+     "dec10": 22.3,
+     "slow_pass": 55.3,
+     "pass_med": 17.0,
+     "b2b": "20/35"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_lonny_c120_eval",
+   "title": "LIT more entries: 1 London + 1 NY trade, the NY one >= 120 min after the first exit (eval path, two_week sizing)",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "promising",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 3.4/wk (3+ in 70% of weeks) win 59.8% PF 4.66 net +34,464 ($5,654/mo) DD -2,522; eval path net +36,389, 2-week pass/fail 57.1/3.4, 1 month 78.0/5.5. H2 (check) 2.82/wk (3+ in 50% of weeks) win 50.0% PF 2.6 net +9,524 ($2,564/mo) DD -1,230; eval path net +14,724, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -732 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": [
+     [
+      [
+       120,
+       480
+      ],
+      [
+       480,
+       1080
+      ]
+     ],
+     1
+    ],
+    "stop_after_loss": false,
+    "second": {
+     "cool": 120,
+     "m": 1.0
+    },
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {
+    "mode": "two_week",
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "built": "2026-10-22 01:59",
+   "spans": {
+    "2026": {
+     "n": 130,
+     "tpw": 3.16,
+     "wk2": 86,
+     "win": 56.2,
+     "pf": 3.73,
+     "net": 51113,
+     "dd": -2722,
+     "avg_r": 0.775,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 347.0,
+     "half": 0,
+     "per_month": 5211,
+     "p10": 43.2,
+     "f10": 2.4,
+     "p15": 54.4,
+     "f15": 2.4,
+     "p20": 63.1,
+     "f20": 5.3,
+     "dec10": 45.6,
+     "slow_pass": 32.1,
+     "pass_med": 9.0,
+     "b2b": "15/2"
+    },
+    "2021-25": {
+     "n": 0
+    },
+    "all": {
+     "n": 130,
+     "tpw": 3.16,
+     "wk2": 86,
+     "win": 56.2,
+     "pf": 3.73,
+     "net": 51113,
+     "dd": -2722,
+     "avg_r": 0.775,
+     "stop": 45.8,
+     "worst_day": -1004,
+     "risk": 347.0,
+     "half": 0,
+     "per_month": 5211,
+     "p10": 43.2,
+     "f10": 2.4,
+     "p15": 54.4,
+     "f15": 2.4,
+     "p20": 63.1,
+     "f20": 5.3,
+     "dec10": 45.6,
+     "slow_pass": 32.1,
+     "pass_med": 9.0,
+     "b2b": "15/2"
     }
    }
   },
@@ -205107,6 +205841,2274 @@
      "slow_pass": 54.0,
      "pass_med": 17.0,
      "b2b": "23/36"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_asia_slot_rr275",
+   "title": "LIT more entries: Asia slot, bank 2.75R",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 4.73/wk (3+ in 89% of weeks) win 59.5% PF 3.38 net +34,313 ($5,629/mo) DD -2,755; eval path net +35,022, 2-week pass/fail 55.5/6.7, 1 month 67.9/11.9. H2 (check) 4.04/wk (3+ in 69% of weeks) win 52.4% PF 2.42 net +13,188 ($3,551/mo) DD -1,643; eval path net +12,181, 2-week pass/fail 59.4/1.4, 1 month 66.1/1.7. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -8,710 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": [
+     [
+      [
+       1080,
+       120
+      ],
+      [
+       120,
+       1080
+      ]
+     ],
+     1
+    ],
+    "stop_after_loss": false,
+    "second": {},
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": [
+     [
+      1080,
+      1440,
+      {
+       "max_rr": 2.75
+      }
+     ],
+     [
+      0,
+      120,
+      {
+       "max_rr": 2.75
+      }
+     ]
+    ],
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 01:59",
+   "spans": {
+    "2026": {
+     "n": 184,
+     "tpw": 4.47,
+     "wk2": 95,
+     "win": 57.1,
+     "pf": 3.0,
+     "net": 47501,
+     "dd": -2755,
+     "avg_r": 0.625,
+     "stop": 43.4,
+     "worst_day": -859,
+     "risk": 299.0,
+     "half": 26,
+     "per_month": 4842,
+     "p10": 33.0,
+     "f10": 1.0,
+     "p15": 49.0,
+     "f15": 4.9,
+     "p20": 64.1,
+     "f20": 9.7,
+     "dec10": 34.0,
+     "slow_pass": 41.6,
+     "pass_med": 13.0,
+     "b2b": "10/2"
+    },
+    "2021-25": {
+     "n": 683,
+     "tpw": 3.19,
+     "wk2": 88,
+     "win": 51.5,
+     "pf": 0.94,
+     "net": -8710,
+     "dd": -20195,
+     "avg_r": -0.008,
+     "stop": 33.8,
+     "worst_day": -1658,
+     "risk": 385.0,
+     "half": 91,
+     "per_month": -171,
+     "p10": 5.2,
+     "f10": 22.2,
+     "p15": 6.8,
+     "f15": 35.9,
+     "p20": 8.8,
+     "f20": 49.7,
+     "dec10": 27.4,
+     "slow_pass": 54.7,
+     "pass_med": 18.0,
+     "b2b": "14/48"
+    },
+    "all": {
+     "n": 867,
+     "tpw": 3.39,
+     "wk2": 89,
+     "win": 52.7,
+     "pf": 1.22,
+     "net": 38791,
+     "dd": -20195,
+     "avg_r": 0.126,
+     "stop": 36.0,
+     "worst_day": -1658,
+     "risk": 370.0,
+     "half": 117,
+     "per_month": 637,
+     "p10": 10.0,
+     "f10": 18.8,
+     "p15": 13.9,
+     "f15": 30.9,
+     "p20": 18.0,
+     "f20": 43.3,
+     "dec10": 28.8,
+     "slow_pass": 47.3,
+     "pass_med": 14.5,
+     "b2b": "24/50"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_asia_slot_rr3_depth075",
+   "title": "LIT more entries: Asia slot, bank 3R, Asia sweep depth >= 0.75 ATR (H1 pick)",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 4.73/wk (3+ in 89% of weeks) win 61.2% PF 3.53 net +35,224 ($5,779/mo) DD -2,516; eval path net +36,098, 2-week pass/fail 58.0/5.0, 1 month 75.2/10.1. H2 (check) 4.1/wk (3+ in 75% of weeks) win 50.0% PF 2.2 net +12,355 ($3,326/mo) DD -1,643; eval path net +15,783, 2-week pass/fail 58.0/4.3, 1 month 64.4/5.1. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -12,273 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": [
+     [
+      [
+       1080,
+       120
+      ],
+      [
+       120,
+       1080
+      ]
+     ],
+     1
+    ],
+    "stop_after_loss": false,
+    "second": {},
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": [
+     [
+      1080,
+      1440,
+      {
+       "max_rr": 3.0,
+       "depth": 0.75
+      }
+     ],
+     [
+      0,
+      120,
+      {
+       "max_rr": 3.0,
+       "depth": 0.75
+      }
+     ]
+    ],
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 01:59",
+   "spans": {
+    "2026": {
+     "n": 185,
+     "tpw": 4.49,
+     "wk2": 95,
+     "win": 57.3,
+     "pf": 2.97,
+     "net": 47579,
+     "dd": -2516,
+     "avg_r": 0.614,
+     "stop": 43.5,
+     "worst_day": -859,
+     "risk": 300.0,
+     "half": 27,
+     "per_month": 4850,
+     "p10": 32.5,
+     "f10": 1.0,
+     "p15": 50.0,
+     "f15": 3.9,
+     "p20": 64.1,
+     "f20": 9.7,
+     "dec10": 33.5,
+     "slow_pass": 40.1,
+     "pass_med": 13.0,
+     "b2b": "10/2"
+    },
+    "2021-25": {
+     "n": 683,
+     "tpw": 3.19,
+     "wk2": 88,
+     "win": 51.5,
+     "pf": 0.92,
+     "net": -12273,
+     "dd": -22702,
+     "avg_r": -0.017,
+     "stop": 33.8,
+     "worst_day": -1658,
+     "risk": 385.0,
+     "half": 92,
+     "per_month": -240,
+     "p10": 5.2,
+     "f10": 21.9,
+     "p15": 6.9,
+     "f15": 37.2,
+     "p20": 9.0,
+     "f20": 53.0,
+     "dec10": 27.1,
+     "slow_pass": 58.0,
+     "pass_med": 19.0,
+     "b2b": "11/50"
+    },
+    "all": {
+     "n": 868,
+     "tpw": 3.4,
+     "wk2": 90,
+     "win": 52.8,
+     "pf": 1.2,
+     "net": 35307,
+     "dd": -22702,
+     "avg_r": 0.117,
+     "stop": 36.1,
+     "worst_day": -1658,
+     "risk": 370.0,
+     "half": 119,
+     "per_month": 580,
+     "p10": 9.9,
+     "f10": 18.5,
+     "p15": 14.2,
+     "f15": 31.8,
+     "p20": 18.2,
+     "f20": 46.0,
+     "dec10": 28.4,
+     "slow_pass": 48.6,
+     "pass_med": 15.0,
+     "b2b": "21/52"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_asia_slot_rr3_w20",
+   "title": "LIT more entries: Asia slot from 20:00, bank 3R",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 4.73/wk (3+ in 89% of weeks) win 59.5% PF 3.42 net +34,737 ($5,699/mo) DD -2,755; eval path net +43,432, 2-week pass/fail 57.1/6.7, 1 month 71.6/11.0. H2 (check) 3.97/wk (3+ in 69% of weeks) win 51.6% PF 2.38 net +12,729 ($3,427/mo) DD -1,643; eval path net +11,105, 2-week pass/fail 56.5/2.9, 1 month 62.7/5.1. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -12,321 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1200,
+      1440
+     ],
+     [
+      0,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": [
+     [
+      [
+       1080,
+       120
+      ],
+      [
+       120,
+       1080
+      ]
+     ],
+     1
+    ],
+    "stop_after_loss": false,
+    "second": {},
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": [
+     [
+      1200,
+      1440,
+      {
+       "max_rr": 3.0
+      }
+     ],
+     [
+      0,
+      120,
+      {
+       "max_rr": 3.0
+      }
+     ]
+    ],
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 01:59",
+   "spans": {
+    "2026": {
+     "n": 183,
+     "tpw": 4.44,
+     "wk2": 95,
+     "win": 56.8,
+     "pf": 3.01,
+     "net": 47466,
+     "dd": -2755,
+     "avg_r": 0.625,
+     "stop": 43.5,
+     "worst_day": -859,
+     "risk": 298.0,
+     "half": 26,
+     "per_month": 4839,
+     "p10": 32.5,
+     "f10": 1.0,
+     "p15": 51.0,
+     "f15": 4.9,
+     "p20": 65.0,
+     "f20": 9.7,
+     "dec10": 33.5,
+     "slow_pass": 39.3,
+     "pass_med": 13.0,
+     "b2b": "11/2"
+    },
+    "2021-25": {
+     "n": 683,
+     "tpw": 3.19,
+     "wk2": 88,
+     "win": 51.5,
+     "pf": 0.92,
+     "net": -12321,
+     "dd": -23576,
+     "avg_r": -0.022,
+     "stop": 33.5,
+     "worst_day": -1658,
+     "risk": 385.0,
+     "half": 93,
+     "per_month": -241,
+     "p10": 4.7,
+     "f10": 22.3,
+     "p15": 6.4,
+     "f15": 37.0,
+     "p20": 8.9,
+     "f20": 50.5,
+     "dec10": 27.0,
+     "slow_pass": 61.0,
+     "pass_med": 19.0,
+     "b2b": "11/48"
+    },
+    "all": {
+     "n": 866,
+     "tpw": 3.39,
+     "wk2": 90,
+     "win": 52.7,
+     "pf": 1.2,
+     "net": 35145,
+     "dd": -23576,
+     "avg_r": 0.114,
+     "stop": 36.0,
+     "worst_day": -1658,
+     "risk": 370.0,
+     "half": 119,
+     "per_month": 578,
+     "p10": 9.7,
+     "f10": 18.9,
+     "p15": 14.5,
+     "f15": 31.8,
+     "p20": 18.8,
+     "f20": 43.9,
+     "dec10": 28.6,
+     "slow_pass": 48.8,
+     "pass_med": 15.0,
+     "b2b": "22/50"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_asia_slot_rr8",
+   "title": "LIT more entries: Asia slot with the live 8R bank",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 4.73/wk (3+ in 89% of weeks) win 59.5% PF 2.92 net +27,367 ($4,490/mo) DD -4,132; eval path net +28,284, 2-week pass/fail 49.6/12.6, 1 month 60.6/25.7. H2 (check) 4.1/wk (3+ in 75% of weeks) win 51.6% PF 2.22 net +12,531 ($3,374/mo) DD -1,658; eval path net +2,795, 2-week pass/fail 63.8/2.9, 1 month 66.1/3.4. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -12,287 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": [
+     [
+      [
+       1080,
+       120
+      ],
+      [
+       120,
+       1080
+      ]
+     ],
+     1
+    ],
+    "stop_after_loss": false,
+    "second": {},
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 01:59",
+   "spans": {
+    "2026": {
+     "n": 185,
+     "tpw": 4.49,
+     "wk2": 95,
+     "win": 56.8,
+     "pf": 2.62,
+     "net": 39898,
+     "dd": -4132,
+     "avg_r": 0.542,
+     "stop": 43.8,
+     "worst_day": -859,
+     "risk": 296.0,
+     "half": 26,
+     "per_month": 4067,
+     "p10": 35.4,
+     "f10": 5.3,
+     "p15": 49.0,
+     "f15": 11.7,
+     "p20": 59.7,
+     "f20": 18.0,
+     "dec10": 40.7,
+     "slow_pass": 29.4,
+     "pass_med": 10.0,
+     "b2b": "10/5"
+    },
+    "2021-25": {
+     "n": 741,
+     "tpw": 3.46,
+     "wk2": 91,
+     "win": 52.1,
+     "pf": 0.92,
+     "net": -12287,
+     "dd": -20599,
+     "avg_r": -0.006,
+     "stop": 32.5,
+     "worst_day": -1658,
+     "risk": 392.0,
+     "half": 109,
+     "per_month": -241,
+     "p10": 10.4,
+     "f10": 28.5,
+     "p15": 14.1,
+     "f15": 46.3,
+     "p20": 15.5,
+     "f20": 59.0,
+     "dec10": 38.9,
+     "slow_pass": 24.9,
+     "pass_med": 10.0,
+     "b2b": "15/58"
+    },
+    "all": {
+     "n": 926,
+     "tpw": 3.62,
+     "wk2": 92,
+     "win": 53.0,
+     "pf": 1.15,
+     "net": 27611,
+     "dd": -20599,
+     "avg_r": 0.104,
+     "stop": 34.6,
+     "worst_day": -1658,
+     "risk": 379.0,
+     "half": 135,
+     "per_month": 454,
+     "p10": 14.7,
+     "f10": 24.7,
+     "p15": 20.0,
+     "f15": 40.7,
+     "p20": 22.9,
+     "f20": 52.3,
+     "dec10": 39.4,
+     "slow_pass": 26.4,
+     "pass_med": 10.0,
+     "b2b": "25/63"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_full_asia_half",
+   "title": "LIT more entries: 18:00-15:30, 1 a day, Asia at half size",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 3.71/wk (3+ in 89% of weeks) win 61.1% PF 4.86 net +29,346 ($4,815/mo) DD -2,530; eval path net +32,806, 2-week pass/fail 54.6/0.0, 1 month 67.0/3.7. H2 (check) 3.21/wk (3+ in 69% of weeks) win 44.0% PF 2.13 net +7,222 ($1,944/mo) DD -1,221; eval path net +2,199, 2-week pass/fail 24.6/0.0, 1 month 37.3/6.8. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -3,454 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": null,
+    "stop_after_loss": false,
+    "second": null,
+    "sess_m": [
+     [
+      1080,
+      120,
+      0.5
+     ]
+    ],
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 02:00",
+   "spans": {
+    "2026": {
+     "n": 145,
+     "tpw": 3.52,
+     "wk2": 95,
+     "win": 55.2,
+     "pf": 3.61,
+     "net": 36568,
+     "dd": -2978,
+     "avg_r": 0.539,
+     "stop": 43.0,
+     "worst_day": -635,
+     "risk": 219.0,
+     "half": 70,
+     "per_month": 3728,
+     "p10": 27.7,
+     "f10": 0.0,
+     "p15": 39.8,
+     "f15": 1.5,
+     "p20": 47.6,
+     "f20": 3.4,
+     "dec10": 27.7,
+     "slow_pass": 45.0,
+     "pass_med": 14.0,
+     "b2b": "8/2"
+    },
+    "2021-25": {
+     "n": 640,
+     "tpw": 2.99,
+     "wk2": 89,
+     "win": 51.2,
+     "pf": 0.97,
+     "net": -3454,
+     "dd": -12126,
+     "avg_r": 0.009,
+     "stop": 31.5,
+     "worst_day": -860,
+     "risk": 336.0,
+     "half": 276,
+     "per_month": -68,
+     "p10": 4.6,
+     "f10": 9.0,
+     "p15": 6.9,
+     "f15": 20.6,
+     "p20": 8.0,
+     "f20": 33.0,
+     "dec10": 13.6,
+     "slow_pass": 59.8,
+     "pass_med": 23.0,
+     "b2b": "9/33"
+    },
+    "all": {
+     "n": 785,
+     "tpw": 3.07,
+     "wk2": 91,
+     "win": 52.0,
+     "pf": 1.26,
+     "net": 33115,
+     "dd": -12126,
+     "avg_r": 0.107,
+     "stop": 33.2,
+     "worst_day": -860,
+     "risk": 306.0,
+     "half": 346,
+     "per_month": 544,
+     "p10": 8.6,
+     "f10": 7.6,
+     "p15": 12.5,
+     "f15": 17.6,
+     "p20": 14.7,
+     "f20": 28.3,
+     "dec10": 16.2,
+     "slow_pass": 52.5,
+     "pass_med": 17.0,
+     "b2b": "17/35"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_full_n2_any_half",
+   "title": "LIT more entries: 18:00-15:30, 2 a day, 2nd at half size",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 5.12/wk (3+ in 89% of weeks) win 58.0% PF 2.9 net +25,395 ($4,166/mo) DD -3,947; eval path net +28,376, 2-week pass/fail 54.6/10.9, 1 month 66.1/24.8. H2 (check) 4.55/wk (3+ in 75% of weeks) win 49.3% PF 2.3 net +12,467 ($3,356/mo) DD -1,843; eval path net +12,781, 2-week pass/fail 58.0/4.3, 1 month 62.7/10.2. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -9,427 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": null,
+    "stop_after_loss": false,
+    "second": {
+     "m": 0.5
+    },
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 02:00",
+   "spans": {
+    "2026": {
+     "n": 202,
+     "tpw": 4.9,
+     "wk2": 95,
+     "win": 55.0,
+     "pf": 2.65,
+     "net": 37861,
+     "dd": -3947,
+     "avg_r": 0.472,
+     "stop": 44.5,
+     "worst_day": -868,
+     "risk": 232.0,
+     "half": 60,
+     "per_month": 3860,
+     "p10": 32.0,
+     "f10": 1.0,
+     "p15": 42.2,
+     "f15": 9.2,
+     "p20": 52.4,
+     "f20": 14.1,
+     "dec10": 33.0,
+     "slow_pass": 37.9,
+     "pass_med": 11.0,
+     "b2b": "10/4"
+    },
+    "2021-25": {
+     "n": 815,
+     "tpw": 3.8,
+     "wk2": 91,
+     "win": 51.8,
+     "pf": 0.94,
+     "net": -9427,
+     "dd": -18268,
+     "avg_r": -0.0,
+     "stop": 33.5,
+     "worst_day": -1242,
+     "risk": 346.0,
+     "half": 233,
+     "per_month": -185,
+     "p10": 10.0,
+     "f10": 26.0,
+     "p15": 14.7,
+     "f15": 43.9,
+     "p20": 16.1,
+     "f20": 56.1,
+     "dec10": 36.0,
+     "slow_pass": 20.2,
+     "pass_med": 10.0,
+     "b2b": "13/53"
+    },
+    "all": {
+     "n": 1017,
+     "tpw": 3.98,
+     "wk2": 92,
+     "win": 52.4,
+     "pf": 1.15,
+     "net": 28434,
+     "dd": -18268,
+     "avg_r": 0.093,
+     "stop": 36.0,
+     "worst_day": -1242,
+     "risk": 329.0,
+     "half": 293,
+     "per_month": 467,
+     "p10": 14.1,
+     "f10": 22.0,
+     "p15": 20.0,
+     "f15": 38.3,
+     "p20": 22.8,
+     "f20": 49.3,
+     "dec10": 36.1,
+     "slow_pass": 26.6,
+     "pass_med": 10.0,
+     "b2b": "23/57"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_kz_out_disp06",
+   "title": "LIT more entries: 18:00-15:50, displacement 0.6 ATR outside 02:00-12:00",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 4.02/wk (3+ in 89% of weeks) win 58.3% PF 2.21 net +16,979 ($2,786/mo) DD -4,136; eval path net +7,388, 2-week pass/fail 51.3/0.8, 1 month 62.4/9.2. H2 (check) 3.65/wk (3+ in 81% of weeks) win 52.6% PF 2.15 net +10,814 ($2,912/mo) DD -2,271; eval path net +7,946, 2-week pass/fail 68.1/0.0, 1 month 67.8/10.2. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -28,463 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      950
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": null,
+    "stop_after_loss": false,
+    "second": null,
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": [
+     [
+      720,
+      955,
+      {
+       "disp": 0.6
+      }
+     ],
+     [
+      1080,
+      1440,
+      {
+       "disp": 0.6
+      }
+     ],
+     [
+      0,
+      120,
+      {
+       "disp": 0.6
+      }
+     ]
+    ],
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 02:00",
+   "spans": {
+    "2026": {
+     "n": 160,
+     "tpw": 3.88,
+     "wk2": 95,
+     "win": 56.2,
+     "pf": 2.19,
+     "net": 27793,
+     "dd": -4136,
+     "avg_r": 0.453,
+     "stop": 41.8,
+     "worst_day": -876,
+     "risk": 333.0,
+     "half": 18,
+     "per_month": 2833,
+     "p10": 27.7,
+     "f10": 6.8,
+     "p15": 39.8,
+     "f15": 12.1,
+     "p20": 50.0,
+     "f20": 18.9,
+     "dec10": 34.5,
+     "slow_pass": 38.3,
+     "pass_med": 13.0,
+     "b2b": "7/5"
+    },
+    "2021-25": {
+     "n": 695,
+     "tpw": 3.24,
+     "wk2": 95,
+     "win": 50.4,
+     "pf": 0.83,
+     "net": -28463,
+     "dd": -31272,
+     "avg_r": -0.048,
+     "stop": 29.8,
+     "worst_day": -874,
+     "risk": 438.0,
+     "half": 88,
+     "per_month": -558,
+     "p10": 11.3,
+     "f10": 32.1,
+     "p15": 14.3,
+     "f15": 51.2,
+     "p20": 15.9,
+     "f20": 62.5,
+     "dec10": 43.4,
+     "slow_pass": 19.5,
+     "pass_med": 8.0,
+     "b2b": "17/66"
+    },
+    "all": {
+     "n": 855,
+     "tpw": 3.35,
+     "wk2": 95,
+     "win": 51.5,
+     "pf": 1.0,
+     "net": -670,
+     "dd": -31272,
+     "avg_r": 0.045,
+     "stop": 31.8,
+     "worst_day": -876,
+     "risk": 408.0,
+     "half": 106,
+     "per_month": -11,
+     "p10": 14.2,
+     "f10": 28.0,
+     "p15": 18.7,
+     "f15": 44.9,
+     "p20": 21.7,
+     "f20": 55.5,
+     "dec10": 42.2,
+     "slow_pass": 26.9,
+     "pass_med": 9.0,
+     "b2b": "24/71"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_n2_any",
+   "title": "LIT more entries: 2 trades a day (02:00-15:30), any 2nd trade",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 3.87/wk (3+ in 74% of weeks) win 55.6% PF 3.53 net +28,933 ($4,747/mo) DD -2,704; eval path net +29,590, 2-week pass/fail 46.2/8.4, 1 month 66.1/17.4. H2 (check) 3.14/wk (3+ in 56% of weeks) win 46.9% PF 2.68 net +12,058 ($3,246/mo) DD -1,868; eval path net +13,287, 2-week pass/fail 50.7/11.6, 1 month 57.6/22.0. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -4,418 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "second": {
+     "m": 1.0
+    },
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 02:00",
+   "spans": {
+    "2026": {
+     "n": 148,
+     "tpw": 3.59,
+     "wk2": 86,
+     "win": 52.7,
+     "pf": 3.2,
+     "net": 40991,
+     "dd": -2704,
+     "avg_r": 0.618,
+     "stop": 46.5,
+     "worst_day": -851,
+     "risk": 280.0,
+     "half": 19,
+     "per_month": 4179,
+     "p10": 31.1,
+     "f10": 5.8,
+     "p15": 41.3,
+     "f15": 14.1,
+     "p20": 50.0,
+     "f20": 19.9,
+     "dec10": 36.9,
+     "slow_pass": 38.8,
+     "pass_med": 12.0,
+     "b2b": "10/3"
+    },
+    "2021-25": {
+     "n": 600,
+     "tpw": 2.8,
+     "wk2": 78,
+     "win": 52.5,
+     "pf": 0.96,
+     "net": -4418,
+     "dd": -20054,
+     "avg_r": -0.006,
+     "stop": 39.8,
+     "worst_day": -1659,
+     "risk": 342.0,
+     "half": 63,
+     "per_month": -87,
+     "p10": 6.3,
+     "f10": 17.7,
+     "p15": 9.1,
+     "f15": 30.2,
+     "p20": 11.3,
+     "f20": 39.8,
+     "dec10": 24.0,
+     "slow_pass": 54.6,
+     "pass_med": 18.0,
+     "b2b": "12/37"
+    },
+    "all": {
+     "n": 748,
+     "tpw": 2.93,
+     "wk2": 80,
+     "win": 52.5,
+     "pf": 1.27,
+     "net": 36572,
+     "dd": -20054,
+     "avg_r": 0.117,
+     "stop": 41.8,
+     "worst_day": -1659,
+     "risk": 334.0,
+     "half": 82,
+     "per_month": 601,
+     "p10": 10.9,
+     "f10": 15.8,
+     "p15": 15.3,
+     "f15": 27.6,
+     "p20": 18.9,
+     "f20": 36.6,
+     "dec10": 26.7,
+     "slow_pass": 51.2,
+     "pass_med": 16.0,
+     "b2b": "22/40"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_n2_any_half",
+   "title": "LIT more entries: 2 trades a day, 2nd trade at half size",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 3.87/wk (3+ in 74% of weeks) win 55.6% PF 4.1 net +30,523 ($5,008/mo) DD -2,194; eval path net +33,333, 2-week pass/fail 57.1/7.6, 1 month 73.4/13.8. H2 (check) 3.14/wk (3+ in 56% of weeks) win 46.9% PF 2.61 net +10,408 ($2,802/mo) DD -1,634; eval path net +15,355, 2-week pass/fail 50.7/4.3, 1 month 50.8/6.8. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -1,766 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "second": {
+     "m": 0.5
+    },
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 02:00",
+   "spans": {
+    "2026": {
+     "n": 148,
+     "tpw": 3.59,
+     "wk2": 86,
+     "win": 52.7,
+     "pf": 3.51,
+     "net": 40932,
+     "dd": -2194,
+     "avg_r": 0.618,
+     "stop": 46.5,
+     "worst_day": -755,
+     "risk": 238.0,
+     "half": 36,
+     "per_month": 4173,
+     "p10": 26.2,
+     "f10": 2.4,
+     "p15": 38.3,
+     "f15": 7.3,
+     "p20": 48.5,
+     "f20": 11.7,
+     "dec10": 28.6,
+     "slow_pass": 53.5,
+     "pass_med": 17.0,
+     "b2b": "11/3"
+    },
+    "2021-25": {
+     "n": 600,
+     "tpw": 2.8,
+     "wk2": 78,
+     "win": 52.5,
+     "pf": 0.98,
+     "net": -1766,
+     "dd": -18344,
+     "avg_r": -0.006,
+     "stop": 39.8,
+     "worst_day": -1242,
+     "risk": 330.0,
+     "half": 115,
+     "per_month": -35,
+     "p10": 5.6,
+     "f10": 14.7,
+     "p15": 9.2,
+     "f15": 27.1,
+     "p20": 12.4,
+     "f20": 37.2,
+     "dec10": 20.3,
+     "slow_pass": 60.4,
+     "pass_med": 19.0,
+     "b2b": "11/35"
+    },
+    "all": {
+     "n": 748,
+     "tpw": 2.93,
+     "wk2": 80,
+     "win": 52.5,
+     "pf": 1.32,
+     "net": 39166,
+     "dd": -18344,
+     "avg_r": 0.117,
+     "stop": 41.8,
+     "worst_day": -1242,
+     "risk": 292.0,
+     "half": 151,
+     "per_month": 644,
+     "p10": 9.5,
+     "f10": 12.8,
+     "p15": 14.9,
+     "f15": 23.9,
+     "p20": 19.6,
+     "f20": 33.1,
+     "dec10": 22.3,
+     "slow_pass": 59.1,
+     "pass_med": 19.0,
+     "b2b": "22/38"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_n2_cool120",
+   "title": "LIT more entries: 2 trades a day, 2nd >= 120 min after the first exit",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 3.55/wk (3+ in 70% of weeks) win 60.4% PF 4.47 net +33,702 ($5,529/mo) DD -2,518; eval path net +36,090, 2-week pass/fail 57.1/3.4, 1 month 78.0/5.5. H2 (check) 2.95/wk (3+ in 50% of weeks) win 50.0% PF 2.43 net +9,359 ($2,520/mo) DD -1,230; eval path net +12,893, 2-week pass/fail 52.2/0.0, 1 month 47.5/0.0. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) +1,393 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "second": {
+     "cool": 120,
+     "m": 1.0
+    },
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 02:00",
+   "spans": {
+    "2026": {
+     "n": 137,
+     "tpw": 3.33,
+     "wk2": 86,
+     "win": 56.9,
+     "pf": 3.64,
+     "net": 43061,
+     "dd": -2518,
+     "avg_r": 0.748,
+     "stop": 46.2,
+     "worst_day": -851,
+     "risk": 280.0,
+     "half": 15,
+     "per_month": 4390,
+     "p10": 31.6,
+     "f10": 1.0,
+     "p15": 43.2,
+     "f15": 1.0,
+     "p20": 52.9,
+     "f20": 3.4,
+     "dec10": 32.6,
+     "slow_pass": 44.4,
+     "pass_med": 14.0,
+     "b2b": "9/2"
+    },
+    "2021-25": {
+     "n": 573,
+     "tpw": 2.67,
+     "wk2": 77,
+     "win": 52.7,
+     "pf": 1.01,
+     "net": 1393,
+     "dd": -18808,
+     "avg_r": 0.004,
+     "stop": 39.5,
+     "worst_day": -1675,
+     "risk": 342.0,
+     "half": 56,
+     "per_month": 27,
+     "p10": 6.9,
+     "f10": 14.3,
+     "p15": 10.1,
+     "f15": 25.9,
+     "p20": 12.6,
+     "f20": 37.3,
+     "dec10": 21.2,
+     "slow_pass": 55.2,
+     "pass_med": 18.0,
+     "b2b": "12/33"
+    },
+    "all": {
+     "n": 710,
+     "tpw": 2.78,
+     "wk2": 79,
+     "win": 53.5,
+     "pf": 1.36,
+     "net": 44454,
+     "dd": -18808,
+     "avg_r": 0.148,
+     "stop": 41.6,
+     "worst_day": -1675,
+     "risk": 334.0,
+     "half": 71,
+     "per_month": 730,
+     "p10": 11.4,
+     "f10": 12.1,
+     "p15": 16.4,
+     "f15": 21.9,
+     "p20": 20.4,
+     "f20": 31.8,
+     "dec10": 23.5,
+     "slow_pass": 53.1,
+     "pass_med": 17.0,
+     "b2b": "21/35"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_n2_flip_stop",
+   "title": "LIT more entries: 2 trades a day, 2nd only opposite side after a loss",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 3.2/wk (3+ in 70% of weeks) win 58.5% PF 4.87 net +33,713 ($5,531/mo) DD -2,196; eval path net +34,446, 2-week pass/fail 57.1/6.7, 1 month 74.3/12.8. H2 (check) 2.69/wk (3+ in 44% of weeks) win 45.2% PF 2.38 net +8,771 ($2,361/mo) DD -1,396; eval path net +9,233, 2-week pass/fail 52.2/0.0, 1 month 47.5/1.7. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) +3,134 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      120,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 2,
+    "be_off": 1.25,
+    "all_hours": false,
+    "per_session": null,
+    "stop_after_loss": false,
+    "second": {
+     "after": [
+      "STOP",
+      "CUT_T15"
+     ],
+     "side": "opp",
+     "m": 1.0
+    },
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 02:00",
+   "spans": {
+    "2026": {
+     "n": 124,
+     "tpw": 3.01,
+     "wk2": 86,
+     "win": 54.0,
+     "pf": 3.82,
+     "net": 42485,
+     "dd": -2196,
+     "avg_r": 0.752,
+     "stop": 45.2,
+     "worst_day": -755,
+     "risk": 282.0,
+     "half": 14,
+     "per_month": 4331,
+     "p10": 31.6,
+     "f10": 1.9,
+     "p15": 42.7,
+     "f15": 2.9,
+     "p20": 53.4,
+     "f20": 5.3,
+     "dec10": 33.5,
+     "slow_pass": 45.0,
+     "pass_med": 14.0,
+     "b2b": "9/3"
+    },
+    "2021-25": {
+     "n": 530,
+     "tpw": 2.47,
+     "wk2": 76,
+     "win": 53.8,
+     "pf": 1.03,
+     "net": 3134,
+     "dd": -17890,
+     "avg_r": 0.02,
+     "stop": 38.1,
+     "worst_day": -1376,
+     "risk": 362.0,
+     "half": 42,
+     "per_month": 61,
+     "p10": 6.2,
+     "f10": 13.8,
+     "p15": 9.9,
+     "f15": 24.7,
+     "p20": 13.4,
+     "f20": 34.3,
+     "dec10": 20.0,
+     "slow_pass": 64.8,
+     "pass_med": 21.0,
+     "b2b": "11/32"
+    },
+    "all": {
+     "n": 654,
+     "tpw": 2.56,
+     "wk2": 78,
+     "win": 53.8,
+     "pf": 1.39,
+     "net": 45618,
+     "dd": -17890,
+     "avg_r": 0.159,
+     "stop": 40.0,
+     "worst_day": -1376,
+     "risk": 346.0,
+     "half": 56,
+     "per_month": 750,
+     "p10": 10.9,
+     "f10": 11.9,
+     "p15": 16.1,
+     "f15": 21.2,
+     "p20": 21.2,
+     "f20": 29.7,
+     "dec10": 22.8,
+     "slow_pass": 59.3,
+     "pass_med": 19.0,
+     "b2b": "20/35"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_win_24h",
+   "title": "LIT more entries: Window 18:00-15:50, 1 trade a day",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 3.71/wk (3+ in 89% of weeks) win 61.1% PF 3.5 net +27,459 ($4,505/mo) DD -3,388; eval path net +32,540, 2-week pass/fail 54.6/0.0, 1 month 66.1/11.9. H2 (check) 3.27/wk (3+ in 69% of weeks) win 45.1% PF 2.03 net +9,623 ($2,591/mo) DD -1,726; eval path net +3,903, 2-week pass/fail 55.1/1.4, 1 month 59.3/15.3. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -13,084 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      950
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": null,
+    "stop_after_loss": false,
+    "second": null,
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 01:59",
+   "spans": {
+    "2026": {
+     "n": 146,
+     "tpw": 3.54,
+     "wk2": 95,
+     "win": 55.5,
+     "pf": 2.83,
+     "net": 37081,
+     "dd": -4199,
+     "avg_r": 0.538,
+     "stop": 43.1,
+     "worst_day": -876,
+     "risk": 325.0,
+     "half": 14,
+     "per_month": 3780,
+     "p10": 29.6,
+     "f10": 1.0,
+     "p15": 42.7,
+     "f15": 5.8,
+     "p20": 52.9,
+     "f20": 8.7,
+     "dec10": 30.6,
+     "slow_pass": 41.3,
+     "pass_med": 13.0,
+     "b2b": "8/2"
+    },
+    "2021-25": {
+     "n": 644,
+     "tpw": 3.0,
+     "wk2": 90,
+     "win": 51.1,
+     "pf": 0.91,
+     "net": -13084,
+     "dd": -19502,
+     "avg_r": 0.007,
+     "stop": 31.6,
+     "worst_day": -874,
+     "risk": 429.0,
+     "half": 65,
+     "per_month": -256,
+     "p10": 9.4,
+     "f10": 23.6,
+     "p15": 12.3,
+     "f15": 42.7,
+     "p20": 13.5,
+     "f20": 55.4,
+     "dec10": 33.0,
+     "slow_pass": 27.1,
+     "pass_med": 10.0,
+     "b2b": "12/51"
+    },
+    "all": {
+     "n": 790,
+     "tpw": 3.09,
+     "wk2": 91,
+     "win": 51.9,
+     "pf": 1.14,
+     "net": 23997,
+     "dd": -19502,
+     "avg_r": 0.105,
+     "stop": 33.5,
+     "worst_day": -876,
+     "risk": 398.0,
+     "half": 79,
+     "per_month": 394,
+     "p10": 13.0,
+     "f10": 20.0,
+     "p15": 17.5,
+     "f15": 36.8,
+     "p20": 20.2,
+     "f20": 47.9,
+     "dec10": 33.0,
+     "slow_pass": 33.1,
+     "pass_med": 11.0,
+     "b2b": "20/53"
+    }
+   }
+  },
+  {
+   "id": "lit_more_ent_win_full",
+   "title": "LIT more entries: Window 18:00-15:30, 1 trade a day",
+   "family": "sessions",
+   "question": "Owner 2026-10-22: LIT entries happen all the time, not in one window - more LIT trades (>= 3 a week) that add money in both 2026 halves without more MFFU eval fails?",
+   "status": "rejected",
+   "verdict": "LIT size rule + eval path (two_week). H1 (pick) 3.71/wk (3+ in 89% of weeks) win 61.1% PF 3.5 net +27,459 ($4,505/mo) DD -3,388; eval path net +32,540, 2-week pass/fail 54.6/0.0, 1 month 66.1/11.9. H2 (check) 3.21/wk (3+ in 69% of weeks) win 44.0% PF 2.03 net +9,568 ($2,576/mo) DD -1,726; eval path net +4,458, 2-week pass/fail 55.1/1.4, 1 month 59.3/11.9. Base (lit_live) H1 3.12/wk (3+ in 70% of weeks) win 58.8% PF 4.98 net +33,891 ($5,560/mo) DD -2,196; eval path net +34,234, 2-week pass/fail 57.1/5.9, 1 month 74.3/11.9; H2 2.56/wk (3+ in 44% of weeks) win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396; eval path net +9,059, 2-week pass/fail 52.2/0.0, 1 month 50.8/0.0. 2021-25 reference (5m) -12,888 vs +1,211.",
+   "writeup": "lit-more-entries",
+   "tags": [
+    "lit",
+    "lit_more_entries"
+   ],
+   "params": {
+    "ref": "cisd",
+    "extra_boxes": [],
+    "window": [
+     [
+      1080,
+      1440
+     ],
+     [
+      0,
+      930
+     ]
+    ],
+    "sweep_names": null,
+    "disp": 0.8,
+    "depth": 0.5,
+    "idm_a": [
+     1.0,
+     36,
+     1
+    ],
+    "nwog_discount": false,
+    "mw_filter": false,
+    "wait": 6,
+    "tf": "1m",
+    "cisd1m": 20,
+    "stop_buf": 0.25,
+    "min_stop": 8.0,
+    "max_stop": 80.0,
+    "classes": [
+     "vix"
+    ],
+    "vix_k": 1.0,
+    "min_rr": 1.5,
+    "max_rr": 8.0,
+    "fallback_rr": null,
+    "be_r": 1.0,
+    "flat_mod": 955,
+    "max_per_day": 1,
+    "be_off": 1.25,
+    "all_hours": true,
+    "per_session": null,
+    "stop_after_loss": false,
+    "second": null,
+    "sess_m": null,
+    "how_out": 1.0,
+    "monday": true,
+    "wk_stop": [
+     2,
+     0.5
+    ],
+    "t_check": {
+     "at": 15,
+     "x": 0.3,
+     "mfe": 0.5
+    },
+    "scale_in": null,
+    "idm_size": null,
+    "ctx_day": null,
+    "be_swing": null,
+    "day_mgmt": null,
+    "entry_delay": 0,
+    "bias_tgt": null,
+    "skip_keys": null,
+    "fills": null,
+    "kz": null,
+    "stop_atr": null,
+    "depth_max": null,
+    "sd_tgt": null,
+    "tx": null,
+    "re_be": null,
+    "cisd_nth": 1
+   },
+   "sizing": {},
+   "built": "2026-10-22 01:59",
+   "spans": {
+    "2026": {
+     "n": 145,
+     "tpw": 3.52,
+     "wk2": 95,
+     "win": 55.2,
+     "pf": 2.83,
+     "net": 37027,
+     "dd": -4253,
+     "avg_r": 0.539,
+     "stop": 43.0,
+     "worst_day": -876,
+     "risk": 326.0,
+     "half": 14,
+     "per_month": 3775,
+     "p10": 29.6,
+     "f10": 1.0,
+     "p15": 42.7,
+     "f15": 5.8,
+     "p20": 52.9,
+     "f20": 9.7,
+     "dec10": 30.6,
+     "slow_pass": 41.3,
+     "pass_med": 13.0,
+     "b2b": "8/2"
+    },
+    "2021-25": {
+     "n": 640,
+     "tpw": 2.99,
+     "wk2": 89,
+     "win": 51.2,
+     "pf": 0.92,
+     "net": -12888,
+     "dd": -19390,
+     "avg_r": 0.009,
+     "stop": 31.5,
+     "worst_day": -874,
+     "risk": 430.0,
+     "half": 64,
+     "per_month": -252,
+     "p10": 9.4,
+     "f10": 23.6,
+     "p15": 12.3,
+     "f15": 42.7,
+     "p20": 13.5,
+     "f20": 55.4,
+     "dec10": 33.0,
+     "slow_pass": 27.1,
+     "pass_med": 10.0,
+     "b2b": "12/51"
+    },
+    "all": {
+     "n": 785,
+     "tpw": 3.07,
+     "wk2": 91,
+     "win": 52.0,
+     "pf": 1.14,
+     "net": 24139,
+     "dd": -19390,
+     "avg_r": 0.107,
+     "stop": 33.2,
+     "worst_day": -876,
+     "risk": 398.0,
+     "half": 78,
+     "per_month": 397,
+     "p10": 13.0,
+     "f10": 20.0,
+     "p15": 17.5,
+     "f15": 36.8,
+     "p20": 20.2,
+     "f20": 48.0,
+     "dec10": 33.0,
+     "slow_pass": 33.1,
+     "pass_med": 11.0,
+     "b2b": "20/53"
     }
    }
   },
