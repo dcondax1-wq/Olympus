@@ -37,7 +37,7 @@ function secondCore() {
   if (window.SecondUI && window.SecondUI.brain) return Promise.resolve();
   if (!scLoading) scLoading = new Promise((ok, bad) => {
     const t = document.createElement('script');
-    t.src = new URL('./secondcore.js?v=3', import.meta.url).href;
+    t.src = new URL('./secondcore.js?v=4', import.meta.url).href;
     t.onload = () => ok(); t.onerror = () => { scLoading = null; bad(new Error('secondcore.js did not load')); };
     document.head.appendChild(t);
   });

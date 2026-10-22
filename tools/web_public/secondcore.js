@@ -50,6 +50,37 @@
     }).join('');
     return `<div class="sc-tw"><table class="sc-t"><thead><tr><th>Entry (ET)</th><th>Side</th><th>Micros</th><th>Entry</th><th>Stop</th><th>Target</th><th>Exit</th><th>R</th><th>$ (own)</th><th>With LIT</th></tr></thead><tbody>${body}</tbody></table></div>`;
   }
+  // ---------------------------------------------------------------- go / no-go scorecard (engine/second_scorecard.py)
+  // sc = {n, need, cum_r, usd, win, pf, pct, kind: collecting | on_track | below | ready, text, expected: {cum_r: [p5, p10,
+  // p50, p90], usd, win, pf}, bad_year: {cum_r: [p10, p50, p90]}, like_2025}
+  const SCK = { collecting: ['Collecting', C.mut], on_track: ['On track', C.acc], below: ["Below range: don't go live", C.bad], ready: ['Ready', C.good] };
+  function scoreBox(sc, title) {
+    if (!sc) return '';
+    if (sc.error) return `<p class="sc-note">Scorecard unavailable: ${esc(sc.error)}</p>`;
+    const [lab, col] = SCK[sc.kind] || ['—', C.mut];
+    const e = sc.expected || {}, b = sc.bad_year || {};
+    const er = sc.n && e.cum_r ? `${fR(e.cum_r[1])} to ${fR(e.cum_r[3])} (median ${fR(e.cum_r[2])})` : '—';
+    const br = sc.n && b.cum_r ? `median ${fR(b.cum_r[1])}` : '—';
+    const pct = Math.max(0, Math.min(100, sc.n ? Number(sc.pct || 0) : 0));
+    return `<div class="sc-state sc-go" style="border-color:${col}"><span class="sc-pill" style="background:${col}">${esc(lab)}</span>
+      <b>${esc(title || 'Go / no-go')}: ${esc(sc.text || '')}</b>
+      <div class="sc-stats"><div class="sc-stat"><span>Paper trades</span><b>${n0(sc.n)}<small>/${n0(sc.need || 20)}</small></b><em>finished</em></div>
+        <div class="sc-stat"><span>Cumulative R</span><b class="${cl(sc.cum_r)}">${fR(sc.cum_r)}</b><em>${sc.n ? 'p' + n0(sc.pct) + ' of the expected' : 'no trades yet'}</em></div>
+        <div class="sc-stat"><span>Win · PF</span><b>${sc.win == null ? '—' : n0(sc.win, 0) + '%'} · ${sc.pf == null ? '—' : n0(sc.pf, 2)}</b><em>${e.win && sc.n ? 'expected ' + n0(e.win[1], 0) + '% · PF ' + n0(e.pf[1], 2) : ''}</em></div>
+        <div class="sc-stat"><span>Paper $ ($500 risk)</span><b class="${cl(sc.usd)}">${usd(sc.usd)}</b><em>${e.usd && sc.n ? 'expected ' + usd(e.usd[0]) + ' to ' + usd(e.usd[2]) : ''}</em></div></div>
+      <div class="sc-bar" title="where the paper result sits in the expected range"><i style="left:5%;width:5%;background:${C.warn}"></i><i style="left:10%;width:80%;background:color-mix(in srgb,${C.good} 35%,transparent)"></i><u style="left:${pct}%"></u></div>
+      <em>Expected after ${n0(e.at_n || sc.n)} trades (2026 H2 bootstrap, p10-p90): ${esc(er)} · a 2025-like year: ${esc(br)}${sc.like_2025 ? ' · <b style="color:' + C.warn + '">looks like 2025 so far</b>' : ''}</em></div>`;
+  }
+  function scoreCard(S) {
+    const g = S && S.scorecard;
+    if (!g) return '';
+    if (g.error) return `<div class="sc-card"><p class="sc-note">Scorecard unavailable: ${esc(g.error)}</p></div>`;
+    const rows = (S.strategies || []).filter((s) => s.scorecard).map((s) => `<tr><td>${esc(s.short || s.key)}</td><td>${n0(s.scorecard.n)}</td><td class="${cl(s.scorecard.cum_r)}">${fR(s.scorecard.cum_r)}</td><td>${esc(s.scorecard.text)}</td></tr>`).join('');
+    return `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.acc}">Go / no-go · before buying account B</div><h3>Scorecard: paper result vs the expected range</h3>
+      <p class="sc-note">${esc(g.rule || '')}${g.source ? ' Source: ' + esc(g.source) + '.' : ''}</p>
+      ${scoreBox(g.account_b, 'Account B (' + ((g.account_b || {}).keys || []).length + ' strategies pooled)')}
+      ${rows ? `<div class="sc-tw"><table class="sc-t"><thead><tr><th>Strategy</th><th>Trades</th><th>Cum R</th><th>Verdict</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}</div>`;
+  }
   function strat(s, live) {
     const lv = live && live.strategies ? live.strategies[s.key] : null;
     const st = lv && lv.state ? lv.state : s.state;
@@ -65,6 +96,7 @@
         <div class="sc-stat"><span>Paper $ (own, $500 risk)</span><b class="${cl(p.usd)}">${usd(p.usd)}</b><em>since the ledger started</em></div>
         <div class="sc-stat"><span>With LIT (one account)${s.with_lit_label ? ' · ' + esc(s.with_lit_label) : ''}</span><b class="${cl(p.with_lit_usd)}">${usd(p.with_lit_usd)}</b><em>${n0(p.with_lit_n)} taken</em></div></div>
       ${s.with_lit_note ? `<p class="sc-note"><b>${esc(s.with_lit_label || 'Note')}:</b> ${esc(s.with_lit_note)}</p>` : ''}
+      ${scoreBox(s.scorecard, 'Go / no-go')}
       <details open><summary><b>Paper trades</b></summary>${trades(rows)}</details>
       <details><summary><b>Rules in plain words</b></summary><ol class="sc-rules">${(s.rules || []).map((r) => `<li>${esc(r)}</li>`).join('')}</ol></details>
       <details><summary><b>Backtest numbers</b></summary>${btTable(s.backtest, s.with_lit_label)}</details></div>`;
@@ -77,6 +109,8 @@
 .sc-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:10px 0}.sc-stat{border:1px solid ${C.line};border-radius:12px;padding:9px 11px;min-width:0}
 .sc-stat span{display:block;font-size:11.5px;opacity:.7}.sc-stat b{display:block;font-size:19px;margin-top:2px}.sc-stat em{display:block;font-style:normal;font-size:11.5px;opacity:.7;margin-top:2px}
 .sc-up{color:${C.good}}.sc-dn{color:${C.bad}}.sc-tw{overflow-x:auto;max-width:100%}.sc-t{width:100%;border-collapse:collapse;font-size:12.5px}.sc-t th,.sc-t td{padding:6px 8px;border-bottom:1px solid ${C.line};text-align:left;white-space:nowrap}.sc-t th{font-weight:600;opacity:.8}
+.sc-go .sc-stat b small{font-size:12px;opacity:.6;font-weight:500}.sc-bar{position:relative;height:8px;border-radius:99px;margin:8px 0 4px;background:color-mix(in srgb,${C.bad} 30%,transparent)}
+.sc-bar i{position:absolute;top:0;bottom:0;border-radius:99px}.sc-bar u{position:absolute;top:-3px;width:3px;height:14px;margin-left:-1px;border-radius:2px;background:currentColor}
 .sc-rules{margin:8px 0 4px;padding-left:20px;font-size:13px;line-height:1.55}.sc-rules li{margin:3px 0}.sc-card details{margin:8px 0}.sc-card summary{cursor:pointer;font-size:13.5px}`;
   // ---------------------------------------------------------------- Account B (engine/account_b.py): its own account + eval
   // ab = LiveBot.second_route_info().account_b: {label, account, plan_label, kind, sizing, keys, eval: {balance, floor, room,
@@ -112,6 +146,7 @@
       const anyR = S.strategies.some((s) => routeOf(s, opts.live).on);
       el.innerHTML = `<div class="sc-banner"><b>${anyR ? 'ROUTED + PAPER.' : 'PAPER ONLY.'}</b> ${esc(S.note || 'Nothing is traded. LIT and the eval account are unchanged.')}${S.source ? ' Source: ' + esc(S.source) + '.' : ''}</div>`
         + acctB((opts.live && opts.live.route && opts.live.route.account_b) || S.account_b || (S.route && S.route.account_b))
+        + scoreCard(S)
         + S.strategies.map((s) => strat(s, opts.live)).join('');
     } catch (e) { el.innerHTML = `<div class="sc-card"><b>This page failed to draw</b><p class="sc-note">${esc(String(e && e.message || e))}</p></div>`; }
   }
@@ -176,5 +211,5 @@
     if (Array.isArray(x.strategies)) return { src, t: x.t, account_b, strategies: x.strategies.map((s) => ({ ...s, src })) };
     return { src, t: x.t, account_b, strategies: Object.entries(x.strategies || {}).map(([key, s]) => ({ key, ...s, src })) };
   }
-  window.SecondUI = { render, brain, brainList, acctB, version: 3 };
+  window.SecondUI = { render, brain, brainList, acctB, scoreBox, scoreCard, version: 4 };
 })();
