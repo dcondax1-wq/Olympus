@@ -164,7 +164,8 @@ def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | 
     b5 = from_frame(sym, "5m", w)
     M = lit.Market(bars=b5, extra_boxes=P.get("extra_boxes") or [])
     M.n_closed = n_closed if len(b5) == n_closed + 1 else M.n
-    C = lit.candidates(M, ref=P["ref"])
+    # all_hours (research/writeups/lit-all-hours.md, lit-more-entries.md; off = today): setups on the whole trading day
+    C = lit.candidates(M, ref=P["ref"], evening=True) if P.get("all_hours") else lit.candidates(M, ref=P["ref"])
     B5 = lit.bars_5m(M) if M.n_closed == M.n else lit.closed_bars(lit.bars_5m(M), M.n_closed)
     B1 = None
     if src is not None and len(src):
@@ -499,7 +500,8 @@ def _shape(M, R, P, now, B1):
               f"{enter_now['qty']} micros | stop {enter_now['stop']:,.2f} | target {enter_now['target']:,.2f}")
     elif len(day_tr) >= P["max_per_day"] and str(trading_date(now)) == today:
         t = day_tr[-1]
-        ms = f"LIT: done for today ({t['exit_reason']} {t['pnl_r']:+.2f}R, ${t['pnl']:+,.0f}); 1 trade a day"
+        ms = (f"LIT: done for today ({t['exit_reason']} {t['pnl_r']:+.2f}R, ${t['pnl']:+,.0f}); "
+              f"{P['max_per_day']} trade{'s' if P['max_per_day'] != 1 else ''} a day")
     elif setups:
         s = next(iter(setups.values())); side = next(iter(setups))
         if s.get("tapped_t"):
