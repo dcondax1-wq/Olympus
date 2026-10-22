@@ -6,6 +6,7 @@
 
 A. order sanity (pure): plan / 40 / account max / wrong-side stop / > 100 pts / < 1.5R / $ at risk.
 B. calendar (pure): weekend, 17:00 break, CME full closures, before 02:00, at the flat time, CME early-close cutoff.
+   B2: the same with LIT all_hours (the Asia slot): CME trading day 18:00 -> 17:00, evening = the next date's session.
 C. 2026 proof: every 2026 LIT trade (tools/lit_final.run on live_model.json "lit") passes order sanity + calendar at the
    routed tick prices; the two_week eval run's worst $ at risk is under max_risk_usd; default-off guards are off.
 D. LiveBot route (stub adapter): an entry that fails sanity is NOT routed ("GUARD ..."), pushed; one entry a day and the
@@ -84,6 +85,33 @@ def pure():
           cal(at(2026, 11, 27, 12, 55), at(2026, 11, 27, 12, 55)) == []
           and any("early close" in x for x in cal(at(2026, 11, 27, 13, 0), at(2026, 11, 27, 13, 0))))
     check("B. Thanksgiving 2026-11-26 (13:00 halt): 12:45 refused", any("early close" in x for x in cal(at(2026, 11, 26, 12, 45), at(2026, 11, 26, 12, 45))))
+    # B2. LIT all_hours (the Asia slot, lit-more-entries.md): the CME trading day 18:00 -> 17:00; off = the checks above
+    def cal_ah(y, m, d, hh, mm):
+        return cal(at(y, m, d, hh, mm), at(y, m, d, hh, mm, 3), session_from=1080, flat_mod=955, all_hours=True)
+    check("B2. all_hours off: Tue 20:41 ET -> refused 'before the session start 02:00' (today's rule)",
+          any("session start 02:00" in x for x in cal(at(2026, 9, 1, 20, 41), at(2026, 9, 1, 20, 41, 3))))
+    check("B2. all_hours: Tue 20:41, 23:28, Wed 00:37 and 10:00 ET -> allowed",
+          cal_ah(2026, 9, 1, 20, 41) == [] and cal_ah(2026, 9, 1, 23, 28) == [] and cal_ah(2026, 9, 3, 0, 37) == []
+          and cal_ah(2026, 9, 2, 10, 0) == [])
+    check("B2. all_hours: Sun 18:30 ET (Monday's session) -> allowed; Sun 17:30 -> refused (closed)",
+          cal_ah(2026, 10, 25, 18, 30) == [] and any("market closed" in x for x in cal_ah(2026, 10, 25, 17, 30)))
+    check("B2. all_hours: 15:55 and 16:30 ET -> past the cutoff; 17:30 -> closed; Fri 20:00 -> closed",
+          any("cutoff 15:55" in x for x in cal_ah(2026, 10, 22, 15, 55)) and any("cutoff 15:55" in x for x in cal_ah(2026, 10, 22, 16, 30))
+          and any("market closed" in x for x in cal_ah(2026, 10, 22, 17, 30)) and any("market closed" in x for x in cal_ah(2026, 10, 23, 20, 0)))
+    check("B2. all_hours: Christmas Eve 20:00 ET (= Christmas's session) and New Year's Eve 20:00 -> CME holiday",
+          any("holiday" in x for x in cal_ah(2026, 12, 24, 20, 0)) and any("holiday" in x for x in cal_ah(2026, 12, 31, 20, 0)))
+    check("B2. all_hours: Thanksgiving evening 20:00 ET (Black Friday's session, 13:15 halt) allowed; Fri 13:00 refused (early close)",
+          cal_ah(2026, 11, 26, 20, 0) == [] and any("early close" in x for x in cal_ah(2026, 11, 27, 13, 0)))
+    check("B2. all_hours: Wed 20:00 before Thanksgiving allowed; Thanksgiving 12:45 refused (13:00 halt)",
+          cal_ah(2026, 11, 25, 20, 0) == [] and any("early close" in x for x in cal_ah(2026, 11, 26, 12, 45)))
+
+    class _B:
+        state = {"strategy": {"model": "lit", "params": {"window": [[1080, 1440], [0, 930]], "all_hours": True}}}
+    b_on = _B()
+    b_off = _B(); b_off.state = {"strategy": {"model": "lit", "params": {"window": [[120, 930]]}}}
+    check("B2. session start from the bot's LIT window: all_hours 18:00 (trading-day order), today 02:00",
+          guards._session_from(b_on) == 1080 and guards._all_hours(b_on) and guards._session_from(b_off) == 120
+          and not guards._all_hours(b_off))
     ev = [{"t": at(2026, 11, 10, 8, 30), "event": "CPI (consumer inflation)", "impact": "high"}]
     check("news: 08:28:30 and 08:32 are inside 2 min of CPI, 08:27 and 08:33 are not",
           guards.news_hit(at(2026, 11, 10, 8, 28, 30), 2, ev) and guards.news_hit(at(2026, 11, 10, 8, 32), 2, ev)
