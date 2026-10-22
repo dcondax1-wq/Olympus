@@ -83,6 +83,9 @@ def bars(M, tf):
 def run(P, sessions=SESS):
     P = {**lit.DEFAULTS, **P}
     M, C = market(P["ref"], P["extra_boxes"])
+    if P.get("retail"):                  # retail-tool entries (engine/lit_retail.py; off = None = today's LIT)
+        from engine import lit_retail
+        C = lit_retail.apply(M, C, P)
     B1 = bars(M, "1m") if P["tf"] == "1m" else None
     return lit.run_x(M, C, P, sessions, B1=B1, B5=bars(M, "5m"))
 

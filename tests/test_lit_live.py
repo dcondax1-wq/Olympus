@@ -151,6 +151,9 @@ def main():
     t_all = time.time()
     # --final: the lit_final params (no loss pack); default: live_model.json "lit" (what the bots trade)
     P = json.load(open(FINAL, encoding="utf-8"))["params"] if "--final" in sys.argv else json.load(open(LIVE, encoding="utf-8"))["lit"]
+    rt = next((a.split("=", 1)[1] for a in sys.argv if a.startswith("--retail=")), None)
+    if rt:                               # retail-tool entries on (engine/lit_retail.py): a JSON file / dict of lit keys, e.g.
+        P = {**P, **json.loads(open(rt).read() if os.path.exists(rt) else rt)}   # {"retail": {...}, "max_per_day": 2, "src_cap": 1}
     from tools import lit_final as F
     REF = [t for t in F.run(P) if t["day"] >= "2026-01-01"]
     sess = [d for d in F.SESS if d >= "2026-01-01"]

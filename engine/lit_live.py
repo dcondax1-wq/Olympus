@@ -162,6 +162,9 @@ def run(df5: pd.DataFrame, params: dict | None = None, one_min=None, now: int | 
     M = lit.Market(bars=b5, extra_boxes=P.get("extra_boxes") or [])
     M.n_closed = n_closed if len(b5) == n_closed + 1 else M.n
     C = lit.candidates(M, ref=P["ref"])
+    if P.get("retail"):                  # retail-tool entries (engine/lit_retail.py; off = None = today's LIT)
+        from engine import lit_retail
+        C = lit_retail.apply(M, C, P)
     B5 = lit.bars_5m(M) if M.n_closed == M.n else lit.closed_bars(lit.bars_5m(M), M.n_closed)
     B1 = None
     if src is not None and len(src):
