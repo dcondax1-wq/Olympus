@@ -1,6 +1,7 @@
 {
  "paper": true,
  "note": "Second strategies next to LIT (engine/second.py computes signals only). \"route\": false (default) = paper; \"route\": true = the PC bot routes it to its own account next to LIT (engine/live.py: LIT first, one position at a time, max 2 trades a day, eval-safe size). Switch: python -m engine.second --route <key> on|off. Cloud-only strategies are never routed. Switch one off: \"on\": false.",
+ "account_b": null,
  "strategies": {
   "ema_lon_vix": {
    "on": true,

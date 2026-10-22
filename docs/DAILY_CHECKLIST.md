@@ -107,6 +107,16 @@ The bot can also trade the EMA London pullback (`ema_lon_vix`), the MACD sweep (
    Pushes for it say the account name like LIT's, with "(EMA)" in the text; the paper ones keep "PAPER".
 3. Switch it off the same way: `python -m engine.second --route ema_lon_vix off`
 
+## Optional: Account B, the second strategies on their own account (OFF)
+
+EMA + MACD + S/R on a second MFFU account (a Builder 25K, $63, is the pick: `research/writeups/second-account-b.md`).
+LIT stays alone on its 50K. Try it on a Sim account first.
+1. In NinjaTrader, note the account Name (a Sim account first, e.g. Sim102), then:
+   `python -m engine.second --account-b "Sim102" --plan builder25k --start 2026-10-26`
+2. The bot picks it up on its next poll: own orders, own eval card ("Account B Sim102"), max 2 trades a day, never
+   opposite to LIT (B is closed first when LIT enters the other way).
+3. Off: `python -m engine.second --account-b off`
+
 ## Rules that never change
 - The bot never arms a real account by itself. You start the eval bot yourself (dashboard, your phrase).
 - **No trade for 5 days**: place 1 MNQ by hand (in and out) or let the min-days trade run (MFFU's 7-day rule).

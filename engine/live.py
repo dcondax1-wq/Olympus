@@ -354,6 +354,8 @@ class LiveBot:
         self._second_prov = {}           # entry_t -> what was routed for a second-strategy entry (checked, corrected, closed)
         self._second_notes = {}          # once-per-key log lines of the second-strategy route
         self._brain_log = None           # engine/brain.BrainLog: today's thought log (data/brain/YYYY-MM-DD.jsonl for the real bot)
+        self.acct_b = None               # engine/account_b.AccountB: the second strategies on their own account (None = off)
+        self._acct_b_sig = None          # the account_b block it was built from (rebuilt when it changes and B is flat)
 
     # ------------------------------------------------------------------ plumbing
     def _log(self, kind, text, **kw):
@@ -596,6 +598,8 @@ class LiveBot:
         self.health["no_yahoo"] = self.no_yahoo
         self._restore(clear_kill=bool(cfg.get("clear_kill")))
         self._start_accounts()
+        self.acct_b, self._acct_b_sig = None, None
+        self._sync_account_b()
         self.running = True
         self.stop_flag.clear()
         if spawn:
@@ -643,6 +647,8 @@ class LiveBot:
             self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "reason": "KILL SWITCH", "entry_t": None})
         if self.accts is not None:                  # every extra account is flattened too (engine/multi_account.py)
             self.accts.kill(self.cfg.get("sym", "NQ"))
+        if self.acct_b is not None:                 # and account B (engine/account_b.py)
+            self.acct_b.kill(self.cfg.get("sym", "NQ"))
         self.stop()
         self._log("risk", "KILL SWITCH: flattened and stopped")
         self._save_state()
@@ -684,6 +690,9 @@ class LiveBot:
                 self.accts.save()
             except Exception:
                 pass
+        if self.acct_b is not None and self.acct_b.open_t is not None:     # account B (engine/account_b.py)
+            r = self.acct_b.kill(sym)
+            extras.append({"id": "account_b", "ok": bool(r.get("ok")), "error": r.get("error")})
         self._log("risk", f"{reason}: " + ("position closed" if pos else "no open position") +
                   "; the bot keeps running, no new entries until the next trading day")
         self._save_state()
@@ -748,6 +757,8 @@ class LiveBot:
         ad = self.adapter
         if self.accts is not None and not self.kill:
             self.accts.tick()                       # the extra accounts' adapters (never raises)
+        if self.acct_b is not None and not self.kill:
+            self.acct_b.adapter_tick()              # account B's adapter (never raises)
         if self.kill or not getattr(ad, "loop_tick", False) or not callable(getattr(ad, "tick", None)):
             return
         try:
@@ -1228,6 +1239,7 @@ class LiveBot:
         if model == "lit":                    # after routing and the state save: never delays an order
             self._brain_tick(res, lit_p, now, brain_keep)
             self._second_route_tick(df_full, df1, res, sym, now)   # routed second strategies (OFF by default): LIT routed first
+            self._account_b_tick(df_full, df1, sym, now)           # account B (OFF by default): its own account, after LIT
             self._second_tick(df_full, df1, res, now)
         return self.state
 
@@ -1294,7 +1306,8 @@ class LiveBot:
             for k, sc in cfg["strategies"].items():
                 if isinstance(sc, dict):
                     sc["route"] = k in over and bool(sc.get("on", True)) and not sc.get("cloud_only")
-        return cfg, _second.routed(cfg)
+        on_b = set(self.acct_b.spec.get("keys") or []) if self.acct_b is not None else set()
+        return cfg, [k for k in _second.routed(cfg) if k not in on_b]     # a strategy on account B is never routed here too
 
     def _snote(self, key, kind, text):
         """Log a second-route line once per key + text (a skipped signal is logged once, not every poll)."""
@@ -1347,8 +1360,15 @@ class LiveBot:
         """Heartbeat / live.json / dashboards: which second strategies the bot routes to its account, the open one, the
         last routed rows. None when nothing is routed (paper only)."""
         keys = list(self._second_routed or [])
+        ab = None
+        if self.acct_b is not None:
+            try:
+                ab = self.acct_b.info()
+            except Exception as e:
+                ab = {"label": "Account B", "error": f"{e.__class__.__name__}: {e}"}
         if not keys and not self._open_src:
-            return None
+            return {"keys": [], "account": None, "open": None, "routed": [], "account_b": ab,
+                    "note": "account B trades its own strategies; nothing routed on LIT's account"} if ab else None
         try:
             acct = self._push_account()
         except Exception:
@@ -1357,7 +1377,8 @@ class LiveBot:
         rows = [{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target")}
                 for r in self.ledger if r.get("src")][-8:]
         return {"keys": keys, "account": acct, "open": op, "routed": rows,
-                "note": "LIT first, one position at a time, max 2 trades a day (1 second-strategy trade)"}
+                "note": "LIT first, one position at a time, max 2 trades a day (1 second-strategy trade)",
+                **({"account_b": ab} if ab else {})}
 
     def _second_qty(self, sc, t):
         """Micros for a routed second-strategy entry: engine/sizing.second_qty with LIT's eval state (shared daily loss,
@@ -1958,6 +1979,49 @@ class LiveBot:
             self._note_error(f"extra accounts NOT started: {e.__class__.__name__}: {e}")
             self._log("risk", f"Extra accounts NOT started ({e.__class__.__name__}: {e}): only the bot's own account trades")
 
+    # ------------------------------------------------------------------ account B (engine/account_b.py, off by default)
+    def _account_b_block(self):
+        """The account_b block: the start cfg's "account_b" (test harnesses; null = off) when the key is there, else
+        second_model.json's. None = off."""
+        if "account_b" in (self.cfg or {}):
+            ab = self.cfg.get("account_b")
+        else:
+            from . import account_b as _ab
+            ab = _ab.raw_cfg()
+        return ab if isinstance(ab, dict) and ab else None
+
+    def _sync_account_b(self):
+        """Start / rebuild / stop account B when its block changed (python -m engine.second --account-b ...); an open
+        account B position keeps the running one until it is flat. Never raises."""
+        try:
+            ab = self._account_b_block()
+            sig = json.dumps(ab, sort_keys=True) if ab else None
+            if sig == self._acct_b_sig:
+                return
+            if self.acct_b is not None and self.acct_b.open_t is not None:
+                self._snote(("acctb", "wait"), "risk", "account B changed in second_model.json: applied once its open trade is closed")
+                return
+            self._acct_b_sig = sig
+            if ab is None:
+                if self.acct_b is not None:
+                    self._log("system", f"{self.acct_b.label}: switched off (no new entries on it)")
+                self.acct_b = None
+                return
+            from . import account_b as _ab
+            self.acct_b = _ab.build(self, ab)
+        except Exception as e:
+            self.acct_b = None
+            self._note_error(f"account B NOT started: {e.__class__.__name__}: {e}")
+
+    def _account_b_tick(self, df5, df1, sym, now):
+        """After LIT's routing, the state save and the LIT-account second route: account B's poll. Never raises."""
+        try:
+            self._sync_account_b()
+            if self.acct_b is not None:
+                self.acct_b.tick(df5, df1, sym, now)
+        except Exception as e:
+            self._note_error(f"account B failed: {e.__class__.__name__}: {e}")
+
     def _route_signals(self, res, sym, now, secs):
         """The bot's own account (_route_primary) and, when configured, every extra account at the same time."""
         if self.accts is None:
@@ -2033,6 +2097,12 @@ class LiveBot:
                     # a routed second-strategy trade is open: LIT has priority - it is closed at market first (the research
                     # "with LIT" rule of second-md.md / second-mix.md "pre"), then LIT enters; never two positions
                     self._second_preempt(sym, ent, now)
+                if self.acct_b is not None:
+                    # account B holds the other direction: closed at market first (no hedging across accounts), then LIT
+                    try:
+                        self.acct_b.lit_entering(ent, sym, now)
+                    except Exception as e:
+                        self._note_error(f"account B hedge close failed: {e.__class__.__name__}: {e}")
                 self._open_routed = ent["entry_t"]
                 self._open_src = None
                 self._open_qty = q

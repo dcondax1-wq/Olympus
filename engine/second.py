@@ -1140,9 +1140,15 @@ def dashboard_block(state: dict | None = None, cfg: dict | None = None, pc: dict
     st = state or {}
     route = route or (pc or {}).get("route") or None
     rk = set((route or {}).get("keys") or [])
-    out = {"paper": not rk, "note": ("Paper only: nothing is traded. LIT and the eval account are unchanged." if not rk else
-                                     f"{', '.join(sorted(rk))} ROUTED on {(route or {}).get('account') or 'the bot account'} next to LIT "
-                                     "(LIT first, one position at a time, max 2 trades a day); the others are paper."),
+    ab = (route or {}).get("account_b") or None
+    bk = set((ab or {}).get("keys") or []) if (ab or {}).get("enabled") else set()
+    note = ("Paper only: nothing is traded. LIT and the eval account are unchanged." if not rk else
+            f"{', '.join(sorted(rk))} ROUTED on {(route or {}).get('account') or 'the bot account'} next to LIT "
+            "(LIT first, one position at a time, max 2 trades a day); the others are paper.")
+    if bk:
+        note = (f"{', '.join(sorted(bk))} ROUTED on {ab['label']} ({ab.get('plan_label')}, its own eval; never opposite to LIT). "
+                + (note if rk else "LIT's account is unchanged."))
+    out = {"paper": not (rk or bk), "note": note, "account_b": ab,
            "route": route, "t": st.get("t"), "first_run": st.get("first_run"), "strategies": [], "pc_t": (pc or {}).get("t")}
     for key, sc in (cfg.get("strategies") or {}).items():
         s = (st.get("strategies") or {}).get(key) or {}
@@ -1161,7 +1167,7 @@ def dashboard_block(state: dict | None = None, cfg: dict | None = None, pc: dict
                                             "wins": sum(1 for v in fin if (v.get("usd") or 0) > 0),
                                             "with_lit_n": len(lit_fin), "with_lit_usd": round(sum((v.get("lit") or {}).get("usd") or 0 for v in lit_fin), 2)},
             "pc_today": [t for t in (pcs.get("trades") or []) if t.get("day") == (pcs.get("state") or {}).get("day")][-5:],
-            "route": key in rk, "route_label": route_label(key in rk, (route or {}).get("account")),
+            "route": key in rk or key in bk, "route_label": route_label(key in rk or key in bk, ab["label"] if key in bk else (route or {}).get("account")),
             "brain": pcs.get("brain") or s.get("brain"),
         })
     return out
@@ -1180,14 +1186,16 @@ def compact(res: dict | None, max_trades: int = 6, route: dict | None = None) ->
         return None
     rk = set((route or {}).get("keys") or [])
     acct = (route or {}).get("account")
-    out = {"t": res.get("t"), "day": res.get("day"), "paper": not rk, "strategies": {},
-           **({"route": {k: v for k, v in route.items() if k in ("keys", "account", "open", "routed", "note")}} if route else {})}
+    ab = (route or {}).get("account_b") or None
+    bk = set((ab or {}).get("keys") or []) if (ab or {}).get("enabled") else set()
+    out = {"t": res.get("t"), "day": res.get("day"), "paper": not (rk or bk), "strategies": {},
+           **({"route": {k: v for k, v in route.items() if k in ("keys", "account", "open", "routed", "note", "account_b")}} if route else {})}
     for k, s in (res.get("strategies") or {}).items():
         tr = [{kk: t.get(kk) for kk in ("day", "entry_t", "exit_t", "dir", "entry", "stop", "stop_now", "target", "exit", "exit_kind",
                                         "r", "qty", "usd", "last", "lit")} for t in (s.get("trades") or [])[-max_trades:]]
-        on_route = k in rk
+        on_route = k in rk or k in bk
         out["strategies"][k] = {"label": s.get("label"), "short": s.get("short"), "on": s.get("on"), "state": s.get("state"),
-                                "route": on_route, "route_label": route_label(on_route, acct), "trades": tr,
+                                "route": on_route, "route_label": route_label(on_route, ab["label"] if k in bk else acct), "trades": tr,
                                 **({"brain": brain_compact(s.get("brain"))} if s.get("brain") else {}),
                                 **({"error": s["error"]} if s.get("error") else {})}
     return out
@@ -1296,6 +1304,10 @@ def set_route(key: str, on: bool, path: str | None = None, selftest=_selftest_ok
     if on and not sc.get("on", True):
         return {"ok": False, "error": f"{key} is switched off (\"on\": false): switch it on first"}
     old = bool(sc.get("route", False))
+    ab = c.get("account_b")
+    if on and isinstance(ab, dict) and key in (ab.get("strategies") or ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"]):
+        return {"ok": False, "error": f"{key} trades on account B ({ab.get('account')}): it is never also routed on LIT's account "
+                                      "(python -m engine.second --account-b off first)"}
     if on:
         ok, line = selftest()
         if not ok:
@@ -1322,13 +1334,48 @@ def set_route(key: str, on: bool, path: str | None = None, selftest=_selftest_ok
     return {"ok": True, "key": key, "from": old, "to": bool(on), "label": sc.get("label") or key}
 
 
+def _account_b_cli(a) -> int:
+    """python -m engine.second --account-b "<Name>" --plan builder25k --start <day> | --account-b off (engine/account_b.py)."""
+    from engine import account_b as AB
+    r = AB.set_account_b(a.account_b, plan=a.plan, start=a.start, sizing=a.sizing,
+                         strategies=[x.strip() for x in a.strategies.split(",") if x.strip()] if a.strategies else None)
+    if not r["ok"]:
+        print("REFUSED: " + r["error"])
+        return 1
+
+    def desc(v):
+        if not v:
+            return "off"
+        return (f"{v['account']} {AB.PLANS[v['plan']]['label']}, eval from {v['eval_start']}, size {v['sizing']}, "
+                f"strategies {', '.join(v['strategies'])}")
+    print(f"Account B: {desc(r['from'])} -> {desc(r['to'])}")
+    if r["to"]:
+        P = AB.PLANS[r["to"]["plan"]]
+        print(f"The PC bot picks it up on its next poll: its own NinjaTrader account, eval tracker and size, never opposite to "
+              f"LIT. Plan {P['label']} (${P['price']:.2f})."
+              + (f" Switched off on LIT's account: {', '.join(r['routed_off'])}." if r.get("routed_off") else ""))
+        if not r.get("sim"):
+            print("Not a Sim account: its orders are refused until you arm it yourself (the same steps as LIT's live account).")
+    else:
+        print("The PC bot takes no new account B entry from its next poll; an open account B trade is still managed to its exit.")
+    return 0
+
+
 def main(argv=None):
     import argparse
     ap = argparse.ArgumentParser(prog="python -m engine.second", description="Second strategies next to LIT (paper / routed).")
     ap.add_argument("--route", nargs=2, metavar=("KEY", "on|off"), help="route a second strategy to the PC bot's account (on) or "
                                                                           "back to paper (off)")
     ap.add_argument("--status", action="store_true", help="show every strategy: on / routed / paper")
+    ap.add_argument("--account-b", metavar="NAME", help="trade the second strategies on their own account (the NinjaTrader account "
+                                                       "Name), or 'off' (engine/account_b.py)")
+    ap.add_argument("--plan", default="builder25k", choices=["builder25k", "builder50k"], help="account B's MFFU plan")
+    ap.add_argument("--start", help="account B's first eval session (yyyy-mm-dd; default today)")
+    ap.add_argument("--sizing", default="need", choices=["need", "safe"], help="account B's size: need (one winner passes) or safe")
+    ap.add_argument("--strategies", help="comma list (default ema_lon_vix,macd_sweep,sr_nyreclaim)")
     a = ap.parse_args(argv)
+    if a.account_b:
+        return _account_b_cli(a)
     if a.route:
         key, st = a.route[0], a.route[1].lower()
         if st not in ("on", "off"):
@@ -1345,7 +1392,14 @@ def main(argv=None):
               + (" LIT stays first; one position at a time; max 2 trades a day." if r["to"] else ""))
         return 0
     cfg = load_cfg()
+    ab = cfg.get("account_b")
+    print("Account B: " + (f"{ab.get('account')} {ab.get('plan')} from {ab.get('eval_start')} size {ab.get('sizing', 'need')}: "
+                           f"{', '.join(ab.get('strategies') or [])}" if isinstance(ab, dict) and ab else "off"))
+    onb = set((ab or {}).get("strategies") or []) if isinstance(ab, dict) else set()
     for k, sc in cfg["strategies"].items():
+        if k in onb:
+            print(f"{k:14s} {'on ' if sc.get('on', True) else 'OFF'} ACCOUNT B  {sc.get('label') or ''}")
+            continue
         print(f"{k:14s} {'on ' if sc.get('on', True) else 'OFF'} {'ROUTED' if sc.get('route') else 'cloud only' if sc.get('cloud_only') else 'paper'}"
               f"  {sc.get('label') or ''}")
     return 0
