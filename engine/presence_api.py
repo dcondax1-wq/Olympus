@@ -109,7 +109,7 @@ async def post_pause(req: Request):
 @router.post("/api/next/pause/clear")
 def post_pause_clear():
     bot = _bot()
-    was = entry_pause.clear(entry_pause.path_for(bot))
+    was = entry_pause.clear(entry_pause.path_for(bot), _clock(bot))
     try:
         if was:
             bot._log("system", "PAUSE lifted: new entries allowed again (PC dashboard)")

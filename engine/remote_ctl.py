@@ -172,7 +172,7 @@ def save_done(d: dict, path: str = DONE_PATH):
     os.replace(tmp, path)
 
 
-def hb_field(path: str | None = None, env=None) -> dict:
+def hb_field(path: str | None = None, env=None, now=None) -> dict:
     """The heartbeat's "remote" block: {"on", "last": "remote: last cmd kill done at 14:02 ET", "pending_stop", "error"}."""
     d = load_done(path or DONE_PATH)
     last = d.get("last") or {}
@@ -181,17 +181,17 @@ def hb_field(path: str | None = None, env=None) -> dict:
         line = f"remote: last cmd {last['cmd']} {last.get('status') or 'done'} at {_hm(last.get('t') or 0)} ET"
     out = {"on": enabled(env), "last": line, "status": last.get("status"), "t": last.get("t"),
            "pending_stop": bool(d.get("pending_stop")), "error": (d.get("fetch") or {}).get("error")}
-    out.update(_extras(os.path.dirname(path or DONE_PATH)))
+    out.update(_extras(os.path.dirname(path or DONE_PATH), now))
     return out
 
 
-def _extras(folder: str) -> dict:
+def _extras(folder: str, now=None) -> dict:
     """The pause, presence and hands-off blocks that ride with "remote" to the cloud and the phone's live.json (small).
     Never raises."""
     out = {}
     try:
         from . import entry_pause
-        p = entry_pause.active(path=os.path.join(folder, entry_pause.NAME))
+        p = entry_pause.active(now, path=os.path.join(folder, entry_pause.NAME))
         out["pause"] = {"until": p["until"], "label": p.get("label"), "src": p.get("src")} if p else None
     except Exception:
         pass
@@ -526,4 +526,4 @@ class RemoteControl:
         self._stop.set()
 
     def status(self) -> dict:
-        return {**hb_field(self.done_path, self._env()), "thread_alive": bool(self._thread and self._thread.is_alive())}
+        return {**hb_field(self.done_path, self._env(), self.clock()), "thread_alive": bool(self._thread and self._thread.is_alive())}

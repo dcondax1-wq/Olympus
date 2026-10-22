@@ -355,7 +355,7 @@ def pause_tests(w, bot, hooks, calls):
           and not [x for x in calls if x[0] != "beat"], (out, p, calls))
     pauses = lambda: [e for e in handsoff.events(c.handsoff_path) if e["kind"] == "pause" and e["src"] == "phone"]
     check("pause is a hands-off event (phone)", len(handsoff.events(c.handsoff_path)) == n_ho + 1 and len(pauses()) == 1)
-    hb = rc.hb_field(w.done, env={"LE_REMOTE": "1"})
+    hb = rc.hb_field(w.done, env={"LE_REMOTE": "1"}, now=wed)
     check("heartbeat 'remote' block carries the pause, presence and the hands-off score",
           (hb.get("pause") or {}).get("until") == mid and "presence" in hb and isinstance(hb.get("handsoff"), dict)
           and hb["handsoff"]["score"] <= 100, hb)
