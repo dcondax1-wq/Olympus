@@ -345,6 +345,7 @@ class LiveBot:
         self._arc = {}                   # (sym, tf) -> the NinjaTrader archive in memory (data/nt_bars, engine/pcbars.py)
         self.accts = None                # engine/multi_account.AccountRouter: the start cfg's extra accounts (None = one account)
         self.brain = None                # engine/brain.py: the Bot Brain snapshot of the last poll (read-only, built after routing)
+        self.second = None               # engine/second.py: the paper second strategies' last run (never routed)
         self._brain_log = None           # engine/brain.BrainLog: today's thought log (data/brain/YYYY-MM-DD.jsonl for the real bot)
 
     # ------------------------------------------------------------------ plumbing
@@ -1208,7 +1209,37 @@ class LiveBot:
         self._save_state()
         if model == "lit":                    # after routing and the state save: never delays an order
             self._brain_tick(res, lit_p, now, brain_keep)
+            self._second_tick(df_full, df1, res, now)
         return self.state
+
+    def _second_tick(self, df5, df1, res, now):
+        """Second strategies, PAPER ONLY (engine/second.py, second_model.json): EMA / MACD on this poll's bars, after LIT's
+        routing and the state save, in a background thread (never delays LIT, never routes: engine/second.py has no adapter);
+        once per new closed 1m / 5m bar; the heartbeat carries the result as "second". A failure only logs an error."""
+        if self.state_path != STATE_PATH and not self.cfg.get("second"):
+            return                            # test harnesses: off unless asked
+        try:
+            key = (int(df5["time"].max()), int(df1["time"].max()) if df1 is not None and len(df1) else 0)
+        except Exception:
+            return
+        if key == getattr(self, "_second_key", None) or getattr(self, "_second_busy", False):
+            return
+        self._second_key, self._second_busy = key, True
+        from . import second as _second
+        lit_w = _second.lit_windows(res)
+
+        def run():
+            try:
+                cfg = _second.load_cfg()
+                if any(s.get("on", True) for s in cfg["strategies"].values()):
+                    self.second = _second.run(df5, one_min=df1, now=now, cfg=cfg, lit=lit_w)
+                else:
+                    self.second = None
+            except Exception as e:
+                self._note_error(f"second strategies failed: {e.__class__.__name__}: {e}")
+            finally:
+                self._second_busy = False
+        threading.Thread(target=run, name="second-paper", daemon=True).start()
 
     def _brain_tick(self, res, P, now, keep):
         """The Bot Brain (engine/brain.py): what LIT is thinking at this poll, read from this poll's result. Read-only,

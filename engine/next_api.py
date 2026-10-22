@@ -313,6 +313,28 @@ def perf():
         return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
 
 
+@router.get("/api/next/second")
+def second_view():
+    """Second strategies, PAPER ONLY (engine/second.py, second_model.json; read-only): rules, backtest tables, today's state
+    and paper trades from the PC bot's last run (LiveBot.second, built after LIT's routing). The bot not running / no run
+    yet: the rules and backtest tables only."""
+    try:
+        from . import second as S
+        from .live import BOT
+        run = getattr(BOT, "second", None)
+        st = None
+        if run:                                  # the PC's own run as a ledger view (every trade of its window)
+            st = {"t": run.get("t"), "strategies": {k: {**{kk: s.get(kk) for kk in ("label", "short", "on", "state", "error")},
+                                                        "ledger": {str(t["entry_t"]): {**t, "side": "LONG" if t["dir"] > 0 else "SHORT"}
+                                                                   for t in s.get("trades") or []}}
+                                                    for k, s in (run.get("strategies") or {}).items()}}
+        out = S.dashboard_block(st)
+        out["source"] = "PC bot" if run else "rules only (the PC bot has not run the second strategies yet)"
+        return _J(out)
+    except Exception as e:                                   # never 500 the dashboard over a page
+        return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
+
+
 @router.get("/api/next/archive")
 def archive():
     """The previous strategy (Liquidity Engine, locked 2026-10-17) for the Archive page: its lock, its last bundle's periods

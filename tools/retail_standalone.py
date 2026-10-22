@@ -47,7 +47,14 @@ D = {}
 def load():
     if D:
         return D
-    df = pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv"))
+    return load_frame(pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv")))
+
+
+def load_frame(df, live_cut=False):
+    """Fill D from a 5m frame (time, open, high, low, close, volume). load() = the research file. live_cut=True (the live
+    second strategies, engine/second.py): the data ends NOW, so a higher-timeframe bar whose clock period has not ended yet
+    is still forming and never counts as closed (htf / to5); the research file (live_cut False) is unchanged."""
+    D.clear()
     df = df.drop_duplicates("time").sort_values("time").reset_index(drop=True)
     et = pd.to_datetime(df["time"].values, unit="s", utc=True).tz_convert("America/New_York")
     mod = (et.hour * 60 + et.minute).values.astype(np.int64)
@@ -71,6 +78,7 @@ def load():
         last[sidx[i]] = i
     D["flat_idx"] = last
     D["n"] = n
+    D["live_cut"] = bool(live_cut)
     return D
 
 
@@ -94,6 +102,8 @@ def htf(tf):
     H = dict(o=d["o"][first], c=d["c"][last], h=np.maximum.reduceat(d["h"], first), l=np.minimum.reduceat(d["l"], first),
              v=np.add.reduceat(d["v"], first), last=last, first=first, sid=d["sid"][first])
     # an incomplete HTF bar (the 5m data has a gap) still closes at its last 5m bar: known only then
+    if D.get("live_cut") and len(last) and (int(d["loc"][d["n"] - 1]) + 300 - shift) % sec != 0:
+        H["open_last"] = True        # live: the data's last HTF bar is still forming (its period has not ended)
     D[key] = H
     return H
 
@@ -102,7 +112,10 @@ def to5(H, vals, fill=np.nan):
     """Map an HTF series to 5m bars: the value of the latest HTF bar CLOSED at or before each 5m bar."""
     d = load()
     out = np.full(d["n"], fill, dtype=float)
-    out[H["last"]] = vals
+    if H.get("open_last"):           # live cut: the forming HTF bar is not closed yet
+        out[H["last"][:-1]] = np.asarray(vals, dtype=float)[:-1]
+    else:
+        out[H["last"]] = vals
     s = pd.Series(out).ffill().values
     return s
 

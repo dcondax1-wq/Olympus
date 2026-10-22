@@ -54,6 +54,7 @@ import { setups as setupsPage, sensitivity as sensPage } from './next/insights.j
 import { intel as intelPage } from './next/intel.js';
 import { brain as brainPage } from './next/brain.js';
 import { perf as perfPage } from './next/perf.js';
+import { second as secondPage } from './next/second.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -69,7 +70,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   firms: hubp.firms, business: hubp.business, market: hubp.market, learn: hubp.learn, system: hubp.system,
   botctl: botctlPage, accounts: pc.accounts, evalhq: pc.evalhq, edge: pc.edge, pnlcal: pc.pnlcal, mffurules: pc.mffurules,
   morning: ops.morning, livechart: ops.livechart, botlog: ops.botlog, ntpanel: ops.ntpanel, timeline: ops.timeline, livesettings: ops.livesettings,
-  setups: setupsPage, sensitivity: sensPage, intel: intelPage, brain: brainPage, perf: perfPage,
+  setups: setupsPage, sensitivity: sensPage, intel: intelPage, brain: brainPage, perf: perfPage, second: secondPage,
   rules: mods.rules, cold: mods.cold, risk: mods.risk, alerts: { show: () => settingsPage.show() }, modules: { show: () => {} },
   playbook: { show: () => {} } };
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };

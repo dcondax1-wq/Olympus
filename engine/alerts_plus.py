@@ -49,6 +49,7 @@ KINDS = {   # kind: (label for the app, what it covers, critical = repeats until
     "update": ("Update failed", "bot auto-update failed or rolled back", True),
     "cloud_stale": ("Cloud monitor stale", "the cloud monitor has not published for 45+ min in market hours", False),
     "rules": ("Rules differ", "PC and cloud run different LIT rules", False),
+    "second": ("Second strategies (PAPER)", "EMA / MACD paper entries and exits next to LIT, never traded (cloud)", False),
 }
 LEVELS = ("on", "silent", "off")
 REPEAT_S = 10 * 60

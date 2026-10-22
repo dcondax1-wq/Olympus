@@ -1,0 +1,49 @@
+{
+ "paper": true,
+ "note": "Second strategies next to LIT, PAPER ONLY (engine/second.py). Nothing here can route an order; LIT (live_model.json) and the eval account are untouched. Switch one off: \"on\": false.",
+ "strategies": {
+  "ema_lon_vix": {
+   "on": true,
+   "kind": "ema_pullback",
+   "label": "London EMA trend pullback",
+   "short": "EMA",
+   "summary": "London hours (03:00-09:30 ET, no Mondays): 15m and 1h EMA 21 above the 50, a pullback to the 5m EMA 50 sweeps a swing low, a 5m CISD back up; stop beyond the sweep wick, VIX-band target, breakeven + costs at 1R.",
+   "run": "ema2_lon_vix",
+   "writeup": "second-ema",
+   "entry": {"win": "lon", "trend": "t15_60", "pull": "e50", "sweep": 1, "disp": 0.0, "reg": "nomon"},
+   "exit": {"tgt": "vix", "be": 1.0, "beo": 1.25, "tchk": null, "ride": null},
+   "usd": 500,
+   "research": {"best": "research/second/ema_best.json", "report": "research/second/ema_report.json"}
+  },
+  "macd_sweep": {
+   "on": true,
+   "kind": "macd_sweep",
+   "label": "MACD divergence at a liquidity sweep",
+   "short": "MACD",
+   "summary": "London (02:00-05:00 ET) and NY open (09:30-11:00): a LIT level is swept by 0.5 ATR, a 5m CISD closes back with MACD-line divergence; market entry, stop beyond the sweep extreme, VIX-band target, 15-minute check.",
+   "run": "md2_best",
+   "writeup": "second-md",
+   "gen": {"tf": 5, "osc": "line", "lv": "all"},
+   "sim": {"ent": "mkt", "tgt": "vix", "be": null, "tc": true},
+   "flt": {"depth": 0.5, "reg": "none", "kz": "lon_ny", "maxpd": 1},
+   "usd": 500,
+   "research": {"best": "research/second/md_best.json"}
+  },
+  "sr_nyreclaim": {
+   "on": true,
+   "kind": "sr_reclaim",
+   "name": "nyreclaim",
+   "label": "NY sweep-and-reclaim of the day's levels (S/R)",
+   "short": "S/R",
+   "summary": "NY 09:30-12:00 ET: a level of the day (yesterday's RTH high/low, overnight, Asia / London box, last week, opening range) is swept after an inducement, a strong 5m close reclaims it; market entry, stop beyond the sweep extreme, 2R target, 15-minute check, 1 a day.",
+   "with_lit_label": "own account recommended",
+   "with_lit_note": "With LIT on one account it slightly worsens LIT's eval path in 2026 H2: shown for reference, own account recommended.",
+   "run": "sr2_nyreclaim_usd500",
+   "writeup": "second-sr",
+   "key": {"setup": "reclaim", "lv": "all_or", "depth": 0.0, "W": 4, "conf": "close", "disp": 0.3, "idm": true, "entry": "mkt",
+           "win": "ny12", "maxpd": 1, "max_stop": 80.0, "min_rr": 1.5, "tg": 2.0, "bk": null, "be": null, "tc": true},
+   "usd": 500,
+   "research": {"best": "research/second/sr_best.json", "report": "research/second/sr_final.json"}
+  }
+ }
+}

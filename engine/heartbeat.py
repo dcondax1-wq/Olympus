@@ -216,6 +216,19 @@ def _brain(bot, max_bytes: int = 16_000):
         return None
 
 
+def _second(bot):
+    """The heartbeat's "second" block: today's state + last paper trades of the second strategies (engine/second.compact
+    of LiveBot.second). Paper only. Never raises."""
+    try:
+        s = getattr(bot, "second", None)
+        if not s:
+            return None
+        from engine import second
+        return second.compact(s)
+    except Exception:
+        return None
+
+
 def _exec():
     """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
     try:
@@ -273,6 +286,7 @@ class Heartbeat:
                 "remote": _remote(),            # phone remote control (engine/remote_ctl.py): the last command and its result
                 "live_pub": _live_pub(),        # the phone's live.json push (engine/live_publish.py): last result, None before it
                 "brain": _brain(self.bot),       # the Bot Brain, phone cut (engine/brain.compact; None before the first LIT poll)
+                "second": _second(self.bot),     # second strategies, PAPER (engine/second.compact; None when off / before the first)
                 **_alerts_plus(self.bot)}       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
 
     def beat(self) -> dict:

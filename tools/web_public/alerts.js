@@ -22,7 +22,8 @@
     ['clock', 'Clock drift', 'PC clock off: entries blocked', true],
     ['update', 'Update failed', 'bot auto-update failed or rolled back', true],
     ['cloud_stale', 'Cloud monitor stale', 'no cloud publish for 45+ min in market hours', false],
-    ['rules', 'Rules differ', 'PC and cloud run different LIT rules', false]];
+    ['rules', 'Rules differ', 'PC and cloud run different LIT rules', false],
+    ['second', 'Second strategies (PAPER)', 'EMA / MACD paper entries and exits next to LIT (never traded)', false]];
   const LV = [['on', 'On'], ['silent', 'Silent'], ['off', 'Off']];
   const STALE_S = 45 * 60;
   const nowS = () => Date.now() / 1000;

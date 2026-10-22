@@ -337,6 +337,9 @@ def simulate(row, X, d=None):
     lim = bool(row.get("lim", 0))
     s = d["sid"][ei]
     kf = d["flat_idx"][s]
+    live = d.get("open_sid") is not None and s == d["open_sid"]   # live (engine/second.py): today's 15:55 flat not reached yet
+    if live:
+        kf = d["n"] - 1
     if kf < ei:
         return None
     tg = X.get("tgt")
@@ -385,6 +388,10 @@ def simulate(row, X, d=None):
             break
         mfe = max(mfe, hi - e)
         if k == kf:
+            if live:                   # the bars end inside the trade: still open (stop after this bar's breakeven check)
+                if be is not None and sp < e and hi >= e + be * risk and not (lim and k == ei):
+                    sp = e + beo
+                return ((cl - e - CPTS) / risk, k, "OPEN_BE" if sp != stop else "OPEN", cl, min(worst, cl - e), tgt)
             ex = cl - TICK; kind = "FLAT"; break
         if tc and k - ei + 1 == tc[0] and mfe < tc[2] * risk and sp == stop and cl < e - tc[1] * risk:
             ex = O[k + 1] - TICK; kind = "CUT"; k += 1; worst = min(worst, ex - e); break
