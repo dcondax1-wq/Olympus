@@ -78,6 +78,28 @@ def trading_date(t) -> dt.date:
     return (_et(t) + dt.timedelta(hours=6)).date()
 
 
+def tday(mod: int) -> int:
+    """ET minute in CME trading-day order: 18:00 (the Globex open of the next trading day) = 0, 17:59 = 1439."""
+    return (int(mod) - 1080) % 1440
+
+
+def tday_end(z: int) -> int:
+    """An entry window's end minute in trading-day order (an end at 18:00 / 24:00 closes the evening part)."""
+    return tday(z) or 1440 if int(z) % 1440 == 1080 else tday(z)
+
+
+def window_span(window) -> tuple:
+    """(first start, last end) of LIT's entry windows in trading-day order, as ET minutes (all_hours: [[1080, 1440], [0, 930]]
+    -> (1080, 930) = 18:00-15:30)."""
+    a = min((int(x) for x, _ in window), key=tday)
+    z = max((int(y) for _, y in window), key=tday_end)
+    return a, z % 1440
+
+
+def _hhmm(m: int) -> str:
+    return f"{int(m) // 60 % 24:02d}:{int(m) % 60:02d}"
+
+
 def window_start(last_t: int) -> int:
     """Unix time from which the bars are kept: 18:00 ET opening the first trading day of the previous month, minus a week."""
     d = trading_date(last_t)
@@ -493,8 +515,12 @@ def _shape(M, R, P, now, B1):
     e = _et(now)
     mod = e.hour * 60 + e.minute
     win_a = min(a for a, _ in P["window"]); win_z = max(z for _, z in P["window"])
+    ah = bool(P.get("all_hours"))
+    if ah:                                    # all_hours: the window in CME trading-day order (18:00 -> 17:00)
+        win_a, win_z = window_span(P["window"])
     if _closed(now):
-        ms = "LIT: market closed (next session 18:00 ET; entries 02:00-15:30 ET)"
+        ms = ("LIT: market closed (next session 18:00 ET; entries 02:00-15:30 ET)" if not ah else
+              f"LIT: market closed (next session 18:00 ET; entries {_hhmm(win_a)}-{_hhmm(win_z)} ET)")
     elif position:
         ms = (f"LIT: IN TRADE {_side(position['dir'])} @ {position['entry']:,.2f} | stop {position['stop']:,.2f}"
               f"{' (breakeven)' if position['be'] else ''} | target {position['target']:,.2f}")
@@ -512,8 +538,12 @@ def _shape(M, R, P, now, B1):
         else:
             ms = (f"LIT: {side.upper()} limit armed at {s['limit']:,.2f} until {_hm(s['expires_t'])} ET "
                   f"(stop {s['stop']:,.2f}, target {s['target']:,.2f})")
-    elif win_z <= mod < 1080:
+    elif (tday(mod) >= tday_end(win_z)) if ah else (win_z <= mod < 1080):
         ms = f"LIT: entry window closed ({win_a // 60:02d}:{win_a % 60:02d}-{win_z // 60:02d}:{win_z % 60:02d} ET); flat by 15:55"
+    elif ah and tday(mod) < tday(win_a):
+        ms = f"LIT: waiting for the session (entries from {_hhmm(win_a)} ET)"
+    elif ah:
+        ms = f"LIT: watching for a sweep + inducement + CISD (entries until {_hhmm(win_z)} ET)"
     elif mod >= 1080 or mod < win_a:
         ms = "LIT: waiting for London sweep (entries from 02:00 ET)"
     else:

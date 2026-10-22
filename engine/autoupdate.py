@@ -51,6 +51,7 @@ RESTART_CODE = 75                                                    # server ex
 HALT_FROM, HALT_TO = 17 * 60 + 2, 17 * 60 + 50                      # daily check window (ET minutes)
 BLACKOUT_FROM, BLACKOUT_TO = 1 * 60 + 50, 16 * 60                    # never on a weekday 01:50-16:00 ET
 HOURLY_MARGIN = 30                                                   # hourly checks stop 30 min before the blackout (01:20 ET)
+ASIA_FROM = 18 * 60                                                  # LIT all_hours: the CME trading day starts 18:00 ET
 PENDING_STAGES = ("limit", "cisd1m", "trade")                        # engine/accounts._lit_stage
 OPEN_LEG = ("entry_sent", "pending", "cancel_pending", "protected", "unprotected", "closing")   # ninjatrader.OPEN_STATUSES
 TESTS = (["-m", "engine.ninjatrader", "--selftest", "--quiet"], ["-X", "utf8", "-m", "engine.sizing"],
@@ -102,14 +103,23 @@ def hour_key(now) -> str:
     return _et(now).strftime("%Y-%m-%dT%H")
 
 
-def window_reason(now, mode: str, last_check_day: str | None = None, last_hour: str | None = None):
+def window_reason(now, mode: str, last_check_day: str | None = None, last_hour: str | None = None, all_hours: bool = False):
     """None when an update may run now, else why not. mode 'daily' (the server's halt check) | 'hourly' (the extra checks
-    outside trading time) | 'start' | 'manual'."""
+    outside trading time) | 'start' | 'manual'.
+    all_hours (LIT all_hours on: the Asia slot trades from 18:00 ET): hourly checks only 16:00-17:30 ET on a weekday, Friday
+    after 16:00, Saturday and Sunday before 17:30 (never in the evening / overnight session). Off: unchanged."""
     if in_blackout(now):
         return "trading hours (no update 01:50-16:00 ET on a weekday)"
     if mode == "hourly":
         e = _et(now)
         m = e.hour * 60 + e.minute
+        if all_hours:
+            wd = e.weekday()
+            free = wd == 5 or (wd == 4 and m >= BLACKOUT_TO) or (wd == 6 and m < ASIA_FROM - HOURLY_MARGIN) \
+                or (wd < 5 and BLACKOUT_TO <= m < ASIA_FROM - HOURLY_MARGIN)
+            if not free:
+                return ("LIT all_hours: the Asia slot trades from 18:00 ET (hourly checks only 16:00-17:30 ET on weekdays "
+                        "and at the weekend)")
         if e.weekday() < 5 and BLACKOUT_FROM - HOURLY_MARGIN <= m < BLACKOUT_TO:
             return "too close to the 01:50 ET trading start (hourly checks stop at 01:20 ET)"
         if in_halt(now):
@@ -154,6 +164,19 @@ def bot_flat_reason(bot) -> str | None:
         return None
     except Exception as e:
         return f"cannot tell if flat ({e.__class__.__name__})"
+
+
+def bot_all_hours(bot) -> bool:
+    """LIT all_hours on for the running bot (its poll's params), else in live_model.json "lit". Never raises."""
+    try:
+        f = getattr(bot, "_lit_all_hours", None)
+        if callable(f) and (getattr(bot, "state", None) or {}).get("strategy"):
+            return bool(f())
+        from .lab_adapter import live_model
+        lm = live_model()
+        return lm.get("model") == "lit" and bool((lm.get("lit") or {}).get("all_hours"))
+    except Exception:
+        return False
 
 
 def files_flat_reason(root: str = ROOT, now=None) -> str | None:
@@ -206,7 +229,7 @@ def git_head(sh: Shell) -> str | None:
 
 # ---------------------------------------------------------------------- the update itself
 def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = None, state: dict | None = None,
-               tests=TESTS, branch: str = BRANCH, env=None) -> dict:
+               tests=TESTS, branch: str = BRANCH, env=None, all_hours: bool = False) -> dict:
     """One check. Returns {"status", "reason", "old", "new", "restart", "alert"}; status: off | skipped | up_to_date |
     updated | rolled_back | failed. `flat` = flat_reason (None = flat). Pure apart from `sh`."""
     now = time.time() if now is None else now
@@ -220,7 +243,7 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
 
     if not is_enabled(state, env):
         return done("off", "auto-update is off (python -m engine.autoupdate --enable)")
-    w = window_reason(now, mode, state.get("last_check_day"), state.get("last_hourly"))
+    w = window_reason(now, mode, state.get("last_check_day"), state.get("last_hourly"), all_hours=all_hours)
     if w:
         return done("skipped", w)
     if flat:
@@ -434,7 +457,7 @@ class DailyUpdater:
             return None
         if window_reason(now, "daily", s.get("last_check_day")) is None:
             return "daily"
-        if window_reason(now, "hourly", s.get("last_check_day"), s.get("last_hourly")) is None:
+        if window_reason(now, "hourly", s.get("last_check_day"), s.get("last_hourly"), all_hours=bot_all_hours(self.bot)) is None:
             return "hourly"
         return None
 
@@ -456,7 +479,8 @@ class DailyUpdater:
         self.busy = True
         try:
             file_log(f"{mode} check (server)")
-            res = run_update(sh or Shell(log=file_log), mode, now, None, state=load_state(self.state_path), tests=tests)
+            res = run_update(sh or Shell(log=file_log), mode, now, None, state=load_state(self.state_path), tests=tests,
+                             all_hours=bot_all_hours(self.bot))
             if mode == "hourly" and res.get("status") == "skipped":
                 res["alert"] = False                   # the halt check alerts about a dirty tree etc.; not every hour
             record(res, path=self.state_path)

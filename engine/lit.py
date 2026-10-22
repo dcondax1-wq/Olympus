@@ -399,9 +399,13 @@ def candidates(M: Market, leg=24, sweep_win=24, ref_back=36, ind_back=36, t_from
     ignored. The default (False) is the RTH-only detector, unchanged."""
     o, h, l, c, mod, at = M.o, M.h, M.l, M.c, M.mod, M.atr
     out = []
+    last_k = len(M.days) - 1
     for k, (date, s, e) in enumerate(M.days):
         x = M.ctx[k]
-        if "pdh" not in x or e - s < 50:
+        # a day needs 50+ bars (skips stub days). evening: the live loop's last day is still forming (from 18:00 it has
+        # fewer than 50 bars until 22:10 ET), so the rule applies to finished days only (a backtest's last day is finished
+        # and long, so the backtest is unchanged); the RTH detector starts at 01:00 with 85+ bars, unchanged
+        if "pdh" not in x or (e - s < 50 and not (evening and k == last_k)):
             continue
         L = M.levels(k)
         for d in (1, -1):
@@ -938,7 +942,8 @@ def _next_bar_same_day(B: XBars, k, day):
         ec = early_close(str(day))
     except Exception:
         ec = None
-    return ec is None or m < ec
+    # 18:00-24:00 (all_hours / the Asia slot) opens the trading day: before its early-close halt, not after it
+    return ec is None or m < ec or m >= 1080
 
 
 def simulate_x(M: Market, B: XBars, cand, entry_px, tgt, stop, P, live=False):

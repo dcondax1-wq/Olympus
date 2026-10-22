@@ -1212,6 +1212,15 @@ class LiveBot:
             self._second_tick(df_full, df1, res, now)
         return self.state
 
+    def _lit_all_hours(self) -> bool:
+        """LIT all_hours on in the params this bot trades (research/writeups/lit-more-entries.md, the Asia slot): the CME
+        trading day 18:00 -> 17:00 is the session; off (today) = 02:00-15:55 clock rules, unchanged."""
+        try:
+            st = (self.state or {}).get("strategy") or {}
+            return st.get("model") == "lit" and bool((st.get("params") or {}).get("all_hours"))
+        except Exception:
+            return False
+
     def _second_tick(self, df5, df1, res, now):
         """Second strategies, PAPER ONLY (engine/second.py, second_model.json): EMA / MACD on this poll's bars, after LIT's
         routing and the state save, in a background thread (never delays LIT, never routes: engine/second.py has no adapter);
@@ -1347,6 +1356,8 @@ class LiveBot:
                 if st.strftime("%Y-%m-%d") == day and st.hour * 60 + st.minute >= 965:
                     return      # started after the close: nothing was watched today, no summary
                 todays = [t for t in res["trades"] if t.get("exit_t", 0) >= now - 12 * 3600]
+                if self._lit_all_hours():     # the whole CME trading day from 18:00 (Asia trades exit before 04:05)
+                    todays = [t for t in res["trades"] if t.get("day") == trading_day(now)]
                 pnl = sum(t["pnl"] for t in todays)
                 lines = [f"📊 {sym} end of day {day}", f"Trades: {len(todays)} · P&L ${pnl:+,.0f}"]
                 lines += [f"{'L' if t['dir'] == 1 else 'S'} {t.get('grade', '')} {t['trigger']} → {t['exit_reason']} {t['pnl_r']:+.2f}R" for t in todays]
@@ -1446,7 +1457,7 @@ class LiveBot:
         if not start or (lsz.get("mode") or "") not in _el.EVAL_MODES:
             return None
         e = _et(self.clock())
-        over = e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60
+        over = e.weekday() < 5 and 16 * 60 <= e.hour * 60 + e.minute < 18 * 60   # 18:00 opens the next trading day's session
         return _el.view(self.eval_days(), start, trading_day(self.clock()), lsz, session_over=over, n_today=self.trades_today())
 
     def _eval_life_tick(self):
@@ -1475,7 +1486,8 @@ class LiveBot:
         """State key eval_2wk: session x of 10 since eval_start(), reset recommended after session 10 (engine/sizing.eval_clock)."""
         from . import sizing as _sz
         e = _et(self.clock())
-        over = e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60          # after the 15:55 flat: today's session is done
+        # after the 15:55 flat: today's session is done; from 18:00 trading_day(now) is already the next session (MFFU)
+        over = e.weekday() < 5 and 16 * 60 <= e.hour * 60 + e.minute < 18 * 60
         return _sz.eval_clock(self.eval_days(), self.eval_start() or None, trading_day(self.clock()), session_over=over)
 
     def eval_profit(self):
@@ -1636,7 +1648,10 @@ class LiveBot:
         # flat_mod, flatten the routed position from the wall clock instead (prop rule: never hold through the close).
         flat_mod = int(merge_params(self.cfg.get("params", {}))["flat_mod"])
         e = _et(now)
-        if self._open_routed is not None and e.hour * 60 + e.minute >= flat_mod + 3 and self._open_routed not in self._flattened \
+        past_flat = e.hour * 60 + e.minute >= flat_mod + 3
+        if past_flat and self._lit_all_hours() and e.hour * 60 + e.minute >= 1080:
+            past_flat = False                 # LIT all_hours: 18:00-24:00 is the start of the next trading day, not past its flat
+        if self._open_routed is not None and past_flat and self._open_routed not in self._flattened \
                 and pos is not None and pos.get("entry_t") == self._open_routed:
             self._log("risk", f"SAFETY FLATTEN: {e:%H:%M} ET is past flat time {flat_mod // 60:02d}:{flat_mod % 60:02d} and the model still shows "
                               f"the position (feed age {self.health.get('data_age_s')}s) - flattening from the clock")

@@ -31,6 +31,8 @@ Guards and defaults (live_model.json "guards" and the start cfg "guards" overrid
   9. calendar      ON   no entry on a CME full-closure day (New Year, Christmas), on a weekend / the 17:00-18:00 break, before
                         the session start (02:00), at or after the flat time, or within 15 min of a CME early close
                         (engine/lit_live.early_close). 2026 replay: 0 blocked (6 early-close days traded, all before cutoff).
+                        LIT all_hours on (Asia slot): the CME trading day 18:00 -> 17:00 (an evening entry = the next
+                        date's session, its holiday / early close; start = the window's first minute in that order).
  11. presence_required  OFF  no new entry without an "I'm here" check-in in the last presence_hours (4 h) + a
                         "Check in to keep trading" push (engine/presence.py). Off: it could cut trades (frequency rule).
  12. entry pause  always  the owner's own "pause until" (engine/entry_pause.py: phone remote "pause" / PC dashboard): no new
@@ -200,9 +202,17 @@ def full_closure(day: str) -> bool:
     return False
 
 
-def calendar(entry_t: int, now: int, session_from: int = 120, flat_mod: int = 955) -> list:
+def tday_mod(mod: int) -> int:
+    """ET minute in CME trading-day order: 18:00 (the Globex open of the next trading day) = 0, 17:59 = 1439."""
+    return (int(mod) - 1080) % 1440
+
+
+def calendar(entry_t: int, now: int, session_from: int = 120, flat_mod: int = 955, all_hours: bool = False) -> list:
     """Problems with entering at entry_t (the fill bar's open) / now: weekend or daily break, CME full closure, before the
-    session start, at or after the flat time, within 15 min of a CME early close."""
+    session start, at or after the flat time, within 15 min of a CME early close.
+    all_hours (LIT "all_hours" on, e.g. the Asia slot of research/writeups/lit-more-entries.md): the CME trading day runs
+    18:00 -> 17:00, so an 18:00-24:00 entry belongs to the next date's session (its holiday / early close) and the session
+    start / cutoff are compared in trading-day order (session_from 18:00 = the Globex open). Off: unchanged."""
     out = []
     for t in (int(now), int(entry_t)):
         e = _et(t)
@@ -218,14 +228,23 @@ def calendar(entry_t: int, now: int, session_from: int = 120, flat_mod: int = 95
     cut = flat_mod
     try:
         from .lit_live import early_close
-        ec = early_close(e.date().isoformat()) if mod < 1080 else None
+        if all_hours:
+            ec = early_close(day)                 # the trading day's own halt (an 18:00-24:00 entry: the next date's)
+        else:
+            ec = early_close(e.date().isoformat()) if mod < 1080 else None
     except Exception:
         ec = None
     if ec is not None:
         cut = min(cut, ec - 15)
-    if mod >= 1080 or mod < session_from:
+    if all_hours:
+        before = tday_mod(mod) < tday_mod(session_from)
+        late = tday_mod(mod) >= tday_mod(cut)
+    else:
+        before = mod >= 1080 or mod < session_from
+        late = mod >= cut
+    if before:
         out.append(f"{e:%H:%M} ET is before the session start {session_from // 60:02d}:{session_from % 60:02d}")
-    elif mod >= cut:
+    elif late:
         out.append(f"{e:%H:%M} ET is past the entry cutoff {cut // 60:02d}:{cut % 60:02d}"
                    + (" (CME early close today)" if ec is not None and cut < flat_mod else ""))
     return out
@@ -335,7 +354,8 @@ def entry_problems(bot, ent: dict, action: dict, plan_qty, now: int, c: dict | N
     c = c or _cfg(bot)
     out = []
     if c.get("calendar"):
-        out += calendar(int(ent["entry_t"]), now, session_from=_session_from(bot), flat_mod=_flat_mod(bot))
+        out += calendar(int(ent["entry_t"]), now, session_from=_session_from(bot), flat_mod=_flat_mod(bot),
+                        all_hours=_all_hours(bot))
     if c.get("order_sanity"):
         out += sanity(action, plan_qty, account_max(bot), c)
     if c.get("dup_entry"):
@@ -395,10 +415,25 @@ def entry_block(bot, ent: dict, action: dict, plan_qty, now: int) -> str | None:
     return why
 
 
+def _lit_params(bot) -> dict:
+    return (((bot.state or {}).get("strategy") or {}).get("params") or {})
+
+
+def _all_hours(bot) -> bool:
+    """LIT all_hours on in the params the bot trades (the poll's state; engine/live.py puts lit_p there)."""
+    try:
+        st = (bot.state or {}).get("strategy") or {}
+        return st.get("model") in (None, "lit") and bool(_lit_params(bot).get("all_hours"))
+    except Exception:
+        return False
+
+
 def _session_from(bot) -> int:
     try:
-        w = (((bot.state or {}).get("strategy") or {}).get("params") or {}).get("window")
+        w = _lit_params(bot).get("window")
         if w:
+            if _all_hours(bot):                   # the window's first minute in trading-day order (18:00 for the Asia slot)
+                return int(min((int(a) for a, _ in w), key=tday_mod))
             return int(min(a for a, _ in w))
     except Exception:
         pass

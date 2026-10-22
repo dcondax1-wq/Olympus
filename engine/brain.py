@@ -132,6 +132,15 @@ def _hhmm(m):
     return f"{int(m) // 60:02d}:{int(m) % 60:02d}"
 
 
+def _span(P):
+    """(first start, last end) of the entry windows: min / max (today), or in CME trading-day order with all_hours
+    (the Asia slot: 18:00-15:30)."""
+    if P.get("all_hours"):
+        from engine import lit_live
+        return lit_live.window_span(P["window"])
+    return min(a_ for a_, _ in P["window"]), max(b_ for _, b_ in P["window"])
+
+
 def _lab(nm, side):
     from engine.lit_brief import _label
     return _label(nm, side)
@@ -394,7 +403,7 @@ def _checks(M, z, P, day_block):
     out.append({"key": "day", "ok": not day_block, "value": "free" if not day_block else "taken",
                 "text": "no trade yet today" if not day_block else "a setup earlier today already filled (1 trade a day)"})
     inw = any(a_ <= z["mod"] < b_ for a_, b_ in P["window"])
-    a0 = min(a_ for a_, _ in P["window"]); b0 = max(b_ for _, b_ in P["window"])
+    a0, b0 = _span(P)
     out.append({"key": "window", "ok": inw, "value": _hhmm(z["mod"]), "need": f"{_hhmm(a0)}-{_hhmm(b0)}",
                 "text": f"entry bar {_hhmm(z['mod'])} ET " + ("inside" if inw else "outside") + f" {_hhmm(a0)}-{_hhmm(b0)} ET"})
     dep_pts = z["depth_atr"] * z["atr_ext"]
@@ -660,8 +669,10 @@ def _guards(ctx, x, now, P, day):
     e = _et(now)
     mod = e.hour * 60 + e.minute
     closed = lit_live._closed(now)
-    a0 = min(a_ for a_, _ in P["window"]); b0 = max(b_ for _, b_ in P["window"])
-    win = (not closed) and a0 <= mod < b0
+    a0, b0 = _span(P)
+    ah = bool(P.get("all_hours"))
+    win = (not closed) and (any(a_ <= mod < b_ for a_, b_ in P["window"]) if ah else a0 <= mod < b0)
+    not_yet = (lit_live.tday(mod) < lit_live.tday(a0)) if ah else (mod < a0 or mod >= 1080)
     ec = lit_live.early_close(day) if day else None
     news = c.get("news") or []
     G = [{"key": k, "label": lab, "on": bool(gc.get(k, dflt)) if gc else dflt}
@@ -680,7 +691,7 @@ def _guards(ctx, x, now, P, day):
                        "early_close": _hhmm(ec) if ec is not None else None,
                        "text": ("Market closed (Globex reopens 18:00 ET)" if closed else
                                 f"Entry window open ({_hhmm(a0)}-{_hhmm(b0)} ET)" if win else
-                                f"Market open, entry window {'not open yet' if mod < a0 or mod >= 1080 else 'over'} "
+                                f"Market open, entry window {'not open yet' if not_yet else 'over'} "
                                 f"({_hhmm(a0)}-{_hhmm(b0)} ET)")},
             "news": news[:8],
             "vix": {"vix": _r2(x.get("vix")), "vxn": _r2(x.get("vxn")), "move": _r2(x.get("vix_move")), "open18": _r2(x.get("open18")),
@@ -696,10 +707,13 @@ def _stage(res, R, setups, watch, near, P, now, day, k_today_ok, guards, mon):
     pend = [s for s in setups if s.get("status") in ("armed", "tapped")]
     e = _et(now)
     mod = e.hour * 60 + e.minute
-    a0 = min(a_ for a_, _ in P["window"]); b0 = max(b_ for _, b_ in P["window"])
-    done_today = any(s.get("status") == "filled" for s in setups) and not pos and not en
+    a0, b0 = _span(P)
+    ah = bool(P.get("all_hours"))
+    # done once the day's cap is filled (1 a day today; 2 with the Asia slot / London + NY switches)
+    done_today = sum(1 for s in setups if s.get("status") == "filled") >= max(1, int(P.get("max_per_day") or 1)) and not pos and not en
     if lit_live._closed(now):
-        return "closed", ("Market closed. Next session opens 18:00 ET; LIT can enter from 02:00 ET (the London sweep).", None)
+        return "closed", ("Market closed. Next session opens 18:00 ET; LIT can enter from 02:00 ET (the London sweep)." if not ah else
+                          f"Market closed. Next session opens 18:00 ET; LIT can enter from {_hhmm(a0)} ET.", None)
     if not k_today_ok:
         return "levels", (f"New session: waiting for the first bars of {day}. Entries from {_hhmm(a0)} ET.", None)
     if pos:
@@ -726,10 +740,10 @@ def _stage(res, R, setups, watch, near, P, now, day, k_today_ok, guards, mon):
         t = next(s for s in setups if s.get("status") == "filled")
         tr = t.get("trade") or {}
         return "done", (f"Done for today: one trade a day ({t['side']} {tr.get('exit') or ''} {float(tr.get('r') or 0):+.2f}R). "
-                        "Next chance tomorrow from 02:00 ET.", t["dir"])
-    if b0 <= mod < 1080:
+                        + ("Next chance tomorrow from 02:00 ET." if not ah else f"Next chance from {_hhmm(a0)} ET."), t["dir"])
+    if (lit_live.tday(mod) >= lit_live.tday_end(b0)) if ah else (b0 <= mod < 1080):
         return "done", (f"Entry window closed at {_hhmm(b0)} ET with no trade today. Next chance tomorrow from {_hhmm(a0)} ET.", None)
-    pre = mod >= 1080 or mod < a0
+    pre = (lit_live.tday(mod) < lit_live.tday(a0)) if ah else (mod >= 1080 or mod < a0)
     best = None
     for w in watch:
         if not w.get("allowed", True):
