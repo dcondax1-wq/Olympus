@@ -7,6 +7,13 @@ summary: The owner asked whether EMA, MACD, support/resistance and supply/demand
 runs: retail_sa_sr_sr_bounce_plateau, retail_sa_ema_ema_openhour_plateau, retail_sa_ema_ema_ribbon_best, retail_sa_sr_sr_limit_best, retail_sa_sr_orb_plateau, retail_sa_sr_orb_best, retail_sa_macd_macd_zero_best, retail_sa_macd_macd_cross_best, retail_sa_macd_macd_cross_plateau, retail_sa_macd_macd_hist_best, retail_sa_macd_macd_div_best, retail_sa_ema_ema_cross_best, retail_sa_ema_ema_cross_plateau, retail_sa_ema_ema_pullback_best, retail_sa_ema_ema_pullback_plateau, retail_sa_ema_ema_ribbon_plateau, retail_sa_ema_ema_openhour_best, retail_sa_sr_sr_bounce_best, retail_sa_sr_sr_retest_best, retail_sa_sr_sr_retest_plateau, retail_sa_sr_sr_limit_plateau, retail_sa_sd_sd_confirm_best, retail_sa_sd_sd_zone_best, retail_sa_ema_ema_openhour_hindsight, retail_sa_macd_macd_cross_hindsight, retail_sa_sr_sr_limit_hindsight
 ---
 
+> **Correction (2026-10-22, found by the follow-up studies):** two bugs in `tools/retail_standalone.py` inflate some numbers
+> below. (1) The S/R targets used the whole day's level list, including the overnight high/low before 09:30, when it is not
+> known yet; with only known levels the PD/ON break-and-limit drops from +48R to +13R in 2026 and from -6R to -22R in 2025,
+> and the bounce has the same flaw (`second-sr.md`). (2) `to5(..., fill=0.0)` never forward-fills, so the 1h/4h trend filters
+> were 0 on most 5m bars (`second-ema.md`). Use `second-sr.md`, `second-ema.md` and `second-md.md` for the second-strategy
+> numbers; treat this page's S/R and trend-filtered rows as inflated.
+
 ## In one minute
 
 - **The question (owner, 2026-10-22):** "Could those strategies on their own, separate to LIT, make money?" EMAs, MACD,
