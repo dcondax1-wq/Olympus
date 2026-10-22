@@ -80,7 +80,7 @@ def ref_exit(t):
     return ("TIME" if t["exit"] == "EOD" else t["exit"], int(t["exit_t"]), round(t["pnl"], 2))
 
 
-def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15")):
+def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15"), lm_extra=None):
     """LiveBot.poll_once with live_model = LIT, PaperAdapter, a frozen clock and a bar source that only shows closed bars
     (tests/test_live_dryrun.Replay). Polls at every 5m close (every minute from 10 min before each entry to 5 min after its
     exit, as the PC bot polls each minute: scale-in adds and 15-minute cuts are decided on 1m closes).
@@ -88,7 +88,8 @@ def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15")):
     from tests.test_live_dryrun import Replay
     from engine.live import tick_px
     os.environ["LE_LIVE_MODEL"] = json.dumps({"model": "lit", "sym": "NQ", "label": "LIT test", "lit": P,
-                                              "params": {"risk_usd": 800, "risk_ref_stop": 20.0, "max_micros": 40}})
+                                              "params": {"risk_usd": 800, "risk_ref_stop": 20.0, "max_micros": 40},
+                                              **(lm_extra or {})})        # lm_extra: e.g. "guards" (tests/test_lit_more_entries.py)
     rp = Replay()
     df1 = pd.read_csv(os.path.join(ROOT, "data", "NQ_1m.csv"))
     rp.frames[("NQ", "1m")] = df1[df1["time"] >= at(sessions[0], 18, 0) - 70 * 86400].reset_index(drop=True)

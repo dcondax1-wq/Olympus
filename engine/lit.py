@@ -761,6 +761,16 @@ DEFAULTS = {
     "per_session": None,         # max trades per session [[start, end) ET minute ranges in trading-day order, n], e.g.
                                  # [[[1080, 120], [120, 480], [480, 1080]], 1] = 1 Asia + 1 London + 1 NY (with max_per_day 3)
     "stop_after_loss": False,    # True: no new trade on a trading day after a STOP exit (a later trade only after a TARGET / BE)
+    "second": None,              # rules for the 2nd+ trade of a trading day (research/writeups/lit-more-entries.md; off = None;
+                                 # needs max_per_day >= 2). {"after": ["TARGET", "BE", ...] or None (any exit of the day's last
+                                 # trade), "side": "any" | "same" | "opp" (vs the last trade's direction), "cool": minutes from the
+                                 # last exit to the next setup's entry bar (0 = none), "r_stop": no new trade once the day's R sum
+                                 # <= this (None = no cap), "r_take": no new trade once the day's R sum >= this, "new_level": True =
+                                 # the setup must sweep a level none of the day's trades swept, "q": {"disp": ATR, "depth": ATR,
+                                 # "idm": n} minimum displacement / sweep depth / inducements, "m": size multiplier of the 2nd+
+                                 # trade (1.0 = full size; carried as "x_m" for engine/sizing.py)}
+    "sess_m": None,              # size multiplier by entry-bar ET minute [[from, to, m], ...] (wrapping ranges allowed, e.g.
+                                 # [[1080, 120, 0.5]] = Asia 18:00-02:00 at half size; first match; off = None). Multiplies "x_m".
     # size (micros = $800 up to a 20-pt stop, then 800*20/stop, max 40; then these multipliers, floor 1 micro)
     "how_out": 1.0,              # multiplier when the sweep extreme is outside the high/low-of-week window (Tue 03:00-Wed 11:30)
     # loss rules (research/writeups/lit-losses.md, run lit_loss_pack; both off by default so lit_final stays reproducible)
@@ -1422,6 +1432,7 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
         B1 = bars_1m(M)
     out, busy, per_day = [], -1, collections.Counter()
     per_sess, lost, per_src = collections.Counter(), set(), collections.Counter()
+    day_last, day_r, day_lv = {}, collections.defaultdict(float), collections.defaultdict(set)
     ps = P.get("per_session")
     sess_of = (lambda m: next((q for q, (a, b) in enumerate(ps[0]) if (m - a) % 1440 < (b - a) % 1440), -1)) if ps else None
     pending, signals, enter_now = [], [], []
@@ -1449,6 +1460,28 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
             continue
         if P.get("stop_after_loss") and z["day"] in lost:
             continue
+        sc = P.get("second")
+        if sc and per_day[z["day"]] >= 1:     # 2nd+ trade of the day (lit-more-entries): conditions on the day so far
+            lt2 = day_last.get(z["day"])
+            if lt2 is not None:
+                if sc.get("after") and lt2["exit"] not in sc["after"]:
+                    continue
+                sd = sc.get("side", "any")
+                if (sd == "same" and lt2["dir"] != z["dir"]) or (sd == "opp" and lt2["dir"] == z["dir"]):
+                    continue
+                if sc.get("cool") and z["entry_t"] < int(lt2["exit_t"]) + 60 * float(sc["cool"]):
+                    continue
+                if sc.get("r_stop") is not None and day_r[z["day"]] <= float(sc["r_stop"]):
+                    continue
+                if sc.get("r_take") is not None and day_r[z["day"]] >= float(sc["r_take"]):
+                    continue
+                if sc.get("new_level") and set(z["swept"]) & day_lv[z["day"]]:
+                    continue
+                q_ = sc.get("q")             # stricter setup for the 2nd+ trade: {"disp": ATR, "depth": ATR, "idm": count}
+                if q_ and ((q_.get("disp") is not None and z["disp"] < float(q_["disp"]))
+                           or (q_.get("depth") is not None and z["depth_atr"] < float(q_["depth"]))
+                           or (q_.get("idm") is not None and len(z.get("idm_a") or []) < int(q_["idm"]))):
+                    continue
         if ps and per_sess[(z["day"], sess_of(z["mod"]))] >= ps[1]:
             continue
         if not z.get("pre_ok") and not setup_ok(z, P, names):
@@ -1514,8 +1547,12 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
         if rb:
             t["_re"] = per_day[z["day"]] >= 1
             last[z["day"]] = t
+        n_before = per_day[z["day"]]
         busy = t["exit_i"]; per_day[z["day"]] += 1
         per_src[(z["day"], z.get("src", "lit"))] += 1
+        day_last[z["day"]] = t
+        day_r[z["day"]] += float(t.get("r") or 0.0)
+        day_lv[z["day"]].update(z["swept"])
         if ps:
             per_sess[(z["day"], sess_of(z["mod"]))] += 1
         if t.get("exit") == "STOP":
@@ -1543,10 +1580,24 @@ def _run_core(M: Market, cands, P, sessions, B1, B5, live, week_hist=None):
                     mi = min(mi, qmax / (t["qty"] * m) + 1e-9)
                 m *= mi
                 why.append(f"{cnt} inducement{'s' if cnt != 1 else ''} taken first x{mi:.3g}")
+        xm = 1.0                             # lit-more-entries: 2nd+ trade / session size (eval sizing re-applies x_m)
+        if sc and n_before >= 1 and sc.get("m") is not None and float(sc["m"]) != 1.0:
+            xm *= float(sc["m"])
+            why.append(f"trade {n_before + 1} of the day x{float(sc['m']):g}")
+        if P.get("sess_m"):
+            for a_, b_, mm_ in P["sess_m"]:
+                if (z["mod"] - a_) % 1440 < (b_ - a_) % 1440:
+                    if float(mm_) != 1.0:
+                        xm *= float(mm_)
+                        why.append(f"session size x{float(mm_):g}")
+                    break
+        m *= xm
         if m != 1.0:
             t = scale_trade(t, m)
             t["size_mult"] = round(m, 6)
             t["size_why"] = why
+        if xm != 1.0:
+            t["x_m"] = round(xm, 6)
         if idm_f:
             t = {**t, **idm_f}
         if live:
