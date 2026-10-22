@@ -416,11 +416,12 @@ def _walk(O, H, L, C, e, sp, risk, T, be, tc, lim, live=False):
                 return (px - e, k, "TARGET", worst, mfe)
             if be is not None and not moved and H[k] >= e + risk:
                 cur = e + be; moved = True
-        if tc and k == 2 and not moved and mfe < 0.5 and C[k] < e - 0.3 * risk and k + 1 < nb:
+        if tc and k == 2 and not moved and mfe < 0.5 and C[k] < e - 0.3 * risk and (k + 1 < nb or live):
             cut = True
         if k == nb - 1:
             if live:
-                return (C[k] - e, k, "OPEN_BE" if moved else "OPEN", min(worst, C[k] - e), mfe)
+                # live (engine/second.py): a 15-minute cut decided on this last close exits at the next open: "OPEN_CUT"
+                return (C[k] - e, k, "OPEN_CUT" if cut else "OPEN_BE" if moved else "OPEN", min(worst, C[k] - e), mfe)
             px = C[k] - TICK
             return (px - e, k, "FLAT", min(worst, px - e), mfe)
     px = C[-1] - TICK

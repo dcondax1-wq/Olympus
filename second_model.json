@@ -1,9 +1,10 @@
 {
  "paper": true,
- "note": "Second strategies next to LIT, PAPER ONLY (engine/second.py). Nothing here can route an order; LIT (live_model.json) and the eval account are untouched. Switch one off: \"on\": false.",
+ "note": "Second strategies next to LIT (engine/second.py computes signals only). \"route\": false (default) = paper; \"route\": true = the PC bot routes it to its own account next to LIT (engine/live.py: LIT first, one position at a time, max 2 trades a day, eval-safe size). Switch: python -m engine.second --route <key> on|off. Cloud-only strategies are never routed. Switch one off: \"on\": false.",
  "strategies": {
   "ema_lon_vix": {
    "on": true,
+   "route": false,
    "kind": "ema_pullback",
    "label": "London EMA trend pullback",
    "short": "EMA",
@@ -17,6 +18,7 @@
   },
   "macd_sweep": {
    "on": true,
+   "route": false,
    "kind": "macd_sweep",
    "label": "MACD divergence at a liquidity sweep",
    "short": "MACD",
@@ -31,6 +33,7 @@
   },
   "sr_nyreclaim": {
    "on": true,
+   "route": false,
    "kind": "sr_reclaim",
    "name": "nyreclaim",
    "label": "NY sweep-and-reclaim of the day's levels (S/R)",
@@ -47,6 +50,7 @@
   },
   "lit_asia": {
    "on": true,
+   "route": false,
    "kind": "lit_variant",
    "cloud_only": true,
    "label": "LIT + Asia slot (paper shadow)",

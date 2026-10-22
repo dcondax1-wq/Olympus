@@ -8,7 +8,7 @@ import { icon } from './icons.js';
 const TABS = [['now', 'Now'], ['levels', 'Levels'], ['setups', 'Setups'], ['sizing', 'Sizing'], ['trade', 'Trade'], ['guards', 'Guards'],
   ['log', 'Thought log'], ['replay', 'Replay a day']];
 const VIEW_TABS = TABS.filter(([k]) => k !== 'replay');
-const S = { tab: 'now', sub: 'now', live: null, liveErr: null, at: 0, timer: null, help: null,
+const S = { who: 'lit', second: null, secondErr: null, tab: 'now', sub: 'now', live: null, liveErr: null, at: 0, timer: null, help: null,
   days: null, day: null, frames: null, fi: 0, rb: null, rbErr: null, play: null, busy: false, fullLog: null };
 const isActive = () => document.getElementById('page-brain')?.classList.contains('active');
 const p2 = (x) => (x == null ? '—' : Number(x).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
@@ -30,6 +30,28 @@ async function getJ(u) { const r = await fetch(u); const d = await r.json().catc
 async function loadLive() {
   try { S.live = await getJ('/api/next/brain'); S.liveErr = null; S.at = Date.now(); if (S.live.help) S.help = S.live.help; }
   catch (e) { S.liveErr = e.message; }
+}
+// the second-strategy brain (engine/second.py brain via /api/next/brain/second), drawn by ./secondcore.js (shared with the phone)
+let scLoading = null;
+function secondCore() {
+  if (window.SecondUI && window.SecondUI.brain) return Promise.resolve();
+  if (!scLoading) scLoading = new Promise((ok, bad) => {
+    const t = document.createElement('script');
+    t.src = new URL('./secondcore.js?v=2', import.meta.url).href;
+    t.onload = () => ok(); t.onerror = () => { scLoading = null; bad(new Error('secondcore.js did not load')); };
+    document.head.appendChild(t);
+  });
+  return scLoading;
+}
+async function loadSecond() {
+  try { await secondCore(); S.second = await getJ('/api/next/brain/second'); S.secondErr = null; }
+  catch (e) { S.secondErr = e.message; }
+}
+function drawSecond() {
+  const box = $('#bbSecond'); if (!box) return;
+  if (!window.SecondUI || !window.SecondUI.brain) { box.innerHTML = `<div class="banner warn">${esc(S.secondErr || 'Loading…')}</div>`; return; }
+  const d = S.second || {};
+  window.SecondUI.brain(box, d.empty || d.error ? { strategies: [], error: d.reason || d.error || S.secondErr } : window.SecondUI.brainList(d, 'PC bot'));
 }
 async function loadFullLog(day) {
   try { const d = await getJ('/api/next/brain/log' + (day ? '?day=' + encodeURIComponent(day) : '')); S.fullLog = d; } catch { S.fullLog = null; }
@@ -245,15 +267,19 @@ function render() {
     : `<span class="nx-chip">${esc(b?.empty ? 'no live Brain' : S.liveErr ? 'offline' : 'loading')}</span>`;
   const head = `<div class="nx-hero"><div><div class="nx-eyebrow">${icon('brain')} Bot Brain · ${src}</div><h2>What the bot is thinking</h2>
     <p class="muted">Every step of the LIT strategy, live: what it waits for, every level it watches, every setup it saw today and the exact rule that stopped it, how it sizes, how it manages the trade and what could block it. Read-only: this page cannot change anything the bot does.</p></div></div>
-    <div class="nx-toolbar bb-tabs">${seg('bbTab', TABS, S.tab)}</div>`;
+    <div class="nx-toolbar bb-tabs">${seg('bbWho', [['lit', 'LIT brain'], ['second', 'Second-strategy brain']], S.who)}</div>
+    ${S.who === 'second' ? '' : `<div class="nx-toolbar bb-tabs">${seg('bbTab', TABS, S.tab)}</div>`}`;
   let body;
-  if (S.tab === 'replay') body = vReplay();
+  if (S.who === 'second') body = '<div id="bbSecond"><div class="nx-skel"><i></i><i></i></div></div>';
+  else if (S.tab === 'replay') body = vReplay();
   else if (!live) body = `<div class="card nx-glass nx-empty-hub"><span class="nx-tile-i">${icon('brain')}</span><h3>${esc(b?.reason || S.liveErr || 'Loading…')}</h3>
       <p class="muted">The live Brain fills in after the bot's first LIT poll. Meanwhile, replay any 2026 day to see what the bot thought.</p>
       <button type="button" class="btn primary" data-bbtab="replay">${icon('replay')}<span>Replay ${esc(b?.latest_day || 'a day')}</span></button></div>`;
   else body = `<div id="bbView">${VIEWS[S.tab](b)}</div>`;
   el.innerHTML = head + body;
   onSeg('bbTab', (v) => { setTab(v); });
+  onSeg('bbWho', (v) => { S.who = v; render(); if (v === 'second') loadSecond().then(drawSecond); });
+  if (S.who === 'second') { drawSecond(); return; }
   $$('[data-bbtab]', el).forEach((x) => x.addEventListener('click', () => {
     if (x.closest('#bbRView')) { S.sub = x.dataset.bbtab; render(); } else setTab(x.dataset.bbtab);
   }));
@@ -379,6 +405,7 @@ async function show() {
   clearInterval(S.timer);
   S.timer = setInterval(async () => {
     if (!isActive() || document.hidden) return;
+    if (S.who === 'second') { await loadSecond(); if (isActive() && S.who === 'second') drawSecond(); return; }
     if (S.tab === 'replay') return;
     if (document.querySelector('#bbTip')) return;          // do not redraw under an open explainer
     await loadLive();

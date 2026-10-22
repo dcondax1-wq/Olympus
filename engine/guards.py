@@ -80,7 +80,13 @@ def config(bot) -> dict:
     except Exception:
         lm = {}
     cfg = (getattr(bot, "cfg", None) or {}).get("guards") or {}
-    return {**DEFAULTS, **(lm if isinstance(lm, dict) else {}), **(cfg if isinstance(cfg, dict) else {})}
+    out = {**DEFAULTS, **(lm if isinstance(lm, dict) else {}), **(cfg if isinstance(cfg, dict) else {})}
+    if getattr(bot, "_second_routed", None):
+        # a routed second strategy is on (second_model.json "route": true): 2 entries a day on the account, at most 1 of
+        # them a second strategy, LIT's own count stays at its max_per_day (dup_problem)
+        out["max_per_day"] = max(2, int(out.get("max_per_day") or 1))
+        out["second_on"] = True
+    return out
 
 
 def _cfg(bot) -> dict:
@@ -320,7 +326,7 @@ def _void(bot) -> set:
     return {int(r["entry_t"]) for r in bot.ledger if r.get("side") == "exit" and r.get("reason") == "NO TRADE" and r.get("entry_t")}
 
 
-def dup_problem(bot, entry_t: int, c, s: dict) -> str | None:
+def dup_problem(bot, entry_t: int, c, s: dict, src=None) -> str | None:
     routed = s.get("routed") or {}
     void = _void(bot)
     for day, ts in routed.items():
@@ -332,6 +338,19 @@ def dup_problem(bot, entry_t: int, c, s: dict) -> str | None:
     n = len(set(today) | led)
     if n >= int(c.get("max_per_day") or 1):
         return f"{n} entr{'y' if n == 1 else 'ies'} already routed today (max {int(c.get('max_per_day') or 1)} a day)"
+    if c.get("second_on"):
+        # one account, LIT + routed second strategies: LIT keeps its own count, the second strategies 1 a day together
+        rows = [r for r in bot.ledger if r.get("side") in ("buy", "sell") and r.get("entry_t")
+                and trading_day(r["entry_t"]) == trading_day(entry_t) and int(r["entry_t"]) not in void]
+        if src:
+            ns = len({int(r["entry_t"]) for r in rows if r.get("src")})
+            if ns >= 1:
+                return f"{ns} second-strategy entry already routed today (max 1 a day: the other slot is LIT's)"
+        else:
+            nl = len({int(r["entry_t"]) for r in rows if not r.get("src")})
+            ml = int(_lit_params(bot).get("max_per_day") or 1)
+            if nl >= ml:
+                return f"{nl} LIT entr{'y' if nl == 1 else 'ies'} already routed today (LIT max {ml} a day)"
     return None
 
 
@@ -359,7 +378,7 @@ def entry_problems(bot, ent: dict, action: dict, plan_qty, now: int, c: dict | N
     if c.get("order_sanity"):
         out += sanity(action, plan_qty, account_max(bot), c)
     if c.get("dup_entry"):
-        p = dup_problem(bot, int(ent["entry_t"]), c, s if s is not None else load_state(bot))
+        p = dup_problem(bot, int(ent["entry_t"]), c, s if s is not None else load_state(bot), src=ent.get("src"))
         if p:
             out.append(p)
     if c.get("daily_loss"):

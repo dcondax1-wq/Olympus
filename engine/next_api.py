@@ -324,11 +324,12 @@ def second_view():
         run = getattr(BOT, "second", None)
         st = None
         if run:                                  # the PC's own run as a ledger view (every trade of its window)
-            st = {"t": run.get("t"), "strategies": {k: {**{kk: s.get(kk) for kk in ("label", "short", "on", "state", "error")},
+            st = {"t": run.get("t"), "strategies": {k: {**{kk: s.get(kk) for kk in ("label", "short", "on", "state", "error", "brain")},
                                                         "ledger": {str(t["entry_t"]): {**t, "side": "LONG" if t["dir"] > 0 else "SHORT"}
                                                                    for t in s.get("trades") or []}}
                                                     for k, s in (run.get("strategies") or {}).items()}}
-        out = S.dashboard_block(st)
+        ri = BOT.second_route_info() if callable(getattr(BOT, "second_route_info", None)) else None
+        out = S.dashboard_block(st, route=ri)
         out["source"] = "PC bot" if run else "rules only (the PC bot has not run the second strategies yet)"
         return _J(out)
     except Exception as e:                                   # never 500 the dashboard over a page

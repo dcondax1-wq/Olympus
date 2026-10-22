@@ -345,7 +345,14 @@ class LiveBot:
         self._arc = {}                   # (sym, tf) -> the NinjaTrader archive in memory (data/nt_bars, engine/pcbars.py)
         self.accts = None                # engine/multi_account.AccountRouter: the start cfg's extra accounts (None = one account)
         self.brain = None                # engine/brain.py: the Bot Brain snapshot of the last poll (read-only, built after routing)
-        self.second = None               # engine/second.py: the paper second strategies' last run (never routed)
+        self.second = None               # engine/second.py: the paper second strategies' last run (display)
+        # routed second strategies (second_model.json "route": true; OFF by default): ONE position on the account, LIT first
+        self._open_src = None            # None = the open routed position is LIT's; else the second_model.json key it belongs to
+        self._second_routed = []         # the keys routed at the last poll (guards: max 2 entries a day when any)
+        self._second_view = None         # engine/second.run of the routed strategies on this poll's closed bars
+        self._second_view_key = None     # (last 5m, last 1m, keys) of that run
+        self._second_prov = {}           # entry_t -> what was routed for a second-strategy entry (checked, corrected, closed)
+        self._second_notes = {}          # once-per-key log lines of the second-strategy route
         self._brain_log = None           # engine/brain.BrainLog: today's thought log (data/brain/YYYY-MM-DD.jsonl for the real bot)
 
     # ------------------------------------------------------------------ plumbing
@@ -613,7 +620,10 @@ class LiveBot:
     def kill_switch(self):
         """Flatten + stop. On paper this closes the simulated position. The flag persists for the rest of the day."""
         self.kill = True
-        if self.state and self.state.get("position"):
+        if self._open_src and self._open_routed is not None:
+            # a routed second-strategy position (engine/second.py): flattened the same way (NinjaTrader: FLATTENEVERYTHING)
+            self._second_flatten(self._open_routed, "KILL SWITCH", self.cfg.get("sym", "NQ"), int(self.clock()))
+        elif self.state and self.state.get("position"):
             pos = self.state["position"]
             qty = self._open_qty if self._open_routed == pos.get("entry_t") and self._open_qty else pos.get("qty")
             q1 = int(qty or 0)
@@ -649,7 +659,11 @@ class LiveBot:
         res = {"ok": True, "note": "flat: nothing to close"}
         legs = [lg for lg in (getattr(self.adapter, "legs", None) or []) if isinstance(lg, dict)
                 and lg.get("status") in ("entry_sent", "pending", "cancel_pending", "protected", "unprotected")]
-        if pos:
+        if self._open_src and self._open_routed is not None:          # a routed second-strategy position
+            pos = self._second_pos()
+            self._second_flatten(self._open_routed, reason, sym, int(self.clock()))
+            res = (self.ledger[-1].get("result") or {}) if self.ledger else res
+        elif pos:
             qty = self._open_qty if self._open_routed == pos.get("entry_t") and self._open_qty else pos.get("qty")
             qty = int(qty or 0) + self._adds_qty(pos.get("entry_t"))
             res = self._route({"sym": sym, "side": "exit", "qty": qty, "reason": reason, "entry_t": pos.get("entry_t")})
@@ -1008,6 +1022,7 @@ class LiveBot:
                 "open_routed": self._open_routed, "open_qty": self._open_qty, "open_adds": self._open_adds,
                 "blocked_entries": sorted(self._blocked_entries),
                 "flattened": sorted(self._flattened), "no_entries_day": self._no_entries_day, "provisional": {str(k): v for k, v in self._provisional.items()},
+                "open_src": self._open_src, "second_prov": {str(k): v for k, v in self._second_prov.items()},
                 "seen": [list(k) for k in list(self.seen)[-2000:]], "ledger": self.ledger[-300:],
                 "week_exits": self.lit_week_hist() if self.cfg else [], "eval_days": self.eval_days() if self.cfg else {},
                 "day_pnl_routed": self.day_pnl_routed(), "trades_today": self.trades_today()}
@@ -1055,13 +1070,16 @@ class LiveBot:
         self._flattened = set(s.get("flattened") or [])
         self._no_entries_day = s.get("no_entries_day")
         self._provisional = {int(k): v for k, v in (s.get("provisional") or {}).items()}
+        self._open_src = s.get("open_src") if self._open_routed is not None else None
+        self._second_prov = {int(k): v for k, v in (s.get("second_prov") or {}).items() if isinstance(v, dict)}
         if s.get("started_at"):
             self.started_at = min(self.started_at, int(s["started_at"]))
         self.kill = bool(s.get("kill")) and not clear_kill
         self._restored = {"ledger": len(self.ledger), "open_routed": self._open_routed, "kill": self.kill,
                           "started_at": self.started_at, "saved_at": s.get("saved_at")}
         self._log("system", f"Restored live state from {os.path.basename(self.state_path)} (saved {_et(s.get('saved_at', 0)):%H:%M:%S} ET): "
-                            f"{len(self.ledger)} ledger rows, open routed position {'@' + _et(self._open_routed).strftime('%H:%M') if self._open_routed else 'none'}, "
+                            f"{len(self.ledger)} ledger rows, open routed position {'@' + _et(self._open_routed).strftime('%H:%M') if self._open_routed else 'none'}"
+                            f"{' (' + str(self._open_src) + ', a second strategy)' if self._open_src else ''}, "
                             f"kill={'ON' if self.kill else 'off'}, day P&L routed ${self.day_pnl_routed():+,.0f}, {self.trades_today()} trades today")
 
     def day_pnl_routed(self):
@@ -1209,6 +1227,7 @@ class LiveBot:
         self._save_state()
         if model == "lit":                    # after routing and the state save: never delays an order
             self._brain_tick(res, lit_p, now, brain_keep)
+            self._second_route_tick(df_full, df1, res, sym, now)   # routed second strategies (OFF by default): LIT routed first
             self._second_tick(df_full, df1, res, now)
         return self.state
 
@@ -1250,6 +1269,337 @@ class LiveBot:
             finally:
                 self._second_busy = False
         threading.Thread(target=run, name="second-paper", daemon=True).start()
+
+    # ------------------------------------------------------------------ routed second strategies (OFF by default)
+    # second_model.json "route": true (owner switch: python -m engine.second --route <key> on). engine/second.py computes the
+    # signals (no adapter there); this pass turns them into the same entry / stop-move / exit actions LIT routes, through the
+    # same guards (engine/guards.entry_block), sizing module (engine/sizing.second_qty) and adapter (_route), on the SAME
+    # account. Rules (docs/DAILY_CHECKLIST.md "Second strategies on the account"):
+    #   - one position at a time; LIT first: no second entry while LIT is in a trade, entering, has a limit armed or waits for
+    #     its 1m CISD; a LIT entry while a second trade is open closes it at market first (_second_preempt; the research rule
+    #     of second-md.md and second-mix.md "pre": the EMA / S-R research let both run, see second-route.md for the gap);
+    #   - max 2 entries a day, at most 1 of them a second strategy (one slot is always kept for LIT's day trade);
+    #   - entry at market right at the 5m open after the signal close (the research fill), decided from the strategy's own
+    #     code on the closed bars + that open (probe), checked once the fill bar has closed (not the model's trade -> flat);
+    #   - its stop moves (EMA breakeven + 1.25 at 1R), its 15-minute cut (MACD / S-R) and the 15:55 flat are routed;
+    #   - runs after LIT's routing and state save; any exception is logged and never touches LIT.
+    SECOND_MAX_AGE_S = 45
+
+    def _second_cfg(self):
+        """(second_model.json, routed keys). A start cfg "second_route": [keys] (test harnesses) replaces the file's flags."""
+        from . import second as _second
+        cfg = _second.load_cfg()
+        over = self.cfg.get("second_route")
+        if isinstance(over, (list, tuple)):
+            for k, sc in cfg["strategies"].items():
+                if isinstance(sc, dict):
+                    sc["route"] = k in over and bool(sc.get("on", True)) and not sc.get("cloud_only")
+        return cfg, _second.routed(cfg)
+
+    def _snote(self, key, kind, text):
+        """Log a second-route line once per key + text (a skipped signal is logged once, not every poll)."""
+        if self._second_notes.get(key) == text:
+            return
+        self._second_notes[key] = text
+        self._log(kind, text)
+
+    def _lit_busy(self):
+        """Why a second-strategy entry must wait for LIT right now (None = LIT is idle)."""
+        st = self.state or {}
+        if st.get("position"):
+            return "LIT is in a trade"
+        if st.get("enter_now"):
+            return "LIT is entering"
+        su = st.get("setups") or {}
+        if su:
+            s = next(iter(su.values()))
+            return "LIT is waiting for its 1m CISD" if s.get("tapped_t") else "LIT has a limit armed"
+        if self._open_routed is not None and not self._open_src:
+            return "LIT's routed position is still open"
+        return None
+
+    def _second_rows_today(self, day):
+        """Second-strategy entries routed on trading day `day` (an entry flattened as NO TRADE does not count)."""
+        void = {int(r["entry_t"]) for r in self.ledger if r.get("side") == "exit" and r.get("reason") == "NO TRADE" and r.get("entry_t")}
+        return [r for r in self.ledger if r.get("side") in ("buy", "sell") and r.get("src") and r.get("entry_t")
+                and trading_day(int(r["entry_t"])) == day and int(r["entry_t"]) not in void]
+
+    def _second_mark(self, sym, now, bar_t=None):
+        """(price, estimated): the forming 1m bar's open when the feed shows it (at bar_t, default this minute), else the
+        model's last close (estimated)."""
+        t = int(bar_t if bar_t is not None else now - now % 60)
+        fo = self._forming.get((sym, 60))
+        if fo and int(fo[0]) == t and fo[1]:
+            return float(fo[1]), False
+        px = (self.state or {}).get("price")
+        return (float(px) if px else None), True
+
+    def _second_pos(self):
+        """The open routed second-strategy position as a position dict (kill switch / flatten / dashboards), else None."""
+        if not self._open_src or self._open_routed is None:
+            return None
+        pv = self._second_prov.get(int(self._open_routed)) or {}
+        return {"entry_t": int(self._open_routed), "dir": int(pv.get("dir") or 1), "qty": int(self._open_qty or pv.get("qty") or 0),
+                "entry": pv.get("entry"), "stop": pv.get("stop_now") or pv.get("stop"), "stop0": pv.get("stop"),
+                "target": pv.get("target"), "setup": pv.get("short") or self._open_src, "src": self._open_src}
+
+    def second_route_info(self):
+        """Heartbeat / live.json / dashboards: which second strategies the bot routes to its account, the open one, the
+        last routed rows. None when nothing is routed (paper only)."""
+        keys = list(self._second_routed or [])
+        if not keys and not self._open_src:
+            return None
+        try:
+            acct = self._push_account()
+        except Exception:
+            acct = str(self.cfg.get("adapter") or "paper")
+        op = self._second_pos()
+        rows = [{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target")}
+                for r in self.ledger if r.get("src")][-8:]
+        return {"keys": keys, "account": acct, "open": op, "routed": rows,
+                "note": "LIT first, one position at a time, max 2 trades a day (1 second-strategy trade)"}
+
+    def _second_qty(self, sc, t):
+        """Micros for a routed second-strategy entry: engine/sizing.second_qty with LIT's eval state (shared daily loss,
+        room, pass / fail lock, session count). Fails closed (0)."""
+        from . import sizing as _sz
+        lsz = getattr(self, "_lit_sizing", None) or {}
+        mode = lsz.get("mode") or "normal"
+        try:
+            st = room = None
+            if mode in _sz.EVAL_MODES:
+                st = self.eval_state()
+                room = self.eval_room()
+            maxq = min(40, int((self.cfg.get("params") or {}).get("max_micros") or 40))
+            r = _sz.second_qty(float(t["risk_pts"]), float(sc.get("usd", 500)), lsz, state=st, room=room, max_micros=maxq)
+            return int(r["qty"]), r["reasons"]
+        except Exception as e:
+            self._note_error(f"second-strategy sizing failed: {e.__class__.__name__}: {e}")
+            return 0, [f"sizing failed ({e.__class__.__name__}): not traded"]
+
+    def _second_route_tick(self, df5, df1, res, sym, now):
+        """After LIT's routing: manage the open routed second-strategy position, then (flat account, LIT idle, right at a
+        5m open) route a new second-strategy entry. Never raises; nothing happens while no strategy has "route" on and none
+        is open."""
+        try:
+            cfg, keys = self._second_cfg()
+        except Exception as e:
+            self._note_error(f"second_model.json not read: {e.__class__.__name__}: {e}")
+            cfg, keys = None, []
+        self._second_routed = keys
+        live_prov = [p.get("key") for p in self._second_prov.values() if not p.get("final")]
+        if cfg is None or (not keys and not self._open_src and not live_prov):
+            self._second_view = None
+            return
+        try:
+            from . import second as _second
+            mk = list(keys) + [k for k in dict.fromkeys([self._open_src] + live_prov) if k and k not in keys]
+            sub = {**cfg, "strategies": {k: cfg["strategies"][k] for k in mk if k in cfg["strategies"]}}
+            lit_w = _second.lit_windows(res)
+            last5 = int(df5["time"].max())
+            vk = (last5, int(df1["time"].max()) if df1 is not None and len(df1) else 0, tuple(mk))
+            if vk != self._second_view_key or self._second_view is None:
+                self._second_view = _second.run(df5, one_min=df1, now=now, cfg=sub, lit=lit_w)
+                self._second_view_key = vk
+            self._second_manage(self._second_view, sym, now, last5)
+            if keys:
+                self._second_entry(df5, df1, sub, keys, lit_w, sym, now)
+        except Exception as e:
+            self._note_error(f"second-strategy route failed: {e.__class__.__name__}: {e}")
+        finally:
+            self._save_state()
+
+    def _second_entry(self, df5, df1, sub, keys, lit_w, sym, now):
+        from . import second as _second
+        tb = int(df5["time"].max()) + 300                 # the 5m bar opening now: the research fills at its open
+        age = int(now) - tb
+        if age < 0 or age > float(self.cfg.get("second_max_age_s") or self.SECOND_MAX_AGE_S):
+            return
+        if self._open_src or self.kill or ("s_probe", tb) in self.seen:     # a second trade open: nothing to probe
+            return
+        self.seen.add(("s_probe", tb))
+        px, est = self._second_mark(sym, now, bar_t=tb)
+        if px is None:
+            return
+        cols = ["time", "open", "high", "low", "close", "volume"]
+        bar = pd.DataFrame([{"time": tb, "open": px, "high": px, "low": px, "close": px, "volume": 1.0}])   # the opening print (a flat 0-volume bar is dropped as junk)
+        df5x = pd.concat([df5[cols], bar], ignore_index=True)
+        df1x = df1
+        if df1 is not None and len(df1) and int(df1["time"].max()) < tb:
+            df1x = pd.concat([df1[cols], bar], ignore_index=True)
+        pr = _second.run(df5x, one_min=df1x, now=now, cfg={**sub, "strategies": {k: sub["strategies"][k] for k in keys}}, lit=lit_w)
+        sig = None
+        for k in keys:
+            s = (pr.get("strategies") or {}).get(k) or {}
+            if s.get("error"):
+                self._snote(("err", k), "warn", f"Second strategy {k}: {s['error']} (no entry from it this bar)")
+                continue
+            t = next((t for t in s.get("trades") or [] if int(t["entry_t"]) == tb and t.get("exit_kind") == "OPEN"
+                      and t.get("target") is not None), None)
+            if t:
+                sig = (k, t)
+                break
+        if not sig:
+            return
+        k, t = sig
+        sc = sub["strategies"][k]
+        nm = sc.get("short") or k
+        d = 1 if int(t["dir"]) == 1 else -1
+        side = "LONG" if d == 1 else "SHORT"
+        head = f"Second strategy {nm} {side} at the {_et(tb):%H:%M} ET open"
+        why = self._lit_busy()            # incl. LIT's routed position (the account is not flat)
+        if not why and self._second_rows_today(trading_day(tb)):
+            why = "1 second-strategy trade a day already (the other slot is LIT's)"
+        if not why and self.health.get("entries_blocked"):
+            why = "feed stale"
+        if not why and self._no_entries_day is not None and self._no_entries_day == trading_day(now):
+            why = "the owner flattened remotely today"
+        q, reasons = (0, []) if why else self._second_qty(sc, t)
+        if not why and q < 1:
+            why = "size 0 (" + "; ".join(reasons) + ")"
+        ent = {"entry_t": tb, "dir": d, "entry": float(t["entry"]), "stop": float(t["stop"]), "target": float(t["target"]),
+               "qty": q, "src": k, "setup": sc.get("label") or k, "risk_pts": float(t["risk_pts"])}
+        if not why:
+            gb = self._guard_entry(ent, q, sym, now)
+            if gb:
+                why = f"GUARD {gb}"
+        if why:
+            self._log("risk", f"{head} NOT routed: {why}")
+            return
+        self._open_routed, self._open_src, self._open_qty, self._open_adds = tb, k, q, []
+        stop_r, tgt_r = tick_px(ent["stop"], d), tick_px(ent["target"], d, target=True)
+        self._second_prov[tb] = {"key": k, "short": nm, "qty": q, "model_qty": int(t.get("qty") or 0), "dir": d, "est": est,
+                                 "entry": float(t["entry"]), "stop": stop_r, "target": tgt_r, "t": int(self.clock()),
+                                 "risk_pts": float(t["risk_pts"]), "day": trading_day(tb)}
+        self.seen.add(("s_entry", k, tb))
+        self._log("system", f"{head}: ROUTED MARKET {q} MNQ ({int(self.clock()) - tb} s after the open), stop {stop_r:,.2f}, "
+                            f"target {tgt_r:,.2f}; size {'; '.join(reasons)}" + ("; priced from the last close (no open in the feed yet)" if est else ""))
+        rr = self._route({**self._entry_action(ent, q, sym), "src": k, "strategy": nm})
+        self._guard_routed(tb)
+        self._push_fill({**ent, "stop0": ent["stop"]}, q, sym, rr, strategy=nm)
+
+    def _second_manage(self, view, sym, now, last5):
+        """The open routed second-strategy position (and the ones closed early, for their booked $): confirm the entry once
+        its fill bar closed, route its stop moves / 15-minute cut / 15:55 flat / model exit, exactly once each."""
+        for et_, pv in sorted(self._second_prov.items()):
+            if pv.get("final"):
+                continue
+            k = pv.get("key")
+            is_open = self._open_routed is not None and int(self._open_routed) == int(et_) and self._open_src == k
+            if is_open and self._second_past_flat(pv, now):
+                self._second_flatten(et_, "TIME", sym, now)
+                continue
+            s = ((view or {}).get("strategies") or {}).get(k)
+            if s is None or s.get("error"):
+                if is_open:
+                    self._snote(("err", k), "warn", f"Second strategy {k}: {(s or {}).get('error') or 'not computed'} - the open "
+                                                     "position keeps its broker stop / target (15:55 flat still routed)")
+                continue
+            tr = next((t for t in s.get("trades") or [] if int(t["entry_t"]) == int(et_)), None)
+            if tr is None:
+                if is_open and int(last5) >= int(et_):
+                    # the fill bar closed and the strategy has no trade there (the real open failed a check the estimate passed)
+                    self._log("risk", f"Second strategy {pv.get('short')} entry {_et(et_):%H:%M} ET is not the strategy's trade once "
+                                      "its fill bar closed: flattening the routed position")
+                    self._second_flatten(et_, "NO TRADE", sym, now)
+                    pv["final"] = True
+                elif not is_open and trading_day(now) != pv.get("day"):
+                    pv["final"] = True
+                continue
+            if not pv.get("checked"):
+                pv["checked"] = True
+                pv["fill"] = float(tr["entry"])
+                tg = tick_px(tr.get("target"), pv["dir"], target=True) if tr.get("target") is not None else None
+                if tg is not None and pv.get("target") is not None and abs(float(tg) - float(pv["target"])) > 1e-9:
+                    self._log("warn", f"Second strategy {pv.get('short')} {_et(et_):%H:%M} ET: broker target {pv['target']:.2f} "
+                                      f"(from the open), the strategy's target is {tg:.2f}; its exit is still routed")
+            if tr["exit_kind"] == "OPEN":
+                if is_open:
+                    pv["stop_now"] = tr.get("stop_now")
+                    if tr.get("cut_now"):
+                        self._second_flatten(et_, str(tr["cut_now"]), sym, now)
+                    elif getattr(self.adapter, "route_stop_moves", False) and tr.get("stop_now") is not None:
+                        self._route_stop_move({"entry_t": int(et_), "dir": pv["dir"], "stop": float(tr["stop_now"]),
+                                               "entry": float(tr["entry"]), "qty": self._open_qty}, sym)
+                continue
+            kind = str(tr["exit_kind"]).upper()
+            reason = "TIME" if kind in ("FLAT", "EOD") else kind
+            qm = int(tr.get("qty") or 0)
+            if is_open:
+                q = int(self._open_qty or pv.get("qty") or 0)
+                pnl = round(float(tr.get("usd") or 0) * q / qm, 2) if qm else 0.0
+                self.seen.add(("s_exit", k, int(et_)))
+                if self.cfg["adapter"] == "paper" or reason == "TIME" or getattr(self.adapter, "route_all_exits", False):
+                    self._route({"sym": sym, "side": "exit", "qty": q, "reason": reason, "pnl": pnl, "entry_t": int(et_),
+                                 "exit_t": tr.get("exit_t"), "src": k, "strategy": pv.get("short")})
+                self._open_routed, self._open_src = None, None
+                self._push_second_outcome(pv, reason, pnl, tr.get("exit_t"), q)
+            else:
+                # closed early by this bot (15-minute cut, 15:55): book the strategy's own exit $ once it is known
+                fl = pv.get("flat") or {}
+                same = (fl.get("reason") in ("CUT", "T15") and kind in ("CUT", "T15")) or (fl.get("reason") == "TIME" and reason == "TIME")
+                if same and qm:
+                    for r in reversed(self.ledger):
+                        if r.get("side") == "exit" and r.get("entry_t") == int(et_) and r.get("pnl_est"):
+                            r["pnl"] = round(float(tr.get("usd") or 0) * int(r.get("qty") or pv.get("qty") or 0) / qm, 2)
+                            r["pnl_est"] = False
+                            r["pnl_model"] = True
+                            break
+            pv["final"] = True
+
+    def _second_past_flat(self, pv, now):
+        """15:55 ET of the trade's day reached (the research flat), or the CME session ended early."""
+        try:
+            flat = int(_dt.datetime.combine(_dt.date.fromisoformat(pv["day"]), _dt.time(15, 55), ET_TZ).timestamp())
+            return int(now) >= flat
+        except Exception:
+            return False
+
+    def _second_flatten(self, et_, reason, sym, now, px=None):
+        """Close the routed second-strategy position at market now (15-minute cut, 15:55, LIT priority, NO TRADE); its $ is
+        booked from the market now (the forming bar's open) and corrected to the strategy's own exit when that is known."""
+        pv = self._second_prov.get(int(et_)) or {}
+        q = int(self._open_qty or pv.get("qty") or 0)
+        if px is None:
+            px, _ = self._second_mark(sym, now)
+        d = int(pv.get("dir") or 1)
+        e = pv.get("fill") or pv.get("entry")
+        pnl = round(q * (d * (float(px) - d * TICK - float(e)) * 2.0 - 1.90), 2) if px is not None and e is not None else 0.0
+        if reason == "NO TRADE":
+            pnl = 0.0 if px is None else pnl
+        self._flattened.add(int(et_))
+        self.seen.add(("s_exit", pv.get("key"), int(et_)))
+        self._log("risk" if reason in ("LIT PRIORITY", "NO TRADE") else "system",
+                  f"Second strategy {pv.get('short')} {_et(int(et_)):%H:%M} ET: {reason} - flatten {q} MNQ at market"
+                  + (f" (~{px:,.2f})" if px is not None else ""))
+        self._route({"sym": sym, "side": "exit", "qty": q, "reason": reason, "entry_t": int(et_), "exit_t": int(now), "pnl": pnl,
+                     "pnl_est": True, "src": pv.get("key"), "strategy": pv.get("short")})
+        pv["flat"] = {"reason": reason, "t": int(now), "px": px}
+        if self._open_routed is not None and int(self._open_routed) == int(et_):
+            self._open_routed, self._open_src = None, None
+        self._push_second_outcome(pv, reason, pnl, int(now), q)
+
+    def _second_preempt(self, sym, ent, now):
+        """LIT is entering while a routed second-strategy trade is open: close that trade at market first."""
+        et_ = self._open_routed
+        pv = self._second_prov.get(int(et_)) or {}
+        self._log("risk", f"LIT first: LIT enters at {_et(ent['entry_t']):%H:%M} ET while the {pv.get('short') or self._open_src} trade "
+                          "is open - it is closed at market before LIT's order (one position at a time)")
+        self._second_flatten(et_, "LIT PRIORITY", sym, now, px=float(ent.get("entry")) if ent.get("entry") else None)
+        pv["final"] = True
+
+    def _push_second_outcome(self, pv, reason, usd, exit_t, qty):
+        try:
+            from . import push
+            if getattr(self.adapter, "reports_fills", False) and reason not in ("LIT PRIORITY", "NO TRADE", "TIME", "CUT", "T15"):
+                return                                     # the adapter pushes its own bracket fill
+            et_ = next((k for k, v in self._second_prov.items() if v is pv), 0)
+            p = push.outcome_payload(self._push_account(), "LONG" if pv.get("dir") == 1 else "SHORT", reason, usd, int(et_),
+                                     exit_t, src="pc", qty=qty, strategy=pv.get("short"))
+            p["body"] = f"{p['body']} ({pv.get('short')})"
+            self._push_send(p)
+        except Exception as e:
+            self._log("warn", f"phone notification failed: {e.__class__.__name__}")
 
     def _brain_tick(self, res, P, now, keep):
         """The Bot Brain (engine/brain.py): what LIT is thinking at this poll, read from this poll's result. Read-only,
@@ -1635,7 +1985,7 @@ class LiveBot:
         late_after = 2 * secs + 60
         self._confirm_provisional(pos, en, res, sym)
         # desync: we routed an entry the engine no longer knows about (no open position, no completed trade with it)
-        if self._open_routed is not None:
+        if self._open_routed is not None and not self._open_src:     # a routed second-strategy position is checked by its own pass
             known = (pos and pos.get("entry_t") == self._open_routed) or (en and en.get("entry_t") == self._open_routed) \
                 or getattr(self, "_pv_wait", None) == self._open_routed or any(t["entry_t"] == self._open_routed for t in res["trades"])
             if not known and not self.health["desync"]:
@@ -1679,7 +2029,12 @@ class LiveBot:
                 self._blocked_entries.add(ent["entry_t"])          # engine/guards.py: only ever blocks
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: GUARD {gb}")
             else:
+                if self._open_src:
+                    # a routed second-strategy trade is open: LIT has priority - it is closed at market first (the research
+                    # "with LIT" rule of second-md.md / second-mix.md "pre"), then LIT enters; never two positions
+                    self._second_preempt(sym, ent, now)
                 self._open_routed = ent["entry_t"]
+                self._open_src = None
                 self._open_qty = q
                 self._open_adds = []
                 d = 1 if ent["dir"] == 1 else -1
@@ -1804,16 +2159,21 @@ class LiveBot:
             self._log("warn", f"phone notification failed: {e.__class__.__name__}")
             return None
 
-    def _push_fill(self, pos, qty, sym, res):
-        """ENTRY notice for a routed entry (paper: the fill; NinjaTrader notifies its own real fill)."""
+    def _push_fill(self, pos, qty, sym, res, strategy=None):
+        """ENTRY notice for a routed entry (paper: the fill; NinjaTrader notifies its own real fill). strategy: a routed
+        second strategy's short name (body "Entered 4 MNQ (EMA)"); LIT's own entries have none."""
         try:
             from . import push
             res = res or {}
             if getattr(self.adapter, "reports_fills", False) or res.get("ok") is False:
                 return
-            self._push_send(push.entry_payload(self._push_account(), "LONG" if pos.get("dir") == 1 else "SHORT", qty, pos["entry_t"],
-                                               src="pc", contract="MNQ" if sym == "NQ" else "MES" if sym == "ES" else sym,
-                                               entry=pos.get("entry"), stop=pos.get("stop0", pos.get("stop")), target=pos.get("target")))
+            p = push.entry_payload(self._push_account(), "LONG" if pos.get("dir") == 1 else "SHORT", qty, pos["entry_t"],
+                                   src="pc", contract="MNQ" if sym == "NQ" else "MES" if sym == "ES" else sym,
+                                   entry=pos.get("entry"), stop=pos.get("stop0", pos.get("stop")), target=pos.get("target"),
+                                   **({"strategy": strategy} if strategy else {}))
+            if strategy:
+                p["body"] = f"{p['body']} ({strategy})"
+            self._push_send(p)
         except Exception as e:
             self._log("warn", f"phone notification failed: {e.__class__.__name__}")
 

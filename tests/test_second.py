@@ -271,12 +271,127 @@ def paper_only():
           mods is not None and not loaded, loaded or p.stderr[-400:])
     cfg = second.load_cfg()
     keys = {kk for s in cfg["strategies"].values() for kk in s}
-    check("second_model.json: paper true, every strategy on, no account / adapter / route setting",
+    # "route" (2026-10-22) is the owner's per-strategy switch for the PC bot (engine/live.py routes it, this module never):
+    # it ships false everywhere; no account / adapter / armed setting lives in this file
+    check("second_model.json: paper true, every strategy on, \"route\": false everywhere, no account / adapter / armed setting",
           cfg.get("paper") is True and all(cfg["strategies"][k].get("on") for k in REF_FILE)
-          and not any(re.search(r"^(account|accounts|adapter|route|routing|armed|live)$", k, re.I) for k in keys), (cfg.get("error"), keys))
+          and not any(s.get("route") for s in cfg["strategies"].values()) and second.routed(cfg) == []
+          and not any(re.search(r"^(account|accounts|adapter|routing|armed|live)$", k, re.I) for k in keys), (cfg.get("error"), keys))
     a, b = (os.path.join(ROOT, "tools", "web_public", "secondcore.js"), os.path.join(ROOT, "web_next", "js", "next", "secondcore.js"))
     check("secondcore.js: the phone and the PC copies are byte-identical",
           os.path.exists(b) and open(a, "rb").read() == open(b, "rb").read())
+
+
+# ------------------------------------------------------------------------------------------------ e. the second brain
+EMA_MASK_ORDER = ("window", "t15", "t60", "pull", "sweep", "monday")
+
+
+def _ema_mask_first_fail(row, E):
+    """The first entry_mask condition (tools/second_ema.entry_mask, written out again here) the candidate fails."""
+    from tools import second_ema as SE
+    a, z = SE.WINS[E["win"]]
+    conds = {"window": a <= row["mod"] + 5 < z, "t15": row["t15"] > 0, "t60": row["t60"] > 0, "pull": row["touch50"] > 0,
+             "sweep": row["swept"] > 0, "monday": row["dow"] != 0}
+    return next((k for k in EMA_MASK_ORDER if not conds[k]), None)
+
+
+def brain(D, n_per=6):
+    """The second brain's rule checks against each strategy's actual decision: at the signal bar's close of a research
+    trade every rule is ✓ (none ✗) and the planned stop / side are the trade's; once filled the trade's checks are all ✓; at
+    the day's close the brain's log marks exactly the research trades as TRADE and gives every other setup a first ✗ that is
+    the engine's reason (EMA: recomputed from tools/second_ema.candidates / entry_mask / simulate on the same bars; MACD /
+    S-R: none of them is a research trade; S-R reclaim / body / inducement rejections are not in tools/second_sr.gen)."""
+    from tools import retail_standalone as RS
+    from tools import second_ema as SE
+    from tools import second_sr as SR
+    print("e. second brain: rule checks vs the strategies' decisions", flush=True)
+    t0 = time.time()
+    for k in ("ema_lon_vix", "macd_sweep", "sr_nyreclaim"):
+        refs = D.ref[k]
+        pick = refs[::max(1, len(refs) // n_per)][:n_per]
+        bad_sig, bad_trade, bad_log, bad_why, n_log, n_rej = [], [], [], [], 0, 0
+        for u in pick:
+            et_ = int(u["entry_t"])
+            b = D.poll(et_ + 2, only=k)["strategies"][k].get("brain") or {}
+            C = b.get("checks") or []
+            pl = b.get("plan") or {}
+            if (b.get("focus") or {}).get("kind") != "signal" or any(c["ok"] is False for c in C) or not C \
+                    or pl.get("dir") != int(u["dir"]) or abs(float(pl.get("stop") or 0) - float(u["stop"])) > 0.01:
+                bad_sig.append((u["day"], et_, b.get("focus"), second.first_fail(C), pl, b.get("error")))
+            b2 = D.poll(et_ + 302, only=k)["strategies"][k].get("brain") or {}
+            if (b2.get("focus") or {}).get("kind") != "trade" or not all(c["ok"] is True for c in b2.get("checks") or [None]):
+                bad_trade.append((u["day"], b2.get("focus"), [(c["k"], c["ok"]) for c in b2.get("checks") or []], b2.get("error")))
+            now = day_close(u["day"])
+            b3 = D.poll(now, only=k)["strategies"][k].get("brain") or {}
+            want = {int(t["entry_t"]) for t in refs if t["day"] == u["day"]}
+            log = [x for x in b3.get("log") or [] if x.get("entry_t") or x.get("t")]
+            got = {int(x["entry_t"]) for x in log if x.get("trade")}
+            if got != want or any(not x.get("trade") and not x.get("ff") and x.get("t") for x in log):
+                bad_log.append((u["day"], sorted(got), sorted(want), [x["text"] for x in log][:12]))
+            n_log += len(log)
+            rej = [x for x in log if x.get("ff") and x.get("entry_t")]
+            n_rej += len(rej)
+            if k == "ema_lon_vix" and rej:
+                cut5 = D.df5.iloc[:int(np.searchsorted(D.T5 + 300, now, side="right"))]
+                E, X = dict(D.cfg["strategies"][k]["entry"]), dict(D.cfg["strategies"][k]["exit"])
+                saved = dict(RS.D)
+                try:
+                    RS.load_frame(second._window(cut5), live_cut=True)
+                    d = SE.load()
+                    cand = SE.candidates()
+                    rows = {(int(d["t"][int(r["sig"])]) + 300, int(r["dir"])): r for _, r in cand.iterrows()}
+                    mask = SE.entry_mask(cand, E)
+                    ok_mask = {(int(d["t"][int(r["sig"])]) + 300, int(r["dir"])): bool(m) for (_, r), m in zip(cand.iterrows(), mask)}
+                    for x in rej:
+                        kk = (int(x["entry_t"]), int(x["dir"]))
+                        r = rows.get(kk)
+                        if r is None:
+                            bad_why.append((u["day"], x["text"], "no such candidate")); continue
+                        ff = x["ff"]
+                        if ff in EMA_MASK_ORDER:
+                            good = (not ok_mask[kk]) and _ema_mask_first_fail(r, E) == ff
+                        elif ff == "one":
+                            good = ok_mask[kk] and any(int(t) < kk[0] for t in want)
+                        elif ff == "target":
+                            good = ok_mask[kk] and SE.simulate(r, X, d) is None
+                        else:
+                            good = False
+                        if not good:
+                            bad_why.append((u["day"], x["text"], ff, _ema_mask_first_fail(r, E), ok_mask[kk]))
+                finally:
+                    RS.D.clear(); RS.D.update(saved)
+            if k == "sr_nyreclaim" and rej:
+                key_ = dict(D.cfg["strategies"][k]["key"])
+                cut5 = D.df5.iloc[:int(np.searchsorted(D.T5 + 300, now, side="right"))]
+                saved, saved_sr, saved_oc = dict(RS.D), dict(SR.D), dict(SR._OC)
+                try:
+                    RS.load_frame(second._window(cut5), live_cut=True)
+                    SR.D.clear(); SR._OC.clear(); SR.data()
+                    d = SR.D
+                    g = {kk: key_[kk] for kk in SR.GEN_KEYS[key_["setup"]]}
+                    gen = {(int(d["t"][c[0]]) + 300, int(c[2]), c[8]) for c in SR.gen(d, key_["setup"], g)}
+                    for x in rej:
+                        in_gen = (int(x["entry_t"]), int(x["dir"]), x.get("level")) in gen
+                        if x["ff"] in ("reclaim", "body", "idm", "depth", "known", "swept") and in_gen:
+                            bad_why.append((u["day"], x["text"], "rejected by the brain but in gen"))
+                        if x["ff"] in ("fill", "stop", "window", "one", "busy", "target") and not in_gen:
+                            bad_why.append((u["day"], x["text"], "a select-stage reason but not in gen"))
+                finally:
+                    RS.D.clear(); RS.D.update(saved)
+                    SR.D.clear(); SR.D.update(saved_sr)
+                    SR._OC.clear(); SR._OC.update(saved_oc)
+        check(f"brain {k}: at the signal bar's close of {len(pick)} research trades every rule is ✓ (no ✗), plan side / stop = the trade",
+              not bad_sig, bad_sig[:3])
+        check(f"brain {k}: once filled, today's trade shows all its rules ✓", not bad_trade, bad_trade[:3])
+        check(f"brain {k}: day-end log marks exactly the research trades as TRADE, every other setup has a first ✗ ({n_log} setups)",
+              not bad_log, bad_log[:2])
+        check(f"brain {k}: each rejected setup's first ✗ is the engine's real reason ({n_rej} rejected setups checked)", not bad_why,
+              bad_why[:4])
+    # the heartbeat cut stays small
+    r = D.poll(day_close(D.ref["sr_nyreclaim"][3]["day"]))
+    size = len(json.dumps(second.compact(r), default=str))
+    check(f"brain: the heartbeat / live.json cut of every strategy's brain is small ({size:,} bytes < 16 KB)", size < 16000, size)
+    print(f"   ({time.time() - t0:.0f}s)", flush=True)
 
 
 # ------------------------------------------------------------------------------------------------ d. cloud dry run
@@ -388,6 +503,7 @@ def main():
     D = Data()
     paper_only()
     rep = day_end(D)
+    brain(D, 3 if quick else 6)
     if not quick:
         intraday(D, n_intra)
         lookahead(D)

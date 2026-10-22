@@ -1,0 +1,855 @@
+{
+ "steps": [
+  {
+   "step": "1. research (second-ema.md)",
+   "ema_trades_2026": 71,
+   "H1": {
+    "p10": 61.3,
+    "f10": 5.0,
+    "p20": 76.1,
+    "f20": 11.0,
+    "b2b": "12/3/1",
+    "net": 39670,
+    "pf": 3.13,
+    "dd": -3659,
+    "n": 124,
+    "n_ema": 46,
+    "net_ema": 11238
+   },
+   "H2": {
+    "p10": 69.6,
+    "f10": 2.9,
+    "p20": 78.0,
+    "f20": 3.4,
+    "b2b": "7/1/1",
+    "net": 23040,
+    "pf": 3.19,
+    "dd": -2071,
+    "n": 61,
+    "n_ema": 21,
+    "net_ema": 6770
+   }
+  },
+  {
+   "step": "2. + no EMA entry while LIT is armed / entering",
+   "ema_trades_2026": 54,
+   "H1": {
+    "p10": 56.3,
+    "f10": 4.2,
+    "p20": 75.2,
+    "f20": 7.3,
+    "b2b": "11/3/1",
+    "net": 36198,
+    "pf": 3.09,
+    "dd": -3660,
+    "n": 117,
+    "n_ema": 37,
+    "net_ema": 2442
+   },
+   "H2": {
+    "p10": 69.6,
+    "f10": 0.0,
+    "p20": 76.3,
+    "f20": 0.0,
+    "b2b": "3/0/1",
+    "net": 12042,
+    "pf": 2.47,
+    "dd": -1919,
+    "n": 56,
+    "n_ema": 16,
+    "net_ema": 5779
+   }
+  },
+  {
+   "step": "3. + EMA closed at market when LIT enters",
+   "ema_trades_2026": 54,
+   "H1": {
+    "p10": 55.5,
+    "f10": 10.9,
+    "p20": 69.7,
+    "f20": 15.6,
+    "b2b": "12/3/1",
+    "net": 36843,
+    "pf": 3.13,
+    "dd": -3846,
+    "n": 115,
+    "n_ema": 36,
+    "net_ema": 2772
+   },
+   "H2": {
+    "p10": 69.6,
+    "f10": 0.0,
+    "p20": 74.6,
+    "f20": 0.0,
+    "b2b": "3/0/1",
+    "net": 11216,
+    "pf": 2.33,
+    "dd": -1919,
+    "n": 56,
+    "n_ema": 16,
+    "net_ema": 4953
+   }
+  },
+  {
+   "step": "4. + pass lock = the live route",
+   "ema_trades_2026": 54,
+   "H1": {
+    "p10": 55.5,
+    "f10": 10.9,
+    "p20": 69.7,
+    "f20": 15.6,
+    "b2b": "12/3/1",
+    "net": 36843,
+    "pf": 3.13,
+    "dd": -3846,
+    "n": 115,
+    "n_ema": 36,
+    "net_ema": 2772
+   },
+   "H2": {
+    "p10": 69.6,
+    "f10": 0.0,
+    "p20": 74.6,
+    "f20": 0.0,
+    "b2b": "3/0/1",
+    "net": 11216,
+    "pf": 2.33,
+    "dd": -1919,
+    "n": 56,
+    "n_ema": 16,
+    "net_ema": 4953
+   }
+  },
+  {
+   "step": "alt: live route without the LIT-armed block",
+   "ema_trades_2026": 71,
+   "H1": {
+    "p10": 60.5,
+    "f10": 11.8,
+    "p20": 68.8,
+    "f20": 16.5,
+    "b2b": "10/3/1",
+    "net": 32365,
+    "pf": 2.78,
+    "dd": -3819,
+    "n": 127,
+    "n_ema": 47,
+    "net_ema": 6328
+   },
+   "H2": {
+    "p10": 71.0,
+    "f10": 0.0,
+    "p20": 76.3,
+    "f20": 0.0,
+    "b2b": "3/0/1",
+    "net": 11247,
+    "pf": 2.32,
+    "dd": -1898,
+    "n": 62,
+    "n_ema": 22,
+    "net_ema": 5052
+   }
+  }
+ ],
+ "rows": [
+  {
+   "day": "2026-01-14",
+   "entry": "08:05",
+   "exit_kind": "STOP",
+   "r": -1.0593,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-01-16",
+   "entry": "03:55",
+   "exit_kind": "BE",
+   "r": 0.0013,
+   "blocked": "LIT waiting for its 1m CISD",
+   "lit_priority": {
+    "lit_t": 1768553880,
+    "px": 26583.5,
+    "r": -0.4282,
+    "r_research": 0.0013,
+    "worst": -22.5
+   }
+  },
+  {
+   "day": "2026-01-22",
+   "entry": "08:40",
+   "exit_kind": "BE",
+   "r": 0.0017,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-01-27",
+   "entry": "03:55",
+   "exit_kind": "BE",
+   "r": 0.003,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-01-28",
+   "entry": "04:55",
+   "exit_kind": "BE",
+   "r": 0.0048,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-01-29",
+   "entry": "03:20",
+   "exit_kind": "STOP",
+   "r": -1.0233,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-01-30",
+   "entry": "07:55",
+   "exit_kind": "STOP",
+   "r": -1.0316,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-02-05",
+   "entry": "03:00",
+   "exit_kind": "STOP",
+   "r": -1.0258,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-02-10",
+   "entry": "04:05",
+   "exit_kind": "BE",
+   "r": 0.0013,
+   "blocked": "LIT waiting for its 1m CISD",
+   "lit_priority": null
+  },
+  {
+   "day": "2026-02-12",
+   "entry": "05:05",
+   "exit_kind": "STOP",
+   "r": -1.0265,
+   "blocked": null,
+   "lit_priority": {
+    "lit_t": 1770892380,
+    "px": 26108.0,
+    "r": -0.6343,
+    "r_research": -1.0265,
+    "worst": -45.5
+   }
+  },
+  {
+   "day": "2026-02-13",
+   "entry": "04:55",
+   "exit_kind": "BE",
+   "r": 0.0019,
+   "blocked": "LIT limit armed",
+   "lit_priority": {
+    "lit_t": 1770978720,
+    "px": 25548.5,
+    "r": -0.0743,
+    "r_research": 0.0019,
+    "worst": -17.5
+   }
+  },
+  {
+   "day": "2026-02-18",
+   "entry": "07:05",
+   "exit_kind": "STOP",
+   "r": -1.0291,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-02-20",
+   "entry": "03:50",
+   "exit_kind": "BE",
+   "r": 0.0014,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-02-25",
+   "entry": "03:05",
+   "exit_kind": "TARGET",
+   "r": 7.1242,
+   "blocked": null,
+   "lit_priority": {
+    "lit_t": 1772018460,
+    "px": 25839.75,
+    "r": 0.049,
+    "r_research": 7.1242,
+    "worst": -22.25
+   }
+  },
+  {
+   "day": "2026-02-26",
+   "entry": "06:25",
+   "exit_kind": "BE",
+   "r": 0.0031,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-02-27",
+   "entry": "04:40",
+   "exit_kind": "FLAT",
+   "r": 1.4021,
+   "blocked": null,
+   "lit_priority": {
+    "lit_t": 1772187720,
+    "px": 25781.75,
+    "r": 0.7042,
+    "r_research": 1.4021,
+    "worst": -2.75
+   }
+  },
+  {
+   "day": "2026-03-04",
+   "entry": "03:05",
+   "exit_kind": "STOP",
+   "r": -1.0407,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-03-05",
+   "entry": "03:00",
+   "exit_kind": "STOP",
+   "r": -1.0381,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-03-10",
+   "entry": "03:05",
+   "exit_kind": "BE",
+   "r": 0.001,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-03-17",
+   "entry": "07:55",
+   "exit_kind": "STOP",
+   "r": -1.0264,
+   "blocked": "LIT limit armed",
+   "lit_priority": null
+  },
+  {
+   "day": "2026-03-18",
+   "entry": "04:50",
+   "exit_kind": "BE",
+   "r": 0.0026,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-03-19",
+   "entry": "03:35",
+   "exit_kind": "BE",
+   "r": 0.0009,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-03-20",
+   "entry": "04:30",
+   "exit_kind": "TARGET",
+   "r": 6.1119,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-03-25",
+   "entry": "03:15",
+   "exit_kind": "BE",
+   "r": 0.0011,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-03-27",
+   "entry": "03:05",
+   "exit_kind": "TARGET",
+   "r": 7.9136,
+   "blocked": "LIT waiting for its 1m CISD",
+   "lit_priority": {
+    "lit_t": 1774595160,
+    "px": 24446.75,
+    "r": 0.1864,
+    "r_research": 7.9136,
+    "worst": -3.0
+   }
+  },
+  {
+   "day": "2026-04-01",
+   "entry": "04:25",
+   "exit_kind": "STOP",
+   "r": -1.0227,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-04-10",
+   "entry": "03:30",
+   "exit_kind": "STOP",
+   "r": -1.0475,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-04-14",
+   "entry": "03:05",
+   "exit_kind": "BE",
+   "r": 0.0017,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-04-16",
+   "entry": "04:50",
+   "exit_kind": "BE",
+   "r": 0.002,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-04-22",
+   "entry": "03:30",
+   "exit_kind": "STOP",
+   "r": -1.0247,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-04-24",
+   "entry": "04:20",
+   "exit_kind": "STOP",
+   "r": -1.0209,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-04-30",
+   "entry": "07:05",
+   "exit_kind": "TARGET",
+   "r": 3.2706,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-05-01",
+   "entry": "05:40",
+   "exit_kind": "BE",
+   "r": 0.0041,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-05-05",
+   "entry": "07:40",
+   "exit_kind": "TARGET",
+   "r": 3.6662,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-05-06",
+   "entry": "03:05",
+   "exit_kind": "TARGET",
+   "r": 5.0141,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-05-07",
+   "entry": "05:35",
+   "exit_kind": "STOP",
+   "r": -1.0293,
+   "blocked": "LIT limit armed",
+   "lit_priority": {
+    "lit_t": 1778147280,
+    "px": 29304.5,
+    "r": 0.0256,
+    "r_research": -1.0293,
+    "worst": -41.25
+   }
+  },
+  {
+   "day": "2026-05-13",
+   "entry": "07:35",
+   "exit_kind": "STOP",
+   "r": -1.0407,
+   "blocked": "LIT limit armed",
+   "lit_priority": {
+    "lit_t": 1778672760,
+    "px": 29928.25,
+    "r": -0.0237,
+    "r_research": -1.0407,
+    "worst": -29.75
+   }
+  },
+  {
+   "day": "2026-05-14",
+   "entry": "06:20",
+   "exit_kind": "STOP",
+   "r": -1.0495,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-05-21",
+   "entry": "05:10",
+   "exit_kind": "STOP",
+   "r": -1.0254,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-05-22",
+   "entry": "03:20",
+   "exit_kind": "BE",
+   "r": 0.0014,
+   "blocked": "LIT limit armed",
+   "lit_priority": {
+    "lit_t": 1779436200,
+    "px": 30127.0,
+    "r": 0.2735,
+    "r_research": 0.0014,
+    "worst": -33.0
+   }
+  },
+  {
+   "day": "2026-05-27",
+   "entry": "03:10",
+   "exit_kind": "TARGET",
+   "r": 4.818,
+   "blocked": "LIT limit armed",
+   "lit_priority": {
+    "lit_t": 1779866100,
+    "px": 30665.5,
+    "r": 0.0552,
+    "r_research": 4.818,
+    "worst": -8.25
+   }
+  },
+  {
+   "day": "2026-06-03",
+   "entry": "03:15",
+   "exit_kind": "BE",
+   "r": 0.0008,
+   "blocked": null,
+   "lit_priority": {
+    "lit_t": 1780489680,
+    "px": 31308.5,
+    "r": 0.4467,
+    "r_research": 0.0008,
+    "worst": -43.0
+   }
+  },
+  {
+   "day": "2026-06-10",
+   "entry": "03:00",
+   "exit_kind": "TARGET",
+   "r": 5.3652,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-06-12",
+   "entry": "03:55",
+   "exit_kind": "TARGET",
+   "r": 7.9683,
+   "blocked": "LIT limit armed",
+   "lit_priority": null
+  },
+  {
+   "day": "2026-06-16",
+   "entry": "03:10",
+   "exit_kind": "BE",
+   "r": 0.0011,
+   "blocked": null,
+   "lit_priority": {
+    "lit_t": 1781602020,
+    "px": 31192.75,
+    "r": 1.1989,
+    "r_research": 0.0011,
+    "worst": -33.25
+   }
+  },
+  {
+   "day": "2026-06-17",
+   "entry": "04:55",
+   "exit_kind": "STOP",
+   "r": -1.0384,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-06-24",
+   "entry": "03:40",
+   "exit_kind": "STOP",
+   "r": -1.06,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-06-25",
+   "entry": "07:05",
+   "exit_kind": "STOP",
+   "r": -1.0259,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-06-30",
+   "entry": "04:30",
+   "exit_kind": "STOP",
+   "r": -1.0209,
+   "blocked": "LIT limit armed",
+   "lit_priority": null
+  },
+  {
+   "day": "2026-07-15",
+   "entry": "08:45",
+   "exit_kind": "BE",
+   "r": 0.0018,
+   "blocked": "LIT limit armed",
+   "lit_priority": null
+  },
+  {
+   "day": "2026-07-23",
+   "entry": "06:10",
+   "exit_kind": "STOP",
+   "r": -1.0615,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-07-24",
+   "entry": "03:55",
+   "exit_kind": "TARGET",
+   "r": 7.8812,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-07-29",
+   "entry": "03:45",
+   "exit_kind": "BE",
+   "r": 0.0012,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-07-30",
+   "entry": "05:45",
+   "exit_kind": "BE",
+   "r": 0.0012,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-08-04",
+   "entry": "05:30",
+   "exit_kind": "TARGET",
+   "r": 4.4818,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-08-05",
+   "entry": "08:45",
+   "exit_kind": "BE",
+   "r": 0.001,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-08-07",
+   "entry": "07:05",
+   "exit_kind": "TARGET",
+   "r": 3.7267,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-08-13",
+   "entry": "04:55",
+   "exit_kind": "STOP",
+   "r": -1.1231,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-08-14",
+   "entry": "08:35",
+   "exit_kind": "STOP",
+   "r": -1.0188,
+   "blocked": "LIT waiting for its 1m CISD",
+   "lit_priority": {
+    "lit_t": 1786711800,
+    "px": 30566.75,
+    "r": -0.0383,
+    "r_research": -1.0188,
+    "worst": -64.25
+   }
+  },
+  {
+   "day": "2026-08-18",
+   "entry": "03:15",
+   "exit_kind": "TARGET",
+   "r": 2.1951,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-08-26",
+   "entry": "03:30",
+   "exit_kind": "STOP",
+   "r": -1.0157,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-08-27",
+   "entry": "04:05",
+   "exit_kind": "BE",
+   "r": 0.0007,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-09-04",
+   "entry": "03:10",
+   "exit_kind": "BE",
+   "r": 0.0016,
+   "blocked": "LIT waiting for its 1m CISD",
+   "lit_priority": {
+    "lit_t": 1788506760,
+    "px": 29907.5,
+    "r": 0.2066,
+    "r_research": 0.0016,
+    "worst": -0.5
+   }
+  },
+  {
+   "day": "2026-09-10",
+   "entry": "07:05",
+   "exit_kind": "TARGET",
+   "r": 2.5579,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-09-15",
+   "entry": "03:45",
+   "exit_kind": "BE",
+   "r": 0.0007,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-09-22",
+   "entry": "03:10",
+   "exit_kind": "STOP",
+   "r": -1.0738,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-09-25",
+   "entry": "04:15",
+   "exit_kind": "BE",
+   "r": 0.0012,
+   "blocked": "LIT limit armed",
+   "lit_priority": null
+  },
+  {
+   "day": "2026-10-01",
+   "entry": "05:00",
+   "exit_kind": "BE",
+   "r": 0.0009,
+   "blocked": null,
+   "lit_priority": null
+  },
+  {
+   "day": "2026-10-02",
+   "entry": "03:10",
+   "exit_kind": "TARGET",
+   "r": 3.4821,
+   "blocked": "LIT limit armed",
+   "lit_priority": {
+    "lit_t": 1790926440,
+    "px": 30895.25,
+    "r": -0.0126,
+    "r_research": 3.4821,
+    "worst": -19.5
+   }
+  },
+  {
+   "day": "2026-10-06",
+   "entry": "04:10",
+   "exit_kind": "FLAT",
+   "r": 1.2562,
+   "blocked": null,
+   "lit_priority": {
+    "lit_t": 1791275520,
+    "px": 31370.25,
+    "r": -0.5013,
+    "r_research": 1.2562,
+    "worst": -37.5
+   }
+  },
+  {
+   "day": "2026-10-13",
+   "entry": "05:45",
+   "exit_kind": "BE",
+   "r": 0.0021,
+   "blocked": "LIT limit armed",
+   "lit_priority": {
+    "lit_t": 1791885780,
+    "px": 30747.75,
+    "r": 0.0333,
+    "r_research": 0.0021,
+    "worst": -14.5
+   }
+  }
+ ],
+ "lit_alone": {
+  "H1": {
+   "p10": 57.1,
+   "f10": 5.9,
+   "p20": 74.3,
+   "f20": 11.9,
+   "b2b": "10/2/1",
+   "net": 34234,
+   "pf": 4.02,
+   "dd": -3314,
+   "n": 80,
+   "n_ema": 0,
+   "net_ema": 0
+  },
+  "H2": {
+   "p10": 52.2,
+   "f10": 0.0,
+   "p20": 50.8,
+   "f20": 0.0,
+   "b2b": "3/1/1",
+   "net": 9059,
+   "pf": 2.2,
+   "dd": -3073,
+   "n": 40,
+   "n_ema": 0,
+   "net_ema": 0
+  }
+ },
+ "seconds": 27
+}
