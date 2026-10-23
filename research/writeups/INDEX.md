@@ -9,7 +9,7 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 | [Promising leads](#promising) | 9 |
 | [Findings](#finding) | 17 |
 | [Rejected](#rejected) | 20 |
-| [Reference / info](#info) | 16 |
+| [Reference / info](#info) | 17 |
 
 <a id="adopt-candidate"></a>
 ## Adopt-candidates (some are live now: see CLAUDE.md / STRATEGY.md)
@@ -108,6 +108,7 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 | Date | Write-up | Family | Verdict | Runs |
 |---|---|---|---|---:|
 | 2026-10-22 | [Account B before launch - stress test, go / no-go scorecard and a bad-market brake (none…](second-prelaunch.md) | risk | info (scorecard built and on the dashboards; no rule change)<br><sub>Owner (2026-10-22) - "What else can we do before launching this other strategy?" Three checks for account B (EMA + MACD + S/R on their own MFFU account). 1) Stress test…</sub> | 14 |
+| 2026-10-22 | [What an AI trading bot needs that ours lacked - audit of 18 features, 6 built (anomaly…](ai-features.md) | product | info<br><sub>Owner (2026-10-22) - "add features that an AI trading bot needs to have". Code audit of 18 things a serious automated futures bot watches about itself; 11 were already…</sub> | 0 |
 | 2026-10-21 | [LIT trade intelligence - every trade with ~60 facts, and what winners and losers have in…](lit-trade-intel.md) | other | descriptive (no rule change)<br><sub>Every LIT trade (630 backtest trades of the live settings, run lit_live, plus the cloud paper and PC live trades as they come) now carries ~60 facts - 57 known at entry…</sub> | 1 |
 | 2026-10-21 | [LIT performance checks - is live inside the expected range, how robust is the live…](lit-robust.md) | other | info (no rule change)<br><sub>Seven read-only checks from the competitor-features list (#6, 7, 9, 11, 12, 13, 14) now run on the live LIT and show on a new Performance page (PC Data > Performance,…</sub> | 9 |
 | 2026-10-21 | [What other trading bots and trader tools do better than ours - 40 features compared, the…](competitor-features.md) | product | research<br><sub>A web scan (2025-2026 sources) of bridges (TradersPost, PickMyTrade, CrossTrade), platforms (NinjaTrader, Tradovate, TradeStation, Sierra Chart, QuantConnect / LEAN),…</sub> | 0 |

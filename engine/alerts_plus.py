@@ -50,6 +50,12 @@ KINDS = {   # kind: (label for the app, what it covers, critical = repeats until
     "cloud_stale": ("Cloud monitor stale", "the cloud monitor has not published for 45+ min in market hours", False),
     "rules": ("Rules differ", "PC and cloud run different LIT rules", False),
     "second": ("Second strategies (PAPER)", "EMA / MACD paper entries and exits next to LIT, never traded (cloud)", False),
+    # engine/ai_watch.py (2026-10-22)
+    "freeze": ("Feed frozen in a trade", "a position is open and the NinjaTrader 1m bars stopped (3+ min)", True),
+    "anomaly": ("Anomaly", "price spike / bad tick on the 1m feed, an entry routed 30+ s after its signal", False),
+    "drift": ("Drift", "LIT / account B live results below the backtest's expected range, execution drift", False),
+    "loss_cap": ("Both accounts loss", "LIT + account B together at the combined daily / weekly cap", False),
+    "rules_change": ("Rules changed", "the trading rules the PC bot runs changed (who / when / why)", False),
 }
 LEVELS = ("on", "silent", "off")
 REPEAT_S = 10 * 60
@@ -423,6 +429,11 @@ def pc_conditions(bot, now=None) -> list:
         if h.get("guard_block"):
             out.append({"id": f"clock:{day}", "kind": "clock", "title": "Clock drift: entries blocked",
                         "body": f"{str(h['guard_block'])[:120]}. Windows: Settings > Time > Sync now."})
+        try:
+            from . import ai_watch
+            out += ai_watch.crit_conditions(bot, now)          # the feed frozen mid-trade (engine/ai_watch.py)
+        except Exception:
+            pass
         try:
             from . import autoupdate
             u = autoupdate.status()
