@@ -6,7 +6,7 @@
 | **Model** | `tools/lab_models/atm.py` (`run`, `run_raw`, `build_all`, `state`; timeframe is a parameter) |
 | **Runner** | `tools/lab_atm_run.py` (`smoke` = dev-only mechanics check, unscored; `all` = the one scored batch; `diag` = the no-skip diagnostic; `report` = these tables) |
 | **Output** | `research/lab/ATM_results.json`, `research/lab/ATM_diag.json`, `research/lab/ATM_trades_<variant>_<flat\|tier>.json`, scorecards `research/lab/ATM_<variant>_<scheme>__<period>.json` |
-| **Data** | TradingView CME NQ1! 5m, with ES1! 5m for SMT, 2025-04-14..2026-10-16. No CFD, no Yahoo. |
+| **Data** | TradingView CME NQ1! 5m, with ES1! 5m for SMT, 2025-04-14..2026-10-16. Official CME data only (TradingView / NinjaTrader), no CFD. |
 
 ## Verdict, 1m/3m version (added 19:30 ET; section 9)
 

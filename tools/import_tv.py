@@ -59,7 +59,7 @@ import data_audit as da  # noqa: E402
 COLS = ["time", "open", "high", "low", "close", "volume"]
 TF_NAME = {60: "1m", 300: "5m", 900: "15m", 3600: "1h"}
 SESSION_DIFF_MAX = 5.0        # pts: per-session median |new - old| close above this = another price space
-ROLL_GAP_RANGE = (40.0, 800.0)  # a real NQ / ES roll gap (NQ Sep 2026: 295.75; ES: 30-90)
+ROLL_GAP_RANGE = (40.0, 800.0)  # a real NQ / ES roll gap (NQ Sep 2026: 294.75; ES: 30-90)
 KNOWN_JUMP_TOL = 1.0          # pts: TradingView's jump at a recorded roll vs the recorded open jump
 MED_MAX, P90_MAX = 0.125, 0.25  # 1m rebuilt to 5m vs the 5m file (tools/stitch_tv_1m.py)
 CONTRACT_MONTH = {3: "H", 6: "M", 9: "U", 12: "Z"}
@@ -229,7 +229,7 @@ def find_rolls(df: pd.DataFrame, sym: str, doc: dict, gap_override=None):
     anchor = doc.get("anchor")
     apply, new = [], None
     pick = {}
-    for r in rec:                     # one roll per contract (ES_rolls.json carries ESU26 twice: TradingView's and Yahoo's)
+    for r in rec:                     # one roll per contract (an older ES_rolls.json carried ESU26 twice)
         if r["from"] not in pick or int(r.get("switch_t", 0)) == tv_switch_t(*parse_code(r["from"])):
             pick[r["from"]] = r
     rec = list(pick.values())

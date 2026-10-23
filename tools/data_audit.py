@@ -1,13 +1,10 @@
 """Futures data audit + clean-set builder for NQ / ES (see research/DATA_AUDIT.md).
 
-  python tools/data_audit.py fetch-refs            # Yahoo single-contract 1h refs (NQZ26/ESZ26) + fresh NQ=F 1m -> data/clean/_src
-  python tools/data_audit.py build-es              # data/clean/ES_{1m,5m,15m,1h}.csv (Yahoo ES=F, Sep-2026 roll fixed)
-  python tools/data_audit.py build-1m              # data/clean/NQ_1m.csv (true 1-minute rows only)
   python tools/data_audit.py audit [dir] [out.csv] # per-day quality table for NQ/ES 5m/15m/1h/1m in a data dir
-  python tools/data_audit.py compare               # Yahoo NQ=F vs TradingView bar-by-bar comparison (overlap window)
   python tools/data_audit.py backtest <dirA> <dirB> [days_from] [days_to]   # engine.backtest.run on two dirs, trade diff
 
-NQ 5m/15m/1h are built by tools/stitch_tv_chunks.py (TradingView NQ1! chunks), which calls into this module.
+NQ 5m/15m/1h are built by tools/stitch_tv_chunks.py (TradingView NQ1! chunks), ES by tools/stitch_es_chunks.py (ES1!),
+NQ 1m by tools/stitch_tv_1m.py; all call into this module. Official data only: TradingView CME exports, NinjaTrader bars.
 Nothing here writes to data/NQ_*.csv or data/ES_*.csv: output goes to data/clean/ only.
 """
 from __future__ import annotations
@@ -24,7 +21,6 @@ import pandas as pd
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
 CLEAN = os.path.join(DATA, "clean")
-SRC = os.path.join(CLEAN, "_src")
 TZ = "America/New_York"
 TF_SECS = {"1m": 60, "5m": 300, "15m": 900, "1h": 3600}
 MONTH_CODE = {3: "H", 6: "M", 9: "U", 12: "Z"}
@@ -60,6 +56,17 @@ def resample(df: pd.DataFrame, secs: int, extra: list | None = None) -> pd.DataF
     return out.reset_index(drop=True)
 
 
+def daily(df: pd.DataFrame) -> pd.DataFrame:
+    """One bar per CME trading day (18:00 ET -> 17:00 ET) from intraday bars; time = 00:00 UTC of the trading date."""
+    td = tday_of(df["time"].values)
+    g = df.assign(td=td).groupby("td", sort=True)
+    out = pd.DataFrame({"open": g["open"].first(), "high": g["high"].max(), "low": g["low"].min(),
+                        "close": g["close"].last(), "volume": g["volume"].sum()})
+    secs = (pd.to_datetime(out.index) - pd.Timestamp("1970-01-01")) // pd.Timedelta(seconds=1)
+    out.insert(0, "time", np.asarray(secs, dtype="int64"))
+    return out.reset_index(drop=True)
+
+
 def write_csv(df: pd.DataFrame, path: str, cols=COLS):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     out = df[cols].copy()
@@ -71,7 +78,7 @@ def write_csv(df: pd.DataFrame, path: str, cols=COLS):
 
 def sanitize(df: pd.DataFrame, secs: int, label: str = "") -> pd.DataFrame:
     """Drop rows that cannot be real Globex bars: duplicates, off-grid stamps, bars inside the 17:00-18:00 ET break or
-    the weekend, impossible OHLC, and flat no-volume placeholder bars (Yahoo session-open / settlement rows)."""
+    the weekend, impossible OHLC, and flat no-volume placeholder bars (session-open / settlement rows)."""
     n0 = len(df)
     df = df.drop_duplicates("time", keep="last")
     t = df["time"].values
@@ -83,7 +90,7 @@ def sanitize(df: pd.DataFrame, secs: int, label: str = "") -> pd.DataFrame:
     bad = (df["high"].values < np.maximum(df["open"].values, df["close"].values) - 1e-9) | \
           (df["low"].values > np.minimum(df["open"].values, df["close"].values) + 1e-9)
     flat = (df["high"].values == df["low"].values) & (np.nan_to_num(df["volume"].values, nan=0) <= 0)
-    # expiry-day 16:00 single-price "settlement" rows Yahoo appends to 1h bars (zero range, huge volume)
+    # expiry-day 16:00 single-price "settlement" rows on 1h bars (zero range, huge volume)
     settle = (df["high"].values == df["low"].values) & (mod == 16 * 60) & (secs >= 3600)
     drop = ((t % secs) != 0) | in_break | weekend | bad | flat | settle
     out = df[~drop].copy()
@@ -260,48 +267,26 @@ def audit_dir(d: str, out_csv: str | None = None, files=None) -> pd.DataFrame:
 
 
 # ----------------------------------------------------------------------------------------------- reference contracts
-def fetch_refs():
-    import time
-    import yfinance as yf
-    os.makedirs(SRC, exist_ok=True)
-
-    def clean(df):
-        if isinstance(df.columns, pd.MultiIndex):
-            df.columns = df.columns.get_level_values(0)
-        df = df.rename(columns=str.lower)[["open", "high", "low", "close", "volume"]].dropna()
-        idx = df.index.tz_convert("UTC") if df.index.tz is not None else df.index.tz_localize("UTC")
-        df = df.reset_index(drop=True)
-        df.insert(0, "time", ((idx - pd.Timestamp("1970-01-01", tz="UTC")) // pd.Timedelta(seconds=1)).astype("int64"))
-        return df
-
-    today = dt.date.today()
-    for tkr in ("NQZ26.CME", "ESZ26.CME"):
-        df = yf.download(tkr, start="2025-10-01", end=str(today + dt.timedelta(days=1)), interval="1h",
-                         progress=False, auto_adjust=False)
-        if df is not None and len(df):
-            p = os.path.join(SRC, f"yahoo_{tkr.split('.')[0]}_1h.csv")
-            clean(df).to_csv(p, index=False)
-            print("wrote", p, len(df))
-    frames = []
-    end = dt.datetime.now(dt.timezone.utc)
-    lim = end - dt.timedelta(days=29)
-    while end > lim:
-        start = max(lim, end - dt.timedelta(days=7))
-        df = yf.download("NQ=F", start=start, end=end, interval="1m", progress=False, auto_adjust=False, prepost=True)
-        if df is not None and len(df):
-            frames.append(clean(df))
-        end = start
-        time.sleep(0.5)
-    if frames:
-        o = pd.concat(frames).drop_duplicates("time", keep="last").sort_values("time")
-        p = os.path.join(SRC, f"yahoo_NQ_1m_{today:%Y%m%d}.csv")
-        o.to_csv(p, index=False)
-        print("wrote", p, len(o))
+def ref_paths(sym: str):
+    """TradingView single-contract exports (chart CME_MINI:NQZ2026 etc., B-ADJ off), saved as
+    data/tv_exports/<CODE>_1h_*.csv or <CODE>_5m_*.csv (e.g. NQZ26_1h_2026-10-16.csv): {code: [paths]}."""
+    import glob
+    import re as _re
+    out = {}
+    for p in sorted(glob.glob(os.path.join(DATA, "tv_exports", f"{sym}[HMUZ][0-9][0-9]_*.csv"))):
+        m = _re.match(rf"({sym}[HMUZ]\d\d)_(1h|5m)_", os.path.basename(p))
+        if m:
+            out.setdefault(m.group(1), []).append(p)
+    return out
 
 
-def ref_path(sym: str, code: str):
-    p = os.path.join(SRC, f"yahoo_{code}_1h.csv")
-    return p if os.path.exists(p) else None
+def read_ref(paths) -> pd.DataFrame:
+    """One single-contract series from its TradingView export files (1h, or 5m resampled to 1h)."""
+    parts = []
+    for p in paths:
+        df = sanitize(read_bars(p), 3600 if "_1h_" in os.path.basename(p) else 300)
+        parts.append(df if "_1h_" in os.path.basename(p) else resample(df, 3600))
+    return pd.concat(parts).drop_duplicates("time", keep="last").sort_values("time").reset_index(drop=True)
 
 
 def ref_gap(cont: pd.DataFrame, ref: pd.DataFrame, switch_t: int, sessions: int = 4, min_vol: float = 5):
@@ -322,71 +307,6 @@ def ref_gap(cont: pd.DataFrame, ref: pd.DataFrame, switch_t: int, sessions: int 
     return gap, mad, int(len(pre)), int(len(post))
 
 
-# ----------------------------------------------------------------------------------------------- ES clean build
-def build_es():
-    """ES has no TradingView export yet: Yahoo ES=F 5m (Aug 6 ->), with Yahoo's mid-session Sep-2026 contract switch
-    detected and back-adjusted (additive, anchored to ESZ26) using the ESZ26 single-contract quotes."""
-    es5 = sanitize(read_bars(os.path.join(DATA, "ES_5m.csv")), 300, "ES_5m").reset_index(drop=True)
-    rp = ref_path("ES", "ESZ26")
-    if not rp:
-        sys.exit("run `python tools/data_audit.py fetch-refs` first (needs data/clean/_src/yahoo_ESZ26_1h.csv)")
-    ref = read_bars(rp)
-    # Yahoo switch bar: the 5m bar in the Sep-2026 roll week after which ES=F tracks ESZ26 (|ref-cont| small)
-    e = last_trading_day(2026, 9)
-    w0 = int(pd.Timestamp(e - dt.timedelta(days=10)).tz_localize(TZ).timestamp())
-    w1 = int(pd.Timestamp(e + dt.timedelta(days=1)).tz_localize(TZ).timestamp())
-    win = es5[(es5.time >= w0) & (es5.time < w1)].copy()
-    win["hb"] = win.time // 3600 * 3600
-    r = ref[ref.volume.fillna(0) >= 5][["time", "close"]].rename(columns={"time": "hb", "close": "ref"})
-    win = win.merge(r, on="hb", how="left")
-    win["d"] = (win["ref"] - win["close"]).abs()
-    # switch = first bar from which the median |ref-cont| over the next 24 bars stays below 20 pts
-    roll_d = win["d"].rolling(24, min_periods=6).median().shift(-23)
-    cand = win[(roll_d < 20)]
-    if cand.empty:
-        raise RuntimeError("could not locate the ES=F Sep-2026 contract switch")
-    switch_t = int(cand.time.iloc[0])
-    # walk back to the single bar with the biggest close-open move (the mixed bar) within +-6 bars
-    near = es5[(es5.time >= switch_t - 3 * 3600) & (es5.time <= switch_t + 3 * 3600)]
-    switch_t = int(near.loc[(near.close - near.open).abs().idxmax(), "time"])
-    rg = ref_gap(es5, ref, switch_t + 300)
-    gap = round(rg[0] * 4) / 4 if rg else None
-    print(f"ES=F switch bar {et_of([switch_t])[0]}  gap(ESZ26-ESU26)={gap}  ref={rg}")
-    adj = es5.copy()
-    pre = adj.time < switch_t
-    for c in ("open", "high", "low", "close"):
-        adj.loc[pre, c] += gap
-    # the mixed bar: opened on ESU26, closed on ESZ26 -> shift its old-contract open/low into the new price space
-    i = adj.index[adj.time == switch_t][0]
-    adj.loc[i, "open"] += gap
-    adj.loc[i, "low"] = min(adj.loc[i, "low"] + gap, adj.loc[i, "open"], adj.loc[i, "close"])
-    adj["source"] = "yahoo-ES=F"
-    adj["contract"] = np.where(adj.time < switch_t, "ESU26", "ESZ26")
-    rolls = {"sym": "ES", "anchor": "ESZ26", "method": "additive back-adjustment; bars before switch_t get +gap",
-             "rolls": [{"from": "ESU26", "to": "ESZ26", "switch_t": switch_t, "switch_et": str(et_of([switch_t])[0]),
-                        "gap": gap, "method": "ESZ26 single-contract 1h quotes vs ES=F (median before - after)",
-                        "uncertainty": round(rg[1], 2) if rg else None,
-                        "note": "Yahoo switched mid-session; the switch bar itself is a mixed bar (open/low re-based)"}]}
-    os.makedirs(CLEAN, exist_ok=True)
-    json.dump(rolls, open(os.path.join(CLEAN, "ES_rolls.json"), "w"), indent=1)
-    write_csv(adj, os.path.join(CLEAN, "ES_5m.csv"))
-    write_csv(resample(adj, 900), os.path.join(CLEAN, "ES_15m.csv"))
-    h_old = sanitize(read_bars(os.path.join(DATA, "ES_1h.csv")), 3600, "ES_1h (Yahoo history)")
-    cut = -(-int(adj.time.min()) // 3600) * 3600
-    h_old = h_old[h_old.time < cut].copy()
-    for c in ("open", "high", "low", "close"):
-        h_old[c] += gap
-    h_new = resample(adj[adj.time >= cut], 3600)
-    write_csv(pd.concat([h_old, h_new]).sort_values("time"), os.path.join(CLEAN, "ES_1h.csv"))
-    m1 = sanitize(read_bars(os.path.join(DATA, "ES_1m.csv")), 60, "ES_1m")
-    m1 = from_first_full_session(m1)
-    if (m1.time < switch_t).any():
-        raise RuntimeError("ES_1m reaches before the roll; adjust it too")
-    write_csv(m1, os.path.join(CLEAN, "ES_1m.csv"))
-    seg = adj.assign(td=tday_of(adj.time)).groupby("td").agg(source=("source", "first"), contract=("contract", "last"))
-    return rolls, seg
-
-
 def from_first_full_session(df: pd.DataFrame) -> pd.DataFrame:
     """Drop a leading partial session (a pull that starts mid-session)."""
     td = tday_of(df.time)
@@ -395,76 +315,6 @@ def from_first_full_session(df: pd.DataFrame) -> pd.DataFrame:
         if df.time.min() <= int(s0.timestamp()):
             return df[td >= day]
     return df
-
-
-# ----------------------------------------------------------------------------------------------- NQ 1m repair
-def build_1m(tv5_paths=None):
-    """NQ_1m.csv was contaminated on 2026-10-16 by 5m rows. Keep only genuine 1-minute bars: a fresh Yahoo NQ=F 1m pull
-    (data/clean/_src/yahoo_NQ_1m_*.csv) from its first complete session. It is all after the Sep-2026 roll (NQZ26) so it
-    is already in the anchor price space."""
-    import glob
-    srcs = sorted(glob.glob(os.path.join(SRC, "yahoo_NQ_1m_*.csv")))
-    if not srcs:
-        sys.exit("run `python tools/data_audit.py fetch-refs` first")
-    fresh = from_first_full_session(sanitize(read_bars(srcs[-1]), 60, "NQ_1m (fresh Yahoo)"))
-    first_full = tday_of([fresh.time.min()])[0]
-    # contamination report on the current file
-    cur = read_bars(os.path.join(DATA, "NQ_1m.csv"))
-    spacing = cur.time.diff()
-    tv = read_bars(os.path.join(DATA, "tv_mnq_5m_2026-10-16.csv"))
-    k = cur.merge(tv[["time", "close", "volume"]], on="time", how="left", suffixes=("", "_tv"))
-    contaminated = (k.close == k.close_tv) & (k.volume == k.volume_tv)
-    # agreement between surviving genuine Yahoo 1m rows and the fresh pull (Yahoo revises bars)
-    m = cur[~contaminated.values].merge(fresh, on="time", suffixes=("_o", "_n"))
-    rev = {"overlap": int(len(m)), "close_equal_pct": round(float((m.close_o == m.close_n).mean() * 100), 2) if len(m) else None,
-           "volume_equal_pct": round(float((m.volume_o == m.volume_n).mean() * 100), 2) if len(m) else None}
-    write_csv(fresh, os.path.join(CLEAN, "NQ_1m.csv"))
-    return {"rows": int(len(fresh)), "first_day": first_full, "last_t": str(et_of([fresh.time.max()])[0]),
-            "source": os.path.basename(srcs[-1]),
-            "current_file_rows": int(len(cur)), "current_rows_at_300s_spacing": int((spacing == 300).sum()),
-            "current_rows_that_are_tv_5m_bars": int(contaminated.sum()),
-            "current_contaminated_inside_yahoo_1m_span": int((contaminated & (k.time >= 1789590000)).sum()),
-            "yahoo_revision_check": rev}
-
-
-# ----------------------------------------------------------------------------------------------- Yahoo vs TV compare
-def compare_sources(yahoo_path=None, tv_path=None) -> dict:
-    y = read_bars(yahoo_path or os.path.join(DATA, "NQ_5m.yahoo_backup.csv"))
-    tv = read_bars(tv_path or os.path.join(DATA, "tv_mnq_5m_2026-10-16.csv"))
-    out = {}
-    # timestamp alignment: which shift of the TV clock best matches Yahoo closes
-    best = []
-    for sh in (-3600, -600, -300, 0, 300, 600, 3600):
-        m = y.merge(tv.assign(time=tv.time + sh), on="time", suffixes=("_y", "_t"))
-        best.append((sh, float((m.close_t - m.close_y).abs().median()), len(m)))
-    out["clock_shift_test"] = best
-    m = y.merge(tv, on="time", suffixes=("_y", "_t"), how="outer", indicator=True)
-    m["td"] = tday_of(m.time)
-    both = m[m._merge == "both"].copy()
-    both["dc"] = both.close_t - both.close_y
-    both["dh"] = both.high_t - both.high_y
-    both["dl"] = both.low_t - both.low_y
-    out["bars_both"] = int(len(both))
-    out["only_tv"] = int((m._merge == "right_only").sum())
-    out["only_yahoo"] = int((m._merge == "left_only").sum())
-    out["abs_dclose_p50_p90_p99"] = [float(both.dc.abs().quantile(q)) for q in (.5, .9, .99)]
-    out["close_exact_pct"] = round(float((both.dc.abs() < 1e-9).mean() * 100), 1)
-    out["tv_high_minus_yahoo_median"] = float(both.dh.median())
-    out["tv_low_minus_yahoo_median"] = float(both.dl.median())
-    out["vol_ratio_tv_over_yahoo_median"] = round(float((both.volume_t / both.volume_y.replace(0, np.nan)).median()), 2)
-    out["yahoo_zero_volume_bars"] = int((both.volume_y == 0).sum())
-    big = both[both.dc.abs() > 100]
-    out["contract_mismatch_bars"] = {"n": int(len(big)), "from": str(et_of([big.time.min()])[0]) if len(big) else None,
-                                     "to": str(et_of([big.time.max()])[0]) if len(big) else None,
-                                     "median_yahoo_minus_tv": float(-big.dc.median()) if len(big) else None}
-    per_day = both.groupby("td").agg(bars=("dc", "size"), med_dclose=("dc", "median"),
-                                     max_abs_dclose=("dc", lambda x: x.abs().max()),
-                                     vol_ratio=("volume_t", "sum"))
-    per_day["vol_ratio"] = (per_day["vol_ratio"] / both.groupby("td").volume_y.sum()).round(2)
-    per_day["only_tv"] = m[m._merge == "right_only"].groupby("td").size()
-    per_day["only_yahoo"] = m[m._merge == "left_only"].groupby("td").size()
-    out["per_day"] = per_day.fillna(0)
-    return out
 
 
 # ----------------------------------------------------------------------------------------------- backtest verification
@@ -512,23 +362,12 @@ def diff_trades(a: list, b: list, la="A", lb="B") -> tuple[list, float]:
 
 def main(argv):
     cmd = argv[1] if len(argv) > 1 else "audit"
-    if cmd == "fetch-refs":
-        fetch_refs()
-    elif cmd == "build-es":
-        build_es()
-    elif cmd == "build-1m":
-        print(json.dumps(build_1m(), indent=1))
-    elif cmd == "audit":
+    if cmd == "audit":
         d = argv[2] if len(argv) > 2 else CLEAN
         out = argv[3] if len(argv) > 3 else None
         q = audit_dir(d, out)
         pd.set_option("display.width", 250)
         print(q.groupby(["file", "status"]).size().to_string())
-    elif cmd == "compare":
-        r = compare_sources()
-        pd.set_option("display.width", 250)
-        print(r.pop("per_day").to_string())
-        print(json.dumps(r, indent=1, default=str))
     elif cmd == "backtest":
         a, b = argv[2], argv[3]
         fr = argv[4] if len(argv) > 4 else None

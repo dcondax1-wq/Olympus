@@ -13,7 +13,7 @@ At most, `IFVG_AMPM` could be **paper-traded** as a low-frequency add-on.
 
 ## Data and protocol
 **Data**
-- **TradingView CME futures only:** NQ1! (Oct 2021 – 2026-10-16 16:55 ET) and ES1! (Apr 2025 – 2026-10-16 16:55 ET). No CFD, no Yahoo.
+- **TradingView CME futures only:** NQ1! (Oct 2021 – 2026-10-16 16:55 ET) and ES1! (Apr 2025 – 2026-10-16 16:55 ET). Official CME data only (TradingView / NinjaTrader), no CFD.
 - The files were refreshed at about 18:05 ET. Every scored number below comes from a fresh process run after that refresh (last bar checked: 2026-10-16 16:55 ET).
 
 **Pre-registration and scoring**

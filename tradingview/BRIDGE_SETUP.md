@@ -324,8 +324,8 @@ Details and numbers: `research/PINE_PARITY.md`.
   - 5 years: PF 1.50 vs 1.54.
 
 ### Remaining differences (Pine cannot do it, or it is deliberate)
-1. **Data feed (the main one).** TradingView trades MNQ1! prints; the Python bot uses NQ1! (`data/NQ_5m.csv`, Yahoo
-   NQ=F live). A tick or two apart, so a trigger, a stop distance or the 15m "late entry" flag can change.
+1. **Data feed (the main one).** TradingView trades MNQ1! prints; the Python bot uses NQ1! (`data/NQ_5m.csv`, NinjaTrader
+   MNQ live). A tick or two apart, so a trigger, a stop distance or the 15m "late entry" flag can change.
    - In the 8-week window: 3 of 22 trades differ, 4 sizes differ by 1-3 micros, and one trade is a late entry on
      MNQ but not on NQ (2 micros vs 4).
    - On identical bars there is no difference.

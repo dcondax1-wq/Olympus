@@ -31,7 +31,7 @@ runs: lit_u_stops_base, lit_u_stops_close_5_emerg_size, lit_u_stops_close_5_live
 
 ## How it was tested
 
-- **The data:** CME NQ1! futures from TradingView only, 5m + 1m bars for 2026, VIX daily. No Yahoo, no CFD.
+- **The data:** CME NQ1! futures from TradingView only, 5m + 1m bars for 2026, VIX daily. Official CME data only (TradingView / NinjaTrader), no CFD.
 - **Same signals:** `tools/lit_t_stops.py` wraps `engine/lit.py` without editing it. With every new option off it reproduces the
   live bot trade for trade: 630 trades of run `lit_live` (120 in 2026, +$41,734 at the LIT size). It also reproduces the baseline
   run `lit_tight_eval_800_25_room60` to the dollar.

@@ -3,8 +3,8 @@ NinjaTrader order route. See docs/ROLL_DEC_2026.md for the owner's steps.
 
     python -X utf8 -m tests.test_roll
 
-Real-shaped data: the Sep 2026 roll (U26 -> Z26, TradingView switch Mon 2026-09-14 18:00 ET, gap +295.75 pts) replayed on
-data/NQ_5m.csv + data/NQ_1m.csv, which sit on the NEW contract's prices ("truth"); the OLD contract prints truth - 295.75.
+Real-shaped data: the Sep 2026 roll (U26 -> Z26, TradingView switch Mon 2026-09-14 18:00 ET, gap +294.75 pts) replayed on
+data/NQ_5m.csv + data/NQ_1m.csv, which sit on the NEW contract's prices ("truth"); the OLD contract prints truth - 294.75.
 The same thing happens in December (Z26 -> H27; TradingView switches Mon 12-14 18:00 ET, NinjaTrader orders Thu 12-10):
   * the TradingView export on disk is anchored on the old contract (made before the roll);
   * the PC bot's NinjaTrader archive (data/nt_bars) holds old-contract bars;
@@ -234,7 +234,7 @@ def main():
         check(f"first poll after the switch: the whole LIT window (from {dt.datetime.fromtimestamp(ws, ET):%m-%d}) is on the new "
               f"contract, 5m and 1m equal the truth ({k5} / {k1} bars)",
               e5 < 1e-6 and s5 and e1 < 1e-6 and s1, (e5, s5, e1, s1))
-        check("the archive is rewritten on the new contract (+295.75) and the log says so ('back-adjusted')",
+        check("the archive is rewritten on the new contract (+294.75) and the log says so ('back-adjusted')",
               ea < 1e-6 and any("back-adjusted" in x for x in pc.log()), (ea, pc.log()[:6]))
         d5b, d1b = pc.poll(n2 + 60)
         e5, s5, _ = diff(d5b, T5, ws, n2 - 300)

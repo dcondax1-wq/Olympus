@@ -6,24 +6,25 @@
 Inputs (all read-only)
   data/tv_exports/NQ1_5m_*.csv       CME_MINI:NQ1! 5m (Bar Replay chunks; files without a Volume column are skipped)
   data/tv_exports/MNQ1_5m_*.csv,
-  data/tv_mnq_5m_*.csv               CME_MINI:MNQ1! 5m: used only for sessions no NQ1! file covers (Aug 24 -> Oct 16)
-  data/NQ_5m.yahoo_backup.csv        Yahoo NQ=F 5m: last resort per session, and a cross-check for roll gaps
-  data/clean/_src/yahoo_NQZ26_1h.csv single-contract reference quotes (tools/data_audit.py fetch-refs)
+  data/tv_mnq_5m_*.csv               CME_MINI:MNQ1! 5m: used only for sessions no NQ1! file covers
+  data/tv_exports/NQZ26_1h_*.csv     optional TradingView single-contract exports (any NQ<M><YY>_1h_ / _5m_ file): roll gaps
   data/clean/NQ_roll_overrides.json  optional {"NQM26->NQU26": 288.0, ...} exact gaps read off TradingView contract charts
+Official data only (owner 2026-10-23): TradingView CME exports. No other source is read.
 
 Method
   1. NQ1! chunks are de-duplicated; every overlapping bar must agree on OHLCV (disagreements are listed in the manifest;
      the copy farther from its file's last bar wins, because a Bar Replay file can end on a still-forming bar).
   2. Per trading day (18:00 ET -> 17:00 ET) one source is chosen, never a mix inside a session:
-     NQ1! > MNQ1! > Yahoo, unless the higher-priority source has < 98% of the bars the best source has for that day.
-  3. The exports are front-month UNADJUSTED (verified: they equal Yahoo NQ=F to the tick before and after rolls, and the
-     roll jump is in the data), so rolls are located and the series is back-adjusted here: additive, anchored to the
+     NQ1! > MNQ1!, unless the higher-priority source has < 98% of the bars the best source has for that day.
+  3. The exports are front-month UNADJUSTED (the roll jump is in the data), so rolls are located and the series is
+     back-adjusted here: additive, anchored to the
      newest contract, every bar before a switch gets +gap. Bars after the last roll are exact exchange prices.
      Switch = first bar of the session that starts 3 trading days before the last trading day (TradingView's NQ1! rule,
-     observed on the Dec-25, Mar-26, Jun-26 and Sep-26 rolls). Gap, best first: override file; simultaneous quotes of
-     both contracts (Yahoo NQ=F switched mid-session in Sep 2026); single-contract reference hours (NQZ26) for weekend
-     switches; the session-open jump for weekday switches (error ~ the weekday 17:00->18:00 drift, median 9 pts);
-     carry model (median gap/price of the measured rolls) as the last resort.
+     observed on the Dec-25, Mar-26, Jun-26 and Sep-26 rolls). Gap, best first: override file; a TradingView
+     single-contract export quoted on both sides of the switch (ref_<CODE>_tv, when its error is <= 2 pts); the
+     session-open jump for weekday switches (error ~ the weekday 17:00->18:00 drift, median ~4 pts); a looser
+     single-contract reference (<= 30 pts); carry model (median gap/price of the 4 nearest directly measured rolls) as
+     the last resort, which is what weekend switches without a single-contract export get.
 """
 from __future__ import annotations
 
@@ -40,7 +41,7 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import data_audit as da  # noqa: E402
 
-PRIORITY = ["tv-NQ1!", "tv-MNQ1!", "yahoo-NQ=F"]
+PRIORITY = ["tv-NQ1!", "tv-MNQ1!"]
 
 
 def _load_group(paths, label):
@@ -152,44 +153,46 @@ def detect_rolls(df: pd.DataFrame, sym="NQ"):
     return rolls, float(wk.abs().median()) if len(wk) else 10.0, float(wk.abs().quantile(0.9)) if len(wk) else 40.0
 
 
-def simultaneous_gap(tv: pd.DataFrame, yahoo: pd.DataFrame, roll: dict):
-    """If Yahoo NQ=F already quoted the new contract while TradingView still showed the old one, the spread is measured
-    on identical timestamps (no maintenance-break drift)."""
-    if yahoo is None or yahoo.empty:
-        return None
-    w = tv[(tv.time < roll["switch_t"]) & (tv.time >= roll["switch_t"] - 3 * 86400)]
-    m = w.merge(yahoo, on="time", suffixes=("", "_y"))
-    d = m.close_y - m.close
-    j = roll["open_jump"]
-    if abs(j) < 50:
-        return None
-    sel = d[(np.sign(d) == np.sign(j)) & (d.abs() > 0.5 * abs(j)) & (d.abs() < 1.5 * abs(j))]
-    if len(sel) < 6:
-        return None
-    last = sel.iloc[-12:]
-    return float(last.median()), float((last - last.median()).abs().median() * 1.4826 / np.sqrt(len(last)) + 0.25), int(len(sel))
+def ref_candidates(df, roll, refs):
+    """{key: candidate} from TradingView single-contract exports quoted on both sides of the switch."""
+    out = {}
+    for code, paths in sorted(refs.items()):
+        rg = da.ref_gap(df, da.read_ref(paths), roll["switch_t"])
+        if rg:
+            out[f"ref_{code}_tv"] = {"gap": round(rg[0], 2), "unc": round(rg[1], 2), "n": [rg[2], rg[3]]}
+    return out
 
 
-def estimate_gaps(df, rolls, drift_p50, drift_p90, yahoo=None, overrides=None):
+def pick_gap(r):
+    """(method, gap, unc) for one roll from its candidates, best first (see Method 3)."""
+    c = r["candidates"]
+    refs = sorted((v["unc"], k) for k, v in c.items() if k.startswith("ref_"))
+    if refs and refs[0][0] <= 2:
+        k = refs[0][1]
+        return k, c[k]["gap"], c[k]["unc"]
+    if "open_jump" in c and not r["weekend_switch"]:
+        return "open_jump", c["open_jump"]["gap"], c["open_jump"]["unc"]
+    if refs and refs[0][0] <= 30:
+        k = refs[0][1]
+        return k, c[k]["gap"], c[k]["unc"]
+    if "carry_model" in c:
+        return "carry_model", c["carry_model"]["gap"], c["carry_model"]["unc"]
+    return "none", 0.0, None
+
+
+def estimate_gaps(df, rolls, drift_p50, drift_p90, refs=None, overrides=None, sym="NQ"):
     overrides = overrides or {}
+    refs = da.ref_paths(sym) if refs is None else refs
     for r in rolls:
-        r["candidates"] = {}
-        sim = simultaneous_gap(df, yahoo, r)
-        if sim:
-            r["candidates"]["simultaneous_yahoo"] = {"gap": sim[0], "unc": round(sim[1], 2), "n": sim[2]}
-        rp = da.ref_path("NQ", "NQZ26")
-        if rp and r["from"] != "NQZ26":
-            rg = da.ref_gap(df, da.read_bars(rp), r["switch_t"])
-            if rg:
-                r["candidates"]["ref_NQZ26_1h"] = {"gap": round(rg[0], 2), "unc": round(rg[1], 2), "n": [rg[2], rg[3]]}
+        r["candidates"] = ref_candidates(df, r, refs)
         if not r["weekend_switch"]:
             r["candidates"]["open_jump"] = {"gap": r["open_jump"], "unc": round(drift_p50, 2)}
-    measured = [r for r in rolls if not r["weekend_switch"] or "simultaneous_yahoo" in r["candidates"]]
-    pct = []   # (switch_t, gap/price) of rolls measured directly
-    for r in measured:
-        c = r["candidates"].get("simultaneous_yahoo") or r["candidates"].get("open_jump")
-        px = float(df.loc[df.time < r["switch_t"], "close"].iloc[-1])
-        pct.append((r["switch_t"], c["gap"] / px))
+    pct = []   # (switch_t, gap/price) of rolls measured directly (official quotes, not the carry model)
+    for r in rolls:
+        m, g, _u = pick_gap(r)
+        if m != "none" and m != "carry_model":
+            px = float(df.loc[df.time < r["switch_t"], "close"].iloc[-1])
+            pct.append((r["switch_t"], g / px))
     carry = float(np.median([p for _, p in pct])) if pct else None
     for r in rolls:
         px = float(df.loc[df.time < r["switch_t"], "close"].iloc[-1])
@@ -204,15 +207,7 @@ def estimate_gaps(df, rolls, drift_p50, drift_p90, yahoo=None, overrides=None):
         if key in overrides:
             r["method"], g, u = "override (TradingView contract charts)", float(overrides[key]), 0.25
         else:
-            order = ["simultaneous_yahoo", "open_jump", "ref_NQZ26_1h", "carry_model"] if not r["weekend_switch"] else \
-                    ["simultaneous_yahoo", "ref_NQZ26_1h", "carry_model"]
-            for k in order:
-                c = r["candidates"].get(k)
-                if c and (k != "ref_NQZ26_1h" or c["unc"] <= 30):
-                    r["method"], g, u = k, c["gap"], c["unc"]
-                    break
-            else:
-                r["method"], g, u = "none", 0.0, None
+            r["method"], g, u = pick_gap(r)
         r["gap"] = round(g * 4) / 4      # tick-rounded so adjusted prices stay on the 0.25 grid
         r["uncertainty"] = u
         r["price_before"] = px
@@ -262,18 +257,16 @@ def main(argv):
     nq1, skipped = _load_group(sorted(glob.glob(os.path.join(D, "tv_exports", "NQ1_5m_*.csv"))), "tv-NQ1!")
     mnq_paths = sorted(glob.glob(os.path.join(D, "tv_exports", "MNQ1_5m_*.csv")) + glob.glob(os.path.join(D, "tv_mnq_5m_*.csv")))
     mnq, _ = _load_group(mnq_paths, "tv-MNQ1!")
-    ypath = os.path.join(D, "NQ_5m.yahoo_backup.csv")
-    yahoo = da.read_bars(ypath) if os.path.exists(ypath) else pd.DataFrame(columns=da.COLS)
     nq1, dis_nq1 = dedupe(nq1)
     mnq, dis_mnq = dedupe(mnq)
     print(f"NQ1! files: {nq1.file.nunique() if len(nq1) else 0} -> {len(nq1)} unique bars; overlap disagreements: {len(dis_nq1)}; skipped (no volume): {skipped}")
-    print(f"MNQ1! files: {len(mnq_paths)} -> {len(mnq)} bars; disagreements {len(dis_mnq)}; Yahoo {len(yahoo)} bars")
-    stitched, counts = choose_sessions({"tv-NQ1!": nq1, "tv-MNQ1!": mnq, "yahoo-NQ=F": yahoo})
+    print(f"MNQ1! files: {len(mnq_paths)} -> {len(mnq)} bars; disagreements {len(dis_mnq)}")
+    stitched, counts = choose_sessions({"tv-NQ1!": nq1, "tv-MNQ1!": mnq})
     stitched = da.sanitize(stitched, 300, "stitched NQ 5m").reset_index(drop=True)
     rolls, p50, p90 = detect_rolls(stitched)
     ov_path = os.path.join(da.CLEAN, "NQ_roll_overrides.json")
     overrides = json.load(open(ov_path)) if os.path.exists(ov_path) else {}
-    rolls, carry = estimate_gaps(stitched, rolls, p50, p90, yahoo, overrides)
+    rolls, carry = estimate_gaps(stitched, rolls, p50, p90, None, overrides)
     stitched["contract"] = label_contracts(stitched, rolls)
     adj = back_adjust(stitched, rolls)
     cov, q5 = coverage_table(adj)
@@ -289,6 +282,7 @@ def main(argv):
     da.write_csv(adj, os.path.join(da.CLEAN, "NQ_5m.csv"))
     da.write_csv(da.resample(adj, 900), os.path.join(da.CLEAN, "NQ_15m.csv"))
     da.write_csv(da.resample(adj, 3600), os.path.join(da.CLEAN, "NQ_1h.csv"))
+    da.write_csv(da.daily(adj), os.path.join(da.CLEAN, "NQ_1d.csv"))
     os.makedirs(os.path.join(da.CLEAN, "raw"), exist_ok=True)
     da.write_csv(stitched, os.path.join(da.CLEAN, "raw", "NQ_5m_unadjusted.csv"), da.COLS + ["source", "contract"])
     json.dump({"sym": "NQ", "anchor": rolls[-1]["to"] if rolls else None,
@@ -297,7 +291,7 @@ def main(argv):
                "rolls": [{k: v for k, v in r.items()} for r in rolls], "carry_pct": carry,
                "weekday_open_drift_p50_p90": [p50, p90]},
               open(os.path.join(da.CLEAN, "NQ_rolls.json"), "w"), indent=1, default=str)
-    # per-day quality for every clean file (ES / 1m are built by tools/data_audit.py)
+    # per-day quality for every clean file (ES: tools/stitch_es_chunks.py, 1m: tools/stitch_tv_1m.py)
     aud_dir = os.path.join(da.CLEAN, "audit")
     q = da.audit_dir(da.CLEAN)
     seg = adj.assign(td=da.tday_of(adj.time)).groupby("td").agg(source=("source", "first"), contract=("contract", "last"))
@@ -317,10 +311,11 @@ def main(argv):
         "price_space": "back-adjusted (additive) to the current front month; bars since the last roll are exact exchange prices",
         "files": files,
         "nq_sources": {"tv-NQ1!": sorted(nq1.file.unique().tolist()) if len(nq1) else [], "skipped_no_volume": skipped,
-                       "tv-MNQ1!": [os.path.basename(p) for p in mnq_paths], "yahoo-NQ=F": os.path.basename(ypath)},
+                       "tv-MNQ1!": [os.path.basename(p) for p in mnq_paths],
+                       "tv-single-contract": {k: [os.path.basename(p) for p in v] for k, v in da.ref_paths("NQ").items()}},
         "nq_sessions_by_source": adj.assign(td=da.tday_of(adj.time)).groupby("source").td.nunique().to_dict(),
         "nq_session_source_ranges": _ranges(seg),
-        "volume_units": {"tv-NQ1!": "NQ contracts", "tv-MNQ1!": "MNQ contracts (about 5x NQ counts)", "yahoo-NQ=F": "NQ contracts"},
+        "volume_units": {"tv-NQ1!": "NQ contracts", "tv-MNQ1!": "MNQ contracts (about 5x NQ counts)"},
         "overlap_disagreements": {"NQ1!": dis_nq1[:50], "NQ1!_count": len(dis_nq1), "MNQ1!_count": len(dis_mnq)},
         "nq_rolls": "NQ_rolls.json", "es_rolls": "ES_rolls.json" if os.path.exists(es_rolls) else None,
         "swap_command_powershell": "New-Item -ItemType Directory -Force data\\_pre_clean_backup | Out-Null; "

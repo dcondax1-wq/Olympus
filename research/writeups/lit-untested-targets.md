@@ -18,7 +18,7 @@ if the trade is at least +0.5R**. It changes 7 trades of 2026 and adds about $2k
 
 ## How it was tested (plain words)
 - **Data:** CME NQ1! futures from TradingView: 5-minute bars, plus true 1-minute bars for 2026. VIX daily closes. The 08:30 ET
-  high-impact releases come from `data/news/events.csv`. No Yahoo, no CFDs.
+  high-impact releases come from `data/news/events.csv`. Official CME data only (TradingView / NinjaTrader), no CFD.
 - **The trades:** the live LIT setups (sweep, inducement, displacement, 5m CISD, limit, 1m CISD entry), the stop 1 tick beyond
   the sweep extreme, breakeven at 1R, flat at 15:55, the Monday rule and the weekly stop. Only the target or the exit changes.
 - **Size:** the live eval sizing: $800 risk up to a 25-pt stop, then 800 x 25 / stop, half size after 2 stop-outs in a week,
