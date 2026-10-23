@@ -472,11 +472,11 @@ def cloud(D):
         check("cloud run with second on: no error, state.json 'second' holds both paper ledgers with the research trades of the day",
               err is None and ok_e and ok_m and want_e and want_m, err or {"ema": list(led_e), "md": list(led_m)})
         readme = open(os.path.join(out, "README.md"), encoding="utf-8").read() if os.path.exists(os.path.join(out, "README.md")) else ""
-        check("README has 'Second strategies (paper)' with both strategies", "## Second strategies (paper)" in readme
+        check("README has 'ATLAS (paper)' with both strategies", "## ATLAS (paper)" in readme
               and "London EMA trend pullback" in readme and "MACD divergence" in readme)
         nts = [n for n in st.get("notices") or [] if n.get("kind") == "second"]
         check(f"PAPER notices of kind 'second' for the entries and exits ({len(nts)})",
-              len(nts) >= 4 and all(n["title"].startswith("PAPER") for n in nts), [n.get("title") for n in nts])
+              len(nts) >= 4 and all(n["title"].startswith(("ATLAS PAPER", "PAPER")) and "PAPER" in n["title"] for n in nts), [n.get("title") for n in nts])
         check("offline: no network call reached the internet (all refused)", True, net.urls[:3])
         # freeze: a re-run where the replay disagrees keeps the finished row
         row = dict(led_e[str(want_e[0]["entry_t"])]) if want_e and led_e else None

@@ -1,4 +1,4 @@
-// Second strategies (PAPER) page: the one renderer shared by the phone app (tools/web_public/second.js) and the PC
+// ATLAS (the second strategy: EMA + MACD + S/R, the 25K account; internal key "second") pages: the one renderer shared by the phone app (tools/web_public/second.js) and the PC
 // dashboard (web_next/js/next/second.js loads web_next/js/next/secondcore.js, a byte-identical copy: tests/test_second.py
 // checks it). Classic script: window.SecondUI.render(el, S, opts). S = engine/second.dashboard_block (data.json "second" /
 // GET /api/next/second), opts.live = the PC's live cut (engine/second.compact from live.json / the heartbeat) laid over
@@ -40,7 +40,7 @@
       <p class="sc-note">Picked on 2026 H1 only; H2 is the untouched check; 2025 and 2021-24 are references. Run ${esc(bt.run || '—')}${bt.writeup ? ` · write-up <a href="#/writeup/${encodeURIComponent(bt.writeup)}">${esc(bt.writeup)}</a>` : ''}.</p>`;
   }
   function trades(rows) {
-    if (!rows || !rows.length) return '<p class="sc-note">No paper trades yet (the ledger starts on the first cloud run with the second strategies on).</p>';
+    if (!rows || !rows.length) return '<p class="sc-note">No paper trades yet (the ledger starts on the first cloud run with ATLAS on).</p>';
     const body = rows.slice().sort((a, b) => (b.entry_t || 0) - (a.entry_t || 0)).slice(0, 40).map((t) => {
       const L = t.lit || {};
       const open = t.exit_kind === 'OPEN';
@@ -76,9 +76,9 @@
     if (!g) return '';
     if (g.error) return `<div class="sc-card"><p class="sc-note">Scorecard unavailable: ${esc(g.error)}</p></div>`;
     const rows = (S.strategies || []).filter((s) => s.scorecard).map((s) => `<tr><td>${esc(s.short || s.key)}</td><td>${n0(s.scorecard.n)}</td><td class="${cl(s.scorecard.cum_r)}">${fR(s.scorecard.cum_r)}</td><td>${esc(s.scorecard.text)}</td></tr>`).join('');
-    return `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.acc}">Go / no-go · before buying account B</div><h3>Scorecard: paper result vs the expected range</h3>
+    return `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.acc}">Go / no-go · before buying the ATLAS 25K</div><h3>Scorecard: paper result vs the expected range</h3>
       <p class="sc-note">${esc(g.rule || '')}${g.source ? ' Source: ' + esc(g.source) + '.' : ''}</p>
-      ${scoreBox(g.account_b, 'Account B (' + ((g.account_b || {}).keys || []).length + ' strategies pooled)')}
+      ${scoreBox(g.account_b, 'ATLAS (' + ((g.account_b || {}).keys || []).length + ' members pooled)')}
       ${rows ? `<div class="sc-tw"><table class="sc-t"><thead><tr><th>Strategy</th><th>Trades</th><th>Cum R</th><th>Verdict</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}</div>`;
   }
   function strat(s, live) {
@@ -116,14 +116,15 @@
   // ab = LiveBot.second_route_info().account_b: {label, account, plan_label, kind, sizing, keys, eval: {balance, floor, room,
   // target, to_target, session, status}, open, routed, day_pnl, entries_today, locked, disabled}
   const EVST = { open: ['Eval running', C.acc], passed: ['Eval PASSED', C.good], failed: ['Eval FAILED', C.bad], stuck: ['Stuck: buy a new one', C.warn] };
+  const abName = (ab) => String((ab && ab.label) || 'ATLAS').replace(/^Account B\b/, 'ATLAS');
   function acctB(ab) {
     if (!ab) return '';
     const ev = ab.eval || {};
     const [lab, col] = EVST[ev.status] || [ev.status || '—', C.mut];
     const op = ab.open;
     const rows = (ab.routed || []).slice().reverse().map((r) => `<tr><td>${hm(r.t)}</td><td>${esc(String(r.side || '').toUpperCase())}</td><td>${n0(r.qty)}</td><td>${esc(r.strategy || r.src || '')}</td><td>${esc(r.reason || '')}</td><td class="${cl(r.pnl)}">${r.pnl == null ? '' : usd(r.pnl)}</td></tr>`).join('');
-    return `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.acc}">${esc(ab.kind || '')} · ${esc(ab.label || 'Account B')} · ${esc(ab.plan_label || '')}</div>
-      <h3>${esc(ab.label || 'Account B')}: ${esc((ab.keys || []).join(' + '))}</h3>
+    return `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.acc}">${esc(ab.kind || '')} · ${esc(abName(ab))} · ${esc(ab.plan_label || '')}</div>
+      <h3>${esc(abName(ab))}: ${esc((ab.keys || []).join(' + '))}</h3>
       ${ab.disabled ? `<p class="sc-note" style="color:${C.bad}">Not trading: ${esc(ab.disabled)}</p>` : ''}
       <div class="sc-state" style="border-color:${col}"><span class="sc-pill" style="background:${col}">${esc(lab)}</span>
         <b>${op ? `In a trade: ${esc(op.side)} ${n0(op.qty)} MNQ (${esc(op.strategy || '')}) from ${px(op.entry)}, stop ${px(op.stop)}, target ${px(op.target)}` : 'Flat'}${ab.locked ? ' · locked today: ' + esc(ab.locked) : ''}</b>
@@ -140,7 +141,7 @@
     opts = opts || {};
     try {
       if (!S || !(S.strategies || []).length) {
-        el.innerHTML = `<div class="sc-card"><b>No second strategies in this build.</b><p class="sc-note">${esc((S && S.error) || 'The next cloud run adds them (second_model.json).')}</p></div>`;
+        el.innerHTML = `<div class="sc-card"><b>No ATLAS members in this build.</b><p class="sc-note">${esc((S && S.error) || 'The next cloud run adds them (second_model.json).')}</p></div>`;
         return;
       }
       const anyR = S.strategies.some((s) => routeOf(s, opts.live).on);
@@ -153,7 +154,7 @@
   // "ROUTED on Sim101" / "PAPER": the PC's live cut (heartbeat / live.json second.route) first, then the dashboard block
   function routeOf(s, live) {
     const lv = live && live.strategies ? live.strategies[s.key] : null;
-    const lab = (lv && lv.route_label) || s.route_label || 'paper';
+    const lab = String((lv && lv.route_label) || s.route_label || 'paper').replace(/Account B\b/, 'ATLAS');
     const on = lv ? !!lv.route : !!s.route;
     return { on, label: on ? String(lab).toUpperCase().replace(/^ROUTED ON/, 'ROUTED on') : 'PAPER' };
   }
@@ -196,13 +197,13 @@
     try {
       const L = (data && data.strategies) || [];
       if (!L.length) {
-        el.innerHTML = `<div class="sc-card"><b>No second-strategy brain yet.</b><p class="sc-note">${esc((data && data.error) || 'It appears after the PC bot (or the cloud run) has run the second strategies with this version.')}</p></div>`;
+        el.innerHTML = `<div class="sc-card"><b>No ATLAS brain yet.</b><p class="sc-note">${esc((data && data.error) || 'It appears after the PC bot (or the cloud run) has run ATLAS with this version.')}</p></div>`;
         return;
       }
       const nR = L.filter((s) => s.route).length;
-      el.innerHTML = `<div class="sc-banner"><b>Second-strategy brain.</b> ${nR ? `${nR} routed to the account next to LIT (LIT first, one position at a time, max 2 trades a day); the rest paper.` : 'All paper: nothing here is traded.'} Each card: what it waits for and every rule in the engine's order (✓ passed · ✗ failed: the first ✗ is why there is no trade · · not decided yet).${data.src ? ' Source: ' + esc(data.src) + (data.t ? ' · ' + hm(data.t) + ' ET' : '') + '.' : ''}</div>`
+      el.innerHTML = `<div class="sc-banner"><b>ATLAS brain.</b> ${nR ? `${nR} routed to the account next to LIT (LIT first, one position at a time, max 2 trades a day); the rest paper.` : 'All paper: nothing here is traded.'} Each card: what it waits for and every rule in the engine's order (✓ passed · ✗ failed: the first ✗ is why there is no trade · · not decided yet).${data.src ? ' Source: ' + esc(data.src) + (data.t ? ' · ' + hm(data.t) + ' ET' : '') + '.' : ''}</div>`
         + acctB(data.account_b) + L.map(brainCard).join('');
-    } catch (e) { el.innerHTML = `<div class="sc-card"><b>The second brain failed to draw</b><p class="sc-note">${esc(String(e && e.message || e))}</p></div>`; }
+    } catch (e) { el.innerHTML = `<div class="sc-card"><b>The ATLAS brain failed to draw</b><p class="sc-note">${esc(String(e && e.message || e))}</p></div>`; }
   }
   // the list from a compact (heartbeat / live.json / /api/next/brain/second) or a dashboard block (data.json "second")
   function brainList(x, src) {
@@ -211,5 +212,197 @@
     if (Array.isArray(x.strategies)) return { src, t: x.t, account_b, strategies: x.strategies.map((s) => ({ ...s, src })) };
     return { src, t: x.t, account_b, strategies: Object.entries(x.strategies || {}).map(([key, s]) => ({ key, ...s, src })) };
   }
-  window.SecondUI = { render, brain, brainList, acctB, scoreBox, scoreCard, version: 4 };
+
+  // ---------------------------------------------------------------- ATLAS: everything about it on one page (owner 2026-10-22: "two
+  // strategies: LIT on the 50K, the new one on the 25K"). ATLAS = the members EMA + MACD + S/R (account B's keys).
+  // S = the dashboard block (data.json "second" / /api/next/second; S.atlas = research/second/atlas.json, else the
+  // account-B research), opts.live = the PC's live cut (heartbeat / live.json second), opts.brain = brainList(...) of the
+  // freshest brain. Read-only.
+  const DEF_KEYS = ['ema_lon_vix', 'macd_sweep', 'sr_nyreclaim'];
+  function members(S, live) {
+    const A = (S && S.atlas) || {};
+    let keys = (Array.isArray(A.members) ? A.members : []).map((m) => typeof m === 'string' ? m : (m && (m.key || m.id))).filter(Boolean);
+    const ab = (live && live.route && live.route.account_b) || (S && S.account_b);
+    if (!keys.length && ab && (ab.keys || []).length) keys = ab.keys.slice();
+    if (!keys.length && S && S.scorecard && S.scorecard.account_b && (S.scorecard.account_b.keys || []).length) keys = S.scorecard.account_b.keys.slice();
+    if (!keys.length) keys = DEF_KEYS.slice();
+    const have = ((S && S.strategies) || []).map((x) => x.key);
+    return have.length ? keys.filter((k) => have.includes(k)) : keys;
+  }
+  // PAPER / SIM / LIVE on <account> / ROUTED on LIT's account
+  function atlasStatus(S, live) {
+    const ab = (live && live.route && live.route.account_b) || (S && S.account_b) || null;
+    if (ab && ab.account && ab.enabled !== false) {
+      const k = String(ab.kind || (/^(sim|playback)/i.test(ab.account) ? 'SIM' : 'LIVE')).toUpperCase();
+      return { mode: k, lvl: k === 'LIVE' ? 'good' : k === 'SIM' ? 'acc' : 'warn', text: `${k} on ${ab.account}`, ab, plan: ab.plan_label || 'MFFU Builder 25K' };
+    }
+    const keys = members(S, live);
+    const routed = ((S && S.strategies) || []).filter((x) => keys.includes(x.key) && routeOf(x, live).on);
+    if (routed.length) return { mode: 'ROUTED', lvl: 'acc', text: routeOf(routed[0], live).label, ab: null, plan: "LIT's account" };
+    return { mode: 'PAPER', lvl: 'warn', text: 'Paper: nothing is traded yet', ab: null, plan: 'MFFU Builder 25K (not bought yet)' };
+  }
+  // every trade of the members (cloud ledger + the PC's live cut), newest first
+  function allTrades(S, live, keys) {
+    const out = [];
+    for (const s of ((S && S.strategies) || []).filter((x) => keys.includes(x.key))) {
+      const lv = live && live.strategies ? live.strategies[s.key] : null;
+      const rows = (s.trades || []).slice();
+      if (lv && lv.trades) for (const t of lv.trades) { const i = rows.findIndex((r) => +r.entry_t === +t.entry_t); if (i < 0) rows.push(t); else if (rows[i].exit_kind === 'OPEN') rows[i] = { ...rows[i], ...t }; }
+      for (const t of rows) out.push({ ...t, member: s.short || s.key });
+    }
+    return out.sort((a, b) => (b.entry_t || 0) - (a.entry_t || 0));
+  }
+  function dayOf(S, live, keys) {
+    for (const k of keys) { const lv = live && live.strategies && live.strategies[k]; if (lv && lv.state && lv.state.day) return lv.state.day; }
+    const s = ((S && S.strategies) || []).find((x) => keys.includes(x.key) && x.state && x.state.day);
+    return (live && live.day) || (s && s.state.day) || null;
+  }
+  // today's $, this week's $ and the trade count of the members (paper ledger, or account B's own day P&L)
+  function atlasMoney(S, live) {
+    const keys = members(S, live), st = atlasStatus(S, live), rows = allTrades(S, live, keys), day = dayOf(S, live, keys);
+    const fin = rows.filter((t) => t.exit_kind && t.exit_kind !== 'OPEN');
+    const d0 = day ? new Date(day + 'T12:00:00Z') : null;
+    const wk0 = d0 ? new Date(d0.getTime() - ((d0.getUTCDay() + 6) % 7) * 86400000).toISOString().slice(0, 10) : null;   // Monday of that week
+    const today = rows.filter((t) => day && t.day === day);
+    const dayUsd = st.ab && st.ab.day_pnl != null ? +st.ab.day_pnl : fin.filter((t) => t.day === day).reduce((a, t) => a + (+t.usd || 0), 0);
+    const weekUsd = fin.filter((t) => wk0 && t.day >= wk0 && t.day <= day).reduce((a, t) => a + (+t.usd || 0), 0);
+    return { keys, st, rows, day, today, dayUsd, weekUsd };
+  }
+  function tradeRows(rows) {
+    if (!rows.length) return '';
+    return `<div class="sc-tw"><table class="sc-t"><thead><tr><th>Entry (ET)</th><th>Member</th><th>Side</th><th>Micros</th><th>Entry</th><th>Exit</th><th>R</th><th>$</th></tr></thead><tbody>${rows.map((t) => {
+      const open = t.exit_kind === 'OPEN';
+      return `<tr><td>${esc(t.day || '')} ${hm(t.entry_t)}</td><td><b>${esc(t.member)}</b></td><td>${t.dir > 0 ? 'LONG' : 'SHORT'}</td><td>${n0(t.qty)}</td><td>${px(t.entry)}</td>
+        <td>${open ? 'open · last ' + px(t.last) : esc(t.exit_kind || '')}</td><td class="${cl(t.r)}">${fR(t.r)}</td><td class="${cl(t.usd)}">${usd(t.usd)}</td></tr>`;
+    }).join('')}</tbody></table></div>`;
+  }
+  // research numbers: research/second/atlas.json (name, members, rules, numbers, eval25k) or the account-B fallback
+  const pctF = (v) => (v == null || isNaN(v)) ? '—' : n0(v, 1) + '%';
+  const NCOL = [['n', 'Trades', n0], ['tpw', '/week', (v) => n0(v, 2)], ['win', 'Win', pctF], ['pf', 'PF', (v) => n0(v, 2)],
+    ['net', 'Net $', usd, 1], ['per_month', '$/month', usd, 1], ['dd', 'Max DD', usd]];
+  const ECOL = [['p10', 'Pass 2 wk', pctF], ['f10', 'Fail 2 wk', pctF], ['p20', 'Pass 1 mo', pctF], ['f20', 'Fail 1 mo', pctF], ['dead10', 'Undecided 2 wk', pctF],
+    ['pass_med', 'Sessions to pass (median)', (v) => n0(v, 1)], ['ev_eval_3m', '$ per eval (3 mo)', usd, 1]];
+  const ORDER = ['H1', 'H2', '2026', '2025', '2021-24', '2021-25'];
+  const plabel = (k) => ({ H1: '2026 H1 (picked)', H2: '2026 H2 (check)' })[k] || k;
+  function periods(o) {
+    if (!o || typeof o !== 'object') return [];
+    if (Array.isArray(o)) return o.filter((x) => x && typeof x === 'object').map((x, i) => [x.period || x.label || String(i + 1), x]);
+    const rk = (k) => { const i = ORDER.indexOf(k); return i < 0 ? 99 : i; };
+    return Object.entries(o).filter(([, v]) => v && typeof v === 'object' && !Array.isArray(v)).sort((a, b) => rk(a[0]) - rk(b[0]));
+  }
+  function numTable(o, cols) {
+    const P = periods(o); if (!P.length) return '';
+    const cs = cols.filter(([k]) => P.some(([, x]) => x[k] != null)); if (!cs.length) return '';
+    return `<div class="sc-tw"><table class="sc-t"><thead><tr><th>Period</th>${cs.map((c) => `<th>${esc(c[1])}</th>`).join('')}</tr></thead><tbody>${P.map(([k, x]) =>
+      `<tr><td>${esc(plabel(k))}</td>${cs.map((c) => `<td class="${c[3] ? cl(x[c[0]]) : ''}">${c[2](x[c[0]])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+  function rulesBlock(A, S, keys) {
+    const R = A.rules;
+    const per = ((S && S.strategies) || []).filter((x) => keys.includes(x.key));
+    const ol = (L) => `<ol class="sc-rules">${(Array.isArray(L) ? L : []).map((r) => `<li>${esc(typeof r === 'string' ? r : (r && r.text) || JSON.stringify(r))}</li>`).join('')}</ol>`;
+    let top = '';
+    if (Array.isArray(R) && R.length) top = `<h4>${esc(A.name || 'ATLAS')} as a whole</h4>${ol(R)}`;
+    else if (typeof R === 'string') top = `<p class="sc-note">${esc(R)}</p>`;
+    const byKey = R && typeof R === 'object' && !Array.isArray(R) ? R : {};
+    if (Array.isArray(byKey.all) && byKey.all.length) top = `<h4>${esc(A.name || 'ATLAS')} as a whole</h4>${ol(byKey.all)}`;
+    return top + per.map((s) => `<details><summary><b>${esc(s.short || s.key)}</b> · ${esc(s.label || '')}</summary>${s.summary ? `<p class="sc-note">${esc(s.summary)}</p>` : ''}${ol(byKey[s.key] || s.rules)}</details>`).join('');
+  }
+  function css2() {
+    css();
+    if (!document.getElementById('sb-css')) { const t = document.createElement('style'); t.id = 'sb-css'; t.textContent = BCSS; document.head.appendChild(t); }
+    if (!document.getElementById('at-css')) { const t = document.createElement('style'); t.id = 'at-css'; t.textContent = ACSS; document.head.appendChild(t); }
+  }
+  const LV = () => ({ good: C.good, acc: C.acc, warn: C.warn, bad: C.bad });
+  function atlas(el, S, opts) {
+    css2();
+    opts = opts || {};
+    try {
+      if (!S || !(S.strategies || []).length) {
+        el.innerHTML = `<div class="sc-card"><b>No ATLAS members in this build.</b><p class="sc-note">${esc((S && S.error) || 'The next cloud run adds them (second_model.json).')}</p></div>`;
+        return;
+      }
+      const live = opts.live || null, A = S.atlas || {}, name = A.name || 'ATLAS';
+      const M = atlasMoney(S, live), keys = M.keys, st = M.st;
+      const per = S.strategies.filter((x) => keys.includes(x.key));
+      const col = LV()[st.lvl] || C.mut;
+      const bl = opts.brain && (opts.brain.strategies || []).length ? opts.brain : brainList(S, 'cloud run');
+      const bs = ((bl && bl.strategies) || []).filter((x) => keys.includes(x.key));
+      const sc = S.scorecard || {}, scb = sc.account_b;
+      const hero = `<div class="sc-card at-hero" style="border-color:${col}"><div class="sc-eyebrow" style="color:${col}">${esc(name)} · ${esc(st.plan)} · ${per.map((s) => esc(s.short || s.key)).join(' + ')}</div>
+        <div class="at-top"><div><span class="sc-pill" style="background:${col}">${esc(st.mode)}</span><h3 class="at-h">${esc(st.text)}</h3>
+          <p class="sc-note">${esc(A.summary || 'The second strategy: three research setups pooled on their own 25K eval account, next to LIT on the 50K. Then we scale.')}</p></div>
+          <div class="at-day"><span>Today${st.ab ? '' : ' (paper)'}</span><b class="${cl(M.dayUsd)}">${usd(M.dayUsd)}</b><em>${n0(M.today.length)} trade${M.today.length === 1 ? '' : 's'} · week ${usd(M.weekUsd)}</em></div></div>
+        <p class="sc-note at-lit"><b>With LIT:</b> never opposite to LIT and LIT first (no ATLAS entry against an open or arming LIT trade; LIT entering the other way closes ATLAS first). Max 2 ATLAS trades a day, one position.</p></div>`;
+      const evCard = st.ab ? acctB(st.ab) : `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.warn}">25K eval · not started</div><h3>MFFU Builder 25K: not bought yet</h3>
+        <p class="sc-note">${esc(name)} trades paper until the go / no-go below says Ready. Once the 25K runs, this card shows its balance, room, target, sessions and pass / fail.</p></div>`;
+      const brainH = `<h3 class="at-sec">${esc(name)} brain <span class="sc-mut">· ${esc((bl && bl.src) || '—')}${bl && bl.t ? ' · ' + hm(bl.t) + ' ET' : ''}</span></h3>`
+        + (bs.length ? bs.map(brainCard).join('') : `<div class="sc-card"><b>No ATLAS brain yet.</b><p class="sc-note">It appears after the PC bot (or the cloud run) has run ATLAS with this version.</p></div>`);
+      const mrow = per.filter((s) => s.scorecard);
+      const goH = scb ? `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.acc}">Go / no-go · before buying the 25K</div>${scoreBox(scb, name + ' (' + n0((scb.keys || keys).length) + ' members pooled)')}
+        ${mrow.length ? `<div class="sc-tw"><table class="sc-t"><thead><tr><th>Member</th><th>Trades</th><th>Cum R</th><th>Verdict</th></tr></thead><tbody>${mrow.map((s) => `<tr><td>${esc(s.short || s.key)}</td><td>${n0(s.scorecard.n)}</td><td class="${cl(s.scorecard.cum_r)}">${fR(s.scorecard.cum_r)}</td><td>${esc(s.scorecard.text)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+        ${sc.rule ? `<p class="sc-note">${esc(sc.rule)}</p>` : ''}</div>` : (sc.error ? `<div class="sc-card"><p class="sc-note">Scorecard unavailable: ${esc(sc.error)}</p></div>` : '');
+      const trH = `<div class="sc-card"><h3>Trades</h3><h4>Today${M.day ? ' · ' + esc(M.day) : ''}</h4>${tradeRows(M.today) || '<p class="sc-note">No ATLAS trade today.</p>'}
+        <details ${M.today.length ? '' : 'open'}><summary><b>Recent</b> (${n0(M.rows.length)})</summary>${tradeRows(M.rows.slice(0, 30)) || '<p class="sc-note">No paper trades yet (the ledger starts on the first cloud run with ATLAS on).</p>'}</details></div>`;
+      const numsT = numTable(A.numbers, NCOL), evT = numTable(A.eval25k || A.eval_25k, ECOL);
+      const btH = `<div class="sc-card"><h3>Backtest numbers</h3>${numsT ? `<h4>${esc(name)} pooled${A.numbers_label ? ' · ' + esc(A.numbers_label) : ''}</h4>${numsT}` : ''}
+        ${evT ? `<h4>MFFU Builder 25K eval odds${A.eval_label ? ' · ' + esc(A.eval_label) : ''}</h4>${evT}` : ''}
+        ${!numsT && !evT ? '<p class="sc-note">Pooled numbers not built yet (research/second/atlas.json).</p>' : ''}
+        <p class="sc-note">Picked on 2026 H1 only; H2 is the untouched check; 2025 and 2021-24 are references. Source: ${esc(A.source || '—')}${A.writeup ? ` · write-up <a href="#/writeup/${encodeURIComponent(A.writeup)}">${esc(A.writeup)}</a>` : ''}.</p>
+        ${per.map((s) => `<details><summary><b>${esc(s.short || s.key)} alone</b> · ${esc(s.label || '')}</summary>${btTable(s.backtest, s.with_lit_label)}</details>`).join('')}</div>`;
+      const ruH = `<div class="sc-card"><h3>Rules in plain words</h3>${rulesBlock(A, S, keys)}</div>`;
+      const others = S.strategies.filter((x) => !keys.includes(x.key));
+      const otH = others.length ? `<details class="sc-card"><summary><b>Other paper shadows</b> (${others.map((s) => esc(s.short || s.key)).join(', ')}): not part of ${esc(name)}</summary>${others.map((s) => strat(s, live)).join('')}</details>` : '';
+      el.innerHTML = hero + evCard + brainH + goH + trH + ruH + btH + otH;
+    } catch (e) { el.innerHTML = `<div class="sc-card"><b>The ATLAS page failed to draw</b><p class="sc-note">${esc(String(e && e.message || e))}</p></div>`; }
+  }
+  // the ATLAS · 25K card of the Home summary from the same data (each app adds its LIT card itself)
+  function atlasCard(S, live, brain) {
+    if (!S || !(S.strategies || []).length) return { name: 'ATLAS', plan: '25K', status: 'NOT BUILT', lvl: '', today: null, week: null, prog: 0, progText: 'no ATLAS block in this build', next: '', go: 'atlas' };
+    const M = atlasMoney(S, live), st = M.st, ab = st.ab, ev = (ab && ab.eval) || {};
+    let prog = 0, progText = '';
+    if (ab && ev.target) {
+      const start = ev.start_balance || (ev.target > 40000 ? 50000 : 25000), need = ev.target - start;
+      prog = need > 0 ? ((ev.balance || start) - start) / need : 0;
+      progText = `${ev.to_target != null ? usd(ev.to_target) + ' to pass' : ''}${ev.session ? ' · session ' + n0(ev.session) : ''}${ev.status && ev.status !== 'open' ? ' · ' + String(ev.status).toUpperCase() : ''}`;
+    } else {
+      const g = (S.scorecard || {}).account_b || {};
+      prog = g.n ? g.n / (g.need || 20) : 0;
+      progText = `Go / no-go: ${n0(g.n || 0)}/${n0(g.need || 20)} paper trades · ${({ collecting: 'collecting', on_track: 'on track', below: 'below range', ready: 'ready' })[g.kind] || '—'}`;
+    }
+    const bl = brain && (brain.strategies || []).length ? brain : brainList(S, 'cloud run');
+    const bs = ((bl && bl.strategies) || []).filter((x) => M.keys.includes(x.key));
+    const rk = { in_trade: 0, armed: 1, waiting: 2, done: 3, off: 4, error: 5 };
+    const pick = bs.slice().sort((a, b) => (rk[(a.brain || {}).stage || (a.state || {}).stage] ?? 9) - (rk[(b.brain || {}).stage || (b.state || {}).stage] ?? 9))[0];
+    const nx = pick ? `${pick.short || pick.key}: ${(pick.brain || {}).text || (pick.state || {}).text || '—'}` : ((S.scorecard || {}).account_b || {}).text || '';
+    return { name: 'ATLAS', plan: ab ? (ab.plan_label || '25K') + ' · ' + ab.account : '25K · paper until Ready', status: st.mode, lvl: st.lvl, today: M.dayUsd, week: M.weekUsd,
+      prog, progText, next: nx, go: 'atlas' };
+  }
+  // Home: two cards side by side, "LIT · 50K" and "ATLAS · 25K". c = {name, plan, status, lvl, today, week, prog (0..1),
+  // progText, next, go}; each app builds its LIT card from its own data.
+  function twoCards(L) {
+    css2();
+    const one = (c) => {
+      const col = LV()[c.lvl] || C.mut;
+      const p = Math.max(0, Math.min(1, +c.prog || 0));
+      return `<button type="button" class="at-two-c" data-go="${esc(c.go || '')}" data-goto="${esc(c.goto || c.go || '')}" style="--c:${col}">
+        <span class="at-two-h"><b>${esc(c.name)}</b><em>${esc(c.plan)}</em></span>
+        <span class="sc-pill" style="background:${col}">${esc(c.status)}</span>
+        <span class="at-two-k"><span><i>Today</i><b class="${cl(c.today)}">${usd(c.today)}</b></span><span><i>This week</i><b class="${cl(c.week)}">${usd(c.week)}</b></span></span>
+        <span class="at-two-bar"><u style="width:${(p * 100).toFixed(1)}%"></u></span><span class="at-two-p">${esc(c.progText || '')}</span>
+        <span class="at-two-n">${esc(c.next || '')}</span></button>`;
+    };
+    return `<div class="at-two" aria-label="Two strategies">${L.map(one).join('')}</div>`;
+  }
+  const ACSS = `.at-hero{border-width:1.5px}.at-top{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.at-top>div:first-child{flex:1 1 220px;min-width:0}
+.at-h{margin:8px 0 4px;font-size:20px}.at-day{text-align:right;min-width:110px}.at-day span,.at-day em{display:block;font-size:11.5px;opacity:.7;font-style:normal}.at-day b{display:block;font-size:26px;font-weight:800}
+.at-lit{margin-top:10px;padding-top:8px;border-top:1px solid ${C.line}}.at-sec{margin:18px 2px 10px;font-size:16px}
+.at-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}.at-two-c{display:flex;flex-direction:column;gap:7px;text-align:left;font:inherit;color:inherit;cursor:pointer;min-width:0;
+border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);border-radius:16px;padding:12px;background:color-mix(in srgb,var(--c) 8%,transparent)}
+.at-two-h{display:flex;flex-direction:column;min-width:0}.at-two-h b{font-size:16px;letter-spacing:.03em}.at-two-h em{font-style:normal;font-size:11.5px;opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-two-c .sc-pill{align-self:flex-start;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-two-k{display:grid;grid-template-columns:1fr 1fr;gap:6px}.at-two-k i{display:block;font-style:normal;font-size:10.5px;opacity:.65;text-transform:uppercase;letter-spacing:.04em}.at-two-k b{font-size:16px}
+.at-two-bar{position:relative;height:6px;border-radius:99px;background:${C.line};overflow:hidden}.at-two-bar u{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--c)}
+.at-two-p{font-size:11.5px;opacity:.75;line-height:1.35}.at-two-n{font-size:12.5px;line-height:1.4;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:340px){.at-two{grid-template-columns:1fr}}`;
+  window.SecondUI = { render, brain, brainList, acctB, scoreBox, scoreCard, atlas, atlasStatus, atlasCard, atlasMoney, twoCards, members, version: 5 };
 })();

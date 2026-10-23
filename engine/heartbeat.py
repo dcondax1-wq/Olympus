@@ -240,6 +240,15 @@ def _exec():
         return None
 
 
+def _ai(bot):
+    """The AI-watch block (engine/ai_watch.hb_block). Never raises."""
+    try:
+        from . import ai_watch
+        return ai_watch.hb_block(bot)
+    except Exception:
+        return None
+
+
 def _alerts_plus(bot):
     """{"rules", "crit"} (engine/alerts_plus.hb_block). Never raises."""
     try:
@@ -289,6 +298,7 @@ class Heartbeat:
                 "live_pub": _live_pub(),        # the phone's live.json push (engine/live_publish.py): last result, None before it
                 "brain": _brain(self.bot),       # the Bot Brain, phone cut (engine/brain.compact; None before the first LIT poll)
                 "second": _second(self.bot),     # second strategies, PAPER (engine/second.compact; None when off / before the first)
+                "ai": _ai(self.bot),             # AI watch: anomalies, drift, loss caps, rule changes (engine/ai_watch.hb_block)
                 **_alerts_plus(self.bot)}       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
 
     def beat(self) -> dict:

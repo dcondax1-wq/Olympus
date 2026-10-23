@@ -4,6 +4,7 @@
 export const TOP = [
   { id: 'command', label: 'Today', icon: 'today' },
   { id: 'brain', label: 'Bot Brain', icon: 'brain' },          // js/next/brain.js: what the bot is thinking (read-only)
+  { id: 'atlas', label: 'ATLAS', icon: 'atlas' },              // js/next/second.js: strategy 2 on the 25K (EMA + MACD + S/R)
   { id: 'botctl', label: 'Bot', icon: 'power' },
   { id: 'accounts', label: 'Accounts', icon: 'wallet' },
   { id: 'chart', label: 'Chart', icon: 'chart' },
@@ -18,7 +19,7 @@ export const TOP = [
 export const DATA = [
   { id: 'results', label: 'Results', icon: 'results', desc: 'LIT replay: 2026 (H1 picked, H2 check), 2021-25 reference, eval odds' },
   { id: 'perf', label: 'Performance', icon: 'robust', desc: 'Range (is live inside the expected band) · Live vs backtest · Exit efficiency · Robustness · Months · Status' },
-  { id: 'second', label: 'Second strategies', icon: 'variants', desc: 'PAPER: EMA London pullback, MACD sweep divergence, S/R NY reclaim next to LIT: rules, today, paper trades, backtest' },
+  { id: 'scale', label: 'Scaling plan', icon: 'prop', desc: 'Step N of the ladder (2 -> 10 accounts, LIT + ATLAS), the next account, its trigger and progress, $ a month 2026-like vs 2025-like' },
   { id: 'intel', label: 'Trade intel', icon: 'stats', desc: 'Every trade (backtest, paper, live) with ~60 facts, the signs of winners vs losers, MFE / MAE' },
   { id: 'edge', label: 'Edge', icon: 'heat', desc: 'Where LIT makes its money: R, exits, MFE / MAE, stop size, hour, weekday, levels' },
   { id: 'pnlcal', label: 'P&L Calendar', icon: 'calendar', desc: 'Daily P&L month grid (backtest or the PC bot), streaks, this week vs the backtest' },
@@ -91,7 +92,7 @@ export const MODULES = [
   { id: 'archive', label: 'Archive', icon: 'archive', desc: 'Previous strategy: Liquidity Engine, Oct 17 (paper shadow), kept so it can come back' },
 ];
 
-export const TITLES = { data: 'Data', command: 'Today', brain: 'Bot Brain', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
+export const TITLES = { data: 'Data', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
 

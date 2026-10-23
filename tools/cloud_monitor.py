@@ -926,7 +926,7 @@ def run(out):
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
                                                "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "ops", "remote", "live_pub",
-                                               "brain", "second")},  # the PC bot's Bot Brain (engine/brain.py compact), second strategies (paper)
+                                               "brain", "second", "ai")},  # the PC bot's Bot Brain (engine/brain.py compact), second strategies (paper)
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
                  "pc_alert_at": pc_alert_at,
@@ -1019,13 +1019,14 @@ def second_notices(block, since):
         if s.get("route"):
             continue                 # routed on the PC account: the PC sends its LIVE pushes (no PAPER duplicate)
         nm = s.get("short") or key
+        pre = "ATLAS PAPER" if key in ("ema_lon_vix", "macd_sweep", "sr_nyreclaim") else "PAPER"     # ATLAS = the 25K strategy (EMA + MACD + S/R)
         for v in (s.get("ledger") or {}).values():
             et_ = int(v.get("entry_t") or 0)
             side = v.get("side") or ("LONG" if (v.get("dir") or 0) > 0 else "SHORT")
             lit = v.get("lit") or {}
             extra = "" if lit.get("taken", True) else f" On LIT's account it would be skipped ({lit.get('why')})."
             if et_ >= since:
-                p = push.text_payload("Cloud", "second", f"PAPER {nm} {side}",
+                p = push.text_payload("Cloud", "second", f"{pre} {nm} {side}",
                                       f"Paper entry {v.get('qty')} MNQ at {float(v.get('entry') or 0):,.2f}, stop {float(v.get('stop') or 0):,.2f}, "
                                       f"target {float(v.get('target') or 0):,.2f}. Not traded.{extra}",
                                       key=f"second:{key}:fill:{et_}", t=et_, url="#/second")
@@ -1033,7 +1034,7 @@ def second_notices(block, since):
                             "qty": v.get("qty"), "setup": s.get("label")})
             xt = v.get("exit_t")
             if xt and v.get("exit_kind") not in (None, "OPEN") and int(xt) >= since:
-                p = push.text_payload("Cloud", "second", f"PAPER {nm} {side} {v.get('exit_kind')}",
+                p = push.text_payload("Cloud", "second", f"{pre} {nm} {side} {v.get('exit_kind')}",
                                       f"{money(float(v.get('usd') or 0))} on paper ({float(v.get('r') or 0):+.2f}R). Not traded.",
                                       key=f"second:{key}:out:{et_}", t=int(xt), url="#/second")
                 out.append({**p, "side": side, "usd": v.get("usd"), "exit": v.get("exit_kind"), "setup": s.get("label")})

@@ -35,6 +35,9 @@ Guards and defaults (live_model.json "guards" and the start cfg "guards" overrid
                         date's session, its holiday / early close; start = the window's first minute in that order).
  11. presence_required  OFF  no new entry without an "I'm here" check-in in the last presence_hours (4 h) + a
                         "Check in to keep trading" push (engine/presence.py). Off: it could cut trades (frequency rule).
+ 13. anomaly_pause / combined_loss  OFF  engine/ai_watch.py: no new entry (LIT + account B) for 15 min after a price
+                        spike / bad tick or while the feed is frozen mid-trade; both accounts together at -$1,500 today /
+                        -$3,000 this week. Off: they could cut trades (frequency rule); the matching pushes are on.
  12. entry pause  always  the owner's own "pause until" (engine/entry_pause.py: phone remote "pause" / PC dashboard): no new
                         entry until then; open trades keep their stop / target. Nothing is paused unless the owner asked.
 Hands-off events (engine/handsoff.py): the reconcile mismatches are also logged as manual trade / close / size.
@@ -67,6 +70,8 @@ DEFAULTS = {
     "news": False, "news_min": 2,
     "calendar": True,
     "presence_required": False, "presence_hours": 4.0,
+    # engine/ai_watch.py (2026-10-22), both OFF: an anomaly pause and a loss cap across LIT + account B
+    "anomaly_pause": False, "anomaly_pause_min": 15, "combined_loss": False, "combined_day_usd": 1500.0, "combined_week_usd": 3000.0,
 }
 
 
@@ -406,6 +411,12 @@ def _owner_blocks(bot, c, now) -> list:
             out.append(p)
     except Exception as e:
         bot._note_error(f"guards: pause check failed: {e.__class__.__name__}")
+    if c.get("anomaly_pause") or c.get("combined_loss"):      # engine/ai_watch.py, OFF by default (LIT and account B)
+        try:
+            from . import ai_watch
+            out += [p for p in (ai_watch.anomaly_problem(bot, c, now), ai_watch.combined_problem(bot, c, now)) if p]
+        except Exception as e:
+            bot._note_error(f"guards: ai watch check failed: {e.__class__.__name__}")
     if c.get("presence_required"):
         try:
             from . import presence

@@ -7,7 +7,7 @@
 //                               earnings, CME holidays + early closes, roll countdown
 //   Learn      (#page-learn)    LIT learning center (steps + diagram + glossary), research library, strategy versions,
 //                               trade gallery
-//   System     (#page-system)   upgrades tracker, PC uptime, discipline log, data quality
+//   System     (#page-system)   upgrades tracker, PC uptime, discipline log, data quality, AI watch (/api/next/ai)
 // API (GETs only): /api/next/hub/firms|business|biz|market|learn|system, /api/next/hub/odds (biz: bizpages.js). Nothing here touches the bot.
 import { $, $$, api, esc, fmt$, fmtS$, fmtN, cls, etStr, toast } from '../util.js';
 import { icon } from './icons.js';
@@ -507,14 +507,32 @@ function dataqHTML(q) {
     <div class="hb-rules">${(q.checks || []).map((c) => `<div class="hb-rule ${c.ok ? 'g' : 'r'}"><i>${icon(c.ok ? 'check' : 'warn')}</i><div><b>${esc(c.name)}</b></div></div>`).join('')}</div>
     <p class="muted small">NinjaTrader archive: ${q.nt_archive?.files || 0} file(s)${q.nt_archive?.note ? ' · ' + esc(q.nt_archive.note) : ''}. VIX last ${esc(q.vix_last || '—')} · news built ${esc(String(q.news_built || '—').slice(0, 16))}. ${esc(q.source)}.</p>`;
 }
+// AI watch (engine/ai_watch.py, /api/next/ai): anomalies, drift per strategy, both accounts' loss, rule-change log, switches
+const LVK = { good: ['good', 'in range'], warn: ['warn', 'watch'], bad: ['high', 'investigate'] };
+function aiHTML(d) {
+  if (!d || d.error) return empty('No AI-watch data.', d?.error || '');
+  const a = d.ai || {};
+  const dr = (a.drift || []).map((x) => { const L = LVK[x.level] || ['', 'too early']; return `<div class="hb-rule ${x.level === 'bad' ? 'r' : 'g'}"><i>${icon(x.level === 'bad' ? 'warn' : 'check')}</i><div><b>${esc(x.strategy || '')}</b> ${chip(L[1], L[0])}<span class="muted small"> ${esc(x.text || x.error || '')}</span></div></div>`; }).join('');
+  const lo = a.loss || {};
+  const an = (a.anomalies || []).slice().reverse().map((x) => `<div><span class="mono">${x.t ? etStr(x.t, true).slice(5) : '—'}</span><i>${icon('warn')}</i><b>${esc(x.what || '')}</b><em class="muted small">${esc(x.text || '')}</em></div>`).join('');
+  const rc = (d.rule_log?.runtime || []).slice(0, 5).map((r) => `<div><span class="mono">${r.t ? etStr(r.t, true).slice(5) : '—'}</span><i>${icon('rules')}</i><b>${esc((r.changes || []).slice(0, 3).join('; '))}</b><em class="muted small">on this PC${r.commit ? ' · ' + esc(String(r.commit.sha || '').slice(0, 7)) + ' ' + esc(r.commit.who || '') : ''}</em></div>`).join('');
+  const gl = (d.rule_log?.commits || []).slice(0, 12).map((c) => `<div><span class="mono">${esc(String(c.when || '').slice(5, 16).replace('T', ' '))}</span><i>${icon('rules')}</i><b>${esc(c.why || '')}</b><em class="muted small">${esc(c.who || '')} · ${esc(Object.values(c.files || {}).flat().slice(0, 3).join('; '))}${c.n > 3 ? ` (+${c.n - 3})` : ''}</em></div>`).join('');
+  const sw = (d.switches || []).map((s) => `<div class="hb-rule ${s.off ? '' : 'g'}"><i>${icon(s.off ? 'power' : 'check')}</i><div><b>${esc(s.key)}</b> ${chip(s.off ? (a.switches && a.switches[s.key] ? 'ON' : 'off') : 'on', s.off ? (a.switches && a.switches[s.key] ? 'high' : '') : 'good')}<span class="muted small"> ${esc(s.what)}. Switch: <code>${esc(s.on)}</code></span></div></div>`).join('');
+  return `<div class="nx-stats hb-mini">${stat('Both accounts today', ok(lo.total) ? fmtS$(lo.total, 0) : '—', ok(lo.lit) ? `LIT ${fmtS$(lo.lit, 0)} · B ${fmtS$(lo.b, 0)}` : '', cls(lo.total))}${stat('This week', ok(lo.week) ? fmtS$(lo.week, 0) : '—', 'LIT + account B', cls(lo.week))}${stat('Anomalies logged', (a.anomalies || []).length, a.freeze ? 'FEED FROZEN in a trade' : 'spikes, bad ticks, slow routes')}</div>
+    ${sec('Drift: live vs the backtest range')}<div class="hb-rules">${dr || empty('No drift verdict yet.', 'The bot computes it every 30 min once it runs.')}</div>
+    ${sec('Anomalies')}${an ? `<div class="hb-log">${an}</div>` : `<div class="hb-note">${icon('check')}<span>None logged.</span></div>`}
+    ${sec('Rule-change log · who / when / why')}<div class="hb-log">${rc}${gl || ''}</div>${!rc && !gl ? `<div class="hb-note">${icon('info')}<span>${esc(d.rule_log?.error || 'No change found.')}</span></div>` : ''}
+    ${sec('Switches')}<div class="hb-rules">${sw}</div><p class="muted small">${esc(d.note || '')} engine/ai_watch.py · /api/next/ai.</p>`;
+}
 async function renderSystem(force) {
   const el = $('#page-system'); if (!el || !isActive('system')) return;
-  const [s, l] = await Promise.all([get('sys', '/api/next/hub/system', force), get('learn', '/api/next/hub/learn', force)]);
+  const [s, l, ai] = await Promise.all([get('sys', '/api/next/hub/system', force), get('learn', '/api/next/hub/learn', force), get('ai', '/api/next/ai', force)]);
   if (!s || s.error) { el.innerHTML = hero('System', 'System', '') + empty('No system data.', s?.error || ''); return; }
   el.innerHTML = `<div class="hb-page">${hero(`${icon('sources')} System`, 'Is the machine doing its job?', 'The 3 upgrades with and without, PC uptime through the 01:55-16:00 window, every manual kill / stop / restart, and the bar data the bot trades on.')}
     ${card('Upgrades tracker · with vs without (15-min check, scale-in, BE + costs)', upgradesHTML(l?.upgrades))}
     <div class="grid cols-2">${card('PC uptime · last 14 days', uptimeHTML(s.uptime))}${card('Discipline log · kills, stops, restarts', disciplineHTML(s.discipline))}</div>
-    ${card('Data quality · 1m / 5m coverage, feed gaps', dataqHTML(s.dataq))}</div>`;
+    ${card('Data quality · 1m / 5m coverage, feed gaps', dataqHTML(s.dataq))}
+    ${card('AI watch · anomalies, drift, both accounts, rule changes', aiHTML(ai))}</div>`;
 }
 
 export const firms = { show: () => renderFirms(true) };

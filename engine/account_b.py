@@ -107,7 +107,7 @@ def normalize(ab: dict | None, scfg: dict | None = None, lit_account: str | None
     out["preset"] = (P or {}).get("preset") or "mffu_builder_50k"
     out["plan_label"] = (P or {}).get("label") or plan
     out["rules"] = MA.rules_of({"preset": out["preset"]})
-    out["label"] = f"Account B {out['account'] or '?'}"
+    out["label"] = f"ATLAS {out['account'] or '?'}"      # ATLAS = the second strategy's account (was "Account B")
     S = scfg.get("strategies") or {}
     bad = [k for k in keys if not isinstance(S.get(k), dict)]
     co = [k for k in keys if isinstance(S.get(k), dict) and S[k].get("cloud_only")]
@@ -180,13 +180,42 @@ def qty(spec: dict, trade: dict, state: dict | None, base: dict | None = None) -
     c = sizing_cfg(spec, base)
     if spec.get("sizing") == "safe":
         r = SZ.second_qty(float(risk), PLANS[spec["plan"]]["safe_usd"], c, state=dict(state), max_micros=maxq)
-        return {"qty": min(maxq, int(r["qty"])), "reasons": list(r["reasons"]), "lock": r.get("lock")}
+        return dll_guard({"qty": min(maxq, int(r["qty"])), "reasons": list(r["reasons"]), "lock": r.get("lock")}, float(risk), R, state)
     m0 = _lit.qty_for(float(risk))
     if not m0:
         return {"qty": 0, "reasons": ["no size"], "lock": None}
     r = SZ.lit_qty(m0, {"risk_pts": float(risk), "tgt_pts": _num(trade.get("tgt_pts")), "size_mult": 1.0}, c, room=state.get("room"),
                    state=dict(state), max_micros=maxq, learning=None)
-    return {"qty": min(maxq, int(r.get("qty") or 0)), "reasons": list(r.get("reasons") or []), "lock": r.get("lock")}
+    return dll_guard({"qty": min(maxq, int(r.get("qty") or 0)), "reasons": list(r.get("reasons") or []), "lock": r.get("lock")},
+                     float(risk), R, state)
+
+
+def dll_guard(r: dict, risk: float, rules: dict, state: dict) -> dict:
+    """The plan's soft daily loss, on EVERY account B trade (2026-10-22 fix: after session 10 safe_eval had no daily check,
+    and the 50K preset had no day guard at all: one stop-out could cost $628 on the 25K / $1,255 on the 50K against a
+    $600 / $1,000 limit). One trade's full stop-out, as the research models it (stop + 2 ticks of slippage, $1.90 a micro
+    round trip = engine/sizing.TW_DLL_SLIP / TW_COMM), never exceeds what is left of today's soft daily loss
+    (dll + today's closed P&L state["cum"]); when not even 1 micro fits: no trade."""
+    from . import sizing as SZ
+    q = int(r.get("qty") or 0)
+    if q <= 0:
+        return r
+    dll = _num(rules.get("dll"))
+    if not dll:
+        return r
+    left = float(dll) + float(_num(state.get("cum"), 0.0))
+    loss1 = (float(risk) + SZ.TW_DLL_SLIP) * SZ.TW_PV + SZ.TW_COMM
+    cap = int(max(0.0, left) / loss1 + 1e-9)
+    if cap >= q:
+        return r
+    out = {**r, "reasons": list(r.get("reasons") or [])}
+    if cap < 1:
+        out["qty"] = 0
+        out["reasons"].append(f"soft daily loss: 1 micro's full stop-out ${loss1:,.0f} > ${left:,.0f} left of today's ${float(dll):,.0f}: no trade")
+    else:
+        out["qty"] = cap
+        out["reasons"].append(f"soft daily loss: {cap} x ${loss1:,.0f} full stop-out fits the ${left:,.0f} left of today's ${float(dll):,.0f} -> {cap}")
+    return out
 
 
 # ---------------------------------------------------------------------------------------------------------------- account

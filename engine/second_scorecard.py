@@ -197,7 +197,7 @@ def readme_lines(sc: dict | None, labels: dict | None = None) -> list:
     labels = labels or {}
     L = ["", "### Go / no-go scorecard", RULE, "", "| | Trades | Cum R | Paper $ | Verdict | Expected cum R (p10-p90) | 2025-like (p50) |",
          "|---|---:|---:|---:|---|---|---|"]
-    rows = list((sc.get("strategies") or {}).items()) + [("Account B (EMA + MACD + S/R)", sc.get("account_b") or {})]
+    rows = list((sc.get("strategies") or {}).items()) + [("ATLAS (EMA + MACD + S/R)", sc.get("account_b") or {})]
     for k, v in rows:
         e, b = v.get("expected") or {}, v.get("bad_year") or {}
         er = f"{e['cum_r'][1]:+.1f} to {e['cum_r'][3]:+.1f}R" if e.get("cum_r") and v.get("n") else "-"

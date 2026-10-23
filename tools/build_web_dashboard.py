@@ -1020,6 +1020,11 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         data["second"] = _second.dashboard_block(st.get("second"), pc=(st.get("pc") or {}).get("second"))
     except Exception as e:
         data["second"] = {"error": f"{e.__class__.__name__}: {e}", "strategies": []}
+    try:                                   # scaling plan (engine/scale_plan.py, read-only): step N, the next account, the ladder
+        from engine import scale_plan as _scale
+        data["scale"] = _scale.cloud_view(st)
+    except Exception as e:
+        data["scale"] = {"error": f"{e.__class__.__name__}: {e}"}
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # research data files for the Lab's 3D views (Monte Carlo cloud, intraday heat, calendar): lab/<name>.json
@@ -1068,6 +1073,12 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             "strategy": {k: (data["strategy"] or {}).get(k) for k in ("label", "chosen", "model", "lit", "lit_sizing")},
             "lit_extra": {k: (data.get("lit_extra") or {}).get(k) for k in ("plan", "sizing")} if data.get("lit_extra") else None,
             "extras": {"two_week": ex.get("two_week"), "eventual": ex.get("eventual")},
+            # ATLAS (data.json "second") for the Home card: state, brain, the last trades, account B, the scorecard
+            "second": {**{k: v for k, v in (data.get("second") or {}).items() if k not in ("strategies", "atlas")},
+                       "atlas": {"name": ((data.get("second") or {}).get("atlas") or {}).get("name"),
+                                 "members": ((data.get("second") or {}).get("atlas") or {}).get("members")},
+                       "strategies": [{**{k: v for k, v in s.items() if k not in ("backtest", "rules", "trades", "summary")},
+                                       "trades": (s.get("trades") or [])[-12:]} for s in (data.get("second") or {}).get("strategies") or []]},
             "results": {"periods": {k: v for k, v in ((results or {}).get("periods") or {}).items()
                                     if k in ("2026 YTD", "2026 H1 (picked on)", "2026 H2 (check)", "2021-25 (reference)")}}}
     with open(os.path.join(out, "home.json"), "w", encoding="utf-8") as fh:

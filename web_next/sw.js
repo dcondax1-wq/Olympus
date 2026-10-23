@@ -1,6 +1,6 @@
 // Liquidity Engine service worker: makes the dashboard installable and keeps the app shell available offline.
 // API calls are never cached (they are live state). Static files are network-first with a cache fallback.
-const SHELL = 'le-shell-next-v11';   // v11 (2026-10-22): Second strategies, paper (js/next/second.js); v10: Bot Brain
+const SHELL = 'le-shell-next-v13';   // v13 (2026-10-23): ATLAS page + Today two-strategy cards and the Scaling plan; v12: scale / ATLAS; v11: Second strategies; v10: Bot Brain
 const ASSETS = ['/', '/index.html', '/css/app.css', '/css/theme.css', '/css/skins.css', '/css/dash.css', '/css/next.css', '/css/hub.css', '/css/ops.css', '/manifest.webmanifest', '/icons/icon.svg?v=drop1'];
 
 self.addEventListener('install', (e) => {
