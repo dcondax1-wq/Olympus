@@ -9,6 +9,10 @@ runs: sh_asia_resweep, sh_trend_idm5, sh_trend_idm, sh_book, sh_atlas25k_asia, s
 
 ## In one minute
 
+- **Audit (2026-10-23, `stophunt-audit.md`):** the code and trades check out (independent rewrite identical, no
+  look-ahead), but the leads were not the pick rule's top choices and have the best H2 of their shortlists, a search
+  re-run on pre-2025 data does not find them, and "0 fails" hides 30-42% stuck evals in 2025 / 2021-24. Asia resweep hunt
+  = WEAK (paper only), trend inducement hunt = NOT REAL.
 - **The ask (owner, 2026-10-23):** "When all the retail traders get stopped out, it's usually because their stop loss is at a
   low or high. If we wait for a resweep, or inducement, then a strong candle move toward our DOL, we could find gold." Find
   more setups with LIT's win rate (55%) or better. Deep research, not the same results as before.
