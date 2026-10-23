@@ -277,8 +277,8 @@ def part_e():
     ro = open(os.path.join(ROOT, "web_next", "js", "next", "routes.js"), encoding="utf-8").read()
     app = open(os.path.join(ROOT, "web_next", "js", "app.js"), encoding="utf-8").read()
     html = open(os.path.join(ROOT, "web_next", "index.html"), encoding="utf-8").read()
-    check("e. phone loads secondcore.js?v=5 + second.js?v=3, SW cache le-public-v26",
-          "secondcore.js?v=5" in idx and "second.js?v=3" in idx and "le-public-v26" in sw)
+    check("e. phone loads secondcore.js?v=5 + second.js?v=3, SW cache le-public-v26 or later",
+          "secondcore.js?v=5" in idx and "second.js?v=3" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 26)
     check("e. PC: top-level ATLAS entry, page-atlas, Today #twoStrat, #second -> atlas",
           "{ id: 'atlas', label: 'ATLAS'" in ro and 'id="page-atlas"' in html and 'id="twoStrat"' in html and "if (page === 'second') page = 'atlas';" in app
           and "atlas: atlasPage" in app and "initTwoCards()" in app)

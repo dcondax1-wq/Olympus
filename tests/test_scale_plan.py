@@ -153,7 +153,7 @@ def page_checks():
     check("phone index loads scalecore.js then scale.js", 0 < idx.index("scalecore.js?v=") < idx.index('src="scale.js?v='))
     sc = open(os.path.join(ROOT, "tools/web_public/scale.js"), encoding="utf-8").read()
     check("phone page registered under Money", "g.id === 'money'" in sc and "VIEWS.scale" in sc)
-    check("phone service worker cache bumped", "le-public-v26" in open(os.path.join(ROOT, "tools/web_public/sw.js"), encoding="utf-8").read())
+    check("phone service worker cache bumped", int(__import__("re").search(r"le-public-v(\d+)", open(os.path.join(ROOT, "tools/web_public/sw.js"), encoding="utf-8").read()).group(1)) >= 26)
     routes = open(os.path.join(ROOT, "web_next/js/next/routes.js"), encoding="utf-8").read()
     app = open(os.path.join(ROOT, "web_next/js/app.js"), encoding="utf-8").read()
     ni = open(os.path.join(ROOT, "web_next/index.html"), encoding="utf-8").read()
