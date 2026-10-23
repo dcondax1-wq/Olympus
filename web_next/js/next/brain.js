@@ -4,6 +4,7 @@
 // from the stored bars, the same Brain at any 5-minute close). Read-only: nothing here can start, size or route anything.
 import { $, $$, esc, fmtN, fmtS$, cls } from '../util.js';
 import { icon } from './icons.js';
+import { charts as loadCharts, card as picCard } from './pics.js';
 
 const TABS = [['now', 'Now'], ['levels', 'Levels'], ['setups', 'Setups'], ['sizing', 'Sizing'], ['trade', 'Trade'], ['guards', 'Guards'],
   ['log', 'Thought log'], ['replay', 'Replay a day']];
@@ -37,21 +38,23 @@ function secondCore() {
   if (window.SecondUI && window.SecondUI.brain) return Promise.resolve();
   if (!scLoading) scLoading = new Promise((ok, bad) => {
     const t = document.createElement('script');
-    t.src = new URL('./secondcore.js?v=6', import.meta.url).href;
+    t.src = new URL('./secondcore.js?v=7', import.meta.url).href;
     t.onload = () => ok(); t.onerror = () => { scLoading = null; bad(new Error('secondcore.js did not load')); };
     document.head.appendChild(t);
   });
   return scLoading;
 }
 async function loadSecond() {
-  try { await secondCore(); S.second = await getJ('/api/next/brain/second'); S.secondErr = null; }
+  try { await secondCore(); [S.second, S.charts] = await Promise.all([getJ('/api/next/brain/second'), loadCharts()]); S.secondErr = null; }
   catch (e) { S.secondErr = e.message; }
 }
 function drawSecond() {
   const box = $('#bbSecond'); if (!box) return;
   if (!window.SecondUI || !window.SecondUI.brain) { box.innerHTML = `<div class="banner warn">${esc(S.secondErr || 'Loading…')}</div>`; return; }
   const d = S.second || {};
-  window.SecondUI.brain(box, d.empty || d.error ? { strategies: [], error: d.reason || d.error || S.secondErr } : window.SecondUI.brainList(d, 'PC bot'));
+  window.SecondUI.brain(box, d.empty || d.error ? { strategies: [], error: d.reason || d.error || S.secondErr } : window.SecondUI.brainList(d, 'PC bot'),
+    { charts: S.charts || null });
+  if (window.TradePics) window.TradePics.settle(box);
 }
 async function loadFullLog(day) {
   try { const d = await getJ('/api/next/brain/log' + (day ? '?day=' + encodeURIComponent(day) : '')); S.fullLog = d; } catch { S.fullLog = null; }
@@ -117,7 +120,8 @@ function vNow(b) {
   const lvl = (r) => `<div class="bb-nr"><span>${esc(r.label)}</span><b class="mono">${p2(r.price)}</b><em class="${cls(r.dist)}">${sgn(r.dist, 1)} pts · ${fmtN(Math.abs(r.dist_atr), 1)} ATR</em></div>`;
   const S2 = b.setups || [];
   const tr = b.trade;
-  return waitingCard(b) + `<div class="nx-stats">
+  const pic = picCard(S.charts, 'lit');
+  return waitingCard(b) + (pic ? card('Trade pictures · LIT', pic, '', 'bb-pics') : '') + `<div class="nx-stats">
       ${stat('Price', p2(b.price), `last 5m close ${esc(b.bar_hm || '')}`)}${stat('ATR (5m)', fmtN(b.atr, 1) + ' pts', `0.5 ATR sweep = ${fmtN((b.atr || 0) * (b.rules?.depth || 0.5), 1)} pts`)}
       ${stat('Setups today', S2.length, `${S2.filter((s) => s.status === 'rejected').length} rejected · ${S2.filter((s) => s.status === 'no_fill').length} no fill`)}
       ${stat('Closed trades today', b.day_trades ?? 0, b.day_pnl ? fmtS$(b.day_pnl) : 'max 1 a day', cls(b.day_pnl))}
@@ -274,7 +278,8 @@ function render() {
   else if (S.tab === 'replay') body = vReplay();
   else if (!live) body = `<div class="card nx-glass nx-empty-hub"><span class="nx-tile-i">${icon('brain')}</span><h3>${esc(b?.reason || S.liveErr || 'Loading…')}</h3>
       <p class="muted">The live Brain fills in after the bot's first LIT poll. Meanwhile, replay any 2026 day to see what the bot thought.</p>
-      <button type="button" class="btn primary" data-bbtab="replay">${icon('replay')}<span>Replay ${esc(b?.latest_day || 'a day')}</span></button></div>`;
+      <button type="button" class="btn primary" data-bbtab="replay">${icon('replay')}<span>Replay ${esc(b?.latest_day || 'a day')}</span></button></div>`
+      + (picCard(S.charts, 'lit') ? card('Trade pictures · LIT', picCard(S.charts, 'lit'), '', 'bb-pics') : '');
   else body = `<div id="bbView">${VIEWS[S.tab](b)}</div>`;
   el.innerHTML = head + body;
   onSeg('bbTab', (v) => { setTab(v); });
@@ -284,6 +289,7 @@ function render() {
     if (x.closest('#bbRView')) { S.sub = x.dataset.bbtab; render(); } else setTab(x.dataset.bbtab);
   }));
   if (S.tab === 'replay') bindReplay();
+  if (window.TradePics) window.TradePics.settle(el);
 }
 function setTab(v) {
   S.tab = v;
@@ -400,6 +406,7 @@ function installCss() { if (document.getElementById('bb-css')) return; const s =
 async function show() {
   installCss();
   if (!S.live && !S.liveErr) { render(); await loadLive(); }
+  S.charts = await loadCharts();
   if (S.live?.empty && S.tab !== 'replay' && !S.days) { /* stay: the empty card offers the replay */ }
   render();
   clearInterval(S.timer);
@@ -409,6 +416,7 @@ async function show() {
     if (S.tab === 'replay') return;
     if (document.querySelector('#bbTip')) return;          // do not redraw under an open explainer
     await loadLive();
+    S.charts = await loadCharts();
     if (S.tab === 'log' && S.live && !S.live.empty) await loadFullLog(S.live.day);
     if (isActive() && S.tab !== 'replay') render();
   }, 15000);

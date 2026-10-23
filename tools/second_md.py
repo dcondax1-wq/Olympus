@@ -283,7 +283,8 @@ def md_cands(X, tf, osc, lv, W=24, LB=None):
             leg = H["h"][P:qx + 1].max() if dr > 0 else H["l"][P:qx + 1].min()
             out.append({"j": int(j), "dir": int(dr), "ext": float(ext), "stops": {"ext": float(ext - dr * TICK)}, "cisd": lev,
                         "lvl": float(leg), "sweep_i": int(i), "level": float(px),
-                        "div": {"osc_ext": float(ox), "osc_prior": float(oP), "px_prior": float(pP)},   # engine/second.py brain
+                        "div": {"osc_ext": float(ox), "osc_prior": float(oP), "px_prior": float(pP), "qp": int(P), "qx": int(qx)},   # engine/second.py brain / chart
+                        "x": int(x),
                         "f": {"depth": float((px - ext) * dr / A[i]) if A[i] > 0 else 0.0,
                                                  "h1h": float(R_h1h[j] * dr), "h1l": float(R_h1l[j] * dr), "m15h": float(R_m15h[j] * dr)}})
             break
