@@ -265,6 +265,23 @@ def units(tmp):
           a["qty"] == 8 and b_["qty"] == 15, (a, b_))
     d25 = AB.qty(s25, {"risk_pts": 20.0, "tgt_pts": 40.0}, st(900.0, cum=-500.0))
     check(f"sizing 25K: the $600 soft daily loss (today -$500: $100 left) -> {d25['qty']}", d25["qty"] == 2, d25)
+    # soft daily loss on EVERY trade (2026-10-22 fix, engine/account_b.dll_guard): after session 10 (safe_eval) and on the
+    # 50K (no preset day guard) one full stop-out (stop + 2 ticks, $1.90 a micro) could exceed what is left of the day
+    g50 = AB.qty(s50, {"risk_pts": 10.0, "tgt_pts": 15.0}, st(4000.0, cum=-200.0, sess=11))
+    check(f"sizing 50K session 11: -$200 today, $800 left / $22.90 a micro full stop-out -> {g50['qty']} (was 40 = $916)",
+          g50["qty"] == 34, g50)
+    worst = []
+    for spec in (s25, s50, {**s25, "sizing": "safe"}, {**s50, "sizing": "safe"}):
+        dll = spec["rules"]["dll"]
+        for sess in (1, 5, 10, 11, 15, 25):
+            for room in (150.0, 400.0, 900.0, 1600.0, 3000.0, 5000.0):
+                for cum in (-550.0, -300.0, 0.0, 250.0):
+                    for rk in (6.0, 8.0, 10.0, 15.0, 25.0, 40.0, 80.0):
+                        q_ = AB.qty(spec, {"risk_pts": rk, "tgt_pts": 2 * rk}, st(room, cum=cum, sess=sess))["qty"]
+                        if q_ * ((rk + 0.5) * 2.0 + 1.90) > dll + cum + 1e-9:
+                            worst.append((spec["plan"], spec.get("sizing"), sess, room, cum, rk, q_))
+    check(f"sizing: one full stop-out never exceeds the rest of the soft daily loss (25K / 50K, need / safe, sessions 1-25; "
+          f"{len(worst)} breaches)", not worst, worst[:5])
     sf = AB.qty({**s25, "sizing": "safe"}, {"risk_pts": 20.0, "tgt_pts": 40.0}, st(1000.0))
     check(f"sizing 25K safe: $150 / (20 x $2) = 3 -> {sf['qty']}", sf["qty"] == 3, sf)
     check("sizing: eval state unknown -> 0 (fails closed)", AB.qty(s25, {"risk_pts": 20.0, "tgt_pts": 40.0}, None)["qty"] == 0)

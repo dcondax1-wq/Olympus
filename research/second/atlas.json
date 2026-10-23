@@ -1,0 +1,150 @@
+{
+ "name": "ATLAS",
+ "version": "2026-10-22",
+ "status": "built, OFF (second_model.json \"account_b\": null); paper / Sim first",
+ "account": "MFFU Builder 25K ($63, owner's price), account B next to LIT's Builder 50K",
+ "members": [
+  {
+   "key": "ema_lon_vix",
+   "short": "EMA",
+   "label": "London EMA trend pullback"
+  },
+  {
+   "key": "macd_sweep",
+   "short": "MACD",
+   "label": "MACD divergence at a liquidity sweep"
+  },
+  {
+   "key": "sr_nyreclaim",
+   "short": "S/R",
+   "label": "NY sweep-and-reclaim of the day's levels (S/R)"
+  }
+ ],
+ "rules": {
+  "EMA": [
+   "London hours only: entries 03:00-09:30 ET, never on a Monday.",
+   "Trend: the 15-minute and the 1-hour EMA 21 are both above their EMA 50 (below for shorts).",
+   "Setup: a pullback reaches the 5-minute EMA 50 and takes out a recent swing low (a stop hunt), then a 5-minute candle closes back above the start of the pullback (CISD).",
+   "Entry at market at the next 5-minute open; stop 1 tick beyond the pullback's low; target = LIT's VIX band (18:00 open +/- one VIX day-move, at least 1.5R, banked at 8R).",
+   "At +1R the stop moves to entry + 1.25 points (breakeven plus costs); flat at 15:55; one EMA trade a day."
+  ],
+  "MACD": [
+   "Two windows: London 02:00-05:00 ET and the New York open 09:30-11:00.",
+   "Setup: a LIT level (session high/low, previous day / week / month, build-ups, gaps) is swept by at least 0.5 ATR and a 5-minute candle closes back (CISD) while the MACD line shows divergence.",
+   "Entry at market at the next 5-minute open; stop beyond the sweep extreme; target = the VIX band (at least 1.5R, banked at 8R).",
+   "15-minute check: cut the trade if after 15 minutes it is 0.3R against and never got 0.5R in favour; flat at 15:55; one MACD trade a day."
+  ],
+  "S/R": [
+   "New York only: entries 09:30-12:00 ET.",
+   "Levels of the day: yesterday's RTH high/low, the overnight high/low, the Asia and London boxes, last week's high/low, the opening range.",
+   "Setup: an inducement swing is taken first, then the level is swept and within 4 bars a strong 5-minute candle (body >= 0.3 ATR) closes back over it (reclaim).",
+   "Entry at market at the next 5-minute open; stop beyond the sweep extreme (max 80 points); target 2R; the 15-minute check as MACD; flat at 15:55; one S/R trade a day."
+  ],
+  "account": [
+   "One position at a time on ATLAS's account, at most 2 trades a day; when two members signal at the same open: EMA first, then MACD, then S/R.",
+   "Never opposite to LIT: no ATLAS entry while LIT holds, enters or has an armed setup the other way; if LIT enters the other way while ATLAS is in a trade, ATLAS closes first (HEDGE).",
+   "Size (need): micros so one winner's target covers what is left to the $1,500 target, capped at 50% of the room to the trailing floor and the $600 soft daily loss, max 20 micros, for 10 sessions; then 30% of the room. A trade whose full stop-out would break the floor or the $600 is skipped.",
+   "Orders go out about 2 seconds after the 5-minute open; a probe more than 45 seconds late is skipped (never chased).",
+   "The account stops when the eval is passed ($1,500), failed, or stuck (less than $100 of room)."
+  ]
+ },
+ "verdict": "Keep ATLAS as it is: 358 tweaks (members, Asia slot, size weights down and up, priority, 25K sizing, windows, weekdays, VIX, exits, banked R, limit entry) and the confluence job's 1,481 variants found nothing that is better in 2026 H1 and H2 beyond chance and holds as a plateau. Account B stays off until the paper scorecard says ready.",
+ "numbers": {
+  "H1": {
+   "net": 19737,
+   "per_month": 3238,
+   "pf": 2.98,
+   "win": 52.5,
+   "tpw": 3.95,
+   "max_dd": -1403,
+   "trades": 101
+  },
+  "H2": {
+   "net": 5448,
+   "per_month": 1467,
+   "pf": 2.35,
+   "win": 56.5,
+   "tpw": 2.95,
+   "max_dd": -1691,
+   "trades": 46
+  },
+  "y2025": {
+   "net": 2232,
+   "per_month": 182,
+   "pf": 1.1,
+   "win": 38.4,
+   "tpw": 4.24,
+   "max_dd": -4796,
+   "trades": 219
+  },
+  "y2124": {
+   "net": 9919,
+   "per_month": 256,
+   "pf": 1.13,
+   "win": 36.9,
+   "tpw": 4.61,
+   "max_dd": -9510,
+   "trades": 751
+  }
+ },
+ "eval25k": {
+  "H1": {
+   "p10": 72.3,
+   "f10": 0.0,
+   "s10": 5.0,
+   "p20": 82.6,
+   "f20": 0.0,
+   "pass_med": 5.0,
+   "p60": 87.5,
+   "funded_3mo": 1842,
+   "funded_6mo": 3734,
+   "funded_lost_3mo": 0.0,
+   "ev_per_eval": 1549
+  },
+  "H2": {
+   "p10": 43.5,
+   "f10": 0.0,
+   "s10": 0.0,
+   "p20": 61.0,
+   "f20": 0.0,
+   "pass_med": 6.0,
+   "p60": 100.0,
+   "funded_3mo": 1349,
+   "funded_6mo": null,
+   "funded_lost_3mo": 0.0,
+   "ev_per_eval": 1286
+  },
+  "y2025": {
+   "p10": 30.5,
+   "f10": 0.0,
+   "s10": 32.9,
+   "p20": 36.0,
+   "f20": 0.0,
+   "pass_med": 4.0,
+   "p60": 38.4,
+   "funded_3mo": 190,
+   "funded_6mo": 485,
+   "funded_lost_3mo": 74.0,
+   "ev_per_eval": 10
+  },
+  "y2124": {
+   "p10": 23.2,
+   "f10": 0.0,
+   "s10": 36.9,
+   "p20": 26.9,
+   "f20": 0.0,
+   "pass_med": 4.0,
+   "p60": 29.9,
+   "funded_3mo": 246,
+   "funded_6mo": 302,
+   "funded_lost_3mo": 74.3,
+   "ev_per_eval": 11
+  }
+ },
+ "source": {
+  "tool": "tools/atlas.py",
+  "run": "atlas_base",
+  "writeup": "research/writeups/atlas.md"
+ },
+ "notes": "numbers = the back-to-back eval path on the Builder 25K (a new $63 eval after each pass / fail / stuck); eval25k = a fresh eval started on every session of the span (p10/f10/s10 = pass/fail/stuck within 10 sessions, p20/f20 within 20, pass_med = median sessions to pass, p60 = pass within 60 sessions); funded = paid to the trader in 3 / 6 months on the 25K sim-funded account at $150 risk a trade (H1 starts are the solid figure; H2 has only 16 starts that can see 3 months); ev_per_eval = p60 x funded 3 months - $63."
+}
