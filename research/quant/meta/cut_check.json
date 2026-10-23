@@ -1,0 +1,22 @@
+{
+ "lit": {
+  "checked": 25,
+  "differ": 0,
+  "examples": []
+ },
+ "atlas": {
+  "checked": 25,
+  "differ": 0,
+  "examples": []
+ },
+ "sh_asia": {
+  "checked": 25,
+  "differ": 0,
+  "examples": []
+ },
+ "sh_trend": {
+  "checked": 25,
+  "differ": 0,
+  "examples": []
+ }
+}
