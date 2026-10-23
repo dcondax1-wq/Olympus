@@ -50,7 +50,7 @@ runs: lit_more_ent_asia_slot_rr3, lit_more_ent_asia_slot_rr3_eval, lit_more_ent_
 
 ## How it was tested
 
-- **Data:** CME NQ1! from TradingView only, 5m 2021-11 to 2026-10-16, 1m for 2026. No Yahoo, no CFD.
+- **Data:** CME NQ1! from TradingView only, 5m 2021-11 to 2026-10-16, 1m for 2026. Official CME data only (TradingView / NinjaTrader), no CFD.
 - **Same LIT:** `engine/lit.py` run_x with `live_model.json` "lit" (15-minute check, BE + 1.25 pts, Monday rule, weekly stop,
   1m CISD entries, stop 1 tick past the sweep extreme, VIX-band target banked at 8R). Candidates on the whole trading day
   (`candidates(evening=True)`). With the live window they give exactly the live trades: base = run `lit_live`

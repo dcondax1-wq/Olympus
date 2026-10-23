@@ -1,6 +1,6 @@
 """Data integrity check of the futures + volatility files the backtests and the live loop read (read-only).
 
-Per bar file (data/NQ_5m.csv, NQ_1m.csv, ES_5m.csv, ES_1m.csv):
+Per bar file (data/NQ_5m.csv, NQ_1m.csv, ES_5m.csv):
   header       time,open,high,low,close,volume
   order        timestamps strictly increasing, no duplicates, on the bar grid (t % bar == 0)
   ohlc         no NaN, prices > 0, high >= max(open, close), low <= min(open, close)
@@ -32,7 +32,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
 ET = ZoneInfo("America/New_York")
 OK, WARN, BAD = "ok", "warn", "fix"
-FILES = [("NQ", 300), ("NQ", 60), ("ES", 300), ("ES", 60)]
+FILES = [("NQ", 300), ("NQ", 60), ("ES", 300)]          # no official ES 1m file (TradingView ES1! 1m not exported yet)
 SPIKE = {"NQ": 0.04, "ES": 0.03}
 TICK = 0.25
 GAP_WARN = {300: 6, 60: 60}   # missing bars in one session above which a session counts as gappy (1m: quiet minutes print no bar)

@@ -41,7 +41,7 @@ runs: lit_u_entries_base, lit_u_entries_bstop_10, lit_u_entries_bstop_3, lit_u_e
 ## How it was tested
 
 - **The data:** CME NQ1! futures from TradingView only: 5m, 1m for 2026, VIX daily. ES1! 5m (`data/ES_5m.csv`, from 2025-04) for
-  SMT. ES 1m starts only on 2026-09-16, so SMT uses closed ES 5m candles. No Yahoo, no CFD.
+  SMT. There is no official ES 1m file, so SMT uses closed ES 5m candles. Official CME data only (TradingView / NinjaTrader), no CFD.
 - **Same signals:** `tools/lit_t_entries.py` wraps `engine/lit.py` without editing it. With every new option off it reproduces
   the live bot trade for trade: 630 trades of run `lit_live` (120 in 2026, +$41,734 at the LIT size). It also reproduces the
   baseline run `lit_tight_eval_800_25_room60` to the dollar (`python tools/lit_t_entries.py check`).

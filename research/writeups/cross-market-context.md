@@ -179,7 +179,7 @@ changes 2026 by $0 and 2021-25 by +$0.7k, which is no evidence. **Gamma says not
 
 ## 5. NQ vs ES relative strength at entry (information only, 2025-04 onward)
 
-ES 5-minute data exists from 2025-04-13 (TradingView ES1! until 2026-08-23, Yahoo ES=F after), so 203 trades carry an ES
+ES 5-minute data exists from 2025-04-13 (TradingView ES1!, all of it), so 203 trades carry an ES
 reading: 89 in 2026 and 114 in April-December 2025. "NQ leads" means NQ had moved more than ES in the trade's direction,
 in percent, before the trigger.
 

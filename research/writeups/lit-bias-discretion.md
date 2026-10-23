@@ -75,7 +75,10 @@ Passing the full strict test: 6 follow-up variants on live LIT (1 with neighbour
 ## How it was tested
 
 - **Data:** CME NQ1! 5m + true 1m bars for 2026 (TradingView exports); ES 5m (2025-04 on) and ES daily for SMT; CBOE VIX
-  for the target. 2021-25 is a reference line at the LIT size rule (5m entries, no 1m).
+  for the target.
+  **Data note (2026-10-23, `data-official.md`):** the ES daily file used here was not official data; it was replaced by
+  daily bars built from the official ES1! 5m. Only the "NQ-ES daily SMT" row (17 trades in 2026) read it; that row was not
+  rerun (a 1,842-variant grid; nothing was adopted from it). 2021-25 is a reference line at the LIT size rule (5m entries, no 1m).
 - **Trades:** today's live LIT (`live_model.json` lit: sweep, inducement, displacement, 5m CISD, limit, 1m CISD entry, stop 1 tick beyond the
   sweep extreme, VIX-band target banked at 8R, BE at 1R, Monday rule, weekly stop), 630 trades, 120 in 2026. Second
   reference: the same + t_check + scale_in + be_off ("the combo").

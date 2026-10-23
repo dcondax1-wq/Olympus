@@ -21,7 +21,7 @@ indicators, no VWAP, no outside data except the VIX close LIT already uses for i
 
 ## How it was tested (plain words)
 - **Data:** CME NQ1! futures from TradingView: 5-minute bars, plus true 1-minute bars for 2026. VIX daily closes
-  (`data/VIX_1d.csv`). No Yahoo, no CFDs.
+  (`data/VIX_1d.csv`). Official CME data only (TradingView / NinjaTrader), no CFD.
 - **The trades:** the live LIT setups (sweep, inducement, displacement, 5m CISD, limit, 1m CISD entry), the stop 1 tick beyond
   the sweep extreme, the VIX-band target banked at 8R, breakeven at 1R, flat at 15:55, the Monday rule and the weekly stop.
 - **What changes:** either a setup is **skipped** (the day stays free, so a later LIT setup that day can still be taken, like the

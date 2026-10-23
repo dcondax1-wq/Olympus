@@ -47,7 +47,7 @@ runs: retail_sa_sr_sr_bounce_plateau, retail_sa_ema_ema_openhour_plateau, retail
 
 - **Data:** TradingView CME NQ1! 5m bars 2021-11 to 2026-10-16 (`data/NQ_5m.csv`); 15m / 1h / 4h built from them. A
   higher-timeframe value is used only from the 5m bar where that bar closed. Round numbers use the unadjusted price
-  (`data/NQ_rolls.json`). No Yahoo, no CFD.
+  (`data/NQ_rolls.json`). Official CME data only (TradingView / NinjaTrader), no CFD.
 - **Fills:** a signal is known at a bar close; a market entry fills at the next 5m open + 1 tick. Limit entries (zone /
   level retests) fill only when price trades 1 tick through the limit; no target on the fill bar. Stops fill at the stop
   (or a worse open) - 1 tick; signal exits and the 15:55 flat at the next open - 1 tick; stop and target in the same bar =

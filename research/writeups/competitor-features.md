@@ -85,7 +85,7 @@ phone. Effort: **S** about a day or less, **M** a few days, **L** a week or more
 
 ## 2. Top 15 to build, ranked by value for effort
 
-Every item keeps the hard rules: paper only from our side, never arming anything, no paid service, no Yahoo, no secrets in
+Every item keeps the hard rules: paper only from our side, never arming anything, no paid service, official data only, no secrets in
 the repo. All 15 explain or warn. None changes when the bot trades or how big. The one exception is #2's optional
 "presence required" switch: it is off by default and could only ever block an entry, never add one.
 
@@ -242,7 +242,7 @@ gives them one answer, as the journal AIs (Zella AI, Cypher) do, with no LLM nee
 | Manual approve-per-trade as the default | TradersPost auto-submit off ([glossary](https://docs.traderspost.io/docs/additional-information/glossary)) | LIT routes about 3 s after the 1m CISD close, and most trades enter at 02:00-08:00 ET. Waiting for a tap would miss or worsen fills. Use the "armed" heads-up + check-in (#1, #2) instead. |
 | Nightly re-selection or re-optimisation of strategies | Trade Ideas Holly ([guide](https://www.trade-ideas.com/hollyguide/print.html)), TrendSpider AI Strategy Lab ([review](https://daytradingtoolkit.com/reviews/trendspider-review)) | It is curve fitting on a thin sample. It breaks the LIT rule (pick on 2026 H1, check on H2, locked). `engine/lit_learn.py` is the bounded version (0.5-1.25x, explain-only) and is enough. |
 | AI that writes the strategy from plain English | Composer ([help](https://help.composer.trade/article/254-what-is-trade-with-ai)), Capitalise.ai, 3Commas AI | The strategy is locked and owner-defined. Generated strategies invite overfitting, and their backtests often ignore costs: Capitalise's backtest ignores commissions and uses a composite feed ([page](https://forex.com/en-us/trading-tools/capitalise-ai/backtesting)), against our "futures data, money with costs" rule. |
-| Composite or retail data feeds for testing | Capitalise.ai composite feed (above) | **Futures data only** (CME NQ1! / NinjaTrader MNQ); no Yahoo, no CFD. |
+| Composite or retail data feeds for testing | Capitalise.ai composite feed (above) | **Futures data only** (CME NQ1! / NinjaTrader MNQ); no CFD. |
 | DCA "safety orders", grids, trailing stops, several exit levels | 3Commas ([G2](https://www.g2.com/products/3commas)), Cryptohopper ([review](https://www.benzinga.com/money/cryptohopper-review/)), Holly exits ([signals](https://www.trade-ideas.com/features/trading-signals/)) | Against the owner's principles: the stop at the sweep extreme, one clear target banked at 8R, size follows the stop. DCA adds to losers, and an MFFU daily loss can be hit fast. Trailing and partials were tested and rejected (`management.md`, `lit-adv-management.md`). |
 | A P&L % kill switch that stops on noise | Hummingbot (its docs warn price moves alone can trip it: [kill switch](https://hummingbot.org/client/global-configs/kill-switch/)) | Our guards block on clear facts (daily loss, room, feed, clock, reconcile), and the owner rule prefers size changes over pauses. |
 | Selling or publishing signals, copy-trading subscribers | Collective2 ([profile](https://uk.trustpilot.com/review/collective2.com?page=2)) | Not the goal; prop-firm rules on shared or copied signals vary ([CrossTrade on MFFU](https://crosstrade.io/learn/prop-firm-ai-trading/myfundedfutures)); and the eval account's numbers are private. |

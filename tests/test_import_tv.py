@@ -5,7 +5,7 @@
 Synthetic market: a random walk per Globex session (18:00 -> 17:00 ET, 1m bars, a busy 09:30 open), the 5m bars built from
 it. Contracts: "Z26" prints the walk, "H27" the walk + 280 pts (the carry). A TradingView NQ1! export (B-ADJ off) prints
 Z26 until TradingView's switch (Mon 2026-12-14 18:00 ET) and H27 after it. The files on disk are anchored on NQZ26 (as
-data/ is today), with the Sep 2026 roll U26 -> Z26 (+295.75) recorded.
+data/ is today), with the Sep 2026 roll U26 -> Z26 (+294.75) recorded.
 Checks: a clean merge (new bars, 15m / 1h rebuilt, backup, imported days); --check writes nothing; duplicates and
 disagreeing overlaps; time zone (no offset, shifted stamps); holes; a known roll (applied, same switch bar); B-ADJ on
 (refused); a NEW roll (refused without --roll; with --roll recorded and the history re-anchored on H27: the files then
@@ -36,7 +36,7 @@ ET = ZoneInfo("America/New_York")
 COLS = ["time", "open", "high", "low", "close", "volume"]
 RESULTS = []
 G_DEC = 280.0           # Z26 -> H27 spread in the synthetic market
-G_SEP = 295.75          # the recorded U26 -> Z26 roll
+G_SEP = 294.75          # the recorded U26 -> Z26 roll
 SW_DEC = it.tv_switch_t(2026, 12)
 SW_SEP = it.tv_switch_t(2026, 9)
 
@@ -257,7 +257,7 @@ def main():
         # the jump at the switch is the spread only (no drift across the halt in the synthetic walk)
         d5 = fresh_data(tmp, "d5", sb5.iloc[:0], s_truth[s_truth.time < at(2026, 9, 14, 12)])
         rc, txt = run(folder(tmp, "f5", [("NQ1_5m_sep.csv", s_tv, {})]), d5)
-        check("known roll: same switch bar as the files, the export is back-adjusted (+295.75 before the switch) and "
+        check("known roll: same switch bar as the files, the export is back-adjusted (+294.75 before the switch) and "
               "matches the files exactly",
               rc == 0 and "same switch bar as the files" in txt and same(rd(d5, "NQ_5m.csv"), s_truth), txt)
         d5c = fresh_data(tmp, "d5c", sb5.iloc[:0], s_truth[s_truth.time >= at(2026, 9, 11)])

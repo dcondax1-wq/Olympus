@@ -1,5 +1,10 @@
 # NQ / ES futures data audit (2026-10-16)
 
+> **Superseded on 2026-10-23 by [writeups/data-official.md](writeups/data-official.md):** official data only. The roll gaps
+> below that came from a non-official cross-check are replaced (NQ Jun-26 289.25 carry model, NQ Sep-26 294.75 open jump,
+> ES Jun-25 51.25 and Jun-26 63.50 carry model), the ES 1m file and the old 1d files are gone (1d is now built from the
+> official 5m), and VIX / VXN come from CBOE's own files. The rest of this page is the 2026-10-16 history.
+
 ## Plain-English summary
 
 1. **There is a clean, authoritative NQ set in `data/clean/`.** It covers 2021-10-18 to 2026-10-16 (1,293 sessions,

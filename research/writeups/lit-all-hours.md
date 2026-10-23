@@ -36,7 +36,7 @@ runs: lit_hours_base, lit_hours_full, lit_hours_asia_only, lit_hours_late, lit_h
 ## How it was tested
 
 - **Data:** CME NQ1! from TradingView only. 5m (2021-11 to 2026-10-16) and 1m for 2026. Both cover the full 23-hour day: 1m bars
-  exist in every hour from 18:00 to 17:00 ET in 2026. No Yahoo, no CFD.
+  exist in every hour from 18:00 to 17:00 ET in 2026. Official CME data only (TradingView / NinjaTrader), no CFD.
 - **Same LIT:** `engine/lit.py` run_x with the live settings (`live_model.json` "lit"): sweep >= 0.5 ATR, inducement taken
   first, displacement >= 0.8 ATR, 5m CISD, limit for 30 min, 1m CISD entry, stop 1 tick beyond the sweep extreme, target the
   18:00 open +/- 1 VIX day move (>= 1.5R, banked at 8R), breakeven at 1R, Monday rule, weekly stop.

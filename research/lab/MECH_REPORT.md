@@ -17,7 +17,7 @@ model on screen, run `MECH_NQ_base` paper-only.
 ## Setup
 
 **Data.** TradingView CME futures **NQ1! / ES1!**, 5m bars, as refreshed on 2026-10-16 and running through 16:55 ET that
-day. No CFD or Yahoo data. ES history starts 2025-04-13, so the first ES day has no prior-day levels.
+day. Official CME data only, no CFD. ES history starts 2025-04-13, so the first ES day has no prior-day levels.
 
 **Costs** (`strategy_lab.make_trade`):
 - MNQ $2/pt, MES $5/pt

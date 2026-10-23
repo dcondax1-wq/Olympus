@@ -142,7 +142,7 @@ in both" is what chance gives.
   only, and SqueezeMetrics publishes GEX / DIX, not vanna. Proxies used: yesterday's VIX change, SPX change, and
   -ΔVIX% x (1 + |ΔSPX%|). They are proxies, not dealer vanna.
 - **CBOE put/call (equity / index):** the free daily file stops 2019-10-04, so it cannot cover 2026. Not tested.
-- **NYSE TICK, DXY, 10-year yield:** no futures-grade file in `data/`, and the no-Yahoo rule applies. Not tested.
+- **NYSE TICK, DXY, 10-year yield:** no futures-grade file in `data/`, and the official-data rule applies. Not tested.
   NQ/ES SMT was already tested (`lit-more-setups.md`, `cross-market-context.md`).
 - 2021-25 is shown as a reference only (LIT-rule net change, column `d_lit_ref` in `research/lit/context.json`). No 1m bars
   there, so t_check and scale_in do not act.

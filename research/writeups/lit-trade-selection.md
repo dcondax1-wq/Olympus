@@ -47,7 +47,7 @@ runs: lit_sel_trap6_size, lit_sel_trap8_size, lit_sel_grade_size, lit_sel_grade_
   - `tools/lit_select.py` builds the candidates and the features and runs the path.
   - `tools/lit_select_rules.py` holds the grades, the rules and the model.
   - Both wrap `engine/lit.py` and `tools/lit_tightstop.py` and change neither.
-- **Data:** CME NQ1! 5m + true 1m bars for 2026 entries, ES 5m (from 2025-04), VIX daily, the news calendar. No Yahoo.
+- **Data:** CME NQ1! 5m + true 1m bars for 2026 entries, ES 5m (from 2025-04), VIX daily, the news calendar. Official CME data only.
 - **The candidate set** is every setup that passes LIT live's own filters:
   - sweep ≥ 0.5 ATR;
   - inducement ≤ 1 ATR and ≤ 36 bars;

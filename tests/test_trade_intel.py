@@ -53,9 +53,9 @@ def stored():
     by = {r["span"]: 0 for r in bt}
     for r in bt:
         by[r["span"]] += 1
-    check("spans: 2026 H1 80 / H2 40 / 2021-25 510 (run lit_live)", by.get("H1") == 80 and by.get("H2") == 40 and by.get("2021-25") == 510, by)
+    check("spans: 2026 H1 80 / H2 40 / 2021-25 511 (run lit_live)", by.get("H1") == 80 and by.get("H2") == 40 and by.get("2021-25") == 511, by)
     T = d["totals"]
-    check("totals match the run: 2026 H1 PF 4.98 +$33,891, H2 PF 2.69 +$9,493", abs(T["H1"]["net"] - 33891.48) < 1 and T["H1"]["pf"] == 4.98
+    check("totals match the run: 2026 H1 PF 4.98 +$33,901, H2 PF 2.69 +$9,493", abs(T["H1"]["net"] - 33901.0) < 1 and T["H1"]["pf"] == 4.98
           and abs(T["H2"]["net"] - 9493.46) < 1 and T["H2"]["pf"] == 2.69, T)
     check("outcomes agree with R / exit", all(r["outcome"] == TI.outcome_of(r["r"]) for r in bt)
           and all(not r["clean_win"] or r["exit"] == "TARGET" for r in bt) and all(not r["gave_back"] or (r["mfe"] >= 1 and r["r"] < 0.5) for r in bt))
@@ -185,7 +185,7 @@ def merge(d):
     R = rows_of(m)
     src = [r["source"] for r in R if r["source"] != "backtest"]
     check("merge: 2 paper (ledger + journal-only) + 1 live, the open and the skipped trade left out", sorted(src) == ["live", "paper", "paper"]
-          and m["meta"]["sources"] == {"backtest": 630, "paper": 2, "live": 1}, m["meta"]["sources"])
+          and m["meta"]["sources"] == {"backtest": 631, "paper": 2, "live": 1}, m["meta"]["sources"])
     p = next(r for r in R if r["source"] == "paper" and r["entry_t"] == 1792393740)
     check("merge: the paper row = ledger facts + journal features", p["disp"] == 1.4 and p["depth_atr"] == 2.0 and p["major"] is False
           and p["rr"] == 5.42 and p["risk_usd"] == 606.0 and p["gave_back"] is True and p["monday"] is True and p["mins"] == 211.0, p)

@@ -58,7 +58,7 @@ runs: lit_live, lit_loss_pack, lit_loss_weekly_stop, lit_loss_monday, lit_loss_a
   - Its executor is a copy of `lit.simulate_x` / `lit._run_core` with extra options that are off by default.
   - With no options it gives LIT final's 661 trades exactly (`python tools/lit_losses.py check`).
 - **Data:** CME NQ1! 5m, with true 1m bars for 2026 entries (`data/NQ_1m.csv`), plus `data/ES_5m.csv` (from 2025-04),
-  `data/VIX_1d.csv` and `data/news/events.csv`. No Yahoo.
+  `data/VIX_1d.csv` (CBOE) and `data/news/events.csv`. Official data only.
 - **Size and costs:** same as LIT final. $800 risk up to a 20-pt stop, then 800×20/stop, MNQ, max 40 micros, $1.40 per micro and 1
   tick of slippage. A "half size" rule re-sizes the finished trade exactly, with a floor of 1 micro. A "skip" rule removes the
   setup, so the day stays free for a later one.

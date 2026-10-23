@@ -2,8 +2,8 @@
 
     python tools/stitch_tv_1m.py              # build + verify; write data/clean/NQ_1m_tv.csv and research/lab/DATA_1M.md
     python tools/stitch_tv_1m.py --check      # build + verify only, write nothing
-    python tools/stitch_tv_1m.py --install    # as the default, then back up data/NQ_1m.csv once to
-                                              # data/_pre_clean_backup/NQ_1m.yahoo.csv and copy the clean file over it
+    python tools/stitch_tv_1m.py --install    # as the default, then back up data/NQ_1m.csv to
+                                              # data/_pre_clean_backup/NQ_1m.<time>.csv and copy the clean file over it
 
 Inputs (read-only)
   data/tv_exports/NQ1_1m_*.csv   CME_MINI:NQ1! 1m, ETH, front month UNADJUSTED, from the "Liquidity Engine Bot" layout:
@@ -44,7 +44,7 @@ D = da.DATA
 EXPORTS = os.path.join(D, "tv_exports")
 OUT = os.path.join(da.CLEAN, "NQ_1m_tv.csv")
 LIVE = os.path.join(D, "NQ_1m.csv")
-BACKUP = os.path.join(D, "_pre_clean_backup", "NQ_1m.yahoo.csv")
+BACKUP = os.path.join(D, "_pre_clean_backup", f"NQ_1m.{dt.datetime.now():%Y%m%d_%H%M%S}.csv")
 DOC = os.path.join(da.ROOT, "research", "lab", "DATA_1M.md")
 ROLLS = os.path.join(D, "NQ_rolls.json")
 REF5 = os.path.join(D, "NQ_5m.csv")
@@ -169,10 +169,9 @@ def write_doc(adj, inv, n_overlap, n_dis, dis_cols, checks, ver, q, cov, missing
         f"Generated {dt.datetime.now():%Y-%m-%d %H:%M} by `python tools/stitch_tv_1m.py` (re-runnable as chunks are added).",
         "",
         "**Source:** CME_MINI:NQ1! 1-minute, ETH, exported from the user's TradingView (layout \"Liquidity Engine Bot\") via "
-        "Bar Replay + Download chart data. Futures only: no Yahoo, no CFD rows in this file.",
+        "Bar Replay + Download chart data. Official CME futures data only.",
         "",
-        "**Files:** `data/clean/NQ_1m_tv.csv` (authoritative) = `data/NQ_1m.csv` (installed copy). The previous Yahoo 1m file is "
-        "kept at `data/_pre_clean_backup/NQ_1m.yahoo.csv`. Columns `time,open,high,low,close,volume`; `time` = bar open, "
+        "**Files:** `data/clean/NQ_1m_tv.csv` (authoritative) = `data/NQ_1m.csv` (installed copy). Columns `time,open,high,low,close,volume`; `time` = bar open, "
         "UNIX seconds UTC (same convention as `data/NQ_5m.csv`); volume in NQ contracts.",
         "",
         "## Coverage",

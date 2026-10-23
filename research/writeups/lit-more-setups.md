@@ -87,7 +87,7 @@ Builder 50K evals within 10 sessions, under the live eval sizing. Money is at th
     bar, so no ES day passes the 1m coverage rule. **ES therefore runs on 5m execution** (1m CISD window = 4 five-minute
     bars). For a fair comparison, NQ on 5m execution makes +$6,430 / +$1,469 (run `lit_more_nq_5m_exec`). ES on 5m makes
     -$4,476 / +$12,186: worse than NQ in Jan-Jun, better in Jul-Oct.
-  - No Yahoo, no CFD.
+  - Official CME data only (TradingView / NinjaTrader), no CFD.
 - **Same LIT:** `engine/lit.py` run_x with `live_model.json` "lit": every setup filter, the 30-min limit at the 5m CISD, the 1m
   CISD entry, the stop 1 tick beyond the sweep extreme, the VIX-band target (>= 1.5R, banked at 8R), BE at 1R, flat 15:55,
   the Monday rule and the weekly stop. `python tools/lit_more.py check` reproduces run `lit_live`: 120 / 120 trades in 2026,
