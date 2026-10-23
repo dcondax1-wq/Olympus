@@ -1,7 +1,7 @@
 {
  "sym": "ES",
  "anchor": "ESZ26",
- "method": "additive back-adjustment anchored to ESZ26: bars with time < switch_t get +gap (cumulative). TradingView ES1! chunks 2025-04 -> 2026-08-23, clean Yahoo ES=F after that.",
+ "method": "additive back-adjustment anchored to ESZ26: bars with time < switch_t get +gap (cumulative). Unadjusted price = adjusted - sum(gaps of rolls after the bar). TradingView ES1! chunks only.",
  "rolls": [
   {
    "from": "ESM25",
@@ -15,20 +15,16 @@
    "source_at_switch": "tv-ES1!",
    "check": "ok",
    "candidates": {
-    "yahoo_1h_cross": {
-     "gap": 53.0,
-     "unc": 0.32,
-     "n": 104
-    },
     "carry_model": {
-     "gap": 51.25,
-     "pct": 0.857
+     "gap": 51.15,
+     "unc": 2.13,
+     "pct": 0.856
     }
    },
-   "price_before": 5978.25,
-   "method": "yahoo_1h_cross",
-   "gap": 53.0,
-   "uncertainty": 0.32
+   "method": "carry_model",
+   "gap": 51.25,
+   "uncertainty": 2.13,
+   "price_before": 5978.25
   },
   {
    "from": "ESU25",
@@ -46,20 +42,16 @@
      "gap": 56.5,
      "unc": 1.25
     },
-    "yahoo_1h_cross": {
-     "gap": 57.75,
-     "unc": 0.33,
-     "n": 20
-    },
     "carry_model": {
      "gap": 56.72,
+     "unc": 2.67,
      "pct": 0.857
     }
    },
-   "price_before": 6616.75,
    "method": "open_jump",
    "gap": 56.5,
-   "uncertainty": 1.25
+   "uncertainty": 1.25,
+   "price_before": 6616.75
   },
   {
    "from": "ESZ25",
@@ -77,20 +69,16 @@
      "gap": 58.5,
      "unc": 1.25
     },
-    "yahoo_1h_cross": {
-     "gap": 57.0,
-     "unc": 0.56,
-     "n": 23
-    },
     "carry_model": {
-     "gap": 58.5,
-     "pct": 0.857
+     "gap": 58.27,
+     "unc": 2.73,
+     "pct": 0.854
     }
    },
-   "price_before": 6824.25,
    "method": "open_jump",
    "gap": 58.5,
-   "uncertainty": 1.25
+   "uncertainty": 1.25,
+   "price_before": 6824.25
   },
   {
    "from": "ESH26",
@@ -108,20 +96,16 @@
      "gap": 52.5,
      "unc": 1.25
     },
-    "yahoo_1h_cross": {
-     "gap": 50.5,
-     "unc": 0.25,
-     "n": 7
-    },
     "carry_model": {
      "gap": 57.43,
+     "unc": 0.71,
      "pct": 0.857
     }
    },
-   "price_before": 6699.25,
    "method": "open_jump",
    "gap": 52.5,
-   "uncertainty": 1.25
+   "uncertainty": 1.25,
+   "price_before": 6699.25
   },
   {
    "from": "ESM26",
@@ -135,20 +119,16 @@
    "source_at_switch": "tv-ES1!",
    "check": "ok",
    "candidates": {
-    "yahoo_1h_cross": {
-     "gap": 63.75,
-     "unc": 0.36,
-     "n": 11
-    },
     "carry_model": {
-     "gap": 63.75,
-     "pct": 0.857
+     "gap": 63.62,
+     "unc": 2.64,
+     "pct": 0.856
     }
    },
-   "price_before": 7436.25,
-   "method": "yahoo_1h_cross",
-   "gap": 63.75,
-   "uncertainty": 0.36
+   "method": "carry_model",
+   "gap": 63.5,
+   "uncertainty": 2.64,
+   "price_before": 7436.25
   },
   {
    "from": "ESU26",
@@ -166,36 +146,25 @@
      "gap": 67.0,
      "unc": 1.25
     },
-    "yahoo_1h_cross": {
-     "gap": 67.75,
-     "unc": 0.25,
-     "n": 7
-    },
     "carry_model": {
-     "gap": 65.43,
-     "pct": 0.857
+     "gap": 65.17,
+     "unc": 2.59,
+     "pct": 0.854
     }
    },
-   "price_before": 7632.25,
    "method": "open_jump",
    "gap": 67.0,
-   "uncertainty": 1.25
-  },
-  {
-   "from": "ESU26",
-   "to": "ESZ26",
-   "switch_t": 1789399800,
-   "switch_et": "2026-09-14 11:30:00-04:00",
-   "gap": 66.25,
-   "method": "ESZ26 single-contract 1h quotes vs ES=F (median before - after)",
-   "uncertainty": 0.12,
-   "note": "Yahoo switched mid-session; the switch bar itself is a mixed bar (open/low re-based)"
+   "uncertainty": 1.25,
+   "price_before": 7632.25
   }
  ],
- "carry_pct": 0.857,
+ "carry_pct": 0.856,
+ "weekday_open_drift_p50_p90": [
+  1.25,
+  5.849999999999994
+ ],
  "sessions": {
-  "tv-ES1!": 392,
-  "yahoo-ES=F": 0
+  "tv-ES1!": 392
  },
  "tv_files": [
   "ES1_5m_chunk_2025-06-09.csv",

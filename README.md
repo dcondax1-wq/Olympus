@@ -16,8 +16,8 @@ Last visit to the Surface (no sleep, no update restarts, starts at logon, offlin
 ## Quick start
 
 ```bash
-pip install fastapi uvicorn pandas numpy yfinance
-python data/fetch.py          # latest NQ/ES bars from Yahoo (re-run daily: history accumulates)
+pip install fastapi uvicorn pandas numpy
+python tools/import_tv.py <folder>   # TradingView NQ1!/ES1! exports -> data/ (NinjaTrader bars come in live)
 python server.py              # dashboard -> http://127.0.0.1:8765
 python bt.py NQ 5m '{}' -v    # CLI backtest with the trade list
 ```
@@ -131,7 +131,7 @@ Offline proof of the order lifecycle without credentials: `python -m engine.trad
 **Hard gates in code:** live URL only when `TRADOVATE_ENV=live` **and** the start config is armed **and** carries the
 phrase; orders above `max_micros` (40) or 4 minis are refused, not clamped; every order is sent with `isAutomated: true`;
 logins are rate-limited (Tradovate allows 5/hour: tokens are cached ~90 min and renewed, never retried in a loop);
-Yahoo bars are ~10 minutes delayed and are accepted for paper only: live trading requires Bar source **Tradovate**.
+Live trading requires a real-time CME bar source (NinjaTrader, or **Tradovate**).
 
 **MFFU Builder 50K notes (confirm the current rules on the MFFU site before trading):** automation is allowed only with
 the trader **present and actively monitoring** (no unattended runs, no HFT); the $1,000 daily loss limit is a *soft*

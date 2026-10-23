@@ -1,10 +1,10 @@
 # NQ 1-minute data (TradingView NQ1!, 2026)
 
-Generated 2026-10-16 19:20 by `python tools/stitch_tv_1m.py` (re-runnable as chunks are added).
+Generated 2026-10-23 18:04 by `python tools/stitch_tv_1m.py` (re-runnable as chunks are added).
 
-**Source:** CME_MINI:NQ1! 1-minute, ETH, exported from the user's TradingView (layout "Liquidity Engine Bot") via Bar Replay + Download chart data. Futures only: no Yahoo, no CFD rows in this file.
+**Source:** CME_MINI:NQ1! 1-minute, ETH, exported from the user's TradingView (layout "Liquidity Engine Bot") via Bar Replay + Download chart data. Official CME futures data only.
 
-**Files:** `data/clean/NQ_1m_tv.csv` (authoritative) = `data/NQ_1m.csv` (installed copy). The previous Yahoo 1m file is kept at `data/_pre_clean_backup/NQ_1m.yahoo.csv`. Columns `time,open,high,low,close,volume`; `time` = bar open, UNIX seconds UTC (same convention as `data/NQ_5m.csv`); volume in NQ contracts.
+**Files:** `data/clean/NQ_1m_tv.csv` (authoritative) = `data/NQ_1m.csv` (installed copy). Columns `time,open,high,low,close,volume`; `time` = bar open, UNIX seconds UTC (same convention as `data/NQ_5m.csv`); volume in NQ contracts.
 
 ## Coverage
 
@@ -55,8 +55,8 @@ The 1m open jump at each switch equals the 5m open_jump in NQ_rolls.json, i.e. T
 | roll | switch_et | bar_at_switch | jump_1m | jump_5m | match | gap_applied | gap_method | gap_unc |
 |---|---|---|---|---|---|---|---|---|
 | NQH26->NQM26 | 2026-03-16 18:00 | True | 215.25 | 215.25 | True | 215.25 | open_jump | 4.0 |
-| NQM26->NQU26 | 2026-06-14 18:00 | True | 513.25 | 513.25 | True | 254.75 | ref_NQZ26_1h | 9.38 |
-| NQU26->NQZ26 | 2026-09-14 18:00 | True | 294.75 | 294.75 | True | 295.75 | simultaneous_yahoo | 0.41 |
+| NQM26->NQU26 | 2026-06-14 18:00 | True | 513.25 | 513.25 | True | 289.25 | carry_model | 15.17 |
+| NQU26->NQZ26 | 2026-09-14 18:00 | True | 294.75 | 294.75 | True | 294.75 | open_jump | 4.0 |
 
 ## Verification against data/NQ_5m.csv
 

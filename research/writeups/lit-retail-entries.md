@@ -60,7 +60,7 @@ runs: lit_retail_e_base_live_lit, lit_retail_e_brt_pdh_l_only_second, lit_retail
 
 ## How it was tested
 
-- **Data:** CME NQ1! 5m (2021-11 -> 2026-10-16) and true 1m for 2026 (`data/NQ_*.csv`). No Yahoo, no CFD.
+- **Data:** CME NQ1! 5m (2021-11 -> 2026-10-16) and true 1m for 2026 (`data/NQ_*.csv`). Official CME data only (TradingView / NinjaTrader), no CFD.
 - **No look-ahead:** 15m/1h candles are built from the 5m bars and count only once their last 5m bar has closed; swings only
   2 candles after the swing; zones only after the leg-out candle closed; EMAs/MACD from closed bars. `tools/lit_retail.py
   check` rebuilds every family on data **cut at the entry bar** (the entry bar forming, like the PC bot's early mode) for

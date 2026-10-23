@@ -45,7 +45,7 @@ runs: md2_best, md2_combo_lit, md2_md_plateau, md2_md_best, md2_md_best_ref, md2
   `live_model*.json` or the live loop was touched.
 - **Data:** CME NQ1! 5m bars 2021-11 to 2026-10-16 (`data/NQ_5m.csv`) through `engine.lit.Market` (the same LIT levels and
   the CBOE VIX one-day move); for 2026 the trade path runs on true 1m bars (`data/NQ_1m.csv`, cleaned like LIT); 5m before.
-  No Yahoo, no CFD.
+  Official CME data only (TradingView / NinjaTrader), no CFD.
 - **Fills and costs:** signals at a 5m close; market entry at the next 5m open + 1 tick; limit entries (the other entry
   tested) at the CISD level, filled only 1 tick through, 30 min, cancelled if the stop trades first. Stops at the stop (or a
   worse open) - 1 tick; 15-minute cuts and the 15:55 flat at market - 1 tick; targets at the limit; stop and target in one

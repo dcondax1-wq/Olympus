@@ -85,7 +85,7 @@ runs: lit_htf_draw4h_neutral, lit_htf_trap_x_clearlv, lit_htf_clear1h_size, lit_
 - **Code:** `tools/lit_htf.py` (new). It wraps `tools/lit_select.py`, `engine/lit.py` and `tools/lit_tightstop.py`; no engine
   file was changed.
 - **Data:** CME NQ1! 5m (2021-11 → 2026-10-16) and true 1m bars for the 2026 entries. Every HTF candle is built from the 5m
-  file. No CFD, no Yahoo.
+  file. Official CME data only (TradingView / NinjaTrader), no CFD.
 - **Candidates and outcomes:** from `lit_select.py`. Every setup that passes the live LIT filters was simulated alone with
   the live executor:
   - limit at the CISD level, then a 1m CISD;

@@ -12,7 +12,7 @@ runs: lit_A, lit_sessions_A, lit_sessions_B, lit_sessions_B2, lit_sessions_C, li
 **Owner order (2026-10-18):** LIT is the strategy, tuned and judged on 2026 only. Every choice below was **picked on 2026 H1
 (Jan 2 - Jun 30)** and **checked on 2026 H2 (Jul 1 - Oct 16)**. 2021-25 is shown as a reference line, never as a gate.
 Same size rule and costs as lit_A: $800 risk up to a 20-pt stop, 800x20/stop beyond, MNQ $2/pt, max 40 micros, $1.40/micro round
-trip, 1 tick slippage on market entries and stop/market exits. CME NQ1! 5m only (no Yahoo, no 1m in this dimension).
+trip, 1 tick slippage on market entries and stop/market exits. CME NQ1! 5m only (official CME data, no 1m in this dimension).
 
 ## In one minute
 

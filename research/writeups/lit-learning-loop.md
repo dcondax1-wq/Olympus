@@ -171,7 +171,7 @@ Over 2026 the review looked at **549 proposals**: 18 of them failed only one che
 ## Where it runs
 
 - **Cloud** (`tools/cloud_monitor.py`, GitHub Actions, free):
-  - every run computes the entry facts for the LIT trades, using ES bars from Yahoo for the ES features;
+  - every run computes the entry facts for the LIT trades (the ES features stay unknown there: no fresh ES bars);
   - it writes the journal after each session;
   - it runs the review on Sunday (cron `47 21 * * 0`), or on the first run after it, or at once with the workflow input
     **learn_review**.

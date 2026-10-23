@@ -1,7 +1,7 @@
 # ATM model: the owner's rules, and the exact mechanical version we tested
 
 Model: `tools/lab_models/atm.py` (`run`, `run_raw`, `build_all`, `state`). Runner: `tools/lab_atm_run.py`.
-Data: TradingView CME futures NQ1! 5m (ES1! 5m for SMT), as in `data/NQ_5m.csv` / `data/ES_5m.csv`. No CFD, no Yahoo.
+Data: TradingView CME futures NQ1! 5m (ES1! 5m for SMT), as in `data/NQ_5m.csv` / `data/ES_5m.csv`. Official CME data only (TradingView / NinjaTrader), no CFD.
 
 Everything below was fixed before the scored batch was run. Where the owner's words leave room, the choice is marked
 **(ours)**. None of these choices was changed after a scored result was seen.

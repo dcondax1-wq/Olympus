@@ -51,7 +51,7 @@ runs: ad_sched_h1_all, ad_sched_h1_evening, ad_sched_long_all_money, ad_sched_lo
 
 ## How it was tested
 
-- **Data:** CME NQ1! from TradingView only: 5m from 2021-11 to 2026-10-16, true 1m bars for 2026. No Yahoo, no CFD.
+- **Data:** CME NQ1! from TradingView only: 5m from 2021-11 to 2026-10-16, true 1m bars for 2026. Official CME data only (TradingView / NinjaTrader), no CFD.
 - **Windows (ET, CME trading-day order):** 18:00-20:00 evening / Sunday open, 20:00-00:00 Asia, 00:00-02:00 late Asia,
   02:00-05:00 London open, 05:00-08:00 London, 08:00-09:30 NY pre-market, 09:30-11:00 NY open, 11:00-13:30 NY midday,
   13:30-15:55 NY afternoon, 16:00-17:00 post-close (mapped only). A Sunday 18:00 open belongs to Monday's trading day.

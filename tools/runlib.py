@@ -55,9 +55,23 @@ TRADE_COLS = ["day", "entry_t", "exit_t", "dir", "r", "pnl", "risk_pts", "qty", 
 ENGINE_EPOCH = 1
 
 
+_DK = {}
+
+
 def _data_key():
-    st = os.stat(os.path.join(ROOT, "data", "NQ_5m.csv"))
-    return f"{st.st_size}:{ENGINE_EPOCH}"
+    """Cache key of the NQ data: size + a content hash (a price change that keeps the file size, e.g. a roll gap fix,
+    must not reuse old caches), memoised per process by size and mtime."""
+    p = os.path.join(ROOT, "data", "NQ_5m.csv")
+    st = os.stat(p)
+    k = (st.st_size, st.st_mtime_ns)
+    if k not in _DK:
+        import hashlib
+        h = hashlib.sha1()
+        with open(p, "rb") as fh:
+            for chunk in iter(lambda: fh.read(1 << 20), b""):
+                h.update(chunk)
+        _DK[k] = h.hexdigest()[:10]
+    return f"{st.st_size}-{_DK[k]}:{ENGINE_EPOCH}"
 
 
 def _dump(obj, path, **kw):

@@ -444,9 +444,9 @@
      "unc": 4.0
     },
     "carry_model": {
-     "gap": 249.7,
-     "unc": 17.11,
-     "pct": 0.995
+     "gap": 249.27,
+     "unc": 17.01,
+     "pct": 0.993
     }
    },
    "method": "open_jump",
@@ -471,9 +471,9 @@
      "unc": 4.0
     },
     "carry_model": {
-     "gap": 245.26,
-     "unc": 8.43,
-     "pct": 0.995
+     "gap": 244.84,
+     "unc": 8.39,
+     "pct": 0.993
     }
    },
    "method": "open_jump",
@@ -493,23 +493,15 @@
    "source_at_switch": "tv-NQ1!",
    "check": "ok",
    "candidates": {
-    "ref_NQZ26_1h": {
-     "gap": 254.75,
-     "unc": 9.38,
-     "n": [
-      31,
-      63
-     ]
-    },
     "carry_model": {
      "gap": 289.29,
-     "unc": 15.43,
+     "unc": 15.17,
      "pct": 0.975
     }
    },
-   "method": "ref_NQZ26_1h",
-   "gap": 254.75,
-   "uncertainty": 9.38,
+   "method": "carry_model",
+   "gap": 289.25,
+   "uncertainty": 15.17,
    "price_before": 29677.75
   },
   {
@@ -524,19 +516,6 @@
    "source_at_switch": "tv-NQ1!",
    "check": "ok",
    "candidates": {
-    "simultaneous_yahoo": {
-     "gap": 295.75,
-     "unc": 0.41,
-     "n": 66
-    },
-    "ref_NQZ26_1h": {
-     "gap": 294.0,
-     "unc": 0.43,
-     "n": [
-      88,
-      87
-     ]
-    },
     "open_jump": {
      "gap": 294.75,
      "unc": 4.0
@@ -547,9 +526,9 @@
      "pct": 0.975
     }
    },
-   "method": "simultaneous_yahoo",
-   "gap": 295.75,
-   "uncertainty": 0.41,
+   "method": "open_jump",
+   "gap": 294.75,
+   "uncertainty": 4.0,
    "price_before": 29193.75
   }
  ],

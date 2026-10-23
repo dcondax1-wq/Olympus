@@ -46,7 +46,7 @@ runs: lit_ll_t15, lit_ll_t15_win, lit_ll_cont15, lit_ll_cont10, lit_ll_t25, lit_
 ## How this was done
 
 - **Trades:** the 120 live LIT trades of 2026 (`tools/lit_1m_manage.py` unit() = run `lit_live`, Monday rule on), with their true
-  CME NQ1! 1m path from the fill to the end of the day. No Yahoo.
+  CME NQ1! 1m path from the fill to the end of the day. Official CME data only.
 - **Path simulator** (`tools/lit_loss_learn.py psim`): with no rule it gives all 120 trades exactly (points, exit, worst open
   point; `check` = 120/120).
 - **Every decision uses closed 1m bars only.** An exit happens at the next 1m open minus 1 tick. A resting stop fills at its

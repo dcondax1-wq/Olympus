@@ -1,6 +1,6 @@
 # Final report: the strategy the bot now runs (Sat 2026-10-17)
 
-All tests use **real CME futures data from your TradingView**: NQ1! 5m (Oct 2021 → Oct 16 2026), NQ1! 1m for 2026, ES1! 5m. No CFD, no Yahoo. Commissions and 1-tick slippage are included. Sizing is a fixed $350 risk per trade.
+All tests use **real CME futures data from your TradingView**: NQ1! 5m (Oct 2021 → Oct 16 2026), NQ1! 1m for 2026, ES1! 5m. Official CME data only (TradingView / NinjaTrader), no CFD. Commissions and 1-tick slippage are included. Sizing is a fixed $350 risk per trade.
 
 ## Bottom line
 - The bot runs **your Liquidity Engine, upgraded to trade like a person**. It targets liquidity it can actually reach, scales out at the first internal draw, moves to breakeven after that, and sits out FOMC days.

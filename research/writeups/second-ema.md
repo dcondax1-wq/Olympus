@@ -77,7 +77,7 @@ targets, 35 breakevens, 32 stops, 2 flat. The median stop was 38.5 points (20 po
 ## How it was found
 
 - **Data and costs:**
-  - TradingView CME NQ1! 5m bars, 2021-11 to 2026-10-16 (`data/NQ_5m.csv`). No Yahoo, no CFD.
+  - TradingView CME NQ1! 5m bars, 2021-11 to 2026-10-16 (`data/NQ_5m.csv`). Official CME data only (TradingView / NinjaTrader), no CFD.
   - 15m, 1h and 4h bars are built from the 5m bars. A higher-timeframe value is used only once its bar has closed.
   - VIX and VXN are the prior day's close from the CBOE files. High-impact news comes from `data/news/events.csv`.
   - Market entries fill at the next 5m open + 1 tick. Stop, BE, check and flat exits fill 1 tick worse.
