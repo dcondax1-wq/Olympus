@@ -135,7 +135,7 @@ def part_b():
             o = {"err": r.stderr[-400:]}
         tag = "SIM on account B" if ab else "paper"
         check(f"b. SecondUI v6 atlas() renders ({tag}): 3 brain cards, go / no-go, backtest + 25K odds, rules, with LIT, other shadows",
-              o.get("v") == 6 and not o.get("fail") and o.get("brain") == 3 and o.get("go") and o.get("bt") and o.get("ev") and o.get("rules")
+              o.get("v", 0) >= 6 and not o.get("fail") and o.get("brain") == 3 and o.get("go") and o.get("bt") and o.get("ev") and o.get("rules")
               and o.get("lit") and o.get("other") and (o.get("acct") if ab else True), o)
         check(f"b. atlasCard status ({tag})", o.get("st") == ("SIM" if ab else "PAPER") and o.get("two"), o.get("st"))
 
@@ -277,8 +277,8 @@ def part_e():
     ro = open(os.path.join(ROOT, "web_next", "js", "next", "routes.js"), encoding="utf-8").read()
     app = open(os.path.join(ROOT, "web_next", "js", "app.js"), encoding="utf-8").read()
     html = open(os.path.join(ROOT, "web_next", "index.html"), encoding="utf-8").read()
-    check("e. phone loads secondcore.js?v=6 + second.js?v=3, SW cache le-public-v26 or later",
-          "secondcore.js?v=6" in idx and "second.js?v=3" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 26)
+    check("e. phone loads secondcore.js?v=7 + second.js?v=4 (trade pictures), SW cache le-public-v29 or later",
+          "secondcore.js?v=7" in idx and "second.js?v=4" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 29)
     check("e. PC: top-level ATLAS entry, page-atlas, Today #twoStrat, #second -> atlas",
           "{ id: 'atlas', label: 'ATLAS'" in ro and 'id="page-atlas"' in html and 'id="twoStrat"' in html and "if (page === 'second') page = 'atlas';" in app
           and "atlas: atlasPage" in app and "initTwoCards()" in app)

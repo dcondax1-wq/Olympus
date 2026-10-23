@@ -994,6 +994,17 @@ def run(out):
         new_state["pushed"] = notifier.keys()[-600:]
     except Exception as e:  # never fails the run
         print("recap failed:", e.__class__.__name__, e)
+    # ---- trade pictures (engine/trade_chart.py, read-only): a chart PNG of every new paper trade of each strategy (LIT, the
+    # ATLAS members, the stop-hunt candidates, LIT + Asia) at its entry, re-drawn at its exit -> <out>/charts/<key>/<id>.png +
+    # charts/index.json (newest 60 per strategy, restored every run); at most 10 a run / ~50 s, nothing new = nothing drawn
+    try:
+        from engine import trade_chart
+        new_state["charts"] = trade_chart.cloud_hook(out, new_state, df_all, _LIT_IN.get("df1") if lm["model"] == "lit" else None,
+                                                     keep=_LIT_IN.get("keep") if lm["model"] == "lit" else None, now=now)
+        if new_state["charts"].get("made"):
+            print(f"charts: {len(new_state['charts']['made'])} drawn in {new_state['charts'].get('secs')} s")
+    except Exception as e:  # never fails the run
+        print("charts failed:", e.__class__.__name__, e)
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"

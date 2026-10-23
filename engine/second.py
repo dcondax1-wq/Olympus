@@ -153,6 +153,7 @@ def _ema_run(df5, one_min, cfg, now, lit):
             U = SE.trades_of(E, X, span=(str(d["days"][0]), "9999"))
             st = _ema_state(SE, d, E, X, now, last_t, U)
             brain = _safe_brain(lambda: _ema_brain(SE, d, E, X, U, st, SE.candidates(), last_t), st)
+            marks = _safe_marks(lambda: _ema_marks(SE, d, E, X, U)) if cfg.get("_marks") else None
             # a CISD on the last closed bar enters at the next 5m open: seen by adding that bar flat at the last close
             # (an estimate for the state line only; the trade itself comes from the real bar on the next poll)
             wx = pd.concat([w, pd.DataFrame([{"time": last_t + 300, **{k: float(w["close"].iloc[-1]) for k in ("open", "high", "low", "close")},
@@ -198,7 +199,7 @@ def _ema_run(df5, one_min, cfg, now, lit):
             t["lit"].update(usd=0.0, why="LIT was in a trade")
         trades.append(t)
     _session_end(trades, now, last_t)
-    return {"trades": trades, "state": st, "brain": brain}
+    return {"trades": trades, "state": st, "brain": brain, **({"marks": marks} if marks else {})}
 
 
 def _ema_load(RS, SE, w, now, last_t):
@@ -329,6 +330,7 @@ def _sr_run(df5, one_min, cfg, now, lit):
             sig = [c for c in SR.gen(d, key["setup"], g) if c[0] == n - 1 and a <= _mod(last_t + 300) < z]
             st = _sr_state(d, key, TT, sig, now, last_t)
             brain = _safe_brain(lambda: _sr_brain(SR, d, key, st, TT, now, last_t), st)
+            marks = _safe_marks(lambda: _sr_marks(SR, d, key, TT)) if cfg.get("_marks") else None
         finally:
             RS.D.clear(); RS.D.update(saved)
             SR.D.clear(); SR.D.update(saved_sr)
@@ -358,7 +360,7 @@ def _sr_run(df5, one_min, cfg, now, lit):
         st["lit_alt"] = [{"day": u["day"], "entry_t": int(u["entry_t"]), "dir": int(u["dir"]), "r": u["r"], "usd": u["pnl_usd"],
                           "exit_kind": str(u["exit_kind"]).upper()} for u in lmap.values()][-5:]
     _session_end(trades, now, last_t)
-    return {"trades": trades, "state": st, "brain": brain}
+    return {"trades": trades, "state": st, "brain": brain, **({"marks": marks} if marks else {})}
 
 
 def _sr_state(d, key, TT, sig, now, last_t):
@@ -430,7 +432,8 @@ def _md_run(df5, one_min, cfg, now, lit):
     st = _md_state(SM, X, C, T, flt, gen, now, last_t, trades)
     _session_end(trades, now, last_t)
     brain = _safe_brain(lambda: _md_brain(SM, X, C, outs, flt, sim, st, now, last_t, trades, gen), st)
-    return {"trades": trades, "state": st, "brain": brain}
+    marks = _safe_marks(lambda: _md_marks(SM, X, T, gen, usd)) if cfg.get("_marks") else None
+    return {"trades": trades, "state": st, "brain": brain, **({"marks": marks} if marks else {})}
 
 
 def _md_trade(SM, X, z, r, q):
@@ -882,7 +885,9 @@ def sr_scan(SR, d, key, s=None):
     b2 = min(b, n)
     out = []
     for p, nm, fr in L:
-        rec = {"name": nm, "label": SR_NAMES.get(nm, nm), "px": _r2(p), "known": bool(rel[b2 - 1] >= fr), "steps": []}
+        kj = a + int(np.searchsorted(rel[a:b2], fr)) if fr > 0 else a
+        rec = {"name": nm, "label": SR_NAMES.get(nm, nm), "px": _r2(p), "known": bool(rel[b2 - 1] >= fr), "steps": [],
+               "known_t": int(d["t"][kj]) if kj < b2 else None}
         out.append(rec)
         if not rec["known"]:
             continue
@@ -906,10 +911,12 @@ def sr_scan(SR, d, key, s=None):
         else:
             cd, od, ld, pp = -c, -o, -h, -p
         rec.update(dir=dr, swept_t=int(d["t"][j]))
-        ext = ld[j]; r = None
+        ext = ld[j]; r = None; ext_q = j
         for q in range(j, min(j + key["W"], b2)):
             if rel[q] >= 1315:
                 break
+            if ld[q] < ext:
+                ext_q = q
             ext = min(ext, ld[q])
             if cd[q] > pp:
                 r = q; break
@@ -919,6 +926,7 @@ def sr_scan(SR, d, key, s=None):
             continue
         rec["reclaim_t"] = int(d["t"][r])
         rec["sig"] = int(r)
+        rec["ext_t"], rec["ext_px"] = int(d["t"][ext_q]), _r2(dr * ext)
         rec["depth_ok"] = bool(pp - ext >= key["depth"] * A)
         rec["body"] = round(float((cd[r] - od[r]) / A), 2) if A > 0 else 0.0
         rec["body_ok"] = not (key["disp"] > 0 and (cd[r] - od[r]) < key["disp"] * A)
@@ -929,7 +937,9 @@ def sr_scan(SR, d, key, s=None):
             for f in F[lo_i:hi_i]:
                 fp = l[f] if dr > 0 else -h[f]
                 if pp < fp <= pp + A and f >= a:
-                    ok = True; break
+                    ok = True
+                    rec["idm_t"], rec["idm_px"] = int(d["t"][f]), _r2(dr * fp)
+                    break
         rec["idm_ok"] = ok if key["idm"] else True
         rec["stop"] = _r2(dr * (ext - TICK))
         rec["gen_ok"] = rec["depth_ok"] and rec["body_ok"] and rec["idm_ok"]
@@ -1086,7 +1096,8 @@ def _sh_run(df5, one_min, cfg, now, lit):
     info = _sh_info(SH, L, spec, cfg, trades, now, last_t)
     st = info["state"]
     brain = _safe_brain(lambda: _sh_brain(SH, L, spec, cfg, trades, info, now, last_t), st)
-    return {"trades": trades, "state": st, "brain": brain}
+    marks = _safe_marks(lambda: _sh_marks(SH, L, spec, trades, info)) if cfg.get("_marks") else None
+    return {"trades": trades, "state": st, "brain": brain, **({"marks": marks} if marks else {})}
 
 
 def _sh_win(SH, spec):
@@ -1275,6 +1286,187 @@ def basic_brain(st, label=None):
     return _brain(st, {"kind": "live", "label": label or "state"}, [], None, [])
 
 
+# ============================================================================================ chart marks (engine/trade_chart.py)
+# The markups of each trade's picture, from the strategy's own arrays inside its run (closed bars only, same data as the
+# decision): computed only when the caller asks (cfg["_marks"], engine/trade_chart.py); the trades / state / brain are
+# the same either way. One dict per trade, keyed by str(entry_t): "known_t" = the close of the decision bar (everything
+# the bot knew at the entry comes from bars closed by then), the levels / swings / candles / lines it used, its rule
+# checks. Times are unix seconds of a bar's open, prices on the bars' own basis.
+def _safe_marks(fn):
+    try:
+        return fn()
+    except Exception as e:
+        return {"error": f"{e.__class__.__name__}: {e}"}
+
+
+def _ser(t, *cols, a=0, z=None):
+    """[[t, v1, v2, ...], ...] of arrays sliced a:z (None for nan)."""
+    z = len(t) if z is None else z
+    out = []
+    for i in range(max(0, a), min(len(t), z)):
+        out.append([int(t[i])] + [None if not np.isfinite(c[i]) else round(float(c[i]), 3) for c in cols])
+    return out
+
+
+def _ema_marks(SE, d, E, X, U):
+    cand = SE.candidates()
+    fh, fl = SE.fractal_masks(d["h"], d["l"])
+    T = d["t"]
+    out = {}
+    for u in U:
+        m = cand[(cand["sig"] == int(u["sig_i"])) & (cand["dir"] == int(u["dir"]))]
+        if not len(m):
+            continue
+        row = m.iloc[0]
+        dr, i = int(row["dir"]), int(row["sig"])
+        start = i - int(row["nrun"])
+        L = d["l"] if dr > 0 else -d["h"]
+        lowbar = start + int(np.argmin(L[start:i + 1]))
+        low = float(L[lowbar])
+        a = float(d["atr"][i])
+        FL = fl if dr > 0 else fh
+        # the swings candidates() counts: confirmed before the run started, inside the last 48 bars, taken by the pullback
+        # extreme and less than 1.5 ATR beyond it; the farthest of them is the "swept swing" (its depth is the brain's number)
+        sw = [(q, float(L[q])) for q in range(max(0, i - 48), max(0, start - 2)) if FL[q] and L[q] > low and L[q] - low < 1.5 * a]
+        swing = None
+        if sw:
+            q, p = max(sw, key=lambda x: x[1])
+            tk = next((k for k in range(start, i + 1) if L[k] < p), None)
+            swing = {"t": int(T[q]), "px": _r2(dr * p), "taken_t": int(T[tk]) if tk is not None else None}
+        xi = int(np.searchsorted(T, int(u["exit_t"]))) if u.get("exit_t") else d["n"] - 1
+        a0 = max(0, start - 48)
+        C, _sim = _ema_row_checks(SE, d, E, X, row, False)
+        up = "above" if dr > 0 else "below"
+        out[str(int(u["entry_t"]))] = {
+            "kind": "ema", "known_t": int(T[i]) + 300, "dir": dr,
+            "cisd": {"px": _r2(dr * float(row["lvl"])), "t": int(T[i]), "ref_t": int(T[start])},
+            "run": {"t0": int(T[start]), "t1": int(T[i])},
+            "ext": {"t": int(T[lowbar]), "px": _r2(dr * low)},
+            "touch50": {"t": int(T[lowbar]), "px": _r2(d["e50"][lowbar]), "ok": bool(row["touch50"] > 0)},
+            "swing": swing, "sdepth": _r2(row["sdepth"]),
+            "ema": {"cols": ["t", "EMA 21", "EMA 50"], "rows": _ser(T, d["e21"], d["e50"], a=a0, z=min(d["n"], xi + 13))},
+            "trend": {"t15": int(np.sign(row["t15"])), "t60": int(np.sign(row["t60"])),
+                      "text": f"15m EMA 21 {up} EMA 50 {'(with)' if row['t15'] > 0 else '(against)'} · 1h EMA 21 {up} EMA 50 "
+                              f"{'(with)' if row['t60'] > 0 else '(against)'}"},
+            "checks": C}
+    return out
+
+
+def _md_marks(SM, X, T, gen, usd):
+    from engine.lit_live import LBL
+    M = X.M
+    H = X.htf(int(gen.get("tf", 5)))
+    _e12, _e26, line, sg, hist = SM.macd_state(H["c"])
+    Ht = X.t[H["first"]]
+    out = {}
+    for z, r in T:
+        if SM.q_usd(usd, r["risk"]) <= 0:
+            continue
+        rec = SM.tr_rec(X, z, r, 1, "MACD-div")
+        dr = int(z["dir"])
+        k = int(X.day[z["sweep_i"]])
+        side = "low" if dr > 0 else "high"
+        nm = next((x[3] for x in M.levels(k) if x[0] == side and abs(float(x[1]) - float(z["level"])) < 1e-6), None)
+        base, hl = ((nm or "").rsplit("_", 1) + [""])[:2]
+        lab = (f"{LBL.get(base, base)} {'high' if hl == 'h' else 'low' if hl == 'l' else ''}".strip() if nm else f"LIT {side}")
+        dv = z.get("div") or {}
+        qp, qx = int(dv.get("qp", -1)), int(dv.get("qx", z.get("x", z["j"])))
+        xi = int(np.searchsorted(Ht, int(rec["exit_t"]))) if rec.get("exit_t") else len(Ht) - 1
+        a0 = max(0, (qp if qp >= 0 else qx) - 24)
+        x = int(z.get("x", qx))
+        out[str(int(rec["entry_t"]))] = {
+            "kind": "macd", "known_t": int(X.t[z["j"]]) + 300, "dir": dr,
+            "level": {"px": _r2(z["level"]), "name": nm, "label": lab, "t": int(X.t[z["sweep_i"]])},
+            "sweep": {"t": int(X.t[z["sweep_i"]]), "ext_t": int(X.t[x]), "ext_px": _r2(z["ext"]), "depth": _r2(z["f"]["depth"])},
+            "cisd": {"px": _r2(z["cisd"]), "t": int(X.t[z["j"]])},
+            "div": {"p1": [int(Ht[qp]) if qp >= 0 else None, _r2(dv.get("px_prior")), round(float(dv.get("osc_prior", 0.0)), 3)],
+                    "p2": [int(Ht[qx]), _r2(z["ext"]), round(float(dv.get("osc_ext", 0.0)), 3)]},
+            "macd": {"tf": int(gen.get("tf", 5)), "osc": gen.get("osc", "line"), "cols": ["t", "MACD", "signal", "hist"],
+                     "rows": _ser(Ht, line, sg, hist, a=a0, z=min(len(Ht), xi + 13))}}
+    return out
+
+
+def _sr_marks(SR, d, key, TT):
+    out = {}
+    T = d["t"]
+    by_s = {}
+    for u in TT:
+        k = min(int(np.searchsorted(T, int(u["entry_t"]))), d["n"] - 1)
+        s = int(d["sid"][k])
+        if s not in by_s:
+            by_s[s] = sr_scan(SR, d, key, s)
+        scan = by_s[s]
+        hit = [r for r in scan if r.get("sig") is not None and int(T[r["sig"]]) + 300 == int(u["entry_t"])
+               and int(r.get("dir") or 0) == int(u["dir"])]
+        rec = next((r for r in hit if r.get("gen_ok")), hit[0] if hit else None)   # two levels at one price: the one that traded
+        if rec is None:
+            continue
+        et = int(u["entry_t"])
+        a, z = SR.WINDOWS[key["win"]]
+        m_ = _mod(et)
+        lo = "low" if rec["dir"] > 0 else "high"
+        checks = [_ck("known", "Level known (from closed bars)", True, f"{rec['label']} {rec['px']:,.2f}"),
+                  _ck("swept", f"Swept from the other side ({lo} taken)", True, _hm(rec["swept_t"]) + " ET"),
+                  _ck("reclaim", f"5m close back {'above' if rec['dir'] > 0 else 'below'} it within {key['W']} bars", True,
+                      _hm(rec["reclaim_t"]) + " ET"),
+                  _ck("body", f"Reclaim candle body >= {key['disp']} ATR", rec.get("body_ok"), f"{rec.get('body') or 0:.2f} ATR"),
+                  _ck("idm", "Inducement swing (within 1 ATR beyond) taken first", rec.get("idm_ok"),
+                      f"{rec['idm_px']:,.2f} at {_hm(rec['idm_t'])} ET" if rec.get("idm_t") else None),
+                  _ck("stop", f"Stop <= {key.get('max_stop', 80.0):.0f} pts, 1 tick beyond the sweep {lo}", True, f"{u['risk_pts']:.2f} pts"),
+                  _ck("window", f"Entry {_hhmm(a)}-{_hhmm(z)} ET", a <= m_ < z, f"{_hhmm(m_)} ET"),
+                  _ck("one", f"Max {key['maxpd']} a day", True)]
+        lv = [{"name": r["name"], "label": r["label"], "px": r["px"], "known_t": r.get("known_t"),
+               "swept_t": r.get("swept_t"), "this": r is rec} for r in scan if r.get("known_t") is not None and r["known_t"] < et]
+        r_i = int(rec["sig"])
+        A = float(d["atr"][r_i - 1]) if r_i > 0 else float(d["atr"][r_i])
+        out[str(et)] = {
+            "kind": "sr", "known_t": int(T[r_i]) + 300, "dir": int(rec["dir"]),
+            "level": {"name": rec["name"], "label": rec["label"], "px": rec["px"], "t": rec.get("known_t")},
+            "levels": lv,
+            "sweep": {"t": rec["swept_t"], "ext_t": rec.get("ext_t"), "ext_px": rec.get("ext_px")},
+            "reclaim": {"t": rec["reclaim_t"], "body_atr": rec.get("body"), "need": key["disp"], "atr": _r2(A)},
+            "idm": ({"t": rec["idm_t"], "px": rec["idm_px"]} if rec.get("idm_t") else None), "checks": checks}
+    return out
+
+
+def _sh_marks(SH, L, spec, trades, info):
+    g = L["g"]; B = g["B"]; sg = L["sg"]
+    kb = SH.BODY_SPEC[spec["body"]][0]
+    out = {}
+    for t in trades:
+        j = int(np.searchsorted(B["t"], int(t["hunt_t"])))
+        xs = [x for x in SH.explain(g, spec, j) if x["trigger"] is not None and int(x["trigger"]["t"]) + 300 == int(t["signal_t"])
+              and int(x["dr"]) == int(t["dir"])]
+        if not xs:
+            continue
+        x = xs[0]
+        q = x["trigger"]
+        dr = int(x["dr"])
+        lim = None
+        if spec["entry"] in ("mid", "fvg"):
+            ii = [i for i in range(len(sg["sig"])) if int(sg["sig"][i]) == int(q["q"]) and int(sg["dr"][i]) == dr]
+            if ii:
+                i = ii[0]
+                lim = {"px": _r2(float(sg["mid"][i] if spec["entry"] == "mid" else sg["fvg"][i]) * dr), "t0": int(t["signal_t"]),
+                       "t1": int(t["signal_t"]) + 1800}
+        C = _sh_checks(SH, spec, g, x, info.get("ctx"), info["win_ok"], {"risk_pts": t["risk_pts"]}, upto_last=False)
+        names = [SH_TYPE.get(tp, tp) for tp in x["types"]]
+        out[str(int(t["entry_t"]))] = {
+            "kind": "stophunt", "known_t": int(t["signal_t"]), "dir": dr, "mode": spec["mode"],
+            "pool": {"px": _r2(x["pool"]), "types": names, "label": " + ".join(names) + (" low" if dr > 0 else " high"),
+                     "t": int(x["t"]), "score": _r2(x["score"])},
+            "hunt": {"t": int(x["t"]), "ext_t": q.get("ext_t"), "ext_px": _r2(x["ext"]), "depth": _r2(q.get("depth")), "need": spec["depth"]},
+            "resweep": {"t": q.get("rs_t")} if q.get("rs_t") else None,
+            "idm": ({"t": q.get("idm_t"), "px": _r2(q.get("idm_px")), "kind": "after"} if q.get("idm_t") else
+                    {"t": x.get("pre_t"), "px": _r2(x.get("pre_px")), "kind": "before"} if x.get("pre_t") else None),
+            "disp": {"t": int(q["t"]), "body": _r2(q["body"]), "thr": _r2(q["thr"]), "atr": _r2(q["atr"]), "k": kb,
+                     "atr_x": _r2(q["body"] / q["atr"]) if q.get("atr") else None},
+            "mss": {"px": _r2(q.get("lvl")), "t": int(q["t"])} if q.get("lvl") is not None else None,
+            "limit": lim, "dol": "2R target (this pick uses no draw-on-liquidity target)" if spec["tg"] == "r2" else spec["tg"],
+            "checks": C}
+    return out
+
+
 # ============================================================================================ one poll, all strategies
 def run(df5: pd.DataFrame, one_min=None, now: int | None = None, cfg: dict | None = None, lit: list | None = None) -> dict:
     """One poll: every strategy of second_model.json that is on. df5 = the merged 5m history LIT's loop uses, one_min =
@@ -1298,7 +1490,8 @@ def run(df5: pd.DataFrame, one_min=None, now: int | None = None, cfg: dict | Non
             else:
                 fn = PLUGINS[sc["kind"]]
             r = fn(df5, one_min, sc, now, lit)
-            out["strategies"][key] = {**base, "trades": r["trades"], "state": r["state"], **({"brain": r["brain"]} if r.get("brain") else {})}
+            out["strategies"][key] = {**base, "trades": r["trades"], "state": r["state"], **({"brain": r["brain"]} if r.get("brain") else {}),
+                                      **({"marks": r["marks"]} if r.get("marks") else {})}
         except Exception as e:                       # never stops LIT or the other strategies
             out["strategies"][key] = {**base, "trades": [], "state": {"stage": "error", "text": f"error: {e.__class__.__name__}: {e}"},
                                       "error": f"{e.__class__.__name__}: {e}"}

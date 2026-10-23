@@ -1596,13 +1596,13 @@ def explain(g, spec, j, upto=None):
         A = atr[j - 1]
         p = dr * ev["p"][e]
         Fp = F["fl"] if dr > 0 else F["fh"]
-        pre = False
+        pre, pre_f = False, -1
         for f in Fp[np.searchsorted(Fp, j - 36):]:
             if f + 2 > j - 1:
                 break
             fp = l[f] if dr > 0 else -h[f]
             if p < fp <= p + A:
-                pre = True
+                pre, pre_f = True, int(f)
                 break
         ext, arg, bounce, inside, rs_bar, idm_bar, il, cz = 1e18, j, -1e18, False, -1, -1, float("nan"), float("nan")
         last = trig = None
@@ -1639,7 +1639,9 @@ def explain(g, spec, j, upto=None):
             st_ok = True if struct == 0 else (not math.isnan(lvl) and cq > lvl)
             last = dict(q=int(q), t=int(B["t"][q]), mode_ok=bool(mode_ok), body=float(body), thr=float(thr), atr=float(A),
                         close_beyond_pool=bool(cq > p), depth=float((p - ext) / A) if A > 0 else 0.0, struct_ok=bool(st_ok),
-                        lvl=None if math.isnan(lvl) else float(dr * lvl), rs=bool(rs_ok), idm=bool(idm_ok), close=float(c[q]))
+                        lvl=None if math.isnan(lvl) else float(dr * lvl), rs=bool(rs_ok), idm=bool(idm_ok), close=float(c[q]),
+                        rs_t=int(B["t"][rs_bar]) if rs_ok else None, idm_t=int(B["t"][idm_bar]) if idm_ok else None,
+                        idm_px=None if math.isnan(il) else float(dr * il), ext_t=int(B["t"][arg]))
             if mode_ok and cq > p and body >= thr and body > 0 and (p - ext) >= depth * A and st_ok:
                 trig = last
                 break
@@ -1653,6 +1655,8 @@ def explain(g, spec, j, upto=None):
         end_q = j + W
         out.append({"j": int(j), "t": int(B["t"][j]), "dr": dr, "pool": float(dr * p), "score": float(ev["score"][e]),
                     "types": [E.TYPES[i] for i in range(len(E.TYPES)) if tm >> i & 1], "ext": float(dr * ext), "pre": bool(pre),
+                    "pre_t": int(B["t"][pre_f]) if pre_f >= 0 else None,
+                    "pre_px": float(l[pre_f] if dr > 0 else h[pre_f]) if pre_f >= 0 else None,
                     "atr": float(A), "until_t": int(B["t"][j]) + 300 * (W + 1), "last": last, "trigger": trig,
                     "expired": trig is None and (last is None or last["q"] >= end_q or upto > (last or {}).get("q", upto))})
     return out

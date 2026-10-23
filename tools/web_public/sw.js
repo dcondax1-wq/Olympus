@@ -21,7 +21,10 @@
 // v27 (2026-10-22): ATLAS (strategy 2, the 25K) is its own bottom tab (second.js v3, secondcore.js v5 SecondUI.atlas), the
 // Home two-strategy cards (LIT · 50K / ATLAS · 25K), Strategy folds into More, brain.js v4 / alerts.js v3 (ATLAS names), hub.js v5.
 // v28 (2026-10-23): secondcore.js v6 (ATLAS page: candidate members (paper), the stop hunts sh_asia / sh_trend with brain + go / no-go).
-const CACHE = 'le-public-v28';
+// v29 (2026-10-23): tradepics.js (trade pictures: engine/trade_chart.py PNGs in charts/, data.json "charts"), secondcore.js v7
+// (each ATLAS / candidate brain card shows its latest trade picture, the ATLAS page a "Trade pictures" strip), brain.js v5 and
+// second.js v4 (LIT pictures on the Bot Brain and Trades pages). charts/<key>/<id>.png?v=<hash>: cache-first like other ?v= files.
+const CACHE = 'le-public-v29';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

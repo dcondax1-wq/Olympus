@@ -159,12 +159,12 @@ def part_d():
         o = json.loads(r.stdout.strip().splitlines()[-1])
     except Exception:
         o = {"ok": False, "err": r.stderr[-400:]}
-    check("d. the page renders the scorecard (node, stub DOM; SecondUI v6)", o.get("ok") and o.get("v") == 6, o)
+    check("d. the page renders the scorecard (node, stub DOM; SecondUI v6+)", o.get("ok") and o.get("v", 0) >= 6, o)
     idx = open(os.path.join(ROOT, "tools", "web_public", "index.html"), encoding="utf-8").read()
     sw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
     pcs = open(os.path.join(ROOT, "web_next", "js", "next", "second.js"), encoding="utf-8").read()
-    check("d. phone loads secondcore.js?v=6, service worker cache bumped (le-public-v26 or later), PC loads ?v=6",
-          "secondcore.js?v=6" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 26 and "secondcore.js?v=6" in pcs)
+    check("d. phone loads secondcore.js?v=7, service worker cache bumped (le-public-v29 or later), PC loads ?v=7",
+          "secondcore.js?v=7" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 29 and "secondcore.js?v=7" in pcs)
 
 
 def main():

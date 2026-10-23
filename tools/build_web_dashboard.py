@@ -1061,10 +1061,25 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # the PC hub pages' data (prop firms, business, market, learn, system): research/props/hub.json, built by tools/hub_data.py;
     # its keys sit next to the phone's (combo / funded / changelog / scoreboard win on a clash), home.json keeps the phone's only
     data["hub"] = {**(_load(os.path.join(ROOT, "research", "props", "hub.json"), None) or {}), **(hub or {})}
+    # trade pictures (engine/trade_chart.py): the cloud's paper-trade charts (<dash>/charts) + the backtest examples
+    # (research/lab/chart_examples) -> site/charts/, data.json "charts" (per strategy: items newest first, examples)
+    try:
+        from engine import trade_chart
+        data["charts"] = trade_chart.site_copy(os.path.join(os.path.dirname(state_path) or ".", "charts"), out)
+        print(f"  charts: {data['charts']['counts']['live']} paper-trade pictures + {data['charts']['counts']['examples']} examples -> charts/")
+    except Exception as e:
+        print("  charts unavailable:", e.__class__.__name__, e)
+        data["charts"] = None
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # home.json: the small file the Home screen draws from first (~100 KB instead of the 4 MB data.json), same build
     ex = data.get("extras") or {}
+    charts_home = None
+    try:
+        from engine import trade_chart
+        charts_home = trade_chart.compact_view(data.get("charts")) if data.get("charts") else None
+    except Exception:
+        pass
     home = {"built": data["built"], "home_only": True,
             "live": {**{k: live.get(k) for k in HOME_LIVE}, "bars": (live.get("bars") or [])[-120:], "brief": live.get("brief"),
                      "ledger": (live.get("ledger") or [])[:20], "push": {k: (live.get("push") or {}).get(k) for k in ("configured", "devices")}},
@@ -1079,6 +1094,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                                  "members": ((data.get("second") or {}).get("atlas") or {}).get("members")},
                        "strategies": [{**{k: v for k, v in s.items() if k not in ("backtest", "rules", "trades", "summary")},
                                        "trades": (s.get("trades") or [])[-12:]} for s in (data.get("second") or {}).get("strategies") or []]},
+            "charts": charts_home,                  # the newest trade pictures per strategy (engine/trade_chart.compact_view)
             "results": {"periods": {k: v for k, v in ((results or {}).get("periods") or {}).items()
                                     if k in ("2026 YTD", "2026 H1 (picked on)", "2026 H2 (check)", "2021-25 (reference)")}}}
     with open(os.path.join(out, "home.json"), "w", encoding="utf-8") as fh:

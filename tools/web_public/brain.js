@@ -60,13 +60,19 @@
     const n = b.nearest || {}, g = b.guards || {}, m = g.market || {};
     const row = (r) => `<div class="bz-lv"><span>${esc(r.label)}</span><b>${p2(r.price)}</b><em class="${cls(r.dist)}">${sg(r.dist, 0)} pts</em></div>`;
     const W = (b.watch || []).filter((w) => w.text);
-    return waiting(b, src) + trade(b) + `<div class="card"><h3>Nearest levels ${info('depth')}</h3><div class="bz-two"><div><div class="small mut">Above</div>${(n.above || []).map(row).join('') || '—'}</div>
+    return waiting(b, src) + trade(b) + litPic() + `<div class="card"><h3>Nearest levels ${info('depth')}</h3><div class="bz-two"><div><div class="small mut">Above</div>${(n.above || []).map(row).join('') || '—'}</div>
         <div><div class="small mut">Below</div>${(n.below || []).map(row).join('') || '—'}</div></div></div>
       ${W.length ? `<div class="card"><h3>Forming now</h3>${W.map((w) => `<p class="small"><b class="${w.side === 'LONG' ? 'up' : 'dn'}">${w.side}</b> ${esc(w.text)}</p>`).join('')}</div>` : ''}
       ${sizing(b)}
       <div class="card"><h3>Guards &amp; market</h3><p class="small">${esc(m.text || '')}${m.early_close ? ` · CME early close ${esc(m.early_close)} ET` : ''}</p>
         <p class="small">News: ${(g.news || []).length ? esc(g.news.map((x) => `${x.time || ''} ${x.title}`).join(' · ')) : 'no high-impact USD news'}</p>
         <p class="small mut">VIX ${num((g.vix || {}).vix, 1)} · band ${p2((g.vix || {}).dn)} / ${p2((g.vix || {}).up)} ${info('vix')}${(g.off || []).length ? ` · off: ${esc(g.off.join(', '))}` : ''}</p></div>`;
+  }
+  // LIT's latest trade picture (engine/trade_chart.py, data.json "charts"): tap = full screen, swipe between trades
+  function litPic() {
+    const T = window.TradePics, ch = (typeof D !== 'undefined' && D && D.charts) || null;
+    if (!T || !ch || !T.list(ch, 'lit').length) return '';
+    return `<div class="card bz-pic">${T.latest(ch, 'lit', {})}</div>`;
   }
   function vLevels(b) {
     const L = b.levels || [];
@@ -108,13 +114,15 @@
     if (S.who === 'second') {
       const box = document.createElement('div'); el.appendChild(box);
       if (!window.SecondUI || !window.SecondUI.brain) { box.innerHTML = emptyBox('Second brain not loaded.', 'secondcore.js did not load.'); return; }
-      window.SecondUI.brain(box, pickSecond() || { strategies: [] });
+      window.SecondUI.brain(box, pickSecond() || { strategies: [] }, { charts: D.charts || null });
+      if (window.TradePics) window.TradePics.settle(box);
       return;
     }
     if (!src) { el.insertAdjacentHTML('beforeend', emptyBox('No Bot Brain yet.', 'It appears once the PC bot (or the cloud paper bot) has run a LIT poll with this version.')); return; }
     const b = src.b;
     el.insertAdjacentHTML('beforeend', `<div class="bz-tabs" style="margin:8px 0">${segHTML('brTab', [['now', 'Now'], ['levels', 'Levels'], ['setups', 'Setups'], ['log', 'Log']], S.tab)}</div>
       <div id="brBody">${S.tab === 'levels' ? vLevels(b) : S.tab === 'setups' ? vSetups(b) : S.tab === 'log' ? vLog(b) : vNow(b, src)}</div>`);
+    if (window.TradePics) window.TradePics.settle(el);
     onSeg('brTab', (v) => { S.tab = v; view(el); });
   }
   // one floating explainer
@@ -154,7 +162,7 @@
 .bz-sh{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:15px}.bz-math{padding-left:18px;margin:8px 0}.bz-math li{padding:5px 0}
 .bz-log{list-style:none;margin:0;padding:0}.bz-log li{display:grid;grid-template-columns:46px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.45}
 .bz-log li.k-rejected span{color:var(--bad)}.bz-log li.k-entry span,.bz-log li.k-exit span{color:var(--good)}
-.bz-tile{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;border-color:color-mix(in srgb,var(--accent) 45%,transparent)}.bz-tt{font-size:16px;font-weight:650;line-height:1.4}`;
+.bz-pic .tp-card{border:0;padding:0;margin:0;background:none}.bz-tile{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;border-color:color-mix(in srgb,var(--accent) 45%,transparent)}.bz-tt{font-size:16px;font-weight:650;line-height:1.4}`;
   function install() {
     if (typeof P !== 'undefined' && !P.brain) P.brain = '<path d="M12 5.2a3 3 0 0 0-5.6-1A3 3 0 0 0 4.5 9a3.2 3.2 0 0 0 .3 5.6A3 3 0 0 0 9 19.3a3 3 0 0 0 3-1.3z"/><path d="M12 5.2a3 3 0 0 1 5.6-1A3 3 0 0 1 19.5 9a3.2 3.2 0 0 1-.3 5.6A3 3 0 0 1 15 19.3a3 3 0 0 1-3-1.3"/><path d="M12 5.2V18"/>';
     // its own main tab on the bottom bar, right after Home (owner 2026-10-21)
