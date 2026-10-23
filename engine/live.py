@@ -1241,7 +1241,27 @@ class LiveBot:
             self._second_route_tick(df_full, df1, res, sym, now)   # routed second strategies (OFF by default): LIT routed first
             self._account_b_tick(df_full, df1, sym, now)           # account B (OFF by default): its own account, after LIT
             self._second_tick(df_full, df1, res, now)
+            self._chart_tick(df_full, df1, res, now, brain_keep)  # trade pictures, background thread (read-only)
         return self.state
+
+    def _chart_tick(self, df5, df1, res, now, keep=None):
+        """Trade pictures (engine/trade_chart.py, read-only): this poll's LIT trades and the ATLAS / candidate strategies'
+        trades (their last paper run, LiveBot.second) drawn by one background worker after LIT's routing and the state save
+        (never delays an order; a busy worker skips the tick) -> logs/charts/, /api/next/charts + /api/next/chart/<id>.
+        Test harnesses: off unless their cfg asks ("charts": true)."""
+        if self.state_path != STATE_PATH and not self.cfg.get("charts"):
+            return
+        try:
+            from . import trade_chart as _tc
+            if getattr(self, "charts", None) is None:
+                self.charts = _tc.PcCharts()
+            lt = [t for t in (res.get("trades") or []) if t.get("entry_t") is not None]
+            pos = (res.get("state") or {}).get("position")
+            if pos and pos.get("entry_t") is not None and not any(int(t["entry_t"]) == int(pos["entry_t"]) for t in lt):
+                lt.append({**pos, "exit_kind": "OPEN"})
+            self.charts.tick(lt, getattr(self, "second", None), df5, df1, now, keep=keep)
+        except Exception as e:
+            self._note_error(f"trade charts failed: {e.__class__.__name__}: {e}")
 
     def _lit_all_hours(self) -> bool:
         """LIT all_hours on in the params this bot trades (research/writeups/lit-more-entries.md, the Asia slot): the CME

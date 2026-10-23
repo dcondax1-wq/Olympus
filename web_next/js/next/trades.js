@@ -7,6 +7,7 @@ import { go } from '../app.js';
 import { icon } from './icons.js';
 import { lineChart, countAll } from './viz.js';
 import { mount3d } from './fx3d.js';
+import { charts as loadCharts } from './pics.js';
 
 // trade charts (the same tradechart.js as the phone site: tools/web_public/tradechart.js, copied to /js/tradechart.js by
 // `cd tools/web_public/fx && npm run build`): a LIT trade drawn like TradingView's Long / Short Position tool, loaded on demand;
@@ -35,7 +36,17 @@ export function openChart(t) {
   openSheet(t, { chartOnly: true });
 }
 
-const st = { year: store.get('nx.trYear', '2026'), filter: 'all', q: '', sort: 'new', shown: 60, data: null, years: [] };
+const st = { year: store.get('nx.trYear', '2026'), filter: 'all', q: '', sort: 'new', shown: 60, data: null, years: [], charts: null };
+// trade pictures (engine/trade_chart.py via ./pics.js + tradepics.js): LIT's newest pictures (the PC bot's own trades, else
+// backtest examples) as a strip above the list; tap = full screen
+function picsStrip() {
+  const T = window.TradePics, ch = st.charts;
+  if (!T || !ch) return '';
+  const L = T.list(ch, 'lit');
+  if (!L.length) return '';
+  return `<div class="card nx-glass tp-trades"><div class="card-h"><h3>Trade pictures · LIT</h3><span class="muted small">${L[0].example ? 'backtest examples until the PC bot has its own' : 'the PC bot\'s trades, newest first'} · click for full screen, arrows between trades</span></div>
+    ${T.strip(L.slice(0, 24), { label: 'LIT trade pictures' })}</div>`;
+}
 let loaded = null;
 
 const FILTERS = [['all', 'All'], ['win', 'Wins'], ['loss', 'Losses'], ['long', 'Long'], ['short', 'Short'], ['half', 'Half size']];
@@ -112,6 +123,7 @@ function render() {
       <div class="nx-stat"><span>Avg R</span><b class="${cls(s.avgR)}">${fmtR(s.avgR)}</b><em>${s.avg$ != null ? fmtS$(s.avg$) + ' per trade' : 'per trade'}</em></div>
       <div class="nx-stat"><span>Half size</span><b data-count="${s.half}">${s.half}</b><em>${loaded?.model === 'lit' ? 'weekly-stop trades' : 'cold-streak trades'}</em></div>
     </div>
+    ${picsStrip()}
     <div class="card nx-glass fx-card" data-fx-card hidden><div class="card-h"><h3>Trade galaxy · ${rows.length} trades</h3><span class="muted small">every trade is a star: time → right, R ↑, stop size ↗ · drag to turn · click a star for its report</span></div><div class="fx3d galaxy" id="trGal"></div></div>
     <div class="card nx-glass"><div class="card-h"><h3>Equity · filtered trades</h3><span class="muted small">cumulative net $, oldest → newest</span></div><div id="trEq"></div></div>
     <div class="nx-toolbar">
@@ -123,6 +135,7 @@ function render() {
     <div class="nx-trades" id="trList">${rows.slice(0, st.shown).map(t => row(t, all.indexOf(t))).join('') || '<div class="empty">No trades match.</div>'}</div>
     ${rows.length > st.shown ? `<div class="nx-more"><button class="btn ghost" id="trMore">Show ${Math.min(60, rows.length - st.shown)} more</button></div>` : ''}`;
   countAll(el.querySelector('.nx-stats'));
+  if (window.TradePics) window.TradePics.settle(el);
   let eq = 0;
   lineChart($('#trEq'), [...rows].sort((a, b) => a.entry_t - b.entry_t).map(t => {
     eq += t.pnl;
@@ -204,4 +217,7 @@ async function load(force = false) {
   }
 }
 
-export function show() { load(); }
+export function show() {
+  load();
+  loadCharts().then((c) => { const had = !!st.charts; st.charts = c; if (c && !had && st.data && $('#page-trades')?.classList.contains('active')) render(); });
+}

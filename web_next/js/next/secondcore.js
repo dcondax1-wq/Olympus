@@ -6,6 +6,9 @@
 // paper trades and $, and the research numbers H1 / H2 / 2025 / 2021-24 alone and "with LIT" on one account. Read-only.
 // v6 (2026-10-23): "Candidate members (paper)" on the ATLAS page: the stop hunts (sh_asia, sh_trend; candCard) with their
 // brain, own go / no-go, paper trades, rules, research numbers and the 25K eval paths as an ATLAS member.
+// v7 (2026-10-23): trade pictures (engine/trade_chart.py via tradepics.js, window.TradePics): each brain card and candidate
+// card shows its member's latest trade picture (tap = full screen, pinch-zoom, swipe between trades), the ATLAS page a
+// "Trade pictures" strip; opts.charts = data.json "charts" (phone) / GET /api/next/charts (PC).
 (function () {
   'use strict';
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -18,6 +21,14 @@
   const C = { good: 'var(--good,#22c55e)', bad: 'var(--bad,#ef5350)', warn: 'var(--warn,#d4a72c)', mut: 'var(--muted,#8a93a6)', line: 'var(--line,rgba(140,150,170,.25))', acc: 'var(--accent,#6aa9ff)' };
   const STAGE = { waiting: ['Waiting', C.mut], armed: ['Armed', C.warn], in_trade: ['In a trade', C.acc], done: ['Done today', C.good], off: ['Off hours', C.mut], error: ['Error', C.bad] };
   const PER = [['H1', '2026 H1 (picked)'], ['H2', '2026 H2 (check)'], ['2025', '2025'], ['2021-24', '2021-24']];
+  // ---------------------------------------------------------------- trade pictures (tradepics.js; nothing when it is not loaded)
+  let PICS = null;
+  const TP = () => window.TradePics || null;
+  function pics(key, empty) {
+    const T = TP();
+    if (!T || !PICS) return '';
+    return T.latest(PICS, key, { empty: empty === false ? '' : 'No trade picture yet: the first paper trade of this strategy gets one at its entry.' });
+  }
 
   function stateBox(s, src) {
     const st = s || {};
@@ -94,6 +105,7 @@
     return `<div class="sc-card"><div class="sc-eyebrow" style="color:${rl.on ? C.acc : C.warn}">${esc(rl.label)}${s.candidate ? ' · CANDIDATE ATLAS MEMBER' : ''} · ${esc(s.short || s.key)}${s.on ? '' : ' · OFF'}</div><h3>${esc(s.label)}</h3>
       ${s.summary ? `<p class="sc-note">${esc(s.summary)}</p>` : ''}
       ${stateBox(st, src)}
+      ${pics(s.key, false)}
       <div class="sc-stats"><div class="sc-stat"><span>Paper trades</span><b>${n0(p.n)}</b><em>${n0(p.wins)} winners</em></div>
         <div class="sc-stat"><span>Paper $ (own, $500 risk)</span><b class="${cl(p.usd)}">${usd(p.usd)}</b><em>since the ledger started</em></div>
         <div class="sc-stat"><span>With LIT (one account)${s.with_lit_label ? ' · ' + esc(s.with_lit_label) : ''}</span><b class="${cl(p.with_lit_usd)}">${usd(p.with_lit_usd)}</b><em>${n0(p.with_lit_n)} taken</em></div></div>
@@ -141,6 +153,7 @@
   function render(el, S, opts) {
     css();
     opts = opts || {};
+    PICS = opts.charts || PICS;
     try {
       if (!S || !(S.strategies || []).length) {
         el.innerHTML = `<div class="sc-card"><b>No ATLAS members in this build.</b><p class="sc-note">${esc((S && S.error) || 'The next cloud run adds them (second_model.json).')}</p></div>`;
@@ -182,6 +195,7 @@
       <h3>${esc(s.label || s.key)}</h3>
       <div class="sc-state" style="border-color:${col}"><span class="sc-pill" style="background:${col}">${esc(lab)}</span><b>${esc(b.text || st.text || '—')}</b>
         <em>${esc((b.focus || {}).label || '')}${b.closed_bars_only !== false ? ' · closed bars only' : ''}${s.src ? ' · ' + esc(s.src) : ''}</em></div>
+      ${pics(s.key)}
       ${b.error ? `<p class="sc-note" style="color:${C.bad}">Brain error: ${esc(b.error)}</p>` : ''}
       ${checks ? `<h4>Rules in the engine's order${ff ? ` · stopped at: <span style="color:${C.bad}">${esc(((b.checks || []).find((c) => c.k === ff) || {}).name || ff)}</span>` : ''}</h4><ul class="sb-ck">${checks}</ul>` : ''}
       ${pl ? `<p class="sc-note"><b>${esc(pl.side === 'long' ? 'LONG' : 'SHORT')} plan${pl.estimate ? ' (estimate until the fill bar)' : ''}:</b> entry ${px(pl.entry)} · stop ${px(pl.stop)} (${n0(pl.risk_pts, 2)} pts) · target ${px(pl.target)}${pl.rr ? ` (${n0(pl.rr, 2)}R)` : ''} · ${n0(pl.qty_500)} micros at $500 risk${ro ? ' (on the eval: capped by 60% of the room and the soft daily loss)' : ''}${pl.when ? ' · ' + esc(pl.when) + ' ET' : ''}</p>` : ''}
@@ -197,6 +211,7 @@
     css();
     if (!document.getElementById('sb-css')) { const t = document.createElement('style'); t.id = 'sb-css'; t.textContent = BCSS; document.head.appendChild(t); }
     opts = opts || {};
+    PICS = opts.charts || PICS;
     try {
       const L = (data && data.strategies) || [];
       if (!L.length) {
@@ -319,6 +334,7 @@
   function atlas(el, S, opts) {
     css2();
     opts = opts || {};
+    PICS = opts.charts || PICS;
     try {
       if (!S || !(S.strategies || []).length) {
         el.innerHTML = `<div class="sc-card"><b>No ATLAS members in this build.</b><p class="sc-note">${esc((S && S.error) || 'The next cloud run adds them (second_model.json).')}</p></div>`;
@@ -340,6 +356,10 @@
         <p class="sc-note">${esc(name)} trades paper until the go / no-go below says Ready. Once the 25K runs, this card shows its balance, room, target, sessions and pass / fail.</p></div>`;
       const brainH = `<h3 class="at-sec">${esc(name)} brain <span class="sc-mut">· ${esc((bl && bl.src) || '—')}${bl && bl.t ? ' · ' + hm(bl.t) + ' ET' : ''}</span></h3>`
         + (bs.length ? bs.map(brainCard).join('') : `<div class="sc-card"><b>No ATLAS brain yet.</b><p class="sc-note">It appears after the PC bot (or the cloud run) has run ATLAS with this version.</p></div>`);
+      const T = TP(), mine = T && PICS ? T.all(PICS, keys) : [], exs = T && PICS && mine.length < 8 ? T.examples(PICS, keys) : [];
+      const picH = T ? `<div class="sc-card at-pics"><h3>Trade pictures <span class="sc-mut">· ${mine.length ? n0(mine.length) + ' paper trade' + (mine.length === 1 ? '' : 's') + (exs.length ? ' + backtest examples' : '') : exs.length ? 'backtest examples until the first paper trade' : 'none yet'}</span></h3>
+        <p class="sc-note">Every ${esc(name)} trade as a chart: the swept level, the setup candles and the plan as the bot saw them at the entry (bright), then what happened (faded). Tap for full screen · pinch or double-tap to zoom · swipe between trades.</p>
+        ${T.strip(mine.slice(0, 24).concat(exs), { label: name + ' trade pictures', empty: 'No pictures yet: the cloud draws one at each paper trade\'s entry and again at its exit.' })}</div>` : '';
       const mrow = per.filter((s) => s.scorecard);
       const goH = scb ? `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.acc}">Go / no-go · before buying the 25K</div>${scoreBox(scb, name + ' (' + n0((scb.keys || keys).length) + ' members pooled)')}
         ${mrow.length ? `<div class="sc-tw"><table class="sc-t"><thead><tr><th>Member</th><th>Trades</th><th>Cum R</th><th>Verdict</th></tr></thead><tbody>${mrow.map((s) => `<tr><td>${esc(s.short || s.key)}</td><td>${n0(s.scorecard.n)}</td><td class="${cl(s.scorecard.cum_r)}">${fR(s.scorecard.cum_r)}</td><td>${esc(s.scorecard.text)}</td></tr>`).join('')}</tbody></table></div>` : ''}
@@ -360,14 +380,17 @@
         + cands.map((s) => candCard(s, live, cbr(s.key))).join('') : '';
       const others = S.strategies.filter((x) => !keys.includes(x.key) && !x.candidate);
       const otH = others.length ? `<details class="sc-card"><summary><b>Other paper shadows</b> (${others.map((s) => esc(s.short || s.key)).join(', ')}): not part of ${esc(name)}</summary>${others.map((s) => strat(s, live)).join('')}</details>` : '';
-      el.innerHTML = hero + evCard + brainH + goH + trH + caH + ruH + btH + otH;
+      el.innerHTML = hero + evCard + brainH + picH + goH + trH + caH + ruH + btH + otH;
+      if (T) T.settle(el);
     } catch (e) { el.innerHTML = `<div class="sc-card"><b>The ATLAS page failed to draw</b><p class="sc-note">${esc(String(e && e.message || e))}</p></div>`; }
   }
   // a candidate member (the stop hunts, second_model.json "candidate": true): its brain (stage, waiting for, rule checks,
   // plan, log), its own go / no-go, paper trades, rules, research numbers and the 25K eval paths with it as an ATLAS member
   // the brain card's body only (rule checks, plan, log) under the candidate's own header and state box
   function brainIn(b) {
+    const h0 = PICS; PICS = null;                // the candidate card shows its picture once, above its brain
     const h = brainCard(b), i = h.indexOf('</em></div>');
+    PICS = h0;
     const body = i >= 0 ? h.slice(i + 11, h.lastIndexOf('</div>')) : '';
     const f = (b.brain || {}).focus || {};
     return `<div class="sb-in"><h4>Brain${f.label ? ' · ' + esc(f.label) : ''} <span class="sc-mut">· closed bars only${b.src ? ' · ' + esc(b.src) : ''}</span></h4>${body.trim() || '<p class="sc-note">No brain yet: the PC bot / the next cloud run fills it.</p>'}</div>`;
@@ -388,6 +411,7 @@
     return `<div class="sc-card at-cand"><div class="sc-eyebrow" style="color:${C.warn}">Candidate member · PAPER · ${esc(s.short || s.key)}${s.on ? '' : ' · OFF'}</div><h3>${esc(s.label)}</h3>
       ${s.summary ? `<p class="sc-note">${esc(s.summary)}</p>` : ''}
       ${stateBox(st, lv && lv.state ? 'PC (live)' : s.state_src === 'PC' ? 'PC' : 'cloud')}
+      ${pics(s.key)}
       ${brainIn(b)}
       <div class="sc-stats"><div class="sc-stat"><span>Paper trades</span><b>${n0(p.n)}</b><em>${n0(p.wins)} winners</em></div>
         <div class="sc-stat"><span>Paper $ ($500 risk)</span><b class="${cl(p.usd)}">${usd(p.usd)}</b><em>since the ledger started</em></div></div>
@@ -447,5 +471,6 @@ border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);border-radius:16p
 .at-two-bar{position:relative;height:6px;border-radius:99px;background:${C.line};overflow:hidden}.at-two-bar u{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--c)}
 .at-two-p{font-size:11.5px;opacity:.75;line-height:1.35}.at-two-n{font-size:12.5px;line-height:1.4;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 @media (max-width:340px){.at-two{grid-template-columns:1fr}}`;
-  window.SecondUI = { render, brain, brainList, acctB, scoreBox, scoreCard, atlas, atlasStatus, atlasCard, atlasMoney, twoCards, members, candCard, version: 6 };
+  window.SecondUI = { render, brain, brainList, acctB, scoreBox, scoreCard, atlas, atlasStatus, atlasCard, atlasMoney, twoCards, members, candCard,
+    setCharts: (c) => { PICS = c || null; }, version: 7 };
 })();

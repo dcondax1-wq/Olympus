@@ -28,7 +28,19 @@
       'EMA + MACD + S/R on its own 25K, next to LIT on the 50K: status, brain, go / no-go, trades, rules, backtest') : '<h2>ATLAS</h2>') + '<div id="atRoot"></div>';
     const root = el.querySelector('#atRoot');
     if (!window.SecondUI || !window.SecondUI.atlas) { root.innerHTML = '<div class="card">secondcore.js did not load.</div>'; return; }
-    window.SecondUI.atlas(root, S, { live: liveCut(), brain: brainOf() });
+    window.SecondUI.atlas(root, S, { live: liveCut(), brain: brainOf(), charts: chartsOf() });
+  }
+
+  // trade pictures (engine/trade_chart.py): data.json "charts" (home.json carries the newest 3 per strategy)
+  const chartsOf = () => { const h = HD(); return (h && h.charts) || null; };
+  // Trades page: LIT's trade pictures on top (its paper trades, else backtest examples); tap = full screen
+  function litPics() {
+    const T = window.TradePics, ch = chartsOf();
+    if (!T || !ch) return '';
+    const L = T.list(ch, 'lit');
+    if (!L.length) return '';
+    return `<div class="card tp-trades"><div class="card-h"><h3>Trade pictures · LIT</h3><span class="meta">${L[0].example ? 'backtest examples until the first paper trade' : 'newest first'} · tap for full screen</span></div>
+      ${T.strip(L.slice(0, 20), { label: 'LIT trade pictures' })}</div>`;
   }
 
   // ------------------------------------------------------------------ Home: "LIT · 50K" and "ATLAS · 25K" side by side
@@ -97,6 +109,19 @@
         } catch (e) { console.warn('atlas home cards', e); }
       };
       VIEWS.today.__atlas = true;
+    }
+    const tr0 = VIEWS.trades;
+    if (tr0 && !tr0.__pics) {
+      VIEWS.trades = function (el) {
+        tr0.apply(this, arguments);
+        try {
+          const h = litPics(); if (!h) return;
+          const hd = el.querySelector('.stats') || el.querySelector('.card');
+          if (hd) hd.insertAdjacentHTML('beforebegin', h); else el.insertAdjacentHTML('beforeend', h);
+          if (window.TradePics) window.TradePics.settle(el);
+        } catch (e) { console.warn('trade pictures', e); }
+      };
+      VIEWS.trades.__pics = true;
     }
     if (typeof nav === 'function') { nav(); if (typeof route === 'function') route(); }
   }

@@ -7,6 +7,7 @@
 // /api/next/brain/second, /api/next/pc/status + /api/next/pc/account (the LIT card). Renderer: ./secondcore.js (a
 // byte-identical copy of tools/web_public/secondcore.js, shared with the phone app). Read-only.
 import { $, esc } from '../util.js';
+import { charts } from './pics.js';
 
 let loading = null;
 
@@ -14,7 +15,7 @@ function core() {
   if (window.SecondUI && window.SecondUI.atlas) return Promise.resolve();
   if (!loading) loading = new Promise((ok, bad) => {
     const s = document.createElement('script');
-    s.src = new URL('./secondcore.js?v=6', import.meta.url).href;
+    s.src = new URL('./secondcore.js?v=7', import.meta.url).href;
     s.onload = () => ok(); s.onerror = () => { loading = null; bad(new Error('secondcore.js did not load')); };
     document.head.appendChild(s);
   });
@@ -27,24 +28,25 @@ async function show() {
   const el = $('#page-second'); if (!el) return;
   el.innerHTML = '<div class="nx-skel"><i></i><i></i></div>';
   let S;
-  try { await core(); S = await getJ('/api/next/second'); }
+  let CH = null;
+  try { await core(); [S, CH] = await Promise.all([getJ('/api/next/second'), charts()]); }
   catch (e) { el.innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
   el.innerHTML = '<div id="scRoot"></div>';
-  window.SecondUI.render($('#scRoot', el), S, {});
+  window.SecondUI.render($('#scRoot', el), S, { charts: CH });
 }
 export const second = { show };
 
 async function showAtlas() {
   const el = $('#page-atlas'); if (!el) return;
   if (!el.querySelector('#atRoot')) el.innerHTML = '<div class="nx-skel"><i></i><i></i></div>';
-  let S, B = null;
+  let S, B = null, CH = null;
   try {
     await core();
-    [S, B] = await Promise.all([getJ('/api/next/second'), getJ('/api/next/brain/second').catch(() => null)]);
+    [S, B, CH] = await Promise.all([getJ('/api/next/second'), getJ('/api/next/brain/second').catch(() => null), charts()]);
   } catch (e) { el.innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
   el.innerHTML = `<div class="nx-hero"><div><div class="nx-eyebrow">Strategy 2 · the 25K</div><h2>ATLAS</h2>
     <p class="muted">EMA + MACD + S/R on its own 25K, next to LIT on the 50K: status, brain, go / no-go, trades, rules, backtest. Read-only.</p></div></div><div id="atRoot"></div>`;
-  window.SecondUI.atlas($('#atRoot', el), S, { brain: brainOf(B) });
+  window.SecondUI.atlas($('#atRoot', el), S, { brain: brainOf(B), charts: CH });
 }
 export const atlas = { show: showAtlas };
 

@@ -445,3 +445,8 @@ router.include_router(_brain_router)
 # AI watch (engine/ai_watch.py: anomalies, drift, both-accounts loss, rule-change log): read-only GET (engine/ai_api.py)
 from .ai_api import router as _ai_router  # noqa: E402
 router.include_router(_ai_router)
+
+# Trade pictures (engine/trade_chart.py): the PC bot's chart PNG of each of its trades + the backtest examples
+# (/api/next/charts, /api/next/chart/<strategy>.<day>_<HHMM>_<side>; engine/chart_api.py, read-only)
+from .chart_api import router as _chart_router  # noqa: E402
+router.include_router(_chart_router)
