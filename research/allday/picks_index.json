@@ -1,0 +1,600 @@
+{
+ "built": "2026-10-23 15:04",
+ "files": {
+  "h1_open18": {
+   "key": "orb|open18|30,bar|R1.5,None,eod",
+   "how": "H1 pick (2026 Jan-Jun, win % >= 50, plateau score)",
+   "verdict": "fails H2",
+   "spans": {
+    "H1": {
+     "n": 95,
+     "tpw": 3.71,
+     "win": 51.6,
+     "pf": 1.46,
+     "net": 14558
+    },
+    "H2": {
+     "n": 60,
+     "tpw": 3.85,
+     "win": 35.0,
+     "pf": 0.66,
+     "net": -9486
+    },
+    "2025": {
+     "n": 176,
+     "tpw": 3.41,
+     "win": 39.2,
+     "pf": 0.89,
+     "net": -8629
+    },
+    "2021-24": {
+     "n": 415,
+     "tpw": 2.55,
+     "win": 38.3,
+     "pf": 0.85,
+     "net": -28542
+    }
+   }
+  },
+  "h1_asia": {
+   "key": "orb|asia|15,bar|R3,1.0,w",
+   "how": "H1 pick (2026 Jan-Jun, win % >= 50, plateau score)",
+   "verdict": "fails H2",
+   "spans": {
+    "H1": {
+     "n": 119,
+     "tpw": 4.65,
+     "win": 54.6,
+     "pf": 1.37,
+     "net": 12834
+    },
+    "H2": {
+     "n": 75,
+     "tpw": 4.81,
+     "win": 48.0,
+     "pf": 0.92,
+     "net": -1793
+    },
+    "2025": {
+     "n": 221,
+     "tpw": 4.28,
+     "win": 53.8,
+     "pf": 0.96,
+     "net": -2583
+    },
+    "2021-24": {
+     "n": 574,
+     "tpw": 3.53,
+     "win": 47.7,
+     "pf": 0.91,
+     "net": -20275
+    }
+   }
+  },
+  "h1_late_asia": {
+   "key": "orb|late_asia|15,opp|R3,1.0,eod",
+   "how": "H1 pick (2026 Jan-Jun, win % >= 50, plateau score)",
+   "verdict": "fails H2",
+   "spans": {
+    "H1": {
+     "n": 122,
+     "tpw": 4.77,
+     "win": 59.0,
+     "pf": 1.85,
+     "net": 23605
+    },
+    "H2": {
+     "n": 76,
+     "tpw": 4.87,
+     "win": 46.1,
+     "pf": 1.01,
+     "net": 165
+    },
+    "2025": {
+     "n": 244,
+     "tpw": 4.73,
+     "win": 47.5,
+     "pf": 0.85,
+     "net": -13347
+    },
+    "2021-24": {
+     "n": 757,
+     "tpw": 4.65,
+     "win": 49.8,
+     "pf": 0.9,
+     "net": -26668
+    }
+   }
+  },
+  "h1_lon_open": {
+   "key": "lit|lon_open|0.75,0.6,8.0,1.0",
+   "how": "H1 pick (2026 Jan-Jun, win % >= 50, plateau score)",
+   "verdict": "fails H2",
+   "spans": {
+    "H1": {
+     "n": 57,
+     "tpw": 2.23,
+     "win": 64.9,
+     "pf": 6.05,
+     "net": 28218
+    },
+    "H2": {
+     "n": 23,
+     "tpw": 1.47,
+     "win": 47.8,
+     "pf": 2.14,
+     "net": 4725
+    },
+    "2025": {
+     "n": 61,
+     "tpw": 1.18,
+     "win": 54.1,
+     "pf": 1.12,
+     "net": 1374
+    },
+    "2021-24": {
+     "n": 180,
+     "tpw": 1.11,
+     "win": 49.4,
+     "pf": 0.73,
+     "net": -13548
+    }
+   }
+  },
+  "h1_london": {
+   "key": "mr|london|vwap,2.5|R1.5,1.0,eod",
+   "how": "H1 pick (2026 Jan-Jun, win % >= 50, plateau score)",
+   "verdict": "fails H2",
+   "spans": {
+    "H1": {
+     "n": 115,
+     "tpw": 4.49,
+     "win": 53.0,
+     "pf": 1.32,
+     "net": 9718
+    },
+    "H2": {
+     "n": 76,
+     "tpw": 4.87,
+     "win": 43.4,
+     "pf": 0.64,
+     "net": -8527
+    },
+    "2025": {
+     "n": 241,
+     "tpw": 4.67,
+     "win": 47.7,
+     "pf": 0.87,
+     "net": -11062
+    },
+    "2021-24": {
+     "n": 745,
+     "tpw": 4.58,
+     "win": 51.4,
+     "pf": 0.89,
+     "net": -30306
+    }
+   }
+  },
+  "h1_ny_pre": {
+   "key": "lit|ny_pre|0.5,0.8,8.0,1.0",
+   "how": "H1 pick (2026 Jan-Jun, win % >= 50, plateau score)",
+   "verdict": "fails H2",
+   "spans": {
+    "H1": {
+     "n": 17,
+     "tpw": 0.66,
+     "win": 64.7,
+     "pf": 6.11,
+     "net": 11954
+    },
+    "H2": {
+     "n": 7,
+     "tpw": 0.45,
+     "win": 14.3,
+     "pf": 0.0,
+     "net": -1905
+    },
+    "2025": {
+     "n": 24,
+     "tpw": 0.47,
+     "win": 50.0,
+     "pf": 1.34,
+     "net": 1739
+    },
+    "2021-24": {
+     "n": 80,
+     "tpw": 0.49,
+     "win": 40.0,
+     "pf": 0.34,
+     "net": -14819
+    }
+   }
+  },
+  "h1_ny_open": {
+   "key": "reclaim|ny_open|sofar,0.0,3,close|S,1.0,eod",
+   "how": "H1 pick (2026 Jan-Jun, win % >= 50, plateau score)",
+   "verdict": "fails H2",
+   "spans": {
+    "H1": {
+     "n": 51,
+     "tpw": 1.99,
+     "win": 52.9,
+     "pf": 1.53,
+     "net": 6052
+    },
+    "H2": {
+     "n": 30,
+     "tpw": 1.92,
+     "win": 46.7,
+     "pf": 0.02,
+     "net": -7155
+    },
+    "2025": {
+     "n": 126,
+     "tpw": 2.44,
+     "win": 44.4,
+     "pf": 0.74,
+     "net": -9444
+    },
+    "2021-24": {
+     "n": 449,
+     "tpw": 2.76,
+     "win": 43.9,
+     "pf": 0.8,
+     "net": -27430
+    }
+   }
+  },
+  "h1_ny_mid": {
+   "key": "cont|ny_mid|sofar,0.65,0.25|R1.5,None,w",
+   "how": "H1 pick (2026 Jan-Jun, win % >= 50, plateau score)",
+   "verdict": "fails H2",
+   "spans": {
+    "H1": {
+     "n": 23,
+     "tpw": 0.9,
+     "win": 52.2,
+     "pf": 1.92,
+     "net": 2668
+    },
+    "H2": {
+     "n": 12,
+     "tpw": 0.77,
+     "win": 33.3,
+     "pf": 0.31,
+     "net": -2404
+    },
+    "2025": {
+     "n": 44,
+     "tpw": 0.85,
+     "win": 47.7,
+     "pf": 1.75,
+     "net": 5525
+    },
+    "2021-24": {
+     "n": 139,
+     "tpw": 0.85,
+     "win": 39.6,
+     "pf": 0.88,
+     "net": -5364
+    }
+   }
+  },
+  "h1_ny_pm": {
+   "key": "reclaim|ny_pm|prev,0.0,3,close|S,1.0,w",
+   "how": "H1 pick (2026 Jan-Jun, win % >= 50, plateau score)",
+   "verdict": "fails H2",
+   "spans": {
+    "H1": {
+     "n": 64,
+     "tpw": 2.5,
+     "win": 56.2,
+     "pf": 2.51,
+     "net": 26639
+    },
+    "H2": {
+     "n": 33,
+     "tpw": 2.12,
+     "win": 45.5,
+     "pf": 1.03,
+     "net": 365
+    },
+    "2025": {
+     "n": 128,
+     "tpw": 2.48,
+     "win": 49.2,
+     "pf": 0.86,
+     "net": -6209
+    },
+    "2021-24": {
+     "n": 400,
+     "tpw": 2.46,
+     "win": 42.8,
+     "pf": 0.7,
+     "net": -45991
+    }
+   }
+  },
+  "long_open18": {
+   "key": "reclaim|open18|pd,0.0,3,close|R3,None,eod",
+   "how": "long-view pick (2021-24, plateau score)",
+   "verdict": "fails a check",
+   "spans": {
+    "H1": {
+     "n": 19,
+     "tpw": 0.74,
+     "win": 26.3,
+     "pf": 1.09,
+     "net": 650
+    },
+    "H2": {
+     "n": 12,
+     "tpw": 0.77,
+     "win": 16.7,
+     "pf": 0.63,
+     "net": -2322
+    },
+    "2025": {
+     "n": 41,
+     "tpw": 0.79,
+     "win": 19.5,
+     "pf": 0.6,
+     "net": -8037
+    },
+    "2021-24": {
+     "n": 96,
+     "tpw": 0.59,
+     "win": 36.5,
+     "pf": 1.51,
+     "net": 20985
+    }
+   }
+  },
+  "long_asia": {
+   "key": "reclaim|asia|prev,0.5,6,cisd|S,None,eod",
+   "how": "long-view pick (2021-24, plateau score)",
+   "verdict": "holds 2025/H1/H2",
+   "spans": {
+    "H1": {
+     "n": 25,
+     "tpw": 0.98,
+     "win": 44.0,
+     "pf": 1.11,
+     "net": 846
+    },
+    "H2": {
+     "n": 25,
+     "tpw": 1.6,
+     "win": 40.0,
+     "pf": 1.85,
+     "net": 5653
+    },
+    "2025": {
+     "n": 38,
+     "tpw": 0.74,
+     "win": 34.2,
+     "pf": 1.22,
+     "net": 3319
+    },
+    "2021-24": {
+     "n": 146,
+     "tpw": 0.9,
+     "win": 41.1,
+     "pf": 1.39,
+     "net": 25189
+    }
+   }
+  },
+  "long_late_asia": {
+   "key": "reclaim|late_asia|sofar,0.0,3,cisd|S,None,w",
+   "how": "long-view pick (2021-24, plateau score)",
+   "verdict": "fails a check",
+   "spans": {
+    "H1": {
+     "n": 15,
+     "tpw": 0.59,
+     "win": 20.0,
+     "pf": 0.33,
+     "net": -4642
+    },
+    "H2": {
+     "n": 17,
+     "tpw": 1.09,
+     "win": 17.6,
+     "pf": 0.22,
+     "net": -6954
+    },
+    "2025": {
+     "n": 25,
+     "tpw": 0.48,
+     "win": 48.0,
+     "pf": 1.48,
+     "net": 5070
+    },
+    "2021-24": {
+     "n": 58,
+     "tpw": 0.36,
+     "win": 41.4,
+     "pf": 1.36,
+     "net": 8224
+    }
+   }
+  },
+  "long_lon_open": {
+   "key": "reclaim|lon_open|or30,0.5,6,cisd|R1.5,None,eod",
+   "how": "long-view pick (2021-24, plateau score)",
+   "verdict": "fails a check",
+   "spans": {
+    "H1": {
+     "n": 46,
+     "tpw": 1.8,
+     "win": 34.8,
+     "pf": 0.71,
+     "net": -4080
+    },
+    "H2": {
+     "n": 29,
+     "tpw": 1.86,
+     "win": 31.0,
+     "pf": 0.84,
+     "net": -1101
+    },
+    "2025": {
+     "n": 96,
+     "tpw": 1.86,
+     "win": 35.4,
+     "pf": 0.87,
+     "net": -4126
+    },
+    "2021-24": {
+     "n": 340,
+     "tpw": 2.09,
+     "win": 48.2,
+     "pf": 1.33,
+     "net": 36724
+    }
+   }
+  },
+  "long_london": {
+   "key": "lit|london|0.5,0.8,8.0,1.5",
+   "how": "long-view pick (2021-24, plateau score)",
+   "verdict": "fails a check",
+   "spans": {
+    "H1": {
+     "n": 33,
+     "tpw": 1.29,
+     "win": 39.4,
+     "pf": 1.4,
+     "net": 2685
+    },
+    "H2": {
+     "n": 16,
+     "tpw": 1.03,
+     "win": 37.5,
+     "pf": 1.55,
+     "net": 1451
+    },
+    "2025": {
+     "n": 32,
+     "tpw": 0.62,
+     "win": 40.6,
+     "pf": 0.65,
+     "net": -2324
+    },
+    "2021-24": {
+     "n": 134,
+     "tpw": 0.82,
+     "win": 44.0,
+     "pf": 1.31,
+     "net": 11744
+    }
+   }
+  },
+  "long_ny_open": {
+   "key": "reclaim|ny_open|pd,0.0,6,close|S,None,eod",
+   "how": "long-view pick (2021-24, plateau score)",
+   "verdict": "fails a check",
+   "spans": {
+    "H1": {
+     "n": 5,
+     "tpw": 0.2,
+     "win": 20.0,
+     "pf": 0.31,
+     "net": -1416
+    },
+    "H2": {
+     "n": 3,
+     "tpw": 0.19,
+     "win": 0.0,
+     "pf": 0.0,
+     "net": -1968
+    },
+    "2025": {
+     "n": 18,
+     "tpw": 0.35,
+     "win": 27.8,
+     "pf": 2.13,
+     "net": 6906
+    },
+    "2021-24": {
+     "n": 81,
+     "tpw": 0.5,
+     "win": 22.2,
+     "pf": 1.56,
+     "net": 19800
+    }
+   }
+  },
+  "long_ny_mid": {
+   "key": "reclaim|ny_mid|pd,0.0,3,close|R3,None,w",
+   "how": "long-view pick (2021-24, plateau score)",
+   "verdict": "fails a check",
+   "spans": {
+    "H1": {
+     "n": 11,
+     "tpw": 0.43,
+     "win": 18.2,
+     "pf": 0.32,
+     "net": -4100
+    },
+    "H2": {
+     "n": 1,
+     "tpw": 0.06,
+     "win": 0.0,
+     "pf": 0.0,
+     "net": -437
+    },
+    "2025": {
+     "n": 15,
+     "tpw": 0.29,
+     "win": 26.7,
+     "pf": 1.47,
+     "net": 2453
+    },
+    "2021-24": {
+     "n": 36,
+     "tpw": 0.22,
+     "win": 44.4,
+     "pf": 1.45,
+     "net": 6735
+    }
+   }
+  },
+  "peeked_open18_vwap": {
+   "key": "mr|open18|vwap,2.5|S,None,w",
+   "how": "long-view pick that was positive in 2025, H1 and H2 (chosen after looking)",
+   "verdict": "holds 2025/H1/H2",
+   "spans": {
+    "H1": {
+     "n": 8,
+     "tpw": 0.31,
+     "win": 37.5,
+     "pf": 1.87,
+     "net": 2080
+    },
+    "H2": {
+     "n": 6,
+     "tpw": 0.38,
+     "win": 33.3,
+     "pf": 1.26,
+     "net": 625
+    },
+    "2025": {
+     "n": 27,
+     "tpw": 0.52,
+     "win": 44.4,
+     "pf": 1.1,
+     "net": 1059
+    },
+    "2021-24": {
+     "n": 47,
+     "tpw": 0.29,
+     "win": 51.1,
+     "pf": 1.39,
+     "net": 6217
+    }
+   }
+  }
+ }
+}
