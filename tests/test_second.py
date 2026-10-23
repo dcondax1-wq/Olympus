@@ -389,8 +389,11 @@ def brain(D, n_per=6):
               bad_why[:4])
     # the heartbeat cut stays small
     r = D.poll(day_close(D.ref["sr_nyreclaim"][3]["day"]))
-    size = len(json.dumps(second.compact(r), default=str))
-    check(f"brain: the heartbeat / live.json cut of every strategy's brain is small ({size:,} bytes < 16 KB)", size < 16000, size)
+    cp = second.compact(r)
+    cand = {k: len(json.dumps(v, default=str)) for k, v in cp["strategies"].items() if v.get("candidate")}   # stop-hunt candidates
+    size = len(json.dumps({**cp, "strategies": {k: v for k, v in cp["strategies"].items() if k not in cand}}, default=str))
+    check(f"brain: the heartbeat / live.json cut of every strategy's brain is small ({size:,} bytes < 16 KB; candidate members "
+          f"{cand} < 3.5 KB each)", size < 16000 and all(v < 3500 for v in cand.values()), (size, cand))
     print(f"   ({time.time() - t0:.0f}s)", flush=True)
 
 
@@ -486,10 +489,11 @@ def cloud(D):
         check("a finished paper trade is frozen (a disagreeing re-run is only noted)",
               r2 is not None and r2["exit_kind"] == row["exit_kind"] and (r2.get("revised_replay") or {}).get("exit_kind") == "TARGET", r2)
         blk = second.dashboard_block(sec)
+        mem = [s for s in blk["strategies"] if not s.get("candidate")]       # candidates (stop hunts): tests/test_second_stophunt.py
         check("dashboard block: every strategy with rules, backtest H1/H2/2025/2021-24 + with-LIT tables and paper trades",
-              len(blk["strategies"]) == len(REF_FILE) + 1 and all(s["rules"] and s["backtest"]["own"].get("H2") and s["backtest"]["with_lit"].get("H1")
-                                                  and s["backtest"]["own"].get("2021-24") for s in blk["strategies"])
-              and all(s["trades"] for s in blk["strategies"] if s["key"] not in ("sr_nyreclaim", "lit_asia")),
+              len(mem) == len(REF_FILE) + 1 and all(s["rules"] and s["backtest"]["own"].get("H2") and s["backtest"]["with_lit"].get("H1")
+                                                  and s["backtest"]["own"].get("2021-24") for s in mem)
+              and all(s["trades"] for s in mem if s["key"] not in ("sr_nyreclaim", "lit_asia")),
               [(s["key"], bool(s["rules"]), list(s["backtest"]["own"]), s["backtest"].get("error")) for s in blk["strategies"]])
     finally:
         heartbeat.read, push.Relay.read, cm.time.time, live.LiveBot._read_hist, urllib.request.urlopen, subprocess.run = saved

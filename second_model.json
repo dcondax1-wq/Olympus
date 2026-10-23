@@ -1,6 +1,6 @@
 {
  "paper": true,
- "note": "Second strategies next to LIT (engine/second.py computes signals only). \"route\": false (default) = paper; \"route\": true = the PC bot routes it to its own account next to LIT (engine/live.py: LIT first, one position at a time, max 2 trades a day, eval-safe size). Switch: python -m engine.second --route <key> on|off. Cloud-only strategies are never routed. Switch one off: \"on\": false.",
+ "note": "Second strategies next to LIT (engine/second.py computes signals only). \"route\": false (default) = paper; \"route\": true = the PC bot routes it to its own account next to LIT (engine/live.py: LIT first, one position at a time, max 2 trades a day, eval-safe size). Switch: python -m engine.second --route <key> on|off. Cloud-only strategies are never routed. Switch one off: \"on\": false. \"candidate\": true = a candidate ATLAS member (stop-hunt research, research/writeups/stophunt.md): paper only, never routed, not on account B.",
  "account_b": null,
  "strategies": {
   "ema_lon_vix": {
@@ -63,6 +63,44 @@
    "rules": ["Every LIT rule as live (live_model.json \"lit\"), plus:", "Entries all session: 18:00-24:00 and 00:00-15:30 ET (LIT setups from the evening too).", "Max 2 trades a day, 1 per session part: Asia (18:00-02:00) and the LIT day (02:00-18:00).", "Asia trades bank at 3R (instead of 8R); the day trade is unchanged.", "Size: LIT's own size rule; costs in. Paper only, cloud only."],
    "overrides": {"window": [[1080, 1440], [0, 930]], "all_hours": true, "max_per_day": 2,
                  "per_session": [[[1080, 120], [120, 1080]], 1], "kz": [[1080, 1440, {"max_rr": 3.0}], [0, 120, {"max_rr": 3.0}]]}
+  },
+  "sh_asia": {
+   "on": true,
+   "route": false,
+   "kind": "stop_hunt",
+   "candidate": true,
+   "pick": "sh_asia_resweep",
+   "label": "Asia resweep hunt",
+   "short": "Asia hunt",
+   "summary": "Asia 18:00-02:00 ET: a 15m / 1h / session / day / week high or low is run by 0.5 ATR, a resweep follows, then a 5m candle >= 1.2 ATR closes back through the pool and the last swing; market entry, stop 1 tick beyond the hunt extreme, 2R, BE + 1.25 at 1R, flat 15:55, 1 a session.",
+   "with_lit_label": "candidate ATLAS member (paper)",
+   "with_lit_note": "Candidate ATLAS member for the 25K (research: ATLAS + it 2-week pass H1 79.8% / H2 56.5%, 0 fails). Next to LIT on the 50K it adds eval fails: not for LIT's account.",
+   "run": "sh_asia_resweep",
+   "writeup": "stophunt",
+   "params": {"pool": "htf", "mode": "rs", "W": 36, "body": "a1.2", "struct": "mss", "fvg": 0, "depth": 0.5, "entry": "mkt", "max_stop": 80.0, "tg": "r2", "min_rr": 1.5, "t15": 0, "be": "be1c", "part": 0, "flat": "1555", "ctx": "none", "win": "asia", "mp": 1},
+   "rules": ["Pools (where retail stops sit, each known before it is used): higher-timeframe pools (15m/1h swings, 15m equal, sessions, day, week).", "Hunt: a 5m bar trades 1+ tick through the pool and the hunt reaches >= 0.5 ATR beyond it.", "Then: a RESWEEP first: the same pool re-run after a close back inside, or the hunt's new extreme taken after a 0.5 ATR bounce.", "Trigger within 36 5m bars of the hunt: a strong candle back toward the draw, a body >= 1.2 x ATR(14, 5m), closing back beyond the pool and beyond the last confirmed 5m swing the other way (market structure shift).", "Entry: market at the next 5m open + 1 tick. Hours: Asia 18:00-02:00 ET; max 1 trade(s) a session, one position at a time.", "Stop: 1 tick beyond the hunt extreme (the protected low/high); stop 6-80 pts, else no trade; size follows the stop.", "Target: fixed 2R; no target that far = no trade.", "Management: stop to entry + 1.25 pts at +1R (LIT's BE + costs); flat 15:55 ET (MFFU: flat by 16:10).", "Costs: $1.90 a micro round trip + 1 tick slippage on market entries and stop / time / flat exits. Scored at $500 risk a trade."],
+   "research_numbers": {"H1": {"n": 38, "tpw": 1.48, "win": 71.1, "pf": 2.6, "net": 8139, "per_month": 1335, "dd": -1431}, "H2": {"n": 40, "tpw": 2.56, "win": 57.5, "pf": 1.37, "net": 2915, "per_month": 785, "dd": -2334}, "2025": {"n": 104, "tpw": 2.02, "win": 56.7, "pf": 1.51, "net": 10990, "per_month": 895, "dd": -5005}, "2021-24": {"n": 376, "tpw": 2.3, "win": 54.8, "pf": 1.27, "net": 22705, "per_month": 582, "dd": -6360}},
+   "usd": 500,
+   "research": {"best": "research/stophunt/sh_asia_resweep.json", "evals": "research/stophunt/evals.json"}
+  },
+  "sh_trend": {
+   "on": true,
+   "route": false,
+   "kind": "stop_hunt",
+   "candidate": true,
+   "pick": "sh_trend_idm5",
+   "label": "Trend inducement hunt",
+   "short": "Trend hunt",
+   "summary": "Any hour 18:00-15:30 ET: a pullback against the 1h trend takes an inducement swing and runs a 5m swing by 0.25 ATR, then a 5m candle >= 1.2 ATR back with the trend closes through the pool and the last swing; limit at mid-candle for 30 min, stop 1 tick beyond the hunt extreme, 2R, BE + 1.25 at 1R, flat 15:55, 2 a session.",
+   "with_lit_label": "candidate ATLAS member (paper)",
+   "with_lit_note": "Candidate ATLAS member for the 25K (research: ATLAS + both hunts 2-week pass H1 74.8% / H2 65.2%, 0 fails). Its wider family does not beat chance: paper first.",
+   "run": "sh_trend_idm5",
+   "writeup": "stophunt",
+   "params": {"pool": "f5", "mode": "pre", "W": 6, "body": "a1.2", "struct": "mss", "fvg": 0, "depth": 0.25, "entry": "mid", "max_stop": 80.0, "tg": "r2", "min_rr": 1.5, "t15": 0, "be": "be1c", "part": 0, "flat": "1555", "ctx": "with", "win": "all", "mp": 2},
+   "rules": ["Pools (where retail stops sit, each known before it is used): 5m swing highs/lows.", "Hunt: a 5m bar trades 1+ tick through the pool and the hunt reaches >= 0.25 ATR beyond it.", "Then: an INDUCEMENT before the hunt (LIT style): a 5m swing within 1 ATR of the pool was taken on the way in.", "Trigger within 6 5m bars of the hunt: a strong candle back toward the draw, a body >= 1.2 x ATR(14, 5m), closing back beyond the pool and beyond the last confirmed 5m swing the other way (market structure shift).", "Entry: a limit at the middle of the trigger candle for 30 minutes. Hours: any hour 18:00-15:30 ET; max 2 trade(s) a session, one position at a time. Only in the direction of the 1h trend (last closed 1h close vs its EMA 50): the hunt is a pullback against the trend.", "Stop: 1 tick beyond the hunt extreme (the protected low/high); stop 6-80 pts, else no trade; size follows the stop.", "Target: fixed 2R; no target that far = no trade.", "Management: stop to entry + 1.25 pts at +1R (LIT's BE + costs); flat 15:55 ET (MFFU: flat by 16:10).", "Costs: $1.90 a micro round trip + 1 tick slippage on market entries and stop / time / flat exits. Scored at $500 risk a trade."],
+   "research_numbers": {"H1": {"n": 35, "tpw": 1.37, "win": 65.7, "pf": 2.18, "net": 6536, "per_month": 1072, "dd": -1385}, "H2": {"n": 24, "tpw": 1.54, "win": 66.7, "pf": 2.3, "net": 4916, "per_month": 1324, "dd": -1027}, "2025": {"n": 98, "tpw": 1.9, "win": 60.2, "pf": 1.72, "net": 13384, "per_month": 1089, "dd": -2640}, "2021-24": {"n": 310, "tpw": 1.89, "win": 60.0, "pf": 1.44, "net": 26349, "per_month": 676, "dd": -4968}},
+   "usd": 500,
+   "research": {"best": "research/stophunt/sh_trend_idm5.json", "evals": "research/stophunt/evals.json"}
   }
  }
 }

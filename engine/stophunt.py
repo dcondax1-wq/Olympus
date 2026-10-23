@@ -76,7 +76,16 @@ def _frame(df):
 def load(cut_t=None, with_1m=True):
     """Bars as numpy arrays. cut_t (unix s): keep only the 5m bars that OPEN before cut_t and the 1m bars that open before it
     (look-ahead check: the data as it was at that moment)."""
-    df, mod, sdays, loc, dow = _frame(pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv")))
+    df = pd.read_csv(os.path.join(ROOT, "data", "NQ_5m.csv"))
+    d1 = pd.read_csv(os.path.join(ROOT, "data", "NQ_1m.csv")) if with_1m else None
+    return bars(df, d1, cut_t=cut_t)
+
+
+def bars(df, d1=None, cut_t=None, m1_from=None, m1_to=None):
+    """load() on given frames (time, open, high, low, close): the research CSVs, or a live window (engine/second.py plugin
+    "stop_hunt": LIT's 5m window + its 1m bars). d1 None = no 1m bars (every trade walks on 5m). m1_from / m1_to override the
+    1m-path span (default: from the 2026-01-02 session to the last 1m bar, as the research)."""
+    df, mod, sdays, loc, dow = _frame(df)
     if cut_t is not None:
         k = int(np.searchsorted(df["time"].values, cut_t))
         df, mod, sdays, loc, dow = df.iloc[:k].reset_index(drop=True), mod[:k], sdays[:k], loc[:k], dow[:k]
@@ -111,8 +120,8 @@ def load(cut_t=None, with_1m=True):
         j = bisect.bisect_left(vd, str(days[s])) - 1
         if j >= 0:
             B["vixmove"][s] = vc[j] / 100.0 / math.sqrt(252.0) * o[a]
-    if with_1m:
-        d1, mod1, sd1, loc1, _ = _frame(pd.read_csv(os.path.join(ROOT, "data", "NQ_1m.csv")))
+    if d1 is not None:
+        d1, mod1, sd1, loc1, _ = _frame(d1)
         if cut_t is not None:
             k = int(np.searchsorted(d1["time"].values, cut_t))
             d1, mod1, sd1, loc1 = d1.iloc[:k].reset_index(drop=True), mod1[:k], sd1[:k], loc1[:k]
@@ -127,6 +136,14 @@ def load(cut_t=None, with_1m=True):
         # 1m path only from the first full 1m session (2026-01-02 session start)
         B["m1_from"] = 1767308400 if len(d1) else 1 << 62      # the 2026-01-02 session (2026-01-01 18:00 ET)
         B["m1_to"] = int(B["m1"]["t"][-1]) if len(d1) else 0
+    else:
+        z = np.zeros(0, np.int64)
+        B["m1"] = dict(t=z, o=np.zeros(0), h=np.zeros(0), l=np.zeros(0), c=np.zeros(0), rel=z, sid=z, loc=z, n=0, flat=z, sflat=z)
+        B["m1_from"], B["m1_to"] = 1 << 62, 0
+    if m1_from is not None:
+        B["m1_from"] = int(m1_from)
+    if m1_to is not None:
+        B["m1_to"] = int(m1_to)
     return B
 
 
@@ -385,8 +402,11 @@ def _sweeps(px, slope, t0, side, known, life, h, l, adj, typ, round_lo):
     return sw, end, pxs
 
 
-def build_pools(B, use_1m=True, verbose=False):
-    """Every retail stop pool. Returns dict of arrays (one row per pool) incl. sweep bar and score."""
+def build_pools(B, use_1m=True, verbose=False, types=None):
+    """Every retail stop pool. Returns dict of arrays (one row per pool) incl. sweep bar and score. types: only these pool
+    types (names of TYPES; None = all, the research default). The pools of a type do not depend on the others, so a subset
+    gives exactly the rows of those types (the live plugin builds only what its pool set hunts)."""
+    want = set(TYPES if types is None else types)
     acc = _Acc()
     h, l, atr = B["h"], B["l"], B["atr"]
     n = B["n"]
@@ -399,12 +419,13 @@ def build_pools(B, use_1m=True, verbose=False):
                 ok = ff + N < len(H["last"])
                 ff = ff[ok]
                 kn = H["last"][ff + N]; bi = H["last"][ff]
-                acc.add(arr[ff], side, kn, bi, LIFE[name], name, strength=N)
+                if name in want:
+                    acc.add(arr[ff], side, kn, bi, LIFE[name], name, strength=N)
                 if N == 2:
                     frac_store[(tf, side)] = (bi, arr[ff], kn)
                 if N == 3 and tf == 5:
                     frac_store[("tl5", side)] = (bi, arr[ff], kn)
-    if use_1m and "m1" in B and B["m1"]["n"]:
+    if use_1m and "f1" in want and "m1" in B and B["m1"]["n"]:
         M1 = B["m1"]
         for N in (2, 3, 4, 5):
             fh, fl = _frac(M1["h"], M1["l"], N)
@@ -419,18 +440,20 @@ def build_pools(B, use_1m=True, verbose=False):
                 acc.add(arr[ff][ok], side, k5[ok], np.maximum(tb[ok], 0), LIFE["f1"], "f1", strength=N)
     # equal highs / lows
     for tf, name, look in ((5, "eq5", 288), (15, "eq15", 576)):
+        if name not in want:
+            continue
         for side in (1, -1):
             bi, px, kn = frac_store[(tf, side)]
             o = np.argsort(bi, kind="stable")
             opx, okn, obi, otc = _eq_pools(bi[o].astype(np.int64), px[o].astype(float), kn[o].astype(np.int64), side, h, l, atr, look)
             acc.add(opx, side, okn, obi, LIFE[name], name, touch=otc)
     # range edges (2h within 3.5 ATR, 4h within 5 ATR)
-    for M, wk in ((24, 3.5), (48, 5.0)):
+    for M, wk in ((24, 3.5), (48, 5.0)) if "range" in want else ():
         hi, lo, kn, th, tl = _range_pools(h, l, atr, B["sid"], M, wk, 3)
         acc.add(hi, 1, kn, kn - M + 1, LIFE["range"], "range", strength=M, touch=th)
         acc.add(lo, -1, kn, kn - M + 1, LIFE["range"], "range", strength=M, touch=tl)
     # trendlines (5m N=3 swings, 12h; 15m N=2 swings mapped to 5m bars, 2 days)
-    for side_line, side_fr in ((-1, -1), (1, 1)):
+    for side_line, side_fr in ((-1, -1), (1, 1)) if "tl" in want else ():
         bi, px, kn = frac_store[("tl5", side_fr)]
         o = np.argsort(bi, kind="stable")
         opx, osl, ot0, okn, olf = _tl_pools(bi[o].astype(np.int64), px[o].astype(float), kn[o].astype(np.int64), side_line, h, l, atr, 144, 6)
@@ -461,8 +484,9 @@ def build_pools(B, use_1m=True, verbose=False):
                 if rel[kn] < end_rel:
                     continue
             ih = ii[np.argmax(h[ii])]; il = ii[np.argmin(l[ii])]
-            acc.add(h[ih], 1, kn, ih, LIFE[nm], nm); acc.add(l[il], -1, kn, il, LIFE[nm], nm)
-        if not (B.get("cut") and b == n and rel[n - 1] < 1375):
+            if nm in want:
+                acc.add(h[ih], 1, kn, ih, LIFE[nm], nm); acc.add(l[il], -1, kn, il, LIFE[nm], nm)
+        if "pd" in want and not (B.get("cut") and b == n and rel[n - 1] < 1375):
             ih = a + int(np.argmax(h[a:b])); il = a + int(np.argmin(l[a:b]))
             acc.add(h[ih], 1, b - 1, ih, LIFE["pd"], "pd"); acc.add(l[il], -1, b - 1, il, LIFE["pd"], "pd")
         y, w, _ = dt.date.fromisoformat(str(days[sid[a]])).isocalendar()
@@ -474,11 +498,13 @@ def build_pools(B, use_1m=True, verbose=False):
             wk_lo[kk] = il
         wk_last[kk] = b - 1
     wkeys = sorted(wk_last)
-    for kk in wkeys[:-1] if (B.get("cut")) else wkeys:
+    for kk in (wkeys[:-1] if (B.get("cut")) else wkeys) if "pw" in want else ():
         kn = wk_last[kk]
         acc.add(h[wk_hi[kk]], 1, kn, wk_hi[kk], LIFE["pw"], "pw"); acc.add(l[wk_lo[kk]], -1, kn, wk_lo[kk], LIFE["pw"], "pw")
     # round numbers
     for grid, nm in ((100.0, "r100"), (50.0, "r50")):
+        if nm not in want:
+            continue
         opx, osd, okn, olv = _round_pools(B["c"], h, l, B["adj"], grid, 48)
         if nm == "r50":
             keep = (olv % 100) != 0

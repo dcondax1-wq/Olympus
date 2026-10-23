@@ -62,76 +62,7 @@
   "n_extra": 0,
   "exit_differs": [],
   "net_backtest": 43384.94,
-  "seconds": 60
+  "seconds": 52
  },
- "bot": {
-  "sessions": [
-   "2026-10-13",
-   "2026-10-14",
-   "2026-10-15"
-  ],
-  "polls": 1265,
-  "want": 2,
-  "entries_ok": 2,
-  "exits_ok": 2,
-  "entry_route_delay_s": [
-   3,
-   3
-  ],
-  "extra": 0,
-  "not_routed": [],
-  "errors": [],
-  "rows": [
-   {
-    "entry": 1791885780,
-    "want": [
-     -1,
-     11,
-     "TARGET",
-     3169.1
-    ],
-    "routed_entry": {
-     "side": "sell",
-     "qty": 11,
-     "stop": 30773.75,
-     "target": 30602.75,
-     "t": 1791885783
-    },
-    "routed_exit": {
-     "reason": "TARGET",
-     "pnl": 3169.1,
-     "t": 1791898383
-    }
-   },
-   {
-    "entry": 1791969840,
-    "want": [
-     -1,
-     1,
-     "TARGET",
-     579.48
-    ],
-    "routed_entry": {
-     "side": "sell",
-     "qty": 1,
-     "stop": 30862.0,
-     "target": 30495.5,
-     "t": 1791969843
-    },
-    "routed_exit": {
-     "reason": "TARGET",
-     "pnl": 579.48,
-     "t": 1791986283
-    }
-   }
-  ],
-  "last_model_state": "LIT: market closed (next session 18:00 ET; entries 02:00-15:30 ET)",
-  "poll_ms": 631,
-  "modify_routes": 0,
-  "states_seen": [
-   "LIT: market closed (next session 18:00 E"
-  ],
-  "ok": true
- },
- "seconds": 881
+ "seconds": 63
 }

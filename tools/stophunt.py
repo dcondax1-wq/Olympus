@@ -1507,6 +1507,157 @@ def cmd_save():
     print("saved sh_withlit50k_trend5", flush=True)
 
 
+# ================================================================================================ live / OPEN mode
+# engine/second.py plugin "stop_hunt" (paper, second_model.json sh_asia / sh_trend): the SAME pipeline as one() / FINAL
+# (sigs_of -> fills -> ctx_ok -> targets -> walk -> select_stats) on LIT's live window, data cut at the poll (closed bars
+# only: B["cut"] = True drops a forming HTF bar / session / week, as the look-ahead check of the research). A trade whose
+# walk ran into the end of the data before its 15:55 flat is OPEN (it holds the one position: later signals are skipped as
+# in the research, where its exit lies in the future).
+def live_base(B, pool=None, dol=False):
+    """base() on given bars: pools of the pool set only (engine/stophunt.build_pools types; the others never change a hunt
+    of the set), swing index, sorted sweeps; DOL tables only when a DOL target / partial needs them."""
+    types = None if pool is None else [E.TYPES[i] for i in POOL_SETS[pool][0]]
+    P = E.build_pools(B, use_1m=types is None or "f1" in types, types=types)
+    g = dict(B=B, P=P, F=E.swing_index(B), order=E.sorted_sweeps(P), span_of_sid=np.full(len(B["days"]), -1, np.int64),
+             nsess=[1, 1, 1, 1], ev={})
+    if dol:
+        g["TB"] = E.dol_tables(P, B)
+    return g
+
+
+def live(spec, df5, df1=None, now=None, is_open=None):
+    """One poll of a pick (spec = FINAL[...] / its "params"): df5 / df1 = the closed 5m / 1m bars (time, open, high, low,
+    close), now = poll time, is_open(day) = that day's 15:55 flat still ahead (engine/second._session_open). Returns
+    {"g", "rows" (chosen trades in the research format + "open", "stop_now", "last"), "X", "Wk", "T", "sg", "ok", "spec"}."""
+    now = int(now if now is not None else int(df5["time"].max()) + 300)
+    has1 = df1 is not None and len(df1)
+    m1_from = max(1767308400, int(df1["time"].min())) if has1 else None
+    # with a 1m feed every signal from 2026 walks on 1m (the research rule); a signal whose 1m bars have not arrived yet
+    # waits (no 5m stand-in that the next poll would replace)
+    B = E.bars(df5, df1 if has1 else None, m1_from=m1_from, m1_to=now + 1 if has1 else None)
+    B["cut"] = True
+    sp = {**spec}
+    g = live_base(B, sp["pool"], dol=str(sp["tg"]).startswith("dol") or bool(sp.get("part")))
+    S = {k: sp[k] for k in DIMS}
+    sg = sigs_of(g, S)
+    X = fills(g, sg, sp["entry"], max_stop=sp["max_stop"])
+    o = np.argsort(X["ft"], kind="stable")
+    Xo = {k: v[o] for k, v in X.items()}
+    okc = ctx_ok(g, Xo, sp["ctx"])
+    T = targets(g, Xo, sp["tg"], min_rr=sp["min_rr"])
+    Wk = walk(g, Xo, T, be=sp["be"], t15=bool(sp["t15"]), part=bool(sp["part"]), flat=sp["flat"])
+    M1 = B["m1"]
+    kf = Xo["kf"] if sp["flat"] == "1555" else np.where(Xo["ks"] >= 0, Xo["ks"], Xo["kf"])
+    p1 = Xo["path"] == 1
+    last_i = np.where(p1, M1["n"] - 1, B["n"] - 1)
+    r1 = M1["rel"][np.clip(kf, 0, M1["n"] - 1)] if M1["n"] else np.zeros(len(kf), np.int64)
+    r5 = B["rel"][np.clip(kf, 0, B["n"] - 1)]
+    rel_kf = np.where(p1, r1, r5)
+    flat_rel = np.where(p1, E.FLAT_REL1, E.FLAT_REL5)
+    days = B["days"][Xo["sid"]]
+    sess_open = np.array([True if is_open is None else bool(is_open(str(d))) for d in days], bool)
+    opn = Wk["ok"] & (Wk["kind"] == 4) & (kf == last_i) & (rel_kf < flat_rel) & sess_open
+    xt = np.where(opn, np.int64(1) << 62, Wk["xt"])
+    ok = Wk["ok"] & okc
+    _, sel = select_stats(Xo["ft"], xt, Xo["sid"], Xo["bucket"], ok, Wk["pnl"], Wk["R"], WINDOWS[sp["win"]], sp["mp"],
+                          g["span_of_sid"], 4, True)
+    rows = trade_rows(g, Xo, Wk, T, sel, sp.get("name", "stophunt"))
+    be_at, be_off = (0.0, 0.0) if sp["be"] == "none" else (1.0, 0.0 if sp["be"] == "be1" else 1.25)
+    for r, i in zip(rows, sel):
+        r["open"] = bool(opn[i])
+        if r["open"]:
+            d = r["dir"]
+            moved = be_at > 0 and float(Wk["mfe"][i]) >= be_at
+            r["stop_now"] = round(r["entry"] + d * be_off, 2) if moved else r["stop"]
+            r["last"] = round(float((M1["c"] if p1[i] else B["c"])[last_i[i]]), 2)
+    return {"g": g, "rows": rows, "X": Xo, "Wk": Wk, "T": T, "sg": sg, "ok": ok, "sel": sel, "spec": sp, "now": now}
+
+
+def explain(g, spec, j, upto=None):
+    """The rule checks of ONE hunt (event bar j) as engine/stophunt._signals walks it, written out in plain Python for the
+    brain (closed bars only, up to bar `upto`, default the last bar): the hunt (pool, side, depth), the extra condition
+    (resweep / inducement), the trigger candle (body vs ATR, close beyond the pool and the last swing) at the trigger bar,
+    or at the last bar looked at when there is none yet. Display only: the trade decision is _signals."""
+    B, F = g["B"], g["F"]
+    ev = ev_of(g, spec["pool"])
+    ks = np.nonzero(ev["j"] == j)[0]
+    m, rk = MODE_SPEC[spec["mode"]]
+    kb, bt = BODY_SPEC[spec["body"]]
+    struct = STRUCT[spec["struct"]]
+    o, h, l, c, atr, mb10, rel, sid = B["o"], B["h"], B["l"], B["c"], B["atr"], B["mb10"], B["rel"], B["sid"]
+    n = B["n"]
+    upto = n - 1 if upto is None else min(int(upto), n - 1)
+    W, depth = int(spec["W"]), float(spec["depth"])
+    out = []
+    for e in ks:
+        dr = -int(ev["side"][e])
+        s = sid[j]
+        a = B["sess_start"][s]
+        A = atr[j - 1]
+        p = dr * ev["p"][e]
+        Fp = F["fl"] if dr > 0 else F["fh"]
+        pre = False
+        for f in Fp[np.searchsorted(Fp, j - 36):]:
+            if f + 2 > j - 1:
+                break
+            fp = l[f] if dr > 0 else -h[f]
+            if p < fp <= p + A:
+                pre = True
+                break
+        ext, arg, bounce, inside, rs_bar, idm_bar, il, cz = 1e18, j, -1e18, False, -1, -1, float("nan"), float("nan")
+        last = trig = None
+        for q in range(j, min(j + W + 1, n)):
+            if q > upto or sid[q] != s or rel[q] > E.ENTRY_CUT:
+                break
+            oq, hq, lq, cq = (o[q], h[q], l[q], c[q]) if dr > 0 else (-o[q], -l[q], -h[q], -c[q])
+            if q > j:
+                if rs_bar < 0:
+                    if rk in (0, 2) and inside and lq < p:
+                        rs_bar = q
+                    elif rk in (1, 2) and lq < ext and (bounce - ext) >= 0.5 * A and q - arg >= 2:
+                        rs_bar = q
+                if idm_bar < 0 and not math.isnan(il) and lq < il:
+                    idm_bar = q
+            if lq < ext:
+                ext, arg, bounce = lq, q, hq
+                if struct == 1:
+                    cz = float(E._cisd_s(o, c, a, arg, dr))
+            else:
+                bounce = max(bounce, hq)
+            rs_ok, idm_ok = 0 <= rs_bar < q, 0 <= idm_bar < q
+            mode_ok = {0: True, 1: q <= j + 1, 2: rs_ok, 3: idm_ok, 4: pre, 5: rs_ok and idm_ok, 6: rs_ok or idm_ok}[m]
+            body = cq - oq
+            thr = kb * A if bt == 0 else kb * mb10[q]
+            lvl = float("nan")
+            if struct == 2:
+                G = F["fh"] if dr > 0 else F["fl"]
+                hi_i = int(np.searchsorted(G, q - 2)) - 1
+                if hi_i >= 0 and G[hi_i] >= j - 48:
+                    lvl = h[G[hi_i]] if dr > 0 else -l[G[hi_i]]
+            elif struct == 1:
+                lvl = cz
+            st_ok = True if struct == 0 else (not math.isnan(lvl) and cq > lvl)
+            last = dict(q=int(q), t=int(B["t"][q]), mode_ok=bool(mode_ok), body=float(body), thr=float(thr), atr=float(A),
+                        close_beyond_pool=bool(cq > p), depth=float((p - ext) / A) if A > 0 else 0.0, struct_ok=bool(st_ok),
+                        lvl=None if math.isnan(lvl) else float(dr * lvl), rs=bool(rs_ok), idm=bool(idm_ok), close=float(c[q]))
+            if mode_ok and cq > p and body >= thr and body > 0 and (p - ext) >= depth * A and st_ok:
+                trig = last
+                break
+            if q - 1 > j and q - 2 >= j:
+                l1, l0, l2 = (l[q - 1], l[q - 2], l[q]) if dr > 0 else (-h[q - 1], -h[q - 2], -h[q])
+                if l1 < l0 and l1 < l2 and l1 > ext + 0.25 and q - 1 != arg:
+                    il = l1
+            if cq > p:
+                inside = True
+        tm = int(ev["tmask"][e])
+        end_q = j + W
+        out.append({"j": int(j), "t": int(B["t"][j]), "dr": dr, "pool": float(dr * p), "score": float(ev["score"][e]),
+                    "types": [E.TYPES[i] for i in range(len(E.TYPES)) if tm >> i & 1], "ext": float(dr * ext), "pre": bool(pre),
+                    "atr": float(A), "until_t": int(B["t"][j]) + 300 * (W + 1), "last": last, "trigger": trig,
+                    "expired": trig is None and (last is None or last["q"] >= end_q or upto > (last or {}).get("q", upto))})
+    return out
+
+
 # ================================================================================================ prototype
 def demo():
     g = base()
