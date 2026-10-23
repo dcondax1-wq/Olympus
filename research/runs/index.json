@@ -1,7 +1,7 @@
 {
- "built": "2026-10-22 22:55",
+ "built": "2026-10-23 00:01",
  "baseline": "baseline",
- "count": 1678,
+ "count": 1686,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -1517,7 +1517,7 @@
     "plan": "builder25k",
     "size": "need"
    },
-   "built": "2026-10-22 13:24",
+   "built": "2026-10-23 00:01",
    "spans": {
     "2026": {
      "n": 147,
@@ -1593,6 +1593,118 @@
      "slow_pass": 73.7,
      "pass_med": 26.0,
      "b2b": "16/16"
+    }
+   }
+  },
+  {
+   "id": "atlas_base",
+   "title": "ATLAS today under the real account-B rules (EMA + MACD + S/R on a Builder 25K, LIT's armed setups block)",
+   "family": "other",
+   "question": "Owner 2026-10-22: tune ATLAS (account B: EMA + MACD + S/R) as a whole for the Builder 25K under the real account-B rules",
+   "status": "adopt-candidate",
+   "verdict": "Builder 25K, fresh eval every session (20 sessions; $ = back-to-back eval path). 2026 H1 (pick) 3.95/wk, path +19,737 ($3,238/mo, PF 2.98, DD -1,403); 2-week pass/fail/stuck 72.3/0.0/5.0, 1 month 82.6/0.0, median 5.0 sessions; funded 3 mo $1842. H2 (check) 2.95/wk, path +5,448 ($1,467/mo, PF 2.35, DD -1,691); 2-week pass/fail/stuck 43.5/0.0/0.0, 1 month 61.0/0.0, median 6.0 sessions; funded 3 mo $1349. Reference 2025 4.24/wk, path +2,232 ($182/mo, PF 1.1, DD -4,796); 2-week pass/fail/stuck 30.5/0.0/32.9, 1 month 36.0/0.0, median 4.0 sessions; funded 3 mo $190; 2021-24 4.61/wk, path +9,919 ($256/mo, PF 1.13, DD -9,510); 2-week pass/fail/stuck 23.2/0.0/36.9, 1 month 26.9/0.0, median 4.0 sessions; funded 3 mo $246.",
+   "writeup": "atlas",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-22 23:58",
+   "spans": {
+    "2026": {
+     "n": 147,
+     "tpw": 3.57,
+     "wk2": 93,
+     "win": 53.7,
+     "pf": 2.8,
+     "net": 25185,
+     "dd": -1691,
+     "avg_r": 0.838,
+     "stop": 45.2,
+     "worst_day": -586,
+     "risk": 182.0,
+     "half": 0,
+     "per_month": 2567,
+     "p10": 18.4,
+     "f10": 0.0,
+     "p15": 34.0,
+     "f15": 0.0,
+     "p20": 44.7,
+     "f20": 0.0,
+     "dec10": 18.4,
+     "slow_pass": 54.2,
+     "pass_med": 17.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 970,
+     "tpw": 4.52,
+     "wk2": 98,
+     "win": 37.2,
+     "pf": 1.12,
+     "net": 12151,
+     "dd": -9510,
+     "avg_r": 0.055,
+     "stop": 27.2,
+     "worst_day": -595,
+     "risk": 156.0,
+     "half": 0,
+     "per_month": 238,
+     "p10": 4.8,
+     "f10": 0.4,
+     "p15": 7.6,
+     "f15": 4.0,
+     "p20": 10.7,
+     "f20": 10.5,
+     "dec10": 5.2,
+     "slow_pass": 78.1,
+     "pass_med": 31.0,
+     "b2b": "9/15"
+    },
+    "all": {
+     "n": 1117,
+     "tpw": 4.37,
+     "wk2": 97,
+     "win": 39.4,
+     "pf": 1.32,
+     "net": 37336,
+     "dd": -9510,
+     "avg_r": 0.158,
+     "stop": 29.5,
+     "worst_day": -595,
+     "risk": 161.0,
+     "half": 0,
+     "per_month": 614,
+     "p10": 7.0,
+     "f10": 0.3,
+     "p15": 11.9,
+     "f15": 3.4,
+     "p20": 16.2,
+     "f20": 8.8,
+     "dec10": 7.3,
+     "slow_pass": 73.0,
+     "pass_med": 27.0,
+     "b2b": "16/15"
     }
    }
   },
@@ -12225,7 +12337,7 @@
    "family": "other",
    "question": "Owner 2026-10-22: run the second strategies on their own prop account (account B) - Builder 25K or 50K?",
    "status": "promising",
-   "verdict": "Account B alone (fresh eval every session, 20 sessions; $ = back-to-back eval path). 2026 H1 (pick) 4.1/wk path +44,368 ($7,279/mo) DD -2,220; 2-week pass/fail 72.3/2.5, 1 month 83.5/4.6, median 5.0 sessions, funded 3 mo $3762, $ per eval bought 3347. H2 (check) 3.08/wk path +7,642 ($2,057/mo) DD -3,804; 2-week pass/fail 53.6/0.0, 1 month 55.9/5.1, median 5.0 sessions, funded 3 mo $1900, $ per eval bought 1808. Reference 2025 4.38/wk path -4,066 ($-331/mo) DD -12,747; 2-week pass/fail 29.7/1.2, 1 month 36.0/3.3, median 4.0 sessions, funded 3 mo $333, $ per eval bought 29; 2021-24 4.74/wk path +2,364 ($61/mo) DD -17,064; 2-week pass/fail 25.3/3.5, 1 month 28.4/6.9, median 4.0 sessions, funded 3 mo $484, $ per eval bought 57.",
+   "verdict": "Account B alone (fresh eval every session, 20 sessions; $ = back-to-back eval path). 2026 H1 (pick) 4.1/wk path +44,368 ($7,279/mo) DD -2,220; 2-week pass/fail 72.3/2.5, 1 month 83.5/4.6, median 5.0 sessions, funded 3 mo $3762, $ per eval bought 3347. H2 (check) 3.08/wk path +7,642 ($2,057/mo) DD -3,804; 2-week pass/fail 53.6/0.0, 1 month 55.9/5.1, median 5.0 sessions, funded 3 mo $1900, $ per eval bought 1808. Reference 2025 4.38/wk path -2,904 ($-236/mo) DD -12,434; 2-week pass/fail 29.7/1.2, 1 month 36.0/3.3, median 4.0 sessions, funded 3 mo $333, $ per eval bought 29; 2021-24 4.72/wk path +13 ($0/mo) DD -19,750; 2-week pass/fail 25.3/4.0, 1 month 28.4/7.5, median 4.0 sessions, funded 3 mo $484, $ per eval bought 57.",
    "writeup": "second-account-b",
    "tags": [
     "second",
@@ -12245,7 +12357,7 @@
     "plan": "builder50k",
     "size": "need"
    },
-   "built": "2026-10-22 13:24",
+   "built": "2026-10-23 00:01",
    "spans": {
     "2026": {
      "n": 153,
@@ -12273,54 +12385,54 @@
      "b2b": "12/3"
     },
     "2021-25": {
-     "n": 998,
-     "tpw": 4.65,
+     "n": 995,
+     "tpw": 4.64,
      "wk2": 99,
      "win": 37.0,
      "pf": 0.99,
-     "net": -1703,
-     "dd": -17064,
-     "avg_r": 0.055,
+     "net": -2891,
+     "dd": -19508,
+     "avg_r": 0.054,
      "stop": 27.5,
-     "worst_day": -1006,
-     "risk": 330.0,
+     "worst_day": -997,
+     "risk": 338.0,
      "half": 0,
-     "per_month": -33,
+     "per_month": -57,
      "p10": 15.3,
-     "f10": 24.9,
-     "p15": 18.2,
-     "f15": 43.9,
-     "p20": 20.2,
-     "f20": 56.5,
-     "dec10": 40.2,
-     "slow_pass": 28.0,
+     "f10": 25.0,
+     "p15": 18.1,
+     "f15": 44.5,
+     "p20": 20.4,
+     "f20": 56.9,
+     "dec10": 40.3,
+     "slow_pass": 28.9,
      "pass_med": 8.0,
-     "b2b": "23/54"
+     "b2b": "23/55"
     },
     "all": {
-     "n": 1151,
-     "tpw": 4.5,
+     "n": 1148,
+     "tpw": 4.49,
      "wk2": 98,
      "win": 39.2,
      "pf": 1.2,
-     "net": 50308,
-     "dd": -17064,
-     "avg_r": 0.156,
+     "net": 49119,
+     "dd": -19508,
+     "avg_r": 0.155,
      "stop": 30.0,
-     "worst_day": -1006,
-     "risk": 334.0,
+     "worst_day": -997,
+     "risk": 341.0,
      "half": 0,
-     "per_month": 827,
+     "per_month": 807,
      "p10": 20.1,
-     "f10": 21.1,
-     "p15": 24.4,
-     "f15": 38.0,
-     "p20": 27.6,
-     "f20": 49.6,
-     "dec10": 41.2,
-     "slow_pass": 25.2,
+     "f10": 21.2,
+     "p15": 24.3,
+     "f15": 38.5,
+     "p20": 27.8,
+     "f20": 49.9,
+     "dec10": 41.3,
+     "slow_pass": 25.8,
      "pass_med": 8.0,
-     "b2b": "35/58"
+     "b2b": "35/59"
     }
    }
   },
@@ -100754,6 +100866,475 @@
      "slow_pass": 74.1,
      "pass_med": 29.0,
      "b2b": "11/11"
+    }
+   }
+  },
+  {
+   "id": "atlas_ema_nothu",
+   "title": "ATLAS with no EMA trade on Thursdays (calendar rule; 2025 / 2021-24 mixed)",
+   "family": "other",
+   "question": "Owner 2026-10-22: tune ATLAS (account B: EMA + MACD + S/R) as a whole for the Builder 25K under the real account-B rules",
+   "status": "rejected",
+   "verdict": "Builder 25K, fresh eval every session (20 sessions; $ = back-to-back eval path). 2026 H1 (pick) 3.44/wk, path +24,286 ($3,984/mo, PF 3.98, DD -975); 2-week pass/fail/stuck 78.2/0.0/4.2, 1 month 85.3/0.0, median 5.0 sessions; funded 3 mo $2048. H2 (check) 2.56/wk, path +6,534 ($1,759/mo, PF 3.28, DD -826); 2-week pass/fail/stuck 43.5/0.0/0.0, 1 month 61.0/0.0, median 6.0 sessions; funded 3 mo $1350. Reference 2025 3.7/wk, path +4,468 ($364/mo, PF 1.22, DD -3,393); 2-week pass/fail/stuck 28.1/0.0/30.5, 1 month 35.1/0.0, median 4.5 sessions; funded 3 mo $256; 2021-24 4.14/wk, path +6,327 ($163/mo, PF 1.09, DD -9,857); 2-week pass/fail/stuck 23.5/0.0/35.7, 1 month 27.4/0.0, median 5.0 sessions; funded 3 mo $224.",
+   "writeup": "atlas",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {
+      "EMA": {
+       "dows": [
+        0,
+        1,
+        2,
+        4
+       ]
+      }
+     },
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-22 23:58",
+   "spans": {
+    "2026": {
+     "n": 128,
+     "tpw": 3.11,
+     "wk2": 93,
+     "win": 55.5,
+     "pf": 3.8,
+     "net": 30820,
+     "dd": -975,
+     "avg_r": 0.956,
+     "stop": 45.1,
+     "worst_day": -586,
+     "risk": 205.0,
+     "half": 0,
+     "per_month": 3142,
+     "p10": 26.2,
+     "f10": 0.0,
+     "p15": 44.7,
+     "f15": 0.0,
+     "p20": 58.3,
+     "f20": 0.0,
+     "dec10": 26.2,
+     "slow_pass": 39.9,
+     "pass_med": 13.0,
+     "b2b": "9/0"
+    },
+    "2021-25": {
+     "n": 865,
+     "tpw": 4.03,
+     "wk2": 97,
+     "win": 34.5,
+     "pf": 1.12,
+     "net": 10795,
+     "dd": -9857,
+     "avg_r": 0.055,
+     "stop": 27.8,
+     "worst_day": -589,
+     "risk": 150.0,
+     "half": 0,
+     "per_month": 211,
+     "p10": 3.5,
+     "f10": 0.0,
+     "p15": 6.2,
+     "f15": 1.5,
+     "p20": 9.4,
+     "f20": 6.8,
+     "dec10": 3.5,
+     "slow_pass": 78.0,
+     "pass_med": 28.0,
+     "b2b": "8/14"
+    },
+    "all": {
+     "n": 993,
+     "tpw": 3.88,
+     "wk2": 96,
+     "win": 37.2,
+     "pf": 1.4,
+     "net": 41615,
+     "dd": -9857,
+     "avg_r": 0.171,
+     "stop": 30.2,
+     "worst_day": -589,
+     "risk": 158.0,
+     "half": 0,
+     "per_month": 684,
+     "p10": 7.1,
+     "f10": 0.0,
+     "p15": 12.4,
+     "f15": 1.3,
+     "p20": 17.3,
+     "f20": 5.7,
+     "dec10": 7.1,
+     "slow_pass": 67.6,
+     "pass_med": 23.0,
+     "b2b": "17/14"
+    }
+   }
+  },
+  {
+   "id": "atlas_limit_close2",
+   "title": "ATLAS with every member entering on a limit at the signal close (10 min)",
+   "family": "other",
+   "question": "Owner 2026-10-22: tune ATLAS (account B: EMA + MACD + S/R) as a whole for the Builder 25K under the real account-B rules",
+   "status": "rejected",
+   "verdict": "Builder 25K, fresh eval every session (20 sessions; $ = back-to-back eval path). 2026 H1 (pick) 3.91/wk, path +16,045 ($2,632/mo, PF 2.54, DD -1,330); 2-week pass/fail/stuck 68.9/0.0/6.7, 1 month 82.6/0.0, median 5.0 sessions; funded 3 mo $1404. H2 (check) 2.95/wk, path +3,359 ($904/mo, PF 1.8, DD -1,713); 2-week pass/fail/stuck 43.5/0.0/0.0, 1 month 47.5/0.0, median 6.0 sessions; funded 3 mo $800. Reference 2025 4.11/wk, path +5,254 ($428/mo, PF 1.24, DD -3,508); 2-week pass/fail/stuck 28.9/0.0/25.3, 1 month 33.5/0.0, median 4.0 sessions; funded 3 mo $296; 2021-24 4.59/wk, path +2,872 ($74/mo, PF 1.04, DD -10,433); 2-week pass/fail/stuck 22.9/0.0/39.6, 1 month 25.4/0.0, median 4.0 sessions; funded 3 mo $208.",
+   "writeup": "atlas",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {
+      "EMA": "{\"ent\": [\"lc\", 2]}",
+      "MD": "{\"ent\": [\"lc\", 2]}",
+      "SR": "{\"ent\": [\"lc\", 2]}"
+     },
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-22 23:58",
+   "spans": {
+    "2026": {
+     "n": 146,
+     "tpw": 3.54,
+     "wk2": 93,
+     "win": 52.1,
+     "pf": 2.33,
+     "net": 19404,
+     "dd": -1713,
+     "avg_r": 0.731,
+     "stop": 44.2,
+     "worst_day": -588,
+     "risk": 186.0,
+     "half": 0,
+     "per_month": 1978,
+     "p10": 8.7,
+     "f10": 0.0,
+     "p15": 19.4,
+     "f15": 0.0,
+     "p20": 28.6,
+     "f20": 0.0,
+     "dec10": 8.7,
+     "slow_pass": 72.8,
+     "pass_med": 23.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 959,
+     "tpw": 4.47,
+     "wk2": 98,
+     "win": 36.9,
+     "pf": 1.08,
+     "net": 8126,
+     "dd": -10407,
+     "avg_r": 0.039,
+     "stop": 27.0,
+     "worst_day": -594,
+     "risk": 146.0,
+     "half": 0,
+     "per_month": 159,
+     "p10": 4.4,
+     "f10": 0.7,
+     "p15": 6.4,
+     "f15": 2.8,
+     "p20": 9.7,
+     "f20": 10.1,
+     "dec10": 5.1,
+     "slow_pass": 79.9,
+     "pass_med": 31.0,
+     "b2b": "8/15"
+    },
+    "all": {
+     "n": 1105,
+     "tpw": 4.32,
+     "wk2": 97,
+     "win": 38.9,
+     "pf": 1.24,
+     "net": 27530,
+     "dd": -10407,
+     "avg_r": 0.13,
+     "stop": 29.2,
+     "worst_day": -594,
+     "risk": 152.0,
+     "half": 0,
+     "per_month": 452,
+     "p10": 5.1,
+     "f10": 0.5,
+     "p15": 8.5,
+     "f15": 2.3,
+     "p20": 12.8,
+     "f20": 8.8,
+     "dec10": 5.6,
+     "slow_pass": 78.4,
+     "pass_med": 28.0,
+     "b2b": "13/16"
+    }
+   }
+  },
+  {
+   "id": "atlas_plus_asia",
+   "title": "ATLAS + the LIT Asia slot as a fourth member",
+   "family": "other",
+   "question": "Owner 2026-10-22: tune ATLAS (account B: EMA + MACD + S/R) as a whole for the Builder 25K under the real account-B rules",
+   "status": "rejected",
+   "verdict": "Builder 25K, fresh eval every session (20 sessions; $ = back-to-back eval path). 2026 H1 (pick) 5.12/wk, path +19,378 ($3,179/mo, PF 2.61, DD -1,256); 2-week pass/fail/stuck 70.6/0.0/9.2, 1 month 80.7/0.0, median 4.0 sessions; funded 3 mo $2134. H2 (check) 4.23/wk, path +7,624 ($2,053/mo, PF 2.43, DD -769); 2-week pass/fail/stuck 58.0/0.0/0.0, 1 month 72.9/0.0, median 7.0 sessions; funded 3 mo $2508. Reference 2025 4.9/wk, path +3,406 ($277/mo, PF 1.13, DD -4,338); 2-week pass/fail/stuck 33.3/3.2/29.7, 1 month 36.0/5.4, median 4.0 sessions; funded 3 mo $193; 2021-24 5.27/wk, path -1,242 ($-32/mo, PF 0.99, DD -15,307); 2-week pass/fail/stuck 23.1/0.0/46.7, 1 month 25.4/0.0, median 4.0 sessions; funded 3 mo $154.",
+   "writeup": "atlas",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "ASIA"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-22 23:58",
+   "spans": {
+    "2026": {
+     "n": 197,
+     "tpw": 4.78,
+     "wk2": 98,
+     "win": 56.3,
+     "pf": 2.55,
+     "net": 27003,
+     "dd": -1416,
+     "avg_r": 0.7,
+     "stop": 42.8,
+     "worst_day": -610,
+     "risk": 194.0,
+     "half": 0,
+     "per_month": 2753,
+     "p10": 19.9,
+     "f10": 0.0,
+     "p15": 38.8,
+     "f15": 0.0,
+     "p20": 51.5,
+     "f20": 0.0,
+     "dec10": 19.9,
+     "slow_pass": 51.8,
+     "pass_med": 16.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 1111,
+     "tpw": 5.18,
+     "wk2": 99,
+     "win": 38.9,
+     "pf": 1.02,
+     "net": 2164,
+     "dd": -15208,
+     "avg_r": 0.03,
+     "stop": 26.5,
+     "worst_day": -610,
+     "risk": 138.0,
+     "half": 0,
+     "per_month": 42,
+     "p10": 2.8,
+     "f10": 1.1,
+     "p15": 4.4,
+     "f15": 6.7,
+     "p20": 5.3,
+     "f20": 13.3,
+     "dec10": 3.9,
+     "slow_pass": 81.0,
+     "pass_med": 36.0,
+     "b2b": "8/20"
+    },
+    "all": {
+     "n": 1308,
+     "tpw": 5.12,
+     "wk2": 98,
+     "win": 41.5,
+     "pf": 1.22,
+     "net": 29166,
+     "dd": -15208,
+     "avg_r": 0.131,
+     "stop": 29.0,
+     "worst_day": -610,
+     "risk": 145.0,
+     "half": 0,
+     "per_month": 479,
+     "p10": 5.6,
+     "f10": 0.9,
+     "p15": 9.9,
+     "f15": 5.6,
+     "p20": 12.8,
+     "f20": 11.2,
+     "dec10": 6.5,
+     "slow_pass": 71.4,
+     "pass_med": 27.0,
+     "b2b": "15/20"
+    }
+   }
+  },
+  {
+   "id": "atlas_sr_until1100",
+   "title": "ATLAS with S/R entries only until 11:00 (H1+H2 better, but a 5-minute spike: 3 H1 stop-outs at 11:00)",
+   "family": "other",
+   "question": "Owner 2026-10-22: tune ATLAS (account B: EMA + MACD + S/R) as a whole for the Builder 25K under the real account-B rules",
+   "status": "rejected",
+   "verdict": "Builder 25K, fresh eval every session (20 sessions; $ = back-to-back eval path). 2026 H1 (pick) 3.87/wk, path +21,045 ($3,453/mo, PF 3.17, DD -1,403); 2-week pass/fail/stuck 73.9/0.0/2.5, 1 month 86.2/0.0, median 5.0 sessions; funded 3 mo $1923. H2 (check) 2.76/wk, path +5,785 ($1,558/mo, PF 2.55, DD -1,685); 2-week pass/fail/stuck 53.6/0.0/0.0, 1 month 62.7/0.0, median 6.0 sessions; funded 3 mo $1000. Reference 2025 4.01/wk, path +5,097 ($415/mo, PF 1.26, DD -3,854); 2-week pass/fail/stuck 30.9/0.0/28.9, 1 month 36.0/0.0, median 4.0 sessions; funded 3 mo $222; 2021-24 4.38/wk, path +14,711 ($380/mo, PF 1.21, DD -7,579); 2-week pass/fail/stuck 23.6/0.0/33.0, 1 month 28.7/0.0, median 5.0 sessions; funded 3 mo $219.",
+   "writeup": "atlas",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {
+      "SR": {
+       "win": [
+        570,
+        660
+       ]
+      }
+     },
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-22 23:58",
+   "spans": {
+    "2026": {
+     "n": 142,
+     "tpw": 3.45,
+     "wk2": 90,
+     "win": 54.9,
+     "pf": 3.0,
+     "net": 26830,
+     "dd": -1573,
+     "avg_r": 0.882,
+     "stop": 44.4,
+     "worst_day": -586,
+     "risk": 194.0,
+     "half": 0,
+     "per_month": 2735,
+     "p10": 18.4,
+     "f10": 0.0,
+     "p15": 34.5,
+     "f15": 0.0,
+     "p20": 46.6,
+     "f20": 0.0,
+     "dec10": 18.4,
+     "slow_pass": 53.6,
+     "pass_med": 16.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 920,
+     "tpw": 4.29,
+     "wk2": 97,
+     "win": 37.9,
+     "pf": 1.22,
+     "net": 19807,
+     "dd": -7579,
+     "avg_r": 0.079,
+     "stop": 27.0,
+     "worst_day": -594,
+     "risk": 152.0,
+     "half": 0,
+     "per_month": 388,
+     "p10": 5.7,
+     "f10": 0.2,
+     "p15": 8.5,
+     "f15": 2.3,
+     "p20": 11.3,
+     "f20": 5.7,
+     "dec10": 5.9,
+     "slow_pass": 77.4,
+     "pass_med": 33.0,
+     "b2b": "9/13"
+    },
+    "all": {
+     "n": 1062,
+     "tpw": 4.15,
+     "wk2": 96,
+     "win": 40.2,
+     "pf": 1.44,
+     "net": 46637,
+     "dd": -7579,
+     "avg_r": 0.186,
+     "stop": 29.4,
+     "worst_day": -594,
+     "risk": 156.0,
+     "half": 0,
+     "per_month": 766,
+     "p10": 7.7,
+     "f10": 0.2,
+     "p15": 12.7,
+     "f15": 2.0,
+     "p20": 17.0,
+     "f20": 4.8,
+     "dec10": 7.9,
+     "slow_pass": 72.1,
+     "pass_med": 27.0,
+     "b2b": "16/13"
     }
    }
   },
@@ -223286,7 +223867,7 @@
     "plan": "builder25k",
     "size": "safe"
    },
-   "built": "2026-10-22 13:25",
+   "built": "2026-10-23 00:01",
    "spans": {
     "2026": {
      "n": 153,
@@ -223391,7 +223972,7 @@
     "plan": "builder50k",
     "size": "safe"
    },
-   "built": "2026-10-22 13:25",
+   "built": "2026-10-23 00:01",
    "spans": {
     "2026": {
      "n": 153,
@@ -223467,6 +224048,350 @@
      "slow_pass": 53.3,
      "pass_med": 16.0,
      "b2b": "21/33"
+    }
+   }
+  },
+  {
+   "id": "atlas_base_published",
+   "title": "ATLAS today, published scorer (no armed-setup block) = acctb_25k_need",
+   "family": "other",
+   "question": "Owner 2026-10-22: tune ATLAS (account B: EMA + MACD + S/R) as a whole for the Builder 25K under the real account-B rules",
+   "status": "info",
+   "verdict": "Builder 25K, fresh eval every session (20 sessions; $ = back-to-back eval path). 2026 H1 (pick) 4.02/wk, path +19,722 ($3,236/mo, PF 2.97, DD -975); 2-week pass/fail/stuck 68.9/0.0/7.6, 1 month 81.7/0.0, median 5.0 sessions; funded 3 mo $1842. H2 (check) 2.82/wk, path +5,391 ($1,451/mo, PF 2.36, DD -1,642); 2-week pass/fail/stuck 43.5/0.0/0.0, 1 month 61.0/0.0, median 6.0 sessions; funded 3 mo $1349. Reference 2025 4.34/wk, path +1,020 ($83/mo, PF 1.05, DD -5,495); 2-week pass/fail/stuck 28.9/0.0/34.9, 1 month 34.3/0.0, median 4.0 sessions; funded 3 mo $175; 2021-24 4.67/wk, path +8,990 ($232/mo, PF 1.11, DD -9,577); 2-week pass/fail/stuck 23.9/0.0/38.9, 1 month 26.5/0.0, median 4.0 sessions; funded 3 mo $253.",
+   "writeup": "atlas",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": false,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-22 23:58",
+   "spans": {
+    "2026": {
+     "n": 147,
+     "tpw": 3.57,
+     "wk2": 90,
+     "win": 53.7,
+     "pf": 2.8,
+     "net": 25113,
+     "dd": -1642,
+     "avg_r": 0.843,
+     "stop": 44.0,
+     "worst_day": -586,
+     "risk": 194.0,
+     "half": 0,
+     "per_month": 2560,
+     "p10": 17.0,
+     "f10": 0.0,
+     "p15": 31.1,
+     "f15": 0.0,
+     "p20": 43.7,
+     "f20": 0.0,
+     "dec10": 17.0,
+     "slow_pass": 57.3,
+     "pass_med": 18.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 985,
+     "tpw": 4.59,
+     "wk2": 99,
+     "win": 36.9,
+     "pf": 1.1,
+     "net": 10010,
+     "dd": -9577,
+     "avg_r": 0.05,
+     "stop": 27.2,
+     "worst_day": -595,
+     "risk": 152.0,
+     "half": 0,
+     "per_month": 196,
+     "p10": 3.9,
+     "f10": 0.4,
+     "p15": 6.7,
+     "f15": 4.3,
+     "p20": 10.4,
+     "f20": 12.6,
+     "dec10": 4.3,
+     "slow_pass": 78.4,
+     "pass_med": 30.0,
+     "b2b": "9/16"
+    },
+    "all": {
+     "n": 1132,
+     "tpw": 4.43,
+     "wk2": 97,
+     "win": 39.0,
+     "pf": 1.3,
+     "net": 35123,
+     "dd": -9577,
+     "avg_r": 0.153,
+     "stop": 29.5,
+     "worst_day": -595,
+     "risk": 156.0,
+     "half": 0,
+     "per_month": 577,
+     "p10": 6.0,
+     "f10": 0.3,
+     "p15": 10.6,
+     "f15": 3.6,
+     "p20": 15.7,
+     "f20": 10.6,
+     "dec10": 6.3,
+     "slow_pass": 73.7,
+     "pass_med": 26.0,
+     "b2b": "16/16"
+    }
+   }
+  },
+  {
+   "id": "atlas_late_limit2",
+   "title": "ATLAS stress: every entry 1 bar late on a limit at the signal close",
+   "family": "other",
+   "question": "Owner 2026-10-22: tune ATLAS (account B: EMA + MACD + S/R) as a whole for the Builder 25K under the real account-B rules",
+   "status": "info",
+   "verdict": "Builder 25K, fresh eval every session (20 sessions; $ = back-to-back eval path). 2026 H1 (pick) 3.01/wk, path +5,660 ($929/mo, PF 1.78, DD -1,496); 2-week pass/fail/stuck 52.1/0.0/6.7, 1 month 56.9/0.0, median 4.5 sessions; funded 3 mo $637. H2 (check) 2.76/wk, path +2,271 ($611/mo, PF 1.62, DD -947); 2-week pass/fail/stuck 18.8/0.0/5.8, 1 month 25.4/0.0, median 4.5 sessions; funded 3 mo $337. Reference 2025 3.57/wk, path +1,983 ($161/mo, PF 1.12, DD -3,944); 2-week pass/fail/stuck 28.1/0.0/18.1, 1 month 31.8/0.0, median 4.0 sessions; funded 3 mo $209; 2021-24 3.99/wk, path -6,713 ($-173/mo, PF 0.9, DD -11,747); 2-week pass/fail/stuck 22.0/0.0/34.8, 1 month 24.8/0.0, median 4.0 sessions; funded 3 mo $124.",
+   "writeup": "atlas",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {
+      "EMA": "{\"delay\": 1, \"ent\": [\"lc\", 2]}",
+      "MD": "{\"delay\": 1, \"ent\": [\"lc\", 2]}",
+      "SR": "{\"delay\": 1, \"ent\": [\"lc\", 2]}"
+     },
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-22 23:58",
+   "spans": {
+    "2026": {
+     "n": 120,
+     "tpw": 2.91,
+     "wk2": 81,
+     "win": 47.5,
+     "pf": 1.73,
+     "net": 7931,
+     "dd": -1858,
+     "avg_r": 0.536,
+     "stop": 36.0,
+     "worst_day": -502,
+     "risk": 144.0,
+     "half": 0,
+     "per_month": 808,
+     "p10": 6.3,
+     "f10": 0.0,
+     "p15": 10.7,
+     "f15": 0.0,
+     "p20": 16.5,
+     "f20": 0.0,
+     "dec10": 6.3,
+     "slow_pass": 82.1,
+     "pass_med": 32.0,
+     "b2b": "2/0"
+    },
+    "2021-25": {
+     "n": 834,
+     "tpw": 3.89,
+     "wk2": 93,
+     "win": 35.1,
+     "pf": 0.94,
+     "net": -4730,
+     "dd": -11747,
+     "avg_r": 0.005,
+     "stop": 23.6,
+     "worst_day": -591,
+     "risk": 140.0,
+     "half": 0,
+     "per_month": -93,
+     "p10": 2.6,
+     "f10": 0.0,
+     "p15": 4.1,
+     "f15": 0.4,
+     "p20": 6.3,
+     "f20": 4.7,
+     "dec10": 2.6,
+     "slow_pass": 61.1,
+     "pass_med": 18.0,
+     "b2b": "5/18"
+    },
+    "all": {
+     "n": 954,
+     "tpw": 3.73,
+     "wk2": 91,
+     "win": 36.7,
+     "pf": 1.03,
+     "net": 3200,
+     "dd": -11747,
+     "avg_r": 0.072,
+     "stop": 24.8,
+     "worst_day": -591,
+     "risk": 140.0,
+     "half": 0,
+     "per_month": 53,
+     "p10": 3.2,
+     "f10": 0.0,
+     "p15": 5.2,
+     "f15": 0.3,
+     "p20": 8.0,
+     "f20": 3.9,
+     "dec10": 3.2,
+     "slow_pass": 72.5,
+     "pass_med": 23.0,
+     "b2b": "7/19"
+    }
+   }
+  },
+  {
+   "id": "atlas_late_mkt",
+   "title": "ATLAS stress: every entry 1 bar late at market",
+   "family": "other",
+   "question": "Owner 2026-10-22: tune ATLAS (account B: EMA + MACD + S/R) as a whole for the Builder 25K under the real account-B rules",
+   "status": "info",
+   "verdict": "Builder 25K, fresh eval every session (20 sessions; $ = back-to-back eval path). 2026 H1 (pick) 3.44/wk, path +4,673 ($767/mo, PF 1.59, DD -941); 2-week pass/fail/stuck 49.6/0.0/5.9, 1 month 47.7/0.0, median 4.0 sessions; funded 3 mo $738. H2 (check) 2.56/wk, path +133 ($36/mo, PF 1.05, DD -901); 2-week pass/fail/stuck 33.3/0.0/10.1, 1 month 50.8/0.0, median 6.5 sessions; funded 3 mo $0. Reference 2025 3.99/wk, path +3,687 ($300/mo, PF 1.18, DD -2,974); 2-week pass/fail/stuck 20.1/0.0/34.1, 1 month 24.7/0.0, median 3.0 sessions; funded 3 mo $72; 2021-24 4.41/wk, path -908 ($-23/mo, PF 0.99, DD -12,687); 2-week pass/fail/stuck 22.5/0.0/43.9, 1 month 24.9/0.0, median 3.0 sessions; funded 3 mo $121.",
+   "writeup": "atlas",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {
+      "EMA": "{\"delay\": 1}",
+      "MD": "{\"delay\": 1}",
+      "SR": "{\"delay\": 1}"
+     },
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-22 23:58",
+   "spans": {
+    "2026": {
+     "n": 128,
+     "tpw": 3.11,
+     "wk2": 93,
+     "win": 46.1,
+     "pf": 1.45,
+     "net": 4806,
+     "dd": -1777,
+     "avg_r": 0.454,
+     "stop": 39.4,
+     "worst_day": -591,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 490,
+     "p10": 2.4,
+     "f10": 0.0,
+     "p15": 4.9,
+     "f15": 0.0,
+     "p20": 7.3,
+     "f20": 0.0,
+     "dec10": 2.4,
+     "slow_pass": 81.8,
+     "pass_med": 33.0,
+     "b2b": "1/0"
+    },
+    "2021-25": {
+     "n": 924,
+     "tpw": 4.31,
+     "wk2": 96,
+     "win": 34.8,
+     "pf": 1.03,
+     "net": 2779,
+     "dd": -12687,
+     "avg_r": -0.008,
+     "stop": 27.2,
+     "worst_day": -591,
+     "risk": 156.0,
+     "half": 0,
+     "per_month": 54,
+     "p10": 3.1,
+     "f10": 0.0,
+     "p15": 4.7,
+     "f15": 1.1,
+     "p20": 6.3,
+     "f20": 9.4,
+     "dec10": 3.1,
+     "slow_pass": 80.5,
+     "pass_med": 32.0,
+     "b2b": "6/17"
+    },
+    "all": {
+     "n": 1052,
+     "tpw": 4.12,
+     "wk2": 95,
+     "win": 36.2,
+     "pf": 1.07,
+     "net": 7585,
+     "dd": -12687,
+     "avg_r": 0.048,
+     "stop": 28.2,
+     "worst_day": -591,
+     "risk": 150.0,
+     "half": 0,
+     "per_month": 125,
+     "p10": 3.0,
+     "f10": 0.0,
+     "p15": 4.7,
+     "f15": 0.9,
+     "p20": 6.5,
+     "f20": 7.9,
+     "dec10": 3.0,
+     "slow_pass": 80.8,
+     "pass_med": 32.0,
+     "b2b": "8/17"
     }
    }
   },

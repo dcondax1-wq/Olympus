@@ -649,7 +649,7 @@ def cmd_pick():
 # A second, smaller grid around the stage-1 reference pick (reclaim, inducement first, displacement close, market entry,
 # NY hours): reclaim window, displacement size, sweep depth, level set, NY window, stop cap, min R of the level target,
 # bank, BE, 15-minute check. Picked the same way (2026 H1 plateau; 2025 / 2021-24 not negative).
-WINDOWS.update({"ny12": (570, 720), "ny10": (600, 930)})
+WINDOWS.update({"ny12": (570, 720), "ny10": (600, 930), "ny11": (570, 660)})      # ny11: ATLAS (tools/atlas.py, atlas.md)
 REF_GEN = [dict(lv=lv, depth=dp, W=w, conf="close", disp=ds, idm=True, entry="mkt")
            for lv in ("all_or", "all") for dp in (0.0, 0.25) for w in (2, 3, 4, 6) for ds in (0.3, 0.5, 0.7)]
 REF_SIM = [dict(win=w, maxpd=1, max_stop=ms) for w in ("nyx", "ny12", "ny10") for ms in (60.0, 80.0, 120.0)]

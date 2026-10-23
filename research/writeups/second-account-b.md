@@ -106,7 +106,7 @@ runs: acctb_25k_need, acctb_50k_need, acctb_25k_safe, acctb_50k_safe, mix_acct2_
 | 2025: 2-week pass / dead (fail + stuck) | 28.9 / 34.9 | 29.7 / 34.1 | |
 | 2021-24: 2-week pass / dead | 23.9 / 38.9 | 25.3 / 36.0 | |
 | 2025 / 2021-24 $ per eval bought | +$1 / +$11 | +$29 / +$57 | |
-| 2025 / 2021-24 eval-path $ | +$1,020 / +$8,990 | -$4,066 / +$2,364 | |
+| 2025 / 2021-24 eval-path $ | +$1,020 / +$8,990 | -$2,904 / +$13 (was -$4,066 / +$2,364 before the 2026-10-22 daily-loss fix, atlas.md) | |
 
 H2 funded $ comes from only 16 starts (early July) and is not quoted.
 
