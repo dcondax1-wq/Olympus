@@ -203,11 +203,11 @@ def b_day(H, day, plan, label, sizing="need", prior=0.0, expect_hedge=False, exp
           and not [x for x in logs if "account B failed" in x], (errors[:3], recon[:2], [x for x in logs if "account B failed" in x][:2]))
     info = b.second_route_info() or {}
     abv = info.get("account_b") or {}
-    check(f"{label}: heartbeat / dashboards show '{B.label}' with its eval tracker", abv.get("label") == "Account B Sim102"
+    check(f"{label}: heartbeat / dashboards show '{B.label}' with its eval tracker", abv.get("label") == "ATLAS Sim102"
           and (abv.get("eval") or {}).get("target") == B.rules["start"] + B.rules["target"], abv.get("eval"))
     cp = second.compact({"t": 1, "day": day, "strategies": {k: {"label": k, "short": k, "on": True, "trades": []} for k in KEYS}}, route=info)
-    check(f"{label}: second.compact labels B's strategies 'ROUTED on Account B Sim102'",
-          all((cp["strategies"][k]["route_label"] == "ROUTED on Account B Sim102") for k in KEYS) and cp["route"].get("account_b"), cp.get("route"))
+    check(f"{label}: second.compact labels B's strategies 'ROUTED on ATLAS Sim102'",
+          all((cp["strategies"][k]["route_label"] == "ROUTED on ATLAS Sim102") for k in KEYS) and cp["route"].get("account_b"), cp.get("route"))
     return {"day": day, "plan": plan, "rows": rows, "lit": len(L), "seconds": round(time.time() - t0), "bot": b}
 
 
@@ -283,7 +283,7 @@ def units(tmp):
           ev["status"] == "passed" and ev["balance"] == 26550.0 and ev["target"] == 26500.0 and ev["session"] == 3, ev)
     B._lifecycle(now)
     B._lifecycle(now)
-    check("eval: 'Account B Sim102 EVAL PASSED' pushed once", [p_["title"] for p_ in fb.pushed] == ["Account B Sim102 EVAL PASSED \U0001F389"],
+    check("eval: 'ATLAS Sim102 EVAL PASSED' pushed once", [p_["title"] for p_ in fb.pushed] == ["ATLAS Sim102 EVAL PASSED \U0001F389"],
           [p_["title"] for p_ in fb.pushed])
     B.closes = [["2026-10-05", now - 2 * 86400, -950.0, now - 2 * 86400 - 600]]
     ev = B.eval_view(now)

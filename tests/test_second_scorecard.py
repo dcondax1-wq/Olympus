@@ -124,7 +124,7 @@ def part_d():
     L = second.readme_lines({"first_run": 1_790_000_000, "t": 1_790_100_000, "strategies": led})
     txt = "\n".join(L)
     check("d. cloud README: 'Go / no-go scorecard' table with the verdicts", "### Go / no-go scorecard" in txt and "| EMA | 6 |" in txt
-          and "Account B (EMA + MACD + S/R)" in txt, txt[-800:])
+          and "ATLAS (EMA + MACD + S/R)" in txt, txt[-800:])
     a = os.path.join(ROOT, "tools", "web_public", "secondcore.js")
     p = os.path.join(ROOT, "web_next", "js", "next", "secondcore.js")
     check("d. secondcore.js: phone and PC copies byte-identical", open(a, "rb").read() == open(p, "rb").read())
@@ -159,12 +159,12 @@ def part_d():
         o = json.loads(r.stdout.strip().splitlines()[-1])
     except Exception:
         o = {"ok": False, "err": r.stderr[-400:]}
-    check("d. the page renders the scorecard (node, stub DOM; SecondUI v4)", o.get("ok") and o.get("v") == 4, o)
+    check("d. the page renders the scorecard (node, stub DOM; SecondUI v5)", o.get("ok") and o.get("v") == 5, o)
     idx = open(os.path.join(ROOT, "tools", "web_public", "index.html"), encoding="utf-8").read()
     sw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
     pcs = open(os.path.join(ROOT, "web_next", "js", "next", "second.js"), encoding="utf-8").read()
-    check("d. phone loads secondcore.js?v=4, service worker cache bumped (le-public-v25 or later), PC loads ?v=4",
-          "secondcore.js?v=4" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 25 and "secondcore.js?v=4" in pcs)
+    check("d. phone loads secondcore.js?v=5, service worker cache bumped (le-public-v26 or later), PC loads ?v=5",
+          "secondcore.js?v=5" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 26 and "secondcore.js?v=5" in pcs)
 
 
 def main():

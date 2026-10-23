@@ -1073,6 +1073,12 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             "strategy": {k: (data["strategy"] or {}).get(k) for k in ("label", "chosen", "model", "lit", "lit_sizing")},
             "lit_extra": {k: (data.get("lit_extra") or {}).get(k) for k in ("plan", "sizing")} if data.get("lit_extra") else None,
             "extras": {"two_week": ex.get("two_week"), "eventual": ex.get("eventual")},
+            # ATLAS (data.json "second") for the Home card: state, brain, the last trades, account B, the scorecard
+            "second": {**{k: v for k, v in (data.get("second") or {}).items() if k not in ("strategies", "atlas")},
+                       "atlas": {"name": ((data.get("second") or {}).get("atlas") or {}).get("name"),
+                                 "members": ((data.get("second") or {}).get("atlas") or {}).get("members")},
+                       "strategies": [{**{k: v for k, v in s.items() if k not in ("backtest", "rules", "trades", "summary")},
+                                       "trades": (s.get("trades") or [])[-12:]} for s in (data.get("second") or {}).get("strategies") or []]},
             "results": {"periods": {k: v for k, v in ((results or {}).get("periods") or {}).items()
                                     if k in ("2026 YTD", "2026 H1 (picked on)", "2026 H2 (check)", "2021-25 (reference)")}}}
     with open(os.path.join(out, "home.json"), "w", encoding="utf-8") as fh:

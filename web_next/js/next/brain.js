@@ -37,7 +37,7 @@ function secondCore() {
   if (window.SecondUI && window.SecondUI.brain) return Promise.resolve();
   if (!scLoading) scLoading = new Promise((ok, bad) => {
     const t = document.createElement('script');
-    t.src = new URL('./secondcore.js?v=4', import.meta.url).href;
+    t.src = new URL('./secondcore.js?v=5', import.meta.url).href;
     t.onload = () => ok(); t.onerror = () => { scLoading = null; bad(new Error('secondcore.js did not load')); };
     document.head.appendChild(t);
   });
@@ -267,7 +267,7 @@ function render() {
     : `<span class="nx-chip">${esc(b?.empty ? 'no live Brain' : S.liveErr ? 'offline' : 'loading')}</span>`;
   const head = `<div class="nx-hero"><div><div class="nx-eyebrow">${icon('brain')} Bot Brain · ${src}</div><h2>What the bot is thinking</h2>
     <p class="muted">Every step of the LIT strategy, live: what it waits for, every level it watches, every setup it saw today and the exact rule that stopped it, how it sizes, how it manages the trade and what could block it. Read-only: this page cannot change anything the bot does.</p></div></div>
-    <div class="nx-toolbar bb-tabs">${seg('bbWho', [['lit', 'LIT brain'], ['second', 'Second-strategy brain']], S.who)}</div>
+    <div class="nx-toolbar bb-tabs">${seg('bbWho', [['lit', 'LIT brain'], ['second', 'ATLAS brain']], S.who)}</div>
     ${S.who === 'second' ? '' : `<div class="nx-toolbar bb-tabs">${seg('bbTab', TABS, S.tab)}</div>`}`;
   let body;
   if (S.who === 'second') body = '<div id="bbSecond"><div class="nx-skel"><i></i><i></i></div></div>';

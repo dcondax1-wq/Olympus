@@ -18,7 +18,9 @@
 // v24 (2026-10-22): secondcore.js v3 (Account B card: its own account + eval tracker).
 // v25 (2026-10-22): secondcore.js v4 (go / no-go scorecard: paper result vs the expected range, engine/second_scorecard.py).
 // v26 (2026-10-22): scalecore.js + scale.js (Money > Scaling plan, engine/scale_plan.py).
-const CACHE = 'le-public-v26';
+// v27 (2026-10-22): ATLAS (strategy 2, the 25K) is its own bottom tab (second.js v3, secondcore.js v5 SecondUI.atlas), the
+// Home two-strategy cards (LIT · 50K / ATLAS · 25K), Strategy folds into More, brain.js v4 / alerts.js v3 (ATLAS names), hub.js v5.
+const CACHE = 'le-public-v27';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

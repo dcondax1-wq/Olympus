@@ -153,6 +153,7 @@
         <div class="hb-meta">${acct}${a.name && a.name !== M.a?.name ? `<span>${esc(a.name)}</span>` : ''}<span>${icon('clock')}heartbeat ${hb != null ? ageTxt(hb) + ' ago' : '—'}</span>${pc.host ? `<span>${esc(pc.host)}</span>` : ''}</div></div>
       <div class="hb-hr"><span>Today</span><b class="${cls(day)}">${susd(day)}</b><em>${M.src === 'cloud' ? 'cloud paper' : esc(M.a?.name || 'eval')} · ${plural((M.a?.stats?.n ?? 0), 'trade')} closed</em></div></div>`;
   }
+  // (off Home since 2026-10-22: to go / room / session sit in the "LIT · 50K" card on top, second.js; kept for reuse)
   function kpiRow(M) {
     const e = M.a?.eval || {}, tw = HD()?.extras?.two_week?.eval?.H2;
     const toGo = ok(e.to_target) ? e.to_target : null, room = e.room, ses = e.session;
@@ -230,10 +231,10 @@
   }
   VIEWS.today = (el) => {
     const M = mainAcct();
-    el.innerHTML = `${surfaceLine()}${banner()}${verdictCard(M)}${kpiRow(M)}${tradeCard()}
+    el.innerHTML = `${surfaceLine()}${banner()}${verdictCard(M)}${tradeCard()}
       <div class="grid g2 astart">${evalCard(M)}${healthCard()}</div>
       ${planTeaser()}
-      <div class="hb-links">${[['trades', 'trades', 'Trades'], ['recaps', 'replay', 'Recaps'], ['weekly', 'results', 'Weekly'], ['money', 'wallet', 'Money'], ['strategy', 'rules', 'Strategy'], ['accounts', 'wallet', 'Accounts'], ['market', 'news', 'Market'], ['props', 'prop', 'Prop firms'], ['live', 'engine', 'Live detail'], ['activity', 'alerts', 'Activity']]
+      <div class="hb-links">${[['trades', 'trades', 'Trades'], ['recaps', 'replay', 'Recaps'], ['weekly', 'results', 'Weekly'], ['money', 'wallet', 'Money'], ['atlas', 'layers', 'ATLAS'], ['strategy', 'rules', 'LIT strategy'], ['accounts', 'wallet', 'Accounts'], ['market', 'news', 'Market'], ['props', 'prop', 'Prop firms'], ['live', 'engine', 'Live detail'], ['activity', 'alerts', 'Activity']]
         .map(([g, ic, l]) => `<button class="chipbtn" type="button" data-go="${g}">${icon(ic)}<span>${l}</span></button>`).join('')}</div>
       <p class="small mut hb-foot">Paper / eval monitor · read-only · built ${HD()?.built ? esc(new Date(HD().built).toLocaleString()) : '—'}${HD()?.home_only ? ' · loading the rest…' : ''}</p>`;
   };

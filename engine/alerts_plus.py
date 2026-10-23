@@ -49,7 +49,7 @@ KINDS = {   # kind: (label for the app, what it covers, critical = repeats until
     "update": ("Update failed", "bot auto-update failed or rolled back", True),
     "cloud_stale": ("Cloud monitor stale", "the cloud monitor has not published for 45+ min in market hours", False),
     "rules": ("Rules differ", "PC and cloud run different LIT rules", False),
-    "second": ("Second strategies (PAPER)", "EMA / MACD paper entries and exits next to LIT, never traded (cloud)", False),
+    "second": ("ATLAS (PAPER)", "ATLAS (EMA / MACD / S/R) paper entries and exits next to LIT, never traded (cloud)", False),
     # engine/ai_watch.py (2026-10-22)
     "freeze": ("Feed frozen in a trade", "a position is open and the NinjaTrader 1m bars stopped (3+ min)", True),
     "anomaly": ("Anomaly", "price spike / bad tick on the 1m feed, an entry routed 30+ s after its signal", False),

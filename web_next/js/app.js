@@ -54,7 +54,7 @@ import { setups as setupsPage, sensitivity as sensPage } from './next/insights.j
 import { intel as intelPage } from './next/intel.js';
 import { brain as brainPage } from './next/brain.js';
 import { perf as perfPage } from './next/perf.js';
-import { second as secondPage } from './next/second.js';
+import { second as secondPage, atlas as atlasPage, initTwoCards } from './next/second.js';
 import { scale as scalePage } from './next/scale.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
@@ -71,7 +71,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   firms: hubp.firms, business: hubp.business, market: hubp.market, learn: hubp.learn, system: hubp.system,
   botctl: botctlPage, accounts: pc.accounts, evalhq: pc.evalhq, edge: pc.edge, pnlcal: pc.pnlcal, mffurules: pc.mffurules,
   morning: ops.morning, livechart: ops.livechart, botlog: ops.botlog, ntpanel: ops.ntpanel, timeline: ops.timeline, livesettings: ops.livesettings,
-  setups: setupsPage, sensitivity: sensPage, intel: intelPage, brain: brainPage, perf: perfPage, second: secondPage, scale: scalePage,
+  setups: setupsPage, sensitivity: sensPage, intel: intelPage, brain: brainPage, perf: perfPage, second: secondPage, atlas: atlasPage, scale: scalePage,
   rules: mods.rules, cold: mods.cold, risk: mods.risk, alerts: { show: () => settingsPage.show() }, modules: { show: () => {} },
   playbook: { show: () => {} } };
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };
@@ -86,6 +86,7 @@ function registerSW() {
 // ------------------------------------------------------------------ navigation
 export function go(page) {
   if (page === 'data') page = store.get('dataSub', 'results');
+  if (page === 'second') page = 'atlas';                       // the old Data → Second strategies page is ATLAS now
   if (!TITLES[page] || !document.getElementById('page-' + page)) page = 'command';
   if (groupOf(page) === 'data') store.set('dataSub', page);
   const prev = S.page;
@@ -561,7 +562,7 @@ async function boot() {
   for (const p of Object.values(PAGES)) p.init?.();
   initCommandExtras(); initPalette(); initVoice();
   // dashboard layer: ops registers the command 'prep' widget, so it runs before the command grid is built
-  initOps(); initHome(); initAnalytics(); initUX(go); addPaletteItems(paletteActions); startLive(); initToday(); initLitToday(); pc.initPCStatus(); initBotControl(); initPulse(); initKeys();
+  initOps(); initHome(); initAnalytics(); initUX(go); addPaletteItems(paletteActions); startLive(); initToday(); initLitToday(); pc.initPCStatus(); initTwoCards(); initBotControl(); initPulse(); initKeys();
   renderPlaybook($('#playbook'));
   const want = new URLSearchParams(location.search).get('page');
   go(want && TITLES[want] ? want : store.get('page', 'command'));

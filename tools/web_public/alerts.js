@@ -23,7 +23,7 @@
     ['update', 'Update failed', 'bot auto-update failed or rolled back', true],
     ['cloud_stale', 'Cloud monitor stale', 'no cloud publish for 45+ min in market hours', false],
     ['rules', 'Rules differ', 'PC and cloud run different LIT rules', false],
-    ['second', 'Second strategies (PAPER)', 'EMA / MACD paper entries and exits next to LIT (never traded)', false],
+    ['second', 'ATLAS (PAPER)', 'ATLAS (EMA / MACD / S/R) paper entries and exits next to LIT (never traded)', false],
     ['freeze', 'Feed frozen in a trade', 'a position is open and the NinjaTrader 1m bars stopped', true],
     ['anomaly', 'Anomaly', 'price spike / bad tick, an entry routed 30+ s after its signal', false],
     ['drift', 'Drift', 'LIT / account B below the backtest range, execution drift', false],
