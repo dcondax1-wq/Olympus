@@ -76,6 +76,8 @@ jobs:
             /second_model.json
             /data/NQ_rolls.json
             /research/second/*.json
+            /research/props/*.json
+            /research/lab/rule_log.json
             /data/VIX_1d.csv
             /data/VXN_1d.csv
             /data/NQ_5m.csv
