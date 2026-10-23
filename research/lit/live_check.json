@@ -62,7 +62,7 @@
   "n_extra": 0,
   "exit_differs": [],
   "net_backtest": 43384.94,
-  "seconds": 53
+  "seconds": 60
  },
  "bot": {
   "sessions": [
@@ -126,12 +126,12 @@
    }
   ],
   "last_model_state": "LIT: market closed (next session 18:00 ET; entries 02:00-15:30 ET)",
-  "poll_ms": 634,
+  "poll_ms": 631,
   "modify_routes": 0,
   "states_seen": [
    "LIT: market closed (next session 18:00 E"
   ],
   "ok": true
  },
- "seconds": 882
+ "seconds": 881
 }

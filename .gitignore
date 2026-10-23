@@ -93,3 +93,7 @@ research/business/statements/
 research/business/tax_*.csv
 data/alerts_plus.json
 data/push_prefs.json
+
+# AI watch state (engine/ai_watch.py), machine-local
+data/ai_watch.json
+data/*_ai.json

@@ -425,3 +425,7 @@ router.include_router(_ops_router)
 # Bot Brain (engine/brain.py): what the bot is thinking now, its thought log, any past 2026 day replayed (engine/brain_api.py)
 from .brain_api import router as _brain_router  # noqa: E402
 router.include_router(_brain_router)
+
+# AI watch (engine/ai_watch.py: anomalies, drift, both-accounts loss, rule-change log): read-only GET (engine/ai_api.py)
+from .ai_api import router as _ai_router  # noqa: E402
+router.include_router(_ai_router)

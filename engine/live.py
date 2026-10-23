@@ -2199,6 +2199,11 @@ class LiveBot:
             alerts_plus.pc_setup_tick(self, now)
         except Exception as e:
             self._note_error(f"setup alerts failed: {e.__class__.__name__}: {e}")
+        try:                                  # AI watch: anomalies, drift, loss caps, rule changes (engine/ai_watch.py; alerts only)
+            from . import ai_watch
+            ai_watch.tick(self, now)
+        except Exception as e:
+            self._note_error(f"ai watch failed: {e.__class__.__name__}: {e}")
 
     # ------------------------------------------------------------------ phone notifications (engine/push.py, Web Push)
     def _push_account(self):

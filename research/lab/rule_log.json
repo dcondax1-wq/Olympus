@@ -1,0 +1,654 @@
+{
+ "v": 1,
+ "built": "2026-10-22T23:35:32+00:00",
+ "files": [
+  "live_model.json",
+  "live_model_lit.json",
+  "second_model.json"
+ ],
+ "commits": [
+  {
+   "sha": "dc3f328d78",
+   "who": "Claude",
+   "when": "2026-10-22T17:10:06+00:00",
+   "why": "Account B: second strategies on their own MFFU account (built, OFF) + Builder 25K vs 50K study",
+   "files": {
+    "second_model.json": [
+     "account_b: added null"
+    ]
+   },
+   "n": 1
+  },
+  {
+   "sha": "04b6d9f002",
+   "who": "Claude",
+   "when": "2026-10-22T12:58:46+00:00",
+   "why": "Second strategies routable on LIT's account (built, OFF) + the second-strategy brain",
+   "files": {
+    "second_model.json": [
+     "strategies.ema_lon_vix.route: added false",
+     "strategies.lit_asia.route: added false",
+     "strategies.macd_sweep.route: added false",
+     "strategies.sr_nyreclaim.route: added false"
+    ]
+   },
+   "n": 4
+  },
+  {
+   "sha": "bdcd8f2749",
+   "who": "Claude",
+   "when": "2026-10-22T02:47:05+00:00",
+   "why": "Second strategies: LIT + Asia slot paper shadow (cloud only), replay 187/187 vs run lit_more_ent_asia_slot_rr3",
+   "files": {
+    "second_model.json": [
+     "strategies.lit_asia.cloud_only: added true",
+     "strategies.lit_asia.kind: added lit_variant",
+     "strategies.lit_asia.on: added true",
+     "strategies.lit_asia.overrides.all_hours: added true",
+     "strategies.lit_asia.overrides.kz: added [[1080, 1440, {\"max_rr\": 3.0}], [0, 120, {\"max_rr\": 3.0}]]",
+     "strategies.lit_asia.overrides.max_per_day: added 2",
+     "strategies.lit_asia.overrides.per_session: added [[[1080, 120], [120, 1080]], 1]",
+     "strategies.lit_asia.overrides.window: added [[1080, 1440], [0, 930]]",
+     "strategies.lit_asia.rules: added [\"Every LIT rule as live (live_model.json \\\"lit\\\"), plus:...",
+     "strategies.lit_asia.run: added lit_more_ent_asia_slot_rr3",
+     "strategies.lit_asia.short: added LIT+Asia",
+     "strategies.lit_asia.writeup: added lit-more-entries"
+    ]
+   },
+   "n": 12
+  },
+  {
+   "sha": "ed2ab48480",
+   "who": "Claude",
+   "when": "2026-10-22T02:17:56+00:00",
+   "why": "Second strategies next to LIT, paper only: EMA London pullback, MACD sweep divergence, S/R NY reclaim",
+   "files": {
+    "second_model.json": [
+     "paper: added true",
+     "strategies.ema_lon_vix.entry.disp: added 0.0",
+     "strategies.ema_lon_vix.entry.pull: added e50",
+     "strategies.ema_lon_vix.entry.reg: added nomon",
+     "strategies.ema_lon_vix.entry.sweep: added 1",
+     "strategies.ema_lon_vix.entry.trend: added t15_60",
+     "strategies.ema_lon_vix.entry.win: added lon",
+     "strategies.ema_lon_vix.exit.be: added 1.0",
+     "strategies.ema_lon_vix.exit.beo: added 1.25",
+     "strategies.ema_lon_vix.exit.ride: added null",
+     "strategies.ema_lon_vix.exit.tchk: added null",
+     "strategies.ema_lon_vix.exit.tgt: added vix",
+     "strategies.ema_lon_vix.kind: added ema_pullback",
+     "strategies.ema_lon_vix.on: added true",
+     "strategies.ema_lon_vix.research.best: added research/second/ema_best.json",
+     "strategies.ema_lon_vix.research.report: added research/second/ema_report.json",
+     "strategies.ema_lon_vix.run: added ema2_lon_vix",
+     "strategies.ema_lon_vix.short: added EMA",
+     "strategies.ema_lon_vix.usd: added 500",
+     "strategies.ema_lon_vix.writeup: added second-ema",
+     "strategies.macd_sweep.flt.depth: added 0.5",
+     "strategies.macd_sweep.flt.kz: added lon_ny",
+     "strategies.macd_sweep.flt.maxpd: added 1",
+     "strategies.macd_sweep.flt.reg: added none",
+     "strategies.macd_sweep.gen.lv: added all",
+     "strategies.macd_sweep.gen.osc: added line",
+     "strategies.macd_sweep.gen.tf: added 5",
+     "strategies.macd_sweep.kind: added macd_sweep",
+     "strategies.macd_sweep.on: added true",
+     "strategies.macd_sweep.research.best: added research/second/md_best.json",
+     "strategies.macd_sweep.run: added md2_best",
+     "strategies.macd_sweep.short: added MACD",
+     "strategies.macd_sweep.sim.be: added null",
+     "strategies.macd_sweep.sim.ent: added mkt",
+     "strategies.macd_sweep.sim.tc: added true",
+     "strategies.macd_sweep.sim.tgt: added vix",
+     "strategies.macd_sweep.usd: added 500",
+     "strategies.macd_sweep.writeup: added second-md",
+     "strategies.sr_nyreclaim.key.W: added 4",
+     "strategies.sr_nyreclaim.key.be: added null",
+     "strategies.sr_nyreclaim.key.bk: added null",
+     "strategies.sr_nyreclaim.key.conf: added close",
+     "strategies.sr_nyreclaim.key.depth: added 0.0",
+     "strategies.sr_nyreclaim.key.disp: added 0.3",
+     "strategies.sr_nyreclaim.key.entry: added mkt",
+     "strategies.sr_nyreclaim.key.idm: added true",
+     "strategies.sr_nyreclaim.key.lv: added all_or",
+     "strategies.sr_nyreclaim.key.max_stop: added 80.0",
+     "strategies.sr_nyreclaim.key.maxpd: added 1",
+     "strategies.sr_nyreclaim.key.min_rr: added 1.5",
+     "strategies.sr_nyreclaim.key.setup: added reclaim",
+     "strategies.sr_nyreclaim.key.tc: added true",
+     "strategies.sr_nyreclaim.key.tg: added 2.0",
+     "strategies.sr_nyreclaim.key.win: added ny12",
+     "strategies.sr_nyreclaim.kind: added sr_reclaim",
+     "strategies.sr_nyreclaim.name: added nyreclaim",
+     "strategies.sr_nyreclaim.on: added true",
+     "strategies.sr_nyreclaim.research.best: added research/second/sr_best.json",
+     "strategies.sr_nyreclaim.research.report: added research/second/sr_final.json",
+     "strategies.sr_nyreclaim.run: added sr2_nyreclaim_usd500"
+    ]
+   },
+   "n": 60
+  },
+  {
+   "sha": "43a3210600",
+   "who": "Claude",
+   "when": "2026-10-20T04:09:58+00:00",
+   "why": "WIP checkpoint: docs and dashboard data for the live config (t_check + be_off on, scale_in off)",
+   "files": {
+    "live_model.json": [
+     "size_rule: $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $... -> $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $..."
+    ],
+    "live_model_lit.json": [
+     "size_rule: $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $... -> $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $..."
+    ]
+   },
+   "n": 2
+  },
+  {
+   "sha": "5fa11a9470",
+   "who": "Claude",
+   "when": "2026-10-20T03:54:55+00:00",
+   "why": "LIT: scale_in off until the Sim roundtrip (--sim-roundtrip-add) passes; t_check and be_off stay on",
+   "files": {
+    "live_model.json": [
+     "lit.scale_in: added null",
+     "lit.scale_in.f: removed (was 1.0)",
+     "lit.scale_in.min_rk: removed (was 2.0)",
+     "lit.scale_in.n: removed (was 1)",
+     "lit.scale_in.pb: removed (was 0.25)",
+     "lit.scale_in.rat_k: removed (was 1.0)"
+    ],
+    "live_model_lit.json": [
+     "lit.scale_in: added null",
+     "lit.scale_in.f: removed (was 1.0)",
+     "lit.scale_in.min_rk: removed (was 2.0)",
+     "lit.scale_in.n: removed (was 1)",
+     "lit.scale_in.pb: removed (was 0.25)",
+     "lit.scale_in.rat_k: removed (was 1.0)"
+    ]
+   },
+   "n": 12
+  },
+  {
+   "sha": "f391348835",
+   "who": "Claude",
+   "when": "2026-10-20T02:10:31+00:00",
+   "why": "LIT: refresh the live strategy's rules and numbers for the 2026-10-20 upgrades",
+   "files": {
+    "live_model.json": [
+     "live: engine/lit_live.py (PC paper bot engine/live.py and tools... -> engine/lit_live.py (PC paper bot engine/live.py and tools...",
+     "size_rule: $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $... -> $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $..."
+    ],
+    "live_model_lit.json": [
+     "live: engine/lit_live.py (PC paper bot engine/live.py and tools... -> engine/lit_live.py (PC paper bot engine/live.py and tools...",
+     "size_rule: $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $... -> $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $..."
+    ]
+   },
+   "n": 4
+  },
+  {
+   "sha": "27199553ca",
+   "who": "Claude",
+   "when": "2026-10-20T01:11:23+00:00",
+   "why": "LIT: switch on t_check, scale_in and be_off 1.25 (owner approved 2026-10-20)",
+   "files": {
+    "live_model.json": [
+     "lit.be_off: added 1.25",
+     "lit.scale_in.f: added 1.0",
+     "lit.scale_in.min_rk: added 2.0",
+     "lit.scale_in.n: added 1",
+     "lit.scale_in.pb: added 0.25",
+     "lit.scale_in.rat_k: added 1.0",
+     "lit.t_check.at: added 15",
+     "lit.t_check.mfe: added 0.5",
+     "lit.t_check.x: added 0.3"
+    ],
+    "live_model_lit.json": [
+     "lit.be_off: added 1.25",
+     "lit.scale_in.f: added 1.0",
+     "lit.scale_in.min_rk: added 2.0",
+     "lit.scale_in.n: added 1",
+     "lit.scale_in.pb: added 0.25",
+     "lit.scale_in.rat_k: added 1.0",
+     "lit.t_check.at: added 15",
+     "lit.t_check.mfe: added 0.5",
+     "lit.t_check.x: added 0.3"
+    ]
+   },
+   "n": 18
+  },
+  {
+   "sha": "413fda666b",
+   "who": "Claude",
+   "when": "2026-10-19T14:14:35+00:00",
+   "why": "Big ideas: scale-in after BE is an adopt-candidate (backtest option, default off); trend-day, volatility sizing rejected; news setups not testable",
+   "files": {
+    "live_model.json": [
+     "no_yahoo: added true"
+    ],
+    "live_model_lit.json": [
+     "no_yahoo: added true"
+    ]
+   },
+   "n": 2
+  },
+  {
+   "sha": "7daeb5e7ef",
+   "who": "Claude",
+   "when": "2026-10-19T02:59:49+00:00",
+   "why": "WIP checkpoint: Accounts page (in progress, not merged)",
+   "files": {
+    "live_model.json": [
+     "accounts: added [{\"firm\": \"MFFU\", \"id\": \"mffu50k_eval\", \"kind\": \"eval\", \"..."
+    ],
+    "live_model_lit.json": [
+     "accounts: added [{\"firm\": \"MFFU\", \"id\": \"mffu50k_eval\", \"kind\": \"eval\", \"..."
+    ]
+   },
+   "n": 2
+  },
+  {
+   "sha": "1c3ce08b70",
+   "who": "Claude",
+   "when": "2026-10-19T00:14:55+00:00",
+   "why": "Eval starts at -$100 (balance $49,900): lit_sizing.eval_prior_pnl, counted on the PC bot, the cloud ledger and the eval clock (needs $3,100, room $1,900)",
+   "files": {
+    "live_model.json": [
+     "lit_sizing.eval_prior_note: added owner 2026-10-18: the Builder 50K eval was at -$100 (bala...",
+     "lit_sizing.eval_prior_pnl: added -100.0"
+    ],
+    "live_model_lit.json": [
+     "lit_sizing.eval_prior_note: added owner 2026-10-18: the Builder 50K eval was at -$100 (bala...",
+     "lit_sizing.eval_prior_pnl: added -100.0"
+    ]
+   },
+   "n": 4
+  },
+  {
+   "sha": "a4ddf3ec5e",
+   "who": "Claude",
+   "when": "2026-10-18T21:22:20+00:00",
+   "why": "No-reset eval: two_week for 10 sessions then safe_eval; funded sizing mode (off); $1.90 commission; min-days trade; opt-in day guard",
+   "files": {
+    "live_model.json": [
+     "lit_sizing.after_mode: added safe_eval",
+     "lit_sizing.funded.max_win: added 1500",
+     "lit_sizing.funded.pct: added 0.4",
+     "lit_sizing.funded.pct_max_usd: added 800",
+     "lit_sizing.funded.pct_min_usd: added 100",
+     "lit_sizing.funded.ref: added 20",
+     "lit_sizing.funded.room_f: added null",
+     "lit_sizing.funded.skip_breach: added true",
+     "lit_sizing.funded.slip_ticks: added 2",
+     "lit_sizing.funded.wk: added true",
+     "lit_sizing.modes.funded: added funded (after the pass; NOT on yet: needs funded_state wi...",
+     "lit_sizing.modes.two_week: two-week eval (on since 2026-10-18, owner order: pass wit... -> two-week eval (on since 2026-10-18, owner order: pass wit...",
+     "lit_sizing.two_week_until: added 10"
+    ],
+    "live_model_lit.json": [
+     "lit_sizing.after_mode: added safe_eval",
+     "lit_sizing.funded.max_win: added 1500",
+     "lit_sizing.funded.pct: added 0.4",
+     "lit_sizing.funded.pct_max_usd: added 800",
+     "lit_sizing.funded.pct_min_usd: added 100",
+     "lit_sizing.funded.ref: added 20",
+     "lit_sizing.funded.room_f: added null",
+     "lit_sizing.funded.skip_breach: added true",
+     "lit_sizing.funded.slip_ticks: added 2",
+     "lit_sizing.funded.wk: added true",
+     "lit_sizing.modes.funded: added funded (after the pass; NOT on yet: needs funded_state wi...",
+     "lit_sizing.modes.two_week: two-week eval (on since 2026-10-18, owner order: pass wit... -> two-week eval (on since 2026-10-18, owner order: pass wit...",
+     "lit_sizing.two_week_until: added 10"
+    ]
+   },
+   "n": 26
+  },
+  {
+   "sha": "9e75695684",
+   "who": "Claude",
+   "when": "2026-10-18T17:42:53+00:00",
+   "why": "WIP checkpoint: agents in progress",
+   "files": {
+    "live_model.json": [
+     "lit_sizing.eval_mode_note: added mode eval ($800 up to a 25-pt stop + 60% room cap) stays ...",
+     "lit_sizing.eval_start: added 2026-10-19",
+     "lit_sizing.mode: eval -> two_week",
+     "lit_sizing.modes.two_week: added two-week eval (on since 2026-10-18, owner order: pass wit...",
+     "lit_sizing.two_week.base: added need",
+     "lit_sizing.two_week.dll_cap: added true",
+     "lit_sizing.two_week.max_usd: added null",
+     "lit_sizing.two_week.need_buf: added 1.0",
+     "lit_sizing.two_week.press_at: added null",
+     "lit_sizing.two_week.press_mult: added 1.0",
+     "lit_sizing.two_week.press_room: added null",
+     "lit_sizing.two_week.protect_keep: added 0.0",
+     "lit_sizing.two_week.protect_over: added null",
+     "lit_sizing.two_week.room_f: added 0.6",
+     "lit_sizing.two_week.stop_at_target: added true",
+     "lit_sizing.two_week.wk: added false",
+     "size_rule: $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $... -> $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $..."
+    ],
+    "live_model_lit.json": [
+     "lit_sizing.eval_mode_note: added mode eval ($800 up to a 25-pt stop + 60% room cap) stays ...",
+     "lit_sizing.eval_start: added 2026-10-19",
+     "lit_sizing.mode: eval -> two_week",
+     "lit_sizing.modes.two_week: added two-week eval (on since 2026-10-18, owner order: pass wit...",
+     "lit_sizing.two_week.base: added need",
+     "lit_sizing.two_week.dll_cap: added true",
+     "lit_sizing.two_week.max_usd: added null",
+     "lit_sizing.two_week.need_buf: added 1.0",
+     "lit_sizing.two_week.press_at: added null",
+     "lit_sizing.two_week.press_mult: added 1.0",
+     "lit_sizing.two_week.press_room: added null",
+     "lit_sizing.two_week.protect_keep: added 0.0",
+     "lit_sizing.two_week.protect_over: added null",
+     "lit_sizing.two_week.room_f: added 0.6",
+     "lit_sizing.two_week.stop_at_target: added true",
+     "lit_sizing.two_week.wk: added false",
+     "size_rule: $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $... -> $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $..."
+    ]
+   },
+   "n": 34
+  },
+  {
+   "sha": "6935831ab1",
+   "who": "Claude",
+   "when": "2026-10-18T14:32:27+00:00",
+   "why": "LIT eval sizing ON: $800 up to a 25-pt stop + 60% room cap (2-week passes up in both 2026 halves, fails unchanged); tight-stop and size research (tighter stops rejected, 1 NQ fixed rejected for the ev",
+   "files": {
+    "live_model.json": [
+     "lit_sizing.eval_ref_stop: added 25.0",
+     "lit_sizing.mode: normal -> eval",
+     "lit_sizing.modes.eval: added eval (on since 2026-10-18): $800 up to a 25-pt stop, then..."
+    ],
+    "live_model_lit.json": [
+     "lit_sizing.eval_ref_stop: added 25.0",
+     "lit_sizing.mode: normal -> eval",
+     "lit_sizing.modes.eval: added eval (on since 2026-10-18): $800 up to a 25-pt stop, then..."
+    ]
+   },
+   "n": 6
+  },
+  {
+   "sha": "f5c7390de6",
+   "who": "Claude",
+   "when": "2026-10-18T08:25:40+00:00",
+   "why": "LIT + loss pack live (weekly stop, Monday rule), fast/safe eval sizing switches (off), NinjaTrader 1-minute feed + 02:00 session + tick-rounded brackets, dashboards on LIT with the old strategy as sha",
+   "files": {
+    "live_model.json": [
+     "lit.monday: added true",
+     "lit.wk_stop: added [2, 0.5]",
+     "lit_sizing.fast_ref_stop: added 40.0",
+     "lit_sizing.mode: added normal",
+     "lit_sizing.modes.fast_eval: added eval speed: $800 up to a 40-pt stop, then 800x40/stop (ru...",
+     "lit_sizing.modes.normal: added the LIT rule: $800 up to a 20-pt stop, then 800x20/stop, ...",
+     "lit_sizing.modes.safe_eval: added never risk more than 60% of the room between the eval bal...",
+     "lit_sizing.safe_cap: added 0.6",
+     "size_rule: $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $... -> $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $..."
+    ],
+    "live_model_lit.json": [
+     "lit.monday: added true",
+     "lit.wk_stop: added [2, 0.5]",
+     "lit_sizing.fast_ref_stop: added 40.0",
+     "lit_sizing.mode: added normal",
+     "lit_sizing.modes.fast_eval: added eval speed: $800 up to a 40-pt stop, then 800x40/stop (ru...",
+     "lit_sizing.modes.normal: added the LIT rule: $800 up to a 20-pt stop, then 800x20/stop, ...",
+     "lit_sizing.modes.safe_eval: added never risk more than 60% of the room between the eval bal...",
+     "lit_sizing.safe_cap: added 0.6",
+     "size_rule: $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $... -> $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $..."
+    ]
+   },
+   "n": 18
+  },
+  {
+   "sha": "8ddbff333b",
+   "who": "Claude",
+   "when": "2026-10-18T04:47:20+00:00",
+   "why": "WIP checkpoint: LIT night build in progress",
+   "files": {
+    "live_model.json": [
+     "chosen: 2026-10-17 -> 2026-10-18",
+     "costs: added $1.40 per micro round trip; 1 tick slippage on market ent...",
+     "equity_filter: added null",
+     "equity_filter.cold_mode: removed (was half)",
+     "equity_filter.cold_size: removed (was 0.25)",
+     "equity_filter.lookback: removed (was 15)",
+     "equity_filter.min_sum_r: removed (was 0.0)",
+     "eval_safe_option.how_out: added 0.5",
+     "eval_safe_option.what: added half size when the sweep extreme is outside Tue 03:00 - W...",
+     "judged_on: added 2026 only (owner order 2026-10-18): parameters picked on ...",
+     "lit.be_r: added 1.0",
+     "lit.cisd1m: added 20",
+     "lit.classes: added [\"vix\"]",
+     "lit.depth: added 0.5",
+     "lit.disp: added 0.8",
+     "lit.extra_boxes: added []",
+     "lit.fallback_rr: added null",
+     "lit.flat_mod: added 955",
+     "lit.how_out: added 1.0",
+     "lit.idm_a: added [1.0, 36, 1]",
+     "lit.max_per_day: added 1",
+     "lit.max_rr: added 8.0",
+     "lit.max_stop: added 80.0",
+     "lit.min_rr: added 1.5",
+     "lit.min_stop: added 8.0",
+     "lit.mw_filter: added false",
+     "lit.nwog_discount: added false",
+     "lit.ref: added cisd",
+     "lit.stop_buf: added 0.25",
+     "lit.sweep_names: added null",
+     "lit.tf: added 1m",
+     "lit.vix_k: added 1.0",
+     "lit.wait: added 6",
+     "lit.window: added [[120, 930]]",
+     "live: added engine/lit_live.py (PC paper bot engine/live.py and tools...",
+     "live_check: added python -X utf8 -m tests.test_lit_live (results research/l...",
+     "model: engine -> lit",
+     "params.be_at_r_trending: removed (was 3.0)",
+     "params.conviction_step: removed (was 0)",
+     "params.dd_aware: removed (was false)",
+     "params.grade_sizing: removed (was false)",
+     "params.max_micros: added 40",
+     "params.memory_seed: removed (was false)",
+     "params.use_fallback: removed (was false)",
+     "previous: added live_model_engine.json (Liquidity Engine lock of 2026-10-...",
+     "size_rule: added $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $...",
+     "sizing: added null",
+     "sizing.late_mult: removed (was 0.5)",
+     "sizing.press: removed (was null)"
+    ],
+    "live_model_lit.json": [
+     "chosen: added 2026-10-18",
+     "costs: added $1.40 per micro round trip; 1 tick slippage on market ent...",
+     "equity_filter: added null",
+     "eval_safe_option.how_out: added 0.5",
+     "eval_safe_option.what: added half size when the sweep extreme is outside Tue 03:00 - W...",
+     "judged_on: added 2026 only (owner order 2026-10-18): parameters picked on ...",
+     "lit.be_r: added 1.0",
+     "lit.cisd1m: added 20",
+     "lit.classes: added [\"vix\"]",
+     "lit.depth: added 0.5",
+     "lit.disp: added 0.8",
+     "lit.extra_boxes: added []",
+     "lit.fallback_rr: added null",
+     "lit.flat_mod: added 955",
+     "lit.how_out: added 1.0",
+     "lit.idm_a: added [1.0, 36, 1]",
+     "lit.max_per_day: added 1",
+     "lit.max_rr: added 8.0",
+     "lit.max_stop: added 80.0",
+     "lit.min_rr: added 1.5",
+     "lit.min_stop: added 8.0",
+     "lit.mw_filter: added false",
+     "lit.nwog_discount: added false",
+     "lit.ref: added cisd",
+     "lit.stop_buf: added 0.25",
+     "lit.sweep_names: added null",
+     "lit.tf: added 1m",
+     "lit.vix_k: added 1.0",
+     "lit.wait: added 6",
+     "lit.window: added [[120, 930]]",
+     "live: added engine/lit_live.py (PC paper bot engine/live.py and tools...",
+     "live_check: added python -X utf8 -m tests.test_lit_live (results research/l...",
+     "locked: added true",
+     "model: added lit",
+     "params.max_micros: added 40",
+     "params.max_trades_day: added 1",
+     "params.risk_ref_stop: added 20.0",
+     "params.risk_usd: added 800",
+     "previous: added live_model_engine.json (Liquidity Engine lock of 2026-10-...",
+     "rules: added STRATEGY.md",
+     "size_rule: added $800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $...",
+     "sizing: added null",
+     "sym: added NQ"
+    ]
+   },
+   "n": 92
+  },
+  {
+   "sha": "e31677bbc8",
+   "who": "Claude",
+   "when": "2026-10-17T21:03:16+00:00",
+   "why": "Strategy lock 2026-10-17 (evening): quarter size in cold streaks, half size on late entries, breakeven at 3R on trending days",
+   "files": {
+    "live_model.json": [
+     "equity_filter.cold_size: added 0.25",
+     "params.be_at_r_trending: added 3.0",
+     "params.memory_seed: added false",
+     "sizing.late_mult: added 0.5",
+     "sizing.press: added null"
+    ]
+   },
+   "n": 5
+  },
+  {
+   "sha": "12b878fe9d",
+   "who": "Demetri Condax",
+   "when": "2026-10-17T07:17:37-04:00",
+   "why": "Every trade needs a real liquidity draw; SMC reads recorded; real-level target mode tested",
+   "files": {
+    "live_model.json": [
+     "params.use_fallback: added false"
+    ]
+   },
+   "n": 1
+  },
+  {
+   "sha": "e069d52c01",
+   "who": "Demetri Condax",
+   "when": "2026-10-17T07:03:48-04:00",
+   "why": "De-risk wide stops; stop-size and ATM tests; backtest export with trade reports",
+   "files": {
+    "live_model.json": [
+     "params.risk_ref_stop: added 20.0",
+     "params.risk_usd: 650 -> 800"
+    ]
+   },
+   "n": 2
+  },
+  {
+   "sha": "9b915872f2",
+   "who": "Demetri Condax",
+   "when": "2026-10-17T06:34:47-04:00",
+   "why": "Eval mode: $650 risk, every setup, half size in cold streaks",
+   "files": {
+    "live_model.json": [
+     "equity_filter.cold_mode: added half",
+     "params.dd_aware: added false",
+     "params.risk_usd: added 650"
+    ]
+   },
+   "n": 3
+  },
+  {
+   "sha": "5317c5b09d",
+   "who": "Demetri Condax",
+   "when": "2026-10-17T05:59:38-04:00",
+   "why": "Lock in the owner's pick: original Liquidity Engine + cold-streak filter",
+   "files": {
+    "live_model.json": [
+     "chosen: added 2026-10-17",
+     "locked: added true",
+     "rules: added STRATEGY.md"
+    ]
+   },
+   "n": 3
+  },
+  {
+   "sha": "11a263fe83",
+   "who": "Demetri Condax",
+   "when": "2026-10-16T23:57:39-04:00",
+   "why": "Add cold-streak equity filter: trade only while the last 15 signals are net positive",
+   "files": {
+    "live_model.json": [
+     "equity_filter.lookback: added 15",
+     "equity_filter.min_sum_r: added 0.0"
+    ]
+   },
+   "n": 2
+  },
+  {
+   "sha": "aa4d18094f",
+   "who": "Demetri Condax",
+   "when": "2026-10-16T23:36:55-04:00",
+   "why": "Switch live pick back to the original Liquidity Engine (1 trade/day, fixed risk) per owner",
+   "files": {
+    "live_model.json": [
+     "params.draw_fallback: removed (was skip)",
+     "params.draw_pick: removed (was farthest_reach)",
+     "params.draw_pm: removed (was nearest)",
+     "params.manage_mode: removed (was person)",
+     "params.news_day_skip: removed (was FOMC)",
+     "params.person_trail: removed (was false)",
+     "params.target_mode: removed (was draw)"
+    ]
+   },
+   "n": 7
+  },
+  {
+   "sha": "d007e5921b",
+   "who": "Demetri Condax",
+   "when": "2026-10-16T23:21:29-04:00",
+   "why": "Final 2026 strategy: person-style draws, partial+BE, FOMC skip; full research suite",
+   "files": {
+    "live_model.json": [
+     "params.draw_fallback: added skip",
+     "params.draw_pick: added farthest_reach",
+     "params.draw_pm: added nearest",
+     "params.manage_mode: added person",
+     "params.news_day_skip: added FOMC",
+     "params.person_trail: added false",
+     "params.target_mode: added draw"
+    ]
+   },
+   "n": 7
+  },
+  {
+   "sha": "2d48c3f0bb",
+   "who": "Demetri Condax",
+   "when": "2026-10-16T18:05:20-04:00",
+   "why": "Bot switched to the 2026 pick: Liquidity Engine straight rules (1 trade/day, fixed risk)",
+   "files": {
+    "live_model.json": [
+     "params.conviction_step: added 0",
+     "params.grade_sizing: added false",
+     "params.max_trades_day: added 1",
+     "sym: added NQ"
+    ]
+   },
+   "n": 4
+  },
+  {
+   "sha": "127852704a",
+   "who": "Demetri Condax",
+   "when": "2026-10-16T17:44:20-04:00",
+   "why": "Futures-only TradingView data through 10-16 close; strategy lab + live strategy plug-in",
+   "files": {
+    "live_model.json": [
+     "model: added engine"
+    ]
+   },
+   "n": 1
+  }
+ ],
+ "how": "git log of the trading files, key-level diff of each commit against its parent (text-only keys left out)"
+}

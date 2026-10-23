@@ -12,6 +12,9 @@
   python -X utf8 -m engine.ops_checks --presession | --eod | --weekly [--send]   build one of the phone notices now
                                                    (prints it; --send also pushes it)
   python -X utf8 -m engine.ops_checks --backup     back up the state files now (backups/, kept 14 days) + rotate logs/
+  python -X utf8 -m engine.ops_checks --restore latest [--yes]   put the newest backup's state files back (dry run without
+                                                   --yes; refused while the bot runs / a position is open; the files it
+                                                   replaces are zipped first to backups/le-pre-restore-*.zip)
   python -X utf8 -m engine.ops_checks --update-guard   UPDATE.bat: exit 1 when a trade / setup is open (never update then),
                                                    exit 2 inside 01:50-16:00 ET on a weekday (ask first), else 0
   python -X utf8 -m engine.ops_checks --wait-server 90   wait until the dashboard answers (exit 1 if it never does)
@@ -745,6 +748,11 @@ def run_checks(ctx: dict) -> list:
     checks.append(check_clock(ctx["net"]))
     checks.append(check_heartbeat(ctx["ping"], ctx["hb"], now))
     checks.append(check_disk())
+    try:                                          # account B readiness (engine/ai_watch.py, from the heartbeat's "ai" block)
+        from . import ai_watch
+        checks += ai_watch.ops_checks(ctx["hb"], now)
+    except Exception:
+        pass
     if not ctx.get("light"):
         checks.append(check_power())
         checks.append(check_windows_update(now))
@@ -879,18 +887,29 @@ def _payload(sub: str, title: str, body: str, key: str, now) -> dict:
 
 
 def presession_notice(checks: list, view: dict, now) -> dict:
-    keys = ("server", "bot", "account", "kill", "nt_folder", "nt_conn", "feed_1m", "feed_5m", "internet", "clock", "disk", "heartbeat", "cfa")
+    keys = ("server", "bot", "account", "kill", "nt_folder", "nt_conn", "feed_1m", "feed_5m", "internet", "clock", "disk", "heartbeat", "cfa",
+            "acct_b")
     problems = [c for c in checks if c["key"] in keys and c["level"] == BAD]
     sim = [c for c in checks if c["key"] in ("account", "nt_conn") and c["level"] == WARN]   # Sim / paper, NinjaTrader closed
     day = trading_day(now)
+    extra = _readiness(now)
     if not problems and not sim:
-        body = f"Bot running on {view.get('name')}, NinjaTrader connected, bars fresh. {eval_line(view.get('eval'))}"
+        body = f"Bot running on {view.get('name')}, NinjaTrader connected, bars fresh. {eval_line(view.get('eval'))}{extra}"
         return _payload("pre", "All green for tonight", body, f"ops:pre:{day}", now)
     first = (problems or sim)[0]
     more = len(problems) + len(sim) - 1
     title = "Fix before 02:00 ET: " + first["name"]
-    body = f"{first['text']}. {first['fix']}" + (f" (+{more} more: double-click HEALTH CHECK)" if more > 0 else "")
+    body = f"{first['text']}. {first['fix']}" + (f" (+{more} more: double-click HEALTH CHECK)" if more > 0 else "") + extra
     return _payload("pre", title, body, f"ops:pre:{day}", now)
+
+
+def _readiness(now, hb=None) -> str:
+    """" News: ... Account B room ... Blocks on: ..." (engine/ai_watch.readiness_line). Never raises."""
+    try:
+        from . import ai_watch
+        return " " + ai_watch.readiness_line(hb_last() if hb is None else hb, now)
+    except Exception:
+        return ""
 
 
 def eod_notice(view: dict, now) -> dict:
@@ -923,6 +942,13 @@ def weekly_notice(view: dict, state: dict, checks: list, now) -> dict:
             f"{eval_line(view.get('eval'))} {health}.")
     if state.get("last_backup_t"):
         body += f" Last backup {_et(state['last_backup_t']):%a}."
+    try:                                          # the weekly self-review line (engine/ai_watch.py: drift, anomalies, rule changes)
+        from . import ai_watch
+        wl = ai_watch.weekly_line(hb_last())
+        if wl:
+            body += " " + wl
+    except Exception:
+        pass
     iso = f"{mon.isocalendar()[0]}-W{mon.isocalendar()[1]:02d}"
     return _payload("week", f"Week {mon:%b %d}-{fri:%b %d}", body, f"ops:week:{iso}", now)
 
@@ -1029,7 +1055,8 @@ def backup_sources(root: str = ROOT) -> list:
     """State files worth keeping (no secrets: no push keys, no .env, no TradingView / alert credentials)."""
     d = os.path.join(root, "data")
     pats = ["live_state.json", "ninjatrader_state*.json", "*ledger*.json*", "lit_journal.jsonl", "lit_learning.json",
-            "autostart.json", "autoupdate.json", "auto_resume.json", "ops_state.json", "nt_bars/*"]
+            "autostart.json", "autoupdate.json", "auto_resume.json", "ops_state.json", "nt_bars/*",
+            "guards_state.json", "live_state_acctb.json", "*_guards.json", "ai_watch.json", "entry_pause.json", "presence.jsonl"]
     out = []
     for p in pats:
         out += [f for f in glob.glob(os.path.join(d, p)) if os.path.isfile(f)]
@@ -1061,6 +1088,58 @@ def backup(root: str = ROOT, dest: str = BACKUP_DIR, keep_days: int = BACKUP_KEE
                     pass
         return {"ok": True, "file": os.path.basename(name), "files": len(files), "deleted": gone,
                 "mb": round(os.path.getsize(name) / 1e6, 1)}
+    except Exception as e:
+        return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
+
+
+def latest_backup(dest: str = BACKUP_DIR) -> str | None:
+    z = sorted(glob.glob(os.path.join(dest, "le-backup-*.zip")), key=os.path.getmtime)
+    return z[-1] if z else None
+
+
+def restore(src: str, root: str = ROOT, yes: bool = False, ping=..., dest: str = BACKUP_DIR, now=None, hb=None) -> dict:
+    """Put a backup zip's state files back (data/ only, the backup_sources() names). Dry run unless yes=True. Refused while
+    the bot runs or a position is open (stop the bot first), and the files it replaces are zipped first
+    (backups/le-pre-restore-*.zip). Never raises."""
+    import fnmatch
+    try:
+        src = latest_backup(dest) if src in (None, "", "latest") else src
+        if not src or not os.path.isfile(src):
+            return {"ok": False, "error": "no backup zip found (backups/le-backup-*.zip)"}
+        pats = [os.path.join("data", p).replace("\\", "/") for p in ("live_state.json", "ninjatrader_state*.json", "*ledger*.json*",
+                "lit_journal.jsonl", "lit_learning.json", "autostart.json", "autoupdate.json", "auto_resume.json", "ops_state.json",
+                "nt_bars/*", "guards_state.json", "live_state_acctb.json", "*_guards.json", "ai_watch.json", "entry_pause.json",
+                "presence.jsonl")]
+        with zipfile.ZipFile(src) as z:
+            names = [n for n in z.namelist() if not n.endswith("/")]
+            ok_names = [n for n in names if ".." not in n and not n.startswith("/") and any(fnmatch.fnmatch(n.replace("\\", "/"), p) for p in pats)]
+            plan = {"ok": True, "zip": os.path.basename(src), "files": ok_names, "skipped": sorted(set(names) - set(ok_names)), "applied": False}
+            if not yes:
+                plan["text"] = f"dry run: {len(ok_names)} file(s) would be restored; add --yes to apply (stop the bot first)"
+                return plan
+            p = ping_server() if ping is ... else ping
+            if p and (p.get("bot_running") or p.get("running")):
+                return {**plan, "ok": False, "error": "the bot is running: stop it first (Bot page > Stop), then restore"}
+            hb = hb_last() if hb is None else hb
+            if hb.get("position"):
+                return {**plan, "ok": False, "error": "the last heartbeat shows an open position: flatten / stop first"}
+            os.makedirs(dest, exist_ok=True)
+            pre = os.path.join(dest, f"le-pre-restore-{_et(now or time.time()):%Y%m%d-%H%M%S}.zip")
+            with zipfile.ZipFile(pre, "w", zipfile.ZIP_DEFLATED) as zp:
+                for n in ok_names:
+                    f = os.path.join(root, n)
+                    if os.path.isfile(f):
+                        zp.write(f, n)
+            for n in ok_names:
+                f = os.path.join(root, n)
+                os.makedirs(os.path.dirname(f), exist_ok=True)
+                tmp = f + ".restore"
+                with z.open(n) as fh, open(tmp, "wb") as out:
+                    shutil.copyfileobj(fh, out)
+                os.replace(tmp, f)
+        ops_log(f"restore {os.path.basename(src)}: {len(ok_names)} files (previous copies in {os.path.basename(pre)})")
+        return {**plan, "applied": True, "pre_restore": os.path.basename(pre),
+                "text": f"restored {len(ok_names)} file(s); the replaced ones are in backups/{os.path.basename(pre)}"}
     except Exception as e:
         return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
 
@@ -1352,6 +1431,8 @@ def main(argv=None) -> int:
     g.add_argument("--wait-server", type=int, metavar="SECONDS")
     g.add_argument("--after-update", action="store_true")
     g.add_argument("--translate", metavar="TEXT")
+    g.add_argument("--restore", metavar="ZIP|latest", help="put a backup's state files back (dry run without --yes)")
+    ap.add_argument("--yes", action="store_true", help="with --restore: apply it (the bot must be stopped)")
     ap.add_argument("--send", action="store_true", help="with --presession / --eod / --weekly: push it too")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
@@ -1367,6 +1448,10 @@ def main(argv=None) -> int:
             save_state(s)
         print(json.dumps({"backup": b, "logs": r}, indent=1))
         return 0 if b.get("ok") else 1
+    if a.restore is not None:
+        r = restore(a.restore, yes=a.yes)
+        print(json.dumps(r, indent=1))
+        return 0 if r.get("ok") else 1
     if a.update_guard:
         code, why = update_guard()
         print(why)
