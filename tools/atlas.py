@@ -599,6 +599,10 @@ def cmd_save():
                         "Size (need): micros so one winner's target covers what is left to the $1,500 target, capped at 50% of the room to the trailing floor and the $600 soft daily loss, max 20 micros, for 10 sessions; then 30% of the room. A trade whose full stop-out would break the floor or the $600 is skipped.",
                         "Orders go out about 2 seconds after the 5-minute open; a probe more than 45 seconds late is skipped (never chased).",
                         "The account stops when the eval is passed ($1,500), failed, or stuck (less than $100 of room)."]},
+        "verdict": ("Keep ATLAS as it is: 358 tweaks (members, Asia slot, size weights down and up, priority, 25K sizing, windows, "
+                    "weekdays, VIX, exits, banked R, limit entry) and the confluence job's 1,481 variants found nothing that is "
+                    "better in 2026 H1 and H2 beyond chance and holds as a plateau. Account B stays off until the paper scorecard "
+                    "says ready."),
         "numbers": {}, "eval25k": {},
         "source": {"tool": "tools/atlas.py", "run": "atlas_base", "writeup": "research/writeups/atlas.md"},
     }

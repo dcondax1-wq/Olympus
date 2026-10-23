@@ -92,7 +92,7 @@ def build():
         end, filled = _walk_end(M, B, cand, entry_px, tgt, stop, P)
         st["same" if bool(filled) == (t is not None) else "diff"] += 1
         W.append({"day": cand["day"], "dir": int(cand["dir"]), "t0": int(M.t[cand["entry_i"]]), "end": int(end),
-                  "filled": t is not None, "entry_t": int(t["entry_t"]) if t is not None else None, "tf": B.secs // 60})
+                  "filled": t is not None, "confirmed": bool(filled), "entry_t": int(t["entry_t"]) if t is not None else None, "tf": B.secs // 60})
         return t
 
     lit.simulate_x = wrap

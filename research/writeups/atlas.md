@@ -3,7 +3,7 @@ title: ATLAS - account B (EMA + MACD + S/R) tuned as a whole for the Builder 25K
 family: risk
 date: 2026-10-22
 status: adopt-candidate (unchanged rules; built, OFF; paper / Sim first)
-summary: Owner (2026-10-22) - LIT on the 50K eval, the new strategy now called ATLAS (account B - London EMA pullback + MACD sweep divergence + S/R NY reclaim) on a Builder 25K; "keep tweaking this strategy, make it ready to trade my other account". ATLAS was scored under the REAL account-B rules, now including the one the research lacked (no ATLAS entry while LIT has an ARMED setup the other way). With it, today's ATLAS on a Builder 25K passes 72.3% of evals within 2 weeks in 2026 H1 (0.0% fail, 5.0% stuck) and 43.5% in H2 (0.0 / 0.0), eval-path +$19,737 ($3,238/mo) and +$5,448 ($1,467/mo), about $1,840 paid out in the first 3 funded months (H1 starts), +$1,549 per $63 eval bought. 358 tweaks were tested (members, Asia slot, per-member size weights down AND up, priority, 25K sizing incl. room 40-60% / safe / hybrid / daily cap, entry windows, weekdays, VIX filters and VIX size, per-member exits, a latency-proof limit entry) and picked on H1, checked on H2. Only 5 different ones beat today in both halves, about what chance gives (3.1), and none is a plateau - the best, S/R entries only until 11:00, wins H1 only by skipping three 11:00 stop-outs (11:05 gives today's H1 exactly). The limit entry does not fix the late-entry weakness and costs about a third of the money. Verdict - keep ATLAS exactly as it is; account B stays off until the paper scorecard says ready. It is still a 2026 bet - in 2025 / 2021-24 about a third of evals get stuck within 2 weeks and an eval is worth about $10.
+summary: Owner (2026-10-22) - LIT on the 50K eval, the new strategy now called ATLAS (account B - London EMA pullback + MACD sweep divergence + S/R NY reclaim) on a Builder 25K; "keep tweaking this strategy, make it ready to trade my other account". ATLAS was scored under the REAL account-B rules, now including the one the research lacked (no ATLAS entry while LIT has an ARMED setup the other way). With it, today's ATLAS on a Builder 25K passes 72.3% of evals within 2 weeks in 2026 H1 (0.0% fail, 5.0% stuck) and 43.5% in H2 (0.0 / 0.0), eval-path +$19,737 ($3,238/mo) and +$5,448 ($1,467/mo), about $1,840 paid out in the first 3 funded months (H1 starts), +$1,549 per $63 eval bought. 358 tweaks were tested (members, Asia slot, per-member size weights down AND up, priority, 25K sizing incl. room 40-60% / safe / hybrid / daily cap, entry windows, weekdays, VIX filters and VIX size, per-member exits, a latency-proof limit entry) and picked on H1, checked on H2. Only 5 different ones beat today in both halves, about what chance gives (3.1), and none is a plateau - the best, S/R entries only until 11:00, wins H1 only by skipping three 11:00 stop-outs (11:05 gives today's H1 exactly). The limit entry does not fix the late-entry weakness and costs about a third of the money. The confluence job's 2 hand-off candidates (EMA big-range-day skip, EMA 15-minute check) fail this rule too. Fixed on the way - account B's size now never lets one stop-out exceed the rest of the soft daily loss (no change on the 25K). Verdict - keep ATLAS exactly as it is; account B stays off until the paper scorecard says ready. It is still a 2026 bet - in 2025 / 2021-24 about a third of evals get stuck within 2 weeks and an eval is worth about $10.
 runs: atlas_base, atlas_base_published, atlas_sr_until1100, atlas_ema_nothu, atlas_plus_asia, atlas_limit_close2, atlas_late_mkt, atlas_late_limit2, acctb_25k_need
 ---
 
@@ -123,6 +123,36 @@ runs: atlas_base, atlas_base_published, atlas_sr_until1100, atlas_ema_nothu, atl
   - Bigger room shares (55-60%) and banked R (EMA 4R / 6R, S/R VIX band 2R / 4R) lose H1 passes or add fails.
 - **Exits:** every member's exit is already its research plateau. Nothing beats it at the account level in H1.
 
+## The confluence job's candidates (atlas-confluences.md)
+
+A parallel job tested 1,481 confluences, risk changes and member re-runs on the same executor. Its base is identical to
+this one (72.3 / 0.0 / 5.0, +$19,737 · 43.5 / 0.0 / 0.0, +$5,448), and its pass count was chance level. Its two hand-off
+candidates were checked with this write-up's rule:
+
+| Candidate | H1 2-week pass / fail / stuck, $ | H2 | 2025 | 2021-24 $ | This rule |
+|---|---|---|---|---|---|
+| Today | 72.3 / 0.0 / 5.0, +$19,737 | 43.5 / 0.0 / 0.0, +$5,448 | 30.5 / 0.0 / 32.9, +$2,232 | +$9,919 | |
+| EMA skipped on big-range days (range so far > 0.455 x the 14-day range) | 79.8 / 0.0 / 4.2, +$22,186 | 44.9 / 0.0 / **1.4**, +$6,005 | 29.7 / 0.0 / 29.7, +$4,308 | +$3,409 | no: H2 dead evals up (0.0 -> 1.4) |
+| EMA 15-minute check | 73.9 / 0.0 / 1.7, **+$19,664** | 43.5 / 0.0 / 0.0, +$5,843 | 30.1 / 0.0 / 31.3, +$3,694 | +$3,438 | no: H1 $ down ($73) |
+| Both together | **71.4** / 0.0 / 1.7, +$18,667 | 44.9 / 0.0 / 1.4, +$6,079 | 29.3 / 0.0 / 29.3, +$3,352 | +$3,492 | no: H1 pass down |
+| EMA no Thursday (its #1) | 78.2 / 0.0 / 4.2, +$24,286 | 43.5 / 0.0 / 0.0, +$6,534 | 28.1 / 0.0 / 30.5, +$4,468 | +$6,327 | passes, rejected: calendar rule, references worse |
+
+- None is adopted.
+- All of them cost 2021-24 money ($3.4k-6.3k against $9.9k).
+- The big-range skip and the 15-minute check are worth logging on paper, as the confluence job suggests. They are not
+  trading rules.
+
+**Armed-setup windows checked against the live loop** (`tests/test_atlas_armed.py`):
+- 97 sampled 2026 setups were polled through `engine/lit_live.run` (PC early mode, as `tests/test_lit_live.py`): in the
+  middle of the window, in its last minute, and 65 s after its end.
+- Checked: armed (or entering / in the trade) inside the window, and no longer armed after it.
+- The sample includes all 7 of the "confirmed but no trade" setups of 2026 on 1m bars. These are the cases where the
+  walker and simulate_x differ (67 of 1,959 in 2021-26): the 1m CISD confirmed, then the backtest dropped the trade
+  because the target was under 1.5R from the real fill. The live loop drops them at that same CISD close, so the window
+  is right.
+- Result: 288 of 291 checks agree. The 3 misses are 1-minute edges: two on a 3-minute window that filled, one on an
+  expiry a minute early.
+
 ## The late-entry weak spot (second-prelaunch.md)
 
 Every member's entry one 5-minute bar late, at market vs a limit at the signal's close price:
@@ -174,6 +204,7 @@ Every member's entry one 5-minute bar late, at market vs a limit at the signal's
   dashboards).
 - `python -X utf8 tools/atlas_members.py check`: the members' default sets equal the stored research trades.
 - `python -X utf8 tools/atlas_lit_armed.py`: LIT's armed windows (1,959 setups walked, 630 filled = LIT's trades).
+- `python -X utf8 -m tests.test_atlas_armed --n 60`: those windows vs the live LIT loop (~1 min).
 - Needs `research/runs/_cache/second_mix_units.pkl` (`python -X utf8 tools/second_mix.py units`, ~15 s).
 - Paper research only. Unchanged: ATLAS's rules, `second_model.json` (`"account_b": null`) and `live_model*.json`. Code
   edits: the daily-loss fix below, and a new research window name `"ny11"` in `tools/second_sr.py` (no default uses it).
