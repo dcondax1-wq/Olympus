@@ -4,6 +4,8 @@
 // GET /api/next/second), opts.live = the PC's live cut (engine/second.compact from live.json / the heartbeat) laid over
 // the state when newer. Per strategy: the rules in plain words, today's state (waiting for / armed / in trade / done), the
 // paper trades and $, and the research numbers H1 / H2 / 2025 / 2021-24 alone and "with LIT" on one account. Read-only.
+// v6 (2026-10-23): "Candidate members (paper)" on the ATLAS page: the stop hunts (sh_asia, sh_trend; candCard) with their
+// brain, own go / no-go, paper trades, rules, research numbers and the 25K eval paths as an ATLAS member.
 (function () {
   'use strict';
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -89,7 +91,7 @@
     const rows = (s.trades || []).slice();
     if (lv && lv.trades) for (const t of lv.trades) { const i = rows.findIndex((r) => +r.entry_t === +t.entry_t); if (i < 0) rows.push(t); else if (rows[i].exit_kind === 'OPEN') rows[i] = { ...rows[i], ...t }; }
     const rl = routeOf(s, live);
-    return `<div class="sc-card"><div class="sc-eyebrow" style="color:${rl.on ? C.acc : C.warn}">${esc(rl.label)} · ${esc(s.short || s.key)}${s.on ? '' : ' · OFF'}</div><h3>${esc(s.label)}</h3>
+    return `<div class="sc-card"><div class="sc-eyebrow" style="color:${rl.on ? C.acc : C.warn}">${esc(rl.label)}${s.candidate ? ' · CANDIDATE ATLAS MEMBER' : ''} · ${esc(s.short || s.key)}${s.on ? '' : ' · OFF'}</div><h3>${esc(s.label)}</h3>
       ${s.summary ? `<p class="sc-note">${esc(s.summary)}</p>` : ''}
       ${stateBox(st, src)}
       <div class="sc-stats"><div class="sc-stat"><span>Paper trades</span><b>${n0(p.n)}</b><em>${n0(p.wins)} winners</em></div>
@@ -175,7 +177,8 @@
     const checks = (b.checks || []).map((c) => `<li class="${c.ok === false ? 'f' : ''}${c.k === ff ? ' ff' : ''}">${mk(c.ok)}<div><b>${esc(c.name)}</b>${c.val ? `<br><span class="sc-mut">${esc(c.val)}</span>` : ''}${c.need ? `<br><span class="sc-mut">needs ${esc(c.need)}</span>` : ''}</div></li>`).join('');
     const lv = (b.levels || []).length ? `<details><summary><b>Levels of the day</b> (${(b.levels || []).filter((x) => x.known).length} known)</summary><div class="sc-tw"><table class="sc-t"><tbody>${b.levels.map((x) => `<tr><td>${esc(x.name)}</td><td>${px(x.px)}</td><td>${x.known ? 'known' : '<span class="sc-mut">not yet</span>'}</td><td>${esc(x.stage || '')}</td></tr>`).join('')}</tbody></table></div></details>` : '';
     const log = (b.log || []).slice().reverse().map((x) => `<li class="${x.trade ? 'tr' : x.signal ? 'sg' : ''}"><span>${esc(x.text || '')}</span></li>`).join('');
-    return `<div class="sc-card sb-card"><div class="sc-eyebrow" style="color:${ro ? C.acc : C.warn}">${ro ? esc(s.route_label || 'ROUTED') : 'PAPER'} · ${esc(s.short || s.key)}</div>
+    const cand = !!(s.candidate || b.candidate);
+    return `<div class="sc-card sb-card"><div class="sc-eyebrow" style="color:${ro ? C.acc : C.warn}">${ro ? esc(s.route_label || 'ROUTED') : 'PAPER'}${cand ? ' · CANDIDATE MEMBER' : ''} · ${esc(s.short || s.key)}</div>
       <h3>${esc(s.label || s.key)}</h3>
       <div class="sc-state" style="border-color:${col}"><span class="sc-pill" style="background:${col}">${esc(lab)}</span><b>${esc(b.text || st.text || '—')}</b>
         <em>${esc((b.focus || {}).label || '')}${b.closed_bars_only !== false ? ' · closed bars only' : ''}${s.src ? ' · ' + esc(s.src) : ''}</em></div>
@@ -350,10 +353,50 @@
         <p class="sc-note">Picked on 2026 H1 only; H2 is the untouched check; 2025 and 2021-24 are references. Source: ${esc(A.source || '—')}${A.writeup ? ` · write-up <a href="#/writeup/${encodeURIComponent(A.writeup)}">${esc(A.writeup)}</a>` : ''}.</p>
         ${per.map((s) => `<details><summary><b>${esc(s.short || s.key)} alone</b> · ${esc(s.label || '')}</summary>${btTable(s.backtest, s.with_lit_label)}</details>`).join('')}</div>`;
       const ruH = `<div class="sc-card"><h3>Rules in plain words</h3>${rulesBlock(A, S, keys)}</div>`;
-      const others = S.strategies.filter((x) => !keys.includes(x.key));
+      const cands = S.strategies.filter((x) => x.candidate && !keys.includes(x.key));
+      const cbr = (k) => ((bl && bl.strategies) || []).find((x) => x.key === k) || null;
+      const caH = cands.length ? `<h3 class="at-sec">Candidate members (paper) <span class="sc-mut">· stop-hunt research, not part of ${esc(name)} yet</span></h3>
+        <div class="sc-banner"><b>PAPER ONLY.</b> Two stop-hunt setups (research/writeups/stophunt.md) watched live next to ${esc(name)}: never routed, not on the 25K, not on LIT's account. Their own go / no-go below decides if they become members.</div>`
+        + cands.map((s) => candCard(s, live, cbr(s.key))).join('') : '';
+      const others = S.strategies.filter((x) => !keys.includes(x.key) && !x.candidate);
       const otH = others.length ? `<details class="sc-card"><summary><b>Other paper shadows</b> (${others.map((s) => esc(s.short || s.key)).join(', ')}): not part of ${esc(name)}</summary>${others.map((s) => strat(s, live)).join('')}</details>` : '';
-      el.innerHTML = hero + evCard + brainH + goH + trH + ruH + btH + otH;
+      el.innerHTML = hero + evCard + brainH + goH + trH + caH + ruH + btH + otH;
     } catch (e) { el.innerHTML = `<div class="sc-card"><b>The ATLAS page failed to draw</b><p class="sc-note">${esc(String(e && e.message || e))}</p></div>`; }
+  }
+  // a candidate member (the stop hunts, second_model.json "candidate": true): its brain (stage, waiting for, rule checks,
+  // plan, log), its own go / no-go, paper trades, rules, research numbers and the 25K eval paths with it as an ATLAS member
+  // the brain card's body only (rule checks, plan, log) under the candidate's own header and state box
+  function brainIn(b) {
+    const h = brainCard(b), i = h.indexOf('</em></div>');
+    const body = i >= 0 ? h.slice(i + 11, h.lastIndexOf('</div>')) : '';
+    const f = (b.brain || {}).focus || {};
+    return `<div class="sb-in"><h4>Brain${f.label ? ' · ' + esc(f.label) : ''} <span class="sc-mut">· closed bars only${b.src ? ' · ' + esc(b.src) : ''}</span></h4>${body.trim() || '<p class="sc-note">No brain yet: the PC bot / the next cloud run fills it.</p>'}</div>`;
+  }
+  function candCard(s, live, br) {
+    const lv = live && live.strategies ? live.strategies[s.key] : null;
+    const st = lv && lv.state ? lv.state : s.state;
+    const rows = (s.trades || []).slice();
+    if (lv && lv.trades) for (const t of lv.trades) { const i = rows.findIndex((r) => +r.entry_t === +t.entry_t); if (i < 0) rows.push(t); else if (rows[i].exit_kind === 'OPEN') rows[i] = { ...rows[i], ...t }; }
+    const p = s.paper || {}, bt = s.backtest || {}, ae = bt.atlas_eval || {};
+    const b = br ? { ...s, ...br, candidate: true } : { ...s, candidate: true };
+    const ev = ['H1', 'H2', '2025', '2021-24'].filter((k) => (ae.atlas || {})[k] || (ae.atlas_plus || {})[k]).map((k) => {
+      const f = (o) => o ? `${n0(o.p10, 1)}% / ${n0(o.f10, 1)}%` : '—';
+      const a = (ae.atlas || {})[k], x = (ae.atlas_plus || {})[k], y = (ae.atlas_plus_both || {})[k];
+      return `<tr><td>${esc(plabel(k))}</td><td>${f(a)}</td><td>${f(x)}</td><td>${f(y)}</td><td class="${cl(a && a.net)}">${usd(a && a.net)}</td><td class="${cl(x && x.net)}">${usd(x && x.net)}</td></tr>`;
+    }).join('');
+    const pl = Object.entries(bt.placebo || {}).filter(([k]) => k === 'H2' || k === 'all').map(([k, v]) => `${k === 'all' ? 'all periods' : k}: random-time p ${n0(v.p_rtime, 3)}`).join(' · ');
+    return `<div class="sc-card at-cand"><div class="sc-eyebrow" style="color:${C.warn}">Candidate member · PAPER · ${esc(s.short || s.key)}${s.on ? '' : ' · OFF'}</div><h3>${esc(s.label)}</h3>
+      ${s.summary ? `<p class="sc-note">${esc(s.summary)}</p>` : ''}
+      ${stateBox(st, lv && lv.state ? 'PC (live)' : s.state_src === 'PC' ? 'PC' : 'cloud')}
+      ${brainIn(b)}
+      <div class="sc-stats"><div class="sc-stat"><span>Paper trades</span><b>${n0(p.n)}</b><em>${n0(p.wins)} winners</em></div>
+        <div class="sc-stat"><span>Paper $ ($500 risk)</span><b class="${cl(p.usd)}">${usd(p.usd)}</b><em>since the ledger started</em></div></div>
+      ${scoreBox(s.scorecard, 'Go / no-go (its own 2026 H2 range)')}
+      <details ${rows.length ? 'open' : ''}><summary><b>Paper trades</b></summary>${trades(rows)}</details>
+      <details><summary><b>Rules in plain words</b></summary><ol class="sc-rules">${(s.rules || []).map((r) => `<li>${esc(r)}</li>`).join('')}</ol></details>
+      <details><summary><b>Research numbers</b> ($500 a trade, costs in)</summary>${numTable(bt.own, NCOL) || '<p class="sc-note">—</p>'}
+        ${ev ? `<h4>As an ATLAS member on the Builder 25K: 2-week pass / fail</h4><div class="sc-tw"><table class="sc-t"><thead><tr><th>Period</th><th>ATLAS today</th><th>ATLAS + it</th><th>ATLAS + both hunts</th><th>$ path ATLAS</th><th>$ path + it</th></tr></thead><tbody>${ev}</tbody></table></div>` : ''}
+        <p class="sc-note">Picked on 2026 H1 + 2025 + 2021-24 (worst period counts); 2026 H2 untouched.${pl ? ' Placebos: ' + esc(pl) + '.' : ''} Run ${esc(bt.run || '—')}${bt.writeup ? ` · write-up <a href="#/writeup/${encodeURIComponent(bt.writeup)}">${esc(bt.writeup)}</a>` : ''}.</p></details></div>`;
   }
   // the ATLAS · 25K card of the Home summary from the same data (each app adds its LIT card itself)
   function atlasCard(S, live, brain) {
@@ -393,7 +436,7 @@
     };
     return `<div class="at-two" aria-label="Two strategies">${L.map(one).join('')}</div>`;
   }
-  const ACSS = `.at-hero{border-width:1.5px}.at-top{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.at-top>div:first-child{flex:1 1 220px;min-width:0}
+  const ACSS = `.at-cand{border-color:color-mix(in srgb,${C.warn} 45%,transparent)}.sb-in{border-top:1px solid ${C.line};margin-top:8px;padding-top:4px}.at-hero{border-width:1.5px}.at-top{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.at-top>div:first-child{flex:1 1 220px;min-width:0}
 .at-h{margin:8px 0 4px;font-size:20px}.at-day{text-align:right;min-width:110px}.at-day span,.at-day em{display:block;font-size:11.5px;opacity:.7;font-style:normal}.at-day b{display:block;font-size:26px;font-weight:800}
 .at-lit{margin-top:10px;padding-top:8px;border-top:1px solid ${C.line}}.at-sec{margin:18px 2px 10px;font-size:16px}
 .at-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}.at-two-c{display:flex;flex-direction:column;gap:7px;text-align:left;font:inherit;color:inherit;cursor:pointer;min-width:0;
@@ -404,5 +447,5 @@ border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);border-radius:16p
 .at-two-bar{position:relative;height:6px;border-radius:99px;background:${C.line};overflow:hidden}.at-two-bar u{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--c)}
 .at-two-p{font-size:11.5px;opacity:.75;line-height:1.35}.at-two-n{font-size:12.5px;line-height:1.4;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 @media (max-width:340px){.at-two{grid-template-columns:1fr}}`;
-  window.SecondUI = { render, brain, brainList, acctB, scoreBox, scoreCard, atlas, atlasStatus, atlasCard, atlasMoney, twoCards, members, version: 5 };
+  window.SecondUI = { render, brain, brainList, acctB, scoreBox, scoreCard, atlas, atlasStatus, atlasCard, atlasMoney, twoCards, members, candCard, version: 6 };
 })();

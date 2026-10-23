@@ -1,0 +1,648 @@
+{
+ "sh_asia_resweep": {
+  "title": "Asia stop hunt with a resweep (HTF pools, fixed 2R)",
+  "spans": {
+   "H1": {
+    "n": 38,
+    "tpw": 1.48,
+    "win": 71.1,
+    "pf": 2.6,
+    "net": 8139,
+    "per_month": 1335,
+    "dd": -1431,
+    "avg_r": 0.485,
+    "net_wo_best3": 5202,
+    "wk2_pct": 54.7,
+    "sessions": {
+     "Asia": [
+      38,
+      8139
+     ],
+     "London": [
+      0,
+      0
+     ],
+     "NY AM": [
+      0,
+      0
+     ],
+     "NY PM": [
+      0,
+      0
+     ]
+    },
+    "exits": {
+     "TARGET": 15,
+     "STOP": 11,
+     "BE": 12
+    }
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "win": 57.5,
+    "pf": 1.37,
+    "net": 2915,
+    "per_month": 785,
+    "dd": -2334,
+    "avg_r": 0.16,
+    "net_wo_best3": -20,
+    "wk2_pct": 70.5,
+    "sessions": {
+     "Asia": [
+      40,
+      2915
+     ],
+     "London": [
+      0,
+      0
+     ],
+     "NY AM": [
+      0,
+      0
+     ],
+     "NY PM": [
+      0,
+      0
+     ]
+    },
+    "exits": {
+     "BE": 11,
+     "STOP": 17,
+     "TARGET": 12
+    }
+   },
+   "2025": {
+    "n": 104,
+    "tpw": 2.02,
+    "win": 56.7,
+    "pf": 1.51,
+    "net": 10990,
+    "per_month": 895,
+    "dd": -5005,
+    "avg_r": 0.234,
+    "net_wo_best3": 8045,
+    "wk2_pct": 73.6,
+    "sessions": {
+     "Asia": [
+      104,
+      10990
+     ],
+     "London": [
+      0,
+      0
+     ],
+     "NY AM": [
+      0,
+      0
+     ],
+     "NY PM": [
+      0,
+      0
+     ]
+    },
+    "exits": {
+     "TARGET": 36,
+     "BE": 23,
+     "STOP": 45
+    }
+   },
+   "2021-24": {
+    "n": 376,
+    "tpw": 2.3,
+    "win": 54.8,
+    "pf": 1.27,
+    "net": 22705,
+    "per_month": 582,
+    "dd": -6360,
+    "avg_r": 0.127,
+    "net_wo_best3": 19754,
+    "wk2_pct": 73.9,
+    "sessions": {
+     "Asia": [
+      376,
+      22705
+     ],
+     "London": [
+      0,
+      0
+     ],
+     "NY AM": [
+      0,
+      0
+     ],
+     "NY PM": [
+      0,
+      0
+     ]
+    },
+    "exits": {
+     "STOP": 170,
+     "BE": 91,
+     "TARGET": 115
+    }
+   }
+  },
+  "placebo": {
+   "H1": {
+    "n": 38,
+    "real": 8139,
+    "skeleton": 8139,
+    "flip_mean": 570,
+    "p_flip": 0.0045,
+    "rtime_mean": 235,
+    "p_rtime": 0.0145
+   },
+   "H2": {
+    "n": 40,
+    "real": 2915,
+    "skeleton": 2915,
+    "flip_mean": 486,
+    "p_flip": 0.231,
+    "rtime_mean": 540,
+    "p_rtime": 0.252
+   },
+   "2025": {
+    "n": 104,
+    "real": 10990,
+    "skeleton": 10990,
+    "flip_mean": 364,
+    "p_flip": 0.0345,
+    "rtime_mean": -1915,
+    "p_rtime": 0.012
+   },
+   "2021-24": {
+    "n": 376,
+    "real": 22705,
+    "skeleton": 22705,
+    "flip_mean": 1567,
+    "p_flip": 0.0295,
+    "rtime_mean": -9285,
+    "p_rtime": 0.0025
+   },
+   "all": {
+    "real": 44749,
+    "skeleton": 44749,
+    "p_flip": 0.0,
+    "p_rtime": 0.0,
+    "nsim": 2000
+   }
+  },
+  "lookahead": {
+   "checked": 40,
+   "identical": 40,
+   "diffs": []
+  },
+  "slip_plus1": {
+   "H1": {
+    "net": 7959,
+    "pf": 2.54
+   },
+   "H2": {
+    "net": 2737,
+    "pf": 1.34
+   },
+   "2025": {
+    "net": 10252,
+    "pf": 1.46
+   },
+   "2021-24": {
+    "net": 19226,
+    "pf": 1.22
+   }
+  }
+ },
+ "sh_trend_idm": {
+  "title": "Trend stop hunt with an inducement first (any pool, DOL target)",
+  "spans": {
+   "H1": {
+    "n": 38,
+    "tpw": 1.48,
+    "win": 73.7,
+    "pf": 2.92,
+    "net": 8816,
+    "per_month": 1446,
+    "dd": -900,
+    "avg_r": 0.479,
+    "net_wo_best3": 4402,
+    "wk2_pct": 46.9,
+    "sessions": {
+     "Asia": [
+      9,
+      3527
+     ],
+     "London": [
+      18,
+      3718
+     ],
+     "NY AM": [
+      8,
+      616
+     ],
+     "NY PM": [
+      3,
+      954
+     ]
+    },
+    "exits": {
+     "BE": 12,
+     "FLAT": 1,
+     "TARGET": 15,
+     "STOP": 10
+    }
+   },
+   "H2": {
+    "n": 21,
+    "tpw": 1.35,
+    "win": 61.9,
+    "pf": 1.65,
+    "net": 2443,
+    "per_month": 658,
+    "dd": -1461,
+    "avg_r": 0.241,
+    "net_wo_best3": -608,
+    "wk2_pct": 38.5,
+    "sessions": {
+     "Asia": [
+      7,
+      1220
+     ],
+     "London": [
+      8,
+      159
+     ],
+     "NY AM": [
+      6,
+      1064
+     ],
+     "NY PM": [
+      0,
+      0
+     ]
+    },
+    "exits": {
+     "STOP": 8,
+     "BE": 6,
+     "TARGET": 7
+    }
+   },
+   "2025": {
+    "n": 62,
+    "tpw": 1.2,
+    "win": 59.7,
+    "pf": 1.93,
+    "net": 10897,
+    "per_month": 887,
+    "dd": -2231,
+    "avg_r": 0.368,
+    "net_wo_best3": 5638,
+    "wk2_pct": 40.7,
+    "sessions": {
+     "Asia": [
+      21,
+      4912
+     ],
+     "London": [
+      17,
+      4894
+     ],
+     "NY AM": [
+      21,
+      1365
+     ],
+     "NY PM": [
+      3,
+      -274
+     ]
+    },
+    "exits": {
+     "STOP": 25,
+     "BE": 14,
+     "TARGET": 22,
+     "FLAT": 1
+    }
+   },
+   "2021-24": {
+    "n": 191,
+    "tpw": 1.17,
+    "win": 61.8,
+    "pf": 1.47,
+    "net": 16821,
+    "per_month": 431,
+    "dd": -5207,
+    "avg_r": 0.186,
+    "net_wo_best3": 11506,
+    "wk2_pct": 34.8,
+    "sessions": {
+     "Asia": [
+      49,
+      3452
+     ],
+     "London": [
+      75,
+      3313
+     ],
+     "NY AM": [
+      61,
+      8860
+     ],
+     "NY PM": [
+      6,
+      1195
+     ]
+    },
+    "exits": {
+     "TARGET": 54,
+     "BE": 63,
+     "STOP": 70,
+     "FLAT": 4
+    }
+   }
+  },
+  "placebo": {
+   "H1": {
+    "n": 38,
+    "real": 8816,
+    "skeleton": 8816,
+    "flip_mean": 5313,
+    "p_flip": 0.0705,
+    "rtime_mean": -251,
+    "p_rtime": 0.0075
+   },
+   "H2": {
+    "n": 21,
+    "real": 2443,
+    "skeleton": 2443,
+    "flip_mean": 1662,
+    "p_flip": 0.358,
+    "rtime_mean": -362,
+    "p_rtime": 0.1385
+   },
+   "2025": {
+    "n": 62,
+    "real": 10897,
+    "skeleton": 10897,
+    "flip_mean": 2513,
+    "p_flip": 0.007,
+    "rtime_mean": -1296,
+    "p_rtime": 0.0065
+   },
+   "2021-24": {
+    "n": 191,
+    "real": 16821,
+    "skeleton": 16821,
+    "flip_mean": 9902,
+    "p_flip": 0.1295,
+    "rtime_mean": -6190,
+    "p_rtime": 0.0025
+   },
+   "all": {
+    "real": 38976,
+    "skeleton": 38976,
+    "p_flip": 0.009,
+    "p_rtime": 0.0,
+    "nsim": 2000
+   }
+  },
+  "lookahead": {
+   "checked": 40,
+   "identical": 40,
+   "diffs": []
+  },
+  "slip_plus1": {
+   "H1": {
+    "net": 8580,
+    "pf": 2.82
+   },
+   "H2": {
+    "net": 2310,
+    "pf": 1.6
+   },
+   "2025": {
+    "net": 10371,
+    "pf": 1.86
+   },
+   "2021-24": {
+    "net": 14537,
+    "pf": 1.39
+   }
+  }
+ },
+ "sh_trend_idm5": {
+  "title": "Trend stop hunt with an inducement first (5m swings, fixed 2R)",
+  "spans": {
+   "H1": {
+    "n": 35,
+    "tpw": 1.37,
+    "win": 65.7,
+    "pf": 2.18,
+    "net": 6536,
+    "per_month": 1072,
+    "dd": -1385,
+    "avg_r": 0.383,
+    "net_wo_best3": 3629,
+    "wk2_pct": 43.0,
+    "sessions": {
+     "Asia": [
+      10,
+      3412
+     ],
+     "London": [
+      13,
+      1631
+     ],
+     "NY AM": [
+      10,
+      455
+     ],
+     "NY PM": [
+      2,
+      1038
+     ]
+    },
+    "exits": {
+     "TARGET": 13,
+     "STOP": 12,
+     "FLAT": 1,
+     "BE": 9
+    }
+   },
+   "H2": {
+    "n": 24,
+    "tpw": 1.54,
+    "win": 66.7,
+    "pf": 2.3,
+    "net": 4916,
+    "per_month": 1324,
+    "dd": -1027,
+    "avg_r": 0.429,
+    "net_wo_best3": 2046,
+    "wk2_pct": 51.3,
+    "sessions": {
+     "Asia": [
+      10,
+      1946
+     ],
+     "London": [
+      8,
+      1674
+     ],
+     "NY AM": [
+      4,
+      1428
+     ],
+     "NY PM": [
+      2,
+      -132
+     ]
+    },
+    "exits": {
+     "STOP": 8,
+     "BE": 6,
+     "TARGET": 9,
+     "FLAT": 1
+    }
+   },
+   "2025": {
+    "n": 98,
+    "tpw": 1.9,
+    "win": 60.2,
+    "pf": 1.72,
+    "net": 13384,
+    "per_month": 1089,
+    "dd": -2640,
+    "avg_r": 0.291,
+    "net_wo_best3": 10442,
+    "wk2_pct": 52.3,
+    "sessions": {
+     "Asia": [
+      34,
+      7953
+     ],
+     "London": [
+      28,
+      6369
+     ],
+     "NY AM": [
+      30,
+      -528
+     ],
+     "NY PM": [
+      6,
+      -411
+     ]
+    },
+    "exits": {
+     "STOP": 39,
+     "BE": 23,
+     "TARGET": 35,
+     "FLAT": 1
+    }
+   },
+   "2021-24": {
+    "n": 310,
+    "tpw": 1.89,
+    "win": 60.0,
+    "pf": 1.44,
+    "net": 26349,
+    "per_month": 676,
+    "dd": -4968,
+    "avg_r": 0.178,
+    "net_wo_best3": 23404,
+    "wk2_pct": 58.0,
+    "sessions": {
+     "Asia": [
+      77,
+      854
+     ],
+     "London": [
+      116,
+      13315
+     ],
+     "NY AM": [
+      106,
+      10828
+     ],
+     "NY PM": [
+      11,
+      1352
+     ]
+    },
+    "exits": {
+     "TARGET": 90,
+     "STOP": 119,
+     "BE": 93,
+     "FLAT": 8
+    }
+   }
+  },
+  "placebo": {
+   "H1": {
+    "n": 35,
+    "real": 6536,
+    "skeleton": 6536,
+    "flip_mean": 5799,
+    "p_flip": 0.3955,
+    "rtime_mean": -335,
+    "p_rtime": 0.0195
+   },
+   "H2": {
+    "n": 24,
+    "real": 4916,
+    "skeleton": 4916,
+    "flip_mean": 2895,
+    "p_flip": 0.186,
+    "rtime_mean": -360,
+    "p_rtime": 0.0315
+   },
+   "2025": {
+    "n": 98,
+    "real": 13384,
+    "skeleton": 13384,
+    "flip_mean": 4758,
+    "p_flip": 0.022,
+    "rtime_mean": -2452,
+    "p_rtime": 0.003
+   },
+   "2021-24": {
+    "n": 310,
+    "real": 26349,
+    "skeleton": 26349,
+    "flip_mean": 14490,
+    "p_flip": 0.073,
+    "rtime_mean": -10034,
+    "p_rtime": 0.0
+   },
+   "all": {
+    "real": 51185,
+    "skeleton": 51185,
+    "p_flip": 0.0105,
+    "p_rtime": 0.0,
+    "nsim": 2000
+   }
+  },
+  "lookahead": {
+   "checked": 40,
+   "identical": 40,
+   "diffs": []
+  },
+  "slip_plus1": {
+   "H1": {
+    "net": 6323,
+    "pf": 2.12
+   },
+   "H2": {
+    "net": 4751,
+    "pf": 2.23
+   },
+   "2025": {
+    "net": 12492,
+    "pf": 1.65
+   },
+   "2021-24": {
+    "net": 22744,
+    "pf": 1.36
+   }
+  }
+ }
+}

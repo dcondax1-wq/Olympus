@@ -44,7 +44,7 @@ def rows(rs, t0=1_790_000_000, usd=500.0):
 def part_a():
     d = SC.load()
     check("a. research/second/scorecard.json exists with a band per strategy + account B",
-          bool(d) and set(d["bands"]) == set(SC.KEYS) | {SC.ACCT_B}, None if not d else list(d["bands"]))
+          bool(d) and set(d["bands"]) == set(SC.KEYS) | {SC.ACCT_B} | set(SC.CANDIDATES), None if not d else list(d["bands"]))
     for k, fn in SC.KEYS.items():
         T = json.load(open(os.path.join(ROOT, "research", "second", fn), encoding="utf-8"))["trades"]
         n2 = sum(1 for t in T if "2026-07-01" <= t["day"] <= "2026-12-31")
@@ -159,12 +159,12 @@ def part_d():
         o = json.loads(r.stdout.strip().splitlines()[-1])
     except Exception:
         o = {"ok": False, "err": r.stderr[-400:]}
-    check("d. the page renders the scorecard (node, stub DOM; SecondUI v5)", o.get("ok") and o.get("v") == 5, o)
+    check("d. the page renders the scorecard (node, stub DOM; SecondUI v6)", o.get("ok") and o.get("v") == 6, o)
     idx = open(os.path.join(ROOT, "tools", "web_public", "index.html"), encoding="utf-8").read()
     sw = open(os.path.join(ROOT, "tools", "web_public", "sw.js"), encoding="utf-8").read()
     pcs = open(os.path.join(ROOT, "web_next", "js", "next", "second.js"), encoding="utf-8").read()
-    check("d. phone loads secondcore.js?v=5, service worker cache bumped (le-public-v26 or later), PC loads ?v=5",
-          "secondcore.js?v=5" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 26 and "secondcore.js?v=5" in pcs)
+    check("d. phone loads secondcore.js?v=6, service worker cache bumped (le-public-v26 or later), PC loads ?v=6",
+          "secondcore.js?v=6" in idx and int(__import__("re").search(r"le-public-v(\d+)", sw).group(1)) >= 26 and "secondcore.js?v=6" in pcs)
 
 
 def main():

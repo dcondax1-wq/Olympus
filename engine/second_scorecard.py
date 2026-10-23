@@ -8,6 +8,7 @@ Bands (build(), research/second/scorecard.json, rebuilt only when the research t
              paths -> quantiles of the cumulative R, win rate, profit factor and $.
   bad year   the same bootstrap of its 2025 trades (a pessimistic band: the year account B evals mostly died).
   account B  EMA + MACD + S/R pooled (their paper ledgers together).
+  candidates the stop-hunt picks (sh_asia, sh_trend: research/stophunt/*.json), own bands, not in the account-B pool.
 Verdict on the live paper ledger (cloud state "second" ledgers, plus the PC heartbeat's finished trades the cloud does
 not have yet), on the finished trades' cumulative R after n trades:
   n < 5                                   "collecting (n/20)"
@@ -28,6 +29,14 @@ import os
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "research", "second", "scorecard.json")
 KEYS = {"ema_lon_vix": "ema_best.json", "macd_sweep": "md_best.json", "sr_nyreclaim": "sr_best.json"}
+# candidate ATLAS members (paper; research/writeups/stophunt.md): own bands from their H2 / 2025 research trades, never in
+# the account-B pool (ATLAS = KEYS) until they are made members
+CANDIDATES = {"sh_asia": os.path.join("..", "stophunt", "sh_asia_resweep.json"), "sh_trend": os.path.join("..", "stophunt", "sh_trend_idm5.json")}
+
+
+def all_keys() -> list:
+    return list(KEYS) + list(CANDIDATES)
+
 ACCT_B = "account_b"
 SPANS = {"expected": ("2026-07-01", "2026-12-31"), "bad_year": ("2025-01-01", "2025-12-31")}
 NMAX, DRAWS, SEED = 40, 4000, 20261022
@@ -71,6 +80,8 @@ def build(path: str = OUT) -> dict:
            "spans": SPANS, "bands": {}, "note": "R per micro after costs; $ at $500 risk a trade (the paper ledger's size)"}
     pools = {k: {nm: _pool(fn, sp) for nm, sp in SPANS.items()} for k, fn in KEYS.items()}
     pools[ACCT_B] = {nm: [p for k in KEYS for p in pools[k][nm]] for nm in SPANS}
+    for k, fn in CANDIDATES.items():      # after account B: the seeds of the existing bands are unchanged
+        pools[k] = {nm: _pool(fn, sp) for nm, sp in SPANS.items()}
     for i, (k, P) in enumerate(pools.items()):
         out["bands"][k] = {nm: _band(P[nm], SEED + 17 * i + j) for j, nm in enumerate(SPANS)}
     with open(path, "w", encoding="utf-8") as fh:
@@ -175,7 +186,7 @@ def card(rows_by_key: dict, keys_b=None, bands: dict | None = None, source: str 
     keys_b = list(keys_b or KEYS)
     out = {"strategies": {}, "source": source, "rule": RULE, "built": bool(B)}
     for k, rows in (rows_by_key or {}).items():
-        if k in KEYS:
+        if k in KEYS or k in CANDIDATES:
             out["strategies"][k] = verdict(B.get(k), rows)
     pooled = [r for k in keys_b for r in finished((rows_by_key or {}).get(k))]
     out["account_b"] = ab = verdict(B.get(ACCT_B), pooled)
@@ -217,5 +228,5 @@ if __name__ == "__main__":
     else:
         p = os.path.join(ROOT, "data", "cloud_state.json")
         st = json.load(open(p, encoding="utf-8")).get("second") if os.path.exists(p) else {}
-        rows = {k: list(((st or {}).get("strategies") or {}).get(k, {}).get("ledger", {}).values()) for k in KEYS}
+        rows = {k: list(((st or {}).get("strategies") or {}).get(k, {}).get("ledger", {}).values()) for k in all_keys()}
         print(json.dumps(card(rows), indent=1)[:3000])
