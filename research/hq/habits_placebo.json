@@ -1,0 +1,322 @@
+{
+ "news_skip15@live": {
+  "k": {
+   "H1": 1,
+   "H2": 0,
+   "2021-25": 2
+  },
+  "H1": {
+   "lit_real": 34152,
+   "lit_pctile": 96.5,
+   "lit_p50": 33666,
+   "ev_real": 38622,
+   "ev_pctile": 96.5,
+   "ev_p50": 34252,
+   "odds_real": 52.9,
+   "odds_pctile": 83.0
+  },
+  "H2": {
+   "lit_real": 9410,
+   "lit_pctile": 0.0,
+   "lit_p50": 9410,
+   "ev_real": 9059,
+   "ev_pctile": 0.0,
+   "ev_p50": 9059,
+   "odds_real": 52.2,
+   "odds_pctile": 0.0
+  },
+  "2021-25": {
+   "lit_real": -666,
+   "lit_pctile": 26.5,
+   "lit_p50": -378
+  }
+ },
+ "news_skip30@live": {
+  "k": {
+   "H1": 2,
+   "H2": 0,
+   "2021-25": 5
+  },
+  "H1": {
+   "lit_real": 33918,
+   "lit_pctile": 69.0,
+   "lit_p50": 33740,
+   "ev_real": 36121,
+   "ev_pctile": 89.5,
+   "ev_p50": 34250,
+   "odds_real": 52.1,
+   "odds_pctile": 62.0
+  },
+  "H2": {
+   "lit_real": 9410,
+   "lit_pctile": 0.0,
+   "lit_p50": 9410,
+   "ev_real": 9059,
+   "ev_pctile": 0.0,
+   "ev_p50": 9059,
+   "odds_real": 52.2,
+   "odds_pctile": 0.0
+  },
+  "2021-25": {
+   "lit_real": -23,
+   "lit_pctile": 56.0,
+   "lit_p50": -183
+  }
+ },
+ "news_half15@live": {
+  "k": {
+   "H1": 1,
+   "H2": 0,
+   "2021-25": 2
+  },
+  "H1": {
+   "lit_real": 33944,
+   "lit_pctile": 96.0,
+   "lit_p50": 33666,
+   "ev_real": 35937,
+   "ev_pctile": 96.0,
+   "ev_p50": 34253,
+   "odds_real": 52.9,
+   "odds_pctile": 90.5
+  },
+  "H2": {
+   "lit_real": 9410,
+   "lit_pctile": 0.0,
+   "lit_p50": 9410,
+   "ev_real": 9059,
+   "ev_pctile": 0.0,
+   "ev_p50": 9059,
+   "odds_real": 52.2,
+   "odds_pctile": 0.0
+  },
+  "2021-25": {
+   "lit_real": -665,
+   "lit_pctile": 18.0,
+   "lit_p50": -494
+  }
+ },
+ "news_half30@live": {
+  "k": {
+   "H1": 2,
+   "H2": 0,
+   "2021-25": 5
+  },
+  "H1": {
+   "lit_real": 33944,
+   "lit_pctile": 95.0,
+   "lit_p50": 33666,
+   "ev_real": 35937,
+   "ev_pctile": 95.0,
+   "ev_p50": 34252,
+   "odds_real": 52.9,
+   "odds_pctile": 86.0
+  },
+  "H2": {
+   "lit_real": 9410,
+   "lit_pctile": 0.0,
+   "lit_p50": 9410,
+   "ev_real": 9059,
+   "ev_pctile": 0.0,
+   "ev_p50": 9059,
+   "odds_real": 52.2,
+   "odds_pctile": 0.0
+  },
+  "2021-25": {
+   "lit_real": -294,
+   "lit_pctile": 58.5,
+   "lit_p50": -401
+  }
+ },
+ "news_skip15@combo": {
+  "k": {
+   "H1": 1,
+   "H2": 0,
+   "2021-25": 2
+  },
+  "H1": {
+   "lit_real": 34152,
+   "lit_pctile": 95.0,
+   "lit_p50": 33666,
+   "ev_real": 34196,
+   "ev_pctile": 95.5,
+   "ev_p50": 29827,
+   "odds_real": 57.1,
+   "odds_pctile": 16.0
+  },
+  "H2": {
+   "lit_real": 9836,
+   "lit_pctile": 0.0,
+   "lit_p50": 9836,
+   "ev_real": 9780,
+   "ev_pctile": 0.0,
+   "ev_p50": 9780,
+   "odds_real": 52.2,
+   "odds_pctile": 0.0
+  },
+  "2021-25": {
+   "lit_real": -666,
+   "lit_pctile": 25.5,
+   "lit_p50": -442
+  }
+ },
+ "news_skip30@combo": {
+  "k": {
+   "H1": 2,
+   "H2": 0,
+   "2021-25": 5
+  },
+  "H1": {
+   "lit_real": 33918,
+   "lit_pctile": 78.5,
+   "lit_p50": 33664,
+   "ev_real": 31160,
+   "ev_pctile": 89.5,
+   "ev_p50": 29825,
+   "odds_real": 56.3,
+   "odds_pctile": 21.5
+  },
+  "H2": {
+   "lit_real": 9836,
+   "lit_pctile": 0.0,
+   "lit_p50": 9836,
+   "ev_real": 9780,
+   "ev_pctile": 0.0,
+   "ev_p50": 9780,
+   "odds_real": 52.2,
+   "odds_pctile": 0.0
+  },
+  "2021-25": {
+   "lit_real": -23,
+   "lit_pctile": 58.0,
+   "lit_p50": -242
+  }
+ },
+ "news_half15@combo": {
+  "k": {
+   "H1": 1,
+   "H2": 0,
+   "2021-25": 2
+  },
+  "H1": {
+   "lit_real": 33944,
+   "lit_pctile": 96.0,
+   "lit_p50": 33666,
+   "ev_real": 31511,
+   "ev_pctile": 97.0,
+   "ev_p50": 29827,
+   "odds_real": 57.1,
+   "odds_pctile": 15.0
+  },
+  "H2": {
+   "lit_real": 9836,
+   "lit_pctile": 0.0,
+   "lit_p50": 9836,
+   "ev_real": 9780,
+   "ev_pctile": 0.0,
+   "ev_p50": 9780,
+   "odds_real": 52.2,
+   "odds_pctile": 0.0
+  },
+  "2021-25": {
+   "lit_real": -665,
+   "lit_pctile": 20.0,
+   "lit_p50": -494
+  }
+ },
+ "news_half30@combo": {
+  "k": {
+   "H1": 2,
+   "H2": 0,
+   "2021-25": 5
+  },
+  "H1": {
+   "lit_real": 33944,
+   "lit_pctile": 88.5,
+   "lit_p50": 33666,
+   "ev_real": 31511,
+   "ev_pctile": 95.5,
+   "ev_p50": 29826,
+   "odds_real": 57.1,
+   "odds_pctile": 29.0
+  },
+  "H2": {
+   "lit_real": 9836,
+   "lit_pctile": 0.0,
+   "lit_p50": 9836,
+   "ev_real": 9780,
+   "ev_pctile": 0.0,
+   "ev_p50": 9780,
+   "odds_real": 52.2,
+   "odds_pctile": 0.0
+  },
+  "2021-25": {
+   "lit_real": -294,
+   "lit_pctile": 55.5,
+   "lit_p50": -404
+  }
+ },
+ "cool2_any@live": {
+  "k": {
+   "H1": 18,
+   "H2": 10,
+   "2021-25": 119
+  },
+  "H1": {
+   "lit_real": 34370,
+   "lit_pctile": 97.0,
+   "lit_p50": 30409,
+   "ev_real": 38386,
+   "ev_pctile": 98.0,
+   "ev_p50": 26709,
+   "odds_real": 54.6,
+   "odds_pctile": 92.0
+  },
+  "H2": {
+   "lit_real": 8575,
+   "lit_pctile": 63.0,
+   "lit_p50": 8284,
+   "ev_real": 9273,
+   "ev_pctile": 49.5,
+   "ev_p50": 9311,
+   "odds_real": 52.2,
+   "odds_pctile": 72.0
+  },
+  "2021-25": {
+   "lit_real": 1532,
+   "lit_pctile": 71.5,
+   "lit_p50": -730
+  }
+ },
+ "cool2_any@combo": {
+  "k": {
+   "H1": 18,
+   "H2": 10,
+   "2021-25": 119
+  },
+  "H1": {
+   "lit_real": 34370,
+   "lit_pctile": 98.0,
+   "lit_p50": 30186,
+   "ev_real": 39219,
+   "ev_pctile": 100.0,
+   "ev_p50": 26365,
+   "odds_real": 54.6,
+   "odds_pctile": 77.5
+  },
+  "H2": {
+   "lit_real": 9001,
+   "lit_pctile": 63.0,
+   "lit_p50": 8619,
+   "ev_real": 9649,
+   "ev_pctile": 53.5,
+   "ev_p50": 9482,
+   "odds_real": 52.2,
+   "odds_pctile": 78.5
+  },
+  "2021-25": {
+   "lit_real": 1532,
+   "lit_pctile": 71.0,
+   "lit_p50": -351
+  }
+ }
+}
