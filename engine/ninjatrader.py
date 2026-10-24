@@ -193,6 +193,7 @@ def close_line(account, instrument):
 
 
 FLATTEN_EVERYTHING = oif_line("FLATTENEVERYTHING")
+RESET_OK_NAME = "ninjatrader_reset_ok.json"  # next to the state file: the owner's "account checked after a NinjaTrader restart"
 
 
 # ---------------------------------------------------------------------- parsing NinjaTrader's outgoing files
@@ -239,6 +240,36 @@ def parse_position(raw):
     except ValueError:
         return None
     return {"side": side, "qty": 0 if side == "FLAT" else qty, "avg": avg or None}
+
+
+_MONTHS = {m: i + 1 for i, m in enumerate(("JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"))}
+
+
+def inst_key(name):
+    """(ROOT, month, 2-digit year) of an instrument name in any of NinjaTrader's spellings, else None:
+    'MNQ 12-26' / 'MNQ 12-26 Globex' (NinjaTrader 8), 'MNQ DEC26' / 'MNQ Dec26 Globex' (display style), 'MNQ 1226'
+    (NinjaTrader 7 style). The exchange suffix (anything after the expiry) is ignored."""
+    s = re.sub(r"\s+", " ", str(name or "").strip().upper())
+    m = re.match(r"^([A-Z0-9]+) (\d{2})-(\d{2})(?: |$)", s) or re.match(r"^([A-Z0-9]+) (\d{2})(\d{2})(?: |$)", s)
+    if m:
+        mm = int(m.group(2))
+        return (m.group(1), mm, int(m.group(3))) if 1 <= mm <= 12 else None
+    m = re.match(r"^([A-Z0-9]+) ([A-Z]{3})(\d{2})(?: |$)", s)
+    if m and m.group(2) in _MONTHS:
+        return (m.group(1), _MONTHS[m.group(2)], int(m.group(3)))
+    return None
+
+
+def same_instrument(file_inst, inst) -> bool:
+    """True when the instrument part of an outgoing position file name ('MNQ 12-26 Globex', 'MNQ DEC26 Globex') is the
+    contract `inst` ('MNQ 12-26') the bot trades."""
+    a, b = str(file_inst or ""), str(inst or "")
+    if not a or not b:
+        return False
+    if a == b or a.startswith(b + " "):
+        return True
+    ka, kb = inst_key(a), inst_key(b)
+    return ka is not None and ka == kb
 
 
 def _read_text(path):
@@ -421,6 +452,13 @@ class NinjaTraderAdapter:
         self._outside_flat: dict = {}
         self._cont_warned = None
         self.watch: list = []                          # retired legs with an order that may still fill (late add / slow cancel)
+        # NinjaTrader restart (it wipes outgoing\\ when it starts): a position file / an order file of an open bracket we had
+        # seen that is gone again. Never read as flat: new entries / adds are refused and the owner is alerted until the
+        # position file is written again or the owner confirms (python -m engine.ninjatrader --confirm-reset)
+        self.seen_pos: dict = {}                       # outgoing position file name -> its last {"side", "qty", "instrument"}
+        self.nt_reset = None                           # {"since", "files", "insts"} while the reset is unresolved
+        self.reset_ok_path = cfg.get("nt_reset_ok_path") or os.path.join(os.path.dirname(self.state_path), RESET_OK_NAME)
+        self._conn_alert_at = 0.0
         self._seq = 0
         self.sim = is_sim(self.account)
         self.env = "demo" if self.sim else "live"      # LiveBot._remember: memory source paper / live
@@ -693,17 +731,22 @@ class NinjaTraderAdapter:
                 if raw is not None:
                     self._unparsable(n, raw)
                 continue
+            inst = n[:-len(suffix)]
+            if not inst or "_" in inst:
+                continue                 # another account whose name ends in ours ("X_Sim101"): instruments have no "_"
             try:
                 mtime = os.path.getmtime(path)
             except OSError:
                 mtime = None
-            out.append({"instrument": n[:-len(suffix)], **pos, "file": n, "mtime": mtime})
+            out.append({"instrument": inst, **pos, "file": n, "mtime": mtime})
         return {"ok": True, "account": self.account, "positions": out}
 
     def position_for(self, instrument: str):
-        """The position file of one instrument ('MNQ 12-26' matches 'MNQ 12-26 Globex_Sim101_Position.txt'); None = no file."""
+        """The position file of one instrument ('MNQ 12-26' matches 'MNQ 12-26 Globex_Sim101_Position.txt' and
+        'MNQ DEC26 Globex_Sim101_Position.txt'); None = no file (which never proves flat: NinjaTrader wipes outgoing\\ when
+        it restarts)."""
         for p in self.positions()["positions"]:
-            if p["instrument"] == instrument or p["instrument"].startswith(instrument + " "):
+            if same_instrument(p["instrument"], instrument):
                 return p
         return None
 
@@ -806,6 +849,8 @@ class NinjaTraderAdapter:
         open_legs = [lg for lg in self.legs if lg["status"] in OPEN_STATUSES]
         if open_legs:
             return {"ok": False, "error": f"REFUSED: the bracket of the entry at {_et(open_legs[0]['entry_t']):%H:%M} ET is still open"}
+        if self.nt_reset:
+            return {"ok": False, "error": "REFUSED: " + self._reset_text()}
         insts = self._instruments()
         plan = [(insts["mini"], sp["minis"], "N"), (insts["micro"], sp["micros"], "M")]
         plan = [x for x in plan if x[1] > 0]
@@ -1033,6 +1078,8 @@ class NinjaTraderAdapter:
         g = self._gate("entry")
         if g:
             return g
+        if self.nt_reset:
+            return {"ok": False, "error": "REFUSED: " + self._reset_text()}
         qty = int(action.get("qty") or 0)
         if qty < 1:
             return {"ok": False, "error": "REFUSED: add qty < 1"}
@@ -1170,7 +1217,9 @@ class NinjaTraderAdapter:
     def _is_flat(self, instrument, since):
         p = self.position_for(instrument)
         if p is None:
-            return since is None          # never a position file: flat only if we never had a fill on it
+            # never a position file: flat only if we never had a fill on it, and never while NinjaTrader's reports were
+            # reset (a restart wiped outgoing\\: a missing file proves nothing)
+            return since is None and not self.nt_reset
         return p["side"] == "FLAT" and (since is None or (p.get("mtime") or 0) >= since - 0.001)
 
     def _cancel_working(self, legs, why) -> list:
@@ -1337,6 +1386,7 @@ class NinjaTraderAdapter:
                     return {"ok": True, "idle": self.disabled or "read-only"}
                 now = self.clock()
                 self._sweep_stale_oifs(max_age=max(10.0, 2 * self.ack_wait))
+                self._tick_outgoing(now)
                 self._tick_withdrawn(now)
                 for lg in list(self.legs):
                     self._tick_leg(lg, now)
@@ -1348,6 +1398,98 @@ class NinjaTraderAdapter:
             self.last_error = f"tick: {e.__class__.__name__}: {e}"
             self._log("error", "NinjaTrader " + self.last_error)
             return {"ok": False, "error": self.last_error}
+
+    # ------------------------------------------------------------------ NinjaTrader restart / disconnect while the bot runs
+    def _reset_text(self) -> str:
+        r = self.nt_reset or {}
+        return (f"NinjaTrader's reports in outgoing were reset at {_et(r.get('since') or 0):%H:%M} ET (NinjaTrader restarted?): "
+                f"{', '.join((r.get('files') or [])[:4])} gone. A missing file never means flat: no new entry until NinjaTrader "
+                "writes the position file again, or you check the account in NinjaTrader and run "
+                "python -m engine.ninjatrader --confirm-reset")
+
+    def _reset_confirmed(self, since) -> bool:
+        try:
+            with open(self.reset_ok_path, encoding="utf-8") as fh:
+                return float(json.load(fh).get("t") or 0) >= float(since or 0)
+        except Exception:
+            return False
+
+    def _tick_outgoing(self, now):
+        """Once per tick: notice NinjaTrader wiping outgoing (a restart) while a position or one of our open brackets
+        exists, and an all-DISCONNECTED NinjaTrader while a trade is open. Only blocks / alerts / protects; never opens."""
+        names = set(self._listing())
+        cur = {p["file"]: p for p in self.positions()["positions"]}
+        open_legs = [lg for lg in self.legs if lg["status"] in OPEN_STATUSES]
+        open_insts = sorted({lg["instrument"] for lg in open_legs})
+        gone, insts = [], set(open_insts)
+        for fn, last in list(self.seen_pos.items()):
+            if fn in cur:
+                continue
+            if last.get("side") != "FLAT" or any(same_instrument(last.get("instrument"), i) for i in open_insts):
+                gone.append(fn)
+                if last.get("instrument"):
+                    insts.add(last["instrument"])
+            elif not self.nt_reset:
+                self.seen_pos.pop(fn, None)      # it was FLAT and no bracket of ours is open: a restart cannot open a position
+        for lg in open_legs:
+            seen = lg.setdefault("seen_ids", [])
+            for oid in (lg["entry_id"], lg["stop_id"], lg["target_id"]):
+                if f"{oid}.txt" in names:
+                    if oid not in seen:
+                        seen.append(oid)
+                elif oid in seen:
+                    gone.append(f"{oid}.txt")
+        for fn, p in cur.items():
+            self.seen_pos[fn] = {"side": p["side"], "qty": p["qty"], "instrument": p["instrument"]}
+        if gone and not self.nt_reset:
+            self.nt_reset = {"since": now, "wall": time.time(), "files": gone, "insts": sorted(insts)}
+            held = ", ".join(f"{lg['side']} {lg['filled'] or lg['qty']} {lg['instrument']} ({lg['status']})" for lg in open_legs)
+            self._risk(f"NinjaTrader's outgoing reports vanished ({', '.join(gone[:4])}): NinjaTrader restarted or its folder was "
+                       "cleared. The bot does NOT assume flat. "
+                       + (f"Open: {held}. The stop / target should still be working at the broker: check NinjaTrader Orders + "
+                          "Positions now. " if held else "")
+                       + "New entries are blocked until NinjaTrader writes the position file again or you run "
+                         "python -m engine.ninjatrader --confirm-reset.", alert=True)
+            self._save()
+        elif self.nt_reset:
+            since = float(self.nt_reset.get("wall") or self.nt_reset.get("since") or 0)
+            back = bool(cur) and all(any(same_instrument(p["instrument"], i) and (p.get("mtime") or 0) >= since - 1
+                                         for p in cur.values()) for i in (self.nt_reset.get("insts") or []))
+            ok = self._reset_confirmed(since)
+            if back or ok:
+                self._log("system", "NinjaTrader: " + ("the owner confirmed the account after the NinjaTrader restart" if ok else
+                          "NinjaTrader writes the position file again") + ": new entries allowed again")
+                self.nt_reset = None
+                self.seen_pos = {fn: v for fn, v in self.seen_pos.items() if fn in cur}   # NinjaTrader's files from now on
+                self._after_reset()
+                self._save()
+        conn = self.connections()
+        if open_legs and conn and all(v == "DISCONNECTED" for v in conn.values()) and now - self._conn_alert_at >= 600:
+            self._conn_alert_at = now
+            self._risk(f"NinjaTrader reports every connection DISCONNECTED ({', '.join(conn)}) with the bot's trade open: the stop "
+                       "and target sit at the broker, but the bot cannot see fills or move the stop. Reconnect NinjaTrader; if it "
+                       "stays down, check the position in the MFFU / Tradovate app.", alert=True)
+
+    def _after_reset(self):
+        """The position files are back after a NinjaTrader restart: an entry of ours that was still in flight (its order
+        report gone) and now shows as a position in its direction gets its stop and target (never a naked position); an
+        open bracket whose stop / target reports did not come back is flagged for a manual look."""
+        for lg in [x for x in self.legs if x["status"] in OPEN_STATUSES]:
+            p = self.position_for(lg["instrument"])
+            held = bool(p and p["side"] != "FLAT")
+            if lg["status"] in ("entry_sent", "pending", "cancel_pending") and not lg["filled"] and held \
+                    and p["side"] == ("LONG" if lg["dir"] == 1 else "SHORT"):
+                lg["filled"], lg["fill_px"], lg["fill_mtime"] = min(int(p["qty"]), int(lg["qty"])), p.get("avg"), p.get("mtime")
+                self._risk(f"after the NinjaTrader restart {p['side']} {p['qty']} {lg['instrument']} is open and the entry "
+                           f"{lg['entry_id']} report is gone: treating it as filled, placing the stop and target", alert=True)
+                self._protect_late(lg)
+            elif lg["status"] == "protected" and held:
+                miss = [n for n, oid in (("stop", lg["stop_id"]), ("target", lg["target_id"])) if self.read_order(oid) is None]
+                if miss:
+                    self._risk(f"after the NinjaTrader restart the {' and '.join(miss)} report of the open {lg['instrument']} trade "
+                               "did not come back: check in NinjaTrader's Orders tab that both are still working (the bot keeps "
+                               "managing the trade and routes its exit).", alert=True)
+            lg["seen_ids"] = [oid for oid in (lg["entry_id"], lg["stop_id"], lg["target_id"]) if self.read_order(oid) is not None]
 
     def _tick_withdrawn(self, now):
         keep = []
@@ -1513,7 +1655,8 @@ class NinjaTraderAdapter:
         if self.readonly:
             return
         blob = {"version": 1, "day": _trading_day(self.clock()), "account": self.account, "saved_at": int(self.clock()),
-                "legs": self.legs, "withdrawn": self.withdrawn, "watch": self.watch, "killed": self.killed}
+                "legs": self.legs, "withdrawn": self.withdrawn, "watch": self.watch, "killed": self.killed,
+                "seen_pos": self.seen_pos, "nt_reset": self.nt_reset}
         try:
             os.makedirs(os.path.dirname(self.state_path), exist_ok=True)
             tmp = self.state_path + ".tmp"
@@ -1537,6 +1680,8 @@ class NinjaTraderAdapter:
         self.legs = [lg for lg in (s.get("legs") or []) if isinstance(lg, dict) and lg.get("status") in OPEN_STATUSES]
         self.withdrawn = [w for w in (s.get("withdrawn") or []) if isinstance(w, dict)]
         self.watch = [lg for lg in (s.get("watch") or []) if isinstance(lg, dict) and isinstance(lg.get("watch"), dict)]
+        self.seen_pos = {k: v for k, v in (s.get("seen_pos") or {}).items() if isinstance(v, dict)}
+        self.nt_reset = s.get("nt_reset") if isinstance(s.get("nt_reset"), dict) else None
 
     def status(self) -> dict:
         fs = self.folder_status()
@@ -1549,6 +1694,7 @@ class NinjaTraderAdapter:
                 "write_mode": self.write_mode, "connections": self.connections(), "positions": pos, "legs": self.legs,
                 "withdrawn": self.withdrawn, "history": list(self.history)[-5:], "unparsed": dict(list(self.unparsed.items())[-5:]),
                 "last_error": self.last_error, "killed": self.killed, "max_micros": self.max_micros, "flat_mod": self.flat_mod,
+                "nt_reset": self.nt_reset,
                 "audit_log": self.audit_path, "state_file": self.state_path}
 
 
@@ -1857,6 +2003,8 @@ def main(argv=None):
     ap.add_argument("--close-suffix", default=None, help="text added to the CLOSEPOSITION instrument, e.g. ' Globex'")
     ap.add_argument("--write-mode", default=None, choices=["direct", "move"], help="how order files reach incoming (default move)")
     ap.add_argument("--port", type=int, default=int(os.environ.get("PORT", 8766)))
+    ap.add_argument("--confirm-reset", action="store_true",
+                    help="after a NinjaTrader restart: you checked the account (positions / orders) in NinjaTrader; new entries are allowed again")
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
     opts = {"nt_account": a.account, "nt_folder": a.folder, "nt_instrument": a.instrument, "nt_contract": a.contract,
@@ -1864,6 +2012,13 @@ def main(argv=None):
     cfg = {"adapter": "ninjatrader", "sym": "NQ", **{k: v for k, v in opts.items() if v}}
     if a.selftest:
         return 0 if selftest(verbose=not a.quiet) else 1
+    if a.confirm_reset:
+        path = os.path.join(os.path.dirname(STATE_PATH), RESET_OK_NAME)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump({"t": time.time(), "by": "owner: --confirm-reset"}, fh)
+        print("Noted: you checked the account in NinjaTrader after its restart. The bot allows new entries again at its next poll.")
+        return 0
     if a.status:
         return _cli_status(cfg)
     if a.sim_check or a.sim_roundtrip or a.sim_roundtrip_add:

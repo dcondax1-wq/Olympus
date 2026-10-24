@@ -253,6 +253,10 @@ connection = `CONNECTED` or `DISCONNECTED`. The outgoing folder is emptied when 
 - **A trade that is already open** keeps the stop and target already at the broker. If NinjaTrader is closed when
   one of them fills, check in the Tradovate app that the other one was cancelled **[UNVERIFIED whether the OCO link
   holds without NinjaTrader]**. Nobody flattens it at 15:55 ET.
+- **NinjaTrader restarted while the bot runs** (it empties `outgoing`): the bot never reads the missing files as
+  "flat". If a position or the bot's bracket was open, it pushes "outgoing reports vanished", keeps managing the trade
+  and blocks new entries until NinjaTrader writes the position file again. If it stays blocked, check Positions and
+  Orders in NinjaTrader, then run `python -m engine.ninjatrader --confirm-reset`.
 - **For a truly PC-off setup**:
   - TradingView with a webhook bridge (`tradingview/BRIDGE_SETUP.md`; about $50 a month).
   - A spare PC that stays on, such as the Surface (section 10).
@@ -388,6 +392,9 @@ reach NinjaTrader within milliseconds of each other; each account then waits for
 10. The account Name string, the Tradovate environment, and whether a NinjaTrader license is needed (ask MFFU).
 11. NinjaTrader's own rollover date for MNQ matches the bot's (8 days before the 3rd-Friday expiry).
 12. MFFU's written OK for automated trading (step 2).
+13. After a NinjaTrader restart with a trade open: whether NinjaTrader rewrites the position file and the stop / target
+    order files in `outgoing`, and keeps the ATI order ids of working orders (the bot waits for the position file, then
+    warns if the stop / target reports did not come back; `tests/test_nt_outgoing.py` simulates the worst case).
 
 ## Sources
 

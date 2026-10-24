@@ -10,6 +10,7 @@ data/autostart.json
 data/live_state.json
 data/guards_state.json
 data/ninjatrader_state.json
+data/ninjatrader_reset_ok.json
 # phone remote control: the command ids already handled (engine/remote_ctl.py)
 data/remote_done.json
 # presence check-ins, the entry pause, hands-off events (engine/presence.py, entry_pause.py, handsoff.py)
