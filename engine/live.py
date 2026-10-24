@@ -167,6 +167,7 @@ LIVE_DEFAULTS = {
     "stale_polls_block": 3,     # block NEW entries once the feed has been stale this many polls in a row inside an entry window
 }
 STATE_VERSION = 1
+LIT_MAX_LATE_S = 90            # a LIT entry (1m fill bar) first seen later than this after its fill bar opened is not chased
 
 
 def _et(ts):
@@ -2107,6 +2108,15 @@ class LiveBot:
             elif age > late_after:
                 self._blocked_entries.add(ent["entry_t"])
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
+            elif (self.state or {}).get("model") == "lit" and str(ent.get("tf") or "") == "1m" \
+                    and now - int(ent["entry_t"]) > float(self.cfg.get("lit_max_late_s", LIT_MAX_LATE_S)):
+                # LIT fills at the open of its 1m entry bar: routed at +2-32 s from the 1m CISD close (enter_now). Seen later
+                # (a restart without today's state, a 1m bar 1+ min late) it is not chased: the stop stays at the sweep extreme
+                # while the price has moved toward the target (2026: 1 min late keeps 92% of the $, 2 min 68%, H2 37%;
+                # research/writeups/lit-robust.md). The engine's 5m rule above allowed up to 16 min.
+                self._blocked_entries.add(ent["entry_t"])
+                self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: seen {now - int(ent['entry_t'])} s after its "
+                                  f"1m fill bar opened (limit {float(self.cfg.get('lit_max_late_s', LIT_MAX_LATE_S)):.0f} s) - not chasing")
             elif not (q := self._equity_qty(ent["entry_t"], ent["qty"], ent)):
                 self._blocked_entries.add(ent["entry_t"])
             elif (gb := self._guard_entry(ent, q, sym, now)):
