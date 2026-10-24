@@ -62,6 +62,10 @@ part yourself or fold it into a script.**
   that eval in every eval mode (`sizing.eval_lock`; was missing after session 10), 1-micro min-days trade if < 2 traded days,
   push "EVAL PASSED 🎉 next steps"; fail (room <= 0) -> no trade, push "EVAL FAILED"; funded switch = `python -m
   engine.eval_life --to-funded --account "<Name>" --start <day>` (extra account, mode funded, disarmed), payouts `--payout`.
+  **Eval anchor (2026-10-24, `sizing.anchor_days`, `tests/test_eval_anchor.py`):** `python -m engine.eval_life --anchor
+  --balance <MFFU balance> --floor <MFFU floor> --as-of <day> [--account "<NT Name>"]` -> gitignored `data/eval_anchor.json`
+  (or cfg / lit_sizing / account spec `eval_anchor`, newest as_of wins): balance = anchor + routed P&L after as_of, floor =
+  max(anchor floor, EOD high after - MLL), lock start + $100; null = old book. 17:05 ET ops push "Check MFFU: bot thinks ...".
   Eval weekly loss stop wired, OFF: switch `"wk_loss_usd": 1200` in lit_sizing (both model files). Other modes:
   eval ($800 up to a 25-pt stop + 60% room cap, run lit_tight_eval_800_25_room60) | normal | fast_eval ($800 up to a 40-pt
   stop) | safe_eval (micros capped at 60% of the eval room); see `lit-experiments.md`.

@@ -216,7 +216,8 @@ def normalize(spec: dict, primary: dict | None = None, seen_ids=(), seen_names=(
            "adapter": str(s.get("adapter") or (primary or {}).get("adapter") or "paper"),
            "nt_account": str(s.get("nt_account") or "").strip(), "enabled": s.get("enabled", True) is not False,
            "armed": s.get("armed") is True, "confirm": s.get("confirm") or "", "eval_start": str(s.get("eval_start") or ""),
-           "eval_prior_pnl": float(_num(s.get("eval_prior_pnl"), 0.0)), "funded": dict(s.get("funded") or {}),
+           "eval_prior_pnl": float(_num(s.get("eval_prior_pnl"), 0.0)), "eval_anchor": s.get("eval_anchor"),
+           "funded": dict(s.get("funded") or {}),
            "lit_sizing": dict(s.get("lit_sizing") or {}), "problem": None}
     pre = PRESETS.get(out["preset"])
     out["firm"] = str(s.get("firm") or (pre or {}).get("firm") or "")
@@ -299,13 +300,14 @@ def _plan(rules: dict, funded: bool = False) -> dict:
 
 
 def sizing_state(mode: str, closes: list, today: str, start: str | None, rules: dict, prior: float = 0.0,
-                 payouts: dict | None = None, session: int | None = None, n_today: int = 0) -> dict | None:
+                 payouts: dict | None = None, session: int | None = None, n_today: int = 0, anchor: dict | None = None) -> dict | None:
     """The sizer's state for one account from its routed closes [(day, exit_t, pnl)] since `start` (+ the prior P&L):
       two_week / eval / safe_eval / fast_eval  engine/sizing.eval_state (profit, cum, room, session, days_traded)
       funded                                   engine/sizing.funded_state (balance, room, floor, locked) with the payouts
       auto                                     eval_state + days_traded + "funded": funded_state
     trail "intra": the floor moves after every closed trade (keys day#exit_t), not only at the day's end. None when the
-    start is unknown in an eval mode (the sizer then falls back as for the primary)."""
+    start is unknown in an eval mode (the sizer then falls back as for the primary). anchor = the broker's balance + floor
+    on a day (engine/sizing.anchor_days, eval modes only; prior is then ignored); None = as before."""
     from . import sizing as sz
     rows = sorted((str(d), int(t or 0), float(p or 0.0)) for d, t, p in closes if not start or str(d) >= str(start))
     funded = mode == "funded"
@@ -324,7 +326,14 @@ def sizing_state(mode: str, closes: list, today: str, start: str | None, rules: 
     if not start and mode in EVAL_MODES + ("auto",):
         return None
     sess = session if session is not None else max(1, sz.eval_session(start, today) or 1)
-    st = sz.eval_state(prev, cum, plan=_plan(rules), session=sess, today=today)    # today: wk_pnl (wk_loss_usd)
+    a = sz.eval_anchor(anchor)
+    if a is not None:                    # the broker's balance + floor on a day (engine/sizing.anchor_days): eval book from there
+        ev_prev, ex = sz.anchor_days(prev, a, float(rules.get("start") or 50000.0))
+        cum_a = cum if today > a["as_of"] else 0.0
+        st = sz.eval_state(ev_prev, cum_a, plan={**_plan(rules), **ex}, session=sess, today=today)
+        st["anchor"] = a
+    else:
+        st = sz.eval_state(prev, cum, plan=_plan(rules), session=sess, today=today)    # today: wk_pnl (wk_loss_usd)
     st["n_today"] = int(n_today)
     st["days_traded"] = len({d for d, _, p in rows if d < today and abs(p) > 1e-9})
     if mode == "auto":
@@ -343,7 +352,13 @@ def primary_state(bot, mode: str):
     ls = getattr(bot, "_lit_sizing", None) or {}
     payouts = ((bot.cfg.get("funded") or {}).get("payouts") or (ls.get("funded_state") or {}).get("payouts") or {})
     rules = rules_of({"preset": bot.cfg.get("preset") or DEFAULT_PRESET, "rules": bot.cfg.get("rules") or {}})
-    return sizing_state(mode, closes, today, bot.eval_start() or None, rules, prior=prior, payouts=payouts)
+    anc = None
+    if callable(getattr(bot, "eval_anchor", None)):
+        try:
+            anc = bot.eval_anchor()
+        except Exception:
+            anc = None
+    return sizing_state(mode, closes, today, bot.eval_start() or None, rules, prior=prior, payouts=payouts, anchor=anc)
 
 
 _NEWS = {"key": None, "rel": {}}
@@ -448,10 +463,27 @@ class Account:
         return sum(1 for r in self.ledger if r.get("side") in ("buy", "sell") and trading_day(r["t"]) == today
                    and (r.get("result") or {}).get("ok") is not False)
 
+    def anchor(self):
+        """This account's eval anchor (engine/sizing.eval_anchor): data/eval_anchor.json "accounts" by its NinjaTrader Name
+        (or id) next to the bot's state file (`python -m engine.eval_life --anchor --account "<Name>"`), or the spec's
+        "eval_anchor"; the newest as_of wins. None = no anchor (as before)."""
+        from . import eval_life as EL
+        from . import sizing as sz
+        f = None
+        try:
+            sp = getattr(getattr(self.router, "bot", None), "state_path", None)
+            for nm in (self.spec.get("nt_account"), self.name, self.id):
+                if nm and f is None:
+                    f = EL.load_anchor(nm, state_path=sp, main=False)
+        except Exception:
+            f = None
+        return sz.newest_anchor(f, self.spec.get("eval_anchor"))
+
     def state(self, today: str, mode: str | None = None):
         return sizing_state(mode or self.mode, [(d, t, p) for d, t, p, *_ in self.closes], today, self.start_day() or None,
                             self.rules, prior=float(self.spec.get("eval_prior_pnl") or 0.0),
-                            payouts=(self.spec.get("funded") or {}).get("payouts"), n_today=self.entries_today(today))
+                            payouts=(self.spec.get("funded") or {}).get("payouts"), n_today=self.entries_today(today),
+                            anchor=self.anchor())
 
     def news_on(self) -> bool:
         nb = self.rules.get("news_ban")
@@ -849,7 +881,7 @@ class AccountRouter:
         the account's own name, arming, phrase and state files."""
         base = {k: v for k, v in (self.bot.cfg or {}).items()
                 if k not in ("accounts", "armed", "confirm", "nt_account", "nt_state_path", "nt_audit_log", "eval_start",
-                             "eval_prior_pnl", "lit_sizing", "funded", "webhook_url")}
+                             "eval_prior_pnl", "eval_anchor", "lit_sizing", "funded", "webhook_url")}
         s = acc.spec
         p = dict(base.get("params") or {})
         p["max_micros"] = min(int(p.get("max_micros", 40) or 40), int(acc.rules["max_micros"]))
@@ -1021,7 +1053,8 @@ class AccountRouter:
                                         "disabled": A.clean_text(h["disabled"], 120)},
                             "enabled": h["enabled"], "locked": A.clean_text(h["locked"], 120), "running": bool(getattr(self.bot, "running", False)),
                             "kill": self.killed(), "position": pos, "orders": orders, "trades": trades,
-                            "eval": {"start": a.start_day() or None, "days": {k: round(v, 2) for k, v in sorted(a.eval_days().items())}},
+                            "eval": {"start": a.start_day() or None, "days": {k: round(v, 2) for k, v in sorted(a.eval_days().items())},
+                                     **({"anchor": a.anchor()} if a.mode != "funded" and a.anchor() else {})},
                             "plan_rules": {"start": R["start"], "target": R["target"], "mll": R["mll"],
                                            "lock": R["start"] + R["lock"] if R.get("trail") != "static" else R["start"] - R["mll"],
                                            "dll": R["dll"], "sessions": 10},

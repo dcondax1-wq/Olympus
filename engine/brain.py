@@ -576,6 +576,12 @@ def _sizing(focus, ctx, P, x, price):
            "risk_usd": round(qty * loss1, 0), "win_usd": round(qty * (tgt * PV - COMM), 0), "reasons": reasons, "fallback": fallback,
            "lit_rule_qty": int(q0), "eval_state": st, "steps": []}
     S = out["steps"]
+    anc = (st or {}).get("anchor") if isinstance((st or {}).get("anchor"), dict) else None
+    if anc and room is not None:             # the MFFU dashboard numbers the eval book starts from (engine/eval_life --anchor)
+        bal = 50000.0 + float(st.get("profit") or 0) + float(st.get("cum") or 0)
+        S.append({"label": "MFFU anchor", "value": f"{anc['as_of']}",
+                  "text": f"MFFU balance ${anc['balance']:,.2f} / floor ${anc['floor']:,.2f} after {anc['as_of']}; now balance "
+                          f"${bal:,.2f}, floor ${bal - float(room):,.2f}, room ${float(room):,.2f}"})
     if mode == "two_week" and st:
         A = sizing.TW_50K
         c = {**sizing.TW_DEFAULT, **(ls.get("two_week") or {})}

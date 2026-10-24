@@ -290,6 +290,13 @@ def pc_activity(bot, now=None, journal_path=None, max_trades=MAX_TRADES, max_ord
                "day_pnl": round(sum(float(r.get("pnl") or 0) for r in ledger if r.get("side") == "exit" and r.get("t")
                                     and trading_day(r["t"]) == today), 2),
                "since_t": start_t or None}
+        if cfg and callable(getattr(bot, "eval_anchor", None)):
+            try:                                      # the MFFU balance + floor anchor (engine/sizing.anchor_days)
+                anc = bot.eval_anchor()
+            except Exception:
+                anc = None
+            if anc:
+                out["eval"]["anchor"] = anc
         ra = getattr(bot, "accts", None)              # extra accounts (engine/multi_account.py): one sub-block each
         if ra is not None:
             try:
@@ -332,23 +339,33 @@ def _iso_week(day: str) -> str:
     return f"{y}-W{w:02d}"
 
 
-def eval_view(days: dict, start: str | None, today: str, now=None, plan=None) -> dict:
+def eval_view(days: dict, start: str | None, today: str, now=None, plan=None, anchor=None) -> dict:
     """The eval numbers of one account from its P&L per day (the "0000-00-00" key = P&L before eval_start): balance,
-    trailing floor, room, progress, session N of 10, today's daily-loss use. The rules of engine/sizing.mffu_eval."""
+    trailing floor, room, progress, session N of 10, today's daily-loss use. The rules of engine/sizing.mffu_eval.
+    anchor = the broker's balance + floor on a day (engine/sizing.anchor_days); None = as before."""
     from . import sizing
     P = {**PLAN_50K, **(plan or {})}
     days = {str(k): float(v) for k, v in (days or {}).items()}
-    ev = sizing.mffu_eval(days, {k: P[k] for k in ("start", "target", "mll", "lock")})
+    td = round(days.get(today, 0.0), 2)
+    days, ex = sizing.anchor_days(days, anchor, float(P["start"]))
+    ev = sizing.mffu_eval(days, {**{k: P[k] for k in ("start", "target", "mll", "lock")}, **ex})
     sess = sizing.eval_session(start, today) if start else None
     clock = None
     try:
         e = _et(now or time.time())
         over = e.weekday() < 5 and e.hour * 60 + e.minute >= 16 * 60
-        clock = sizing.eval_clock(days, start, today, session_over=over)
+        clock = sizing.eval_clock(days, start, today, session_over=over,
+                                  plan={"target": P["target"], "mll": P["mll"], "lock": P["lock"] - P["start"], **ex} if ex else None)
     except Exception:
         clock = None
-    td = round(days.get(today, 0.0), 2)
     target_bal = P["start"] + P["target"]
+    out = _eval_view_out(P, ev, td, target_bal, sess, start, days, clock)
+    if ex:
+        out["anchor"] = sizing.eval_anchor(anchor)
+    return out
+
+
+def _eval_view_out(P, ev, td, target_bal, sess, start, days, clock) -> dict:
     return {"start_balance": P["start"], "balance": ev["balance"], "profit": ev["profit"], "to_target": max(0.0, ev["to_target"]),
             "target_balance": target_bal, "floor": ev["trailing_mll"], "room": ev["cushion"], "locked": ev["trailing_mll"] >= P["lock"] - 0.01,
             "mll": P["mll"], "dll": P["dll"], "dll_used": round(max(0.0, -td), 2), "today": td,
@@ -414,7 +431,8 @@ def _pc_section(meta: dict, pc: dict, lm: dict, today: str, now: int) -> dict:
     if pos and pos.get("note"):
         pos = {**pos}
     return {**meta, "badge": "LIVE" if badge == "LIVE ACCOUNT" else badge, "broker_account": ak.get("name"), "adapter": adapter,
-            "conn": conn, "eval": eval_view(days, start, today, now, plan=(acct or {}).get("plan_rules"))
+            "conn": conn, "eval": eval_view(days, start, today, now, plan=(acct or {}).get("plan_rules"),
+                                            anchor=((acct or {}).get("eval") or {}).get("anchor"))
             if meta.get("kind") in ("eval", "funded") else None,
             "pnl": _pnl_views(days, today), "position": pos, "orders": list((acct or {}).get("orders") or []),
             "trades": trades, "days": [[d, round(v, 2)] for d, v in sorted(days.items()) if d != "0000-00-00"],

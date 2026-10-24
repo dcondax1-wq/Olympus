@@ -1821,10 +1821,29 @@ class LiveBot:
             days["0000-00-00"] = prior
         return days
 
-    def eval_room(self):
-        """MFFU 50K room: eval balance minus the trailing max-loss floor (engine/sizing.mffu_eval)."""
+    def eval_anchor(self):
+        """The eval anchor (engine/sizing.eval_anchor: the broker's balance + floor on a day), the newest as_of of: the anchor
+        file next to the state file (data/eval_anchor.json, `python -m engine.eval_life --anchor`; main entry or this NT
+        account's name), the start cfg "eval_anchor", live_model.json lit_sizing.eval_anchor. None = no anchor (as before)."""
+        from . import eval_life as _el
         from . import sizing as _sz
-        return _sz.mffu_eval(self.eval_days())["cushion"]
+        try:
+            f = _el.load_anchor(self.cfg.get("nt_account") or None, state_path=self.state_path)
+        except Exception:
+            f = None
+        return _sz.newest_anchor(f, self.cfg.get("eval_anchor"), (getattr(self, "_lit_sizing", None) or {}).get("eval_anchor"))
+
+    def eval_book(self):
+        """(days, plan extra) of the eval: eval_days() with the anchor applied (engine/sizing.anchor_days); no anchor = the
+        same days and {}."""
+        from . import sizing as _sz
+        return _sz.anchor_days(self.eval_days(), self.eval_anchor())
+
+    def eval_room(self):
+        """MFFU 50K room: eval balance minus the trailing max-loss floor (engine/sizing.mffu_eval), anchored when set."""
+        from . import sizing as _sz
+        days, ex = self.eval_book()
+        return _sz.mffu_eval(days, ex or None)["cushion"]
 
     def eval_state(self):
         """The two_week sizer's eval state (engine/sizing.eval_state): routed P&L of the eval's earlier days (live_state.json
@@ -1834,10 +1853,12 @@ class LiveBot:
         if not start:
             return None
         today = trading_day(self.clock())
-        days = self.eval_days()
-        st = _sz.eval_state({d: v for d, v in days.items() if d < today}, float(days.get(today, 0.0)),
+        days, ex = self.eval_book()
+        st = _sz.eval_state({d: v for d, v in days.items() if d < today}, float(days.get(today, 0.0)), plan=ex or None,
                             session=max(1, _sz.eval_session(start, today) or 1), today=today)   # today: wk_pnl (wk_loss_usd)
         st["n_today"] = int(self.trades_today())
+        if ex:
+            st["anchor"] = self.eval_anchor()
         return st
 
     def eval_life(self):
@@ -1850,7 +1871,8 @@ class LiveBot:
             return None
         e = _et(self.clock())
         over = e.weekday() < 5 and 16 * 60 <= e.hour * 60 + e.minute < 18 * 60   # 18:00 opens the next trading day's session
-        return _el.view(self.eval_days(), start, trading_day(self.clock()), lsz, session_over=over, n_today=self.trades_today())
+        return _el.view(self.eval_days(), start, trading_day(self.clock()), lsz, session_over=over, n_today=self.trades_today(),
+                        anchor=self.eval_anchor())
 
     def _eval_life_tick(self):
         """Every poll (LIT): the eval lifecycle into the state, a log line + one push on the pass day, the fail day and when
@@ -1880,7 +1902,8 @@ class LiveBot:
         e = _et(self.clock())
         # after the 15:55 flat: today's session is done; from 18:00 trading_day(now) is already the next session (MFFU)
         over = e.weekday() < 5 and 16 * 60 <= e.hour * 60 + e.minute < 18 * 60
-        return _sz.eval_clock(self.eval_days(), self.eval_start() or None, trading_day(self.clock()), session_over=over)
+        days, ex = self.eval_book()
+        return _sz.eval_clock(days, self.eval_start() or None, trading_day(self.clock()), session_over=over, plan=ex or None)
 
     def eval_profit(self):
         """The eval account's routed profit ($) since cfg eval_start (yyyy-mm-dd; default: everything in the ledger).
