@@ -44,10 +44,10 @@ def unit():
     qu = sz.lit_qty(3, {**t, **UP}, TW, room=2000.0, state=FRESH, learning=None)["qty"]
     qd = sz.lit_qty(3, {**t, **DN}, TW, room=2000.0, state=FRESH, learning=None)["qty"]
     check("two_week: x1.5 / x0.75 on the one-winner size (30-pt stop, 200-pt target: 8 -> 12 / 6)", (q0, qu, qd) == (8, 12, 6), (q0, qu, qd))
-    # after a -$1,500 day the 60% room cap (300 / 60 = 5) binds on the size-up too
+    # after a -$1,500 day the 60% room cap (300 / 62.4 = 4: 30 pts + 1 tick, $1.90 since 2026-10-24) binds on the size-up too
     st = {"profit": -1500.0, "cum": 0.0, "room": 500.0, "session": 2, "n_today": 0}
     check("two_week: the 60% room cap still binds a size-up",
-          sz.lit_qty(3, {**t, **UP}, TW, room=500.0, state=st, learning=None)["qty"] == sz.lit_qty(3, t, TW, room=500.0, state=st, learning=None)["qty"] == 5)
+          sz.lit_qty(3, {**t, **UP}, TW, room=500.0, state=st, learning=None)["qty"] == sz.lit_qty(3, t, TW, room=500.0, state=st, learning=None)["qty"] == 4)
     # today -$800: soft daily loss left $200 / 61.9 = 3 -> a size-up stays at 3
     st = {**FRESH, "cum": -800.0, "room": 1200.0}
     check("two_week: the $1,000 soft daily loss left still binds a size-up",

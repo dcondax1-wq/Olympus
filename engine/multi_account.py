@@ -541,8 +541,11 @@ class Account:
                 tgt = abs(float(ent["target"]) - float(ent["entry"]))
             if tgt and tgt * sz.TW_PV - sz.TW_COMM > 0:
                 cap_usd = bd * float(R["target"]) * BEST_DAY_MARGIN - max(0.0, self.day_pnl(today))
-                cap = max(1, int(cap_usd / (tgt * sz.TW_PV - sz.TW_COMM)))
-                if cap < q:
+                cap = max(0, int(cap_usd / (tgt * sz.TW_PV - sz.TW_COMM)))     # < 1 -> skip (2026-10-24 cap invariant)
+                if cap < 1:
+                    q = 0
+                    reasons.append(f"skip: best-day rule {bd * 100:.0f}%: 1 micro's winner pays more than ${cap_usd:,.0f}: no trade")
+                elif cap < q:
                     q = cap
                     reasons.append(f"best-day rule {bd * 100:.0f}%: a winner pays <= ${cap_usd:,.0f} -> {q}")
         risk = _num(ent.get("risk_pts"))
@@ -556,7 +559,11 @@ class Account:
                              (_num(R.get("max_risk_usd")), "max risk a trade")):
                 if lim is None:
                     continue
-                cap = max(1, int(max(0.0, lim) / loss1))
+                cap = sz.fit_micros(q, lim, loss1)          # a ceiling: < 1 micro -> skip, never 1 (2026-10-24)
+                if cap < 1:
+                    q = 0
+                    reasons.append(f"skip: 1 micro's stop-out ${loss1:,.0f} does not fit the {lab} ${lim:,.0f}: no trade")
+                    break
                 if cap < q:
                     q = cap
                     reasons.append(f"{lab} ${lim:,.0f} -> {q}")
