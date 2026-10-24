@@ -35,6 +35,8 @@ PAYOUT_ASK_ABOVE = 1500.0         # lit-money-batch2.md: ask only once $1,500+ i
 STAGGER_SESSIONS = 5              # lit-risk-money.md: a 2nd eval 5 sessions after the first, never the same day
 WK_LOSS_SUGGEST = 1200.0          # lit-risk-money.md run lit_risk_m_wk1200
 EVAL_MODES = ("eval", "safe_eval", "fast_eval", "two_week")
+STUCK_ROOM = 200.0                # 2026-10-24 cap invariant: room under $200 -> 60% fits 1 micro only up to a ~58-pt stop
+                                  # (research/writeups/sizing-caps.md: 2026 eval path, stuck at $200 = the old fails)
 
 
 def _num(x, d=None):
@@ -108,10 +110,18 @@ def view(days: dict, start: str | None, today: str, lsz: dict | None = None, ses
         trading = "trading"
     else:
         trading = status
+    stuck = status == "open" and st["room"] < STUCK_ROOM
+    if stuck:
+        # the cap invariant (2026-10-24, engine/sizing.ceilings): with this little room most LIT entries no longer fit
+        # 1 micro inside the caps and are skipped, so the eval can sit for weeks without failing or passing
+        rf = float(tw.get("room_f") or c.get("safe_cap") or 0.6)
+        mx = max(0.0, (rf * st["room"] - 1.90) / 2.0 - 0.25)
+        trading = (f"stuck: room ${st['room']:,.0f} - 1 micro fits only stops up to {mx:.0f} pts, most entries are skipped; "
+                   "buy a new eval")
     out = {"start": start, "today": today, "status": status, "balance": round(START_BAL + bal, 2), "profit": round(bal, 2),
            "to_target": round(target - bal, 2), "target_balance": START_BAL + target, "room": st["room"],
            "session": clock.get("session"), "days_traded": dtr, "min_days": mind, "min_days_left": left,
-           "trading": trading, "wk_stop": wk, "clock_text": clock.get("text")}
+           "trading": trading, "wk_stop": wk, "clock_text": clock.get("text"), "stuck": stuck}
     out["text"] = (f"Eval {status.upper()}: balance ${out['balance']:,.0f} ({_money(bal)}), {trading}"
                    if status in ("passed", "failed") else f"Eval {status}: {_money(bal)}, ${max(0.0, out['to_target']):,.0f} to go, "
                                                           f"room ${st['room']:,.0f}; {wk['text']}")
@@ -184,7 +194,16 @@ def notices(v: dict, account: str, now) -> list:
         out.append(failed_payload(v, account, now))
     elif (v.get("wk_stop") or {}).get("state") == "tripped":
         out.append(wk_stop_payload(v, account, now))
+    if v.get("stuck"):
+        out.append(stuck_payload(v, account, now))
     return out
+
+
+def stuck_payload(v: dict, account: str, now) -> dict:
+    body = (f"{account}: room ${float(v.get('room') or 0):,.0f} to the max-loss floor. The bot never sends a trade whose "
+            "1-micro stop-out does not fit the caps, so most LIT entries are now skipped and this eval can sit for weeks. "
+            f"Buy a new MFFU Builder 50K ({OWNER_PRICE} with a code last time) and tell Claude its Name and first session.")
+    return _payload("stuck", "EVAL STUCK: buy a new one", body, f"eval:stuck:{v.get('start') or 'nostart'}", now)
 
 
 # ---------------------------------------------------------------------------------------------------- funded payouts

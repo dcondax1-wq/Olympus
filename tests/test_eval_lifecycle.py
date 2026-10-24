@@ -70,7 +70,9 @@ def sizing_checks():
     sf = sz.eval_state({"0000-00-00": -100.0, "2026-10-19": -1950.0}, 0.0, session=2, today="2026-10-20")
     fon, foff = q_of(L, sf), q_of({**L, "pass_lock": False}, sf)
     check("failed eval (room -$50): no trade", sf["room"] < 0 and fon["qty"] == 0 and fon.get("lock") == "failed", (sf, fon))
-    check("pass_lock false: the old 1-micro trade on a failed eval", foff["qty"] == 1, foff)
+    # since the 2026-10-24 cap invariant (tests/test_sizing_caps.py) the room caps never raise back to 1 micro: no trade
+    # on a failed eval even with pass_lock false
+    check("pass_lock false: no 1-micro trade on a failed eval either (cap invariant)", foff["qty"] == 0, foff)
     # open eval: unchanged
     so = sz.eval_state({"2026-10-19": 400.0}, 0.0, session=2, today="2026-10-20")
     check("open eval: pass_lock changes nothing", q_of(L, so)["qty"] == q_of({**L, "pass_lock": False}, so)["qty"] > 0)
