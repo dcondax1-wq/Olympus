@@ -518,12 +518,13 @@ def _expected(bot) -> int:
 
 
 def _broker_net(ad) -> tuple[int, list]:
+    from .ninjatrader import same_instrument      # 'MNQ 12-26 Globex' / 'MNQ DEC26 Globex' = 'MNQ 12-26'
     insts = ad._instruments()
     net, held = 0, []
     for p in ad.positions().get("positions") or []:
         mult = None
         for kind, name in insts.items():
-            if name and (p["instrument"] == name or p["instrument"].startswith(name + " ")):
+            if name and same_instrument(p["instrument"], name):
                 mult = 10 if kind == "mini" else 1
         if mult is None or p.get("side") not in ("LONG", "SHORT"):
             continue
