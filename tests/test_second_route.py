@@ -294,8 +294,9 @@ def units():
         b = SE.ema_eval_qty({"risk_pts": rp}, st, base="usd500")
         ok &= a == b
     check("sizing: engine/sizing.second_qty == the research eval-safe size (ema_eval_qty usd500) on 5 stops", ok)
-    check("sizing: normal mode = $500 / (stop x $2), 1-40", SZ.second_qty(20.0, 500.0, {"mode": "normal"})["qty"] == 12
-          and SZ.second_qty(3.0, 500.0, {})["qty"] == 40 and SZ.second_qty(300.0, 500.0, {})["qty"] == 1)
+    # a 300-pt stop: 1 micro's stop-out $602.40 > $500 -> skip (2026-10-24 cap invariant; was 1 micro)
+    check("sizing: normal mode = $500 / (stop x $2), 1-40; 1 micro over the $500 -> skip", SZ.second_qty(20.0, 500.0, {"mode": "normal"})["qty"] == 12
+          and SZ.second_qty(3.0, 500.0, {})["qty"] == 40 and SZ.second_qty(300.0, 500.0, {})["qty"] == 0)
     check("sizing: a failed eval (room <= 0) -> 0", SZ.second_qty(20.0, 500.0, cfg, state={**st, "room": -5.0})["qty"] == 0)
     check("sizing: a passed eval (pass lock) -> 0", SZ.second_qty(20.0, 500.0, cfg, state={**st, "profit": 3100.0, "cum": 0.0})["qty"] == 0)
     check("sizing: eval mode with the room unknown -> 0 (fails closed)", SZ.second_qty(20.0, 500.0, cfg, state=None, room=None)["qty"] == 0)

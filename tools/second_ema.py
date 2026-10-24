@@ -799,9 +799,14 @@ A50 = {"target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0}
 
 
 def ema_eval_qty(u, st, base="lit"):
+    """= engine/sizing.second_qty in an eval mode (base usd500). Since the 2026-10-24 cap invariant every cap prices 1 micro
+    at (stop + 1 tick) x $2 + $1.90 (the room cap was stop x $2) and a $ base that 1 micro does not fit is a skip (0)."""
+    l1 = (u["risk_pts"] + TICK) * PV + COMM
+    if base.startswith("usd") and l1 > float(base[3:]):
+        return 0
     q = qty(base, u["risk_pts"])
-    q = min(q, int(0.6 * max(0.0, st["room"]) / (u["risk_pts"] * PV)))
-    q = min(q, int(max(0.0, A50["dll"] + st["cum"]) / ((u["risk_pts"] + TICK) * PV + COMM)))
+    q = min(q, int(0.6 * max(0.0, st["room"]) / l1 + 1e-9))
+    q = min(q, int(max(0.0, A50["dll"] + st["cum"]) / l1 + 1e-9))
     return max(0, q)
 
 
