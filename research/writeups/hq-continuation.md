@@ -235,7 +235,7 @@ LIT alone on the 50K, 2-week pass / fail: H1 57.1 / 5.9, H2 52.2 / 0.0, 2025 14.
   - The real setup variants manage only 2.5% and 0.9%. The zone, trigger and target rules do not add anything over
     "trade in the leg's direction at some point".
   - Caveat: one random draw has more spread than a rule, which inflates the random rates a little.
-- **By part of the setup** (median expectancy over variants, `research/hq/family.json`):
+- **By part of the setup** (median expectancy over variants, `research/hq/cont/family.json`):
   - No zone, trigger or target is positive in all four periods.
   - The stop-hunt second leg is the best part in 2021-24 (+0.13R, 67% of its variants positive). It is the worst in H2 and
     2025 (-0.15R / -0.19R, only 22% / 11% positive). It is also rare: 0.2-0.8 a week.
@@ -257,7 +257,7 @@ LIT alone on the 50K, 2-week pass / fail: H1 57.1 / 5.9, H2 52.2 / 0.0, 2025 14.
 ## Files
 
 - `tools/hq_cont.py`. Commands: `grid` (~27 min on 4 processes), `pick`, `peek`, `evals`, `save`.
-- `research/hq/`:
+- `research/hq/cont/`:
   - `picks.json`: picks, spans, months, neighbours, drop-best-5, placebos, family counts and chance;
   - `evals.json`: the eval paths;
   - `family.json`: medians by part of the setup and the variants positive everywhere;

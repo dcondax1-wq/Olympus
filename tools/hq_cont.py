@@ -30,10 +30,10 @@ days with full 1m coverage, else 5m (stop first when stop and target share a bar
 stop / time exits - 1 tick). Size = the LIT size rule ($800 up to a 20-pt stop, then 800 x 20 / stop, max 40 micros),
 $1.90 a micro. Data: TradingView CME NQ1! (data/NQ_5m.csv, data/NQ_1m.csv). No Yahoo, no CFD.
 
-    python -X utf8 tools/hq_cont.py grid     # every variant, stats per span -> research/hq/grid.json.gz (~10 min, 4 procs)
+    python -X utf8 tools/hq_cont.py grid     # every variant, stats per span -> research/hq/cont/grid.json.gz (~10 min, 4 procs)
     python -X utf8 tools/hq_cont.py pick     # H1 picks + pre-2025 re-pick, plateau, placebos, chance, months -> picks.json
     python -X utf8 tools/hq_cont.py evals    # 50K next to LIT + 25K alone for the picks -> evals.json
-    python -X utf8 tools/hq_cont.py save     # rl.save hq_cont_* + research/hq/<pick>.json (common trade format)
+    python -X utf8 tools/hq_cont.py save     # rl.save hq_cont_* + research/hq/cont/<pick>.json (common trade format)
 Research only: edits no engine file, no live_model*.json, no second_model.json, no UI.
 """
 from __future__ import annotations
@@ -55,7 +55,7 @@ sys.path.insert(0, ROOT)
 from engine import lit  # noqa: E402
 from tools import allday as A  # noqa: E402
 
-OUT = os.path.join(ROOT, "research", "hq")
+OUT = os.path.join(ROOT, "research", "hq", "cont")
 TICK, PV, COMM, BE_OFF = 0.25, 2.0, 1.90, 1.25
 SPANS = {"H1": ("2026-01-01", "2026-06-30"), "H2": ("2026-07-01", "2026-12-31"), "2025": ("2025-01-01", "2025-12-31"),
          "2021-24": ("2021-01-01", "2024-12-31"), "2026": ("2026-01-01", "2026-12-31")}
@@ -945,7 +945,7 @@ def cmd_pick():
     _dump(res, PICKS, indent=1, default=float)
 
 
-PEEKED = [  # chosen AFTER looking at every period (research/hq/family.json): not a fair out-of-sample pick, shown as leads
+PEEKED = [  # chosen AFTER looking at every period (research/hq/cont/family.json): not a fair out-of-sample pick, shown as leads
     ("both|or30|3|0|0|1|fvg|12|close|pb|R3|1.0|eod", "peeked: the variant at 2+ a week positive in all four periods with the best worst-period PF"),
     ("ny|or30|4|0.8|0|1|fvg|24|close|pb|R1.5|1.0|eod", "peeked: the variant positive in all four periods with the best worst-period t-stat (NY only, ~1 a week)"),
 ]
