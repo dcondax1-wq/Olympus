@@ -247,4 +247,4 @@ What the table says:
 - **Stop / BE fills:** they are filled at the stop level − 1 tick even when the bar gapped through it (`launch_evidence` F3: 1 case in 2026). The tick rows bound this; they do not model it.
 - **Ledger precision:** the ledger's exit times for STOP / BE / TARGET are bar ends, so the exact intrabar time is unknown. Prices are back-adjusted NQ1!.
 - **What the bootstrap captures:** only the variation between weeks in one regime-specific year (2026). The 2021-25 reference on 5m bars only is PF 1.01 at $1.40 and 0.99 at $1.90: no edge.
-- **Live-loop equality test:** `python -X utf8 -m tests.test_lit_live` was run in this worktree; see the result in the commit message / report.
+- **Live-loop equality test:** `python -X utf8 -m tests.test_lit_live` did **not** finish here. It hit a 15-minute timeout while other audit agents shared the CPU, so there is no pass or fail result. This audit changed no engine code, so the stored equality (`launch_evidence.md`) still applies, but it was not re-checked here.
