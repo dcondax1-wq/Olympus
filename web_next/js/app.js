@@ -56,6 +56,7 @@ import { brain as brainPage } from './next/brain.js';
 import { perf as perfPage } from './next/perf.js';
 import { second as secondPage, atlas as atlasPage, initTwoCards } from './next/second.js';
 import { scale as scalePage } from './next/scale.js';
+import { pages as ccPages, initCC } from './next/cc.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -73,7 +74,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   morning: ops.morning, livechart: ops.livechart, botlog: ops.botlog, ntpanel: ops.ntpanel, timeline: ops.timeline, livesettings: ops.livesettings,
   setups: setupsPage, sensitivity: sensPage, intel: intelPage, brain: brainPage, perf: perfPage, second: secondPage, atlas: atlasPage, scale: scalePage,
   rules: mods.rules, cold: mods.cold, risk: mods.risk, alerts: { show: () => settingsPage.show() }, modules: { show: () => {} },
-  playbook: { show: () => {} } };
+  playbook: { show: () => {} }, ...ccPages };
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };
 
 // installable home-screen app: register the service worker (no-op where unsupported, e.g. plain http on a LAN IP in some browsers).
@@ -87,7 +88,7 @@ function registerSW() {
 export function go(page) {
   if (page === 'data') page = store.get('dataSub', 'results');
   if (page === 'second') page = 'atlas';                       // the old Data → Second strategies page is ATLAS now
-  if (!TITLES[page] || !document.getElementById('page-' + page)) page = 'command';
+  if (!TITLES[page] || !document.getElementById('page-' + page)) page = 'cc';
   if (groupOf(page) === 'data') store.set('dataSub', page);
   const prev = S.page;
   S.page = page;
@@ -562,10 +563,10 @@ async function boot() {
   for (const p of Object.values(PAGES)) p.init?.();
   initCommandExtras(); initPalette(); initVoice();
   // dashboard layer: ops registers the command 'prep' widget, so it runs before the command grid is built
-  initOps(); initHome(); initAnalytics(); initUX(go); addPaletteItems(paletteActions); startLive(); initToday(); initLitToday(); pc.initPCStatus(); initTwoCards(); initBotControl(); initPulse(); initKeys();
+  initOps(); initHome(); initAnalytics(); initUX(go); addPaletteItems(paletteActions); startLive(); initToday(); initLitToday(); pc.initPCStatus(); initTwoCards(); initBotControl(); initPulse(); initKeys(); initCC();
   renderPlaybook($('#playbook'));
   const want = new URLSearchParams(location.search).get('page');
-  go(want && TITLES[want] ? want : store.get('page', 'command'));
+  go(want && TITLES[want] ? want : store.get('page', 'cc'));
   await run();
   setTimeout(registerSW, 3000);
 }
