@@ -61,9 +61,9 @@ def item(cl, key):
 def pure_checks():
     cl = LC.checklist(good_facts(), good_health(), True, NOW)
     keys = [i["key"] for i in cl["items"]]
-    check("10 lines in order", keys == ["anchor", "allow", "b", "startup", "nt", "feed", "sim", "sim_add", "armed", "up"], keys)
+    check("11 lines in order", keys == ["anchor", "allow", "b", "startup", "nt", "feed", "broker", "sim", "sim_add", "armed", "up"], keys)
     check("all green from the good fixture (armed is display only)", cl["all_green"] and cl["n_red"] == 0
-          and all(i["state"] == "good" for i in cl["items"] if i["key"] != "armed"), [(i["key"], i["state"]) for i in cl["items"]])
+          and all(i["state"] == "good" for i in cl["items"] if i["key"] not in ("armed", "broker")), [(i["key"], i["state"]) for i in cl["items"]])
     check("anchor line shows the launch numbers", "$49,710.80" in item(cl, "anchor")["detail"] and "$48,168.20" in item(cl, "anchor")["detail"],
           item(cl, "anchor"))
     check("armed: info, says 50K ARMED / 25K not armed, no fix", item(cl, "armed")["state"] == "info" and "50K ARMED" in item(cl, "armed")["detail"]
@@ -200,7 +200,7 @@ def wiring_checks():
     bot = SimpleNamespace(cfg={"adapter": "paper"}, running=False, state={}, health={}, ledger=[], log=[])
     hb = heartbeat.Heartbeat(bot, every_s=300, log=lambda *a: None)
     pl = hb.payload()
-    check("heartbeat payload has 'launch' with items", isinstance(pl.get("launch"), dict) and len(pl["launch"].get("items") or []) == 10,
+    check("heartbeat payload has 'launch' with items", isinstance(pl.get("launch"), dict) and len(pl["launch"].get("items") or []) == 11,
           pl.get("launch"))
     check("heartbeat 'launch' under 4 KB", len(json.dumps(pl["launch"])) < 4096, len(json.dumps(pl["launch"])))
     lj = live_publish.build(pl, now=pl["t"])
