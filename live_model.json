@@ -105,7 +105,9 @@
     },
     "eval_prior_pnl": -100.0,
     "eval_prior_note": "owner 2026-10-18: the Builder 50K eval was at -$100 (balance $49,900) when the bot went live; counted as one day before eval_start (needs $3,100, room $1,900)",
-    "wk_loss_usd": 1200
+    "wk_loss_usd": 1200,
+    "learn_costs": false,
+    "learn_costs_note": "live learning (2026-10-25, engine/live_learning.py, research/writeups/live-learning.md): true = every sizing ceiling (room, room share, soft daily loss, weekly loss) prices one micro's stop-out at the slippage / commission the PC measured on its real NinjaTrader fills (p75 of the last 30 fills, 1-4 ticks; commission $1.90-$4.00) instead of 1 tick + $1.90. Only ever fewer micros, never more; nothing learned yet = the same size. false / absent = today's exact sizing. \"scale\" also shrinks every size in proportion (costs ~11% of the $: not recommended)."
   },
   "size_rule": "$800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $2/pt; max 40 micros; no trade under 1 micro (engine/lit.py qty_for). Weekly stop: after 2 STOP exits in the calendar week, half size for the rest of it (one rounding, floor 1 micro). No cold-streak filter, no late-entry rule. Switch lit_sizing.mode (normal / eval / fast_eval / safe_eval / two_week); live: two_week (one winner passes, 60% of the eval room, $1,000 soft daily loss cap, 40 micros, min 1). Scale-in (built and safety-reviewed 2026-10-20, OFF: \"scale_in\": null until the owner's Sim101 roundtrip, python -m engine.ninjatrader --sim-roundtrip-add, passes): one add after breakeven, sized by engine/sizing.scale_in_qty (its open risk never above the first entry's).",
   "costs": "$1.40 per micro round trip; 1 tick slippage on market entries and on stop / breakeven / end-of-day exits (limit entries and targets fill at the price)",

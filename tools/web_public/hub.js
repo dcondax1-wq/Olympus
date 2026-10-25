@@ -377,15 +377,29 @@
           <td class="v">${usd(e.to_target)}</td><td class="v ${ok(e.room) && e.room < 700 ? 'dn' : ''}">${usd(e.room)}</td><td class="v">${ok(e.session) ? `${e.session}/${e.sessions}` : '—'}</td><td class="v">${s.n ?? 0}</td><td class="v">${pct(s.win_pct)}</td><td class="v">${fPF(s.pf)}</td></tr>`; }).join('')}</table></div>
       <p class="small mut" style="margin:8px 0 0">Extra accounts appear here as soon as the PC bot routes them (live_model.json “accounts”, engine/multi_account.py).</p></div>`;
   }
+  // Funded & payouts (2026-10-25, data.json "funded_life" = engine/funded_life.block, read-only): per funded account the
+  // buffer progress bar, the cycle profit, the 50% consistency gauge, the payout-ready date, payouts n of 5. Before a funded
+  // account exists: the default (a passed eval stops and tells you), the one command, and the money plan numbers.
   function payoutCard() {
-    const F = ACC().find((a) => a.kind === 'funded'), e = F?.eval;
-    const need = 50000 + 2100 + 1500;
-    return `<div class="card"><div class="card-h"><h3>${icon('prop')}Funded payout tracker</h3>${F ? chip('funded', 'good') : chip('not funded yet')}</div>
-      ${F && e ? `<div class="hb-tiles">${tile('Balance', usd(e.balance))}${tile('Ask for a payout at', usd(need), 'balance $53,600')}${tile('Still to go', usd(Math.max(0, need - e.balance)), '', e.balance >= need ? 'up' : '')}${tile('You can ask for', usd(Math.max(0, Math.min(2000, e.balance - 52100))), 'up to $2,000')}</div>`
-        : `<p class="lead" style="margin-top:0">Shows here once the Builder 50K is passed and funded. Until then: the habit that pays most.</p>`}
-      <ul class="list"><li>MFFU Builder funded: a <b>$2,100 buffer</b> stays above $50,000.</li><li>Ask <b>only once $1,500+ is above the buffer</b> (balance <b>$53,600</b>), then take up to <b>$2,000</b>.</li>
-        <li>That habit pays <b>+$29 / +$32 a month</b> more per account (Jan–Jun / Jul–Oct) and loses fewer accounts (1.0 → 0.8%, 1.5 → 1.4%) than taking each $500 minimum (71% less).</li></ul>
-      <p class="small mut"><a class="lnk" href="#/writeup/lit-money-batch2">research/writeups/lit-money-batch2.md</a> · funded sizing is not switched on yet (needs funded_state wiring).</p></div>`;
+    const FL = HD()?.funded_life || {}, rows = (FL.accounts || []).filter((t) => t && !t.error), plan = FL.plan || {};
+    const gauge = (t) => { const f = Math.max(0, Math.min(1.25, +t.cons_frac || 0)) / 1.25, warn = !t.cons_ok && t.cycle_profit > 0;
+      return `<div class="hb-gr"><span>Best day vs the 50% rule<em>${t.best_day_pct != null ? `${t.best_day_pct}% of the cycle` : 'no cycle yet'}</em></span><div class="hb-gt"><i class="${warn ? '' : 'ok'}" style="width:${(f * 100).toFixed(1)}%;${warn ? 'background:var(--warn)' : ''}"></i><u style="left:${(1 / 1.25 * 100).toFixed(1)}%"></u></div><b class="${warn ? 'dn' : 'up'}">${t.best_day_pct != null ? t.best_day_pct + '%' : '—'}</b></div>`; };
+    const card = (t) => `<div class="card"><div class="card-h"><h3>${icon('prop')}${esc(t.name)}</h3>${chip(t.status === 'ready' ? 'payout ready' : t.status, t.status === 'ready' || t.status === 'graduated' ? 'good' : t.status === 'lost' ? 'bad' : '')}</div>
+      <p class="lead" style="margin-top:0">${esc(t.text)}</p>
+      <div class="hb-goal"><div class="hb-gr"><span>Buffer, then the payout line<em>${usd(t.buffer_balance)} buffer · ask at ${usd(t.ask_at_balance)}</em></span><div class="hb-gt"><i class="${t.to_ask <= 0 ? 'ok' : ''}" style="width:${(Math.max(0, Math.min(1, +t.buffer_frac || 0)) * 100).toFixed(1)}%"></i><u style="left:${(t.buffer / (t.ask_at_balance - (t.buffer_balance - t.buffer)) * 100).toFixed(1)}%"></u></div><b>${usd(t.balance)}</b></div>${gauge(t)}</div>
+      <div class="hb-tiles">${tile('Cycle profit', susd(t.cycle_profit), `${t.cycle_days}/${t.cycle_days_need} traded days`)}${tile('You can request', usd(t.max_request), t.eligible ? `${usd(t.to_you)} to you (80%)` : `MFFU ${usd(t.request_min)}–${usd(t.request_max)}`, t.ready ? 'up' : '')}
+        ${tile('Payout-ready from', t.eligible_from ? esc(t.eligible_from) : '—', t.more_days ? `trade ${t.more_days} more day(s)` : '48 h after the 1st trade')}${tile('Payouts', `${t.payouts_n}/${t.payouts_max}`, `${usd(t.paid_to_you)} to you · then live`)}</div>
+      <p class="small mut">Floor ${usd(t.floor)} (room ${usd(t.room)}); after the 1st payout the max loss sits at ${usd(t.mll_after_payout)}. The bot never requests a payout: you ask MFFU, then record it (engine.eval_life --payout).</p></div>`;
+    if (rows.length) return rows.map(card).join('');
+    const P = (k) => plan[k] || null, row = (k, lab) => { const p = P(k); return p ? `<tr><td class="k">${lab}</td><td class="v">${usd(p.H1?.per_month)}</td><td class="v up"><b>${usd(p.H2?.per_month)}</b></td><td class="v">${p.H2?.first_med ?? '—'}</td></tr>` : ''; };
+    return `<div class="card"><div class="card-h"><h3>${icon('prop')}Funded &amp; payouts</h3>${chip('not funded yet')}</div>
+      <p class="lead" style="margin-top:0">When an eval passes the bot stops trading it and tells you. Funded trading starts only after you run one line on the PC.</p>
+      <div class="note"><b>After the pass:</b> python -X utf8 -m engine.eval_life --to-funded --account "&lt;funded Name&gt;" --start &lt;first day&gt;</div>
+      ${Object.keys(plan).length ? `<div class="tw" style="margin-top:12px"><table class="ht"><tr><th>Funded, $ a month to you</th><th class="c">Jan–Jun</th><th class="c">Jul–Oct</th><th class="c">1st payout (sessions)</th></tr>
+        ${row('lit50_rec', 'Zlarior on the 50K')}${row('atlas25_rec', 'ATLAS on a 25K')}${row('lit25_rec', 'Zlarior on a 2nd 25K')}</table></div>` : ''}
+      <ul class="list"><li>MFFU sim funded: a <b>$2,100 buffer</b> (25K $1,100) stays in; ask once <b>$1,500</b> (25K $750) sits above it, up to <b>$2,000</b> ($1,000).</li>
+        <li>No day may be more than <b>50%</b> of the cycle’s profit; 2 traded days a cycle; the first request 48 h after the first trade; 5 sim payouts, then live.</li></ul>
+      <p class="small mut"><a class="lnk" href="#/writeup/funded-path">research/writeups/funded-path.md</a> · paper / backtest numbers, $1.90 a micro.</p></div>`;
   }
   VIEWS.money = (el) => {
     const P = HD()?.results?.periods || {}, h2 = P['2026 H2 (check)'] || {}, h1 = P['2026 H1 (picked on)'] || {}, y = P['2026 YTD'] || {}, ref = P['2021-25 (reference)'] || {};

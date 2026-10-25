@@ -157,6 +157,112 @@ EVAL_MODES = ("eval", "safe_eval", "fast_eval", "two_week")
 
 def lit_qty(qty: int, trade: dict, cfg: dict | None = None, room: float | None = None, max_micros: int = 40,
             state: dict | None = None, learning="auto") -> dict:
+    """_lit_qty_base below, then (only with lit_sizing "learn_costs": true) the learned cost reserve (cost_reserve: never
+    raises the micros). learn_costs absent / false: exactly _lit_qty_base (tests/test_learning_live.py)."""
+    r = _lit_qty_base(qty, trade, cfg, room=room, max_micros=max_micros, state=state, learning=learning)
+    if (cfg or {}).get("learn_costs"):
+        r = cost_reserve(r, trade, cfg, room=room, state=state, bot="lit")
+    return r
+
+
+# ------------------------------------------------------------------------------------------------ learned costs
+# engine/live_learning.py (owner 2026-10-25, "learn like a human trader without emotion"): the real fills' adverse slippage
+# (p75 of the last 30 broker fills, 1..4 ticks) and the commission really booked ($1.90..$4.00 a micro). Switch
+# lit_sizing "learn_costs" (default off). Conservative only: the result is never more micros than without it.
+COST_RESERVE_MAX, COST_COMM_MAX = 4.0, 4.0
+
+
+def learned_costs(cfg: dict | None, state: dict | None = None, bot: str = "lit") -> dict | None:
+    """{"reserve_ticks", "comm"} in force, clipped to [1, 4] ticks and [$1.90, $4.00]; None when learn_costs is off.
+    Source: state["costs"] (a dict, e.g. a replay / test), else a dict given as the switch's value, else
+    logs/learning/costs.json (engine/live_learning.load_costs; none = 1 tick, $1.90 = no change)."""
+    c = cfg or {}
+    if not c.get("learn_costs"):
+        return None
+    lc = state.get("costs") if isinstance(state, dict) and isinstance(state.get("costs"), dict) else None
+    if lc is None and isinstance(c.get("learn_costs"), dict):
+        lc = c["learn_costs"]
+    if lc is None:
+        try:
+            from .live_learning import load_costs
+            lc = load_costs(bot)
+        except Exception:
+            lc = None
+    lc = lc or {}
+    rt = _num(lc.get("reserve_ticks"), 1.0)
+    cm = _num(lc.get("comm"), TW_COMM)
+    return {"reserve_ticks": min(COST_RESERVE_MAX, max(1.0, rt)), "comm": min(COST_COMM_MAX, max(TW_COMM, cm))}
+
+
+def cost_reserve(r: dict, trade: dict, cfg: dict | None, room: float | None = None, state: dict | None = None,
+                 bot: str = "lit", costs: dict | None = None) -> dict:
+    """One sizing result r = {"qty", ...} re-priced at the learned costs: one micro's full stop-out costs
+    (stop + reserve_ticks x 0.25) x $2 + comm instead of (stop + 1 tick) x $2 + $1.90, and
+      1. every ceiling is re-checked at that price: room to the floor (strict), the room share (two_week room_f /
+         eval safe_cap), the soft daily loss + today, the eval weekly loss; 1 micro that does not fit -> 0 (skip);
+      2. only with learn_costs "scale": the micros also shrink in proportion (the same $ risk at the learned cost,
+         floor 1). Measured on the 2026 journal it costs more $ than the slippage it covers (research/writeups/
+         live-learning.md), so learn_costs true = the ceilings only.
+    Never more micros than r. Nothing learned (1 tick, $1.90) or the switch off: r unchanged (the same object)."""
+    C = costs if costs is not None else learned_costs(cfg, state, bot)
+    q0 = int(r.get("qty") or 0)
+    if not C or q0 <= 0:
+        return r
+    rt = min(COST_RESERVE_MAX, max(1.0, float(C["reserve_ticks"])))
+    cm = min(COST_COMM_MAX, max(TW_COMM, float(C["comm"])))
+    if rt <= 1.0 + 1e-9 and cm <= TW_COMM + 1e-9:
+        return r
+    risk = _num(trade.get("risk_pts", trade.get("risk")))
+    if risk is None and trade.get("entry") is not None and trade.get("stop0", trade.get("stop")) is not None:
+        risk = abs(float(trade["entry"]) - float(trade.get("stop0", trade.get("stop"))))
+    if not risk or risk <= 0 or risk != risk:
+        return r
+    base, lrn = loss_1micro(risk), loss_1micro(risk, 0.25 * rt, cm)
+    c = cfg or {}
+    out = {**r, "reasons": list(r.get("reasons") or [])}
+    q = max(1, int(q0 * base / lrn + 1e-9)) if c.get("learn_costs") == "scale" else q0
+    st = state or {}
+    rm = _num(st.get("room")) if st.get("room") is not None else _num(room)
+    cum = float(_num(st.get("cum"), 0.0))
+    mode = c.get("mode") or "normal"
+    lims = []
+    if rm is not None:
+        lims.append((rm, True, f"${rm:,.0f} room to the max-loss floor"))
+        share = None
+        if mode == "two_week":
+            share = (c.get("two_week") or {}).get("room_f", TW_DEFAULT["room_f"])
+        elif mode in ("eval", "safe_eval"):
+            share = c.get("safe_cap", 0.6)
+        if share:
+            lims.append((float(share) * max(0.0, rm), False, f"{float(share) * 100:.0f}% of the ${rm:,.0f} room"))
+    if mode in EVAL_MODES or st.get("cum") is not None:
+        dll = _dll_of(c)
+        lims.append((dll + cum, False, f"soft daily loss ${dll:,.0f} (today {cum:+,.0f})"))
+    wl, w = _num(c.get("wk_loss_usd")), _num(st.get("wk_pnl"))
+    if wl and w is not None:
+        lims.append((wl + w, False, f"eval weekly loss ${wl:,.0f} (this week {w:+,.0f})"))
+    info = {"reserve_ticks": rt, "comm": cm, "loss1": round(lrn, 2), "loss1_assumed": round(base, 2), "qty_before": q0}
+    for lim, strict, lab in lims:
+        n = fit_micros(q, lim, lrn, strict=strict)
+        if n < 1:
+            out.update(qty=0, mult=0.0, cap="skip", costs=info)
+            out["reasons"].append(f"skip: at the learned costs ({rt:g} ticks, ${cm:.2f} a micro) 1 micro's stop-out ${lrn:,.0f} "
+                                  f"does not fit the {lab}: no trade")
+            return out
+        q = min(q, n)
+    q = min(q, q0)                                   # never more than without the learned costs
+    out["costs"] = info
+    if q != q0:
+        out["reasons"].append(f"learned costs: {rt:g} ticks + ${cm:.2f} a micro -> 1 micro risks ${lrn:,.0f} (was ${base:,.0f}) "
+                              f"-> {q} micros (was {q0})")
+        out["qty"] = q
+        if "mult" in out:
+            out["mult"] = round(float(out.get("mult") or 1.0) * q / q0, 4)
+    return out
+
+
+def _lit_qty_base(qty: int, trade: dict, cfg: dict | None = None, room: float | None = None, max_micros: int = 40,
+                  state: dict | None = None, learning="auto") -> dict:
     """lit_qty_core below, then the day-level guard when cfg["guard"] is set (risk audit 2026-10-18,
     research/writeups/lit-funded-sizing.md; off = exactly the old sizing). cfg["guard"] = {} (GUARD_DEFAULT) or a dict:
       max_per_day     1: state["n_today"] (entries already routed today) >= this -> 0 (the router's own 1-a-day cap)
@@ -902,11 +1008,17 @@ def eval_clock(day_pnl: dict, start: str | None, today: str, session_over: bool 
 #   slip_ticks 2: ticks of slippage assumed on the stop in every cap
 #   skip_breach True: when even 1 micro's full stop-out would reach the floor or the soft daily loss -> 0 (skip). The soft caps
 #              (room_f, max_win) never go below 1 micro.
+#   cons_aware False | True | "after_payout" (from the 2nd cycle on) (2026-10-25, engine/funded_life.py, research/writeups/funded-path.md): the 50% consistency rule
+#              per payout cycle as a SOFT cap: today's day may pay at most max(cons x the cycle target, cons/(1-cons) x the
+#              cycle's profit on the earlier days); the target is buffer + pay_max - the balance the cycle started at. Sizes
+#              down to that, never below 1 micro (a too-big day only delays the payout, it is not a breach). Needs
+#              state["cycle_target"] / ["cycle_prev"] (funded_cycle(), added by engine/multi_account.sizing_state); absent = off.
 # state = {"room": balance + today's closed P&L - trailing floor ($), "cum": today's closed P&L, "locked": floor at the lock}
 FD_50K = {"mll": 2000.0, "lock": 100.0, "dll": 1000.0, "buffer": 2100.0, "pay_min": 500.0, "pay_max": 2000.0, "split": 0.8,
           "cons": 0.5, "cycle_days": 2, "first_wait": 2, "max_payouts": 5, "max_micros": 40, "scale": 1.0}
 FD_DEFAULT = {"tiers": [[0.0, 800.0]], "pre_lock_usd": None, "pct": None, "pct_min_usd": 100.0, "pct_max_usd": 1000.0,
-              "ref": 20.0, "wk": True, "room_f": 0.6, "dll_cap": True, "max_win": None, "slip_ticks": 2, "skip_breach": True}
+              "ref": 20.0, "wk": True, "room_f": 0.6, "dll_cap": True, "max_win": None, "slip_ticks": 2, "skip_breach": True,
+              "cons_aware": False}
 
 
 def funded_qty(trade: dict, state: dict | None, cfg: dict | None = None, acct: dict | None = None, why: list | None = None) -> int:
@@ -962,6 +1074,15 @@ def funded_qty(trade: dict, state: dict | None, cfg: dict | None = None, acct: d
         if cap < q:
             q = cap
             note(f"best day <= ${float(c['max_win']) * sc:,.0f} -> {q}")
+    if (c.get("cons_aware") and tgt and tgt * TW_PV - TW_COMM > 0 and _num(st.get("cycle_target")) is not None
+            and (c["cons_aware"] != "after_payout" or int(_num(st.get("payouts_n"), 0)) > 0)):
+        cons = float(A["cons"])
+        prev = max(0.0, float(_num(st.get("cycle_prev"), 0.0)))
+        day_max = max(cons * float(st["cycle_target"]), cons / max(1e-9, 1.0 - cons) * prev)
+        cap = int(max(0.0, day_max - max(0.0, cum)) / (tgt * TW_PV - TW_COMM))
+        if cap < q:                                    # soft: never below 1 micro (a big day delays the payout, no breach)
+            q = max(1, cap)
+            note(f"consistency {cons * 100:.0f}%: today's day <= ${day_max:,.0f} -> {q}")
     if c["room_f"] and room is not None:
         cap = int(float(c["room_f"]) * max(0.0, room) / loss1 + 1e-9)
         if cap < 1:
@@ -1002,11 +1123,36 @@ def funded_state(day_pnl: dict, today_cum: float = 0.0, payouts: dict | None = N
             "floor": round(floor, 2), "locked": floor >= float(A["lock"]) - 1e-9}
 
 
+def funded_cycle(day_pnl: dict, today_cum: float = 0.0, payouts: dict | None = None, plan: dict | None = None) -> dict:
+    """The payout cycle of a funded account (2026-10-25, engine/funded_life.py): the cycle starts after the last payout day.
+    -> {"cycle_start_bal" (balance after the last payout, $ above start), "cycle_prev" (closed P&L of the cycle's earlier
+    days), "best_prev" (best earlier day of the cycle), "cycle_days_prev" (traded earlier days), "cycle_target" (cycle profit
+    a max request needs: buffer + pay_max - cycle_start_bal)}. day_pnl = earlier days only (as funded_state)."""
+    A = {**FD_50K, **(plan or {})}
+    pay = {str(d): float(v) for d, v in (payouts or {}).items()}
+    last = max(pay) if pay else ""
+    days = {str(d): float(v) for d, v in (day_pnl or {}).items()}
+    start_bal = sum(v for d, v in days.items() if d <= last) - sum(pay.values())
+    cyc = [v for d, v in days.items() if d > last and abs(v) > 1e-9]
+    return {"cycle_start_bal": round(start_bal, 2), "cycle_prev": round(sum(cyc), 2), "best_prev": round(max(cyc), 2) if cyc else 0.0,
+            "cycle_days_prev": len(cyc), "payouts_n": len(pay), "cycle_target": round(max(0.0, float(A["buffer"]) + float(A["pay_max"]) - start_bal), 2)}
+
+
 SECOND_TICK, SECOND_COMM = 0.25, 1.90
 
 
 def second_qty(risk_pts: float, usd: float = 500.0, cfg: dict | None = None, state: dict | None = None,
                room: float | None = None, max_micros: int = 40) -> dict:
+    """_second_qty_base, then (only with lit_sizing "learn_costs": true) ATLAS's learned cost reserve (cost_reserve,
+    never more micros). Off: exactly _second_qty_base."""
+    r = _second_qty_base(risk_pts, usd, cfg, state=state, room=room, max_micros=max_micros)
+    if (cfg or {}).get("learn_costs"):
+        r = cost_reserve(r, {"risk_pts": risk_pts}, cfg, room=room, state=state, bot="atlas")
+    return r
+
+
+def _second_qty_base(risk_pts: float, usd: float = 500.0, cfg: dict | None = None, state: dict | None = None,
+                     room: float | None = None, max_micros: int = 40) -> dict:
     """Micros for a ROUTED second-strategy trade (engine/second.py, routed by engine/live.py on LIT's account), exactly as
     the research eval path sizes it (tools/second_ema.ema_eval_qty, base usd500; research/writeups/second-ema.md):
       skip      1 micro's stop-out (stop + 1 tick) x $2 + $1.90 > usd -> 0 (the $ risk is a ceiling, 2026-10-24)

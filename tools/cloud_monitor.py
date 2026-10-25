@@ -955,7 +955,7 @@ def run(out):
                  "levels": [{k: p.get(k) for k in ("label", "price", "side", "strength", "kind")} for p in state.get("active_pools") or []][:60]
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
-                                               "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "ops", "remote", "live_pub",
+                                               "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "learn", "ops", "remote", "live_pub",
                                                "brain", "second", "ai", "launch")},  # the PC bot's Bot Brain (engine/brain.py compact), second strategies (paper)
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
@@ -1026,6 +1026,31 @@ def run(out):
         new_state["pushed"] = notifier.keys()[-600:]
     except Exception as e:  # never fails the run
         print("recap failed:", e.__class__.__name__, e)
+    # ---- live learning (engine/live_learning.py, read-only): a review record of every finished Zlarior / ATLAS / ATLAS v2
+    # trade against its backtest twin on the same bars, the weekly live-vs-backtest summary (pushed Sunday evening), "The bot
+    # suggests" cards (the learning loop's shadow knobs, the PC's learned cost reserve) -> state "learning_live"
+    try:
+        from engine import live_learning
+        J = L = None
+        if lm["model"] == "lit":
+            from engine import lit_learn
+            jp, lp = learning_paths(out)
+            J, L = lit_learn.load_journal(jp), lit_learn.load_learning(lp)
+        lres = live_learning.cloud_hook(new_state, st, res if lm["model"] == "lit" else None, _LIT_IN.get("second_run"),
+                                        _LIT_IN.get("df1"), now, lit_journal=J, learning=L, lit_sizing=lm.get("lit_sizing"))
+        for n in lres.get("notices") or []:
+            if notifier.seen(n):
+                continue
+            r = notifier.notify(n, push_it=now - int(n.get("t") or 0) <= PUSH_MAX_AGE_S, other_sent=pc_sent)
+            new_state["notices"].append({**{k: n.get(k) for k in ("t", "kind", "src", "key", "title", "body", "url")},
+                                         "sent": int(r.get("sent") or 0), "at": now})
+        new_state["notices"] = sorted(new_state["notices"], key=lambda x: (x.get("t") or 0, x.get("at") or 0))[-80:]
+        new_state["pushed"] = notifier.keys()[-600:]
+        ll = new_state.get("learning_live") or {}
+        print(f"learning_live: {len(ll.get('reviews') or [])} reviews, {len(ll.get('suggest') or [])} suggestions"
+              + (f", weekly pushed {ll.get('pushed_week')}" if lres.get("notices") else "") + (f", errors {ll['errors']}" if ll.get("errors") else ""))
+    except Exception as e:  # never fails the run
+        print("learning_live failed:", e.__class__.__name__, e)
     # ---- trade pictures (engine/trade_chart.py, read-only): a chart PNG of every new paper trade of each strategy (LIT, the
     # ATLAS members, the stop-hunt candidates, LIT + Asia) at its entry, re-drawn at its exit -> <out>/charts/<key>/<id>.png +
     # charts/index.json (newest 60 per strategy, restored every run); at most 10 a run / ~50 s, nothing new = nothing drawn
@@ -1052,6 +1077,7 @@ def second_step(st, df_all, df1, res, now, pauses=None):
     if not any(s.get("on", True) for s in cfg["strategies"].values()) and not st.get("second"):
         return None
     r = second.run(df_all, one_min=df1, now=now, cfg=cfg, lit=second.lit_windows(res))
+    _LIT_IN["second_run"] = r          # the backtest twin of the ATLAS paper ledger (engine/live_learning.py trade reviews)
     return second.ledger_update(st.get("second"), r, now, pauses, in_pause)
 
 
