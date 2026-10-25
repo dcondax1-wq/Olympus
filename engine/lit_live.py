@@ -398,6 +398,11 @@ def early_close(day: str) -> int | None:
            _nth_weekday(y, 11, 3, 4), _nth_weekday(y, 11, 3, 4) + dt.timedelta(days=1), dt.date(y, 12, 24)}
     if d == _nth_weekday(y, 11, 3, 4) + dt.timedelta(days=1) or d == dt.date(y, 12, 24):
         return 13 * 60 + 15
+    # BUG_FIX (A1 audit 2026-10-25, tests/test_a1_timing.py): July 3 closes 12:15 CT = 13:15 ET when July 4 itself is a
+    # Tuesday-Friday (data/NQ_5m.csv: 2023-07-03, 2024-07-03, 2025-07-03 end with the 13:10 bar). No 2026 date changes
+    # (July 4 2026 is a Saturday: July 3 is the observed holiday, 13:00 below).
+    if d == dt.date(y, 7, 3) and 1 <= dt.date(y, 7, 4).weekday() <= 4:
+        return 13 * 60 + 15
     if d in hol:
         return 13 * 60
     if d == _easter(y) - dt.timedelta(days=2):
