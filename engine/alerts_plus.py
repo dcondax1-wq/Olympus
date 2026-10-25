@@ -186,7 +186,7 @@ def armed_payload(src: str, s: dict, stage: str, now, size=(None, None)) -> dict
     else:
         line = f"{side} limit {px(s['limit'])} · stop {px(s['stop'])}{tgt}{sz} · valid until {_hm(s['valid'])}"
         key = f"armed:{s['arm_t']}:{s['dir']}"
-    p = push.text_payload(src, "armed", f"LIT setup armed · {side}", f"LIT setup armed: {line}", key=key, t=now, url="#/today")
+    p = push.text_payload(src, "armed", f"Zlarior setup armed · {side}", f"LIT setup armed: {line}", key=key, t=now, url="#/today")
     p.update(tag=f"le-setup-{int(s['arm_t'])}", side=side, entry=s["limit"], stop=s["stop"], target=s.get("target"),
              qty=q, risk_usd=usd, setup="LIT")
     return p

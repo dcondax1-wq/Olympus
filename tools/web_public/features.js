@@ -36,7 +36,7 @@
   feat('Goals', 'Minimum days chip', 'Days traded against MFFU’s minimum days.', 'goals', 1);
   feat('Goals', 'Anchored check', 'Says when the numbers match the MFFU dashboard (the eval anchor).', 'goals', 1);
   feat('Goals', 'ATLAS 25K progress', 'The 25K eval for ATLAS: target $1,500, max loss $1,000, or "not started yet".', 'goals', 1);
-  feat('Goals', 'LIT week ring', 'LIT trades this week against the 2-4 goal.', 'goals', 1);
+  feat('Goals', 'Zlarior week ring', 'Zlarior trades this week against the 2-4 goal.', 'goals', 1);
   feat('Goals', 'ATLAS week ring', 'ATLAS trades this week against the 3-4 goal.', 'goals', 1);
   feat('Goals', 'Week day strip', 'Mon-Fri boxes with the trades and $ of each day.', 'goals', 1);
   feat('Goals', 'On-pace sentence', 'Says if the week is on pace, behind, met or above the goal.', 'goals', 1);
@@ -49,7 +49,7 @@
   feat('Goals', 'Since you last looked', 'Shows how much closer to the target the 50K got since your last visit.', 'today', 1);
   // ---- Today (new)
   feat('Today', 'Today’s plan card', 'One card: what the bot waits for, the window, killzones, news.', 'today', 1);
-  feat('Today', 'Next session countdown', 'Live countdown to the next LIT entry window (02:00 ET).', 'today', 1);
+  feat('Today', 'Next session countdown', 'Live countdown to the next Zlarior entry window (02:00 ET).', 'today', 1);
   feat('Today', 'Market-open countdown', 'On a weekend: the countdown to Sunday 18:00 ET.', 'today', 1);
   feat('Today', 'Cut-off countdown', 'Inside the window: time left until the 15:30 ET entry cut-off.', 'today', 1);
   feat('Today', 'Killzone now / next', 'Which killzone is on now, or which one is next and when.', 'today', 1);
@@ -65,7 +65,7 @@
   feat('Trades', 'Best and worst day', 'The best and the worst day with their dates.', 'weekcal', 1);
   feat('Trades', 'Green-day %', 'How many traded days ended green.', 'weekcal', 1);
   feat('Trades', 'Weekday averages', 'Average $ per weekday, as bars.', 'weekcal', 1);
-  feat('Trades', 'Last 10 trades', 'The newest 10 trades of LIT and ATLAS in one list.', 'last10', 1);
+  feat('Trades', 'Last 10 trades', 'The newest 10 trades of Zlarior and ATLAS in one list.', 'last10', 1);
   feat('Trades', 'Trade pictures in the list', 'Each of the last trades with its chart picture (tap = full screen).', 'last10', 1);
   feat('Trades', 'CSV export of the last trades', 'Saves the last trades as a spreadsheet file.', 'last10', 1);
   // ---- ATLAS (new)
@@ -102,11 +102,11 @@
   feat('Home', 'Is the bot trading my eval?', 'The big verdict at the top: trading, checking, PC silent or stopped.', 'today');
   feat('Home', 'Surface check-in line', 'When the PC last reported; red when it is offline in trading hours.', 'today');
   feat('Home', 'Bot stopped banner', 'A red banner with the one-line fix when the bot is off.', 'today');
-  feat('Home', 'LIT and ATLAS cards', 'The two strategies side by side: status, today, this week, eval.', 'today');
+  feat('Home', 'Zlarior and ATLAS cards', 'The two strategies side by side: status, today, this week, eval.', 'today');
   feat('Home', 'Open trade mini chart', 'The open trade with entry, stop, target and breakeven lines.', 'today');
   feat('Home', 'Why no trade today', 'The model’s state, rejected setups and shallow sweeps.', 'today');
   feat('Home', 'Add to Home Screen guide', 'Step-by-step install for iPhone and Android.', 'today');
-  feat('Home', 'LIT plan', 'Today’s levels, the VIX target band, the sweeps seen.', 'plan');
+  feat('Zlarior', 'Zlarior plan', 'Today’s levels, the VIX target band, the sweeps seen.', 'plan');
   feat('Home', 'Levels radar', 'Nearest LIT levels above and below price.', 'radar');
   feat('Home', 'Market', 'News week, CME holidays, the contract roll, the VIX band.', 'market');
   feat('Home', 'Live detail', 'The Live Oracle, week ring, liquidity map, signals.', 'live');
@@ -126,7 +126,7 @@
   feat('Trades', 'Stats', 'Key stats, streaks, R histogram, time of day.', 'stats');
   feat('Trades', 'Accounts', 'Every account: position, orders, past trades.', 'accounts');
   feat('Trades', 'Execution', 'Slippage, missed and extra trades vs the backtest.', 'execq');
-  feat('Trades', 'Edge', 'Where LIT makes its money: R, MFE, stop size, hour, weekday.', 'edge');
+  feat('Trades', 'Edge', 'Where Zlarior makes its money: R, MFE, stop size, hour, weekday.', 'edge');
   feat('Trades', 'P&L calendar', 'Daily P&L calendar with streaks.', 'pnlcal');
   feat('Trades', 'Results', 'The live settings, 5-year replay.', 'results');
   feat('Trades', 'Replays', 'Step through each trade day.', 'replays');
@@ -136,7 +136,7 @@
   feat('Trades', 'Stop sizes', 'Wide stop, smaller size: results by stop bucket.', 'stops');
   feat('Money', 'Money', '$ a month, your goal, the funded plan, payouts.', 'money');
   feat('Money', 'What if', 'The next trade at target, at the stop or at breakeven.', 'whatif');
-  feat('Money', 'Prop firms', 'Prices, discount codes, rules, LIT fit, what to buy next.', 'props');
+  feat('Money', 'Prop firms', 'Prices, discount codes, rules, Zlarior fit, what to buy next.', 'props');
   feat('Money', 'Eval HQ', 'The 2-week pass path and the pass / fail odds.', 'evalhq');
   feat('Money', 'Eval curve', 'Balance per session with the target and the trailing floor.', 'curve');
   feat('Money', 'Share card', 'The month as a picture for the share sheet.', 'share');
@@ -151,12 +151,12 @@
   feat('Health', 'Activity', 'Every fill and outcome, newest first.', 'activity');
   feat('Health', 'Stale-data banner', 'A banner when the data is older than 45 minutes.', '');
   feat('Health', 'Live feed from the PC', 'The PC’s live file refreshes Home every 30-60 seconds.', 'today');
-  feat('LIT', 'Strategy in plain words', 'The live rules, upgrades, scoreboard and changelog.', 'strategy');
-  feat('LIT', 'Risk & sizing', 'Size follows the stop; the weekly stop.', 'risk');
-  feat('LIT', 'MFFU rules', 'The Builder 50K rulebook and how LIT fits it.', 'mffurules');
-  feat('LIT', 'Rejected setups', 'Every LIT setup and the rule that stopped it.', 'setups');
-  feat('LIT', 'News', 'USD events, the bot’s blackouts, headlines.', 'news');
-  feat('LIT', 'Chart', 'Live 5-minute chart with the liquidity pools.', 'chart');
+  feat('Zlarior', 'Strategy in plain words', 'The live rules, upgrades, scoreboard and changelog.', 'strategy');
+  feat('Zlarior', 'Risk & sizing', 'Size follows the stop; the weekly stop.', 'risk');
+  feat('Zlarior', 'MFFU rules', 'The Builder 50K rulebook and how Zlarior fits it.', 'mffurules');
+  feat('Zlarior', 'Rejected setups', 'Every LIT setup and the rule that stopped it.', 'setups');
+  feat('Zlarior', 'News', 'USD events, the bot’s blackouts, headlines.', 'news');
+  feat('Zlarior', 'Chart', 'Live 5-minute chart with the liquidity pools.', 'chart');
   feat('Research', 'Lab overview', 'Latest findings and every run.', 'lab');
   feat('Research', 'Experiments', 'Every backtest, stored with its data.', 'experiments');
   feat('Research', 'Write-ups', 'Findings in plain words, plus the archive.', 'writeups');
@@ -180,7 +180,7 @@
   const SECTIONS = [
     ['Today & plan', 'today', ['goals', 'plan', 'day', 'brief', 'levels', 'radar', 'market', 'live', 'cockpit', 'news']],
     ['Bot health & control', 'radar', ['launch', 'lights', 'ops', 'engine', 'aiwatch', 'remote', 'alerts', 'activity', 'chart']],
-    ['LIT strategy', 'rules', ['strategy', 'risk', 'mffurules', 'setups', 'learned']],
+    ['Zlarior strategy', 'rules', ['strategy', 'risk', 'mffurules', 'setups', 'learned']],
     ['Research & backtests', 'lab', ['lab', 'experiments', 'writeups', 'losses', 'intraday', 'evals', 'results', 'replays', 'stops', 'intel']],
     ['Money & accounts', 'wallet', ['accounts', 'evaltl', 'evalhq', 'eval', 'curve', 'perf', 'scale', 'props', 'whatif', 'share']],
     ['This app', 'settings', ['features', 'settings', 'sources', 'parts', 'archive']],
@@ -269,7 +269,7 @@
   }
   function allTrades() {
     const h = HD() || {}, a = mainAcct(), out = [];
-    for (const t of (a && a.trades) || []) out.push({ who: 'LIT', day: t.day, entry_t: t.entry_t, side: t.side, r: t.r, usd: t.pnl, exit: t.exit, qty: t.qty, src: a.source === 'pc' ? 'PC' : 'paper' });
+    for (const t of (a && a.trades) || []) out.push({ who: 'Zlarior', day: t.day, entry_t: t.entry_t, side: t.side, r: t.r, usd: t.pnl, exit: t.exit, qty: t.qty, src: a.source === 'pc' ? 'PC' : 'paper' });
     const mem = new Set((((h.second || {}).atlas || {}).members || []).map((m) => m.key));
     for (const s of (h.second || {}).strategies || []) {
       if (mem.size ? !mem.has(s.key) : !['ema_lon_vix', 'macd_sweep', 'sr_nyreclaim'].includes(s.key)) continue;
@@ -277,7 +277,7 @@
     }
     let src = 'live / paper';
     if (!out.length) {
-      for (const t of (h.trades || []).slice().sort((x, y) => (y.entry_t || 0) - (x.entry_t || 0)).slice(0, 10)) out.push({ who: 'LIT', day: t.day, entry_t: t.entry_t, side: t.side, r: t.r, usd: t.pnl, exit: t.exit, qty: t.qty, src: 'backtest' });
+      for (const t of (h.trades || []).slice().sort((x, y) => (y.entry_t || 0) - (x.entry_t || 0)).slice(0, 10)) out.push({ who: 'Zlarior', day: t.day, entry_t: t.entry_t, side: t.side, r: t.r, usd: t.pnl, exit: t.exit, qty: t.qty, src: 'backtest' });
       src = 'backtest (no live / paper trade yet)';
     }
     return { rows: out.sort((x, y) => (y.entry_t || 0) - (x.entry_t || 0)).slice(0, 10), src };
@@ -326,7 +326,7 @@
   // ================================================================================ #/last10
   VIEWS.last10 = (el) => {
     const { rows, src } = allTrades(), h = HD() || {}, T = window.TradePics;
-    el.innerHTML = head('Trades · last 10', 'Last 10 trades', `LIT and ATLAS, newest first · ${esc(src)}`);
+    el.innerHTML = head('Trades · last 10', 'Last 10 trades', `Zlarior and ATLAS, newest first · ${esc(src)}`);
     if (!rows.length) { el.insertAdjacentHTML('beforeend', emptyBox('No trades yet.', 'The list fills in with the first paper or live trade.')); return; }
     const pics = [];
     if (T && h.charts) for (const k of ['lit', 'ema_lon_vix', 'macd_sweep', 'sr_nyreclaim']) pics.push(...T.list(h.charts, k));

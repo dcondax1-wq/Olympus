@@ -1,8 +1,11 @@
 // Information architecture of the redesigned dashboard.
-// Top level: Today · Chart · Trades · Data · Modules · Settings. Every other page lives under Data (tab strip) or
-// Modules (tile grid). Page ids stay the same as the classic dashboard so every page module and go('x') call still works.
+// Top level (2026-10-25 PM): Home · Zlarior · ATLAS · Results · All tools (+ Settings, Advanced folded). Each bot has its
+// own page with sections (BOTS below); every other page lives under Results (tab strip) or All tools (tile grid). Page
+// ids stay the same as the classic dashboard so every page module and go('x') call still works.
+// "Zlarior" is the display name of the LIT bot (owner 2026-10-25): every key, file and setting stays "lit".
 export const TOP = [
   { id: 'cc', label: 'Command center', icon: 'command' },     // js/next/cc.js: both accounts, health lights, what the bot waits for
+  { id: 'zlarior', label: 'Zlarior', icon: 'zlarior' },        // the LIT bot's sections (no page of its own: opens its last section page)
   { id: 'command', label: 'Today', icon: 'today' },
   { id: 'brain', label: 'Bot Brain', icon: 'brain' },          // js/next/brain.js: what the bot is thinking (read-only)
   { id: 'atlas', label: 'ATLAS', icon: 'atlas' },              // js/next/second.js: strategy 2 on the 25K (EMA + MACD + S/R)
@@ -22,7 +25,7 @@ export const DATA = [
   { id: 'perf', label: 'Performance', icon: 'robust', desc: 'Range (is live inside the expected band) · Live vs backtest · Exit efficiency · Robustness · Months · Status' },
   { id: 'scale', label: 'Scaling plan', icon: 'prop', desc: 'Step N of the ladder (2 -> 10 accounts, LIT + ATLAS), the next account, its trigger and progress, $ a month 2026-like vs 2025-like' },
   { id: 'intel', label: 'Trade intel', icon: 'stats', desc: 'Every trade (backtest, paper, live) with ~60 facts, the signs of winners vs losers, MFE / MAE' },
-  { id: 'edge', label: 'Edge', icon: 'heat', desc: 'Where LIT makes its money: R, exits, MFE / MAE, stop size, hour, weekday, levels' },
+  { id: 'edge', label: 'Edge', icon: 'heat', desc: 'Where Zlarior makes its money: R, exits, MFE / MAE, stop size, hour, weekday, levels' },
   { id: 'pnlcal', label: 'P&L Calendar', icon: 'calendar', desc: 'Daily P&L month grid (backtest or the PC bot), streaks, this week vs the backtest' },
   { id: 'lab', label: 'Experiments', icon: 'variants', desc: 'Research run library: every LIT backtest with its data' },
   { id: 'writeups', label: 'Write-ups', icon: 'reports', desc: 'Plain-language research reports, LIT first' },
@@ -51,7 +54,7 @@ export const ARCHIVE = [
 
 // Hub pages (js/next/hubpages.js): the business side and the context around the bot, grouped in five pages.
 export const HUB = [
-  { id: 'firms', label: 'Prop Firms', icon: 'prop', desc: 'Every plan compared: rules, prices, codes, payouts, bots, live accounts, LIT fit, what to buy next' },
+  { id: 'firms', label: 'Prop Firms', icon: 'prop', desc: 'Every plan compared: rules, prices, codes, payouts, bots, live accounts, Zlarior fit, what to buy next' },
   { id: 'business', label: 'Business', icon: 'wallet', desc: 'Eval odds now, floor gauge, MFFU rules check, payout calendar, fees and net P&L, tax, Z06 goal, planners' },
   { id: 'market', label: 'Market', icon: 'regime', desc: 'VIX regime + target band, overnight recap, levels map, week calendar, earnings, holidays, roll' },
   { id: 'learn', label: 'Learn', icon: 'learned', desc: 'LIT step by step, glossary, research library with verdicts, strategy versions, trade gallery' },
@@ -72,13 +75,13 @@ export const MODULES = [
   ...OPS,
   ...HUB,
   { id: 'evalhq', label: 'Eval HQ', icon: 'prop', desc: 'The 2-week pass path: $ to go, $ per session, what one winner pays, the odds' },
-  { id: 'mffurules', label: 'MFFU rules', icon: 'rules', desc: 'The Builder 50K rulebook with how sure each rule is, and how LIT fits it' },
-  { id: 'litday', label: 'LIT Day plan', icon: 'clock', desc: 'Day clock 18:00-17:00 ET, what happens next, pre-session checklist, week planner' },
-  { id: 'litlevels', label: 'LIT Levels', icon: 'target', desc: 'Setup tracker (sweep → CISD → limit → 1m CISD) and every LIT level with its distance' },
+  { id: 'mffurules', label: 'MFFU rules', icon: 'rules', desc: 'The Builder 50K rulebook with how sure each rule is, and how Zlarior fits it' },
+  { id: 'litday', label: 'Day plan', icon: 'clock', desc: 'Day clock 18:00-17:00 ET, what happens next, pre-session checklist, week planner' },
+  { id: 'litlevels', label: 'Levels', icon: 'target', desc: 'Setup tracker (sweep → CISD → limit → 1m CISD) and every LIT level with its distance' },
   { id: 'litcockpit', label: 'Eval cockpit', icon: 'wallet', desc: 'What one stop-out or winner does to the MFFU eval; pass / fail odds from this balance' },
-  { id: 'strategy', label: 'Strategy', icon: 'strategy', desc: 'LIT, the locked rulebook in plain language, with the numbers' },
+  { id: 'strategy', label: 'Strategy', icon: 'strategy', desc: 'Zlarior (the LIT method), the locked rulebook in plain language, with the numbers' },
   { id: 'rules', label: 'Strategy Rules', icon: 'rules', desc: 'The exact locked strategy (STRATEGY.md)' },
-  { id: 'live', label: 'Paper Bot · LIT', icon: 'engine', desc: 'Paper bot control, model state, ledger' },
+  { id: 'live', label: 'Paper Bot · Zlarior', icon: 'engine', desc: 'Paper bot control, model state, ledger' },
   { id: 'risk', label: 'Risk & Sizing', icon: 'risk', desc: '$800 to a 20-pt stop, scaled down beyond; weekly stop' },
   { id: 'newshub', label: 'News hub', icon: 'radar', desc: 'Next high-impact event, blackouts, 7-day calendar, headlines' },
   { id: 'news', label: 'Markets & News', icon: 'news', desc: 'Calendar, headlines, cross-market, gamma' },
@@ -98,7 +101,7 @@ export const CC = [
   { id: 'goals', label: 'Goals', icon: 'target', desc: 'Eval progress per account, 2-4 trades a week, the ATLAS 20-trade scorecard, payout and scale' },
   { id: 'evaltl', label: 'Eval timeline', icon: 'calendar', desc: 'Session-by-session P&L of the eval with the 10 / 15 session marks and the days ahead' },
   { id: 'sesscal', label: 'Session calendar', icon: 'week', desc: 'The next 20 trading days: early closes, CME holidays, the clock change' },
-  { id: 'tradelog', label: 'Trade log', icon: 'trades', desc: 'LIT replay or PC routed trades with filters, a summary and CSV export' },
+  { id: 'tradelog', label: 'Trade log', icon: 'trades', desc: 'Zlarior replay or PC routed trades with filters, a summary and CSV export' },
   { id: 'atlassetups', label: 'ATLAS per setup', icon: 'atlas', desc: 'EMA / MACD / S-R setups H1 / H2 / ref, sortable, the 2026 ATLAS ledger, CSV' },
   { id: 'runbook', label: 'Runbook', icon: 'rules', desc: 'Emergency steps big, then start, check, shutdown and recovery with copy buttons' },
   { id: 'audit', label: 'Audit evidence', icon: 'check', desc: 'The 2026-10-25 pre-launch audit: verdict, EXECUTION_TEST_MATRIX, every file' },
@@ -108,22 +111,45 @@ export const CC = [
 // Sidebar (shell.js), cleaned up 2026-10-25: six clear top items, everything else under "Advanced" (folded by default,
 // in four small sections). Each page appears once. Each id must be a page; 'data' opens the last Results tab.
 // NAV_NAMES only renames the sidebar entry (the page title stays TITLES[id]).
+// 2026-10-25 PM: Home · Zlarior · ATLAS · Results · All tools; the pages each bot page holds are in BOTS (not repeated here).
 export const GROUPS = [
-  { label: 'Main', ids: ['cc', 'botctl', 'chart', 'trades', 'data', 'modules'] },
+  { label: 'Main', ids: ['cc', 'zlarior', 'atlas', 'data', 'modules'] },
   { label: 'Advanced', advanced: true, sections: [
-    { label: 'Accounts', ids: ['accounts', 'atlas', 'goals', 'evalhq', 'evaltl', 'litcockpit'] },
-    { label: 'Bot', ids: ['command', 'brain', 'livechart', 'tradelog', 'morning', 'ntpanel', 'botlog', 'timeline'] },
-    { label: 'Results', ids: ['perf', 'atlassetups', 'scale', 'lab'] },
-    { label: 'Help', ids: ['runbook', 'audit', 'sesscal', 'livesettings', 'features', 'archive'] },
+    { label: 'Accounts', ids: ['goals', 'sesscal'] },
+    { label: 'Bot', ids: ['morning', 'ntpanel', 'botlog', 'timeline'] },
+    { label: 'Results', ids: ['scale', 'lab', 'intel'] },
+    { label: 'Help', ids: ['runbook', 'audit', 'features', 'archive'] },
   ] },
 ];
-export const NAV_NAMES = { cc: 'Home', botctl: 'Bot', data: 'Results', modules: 'All tools', command: 'Today (classic)', archive: 'Archive (old engine)' };
+export const NAV_NAMES = { cc: 'Home', data: 'Results', modules: 'All tools', command: 'Today (classic)', archive: 'Archive (old engine)' };
+
+// The two bot pages (2026-10-25 PM): a segmented control on top picks the section; a section with several pages shows
+// them as chips. "atlas:brain" = the one ATLAS page showing one part (second.js atlasPart). Each page belongs to one bot.
+export const BOTS = {
+  zlarior: { name: 'Zlarior', sub: 'LIT method · 50K', segs: [
+    ['Today', ['botctl', 'accounts', 'evalhq', 'evaltl', 'litcockpit', 'command']],
+    ['Brain', ['brain']],
+    ['Trades', ['trades', 'tradelog', 'journal', 'review', 'memory']],
+    ['Plan & levels', ['litday', 'litlevels', 'livechart', 'chart', 'briefing']],
+    ['Results', ['perf', 'pnlcal', 'edge']],
+    ['Strategy', ['strategy', 'rules', 'risk', 'mffurules', 'livesettings']],
+  ] },
+  atlas: { name: 'ATLAS', sub: '25K', segs: [
+    ['Today', ['atlas']], ['Brain', ['atlas:brain']], ['Trades', ['atlas:trades']],
+    ['Setups', ['atlas:setups', 'atlassetups']], ['Results', ['atlas:results']],
+  ] },
+};
+export const BOT_CHIP = { botctl: 'Bot control', accounts: '50K account', evalhq: 'Eval HQ', evaltl: 'Eval timeline', litcockpit: 'Eval cockpit', command: 'Today (classic)',
+  trades: 'Trades', tradelog: 'Trade log', journal: 'Journal', review: 'Weekly review', memory: 'Memory', litday: 'Day plan', litlevels: 'Levels', livechart: 'Live chart',
+  chart: 'Chart', briefing: 'Briefing', perf: 'Performance', pnlcal: 'P&L calendar', edge: 'Edge', strategy: 'Strategy', rules: 'Rules (STRATEGY.md)', risk: 'Risk & sizing',
+  mffurules: 'MFFU rules', livesettings: 'Live settings', 'atlas:setups': 'Rules & members', atlassetups: 'Per setup' };
+export const botOf = (id) => Object.keys(BOTS).find((b) => BOTS[b].segs.some((s) => s[1].some((it) => it.split(':')[0] === id))) || null;
 export const groupIds = (g) => g.ids || (g.sections || []).flatMap((s) => s.ids);
 // phone tab bar (the PC sidebar shows the groups)
-export const TABS = ['cc', 'botctl', 'chart', 'trades', 'modules'];
+export const TABS = ['cc', 'zlarior', 'atlas', 'data', 'modules'];
 
-export const TITLES = { cc: 'Command center', data: 'Results', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'All tools', settings: 'Settings' };
+export const TITLES = { cc: 'Command center', zlarior: 'Zlarior', data: 'Results', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'All tools', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES, ...CC]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
 
-export const groupOf = (id) => DATA.some(p => p.id === id) ? 'data' : MODULES.some(p => p.id === id) ? 'modules' : ARCHIVE.some(p => p.id === id) ? 'archive' : id;
+export const groupOf = (id) => id === 'zlarior' ? 'zlarior' : botOf(id) ? botOf(id) : DATA.some(p => p.id === id) ? 'data' : MODULES.some(p => p.id === id) ? 'modules' : ARCHIVE.some(p => p.id === id) ? 'archive' : id;

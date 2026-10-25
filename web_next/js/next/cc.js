@@ -50,8 +50,11 @@ const H = { d: null, at: 0, timer: null, hl: null, paused: store.get('nx.cc.paus
 
 // Cleaned up 2026-10-25 ("a maid swept it"): each account card has ONE big number (progress to the target), one line,
 // one status chip, one primary button and a "⋯" menu; the details fold away under "Details". Nothing was removed.
+// "Zlarior" is the LIT bot's display name (2026-10-25): the API keeps "LIT" in strategy / name, the card shows Zlarior.
+const zl = (s) => String(s == null ? '' : s).replace(/^LIT\b/, 'Zlarior');
 function acctCard(a, kind) {
-  const title = kind === 'lit' ? 'LIT · Builder 50K' : 'ATLAS · Builder 25K';
+  const title = kind === 'lit' ? 'Zlarior · Builder 50K' : 'ATLAS · Builder 25K';
+  if (a) a = { ...a, name: zl(a.name), strategy: zl(a.strategy) };
   if (!a) return card(title, empty('No data yet', 'The PC bot has not reported this account.'), '', `cc-acct ${kind}`);
   if (a.error) return card(esc(a.name || title), empty('Could not read this account', esc(a.error)), '', `cc-acct ${kind}`);
   const start = (a.target_balance || 0) - (kind === 'lit' ? 3000 : 1500);
@@ -145,7 +148,7 @@ function banners(d) {
 function statusText(d) {
   const L = d.lit || {}, A = d.atlas || {};
   const lines = [`Liquidity Engine status ${d.et}`, `Verdict: ${d.verdict?.label || '?'} (${d.verdict?.reason || ''})`,
-    `LIT 50K: balance ${usd(L.balance, 2)}, ${usd(L.to_target)} to target, room ${usd(L.room)}, today ${susd(L.today_pnl)}${L.position ? `, IN TRADE ${L.position.side} ${L.position.qty}` : ', flat'}`,
+    `Zlarior 50K: balance ${usd(L.balance, 2)}, ${usd(L.to_target)} to target, room ${usd(L.room)}, today ${susd(L.today_pnl)}${L.position ? `, IN TRADE ${L.position.side} ${L.position.qty}` : ', flat'}`,
     `ATLAS 25K: ${A.configured === false ? 'not set up' : `balance ${usd(A.balance, 2)}, ${usd(A.to_target)} to target, room ${usd(A.room)}, today ${susd(A.today_pnl)}`}`,
     `Waiting for: ${d.waiting?.say || ''}`,
     `Health: ${(d.lights || []).map((l) => `${l.label} ${l.ok === true ? 'OK' : l.ok === false ? 'RED' : '-'}`).join(', ')}`,
@@ -176,7 +179,7 @@ function renderHome() {
     '<div class="nx-more-cap">Open</div>' + item('Bot Brain', 'data-goto="brain"', icon('brain')) + item('Live chart', 'data-goto="livechart"', icon('chart')) +
     item('NinjaTrader', 'data-goto="ntpanel"', icon('sources')) + item('Bot log', 'data-goto="botlog"', icon('reports')) +
     item('News hub', 'data-goto="newshub"', icon('radar')) + item('Runbook (emergency)', 'data-goto="runbook"', icon('rules')), 'Refresh, copy, other pages');
-  el.innerHTML = `<div class="cc-head"><div><div class="nx-eyebrow">${esc(d.et || '')}</div><p class="cc-lead">Both accounts at a glance: LIT on the 50K, ATLAS on the 25K.</p></div>
+  el.innerHTML = `<div class="cc-head"><div><div class="nx-eyebrow">${esc(d.et || '')}</div><p class="cc-lead">Both accounts at a glance: Zlarior on the 50K, ATLAS on the 25K.</p></div>
       <div class="op-verdict ${lvl}" title="${esc(v.reason || '')}">${dot(lvl === 'good' ? true : lvl === 'bad' ? false : null)}<b>${esc(v.label || (d.running ? 'RUNNING' : 'STOPPED'))}</b><em>${esc(v.reason || '')}</em></div></div>` +
     launchHtml(d.launch) + banners(d) +
     `<div class="cc-now ${ns.k}">${icon(ns.k === 'good' ? 'check' : 'warn')}<div><span class="nx-eyebrow">What to do now</span><b>${esc(ns.t)}</b>
@@ -231,7 +234,7 @@ export const cc = {
 // ================================================================== 2. Goals (engine/goals.py when merged, else built here)
 function goalsFallback(h) {
   const accs = [h?.lit, h?.atlas].filter(Boolean).map((a) => ({
-    name: a.name, kind: 'eval', profit: a.profit, target: a.target_balance && a.balance != null ? (a.profit || 0) + (a.to_target || 0) : null,
+    name: zl(a.name), kind: 'eval', profit: a.profit, target: a.target_balance && a.balance != null ? (a.profit || 0) + (a.to_target || 0) : null,
     room: a.room, floor: a.floor, sessions_used: a.session || 0, sessions_max: a.sessions || 10, status: a.status, balance: a.balance,
   }));
   const wk = (() => {
@@ -306,7 +309,7 @@ async function evaltl() {
   const used = ev.session || 0, max = ev.sessions || 10;
   const gap = Math.max(0, used - rows.length);              // sessions the eval counted without a bot trade (no P&L row)
   const future = (cal?.rows || []).filter((r) => !rows.some((x) => x.day === r.day)).slice(0, Math.max(0, 15 - rows.length - gap));
-  el.innerHTML = hero('Eval timeline', 'Session by session', `LIT eval from ${esc(ev.start || '—')}: ${esc(ev.clock_text || '')}. Goal: decided within 10 sessions, never more than 15.`) +
+  el.innerHTML = hero('Eval timeline', 'Session by session', `Zlarior eval from ${esc(ev.start || '—')}: ${esc(ev.clock_text || '')}. Goal: decided within 10 sessions, never more than 15.`) +
     `<div class="nx-stats">${stat('Sessions used', `${used} / ${max}`)}${stat('Profit', susd(ev.profit), `${usd(ev.to_target)} to go`, cl(ev.profit))}${stat('Room', usd(ev.room), `floor ${usd(ev.floor, 2)}`)}${stat('Status', esc(ev.status || 'open'))}</div>` +
     card('Timeline', `<div class="cc-tl">${rows.map((r, i) => `<div class="cc-tl-d ${r.pnl > 0 ? 'up' : r.pnl < 0 ? 'dn' : ''}"><em>${i + 1}</em><b>${susd(r.pnl)}</b><span>${esc(r.day)}</span></div>`).join('')}
       ${Array.from({ length: gap }, (_, i) => `<div class="cc-tl-d"><em>${rows.length + i + 1}</em><b>$0</b><span>no bot trade</span></div>`).join('')}
@@ -467,9 +470,9 @@ async function tradelog() {
   const base = TL.src === 'pc' ? TL.pc.map((t) => ({ ...t, side: t.side, exit: t.exit || t.reason })) : TL.rows;
   const months = [...new Set(base.map((t) => String(t.day || '').slice(0, 7)).filter(Boolean))].sort().reverse();
   const exits = [...new Set(base.map((t) => t.exit).filter(Boolean))].sort();
-  el.innerHTML = hero('Trade log', 'Every trade, filtered your way', 'The LIT 2026 replay (live settings, costs in) or the trades the PC bot routed. Filter, then export what you see as CSV.') +
+  el.innerHTML = hero('Trade log', 'Every trade, filtered your way', 'The Zlarior 2026 replay (live settings, costs in) or the trades the PC bot routed. Filter, then export what you see as CSV.') +
     card('Filters', `<div class="cc-filters wrap">
-      <div class="seg sm" id="tlSrc">${[['replay', 'LIT replay 2026'], ['pc', 'PC routed']].map(([v, l]) => `<button type="button" data-v="${v}" class="${TL.src === v ? 'on' : ''}">${l}</button>`).join('')}</div>
+      <div class="seg sm" id="tlSrc">${[['replay', 'Zlarior replay 2026'], ['pc', 'PC routed']].map(([v, l]) => `<button type="button" data-v="${v}" class="${TL.src === v ? 'on' : ''}">${l}</button>`).join('')}</div>
       <div class="seg sm" id="tlSide">${['all', 'LONG', 'SHORT'].map((v) => `<button type="button" data-v="${v}" class="${TL.side === v ? 'on' : ''}">${v}</button>`).join('')}</div>
       <select class="inp" id="tlExit"><option value="all">every exit</option>${exits.map((x) => `<option ${TL.exit === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
       <select class="inp" id="tlMonth"><option value="all">every month</option>${months.map((x) => `<option ${TL.month === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
@@ -504,7 +507,7 @@ async function tradelog() {
 // n = a new read-only feature of this upgrade (counted); the directory also links every older page.
 export const FEATURES = [
   ['Command center', 'cc', [
-    ['Both accounts side by side', 'LIT 50K and ATLAS 25K cards on one screen'], ['Progress to target bars', 'profit vs the pass target, $ to go'],
+    ['Both accounts side by side', 'Zlarior 50K and ATLAS 25K cards on one screen'], ['Progress to target bars', 'profit vs the pass target, $ to go'],
     ['Room to floor gauge', 'trailing-drawdown cushion, turns amber / red when thin'], ['Today strip', 'today $, trades today / max, daily loss used, this week'],
     ['Open position card', 'side, micros, entry, stop, target, BE trigger, time in trade, $ now'], ['What the bot waits for', 'one plain sentence + the setups seen today'],
     ['Session phase + countdown', 'overnight / entry window / manage / flat / CME break, time to the next step'],

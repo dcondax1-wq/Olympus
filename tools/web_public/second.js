@@ -25,7 +25,7 @@
   function view(el) {
     const S = (HD() && HD().second) || null;
     el.innerHTML = (typeof head === 'function' ? head('Strategy 2 · 25K', 'ATLAS',
-      'EMA + MACD + S/R on its own 25K, next to LIT on the 50K: status, brain, go / no-go, trades, rules, backtest') : '<h2>ATLAS</h2>') + '<div id="atRoot"></div>';
+      'EMA + MACD + S/R on its own 25K, next to Zlarior on the 50K: status, brain, go / no-go, trades, rules, backtest') : '<h2>ATLAS</h2>') + '<div id="atRoot"></div>';
     const root = el.querySelector('#atRoot');
     if (!window.SecondUI || !window.SecondUI.atlas) { root.innerHTML = '<div class="card">secondcore.js did not load.</div>'; return; }
     window.SecondUI.atlas(root, S, { live: liveCut(), brain: brainOf(), charts: chartsOf() });
@@ -39,8 +39,8 @@
     if (!T || !ch) return '';
     const L = T.list(ch, 'lit');
     if (!L.length) return '';
-    return `<div class="card tp-trades"><div class="card-h"><h3>Trade pictures · LIT</h3><span class="meta">${L[0].example ? 'backtest examples until the first paper trade' : 'newest first'} · tap for full screen</span></div>
-      ${T.strip(L.slice(0, 20), { label: 'LIT trade pictures' })}</div>`;
+    return `<div class="card tp-trades"><div class="card-h"><h3>Trade pictures · Zlarior</h3><span class="meta">${L[0].example ? 'backtest examples until the first paper trade' : 'newest first'} · tap for full screen</span></div>
+      ${T.strip(L.slice(0, 20), { label: 'Zlarior trade pictures' })}</div>`;
   }
 
   // ------------------------------------------------------------------ Home: "LIT · 50K" and "ATLAS · 25K" side by side
@@ -61,7 +61,7 @@
     if (ok(e.to_target)) parts.push('$' + Math.round(e.to_target).toLocaleString('en-US') + ' to pass');
     if (ok(e.session)) parts.push('session ' + e.session + '/' + (e.sessions || 10));
     if (ok(e.room)) parts.push('room $' + Math.round(e.room).toLocaleString('en-US'));
-    return { name: 'LIT', plan: (a && a.plan) ? 'MFFU ' + String(a.plan).replace(/^MFFU\s*/, '') + (a.source === 'cloud' ? ' · cloud paper' : '') : 'MFFU Builder 50K',
+    return { name: 'Zlarior', plan: (a && a.plan) ? 'MFFU ' + String(a.plan).replace(/^MFFU\s*/, '') + (a.source === 'cloud' ? ' · cloud paper' : '') : 'MFFU Builder 50K',
       status, lvl, today: pn.today, week: pn.week, prog: prof != null ? prof / target : 0, progText: parts.join(' · ') || 'eval not reporting yet', next, go: 'today' };
   }
   function homeCards() {
