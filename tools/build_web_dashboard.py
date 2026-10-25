@@ -1025,6 +1025,11 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         data["scale"] = _scale.cloud_view(st)
     except Exception as e:
         data["scale"] = {"error": f"{e.__class__.__name__}: {e}"}
+    try:                                   # Goals (engine/goals.py, read-only): each account vs the owner's goals, in sentences
+        from engine import goals as _goals
+        data["goals"] = _goals.site_block(data)
+    except Exception as e:
+        data["goals"] = {"error": f"{e.__class__.__name__}: {e}"}
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # research data files for the Lab's 3D views (Monte Carlo cloud, intraday heat, calendar): lab/<name>.json
@@ -1084,7 +1089,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             "live": {**{k: live.get(k) for k in HOME_LIVE}, "bars": (live.get("bars") or [])[-120:], "brief": live.get("brief"),
                      "ledger": (live.get("ledger") or [])[:20], "push": {k: (live.get("push") or {}).get(k) for k in ("configured", "devices")}},
             "accounts": [{k: v for k, v in a.items() if k not in ("trades", "days", "orders")} for a in accounts],
-            "exec": data["exec"], "hub": hub,
+            "exec": data["exec"], "hub": hub, "goals": data.get("goals"),
             "strategy": {k: (data["strategy"] or {}).get(k) for k in ("label", "chosen", "model", "lit", "lit_sizing")},
             "lit_extra": {k: (data.get("lit_extra") or {}).get(k) for k in ("plan", "sizing")} if data.get("lit_extra") else None,
             "extras": {"two_week": ex.get("two_week"), "eventual": ex.get("eventual")},
