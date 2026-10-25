@@ -2151,6 +2151,13 @@ class NinjaTraderBars:
                           "(NinjaTrader closed, disconnected, or the chart was removed?)"), False
         if mins != base_m:
             df = self.aggregate(df, mins * 60)
+            # BUG_FIX (A1 audit 2026-10-25, tests/test_a1_timing.py): a bar built from finer bars is complete only when the
+            # feed has closed a base bar at or past its last slot. LE_BarFeed writes a 1m bar on the first tick AFTER it
+            # closes, so at 10:05:01 a 1m-only feed may still end at 10:03: the 10:00 5m bar then held 4 minutes and passed
+            # live.clean_bars (time + 300 <= now) as closed. Same rule as pcbars.CloudFeed (the minute-4 bar is in).
+            df = df[df["time"] + mins * 60 <= last_open + bsecs]
+            if df.empty:
+                return None, f"{os.path.basename(path)}: no complete {interval} bar yet", False
         m = re.fullmatch(r"(\d+)d", str(period or "5d"))
         start = now - (int(m.group(1)) if m else 5) * 86400
         full = int(df["time"].iloc[0]) <= start + 3600

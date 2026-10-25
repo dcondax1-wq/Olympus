@@ -1,0 +1,23 @@
+{
+ "trades": 120,
+ "walk_agrees_with_engine_exit": 120,
+ "A_stop_and_target_same_bar": 0,
+ "B_be_stop_and_target_same_bar": 0,
+ "C_be_trigger_and_be_level_same_bar": 5,
+ "C_trades_by_exit": {
+  "TARGET": 3,
+  "BE": 2
+ },
+ "bad_way_bound_usd": -4232.88,
+ "good_way_bound_usd": 0.0,
+ "net_2026": 43819.78,
+ "net_2026_all_ambiguous_bad": 39586.9,
+ "H1": {
+  "bad": -2114.0,
+  "net": 33901.0
+ },
+ "H2": {
+  "bad": -2118.88,
+  "net": 9918.78
+ }
+}

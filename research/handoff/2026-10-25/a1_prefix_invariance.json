@@ -1,0 +1,360 @@
+{
+ "what": "prefix invariance (A1 audit 2026-10-25)",
+ "argv": [
+  "--full"
+ ],
+ "lit": {
+  "clean": {
+   "signals": 220,
+   "same": 220,
+   "late_seen_at_entry_bar_close": 2,
+   "late": [
+    {
+     "day": "2026-03-23",
+     "t": 1774263300,
+     "status_full": "filled"
+    },
+    {
+     "day": "2026-05-05",
+     "t": 1777961400,
+     "status_full": "filled"
+    }
+   ],
+   "differ": [],
+   "missing": [],
+   "phantom": [],
+   "tf_differs": [
+    {
+     "day": "2026-01-14",
+     "t": 1768374000,
+     "full_tf": 1,
+     "cut_tf": 5,
+     "status_full": "filled"
+    },
+    {
+     "day": "2026-04-03",
+     "t": 1775201700,
+     "full_tf": 5,
+     "cut_tf": 1,
+     "status_full": "filled"
+    }
+   ],
+   "trades": 120,
+   "enter_now_ok": 118,
+   "enter_now_bad": [
+    {
+     "day": "2026-03-23",
+     "tf": 1,
+     "want": [
+      1774263480,
+      1,
+      24454.25,
+      24399.5,
+      24764.0,
+      2
+     ],
+     "enter_now": null,
+     "est": null,
+     "position": null
+    },
+    {
+     "day": "2026-04-03",
+     "tf": 5,
+     "want": [
+      1775203500,
+      1,
+      24747.75,
+      24703.75,
+      25000.75,
+      4
+     ],
+     "enter_now": null,
+     "est": null,
+     "position": [
+      1775203320,
+      1,
+      24750.25,
+      24703.75,
+      25000.75,
+      3
+     ]
+    }
+   ],
+   "position_ok": 118,
+   "position_bad": [
+    {
+     "day": "2026-03-23",
+     "want": [
+      1774263480,
+      1,
+      24454.25,
+      24399.5,
+      24764.0,
+      2
+     ],
+     "position": null,
+     "finished": []
+    },
+    {
+     "day": "2026-04-03",
+     "want": [
+      1775203500,
+      1,
+      24747.75,
+      24703.75,
+      25000.75,
+      4
+     ],
+     "position": [
+      1775203320,
+      1,
+      24750.25,
+      24703.75,
+      25000.75,
+      3
+     ],
+     "finished": []
+    }
+   ],
+   "known_days": [
+    "2026-03-23",
+    "2026-04-03"
+   ],
+   "seconds": 113
+  },
+  "raw_feed": {
+   "signals": 220,
+   "same": 220,
+   "late_seen_at_entry_bar_close": 0,
+   "late": [],
+   "differ": [],
+   "missing": [],
+   "phantom": [],
+   "tf_differs": [
+    {
+     "day": "2026-04-03",
+     "t": 1775201700,
+     "full_tf": 5,
+     "cut_tf": 1,
+     "status_full": "filled"
+    }
+   ],
+   "trades": 120,
+   "enter_now_ok": 117,
+   "enter_now_bad": [
+    {
+     "day": "2026-03-23",
+     "tf": 1,
+     "want": [
+      1774263480,
+      1,
+      24454.25,
+      24399.5,
+      24764.0,
+      2
+     ],
+     "enter_now": null,
+     "est": null,
+     "position": null
+    },
+    {
+     "day": "2026-04-03",
+     "tf": 5,
+     "want": [
+      1775203500,
+      1,
+      24747.75,
+      24703.75,
+      25000.75,
+      4
+     ],
+     "enter_now": null,
+     "est": null,
+     "position": [
+      1775203320,
+      1,
+      24750.25,
+      24703.75,
+      25000.75,
+      3
+     ]
+    },
+    {
+     "day": "2026-05-05",
+     "tf": 1,
+     "want": [
+      1777961820,
+      -1,
+      28412.25,
+      28457.75,
+      28208.0,
+      3
+     ],
+     "enter_now": null,
+     "est": null,
+     "position": [
+      1777961760,
+      -1,
+      28421.75,
+      28457.75,
+      28208.0,
+      6
+     ]
+    }
+   ],
+   "position_ok": 117,
+   "position_bad": [
+    {
+     "day": "2026-03-23",
+     "want": [
+      1774263480,
+      1,
+      24454.25,
+      24399.5,
+      24764.0,
+      2
+     ],
+     "position": null,
+     "finished": []
+    },
+    {
+     "day": "2026-04-03",
+     "want": [
+      1775203500,
+      1,
+      24747.75,
+      24703.75,
+      25000.75,
+      4
+     ],
+     "position": [
+      1775203320,
+      1,
+      24750.25,
+      24703.75,
+      25000.75,
+      3
+     ],
+     "finished": []
+    },
+    {
+     "day": "2026-05-05",
+     "want": [
+      1777961820,
+      -1,
+      28412.25,
+      28457.75,
+      28208.0,
+      3
+     ],
+     "position": [
+      1777961760,
+      -1,
+      28421.75,
+      28457.75,
+      28208.0,
+      6
+     ],
+     "finished": []
+    }
+   ],
+   "known_days": [
+    "2026-03-23",
+    "2026-04-03",
+    "2026-05-05"
+   ],
+   "seconds": 252
+  }
+ },
+ "atlas": {
+  "ema_lon_vix": {
+   "trades": 86,
+   "signal_ok": 86,
+   "signal_bad": [],
+   "entry_ok": 86,
+   "entry_bad": []
+  },
+  "macd_sweep": {
+   "trades": 44,
+   "signal_ok": 44,
+   "signal_bad": [],
+   "entry_ok": 44,
+   "entry_bad": []
+  },
+  "sr_nyreclaim": {
+   "trades": 45,
+   "signal_ok": 45,
+   "signal_bad": [],
+   "entry_ok": 45,
+   "entry_bad": []
+  },
+  "seconds": 77
+ },
+ "checks": [
+  [
+   "LIT a: 220/220 2026 signals identical on data cut at the trigger bar's close (2 first seen at the entry bar's close: ['2026-03-23', '2026-05-05']), 0 differ, 0 missing",
+   true
+  ],
+  [
+   "LIT a: execution bar size (1m / 5m) of the signal same as the full run on 218/220",
+   true
+  ],
+  [
+   "LIT b: 118/120 trades decided at the 1m CISD close as the backtest trade (entry, stop, target, micros; known days ['2026-03-23', '2026-04-03'] reported, not failed: 2)",
+   true
+  ],
+  [
+   "LIT b: 118/120 open positions / finished trades at the fill bar's close = the backtest trade",
+   true
+  ],
+  [
+   "LIT c: phantom signals at the cut time 0 (an earlier setup's limit still pending: 0)",
+   true
+  ],
+  [
+   "LIT (raw 1m feed) a: 220/220 2026 signals identical on data cut at the trigger bar's close (0 first seen at the entry bar's close: []), 0 differ, 0 missing",
+   true
+  ],
+  [
+   "LIT (raw 1m feed) a: execution bar size (1m / 5m) of the signal same as the full run on 219/220",
+   true
+  ],
+  [
+   "LIT (raw 1m feed) b: 117/120 trades decided at the 1m CISD close as the backtest trade (entry, stop, target, micros; known days ['2026-03-23', '2026-04-03', '2026-05-05'] reported, not failed: 3)",
+   true
+  ],
+  [
+   "LIT (raw 1m feed) b: 117/120 open positions / finished trades at the fill bar's close = the backtest trade",
+   true
+  ],
+  [
+   "LIT (raw 1m feed) c: phantom signals at the cut time 0 (an earlier setup's limit still pending: 0)",
+   true
+  ],
+  [
+   "ATLAS ema_lon_vix a: 86/86 2026 research trades signalled from the bars up to the signal bar alone (same side, same stop, no trade before the entry bar opens)",
+   true
+  ],
+  [
+   "ATLAS ema_lon_vix b: 86/86 trades at the entry bar's close with the research entry / stop / target",
+   true
+  ],
+  [
+   "ATLAS macd_sweep a: 44/44 2026 research trades signalled from the bars up to the signal bar alone (same side, same stop, no trade before the entry bar opens)",
+   true
+  ],
+  [
+   "ATLAS macd_sweep b: 44/44 trades at the entry bar's close with the research entry / stop / target",
+   true
+  ],
+  [
+   "ATLAS sr_nyreclaim a: 45/45 2026 research trades signalled from the bars up to the signal bar alone (same side, same stop, no trade before the entry bar opens)",
+   true
+  ],
+  [
+   "ATLAS sr_nyreclaim b: 45/45 trades at the entry bar's close with the research entry / stop / target",
+   true
+  ]
+ ],
+ "seconds": 451
+}
