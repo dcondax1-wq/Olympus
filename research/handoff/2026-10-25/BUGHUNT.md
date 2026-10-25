@@ -202,9 +202,9 @@ from `eval_prior_pnl`). After tonight's start, the PC heartbeat carries the anch
 | test_lit_idm_sizing (quick) | 13/13 | | |
 | test_lit_late_entry | 10/10 | | |
 | test_lit_learn | 13/14 | **14/14** | stale (9) |
-| test_lit_live | timeout at 25 min | see below | day-end replay 120/120 identical before the timeout |
+| test_lit_live | timeout at 25 min | timeout at 50 min, 0 failures |  day-end replay 120/120 identical before the timeout |
 | test_lit_lookahead | pass | | |
-| test_lit_more_entries | timeout at 25 min | see below | asia_slot 187/187 identical before the timeout |
+| test_lit_more_entries | timeout at 25 min | **PASS** (40 min) | asia_slot 187/187 identical before the timeout |
 | test_lit_oif | 117/120 | 117/120 | research cleaning, written up above |
 | test_lit_provisional | 5/5 | | |
 | test_lit_retail | pass | | |
@@ -231,7 +231,7 @@ from `eval_prior_pnl`). After tonight's start, the PC heartbeat carries the anch
 | test_presence | 59/59 | | |
 | test_push | 41/41 | | |
 | test_recap | 104/104 | | |
-| test_rehearsal | timeout at 25 min | see below | |
+| test_rehearsal | timeout at 25 min | timeout at 50 min, 25 pass / 0 fail | slow under load |
 | test_remote_ctl | 51/51 | | |
 | test_risk_invariants | 27/27 | | |
 | test_roll | 23/23 | | |
@@ -250,4 +250,14 @@ from `eval_prior_pnl`). After tonight's start, the PC heartbeat carries the anch
 | test_win_scripts | 132/132 | | |
 | test_writeups_index | 5/5 | | |
 
-**Reruns of the three timeouts** (alone, 50-minute limit): see "Reruns" below.
+**Reruns of the three timeouts** (50-minute limit; the box was still loaded by other sessions):
+
+- `test_lit_more_entries`: **PASS** (rc 0, 40 min). asia_slot replay 187/187 identical.
+- `test_lit_live`: timed out again in its last stage. Everything it finished matched:
+  - day-end replay: **120/120 identical**
+  - intraday: 9,923 polls on 120 trade days, **0 differences** (+29 polls on the known day 2026-04-03)
+  - open position matched on 3,388 polls
+  - enter-now: 118/119 identical (04-03)
+  - No FAIL line before the timeout. 04-03 is the same research-cleaning day as in `test_lit_oif` (see above).
+- `test_rehearsal`: timed out again: 25 checks passed, 0 failed before the timeout (Sim101 preflight + START days).
+  Run it alone on an idle PC.
