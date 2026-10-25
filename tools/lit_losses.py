@@ -1385,6 +1385,7 @@ def save():
 
 
 UPGRADES = ("t_check", "scale_in", "be_off")   # built 2026-10-20 (tools/lit_adopt_combo.py); t_check + be_off ON, scale_in OFF until the Sim roundtrip
+PACK_VALUES = {"cisd1m": 20}   # options re-tuned after the loss pack (2026-10-24 safe switches: cisd1m 22, research/writeups/hq-lit.md)
 
 
 def save_live():
@@ -1395,7 +1396,8 @@ def save_live():
     The previous reference (2026-10-18, no upgrades) is kept as run lit_live_2026-10-18."""
     lm = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))
     P = {**lit.DEFAULTS, **lm["lit"]}
-    P0 = {**lit.DEFAULTS, **{k: v for k, v in lm["lit"].items() if k not in UPGRADES}}
+    P0 = {**lit.DEFAULTS, **{k: v for k, v in lm["lit"].items() if k not in UPGRADES}, **PACK_VALUES}
+    tuned = sorted(f"{k}{lm['lit'][k]}" for k, v in PACK_VALUES.items() if lm["lit"].get(k, v) != v)
 
     def key(L, qty=True):
         return [(t["day"], t["entry_t"], round(t["pnl"], 2), t["exit"]) + ((t["qty"],) if qty else ())
@@ -1406,16 +1408,22 @@ def save_live():
         raise SystemExit("the engine options do not reproduce lit_loss_pack")
     T = F.run(P)
     on = [k for k in UPGRADES if lm["lit"].get(k)]
+    on_t = tuple(sorted(on + tuned))
     # the stored run each switch set must reproduce (2026-10-20: scale_in off until the Sim roundtrip passes)
-    REF = {("be_off", "scale_in", "t_check"): "lit_adopt_all3", ("be_off", "t_check"): "lit_adopt_t15_be_off"}
-    rid_ref = REF.get(tuple(sorted(on)))
+    REF = {("be_off", "scale_in", "t_check"): "lit_adopt_all3", ("be_off", "t_check"): "lit_adopt_t15_be_off",
+           ("be_off", "cisd1m22", "t_check"): "hq_lit_sw_c22"}   # hq_lit runs use $1.90 a micro: trades compared without P&L
+    rid_ref = REF.get(on_t)
     if on and not rid_ref:
-        raise SystemExit(f"no reference run for the upgrade set {on}: add one to REF in tools/lit_losses.py save_live")
+        raise SystemExit(f"no reference run for the upgrade set {list(on_t)}: add one to REF in tools/lit_losses.py save_live")
     if rid_ref and os.path.exists(os.path.join(rl.RUNS, rid_ref + ".json")):
         ref = rl.load(rid_ref)
         c = ref["trade_cols"]
         kr = [(r[c.index("day")], r[c.index("entry_t")], round(r[c.index("pnl")], 2), r[c.index("exit")]) for r in ref["trades"]]
-        ok = key(T, qty=False) == kr
+        if tuned:   # a research run at other costs: same trades, same exits
+            kr = [(d, e, x) for d, e, _p, x in kr]
+            ok = [(d, e, x) for d, e, _p, x in key(T, qty=False)] == kr
+        else:
+            ok = key(T, qty=False) == kr
         print(f"live ({', '.join(on)}) == run {rid_ref}:", ok, len(T), len(kr), flush=True)
         if not ok:
             raise SystemExit(f"live_model.json lit does not reproduce run {rid_ref}")
