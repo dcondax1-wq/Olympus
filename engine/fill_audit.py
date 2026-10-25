@@ -947,6 +947,12 @@ class Watcher:
             rep = audit(store=self.store, now=now, eval_start=self._eval_start())
             res["audit"] = rep["summary"]["text"]
             res["alerts"] = send_alerts(alert_payloads(rep["rows"], now), self.store)
+            try:                     # live learning (engine/live_learning.py): learned costs + the trade review journal
+                from engine import live_learning
+                live_learning.pc_update(fa_store=self.store, now=now)
+                live_learning.pc_reviews(fa_store=self.store, now=now, checks=after)
+            except Exception as ex:
+                self.log(f"[exec audit] learning: {ex.__class__.__name__}: {ex}")
             if after:
                 try:                 # the nightly live-vs-backtest verdict (one push only when the day differs)
                     res["nightly"] = nightly(e.date().isoformat(), store=self.store, now=now, rep=rep)["verdict"]

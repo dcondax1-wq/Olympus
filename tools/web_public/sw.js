@@ -32,7 +32,9 @@
 // v34 (2026-10-25 PM): the LIT bot is named "Zlarior" (display name only): tabs Home · Zlarior · ATLAS · Money · More, each bot tab
 // holds all of that bot (sections: Zlarior Today · Brain · Trades · Plan · Results · Strategy; ATLAS Today · Brain · Trades · Setups ·
 // Results), clean.js v2 and the renamed labels. New cache name so every iPhone refreshes.
-const CACHE = 'le-public-v34';
+// v35 (2026-10-25 PM): learning.js + learncore.js (Zlarior > Results > Learning, ATLAS > Results > Learning: live vs backtest,
+// real-fill costs, weekly reviews, "The bot suggests"; data.json "learning_live", engine/live_learning.py), clean.js v3.
+const CACHE = 'le-public-v35';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=k31025', './icons/apple-touch-icon.png?v=k31025', './icons/icon-512.png?v=k31025'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

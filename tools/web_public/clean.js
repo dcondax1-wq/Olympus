@@ -173,17 +173,18 @@
     ['Brain', ['brain'], []],
     ['Trades', ['trades', 'last10', 'recaps', 'intel', 'journal', 'stats', 'weekly'], ['tplay', 'weekcal', 'activity', 'replays']],
     ['Plan', ['plan', 'day', 'levels', 'radar', 'brief'], []],
-    ['Results', ['perf', 'results', 'pnlcal', 'edge', 'execq'], ['stops', 'evals']],
+    ['Results', ['perf', 'results', 'pnlcal', 'edge', 'execq', 'learning'], ['stops', 'evals']],
     ['Strategy', ['strategy', 'risk', 'mffurules'], []],
   ];
   const AT_SEGS = [
     ['Today', ['atlas'], []], ['Brain', ['atlas/brain'], []], ['Trades', ['atlas/trades'], []],
-    ['Setups', ['atlas/setups', 'atstats'], []], ['Results', ['atlas/results'], []],
+    ['Setups', ['atlas/setups', 'atstats'], []], ['Results', ['atlas/results', 'atlearn'], []],
   ];
   const BOTS = { lit: { name: 'Zlarior', segs: ZL_SEGS }, atlas: { name: 'ATLAS', segs: AT_SEGS } };
   const CHIP = { lit: 'Today', eval: '50K eval', evalhq: 'Eval HQ', cockpit: 'Eval cockpit', curve: 'Eval curve', trades: 'All trades', intel: 'Trade intel',
     plan: 'Plan', day: 'Day plan', levels: 'Levels', radar: 'Radar', brief: 'Briefing', perf: 'Performance', results: 'Replay', pnlcal: 'Calendar',
-    execq: 'Execution', risk: 'Risk & sizing', mffurules: 'MFFU rules', 'atlas/setups': 'Rules & members', atstats: 'Setup stats' };
+    execq: 'Execution', risk: 'Risk & sizing', mffurules: 'MFFU rules', 'atlas/setups': 'Rules & members', atstats: 'Setup stats',
+    'atlas/results': 'Results', learning: 'Learning', atlearn: 'Learning' };
   const chipLabel = (it) => CHIP[it] || (PAGES[it] && PAGES[it].label) || it;
   const goAttr = (it) => { const [id, arg] = it.split('/'); return `data-go="${esc(id)}"${arg ? ` data-arg="${esc(arg)}"` : ''}`; };
   const botIds = (b) => BOTS[b].segs.flatMap((s) => s[1].concat(s[2])).map((it) => it.split('/')[0]);
