@@ -88,8 +88,10 @@ function registerSW() {
 export function go(page) {
   if (page === 'data') page = store.get('dataSub', 'results');
   if (page === 'second') page = 'atlas';                       // the old Data → Second strategies page is ATLAS now
+  if (page === 'zlarior' || page === 'lit') page = store.get('zlSub', 'botctl');   // the Zlarior entry: its last section page
   if (!TITLES[page] || !document.getElementById('page-' + page)) page = 'cc';
   if (groupOf(page) === 'data') store.set('dataSub', page);
+  if (groupOf(page) === 'zlarior') store.set('zlSub', page);
   const prev = S.page;
   S.page = page;
   $$('#nav a').forEach(a => a.classList.toggle('active', a.dataset.page === page));
@@ -121,7 +123,7 @@ function rangeText() {
   if (!r) return isArchive(S.page) ? 'Archive · engine backtest loading…' : 'loading…';
   return isArchive(S.page)
     ? `Archive · engine ${r.sym || S.sym} ${r.tf || S.tf} · ${r.range[0]} → ${r.range[1]} · ${r.days.length} sessions`
-    : `LIT · NQ 5m${r.trades.some(t => t.trigger_tf === '1m') ? ' + 1m' : ''} · ${r.range[0]} → ${r.range[1]} · ${r.days.length} sessions`;
+    : `Zlarior · NQ 5m${r.trades.some(t => t.trigger_tf === '1m') ? ' + 1m' : ''} · ${r.range[0]} → ${r.range[1]} · ${r.days.length} sessions`;
 }
 export async function run() {
   if (isArchive(S.page)) return runEngine();

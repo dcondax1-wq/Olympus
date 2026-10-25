@@ -267,7 +267,7 @@ def part_f(view):
     except Exception:
         o = {"err": r.stderr[-500:]}
     check("f. SecondUI v7: each member's brain card shows its latest picture, the ATLAS page a 'Trade pictures' strip, alt text",
-          o.get("v") == 7 and o.get("cards", 0) >= 3 and o.get("strip") and o.get("th", 0) >= 3 and not o.get("fail") and o.get("bc", 0) >= 3 and o.get("alt"), o)
+          o.get("v", 0) >= 7 and o.get("cards", 0) >= 3 and o.get("strip") and o.get("th", 0) >= 3 and not o.get("fail") and o.get("bc", 0) >= 3 and o.get("alt"), o)
 
 
 def part_g(view, site_dir, shots):
@@ -297,8 +297,8 @@ def part_g(view, site_dir, shots):
                   and "api.github.com" not in m.text and "raw.githubusercontent" not in m.text else None)
             pg.route("https://api.github.com/**", lambda r: r.fulfill(status=404, body="{}"))
             pg.route("https://raw.githubusercontent.com/**", lambda r: r.fulfill(status=404, body="{}"))
-            pg.goto(url + "?fxoff#/atlas")
-            pg.wait_for_selector("#atRoot .at-hero", timeout=20000)
+            pg.goto(url + "?fxoff#/atlas/brain")            # 2026-10-25 PM: the ATLAS tab in parts; the member brains are its Brain section
+            pg.wait_for_selector("#atRoot .at-hero", state="attached", timeout=20000)
             pg.wait_for_timeout(800)
             n_cards = pg.eval_on_selector_all("#atRoot .sb-card .tp-card", "e => e.length")
             n_th = pg.eval_on_selector_all("#atRoot .at-pics .tp-th", "e => e.length")

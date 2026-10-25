@@ -226,7 +226,7 @@
     const b = HL().brief || {}, m = b.morning || {}, log = (b.log || []).filter((x) => x.kind === 'sweep');
     if (!m.plan && !log.length) return '';
     const watched = (m.levels || []).filter((l) => !l.taken).length;
-    return `<a class="card hb-plan" href="#/plan"><div class="card-h"><h3>${icon('target')}Today's LIT plan · ${esc(fDate(m.day || b.day || ''))}</h3><span class="meta">${icon('right')}</span></div>
+    return `<a class="card hb-plan" href="#/plan"><div class="card-h"><h3>${icon('target')}Today's Zlarior plan · ${esc(fDate(m.day || b.day || ''))}</h3><span class="meta">${icon('right')}</span></div>
       <p>${esc(m.plan || '')}</p><div class="chips">${chip(`${watched} levels watched`)}${chip(`${log.length} sweeps seen`)}${m.vix ? chip(`VIX ${num(m.vix.vix, 2)} · ${num(m.vix.move, 0)} pt move`) : ''}</div></a>`;
   }
   VIEWS.today = (el) => {
@@ -234,7 +234,7 @@
     el.innerHTML = `${surfaceLine()}${banner()}${verdictCard(M)}${tradeCard()}
       <div class="grid g2 astart">${evalCard(M)}${healthCard()}</div>
       ${planTeaser()}
-      <div class="hb-links">${[['trades', 'trades', 'Trades'], ['recaps', 'replay', 'Recaps'], ['weekly', 'results', 'Weekly'], ['money', 'wallet', 'Money'], ['atlas', 'layers', 'ATLAS'], ['strategy', 'rules', 'LIT strategy'], ['accounts', 'wallet', 'Accounts'], ['market', 'news', 'Market'], ['props', 'prop', 'Prop firms'], ['live', 'engine', 'Live detail'], ['activity', 'alerts', 'Activity']]
+      <div class="hb-links">${[['trades', 'trades', 'Trades'], ['recaps', 'replay', 'Recaps'], ['weekly', 'results', 'Weekly'], ['money', 'wallet', 'Money'], ['atlas', 'layers', 'ATLAS'], ['strategy', 'rules', 'Zlarior strategy'], ['accounts', 'wallet', 'Accounts'], ['market', 'news', 'Market'], ['props', 'prop', 'Prop firms'], ['live', 'engine', 'Live detail'], ['activity', 'alerts', 'Activity']]
         .map(([g, ic, l]) => `<button class="chipbtn" type="button" data-go="${g}">${icon(ic)}<span>${l}</span></button>`).join('')}</div>
       <p class="small mut hb-foot">Paper / eval monitor · read-only · built ${HD()?.built ? esc(new Date(HD().built).toLocaleString()) : '—'}${HD()?.home_only ? ' · loading the rest…' : ''}</p>`;
   };
@@ -250,7 +250,7 @@
     const untaken = (m.levels || []).filter((l) => !l.taken).sort((a, c) => c.price - a.price), taken = (m.levels || []).filter((l) => l.taken);
     const px = n.price || m.price || HL().price;
     const lvRow = (l) => `<div class="hb-lv ${l.side === 'H' ? 'h' : 'l'}"><span>${esc(l.label)}</span><b>${num(l.price, 2)}</b><em>${ok(px) ? (l.price > px ? '+' : '') + num(l.price - px, 1) + ' pts' : ''}</em></div>`;
-    el.innerHTML = head(`Home · LIT plan · ${esc(fDate(m.day || b.day || ''))}`, 'Today’s LIT plan', esc(b.waiting ? `Built ${b.at || ''}; ${b.waiting}.` : `Built ${b.at || ''}.`))
+    el.innerHTML = head(`Zlarior · plan · ${esc(fDate(m.day || b.day || ''))}`, 'Today’s Zlarior plan', esc(b.waiting ? `Built ${b.at || ''}; ${b.waiting}.` : `Built ${b.at || ''}.`))
       + (m.plan ? `<div class="card"><div class="card-h"><h3>${icon('target')}The plan</h3><span class="meta">engine/lit_brief.py</span></div><p class="lead">${esc(m.plan)}</p>
           ${m.vix ? `<p class="small mut">${esc(m.vix.text)}</p>` : ''}${m.eval?.text ? `<p class="small">${icon('prop')} ${esc(m.eval.text)}</p>` : ''}
           ${m.overnight?.text ? `<p class="small mut">${esc(m.overnight.text)}</p>` : ''}${b.news_text || m.news_text ? `<p class="small mut">${icon('news')} ${esc(b.news_text || m.news_text)}</p>` : ''}</div>` : emptyBox('No plan yet.', 'The day brief is written by the cloud monitor before the session.'))
@@ -338,7 +338,7 @@
     const cell = {}; for (const t of T) { if (!t.entry_t) continue; const e = et(t.entry_t), w = WD.indexOf(e.wd); if (w < 0) continue; const k = w + '_' + e.h; (cell[k] = cell[k] || []).push(t); }
     const col = (r) => r == null ? 'transparent' : r > 0 ? `rgba(46,229,157,${Math.min(0.9, 0.15 + r / 4).toFixed(2)})` : `rgba(255,90,122,${Math.min(0.9, 0.2 + -r / 1.2).toFixed(2)})`;
     const byH = hours.map((h) => { const a = T.filter((t) => t.entry_t && et(t.entry_t).h === h); return { h, n: a.length, net: sum(a, (t) => t.pnl) }; });
-    el.innerHTML = head('Trades · stats', 'Key stats & streaks', sp === 'live' ? 'The live eval’s closed trades (PC bot).' : 'The LIT replay of the live rules at the LIT size rule ($800 up to a 20-pt stop), costs in.')
+    el.innerHTML = head('Trades · stats', 'Key stats & streaks', sp === 'live' ? 'The live eval’s closed trades (PC bot).' : 'The Zlarior replay of the live rules at the LIT size rule ($800 up to a 20-pt stop), costs in.')
       + `<div class="card hb-filt">${segHTML('hsSp', [['2026', '2026'], ['H1', 'Jan–Jun'], ['H2', 'Jul–Oct'], ['2021-25', '2021-25'], ['live', 'Live eval']], sp, 'sm')}</div>`
       + (!n ? emptyBox('No trades here yet.', sp === 'live' ? 'The live eval’s trades show here once the PC bot has closed one.' : '') : `
       <div class="hb-tiles">${tile('Trades', String(n), sp === 'live' ? '' : `${plural(wins.length, 'winner')}`)}${tile('Win rate', pct(100 * wins.length / n), `${losses.length} losers · ${n - wins.length - losses.length} flat`)}${tile('Avg R', fR(sum(T, (t) => t.r) / n), `net ${fR(sum(T, (t) => t.r), 1)}`, cls(sum(T, (t) => t.r)))}
@@ -466,14 +466,14 @@
     const fitTxt = ok(fit.per_month) ? `${usd(fit.per_month)} a month${fit.span ? ' · ' + esc(fit.span) : ''}` : fit.text ? esc(fit.text) : '';
     return `<div class="hb-plan2"><div class="hb-p2h"><b>${esc(p.name || '')}</b><span>${ok(p.price_owner) ? `<b class="up">${usd(p.price_owner, 2)}</b>` : ''}${ok(p.price_list) && p.price_list !== p.price_owner ? ` <s class="mut">${usd(p.price_list, 2)}</s>` : ''}</span></div>
       ${codes.length ? `<div class="hb-codes">${codes.map((c) => `<button type="button" class="hb-code" data-code="${esc(c.code)}" title="${esc([c.source, c.date].filter(Boolean).join(' · '))}">${icon('doc')}<b>${esc(c.code)}</b>${ok(c.pct) ? `<span>−${num(c.pct, 0)}%</span>` : ''}</button>`).join('')}<span class="small mut">tap to copy · verify at checkout${codes[0].date ? ' · seen ' + esc(codes[0].date) : ''}</span></div>` : ''}
-      ${fitTxt ? `<p class="small" style="margin:6px 0 0">${icon('results')} LIT fit: <b>${fitTxt}</b>${fit.verdict ? ' · ' + esc(fit.verdict) : ''}</p>` : ''}
+      ${fitTxt ? `<p class="small" style="margin:6px 0 0">${icon('results')} Zlarior fit: <b>${fitTxt}</b>${fit.verdict ? ' · ' + esc(fit.verdict) : ''}</p>` : ''}
       ${kvBlock('Eval rules', p.eval)}${kvBlock('Funded rules', p.funded)}${kvBlock('Payouts', p.payouts)}${kvBlock('Live account', p.live)}</div>`;
   }
   VIEWS.props = (el) => {
     if (!D) { el.innerHTML = skel(3); return; }
     const F = firmList(), P = PR() || {}, FU = HUBD().funded, nxt = P.firms?.next || P.next || null;
     const soon = !F.length;
-    el.innerHTML = head('Money · prop firms', 'Prop firms', 'Prices (your real price next to the list price), discount codes, the rules that matter for a bot, and how LIT fits each plan.')
+    el.innerHTML = head('Money · prop firms', 'Prop firms', 'Prices (your real price next to the list price), discount codes, the rules that matter for a bot, and how Zlarior fits each plan.')
       + (soon ? `<div class="card"><div class="card-h"><h3>${icon('prop')}Firm cards: coming soon</h3>${chip('research running')}</div>
           <p class="lead" style="margin-top:0">The firm-by-firm study (research/props/firms.json) is being written. Until it lands, what is known:</p>
           <div class="kv one"><div><span>MFFU Builder 50K (your eval)</span><b>$91.80 with a code · $0 activation</b></div><div><span>MFFU Builder 25K</span><b>$63 with a code</b></div>
@@ -625,7 +625,7 @@
     if (!isLIT()) { oldStrategy(el); return; }
     const S = D.strategy || {}, P = D.results?.periods || {}, h2 = P['2026 H2 (check)'] || {}, h1 = P['2026 H1 (picked on)'] || {};
     const pm = (p) => ok(p.per_month) ? p.per_month : perMonth(p.net, p.from, p.to);
-    el.innerHTML = head(`Strategy · locked ${esc(fDate(S.chosen) || '')}`, 'LIT · Liquidity Inducement', 'The rules the bot trades, in plain words, what was tested to make it better, and what changed lately.',
+    el.innerHTML = head(`Strategy · locked ${esc(fDate(S.chosen) || '')}`, 'Zlarior · the LIT method (Liquidity Inducement)', 'The rules the bot trades, in plain words, what was tested to make it better, and what changed lately.',
         `<button class="btn ghost" type="button" data-go="results">${icon('results')}Results</button>`)
       + `<div class="hb-tiles">${tile('Jul–Oct (check)', `PF ${fPF(h2.pf)}`, `${susd(h2.net)} · ${usd(pm(h2))}/mo · ${num(h2.per_week, 1)}/wk`, 'up')}${tile('Jan–Jun (picked)', `PF ${fPF(h1.pf)}`, `${susd(h1.net)} · ${usd(pm(h1))}/mo`)}
         ${tile('Win rate 2026', pct(P['2026 YTD']?.win_pct), 'small losses, big wins')}${tile('Sizing now', esc((S.lit_sizing || {}).mode || 'normal'), 'two_week = one winner passes')}</div>`
@@ -665,7 +665,7 @@
     const have = {}; GROUPS.forEach((g) => g.pages.forEach((p) => { have[p[0]] = p; }));
     const P = (id, label, ic, desc) => have[id] ? [id, label || have[id][1], ic || have[id][2], desc || have[id][3]] : (label ? [id, label, ic, desc] : null);
     const NEW = [
-      { id: 'today', label: 'Home', icon: 'today', pages: [P('today', 'Home', 'today', 'Is the bot trading my eval, today, the open trade, health'), P('plan', 'LIT plan', 'target', 'Today’s levels, the target band, sweeps seen'), P('market', 'Market', 'news', 'News week, CME holidays, the roll, the VIX band'),
+      { id: 'today', label: 'Home', icon: 'today', pages: [P('today', 'Home', 'today', 'Is the bot trading my eval, today, the open trade, health'), P('plan', 'Zlarior plan', 'target', 'Today’s levels, the target band, sweeps seen'), P('market', 'Market', 'news', 'News week, CME holidays, the roll, the VIX band'),
         P('live', 'Live detail', 'engine', 'Live Oracle, week ring, liquidity map, signals'), P('brief'), P('day'), P('levels'), P('cockpit'), P('ops')] },
       { id: 'trades', label: 'Trades', icon: 'trades', pages: [P('trades'), P('recaps'), P('weekly'), P('journal', 'Journal', 'doc', 'Search, filter, notes, CSV export'), P('stats', 'Stats', 'results', 'Key stats, streaks, R histogram, time of day'),
         P('accounts'), P('execq', 'Execution', 'check', 'Slippage, missed and extra trades vs the backtest'), P('edge'), P('pnlcal'), P('results'), P('replays'), P('stops'), P('activity')] },

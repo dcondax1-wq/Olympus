@@ -13,7 +13,7 @@
 (function () {
   'use strict';
   if (typeof GROUPS === 'undefined' || typeof VIEWS === 'undefined') return;
-  const KINDS = [['armed', 'Setup armed / expired', 'LIT limit armed, 1m-CISD wait, expired without a fill', false],
+  const KINDS = [['armed', 'Setup armed / expired', 'Zlarior limit armed, 1m-CISD wait, expired without a fill', false],
     ['pc_offline', 'Surface offline', 'no heartbeat from the PC in the session', true],
     ['feed_stale', 'FEED STALE', 'NinjaTrader bars missing: new entries blocked', true],
     ['unprotected', 'Position mismatch', 'NinjaTrader vs the bot, reconcile flatten', true],
@@ -23,11 +23,11 @@
     ['update', 'Update failed', 'bot auto-update failed or rolled back', true],
     ['cloud_stale', 'Cloud monitor stale', 'no cloud publish for 45+ min in market hours', false],
     ['rules', 'Rules differ', 'PC and cloud run different LIT rules', false],
-    ['second', 'ATLAS (PAPER)', 'ATLAS (EMA / MACD / S/R) paper entries and exits next to LIT (never traded)', false],
+    ['second', 'ATLAS (PAPER)', 'ATLAS (EMA / MACD / S/R) paper entries and exits next to Zlarior (never traded)', false],
     ['freeze', 'Feed frozen in a trade', 'a position is open and the NinjaTrader 1m bars stopped', true],
     ['anomaly', 'Anomaly', 'price spike / bad tick, an entry routed 30+ s after its signal', false],
-    ['drift', 'Drift', 'LIT / account B below the backtest range, execution drift', false],
-    ['loss_cap', 'Both accounts loss', 'LIT + account B at the combined daily / weekly cap', false],
+    ['drift', 'Drift', 'Zlarior / account B below the backtest range, execution drift', false],
+    ['loss_cap', 'Both accounts loss', 'Zlarior + account B at the combined daily / weekly cap', false],
     ['rules_change', 'Rules changed', 'the trading rules the PC bot runs changed', false]];
   const LV = [['on', 'On'], ['silent', 'Silent'], ['off', 'Off']];
   const STALE_S = 45 * 60;

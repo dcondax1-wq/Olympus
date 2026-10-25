@@ -208,7 +208,7 @@ async function showRisk() {
 function showRiskLit(el, r) {
   const stops = [8, 10, 15, 20, 25, 30, 40, 50, 60, 70, 80], lo = 8, hi = 88, y = r?.periods?.['2026 YTD'];
   el.innerHTML = `
-    <div class="nx-hero"><div><div class="nx-eyebrow">Risk &amp; sizing · LIT · live_model.json · engine/lit.py</div><h2>Size follows the stop</h2>
+    <div class="nx-hero"><div><div class="nx-eyebrow">Risk &amp; sizing · Zlarior · live_model.json · engine/lit.py</div><h2>Size follows the stop</h2>
       <p class="muted">Full $${SZ.risk} risk up to a ${SZ.ref}-pt stop; wider stops risk $${SZ.risk} × ${SZ.ref} / stop (a wide stop means <b>less</b> money at risk). MNQ micros at $${PV}/pt, max ${MAXM}; under 1 micro = no trade.
       <b>Weekly stop</b>: after ${SZ.wkn} stop-outs in a calendar week, ${sizeWord(SZ.wk)} size for the rest of it (rounded down once, at least 1 micro). <b>Fast-eval</b> sizing switch: full risk up to a ${SZ.fref}-pt stop (mode now: <b>${esc(SZ.mode)}</b>).
       No cold-streak filter and no late-entry rule: those were the previous strategy's (Modules → Archive).</p></div></div>

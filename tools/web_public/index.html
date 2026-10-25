@@ -997,12 +997,12 @@ a.lnk { color: var(--accent-2); text-decoration: underline; text-decoration-colo
 </head>
 <body>
 <div id="splash" aria-hidden="true"><canvas id="spCv"></canvas><div class="sp-in"><img src="icons/icon-512.png?v=k31025" alt="">
-  <div class="sp-t">LIQUIDITY ENGINE</div><div class="sp-s">LIT strategy · NQ futures · paper · works with the PC off</div><div class="sp-bar"><i></i></div></div></div>
+  <div class="sp-t">LIQUIDITY ENGINE</div><div class="sp-s">Zlarior · the LIT method · NQ futures · paper · works with the PC off</div><div class="sp-bar"><i></i></div></div></div>
 <div class="app">
   <aside class="side">
     <div class="brand">
       <div class="mark"><img src="icons/icon-192.png?v=k31025" alt="" width="38" height="38"></div>
-      <div><b>Liquidity Engine</b><span id="sideStrat">LIT · NQ · MFFU Builder 50K · paper</span></div>
+      <div><b>Liquidity Engine</b><span id="sideStrat">Zlarior · LIT method · NQ · MFFU Builder 50K · paper</span></div>
     </div>
     <nav class="nav" id="nav" aria-label="Sections"></nav>
     <div class="side-foot"><div class="k">Cloud monitor</div><div class="v" id="sideRun">—</div><div class="small mut" id="sideSub">GitHub Actions · PC off</div></div>
@@ -1446,7 +1446,7 @@ const GROUPS = [
     ['setups', 'Rejected setups', 'loss', 'Every LIT setup and the rule that stopped it'],
     ['learned', 'Lessons', 'learned', 'What the replay trades teach']] },
   { id: 'system', label: 'System', icon: 'modules', pages: [['system', 'Overview', 'modules', 'Every part of the bot'], ['strategy', 'Strategy', 'rules', 'The locked strategy in plain words'],
-    ['engine', 'Paper bot', 'engine', 'LIT cloud paper bot: state, position, events'], ['eval', 'MFFU Eval', 'prop', 'Balance, target, trailing max loss'],
+    ['engine', 'Paper bot', 'engine', 'Zlarior cloud paper bot: state, position, events'], ['eval', 'MFFU Eval', 'prop', 'Balance, target, trailing max loss'],
     ['news', 'News', 'news', 'USD events, the bot’s blackouts, headlines'],
     ['risk', 'Risk & Sizing', 'risk', 'Size follows the stop, weekly stop'], ['activity', 'Activity', 'trades', 'Every fill and outcome, newest first'],
     ['alerts', 'Notifications', 'alerts', 'Phone notifications for every fill and outcome'],
@@ -1690,7 +1690,7 @@ const nbox = (k, v) => `<div><span>${k}</span><b>${v}</b></div>`;
 const LV = () => D?.live || {};
 // the live strategy: LIT (live_model.json "model": "lit", no cold-streak filter) or the old Liquidity Engine
 const isLIT = () => (LV().model || D?.strategy?.model) === 'lit';
-const stratName = () => String(LV().strategy || D?.strategy?.label || (isLIT() ? 'LIT' : 'Liquidity Engine')).split(' (')[0].split(' - ')[0];   // "LIT"; the engine: "Liquidity Engine"
+const stratName = () => { const n = String(LV().strategy || D?.strategy?.label || (isLIT() ? 'LIT' : 'Liquidity Engine')).split(' (')[0].split(' - ')[0]; return n === 'LIT' ? 'Zlarior' : n; };   // the LIT bot's display name is "Zlarior" (2026-10-25); the engine: "Liquidity Engine"
 // LIT's size rule now: the weekly stop (after 2 stop-outs in a calendar week, half size for the rest of it)
 const litWeek = () => (LV().lit_rules || {}).weekly_stop || null;
 const litMonday = () => (LV().lit_rules || {}).monday || null;
@@ -1818,7 +1818,7 @@ function lkPick(row) {
   if (!row) return;
   if (row.title && row.t) { if (NEWS()?.events?.some(e => e.t === row.t) && row.date) openEvent(row); else toast(`${row.title} · ${et(row.t).hm || ''} ET`); return; }
   if (row.label && row.a != null) { toast(`${row.label}${ok(row.hi) ? ` · high ${num(row.hi)}${row.hiTaken ? ' (taken)' : ''} · low ${num(row.lo)}${row.loTaken ? ' (taken)' : ''}` : ''}`); return; }
-  if (row.expires_t) { toast(`LIT ${row.dir === 1 ? 'LONG' : 'SHORT'} limit armed · ${row.label || ''}`); return; }
+  if (row.expires_t) { toast(`Zlarior ${row.dir === 1 ? 'LONG' : 'SHORT'} limit armed · ${row.label || ''}`); return; }
   if (row.t) toast(`${row.dir === 1 ? 'LONG' : 'SHORT'} ${row.open ? 'open' : susd(row.pnl)}`);
 }
 // iOS only grants motion sensors from a tap: re-arm on the first tap after a reload
@@ -1998,7 +1998,7 @@ VIEWS.today = (el) => {
     </div>
     <div class="card"><div class="card-h"><h3>Price now · last sessions</h3><button class="chipbtn" type="button" data-go="chart"><span>Open chart</span>${icon('right')}</button></div><div id="tdChart"></div></div>
     <div class="grid g2">
-      <div class="card"><div class="card-h"><h3>Latest ${lit ? 'LIT' : 'engine'} signals</h3><span class="meta">${lit ? 'the cloud bot’s recent window' : 'the cloud engine’s 20-day window'}</span></div>${sigList(lv.engine_trades)}</div>
+      <div class="card"><div class="card-h"><h3>Latest ${lit ? 'Zlarior' : 'engine'} signals</h3><span class="meta">${lit ? 'the cloud bot’s recent window' : 'the cloud engine’s 20-day window'}</span></div>${sigList(lv.engine_trades)}</div>
       ${labTeaser()}
     </div>
     ${lit ? shadowCard() : ''}`;
@@ -3511,7 +3511,7 @@ VIEWS.engine = (el) => {
       <div class="card"><div class="card-h"><h3>Cloud monitor</h3><span class="meta">GitHub Actions</span></div><div class="kv one"><div><span>Last run</span><b>${lv.last_run ? ago(lv.last_run) : '—'}</b></div><div><span>Runs so far</span><b>${lv.runs ?? '—'}</b></div><div><span>Last bar</span><b>${esc(lv.health?.last_bar || '—')}</b></div>
         <div><span>Price</span><b>${num(lv.price)}</b></div><div><span>Mode</span><b>paper only · never places orders</b></div><div><span>Schedule</span><b>${lit ? 'every 30 min, 02:00–16:25 ET, market days' : 'every 15 min in the killzones, market days'}</b></div></div></div></div>
     <div class="grid g2"><div class="card"><div class="card-h"><h3>Today’s events</h3><span class="meta">${esc(lv.today || '')}</span></div>${feedHTML(lv.events)}</div>
-      <div class="card"><div class="card-h"><h3>Latest ${lit ? 'LIT' : 'engine'} signals</h3><span class="meta">${lit ? 'the recent window' : 'the 20-day window'}</span></div>${sigList(lv.engine_trades)}</div></div>
+      <div class="card"><div class="card-h"><h3>Latest ${lit ? 'Zlarior' : 'engine'} signals</h3><span class="meta">${lit ? 'the recent window' : 'the 20-day window'}</span></div>${sigList(lv.engine_trades)}</div></div>
     ${lit ? shadowCard() : ''}`;
   fxFill('engine-pipeline', 'pipeline', PD, {}, (fb) => pipeFb(fb, PD));
 };
@@ -3715,10 +3715,10 @@ function accTradeRow(x, i) {
         <span class="chips">${chip(`${x.qty ?? '—'} MNQ${x.risk_pts != null ? ` <i>·</i> ${num(x.risk_pts, 1)} pt stop` : ''}`)}${x.exit ? chip(esc(x.exit), x.exit === 'TARGET' ? 'good' : x.exit === 'STOP' ? 'bad' : '') : ''}</span>${AS.fa === 'all' && ACCS().length > 1 ? `<span class="small mut acc-an">${esc(x.acc_name)}</span>` : ''}</span>
       <span class="tres"><b class="${cls(x.pnl)}">${susd(x.pnl)}</b><span class="${cR(x.r)}">${fR(x.r)}</span></span>${icon('down', 'acc-chev')}</button>
     ${open ? `<div class="acc-td"><div class="nums">${nbox('Entry', num(x.entry))}${nbox('Stop', num(x.stop))}${nbox('Target', num(x.target))}${x.exit_px != null ? nbox('Exit', num(x.exit_px)) : ''}${x.mfe != null ? nbox('Best point', fR(x.mfe)) : ''}${x.exit_t ? nbox('Closed', et(x.exit_t).hm + ' ET') : ''}</div>
-      ${why.length ? `<section><h4>${icon('info')}Why LIT took it</h4><p>${why.join(' · ')}</p></section>` : ''}
+      ${why.length ? `<section><h4>${icon('info')}Why Zlarior took it</h4><p>${why.join(' · ')}</p></section>` : ''}
       ${rp.why ? `<section><h4>${icon('info')}Report</h4><ul class="list">${rp.why.map(w => `<li>${esc(w)}</li>`).join('')}</ul></section>` : ''}
       ${rp.result ? `<section><h4>${icon('check')}Result</h4><p>${esc(rp.result)}</p></section>` : ''}
-      ${!why.length && !rp.why ? `<div class="note">No LIT report for this trade yet: the replay export writes one after the next data refresh.</div>` : ''}
+      ${!why.length && !rp.why ? `<div class="note">No Zlarior report for this trade yet: the replay export writes one after the next data refresh.</div>` : ''}
       <div class="acc-ta">${tcAvail(x) ? `<button class="btn sm" type="button" data-acc-chart="${i}">${icon('chart')}Chart</button>` : '<span class="small mut">No chart: the recent bars do not cover this day.</span>'}${x.report ? `<button class="btn sm ghost" type="button" data-acc-rep="${i}">${icon('doc')}Full report</button>` : ''}</div></div>` : ''}</div>`;
 }
 function accTrades(el) {
@@ -3904,7 +3904,7 @@ function litStrategy(el) {
         <div><span>Sizing mode</span><b>${esc(mode)}${mode === 'normal' ? ' (fast-eval / safe-eval switches off)' : ''}</b></div>
         <div><span>Account</span><b>MFFU Builder 50K eval · paper only</b></div></div>
         ${S.lock_note ? `<p class="lead" style="margin-top:12px">${lockNoteHTML(S.lock_note)}</p>` : ''}</div>
-    ${cols.length ? `${secH('How it has done')}<div class="card"><div class="card-h"><h3>LIT replay of these settings</h3><span class="meta">real CME NQ futures · costs included</span></div>
+    ${cols.length ? `${secH('How it has done')}<div class="card"><div class="card-h"><h3>Zlarior replay of these settings</h3><span class="meta">real CME NQ futures · costs included</span></div>
       <div class="tw"><table class="ht"><tr><th>Number</th>${cols.map(([l]) => `<th class="c">${esc(l)}</th>`).join('')}</tr>${rows.map(([l, f]) => `<tr><td class="k">${l}</td>${cols.map(([, p]) => `<td class="v">${f(p)}</td>`).join('')}</tr>`).join('')}</table></div>
       <p class="card-d" style="margin-top:10px">Expect the H2 rate, not the full-year rate: H1 was tuned, H2 was not. 2021-25 has no 1-minute data, so it is a reference line only.</p></div>` : ''}
     ${secH('The rules, word for word')}<div class="card"><article class="md">${r.html || '<p class="mut">STRATEGY.md is not in this build.</p>'}</article></div>
@@ -4508,23 +4508,23 @@ applyLook(); nav(); route(); load('boot'); schedule(); loadFX(); loadLK();
 setInterval(() => FX && D && FX.mood(moodNow()), 60000);
 if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => null);
 </script>
-<script src="extras.js?v=1" defer></script>
-<script src="hub.js?v=6" defer></script>
-<script src="more.js?v=3" defer></script>
+<script src="extras.js?v=2" defer></script>
+<script src="hub.js?v=7" defer></script>
+<script src="more.js?v=4" defer></script>
 <script src="live.js?v=1" defer></script>
 <script src="intel.js?v=1" defer></script>
 <script src="tradepics.js?v=1" defer></script>
-<script src="brain.js?v=5" defer></script>
-<script src="alerts.js?v=4" defer></script><script src="ai.js?v=1" defer></script>
+<script src="brain.js?v=6" defer></script>
+<script src="alerts.js?v=5" defer></script><script src="ai.js?v=2" defer></script>
 <script src="perfcore.js?v=1" defer></script>
 <script src="perf.js?v=1" defer></script>
 <script src="secondcore.js?v=8" defer></script>
 <script src="second.js?v=4" defer></script>
 <script src="scalecore.js?v=1" defer></script>
 <script src="scale.js?v=1" defer></script>
-<script src="goals.js?v=1" defer></script>
+<script src="goals.js?v=2" defer></script>
 <script src="launch.js?v=1" defer></script>
-<script src="features.js?v=1" defer></script>
-<script src="clean.js?v=1" defer></script>
+<script src="features.js?v=2" defer></script>
+<script src="clean.js?v=2" defer></script>
 </body>
 </html>

@@ -29,7 +29,10 @@
 // timeline, ATLAS setup stats, offline badge, haptics, scroll-to-top). New cache name so every iPhone refreshes.
 // v33 (2026-10-25): K3 icon (v32) + clean.js (the calm layout: five tabs Home · Trades · ATLAS · Money · More, a short Home, one grouped More
 // list with Advanced collapsed, 3D off by default), hub.js v6, more.js v3. New cache name so every iPhone refreshes.
-const CACHE = 'le-public-v33';
+// v34 (2026-10-25 PM): the LIT bot is named "Zlarior" (display name only): tabs Home · Zlarior · ATLAS · Money · More, each bot tab
+// holds all of that bot (sections: Zlarior Today · Brain · Trades · Plan · Results · Strategy; ATLAS Today · Brain · Trades · Setups ·
+// Results), clean.js v2 and the renamed labels. New cache name so every iPhone refreshes.
+const CACHE = 'le-public-v34';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=k31025', './icons/apple-touch-icon.png?v=k31025', './icons/icon-512.png?v=k31025'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

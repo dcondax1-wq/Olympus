@@ -6,7 +6,7 @@
 // Data: /api/next/second (engine/next_api.py second_view -> engine/second.dashboard_block of LiveBot.second, .atlas),
 // /api/next/brain/second, /api/next/pc/status + /api/next/pc/account (the LIT card). Renderer: ./secondcore.js (a
 // byte-identical copy of tools/web_public/secondcore.js, shared with the phone app). Read-only.
-import { $, esc } from '../util.js';
+import { $, esc, store } from '../util.js';
 import { charts } from './pics.js';
 
 let loading = null;
@@ -44,11 +44,41 @@ async function showAtlas() {
     await core();
     [S, B, CH] = await Promise.all([getJ('/api/next/second'), getJ('/api/next/brain/second').catch(() => null), charts()]);
   } catch (e) { el.innerHTML = `<div class="banner warn">${esc(e.message)}</div>`; return; }
-  el.innerHTML = `<div class="nx-hero"><div><div class="nx-eyebrow">Strategy 2 · the 25K</div><h2>ATLAS</h2>
-    <p class="muted">EMA + MACD + S/R on its own 25K, next to LIT on the 50K: status, brain, go / no-go, trades, rules, backtest. Read-only.</p></div></div><div id="atRoot"></div>`;
+  const part = store.get('nx.atPart', 'today');
+  el.innerHTML = `<div class="nx-hero"${part !== 'today' ? ' hidden' : ''}><div><div class="nx-eyebrow">Strategy 2 · the 25K</div><h2>ATLAS</h2>
+    <p class="muted">EMA + MACD + S/R on its own 25K, next to Zlarior on the 50K: status, brain, go / no-go, trades, rules, backtest. Read-only.</p></div></div><div id="atRoot"></div>`;
   window.SecondUI.atlas($('#atRoot', el), S, { brain: brainOf(B), charts: CH });
+  try { atlasPart($('#atRoot', el), part); } catch (e) { console.warn('atlas parts', e); }
 }
 export const atlas = { show: showAtlas };
+
+// The ATLAS page in parts (2026-10-25 PM, the sections of the ATLAS page: Today · Brain · Trades · Setups · Results): each
+// block SecondUI.atlas draws is tagged with its part; only the asked part shows (the same split as the phone, clean.js).
+function atlasTag(root) {
+  let cur = 'brain', i = 0;
+  for (const c of root.children) {
+    const cl = c.classList, h = ((c.querySelector('h3,.sc-eyebrow,summary') || c).textContent || '').trim();
+    let s;
+    if (cl.contains('at-hero')) s = 'today';
+    else if (cl.contains('av2')) s = 'results';
+    else if (c.tagName === 'H3' && cl.contains('at-sec')) { cur = /^Candidate/i.test(h) ? 'setups' : 'brain'; s = cur; }
+    else if (cl.contains('sb-card') || cl.contains('sc-banner') || cl.contains('at-cand')) s = cur;
+    else if (cl.contains('at-pics') || /^Trades\b/.test(h)) s = 'trades';
+    else if (/^Go \/ no-go|^Backtest|^Scorecard/i.test(h)) s = 'results';
+    else if (/^Rules/.test(h) || c.tagName === 'DETAILS') s = 'setups';
+    else if (i === 1) s = 'today results';                  // the 25K eval card, right under the hero
+    else s = 'results';
+    c.dataset.at = s; i++;
+  }
+}
+function atlasPart(root, part) {
+  if (!root || !root.children.length) return;
+  if (!['today', 'brain', 'trades', 'setups', 'results'].includes(part)) part = 'today';
+  atlasTag(root);
+  let n = 0;
+  for (const c of root.children) { const on = c.dataset.at.split(' ').includes(part); c.style.display = on ? '' : 'none'; n += on; }
+  if (!n) root.insertAdjacentHTML('beforeend', '<div class="nx-empty muted">Nothing here yet. It fills in after the next ATLAS run.</div>');
+}
 
 // ------------------------------------------------------------------ Today: "LIT · 50K" and "ATLAS · 25K"
 const ok = (v) => v != null && !isNaN(v);
@@ -58,7 +88,7 @@ function litCard(st, ac) {
   if (ok(e.to_target)) parts.push('$' + Math.round(e.to_target).toLocaleString('en-US') + ' to pass');
   if (ok(e.session)) parts.push('session ' + e.session + '/' + (e.sessions || 10));
   if (ok(e.room)) parts.push('room $' + Math.round(e.room).toLocaleString('en-US'));
-  return { name: 'LIT', plan: (a.plan ? 'MFFU ' + String(a.plan).replace(/^MFFU\s*/, '') : 'MFFU Builder 50K') + (a.name ? ' · ' + a.name : ''),
+  return { name: 'Zlarior', plan: (a.plan ? 'MFFU ' + String(a.plan).replace(/^MFFU\s*/, '') : 'MFFU Builder 50K') + (a.name ? ' · ' + a.name : ''),
     status: v.label || v.code || (st && st.error ? 'NO ANSWER' : '—'), lvl: v.level === 'good' ? 'good' : v.level === 'bad' ? 'bad' : v.level ? 'warn' : '',
     today: pn.today, week: pn.week, prog: ok(e.profit) ? e.profit / 3000 : 0, progText: parts.join(' · ') || 'eval not reporting',
     next: (h.lit && h.lit.text) || (st && st.model_state) || '', goto: 'brain' };

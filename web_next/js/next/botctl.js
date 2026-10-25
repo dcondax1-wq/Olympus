@@ -479,7 +479,7 @@ async function renderPage(force) {
   if (!s || s.error) { el.innerHTML = card('Bot Control', empty('No answer from the server.', esc(s?.error || ''))); return; }
   if (!el.querySelector('.bc-page')) {
     el.innerHTML = `<div class="bc-page">
-      <div class="nx-hero"><div><div class="nx-eyebrow">Bot Control · LIT · NinjaTrader</div><h2>Start, watch, stop</h2><p class="muted">Pick the account, let the checklist go green, press START. Sim starts with one click; a real account needs the confirm phrase you type each time. Paper and Sim by default.</p></div></div>
+      <div class="nx-hero"><div><div class="nx-eyebrow">Bot Control · Zlarior · NinjaTrader</div><h2>Start, watch, stop</h2><p class="muted">Pick the account, let the checklist go green, press START. Sim starts with one click; a real account needs the confirm phrase you type each time. Paper and Sim by default.</p></div></div>
       <div id="bcStrip"></div>
       <div class="bc-grid2"><div id="bcStart"></div><div id="bcRight"></div></div>
       <div class="bc-sec">You · presence and hands-off</div>

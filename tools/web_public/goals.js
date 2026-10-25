@@ -83,7 +83,7 @@
     const scR = ring(sc.frac || 0, `${sc.n || 0}`, `ATLAS go-live · of ${sc.need || 20}`, lvc(sc.level === 'idle' ? 'warn' : sc.level), 84);
     return `<div class="card gl-card"><div class="card-h"><h3>${icon('target')}Goals</h3><button class="chipbtn wide" type="button" data-go="goals"><span>All goals</span>${icon('right')}</button></div>
       ${acctBlock(lit, true)}${since(lit)}${acctBlock(at, true)}
-      <div class="gl-rings">${weekRing(W.lit, 'LIT this week')}${weekRing(W.atlas, 'ATLAS this week')}${scR}</div>
+      <div class="gl-rings">${weekRing(W.lit, 'Zlarior this week')}${weekRing(W.atlas, 'ATLAS this week')}${scR}</div>
       <p class="gl-s small">${esc((W.lit || {}).sentence || '')}</p>
       ${monthBlock(m)}
       <div class="gl-foot">${G.payout && !G.payout.error ? `<span>${icon('wallet')}${esc(G.payout.sentence)}</span>` : ''}${G.scale && G.scale.step != null ? `<span>${icon('layers')}Scale step ${G.scale.step} of ${G.scale.of} · ${G.scale.progress ?? 0}% to the next</span>` : ''}</div></div>`;
@@ -125,7 +125,7 @@
     const clk = (cal.clocks || []).filter((x) => x.day >= today || daysTo(x.day) > -7);
     const lines = [];
     if (C.inWin) lines.push(`<div class="gl-t now">${icon('clock')}<span><b>Entry window open</b> · cut-off in <b data-cd="${C.cut}">${cdFmt(C.cut - nowS())}</b> · flat 15:55 ET</span></div>`);
-    else lines.push(`<div class="gl-t">${icon('clock')}<span>Next LIT window <b>${et(C.open).wd} 02:00 ET</b> · in <b data-cd="${C.open}">${cdFmt(C.open - nowS())}</b></span></div>`);
+    else lines.push(`<div class="gl-t">${icon('clock')}<span>Next Zlarior window <b>${et(C.open).wd} 02:00 ET</b> · in <b data-cd="${C.open}">${cdFmt(C.open - nowS())}</b></span></div>`);
     if (C.sesOpen) lines.push(`<div class="gl-t">${icon('today')}<span>Market opens <b>${et(C.sesOpen).wd} 18:00 ET</b> · in <b data-cd="${C.sesOpen}">${cdFmt(C.sesOpen - nowS())}</b></span></div>`);
     if (C.kz) lines.push(`<div class="gl-t now">${icon('target')}<span><b>${esc(C.kz[2])} killzone now</b></span></div>`);
     else if (C.nk) lines.push(`<div class="gl-t">${icon('target')}<span>Next killzone <b>${esc(C.nk.label)}</b> in <b data-cd="${C.nk.t}">${cdFmt(C.nk.t - nowS())}</b></span></div>`);
@@ -153,7 +153,7 @@
   }
   VIEWS.goals = (el) => {
     const G = GL();
-    el.innerHTML = head('Home · Goals', 'My goals', 'Pass each eval in 2 weeks (10 sessions, never more than 15) · LIT 2-4 trades a week · ATLAS 3-4 · then funded, payouts and more accounts');
+    el.innerHTML = head('Home · Goals', 'My goals', 'Pass each eval in 2 weeks (10 sessions, never more than 15) · Zlarior 2-4 trades a week · ATLAS 3-4 · then funded, payouts and more accounts');
     if (!G) { el.insertAdjacentHTML('beforeend', emptyBox('No goals yet.', 'The goals come with the next cloud run (engine/goals.py).')); return; }
     const [lit, at] = Array.isArray(G.accounts) ? G.accounts : [];
     const sum = (G.lines || []).map((x) => `<li style="--c:${lvc(x.level)}">${esc(x.text)}</li>`).join('');
@@ -163,7 +163,7 @@
       <div class="card"><div class="card-h"><h3>${icon('check')}In one look</h3><div class="row-btns"><button class="chipbtn wide" type="button" id="glShare">${icon('share')}<span>Share</span></button></div></div><ul class="gl-sum">${sum}</ul></div>
       <div class="card">${acctBlock(lit, false)}${pass(lit)}</div>
       <div class="card">${acctBlock(at, false)}${pass(at)}</div>
-      <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>${icon('trades')}LIT this week</h3><span class="meta">goal ${(W.lit || {}).lo}-${(W.lit || {}).hi}</span></div>${weekStrip(W.lit)}</div>
+      <div class="grid g2 astart"><div class="card"><div class="card-h"><h3>${icon('trades')}Zlarior this week</h3><span class="meta">goal ${(W.lit || {}).lo}-${(W.lit || {}).hi}</span></div>${weekStrip(W.lit)}</div>
         <div class="card"><div class="card-h"><h3>${icon('atlas')}ATLAS this week</h3><span class="meta">goal ${(W.atlas || {}).lo}-${(W.atlas || {}).hi}</span></div>${weekStrip(W.atlas)}</div></div>
       <div class="card"><div class="card-h"><h3>${icon('results')}Month vs the backtest</h3><span class="meta">${esc((G.month || {}).month || '')}</span></div>${monthBlock(G.month)}
         ${(G.month || {}).per_month_expected ? `<p class="small mut">On average the backtest makes about ${susd((G.month || {}).per_month_expected)} a month on this eval (the Jul-Oct check half, engine/health_band.py); the middle path is lower because a few big winners carry the average.</p>` : ''}</div>
