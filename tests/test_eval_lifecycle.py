@@ -26,8 +26,9 @@ from tests.test_multi_account import Clock, make_bot, pos_at, ts  # noqa: E402
 
 RESULTS = []
 LIVE_LSZ = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit_sizing"]
-# the weekly loss stop is ON live since the owner's safe switches (2026-10-24, wk_loss_usd 1200); these checks use the
-# live sizing with the key removed for the OFF cases and set it explicitly for the ON cases
+# the eval weekly loss stop was ON live 2026-10-24 (wk_loss_usd 1200) and is OFF again since the owner's 2026-10-25 switch
+# (wk_loss_usd null, uprisk.md); these checks use the live sizing with the key removed for the OFF cases and set it
+# explicitly (1200) for the ON cases, so they hold either way
 LSZ = {k: v for k, v in LIVE_LSZ.items() if k != "wk_loss_usd"}
 T_WED = ts(2026, 10, 21, 10, 0)            # Wednesday 2026-10-21, 10:00 ET
 TR = {"risk_pts": 30.0, "tgt_pts": 200.0, "size_mult": 1.0}
@@ -202,7 +203,7 @@ def bot_checks(tmp):
     st = a.state("2026-10-21") if a else None
     q = a.qty_for({**p, "tgt_pts": 200.0}, T_WED + 305) if a else None
     exp = sz.funded_qty({"risk_pts": 30.0, "tgt_pts": 200.0}, st, MA.PRESETS["mffu_builder_50k"]["sizing"]["funded"])
-    check("funded account in the bot: mode funded, funded_state room $2,000, micros = funded_qty (40% room, <= $1,500 winner)",
+    check("funded account in the bot: mode funded, funded_state room $2,000, micros = funded_qty (preset: 60% room, <= $2,000 winner)",
           a is not None and a.mode == "funded" and st and st["room"] == 2000.0 and q == exp and q >= 1, (st, q, exp))
 
 
@@ -244,8 +245,14 @@ def funded_2026():
             pay_rows.append({"day": d, **pc, "floor_before": before["floor"], "floor_after": after["floor"],
                              "bal_drop": round(before["balance"] - after["balance"], 2)})
     traded = [x for x in rows if x["q"]]
-    big = [x for x in traded if x["q"] > 1 and x["win_usd"] > 1500.0 + 1e-6]
-    check("funded 2026: every trade with 2+ micros pays at most $1,500 at its target (best-day cap)", not big, big[:3])
+    mw = float(cfg["funded"]["max_win"])            # $2,000 since the owner's 2026-10-25 switch (uprisk.md; was $1,500)
+    cap_usd = float(cfg["funded"]["pct_max_usd"])    # $1,500 (was $800)
+    big = [x for x in traded if x["q"] > 1 and x["win_usd"] > mw + 1e-6]
+    check(f"funded 2026: every trade with 2+ micros pays at most ${mw:,.0f} at its target (best-day cap, preset max_win)",
+          not big, big[:3])
+    risky = [x for x in traded if x["risk_usd"] > min(cap_usd, float(R["dll"])) + 1e-6 or x["risk_usd"] >= x["room"]]
+    check(f"funded 2026: every full stop-out (stop + 2 ticks, $1.90) <= ${cap_usd:,.0f}, the $1,000 soft daily loss and "
+          "below the room (never reaches the floor)", not risky, risky[:3])
     check("funded 2026: the account is never lost (room > 0 at every entry)", lost is None and all(x["room"] > 0 for x in rows), lost)
     check("funded 2026: each payout asked only at $1,500+ above the $2,100 buffer, $500-$2,000",
           pay_rows and all(p["above_buffer"] >= 1500.0 and 500.0 <= p["amount"] <= 2000.0 for p in pay_rows), pay_rows[:2])

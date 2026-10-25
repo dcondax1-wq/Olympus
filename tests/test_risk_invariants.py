@@ -47,6 +47,7 @@ from engine import sizing as sz  # noqa: E402
 
 RESULTS = []
 LSZ = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit_sizing"]
+from tests.sizing_pins import PINNED  # noqa: E402
 EVAL_MODES = ("two_week", "eval", "safe_eval", "fast_eval")
 
 
@@ -90,12 +91,13 @@ NOW = 1792591200          # 2026-10-21 ~10:00 ET
 
 
 # ------------------------------------------------------------------------------------------------ 1 + 2
-def part_caps(n=3000, seed=25):
-    rnd = random.Random(seed)
+def lit_caps(rnd, n, base, label):
+    """LIT ceilings on `base`: the room (strict), the $1,000 soft daily loss and, when base has wk_loss_usd, the weekly loss."""
+    wl = base.get("wk_loss_usd")
     bad, bad1, maxq_bad = [], [], []
     for _ in range(n):
         mode = rnd.choice(EVAL_MODES)
-        cfg = {**LSZ, "mode": mode}
+        cfg = {**base, "mode": mode}
         risk = rnd.choice([6.0, 9.5, 14.0, 20.0, 33.0, 50.0, 70.0, 88.0, 120.0])
         room = rnd.choice([30.0, 75.0, 140.0, 260.0, 600.0, 1200.0, 2000.0, 3100.0])
         cum = rnd.choice([0.0, -250.0, -700.0, -960.0, 180.0])
@@ -106,7 +108,9 @@ def part_caps(n=3000, seed=25):
         r = sz.lit_qty(q0, {"risk_pts": risk, "tgt_pts": rnd.choice([1.5 * risk, 3 * risk, 200.0]), "size_mult": 1.0}, cfg,
                        room=room, state=s, learning=None)
         q = int(r["qty"])
-        lims = [(room, True), (1000.0 + cum, False)] + ([(1200.0 + wk, False)] if wk is not None else [])
+        lims = [(room, True), (1000.0 + cum, False)] + ([(float(wl) + wk, False)] if wl and wk is not None else [])
+        if mode == "two_week" and s["session"] <= int(base.get("two_week_until") or 10):
+            lims.append((float((base.get("two_week") or {}).get("room_f") or 1.0) * room, False))   # the room share (0.8 live)
         fits1 = all((L1(risk) < lim) if strict else (L1(risk) <= lim + 1e-9) for lim, strict in lims)
         if q and not all((q * L1(risk) < lim) if strict else (q * L1(risk) <= lim + 1e-9) for lim, strict in lims):
             bad.append((mode, risk, room, cum, wk, q))
@@ -114,10 +118,18 @@ def part_caps(n=3000, seed=25):
             bad1.append((mode, risk, room, cum, wk, q))
         if q > 40:
             maxq_bad.append((mode, q0, q))
-    check(f"1 LIT ({n} random eval states, live lit_sizing, every eval mode): qty x (stop + 1 tick, $1.90) inside the room, "
-          "the $1,000 soft daily loss and the $1,200 weekly loss", not bad, bad[:4])
-    check("1 LIT: when 1 micro does not fit a ceiling the entry is skipped (never 1 micro)", not bad1, bad1[:4])
-    check("2 LIT: a model asking for 100 micros never routes more than 40", not maxq_bad, maxq_bad[:4])
+    wk_txt = f"the ${float(wl):,.0f} weekly loss" if wl else "no weekly stop (wk_loss_usd null)"
+    check(f"1 LIT ({n} random eval states, {label}, every eval mode): qty x (stop + 1 tick, $1.90) inside the room, "
+          f"the two_week room share, the $1,000 soft daily loss and {wk_txt}", not bad, bad[:4])
+    check(f"1 LIT ({label}): when 1 micro does not fit a ceiling the entry is skipped (never 1 micro)", not bad1, bad1[:4])
+    check(f"2 LIT ({label}): a model asking for 100 micros never routes more than 40", not maxq_bad, maxq_bad[:4])
+
+
+def part_caps(n=3000, seed=25):
+    rnd = random.Random(seed)
+    # the live config (owner 2026-10-25: room_f 0.8, no weekly stop) and the pinned one with the $1,200 weekly stop ON
+    lit_caps(rnd, n, LSZ, "live lit_sizing")
+    lit_caps(rnd, n, PINNED, "pinned: room_f 0.55 + $1,200 weekly stop")
     # ATLAS on LIT's account
     bad = []
     for _ in range(n):

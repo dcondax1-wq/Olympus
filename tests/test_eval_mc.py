@@ -34,7 +34,10 @@ def main():
     near = eval_mc.simulate(3, 2900.0, 2000.0, LS, n=500, seed=1)
     thin = eval_mc.simulate(3, -1850.0, 150.0, LS, n=500, seed=1)
     check("$100 from the target passes more than a fresh eval", near["p10"] > fresh["p10"], near["p10"])
-    check("$150 of room fails more than a fresh eval", thin["fail"] > fresh["fail"], thin["fail"])
+    # since the sizing cap invariant (15cb560, 2026-10-24: skip when 1 micro's stop-out does not fit the room, no min 1
+    # micro) a thin eval no longer stops out to a FAIL: it mostly can not trade and stays open (stuck) instead
+    check("$150 of room passes less and gets stuck (open) more than a fresh eval",
+          thin["pass"] < fresh["pass"] and thin["open"] > fresh["open"], {k: thin.get(k) for k in ("pass", "fail", "open")})
     late = eval_mc.from_clock({"status": "open", "session": 12, "profit": 500.0, "room": 1800.0}, LS, n=500, seed=1)
     check("past session 10: no 2-week odds, text says so", late["p10"] == 0 and "past the 2-week clock" in late["text"], late["text"][:80])
     check("closed / unknown clock -> None", eval_mc.from_clock({"status": "passed", "session": 4}, LS) is None

@@ -45,8 +45,9 @@ def main():
     r.append(check("close to target", two_week_qty({"risk_pts": 40, "tgt_pts": 200}, {"profit": 2500.0, "room": 2000.0}, A0), 2))
     # never risk the pass: the day already reached the target
     r.append(check("target reached today", two_week_qty({"risk_pts": 40, "tgt_pts": 200}, {"profit": 2900.0, "cum": 200.0, "room": 2000.0}, A0), 0))
-    # minimum 1 micro even when the room is tiny
-    r.append(check("min 1 micro", two_week_qty({"risk_pts": 80, "tgt_pts": 160}, {"profit": -1950.0, "room": 50.0}, A0), 1))
+    # tiny room: 1 micro's stop-out (~$164) does not fit $50 of room -> skip (sizing cap invariant 15cb560, 2026-10-24: a
+    # budget is a ceiling, skip instead of the old "min 1 micro")
+    r.append(check("tiny room skips (no min 1 micro)", two_week_qty({"risk_pts": 80, "tgt_pts": 160}, {"profit": -1950.0, "room": 50.0}, A0), 0))
     # maximum 40 micros
     r.append(check("max 40 micros", two_week_qty({"risk_pts": 8, "tgt_pts": 12}, FRESH, {**A0, "dll_cap": False}), 40))
     # a losing day so far shrinks the daily-loss budget: -$600 today -> 400 / 81.9 = 4

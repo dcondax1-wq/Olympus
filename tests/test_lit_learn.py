@@ -298,7 +298,8 @@ def test_sizing_hook():
     assert sizing.lit_qty(3, {**t22, "learn": None}, E, room=5000.0, learning=L)["qty"] == 18
     assert sizing.lit_qty(3, t22, E, room=5000.0, learning=L)["qty"] == 19
     # the room cap still applies after the learning step
-    assert sizing.lit_qty(3, tf, E, room=300.0, learning=L)["qty"] == 2           # 0.6 x 300 / 88 = 2
+    # 0.6 x 300 = $180; one micro's stop-out is (44 + 1 tick) x $2 + $1.90 = $92.40 (cost-aware ceilings, 2026-10-24) -> 1
+    assert sizing.lit_qty(3, tf, E, room=300.0, learning=L)["qty"] == 1
     # observe mode: unchanged size, the would-be multiplier reported
     ro = sizing.lit_qty(3, tf, E, room=2000.0, learning={**L, "mode": "observe"})
     assert ro["qty"] == 5 and ro["learn"]["would"] == 1.25 and ro["learn"]["mult"] == 1.0
