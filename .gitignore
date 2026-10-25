@@ -86,6 +86,8 @@ data/accounts.json
 data/eval_anchor.json
 data/eval_anchor.json.tmp
 data/live_state_accounts.json
+data/live_state_atlas_v2.json
+data/live_state_atlas_v2.json.tmp
 data/ninjatrader_state_*.json
 
 .claude/worktrees/

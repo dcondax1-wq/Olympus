@@ -1018,6 +1018,11 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     try:                                   # second strategies, PAPER (engine/second.py): rules, backtest tables, state, trades
         from engine import second as _second
         data["second"] = _second.dashboard_block(st.get("second"), pc=(st.get("pc") or {}).get("second"))
+        try:                               # ATLAS v2 PAPER shadow (engine/atlas_v2.card, read-only): the ATLAS tab card
+            from engine import atlas_v2 as _av2
+            data["second"]["atlas_v2"] = _av2.card(st.get("atlas_v2"), pc=(((st.get("pc") or {}).get("second") or {}).get("atlas_v2")))
+        except Exception as e:
+            data["second"]["atlas_v2"] = {"error": f"{e.__class__.__name__}: {e}"}
     except Exception as e:
         data["second"] = {"error": f"{e.__class__.__name__}: {e}", "strategies": []}
     try:                                   # scaling plan (engine/scale_plan.py, read-only): step N, the next account, the ladder
@@ -1094,7 +1099,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
             "lit_extra": {k: (data.get("lit_extra") or {}).get(k) for k in ("plan", "sizing")} if data.get("lit_extra") else None,
             "extras": {"two_week": ex.get("two_week"), "eventual": ex.get("eventual")},
             # ATLAS (data.json "second") for the Home card: state, brain, the last trades, account B, the scorecard
-            "second": {**{k: v for k, v in (data.get("second") or {}).items() if k not in ("strategies", "atlas")},
+            "second": {**{k: v for k, v in (data.get("second") or {}).items() if k not in ("strategies", "atlas", "atlas_v2")},
                        "atlas": {"name": ((data.get("second") or {}).get("atlas") or {}).get("name"),
                                  "members": ((data.get("second") or {}).get("atlas") or {}).get("members")},
                        "strategies": [{**{k: v for k, v in s.items() if k not in ("backtest", "rules", "trades", "summary")},

@@ -9,6 +9,8 @@
 // v7 (2026-10-23): trade pictures (engine/trade_chart.py via tradepics.js, window.TradePics): each brain card and candidate
 // card shows its member's latest trade picture (tap = full screen, pinch-zoom, swipe between trades), the ATLAS page a
 // "Trade pictures" strip; opts.charts = data.json "charts" (phone) / GET /api/next/charts (PC).
+// v8 (2026-10-25): "ATLAS v2 (paper shadow)" card on the ATLAS page (atlasV2Card, S.atlas_v2 = engine/atlas_v2.card): hunt
+// trades so far / 20, paper $ vs the research band, the shadow 25K eval's progress, its trades. Read-only, never routed.
 (function () {
   'use strict';
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -380,9 +382,38 @@
         + cands.map((s) => candCard(s, live, cbr(s.key))).join('') : '';
       const others = S.strategies.filter((x) => !keys.includes(x.key) && !x.candidate);
       const otH = others.length ? `<details class="sc-card"><summary><b>Other paper shadows</b> (${others.map((s) => esc(s.short || s.key)).join(', ')}): not part of ${esc(name)}</summary>${others.map((s) => strat(s, live)).join('')}</details>` : '';
-      el.innerHTML = hero + evCard + brainH + picH + goH + trH + caH + ruH + btH + otH;
+      el.innerHTML = hero + evCard + atlasV2Card(S.atlas_v2) + brainH + picH + goH + trH + caH + ruH + btH + otH;
       if (T) T.settle(el);
     } catch (e) { el.innerHTML = `<div class="sc-card"><b>The ATLAS page failed to draw</b><p class="sc-note">${esc(String(e && e.message || e))}</p></div>`; }
+  }
+  // ATLAS v2 (paper shadow, engine/atlas_v2.card: data.json second.atlas_v2 / GET /api/next/second atlas_v2): candidate 1b of
+  // research/writeups/atlas-v2.md on a simulated Builder 25K next to the live ATLAS. Hunt trades so far / 20, paper $ vs the
+  // research band, the shadow eval's progress, its last trades and the research numbers. Read-only, never routed.
+  function atlasV2Card(x) {
+    if (!x) return '';
+    if (x.error) return `<div class="sc-card"><b>ATLAS v2 (paper shadow)</b><p class="sc-note">Unavailable: ${esc(x.error)}</p></div>`;
+    const m = x.money || {}, ev = x.eval || {}, sc = x.scorecard || {}, h = sc.hunts || {}, ac = sc.account || {}, pg = x.progress || {};
+    const need = +pg.need || 20, n = +pg.hunts_n || 0, p = Math.max(0, Math.min(1, n / need)), ep = Math.max(0, Math.min(1, +ev.progress || 0));
+    const kc = { ready: C.good, on_track: C.acc, below: C.bad, collecting: C.mut }[h.kind] || C.mut;
+    const e = ac.expected || {}, band = e.usd && ac.n ? `${usd(e.usd[0])} to ${usd(e.usd[2])} (median ${usd(e.usd[1])}) after ${n0(e.at_n)} trades` : 'shown after the first finished trade';
+    const rows = (x.trades || []).slice().sort((a, b) => (b.entry_t || 0) - (a.entry_t || 0)).slice(0, 10).map((t) => `<tr><td>${esc(t.day || '')} ${hm(t.entry_t)}</td><td>${esc(t.short || t.src || '')}</td><td>${t.dir > 0 ? 'LONG' : 'SHORT'}</td><td>${n0(t.qty)}</td><td>${esc(t.exit_kind || '')}</td><td class="${cl(t.usd)}">${t.usd == null ? '—' : usd(t.usd)}</td></tr>`).join('');
+    const R = x.research || {}, T0 = x.today_research || {};
+    const rr = ['H1', 'H2', '2025', '2021-24'].filter((k) => R[k]).map((k) => `<tr><td>${esc(R[k].label || k)}</td><td class="${cl(R[k].usd)}">${usd(R[k].usd)}</td><td class="${cl(R[k].per_month)}">${usd(R[k].per_month)}</td><td>${n0(R[k].p10, 1)}% / ${n0(R[k].f10, 1)}%</td><td class="${cl(T0[k])}">${usd(T0[k])}</td></tr>`).join('');
+    const evs = (x.evals || []).slice(-6).map((v) => `${esc(v.result)} (${n0(v.sessions)} s)`).join(' · ');
+    return `<div class="sc-card av2"><div class="sc-eyebrow" style="color:${C.warn}">ATLAS v2 · PAPER SHADOW · never routed${x.source ? ' · from the ' + esc(x.source) : ''}</div>
+      <h3>ATLAS v2 (paper shadow)</h3><p class="sc-note">${esc(x.what || '')}</p>
+      <div class="sc-stats"><div class="sc-stat"><span>Hunt trades so far</span><b>${n0(n)} / ${n0(need)}</b><em>decide after ${n0(need)}+</em></div>
+        <div class="sc-stat"><span>Paper $ (all trades)</span><b class="${cl(m.usd)}">${usd(m.usd)}</b><em>${n0(m.n)} trades · after $63 evals ${usd(m.net_less_fees)}</em></div></div>
+      <div class="av2-bar" style="--c:${kc}"><u style="width:${(p * 100).toFixed(1)}%"></u></div>
+      <p class="sc-note"><span class="sc-pill" style="background:${kc}">${esc(h.text || 'collecting')}</span> Expected $ (research band): ${esc(band)}.</p>
+      <h4>Shadow eval ${ev.n ? n0(ev.n) + ' · ' : ''}MFFU Builder 25K</h4>
+      <div class="sc-stats"><div class="sc-stat"><span>Balance</span><b>${ev.balance != null ? '$' + n0(ev.balance) : '—'}</b><em>${ev.to_target != null ? usd(ev.to_target).replace('+', '') + ' to pass' : ''}</em></div>
+        <div class="sc-stat"><span>Room to the floor</span><b>${ev.room != null ? '$' + n0(ev.room) : '—'}</b><em>session ${n0(ev.session)} · new eval under $${n0(ev.min_room || 200)}</em></div></div>
+      <div class="av2-bar" style="--c:${C.acc}"><u style="width:${(ep * 100).toFixed(1)}%"></u></div>
+      <p class="sc-note">Evals: ${n0(m.passes || 0)} passed · ${n0(m.fails || 0)} failed · ${n0(m.stuck || 0)} stuck · ${n0(m.evals_bought || 0)} bought ($63 each, paper)${evs ? ' · last: ' + evs : ''}.</p>
+      <details ${rows ? 'open' : ''}><summary><b>Shadow trades</b> (${n0((x.trades || []).length)})</summary>${rows ? `<div class="sc-tw"><table class="sc-t"><thead><tr><th>Entry ET</th><th>Member</th><th>Side</th><th>Qty</th><th>Exit</th><th>$</th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="sc-note">No shadow trade yet: it starts with the next cloud run.</p>'}</details>
+      <details><summary><b>Research numbers</b> (eval money less the $63 fees)</summary>${rr ? `<div class="sc-tw"><table class="sc-t"><thead><tr><th>Period</th><th>v2 $</th><th>v2 $/month</th><th>2-week pass / fail</th><th>ATLAS today $</th></tr></thead><tbody>${rr}</tbody></table></div>` : ''}
+        <p class="sc-note">${esc(sc.rule || '')} Run ${esc(x.run || '—')}${x.writeup ? ` · write-up <a href="#/writeup/${encodeURIComponent(x.writeup)}">${esc(x.writeup)}</a>` : ''}. Members: ${esc((x.members || []).join(' + '))}.</p></details></div>`;
   }
   // a candidate member (the stop hunts, second_model.json "candidate": true): its brain (stage, waiting for, rule checks,
   // plan, log), its own go / no-go, paper trades, rules, research numbers and the 25K eval paths with it as an ATLAS member
@@ -460,7 +491,7 @@
     };
     return `<div class="at-two" aria-label="Two strategies">${L.map(one).join('')}</div>`;
   }
-  const ACSS = `.at-cand{border-color:color-mix(in srgb,${C.warn} 45%,transparent)}.sb-in{border-top:1px solid ${C.line};margin-top:8px;padding-top:4px}.at-hero{border-width:1.5px}.at-top{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.at-top>div:first-child{flex:1 1 220px;min-width:0}
+  const ACSS = `.av2{border-color:color-mix(in srgb,${C.warn} 45%,transparent)}.av2-bar{position:relative;height:6px;border-radius:99px;background:${C.line};overflow:hidden;margin:8px 0 4px}.av2-bar u{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--c)}.at-cand{border-color:color-mix(in srgb,${C.warn} 45%,transparent)}.sb-in{border-top:1px solid ${C.line};margin-top:8px;padding-top:4px}.at-hero{border-width:1.5px}.at-top{display:flex;gap:14px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}.at-top>div:first-child{flex:1 1 220px;min-width:0}
 .at-h{margin:8px 0 4px;font-size:20px}.at-day{text-align:right;min-width:110px}.at-day span,.at-day em{display:block;font-size:11.5px;opacity:.7;font-style:normal}.at-day b{display:block;font-size:26px;font-weight:800}
 .at-lit{margin-top:10px;padding-top:8px;border-top:1px solid ${C.line}}.at-sec{margin:18px 2px 10px;font-size:16px}
 .at-two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}.at-two-c{display:flex;flex-direction:column;gap:7px;text-align:left;font:inherit;color:inherit;cursor:pointer;min-width:0;
@@ -472,5 +503,5 @@ border:1.5px solid color-mix(in srgb,var(--c) 55%,transparent);border-radius:16p
 .at-two-p{font-size:11.5px;opacity:.75;line-height:1.35}.at-two-n{font-size:12.5px;line-height:1.4;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 @media (max-width:340px){.at-two{grid-template-columns:1fr}}`;
   window.SecondUI = { render, brain, brainList, acctB, scoreBox, scoreCard, atlas, atlasStatus, atlasCard, atlasMoney, twoCards, members, candCard,
-    setCharts: (c) => { PICS = c || null; }, version: 7 };
+    setCharts: (c) => { PICS = c || null; }, version: 8, atlasV2Card };
 })();
