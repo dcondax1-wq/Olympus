@@ -2399,7 +2399,16 @@ def main(argv=None):
     if a.sim_check or a.sim_roundtrip or a.sim_roundtrip_add:
         if a.sim_roundtrip_add:
             cfg["nt_state_path"] = os.path.join(ROOT, "data", "ninjatrader_state_simcheck.json")   # never the bot's own state
-        return _cli_sim_check(cfg, roundtrip=a.sim_roundtrip or a.sim_roundtrip_add, add=a.sim_roundtrip_add)
+        rc = _cli_sim_check(cfg, roundtrip=a.sim_roundtrip or a.sim_roundtrip_add, add=a.sim_roundtrip_add)
+        if a.sim_roundtrip or a.sim_roundtrip_add:      # the launch checklist's "Sim roundtrip" line (data/sim_roundtrip_last.json)
+            try:
+                from . import launch_check
+                launch_check.save_sim_result("add" if a.sim_roundtrip_add else "roundtrip", rc == 0,
+                                             cfg.get("nt_account") or os.environ.get("NINJATRADER_ACCOUNT") or "Sim101",
+                                             [f"exit code {rc}"])
+            except Exception:
+                pass
+        return rc
     if a.disable_auto_resume:
         from . import autoresume
         was = autoresume.disable("owner: --disable-auto-resume")

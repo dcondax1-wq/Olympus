@@ -14,6 +14,7 @@ data/ninjatrader_reset_ok.json
 data/ninjatrader_state*.json.corrupt-*
 # the owner's NinjaTrader account allowlist (engine/ninjatrader.allow_account)
 data/nt_accounts_allow.json
+data/sim_roundtrip_last.json*
 # phone remote control: the command ids already handled (engine/remote_ctl.py)
 data/remote_done.json
 # presence check-ins, the entry pause, hands-off events (engine/presence.py, entry_pause.py, handsoff.py)

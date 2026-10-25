@@ -8,7 +8,8 @@ allowlist file, the guards' clock probe result, the heartbeat status hook, live_
   GET /api/next/cc/home          both accounts side by side (LIT 50K, ATLAS 25K): progress to target, room to floor,
                                  today, open position, what the bot waits for, health lights (feed, NinjaTrader, clock,
                                  STARTUP RECONCILED, allowlist, duplicate-process lock, heartbeat, kill, poll), the day
-                                 (session phase, early close, full closure, DST change, news today), the last log rows
+                                 (session phase, early close, full closure, DST change, news today), the last log rows,
+                                 the launch checklist (engine/launch_check.py, "launch")
   GET /api/next/cc/calendar      the next 14 trading days: early close, closed, DST change, weekday
   GET /api/next/cc/handoff       the audit folder's files (name, size, kind) + the README headline
   GET /api/next/cc/doc?name=     one text file of that folder (md / csv / txt / json, <= 600 KB; a name, never a path)
@@ -325,6 +326,12 @@ def recent_log(bot, n=12) -> list:
     return rows[:n]
 
 
+def _launch(bot, h, now):
+    """The launch checklist (engine/launch_check.py): the same items the phone shows, read from the bot itself."""
+    from . import launch_check
+    return launch_check.block(bot, h if isinstance(h, dict) and not h.get("error") else None, now)
+
+
 def home_view(bot, now: int | None = None) -> dict:
     from . import botctl, pcdash_api
     now = int(now or _now(bot))
@@ -341,6 +348,7 @@ def home_view(bot, now: int | None = None) -> dict:
             "verdict": st.get("verdict"), "running": bool(getattr(bot, "running", False)),
             "lit": _safe(lambda: _lit_card(bot, now, lm)), "atlas": _safe(lambda: _atlas_card(bot, now)),
             "lights": _safe(lambda: lights(bot, now, h), []), "waiting": _safe(lambda: waiting(bot, st)),
+            "launch": _safe(lambda: _launch(bot, h, now)),
             "day": d, "log": _safe(lambda: recent_log(bot), []),
             "version": (h.get("auto") or {}).get("version"), "branch": (h.get("auto") or {}).get("branch"),
             "uptime": h.get("uptime"), "price": st.get("price"), "eval_clock": st.get("eval_clock")}

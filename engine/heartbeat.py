@@ -16,6 +16,7 @@ heartbeat.json: {"t": unix seconds, "running": bot running, "adapter": paper|nin
                            orders today, kill flag, uptime; secret-free, ~2 KB; the cloud's verdict: accounts.verdict),
                  "remote": the phone remote control (engine/remote_ctl.hb_field: on, "remote: last cmd X done at HH:MM ET",
                            a stop waiting for flat, the last fetch error),
+                 "launch": the launch checklist (engine/launch_check.block: items green / red, each red with its fix command),
                  "ops": the owner's PC helpers (engine/ops_checks.hb_fields: last check red / yellow count + first fix,
                         last backup, free disk; ~200 bytes)}
 Every beat also writes the payload to logs/heartbeat_last.json (local, gitignored) for HEALTH_CHECK and the ops task.
@@ -176,6 +177,16 @@ def save_last(payload: dict, res: dict, path: str = LAST_PATH):
         pass
 
 
+def _launch(bot, health):
+    """The launch checklist block (engine/launch_check.block: anchor, allowlist, account B, startup reconcile, NinjaTrader,
+    feed, Sim roundtrips, armed, bot up from 01:55 ET). Never raises; None when unavailable."""
+    try:
+        from . import launch_check
+        return launch_check.block(bot, health if isinstance(health, dict) else None)
+    except Exception:
+        return None
+
+
 def _acct(bot):
     """The Accounts page block (engine/accounts.pc_activity). Never raises; None when unavailable."""
     try:
@@ -288,11 +299,13 @@ class Heartbeat:
     def payload(self) -> dict:
         st = getattr(self.bot, "state", None) or {}
         cfg = getattr(self.bot, "cfg", None) or {}
+        health = _health(self.bot)
         return {"t": int(time.time()), "running": bool(getattr(self.bot, "running", False)), "adapter": cfg.get("adapter", "paper"),
                 "position": bool(st.get("position")), "model_state": st.get("model_state"), "host": platform.node(),
                 "model": (st.get("strategy") or {}).get("model") or cfg.get("model"),
                 "push_pk": _push_pk(),          # phone notifications: the cloud seals the notification key to this (engine/push.py)
-                "every_s": int(self.every_s), "acct": _acct(self.bot), "health": _health(self.bot), "ops": _ops(),
+                "every_s": int(self.every_s), "acct": _acct(self.bot), "health": health, "ops": _ops(),
+                "launch": _launch(self.bot, health),   # the launch checklist (engine/launch_check.py; read-only, ~2 KB)
                 "exec": _exec(),                # execution quality summary (engine/fill_audit.py), None before the first audit
                 "remote": _remote(),            # phone remote control (engine/remote_ctl.py): the last command and its result
                 "live_pub": _live_pub(),        # the phone's live.json push (engine/live_publish.py): last result, None before it

@@ -144,7 +144,7 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
     now = int(now or time.time())
     hb = dict(hb_payload or {})
     pc = {k: hb.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "health", "ops", "remote", "acct",
-                                 "brain", "second", "ai")}   # brain: the Bot Brain's phone cut (< 16 KB); second: paper EMA / MACD
+                                 "brain", "second", "ai", "launch")}   # brain: the Bot Brain's phone cut (< 16 KB); second: paper EMA / MACD
     pc.update(present=True, t=now, age_s=0, silent=False, every_s=int(every_s), live=True)
     out = {"v": 1, "kind": KIND, "t": now, "every_s": int(every_s), "host": hb.get("host"), "model_state": hb.get("model_state")}
     try:

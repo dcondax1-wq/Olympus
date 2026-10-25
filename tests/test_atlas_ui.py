@@ -195,9 +195,9 @@ def part_c(shots):
             check("c. Home: two cards 'LIT' + 'ATLAS' on top (status, today, week, eval)", len(cards) == 2 and cards[0].startswith("LIT") and cards[1].startswith("ATLAS")
                   and "THIS WEEK" in cards[0].upper() and "SIM" in cards[1].upper() and "TO PASS" in cards[0].upper(), cards)
             first = pg.evaluate("() => { const p = document.querySelector('#page'); const c = p.querySelector('.at-two'), h = p.querySelector('.hb-hero'); return !!c && !!h && !!(c.compareDocumentPosition(h) & 4); }")
-            # 2026-10-25: the Goals card (goals.js) is the first card, the two cards right under it
+            # 2026-10-25: the Goals card (goals.js) is the first card (after the launch checklist, launch.js, until it is all green), the two cards right under it
             check("c. Home: Goals first, then the two cards, above the 'Is the bot trading my eval?' card", first and pg.evaluate(
-                "() => { const L = [...document.querySelector('#page').querySelectorAll('.card:not(#moInst), .at-two')]; "
+                "() => { const L = [...document.querySelector('#page').querySelectorAll('.card:not(#moInst):not(.lc-card), .at-two')]; "
                 "return L.length > 1 && L[0].classList.contains('gl-card') && L[1].classList.contains('at-two'); }"))
             box = pg.evaluate("() => [...document.querySelectorAll('.at-two-c')].map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.width)]; })")
             check("c. Home: the cards are side by side at 390 px", len(box) == 2 and box[0][0] < box[1][0] and all(w > 120 for _, w in box), box)
