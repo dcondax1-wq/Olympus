@@ -414,9 +414,23 @@ class AccountB:
             f = EL.load_anchor(self.name, state_path=getattr(self.bot, "state_path", None), main=False) if self.name else None
         except Exception:
             f = None
-        return SZ.newest_anchor(f, self.spec.get("eval_anchor"))
+        return SZ.newest_anchor(f, self.spec.get("eval_anchor"), self._broker_anchor())
 
-    def eval_state(self, now=None):
+    # ---- real balance from NinjaTrader (engine/broker_balance.py): account B reads ITS OWN accounts.csv row (self.name)
+    def _broker(self):
+        if not self.name or not self.spec.get("eval_start") or self.kind() == "PAPER":
+            return None
+        from . import broker_balance as BB
+        return BB.for_bot(self.bot)
+
+    def _broker_anchor(self):
+        try:
+            b = self._broker()
+            return b.anchor(self.name, self.spec.get("eval_start")) if b else None
+        except Exception:
+            return None
+
+    def _state_raw(self, now=None):
         from . import multi_account as MA
         today = trading_day(now if now is not None else self.clock())
         if not self.spec.get("eval_start"):
@@ -424,6 +438,41 @@ class AccountB:
         return MA.sizing_state("two_week", [(d, t, p) for d, t, p, *_ in self.closes], today, self.spec["eval_start"], self.rules,
                                prior=float(self.spec.get("prior_pnl") or 0.0), n_today=self.entries_today(today),
                                anchor=self.anchor())
+
+    def eval_state(self, now=None):
+        st = self._state_raw(now)
+        try:
+            b = self._broker()
+            if b is not None and st is not None:      # min(ledger room, real room of B's own account)
+                st = b.cap_state(st, self.name, self.rules, now=int(now if now is not None else self.clock()))
+        except Exception:
+            pass
+        return st
+
+    def broker_tick(self, now):
+        """Day-close auto-anchor of account B's own NinjaTrader account + one "balance differs" push a day. Never raises."""
+        try:
+            b = self._broker()
+            if b is None:
+                return
+            start = float(self.rules["start"])
+
+            def book_floor():
+                st = self._state_raw(now)
+                return start + float(st["profit"]) + float(st["cum"]) - float(st["room"])
+            a = b.observe(self.name, self.spec.get("eval_start"), self.rules, book_floor=book_floor, now=int(now))
+            if a:
+                self.log("risk", f"real balance from NinjaTrader at the {a['as_of']} close: ${a['balance']:,.2f}, floor ${a['floor']:,.2f}")
+            st = self._state_raw(now)
+            if st is None:
+                return
+            d = b.drift(self.name, start + float(st["profit"]) + float(st["cum"]), self.rules, now=int(now))
+            if d:
+                from . import broker_balance as BB
+                self.log("risk", f"balance differs: NinjaTrader ${d['real']:,.2f}, ledger ${d['ledger']:,.2f}")
+                self._send(BB.drift_payload(self.label, self.name, d, now))
+        except Exception as e:
+            self.log("error", f"real balance check failed: {e.__class__.__name__}: {e}")
 
     def eval_view(self, now=None) -> dict:
         """Balance, trailing floor, room, pass target, session, status (open / passed / failed / stuck)."""
@@ -553,6 +602,7 @@ class AccountB:
                     self.view_key = vk
                 self.manage(self.view, sym, now, last5)
             self._lifecycle(now)
+            self.broker_tick(now)
             if keys:
                 self.entry(df5, df1, {**sub, "strategies": {k: sub["strategies"][k] for k in keys}}, keys, sym, now)
         except Exception as e:

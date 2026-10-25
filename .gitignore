@@ -107,3 +107,6 @@ data/push_prefs.json
 # AI watch state (engine/ai_watch.py), machine-local
 data/ai_watch.json
 data/*_ai.json
+# real balance from NinjaTrader: the day-close anchors (engine/broker_balance.py)
+data/broker_balance.json
+data/broker_balance.json.tmp

@@ -582,6 +582,11 @@ def _sizing(focus, ctx, P, x, price):
         S.append({"label": "MFFU anchor", "value": f"{anc['as_of']}",
                   "text": f"MFFU balance ${anc['balance']:,.2f} / floor ${anc['floor']:,.2f} after {anc['as_of']}; now balance "
                           f"${bal:,.2f}, floor ${bal - float(room):,.2f}, room ${float(room):,.2f}"})
+    bk = (st or {}).get("broker") if isinstance((st or {}).get("broker"), dict) else None
+    if bk:                                   # the real balance from NinjaTrader (engine/broker_balance.py): room = min(ledger, real)
+        from engine import broker_balance
+        S.append({"label": "Real balance", "value": _usd(bk["equity"]), "text": broker_balance.line(bk)})
+        out["broker_line"] = broker_balance.line(bk)
     if mode == "two_week" and st:
         A = sizing.TW_50K
         c = {**sizing.TW_DEFAULT, **(ls.get("two_week") or {})}
@@ -948,7 +953,7 @@ def compact(b: dict, log_n: int = 30, n_levels: int = 14, max_bytes: int = 16_00
                       "checks": [[c["key"], bool(c["ok"]), c.get("text")] for c in s.get("checks") or []]} for s in pick]
     out["setups_n"] = {"all": len(S), "blocked": len(blocked), "shown": len(pick)}
     sz = b.get("sizing") or {}
-    out["sizing"] = {k: sz.get(k) for k in ("mode", "what", "qty", "risk_pts", "tgt_pts", "risk_usd", "win_usd", "steps", "weekly_stop", "eval")}
+    out["sizing"] = {k: sz.get(k) for k in ("mode", "what", "qty", "risk_pts", "tgt_pts", "risk_usd", "win_usd", "steps", "weekly_stop", "eval", "broker_line")}
     out["trade"] = b.get("trade")
     out["guards"] = {"blocking": g.get("blocking"), "market": g.get("market"), "feed": g.get("feed"), "vix": g.get("vix"),
                      "news": (g.get("news") or [])[:4], "clock_drift_s": g.get("clock_drift_s"),

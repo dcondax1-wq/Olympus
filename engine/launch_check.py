@@ -152,10 +152,43 @@ def facts(bot, health: dict | None = None, now=None, sim_path: str | None = None
                       "problems": [_clean(p, 160) for p in (st.get("problems") or [])][:4]}
     # 5. Sim roundtrips (data/sim_roundtrip_last.json)
     out["sim"] = load_sim_result(sim_path)
+    # 5b. real balance from NinjaTrader (engine/broker_balance.py: le_feed/accounts.csv from LE_BarFeed), the LIT account's row
+    try:
+        out["broker"] = broker_fact(bot, lit, now)
+    except Exception as e:
+        out["broker"] = {"fresh": False, "why": _clean(f"{e.__class__.__name__}: {e}", 120)}
     # 6. armed (display only) and the bot's start time
     out["lit_armed"] = bool(((h.get("account") or {}).get("armed")) or (getattr(bot, "cfg", None) or {}).get("armed"))
     sa = getattr(bot, "started_at", None)
     out["bot_started_t"] = int(sa) if sa and getattr(bot, "running", False) else None
+    return out
+
+
+def broker_fact(bot, lit, now, path: str | None = None) -> dict:
+    """{"fresh", "cash", "equity", "age_s", "why", "floor", "room"} of the LIT account's accounts.csv row."""
+    from . import broker_balance as bb
+    cfg = getattr(bot, "cfg", None) or {}
+    if path is None:
+        from .ninjatrader import default_folder
+        path = cfg.get("broker_balance_file") or os.path.join(cfg.get("nt_folder") or default_folder(), bb.FEED_DIR, bb.FILE)
+    s = bb.read(now=now, path=path)
+    if not lit:
+        return {"fresh": False, "why": "no NinjaTrader account for LIT yet"}
+    if bb.SIM.match(str(lit)):
+        return {"fresh": False, "why": f"{lit} is a Sim account: its balance is not the eval's"}
+    r = s["rows"].get(str(lit))
+    if r is None:
+        return {"fresh": False, "why": s["why"] or f"no row for {lit} in accounts.csv"}
+    ok, why = bb.sane(r, bb.R50K)
+    out = {"fresh": bool(r["fresh"] and ok), "cash": r["cash"], "equity": round(bb.real_equity(r), 2), "age_s": int(r["age_s"]),
+           "why": "" if r["fresh"] and ok else (why or f"accounts.csv row is {int(r['age_s'])} s old")}
+    try:
+        st = bot.eval_state() if callable(getattr(bot, "eval_state", None)) else None
+        b = (st or {}).get("broker")
+        if b:
+            out.update(floor=b["floor"], room=b["room"])
+    except Exception:
+        pass
     return out
 
 
@@ -267,6 +300,18 @@ def checklist(f: dict | None, health: dict | None, running: bool, now=None) -> d
         items.append(_item("feed", "Bar feed fresh", "good", f"{fd.get('used') or fd.get('source') or 'ninjatrader'}: {ages}"))
     else:
         items.append(_item("feed", "Bar feed fresh", "bad", f"no fresh bar ({ages}): open the MNQ chart with LE_BarFeed", STATUS_CMD))
+    # 6b. real balance from NinjaTrader: green when fresh; otherwise display only (the bot then sizes from its ledger + the
+    #     anchor exactly as before, so it never blocks the launch)
+    bk = f.get("broker") or {}
+    if bk.get("fresh"):
+        extra = (f", floor {_usd(bk['floor'])}, room {_usd(bk['room'])}" if bk.get("floor") is not None and bk.get("room") is not None
+                 else "")
+        items.append(_item("broker", "Real balance from NinjaTrader", "good",
+                           f"balance {_usd(bk.get('equity'))}{extra} ({bk.get('age_s')} s old)"))
+    else:
+        items.append(_item("broker", "Real balance from NinjaTrader", "info",
+                           f"not used: {bk.get('why') or 'no accounts.csv'}; the bot sizes from its ledger + the anchor "
+                           "(compile the new LE_BarFeed: ninjatrader/SETUP.md)"))
     # 7. Sim roundtrips (data/sim_roundtrip_last.json)
     sim = f.get("sim") or {}
     for key, kind, label, cmd in (("sim", "roundtrip", "Sim roundtrip", RT_CMD), ("sim_add", "add", "Sim roundtrip + add", RT_ADD_CMD)):

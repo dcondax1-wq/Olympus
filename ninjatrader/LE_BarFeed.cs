@@ -23,6 +23,15 @@
 // the same instrument (two writers on MNQ_1m.csv), or switch "Also write 1-minute bars" off there.
 // Only standard NinjaScript: OnStateChange / OnBarUpdate / OnMarketData, Calculate.OnBarClose, File.AppendAllText; C# 5 syntax only
 // (no $"..." strings, no ?. or =>), so it compiles on every NinjaTrader 8 version.
+//
+// ACCOUNTS (2026-10-25, "Write account balances", on by default; UNTESTED on a real NinjaTrader install when written):
+// once a minute (a timer, so also outside market hours) and at most every 5 s on an account update it rewrites
+//     Documents\NinjaTrader 8\le_feed\accounts.csv      (temp file + swap, like the bar files)
+//     name,time,cash,realized,unrealized,netliq            time = unix seconds (UTC); a value NinjaTrader does not give = empty
+// one line per account in Account.All (or only the Names in "Accounts to write", comma list), from
+// account.Get(AccountItem.CashValue / RealizedProfitLoss / UnrealizedProfitLoss / NetLiquidation, Currency.UsDollar).
+// The Python bot (engine/broker_balance.py) takes its eval balance from it. Read-only: it never places or changes an order.
+// Every account call sits in its own try/catch: if any of it fails the bar export above works exactly as before.
 
 #region Using declarations
 using System;
@@ -76,6 +85,16 @@ namespace NinjaTrader.NinjaScript.Indicators
         private long lastOpenMinute = long.MinValue;
         private bool realtime;
 
+        // account balances (accounts.csv): one writer per NinjaTrader (the first LE_BarFeed that reaches Realtime)
+        private static readonly object AcctLock = new object();
+        private readonly object AcctWriteLock = new object();
+        private static LE_BarFeed acctOwner;
+        private string accountsPath;
+        private System.Threading.Timer acctTimer;
+        private DateTime lastAcctWrite = DateTime.MinValue;
+        private readonly HashSet<Account> acctSubscribed = new HashSet<Account>();
+        private int acctProblems;
+
         protected override void OnStateChange()
         {
             if (State == State.SetDefaults)
@@ -92,6 +111,8 @@ namespace NinjaTrader.NinjaScript.Indicators
                 MaxBars1m = 20000;                  // 20000 one-minute bars = about 14 trading days
                 TrimEvery = 1000;
                 WriteOneMinute = true;
+                WriteAccounts = true;
+                AccountNames = "";
             }
             else if (State == State.Configure)
             {
@@ -120,6 +141,7 @@ namespace NinjaTrader.NinjaScript.Indicators
                 }
                 if (addOneMinute || BarsPeriod.Value == 1)
                     openPath = Path.Combine(folder, root + "_1m_open.csv");
+                accountsPath = Path.Combine(folder, "accounts.csv");
                 try
                 {
                     Directory.CreateDirectory(folder);
@@ -150,6 +172,210 @@ namespace NinjaTrader.NinjaScript.Indicators
                     foreach (Feed f in feeds)
                         if (f.History != null)
                             WriteHistory(f);
+                StartAccounts();
+            }
+            else if (State == State.Terminated)
+            {
+                StopAccounts();
+            }
+        }
+
+        // ---- accounts.csv (never lets an exception out: the bar export must not depend on it)
+        private void StartAccounts()
+        {
+            try
+            {
+                if (!active || !WriteAccounts || accountsPath == null)
+                    return;
+                lock (AcctLock)
+                {
+                    if (acctOwner != null && acctOwner != this)
+                        return;                      // another LE_BarFeed already writes accounts.csv
+                    acctOwner = this;
+                }
+                acctTimer = new System.Threading.Timer(AcctTimerTick, null, 2000, 60000);
+            }
+            catch (Exception e)
+            {
+                AcctReport("account export not started: " + e.Message);
+            }
+        }
+
+        private void StopAccounts()
+        {
+            try
+            {
+                if (acctTimer != null)
+                {
+                    acctTimer.Dispose();
+                    acctTimer = null;
+                }
+            }
+            catch (Exception)
+            {
+            }
+            try
+            {
+                lock (AcctLock)
+                {
+                    foreach (Account a in acctSubscribed)
+                    {
+                        try
+                        {
+                            a.AccountItemUpdate -= OnAccountItemUpdate;
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                    acctSubscribed.Clear();
+                    if (acctOwner == this)
+                        acctOwner = null;
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private void AcctTimerTick(object state)
+        {
+            WriteAccountsFile();
+        }
+
+        private void OnAccountItemUpdate(object sender, AccountItemEventArgs e)
+        {
+            try
+            {
+                // never write on NinjaTrader's own event thread: wake the timer (a pool thread) instead, at most every 5 s
+                if ((DateTime.UtcNow - lastAcctWrite).TotalSeconds >= 5)
+                {
+                    lastAcctWrite = DateTime.UtcNow;
+                    System.Threading.Timer t = acctTimer;
+                    if (t != null)
+                        t.Change(0, 60000);
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+
+        private static string AcctValue(Account a, AccountItem item)
+        {
+            try
+            {
+                double v = a.Get(item, Currency.UsDollar);
+                if (double.IsNaN(v) || double.IsInfinity(v))
+                    return "";
+                return v.ToString("0.00", CultureInfo.InvariantCulture);
+            }
+            catch (Exception)
+            {
+                return "";                           // this item is not available on this account / connection
+            }
+        }
+
+        private void WriteAccountsFile()
+        {
+            if (!System.Threading.Monitor.TryEnter(AcctWriteLock))
+                return;                              // a write is already running (timer + update at once)
+            try
+            {
+                if (accountsPath == null || !WriteAccounts)
+                    return;
+                HashSet<string> only = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                if (!string.IsNullOrEmpty(AccountNames))
+                    foreach (string n in AccountNames.Split(','))
+                        if (n.Trim().Length > 0)
+                            only.Add(n.Trim());
+                long now = (DateTime.UtcNow.Ticks - EpochTicks) / TimeSpan.TicksPerSecond;
+                StringBuilder sb = new StringBuilder(256);
+                sb.Append("name,time,cash,realized,unrealized,netliq\n");
+                List<Account> seen = new List<Account>();
+                lock (Account.All)
+                {
+                    foreach (Account a in Account.All)
+                        seen.Add(a);
+                }
+                lock (AcctLock)
+                {
+                    foreach (Account a in seen)
+                    {
+                        string name;
+                        try
+                        {
+                            name = a.Name;
+                        }
+                        catch (Exception)
+                        {
+                            continue;
+                        }
+                        if (string.IsNullOrEmpty(name) || (only.Count > 0 && !only.Contains(name)))
+                            continue;
+                        if (!acctSubscribed.Contains(a))
+                        {
+                            try
+                            {
+                                a.AccountItemUpdate += OnAccountItemUpdate;
+                                acctSubscribed.Add(a);
+                            }
+                            catch (Exception)
+                            {
+                            }
+                        }
+                        sb.Append(name.Replace(",", " ")).Append(',').Append(now.ToString(CultureInfo.InvariantCulture)).Append(',')
+                          .Append(AcctValue(a, AccountItem.CashValue)).Append(',')
+                          .Append(AcctValue(a, AccountItem.RealizedProfitLoss)).Append(',')
+                          .Append(AcctValue(a, AccountItem.UnrealizedProfitLoss)).Append(',')
+                          .Append(AcctValue(a, AccountItem.NetLiquidation)).Append('\n');
+                    }
+                    lastAcctWrite = DateTime.UtcNow;
+                }
+                string tmp = accountsPath + ".tmp";
+                lock (FileLock)
+                {
+                    try
+                    {
+                        File.WriteAllText(tmp, sb.ToString());
+                        if (File.Exists(accountsPath))
+                            File.Replace(tmp, accountsPath, null);
+                        else
+                            File.Move(tmp, accountsPath);
+                    }
+                    catch (Exception)
+                    {
+                        File.Copy(tmp, accountsPath, true);   // the bot had the file open for reading: overwrite in place
+                        try
+                        {
+                            File.Delete(tmp);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                AcctReport("accounts.csv not written: " + e.Message);
+            }
+            finally
+            {
+                System.Threading.Monitor.Exit(AcctWriteLock);
+            }
+        }
+
+        private void AcctReport(string text)
+        {
+            try
+            {
+                acctProblems++;
+                if (acctProblems <= 3)
+                    Log("LE_BarFeed accounts: " + text, LogLevel.Warning);
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -361,6 +587,12 @@ namespace NinjaTrader.NinjaScript.Indicators
 
         [Display(Name = "Also write 1-minute bars", Description = "On a 5-minute chart, also write <ROOT>_1m.csv from an added 1-minute series (LIT needs it)", Order = 4, GroupName = "LE_BarFeed")]
         public bool WriteOneMinute { get; set; }
+
+        [Display(Name = "Write account balances", Description = "Also write le_feed\\accounts.csv (cash, realized, unrealized, net liquidation of each account) once a minute for the Python bot", Order = 5, GroupName = "LE_BarFeed")]
+        public bool WriteAccounts { get; set; }
+
+        [Display(Name = "Accounts to write", Description = "Comma list of account Names to write; empty = every account", Order = 6, GroupName = "LE_BarFeed")]
+        public string AccountNames { get; set; }
         #endregion
     }
 }

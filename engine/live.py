@@ -1241,6 +1241,7 @@ class LiveBot:
             except Exception as e:
                 self._note_error(f"eval clock failed: {e}")
             self._eval_life_tick()                              # pass / fail day, min-days, weekly loss stop
+            self._broker_tick()                                 # real balance from NinjaTrader: day-close anchor, drift push
         if self.state_path == STATE_PATH:
             self._narrate_filter(eqf, lm)
         self.last_poll = now
@@ -1851,7 +1852,57 @@ class LiveBot:
             f = _el.load_anchor(self.cfg.get("nt_account") or None, state_path=self.state_path)
         except Exception:
             f = None
-        return _sz.newest_anchor(f, self.cfg.get("eval_anchor"), (getattr(self, "_lit_sizing", None) or {}).get("eval_anchor"))
+        return _sz.newest_anchor(f, self.cfg.get("eval_anchor"), (getattr(self, "_lit_sizing", None) or {}).get("eval_anchor"),
+                                 self._broker_anchor())
+
+    # ---- real balance from NinjaTrader (engine/broker_balance.py; 2026-10-25): stale / missing file = nothing changes
+    def _broker_name(self):
+        """The NinjaTrader account Name whose accounts.csv row is this bot's eval (None on paper)."""
+        if str(self.cfg.get("adapter") or "paper") != "ninjatrader" and not self.cfg.get("broker_balance"):
+            return None
+        return self.cfg.get("nt_account") or getattr(getattr(self, "adapter", None), "account", None) or None
+
+    def _broker(self):
+        """engine.broker_balance.Broker of this bot, or None (switch off / paper / not an eval mode)."""
+        if (getattr(self, "_lit_sizing", None) or {}).get("mode") not in ("two_week", "eval", "safe_eval", "fast_eval"):
+            return None
+        if not self._broker_name():
+            return None
+        from . import broker_balance as _bb
+        return _bb.for_bot(self)
+
+    def _broker_anchor(self):
+        """The last real-EOD anchor (engine/broker_balance.Broker.anchor), None when there is none. Never raises."""
+        try:
+            b = self._broker()
+            return b.anchor(self._broker_name(), self.eval_start() or None) if b else None
+        except Exception:
+            return None
+
+    def _broker_tick(self):
+        """Every poll: the day-close auto-anchor and the "balance differs" push (once a day). Never raises."""
+        try:
+            b = self._broker()
+            if b is None or not self.eval_start():
+                return
+            from . import sizing as _sz
+            name = self._broker_name()
+
+            def book_floor():
+                days, ex = self.eval_book()
+                return _sz.mffu_eval(days, ex or None)["trailing_mll"]
+            a = b.observe(name, self.eval_start(), None, book_floor=book_floor, now=int(self.clock()))
+            if a:
+                self._log("risk", f"Real balance from NinjaTrader {name} at the {a['as_of']} close: ${a['balance']:,.2f}, floor "
+                                  f"${a['floor']:,.2f}: the eval book starts from it")
+            days, ex = self.eval_book()
+            d = b.drift(name, _sz.mffu_eval(days, ex or None)["balance"], now=int(self.clock()))
+            if d:
+                from . import broker_balance as _bb
+                self._log("risk", f"Balance differs: NinjaTrader ${d['real']:,.2f}, bot ledger ${d['ledger']:,.2f}")
+                self._push_send(_bb.drift_payload(self._push_account(), name, d, self.clock()))
+        except Exception as e:
+            self._note_error(f"real balance check failed: {e.__class__.__name__}: {e}")
 
     def eval_book(self):
         """(days, plan extra) of the eval: eval_days() with the anchor applied (engine/sizing.anchor_days); no anchor = the
@@ -1863,7 +1914,12 @@ class LiveBot:
         """MFFU 50K room: eval balance minus the trailing max-loss floor (engine/sizing.mffu_eval), anchored when set."""
         from . import sizing as _sz
         days, ex = self.eval_book()
-        return _sz.mffu_eval(days, ex or None)["cushion"]
+        r = _sz.mffu_eval(days, ex or None)
+        b = self._broker()
+        if b is not None:                    # min(ledger room, real room incl. unrealized): never more than either
+            from . import broker_balance as _bb
+            return _bb.cap_room(r["cushion"], b.row(self._broker_name()), r["trailing_mll"])[0]
+        return r["cushion"]
 
     def eval_state(self):
         """The two_week sizer's eval state (engine/sizing.eval_state): routed P&L of the eval's earlier days (live_state.json
@@ -1879,6 +1935,9 @@ class LiveBot:
         st["n_today"] = int(self.trades_today())
         if ex:
             st["anchor"] = self.eval_anchor()
+        b = self._broker()
+        if b is not None:                    # min(ledger room, real room); st["broker"] = the NinjaTrader numbers
+            st = b.cap_state(st, self._broker_name())
         return st
 
     def eval_life(self):
