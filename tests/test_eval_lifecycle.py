@@ -25,7 +25,10 @@ from engine.ninjatrader import _FakeNT  # noqa: E402
 from tests.test_multi_account import Clock, make_bot, pos_at, ts  # noqa: E402
 
 RESULTS = []
-LSZ = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit_sizing"]
+LIVE_LSZ = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit_sizing"]
+# the weekly loss stop is ON live since the owner's safe switches (2026-10-24, wk_loss_usd 1200); these checks use the
+# live sizing with the key removed for the OFF cases and set it explicitly for the ON cases
+LSZ = {k: v for k, v in LIVE_LSZ.items() if k != "wk_loss_usd"}
 T_WED = ts(2026, 10, 21, 10, 0)            # Wednesday 2026-10-21, 10:00 ET
 TR = {"risk_pts": 30.0, "tgt_pts": 200.0, "size_mult": 1.0}
 
@@ -79,7 +82,7 @@ def sizing_checks():
     check("mode normal / funded: no eval lock", sz.lit_qty(13, TR, {"mode": "normal"}, state=sf, learning=None)["qty"] == 13)
     # weekly loss stop
     sw = sz.eval_state({"2026-10-19": -700.0, "2026-10-20": -600.0}, 0.0, session=3, today="2026-10-21")
-    check("weekly loss stop OFF (key absent, live_model.json today): trades", "wk_loss_usd" not in LSZ and q_of(L, sw)["qty"] > 0)
+    check("weekly loss stop OFF (key absent): trades", "wk_loss_usd" not in LSZ and q_of(L, sw)["qty"] > 0)
     w_on = q_of({**L, "wk_loss_usd": 1200}, sw)
     check("weekly loss stop ON at -$1,200, week -$1,300: no trade", w_on["qty"] == 0 and "weekly loss stop" in " ".join(w_on["reasons"]), w_on)
     sw2 = sz.eval_state({"2026-10-16": -1300.0}, 0.0, session=6, today="2026-10-19")
@@ -162,7 +165,7 @@ def bot_checks(tmp):
           and len(sent) == 1 and "Weekly loss stop" in sent[0]["title"], (q, sent))
     b, sent = bot({"2026-10-19": -700.0, "2026-10-20": -600.0}, L)
     q = b._equity_qty(T_WED, 13, p)
-    check("LiveBot weekly loss stop OFF (live_model.json): trades", q > 0, q)
+    check("LiveBot weekly loss stop OFF (key absent): trades", q > 0, q)
     from engine import accounts, pcdash_api
     b._eval_life_tick()
     h = accounts.pc_health(b, T_WED)
