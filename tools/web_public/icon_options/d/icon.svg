@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Option D "Blade": the sweep wick as a neon glass blade with a gold guard, its point cutting down through a
+       gold liquidity line. Full bleed, opaque. Built by tools/icon_options_build.py; applied with tools/icon_apply.py d -->
+  <defs>
+    <radialGradient id="bg" cx="512" cy="420" r="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#141d38"/><stop offset="0.5" stop-color="#090c18"/><stop offset="1" stop-color="#030406"/>
+    </radialGradient>
+    <linearGradient id="bladeL" x1="0" y1="300" x2="0" y2="880" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e9fffb"/><stop offset="0.4" stop-color="#7ff3e0"/><stop offset="1" stop-color="#3ee0c8"/>
+    </linearGradient>
+    <linearGradient id="bladeR" x1="0" y1="300" x2="0" y2="880" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5d6cff"/><stop offset="0.6" stop-color="#2f9fd8"/><stop offset="1" stop-color="#1c6fae"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff1c4"/><stop offset="0.45" stop-color="#f2c35b"/><stop offset="1" stop-color="#8a5f1c"/>
+    </linearGradient>
+    <linearGradient id="grip" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#9aa6ff"/><stop offset="0.5" stop-color="#4b46d6"/><stop offset="1" stop-color="#1d1868"/>
+    </linearGradient>
+    <linearGradient id="level" x1="0" y1="0" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f2c35b" stop-opacity="0"/><stop offset="0.12" stop-color="#f2c35b" stop-opacity="0.9"/>
+      <stop offset="0.42" stop-color="#fff2cc"/><stop offset="0.88" stop-color="#f2c35b" stop-opacity="0.9"/><stop offset="1" stop-color="#f2c35b" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="flare" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.16" stop-color="#fff4d6" stop-opacity="0.95"/><stop offset="0.45" stop-color="#f2c35b" stop-opacity="0.35"/><stop offset="1" stop-color="#f2c35b" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="b70" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="70"/></filter>
+    <filter id="b24" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="24"/></filter>
+    <filter id="b6" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="6"/></filter>
+  </defs>
+  <g id="bg"><rect width="1024" height="1024" fill="url(#bg)"/></g>
+  <g id="art">
+    <ellipse cx="512" cy="500" rx="240" ry="380" fill="#2bc8d0" opacity="0.26" filter="url(#b70)" transform="rotate(22 512 512)"/>
+    <rect x="40" y="704" width="944" height="28" rx="14" fill="#f2c35b" opacity="0.3" filter="url(#b24)"/>
+    <rect x="40" y="704" width="944" height="28" rx="14" fill="url(#level)"/>
+    <g transform="rotate(22 512 512)">
+      <!-- blade glow + blade (two bevels split along the ridge) -->
+      <path d="M440 300 L584 300 L570 690 L512 900 L454 690 Z" fill="#3ee0c8" opacity="0.6" filter="url(#b24)"/>
+      <path d="M440 300 L512 300 L512 900 L454 690 Z" fill="url(#bladeL)"/>
+      <path d="M512 300 L584 300 L570 690 L512 900 Z" fill="url(#bladeR)"/>
+      <path d="M440 300 L452 300 L466 690 L512 890 L454 690 Z" fill="#ffffff" opacity="0.7"/>
+      <rect x="509" y="300" width="6" height="590" fill="#ffffff" opacity="0.55" filter="url(#b6)"/>
+      <!-- grip, guard, pommel -->
+      <rect x="484" y="120" width="56" height="160" rx="16" fill="url(#grip)"/>
+      <rect x="490" y="130" width="12" height="140" rx="6" fill="#ffffff" opacity="0.35"/>
+      <rect x="360" y="266" width="304" height="44" rx="22" fill="url(#gold)"/>
+      <rect x="372" y="270" width="280" height="10" rx="5" fill="#ffffff" opacity="0.55"/>
+      <circle cx="512" cy="104" r="34" fill="url(#gold)"/>
+      <circle cx="502" cy="94" r="10" fill="#ffffff" opacity="0.7"/>
+    </g>
+    <!-- where the blade cuts the level -->
+    <circle cx="434" cy="718" r="140" fill="url(#flare)"/>
+  </g>
+</svg>

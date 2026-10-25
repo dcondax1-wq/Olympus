@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Option F "Hex L": a bevelled indigo-metal hexagon crest holding a neon teal "L" (for LIT) and a gold target dot.
+       Full bleed, opaque. Built by tools/icon_options_build.py; applied with tools/icon_apply.py f -->
+  <defs>
+    <radialGradient id="bg" cx="512" cy="460" r="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#191c3c"/><stop offset="0.5" stop-color="#0a0c18"/><stop offset="1" stop-color="#030406"/>
+    </radialGradient>
+    <radialGradient id="plate" cx="430" cy="360" r="520" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1e2448"/><stop offset="1" stop-color="#07080f"/>
+    </radialGradient>
+    <linearGradient id="neon" x1="0" y1="290" x2="0" y2="740" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b5fff2"/><stop offset="0.5" stop-color="#3ee0c8"/><stop offset="1" stop-color="#22b4d8"/>
+    </linearGradient>
+    <radialGradient id="dot" cx="0.4" cy="0.35" r="0.6">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.3" stop-color="#ffe7a1"/><stop offset="1" stop-color="#c58a2a"/>
+    </radialGradient>
+    <filter id="b70" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="70"/></filter>
+    <filter id="b26" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="26"/></filter>
+    <filter id="b10" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+  <g id="bg"><rect width="1024" height="1024" fill="url(#bg)"/></g>
+  <g id="art">
+    <circle cx="512" cy="512" r="400" fill="#4f58ff" opacity="0.28" filter="url(#b70)"/>
+    <!-- bevel: six faces between the outer (r 410) and inner (r 340) hexagon, shaded by angle to the light -->
+    <path d="M512 102 L867 307 L806 342 L512 172 Z" fill="#c3cbff"/>
+    <path d="M867 307 L867 717 L806 682 L806 342 Z" fill="#5b5fe0"/>
+    <path d="M867 717 L512 922 L512 852 L806 682 Z" fill="#26236e"/>
+    <path d="M512 922 L157 717 L218 682 L512 852 Z" fill="#3a3aa8"/>
+    <path d="M157 717 L157 307 L218 342 L218 682 Z" fill="#7f8cff"/>
+    <path d="M157 307 L512 102 L512 172 L218 342 Z" fill="#e6eaff"/>
+    <path d="M512 102 L867 307 L867 717 L512 922 L157 717 L157 307 Z" fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="4"/>
+    <path d="M512 172 L806 342 L806 682 L512 852 L218 682 L218 342 Z" fill="url(#plate)"/>
+    <path d="M512 172 L806 342 L806 682 L512 852 L218 682 L218 342 Z" fill="none" stroke="#3ee0c8" stroke-opacity="0.35" stroke-width="5"/>
+    <!-- the neon L -->
+    <path d="M392 290 L492 290 L492 640 L652 640 L652 740 L392 740 Z" fill="#3ee0c8" opacity="0.75" filter="url(#b26)"/>
+    <path d="M392 290 L492 290 L492 640 L652 640 L652 740 L392 740 Z" fill="url(#neon)"/>
+    <path d="M422 316 L462 316 L462 670 L622 670 L622 710 L422 710 Z" fill="#ffffff" opacity="0.5" filter="url(#b10)"/>
+    <path d="M392 290 L492 290 L492 300 L402 300 L402 740 L392 740 Z" fill="#ffffff" opacity="0.65"/>
+    <!-- gold target dot -->
+    <circle cx="620" cy="350" r="70" fill="#f2c35b" opacity="0.45" filter="url(#b26)"/>
+    <circle cx="620" cy="350" r="44" fill="url(#dot)"/>
+  </g>
+</svg>
