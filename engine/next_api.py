@@ -450,3 +450,10 @@ router.include_router(_ai_router)
 # (/api/next/charts, /api/next/chart/<strategy>.<day>_<HHMM>_<side>; engine/chart_api.py, read-only)
 from .chart_api import router as _chart_router  # noqa: E402
 router.include_router(_chart_router)
+
+# PC Command center, Goals fallback, Runbook, Audit evidence, ATLAS setups, small tools (engine/pc_cc_api.py, read-only GET)
+try:
+    from .pc_cc_api import router as _cc_router  # noqa: E402
+    router.include_router(_cc_router)
+except Exception as _cc_err:                      # never stops the server or the bot
+    print(f"[cc] /api/next/cc disabled: {_cc_err.__class__.__name__}: {_cc_err}", flush=True)
