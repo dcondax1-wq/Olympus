@@ -19,6 +19,12 @@ What the bot does (engine/sizing.eval_lock + lit_qty, engine/live.py LiveBot._ev
         disarmed: a real account trades only after --armed yes, your phrase at --start and NINJATRADER_LIVE=1)
   python -X utf8 -m engine.eval_life --payout 2026-12-01=2000 [--id mffu50k_funded]   record a funded payout
   python -X utf8 -m engine.eval_life --funded-status [--id mffu50k_funded]            payout check of the funded account
+  python -m engine.eval_life --anchor --balance 49710.80 --floor 48168.20 --as-of 2026-10-23 [--account "<Name>"]
+        eval ANCHOR (2026-10-24): the MFFU dashboard's balance + minimum-balance floor after a session's close, written to
+        data/eval_anchor.json (gitignored). The bot then books balance = that balance + its routed P&L after as_of and the
+        floor = max(that floor, highest EOD after as_of - MLL), locked at start + $100 (engine/sizing.anchor_days).
+        No --account = LIT's own account; --account = an extra account / account B by its NinjaTrader Name.
+        A push at 17:05 ET each weekday says what the bot thinks ("Check MFFU: bot thinks balance $X, floor $Y").
 """
 from __future__ import annotations
 
@@ -79,19 +85,21 @@ def wk_stop_view(lsz: dict | None, state: dict | None) -> dict:
 
 # ---------------------------------------------------------------------------------------------------- the eval view
 def view(days: dict, start: str | None, today: str, lsz: dict | None = None, session_over: bool = False,
-         n_today: int = 0) -> dict:
+         n_today: int = 0, anchor: dict | None = None) -> dict:
     """The eval's lifecycle now. days = closed P&L per trading day since the eval start (yyyy-mm-dd keys; "0000-00-00" =
-    the P&L before the bot traded it), today's included. -> {status open/passed/failed/not started/unknown, balance,
-    profit, to_target, room, session, days_traded, min_days, min_days_left, trading (what the bot does now), wk_stop, text}."""
+    the P&L before the bot traded it), today's included. anchor = the broker's balance + floor on a day (engine/sizing.
+    anchor_days; None = as before). -> {status open/passed/failed/not started/unknown, balance, profit, to_target, room,
+    floor, session, days_traded, min_days, min_days_left, trading (what the bot does now), wk_stop, text}."""
     from . import sizing as sz
     c = lsz or {}
     tw = c.get("two_week") or {}
     acct = {**sz.TW_50K, **(tw.get("acct") or {})}
     target = float(acct["target"])
     days = {str(d): float(v) for d, v in (days or {}).items()}
-    clock = sz.eval_clock(days, start, today, session_over=session_over)
+    days, ex = sz.anchor_days(days, anchor, START_BAL)
+    clock = sz.eval_clock(days, start, today, session_over=session_over, plan=ex or None)
     prev = {d: v for d, v in days.items() if d < today}
-    st = sz.eval_state(prev, days.get(today, 0.0), session=clock.get("session") or None, today=today)
+    st = sz.eval_state(prev, days.get(today, 0.0), plan=ex or None, session=clock.get("session") or None, today=today)
     st["n_today"] = int(n_today or 0)
     bal = st["profit"] + st["cum"]
     status = clock["status"]
@@ -125,7 +133,116 @@ def view(days: dict, start: str | None, today: str, lsz: dict | None = None, ses
     out["text"] = (f"Eval {status.upper()}: balance ${out['balance']:,.0f} ({_money(bal)}), {trading}"
                    if status in ("passed", "failed") else f"Eval {status}: {_money(bal)}, ${max(0.0, out['to_target']):,.0f} to go, "
                                                           f"room ${st['room']:,.0f}; {wk['text']}")
+    if ex:                                   # anchored: the broker's floor rebuilt, shown next to the balance
+        out["floor"] = round(out["balance"] - float(st["room"]), 2)
+        out["anchor"] = sz.eval_anchor(anchor)
     return out
+
+
+# ---------------------------------------------------------------------------------------------------- eval anchor file
+ANCHOR_FILE = "eval_anchor.json"     # gitignored, next to the bot's state file (data/): {"v", "main", "accounts": {name: anchor}}
+_ANCHOR_CACHE: dict = {}
+
+
+def anchor_path(state_path: str | None = None) -> str:
+    """data/eval_anchor.json, or the file next to a test bot's own state file (a test bot never reads the owner's)."""
+    sp = state_path or os.path.join(ROOT, "data", "live_state.json")
+    return os.path.join(os.path.dirname(os.path.abspath(sp)), ANCHOR_FILE)
+
+
+def load_anchors(path: str | None = None) -> dict:
+    """The anchor file ({} when missing / unreadable). Cached by modification time (read on every poll)."""
+    p = path or anchor_path()
+    try:
+        mt = os.path.getmtime(p)
+    except OSError:
+        return {}
+    hit = _ANCHOR_CACHE.get(p)
+    if hit and hit[0] == mt:
+        return hit[1]
+    try:
+        with open(p, encoding="utf-8") as fh:
+            d = json.load(fh)
+        d = d if isinstance(d, dict) else {}
+    except Exception:
+        d = {}
+    _ANCHOR_CACHE[p] = (mt, d)
+    return d
+
+
+def load_anchor(account: str | None = None, state_path: str | None = None, path: str | None = None,
+                main: bool = True) -> dict | None:
+    """The valid anchor for one account: its own entry by NinjaTrader Name ("accounts"), else (main=True) the main entry
+    ("main" = LIT's own account). None when there is none."""
+    from . import sizing as sz
+    d = load_anchors(path or anchor_path(state_path))
+    acc = d.get("accounts") if isinstance(d.get("accounts"), dict) else {}
+    a = sz.eval_anchor(acc.get(str(account).strip())) if account else None
+    if a is None and main:
+        a = sz.eval_anchor(d.get("main"))
+    return a
+
+
+def save_anchor(anchor: dict, account: str | None = None, path: str | None = None) -> dict:
+    """Write one anchor into the anchor file (temp file + rename). account None = the main (LIT) account."""
+    import time as _t
+    from . import sizing as sz
+    a = sz.eval_anchor({**anchor, "set_t": int(_t.time())})
+    if a is None:
+        raise ValueError("invalid anchor: as_of yyyy-mm-dd, balance > 0, 0 < floor <= balance")
+    p = path or anchor_path()
+    try:
+        with open(p, encoding="utf-8") as fh:
+            d = json.load(fh)
+        d = d if isinstance(d, dict) else {}
+    except Exception:
+        d = {}
+    d["v"] = 1
+    if account:
+        d.setdefault("accounts", {})
+        if not isinstance(d["accounts"], dict):
+            d["accounts"] = {}
+        d["accounts"][str(account).strip()] = a
+    else:
+        d["main"] = a
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(d, fh, indent=1)
+    os.replace(tmp, p)
+    _ANCHOR_CACHE.pop(p, None)
+    return a
+
+
+def anchor_check_payload(rows: list, now) -> dict | None:
+    """The 17:05 ET push: what the bot thinks each eval account's balance and floor are, so the owner compares them with
+    the MFFU dashboard. rows = [{"name", "balance", "floor", "room", "to_target", "anchor"}]. None when there is no row."""
+    rows = [r for r in rows or [] if r and r.get("balance") is not None and r.get("floor") is not None]
+    if not rows:
+        return None
+    from . import push
+    day = _dt.datetime.fromtimestamp(int(now), _ET()).strftime("%Y-%m-%d")
+    bits = []
+    for r in rows:
+        s = f"{r.get('name') or 'eval'}: balance ${float(r['balance']):,.2f}, floor ${float(r['floor']):,.2f}"
+        if r.get("room") is not None:
+            s += f" (room ${float(r['room']):,.2f}"
+            s += f", ${max(0.0, float(r['to_target'])):,.2f} to target)" if r.get("to_target") is not None else ")"
+        a = r.get("anchor")
+        s += f", anchored {a['as_of']}" if isinstance(a, dict) and a.get("as_of") else ", not anchored"
+        bits.append(s)
+    first = rows[0]
+    title = f"Check MFFU: bot thinks balance ${float(first['balance']):,.2f}, floor ${float(first['floor']):,.2f}"
+    body = ("; ".join(bits) + ". Different on MFFU? Run: python -m engine.eval_life --anchor --balance <MFFU balance> "
+            f"--floor <MFFU floor> --as-of {day}")
+    p = push.text_payload("PC", "ops", title[:120], body[:900], key=f"eval:mffu_check:{day}", t=int(now), url="#/accounts")
+    p["tag"] = "le-eval-mffu-check"
+    return p
+
+
+def _ET():
+    from zoneinfo import ZoneInfo
+    return ZoneInfo("America/New_York")
 
 
 # ---------------------------------------------------------------------------------------------------- next steps
@@ -288,6 +405,56 @@ def funded_status(ident: str = FUNDED_ID, path: str | None = None, state_path: s
     return {"id": ident, "start": f.get("start"), **payout_check(days, f.get("payouts") or {})}
 
 
+def _plan_of(account: str | None) -> tuple:
+    """(start, target, found) of the account the anchor is for: an extra account (data/accounts.json) or account B
+    (second_model.json) by NinjaTrader Name, else the MFFU Builder 50K (found False for a name the bot does not know)."""
+    if account:
+        try:
+            from . import multi_account as ma
+            for r in ma.load_file():
+                if account in (str(r.get("nt_account") or ""), str(r.get("name") or ""), str(r.get("id") or "")):
+                    R = ma.rules_of(r)
+                    return float(R["start"]), float(R["target"]), True
+        except Exception:
+            pass
+        try:
+            from . import account_b as ab
+            raw = ab.raw_cfg() or {}
+            if str(raw.get("account") or "").strip() == account:
+                from . import multi_account as ma
+                plan = str(raw.get("plan") or "builder50k").lower().replace(" ", "").replace("_", "")
+                R = ma.rules_of({"preset": ab.PLANS[plan]["preset"]})
+                return float(R["start"]), float(R["target"]), True
+        except Exception:
+            pass
+        return START_BAL, 3000.0, False
+    return START_BAL, 3000.0, True
+
+
+def set_anchor(balance, floor, as_of, account: str | None = None, path: str | None = None) -> int:
+    """`--anchor`: store the MFFU dashboard numbers; the bot reads them on its next poll (no restart needed)."""
+    if balance is None or floor is None or not as_of:
+        print("--anchor needs --balance <MFFU balance> --floor <MFFU floor> --as-of yyyy-mm-dd")
+        return 1
+    try:
+        a = save_anchor({"as_of": as_of, "balance": balance, "floor": floor}, account, path)
+    except ValueError as e:
+        print(f"not saved: {e}")
+        return 1
+    start, target, found = _plan_of(account)
+    room, need = round(a["balance"] - a["floor"], 2), round(start + target - a["balance"], 2)
+    who = f'account "{account}"' if account else "the main (LIT) account"
+    print(f"Saved for {who} as of {a['as_of']}: balance ${a['balance']:,.2f}, floor ${a['floor']:,.2f}")
+    if found:
+        print(f"Room ${room:,.2f}, ${need:,.2f} left to ${start + target:,.0f}. The bot uses it from its next poll "
+              f"(P&L after {a['as_of']} is added; the floor trails from here).")
+    else:
+        print(f"Room ${room:,.2f}. Note: the bot has no extra account / account B named \"{account}\" yet: check the Name "
+              "(NinjaTrader Accounts tab). LIT's own account needs no --account.")
+    print(f"File: {path or anchor_path()} (stays on this PC, never committed)")
+    return 0
+
+
 def main(argv=None) -> int:
     import argparse
     ap = argparse.ArgumentParser(prog="python -m engine.eval_life", description="eval pass / fail, funded switch, payouts")
@@ -299,7 +466,14 @@ def main(argv=None) -> int:
     ap.add_argument("--funded-status", action="store_true")
     ap.add_argument("--id", default=FUNDED_ID)
     ap.add_argument("--file", default=None, help="accounts file (default data/accounts.json)")
+    ap.add_argument("--anchor", action="store_true", help="set the eval anchor: the MFFU dashboard's balance + floor on a day")
+    ap.add_argument("--balance", type=float, help="--anchor: MFFU account balance ($)")
+    ap.add_argument("--floor", type=float, help="--anchor: MFFU minimum-balance floor / max-loss level ($)")
+    ap.add_argument("--as-of", dest="as_of", help="--anchor: the session those numbers are after (yyyy-mm-dd)")
+    ap.add_argument("--anchor-file", default=None, help=argparse.SUPPRESS)
     a = ap.parse_args(argv)
+    if a.anchor:
+        return set_anchor(a.balance, a.floor, a.as_of, a.account, a.anchor_file)
     if a.to_funded:
         if not a.start or (not a.account and not a.paper):
             print("--to-funded needs --account \"<Name>\" (or --paper) and --start yyyy-mm-dd")
@@ -318,7 +492,9 @@ def main(argv=None) -> int:
     lsz = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8")).get("lit_sizing") or {}
     from .live import trading_day
     import time as _t
-    v = view(st.get("eval_days") or {}, lsz.get("eval_start") or None, trading_day(_t.time()), lsz)
+    from . import sizing as _sz
+    v = view(st.get("eval_days") or {}, lsz.get("eval_start") or None, trading_day(_t.time()), lsz,
+             anchor=_sz.newest_anchor(load_anchor(), lsz.get("eval_anchor")))
     print(json.dumps(v, indent=1))
     return 0
 

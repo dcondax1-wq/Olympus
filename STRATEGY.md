@@ -112,7 +112,7 @@ Every one of these counts as liquidity:
     the first entry's, inside 60% of the room and the soft daily loss that is left.
   - If the target, the stop or the eval state is missing at an entry, the bot sizes it with the eval mode below and logs why.
   - Code: `engine/sizing.py` (`two_week_qty`, `eval_state`, `eval_session`, `eval_clock`, `lit_qty` mode `two_week`), settings
-    `lit_sizing.two_week` (`base need`, `room_f 0.6`, `wk false`, `dll_cap true`, `stop_at_target true`).
+    `lit_sizing.two_week` (`base need`, `room_f 0.55` (safe switch 2026-10-24, was 0.6), `wk_loss_usd 1200`, `wk false`, `dll_cap true`, `stop_at_target true`).
 - **Eval sizing (on 2026-10-18 until the two-week mode replaced it; `"mode": "eval"` switches back):** $800 up to a **25-point** stop, then 800 × 25 ÷ stop
   (times the weekly stop's half, rounded down once), then never more than **60% of the room** between the eval balance and the
   trailing max-loss floor. Typical trade: about 4 micros, about $330 at risk (the LIT rule alone: 3 micros, $275). Run
@@ -199,7 +199,7 @@ on the LIT size rule ($800 up to a 20-pt stop; the live eval sizing is in rules 
 | Trades · per week · weeks with 2+ | 120 · 2.91 · 86% | 80 · 3.12 · 85% | 40 · 2.56 · 81% | 510 · 2.38 · 76% |
 | Win rate (a breakeven exit now counts as a small win) | 55.0% | 58.8% | 47.5% | 53.7% |
 | Profit factor | **4.07** | 4.98 | 2.69 | 1.01 |
-| Net · per month | **+$43,385 · $4,423** | +$33,891 · $5,560 | +$9,493 · $2,556 | +$1,211 · $24 |
+| Net · per month | **+$43,820 · $4,467** | +$33,901 · $5,561 | +$9,919 · $2,671 | +$1,265 · $25 |
 | Max drawdown | −$2,196 | −$2,196 | −$1,396 | −$19,436 |
 | MFFU 50K eval within 2 weeks (pass / fail) | 31.6% / 1.0% | 36.7% / 1.6% | 23.1% / 0.0% | 6.0% / 13.3% |
 | Within 1 month (pass / fail) | 57.3% / 4.9% | 64.1% / 7.8% | 46.2% / 0.0% | 13.2% / 33.0% |

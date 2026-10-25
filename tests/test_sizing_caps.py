@@ -63,17 +63,18 @@ def skipped(r):
 
 # ------------------------------------------------------------------------------------------------ LIT (50K, live cfg)
 def lit_cases():
-    # nearly exhausted room: $120 to the floor, 50-pt stop: 60% x 120 = $72 < 1 micro ($102.40) -> skip (was 1 micro)
+    # nearly exhausted room: $120 to the floor, 50-pt stop: 55% x 120 = $66 < 1 micro ($102.40) -> skip (was 1 micro)
     r = lq(50.0, 200.0, st_of(profit=-1880.0, room=120.0, session=3))
-    check("LIT two_week: room $120, 50-pt stop -> skip (1 micro $102 > 60% room $72)", skipped(r), r)
+    check("LIT two_week: room $120, 50-pt stop -> skip (1 micro $102 > 55% room $66)", skipped(r), r)
     # daily loss nearly used: today -$950, $50 left, 40-pt stop ($82.40 a micro) -> skip
     r = lq(40.0, 150.0, st_of(cum=-950.0, room=1050.0, session=2))
     check("LIT two_week: day -$950 of the $1,000 soft loss, 40-pt stop -> skip", skipped(r), r)
-    # wide stop: 88 pts = $178.40 a micro (1 tick, $1.90); 60% of $300 room = $180 -> 1 fits; 60% of $290 = $174 -> skip
-    r1 = lq(88.0, 200.0, st_of(profit=-1700.0, room=300.0, session=4))
-    r0 = lq(88.0, 200.0, st_of(profit=-1710.0, room=290.0, session=4))
-    check("LIT two_week: 88-pt stop, room $300 -> 1 micro ($178.40 <= $180)", int(r1["qty"]) == 1, r1)
-    check("LIT two_week: 88-pt stop, room $290 -> skip ($178.40 > $174)", skipped(r0), r0)
+    # wide stop: 88 pts = $178.40 a micro (1 tick, $1.90); 55% of $330 room = $181.50 -> 1 fits; 55% of $320 = $176 -> skip
+    # (room_f 0.55 since the owner's safe switches 2026-10-24; was 60% of $300 / $290)
+    r1 = lq(88.0, 200.0, st_of(profit=-1670.0, room=330.0, session=4))
+    r0 = lq(88.0, 200.0, st_of(profit=-1680.0, room=320.0, session=4))
+    check("LIT two_week: 88-pt stop, room $330 -> 1 micro ($178.40 <= $181.50)", int(r1["qty"]) == 1, r1)
+    check("LIT two_week: 88-pt stop, room $320 -> skip ($178.40 > $176)", skipped(r0), r0)
     # a normal fresh eval is unchanged in kind: one winner passes, inside every cap
     r = lq(40.0, 200.0, st_of())
     check("LIT two_week fresh eval: 40-pt stop, 200-pt target -> 8 micros (one winner passes)", int(r["qty"]) == 8, r)

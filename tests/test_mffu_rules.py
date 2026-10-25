@@ -148,6 +148,29 @@ def main():
     else:
         warn("funded constants", True, "engine/sizing.py has no FD_50K")
 
+    # ---------------------------------------------------------------- account presets (2026-10-24 check vs the help center)
+    from engine import multi_account as MA, account_b as AB, accounts as AC, guards as GD
+    for pk, L, st in (("mffu_builder_50k", L50, 50000.0), ("mffu_builder_25k", L25, 25000.0)):
+        r = MA.PRESETS[pk]["rules"]
+        check(f"preset {pk}: start / target / EOD MLL / lock / soft DLL / max micros",
+              (r["start"], r["target"], r["mll"], r["lock"], r["dll"], r["max_micros"], r["trail"])
+              == (st, L["target"], L["mll"], L["lock"], L["dll"], L["max_micros"], "eod"), json.dumps(r))
+    p25 = MA.PRESETS["mffu_builder_25k"]["sizing"]
+    check("preset 25K sizing plan + guard (floor lock $25,100, $600 DLL, 20 micros)",
+          p25["plan"] == {"start": 25000.0, "target": L25["target"], "mll": L25["mll"], "lock": 25000.0 + L25["lock"], "dll": L25["dll"]}
+          and p25["guard"] == {"target": L25["target"], "dll": L25["dll"], "max_micros": L25["max_micros"]})
+    check("account B plans map to the MFFU presets", AB.PLANS["builder50k"]["preset"] == "mffu_builder_50k"
+          and AB.PLANS["builder25k"]["preset"] == "mffu_builder_25k")
+    check("accounts.PLAN_50K (dashboards' eval card)", (AC.PLAN_50K["target"], AC.PLAN_50K["mll"], AC.PLAN_50K["lock"], AC.PLAN_50K["dll"])
+          == (L50["target"], L50["mll"], 50000.0 + L50["lock"], L50["dll"]))
+    check("MNQ round trip $1.90 in the eval book / caps (sizing, guards, account B)",
+          all(abs(c - L50["comm_rt_micro"]) < 1e-9 for c in (sizing.TW_COMM, GD.COMM, AB.COMM)), f"{sizing.TW_COMM} {GD.COMM} {AB.COMM}")
+    ab_src = _src("engine/account_b.py")
+    check("hedging across own accounts prohibited: account B is never opposite to LIT (HEDGE close)",
+          "never opposite" in ab_src and "HEDGE" in ab_src)
+    ev_a = sizing.eval_state({"0000-00-00": 49710.80 - 50000.0}, 0.0, plan={"floor0": 48168.20 - 50000.0})
+    check("eval anchor: MFFU 2026-10-24 numbers give room $1,542.60", abs(ev_a["room"] - 1542.60) < 0.005, f"{ev_a['room']}")
+
     # ---------------------------------------------------------------- known gaps (WARN)
     lit_src = _src("engine/lit.py")
     m = re.search(r"TICK, PV, COMM, SLIP, MAX_MICROS = [\d.]+, [\d.]+, ([\d.]+)", lit_src)

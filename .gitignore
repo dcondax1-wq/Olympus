@@ -78,6 +78,9 @@ data/autoupdate.json
 data/auto_resume.json
 data/_nt_probe_state.json
 data/accounts.json
+# the owner's MFFU balance + floor anchors (engine/eval_life.py --anchor)
+data/eval_anchor.json
+data/eval_anchor.json.tmp
 data/live_state_accounts.json
 data/ninjatrader_state_*.json
 

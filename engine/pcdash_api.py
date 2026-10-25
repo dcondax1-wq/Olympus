@@ -325,6 +325,7 @@ def account_view(bot, now: int | None = None, lm: dict | None = None, bars: bool
            "orders": _timeline(bot, acct.get("orders") or [], today), "trades": all_trades[::-1],
            "eval_trades": len(sec.get("trades") or []), "days": sec.get("days"), "equity": eq,
            "sizing": {"mode": ls.get("mode"), "eval_start": ls.get("eval_start"), "eval_prior_pnl": ls.get("eval_prior_pnl"),
+                      "eval_anchor": ev.get("anchor"),
                       "two_week_until": ls.get("two_week_until"), "after_mode": ls.get("after_mode")},
            "model_state": accounts.clean_text((getattr(bot, "state", None) or {}).get("model_state"), 200)}
     if acct.get("accounts"):                     # extra accounts (engine/multi_account.py): one compact row each

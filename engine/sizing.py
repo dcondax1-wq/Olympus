@@ -81,6 +81,54 @@ def route_qty(qty: int, trade: dict, cold_mult: float, sizing: dict | None = Non
     return {"qty": q, "mult": round(q / qty, 4) if qty else 0.0, "reasons": reasons}
 
 
+# ------------------------------------------------------------------------------------------------ eval anchor (2026-10-24)
+# The broker's own numbers on a day: {"as_of": "yyyy-mm-dd", "balance": $, "floor": $} (MFFU dashboard: balance and the
+# minimum-balance floor after that day's close). With an anchor the eval book is: balance = anchor balance + the routed P&L
+# of the sessions AFTER as_of; floor = max(anchor floor, highest EOD balance after as_of - MLL), locked at start + lock.
+# The bot then matches a floor it could never rebuild from its own ledger (trades before the bot, days it did not route).
+# None / invalid = no anchor = exactly the behaviour before (eval_start + eval_prior_pnl). Writer: engine/eval_life --anchor.
+def eval_anchor(x) -> dict | None:
+    """A valid anchor {"as_of", "balance", "floor"} (normalized, cents) or None."""
+    if not isinstance(x, dict):
+        return None
+    try:
+        d = _dt.date.fromisoformat(str(x.get("as_of") or "")[:10]).isoformat()
+        b, f = float(x["balance"]), float(x["floor"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if b != b or f != f or b <= 0 or f <= 0 or f > b + 1e-9:
+        return None
+    out = {"as_of": d, "balance": round(b, 2), "floor": round(f, 2)}
+    if x.get("set_t") is not None:
+        out["set_t"] = x.get("set_t")
+    return out
+
+
+def newest_anchor(*cands) -> dict | None:
+    """The valid anchor with the latest as_of (the first one wins a tie), or None."""
+    best = None
+    for c in cands:
+        a = eval_anchor(c)
+        if a and (best is None or a["as_of"] > best["as_of"]):
+            best = a
+    return best
+
+
+def anchor_days(day_pnl: dict, anchor, start: float = 50000.0) -> tuple:
+    """(days, plan extra) for mffu_eval / eval_state / eval_clock. With a valid anchor the days up to as_of (and the old
+    "0000-00-00" prior) are replaced by one "0000-00-00" = anchor balance - start, and the plan extra {"floor0": anchor floor
+    - start} seeds the trailing floor (its EOD high = floor0 + mll). Keys may be "yyyy-mm-dd" or "yyyy-mm-dd#..." (intraday
+    trail). No anchor: the same dict back and {}."""
+    a = eval_anchor(anchor)
+    if not a:
+        return day_pnl, {}
+    out = {"0000-00-00": round(a["balance"] - float(start), 2)}
+    for d, v in (day_pnl or {}).items():
+        if str(d) != "0000-00-00" and str(d)[:10] > a["as_of"]:
+            out[d] = v
+    return out, {"floor0": round(a["floor"] - float(start), 2)}
+
+
 # ------------------------------------------------------------------------------------------------ LIT (live_model.json "lit_sizing")
 MFFU_50K = {"start": 50000.0, "target": 3000.0, "mll": 2000.0, "lock": 50100.0}
 
@@ -91,6 +139,9 @@ def mffu_eval(day_pnl: dict, plan: dict | None = None) -> dict:
     p = {**MFFU_50K, **(plan or {})}
     bal = peak = p["start"]
     mll = p["start"] - p["mll"]
+    if p.get("floor0") is not None:          # eval anchor (anchor_days): the broker's floor; its EOD high = floor + mll
+        mll = min(p["start"] + float(p["floor0"]), p["lock"])
+        peak = p["start"] + float(p["floor0"]) + p["mll"]
     for d in sorted(day_pnl):
         bal += float(day_pnl[d])
         peak = max(peak, bal)
@@ -726,6 +777,9 @@ def eval_state(day_pnl: dict, today_cum: float = 0.0, plan: dict | None = None, 
     A = {**TW_50K, **(plan or {})}
     bal = peak = 0.0
     floor = -float(A["mll"])
+    if A.get("floor0") is not None:          # eval anchor (anchor_days): the broker's floor; its EOD high = floor + mll
+        floor = min(float(A["floor0"]), float(A["lock"]))
+        peak = float(A["floor0"]) + float(A["mll"])
     for d in sorted(day_pnl):
         bal += float(day_pnl[d])
         peak = max(peak, bal)
