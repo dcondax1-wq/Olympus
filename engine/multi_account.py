@@ -65,9 +65,10 @@ PRESETS = {
         "firm": "MFFU", "plan": "Builder 50K",
         "rules": {"start": 50000.0, "target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0, "max_micros": 40,
                   "trail": "eod", "best_day": None, "news_ban": False},
-        "sizing": {"funded": {"pct": 0.4, "pct_min_usd": 100, "pct_max_usd": 800, "ref": 20, "wk": True, "room_f": None,
-                              "max_win": 1500, "slip_ticks": 2, "skip_breach": True}},
-        "note": "the owner's eval: two_week for 10 sessions, then safe_eval; funded: 40% of the room, <= $800, a winner <= $1,500"},
+        "sizing": {"funded": {"pct": 0.6, "pct_min_usd": 100, "pct_max_usd": 1500, "ref": 20, "wk": True, "room_f": None,
+                              "max_win": 2000, "slip_ticks": 2, "skip_breach": True}},
+        "note": "the owner's eval: two_week for 10 sessions, then safe_eval; funded (owner 2026-10-25, research/writeups/uprisk.md): "
+                "60% of the room, <= $1,500, a winner <= $2,000 (one winner = one full payout request)"},
     "mffu_builder_25k": {
         # owner 2026-10-19: the second account (bought next), traded by the same bot next to the Builder 50K eval.
         # Rules from tools/lit_funded_firms.py / engine/sizing.TW_25K (target $1,500, $1,000 EOD trailing locking at +$100,
@@ -83,11 +84,11 @@ PRESETS = {
                    "guard": {"target": 1500.0, "dll": 600.0, "max_micros": 20},
                    "two_week_until": 10, "after_mode": "safe_eval", "safe_cap": 0.3, "eval_ref_stop": 25.0, "fast_ref_stop": 40.0,
                    "plan": {"start": 25000.0, "target": 1500.0, "mll": 1000.0, "lock": 25100.0, "dll": 600.0},
-                   "funded": {"pct": 0.4, "pct_min_usd": 50, "pct_max_usd": 400, "ref": 20, "wk": True, "room_f": None,
-                              "max_win": 750, "slip_ticks": 2, "skip_breach": True}},
+                   "funded": {"pct": 0.6, "pct_min_usd": 50, "pct_max_usd": 750, "ref": 20, "wk": True, "room_f": None,
+                              "max_win": 1000, "slip_ticks": 2, "skip_breach": True}},
         "note": "MFFU Builder 25K eval: two_week (one winner passes: micros so the target covers what is left to +$1,500, "
                 "<= 50% of the room to the $1,000 trailing floor, <= the $600 soft daily loss, max 20) for 10 sessions, then "
-                "safe_eval at 30% of the room (lit-builder-25k.md); stops when the room is under $100 (stuck); funded: 40% of the room, <= $400, a winner <= $750 (50% best-day payout rule)"},
+                "safe_eval at 30% of the room (lit-builder-25k.md); stops when the room is under $100 (stuck); funded (owner 2026-10-25, uprisk.md): 60% of the room, <= $750, a winner <= $1,000"},
     "lucid_pro_50k": {
         "firm": "Lucid Trading", "plan": "LucidPro 50K (daily loss option on)",
         "rules": {"start": 50000.0, "target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1200.0, "max_micros": 40,
