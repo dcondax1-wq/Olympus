@@ -27,7 +27,7 @@
 // v30 (2026-10-25): goals.js (Home > Goals card + Today's plan card, #/goals, data.json "goals" from engine/goals.py) and
 // features.js (the new More hub, #/features "What's new / All features", week calendar, last 10, health lights, eval
 // timeline, ATLAS setup stats, offline badge, haptics, scroll-to-top). New cache name so every iPhone refreshes.
-const CACHE = 'le-public-v30';
+const CACHE = 'le-public-v31';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

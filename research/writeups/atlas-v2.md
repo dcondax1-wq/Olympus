@@ -203,6 +203,13 @@ and in `"strategies"`: `"sh_asia": {..., "candidate": false}`, `"sh_trend": {...
 **Suggested next step:** log candidate 1 as a paper shadow next to the live ATLAS (no routing). It needs the cloud /
 PC paper ledger to book the hunts on account B's rules. Revisit after 20+ hunt trades, using the scorecard bands.
 
+**Built (2026-10-25): the paper shadow of candidate 1b** (`engine/atlas_v2.py`; cloud state `atlas_v2`, PC heartbeat
+`second.atlas_v2`, ATLAS page card "ATLAS v2 (paper shadow)"). Never routed; `second_model.json` `account_b` untouched.
+Its 2026 replay equals this research's executor trade for trade (`tests/test_atlas_v2_shadow.py`). Note: re-scored on
+today's unit files (`research/second/*_best.json`), candidate 1b reads H1 +$10,882 / H2 +$3,990 / 2025 +$246 / 2021-24
++$4,771 (published above: +$10,876 / +$3,859 / +$240 / +$4,575; the stored runs used an older unit cache, 206 of 207
+2026 trades identical). Same conclusion. `account_b` now accepts `"weights"` and `"min_room"` (off when absent).
+
 ## How it was tested
 
 - **Executor:** `tools/atlas.py` + `tools/second_account_b.py`, which reproduces the audit's base exactly (H1 65.5 / H2

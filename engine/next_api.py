@@ -331,6 +331,14 @@ def second_view():
         ri = BOT.second_route_info() if callable(getattr(BOT, "second_route_info", None)) else None
         out = S.dashboard_block(st, route=ri)
         out["source"] = "PC bot" if run else "rules only (the PC bot has not run the second strategies yet)"
+        try:                                                 # ATLAS v2 PAPER shadow (engine/atlas_v2.card, read-only)
+            from . import atlas_v2 as AV2
+            av = getattr(BOT, "atlas_v2", None)
+            if not (isinstance(av, dict) and av.get("ev")):
+                av = _read(AV2.pc_path(getattr(BOT, "state_path", None)))
+            out["atlas_v2"] = AV2.card(av, src="PC")
+        except Exception as e:
+            out["atlas_v2"] = {"error": f"{e.__class__.__name__}: {e}"}
         return _J(out)
     except Exception as e:                                   # never 500 the dashboard over a page
         return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)

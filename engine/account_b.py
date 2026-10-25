@@ -3,6 +3,11 @@
 second_model.json top level "account_b": null (default = off, the bot is exactly today's) or
   {"account": "<NinjaTrader account Name>", "plan": "builder25k" | "builder50k", "eval_start": "yyyy-mm-dd",
    "strategies": ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"], "sizing": "need" | "safe"}
+  optional (ATLAS v2, research/writeups/atlas-v2.md, BUILT BUT OFF: absent = exactly today's behaviour):
+    "weights": {"<key>": w}  per-member size weight: micros = max(1, int(need micros x w)), then the soft-daily-loss guard
+                             (= tools/atlas.q_variant); a member not listed trades at 1.0
+    "min_room": 200          stuck = room under this many $ (replaces MIN_ROOM = $100 for this account): no new trade,
+                             push "buy a new one"
   optional: "prior_pnl" ($ on the account before the bot traded it), "armed": false (a REAL, non-Sim account also needs
   "armed": true, the LIVE phrase typed at the bot's start and NINJATRADER_LIVE=1: engine/ninjatrader._live_gate; the bot
   never sets any of that).
@@ -135,8 +140,46 @@ def normalize(ab: dict | None, scfg: dict | None = None, lit_account: str | None
             _dt.date.fromisoformat(out["eval_start"])
         except ValueError:
             out["problem"] = f"eval_start {out['eval_start']!r} is not yyyy-mm-dd"
+    # ATLAS v2 keys (built but off): only in the spec when in the block (absent = today's spec, unchanged)
+    if "weights" in ab:
+        W = ab.get("weights")
+        okw = isinstance(W, dict) and all(isinstance(k, str) and _num(v) is not None and 0.0 < float(v) <= 2.0 for k, v in W.items())
+        if not okw:
+            out["problem"] = out["problem"] or 'weights must be {"<strategy key>": number in (0, 2]}'
+        else:
+            out["weights"] = {str(k): float(v) for k, v in W.items()}
+            unk = [k for k in out["weights"] if k not in keys]
+            if unk:
+                out["problem"] = out["problem"] or f"weights for strategies not on account B: {', '.join(unk)}"
+    if "min_room" in ab:
+        mr = _num(ab.get("min_room"))
+        if mr is None or not 0.0 <= mr <= 1000.0:
+            out["problem"] = out["problem"] or f"min_room {ab.get('min_room')!r} must be a number of $ (0-1000)"
+        else:
+            out["min_room"] = float(mr)
     out["keys"] = [k for k in keys if isinstance(S.get(k), dict) and S[k].get("on", True) and not S[k].get("cloud_only")]
     return out
+
+
+def min_room(spec: dict | None) -> float:
+    """The stuck threshold of this account: spec "min_room" (account_b "min_room", ATLAS v2, off by default) else MIN_ROOM."""
+    v = (spec or {}).get("min_room")
+    return float(v) if v is not None else MIN_ROOM
+
+
+def weight(spec: dict | None, key: str | None) -> float:
+    """The member's size weight (account_b "weights", ATLAS v2, off by default): 1.0 when absent / not listed."""
+    W = (spec or {}).get("weights") or {}
+    return float(W.get(key, 1.0)) if key is not None else 1.0
+
+
+def _weighted(r: dict, w: float) -> dict:
+    """micros x the member's weight (min 1 while the base size is >= 1; = tools/atlas.q_variant). w == 1.0: r unchanged."""
+    q = int(r.get("qty") or 0)
+    if w == 1.0 or q <= 0:
+        return r
+    q2 = max(1, int(q * w + 1e-9)) if w > 0 else 0
+    return {**r, "qty": q2, "reasons": list(r.get("reasons") or []) + [f"member weight {w:g}: {q} -> {q2}"]}
 
 
 def keys_on_b(ab: dict | None = None) -> list:
@@ -169,9 +212,10 @@ def sizing_cfg(spec: dict, base: dict | None = None) -> dict:
     return c
 
 
-def qty(spec: dict, trade: dict, state: dict | None, base: dict | None = None) -> dict:
+def qty(spec: dict, trade: dict, state: dict | None, base: dict | None = None, key: str | None = None) -> dict:
     """Micros for one account B entry: {"qty", "reasons", "lock"}. trade = {"risk_pts", "tgt_pts", ...}; state =
-    the account's eval state (multi_account.sizing_state). Fails closed (0) on any error / unknown state."""
+    the account's eval state (multi_account.sizing_state). Fails closed (0) on any error / unknown state. key = the member
+    (its spec "weights" entry, ATLAS v2: absent = 1.0 = today's size)."""
     from . import lit as _lit
     from . import sizing as SZ
     R = spec["rules"]
@@ -184,14 +228,16 @@ def qty(spec: dict, trade: dict, state: dict | None, base: dict | None = None) -
     c = sizing_cfg(spec, base)
     if spec.get("sizing") == "safe":
         r = SZ.second_qty(float(risk), PLANS[spec["plan"]]["safe_usd"], c, state=dict(state), max_micros=maxq)
-        return dll_guard({"qty": min(maxq, int(r["qty"])), "reasons": list(r["reasons"]), "lock": r.get("lock")}, float(risk), R, state)
+        r = _weighted({"qty": min(maxq, int(r["qty"])), "reasons": list(r["reasons"]), "lock": r.get("lock")}, weight(spec, key))
+        return dll_guard(r, float(risk), R, state)
     m0 = _lit.qty_for(float(risk))
     if not m0:
         return {"qty": 0, "reasons": ["no size"], "lock": None}
     r = SZ.lit_qty(m0, {"risk_pts": float(risk), "tgt_pts": _num(trade.get("tgt_pts")), "size_mult": 1.0}, c, room=state.get("room"),
                    state=dict(state), max_micros=maxq, learning=None)
-    return dll_guard({"qty": min(maxq, int(r.get("qty") or 0)), "reasons": list(r.get("reasons") or []), "lock": r.get("lock")},
-                     float(risk), R, state)
+    r = _weighted({"qty": min(maxq, int(r.get("qty") or 0)), "reasons": list(r.get("reasons") or []), "lock": r.get("lock")},
+                  weight(spec, key))
+    return dll_guard(r, float(risk), R, state)
 
 
 def dll_guard(r: dict, risk: float, rules: dict, state: dict) -> dict:
@@ -393,7 +439,7 @@ class AccountB:
         prof = float(st["profit"]) + float(st["cum"])
         bal = start + prof
         floor = bal - float(st["room"])
-        status = "passed" if prof >= float(R["target"]) else "failed" if st["room"] <= 0 else "stuck" if st["room"] < MIN_ROOM else "open"
+        status = "passed" if prof >= float(R["target"]) else "failed" if st["room"] <= 0 else "stuck" if st["room"] < min_room(self.spec) else "open"
         return {**({"anchor": st["anchor"]} if st.get("anchor") else {}), "start_balance": start, "balance": round(bal, 2), "profit": round(prof, 2), "today": round(float(st["cum"]), 2),
                 "floor": round(floor, 2), "room": round(float(st["room"]), 2), "target": start + float(R["target"]),
                 "to_target": round(max(0.0, float(R["target"]) - prof), 2), "session": st.get("session"), "status": status,
@@ -414,7 +460,7 @@ class AccountB:
                                                                    "trade on this eval; request the funded account in the MFFU dashboard"),
                "failed": (f"{self.label} EVAL FAILED", f"balance ${ev['balance']:,.0f} reached the max-loss floor ${ev['floor']:,.0f}: no "
                                                       "new trade on this account"),
-               "stuck": (f"{self.label} stuck: room ${ev['room']:,.0f}", f"the room to the max-loss floor is under ${MIN_ROOM:,.0f}: 1 micro "
+               "stuck": (f"{self.label} stuck: room ${ev['room']:,.0f}", f"the room to the max-loss floor is under ${min_room(self.spec):,.0f}: 1 micro "
                                                                        "no longer fits a stop, the bot stops trading this account; buy a new one")}[stt]
         self.log("risk", f"{txt[0]}: {txt[1]}")
         self._push_text(txt[0], txt[1], key)
@@ -592,7 +638,7 @@ class AccountB:
             sz = {"qty": 0, "reasons": []}
             if not why:
                 try:
-                    sz = qty(self.spec, {"risk_pts": risk, "tgt_pts": tgt}, self.eval_state(now), base=getattr(self.bot, "_lit_sizing", None))
+                    sz = qty(self.spec, {"risk_pts": risk, "tgt_pts": tgt}, self.eval_state(now), base=getattr(self.bot, "_lit_sizing", None), key=k)
                 except Exception as e:
                     sz = {"qty": 0, "reasons": [f"sizing failed ({e.__class__.__name__}: {e}): not traded"]}
                 self.last_size = {"qty": sz["qty"], "key": k, "reasons": [str(x)[:120] for x in sz["reasons"]][-6:], "t": int(now)}

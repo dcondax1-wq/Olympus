@@ -718,6 +718,18 @@ def run(out):
         print("second strategies failed:", e.__class__.__name__, e)
         second_block = {**(st.get("second") or {}), "error": f"{e.__class__.__name__}: {e}"}
 
+    # ---- ATLAS v2 PAPER SHADOW (engine/atlas_v2.py, research/writeups/atlas-v2.md candidate 1b): the members' frozen paper
+    # ledgers above + LIT's run on the same bars -> its own frozen paper ledger and 25K eval tracker (state "atlas_v2").
+    # Never routed; never stops the LIT run; the live ATLAS (second_model.json account_b) is not read or changed here
+    atlas_v2 = None
+    try:
+        from engine import atlas_v2 as _av2
+        if lm["model"] == "lit" and second_block and not second_block.get("error") and _av2.enabled():
+            atlas_v2 = _av2.step(st.get("atlas_v2"), _av2.members_rows(second_block), res, df_all, _LIT_IN.get("df1"), now)
+    except Exception as e:
+        print("atlas v2 shadow failed:", e.__class__.__name__, e)
+        atlas_v2 = {**(st.get("atlas_v2") or {}), "error": f"{e.__class__.__name__}: {e}"} if st.get("atlas_v2") else None
+
     # ---- alerts for events not seen before (only events from after the monitor started, like LiveBot._emit_events)
     new_alerts = []
     for ev in res["events"]:
@@ -870,6 +882,24 @@ def run(out):
         push_res.append(r)
         notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "key", "title", "body", "url", "side", "entry", "stop", "target",
                                                  "qty", "usd", "exit", "setup")}, "sent": int(r.get("sent") or 0), "at": now})
+    if atlas_v2 and not atlas_v2.get("error"):    # ATLAS v2 PAPER shadow: kind "second", sent only with second_model.json atlas_v2.push true
+        try:
+            from engine import atlas_v2 as _av2
+            av2_push = _av2.push_on()
+            for n in _av2.notices(atlas_v2, max(push_since - 60, now - PUSH_MAX_AGE_S), money):
+                if notifier.seen(n):
+                    continue
+                q = alerts_plus.apply_level(n, plus["prefs"]) if av2_push else None
+                if q is None:                          # shadow pushes off (default) or the app's "second" level off: recorded only
+                    notifier.mark(n)
+                    r = {"sent": 0, "skipped": "off"}
+                else:
+                    r = notifier.notify(q, push_it=True, other_sent=pc_sent)
+                push_res.append(r)
+                notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "key", "title", "body", "url", "side", "entry", "stop", "target",
+                                                         "qty", "usd", "exit", "setup")}, "sent": int(r.get("sent") or 0), "at": now})
+        except Exception as e:                     # never fails the run
+            print("atlas v2 notices failed:", e.__class__.__name__, e)
     notices = sorted(notices, key=lambda x: (x.get("t") or 0, x.get("at") or 0))[-80:]
     gone = sorted({g for r in push_res for g in r.get("gone") or []})
     if gone:                                       # expired / made for an old key: the app re-subscribes on its next open
@@ -953,6 +983,8 @@ def run(out):
         new_state["second"] = second_block
         if (second_block.get("strategies") or {}).get("lit_asia"):     # LIT + Asia slot paper shadow: its own state key too
             new_state["lit_asia"] = second_block["strategies"]["lit_asia"]
+    if atlas_v2 is not None or st.get("atlas_v2"):   # ATLAS v2 PAPER shadow: its own state key (kept when a run skipped it)
+        new_state["atlas_v2"] = atlas_v2 if atlas_v2 is not None else st["atlas_v2"]
     from engine import uptime as _uptime        # status page: 30-day uptime per part + incidents -> state "uptime" (never raises)
     _uptime.cloud_hook(new_state, st, pc, now)
     try:                    # LIT day analyst (engine/lit_brief.py): morning briefing, intraday log, recap -> state "brief" + README

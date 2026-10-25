@@ -237,7 +237,15 @@ def _second(bot):
             # nothing computed yet by the paper thread: the routed strategies still show ("ROUTED on <account>")
             return {"t": None, "paper": not (ri or {}).get("keys"), "strategies": {}, "route": ri} if ri else None
         from engine import second
-        return second.compact(s, route=ri)
+        out = second.compact(s, route=ri)
+        av = getattr(bot, "atlas_v2", None)          # ATLAS v2 PAPER shadow (engine/atlas_v2.compact; never routed)
+        if out is not None and isinstance(av, dict) and av.get("ev"):
+            try:
+                from engine import atlas_v2
+                out["atlas_v2"] = atlas_v2.compact(av)
+            except Exception:
+                pass
+        return out
     except Exception:
         return None
 
