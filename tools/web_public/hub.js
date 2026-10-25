@@ -602,7 +602,7 @@
       ['Stop', 'One tick beyond the sweep extreme (the protected high or low), 8 to 80 points. Never a fixed distance.'],
       ['Target', 'The 18:00 open ± one VIX one-day move, at least 1.5R away; profit banked at 8R. One target, no greed.'],
       ['Manage', `Stop to breakeven at +1R. Flat at 15:55 ET. One trade a day, entries ${hmM(w[0])}–${hmM(w[1])} ET.`],
-      ['Size', 'Size follows the stop: a wide stop means fewer micros. On the eval (two-week mode): enough micros that one winner passes, capped at 60% of the room and the $1,000 soft daily loss, max 40.'],
+      ['Size', 'Size follows the stop: a wide stop means fewer micros. On the eval (two-week mode): enough micros that one winner passes, capped at 80% of the room and the $1,000 soft daily loss, max 40, no weekly loss stop (owner 2026-10-25).'],
       ['Loss rules', 'After 2 stop-outs in a week, half size for the rest of it (not in two-week eval mode). Monday: once Friday’s high is taken only shorts, once Friday’s low is taken only longs.']];
     return `<div class="hb-steps">${steps.map(([t, d], i) => `<div class="hb-step"><span>${i + 1}</span><div><b>${t}</b><p>${d}</p></div></div>`).join('')}</div>`;
   }

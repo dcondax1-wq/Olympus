@@ -25,7 +25,11 @@ from engine.ninjatrader import _FakeNT  # noqa: E402
 from tests.test_multi_account import Clock, make_bot, ts  # noqa: E402
 
 RESULTS = []
-LSZ = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit_sizing"]
+from tests.sizing_pins import LIVE, PINNED  # noqa: E402
+
+# the anchor math is checked on a pinned config (two_week room_f 0.55, the values it was written for); the live room_f
+# (0.8, owner 2026-10-25) gets its own anchored check below
+LSZ = PINNED
 A = {"as_of": "2026-10-23", "balance": 49710.80, "floor": 48168.20}
 T_MON = ts(2026, 10, 26, 10, 0)            # Monday 2026-10-26 10:00 ET (first session after the anchor)
 T_TUE = ts(2026, 10, 27, 10, 0)
@@ -103,6 +107,12 @@ def math_checks():
     cap = int(0.6 * 1542.60 / (60.0 * 2.0))
     check(f"two_week: anchored 60% room cap = {cap} micros (unanchored {r_o['qty']})", r_a["qty"] <= cap and r_a["qty"] < r_o["qty"],
           (r_a, r_o))
+    # live room_f 0.8 on the anchored room: 0.8 x $1,542.60 / (60.25 x $2 + $1.90) = 10, the soft daily loss (8) binds;
+    # a full stop-out stays inside the room and the $1,000 day
+    r_l = sz.lit_qty(13, tr, LIVE, room=st["room"], state=st, learning=None)
+    l1 = (60.0 + 0.25) * 2.0 + 1.90
+    check(f"two_week LIVE (room_f 0.8): anchored 60-pt stop -> {r_l['qty']} micros, ${r_l['qty'] * l1:,.0f} at risk "
+          "<= 80% of $1,542.60 and <= $1,000", 1 <= r_l["qty"] and r_l["qty"] * l1 <= min(0.8 * 1542.60, 1000.0), r_l)
     # eval_life.view with the anchor
     v = EL.view({"2026-10-19": -250.0}, "2026-10-19", "2026-10-26", LSZ, anchor=A)
     check("eval_life.view anchored: balance, floor, room, to_target, status open",
@@ -195,9 +205,12 @@ def bot_checks(tmp):
     from engine import brain
     sz_out = brain._sizing({"risk": 30.0, "tgt": 200.0, "what": "test"}, {"lit_sizing": LSZ, "eval_state": st}, None, {}, None)
     steps = {s_["label"]: s_ for s_ in sz_out["steps"]}
-    check("Bot Brain sizing: MFFU anchor step + 'Left to +$3,000' = $3,289 + 60% cap on the $1,543 room",
+    check("Bot Brain sizing: MFFU anchor step + 'Left to +$3,000' = $3,289 + 55% cap on the $1,543 room",
           "MFFU anchor" in steps and "48,168.20" in steps["MFFU anchor"]["text"] and "3,289" in steps["Left to +$3,000"]["value"]
-          and "1,543" in steps["60% room cap"]["text"], sz_out["steps"])
+          and "1,543" in steps["55% room cap"]["text"], sz_out["steps"])
+    sz_l = brain._sizing({"risk": 30.0, "tgt": 200.0, "what": "test"}, {"lit_sizing": LIVE, "eval_state": st}, None, {}, None)
+    check("Bot Brain sizing on the live config: the room cap step names the live room_f (80%), not a fixed 60%",
+          any(s_["label"] == "80% room cap" for s_ in sz_l["steps"]), sz_l["steps"])
 
     # the session after: a routed +$500 day raises the floor
     clock.t = T_TUE + 290

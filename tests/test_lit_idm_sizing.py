@@ -25,7 +25,11 @@ from tests import test_multi_account as TM  # noqa: E402
 RESULTS = []
 IDM = {"atr": 2.0, "bars": 48, "n": 2, "up": 1.5, "down": 0.75, "cap_usd": 990}
 LM = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))
-LSZ = LM["lit_sizing"]
+from tests.sizing_pins import PINNED  # noqa: E402
+# the idm multiplier math on a pinned sizing config (two_week room_f 0.55, funded 40% / <= $800 / winner <= $1,500: the
+# values these cases were written for); at the owner's 2026-10-25 values (room_f 0.8, funded winner <= $2,000) the
+# best-day cap binds the x1.5 funded size-up, which is the cap working, not the multiplier
+LSZ = PINNED
 TW = {"mode": "two_week", "two_week": LSZ["two_week"], "two_week_until": 10, "after_mode": "safe_eval", "safe_cap": 0.6}
 UP = {"idm_m": 1.5, "idm_cap": 990.0, "idm_n": 3, "wk_m": 1.0, "size_mult": 1.5}
 DN = {"idm_m": 0.75, "idm_cap": 990.0, "idm_n": 1, "wk_m": 1.0, "size_mult": 0.75}

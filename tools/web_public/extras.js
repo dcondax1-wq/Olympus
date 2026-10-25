@@ -77,6 +77,7 @@
 
   // --------------------------------------------------------------------------------------------- two_week sizing (engine/sizing.py two_week_qty, JS port)
   const TW = { PV: 2, COMM: 1.9, SLIP: 0.25, DSLIP: 0.5 };
+  const RFP = () => Math.round(((D.lit_extra?.sizing?.two_week?.room_f) ?? 0.6) * 100);   // live room_f in % (0.8 since 2026-10-25)
   function twQty(stop, tgt, st) {
     const c = { need_buf: 1, room_f: 0.6, dll_cap: true, stop_at_target: true, ...(D.lit_extra?.sizing?.two_week || {}) };
     const P = { target: 3000, dll: 1000, ...(D.lit_extra?.plan || {}) }, maxq = D.lit_extra?.sizing?.max_micros || 40;
@@ -131,8 +132,8 @@
     el.innerHTML = head('Today · MFFU Builder 50K · Eval HQ', E.status === 'passed' ? 'Eval passed' : `${usd(E.toGo)} to pass${E.left != null ? ` · ${plural(E.left, 'session')} left` : ''}`,
       `The owner’s rule: an eval is decided within 2 weeks (10 sessions). Paper eval on the cloud bot; sizing mode <b>${esc(E.mode)}</b>.`) +
       howto('evalhq', `<ul><li><b>Pass path</b>: the 10 sessions of the 2-week window; the lit one is today. <b>Needed per session</b> = what is left to +$3,000 spread over the sessions left.</li>
-        <li><b>One winner passes</b>: the live two_week sizing buys enough micros that one trade reaching its target covers everything still needed, but never more than 60% of the room to the trailing floor and never more than the $1,000 soft daily loss on a full stop. The table shows that rule at different stop sizes (the target is 2026’s median target distance, kept between 1.5R and 8R).</li>
-        <li><b>Odds</b>: replays of every possible eval start in 2026 with the live sizing (run lit_2wk_rec). Pass / fail / still open after 10 sessions. H2 (Jul–Oct) is the honest check; H1 is where the rules were picked.</li>
+        <li><b>One winner passes</b>: the live two_week sizing buys enough micros that one trade reaching its target covers everything still needed, but never more than ${RFP()}% of the room to the trailing floor and never more than the $1,000 soft daily loss on a full stop. The table shows that rule at different stop sizes (the target is 2026’s median target distance, kept between 1.5R and 8R).</li>
+        <li><b>Odds</b>: replays of every possible eval start in 2026 with the live sizing (${esc(tw?.run || "run lit_2wk_rec")}: Monte Carlo starts at the live two_week switches, research/lit/uprisk_eval.json). Pass / fail / still open after 10 sessions. H2 (Jul–Oct) is the honest check; H1 is where the rules were picked.</li>
         <li>All of it is the paper eval and the backtest. The bot never places real orders.</li></ul>`) +
       `<div class="card lex-hq"><div class="card-h"><h3>Pass path · paper eval</h3>${tag(esc(E.status).toUpperCase(), statusK)}</div>
         <div class="lex-big"><b>${usd(E.bal)}</b><span class="${cls(E.profit)}">${susd(E.profit)} since the start${E.ev.start ? ` (${fDate(E.ev.start)})` : ''}</span></div>
@@ -153,7 +154,7 @@
         ${tbl.map((r) => `<tr class="${r.typ ? 'lex-on' : ''}"><td><b>${r.s} pts</b><span class="dl small mut">${Math.round(r.tg)} pts · ${num(r.tg / r.s, 1)}R${r.typ ? ' · 2026 median' : ''}</span></td><td class="v">${r.q}<span class="dl small mut">${esc(r.short)}</span></td>
           <td class="v dn">${usd(-r.risk)}</td>
           <td class="v ${r.win >= E.toGo ? 'up' : ''}">${susd(r.win)}<span class="dl small ${r.win >= E.toGo ? 'up' : 'mut'}">${r.win >= E.toGo ? 'passes' : usd(E.toGo - r.win) + ' left'}</span></td></tr>`).join('')}</table></div>
-        <p class="note">Wide stop, fewer micros: the room cap (60% of ${usd(E.room)}) and the $1,000 soft daily loss shrink the size as the stop grows, so a wide-stop winner may not pass in one go. Costs in: $1.90 a micro round trip, 1 tick of stop slippage. ${ok(lit.vix_move) ? `Today’s target band: 18:00 open ${num(lit.open18)} ± 1 VIX day move = ${num(lit.vix_move, 0)} pts (VIX ${num(lit.vix, 1)}), banked at 8R.` : ''}</p></div>
+        <p class="note">Wide stop, fewer micros: the room cap (${RFP()}% of ${usd(E.room)}) and the $1,000 soft daily loss shrink the size as the stop grows, so a wide-stop winner may not pass in one go. Costs in: $1.90 a micro round trip, 1 tick of stop slippage. ${ok(lit.vix_move) ? `Today’s target band: 18:00 open ${num(lit.open18)} ± 1 VIX day move = ${num(lit.vix_move, 0)} pts (VIX ${num(lit.vix, 1)}), banked at 8R.` : ''}</p></div>
       ${ODDS.length ? `<div class="card"><div class="card-h"><h3>Odds of deciding in 2 weeks · live sizing</h3><span class="meta">run ${esc(tw.run)} · backtest</span></div>
         <div class="lex-odds">${ODDS.map(([k, lab]) => { const o = tw.eval[k]; return `<div class="o"><div class="h"><span>${lab}</span><b>${pct(o.p10)} pass</b></div>
           <div class="bar"><i class="p" style="width:${o.p10}%"></i><i class="f" style="width:${o.f10}%"></i><i class="u" style="width:${Math.max(0, 100 - o.p10 - o.f10)}%"></i></div>

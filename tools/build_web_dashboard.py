@@ -554,6 +554,42 @@ def _ex_stats(rows):
             "net": round(sum(t["pnl"] for t in rows)), "pf": round(won / lost, 2) if lost > 0 else None}
 
 
+EVAL_FEE = 91.80                     # the owner's MFFU Builder 50K eval price
+UPRISK_BASE = {"room_f": 0.55, "wk_loss_usd": 1200, "need_buf": 1.0, "two_week_until": 10, "maxq": 40, "reset_at": None}
+
+
+def _live_eval_odds(ls, path=None):
+    """The two-week eval odds of the live lit_sizing switches from research/lit/uprisk_eval.json (MC 1,000 starts a half,
+    exact MFFU rules, tools/uprisk.py eval), in lit_2wk_rec's eval_path fields (p10 / f10 / o10 / pass_med / cost / max_risk /
+    p_ever). None when the file is missing or no row matches the live switches."""
+    d = _load(path or os.path.join(LIT_DOCS, "uprisk_eval.json"), None)
+    if not isinstance(d, dict) or not isinstance(d.get("eval"), dict):
+        return None
+    tw = ls.get("two_week") or {}
+    live = {"room_f": tw.get("room_f"), "wk_loss_usd": ls.get("wk_loss_usd"), "need_buf": tw.get("need_buf", 1.0),
+            "two_week_until": ls.get("two_week_until", 10), "maxq": 40, "reset_at": None}
+    norm = lambda c: {k: (None if c.get(k) is None else float(c[k])) for k in UPRISK_BASE}  # noqa: E731
+    for key, row in d["eval"].items():
+        if not isinstance(row, dict) or norm({**UPRISK_BASE, **(row.get("var") or {})}) != norm(live):
+            continue
+        ev = {}
+        for sp, src in (("H1", "H1"), ("H2", "H2"), ("2021-25", "REF")):
+            r = row.get(src) or {}
+            if r.get("p10") is None:
+                continue
+            ev[sp] = {"p10": r["p10"], "f10": r["f10"], "o10": round(100.0 - float(r.get("dec10", r["p10"] + r["f10"])), 1),
+                      "pass_med": r.get("pass_med"), "p_ever": r.get("p_ever"), "slow_pass": r.get("slow_pass"),
+                      "cost": round(EVAL_FEE / (float(r["p10"]) / 100.0)) if r["p10"] else None,
+                      "max_risk": r.get("max_risk"), "worst_day": -1000}
+        if not ev:
+            return None
+        return {"run": f"uprisk_eval {key}", "title": f"Two-week eval at the live switches (uprisk {key})", "built": d.get("built"),
+                "eval": ev, "cfg": live,
+                "source": f"research/lit/uprisk_eval.json row {key} (tools/uprisk.py eval: MC {d.get('n', 1000)} starts a half, "
+                          "MFFU Builder 50K, live two_week switches; cost = $91.80 / 2-week pass rate)"}
+    return None
+
+
 def _extras(st, lm, bt):
     try:
         from zoneinfo import ZoneInfo
@@ -611,6 +647,14 @@ def _extras(st, lm, bt):
                                "money": {k: {kk: (sp2.get(k) or {}).get(kk) for kk in ("n", "tpw", "wk2", "pf", "net", "per_month", "dd", "worst_day", "risk")}
                                          for k in ("2026", "2021-25")}}
             out["sources"]["two_week"] = "research/runs/lit_2wk_rec.json (two-week sizing, MFFU Builder 50K, exact eval replay + Monte Carlo)"
+        # ---- the same odds at the LIVE two_week switches (research/lit/uprisk_eval.json, tools/uprisk.py eval: the row whose
+        # room_f / weekly loss stop / need_buf / two_week_until / reset match live_model.json lit_sizing; owner 2026-10-25:
+        # room_f 0.8, weekly stop off). Replaces the eval odds above when a row matches; lit_2wk_rec stays the fallback.
+        le = _live_eval_odds((lm or {}).get("lit_sizing") or {})
+        if le:
+            tw = out.setdefault("two_week", {})
+            tw.update(run=le["run"], title=le["title"], built=le["built"], eval=le["eval"], eval_cfg=le["cfg"])
+            out["sources"]["two_week"] = le["source"]
         ev = _load(os.path.join(LIT_DOCS, "eventual.json"), None)       # local only unless the workflow checks it out
         if isinstance(ev, dict) and ev.get("C 10 sessions, then safe_eval"):
             out["eventual"] = {"label": "10 sessions two-week, then safe_eval (live rule)", **ev["C 10 sessions, then safe_eval"]}

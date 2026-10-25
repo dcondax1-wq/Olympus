@@ -686,9 +686,9 @@ SETTINGS = [
     ("lit.extra_boxes", "Extra session boxes", "Research option: more session boxes as levels (empty = off).", "", "entry"),
     ("lit.sweep_names", "Level list", "null = every LIT level (session boxes, PDH/PDL, PWH/PWL, PMH/PML, NWOG/NDOG, build-ups).", "", "entry"),
     ("lit.fallback_rr", "Fallback target", "null = no fallback target (no VIX band, no trade).", "", "exit"),
-    ("lit_sizing.mode", "Sizing mode", "two_week = \"one winner passes\": micros so the target covers what is left to +$3,000, capped at 60% of "
-     "the eval room and the $1,000 soft daily loss, max 40, min 1.",
-     "run lit_2wk_rec: 2-week pass H1 52.9% / H2 50.7%, fail 8.4% / 2.9%; live eval path now (t_check + be_off) 57.1/5.9 and 52.2/0.0", "eval"),
+    ("lit_sizing.mode", "Sizing mode", "two_week = \"one winner passes\": micros so the target covers what is left to +$3,000, capped at 80% of "
+     "the eval room (two_week room_f 0.8, owner 2026-10-25) and the $1,000 soft daily loss, max 40, min 1; no eval weekly loss stop.",
+     "uprisk.md (room_f 0.8, weekly stop off): 2-week pass H1 52.9% / H2 58.6%, fail 17.8% / 20.9% (was 53.0/3.6 and 53.7/2.2)", "eval"),
     ("lit_sizing.eval_start", "Eval start", "First session of the eval (sessions are counted from here).", "", "eval"),
     ("lit_sizing.eval_prior_pnl", "Eval P&L before the bot", "The eval's P&L when the bot started (owner: -$100).", "", "eval"),
     ("lit_sizing.two_week_until", "Two-week sessions", "two_week sizing runs for this many sessions, then after_mode.", "", "eval"),
@@ -699,9 +699,13 @@ SETTINGS = [
      "fast_eval: 2-week passes H1 52% / H2 47% but 21-27% fail", "eval"),
     ("lit_sizing.eval_ref_stop", "Eval reference stop", "Used only by mode eval ($800 up to a 25-pt stop + 60% room cap).",
      "eval: 2-week passes H1 37.5% / H2 29.5%", "eval"),
-    ("lit_sizing.two_week", "two_week details", "The knobs of two_week sizing (room_f 0.6 = 60% of the room, dll_cap = $1,000 daily cap).", "", "eval"),
-    ("lit_sizing.funded", "Funded sizing", "Sizing after the pass. NOT on: needs the funded state wiring first.",
-     "run lit_funded_rec: ~$740-770/mo paid, ~1% lost in 6 months", "eval"),
+    ("lit_sizing.two_week", "two_week details", "The knobs of two_week sizing (room_f 0.8 = 80% of the room since the owner's 2026-10-25 "
+     "switch, dll_cap = $1,000 daily cap).", "", "eval"),
+    ("lit_sizing.wk_loss_usd", "Eval weekly loss stop", "null = off (owner 2026-10-25: \"evals: one hit, make it quick\"); a number = no new "
+     "eval entry once the week lost that much.", "uprisk.md: off = 2-week fail ~18-21% (on at $1,200: ~2-4%)", "eval"),
+    ("lit_sizing.funded", "Funded sizing", "Sizing after the pass (acts on an account switched with eval_life --to-funded): 60% of the room, "
+     "at most $1,500 a trade, a winner at most $2,000, skip when 1 micro could reach the floor.",
+     "uprisk.md: ~$929 / $915 a month to you (H1 / H2), 0% lost in 6 months", "eval"),
     ("equity_filter", "Cold-streak filter", "null = off (that was the old engine's filter; LIT has none).", "", "core"),
     ("sizing", "Old engine sizing", "null = off for LIT.", "", "core"),
 ]

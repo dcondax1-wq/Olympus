@@ -21,7 +21,7 @@ Contents (every number next to its rule):
   setups    every 5m CISD candidate today with each rule check (value vs threshold) and its status: armed / filled /
             no fill / rejected (the rule) / blocked (1 trade a day)
   sizing    the sizing mode's math in words and numbers (two_week: what is left to +$3,000, $ per micro at the target,
-            60% room cap, soft daily loss cap, max 40) -> micros and $ at risk; weekly stop; eval session; pass lock
+            room_f room cap, soft daily loss cap, max 40) -> micros and $ at risk; weekly stop; eval session; pass lock
   trade     the open trade's management: stop, breakeven trigger (+1R), the 15-minute check, target, 8R bank, 15:55 flat
   guards    feed ages, guards on/off and whether one blocks, clock drift, news today, VIX/VXN band, market hours
   log       a time-stamped narration of today's state changes (data/brain/YYYY-MM-DD.jsonl on the PC, last 200 lines)
@@ -600,8 +600,9 @@ def _sizing(focus, ctx, P, x, price):
         S.append({"label": "One winner passes", "value": f"{q_need} micros", "text": f"ceil({_usd(need)} / {_usd(per)}) = {q_need} micros"})
         if c.get("room_f") and room is not None:
             cap = int(float(c["room_f"]) * max(0.0, float(room)) / (risk * PV))
-            S.append({"label": "60% room cap", "value": f"{cap} micros",
-                      "text": f"60% of the {_usd(room)} room to the trailing floor / ({risk:.1f} pts x $2) = {cap}"})
+            pct = float(c["room_f"]) * 100        # two_week room_f (0.8 since the owner's 2026-10-25 switch; was a fixed "60%" label)
+            S.append({"label": f"{pct:.0f}% room cap", "value": f"{cap} micros",
+                      "text": f"{pct:.0f}% of the {_usd(room)} room to the trailing floor / ({risk:.1f} pts x $2) = {cap}"})
         if c.get("dll_cap"):
             ld = (risk + sizing.TW_DLL_SLIP) * PV + COMM
             cap2 = int(max(0.0, A["dll"] + cum) / ld)

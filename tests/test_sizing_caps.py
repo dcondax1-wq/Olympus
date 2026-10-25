@@ -31,7 +31,11 @@ from engine import lit  # noqa: E402
 
 logging.getLogger("engine.sizing").setLevel(logging.ERROR)
 RESULTS = []
-LSZ = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit_sizing"]
+from tests.sizing_pins import LIVE, PINNED, live_checks  # noqa: E402
+
+# the cases below test the sizing math on a pinned config (room_f 0.55, the $1,200 weekly stop: the values they were
+# written for); the sweeps also run on the live config (owner 2026-10-25: room_f 0.8, no eval weekly stop)
+LSZ = PINNED
 
 
 def check(name, cond, info=""):
@@ -106,11 +110,29 @@ def lit_cases():
     check("LIT failed eval (room -$50): 0, lock failed", int(r["qty"]) == 0 and r.get("lock") == "failed", r)
 
 
-def lit_sweep(n=6000, seed=7):
+def live_cases():
+    """The owner's live values (2026-10-25): room_f 0.8 and no eval weekly loss stop, still inside every ceiling."""
+    live_checks(check)
+    L = dict(LIVE)
+    # 88-pt stop = $178.40 a micro: 80% of $230 = $184 -> 1; 80% of $220 = $176 -> skip
+    r1 = lq(88.0, 200.0, st_of(profit=-1770.0, room=230.0, session=4), cfg=L)
+    r0 = lq(88.0, 200.0, st_of(profit=-1780.0, room=220.0, session=4), cfg=L)
+    check("LIVE two_week (room_f 0.8): 88-pt stop, room $230 -> 1 micro ($178.40 <= $184)", int(r1["qty"]) == 1, r1)
+    check("LIVE two_week (room_f 0.8): 88-pt stop, room $220 -> skip ($178.40 > $176)", skipped(r0), r0)
+    # no weekly stop: week -$1,190 still trades (the soft daily loss and the room still bound it)
+    r = lq(40.0, 200.0, st_of(room=1500.0, session=3, wk_pnl=-1190.0), cfg=L)
+    check("LIVE: no eval weekly loss stop: week -$1,190, 40-pt stop -> trades, inside 80% room and the $1,000 day",
+          1 <= int(r["qty"]) and int(r["qty"]) * L1(40.0) <= min(0.8 * 1500.0, 1000.0), r)
+    r = lq(40.0, 150.0, st_of(cum=-950.0, room=1050.0, session=2), cfg=L)
+    check("LIVE two_week: day -$950 of the $1,000 soft loss, 40-pt stop -> skip", skipped(r), r)
+
+
+def lit_sweep(n=6000, seed=7, base=None, label=""):
     rnd = random.Random(seed)
     bad = []
-    plans = {"50K": (LSZ, 1000.0, 40), "25K": (AB.sizing_cfg({**AB.normalize({"account": "x", "plan": "builder25k"},
-                                                                              scfg={"strategies": {}}), "sizing": "need"}, LSZ), 600.0, 20)}
+    B = LSZ if base is None else base
+    plans = {"50K": (B, 1000.0, 40), "25K": (AB.sizing_cfg({**AB.normalize({"account": "x", "plan": "builder25k"},
+                                                                            scfg={"strategies": {}}), "sizing": "need"}, B), 600.0, 20)}
     for _ in range(n):
         pk = rnd.choice(list(plans))
         cfg, dll, maxq = plans[pk]
@@ -137,7 +159,7 @@ def lit_sweep(n=6000, seed=7):
             ok &= l <= wl + s["wk_pnl"] + 1e-6
         if not ok:
             bad.append((pk, mode, risk, room, cum, prof, q, round(l, 2)))
-    check(f"LIT sweep ({n} random states, 50K + 25K, every eval mode): qty x (stop + 1 tick, $1.90) inside the room, "
+    check(f"LIT sweep{label} ({n} random states, 50K + 25K, every eval mode): qty x (stop + 1 tick, $1.90) inside the room, "
           "the soft daily loss and the weekly stop", not bad, bad[:4])
 
 
@@ -253,6 +275,8 @@ def main():
     lit_cases()
     stuck_cases()
     lit_sweep()
+    live_cases()
+    lit_sweep(base=LIVE, label=" on the LIVE config (room_f 0.8, weekly stop off unless drawn)")
     atlas_cases()
     acctb_cases()
     extra_cases()

@@ -8,7 +8,8 @@ Settings: `live_model.json` (copy in `live_model_lit.json`) → `"model": "lit"`
 **Version:** locked 2026-10-18, **loss pack adopted 2026-10-18** (rule 10: Monday rule + weekly stop), **15-minute check +
 breakeven + costs ON since 2026-10-20** (rule 11; owner approved). **Scale-in after breakeven is built and safety-reviewed but
 OFF** (`"scale_in": null`) until the owner's Sim101 roundtrip passes (`python -m engine.ninjatrader --sim-roundtrip-add`,
-`docs/DAILY_CHECKLIST.md` "Switch on scale-in").
+`docs/DAILY_CHECKLIST.md` "Switch on scale-in"). **Uprisk on 2026-10-25** (owner: "evals: one hit, make it quick"; rule 9,
+`research/writeups/uprisk.md`): eval room cap 80% and no eval weekly loss stop; funded 60% of the room, at most $1,500, a winner at most $2,000.
 **Owner's order
 (2026-10-18): LIT is the strategy, tuned and judged on 2026 only** (Jan 2 – Oct 16). Picked on Jan–Jun 2026, checked on
 Jul–Oct 2026. 2021–25 is shown as a reference line, never as a gate. The previous strategy (Liquidity Engine, below) keeps
@@ -84,8 +85,26 @@ Every one of these counts as liquidity:
   (10 sessions). In plain words: **"one winner passes"**.
   1. When LIT enters, the target is already known (the VIX band, 1.5R to 8R).
   2. The bot buys enough micros that, if this one trade reaches its target, the eval reaches +$3,000.
-  3. Then it caps the size so a full stop-out (stop + 1 tick + commission) stays inside **60% of the room** between the eval
-     balance and the trailing max-loss floor, and inside MFFU's **$1,000 soft daily loss**; at most 40 micros, at least 1.
+  3. Then it caps the size so a full stop-out (stop + 1 tick + commission) stays inside **80% of the room** between the eval
+     balance and the trailing max-loss floor (owner 2026-10-25; 60% until 2026-10-24, 55% on 2026-10-24), and inside MFFU's
+     **$1,000 soft daily loss**; at most 40 micros, at least 1 (a micro that does not fit is a skip, never forced).
+     **No eval weekly loss stop** since 2026-10-25 (it was $1,200 for one day, 2026-10-24).
+  - **Uprisk numbers (owner 2026-10-25, `research/writeups/uprisk.md`, Monte Carlo 1,000 starts a half, live rules):**
+
+    | 2-week pass / fail | Jan–Jun (pick) | **Jul–Oct (check, quote this)** | 2021–25 (reference) |
+    |---|---|---|---|
+    | Now: room 80%, no weekly stop | 52.9% / 17.8% | **58.6% / 20.9%** | 20.7% / 24.9% |
+    | Before: room 55%, weekly stop $1,200 | 53.0% / 3.6% | 53.7% / 2.2% | 15.6% / 4.0% |
+
+    In plain words: an eval is decided sooner (median 5 sessions to pass on Jul–Oct, 79.5% decided within 2 weeks vs 55.9%),
+    but about **1 eval in 5 fails within 2 weeks** (before: 1 in 35). Ever passing drops from ~80% to ~72%; each eval is
+    $91.80. The whole eval → funded → payouts slot pays about **$823 / $798 a month** (H1 / H2) to you net of evals, vs $804 / $766
+    with the old eval sizing. 2021–25: about −$7 a month (fees only).
+  - **Funded sizing (owner 2026-10-25, acts once an account is switched with `eval_life --to-funded`):** risk 60% of the
+    room to the floor, at most **$1,500** a trade (x 20 ÷ stop beyond 20 pts), a winner pays at most **$2,000** (one winner =
+    one full payout request), the $1,000 soft daily loss, skip when 1 micro could reach the floor. 2026: **$929 / $915 a
+    month** to you (H1 / H2; before $889 / $835), first payout after ~23-26 funded sessions (before 33), **0% of accounts
+    lost**. Builder 25K: 60%, at most $750, a winner at most $1,000 ($445 / $405 a month; before $329 / $389).
   4. No new trade once the day already reached the eval target. The weekly stop's half size does **not** apply in this mode
      (the Monday rule still does). Near the target the size shrinks by itself.
   - Results **before the 2026-10-20 upgrades** (the 120 real LIT trades of 2026, a fresh eval on every session, MFFU 50K at
@@ -112,7 +131,8 @@ Every one of these counts as liquidity:
     the first entry's, inside 60% of the room and the soft daily loss that is left.
   - If the target, the stop or the eval state is missing at an entry, the bot sizes it with the eval mode below and logs why.
   - Code: `engine/sizing.py` (`two_week_qty`, `eval_state`, `eval_session`, `eval_clock`, `lit_qty` mode `two_week`), settings
-    `lit_sizing.two_week` (`base need`, `room_f 0.55` (safe switch 2026-10-24, was 0.6), `wk_loss_usd 1200`, `wk false`, `dll_cap true`, `stop_at_target true`).
+    `lit_sizing.two_week` (`base need`, `room_f 0.8` (owner 2026-10-25; 0.55 on 2026-10-24, 0.6 before), `wk false`, `dll_cap true`, `stop_at_target true`);
+    `lit_sizing.wk_loss_usd null` (eval weekly loss stop off since 2026-10-25); `lit_sizing.funded` `pct 0.6`, `pct_max_usd 1500`, `max_win 2000`.
 - **Eval sizing (on 2026-10-18 until the two-week mode replaced it; `"mode": "eval"` switches back):** $800 up to a **25-point** stop, then 800 × 25 ÷ stop
   (times the weekly stop's half, rounded down once), then never more than **60% of the room** between the eval balance and the
   trailing max-loss floor. Typical trade: about 4 micros, about $330 at risk (the LIT rule alone: 3 micros, $275). Run

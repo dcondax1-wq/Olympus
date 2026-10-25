@@ -97,6 +97,7 @@ jobs:
             /research/lit/*.md
             /research/lit/mffu_rules.json
             /research/lit/eventual.json
+            /research/lit/uprisk_eval.json
             /research/archive/engine-2026-10-17/
             /research/study/
             /research/runs/*.json

@@ -20,9 +20,16 @@ if ROOT not in sys.path:
 
 from engine import eval_life as EL, funded_life as FL, multi_account as MA, sizing as sz  # noqa: E402
 
+from tests.sizing_pins import OLD_FUNDED, OLD_FUNDED_25K  # noqa: E402
+
 RESULTS = []
-REC50 = MA.PRESETS["mffu_builder_50k"]["sizing"]["funded"]
-REC25 = MA.PRESETS["mffu_builder_25k"]["sizing"]["funded"]
+# the sizing math is checked on the write-up rule it was written for (lit-funded-sizing.md: 40% of the room, <= $800 /
+# $400, a winner <= $1,500 / $750); the presets carry the owner's 2026-10-25 rule (uprisk.md: 60%, <= $1,500 / $750, a
+# winner <= $2,000 / $1,000), checked in new_rule_checks()
+REC50 = OLD_FUNDED
+REC25 = OLD_FUNDED_25K
+NEW50 = MA.PRESETS["mffu_builder_50k"]["sizing"]["funded"]
+NEW25 = MA.PRESETS["mffu_builder_25k"]["sizing"]["funded"]
 
 
 def check(name, cond, info=""):
@@ -149,7 +156,40 @@ def sizing_checks():
           all(st[k] == v for k, v in base.items()) and st["cycle_target"] == 2100.0 and st["cycle_prev"] == 1300.0, st)
     # the defaults stay the research rule
     check("presets: funded cfg has no cons_aware (OFF: research/writeups/funded-path.md)",
-          "cons_aware" not in REC50 and "cons_aware" not in REC25 and sz.FD_DEFAULT["cons_aware"] is False)
+          "cons_aware" not in NEW50 and "cons_aware" not in NEW25 and sz.FD_DEFAULT["cons_aware"] is False)
+
+
+def new_rule_checks():
+    """The owner's funded rule (2026-10-25, research/writeups/uprisk.md) on the presets: 60% of the room, <= $1,500 (50K) /
+    $750 (25K), a winner <= $2,000 / $1,000; every full stop-out (stop + 2 ticks, $1.90) inside the room (strict), the soft
+    daily loss and the $ cap; skip when 1 micro could reach the floor."""
+    f0 = sz.funded_state({})
+    tr = {"risk_pts": 40.0, "tgt_pts": 60.0}
+    check("uprisk 50K: fresh room $2,000 x 60% = $1,200, 40-pt stop -> $600 -> 7 micros", sz.funded_qty(tr, f0, NEW50) == 7)
+    check("uprisk 50K: a winner <= $2,000: 200-pt target -> 5 micros (2000 / 398.1)",
+          sz.funded_qty({"risk_pts": 40.0, "tgt_pts": 200.0}, f0, NEW50) == 5)
+    check("uprisk 50K: room $100, 60-pt stop: 1 micro could reach the floor -> skip (0)",
+          sz.funded_qty({"risk_pts": 60.0, "tgt_pts": 120.0}, {"room": 100.0, "cum": 0.0, "locked": True}, NEW50) == 0)
+    A25 = {"mll": 1000.0, "lock": 100.0, "dll": 600.0, "max_micros": 20}
+    check("uprisk 25K: fresh room $1,000 x 60% = $600, 40-pt stop -> 3 micros",
+          sz.funded_qty(tr, sz.funded_state({}, plan={"mll": 1000.0, "lock": 100.0}), NEW25, acct=A25) == 3)
+    bad = []
+    for cfg, acct, cap_usd, dll, mx in ((NEW50, None, 1500.0, 1000.0, 40), (NEW25, A25, 750.0, 600.0, 20)):
+        for risk in (4.0, 8.0, 15.0, 20.0, 25.0, 40.0, 70.0, 120.0, 250.0):
+            for tgt in (30.0, 80.0, 200.0, 500.0):
+                for room in (50.0, 150.0, 400.0, 900.0, 2000.0, 3500.0, 6000.0):
+                    for cum in (0.0, -300.0, -dll + 80.0, 500.0):
+                        q = sz.funded_qty({"risk_pts": risk, "tgt_pts": tgt}, {"room": room, "cum": cum, "locked": room > 2000},
+                                          cfg, acct=acct)
+                        if not q:
+                            continue
+                        l = q * ((risk + 0.5) * 2.0 + 1.90)
+                        win = q * (tgt * 2.0 - 1.90)
+                        if not (l <= cap_usd and l < room and l <= dll + cum + 1e-6 and q <= mx
+                                and (q == 1 or win <= cfg["max_win"] + 1e-6)):
+                            bad.append((cap_usd, risk, tgt, room, cum, q, round(l), round(win)))
+    check("uprisk sweep (50K + 25K presets, 2,016 states): a full stop-out never past the $1,500 / $750 cap, the room "
+          "(never reaches the floor), the soft daily loss; a 2+ micro winner <= $2,000 / $1,000", not bad, bad[:4])
 
 
 # ------------------------------------------------------------------------------------------------ the switch + the bot
@@ -210,6 +250,7 @@ def main():
     try:
         tracker_checks()
         sizing_checks()
+        new_rule_checks()
         switch_checks(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
