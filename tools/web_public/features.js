@@ -74,6 +74,7 @@
   feat('ATLAS', 'Paper result per setup', 'Each setup’s paper trades and $ so far.', 'atstats', 1);
   feat('ATLAS', 'Setup state today', 'What each ATLAS setup is doing today, in its own words.', 'atstats', 1);
   // ---- Health (new)
+  feat('Health', 'Launch checklist', 'Tonight’s launch: anchor, allowlist, ATLAS account, startup, NinjaTrader, feed, Sim roundtrips, armed, up from 01:55 ET; each red line with its fix command.', 'launch', 1);
   feat('Health', 'Health lights', 'Green / amber / red lights for every part the bot needs.', 'lights', 1);
   feat('Health', 'PC heartbeat light', 'When the Surface last checked in.', 'lights', 1);
   feat('Health', 'NinjaTrader feed light', 'Age of the newest NinjaTrader bar; amber when it is behind.', 'lights', 1);
@@ -178,7 +179,7 @@
   // ================================================================================ More: one clean hub
   const SECTIONS = [
     ['Today & plan', 'today', ['goals', 'plan', 'day', 'brief', 'levels', 'radar', 'market', 'live', 'cockpit', 'news']],
-    ['Bot health & control', 'radar', ['lights', 'ops', 'engine', 'aiwatch', 'remote', 'alerts', 'activity', 'chart']],
+    ['Bot health & control', 'radar', ['launch', 'lights', 'ops', 'engine', 'aiwatch', 'remote', 'alerts', 'activity', 'chart']],
     ['LIT strategy', 'rules', ['strategy', 'risk', 'mffurules', 'setups', 'learned']],
     ['Research & backtests', 'lab', ['lab', 'experiments', 'writeups', 'losses', 'intraday', 'evals', 'results', 'replays', 'stops', 'intel']],
     ['Money & accounts', 'wallet', ['accounts', 'evaltl', 'evalhq', 'eval', 'curve', 'perf', 'scale', 'props', 'whatif', 'share']],
