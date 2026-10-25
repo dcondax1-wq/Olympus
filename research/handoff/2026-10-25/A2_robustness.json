@@ -1,0 +1,880 @@
+{
+ "built": "2026-10-25T04:27:35+00:00",
+ "same_as_lit_live": true,
+ "method": "live current config (cisd1m 22), LIT size rule, 2026 sessions, commission $1.90/micro, 1 tick on market entry and stop/BE/EOD/CUT exits already in the base; CI = chronological block bootstrap by ISO week (5,000 draws, 90%).",
+ "rows": [
+  {
+   "variant": "BASE live current @ $1.90/micro (+1 tick entry & non-target exits already in)",
+   "label": "BASELINE",
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 4.15,
+   "net": 43501.78,
+   "per_month": 4435,
+   "dd": -2213,
+   "h1_net": 33666.0,
+   "h1_pf": 4.92,
+   "h2_net": 9835.78,
+   "h2_pf": 2.88,
+   "net_ci90": [
+    19993,
+    69393
+   ],
+   "pf_ci90": [
+    2.21,
+    7.24
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": ""
+  },
+  {
+   "variant": "+1 tick(s) per affected fill",
+   "label": "RESEARCH_VARIANT",
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 4.02,
+   "net": 42948.28,
+   "per_month": 4378,
+   "dd": -2247,
+   "h1_net": 33258.5,
+   "h1_pf": 4.74,
+   "h2_net": 9689.78,
+   "h2_pf": 2.81,
+   "net_ci90": [
+    19399,
+    68861
+   ],
+   "pf_ci90": [
+    2.15,
+    6.99
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "post-hoc, linear in micros; entry + non-target exit each worse by k ticks; paths unchanged"
+  },
+  {
+   "variant": "+2 tick(s) per affected fill",
+   "label": "RESEARCH_VARIANT",
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 3.89,
+   "net": 42394.78,
+   "per_month": 4322,
+   "dd": -2281,
+   "h1_net": 32851.0,
+   "h1_pf": 4.56,
+   "h2_net": 9543.78,
+   "h2_pf": 2.75,
+   "net_ci90": [
+    18893,
+    68258
+   ],
+   "pf_ci90": [
+    2.09,
+    6.73
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "post-hoc, linear in micros; entry + non-target exit each worse by k ticks; paths unchanged"
+  },
+  {
+   "variant": "+4 tick(s) per affected fill",
+   "label": "RESEARCH_VARIANT",
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 3.65,
+   "net": 41287.78,
+   "per_month": 4209,
+   "dd": -2349,
+   "h1_net": 32036.0,
+   "h1_pf": 4.25,
+   "h2_net": 9251.78,
+   "h2_pf": 2.63,
+   "net_ci90": [
+    17771,
+    66990
+   ],
+   "pf_ci90": [
+    1.98,
+    6.3
+   ],
+   "p_net_le0": 0.06,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "post-hoc, linear in micros; entry + non-target exit each worse by k ticks; paths unchanged"
+  },
+  {
+   "variant": "+1 tick(s) on every fill incl. target limits",
+   "label": "RESEARCH_VARIANT",
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 4.01,
+   "net": 42865.78,
+   "per_month": 4370,
+   "dd": -2247,
+   "h1_net": 33196.0,
+   "h1_pf": 4.73,
+   "h2_net": 9669.78,
+   "h2_pf": 2.81,
+   "net_ci90": [
+    19359,
+    68714
+   ],
+   "pf_ci90": [
+    2.15,
+    6.98
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "post-hoc; stricter: the resting target limit also fills k ticks worse"
+  },
+  {
+   "variant": "+2 tick(s) on every fill incl. target limits",
+   "label": "RESEARCH_VARIANT",
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 3.88,
+   "net": 42229.78,
+   "per_month": 4305,
+   "dd": -2281,
+   "h1_net": 32726.0,
+   "h1_pf": 4.55,
+   "h2_net": 9503.78,
+   "h2_pf": 2.74,
+   "net_ci90": [
+    18810,
+    68004
+   ],
+   "pf_ci90": [
+    2.08,
+    6.71
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "post-hoc; stricter: the resting target limit also fills k ticks worse"
+  },
+  {
+   "variant": "entry latency 1 min (fills 1 1m bar(s) later)",
+   "label": "RESEARCH_VARIANT",
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 3.97,
+   "net": 40000.64,
+   "per_month": 4078,
+   "dd": -2029,
+   "h1_net": 27371.22,
+   "h1_pf": 4.2,
+   "h2_net": 12629.42,
+   "h2_pf": 3.57,
+   "net_ci90": [
+    18222,
+    63007
+   ],
+   "pf_ci90": [
+    2.16,
+    6.77
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 19,
+   "mfe4_retained": 17,
+   "mfe4_retention_pct": 73.9,
+   "note": "engine option entry_delay: re-simulated; a stop/target touch in the gap = no trade"
+  },
+  {
+   "variant": "entry latency 2 min (fills 2 1m bar(s) later)",
+   "label": "RESEARCH_VARIANT",
+   "n": 118,
+   "tpw": 2.86,
+   "pf": 3.04,
+   "net": 29594.4,
+   "per_month": 3017,
+   "dd": -3633,
+   "h1_net": 25648.92,
+   "h1_pf": 3.78,
+   "h2_net": 3945.48,
+   "h2_pf": 1.75,
+   "net_ci90": [
+    8868,
+    53229
+   ],
+   "pf_ci90": [
+    1.54,
+    5.3
+   ],
+   "p_net_le0": 0.4,
+   "mfe4_winners": 20,
+   "mfe4_retained": 17,
+   "mfe4_retention_pct": 73.9,
+   "note": "engine option entry_delay: re-simulated; a stop/target touch in the gap = no trade"
+  },
+  {
+   "variant": "fee +$0.50/micro ($2.40 round trip)",
+   "label": "RESEARCH_VARIANT",
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 4.08,
+   "net": 43183.78,
+   "per_month": 4402,
+   "dd": -2230,
+   "h1_net": 33431.0,
+   "h1_pf": 4.83,
+   "h2_net": 9752.78,
+   "h2_pf": 2.84,
+   "net_ci90": [
+    19622,
+    69047
+   ],
+   "pf_ci90": [
+    2.18,
+    7.11
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": ""
+  },
+  {
+   "variant": "longs only",
+   "label": "RESEARCH_VARIANT",
+   "n": 55,
+   "tpw": 1.33,
+   "pf": 4.45,
+   "net": 20421.78,
+   "per_month": 2082,
+   "dd": -1429,
+   "h1_net": 18118.08,
+   "h1_pf": 5.78,
+   "h2_net": 2303.7,
+   "h2_pf": 2.08,
+   "net_ci90": [
+    5250,
+    37985
+   ],
+   "pf_ci90": [
+    1.76,
+    9.36
+   ],
+   "p_net_le0": 0.92,
+   "mfe4_winners": 8,
+   "mfe4_retained": 8,
+   "mfe4_retention_pct": 34.8,
+   "note": "split of the base, not a strategy"
+  },
+  {
+   "variant": "shorts only",
+   "label": "RESEARCH_VARIANT",
+   "n": 65,
+   "tpw": 1.58,
+   "pf": 3.92,
+   "net": 23080.0,
+   "per_month": 2353,
+   "dd": -1660,
+   "h1_net": 15547.92,
+   "h1_pf": 4.24,
+   "h2_net": 7532.08,
+   "h2_pf": 3.42,
+   "net_ci90": [
+    9000,
+    39391
+   ],
+   "pf_ci90": [
+    1.97,
+    7.58
+   ],
+   "p_net_le0": 0.24,
+   "mfe4_winners": 15,
+   "mfe4_retained": 15,
+   "mfe4_retention_pct": 65.2,
+   "note": "split of the base, not a strategy"
+  },
+  {
+   "variant": "session London 02:00-07:59 (by fill time)",
+   "label": "RESEARCH_VARIANT",
+   "n": 95,
+   "tpw": 2.31,
+   "pf": 4.15,
+   "net": 37268.1,
+   "per_month": 3799,
+   "dd": -2137,
+   "h1_net": 27303.42,
+   "h1_pf": 4.53,
+   "h2_net": 9964.68,
+   "h2_pf": 3.44,
+   "net_ci90": [
+    14733,
+    62383
+   ],
+   "pf_ci90": [
+    2.05,
+    7.53
+   ],
+   "p_net_le0": 0.14,
+   "mfe4_winners": 20,
+   "mfe4_retained": 20,
+   "mfe4_retention_pct": 87.0,
+   "note": "split of the base"
+  },
+  {
+   "variant": "session NY AM 08:00-11:59 (by fill time)",
+   "label": "RESEARCH_VARIANT",
+   "n": 21,
+   "tpw": 0.51,
+   "pf": 2.93,
+   "net": 3885.58,
+   "per_month": 396,
+   "dd": -1187,
+   "h1_net": 4513.78,
+   "h1_pf": 6.31,
+   "h2_net": -628.2,
+   "h2_pf": 0.46,
+   "net_ci90": [
+    -621,
+    9205
+   ],
+   "pf_ci90": [
+    0.74,
+    10.09
+   ],
+   "p_net_le0": 8.92,
+   "mfe4_winners": 2,
+   "mfe4_retained": 2,
+   "mfe4_retention_pct": 8.7,
+   "note": "split of the base"
+  },
+  {
+   "variant": "session NY PM 12:00-15:55 (by fill time)",
+   "label": "RESEARCH_VARIANT",
+   "n": 4,
+   "tpw": 0.1,
+   "pf": null,
+   "net": 2348.1,
+   "per_month": 239,
+   "dd": 0,
+   "h1_net": 1848.8,
+   "h1_pf": null,
+   "h2_net": 499.3,
+   "h2_pf": null,
+   "net_ci90": [
+    382,
+    4712
+   ],
+   "pf_ci90": [
+    NaN,
+    NaN
+   ],
+   "p_net_le0": 1.42,
+   "mfe4_winners": 1,
+   "mfe4_retained": 1,
+   "mfe4_retention_pct": 4.3,
+   "note": "split of the base"
+  },
+  {
+   "variant": "top-1 winners removed",
+   "label": "RESEARCH_VARIANT",
+   "n": 119,
+   "tpw": 2.89,
+   "pf": 3.7,
+   "net": 37289.08,
+   "per_month": 3801,
+   "dd": -2213,
+   "h1_net": 27453.3,
+   "h1_pf": 4.2,
+   "h2_net": 9835.78,
+   "h2_pf": 2.88,
+   "net_ci90": [
+    16410,
+    61643
+   ],
+   "pf_ci90": [
+    2.01,
+    6.5
+   ],
+   "p_net_le0": 0.12,
+   "mfe4_winners": 22,
+   "mfe4_retained": 22,
+   "mfe4_retention_pct": 95.7,
+   "note": "removed: 2026-04-17 +6213"
+  },
+  {
+   "variant": "top-3 winners removed",
+   "label": "RESEARCH_VARIANT",
+   "n": 117,
+   "tpw": 2.84,
+   "pf": 2.99,
+   "net": 27508.38,
+   "per_month": 2804,
+   "dd": -2213,
+   "h1_net": 17672.6,
+   "h1_pf": 3.06,
+   "h2_net": 9835.78,
+   "h2_pf": 2.88,
+   "net_ci90": [
+    11479,
+    44427
+   ],
+   "pf_ci90": [
+    1.7,
+    5.03
+   ],
+   "p_net_le0": 0.12,
+   "mfe4_winners": 20,
+   "mfe4_retained": 20,
+   "mfe4_retention_pct": 87.0,
+   "note": "removed: 2026-04-17 +6213, 2026-01-06 +5138, 2026-03-18 +4643"
+  },
+  {
+   "variant": "top-5 winners removed",
+   "label": "RESEARCH_VARIANT",
+   "n": 115,
+   "tpw": 2.79,
+   "pf": 2.41,
+   "net": 19449.98,
+   "per_month": 1983,
+   "dd": -2213,
+   "h1_net": 9614.2,
+   "h1_pf": 2.12,
+   "h2_net": 9835.78,
+   "h2_pf": 2.88,
+   "net_ci90": [
+    6672,
+    33023
+   ],
+   "pf_ci90": [
+    1.41,
+    3.96
+   ],
+   "p_net_le0": 0.44,
+   "mfe4_winners": 18,
+   "mfe4_retained": 18,
+   "mfe4_retention_pct": 78.3,
+   "note": "removed: 2026-04-17 +6213, 2026-01-06 +5138, 2026-03-18 +4643, 2026-01-07 +4234, 2026-05-26 +3825"
+  },
+  {
+   "variant": "neighbour disp=0.7 (live 0.8)",
+   "label": "RESEARCH_VARIANT",
+   "n": 134,
+   "tpw": 3.25,
+   "pf": 3.65,
+   "net": 41446.02,
+   "per_month": 4225,
+   "dd": -2751,
+   "h1_net": 32879.14,
+   "h1_pf": 4.48,
+   "h2_net": 8566.88,
+   "h2_pf": 2.38,
+   "net_ci90": [
+    18334,
+    66561
+   ],
+   "pf_ci90": [
+    2.0,
+    6.18
+   ],
+   "p_net_le0": 0.08,
+   "mfe4_winners": 24,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour disp=0.9 (live 0.8)",
+   "label": "RESEARCH_VARIANT",
+   "n": 108,
+   "tpw": 2.62,
+   "pf": 3.84,
+   "net": 34855.76,
+   "per_month": 3553,
+   "dd": -2074,
+   "h1_net": 28328.1,
+   "h1_pf": 4.61,
+   "h2_net": 6527.66,
+   "h2_pf": 2.48,
+   "net_ci90": [
+    11981,
+    60214
+   ],
+   "pf_ci90": [
+    1.85,
+    6.96
+   ],
+   "p_net_le0": 0.2,
+   "mfe4_winners": 20,
+   "mfe4_retained": 20,
+   "mfe4_retention_pct": 87.0,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour disp=1.0 (live 0.8)",
+   "label": "RESEARCH_VARIANT",
+   "n": 92,
+   "tpw": 2.23,
+   "pf": 3.48,
+   "net": 26365.48,
+   "per_month": 2688,
+   "dd": -2007,
+   "h1_net": 23515.4,
+   "h1_pf": 4.56,
+   "h2_net": 2850.08,
+   "h2_pf": 1.71,
+   "net_ci90": [
+    5831,
+    50179
+   ],
+   "pf_ci90": [
+    1.48,
+    6.78
+   ],
+   "p_net_le0": 1.08,
+   "mfe4_winners": 15,
+   "mfe4_retained": 15,
+   "mfe4_retention_pct": 65.2,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour depth=0.4 (live 0.5)",
+   "label": "RESEARCH_VARIANT",
+   "n": 121,
+   "tpw": 2.94,
+   "pf": 4.15,
+   "net": 43501.88,
+   "per_month": 4435,
+   "dd": -2213,
+   "h1_net": 33666.1,
+   "h1_pf": 4.92,
+   "h2_net": 9835.78,
+   "h2_pf": 2.88,
+   "net_ci90": [
+    19993,
+    69393
+   ],
+   "pf_ci90": [
+    2.21,
+    7.24
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour depth=0.6 (live 0.5)",
+   "label": "RESEARCH_VARIANT",
+   "n": 118,
+   "tpw": 2.86,
+   "pf": 4.32,
+   "net": 44060.58,
+   "per_month": 4492,
+   "dd": -1858,
+   "h1_net": 34225.5,
+   "h1_pf": 5.26,
+   "h2_net": 9835.08,
+   "h2_pf": 2.88,
+   "net_ci90": [
+    20554,
+    69786
+   ],
+   "pf_ci90": [
+    2.33,
+    7.48
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour cisd1m=18 (live 22)",
+   "label": "RESEARCH_VARIANT",
+   "n": 116,
+   "tpw": 2.82,
+   "pf": 3.14,
+   "net": 31307.2,
+   "per_month": 3192,
+   "dd": -2121,
+   "h1_net": 24112.4,
+   "h1_pf": 3.85,
+   "h2_net": 7194.8,
+   "h2_pf": 2.17,
+   "net_ci90": [
+    10656,
+    55303
+   ],
+   "pf_ci90": [
+    1.63,
+    5.52
+   ],
+   "p_net_le0": 0.36,
+   "mfe4_winners": 19,
+   "mfe4_retained": 19,
+   "mfe4_retention_pct": 82.6,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour cisd1m=20 (live 22)",
+   "label": "RESEARCH_VARIANT",
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 4.02,
+   "net": 43075.88,
+   "per_month": 4391,
+   "dd": -2213,
+   "h1_net": 33666.0,
+   "h1_pf": 4.92,
+   "h2_net": 9409.88,
+   "h2_pf": 2.66,
+   "net_ci90": [
+    19733,
+    68712
+   ],
+   "pf_ci90": [
+    2.18,
+    6.95
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour cisd1m=24 (live 22)",
+   "label": "RESEARCH_VARIANT",
+   "n": 122,
+   "tpw": 2.96,
+   "pf": 4.07,
+   "net": 43243.98,
+   "per_month": 4408,
+   "dd": -2213,
+   "h1_net": 33406.6,
+   "h1_pf": 4.78,
+   "h2_net": 9837.38,
+   "h2_pf": 2.88,
+   "net_ci90": [
+    19616,
+    69121
+   ],
+   "pf_ci90": [
+    2.17,
+    7.16
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour cisd1m=26 (live 22)",
+   "label": "RESEARCH_VARIANT",
+   "n": 124,
+   "tpw": 3.01,
+   "pf": 4.07,
+   "net": 43314.68,
+   "per_month": 4416,
+   "dd": -2213,
+   "h1_net": 33406.7,
+   "h1_pf": 4.78,
+   "h2_net": 9907.98,
+   "h2_pf": 2.89,
+   "net_ci90": [
+    19662,
+    69197
+   ],
+   "pf_ci90": [
+    2.17,
+    7.17
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour idm_age=24 (live 36)",
+   "label": "RESEARCH_VARIANT",
+   "n": 115,
+   "tpw": 2.79,
+   "pf": 4.69,
+   "net": 48500.78,
+   "per_month": 4944,
+   "dd": -2213,
+   "h1_net": 33847.0,
+   "h1_pf": 5.03,
+   "h2_net": 14653.78,
+   "h2_pf": 4.1,
+   "net_ci90": [
+    24693,
+    73732
+   ],
+   "pf_ci90": [
+    2.6,
+    8.07
+   ],
+   "p_net_le0": 0.02,
+   "mfe4_winners": 24,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour idm_age=48 (live 36)",
+   "label": "RESEARCH_VARIANT",
+   "n": 120,
+   "tpw": 2.91,
+   "pf": 4.15,
+   "net": 43501.78,
+   "per_month": 4435,
+   "dd": -2213,
+   "h1_net": 33666.0,
+   "h1_pf": 4.92,
+   "h2_net": 9835.78,
+   "h2_pf": 2.88,
+   "net_ci90": [
+    19993,
+    69393
+   ],
+   "pf_ci90": [
+    2.21,
+    7.24
+   ],
+   "p_net_le0": 0.04,
+   "mfe4_winners": 23,
+   "mfe4_retained": 23,
+   "mfe4_retention_pct": 100.0,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour idm_dist=0.75 (live 1.0)",
+   "label": "RESEARCH_VARIANT",
+   "n": 110,
+   "tpw": 2.67,
+   "pf": 3.53,
+   "net": 35314.98,
+   "per_month": 3600,
+   "dd": -2592,
+   "h1_net": 32942.58,
+   "h1_pf": 4.96,
+   "h2_net": 2372.4,
+   "h2_pf": 1.42,
+   "net_ci90": [
+    12191,
+    61074
+   ],
+   "pf_ci90": [
+    1.75,
+    6.39
+   ],
+   "p_net_le0": 0.28,
+   "mfe4_winners": 19,
+   "mfe4_retained": 19,
+   "mfe4_retention_pct": 82.6,
+   "note": "full re-simulation on 2026"
+  },
+  {
+   "variant": "neighbour idm_dist=1.25 (live 1.0)",
+   "label": "RESEARCH_VARIANT",
+   "n": 126,
+   "tpw": 3.06,
+   "pf": 3.73,
+   "net": 41539.52,
+   "per_month": 4235,
+   "dd": -3470,
+   "h1_net": 30548.74,
+   "h1_pf": 4.38,
+   "h2_net": 10990.78,
+   "h2_pf": 2.77,
+   "net_ci90": [
+    17763,
+    66946
+   ],
+   "pf_ci90": [
+    1.98,
+    6.52
+   ],
+   "p_net_le0": 0.06,
+   "mfe4_winners": 23,
+   "mfe4_retained": 22,
+   "mfe4_retention_pct": 95.7,
+   "note": "full re-simulation on 2026"
+  }
+ ],
+ "months": [
+  {
+   "month": "2026-01",
+   "n": 17,
+   "net": 9973,
+   "pf": 5.67
+  },
+  {
+   "month": "2026-02",
+   "n": 13,
+   "net": 2278,
+   "pf": 2.05
+  },
+  {
+   "month": "2026-03",
+   "n": 10,
+   "net": 7418,
+   "pf": 14.32
+  },
+  {
+   "month": "2026-04",
+   "n": 14,
+   "net": 6652,
+   "pf": 7.04
+  },
+  {
+   "month": "2026-05",
+   "n": 17,
+   "net": 5064,
+   "pf": 3.78
+  },
+  {
+   "month": "2026-06",
+   "n": 9,
+   "net": 2282,
+   "pf": 3.87
+  },
+  {
+   "month": "2026-07",
+   "n": 9,
+   "net": 882,
+   "pf": 1.83
+  },
+  {
+   "month": "2026-08",
+   "n": 9,
+   "net": 430,
+   "pf": 1.3
+  },
+  {
+   "month": "2026-09",
+   "n": 14,
+   "net": 1882,
+   "pf": 1.95
+  },
+  {
+   "month": "2026-10",
+   "n": 8,
+   "net": 6643,
+   "pf": 9.55
+  }
+ ],
+ "seconds": 7
+}
