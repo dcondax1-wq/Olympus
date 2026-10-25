@@ -2,73 +2,94 @@
 // search button and the Settings > Interface card. app.js calls initShell() at boot and onPage(id) on every navigation.
 import { $, $$, store, esc } from '../util.js';
 import { icon } from './icons.js';
-import { TOP, DATA, MODULES, ARCHIVE, HUB, TITLES, groupOf, CC, GROUPS, TABS } from './routes.js';
+import { TOP, DATA, MODULES, ARCHIVE, HUB, TITLES, groupOf, CC, GROUPS, TABS, NAV_NAMES, groupIds } from './routes.js';
 import { fxLevel, setFxLevel } from './fx3d.js';
+import { moreMenu } from './menu.js';
 
 const root = document.documentElement;
 const pref = { get: (k, d) => store.get('nx.' + k, d), set: (k, v) => store.set('nx.' + k, v) };
 
-const PINS = ['morning', 'livechart', 'perf', 'evalhq', 'strategy', 'live', 'briefing', 'results', 'evals'];
 
 function navLink(p, extra = '') {
   // label span first: the command palette reads the first <span> of each #nav link as the page name (CSS puts the icon first)
-  return `<a data-page="${p.id}" ${extra} title="${esc(p.label)}"><span class="nx-nl">${esc(p.label)}</span><span class="nx-ni">${icon(p.icon)}</span></a>`;
+  const name = NAV_NAMES[p.id] || p.label;
+  return `<a data-page="${p.id}" ${extra} title="${esc(TITLES[p.id] || p.label)}"><span class="nx-nl">${esc(name)}</span><span class="nx-ni">${icon(p.icon)}</span></a>`;
+}
+
+// which sidebar groups are folded: "Advanced" starts folded (key navShut.v2, so the old six-group state does not carry over)
+const shutSet = () => new Set(pref.get('navShut.v2', ['Advanced']));
+function paintNav() {
+  const shut = shutSet();
+  $$('#nav > .nx-grp-h').forEach(h => { const c = shut.has(h.dataset.grp); h.classList.toggle('shut', c); h.setAttribute('aria-expanded', String(!c)); });
+  $$('#nav > .nx-gl').forEach(a => a.classList.toggle('nx-hide', shut.has(a.dataset.g) && !a.classList.contains('active')));
+  $$('#nav > .nx-nav-sub').forEach(d => d.classList.toggle('nx-hide', shut.has(d.dataset.g)));
 }
 
 function buildNav() {
   const nav = $('#nav');
-  // grouped sidebar (2026-10-25): Home · Accounts · Trading · Results · Operations · More, each group folds (remembered).
-  // Every other page sits in a hidden list so the command palette (reads #nav a[data-page]) still lists all of them.
+  // cleaned sidebar (2026-10-25): six top items (Home, Bot, Chart, Trades, Results, All tools) and one "Advanced" group,
+  // folded by default, with four small sections. Every other page sits in a hidden list so the command palette
+  // (reads #nav a[data-page]) still lists all of them; renamed entries are listed there under their page title too.
   const ALL = [...TOP, ...CC, ...DATA, ...MODULES];
   const find = (id) => ALL.find(p => p.id === id) || { id, label: TITLES[id] || id, icon: 'dot' };
-  const shut = new Set(pref.get('navShut', []));
-  const shown = new Set(GROUPS.flatMap(g => g.ids));
-  nav.innerHTML = GROUPS.map(g => `<button type="button" class="nx-nav-sec nx-grp-h${shut.has(g.label) ? ' shut' : ''}" data-grp="${esc(g.label)}" aria-expanded="${!shut.has(g.label)}">${esc(g.label)}<i>${icon('down')}</i></button>` +
-    g.ids.map(id => navLink(find(id), `class="nx-gl${shut.has(g.label) ? ' nx-hide' : ''}" data-g="${esc(g.label)}"`)).join('')).join('') +
-    `<div class="nx-nav-all" hidden>${ALL.filter(p => !shown.has(p.id) && p.id !== 'data').map(p => `<a data-page="${p.id}"><span>${esc(p.label)}</span></a>`).join('')}${ARCHIVE.map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id])}</span></a>`).join('')}</div>`;
+  const shown = new Set(GROUPS.flatMap(groupIds));
+  const links = (g, ids) => ids.map(id => navLink(find(id), `class="nx-gl" data-g="${esc(g.label)}"`)).join('');
+  nav.innerHTML = GROUPS.map(g => {
+    if (!g.advanced) return links(g, g.ids);
+    return `<button type="button" class="nx-nav-sec nx-grp-h nx-adv-h" data-grp="${esc(g.label)}"><span>${esc(g.label)}</span><i>${icon('down')}</i></button>` +
+      g.sections.map(s => `<div class="nx-nav-sub" data-g="${esc(g.label)}">${esc(s.label)}</div>` + links(g, s.ids)).join('');
+  }).join('') +
+    `<div class="nx-nav-all" hidden>${ALL.filter(p => (!shown.has(p.id) || NAV_NAMES[p.id]) && p.id !== 'data').map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id] || p.label)}</span></a>`).join('')}${ARCHIVE.map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id])}</span></a>`).join('')}</div>`;
+  paintNav();
   nav.addEventListener('click', (e) => {
     const h = e.target.closest('.nx-grp-h'); if (!h) return;
-    const g = h.dataset.grp, now = new Set(pref.get('navShut', []));
-    const close = !now.has(g); close ? now.add(g) : now.delete(g);
-    pref.set('navShut', [...now]);
-    h.classList.toggle('shut', close); h.setAttribute('aria-expanded', String(!close));
-    $$(`#nav > a[data-g="${CSS.escape(g)}"]`).forEach(a => a.classList.toggle('nx-hide', close && !a.classList.contains('active')));
+    const g = h.dataset.grp, now = shutSet();
+    now.has(g) ? now.delete(g) : now.add(g);
+    pref.set('navShut.v2', [...now]);
+    paintNav();
   });
   $('#nxTabs').innerHTML = TABS.map(find).map(p =>
-    `<button type="button" data-goto="${p.id}" class="nx-tab" data-tab="${p.id}"><span class="nx-ti">${icon(p.icon)}</span><span>${esc(p.id === 'cc' ? 'Home' : p.label)}</span></button>`).join('');
+    `<button type="button" data-goto="${p.id}" class="nx-tab" data-tab="${p.id}"><span class="nx-ti">${icon(p.icon)}</span><span>${esc(NAV_NAMES[p.id] || p.label)}</span></button>`).join('');
   $('#nxCollapse').innerHTML = icon('collapse') + '<span>Collapse</span>';
   $('#nxSearch .nx-search-i').innerHTML = icon('search');
 }
 
 function buildModules() {
   const el = $('#page-modules');
+  // "All tools" (2026-10-25 clean-up): every page in one place, in plain sections, as compact tiles. The filter box and the
+  // command palette (Ctrl K) find any of them. Nothing is hidden: the sidebar's Advanced group is a shortcut to the same pages.
+  const tile = (m) => `<button type="button" class="nx-tile" data-goto="${m.id}" data-k="${esc((m.label + ' ' + (m.desc || '')).toLowerCase())}">
+        <span class="nx-tile-i">${icon(m.icon)}</span><span class="nx-tile-t">${esc(m.label)}</span>
+        <span class="nx-tile-d">${esc(m.desc || '')}</span><span class="nx-tile-b" id="nxBadge-${m.id}"></span><span class="nx-tile-go">${icon('right')}</span></button>`;
+  const pick = (ids) => ids.map(id => [...MODULES, ...CC, ...TOP].find(p => p.id === id)).filter(Boolean)
+    .map(p => ({ ...p, desc: p.desc || { brain: 'What the bot is thinking right now: levels, setups, sizing, guards (read-only)', atlas: 'Strategy 2 on the 25K: EMA + MACD + S/R, its paper ledger and go / no-go', accounts: 'The LIT 50K account: balance, floor, eval sessions and trades', command: 'The classic Today page: two-strategy cards, bot strip and every widget' }[p.id] || '' }));
+  const used = new Set();
+  const SECT = [
+    ['Accounts and evals', ['accounts', 'atlas', 'goals', 'evalhq', 'evaltl', 'litcockpit', 'mffurules']],
+    ['Running the bot', ['command', 'brain', 'livechart', 'morning', 'ntpanel', 'botlog', 'timeline', 'livesettings', 'live', 'launch', 'alerts']],
+    ['Help and safety', ['runbook', 'audit', 'sesscal', 'features', 'tv']],
+    ['The strategy', ['strategy', 'rules', 'risk', 'litday', 'litlevels']],
+    ['Trades and review', ['tradelog', 'atlassetups', 'memory', 'journal', 'review', 'report', 'briefing']],
+    ['Market and business', ['newshub', 'news', 'market', 'firms', 'business', 'learn', 'system']],
+  ].map(([t, ids]) => { const ps = pick(ids); ps.forEach(p => used.add(p.id)); return [t, ps]; });
+  const rest = MODULES.filter(m => !used.has(m.id) && m.id !== 'archive');
+  if (rest.length) SECT.push(['More', rest]);
   el.innerHTML = `
     <div class="nx-hero">
-      <div><div class="nx-eyebrow">Modules</div><h2>Every tool the engine runs on</h2>
-        <p class="muted">Strategy, risk, research and connections. Tap a tile to open it; the command palette (Ctrl K) reaches all of them too.</p></div>
-      <label class="nx-field nx-find">${icon('search')}<input id="nxModFind" class="inp" placeholder="Filter modules" autocomplete="off"></label>
+      <div><div class="nx-eyebrow">All tools</div><h2>Every page in one place</h2>
+        <p class="muted">Grouped by what you want to do. Type to filter, or press Ctrl K from anywhere.</p></div>
+      <label class="nx-field nx-find">${icon('search')}<input id="nxModFind" class="inp" placeholder="Filter tools" autocomplete="off"></label>
     </div>
-    <div class="nx-tiles" id="nxTiles">${MODULES.map(m => `
-      <button type="button" class="nx-tile" data-goto="${m.id}" data-k="${esc((m.label + ' ' + m.desc).toLowerCase())}">
-        <span class="nx-tile-i">${icon(m.icon)}</span>
-        <span class="nx-tile-t">${esc(m.label)}</span>
-        <span class="nx-tile-d">${esc(m.desc)}</span>
-        <span class="nx-tile-b" id="nxBadge-${m.id}"></span>
-        <span class="nx-tile-go">${icon('right')}</span>
-      </button>`).join('')}
-    </div>
-    <div class="nx-eyebrow" style="margin:26px 2px 10px">App</div>
-    <div class="nx-tiles compact">
-      <button type="button" class="nx-tile" data-goto="settings"><span class="nx-tile-i">${icon('settings')}</span><span class="nx-tile-t">Settings</span><span class="nx-tile-d">Themes, phone app, interface</span><span class="nx-tile-go">${icon('right')}</span></button>
-    </div>
-    <div class="nx-eyebrow" style="margin:26px 2px 10px">Data</div>
-    <div class="nx-tiles compact">${DATA.map(m => `
-      <button type="button" class="nx-tile" data-goto="${m.id}"><span class="nx-tile-i">${icon(m.icon)}</span>
-        <span class="nx-tile-t">${esc(m.label)}</span><span class="nx-tile-d">${esc(m.desc)}</span><span class="nx-tile-go">${icon('right')}</span></button>`).join('')}
-    </div>`;
+    <div id="nxTiles">${SECT.map(([t, ps]) => `<section class="nx-tsec"><div class="nx-eyebrow nx-tsec-h">${esc(t)}</div><div class="nx-tiles compact">${ps.map(tile).join('')}</div></section>`).join('')}
+    <section class="nx-tsec"><div class="nx-eyebrow nx-tsec-h">Results and research</div><div class="nx-tiles compact">${DATA.map(tile).join('')}</div></section>
+    <section class="nx-tsec"><div class="nx-eyebrow nx-tsec-h">Archive and app</div><div class="nx-tiles compact">${tile(MODULES.find(m => m.id === 'archive'))}
+      <button type="button" class="nx-tile" data-goto="settings" data-k="settings themes phone app interface 3d"><span class="nx-tile-i">${icon('settings')}</span><span class="nx-tile-t">Settings</span><span class="nx-tile-d">Interface, 3D background, themes, phone app, alerts</span><span class="nx-tile-go">${icon('right')}</span></button></div></section>
+    <p class="muted small nx-tsec-empty" id="nxModNone" hidden>No tool matches. Try a shorter word, or press Ctrl K.</p></div>`;
   $('#nxModFind').oninput = (e) => {
     const q = e.target.value.trim().toLowerCase();
     $$('#nxTiles .nx-tile').forEach(t => { t.hidden = q && !t.dataset.k.includes(q); });
+    $$('#nxTiles .nx-tsec').forEach(sec => { sec.hidden = !sec.querySelector('.nx-tile:not([hidden])'); });
+    $('#nxModNone').hidden = !!$('#nxTiles .nx-tile:not([hidden])');
   };
   // live badges
   fetch('/api/next/cold').then(r => r.ok ? r.json() : null).then(d => {
@@ -130,6 +151,8 @@ export function onPage(page) {
   root.dataset.page = page;
   root.dataset.group = g;
   $$('#nav > a').forEach(a => a.classList.toggle('active', a.dataset.page === page || a.dataset.page === g));
+  paintNav();                                   // a page inside the folded "Advanced" group still shows its own entry
+  $('#nxSetBtn')?.classList.toggle('active', page === 'settings');
   $$('#nxTabs .nx-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === g || ((g === 'settings' || g === 'archive') && t.dataset.tab === 'modules')));
   $('#nxCrumb').textContent = g === 'data' ? 'Data' : g === 'modules' && page !== 'modules' ? 'Modules' : g === 'archive' ? 'Archive · previous strategy' : '';
   buildSub(page);
@@ -142,13 +165,41 @@ function interfaceCard() {
   const row = (id, label, sub, on) => `<label class="nx-switch-row"><span><b>${label}</b><span class="muted small">${sub}</span></span>
     <input type="checkbox" class="nx-switch" id="${id}" ${on ? 'checked' : ''}></label>`;
   el.innerHTML = row('nxOptCollapse', 'Compact sidebar', 'Icons only on desktop', pref.get('collapsed', false)) +
-    row('nxOptPins', 'Pinned shortcuts', 'Eval HQ, Strategy, Paper Bot (LIT), Briefing, Results, Evals in the sidebar', pref.get('pins', true)) +
-    `<div class="nx-switch-row"><span><b>3D effects</b><span class="muted small">Galaxy background, card glow, tap sparks, Live Oracle, trade galaxy, month city. Lite saves battery.</span></span>
-      <div class="seg sm" id="nxOptFx">${[['max', 'Max'], ['lite', 'Lite'], ['off', 'Off']].map(([v, l]) => `<button type="button" data-v="${v}" class="${fxLevel() === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>` +
+    row('nxOptAdv', 'Open "Advanced" in the sidebar', 'Show every page in the sidebar; off keeps it to the six main pages', !shutSet().has('Advanced')) +
+    `<div class="nx-switch-row"><span><b>3D background</b><span class="muted small">Galaxy background, card glow, tap sparks, Live Oracle, trade galaxy, month city. Off by default (calm and fast); Lite is a soft version.</span></span>
+      <div class="seg sm" id="nxOptFx">${[['off', 'Off'], ['lite', 'Lite'], ['max', 'Max']].map(([v, l]) => `<button type="button" data-v="${v}" class="${fxLevel() === v ? 'on' : ''}">${l}</button>`).join('')}</div></div>` +
     `<div class="note">Classic dashboard: start the server with <span class="mono">LE_UI=classic</span> to get the previous look. Every page is shared, so both stay in sync.</div>`;
   $('#nxOptCollapse').onchange = (e) => setCollapsed(e.target.checked);
   $('#nxOptFx').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; $$('#nxOptFx button').forEach(x => x.classList.toggle('on', x === b)); setFxLevel(b.dataset.v); };
-  $('#nxOptPins').onchange = (e) => { pref.set('pins', e.target.checked); root.dataset.pins = e.target.checked ? 'on' : 'off'; };
+  $('#nxOptAdv').onchange = (e) => { const s = shutSet(); e.target.checked ? s.delete('Advanced') : s.add('Advanced'); pref.set('navShut.v2', [...s]); paintNav(); };
+}
+
+// ------------------------------------------------------------------ top bar: search, news, clock, bell, dark / light and "⋯"
+// The rarely used buttons (symbol, pull bars, reload LIT, risk calculator, themes, sound, settings, shortcuts) move into
+// the "⋯" menu with a plain label each. The elements keep their ids and handlers, so every action and key still works.
+const TOP_MORE = [['symSeg', 'Market'], ['runBtn', 'Reload'], ['refreshData', 'Pull latest bars'], ['rcBtn', 'Risk calculator (R)'],
+  ['thmBtn', 'Theme switcher (T)'], ['soundBtn', 'Sound alerts (M)'], ['themeBtn', 'Settings (G then S)']];
+export function tidyTop() {
+  const tb = $('.nx-top .tb-right'); if (!tb) return;
+  let m = $('#nxTopMore');
+  if (!m) {
+    tb.insertAdjacentHTML('beforeend', moreMenu(`<div class="nx-more-cap">Tools</div><div id="nxTopMoreL"></div>
+      <button type="button" role="menuitem" class="nx-more-i" id="nxKeysBtn"><span>Keyboard shortcuts (?)</span></button>`, 'More: market, reload, themes, sound, settings'));
+    m = tb.lastElementChild; m.id = 'nxTopMore';
+    $('#nxKeysBtn').onclick = () => window.LE?.keys?.help?.();
+  }
+  const list = $('#nxTopMoreL');
+  for (const [id, label] of TOP_MORE) {
+    const e = document.getElementById(id);
+    if (!e || e.closest('#nxTopMore')) continue;
+    const row = document.createElement('div'); row.className = 'nx-more-row'; row.dataset.for = id;
+    row.innerHTML = `<span class="nx-more-l">${esc(label)}</span>`;
+    row.appendChild(e);
+    row.addEventListener('click', (ev) => { if (ev.target === row || ev.target.classList.contains('nx-more-l')) e.click?.(); });
+    const at = [...list.children].find(c => TOP_MORE.findIndex(t => t[0] === c.dataset.for) > TOP_MORE.findIndex(t => t[0] === id));
+    list.insertBefore(row, at || null);
+  }
+  tb.appendChild(m);                                  // the menu stays the last button
 }
 
 function setCollapsed(on) {
@@ -163,7 +214,8 @@ export function initShell() {
   buildModules();
   interfaceCard();
   root.dataset.side = pref.get('collapsed', false) ? 'mini' : 'full';
-  root.dataset.pins = pref.get('pins', true) ? 'on' : 'off';
+  root.dataset.pins = 'on';
+  const sb = $('#nxSetBtn .nx-ni'); if (sb) sb.innerHTML = icon('settings');
   $('#nxCollapse').onclick = () => setCollapsed(root.dataset.side !== 'mini');
   $('#nxSearch').onclick = () => { const b = $('#cpBtn'); if (b) b.click(); else document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true })); };
   // the top bar hides its border until the page scrolls

@@ -182,8 +182,13 @@ def static_checks():
     check("app.js: cc pages registered, initCC, home = cc", "...ccPages" in app and "initCC()" in app and "store.get('page', 'cc')" in app)
     check("routes: Command center top-level, ATLAS kept, sidebar groups", "{ id: 'cc', label: 'Command center'" in routes and "{ id: 'atlas', label: 'ATLAS'" in routes
           and "export const GROUPS" in routes)
-    grp = re.findall(r"label: '(\w+)', ids:", routes)
-    check("routes: 6 sidebar groups", grp == ["Home", "Accounts", "Trading", "Results", "Operations", "More"], grp)
+    # clean-up 2026-10-25 (layout deliberately changed): six main items, then one folded "Advanced" group with four sections
+    grp = re.findall(r"label: '(\w+)', (?:ids|advanced)", routes)
+    main = re.search(r"label: 'Main', ids: \[([^\]]*)\]", routes)
+    check("routes: Main (6 items max) + Advanced (Accounts, Bot, Results, Help)", grp == ["Main", "Advanced", "Accounts", "Bot", "Results", "Help"]
+          and main and len(re.findall(r"'[a-z]+'", main.group(1))) <= 6, grp)
+    side = re.findall(r"'([a-z]+)'", routes[routes.index("export const GROUPS"):routes.index("export const NAV_NAMES")])
+    check("routes: no page twice in the sidebar, Archive under Advanced", len(side) == len(set(side)) and "archive" in side and side.index("archive") > 5, side)
     ids = re.findall(r"'([a-z]+)'", routes[routes.index("export const GROUPS"):routes.index("export const TABS")])
     missing = [i for i in ids if i != "data" and f'id="page-{i}"' not in html]
     check("routes: every sidebar id has a page section", not missing, missing)

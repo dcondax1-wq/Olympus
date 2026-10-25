@@ -184,23 +184,24 @@ def part_c(shots):
             pg.route("https://api.github.com/**", lambda r: r.fulfill(status=404, body="{}"))
             pg.route("https://raw.githubusercontent.com/**", lambda r: r.fulfill(status=404, body="{}"))
             pg.goto(url + "?fxoff#/today")
-            pg.wait_for_selector(".at-two-c", timeout=20000)
+            pg.wait_for_selector(".cl-hero", timeout=20000)
             if pg.query_selector("#moInstX"):
                 pg.click("#moInstX")                  # the browser-only "Add to Home Screen" guide (not in the installed app)
-                pg.wait_for_selector(".at-two-c", timeout=10000)
+                pg.wait_for_selector(".cl-hero", timeout=10000)
             pg.wait_for_timeout(800)
             tabs = pg.eval_on_selector_all("#tabs a span", "els => els.map(e => e.textContent.trim())")
-            check("c. phone bottom bar = Home · Brain · ATLAS · Trades · Money · More", tabs == ["Home", "Brain", "ATLAS", "Trades", "Money", "More"], tabs)
-            cards = pg.eval_on_selector_all(".at-two-c", "els => els.map(e => e.innerText)")
-            check("c. Home: two cards 'LIT' + 'ATLAS' on top (status, today, week, eval)", len(cards) == 2 and cards[0].startswith("LIT") and cards[1].startswith("ATLAS")
-                  and "THIS WEEK" in cards[0].upper() and "SIM" in cards[1].upper() and "TO PASS" in cards[0].upper(), cards)
-            first = pg.evaluate("() => { const p = document.querySelector('#page'); const c = p.querySelector('.at-two'), h = p.querySelector('.hb-hero'); return !!c && !!h && !!(c.compareDocumentPosition(h) & 4); }")
-            # 2026-10-25: the Goals card (goals.js) is the first card (after the launch checklist, launch.js, until it is all green), the two cards right under it
-            check("c. Home: Goals first, then the two cards, above the 'Is the bot trading my eval?' card", first and pg.evaluate(
-                "() => { const L = [...document.querySelector('#page').querySelectorAll('.card:not(#moInst):not(.lc-card), .at-two')]; "
-                "return L.length > 1 && L[0].classList.contains('gl-card') && L[1].classList.contains('at-two'); }"))
-            box = pg.evaluate("() => [...document.querySelectorAll('.at-two-c')].map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.width)]; })")
-            check("c. Home: the cards are side by side at 390 px", len(box) == 2 and box[0][0] < box[1][0] and all(w > 120 for _, w in box), box)
+            # 2026-10-25 calm layout (clean.js): five tabs, Bot Brain folds into Home (#/brain still opens it)
+            check("c. phone bottom bar = Home · Trades · ATLAS · Money · More", tabs == ["Home", "Trades", "ATLAS", "Money", "More"], tabs)
+            cards = pg.eval_on_selector_all(".cl-hero", "els => els.map(e => e.innerText)")
+            check("c. Home: one hero card per account, 'LIT · 50K' then 'ATLAS · 25K' (big $ to the target, status chip)", len(cards) == 2 and cards[0].upper().startswith("LIT")
+                  and cards[1].upper().startswith("ATLAS") and "TARGET" in cards[0].upper() and "SIM" in cards[1].upper(), cards)
+            check("c. Home: the hero cards come first (after the launch checklist while it is not all green)", pg.evaluate(
+                "() => { const L = [...document.querySelector('#page').querySelectorAll('.card:not(#moInst):not(.cl-launch)')]; "
+                "return L.length > 3 && L[0].classList.contains('cl-hero') && L[1].classList.contains('cl-hero') && L[2].classList.contains('cl-plan'); }"))
+            check("c. Home: the old Home (goals, 'Is the bot trading my eval?') is one tap away on #/homefull",
+                  pg.evaluate("() => !!document.querySelector('#page [data-go=homefull]') && !document.querySelector('#page .hb-hero')"))
+            box = pg.evaluate("() => [...document.querySelectorAll('.cl-hero')].map(e => { const r = e.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.width)]; })")
+            check("c. Home: the hero cards are full width, stacked at 390 px", len(box) == 2 and box[0][0] < box[1][0] and all(w > 300 for _, w in box), box)
             ov = pg.evaluate("() => document.documentElement.scrollWidth - innerWidth")
             check("c. Home: no horizontal scroll at 390 px", ov <= 1, ov)
             if shots:

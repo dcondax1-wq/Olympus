@@ -11,10 +11,10 @@ export const GO = [
   ['z', 'sesscal', 'Session calendar'], ['b', 'botctl', 'Bot Control'], ['a', 'accounts', 'Accounts'], ['c', 'chart', 'Chart'],
   ['l', 'livechart', 'Live chart (LIT levels)'], ['o', 'botlog', 'Bot log'], ['n', 'ntpanel', 'NinjaTrader'],
   ['i', 'timeline', 'Session timeline'], ['m', 'morning', 'Morning report'], ['v', 'livesettings', 'Live settings'],
-  ['t', 'trades', 'Trades'], ['r', 'results', 'Results'], ['e', 'evalhq', 'Eval HQ'], ['d', 'data', 'Data'],
-  ['u', 'modules', 'Modules'], ['s', 'settings', 'Settings'],
+  ['t', 'trades', 'Trades'], ['r', 'results', 'Results'], ['e', 'evalhq', 'Eval HQ'], ['d', 'data', 'Results (tabs)'],
+  ['u', 'modules', 'All tools'], ['s', 'settings', 'Settings'],
 ];
-export const NUM = ['cc', 'goals', 'command', 'botctl', 'accounts', 'trades'];
+export const NUM = ['cc', 'botctl', 'chart', 'trades', 'data', 'modules'];   // the six main sidebar pages, in order
 export const SINGLE = [
   ['?', 'This list'], ['Ctrl K  or  /', 'Command palette (search every page)'], ['M', 'Sound alerts on / off (mute)'],
   ['Z', 'Zen mode'], ['F', 'TV-wall fullscreen'], ['T', 'Theme switcher'], ['D', 'Dark / light'], ['R', 'Risk calculator'],
