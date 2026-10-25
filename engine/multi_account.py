@@ -477,13 +477,66 @@ class Account:
                     f = EL.load_anchor(nm, state_path=sp, main=False)
         except Exception:
             f = None
-        return sz.newest_anchor(f, self.spec.get("eval_anchor"))
+        return sz.newest_anchor(f, self.spec.get("eval_anchor"), self._broker_anchor())
 
-    def state(self, today: str, mode: str | None = None):
-        return sizing_state(mode or self.mode, [(d, t, p) for d, t, p, *_ in self.closes], today, self.start_day() or None,
-                            self.rules, prior=float(self.spec.get("eval_prior_pnl") or 0.0),
-                            payouts=(self.spec.get("funded") or {}).get("payouts"), n_today=self.entries_today(today),
-                            anchor=self.anchor())
+    # ---- real balance from NinjaTrader (engine/broker_balance.py): this account's own accounts.csv row, eval modes only
+    def _broker_name(self):
+        return (self.spec.get("nt_account") or self.name) if self.spec.get("adapter") == "ninjatrader" else None
+
+    def _broker(self):
+        if self.mode not in EVAL_MODES or not self.start_day() or not self._broker_name():
+            return None
+        from . import broker_balance as BB
+        return BB.for_bot(getattr(self.router, "bot", None))
+
+    def _broker_anchor(self):
+        try:
+            b = self._broker()
+            return b.anchor(self._broker_name(), self.start_day() or None) if b else None
+        except Exception:
+            return None
+
+    def state(self, today: str, mode: str | None = None, raw: bool = False):
+        st = sizing_state(mode or self.mode, [(d, t, p) for d, t, p, *_ in self.closes], today, self.start_day() or None,
+                          self.rules, prior=float(self.spec.get("eval_prior_pnl") or 0.0),
+                          payouts=(self.spec.get("funded") or {}).get("payouts"), n_today=self.entries_today(today),
+                          anchor=self.anchor())
+        if raw or (mode or self.mode) not in EVAL_MODES or st is None:
+            return st
+        try:
+            b = self._broker()
+            if b is not None:                # min(ledger room, real room of this account)
+                st = b.cap_state(st, self._broker_name(), self.rules)
+        except Exception:
+            pass
+        return st
+
+    def broker_tick(self, now):
+        """Day-close auto-anchor + one "balance differs" push a day for this account. Never raises."""
+        try:
+            b = self._broker()
+            if b is None:
+                return
+            start = float(self.rules["start"])
+            today = trading_day(now)
+
+            def book_floor():
+                st = self.state(today, raw=True)
+                return start + float(st["profit"]) + float(st["cum"]) - float(st["room"])
+            a = b.observe(self._broker_name(), self.start_day(), self.rules, book_floor=book_floor, now=int(now))
+            if a:
+                self.log("risk", f"real balance from NinjaTrader at the {a['as_of']} close: ${a['balance']:,.2f}, floor ${a['floor']:,.2f}")
+            st = self.state(today, raw=True)
+            if st is None:
+                return
+            d = b.drift(self._broker_name(), start + float(st["profit"]) + float(st["cum"]), self.rules, now=int(now))
+            if d:
+                self.log("risk", f"balance differs: NinjaTrader ${d['real']:,.2f}, ledger ${d['ledger']:,.2f}")
+                self.router.notify(f"{self.name} balance differs",
+                                   f"NinjaTrader ${d['real']:,.2f}, bot ledger ${d['ledger']:,.2f} (difference ${d['diff']:+,.2f})",
+                                   f"baldiff:{self._broker_name()}:{d['day']}")
+        except Exception as e:
+            self.log("error", f"real balance check failed: {e.__class__.__name__}: {e}")
 
     def news_on(self) -> bool:
         nb = self.rules.get("news_ban")
@@ -932,6 +985,8 @@ class AccountRouter:
                     ad.tick()
                 except Exception as e:
                     acc.log("error", f"adapter tick failed: {e.__class__.__name__}: {e}")
+            if acc.problem is None:
+                acc.broker_tick(int(self.clock()))
 
     def begin(self, res, sym, now, secs, entry_block=None):
         """Start this poll's routing for every account (threads when parallel): returns a job; finish(job) joins it."""

@@ -152,6 +152,42 @@ held exactly the right bars, and the bot's own reader accepted them. Check these
   standard NinjaScript.
 - The editor's own "NinjaScript generated code" block must stay as it made it.
 
+### 4b. Real account balance: `accounts.csv` (2026-10-25, UNTESTED on a real install)
+
+The same indicator also writes `Documents\NinjaTrader 8\le_feed\accounts.csv` once a minute (also when the market
+is closed) and at most every 5 s on an account update: one line per account,
+`name,time,cash,realized,unrealized,netliq` (time = unix seconds, UTC; an item NinjaTrader does not give = empty).
+The bot (`engine/broker_balance.py`) then starts the eval book from the real balance at every day close, and sizes
+from the smaller of its own room and the real room. A missing or old file changes nothing: the bot sizes exactly as
+before (ledger + `data/eval_anchor.json`). It only reads balances; it never places or changes an order.
+
+This part was written without a NinjaTrader install to compile it on. Steps (5 minutes, market open or closed):
+
+1. Copy the new `ninjatrader\LE_BarFeed.cs` over the old one in `Documents\NinjaTrader 8\bin\Custom\Indicators\`,
+   NinjaScript Editor > LE_BarFeed > **F5**. No error at the bottom = compiled. If an error names one of these, do
+   what it says and press F5 again:
+   - `AccountItem.NetLiquidation` "does not contain a definition": change that one item to `AccountItem.CashValue`
+     (the bot then uses cash + unrealized).
+   - `AccountItemEventArgs` / `AccountItemUpdate`: delete the line `a.AccountItemUpdate += OnAccountItemUpdate;` and
+     the line `a.AccountItemUpdate -= OnAccountItemUpdate;` (the file is then written once a minute only).
+   - `Account.All` or `Currency.UsDollar`: set **Write account balances** off on the chart (bars keep working) and
+     send a photo of the error.
+2. Remove LE_BarFeed from the MNQ chart and add it again (or press F5 with the chart open: NinjaTrader reloads it).
+   In its settings **Write account balances** is ticked; leave **Accounts to write** empty, or type your account
+   Names with a comma between them (e.g. `MFFU50K-EVAL-1,MFFU25K-EVAL-2`).
+3. Check: open `Documents\NinjaTrader 8\le_feed\accounts.csv` in Notepad: one line per account; the `cash` of
+   your MFFU account equals the balance in the MFFU dashboard / Control Center > Accounts tab ("Cash value"). Within a
+   minute, in the repo folder:
+       python -m engine.broker_balance
+   prints each account with "N s old" (under 180 s = fresh). The launch checklist line **Real balance from
+   NinjaTrader** turns green. Sim accounts (Sim101, Playback) are listed but never used for an eval.
+
+What it does with the numbers (switch `"broker_balance": false` in the start config turns it off):
+- Day close (the last fresh value before 18:00 ET): balance = the real cash; floor = max(previous floor, real
+  balance - $2,000 (50K) / $1,000 (25K)), locked at start + $100. Saved in `data/broker_balance.json` (gitignored).
+- Intraday: room = min(bot ledger room, real net liquidation - floor).
+- Real and ledger balance more than $50 apart for 5 minutes: one phone push "balance differs" with both numbers.
+
 ## 5. Test on Sim101 (no money involved)
 
 Run these in a PowerShell window in the project folder, with NinjaTrader open and connected.
@@ -398,7 +434,8 @@ reach NinjaTrader within milliseconds of each other; each account then waits for
 6. OCO on the Tradovate connection: when the target fills, NinjaTrader cancels the stop. The first Sim101 trade shows
    it. The bot cancels a leftover leg either way.
 7. A market fill is reported within 6 s, and order confirmation does not hold ATI orders back.
-8. LE_BarFeed compiles (section 4); its bar times are bar opens. The bot rejects shifted times. The added 1-minute
+8. LE_BarFeed compiles (section 4) incl. the account export (4b: `Account.All`, `Account.Get(AccountItem..., Currency.UsDollar)`,
+   `AccountItemUpdate`; UNTESTED on a real install); its bar times are bar opens. The bot rejects shifted times. The added 1-minute
    series loads as many days as the chart (30); `MNQ_1m.csv` keeps the last 20,000 one-minute bars.
 9. Orders are processed while NinjaTrader is minimized and the screen is locked or off.
 10. The account Name string, the Tradovate environment, and whether a NinjaTrader license is needed (ask MFFU).
