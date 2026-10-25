@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Option C "Atlas": a glowing indigo globe with a few bold meridians, circled by one tilted teal-to-gold orbit
+       (the market's path) with a bright node on it. Full bleed, opaque.
+       Built by tools/icon_options_build.py; applied with tools/icon_apply.py c -->
+  <defs>
+    <radialGradient id="bg" cx="512" cy="470" r="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1b1a44"/><stop offset="0.45" stop-color="#0b0c1a"/><stop offset="1" stop-color="#040508"/>
+    </radialGradient>
+    <radialGradient id="sphere" cx="420" cy="370" r="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c9d0ff"/><stop offset="0.22" stop-color="#8a96ff"/><stop offset="0.55" stop-color="#4b46d6"/>
+      <stop offset="0.85" stop-color="#1d1868"/><stop offset="1" stop-color="#0d0b33"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="300" y1="300" x2="760" y2="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3ee0c8" stop-opacity="0"/><stop offset="0.6" stop-color="#3ee0c8" stop-opacity="0.2"/><stop offset="1" stop-color="#6ff7e2" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="62" y1="0" x2="962" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f2c35b"/><stop offset="0.45" stop-color="#fff3cf"/><stop offset="0.75" stop-color="#3ee0c8"/><stop offset="1" stop-color="#2bb7d6"/>
+    </linearGradient>
+    <radialGradient id="node" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.18" stop-color="#fff2c8"/><stop offset="0.45" stop-color="#f2c35b" stop-opacity="0.45"/><stop offset="1" stop-color="#f2c35b" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="ball"><circle cx="512" cy="500" r="315"/></clipPath>
+    <clipPath id="front"><rect x="-200" y="520" width="1424" height="700"/></clipPath>
+    <filter id="b90" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="90"/></filter>
+    <filter id="b22" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="22"/></filter>
+    <filter id="b10" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+  <g id="bg"><rect width="1024" height="1024" fill="url(#bg)"/></g>
+  <g id="art">
+    <!-- halo -->
+    <circle cx="512" cy="500" r="330" fill="#5b5cff" opacity="0.42" filter="url(#b90)"/>
+    <!-- orbit, back half (behind the globe) -->
+    <g transform="rotate(-16 512 520)">
+      <ellipse cx="512" cy="520" rx="465" ry="124" fill="none" stroke="url(#orbit)" stroke-width="26" opacity="0.55"/>
+    </g>
+    <!-- globe -->
+    <circle cx="512" cy="500" r="315" fill="url(#sphere)"/>
+    <g clip-path="url(#ball)">
+      <g transform="rotate(-16 512 500)" fill="none" stroke="#e6ebff" stroke-opacity="0.26" stroke-width="9">
+        <line x1="512" y1="165" x2="512" y2="835"/>
+        <ellipse cx="512" cy="500" rx="165" ry="315"/>
+        <ellipse cx="512" cy="500" rx="272" ry="315"/>
+        <ellipse cx="512" cy="500" rx="315" ry="70"/>
+        <ellipse cx="512" cy="342" rx="272" ry="56"/>
+        <ellipse cx="512" cy="658" rx="272" ry="56"/>
+      </g>
+      <!-- night side + teal rim light -->
+      <circle cx="600" cy="600" r="300" fill="#05041a" opacity="0.32" filter="url(#b90)"/>
+    </g>
+    <circle cx="512" cy="500" r="309" fill="none" stroke="url(#rim)" stroke-width="12"/>
+    <ellipse cx="420" cy="360" rx="92" ry="60" fill="#ffffff" opacity="0.55" filter="url(#b22)" transform="rotate(-30 420 360)"/>
+    <ellipse cx="410" cy="350" rx="34" ry="20" fill="#ffffff" opacity="0.9" filter="url(#b10)" transform="rotate(-30 410 350)"/>
+    <!-- orbit, front half (over the globe) -->
+    <g transform="rotate(-16 512 520)">
+      <g clip-path="url(#front)">
+        <ellipse cx="512" cy="520" rx="465" ry="124" fill="none" stroke="url(#orbit)" stroke-width="40" opacity="0.4" filter="url(#b22)"/>
+        <ellipse cx="512" cy="520" rx="465" ry="124" fill="none" stroke="url(#orbit)" stroke-width="28"/>
+        <ellipse cx="512" cy="522" rx="465" ry="124" fill="none" stroke="#ffffff" stroke-opacity="0.55" stroke-width="6"/>
+      </g>
+      <!-- the node on the orbit -->
+      <circle cx="202" cy="612" r="88" fill="url(#node)"/>
+      <circle cx="202" cy="612" r="22" fill="#ffffff"/>
+    </g>
+  </g>
+</svg>
