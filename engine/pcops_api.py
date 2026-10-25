@@ -642,7 +642,7 @@ EDIT = ("live_model.json AND live_model_lit.json (keep them identical), the \"li
 SETTINGS = [
     # (path, name, plain words, tested, group)
     ("model", "Strategy", "Which strategy the bot trades. \"lit\" = Liquidity Inducement (the locked strategy).",
-     "LIT 2026 (run lit_live): 120 trades, 2.91/week, PF 4.07, +$43,385 ($4,423/mo), max DD -$2,196; H1 PF 4.98 / H2 (check) PF 2.69 +$9,493",
+     "LIT 2026 (run lit_live): 120 trades, 2.91/week, PF 4.19, +$43,820 ($4,467/mo), max DD -$2,196; H1 PF 4.98 / H2 (check) PF 2.91 +$9,919",
      "core"),
     ("locked", "Locked", "The rule set is frozen: changes only after a research run proves them on 2026 H1 and H2.", "", "core"),
     ("no_yahoo", "No Yahoo", "Bars come only from NinjaTrader (MNQ) and the TradingView exports. A stale NinjaTrader feed blocks new entries "
@@ -778,7 +778,7 @@ def settings_view(lm: dict | None = None, lm_lit: dict | None = None) -> dict:
             "rows": rows, "other": other, "groups": _GROUPS, "drift": drift, "edit": EDIT, "read_only": True,
             "modes": lm.get("lit_sizing", {}).get("modes"), "results": {
                 "2026": "120 trades, 2.91/wk, win 55.0%, PF 4.07, +$43,385 ($4,423/mo), DD -$2,196 (run lit_live)",
-                "H1": "PF 4.98, +$33,891 (picked)", "H2": "PF 2.69, +$9,493, ~$2,550/mo (the check: quote this one)",
+                "H1": "PF 4.98, +$33,901 (picked)", "H2": "PF 2.91, +$9,919, ~$2,670/mo (the check: quote this one)",
                 "eval": "two_week path: H1 PF 4.02 +$34,234 / H2 PF 2.20 +$9,059; 2-week pass/fail 57.1/5.9 and 52.2/0.0",
                 "2021-25": "reference only: PF 1.01, +$1,211, DD -$19,436"}}
 
