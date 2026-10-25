@@ -9,7 +9,7 @@ import { S } from '../state.js';
 let FX = null;
 const pend = new Map();
 const root = document.documentElement;
-export const fxLevel = () => store.get('nx.fx', 'max');
+export const fxLevel = () => store.get('nx.fx', 'off');   // off by default since 2026-10-25 (calm); Settings > Interface turns it on
 
 export async function initFX() {
   const lv = fxLevel();

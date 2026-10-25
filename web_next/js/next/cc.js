@@ -7,6 +7,7 @@
 import { $, $$, api, esc, store, toast, downloadFile } from '../util.js';
 import { icon } from './icons.js';
 import { md } from './lab.js';
+import { moreMenu, item } from './menu.js';
 
 // ------------------------------------------------------------------ helpers (the operator pages' card / stat / chip look)
 const ok = (v) => v != null && v !== '' && !Number.isNaN(+v);
@@ -45,11 +46,14 @@ function toCSV(rows, cols) {
 const csvBtn = (id, label = 'CSV') => `<button type="button" class="nx-chipbtn" id="${id}">${icon('download')}<span>${label}</span></button>`;
 
 // ================================================================== 1. Command center (home)
-const H = { d: null, at: 0, timer: null, paused: store.get('nx.cc.paused', false) };
+const H = { d: null, at: 0, timer: null, hl: null, paused: store.get('nx.cc.paused', false) };
 
+// Cleaned up 2026-10-25 ("a maid swept it"): each account card has ONE big number (progress to the target), one line,
+// one status chip, one primary button and a "⋯" menu; the details fold away under "Details". Nothing was removed.
 function acctCard(a, kind) {
-  if (!a) return card(kind === 'lit' ? 'LIT · Builder 50K' : 'ATLAS · Builder 25K', empty('No data yet'));
-  if (a.error) return card(esc(a.name || kind), empty('Could not read this account', esc(a.error)));
+  const title = kind === 'lit' ? 'LIT · Builder 50K' : 'ATLAS · Builder 25K';
+  if (!a) return card(title, empty('No data yet', 'The PC bot has not reported this account.'), '', `cc-acct ${kind}`);
+  if (a.error) return card(esc(a.name || title), empty('Could not read this account', esc(a.error)), '', `cc-acct ${kind}`);
   const start = (a.target_balance || 0) - (kind === 'lit' ? 3000 : 1500);
   const prog = ok(a.progress) ? +a.progress : ok(a.profit) && a.target_balance ? Math.max(0, a.profit / (a.target_balance - start)) : 0;
   const roomMax = kind === 'lit' ? 2000 : 1000;
@@ -57,33 +61,50 @@ function acctCard(a, kind) {
   const roomKind = roomF < 0.25 ? 'bad' : roomF < 0.5 ? 'warn' : 'good';
   const st = String(a.status || '').toLowerCase();
   const stK = st === 'passed' ? 'good' : st === 'failed' || st === 'stuck' ? 'bad' : st === 'not set up' ? 'warn' : '';
+  const setUp = !(a.configured === false || st === 'not set up');
   const pos = a.position;
+  const line = !setUp ? (a.note ? esc(a.note) : 'Not set up yet: see the launch checklist above.')
+    : [`balance <b>${usd(a.balance, 2)}</b>`, `<b>${usd(a.to_target)}</b> to go`, a.session ? `session ${a.session} of ${a.sessions || 10}` : 'not started',
+      `room <b class="${roomKind === 'bad' ? 'dn' : ''}">${usd(a.room)}</b>`].join(' · ');
+  const posLine = pos ? `<div class="cc-posl">${chip(esc(pos.side || (pos.dir > 0 ? 'LONG' : 'SHORT')), pos.dir > 0 || pos.side === 'LONG' ? 'good' : 'bad')}
+      <span>${esc(pos.qty ?? '')} MNQ @ ${px(pos.entry)} · stop ${px(pos.stop)} · target ${px(pos.target)}</span>${ok(pos.unrealized_usd) ? `<b class="${cl(pos.unrealized_usd)}">${susd(pos.unrealized_usd)}</b>` : ''}</div>` : '';
   const posHtml = pos ? `<div class="cc-pos">
-      <div class="cc-pos-h">${chip(esc(pos.side || (pos.dir > 0 ? 'LONG' : 'SHORT')), pos.dir > 0 || pos.side === 'LONG' ? 'good' : 'bad')}<b>${esc(pos.qty ?? '')} MNQ @ ${px(pos.entry)}</b>
-        ${ok(pos.unrealized_usd) ? `<b class="${cl(pos.unrealized_usd)}">${susd(pos.unrealized_usd)}</b>` : ''}</div>
       <div class="cc-pos-g"><span>Stop <b>${px(pos.stop)}</b></span><span>Target <b>${px(pos.target)}</b></span>
         <span>${pos.be ? 'At breakeven' : `BE at <b>${px(pos.be_trigger)}</b>`}</span><span>In trade <b>${ago(pos.time_in_s)}</b></span>
         ${ok(pos.risk_usd) ? `<span>Risk <b>${usd(pos.risk_usd)}</b></span>` : ''}${ok(pos.target_usd) ? `<span>Target pays <b>${usd(pos.target_usd)}</b></span>` : ''}</div></div>`
     : `<div class="cc-flat">${icon('check')}<span>Flat: no open position</span></div>`;
   const anc = kind === 'lit' && a.launch_anchor ? `<div class="cc-note">${icon('info')}<span>Launch anchor (MFFU, ${esc(a.launch_anchor.as_of)}): balance ${usd(a.launch_anchor.balance, 2)}, floor ${usd(a.launch_anchor.floor, 2)}, ${usd(a.launch_anchor.target_balance - a.launch_anchor.balance, 2)} to go.${a.anchor ? ' Loaded in the bot.' : ''}</span></div>` : '';
+  const notes = [a.note && setUp ? a.note : '', a.disabled, a.locked].filter(Boolean);
+  const primary = kind === 'lit' ? ['accounts', 'Open account', 'wallet'] : ['atlas', 'Open ATLAS', 'atlas'];
+  const menu = moreMenu(item('Goals', 'data-goto="goals"', icon('target')) + item('Eval timeline', 'data-goto="evaltl"', icon('calendar')) +
+    (kind === 'lit' ? item('Eval HQ', 'data-goto="evalhq"', icon('prop')) + item('Eval cockpit', 'data-goto="litcockpit"', icon('wallet')) + item('Bot Brain', 'data-goto="brain"', icon('brain'))
+      : item('ATLAS per setup', 'data-goto="atlassetups"', icon('atlas')) + item('Scaling plan', 'data-goto="scale"', icon('prop'))), `More for ${a.name || title}`);
   return `<div class="card nx-glass cc-card cc-acct ${kind}">
-    <div class="cc-acct-h"><div><div class="nx-eyebrow">${esc(a.strategy)} · ${esc(a.plan || '')}</div><h3>${esc(a.name)}</h3>
-      <div class="cc-sub">${a.broker_account ? esc(a.broker_account) + ' · ' : ''}${a.badge ? chip(esc(a.badge), a.badge === 'LIVE' ? 'bad' : '') : ''} ${chip(esc(a.status || 'open'), stK)}</div></div>
-      <div class="cc-big"><span>Balance</span><b>${usd(a.balance, 2)}</b><em class="${cl(a.profit)}">${susd(a.profit)} in this eval</em></div></div>
-    <div class="cc-meter"><div class="cc-meter-h"><span>Progress to target ${usd(a.target_balance)}</span><b>${pct(prog * 100)}</b></div>${bar(prog, 'accent')}
-      <div class="cc-meter-s"><span>${usd(a.to_target)} to go</span><span>${a.session ? `session ${a.session} of ${a.sessions || 10}` : 'not started'}</span></div></div>
-    <div class="cc-meter"><div class="cc-meter-h"><span>Room to floor ${usd(a.floor, 2)}</span><b class="${roomKind === 'bad' ? 'dn' : ''}">${usd(a.room)}</b></div>${bar(roomF, roomKind)}
-      <div class="cc-meter-s"><span>${roomF < 0.25 ? 'thin: the bot sizes down' : 'trailing drawdown cushion'}</span><span>of ${usd(roomMax)}</span></div></div>
-    <div class="nx-stats cc-mini">${stat('Today', susd(a.today_pnl), '', cl(a.today_pnl))}${stat('Trades today', `${a.trades_today ?? 0} / ${a.max_trades_day}`)}
-      ${stat('Daily loss used', ok(a.dll_used) ? usd(a.dll_used) : '—', ok(a.dll) ? `of ${usd(a.dll)}` : '')}${a.week_pnl != null ? stat('This week', susd(a.week_pnl), '', cl(a.week_pnl)) : ''}</div>
-    ${posHtml}${a.note ? `<div class="cc-note warn">${icon('warn')}<span>${esc(a.note)}</span></div>` : ''}${a.disabled ? `<div class="cc-note warn">${icon('warn')}<span>${esc(a.disabled)}</span></div>` : ''}${a.locked ? `<div class="cc-note warn">${icon('warn')}<span>${esc(a.locked)}</span></div>` : ''}${anc}
-    <div class="cc-acct-f">${go(kind === 'lit' ? 'accounts' : 'atlas', kind === 'lit' ? 'Account' : 'ATLAS', 'wallet')}${go('goals', 'Goals', 'target')}${go('evaltl', 'Eval timeline', 'calendar')}</div></div>`;
+    <div class="cc-acct-h"><div><div class="nx-eyebrow">${esc(a.strategy)} · ${esc(a.plan || '')}${a.badge ? ' · ' + esc(a.badge) : ''}</div><h3>${esc(a.name)}</h3></div>
+      <div class="cc-acct-st">${chip(esc(a.status || 'open'), stK)}${menu}</div></div>
+    <div class="cc-hero-n"><b class="${setUp ? '' : 'muted'}">${setUp ? pct(prog * 100) : '—'}</b><span>${setUp ? `of the way to ${usd(a.target_balance)}` : 'not trading yet'}</span></div>
+    ${bar(setUp ? prog : 0, 'accent')}
+    <p class="cc-line">${line}</p>${posLine}
+    ${notes.map((n) => `<div class="cc-note warn">${icon('warn')}<span>${esc(n)}</span></div>`).join('')}
+    <details class="cc-det"><summary>Details</summary>
+      <div class="cc-meter"><div class="cc-meter-h"><span>Room to floor ${usd(a.floor, 2)}</span><b class="${roomKind === 'bad' ? 'dn' : ''}">${usd(a.room)}</b></div>${bar(roomF, roomKind)}
+        <div class="cc-meter-s"><span>${roomF < 0.25 ? 'thin: the bot sizes down' : 'trailing drawdown cushion'}</span><span>of ${usd(roomMax)}</span></div></div>
+      <div class="nx-stats cc-mini">${stat('Today', susd(a.today_pnl), '', cl(a.today_pnl))}${stat('Trades today', `${a.trades_today ?? 0} / ${a.max_trades_day ?? '—'}`)}
+        ${stat('Daily loss used', ok(a.dll_used) ? usd(a.dll_used) : '—', ok(a.dll) ? `of ${usd(a.dll)}` : '')}${a.week_pnl != null ? stat('This week', susd(a.week_pnl), '', cl(a.week_pnl)) : ''}</div>
+      ${posHtml}${anc}${a.broker_account ? `<p class="muted small">Account: ${esc(a.broker_account)}</p>` : ''}
+    </details>
+    <div class="cc-acct-f">${go(primary[0], primary[1], primary[2])}</div></div>`;
 }
 
+// health: one row of small lights; hover shows the detail, a click opens it (with the fix to copy) under the row
 function lightsHtml(L) {
-  if (!L?.length) return empty('No health data');
-  return `<div class="cc-lights">${L.map((l) => `<div class="cc-light ${l.ok === true ? 'good' : l.ok === false ? 'bad' : 'idle'}" title="${esc(l.fix || l.detail)}">
-    ${dot(l.ok)}<div><b>${esc(l.label)}</b><span>${esc(l.detail)}</span>${l.ok === false && l.fix ? `<button type="button" class="cc-fix" data-copy="${esc(l.fix)}">${icon('copy')}<em>${esc(l.fix)}</em></button>` : ''}</div></div>`).join('')}</div>`;
+  if (!L?.length) return `<div class="cc-hrow"><span class="muted small">No health data yet.</span></div>`;
+  return `<div class="cc-hrow" role="list">${L.map((l, i) => `<button type="button" role="listitem" class="cc-hl ${l.ok === true ? 'good' : l.ok === false ? 'bad' : 'idle'}" data-hl="${i}" title="${esc(l.label + ': ' + (l.detail || ''))}">${dot(l.ok)}<span>${esc(l.label)}</span></button>`).join('')}</div>
+    <div class="cc-hdet" id="ccHlD" hidden></div>`;
+}
+function lightDetail(l) {
+  return `<div class="cc-light ${l.ok === true ? 'good' : l.ok === false ? 'bad' : 'idle'}">${dot(l.ok)}<div><b>${esc(l.label)}</b><span>${esc(l.detail || '')}</span>
+    ${l.fix ? `<button type="button" class="cc-fix" data-copy="${esc(l.fix)}">${icon('copy')}<em>${esc(l.fix)}</em></button>` : ''}</div></div>`;
 }
 
 // the launch checklist (engine/launch_check.py via /api/next/cc/home "launch"): on top until every line is green
@@ -93,10 +114,13 @@ function launchHtml(Lc) {
   const counted = Lc.items.filter((i) => i.state !== 'info');
   const good = counted.filter((i) => i.state === 'good').length;
   if (Lc.all_green) return `<div class="cc-banner good cc-launch-ok">${icon('check')}<span><b>Launch checklist: all ${counted.length} green.</b> Arming stays your own step (docs/GO_LIVE_TONIGHT.md).</span></div>`;
-  return card(`${icon('flag')}Launch checklist · ${good} of ${counted.length} green`,
-    `${bar(good / Math.max(1, counted.length), 'good')}<div class="cc-lights cc-launch">${Lc.items.map((l) => `<div class="cc-light ${l.state === 'good' ? 'good' : l.state === 'bad' ? 'bad' : 'idle'}">
-      ${dot(st(l.state))}<div><b>${esc(l.label)}</b><span>${esc(l.detail)}</span>${l.state === 'bad' && l.fix ? `<button type="button" class="cc-fix" data-copy="${esc(l.fix)}">${icon('copy')}<em>${esc(l.fix)}</em></button>` : ''}</div></div>`).join('')}</div>
-    <p class="muted small">Launch 18:00 ET; the bot must run from 01:55 ET. Each red line: click its command to copy it. Read-only: nothing here arms or starts the bot.</p>`,
+  // red lines first, then amber, then green; each a compact row, its command one click to copy
+  const order = { bad: 0, info: 1, warn: 1, good: 2 };
+  const items = [...Lc.items].sort((x, y) => (order[x.state] ?? 1) - (order[y.state] ?? 1));
+  return card(`${icon('flag')}Launch checklist <span class="cc-count">${good} of ${counted.length} green</span>`,
+    `${bar(good / Math.max(1, counted.length), 'good')}<div class="cc-lrows">${items.map((l) => `<div class="cc-lrow ${l.state === 'good' ? 'good' : l.state === 'bad' ? 'bad' : 'idle'}">
+      ${dot(st(l.state))}<div class="cc-lrow-t"><b>${esc(l.label)}</b><span title="${esc(l.detail)}">${esc(l.detail)}</span></div>${l.state === 'bad' && l.fix ? `<button type="button" class="cc-fix sm" data-copy="${esc(l.fix)}" title="Copy: ${esc(l.fix)}">${icon('copy')}<em>Copy fix</em></button>` : ''}</div>`).join('')}</div>
+    <p class="muted small">Launch 18:00 ET; the bot must run from 01:55 ET. Read-only: nothing here arms or starts the bot.</p>`,
     '', 'cc-launch-card');
 }
 
@@ -112,10 +136,10 @@ function banners(d) {
   const day = d.day || {}, out = [];
   if (day.closed) out.push(`<div class="cc-banner bad">${icon('warn')}<span><b>Market closed today</b> (CME holiday). No session.</span></div>`);
   if (day.early_close) out.push(`<div class="cc-banner warn">${icon('clock')}<span><b>Early close today at ${esc(day.early_close)} ET.</b> The bot moves its flat time and entry cutoff before the halt.</span></div>`);
-  if (day.dst) out.push(`<div class="cc-banner warn">${icon('clock')}<span><b>Clock change in ${day.dst.days} day(s): ${esc(day.dst.date)}.</b> ${esc(day.dst.text)}</span></div>`);
+  if (day.dst) out.push(`<div class="cc-banner warn">${icon('clock')}<span><b>Clock change in ${day.dst.days} day(s): ${esc(day.dst.date)}.</b> <span class="cc-bsub">${esc(day.dst.text)}</span></span></div>`);
   const hi = (day.news?.events || []).filter((e) => e.tier1);
   if (hi.length) out.push(`<div class="cc-banner warn">${icon('news')}<span><b>High-impact news today:</b> ${hi.map((e) => `${esc(e.time || hm(e.t))} ${esc(e.title)}`).join(' · ')}. Entries pause 2 min around Tier-1 releases.</span></div>`);
-  return out.join('');
+  return out.length ? `<div class="cc-banners">${out.join('')}</div>` : '';
 }
 
 function statusText(d) {
@@ -129,50 +153,65 @@ function statusText(d) {
   return lines.join('\n');
 }
 
-function phaseHtml(p) {
+function phaseText(p) {
   if (!p) return '';
   const left = ok(p.min_left) ? `${Math.floor(p.min_left / 60)} h ${p.min_left % 60} min` : '';
-  return `<div class="cc-phase ${p.entries ? 'on' : ''}">${dot(p.entries ? true : null)}<div><b>${esc(p.label)}</b><span>${esc(p.next)}${left ? ` in ${left}` : ''}</span></div></div>`;
+  return `${esc(p.label)} · ${esc(p.next)}${left ? ` in ${left}` : ''}`;
 }
 
 function renderHome() {
   const el = $('#page-cc'); if (!el) return;
   const d = H.d;
-  if (!d) { el.innerHTML = hero('Command center', 'Loading…', '') + `<div class="cc-skel"></div>`; return; }
-  if (d.error) { el.innerHTML = hero('Command center', 'Both accounts at a glance', '') + errBox(d); return; }
+  if (!d) { el.innerHTML = hero('Home', 'Command center', '') + `<div class="cc-skel"></div><div class="cc-two"><div class="cc-skel"></div><div class="cc-skel"></div></div>`; return; }
+  if (d.error) { el.innerHTML = hero('Home', 'Command center', '') + errBox(d); return; }
   const v = d.verdict || {};
   const lvl = v.level === 'good' ? 'good' : v.level === 'bad' ? 'bad' : 'warn';
   const ns = nextStep(d);
   const w = d.waiting || {};
-  el.innerHTML = hero(`Command center · ${esc(d.et || '')}`, 'Both accounts at a glance',
-    'LIT on the MFFU Builder 50K and ATLAS on the Builder 25K. Read-only: nothing here sends an order.',
-    `<div class="op-verdict ${lvl}">${dot(lvl === 'good' ? true : lvl === 'bad' ? false : null)}<b>${esc(v.label || (d.running ? 'RUNNING' : 'STOPPED'))}</b><em>${esc(v.reason || '')}</em></div>`) +
+  const setups = w.setups_today || [];
+  const news = d.day?.news?.events || [];
+  const footMenu = moreMenu(
+    item(H.paused ? 'Resume auto-refresh' : 'Pause auto-refresh', 'id="ccPause"', icon(H.paused ? 'play' : 'pause')) +
+    item('Copy status', 'id="ccCopy"', icon('copy')) + item('Refresh now', 'id="ccNow"', icon('refresh')) +
+    '<div class="nx-more-cap">Open</div>' + item('Bot Brain', 'data-goto="brain"', icon('brain')) + item('Live chart', 'data-goto="livechart"', icon('chart')) +
+    item('NinjaTrader', 'data-goto="ntpanel"', icon('sources')) + item('Bot log', 'data-goto="botlog"', icon('reports')) +
+    item('News hub', 'data-goto="newshub"', icon('radar')) + item('Runbook (emergency)', 'data-goto="runbook"', icon('rules')), 'Refresh, copy, other pages');
+  el.innerHTML = `<div class="cc-head"><div><div class="nx-eyebrow">${esc(d.et || '')}</div><p class="cc-lead">Both accounts at a glance: LIT on the 50K, ATLAS on the 25K.</p></div>
+      <div class="op-verdict ${lvl}" title="${esc(v.reason || '')}">${dot(lvl === 'good' ? true : lvl === 'bad' ? false : null)}<b>${esc(v.label || (d.running ? 'RUNNING' : 'STOPPED'))}</b><em>${esc(v.reason || '')}</em></div></div>` +
     launchHtml(d.launch) + banners(d) +
-    `<div class="cc-now ${ns.k}">${icon(ns.k === 'good' ? 'check' : 'warn')}<div><span class="nx-eyebrow">What to do now</span><b>${esc(ns.t)}</b></div>
-      ${ns.fix ? `<button type="button" class="nx-chipbtn" data-copy="${esc(ns.fix)}">${icon('copy')}<span>Copy the fix</span></button>` : ns.go ? go(ns.go, 'Bot Control', 'power') : ''}</div>
+    `<div class="cc-now ${ns.k}">${icon(ns.k === 'good' ? 'check' : 'warn')}<div><span class="nx-eyebrow">What to do now</span><b>${esc(ns.t)}</b>
+        <span class="cc-now-s">${[d.running && w.say ? `Bot: ${esc(w.say)}` : '', d.day?.phase ? phaseText(d.day.phase) : ''].filter(Boolean).join(' · ')}</span></div>
+      ${ns.fix ? `<button type="button" class="nx-chipbtn primary" data-copy="${esc(ns.fix)}">${icon('copy')}<span>Copy the fix</span></button>` : ns.go ? `<button type="button" class="nx-chipbtn primary" data-goto="${ns.go}">${icon('power')}<span>Open Bot Control</span></button>` : ''}</div>
     <div class="cc-two">${acctCard(d.lit, 'lit')}${acctCard(d.atlas, 'atlas')}</div>
-    <div class="grid cols-2 cc-row">
-      ${card('What the bot is waiting for', `<div class="cc-wait"><b>${esc(w.say || '—')}</b>${w.model_state ? `<span class="mono">${esc(w.model_state)}</span>` : ''}
-        ${(w.setups_today || []).length ? `<div class="cc-setups">${w.setups_today.map((s) => `<div>${chip(esc(s.side), s.side === 'LONG' ? 'good' : 'bad')}<span>${esc(s.level || '')} · limit ${px(s.limit)} · stop ${px(s.stop)} · ${ok(s.rr) ? (+s.rr).toFixed(1) + 'R' : ''}</span><em>${hm(s.t)}</em></div>`).join('')}</div>` : '<span class="muted small">No LIT setup yet today.</span>'}</div>
-        ${phaseHtml(d.day?.phase)}`, go('brain', 'Bot Brain', 'brain') + go('livechart', 'Live chart', 'chart'))}
-      ${card('Health lights', lightsHtml(d.lights), go('ntpanel', 'NinjaTrader', 'sources') + go('runbook', 'Runbook', 'rules'))}
-    </div>
-    <div class="grid cols-2 cc-row">
-      ${card('News today', (d.day?.news?.events || []).length ? `<ul class="op-list">${d.day.news.events.map((e) => `<li><span class="op-t mono">${esc(e.time || hm(e.t))}</span><span class="op-k ${e.tier1 ? 'news' : ''}">${icon(e.tier1 ? 'warn' : 'dot')}</span><span class="op-x">${esc(e.title)}${e.impact ? ` <span class="muted small">${esc(e.impact)}</span>` : ''}</span><span></span></li>`).join('')}</ul>` : empty('No USD events listed for today.'), go('newshub', 'News hub', 'radar'))}
-      ${card('Latest bot log', (d.log || []).length ? `<ul class="op-list">${d.log.map((r) => `<li><span class="op-t mono">${hm(r.t)}</span><span class="op-k ${r.type === 'risk' || r.type === 'error' || r.type === 'kill' ? 'stop' : r.type === 'order' ? 'entry' : ''}">${icon(r.type === 'order' ? 'play' : r.type === 'system' ? 'info' : 'warn')}</span><span class="op-x">${esc(r.text)}</span><span></span></li>`).join('')}</ul>` : empty('No log rows yet.'), go('botlog', 'Bot log', 'reports'))}
-    </div>
+    <div class="cc-health"><span class="nx-eyebrow">Health</span>${lightsHtml(d.lights)}</div>
+    <details class="cc-today"${store.get('nx.cc.todayOpen', false) ? ' open' : ''}><summary><span>Today: setups, news and the bot log</span>
+        <em>${setups.length} setup${setups.length === 1 ? '' : 's'} · ${news.length} news · ${(d.log || []).length} log rows</em></summary>
+      <div class="grid cols-3 cc-row">
+        ${card('Waiting for', `<div class="cc-wait"><b>${esc(w.say || '—')}</b>${w.model_state ? `<span class="mono">${esc(w.model_state)}</span>` : ''}
+          ${setups.length ? `<div class="cc-setups">${setups.map((s) => `<div>${chip(esc(s.side), s.side === 'LONG' ? 'good' : 'bad')}<span>${esc(s.level || '')} · limit ${px(s.limit)} · stop ${px(s.stop)} · ${ok(s.rr) ? (+s.rr).toFixed(1) + 'R' : ''}</span><em>${hm(s.t)}</em></div>`).join('')}</div>` : '<span class="muted small">No LIT setup yet today.</span>'}</div>`)}
+        ${card('News today', news.length ? `<ul class="op-list">${news.map((e) => `<li><span class="op-t mono">${esc(e.time || hm(e.t))}</span><span class="op-k ${e.tier1 ? 'news' : ''}">${icon(e.tier1 ? 'warn' : 'dot')}</span><span class="op-x">${esc(e.title)}${e.impact ? ` <span class="muted small">${esc(e.impact)}</span>` : ''}</span><span></span></li>`).join('')}</ul>` : empty('No US news events today.', 'Nothing that pauses entries.'))}
+        ${card('Latest bot log', (d.log || []).length ? `<ul class="op-list">${d.log.map((r) => `<li><span class="op-t mono">${hm(r.t)}</span><span class="op-k ${r.type === 'risk' || r.type === 'error' || r.type === 'kill' ? 'stop' : r.type === 'order' ? 'entry' : ''}">${icon(r.type === 'order' ? 'play' : r.type === 'system' ? 'info' : 'warn')}</span><span class="op-x">${esc(r.text)}</span><span></span></li>`).join('')}</ul>` : empty('The log is empty so far.', 'Rows appear once the bot runs.'))}
+      </div></details>
     <div class="cc-foot">
       <span>${dot(!H.paused)}${H.paused ? 'Auto-refresh paused' : 'Refreshes every 15 s'} · updated <b id="ccAgo">0 s</b> ago</span>
       <span>version <b class="mono">${esc(d.version || '?')}</b>${d.branch ? ` · ${esc(d.branch)}` : ''}</span>
-      <span class="cc-sp"></span>
-      <button type="button" class="nx-chipbtn" id="ccPause">${icon(H.paused ? 'play' : 'pause')}<span>${H.paused ? 'Resume' : 'Pause'}</span></button>
-      <button type="button" class="nx-chipbtn" id="ccCopy">${icon('copy')}<span>Copy status</span></button>
-      <button type="button" class="nx-chipbtn" id="ccNow">${icon('refresh')}<span>Refresh</span></button>
+      <span class="cc-sp"></span>${footMenu}
     </div>
-    ${src('From the PC bot\'s own state (engine/pc_cc_api.py): eval cards, guards, NinjaTrader files, the heartbeat and today\'s log. Read-only.')}`;
+    ${src('From the PC bot\'s own state (engine/pc_cc_api.py): eval cards, guards, NinjaTrader files, the heartbeat and today\'s log. Read-only: nothing here sends an order.')}`;
   $('#ccPause').onclick = () => { H.paused = !H.paused; store.set('nx.cc.paused', H.paused); renderHome(); };
   $('#ccCopy').onclick = () => copy(statusText(d));
   $('#ccNow').onclick = () => loadHome(true);
+  const det = $('#page-cc .cc-today'); if (det) det.ontoggle = () => store.set('nx.cc.todayOpen', det.open);
+  const hd = $('#ccHlD');
+  $$('#page-cc .cc-hl').forEach((b) => {
+    b.onclick = () => {
+      const i = +b.dataset.hl, same = H.hl === i && !hd.hidden;
+      $$('#page-cc .cc-hl').forEach((x) => x.classList.toggle('on', !same && x === b));
+      H.hl = same ? null : i; hd.hidden = same;
+      if (!same) hd.innerHTML = lightDetail(d.lights[i]);
+    };
+  });
+  if (H.hl != null && d.lights?.[H.hl]) { hd.hidden = false; hd.innerHTML = lightDetail(d.lights[H.hl]); $(`#page-cc .cc-hl[data-hl="${H.hl}"]`)?.classList.add('on'); }
 }
 
 async function loadHome(force) {
@@ -490,7 +529,8 @@ export const FEATURES = [
     ['Filtered summary', 'trades, net $, win %, PF, avg R'], ['Filtered CSV export', 'exactly what you see']]],
   ['All features', 'features', [['Feature directory with search', 'this page'], ['Data freshness', 'how old each data file is'], ['Points to $ calculator', 'points x micros x $2'],
     ['ET / your time converter', 'the bot runs on New York time']]],
-  ['Shell', null, [['Grouped sidebar', 'Home, Accounts, Trading, Results, Operations, More, each group folds'], ['Command palette', 'Ctrl K reaches every page, the new ones too'],
+  ['Shell', null, [['Clean sidebar', 'six main pages (Home, Bot, Chart, Trades, Results, All tools); every other page under Advanced, folded'],
+    ['"⋯" menus', 'one main button per card; the rest (and the rare top-bar buttons) sit in a ⋯ menu'], ['Calm by default', '3D background and ticker off (Settings turns them on)'], ['Command palette', 'Ctrl K reaches every page, the new ones too'],
     ['Go-to shortcuts', 'G then H / P / F / W / Q / J / E…, 1-6 for the top pages'], ['Dark / light button', 'in the top bar (D also works)'], ['Smooth page transitions', 'fade-in pages, hover states on cards']]],
 ];
 export const FEATURE_COUNT = FEATURES.reduce((s, [, , l]) => s + l.length, 0);
@@ -559,7 +599,7 @@ export function initCC() {
       catch { const r = document.documentElement; r.dataset.theme = r.dataset.theme === 'light' ? 'dark' : 'light'; }
       setTimeout(paint, 30);
     };
-    right.insertBefore(b, $('#themeBtn') || null);
+    right.insertBefore(b, [...right.children].find((c) => c.id === 'themeBtn' || c.id === 'nxTopMore') || null);
     new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
 }
