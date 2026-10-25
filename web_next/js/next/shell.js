@@ -2,7 +2,7 @@
 // search button and the Settings > Interface card. app.js calls initShell() at boot and onPage(id) on every navigation.
 import { $, $$, store, esc } from '../util.js';
 import { icon } from './icons.js';
-import { TOP, DATA, MODULES, ARCHIVE, HUB, TITLES, groupOf } from './routes.js';
+import { TOP, DATA, MODULES, ARCHIVE, HUB, TITLES, groupOf, CC, GROUPS, TABS } from './routes.js';
 import { fxLevel, setFxLevel } from './fx3d.js';
 
 const root = document.documentElement;
@@ -17,14 +17,25 @@ function navLink(p, extra = '') {
 
 function buildNav() {
   const nav = $('#nav');
-  // visible: the six top-level pages. Hidden: every sub page, so the command palette (reads #nav a[data-page]) lists them.
-  nav.innerHTML = TOP.map(p => navLink(p)).join('') +
-    `<div class="nx-nav-sec">Hub</div>` + HUB.map(p => navLink(p, 'class="nx-pin"')).join('') +
-    `<div class="nx-nav-sec">Pinned</div>` +
-    PINS.map(id => [...DATA, ...MODULES].find(p => p.id === id)).map(p => navLink(p, 'class="nx-pin"')).join('') +
-    `<div class="nx-nav-all" hidden>${[...DATA, ...MODULES].filter(p => !PINS.includes(p.id) && !HUB.some(h => h.id === p.id)).map(p => `<a data-page="${p.id}"><span>${esc(p.label)}</span></a>`).join('')}${ARCHIVE.map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id])}</span></a>`).join('')}</div>`;
-  $('#nxTabs').innerHTML = TOP.filter(p => p.id !== 'settings').map(p =>
-    `<button type="button" data-goto="${p.id}" class="nx-tab" data-tab="${p.id}"><span class="nx-ti">${icon(p.icon)}</span><span>${p.label}</span></button>`).join('');
+  // grouped sidebar (2026-10-25): Home · Accounts · Trading · Results · Operations · More, each group folds (remembered).
+  // Every other page sits in a hidden list so the command palette (reads #nav a[data-page]) still lists all of them.
+  const ALL = [...TOP, ...CC, ...DATA, ...MODULES];
+  const find = (id) => ALL.find(p => p.id === id) || { id, label: TITLES[id] || id, icon: 'dot' };
+  const shut = new Set(pref.get('navShut', []));
+  const shown = new Set(GROUPS.flatMap(g => g.ids));
+  nav.innerHTML = GROUPS.map(g => `<button type="button" class="nx-nav-sec nx-grp-h${shut.has(g.label) ? ' shut' : ''}" data-grp="${esc(g.label)}" aria-expanded="${!shut.has(g.label)}">${esc(g.label)}<i>${icon('down')}</i></button>` +
+    g.ids.map(id => navLink(find(id), `class="nx-gl${shut.has(g.label) ? ' nx-hide' : ''}" data-g="${esc(g.label)}"`)).join('')).join('') +
+    `<div class="nx-nav-all" hidden>${ALL.filter(p => !shown.has(p.id) && p.id !== 'data').map(p => `<a data-page="${p.id}"><span>${esc(p.label)}</span></a>`).join('')}${ARCHIVE.map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id])}</span></a>`).join('')}</div>`;
+  nav.addEventListener('click', (e) => {
+    const h = e.target.closest('.nx-grp-h'); if (!h) return;
+    const g = h.dataset.grp, now = new Set(pref.get('navShut', []));
+    const close = !now.has(g); close ? now.add(g) : now.delete(g);
+    pref.set('navShut', [...now]);
+    h.classList.toggle('shut', close); h.setAttribute('aria-expanded', String(!close));
+    $$(`#nav > a[data-g="${CSS.escape(g)}"]`).forEach(a => a.classList.toggle('nx-hide', close && !a.classList.contains('active')));
+  });
+  $('#nxTabs').innerHTML = TABS.map(find).map(p =>
+    `<button type="button" data-goto="${p.id}" class="nx-tab" data-tab="${p.id}"><span class="nx-ti">${icon(p.icon)}</span><span>${esc(p.id === 'cc' ? 'Home' : p.label)}</span></button>`).join('');
   $('#nxCollapse').innerHTML = icon('collapse') + '<span>Collapse</span>';
   $('#nxSearch .nx-search-i').innerHTML = icon('search');
 }

@@ -352,6 +352,60 @@ def scale_view():
         return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
 
 
+def goals_data(bot=None, now=None) -> dict:
+    """The blocks engine/goals.build reads, built from the running PC bot the way the cloud builds them from its heartbeat:
+    accounts (engine/accounts.build_accounts over pc_activity), the second strategies + account B (the /api/next/second
+    view), the scale plan (/api/next/scale). Each part is best effort; the bot not running gives the plan-only parts."""
+    import time as _t
+    now = int(now or _t.time())
+    data: dict = {"accounts": [], "second": {}, "scale": {}}
+    try:
+        from . import accounts as A
+        pc = {"present": bot is not None, "t": now if bot is not None else None, "running": None}
+        if bot is not None:
+            pc["acct"] = A.pc_activity(bot, now=now)
+        lm = _read(os.path.join(ROOT, "live_model.json")) or {}
+        data["accounts"] = [a for a in A.build_accounts({"pc": pc, "last_run": now}, lm, now=now) if a.get("source") == "pc"]
+    except Exception:
+        pass
+    try:
+        from . import second as S
+        run = getattr(bot, "second", None) if bot is not None else None
+        st = None
+        if run:
+            st = {"t": run.get("t"), "strategies": {k: {"ledger": {str(t["entry_t"]): {**t, "side": "LONG" if t.get("dir", 1) > 0 else "SHORT"}
+                                                                   for t in s.get("trades") or [] if t.get("entry_t") is not None}}
+                                                    for k, s in (run.get("strategies") or {}).items()}}
+        ri = bot.second_route_info() if bot is not None and callable(getattr(bot, "second_route_info", None)) else None
+        data["second"] = S.dashboard_block(st, route=ri)
+        if bot is not None and getattr(bot, "acct_b", None) is not None:
+            data["second"]["account_b"] = bot.acct_b.info(now)
+    except Exception:
+        pass
+    try:
+        from . import scale_plan as SP
+        data["scale"] = SP.pc_view(bot, now=now)
+    except Exception:
+        pass
+    return data
+
+
+@router.get("/api/next/goals")
+def goals_view():
+    """Goals (engine/goals.py, read-only): each eval against its target / floor / 10 sessions, this week's trades against
+    2-4 (LIT) and 3-4 (ATLAS), the month against the backtest band, the ATLAS scorecard, payout and scale step. The same
+    JSON as data.json "goals", from the running PC bot."""
+    try:
+        from . import goals as G
+        try:
+            from .live import BOT
+        except Exception:
+            BOT = None
+        return _J(G.site_block(goals_data(BOT)))
+    except Exception as e:                                   # never 500 the dashboard over a page
+        return _J({"error": f"{e.__class__.__name__}: {e}"}, 500)
+
+
 @router.get("/api/next/archive")
 def archive():
     """The previous strategy (Liquidity Engine, locked 2026-10-17) for the Archive page: its lock, its last bundle's periods
@@ -450,3 +504,10 @@ router.include_router(_ai_router)
 # (/api/next/charts, /api/next/chart/<strategy>.<day>_<HHMM>_<side>; engine/chart_api.py, read-only)
 from .chart_api import router as _chart_router  # noqa: E402
 router.include_router(_chart_router)
+
+# PC Command center, Goals fallback, Runbook, Audit evidence, ATLAS setups, small tools (engine/pc_cc_api.py, read-only GET)
+try:
+    from .pc_cc_api import router as _cc_router  # noqa: E402
+    router.include_router(_cc_router)
+except Exception as _cc_err:                      # never stops the server or the bot
+    print(f"[cc] /api/next/cc disabled: {_cc_err.__class__.__name__}: {_cc_err}", flush=True)

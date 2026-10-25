@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Option B "Apex": a crest monogram. A bold "A" whose two legs are the two strategies (teal LIT, indigo ATLAS)
+       meeting at one apex, cut by a gold liquidity line as the crossbar, inside a thin obsidian bezel ring.
+       Full bleed, opaque. Built by tools/icon_options_build.py; applied with tools/icon_apply.py b -->
+  <defs>
+    <radialGradient id="bg" cx="512" cy="460" r="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1a1d3c"/><stop offset="0.5" stop-color="#0b0d18"/><stop offset="1" stop-color="#040508"/>
+    </radialGradient>
+    <radialGradient id="plate" cx="512" cy="400" r="440" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1c2140"/><stop offset="0.7" stop-color="#0d1020"/><stop offset="1" stop-color="#080a14"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="120" y1="120" x2="900" y2="900" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9aa6ff"/><stop offset="0.5" stop-color="#3a4170"/><stop offset="1" stop-color="#3ee0c8"/>
+    </linearGradient>
+    <linearGradient id="legL" x1="0" y1="176" x2="0" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c3cbff"/><stop offset="0.35" stop-color="#7f8cff"/><stop offset="1" stop-color="#4a3fd8"/>
+    </linearGradient>
+    <linearGradient id="legR" x1="0" y1="176" x2="0" y2="820" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#d4fff7"/><stop offset="0.35" stop-color="#3ee0c8"/><stop offset="1" stop-color="#0f8fa8"/>
+    </linearGradient>
+    <linearGradient id="level" x1="0" y1="0" x2="1024" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f2c35b" stop-opacity="0"/><stop offset="0.1" stop-color="#f2c35b" stop-opacity="0.95"/>
+      <stop offset="0.5" stop-color="#fff4d2"/><stop offset="0.9" stop-color="#f2c35b" stop-opacity="0.95"/><stop offset="1" stop-color="#f2c35b" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="flare" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.2" stop-color="#fff2cc" stop-opacity="0.85"/><stop offset="0.5" stop-color="#f2c35b" stop-opacity="0.25"/><stop offset="1" stop-color="#f2c35b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="apex" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.25" stop-color="#e6ecff" stop-opacity="0.7"/><stop offset="1" stop-color="#8f9bff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="b70" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="70"/></filter>
+    <filter id="b26" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="26"/></filter>
+    <filter id="b8" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <g id="bg"><rect width="1024" height="1024" fill="url(#bg)"/></g>
+  <g id="art">
+    <!-- crest plate and bezel -->
+    <circle cx="512" cy="512" r="420" fill="url(#plate)"/>
+    <circle cx="512" cy="512" r="420" fill="none" stroke="url(#ring)" stroke-width="26"/>
+    <circle cx="512" cy="512" r="398" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="4"/>
+    <!-- glow of the A -->
+    <ellipse cx="512" cy="520" rx="260" ry="330" fill="#5a63ff" opacity="0.32" filter="url(#b70)"/>
+    <g filter="url(#b26)" opacity="0.75">
+      <path d="M512 176 L356 820 L234 820 Z" fill="#6d7cff"/>
+      <path d="M512 176 L790 820 L668 820 Z" fill="#3ee0c8"/>
+    </g>
+    <!-- the A: left leg indigo (ATLAS), right leg teal (LIT) -->
+    <path d="M512 176 L512 459 L356 820 L234 820 Z" fill="url(#legL)"/>
+    <path d="M512 176 L790 820 L668 820 L512 459 Z" fill="url(#legR)"/>
+    <!-- bevel: lit outer edge on the left, a dark seam down the middle -->
+    <path d="M512 176 L234 820 L258 820 L512 232 Z" fill="#ffffff" opacity="0.45"/>
+    <path d="M512 176 L512 459 L506 459 L506 190 Z" fill="#0a0c1c" opacity="0.35"/>
+    <circle cx="512" cy="190" r="70" fill="url(#apex)"/>
+    <!-- the gold liquidity line as crossbar -->
+    <rect x="40" y="636" width="944" height="30" rx="15" fill="#f2c35b" opacity="0.35" filter="url(#b26)"/>
+    <rect x="40" y="636" width="944" height="30" rx="15" fill="url(#level)"/>
+    <rect x="300" y="646" width="424" height="9" rx="4.5" fill="#ffffff" opacity="0.8" filter="url(#b8)"/>
+    <circle cx="512" cy="651" r="110" fill="url(#flare)"/>
+  </g>
+</svg>

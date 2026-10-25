@@ -2,6 +2,7 @@
 // Top level: Today · Chart · Trades · Data · Modules · Settings. Every other page lives under Data (tab strip) or
 // Modules (tile grid). Page ids stay the same as the classic dashboard so every page module and go('x') call still works.
 export const TOP = [
+  { id: 'cc', label: 'Command center', icon: 'command' },     // js/next/cc.js: both accounts, health lights, what the bot waits for
   { id: 'command', label: 'Today', icon: 'today' },
   { id: 'brain', label: 'Bot Brain', icon: 'brain' },          // js/next/brain.js: what the bot is thinking (read-only)
   { id: 'atlas', label: 'ATLAS', icon: 'atlas' },              // js/next/second.js: strategy 2 on the 25K (EMA + MACD + S/R)
@@ -92,8 +93,32 @@ export const MODULES = [
   { id: 'archive', label: 'Archive', icon: 'archive', desc: 'Previous strategy: Liquidity Engine, Oct 17 (paper shadow), kept so it can come back' },
 ];
 
-export const TITLES = { data: 'Data', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
-for (const p of [...DATA, ...MODULES]) TITLES[p.id] = p.label;
+// PC upgrade 2026-10-25 (js/next/cc.js, engine/pc_cc_api.py, read-only): top-level pages without a sub bar
+export const CC = [
+  { id: 'goals', label: 'Goals', icon: 'target', desc: 'Eval progress per account, 2-4 trades a week, the ATLAS 20-trade scorecard, payout and scale' },
+  { id: 'evaltl', label: 'Eval timeline', icon: 'calendar', desc: 'Session-by-session P&L of the eval with the 10 / 15 session marks and the days ahead' },
+  { id: 'sesscal', label: 'Session calendar', icon: 'week', desc: 'The next 20 trading days: early closes, CME holidays, the clock change' },
+  { id: 'tradelog', label: 'Trade log', icon: 'trades', desc: 'LIT replay or PC routed trades with filters, a summary and CSV export' },
+  { id: 'atlassetups', label: 'ATLAS per setup', icon: 'atlas', desc: 'EMA / MACD / S-R setups H1 / H2 / ref, sortable, the 2026 ATLAS ledger, CSV' },
+  { id: 'runbook', label: 'Runbook', icon: 'rules', desc: 'Emergency steps big, then start, check, shutdown and recovery with copy buttons' },
+  { id: 'audit', label: 'Audit evidence', icon: 'check', desc: 'The 2026-10-25 pre-launch audit: verdict, EXECUTION_TEST_MATRIX, every file' },
+  { id: 'features', label: 'All features', icon: 'modules', desc: 'Every PC feature grouped, with search and quick tools' },
+];
+
+// Sidebar groups (shell.js). Each id must be a page; 'data' opens the last Data tab.
+export const GROUPS = [
+  { label: 'Home', ids: ['cc', 'goals', 'command', 'brain'] },
+  { label: 'Accounts', ids: ['accounts', 'atlas', 'evalhq', 'evaltl', 'litcockpit'] },
+  { label: 'Trading', ids: ['botctl', 'chart', 'livechart', 'trades', 'tradelog'] },
+  { label: 'Results', ids: ['data', 'perf', 'atlassetups', 'scale', 'lab'] },
+  { label: 'Operations', ids: ['morning', 'ntpanel', 'botlog', 'timeline', 'runbook', 'audit', 'sesscal', 'livesettings'] },
+  { label: 'More', ids: ['features', 'modules', 'settings'] },
+];
+// phone tab bar (the PC sidebar shows the groups)
+export const TABS = ['cc', 'command', 'botctl', 'accounts', 'trades', 'modules'];
+
+export const TITLES = { cc: 'Command center', data: 'Data', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
+for (const p of [...DATA, ...MODULES, ...CC]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
 
 export const groupOf = (id) => DATA.some(p => p.id === id) ? 'data' : MODULES.some(p => p.id === id) ? 'modules' : ARCHIVE.some(p => p.id === id) ? 'archive' : id;

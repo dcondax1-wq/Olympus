@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Option J "Compass": an eight-point atlas star in faceted gold (long points) and indigo (short points) over a
+       thin teal ring, with a teal gem at its heart. Full bleed, opaque. Built by tools/icon_options_build.py; applied with tools/icon_apply.py j -->
+  <defs>
+    <radialGradient id="bg" cx="512" cy="512" r="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#191a3e"/><stop offset="0.5" stop-color="#090b17"/><stop offset="1" stop-color="#030406"/>
+    </radialGradient>
+    <linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4d0"/><stop offset="1" stop-color="#f2c35b"/></linearGradient>
+    <linearGradient id="gd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b9842a"/><stop offset="1" stop-color="#5e3d0e"/></linearGradient>
+    <radialGradient id="gem" cx="0.38" cy="0.32" r="0.7">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.25" stop-color="#9ff8ea"/><stop offset="0.6" stop-color="#3ee0c8"/><stop offset="1" stop-color="#0d6c8a"/>
+    </radialGradient>
+    <filter id="b80" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="80"/></filter>
+    <filter id="b20" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="20"/></filter>
+  </defs>
+  <g id="bg"><rect width="1024" height="1024" fill="url(#bg)"/></g>
+  <g id="art">
+    <circle cx="512" cy="512" r="380" fill="#5056ff" opacity="0.3" filter="url(#b80)"/>
+    <circle cx="512" cy="512" r="300" fill="none" stroke="#3ee0c8" stroke-width="16" opacity="0.9"/>
+    <circle cx="512" cy="512" r="300" fill="none" stroke="#3ee0c8" stroke-width="30" opacity="0.4" filter="url(#b20)"/>
+    <circle cx="512" cy="512" r="250" fill="none" stroke="#6d7cff" stroke-width="5" opacity="0.6"/>
+    <!-- short diagonal points (indigo) -->
+    <g>
+      <path d="M512 512 L740 284 L560 464 Z" fill="#8a96ff"/><path d="M512 512 L740 284 L560 560 Z" fill="#2c2a9a"/>
+      <path d="M512 512 L740 740 L560 560 Z" fill="#4b46d6"/><path d="M512 512 L740 740 L464 560 Z" fill="#1d1868"/>
+      <path d="M512 512 L284 740 L464 560 Z" fill="#3a37c0"/><path d="M512 512 L284 740 L464 464 Z" fill="#7f8cff"/>
+      <path d="M512 512 L284 284 L464 464 Z" fill="#b1b9ff"/><path d="M512 512 L284 284 L560 464 Z" fill="#5e62f0"/>
+    </g>
+    <!-- long points (gold), each split into a lit and a shaded facet -->
+    <g filter="url(#b20)" opacity="0.5"><path d="M512 92 L582 442 L932 512 L582 582 L512 932 L442 582 L92 512 L442 442 Z" fill="#f2c35b"/></g>
+    <path d="M512 92 L442 442 L512 512 Z" fill="url(#gl)"/><path d="M512 92 L582 442 L512 512 Z" fill="url(#gd)"/>
+    <path d="M932 512 L582 442 L512 512 Z" fill="url(#gl)"/><path d="M932 512 L582 582 L512 512 Z" fill="url(#gd)"/>
+    <path d="M512 932 L582 582 L512 512 Z" fill="url(#gd)"/><path d="M512 932 L442 582 L512 512 Z" fill="url(#gl)"/>
+    <path d="M92 512 L442 582 L512 512 Z" fill="url(#gd)"/><path d="M92 512 L442 442 L512 512 Z" fill="url(#gl)"/>
+    <!-- heart gem -->
+    <circle cx="512" cy="512" r="88" fill="#3ee0c8" opacity="0.6" filter="url(#b20)"/>
+    <circle cx="512" cy="512" r="62" fill="url(#gem)"/>
+    <circle cx="512" cy="512" r="62" fill="none" stroke="#fff1c4" stroke-width="8"/>
+    <circle cx="490" cy="488" r="14" fill="#ffffff"/>
+  </g>
+</svg>
