@@ -39,7 +39,16 @@ def main():
     check("every auto lead scored", all(i in res["leads"] and "error" not in res["leads"][i] for i in ids
                                         if next(x for x in B["leads"] if x["id"] == i)["kind"] == "auto"),
           {k: v.get("error") for k, v in res["leads"].items() if v.get("error")})
-    check("live control = run lit_live (H1 +33,891 / H2 +9,493)", res["live"]["lit"]["H1"]["net"] == 33891 and res["live"]["lit"]["H2"]["net"] == 9493,
+    # the control is compared with the STORED run lit_live (was hard-coded H1 +33,891 / H2 +9,493, the numbers before the
+    # 2026-10-24 safe switches; the run is now H1 +33,901 / H2 +9,919)
+    from tools import lit_final as LF
+    from tools import runlib as RL
+    rlv = RL.load("lit_live")
+    TT = sorted((dict(zip(rlv["trade_cols"], row)) for row in rlv["trades"]), key=lambda t: t["entry_t"])
+    so = LF.score(TT)
+    want = (so["H1"]["net"], so["H2"]["net"])
+    check(f"live control = run lit_live (H1 {want[0]:+,} / H2 {want[1]:+,})",
+          (res["live"]["lit"]["H1"]["net"], res["live"]["lit"]["H2"]["net"]) == want,
           (res["live"]["lit"]["H1"]["net"], res["live"]["lit"]["H2"]["net"]))
     md = BR.render(res)
     check("BACKLOG.md: one row and one section per lead", all(md.count(f"(`{i}`)") == 1 for i in ids))

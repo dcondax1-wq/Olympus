@@ -310,8 +310,9 @@ def test_static():
     check("guards._owner_blocks (LIT and account B) call the ai_watch blocks only when switched on",
           'if c.get("anomaly_pause") or c.get("combined_loss"):' in g and "G._owner_blocks(self.bot" in read("engine/account_b.py"))
     check("heartbeat carries 'ai'", '"ai": _ai(self.bot)' in read("engine/heartbeat.py"))
-    check("live.json carries 'ai' (trimmed first when too big)", '"second", "ai")}' in read("engine/live_publish.py") and 'for k in ("ai", "second"' in read("engine/live_publish.py"))
-    check("cloud monitor passes live.pc.ai through", '"brain", "second", "ai")}' in read("tools/cloud_monitor.py"))
+    # the tuples grew a "launch" key after "ai" (launch checklist, 2026-10-25): match the "ai" entry, not the tuple's end
+    check("live.json carries 'ai' (trimmed first when too big)", '"second", "ai"' in read("engine/live_publish.py") and 'for k in ("ai", "second"' in read("engine/live_publish.py"))
+    check("cloud monitor passes live.pc.ai through", '"brain", "second", "ai"' in read("tools/cloud_monitor.py"))
     check("phone: index.html loads ai.js, System > AI watch page", 'src="ai.js?v=' in read("tools/web_public/index.html") and "VIEWS.aiwatch" in read("tools/web_public/ai.js"))
     check("PC: /api/next/ai mounted, System page AI-watch card", "ai_api import router" in read("engine/next_api.py") and "/api/next/ai" in read("web_next/js/next/hubpages.js"))
     from engine import ai_api

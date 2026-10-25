@@ -94,6 +94,13 @@ jobs:
             /research/lab/intraday_heat.json
             /research/lab/calendar_effects.json
             /research/lab/backtest_engine.json
+            /research/lab/health_band.json
+            /research/lab/lookahead_audit.json
+            /research/lab/rejections.json
+            /research/lab/robust.json
+            /research/lab/trade_intel.json
+            /research/lab/walkforward.json
+            /research/hq/news_calendar.csv
             /research/lit/*.md
             /research/lit/mffu_rules.json
             /research/lit/eventual.json

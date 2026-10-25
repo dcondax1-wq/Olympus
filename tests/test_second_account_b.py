@@ -334,6 +334,37 @@ def units(tmp):
     x = [r for r in Bh.ledger if r.get("side") == "exit"]
     check("lit_entering: LIT same direction -> B kept; LIT opposite -> B closed at market (HEDGE, $ booked at LIT's price)",
           same_ok and Bh.open_t is None and len(x) == 1 and x[0]["reason"] == "HEDGE" and abs(x[0]["pnl"] - 3 * ((25010 - 0.25 - 25000) * 2 - 1.9)) < 0.01, x)
+    # startup reconcile on account B (bug hunt 2026-10-25: B routed before its own NinjaTrader account reconciled)
+    class _StubNT:
+        def __init__(self):
+            self.probs = ["NinjaTrader shows LONG 2 MNQ 12-26 on Sim102 that no bracket of the bot explains"]
+
+        def startup_problems(self):
+            return list(self.probs)
+    Bs = mk()
+    Bs.bot.cfg = {"adapter": "ninjatrader", "sym": "NQ"}
+    Bs.adapter = _StubNT()
+    w1 = Bs.startup_block(now)
+    Bs.adapter.probs = []
+    w2 = Bs.startup_block(now + 60)
+    Bs.adapter.probs = ["chart on MNQ 09-26"]
+    w3 = Bs.startup_block(now + 120)
+    check("startup: account B DISARMED while its own NinjaTrader account does not reconcile, then latched once it does",
+          w1 and "STARTUP DISARMED" in w1 and "no bracket" in w1 and w2 is None and w3 is None and Bs._startup_ok == now + 60
+          and any("STARTUP RECONCILED" in t for _, t in Bs.bot.logs), (w1, w2, w3))
+    Bs2 = mk()
+    Bs2.bot.cfg = {"adapter": "ninjatrader", "sym": "NQ"}
+
+    class _Boom:
+        def startup_problems(self):
+            raise RuntimeError("bad file")
+    Bs2.adapter = _Boom()
+    Bp = mk()
+    Bp.adapter = _StubNT()
+    check("startup: a failing check keeps account B disarmed (fails closed); a paper bot has no gate",
+          "STARTUP DISARMED" in (Bs2.startup_block(now) or "") and Bp.startup_block(now) is None)
+    check("startup: the entry path asks startup_block before routing",
+          "why_bar = self.startup_block(now)" in open(os.path.join(ROOT, "engine", "account_b.py"), encoding="utf-8").read())
     # the switch
     p_ = os.path.join(tmp, "second_model.json")
     shutil.copy(second.CFG_PATH, p_)
