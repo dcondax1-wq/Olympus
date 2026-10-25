@@ -52,7 +52,7 @@ there, not here.
   at 8R; BE at 1R (+1.25 pts costs), 15-minute cut, flat 15:55, 1 trade/day, entries 02:00-15:30. Sizing `lit_sizing.mode`
   two_week. **Scale-in is built but OFF** until the owner's Sim roundtrip passes. Change both `live_model.json` and
   `live_model_lit.json`, then rerun `python tools/lit_losses.py live`.
-- **Headline (run `lit_live`, costs in):** 2026 PF 4.07, +$43,385; **quote the H2 check rate: PF 2.69, +$9,493 (~$2,550/mo)**.
+- **Headline (run `lit_live`, costs in):** 2026 PF 4.19, +$43,820; **quote the H2 check rate: PF 2.91, +$9,919 (~$2,670/mo)** (safe switches on 2026-10-24: cisd1m 22, room_f 0.55, wk_loss_usd 1200).
 - **Live loop:** `engine/lit_live.py`; PC bot `engine/live.py` (`server.py`, http://localhost:8766) routes to NinjaTrader 8
   via `engine/ninjatrader.py` (Sim by default); cloud monitor `tools/cloud_monitor.py` (GitHub Actions, every 15 min,
   paper ledger, phone pushes, publishes the `dashboard` branch and the nq-dashboard site).
