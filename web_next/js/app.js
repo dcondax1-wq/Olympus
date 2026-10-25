@@ -31,7 +31,7 @@ import { initOps, showOps } from './dash/ops.js';
 import { initUX, paletteActions } from './dash/ux.js';
 // redesigned shell (web_next/js/next): navigation, custom controls, new Trades / Data / Modules pages
 import { TITLES as NX_TITLES, groupOf } from './next/routes.js';
-import { initShell, onPage } from './next/shell.js';
+import { initShell, onPage, tidyTop } from './next/shell.js';
 import { initControls } from './next/controls.js';
 import * as tradesPage from './next/trades.js';
 import * as hub from './next/datahub.js';
@@ -564,6 +564,7 @@ async function boot() {
   initCommandExtras(); initPalette(); initVoice();
   // dashboard layer: ops registers the command 'prep' widget, so it runs before the command grid is built
   initOps(); initHome(); initAnalytics(); initUX(go); addPaletteItems(paletteActions); startLive(); initToday(); initLitToday(); pc.initPCStatus(); initTwoCards(); initBotControl(); initPulse(); initKeys(); initCC();
+  tidyTop(); setTimeout(tidyTop, 1500);   // after every layer added its top-bar buttons: the rare ones move into the top bar's "⋯" menu
   renderPlaybook($('#playbook'));
   const want = new URLSearchParams(location.search).get('page');
   go(want && TITLES[want] ? want : store.get('page', 'cc'));

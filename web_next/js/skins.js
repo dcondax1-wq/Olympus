@@ -15,10 +15,12 @@ export const SKINS = [
   ['swiss', 'Swiss', 'light', 'White paper, black ink, international orange. Flat.', ['#f6f6f4', '#ffffff', '#ff4f00', '#111111', '#ff4f00', '#111111'], 'Space Grotesk'],
 ].map(([id, name, mode, desc, sw, font]) => ({ id, name, mode, desc, sw, font }));
 
-const DEFAULTS = { skin: 'obsidian', density: 'comfortable', ticker: true, motion: true, hollow: false, accent: null, sound: false };
+const DEFAULTS = { skin: 'obsidian', density: 'comfortable', ticker: false, motion: true, hollow: false, accent: null, sound: false };
 export const A = { ...DEFAULTS, ...store.get('appearance', {}) };
 // one-time move to the redesigned look; any theme picked after this is kept
 if (!store.get('nxSkinMigrated', false)) { A.skin = 'obsidian'; A.accent = null; store.set('nxSkinMigrated', true); }
+// clean-up pass 2026-10-25: the scrolling ticker starts off once (Settings > Appearance > Ticker tape turns it back on)
+if (!store.get('nxCleanMigrated', false)) { A.ticker = false; store.set('nxCleanMigrated', true); }
 
 const hexA = (hex, a) => {
   const n = parseInt(hex.replace('#', ''), 16);

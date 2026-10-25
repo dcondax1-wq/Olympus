@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="/css/hub.css">
   <link rel="stylesheet" href="/css/ops.css">
   <link rel="stylesheet" href="/css/cc.css">
+  <link rel="stylesheet" href="/css/clean.css">
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#07080c">
   <meta name="mobile-web-app-capable" content="yes">
@@ -34,7 +35,8 @@
     </div>
     <nav id="nav" class="nx-nav" aria-label="Main"></nav>
     <div class="nx-side-foot">
-      <div class="nx-acct" data-goto="prop">
+      <button type="button" class="nx-setbtn" id="nxSetBtn" data-goto="settings" title="Settings (G then S)"><span class="nx-ni">⚙</span><span class="nx-nl">Settings</span></button>
+      <div class="nx-acct" data-goto="accounts" title="Accounts">
         <div class="nx-acct-k">Account</div>
         <div class="nx-acct-v" id="railPlan">MFFU Builder 50K</div>
         <div class="nx-acct-s" id="nxAcctSub">paper · eval tracker</div>
@@ -401,13 +403,13 @@
 
     <!-- ============================================================ SETTINGS -->
     <section class="page" id="page-settings">
-      <div class="card" style="margin-bottom:14px"><div class="card-h"><h3>Open on your phone · home-screen app</h3><span class="pill" id="netState"></span></div><div id="phoneOut"><div class="empty">Looking up this computer's addresses…</div></div></div>
-      <div class="card"><div class="card-h"><h3>Themes</h3><span class="muted small">click to apply · saved in this browser</span></div><div class="skins" id="skinGallery"></div></div>
-      <div class="grid cols-2" style="margin-top:14px">
-        <div class="card"><div class="card-h"><h3>Appearance</h3></div><div id="appearanceOut"></div></div>
+      <div class="grid cols-2">
         <div class="card"><div class="card-h"><h3>Interface</h3><span class="muted small">this browser</span></div><div id="nxInterface"></div></div>
+        <div class="card"><div class="card-h"><h3>Appearance</h3></div><div id="appearanceOut"></div></div>
       </div>
-      <div class="card" style="margin-top:14px"><div class="card-h"><h3>Alerts on this PC</h3><span class="muted small">sound · desktop notifications · tab badge</span></div><div id="nxAlerts"></div></div>
+      <div class="card" style="margin-top:16px"><div class="card-h"><h3>Alerts on this PC</h3><span class="muted small">sound · desktop notifications · tab badge</span></div><div id="nxAlerts"></div></div>
+      <div class="card" style="margin-top:16px"><div class="card-h"><h3>Themes</h3><span class="muted small">click to apply · saved in this browser</span></div><div class="skins" id="skinGallery"></div></div>
+      <div class="card" style="margin-top:16px"><div class="card-h"><h3>Open on your phone · home-screen app</h3><span class="pill" id="netState"></span></div><div id="phoneOut"><div class="empty">Looking up this computer's addresses…</div></div></div>
     </section>
 
     <!-- ============================================================ NEWS & RISK -->

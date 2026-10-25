@@ -105,19 +105,24 @@ export const CC = [
   { id: 'features', label: 'All features', icon: 'modules', desc: 'Every PC feature grouped, with search and quick tools' },
 ];
 
-// Sidebar groups (shell.js). Each id must be a page; 'data' opens the last Data tab.
+// Sidebar (shell.js), cleaned up 2026-10-25: six clear top items, everything else under "Advanced" (folded by default,
+// in four small sections). Each page appears once. Each id must be a page; 'data' opens the last Results tab.
+// NAV_NAMES only renames the sidebar entry (the page title stays TITLES[id]).
 export const GROUPS = [
-  { label: 'Home', ids: ['cc', 'goals', 'command', 'brain'] },
-  { label: 'Accounts', ids: ['accounts', 'atlas', 'evalhq', 'evaltl', 'litcockpit'] },
-  { label: 'Trading', ids: ['botctl', 'chart', 'livechart', 'trades', 'tradelog'] },
-  { label: 'Results', ids: ['data', 'perf', 'atlassetups', 'scale', 'lab'] },
-  { label: 'Operations', ids: ['morning', 'ntpanel', 'botlog', 'timeline', 'runbook', 'audit', 'sesscal', 'livesettings'] },
-  { label: 'More', ids: ['features', 'modules', 'settings'] },
+  { label: 'Main', ids: ['cc', 'botctl', 'chart', 'trades', 'data', 'modules'] },
+  { label: 'Advanced', advanced: true, sections: [
+    { label: 'Accounts', ids: ['accounts', 'atlas', 'goals', 'evalhq', 'evaltl', 'litcockpit'] },
+    { label: 'Bot', ids: ['command', 'brain', 'livechart', 'tradelog', 'morning', 'ntpanel', 'botlog', 'timeline'] },
+    { label: 'Results', ids: ['perf', 'atlassetups', 'scale', 'lab'] },
+    { label: 'Help', ids: ['runbook', 'audit', 'sesscal', 'livesettings', 'features', 'archive'] },
+  ] },
 ];
+export const NAV_NAMES = { cc: 'Home', botctl: 'Bot', data: 'Results', modules: 'All tools', command: 'Today (classic)', archive: 'Archive (old engine)' };
+export const groupIds = (g) => g.ids || (g.sections || []).flatMap((s) => s.ids);
 // phone tab bar (the PC sidebar shows the groups)
-export const TABS = ['cc', 'command', 'botctl', 'accounts', 'trades', 'modules'];
+export const TABS = ['cc', 'botctl', 'chart', 'trades', 'modules'];
 
-export const TITLES = { cc: 'Command center', data: 'Data', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'Modules', settings: 'Settings' };
+export const TITLES = { cc: 'Command center', data: 'Results', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'All tools', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES, ...CC]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
 
