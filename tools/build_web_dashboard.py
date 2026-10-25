@@ -1035,6 +1035,19 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         data["goals"] = _goals.site_block(data)
     except Exception as e:
         data["goals"] = {"error": f"{e.__class__.__name__}: {e}"}
+    try:                                   # Funded & payouts (engine/funded_life.py, read-only) + the money plan numbers
+        from engine import funded_life as _fl
+        data["funded_life"] = _fl.block(data.get("accounts") or [])
+        _fp = os.path.join(ROOT, "research", "lit", "funded_path.json")
+        if os.path.exists(_fp):
+            _fpj = json.load(open(_fp, encoding="utf-8"))
+            data["funded_life"]["plan"] = {k: {"title": v["title"], "plan": v["plan"], "strategy": v["strategy"],
+                                               **{sp: {kk: v[sp].get(kk) for kk in ("per_month", "paid_6m", "loss_6m", "first_med",
+                                                                                     "payouts_mean", "cons_block_days")}
+                                                  for sp in ("H1", "H2")}}
+                                           for k, v in (_fpj.get("configs") or {}).items() if k.endswith("_rec")}
+    except Exception as e:
+        data["funded_life"] = {"error": f"{e.__class__.__name__}: {e}"}
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # research data files for the Lab's 3D views (Monte Carlo cloud, intraday heat, calendar): lab/<name>.json

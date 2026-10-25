@@ -350,16 +350,33 @@ def payout_goal(data: dict, lit: dict) -> dict:
     if not acc:
         nxt = "after the 50K passes" if lit.get("status") != "passed" else "add the funded account (engine.eval_life --to-funded)"
         return {"stage": "eval", "funded": 0, "sentence": f"Payouts start on the funded account: {nxt}.", "level": "idle", "frac": 0.0}
-    a = acc[0]
-    ev = a.get("eval") or {}
-    bal = _f(ev.get("balance"), 50000.0)
-    need = 50000.0 + PAYOUT_BUFFER + PAYOUT_ASK_ABOVE
-    frac = _clip((bal - 50000.0) / (need - 50000.0))
-    ok = bal >= need
-    return {"stage": "funded", "funded": len(acc), "balance": bal, "ask_at": need, "frac": round(frac, 4), "ready": ok,
-            "sentence": (f"Payout ready: balance {_money(bal)} is above {_money(need)}." if ok else
-                         f"Funded: {_money(need - bal)} more before the first payout request (at {_money(need)})."),
-            "level": "good" if ok else "warn"}
+    # the sim funded tracker (engine/funded_life.py, 2026-10-25): buffer, cycle, 50% consistency, 48 h, payouts n of 5
+    from . import funded_life as FL
+    trk = []
+    for x in acc:
+        try:
+            t = FL.from_account(x)
+        except Exception:
+            t = None
+        if t:
+            trk.append(t)
+    if not trk:                                     # no day P&L in the section: the old balance-only view
+        a = acc[0]
+        ev = a.get("eval") or {}
+        bal = _f(ev.get("balance"), 50000.0)
+        need = 50000.0 + PAYOUT_BUFFER + PAYOUT_ASK_ABOVE
+        frac = _clip((bal - 50000.0) / (need - 50000.0))
+        ok = bal >= need
+        return {"stage": "funded", "funded": len(acc), "balance": bal, "ask_at": need, "frac": round(frac, 4), "ready": ok,
+                "sentence": (f"Payout ready: balance {_money(bal)} is above {_money(need)}." if ok else
+                             f"Funded: {_money(need - bal)} more before the first payout request (at {_money(need)})."),
+                "level": "good" if ok else "warn"}
+    t = next((x for x in trk if x["status"] == "ready"), trk[0])
+    lvl = {"ready": "good", "graduated": "good", "lost": "bad", "consistency": "warn", "eligible": "warn"}.get(t["status"], "idle")
+    return {"stage": "funded", "funded": len(acc), "balance": t["balance"], "ask_at": t["ask_at_balance"], "frac": t["buffer_frac"],
+            "ready": t["ready"], "status": t["status"], "max_request": t["max_request"], "payouts_n": t["payouts_n"],
+            "payouts_max": t["payouts_max"], "best_day_pct": t["best_day_pct"], "cycle_profit": t["cycle_profit"],
+            "eligible_from": t["eligible_from"], "tracker": t, "trackers": trk, "sentence": t["text"], "level": lvl}
 
 
 def scale_goal(data: dict) -> dict:

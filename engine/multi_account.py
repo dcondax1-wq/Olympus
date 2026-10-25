@@ -322,7 +322,13 @@ def sizing_state(mode: str, closes: list, today: str, start: str | None, rules: 
     if prior:
         prev["0000-00-00"] = float(prior)
     if funded:
-        return sz.funded_state(prev, cum, payouts or {}, plan=_plan(rules, True))
+        st = sz.funded_state(prev, cum, payouts or {}, plan=_plan(rules, True))
+        try:                             # the payout cycle (sizing funded "cons_aware", engine/funded_life.py): extra keys only
+            from . import funded_life as FL
+            st.update(sz.funded_cycle(prev, cum, payouts or {}, plan={**_plan(rules, True), **FL.payout_rules(rules)}))
+        except Exception:
+            pass
+        return st
     if not start and mode in EVAL_MODES + ("auto",):
         return None
     sess = session if session is not None else max(1, sz.eval_session(start, today) or 1)
@@ -1120,7 +1126,10 @@ class AccountRouter:
                             "plan_rules": {"start": R["start"], "target": R["target"], "mll": R["mll"],
                                            "lock": R["start"] + R["lock"] if R.get("trail") != "static" else R["start"] - R["mll"],
                                            "dll": R["dll"], "sessions": 10},
-                            "day_pnl": h["day_pnl"], "size": a.last_size})
+                            "day_pnl": h["day_pnl"], "size": a.last_size,
+                            **({"funded": {"start": (a.spec.get("funded") or {}).get("start"), "preset": a.spec.get("preset"),
+                                           "payouts": dict((a.spec.get("funded") or {}).get("payouts") or {})}}
+                               if a.mode == "funded" else {})})
             except Exception as e:
                 out.append({"id": a.id, "name": a.name, "error": f"{e.__class__.__name__}: {A.clean_text(e, 120)}"})
         return out

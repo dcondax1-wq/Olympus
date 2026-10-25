@@ -1974,6 +1974,39 @@ class LiveBot:
             seen.add(p["key"])
             self._log("risk", f"{p['title']}: {v['trading']}")
             self._push_send(p)
+        self._funded_life_tick(seen)
+
+    def _funded_life_tick(self, seen: set):
+        """The funded extra accounts (mode funded, engine/multi_account.py): the sim funded payout tracker
+        (engine/funded_life.py) into the state, one push per event ("PAYOUT READY: request $X", consistency, lost, 5 payouts).
+        Read-only: never requests a payout, never changes sizing or routing. Never raises."""
+        try:
+            router = getattr(self, "accts", None)
+            if router is None:
+                return
+            from . import funded_life as _fl
+            today = trading_day(self.clock())
+            rows = []
+            for a in getattr(router, "accounts", []) or []:
+                if getattr(a, "mode", None) != "funded":
+                    continue
+                f = a.spec.get("funded") or {}
+                days = {d: v for d, v in a.eval_days().items() if d != "0000-00-00"}
+                t = _fl.track(days, f.get("payouts") or {}, _fl.plan_of(a.spec.get("preset")), today=today, start=f.get("start"),
+                              name=a.name)
+                t["id"] = a.id
+                rows.append(t)
+                for p in _fl.notices(t, self.clock()):
+                    if p["key"] in seen:
+                        continue
+                    seen.add(p["key"])
+                    self._log("risk", f"{p['title']}: {t['text']}")
+                    self._push_send(p)
+            self.funded_life = rows
+            if isinstance(self.state, dict):
+                self.state["funded_life"] = rows
+        except Exception as e:
+            self._note_error(f"funded tracker failed: {e}")
 
     def eval_clock(self):
         """State key eval_2wk: session x of 10 since eval_start(), reset recommended after session 10 (engine/sizing.eval_clock)."""

@@ -288,7 +288,26 @@ async function goals() {
       ${card('Payout and scale', sc && !sc.error ? `<p class="cc-sent">${esc(sc.sentence || '')}</p>${sc.next ? `<div class="cc-meter"><div class="cc-meter-h"><span>${esc(sc.next.action || 'next step')}</span><b>${pct(sc.next.progress)}</b></div>${bar((sc.next.progress || 0) / 100, 'good')}</div>` : ''}
         <div class="cc-kvs">${kv(sc.money || {})}</div>` : empty('Scaling plan not available', esc(sc?.error || '')), go('scale', 'Scaling plan', 'prop'))}
     </div>
+    ${fundedCards(g.payout)}
     ${src(g.fallback ? 'Fallback: accounts from /api/next/cc/home; week = PC routed trades since Monday; scorecard = ATLAS closed trades the bot routed.' : 'From /api/next/goals (engine/goals.py).')}`;
+}
+// Funded & payouts (2026-10-25, engine/funded_life.py via /api/next/goals "payout.trackers", read-only): per funded account
+// the buffer progress, cycle profit, the 50% consistency gauge, the payout-ready date and payouts n of 5.
+function fundedCards(p) {
+  const T = (p && p.trackers) || [];
+  if (!T.length) {
+    return `<div class="cc-row">${card('Funded & payouts', `<p class="cc-sent">${esc((p && p.sentence) || 'Payouts start on the funded account.')}</p>
+      <p class="cc-sent">A passed eval stops trading and tells you. Funded trading starts only after you run:<br><code>python -X utf8 -m engine.eval_life --to-funded --account "&lt;funded Name&gt;" --start &lt;first day&gt;</code></p>
+      <div class="cc-meter-s"><span>MFFU sim funded: $2,100 buffer (25K $1,100), ask once $1,500 ($750) is above it, max $2,000 ($1,000), best day &lt;= 50% of the cycle, 2 traded days, 5 sim payouts. research/writeups/funded-path.md</span></div>`)}</div>`;
+  }
+  return `<div class="cc-two cc-row">${T.map((t) => {
+    const cf = Math.max(0, Math.min(1, (+t.cons_frac || 0) / 1.25)), warn = !t.cons_ok && t.cycle_profit > 0;
+    return card(esc(t.name) + ' · funded', `<p class="cc-sent">${esc(t.text)}</p>
+      <div class="cc-meter"><div class="cc-meter-h"><span>Balance ${usd(t.balance)} · payout line ${usd(t.ask_at_balance)}</span><b>${pct((t.buffer_frac || 0) * 100)}</b></div>${bar(t.buffer_frac || 0, t.to_ask <= 0 ? 'good' : 'accent')}
+        <div class="cc-meter-s"><span>buffer ${usd(t.buffer_balance)}, floor ${usd(t.floor)} (room ${usd(t.room)}); after the 1st payout the max loss sits at ${usd(t.mll_after_payout)}</span></div></div>
+      <div class="cc-meter"><div class="cc-meter-h"><span>Best day vs the 50% rule (cycle ${susd(t.cycle_profit)}, ${t.cycle_days}/${t.cycle_days_need} days)</span><b>${t.best_day_pct != null ? t.best_day_pct + '%' : '—'}</b></div>${bar(cf, warn ? 'warn' : 'good')}</div>
+      <div class="cc-kvs">${kv({ request_now: t.max_request, to_you: t.to_you, ready_from: t.eligible_from, more_days: t.more_days, payouts: `${t.payouts_n}/${t.payouts_max}`, paid_to_you: t.paid_to_you, status: t.status })}</div>`);
+  }).join('')}</div>`;
 }
 function ring(f, k = '') {
   const r = 30, c = 2 * Math.PI * r;

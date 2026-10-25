@@ -17,6 +17,9 @@ What the bot does (engine/sizing.eval_lock + lit_qty, engine/live.py LiveBot._ev
   python -X utf8 -m engine.eval_life --to-funded --account "<NinjaTrader funded account Name>" --start 2026-11-03
         adds the funded MFFU Builder 50K to data/accounts.json (mode funded: 40% of the room, max $800, a winner <= $1,500;
         disarmed: a real account trades only after --armed yes, your phrase at --start and NINJATRADER_LIVE=1)
+        a passed Builder 25K: add --plan builder25k (id mffu25k_funded: 40% of the room, max $400, a winner <= $750)
+        Until this is run, a passed eval only stops trading and pushes "EVAL PASSED" (the safe default).
+  python -X utf8 -m engine.funded_life                     the sim funded payout tracker (engine/funded_life.py, read-only)
   python -X utf8 -m engine.eval_life --payout 2026-12-01=2000 [--id mffu50k_funded]   record a funded payout
   python -X utf8 -m engine.eval_life --funded-status [--id mffu50k_funded]            payout check of the funded account
   python -m engine.eval_life --anchor --balance 49710.80 --floor 48168.20 --as-of 2026-10-23 [--account "<Name>"]
@@ -356,21 +359,37 @@ def payout_check(day_pnl: dict, payouts: dict | None = None, today_cum: float = 
 
 
 # ---------------------------------------------------------------------------------------------------- commands
-def to_funded(account: str, start: str, ident: str = FUNDED_ID, adapter: str = "ninjatrader", path: str | None = None) -> int:
-    """data/accounts.json: the funded MFFU Builder 50K as an extra account in mode funded (engine/multi_account.py),
-    disarmed. Re-running it updates the same entry."""
+FUNDED_PLANS = {"builder50k": ("mffu_builder_50k", "MFFU Builder 50K funded", FUNDED_ID,
+                               "40% of the room to the floor (max $800, x20/stop beyond 20 pts), a winner <= $1,500"),
+                "builder25k": ("mffu_builder_25k", "MFFU Builder 25K funded", "mffu25k_funded",
+                               "40% of the room to the floor (max $400, x20/stop beyond 20 pts), a winner <= $750")}
+
+
+def to_funded(account: str, start: str, ident: str | None = FUNDED_ID, adapter: str = "ninjatrader", path: str | None = None,
+              plan: str = "builder50k") -> int:
+    """data/accounts.json: the funded MFFU Builder 50K (or 25K: plan "builder25k") as an extra account in mode funded
+    (engine/multi_account.py), disarmed. Re-running it updates the same entry. This is the switch: until the owner runs it
+    a passed eval only stops trading and pushes "EVAL PASSED" (sizing.eval_lock)."""
     from . import multi_account as ma
     _dt.date.fromisoformat(start)
+    plan = str(plan or "builder50k").lower().replace(" ", "").replace("_", "")
+    if plan not in FUNDED_PLANS:
+        print(f"unknown plan {plan!r}: builder50k or builder25k")
+        return 1
+    preset, label, default_id, rule = FUNDED_PLANS[plan]
+    ident = default_id if ident in (None, "", FUNDED_ID) and plan != "builder50k" else (ident or FUNDED_ID)
     path = path or ma.ACCOUNTS_PATH
     rows = ma.load_file(path)
-    argv = ["--set" if any(r.get("id") == ident for r in rows) else "--add", "--id", ident, "--name", "MFFU Builder 50K funded",
-            "--preset", "mffu_builder_50k", "--mode", "funded", "--funded-start", start, "--adapter", adapter, "--file", path]
+    argv = ["--set" if any(r.get("id") == ident for r in rows) else "--add", "--id", ident, "--name", label,
+            "--preset", preset, "--mode", "funded", "--funded-start", start, "--adapter", adapter, "--file", path]
     if adapter == "ninjatrader":
         argv += ["--nt-account", account]
     rc = ma.main(argv)
     if rc == 0:
-        print("Funded sizing: 40% of the room to the floor (max $800, x20/stop beyond 20 pts), a winner <= $1,500 (50% best-day "
-              "payout rule), weekly stop, skip when 1 micro could reach the floor. Restart the bot (--start) to load it.")
+        print(f"Funded sizing: {rule} (50% best-day payout rule), weekly stop, skip when 1 micro could reach the floor or the "
+              "soft daily loss. Restart the bot (--start) to load it.")
+        print(f"Payout tracker: python -X utf8 -m engine.funded_life (push \"PAYOUT READY: request $X\" when every MFFU rule "
+              "is met; the bot never requests a payout itself).")
         print("It is DISARMED: a real account trades only after `python -m engine.multi_account --set --id "
               f"{ident} --armed yes`, your phrase at --start and NINJATRADER_LIVE=1 (you do that yourself).")
         print(f"Record each payout: python -X utf8 -m engine.eval_life --payout <day>=<$> --id {ident}")
@@ -386,7 +405,13 @@ def record_payout(spec: str, ident: str = FUNDED_ID, path: str | None = None) ->
 
 
 def funded_status(ident: str = FUNDED_ID, path: str | None = None, state_path: str | None = None) -> dict:
-    """The funded account's payout check from its routed closes (data/live_state_accounts.json) and recorded payouts."""
+    """The funded account's payout check from its routed closes (data/live_state_accounts.json) and recorded payouts,
+    + "tracker": the engine/funded_life.py view (buffer, cycle, consistency, 48 h, payouts n of 5)."""
+    try:
+        from . import funded_life as FL
+        trk = next((t for t in FL.local_status(path, state_path) if t.get("id") == ident), None)
+    except Exception as e:
+        trk = {"error": f"{e.__class__.__name__}: {e}"}
     from . import multi_account as ma
     spec = next((r for r in ma.load_file(path or ma.ACCOUNTS_PATH) if r.get("id") == ident), None)
     if not spec:
@@ -402,7 +427,7 @@ def funded_status(ident: str = FUNDED_ID, path: str | None = None, state_path: s
         d, p = str(row[0]), float(row[2])
         if not f.get("start") or d >= str(f["start"]):
             days[d] = round(days.get(d, 0.0) + p, 2)
-    return {"id": ident, "start": f.get("start"), **payout_check(days, f.get("payouts") or {})}
+    return {"id": ident, "start": f.get("start"), **payout_check(days, f.get("payouts") or {}), "tracker": trk}
 
 
 def _plan_of(account: str | None) -> tuple:
@@ -462,9 +487,10 @@ def main(argv=None) -> int:
     ap.add_argument("--account", help="NinjaTrader account Name of the funded account")
     ap.add_argument("--start", help="first funded session (yyyy-mm-dd)")
     ap.add_argument("--paper", action="store_true", help="--to-funded on the paper adapter (no NinjaTrader orders)")
+    ap.add_argument("--plan", default="builder50k", help="--to-funded: builder50k (default) or builder25k")
     ap.add_argument("--payout", help="day=amount withdrawn from the funded account")
     ap.add_argument("--funded-status", action="store_true")
-    ap.add_argument("--id", default=FUNDED_ID)
+    ap.add_argument("--id", default=None, help=f"funded account id (default {FUNDED_ID}; 25K: mffu25k_funded)")
     ap.add_argument("--file", default=None, help="accounts file (default data/accounts.json)")
     ap.add_argument("--anchor", action="store_true", help="set the eval anchor: the MFFU dashboard's balance + floor on a day")
     ap.add_argument("--balance", type=float, help="--anchor: MFFU account balance ($)")
@@ -478,11 +504,11 @@ def main(argv=None) -> int:
         if not a.start or (not a.account and not a.paper):
             print("--to-funded needs --account \"<Name>\" (or --paper) and --start yyyy-mm-dd")
             return 1
-        return to_funded(a.account or "", a.start, a.id, "paper" if a.paper else "ninjatrader", a.file)
+        return to_funded(a.account or "", a.start, a.id, "paper" if a.paper else "ninjatrader", a.file, plan=a.plan)
     if a.payout:
-        return record_payout(a.payout, a.id, a.file)
+        return record_payout(a.payout, a.id or FUNDED_ID, a.file)
     if a.funded_status:
-        print(json.dumps(funded_status(a.id, a.file), indent=1))
+        print(json.dumps(funded_status(a.id or FUNDED_ID, a.file), indent=1))
         return 0
     try:
         st = json.load(open(os.path.join(ROOT, "data", "live_state.json"), encoding="utf-8"))

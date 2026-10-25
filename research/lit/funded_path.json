@@ -1,0 +1,785 @@
+{
+ "built": "2026-10-25",
+ "sessions": 206,
+ "first": "2026-01-02",
+ "last": "2026-10-16",
+ "trades": {
+  "lit": 120,
+  "atlas": 175
+ },
+ "configs": {
+  "lit50_rec": {
+   "title": "LIT on the Builder 50K: research rule (40% room, <= $800, winner <= $1,500)",
+   "strategy": "lit",
+   "plan": "builder50k",
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 100,
+    "pct_max_usd": 800,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1500,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 2394,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 82.7,
+    "loss_6m": 0.0,
+    "paid_6m": 5336,
+    "paid_p10_6m": 2829,
+    "any_pay_6m": 97.6,
+    "per_month": 889,
+    "first_med": 33.0,
+    "first_p75": 51.25,
+    "payouts_mean": 3.41,
+    "grad_6m": 29.7,
+    "cons_block_days": 37.1,
+    "cons_block_any": 94.4,
+    "max_risk": 440
+   },
+   "H1_real": {
+    "sessions": 128,
+    "first": 22,
+    "payouts": 5,
+    "paid": 8000,
+    "lost": null,
+    "cons_block_days": 45,
+    "pay_at": [
+     [
+      22,
+      1600
+     ],
+     [
+      57,
+      1600
+     ],
+     [
+      72,
+      1600
+     ],
+     [
+      104,
+      1600
+     ],
+     [
+      106,
+      1600
+     ]
+    ]
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 2167,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 79.1,
+    "loss_6m": 0.0,
+    "paid_6m": 5009,
+    "paid_p10_6m": 1551,
+    "any_pay_6m": 95.0,
+    "per_month": 835,
+    "first_med": 33.0,
+    "first_p75": 54.0,
+    "payouts_mean": 3.2,
+    "grad_6m": 23.0,
+    "cons_block_days": 38.4,
+    "cons_block_any": 88.6,
+    "max_risk": 422
+   },
+   "H2_real": {
+    "sessions": 78,
+    "first": 67,
+    "payouts": 1,
+    "paid": 1600,
+    "lost": null,
+    "cons_block_days": 5,
+    "pay_at": [
+     [
+      67,
+      1600
+     ]
+    ]
+   }
+  },
+  "lit50_cons": {
+   "title": "LIT 50K: research rule + consistency-aware cap",
+   "strategy": "lit",
+   "plan": "builder50k",
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 100,
+    "pct_max_usd": 800,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1500,
+    "slip_ticks": 2,
+    "skip_breach": true,
+    "cons_aware": true
+   },
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 2225,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 82.7,
+    "loss_6m": 0.0,
+    "paid_6m": 4876,
+    "paid_p10_6m": 1600,
+    "any_pay_6m": 97.6,
+    "per_month": 813,
+    "first_med": 33.0,
+    "first_p75": 51.25,
+    "payouts_mean": 3.15,
+    "grad_6m": 19.2,
+    "cons_block_days": 13.2,
+    "cons_block_any": 81.5,
+    "max_risk": 440
+   },
+   "H1_real": {
+    "sessions": 128,
+    "first": 22,
+    "payouts": 4,
+    "paid": 6400,
+    "lost": null,
+    "cons_block_days": 32,
+    "pay_at": [
+     [
+      22,
+      1600
+     ],
+     [
+      57,
+      1600
+     ],
+     [
+      76,
+      1600
+     ],
+     [
+      110,
+      1600
+     ]
+    ]
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 2240,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 79.1,
+    "loss_6m": 0.0,
+    "paid_6m": 4945,
+    "paid_p10_6m": 1523,
+    "any_pay_6m": 95.0,
+    "per_month": 824,
+    "first_med": 33.0,
+    "first_p75": 54.0,
+    "payouts_mean": 3.24,
+    "grad_6m": 26.9,
+    "cons_block_days": 4.3,
+    "cons_block_any": 68.0,
+    "max_risk": 422
+   },
+   "H2_real": {
+    "sessions": 78,
+    "first": 67,
+    "payouts": 2,
+    "paid": 3200,
+    "lost": null,
+    "cons_block_days": 1,
+    "pay_at": [
+     [
+      67,
+      1600
+     ],
+     [
+      76,
+      1600
+     ]
+    ]
+   }
+  },
+  "lit50_cons2": {
+   "title": "LIT 50K: research rule + consistency-aware cap after the 1st payout",
+   "strategy": "lit",
+   "plan": "builder50k",
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 100,
+    "pct_max_usd": 800,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 1500,
+    "slip_ticks": 2,
+    "skip_breach": true,
+    "cons_aware": "after_payout"
+   },
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 2225,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 82.7,
+    "loss_6m": 0.0,
+    "paid_6m": 4876,
+    "paid_p10_6m": 1600,
+    "any_pay_6m": 97.6,
+    "per_month": 813,
+    "first_med": 33.0,
+    "first_p75": 51.25,
+    "payouts_mean": 3.15,
+    "grad_6m": 19.2,
+    "cons_block_days": 13.2,
+    "cons_block_any": 81.5,
+    "max_risk": 440
+   },
+   "H1_real": {
+    "sessions": 128,
+    "first": 22,
+    "payouts": 4,
+    "paid": 6400,
+    "lost": null,
+    "cons_block_days": 32,
+    "pay_at": [
+     [
+      22,
+      1600
+     ],
+     [
+      57,
+      1600
+     ],
+     [
+      76,
+      1600
+     ],
+     [
+      110,
+      1600
+     ]
+    ]
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 2240,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 79.1,
+    "loss_6m": 0.0,
+    "paid_6m": 4945,
+    "paid_p10_6m": 1523,
+    "any_pay_6m": 95.0,
+    "per_month": 824,
+    "first_med": 33.0,
+    "first_p75": 54.0,
+    "payouts_mean": 3.24,
+    "grad_6m": 26.9,
+    "cons_block_days": 4.3,
+    "cons_block_any": 68.0,
+    "max_risk": 422
+   },
+   "H2_real": {
+    "sessions": 78,
+    "first": 67,
+    "payouts": 2,
+    "paid": 3200,
+    "lost": null,
+    "cons_block_days": 1,
+    "pay_at": [
+     [
+      67,
+      1600
+     ],
+     [
+      76,
+      1600
+     ]
+    ]
+   }
+  },
+  "atlas25_rec": {
+   "title": "ATLAS on the Builder 25K: 25K funded rule (40% room, <= $400, winner <= $750)",
+   "strategy": "atlas",
+   "plan": "builder25k",
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 50,
+    "pct_max_usd": 400,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 750,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 1.5,
+    "paid_3m": 2261,
+    "paid_p10_3m": 800,
+    "any_pay_3m": 97.0,
+    "loss_6m": 1.8,
+    "paid_6m": 3735,
+    "paid_p10_6m": 3200,
+    "any_pay_6m": 98.0,
+    "per_month": 622,
+    "first_med": 22.0,
+    "first_p75": 31.25,
+    "payouts_mean": 4.76,
+    "grad_6m": 88.1,
+    "cons_block_days": 34.7,
+    "cons_block_any": 97.5,
+    "max_risk": 323
+   },
+   "H1_real": {
+    "sessions": 128,
+    "first": 37,
+    "payouts": 5,
+    "paid": 3930,
+    "lost": null,
+    "cons_block_days": 37,
+    "pay_at": [
+     [
+      37,
+      730
+     ],
+     [
+      48,
+      800
+     ],
+     [
+      70,
+      800
+     ],
+     [
+      78,
+      800
+     ],
+     [
+      89,
+      800
+     ]
+    ]
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 7.4,
+    "paid_3m": 859,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 65.2,
+    "loss_6m": 13.6,
+    "paid_6m": 1911,
+    "paid_p10_6m": 0,
+    "any_pay_6m": 81.0,
+    "per_month": 318,
+    "first_med": 40.0,
+    "first_p75": 59.0,
+    "payouts_mean": 2.47,
+    "grad_6m": 15.5,
+    "cons_block_days": 23.4,
+    "cons_block_any": 70.6,
+    "max_risk": 335
+   },
+   "H2_real": {
+    "sessions": 78,
+    "first": 28,
+    "payouts": 1,
+    "paid": 800,
+    "lost": null,
+    "cons_block_days": 4,
+    "pay_at": [
+     [
+      28,
+      800
+     ]
+    ]
+   }
+  },
+  "atlas25_cons": {
+   "title": "ATLAS 25K: 25K rule + consistency-aware cap",
+   "strategy": "atlas",
+   "plan": "builder25k",
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 50,
+    "pct_max_usd": 400,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 750,
+    "slip_ticks": 2,
+    "skip_breach": true,
+    "cons_aware": true
+   },
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 1.3,
+    "paid_3m": 2267,
+    "paid_p10_3m": 800,
+    "any_pay_3m": 97.0,
+    "loss_6m": 1.6,
+    "paid_6m": 3702,
+    "paid_p10_6m": 3159,
+    "any_pay_6m": 98.0,
+    "per_month": 617,
+    "first_med": 22.0,
+    "first_p75": 31.0,
+    "payouts_mean": 4.75,
+    "grad_6m": 87.3,
+    "cons_block_days": 26.8,
+    "cons_block_any": 96.8,
+    "max_risk": 323
+   },
+   "H1_real": {
+    "sessions": 128,
+    "first": 37,
+    "payouts": 5,
+    "paid": 3930,
+    "lost": null,
+    "cons_block_days": 45,
+    "pay_at": [
+     [
+      37,
+      730
+     ],
+     [
+      48,
+      800
+     ],
+     [
+      71,
+      800
+     ],
+     [
+      87,
+      800
+     ],
+     [
+      92,
+      800
+     ]
+    ]
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 6.9,
+    "paid_3m": 922,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 65.2,
+    "loss_6m": 14.1,
+    "paid_6m": 2029,
+    "paid_p10_6m": 0,
+    "any_pay_6m": 81.0,
+    "per_month": 338,
+    "first_med": 40.0,
+    "first_p75": 59.0,
+    "payouts_mean": 2.74,
+    "grad_6m": 23.8,
+    "cons_block_days": 2.3,
+    "cons_block_any": 34.2,
+    "max_risk": 335
+   },
+   "H2_real": {
+    "sessions": 78,
+    "first": 28,
+    "payouts": 1,
+    "paid": 800,
+    "lost": null,
+    "cons_block_days": 4,
+    "pay_at": [
+     [
+      28,
+      800
+     ]
+    ]
+   }
+  },
+  "atlas25_cons2": {
+   "title": "ATLAS 25K: 25K rule + consistency-aware cap after the 1st payout",
+   "strategy": "atlas",
+   "plan": "builder25k",
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 50,
+    "pct_max_usd": 400,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 750,
+    "slip_ticks": 2,
+    "skip_breach": true,
+    "cons_aware": "after_payout"
+   },
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 1.2,
+    "paid_3m": 2260,
+    "paid_p10_3m": 800,
+    "any_pay_3m": 97.0,
+    "loss_6m": 1.5,
+    "paid_6m": 3702,
+    "paid_p10_6m": 3159,
+    "any_pay_6m": 98.0,
+    "per_month": 617,
+    "first_med": 22.0,
+    "first_p75": 31.25,
+    "payouts_mean": 4.75,
+    "grad_6m": 87.3,
+    "cons_block_days": 26.7,
+    "cons_block_any": 96.9,
+    "max_risk": 323
+   },
+   "H1_real": {
+    "sessions": 128,
+    "first": 37,
+    "payouts": 5,
+    "paid": 3930,
+    "lost": null,
+    "cons_block_days": 45,
+    "pay_at": [
+     [
+      37,
+      730
+     ],
+     [
+      48,
+      800
+     ],
+     [
+      71,
+      800
+     ],
+     [
+      87,
+      800
+     ],
+     [
+      92,
+      800
+     ]
+    ]
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 6.9,
+    "paid_3m": 922,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 65.2,
+    "loss_6m": 14.1,
+    "paid_6m": 2029,
+    "paid_p10_6m": 0,
+    "any_pay_6m": 81.0,
+    "per_month": 338,
+    "first_med": 40.0,
+    "first_p75": 59.0,
+    "payouts_mean": 2.74,
+    "grad_6m": 23.8,
+    "cons_block_days": 2.3,
+    "cons_block_any": 34.2,
+    "max_risk": 335
+   },
+   "H2_real": {
+    "sessions": 78,
+    "first": 28,
+    "payouts": 1,
+    "paid": 800,
+    "lost": null,
+    "cons_block_days": 4,
+    "pay_at": [
+     [
+      28,
+      800
+     ]
+    ]
+   }
+  },
+  "lit25_rec": {
+   "title": "LIT on a Builder 25K (the 3rd account): 25K funded rule",
+   "strategy": "lit",
+   "plan": "builder25k",
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 50,
+    "pct_max_usd": 400,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 750,
+    "slip_ticks": 2,
+    "skip_breach": true
+   },
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 779,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 66.0,
+    "loss_6m": 0.0,
+    "paid_6m": 1976,
+    "paid_p10_6m": 688,
+    "any_pay_6m": 93.4,
+    "per_month": 329,
+    "first_med": 47.0,
+    "first_p75": 68.0,
+    "payouts_mean": 2.54,
+    "grad_6m": 10.1,
+    "cons_block_days": 26.5,
+    "cons_block_any": 83.9,
+    "max_risk": 189
+   },
+   "H1_real": {
+    "sessions": 128,
+    "first": 31,
+    "payouts": 3,
+    "paid": 2208,
+    "lost": null,
+    "cons_block_days": 40,
+    "pay_at": [
+     [
+      31,
+      608
+     ],
+     [
+      76,
+      800
+     ],
+     [
+      110,
+      800
+     ]
+    ]
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 1019,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 75.3,
+    "loss_6m": 0.0,
+    "paid_6m": 2334,
+    "paid_p10_6m": 0,
+    "any_pay_6m": 88.8,
+    "per_month": 389,
+    "first_med": 34.0,
+    "first_p75": 54.0,
+    "payouts_mean": 2.99,
+    "grad_6m": 21.8,
+    "cons_block_days": 31.0,
+    "cons_block_any": 83.0,
+    "max_risk": 211
+   },
+   "H2_real": {
+    "sessions": 78,
+    "first": 68,
+    "payouts": 1,
+    "paid": 731,
+    "lost": null,
+    "cons_block_days": 3,
+    "pay_at": [
+     [
+      68,
+      731
+     ]
+    ]
+   }
+  },
+  "lit25_cons": {
+   "title": "LIT 25K: 25K rule + consistency-aware cap",
+   "strategy": "lit",
+   "plan": "builder25k",
+   "cfg": {
+    "pct": 0.4,
+    "pct_min_usd": 50,
+    "pct_max_usd": 400,
+    "ref": 20,
+    "wk": true,
+    "room_f": null,
+    "max_win": 750,
+    "slip_ticks": 2,
+    "skip_breach": true,
+    "cons_aware": true
+   },
+   "H1": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 765,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 66.0,
+    "loss_6m": 0.0,
+    "paid_6m": 1899,
+    "paid_p10_6m": 688,
+    "any_pay_6m": 93.4,
+    "per_month": 316,
+    "first_med": 47.0,
+    "first_p75": 68.0,
+    "payouts_mean": 2.45,
+    "grad_6m": 8.2,
+    "cons_block_days": 18.4,
+    "cons_block_any": 77.4,
+    "max_risk": 189
+   },
+   "H1_real": {
+    "sessions": 128,
+    "first": 31,
+    "payouts": 3,
+    "paid": 2208,
+    "lost": null,
+    "cons_block_days": 40,
+    "pay_at": [
+     [
+      31,
+      608
+     ],
+     [
+      72,
+      800
+     ],
+     [
+      104,
+      800
+     ]
+    ]
+   },
+   "H2": {
+    "paths": 1000,
+    "loss_3m": 0.0,
+    "paid_3m": 992,
+    "paid_p10_3m": 0,
+    "any_pay_3m": 75.3,
+    "loss_6m": 0.0,
+    "paid_6m": 2236,
+    "paid_p10_6m": 0,
+    "any_pay_6m": 88.8,
+    "per_month": 373,
+    "first_med": 34.0,
+    "first_p75": 54.0,
+    "payouts_mean": 2.9,
+    "grad_6m": 19.7,
+    "cons_block_days": 21.6,
+    "cons_block_any": 78.3,
+    "max_risk": 211
+   },
+   "H2_real": {
+    "sessions": 78,
+    "first": 68,
+    "payouts": 1,
+    "paid": 731,
+    "lost": null,
+    "cons_block_days": 3,
+    "pay_at": [
+     [
+      68,
+      731
+     ]
+    ]
+   }
+  }
+ }
+}

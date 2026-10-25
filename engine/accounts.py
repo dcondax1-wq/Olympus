@@ -515,6 +515,9 @@ def build_accounts(state: dict, lm: dict | None = None, now=None) -> list:
                     raise RuntimeError(sub["error"])
                 sec = _pc_section(meta, {**pc, "acct": sub}, {}, today, now)
                 sec.update(mode=sub.get("mode"), locked=sub.get("locked"), enabled=sub.get("enabled"), extra=True)
+                if isinstance(sub.get("funded"), dict):        # engine/funded_life.py reads start / preset / payouts
+                    sec["funded"] = sub["funded"]
+                    sec["plan_rules"] = sub.get("plan_rules")
                 out.append(sec)
             else:
                 out.append(_pc_section(meta, pc, lm or {}, today, now))

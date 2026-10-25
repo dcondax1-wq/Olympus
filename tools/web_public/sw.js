@@ -32,7 +32,9 @@
 // v34 (2026-10-25 PM): the LIT bot is named "Zlarior" (display name only): tabs Home · Zlarior · ATLAS · Money · More, each bot tab
 // holds all of that bot (sections: Zlarior Today · Brain · Trades · Plan · Results · Strategy; ATLAS Today · Brain · Trades · Setups ·
 // Results), clean.js v2 and the renamed labels. New cache name so every iPhone refreshes.
-const CACHE = 'le-public-v34';
+// v35 (2026-10-25 PM): hub.js v8: Money > "Funded & payouts" card (data.json "funded_life", engine/funded_life.py: buffer bar,
+// cycle profit, 50% consistency gauge, payout-ready date, payouts n/5). New cache name so every iPhone refreshes.
+const CACHE = 'le-public-v35';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=k31025', './icons/apple-touch-icon.png?v=k31025', './icons/icon-512.png?v=k31025'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

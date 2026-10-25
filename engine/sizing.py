@@ -902,11 +902,17 @@ def eval_clock(day_pnl: dict, start: str | None, today: str, session_over: bool 
 #   slip_ticks 2: ticks of slippage assumed on the stop in every cap
 #   skip_breach True: when even 1 micro's full stop-out would reach the floor or the soft daily loss -> 0 (skip). The soft caps
 #              (room_f, max_win) never go below 1 micro.
+#   cons_aware False | True | "after_payout" (from the 2nd cycle on) (2026-10-25, engine/funded_life.py, research/writeups/funded-path.md): the 50% consistency rule
+#              per payout cycle as a SOFT cap: today's day may pay at most max(cons x the cycle target, cons/(1-cons) x the
+#              cycle's profit on the earlier days); the target is buffer + pay_max - the balance the cycle started at. Sizes
+#              down to that, never below 1 micro (a too-big day only delays the payout, it is not a breach). Needs
+#              state["cycle_target"] / ["cycle_prev"] (funded_cycle(), added by engine/multi_account.sizing_state); absent = off.
 # state = {"room": balance + today's closed P&L - trailing floor ($), "cum": today's closed P&L, "locked": floor at the lock}
 FD_50K = {"mll": 2000.0, "lock": 100.0, "dll": 1000.0, "buffer": 2100.0, "pay_min": 500.0, "pay_max": 2000.0, "split": 0.8,
           "cons": 0.5, "cycle_days": 2, "first_wait": 2, "max_payouts": 5, "max_micros": 40, "scale": 1.0}
 FD_DEFAULT = {"tiers": [[0.0, 800.0]], "pre_lock_usd": None, "pct": None, "pct_min_usd": 100.0, "pct_max_usd": 1000.0,
-              "ref": 20.0, "wk": True, "room_f": 0.6, "dll_cap": True, "max_win": None, "slip_ticks": 2, "skip_breach": True}
+              "ref": 20.0, "wk": True, "room_f": 0.6, "dll_cap": True, "max_win": None, "slip_ticks": 2, "skip_breach": True,
+              "cons_aware": False}
 
 
 def funded_qty(trade: dict, state: dict | None, cfg: dict | None = None, acct: dict | None = None, why: list | None = None) -> int:
@@ -962,6 +968,15 @@ def funded_qty(trade: dict, state: dict | None, cfg: dict | None = None, acct: d
         if cap < q:
             q = cap
             note(f"best day <= ${float(c['max_win']) * sc:,.0f} -> {q}")
+    if (c.get("cons_aware") and tgt and tgt * TW_PV - TW_COMM > 0 and _num(st.get("cycle_target")) is not None
+            and (c["cons_aware"] != "after_payout" or int(_num(st.get("payouts_n"), 0)) > 0)):
+        cons = float(A["cons"])
+        prev = max(0.0, float(_num(st.get("cycle_prev"), 0.0)))
+        day_max = max(cons * float(st["cycle_target"]), cons / max(1e-9, 1.0 - cons) * prev)
+        cap = int(max(0.0, day_max - max(0.0, cum)) / (tgt * TW_PV - TW_COMM))
+        if cap < q:                                    # soft: never below 1 micro (a big day delays the payout, no breach)
+            q = max(1, cap)
+            note(f"consistency {cons * 100:.0f}%: today's day <= ${day_max:,.0f} -> {q}")
     if c["room_f"] and room is not None:
         cap = int(float(c["room_f"]) * max(0.0, room) / loss1 + 1e-9)
         if cap < 1:
@@ -1000,6 +1015,21 @@ def funded_state(day_pnl: dict, today_cum: float = 0.0, payouts: dict | None = N
         bal -= float(pay.get(d, 0.0))
     return {"balance": round(bal, 2), "cum": float(today_cum), "room": round(bal + today_cum - floor, 2),
             "floor": round(floor, 2), "locked": floor >= float(A["lock"]) - 1e-9}
+
+
+def funded_cycle(day_pnl: dict, today_cum: float = 0.0, payouts: dict | None = None, plan: dict | None = None) -> dict:
+    """The payout cycle of a funded account (2026-10-25, engine/funded_life.py): the cycle starts after the last payout day.
+    -> {"cycle_start_bal" (balance after the last payout, $ above start), "cycle_prev" (closed P&L of the cycle's earlier
+    days), "best_prev" (best earlier day of the cycle), "cycle_days_prev" (traded earlier days), "cycle_target" (cycle profit
+    a max request needs: buffer + pay_max - cycle_start_bal)}. day_pnl = earlier days only (as funded_state)."""
+    A = {**FD_50K, **(plan or {})}
+    pay = {str(d): float(v) for d, v in (payouts or {}).items()}
+    last = max(pay) if pay else ""
+    days = {str(d): float(v) for d, v in (day_pnl or {}).items()}
+    start_bal = sum(v for d, v in days.items() if d <= last) - sum(pay.values())
+    cyc = [v for d, v in days.items() if d > last and abs(v) > 1e-9]
+    return {"cycle_start_bal": round(start_bal, 2), "cycle_prev": round(sum(cyc), 2), "best_prev": round(max(cyc), 2) if cyc else 0.0,
+            "cycle_days_prev": len(cyc), "payouts_n": len(pay), "cycle_target": round(max(0.0, float(A["buffer"]) + float(A["pay_max"]) - start_bal), 2)}
 
 
 SECOND_TICK, SECOND_COMM = 0.25, 1.90
