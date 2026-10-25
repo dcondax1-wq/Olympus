@@ -37,7 +37,7 @@
     "mw_filter": false,
     "wait": 6,
     "tf": "1m",
-    "cisd1m": 20,
+    "cisd1m": 22,
     "stop_buf": 0.25,
     "min_stop": 8.0,
     "max_stop": 80.0,
@@ -65,7 +65,7 @@
     "two_week": {
       "base": "need",
       "need_buf": 1.0,
-      "room_f": 0.6,
+      "room_f": 0.55,
       "wk": false,
       "dll_cap": true,
       "stop_at_target": true,
@@ -104,7 +104,8 @@
       "skip_breach": true
     },
     "eval_prior_pnl": -100.0,
-    "eval_prior_note": "owner 2026-10-18: the Builder 50K eval was at -$100 (balance $49,900) when the bot went live; counted as one day before eval_start (needs $3,100, room $1,900)"
+    "eval_prior_note": "owner 2026-10-18: the Builder 50K eval was at -$100 (balance $49,900) when the bot went live; counted as one day before eval_start (needs $3,100, room $1,900)",
+    "wk_loss_usd": 1200
   },
   "size_rule": "$800 risk up to a 20-pt stop, then 800 x 20 / stop; MNQ $2/pt; max 40 micros; no trade under 1 micro (engine/lit.py qty_for). Weekly stop: after 2 STOP exits in the calendar week, half size for the rest of it (one rounding, floor 1 micro). No cold-streak filter, no late-entry rule. Switch lit_sizing.mode (normal / eval / fast_eval / safe_eval / two_week); live: two_week (one winner passes, 60% of the eval room, $1,000 soft daily loss cap, 40 micros, min 1). Scale-in (built and safety-reviewed 2026-10-20, OFF: \"scale_in\": null until the owner's Sim101 roundtrip, python -m engine.ninjatrader --sim-roundtrip-add, passes): one add after breakeven, sized by engine/sizing.scale_in_qty (its open risk never above the first entry's).",
   "costs": "$1.40 per micro round trip; 1 tick slippage on market entries and on stop / breakeven / end-of-day exits (limit entries and targets fill at the price)",
