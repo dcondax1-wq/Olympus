@@ -55,8 +55,13 @@ def stored():
         by[r["span"]] += 1
     check("spans: 2026 H1 80 / H2 40 / 2021-25 511 (run lit_live)", by.get("H1") == 80 and by.get("H2") == 40 and by.get("2021-25") == 511, by)
     T = d["totals"]
-    check("totals match the run: 2026 H1 PF 4.98 +$33,901, H2 PF 2.69 +$9,493", abs(T["H1"]["net"] - 33901.0) < 1 and T["H1"]["pf"] == 4.98
-          and abs(T["H2"]["net"] - 9493.46) < 1 and T["H2"]["pf"] == 2.69, T)
+    # compared with the stored run lit_live (was hard-coded H2 PF 2.69 +$9,493, the numbers before the 2026-10-24 safe switches)
+    from tools import lit_final as LF
+    from tools import runlib as RL
+    rlv = RL.load("lit_live")
+    so = LF.score(sorted((dict(zip(rlv["trade_cols"], row)) for row in rlv["trades"]), key=lambda t: t["entry_t"]))
+    check(f"totals match the run: 2026 H1 PF {so['H1']['pf']} {so['H1']['net']:+,}, H2 PF {so['H2']['pf']} {so['H2']['net']:+,}",
+          all(abs(T[s]["net"] - so[s]["net"]) < 1 and T[s]["pf"] == so[s]["pf"] for s in ("H1", "H2")), T)
     check("outcomes agree with R / exit", all(r["outcome"] == TI.outcome_of(r["r"]) for r in bt)
           and all(not r["clean_win"] or r["exit"] == "TARGET" for r in bt) and all(not r["gave_back"] or (r["mfe"] >= 1 and r["r"] < 0.5) for r in bt))
     check("time to +1R only when MFE reached 1R", all(r["t1r"] is None or r["mfe"] >= 1.0 for r in bt)

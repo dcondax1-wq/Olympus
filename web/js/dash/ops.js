@@ -93,7 +93,7 @@ function renderNews() {
   const p = S.meta?.defaults || {};
   const before = (p.news_before_min ?? 15) * 60, after = (p.news_after_min ?? 30) * 60;
   let evs = [];
-  if (newsApi?.events) evs = newsApi.events.map(e => ({ t: e.t, ev: e.event, imp: e.impact, bs: e.blackout_start, be: e.blackout_end }));
+  if (newsApi?.events) evs = newsApi.events.map(e => ({ t: e.t, ev: e.event, imp: e.impact, bs: e.blackout_start_t ?? null, be: e.blackout_end_t ?? null }));   // *_t = epoch s (blackout_start / _end are 'HH:MM' text)
   else if (newsFb) {
     const seen = new Set();
     for (const e of [...(newsFb.upcoming || []), ...(newsFb.calendar || [])]) {

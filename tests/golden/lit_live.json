@@ -1,6 +1,6 @@
 {
  "note": "frozen by tests/test_golden.py --update; see its doc for when to update",
- "data_key": "17519777:1",
+ "data_key": "17519777-21380e2635:1",
  "params_lit": {
   "t_check": {
    "at": 15,
@@ -29,7 +29,7 @@
   "mw_filter": false,
   "wait": 6,
   "tf": "1m",
-  "cisd1m": 20,
+  "cisd1m": 22,
   "stop_buf": 0.25,
   "min_stop": 8.0,
   "max_stop": 80.0,
@@ -55,7 +55,7 @@
   "two_week": {
    "base": "need",
    "need_buf": 1.0,
-   "room_f": 0.6,
+   "room_f": 0.55,
    "wk": false,
    "dll_cap": true,
    "stop_at_target": true,
@@ -94,7 +94,8 @@
    "skip_breach": true
   },
   "eval_prior_pnl": -100.0,
-  "eval_prior_note": "owner 2026-10-18: the Builder 50K eval was at -$100 (balance $49,900) when the bot went live; counted as one day before eval_start (needs $3,100, room $1,900)"
+  "eval_prior_note": "owner 2026-10-18: the Builder 50K eval was at -$100 (balance $49,900) when the bot went live; counted as one day before eval_start (needs $3,100, room $1,900)",
+  "wk_loss_usd": 1200
  },
  "lit_rule": {
   "H1": {
@@ -102,71 +103,71 @@
    "tpw": 3.12,
    "win": 58.8,
    "pf": 4.98,
-   "net": 33891,
+   "net": 33901,
    "dd": -2196,
-   "per_month": 5560,
+   "per_month": 5562,
    "p10": 36.7,
    "f10": 1.6
   },
   "H2": {
    "n": 40,
    "tpw": 2.56,
-   "win": 47.5,
-   "pf": 2.69,
-   "net": 9493,
+   "win": 50.0,
+   "pf": 2.91,
+   "net": 9919,
    "dd": -1396,
-   "per_month": 2556,
+   "per_month": 2670,
    "p10": 23.1,
    "f10": 0.0
   },
   "2026": {
    "n": 120,
    "tpw": 2.91,
-   "win": 55.0,
-   "pf": 4.07,
-   "net": 43385,
+   "win": 55.8,
+   "pf": 4.19,
+   "net": 43820,
    "dd": -2196,
-   "per_month": 4423,
+   "per_month": 4467,
    "p10": 31.6,
    "f10": 1.0
   },
   "2021-25": {
-   "n": 510,
+   "n": 511,
    "tpw": 2.38,
-   "win": 53.7,
+   "win": 53.8,
    "pf": 1.01,
-   "net": 1211,
-   "dd": -19436,
-   "per_month": 24,
+   "net": 1265,
+   "dd": -19426,
+   "per_month": 25,
    "p10": 6.0,
    "f10": 13.3
   }
  },
  "eval_path": {
   "H1": {
-   "n": 80,
-   "pf": 4.02,
-   "net": 34234,
-   "dd": -3314,
+   "n": 68,
+   "pf": 3.49,
+   "net": 16977,
+   "dd": -1906,
    "p10": 57.1,
-   "f10": 5.9,
-   "mc_p10": 52.8,
-   "mc_f10": 2.6
+   "f10": 0.0,
+   "mc_p10": 52.6,
+   "mc_f10": 0.0
   },
   "H2": {
-   "n": 40,
-   "pf": 2.2,
-   "net": 9059,
-   "dd": -3073,
+   "n": 14,
+   "pf": 0.28,
+   "net": -1946,
+   "dd": -1946,
    "p10": 52.2,
    "f10": 0.0,
-   "mc_p10": 55.1,
-   "mc_f10": 3.5
+   "mc_p10": 52.6,
+   "mc_f10": 0.0
   }
  },
  "trades": {
-  "n": 630,
-  "sha1": "7a0511dbdcbb7cd2",
+  "n": 631,
+  "sha1": "9a71b90779c64dc3",
   "n_2026": 120
  }
 }

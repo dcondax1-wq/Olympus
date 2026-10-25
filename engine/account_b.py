@@ -293,6 +293,7 @@ class AccountB:
         self.view = None
         self.view_key = None
         self.last_size = None
+        self._startup_ok = None           # startup_block: set once B's own NinjaTrader account reconciled (entries allowed)
         self.mx = threading.RLock()
 
     # ---- plumbing
@@ -662,6 +663,8 @@ class AccountB:
             why_bar = f"{MAX_PER_DAY} entries on account B today already (max {MAX_PER_DAY} a day)"
         if not why_bar and (self.bot.health or {}).get("entries_blocked"):
             why_bar = "feed stale"
+        if not why_bar:
+            why_bar = self.startup_block(now)
         if not why_bar and getattr(self.bot, "_no_entries_day", None) == trading_day(now):
             why_bar = "the owner flattened remotely today"
         if not why_bar and self.lock and self.lock.get("day") == day:
@@ -719,6 +722,31 @@ class AccountB:
         rr = self.route(act)
         if rr.get("ok") is not False:
             self._push_entry(act, q)
+
+    def startup_block(self, now):
+        """Startup reconcile for account B (bug hunt 2026-10-25): LIT's entries wait for guards.startup_problems, B's did
+        not. B routes no entry until, once, its OWN NinjaTrader account reconciles (engine/ninjatrader startup_problems on
+        B's adapter: folders, process lock, allowlist, no reset / unreadable state, a connection up, the chart on the order
+        contract, every open bracket's reports present, no position on B that no bracket explains). Latched once it passes.
+        Paper bot / guards "startup_reconcile" off / an adapter without the check: no gate. A bug fails CLOSED."""
+        if getattr(self, "_startup_ok", None) or (self.bot.cfg or {}).get("adapter") != "ninjatrader":
+            return None
+        try:
+            from . import guards as G
+            if not G.config(self.bot).get("startup_reconcile"):
+                return None
+            fn = getattr(self.adapter, "startup_problems", None)
+            if not callable(fn):
+                return None
+            probs = [str(p) for p in (fn() or [])]
+        except Exception as e:
+            probs = [f"account B startup check failed ({e.__class__.__name__}: {e})"]
+        if probs:
+            self.note(("startup",), "risk", "STARTUP DISARMED on account B (no new entries yet): " + "; ".join(probs))
+            return "STARTUP DISARMED until reconciled: " + "; ".join(probs)
+        self._startup_ok = int(now)
+        self.log("system", f"STARTUP RECONCILED on {self.name}: NinjaTrader positions / orders and contract check out; entries allowed")
+        return None
 
     def guard(self, act, entry_t, now):
         """Account B's own guards: CME calendar / session, order sanity (the plan's max micros), the bot's clock check,
