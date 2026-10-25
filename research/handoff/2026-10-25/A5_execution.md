@@ -38,8 +38,8 @@ seconds). Sim101 needs nothing new.
 | `python -X utf8 -m tests.test_lit_exit_route` | 19/19 | `a5_logs/test_lit_exit_route.txt` |
 | `python -X utf8 -m tests.test_lit_oif` (all 2026 trades through LiveBot + fake NinjaTrader, now with the startup gate) | 117/120, the same 3 days (2026-03-23, 04-03, 05-05) that also miss on the pre-fix code (`a5_logs/test_lit_oif_3days_on_OLD_code.txt`: 0/3); every day logs `STARTUP RECONCILED` before its entry; median 2.55 s after the 1m CISD close | `a5_logs/test_lit_oif.txt` |
 
-Not run here: `tests.test_second_account_b` (85 min full / 25 min quick; the baseline full run was cut at 900 s with
-30 PASS 0 FAIL), `tests.test_rehearsal` (server subprocess replay), `tests.test_lit_live` (paper adapter: no code path
+`python -X utf8 -m tests.test_second_account_b --quick`: 42/42 in 1363 s (`a5_logs/test_second_account_b_quick.txt`).
+Not run here: `tests.test_second_account_b` full (85 min), `tests.test_rehearsal` (server subprocess replay), `tests.test_lit_live` (paper adapter: no code path
 changed for paper; guard 0 only applies to `adapter == "ninjatrader"`).
 
 ## EXECUTION_TEST_MATRIX
