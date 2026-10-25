@@ -828,10 +828,50 @@ def account_view(hb: dict, now) -> dict:
     if ev.get("days") is not None:
         try:
             from . import accounts
-            out["eval"] = accounts.eval_view(ev.get("days") or {}, ev.get("start"), trading_day(now), now=now)
+            out["eval"] = accounts.eval_view(ev.get("days") or {}, ev.get("start"), trading_day(now), now=now,
+                                             anchor=ev.get("anchor"))
         except Exception:
             out["eval"] = None
     return out
+
+
+def mffu_check_notice(hb: dict, view: dict, now) -> dict | None:
+    """17:05 ET each weekday: "Check MFFU: bot thinks balance $X, floor $Y" for LIT's account (+ extra accounts and account
+    B), so the owner compares them with the MFFU dashboard and re-anchors when they differ (engine/eval_life --anchor).
+    None when the bot's numbers are not known."""
+    from . import eval_life
+    rows = []
+    ev = view.get("eval") or {}
+    if ev.get("balance") is not None and ev.get("floor") is not None:
+        rows.append({"name": view.get("name"), "balance": ev["balance"], "floor": ev["floor"], "room": ev.get("room"),
+                     "to_target": ev.get("to_target"), "anchor": ev.get("anchor")})
+    acct = hb.get("acct") if isinstance(hb.get("acct"), dict) else {}
+    for sub in acct.get("accounts") or []:
+        try:
+            if not isinstance(sub, dict) or sub.get("error") or (sub.get("kind") or "eval") != "eval":
+                continue
+            se = sub.get("eval") or {}
+            from . import accounts
+            v = accounts.eval_view(se.get("days") or {}, se.get("start"), trading_day(now), now=now, plan=sub.get("plan_rules"),
+                                   anchor=se.get("anchor"))
+            rows.append({"name": (sub.get("account") or {}).get("name") or sub.get("name"), "balance": v["balance"],
+                         "floor": v["floor"], "room": v["room"], "to_target": v["to_target"], "anchor": v.get("anchor")})
+        except Exception:
+            continue
+    try:
+        ab = (((hb.get("second") or {}).get("route") or {}).get("account_b") or {})
+        be = ab.get("eval") or {}
+        if be.get("balance") is not None and be.get("floor") is not None:
+            rows.append({"name": ab.get("account") or "account B", "balance": be["balance"], "floor": be["floor"],
+                         "room": be.get("room"), "to_target": be.get("to_target"), "anchor": be.get("anchor")})
+    except Exception:
+        pass
+    p = eval_life.anchor_check_payload(rows, now)
+    if p:
+        p["key"] = f"ops:mffu:{trading_day(now)}"
+        if not view.get("fresh"):
+            p["body"] = (p["body"] + " (bot numbers older than 30 min: is the PC bot running?)")[:900]
+    return p
 
 
 def eval_line(ev: dict | None) -> str:
@@ -1251,6 +1291,7 @@ def due(now) -> dict:
     return {"presession": wd < 5 and 100 <= mod <= 135,            # 01:40-02:15 ET
             "eod": wd < 5 and 965 <= mod <= 1020,                   # 16:05-17:00 ET
             "weekly": wd == 6 and 1020 <= mod <= 1439,              # Sunday 17:00-23:59 ET
+            "mffu_check": wd < 5 and 1025 <= mod <= 1075,           # 17:05-17:55 ET: "Check MFFU: bot thinks ..."
             "daily": (wd < 5 and (100 <= mod <= 135 or 965 <= mod <= 1020)) or (wd == 6 and 1020 <= mod <= 1439)}
 
 
@@ -1306,6 +1347,10 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
                 notes += business_notices(view, now)
         if D["weekly"] and real:
             notes += watch_notices(state, now)
+        if D.get("mffu_check"):
+            n = mffu_check_notice(ctx["hb"] or {}, view, now)
+            if n:
+                notes.append(n)
         n = eval_result_notice(view, now)
         if n and not bot_pushes_eval(ctx["hb"], view):
             notes.append(n)            # the running bot pushes its own pass / fail notice (engine/eval_life.py): no double push

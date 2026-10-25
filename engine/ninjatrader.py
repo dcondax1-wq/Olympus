@@ -2326,6 +2326,11 @@ def selftest(verbose=True) -> bool:
         got = [ls for _, ls in fake.files[k:]]
         check("bracket: ok, entry file = 1 MARKET line, then 1 file with the STOPMARKET + LIMIT OCO pair (exact lines)",
               r["ok"] and got == [exp_entry, exp_bracket], json.dumps(got))
+        _box = os.path.join(ad.folder, "le_outbox")
+        check("order files: written whole in le_outbox\\ then renamed into incoming\\ (never copied, never written in place)",
+              ad.write_mode == "move" and os.path.isdir(_box) and not os.listdir(_box)
+              and os.path.dirname(os.path.abspath(_box)) == os.path.dirname(os.path.abspath(ad.incoming)),
+              f"mode {ad.write_mode}, outbox {os.listdir(_box) if os.path.isdir(_box) else 'missing'}")
         check("bracket: NinjaTrader shows LONG 2 MNQ, stop + target WORKING, leg protected",
               ad.position_for("MNQ 12-26")["side"] == "LONG" and ad.position_for("MNQ 12-26")["qty"] == 2
               and ad.read_order(S)["state"] == "WORKING" and ad.read_order(TG)["state"] == "WORKING" and lg["status"] == "protected")

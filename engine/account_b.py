@@ -103,6 +103,7 @@ def normalize(ab: dict | None, scfg: dict | None = None, lit_account: str | None
     keys = [str(k) for k in keys] if isinstance(keys, (list, tuple)) else ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"]
     out = {"account": str(ab.get("account") or "").strip(), "plan": plan, "eval_start": str(ab.get("eval_start") or ""),
            "strategies": keys, "sizing": str(ab.get("sizing") or "need"), "prior_pnl": float(_num(ab.get("prior_pnl"), 0.0)),
+           "eval_anchor": ab.get("eval_anchor"),
            "armed": ab.get("armed") is True, "problem": None}
     out["preset"] = (P or {}).get("preset") or "mffu_builder_50k"
     out["plan_label"] = (P or {}).get("label") or plan
@@ -274,7 +275,8 @@ class AccountB:
         NINJATRADER_LIVE=1 (the adapter's _live_gate); the bot's own arming is never inherited."""
         b = self.bot.cfg or {}
         base = {k: v for k, v in b.items() if k not in ("accounts", "armed", "confirm", "nt_account", "nt_state_path", "nt_audit_log",
-                                                       "eval_start", "eval_prior_pnl", "lit_sizing", "funded", "webhook_url", "account_b")}
+                                                       "eval_start", "eval_prior_pnl", "eval_anchor", "lit_sizing", "funded",
+                                                       "webhook_url", "account_b")}
         p = dict(base.get("params") or {})
         p["max_micros"] = min(int(p.get("max_micros", 40) or 40), int(self.rules["max_micros"]))
         d = os.path.dirname(self.state_path)
@@ -353,13 +355,26 @@ class AccountB:
                     and trading_day(int(r["entry_t"])) == day and int(r["entry_t"]) not in void
                     and (r.get("result") or {}).get("ok") is not False})
 
+    def anchor(self):
+        """Account B's eval anchor (engine/sizing.eval_anchor): data/eval_anchor.json "accounts" by its NinjaTrader Name
+        next to the bot's state file (`python -m engine.eval_life --anchor --account "<Name>"`), or account_b "eval_anchor";
+        the newest as_of wins. None = no anchor (as before)."""
+        from . import eval_life as EL
+        from . import sizing as SZ
+        try:
+            f = EL.load_anchor(self.name, state_path=getattr(self.bot, "state_path", None), main=False) if self.name else None
+        except Exception:
+            f = None
+        return SZ.newest_anchor(f, self.spec.get("eval_anchor"))
+
     def eval_state(self, now=None):
         from . import multi_account as MA
         today = trading_day(now if now is not None else self.clock())
         if not self.spec.get("eval_start"):
             return None
         return MA.sizing_state("two_week", [(d, t, p) for d, t, p, *_ in self.closes], today, self.spec["eval_start"], self.rules,
-                               prior=float(self.spec.get("prior_pnl") or 0.0), n_today=self.entries_today(today))
+                               prior=float(self.spec.get("prior_pnl") or 0.0), n_today=self.entries_today(today),
+                               anchor=self.anchor())
 
     def eval_view(self, now=None) -> dict:
         """Balance, trailing floor, room, pass target, session, status (open / passed / failed / stuck)."""
@@ -376,7 +391,7 @@ class AccountB:
         bal = start + prof
         floor = bal - float(st["room"])
         status = "passed" if prof >= float(R["target"]) else "failed" if st["room"] <= 0 else "stuck" if st["room"] < MIN_ROOM else "open"
-        return {"start_balance": start, "balance": round(bal, 2), "profit": round(prof, 2), "today": round(float(st["cum"]), 2),
+        return {**({"anchor": st["anchor"]} if st.get("anchor") else {}), "start_balance": start, "balance": round(bal, 2), "profit": round(prof, 2), "today": round(float(st["cum"]), 2),
                 "floor": round(floor, 2), "room": round(float(st["room"]), 2), "target": start + float(R["target"]),
                 "to_target": round(max(0.0, float(R["target"]) - prof), 2), "session": st.get("session"), "status": status,
                 "start": self.spec.get("eval_start"), "days_traded": st.get("days_traded"), "dll": float(R["dll"]),

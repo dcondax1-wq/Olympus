@@ -284,7 +284,8 @@ def _eval_status(eval_block: dict | None, now=None) -> dict | None:
         import time as _t
         today = trading_day(int(now or _t.time()))
         lm = _json(os.path.join(ROOT, "live_model.json"), {}) or {}
-        return EL.view(eval_block.get("days") or {}, eval_block.get("start"), today, lm.get("lit_sizing"))
+        return EL.view(eval_block.get("days") or {}, eval_block.get("start"), today, lm.get("lit_sizing"),
+                       anchor=eval_block.get("anchor"))
     except Exception:
         return None
 
