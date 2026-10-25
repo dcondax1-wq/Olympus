@@ -349,6 +349,7 @@ class LiveBot:
         self.accts = None                # engine/multi_account.AccountRouter: the start cfg's extra accounts (None = one account)
         self.brain = None                # engine/brain.py: the Bot Brain snapshot of the last poll (read-only, built after routing)
         self.second = None               # engine/second.py: the paper second strategies' last run (display)
+        self.atlas_v2 = None             # engine/atlas_v2.py: the ATLAS v2 PAPER shadow state (paper thread, never routed)
         # routed second strategies (second_model.json "route": true; OFF by default): ONE position on the account, LIT first
         self._open_src = None            # None = the open routed position is LIT's; else the second_model.json key it belongs to
         self._second_routed = []         # the keys routed at the last poll (guards: max 2 entries a day when any)
@@ -1313,6 +1314,9 @@ class LiveBot:
                     self.second = _second.run(df5, one_min=df1, now=now, cfg=cfg, lit=lit_w)
                 else:
                     self.second = None
+                if self.second is not None:           # ATLAS v2 PAPER shadow (engine/atlas_v2.py): never routed, own file
+                    from . import atlas_v2 as _av2
+                    self.atlas_v2 = _av2.pc_step(_av2.pc_path(self.state_path), self.second, res, df5, df1, now)
             except Exception as e:
                 self._note_error(f"second strategies failed: {e.__class__.__name__}: {e}")
             finally:

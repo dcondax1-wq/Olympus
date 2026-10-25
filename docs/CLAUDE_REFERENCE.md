@@ -129,6 +129,18 @@ part yourself or fold it into a script.**
   own scorecard bands (`second_scorecard.CANDIDATES`). Evening: the PC bot runs them every bar 24/5 (heartbeat / live.json);
   the cloud cron has no evening runs (01:32 ET is the first), so it books the night's trades at its next run. Test `python
   -X utf8 -m tests.test_second_stophunt [--quick]` (2026 replay 78/78 + 59/59).
+- **ATLAS v2 PAPER SHADOW (2026-10-25, `engine/atlas_v2.py`, `research/writeups/atlas-v2.md` candidate 1b):** ATLAS +
+  sh_asia + sh_trend at weight 0.5 + a new eval when room < $200, on a simulated Builder 25K next to the live ATLAS
+  (= tools/atlas_v2.score on the members' paper trades: need size via `account_b.qty(key=)`, one position, max 2 a day,
+  no-hedge vs LIT trades + armed setups, HEDGE cut, $600 soft loss). Never routed. Cloud: state key `atlas_v2` (own frozen
+  ledger + eval tracker, from state `second` ledgers + LIT's run); PC: `LiveBot._second_tick` paper thread ->
+  `data/live_state_atlas_v2.json` (gitignored), heartbeat `second.atlas_v2`. Scorecard bands
+  `research/second/atlas_v2_scorecard.json` (`python -m engine.atlas_v2 build`; hunts: decide after 20+ hunt trades).
+  Pushes kind `second` "ATLAS v2 PAPER ...", OFF by default (`second_model.json` `"atlas_v2": {"push": false}`). Card: ATLAS
+  page (secondcore.js v8 `atlasV2Card`, data.json second.atlas_v2, /api/next/second atlas_v2; phone sw le-public-v31).
+  `account_b` keys `"weights"` / `"min_room"` are built but OFF (absent = today's sizing / $100 stuck). Test `python -X utf8
+  -m tests.test_atlas_v2_shadow [--no-cloud]` (2026 replay = the research executor exactly; the stored run file was scored
+  on an older unit cache: 206/207 trades identical, $ within 0.1%).
 - Same code as the research: engine/second.py calls tools/second_ema.py / second_md.py / second_sr.py on LIT's live
   window (retail_standalone.load_frame live_cut, the simulators' live/OPEN mode). "With LIT" view = LIT first, no entry
   while LIT is in a trade, max 2 a day (MACD closed when LIT enters).

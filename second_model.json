@@ -102,5 +102,6 @@
    "usd": 500,
    "research": {"best": "research/stophunt/sh_trend_idm5.json", "evals": "research/stophunt/evals.json"}
   }
- }
+ },
+ "atlas_v2": {"on": true, "push": false, "note": "ATLAS v2 PAPER SHADOW (engine/atlas_v2.py, research/writeups/atlas-v2.md candidate 1b: ATLAS + sh_asia + sh_trend at half size + a new eval under $200 of room) on a simulated Builder 25K next to the live ATLAS: paper only, never routed, account_b untouched. on: false = not computed. push: true = its ATLAS v2 PAPER pushes (kind second) are sent; false (default) = recorded in the app activity only."}
 }
