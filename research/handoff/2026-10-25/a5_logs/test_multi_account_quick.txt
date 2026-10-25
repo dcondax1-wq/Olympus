@@ -1,0 +1,51 @@
+[PASS] no accounts list: no router (today's bot)
+[PASS] router built with 3 extra accounts, all enabled
+[PASS] primary routed exactly as without accounts (same rows)
+[PASS] lucid: one winner passes ($3,000 need, 40% room, $1,000 cap)
+[PASS] fn: needs only $500 after +$2,500 prior -> fewer micros
+[PASS] funded paper: funded_qty (40% room, $800, winner <= $1,500)
+[PASS] the four accounts' micros are independent
+[PASS] same entry / stop / target on every account (ticked like the primary)
+[PASS] separate NinjaTrader orders per account (Sim102 and Sim103 brackets)
+[PASS] separate fills / positions: each NT adapter holds its own bracket
+[PASS] own state files per account (router + one NinjaTrader state each)
+[PASS] breakeven: one stop move per NinjaTrader account (paper: none)
+[PASS] exits: every account flat, P&L = model $ x its micros / model micros
+[PASS] daily-loss lock-out: fn (-$1,050 today) routes nothing, lucid / fund still trade
+[PASS] max-loss floor reached (prior -$2,000): that account is locked, the primary still trades
+[PASS] health rows show the lock-outs
+[PASS] kill: FakeNT flat on every account, paper accounts got their exit, bot stopped
+[PASS] after kill: no account routes a new entry
+[PASS] real account: the primary's armed + phrase are NOT inherited
+[PASS] real account: armed but no phrase -> refused
+[PASS] real account: armed + phrase + NINJATRADER_LIVE=1 but not in the account allowlist -> refused
+[PASS] real account: armed + phrase + NINJATRADER_LIVE=1 + allowlisted -> enabled
+[PASS] real account: armed + phrase without NINJATRADER_LIVE=1 -> refused
+[PASS] config problems refused per account (own account twice, tradovate, unknown preset, duplicate id, disabled)
+[PASS] restart: closes and the daily-loss lock restored
+[PASS] next day: the lock-out is gone, the closes stay (eval state)
+[PASS] funded_state: balance after payouts, floor trails the EOD high, locked at +$100
+[PASS] intraday trailing (Rapid funded): the floor moved after the +$1,500 trade, the EOD eval floor did not
+[PASS] primary funded mode gets its funded_state (was: unknown -> smallest size)
+[PASS] primary funded qty = funded_qty on its own state
+[PASS] best-day rule: a Rapid eval winner pays <= $1,425
+[PASS] 25K eval: its own rules (target $1,500, 50% of the $1,000 room, $600 daily loss, max 20) -> the 25K qty, not the 50K's
+[PASS] 25K qty is about half the same signal on the 50K plan
+[PASS] 25K stuck (room $70 < $100): entries stop, push '25K stuck: room $70, buy a new one'
+[PASS] hedging guard: a SHORT is refused on every other account while h1 is LONG (primary included)
+[PASS] 25K eval state: room $1,000, session 1
+[PASS] 25K Accounts section plan: $25,000 start, floor locks at $25,100
+[PASS] heartbeat acct block: one sub-block per extra account, no phrase / paths
+[PASS] pc_health lists every account (label, mode, enabled)
+[PASS] cloud Accounts page: a section per extra account after the MFFU eval
+[PASS] lucid section: its own closed trade and eval balance
+[PASS] PC Accounts page: the extra accounts card rows
+[PASS] API snapshot: no per-account phrase field
+[PASS] opt-in: an extra real account gets its own proof, no phrase stored
+[PASS] auto-resume: the bot resumes; Sim and opted-in real accounts come back
+[PASS] auto-resume: real accounts not opted in / not armed are left out cleanly (named in the refusals)
+[PASS] auto-resume without accounts: exactly as before
+[PASS] accounts.json never stores the phrase; --start gives it to armed real accounts only
+saved fn50k: ninjatrader FNFAKE0003 fn_rapid_daily_50k mode two_week, eval from 2026-10-21, enabled, armed no. It joins on the next --start.
+[PASS] CLI --add writes a valid entry
+multi_account: 49/49 ALL PASS

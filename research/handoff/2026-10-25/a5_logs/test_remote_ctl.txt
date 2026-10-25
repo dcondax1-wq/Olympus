@@ -1,0 +1,53 @@
+ok   init_control_branch: creates control (command.json + README.md), second run leaves it alone
+ok   init_control_branch --dry-run on an existing branch: 'exists', nothing pushed
+ok   the blank template is ignored silently (no command, no notice, no heartbeat push)
+ok   status: done, a phone notice with the bot's status, a fresh heartbeat
+ok   heartbeat 'remote' block: 'remote: last cmd status done at HH:MM ET', on
+ok   duplicate id (the same file on the next fetch): not run again, no notice
+ok   16-min-old kill, a future ts, a config command, a bad id, no ts: all ignored, nothing called
+ok   ignored ids are not reported again on the next fetch (a bad id cannot be stored: skipped, never a notice)
+ok   parse_ts: seconds, ms, ISO Z, ISO offset, junk
+ok   stop while in a trade: pending, bot not stopped yet, notice 'will stop once flat'
+ok   still in the trade on the next pass: still waiting
+ok   flat: the pending stop runs once (stop hook), notice 'bot stopped (now flat)'
+ok   not stopped twice
+ok   stop now in a trade: flatten then stop
+ok   flatten: the flatten hook, the bot is not stopped
+ok   update and restart in a trade: both refused 'not flat', no update run, no exit
+ok   restart with a LIT entry pending (limit / 1m CISD): refused
+ok   restart when the server is not supervised by run_bot.ps1: refused
+ok   flat but Wednesday 10:00 ET: update refused (trading hours) and restart refused while the bot runs
+ok   restart when flat (Saturday): exit(75), the id stored as done before the exit
+ok   after the restart the same command is not run again
+ok   update when flat outside trading hours: update runs once, then exit(75)
+ok   update already up to date: done, no restart
+ok   update rolled back: failed, no restart
+ok   start on a real account: refused, the start hook never called
+ok   start on Sim101 carrying adapter / confirm / account / risk fields: only a Sim101 NinjaTrader body is built (no confirm, no present, no extra fields)
+ok   start account 'Sim101x': real names never reach the start hook
+ok   start account 'MFFU Sim101': real names never reach the start hook
+ok   start account '': real names never reach the start hook
+ok   start account 'LIVE123': real names never reach the start hook
+ok   start account '../Sim101': real names never reach the start hook
+ok   start while running: refused
+ok   kill: the kill hook, done notice
+ok   pause until tomorrow: done, data file until 00:00 ET tonight, notice says so, no order hook called
+ok   pause is a hands-off event (phone)
+ok   heartbeat 'remote' block carries the pause, presence and the hands-off score
+ok   pause until 14:30: today 14:30 ET (the later command replaces the first)
+ok   pause with a bad time / no until / more than 14 days ahead: refused, the running pause is kept
+ok   resume_entries: done 'pause lifted', file gone
+ok   resume_entries with no pause: done 'no pause was running'
+ok   present: a phone check-in line in presence.jsonl (2 h), notice 'present until 12:00 ET', no order hook
+ok   present / resume_entries / status are not hands-off events
+ok   off unless LE_REMOTE=1 (no thread)
+ok   LiveBot + fake NinjaTrader: remote kill mid-trade -> FLATTENEVERYTHING, account flat, kill flag, bot stopped
+ok   LiveBot + fake NinjaTrader: remote flatten mid-trade -> account flat, bot still running, no kill flag
+ok   after the flatten, the model's still-open position is not re-routed, no modify / add sent
+ok   a new model entry later the same day is NOT routed (remote flatten = done for today)
+ok   LiveBot: remote pause mid-trade -> done, nothing sent to NinjaTrader, position still 2, bot running
+ok   LiveBot: a new entry while paused -> GUARD 'paused by you until tomorrow'
+ok   LiveBot: resume_entries -> the pause no longer blocks (other guards unchanged)
+ok   heartbeat payload has 'remote' with the last command line
+
+51/51 remote-control checks passed

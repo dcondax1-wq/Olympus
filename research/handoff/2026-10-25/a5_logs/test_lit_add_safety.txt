@@ -1,0 +1,30 @@
+ok   2. stop filled at the old qty after an add -> the remainder (3) is closed at once, nothing left working, alert
+ok   1. adapter: add refused while the bracket stop is 24990 and the add was sized at 25021.25; an add without a stop is refused; no order file
+ok   1. adapter: the same add goes through once the stop is at breakeven (bracket 20)
+ok   3. adapter restart: add 1 again for the same entry -> refused (add numbers in the state file), no order file
+ok   4. add_fills reports the real add (n 1, 10 filled @ 25040)
+ok   cleanup flat
+ok   4. pending add never filled -> cancelled after 45 s, add_fills shows 0 filled (status rejected)
+ok   1. LiveBot: add not routed while the broker stop is 24990 (BE 25021.25 never accepted)
+ok   1. LiveBot: a refused BE modify blocks the add; an accepted one lets it through with the BE stop
+ok   3. LiveBot: the add is saved as done (state file 'seen') before the broker call
+ok   3. LiveBot: the same add decision is not routed twice
+ok   4. pending add booked at the asked size until the broker reports
+ok   4. add cancelled unfilled -> 0 micros; partial fill 3 @ 25047 -> ledger P&L from 3 @ 25047 (not 4 @ 25045.25)
+ok   5. add seen 25 s after its CISD close -> not routed; 15 s -> routed
+ok   A. partial stop 1/4 then target 3/3 -> flat: no CLOSEPOSITION, no 'had no stop' alert, retired as target filled
+ok   A. target filled but NinjaTrader still shows a position afterwards -> CLOSEPOSITION + alert
+ok   B. late add fill after the exit: the retired leg is watched, the 3 left are closed at once, alert
+ok   B. add_fills still reports the late add (3 @ 25041) for the ledger
+ok   B. restart after the exit: the new adapter still watches the add and closes its late fill
+ok   B. ... position flat, alert
+ok   B. add cancelled cleanly with the exit -> no watch left, no CLOSEPOSITION
+ok   C. crash right after the add's order file: the restarted adapter knows the add, grows the bracket to 5
+ok   C. ... the same add is refused again; add_fills reports it (3 @ 25040)
+ok   C. ... the BE stop closes all 5
+ok   C. LiveBot restart without the add in its ledger: booked from NinjaTrader's fill (3 @ 25040) in qty and P&L
+ok   C. ... an unfilled adapter add is not booked
+ok   6. cloud ledger: the add sized by scale_in_qty on the ledger's eval state (as the PC), $ includes it
+ok   6. cloud ledger normal mode: the model's add x paper micros / model micros (10 x 5 / 10 = 5)
+
+scale-in add safety: 28/28 PASS

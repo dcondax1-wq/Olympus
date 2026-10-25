@@ -306,6 +306,8 @@ class LiveBot:
     def reset(self):
         self._guard_key = None
         self._eod_sent = None
+        self._startup_ok = None          # engine/guards.startup_problems: set once the startup reconcile passed (entries allowed)
+        self._startup_last = None
         self.running = False
         self.cfg = {}
         self.log = deque(maxlen=400)
@@ -618,6 +620,15 @@ class LiveBot:
         self.stop_flag.set()
         self._gen += 1
         self.running = False
+        # engine/ninjatrader: each NinjaTrader account lock goes back when the bot stops (a Sim check or the next start may
+        # take it); while the bot runs, a second process on the same account is refused
+        for ad in [self.adapter, getattr(self.acct_b, "adapter", None)] + \
+                [getattr(a, "adapter", None) for a in (getattr(self.accts, "accounts", None) or [])]:
+            try:
+                if callable(getattr(ad, "release_lock", None)):
+                    ad.release_lock()
+            except Exception:
+                pass
         self._log("system", "Bot stopped")
         self._save_state()
         return {"ok": True}
@@ -637,7 +648,10 @@ class LiveBot:
             # $0 in day_pnl_routed / eval_days, so the eval clock, the next trade's two_week size and the soft daily
             # loss all saw a loss that never happened as flat
             pnl = self._kill_pnl(pos, q1)
-            self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "qty": qty, "reason": "KILL SWITCH",
+            # "scope": "global" = the owner's own kill (HOLD TO KILL / remote kill): the primary adapter may send NinjaTrader's
+            # FLATTENEVERYTHING. Every other KILL SWITCH route (account B, extra accounts, remote flatten) stays on its own
+            # account (engine/ninjatrader.kill, pre-launch audit 2026-10-25)
+            self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "qty": qty, "reason": "KILL SWITCH", "scope": "global",
                          "entry_t": pos.get("entry_t"), "exit_t": int(self.clock()),
                          **({"pnl": pnl, "pnl_est": True} if pnl is not None else {})})
             self._flattened.add(pos.get("entry_t"))
@@ -645,7 +659,7 @@ class LiveBot:
         elif getattr(self.adapter, "kill_flattens_all", False):
             # broker adapters that can flatten the whole account (NinjaTrader FLATTENEVERYTHING) are told even when the
             # model shows no position: the broker may still hold one (desync, manual order, late fill)
-            self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "reason": "KILL SWITCH", "entry_t": None})
+            self._route({"sym": self.cfg.get("sym", "NQ"), "side": "exit", "reason": "KILL SWITCH", "scope": "global", "entry_t": None})
         if self.accts is not None:                  # every extra account is flattened too (engine/multi_account.py)
             self.accts.kill(self.cfg.get("sym", "NQ"))
         if self.acct_b is not None:                 # and account B (engine/account_b.py)

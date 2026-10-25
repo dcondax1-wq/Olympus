@@ -1,0 +1,33 @@
+== 1. outgoing position file names
+  [PASS] inst_key: 'MNQ 12-26', 'MNQ 12-26 Globex', 'MNQ DEC26 Globex', 'mnq Dec26', 'MNQ 1226 Globex' = MNQ Dec 2026
+  [PASS] same_instrument: MNQ DEC26 Globex = MNQ 12-26; MNQ 03-27 / NQ 12-26 / MES 12-26 are not
+  [PASS] account 'MFFUEVBLDR602936016', file 'MNQ 12-26 Globex_MFFUEVBLDR602936016_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
+  [PASS] account 'My Eval 50K', file 'MNQ 12-26 Globex_My Eval 50K_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
+  [PASS] account 'MFFUEVBLDR602936016', file 'MNQ DEC26 Globex_MFFUEVBLDR602936016_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
+  [PASS] account 'MFFUEVBLDR602936016', file 'MNQ 1226 Globex_MFFUEVBLDR602936016_Position.txt': LONG 3 @ 25020.25 found, other accounts ignored, reconcile net +3
+== 2. NinjaTrader restart with a protected trade open
+  [PASS] setup: bracket placed and protected, order files seen
+  [PASS] outgoing wiped: reset noticed, ONE alert, the leg stays protected (never read as flat)
+  [PASS] outgoing wiped: nothing written by the bot (no re-entry, no flatten, no cancel)
+  [PASS] outgoing wiped: _is_flat on a missing position file is False
+  [PASS] position file back: reset cleared, the missing stop/target reports flagged in an alert
+  [PASS] after the reset clears: no new reset from the same files
+  [PASS] the broker stop fills after the restart: the bot sees it and retires the bracket (no CLOSEPOSITION needed)
+== 3. NinjaTrader restart while flat
+  [PASS] a FLAT position file that vanishes blocks nothing (an NinjaTrader restart cannot open a position)
+  [PASS] a SHORT position file that vanishes: reset + alert, the entry is REFUSED
+  [PASS] still blocked while no position file and no confirmation
+  [PASS] owner confirmation file (python -m engine.ninjatrader --confirm-reset) clears it
+== 4. NinjaTrader restart while the entry is in flight
+  [PASS] setup: entry pending (no fill report yet), its order file seen
+  [PASS] reset while pending: the leg is never retired on missing files
+  [PASS] position file back (LONG 3): the in-flight entry is treated as filled and gets its stop + target
+== 5. Python restart during an unresolved NinjaTrader reset
+  [PASS] restored after a Python restart: the open bracket and the reset (still blocked)
+  [PASS] restored adapter does not write anything on missing files
+== 6. stop REJECTED / cancelled outside the bot; 7. disconnect
+  [PASS] stop REJECTED after the fill: CLOSEPOSITION at once, alert, the account flat
+  [PASS] stop CANCELLED outside the bot: flattened + alert
+  [PASS] all connections DISCONNECTED with a trade open: one alert (rate-limited), the trade kept (no flatten written)
+  [PASS] all connections DISCONNECTED: a new entry is refused
+26/26 checks passed

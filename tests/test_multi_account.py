@@ -222,14 +222,19 @@ def unit(tmp):
             return a.disabled_reason()
         r0 = gate(live[0])
         r1 = gate({**live[0], "armed": True})
+        r2n = gate({**live[0], "armed": True, "confirm": LIVE_PHRASE})          # not in the account allowlist
+        os.environ["NINJATRADER_ALLOW"] = "LTFAKE0001"
         r2 = gate({**live[0], "armed": True, "confirm": LIVE_PHRASE})
+        os.environ.pop("NINJATRADER_ALLOW", None)
         os.environ.pop(LIVE_ENV, None)
         r3 = gate({**live[0], "armed": True, "confirm": LIVE_PHRASE})
     finally:
         os.environ.pop(LIVE_ENV, None)
     check("real account: the primary's armed + phrase are NOT inherited", r0 and "not armed" in r0, r0)
     check("real account: armed but no phrase -> refused", r1 and "phrase" in r1, r1)
-    check("real account: armed + phrase + NINJATRADER_LIVE=1 -> enabled", r2 is None, r2)
+    check("real account: armed + phrase + NINJATRADER_LIVE=1 but not in the account allowlist -> refused",
+          r2n and "allowlist" in r2n, r2n)
+    check("real account: armed + phrase + NINJATRADER_LIVE=1 + allowlisted -> enabled", r2 is None, r2)
     check("real account: armed + phrase without NINJATRADER_LIVE=1 -> refused", r3 and LIVE_ENV in r3, r3)
     bad = MA.specs_from_cfg({"adapter": "ninjatrader", "nt_account": "Sim101", "accounts": [
         {"id": "dup", "adapter": "ninjatrader", "nt_account": "Sim101"}, {"id": "x", "adapter": "tradovate"},

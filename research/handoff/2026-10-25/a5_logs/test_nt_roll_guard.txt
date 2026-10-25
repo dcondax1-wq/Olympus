@@ -1,0 +1,12 @@
+ok   order contract on 2026-12-10 is MNQ 03-27
+ok   1. chart on MNQ 12-26, orders on MNQ 03-27 -> entry refused, no order file, alert
+ok   2. chart on MNQ 03-27 -> entry and bracket go in
+ok   3. unknown chart contract + fill 310 pts from the chart price -> no stop/target placed, flattened
+ok   4. 2026-12-09: chart and orders on MNQ 12-26 -> entry goes in
+ok   5. fill 0.5% (125 pts) from the chart price -> no stop/target, flattened
+ok   5. fill 24 pts (the worst 2026 LIT entry-bar offset, 0.08-0.1%) from the model price -> bracket placed
+ok   6. late fill 310 pts from the chart price (pending entry, protected in tick) -> no stop/target, flattened, alert
+ok   7. chart on MNQ ##-## (continuous) -> alert 'continuous contract ... roll check is OFF', entry still goes in
+ok   7. ... warned once per day
+
+roll guard: 10/10 PASS
