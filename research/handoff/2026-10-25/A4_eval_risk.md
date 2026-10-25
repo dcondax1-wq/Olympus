@@ -28,8 +28,11 @@ regression test; **RESEARCH_VARIANT** = not live, shown for comparison only.
      cap. Before: 10 micros on a $60 room. It now skips the trade (0).
   2. `multi_account.qty_for`: an extra eval account with no `eval_start` used to trade with no room cap. Before: 20 micros on
      a 25K. It now returns 0.
-- **One router FINDING, not fixed** (account B is OFF; fix it before switching B on): if the broker refuses ATLAS's HEDGE
-  close, B still marks itself flat and LIT's opposite order still goes out.
+- **Two router BUG_FIXes**, made later on 2026-10-25 because the owner is switching ATLAS on tonight (details in section 3):
+  3. A refused or unconfirmed HEDGE close no longer marks B flat. LIT's opposite entry waits for B's confirmed close. If
+     the close is not confirmed by LIT's deadline (90 s), LIT's entry is skipped with the critical alert "HEDGE BLOCKED:
+     ATLAS close not confirmed".
+  4. When the first ATLAS member is blocked, the next allowed member takes the bar, as the research tool scores it.
 - **Commission gap** (`engine/lit.py` books $1.40 a micro, MFFU charges $1.90):
   - Normal sizing: $318 over 2026 ($32 a month), at most $17 a trade.
   - Eval path: at most $33.50 per 10-session window.
@@ -144,7 +147,7 @@ knows. Extra accounts are off by default.
       changes 120/120's P&L by $0.50 a micro, not its trades. Re-baseline `tests.test_lit_live`. Or set `engine/lit.py COMM
       = 1.90` and rebuild run `lit_live`.
 
-## 3. Router determinism (tests/test_router_determinism.py, 26/26 + 2 notes)
+## 3. Router determinism (tests/test_router_determinism.py, 36/36 after BUG_FIX 3 + 4)
 
 What holds:
 - **ATLAS never opposes LIT.** A B entry is blocked while LIT holds, is entering, has a limit armed, is waiting for its 1m
@@ -169,17 +172,28 @@ What holds:
     close (Nov 27, Dec 24).
 - **Shipped state.** `account_b` is null and nothing is routed.
 
-Findings:
-- **FINDING 4b (fix before switching account B on).** `AccountB.flatten` ignores the broker's answer. If the HEDGE close is
-  refused, B sets `open_t = None`, books the P&L, and LIT's opposite order still goes out. B's position would then sit
-  unmanaged, opposite LIT. That breaks MFFU's no-hedging rule across your own accounts.
-  - Fix: keep `open_t` and retry / alert on a refused close, and consider holding LIT's entry until B confirms flat.
-  - Even when the close is accepted, the two orders are not confirmation-sequenced: there can be a millisecond overlap
-    between B's close fill and LIT's fill.
-- **Priority = the first member with a signal, not the first allowed one.** If EMA's signal is blocked (for example by
-  LIT's armed opposite setup), MACD's signal on the same bar is not taken. The research executor (`tools/atlas`) drops the
-  blocked unit first and takes the next member. Only 3 opens in 2026 had 2+ members signalling (6 of 175 signals), so the
-  impact is negligible, but research and live differ on those bars.
+Findings, and the fixes made later on 2026-10-25 because the owner is switching ATLAS on tonight:
+- **BUG_FIX 3 (was FINDING 4b): a refused HEDGE close.** Before the fix, `AccountB.flatten` ignored the broker's answer. A
+  refused close still marked B flat and LIT's opposite order still went out. Now:
+  - `engine/account_b.py`: B is marked flat only when the close is **confirmed**. That means the order was not refused,
+    NinjaTrader did not report it unconfirmed, and, for the NinjaTrader adapter, no leg of that entry is still open or
+    closing (the adapter confirms from its position file).
+  - An unconfirmed close keeps `open_t` and the position, books no P&L, blocks new B entries, and is re-sent every 10 s
+    (`settle_closing`, also run on every B tick). It raises a critical condition, "ATLAS close not confirmed".
+  - `engine/live.py _route_primary` → `_hedge_clear`: LIT's opposite entry is routed only after B's close is confirmed.
+    Until then it is not routed, and it is retried on the next polls.
+  - At LIT's own deadline (1m: `LIT_MAX_LATE_S` 90 s from the fill bar open; 5m: the existing late rule) the entry is
+    skipped, with the critical alert **"HEDGE BLOCKED: ATLAS close not confirmed"** (log, phone push, `alerts_plus` kind
+    `hedge`, which repeats until acknowledged).
+  - If B's code throws while B holds a position, the check fails closed. With B flat or off, LIT is never held back.
+  - B's pending entry (sent, not filled) counts as an open position and is closed / cancelled and confirmed first.
+- **BUG_FIX 4: ATLAS member priority now matches the research tool.** The first member in the configured order (EMA >
+  MACD > S/R) whose own signal passes the no-hedging rule, the size and the guards is routed. A blocked member hands the bar
+  to the next one, and there is at most one order per bar. Account-level blocks (2 entries a day, the soft-loss lock, eval
+  passed / failed / stuck, feed stale, remote flatten) stop every member. Only 3 opens in 2026 had 2+ members signalling.
+  `tools/atlas` already scored it this way, so the C numbers above are unchanged.
+- **Residual:** B's close is confirmed before LIT's order is sent, so the two orders no longer overlap. On a refused
+  close, the trade-off is a skipped LIT trade.
 - **Minor.**
   - `AccountB.blob` keeps `list(self.seen)[-600:]` of a *set*, so which de-dup keys survive a save is arbitrary once there
     are more than 600 (probe keys add about 288 a day). Exits are de-duplicated by `open_t` / `prov.final` (persisted), so
@@ -209,7 +223,7 @@ python -X utf8 tools/second_mix.py units          # unit cache (gitignored, ~20 
 python -X utf8 tools/atlas_lit_armed.py           # LIT armed-window cache (~6 s)
 python -X utf8 tools/a4_eval_windows.py           # the CSVs above (~1 min)
 python -X utf8 -m tests.test_risk_invariants      # 27/27
-python -X utf8 -m tests.test_router_determinism   # 26/26
+python -X utf8 -m tests.test_router_determinism   # 36/36
 python -X utf8 -m tests.test_sizing_caps          # 41/41 (unchanged)
 python -X utf8 -m tests.test_multi_account --quick  # 48/48
 python -X utf8 -m tests.test_eval_anchor          # 43/43

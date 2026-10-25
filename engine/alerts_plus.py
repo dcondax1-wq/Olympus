@@ -46,6 +46,7 @@ KINDS = {   # kind: (label for the app, what it covers, critical = repeats until
     "kill": ("Kill switch fired", "the bot flattened and stopped", True),
     "eval_floor": ("Eval near the floor", "room to the trailing max-loss floor below $400", True),
     "clock": ("Clock drift", "PC clock off: entries blocked", True),
+    "hedge": ("HEDGE BLOCKED", "account B's opposite close not confirmed: LIT's entry held back / skipped", True),
     "update": ("Update failed", "bot auto-update failed or rolled back", True),
     "cloud_stale": ("Cloud monitor stale", "the cloud monitor has not published for 45+ min in market hours", False),
     "rules": ("Rules differ", "PC and cloud run different LIT rules", False),
@@ -426,6 +427,17 @@ def pc_conditions(bot, now=None) -> list:
                 start = bot.eval_start() if callable(getattr(bot, "eval_start", None)) else ""
                 out.append({"id": f"eval_floor:{start or '-'}", "kind": "eval_floor", "title": f"Eval near the floor: ${room:,.0f} left",
                             "body": f"${room:,.0f} to the trailing max-loss floor. One stop-out can end the eval; check the size."})
+        for cid, c in (getattr(bot, "_hedge_crit", None) or {}).items():      # LIT skipped: account B's close unconfirmed
+            if isinstance(c, dict) and c.get("day") == day:
+                out.append({"id": cid, "kind": "hedge", "title": c.get("title"), "body": c.get("body")})
+        ab = getattr(bot, "acct_b", None)
+        if ab is not None and callable(getattr(ab, "closing_open", None)):
+            for et_, pv in ab.closing_open():
+                cl = pv.get("closing") or {}
+                out.append({"id": f"hedge_close:{int(et_)}", "kind": "hedge", "title": "ATLAS close not confirmed",
+                            "body": f"{pv.get('short') or pv.get('key')} {cl.get('q')} MNQ on account B: {cl.get('reason')} close "
+                                    f"not confirmed after {cl.get('tries')} tries ({str(cl.get('error') or '')[:80]}). Check "
+                                    "NinjaTrader; LIT's opposite entry is held back."})
         if h.get("guard_block"):
             out.append({"id": f"clock:{day}", "kind": "clock", "title": "Clock drift: entries blocked",
                         "body": f"{str(h['guard_block'])[:120]}. Windows: Settings > Time > Sync now."})

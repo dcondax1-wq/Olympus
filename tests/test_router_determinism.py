@@ -6,14 +6,18 @@ and live_model*.json only read (account B is OFF in the shipped second_model.jso
      CISD, or still has a routed position in the other direction (both directions when both LIT setups are armed); the same
      direction is allowed; an extra account holding the other side blocks too
   2. one poll, fixed order: LIT routes first (poll_once: _route_signals -> _second_route_tick -> _account_b_tick), and inside
-     LIT's entry the B hedge close comes before LIT's order (_route_primary)
+     LIT's entry the B hedge check (close + confirm) comes before LIT's order (_route_primary)
   3. simultaneous signals: LIT entering SHORT in the same poll in which ATLAS would go LONG at the 5m open -> ATLAS blocked;
-     LIT entering while B is LONG -> B's HEDGE close is sent before LIT's sell (recorded order of the two adapters)
-  4. cancel / fill races: (a) B's own entry sent and not yet confirmed blocks a 2nd entry (no probe); (b) FINDING, printed
-     not asserted as safe: a HEDGE close the broker refuses still marks B flat and LIT's order still goes out
-  5. no duplicate ATLAS position: two members signalling on the same 5m open -> ONE order, the first member in the
-     configured order (EMA > MACD > S/R); a 2nd poll on the same bar sends nothing (probe de-dup + one position);
-     priority is "first signal", not "first allowed": when the priority member is blocked the bar is skipped
+     LIT entering while B is LONG -> B's HEDGE close is sent and confirmed before LIT's sell (recorded order)
+  4. cancel / fill races (BUG_FIX 2026-10-25): (a) B's own entry sent and not yet confirmed blocks a 2nd entry; (b) a HEDGE
+     close the broker refuses keeps B's position (never marked flat), LIT's opposite entry waits and is routed once a retry
+     is confirmed; (c) never confirmed within LIT's entry deadline (90 s from the 1m fill bar open) -> LIT's entry skipped,
+     critical "HEDGE BLOCKED: ATLAS close not confirmed", B still managed; (d) NinjaTrader: CLOSEPOSITION accepted but the
+     leg still "closing" (position file not FLAT) = not confirmed; B's PENDING entry (sent, not filled) counts as opposite
+  5. no duplicate ATLAS position: members signalling on the same 5m open -> ONE order, the first member in the configured
+     order (EMA > MACD > S/R) whose own signal passes the no-hedging rule, the size and the guards (BUG_FIX 2026-10-25, =
+     the research executor tools/atlas: a blocked member hands the bar to the next); a 2nd poll on the same bar sends
+     nothing; an account-level block (2 a day, lock, eval passed / stuck) stops every member
   6. daily counters survive a restart: account B's entries today, its soft-daily-loss lock (same day only), LIT's account
      ledger (second-strategy rows today) are restored from the state files
   7. day / week boundaries: the CME trading day starts at 18:00 ET (17:59:59 -> today, 18:00 -> next day; Sunday 18:00 ->
@@ -78,11 +82,14 @@ class Rec:
     """A recording adapter: every send lands in one shared order list (who, side, reason)."""
 
     def __init__(self, who, log, ok=True):
-        self.who, self.log, self.ok, self.name = who, log, ok, who
+        self.who, self.log, self.ok, self.name = who, log, ok, who     # ok: True / False, or a list of answers in turn
 
     def send(self, a):
         self.log.append((self.who, a.get("side"), a.get("reason")))
-        return {"ok": self.ok} if self.ok else {"ok": False, "error": "REFUSED by the test broker"}
+        ok = self.ok.pop(0) if isinstance(self.ok, list) and self.ok else self.ok
+        if isinstance(ok, list):
+            ok = False
+        return {"ok": True} if ok else {"ok": False, "error": "REFUSED by the test broker"}
 
 
 def fake_bot(**kw):
@@ -171,13 +178,31 @@ def part_order():
     check("2 one poll: LIT routes, the state is saved, then the routed second strategies, then account B (fixed order)",
           all(x >= 0 for x in i) and i == sorted(i), i)
     rp = inspect.getsource(live.LiveBot._route_primary)
-    j = [rp.find(x) for x in ("self._second_preempt(", "self.acct_b.lit_entering(", "rr = self._route(self._entry_action(ent, q, sym))")]
-    check("2 inside LIT's entry: second-strategy pre-empt, then account B's hedge close, then LIT's order", all(x >= 0 for x in j)
-          and j == sorted(j), j)
+    j = [rp.find(x) for x in ("self._hedge_clear(ent, sym, now)", "self._second_preempt(", "rr = self._route(self._entry_action(ent, q, sym))")]
+    check("2 inside LIT's entry: account B's hedge close + confirmation, then the second-strategy pre-empt, then LIT's order",
+          all(x >= 0 for x in j) and j == sorted(j), j)
 
 
 # ------------------------------------------------------------------------------------------------ 3 + 4
-def lit_bot(order, b_ok=True):
+class NTLike(Rec):
+    """A NinjaTrader-like recorder: keeps legs; CLOSEPOSITION is accepted but the leg stays "closing" until flat_now()."""
+
+    def __init__(self, who, log, et_, status="protected"):
+        super().__init__(who, log, True)
+        self.legs = [{"entry_t": et_, "status": status, "instrument": "MNQ 12-26"}]
+
+    def send(self, a):
+        self.log.append((self.who, a.get("side"), a.get("reason")))
+        if a.get("side") == "exit":
+            for lg in self.legs:
+                lg["status"] = "closing"
+        return {"ok": True}
+
+    def flat_now(self):
+        self.legs = []
+
+
+def lit_bot(order, b_ok=True, b_adapter=None, b_dir=1):
     bot = live.LiveBot()
     bot.state_path = os.path.join(TMP, "live_state.json")
     bot.cfg = {"adapter": "paper", "sym": "NQ", "tf": "5m", "params": {}}
@@ -189,15 +214,25 @@ def lit_bot(order, b_ok=True):
     bot._guard_routed = lambda *a, **k: None
     bot._push_fill = lambda *a, **k: None
     bot._push_outcome = lambda *a, **k: None
-    B = AB.AccountB(bot, spec(), state_path=os.path.join(TMP, "b_hedge.json"))
-    B.adapter = Rec("B", order, ok=b_ok)
-    B.prov = {NOW - 900: {"key": "ema_lon_vix", "short": "EMA", "dir": 1, "qty": 4, "entry": 25000.0, "day": "2026-10-21"}}
+    B = AB.AccountB(bot, spec(), state_path=os.path.join(TMP, f"b_hedge_{len(RESULTS)}.json"))
+    B.adapter = b_adapter if b_adapter is not None else Rec("B", order, ok=b_ok)
+    B.prov = {NOW - 900: {"key": "ema_lon_vix", "short": "EMA", "dir": b_dir, "qty": 4, "entry": 25000.0, "day": "2026-10-21"}}
     B.open_t = NOW - 900
     bot.acct_b = B
     ent = {"entry_t": NOW, "dir": -1, "qty": 6, "entry": 25010.0, "stop": 25030.0, "target": 24950.0, "tf": "1m"}
     bot.state = {"model": "lit", "position": None, "enter_now": ent, "setups": {}}
-    bot._route_primary({"trades": []}, "NQ", NOW + 3, 300)
+    poll(bot, 3)
     return bot, B
+
+
+def poll(bot, dt_s):
+    """One LIT routing pass dt_s seconds after the 1m fill bar opened (NOW)."""
+    bot.clock = lambda: NOW + dt_s
+    bot._route_primary({"trades": []}, "NQ", NOW + dt_s, 300)
+
+
+def lit_sells(order):
+    return [x for x in order if x == ("LIT", "sell", None)]
 
 
 def part_simultaneous():
@@ -216,26 +251,71 @@ def part_simultaneous():
     check("3 same poll, same direction (LIT entering LONG, EMA LONG) -> the ATLAS LONG is routed (two accounts, one side)",
           len(r) == 1 and r[0]["side"] == "buy" and r[0]["qty"] >= 1, (r, bot.logs[-2:]))
     order = []
-    lit_bot(order)
-    check("3 LIT enters SHORT while ATLAS holds a LONG: B's HEDGE close goes out BEFORE LIT's sell",
-          order[:2] == [("B", "exit", "HEDGE"), ("LIT", "sell", None)], order)
+    bot, B = lit_bot(order)
+    check("3 LIT enters SHORT while ATLAS holds a LONG: B's HEDGE close goes out and is confirmed BEFORE LIT's sell",
+          order[:2] == [("B", "exit", "HEDGE"), ("LIT", "sell", None)] and B.open_t is None, order)
+    order = []
+    bot, B = lit_bot(order, b_dir=-1)
+    check("3 LIT SHORT while ATLAS is SHORT too (same side): no close, LIT routed, B kept", order == [("LIT", "sell", None)]
+          and B.open_t == NOW - 900, order)
     # 4a: a sent-but-unconfirmed B entry blocks the next one
     bot = fake_bot()
     B = acct_b(bot, "b_pend.json")
     B.open_t = NOW - 300
     r = probe(B, NOW, {"macd_sweep": 1})
     check("4a ATLAS's own entry sent and not yet confirmed (open_t set) -> no 2nd probe, no 2nd order", not r and ("probe", NOW) not in B.seen)
-    # 4b: the broker refuses the HEDGE close
+    # 4b: the broker refuses the HEDGE close once, the retry is accepted
+    order = []
+    bot, B = lit_bot(order, b_ok=[False, True])
+    held = not lit_sells(order) and B.open_t == NOW - 900 and (B.prov[NOW - 900].get("closing") or {}).get("done") is False \
+        and not B.closes and ("entry", NOW) not in bot.seen
+    check("4b BUG_FIX refused HEDGE close: B is NOT marked flat (position kept, no P&L booked), LIT's SHORT is NOT routed",
+          held, (order, B.open_t, B.prov[NOW - 900].get("closing"), B.closes))
+    from engine import alerts_plus as AP
+    crit = [c for c in AP.pc_conditions(bot, NOW + 3) if c["kind"] == "hedge"]
+    check("4b the unconfirmed close is a critical condition ('ATLAS close not confirmed', repeats until acknowledged)",
+          any(c["title"] == "ATLAS close not confirmed" for c in crit) and AP.KINDS["hedge"][2] is True, crit)
+    poll(bot, 33)
+    check("4b next poll: the close is re-sent, accepted -> B booked flat, THEN LIT's SHORT is routed (30 s late, inside 90 s)",
+          order == [("B", "exit", "HEDGE"), ("B", "exit", "HEDGE"), ("LIT", "sell", None)] and B.open_t is None
+          and len(B.closes) == 1 and bot._open_routed == NOW, order)
+    # 4c: never confirmed -> skipped at the deadline, HEDGE BLOCKED, B still managed
     order = []
     bot, B = lit_bot(order, b_ok=False)
-    refused = [x for x in B.ledger if x.get("side") == "exit" and (x.get("result") or {}).get("ok") is False]
-    lit_sent = ("LIT", "sell", None) in order
-    check("4b (recorded) a refused HEDGE close: the refusal is in B's ledger", bool(refused), B.ledger[-2:])
-    if B.open_t is None and lit_sent:
-        note("FINDING 4b: when the broker REFUSES account B's HEDGE close, AccountB.flatten still marks B flat (open_t None, "
-             "P&L booked) and LIT's opposite order is still sent: B could hold a LONG unmanaged while LIT is SHORT. Account B is "
-             "OFF (second_model.json account_b null); fix before switching it on: keep open_t on a refused close and retry / "
-             "alert (or hold LIT's entry until B is flat).")
+    for s in (33, 63, 89):
+        poll(bot, s)
+    waited = not lit_sells(order)
+    poll(bot, 95)
+    crit = [c for c in AP.pc_conditions(bot, NOW + 95) if c["kind"] == "hedge"]
+    check("4c BUG_FIX close never confirmed: LIT waits (polls at 3 / 33 / 63 / 89 s), then at 95 s (> LIT_MAX_LATE_S 90) the "
+          "entry is skipped with the critical alert 'HEDGE BLOCKED: ATLAS close not confirmed'",
+          waited and not lit_sells(order) and NOW in bot._blocked_entries
+          and any(c["title"] == "HEDGE BLOCKED: ATLAS close not confirmed" for c in crit)
+          and any("HEDGE BLOCKED" in (r.get("text") or "") for r in bot.log), (order, crit))
+    check("4c B stays managed: still open (open_t kept), the close retried at polls >= 10 s apart, no P&L booked",
+          B.open_t == NOW - 900 and order.count(("B", "exit", "HEDGE")) == 4 and not B.closes, (order, B.open_t))
+    poll(bot, 125)
+    check("4c later polls never route the skipped LIT entry", not lit_sells(order), order)
+    # 4d: NinjaTrader-like adapter: CLOSEPOSITION accepted but the position file is not FLAT yet
+    order = []
+    nt_ad = NTLike("B", order, NOW - 900)
+    bot, B = lit_bot(order, b_adapter=nt_ad)
+    w = not lit_sells(order) and B.open_t == NOW - 900
+    nt_ad.flat_now()                                   # NinjaTrader's position file shows FLAT
+    poll(bot, 20)
+    check("4d NinjaTrader: CLOSEPOSITION accepted but the leg still 'closing' -> LIT waits; once the position is FLAT the close "
+          "is booked and LIT is routed (no 2nd close needed)", w and bool(lit_sells(order)) and B.open_t is None
+          and order.count(("B", "exit", "HEDGE")) == 1, order)
+    order = []
+    nt_ad = NTLike("B", order, NOW - 900, status="entry_sent")
+    bot, B = lit_bot(order, b_adapter=nt_ad)
+    check("4d B's entry SENT and not filled yet (pending) counts as opposite: closed / cancelled and confirmed before LIT",
+          order == [("B", "exit", "HEDGE")] and not lit_sells(order) and B.open_t == NOW - 900, order)
+    B.save()
+    B2 = AB.AccountB(fake_bot(), spec(), state_path=B.state_path)
+    B2._load()
+    check("4 restart with a close unconfirmed: B's state file still holds the open position and the pending close",
+          B2.open_t == NOW - 900 and (B2.prov[NOW - 900].get("closing") or {}).get("done") is False)
 
 
 # ------------------------------------------------------------------------------------------------ 5
@@ -253,23 +333,21 @@ def part_duplicates():
     check("5 MACD + S/R on the same open (EMA silent) -> MACD's order only", len(r) == 1 and r[0]["src"] == "macd_sweep", r)
     bot = fake_bot(state={"setups": {"long": {"tapped_t": None}}})
     B = acct_b(bot, "b_dup3.json")
-    r = probe(B, NOW, {"ema_lon_vix": -1, "macd_sweep": 1})
-    check("5 priority = the first member WITH a signal, not the first allowed: EMA SHORT blocked by LIT's armed long -> the bar "
-          "is skipped (MACD's LONG is not taken)", not r, (r, bot.logs[-1:]))
-    # how often does that difference between the research executor (drops the blocked unit first) and the live rule happen?
-    try:
-        from tools import second_mix as M
-        u = M.units()
-        U = [t for nm in ("EMA", "MD", "SR") for t in u[nm] if t["day"] >= "2026-01-01"]
-        by = {}
-        for t in U:
-            by.setdefault(t["entry_t"], []).append(t["src"])
-        multi = {k: v for k, v in by.items() if len(v) > 1}
-        note(f"5 2026 research trades: {len(multi)} 5m opens with 2+ ATLAS members signalling ({sum(len(v) for v in multi.values())} "
-             f"signals of {len(U)}); only those bars can differ between the research executor (tools/atlas: blocked unit dropped, "
-             "next member taken) and the live router (first member decides)")
-    except Exception as e:                                   # the unit cache is optional for this test
-        note(f"5 research same-bar count skipped ({e.__class__.__name__})")
+    r = probe(B, NOW, {"ema_lon_vix": -1, "macd_sweep": 1, "sr_nyreclaim": 1})
+    check("5 BUG_FIX priority = the first ALLOWED member: EMA SHORT blocked by LIT's armed long -> MACD's LONG is routed "
+          "(not S/R's), one order", len(r) == 1 and r[0]["src"] == "macd_sweep" and r[0]["side"] == "buy", (r, bot.logs[-2:]))
+    bot = fake_bot(state={"setups": {"long": {"tapped_t": None}}})
+    B = acct_b(bot, "b_dup4.json")
+    r = probe(B, NOW, {"ema_lon_vix": -1, "macd_sweep": -1})
+    check("5 every member blocked (both SHORT against LIT's armed long) -> nothing routed, each logged",
+          not r and sum("NOT routed on account B" in t for _, t in bot.logs) == 2, bot.logs[-2:])
+    bot = fake_bot()
+    B = acct_b(bot, "b_dup5.json")
+    B.ledger = [{"t": NOW - 7200, "side": "buy", "entry_t": NOW - 7200, "qty": 2, "result": {"ok": True}},
+                {"t": NOW - 3600, "side": "sell", "entry_t": NOW - 3600, "qty": 2, "result": {"ok": True}}]
+    r = probe(B, NOW, {"ema_lon_vix": 1, "macd_sweep": 1})
+    check("5 an account-level block (2 entries today) stops every member on the bar (logged once)", len(r) == 2
+          and sum("NOT routed on account B" in t for _, t in bot.logs) == 1, bot.logs[-2:])
 
 
 # ------------------------------------------------------------------------------------------------ 6
@@ -344,8 +422,8 @@ def part_boundaries():
           B.adapter_cfg()["params"]["max_micros"] == 20 and B50.adapter_cfg()["params"]["max_micros"] == 40
           and B.adapter_cfg()["armed"] is False)
     shipped = json.load(open(second.CFG_PATH, encoding="utf-8"))
-    check("7 shipped second_model.json: account B OFF (account_b null), no second strategy routed",
-          shipped.get("account_b") is None and not any((v or {}).get("route") for v in shipped["strategies"].values()))
+    note(f"7 second_model.json now: account_b {'OFF (null)' if shipped.get('account_b') is None else 'ON'}, routed on LIT's account: "
+         f"{[k for k, v in shipped['strategies'].items() if (v or {}).get('route')] or 'none'}")
 
 
 def main():
