@@ -482,6 +482,9 @@
   const ADD = { today: [['radar', 'Levels radar', 'radar', 'Nearest LIT levels above / below price, the next killzone', 2]],
     trades: [['tplay', 'Trade replay', 'replay', 'A past trade bar by bar: play, pause, step', 2]],
     money: [['curve', 'Eval curve', 'results', 'Balance per session, the $53,000 target, the trailing floor', 1], ['share', 'Share card', 'share', 'The month as a PNG for the share sheet', 2]] };
+  // parts the calm Home (clean.js) reuses: the Add to Home Screen guide, why no trade today, the levels radar
+  window.MoreParts = { installCard, wireInstall, whyCard, radarCard };
+
   function install() {
     for (const [gid, list] of Object.entries(ADD)) {
       const G = GROUPS.find((g) => g.id === gid) || GROUPS[GROUPS.length - 1]; if (!G) continue;

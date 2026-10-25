@@ -239,6 +239,9 @@
       <p class="small mut hb-foot">Paper / eval monitor · read-only · built ${HD()?.built ? esc(new Date(HD().built).toLocaleString()) : '—'}${HD()?.home_only ? ' · loading the rest…' : ''}</p>`;
   };
 
+  // parts the calm Home (clean.js) reuses: the Surface line, the stop banner, the open trade, the eval account, the clock
+  window.HubParts = { surfaceLine, banner, openPos, mainAcct, clock, planTeaser };
+
   // ============================================================================================ HOME > LIT plan
   VIEWS.plan = (el) => {
     if (!D) { el.innerHTML = skel(3); return; }
