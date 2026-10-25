@@ -1,7 +1,7 @@
 {
- "built": "2026-10-25 00:21",
+ "built": "2026-10-25 13:26",
  "baseline": "baseline",
- "count": 2059,
+ "count": 2070,
  "columns": {
   "n": "trades",
   "tpw": "trades/week",
@@ -16972,6 +16972,495 @@
      "slow_pass": 25.8,
      "pass_med": 8.0,
      "b2b": "35/59"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_ema06_shteve",
+   "title": "ATLAS with no EMA entry in the 06:00 hour + sh_trend in the evening only (18:00-02:00)",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "promising",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 67.2/0.0/0.8 (dec10 68.0), p15/f15 71.1/0.0, slow_pass 8.5%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+9,678 = $+1,625 per $63 eval, 0.824 passes per eval; one-start path +8,661 ($1,421/mo, PF 2.4, DD -926); 4.69 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 50.7/0.0/0.0 (dec10 50.7), p15/f15 53.1/0.0, slow_pass 0.0%, pass_med 3.0; eval money less fees (mean of starts every 5th session) $+2,432 = $+858 per $63 eval, 0.647 passes per eval; one-start path +1,803 ($485/mo, PF 1.8, DD -831); 3.85 candidate trades/wk, 93.8% weeks 2+. Reference 2025 2-week pass/fail/stuck 31.7/0.0/20.1 (dec10 51.8), p15/f15 35.7/0.0, slow_pass 2.2%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $+145 = $+20 per $63 eval, 0.297 passes per eval; one-start path +4,213 ($343/mo, PF 1.24, DD -2,838); 5.21 candidate trades/wk, 94.3% weeks 2+; 2021-24 2-week pass/fail/stuck 24.8/0.0/26.5 (dec10 51.3), p15/f15 28.5/0.0, slow_pass 4.6%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+1,418 = $+60 per $63 eval, 0.342 passes per eval; one-start path +4,373 ($113/mo, PF 1.1, DD -7,070); 5.54 candidate trades/wk, 98.8% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHT"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {},
+     "gate": {
+      "EMA": {
+       "f": "hour",
+       "out": [
+        [
+         6,
+         7
+        ]
+       ]
+      },
+      "SHT": {
+       "f": "hour",
+       "out": [
+        [
+         2,
+         18
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:25",
+   "spans": {
+    "2026": {
+     "n": 99,
+     "tpw": 2.4,
+     "wk2": 64,
+     "win": 51.5,
+     "pf": 2.24,
+     "net": 10464,
+     "dd": -1335,
+     "avg_r": 0.805,
+     "stop": 39.0,
+     "worst_day": -586,
+     "risk": 148.0,
+     "half": 0,
+     "per_month": 1067,
+     "p10": 3.9,
+     "f10": 0.0,
+     "p15": 8.3,
+     "f15": 0.0,
+     "p20": 12.6,
+     "f20": 0.0,
+     "dec10": 3.9,
+     "slow_pass": 86.1,
+     "pass_med": 34.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 713,
+     "tpw": 3.33,
+     "wk2": 77,
+     "win": 41.0,
+     "pf": 1.14,
+     "net": 8586,
+     "dd": -7070,
+     "avg_r": 0.081,
+     "stop": 21.8,
+     "worst_day": -595,
+     "risk": 121.0,
+     "half": 0,
+     "per_month": 168,
+     "p10": 2.0,
+     "f10": 0.0,
+     "p15": 4.0,
+     "f15": 0.3,
+     "p20": 6.1,
+     "f20": 2.0,
+     "dec10": 2.0,
+     "slow_pass": 78.8,
+     "pass_med": 30.0,
+     "b2b": "5/9"
+    },
+    "all": {
+     "n": 812,
+     "tpw": 3.18,
+     "wk2": 75,
+     "win": 42.2,
+     "pf": 1.27,
+     "net": 19050,
+     "dd": -7070,
+     "avg_r": 0.169,
+     "stop": 22.8,
+     "worst_day": -595,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 313,
+     "p10": 2.3,
+     "f10": 0.0,
+     "p15": 4.7,
+     "f15": 0.2,
+     "p20": 7.1,
+     "f20": 1.6,
+     "dec10": 2.3,
+     "slow_pass": 81.5,
+     "pass_med": 32.0,
+     "b2b": "8/9"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_hunts_w05",
+   "title": "ATLAS + both stop-hunt candidates (sh_asia, sh_trend) as members 4 and 5 at half size",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "promising",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 67.2/0.0/0.0 (dec10 67.2), p15/f15 79.8/0.0, slow_pass 5.0%, pass_med 6.0; eval money less fees (mean of starts every 5th session) $+10,090 = $+1,586 per $63 eval, 0.843 passes per eval; one-start path +13,136 ($2,155/mo, PF 2.54, DD -803); 7.19 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 55.1/0.0/0.0 (dec10 55.1), p15/f15 73.4/0.0, slow_pass 1.9%, pass_med 7.0; eval money less fees (mean of starts every 5th session) $+3,260 = $+1,262 per $63 eval, 0.613 passes per eval; one-start path +1,057 ($284/mo, PF 1.32, DD -819); 7.31 candidate trades/wk, 100.0% weeks 2+. Reference 2025 2-week pass/fail/stuck 26.5/0.0/20.5 (dec10 47.0), p15/f15 30.7/0.0, slow_pass 4.8%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $-854 = $-134 per $63 eval, 0.225 passes per eval; one-start path +1,250 ($102/mo, PF 1.09, DD -2,944); 8.7 candidate trades/wk, 98.1% weeks 2+; 2021-24 2-week pass/fail/stuck 24.5/0.0/25.1 (dec10 49.6), p15/f15 27.9/0.0, slow_pass 6.7%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+2,542 = $+110 per $63 eval, 0.335 passes per eval; one-start path +8,090 ($209/mo, PF 1.14, DD -5,932); 9.52 candidate trades/wk, 100.0% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:25",
+   "spans": {
+    "2026": {
+     "n": 202,
+     "tpw": 4.9,
+     "wk2": 93,
+     "win": 58.4,
+     "pf": 2.2,
+     "net": 14193,
+     "dd": -1328,
+     "avg_r": 0.559,
+     "stop": 43.9,
+     "worst_day": -520,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 1447,
+     "p10": 7.8,
+     "f10": 0.0,
+     "p15": 13.1,
+     "f15": 0.0,
+     "p20": 17.5,
+     "f20": 0.0,
+     "dec10": 7.8,
+     "slow_pass": 76.7,
+     "pass_med": 29.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 1086,
+     "tpw": 5.07,
+     "wk2": 85,
+     "win": 46.6,
+     "pf": 1.13,
+     "net": 9340,
+     "dd": -5932,
+     "avg_r": 0.102,
+     "stop": 22.8,
+     "worst_day": -579,
+     "risk": 93.0,
+     "half": 0,
+     "per_month": 183,
+     "p10": 2.1,
+     "f10": 0.0,
+     "p15": 4.1,
+     "f15": 0.4,
+     "p20": 6.0,
+     "f20": 2.2,
+     "dec10": 2.1,
+     "slow_pass": 81.4,
+     "pass_med": 32.0,
+     "b2b": "5/7"
+    },
+    "all": {
+     "n": 1288,
+     "tpw": 5.04,
+     "wk2": 87,
+     "win": 48.4,
+     "pf": 1.28,
+     "net": 23533,
+     "dd": -5932,
+     "avg_r": 0.174,
+     "stop": 25.0,
+     "worst_day": -579,
+     "risk": 98.0,
+     "half": 0,
+     "per_month": 387,
+     "p10": 3.0,
+     "f10": 0.0,
+     "p15": 5.6,
+     "f15": 0.3,
+     "p20": 7.8,
+     "f20": 1.9,
+     "dec10": 3.0,
+     "slow_pass": 80.9,
+     "pass_med": 32.0,
+     "b2b": "9/8"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_hunts_w05_stuck200",
+   "title": "ATLAS + both stop hunts at half size + buy a new eval under $200 of room (post-hoc stack)",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "promising",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 67.2/0.0/2.5 (dec10 69.7), p15/f15 79.8/0.0, slow_pass 5.0%, pass_med 6.0; eval money less fees (mean of starts every 5th session) $+10,876 = $+1,344 per $63 eval, 0.77 passes per eval; one-start path +14,097 ($2,313/mo, PF 2.56, DD -1,339); 7.19 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 55.1/0.0/1.4 (dec10 56.5), p15/f15 73.4/0.0, slow_pass 1.9%, pass_med 7.0; eval money less fees (mean of starts every 5th session) $+3,859 = $+985 per $63 eval, 0.596 passes per eval; one-start path +5,343 ($1,438/mo, PF 2.3, DD -1,040); 7.31 candidate trades/wk, 100.0% weeks 2+. Reference 2025 2-week pass/fail/stuck 26.5/0.0/41.0 (dec10 67.5), p15/f15 30.7/0.0, slow_pass 4.8%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+240 = $+15 per $63 eval, 0.31 passes per eval; one-start path +5,744 ($468/mo, PF 1.21, DD -3,668); 8.7 candidate trades/wk, 98.1% weeks 2+; 2021-24 2-week pass/fail/stuck 24.3/0.0/45.8 (dec10 70.1), p15/f15 27.4/0.0, slow_pass 6.4%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+4,575 = $+108 per $63 eval, 0.338 passes per eval; one-start path +17,275 ($446/mo, PF 1.19, DD -5,993); 9.52 candidate trades/wk, 100.0% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.5,
+      "SHT": 0.5
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {},
+     "min_room": 200.0
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:25",
+   "spans": {
+    "2026": {
+     "n": 207,
+     "tpw": 5.02,
+     "wk2": 95,
+     "win": 57.5,
+     "pf": 2.48,
+     "net": 19440,
+     "dd": -1339,
+     "avg_r": 0.537,
+     "stop": 44.5,
+     "worst_day": -536,
+     "risk": 136.0,
+     "half": 0,
+     "per_month": 1982,
+     "p10": 12.6,
+     "f10": 0.0,
+     "p15": 21.4,
+     "f15": 0.0,
+     "p20": 28.2,
+     "f20": 0.0,
+     "dec10": 12.6,
+     "slow_pass": 71.8,
+     "pass_med": 27.0,
+     "b2b": "5/0"
+    },
+    "2021-25": {
+     "n": 1397,
+     "tpw": 6.52,
+     "wk2": 99,
+     "win": 46.4,
+     "pf": 1.2,
+     "net": 23019,
+     "dd": -5993,
+     "avg_r": 0.108,
+     "stop": 27.0,
+     "worst_day": -585,
+     "risk": 140.0,
+     "half": 0,
+     "per_month": 451,
+     "p10": 2.4,
+     "f10": 0.7,
+     "p15": 5.7,
+     "f15": 3.8,
+     "p20": 8.9,
+     "f20": 9.0,
+     "dec10": 3.1,
+     "slow_pass": 84.3,
+     "pass_med": 31.0,
+     "b2b": "9/11"
+    },
+    "all": {
+     "n": 1604,
+     "tpw": 6.28,
+     "wk2": 98,
+     "win": 47.8,
+     "pf": 1.33,
+     "net": 42459,
+     "dd": -5993,
+     "avg_r": 0.163,
+     "stop": 28.9,
+     "worst_day": -585,
+     "risk": 139.0,
+     "half": 0,
+     "per_month": 698,
+     "p10": 4.1,
+     "f10": 0.6,
+     "p15": 8.2,
+     "f15": 3.2,
+     "p20": 12.0,
+     "f20": 7.5,
+     "dec10": 4.7,
+     "slow_pass": 81.5,
+     "pass_med": 31.0,
+     "b2b": "15/11"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_hunts_w075",
+   "title": "ATLAS + both stop-hunt candidates as members 4 and 5 at 0.75 size",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "promising",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 68.1/0.0/0.0 (dec10 68.1), p15/f15 81.6/0.0, slow_pass 5.8%, pass_med 5.5; eval money less fees (mean of starts every 5th session) $+11,720 = $+1,731 per $63 eval, 0.852 passes per eval; one-start path +14,580 ($2,392/mo, PF 3.01, DD -874); 7.19 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 59.4/0.0/0.0 (dec10 59.4), p15/f15 68.8/0.0, slow_pass 5.8%, pass_med 6.0; eval money less fees (mean of starts every 5th session) $+3,622 = $+1,358 per $63 eval, 0.625 passes per eval; one-start path +1,421 ($383/mo, PF 1.42, DD -833); 7.31 candidate trades/wk, 100.0% weeks 2+. Reference 2025 2-week pass/fail/stuck 30.5/0.0/21.3 (dec10 51.8), p15/f15 33.6/0.0, slow_pass 4.4%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $-1,668 = $-212 per $63 eval, 0.22 passes per eval; one-start path +1,159 ($94/mo, PF 1.07, DD -4,600); 8.7 candidate trades/wk, 98.1% weeks 2+; 2021-24 2-week pass/fail/stuck 27.3/0.0/25.1 (dec10 52.4), p15/f15 31.5/0.0, slow_pass 5.2%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+5,790 = $+218 per $63 eval, 0.379 passes per eval; one-start path +10,867 ($280/mo, PF 1.17, DD -6,317); 9.52 candidate trades/wk, 100.0% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA",
+      "SHT"
+     ],
+     "w": {
+      "SHA": 0.75,
+      "SHT": 0.75
+     },
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:25",
+   "spans": {
+    "2026": {
+     "n": 173,
+     "tpw": 4.2,
+     "wk2": 86,
+     "win": 59.0,
+     "pf": 2.5,
+     "net": 16002,
+     "dd": -1343,
+     "avg_r": 0.58,
+     "stop": 43.8,
+     "worst_day": -520,
+     "risk": 130.0,
+     "half": 0,
+     "per_month": 1631,
+     "p10": 8.3,
+     "f10": 0.0,
+     "p15": 13.6,
+     "f15": 0.0,
+     "p20": 19.9,
+     "f20": 0.0,
+     "dec10": 8.3,
+     "slow_pass": 72.8,
+     "pass_med": 24.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 1058,
+     "tpw": 4.93,
+     "wk2": 86,
+     "win": 45.8,
+     "pf": 1.15,
+     "net": 12026,
+     "dd": -6317,
+     "avg_r": 0.054,
+     "stop": 22.5,
+     "worst_day": -594,
+     "risk": 106.0,
+     "half": 0,
+     "per_month": 236,
+     "p10": 2.4,
+     "f10": 0.0,
+     "p15": 5.5,
+     "f15": 0.7,
+     "p20": 8.7,
+     "f20": 1.4,
+     "dec10": 2.4,
+     "slow_pass": 77.7,
+     "pass_med": 29.0,
+     "b2b": "8/10"
+    },
+    "all": {
+     "n": 1231,
+     "tpw": 4.82,
+     "wk2": 86,
+     "win": 47.7,
+     "pf": 1.31,
+     "net": 28028,
+     "dd": -6317,
+     "avg_r": 0.128,
+     "stop": 24.2,
+     "worst_day": -594,
+     "risk": 110.0,
+     "half": 0,
+     "per_month": 461,
+     "p10": 3.4,
+     "f10": 0.0,
+     "p15": 6.8,
+     "f15": 0.5,
+     "p20": 10.5,
+     "f20": 1.2,
+     "dec10": 3.4,
+     "slow_pass": 76.4,
+     "pass_med": 27.0,
+     "b2b": "12/10"
     }
    }
   },
@@ -112926,6 +113415,705 @@
      "slow_pass": 72.1,
      "pass_med": 27.0,
      "b2b": "16/13"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_cap05",
+   "title": "ATLAS, after session 10 cap at 50% of the room (was 30%)",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "rejected",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 65.5/0.0/0.8 (dec10 66.3), p15/f15 79.8/0.0, slow_pass 5.9%, pass_med 6.0; eval money less fees (mean of starts every 5th session) $+11,920 = $+1,703 per $63 eval, 0.831 passes per eval; one-start path +18,656 ($3,061/mo, PF 3.08, DD -1,194); 4.38 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 43.5/0.0/0.0 (dec10 43.5), p15/f15 51.6/0.0, slow_pass 15.9%, pass_med 6.0; eval money less fees (mean of starts every 5th session) $+3,760 = $+921 per $63 eval, 0.571 passes per eval; one-start path +6,293 ($1,694/mo, PF 3.16, DD -918); 3.27 candidate trades/wk, 93.8% weeks 2+. Reference 2025 2-week pass/fail/stuck 30.1/0.0/23.7 (dec10 53.8), p15/f15 34.0/0.0, slow_pass 3.4%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $-3,532 = $-279 per $63 eval, 0.237 passes per eval; one-start path -963 ($-78/mo, PF 0.96, DD -5,870); 4.84 candidate trades/wk, 94.3% weeks 2+; 2021-24 2-week pass/fail/stuck 22.9/0.0/27.1 (dec10 50.0), p15/f15 26.5/0.0, slow_pass 1.9%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $-6,811 = $-177 per $63 eval, 0.271 passes per eval; one-start path -1,364 ($-35/mo, PF 0.98, DD -13,247); 5.37 candidate trades/wk, 99.4% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {
+      "two_week_until": 10,
+      "safe_cap": 0.5
+     }
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:26",
+   "spans": {
+    "2026": {
+     "n": 126,
+     "tpw": 3.06,
+     "wk2": 76,
+     "win": 52.4,
+     "pf": 3.1,
+     "net": 24949,
+     "dd": -938,
+     "avg_r": 0.862,
+     "stop": 41.2,
+     "worst_day": -586,
+     "risk": 193.0,
+     "half": 0,
+     "per_month": 2543,
+     "p10": 18.4,
+     "f10": 0.0,
+     "p15": 29.6,
+     "f15": 0.0,
+     "p20": 41.7,
+     "f20": 0.0,
+     "dec10": 18.4,
+     "slow_pass": 60.9,
+     "pass_med": 19.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 864,
+     "tpw": 4.03,
+     "wk2": 94,
+     "win": 36.6,
+     "pf": 0.98,
+     "net": -2326,
+     "dd": -13247,
+     "avg_r": 0.026,
+     "stop": 25.0,
+     "worst_day": -595,
+     "risk": 177.0,
+     "half": 0,
+     "per_month": -46,
+     "p10": 3.3,
+     "f10": 0.2,
+     "p15": 6.0,
+     "f15": 2.2,
+     "p20": 9.2,
+     "f20": 7.9,
+     "dec10": 3.5,
+     "slow_pass": 78.1,
+     "pass_med": 29.0,
+     "b2b": "6/20"
+    },
+    "all": {
+     "n": 990,
+     "tpw": 3.87,
+     "wk2": 91,
+     "win": 38.6,
+     "pf": 1.2,
+     "net": 22623,
+     "dd": -13247,
+     "avg_r": 0.133,
+     "stop": 26.5,
+     "worst_day": -595,
+     "risk": 180.0,
+     "half": 0,
+     "per_month": 372,
+     "p10": 5.7,
+     "f10": 0.2,
+     "p15": 9.8,
+     "f15": 1.9,
+     "p20": 14.5,
+     "f20": 7.0,
+     "dec10": 5.9,
+     "slow_pass": 73.0,
+     "pass_med": 25.0,
+     "b2b": "13/21"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_ema_no06",
+   "title": "ATLAS with no EMA entry in the 06:00 ET hour (gate picked on 2021-24 only)",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "rejected",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 65.5/0.0/0.8 (dec10 66.3), p15/f15 73.7/0.0, slow_pass 3.3%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+9,343 = $+1,545 per $63 eval, 0.827 passes per eval; one-start path +5,069 ($832/mo, PF 2.0, DD -926); 4.3 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 43.5/0.0/0.0 (dec10 43.5), p15/f15 54.7/0.0, slow_pass 13.3%, pass_med 6.0; eval money less fees (mean of starts every 5th session) $+2,185 = $+904 per $63 eval, 0.586 passes per eval; one-start path +5,354 ($1,441/mo, PF 4.06, DD -816); 3.21 candidate trades/wk, 93.8% weeks 2+. Reference 2025 2-week pass/fail/stuck 30.5/0.0/19.7 (dec10 50.2), p15/f15 34.8/0.0, slow_pass 4.4%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $-1,776 = $-322 per $63 eval, 0.211 passes per eval; one-start path -2,000 ($-163/mo, PF 0.79, DD -5,934); 4.59 candidate trades/wk, 94.3% weeks 2+; 2021-24 2-week pass/fail/stuck 23.2/0.0/23.6 (dec10 46.8), p15/f15 26.9/0.0, slow_pass 4.0%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $-1,030 = $-45 per $63 eval, 0.316 passes per eval; one-start path +3,268 ($84/mo, PF 1.07, DD -7,188); 5.1 candidate trades/wk, 98.8% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {},
+     "gate": {
+      "EMA": {
+       "f": "hour",
+       "out": [
+        [
+         6,
+         7
+        ]
+       ]
+      }
+     }
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:25",
+   "spans": {
+    "2026": {
+     "n": 76,
+     "tpw": 1.84,
+     "wk2": 48,
+     "win": 48.7,
+     "pf": 2.53,
+     "net": 10423,
+     "dd": -938,
+     "avg_r": 0.923,
+     "stop": 39.2,
+     "worst_day": -586,
+     "risk": 162.0,
+     "half": 0,
+     "per_month": 1063,
+     "p10": 8.3,
+     "f10": 0.0,
+     "p15": 13.1,
+     "f15": 0.0,
+     "p20": 18.0,
+     "f20": 0.0,
+     "dec10": 8.3,
+     "slow_pass": 70.3,
+     "pass_med": 25.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 589,
+     "tpw": 2.75,
+     "wk2": 69,
+     "win": 37.0,
+     "pf": 1.02,
+     "net": 1268,
+     "dd": -7188,
+     "avg_r": 0.043,
+     "stop": 21.8,
+     "worst_day": -595,
+     "risk": 109.0,
+     "half": 0,
+     "per_month": 25,
+     "p10": 2.5,
+     "f10": 0.0,
+     "p15": 3.8,
+     "f15": 0.3,
+     "p20": 5.5,
+     "f20": 1.3,
+     "dec10": 2.5,
+     "slow_pass": 76.6,
+     "pass_med": 30.0,
+     "b2b": "4/9"
+    },
+    "all": {
+     "n": 665,
+     "tpw": 2.6,
+     "wk2": 66,
+     "win": 38.3,
+     "pf": 1.19,
+     "net": 11692,
+     "dd": -7188,
+     "avg_r": 0.144,
+     "stop": 22.8,
+     "worst_day": -595,
+     "risk": 115.0,
+     "half": 0,
+     "per_month": 192,
+     "p10": 3.4,
+     "f10": 0.0,
+     "p15": 5.3,
+     "f15": 0.2,
+     "p20": 7.5,
+     "f20": 1.1,
+     "dec10": 3.4,
+     "slow_pass": 74.4,
+     "pass_med": 27.5,
+     "b2b": "7/9"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_idle_s15_300",
+   "title": "ATLAS, from session 15 an eval with under $300 room counts as stuck",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "rejected",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 65.5/0.0/0.8 (dec10 66.3), p15/f15 73.7/0.0, slow_pass 4.3%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+12,505 = $+1,342 per $63 eval, 0.785 passes per eval; one-start path +17,862 ($2,930/mo, PF 2.93, DD -1,092); 4.38 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 43.5/0.0/0.0 (dec10 43.5), p15/f15 54.7/0.0, slow_pass 13.3%, pass_med 6.0; eval money less fees (mean of starts every 5th session) $+3,283 = $+772 per $63 eval, 0.471 passes per eval; one-start path +6,380 ($1,718/mo, PF 2.88, DD -1,647); 3.27 candidate trades/wk, 93.8% weeks 2+. Reference 2025 2-week pass/fail/stuck 30.1/0.0/23.7 (dec10 53.8), p15/f15 32.4/0.0, slow_pass 2.4%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $-1,913 = $-149 per $63 eval, 0.27 passes per eval; one-start path +1,512 ($123/mo, PF 1.08, DD -3,955); 4.84 candidate trades/wk, 94.3% weeks 2+; 2021-24 2-week pass/fail/stuck 22.9/0.0/27.1 (dec10 50.0), p15/f15 25.5/0.0, slow_pass 2.9%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $-6,255 = $-149 per $63 eval, 0.266 passes per eval; one-start path +1,721 ($44/mo, PF 1.02, DD -11,374); 5.37 candidate trades/wk, 99.4% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {},
+     "idle": [
+      15,
+      300.0
+     ]
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:26",
+   "spans": {
+    "2026": {
+     "n": 130,
+     "tpw": 3.16,
+     "wk2": 81,
+     "win": 52.3,
+     "pf": 2.91,
+     "net": 24242,
+     "dd": -1647,
+     "avg_r": 0.809,
+     "stop": 42.5,
+     "worst_day": -586,
+     "risk": 219.0,
+     "half": 0,
+     "per_month": 2471,
+     "p10": 13.1,
+     "f10": 0.0,
+     "p15": 25.2,
+     "f15": 0.0,
+     "p20": 35.9,
+     "f20": 0.0,
+     "dec10": 13.1,
+     "slow_pass": 66.5,
+     "pass_med": 21.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 823,
+     "tpw": 3.84,
+     "wk2": 91,
+     "win": 36.3,
+     "pf": 1.04,
+     "net": 3233,
+     "dd": -11374,
+     "avg_r": 0.043,
+     "stop": 25.0,
+     "worst_day": -595,
+     "risk": 174.0,
+     "half": 0,
+     "per_month": 63,
+     "p10": 4.5,
+     "f10": 0.2,
+     "p15": 7.5,
+     "f15": 2.7,
+     "p20": 10.7,
+     "f20": 7.7,
+     "dec10": 4.7,
+     "slow_pass": 74.0,
+     "pass_med": 27.0,
+     "b2b": "7/18"
+    },
+    "all": {
+     "n": 953,
+     "tpw": 3.73,
+     "wk2": 89,
+     "win": 38.5,
+     "pf": 1.26,
+     "net": 27475,
+     "dd": -11374,
+     "avg_r": 0.148,
+     "stop": 26.5,
+     "worst_day": -595,
+     "risk": 182.0,
+     "half": 0,
+     "per_month": 451,
+     "p10": 5.9,
+     "f10": 0.2,
+     "p15": 10.3,
+     "f15": 2.3,
+     "p20": 14.8,
+     "f20": 6.8,
+     "dec10": 6.1,
+     "slow_pass": 72.4,
+     "pass_med": 25.0,
+     "b2b": "14/19"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_sha_full",
+   "title": "ATLAS + sh_asia at full size",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "rejected",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 79.0/0.0/0.0 (dec10 79.0), p15/f15 84.2/0.0, slow_pass 6.5%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+12,339 = $+1,718 per $63 eval, 0.861 passes per eval; one-start path +13,046 ($2,140/mo, PF 2.56, DD -864); 5.86 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 53.6/0.0/1.4 (dec10 55.0), p15/f15 60.9/0.0, slow_pass 2.2%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+2,128 = $+690 per $63 eval, 0.514 passes per eval; one-start path -570 ($-153/mo, PF 0.69, DD -859); 5.83 candidate trades/wk, 93.8% weeks 2+. Reference 2025 2-week pass/fail/stuck 32.5/0.0/31.3 (dec10 63.8), p15/f15 33.6/0.0, slow_pass 1.2%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $-2,844 = $-290 per $63 eval, 0.2 passes per eval; one-start path -973 ($-79/mo, PF 0.94, DD -6,608); 6.86 candidate trades/wk, 98.1% weeks 2+; 2021-24 2-week pass/fail/stuck 31.2/0.0/30.9 (dec10 62.1), p15/f15 33.2/0.0, slow_pass 6.0%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $+5,059 = $+144 per $63 eval, 0.378 passes per eval; one-start path +14,117 ($364/mo, PF 1.22, DD -4,978); 7.68 candidate trades/wk, 100.0% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHA"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:25",
+   "spans": {
+    "2026": {
+     "n": 126,
+     "tpw": 3.06,
+     "wk2": 64,
+     "win": 55.6,
+     "pf": 2.22,
+     "net": 12476,
+     "dd": -1363,
+     "avg_r": 0.709,
+     "stop": 40.1,
+     "worst_day": -488,
+     "risk": 155.0,
+     "half": 0,
+     "per_month": 1272,
+     "p10": 6.8,
+     "f10": 0.0,
+     "p15": 11.7,
+     "f15": 0.0,
+     "p20": 18.0,
+     "f20": 0.0,
+     "dec10": 6.8,
+     "slow_pass": 77.1,
+     "pass_med": 27.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 892,
+     "tpw": 4.16,
+     "wk2": 79,
+     "win": 42.4,
+     "pf": 1.16,
+     "net": 13144,
+     "dd": -6608,
+     "avg_r": 0.075,
+     "stop": 22.8,
+     "worst_day": -595,
+     "risk": 128.0,
+     "half": 0,
+     "per_month": 257,
+     "p10": 2.8,
+     "f10": 0.0,
+     "p15": 5.6,
+     "f15": 3.7,
+     "p20": 7.7,
+     "f20": 8.1,
+     "dec10": 2.8,
+     "slow_pass": 74.9,
+     "pass_med": 29.0,
+     "b2b": "8/12"
+    },
+    "all": {
+     "n": 1018,
+     "tpw": 3.98,
+     "wk2": 76,
+     "win": 44.0,
+     "pf": 1.28,
+     "net": 25621,
+     "dd": -6608,
+     "avg_r": 0.153,
+     "stop": 24.5,
+     "worst_day": -595,
+     "risk": 134.0,
+     "half": 0,
+     "per_month": 421,
+     "p10": 3.4,
+     "f10": 0.0,
+     "p15": 6.6,
+     "f15": 3.1,
+     "p20": 9.4,
+     "f20": 6.8,
+     "dec10": 3.4,
+     "slow_pass": 76.4,
+     "pass_med": 29.5,
+     "b2b": "11/12"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_sht_full",
+   "title": "ATLAS + sh_trend at full size (money up in all 4 spans, H1 2-week pass down 5 points)",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "rejected",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 60.5/0.0/0.0 (dec10 60.5), p15/f15 64.9/0.0, slow_pass 9.2%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+9,456 = $+1,748 per $63 eval, 0.815 passes per eval; one-start path +11,770 ($1,931/mo, PF 2.87, DD -864); 5.7 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 62.3/0.0/0.0 (dec10 62.3), p15/f15 67.2/0.0, slow_pass 4.1%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $+3,208 = $+1,013 per $63 eval, 0.684 passes per eval; one-start path +1,820 ($490/mo, PF 1.72, DD -867); 4.74 candidate trades/wk, 100.0% weeks 2+. Reference 2025 2-week pass/fail/stuck 39.4/0.0/22.1 (dec10 61.5), p15/f15 40.6/0.0, slow_pass 1.9%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $+811 = $+103 per $63 eval, 0.286 passes per eval; one-start path +6,898 ($561/mo, PF 1.37, DD -4,121); 6.69 candidate trades/wk, 94.3% weeks 2+; 2021-24 2-week pass/fail/stuck 30.1/0.0/32.0 (dec10 62.1), p15/f15 33.1/0.0, slow_pass 3.9%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $+7,188 = $+268 per $63 eval, 0.428 passes per eval; one-start path +15,400 ($397/mo, PF 1.28, DD -5,300); 7.21 candidate trades/wk, 100.0% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR",
+      "SHT"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:25",
+   "spans": {
+    "2026": {
+     "n": 116,
+     "tpw": 2.82,
+     "wk2": 69,
+     "win": 52.6,
+     "pf": 2.54,
+     "net": 13590,
+     "dd": -1376,
+     "avg_r": 0.739,
+     "stop": 38.5,
+     "worst_day": -432,
+     "risk": 148.0,
+     "half": 0,
+     "per_month": 1385,
+     "p10": 8.3,
+     "f10": 0.0,
+     "p15": 15.0,
+     "f15": 0.0,
+     "p20": 22.3,
+     "f20": 0.0,
+     "dec10": 8.3,
+     "slow_pass": 73.5,
+     "pass_med": 25.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 924,
+     "tpw": 4.31,
+     "wk2": 87,
+     "win": 45.0,
+     "pf": 1.3,
+     "net": 22297,
+     "dd": -5300,
+     "avg_r": 0.145,
+     "stop": 22.0,
+     "worst_day": -581,
+     "risk": 120.0,
+     "half": 0,
+     "per_month": 437,
+     "p10": 3.6,
+     "f10": 0.0,
+     "p15": 7.1,
+     "f15": 1.4,
+     "p20": 10.6,
+     "f20": 3.4,
+     "dec10": 3.6,
+     "slow_pass": 74.8,
+     "pass_med": 27.0,
+     "b2b": "8/9"
+    },
+    "all": {
+     "n": 1040,
+     "tpw": 4.07,
+     "wk2": 84,
+     "win": 45.9,
+     "pf": 1.43,
+     "net": 35888,
+     "dd": -5300,
+     "avg_r": 0.211,
+     "stop": 23.0,
+     "worst_day": -581,
+     "risk": 123.0,
+     "half": 0,
+     "per_month": 590,
+     "p10": 4.4,
+     "f10": 0.0,
+     "p15": 8.4,
+     "f15": 1.2,
+     "p20": 12.5,
+     "f20": 2.8,
+     "dec10": 4.4,
+     "slow_pass": 74.4,
+     "pass_med": 26.0,
+     "b2b": "12/9"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_stuck300",
+   "title": "ATLAS, buy a new eval when the room is under $300 (was $100)",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "rejected",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 63.9/0.0/21.0 (dec10 84.9), p15/f15 70.2/0.0, slow_pass 4.5%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+13,314 = $+1,263 per $63 eval, 0.72 passes per eval; one-start path +20,466 ($3,358/mo, PF 2.94, DD -1,283); 4.38 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 43.5/0.0/18.8 (dec10 62.3), p15/f15 54.7/0.0, slow_pass 13.3%, pass_med 6.0; eval money less fees (mean of starts every 5th session) $+2,627 = $+701 per $63 eval, 0.378 passes per eval; one-start path +5,276 ($1,420/mo, PF 2.13, DD -1,631); 3.27 candidate trades/wk, 93.8% weeks 2+. Reference 2025 2-week pass/fail/stuck 29.3/0.0/53.4 (dec10 82.7), p15/f15 30.7/0.0, slow_pass 1.3%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $+478 = $+27 per $63 eval, 0.294 passes per eval; one-start path +3,479 ($283/mo, PF 1.13, DD -5,458); 4.84 candidate trades/wk, 94.3% weeks 2+; 2021-24 2-week pass/fail/stuck 21.9/0.0/64.6 (dec10 86.5), p15/f15 23.6/0.0, slow_pass 1.6%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $-827 = $-14 per $63 eval, 0.252 passes per eval; one-start path +8,061 ($208/mo, PF 1.08, DD -12,716); 5.37 candidate trades/wk, 99.4% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {},
+     "min_room": 300.0
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:26",
+   "spans": {
+    "2026": {
+     "n": 146,
+     "tpw": 3.54,
+     "wk2": 90,
+     "win": 53.4,
+     "pf": 2.69,
+     "net": 25742,
+     "dd": -1567,
+     "avg_r": 0.831,
+     "stop": 45.0,
+     "worst_day": -586,
+     "risk": 222.0,
+     "half": 0,
+     "per_month": 2624,
+     "p10": 16.5,
+     "f10": 0.0,
+     "p15": 31.1,
+     "f15": 0.0,
+     "p20": 42.7,
+     "f20": 0.0,
+     "dec10": 16.5,
+     "slow_pass": 58.2,
+     "pass_med": 19.0,
+     "b2b": "7/0"
+    },
+    "2021-25": {
+     "n": 967,
+     "tpw": 4.51,
+     "wk2": 98,
+     "win": 37.2,
+     "pf": 1.09,
+     "net": 11540,
+     "dd": -12716,
+     "avg_r": 0.055,
+     "stop": 27.2,
+     "worst_day": -594,
+     "risk": 207.0,
+     "half": 0,
+     "per_month": 226,
+     "p10": 5.9,
+     "f10": 2.4,
+     "p15": 8.7,
+     "f15": 13.3,
+     "p20": 11.7,
+     "f20": 22.6,
+     "dec10": 8.3,
+     "slow_pass": 75.5,
+     "pass_med": 30.0,
+     "b2b": "11/21"
+    },
+    "all": {
+     "n": 1113,
+     "tpw": 4.35,
+     "wk2": 97,
+     "win": 39.4,
+     "pf": 1.27,
+     "net": 37282,
+     "dd": -12716,
+     "avg_r": 0.157,
+     "stop": 29.5,
+     "worst_day": -594,
+     "risk": 208.0,
+     "half": 0,
+     "per_month": 613,
+     "p10": 7.6,
+     "f10": 2.0,
+     "p15": 12.3,
+     "f15": 11.2,
+     "p20": 16.7,
+     "f20": 18.9,
+     "dec10": 9.6,
+     "slow_pass": 72.5,
+     "pass_med": 26.0,
+     "b2b": "18/21"
     }
    }
   },
@@ -271731,6 +272919,119 @@
      "slow_pass": 80.8,
      "pass_med": 32.0,
      "b2b": "8/17"
+    }
+   }
+  },
+  {
+   "id": "atlas_v2_base",
+   "title": "ATLAS today under the real account-B rules (v2 scorer: + money averaged over eval starts, $ per $63 eval)",
+   "family": "other",
+   "question": "Owner 2026-10-25: make ATLAS (account B, Builder 25K) stronger: hold in 2026 H1 pick + H2 check AND do not lose in 2025 / 2021-24; eval path as $ per $63 eval",
+   "status": "info",
+   "verdict": "Builder 25K. 2026 H1 (pick) 2-week pass/fail/stuck 65.5/0.0/0.8 (dec10 66.3), p15/f15 73.7/0.0, slow_pass 4.3%, pass_med 5.0; eval money less fees (mean of starts every 5th session) $+8,500 = $+1,545 per $63 eval, 0.81 passes per eval; one-start path +6,481 ($1,063/mo, PF 2.3, DD -926); 4.38 candidate trades/wk, 96.3% weeks 2+. H2 (check) 2-week pass/fail/stuck 43.5/0.0/0.0 (dec10 43.5), p15/f15 54.7/0.0, slow_pass 13.3%, pass_med 6.0; eval money less fees (mean of starts every 5th session) $+2,029 = $+839 per $63 eval, 0.586 passes per eval; one-start path +4,434 ($1,194/mo, PF 3.18, DD -816); 3.27 candidate trades/wk, 93.8% weeks 2+. Reference 2025 2-week pass/fail/stuck 30.1/0.0/23.7 (dec10 53.8), p15/f15 32.4/0.0, slow_pass 2.4%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $-1,935 = $-415 per $63 eval, 0.174 passes per eval; one-start path -2,156 ($-176/mo, PF 0.81, DD -5,819); 4.84 candidate trades/wk, 94.3% weeks 2+; 2021-24 2-week pass/fail/stuck 22.9/0.0/27.1 (dec10 50.0), p15/f15 25.5/0.0, slow_pass 3.3%, pass_med 4.0; eval money less fees (mean of starts every 5th session) $-1,429 = $-50 per $63 eval, 0.329 passes per eval; one-start path +2,419 ($62/mo, PF 1.05, DD -7,818); 5.37 candidate trades/wk, 99.4% weeks 2+.",
+   "writeup": "atlas-v2",
+   "tags": [
+    "second",
+    "account_b",
+    "atlas",
+    "atlas_v2"
+   ],
+   "params": {
+    "V": {
+     "members": [
+      "EMA",
+      "MD",
+      "SR"
+     ],
+     "w": {},
+     "armed": true,
+     "flt": {},
+     "sets": {},
+     "size": "need",
+     "tw": {},
+     "cfg": {}
+    }
+   },
+   "sizing": {
+    "plan": "builder25k",
+    "size": "need"
+   },
+   "built": "2026-10-25 13:25",
+   "spans": {
+    "2026": {
+     "n": 79,
+     "tpw": 1.92,
+     "wk2": 45,
+     "win": 49.4,
+     "pf": 2.55,
+     "net": 10914,
+     "dd": -938,
+     "avg_r": 0.949,
+     "stop": 36.8,
+     "worst_day": -586,
+     "risk": 163.0,
+     "half": 0,
+     "per_month": 1113,
+     "p10": 5.8,
+     "f10": 0.0,
+     "p15": 11.2,
+     "f15": 0.0,
+     "p20": 16.5,
+     "f20": 0.0,
+     "dec10": 5.8,
+     "slow_pass": 75.5,
+     "pass_med": 27.0,
+     "b2b": "3/0"
+    },
+    "2021-25": {
+     "n": 629,
+     "tpw": 2.93,
+     "wk2": 70,
+     "win": 37.4,
+     "pf": 1.0,
+     "net": 262,
+     "dd": -7583,
+     "avg_r": 0.033,
+     "stop": 21.5,
+     "worst_day": -595,
+     "risk": 122.0,
+     "half": 0,
+     "per_month": 5,
+     "p10": 2.9,
+     "f10": 0.2,
+     "p15": 4.6,
+     "f15": 1.2,
+     "p20": 5.9,
+     "f20": 3.4,
+     "dec10": 3.1,
+     "slow_pass": 74.9,
+     "pass_med": 31.0,
+     "b2b": "4/9"
+    },
+    "all": {
+     "n": 708,
+     "tpw": 2.77,
+     "wk2": 66,
+     "win": 38.7,
+     "pf": 1.17,
+     "net": 11177,
+     "dd": -7803,
+     "avg_r": 0.135,
+     "stop": 22.2,
+     "worst_day": -595,
+     "risk": 124.0,
+     "half": 0,
+     "per_month": 184,
+     "p10": 3.4,
+     "f10": 0.2,
+     "p15": 5.6,
+     "f15": 1.0,
+     "p20": 7.6,
+     "f20": 2.8,
+     "dec10": 3.6,
+     "slow_pass": 75.1,
+     "pass_med": 29.0,
+     "b2b": "7/10"
     }
    }
   },
