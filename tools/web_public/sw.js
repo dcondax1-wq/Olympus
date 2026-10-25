@@ -27,9 +27,9 @@
 // v30 (2026-10-25): goals.js (Home > Goals card + Today's plan card, #/goals, data.json "goals" from engine/goals.py) and
 // features.js (the new More hub, #/features "What's new / All features", week calendar, last 10, health lights, eval
 // timeline, ATLAS setup stats, offline badge, haptics, scroll-to-top). New cache name so every iPhone refreshes.
-const CACHE = 'le-public-v31';
+const CACHE = 'le-public-v32';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=drop1', './icons/apple-touch-icon.png?v=drop1', './icons/icon-512.png?v=drop1'];
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=k31025', './icons/apple-touch-icon.png?v=k31025', './icons/icon-512.png?v=k31025'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE && k !== BADGE).map((k) => caches.delete(k)))));
@@ -68,7 +68,7 @@ self.addEventListener('push', (e) => {
   let d = {};
   try { d = e.data ? e.data.json() : {}; } catch (_) { d = { body: e.data ? e.data.text() : '' }; }
   const title = String(d.title || 'Liquidity Engine').slice(0, 120);
-  const opts = { body: String(d.body || '').slice(0, 600), icon: 'icons/icon-192.png?v=drop1', badge: 'icons/icon-192.png?v=drop1',
+  const opts = { body: String(d.body || '').slice(0, 600), icon: 'icons/icon-192.png?v=k31025', badge: 'icons/icon-192.png?v=k31025',
     data: { url: safeHash(d.url), key: d.key || null, t: d.t || null }, timestamp: d.t ? d.t * 1000 : Date.now() };
   if (d.tag) { opts.tag = String(d.tag); opts.renotify = true; }
   if (d.require) { opts.requireInteraction = true; opts.vibrate = [400, 150, 400, 150, 400]; }   // the Surface-offline alert stays until tapped
