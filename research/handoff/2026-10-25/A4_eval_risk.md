@@ -214,7 +214,7 @@ python -X utf8 -m tests.test_sizing_caps          # 41/41 (unchanged)
 python -X utf8 -m tests.test_multi_account --quick  # 48/48
 python -X utf8 -m tests.test_eval_anchor          # 43/43
 python -X utf8 -m tests.test_mffu_rules           # 55 ok, 3 WARN (unchanged)
-python -X utf8 -m tests.test_lit_live --days --bot  # the 120/120 replay (see the hand-off note for the result)
+python -X utf8 -m tests.test_lit_live --days --bot  # 120/120 identical; LiveBot 2/2 entries, 2/2 exits, 0 errors (after the fixes)
 ```
 
 ## Uncertainties
