@@ -553,6 +553,13 @@ class Account:
         R = self.rules
         try:
             st = self.state(today)
+            if st is None and mode in EVAL_MODES + ("funded", "auto"):
+                # pre-launch audit A4 (2026-10-25): no eval / funded state (eval_start missing) = the room to the max-loss
+                # floor is unknown -> not traded (was: eval-mode fallback with no room cap); as engine/account_b.qty
+                self.last_size = {"qty": 0, "model_qty": int(ent["qty"]), "mode": mode,
+                                  "reasons": [f"{mode}: account state unknown (eval_start missing?): not traded"]}
+                self.log("risk", f"entry NOT traded: {mode} account state unknown (eval_start missing?): the room caps can not be applied")
+                return 0
             room = _num((st or {}).get("room")) if mode in EVAL_MODES and st is not None else None
             if mode == "funded":
                 room = _num((st or {}).get("room"))
