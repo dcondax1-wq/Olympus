@@ -178,3 +178,11 @@ tr.cc-tot td { font-weight: 700; background: color-mix(in srgb, var(--accent) 6%
 :root[data-theme="light"][data-fx] .nx .card, :root[data-theme="light"][data-fx] .nx .kpi { background: color-mix(in srgb, var(--surface) 92%, transparent); }
 :root[data-theme="light"][data-fx] :is(.nx-stat, .nx-tile, .nx-trade) { background: color-mix(in srgb, var(--surface-2) 90%, transparent); }
 :root[data-theme="light"] .nx .topbar.nx-top { background: color-mix(in srgb, var(--page) 85%, transparent); }
+/* launch checklist (2026-10-25, engine/launch_check.py): on top of the Command center until every line is green */
+.cc-banner.good { border-color: color-mix(in srgb, var(--good) 45%, transparent); background: color-mix(in srgb, var(--good) 9%, transparent); } .cc-banner.good svg { color: var(--good); }
+.cc-launch-card { margin-bottom: 14px; border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+.cc-launch-card .cc-bar { margin: 2px 0 12px; }
+.cc-launch { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.cc-bar.good i { background: var(--good); }
+.cc-launch .cc-fix { max-width: 100%; text-align: left; } .cc-launch .cc-fix em { white-space: normal; overflow-wrap: anywhere; }
+.cc-launch .cc-light > div { min-width: 0; }

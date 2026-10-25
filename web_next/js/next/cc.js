@@ -86,6 +86,20 @@ function lightsHtml(L) {
     ${dot(l.ok)}<div><b>${esc(l.label)}</b><span>${esc(l.detail)}</span>${l.ok === false && l.fix ? `<button type="button" class="cc-fix" data-copy="${esc(l.fix)}">${icon('copy')}<em>${esc(l.fix)}</em></button>` : ''}</div></div>`).join('')}</div>`;
 }
 
+// the launch checklist (engine/launch_check.py via /api/next/cc/home "launch"): on top until every line is green
+function launchHtml(Lc) {
+  if (!Lc || Lc.error || !Array.isArray(Lc.items)) return '';
+  const st = (s) => (s === 'good' ? true : s === 'bad' ? false : null);
+  const counted = Lc.items.filter((i) => i.state !== 'info');
+  const good = counted.filter((i) => i.state === 'good').length;
+  if (Lc.all_green) return `<div class="cc-banner good cc-launch-ok">${icon('check')}<span><b>Launch checklist: all ${counted.length} green.</b> Arming stays your own step (docs/GO_LIVE_TONIGHT.md).</span></div>`;
+  return card(`${icon('flag')}Launch checklist · ${good} of ${counted.length} green`,
+    `${bar(good / Math.max(1, counted.length), 'good')}<div class="cc-lights cc-launch">${Lc.items.map((l) => `<div class="cc-light ${l.state === 'good' ? 'good' : l.state === 'bad' ? 'bad' : 'idle'}">
+      ${dot(st(l.state))}<div><b>${esc(l.label)}</b><span>${esc(l.detail)}</span>${l.state === 'bad' && l.fix ? `<button type="button" class="cc-fix" data-copy="${esc(l.fix)}">${icon('copy')}<em>${esc(l.fix)}</em></button>` : ''}</div></div>`).join('')}</div>
+    <p class="muted small">Launch 18:00 ET; the bot must run from 01:55 ET. Each red line: click its command to copy it. Read-only: nothing here arms or starts the bot.</p>`,
+    '', 'cc-launch-card');
+}
+
 function nextStep(d) {
   const red = (d.lights || []).find((l) => l.ok === false);
   if (red) return { k: 'bad', t: `${red.label}: ${red.detail}`, fix: red.fix };
@@ -133,7 +147,7 @@ function renderHome() {
   el.innerHTML = hero(`Command center · ${esc(d.et || '')}`, 'Both accounts at a glance',
     'LIT on the MFFU Builder 50K and ATLAS on the Builder 25K. Read-only: nothing here sends an order.',
     `<div class="op-verdict ${lvl}">${dot(lvl === 'good' ? true : lvl === 'bad' ? false : null)}<b>${esc(v.label || (d.running ? 'RUNNING' : 'STOPPED'))}</b><em>${esc(v.reason || '')}</em></div>`) +
-    banners(d) +
+    launchHtml(d.launch) + banners(d) +
     `<div class="cc-now ${ns.k}">${icon(ns.k === 'good' ? 'check' : 'warn')}<div><span class="nx-eyebrow">What to do now</span><b>${esc(ns.t)}</b></div>
       ${ns.fix ? `<button type="button" class="nx-chipbtn" data-copy="${esc(ns.fix)}">${icon('copy')}<span>Copy the fix</span></button>` : ns.go ? go(ns.go, 'Bot Control', 'power') : ''}</div>
     <div class="cc-two">${acctCard(d.lit, 'lit')}${acctCard(d.atlas, 'atlas')}</div>
