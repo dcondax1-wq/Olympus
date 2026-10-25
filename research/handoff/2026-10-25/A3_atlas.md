@@ -16,7 +16,8 @@ Labels: **BASELINE** = today's code and config. **RESEARCH_VARIANT** = a what-if
    bars cut at the decision bar's close, a flat probe bar at the real open, `now` = open + 2 s, the same `engine.second.run`.
    Result: **175 / 175 trades on the same bar with the same entry, stop and target** (EMA 86/86, MACD 44/44, S/R 45/45).
    The fill check after the fill bar closes also matches 175 / 175 (`PROBE_CHECK.csv`). Offset = 0 bars.
-   The full scan over every 5m open in each setup's window for all of 2026 is in `SCAN_<setup>.csv` (results in section 3).
+   The full scan probed every 5m open in each setup's window for all of 2026 (33,321 probes). The live path routes
+   **exactly the 175 research entries: 0 false positives, 0 misses, 0 shifted** (`SCAN_<setup>.csv`).
 2. **Prefix invariance holds.** Each setup's 2026 signals come out the same from data that stops at the decision bar. The
    code paths that could look ahead all wait for closed bars (section 2). The probe above is that test, run on all 175
    trades, not a sample.
@@ -79,7 +80,7 @@ Common to all three:
 ### ATLAS_LONDON_EMA (`ema_lon_vix`, run `ema2_lon_vix`, `tools/second_ema.py`)
 | Item | Code (file:line) | Actual |
 |---|---|---|
-| Hours | `second_ema.py:56` WINS["lon"]=(180,570); mask `:450` uses the entry-bar minute (signal + 5) | entry bar opens 03:00-09:25 ET; candidates only for signal bars 01:50-15:35 (`:217`) |
+| Hours | `second_ema.py:56` WINS["lon"]=(180,570); mask `:450` uses the entry-bar minute (signal + 5) | entry bar opens 03:00-09:25 ET; candidates only for signal bars opening 01:50-15:30 (`:217`) |
 | Weekday | `:490` reg "nomon" (dow of the signal bar) | no Mondays |
 | Trend | `:71-75` t15/t60 = sign(EMA21-EMA50) of the **closed** 15m / 1h bars; `:456` "t15_60" | both > 0 for longs, both < 0 for shorts |
 | EMAs | `retail_standalone.py:123` `ewm(span, adjust=False)` | EMA 21/50 on 15m and 1h closes; 5m EMA 50 for the pullback |
@@ -198,7 +199,13 @@ bar of the day is closed. The probe and the scan close that gap.
 | **Measured offset (2026)** | **0 bars for 175 / 175 research trades** (`PROBE_CHECK.csv`, verdict SAME_BAR_SAME_LEVELS) |
 
 Full scan (every 5m open in each window, all 2026 sessions, probed as live: `SCAN_<key>.csv`):
-SCAN_RESULTS_PLACEHOLDER
+| Setup | 5m opens probed (2026-01-02..10-16) | Live entries | Research trades | Same bar & stop | Live-only (false positive) | Research-only (missed) | Shifted +/-1-2 bars |
+|---|---|---|---|---|---|---|---|
+| London EMA | 16,065 | 86 | 86 | 86 | 0 | 0 | 0 |
+| MACD sweep | 11,106 | 44 | 44 | 44 | 0 | 0 | 0 |
+| NY reclaim | 6,150 | 45 | 45 | 45 | 0 | 0 | 0 |
+
+So across 33,321 live probes the bot would have routed exactly the 175 research entries, each on its research bar and none a bar early or late.
 
 The real live risk is **fill price, not bar**. A market order 2-32 s after the open can be a few ticks away from the open.
 That is the +1 / +2 / +4 tick rows in section 6.
