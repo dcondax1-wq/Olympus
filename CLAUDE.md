@@ -58,7 +58,9 @@ there, not here.
   paper ledger, phone pushes, publishes the `dashboard` branch and the nq-dashboard site).
 - **Paper only, never routed by default:** second strategies / ATLAS / account B (`engine/second.py`, `second_model.json`),
   stop-hunt candidates, LIT Asia slot; old engine runs as a shadow ledger (`live_model_engine.json`).
-- **Read-only add-ons:** Bot Brain, Trade pictures, AI watch, Performance page, Trade intel, Alerts plus, phone live feed.
+- **Read-only add-ons:** Bot Brain, Trade pictures, AI watch, Performance page, Trade intel, Alerts plus, phone live feed,
+  Live learning (`engine/live_learning.py`: real-fill costs, trade reviews vs the twin, Sunday weekly, suggestions;
+  `lit_sizing.learn_costs` default false, on = caps priced at the learned slippage, only ever fewer micros).
 
 ## Reference index (`docs/CLAUDE_REFERENCE.md`, read before working in that area)
 | Section | Read it when |

@@ -420,6 +420,18 @@ def extras():
         return _J({"error": f"{e.__class__.__name__}: {accounts.clean_text(e, 120)}"}, 500)
 
 
+# ------------------------------------------------------------------------------------------------ live learning
+@router.get("/api/next/pc/learning")
+def pc_learning():
+    """engine/live_learning.view(): learned execution costs, the trade review journal, the weekly live-vs-backtest gap and
+    "The bot suggests" cards. Read-only: approving a suggestion is a command the owner runs himself."""
+    try:
+        from . import live_learning
+        return _J(live_learning.view())
+    except Exception as e:
+        return _J({"error": f"{e.__class__.__name__}: {accounts.clean_text(e, 120)}"}, 500)
+
+
 # ------------------------------------------------------------------------------------------------ execution quality
 @router.get("/api/next/pc/execution")
 def pc_execution(rows: int = 200):

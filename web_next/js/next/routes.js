@@ -131,18 +131,19 @@ export const BOTS = {
     ['Brain', ['brain']],
     ['Trades', ['trades', 'tradelog', 'journal', 'review', 'memory']],
     ['Plan & levels', ['litday', 'litlevels', 'livechart', 'chart', 'briefing']],
-    ['Results', ['perf', 'pnlcal', 'edge']],
+    ['Results', ['perf', 'pnlcal', 'edge', 'learnlit']],
     ['Strategy', ['strategy', 'rules', 'risk', 'mffurules', 'livesettings']],
   ] },
   atlas: { name: 'ATLAS', sub: '25K', segs: [
     ['Today', ['atlas']], ['Brain', ['atlas:brain']], ['Trades', ['atlas:trades']],
-    ['Setups', ['atlas:setups', 'atlassetups']], ['Results', ['atlas:results']],
+    ['Setups', ['atlas:setups', 'atlassetups']], ['Results', ['atlas:results', 'learnatlas']],
   ] },
 };
 export const BOT_CHIP = { botctl: 'Bot control', accounts: '50K account', evalhq: 'Eval HQ', evaltl: 'Eval timeline', litcockpit: 'Eval cockpit', command: 'Today (classic)',
   trades: 'Trades', tradelog: 'Trade log', journal: 'Journal', review: 'Weekly review', memory: 'Memory', litday: 'Day plan', litlevels: 'Levels', livechart: 'Live chart',
   chart: 'Chart', briefing: 'Briefing', perf: 'Performance', pnlcal: 'P&L calendar', edge: 'Edge', strategy: 'Strategy', rules: 'Rules (STRATEGY.md)', risk: 'Risk & sizing',
-  mffurules: 'MFFU rules', livesettings: 'Live settings', 'atlas:setups': 'Rules & members', atlassetups: 'Per setup' };
+  mffurules: 'MFFU rules', livesettings: 'Live settings', 'atlas:setups': 'Rules & members', atlassetups: 'Per setup',
+  'atlas:results': 'Results', learnlit: 'Learning', learnatlas: 'Learning' };
 export const botOf = (id) => Object.keys(BOTS).find((b) => BOTS[b].segs.some((s) => s[1].some((it) => it.split(':')[0] === id))) || null;
 export const groupIds = (g) => g.ids || (g.sections || []).flatMap((s) => s.ids);
 // phone tab bar (the PC sidebar shows the groups)
@@ -151,5 +152,7 @@ export const TABS = ['cc', 'zlarior', 'atlas', 'data', 'modules'];
 export const TITLES = { cc: 'Command center', zlarior: 'Zlarior', data: 'Results', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'All tools', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES, ...CC]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
+TITLES.learnlit = 'Zlarior · Learning';
+TITLES.learnatlas = 'ATLAS · Learning';
 
 export const groupOf = (id) => id === 'zlarior' ? 'zlarior' : botOf(id) ? botOf(id) : DATA.some(p => p.id === id) ? 'data' : MODULES.some(p => p.id === id) ? 'modules' : ARCHIVE.some(p => p.id === id) ? 'archive' : id;

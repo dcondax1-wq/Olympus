@@ -259,6 +259,15 @@ def _exec():
         return None
 
 
+def _learn():
+    """The "learn" block (engine/live_learning.heartbeat_block: the learned execution costs + the last trade reviews). Never raises."""
+    try:
+        from engine import live_learning
+        return live_learning.heartbeat_block()
+    except Exception:
+        return None
+
+
 def _ai(bot):
     """The AI-watch block (engine/ai_watch.hb_block). Never raises."""
     try:
@@ -315,6 +324,7 @@ class Heartbeat:
                 "every_s": int(self.every_s), "acct": _acct(self.bot), "health": health, "ops": _ops(),
                 "launch": _launch(self.bot, health),   # the launch checklist (engine/launch_check.py; read-only, ~2 KB)
                 "exec": _exec(),                # execution quality summary (engine/fill_audit.py), None before the first audit
+                "learn": _learn(),              # live learning (engine/live_learning.py): learned costs + trade reviews, None before
                 "remote": _remote(),            # phone remote control (engine/remote_ctl.py): the last command and its result
                 "live_pub": _live_pub(),        # the phone's live.json push (engine/live_publish.py): last result, None before it
                 "brain": _brain(self.bot),       # the Bot Brain, phone cut (engine/brain.compact; None before the first LIT poll)

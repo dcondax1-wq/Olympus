@@ -966,7 +966,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         print("  accounts unavailable:", e.__class__.__name__, e)
         accounts = []
     if isinstance(live.get("pc"), dict):
-        live["pc"] = {k: v for k, v in live["pc"].items() if k not in ("acct", "exec")}
+        live["pc"] = {k: v for k, v in live["pc"].items() if k not in ("acct", "exec", "learn")}
         try:                       # the verdict again at build time (the heartbeat age grows between cloud runs)
             from engine import accounts as _acc_v
             live["pc_verdict"] = _acc_v.verdict(st.get("pc"), st.get("last_run") or None)
@@ -1070,6 +1070,13 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     # execution quality of the live eval (engine/fill_audit.py on the PC, carried by its heartbeat as "exec"): slippage $ per
     # trade / month against the backtest, missed and extra trades (live_panel.js execution card)
     data["exec"] = (st.get("pc") or {}).get("exec") if isinstance(st.get("pc"), dict) else None
+    # live learning (engine/live_learning.py): trade reviews vs the backtest twin, weekly gap, learned costs, suggestions
+    # (Zlarior > Results > Learning and ATLAS > Results > Learning, tools/web_public/learning.js)
+    try:
+        from engine import live_learning as _ll
+        data["learning_live"] = _ll.site_block(st)
+    except Exception as e:
+        data["learning_live"] = {"error": f"{e.__class__.__name__}: {e}"}
     # Bot Brain (engine/brain.py): the plain-English explainers once here (the live cuts in live.pc.brain / live.brain skip them)
     try:
         from engine import brain as _brain
