@@ -1,4 +1,4 @@
-"""Render the Home Screen icon options (tools/web_public/icon_options/<a..m>/icon.svg) to PNGs + two preview sheets.
+"""Render the Home Screen icon options (tools/web_public/icon_options/<a..m, j1..k3>/icon.svg) to PNGs + two preview sheets.
 
     python tools/icon_options_build.py            # all PNGs + research/handoff/2026-10-25/icon_options.png (A-C)
                                                   #   and icon_options_more.png (D-M)
@@ -9,7 +9,7 @@ Each option folder gets: icon-1024.png, icon-512.png, icon-192.png, apple-touch-
 icon-120.png, icon-maskable-512.png (art scaled 0.8 into the safe circle) and info.json (name + one line).
 All PNGs are RGB (no alpha), full-bleed squares; iOS rounds the corners itself.
 Rendering: Playwright + the Chromium in /opt/pw-browsers (SVG filters/gradients render exactly as in Safari/Chrome).
-Nothing live is touched; tools/icon_apply.py <a..m> switches the live icon.
+Nothing live is touched; tools/icon_apply.py <key> switches the live icon.
 """
 import base64
 import glob
@@ -24,6 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OPT = os.path.join(ROOT, "tools", "web_public", "icon_options")
 SHEET = os.path.join(ROOT, "research", "handoff", "2026-10-25", "icon_options.png")
 SHEET_MORE = os.path.join(ROOT, "research", "handoff", "2026-10-25", "icon_options_more.png")
+SHEET_FINAL = os.path.join(ROOT, "research", "handoff", "2026-10-25", "icon_options_final.png")
 LIVE = os.path.join(ROOT, "web", "icons", "icon-512.png")
 
 OPTIONS = {
@@ -41,7 +42,15 @@ OPTIONS = {
     "l": ("Wave", "One thick indigo-to-teal neon ribbon that rolls over a crest, dives below a gold level and surges back up through a bright reclaim point."),
     "m": ("Facet", "A brilliant-cut gem in teal and indigo facets with gold edges and one white sparkle."),
 }
-FIRST, MORE = list("abc"), list("defghijklm")
+OPTIONS.update({
+    "j1": ("Compass Observatory", "Ultra-detailed: gold bezel, steel degree ring with 2-degree ticks, guilloché dial with an engraved sweep, faceted gold star, cut-gem hub, glass dome."),
+    "j2": ("Compass Sovereign", "Bold-premium: a large faceted gold star over a thick knurled gold bezel and deep dial, glowing teal ring, big gem hub."),
+    "j3": ("Compass Meridian", "Balanced: the gold star breaks out over a fine degree ring and light guilloché dial, teal inner ring and gem hub, nebula sky."),
+    "k1": ("Orbit Nebula", "Ultra-detailed: refracting glass candle with an inner light filament, gold ring plus three fine rings, particle trail into a lens-flared comet."),
+    "k2": ("Orbit Sovereign", "Bold-premium: a wide glowing glass candle, one heavy polished gold ring and one fine teal ring, a big bright comet head."),
+    "k3": ("Orbit Halo", "Balanced: teal glass candle with refraction and inner light inside a thin teal halo, a steep gold ring with a fine teal ring, short particle trail."),
+})
+FIRST, MORE, FINAL = list("abc"), list("defghijklm"), ["j1", "j2", "j3", "k1", "k2", "k3"]
 SIZES = {"icon-512.png": 512, "icon-192.png": 192, "apple-touch-icon.png": 180, "icon-152.png": 152, "icon-120.png": 120}
 
 
@@ -137,10 +146,10 @@ def build_sheet(page, keys, out, cols, every):
       background:radial-gradient(120% 80% at 30% 10%,#1d2347 0%,#0b0d1a 55%,#030306 100%)}}
     .grid{{display:grid;grid-template-columns:repeat(4,1fr);row-gap:26px}}
     .app{{display:flex;flex-direction:column;align-items:center;gap:6px}}
-    .ic{{width:60px;height:60px;border-radius:13.4px;display:block}} .app span{{font-size:11.5px;color:#fff}}
+    .ic{{width:60px;height:60px;border-radius:13.4px;display:block}} .app span{{font-size:11.5px;color:#fff;max-width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}}
     .side h3{{font-size:24px;margin:0 0 18px}} .rows{{display:grid;grid-template-columns:repeat({rcols},auto);column-gap:60px}}
     .row{{display:flex;align-items:center;gap:26px;margin-bottom:26px}}
-    .row b{{width:200px;font-size:20px}} .note{{color:#6f788b;font-size:17px;max-width:900px;line-height:1.5}}
+    .row b{{width:300px;font-size:20px}} .note{{color:#6f788b;font-size:17px;max-width:900px;line-height:1.5}}
     </style></head><body>
     <h1>Home Screen icon options {keys[0].upper()}-{keys[-1].upper()} &middot; pick one</h1>
     <p class="sub">2026-10-25 &middot; Obsidian palette (teal #3ee0c8, indigo #6d7cff, gold #f2c35b on near-black) &middot; apply with: python tools/icon_apply.py {letters}</p>
@@ -168,6 +177,7 @@ def main():
             build_assets(page, keys)
         build_sheet(page, FIRST, SHEET, 3, 2)
         build_sheet(page, MORE, SHEET_MORE, 5, 3)
+        build_sheet(page, FINAL, SHEET_FINAL, 3, 3)
     finally:
         browser.close()
         pw.stop()
