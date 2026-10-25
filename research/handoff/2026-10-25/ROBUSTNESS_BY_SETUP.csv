@@ -1,0 +1,141 @@
+setup_id,span,test,label,trades,net_pnl,PF,positive_trade_rate,max_drawdown,kept_pct,note
+ATLAS_LONDON_EMA,H1,base,BASELINE,60,19866.53,2.72,60.0,-3366.59,100.0,
+ATLAS_LONDON_EMA,H1,slip_plus1tick,RESEARCH_VARIANT,60,19412.03,2.63,20.0,-3504.49,97.7,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,H1,slip_plus2tick,RESEARCH_VARIANT,60,18957.53,2.54,20.0,-3644.49,95.4,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,H1,slip_plus4tick,RESEARCH_VARIANT,60,18048.53,2.38,20.0,-3924.49,90.8,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,H1,fee_plus_0.50,RESEARCH_VARIANT,60,19616.53,2.68,20.0,-3434.49,98.7,+$0.50 a micro round trip
+ATLAS_LONDON_EMA,H1,top1_winners_removed,RESEARCH_VARIANT,59,15950.64,2.38,59.3,-3366.59,80.3,
+ATLAS_LONDON_EMA,H1,top3_winners_removed,RESEARCH_VARIANT,57,8295.68,1.72,57.9,-3366.59,41.8,
+ATLAS_LONDON_EMA,H1,top10pct_winners_removed,RESEARCH_VARIANT,54,-875.65,0.92,55.6,-6483.65,-4.4,
+ATLAS_LONDON_EMA,H1,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,59,11122.0,2.01,,,56.1,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_MACD_SWEEP,H1,base,BASELINE,29,22089.56,3.78,37.9,-2527.2,100.0,
+ATLAS_MACD_SWEEP,H1,slip_plus1tick,RESEARCH_VARIANT,29,21921.06,3.71,37.9,-2585.2,99.2,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,H1,slip_plus2tick,RESEARCH_VARIANT,29,21752.56,3.65,37.9,-2643.2,98.5,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,H1,slip_plus4tick,RESEARCH_VARIANT,29,21415.56,3.53,37.9,-2759.2,96.9,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,H1,fee_plus_0.50,RESEARCH_VARIANT,29,21990.56,3.74,37.9,-2556.2,99.6,+$0.50 a micro round trip
+ATLAS_MACD_SWEEP,H1,top1_winners_removed,RESEARCH_VARIANT,28,18200.76,3.29,35.7,-2527.2,82.4,
+ATLAS_MACD_SWEEP,H1,top3_winners_removed,RESEARCH_VARIANT,26,10614.36,2.33,30.8,-4504.7,48.1,
+ATLAS_MACD_SWEEP,H1,top10pct_winners_removed,RESEARCH_VARIANT,26,10614.36,2.33,30.8,-4504.7,48.1,
+ATLAS_MACD_SWEEP,H1,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,27,16535.0,3.29,,,74.9,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_NY_RECLAIM,H1,base,BASELINE,29,12212.6,3.72,65.5,-971.1,100.0,
+ATLAS_NY_RECLAIM,H1,slip_plus1tick,RESEARCH_VARIANT,29,12127.1,3.68,65.5,-980.1,99.3,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,H1,slip_plus2tick,RESEARCH_VARIANT,29,12041.6,3.64,65.5,-989.1,98.6,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,H1,slip_plus4tick,RESEARCH_VARIANT,29,11870.6,3.56,65.5,-1007.1,97.2,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,H1,fee_plus_0.50,RESEARCH_VARIANT,29,12147.1,3.7,65.5,-975.6,99.5,+$0.50 a micro round trip
+ATLAS_NY_RECLAIM,H1,top1_winners_removed,RESEARCH_VARIANT,28,11224.2,3.5,64.3,-971.1,91.9,
+ATLAS_NY_RECLAIM,H1,top3_winners_removed,RESEARCH_VARIANT,26,9341.1,3.08,61.5,-971.1,76.5,
+ATLAS_NY_RECLAIM,H1,top10pct_winners_removed,RESEARCH_VARIANT,26,9341.1,3.08,61.5,-971.1,76.5,
+ATLAS_NY_RECLAIM,H1,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,18,3370.0,1.8,,,27.6,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_POOLED_ALONE,H1,base,BASELINE,118,54168.69,3.26,55.9,-2813.99,100.0,
+ATLAS_POOLED_ALONE,H1,slip_plus1tick,RESEARCH_VARIANT,118,53460.19,3.18,35.6,-2838.99,98.7,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,H1,slip_plus2tick,RESEARCH_VARIANT,118,52751.69,3.1,35.6,-2863.99,97.4,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,H1,slip_plus4tick,RESEARCH_VARIANT,118,51334.69,2.96,35.6,-2913.99,94.8,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,H1,fee_plus_0.50,RESEARCH_VARIANT,118,53754.19,3.22,35.6,-2826.49,99.2,+$0.50 a micro round trip
+ATLAS_POOLED_ALONE,H1,top1_winners_removed,RESEARCH_VARIANT,117,50252.8,3.1,55.6,-2813.99,92.8,
+ATLAS_POOLED_ALONE,H1,top3_winners_removed,RESEARCH_VARIANT,115,42503.0,2.77,54.8,-2813.99,78.5,
+ATLAS_POOLED_ALONE,H1,top10pct_winners_removed,RESEARCH_VARIANT,106,10410.85,1.43,50.9,-3925.81,19.2,
+ATLAS_LONDON_EMA,H2,base,BASELINE,26,8135.74,3.1,69.2,-1491.77,100.0,
+ATLAS_LONDON_EMA,H2,slip_plus1tick,RESEARCH_VARIANT,26,7955.74,2.98,26.9,-1534.56,97.8,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,H2,slip_plus2tick,RESEARCH_VARIANT,26,7775.74,2.87,26.9,-1578.56,95.6,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,H2,slip_plus4tick,RESEARCH_VARIANT,26,7415.74,2.66,26.9,-1666.56,91.2,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,H2,fee_plus_0.50,RESEARCH_VARIANT,26,8031.74,3.04,26.9,-1512.56,98.7,+$0.50 a micro round trip
+ATLAS_LONDON_EMA,H2,top1_winners_removed,RESEARCH_VARIANT,25,4226.66,2.09,68.0,-1491.77,52.0,
+ATLAS_LONDON_EMA,H2,top3_winners_removed,RESEARCH_VARIANT,23,498.98,1.13,65.2,-1914.54,6.1,
+ATLAS_LONDON_EMA,H2,top10pct_winners_removed,RESEARCH_VARIANT,23,498.98,1.13,65.2,-1914.54,6.1,
+ATLAS_LONDON_EMA,H2,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,23,320.0,1.07,,,3.9,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_MACD_SWEEP,H2,base,BASELINE,15,2568.64,1.75,33.3,-1717.2,100.0,
+ATLAS_MACD_SWEEP,H2,slip_plus1tick,RESEARCH_VARIANT,15,2490.14,1.71,33.3,-1770.2,96.9,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,H2,slip_plus2tick,RESEARCH_VARIANT,15,2411.64,1.68,33.3,-1823.2,93.9,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,H2,slip_plus4tick,RESEARCH_VARIANT,15,2254.64,1.61,33.3,-1929.2,87.8,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,H2,fee_plus_0.50,RESEARCH_VARIANT,15,2528.64,1.73,33.3,-1743.7,98.4,+$0.50 a micro round trip
+ATLAS_MACD_SWEEP,H2,top1_winners_removed,RESEARCH_VARIANT,14,-408.3,0.88,28.6,-1958.8,-15.9,
+ATLAS_MACD_SWEEP,H2,top3_winners_removed,RESEARCH_VARIANT,12,-2621.4,0.24,16.7,-2621.4,-102.1,
+ATLAS_MACD_SWEEP,H2,top10pct_winners_removed,RESEARCH_VARIANT,13,-1518.6,0.56,23.1,-2126.2,-59.1,
+ATLAS_MACD_SWEEP,H2,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,13,1737.0,1.4,,,67.6,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_NY_RECLAIM,H2,base,BASELINE,16,2913.8,1.89,50.0,-2772.8,100.0,
+ATLAS_NY_RECLAIM,H2,slip_plus1tick,RESEARCH_VARIANT,16,2857.3,1.86,50.0,-2809.8,98.1,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,H2,slip_plus2tick,RESEARCH_VARIANT,16,2800.8,1.83,50.0,-2846.8,96.1,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,H2,slip_plus4tick,RESEARCH_VARIANT,16,2687.8,1.78,50.0,-2920.8,92.2,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,H2,fee_plus_0.50,RESEARCH_VARIANT,16,2877.3,1.87,50.0,-2791.3,98.7,+$0.50 a micro round trip
+ATLAS_NY_RECLAIM,H2,top1_winners_removed,RESEARCH_VARIANT,15,1953.2,1.59,46.7,-2772.8,67.0,
+ATLAS_NY_RECLAIM,H2,top3_winners_removed,RESEARCH_VARIANT,13,140.1,1.04,38.5,-2772.8,4.8,
+ATLAS_NY_RECLAIM,H2,top10pct_winners_removed,RESEARCH_VARIANT,14,1036.8,1.32,42.9,-2772.8,35.6,
+ATLAS_NY_RECLAIM,H2,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,15,-1691.0,0.67,,,-58.0,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_POOLED_ALONE,H2,base,BASELINE,57,13618.18,2.28,54.4,-3742.12,100.0,
+ATLAS_POOLED_ALONE,H2,slip_plus1tick,RESEARCH_VARIANT,57,13303.18,2.23,35.1,-3904.12,97.7,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,H2,slip_plus2tick,RESEARCH_VARIANT,57,12988.18,2.17,35.1,-4066.12,95.4,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,H2,slip_plus4tick,RESEARCH_VARIANT,57,12358.18,2.07,35.1,-4390.12,90.7,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,H2,fee_plus_0.50,RESEARCH_VARIANT,57,13437.68,2.25,35.1,-3825.62,98.7,+$0.50 a micro round trip
+ATLAS_POOLED_ALONE,H2,top1_winners_removed,RESEARCH_VARIANT,56,9709.1,1.92,53.6,-3742.12,71.3,
+ATLAS_POOLED_ALONE,H2,top3_winners_removed,RESEARCH_VARIANT,54,4634.82,1.44,51.9,-3742.12,34.0,
+ATLAS_POOLED_ALONE,H2,top10pct_winners_removed,RESEARCH_VARIANT,51,280.61,1.03,49.0,-5002.74,2.1,
+ATLAS_LONDON_EMA,2025,base,BASELINE,130,6255.73,1.18,47.7,-9472.13,100.0,
+ATLAS_LONDON_EMA,2025,slip_plus1tick,RESEARCH_VARIANT,130,4784.23,1.14,11.5,-9838.14,76.5,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,2025,slip_plus2tick,RESEARCH_VARIANT,130,3312.73,1.09,11.5,-10205.14,53.0,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,2025,slip_plus4tick,RESEARCH_VARIANT,130,369.73,1.01,11.5,-10939.14,5.9,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,2025,fee_plus_0.50,RESEARCH_VARIANT,130,5478.73,1.16,11.5,-9654.64,87.6,+$0.50 a micro round trip
+ATLAS_LONDON_EMA,2025,top1_winners_removed,RESEARCH_VARIANT,129,2343.44,1.07,47.3,-9472.13,37.5,
+ATLAS_LONDON_EMA,2025,top3_winners_removed,RESEARCH_VARIANT,127,-5444.23,0.84,46.5,-12057.25,-87.0,
+ATLAS_LONDON_EMA,2025,top10pct_winners_removed,RESEARCH_VARIANT,117,-32325.68,0.05,41.9,-32325.68,-516.7,
+ATLAS_LONDON_EMA,2025,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,126,-8872.0,0.75,,,-142.8,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_MACD_SWEEP,2025,base,BASELINE,72,8189.77,1.35,22.2,-13532.8,100.0,
+ATLAS_MACD_SWEEP,2025,slip_plus1tick,RESEARCH_VARIANT,72,7661.27,1.32,22.2,-13914.8,93.5,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,2025,slip_plus2tick,RESEARCH_VARIANT,72,7132.77,1.3,22.2,-14296.8,87.1,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,2025,slip_plus4tick,RESEARCH_VARIANT,72,6075.77,1.24,22.2,-15060.8,74.2,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,2025,fee_plus_0.50,RESEARCH_VARIANT,72,7914.27,1.34,22.2,-13723.8,96.6,+$0.50 a micro round trip
+ATLAS_MACD_SWEEP,2025,top1_winners_removed,RESEARCH_VARIANT,71,4311.07,1.19,21.1,-13532.8,52.6,
+ATLAS_MACD_SWEEP,2025,top3_winners_removed,RESEARCH_VARIANT,69,-3017.03,0.87,18.8,-13532.8,-36.8,
+ATLAS_MACD_SWEEP,2025,top10pct_winners_removed,RESEARCH_VARIANT,64,-17998.3,0.22,12.5,-18539.4,-219.8,
+ATLAS_MACD_SWEEP,2025,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,71,12672.0,1.54,,,154.9,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_NY_RECLAIM,2025,base,BASELINE,71,4990.8,1.26,39.4,-4143.7,100.0,
+ATLAS_NY_RECLAIM,2025,slip_plus1tick,RESEARCH_VARIANT,71,4588.3,1.23,39.4,-4264.2,91.9,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,2025,slip_plus2tick,RESEARCH_VARIANT,71,4185.8,1.21,39.4,-4384.7,83.9,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,2025,slip_plus4tick,RESEARCH_VARIANT,71,3380.8,1.16,39.4,-4625.7,67.7,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,2025,fee_plus_0.50,RESEARCH_VARIANT,71,4746.8,1.24,39.4,-4210.2,95.1,+$0.50 a micro round trip
+ATLAS_NY_RECLAIM,2025,top1_winners_removed,RESEARCH_VARIANT,70,4010.1,1.21,38.6,-4143.7,80.3,
+ATLAS_NY_RECLAIM,2025,top3_winners_removed,RESEARCH_VARIANT,68,2058.3,1.11,36.8,-6095.5,41.2,
+ATLAS_NY_RECLAIM,2025,top10pct_winners_removed,RESEARCH_VARIANT,63,-2716.3,0.86,31.7,-6095.5,-54.4,
+ATLAS_NY_RECLAIM,2025,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,59,1079.0,1.06,,,21.6,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_POOLED_ALONE,2025,base,BASELINE,273,19436.3,1.25,38.8,-8371.07,100.0,
+ATLAS_POOLED_ALONE,2025,slip_plus1tick,RESEARCH_VARIANT,273,17033.8,1.22,21.6,-8608.57,87.6,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,2025,slip_plus2tick,RESEARCH_VARIANT,273,14631.3,1.18,21.6,-8875.83,75.3,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,2025,slip_plus4tick,RESEARCH_VARIANT,273,9826.3,1.12,21.6,-9449.83,50.6,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,2025,fee_plus_0.50,RESEARCH_VARIANT,273,18139.8,1.23,21.6,-8490.57,93.3,+$0.50 a micro round trip
+ATLAS_POOLED_ALONE,2025,top1_winners_removed,RESEARCH_VARIANT,272,15524.01,1.2,38.6,-8371.07,79.9,
+ATLAS_POOLED_ALONE,2025,top3_winners_removed,RESEARCH_VARIANT,270,7736.34,1.1,38.1,-10995.01,39.8,
+ATLAS_POOLED_ALONE,2025,top10pct_winners_removed,RESEARCH_VARIANT,245,-53274.3,0.3,31.8,-53274.3,-274.1,
+ATLAS_LONDON_EMA,2021-24,base,BASELINE,420,5606.99,1.05,48.3,-21477.6,100.0,
+ATLAS_LONDON_EMA,2021-24,slip_plus1tick,RESEARCH_VARIANT,420,279.49,1.0,10.0,-23908.1,5.0,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,2021-24,slip_plus2tick,RESEARCH_VARIANT,420,-5048.01,0.96,10.0,-26338.6,-90.0,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,2021-24,slip_plus4tick,RESEARCH_VARIANT,420,-15703.01,0.88,10.0,-31199.6,-280.1,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_LONDON_EMA,2021-24,fee_plus_0.50,RESEARCH_VARIANT,420,2828.49,1.03,10.0,-22721.6,50.4,+$0.50 a micro round trip
+ATLAS_LONDON_EMA,2021-24,top1_winners_removed,RESEARCH_VARIANT,419,1644.99,1.02,48.2,-25439.6,29.3,
+ATLAS_LONDON_EMA,2021-24,top3_winners_removed,RESEARCH_VARIANT,417,-6218.41,0.94,48.0,-29377.2,-110.9,
+ATLAS_LONDON_EMA,2021-24,top10pct_winners_removed,RESEARCH_VARIANT,378,-108567.7,0.0,42.6,-108570.02,-1936.3,
+ATLAS_LONDON_EMA,2021-24,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,408,-12373.0,0.89,,,-226.7,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_MACD_SWEEP,2021-24,base,BASELINE,266,12052.83,1.13,17.7,-22629.51,100.0,
+ATLAS_MACD_SWEEP,2021-24,slip_plus1tick,RESEARCH_VARIANT,266,9640.83,1.1,17.7,-23627.51,80.0,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,2021-24,slip_plus2tick,RESEARCH_VARIANT,266,7228.83,1.07,17.7,-24625.51,60.0,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,2021-24,slip_plus4tick,RESEARCH_VARIANT,266,2404.83,1.02,16.9,-26912.27,20.0,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_MACD_SWEEP,2021-24,fee_plus_0.50,RESEARCH_VARIANT,266,10779.33,1.11,17.7,-23143.51,89.4,+$0.50 a micro round trip
+ATLAS_MACD_SWEEP,2021-24,top1_winners_removed,RESEARCH_VARIANT,265,8103.43,1.08,17.4,-22629.51,67.2,
+ATLAS_MACD_SWEEP,2021-24,top3_winners_removed,RESEARCH_VARIANT,263,219.33,1.0,16.7,-22629.51,1.8,
+ATLAS_MACD_SWEEP,2021-24,top10pct_winners_removed,RESEARCH_VARIANT,239,-80010.36,0.16,8.4,-80010.36,-663.8,
+ATLAS_MACD_SWEEP,2021-24,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,260,1946.0,1.02,,,16.1,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_NY_RECLAIM,2021-24,base,BASELINE,256,4843.7,1.06,34.8,-5859.0,100.0,
+ATLAS_NY_RECLAIM,2021-24,slip_plus1tick,RESEARCH_VARIANT,256,3151.7,1.04,34.8,-6118.0,65.1,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,2021-24,slip_plus2tick,RESEARCH_VARIANT,256,1459.7,1.02,34.8,-6385.2,30.1,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,2021-24,slip_plus4tick,RESEARCH_VARIANT,256,-1924.3,0.98,34.8,-7878.2,-39.7,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_NY_RECLAIM,2021-24,fee_plus_0.50,RESEARCH_VARIANT,256,3830.2,1.05,34.8,-6001.5,79.1,+$0.50 a micro round trip
+ATLAS_NY_RECLAIM,2021-24,top1_winners_removed,RESEARCH_VARIANT,255,3858.9,1.05,34.5,-5859.0,79.7,
+ATLAS_NY_RECLAIM,2021-24,top3_winners_removed,RESEARCH_VARIANT,253,1896.0,1.03,34.0,-5873.2,39.1,
+ATLAS_NY_RECLAIM,2021-24,top10pct_winners_removed,RESEARCH_VARIANT,230,-20235.2,0.73,27.4,-24319.9,-417.8,
+ATLAS_NY_RECLAIM,2021-24,"late_1bar (stress, research code re-run)",RESEARCH_VARIANT,222,-5618.0,0.92,,,-116.0,research/second/robust.json tests.late1 (tools/second_robust.py): every entry 1 5m bar later
+ATLAS_POOLED_ALONE,2021-24,base,BASELINE,942,22503.52,1.08,36.0,-29721.08,100.0,
+ATLAS_POOLED_ALONE,2021-24,slip_plus1tick,RESEARCH_VARIANT,942,13072.02,1.05,18.9,-33957.08,58.1,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,2021-24,slip_plus2tick,RESEARCH_VARIANT,942,3640.52,1.01,18.9,-38193.08,16.2,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,2021-24,slip_plus4tick,RESEARCH_VARIANT,942,-15222.48,0.95,18.7,-48710.03,-67.6,k extra ticks against on the market entry and on every market exit (stop/BE/cut/flat); target limits none; qty unchanged
+ATLAS_POOLED_ALONE,2021-24,fee_plus_0.50,RESEARCH_VARIANT,942,17438.02,1.06,18.9,-31951.58,77.5,+$0.50 a micro round trip
+ATLAS_POOLED_ALONE,2021-24,top1_winners_removed,RESEARCH_VARIANT,941,18541.52,1.07,35.9,-33683.08,82.4,
+ATLAS_POOLED_ALONE,2021-24,top3_winners_removed,RESEARCH_VARIANT,939,10642.72,1.04,35.8,-33683.08,47.3,
+ATLAS_POOLED_ALONE,2021-24,top10pct_winners_removed,RESEARCH_VARIANT,847,-213898.54,0.24,28.8,-214832.36,-950.5,

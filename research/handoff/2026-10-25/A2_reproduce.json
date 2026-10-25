@@ -1,0 +1,1044 @@
+{
+ "data_hash": "5m:17519777-21380e2635:1|1m:13967504-d6ffd3ecfe|VIX:e5c621f32b|VXN:313484bd7e",
+ "data_commit": "aeb9d10 2026-10-23",
+ "configs": {
+  "pre_switch": {
+   "config_hash": "8731a81ac0541ec0f92c7e6ed6b7de572443c714",
+   "stored_run": "lit_adopt_t15_be_off",
+   "reproduces_stored_run": true,
+   "n_trades_all": 631,
+   "first_diffs": [],
+   "stored_verdict": "LIT size rule (engine run_x, as lit_live). 2026 H1 (pick) n=80 3.12/wk win 58.8% PF 4.98 net +33,901 ($5,562/mo) DD -2,196 eval 2wk 36.7/1.6 1mo 64.1/7.8; 2026 H2 (check) n=40 2.56/wk win 47.5% PF 2.69 net +9,493 ($2,556/mo) DD -1,396 eval 2wk 23.1/0.0 1mo 46.2/0.0; 2021-25 reference n=511 2.38/wk win 53.8% PF 1.01 net +1,265 ($25/mo) DD -19,426 eval 2wk 6.0/13.3 1mo 13.2/33.0. Eval path (two_week sizing): H1 n=80 PF 4.02 net +34,253 ($5,620/mo) DD -3,314; 2-week pass/fail 57.1/5.9 (Monte Carlo 52.8/2.6), 1 month 74.3/11.9; H2 n=40 PF 2.2 net +9,059 ($2,439/mo) DD -3,073; 2-week pass/fail 52.2/0.0 (Monte Carlo 55.1/3.5), 1 month 50.8/0.0.",
+   "LIT_size_rule_1.40": {
+    "2026": {
+     "n": 120,
+     "sessions": 206,
+     "tpw": 2.91,
+     "pf": 4.07,
+     "net": 43394.38,
+     "per_month": 4424,
+     "dd": -2196,
+     "win": 55.0
+    },
+    "H1": {
+     "n": 80,
+     "sessions": 128,
+     "tpw": 3.12,
+     "pf": 4.98,
+     "net": 33901.0,
+     "per_month": 5562,
+     "dd": -2196,
+     "win": 58.8
+    },
+    "H2": {
+     "n": 40,
+     "sessions": 78,
+     "tpw": 2.56,
+     "pf": 2.69,
+     "net": 9493.38,
+     "per_month": 2556,
+     "dd": -1396,
+     "win": 47.5
+    },
+    "2021-25": {
+     "n": 511,
+     "sessions": 1072,
+     "tpw": 2.38,
+     "pf": 1.01,
+     "net": 1264.94,
+     "per_month": 25,
+     "dd": -19426,
+     "win": 53.8
+    }
+   },
+   "LIT_size_rule_1.90": {
+    "2026": {
+     "n": 120,
+     "sessions": 206,
+     "tpw": 2.91,
+     "pf": 4.02,
+     "net": 43075.88,
+     "per_month": 4391,
+     "dd": -2213,
+     "win": 55.0
+    },
+    "H1": {
+     "n": 80,
+     "sessions": 128,
+     "tpw": 3.12,
+     "pf": 4.92,
+     "net": 33666.0,
+     "per_month": 5523,
+     "dd": -2213,
+     "win": 58.8
+    },
+    "H2": {
+     "n": 40,
+     "sessions": 78,
+     "tpw": 2.56,
+     "pf": 2.66,
+     "net": 9409.88,
+     "per_month": 2533,
+     "dd": -1419,
+     "win": 47.5
+    },
+    "2021-25": {
+     "n": 511,
+     "sessions": 1072,
+     "tpw": 2.38,
+     "pf": 0.99,
+     "net": -663.56,
+     "per_month": -13,
+     "dd": -20378,
+     "win": 53.6
+    }
+   },
+   "eval_run": "lit_adopt_t15_be_off_eval",
+   "eval_reproduces": false,
+   "eval_cfg": {
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.6,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "mode": "two_week",
+    "two_week_until": 10,
+    "after_mode": "safe_eval"
+   },
+   "eval_path_1.90": {
+    "2026": {
+     "n": 91,
+     "sessions": 206,
+     "tpw": 2.21,
+     "pf": 3.06,
+     "net": 25223.22,
+     "per_month": 2571,
+     "dd": -2704,
+     "win": 58.2
+    },
+    "H1": {
+     "n": 76,
+     "sessions": 128,
+     "tpw": 2.97,
+     "pf": 3.85,
+     "net": 27163.7,
+     "per_month": 4457,
+     "dd": -1926,
+     "win": 61.8
+    },
+    "H2": {
+     "n": 15,
+     "sessions": 78,
+     "tpw": 0.96,
+     "pf": 0.29,
+     "net": -1940.48,
+     "per_month": -522,
+     "dd": -1940,
+     "win": 40.0
+    }
+   },
+   "evals_b2b": {
+    "H1": {
+     "PASS": 7,
+     "OPEN": 1
+    },
+    "H2": {
+     "OPEN": 1
+    }
+   },
+   "eval_path_stuck200_1.90": {
+    "2026": {
+     "n": 120,
+     "sessions": 206,
+     "tpw": 2.91,
+     "pf": 3.09,
+     "net": 43252.46,
+     "per_month": 4409,
+     "dd": -3401,
+     "win": 55.0
+    },
+    "H1": {
+     "n": 80,
+     "sessions": 128,
+     "tpw": 3.12,
+     "pf": 3.28,
+     "net": 28481.6,
+     "per_month": 4673,
+     "dd": -3401,
+     "win": 58.8
+    },
+    "H2": {
+     "n": 40,
+     "sessions": 78,
+     "tpw": 2.56,
+     "pf": 2.8,
+     "net": 14770.86,
+     "per_month": 3977,
+     "dd": -1831,
+     "win": 47.5
+    }
+   },
+   "evals_b2b_stuck200": {
+    "H1": {
+     "PASS": 8,
+     "STUCK": 2,
+     "OPEN": 1
+    },
+    "H2": {
+     "STUCK": 1,
+     "PASS": 5,
+     "OPEN": 1
+    }
+   },
+   "evals_list": [
+    {
+     "id": "H1-E01",
+     "span": "H1",
+     "start": "2026-01-02",
+     "result": "PASS",
+     "sessions": 3,
+     "n": 3,
+     "net": 3055.9
+    },
+    {
+     "id": "H1-E02",
+     "span": "H1",
+     "start": "2026-01-07",
+     "result": "PASS",
+     "sessions": 1,
+     "n": 1,
+     "net": 3175.2
+    },
+    {
+     "id": "H1-E03",
+     "span": "H1",
+     "start": "2026-01-08",
+     "result": "PASS",
+     "sessions": 50,
+     "n": 28,
+     "net": 3192.3
+    },
+    {
+     "id": "H1-E04",
+     "span": "H1",
+     "start": "2026-03-19",
+     "result": "PASS",
+     "sessions": 3,
+     "n": 2,
+     "net": 3088.5
+    },
+    {
+     "id": "H1-E05",
+     "span": "H1",
+     "start": "2026-03-24",
+     "result": "PASS",
+     "sessions": 4,
+     "n": 1,
+     "net": 3943.68
+    },
+    {
+     "id": "H1-E06",
+     "span": "H1",
+     "start": "2026-03-30",
+     "result": "PASS",
+     "sessions": 15,
+     "n": 8,
+     "net": 8175.02
+    },
+    {
+     "id": "H1-E07",
+     "span": "H1",
+     "start": "2026-04-20",
+     "result": "PASS",
+     "sessions": 45,
+     "n": 31,
+     "net": 3297.0
+    },
+    {
+     "id": "H1-E08",
+     "span": "H1",
+     "start": "2026-06-22",
+     "result": "OPEN",
+     "sessions": 7,
+     "n": 2,
+     "net": -763.9
+    },
+    {
+     "id": "H2-E01",
+     "span": "H2",
+     "start": "2026-07-01",
+     "result": "OPEN",
+     "sessions": 78,
+     "n": 15,
+     "net": -1940.48
+    }
+   ],
+   "evals_list_stuck200": [
+    {
+     "id": "H1-E01",
+     "span": "H1",
+     "start": "2026-01-02",
+     "result": "PASS",
+     "sessions": 3,
+     "n": 3,
+     "net": 3055.9
+    },
+    {
+     "id": "H1-E02",
+     "span": "H1",
+     "start": "2026-01-07",
+     "result": "PASS",
+     "sessions": 1,
+     "n": 1,
+     "net": 3175.2
+    },
+    {
+     "id": "H1-E03",
+     "span": "H1",
+     "start": "2026-01-08",
+     "result": "STUCK",
+     "sessions": 7,
+     "n": 6,
+     "net": -1809.7
+    },
+    {
+     "id": "H1-E04",
+     "span": "H1",
+     "start": "2026-01-19",
+     "result": "PASS",
+     "sessions": 20,
+     "n": 13,
+     "net": 4337.6
+    },
+    {
+     "id": "H1-E05",
+     "span": "H1",
+     "start": "2026-02-16",
+     "result": "STUCK",
+     "sessions": 9,
+     "n": 6,
+     "net": -1875.2
+    },
+    {
+     "id": "H1-E06",
+     "span": "H1",
+     "start": "2026-02-27",
+     "result": "PASS",
+     "sessions": 14,
+     "n": 7,
+     "net": 3857.5
+    },
+    {
+     "id": "H1-E07",
+     "span": "H1",
+     "start": "2026-03-19",
+     "result": "PASS",
+     "sessions": 3,
+     "n": 2,
+     "net": 3088.5
+    },
+    {
+     "id": "H1-E08",
+     "span": "H1",
+     "start": "2026-03-24",
+     "result": "PASS",
+     "sessions": 4,
+     "n": 1,
+     "net": 3943.68
+    },
+    {
+     "id": "H1-E09",
+     "span": "H1",
+     "start": "2026-03-30",
+     "result": "PASS",
+     "sessions": 15,
+     "n": 8,
+     "net": 8175.02
+    },
+    {
+     "id": "H1-E10",
+     "span": "H1",
+     "start": "2026-04-20",
+     "result": "PASS",
+     "sessions": 45,
+     "n": 31,
+     "net": 3297.0
+    },
+    {
+     "id": "H1-E11",
+     "span": "H1",
+     "start": "2026-06-22",
+     "result": "OPEN",
+     "sessions": 7,
+     "n": 2,
+     "net": -763.9
+    },
+    {
+     "id": "H2-E01",
+     "span": "H2",
+     "start": "2026-07-01",
+     "result": "STUCK",
+     "sessions": 12,
+     "n": 6,
+     "net": -1830.7
+    },
+    {
+     "id": "H2-E02",
+     "span": "H2",
+     "start": "2026-07-17",
+     "result": "PASS",
+     "sessions": 2,
+     "n": 1,
+     "net": 3207.6
+    },
+    {
+     "id": "H2-E03",
+     "span": "H2",
+     "start": "2026-07-21",
+     "result": "PASS",
+     "sessions": 31,
+     "n": 12,
+     "net": 3388.68
+    },
+    {
+     "id": "H2-E04",
+     "span": "H2",
+     "start": "2026-09-02",
+     "result": "PASS",
+     "sessions": 22,
+     "n": 14,
+     "net": 3701.68
+    },
+    {
+     "id": "H2-E05",
+     "span": "H2",
+     "start": "2026-10-02",
+     "result": "PASS",
+     "sessions": 1,
+     "n": 1,
+     "net": 3080.0
+    },
+    {
+     "id": "H2-E06",
+     "span": "H2",
+     "start": "2026-10-05",
+     "result": "PASS",
+     "sessions": 8,
+     "n": 6,
+     "net": 3223.6
+    },
+    {
+     "id": "H2-E07",
+     "span": "H2",
+     "start": "2026-10-15",
+     "result": "OPEN",
+     "sessions": 2,
+     "n": 0,
+     "net": 0
+    }
+   ],
+   "fresh_evals": {
+    "no_stuck_rule": {
+     "H1_10": {
+      "starts": 119,
+      "pass": 57.1,
+      "fail": 0.0,
+      "stuck": 0.0
+     },
+     "H1_20": {
+      "starts": 109,
+      "pass": 74.3,
+      "fail": 0.0,
+      "stuck": 0.0
+     },
+     "H2_10": {
+      "starts": 69,
+      "pass": 52.2,
+      "fail": 0.0,
+      "stuck": 0.0
+     },
+     "H2_20": {
+      "starts": 59,
+      "pass": 49.2,
+      "fail": 0.0,
+      "stuck": 0.0
+     }
+    },
+    "stuck200": {
+     "H1_10": {
+      "starts": 119,
+      "pass": 57.1,
+      "fail": 0.0,
+      "stuck": 13.4
+     },
+     "H1_20": {
+      "starts": 109,
+      "pass": 74.3,
+      "fail": 0.0,
+      "stuck": 15.6
+     },
+     "H2_10": {
+      "starts": 69,
+      "pass": 52.2,
+      "fail": 0.0,
+      "stuck": 11.6
+     },
+     "H2_20": {
+      "starts": 59,
+      "pass": 49.2,
+      "fail": 0.0,
+      "stuck": 23.7
+     }
+    }
+   },
+   "post_cap_runs": {
+    "sizing_cap_lit_eval": {
+     "same": true,
+     "n_mine": 91,
+     "n_stored": 91,
+     "net_mine": 25223,
+     "net_stored": 25223
+    },
+    "sizing_cap_lit_eval_stuck200": {
+     "same": true,
+     "n_mine": 120,
+     "n_stored": 120,
+     "net_mine": 43252,
+     "net_stored": 43252
+    }
+   },
+   "eval_stored_verdict": "Eval path, live two_week sizing. 2026 H1 (pick) n=80 PF 4.02 net +34,253 ($5,620/mo) DD -3,314; 2-week pass/fail 57.1/5.9 (Monte Carlo 52.8/2.6), 1 month 74.3/11.9. 2026 H2 (check) n=40 PF 2.2 net +9,059 ($2,439/mo) DD -3,073; 2-week pass/fail 52.2/0.0 (Monte Carlo 55.1/3.5), 1 month 50.8/0.0. 2021-25: no 1m bars.",
+   "trades_2026_on_5m_fallback": 1,
+   "fills_after_15_30_2026": [],
+   "risk_pts_2026_min_max": [
+    11.5,
+    84.0
+   ],
+   "risk_outside_8_80_2026": 10,
+   "exits_2026": {
+    "BE": 34,
+    "TARGET": 25,
+    "STOP": 40,
+    "CUT_T15": 13,
+    "EOD": 8
+   },
+   "ledger_note": "not written to the ledger (LIT_size_rule_PRESWITCH); reproduced only"
+  },
+  "current": {
+   "config_hash": "2a346184de690e807b835085b79d2cc122fe5c1d",
+   "stored_run": "lit_live",
+   "reproduces_stored_run": true,
+   "n_trades_all": 631,
+   "first_diffs": [],
+   "stored_verdict": "LIVE since 2026-10-20 (loss pack + t_check, be_off; scale_in built but OFF until the Sim roundtrip passes; the 2026-10-18 version is run lit_live_2026-10-18; = run hq_lit_sw_c22). LIT size rule: 2026 H1 (pick) n=80 3.12/wk win 58.8% PF 4.98 net +33,901 ($5,562/mo) DD -2,196 eval 2wk 36.7/1.6 1mo 64.1/7.8 pass rate 83.7%; 2026 H2 (check) n=40 2.56/wk win 50.0% PF 2.91 net +9,919 ($2,670/mo) DD -1,396 eval 2wk 23.1/0.0 1mo 47.4/0.0 pass rate 100.0%; 2026 n=120 2.91/wk win 55.8% PF 4.19 net +43,820 ($4,467/mo) DD -2,196 eval 2wk 31.6/1.0 1mo 57.8/4.9 pass rate 91.3%; 2021-25 reference only n=511 2.38/wk win 53.8% PF 1.01 net +1,265 ($25/mo) DD -19,426 eval 2wk 6.0/13.3 1mo 13.2/33.0 pass rate 30.0%. Eval path (live two_week sizing): run hq_lit_sw_c22_eval.",
+   "LIT_size_rule_1.40": {
+    "2026": {
+     "n": 120,
+     "sessions": 206,
+     "tpw": 2.91,
+     "pf": 4.19,
+     "net": 43819.78,
+     "per_month": 4467,
+     "dd": -2196,
+     "win": 55.8
+    },
+    "H1": {
+     "n": 80,
+     "sessions": 128,
+     "tpw": 3.12,
+     "pf": 4.98,
+     "net": 33901.0,
+     "per_month": 5562,
+     "dd": -2196,
+     "win": 58.8
+    },
+    "H2": {
+     "n": 40,
+     "sessions": 78,
+     "tpw": 2.56,
+     "pf": 2.91,
+     "net": 9918.78,
+     "per_month": 2670,
+     "dd": -1396,
+     "win": 50.0
+    },
+    "2021-25": {
+     "n": 511,
+     "sessions": 1072,
+     "tpw": 2.38,
+     "pf": 1.01,
+     "net": 1264.94,
+     "per_month": 25,
+     "dd": -19426,
+     "win": 53.8
+    }
+   },
+   "LIT_size_rule_1.90": {
+    "2026": {
+     "n": 120,
+     "sessions": 206,
+     "tpw": 2.91,
+     "pf": 4.15,
+     "net": 43501.78,
+     "per_month": 4435,
+     "dd": -2213,
+     "win": 55.8
+    },
+    "H1": {
+     "n": 80,
+     "sessions": 128,
+     "tpw": 3.12,
+     "pf": 4.92,
+     "net": 33666.0,
+     "per_month": 5523,
+     "dd": -2213,
+     "win": 58.8
+    },
+    "H2": {
+     "n": 40,
+     "sessions": 78,
+     "tpw": 2.56,
+     "pf": 2.88,
+     "net": 9835.78,
+     "per_month": 2648,
+     "dd": -1419,
+     "win": 50.0
+    },
+    "2021-25": {
+     "n": 511,
+     "sessions": 1072,
+     "tpw": 2.38,
+     "pf": 0.99,
+     "net": -663.56,
+     "per_month": -13,
+     "dd": -20378,
+     "win": 53.6
+    }
+   },
+   "eval_run": "hq_lit_sw_c22_r55_wk12_eval",
+   "eval_reproduces": false,
+   "eval_cfg": {
+    "two_week": {
+     "base": "need",
+     "need_buf": 1.0,
+     "room_f": 0.55,
+     "wk": false,
+     "dll_cap": true,
+     "stop_at_target": true,
+     "max_usd": null,
+     "press_at": null,
+     "press_mult": 1.0,
+     "press_room": null,
+     "protect_over": null,
+     "protect_keep": 0.0
+    },
+    "safe_cap": 0.6,
+    "eval_ref_stop": 25.0,
+    "fast_ref_stop": 40.0,
+    "mode": "two_week",
+    "two_week_until": 10,
+    "after_mode": "safe_eval",
+    "wk_loss_usd": 1200
+   },
+   "eval_path_1.90": {
+    "2026": {
+     "n": 90,
+     "sessions": 206,
+     "tpw": 2.18,
+     "pf": 2.48,
+     "net": 18212.1,
+     "per_month": 1857,
+     "dd": -2708,
+     "win": 56.7
+    },
+    "H1": {
+     "n": 75,
+     "sessions": 128,
+     "tpw": 2.93,
+     "pf": 3.11,
+     "net": 20155.88,
+     "per_month": 3307,
+     "dd": -2040,
+     "win": 60.0
+    },
+    "H2": {
+     "n": 15,
+     "sessions": 78,
+     "tpw": 0.96,
+     "pf": 0.29,
+     "net": -1943.78,
+     "per_month": -523,
+     "dd": -1944,
+     "win": 40.0
+    }
+   },
+   "evals_b2b": {
+    "H1": {
+     "PASS": 5,
+     "OPEN": 1
+    },
+    "H2": {
+     "OPEN": 1
+    }
+   },
+   "eval_path_stuck200_1.90": {
+    "2026": {
+     "n": 116,
+     "sessions": 206,
+     "tpw": 2.82,
+     "pf": 3.39,
+     "net": 40366.62,
+     "per_month": 4115,
+     "dd": -4154,
+     "win": 56.9
+    },
+    "H1": {
+     "n": 77,
+     "sessions": 128,
+     "tpw": 3.01,
+     "pf": 4.28,
+     "net": 31035.5,
+     "per_month": 5092,
+     "dd": -2040,
+     "win": 61.0
+    },
+    "H2": {
+     "n": 39,
+     "sessions": 78,
+     "tpw": 2.5,
+     "pf": 2.26,
+     "net": 9331.12,
+     "per_month": 2512,
+     "dd": -3390,
+     "win": 48.7
+    }
+   },
+   "evals_b2b_stuck200": {
+    "H1": {
+     "PASS": 8,
+     "STUCK": 1,
+     "OPEN": 1
+    },
+    "H2": {
+     "STUCK": 1,
+     "PASS": 3,
+     "OPEN": 1
+    }
+   },
+   "evals_list": [
+    {
+     "id": "H1-E01",
+     "span": "H1",
+     "start": "2026-01-02",
+     "result": "PASS",
+     "sessions": 3,
+     "n": 3,
+     "net": 3055.9
+    },
+    {
+     "id": "H1-E02",
+     "span": "H1",
+     "start": "2026-01-07",
+     "result": "PASS",
+     "sessions": 1,
+     "n": 1,
+     "net": 3175.2
+    },
+    {
+     "id": "H1-E03",
+     "span": "H1",
+     "start": "2026-01-08",
+     "result": "PASS",
+     "sessions": 60,
+     "n": 32,
+     "net": 3707.62
+    },
+    {
+     "id": "H1-E04",
+     "span": "H1",
+     "start": "2026-04-02",
+     "result": "PASS",
+     "sessions": 12,
+     "n": 6,
+     "net": 7528.86
+    },
+    {
+     "id": "H1-E05",
+     "span": "H1",
+     "start": "2026-04-20",
+     "result": "PASS",
+     "sessions": 45,
+     "n": 31,
+     "net": 3452.4
+    },
+    {
+     "id": "H1-E06",
+     "span": "H1",
+     "start": "2026-06-22",
+     "result": "OPEN",
+     "sessions": 7,
+     "n": 2,
+     "net": -764.1
+    },
+    {
+     "id": "H2-E01",
+     "span": "H2",
+     "start": "2026-07-01",
+     "result": "OPEN",
+     "sessions": 78,
+     "n": 15,
+     "net": -1943.78
+    }
+   ],
+   "evals_list_stuck200": [
+    {
+     "id": "H1-E01",
+     "span": "H1",
+     "start": "2026-01-02",
+     "result": "PASS",
+     "sessions": 3,
+     "n": 3,
+     "net": 3055.9
+    },
+    {
+     "id": "H1-E02",
+     "span": "H1",
+     "start": "2026-01-07",
+     "result": "PASS",
+     "sessions": 1,
+     "n": 1,
+     "net": 3175.2
+    },
+    {
+     "id": "H1-E03",
+     "span": "H1",
+     "start": "2026-01-08",
+     "result": "STUCK",
+     "sessions": 47,
+     "n": 26,
+     "net": 202.6
+    },
+    {
+     "id": "H1-E04",
+     "span": "H1",
+     "start": "2026-03-16",
+     "result": "PASS",
+     "sessions": 1,
+     "n": 1,
+     "net": 3329.1
+    },
+    {
+     "id": "H1-E05",
+     "span": "H1",
+     "start": "2026-03-17",
+     "result": "PASS",
+     "sessions": 2,
+     "n": 2,
+     "net": 3377.2
+    },
+    {
+     "id": "H1-E06",
+     "span": "H1",
+     "start": "2026-03-19",
+     "result": "PASS",
+     "sessions": 3,
+     "n": 2,
+     "net": 3088.5
+    },
+    {
+     "id": "H1-E07",
+     "span": "H1",
+     "start": "2026-03-24",
+     "result": "PASS",
+     "sessions": 4,
+     "n": 1,
+     "net": 3943.68
+    },
+    {
+     "id": "H1-E08",
+     "span": "H1",
+     "start": "2026-03-30",
+     "result": "PASS",
+     "sessions": 15,
+     "n": 8,
+     "net": 8175.02
+    },
+    {
+     "id": "H1-E09",
+     "span": "H1",
+     "start": "2026-04-20",
+     "result": "PASS",
+     "sessions": 45,
+     "n": 31,
+     "net": 3452.4
+    },
+    {
+     "id": "H1-E10",
+     "span": "H1",
+     "start": "2026-06-22",
+     "result": "OPEN",
+     "sessions": 7,
+     "n": 2,
+     "net": -764.1
+    },
+    {
+     "id": "H2-E01",
+     "span": "H2",
+     "start": "2026-07-01",
+     "result": "STUCK",
+     "sessions": 32,
+     "n": 13,
+     "net": -1891.48
+    },
+    {
+     "id": "H2-E02",
+     "span": "H2",
+     "start": "2026-08-14",
+     "result": "PASS",
+     "sessions": 35,
+     "n": 20,
+     "net": 4675.08
+    },
+    {
+     "id": "H2-E03",
+     "span": "H2",
+     "start": "2026-10-02",
+     "result": "PASS",
+     "sessions": 1,
+     "n": 1,
+     "net": 3080.0
+    },
+    {
+     "id": "H2-E04",
+     "span": "H2",
+     "start": "2026-10-05",
+     "result": "PASS",
+     "sessions": 8,
+     "n": 5,
+     "net": 3467.52
+    },
+    {
+     "id": "H2-E05",
+     "span": "H2",
+     "start": "2026-10-15",
+     "result": "OPEN",
+     "sessions": 2,
+     "n": 0,
+     "net": 0
+    }
+   ],
+   "fresh_evals": {
+    "no_stuck_rule": {
+     "H1_10": {
+      "starts": 119,
+      "pass": 57.1,
+      "fail": 0.0,
+      "stuck": 0.0
+     },
+     "H1_20": {
+      "starts": 109,
+      "pass": 73.4,
+      "fail": 0.0,
+      "stuck": 0.0
+     },
+     "H2_10": {
+      "starts": 69,
+      "pass": 50.7,
+      "fail": 0.0,
+      "stuck": 0.0
+     },
+     "H2_20": {
+      "starts": 59,
+      "pass": 50.8,
+      "fail": 0.0,
+      "stuck": 0.0
+     }
+    },
+    "stuck200": {
+     "H1_10": {
+      "starts": 119,
+      "pass": 57.1,
+      "fail": 0.0,
+      "stuck": 5.0
+     },
+     "H1_20": {
+      "starts": 109,
+      "pass": 73.4,
+      "fail": 0.0,
+      "stuck": 11.9
+     },
+     "H2_10": {
+      "starts": 69,
+      "pass": 50.7,
+      "fail": 0.0,
+      "stuck": 0.0
+     },
+     "H2_20": {
+      "starts": 59,
+      "pass": 50.8,
+      "fail": 0.0,
+      "stuck": 0.0
+     }
+    }
+   },
+   "post_cap_runs": {},
+   "eval_stored_verdict": "HQ switch re-score: 1m CISD window 22 bars (cisd1m 22) + two_week room cap 55% (room_f 0.55) + eval weekly loss stop -$1,200 (wk_loss_usd 1200). Eval path: H1 (pick) PF 4.0 net +29,827 ($4,893/mo) DD -2,416; 2-week pass/fail 57.1/0.0 (Monte Carlo 52.5/1.8), 1 month 73.4/5.5, median 5.0 sessions. H2 (check) PF 2.36 net +9,780 ($2,633/mo) DD -3,036; 2-week pass/fail 52.2/0.0 (Monte Carlo 52.8/0.9), 1 month 49.2/1.7, median 4.0 sessions. 2021-25: no 1m bars.",
+   "trades_2026_on_5m_fallback": 1,
+   "fills_after_15_30_2026": [],
+   "risk_pts_2026_min_max": [
+    11.5,
+    84.0
+   ],
+   "risk_outside_8_80_2026": 10,
+   "exits_2026": {
+    "BE": 35,
+    "TARGET": 25,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 8
+   }
+  }
+ },
+ "signal_ledger": {
+  "rows": 1325,
+  "status": {
+   "TRADE": 120,
+   "skipped": 479,
+   "rejected": 626,
+   "armed_no_trade": 100
+  },
+  "first_failing_rule": {
+   "": 120,
+   "day": 397,
+   "idm": 145,
+   "depth": 64,
+   "disp": 216,
+   "window": 98,
+   "limit_expired_30min": 55,
+   "busy_open_trade": 82,
+   "target_touched_before_tap": 3,
+   "stop": 71,
+   "target": 6,
+   "no_1m_cisd_within_window": 12,
+   "extreme_broken_after_tap_before_cisd": 20,
+   "monday": 26,
+   "qty_zero": 6,
+   "below_min_rr_after_fill": 2,
+   "extreme_broken_before_tap": 2
+  },
+  "classifier_mismatches": []
+ },
+ "seconds": 8
+}

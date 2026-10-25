@@ -1,0 +1,58 @@
+== A. kill scope: account-scoped unless the owner's global kill
+  [PASS] setup: LIT (Sim101) LONG 3 and account B (Sim102) LONG 2, both protected
+  [PASS] account B's kill: no FLATTENEVERYTHING / CANCELALLORDERS written
+  [PASS] account B's kill: CLOSEPOSITION on Sim102 only; B flat, its legs retired, scope 'account'
+  [PASS] account B's kill: LIT's Sim101 position (LONG 3) and its stop / target are untouched
+  [PASS] account B after its kill: new entries refused
+  [PASS] account kill with an entry still working: CLOSEPOSITION;Sim103 + CANCEL of that entry by id, nothing account-wide
+  [PASS] writer: FLATTENEVERYTHING / CANCELALLORDERS outside the global kill, a Sim102 line from the Sim101 adapter and a CANCEL of a non-bot id are all refused (nothing written)
+  [PASS] owner's global kill (scope 'global', LiveBot.kill_switch only): exactly FLATTENEVERYTHING;;;;;;;;;;;;
+  [PASS] source: only LiveBot.kill_switch asks for the global scope (account_b.py / multi_account.py never do)
+== B. LiveBot: remote flatten / kill with extra NinjaTrader accounts
+  [PASS] LiveBot remote flatten (flatten_now): extra accounts open ({'Sim102': 8, 'Sim103': 2}) -> each CLOSEPOSITION on its own account, no FLATTENEVERYTHING
+  [PASS] LiveBot kill switch: extra accounts open ({'Sim102': 8, 'Sim103': 2}) -> each CLOSEPOSITION on its own account, no FLATTENEVERYTHING
+== C. duplicate process: one bot process per account
+  [PASS] a first bot process holds Sim101; a second one starts DISABLED ('another bot process') and writes nothing
+  [PASS] the same second process may still trade another account (Sim102): not disabled
+  [PASS] the lock names the holder (pid) for the owner
+  [PASS] same process, second adapter on Sim101 while the other process holds it: still disabled
+  [PASS] the holder exits (or crashes): the lock goes with it, a new bot on Sim101 is enabled (no stale lock)
+  [PASS] several adapters in one process on the same account share the lock (a restarted LiveBot)
+  [PASS] while this process's bot runs, another process is refused; after LiveBot.stop() the account is free again (a Sim check / the next start can take it)
+== D. account allowlist
+  [PASS] armed + phrase + NINJATRADER_LIVE=1 but not allowlisted -> DISABLED with the --allow-account command
+  [PASS] allowlisted by file (--allow-account) -> enabled; another Name or other capitals -> refused
+  [PASS] NINJATRADER_ALLOW (comma list in .env.local.ps1) also allows; removing the Name refuses again
+  [PASS] Sim accounts need no allowlist entry
+  [PASS] an account Name with ';' (would break the OIF line) is refused by --allow-account
+== E. startup DISARMED until reconciled
+  [PASS] unexplained NinjaTrader position (LONG 2, no bracket / ledger of this bot): DISARMED
+  [PASS] account flat now, but the bar feed is stale: still DISARMED (feed)
+  [PASS] chart on MNQ 09-26 while the orders go to MNQ 12-26: DISARMED (contract)
+  [PASS] everything reconciles: the entry check passes and the startup gate LATCHES (logged STARTUP RECONCILED)
+  [PASS] latched: later problems are the regular guards' job (reconcile / adapter), not the startup gate
+  [PASS] real clock: DISARMED until one clock probe has finished (the probe is started by the check), then clear
+  [PASS] eval anchor (real account, two_week): eval start unknown / anchor in the future / room <= 0 / an anchor file with no valid anchor -> DISARMED; a valid anchor and room -> clear
+  [PASS] Sim accounts: the eval anchor never blocks (paper / Sim101 rehearsals)
+== F. file publish: no overwrite, interrupted publish
+  [PASS] a file name already in incoming\ is NEVER overwritten: our order goes under the next name
+  [PASS] _publish refuses an existing target (Windows rename / POSIX link), the old file stays
+  [PASS] interrupted publish: the unpublished file left in le_outbox\ is deleted at start, never moved into incoming\
+== G. corrupted state file
+  [PASS] torn state file with a trade open: not read as flat, moved aside (.corrupt-*), alert, new entry REFUSED
+  [PASS] a restart after that still blocks (the problem is saved, the torn file is gone)
+  [PASS] a state file holding valid JSON of the wrong shape ([]) does not crash the adapter: treated as unreadable
+  [PASS] the model's exit is still routed: CLOSEPOSITION closes the position although the bracket was lost
+  [PASS] flat account + the lost bracket's stop / target still working (orphans, ids from the audit log): CANCEL by id
+  [PASS] account flat and no order of the bot working: the block clears, entries allowed again
+== H. fill before the ack / after the withdraw
+  [PASS] NinjaTrader did not pick the entry up in time: withdrawn, ok False, watched
+  [PASS] the withdrawn entry filled anyway: the next ticks place its stop + target (OCO), never a naked position
+  [PASS] picked up at the last moment (fill reported before the bot saw the ack): treated as sent, stop + target placed
+== I. target REJECTED after the fill
+  [PASS] target REJECTED: flattened at once (CLOSEPOSITION), the stop cancelled, alert, ok False
+== J. DST
+  [PASS] entry gate in ET wall time on both DST Mondays: 01:59 refused, 02:01 allowed, 15:39 allowed, 15:56 refused
+  [PASS] trading day across the clock change: Sun 18:30 -> Monday; 01:30 on the fall-back night -> Sunday's date
+
+46/46 checks passed in 3 s

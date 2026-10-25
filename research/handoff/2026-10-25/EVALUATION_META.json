@@ -1,0 +1,102 @@
+{
+ "reproduce": {
+  "H1": {
+   "published_p10_f10": [
+    57.1,
+    0.0
+   ],
+   "this_tool_pass_breach": [
+    57.1,
+    0.0
+   ]
+  },
+  "H2": {
+   "published_p10_f10": [
+    52.2,
+    0.0
+   ],
+   "this_tool_pass_breach": [
+    50.7,
+    0.0
+   ]
+  }
+ },
+ "hedge_check": {
+  "atlas_trades_checked": 914,
+  "violations": 0,
+  "examples": []
+ },
+ "owner_start_profit_space": [
+  -289.2,
+  -1831.8,
+  168.2
+ ],
+ "owner_session0": 5,
+ "lit_cfg": {
+  "mode": "two_week",
+  "two_week": {
+   "base": "need",
+   "need_buf": 1.0,
+   "room_f": 0.55,
+   "wk": false,
+   "dll_cap": true,
+   "stop_at_target": true,
+   "max_usd": null,
+   "press_at": null,
+   "press_mult": 1.0,
+   "press_room": null,
+   "protect_over": null,
+   "protect_keep": 0.0
+  },
+  "safe_cap": 0.6,
+  "fast_ref_stop": 40.0,
+  "eval_ref_stop": 25.0,
+  "two_week_until": 10,
+  "after_mode": "safe_eval",
+  "wk_loss_usd": 1200
+ },
+ "rows": 1589,
+ "lit_units_2026": 120,
+ "atlas_units_2026": {
+  "standalone": 175,
+  "with_router_rules": 163
+ },
+ "commission": {
+  "lit_live_2026": {
+   "trades": 120,
+   "micros": 636,
+   "booked_net": 43820,
+   "mffu_net": 43502,
+   "drift_total": 318.0,
+   "drift_max_trade": 17.0,
+   "drift_per_month": 32.42,
+   "H1": {
+    "booked": 33901,
+    "mffu": 33666,
+    "pf_mffu": 4.92
+   },
+   "H2": {
+    "booked": 9919,
+    "mffu": 9836,
+    "pf_mffu": 2.88
+   }
+  },
+  "eval_window_drift": {
+   "max": 33.5,
+   "median": 10.5
+  },
+  "booked_vs_true_results": {
+   "A_fresh|H1|true-book pass -> $1.40-book pass": 68,
+   "A_fresh|H1|true-book stuck -> $1.40-book stuck": 6,
+   "A_fresh|H1|true-book unfinished -> $1.40-book unfinished": 45,
+   "A_fresh|H2|true-book pass -> $1.40-book pass": 35,
+   "A_fresh|H2|true-book unfinished -> $1.40-book unfinished": 34,
+   "B_owner|H1|true-book pass -> $1.40-book pass": 48,
+   "B_owner|H1|true-book stuck -> $1.40-book stuck": 16,
+   "B_owner|H1|true-book unfinished -> $1.40-book unfinished": 55,
+   "B_owner|H2|true-book pass -> $1.40-book pass": 22,
+   "B_owner|H2|true-book unfinished -> $1.40-book stuck": 3,
+   "B_owner|H2|true-book unfinished -> $1.40-book unfinished": 44
+  }
+ }
+}

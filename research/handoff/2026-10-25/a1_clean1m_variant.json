@@ -1,0 +1,100 @@
+{
+ "label": "RESEARCH_VARIANT (not adopted): 1m cleaning without the volume heuristic",
+ "dropped_windows_total": 233,
+ "dropped_windows_2026": 226,
+ "dropped_rebuild_5m_exactly": 233,
+ "dropped_first_row_equals_5m": 31,
+ "baseline": {
+  "2026": {
+   "n": 120,
+   "net": 43819.78,
+   "pf": 4.19,
+   "dd": -2195.6
+  },
+  "H1": {
+   "n": 80,
+   "net": 33901.0,
+   "pf": 4.98,
+   "dd": -2195.6
+  },
+  "H2": {
+   "n": 40,
+   "net": 9918.78,
+   "pf": 2.91,
+   "dd": -1396.4
+  }
+ },
+ "variant": {
+  "2026": {
+   "n": 120,
+   "net": 43089.38,
+   "pf": 4.12,
+   "dd": -2195.6
+  },
+  "H1": {
+   "n": 80,
+   "net": 33170.6,
+   "pf": 4.85,
+   "dd": -2195.6
+  },
+  "H2": {
+   "n": 40,
+   "net": 9918.78,
+   "pf": 2.91,
+   "dd": -1396.4
+  }
+ },
+ "trades_changed": [
+  {
+   "day": "2026-03-23",
+   "baseline": [
+    1774263480,
+    1,
+    2,
+    "TARGET",
+    1236.2
+   ],
+   "variant": [
+    1774263600,
+    1,
+    1,
+    "TARGET",
+    595.6
+   ]
+  },
+  {
+   "day": "2026-04-03",
+   "baseline": [
+    1775203500,
+    1,
+    4,
+    "STOP",
+    -359.6
+   ],
+   "variant": [
+    1775203320,
+    1,
+    3,
+    "STOP",
+    -284.7
+   ]
+  },
+  {
+   "day": "2026-05-05",
+   "baseline": [
+    1777961820,
+    -1,
+    3,
+    "STOP",
+    -278.7
+   ],
+   "variant": [
+    1777961760,
+    -1,
+    6,
+    "STOP",
+    -443.4
+   ]
+  }
+ ]
+}

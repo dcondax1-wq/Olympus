@@ -1,0 +1,22 @@
+== 1. 15-minute check (t_check) on the PC route
+  [PASS] 2026-01-13: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-01-16: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-01-29: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-01-30: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-03-04: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-03-31: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-04-28: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-05-07: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-05-12: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-07-03: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-07-07: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-09-02: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+  [PASS] 2026-10-06: CUT_T15 routed 2 s after the check bar closed, exit time / P&L = backtest
+== 2. breakeven at entry + 1.25 pts (be_off) on the PC route
+  [PASS] 2026-01-02 short: breakeven CHANGE to 26436.75 (entry - 1.25) routed 2 s after the +1R bar closed; BE exit P&L = backtest
+  [PASS] 2026-02-18 short: breakeven CHANGE to 25686.75 (entry - 1.25) routed 2 s after the +1R bar closed; BE exit P&L = backtest
+  [PASS] 2026-04-20 long: breakeven CHANGE to 27259.5 (entry + 1.25) routed 2 s after the +1R bar closed; BE exit P&L = backtest
+  [PASS] 2026-05-19 long: breakeven CHANGE to 29553.25 (entry + 1.25) routed 2 s after the +1R bar closed; BE exit P&L = backtest
+  [PASS] 2026-06-17 short: breakeven CHANGE to 30800.25 (entry - 1.25) routed 2 s after the +1R bar closed; BE exit P&L = backtest
+  [PASS] 2026-09-28 long: breakeven CHANGE to 30602.25 (entry + 1.25) routed 2 s after the +1R bar closed; BE exit P&L = backtest
+19/19 checks passed in 358 s -> research/lit/live_exit_route.json

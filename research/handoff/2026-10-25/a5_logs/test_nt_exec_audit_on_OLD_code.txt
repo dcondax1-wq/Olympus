@@ -1,0 +1,89 @@
+== A. kill scope: account-scoped unless the owner's global kill
+  [PASS] setup: LIT (Sim101) LONG 3 and account B (Sim102) LONG 2, both protected
+  [FAIL] account B's kill: no FLATTENEVERYTHING / CANCELALLORDERS written  -- ['FLATTENEVERYTHING;;;;;;;;;;;;']
+  [FAIL] account B's kill: CLOSEPOSITION on Sim102 only; B flat, its legs retired, scope 'account'  -- ({'ok': True, 'adapter': 'ninjatrader', 'oif': 'oif_le_acctb_1792903428738_3.txt'}, ['FLATTENEVERYTHING;;;;;;;;;;;;'])
+  [FAIL] account B's kill: LIT's Sim101 position (LONG 3) and its stop / target are untouched
+  [PASS] account B after its kill: new entries refused
+  [FAIL] account kill with an entry still working: CLOSEPOSITION;Sim103 + CANCEL of that entry by id, nothing account-wide  -- ({'ok': True, 'adapter': 'ninjatrader', 'oif': 'oif_le_acctc_1792903428755_2.txt'}, ['FLATTENEVERYTHING;;;;;;;;;;;;'])
+  [FAIL] writer: FLATTENEVERYTHING / CANCELALLORDERS outside the global kill, a Sim102 line from the Sim101 adapter and a CANCEL of a non-bot id are all refused (nothing written)  -- [None, None, None, None, None]
+  [FAIL] owner's global kill (scope 'global', LiveBot.kill_switch only): exactly FLATTENEVERYTHING;;;;;;;;;;;;  -- ({'ok': True, 'adapter': 'ninjatrader', 'oif': 'oif_le_1792903428759_8.txt'}, ['FLATTENEVERYTHING;;;;;;;;;;;;', 'CANCELALLORDERS;;;;;;;;;;;;', 'CLOSEPOSITION;Sim102;MNQ 12-26;;;;;;;;;;', 'PLACE;Sim102;MNQ 12-26;BUY;1;MARKET;0;0;DAY;;LEX1;;', 'CANCEL;;;;;;;;;;NT12345;;', 'FLATTENEVERYTHING;;;;;;;;;;;;'])
+  [FAIL] source: only LiveBot.kill_switch asks for the global scope (account_b.py / multi_account.py never do)  -- (0, 0)
+== B. LiveBot: remote flatten / kill with extra NinjaTrader accounts
+  [FAIL] LiveBot remote flatten (flatten_now): extra accounts open ({'Sim102': 8, 'Sim103': 2}) -> each CLOSEPOSITION on its own account, no FLATTENEVERYTHING  -- ({'Sim102': 8, 'Sim103': 2}, ['FLATTENEVERYTHING;;;;;;;;;;;;', 'FLATTENEVERYTHING;;;;;;;;;;;;'])
+  [FAIL] LiveBot kill switch: extra accounts open ({'Sim102': 8, 'Sim103': 2}) -> each CLOSEPOSITION on its own account, no FLATTENEVERYTHING  -- ({'Sim102': 8, 'Sim103': 2}, ['FLATTENEVERYTHING;;;;;;;;;;;;', 'FLATTENEVERYTHING;;;;;;;;;;;;'])
+== C. duplicate process: one bot process per account
+  [FAIL] a first bot process holds Sim101; a second one starts DISABLED ('another bot process') and writes nothing  -- ('READY', None, {'ok': True, 'adapter': 'ninjatrader', 'account': 'Sim101', 'env': 'demo', 'side': 'BUY', 'legs': [{'instrument': 'MNQ 12-26', 'qty': 1, 'filled': 1, 'fill_px': 25020.0, 'ok': True, 'stop': 24990.0, 'target': 25080.0, 'stop_state': 'WORKING', 'target_state': 'WORKING'}]})
+  [PASS] the same second process may still trade another account (Sim102): not disabled
+  [FAIL] the lock names the holder (pid) for the owner
+  [FAIL] same process, second adapter on Sim101 while the other process holds it: still disabled
+  [PASS] the holder exits (or crashes): the lock goes with it, a new bot on Sim101 is enabled (no stale lock)
+  [PASS] several adapters in one process on the same account share the lock (a restarted LiveBot)
+== D. account allowlist
+Traceback (most recent call last):
+  File "/tmp/claude-0/-home-user-nq-liquidity-engine/1c5df1a3-c52b-5e3b-a05e-7ae8d672b70d/scratchpad/orig/tests/test_nt_exec_audit.py", line 542, in main
+    fn(tmp)
+    ~~^^^^^
+  File "/tmp/claude-0/-home-user-nq-liquidity-engine/1c5df1a3-c52b-5e3b-a05e-7ae8d672b70d/scratchpad/orig/tests/test_nt_exec_audit.py", line 230, in test_allowlist
+    nt.allow_account("MFFUTEST001", path=allow)
+    ^^^^^^^^^^^^^^^^
+AttributeError: module 'engine.ninjatrader' has no attribute 'allow_account'
+  [FAIL] test_allowlist raised AttributeError: module 'engine.ninjatrader' has no attribute 'allow_account'
+== E. startup DISARMED until reconciled
+Traceback (most recent call last):
+  File "/tmp/claude-0/-home-user-nq-liquidity-engine/1c5df1a3-c52b-5e3b-a05e-7ae8d672b70d/scratchpad/orig/tests/test_nt_exec_audit.py", line 542, in main
+    fn(tmp)
+    ~~^^^^^
+  File "/tmp/claude-0/-home-user-nq-liquidity-engine/1c5df1a3-c52b-5e3b-a05e-7ae8d672b70d/scratchpad/orig/tests/test_nt_exec_audit.py", line 282, in test_startup
+    p1 = guards.startup_problems(bot, c)
+         ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: module 'engine.guards' has no attribute 'startup_problems'
+  [FAIL] test_startup raised AttributeError: module 'engine.guards' has no attribute 'startup_problems'
+== F. file publish: no overwrite, interrupted publish
+  [FAIL] a file name already in incoming\ is NEVER overwritten: our order goes under the next name  -- ({'ok': True, 'file': 'oif_le_1792867523922_1.txt', 'path': '/tmp/le_nt_exec_audit_3sg9ae9p/f/NinjaTrader 8/incoming/oif_le_1792867523922_1.txt', 'lines': ['CANCEL;;;;;;;;;;LETEST1S;;']}, 'CANCEL;;;;;;;;;;LETEST1S;;\n')
+Traceback (most recent call last):
+  File "/tmp/claude-0/-home-user-nq-liquidity-engine/1c5df1a3-c52b-5e3b-a05e-7ae8d672b70d/scratchpad/orig/tests/test_nt_exec_audit.py", line 542, in main
+    fn(tmp)
+    ~~^^^^^
+  File "/tmp/claude-0/-home-user-nq-liquidity-engine/1c5df1a3-c52b-5e3b-a05e-7ae8d672b70d/scratchpad/orig/tests/test_nt_exec_audit.py", line 392, in test_publish
+    nt._publish(src, dst)
+    ^^^^^^^^^^^
+AttributeError: module 'engine.ninjatrader' has no attribute '_publish'
+  [FAIL] test_publish raised AttributeError: module 'engine.ninjatrader' has no attribute '_publish'
+== G. corrupted state file
+Traceback (most recent call last):
+  File "/tmp/claude-0/-home-user-nq-liquidity-engine/1c5df1a3-c52b-5e3b-a05e-7ae8d672b70d/scratchpad/orig/tests/test_nt_exec_audit.py", line 542, in main
+    fn(tmp)
+    ~~^^^^^
+  File "/tmp/claude-0/-home-user-nq-liquidity-engine/1c5df1a3-c52b-5e3b-a05e-7ae8d672b70d/scratchpad/orig/tests/test_nt_exec_audit.py", line 430, in test_corrupt_state
+    r.get("ok") and ad2.state_problem and corrupt and e.alerts and not rr.get("ok") and "unreadable" in rr.get("error", ""),
+                    ^^^^^^^^^^^^^^^^^
+AttributeError: 'NinjaTraderAdapter' object has no attribute 'state_problem'
+  [FAIL] test_corrupt_state raised AttributeError: 'NinjaTraderAdapter' object has no attribute 'state_problem'
+== H. fill before the ack / after the withdraw
+  [PASS] NinjaTrader did not pick the entry up in time: withdrawn, ok False, watched
+  [PASS] the withdrawn entry filled anyway: the next ticks place its stop + target (OCO), never a naked position
+  [PASS] picked up at the last moment (fill reported before the bot saw the ack): treated as sent, stop + target placed
+== I. target REJECTED after the fill
+  [PASS] target REJECTED: flattened at once (CLOSEPOSITION), the stop cancelled, alert, ok False
+== J. DST
+  [PASS] entry gate in ET wall time on both DST Mondays: 01:59 refused, 02:01 allowed, 15:39 allowed, 15:56 refused
+  [PASS] trading day across the clock change: Sun 18:30 -> Monday; 01:30 on the fall-back night -> Sunday's date
+
+11/28 checks passed in 2 s
+  FAIL account B's kill: no FLATTENEVERYTHING / CANCELALLORDERS written
+  FAIL account B's kill: CLOSEPOSITION on Sim102 only; B flat, its legs retired, scope 'account'
+  FAIL account B's kill: LIT's Sim101 position (LONG 3) and its stop / target are untouched
+  FAIL account kill with an entry still working: CLOSEPOSITION;Sim103 + CANCEL of that entry by id, nothing account-wide
+  FAIL writer: FLATTENEVERYTHING / CANCELALLORDERS outside the global kill, a Sim102 line from the Sim101 adapter and a CANCEL of a non-bot id are all refused (nothing written)
+  FAIL owner's global kill (scope 'global', LiveBot.kill_switch only): exactly FLATTENEVERYTHING;;;;;;;;;;;;
+  FAIL source: only LiveBot.kill_switch asks for the global scope (account_b.py / multi_account.py never do)
+  FAIL LiveBot remote flatten (flatten_now): extra accounts open ({'Sim102': 8, 'Sim103': 2}) -> each CLOSEPOSITION on its own account, no FLATTENEVERYTHING
+  FAIL LiveBot kill switch: extra accounts open ({'Sim102': 8, 'Sim103': 2}) -> each CLOSEPOSITION on its own account, no FLATTENEVERYTHING
+  FAIL a first bot process holds Sim101; a second one starts DISABLED ('another bot process') and writes nothing
+  FAIL the lock names the holder (pid) for the owner
+  FAIL same process, second adapter on Sim101 while the other process holds it: still disabled
+  FAIL test_allowlist raised AttributeError: module 'engine.ninjatrader' has no attribute 'allow_account'
+  FAIL test_startup raised AttributeError: module 'engine.guards' has no attribute 'startup_problems'
+  FAIL a file name already in incoming\ is NEVER overwritten: our order goes under the next name
+  FAIL test_publish raised AttributeError: module 'engine.ninjatrader' has no attribute '_publish'
+  FAIL test_corrupt_state raised AttributeError: 'NinjaTraderAdapter' object has no attribute 'state_problem'

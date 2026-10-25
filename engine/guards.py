@@ -70,6 +70,8 @@ DEFAULTS = {
     "news": False, "news_min": 2,
     "calendar": True,
     "presence_required": False, "presence_hours": 4.0,
+    # 0. startup reconcile (pre-launch audit 2026-10-25): NinjaTrader bots start DISARMED for entries until it passes once
+    "startup_reconcile": True, "startup_require_anchor": False,
     # engine/ai_watch.py (2026-10-22), both OFF: an anomaly pause and a loss cap across LIT + account B
     "anomaly_pause": False, "anomaly_pause_min": 15, "combined_loss": False, "combined_day_usd": 1500.0, "combined_week_usd": 3000.0,
 }
@@ -297,6 +299,7 @@ def _clock_run(probe):
         pass
     finally:
         _CLOCK["running"] = False
+        _CLOCK["done"] = _CLOCK.get("done", 0) + 1       # the startup reconcile waits for one finished probe
 
 
 def clock_tick(bot, c, now_real=None):
@@ -373,10 +376,92 @@ def note_routed(bot, entry_t: int):
 
 
 # ---------------------------------------------------------------------------------------------- the entry hook
+def _anchor_problems(bot, c) -> list:
+    """The eval anchor / eval state of a REAL account in an eval sizing mode reconciles: eval start known, an anchor file
+    that exists is valid for this account, its as_of not in the future, the eval room computable and above 0."""
+    ad = getattr(bot, "adapter", None)
+    if getattr(ad, "sim", True) or ((getattr(bot, "_lit_sizing", None) or {}).get("mode") or "") not in EVAL_MODES:
+        return []
+    out = []
+    try:
+        if not bot.eval_start():
+            out.append("eval start unknown (live_model.json lit_sizing.eval_start): the sizing would not know the eval day")
+        from . import eval_life as _el
+        p = _el.anchor_path(getattr(bot, "state_path", None))
+        a = bot.eval_anchor()
+        if os.path.exists(p) and a is None and _el.load_anchors(p):
+            out.append(f"eval anchor file {os.path.basename(p)} has no valid anchor for {getattr(ad, 'account', '?')} "
+                       "(python -m engine.eval_life --anchor ...)")
+        if a and a["as_of"] > trading_day(int(bot.clock())):
+            out.append(f"eval anchor as_of {a['as_of']} is in the future")
+        if a is None and c.get("startup_require_anchor"):
+            out.append("no eval anchor set (startup_require_anchor): python -m engine.eval_life --anchor ...")
+        room = bot.eval_room()
+        if room is None or float(room) <= 0:
+            out.append(f"eval room {room} <= 0: the eval looks failed; check the MFFU dashboard")
+    except Exception as e:
+        out.append(f"eval state could not be computed ({e.__class__.__name__}: {e})")
+    return out
+
+
+def startup_problems(bot, c: dict | None = None, now: int | None = None) -> list:
+    """0. startup reconcile: a NinjaTrader bot routes no entry until, once, NinjaTrader's position / order files match the
+    bot (engine/ninjatrader.startup_problems + the ledger vs the account), the bar feed is fresh, the PC clock was checked,
+    the chart is on the order contract and the eval anchor reconciles. Latched: once passed, the regular guards take over."""
+    c = c or _cfg(bot)
+    if not c.get("startup_reconcile") or getattr(bot, "_startup_ok", None) or (bot.cfg or {}).get("adapter") != "ninjatrader":
+        return []
+    ad = getattr(bot, "adapter", None)
+    out = []
+    if ad is not None and callable(getattr(ad, "startup_problems", None)):
+        try:
+            out += ad.startup_problems()
+        except Exception as e:                   # fails CLOSED: the startup reconcile never lets an entry through on a bug
+            out.append(f"NinjaTrader startup check failed ({e.__class__.__name__}: {e})")
+        try:
+            exp = _expected(bot)
+            net, held = _broker_net(ad)
+            if net != exp and not any(lg.get("status") != "protected" for lg in getattr(ad, "legs", []) or []):
+                out.append(f"NinjaTrader {getattr(ad, 'account', '')} shows {', '.join(held) or 'flat'}, the bot's ledger {_txt(exp)}")
+        except Exception as e:
+            out.append(f"position reconcile failed ({e.__class__.__name__}: {e})")
+    h = getattr(bot, "health", {}) or {}
+    if h.get("entries_blocked") or h.get("stale"):
+        out.append(f"bar feed not fresh ({h.get('feed_block') or 'stale'})")
+    if c.get("clock") and getattr(bot, "clock", None) is time.time:
+        if _CLOCK.get("running") or not (_CLOCK.get("done") or _CLOCK.get("ok_t")):
+            clock_tick(bot, c)
+            out.append("PC clock check against internet time still running")
+    out += _anchor_problems(bot, c)
+    return out
+
+
+def startup_tick(bot, c, now) -> list:
+    """Evaluate the startup reconcile, log when its answer changes, latch it once it passes."""
+    probs = startup_problems(bot, c, now)
+    if getattr(bot, "_startup_ok", None) or not c.get("startup_reconcile") or (bot.cfg or {}).get("adapter") != "ninjatrader":
+        return []
+    key = "; ".join(probs)
+    if probs:
+        if getattr(bot, "_startup_last", None) != key:
+            bot._startup_last = key
+            bot._log("risk", f"STARTUP DISARMED (no new entries yet): {key}")
+        bot.health["startup"] = {"ok": False, "problems": probs}
+    else:
+        bot._startup_ok = int(now)
+        bot.health["startup"] = {"ok": True, "since": int(now)}
+        bot._log("system", "STARTUP RECONCILED: NinjaTrader positions / orders, feed, clock, contract and eval anchor check out; "
+                           "entries allowed")
+    return probs
+
+
 def entry_problems(bot, ent: dict, action: dict, plan_qty, now: int, c: dict | None = None, s: dict | None = None) -> list:
     """Every reason not to route this entry (empty = route it)."""
     c = c or _cfg(bot)
     out = []
+    sp = startup_tick(bot, c, now)
+    if sp:
+        out.append("STARTUP DISARMED until reconciled: " + "; ".join(sp))
     if c.get("calendar"):
         out += calendar(int(ent["entry_t"]), now, session_from=_session_from(bot), flat_mod=_flat_mod(bot),
                         all_hours=_all_hours(bot))
@@ -664,7 +749,8 @@ def tick(bot, now: int):
         c = bot._guards_cfg = config(bot)
     except Exception:
         return
-    for name, fn in (("clock", lambda: clock_tick(bot, c)), ("reconcile", lambda: reconcile_tick(bot, c, now)),
+    for name, fn in (("clock", lambda: clock_tick(bot, c)), ("startup", lambda: startup_tick(bot, c, now)),
+                     ("reconcile", lambda: reconcile_tick(bot, c, now)),
                      ("presence", lambda: _presence_tick(bot, c, now)), ("handsoff", lambda: _handsoff_tick(bot, now))):
         try:
             fn()

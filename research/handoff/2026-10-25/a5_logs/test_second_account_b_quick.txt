@@ -1,0 +1,90 @@
+unit checks: config, sizing per plan, eval lock, no-opposite, switch
+  [PASS] second_model.json ships "account_b": null (account B off)
+  [PASS] config: B on LIT's own account refused
+  [PASS] config: unknown plan / sizing / strategy / cloud-only refused
+  [PASS] config: a valid block has no problem
+  [PASS] sizing 25K need: one winner passes capped at 50% of the $1,000 room and 20 micros -> 20
+  [PASS] sizing 50K need: capped at 60% of the $2,000 room, the $1,000 soft loss, 40 micros -> 40
+  [PASS] sizing 30-pt stop: 25K 8 (50% x $1,000 / $60 = 8) vs 50K 15 (min(26 need, 20 room, 15 dll))
+  [PASS] sizing 25K: the $600 soft daily loss (today -$500: $100 left) -> 2
+  [PASS] sizing 50K session 11: -$200 today, $800 left / $22.90 a micro full stop-out -> 34 (was 40 = $916)
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $53 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $83 would reach the soft daily loss ($600, day -550): no trade
+lit_qty guard: 1 micro's worst-case stop-out $163 would reach the soft daily loss ($600, day -550): no trade
+  [PASS] sizing: one full stop-out never exceeds the rest of the soft daily loss (25K / 50K, need / safe, sessions 1-25; 0 breaches)
+  [PASS] sizing 25K safe: $150 / (20 x $2) = 3 -> 3
+  [PASS] sizing: eval state unknown -> 0 (fails closed)
+  [PASS] lock builder25k: passed (+$1,500) -> 0 micros; failed (room <= 0) -> 0
+  [PASS] lock builder50k: passed (+$3,000) -> 0 micros; failed (room <= 0) -> 0
+  [PASS] eval 25K: balance $26,550 >= target $26,500 -> passed, session 3
+  [PASS] eval: 'ATLAS Sim102 EVAL PASSED' pushed once
+  [PASS] eval 25K: -$950 -> room $50 < $100 -> stuck (no trade, push 'buy a new one')
+  [PASS] eval 25K: -$1,000 -> failed
+  [PASS] soft daily loss: -$610 on the 25K -> locked out for the day (LIT not affected)
+  [PASS] eval 50K: +$1,200 -> balance $51,200, floor $49,200 (EOD trailing $2,000), target $53,000, open
+  [PASS] no-opposite: LIT in a SHORT -> a B LONG blocked, a B SHORT allowed
+  [PASS] no-opposite: LIT entering SHORT -> B LONG blocked
+  [PASS] no-opposite: LIT short setup armed (limit) -> B LONG blocked; long setup armed -> B LONG allowed
+  [PASS] no-opposite: LIT's routed SHORT on its account -> B LONG blocked
+  [PASS] lit_entering: LIT same direction -> B kept; LIT opposite -> B closed at market (HEDGE, $ booked at LIT's price)
+  [PASS] switch: refused when engine.ninjatrader --selftest fails (file untouched), refused for an invalid name
+  [PASS] switch: --account-b Sim102 --plan builder25k --start sets the one account_b line; B's strategies route off on LIT's account
+  [PASS] switch: a strategy on account B can not be routed on LIT's account too (--route refused)
+  [PASS] switch: --account-b off restores the file byte for byte
+  [PASS] engine/account_b.py never arms anything (sets no environment switch, holds no LIVE phrase)
+a. account B off = today
+  [PASS] a. 2026-10-02 B off: no account B (acct_b None, no acctb order file, no Sim102 position), LIT routed (1)
+b/c. account B on (Sim102) next to LIT (Sim101)
+  [PASS] b. 2026-10-02 builder25k: account B started on Sim102 (MFFU Builder 25K), no problem
+  [PASS] b. 2026-10-02 builder25k: LIT's 1 trade(s) routed on Sim101 and exited as run lit_live
+  [PASS] b. 2026-10-02 builder25k: B ema_lon_vix 03:10:00 routed on Sim102 like the research trade (4 micros on B's eval, stop, target) 3.0 s after its 5m open
+  [PASS] b. 2026-10-02 builder25k: B ema_lon_vix 03:10:00 exit TARGET with the research $ (+1,546.05) booked on B's eval
+  [PASS] b. 2026-10-02 builder25k: never long on one account and short on the other at any poll (445 polls)
+  [PASS] b. 2026-10-02 builder25k: both accounts in a position at once in the same direction (allowed: 297 polls)
+  [PASS] b. 2026-10-02 builder25k: account B <= 2 entries a day, one position (fake Sim102 never above one entry's size)
+  [PASS] b. 2026-10-02 builder25k: no error, no RECONCILE flatten, no DESYNC, no account B error
+  [PASS] b. 2026-10-02 builder25k: heartbeat / dashboards show 'ATLAS Sim102' with its eval tracker
+  [PASS] b. 2026-10-02 builder25k: second.compact labels B's strategies 'ROUTED on ATLAS Sim102'
+     2026-10-02 builder25k: [{'entry': '03:10:00', 'key': 'ema_lon_vix', 'routed': True, 'qty': 4, 'exit': 'TARGET', 'pnl': 1546.05}] (463 s)
+e. a crash in account B never touches LIT
+  [PASS] e. 2026-10-02: account B raising every poll (inside its pass, and its whole tick) -> LIT's orders identical to B off (1 entries, delay [2] s vs [2] s), no poll failed, the error logged
+account B: 42/42 checks passed in 1363 s

@@ -73,7 +73,10 @@ What changes for you:
     `stop_bot.ps1 -RestartServer` is not enough. (run_bot.ps1 turns the heartbeat on by itself anyway. The heartbeat lets
     the cloud push "PC bot silent" to your phone if the PC dies; the cloud checks every 30 min from about 02:00 ET.)
     Only your eval account should be connected in NinjaTrader: the kill switch flattens every connected account.
-11. Run: `python -m engine.ninjatrader --start --account <your eval account Name> --confirm "I ACCEPT LIVE RISK"`
+11. Once per account (2026-10-25, the account allowlist): `python -m engine.ninjatrader --allow-account "<your eval account Name>"`.
+    Then run: `python -m engine.ninjatrader --start --account <your eval account Name> --confirm "I ACCEPT LIVE RISK"`
+    (the bot starts DISARMED and allows entries once the log says `STARTUP RECONCILED`; see
+    `research/handoff/2026-10-25/STARTUP_AND_RECOVERY_RUNBOOK.md`)
     Type the Name exactly as the Accounts tab shows it (same capitals, dashes kept) and in quotes, e.g.
     `--account "MFFUEV12345"`; NinjaTrader ignores orders for an account name it doesn't know.
 12. The command prints `Bot start: OK` and the line

@@ -200,7 +200,8 @@ Example: long 2 MNQ on Sim101, stop 24990.25, target 25080. The ids are made per
 | Breakeven, or any stop move the model makes (0 = leave unchanged) | `CHANGE;;;;0;;0;25020.25;;;<id>S;;` |
 | Partial fill completed (resize both legs) | `CHANGE;;;;4;;0;0;;;<id>S;;` and the same for `<id>T` |
 | Exit (time stop, giveback, 15:55, news; also a harmless sync after a bracket fill) | `CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;` then, once NinjaTrader shows flat, `CANCEL;;;;;;;;;;<id>S;;` for any leg still working |
-| Kill switch | `FLATTENEVERYTHING;;;;;;;;;;;;` |
+| Kill switch (yours: HOLD TO KILL, remote kill, `--kill`) | `FLATTENEVERYTHING;;;;;;;;;;;;` |
+| Account B / an extra account flattened (its kill, a remote flatten) | `CLOSEPOSITION;<its account>;MNQ 12-26;;;;;;;;;;` + `CANCEL;;;;;;;;;;<id>;;` for its own orders still working (never `FLATTENEVERYTHING`, which would close the other account too) |
 
 Why the stop and target wait for the fill: if the entry failed, a stop or target already sitting at the broker could
 open a position by itself. The wait is normally well under a second.
@@ -237,6 +238,8 @@ connection = `CONNECTED` or `DISCONNECTED`. The outgoing folder is emptied when 
 - **Kill switch**: dashboard **HOLD TO KILL**, or `python -m engine.ninjatrader --kill`. This sends
   `FLATTENEVERYTHING`: NinjaTrader cancels every order and flattens every position **on every account connected in
   NinjaTrader** **[doc]**, not only the bot's account. The bot stops, and the kill flag holds for the rest of the day.
+  Only your own kill does that: account B's or an extra account's flatten, and a remote **flatten**, close that one
+  account with `CLOSEPOSITION` and cancel its own orders by id (2026-10-25).
   If the server is down, `--kill` writes the file to NinjaTrader itself. If NinjaTrader is down too, flatten in the
   Tradovate or MFFU app.
 - **In NinjaTrader by hand**: Chart Trader **Close**, or the Positions tab > right-click > Flatten. The bot notices a
@@ -286,9 +289,18 @@ All three locks are needed at once, or every order is refused:
    `powershell -ExecutionPolicy Bypass -File scripts\<name>.ps1`.
 2. The start says armed.
 3. The start carries the phrase `I ACCEPT LIVE RISK`.
+4. (2026-10-25) The account Name is in the account allowlist, once per account:
+   `python -m engine.ninjatrader --allow-account "<the MFFU account Name>"` (written to `data\nt_accounts_allow.json`,
+   never uploaded). Any other Name is refused, so a typo or another real account never gets an order.
 
 Command:
 `python -m engine.ninjatrader --start --account <the MFFU account Name> --confirm "I ACCEPT LIVE RISK"`
+
+After the start the bot is **DISARMED for entries** until its startup check passes once (Live page log
+`STARTUP RECONCILED`; until then `STARTUP DISARMED: <reason>`): NinjaTrader's position / order files match the bot,
+the bar feed is fresh, the PC clock was checked, the chart is on the order contract and the eval anchor is sane. Only
+one bot process may trade an account (a second copy logs `another bot process already trades account ...` and sends
+nothing). Runbook: `research/handoff/2026-10-25/STARTUP_AND_RECOVERY_RUNBOOK.md`.
 
 A real-account bot never restarts by itself after a crash or reboot; you start it by hand. Stay present, as MFFU
 requires. LIT trades from 02:00 ET (most trades 02:00-08:00), so "present" means awake then.

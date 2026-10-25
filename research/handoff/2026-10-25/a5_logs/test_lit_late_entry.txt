@@ -1,0 +1,11 @@
+  [PASS] LIT position first seen 2 s after its 1m fill bar opened: routed
+  [PASS] LIT position first seen 62 s after its 1m fill bar opened: routed
+  [PASS] LIT position first seen 90 s after its 1m fill bar opened: routed
+  [PASS] LIT position first seen 91 s after its 1m fill bar opened: NOT routed + logged
+  [PASS]   ... and its model exit is not routed either (late 91 s)
+  [PASS] LIT position first seen 150 s after its 1m fill bar opened: NOT routed + logged
+  [PASS]   ... and its model exit is not routed either (late 150 s)
+  [PASS] LIT position first seen 900 s after its 1m fill bar opened: NOT routed + logged
+  [PASS]   ... and its model exit is not routed either (late 900 s)
+  [PASS] the 5m engine's rule is unchanged (an engine position seen 10 min after its entry bar opened is routed)
+10/10 checks passed

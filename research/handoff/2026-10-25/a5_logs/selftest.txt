@@ -1,0 +1,82 @@
+NinjaTrader 8 ATI offline self-test
+  [PASS] grammar: documented templates compile and FLATTENEVERYTHING has 12 semicolons
+  [PASS] grammar: the validator rejects a wrong field count, a comma decimal and an unknown order type
+  [PASS] instrument: front month in NinjaTrader naming with the 8-day roll
+  [PASS] accounts: Sim101 / Sim102 / Playback101 are simulation; MFFU-style names are not
+  [PASS] adapter: Sim101 enabled, folder found, front month MNQ 12-26
+  [PASS] bracket: ok, entry file = 1 MARKET line, then 1 file with the STOPMARKET + LIMIT OCO pair (exact lines)
+  [PASS] order files: written whole in le_outbox\ then renamed into incoming\ (never copied, never written in place)
+  [PASS] bracket: NinjaTrader shows LONG 2 MNQ, stop + target WORKING, leg protected
+  [PASS] bracket: one position at a time (a second entry is refused while the bracket is open)
+  [PASS] breakeven: one CHANGE line, quantity and limit 0 (= unchanged), new stop price, our stop order id
+  [PASS] restart: open bracket restored from the state file (same ids)
+  [PASS] exit: CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;; -> flat confirmed, bracket cancelled, nothing left to cancel
+  [PASS] exit: a sync exit when already flat is harmless (CLOSEPOSITION, ok)
+  [PASS] exit: legs still working after CLOSEPOSITION -> CANCEL;;;;;;;;;;<id>;; for each
+  [PASS] bracket: target fills, OCO cancels the stop, tick() retires the leg
+  [PASS] partial fill: stop/target for the 2 filled, then CHANGE;;;;4;;0;0;;;<id>;; on both once all 4 fill
+  [PASS] kill: FLATTENEVERYTHING;;;;;;;;;;;; -> NinjaTrader flat, legs retired, new entries refused
+  [PASS] gates: 41 micros / 5 minis / stop on the wrong side / 15:56 ET / Saturday are all refused, no file written
+  [PASS] contract auto: 12 micros -> 1 NQ 12-26 + 2 MNQ 12-26, one entry file with both lines, each leg bracketed
+  [PASS] live gate: a non-Sim account is refused without armed, without the exact phrase, without NINJATRADER_LIVE=1, or when its Name is not in the account allowlist
+  [PASS] live gate: armed + phrase + NINJATRADER_LIVE=1 + allowlisted enables it (env 'live' for the trade memory)
+  [PASS] NinjaTrader off: entry not picked up -> withdrawn (deleted), ok False, nothing left in incoming
+  [PASS] NinjaTrader off: the withdrawn entry is watched, then dropped after the timeout
+  [PASS] entry REJECTED: no stop/target sent, ok False, nothing tracked
+  [PASS] stop REJECTED after the fill: flattened at once (CLOSEPOSITION), alert raised, ok False
+  [PASS] freeze after the fill: alert + 'unprotected', the next tick places the stop and target
+  [PASS] freeze, then closed by hand: no stop/target is placed afterwards (they would be naked)
+  [PASS] cancel pending: an unfilled entry's CANCEL keeps the leg watched; a late fill gets its stop + target
+  [PASS] cancel confirmed: CANCELLED resolves the unfilled entry, nothing protected, the leg retired
+  [PASS] partial exit: the stop fills 1 of 4 -> the target is resized to 3 (CHANGE;;;;3;;0;0;;;<id>;;)
+  [PASS] early close: halts 13:15 (Black Friday, Dec 24) / 13:00 (Labor Day) / 09:15 (Good Friday); a 12:00 entry is flattened at 13:11, a 13:02 entry is refused
+  [PASS] parsing: spaces after semicolons, junk files and bad numbers never raise
+  [PASS] files: every OIF written matched the documented grammar, no byte-order mark, all named oif*.txt
+  [PASS] audit: every OIF line written is in logs/ninjatrader_oif.log; files never processed were all withdrawn
+  [PASS] feed: MNQ_5m.csv -> the Yahoo frame layout (time int64 = bar open, float OHLCV), half-written last line dropped
+  [PASS] feed: 1h bars are built from the 5m file (open first, high max, low min, close last, volume sum)
+  [PASS] feed: stale during market hours -> None with the reason (the bot blocks new entries; no Yahoo)
+  [PASS] feed: no file for a symbol -> None with the file name to create
+  [PASS] feed: bar times shifted by an hour (bars at 17:xx ET) are detected and refused
+  [PASS] LiveBot: adapter ninjatrader refused unless armed
+  [PASS] LiveBot: ADAPTERS['ninjatrader'] selected, 'data' alias -> data_source ninjatrader
+  [PASS] LiveBot: entry routed as a bracket; the model's breakeven becomes ONE modify -> CHANGE of the stop
+  [PASS] LiveBot: a TIME STOP exit (not only TIME) is routed to NinjaTrader as CLOSEPOSITION
+  [PASS] LiveBot: when the adapter refuses an entry, the model's breakeven is not sent (no bracket to move)
+  [PASS] LiveBot: data_source ninjatrader serves the feed (no Yahoo call); stale -> no_yahoo: None + FEED STALE, no Yahoo call; no_yahoo off: Yahoo fallback + warning + flag
+  [PASS] LiveBot: kill switch with no model position still reaches NinjaTrader (FLATTENEVERYTHING) and stops the bot
+  [PASS] autostart: ninjatrader on Sim101 counts as demo (may resume), any other account as live (never resumes)
+  [PASS] LIT: the adapter's session starts at the LIT window (02:00 ET) for model lit, 08:00 for the engine
+  [PASS] LIT all_hours: the adapter's session starts 18:00 ET (trading-day order); off: 02:00 and the clock-day gate
+  [PASS] LIT all_hours: entries allowed Tue 20:41, Tue 23:28, Wed 00:37, Wed 10:00 and Sun 18:30 ET (Monday's session)
+  [PASS] LIT all_hours: refused 15:55 / 16:30 / 17:30 ET, Fri 20:00, Sat, Sun 17:30; today's adapter still refuses 20:41
+  [PASS] LIT all_hours: the flat-time watch leaves a 20:45 / 01:00 / 10:00 ET Asia trade open and flattens it at 15:55
+  [PASS] LIT: a 02:35 ET entry is routed (not refused as outside the session); the VIX-band target 25087.37 goes in as LIMIT 25087.25 (tick, toward the entry), the stop as STOPMARKET 24970.25
+  [PASS] LIT: tick rounding: stops to the nearest tick, targets toward the entry (long down, short up)
+  [PASS] LIT: the adapter's flat-time watch leaves a 02:36 ET London trade alone (no CLOSEPOSITION before 08:00)
+  [PASS] LIT: breakeven at 1R (model stop = the fill) -> one CHANGE of the stop to 25020.00
+  [PASS] LIT: the 15:55 flat (model exit EOD -> TIME) is routed as CLOSEPOSITION and the bracket is retired
+  [PASS] LIT: 1m bars from NinjaTrader's MNQ_1m.csv (no Yahoo call); a stale 1m file -> no Yahoo call, the bars already seen are kept, nt_down_1m flagged (entries blocked), fallback flag untouched
+  [PASS] LIT: the forming minute's open from MNQ_1m_open.csv (sizes an entry decided on the 1m CISD close); an old minute in it is ignored
+  [PASS] be_off: breakeven at entry + 1.25 pts -> one CHANGE of the stop to 25021.25 (5 ticks above the 25020 entry)
+  [PASS] scale-in: MARKET add of 3 (same side, own order id), then the ONE OCO pair resized to the whole position: CHANGE qty 5 on the stop and the target (no second bracket)
+  [PASS] scale-in: refused (no order file) above max_micros (5 + 36 > 40), on the other side, when NinjaTrader's position disagrees with the bracket, and after the entry cutoff
+  [PASS] scale-in: the resized stop closes the whole position (5) -> flat, bracket retired
+  [PASS] scale-in: no protected bracket -> refused
+  [PASS] scale-in: an add sized at breakeven is refused while the broker stop is still the first stop (25030)
+  [PASS] scale-in: an add filled after the call returned (pending) -> the next tick() resizes the stop and target to 4
+  [PASS] LiveBot: scale-in add sizing in an eval mode = engine/sizing.scale_in_qty at the routed size (60% room -> 3, soft daily loss left -> 1, sizing error -> 0 = no add); normal mode = the model's add (4)
+  [PASS] LiveBot: the model's add_now becomes ONE add route (the model's add at the routed size) after the breakeven CHANGE to entry + 1.25
+  [PASS] LiveBot: a model exit (CUT_T15) after an add is routed as CLOSEPOSITION for the whole position (qty 8) with the add's P&L at its REAL fill (25045.00, the model priced 25045.25) in the ledger
+  [PASS] secrets: no confirm phrase or credential in the OIF audit log / trace
+
+NinjaTrader offline self-test: PASS (70/70)
+Exact OIF lines (long 2 MNQ on Sim101, stop 24990.13 -> 24990.25 tick-rounded, target 25080):
+  entry    PLACE;Sim101;MNQ 12-26;BUY;2;MARKET;0;0;DAY;;<id>E;;
+  bracket  PLACE;Sim101;MNQ 12-26;SELL;2;STOPMARKET;0;24990.25;DAY;<id>O;<id>S;;
+           PLACE;Sim101;MNQ 12-26;SELL;2;LIMIT;25080.00;0;DAY;<id>O;<id>T;;
+  BE       CHANGE;;;;0;;0;25020.25;;;<id>S;;
+  add      PLACE;Sim101;MNQ 12-26;BUY;3;MARKET;0;0;DAY;;<id>A1;;   (LIT scale_in, off by default)
+           CHANGE;;;;5;;0;0;;;<id>S;;  CHANGE;;;;5;;0;0;;;<id>T;;   (the one OCO pair covers all 5)
+  exit     CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;   (+ CANCEL;;;;;;;;;;<id>S;; for any leg still working)
+  kill     FLATTENEVERYTHING;;;;;;;;;;;;

@@ -51,55 +51,55 @@
  "verdict": "Keep ATLAS as it is: 358 tweaks (members, Asia slot, size weights down and up, priority, 25K sizing, windows, weekdays, VIX, exits, banked R, limit entry) and the confluence job's 1,481 variants found nothing that is better in 2026 H1 and H2 beyond chance and holds as a plateau. Account B stays off until the paper scorecard says ready.",
  "numbers": {
   "H1": {
-   "net": 19737,
-   "per_month": 3238,
-   "pf": 2.98,
-   "win": 52.5,
-   "tpw": 3.95,
-   "max_dd": -1403,
-   "trades": 101
+   "net": 6481,
+   "per_month": 1063,
+   "pf": 2.3,
+   "win": 48.1,
+   "tpw": 2.11,
+   "max_dd": -926,
+   "trades": 54
   },
   "H2": {
-   "net": 5448,
-   "per_month": 1467,
-   "pf": 2.35,
-   "win": 56.5,
-   "tpw": 2.95,
-   "max_dd": -1691,
-   "trades": 46
+   "net": 4434,
+   "per_month": 1194,
+   "pf": 3.18,
+   "win": 52.0,
+   "tpw": 1.6,
+   "max_dd": -816,
+   "trades": 25
   },
   "y2025": {
-   "net": 2232,
-   "per_month": 182,
-   "pf": 1.1,
-   "win": 38.4,
-   "tpw": 4.24,
-   "max_dd": -4796,
-   "trades": 219
+   "net": -2156,
+   "per_month": -176,
+   "pf": 0.81,
+   "win": 39.1,
+   "tpw": 2.58,
+   "max_dd": -5819,
+   "trades": 133
   },
   "y2124": {
-   "net": 9919,
-   "per_month": 256,
-   "pf": 1.13,
+   "net": 2419,
+   "per_month": 62,
+   "pf": 1.05,
    "win": 36.9,
-   "tpw": 4.61,
-   "max_dd": -9510,
-   "trades": 751
+   "tpw": 3.05,
+   "max_dd": -7818,
+   "trades": 496
   }
  },
  "eval25k": {
   "H1": {
-   "p10": 72.3,
+   "p10": 65.5,
    "f10": 0.0,
-   "s10": 5.0,
-   "p20": 82.6,
+   "s10": 0.8,
+   "p20": 76.1,
    "f20": 0.0,
    "pass_med": 5.0,
-   "p60": 87.5,
+   "p60": 92.2,
    "funded_3mo": 1842,
    "funded_6mo": 3734,
    "funded_lost_3mo": 0.0,
-   "ev_per_eval": 1549
+   "ev_per_eval": 1635
   },
   "H2": {
    "p10": 43.5,
@@ -115,23 +115,23 @@
    "ev_per_eval": 1286
   },
   "y2025": {
-   "p10": 30.5,
+   "p10": 30.1,
    "f10": 0.0,
-   "s10": 32.9,
-   "p20": 36.0,
+   "s10": 23.7,
+   "p20": 33.9,
    "f20": 0.0,
    "pass_med": 4.0,
-   "p60": 38.4,
+   "p60": 32.6,
    "funded_3mo": 190,
    "funded_6mo": 485,
    "funded_lost_3mo": 74.0,
-   "ev_per_eval": 10
+   "ev_per_eval": -1
   },
   "y2124": {
-   "p10": 23.2,
+   "p10": 22.9,
    "f10": 0.0,
-   "s10": 36.9,
-   "p20": 26.9,
+   "s10": 27.1,
+   "p20": 26.4,
    "f20": 0.0,
    "pass_med": 4.0,
    "p60": 29.9,

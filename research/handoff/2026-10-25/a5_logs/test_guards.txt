@@ -1,0 +1,71 @@
+ok   A. a normal LIT order passes
+ok   A. more micros than the sizing plan -> refused
+ok   A. more than 40 micros -> refused
+ok   A. more than the account's max -> refused
+ok   A. long with the stop above the entry -> refused
+ok   A. short with the stop below the entry -> refused
+ok   A. stop 101 pts away -> refused
+ok   A. stop exactly 100 pts away -> allowed
+ok   A. target 1.4R -> refused
+ok   A. target exactly 1.5R -> allowed
+ok   A. a 1.5R target rounded 1 tick toward the entry (1.49R) -> allowed (tick slack)
+ok   A. the self-test's 1.35R target -> refused
+ok   A. $1,250 at risk -> refused
+ok   A. missing stop -> refused
+ok   B. Thu 10:00 ET -> allowed
+ok   B. Saturday -> refused
+ok   B. Sunday 17:30 ET (before the 18:00 open) -> refused
+ok   B. 17:30 ET daily break -> refused
+ok   B. 01:30 ET (before 02:00) -> refused
+ok   B. 15:55 ET (flat time) -> refused
+ok   B. Christmas 2026 (Fri) -> refused, CME holiday
+ok   B. New Year 2027 (Fri) -> refused
+ok   B. New Year 2023 fell on a Sunday: Mon 2023-01-02 refused
+ok   B. Black Friday 2026-11-27 (13:15 halt): 12:55 allowed, 13:00 refused (15 min before)
+ok   B. Thanksgiving 2026-11-26 (13:00 halt): 12:45 refused
+ok   B2. all_hours off: Tue 20:41 ET -> refused 'before the session start 02:00' (today's rule)
+ok   B2. all_hours: Tue 20:41, 23:28, Wed 00:37 and 10:00 ET -> allowed
+ok   B2. all_hours: Sun 18:30 ET (Monday's session) -> allowed; Sun 17:30 -> refused (closed)
+ok   B2. all_hours: 15:55 and 16:30 ET -> past the cutoff; 17:30 -> closed; Fri 20:00 -> closed
+ok   B2. all_hours: Christmas Eve 20:00 ET (= Christmas's session) and New Year's Eve 20:00 -> CME holiday
+ok   B2. all_hours: Thanksgiving evening 20:00 ET (Black Friday's session, 13:15 halt) allowed; Fri 13:00 refused (early close)
+ok   B2. all_hours: Wed 20:00 before Thanksgiving allowed; Thanksgiving 12:45 refused (13:00 halt)
+ok   B2. session start from the bot's LIT window: all_hours 18:00 (trading-day order), today 02:00
+ok   news: 08:28:30 and 08:32 are inside 2 min of CPI, 08:27 and 08:33 are not
+ok   defaults: news OFF; order sanity, duplicates, room alarm, daily loss, reconcile (+ flatten), P&L reconcile, clock, calendar ON
+ok   news: the Tier-1 calendar comes from data/news (CPI 2026-11-10 08:30)
+ok   C. 2026: all 120 LIT trades pass order sanity + calendar (0 would be blocked)
+ok   C. worst 2026 $ at risk incl. costs: LIT rule $853, two_week eval $964 < max_risk_usd $1,200
+ok   D. stop 130 pts away: NOT routed, 'NOT routed: GUARD' logged, pushed
+ok   D. a normal entry is routed (side, qty, tick stop / target) and recorded in guards_state.json
+ok   D. a 2nd entry the same day: NOT routed (1 trade a day)
+ok   D. restart, live_state.json deleted: the same signal is NOT routed again (persisted)
+ok   D. the next trading day: routed
+ok   D. after a NO TRADE flatten (the estimate was not the model's trade) the model's later entry is routed
+ok   D. today's routed P&L -$1,000: NOT routed (soft daily loss) + push
+ok   D. -$999: routed
+ok   D. clock drift 8 s with a simulated clock (test harness): ignored, routed
+ok   D. clock 8 s ahead on the real clock (2 probes): entry blocked
+ok   D. one bad probe only (not confirmed yet): not blocked
+ok   D. clock probe thread: two 7 s answers -> confirmed (bad 2), PC clock behind
+ok   D. news guard OFF (default): an entry 1 min after CPI is routed
+ok   D. news guard ON (start cfg guards.news): the same entry is NOT routed
+ok   E. room $850: no alarm
+ok   E. room $750: 'below $800' pushed once (2 polls)
+ok   E. room $350: 'below $400' pushed once; 5 polls, 2 pushes in all
+ok   F. account flat, ledger flat: nothing
+ok   F. unknown LONG 2: first poll only notes it (no push, no close yet)
+ok   F. 30 s later: push 'Position mismatch' + CLOSEPOSITION -> the account is flat
+ok   F. ledger LONG 3, NinjaTrader flat: no push within 6 min (a bracket fill the model has not seen yet), then push, no order
+ok   F. the bot's bracket (LONG 4) = NinjaTrader LONG 4: nothing
+ok   F. 17:00 P&L reconcile: NinjaTrader fills +$312.40 = ledger: logged, no push (and nothing before 17:00)
+ok   F. ledger $50 above NinjaTrader's fills: one push 'P&L mismatch'
+ok   F. paper / stub adapter: reconcile does nothing
+ok   G. fresh 1m + 5m + 1m-open files: no block, the forming 1m open is read from MNQ_1m_open.csv
+ok   G. 1m-open file 10 min old: NOT a block (forming open unknown -> the entry is sized from the CISD close and checked when its fill bar closes)
+ok   G. only the 1m file stale (40 min; 5m fresh): FEED STALE, NEW entries blocked at once
+ok   G. an entry while only the 1m feed is stale is NOT routed ('feed stale')
+ok   G. 1m file missing: blocked too
+ok   G. no Yahoo call in any of it
+
+guards test: PASS (69/69)

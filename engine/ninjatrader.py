@@ -8,7 +8,10 @@ Same contract as live.PaperAdapter / tradovate.TradovateAdapter. LiveBot builds 
 send(action) with
   {"side": "buy"|"sell", "qty": micros, "stop": px, "target": px, "entry": px, "sym": "NQ", "entry_t": t}  -> bracket
   {"side": "exit", "reason": ..., "entry_t": t}   -> CLOSEPOSITION, then cancel any of our legs still working
-  {"side": "exit", "reason": "KILL SWITCH"}       -> kill(): FLATTENEVERYTHING (every account connected in NinjaTrader)
+  {"side": "exit", "reason": "KILL SWITCH"}       -> kill(): THIS account only (CLOSEPOSITION + CANCEL by id; account B,
+                                                     extra accounts, remote flatten)
+  {"side": "exit", "reason": "KILL SWITCH", "scope": "global"} -> kill(scope="global"): FLATTENEVERYTHING (every account
+                                                     connected in NinjaTrader; only the owner's kill, LiveBot.kill_switch)
   {"side": "modify", "stop": px}                  -> CHANGE the stop order (breakeven at 1R)
   {"side": "add", "qty": n, "dir": d, "entry_t": t} -> LIT scale-in: MARKET add, then CHANGE the qty of the OCO stop and
                                                      target to the whole position (add_to_position)
@@ -65,6 +68,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE_PATH = os.path.join(ROOT, "data", "ninjatrader_state.json")      # gitignored: open brackets survive a restart
 AUDIT_PATH = os.path.join(ROOT, "logs", "ninjatrader_oif.log")         # every OIF line ever written (logs/ is ignored)
 LIVE_ENV = "NINJATRADER_LIVE"            # must be "1" in the SERVER's environment before a non-Sim account can trade
+# account allowlist (pre-launch audit 2026-10-25): a non-Sim account trades only when its exact NinjaTrader Name is listed in
+# data/nt_accounts_allow.json (gitignored; `python -m engine.ninjatrader --allow-account "<Name>"`) or in NINJATRADER_ALLOW
+# (comma list, .env.local.ps1). Sim101 / SimNNN / PlaybackNNN are always allowed. Every PLACE / CLOSEPOSITION line must also
+# name the adapter's own account, and FLATTENEVERYTHING / CANCELALLORDERS go out only on the owner's global kill.
+ALLOW_PATH = os.path.join(ROOT, "data", "nt_accounts_allow.json")
+ALLOW_ENV = "NINJATRADER_ALLOW"
+LOCK_DIR = "le_locks"                    # <NinjaTrader 8>\le_locks\<account>.lock: one bot process per account (OS file lock)
+_LOCKS: dict = {}                        # lock path -> open file handle held by THIS process (released when it exits)
 FEED_DIR = "le_feed"
 SIM_ACCOUNT = re.compile(r"^(Sim|Playback)\d+$")     # NinjaTrader's own simulation accounts: Sim101, Sim102, Playback101
 
@@ -337,6 +348,59 @@ def resolve_account(cfg: dict | None = None) -> str:
     return str(cfg.get("nt_account") or os.environ.get("NINJATRADER_ACCOUNT") or "Sim101").strip()
 
 
+def _publish(src: str, dst: str):
+    """Move a finished order file into incoming\\ in one step, never replacing a file already there (FileExistsError).
+    Windows: os.rename refuses an existing target. POSIX: a hard link refuses it too, then the source name is dropped."""
+    if os.name == "nt":
+        os.rename(src, dst)
+        return
+    try:
+        os.link(src, dst)
+    except FileExistsError:
+        raise
+    except OSError:                      # a file system without hard links: check, then rename (tiny race, POSIX tests only)
+        if os.path.exists(dst):
+            raise FileExistsError(dst)
+        os.replace(src, dst)
+        return
+    try:
+        os.remove(src)
+    except OSError:
+        pass
+
+
+def allowed_accounts(path: str | None = None) -> set:
+    """The owner's account allowlist: data/nt_accounts_allow.json {"accounts": [...]} + NINJATRADER_ALLOW (comma list)."""
+    out = {a.strip() for a in os.environ.get(ALLOW_ENV, "").split(",") if a.strip()}
+    try:
+        with open(path or ALLOW_PATH, encoding="utf-8") as fh:
+            d = json.load(fh)
+        out |= {str(a).strip() for a in (d.get("accounts") or []) if str(a).strip()}
+    except Exception:
+        pass
+    return out
+
+
+def allow_account(name: str, path: str | None = None, remove: bool = False) -> list:
+    """Add (or remove) one exact account Name in the allowlist file; returns the new list."""
+    name = str(name or "").strip()
+    if not name or any(c in name for c in ";\r\n,"):
+        raise ValueError("give the account Name exactly as NinjaTrader's Accounts tab shows it")
+    p = path or ALLOW_PATH
+    try:
+        with open(p, encoding="utf-8") as fh:
+            cur = [str(a).strip() for a in (json.load(fh).get("accounts") or [])]
+    except Exception:
+        cur = []
+    cur = [a for a in cur if a != name] + ([] if remove else [name])
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump({"accounts": cur, "note": "NinjaTrader account Names the bot may send orders to (Sim accounts always)"}, fh, indent=1)
+    os.replace(tmp, p)
+    return cur
+
+
 def nt_instrument(root: str = "MNQ", today: dt.date | None = None) -> str:
     """NinjaTrader's name for the front quarterly contract, e.g. 'MNQ 12-26'. Same roll rule as tradovate.front_month:
     the next contract from 8 days before the 3rd-Friday expiry (Dec 2026 -> Mar 2027 on 2026-12-10)."""
@@ -462,10 +526,16 @@ class NinjaTraderAdapter:
         self._seq = 0
         self.sim = is_sim(self.account)
         self.env = "demo" if self.sim else "live"      # LiveBot._remember: memory source paper / live
+        self.state_problem = None                      # the state file was unreadable: entries blocked until the account is flat
+        self._global_kill = False                      # True only inside kill(scope="global"): FLATTENEVERYTHING may be written
         self.disabled = self._live_gate()
+        self.lock_problem = None if self.disabled else self._acquire_lock()
+        if self.lock_problem:
+            self.disabled = self.lock_problem
         self._restore()
-        if not readonly:
+        if not readonly and not self.lock_problem:
             self._sweep_stale_oifs(max_age=10.0)
+            self._sweep_outbox(max_age=10.0)
         fs = self.folder_status()
         self._log("system", f"NinjaTrader adapter: account {self.account} ({'SIM' if self.sim else 'LIVE ACCOUNT'}), "
                             f"{' + '.join(self._instruments().values()) if self.contract_mode == 'auto' else self._instruments()['micro']}, "
@@ -485,7 +555,77 @@ class NinjaTraderAdapter:
             return f"LIVE account {self.account} refused: confirm phrase missing (type exactly '{LIVE_PHRASE}')"
         if os.environ.get(LIVE_ENV, "") != "1":
             return f"LIVE account {self.account} refused: start the server with {LIVE_ENV}=1"
+        if self.account not in allowed_accounts(self.cfg.get("nt_allow_path")):
+            return (f"LIVE account {self.account} refused: not in the account allowlist (run once: python -m engine.ninjatrader "
+                    f"--allow-account \"{self.account}\")")
         return None
+
+    def _acquire_lock(self):
+        """One bot process per NinjaTrader account: an OS lock on <NinjaTrader 8>\\le_locks\\<account>.lock, held for the
+        life of the process (the OS releases it when the process exits or crashes, so it never goes stale). Several adapters
+        in ONE process share it (a restarted LiveBot; LIT and account B lock different names). None = ours, else why not."""
+        if self.readonly or not os.path.isdir(self.folder) or self.cfg.get("nt_lock") is False:
+            return None
+        d = os.path.join(self.folder, LOCK_DIR)
+        path = os.path.join(d, re.sub(r"[^A-Za-z0-9_.-]", "_", self.account) + ".lock")
+        key = os.path.normcase(os.path.abspath(path))
+        if key in _LOCKS:
+            self._lock_key = key
+            return None
+        try:
+            os.makedirs(d, exist_ok=True)
+            fh = open(path, "a+")
+        except OSError as e:
+            return f"account lock {path} could not be opened ({e.__class__.__name__}: {e})"
+        try:
+            if os.name == "nt":
+                import msvcrt
+                fh.seek(0)
+                msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            fh.close()
+            try:
+                with open(path + ".info", encoding="utf-8") as f2:
+                    who = json.load(f2)
+            except Exception:
+                who = {}
+            return (f"another bot process already trades account {self.account} (pid {who.get('pid', '?')}, started "
+                    f"{who.get('started', '?')}, folder {who.get('root', '?')}): this copy sends NO orders. Stop the other "
+                    "copy first (scripts\\stop_bot.ps1), then start again")
+        _LOCKS[key] = fh
+        self._lock_key = key
+        try:
+            with open(path + ".info", "w", encoding="utf-8") as f2:
+                json.dump({"pid": os.getpid(), "started": dt.datetime.now(ET).strftime("%Y-%m-%d %H:%M:%S ET"), "root": ROOT,
+                           "account": self.account}, f2)
+        except OSError:
+            pass
+        return None
+
+    def release_lock(self):
+        """The bot stopped (LiveBot.stop): give the account back so a Sim check or another start can take it. Never raises."""
+        key = getattr(self, "_lock_key", None)
+        fh = _LOCKS.pop(key, None) if key else None
+        self._lock_key = None
+        if fh is None:
+            return
+        try:
+            if os.name == "nt":
+                import msvcrt
+                fh.seek(0)
+                msvcrt.locking(fh.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(fh.fileno(), fcntl.LOCK_UN)
+        except OSError:
+            pass
+        try:
+            fh.close()
+        except OSError:
+            pass
 
     def _log(self, kind, text, **kw):
         self.trace.append({"t": int(self.clock()), "type": kind, "text": text, **kw})
@@ -604,7 +744,7 @@ class NinjaTraderAdapter:
             self._log("error", msg)
             return {"ok": False, "error": msg}
         for ln in lines:
-            bad = validate_line(ln)
+            bad = validate_line(ln) or self._scope_problem(ln)
             if bad:                                  # a bug guard: a malformed line is never handed to NinjaTrader
                 msg = f"internal: refused to write invalid OIF line {ln!r}: {'; '.join(bad)}"
                 self.last_error = msg
@@ -624,7 +764,7 @@ class NinjaTraderAdapter:
                     tmp = os.path.join(box, name)
                     with open(tmp, "wb") as fh:
                         fh.write(data)
-                    os.replace(tmp, path)
+                    _publish(tmp, path)          # never over an existing file (a name reused by another process)
                 else:
                     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0))
                     try:
@@ -634,6 +774,14 @@ class NinjaTraderAdapter:
                 self._audit(name, lines)
                 self._log("broker", f"NinjaTrader {label} -> {name}: " + " | ".join(lines))
                 return {"ok": True, "file": name, "path": path, "lines": list(lines)}
+            except FileExistsError as e:         # that name is taken in incoming\: never overwrite it, take a new name
+                err = e
+                if self.write_mode == "move":
+                    try:
+                        os.remove(os.path.join(self.folder, "le_outbox", name))
+                    except OSError:
+                        pass
+                self._log("warn", f"NinjaTrader order file name {name} already in incoming (another writer?): new name")
             except OSError as e:
                 err = e
                 time.sleep(0.2 * (attempt + 1))
@@ -641,6 +789,42 @@ class NinjaTraderAdapter:
         self.last_error = msg
         self._log("error", "NinjaTrader " + msg)
         return {"ok": False, "error": msg}
+
+    def _scope_problem(self, line: str) -> list:
+        """Account scope of one OIF line (pre-launch audit 2026-10-25): PLACE / CLOSEPOSITION / REVERSEPOSITION must name this
+        adapter's own account; CANCEL / CHANGE only our own order ids (LE...); FLATTENEVERYTHING / CANCELALLORDERS (they act
+        on EVERY account and connection in NinjaTrader) only inside the owner's global kill. [] = fine."""
+        f = line.split(";")
+        cmd = f[0]
+        if cmd in ("PLACE", "CLOSEPOSITION", "REVERSEPOSITION") and f[1] != self.account:
+            return [f"account {f[1]!r} is not this adapter's account {self.account!r}"]
+        if cmd in ("CANCEL", "CHANGE") and not f[10].startswith("LE"):
+            return [f"order id {f[10]!r} is not one of the bot's (LE...)"]
+        if cmd in ("FLATTENEVERYTHING", "CANCELALLORDERS") and not self._global_kill:
+            return [f"{cmd} acts on every account: only the owner's global kill may send it"]
+        if cmd == "CLOSESTRATEGY":
+            return ["CLOSESTRATEGY is never used by the bot"]
+        return []
+
+    def _sweep_outbox(self, max_age: float):
+        """A crash between writing le_outbox\\<name> and moving it into incoming\\ leaves the file in le_outbox: it was never
+        published (NinjaTrader never saw it), so it is deleted, never moved in late."""
+        box = os.path.join(self.folder, "le_outbox")
+        try:
+            names = os.listdir(box)
+        except OSError:
+            return
+        for n in names:
+            if not n.startswith(f"oif_le_{self.file_tag}"):
+                continue
+            p = os.path.join(box, n)
+            try:
+                if time.time() - os.path.getmtime(p) >= max_age:
+                    os.remove(p)
+                    self._log("warn", f"NinjaTrader: removed {n} from le_outbox (a write interrupted before it was published; "
+                                      "it never reached NinjaTrader)")
+            except OSError:
+                continue
 
     def _withdraw(self, path) -> bool:
         """Delete our unprocessed file so NinjaTrader can never run it late. True = we removed it (it did not run)."""
@@ -851,6 +1035,9 @@ class NinjaTraderAdapter:
             return {"ok": False, "error": f"REFUSED: the bracket of the entry at {_et(open_legs[0]['entry_t']):%H:%M} ET is still open"}
         if self.nt_reset:
             return {"ok": False, "error": "REFUSED: " + self._reset_text()}
+        if self.state_problem and not self._state_problem_resolved():
+            return {"ok": False, "error": "REFUSED: " + self.state_problem["text"] + ": no new entry until NinjaTrader shows the "
+                                                     "account FLAT or you run python -m engine.ninjatrader --confirm-reset"}
         insts = self._instruments()
         plan = [(insts["mini"], sp["minis"], "N"), (insts["micro"], sp["micros"], "M")]
         plan = [x for x in plan if x[1] > 0]
@@ -1337,22 +1524,79 @@ class NinjaTraderAdapter:
         ids = self._cancel_working(self.legs, "cancel")
         return {"ok": True, "cancelled": len(ids), "ids": ids}
 
-    def kill(self) -> dict:
-        """FLATTENEVERYTHING: NinjaTrader cancels every working order and flattens every position on EVERY account and
-        connection it has (not only this bot's). Works even when the account is disabled for new orders."""
+    def kill(self, scope: str = "account") -> dict:
+        """The kill switch on this adapter. Works even when the account is disabled for new orders; no new entry after it.
+
+        scope "account" (the default; account B, the extra accounts, a remote flatten): ONLY this account - CLOSEPOSITION for
+        every instrument NinjaTrader shows a position on for this account (and ours), then CANCEL by id for every order of
+        ours still working (entries / adds always; the stop / target once NinjaTrader shows flat, so a failed close never
+        leaves the position without its stop). Never FLATTENEVERYTHING / CANCELALLORDERS: with LIT 50K + account B 25K on one
+        NinjaTrader those would also close the other account (help guide: they act on all accounts and connections).
+        scope "global" (only the owner's HOLD TO KILL / remote kill / --kill on the primary): FLATTENEVERYTHING."""
         if self.readonly:
             return {"ok": False, "error": "REFUSED: read-only adapter"}
         self.killed = True
-        r = self._send_lines([FLATTEN_EVERYTHING], "KILL")
         legs = list(self.legs)
-        if r["ok"]:
+        if scope == "global":
+            self._global_kill = True
+            try:
+                r = self._send_lines([FLATTEN_EVERYTHING], "KILL")
+            finally:
+                self._global_kill = False
+            if r["ok"]:
+                self._retire(legs, "kill switch")
+                self._risk("KILL: FLATTENEVERYTHING sent (every account and connection in NinjaTrader)")
+            else:
+                self._risk(f"KILL could not reach NinjaTrader ({r.get('error')}). Flatten the account in NinjaTrader or the "
+                           "Tradovate/MFFU app NOW.", alert=True)
+            self._save()
+            return {"ok": r["ok"], "adapter": self.name, "scope": "global", "oif": r.get("file"),
+                    **({} if r["ok"] else {"error": r.get("error")})}
+        return self._kill_account(legs)
+
+    def _kill_account(self, legs) -> dict:
+        insts = list(self._our_instruments())
+        for p in self.positions()["positions"]:
+            if p["side"] != "FLAT" and not any(same_instrument(p["instrument"], i) for i in insts):
+                insts.append(p["instrument"])
+        held = [i for i in insts if (lambda p: p and p["side"] != "FLAT")(self.position_for(i))]
+        ids_all = self._live_ids(legs + list(self.watch))
+        risky = [i for i in ids_all if not any(i in (lg["stop_id"], lg["target_id"]) for lg in legs + list(self.watch))]
+        lines = [close_line(self.account, i + self.close_suffix) for i in (held or insts[:1])] + [cancel_line(i) for i in risky]
+        r = self._send_lines(lines, "KILL (this account only)")
+        if not r["ok"]:
+            self._risk(f"KILL ({self.account}) could not reach NinjaTrader ({r.get('error')}). Flatten {self.account} in "
+                       "NinjaTrader or the Tradovate/MFFU app NOW.", alert=True)
+            self._save()
+            return {"ok": False, "adapter": self.name, "scope": "account", "error": r.get("error")}
+        since = {lg["instrument"]: lg.get("fill_mtime") for lg in legs}
+        flat = self._wait(lambda: all(self._is_flat(i, since.get(i)) for i in held), self.verify_wait) if held else True
+        left = [i for i in self._live_ids(legs + list(self.watch)) if i not in risky] if flat else []
+        if left:
+            self._send_lines([cancel_line(i) for i in left], "CANCEL (kill, after flat)")
+        if flat:
             self._retire(legs, "kill switch")
-            self._risk("KILL: FLATTENEVERYTHING sent (every account and connection in NinjaTrader)")
+            self._risk(f"KILL: {self.account} flattened (CLOSEPOSITION {', '.join(held) or 'none held'}; cancelled "
+                       f"{len(risky) + len(left)} order(s) by id). Other accounts untouched.")
         else:
-            self._risk(f"KILL could not reach NinjaTrader ({r.get('error')}). Flatten the account in NinjaTrader or the "
-                       "Tradovate/MFFU app NOW.", alert=True)
+            for lg in legs:
+                lg["status"], lg["close_sent"] = "closing", time.time()
+            self._risk(f"KILL ({self.account}): CLOSEPOSITION sent but NinjaTrader does not show flat yet on {', '.join(held)}: "
+                       "the stop stays working. Check NinjaTrader / the MFFU app now.", alert=True)
         self._save()
-        return {"ok": r["ok"], "adapter": self.name, "oif": r.get("file"), **({} if r["ok"] else {"error": r.get("error")})}
+        return {"ok": flat, "adapter": self.name, "scope": "account", "oif": r.get("file"), "closed": held,
+                "cancelled": risky + left, **({} if flat else {"error": "kill sent, flat not confirmed yet"})}
+
+    def _live_ids(self, legs) -> list:
+        """Our order ids NinjaTrader still reports working (or with no report yet for an entry / add in flight)."""
+        out = []
+        for lg in legs:
+            ids = [lg["entry_id"], lg["stop_id"], lg["target_id"]] + [a["id"] for a in lg.get("adds") or []]
+            for oid in ids:
+                st = self.read_order(oid)
+                if (st and st["state"] in LIVE_STATES | {PARTFILLED}) and oid not in out:
+                    out.append(oid)
+        return out
 
     def send(self, action: dict) -> dict:
         """LiveBot entry point. Never raises."""
@@ -1363,7 +1607,8 @@ class NinjaTraderAdapter:
                     return self.place_bracket(action)
                 if side == "exit":
                     if str(action.get("reason") or "").upper() == "KILL SWITCH":
-                        return self.kill()
+                        # account-scoped unless the owner's global kill (LiveBot.kill_switch, primary only) says "global"
+                        return self.kill(scope="global" if action.get("scope") == "global" else "account")
                     return self.flatten(action)
                 if side == "modify":
                     return self.modify_stop(action.get("stop"), action)
@@ -1387,6 +1632,12 @@ class NinjaTraderAdapter:
                 now = self.clock()
                 self._sweep_stale_oifs(max_age=max(10.0, 2 * self.ack_wait))
                 self._tick_outgoing(now)
+                if self.state_problem:
+                    if self.state_problem.pop("alert", None):
+                        self._alert(self.state_problem["text"] + ". No new entry until NinjaTrader shows this account FLAT or "
+                                    "you check NinjaTrader and run python -m engine.ninjatrader --confirm-reset. Check "
+                                    "NinjaTrader Orders + Positions now.")
+                    self._state_problem_resolved()
                 self._tick_withdrawn(now)
                 for lg in list(self.legs):
                     self._tick_leg(lg, now)
@@ -1398,6 +1649,51 @@ class NinjaTraderAdapter:
             self.last_error = f"tick: {e.__class__.__name__}: {e}"
             self._log("error", "NinjaTrader " + self.last_error)
             return {"ok": False, "error": self.last_error}
+
+    # ------------------------------------------------------------------ an unreadable state file (pre-launch audit 2026-10-25)
+    def _audit_ids(self) -> list:
+        """Order ids this account PLACEd, from the tail of the OIF audit log (the record that survives a torn state file)."""
+        out = []
+        try:
+            with open(self.audit_path, encoding="utf-8", errors="replace") as fh:
+                rows = fh.read().splitlines()[-3000:]
+        except OSError:
+            return out
+        for row in rows:
+            parts = row.split("  ")
+            if len(parts) < 4 or parts[1].strip() != self.account:
+                continue
+            f = parts[-1].split(";")
+            if f[0] == "PLACE" and len(f) == 13 and f[10] and f[10] not in out:
+                out.append(f[10])
+        return out
+
+    def _state_problem_resolved(self) -> bool:
+        """The state file was unreadable: resolved once the owner confirmed (--confirm-reset), or once NinjaTrader shows every
+        instrument of ours FLAT and no order of ours (audit log) is still working - such an orphan is cancelled by id first
+        (cancelling an order on a flat account can never add risk)."""
+        sp = self.state_problem
+        if not sp:
+            return True
+        if self._reset_confirmed(sp.get("since")):
+            self.state_problem = None
+            self._log("system", "NinjaTrader: the owner confirmed the account after the unreadable state file: entries allowed")
+            return True
+        if not all((lambda p: bool(p and p["side"] == "FLAT"))(self.position_for(i)) for i in self._our_instruments()):
+            return False
+        orphans = [oid for oid in self._audit_ids()
+                   if (lambda st: bool(st and st["state"] in LIVE_STATES | {PARTFILLED}))(self.read_order(oid))]
+        if orphans:
+            if time.time() - float(sp.get("cancel_at") or 0) >= 30:
+                sp["cancel_at"] = time.time()
+                self._risk(f"account flat, but {len(orphans)} order(s) of the bot are still working with no trade of its own: "
+                           f"cancelling {', '.join(orphans)}", alert=True)
+                self._send_lines([cancel_line(i) for i in orphans], "CANCEL (orphan orders, state file lost)")
+            return False
+        self.state_problem = None
+        self._log("system", "NinjaTrader: the account is FLAT and no order of the bot is working: entries allowed again "
+                            "(the state file had been unreadable)")
+        return True
 
     # ------------------------------------------------------------------ NinjaTrader restart / disconnect while the bot runs
     def _reset_text(self) -> str:
@@ -1656,7 +1952,7 @@ class NinjaTraderAdapter:
             return
         blob = {"version": 1, "day": _trading_day(self.clock()), "account": self.account, "saved_at": int(self.clock()),
                 "legs": self.legs, "withdrawn": self.withdrawn, "watch": self.watch, "killed": self.killed,
-                "seen_pos": self.seen_pos, "nt_reset": self.nt_reset}
+                "seen_pos": self.seen_pos, "nt_reset": self.nt_reset, "state_problem": self.state_problem}
         try:
             os.makedirs(os.path.dirname(self.state_path), exist_ok=True)
             tmp = self.state_path + ".tmp"
@@ -1670,10 +1966,30 @@ class NinjaTraderAdapter:
         try:
             with open(self.state_path, encoding="utf-8") as fh:
                 s = json.load(fh)
+            if not isinstance(s, dict) or not isinstance(s.get("legs", []), list):
+                raise ValueError("not a state object")
         except FileNotFoundError:
             return
         except Exception as e:
-            self._log("warn", f"NinjaTrader state file unreadable ({e}): starting with no open brackets")
+            # a torn / corrupted file: the open bracket it held is unknown. Never read that as flat: kept aside for a look,
+            # new entries blocked until NinjaTrader shows this account flat (position files) or the owner confirms
+            mine = not self.readonly and not getattr(self, "lock_problem", None)
+            bad = f"{self.state_path}.corrupt-{int(time.time())}"
+            try:
+                if mine:
+                    os.replace(self.state_path, bad)
+                else:
+                    bad = self.state_path
+            except OSError:
+                bad = self.state_path
+            self.state_problem = {"since": time.time(), "text": f"the bot's NinjaTrader state file was unreadable ({e.__class__.__name__}"
+                                  f"; kept as {os.path.basename(bad)}): the open bracket it held is unknown"}
+            if mine:
+                self._save()                 # the problem itself survives a restart (the torn file was moved aside)
+                self.state_problem["alert"] = 1          # the phone alert goes out at the first tick() (after the bot is wired)
+                self._risk(self.state_problem["text"] + ". New entries are blocked until NinjaTrader shows this account FLAT "
+                           "or you check NinjaTrader and run python -m engine.ninjatrader --confirm-reset. An open trade's stop "
+                           "and target stay at the broker; check NinjaTrader Orders + Positions now.")
             return
         if s.get("account") != self.account or s.get("day") != _trading_day(self.clock()):
             return
@@ -1682,6 +1998,7 @@ class NinjaTraderAdapter:
         self.watch = [lg for lg in (s.get("watch") or []) if isinstance(lg, dict) and isinstance(lg.get("watch"), dict)]
         self.seen_pos = {k: v for k, v in (s.get("seen_pos") or {}).items() if isinstance(v, dict)}
         self.nt_reset = s.get("nt_reset") if isinstance(s.get("nt_reset"), dict) else None
+        self.state_problem = s.get("state_problem") if isinstance(s.get("state_problem"), dict) else None
 
     def status(self) -> dict:
         fs = self.folder_status()
@@ -1694,8 +2011,41 @@ class NinjaTraderAdapter:
                 "write_mode": self.write_mode, "connections": self.connections(), "positions": pos, "legs": self.legs,
                 "withdrawn": self.withdrawn, "history": list(self.history)[-5:], "unparsed": dict(list(self.unparsed.items())[-5:]),
                 "last_error": self.last_error, "killed": self.killed, "max_micros": self.max_micros, "flat_mod": self.flat_mod,
-                "nt_reset": self.nt_reset,
+                "nt_reset": self.nt_reset, "state_problem": self.state_problem, "lock_problem": self.lock_problem,
                 "audit_log": self.audit_path, "state_file": self.state_path}
+
+    def startup_problems(self) -> list:
+        """What the PC bot's startup reconcile (engine/guards.startup_problems) needs from NinjaTrader before the first entry:
+        folders there, this process owns the account, the account allowed, no NinjaTrader reset / unreadable state open,
+        not every connection DISCONNECTED, the chart on the contract the orders go to, every open bracket of ours with its
+        stop and target reports present, and no position on this account that no bracket of ours explains. [] = reconciled."""
+        out = []
+        fs = self.folder_status()
+        if not fs["incoming"] or not fs["outgoing"]:
+            out.append(f"NinjaTrader folders missing ({self.incoming} / {self.outgoing})")
+        if self.disabled:
+            out.append(f"adapter disabled: {self.disabled}")
+        if self.nt_reset:
+            out.append("NinjaTrader reports reset (restart?): waiting for the position file or --confirm-reset")
+        if self.state_problem and not self._state_problem_resolved():
+            out.append(self.state_problem["text"])
+        conn = self.connections()
+        if conn and all(v == "DISCONNECTED" for v in conn.values()):
+            out.append(f"every NinjaTrader connection DISCONNECTED ({', '.join(conn)})")
+        insts = self._our_instruments()
+        bad = self._contract_mismatch(insts)
+        if bad:
+            out.append(bad)
+        open_legs = [lg for lg in self.legs if lg["status"] in OPEN_STATUSES]
+        for lg in open_legs:
+            if lg["status"] == "protected":
+                miss = [n for n, oid in (("stop", lg["stop_id"]), ("target", lg["target_id"])) if self.read_order(oid) is None]
+                if miss:
+                    out.append(f"open {lg['instrument']} trade: {' and '.join(miss)} report missing in outgoing (check NinjaTrader Orders)")
+        for p in self.positions()["positions"]:
+            if p["side"] != "FLAT" and not any(same_instrument(p["instrument"], lg["instrument"]) for lg in open_legs):
+                out.append(f"NinjaTrader shows {p['side']} {p['qty']} {p['instrument']} on {self.account} that no bracket of the bot explains")
+        return out
 
 
 # ---------------------------------------------------------------------- bar feed (LE_BarFeed.cs -> CSV -> the bot)
@@ -1801,6 +2151,13 @@ class NinjaTraderBars:
                           "(NinjaTrader closed, disconnected, or the chart was removed?)"), False
         if mins != base_m:
             df = self.aggregate(df, mins * 60)
+            # BUG_FIX (A1 audit 2026-10-25, tests/test_a1_timing.py): a bar built from finer bars is complete only when the
+            # feed has closed a base bar at or past its last slot. LE_BarFeed writes a 1m bar on the first tick AFTER it
+            # closes, so at 10:05:01 a 1m-only feed may still end at 10:03: the 10:00 5m bar then held 4 minutes and passed
+            # live.clean_bars (time + 300 <= now) as closed. Same rule as pcbars.CloudFeed (the minute-4 bar is in).
+            df = df[df["time"] + mins * 60 <= last_open + bsecs]
+            if df.empty:
+                return None, f"{os.path.basename(path)}: no complete {interval} bar yet", False
         m = re.fullmatch(r"(\d+)d", str(period or "5d"))
         start = now - (int(m.group(1)) if m else 5) * 86400
         full = int(df["time"].iloc[0]) <= start + 3600
@@ -2005,8 +2362,26 @@ def main(argv=None):
     ap.add_argument("--port", type=int, default=int(os.environ.get("PORT", 8766)))
     ap.add_argument("--confirm-reset", action="store_true",
                     help="after a NinjaTrader restart: you checked the account (positions / orders) in NinjaTrader; new entries are allowed again")
+    ap.add_argument("--allow-account", default=None, metavar="NAME",
+                    help="owner, once per real account: let the bot send orders to this exact NinjaTrader account Name "
+                         "(data/nt_accounts_allow.json; Sim accounts are always allowed)")
+    ap.add_argument("--disallow-account", default=None, metavar="NAME", help="remove a Name from the account allowlist")
+    ap.add_argument("--list-allowed", action="store_true", help="print the account allowlist")
     ap.add_argument("--quiet", action="store_true")
     a = ap.parse_args(argv)
+    if a.allow_account or a.disallow_account:
+        try:
+            cur = allow_account(a.allow_account or a.disallow_account, remove=bool(a.disallow_account))
+        except ValueError as e:
+            print(f"Not changed: {e}.")
+            return 1
+        print(("Allowed" if a.allow_account else "Removed") + f": {a.allow_account or a.disallow_account}. Allowlist now: "
+              + (", ".join(cur) or "(empty: Sim accounts only)") + ". A running bot reads it at its next start.")
+        return 0
+    if a.list_allowed:
+        cur = sorted(allowed_accounts())
+        print("Accounts the bot may send orders to: " + (", ".join(cur) or "none") + " (+ every Sim / Playback account)")
+        return 0
     opts = {"nt_account": a.account, "nt_folder": a.folder, "nt_instrument": a.instrument, "nt_contract": a.contract,
             "nt_close_suffix": a.close_suffix, "nt_write_mode": a.write_mode}
     cfg = {"adapter": "ninjatrader", "sym": "NQ", **{k: v for k, v in opts.items() if v}}
@@ -2102,7 +2477,7 @@ def main(argv=None):
         except Exception as e:
             print(f"Server not reachable ({e}): writing FLATTENEVERYTHING to NinjaTrader directly")
         ad = NinjaTraderAdapter({**cfg, "nt_state_path": os.path.join(ROOT, "data", "ninjatrader_state.json")})
-        r = ad.kill()
+        r = ad.kill(scope="global")                      # the owner typed --kill: the global kill
         print("FLATTENEVERYTHING", "picked up by NinjaTrader" if r["ok"] else f"FAILED: {r.get('error')}")
         return 0 if r["ok"] else 1
     ap.print_help()
@@ -2268,7 +2643,7 @@ def selftest(verbose=True) -> bool:
     import tempfile
     import pandas as pd
     tmp = tempfile.mkdtemp(prefix="le_nt_selftest_")
-    saved_env = {k: os.environ.get(k) for k in (LIVE_ENV, "NINJATRADER_ACCOUNT", "NINJATRADER_FOLDER")}
+    saved_env = {k: os.environ.get(k) for k in (LIVE_ENV, "NINJATRADER_ACCOUNT", "NINJATRADER_FOLDER", ALLOW_ENV)}
     for k in saved_env:
         os.environ.pop(k, None)
     checks = []
@@ -2386,9 +2761,9 @@ def selftest(verbose=True) -> bool:
         check("partial fill: stop/target for the 2 filled, then CHANGE;;;;4;;0;0;;;<id>;; on both once all 4 fill",
               part_ok and lines_since(k) == [f"CHANGE;;;;4;;0;0;;;{lg['stop_id']};;", f"CHANGE;;;;4;;0;0;;;{lg['target_id']};;"]
               and fake.orders[lg["target_id"]]["qty"] == 4, json.dumps(lines_since(k)))
-        # ---- 8. kill: FLATTENEVERYTHING, then no new entries
+        # ---- 8. kill: the owner's global kill = FLATTENEVERYTHING, then no new entries (account-scoped kill: tests/test_nt_exec_audit.py)
         k = len(fake.files)
-        r = ad.send({"sym": "NQ", "side": "exit", "reason": "KILL SWITCH"})
+        r = ad.send({"sym": "NQ", "side": "exit", "reason": "KILL SWITCH", "scope": "global"})
         check("kill: FLATTENEVERYTHING;;;;;;;;;;;; -> NinjaTrader flat, legs retired, new entries refused",
               r["ok"] and lines_since(k) == ["FLATTENEVERYTHING;;;;;;;;;;;;"] and ad.position_for("MNQ 12-26")["side"] == "FLAT" and not ad.legs
               and "kill" in ad.send({"sym": "NQ", "side": "buy", "qty": 1, "stop": 25000, "target": 25040, "entry": 25020})["error"])
@@ -2423,13 +2798,18 @@ def selftest(verbose=True) -> bool:
         live2 = make({"nt_account": "MFFUEV12345", "confirm": "i accept"})
         live3 = make({"nt_account": "MFFUEV12345", "confirm": LIVE_PHRASE})
         os.environ[LIVE_ENV] = "1"
-        live4 = make({"nt_account": "MFFUEV12345", "confirm": LIVE_PHRASE})
-        live5 = make({"nt_account": "MFFUEV12345", "confirm": LIVE_PHRASE, "armed": False})
+        allow = os.path.join(tmp, "allow.json")
+        live6 = make({"nt_account": "MFFUEV12345", "confirm": LIVE_PHRASE, "nt_allow_path": allow})     # not allowlisted yet
+        allow_account("MFFUEV12345", path=allow)
+        live4 = make({"nt_account": "MFFUEV12345", "confirm": LIVE_PHRASE, "nt_allow_path": allow})
+        live5 = make({"nt_account": "MFFUEV12345", "confirm": LIVE_PHRASE, "armed": False, "nt_allow_path": allow})
         os.environ.pop(LIVE_ENV, None)
-        check("live gate: a non-Sim account is refused without armed, without the exact phrase, or without NINJATRADER_LIVE=1",
+        check("live gate: a non-Sim account is refused without armed, without the exact phrase, without NINJATRADER_LIVE=1, "
+              "or when its Name is not in the account allowlist",
               live1.disabled and "not armed" in live1.disabled and "REFUSED" in rl["error"] and len(fake.files) == n0
-              and "phrase" in live2.disabled and LIVE_ENV in live3.disabled and live5.disabled, f"{live1.disabled} | {live2.disabled} | {live3.disabled}")
-        check("live gate: armed + phrase + NINJATRADER_LIVE=1 enables it (env 'live' for the trade memory)",
+              and "phrase" in live2.disabled and LIVE_ENV in live3.disabled and live5.disabled
+              and "allowlist" in (live6.disabled or ""), f"{live1.disabled} | {live2.disabled} | {live3.disabled} | {live6.disabled}")
+        check("live gate: armed + phrase + NINJATRADER_LIVE=1 + allowlisted enables it (env 'live' for the trade memory)",
               live4.disabled is None and live4.env == "live" and not live4.sim, str(live4.disabled))
         # ---- 10. NinjaTrader not running: the file is withdrawn, never left to run late
         fake.running = False
