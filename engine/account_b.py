@@ -28,7 +28,9 @@ What it does (engine/live.py calls it after LIT's routing and state save; any ex
   * NEVER opposite to LIT (MFFU bans long + short on one underlying, also across your own accounts,
     research/lit/mffu_rules.json "hedging"): a B entry is blocked while LIT's account holds, enters or has an armed setup
     (limit / waiting for its 1m CISD) in the other direction, or an extra account (engine/multi_account.py) holds the other
-    side; when LIT enters opposite while B is open, B is closed at market FIRST (reason HEDGE), then LIT's order goes out
+    side; when LIT enters opposite while B is open (or B's entry is pending), B is closed at market FIRST (reason HEDGE) and
+    LIT's order goes out only once that close is CONFIRMED flat (2026-10-25; unconfirmed by LIT's entry deadline -> LIT's
+    entry skipped, critical "HEDGE BLOCKED: ATLAS close not confirmed"; B is never marked flat on an unconfirmed close)
     (second-mix.md no_hedge rule: skip / close at LIT's opposite entry; the armed-setup block is stricter than the research).
     Same direction as LIT is allowed (two accounts, two positions).
   * strategies on account B are never also routed on LIT's account (LiveBot._second_cfg drops them there).
@@ -49,6 +51,7 @@ SIZINGS = ("need", "safe")
 MAX_PER_DAY = 2
 MAX_AGE_S = 45                  # a 5m open seen later than this is not probed (the research fills at the open)
 MIN_ROOM = 100.0
+CLOSE_RETRY_S = 10              # an unconfirmed close of B's position is re-sent at most this often (pre-launch audit A4)
 TICK, PV, COMM = 0.25, 2.0, 1.90
 ADAPTER_FACTORY = None          # tests: (spec, adapter cfg) -> adapter; None = engine/live.ADAPTERS
 VERSION = 1
@@ -457,18 +460,28 @@ class AccountB:
                 pass
         return None
 
-    def lit_entering(self, ent: dict, sym: str, now: int):
-        """engine/live.py, right before LIT's entry order: B open in the OTHER direction -> closed at market first (HEDGE)."""
+    def lit_entering(self, ent: dict, sym: str, now: int) -> bool:
+        """engine/live.py, right before LIT's entry order: B open (or its entry sent / pending) in the OTHER direction ->
+        closed at market first (HEDGE). Returns True = LIT may route (B is not opposite, or B's close is CONFIRMED flat);
+        False = B's close was refused / is not confirmed yet: LIT must NOT route its opposite entry now (it retries on the
+        next poll until its own entry deadline). B stays managed and is never marked flat on an unconfirmed close.
+        Pre-launch audit A4 (2026-10-25)."""
         if self.open_t is None:
-            return
-        pv = self.prov.get(int(self.open_t)) or {}
+            return True
+        et_ = int(self.open_t)
+        pv = self.prov.get(et_) or {}
         d = 1 if int(ent.get("dir") or 1) == 1 else -1
         if int(pv.get("dir") or 0) != -d:
-            return
-        self.log("risk", f"no hedging: LIT enters {'LONG' if d == 1 else 'SHORT'} at {_et(ent['entry_t']):%H:%M} ET while account B "
-                         f"holds the {pv.get('short') or pv.get('key')} {'SHORT' if d == 1 else 'LONG'}: B is closed at market before LIT's order")
-        self.flatten(int(self.open_t), "HEDGE", sym, now, px=_num(ent.get("entry")))
-        pv["final"] = True
+            return True
+        cl = pv.get("closing")
+        if cl and not cl.get("done"):
+            self.settle_closing(sym, now)                 # a close already sent: confirmed now? (else re-sent)
+        else:
+            self.log("risk", f"no hedging: LIT enters {'LONG' if d == 1 else 'SHORT'} at {_et(ent['entry_t']):%H:%M} ET while account B "
+                             f"holds the {pv.get('short') or pv.get('key')} {'SHORT' if d == 1 else 'LONG'}: B is closed at market before LIT's order")
+            if self.flatten(et_, "HEDGE", sym, now, px=_num(ent.get("entry"))):
+                pv["final"] = True
+        return self.open_t is None or int(self.open_t) != et_
 
     # ---- one poll
     def tick(self, df5, df1, sym, now):
@@ -483,6 +496,7 @@ class AccountB:
             mk = list(dict.fromkeys(keys + [k for k in live_prov if k]))
             sub = {**scfg, "strategies": {k: {**scfg["strategies"][k], "route": True} for k in mk if k in (scfg.get("strategies") or {})}}
             last5 = int(df5["time"].max())
+            self.settle_closing(sym, now)                 # unconfirmed closes first (re-sent / confirmed)
             # the strategies' view is only needed while a B trade is live (fill check, stop moves, cuts, exits); a flat
             # account B only probes at each 5m open (entry below)
             if live_prov:
@@ -532,7 +546,8 @@ class AccountB:
         if df1 is not None and len(df1) and int(df1["time"].max()) < tb:
             df1x = pd.concat([df1[cols], bar], ignore_index=True)
         pr = _second.run(df5x, one_min=df1x, now=now, cfg=sub, lit=[])
-        sig = None
+        # every member's signal on this 5m open, in the configured member order (spec "strategies": EMA > MACD > S/R)
+        sigs = []
         for k in keys:
             s = (pr.get("strategies") or {}).get(k) or {}
             if s.get("error"):
@@ -541,50 +556,62 @@ class AccountB:
             t = next((t for t in s.get("trades") or [] if int(t["entry_t"]) == tb and t.get("exit_kind") == "OPEN"
                       and t.get("target") is not None), None)
             if t:
-                sig = (k, t)
-                break
-        if not sig:
+                sigs.append((k, t))
+        if not sigs:
             return
-        k, t = sig
-        sc = sub["strategies"][k]
-        nm = sc.get("short") or k
-        d = 1 if int(t["dir"]) == 1 else -1
-        head = f"{nm} {'LONG' if d == 1 else 'SHORT'} at the {_et(tb):%H:%M} ET open"
         day = trading_day(tb)
-        why = None
+        # account-level blocks (the same for every member on this bar)
+        why_bar = None
         if self.entries_today(day) >= MAX_PER_DAY:
-            why = f"{MAX_PER_DAY} entries on account B today already (max {MAX_PER_DAY} a day)"
-        if not why and (self.bot.health or {}).get("entries_blocked"):
-            why = "feed stale"
-        if not why and getattr(self.bot, "_no_entries_day", None) == trading_day(now):
-            why = "the owner flattened remotely today"
-        if not why and self.lock and self.lock.get("day") == day:
-            why = f"locked out today: {self.lock['reason']}"
-        if not why:
-            why = self.lit_opposite(d)
+            why_bar = f"{MAX_PER_DAY} entries on account B today already (max {MAX_PER_DAY} a day)"
+        if not why_bar and (self.bot.health or {}).get("entries_blocked"):
+            why_bar = "feed stale"
+        if not why_bar and getattr(self.bot, "_no_entries_day", None) == trading_day(now):
+            why_bar = "the owner flattened remotely today"
+        if not why_bar and self.lock and self.lock.get("day") == day:
+            why_bar = f"locked out today: {self.lock['reason']}"
+        ev = self.eval_view(now) if not why_bar else {}
+        if not why_bar and ev.get("status") in ("passed", "failed", "stuck"):
+            why_bar = f"eval {ev['status']} (balance ${ev.get('balance', 0):,.0f}, room ${(ev.get('room') or 0):,.0f})"
+        # member priority (pre-launch audit A4 2026-10-25, = tools/atlas research executor): the FIRST member in the
+        # configured order whose own signal passes the no-hedging rule, the size and the guards is routed; a blocked member
+        # hands the bar to the next one; at most ONE order per bar (one position on B)
+        chosen = None
+        for k, t in sigs:
+            sc = sub["strategies"][k]
+            nm = sc.get("short") or k
+            d = 1 if int(t["dir"]) == 1 else -1
+            head = f"{nm} {'LONG' if d == 1 else 'SHORT'} at the {_et(tb):%H:%M} ET open"
+            why = why_bar
+            if not why:
+                why = self.lit_opposite(d)
+                if why:
+                    why = f"no hedging: {why}"
+            risk = abs(float(t["entry"]) - float(t["stop"]))
+            tgt = abs(float(t["target"]) - float(t["entry"]))
+            sz = {"qty": 0, "reasons": []}
+            if not why:
+                try:
+                    sz = qty(self.spec, {"risk_pts": risk, "tgt_pts": tgt}, self.eval_state(now), base=getattr(self.bot, "_lit_sizing", None))
+                except Exception as e:
+                    sz = {"qty": 0, "reasons": [f"sizing failed ({e.__class__.__name__}: {e}): not traded"]}
+                self.last_size = {"qty": sz["qty"], "key": k, "reasons": [str(x)[:120] for x in sz["reasons"]][-6:], "t": int(now)}
+                if sz["qty"] < 1:
+                    why = "size 0 (" + "; ".join(sz["reasons"][-3:]) + ")"
+            act = {"sym": sym, "side": "buy" if d == 1 else "sell", "qty": int(sz["qty"]), "stop": _tick(float(t["stop"]), d),
+                   "target": _tick(float(t["target"]), d, target=True), "entry": float(t["entry"]), "entry_t": tb, "src": k, "strategy": nm}
+            if not why:
+                why = self.guard(act, tb, now)
             if why:
-                why = f"no hedging: {why}"
-        ev = self.eval_view(now)
-        if not why and ev.get("status") in ("passed", "failed", "stuck"):
-            why = f"eval {ev['status']} (balance ${ev.get('balance', 0):,.0f}, room ${(ev.get('room') or 0):,.0f})"
-        risk = abs(float(t["entry"]) - float(t["stop"]))
-        tgt = abs(float(t["target"]) - float(t["entry"]))
-        sz = {"qty": 0, "reasons": []}
-        if not why:
-            try:
-                sz = qty(self.spec, {"risk_pts": risk, "tgt_pts": tgt}, self.eval_state(now), base=getattr(self.bot, "_lit_sizing", None))
-            except Exception as e:
-                sz = {"qty": 0, "reasons": [f"sizing failed ({e.__class__.__name__}: {e}): not traded"]}
-            self.last_size = {"qty": sz["qty"], "key": k, "reasons": [str(x)[:120] for x in sz["reasons"]][-6:], "t": int(now)}
-            if sz["qty"] < 1:
-                why = "size 0 (" + "; ".join(sz["reasons"][-3:]) + ")"
-        act = {"sym": sym, "side": "buy" if d == 1 else "sell", "qty": int(sz["qty"]), "stop": _tick(float(t["stop"]), d),
-               "target": _tick(float(t["target"]), d, target=True), "entry": float(t["entry"]), "entry_t": tb, "src": k, "strategy": nm}
-        if not why:
-            why = self.guard(act, tb, now)
-        if why:
-            self.log("risk", f"{head} NOT routed on account B: {why}")
+                self.log("risk", f"{head} NOT routed on account B: {why}")
+                if why_bar:
+                    return                                # an account-level block: no member trades this bar
+                continue
+            chosen = (k, t, nm, d, head, risk, sz, act)
+            break
+        if chosen is None:
             return
+        k, t, nm, d, head, risk, sz, act = chosen
         q = int(sz["qty"])
         self.open_t = tb
         self.prov[tb] = {"key": k, "short": nm, "qty": q, "model_qty": int(t.get("qty") or 0), "dir": d, "est": est,
@@ -623,8 +650,8 @@ class AccountB:
 
     def manage(self, view, sym, now, last5):
         for et_, pv in sorted(self.prov.items()):
-            if pv.get("final"):
-                continue
+            if pv.get("final") or ((pv.get("closing") or {}) and not pv["closing"].get("done")):
+                continue                                  # a close in flight is handled by settle_closing
             k = pv.get("key")
             is_open = self.open_t is not None and int(self.open_t) == int(et_)
             if is_open and self._past_flat(pv, now):
@@ -641,8 +668,8 @@ class AccountB:
                 if is_open and int(last5) >= int(et_):
                     self.log("risk", f"{pv.get('short')} entry {_et(et_):%H:%M} ET is not the strategy's trade once its fill bar closed: "
                                      "flattening account B")
-                    self.flatten(et_, "NO TRADE", sym, now)
-                    pv["final"] = True
+                    if self.flatten(et_, "NO TRADE", sym, now):
+                        pv["final"] = True
                 elif not is_open and trading_day(now) != pv.get("day"):
                     pv["final"] = True
                 continue
@@ -735,13 +762,83 @@ class AccountB:
         self.seen.add(("exit", pv.get("key"), int(et_)))
         self.log("risk" if reason in ("HEDGE", "NO TRADE", "KILL SWITCH") else "system",
                  f"{pv.get('short')} {_et(int(et_)):%H:%M} ET: {reason} - flatten {q} MNQ at market" + (f" (~{px:,.2f})" if px is not None else ""))
-        self.route({"sym": sym, "side": "exit", "qty": q, "reason": reason, "entry_t": int(et_), "exit_t": int(now), "pnl": pnl,
-                    "pnl_est": True, "src": pv.get("key"), "strategy": pv.get("short")})
+        res = self.route({"sym": sym, "side": "exit", "qty": q, "reason": reason, "entry_t": int(et_), "exit_t": int(now), "pnl": pnl,
+                          "pnl_est": True, "src": pv.get("key"), "strategy": pv.get("short")})
+        if not self._close_ok(res, et_):
+            # pre-launch audit A4 (2026-10-25): a refused / unconfirmed close never marks B flat - the position stays B's
+            # (open_t kept, still managed, no new B entry, LIT's opposite entry held back) and the close is re-sent
+            first = not pv.get("closing")
+            pv["closing"] = {"reason": reason, "t": int(now), "last": int(now), "px": px, "pnl": pnl, "q": q, "done": False,
+                             "tries": int((pv.get("closing") or {}).get("tries") or 0) + 1,
+                             "error": str((res or {}).get("error") or "no flat confirmation")[:160]}
+            self.log("risk", f"CLOSE NOT CONFIRMED ({reason}): {pv.get('short')} {q} MNQ on {self.name}: {pv['closing']['error']} - "
+                             "B is NOT marked flat, the close is re-sent")
+            if first:
+                self._push_text(f"{self.label}: CLOSE NOT CONFIRMED ({reason})",
+                                f"{q} MNQ on {self.name} may still be open ({pv['closing']['error']}). The bot re-sends the close "
+                                "and holds LIT's opposite entry; check NinjaTrader.", f"acctb:closing:{int(et_)}")
+            self.save()
+            return False
+        self._finish_close(int(et_), pv, reason, px, pnl, q, now)
+        return True
+
+    def _close_ok(self, res, et_) -> bool:
+        """The close of B's entry et_ is confirmed: the order was not refused, NinjaTrader did not report it unconfirmed,
+        and (when the adapter can tell) no leg of that entry is still open / closing."""
+        r = res if isinstance(res, dict) else {}
+        if r.get("ok") is False or r.get("flat_confirmed") is False:
+            return False
+        return self.flat_confirmed(et_) is not False
+
+    def flat_confirmed(self, et_):
+        """True / False = the adapter's own book (NinjaTrader legs, confirmed by its position file) says B's entry et_ is
+        flat / still open or closing; None = the adapter can not tell (paper): the close order's answer decides."""
+        legs = getattr(self.adapter, "legs", None)
+        if not isinstance(legs, list):
+            return None
+        from .ninjatrader import OPEN_STATUSES
+        return not any(int(lg.get("entry_t") or 0) == int(et_) and lg.get("status") in OPEN_STATUSES for lg in legs)
+
+    def _finish_close(self, et_, pv, reason, px, pnl, q, now):
         pv["flat"] = {"reason": reason, "t": int(now), "px": px}
+        if pv.get("closing"):
+            pv["closing"]["done"] = True
         if self.open_t is not None and int(self.open_t) == int(et_):
             self.open_t = None
         self._close(int(et_), int(now), pnl, now)
         self._push_outcome(pv, reason, pnl, int(now), q, int(et_))
+
+    def settle_closing(self, sym, now):
+        """Every close of B not confirmed yet: flat now (the NinjaTrader adapter retries its own CLOSEPOSITION and confirms
+        from the position file) -> booked, B is free; else the close is re-sent every CLOSE_RETRY_S. Never raises."""
+        for et_, pv in sorted(self.prov.items()):
+            cl = pv.get("closing")
+            if not cl or cl.get("done"):
+                continue
+            try:
+                ok = self.flat_confirmed(et_) is True
+                if not ok and int(now) - int(cl.get("last") or 0) >= CLOSE_RETRY_S:
+                    cl["last"] = int(now)
+                    cl["tries"] = int(cl.get("tries") or 0) + 1
+                    res = self.route({"sym": sym, "side": "exit", "qty": int(cl.get("q") or pv.get("qty") or 0), "reason": cl["reason"],
+                                      "entry_t": int(et_), "exit_t": int(now), "pnl": cl.get("pnl"), "pnl_est": True,
+                                      "src": pv.get("key"), "strategy": pv.get("short"), "retry": cl["tries"]})
+                    ok = self._close_ok(res, et_)
+                    if not ok:
+                        cl["error"] = str((res or {}).get("error") or "no flat confirmation")[:160]
+                if ok:
+                    self.log("risk", f"close confirmed ({cl['reason']}): {pv.get('short')} on {self.name} is flat after "
+                                     f"{int(cl.get('tries') or 1)} tries")
+                    self._finish_close(int(et_), pv, cl["reason"], cl.get("px"), float(cl.get("pnl") or 0.0), int(cl.get("q") or 0), now)
+                    if cl["reason"] in ("HEDGE", "NO TRADE", "KILL SWITCH"):
+                        pv["final"] = True
+                    self.save()
+            except Exception as e:
+                self.log("error", f"close settle failed: {e.__class__.__name__}: {e}")
+
+    def closing_open(self) -> list:
+        """B's closes not confirmed yet [(entry_t, pv)] (the PC's critical alert, engine/alerts_plus.pc_conditions)."""
+        return [(et_, pv) for et_, pv in sorted(self.prov.items()) if (pv.get("closing") or {}) and not pv["closing"].get("done")]
 
     def _close(self, entry_t, exit_t, pnl, now):
         with self.mx:

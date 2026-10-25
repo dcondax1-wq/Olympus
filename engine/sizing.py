@@ -230,7 +230,8 @@ def ceilings(r: dict, trade: dict, cfg: dict, room: float | None = None, state: 
       daily       the soft daily loss left today: q x loss <= dll + state["cum"] (dll = the plan's: 50K $1,000, 25K $600)
       weekly      with lit_sizing.wk_loss_usd set and the week's P&L known: q x loss <= wk_loss_usd + state["wk_pnl"]
     loss = loss_1micro (stop + 1 tick, $1.90). q is cut to fit; q < 1 -> 0 (skip, reason "skip: ..."). Never raises q.
-    Unknown values: that ceiling is not checked (said in the reasons). Other modes: unchanged."""
+    Stop distance unknown / 0: skip (unresolved, 2026-10-25). Other unknown values: that ceiling is not checked (said in the
+    reasons). Other modes: unchanged."""
     c = cfg or {}
     q0 = int(r.get("qty") or 0)
     if q0 <= 0 or (c.get("mode") or "normal") not in EVAL_MODES or c.get("ceilings") is False:
@@ -239,8 +240,12 @@ def ceilings(r: dict, trade: dict, cfg: dict, room: float | None = None, state: 
     if risk is None and trade.get("entry") is not None and trade.get("stop0", trade.get("stop")) is not None:
         risk = abs(float(trade["entry"]) - float(trade.get("stop0", trade.get("stop"))))
     out = {**r, "reasons": list(r.get("reasons") or [])}
-    if not risk or risk <= 0:
-        out["reasons"].append("ceilings: stop distance unknown, not checked")
+    if not risk or risk <= 0 or risk != risk:
+        # pre-launch audit A4 (2026-10-25): an eval entry whose stop distance is unknown can not be priced against the room
+        # or the soft daily loss -> unresolved = no trade (was: "not checked", the model's micros routed uncapped)
+        out.update(qty=0, mult=0.0, cap="skip")
+        out["reasons"].append("skip: stop distance unknown, the eval ceilings can not be checked: no trade (unresolved)")
+        log.info("lit_qty skip: stop distance unknown in an eval mode")
         return out
     st = state or {}
     loss1 = loss_1micro(risk)

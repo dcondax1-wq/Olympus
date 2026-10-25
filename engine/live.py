@@ -356,6 +356,8 @@ class LiveBot:
         self._second_view_key = None     # (last 5m, last 1m, keys) of that run
         self._second_prov = {}           # entry_t -> what was routed for a second-strategy entry (checked, corrected, closed)
         self._second_notes = {}          # once-per-key log lines of the second-strategy route
+        self._hedge_wait = {}            # LIT entry_t -> first time it waited for account B's opposite close to confirm
+        self._hedge_crit = {}            # critical alert id -> {"title", "body", "day"} (HEDGE BLOCKED; engine/alerts_plus)
         self._brain_log = None           # engine/brain.BrainLog: today's thought log (data/brain/YYYY-MM-DD.jsonl for the real bot)
         self.acct_b = None               # engine/account_b.AccountB: the second strategies on their own account (None = off)
         self._acct_b_sig = None          # the account_b block it was built from (rebuilt when it changes and B is flat)
@@ -2145,6 +2147,7 @@ class LiveBot:
             elif age > late_after:
                 self._blocked_entries.add(ent["entry_t"])
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: seen {age // 60} min late (restart / feed gap) - not chasing")
+                self._hedge_blocked(ent["entry_t"], now)
             elif (self.state or {}).get("model") == "lit" and str(ent.get("tf") or "") == "1m" \
                     and now - int(ent["entry_t"]) > float(self.cfg.get("lit_max_late_s", LIT_MAX_LATE_S)):
                 # LIT fills at the open of its 1m entry bar: routed at +2-32 s from the 1m CISD close (enter_now). Seen later
@@ -2154,22 +2157,22 @@ class LiveBot:
                 self._blocked_entries.add(ent["entry_t"])
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: seen {now - int(ent['entry_t'])} s after its "
                                   f"1m fill bar opened (limit {float(self.cfg.get('lit_max_late_s', LIT_MAX_LATE_S)):.0f} s) - not chasing")
-            elif not (q := self._equity_qty(ent["entry_t"], ent["qty"], ent)):
+                self._hedge_blocked(ent["entry_t"], now)
+            elif not (q :=self._equity_qty(ent["entry_t"], ent["qty"], ent)):
                 self._blocked_entries.add(ent["entry_t"])
             elif (gb := self._guard_entry(ent, q, sym, now)):
                 self._blocked_entries.add(ent["entry_t"])          # engine/guards.py: only ever blocks
                 self._log("risk", f"Entry at {_et(ent['entry_t']):%H:%M} ET NOT routed: GUARD {gb}")
+            elif not self._hedge_clear(ent, sym, now):
+                # account B holds / has sent the other direction and its close is not CONFIRMED flat yet: LIT's opposite
+                # entry is NOT routed now (MFFU: no long + short across your own accounts). Next poll tries again until the
+                # entry deadline above (1m: LIT_MAX_LATE_S from the fill bar open), then it is skipped: HEDGE BLOCKED.
+                self.seen.discard(("entry", ent["entry_t"]))
             else:
                 if self._open_src:
                     # a routed second-strategy trade is open: LIT has priority - it is closed at market first (the research
                     # "with LIT" rule of second-md.md / second-mix.md "pre"), then LIT enters; never two positions
                     self._second_preempt(sym, ent, now)
-                if self.acct_b is not None:
-                    # account B holds the other direction: closed at market first (no hedging across accounts), then LIT
-                    try:
-                        self.acct_b.lit_entering(ent, sym, now)
-                    except Exception as e:
-                        self._note_error(f"account B hedge close failed: {e.__class__.__name__}: {e}")
                 self._open_routed = ent["entry_t"]
                 self._open_src = None
                 self._open_qty = q
@@ -2191,6 +2194,9 @@ class LiveBot:
         for tr in res["trades"]:
             if tr["exit_t"] >= start - secs and ("exit", tr["entry_t"]) not in self.seen:
                 self.seen.add(("exit", tr["entry_t"]))
+                if tr["entry_t"] in self._hedge_wait and ("entry", tr["entry_t"]) not in self.seen:
+                    self._blocked_entries.add(tr["entry_t"])     # the trade ended while LIT waited for account B's close
+                    self._hedge_blocked(tr["entry_t"], int(self.clock()))
                 if tr["entry_t"] in self._blocked_entries:
                     self._log("system", f"Exit {tr['exit_reason']} for the un-routed entry at {_et(tr['entry_t']):%H:%M} ET - nothing to flatten")
                     continue
@@ -2231,6 +2237,54 @@ class LiveBot:
         return {"sym": sym, "side": "buy" if d == 1 else "sell", "qty": q,
                 "stop": tick_px(ent["stop"], d), "target": tick_px(ent["target"], d, target=True),
                 "entry": ent["entry"], "entry_t": ent["entry_t"]}
+
+    def _hedge_clear(self, ent, sym, now) -> bool:
+        """Account B (engine/account_b.py) holds, or has sent, the direction opposite to this LIT entry: close it at market
+        and route LIT only once that close is CONFIRMED flat (pre-launch audit A4, 2026-10-25). True = route LIT now; False =
+        wait (this poll routes nothing; the entry deadline decides on later polls). An error while B holds a position fails
+        closed (LIT's opposite entry is not routed); with B flat or off, LIT is never held back."""
+        ab = self.acct_b
+        if ab is None:
+            return True
+        try:
+            ok = ab.lit_entering(ent, sym, now) is not False
+        except Exception as e:
+            self._note_error(f"account B hedge close failed: {e.__class__.__name__}: {e}")
+            ok = getattr(ab, "open_t", None) is None
+        et_ = int(ent["entry_t"])
+        if ok:
+            if et_ in self._hedge_wait:
+                self._log("risk", f"Account B's close confirmed: LIT's entry at {_et(et_):%H:%M} ET is routed "
+                                  f"{int(now) - int(self._hedge_wait[et_])} s after it first waited")
+            return True
+        first = et_ not in self._hedge_wait
+        self._hedge_wait.setdefault(et_, int(now))
+        if first:
+            self._log("risk", f"HEDGE WAIT: LIT {'LONG' if int(ent.get('dir') or 1) == 1 else 'SHORT'} at {_et(et_):%H:%M} ET is NOT "
+                              "routed until account B's opposite position is confirmed flat (the close is re-sent; LIT gives up at "
+                              "its entry deadline)")
+        return False
+
+    def _hedge_blocked(self, entry_t, now):
+        """LIT's entry deadline passed while it waited for account B's close: skipped, one critical alert."""
+        et_ = int(entry_t)
+        if et_ not in self._hedge_wait:
+            return
+        cid = f"hedge_blocked:{et_}"
+        if cid in self._hedge_crit:
+            return
+        title = "HEDGE BLOCKED: ATLAS close not confirmed"
+        body = (f"LIT's entry at {_et(et_):%H:%M} ET was skipped: account B's opposite position was not confirmed flat within "
+                f"the entry deadline. Check account B in NinjaTrader now (it may still be open; the bot keeps managing it).")
+        self._hedge_crit[cid] = {"title": title, "body": body, "day": trading_day(et_)}
+        self._log("risk", f"{title}: {body}")
+        if self.state_path == STATE_PATH:                 # the real bot only (test harnesses never alert)
+            self._alert(f"{title}. {body}", "risk")
+        try:
+            from . import push
+            self._push_send(push.text_payload("PC", "risk", title, body, key=cid, t=int(now), url="#/second"))
+        except Exception as e:
+            self._note_error(f"hedge alert push failed: {e}")
 
     def _guard_entry(self, ent, q, sym, now):
         """A reason not to route this entry (order sanity, duplicate, daily loss, clock, news, calendar), else None."""

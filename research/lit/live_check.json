@@ -28,7 +28,7 @@
   "mw_filter": false,
   "wait": 6,
   "tf": "1m",
-  "cisd1m": 20,
+  "cisd1m": 22,
   "stop_buf": 0.25,
   "min_stop": 8.0,
   "max_stop": 80.0,
@@ -61,8 +61,8 @@
   "extra": [],
   "n_extra": 0,
   "exit_differs": [],
-  "net_backtest": 43394.38,
-  "seconds": 50
+  "net_backtest": 43819.78,
+  "seconds": 73
  },
  "bot": {
   "sessions": [
@@ -126,12 +126,12 @@
    }
   ],
   "last_model_state": "LIT: market closed (next session 18:00 ET; entries 02:00-15:30 ET)",
-  "poll_ms": 571,
+  "poll_ms": 679,
   "modify_routes": 0,
   "states_seen": [
    "LIT: market closed (next session 18:00 E"
   ],
   "ok": true
  },
- "seconds": 793
+ "seconds": 956
 }
