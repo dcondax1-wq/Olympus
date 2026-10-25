@@ -754,7 +754,7 @@ def run(out):
                     note += f"\n{lr.get('qty')} micros ({'; '.join(lr['reasons'])})"
                 if mode != "normal":
                     note += f"\nsizing mode {mode}" + (f": {lr['qty']} micros ({'; '.join(lr.get('reasons') or [])})" if lr else "")
-            new_alerts.append(f"{SYM} {'LIT ' if lm['model'] == 'lit' else ''}{ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
+            new_alerts.append(f"{SYM} {'Zlarior ' if lm['model'] == 'lit' else ''}{ev['type'].upper()} {et(ev['t']):%H:%M} ET\n{ev['text']}{note}")
     # eval timing flipped since the last run (cold streak <-> full size): the owner buys/resets the eval on GO
     prev_et = (st.get("eval_timing") or {}).get("verdict") if prev_model == lm["model"] else None   # no flip alert on a switch
     now_et = state["eval_timing"]
@@ -767,7 +767,7 @@ def run(out):
     if et_now.weekday() < 5 and et_now.hour * 60 + et_now.minute >= 960 and eod_sent != today:
         eod_sent = today
         tt = [v for v in ledger.values() if v["day"] == today]
-        lines = [f"{SYM} {'LIT ' if lm['model'] == 'lit' else ''}cloud paper - end of day {today}", f"Trades: {len(tt)} | P&L {money(sum(v['usd'] for v in tt))}"]
+        lines = [f"{SYM} {'Zlarior ' if lm['model'] == 'lit' else ''}cloud paper - end of day {today}", f"Trades: {len(tt)} | P&L {money(sum(v['usd'] for v in tt))}"]
         lines += [f"{v['side']} {v['grade'] or ''} {v['trigger']} -> {v['exit']} {v['R']:+.2f}R {money(v['usd'])}" for v in tt]
         lines.append(f"Model now: {state.get('model_state')}")
         new_alerts.append("\n".join(lines))

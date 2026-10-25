@@ -2,7 +2,7 @@
 // search button and the Settings > Interface card. app.js calls initShell() at boot and onPage(id) on every navigation.
 import { $, $$, store, esc } from '../util.js';
 import { icon } from './icons.js';
-import { TOP, DATA, MODULES, ARCHIVE, HUB, TITLES, groupOf, CC, GROUPS, TABS, NAV_NAMES, groupIds } from './routes.js';
+import { TOP, DATA, MODULES, ARCHIVE, HUB, TITLES, groupOf, CC, GROUPS, TABS, NAV_NAMES, groupIds, BOTS, BOT_CHIP, botOf } from './routes.js';
 import { fxLevel, setFxLevel } from './fx3d.js';
 import { moreMenu } from './menu.js';
 
@@ -27,7 +27,7 @@ function paintNav() {
 
 function buildNav() {
   const nav = $('#nav');
-  // cleaned sidebar (2026-10-25): six top items (Home, Bot, Chart, Trades, Results, All tools) and one "Advanced" group,
+  // cleaned sidebar (2026-10-25; PM: Home, Zlarior, ATLAS, Results, All tools; the bot pages hold their sections) and one "Advanced" group,
   // folded by default, with four small sections. Every other page sits in a hidden list so the command palette
   // (reads #nav a[data-page]) still lists all of them; renamed entries are listed there under their page title too.
   const ALL = [...TOP, ...CC, ...DATA, ...MODULES];
@@ -39,7 +39,7 @@ function buildNav() {
     return `<button type="button" class="nx-nav-sec nx-grp-h nx-adv-h" data-grp="${esc(g.label)}"><span>${esc(g.label)}</span><i>${icon('down')}</i></button>` +
       g.sections.map(s => `<div class="nx-nav-sub" data-g="${esc(g.label)}">${esc(s.label)}</div>` + links(g, s.ids)).join('');
   }).join('') +
-    `<div class="nx-nav-all" hidden>${ALL.filter(p => (!shown.has(p.id) || NAV_NAMES[p.id]) && p.id !== 'data').map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id] || p.label)}</span></a>`).join('')}${ARCHIVE.map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id])}</span></a>`).join('')}</div>`;
+    `<div class="nx-nav-all" hidden>${ALL.filter(p => (!shown.has(p.id) || NAV_NAMES[p.id]) && p.id !== 'data' && p.id !== 'zlarior').map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id] || p.label)}</span></a>`).join('')}${ARCHIVE.map(p => `<a data-page="${p.id}"><span>${esc(TITLES[p.id])}</span></a>`).join('')}</div>`;
   paintNav();
   nav.addEventListener('click', (e) => {
     const h = e.target.closest('.nx-grp-h'); if (!h) return;
@@ -117,11 +117,30 @@ function buildModules() {
   }).catch(() => null);
 }
 
+// the bot pages (2026-10-25 PM): Zlarior / ATLAS sections as a segmented control, then the section's pages as chips.
+// ATLAS parts ("atlas:brain") open the one ATLAS page on that part (store nx.atPart, read by second.js).
+export const atPart = () => store.get('nx.atPart', 'today');
+const botTitle = (it) => BOT_CHIP[it] || TITLES[it.split(':')[0]] || it;
+function botBar(b, page) {
+  const B = BOTS[b], key = page === 'atlas' && atPart() !== 'today' ? 'atlas:' + atPart() : page;
+  let si = B.segs.findIndex(s => s[1].includes(key)); if (si < 0) si = 0;
+  const attr = (it) => { const [id, part] = it.split(':'); return `data-goto="${esc(id)}"${id === 'atlas' ? ` data-atpart="${esc(part || 'today')}"` : ''}`; };
+  const S = B.segs[si];
+  return `<div class="nx-botbar"><div class="nx-botname"><b>${esc(B.name)}</b><span>${esc(B.sub)}</span></div>
+    <div class="seg nx-botseg" role="tablist" aria-label="${esc(B.name)} sections">${B.segs.map((s, i) => `<button type="button" role="tab" aria-selected="${i === si}" class="${i === si ? 'on' : ''}" ${attr(s[1][0])}>${esc(s[0])}</button>`).join('')}</div></div>
+    ${S[1].length > 1 ? `<div class="nx-strip nx-botchips">${S[1].map(it => `<button type="button" ${attr(it)} class="${it === key ? 'on' : ''}"><span>${esc(botTitle(it))}</span></button>`).join('')}</div>` : ''}`;
+}
+document.addEventListener('click', (e) => {          // capture: runs before app.js go(), so the ATLAS page draws the asked part
+  const t = e.target.closest('[data-goto="atlas"]'); if (!t) return;
+  store.set('nx.atPart', t.dataset.atpart || 'today');
+}, true);
+
 function buildSub(page) {
   const el = $('#nxSub');
   const g = groupOf(page);
+  if (BOTS[g]) { el.innerHTML = botBar(g, page); el.hidden = false; return; }
   if (g === 'data') {
-    el.innerHTML = `<div class="nx-strip" role="tablist">${DATA.map(p =>
+    el.innerHTML = `<div class="nx-strip" role="tablist">${DATA.filter(p => !botOf(p.id)).map(p =>
       `<button type="button" role="tab" data-goto="${p.id}" class="${p.id === page ? 'on' : ''}" aria-selected="${p.id === page}">${icon(p.icon)}<span>${esc(p.label)}</span></button>`).join('')}</div>`;
     el.querySelector('.on')?.scrollIntoView({ inline: 'center', block: 'nearest' });
     el.hidden = false;
@@ -154,7 +173,7 @@ export function onPage(page) {
   paintNav();                                   // a page inside the folded "Advanced" group still shows its own entry
   $('#nxSetBtn')?.classList.toggle('active', page === 'settings');
   $$('#nxTabs .nx-tab').forEach(t => t.classList.toggle('on', t.dataset.tab === g || ((g === 'settings' || g === 'archive') && t.dataset.tab === 'modules')));
-  $('#nxCrumb').textContent = g === 'data' ? 'Data' : g === 'modules' && page !== 'modules' ? 'Modules' : g === 'archive' ? 'Archive · previous strategy' : '';
+  $('#nxCrumb').textContent = BOTS[g] && page !== 'atlas' ? BOTS[g].name : g === 'data' ? 'Results' : g === 'modules' && page !== 'modules' ? 'Modules' : g === 'archive' ? 'Archive · previous strategy' : '';
   buildSub(page);
   requestAnimationFrame(() => { $('#page-' + page)?.scrollTo?.(0, 0); });
   document.title = `${TITLES[page] || 'Liquidity Engine'} · Liquidity Engine`;   // the app's name; the strategy is LIT

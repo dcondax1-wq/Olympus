@@ -261,7 +261,7 @@
       ${top.length ? `<div class="mo-h4">Setups seen and rejected${W.day && W.day !== et(nowS()).date ? ' · ' + esc(fDate(W.day)) : ''}</div>${top.map((x) => `<div class="mo-rj"><b>${x.t ? et(x.t).hm : ''}</b><span>${esc(String(x.text || '').replace(/^(LONG|SHORT) setup rejected: /, (s, d) => d + ': '))}</span>${x.rule ? chip(esc(RULE_W[x.rule] || x.rule), 'bad') : ''}</div>`).join('')}` : ''}
       ${!top.length && W.shallow.length ? `<div class="mo-h4">Sweeps that were too shallow${W.day && W.day !== et(nowS()).date ? ' · ' + esc(fDate(W.day)) : ''}</div>${W.shallow.slice(0, 3).map((x) => `<div class="mo-rj"><b>${x.t ? et(x.t).hm : ''}</b><span>${esc(x.text)}</span></div>`).join('')}` : ''}
       ${!top.length && !W.shallow.length && !W.reasons.length ? `<p class="mo-p">No setup has formed yet: LIT waits for a level sweep, an inducement, a displacement and a CISD close. Two to four trades a week is normal.</p>` : ''}
-      <div class="row-btns"><button class="chipbtn" type="button" data-go="plan">${icon('target')}<span>LIT plan</span></button><button class="chipbtn" type="button" data-go="radar">${icon('radar')}<span>Levels radar</span></button></div></div>`;
+      <div class="row-btns"><button class="chipbtn" type="button" data-go="plan">${icon('target')}<span>Zlarior plan</span></button><button class="chipbtn" type="button" data-go="radar">${icon('radar')}<span>Levels radar</span></button></div></div>`;
   }
 
   // ============================================================================================ eval equity curve (Money)
@@ -380,7 +380,7 @@
     if (!D) { el.innerHTML = skel(3); return; }
     if (!list.length) { el.innerHTML = head('Trades · replay', 'Trade replay') + emptyBox('No trade charts in this build.'); return; }
     const id = (ARG && list.find((t) => t.chart === ARG) ? ARG : null) || RPM.id || list[0].chart, t = list.find((x) => x.chart === id) || list[0];
-    el.innerHTML = head('Trades · replay', 'Trade replay', 'Watch a past LIT trade unfold bar by bar: the sweep, the entry, breakeven and the exit.')
+    el.innerHTML = head('Trades · replay', 'Trade replay', 'Watch a past Zlarior trade unfold bar by bar: the sweep, the entry, breakeven and the exit.')
       + `<div class="card"><div class="mo-rsel"><select class="hb-sel" id="moRpick" aria-label="Trade">${list.map((x) => `<option value="${esc(x.chart)}" ${x.chart === t.chart ? 'selected' : ''}>${esc(fDate(x.day))} · ${esc(x.side)} · ${susd(x.pnl)} (${fR(x.r, 1)})</option>`).join('')}</select>
           ${segHTML('moTf', [['5m', '5m'], ['1m', '1m']], RPM.tf, 'sm')}</div>
         <div id="moRbox">${skLines(6)}</div>
@@ -436,7 +436,7 @@
     const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#0b0e18'); bg.addColorStop(1, '#151a2b'); g.fillStyle = bg; g.fillRect(0, 0, W, H);
     const glow = g.createRadialGradient(W * 0.8, H * 0.15, 20, W * 0.8, H * 0.15, 700); glow.addColorStop(0, acc + '55'); glow.addColorStop(1, 'transparent'); g.fillStyle = glow; g.fillRect(0, 0, W, H);
     const F = (w, s) => `${w} ${s}px Inter, system-ui, -apple-system, Segoe UI, sans-serif`;
-    g.fillStyle = '#a9b1c3'; g.font = F(600, 34); g.fillText('LIQUIDITY · LIT on NQ', 80, 120);
+    g.fillStyle = '#a9b1c3'; g.font = F(600, 34); g.fillText('ZLARIOR · LIT on NQ', 80, 120);
     g.fillStyle = '#eef1f8'; g.font = F(800, 76); g.fillText(fDate(S.month), 80, 220);
     g.fillStyle = '#6f788b'; g.font = F(600, 32); g.fillText(S.kind, 80, 275);
     g.fillStyle = S.net >= 0 ? good : bad; g.font = F(800, 168); g.fillText(susd(S.net), 76, 470);

@@ -336,6 +336,14 @@ part yourself or fold it into a script.**
   Trade log, ATLAS per setup, Runbook, Audit evidence, All features (61 new features). API `engine/pc_cc_api.py`
   (`/api/next/cc/*`, GET only), UI `web_next/js/next/cc.js` + `css/cc.css`, grouped sidebar `routes.js` GROUPS.
   Tests `python -X utf8 -m tests.test_pc_command_center`; shots `tests/shots_pc_cc.py` -> `research/handoff/2026-10-25/ui_pc/`.
+  **"Zlarior" (owner 2026-10-25 PM): the display name of the LIT bot only** (like ATLAS for "second"): every key, file,
+  config, push kind and route id stays `lit`; "LIT" stays where it names the method ("Zlarior trades the LIT method").
+  Phone (`tools/web_public/clean.js` v2): tabs Home · Zlarior · ATLAS · Money · More; the Zlarior tab (group `lit`, page
+  `#/lit`) has sections Today (+ 50K eval pages) · Brain · Trades · Plan · Results · Strategy (ZL_SEGS), the ATLAS tab
+  Today · Brain · Trades · Setups · Results = the one ATLAS page cut into parts (`#/atlas/<part>`, atlasTag). PC
+  (`routes.js` BOTS): sidebar Home · Zlarior · ATLAS · Results · All tools; `zlarior` is a virtual entry that opens its last
+  section page (`zlSub`), the ATLAS part sits in `nx.atPart` (shell.js / second.js). Old links (#/trades, #/brain, #/second)
+  still open. Push titles say "Zlarior setup armed" (kind `armed` unchanged). Shots `research/handoff/2026-10-25/ui_zlarior/`.
 - **PC-off:** the GitHub Actions cloud monitor runs every 15 min on market days. It is the same engine and settings as
   `live_model.json`, keeps a paper ledger plus an MFFU eval tracker, sends phone push notifications (`engine/push.py`, `docs/NOTIFICATIONS.md`: entries, outcomes, PC silent; Telegram/Discord off
   unless `LE_ALERTS_CHAT=1`), runs the fast-entry watcher (`tools/lit_watch.py`) and the LIT day brief (`engine/lit_brief.py`), and publishes README.md and

@@ -13,7 +13,7 @@
   const hm = (t) => (ok(t) ? ET.format(new Date(t * 1000)) : '—');
   const LV = { good: ['in range', 'good'], warn: ['watch', 'warn'], bad: ['investigate', 'bad'] };
   const SW = [['anomaly_pause', 'Anomaly pause', 'no new entry 15 min after a spike / bad tick, and while the feed is frozen in a trade', 'live_model.json "guards": {"anomaly_pause": true}'],
-    ['combined_loss', 'Both-accounts loss cap', 'no new entry on LIT or account B at −$1,500 today / −$3,000 this week together', 'live_model.json "guards": {"combined_loss": true}']];
+    ['combined_loss', 'Both-accounts loss cap', 'no new entry on Zlarior or account B at −$1,500 today / −$3,000 this week together', 'live_model.json "guards": {"combined_loss": true}']];
 
   function view(el) {
     const A = (typeof D !== 'undefined' && D && D.live && D.live.pc && D.live.pc.ai) || null;
@@ -27,7 +27,7 @@
     const sw = SW.map(([k, l, d, how]) => { const on = !!(A.switches || {})[k]; return `<div class="row"><span><b>${l}</b> <span class="chip ${on ? 'bad' : ''}">${on ? 'ON' : 'off'}</span><span class="small mut">${d}. Switch: ${E(how)}</span></span></div>`; }).join('');
     const b = A.acct_b;
     el.innerHTML = h + `${A.freeze ? `<div class="card" style="border-color:var(--bad,#e5484d)"><b>FEED FROZEN in a trade</b><div class="small mut">${E(A.freeze.text)}. The broker stop / target still protect it.</div></div>` : ''}
-      <div class="card"><b>Both accounts</b><div class="row"><span>Today</span><b>${m$(lo.total)}</b></div><div class="row"><span class="small mut">LIT ${m$(lo.lit)} · account B ${m$(lo.b)}</span></div><div class="row"><span>This week</span><b>${m$(lo.week)}</b></div>
+      <div class="card"><b>Both accounts</b><div class="row"><span>Today</span><b>${m$(lo.total)}</b></div><div class="row"><span class="small mut">Zlarior ${m$(lo.lit)} · account B ${m$(lo.b)}</span></div><div class="row"><span>This week</span><b>${m$(lo.week)}</b></div>
         ${b ? `<div class="row"><span class="small mut">${E(b.label || 'Account B')} ${b.problem ? '· ' + E(b.problem) : `room $${Math.round(+b.room || 0).toLocaleString('en-US')} · ${E(b.status || '')}`}</span></div>` : ''}</div>
       <div class="card"><b>Drift: live vs the backtest range</b>${dr || '<div class="small mut">No verdict yet.</div>'}</div>
       <div class="card"><b>Anomalies</b>${an || '<div class="small mut">None logged.</div>'}</div>

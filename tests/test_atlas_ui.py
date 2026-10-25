@@ -6,8 +6,8 @@ the PC copy of the renderer. Read-only, ~30 s with Playwright (skipped parts say
 
 a. engine/second.dashboard_block carries "atlas" (research/second/atlas.json, else the account-B 25K research)
 b. secondcore.js: phone and PC copies byte-identical, node --check, SecondUI.atlas / twoCards render in node (stub DOM)
-c. the phone app at 390 px (Playwright, sample data.json): bottom bar Home · Brain · ATLAS · Trades · Money · More, the
-   Home cards, the ATLAS page (hero, 25K eval card, brain cards for the 3 members, go / no-go, trades, rules, backtest),
+c. the phone app at 390 px (Playwright, sample data.json): bottom bar Home · Zlarior · ATLAS · Money · More (2026-10-25 PM:
+   Zlarior = the LIT bot's display name), the bot tabs' sections, old links landing in the right tab, the Home cards, the ATLAS page (hero, 25K eval card, brain cards for the 3 members, go / no-go, trades, rules, backtest),
    #/second opens ATLAS, the Brain toggle says "ATLAS brain", no page errors, no horizontal scroll; screenshots
 d. the PC renderer copy in a static page at 1440 px (Playwright): ATLAS page + two cards, no page errors; screenshot
 """
@@ -190,10 +190,10 @@ def part_c(shots):
                 pg.wait_for_selector(".cl-hero", timeout=10000)
             pg.wait_for_timeout(800)
             tabs = pg.eval_on_selector_all("#tabs a span", "els => els.map(e => e.textContent.trim())")
-            # 2026-10-25 calm layout (clean.js): five tabs, Bot Brain folds into Home (#/brain still opens it)
-            check("c. phone bottom bar = Home · Trades · ATLAS · Money · More", tabs == ["Home", "Trades", "ATLAS", "Money", "More"], tabs)
+            # 2026-10-25 PM (clean.js v2): the LIT bot is "Zlarior"; five tabs, each bot tab holds all of that bot (#/brain, #/trades still open)
+            check("c. phone bottom bar = Home · Zlarior · ATLAS · Money · More", tabs == ["Home", "Zlarior", "ATLAS", "Money", "More"], tabs)
             cards = pg.eval_on_selector_all(".cl-hero", "els => els.map(e => e.innerText)")
-            check("c. Home: one hero card per account, 'LIT · 50K' then 'ATLAS · 25K' (big $ to the target, status chip)", len(cards) == 2 and cards[0].upper().startswith("LIT")
+            check("c. Home: one hero card per account, 'Zlarior · 50K' then 'ATLAS · 25K' (big $ to the target, status chip)", len(cards) == 2 and cards[0].upper().startswith("ZLARIOR")
                   and cards[1].upper().startswith("ATLAS") and "TARGET" in cards[0].upper() and "SIM" in cards[1].upper(), cards)
             check("c. Home: the hero cards come first (after the launch checklist while it is not all green)", pg.evaluate(
                 "() => { const L = [...document.querySelector('#page').querySelectorAll('.card:not(#moInst):not(.cl-launch)')]; "
@@ -224,14 +224,37 @@ def part_c(shots):
             pg.goto(url + "?fxoff#/second")
             pg.wait_for_selector("#atRoot .at-hero", timeout=10000)
             check("c. #/second (old push links) opens ATLAS", pg.eval_on_selector("#tabs a.on", "e => e.dataset.t") == "atlas")
+            seg = pg.eval_on_selector_all("#sub .zl-seg button", "els => els.map(e => e.textContent.trim())")
+            check("c. ATLAS tab sections: Today · Brain · Trades · Setups · Results", seg == ["Today", "Brain", "Trades", "Setups", "Results"], seg)
+            pg.goto(url + "?fxoff#/atlas/brain")
+            pg.wait_for_timeout(900)
+            vis = pg.evaluate("() => [...document.querySelectorAll('#atRoot > *')].filter(e => e.offsetParent !== null).map(e => e.dataset.at)")
+            check("c. #/atlas/brain shows only the ATLAS brain (3 member cards visible)", vis and all("brain" in (v or "") for v in vis)
+                  and pg.evaluate("() => [...document.querySelectorAll('#atRoot .sb-card')].filter(e => e.offsetParent !== null).length") == 3, vis)
+            for h in ("trades", "brain", "plan"):
+                pg.goto(url + f"?fxoff#/{h}")
+                pg.wait_for_timeout(700)
+                on = pg.eval_on_selector("#tabs a.on", "e => e.dataset.t")
+                check(f"c. #/{h} (old link) opens inside the Zlarior tab", on == "lit", on)
+            pg.goto(url + "?fxoff#/lit")
+            pg.wait_for_timeout(900)
+            zs = pg.eval_on_selector_all("#sub .zl-seg button", "els => els.map(e => e.textContent.trim())")
+            check("c. Zlarior tab sections: Today · Brain · Trades · Plan · Results · Strategy", zs == ["Today", "Brain", "Trades", "Plan", "Results", "Strategy"], zs)
+            check("c. Zlarior > Today: the 50K hero card, 'Zlarior trades the LIT method'", "Zlarior trades the LIT method" in pg.inner_text("#page") and pg.query_selector("#page .cl-hero"))
+            ov = pg.evaluate("() => document.documentElement.scrollWidth - innerWidth")
+            check("c. Zlarior tab: no horizontal scroll at 390 px", ov <= 1, ov)
             pg.goto(url + "?fxoff#/brain")
             pg.wait_for_timeout(1200)
             bt = pg.inner_text("#page")
-            check("c. Bot Brain toggle: 'LIT brain' / 'ATLAS brain'", "LIT brain" in bt and "ATLAS brain" in bt and "Second-strategy" not in bt, bt[:300])
+            check("c. Bot Brain toggle: 'Zlarior brain' / 'ATLAS brain'", "Zlarior brain" in bt and "ATLAS brain" in bt and "Second-strategy" not in bt, bt[:300])
+            pg.goto(url + "?fxoff#/strategy")
+            pg.wait_for_timeout(800)
+            st = pg.inner_text("#sub")
+            check("c. the Strategy page sits in the Zlarior tab (Strategy section)", "Strategy" in st and pg.eval_on_selector("#tabs a.on", "e => e.dataset.t") == "lit", st[:300])
             pg.goto(url + "?fxoff#/system")
             pg.wait_for_timeout(800)
-            st = pg.inner_text("#page")
-            check("c. More holds the LIT Strategy page (folded in)", "Strategy" in st, st[:300])
+            ids = pg.eval_on_selector_all("#page .cl-row", "els => els.map(e => e.dataset.go)")
+            check("c. More: one grouped list, each page once", len(ids) == len(set(ids)) and len(ids) > 20, len(ids))
             check("c. no page / console errors on the phone", not errs, errs[:5])
             b.close()
     finally:

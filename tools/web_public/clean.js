@@ -1,11 +1,16 @@
 // Calm layout (phone, 2026-10-25; loaded by index.html with one <script defer> LAST, after features.js; read-only UI).
 // The owner: "too many buttons, make it look like a maid swept and cleaned it". Nothing is deleted, only moved:
-//   Bottom bar   five tabs: Home · Trades · ATLAS · Money · More (Bot Brain lives under Home; #/brain still opens it)
+//   Bottom bar   five tabs: Home · Zlarior · ATLAS · Money · More (v2, 2026-10-25 PM: the LIT bot is called "Zlarior";
+//                display name only, every key, file and setting stays "lit"). Each bot tab holds ALL of that bot:
+//                  Zlarior  Today (+ the 50K eval pages) · Brain · Trades · Plan & levels · Results · Strategy
+//                  ATLAS    Today · Brain · Trades · Setups · Results (the one ATLAS page in parts: #/atlas/<part>)
+//                a small segmented control on top picks the section; a section with several pages shows them as chips.
+//                Old links (#/trades, #/brain, #/plan, #/second ...) open the same pages, now inside the bot's tab.
 //   Home         only what matters, in this order: the launch checklist (only while a line is not green), one hero card
-//                per account (LIT 50K, ATLAS 25K: ONE big number = $ to the target, one line = room / sessions left, one
-//                status chip), today's plan in one line, the last (or open) trade, then a short "One tap away" list.
+//                per account (Zlarior 50K, ATLAS 25K: ONE big number = $ to the target, one line = room / sessions left,
+//                one status chip), today's plan in one line, the last (or open) trade, then a short "One tap away" list.
 //                Every card the old Home showed is still on #/homefull ("Full overview").
-//   Sub-bar      a tab shows its 2-5 main pages (no long strips); every other page has a "‹ Home" / "‹ More" back button
+//   Sub-bar      the bot tabs show their sections; Money its main pages; every other page a "‹ Home" / "‹ More" button
 //   More         one grouped list with search on top, each page once; research / technical pages sit under "Advanced",
 //                collapsed by default (opens by itself while searching)
 //   Look         calm cards (one style, 8-pt spacing), 44 px tap targets, readable numbers; 3D effects are off by default
@@ -15,7 +20,7 @@
 (function () {
   'use strict';
   if (typeof GROUPS === 'undefined' || typeof VIEWS === 'undefined') return;
-  window.CLEAN = { version: 1 };
+  window.CLEAN = { version: 2 };
   const HD = () => (typeof D !== 'undefined' && D) || window.HOMEJ || null;
   const nowS = () => Date.now() / 1000;
   const okN = (v) => v != null && v !== '' && !isNaN(v);
@@ -50,7 +55,7 @@
     return (pc && ((pc.conn && pc.conn.connected) || pc.eval)) ? pc : (cl || pc || null);
   }
   function goalsAcct(k) { const G = (HD() || {}).goals; return G && Array.isArray(G.accounts) ? G.accounts.find((a) => a && a.id === k) || null : null; }
-  function litHero() {
+  function litHero(go) {
     const h = HD() || {}, L = h.live || {}, v = L.pc_verdict || {}, a = litAcct(), e = (a && a.eval) || {}, g = goalsAcct('lit50k') || {};
     const target = okN(e.target_balance) && okN(e.start_balance) ? e.target_balance - e.start_balance : (g.profit_target || 3000);
     const toGo = okN(e.to_target) ? e.to_target : g.to_go;
@@ -66,8 +71,8 @@
     const H = window.HubParts || {};
     let surf = ''; try { surf = H.surfaceLine ? H.surfaceLine() : ''; } catch (er) { surf = ''; }
     const stopped = v.code === 'SILENT' || v.code === 'DISABLED' || (L.pc && L.pc.present && L.pc.running === false);
-    return `<button type="button" class="card cl-card cl-hero ${lvl}" data-go="brain" aria-label="LIT 50K: ${esc(big)} to the target, ${esc(status)}">
-      <span class="cl-h"><span class="cl-eye">LIT · 50K<em>${esc(a && a.source === 'cloud' ? 'MFFU Builder 50K · cloud paper' : 'MFFU Builder 50K')}</em></span>${chipS(status, lvl)}</span>
+    return `<button type="button" class="card cl-card cl-hero ${lvl}" data-go="${go || 'lit'}" aria-label="Zlarior 50K: ${esc(big)} to the target, ${esc(status)}">
+      <span class="cl-h"><span class="cl-eye">Zlarior · 50K<em>${esc(a && a.source === 'cloud' ? 'MFFU Builder 50K · cloud paper' : 'MFFU Builder 50K')}</em></span>${chipS(status, lvl)}</span>
       <span class="cl-big"><b>${esc(big)}</b><em>${passed ? 'target reached' : `to the +${money(target)} target`}</em></span>
       <span class="cl-bar"><i style="width:${(prog * 100).toFixed(1)}%"></i></span>
       <span class="cl-line">${esc(line || 'eval not reporting yet')}</span>
@@ -112,7 +117,7 @@
     let txt = '', cd = null;
     if (C) {
       if (C.inWin) { txt = `Entry window open · cut-off in `; cd = C.cut; }
-      else { txt = `Next LIT window ${et(C.open).wd} 02:00 ET · in `; cd = C.open; }
+      else { txt = `Next Zlarior window ${et(C.open).wd} 02:00 ET · in `; cd = C.open; }
     } else txt = L.model_state || 'Waiting for the next session';
     const cal = (h.goals && h.goals.calendar) || {}, today = (h.goals && h.goals.today) || et(nowS()).date;
     const newsT = (cal.news || []).filter((n) => n.day === today);
@@ -154,23 +159,99 @@
       <section class="card cl-card cl-list" aria-label="One tap away"><span class="cl-eye">One tap away</span>
         ${rowLink('brain', 'Bot Brain', 'What the bot is thinking right now', 'brain')}
         ${rowLink('goals', 'Goals', 'Each eval, this week, this month', 'target')}
-        ${rowLink('plan', 'LIT plan and levels', 'Today’s levels, the target band, sweeps seen', 'target')}
+        ${rowLink('plan', 'Zlarior plan and levels', 'Today’s levels, the target band, sweeps seen', 'target')}
         ${rowLink('homefull', 'Full overview', 'Every card the old Home showed: health, radar, why no trade', 'layers')}</section>
       <p class="cl-foot">Paper / eval monitor · read-only${built ? ` · data ${esc(built.toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }))}` : ''}${HD() && HD().home_only ? ' · loading the rest…' : ''}</p>`;
     if (ins && M.wireInstall) { try { M.wireInstall(el); } catch (e) { /* guide only */ } }
   }
 
+  // ------------------------------------------------------------------ the bot tabs: sections (segmented control) and their pages
+  // [section, its pages (chips, the first opens on a tap of the section), pages that belong here but have no chip]
+  // An item "atlas/brain" is the ATLAS page showing one part (#/atlas/brain).
+  const ZL_SEGS = [
+    ['Today', ['lit', 'eval', 'evalhq', 'cockpit', 'curve'], ['live', 'engine']],
+    ['Brain', ['brain'], []],
+    ['Trades', ['trades', 'last10', 'recaps', 'intel', 'journal', 'stats', 'weekly'], ['tplay', 'weekcal', 'activity', 'replays']],
+    ['Plan', ['plan', 'day', 'levels', 'radar', 'brief'], []],
+    ['Results', ['perf', 'results', 'pnlcal', 'edge', 'execq'], ['stops', 'evals']],
+    ['Strategy', ['strategy', 'risk', 'mffurules'], []],
+  ];
+  const AT_SEGS = [
+    ['Today', ['atlas'], []], ['Brain', ['atlas/brain'], []], ['Trades', ['atlas/trades'], []],
+    ['Setups', ['atlas/setups', 'atstats'], []], ['Results', ['atlas/results'], []],
+  ];
+  const BOTS = { lit: { name: 'Zlarior', segs: ZL_SEGS }, atlas: { name: 'ATLAS', segs: AT_SEGS } };
+  const CHIP = { lit: 'Today', eval: '50K eval', evalhq: 'Eval HQ', cockpit: 'Eval cockpit', curve: 'Eval curve', trades: 'All trades', intel: 'Trade intel',
+    plan: 'Plan', day: 'Day plan', levels: 'Levels', radar: 'Radar', brief: 'Briefing', perf: 'Performance', results: 'Replay', pnlcal: 'Calendar',
+    execq: 'Execution', risk: 'Risk & sizing', mffurules: 'MFFU rules', 'atlas/setups': 'Rules & members', atstats: 'Setup stats' };
+  const chipLabel = (it) => CHIP[it] || (PAGES[it] && PAGES[it].label) || it;
+  const goAttr = (it) => { const [id, arg] = it.split('/'); return `data-go="${esc(id)}"${arg ? ` data-arg="${esc(arg)}"` : ''}`; };
+  const botIds = (b) => BOTS[b].segs.flatMap((s) => s[1].concat(s[2])).map((it) => it.split('/')[0]);
+  function segBar(g, p, arg) {
+    const B = BOTS[g], key = p === 'atlas' && arg && arg !== 'today' ? 'atlas/' + arg : p;
+    let si = B.segs.findIndex((s) => s[1].includes(key) || s[2].includes(key)); if (si < 0) si = 0;
+    const S = B.segs[si], extra = S[2].includes(key) ? [key] : [];
+    const chips = S[1].length > 1 || extra.length ? `<div class="strip cl-strip zl-chips">${S[1].concat(extra).map((it) => `<button type="button" ${goAttr(it)} class="${it === key ? 'on' : ''}">${esc(chipLabel(it))}</button>`).join('')}</div>` : '';
+    return `<div class="zl-seg" role="tablist" aria-label="${esc(B.name)} sections">${B.segs.map((s, i) => `<button type="button" role="tab" aria-selected="${i === si}" class="${i === si ? 'on' : ''}" ${goAttr(s[1][0])}>${esc(s[0])}</button>`).join('')}</div>${chips}`;
+  }
+
+  // ------------------------------------------------------------------ Zlarior > Today (#/lit)
+  function litNext() {
+    const L = (HD() || {}).live || {}, pb = L.pc && L.pc.brain && !L.pc.brain.error ? L.pc.brain : null, cb = L.brain && !L.brain.error ? L.brain : null;
+    const b = pb && (nowS() - (+pb.t || 0) < FRESH_S || !cb) ? pb : cb;
+    return (b && b.stage && b.stage.waiting) || L.model_state || '';
+  }
+  function litView(el) {
+    const nx = litNext();
+    el.innerHTML = `<header class="hero"><div><div class="eyebrow">Bot 1 · MFFU Builder 50K</div><h2>Zlarior</h2><p>Zlarior trades the LIT method on the 50K: a swept level, a 5-minute CISD, the stop 1 tick beyond the sweep, one clear target.</p></div></header>
+      ${litHero('evalhq')}
+      ${nx ? `<button type="button" class="card cl-card cl-plan" data-go="brain"><span class="cl-ri">${icon('brain')}</span><span class="cl-rt"><span class="cl-eye">Right now</span><b>${esc(nx)}</b><em>Bot Brain: every rule it checks</em></span>${icon('right', 'cl-go')}</button>` : ''}
+      ${planLine()}
+      ${lastTrade()}
+      <p class="cl-foot">Paper / eval monitor · read-only · Zlarior is the display name of the LIT bot</p>`;
+  }
+
+  // ------------------------------------------------------------------ ATLAS: the one page, in parts (#/atlas/<part>)
+  // Tags each block SecondUI.atlas draws with its part, then shows only the asked part (the rest stays in the page, hidden).
+  function atlasTag(root) {
+    let cur = 'brain', i = 0;
+    for (const c of root.children) {
+      const cl = c.classList, h = ((c.querySelector('h3,.sc-eyebrow,summary') || c).textContent || '').trim();
+      let s;
+      if (cl.contains('at-hero')) s = 'today';
+      else if (cl.contains('av2')) s = 'results';
+      else if (c.tagName === 'H3' && cl.contains('at-sec')) { cur = /^Candidate/i.test(h) ? 'setups' : 'brain'; s = cur; }
+      else if (cl.contains('sb-card') || cl.contains('sc-banner') || cl.contains('at-cand')) s = cur;
+      else if (cl.contains('at-pics') || /^Trades\b/.test(h)) s = 'trades';
+      else if (/^Go \/ no-go|^Backtest|^Scorecard/i.test(h)) s = 'results';
+      else if (/^Rules/.test(h) || c.tagName === 'DETAILS') s = 'setups';
+      else if (i === 1) s = 'today results';                  // the 25K eval card, right under the hero
+      else s = 'results';
+      c.dataset.at = s; i++;
+    }
+  }
+  const AT_PART = ['today', 'brain', 'trades', 'setups', 'results'];
+  function atlasPart(el, part) {
+    const root = el.querySelector('#atRoot'); if (!root || !root.children.length) return;
+    if (!AT_PART.includes(part)) part = 'today';
+    atlasTag(root);
+    let n = 0;
+    for (const c of root.children) { const on = c.dataset.at.split(' ').includes(part); c.style.display = on ? '' : 'none'; n += on; }
+    const hd = el.querySelector('.hero'); if (hd && part !== 'today') hd.style.display = 'none';
+    if (!n) root.insertAdjacentHTML('beforeend', `<div class="card cl-card cl-empty"><p>Nothing here yet. It fills in after the next cloud run with ATLAS on.</p></div>`);
+  }
+
   // ------------------------------------------------------------------ More: one grouped list, Advanced collapsed
   const SECTIONS = [
-    ['Today', ['goals', 'brain', 'plan', 'day', 'brief', 'levels', 'radar', 'market', 'news', 'cockpit', 'live', 'homefull']],
+    ['Today', ['goals', 'market', 'news', 'live', 'homefull']],
     ['Bot and health', ['launch', 'lights', 'ops', 'engine', 'alerts', 'activity', 'remote', 'aiwatch']],
-    ['Trades', ['recaps', 'weekcal', 'pnlcal', 'tplay', 'accounts', 'intel']],
-    ['Money', ['perf', 'scale', 'curve', 'share', 'evalhq', 'eval']],
-    ['Strategy', ['strategy', 'risk', 'mffurules']],
+    ['Trades', ['tplay', 'weekcal', 'replays', 'accounts']],
+    ['Money', ['share', 'evals', 'stops']],
     ['This app', ['settings', 'features']],
   ];
-  const ADV = ['lab', 'experiments', 'writeups', 'losses', 'intraday', 'evals', 'setups', 'learned', 'results', 'replays', 'stops', 'execq', 'edge', 'chart', 'sources', 'parts', 'archive'];
-  const TAB_MAIN = { trades: ['trades', 'last10', 'journal', 'stats', 'weekly'], atlas: ['atlas', 'atstats'], money: ['money', 'evaltl', 'props', 'whatif'] };
+  const ADV = ['lab', 'experiments', 'writeups', 'losses', 'intraday', 'setups', 'learned', 'chart', 'sources', 'parts', 'archive'];
+  const TAB_MAIN = { money: ['money', 'evaltl', 'props', 'whatif', 'scale'] };
+  const ON_TABS = () => [...new Set(ZL_SEGS.flatMap((s) => s[1]).concat(['atlas', 'atstats'], TAB_MAIN.money))];
   function moreView(el) {
     const used = new Set(['today', 'system']);
     const row = (id) => {
@@ -179,7 +260,7 @@
         <span class="cl-rt"><b>${esc(p.label)}</b>${p.desc ? `<em>${esc(p.desc)}</em>` : ''}</span>${icon('right', 'cl-go')}</button>`;
     };
     // the tabs' own main pages are found by search only (they are one tap away on their tab)
-    const tabRows = Object.values(TAB_MAIN).flat().map(row).join('');
+    const tabRows = ON_TABS().map(row).join('');
     const secs = SECTIONS.map(([t, ids]) => { const r = ids.map(row).join(''); return r ? `<section class="cl-sec"><h4>${esc(t)}</h4><div class="card cl-card cl-list">${r}</div></section>` : ''; }).join('');
     const advIds = ADV.slice();
     Object.keys(PAGES).forEach((id) => { if (!used.has(id) && !advIds.includes(id)) advIds.push(id); });   // anything new lands in Advanced
@@ -220,6 +301,12 @@
       if (p === 'today' || p === 'system') { sub.className = 'sub'; sub.innerHTML = ''; return; }
       if (g === 'today') { sub.className = 'sub mb'; sub.innerHTML = back('today', 'Home'); return; }
       if (g === 'system') { sub.className = 'sub mb'; sub.innerHTML = back('system', 'More'); return; }
+      if (BOTS[g]) {
+        sub.className = 'sub zl';
+        sub.innerHTML = segBar(g, p, typeof ARG !== 'undefined' ? ARG : null);
+        sub.querySelectorAll('.zl-seg, .zl-chips').forEach((st) => { const on = st.querySelector('.on'); if (on) st.scrollLeft = Math.max(0, on.offsetLeft - (st.clientWidth - on.offsetWidth) / 2); });
+        return;
+      }
       const L = TAB_MAIN[g]; if (!L) return sb0(p, g);
       const ids = L.filter((id) => PAGES[id]);
       if (!ids.includes(p)) { sub.className = 'sub mb'; sub.innerHTML = back(ids[0] || 'system', (PAGES[ids[0]] || {}).label || 'Back'); return; }
@@ -233,6 +320,7 @@
   function install() {
     if (typeof P !== 'undefined') {
       P.home = '<path d="M4 10.5L12 4l8 6.5V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z"/>';
+      P.zlarior = '<rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M8.5 8.5h7l-7 7h7"/>';
       if (!P.wallet) P.wallet = '<rect x="3.5" y="6" width="17" height="13" rx="2.5"/><path d="M16 12.5h4.5"/><path d="M6 6l9-2.5 1 2.5"/>';
     }
     // 1. five tabs: Brain folds into Home (its page and deep link stay), any other extra tab folds into More
@@ -246,12 +334,36 @@
         if (typeof DETAIL !== 'undefined') Object.values(DETAIL).forEach((d) => { if (d.group === g.id) d.group = into.id; });
         GROUPS.splice(i, 1);
       }
-      const order = ['today', 'trades', 'atlas', 'money', 'system'];
+      // v2: the Zlarior tab (internal group "lit") takes every LIT page from Home, Trades, Money and More; Trades' other
+      // pages (Accounts) go to Money. Each page keeps its id, so every old link still opens it.
+      const Mo = GROUPS.find((g) => g.id === 'money');
+      const zl = ['lit'].concat(botIds('lit').filter((id) => id !== 'lit'));
+      const tuple = (id) => { for (const g of GROUPS) { const t = g.pages.find((q) => q[0] === id); if (t) return t; } const q = PAGES[id]; return q ? [id, q.label, q.icon, q.desc] : null; };
+      const zPages = [['lit', 'Zlarior', 'zlarior', 'Zlarior on the 50K: today, the eval, brain, trades, plan, results, strategy']].concat(zl.slice(1).map(tuple).filter(Boolean));
+      GROUPS.forEach((g) => { g.pages = g.pages.filter((q) => !zl.includes(q[0])); });
+      PAGES.lit = { id: 'lit', label: 'Zlarior', icon: 'zlarior', desc: zPages[0][3], group: 'lit' };
+      zl.forEach((id) => { if (PAGES[id]) PAGES[id].group = 'lit'; });
+      const ti = GROUPS.findIndex((g) => g.id === 'trades');
+      if (ti >= 0) {
+        if (Mo) GROUPS[ti].pages.forEach((q) => { if (!Mo.pages.some((x) => x[0] === q[0])) Mo.pages.push(q); if (PAGES[q[0]]) PAGES[q[0]].group = 'money'; });
+        GROUPS.splice(ti, 1);
+      }
+      if (!GROUPS.some((g) => g.id === 'lit')) GROUPS.push({ id: 'lit', label: 'Zlarior', icon: 'zlarior', pages: zPages });
+      const order = ['today', 'lit', 'atlas', 'money', 'system'];
       GROUPS.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
-      const LBL = { today: ['Home', 'home'], trades: ['Trades', 'trades'], atlas: ['ATLAS', 'atlas'], money: ['Money', 'wallet'], system: ['More', 'modules'] };
+      const LBL = { today: ['Home', 'home'], lit: ['Zlarior', 'zlarior'], atlas: ['ATLAS', 'atlas'], money: ['Money', 'wallet'], system: ['More', 'modules'] };
       GROUPS.forEach((g) => { if (LBL[g.id]) { g.label = LBL[g.id][0]; g.icon = LBL[g.id][1]; } });
       // the tab opens its main page first
-      GROUPS.forEach((g) => { const main = { today: 'today', trades: 'trades', atlas: 'atlas', money: 'money', system: 'system' }[g.id]; const k = g.pages.findIndex((p) => p[0] === main); if (k > 0) g.pages.unshift(g.pages.splice(k, 1)[0]); });
+      GROUPS.forEach((g) => { const main = { today: 'today', lit: 'lit', atlas: 'atlas', money: 'money', system: 'system' }[g.id]; const k = g.pages.findIndex((p) => p[0] === main); if (k > 0) g.pages.unshift(g.pages.splice(k, 1)[0]); });
+      VIEWS.lit = litView;
+      if (typeof SCENE !== 'undefined') SCENE.lit = 'today';
+      if (typeof ALIAS !== 'undefined') Object.assign(ALIAS, { zlarior: 'lit', zl: 'lit', bot1: 'lit', lit50k: 'lit' });
+      // ATLAS: the one page in parts (#/atlas/brain, #/atlas/trades ...); #/second keeps opening it
+      const av = VIEWS.atlas;
+      if (av && !av.__parts) {
+        VIEWS.atlas = function (el) { av.apply(this, arguments); try { atlasPart(el, typeof ARG !== 'undefined' && PAGE === 'atlas' ? ARG : 'today'); } catch (e) { console.warn('atlas parts', e); } };
+        VIEWS.atlas.__parts = true;
+      }
     }
     // 2. the old Home lives on as Home > Full overview
     const old = VIEWS.today;
@@ -309,6 +421,16 @@
   :root[data-clean="on"] .sub{background:color-mix(in srgb,var(--page) 94%,transparent)}
 }
 .cl-strip{gap:4px}.cl-strip button{padding:0 14px;font-weight:600}
+/* the bot tabs: a small segmented control (sections), then the section's pages as chips */
+.sub.zl{padding-bottom:8px;background:linear-gradient(180deg,color-mix(in srgb,var(--page) 94%,transparent),color-mix(in srgb,var(--page) 80%,transparent));backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.zl-seg{display:flex;gap:2px;padding:3px;border-radius:12px;background:var(--surface-2);border:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.zl-seg::-webkit-scrollbar{display:none}
+.zl-seg button{flex:1 0 auto;min-height:34px;padding:0 7px;border:0;border-radius:9px;background:none;color:var(--ink-2);font:600 13px var(--sans);white-space:nowrap;cursor:pointer;transition:background .15s,color .15s}
+.zl-seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.28),0 0 0 1px var(--line)}
+.zl-chips{margin-top:6px;padding:0;border:0;background:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+.zl-chips button{height:32px;min-height:32px;padding:0 12px;border-radius:99px;border:1px solid var(--line);font-size:12.5px}
+.zl-chips button.on{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+@media (max-width:760px){:root[data-clean="on"] .zl-chips button{min-height:32px}}
 /* the calm cards */
 .cl-card{display:block;width:100%;text-align:left;font:inherit;color:inherit}
 button.cl-card{cursor:pointer;transition:transform .15s var(--ease),border-color .2s}button.cl-card:active{transform:scale(.985)}

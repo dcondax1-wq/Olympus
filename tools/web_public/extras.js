@@ -16,9 +16,9 @@
   const ADD = {
     today: [['evalhq', 'Eval HQ', 'prop', 'The 2-week pass path: $ to go, sessions left, what one winner pays, the odds', 1],
       ['ops', 'Ops check', 'check', 'Is everything running? Checklist, NinjaTrader help, quick links', 99]],
-    trades: [['edge', 'Edge', 'heat', 'Where LIT makes its money: R, hours, weekdays, levels, stop sizes', 2],
+    trades: [['edge', 'Edge', 'heat', 'Where Zlarior makes its money: R, hours, weekdays, levels, stop sizes', 2],
       ['pnlcal', 'Calendar', 'results', 'Daily P&L calendar, streaks, this week vs the backtest', 3]],
-    system: [['mffurules', 'MFFU rules', 'rules', 'The Builder 50K rulebook and how LIT fits it', 4]],
+    system: [['mffurules', 'MFFU rules', 'rules', 'The Builder 50K rulebook and how Zlarior fits it', 4]],
   };
   const SCN = { evalhq: 'eval', ops: 'engine', edge: 'results', pnlcal: 'results', mffurules: 'eval' };
   const ALI = { hq: 'evalhq', evalhq: 'evalhq', pass: 'evalhq', edge: 'edge', stats: 'edge', analytics: 'edge', pnl: 'pnlcal', cal: 'pnlcal',
@@ -192,7 +192,7 @@
     const ex = ['TARGET', 'STOP', 'BE', 'TIME'].map((e) => { const g = t.filter((q) => q.exit === e); return { label: e === 'BE' ? 'Breakeven' : e === 'TIME' ? 'Time (15:55)' : e[0] + e.slice(1).toLowerCase(), v: sum(g, (q) => q.pnl), sub: `${g.length} · ${fR(g.length ? sum(g, (q) => q.r) / g.length : 0)}` }; });
     const ls = [[1, 'Long'], [-1, 'Short']].map(([d, l]) => { const g = t.filter((q) => q.dir === d); return { label: l, v: sum(g, (q) => q.pnl), sub: `${g.length} · ${pct(kpis(g).win || 0)} won · PF ${fPF(kpis(g).pf)}` }; });
     const lv = (x.levels && x.levels[sp]) || [];
-    el.innerHTML = head('Trades · LIT backtest · ' + (SPANS.find((s) => s[0] === sp) || [])[1], 'Edge', 'Where the strategy makes and loses its money. Backtest trades with the live rules at the normal size ($800 up to a 20-pt stop), costs in.', spanSeg('exSpan')) +
+    el.innerHTML = head('Zlarior · backtest · ' + (SPANS.find((s) => s[0] === sp) || [])[1], 'Edge', 'Where the strategy makes and loses its money. Backtest trades with the live rules at the normal size ($800 up to a 20-pt stop), costs in.', spanSeg('exSpan')) +
       howto('edge', `<ul><li><b>2026</b> is how LIT is judged (owner, 2026-10-18): rules picked on <b>H1</b> (Jan–Jun), checked on <b>H2</b> (Jul–Oct). <b>2021-25</b> is a reference line on 5m bars only (no 1m data), never a gate.</li>
         <li><b>R</b> = the result in units of the money at risk on that trade. A full stop is −1R; LIT banks winners at the VIX target, up to 8R.</li>
         <li>The $ figures are at the normal backtest size. The eval runs the two_week size, so its $ per trade differ; R and the patterns are the same trades.</li>
@@ -260,7 +260,7 @@
     const h2w = H2.from && H2.to ? Math.max(1, (Date.parse(H2.to) - Date.parse(H2.from)) / (7 * 864e5)) : null, expT = H2.per_week || null;
     const h2t = span('H2'), expR = h2t.length && expT ? sum(h2t, (q) => q.r) / h2t.length * expT : null, expUsd = h2w ? H2.net / h2w : null;
     const wdLeft = Math.max(0, 4 - ((nowD.getUTCDay() + 6) % 7));
-    el.innerHTML = head('Trades · ' + (src === 'paper' ? 'cloud paper bot' : 'LIT backtest'), 'P&L calendar', src === 'paper' ? 'Every paper trade of the cloud bot, by day (paper only: no real orders).' : 'Every replay trading day: live rules, normal size ($800 up to a 20-pt stop), costs in.',
+    el.innerHTML = head('Trades · ' + (src === 'paper' ? 'cloud paper bot' : 'Zlarior backtest'), 'P&L calendar', src === 'paper' ? 'Every paper trade of the cloud bot, by day (paper only: no real orders).' : 'Every replay trading day: live rules, normal size ($800 up to a 20-pt stop), costs in.',
       segHTML('exCalSrc', [['bt', 'Backtest'], ['paper', 'Paper · live']], src)) +
       `<div class="card lex-wk"><div class="card-h"><h3>This week vs the backtest</h3><span class="meta">${fDate(monK)} – ${fDate(friK)} · paper</span></div>
         <div class="lex-gauge"><div><span>Trades</span><b>${wk.length} <small class="mut">of ~${num(expT, 1)} expected</small></b><div class="meter"><i style="width:${expT ? Math.min(100, wk.length / 4 * 100) : 0}%"></i><em style="left:50%"></em></div><small class="mut">owner’s band 2–4 a week · ${plural(wdLeft, 'session')} left after today</small></div>
@@ -373,7 +373,7 @@
       ['Commission $1.90 / micro', 'in every eval number on these pages', 'good'], ['Bots allowed', 'with your own settings; ask MFFU in writing about presence before live', 'warn']];
     el.innerHTML = head('System · prop firm · ' + esc(m.title || ''), 'MFFU rules', `Builder 50K, read ${esc(m.built || '')}. Each rule says how sure it is: confirmed on MFFU’s pages, conflict (MFFU pages disagree), or unconfirmed.`,
       segHTML('exMf', m.stages.map((s) => [s.stage, s.stage === 'sim_funded' ? 'Sim funded' : s.stage[0].toUpperCase() + s.stage.slice(1)]), stage)) +
-      `<div class="card"><div class="card-h"><h3>How LIT fits the eval</h3></div><div class="lex-lights">${fit.map(([a, b, k]) => `<div class="li ${k}"><i></i><div><b>${a}</b><em>${b}</em></div></div>`).join('')}</div></div>
+      `<div class="card"><div class="card-h"><h3>How Zlarior fits the eval</h3></div><div class="lex-lights">${fit.map(([a, b, k]) => `<div class="li ${k}"><i></i><div><b>${a}</b><em>${b}</em></div></div>`).join('')}</div></div>
       <div class="card"><div class="card-h"><h3>${stage === 'sim_funded' ? 'Sim funded' : stage[0].toUpperCase() + stage.slice(1)}</h3><span class="meta">${tag(n('confirmed') + ' confirmed', 'good')} ${n('conflict') ? tag(n('conflict') + ' conflict', 'warn') : ''} ${n('unconfirmed') ? tag(n('unconfirmed') + ' unconfirmed', 'bad') : ''}</span></div>
         <div class="lex-rules">${S.items.map((i) => `<div class="ru"><div class="h"><b>${esc(KN[i.k] || i.k.replace(/_/g, ' '))}</b>${tag(esc(i.status || '?'), SK[i.status] || '')}</div><div class="v">${fmtV(i.value, i.k)}</div>${i.note ? `<p class="small mut">${esc(i.note)}</p>` : ''}</div>`).join('')}</div>
         <p class="note">${esc(m.method || '')}</p>${srcLine(esc(X()?.sources?.mffu || ''))}</div>`;

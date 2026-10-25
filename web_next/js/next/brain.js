@@ -121,7 +121,7 @@ function vNow(b) {
   const S2 = b.setups || [];
   const tr = b.trade;
   const pic = picCard(S.charts, 'lit');
-  return waitingCard(b) + (pic ? card('Trade pictures · LIT', pic, '', 'bb-pics') : '') + `<div class="nx-stats">
+  return waitingCard(b) + (pic ? card('Trade pictures · Zlarior', pic, '', 'bb-pics') : '') + `<div class="nx-stats">
       ${stat('Price', p2(b.price), `last 5m close ${esc(b.bar_hm || '')}`)}${stat('ATR (5m)', fmtN(b.atr, 1) + ' pts', `0.5 ATR sweep = ${fmtN((b.atr || 0) * (b.rules?.depth || 0.5), 1)} pts`)}
       ${stat('Setups today', S2.length, `${S2.filter((s) => s.status === 'rejected').length} rejected · ${S2.filter((s) => s.status === 'no_fill').length} no fill`)}
       ${stat('Closed trades today', b.day_trades ?? 0, b.day_pnl ? fmtS$(b.day_pnl) : 'max 1 a day', cls(b.day_pnl))}
@@ -270,8 +270,8 @@ function render() {
   const src = live ? `<span class="nx-chip good">LIVE · PC bot${b.running ? '' : ' (stopped)'}</span> <span class="muted small">updated ${new Date(S.at).toLocaleTimeString()}</span>`
     : `<span class="nx-chip">${esc(b?.empty ? 'no live Brain' : S.liveErr ? 'offline' : 'loading')}</span>`;
   const head = `<div class="nx-hero"><div><div class="nx-eyebrow">${icon('brain')} Bot Brain · ${src}</div><h2>What the bot is thinking</h2>
-    <p class="muted">Every step of the LIT strategy, live: what it waits for, every level it watches, every setup it saw today and the exact rule that stopped it, how it sizes, how it manages the trade and what could block it. Read-only: this page cannot change anything the bot does.</p></div></div>
-    <div class="nx-toolbar bb-tabs">${seg('bbWho', [['lit', 'LIT brain'], ['second', 'ATLAS brain']], S.who)}</div>
+    <p class="muted">Every step of Zlarior (the LIT method), live: what it waits for, every level it watches, every setup it saw today and the exact rule that stopped it, how it sizes, how it manages the trade and what could block it. Read-only: this page cannot change anything the bot does.</p></div></div>
+    <div class="nx-toolbar bb-tabs">${seg('bbWho', [['lit', 'Zlarior brain'], ['second', 'ATLAS brain']], S.who)}</div>
     ${S.who === 'second' ? '' : `<div class="nx-toolbar bb-tabs">${seg('bbTab', TABS, S.tab)}</div>`}`;
   let body;
   if (S.who === 'second') body = '<div id="bbSecond"><div class="nx-skel"><i></i><i></i></div></div>';
@@ -279,7 +279,7 @@ function render() {
   else if (!live) body = `<div class="card nx-glass nx-empty-hub"><span class="nx-tile-i">${icon('brain')}</span><h3>${esc(b?.reason || S.liveErr || 'Loading…')}</h3>
       <p class="muted">The live Brain fills in after the bot's first LIT poll. Meanwhile, replay any 2026 day to see what the bot thought.</p>
       <button type="button" class="btn primary" data-bbtab="replay">${icon('replay')}<span>Replay ${esc(b?.latest_day || 'a day')}</span></button></div>`
-      + (picCard(S.charts, 'lit') ? card('Trade pictures · LIT', picCard(S.charts, 'lit'), '', 'bb-pics') : '');
+      + (picCard(S.charts, 'lit') ? card('Trade pictures · Zlarior', picCard(S.charts, 'lit'), '', 'bb-pics') : '');
   else body = `<div id="bbView">${VIEWS[S.tab](b)}</div>`;
   el.innerHTML = head + body;
   onSeg('bbTab', (v) => { setTab(v); });

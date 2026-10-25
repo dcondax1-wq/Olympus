@@ -1,6 +1,6 @@
 // Liquidity Engine service worker: makes the dashboard installable and keeps the app shell available offline.
 // API calls are never cached (they are live state). Static files are network-first with a cache fallback.
-const SHELL = 'le-shell-next-v17';   // v17 (2026-10-25 PM): K3 icon + clean-up pass: six-item sidebar + Advanced, lean top bar with a ⋯ menu, calm Home, clean.css, 3D off by default; v15 (2026-10-25): Command center, grouped sidebar, cc.js / cc.css; v14 (2026-10-23): trade pictures (tradepics.js, pics.js); v13: ATLAS page + Today two-strategy cards and the Scaling plan; v12: scale / ATLAS; v11: Second strategies; v10: Bot Brain
+const SHELL = 'le-shell-next-v18';   // v18 (2026-10-25 PM): "Zlarior" (the LIT bot's display name): sidebar Home · Zlarior · ATLAS · Results · All tools, bot pages with sections (routes.js BOTS); v17 (2026-10-25 PM): K3 icon + clean-up pass: six-item sidebar + Advanced, lean top bar with a ⋯ menu, calm Home, clean.css, 3D off by default; v15 (2026-10-25): Command center, grouped sidebar, cc.js / cc.css; v14 (2026-10-23): trade pictures (tradepics.js, pics.js); v13: ATLAS page + Today two-strategy cards and the Scaling plan; v12: scale / ATLAS; v11: Second strategies; v10: Bot Brain
 const ASSETS = ['/', '/index.html', '/css/app.css', '/css/theme.css', '/css/skins.css', '/css/dash.css', '/css/next.css', '/css/hub.css', '/css/ops.css', '/css/cc.css', '/css/clean.css', '/manifest.webmanifest', '/icons/icon.svg?v=k31025'];
 
 self.addEventListener('install', (e) => {

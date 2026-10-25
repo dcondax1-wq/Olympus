@@ -12,9 +12,10 @@ export const GO = [
   ['l', 'livechart', 'Live chart (LIT levels)'], ['o', 'botlog', 'Bot log'], ['n', 'ntpanel', 'NinjaTrader'],
   ['i', 'timeline', 'Session timeline'], ['m', 'morning', 'Morning report'], ['v', 'livesettings', 'Live settings'],
   ['t', 'trades', 'Trades'], ['r', 'results', 'Results'], ['e', 'evalhq', 'Eval HQ'], ['d', 'data', 'Results (tabs)'],
-  ['u', 'modules', 'All tools'], ['s', 'settings', 'Settings'],
+  ['u', 'modules', 'All tools'], ['s', 'settings', 'Settings'], ['g', 'zlarior', 'Zlarior (the LIT bot)'],
 ];
-export const NUM = ['cc', 'botctl', 'chart', 'trades', 'data', 'modules'];   // the six main sidebar pages, in order
+const NUM_L = { atlas: 'ATLAS' };
+export const NUM = ['cc', 'zlarior', 'atlas', 'data', 'modules', 'settings'];   // the five main sidebar pages + Settings, in order (2026-10-25 PM)
 export const SINGLE = [
   ['?', 'This list'], ['Ctrl K  or  /', 'Command palette (search every page)'], ['M', 'Sound alerts on / off (mute)'],
   ['Z', 'Zen mode'], ['F', 'TV-wall fullscreen'], ['T', 'Theme switcher'], ['D', 'Dark / light'], ['R', 'Risk calculator'],
@@ -28,7 +29,7 @@ export function helpHTML() {
   return `<div class="op-keys" role="dialog" aria-label="Keyboard shortcuts"><div class="op-keys-h"><h3>Keyboard shortcuts</h3><button type="button" class="btn ghost sm" id="opKeysX">Close</button></div>
     <div class="op-keys-safe"><b>Kill switch: no key.</b> Only the HOLD TO KILL button on Bot Control (hold 1.5 s). K does nothing. No key starts, stops or arms the bot.</div>
     <div class="op-keys-g"><div><h4>Go to (press G, then)</h4>${GO.map(([k, , l]) => `<div class="op-kr"><span>${esc(l)}</span><span>${kbd('G then ' + k.toUpperCase())}</span></div>`).join('')}</div>
-    <div><h4>Top pages</h4>${NUM.map((p, i) => `<div class="op-kr"><span>${esc((GO.find((g) => g[1] === p) || [0, 0, p])[2])}</span><span>${kbd(String(i + 1))}</span></div>`).join('')}
+    <div><h4>Top pages</h4>${NUM.map((p, i) => `<div class="op-kr"><span>${esc((GO.find((g) => g[1] === p) || [0, 0, NUM_L[p] || p])[2])}</span><span>${kbd(String(i + 1))}</span></div>`).join('')}
     <h4 style="margin-top:14px">Tools</h4>${SINGLE.map(([k, l]) => `<div class="op-kr"><span>${esc(l)}</span><span>${kbd(k)}</span></div>`).join('')}</div></div>
     <p class="muted small">Shortcuts are ignored while you type in a field.</p></div>`;
 }

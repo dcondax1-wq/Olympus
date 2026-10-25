@@ -187,10 +187,13 @@ def static_checks():
     main = re.search(r"label: 'Main', ids: \[([^\]]*)\]", routes)
     check("routes: Main (6 items max) + Advanced (Accounts, Bot, Results, Help)", grp == ["Main", "Advanced", "Accounts", "Bot", "Results", "Help"]
           and main and len(re.findall(r"'[a-z]+'", main.group(1))) <= 6, grp)
+    # 2026-10-25 PM: the LIT bot is "Zlarior": Main = Home · Zlarior · ATLAS · Results · All tools; each bot page has its sections
+    check("routes: Main = cc, zlarior, atlas, data, modules + BOTS sections", main and re.findall(r"'([a-z]+)'", main.group(1)) == ["cc", "zlarior", "atlas", "data", "modules"]
+          and "export const BOTS" in routes and "['Plan & levels'" in routes and "['Setups'" in routes and "if (page === 'zlarior'" in app, main and main.group(1))
     side = re.findall(r"'([a-z]+)'", routes[routes.index("export const GROUPS"):routes.index("export const NAV_NAMES")])
     check("routes: no page twice in the sidebar, Archive under Advanced", len(side) == len(set(side)) and "archive" in side and side.index("archive") > 5, side)
     ids = re.findall(r"'([a-z]+)'", routes[routes.index("export const GROUPS"):routes.index("export const TABS")])
-    missing = [i for i in ids if i != "data" and f'id="page-{i}"' not in html]
+    missing = [i for i in ids if i not in ("data", "zlarior") and f'id="page-{i}"' not in html]   # data / zlarior open their last sub-page
     check("routes: every sidebar id has a page section", not missing, missing)
     check("shell: grouped, foldable sidebar", "nx-grp-h" in shell and "navShut" in shell)
     check("keys: G then H = Command center, W = Runbook; no K kill shortcut", "['h', 'cc'" in keys and "['w', 'runbook'" in keys and "['k'," not in keys)

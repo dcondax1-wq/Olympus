@@ -183,3 +183,16 @@
 .cc-banners .cc-banner { align-items: center; }
 @media (min-width: 1300px) { .cc-lrows { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .cc-lrow { min-height: 40px; }
+
+/* the bot pages (2026-10-25 PM): Zlarior / ATLAS name, a small segmented control for the sections, the section's pages as chips */
+.nx-botbar { display: flex; align-items: center; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.nx-botname { display: flex; flex-direction: column; line-height: 1.15; min-width: 0; }
+.nx-botname b { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.nx-botname span { font-size: 12px; color: var(--muted); }
+.nx .seg.nx-botseg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 12px; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+.nx .seg.nx-botseg::-webkit-scrollbar { display: none; }
+.nx .seg.nx-botseg button { height: 32px; padding: 0 14px; font-size: 13px; font-weight: 600; }
+.nx-strip.nx-botchips { margin-top: 8px; padding: 0; border: 0; background: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
+.nx-strip.nx-botchips button { height: 30px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--line); font-size: 12.5px; }
+.nx-strip.nx-botchips button.on { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.nx-hero[hidden] { display: none; }
