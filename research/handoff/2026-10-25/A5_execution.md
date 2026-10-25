@@ -35,8 +35,8 @@ seconds). Sim101 needs nothing new.
 | `python -X utf8 -m tests.test_remote_ctl` | 51/51 (remote kill still FLATTENEVERYTHING, account flat) | `a5_logs/test_remote_ctl.txt` |
 | `python -X utf8 -m tests.test_lit_add_safety` | 28/28 | `a5_logs/test_lit_add_safety.txt` |
 | `python -X utf8 -m tests.test_lit_late_entry` | 10/10 | `a5_logs/test_lit_late_entry.txt` |
-| `python -X utf8 -m tests.test_lit_exit_route` | see `a5_logs/test_lit_exit_route.txt` | `a5_logs/test_lit_exit_route.txt` |
-| `python -X utf8 -m tests.test_lit_oif` (all 2026 trades through LiveBot + fake NinjaTrader, now with the startup gate) | see `a5_logs/test_lit_oif.txt` (baseline 117/120, 3 known days) | `a5_logs/test_lit_oif.txt` |
+| `python -X utf8 -m tests.test_lit_exit_route` | 19/19 | `a5_logs/test_lit_exit_route.txt` |
+| `python -X utf8 -m tests.test_lit_oif` (all 2026 trades through LiveBot + fake NinjaTrader, now with the startup gate) | 117/120, the same 3 days (2026-03-23, 04-03, 05-05) that also miss on the pre-fix code (`a5_logs/test_lit_oif_3days_on_OLD_code.txt`: 0/3); every day logs `STARTUP RECONCILED` before its entry; median 2.55 s after the 1m CISD close | `a5_logs/test_lit_oif.txt` |
 
 Not run here: `tests.test_second_account_b` (85 min full / 25 min quick; the baseline full run was cut at 900 s with
 30 PASS 0 FAIL), `tests.test_rehearsal` (server subprocess replay), `tests.test_lit_live` (paper adapter: no code path
@@ -86,7 +86,7 @@ ST = `python -X utf8 -m engine.ninjatrader --selftest` (`a5_logs/selftest.txt`);
 | Reused file names | fake-folder replay | EA F | a name already in `incoming\` is never overwritten | as expected; old code overwrote (FAIL) | PASS (BUG_FIX 3) | same |
 | Reused order IDs | unit (review) | `LE{entry_t}{4-char nonce}{N/M}{E/S/T/O}`, ST "restart ... same ids" | unique per entry; a restart reuses the same ids for the same leg (never re-sends) | one entry per day per account; LIT and B ids collide only with the same second AND nonce (1 in 923k) | PASS (residual noted) | `engine/ninjatrader.py` `place_bracket` |
 | Corrupted state file | fake-folder replay | EA G | torn / wrong-shape file: no crash, moved aside, alert, entries blocked (also after a restart) until flat + no bot order working, or `--confirm-reset` | as expected; old code: `[]` crashed the constructor | PASS (BUG_FIX 4) | `a5_logs/test_nt_exec_audit.txt` |
-| Restart exit routing | fake-folder replay | `tests.test_lit_exit_route` | every exit kind routed once after a restart, P&L = backtest | see log | see log | `a5_logs/test_lit_exit_route.txt` |
+| Restart exit routing | fake-folder replay | `tests.test_lit_exit_route` | every exit kind routed once after a restart, P&L = backtest | 19/19 | PASS | `a5_logs/test_lit_exit_route.txt` |
 | Expired credentials | n/a (OIF has none) / provider | - | OIF needs no credentials; an expired Tradovate session shows as DISCONNECTED (row "Execution lost") | fake DISCONNECTED path PASS; real Tradovate expiry not reproducible here | UNTESTED (provider) | `a5_logs/test_nt_outgoing.txt` |
 | Early close | fake-folder replay | ST "early close" | flat 5 min before the halt, entries stop 15 min before | as expected | PASS | `a5_logs/selftest.txt` |
 | DST | unit | EA J | gates in ET wall time on both DST Mondays; trading day across the change | as expected | PASS | `a5_logs/test_nt_exec_audit.txt` |
@@ -135,4 +135,4 @@ ST = `python -X utf8 -m engine.ninjatrader --selftest` (`a5_logs/selftest.txt`);
 5. The owner's global kill still flattens every account connected in NinjaTrader (documented in SETUP.md and
    GO_LIVE_TONIGHT.md step 10: connect only the bot's accounts).
 6. The clock probe needs internet once: with none, the probe finishes "unknown" and the gate passes (same rule as guard 7).
-7. `test_lit_oif` timing rows depend on box load (other audit agents were running in parallel).
+7. `test_lit_oif` timing rows depend on box load (other audit agents were running in parallel); this run had none over 10 s.

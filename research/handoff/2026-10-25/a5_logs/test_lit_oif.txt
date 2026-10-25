@@ -1,0 +1,17 @@
+120 backtest trades to replay
+  1/120 2026-01-02 ok 2.25 s (5s)
+  11/120 2026-01-19 ok 2.38 s (54s)
+  21/120 2026-02-11 ok 2.49 s (119s)
+  31/120 2026-03-03 ok 2.44 s (206s)
+  38/120 {"day": "2026-03-23", "entry_bar": "06:58:00", "dir": 1, "qty": 2, "oif_t": null, "delay_s": null, "first_poll": false, "compute_s": null, "oif_qty": null, "entries_written": 0, "stop_ok": false, "target_ok": false, "ok": false, "errors": [], "polls": 7, "poll_real_s_max": 1.06, "entry_poll": [1.06, 0.0], "why": ["STARTUP RECONCILED: NinjaTrader positions / orders, feed, clock, contract and eval anchor check out; entries allowed", "LIT LONG setup: swept equal lows (extreme 24,399.75); limit 24,440.00 stop 24,399.50 (40.50 pts) target 24,764.00 (8.00R, VIX band (banked at 8.0R))", "Bot started | NQ 5m | adapter=ninjatrader | data=ninjatrader (no Yahoo) | window=20d"]} (250s)
+  41/120 2026-04-01 ok 2.45 s (268s)
+  42/120 {"day": "2026-04-03", "entry_bar": "04:05:00", "dir": 1, "qty": 4, "oif_t": "04:02:32", "delay_s": -147.53, "first_poll": false, "compute_s": 0.47, "oif_qty": 3, "entries_written": 1, "stop_ok": true, "target_ok": true, "ok": false, "errors": [], "polls": 7, "poll_real_s_max": 0.95, "entry_poll": [0.9, 0.0], "why": ["LONG LIT @ 24,750.25 stop 24,703.75 target 25,000.75 qty 3 (1m CISD entry, 1m bars)", "BUY 3 NQ -> True", "LIT 1m CISD closed at 04:02 ET: MARKET entry sent at once (32 s after the close; the backtest fills at this bar's open)", "STARTUP RECONCILED: NinjaTrader positions / orders, feed, clock, contract and eval anchor check out; entries allowed", "LIT LONG setup: swept Asia 18-00 low, Tokyo low, Asia low, Frankfurt low (extreme 24,704.00); limit 24,736.75 stop 24,703.75 (33.00 pts) target 25,000.75 (8.00R, VIX band (banked at 8.0R))", "Bot started | NQ 5m | adapter=ninjatrader | data=ninjatrader (no Yahoo) | window=20d"]} (274s)
+  51/120 2026-04-23 ok 2.64 s (319s)
+  57/120 {"day": "2026-05-05", "entry_bar": "02:17:00", "dir": -1, "qty": 3, "oif_t": "02:16:02", "delay_s": -57.53, "first_poll": false, "compute_s": 0.47, "oif_qty": 6, "entries_written": 1, "stop_ok": true, "target_ok": true, "ok": false, "errors": [], "polls": 7, "poll_real_s_max": 0.48, "entry_poll": [0.46, 0.0], "why": ["SHORT LIT @ 28,421.75 stop 28,457.75 target 28,208.00 qty 6 (1m CISD entry, 1m bars)", "SELL 6 NQ -> True", "LIT 1m CISD closed at 02:16 ET: MARKET entry sent at once (2 s after the close; the backtest fills at this bar's open)", "STARTUP RECONCILED: NinjaTrader positions / orders, feed, clock, contract and eval anchor check out; entries allowed", "LIT SHORT setup: swept Asia 18-00 high, Tokyo high, Asia high (extreme 28,457.50); limit 28,430.00 stop 28,457.75 (27.75 pts) target 28,208.00 (8.00R, VIX band (banked at 8.0R))", "Bot started | NQ 5m | adapter=ninjatrader | data=ninjatrader (no Yahoo) | window=20d"]} (346s)
+  61/120 2026-05-12 ok 2.52 s (361s)
+  71/120 2026-05-29 ok 2.67 s (409s)
+  81/120 2026-07-02 ok 2.46 s (454s)
+  91/120 2026-08-11 ok 2.56 s (495s)
+  101/120 2026-09-04 ok 2.51 s (542s)
+  111/120 2026-09-28 ok 2.7 s (603s)
+LIT -> NinjaTrader OIF: 117/120 entries written at the backtest's entry bar (median 2.55 s, max 2.77 s after the 1m CISD close); missed 3 ['2026-03-23', '2026-04-03', '2026-05-05']; written by the first poll after the close 117/120; one poll's compute median 0.55 s max 0.77 s; over 10 s: [] in 658s
