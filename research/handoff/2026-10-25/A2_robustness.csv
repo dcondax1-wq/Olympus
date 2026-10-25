@@ -1,0 +1,31 @@
+variant,label,n,tpw,pf,net,per_month,dd,h1_net,h1_pf,h2_net,h2_pf,net_ci90,pf_ci90,p_net_le0,mfe4_winners,mfe4_retained,mfe4_retention_pct,note
+BASE live current @ $1.90/micro (+1 tick entry & non-target exits already in),BASELINE,120,2.91,4.15,43501.78,4435,-2213,33666.0,4.92,9835.78,2.88,"[19993, 69393]","[2.21, 7.24]",0.04,23,23,100.0,
++1 tick(s) per affected fill,RESEARCH_VARIANT,120,2.91,4.02,42948.28,4378,-2247,33258.5,4.74,9689.78,2.81,"[19399, 68861]","[2.15, 6.99]",0.04,23,23,100.0,"post-hoc, linear in micros; entry + non-target exit each worse by k ticks; paths unchanged"
++2 tick(s) per affected fill,RESEARCH_VARIANT,120,2.91,3.89,42394.78,4322,-2281,32851.0,4.56,9543.78,2.75,"[18893, 68258]","[2.09, 6.73]",0.04,23,23,100.0,"post-hoc, linear in micros; entry + non-target exit each worse by k ticks; paths unchanged"
++4 tick(s) per affected fill,RESEARCH_VARIANT,120,2.91,3.65,41287.78,4209,-2349,32036.0,4.25,9251.78,2.63,"[17771, 66990]","[1.98, 6.3]",0.06,23,23,100.0,"post-hoc, linear in micros; entry + non-target exit each worse by k ticks; paths unchanged"
++1 tick(s) on every fill incl. target limits,RESEARCH_VARIANT,120,2.91,4.01,42865.78,4370,-2247,33196.0,4.73,9669.78,2.81,"[19359, 68714]","[2.15, 6.98]",0.04,23,23,100.0,post-hoc; stricter: the resting target limit also fills k ticks worse
++2 tick(s) on every fill incl. target limits,RESEARCH_VARIANT,120,2.91,3.88,42229.78,4305,-2281,32726.0,4.55,9503.78,2.74,"[18810, 68004]","[2.08, 6.71]",0.04,23,23,100.0,post-hoc; stricter: the resting target limit also fills k ticks worse
+entry latency 1 min (fills 1 1m bar(s) later),RESEARCH_VARIANT,120,2.91,3.97,40000.64,4078,-2029,27371.22,4.2,12629.42,3.57,"[18222, 63007]","[2.16, 6.77]",0.04,19,17,73.9,engine option entry_delay: re-simulated; a stop/target touch in the gap = no trade
+entry latency 2 min (fills 2 1m bar(s) later),RESEARCH_VARIANT,118,2.86,3.04,29594.4,3017,-3633,25648.92,3.78,3945.48,1.75,"[8868, 53229]","[1.54, 5.3]",0.4,20,17,73.9,engine option entry_delay: re-simulated; a stop/target touch in the gap = no trade
+fee +$0.50/micro ($2.40 round trip),RESEARCH_VARIANT,120,2.91,4.08,43183.78,4402,-2230,33431.0,4.83,9752.78,2.84,"[19622, 69047]","[2.18, 7.11]",0.04,23,23,100.0,
+longs only,RESEARCH_VARIANT,55,1.33,4.45,20421.78,2082,-1429,18118.08,5.78,2303.7,2.08,"[5250, 37985]","[1.76, 9.36]",0.92,8,8,34.8,"split of the base, not a strategy"
+shorts only,RESEARCH_VARIANT,65,1.58,3.92,23080.0,2353,-1660,15547.92,4.24,7532.08,3.42,"[9000, 39391]","[1.97, 7.58]",0.24,15,15,65.2,"split of the base, not a strategy"
+session London 02:00-07:59 (by fill time),RESEARCH_VARIANT,95,2.31,4.15,37268.1,3799,-2137,27303.42,4.53,9964.68,3.44,"[14733, 62383]","[2.05, 7.53]",0.14,20,20,87.0,split of the base
+session NY AM 08:00-11:59 (by fill time),RESEARCH_VARIANT,21,0.51,2.93,3885.58,396,-1187,4513.78,6.31,-628.2,0.46,"[-621, 9205]","[0.74, 10.09]",8.92,2,2,8.7,split of the base
+session NY PM 12:00-15:55 (by fill time),RESEARCH_VARIANT,4,0.1,,2348.1,239,0,1848.8,,499.3,,"[382, 4712]","[nan, nan]",1.42,1,1,4.3,split of the base
+top-1 winners removed,RESEARCH_VARIANT,119,2.89,3.7,37289.08,3801,-2213,27453.3,4.2,9835.78,2.88,"[16410, 61643]","[2.01, 6.5]",0.12,22,22,95.7,removed: 2026-04-17 +6213
+top-3 winners removed,RESEARCH_VARIANT,117,2.84,2.99,27508.38,2804,-2213,17672.6,3.06,9835.78,2.88,"[11479, 44427]","[1.7, 5.03]",0.12,20,20,87.0,"removed: 2026-04-17 +6213, 2026-01-06 +5138, 2026-03-18 +4643"
+top-5 winners removed,RESEARCH_VARIANT,115,2.79,2.41,19449.98,1983,-2213,9614.2,2.12,9835.78,2.88,"[6672, 33023]","[1.41, 3.96]",0.44,18,18,78.3,"removed: 2026-04-17 +6213, 2026-01-06 +5138, 2026-03-18 +4643, 2026-01-07 +4234, 2026-05-26 +3825"
+neighbour disp=0.7 (live 0.8),RESEARCH_VARIANT,134,3.25,3.65,41446.02,4225,-2751,32879.14,4.48,8566.88,2.38,"[18334, 66561]","[2.0, 6.18]",0.08,24,23,100.0,full re-simulation on 2026
+neighbour disp=0.9 (live 0.8),RESEARCH_VARIANT,108,2.62,3.84,34855.76,3553,-2074,28328.1,4.61,6527.66,2.48,"[11981, 60214]","[1.85, 6.96]",0.2,20,20,87.0,full re-simulation on 2026
+neighbour disp=1.0 (live 0.8),RESEARCH_VARIANT,92,2.23,3.48,26365.48,2688,-2007,23515.4,4.56,2850.08,1.71,"[5831, 50179]","[1.48, 6.78]",1.08,15,15,65.2,full re-simulation on 2026
+neighbour depth=0.4 (live 0.5),RESEARCH_VARIANT,121,2.94,4.15,43501.88,4435,-2213,33666.1,4.92,9835.78,2.88,"[19993, 69393]","[2.21, 7.24]",0.04,23,23,100.0,full re-simulation on 2026
+neighbour depth=0.6 (live 0.5),RESEARCH_VARIANT,118,2.86,4.32,44060.58,4492,-1858,34225.5,5.26,9835.08,2.88,"[20554, 69786]","[2.33, 7.48]",0.04,23,23,100.0,full re-simulation on 2026
+neighbour cisd1m=18 (live 22),RESEARCH_VARIANT,116,2.82,3.14,31307.2,3192,-2121,24112.4,3.85,7194.8,2.17,"[10656, 55303]","[1.63, 5.52]",0.36,19,19,82.6,full re-simulation on 2026
+neighbour cisd1m=20 (live 22),RESEARCH_VARIANT,120,2.91,4.02,43075.88,4391,-2213,33666.0,4.92,9409.88,2.66,"[19733, 68712]","[2.18, 6.95]",0.04,23,23,100.0,full re-simulation on 2026
+neighbour cisd1m=24 (live 22),RESEARCH_VARIANT,122,2.96,4.07,43243.98,4408,-2213,33406.6,4.78,9837.38,2.88,"[19616, 69121]","[2.17, 7.16]",0.04,23,23,100.0,full re-simulation on 2026
+neighbour cisd1m=26 (live 22),RESEARCH_VARIANT,124,3.01,4.07,43314.68,4416,-2213,33406.7,4.78,9907.98,2.89,"[19662, 69197]","[2.17, 7.17]",0.04,23,23,100.0,full re-simulation on 2026
+neighbour idm_age=24 (live 36),RESEARCH_VARIANT,115,2.79,4.69,48500.78,4944,-2213,33847.0,5.03,14653.78,4.1,"[24693, 73732]","[2.6, 8.07]",0.02,24,23,100.0,full re-simulation on 2026
+neighbour idm_age=48 (live 36),RESEARCH_VARIANT,120,2.91,4.15,43501.78,4435,-2213,33666.0,4.92,9835.78,2.88,"[19993, 69393]","[2.21, 7.24]",0.04,23,23,100.0,full re-simulation on 2026
+neighbour idm_dist=0.75 (live 1.0),RESEARCH_VARIANT,110,2.67,3.53,35314.98,3600,-2592,32942.58,4.96,2372.4,1.42,"[12191, 61074]","[1.75, 6.39]",0.28,19,19,82.6,full re-simulation on 2026
+neighbour idm_dist=1.25 (live 1.0),RESEARCH_VARIANT,126,3.06,3.73,41539.52,4235,-3470,30548.74,4.38,10990.78,2.77,"[17763, 66946]","[1.98, 6.52]",0.06,23,22,95.7,full re-simulation on 2026
