@@ -1,0 +1,784 @@
+{
+ "built": "2026-10-25",
+ "n": 1000,
+ "eval": {
+  "today": {
+   "var": {},
+   "H1": {
+    "p10": 53.0,
+    "f10": 3.6,
+    "dec10": 56.6,
+    "p_ever": 82.8,
+    "pass_med": 7.0,
+    "slow_pass": 24.9,
+    "usd_per_pass": 110.9,
+    "max_risk": 991,
+    "sess_per_try": 12.7
+   },
+   "H2": {
+    "p10": 53.7,
+    "f10": 2.2,
+    "dec10": 55.9,
+    "p_ever": 79.7,
+    "pass_med": 6.0,
+    "slow_pass": 26.9,
+    "usd_per_pass": 115.2,
+    "max_risk": 995,
+    "sess_per_try": 15.3
+   },
+   "REF": {
+    "p10": 15.6,
+    "f10": 4.0,
+    "dec10": 19.6,
+    "p_ever": 27.8,
+    "pass_med": 9.0,
+    "slow_pass": 33.5,
+    "usd_per_pass": 330.2,
+    "max_risk": 994,
+    "sess_per_try": 25.6
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 57.1,
+    "f10": 5.0
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 50.7,
+    "f10": 0.0
+   }
+  },
+  "rf60": {
+   "var": {
+    "room_f": 0.6
+   },
+   "H1": {
+    "p10": 53.2,
+    "f10": 4.3,
+    "dec10": 57.5,
+    "p_ever": 82.6,
+    "pass_med": 7.0,
+    "slow_pass": 24.3,
+    "usd_per_pass": 111.1,
+    "max_risk": 991,
+    "sess_per_try": 12.5
+   },
+   "H2": {
+    "p10": 55.1,
+    "f10": 3.1,
+    "dec10": 58.2,
+    "p_ever": 79.0,
+    "pass_med": 6.0,
+    "slow_pass": 24.6,
+    "usd_per_pass": 116.2,
+    "max_risk": 995,
+    "sess_per_try": 14.6
+   },
+   "REF": {
+    "p10": 16.7,
+    "f10": 6.7,
+    "dec10": 23.4,
+    "p_ever": 28.8,
+    "pass_med": 9.0,
+    "slow_pass": 31.9,
+    "usd_per_pass": 318.7,
+    "max_risk": 994,
+    "sess_per_try": 24.7
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 57.1,
+    "f10": 5.9
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 50.7,
+    "f10": 1.4
+   }
+  },
+  "rf70": {
+   "var": {
+    "room_f": 0.7
+   },
+   "H1": {
+    "p10": 53.4,
+    "f10": 5.3,
+    "dec10": 58.7,
+    "p_ever": 81.7,
+    "pass_med": 7.0,
+    "slow_pass": 23.5,
+    "usd_per_pass": 112.4,
+    "max_risk": 991,
+    "sess_per_try": 12.2
+   },
+   "H2": {
+    "p10": 55.8,
+    "f10": 5.3,
+    "dec10": 61.1,
+    "p_ever": 78.2,
+    "pass_med": 6.0,
+    "slow_pass": 23.1,
+    "usd_per_pass": 117.4,
+    "max_risk": 995,
+    "sess_per_try": 13.8
+   },
+   "REF": {
+    "p10": 17.5,
+    "f10": 10.5,
+    "dec10": 28.0,
+    "p_ever": 29.6,
+    "pass_med": 9.0,
+    "slow_pass": 31.8,
+    "usd_per_pass": 310.1,
+    "max_risk": 994,
+    "sess_per_try": 23.6
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 57.1,
+    "f10": 6.7
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 50.7,
+    "f10": 2.9
+   }
+  },
+  "rf80": {
+   "var": {
+    "room_f": 0.8
+   },
+   "H1": {
+    "p10": 54.3,
+    "f10": 6.9,
+    "dec10": 61.2,
+    "p_ever": 81.9,
+    "pass_med": 7.0,
+    "slow_pass": 22.7,
+    "usd_per_pass": 112.1,
+    "max_risk": 991,
+    "sess_per_try": 11.8
+   },
+   "H2": {
+    "p10": 56.8,
+    "f10": 9.8,
+    "dec10": 66.6,
+    "p_ever": 76.9,
+    "pass_med": 5.0,
+    "slow_pass": 20.7,
+    "usd_per_pass": 119.4,
+    "max_risk": 995,
+    "sess_per_try": 12.8
+   },
+   "REF": {
+    "p10": 18.4,
+    "f10": 15.1,
+    "dec10": 33.5,
+    "p_ever": 29.9,
+    "pass_med": 8.0,
+    "slow_pass": 30.1,
+    "usd_per_pass": 307.0,
+    "max_risk": 994,
+    "sess_per_try": 22.5
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 58.0,
+    "f10": 10.1
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 50.7,
+    "f10": 8.7
+   }
+  },
+  "rf100": {
+   "var": {
+    "room_f": 1.0
+   },
+   "H1": {
+    "p10": 55.3,
+    "f10": 9.0,
+    "dec10": 64.3,
+    "p_ever": 80.9,
+    "pass_med": 7.0,
+    "slow_pass": 21.3,
+    "usd_per_pass": 113.5,
+    "max_risk": 991,
+    "sess_per_try": 11.2
+   },
+   "H2": {
+    "p10": 57.8,
+    "f10": 12.6,
+    "dec10": 70.4,
+    "p_ever": 76.5,
+    "pass_med": 5.0,
+    "slow_pass": 18.7,
+    "usd_per_pass": 120.0,
+    "max_risk": 995,
+    "sess_per_try": 11.7
+   },
+   "REF": {
+    "p10": 18.8,
+    "f10": 19.9,
+    "dec10": 38.7,
+    "p_ever": 30.3,
+    "pass_med": 8.0,
+    "slow_pass": 30.0,
+    "usd_per_pass": 303.0,
+    "max_risk": 994,
+    "sess_per_try": 21.6
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 59.7,
+    "f10": 10.9
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 53.6,
+    "f10": 13.0
+   }
+  },
+  "rf70_nb125": {
+   "var": {
+    "room_f": 0.7,
+    "need_buf": 1.25
+   },
+   "H1": {
+    "p10": 49.9,
+    "f10": 5.9,
+    "dec10": 55.8,
+    "p_ever": 80.9,
+    "pass_med": 7.0,
+    "slow_pass": 25.2,
+    "usd_per_pass": 113.5,
+    "max_risk": 991,
+    "sess_per_try": 12.5
+   },
+   "H2": {
+    "p10": 55.0,
+    "f10": 5.9,
+    "dec10": 60.9,
+    "p_ever": 76.8,
+    "pass_med": 5.0,
+    "slow_pass": 24.1,
+    "usd_per_pass": 119.5,
+    "max_risk": 995,
+    "sess_per_try": 14.1
+   },
+   "REF": {
+    "p10": 16.5,
+    "f10": 12.8,
+    "dec10": 29.3,
+    "p_ever": 27.0,
+    "pass_med": 9.0,
+    "slow_pass": 30.4,
+    "usd_per_pass": 340.0,
+    "max_risk": 994,
+    "sess_per_try": 23.4
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 49.6,
+    "f10": 8.4
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 50.7,
+    "f10": 4.3
+   }
+  },
+  "rf80_nb150": {
+   "var": {
+    "room_f": 0.8,
+    "need_buf": 1.5
+   },
+   "H1": {
+    "p10": 50.8,
+    "f10": 8.5,
+    "dec10": 59.3,
+    "p_ever": 78.4,
+    "pass_med": 7.0,
+    "slow_pass": 23.9,
+    "usd_per_pass": 117.1,
+    "max_risk": 994,
+    "sess_per_try": 12.1
+   },
+   "H2": {
+    "p10": 53.4,
+    "f10": 11.9,
+    "dec10": 65.3,
+    "p_ever": 73.9,
+    "pass_med": 6.0,
+    "slow_pass": 22.7,
+    "usd_per_pass": 124.2,
+    "max_risk": 995,
+    "sess_per_try": 13.1
+   },
+   "REF": {
+    "p10": 17.2,
+    "f10": 18.4,
+    "dec10": 35.6,
+    "p_ever": 28.1,
+    "pass_med": 8.0,
+    "slow_pass": 30.6,
+    "usd_per_pass": 326.7,
+    "max_risk": 994,
+    "sess_per_try": 21.3
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 52.1,
+    "f10": 10.9
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 42.0,
+    "f10": 11.6
+   }
+  },
+  "rf70_nowk": {
+   "var": {
+    "room_f": 0.7,
+    "wk_loss_usd": null
+   },
+   "H1": {
+    "p10": 52.6,
+    "f10": 13.9,
+    "dec10": 66.5,
+    "p_ever": 75.8,
+    "pass_med": 6.0,
+    "slow_pass": 19.1,
+    "usd_per_pass": 121.1,
+    "max_risk": 991,
+    "sess_per_try": 10.5
+   },
+   "H2": {
+    "p10": 57.9,
+    "f10": 16.5,
+    "dec10": 74.4,
+    "p_ever": 73.4,
+    "pass_med": 5.0,
+    "slow_pass": 16.6,
+    "usd_per_pass": 125.1,
+    "max_risk": 995,
+    "sess_per_try": 10.7
+   },
+   "REF": {
+    "p10": 19.1,
+    "f10": 19.2,
+    "dec10": 38.3,
+    "p_ever": 30.0,
+    "pass_med": 8.0,
+    "slow_pass": 27.0,
+    "usd_per_pass": 306.0,
+    "max_risk": 994,
+    "sess_per_try": 20.5
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 57.1,
+    "f10": 15.1
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 52.2,
+    "f10": 17.4
+   }
+  },
+  "rf80_nowk": {
+   "var": {
+    "room_f": 0.8,
+    "wk_loss_usd": null
+   },
+   "H1": {
+    "p10": 52.9,
+    "f10": 17.8,
+    "dec10": 70.7,
+    "p_ever": 73.5,
+    "pass_med": 6.0,
+    "slow_pass": 17.3,
+    "usd_per_pass": 124.9,
+    "max_risk": 991,
+    "sess_per_try": 9.9
+   },
+   "H2": {
+    "p10": 58.6,
+    "f10": 20.9,
+    "dec10": 79.5,
+    "p_ever": 71.8,
+    "pass_med": 5.0,
+    "slow_pass": 13.8,
+    "usd_per_pass": 127.9,
+    "max_risk": 995,
+    "sess_per_try": 9.3
+   },
+   "REF": {
+    "p10": 20.7,
+    "f10": 24.9,
+    "dec10": 45.6,
+    "p_ever": 31.5,
+    "pass_med": 8.0,
+    "slow_pass": 26.7,
+    "usd_per_pass": 291.4,
+    "max_risk": 994,
+    "sess_per_try": 19.0
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 57.1,
+    "f10": 16.0
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 52.2,
+    "f10": 23.2
+   }
+  },
+  "rf70_tw20": {
+   "var": {
+    "room_f": 0.7,
+    "two_week_until": 20
+   },
+   "H1": {
+    "p10": 53.4,
+    "f10": 5.3,
+    "dec10": 58.7,
+    "p_ever": 81.1,
+    "pass_med": 7.0,
+    "slow_pass": 19.9,
+    "usd_per_pass": 113.2,
+    "max_risk": 991,
+    "sess_per_try": 11.0
+   },
+   "H2": {
+    "p10": 55.8,
+    "f10": 5.3,
+    "dec10": 61.1,
+    "p_ever": 77.6,
+    "pass_med": 5.0,
+    "slow_pass": 16.5,
+    "usd_per_pass": 118.3,
+    "max_risk": 995,
+    "sess_per_try": 11.3
+   },
+   "REF": {
+    "p10": 17.5,
+    "f10": 10.5,
+    "dec10": 28.0,
+    "p_ever": 32.1,
+    "pass_med": 10.0,
+    "slow_pass": 29.3,
+    "usd_per_pass": 286.0,
+    "max_risk": 994,
+    "sess_per_try": 20.2
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 57.1,
+    "f10": 6.7
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 50.7,
+    "f10": 2.9
+   }
+  },
+  "rf80_tw99": {
+   "var": {
+    "room_f": 0.8,
+    "wk_loss_usd": null,
+    "two_week_until": 999
+   },
+   "H1": {
+    "p10": 52.9,
+    "f10": 17.8,
+    "dec10": 70.7,
+    "p_ever": 72.2,
+    "pass_med": 6.0,
+    "slow_pass": 13.2,
+    "usd_per_pass": 127.1,
+    "max_risk": 991,
+    "sess_per_try": 8.5
+   },
+   "H2": {
+    "p10": 58.6,
+    "f10": 20.9,
+    "dec10": 79.5,
+    "p_ever": 70.8,
+    "pass_med": 4.0,
+    "slow_pass": 8.8,
+    "usd_per_pass": 129.7,
+    "max_risk": 995,
+    "sess_per_try": 7.3
+   },
+   "REF": {
+    "p10": 20.7,
+    "f10": 24.9,
+    "dec10": 45.6,
+    "p_ever": 35.8,
+    "pass_med": 9.0,
+    "slow_pass": 29.1,
+    "usd_per_pass": 256.4,
+    "max_risk": 994,
+    "sess_per_try": 14.3
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 57.1,
+    "f10": 16.0
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 52.2,
+    "f10": 23.2
+   }
+  },
+  "today_reset10": {
+   "var": {
+    "reset_at": 10
+   },
+   "H1": {
+    "p10": 53.0,
+    "f10": 47.0,
+    "dec10": 100.0,
+    "p_ever": 53.0,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 173.2,
+    "max_risk": 991,
+    "sess_per_try": 7.0
+   },
+   "H2": {
+    "p10": 53.7,
+    "f10": 46.3,
+    "dec10": 100.0,
+    "p_ever": 53.7,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 170.9,
+    "max_risk": 995,
+    "sess_per_try": 6.9
+   },
+   "REF": {
+    "p10": 15.6,
+    "f10": 84.4,
+    "dec10": 100.0,
+    "p_ever": 15.6,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 588.5,
+    "max_risk": 994,
+    "sess_per_try": 9.1
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 57.1,
+    "f10": 5.0
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 50.7,
+    "f10": 0.0
+   }
+  },
+  "rf80_reset10": {
+   "var": {
+    "room_f": 0.8,
+    "wk_loss_usd": null,
+    "reset_at": 10
+   },
+   "H1": {
+    "p10": 52.9,
+    "f10": 47.1,
+    "dec10": 100.0,
+    "p_ever": 52.9,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 173.5,
+    "max_risk": 991,
+    "sess_per_try": 6.4
+   },
+   "H2": {
+    "p10": 58.6,
+    "f10": 41.4,
+    "dec10": 100.0,
+    "p_ever": 58.6,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 156.7,
+    "max_risk": 995,
+    "sess_per_try": 5.8
+   },
+   "REF": {
+    "p10": 20.7,
+    "f10": 79.3,
+    "dec10": 100.0,
+    "p_ever": 20.7,
+    "pass_med": 5.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 443.5,
+    "max_risk": 994,
+    "sess_per_try": 8.2
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 57.1,
+    "f10": 16.0
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 52.2,
+    "f10": 23.2
+   }
+  },
+  "rf100_reset10": {
+   "var": {
+    "room_f": 1.0,
+    "wk_loss_usd": null,
+    "reset_at": 10
+   },
+   "H1": {
+    "p10": 53.4,
+    "f10": 46.6,
+    "dec10": 100.0,
+    "p_ever": 53.4,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 171.9,
+    "max_risk": 991,
+    "sess_per_try": 6.2
+   },
+   "H2": {
+    "p10": 59.6,
+    "f10": 40.4,
+    "dec10": 100.0,
+    "p_ever": 59.6,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 154.0,
+    "max_risk": 995,
+    "sess_per_try": 5.7
+   },
+   "REF": {
+    "p10": 21.3,
+    "f10": 78.7,
+    "dec10": 100.0,
+    "p_ever": 21.3,
+    "pass_med": 5.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 431.0,
+    "max_risk": 994,
+    "sess_per_try": 7.9
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 58.0,
+    "f10": 17.6
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 52.2,
+    "f10": 24.6
+   }
+  },
+  "today_reset15": {
+   "var": {
+    "reset_at": 15
+   },
+   "H1": {
+    "p10": 53.0,
+    "f10": 3.6,
+    "dec10": 56.6,
+    "p_ever": 62.2,
+    "pass_med": 5.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 147.6,
+    "max_risk": 991,
+    "sess_per_try": 8.9
+   },
+   "H2": {
+    "p10": 53.7,
+    "f10": 2.2,
+    "dec10": 55.9,
+    "p_ever": 58.3,
+    "pass_med": 4.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 157.5,
+    "max_risk": 995,
+    "sess_per_try": 8.9
+   },
+   "REF": {
+    "p10": 15.6,
+    "f10": 4.0,
+    "dec10": 19.6,
+    "p_ever": 18.5,
+    "pass_med": 5.0,
+    "slow_pass": 0.0,
+    "usd_per_pass": 496.2,
+    "max_risk": 994,
+    "sess_per_try": 12.9
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 57.1,
+    "f10": 5.0
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 50.7,
+    "f10": 0.0
+   }
+  },
+  "rf80_q20": {
+   "var": {
+    "room_f": 0.8,
+    "maxq": 20
+   },
+   "H1": {
+    "p10": 54.3,
+    "f10": 6.9,
+    "dec10": 61.2,
+    "p_ever": 81.9,
+    "pass_med": 7.0,
+    "slow_pass": 22.7,
+    "usd_per_pass": 112.1,
+    "max_risk": 991,
+    "sess_per_try": 11.8
+   },
+   "H2": {
+    "p10": 56.8,
+    "f10": 9.8,
+    "dec10": 66.6,
+    "p_ever": 76.9,
+    "pass_med": 5.0,
+    "slow_pass": 20.7,
+    "usd_per_pass": 119.4,
+    "max_risk": 995,
+    "sess_per_try": 12.8
+   },
+   "REF": {
+    "p10": 17.2,
+    "f10": 15.0,
+    "dec10": 32.2,
+    "p_ever": 29.8,
+    "pass_med": 9.0,
+    "slow_pass": 32.6,
+    "usd_per_pass": 308.1,
+    "max_risk": 994,
+    "sess_per_try": 22.8
+   },
+   "H1_roll": {
+    "windows": 119,
+    "p10": 58.0,
+    "f10": 10.1
+   },
+   "H2_roll": {
+    "windows": 69,
+    "p10": 50.7,
+    "f10": 8.7
+   }
+  }
+ }
+}
