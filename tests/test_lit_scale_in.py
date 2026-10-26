@@ -98,6 +98,7 @@ def replay(T, live, n=8):
     import numpy as np
     from engine.live import tick_px
     from tests.test_lit_exit_route import Harness, hm, rows_for
+    from tests.test_lit_live import booked          # the backtest's $ at the live $1.90 commission
     only = next((a.split("=", 1)[1].split(",") for a in sys.argv if a.startswith("--only=")), None)
     if only:
         T = [t for t in T if t["day"] in only]
@@ -127,7 +128,7 @@ def replay(T, live, n=8):
                 ok = len(add_rows) == 1 and q_add == a["qty"] and abs(float(add_rows[0]["entry"]) - a["px"]) < 1e-9 \
                     and 0 <= row["add_delay_s"] <= 10 and abs(float(add_rows[0]["stop"]) - tick_px(t["entry_px"], t["dir"])) < 1e-9
             ok = ok and e_row is not None and int(e_row["qty"]) == int(t["qty"]) and x_row is not None \
-                and int(x_row["qty"]) == int(t["qty"]) + a["qty"] and abs(float(x_row["pnl"]) - t["pnl"]) < 0.01
+                and int(x_row["qty"]) == int(t["qty"]) + a["qty"] and abs(float(x_row["pnl"]) - booked(t)) < 0.01
             row["ok"] = ok
             rows.append(row)
             out.append(check(f"{t['day']}: add {a['qty']} @ {a['px']} routed "

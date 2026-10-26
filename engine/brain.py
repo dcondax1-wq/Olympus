@@ -45,7 +45,8 @@ VERSION = 1
 KIND = "le-brain"
 LOG_KEEP = 200
 LEG = 24                                                   # engine/lit.py candidates(): the leg is the last 24 5m bars
-PV, COMM, SLIP = 2.0, 1.90, 0.25
+from engine.sizing import LIVE_COMM as COMM   # noqa: E402  $1.90 a micro round trip: what the live bots book
+PV, SLIP = 2.0, 0.25
 
 STAGES = [
     ("levels", "Levels", "The map: every liquidity level LIT watches today (session boxes, previous day / week / month highs and "

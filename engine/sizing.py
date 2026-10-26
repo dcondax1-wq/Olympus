@@ -29,6 +29,16 @@ import math
 
 log = logging.getLogger(__name__)
 
+# The live commission (2026-10-26): what MFFU / Tradovate charge per MNQ micro ROUND TRIP (research/lit/mffu_rules.json).
+# The ONE number every live booking uses: the live loop's trades / open position (engine/lit_live.live_booked), the PC bot's
+# ledger (engine/live.py: routed exits, scale-in adds, the kill-switch flatten), the cloud monitor's paper ledger
+# (tools/cloud_monitor.py), the extra accounts (engine/multi_account.py), and so the eval room / anchor / pass-fail math
+# (engine/eval_life.py, eval_state below); every sizing ceiling here (TW_COMM), the guards, the Bot Brain and the fill audit
+# price it too. Research backtests keep engine/lit.py COMM ($1.40, the cost of every stored run); a research trade is
+# booked live at $(LIVE_COMM - lit.COMM) = $0.50 less per micro traded (run lit_live 2026: $318 over 636 micros, <= $17 a
+# trade; tests/test_lit_live.py re-prices its expected $ the same way).
+LIVE_COMM = 1.90
+
 DEFAULT = {"late_mult": None, "press": None}
 
 
@@ -748,7 +758,7 @@ def _learn(trade, learning):
 #          "room": balance + cum - trailing floor ($), "session": eval session number (1 = first day), "n_today": trades so far}
 # trade = {"risk_pts" | "risk": stop distance at entry (pts), "tgt_pts" | "tgt" | (entry, target): target distance (pts),
 #          "size_mult" | "wk_m": weekly-stop multiplier}
-TW_PV, TW_COMM, TW_SLIP = 2.0, 1.90, 0.25   # MFFU MNQ round trip $1.90 (research/lit/mffu_rules.json; was 1.40 until 2026-10-18)
+TW_PV, TW_COMM, TW_SLIP = 2.0, LIVE_COMM, 0.25   # MFFU MNQ round trip $1.90 = LIVE_COMM (was 1.40 until 2026-10-18)
 TW_DLL_SLIP = 0.5                            # the soft daily loss cap assumes 2 ticks of stop slippage (2026-10-18)
 TW_50K = {"target": 3000.0, "mll": 2000.0, "lock": 100.0, "dll": 1000.0, "max_micros": 40, "scale": 1.0}
 TW_25K = {"target": 1500.0, "mll": 1000.0, "lock": 100.0, "dll": 600.0, "max_micros": 20, "scale": 0.5}
