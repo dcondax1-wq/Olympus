@@ -11,6 +11,9 @@
 // "Trade pictures" strip; opts.charts = data.json "charts" (phone) / GET /api/next/charts (PC).
 // v8 (2026-10-25): "ATLAS v2 (paper shadow)" card on the ATLAS page (atlasV2Card, S.atlas_v2 = engine/atlas_v2.card): hunt
 // trades so far / 20, paper $ vs the research band, the shadow 25K eval's progress, its trades. Read-only, never routed.
+// 2026-10-26: ATLAS's funded account (engine/account_b.py stage "funded", ab.stage / ab.funded): the account card shows
+// the MFFU payout tracker (balance, payout line, buffer, best day vs 50%, eligibility, payouts n/5; fundedB), Home's card
+// says FUNDED. Same file name and ?v=8 (the phone's le-public-v38 cache refreshes it).
 (function () {
   'use strict';
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -132,10 +135,36 @@
   // ab = LiveBot.second_route_info().account_b: {label, account, plan_label, kind, sizing, keys, eval: {balance, floor, room,
   // target, to_target, session, status}, open, routed, day_pnl, entries_today, locked, disabled}
   const EVST = { open: ['Eval running', C.acc], passed: ['Eval PASSED', C.good], failed: ['Eval FAILED', C.bad], stuck: ['Stuck: buy a new one', C.warn] };
+  // the funded stage (engine/account_b.py "funded", 2026-10-26): ab.stage 'funded', ab.funded = the MFFU payout tracker
+  const FDST = { funded: ['Funded', C.good], lost: ['Funded account LOST', C.bad], stuck: ['Funded: stuck, buy a new eval', C.warn], graduated: ['5 payouts: MFFU moves it to live', C.good] };
   const abName = (ab) => String((ab && ab.label) || 'ATLAS').replace(/^Account B\b/, 'ATLAS');
+  function fundedB(ab, ev) {
+    const F = ab.funded || {};
+    const [lab, col] = FDST[ev.status] || [ev.status || '—', C.mut];
+    const op = ab.open;
+    const pays = Object.entries(F.payouts || {}).map(([d, v]) => `${esc(d)} ${usd(v)}`).join(' · ');
+    const elig = F.eligible ? `eligible now: request up to ${usd(F.max_request)} (${usd(F.to_you)} to you at 80%)` : F.eligible_from ? `first request from ${esc(F.eligible_from)}` : 'no funded trade yet';
+    const rows = (ab.routed || []).slice().reverse().map((r) => `<tr><td>${hm(r.t)}</td><td>${esc(String(r.side || '').toUpperCase())}</td><td>${n0(r.qty)}</td><td>${esc(r.strategy || r.src || '')}</td><td>${esc(r.reason || '')}</td><td class="${cl(r.pnl)}">${r.pnl == null ? '' : usd(r.pnl)}</td></tr>`).join('');
+    return `<div class="sc-card"><div class="sc-eyebrow" style="color:${C.good}">${esc(ab.kind || '')} · ${esc(abName(ab))} · ${esc(ab.plan_label || '')}</div>
+      <h3>${esc(abName(ab))}: funded · ${esc((ab.keys || []).join(' + '))}</h3>
+      ${ab.disabled ? `<p class="sc-note" style="color:${C.bad}">Not trading: ${esc(ab.disabled)}</p>` : ''}
+      <div class="sc-state" style="border-color:${col}"><span class="sc-pill" style="background:${col}">${esc(lab)}</span>
+        <b>${op ? `In a trade: ${esc(op.side)} ${n0(op.qty)} MNQ (${esc(op.strategy || '')}) from ${px(op.entry)}, stop ${px(op.stop)}, target ${px(op.target)}` : 'Flat'}${ab.locked ? ' · locked today: ' + esc(ab.locked) : ''}</b>
+        <em>Funded from ${esc(ev.start || '?')}${ev.session ? ' · funded session ' + n0(ev.session) : ''}${ab.eval_account ? ' · passed eval ' + esc(ab.eval_account) : ''} · ${esc(ab.note || '')}</em></div>
+      <p class="sc-note"><b>${esc(F.text || '')}</b></p>
+      <div class="sc-stats"><div class="sc-stat"><span>Balance</span><b>$${n0(ev.balance)}</b><em>today ${usd(ab.day_pnl)}</em></div>
+        <div class="sc-stat"><span>Payout line</span><b>$${n0(F.ask_at_balance)}</b><em>${F.to_ask != null ? (F.to_ask > 0 ? usd(F.to_ask) + ' to go' : 'reached') : ''}</em></div>
+        <div class="sc-stat"><span>Room to the max-loss floor</span><b>${usd(ev.room)}</b><em>floor $${n0(ev.floor)}</em></div>
+        <div class="sc-stat"><span>Buffer ($${n0(F.buffer)} stays in)</span><b>${F.buffer_reached ? 'reached' : 'not yet'}</b><em>at $${n0(F.buffer_balance)}</em></div>
+        <div class="sc-stat"><span>Best day vs the ${n0(F.cons_limit_pct)}% rule</span><b>${F.best_day_pct == null ? '—' : n0(F.best_day_pct) + '%'}</b><em>cycle ${usd(F.cycle_profit)} · ${n0(F.cycle_days)}/${n0(F.cycle_days_need)} days</em></div>
+        <div class="sc-stat"><span>Payouts</span><b>${n0(F.payouts_n)} of ${n0(F.payouts_max)}</b><em>${usd(F.paid_to_you)} to you</em></div></div>
+      <p class="sc-note">Payout: ${elig}. ${(F.why || []).length && !F.ready ? 'Why not yet: ' + esc(F.why.slice(0, 3).join('; ')) + '.' : ''} The bot never requests a payout: you ask MFFU, then record it (${esc(String(F.record_cmd || '').replace('{day}', 'day').replace('{amount}', '$'))}).${pays ? ' Taken: ' + pays + '.' : ''}</p>
+      ${rows ? `<details><summary><b>Orders on ${esc(ab.account || '')}</b></summary><div class="sc-tw"><table class="sc-t"><thead><tr><th>Time</th><th>Side</th><th>Micros</th><th>Strategy</th><th>Reason</th><th>$</th></tr></thead><tbody>${rows}</tbody></table></div></details>` : ''}</div>`;
+  }
   function acctB(ab) {
     if (!ab) return '';
     const ev = ab.eval || {};
+    if (ab.stage === 'funded') return fundedB(ab, ev);
     const [lab, col] = EVST[ev.status] || [ev.status || '—', C.mut];
     const op = ab.open;
     const rows = (ab.routed || []).slice().reverse().map((r) => `<tr><td>${hm(r.t)}</td><td>${esc(String(r.side || '').toUpperCase())}</td><td>${n0(r.qty)}</td><td>${esc(r.strategy || r.src || '')}</td><td>${esc(r.reason || '')}</td><td class="${cl(r.pnl)}">${r.pnl == null ? '' : usd(r.pnl)}</td></tr>`).join('');
@@ -461,7 +490,9 @@
     if (ab && ev.target) {
       const start = ev.start_balance || (ev.target > 40000 ? 50000 : 25000), need = ev.target - start;
       prog = need > 0 ? ((ev.balance || start) - start) / need : 0;
-      progText = `${ev.to_target != null ? usd(ev.to_target) + ' to pass' : ''}${ev.session ? ' · session ' + n0(ev.session) : ''}${ev.status && ev.status !== 'open' ? ' · ' + String(ev.status).toUpperCase() : ''}`;
+      progText = ab.stage === 'funded'
+        ? `FUNDED · ${ev.to_target != null ? (ev.to_target > 0 ? usd(ev.to_target) + ' to the payout line' : 'payout line reached') : ''} · payouts ${n0((ab.funded || {}).payouts_n)}/${n0((ab.funded || {}).payouts_max || 5)}${ev.status && ev.status !== 'funded' ? ' · ' + String(ev.status).toUpperCase() : ''}`
+        : `${ev.to_target != null ? usd(ev.to_target) + ' to pass' : ''}${ev.session ? ' · session ' + n0(ev.session) : ''}${ev.status && ev.status !== 'open' ? ' · ' + String(ev.status).toUpperCase() : ''}`;
     } else {
       const g = (S.scorecard || {}).account_b || {};
       prog = g.n ? g.n / (g.need || 20) : 0;

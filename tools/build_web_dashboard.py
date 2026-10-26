@@ -1082,6 +1082,14 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     try:                                   # Funded & payouts (engine/funded_life.py, read-only) + the money plan numbers
         from engine import funded_life as _fl
         data["funded_life"] = _fl.block(data.get("accounts") or [])
+        try:                               # ATLAS's funded 25K (engine/account_b.py stage "funded", from the PC heartbeat)
+            from engine import goals as _g
+            _abt = _g._atlas_funded_tracker(data)
+            if _abt:
+                data["funded_life"]["accounts"].append(_abt)
+                data["funded_life"]["n"] = len(data["funded_life"]["accounts"])
+        except Exception:
+            pass
         _fp = os.path.join(ROOT, "research", "lit", "funded_path.json")
         if os.path.exists(_fp):
             _fpj = json.load(open(_fp, encoding="utf-8"))

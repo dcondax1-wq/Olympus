@@ -42,6 +42,34 @@ What it does (engine/live.py calls it after LIT's routing and state save; any ex
     (second-mix.md no_hedge rule: skip / close at LIT's opposite entry; the armed-setup block is stricter than the research).
     Same direction as LIT is allowed (two accounts, two positions).
   * strategies on account B are never also routed on LIT's account (LiveBot._second_cfg drops them there).
+
+FUNDED (2026-10-26, owner: "when its eval passes the bot keeps trading it under the funded rules"; research/writeups/
+atlas-funded.md, tests/test_account_b_funded.py). Never automatic: a pass only stops the eval and pushes "EVAL PASSED: run
+the funded switch". The switch (MFFU gives the funded account its OWN new Name):
+    python -X utf8 -m engine.account_b --to-funded --account "<funded Name>" --start <first funded day> [--balance 25000]
+  (or the Start page: Accounts > ATLAS's 25K > "Passed → funded") writes the local block's funded stage, DISARMED:
+    "stage": "funded", "funded_start": "yyyy-mm-dd", "funded_balance": $ (the funded account's balance on that day as MFFU
+    shows it, default the plan start; above / below it counts as P&L before the bot), "payouts": {day: $ requested},
+    "eval_account": the passed eval's Name (history), "funded_set": the day of the switch
+  + the funded Name on the NinjaTrader allowlist; the eval's state file is kept as live_state_acctb.eval_<Name>.json.
+  A real funded account trades only after the owner arms it himself (the Start page's typed phrase: engine/go.arm_b).
+  Every other switch (arm_b, launch prep, set_account_b on the same Name) keeps the funded stage.
+  What changes on B in the funded stage (engine/multi_account PRESETS <plan>.sizing.funded, research/writeups/uprisk.md):
+    size   engine/sizing.funded_qty on the plan's funded preset: 25K = risk 60% of the room to the floor, at most $750
+           (x20/stop past a 20-pt stop), a winner pays at most $1,000 (one max payout request), the $600 soft daily loss,
+           20 micros, no trade when 1 micro's full stop-out (stop + 2 ticks, $1.90) could reach the floor (skip_breach);
+           then the soft daily loss guard (dll_guard) as in the eval. The member weights never raise it.
+    state  balance / EOD trailing floor (the plan's max loss, locked at start + $100; after the first payout the floor sits at
+           start + $100) from B's closes since funded_start + the payouts (engine/multi_account.sizing_state "funded");
+    stops  lost (room <= 0), stuck (room under $100 = min_room, as a funded extra account: 1 micro no longer fits most
+           stops; push "buy a new eval") and graduated (5 sim payouts: MFFU moves it to live, you must be present) = no new
+           trade;
+    payout the MFFU payout tracker (engine/funded_life.track): buffer ($1,100 on the 25K, it stays in the account), the 50%
+           consistency rule per cycle (it limits payouts, not trading), 2 traded days a cycle, the first request 48 h
+           after the first funded trade, request $250-$1,000, 80% to you, payouts n of 5; pushes "PAYOUT READY: request $X"
+           (with the record line), consistency, lost, graduated. The bot never requests a payout:
+    python -X utf8 -m engine.account_b --payout <day>=<$>      record one after MFFU paid it
+    python -X utf8 -m engine.account_b --funded-status          the tracker now
 """
 from __future__ import annotations
 
@@ -64,6 +92,12 @@ CLOSE_RETRY_S = 10              # an unconfirmed close of B's position is re-sen
 TICK, PV, COMM = 0.25, 2.0, 1.90
 ADAPTER_FACTORY = None          # tests: (spec, adapter cfg) -> adapter; None = engine/live.ADAPTERS
 VERSION = 1
+STAGES = ("eval", "funded")
+# the funded stage's keys in the block (kept by every other switch on the same account Name: set_account_b)
+FUNDED_KEYS = ("stage", "funded_start", "funded_balance", "payouts", "eval_account", "funded_set")
+PAYOUT_CMD = "python -X utf8 -m engine.account_b --payout {day}={amount}"
+FUNDED_CMD = 'python -X utf8 -m engine.account_b --to-funded --account "<funded Name>" --start <first funded day>'
+STOP_STATUSES = ("passed", "failed", "stuck", "lost", "graduated")   # eval / funded statuses: no new entry on B
 
 
 def _et(ts):
@@ -216,7 +250,59 @@ def normalize(ab: dict | None, scfg: dict | None = None, lit_account: str | None
         else:
             out["min_room"] = float(mr)
     out["keys"] = [k for k in keys if isinstance(S.get(k), dict) and S[k].get("on", True) and not S[k].get("cloud_only")]
+    # the stage (2026-10-26): "eval" (absent = the eval, exactly as before) or "funded" (python -m engine.account_b --to-funded)
+    stage = str(ab.get("stage") or "eval").strip().lower()
+    out["stage"] = stage
+    if stage not in STAGES:
+        out["problem"] = out["problem"] or f"unknown stage {ab.get('stage')!r} (eval or funded)"
+    elif stage == "funded":
+        F, why = funded_block(ab, out["rules"])
+        out["funded"] = F
+        out["plan_label"] = f"{out['plan_label']} funded"
+        if why:
+            out["problem"] = out["problem"] or why
     return out
+
+
+def funded_block(ab: dict, rules: dict) -> tuple:
+    """The funded stage's keys of an account_b block -> ({"start", "balance", "prior", "payouts", "eval_account", "set"},
+    problem or None). balance = the funded account's balance on funded_start (default the plan start); prior = balance -
+    the plan start ($ before the bot, counted as one day before the start)."""
+    start = str(ab.get("funded_start") or "")
+    R0 = float(rules["start"])
+    bal = R0 if ab.get("funded_balance") in (None, "") else _num(ab.get("funded_balance"))
+    pays, bad_pay = {}, None
+    for d, v in ((ab.get("payouts") or {}) if isinstance(ab.get("payouts"), dict) else {}).items():
+        try:
+            _dt.date.fromisoformat(str(d))
+            x = float(v)
+            if not x > 0:
+                raise ValueError
+            pays[str(d)] = round(x, 2)
+        except (TypeError, ValueError):
+            bad_pay = f"payout {d!r}: {v!r} is not yyyy-mm-dd = $ above 0"
+    if ab.get("payouts") is not None and not isinstance(ab.get("payouts"), dict):
+        bad_pay = 'payouts must be {"yyyy-mm-dd": $}'
+    F = {"start": start, "balance": float(bal) if bal is not None else R0, "prior": round((float(bal) if bal is not None else R0) - R0, 2),
+         "payouts": dict(sorted(pays.items())), "eval_account": str(ab.get("eval_account") or "") or None,
+         "set": str(ab.get("funded_set") or "") or None}
+    why = None
+    try:
+        _dt.date.fromisoformat(start)
+    except ValueError:
+        why = f"funded_start {start!r} is not yyyy-mm-dd ({FUNDED_CMD})"
+    lo, hi = R0 - float(rules["mll"]), R0 + 5.0 * float(rules["mll"])
+    if not why and (bal is None or not lo < float(bal) <= hi):
+        why = f"funded_balance {ab.get('funded_balance')!r} is not a funded balance for this plan (above ${lo:,.0f}, up to ${hi:,.0f})"
+    if not why and bad_pay:
+        why = bad_pay
+    if not why and pays and min(pays) < start:
+        why = f"payout on {min(pays)} is before the funded start {start}"
+    return F, why
+
+
+def is_funded(spec: dict | None) -> bool:
+    return bool(spec) and spec.get("stage") == "funded" and isinstance(spec.get("funded"), dict)
 
 
 def min_room(spec: dict | None) -> float:
@@ -276,6 +362,8 @@ def qty(spec: dict, trade: dict, state: dict | None, base: dict | None = None, k
     (its spec "weights" entry, ATLAS v2: absent = 1.0 = today's size)."""
     from . import lit as _lit
     from . import sizing as SZ
+    if is_funded(spec):
+        return funded_qty(spec, trade, state, base=base, key=key)
     R = spec["rules"]
     maxq = int(R["max_micros"])
     if state is None:
@@ -295,6 +383,52 @@ def qty(spec: dict, trade: dict, state: dict | None, base: dict | None = None, k
                    state=dict(state), max_micros=maxq, learning=None)
     r = _weighted({"qty": min(maxq, int(r.get("qty") or 0)), "reasons": list(r.get("reasons") or []), "lock": r.get("lock")},
                   weight(spec, key))
+    return dll_guard(r, float(risk), R, state)
+
+
+def funded_cfg(spec: dict, base: dict | None = None) -> dict:
+    """live_model.json lit_sizing + the plan preset's sizing in mode funded (engine/multi_account.sizing_cfg): "funded" =
+    the preset's funded rule (25K: pct 0.6, $50-$750, ref 20, max_win $1,000, slip 2 ticks, skip_breach), "acct" = the
+    plan's $ limits (dll, mll, lock, max micros; absolute, no scale)."""
+    from . import multi_account as MA
+    if base is None:
+        try:
+            base = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8")).get("lit_sizing") or {}
+        except Exception:
+            base = {}
+    s = MA.normalize({"id": "acctb", "preset": spec["preset"], "mode": "funded", "adapter": "paper"})
+    c = MA.sizing_cfg(base, s)
+    c["mode"] = "funded"
+    return c
+
+
+def funded_qty(spec: dict, trade: dict, state: dict | None, base: dict | None = None, key: str | None = None) -> dict:
+    """Micros for one account B entry in the FUNDED stage: engine/sizing.funded_qty on the plan's funded preset (the same
+    rule as a funded extra account, engine/multi_account), never above the plan's max micros, then the learned cost reserve
+    (lit_sizing learn_costs, off by default; never more), the member weight (never above the funded caps) and the soft daily
+    loss guard. state = funded state {room, cum, locked, ...} (AccountB.eval_state). Fails closed (0)."""
+    from . import sizing as SZ
+    R = spec["rules"]
+    maxq = int(R["max_micros"])
+    if state is None:
+        return {"qty": 0, "reasons": ["funded state unknown (funded_start missing?): not traded"], "lock": None}
+    risk = _num(trade.get("risk_pts"))
+    if not risk or risk <= 0:
+        return {"qty": 0, "reasons": ["no stop distance"], "lock": None}
+    room = _num(state.get("room"))
+    if room is not None and room <= 0:
+        return {"qty": 0, "reasons": [f"funded account lost: room ${room:,.0f} to the max-loss floor: no new trade"], "lock": "lost"}
+    c = funded_cfg(spec, base)
+    why: list = []
+    q = SZ.funded_qty({"risk_pts": float(risk), "tgt_pts": _num(trade.get("tgt_pts")), "size_mult": 1.0}, dict(state),
+                      c.get("funded") or {}, acct={**(c.get("acct") or {}), "max_micros": maxq}, why=why)
+    r = {"qty": min(maxq, int(q or 0)), "reasons": [f"funded: {w}" for w in why], "lock": None}
+    if c.get("learn_costs") and r["qty"] > 0:
+        r = SZ.cost_reserve(r, {"risk_pts": float(risk)}, c, state=dict(state), bot="atlas")
+    q0 = int(r.get("qty") or 0)
+    r = _weighted(r, weight(spec, key))
+    if int(r.get("qty") or 0) > q0:
+        r = {**r, "qty": q0, "reasons": list(r.get("reasons") or []) + [f"member weight: never above the funded caps -> {q0}"]}
     return dll_guard(r, float(risk), R, state)
 
 
@@ -417,6 +551,15 @@ class AccountB:
             self.problem = f"adapter failed: {e.__class__.__name__}: {e}"
         dis = self.disabled_reason()
         ev = self.eval_view()
+        if self.funded():
+            F = self.spec["funded"]
+            self.log("system" if not dis else "risk",
+                     f"{self.kind()} {self.name} {self.spec['plan_label']}, strategies {', '.join(self.spec['keys'])}, FUNDED sizing "
+                     f"(the plan's funded rule) from {F['start']} (balance ${ev.get('balance') or 0:,.0f}, room ${ev.get('room') or 0:,.0f}, "
+                     f"payouts {len(F['payouts'])}" + (f"; passed eval {F['eval_account']}" if F.get("eval_account") else "") + "): "
+                     + (f"DISABLED ({dis})" if dis else "ready"))
+            self.save()
+            return self
         self.log("system" if not dis else "risk",
                  f"{self.kind()} {self.name} {self.spec['plan_label']}, strategies {', '.join(self.spec['keys'])}, size {self.spec['sizing']}, "
                  f"eval from {self.spec['eval_start'] or '?'} (balance ${ev.get('balance', 0):,.0f}, room ${ev.get('room', 0):,.0f}): "
@@ -477,8 +620,8 @@ class AccountB:
 
     # ---- real balance from NinjaTrader (engine/broker_balance.py): account B reads ITS OWN accounts.csv row (self.name)
     def _broker(self):
-        if not self.name or not self.spec.get("eval_start") or self.kind() == "PAPER":
-            return None
+        if not self.name or not self.spec.get("eval_start") or self.kind() == "PAPER" or self.funded():
+            return None                    # the funded stage books from its own closes (as a funded extra account)
         from . import broker_balance as BB
         return BB.for_bot(self.bot)
 
@@ -489,9 +632,41 @@ class AccountB:
         except Exception:
             return None
 
+    def funded(self) -> bool:
+        return is_funded(self.spec)
+
+    def funded_days(self, today=None) -> dict:
+        """Closed P&L per trading day since the funded start (today's included)."""
+        F = (self.spec.get("funded") or {})
+        days = {}
+        for d, _, p, *_ in self.closes:
+            if F.get("start") and str(d) >= F["start"] and (today is None or str(d) <= today):
+                days[str(d)] = round(days.get(str(d), 0.0) + float(p), 2)
+        return days
+
+    def _funded_state(self, today):
+        """engine/multi_account.sizing_state "funded" on B's closes since funded_start (+ the balance before the bot, the
+        payouts): {balance, cum, room, floor, locked, cycle...}. After the first payout the floor sits at start + $100."""
+        from . import multi_account as MA
+        F = self.spec["funded"]
+        if not F.get("start"):
+            return None
+        st = MA.sizing_state("funded", [(d, t, p) for d, t, p, *_ in self.closes], today, F["start"], self.rules,
+                             prior=float(F.get("prior") or 0.0), payouts=dict(F.get("payouts") or {}), n_today=self.entries_today(today))
+        if F.get("payouts"):
+            lock = float(self.rules["lock"])
+            if float(st["floor"]) < lock:
+                st["floor"] = lock
+                st["room"] = round(float(st["balance"]) + float(st["cum"]) - lock, 2)
+                st["locked"] = True
+        st["n_today"] = self.entries_today(today)
+        return st
+
     def _state_raw(self, now=None):
         from . import multi_account as MA
         today = trading_day(now if now is not None else self.clock())
+        if self.funded():
+            return self._funded_state(today)
         if not self.spec.get("eval_start"):
             return None
         return MA.sizing_state("two_week", [(d, t, p) for d, t, p, *_ in self.closes], today, self.spec["eval_start"], self.rules,
@@ -533,8 +708,28 @@ class AccountB:
         except Exception as e:
             self.log("error", f"real balance check failed: {e.__class__.__name__}: {e}")
 
+    def funded_view(self, now=None) -> dict:
+        """The MFFU sim funded tracker of B (engine/funded_life.track): balance, floor, buffer, cycle, best day vs 50%,
+        the first-request date, eligibility, the max request (x 80% to you), payouts n of 5, status, one plain line."""
+        from . import funded_life as FL
+        now = int(now if now is not None else self.clock())
+        today = trading_day(now)
+        F = self.spec["funded"]
+        P = FL.plan_of(self.spec["plan"])
+        t = FL.track(self.funded_days(today), dict(F.get("payouts") or {}), P, today=today, start=F.get("start"), name=self.label,
+                     prior=float(F.get("prior") or 0.0))
+        t["buffer_reached"] = bool(t["balance"] >= t["buffer_balance"] - 1e-9)
+        t["record_cmd"] = PAYOUT_CMD
+        t["payouts"] = dict(F.get("payouts") or {})
+        t["eval_account"] = F.get("eval_account")
+        return t
+
     def eval_view(self, now=None) -> dict:
-        """Balance, trailing floor, room, pass target, session, status (open / passed / failed / stuck)."""
+        """Balance, trailing floor, room, pass target, session, status (open / passed / failed / stuck). Funded stage: the
+        same keys on the funded account (target = the payout line, status funded / lost / graduated) + "funded" = the
+        payout tracker (funded_view)."""
+        if self.funded():
+            return self._funded_eval_view(now)
         R = self.rules
         try:
             st = self.eval_state(now)
@@ -554,8 +749,42 @@ class AccountB:
                 "start": self.spec.get("eval_start"), "days_traded": st.get("days_traded"), "dll": float(R["dll"]),
                 "max_micros": int(R["max_micros"]), "plan": self.spec["plan_label"], "price": PLANS[self.spec["plan"]]["price"]}
 
+    def _funded_eval_view(self, now=None) -> dict:
+        from . import sizing as SZ
+        R = self.rules
+        F = self.spec["funded"]
+        now = int(now if now is not None else self.clock())
+        try:
+            st = self.eval_state(now)
+            t = self.funded_view(now)
+        except Exception as e:
+            return {"error": f"{e.__class__.__name__}: {e}", "stage": "funded"}
+        start = float(R["start"])
+        if st is None:
+            return {"stage": "funded", "start_balance": float(F.get("balance") or start), "balance": float(F.get("balance") or start),
+                    "status": "no funded_start", "session": None, "room": None, "funded": t}
+        prof = float(st["balance"]) + float(st["cum"])        # since the plan start: the balance before the bot + P&L - payouts
+        bal = start + prof
+        floor = start + float(st["floor"])
+        room = float(st["room"])
+        # stuck as a funded extra account (engine/multi_account Account.entry_block, the preset's min_room): under $100 of
+        # room 1 micro no longer fits most stops and no payout can come back: no new trade, push "buy a new eval"
+        status = ("lost" if room <= 0 else "graduated" if t.get("graduated") else "stuck" if room < min_room(self.spec)
+                  else "funded")
+        today = trading_day(now)
+        return {"stage": "funded", "start_balance": float(F.get("balance") or start), "plan_start": start, "balance": round(bal, 2),
+                "profit": round(prof, 2), "today": round(float(st["cum"]), 2), "floor": round(floor, 2), "room": round(room, 2),
+                "locked": bool(st.get("locked")), "target": t.get("ask_at_balance"), "target_label": "payout line",
+                "to_target": t.get("to_ask"), "session": SZ.eval_session(F.get("start"), today), "status": status,
+                "start": F.get("start"), "days_traded": len([d for d, v in self.funded_days(today).items() if abs(v) > 1e-9 and d < today]),
+                "dll": float(R["dll"]), "max_micros": int(R["max_micros"]), "plan": self.spec["plan_label"],
+                "price": PLANS[self.spec["plan"]]["price"], "eval_account": F.get("eval_account"), "funded": t}
+
     def _lifecycle(self, now):
-        """Pass / fail / stuck: one push each (key per eval start)."""
+        """Pass / fail / stuck: one push each (key per eval start). Funded stage: the payout tracker's pushes (PAYOUT READY,
+        consistency, lost, 5 payouts), each once."""
+        if self.funded():
+            return self._funded_lifecycle(now)
         ev = self.eval_view(now)
         stt = ev.get("status")
         if stt not in ("passed", "failed", "stuck"):
@@ -565,13 +794,40 @@ class AccountB:
             return
         self.notified.append(key)
         txt = {"passed": (f"{self.label} EVAL PASSED \U0001F389", f"balance ${ev['balance']:,.0f} (target ${ev['target']:,.0f}): no new "
-                                                                   "trade on this eval; request the funded account in the MFFU dashboard"),
+                                                                   "trade on this eval; request the funded account in the MFFU dashboard, "
+                                                                   "then run the funded switch with its new Name: Start page > Accounts > "
+                                                                   f"Passed → funded, or {FUNDED_CMD}. The bot never switches by itself."),
                "failed": (f"{self.label} EVAL FAILED", f"balance ${ev['balance']:,.0f} reached the max-loss floor ${ev['floor']:,.0f}: no "
                                                       "new trade on this account"),
                "stuck": (f"{self.label} stuck: room ${ev['room']:,.0f}", f"the room to the max-loss floor is under ${min_room(self.spec):,.0f}: 1 micro "
                                                                        "no longer fits a stop, the bot stops trading this account; buy a new one")}[stt]
         self.log("risk", f"{txt[0]}: {txt[1]}")
         self._push_text(txt[0], txt[1], key)
+
+    def _funded_lifecycle(self, now):
+        from . import funded_life as FL
+        try:
+            t = self.funded_view(now)
+            ev = self._funded_eval_view(now)
+        except Exception as e:
+            self.log("error", f"funded tracker failed: {e.__class__.__name__}: {e}")
+            return
+        for p in FL.notices(t, now):
+            if p["key"] in self.notified:
+                continue
+            self.notified.append(p["key"])
+            self.log("risk", f"{p['title']}: {t['text']}")
+            self._send(p)
+        if ev.get("status") == "stuck":
+            key = f"acctb:fstuck:{(self.spec.get('funded') or {}).get('start') or '?'}:{self.name}"
+            if key not in self.notified:
+                self.notified.append(key)
+                title = f"{self.label} funded account stuck: room ${ev.get('room') or 0:,.0f}"
+                body = (f"the room to the max-loss floor is under ${min_room(self.spec):,.0f}: 1 micro no longer fits a stop, the bot "
+                        f"stops trading this funded account (balance ${ev.get('balance') or 0:,.0f}, floor ${ev.get('floor') or 0:,.0f}). "
+                        f"Paid so far {FL._money(t.get('paid_to_you'))} to you. Buy a new 25K eval for ATLAS.")
+                self.log("risk", f"{title}: {body}")
+                self._push_text(title, body, key)
 
     def check_lock(self, now):
         today = trading_day(now)
@@ -728,8 +984,9 @@ class AccountB:
         if not why_bar and self.lock and self.lock.get("day") == day:
             why_bar = f"locked out today: {self.lock['reason']}"
         ev = self.eval_view(now) if not why_bar else {}
-        if not why_bar and ev.get("status") in ("passed", "failed", "stuck"):
-            why_bar = f"eval {ev['status']} (balance ${ev.get('balance', 0):,.0f}, room ${(ev.get('room') or 0):,.0f})"
+        if not why_bar and ev.get("status") in STOP_STATUSES:
+            why_bar = (f"{'funded account' if self.funded() else 'eval'} {ev['status']} (balance ${ev.get('balance', 0):,.0f}, "
+                       f"room ${(ev.get('room') or 0):,.0f})")
         # member priority (pre-launch audit A4 2026-10-25, = tools/atlas research executor): the FIRST member in the
         # configured order whose own signal passes the no-hedging rule, the size and the guards is routed; a blocked member
         # hands the bar to the next one; at most ONE order per bar (one position on B)
@@ -1100,20 +1357,32 @@ class AccountB:
         today = trading_day(now)
         rows = [{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target")}
                 for r in self.ledger if r.get("side") in ("buy", "sell", "exit")][-8:]
-        return {"label": self.label, "account": self.name, "plan": self.spec["plan"], "plan_label": self.spec["plan_label"],
-                "kind": self.kind(), "sizing": self.spec["sizing"], "keys": list(self.spec["keys"]), "enabled": not self.disabled_reason(),
-                "disabled": self.disabled_reason(), "eval": self.eval_view(now), "open": self.position(), "routed": rows,
-                "day_pnl": self.day_pnl(today), "entries_today": self.entries_today(today),
-                "locked": (self.lock or {}).get("reason") if (self.lock or {}).get("day") == today else None, "size": self.last_size,
-                "note": "own account: max 2 trades a day, one position, never opposite to LIT"}
+        out = {"label": self.label, "account": self.name, "plan": self.spec["plan"], "plan_label": self.spec["plan_label"],
+               "kind": self.kind(), "sizing": self.spec["sizing"], "keys": list(self.spec["keys"]), "enabled": not self.disabled_reason(),
+               "disabled": self.disabled_reason(), "eval": self.eval_view(now), "open": self.position(), "routed": rows,
+               "day_pnl": self.day_pnl(today), "entries_today": self.entries_today(today),
+               "locked": (self.lock or {}).get("reason") if (self.lock or {}).get("day") == today else None, "size": self.last_size,
+               "note": "own account: max 2 trades a day, one position, never opposite to LIT"}
+        if self.funded():                 # the funded stage only (the eval's info is exactly as before)
+            ev = out["eval"] if isinstance(out["eval"], dict) else {}
+            out.update(stage="funded", sizing="funded", funded=compact_tracker(ev.get("funded")),
+                       eval_account=(self.spec.get("funded") or {}).get("eval_account"),
+                       note="funded: max 2 trades a day, one position, never opposite to LIT; 60% of the room, a winner <= one max "
+                            "payout request; the bot never requests a payout")
+            if isinstance(out["eval"], dict):
+                out["eval"] = {k: v for k, v in out["eval"].items() if k != "funded"}
+        return out
 
     # ---- persistence
     def blob(self) -> dict:
         with self.mx:
-            return {"v": VERSION, "account": self.name, "plan": self.spec["plan"], "eval_start": self.spec.get("eval_start"),
-                    "saved_at": int(self.clock()), "ledger": self.ledger[-400:], "closes": list(self.closes),
-                    "prov": {str(k): v for k, v in self.prov.items()}, "open_t": self.open_t,
-                    "seen": [list(x) for x in list(self.seen)[-600:]], "lock": self.lock, "notified": self.notified[-50:]}
+            out = {"v": VERSION, "account": self.name, "plan": self.spec["plan"], "eval_start": self.spec.get("eval_start"),
+                   "saved_at": int(self.clock()), "ledger": self.ledger[-400:], "closes": list(self.closes),
+                   "prov": {str(k): v for k, v in self.prov.items()}, "open_t": self.open_t,
+                   "seen": [list(x) for x in list(self.seen)[-600:]], "lock": self.lock, "notified": self.notified[-50:]}
+            if self.funded():
+                out.update(stage="funded", funded_start=(self.spec.get("funded") or {}).get("start"))
+            return out
 
     def save(self):
         if not self.state_path:
@@ -1148,6 +1417,23 @@ class AccountB:
             pv = self.prov.get(int(self.open_t)) or {}
             self.log("system", f"restored: open {pv.get('short') or pv.get('key')} {'LONG' if pv.get('dir') == 1 else 'SHORT'} "
                                f"{pv.get('qty')} MNQ from {_et(int(self.open_t)):%H:%M} ET (managed to its exit)")
+
+
+TRACKER_KEYS = ("name", "plan", "label", "status", "text", "start", "today", "balance", "profit", "floor", "room", "locked", "mll_after_payout", "buffer", "buffer_balance",
+                "buffer_reached", "above_buffer", "ask_at_balance", "to_ask", "buffer_frac", "cycle_start", "cycle_profit",
+                "cycle_days", "cycle_days_need", "best_day", "best_day_on", "best_day_pct", "cons_limit_pct", "cons_ok",
+                "cons_need_profit", "cons_frac", "more_days", "first_trade", "eligible_from", "eligible", "ready", "max_request",
+                "request_min", "request_max", "to_you", "split", "payouts_n", "payouts_max", "paid_gross", "paid_to_you",
+                "graduated", "lost", "why", "payouts", "eval_account", "record_cmd")
+
+
+def compact_tracker(t: dict | None) -> dict | None:
+    """The funded tracker for the heartbeat / dashboards (engine/funded_life.track keys the cards read)."""
+    if not isinstance(t, dict):
+        return None
+    out = {k: t.get(k) for k in TRACKER_KEYS if k in t}
+    out["why"] = [str(w)[:160] for w in (t.get("why") or [])][:6]
+    return out
 
 
 def _state_path_for(bot_state_path: str | None) -> str:
@@ -1189,6 +1475,12 @@ def set_account_b(account: str | None, plan: str = "builder25k", start: str | No
         new = {"account": str(account).strip(), "plan": plan, "eval_start": start or _dt.date.today().isoformat(),
                "strategies": list(strategies or ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"]), "sizing": sizing}
         new.update({k: v for k, v in (extra or {}).items() if k not in new})   # e.g. "armed" (engine/go.py, owner-typed)
+        if isinstance(old, dict) and str(old.get("account") or "").strip() == new["account"] \
+                and str(old.get("stage") or "").lower() == "funded":
+            # the same (funded) account again (arming it, launch prep): its funded stage is kept, never reset to an eval
+            for k in FUNDED_KEYS:
+                if k in old:
+                    new.setdefault(k, old[k])
         spec = normalize(new, second.load_cfg(path))
         if spec["problem"]:
             return {"ok": False, "error": spec["problem"]}
@@ -1211,6 +1503,159 @@ def set_account_b(account: str | None, plan: str = "builder25k", start: str | No
         from .ninjatrader import is_sim
         sim = is_sim(new["account"])
     return {"ok": True, "from": old, "to": new, "routed_off": routed_off, "sim": sim}
+
+
+# ---------------------------------------------------------------------------------------------------------------- funded
+def _lit_name() -> str | None:
+    """LIT's own NinjaTrader account Name on this PC (data/start_bot.json "lit", else data/autostart.json), best effort."""
+    for f, k in (("start_bot.json", "lit"), ("autostart.json", "nt_account")):
+        try:
+            v = str(json.load(open(os.path.join(ROOT, "data", f), encoding="utf-8")).get(k) or "").strip()
+            if v:
+                return v
+        except Exception:
+            pass
+    return None
+
+
+def state_file(path: str | None = None) -> str:
+    """Account B's state file next to this second_model.json: <its folder>/data/live_state_acctb.json (the PC bot's own,
+    engine/live.STATE_PATH -> _state_path_for; a test's temp copy -> its own)."""
+    return os.path.join(os.path.dirname(os.path.abspath(cfg_path(path))), "data", "live_state_acctb.json")
+
+
+def to_funded(account: str, start: str, balance=None, path: str | None = None, selftest=None, allow_path: str | None = None,
+              lit_account: str | None = None, state_path: str | None = None, today: str | None = None, allow: bool = True) -> dict:
+    """The funded switch (owner-run, never automatic): ATLAS's passed eval -> its NEW funded account. The local block
+    (data/account_b.json) becomes stage "funded" on the funded Name from `start` (its balance that day: `balance`, default
+    the plan start), DISARMED ("armed" / the eval's anchor and prior dropped; strategies, plan, sizing kept); the passed
+    eval's Name is kept as "eval_account" and its state file as live_state_acctb.eval_<Name>.json; the funded Name goes on
+    the NinjaTrader allowlist. Re-running it on the same funded Name updates the start / balance and keeps the payouts.
+    Refused: no account B, the eval's own Name (MFFU gives a new one), LIT's account, another funded Name, a bad day /
+    balance, or engine.ninjatrader --selftest failing. Returns {"ok", "error" | "say", "from", "to", "archived", ...}."""
+    from . import second
+    path = path or second.CFG_PATH
+    old = raw_cfg(path)
+    if not isinstance(old, dict) or not str(old.get("account") or "").strip():
+        return {"ok": False, "error": "ATLAS has no account yet (account B is off): nothing to switch to funded"}
+    name = str(account or "").strip()
+    if not name or any(c in name for c in ";,\r\n|"):
+        return {"ok": False, "error": "type the funded account's Name exactly as NinjaTrader's Accounts tab shows it"}
+    cur = str(old.get("account")).strip()
+    stage = str(old.get("stage") or "eval").strip().lower()
+    if stage == "funded" and name != cur:
+        return {"ok": False, "error": f"ATLAS is already funded on {cur}: a new funded account needs a new eval first"}
+    if stage != "funded" and name == cur:
+        return {"ok": False, "error": f"{name} is the eval account: MFFU gives the funded account its own new Name (NinjaTrader's "
+                                      "Accounts tab after the funded agreement)"}
+    lit = lit_account if lit_account is not None else _lit_name()
+    if lit and name == str(lit).strip():
+        return {"ok": False, "error": f"{name} is Zlarior's (LIT's) own account: ATLAS's funded account has its own Name"}
+    try:
+        start = _dt.date.fromisoformat(str(start)).isoformat()
+    except (TypeError, ValueError):
+        return {"ok": False, "error": "the first funded day as yyyy-mm-dd"}
+    from . import multi_account as MA
+    plan = str(old.get("plan") or "builder25k").lower().replace(" ", "").replace("_", "")
+    R = MA.rules_of({"preset": (PLANS.get(plan) or PLANS["builder25k"])["preset"]})
+    bal = float(R["start"]) if balance in (None, "") else _num(balance)
+    if bal is None:
+        return {"ok": False, "error": f"balance {balance!r} is not a number of $"}
+    new = {k: v for k, v in old.items() if k not in ("armed", "confirm", "eval_anchor", "prior_pnl") + FUNDED_KEYS}
+    new.update(account=name, stage="funded", funded_start=start, funded_balance=round(float(bal), 2),
+               payouts=dict(old.get("payouts") or {}) if stage == "funded" else {},
+               eval_account=(old.get("eval_account") if stage == "funded" else cur) or None,
+               funded_set=today or _dt.date.today().isoformat())
+    spec = normalize(new, second.load_cfg(path), lit)
+    if spec["problem"]:
+        return {"ok": False, "error": spec["problem"]}
+    ok, line = (selftest or second._selftest_ok)()
+    if not ok:
+        return {"ok": False, "error": f"engine.ninjatrader --selftest failed ({line}): ATLAS NOT switched to funded"}
+    archived = None
+    if stage != "funded":
+        sp = state_path or state_file(path)
+        try:
+            with open(sp, encoding="utf-8") as fh:
+                b = json.load(fh)
+            if isinstance(b, dict) and b.get("account") == cur:
+                import re
+                import shutil
+                archived = os.path.splitext(sp)[0] + f".eval_{re.sub(r'[^A-Za-z0-9_-]', '_', cur)}.json"
+                shutil.copyfile(sp, archived)
+        except FileNotFoundError:
+            pass
+        except Exception as e:
+            return {"ok": False, "error": f"the eval's state file could not be kept ({e.__class__.__name__}: {e}): not switched"}
+    write_local(new, path, why=f"Funded on {name} from {start} (passed eval {new.get('eval_account') or cur}).")
+    if raw_cfg(path) != new:
+        return {"ok": False, "error": f"{LOCAL_REL} write check failed: ATLAS not switched"}
+    allowed = None
+    if allow:
+        from .ninjatrader import allow_account
+        allowed = allow_account(name, path=allow_path)
+    from .ninjatrader import is_sim
+    v = funded_cfg(spec)
+    f = v.get("funded") or {}
+    rule = (f"risk {float(f.get('pct') or 0) * 100:.0f}% of the room to the floor, at most ${float(f.get('pct_max_usd') or 0):,.0f} a "
+            f"trade, a winner <= ${float(f.get('max_win') or 0):,.0f}, the ${float(R['dll']):,.0f} daily loss, {int(R['max_micros'])} micros, "
+            "no trade when 1 micro could reach the floor")
+    return {"ok": True, "from": old, "to": new, "archived": archived, "allowlist": allowed, "sim": is_sim(name), "rule": rule,
+            "say": f"ATLAS -> funded {spec['plan_label'].replace(' funded', '')} {name} from {start} (balance ${float(bal):,.0f}; "
+                   f"passed eval {new.get('eval_account') or cur}). NOT armed: a real account trades only after you arm it at "
+                   "the start (you type the phrase)."}
+
+
+def record_payout(spec_s: str, path: str | None = None) -> dict:
+    """Record one payout MFFU paid on B's funded account ("yyyy-mm-dd=$", the gross request): the tracker starts a new
+    cycle after that day and the floor sits at start + $100. Never requests anything."""
+    d, _, v = str(spec_s or "").partition("=")
+    try:
+        d = _dt.date.fromisoformat(d.strip()).isoformat()
+        amt = round(float(v), 2)
+        if not amt > 0:
+            raise ValueError
+    except (TypeError, ValueError):
+        return {"ok": False, "error": "give the payout as yyyy-mm-dd=$ (e.g. 2026-12-01=1000)"}
+    from . import second
+    path = path or second.CFG_PATH
+    old = raw_cfg(path)
+    if not isinstance(old, dict) or str(old.get("stage") or "").lower() != "funded":
+        return {"ok": False, "error": f"ATLAS's account is not funded yet ({FUNDED_CMD})"}
+    new = {**old, "payouts": {**dict(old.get("payouts") or {}), d: amt}}
+    spec = normalize(new, second.load_cfg(path))
+    if spec["problem"]:
+        return {"ok": False, "error": spec["problem"]}
+    write_local(new, path, why=f"Payout {d} ${amt:,.2f} recorded.")
+    from . import funded_life as FL
+    P = FL.plan_of(spec["plan"])
+    note = None if P["pay_min"] <= amt <= P["pay_max"] else \
+        f"note: MFFU's request on this plan is ${P['pay_min']:,.0f}-${P['pay_max']:,.0f}; recorded as given"
+    return {"ok": True, "payouts": spec["funded"]["payouts"], "note": note,
+            "say": f"Payout {d} ${amt:,.2f} recorded on {spec['account']} ({len(spec['funded']['payouts'])} of {P['max_payouts']})."}
+
+
+def funded_status(path: str | None = None, state_path: str | None = None, today: str | None = None) -> dict:
+    """B's funded tracker from the local block and B's state file (its closes), without a running bot."""
+    from . import funded_life as FL
+    ab = raw_cfg(path)
+    spec = normalize(ab) if ab else None
+    if not is_funded(spec):
+        return {"ok": False, "error": f"ATLAS's account is not funded yet ({FUNDED_CMD})"}
+    F = spec["funded"]
+    days = {}
+    try:
+        with open(state_path or state_file(path), encoding="utf-8") as fh:
+            b = json.load(fh)
+        if isinstance(b, dict) and b.get("account") == spec["account"]:
+            for c in b.get("closes") or []:
+                if isinstance(c, (list, tuple)) and len(c) >= 3 and str(c[0]) >= F["start"]:
+                    days[str(c[0])] = round(days.get(str(c[0]), 0.0) + float(c[2]), 2)
+    except Exception:
+        pass
+    t = FL.track(days, F["payouts"], FL.plan_of(spec["plan"]), today=today, start=F["start"], name=spec["label"], prior=F["prior"])
+    t["record_cmd"] = PAYOUT_CMD
+    return {"ok": True, "account": spec["account"], "eval_account": F.get("eval_account"), "tracker": compact_tracker(t)}
 
 
 # ---------------------------------------------------------------------------------------------------------------- migration
@@ -1313,10 +1758,47 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="python -m engine.account_b", description="ATLAS's account (account B) on this PC")
     ap.add_argument("--migrate", action="store_true", help="move a local account_b block out of second_model.json "
                                                             "into data/account_b.json")
+    ap.add_argument("--to-funded", action="store_true", help="after ATLAS's eval passed: trade its NEW funded account "
+                                                              "(--account, --start) under the funded rules, disarmed")
+    ap.add_argument("--account", help="--to-funded: the funded account's Name exactly as NinjaTrader shows it")
+    ap.add_argument("--start", help="--to-funded: the first funded session (yyyy-mm-dd)")
+    ap.add_argument("--balance", type=float, default=None, help="--to-funded: its balance that day as MFFU shows it (default "
+                                                                 "the plan start, $25,000)")
+    ap.add_argument("--payout", help="record one payout MFFU paid on the funded account: yyyy-mm-dd=$")
+    ap.add_argument("--funded-status", action="store_true", help="the funded payout tracker now")
     a = ap.parse_args(argv)
     if a.migrate:
         r = migrate_local()
         print(f"  [{'OK' if r['status'] in ('clean', 'migrated', 'no_git') else '..'}]  {r['say']}")
+        return 0
+    if a.to_funded:
+        if not a.account or not a.start:
+            print(f"--to-funded needs --account \"<funded Name>\" and --start yyyy-mm-dd ({FUNDED_CMD})")
+            return 1
+        r = to_funded(a.account, a.start, a.balance)
+        if not r["ok"]:
+            print(f"  [FIX] {r['error']}")
+            return 1
+        print(f"  [OK]  {r['say']}")
+        print(f"        Funded sizing: {r['rule']}.")
+        print("        Payout tracker: python -X utf8 -m engine.account_b --funded-status (push \"PAYOUT READY: request $X\" when "
+              "every MFFU rule is met; the bot never requests a payout).")
+        print(f"        Record each payout: {PAYOUT_CMD.format(day='<day>', amount='<$>')}")
+        if r.get("archived"):
+            print(f"        The eval's history is kept in {r['archived']}")
+        print("        Restart the bot (or it switches by itself once ATLAS is flat).")
+        return 0
+    if a.payout:
+        r = record_payout(a.payout)
+        print(f"  [{'OK' if r['ok'] else 'FIX'}]  {r.get('say') or r.get('error')}" + (f" ({r['note']})" if r.get("note") else ""))
+        return 0 if r["ok"] else 1
+    if a.funded_status:
+        r = funded_status()
+        if not r["ok"]:
+            print(f"  [..]  {r['error']}")
+            return 0
+        print(r["tracker"]["text"])
+        print(json.dumps(r, indent=1))
         return 0
     found, _ = read_local()
     print(json.dumps({"source": LOCAL_REL if found else "second_model.json", "account_b": raw_cfg()}, indent=1))
