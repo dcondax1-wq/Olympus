@@ -1747,7 +1747,8 @@ class LiveBot:
         return from_frame(sym, "1h", h1)
 
     def _emit_events(self, res, sym):
-        start = self.started_at
+        # an older loop thread can finish its last poll while start() re-initialises (started_at None for a moment)
+        start = self.started_at if self.started_at is not None else int(self.clock())
         for ev in res["events"]:
             key = (ev["t"], ev["type"], ev["text"])
             if ev["t"] < start - 3600 or key in self.seen:
