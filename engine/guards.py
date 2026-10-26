@@ -285,7 +285,15 @@ _CLOCK = {"drift": None, "t": 0.0, "ok_t": 0.0, "bad": 0, "running": False, "pro
 def clock_probe() -> float | None:
     """Server clock - this PC's clock in seconds (median of 3 HTTP Date headers, engine/ops_checks.internet); None = unknown."""
     from . import ops_checks
-    return ops_checks.internet().get("drift_s")
+    net = ops_checks.internet()
+    d = net.get("drift_s")
+    if d is None:
+        return None
+    # only the part of the drift the probe can actually prove counts (a slow round trip or the whole-second Date header
+    # can make a right clock look up to (round trip / 2 + 1) s off): blocks on a real drift, not on a busy PC
+    h = max(0.0, float(net.get("unc_s") or 1.0) - 1.0)            # half the round trip
+    lo, hi = float(d) - h, float(d) + 1.0 + h                       # the Date header is whole seconds: true drift in [lo, hi]
+    return lo if lo > 0 else hi if hi < 0 else 0.0
 
 
 def _clock_run(probe):
