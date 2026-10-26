@@ -17,6 +17,7 @@ $Desktop = [Environment]::GetFolderPath('Desktop')      # follows a OneDrive-mov
 $Icons = Join-Path $env:SystemRoot 'System32\shell32.dll'
 
 $items = @(
+    @{ Name = 'LE START BOT';    File = 'START_BOT.bat';       Icon = 137; Tip = 'Start Zlarior + ATLAS: update, setup, Sim test, then you type I ACCEPT LIVE RISK' },
     @{ Name = 'LE UPDATE';       File = 'UPDATE.bat';          Icon = 238; Tip = 'Update the bot: stop, git pull, pip install, restart, self-test' },
     @{ Name = 'LE DASHBOARD';    File = 'START_DASHBOARD.bat'; Icon = 13;  Tip = 'Open the dashboard (starts the bot server if needed)' },
     @{ Name = 'LE HEALTH CHECK'; File = 'HEALTH_CHECK.bat';    Icon = 23;  Tip = 'Green / red checks with the fix for each' },
