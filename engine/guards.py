@@ -56,7 +56,7 @@ from zoneinfo import ZoneInfo
 ET = ZoneInfo("America/New_York")
 STATE_NAME = "guards_state.json"
 PV = 2.0                                  # MNQ $ per point
-COMM = 1.90                               # $ per micro round turn (the eval sizing's cost; lit.COMM is 1.40)
+from .sizing import LIVE_COMM as COMM   # noqa: E402  $1.90 a micro round turn, the live commission (lit.COMM, research: 1.40)
 EVAL_MODES = ("eval", "safe_eval", "fast_eval", "two_week")
 
 DEFAULTS = {

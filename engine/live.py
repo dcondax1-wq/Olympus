@@ -731,23 +731,25 @@ class LiveBot:
         q, u = pos.get("qty"), pos.get("unrealized")
         if q and u is not None and pos.get("entry") is not None:
             from . import lit as _lit
+            from .sizing import LIVE_COMM          # the position's unrealized is booked at the live commission
             d = 1 if pos.get("dir", 1) == 1 else -1
-            return float(pos["entry"]) + d * (float(u) / float(q) + _lit.COMM) / _lit.PV
+            return float(pos["entry"]) + d * (float(u) / float(q) + LIVE_COMM) / _lit.PV
         return None
 
     def _kill_pnl(self, pos, qty):
         """$ of the kill-switch flatten at the routed size (first entry + every routed add), at the market now, costs in."""
         try:
             from . import lit as _lit
+            from .sizing import LIVE_COMM          # what the broker charges a micro round trip (not the backtest's $1.40)
             px = self._kill_mark_px(pos)
             if px is None or pos.get("entry") is None or not qty:
                 return None
             d = 1 if pos.get("dir", 1) == 1 else -1
-            pnl = int(qty) * (d * (px - float(pos["entry"])) * _lit.PV - _lit.COMM)
+            pnl = int(qty) * (d * (px - float(pos["entry"])) * _lit.PV - LIVE_COMM)
             self._sync_adds(pos.get("entry_t"))
             for a in self._open_adds:
                 if a.get("entry_t") == pos.get("entry_t"):
-                    pnl += int(a["qty"]) * (d * (px - float(a["px"])) * _lit.PV - _lit.COMM)
+                    pnl += int(a["qty"]) * (d * (px - float(a["px"])) * _lit.PV - LIVE_COMM)
             return round(pnl, 2)
         except Exception as e:
             self._note_error(f"kill switch P&L not booked: {e.__class__.__name__}: {e}")
@@ -829,18 +831,20 @@ class LiveBot:
 
     def _routed_pnl(self, tr, qty):
         """$ P&L of a finished trade at the routed size: the first entry's qty, plus every scale-in add routed to it at its
-        own price (the model's add qty may differ from the routed one: the eval caps size the routed adds)."""
+        own price (the model's add qty may differ from the routed one: the eval caps size the routed adds). Booked at the
+        live commission engine/sizing.LIVE_COMM ($1.90 a micro; tr["pnl"] from engine/lit_live.py already is)."""
         self._sync_adds(tr["entry_t"])
         adds = [a for a in self._open_adds if a.get("entry_t") == tr["entry_t"]]
         if not tr.get("adds") and not adds:
             return round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"]
         from . import lit as _lit
+        from .sizing import LIVE_COMM
         d = 1 if tr.get("dir", 1) == 1 else -1
         xp = float(tr["exit_price"])
         pts = float(tr["pts"]) if tr.get("pts") is not None else d * (xp - float(tr["entry"]))
-        pnl = qty * (pts * _lit.PV - _lit.COMM)
+        pnl = qty * (pts * _lit.PV - LIVE_COMM)
         for a in adds:                     # a["px"]: the broker's fill when reported (_sync_adds), else the model's price
-            pnl += int(a["qty"]) * (d * (xp - float(a["px"])) * _lit.PV - _lit.COMM)
+            pnl += int(a["qty"]) * (d * (xp - float(a["px"])) * _lit.PV - LIVE_COMM)
         return round(pnl, 2)
 
     def _add_qty(self, pos, an) -> int:

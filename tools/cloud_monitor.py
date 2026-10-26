@@ -261,7 +261,7 @@ def lit_add_usd(ledger, t, qty, lit_sizing=None, f=1.0, max_micros=40):
     from engine import lit as _lit
     mode = str((lit_sizing or {}).get("mode") or "normal")
     adds = t.get("adds") or []
-    cm = float(t.get("comm_rt", _lit.COMM))
+    cm = float(t.get("comm_rt", sizing.LIVE_COMM))        # the broker's $1.90 a micro (engine/lit_live books every trade at it)
     q0, qm = int(qty), int(t["qty"])
     if mode in ("two_week", "eval", "safe_eval"):
         start = (lit_sizing or {}).get("eval_start")

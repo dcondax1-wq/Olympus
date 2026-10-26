@@ -769,7 +769,8 @@ class Account:
             pnl = round(tr["pnl"] * qty / tr["qty"], 2) if tr["qty"] else tr["pnl"]
             if tr.get("adds") and tr.get("pts") is not None:     # extra accounts never scale in: the first entry's P&L only
                 from . import lit as _lit
-                pnl = round(qty * (float(tr["pts"]) * _lit.PV - float(tr.get("comm_rt", _lit.COMM))), 2)
+                from .sizing import LIVE_COMM     # the live commission (tr from engine/lit_live carries it as comm_rt)
+                pnl = round(qty * (float(tr["pts"]) * _lit.PV - float(tr.get("comm_rt", LIVE_COMM))), 2)
             if self.spec["adapter"] == "paper" or tr["exit_reason"] == "TIME" or getattr(self.adapter, "route_all_exits", False):
                 self.route({"sym": sym, "side": "exit", "qty": qty, "reason": tr["exit_reason"], "pnl": pnl,
                             "entry_t": tr["entry_t"], "exit_t": tr["exit_t"]})

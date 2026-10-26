@@ -9,7 +9,8 @@ route does what the backtest does once they are switched on.
 Checks per trade (backtest = tools/lit_final.py run on the 2026 sessions = engine/lit.py run_x, the same code as run lit_live):
   t_check  the exit is routed (reason CUT_T15) <= LIMIT_S after the close of the 15-minute check bar, i.e. at the open of
            the backtest's exit bar (the backtest exits at that open - 1 tick), with the backtest's exit time, and the routed
-           P&L equals the backtest's at the routed size (the price comes from the forming bar's open, as the entry does).
+           P&L equals the backtest's at the routed size (the price comes from the forming bar's open, as the entry does),
+           booked at the live $1.90 commission (tests/test_lit_live.booked).
   be_off   the breakeven CHANGE is routed <= LIMIT_S after the close of the 1m bar that reached +1R, at exactly
            entry + 1.25 pts (long) / entry - 1.25 (short) on the tick grid = the backtest's breakeven stop; the BE exit
            P&L equals the backtest's.
@@ -34,6 +35,7 @@ import pandas as pd  # noqa: E402
 
 from engine import live  # noqa: E402
 from tests.test_lit_timing import Clock, hm  # noqa: E402
+from tests.test_lit_live import booked  # noqa: E402  (research $ re-priced at engine/sizing.LIVE_COMM)
 
 LIMIT_S = 10.0
 T15 = {"at": 15, "x": 0.3, "mfe": 0.5}
@@ -149,7 +151,7 @@ def t_check_part(only=None):
             bot = H.run([(ent - 360, ent + 40), (chk_close - 90, chk_close + 40)])
             e_row, _, _, x_row = rows_for(bot, ent)
             q = int(e_row["qty"]) if e_row else None
-            want = round(t["pnl"] * q / t["qty"], 2) if q else None
+            want = round(booked(t) * q / t["qty"], 2) if q else None     # the backtest's $ at the live $1.90 commission
             r = {"day": t["day"], "dir": t["dir"], "entry": hm(ent), "check_close": hm(chk_close), "bt_exit_t": hm(xt),
                  "bt_exit_px": t.get("exit_px"), "bt_pnl": t["pnl"], "qty_bt": t["qty"], "qty_routed": q,
                  "routed_t": hm(x_row["t"]) if x_row else None, "delay_s": (x_row["t"] - chk_close) if x_row else None,
@@ -185,7 +187,7 @@ def be_off_part(only=None, n=6):
             want_stop = live.tick_px(float(t["entry_px"]) + d * BE_OFF, d)
             m = m_rows[0] if m_rows else None
             q = int(e_row["qty"]) if e_row else None
-            want = round(t["pnl"] * q / t["qty"], 2) if q else None
+            want = round(booked(t) * q / t["qty"], 2) if q else None     # the backtest's $ at the live $1.90 commission
             r = {"day": t["day"], "dir": d, "entry_px": t["entry_px"], "be_bar_close": hm(bc), "want_stop": want_stop,
                  "routed_stop": m and m["stop"], "be_routed": hm(m["t"]) if m else None, "be_delay_s": (m["t"] - bc) if m else None,
                  "modifies": len(m_rows), "bt_pnl": t["pnl"], "routed_pnl": x_row and x_row.get("pnl"), "want_pnl": want,

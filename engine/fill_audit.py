@@ -49,7 +49,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
 STORE = os.path.join(ROOT, "logs", "exec_audit")          # logs/ is gitignored: machine-local
 ET = ZoneInfo("America/New_York")
-TICK, PV, COMM = 0.25, 2.0, 1.90
+from .sizing import LIVE_COMM as COMM   # noqa: E402  $1.90 a micro round trip (the live booking's commission)
+TICK, PV = 0.25, 2.0
 TICK_USD = TICK * PV                                         # $0.50 a tick a micro
 SLIP_ALERT_TICKS = 4.0
 ALERT_MAX_AGE_S = 2 * 86400                                  # never push about something older than this

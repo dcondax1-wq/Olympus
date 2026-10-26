@@ -295,7 +295,7 @@ def size_today(stop, tgt, clock=None, ev=None, lit_sizing=None, params=None, wk_
         room = (ev or {}).get("cushion")
         r = sizing.lit_qty(q0, {"risk_pts": stop, "size_why": []}, ls, room=room, learning=None)
         q, why = int(r["qty"]), list(r.get("reasons") or [])
-    risk = q * ((stop + lit.SLIP) * lit.PV + lit.COMM)
+    risk = q * ((stop + lit.SLIP) * lit.PV + sizing.LIVE_COMM)     # a full stop-out at the live $1.90 commission
     return {"mode": mode, "stop": stop, "tgt": round(tgt, 1), "qty": int(q), "risk_usd": round(risk), "why": why}
 
 
