@@ -44,6 +44,9 @@ class World:
         G.checklist_lines = lambda: (["  [OK] all"], 0)
         G._open = lambda: self.calls.append("open")
         G.shortcut = lambda: None
+        G.mixup = lambda lit, atlas, balances=None: None
+        G.verify_routes = lambda lit, atlas, state=None, b=None: (self.calls.append("verify"), list(self.route_probs))[1]
+        self.route_probs = []
         G.startup_shortcuts = lambda: self.calls.append("startup")
         G.ensure_ninjatrader = lambda: (self.calls.append("nt"), self.nt)[1]
         self.nt = True
@@ -188,6 +191,33 @@ def main():
             check("arm_b: twice = no change", g3.arm_b("MFFU25K-2", path=p, selftest=ok).get("already") is True)
             check("arm_b: another name refused", g3.arm_b("OTHER", path=p, selftest=ok).get("ok") is False)
             check("arm_b: spec reads armed", AB.normalize(ab, SE.load_cfg(p)).get("armed") is True)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            w = World(tmp)
+            w.route_probs = ["ATLAS is on 'X'"]
+            rc = G.run(inp=answers("A", "B", "I ACCEPT LIVE RISK"), pull=False)
+            check("routes wrong after the start: bot stopped, no auto-resume",
+                  rc == 1 and ("start", ("--stop",)) in w.calls
+                  and not any(isinstance(c, tuple) and c[1][:1] == ("--enable-auto-resume",) for c in w.calls), w.calls)
+
+        g3 = importlib.reload(G)
+        M = g3.mixup
+        check("mixup: fine names", M("MFFUEV50K123", "MFFUEV25K456", balances={}) is None)
+        check("mixup: plain ids fine", M("MFFUEVA1", "MFFUEVB2", balances={}) is None)
+        check("mixup: swapped by name", M("MFFU25K-1", "MFFU50K-2", balances={}) is not None)
+        check("mixup: Sim refused", M("Sim101", "MFFU25K", balances={}) is not None)
+        check("mixup: 50K slot with $25k balance", M("A", "B", balances={"A": 25000.0, "B": 49710.8}) is not None)
+        check("mixup: 25K slot with $49k balance", M("A", "B", balances={"B": 49710.8}) is not None)
+        check("mixup: right balances", M("A", "B", balances={"A": 49710.8, "B": 25000.0}) is None)
+        V = g3.verify_routes
+        okst = {"running": True, "cfg": {"nt_account": "A", "adapter": "ninjatrader"}}
+        okb = {"account": "B", "plan": "builder25k", "armed": True}
+        check("verify: right", V("A", "B", state=okst, b=okb) == [])
+        check("verify: Zlarior on the 25K", V("B", "A", state={"running": True, "cfg": {"nt_account": "B", "adapter": "ninjatrader"}}, b=okb) != [])
+        check("verify: ATLAS not armed", V("A", "B", state=okst, b={**okb, "armed": False}) != [])
+        check("verify: ATLAS on a 50K plan", V("A", "B", state=okst, b={**okb, "plan": "builder50k"}) != [])
+        check("verify: 25K also an extra Zlarior account", V("A", "B", state={"running": True, "cfg": {"nt_account": "A", "adapter": "ninjatrader", "accounts": [{"id": "x", "nt_account": "B"}]}}, b=okb) != [])
+        check("verify: not running", V("A", "B", state={**okst, "running": False}, b=okb) != [])
 
         seq = iter([None, False, True])
         check("ensure_ninjatrader: waits for CONNECTED", g3.ensure_ninjatrader(wait_s=60, connected=lambda: next(seq), sleep=lambda s: None))
