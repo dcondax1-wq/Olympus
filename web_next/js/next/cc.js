@@ -8,6 +8,7 @@ import { $, $$, api, esc, store, toast, downloadFile } from '../util.js';
 import { icon } from './icons.js';
 import { md } from './lab.js';
 import { moreMenu, item } from './menu.js';
+import { fillBoardHome } from './board.js';
 
 // ------------------------------------------------------------------ helpers (the operator pages' card / stat / chip look)
 const ok = (v) => v != null && v !== '' && !Number.isNaN(+v);
@@ -186,6 +187,7 @@ function renderHome() {
         <span class="cc-now-s">${[d.running && w.say ? `Bot: ${esc(w.say)}` : '', d.day?.phase ? phaseText(d.day.phase) : ''].filter(Boolean).join(' · ')}</span></div>
       ${ns.fix ? `<button type="button" class="nx-chipbtn primary" data-copy="${esc(ns.fix)}">${icon('copy')}<span>Copy the fix</span></button>` : ns.go ? `<button type="button" class="nx-chipbtn primary" data-goto="${ns.go}">${icon('power')}<span>Open Bot Control</span></button>` : ''}</div>
     <div class="cc-two">${acctCard(d.lit, 'lit')}${acctCard(d.atlas, 'atlas')}</div>
+    <div id="ccBoard" class="cc-board" aria-label="Right now (live board)"></div>
     <div class="cc-health"><span class="nx-eyebrow">Health</span>${lightsHtml(d.lights)}</div>
     <details class="cc-today"${store.get('nx.cc.todayOpen', false) ? ' open' : ''}><summary><span>Today: setups, news and the bot log</span>
         <em>${setups.length} setup${setups.length === 1 ? '' : 's'} · ${news.length} news · ${(d.log || []).length} log rows</em></summary>
@@ -215,6 +217,7 @@ function renderHome() {
     };
   });
   if (H.hl != null && d.lights?.[H.hl]) { hd.hidden = false; hd.innerHTML = lightDetail(d.lights[H.hl]); $(`#page-cc .cc-hl[data-hl="${H.hl}"]`)?.classList.add('on'); }
+  fillBoardHome().catch(() => null);             // the "Right now" row (board.js, /api/next/board)
 }
 
 async function loadHome(force) {
@@ -537,6 +540,14 @@ export const FEATURES = [
     ['Early close / holiday / DST banner', 'today and the clock change on Nov 1'], ['News today', 'USD events, Tier-1 flagged'], ['Latest bot log', 'risk, order and system rows'],
     ['Copy status', 'a plain-text status for a message'], ['Auto-refresh with pause', 'every 15 s, last-updated stamp'], ['Version stamp', 'which commit the PC runs'],
     ['Launch anchor note', 'the MFFU balance 49,710.80 / floor 48,168.20 / $3,289.20 to go']]],
+  ['Live board (2026-10-26)', 'board', [
+    ['Right now per account', 'balance, room to the floor, $ to the target, today, session X of 10'], ['What it waits for', 'the Bot Brain step for Zlarior, each ATLAS member\'s state'],
+    ['Entry window countdown', 'opens in / closes in, per account and per ATLAS member'], ['Size now', 'the micros Zlarior would trade at a typical stop, the risk and what the target pays'],
+    ['What blocks entries', 'clock drift, feed, NinjaTrader, kill, eval state: in red with the fix to copy'],
+    ['Today\'s map', 'LIT levels, VIX objective up / down, the 18:00 open and the price: points and $ per micro'],
+    ['Bot health strip', 'poll time (amber above 5 s), feed 1m / 5m age, NinjaTrader, clock, last error, heartbeat, phone feed'],
+    ['Week and eval progress', 'trades vs 2-4 (ATLAS 3-4), the session bar, 2-week pass / fail odds, $ a month expected vs actual'],
+    ['Trade log with pictures', 'both accounts, live and paper, the picture of each trade, CSV export'], ['Home "Right now" row', 'the compact cut on this Command center']]],
   ['Goals', 'goals', [['Eval progress per account', 'from engine/goals.py, or built from the bot'], ['Weekly trade target', '2-4 a week ring'],
     ['ATLAS 20-trade scorecard', 'dots and stats'], ['Payout and scale progress', 'the scaling plan step and its progress'], ['Graceful fallback', 'works before /api/next/goals is merged']]],
   ['Eval timeline', 'evaltl', [['Session-by-session P&L', 'every eval day, with the 10 / 15 session marks'], ['Upcoming sessions', 'early closes, holidays and DST ahead']]],

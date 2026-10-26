@@ -1144,6 +1144,14 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
     except Exception as e:
         print("  charts unavailable:", e.__class__.__name__, e)
         data["charts"] = None
+    # live board (engine/live_board.py, read-only): right now per account, today's map, health strip, week / eval odds, trade
+    # log of both accounts, from the PC heartbeat the cloud read (live.pc) + accounts / goals / second / extras; the phone lays
+    # the PC's fresher live.json "board" over it (tools/web_public/board.js)
+    try:
+        from engine import live_board as _lb
+        data["board"] = _lb.site_block(data, st)
+    except Exception as e:
+        data["board"] = {"error": f"{e.__class__.__name__}: {e}"}
     with open(os.path.join(out, "data.json"), "w", encoding="utf-8") as fh:
         json.dump(data, fh, separators=(",", ":"), default=str)
     # home.json: the small file the Home screen draws from first (~100 KB instead of the 4 MB data.json), same build
@@ -1169,6 +1177,8 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
                        "strategies": [{**{k: v for k, v in s.items() if k not in ("backtest", "rules", "trades", "summary")},
                                        "trades": (s.get("trades") or [])[-12:]} for s in (data.get("second") or {}).get("strategies") or []]},
             "charts": charts_home,                  # the newest trade pictures per strategy (engine/trade_chart.compact_view)
+            # the live board's Home cut (engine/live_board.py): everything but the long trade list
+            "board": {**data["board"], "trades": (data["board"].get("trades") or [])[:12]} if isinstance(data.get("board"), dict) else None,
             "results": {"periods": {k: v for k, v in ((results or {}).get("periods") or {}).items()
                                     if k in ("2026 YTD", "2026 H1 (picked on)", "2026 H2 (check)", "2021-25 (reference)")}}}
     with open(os.path.join(out, "home.json"), "w", encoding="utf-8") as fh:
