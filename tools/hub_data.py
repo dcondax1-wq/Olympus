@@ -125,9 +125,40 @@ def firms_raw() -> dict:
     return _json(os.path.join(PROPS, "firms.json"), {}) or {}
 
 
+_BIZ_CACHE: dict = {}
+
+
+def _stat_key(paths) -> tuple:
+    out = []
+    for p in paths:
+        try:
+            st = os.stat(p)
+            out.append((p, st.st_mtime_ns, st.st_size))
+        except OSError:
+            out.append((p, None, None))
+    return tuple(out)
+
+
 def business_raw() -> dict:
     """research/business/prop_business.xlsx (sheets expenses / payouts, or the tracker's Fees / Payouts / Settings) when
-    present, else research/props/business.json."""
+    present, else research/props/business.json. Cached until one of its files changes (the PC dashboard's board / goals
+    read it every 15 s: the workbook parse was ~70 ms of each, more on the owner's Surface); callers get their own copy."""
+    import copy
+    try:
+        from tools import business as _biz
+        logs = (_biz.EXPENSES_CSV, _biz.PAYOUTS_CSV)
+    except Exception:                                        # noqa: BLE001
+        logs = ()
+    key = _stat_key((os.path.join(PROPS, "business.json"), os.path.join(ROOT, "research", "business", "prop_business.xlsx")) + logs)
+    hit = _BIZ_CACHE.get("b")
+    if hit is not None and hit[0] == key:
+        return copy.deepcopy(hit[1])
+    b = _business_raw()
+    _BIZ_CACHE["b"] = (key, copy.deepcopy(b))
+    return b
+
+
+def _business_raw() -> dict:
     b = dict(_json(os.path.join(PROPS, "business.json"), {}) or {})
     xl = os.path.join(ROOT, "research", "business", "prop_business.xlsx")
     if os.path.exists(xl):
