@@ -607,7 +607,8 @@
    ],
    "checked": "2026-10-18",
    "unit": "USD",
-   "note": "list $105 (owner screenshot 2026-10-26); owner usually pays $63 with a code; the 25K bought 2026-10-26 (ATLAS) cost $43 (discount)", "owner_paid_2026_10_26": 43.0
+   "note": "list $105 (owner screenshot 2026-10-26); owner usually pays $63 with a code; the 25K bought 2026-10-26 (ATLAS) cost $43 (discount)",
+   "owner_paid_2026_10_26": 43.0
   },
   "profit_target": {
    "value": 1500.0,
@@ -638,14 +639,15 @@
     "amount": 600.0,
     "type": "soft"
    },
-   "status": "conflict",
+   "status": "confirmed",
    "source": [
     "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
-    "https://myfundedfutures.com/plans/builder"
+    "https://myfundedfutures.com/plans/builder",
+    "owner's MFFU dashboard screenshots 2026-10-26 (Builder 25K bought for ATLAS, $43)"
    ],
    "checked": "2026-10-18",
    "unit": "USD",
-   "note": "current guide and plan page: $600 soft pause; the legacy 25K and a blog post: no DLL"
+   "note": "owner screenshots 2026-10-26: $600 daily loss limit on the eval and on the funded account (earlier: the current guide and plan page said $600 soft pause; the legacy 25K and a blog post: no DLL)"
   },
   "consistency_eval": {
    "value": null,
@@ -674,15 +676,67 @@
     "split": 0.8,
     "consistency": 0.5,
     "max_sim_payouts": 5,
-    "sim_funded_active": 2
+    "sim_funded_active": 2,
+    "max_loss": {
+     "amount": 1000.0,
+     "type": "EOD trailing",
+     "lock": "start + $100"
+    },
+    "daily_loss_limit": 600.0,
+    "max_contracts": {
+     "minis": 2,
+     "micros": 20
+    },
+    "scaling": null,
+    "days_to_payout": 2,
+    "payout_every_days": 2
    },
    "status": "confirmed",
    "source": [
     "https://help.myfundedfutures.com/en/articles/17036130-builder-plan-25k-a-comprehensive-look",
-    "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts"
+    "https://help.myfundedfutures.com/en/articles/13745661-payout-policy-overview-best-and-fastest-prop-firm-payouts",
+    "owner's MFFU dashboard screenshots 2026-10-26 (Builder 25K bought for ATLAS, $43)"
    ],
-   "checked": "2026-10-18",
-   "note": "up to 2 active sim-funded 25K accounts per user"
+   "checked": "2026-10-26",
+   "note": "up to 2 active sim-funded 25K accounts per user; owner screenshots 2026-10-26: max drawdown $1K EOD, DLL $600, max 2 contracts (20 micros), consistency 50%, no scaling rule, 2 days to payout, min payout $250, max request $1,000, 80% split, buffer $1.1K, payouts as often as every 2 days (engine/funded_life.PLANS builder25k, engine/account_b.py funded)"
+  },
+  "inactivity": {
+   "value": {
+    "days": 7,
+    "type": "calendar days"
+   },
+   "status": "confirmed",
+   "source": [
+    "owner's MFFU dashboard screenshots 2026-10-26 (Builder 25K bought for ATLAS, $43)"
+   ],
+   "checked": "2026-10-26",
+   "note": "eval: inactivity 7 calendar days"
+  },
+  "owner_screenshot_2026_10_26": {
+   "eval": {
+    "target": 1500.0,
+    "max_drawdown": "1000 EOD",
+    "dll": 600.0,
+    "max_contracts": "2 (20 micros, 10:1)",
+    "consistency": null,
+    "inactivity_days": 7
+   },
+   "funded": {
+    "max_drawdown": "1000 EOD",
+    "dll": 600.0,
+    "max_contracts": "2 (20 micros)",
+    "consistency": 0.5,
+    "scaling": null,
+    "days_to_payout": 2,
+    "payout_min": 250.0,
+    "payout_max": 1000.0,
+    "split": 0.8,
+    "buffer": 1100.0,
+    "payout_every_days": 2
+   },
+   "price_paid": 43.0,
+   "price_usual": 63.0,
+   "matches": "every value matches limits.builder_25k, engine/funded_life.PLANS['builder25k'] and multi_account PRESETS mffu_builder_25k"
   }
  },
  "limits": {
@@ -720,7 +774,9 @@
    "split": 0.8,
    "cons": 0.5,
    "inactivity_days": 7,
-   "comm_rt_micro": 1.9
+   "comm_rt_micro": 1.9,
+   "cycle_days": 2,
+   "max_payouts": 5
   }
  }
 }

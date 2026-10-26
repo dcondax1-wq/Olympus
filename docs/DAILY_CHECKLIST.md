@@ -117,6 +117,11 @@ LIT stays alone on its 50K. Try it on a Sim account first.
 2. The bot picks it up on its next poll: own orders, own eval card ("Account B Sim102"), max 2 trades a day, never
    opposite to LIT (B is closed first when LIT enters the other way).
 3. Off: `python -m engine.second --account-b off`
+4. **ATLAS's eval passed** (push "EVAL PASSED"): the bot stops it. Request the funded account at MFFU, note its NEW
+   Name, stop the bot, then Start page > Accounts > ATLAS's 25K > **Passed → funded** (or
+   `python -X utf8 -m engine.account_b --to-funded --account "<funded Name>" --start <first day>`). It is not armed:
+   type the phrase at the next start. Payouts: request at MFFU when the push says PAYOUT READY, then
+   `python -X utf8 -m engine.account_b --payout <day>=<$>` (`research/writeups/atlas-funded.md`).
 
 ## Rules that never change
 - The bot never arms a real account by itself. You start the eval bot yourself (dashboard, your phrase).

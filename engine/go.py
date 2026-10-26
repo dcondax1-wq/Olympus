@@ -1182,9 +1182,13 @@ def accounts(cards=None) -> dict:
     if b_on or atlas:
         n = b_on or atlas
         plan = str(b.get("plan") or "builder25k") if b_on else "builder25k"
-        rows.append({"name": n, "bot": "ATLAS", "role": "b", "plan": plan, "plan_label": PLANS.get(plan, ("", plan))[1],
-                     "state": "eval", "armed": b.get("armed") is True if b_on else False, "start": b.get("eval_start"),
-                     "note": None if b_on == atlas else "not set up yet (Run setup)" if not b_on else f"the saved 25K is {atlas or 'none'}",
+        funded = bool(b_on) and str(b.get("stage") or "").lower() == "funded"       # engine/account_b.to_funded (owner-run)
+        rows.append({"name": n, "bot": "ATLAS", "role": "b", "plan": plan,
+                     "plan_label": PLANS.get(plan, ("", plan))[1] + (" funded" if funded else ""),
+                     "state": "funded" if funded else "eval", "armed": b.get("armed") is True if b_on else False,
+                     "start": b.get("funded_start") if funded else b.get("eval_start"),
+                     "note": (f"passed eval {b.get('eval_account')}" if funded and b.get("eval_account") else None) if b_on == atlas
+                     else "not set up yet (Run setup)" if not b_on else f"the saved 25K is {atlas or 'none'}",
                      **_money(n, PLANS.get(plan, ("mffu_builder_25k",))[0], False, bals)})
     for e in _extras():
         n = ma.normalize(e)
@@ -1323,13 +1327,16 @@ def set_anchor(name, balance, floor, as_of) -> dict:
     return {"ok": True, "say": f"{name or lit}: balance ${balance:,.2f}, floor ${floor:,.2f} as of {as_of}.", "lines": lines}
 
 
-def to_funded(name, funded_name, start, plan=None) -> dict:
-    """After a pass: the funded account (its new NinjaTrader Name) joins as a funded account (engine/eval_life.to_funded,
-    data/accounts.json mode funded, disarmed)."""
+def to_funded(name, funded_name, start, plan=None, balance=None) -> dict:
+    """After a pass: the funded account (its new NinjaTrader Name) joins as a funded account. Zlarior's eval: engine/
+    eval_life.to_funded (data/accounts.json mode funded, disarmed). ATLAS's 25K (account B): engine/account_b.to_funded
+    (the local block's funded stage on the new Name, disarmed) and the saved ATLAS Name follows it."""
     from . import eval_life
     row = next((r for r in accounts()["rows"] if r["name"] == str(name or "").strip()), None)
     if row is None or row.get("state") != "eval":
         return {"ok": False, "error": f"No eval account {name!r} here: pick the account that passed."}
+    if row.get("role") == "b":
+        return _b_to_funded(row, funded_name, start, balance)
     plan = str(plan or row.get("plan") or "builder50k").lower()
     if plan not in PLANS:
         return {"ok": False, "error": "Pick a plan: Builder 50K or Builder 25K."}
@@ -1352,6 +1359,36 @@ def to_funded(name, funded_name, start, plan=None) -> dict:
     _allow(funded_name)
     return {"ok": True, "say": f"{funded_name} is funded ({PLANS[plan][1]}) from {start}. Not armed: it joins at the next start.",
             "lines": [ln for ln in lines if "python" not in ln]}
+
+
+def _b_to_funded(row, funded_name, start, balance=None) -> dict:
+    """ATLAS's passed 25K -> its funded account (engine/account_b.to_funded): the funded stage in data/account_b.json on
+    the new Name, disarmed, allowlisted; data/start_bot.json "atlas" = the new Name (setup stays done: no launch prep
+    again, it would not reset the funded stage anyway)."""
+    from . import account_b
+    funded_name = str(funded_name or "").strip()
+    try:
+        start = dt.date.fromisoformat(str(start)).isoformat()
+    except (TypeError, ValueError):
+        return {"ok": False, "error": "First funded day as yyyy-mm-dd."}
+    bad = slot_problem(funded_name, "25K" if row.get("plan") == "builder25k" else "50K")
+    if bad:
+        return {"ok": False, "error": f"Not switched: {bad}."}
+    cfg = _read(CFG)
+    who = role_of(funded_name, cfg)
+    if who:
+        return {"ok": False, "error": f"Not switched: {funded_name} is already {who}. The funded account has its own Name."}
+    if bot_running():
+        return {"ok": False, "error": "Stop the bot first: it reads the accounts when it starts."}
+    lit, _ = _names(cfg)
+    r = account_b.to_funded(funded_name, start, balance, path=SECOND_PATH, allow_path=ALLOW_PATH, lit_account=lit)
+    if not r.get("ok"):
+        return {"ok": False, "error": f"Not switched: {r.get('error')}"}
+    cfg["atlas"] = funded_name
+    _save(cfg)
+    return {"ok": True, "say": f"ATLAS → funded {funded_name} from {start} (passed eval {row['name']}). Funded sizing: {r['rule']}. "
+                               "Not armed: arm it at the next start (you type the phrase).",
+            "lines": [r["say"]] + ([f"The eval's history is kept in {os.path.basename(r['archived'])}"] if r.get("archived") else [])}
 
 
 # ---------------------------------------------------------------------------- step jobs (Sim test, arm + start)

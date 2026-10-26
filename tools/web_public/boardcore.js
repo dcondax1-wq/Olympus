@@ -9,6 +9,8 @@
 //   BoardUI.wire(root, B, o)  health details, copy buttons, trade-log filters, CSV export, the live countdowns
 //   BoardUI.csv(rows)         the trade log as CSV text
 // opts: {charts: trade-picture index (engine/trade_chart index_view), go: (id) => 'data-goto="id"', where: 'pc' | 'phone'}
+// 2026-10-26: ATLAS's funded stage (a.stage 'funded', a.funded = the payout tracker): $ to the payout line, payouts n of 5
+// and a Payout row (buffer, best day vs 50%, traded days, eligibility) instead of the eval's target and session.
 (function () {
   'use strict';
   if (typeof window === 'undefined') return;
@@ -95,13 +97,21 @@
     return `<div class="bd-mem">${M.map((m) => `<div class="bd-mrow"><b>${esc(m.short)}</b><span class="bd-mt">${esc(m.text || (m.stage ? m.stage : 'no state yet'))}</span>
       <span class="bd-mw">${m.window && m.window.open ? win(m.window) : m.window && ok(m.window.open_t) ? `${esc(wdhm(m.window.open_t))} ET · ${win(m.window)}` : esc((m.window && m.window.text) || '')}</span></div>`).join('')}</div>`;
   }
+  // ATLAS's funded account (engine/account_b.py stage "funded"): the MFFU payout tracker (engine/funded_life.track)
+  function fundedHtml(F) {
+    if (!F || !Object.keys(F).length) return '';
+    const elig = F.eligible ? `eligible now: up to ${usd(F.max_request)} (${usd(F.to_you)} to you)` : F.eligible_from ? `first request from ${esc(F.eligible_from)}` : 'no funded trade yet';
+    return `<div class="bd-row"><span class="bd-k">Payout</span><div><b>${esc(F.text || '')}</b>
+      <em>buffer ${F.buffer_reached ? 'reached' : `${usd(F.buffer_balance)} not reached`} · best day ${pct(F.best_day_pct)} of the cycle (max ${pct(F.cons_limit_pct)}) · ${esc(F.cycle_days ?? 0)}/${esc(F.cycle_days_need ?? 2)} traded days · ${elig}</em></div></div>`;
+  }
   function acctCard(B, a, opts) {
     if (!a || a.error) return `<section class="bd-card bd-acct"><p class="bd-note">${esc((a && a.error) || 'No data for this account yet.')}</p></section>`;
     const tgt = ok(a.target_balance) ? a.target_balance : null;
     const start = a.id === 'lit' ? 50000 : 25000;
     const prog = ok(a.profit) && tgt ? Math.max(0, Math.min(1, a.profit / (tgt - start))) : 0;
     const st = String(a.status || '').toLowerCase();
-    const stK = st === 'passed' ? 'good' : /fail|stuck|not set/.test(st) ? 'bad' : '';
+    const funded = a.stage === 'funded', F = a.funded || {};
+    const stK = st === 'passed' || (funded && /funded|graduated/.test(st)) ? 'good' : /fail|stuck|lost|not set/.test(st) ? 'bad' : '';
     const roomK = !ok(a.room_frac) ? '' : a.room_frac < 0.25 ? 'bad' : a.room_frac < 0.5 ? 'warn' : 'good';
     const blocked = (B.blocks || []).length + (a.blocks || []).length > 0;
     const wait = a.id === 'lit'
@@ -111,14 +121,19 @@
     const w = a.window || {};
     return `<section class="bd-card bd-acct ${esc(a.id)}${blocked ? ' blocked' : ''}" aria-label="${esc(a.name)} right now">
       <div class="bd-h"><div class="bd-eye">${esc(a.name)} · ${esc((a.plan || '').replace('MFFU ', ''))}<em>${esc([a.badge, a.broker].filter(Boolean).join(' · ') || a.source || '')}</em></div>${chip(a.status || 'open', stK)}</div>
-      <div class="bd-big"><b>${ok(a.to_target) ? (a.to_target <= 0 ? 'Passed' : usd(a.to_target)) : '—'}</b><em>${ok(a.to_target) && a.to_target <= 0 ? 'target reached' : `to the ${usd(tgt)} target`}</em></div>
+      ${funded
+    ? `<div class="bd-big"><b>${ok(a.to_target) ? (a.to_target <= 0 ? 'Payout line' : usd(a.to_target)) : '—'}</b><em>${ok(a.to_target) && a.to_target <= 0 ? 'reached' : `to the ${usd(tgt)} payout line`}</em></div>`
+    : `<div class="bd-big"><b>${ok(a.to_target) ? (a.to_target <= 0 ? 'Passed' : usd(a.to_target)) : '—'}</b><em>${ok(a.to_target) && a.to_target <= 0 ? 'target reached' : `to the ${usd(tgt)} target`}</em></div>`}
       <div class="bd-bar"><i style="width:${(prog * 100).toFixed(1)}%"></i></div>
       <div class="bd-kpis">
         <div><span>Balance</span><b>${usd(a.balance, 2)}</b></div>
         <div><span>Room to floor</span><b class="${roomK === 'bad' ? 'dn' : ''}">${usd(a.room)}</b><em>floor ${usd(a.floor)}</em></div>
         <div><span>Today</span><b class="${cl(a.today_pnl)}">${susd(a.today_pnl)}</b><em>${esc(a.trades_today ?? 0)} of ${esc(a.max_day)} trade${a.max_day === 1 ? '' : 's'}</em></div>
-        <div><span>Session</span><b>${ok(a.session) ? `${esc(a.session)} of ${esc(a.sessions || 10)}` : '—'}</b><em>goal: pass in 10</em></div>
+        ${funded
+    ? `<div><span>Payouts</span><b>${esc(F.payouts_n ?? 0)} of ${esc(F.payouts_max ?? 5)}</b><em>${usd(F.paid_to_you)} to you</em></div>`
+    : `<div><span>Session</span><b>${ok(a.session) ? `${esc(a.session)} of ${esc(a.sessions || 10)}` : '—'}</b><em>goal: pass in 10</em></div>`}
       </div>
+      ${funded ? fundedHtml(F) : ''}
       ${posHtml(a.position)}
       ${wait}
       <div class="bd-row"><span class="bd-k">Entry window</span><div>${win(w)} <em>${esc(w.who ? w.who + ' · ' : '')}${esc(ok(w.open_t) && !w.open ? wdhm(w.open_t) + ' ET' : w.hours || '')}</em></div></div>
