@@ -432,7 +432,12 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
                 continue
             rc = subprocess.run([py, "-X", "utf8", "-m", "engine.ninjatrader", flag], cwd=ROOT).returncode
             if rc:
-                print(" [FIX] The Sim test failed. Nothing is armed. Send Claude a photo of this window.")
+                print("     Trying once more in 30 seconds (NinjaTrader can be slow right after a chart loads)")
+                time.sleep(30)
+                rc = subprocess.run([py, "-X", "utf8", "-m", "engine.ninjatrader", flag], cwd=ROOT).returncode
+            if rc:
+                print(" [FIX] The Sim test failed. Nothing is armed. Close NinjaTrader, open it again, log in, then run START BOT")
+                print("       again. Still failing: send Claude a photo of this window.")
                 return 1
     else:
         print("\n 2/4 Sim101 test already passed")
