@@ -98,6 +98,7 @@ export const MODULES = [
 
 // PC upgrade 2026-10-25 (js/next/cc.js, engine/pc_cc_api.py, read-only): top-level pages without a sub bar
 export const CC = [
+  { id: 'board', label: 'Live board', icon: 'radar', desc: 'Right now on both accounts (waiting for, next window, size now, what blocks entries), today\'s map, bot health, week and eval odds, every trade with its picture + CSV' },
   { id: 'start', label: 'Start & Accounts', icon: 'power', desc: 'START BOT as one checklist (NinjaTrader, accounts, setup, Sim test, arm, running) and every account: add, balance, funded, remove' },
   { id: 'goals', label: 'Goals', icon: 'target', desc: 'Eval progress per account, 2-4 trades a week, the ATLAS 20-trade scorecard, payout and scale' },
   { id: 'evaltl', label: 'Eval timeline', icon: 'calendar', desc: 'Session-by-session P&L of the eval with the 10 / 15 session marks and the days ahead' },
@@ -116,7 +117,7 @@ export const CC = [
 export const GROUPS = [
   { label: 'Main', ids: ['cc', 'start', 'zlarior', 'atlas', 'data', 'modules'] },
   { label: 'Advanced', advanced: true, sections: [
-    { label: 'Accounts', ids: ['goals', 'sesscal'] },
+    { label: 'Accounts', ids: ['board', 'goals', 'sesscal'] },
     { label: 'Bot', ids: ['morning', 'ntpanel', 'botlog', 'timeline'] },
     { label: 'Results', ids: ['scale', 'lab', 'intel'] },
     { label: 'Help', ids: ['runbook', 'audit', 'features', 'archive'] },

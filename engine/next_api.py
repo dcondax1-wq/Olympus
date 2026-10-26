@@ -524,3 +524,11 @@ try:
     router.include_router(_cc_router)
 except Exception as _cc_err:                      # never stops the server or the bot
     print(f"[cc] /api/next/cc disabled: {_cc_err.__class__.__name__}: {_cc_err}", flush=True)
+
+# Live board (engine/live_board.py: right now per account, today's map, health strip, week / eval progress, trade log of
+# both accounts): one read-only GET (engine/board_api.py)
+try:
+    from .board_api import router as _board_router  # noqa: E402
+    router.include_router(_board_router)
+except Exception as _board_err:                   # never stops the server or the bot
+    print(f"[board] /api/next/board disabled: {_board_err.__class__.__name__}: {_board_err}", flush=True)

@@ -159,6 +159,25 @@ def main() -> int:
         check("clock: 0.4 s OK, 5 s WARN, 90 s FIX with 'Sync now'", oc.check_clock(net)["level"] == oc.OK
               and oc.check_clock(oc.internet(probe=probe(5)))["level"] == oc.WARN
               and oc.check_clock(oc.internet(probe=probe(-90)))["level"] == oc.BAD and "Sync now" in oc.check_clock(oc.internet(probe=probe(-90)))["fix"])
+        # the entry guard counts only the drift the probe proves (owner's busy Surface 2026-10-25 read "5.0 s ahead")
+        from engine import guards as _G
+        _real = oc.internet
+        try:
+            slow = lambda off, rtt: (lambda **k: _real(probe=lambda u: {"ok": True, "date": 1000.0 + off, "t0": 1000.0 - rtt / 2, "t1": 1000.0 + rtt / 2}))
+            oc.internet = slow(-5.0, 10.0)
+            g1 = _G.clock_probe()
+            oc.internet = slow(-8.0, 0.2)
+            g2 = _G.clock_probe()
+            oc.internet = slow(7.0, 0.2)
+            g3 = _G.clock_probe()
+            oc.internet = slow(0.0, 0.2)
+            g4 = _G.clock_probe()
+        finally:
+            oc.internet = _real
+        check("clock guard: '5 s ahead' on a 10 s round trip proves nothing (0)", g1 == 0.0, g1)
+        check("clock guard: 8 s ahead on a fast round trip still proves > 5 s", g2 is not None and g2 < -5.0, g2)
+        check("clock guard: 7 s behind on a fast round trip still blocks", g3 is not None and g3 > 5.0, g3)
+        check("clock guard: right clock = 0", g4 == 0.0, g4)
         down = oc.internet(probe=lambda u: {"ok": False, "t0": 0, "t1": 0})
         check("internet down -> FIX; clock not checked", not down["up"] and oc.check_internet(down)["level"] == oc.BAD
               and oc.check_clock(down)["level"] == oc.SKIP)

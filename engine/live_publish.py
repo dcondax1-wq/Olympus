@@ -165,6 +165,17 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
     out["pc"] = pc
     if hb_last:
         out["heartbeat"] = {"t": hb_last.get("at"), "ok": bool(hb_last.get("ok"))}
+    try:                                # the live board (engine/live_board.py): right now, map, health, progress, last trades
+        from . import live_board
+        bd = live_board.from_heartbeat({**hb, "live_pub": hb.get("live_pub")}, now=now, lm=lm, where="live", n_trades=12)
+        if hb_last and hb_last.get("at"):
+            hl = next((x for x in (bd.get("health") or {}).get("items") or [] if x.get("key") == "heartbeat"), None)
+            if hl is not None:              # the last real heartbeat push, not this live.json's own time
+                hl.update(t=int(hb_last["at"]), ok=bool(hb_last.get("ok")) and now - int(hb_last["at"]) < live_board.HB_STALE_S,
+                          value=live_board.age_text(now - int(hb_last["at"])))
+        out["board"] = bd
+    except Exception as e:
+        out["board"] = {"error": f"{e.__class__.__name__}: {str(e)[:120]}"}
     out = scrub(out, _phrases())
     return fit(out)
 
@@ -185,10 +196,17 @@ def fit(p: dict, max_bytes: int = MAX_BYTES) -> dict:
             while size() > max_bytes and len(br.get(key) or []) > keep:
                 br[key] = br[key][:max(keep, len(br[key]) // 2)]
                 p["trimmed"] = True
+    bd = p.get("board") if isinstance(p.get("board"), dict) else None
+    if bd and size() > max_bytes and len(bd.get("trades") or []) > 4:     # the live board: its trade list first
+        bd["trades"] = bd["trades"][:4]
+        p["trimmed"] = True
     for k in ("ai", "second", "ops", "remote", "brain"):
         if size() > max_bytes and isinstance(p.get("pc"), dict):
             p["pc"].pop(k, None)
             p["trimmed"] = True
+    if bd and size() > max_bytes:                                           # last resort: no board (data.json keeps one)
+        p.pop("board", None)
+        p["trimmed"] = True
     return p
 
 

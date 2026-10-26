@@ -37,7 +37,9 @@
 // v35 (2026-10-25 PM): learning.js + learncore.js (Zlarior > Results > Learning, ATLAS > Results > Learning: live vs backtest,
 // real-fill costs, weekly reviews, "The bot suggests"; data.json "learning_live", engine/live_learning.py), clean.js v3.
 // v36 (2026-10-25 PM): funded & payouts card (v35 funded) + Learning pages (v35 learning) merged.
-const CACHE = 'le-public-v36';
+// v37 (2026-10-26): board.js + boardcore.js (Home "Right now" cut and #/board, the live board: right now per account, today's
+// map, bot health strip, week and eval odds, trade log with pictures + CSV; data.json / live.json "board", engine/live_board.py).
+const CACHE = 'le-public-v37';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=k31025', './icons/apple-touch-icon.png?v=k31025', './icons/icon-512.png?v=k31025'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });
