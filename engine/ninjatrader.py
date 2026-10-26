@@ -2397,6 +2397,7 @@ def main(argv=None):
     if a.status:
         return _cli_status(cfg)
     if a.sim_check or a.sim_roundtrip or a.sim_roundtrip_add:
+        cfg.setdefault("nt_ack_wait_s", 15.0)            # Sim tests only: a busy NinjaTrader (chart just loaded) may take > 4 s
         if a.sim_roundtrip_add:
             cfg["nt_state_path"] = os.path.join(ROOT, "data", "ninjatrader_state_simcheck.json")   # never the bot's own state
         rc = _cli_sim_check(cfg, roundtrip=a.sim_roundtrip or a.sim_roundtrip_add, add=a.sim_roundtrip_add)

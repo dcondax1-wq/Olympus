@@ -461,9 +461,21 @@ def step_sims(py=sys.executable, dry=False, restart=False) -> int:
             if dry:
                 print(f"     (dry run: would run engine.ninjatrader {flag})")
                 continue
-            rc = subprocess.run([py, "-X", "utf8", "-m", "engine.ninjatrader", flag], cwd=ROOT).returncode
+            wm = ["--write-mode", cfg["write_mode"]] if cfg.get("write_mode") else []
+            rc = subprocess.run([py, "-X", "utf8", "-m", "engine.ninjatrader", flag, *wm], cwd=ROOT).returncode
+            if rc and cfg.get("write_mode") != "direct":
+                # NinjaTrader may not notice a file MOVED into incoming\ on some installs: try writing it there directly
+                print("     Trying again with the order file written straight into NinjaTrader's folder")
+                time.sleep(5)
+                rc = subprocess.run([py, "-X", "utf8", "-m", "engine.ninjatrader", flag, "--write-mode", "direct"],
+                                    cwd=ROOT).returncode
+                if rc == 0:
+                    cfg["write_mode"] = "direct"
+                    _save(cfg)
+                    print("     That works on this PC: the bot will always write its order files that way.")
             if rc:
-                print(" [FIX] The Sim test failed. Nothing is armed. Send Claude a photo of this window.")
+                print(" [FIX] The Sim test failed. Nothing is armed. Close NinjaTrader, open it again, log in, then run START BOT")
+                print("       again. Still failing: send Claude a photo of this window.")
                 return 1
         if not dry:
             print("     Sim101 test passed")
@@ -517,7 +529,8 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
     rb = arm_b(cfg["atlas"])
     print(f"     25K (ATLAS): {'armed' if rb.get('ok') else 'NOT armed: ' + str(rb.get('error'))[:160]}")
     from . import ninjatrader
-    rc = ninjatrader.main(["--start", "--account", cfg["lit"], "--confirm", phrase])
+    wm = ["--write-mode", cfg["write_mode"]] if cfg.get("write_mode") else []
+    rc = ninjatrader.main(["--start", "--account", cfg["lit"], "--confirm", phrase, *wm])
     if rc:
         print(" [FIX] The bot did not start (see the lines above). Send Claude a photo of this window.")
         return 1
@@ -527,7 +540,7 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
         ninjatrader.main(["--stop"])
         return 1
     print(f"\n [OK] Zlarior trades the 50K {cfg['lit']} · ATLAS trades the 25K {cfg['atlas']} (checked in the running bot)")
-    ninjatrader.main(["--enable-auto-resume", "--account", cfg["lit"], "--confirm", phrase])
+    ninjatrader.main(["--enable-auto-resume", "--account", cfg["lit"], "--confirm", phrase, *wm])
     startup_shortcuts()
     print("\n Launch checklist (the bot unlocks entries by itself once everything reconciles):")
     lines, red = [], None

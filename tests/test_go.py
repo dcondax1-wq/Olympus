@@ -31,6 +31,7 @@ class World:
         self.calls = []
         self.running, self.server, self.sims, self.market = running, server, dict(zip(("roundtrip", "add"), sims)), market
         self.prep_rc, self.sim_rc, self.start_rc = prep_rc, sim_rc, start_rc
+        self.direct_ok = False
         G.CFG = os.path.join(tmp, "start_bot.json")
         G.AUTOSTART = os.path.join(tmp, "autostart.json")
         G.ENV_FILE = os.path.join(tmp, ".env.local.ps1")
@@ -61,11 +62,13 @@ class World:
                 self.returncode = rc
 
         def fake_run(cmd, cwd=None, **k):
-            world.calls.append(" ".join(cmd[-1:]))
-            if cmd[-1] in ("--sim-roundtrip", "--sim-roundtrip-add"):
-                if not world.sim_rc:
-                    world.sims["add" if cmd[-1].endswith("add") else "roundtrip"] = True
-                return _Proc(world.sim_rc)
+            flag = next((c for c in cmd if c in ("--sim-roundtrip", "--sim-roundtrip-add")), None)
+            world.calls.append(" ".join(cmd[-1:]) if not flag else flag + (" direct" if "direct" in cmd else ""))
+            if flag:
+                rc = world.sim_rc if not ("direct" in cmd and world.direct_ok) else 0
+                if not rc:
+                    world.sims["add" if flag.endswith("add") else "roundtrip"] = True
+                return _Proc(rc)
             return _Proc(0)
         G.subprocess.run = fake_run
         import engine.launch_prep as LP
@@ -138,6 +141,15 @@ def main():
             w = World(tmp, sim_rc=1)
             rc = G.run(inp=answers("A", "B", "I ACCEPT LIVE RISK"), pull=False)
             check("Sim test fails: stops, never started", rc == 1 and not any(isinstance(c, tuple) and c[0] == "start" for c in w.calls), w.calls)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            w = World(tmp, sim_rc=1)
+            w.direct_ok = True
+            rc = G.run(inp=answers("A", "B", "I ACCEPT LIVE RISK"), pull=False)
+            st = [c for c in w.calls if isinstance(c, tuple) and c[0] == "start" and c[1][0] == "--start"]
+            check("move mode fails, direct works: remembered and the bot starts with --write-mode direct",
+                  rc == 0 and G._read(G.CFG).get("write_mode") == "direct" and st and st[0][1][-2:] == ("--write-mode", "direct")
+                  and "--sim-roundtrip-add" not in w.calls and "--sim-roundtrip-add direct" in w.calls, w.calls)
 
         with tempfile.TemporaryDirectory() as tmp:
             w = World(tmp, server=True)
