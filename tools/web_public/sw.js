@@ -41,7 +41,9 @@
 // map, bot health strip, week and eval odds, trade log with pictures + CSV; data.json / live.json "board", engine/live_board.py).
 // v38 (2026-10-26 PM): ATLAS's funded account on the ATLAS page / Home card (secondcore.js) and the live board
 // (boardcore.js): the MFFU payout tracker (engine/account_b.py stage "funded"). New cache name so every iPhone refreshes.
-const CACHE = 'le-public-v38';
+// v39 (2026-10-26 PM): moneycore.js + goals.js v3 (Road to $10K / Stingray 3LT: "My goals" at the bottom of the Home Goals
+// card and #/goals, the 9-account stack and the next action; data.json goals.money / live.json money, engine/money_goal.py).
+const CACHE = 'le-public-v39';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=k31025', './icons/apple-touch-icon.png?v=k31025', './icons/icon-512.png?v=k31025'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

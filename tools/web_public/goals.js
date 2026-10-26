@@ -4,6 +4,9 @@
 //   Home     a "Goals" card on top (rings + bars + one plain sentence each) and a "Today" card (next session countdown, what the
 //            bot is waiting for, news chips, early-close / clock-change banners)
 //   #/goals  the full Goals page: per account, the week strip, the month band, ATLAS go-live, payout, scale, pass-by dates
+//   2026-10-26: "Road to $10K / Stingray 3LT" (engine/money_goal.py, drawn by moneycore.js): "My goals" at the bottom of the
+//            Home card ($10K month bar, the Stingray 3LT by Feb 22 2027 with its countdown, the Z06 bar) and the whole card
+//            (next action, the 9-account stack, My goals) at the bottom of #/goals; data.json goals.money or live.json money
 // Classic script that uses the main page's helpers (D, VIEWS, GROUPS, PAGES, icon, esc, usd, store ...). Paper only.
 (function () {
   'use strict';
@@ -86,7 +89,15 @@
       <div class="gl-rings">${weekRing(W.lit, 'Zlarior this week')}${weekRing(W.atlas, 'ATLAS this week')}${scR}</div>
       <p class="gl-s small">${esc((W.lit || {}).sentence || '')}</p>
       ${monthBlock(m)}
-      <div class="gl-foot">${G.payout && !G.payout.error ? `<span>${icon('wallet')}${esc(G.payout.sentence)}</span>` : ''}${G.scale && G.scale.step != null ? `<span>${icon('layers')}Scale step ${G.scale.step} of ${G.scale.of} · ${G.scale.progress ?? 0}% to the next</span>` : ''}</div></div>`;
+      <div class="gl-foot">${G.payout && !G.payout.error ? `<span>${icon('wallet')}${esc(G.payout.sentence)}</span>` : ''}${G.scale && G.scale.step != null ? `<span>${icon('layers')}Scale step ${G.scale.step} of ${G.scale.of} · ${G.scale.progress ?? 0}% to the next</span>` : ''}</div>
+      ${moneyHome()}</div>`;
+  }
+  // Road to $10K / Stingray 3LT (engine/money_goal.py via moneycore.js): data.json "goals.money" or live.json "money", the newer
+  const MONEY = () => (window.MoneyUI ? window.MoneyUI.pick((GL() || {}).money, window.LIVE && window.LIVE.j && window.LIVE.j.money) : null);
+  function moneyHome() {
+    const M = MONEY();
+    if (!window.MoneyUI || !M || M.error) return '';
+    return `<div class="gl-money">${window.MoneyUI.goals(M, { compact: true })}${M.next && M.next.text ? `<p class="gl-s small"><b>Next:</b> ${esc(M.next.text)}</p>` : ''}</div>`;
   }
   function monthBlock(m) {
     if (!m || m.error) return '';
@@ -173,7 +184,9 @@
           <div class="gl-row"><span>Payout</span><em>${esc((G.payout || {}).stage || '')}</em></div>${bar((G.payout || {}).frac, 'var(--gold)')}<p class="gl-s small">${esc((G.payout || {}).sentence || '')}</p>
           <div class="gl-row"><span>Scale step <b>${(G.scale || {}).step ?? '—'}</b> of ${(G.scale || {}).of ?? '—'}</span><em>${(G.scale || {}).progress ?? 0}% to the next</em></div>${bar((G.scale || {}).frac, 'var(--accent)')}<p class="gl-s small">${esc((G.scale || {}).sentence || '')}</p>
           <button class="chipbtn wide" type="button" data-go="scale" style="margin-top:8px">${icon('layers')}<span>Scaling plan</span></button></div></div>
+      ${window.MoneyUI ? `<div class="card gl-moneycard" id="glMoney">${window.MoneyUI.card(MONEY(), { where: 'phone' })}</div>` : ''}
       <p class="small mut">Read-only. Built ${esc(new Date((G.t || 0) * 1000).toLocaleString())} from ${esc((G.sources || {}).lit_trades || '—')} trades.</p>`);
+    if (window.MoneyUI) window.MoneyUI.wire(el.querySelector('#glMoney'), MONEY());
     const sh = el.querySelector('#glShare');
     if (sh) sh.onclick = () => shareText('My goals\n' + (G.lines || []).map((x) => '• ' + x.text).join('\n'));
   };
@@ -244,6 +257,7 @@
 .gl-wk{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.gl-wd{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;border-radius:12px;background:var(--surface-2);position:relative;min-height:96px}
 .gl-wd em{font-style:normal;font-size:11px;color:var(--muted)}.gl-wd b{font:700 18px var(--mono)}.gl-wd span{font:600 10.5px var(--mono)}.gl-wd.today{outline:1.5px solid var(--accent)}.gl-wd.future{opacity:.5}
 .gl-wd i{display:block;width:60%;height:calc(var(--h) * .3);min-height:2px;border-radius:4px;background:var(--muted)}.gl-wd i.up{background:var(--good)}.gl-wd i.dn{background:var(--bad)}
+.gl-money{margin-top:12px;padding-top:4px;border-top:1px solid var(--line)}.gl-money .gl-s b{color:var(--ink)}
 .gl-dates{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.gl-acct .chips{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
 html[data-theme="light"] .gl-acct .chip,html[data-theme="light"] .gl-news .chip,html[data-theme="light"] .gl-dates .chip{background:var(--surface-2);color:var(--ink-2);border-color:var(--line)}
 html[data-theme="light"] .gl-acct .chip.good,html[data-theme="light"] .gl-news .chip.good{color:#0b7a4b;background:color-mix(in srgb,var(--good) 14%,#fff)}

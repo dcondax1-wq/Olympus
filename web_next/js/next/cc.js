@@ -2,13 +2,15 @@
 // Session calendar. Sources (all GET, nothing here starts, arms, routes, sizes or stops anything):
 //   /api/next/cc/home  /cc/calendar  /cc/handoff  /cc/doc?name=  /cc/setups  /cc/atlas_trades  /cc/runbook  /cc/data_files
 //   (engine/pc_cc_api.py), /api/next/goals (engine/goals.py, merged later: the Goals page falls back when it 404s),
-//   /api/next/trades (LIT replay), /api/next/pc/account (PC routed trades), /api/next/scale (scaling plan).
+//   /api/next/trades (LIT replay), /api/next/pc/account (PC routed trades), /api/next/scale (scaling plan),
+//   /api/next/money (Road to $10K / Stingray 3LT at the bottom of Goals, money.js; its form saves only the owner's figures).
 // The kill switch stays HOLD TO KILL on Bot Control; no button on these pages talks to the bot.
 import { $, $$, api, esc, store, toast, downloadFile } from '../util.js';
 import { icon } from './icons.js';
 import { md } from './lab.js';
 import { moreMenu, item } from './menu.js';
 import { fillBoardHome } from './board.js';
+import { fillMoney } from './money.js';
 
 // ------------------------------------------------------------------ helpers (the operator pages' card / stat / chip look)
 const ok = (v) => v != null && v !== '' && !Number.isNaN(+v);
@@ -292,7 +294,9 @@ async function goals() {
         <div class="cc-kvs">${kv(sc.money || {})}</div>` : empty('Scaling plan not available', esc(sc?.error || '')), go('scale', 'Scaling plan', 'prop'))}
     </div>
     ${fundedCards(g.payout)}
-    ${src(g.fallback ? 'Fallback: accounts from /api/next/cc/home; week = PC routed trades since Monday; scorecard = ATLAS closed trades the bot routed.' : 'From /api/next/goals (engine/goals.py).')}`;
+    ${src(g.fallback ? 'Fallback: accounts from /api/next/cc/home; week = PC routed trades since Monday; scorecard = ATLAS closed trades the bot routed.' : 'From /api/next/goals (engine/goals.py).')}
+    <div class="cc-row" id="ccMoney"></div>`;
+  fillMoney(el.querySelector('#ccMoney'));      // Road to $10K / Stingray 3LT + "My goals" at the bottom (money.js)
 }
 // Funded & payouts (2026-10-25, engine/funded_life.py via /api/next/goals "payout.trackers", read-only): per funded account
 // the buffer progress, cycle profit, the 50% consistency gauge, the payout-ready date and payouts n of 5.
@@ -549,7 +553,9 @@ export const FEATURES = [
     ['Week and eval progress', 'trades vs 2-4 (ATLAS 3-4), the session bar, 2-week pass / fail odds, $ a month expected vs actual'],
     ['Trade log with pictures', 'both accounts, live and paper, the picture of each trade, CSV export'], ['Home "Right now" row', 'the compact cut on this Command center']]],
   ['Goals', 'goals', [['Eval progress per account', 'from engine/goals.py, or built from the bot'], ['Weekly trade target', '2-4 a week ring'],
-    ['ATLAS 20-trade scorecard', 'dots and stats'], ['Payout and scale progress', 'the scaling plan step and its progress'], ['Graceful fallback', 'works before /api/next/goals is merged']]],
+    ['ATLAS 20-trade scorecard', 'dots and stats'], ['Payout and scale progress', 'the scaling plan step and its progress'], ['Graceful fallback', 'works before /api/next/goals is merged'],
+    ['Road to $10K / Stingray 3LT', 'the next money step, the 9-account stack, My goals ($10K month, Stingray 3LT by Feb 22 2027, Z06)'],
+    ['Money form (this PC only)', 'savings balance, the month\'s jobs and Kalshi, the targets: data/goals_money.json']]],
   ['Eval timeline', 'evaltl', [['Session-by-session P&L', 'every eval day, with the 10 / 15 session marks'], ['Upcoming sessions', 'early closes, holidays and DST ahead']]],
   ['Session calendar', 'sesscal', [['Next 20 trading days', 'normal / early close / closed / DST'], ['Calendar CSV', 'export']]],
   ['Runbook', 'runbook', [['Emergency steps, big', 'HOLD TO KILL, Flatten Everything, the MFFU app'], ['Runbook sections + jump list', 'start, check, shutdown, recovery'],

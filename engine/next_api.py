@@ -395,6 +395,11 @@ def goals_data(bot=None, now=None) -> dict:
         data["scale"] = SP.pc_view(bot, now=now)
     except Exception:
         pass
+    try:                                                     # the owner's money figures (engine/money_goal.py, local file)
+        from . import money_goal as MG
+        data["money_in"] = MG.local_block()
+    except Exception:
+        pass
     return data
 
 
@@ -504,6 +509,11 @@ router.include_router(_ops_router)
 # local PC only (engine/start_api.py, engine/cloud_guard.local_only + CLOUD_BLOCKED)
 from .start_api import router as _start_router  # noqa: E402
 router.include_router(_start_router)
+
+# Road to $10K / Stingray 3LT (engine/money_goal.py): the card for everyone, the owner's money form (POST) local PC only
+# (engine/money_api.py, engine/cloud_guard.local_only + CLOUD_BLOCKED); it writes only data/goals_money.json
+from .money_api import router as _money_router  # noqa: E402
+router.include_router(_money_router)
 
 # Bot Brain (engine/brain.py): what the bot is thinking now, its thought log, any past 2026 day replayed (engine/brain_api.py)
 from .brain_api import router as _brain_router  # noqa: E402

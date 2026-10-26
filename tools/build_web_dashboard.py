@@ -1010,7 +1010,7 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         print("  accounts unavailable:", e.__class__.__name__, e)
         accounts = []
     if isinstance(live.get("pc"), dict):
-        live["pc"] = {k: v for k, v in live["pc"].items() if k not in ("acct", "exec", "learn")}
+        live["pc"] = {k: v for k, v in live["pc"].items() if k not in ("acct", "exec", "learn", "money")}
         try:                       # the verdict again at build time (the heartbeat age grows between cloud runs)
             from engine import accounts as _acc_v
             live["pc_verdict"] = _acc_v.verdict(st.get("pc"), st.get("last_run") or None)
@@ -1076,9 +1076,12 @@ def build(state_path, chart_path, out, runs_dir=RUNS, writeups_dir=WRITEUPS):
         data["scale"] = {"error": f"{e.__class__.__name__}: {e}"}
     try:                                   # Goals (engine/goals.py, read-only): each account vs the owner's goals, in sentences
         from engine import goals as _goals
+        # + "money" (Road to $10K / Stingray 3LT, engine/money_goal.py) from the owner's figures in the PC heartbeat
+        data["money_in"] = (st.get("pc") or {}).get("money") if isinstance(st.get("pc"), dict) else None
         data["goals"] = _goals.site_block(data)
     except Exception as e:
         data["goals"] = {"error": f"{e.__class__.__name__}: {e}"}
+    data.pop("money_in", None)             # the card in goals.money is what the pages read
     try:                                   # Funded & payouts (engine/funded_life.py, read-only) + the money plan numbers
         from engine import funded_life as _fl
         data["funded_life"] = _fl.block(data.get("accounts") or [])
