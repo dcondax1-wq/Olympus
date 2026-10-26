@@ -150,7 +150,8 @@ Every one of these counts as liquidity:
     micros capped at 0.6 × room ÷ (stop × $2), at least 1. Run `lit_x_room_cap60` (LIT final): 1-month fails H1 25.8% → 10.2%,
     pass rate H1 66% → 80%; H2 unchanged (it never binds there).
 - Costs in every number: $1.40 per micro round trip, 1 tick slippage on market entries and on stop / breakeven / end-of-day
-  exits; limit fills and targets fill at their price.
+  exits; limit fills and targets fill at their price. The bots book the real $1.90 a micro (MFFU / Tradovate, since
+  2026-10-26): about $0.50 a micro less, $318 over 2026 ($33 a month; Jul–Oct +$9,919 → +$9,836), same trades.
 
 ## 10. Loss rules (adopted 2026-10-18, `research/writeups/lit-losses.md`)
 Both were picked on Jan–Jun 2026 and helped Jul–Oct too (`engine/lit.py` options `monday` and `wk_stop`, on in `live_model.json`).

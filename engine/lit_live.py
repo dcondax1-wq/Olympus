@@ -9,6 +9,9 @@ backtest cannot drift apart. Returns the shape the live loop already consumes (a
   trades  finished trades: entry_t, exit_t, dir, entry, exit_price, stop, target, qty, pnl, pnl_r, exit_reason, trigger 'LIT'
   events  signal (limit placed), entry, exit; texts never change once written (the alert de-dup key)
   days    daily P&L of the window
+Money (2026-10-26): every $ here (trades pnl / pnl_r, the open position's unrealized, days, day_pnl) is booked at the
+broker's commission engine/sizing.LIVE_COMM ($1.90 a micro round trip, comm_rt), not the research backtest's lit.COMM
+($1.40): live_booked(). The trades themselves (entries, exits, micros) are the backtest's, unchanged.
 
 Window: the LIT levels include the previous month's high/low, so run() keeps the bars from the first trading day of the
 previous month (minus a week) on; callers hand it the merged history (not the engine's 20-day window). On that window
@@ -28,6 +31,7 @@ import pandas as pd
 
 from engine import lit
 from engine.data import Bars, from_frame
+from engine.sizing import LIVE_COMM          # $ a micro round trip the broker charges: every $ this loop books (live_booked)
 
 ET = ZoneInfo("America/New_York")
 CUSHION_DAYS = 7
@@ -318,11 +322,36 @@ def _idm(t):
     return {k: t[k] for k in IDM_KEYS if k in t}
 
 
+def micros(t) -> int:
+    """Micros a trade traded: the first entry + every scale-in add."""
+    return int(t.get("qty") or 0) + sum(int(a.get("qty") or 0) for a in (t.get("adds") or []))
+
+
+def live_booked(t: dict) -> dict:
+    """A trade (or the open position) of engine/lit.py, whose $ carry the research cost (lit.COMM, $1.40 a micro round trip:
+    every stored run), booked at what MFFU / Tradovate really charge, engine/sizing.LIVE_COMM ($1.90): pnl minus
+    (LIVE_COMM - its comm_rt) x every micro traded, R shifted by the same $ on the trade's planned risk, comm_rt = LIVE_COMM.
+    Entries, exits and micros are untouched (the replay stays the backtest's trade for trade; tests/test_lit_live.py
+    re-prices its expected $ the same way). A copy; a trade already at LIVE_COMM comes back as it is."""
+    extra = round(LIVE_COMM - float(t.get("comm_rt", lit.COMM)), 6)
+    if abs(extra) < 1e-9 or t.get("pnl") is None:
+        return t
+    x = dict(t)
+    usd = extra * micros(t)
+    x["pnl"] = round(float(t["pnl"]) - usd, 2)
+    q, rk = int(t.get("qty") or 0), float(t.get("risk_pts") or 0.0)
+    if t.get("r") is not None and q and rk:
+        x["r"] = round(float(t["r"]) - usd / (rk * lit.PV * q), 3)
+    x["comm_rt"] = LIVE_COMM
+    return x
+
+
 def _trade(t):
     reason = "TIME" if t["exit"] == "EOD" else t["exit"]        # the live loop flattens on TIME at 15:55
     return {"entry_t": int(t["entry_t"]), "exit_t": int(t["exit_t"]), "dir": int(t["dir"]), "entry": float(t["entry_px"]),
             "exit_price": float(t["exit_px"]), "stop": float(t["stop_px"]), "target": float(t["target_px"]), "qty": int(t["qty"]),
-            "pnl": float(t["pnl"]), "pnl_r": float(t["r"]), "exit_reason": reason, "trigger": "LIT", "grade": "", "day": t["day"],
+            "pnl": float(t["pnl"]), "pnl_r": float(t["r"]), "comm_rt": float(t.get("comm_rt", lit.COMM)),
+            "exit_reason": reason, "trigger": "LIT", "grade": "", "day": t["day"],
             "risk_pts": float(t["risk_pts"]), "risk_usd": float(t["risk_usd"]), "target_label": t.get("target_label"),
             "swept": _sweep_names(t.get("swept")), "sweep_ext": t.get("sweep_ext"), "tf": f"{t.get('tf', 5)}m",
             "mfe": t.get("mfe"), "bars_held": t.get("bars_held"), "entry_kind": "limit" if t.get("limit_fill") else "1m CISD",
@@ -425,7 +454,8 @@ def _session_over(day: str, now: int, last_close: int | None = None) -> bool:
 
 def _close_at_session_end(t):
     """A position still open when its session is over (CME early close on a holiday, before the 15:55 flat): closed at
-    the last bar's close minus 1 tick, as the backtest does when the next session's bars arrive."""
+    the last bar's close minus 1 tick, as the backtest does when the next session's bars arrive (at the backtest's cost;
+    _shape books it at LIVE_COMM like every trade)."""
     d, q = int(t["dir"]), int(t["qty"])
     exit_px = float(t["exit_px"]) - d * lit.SLIP
     pnl = (d * (exit_px - float(t["entry_px"])) * lit.PV - lit.COMM) * q
@@ -476,6 +506,7 @@ def _shape(M, R, P, now, B1):
                                + (f" - {'; '.join(t['size_why'])}" if t.get("size_why") else "")})
         if t["exit"] == "OPEN" and _session_over(t["day"], now, int(M.t[nc - 1]) + 300):
             t = _close_at_session_end(t)       # early-close holiday: the backtest exits at the day's last bar
+        t = live_booked(t)                     # $ at the broker's commission (engine/sizing.LIVE_COMM), not the research $1.40
         if t["exit"] == "OPEN":
             position = {"entry_t": int(t["entry_t"]), "dir": int(t["dir"]), "qty": int(t["qty"]), "stop": float(t["stop_now"]),
                         "stop0": float(t["stop_px"]), "target": float(t["target_px"]), "entry": float(t["entry_px"]), "setup": "LIT",

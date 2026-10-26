@@ -680,6 +680,14 @@ def check_heartbeat(ping: dict | None, hb: dict, now) -> dict:
                   tr["fix"] if tr else FIX["heartbeat"])
     if age > 20 * 60:
         return _c("heartbeat", "Heartbeat to the cloud", WARN, f"last push {age // 60} min ago", "Restart the bot: STOP BOT, then START DASHBOARD.")
+    fz = (h.get("health") or {}).get("frozen") if isinstance(h.get("health"), dict) else None
+    if isinstance(fz, dict) and fz.get("to") and now - float(fz["to"]) < 24 * 3600 and float(fz.get("s") or 0) >= 15 * 60:
+        # engine/heartbeat.py noticed the whole process stood still (2026-10-25/26: the Surface slept 22:43 -> 05:17 ET)
+        s = int(fz["s"])
+        return _c("heartbeat", "Heartbeat to the cloud", WARN,
+                  f"last push {age // 60} min ago, but the PC was asleep {s // 3600} h {s % 3600 // 60} min "
+                  f"({_et(fz['from']):%a %H:%M} -> {_et(fz['to']):%H:%M} ET): no bars, no trades, no heartbeat then",
+                  "Settings > System > Power: Sleep 'Never' when plugged in; Control Panel > Power Options > lid: 'Do nothing'.")
     return _c("heartbeat", "Heartbeat to the cloud", OK, f"last push {age // 60} min ago")
 
 

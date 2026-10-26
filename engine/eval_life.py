@@ -126,7 +126,7 @@ def view(days: dict, start: str | None, today: str, lsz: dict | None = None, ses
         # the cap invariant (2026-10-24, engine/sizing.ceilings): with this little room most LIT entries no longer fit
         # 1 micro inside the caps and are skipped, so the eval can sit for weeks without failing or passing
         rf = float(tw.get("room_f") or c.get("safe_cap") or 0.6)
-        mx = max(0.0, (rf * st["room"] - 1.90) / 2.0 - 0.25)
+        mx = max(0.0, (rf * st["room"] - sz.LIVE_COMM) / 2.0 - 0.25)
         trading = (f"stuck: room ${st['room']:,.0f} - 1 micro fits only stops up to {mx:.0f} pts, most entries are skipped; "
                    "buy a new eval")
     out = {"start": start, "today": today, "status": status, "balance": round(START_BAL + bal, 2), "profit": round(bal, 2),

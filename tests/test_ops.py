@@ -224,6 +224,13 @@ def main() -> int:
         c = oc.check_heartbeat({**ping, "heartbeat": {"enabled": True, "last": {"at": now - 120, "ok": False, "error": "Authentication failed"}}}, {}, now)
         check("heartbeat push failed -> FIX: git sign-in", c["level"] == oc.BAD and "sign in" in c["fix"], c)
         check("heartbeat off -> WARN", oc.check_heartbeat({**ping, "heartbeat": {"enabled": False}}, {}, now)["level"] == oc.WARN)
+        slept = {"enabled": True, "last": {"at": now - 120, "ok": True},
+                 "health": {"frozen": {"from": int(now) - 8 * 3600, "to": int(now) - 2 * 3600 + 240, "s": 6 * 3600 - 240}}}
+        c = oc.check_heartbeat({**ping, "heartbeat": slept}, {}, now)
+        check("heartbeat OK but the PC was asleep last night (heartbeat health.frozen) -> WARN with the power-settings fix",
+              c["level"] == oc.WARN and "asleep 5 h 56 min" in c["text"] and "Sleep 'Never'" in c["fix"], c)
+        old = {**slept, "health": {"frozen": {"from": int(now) - 50 * 3600, "to": int(now) - 30 * 3600, "s": 20 * 3600}}}
+        check("a freeze older than a day no longer warns", oc.check_heartbeat({**ping, "heartbeat": old}, {}, now)["level"] == oc.OK)
         check("account LIVE -> OK", oc.check_account(hb(now), now)[0]["level"] == oc.OK)
         c = oc.check_account(hb(now, "SIM"), now)
         check("account Sim -> WARN 'not your eval'", c[0]["level"] == oc.WARN and "not your eval" in c[0]["text"], c)

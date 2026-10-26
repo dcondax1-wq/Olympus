@@ -23,6 +23,11 @@ backtest (tools/lit_final.py run = engine/lit.py run_x on the whole history), on
 3. LiveBot: engine/live.py itself (PaperAdapter, frozen clock, bars revealed as they close, raw 1m file read like a feed) on
    three October sessions: every backtest trade must be routed once (side, micros, stop, target) and exited once (reason, $).
 Results -> research/lit/live_check.json. One process.
+
+The $ compared (2026-10-26): the research ledger (tools/lit_final.run = engine/lit.py run_x) books lit.COMM, $1.40 a micro
+round trip; every live booking (engine/lit_live.py, the LiveBot ledger, the cloud paper ledger) books engine/sizing.LIVE_COMM,
+$1.90, what MFFU / Tradovate charge. So the expected $ of each trade is the research trade's $ re-priced at $1.90
+(booked(): $0.50 less per micro traded, first entry + adds); entries, exits, micros and times must stay identical.
 """
 from __future__ import annotations
 
@@ -41,8 +46,9 @@ if ROOT not in sys.path:
 import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
-from engine import lit_live  # noqa: E402
+from engine import lit, lit_live  # noqa: E402
 from engine.data import load, load_ltf  # noqa: E402
+from engine.sizing import LIVE_COMM  # noqa: E402
 
 ET = ZoneInfo("America/New_York")
 OUT = os.path.join(ROOT, "research", "lit", "live_check.json")
@@ -76,8 +82,19 @@ def ref_key(t):
     return (int(t["entry_t"]), int(t["dir"]), round(t["entry_px"], 2), round(t["stop_px"], 2), round(t["target_px"], 2), int(t["qty"]))
 
 
+def micros(t) -> int:
+    """Micros a research trade traded: the first entry + every scale-in add."""
+    return int(t["qty"]) + sum(int(a.get("qty") or 0) for a in (t.get("adds") or []))
+
+
+def booked(t) -> float:
+    """The research trade's $ (booked at lit.COMM, $1.40 a micro) as the live loop books it: at engine/sizing.LIVE_COMM
+    ($1.90), i.e. (LIVE_COMM - lit.COMM) less per micro traded. The trade itself (entry, exit, micros) is unchanged."""
+    return round(float(t["pnl"]) - round(LIVE_COMM - lit.COMM, 6) * micros(t), 2)
+
+
 def ref_exit(t):
-    return ("TIME" if t["exit"] == "EOD" else t["exit"], int(t["exit_t"]), round(t["pnl"], 2))
+    return ("TIME" if t["exit"] == "EOD" else t["exit"], int(t["exit_t"]), booked(t))
 
 
 def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15"), lm_extra=None):
@@ -127,9 +144,9 @@ def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15"), l
             # the bot routes tick prices (engine/live.tick_px): stop to the nearest tick, the VIX-band target toward the entry
             eo = e is not None and e["side"] == ("buy" if t["dir"] == 1 else "sell") and e["qty"] == t["qty"] and \
                 abs(e["stop"] - tick_px(t["stop_px"], t["dir"])) < 1e-6 and abs(e["target"] - tick_px(t["target_px"], t["dir"], target=True)) < 1e-6
-            xo = x is not None and x["reason"] == ("TIME" if t["exit"] == "EOD" else t["exit"]) and abs(x["pnl"] - t["pnl"]) < 0.01
+            xo = x is not None and x["reason"] == ("TIME" if t["exit"] == "EOD" else t["exit"]) and abs(x["pnl"] - booked(t)) < 0.01
             e_ok += eo; x_ok += xo
-            rows.append({"entry": int(t["entry_t"]), "want": [t["dir"], t["qty"], t["exit"], t["pnl"]],
+            rows.append({"entry": int(t["entry_t"]), "want": [t["dir"], t["qty"], t["exit"], booked(t)], "research_pnl": t["pnl"],
                          "routed_entry": e and {k: e.get(k) for k in ("side", "qty", "stop", "target", "t")},
                          "routed_exit": x and {k: x.get(k) for k in ("reason", "pnl", "t")}})
         extra = [r for r in led if r["side"] in ("buy", "sell", "exit") and int(r["entry_t"]) not in {int(t["entry_t"]) for t in want}]
@@ -211,13 +228,19 @@ def main():
                 extra.append((d, "open position at the session close"))
         r = {"sessions": len(sess), "backtest_trades": len(REF), "matched_entries": same, "matched_exits_and_pnl": exits_same,
              "missing": miss[:20], "n_missing": len(miss), "extra": extra[:20], "n_extra": len(extra), "exit_differs": wrong[:20],
-             "net_backtest": round(sum(t["pnl"] for t in REF), 2), "seconds": round(time.time() - t0)}
+             "net_backtest": round(sum(t["pnl"] for t in REF), 2), "net_live_booked": round(sum(booked(t) for t in REF), 2),
+             "commission": {"research": lit.COMM, "live": LIVE_COMM, "micros": sum(micros(t) for t in REF),
+                            "diff_usd": round(sum(booked(t) - t["pnl"] for t in REF), 2),
+                            "max_trade_usd": round(min((booked(t) - t["pnl"] for t in REF), default=0.0), 2)},
+             "seconds": round(time.time() - t0)}
         return r
 
     out["day_end"] = day_end()
     print(f"day-end replay (prev-month window): {out['day_end']['matched_exits_and_pnl']}/{len(REF)} trades identical "
           f"(entries {out['day_end']['matched_entries']}, missing {out['day_end']['n_missing']}, extra {out['day_end']['n_extra']}) "
-          f"in {out['day_end']['seconds']}s", flush=True)
+          f"in {out['day_end']['seconds']}s; $ at the live ${LIVE_COMM:.2f} commission: research ${out['day_end']['net_backtest']:,.2f} "
+          f"-> live ${out['day_end']['net_live_booked']:,.2f} ({out['day_end']['commission']['diff_usd']:+,.2f} over "
+          f"{out['day_end']['commission']['micros']} micros)", flush=True)
     if "--w20" in sys.argv:
         out["day_end_20d"] = day_end(20)
         print(f"day-end replay (plain 20-day window): {out['day_end_20d']['matched_exits_and_pnl']}/{len(REF)} identical "

@@ -3344,7 +3344,8 @@ def selftest(verbose=True) -> bool:
         sbot._route_signals({"trades": [btr], "events": []}, "NQ", int(now[0]), 300)
         xr = [x for x in sbot.ledger if x["side"] == "exit"][-1]
         from . import lit as _lit
-        want_pnl = round(4 * (40.0 * _lit.PV - _lit.COMM) + 4 * ((25060.0 - 25045.0) * _lit.PV - _lit.COMM), 2)
+        from .sizing import LIVE_COMM                    # routed P&L is booked at the live $1.90 commission
+        want_pnl = round(4 * (40.0 * _lit.PV - LIVE_COMM) + 4 * ((25060.0 - 25045.0) * _lit.PV - LIVE_COMM), 2)
         check("LiveBot: a model exit (CUT_T15) after an add is routed as CLOSEPOSITION for the whole position (qty 8) with the "
               "add's P&L at its REAL fill (25045.00, the model priced 25045.25) in the ledger",
               lines_since(k)[:1] == ["CLOSEPOSITION;Sim101;MNQ 12-26;;;;;;;;;;"] and xr["qty"] == 8
