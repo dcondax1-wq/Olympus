@@ -275,6 +275,36 @@ def ensure_ninjatrader(wait_s=900, connected=None, sleep=time.sleep) -> bool:
     return False
 
 
+def feed_problem():
+    """None = LE_BarFeed's MNQ 5m file is fresh; else why not (engine/ninjatrader.NinjaTraderBars.recent_bars)."""
+    try:
+        from .ninjatrader import NinjaTraderBars, default_folder
+        df, why, _ = NinjaTraderBars(default_folder()).recent_bars("NQ", "5m", "1d")
+        return None if df is not None else (why or "no bars")
+    except Exception as e:
+        return f"{e.__class__.__name__}: {e}"
+
+
+def ensure_feed(wait_s=900, problem=None, sleep=time.sleep) -> bool:
+    """The NinjaTrader bar feed fresh (the Sim test and every trade need it); shows the chart fix once and waits up to
+    15 min for it. True = fresh."""
+    problem = problem or feed_problem
+    why = problem()
+    if why is None:
+        return True
+    print(f"     The bot gets no live bars from NinjaTrader ({why}).")
+    print("     Fix it in NinjaTrader now (this window waits and goes on by itself):")
+    print("       1. Open the MNQ 12-26 chart, set it to 5 Minute (or New > Chart: MNQ 12-26, Minute, 5).")
+    print("       2. Right-click the chart > Indicators > LE_BarFeed > Add > OK (already listed? Remove it, Add it again).")
+    t0 = time.time()
+    while time.time() - t0 < wait_s:
+        sleep(15)
+        if problem() is None:
+            print("     Live bars OK")
+            return True
+    return False
+
+
 def startup_shortcuts():
     """Windows Startup folder (no admin): NinjaTrader and START_DASHBOARD.bat (the bot server; auto-resume then brings the
     bot back on the 50K and the 25K once NinjaTrader connects). Replaces the two it made before."""
@@ -376,6 +406,9 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
         if not market_open():
             print(" [WAIT] The market is closed (open Sun 18:00 ET - Fri 17:00 ET, not 17:00-18:00).")
             print("        Double-click START BOT again after it opens.")
+            return 1
+        if not dry and not ensure_feed():
+            print(" [FIX] Still no live bars from the MNQ chart. Send Claude a photo of the chart and this window.")
             return 1
         if server_up() and not dry:
             stop_server()                                   # the roundtrip needs the bot stopped

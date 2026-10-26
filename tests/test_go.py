@@ -48,6 +48,8 @@ class World:
         G.verify_routes = lambda lit, atlas, state=None, b=None: (self.calls.append("verify"), list(self.route_probs))[1]
         self.route_probs = []
         G.startup_shortcuts = lambda: self.calls.append("startup")
+        G.ensure_feed = lambda: (self.calls.append("feed"), self.feed)[1]
+        self.feed = True
         G.ensure_ninjatrader = lambda: (self.calls.append("nt"), self.nt)[1]
         self.nt = True
         G.arm_b = lambda atlas, path=None, selftest=None: (self.calls.append(("arm_b", atlas)), {"ok": True})[1]
@@ -218,6 +220,18 @@ def main():
         check("verify: ATLAS on a 50K plan", V("A", "B", state=okst, b={**okb, "plan": "builder50k"}) != [])
         check("verify: 25K also an extra Zlarior account", V("A", "B", state={"running": True, "cfg": {"nt_account": "A", "adapter": "ninjatrader", "accounts": [{"id": "x", "nt_account": "B"}]}}, b=okb) != [])
         check("verify: not running", V("A", "B", state={**okst, "running": False}, b=okb) != [])
+
+        with tempfile.TemporaryDirectory() as tmp:
+            w = World(tmp)
+            w.feed = False
+            rc = G.run(inp=answers("A", "B", "I ACCEPT LIVE RISK"), pull=False)
+            check("no live bars: stops before the Sim test, never started",
+                  rc == 1 and "feed" in w.calls and not any(isinstance(c, str) and c.startswith("--sim") for c in w.calls)
+                  and not any(isinstance(c, tuple) and c[0] == "start" for c in w.calls), w.calls)
+        g3 = importlib.reload(G)
+        fs = iter(["stale", "stale", None])
+        check("ensure_feed: waits for fresh bars", g3.ensure_feed(wait_s=60, problem=lambda: next(fs), sleep=lambda s: None))
+        check("ensure_feed: gives up", not g3.ensure_feed(wait_s=0.01, problem=lambda: "stale", sleep=lambda s: None))
 
         seq = iter([None, False, True])
         check("ensure_ninjatrader: waits for CONNECTED", g3.ensure_ninjatrader(wait_s=60, connected=lambda: next(seq), sleep=lambda s: None))
