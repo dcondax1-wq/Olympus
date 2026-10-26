@@ -18,7 +18,43 @@ import os
 from fastapi.responses import JSONResponse, Response
 
 OPEN_PATHS = ("/api/health/ping", "/api/tv/webhook")
-CLOUD_BLOCKED = ("/api/live/arm", "/api/live/golive", "/api/launch/test_webhook")
+# the Start page's arm / start / account writes (engine/start_api.py): also refused off this PC by local_only() below
+START_WRITES = ("/api/next/start/names", "/api/next/start/nt", "/api/next/start/setup", "/api/next/start/sims",
+                "/api/next/start/arm", "/api/next/start/accounts/add", "/api/next/start/accounts/remove",
+                "/api/next/start/accounts/anchor", "/api/next/start/accounts/funded")
+CLOUD_BLOCKED = ("/api/live/arm", "/api/live/golive", "/api/launch/test_webhook", *START_WRITES)
+LOCAL_HOSTS = ("127.0.0.1", "::1", "localhost", "::ffff:127.0.0.1")
+PROXY_HEADERS = ("x-forwarded-for", "x-forwarded-host", "x-real-ip", "forwarded", "cf-connecting-ip", "true-client-ip",
+                 "tailscale-user-login", "x-original-forwarded-for")
+
+
+def _hostname(v: str) -> str:
+    v = (v or "").strip().lower()
+    if "://" in v:
+        v = v.split("://", 1)[1]
+    v = v.split("/", 1)[0]
+    if v.startswith("["):
+        return v[1:].split("]", 1)[0]
+    return v.rsplit(":", 1)[0] if v.count(":") == 1 else v
+
+
+def local_only(request) -> str | None:
+    """Why this request may not arm, start or change accounts (None = it comes from a browser on this PC). Refused: cloud
+    mode, a caller that is not this PC (the phone on the LAN / Tailscale), anything relayed by a proxy or tunnel, a Host
+    or Origin that is not localhost (a web page on another site, DNS rebinding)."""
+    if os.environ.get("LE_CLOUD") == "1":
+        return "cloud mode is paper only: arming and account changes are done on the PC itself"
+    client = getattr(getattr(request, "client", None), "host", None) or ""
+    if client not in LOCAL_HOSTS:
+        return "only on the PC itself (http://localhost:8766): the phone and other computers can only look"
+    if any(request.headers.get(h) for h in PROXY_HEADERS):
+        return "only on the PC itself: this request came through a proxy or tunnel"
+    if _hostname(request.headers.get("host", "")) not in LOCAL_HOSTS:
+        return "only on the PC itself: open http://localhost:8766"
+    origin = request.headers.get("origin")
+    if origin and _hostname(origin) not in LOCAL_HOSTS:
+        return "only from the dashboard on this PC"
+    return None
 
 
 def _authorized(header: str, password: str) -> bool:

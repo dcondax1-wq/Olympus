@@ -98,6 +98,7 @@ export const MODULES = [
 
 // PC upgrade 2026-10-25 (js/next/cc.js, engine/pc_cc_api.py, read-only): top-level pages without a sub bar
 export const CC = [
+  { id: 'start', label: 'Start & Accounts', icon: 'power', desc: 'START BOT as one checklist (NinjaTrader, accounts, setup, Sim test, arm, running) and every account: add, balance, funded, remove' },
   { id: 'goals', label: 'Goals', icon: 'target', desc: 'Eval progress per account, 2-4 trades a week, the ATLAS 20-trade scorecard, payout and scale' },
   { id: 'evaltl', label: 'Eval timeline', icon: 'calendar', desc: 'Session-by-session P&L of the eval with the 10 / 15 session marks and the days ahead' },
   { id: 'sesscal', label: 'Session calendar', icon: 'week', desc: 'The next 20 trading days: early closes, CME holidays, the clock change' },
@@ -113,7 +114,7 @@ export const CC = [
 // NAV_NAMES only renames the sidebar entry (the page title stays TITLES[id]).
 // 2026-10-25 PM: Home · Zlarior · ATLAS · Results · All tools; the pages each bot page holds are in BOTS (not repeated here).
 export const GROUPS = [
-  { label: 'Main', ids: ['cc', 'zlarior', 'atlas', 'data', 'modules'] },
+  { label: 'Main', ids: ['cc', 'start', 'zlarior', 'atlas', 'data', 'modules'] },
   { label: 'Advanced', advanced: true, sections: [
     { label: 'Accounts', ids: ['goals', 'sesscal'] },
     { label: 'Bot', ids: ['morning', 'ntpanel', 'botlog', 'timeline'] },
@@ -121,7 +122,7 @@ export const GROUPS = [
     { label: 'Help', ids: ['runbook', 'audit', 'features', 'archive'] },
   ] },
 ];
-export const NAV_NAMES = { cc: 'Home', data: 'Results', modules: 'All tools', command: 'Today (classic)', archive: 'Archive (old engine)' };
+export const NAV_NAMES = { cc: 'Home', start: 'Start', data: 'Results', modules: 'All tools', command: 'Today (classic)', archive: 'Archive (old engine)' };
 
 // The two bot pages (2026-10-25 PM): a segmented control on top picks the section; a section with several pages shows
 // them as chips. "atlas:brain" = the one ATLAS page showing one part (second.js atlasPart). Each page belongs to one bot.

@@ -58,6 +58,7 @@ import { second as secondPage, atlas as atlasPage, initTwoCards } from './next/s
 import { scale as scalePage } from './next/scale.js';
 import { pages as ccPages, initCC } from './next/cc.js';
 import { learnlit as learnlitPage, learnatlas as learnatlasPage } from './next/learning.js';
+import { start as startPage } from './next/start.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -75,7 +76,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   morning: ops.morning, livechart: ops.livechart, botlog: ops.botlog, ntpanel: ops.ntpanel, timeline: ops.timeline, livesettings: ops.livesettings,
   setups: setupsPage, sensitivity: sensPage, intel: intelPage, brain: brainPage, perf: perfPage, second: secondPage, atlas: atlasPage, scale: scalePage,
   rules: mods.rules, cold: mods.cold, risk: mods.risk, alerts: { show: () => settingsPage.show() }, modules: { show: () => {} },
-  playbook: { show: () => {} }, learnlit: learnlitPage, learnatlas: learnatlasPage, ...ccPages };
+  playbook: { show: () => {} }, learnlit: learnlitPage, learnatlas: learnatlasPage, start: startPage, ...ccPages };
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };
 
 // installable home-screen app: register the service worker (no-op where unsupported, e.g. plain http on a LAN IP in some browsers).
