@@ -56,7 +56,7 @@ DEFAULTS = {
     # goal 3: a C8 Z06, no date
     "z06": {"name": "C8 Z06", "target": 60000.0, "note": "about $55K down + a $5K cushion on a ~$108K all-in 2023-24 Z06"},
     "plan": {"jobs": 2900.0, "kalshi_day_lo": 50.0, "kalshi_day_hi": 100.0, "kalshi_days": 30},
-    "publish": True,                                          # the phone shows the figures (the public dashboard site)
+    "publish": False,                                         # the phone shows the figures (the public dashboard site)
 }
 # the owner's plan (chat 2026-10-26): per account type the count, the bot, the firm's cap, the price + where to get it
 TYPES = {

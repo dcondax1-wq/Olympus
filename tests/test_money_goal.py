@@ -136,6 +136,10 @@ def file_checks():
         q = os.path.join(td, "b.json")
         MG.save({"savings": 22000, "jobs": 1000}, q, now=NOW)
         hb = MG.heartbeat_block(q)
+        check("c. default: the public phone site gets no savings / jobs / Kalshi (privacy, until the owner switches it on)",
+              hb["hidden"] and "savings" not in hb["inputs"], hb)
+        MG.save({"settings": {"publish": True}}, q, now=NOW)
+        hb = MG.heartbeat_block(q)
         check("c. heartbeat block: the figures + targets", hb["inputs"]["savings"][-1]["usd"] == 22000 and hb["inputs"]["settings"]["car"]["target"] == 38000, hb)
         MG.save({"settings": {"publish": False}}, q, now=NOW)
         hb = MG.heartbeat_block(q)
@@ -271,7 +275,7 @@ def wiring_checks():
     from engine import live_publish as LP
     with tempfile.TemporaryDirectory() as td:
         q = os.path.join(td, "g.json")
-        MG.save({"savings": 20500, "jobs": 2900, "kalshi": 300}, q, now=NOW)
+        MG.save({"savings": 20500, "jobs": 2900, "kalshi": 300, "settings": {"publish": True}}, q, now=NOW)
         hbp = {"t": NOW, "running": True, "host": "SURFACE", "money": MG.heartbeat_block(q),
                "second": {"route": {"account_b": {"account": "EV25K", "eval": {"status": "open", "balance": 25000}}}}}
         out = LP.build(hbp, now=NOW, lm={})

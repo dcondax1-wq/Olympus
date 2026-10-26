@@ -527,7 +527,7 @@ part yourself or fold it into a script.**
   Heartbeat `money` (heartbeat_block; publish off = targets only) -> cloud state pc.money -> data.json / home.json
   goals.money; live.json `money` (`money_goal.from_heartbeat`, ~7 KB, dropped first by `fit`). UI `moneycore.js` (MoneyUI,
   byte-identical phone / PC): phone goals.js v3 (#/goals bottom; the old Goals card on Full overview), PC `money.js` from
-  cc.js Goals (form only when local); sw le-public-v39. The public dashboard site shows the figures while publish is on.
+  cc.js Goals (form only when local); sw le-public-v39. The public dashboard site shows the figures only while publish is on (default OFF since 2026-10-26: the site is public; the owner switches it on in the PC form).
   Shots research/handoff/2026-10-26/ui_money_goal/.
 - **Phone live feed (2026-10-21, `engine/live_publish.py`, `tools/web_public/live.js`, `tests/test_live_publish.py`):** the PC
   force-pushes one `live.json` (verdict, PC account / eval / position, feed ages, health, check-in time) to branch `live` of the
