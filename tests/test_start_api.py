@@ -419,9 +419,10 @@ def main():
             started.clear()
             r = G.resume_now(lambda body: (started.append(body), setattr(w.bot, "running", True),
                                            setattr(w.bot, "cfg", {"nt_account": L25, "adapter": "ninjatrader"}), {"ok": True})[-1],
-                             connected=True, live_state={}, env={"NINJATRADER_LIVE": "1"}, state_fn=state)
-            check("resume_now: the running bot is on the wrong account -> refused with stop", not r["ok"] and r.get("stop")
-                  and "not the 50K" in r["error"], r)
+                             connected=True, live_state={}, env={"NINJATRADER_LIVE": "1"}, state_fn=state,
+                             stop_fn=lambda: setattr(w.bot, "running", False))
+            check("resume_now: the running bot is on the wrong account -> stopped (Bot Control's stop), refused",
+                  not r["ok"] and r.get("stop") and "not the 50K" in r["error"] and w.bot.running is False, r)
             w.bot.running, w.bot.cfg = False, {}
 
             def fake_http(path, body=None, timeout=5):

@@ -932,11 +932,12 @@ def start_body(cfg) -> dict:
     return body
 
 
-def resume_now(start_fn, connected=None, live_state=None, env=None, state_fn=None, optin=None) -> dict:
+def resume_now(start_fn, connected=None, live_state=None, env=None, state_fn=None, optin=None, stop_fn=None) -> dict:
     """In the server: "Start trading" without the phrase. Refused unless resume_problem() is None AND the auto-resume gate
     passes (engine/autoresume.decide: NINJATRADER_LIVE=1 in this server, no kill switch / daily loss today, no failed start
     in the last 10 minutes, NinjaTrader CONNECTED). start_fn = Bot Control's start (the bot + its autostart record, the
-    phrase stripped). After the start the routes are checked in the running bot and it is stopped when they are wrong."""
+    phrase stripped). After the start the routes are checked in the running bot and it is stopped when they are wrong
+    (stop_fn = Bot Control's stop: the bot and its autostart record)."""
     from . import autoresume
     cfg = _read(CFG)
     why = resume_problem(cfg, optin=optin)
@@ -960,6 +961,11 @@ def resume_now(start_fn, connected=None, live_state=None, env=None, state_fn=Non
     st = state_fn() if state_fn else _state()
     probs = verify_routes(cfg["lit"], cfg["atlas"], state=st)
     if probs:
+        try:
+            if stop_fn is not None:
+                stop_fn()
+        except Exception:
+            pass
         return {"ok": False, "error": "Wrong account set-up, so the bot was stopped: " + "; ".join(probs), "stop": True}
     return {"ok": True, "say": f"Running: Zlarior → 50K {cfg['lit']} · ATLAS → 25K {cfg['atlas']}",
             "refused_accounts": d.get("refused_accounts") or []}
@@ -1080,6 +1086,7 @@ def step_auto(cfg, phrase="", py=sys.executable, after_update=False, sleep=time.
         if not server_up() and not start_server():
             _note("start", "The bot server did not start. Trying again in a minute.", retry_s=60)
             return 1
+        last = None
         for _ in range(3):                                  # a fresh server may resume the bot by itself first
             if bot_running():
                 break
@@ -1092,8 +1099,14 @@ def step_auto(cfg, phrase="", py=sys.executable, after_update=False, sleep=time.
             if r.get("need") == "phrase":
                 _note("arm", r.get("error") or "Type I ACCEPT LIVE RISK to start.", need="phrase")
                 return 3
-            _note("start", str(r.get("error") or "Not started.")[:300], retry_s=30)
+            last = str(r.get("error") or "Not started.")[:300]
+            if r.get("stop"):
+                break                                       # it started on the wrong account and was stopped: no retry here
+            _note("start", last, retry_s=30)
             sleep(30)
+        if not bot_running():
+            _note("start", f"{last or 'Not started.'} Trying again in a minute.", retry_s=60)
+            return 1
         probs = verify_routes(lit, atlas)
         if probs:
             if bot_running():

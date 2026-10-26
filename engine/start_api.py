@@ -229,11 +229,16 @@ def _start_fn():
     return botctl.HOOKS.get("start") or (lambda body: _bot().start(body))
 
 
+def _stop_fn():
+    from . import botctl
+    return botctl.HOOKS.get("stop") or (lambda: _bot().stop())
+
+
 @router.post("/api/next/start/resume")
 def r_resume(request: Request):
     """Start without the phrase, through the auto-resume gate (engine/go.resume_now); the "Start trading" job calls it."""
     _NT["t"] = 0.0
-    return _do(request, lambda: go.resume_now(_start_fn(), connected=_connected(), state_fn=_state))
+    return _do(request, lambda: go.resume_now(_start_fn(), connected=_connected(), state_fn=_state, stop_fn=_stop_fn()))
 
 
 @router.post("/api/next/start/clock")
