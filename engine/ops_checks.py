@@ -321,8 +321,14 @@ def internet(probe=http_probe, urls=PROBE_URLS) -> dict:
     """{"up": bool, "drift_s": server clock - this PC's clock (median of the answers), "n": answers}."""
     res = [probe(u) for u in urls]
     up = [r for r in res if r.get("ok")]
-    drifts = sorted(r["date"] - (r["t0"] + r["t1"]) / 2.0 for r in up if r.get("date"))
-    return {"up": bool(up), "n": len(up), "drift_s": drifts[len(drifts) // 2] if drifts else None}
+    rows = sorted((r["date"] - (r["t0"] + r["t1"]) / 2.0, max(0.0, r["t1"] - r["t0"]) / 2.0) for r in up if r.get("date"))
+    if not rows:
+        return {"up": bool(up), "n": len(up), "drift_s": None, "unc_s": None}
+    d, half_rtt = rows[len(rows) // 2]
+    # unc_s: how far off this reading can be. The server stamps the reply somewhere inside the round trip (+/- half of it;
+    # a slow or CPU-starved PC stretches the round trip, owner's Surface 2026-10-25: "5.0 s ahead" while polls took 30 s)
+    # and the Date header is whole seconds (+1 s).
+    return {"up": bool(up), "n": len(up), "drift_s": d, "unc_s": round(half_rtt + 1.0, 3)}
 
 
 def ping_server(port: int | None = None, timeout: float = 3.0) -> dict | None:
