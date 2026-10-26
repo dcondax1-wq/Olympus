@@ -305,7 +305,7 @@ def scenario_one_time_setup(sb: Sandbox, tag: str):
     check(f"[{tag}] ... task LiquidityEngineOps: every 5 min + at logon, ops_tick.py", bool(t2)
           and t2["Triggers"][0]["Repetition"]["Interval"] == "PT5M" and "ops_tick.py" in t2["Actions"][0]["Arguments"], t2)
     desk = sorted(os.listdir(os.path.join(sb.dir, "home", "Desktop")))
-    check(f"[{tag}] ... 4 desktop icons", desk == ["LE DASHBOARD.lnk", "LE HEALTH CHECK.lnk", "LE STOP BOT.lnk", "LE UPDATE.lnk"], desk)
+    check(f"[{tag}] ... 2 desktop icons (LE START = the Start page, LE STOP BOT)", desk == ["LE START.lnk", "LE STOP BOT.lnk"], desk)
     stp = os.listdir(os.path.join(sb.dir, "appdata/Microsoft/Windows/Start Menu/Programs/Startup"))
     check(f"[{tag}] ... NinjaTrader Startup shortcut", stp == ["NinjaTrader 8 (Liquidity Engine).lnk"], stp)
     py = [c[1:] for c in sb.calls("python")]
@@ -392,11 +392,16 @@ def scenario_small(sb: Sandbox):
         errs = ps_errors(out, err)
         check(f"[dry] {script} {' '.join(args)} exits 0, no PowerShell error", code == 0 and not errs, f"{code} {errs[:6]} {out[-800:]}")
     # the SETUP_SHORTCUTS.bat pair, for real, twice (the second run replaces what the first made)
+    dk = os.path.join(sb.dir, "home", "Desktop")
+    for old in ("LE START BOT.lnk", "LE UPDATE.lnk", "LE DASHBOARD.lnk", "LE HEALTH CHECK.lnk", "My own.lnk"):
+        open(os.path.join(dk, old), "w").close()                  # the icons an older version made (and one of the owner's)
     for i in (1, 2):
         c1, o1, e1 = sb.ps("make_shortcuts.ps1")
         c2, o2, e2 = sb.ps("install_ops_task.ps1")
-        check(f"[shortcuts run {i}] make_shortcuts + install_ops_task exit 0, 4 icons + the helper task", c1 == 0 and c2 == 0
-              and not ps_errors(o1, e1) and not ps_errors(o2, e2) and o1.count("[OK]") == 4 and sb.task("LiquidityEngineOps"),
+        left = sorted(n for n in os.listdir(dk) if n.startswith("LE ") or n == "My own.lnk")
+        check(f"[shortcuts run {i}] make_shortcuts + install_ops_task exit 0, 2 icons (the 4 old ones removed, the owner's kept) "
+              "+ the helper task", c1 == 0 and c2 == 0 and left == ["LE START.lnk", "LE STOP BOT.lnk", "My own.lnk"]
+              and not ps_errors(o1, e1) and not ps_errors(o2, e2) and o1.count("[OK]") == 2 and sb.task("LiquidityEngineOps"),
               f"{c1} {c2} {ps_errors(o1, e1)} {ps_errors(o2, e2)} {o1} {o2}")
     c, o, e = sb.ps("install_autostart.ps1", "-Port", str(sb.port))
     c2, o2, e2 = sb.ps("install_autostart.ps1", "-Port", str(sb.port))

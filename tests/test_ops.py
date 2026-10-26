@@ -487,8 +487,12 @@ def main() -> int:
                 pprobs.append(f"{p}: no -DryRun")
         check("ps1: balanced braces / parens / brackets, param block, -DryRun", not pprobs, pprobs)
         sc = read("scripts/make_shortcuts.ps1")
-        check("shortcuts: UPDATE, DASHBOARD, HEALTH CHECK, STOP on the desktop", all(x in sc for x in ("UPDATE.bat", "START_DASHBOARD.bat", "HEALTH_CHECK.bat",
-                                                                                                        "STOP_BOT.bat")) and "GetFolderPath('Desktop')" in sc)
+        check("shortcuts: LE START (START_DASHBOARD.bat = the Start page) and LE STOP BOT on the desktop, the older icons removed",
+              all(x in sc for x in ("'LE START'", "START_DASHBOARD.bat", "'LE STOP BOT'", "STOP_BOT.bat", "$retired"))
+              and all(x in sc for x in ("'LE UPDATE'", "'LE DASHBOARD'", "'LE HEALTH CHECK'", "'LE START BOT'"))
+              and "GetFolderPath('Desktop')" in sc and "File = 'UPDATE.bat'" not in sc)
+        check("START_DASHBOARD.bat opens the Start page and waits up to 5 min for the server (logon)",
+              "/?page=start" in sd and "lss 150" in sd)
         it = read("scripts/install_ops_task.ps1")
         check("ops task: pythonw scripts\\ops_tick.py every 5 min, limited user, not elevated", "pythonw.exe" in it and "ops_tick.py" in it
               and "New-TimeSpan -Minutes 5" in it and "RunLevel Limited" in it and "Highest" not in it)

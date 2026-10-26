@@ -801,6 +801,18 @@ def _migrate_account_b():
         print(f"[account_b] migration skipped: {e.__class__.__name__}: {e}", flush=True)
 
 
+def _ensure_shortcuts():
+    """The desktop icons (LE START + LE STOP BOT) and the Startup-folder shortcuts of this version, once (engine/go.py,
+    Windows only): an update brings the new icons without a click. Never raises."""
+    try:
+        from engine import go as _go
+        r = _go.ensure_shortcuts()
+        if r.get("made") or not r.get("ok"):
+            print(f"[shortcuts] {r}", flush=True)
+    except Exception as e:
+        print(f"[shortcuts] skipped: {e.__class__.__name__}: {e}", flush=True)
+
+
 def _autostart_startup():
     WATCHDOG.server_started_at = int(time.time())
     if os.environ.get("LE_NO_AUTOSTART") == "1":
@@ -808,6 +820,7 @@ def _autostart_startup():
     else:
         _migrate_account_b()             # before the resume reads ATLAS's account
         threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
+        threading.Thread(target=_ensure_shortcuts, name="shortcuts", daemon=True).start()
     WATCHDOG.start()
     HEARTBEAT.start()
     LIVEPUB.start()                      # phone live.json every minute (engine/live_publish.py)

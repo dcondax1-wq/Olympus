@@ -1,4 +1,4 @@
-"""START BOT: the one double-click start for the owner (START_BOT.bat / the "LE START BOT" desktop icon).
+"""START BOT: the one start for the owner (the Start page's "Start trading" button, step_auto; START_BOT.bat in the console).
 
     python -X utf8 -m engine.go            # what START_BOT.bat runs
     python -X utf8 -m engine.go --dry-run  # say what it would do, change nothing
@@ -394,9 +394,35 @@ def update(py=sys.executable) -> bool:
 
 
 def shortcut():
-    """The "LE START BOT" desktop icon (scripts/make_shortcuts.ps1, Windows only; replaces the icons it made before)."""
+    """The desktop icons (scripts/make_shortcuts.ps1: LE START + LE STOP BOT, Windows only; replaces the icons it made
+    before)."""
     if os.name == "nt":
         subprocess.run(_ps(os.path.join(ROOT, "scripts", "make_shortcuts.ps1")), cwd=ROOT, capture_output=True)
+
+
+SHORTCUTS_V = 2          # the icon set of scripts/make_shortcuts.ps1 (2 = LE START + LE STOP BOT, 2026-10-26)
+SHORTCUTS_MARK = os.path.join(ROOT, "data", "shortcuts.json")     # gitignored
+
+
+def ensure_shortcuts(run=None, mark=None, startup=None) -> dict:
+    """At the server's start (after an update): the desktop icons and the Windows Startup-folder shortcuts (NinjaTrader,
+    the bot server = START_DASHBOARD.bat, which opens the Start page) are made once per SHORTCUTS_V, so the PC gets the
+    new icons without any click. Windows only (tests pass run). Never raises."""
+    mark = mark or SHORTCUTS_MARK
+    if os.name != "nt" and run is None:
+        return {"ok": True, "skipped": "not Windows"}
+    if _read(mark).get("v") == SHORTCUTS_V:
+        return {"ok": True, "already": True}
+    try:
+        r = (run or subprocess.run)(_ps(os.path.join(ROOT, "scripts", "make_shortcuts.ps1")), cwd=ROOT, capture_output=True,
+                                    text=True, timeout=120)
+        if r.returncode != 0:
+            return {"ok": False, "error": ((r.stdout or "") + (r.stderr or "")).strip()[-200:]}
+        (startup or startup_shortcuts)()
+        _save({"v": SHORTCUTS_V, "t": int(time.time())}, mark)
+        return {"ok": True, "made": True}
+    except Exception as e:
+        return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
 
 
 # ------------------------------------------------------------------------------------------------ the steps
@@ -1017,7 +1043,8 @@ def step_auto(cfg, phrase="", py=sys.executable, after_update=False, sleep=time.
         t0 = time.time()
         while autoresume.nt_connected({"adapter": "ninjatrader"}) is not True:
             if time.time() - t0 > wait_s:
-                _note("nt", "NinjaTrader is still not connected. Log in to NinjaTrader; the page tries again by itself.",
+                _note("nt", "NinjaTrader is still not connected. Log in to NinjaTrader; the page tries again by itself. (In "
+                            "NinjaTrader, Connections > Configure: tick 'Connect on startup' and it connects by itself.)",
                       retry_s=60)
                 return 1
             _note("nt", "Log in to NinjaTrader and connect your MFFU account. This page goes on by itself.", retry_s=NT_EVERY_S)

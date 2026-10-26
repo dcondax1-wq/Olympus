@@ -275,6 +275,22 @@ def main():
         check("session: Mon 19:00 -> Tue", g2.session_day(mk(2026, 10, 26, 19, 0)) == "2026-10-27")
         check("session: Fri 18:30 -> Mon", g2.session_day(mk(2026, 10, 30, 18, 30)) == "2026-11-02")
         check("market: Sat closed", not g2.market_open(mk(2026, 10, 31, 12, 0)))
+
+        # the icons after an update (server start): made once per icon-set version, the Startup-folder shortcuts too
+        from types import SimpleNamespace as NS
+        with tempfile.TemporaryDirectory() as tmp:
+            mark, ran, sc = os.path.join(tmp, "shortcuts.json"), [], []
+            run = lambda cmd, **k: (ran.append(cmd), NS(returncode=0, stdout="[OK]", stderr=""))[1]  # noqa: E731
+            r1 = g2.ensure_shortcuts(run=run, mark=mark, startup=lambda: sc.append(1))
+            r2 = g2.ensure_shortcuts(run=run, mark=mark, startup=lambda: sc.append(1))
+            check("shortcuts: made once (make_shortcuts.ps1 + the Startup folder), then nothing until the icon set changes",
+                  r1.get("made") and r2.get("already") and len(ran) == 1 and "make_shortcuts.ps1" in " ".join(ran[0]) and sc == [1]
+                  and g2._read(mark).get("v") == g2.SHORTCUTS_V, (r1, r2, ran))
+            bad = lambda cmd, **k: NS(returncode=1, stdout="", stderr="COM error")  # noqa: E731
+            os.remove(mark)
+            r3 = g2.ensure_shortcuts(run=bad, mark=mark, startup=lambda: sc.append(1))
+            check("shortcuts: a failure is reported, no mark (tried again at the next start)", not r3["ok"] and not os.path.exists(mark), r3)
+            check("shortcuts: not Windows -> skipped", g2.ensure_shortcuts(mark=mark).get("skipped") == "not Windows" if os.name != "nt" else True)
     finally:
         G.subprocess.run = real_run
     n = sum(RES)
