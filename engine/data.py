@@ -50,7 +50,11 @@ def _tag(df: pd.DataFrame) -> tuple:
     tdate = shifted.normalize()
     tday = (tdate.tz_localize(None).values.astype("datetime64[D]").astype(np.int64)).astype(np.int64)
     dow = tdate.dayofweek.values.astype(np.int32)
-    date_str = [d.strftime("%Y-%m-%d") for d in tdate]
+    # the trading date's yyyy-mm-dd, one strftime per distinct day (was one per bar: ~12x slower, the live poll does
+    # this every minute): tday is that date as days since 1970, so the text is identical
+    u, inv = np.unique(tday, return_inverse=True)
+    names = np.datetime_as_string(u.astype("datetime64[D]"), unit="D").tolist()
+    date_str = [names[i] for i in inv.ravel().tolist()]
     return mod, tday, dow, date_str
 
 

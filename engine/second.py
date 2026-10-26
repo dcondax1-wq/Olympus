@@ -1516,7 +1516,28 @@ def _row(x):
     return {k: x.get(k) for k in _KEEP if x.get(k) is not None} if isinstance(x, dict) else None
 
 
+_BT_CACHE: dict = {}
+BT_CACHE_S = 300.0
+
+
 def backtest(key: str, sc: dict) -> dict:
+    """The research numbers of one strategy (_backtest), kept BT_CACHE_S: they come from stored research files, and the
+    PC dashboard's board / goals / second pages ask for them every 15 s (~190 ms a call, more on the owner's Surface, in
+    the bot's process). Callers get their own copy."""
+    import copy
+    import time as _t
+    k = (key, json.dumps(sc, sort_keys=True, default=str))
+    hit = _BT_CACHE.get(k)
+    if hit is not None and _t.time() - hit[0] < BT_CACHE_S:
+        return copy.deepcopy(hit[1])
+    out = _backtest(key, sc)
+    if len(_BT_CACHE) > 64:
+        _BT_CACHE.clear()
+    _BT_CACHE[k] = (_t.time(), copy.deepcopy(out))
+    return out
+
+
+def _backtest(key: str, sc: dict) -> dict:
     """The research numbers of one strategy at $500 risk a trade: alone, and LIT + it on one account vs LIT alone, per
     period (H1 / H2 / 2026 / 2025 / 2021-24). From the research JSON named in second_model.json "research"."""
     rs = sc.get("research") or {}

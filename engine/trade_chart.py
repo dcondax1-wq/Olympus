@@ -23,8 +23,9 @@ Where pictures are made:
   cloud    tools/cloud_monitor.py -> cloud_hook(): every new paper trade (each strategy) at entry, again at the exit;
            <out>/charts/<strategy>/<trade-id>.png + charts/index.json (newest KEEP per strategy) on the dashboard branch;
            tools/build_web_dashboard.py copies them to the site (data.json "charts").
-  PC       engine/live.py LiveBot._chart_tick -> PcCharts (one background thread after routing; never delays LIT) ->
-           logs/charts/, served by engine/chart_api.py at /api/next/charts and /api/next/chart/<id>.
+  PC       engine/live.py LiveBot._chart_tick -> PcCharts.draw in the background worker process (engine/bg_worker.py; its
+           thread when the worker is off; after routing, never delays LIT) -> logs/charts/, served by engine/chart_api.py
+           at /api/next/charts and /api/next/chart/<id>.
   examples python -m engine.trade_chart backfill --strategy all --since 2026-07-01 [--n 20] -> research/lab/chart_examples/
            (backtest trades for the pages' examples, ~20 per strategy).
   one      python -m engine.trade_chart one --strategy ema_lon_vix --day 2026-10-13 [--out file.png]
@@ -1538,38 +1539,75 @@ class PcCharts:
 
         def run():
             try:
-                st = Store(self.root)
-                jobs = []
-                for t in lit_trades or []:
-                    tt = norm_trade(t)
-                    if now - tt["entry_t"] <= 12 * 86400 and st.stale("lit", tt):
-                        jobs.append(("lit", tt, None))
-                for key, s in ((second_res or {}).get("strategies") or {}).items():
-                    for t in s.get("trades") or []:
-                        tt = norm_trade(t)
-                        if now - tt["entry_t"] <= 12 * 86400 and st.stale(key, tt):
-                            jobs.append((key, tt, None))
-                jobs.sort(key=lambda j: -j[1]["entry_t"])
-                cache = {}
-                for key, tt, _ in jobs[:MAX_NEW]:
-                    try:
-                        res = None
-                        if key != "lit":
-                            if key not in cache:
-                                cache[key] = second_run(key, df5, df1, now)
-                            res = cache[key]
-                        row = make(key, tt, df5, df1, path=st.path(key, tt), now=now, src="pc", keep=keep if key == "lit" else None, res=res)
-                        st.put(key, row)
-                    except Exception as e:
-                        self.error = f"{key}: {e.__class__.__name__}: {e}"
-                st.save(now)
-                self.last = int(now)
-            except Exception as e:
-                self.error = f"{e.__class__.__name__}: {e}"
+                self.draw(lit_trades, second_res, df5, df1, now, keep=keep)
             finally:
                 self.busy = False
         threading.Thread(target=run, name="trade-charts", daemon=True).start()
         return True
+
+    def draw(self, lit_trades, second_res, df5, df1, now, keep=None):
+        """One tick's pictures, in the caller's thread (tick() runs it in a thread; engine/bg_worker.py in its own process).
+        Never raises; self.last / self.error tell how it went."""
+        try:
+            st = Store(self.root)
+            jobs = []
+            for t in lit_trades or []:
+                tt = norm_trade(t)
+                if now - tt["entry_t"] <= 12 * 86400 and st.stale("lit", tt):
+                    jobs.append(("lit", tt, None))
+            for key, s in ((second_res or {}).get("strategies") or {}).items():
+                for t in s.get("trades") or []:
+                    tt = norm_trade(t)
+                    if now - tt["entry_t"] <= 12 * 86400 and st.stale(key, tt):
+                        jobs.append((key, tt, None))
+            jobs.sort(key=lambda j: -j[1]["entry_t"])
+            cache = {}
+            for key, tt, _ in jobs[:MAX_NEW]:
+                try:
+                    res = None
+                    if key != "lit":
+                        if key not in cache:
+                            cache[key] = second_run(key, df5, df1, now)
+                        res = cache[key]
+                    row = make(key, tt, df5, df1, path=st.path(key, tt), now=now, src="pc", keep=keep if key == "lit" else None, res=res)
+                    st.put(key, row)
+                except Exception as e:
+                    self.error = f"{key}: {e.__class__.__name__}: {e}"
+            st.save(now)
+            self.last = int(now)
+        except Exception as e:
+            self.error = f"{e.__class__.__name__}: {e}"
+
+    def sigs(self) -> dict:
+        """{chart id: sig} of the pictures in the store (a picture whose file is gone is left out): what is drawn already,
+        so the PC bot sends a tick only when one of its trades is new or changed (pending())."""
+        out = {}
+        try:
+            ix = Store(self.root).ix
+            for key, rows in (ix.get("strategies") or {}).items():
+                for r in rows or []:
+                    if r.get("id") and r.get("tid") and os.path.exists(os.path.join(self.root, key, r["tid"] + ".png")):
+                        out[r["id"]] = r.get("sig")
+        except Exception:
+            pass
+        return out
+
+
+def pending(lit_trades, second_res, now, drawn: dict) -> bool:
+    """True when a tick would draw something: a trade of the last 12 days (LIT's or a second strategy's) whose picture is
+    missing from `drawn` (PcCharts.sigs) or shows an older state. Same test as Store.stale, without reading the store."""
+    rows = [("lit", t) for t in lit_trades or []]
+    rows += [(key, t) for key, s in ((second_res or {}).get("strategies") or {}).items() for t in s.get("trades") or []]
+    for key, t in rows:
+        tt = norm_trade(t)
+        if now - tt["entry_t"] <= 12 * 86400 and drawn.get(chart_id(key, tt)) != sig_of(tt):
+            return True
+    return False
+
+
+def lit_pending(lit_trades, now, drawn: dict) -> bool:
+    """pending() for LIT's trades only (the PC bot then sends its market, keep, with the tick)."""
+    return pending(lit_trades, None, now, drawn)
 
 
 # ------------------------------------------------------------------------------------------------ backtest examples

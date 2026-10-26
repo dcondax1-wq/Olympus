@@ -44,12 +44,46 @@ HOT_RE = re.compile("|".join(HOT), re.I)
 
 _cache: dict = {}
 _lock = threading.Lock()
+_BG = {"on": False, "inflight": set(), "warm": {}}
+
+
+def background_refresh(on: bool = True):
+    """The PC bot (engine/live.py, the real bot only): an expired entry (the calendar every 30 min, VIX / VXN every 15 min:
+    downloads with 15-30 s timeouts) is served at once from the last copy and downloaded again in a background thread, so a
+    slow or hanging network never sits inside a poll before LIT's routing. The first read still waits (nothing to serve).
+    Off (the default: cloud monitor, tools, tests): the caller downloads, as before."""
+    _BG["on"] = bool(on)
+    # the calendar download rewrites ff_archive.csv when it changed: parse it again in that thread (the entry guard's
+    # news_hit and upcoming_events read these two)
+    _BG["warm"] = {"ff": [(historical_events, ("high",)), (historical_events, ("high", "medium"))]}
+
+
+def _refresh(key, fn):
+    try:
+        val = fn()
+        with _lock:
+            _cache[key] = (time.time(), val)
+        for args in _BG["warm"].get(key, ()):             # re-read the files the download rewrote, here, not in the poll
+            try:
+                args[0](*args[1:])
+            except Exception:
+                pass
+    except Exception:
+        pass                                              # the last copy stays; the next read tries again
+    finally:
+        with _lock:
+            _BG["inflight"].discard(key)
 
 
 def _cached(key, ttl, fn):
     with _lock:
         hit = _cache.get(key)
         if hit and time.time() - hit[0] < ttl:
+            return hit[1]
+        if hit and _BG["on"]:
+            if key not in _BG["inflight"]:
+                _BG["inflight"].add(key)
+                threading.Thread(target=_refresh, args=(key, fn), name=f"news-refresh-{key}", daemon=True).start()
             return hit[1]
     val = fn()
     with _lock:
@@ -97,9 +131,15 @@ def _archive(evs):
     if not rows:
         return
     df = pd.DataFrame(rows)
+    old = None
     if os.path.exists(path):
+        with open(path, encoding="utf-8", errors="replace", newline="") as fh:
+            old = fh.read()
         df = pd.concat([pd.read_csv(path), df])
-    df.drop_duplicates(["date", "time_et", "event"]).sort_values(["date", "time_et"]).to_csv(path, index=False)
+    text = df.drop_duplicates(["date", "time_et", "event"]).sort_values(["date", "time_et"]).to_csv(index=False)
+    if text != old:                       # unchanged: not rewritten (its time stays, historical_events keeps its parse)
+        with open(path, "w", encoding="utf-8", newline="") as fh:
+            fh.write(text)
 
 
 # ------------------------------------------------------------------ historical calendar (backtests)

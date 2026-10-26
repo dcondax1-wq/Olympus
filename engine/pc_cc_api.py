@@ -247,7 +247,9 @@ def poll_line(ps) -> str:
         return ""
     top = sorted((s for s in ps.get("stages") or [] if " > " not in str(s.get("name"))), key=lambda s: -(s.get("ms") or 0))[:3]
     th = [t for t in ps.get("threads") or [] if (t.get("cpu_ms") or 0) >= 500][:1]
-    return (f"{ps['total_ms'] / 1000:.1f} s a poll (CPU {(ps.get('cpu_ms') or 0) / 1000:.1f} s); slowest: "
+    lit = ps.get("lit_ms")
+    return ((f"LIT decided and routed {lit / 1000:.1f} s into the poll; " if isinstance(lit, (int, float)) else "")
+            + f"{ps['total_ms'] / 1000:.1f} s a poll (CPU {(ps.get('cpu_ms') or 0) / 1000:.1f} s); slowest: "
             + ", ".join(f"{s['name']} {(s.get('ms') or 0) / 1000:.1f} s" for s in top)
             + (f"; busy meanwhile: {th[0]['name']} {th[0]['cpu_ms'] / 1000:.1f} s CPU" if th else ""))
 

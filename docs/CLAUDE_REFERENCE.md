@@ -369,6 +369,10 @@ part yourself or fold it into a script.**
   second_model.json by hand (the server does it at start).
 - `python -X utf8 -m tests.test_poll_timing [--full]`: the poll stage timer and the outgoing-folder cache (`--full` replays
   test_lit_live's LiveBot with and without the timer, ~15 min).
+- `python -X utf8 -m tests.test_poll_speed [--quick] [--compare]`: the LIT path of the poll (health.lit_ms) with every
+  background feature on vs off (gate: median <= 1.6 x off + 150 ms, p90 <= 2 x off + 300 ms, median <= 3 s); worker =
+  threads (orders, second run, ATLAS v2, pictures byte for byte); bar-frame deltas; worker deaths / hangs; news / ES off the
+  poll path (~3 min; `--compare` also runs the old threads and checks the gate catches them).
 - `python tools/export_backtest.py`: the live-settings 5-year replay → `research/lab/backtest_live.json`. Contains periods, months,
   stop buckets, eval odds, **per-trade reports** (why it entered / plan / result / lessons) and **lessons** (wins vs losses).
   About 1 min on 11 processes.
@@ -612,6 +616,26 @@ part yourself or fold it into a script.**
   every adapter: 2 reads a poll). The constant ~32 s (= ~2 s of work + one 30 s wait?) is still unproven: the first
   heartbeat with `health.poll.stages` names the stage (wall >> CPU = waiting on disk / network / a lock). Tests
   `tests.test_poll_timing` (15; `--full` also replays test_lit_live's LiveBot with and without the timer).
+- **Poll speed fix (2026-10-26, `engine/bg_worker.py`, `tests/test_poll_speed.py`):** measured cause = the GIL: the paper
+  work the bot ran in threads after routing (second.run ~0.8 s + ATLAS v2 `pc_step` ~2.4 s a minute, pictures ~0.5 s each,
+  here) overlapped the next poll; its LIT part (poll start -> routed, new `health.lit_ms`, heartbeat `health.poll.lit_ms`,
+  Bot loop line) went 0.57 s -> 2.5 s median / 5 s p90 (1 core: 1.4 / 3.5 s), lit_live.run wall 0.49 -> 3.6 s at the
+  same CPU. Now: (1) that work runs in ONE child process `python -m engine.bg_worker` at BELOW_NORMAL priority (nice 10):
+  jobs "second" (second.run + stop-hunt candidates + `atlas_v2.pc_step`) and "charts" (`PcCharts.draw`), length-prefixed
+  pickles on stdin / stdout, bars sent as deltas (`frame_packet`: exact prefix check, last 2,000 rows; the 5-year history
+  goes once), args pickled at submit, one job per kind (busy = skip), results set `bot.second` / `bot.atlas_v2` /
+  `_charts_drawn` from a receiver thread; pictures only sent when `trade_chart.pending` (keep only for a stale LIT
+  picture). Dies / hangs (600 s) -> callback error + restart (20 s gap); 3 deaths in a row or `LE_BG_WORKER=0` -> the old
+  threads. Child watches the parent pid, imports no adapter module. Account B and the routed second strategies stay in
+  the loop (they route); B's `second.run` no longer waits on second.py's `_LOCK` held by the paper thread. (2) news / VIX
+  downloads (15-30 s timeouts, every 15-30 min, before routing) -> `news.background_refresh(True)` (real bot only: stale
+  copy served, one refresh thread; the archive is rewritten only when changed so `historical_events` keeps its parse).
+  (3) the ES learning merge (5-year frame, every 5 min, before routing) -> refreshed after the state save. (4)
+  `data._tag` one strftime per day, not per bar (12x, identical): lit_live.run 0.46 -> 0.32 s. (5) dashboard: board /
+  goals 250 -> 20 ms (`second.backtest` memo 300 s, `hub_data.business_raw` cached by file stats). Result here (4 cores,
+  back-to-back polls): LIT path 0.41 s off / 0.40-0.53 s on (was 2.5 s); 1 core 0.43 s (was 1.37 s). Identity: test_lit_live
+  120/120 + bot 2/2, account_b --quick 45/45, worker == threads (orders, second run, ATLAS v2 state, PNG bytes). Next win
+  (not done, feed code owned elsewhere): `lit_live.feed_1m` iterates all 10k 5m groups in pandas (~130 ms a poll).
 - **Updates never blocked by the PC's own files (2026-10-26):** ATLAS's account (the account_b block) lives in the
   gitignored `data/account_b.json`; `second_model.json` ships `"account_b": null` and is never written for it
   (`account_b.raw_cfg`: local first, else the tracked block; `set_account_b` / `arm_b` / launch prep / the Start page write

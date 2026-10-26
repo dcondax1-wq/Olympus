@@ -78,11 +78,26 @@ def poll_stages_block(ps) -> dict | None:
         return None
     st = [{"name": clean_text(s.get("name"), 90), "ms": _i(s.get("ms")), "cpu_ms": _i(s.get("cpu_ms")), "n": _i(s.get("n"))}
           for s in ps["stages"] if isinstance(s, dict) and (" > " not in str(s.get("name")) or (_i(s.get("ms")) or 0) >= 50)]
-    return {"t": _i(ps.get("t")), "total_ms": _i(ps.get("total_ms")), "cpu_ms": _i(ps.get("cpu_ms")),
+    return {"t": _i(ps.get("t")), "total_ms": _i(ps.get("total_ms")), "lit_ms": _i(ps.get("lit_ms")), "cpu_ms": _i(ps.get("cpu_ms")),
             "wait_ms": _i(ps.get("wait_ms")), "other_ms": _i(ps.get("other_ms")), "slowest": clean_text(ps.get("slowest"), 90),
             "stages": st[:40], "threads": [{"name": clean_text(t.get("name"), 40), "cpu_ms": _i(t.get("cpu_ms"))}
                                            for t in (ps.get("threads") or [])[:4] if isinstance(t, dict)],
             "recent_ms": [_i(x) for x in (ps.get("recent_ms") or [])[-10:]]}
+
+
+def bg_block(b) -> dict | None:
+    """health.poll.bg: the background worker process (engine/bg_worker.py) that runs the paper work off the trading process:
+    on / why off, its pid, jobs done, errors, restarts, the last job of each kind (wall / CPU ms). Small. None before it."""
+    if not isinstance(b, dict):
+        return None
+    last = {}
+    for k, v in (b.get("last") or {}).items():
+        if isinstance(v, dict):
+            last[clean_text(k, 20)] = {"t": _i(v.get("t")), "ms": _i(v.get("ms")), "cpu_ms": _i(v.get("cpu_ms")), "ok": bool(v.get("ok")),
+                                       "error": clean_text(v.get("error"), 120)}
+    return {"on": bool(b.get("on")), "off": clean_text(b.get("off"), 120), "pid": _i(b.get("pid")), "jobs": _i(b.get("jobs")),
+            "errors": _i(b.get("errors")), "restarts": _i(b.get("restarts")), "busy": [clean_text(x, 20) for x in (b.get("busy") or [])][:4],
+            "last": last}
 
 
 def accounts_cfg(lm: dict | None) -> list:
@@ -739,7 +754,8 @@ def pc_health(bot, now=None) -> dict:
             "poll": {"last_t": lp, "age_s": (now - lp) if lp else None, "last_ok_t": _i(h.get("last_ok_poll")),
                      "errors": _i(getattr(bot, "errors", 0)), "consecutive_errors": _i(h.get("consecutive_errors")),
                      "last_error": clean_text(h.get("last_error"), 160), "last_error_t": _i(h.get("last_error_t")),
-                     "poll_ms": _i(h.get("poll_ms")), "stages": poll_stages_block(h.get("poll_stages"))},
+                     "poll_ms": _i(h.get("poll_ms")), "lit_ms": _i(h.get("lit_ms")), "bg": bg_block(h.get("bg")),
+                     "stages": poll_stages_block(h.get("poll_stages"))},
             "lit": {**_lit_stage(st), "setups_today": len(sigs), "last_setup": last_sig,
                     "day_trades": _i(st.get("day_trades")), "price": _f(st.get("price"))},
             "orders": {"today": len(sent), "entries_today": len(entries), "last": last_order,
