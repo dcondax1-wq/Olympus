@@ -1,0 +1,3133 @@
+{
+ "built": "2026-10-26",
+ "n": 1000,
+ "na": "na_vm125_1000_n99_fixed",
+ "solo": {
+  "eval": {
+   "builder50k": {
+    "lit_live": {
+     "H1": {
+      "p10": 50.6,
+      "f10": 20.2,
+      "p15": 57.6,
+      "p_ever": 71.4,
+      "fail_ever": 27.6,
+      "pass_med": 6.0,
+      "slow_pass": 19.3,
+      "usd_per_pass": 128.6,
+      "max_risk": 991
+     },
+     "H2": {
+      "p10": 57.0,
+      "f10": 21.0,
+      "p15": 60.8,
+      "p_ever": 71.0,
+      "fail_ever": 28.0,
+      "pass_med": 5.0,
+      "slow_pass": 14.4,
+      "usd_per_pass": 129.3,
+      "max_risk": 995
+     },
+     "2025": {
+      "p10": 12.4,
+      "f10": 17.6,
+      "p15": 14.4,
+      "p_ever": 24.6,
+      "fail_ever": 62.4,
+      "pass_med": 10.0,
+      "slow_pass": 41.5,
+      "usd_per_pass": 373.2,
+      "max_risk": 994
+     },
+     "2021-24": {
+      "p10": 19.2,
+      "f10": 30.8,
+      "p15": 22.8,
+      "p_ever": 28.2,
+      "fail_ever": 69.2,
+      "pass_med": 7.0,
+      "slow_pass": 19.1,
+      "usd_per_pass": 325.5,
+      "max_risk": 994
+     }
+    },
+    "na_f5": {
+     "H1": {
+      "p10": 0.0,
+      "f10": 0.0,
+      "p15": 0.0,
+      "p_ever": 3.8,
+      "fail_ever": 0.0,
+      "pass_med": 46.0,
+      "slow_pass": 100.0,
+      "usd_per_pass": 2415.8,
+      "max_risk": 132
+     },
+     "H2": {
+      "p10": 0.0,
+      "f10": 0.0,
+      "p15": 0.0,
+      "p_ever": 3.6,
+      "fail_ever": 0.0,
+      "pass_med": 45.5,
+      "slow_pass": 100.0,
+      "usd_per_pass": 2550.0,
+      "max_risk": 131
+     },
+     "2025": {
+      "p10": 3.6,
+      "f10": 0.0,
+      "p15": 5.0,
+      "p_ever": 13.2,
+      "fail_ever": 0.0,
+      "pass_med": 23.0,
+      "slow_pass": 62.1,
+      "usd_per_pass": 695.5,
+      "max_risk": 141
+     },
+     "2021-24": {
+      "p10": 0.0,
+      "f10": 0.0,
+      "p15": 0.0,
+      "p_ever": 0.8,
+      "fail_ever": 0.0,
+      "pass_med": 51.5,
+      "slow_pass": 100.0,
+      "usd_per_pass": 11475.0,
+      "max_risk": 126
+     }
+    },
+    "na_f10": {
+     "H1": {
+      "p10": 2.4,
+      "f10": 0.0,
+      "p15": 3.4,
+      "p_ever": 15.4,
+      "fail_ever": 0.0,
+      "pass_med": 28.0,
+      "slow_pass": 77.9,
+      "usd_per_pass": 596.1,
+      "max_risk": 283
+     },
+     "H2": {
+      "p10": 4.4,
+      "f10": 0.0,
+      "p15": 7.2,
+      "p_ever": 29.6,
+      "fail_ever": 0.0,
+      "pass_med": 30.0,
+      "slow_pass": 75.7,
+      "usd_per_pass": 310.1,
+      "max_risk": 263
+     },
+     "2025": {
+      "p10": 5.2,
+      "f10": 0.0,
+      "p15": 7.0,
+      "p_ever": 19.8,
+      "fail_ever": 0.0,
+      "pass_med": 24.0,
+      "slow_pass": 64.6,
+      "usd_per_pass": 463.6,
+      "max_risk": 282
+     },
+     "2021-24": {
+      "p10": 1.2,
+      "f10": 0.0,
+      "p15": 3.4,
+      "p_ever": 18.6,
+      "fail_ever": 0.0,
+      "pass_med": 30.0,
+      "slow_pass": 81.7,
+      "usd_per_pass": 493.5,
+      "max_risk": 282
+     }
+    },
+    "na_f15": {
+     "H1": {
+      "p10": 4.4,
+      "f10": 0.0,
+      "p15": 6.8,
+      "p_ever": 23.2,
+      "fail_ever": 0.0,
+      "pass_med": 24.0,
+      "slow_pass": 70.7,
+      "usd_per_pass": 395.7,
+      "max_risk": 426
+     },
+     "H2": {
+      "p10": 11.0,
+      "f10": 0.0,
+      "p15": 15.2,
+      "p_ever": 31.8,
+      "fail_ever": 0.0,
+      "pass_med": 17.0,
+      "slow_pass": 52.2,
+      "usd_per_pass": 288.7,
+      "max_risk": 423
+     },
+     "2025": {
+      "p10": 6.2,
+      "f10": 0.0,
+      "p15": 8.6,
+      "p_ever": 21.6,
+      "fail_ever": 0.4,
+      "pass_med": 20.0,
+      "slow_pass": 60.2,
+      "usd_per_pass": 425.0,
+      "max_risk": 412
+     },
+     "2021-24": {
+      "p10": 6.0,
+      "f10": 0.0,
+      "p15": 10.2,
+      "p_ever": 26.8,
+      "fail_ever": 8.4,
+      "pass_med": 21.5,
+      "slow_pass": 61.9,
+      "usd_per_pass": 342.5,
+      "max_risk": 421
+     }
+    },
+    "na_f20": {
+     "H1": {
+      "p10": 7.8,
+      "f10": 0.4,
+      "p15": 10.2,
+      "p_ever": 20.0,
+      "fail_ever": 13.8,
+      "pass_med": 15.0,
+      "slow_pass": 49.0,
+      "usd_per_pass": 459.0,
+      "max_risk": 552
+     },
+     "H2": {
+      "p10": 17.6,
+      "f10": 0.4,
+      "p15": 22.6,
+      "p_ever": 33.2,
+      "fail_ever": 10.8,
+      "pass_med": 10.0,
+      "slow_pass": 31.9,
+      "usd_per_pass": 276.5,
+      "max_risk": 555
+     },
+     "2025": {
+      "p10": 9.4,
+      "f10": 0.0,
+      "p15": 12.0,
+      "p_ever": 24.4,
+      "fail_ever": 20.2,
+      "pass_med": 16.0,
+      "slow_pass": 50.8,
+      "usd_per_pass": 376.2,
+      "max_risk": 563
+     },
+     "2021-24": {
+      "p10": 9.8,
+      "f10": 0.6,
+      "p15": 14.8,
+      "p_ever": 29.4,
+      "fail_ever": 37.6,
+      "pass_med": 15.0,
+      "slow_pass": 49.7,
+      "usd_per_pass": 312.2,
+      "max_risk": 553
+     }
+    },
+    "na_f30": {
+     "H1": {
+      "p10": 9.2,
+      "f10": 11.0,
+      "p15": 12.0,
+      "p_ever": 17.0,
+      "fail_ever": 76.6,
+      "pass_med": 9.0,
+      "slow_pass": 29.4,
+      "usd_per_pass": 540.0,
+      "max_risk": 830
+     },
+     "H2": {
+      "p10": 16.2,
+      "f10": 11.2,
+      "p15": 20.6,
+      "p_ever": 27.2,
+      "fail_ever": 67.8,
+      "pass_med": 9.0,
+      "slow_pass": 24.3,
+      "usd_per_pass": 337.5,
+      "max_risk": 849
+     },
+     "2025": {
+      "p10": 13.4,
+      "f10": 3.2,
+      "p15": 16.0,
+      "p_ever": 22.8,
+      "fail_ever": 68.4,
+      "pass_med": 8.0,
+      "slow_pass": 29.8,
+      "usd_per_pass": 402.6,
+      "max_risk": 810
+     },
+     "2021-24": {
+      "p10": 18.2,
+      "f10": 10.0,
+      "p15": 22.8,
+      "p_ever": 29.8,
+      "fail_ever": 67.4,
+      "pass_med": 8.0,
+      "slow_pass": 23.5,
+      "usd_per_pass": 308.1,
+      "max_risk": 840
+     }
+    },
+    "na_f40": {
+     "H1": {
+      "p10": 10.0,
+      "f10": 28.8,
+      "p15": 11.8,
+      "p_ever": 13.6,
+      "fail_ever": 86.4,
+      "pass_med": 2.0,
+      "slow_pass": 13.2,
+      "usd_per_pass": 675.0,
+      "max_risk": 986
+     },
+     "H2": {
+      "p10": 22.2,
+      "f10": 22.8,
+      "p15": 25.8,
+      "p_ever": 29.6,
+      "fail_ever": 69.6,
+      "pass_med": 5.0,
+      "slow_pass": 12.8,
+      "usd_per_pass": 310.1,
+      "max_risk": 988
+     },
+     "2025": {
+      "p10": 14.4,
+      "f10": 15.8,
+      "p15": 16.2,
+      "p_ever": 20.6,
+      "fail_ever": 78.6,
+      "pass_med": 6.0,
+      "slow_pass": 21.4,
+      "usd_per_pass": 445.6,
+      "max_risk": 983
+     },
+     "2021-24": {
+      "p10": 22.4,
+      "f10": 27.6,
+      "p15": 26.8,
+      "p_ever": 30.2,
+      "fail_ever": 69.6,
+      "pass_med": 5.0,
+      "slow_pass": 11.3,
+      "usd_per_pass": 304.0,
+      "max_risk": 991
+     }
+    }
+   },
+   "builder25k": {
+    "lit_live": {
+     "H1": {
+      "p10": 52.8,
+      "f10": 11.6,
+      "p15": 58.4,
+      "p_ever": 78.4,
+      "fail_ever": 20.0,
+      "pass_med": 6.0,
+      "slow_pass": 25.5,
+      "usd_per_pass": 80.4,
+      "max_risk": 581
+     },
+     "H2": {
+      "p10": 56.4,
+      "f10": 17.4,
+      "p15": 59.2,
+      "p_ever": 71.8,
+      "fail_ever": 25.2,
+      "pass_med": 5.0,
+      "slow_pass": 17.5,
+      "usd_per_pass": 87.7,
+      "max_risk": 577
+     },
+     "2025": {
+      "p10": 14.2,
+      "f10": 17.6,
+      "p15": 16.0,
+      "p_ever": 25.8,
+      "fail_ever": 55.2,
+      "pass_med": 9.0,
+      "slow_pass": 38.0,
+      "usd_per_pass": 244.2,
+      "max_risk": 592
+     },
+     "2021-24": {
+      "p10": 19.6,
+      "f10": 28.8,
+      "p15": 23.0,
+      "p_ever": 29.6,
+      "fail_ever": 65.8,
+      "pass_med": 7.0,
+      "slow_pass": 22.3,
+      "usd_per_pass": 212.8,
+      "max_risk": 598
+     }
+    },
+    "na_f5": {
+     "H1": {
+      "p10": 0.0,
+      "f10": 0.0,
+      "p15": 0.0,
+      "p_ever": 0.0,
+      "fail_ever": 0.0,
+      "pass_med": null,
+      "slow_pass": 0.0,
+      "usd_per_pass": 63000000000.0,
+      "max_risk": 49
+     },
+     "H2": {
+      "p10": 0.0,
+      "f10": 0.0,
+      "p15": 0.0,
+      "p_ever": 0.0,
+      "fail_ever": 0.0,
+      "pass_med": null,
+      "slow_pass": 0.0,
+      "usd_per_pass": 63000000000.0,
+      "max_risk": 47
+     },
+     "2025": {
+      "p10": 1.4,
+      "f10": 0.0,
+      "p15": 2.0,
+      "p_ever": 11.6,
+      "fail_ever": 0.0,
+      "pass_med": 32.0,
+      "slow_pass": 82.8,
+      "usd_per_pass": 543.1,
+      "max_risk": 67
+     },
+     "2021-24": {
+      "p10": 0.0,
+      "f10": 0.0,
+      "p15": 0.0,
+      "p_ever": 0.2,
+      "fail_ever": 0.0,
+      "pass_med": 17.0,
+      "slow_pass": 100.0,
+      "usd_per_pass": 31500.0,
+      "max_risk": 54
+     }
+    },
+    "na_f10": {
+     "H1": {
+      "p10": 1.4,
+      "f10": 0.0,
+      "p15": 3.6,
+      "p_ever": 17.0,
+      "fail_ever": 0.0,
+      "pass_med": 29.0,
+      "slow_pass": 78.8,
+      "usd_per_pass": 370.6,
+      "max_risk": 132
+     },
+     "H2": {
+      "p10": 1.2,
+      "f10": 0.0,
+      "p15": 1.6,
+      "p_ever": 12.8,
+      "fail_ever": 0.0,
+      "pass_med": 35.0,
+      "slow_pass": 87.5,
+      "usd_per_pass": 492.2,
+      "max_risk": 128
+     },
+     "2025": {
+      "p10": 3.4,
+      "f10": 0.0,
+      "p15": 5.6,
+      "p_ever": 17.0,
+      "fail_ever": 0.0,
+      "pass_med": 26.0,
+      "slow_pass": 67.1,
+      "usd_per_pass": 370.6,
+      "max_risk": 131
+     },
+     "2021-24": {
+      "p10": 1.0,
+      "f10": 0.0,
+      "p15": 2.2,
+      "p_ever": 11.8,
+      "fail_ever": 0.0,
+      "pass_med": 31.0,
+      "slow_pass": 81.4,
+      "usd_per_pass": 533.9,
+      "max_risk": 132
+     }
+    },
+    "na_f15": {
+     "H1": {
+      "p10": 5.0,
+      "f10": 0.0,
+      "p15": 7.0,
+      "p_ever": 20.6,
+      "fail_ever": 0.0,
+      "pass_med": 21.0,
+      "slow_pass": 66.0,
+      "usd_per_pass": 305.8,
+      "max_risk": 199
+     },
+     "H2": {
+      "p10": 5.4,
+      "f10": 0.0,
+      "p15": 8.2,
+      "p_ever": 23.0,
+      "fail_ever": 0.0,
+      "pass_med": 19.0,
+      "slow_pass": 64.3,
+      "usd_per_pass": 273.9,
+      "max_risk": 198
+     },
+     "2025": {
+      "p10": 5.6,
+      "f10": 0.0,
+      "p15": 8.2,
+      "p_ever": 20.6,
+      "fail_ever": 0.0,
+      "pass_med": 20.0,
+      "slow_pass": 60.2,
+      "usd_per_pass": 305.8,
+      "max_risk": 194
+     },
+     "2021-24": {
+      "p10": 4.6,
+      "f10": 0.0,
+      "p15": 7.2,
+      "p_ever": 21.6,
+      "fail_ever": 0.0,
+      "pass_med": 23.5,
+      "slow_pass": 66.7,
+      "usd_per_pass": 291.7,
+      "max_risk": 205
+     }
+    },
+    "na_f20": {
+     "H1": {
+      "p10": 4.4,
+      "f10": 0.0,
+      "p15": 7.0,
+      "p_ever": 18.6,
+      "fail_ever": 0.0,
+      "pass_med": 20.0,
+      "slow_pass": 62.4,
+      "usd_per_pass": 338.7,
+      "max_risk": 265
+     },
+     "H2": {
+      "p10": 18.0,
+      "f10": 0.0,
+      "p15": 22.4,
+      "p_ever": 31.4,
+      "fail_ever": 0.0,
+      "pass_med": 9.0,
+      "slow_pass": 28.7,
+      "usd_per_pass": 200.6,
+      "max_risk": 262
+     },
+     "2025": {
+      "p10": 9.0,
+      "f10": 0.0,
+      "p15": 11.4,
+      "p_ever": 23.0,
+      "fail_ever": 0.0,
+      "pass_med": 16.0,
+      "slow_pass": 50.4,
+      "usd_per_pass": 273.9,
+      "max_risk": 252
+     },
+     "2021-24": {
+      "p10": 8.2,
+      "f10": 0.4,
+      "p15": 12.4,
+      "p_ever": 24.8,
+      "fail_ever": 3.6,
+      "pass_med": 15.5,
+      "slow_pass": 50.0,
+      "usd_per_pass": 254.0,
+      "max_risk": 263
+     }
+    },
+    "na_f30": {
+     "H1": {
+      "p10": 10.6,
+      "f10": 1.6,
+      "p15": 13.0,
+      "p_ever": 16.6,
+      "fail_ever": 9.6,
+      "pass_med": 7.0,
+      "slow_pass": 21.7,
+      "usd_per_pass": 379.5,
+      "max_risk": 390
+     },
+     "H2": {
+      "p10": 20.4,
+      "f10": 2.4,
+      "p15": 25.0,
+      "p_ever": 29.4,
+      "fail_ever": 26.2,
+      "pass_med": 7.0,
+      "slow_pass": 15.0,
+      "usd_per_pass": 214.3,
+      "max_risk": 395
+     },
+     "2025": {
+      "p10": 12.4,
+      "f10": 0.2,
+      "p15": 14.4,
+      "p_ever": 21.8,
+      "fail_ever": 23.8,
+      "pass_med": 8.0,
+      "slow_pass": 33.9,
+      "usd_per_pass": 289.0,
+      "max_risk": 405
+     },
+     "2021-24": {
+      "p10": 17.6,
+      "f10": 4.4,
+      "p15": 21.6,
+      "p_ever": 28.4,
+      "fail_ever": 59.2,
+      "pass_med": 7.5,
+      "slow_pass": 23.9,
+      "usd_per_pass": 221.8,
+      "max_risk": 393
+     }
+    },
+    "na_f40": {
+     "H1": {
+      "p10": 12.8,
+      "f10": 11.6,
+      "p15": 14.2,
+      "p_ever": 16.6,
+      "fail_ever": 66.6,
+      "pass_med": 3.0,
+      "slow_pass": 14.5,
+      "usd_per_pass": 379.5,
+      "max_risk": 497
+     },
+     "H2": {
+      "p10": 22.0,
+      "f10": 15.8,
+      "p15": 24.6,
+      "p_ever": 27.4,
+      "fail_ever": 63.6,
+      "pass_med": 5.0,
+      "slow_pass": 10.2,
+      "usd_per_pass": 229.9,
+      "max_risk": 525
+     },
+     "2025": {
+      "p10": 14.2,
+      "f10": 9.4,
+      "p15": 16.6,
+      "p_ever": 21.0,
+      "fail_ever": 71.8,
+      "pass_med": 6.0,
+      "slow_pass": 21.0,
+      "usd_per_pass": 300.0,
+      "max_risk": 542
+     },
+     "2021-24": {
+      "p10": 21.6,
+      "f10": 21.6,
+      "p15": 25.0,
+      "p_ever": 28.6,
+      "fail_ever": 70.8,
+      "pass_med": 4.0,
+      "slow_pass": 12.6,
+      "usd_per_pass": 220.3,
+      "max_risk": 521
+     }
+    }
+   }
+  },
+  "funded": {
+   "builder50k": {
+    "lit_live": {
+     "H1": {
+      "per_month": 923,
+      "paid_p10": 1600,
+      "loss_6m": 0.0,
+      "first_med": 26.0,
+      "any_pay": 94.4,
+      "payouts": 3.49,
+      "trade_pnl_m": 2535,
+      "hold_cons": 45.1,
+      "months_paying": 2.83,
+      "max_risk": 581,
+      "trades_6m": 70.2
+     },
+     "H2": {
+      "per_month": 910,
+      "paid_p10": 1580,
+      "loss_6m": 0.0,
+      "first_med": 24.0,
+      "any_pay": 93.0,
+      "payouts": 3.45,
+      "trade_pnl_m": 2556,
+      "hold_cons": 44.8,
+      "months_paying": 2.98,
+      "max_risk": 845,
+      "trades_6m": 57.9
+     },
+     "2025": {
+      "per_month": 74,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 56.0,
+      "any_pay": 23.0,
+      "payouts": 0.28,
+      "trade_pnl_m": 71,
+      "hold_cons": 3.7,
+      "months_paying": 0.27,
+      "max_risk": 981,
+      "trades_6m": 42.0
+     },
+     "2021-24": {
+      "per_month": 56,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 39.0,
+      "any_pay": 18.4,
+      "payouts": 0.22,
+      "trade_pnl_m": -23,
+      "hold_cons": 2.6,
+      "months_paying": 0.22,
+      "max_risk": 909,
+      "trades_6m": 36.1
+     }
+    },
+    "na_f5_c300": {
+     "H1": {
+      "per_month": 32,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 92.0,
+      "any_pay": 12.4,
+      "payouts": 0.13,
+      "trade_pnl_m": 142,
+      "hold_cons": 0.3,
+      "months_paying": 0.13,
+      "max_risk": 247,
+      "trades_6m": 42.5
+     },
+     "H2": {
+      "per_month": 26,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 90.5,
+      "any_pay": 9.2,
+      "payouts": 0.11,
+      "trade_pnl_m": 129,
+      "hold_cons": 0.4,
+      "months_paying": 0.11,
+      "max_risk": 281,
+      "trades_6m": 40.5
+     },
+     "2025": {
+      "per_month": 8,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 90.0,
+      "any_pay": 3.0,
+      "payouts": 0.03,
+      "trade_pnl_m": 140,
+      "hold_cons": 3.7,
+      "months_paying": 0.03,
+      "max_risk": 297,
+      "trades_6m": 45.9
+     },
+     "2021-24": {
+      "per_month": 13,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 86.0,
+      "any_pay": 5.4,
+      "payouts": 0.06,
+      "trade_pnl_m": 85,
+      "hold_cons": 0.1,
+      "months_paying": 0.06,
+      "max_risk": 291,
+      "trades_6m": 65.3
+     }
+    },
+    "na_f10_c300": {
+     "H1": {
+      "per_month": 67,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 65.0,
+      "any_pay": 21.2,
+      "payouts": 0.26,
+      "trade_pnl_m": 232,
+      "hold_cons": 5.0,
+      "months_paying": 0.25,
+      "max_risk": 297,
+      "trades_6m": 60.5
+     },
+     "H2": {
+      "per_month": 117,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 64.0,
+      "any_pay": 35.4,
+      "payouts": 0.46,
+      "trade_pnl_m": 404,
+      "hold_cons": 7.8,
+      "months_paying": 0.45,
+      "max_risk": 296,
+      "trades_6m": 57.3
+     },
+     "2025": {
+      "per_month": 13,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 74.0,
+      "any_pay": 5.0,
+      "payouts": 0.05,
+      "trade_pnl_m": 156,
+      "hold_cons": 9.0,
+      "months_paying": 0.05,
+      "max_risk": 297,
+      "trades_6m": 52.5
+     },
+     "2021-24": {
+      "per_month": 74,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 61.0,
+      "any_pay": 22.6,
+      "payouts": 0.29,
+      "trade_pnl_m": 237,
+      "hold_cons": 4.7,
+      "months_paying": 0.28,
+      "max_risk": 298,
+      "trades_6m": 74.8
+     }
+    },
+    "na_f10_c500": {
+     "H1": {
+      "per_month": 57,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 65.0,
+      "any_pay": 19.2,
+      "payouts": 0.22,
+      "trade_pnl_m": 184,
+      "hold_cons": 3.9,
+      "months_paying": 0.22,
+      "max_risk": 499,
+      "trades_6m": 60.1
+     },
+     "H2": {
+      "per_month": 102,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 63.5,
+      "any_pay": 34.8,
+      "payouts": 0.41,
+      "trade_pnl_m": 390,
+      "hold_cons": 6.7,
+      "months_paying": 0.41,
+      "max_risk": 494,
+      "trades_6m": 56.7
+     },
+     "2025": {
+      "per_month": 16,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 85.0,
+      "any_pay": 6.2,
+      "payouts": 0.06,
+      "trade_pnl_m": 158,
+      "hold_cons": 6.6,
+      "months_paying": 0.06,
+      "max_risk": 495,
+      "trades_6m": 51.7
+     },
+     "2021-24": {
+      "per_month": 71,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 65.0,
+      "any_pay": 22.4,
+      "payouts": 0.28,
+      "trade_pnl_m": 235,
+      "hold_cons": 3.7,
+      "months_paying": 0.27,
+      "max_risk": 498,
+      "trades_6m": 74.6
+     }
+    },
+    "na_f15_c500": {
+     "H1": {
+      "per_month": 50,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 44.0,
+      "any_pay": 16.0,
+      "payouts": 0.2,
+      "trade_pnl_m": 95,
+      "hold_cons": 4.9,
+      "months_paying": 0.19,
+      "max_risk": 499,
+      "trades_6m": 49.8
+     },
+     "H2": {
+      "per_month": 70,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 56.0,
+      "any_pay": 23.8,
+      "payouts": 0.27,
+      "trade_pnl_m": 298,
+      "hold_cons": 10.1,
+      "months_paying": 0.26,
+      "max_risk": 494,
+      "trades_6m": 50.4
+     },
+     "2025": {
+      "per_month": 17,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 64.0,
+      "any_pay": 6.4,
+      "payouts": 0.06,
+      "trade_pnl_m": 152,
+      "hold_cons": 8.4,
+      "months_paying": 0.06,
+      "max_risk": 495,
+      "trades_6m": 46.5
+     },
+     "2021-24": {
+      "per_month": 76,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 45.0,
+      "any_pay": 22.8,
+      "payouts": 0.29,
+      "trade_pnl_m": 234,
+      "hold_cons": 7.1,
+      "months_paying": 0.28,
+      "max_risk": 498,
+      "trades_6m": 65.2
+     }
+    },
+    "na_f20_c750": {
+     "H1": {
+      "per_month": 15,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 26.0,
+      "any_pay": 5.8,
+      "payouts": 0.06,
+      "trade_pnl_m": -63,
+      "hold_cons": 3.0,
+      "months_paying": 0.06,
+      "max_risk": 741,
+      "trades_6m": 37.5
+     },
+     "H2": {
+      "per_month": 55,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 45.0,
+      "any_pay": 16.6,
+      "payouts": 0.21,
+      "trade_pnl_m": 238,
+      "hold_cons": 8.9,
+      "months_paying": 0.2,
+      "max_risk": 739,
+      "trades_6m": 38.9
+     },
+     "2025": {
+      "per_month": 15,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 45.0,
+      "any_pay": 5.2,
+      "payouts": 0.06,
+      "trade_pnl_m": 224,
+      "hold_cons": 8.9,
+      "months_paying": 0.06,
+      "max_risk": 744,
+      "trades_6m": 38.1
+     },
+     "2021-24": {
+      "per_month": 58,
+      "paid_p10": 0,
+      "loss_6m": 2.0,
+      "first_med": 37.0,
+      "any_pay": 18.4,
+      "payouts": 0.22,
+      "trade_pnl_m": 212,
+      "hold_cons": 7.8,
+      "months_paying": 0.22,
+      "max_risk": 746,
+      "trades_6m": 50.9
+     }
+    },
+    "na_f30_c1000": {
+     "H1": {
+      "per_month": 13,
+      "paid_p10": 0,
+      "loss_6m": 19.2,
+      "first_med": 24.0,
+      "any_pay": 3.8,
+      "payouts": 0.05,
+      "trade_pnl_m": -102,
+      "hold_cons": 2.8,
+      "months_paying": 0.05,
+      "max_risk": 997,
+      "trades_6m": 22.1
+     },
+     "H2": {
+      "per_month": 38,
+      "paid_p10": 0,
+      "loss_6m": 47.8,
+      "first_med": 40.5,
+      "any_pay": 10.4,
+      "payouts": 0.14,
+      "trade_pnl_m": 221,
+      "hold_cons": 9.4,
+      "months_paying": 0.14,
+      "max_risk": 988,
+      "trades_6m": 21.7
+     },
+     "2025": {
+      "per_month": 15,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 48.0,
+      "any_pay": 5.6,
+      "payouts": 0.06,
+      "trade_pnl_m": 287,
+      "hold_cons": 9.4,
+      "months_paying": 0.06,
+      "max_risk": 994,
+      "trades_6m": 25.3
+     },
+     "2021-24": {
+      "per_month": 43,
+      "paid_p10": 0,
+      "loss_6m": 24.4,
+      "first_med": 31.0,
+      "any_pay": 11.8,
+      "payouts": 0.16,
+      "trade_pnl_m": 253,
+      "hold_cons": 8.4,
+      "months_paying": 0.16,
+      "max_risk": 995,
+      "trades_6m": 30.8
+     }
+    }
+   },
+   "builder25k": {
+    "lit_live": {
+     "H1": {
+      "per_month": 437,
+      "paid_p10": 721,
+      "loss_6m": 0.0,
+      "first_med": 27.0,
+      "any_pay": 91.2,
+      "payouts": 3.3,
+      "trade_pnl_m": 1180,
+      "hold_cons": 45.3,
+      "months_paying": 2.76,
+      "max_risk": 291,
+      "trades_6m": 66.1
+     },
+     "H2": {
+      "per_month": 403,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 25.0,
+      "any_pay": 86.2,
+      "payouts": 3.07,
+      "trade_pnl_m": 1049,
+      "hold_cons": 38.5,
+      "months_paying": 2.61,
+      "max_risk": 422,
+      "trades_6m": 52.5
+     },
+     "2025": {
+      "per_month": 37,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 52.0,
+      "any_pay": 23.0,
+      "payouts": 0.29,
+      "trade_pnl_m": 45,
+      "hold_cons": 3.7,
+      "months_paying": 0.28,
+      "max_risk": 458,
+      "trades_6m": 37.1
+     },
+     "2021-24": {
+      "per_month": 27,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 41.0,
+      "any_pay": 18.0,
+      "payouts": 0.21,
+      "trade_pnl_m": -6,
+      "hold_cons": 2.2,
+      "months_paying": 0.21,
+      "max_risk": 454,
+      "trades_6m": 32.9
+     }
+    },
+    "na_f5_c300": {
+     "H1": {
+      "per_month": 0,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": null,
+      "any_pay": 0.0,
+      "payouts": 0.0,
+      "trade_pnl_m": -21,
+      "hold_cons": 0.0,
+      "months_paying": 0.0,
+      "max_risk": 49,
+      "trades_6m": 4.1
+     },
+     "H2": {
+      "per_month": 0,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": null,
+      "any_pay": 0.0,
+      "payouts": 0.0,
+      "trade_pnl_m": 22,
+      "hold_cons": 0.0,
+      "months_paying": 0.0,
+      "max_risk": 47,
+      "trades_6m": 8.9
+     },
+     "2025": {
+      "per_month": 3,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 84.0,
+      "any_pay": 2.2,
+      "payouts": 0.02,
+      "trade_pnl_m": 34,
+      "hold_cons": 2.4,
+      "months_paying": 0.02,
+      "max_risk": 145,
+      "trades_6m": 12.8
+     },
+     "2021-24": {
+      "per_month": 1,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 115.0,
+      "any_pay": 0.6,
+      "payouts": 0.01,
+      "trade_pnl_m": 5,
+      "hold_cons": 0.0,
+      "months_paying": 0.01,
+      "max_risk": 91,
+      "trades_6m": 25.2
+     }
+    },
+    "na_f10_c300": {
+     "H1": {
+      "per_month": 28,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 58.0,
+      "any_pay": 16.2,
+      "payouts": 0.21,
+      "trade_pnl_m": 83,
+      "hold_cons": 6.3,
+      "months_paying": 0.21,
+      "max_risk": 149,
+      "trades_6m": 27.4
+     },
+     "H2": {
+      "per_month": 22,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 55.0,
+      "any_pay": 13.0,
+      "payouts": 0.17,
+      "trade_pnl_m": 65,
+      "hold_cons": 2.3,
+      "months_paying": 0.16,
+      "max_risk": 148,
+      "trades_6m": 28.8
+     },
+     "2025": {
+      "per_month": 9,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 88.5,
+      "any_pay": 6.8,
+      "payouts": 0.07,
+      "trade_pnl_m": 76,
+      "hold_cons": 5.4,
+      "months_paying": 0.07,
+      "max_risk": 148,
+      "trades_6m": 30.9
+     },
+     "2021-24": {
+      "per_month": 24,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 64.0,
+      "any_pay": 15.4,
+      "payouts": 0.19,
+      "trade_pnl_m": 60,
+      "hold_cons": 2.5,
+      "months_paying": 0.19,
+      "max_risk": 149,
+      "trades_6m": 47.7
+     }
+    },
+    "na_f10_c500": {
+     "H1": {
+      "per_month": 24,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 53.0,
+      "any_pay": 15.0,
+      "payouts": 0.18,
+      "trade_pnl_m": 76,
+      "hold_cons": 4.3,
+      "months_paying": 0.18,
+      "max_risk": 249,
+      "trades_6m": 27.1
+     },
+     "H2": {
+      "per_month": 20,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 54.0,
+      "any_pay": 12.8,
+      "payouts": 0.16,
+      "trade_pnl_m": 67,
+      "hold_cons": 2.0,
+      "months_paying": 0.16,
+      "max_risk": 245,
+      "trades_6m": 29.0
+     },
+     "2025": {
+      "per_month": 8,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 84.0,
+      "any_pay": 6.2,
+      "payouts": 0.06,
+      "trade_pnl_m": 73,
+      "hold_cons": 4.1,
+      "months_paying": 0.06,
+      "max_risk": 247,
+      "trades_6m": 30.9
+     },
+     "2021-24": {
+      "per_month": 22,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 65.0,
+      "any_pay": 14.8,
+      "payouts": 0.17,
+      "trade_pnl_m": 60,
+      "hold_cons": 2.2,
+      "months_paying": 0.17,
+      "max_risk": 248,
+      "trades_6m": 47.6
+     }
+    },
+    "na_f15_c500": {
+     "H1": {
+      "per_month": 25,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 41.5,
+      "any_pay": 14.8,
+      "payouts": 0.19,
+      "trade_pnl_m": 93,
+      "hold_cons": 5.9,
+      "months_paying": 0.18,
+      "max_risk": 249,
+      "trades_6m": 31.0
+     },
+     "H2": {
+      "per_month": 29,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 38.0,
+      "any_pay": 17.0,
+      "payouts": 0.22,
+      "trade_pnl_m": 94,
+      "hold_cons": 5.8,
+      "months_paying": 0.22,
+      "max_risk": 245,
+      "trades_6m": 31.9
+     },
+     "2025": {
+      "per_month": 8,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 63.0,
+      "any_pay": 6.0,
+      "payouts": 0.06,
+      "trade_pnl_m": 66,
+      "hold_cons": 8.0,
+      "months_paying": 0.06,
+      "max_risk": 247,
+      "trades_6m": 32.4
+     },
+     "2021-24": {
+      "per_month": 32,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 44.0,
+      "any_pay": 18.6,
+      "payouts": 0.25,
+      "trade_pnl_m": 95,
+      "hold_cons": 6.1,
+      "months_paying": 0.25,
+      "max_risk": 249,
+      "trades_6m": 47.4
+     }
+    },
+    "na_f20_c750": {
+     "H1": {
+      "per_month": 14,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 32.0,
+      "any_pay": 10.2,
+      "payouts": 0.11,
+      "trade_pnl_m": 0,
+      "hold_cons": 3.5,
+      "months_paying": 0.11,
+      "max_risk": 371,
+      "trades_6m": 25.2
+     },
+     "H2": {
+      "per_month": 20,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 36.0,
+      "any_pay": 12.6,
+      "payouts": 0.15,
+      "trade_pnl_m": 66,
+      "hold_cons": 6.8,
+      "months_paying": 0.15,
+      "max_risk": 370,
+      "trades_6m": 26.3
+     },
+     "2025": {
+      "per_month": 9,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 51.0,
+      "any_pay": 5.8,
+      "payouts": 0.06,
+      "trade_pnl_m": 85,
+      "hold_cons": 7.6,
+      "months_paying": 0.06,
+      "max_risk": 371,
+      "trades_6m": 28.2
+     },
+     "2021-24": {
+      "per_month": 27,
+      "paid_p10": 0,
+      "loss_6m": 0.6,
+      "first_med": 33.0,
+      "any_pay": 15.8,
+      "payouts": 0.2,
+      "trade_pnl_m": 81,
+      "hold_cons": 5.8,
+      "months_paying": 0.2,
+      "max_risk": 372,
+      "trades_6m": 38.6
+     }
+    },
+    "na_f30_c1000": {
+     "H1": {
+      "per_month": 7,
+      "paid_p10": 0,
+      "loss_6m": 7.8,
+      "first_med": 26.0,
+      "any_pay": 4.4,
+      "payouts": 0.05,
+      "trade_pnl_m": -46,
+      "hold_cons": 3.2,
+      "months_paying": 0.05,
+      "max_risk": 499,
+      "trades_6m": 17.5
+     },
+     "H2": {
+      "per_month": 19,
+      "paid_p10": 0,
+      "loss_6m": 45.4,
+      "first_med": 32.5,
+      "any_pay": 10.4,
+      "payouts": 0.14,
+      "trade_pnl_m": 82,
+      "hold_cons": 8.3,
+      "months_paying": 0.14,
+      "max_risk": 494,
+      "trades_6m": 19.3
+     },
+     "2025": {
+      "per_month": 7,
+      "paid_p10": 0,
+      "loss_6m": 0.0,
+      "first_med": 38.0,
+      "any_pay": 5.0,
+      "payouts": 0.05,
+      "trade_pnl_m": 112,
+      "hold_cons": 8.3,
+      "months_paying": 0.05,
+      "max_risk": 495,
+      "trades_6m": 20.1
+     },
+     "2021-24": {
+      "per_month": 20,
+      "paid_p10": 0,
+      "loss_6m": 17.8,
+      "first_med": 26.5,
+      "any_pay": 11.6,
+      "payouts": 0.15,
+      "trade_pnl_m": 85,
+      "hold_cons": 7.2,
+      "months_paying": 0.14,
+      "max_risk": 496,
+      "trades_6m": 25.6
+     }
+    }
+   }
+  }
+ },
+ "mix": {
+  "builder50k": {
+   "lit_only": {
+    "H1": {
+     "per_month": 929,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 94.5,
+     "payouts": 3.51,
+     "trade_pnl_m": 2554,
+     "hold_cons": 45.4,
+     "months_paying": 2.85,
+     "max_risk": 581,
+     "trades_6m": 69.9
+    },
+    "H2": {
+     "per_month": 915,
+     "paid_p10": 1589,
+     "loss_6m": 0.0,
+     "first_med": 23.5,
+     "any_pay": 92.8,
+     "payouts": 3.47,
+     "trade_pnl_m": 2559,
+     "hold_cons": 44.5,
+     "months_paying": 2.98,
+     "max_risk": 845,
+     "trades_6m": 57.7
+    },
+    "2025": {
+     "per_month": 72,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 51.5,
+     "any_pay": 22.2,
+     "payouts": 0.28,
+     "trade_pnl_m": 75,
+     "hold_cons": 4.1,
+     "months_paying": 0.26,
+     "max_risk": 981,
+     "trades_6m": 41.9
+    },
+    "2021-24": {
+     "per_month": 58,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 41.0,
+     "any_pay": 19.1,
+     "payouts": 0.23,
+     "trade_pnl_m": -28,
+     "hold_cons": 2.6,
+     "months_paying": 0.22,
+     "max_risk": 909,
+     "trades_6m": 35.5
+    }
+   },
+   "lit+na_f2_c100": {
+    "H1": {
+     "per_month": 946,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 94.5,
+     "payouts": 3.58,
+     "trade_pnl_m": 2661,
+     "hold_cons": 42.8,
+     "months_paying": 2.94,
+     "max_risk": 581,
+     "trades_6m": 98.6
+    },
+    "H2": {
+     "per_month": 957,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 24.0,
+     "any_pay": 92.9,
+     "payouts": 3.62,
+     "trade_pnl_m": 2668,
+     "hold_cons": 43.5,
+     "months_paying": 3.04,
+     "max_risk": 845,
+     "trades_6m": 84.9
+    },
+    "2025": {
+     "per_month": 75,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 48.0,
+     "any_pay": 22.8,
+     "payouts": 0.29,
+     "trade_pnl_m": 89,
+     "hold_cons": 4.5,
+     "months_paying": 0.28,
+     "max_risk": 981,
+     "trades_6m": 46.8
+    },
+    "2021-24": {
+     "per_month": 61,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 38.0,
+     "any_pay": 19.7,
+     "payouts": 0.23,
+     "trade_pnl_m": -14,
+     "hold_cons": 2.8,
+     "months_paying": 0.23,
+     "max_risk": 909,
+     "trades_6m": 42.3
+    }
+   },
+   "lit+na_f3_c100": {
+    "H1": {
+     "per_month": 960,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 94.9,
+     "payouts": 3.63,
+     "trade_pnl_m": 2698,
+     "hold_cons": 43.8,
+     "months_paying": 2.97,
+     "max_risk": 581,
+     "trades_6m": 106.0
+    },
+    "H2": {
+     "per_month": 976,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 23.0,
+     "any_pay": 93.2,
+     "payouts": 3.7,
+     "trade_pnl_m": 2714,
+     "hold_cons": 44.7,
+     "months_paying": 3.07,
+     "max_risk": 845,
+     "trades_6m": 91.4
+    },
+    "2025": {
+     "per_month": 80,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 46.0,
+     "any_pay": 24.3,
+     "payouts": 0.31,
+     "trade_pnl_m": 116,
+     "hold_cons": 5.2,
+     "months_paying": 0.3,
+     "max_risk": 981,
+     "trades_6m": 53.1
+    },
+    "2021-24": {
+     "per_month": 65,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 37.5,
+     "any_pay": 20.8,
+     "payouts": 0.25,
+     "trade_pnl_m": -4,
+     "hold_cons": 3.0,
+     "months_paying": 0.25,
+     "max_risk": 909,
+     "trades_6m": 48.7
+    }
+   },
+   "lit+na_f3_c150": {
+    "H1": {
+     "per_month": 993,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 94.9,
+     "payouts": 3.76,
+     "trade_pnl_m": 2720,
+     "hold_cons": 41.3,
+     "months_paying": 2.98,
+     "max_risk": 581,
+     "trades_6m": 108.7
+    },
+    "H2": {
+     "per_month": 969,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 23.0,
+     "any_pay": 93.2,
+     "payouts": 3.67,
+     "trade_pnl_m": 2740,
+     "hold_cons": 44.5,
+     "months_paying": 3.07,
+     "max_risk": 845,
+     "trades_6m": 94.6
+    },
+    "2025": {
+     "per_month": 81,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 46.0,
+     "any_pay": 24.3,
+     "payouts": 0.31,
+     "trade_pnl_m": 116,
+     "hold_cons": 4.9,
+     "months_paying": 0.3,
+     "max_risk": 981,
+     "trades_6m": 53.3
+    },
+    "2021-24": {
+     "per_month": 68,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 37.5,
+     "any_pay": 20.8,
+     "payouts": 0.26,
+     "trade_pnl_m": 0,
+     "hold_cons": 2.8,
+     "months_paying": 0.26,
+     "max_risk": 909,
+     "trades_6m": 48.7
+    }
+   },
+   "lit+na_f3_c200": {
+    "H1": {
+     "per_month": 987,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 94.9,
+     "payouts": 3.73,
+     "trade_pnl_m": 2782,
+     "hold_cons": 40.5,
+     "months_paying": 2.96,
+     "max_risk": 581,
+     "trades_6m": 109.7
+    },
+    "H2": {
+     "per_month": 976,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 23.0,
+     "any_pay": 93.2,
+     "payouts": 3.7,
+     "trade_pnl_m": 2822,
+     "hold_cons": 43.2,
+     "months_paying": 3.09,
+     "max_risk": 845,
+     "trades_6m": 96.1
+    },
+    "2025": {
+     "per_month": 81,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 46.0,
+     "any_pay": 24.3,
+     "payouts": 0.31,
+     "trade_pnl_m": 117,
+     "hold_cons": 5.0,
+     "months_paying": 0.3,
+     "max_risk": 981,
+     "trades_6m": 53.4
+    },
+    "2021-24": {
+     "per_month": 68,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 37.5,
+     "any_pay": 20.8,
+     "payouts": 0.26,
+     "trade_pnl_m": 0,
+     "hold_cons": 2.7,
+     "months_paying": 0.26,
+     "max_risk": 909,
+     "trades_6m": 48.8
+    }
+   },
+   "lit+na_f4_c150": {
+    "H1": {
+     "per_month": 1012,
+     "paid_p10": 2861,
+     "loss_6m": 0.0,
+     "first_med": 24.0,
+     "any_pay": 95.4,
+     "payouts": 3.84,
+     "trade_pnl_m": 2757,
+     "hold_cons": 41.6,
+     "months_paying": 3.01,
+     "max_risk": 581,
+     "trades_6m": 113.9
+    },
+    "H2": {
+     "per_month": 971,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 23.0,
+     "any_pay": 93.5,
+     "payouts": 3.68,
+     "trade_pnl_m": 2748,
+     "hold_cons": 44.7,
+     "months_paying": 3.08,
+     "max_risk": 845,
+     "trades_6m": 99.5
+    },
+    "2025": {
+     "per_month": 79,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 46.0,
+     "any_pay": 24.0,
+     "payouts": 0.3,
+     "trade_pnl_m": 129,
+     "hold_cons": 5.6,
+     "months_paying": 0.29,
+     "max_risk": 981,
+     "trades_6m": 59.1
+    },
+    "2021-24": {
+     "per_month": 70,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 39.5,
+     "any_pay": 21.2,
+     "payouts": 0.27,
+     "trade_pnl_m": 12,
+     "hold_cons": 3.4,
+     "months_paying": 0.27,
+     "max_risk": 909,
+     "trades_6m": 54.4
+    }
+   },
+   "lit+na_f5_c250": {
+    "H1": {
+     "per_month": 983,
+     "paid_p10": 2847,
+     "loss_6m": 0.0,
+     "first_med": 24.0,
+     "any_pay": 95.3,
+     "payouts": 3.73,
+     "trade_pnl_m": 2966,
+     "hold_cons": 42.0,
+     "months_paying": 2.96,
+     "max_risk": 581,
+     "trades_6m": 121.9
+    },
+    "H2": {
+     "per_month": 906,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 24.0,
+     "any_pay": 93.7,
+     "payouts": 3.43,
+     "trade_pnl_m": 2743,
+     "hold_cons": 45.2,
+     "months_paying": 2.93,
+     "max_risk": 845,
+     "trades_6m": 112.2
+    },
+    "2025": {
+     "per_month": 74,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 43.0,
+     "any_pay": 22.6,
+     "payouts": 0.28,
+     "trade_pnl_m": 137,
+     "hold_cons": 6.6,
+     "months_paying": 0.27,
+     "max_risk": 981,
+     "trades_6m": 63.2
+    },
+    "2021-24": {
+     "per_month": 71,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 36.0,
+     "any_pay": 21.1,
+     "payouts": 0.27,
+     "trade_pnl_m": 26,
+     "hold_cons": 3.6,
+     "months_paying": 0.27,
+     "max_risk": 909,
+     "trades_6m": 57.8
+    }
+   },
+   "lit+na_f5_c400": {
+    "H1": {
+     "per_month": 943,
+     "paid_p10": 2851,
+     "loss_6m": 0.0,
+     "first_med": 24.0,
+     "any_pay": 95.3,
+     "payouts": 3.58,
+     "trade_pnl_m": 2950,
+     "hold_cons": 42.1,
+     "months_paying": 2.84,
+     "max_risk": 581,
+     "trades_6m": 125.4
+    },
+    "H2": {
+     "per_month": 810,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 24.0,
+     "any_pay": 93.7,
+     "payouts": 3.07,
+     "trade_pnl_m": 2754,
+     "hold_cons": 46.6,
+     "months_paying": 2.7,
+     "max_risk": 845,
+     "trades_6m": 116.4
+    },
+    "2025": {
+     "per_month": 72,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 42.0,
+     "any_pay": 22.3,
+     "payouts": 0.28,
+     "trade_pnl_m": 145,
+     "hold_cons": 6.6,
+     "months_paying": 0.27,
+     "max_risk": 981,
+     "trades_6m": 63.2
+    },
+    "2021-24": {
+     "per_month": 70,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 36.0,
+     "any_pay": 21.1,
+     "payouts": 0.27,
+     "trade_pnl_m": 25,
+     "hold_cons": 3.6,
+     "months_paying": 0.26,
+     "max_risk": 909,
+     "trades_6m": 57.8
+    }
+   },
+   "lit+na_f10_c400": {
+    "H1": {
+     "per_month": 862,
+     "paid_p10": 1600,
+     "loss_6m": 0.0,
+     "first_med": 23.0,
+     "any_pay": 93.3,
+     "payouts": 3.27,
+     "trade_pnl_m": 2972,
+     "hold_cons": 42.1,
+     "months_paying": 2.59,
+     "max_risk": 581,
+     "trades_6m": 133.0
+    },
+    "H2": {
+     "per_month": 653,
+     "paid_p10": 1398,
+     "loss_6m": 0.0,
+     "first_med": 25.0,
+     "any_pay": 91.5,
+     "payouts": 2.48,
+     "trade_pnl_m": 2522,
+     "hold_cons": 41.8,
+     "months_paying": 2.26,
+     "max_risk": 845,
+     "trades_6m": 123.8
+    },
+    "2025": {
+     "per_month": 64,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 36.5,
+     "any_pay": 19.4,
+     "payouts": 0.24,
+     "trade_pnl_m": 195,
+     "hold_cons": 8.3,
+     "months_paying": 0.23,
+     "max_risk": 981,
+     "trades_6m": 68.4
+    },
+    "2021-24": {
+     "per_month": 84,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 31.0,
+     "any_pay": 22.5,
+     "payouts": 0.32,
+     "trade_pnl_m": 126,
+     "hold_cons": 6.0,
+     "months_paying": 0.31,
+     "max_risk": 909,
+     "trades_6m": 65.5
+    }
+   }
+  },
+  "builder25k": {
+   "lit_only": {
+    "H1": {
+     "per_month": 445,
+     "paid_p10": 765,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 92.0,
+     "payouts": 3.37,
+     "trade_pnl_m": 1206,
+     "hold_cons": 46.1,
+     "months_paying": 2.78,
+     "max_risk": 291,
+     "trades_6m": 66.0
+    },
+    "H2": {
+     "per_month": 405,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 25.0,
+     "any_pay": 85.6,
+     "payouts": 3.09,
+     "trade_pnl_m": 1053,
+     "hold_cons": 38.5,
+     "months_paying": 2.62,
+     "max_risk": 422,
+     "trades_6m": 52.4
+    },
+    "2025": {
+     "per_month": 36,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 51.0,
+     "any_pay": 22.7,
+     "payouts": 0.28,
+     "trade_pnl_m": 46,
+     "hold_cons": 4.3,
+     "months_paying": 0.27,
+     "max_risk": 458,
+     "trades_6m": 37.2
+    },
+    "2021-24": {
+     "per_month": 28,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 42.0,
+     "any_pay": 18.7,
+     "payouts": 0.22,
+     "trade_pnl_m": -8,
+     "hold_cons": 2.2,
+     "months_paying": 0.22,
+     "max_risk": 454,
+     "trades_6m": 32.0
+    }
+   },
+   "lit+na_f2_c100": {
+    "H1": {
+     "per_month": 439,
+     "paid_p10": 765,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 92.0,
+     "payouts": 3.32,
+     "trade_pnl_m": 1201,
+     "hold_cons": 46.6,
+     "months_paying": 2.77,
+     "max_risk": 291,
+     "trades_6m": 69.3
+    },
+    "H2": {
+     "per_month": 411,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 25.0,
+     "any_pay": 85.6,
+     "payouts": 3.14,
+     "trade_pnl_m": 1068,
+     "hold_cons": 38.4,
+     "months_paying": 2.65,
+     "max_risk": 422,
+     "trades_6m": 56.1
+    },
+    "2025": {
+     "per_month": 36,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 51.0,
+     "any_pay": 22.7,
+     "payouts": 0.28,
+     "trade_pnl_m": 47,
+     "hold_cons": 4.4,
+     "months_paying": 0.27,
+     "max_risk": 458,
+     "trades_6m": 37.6
+    },
+    "2021-24": {
+     "per_month": 28,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 42.5,
+     "any_pay": 18.6,
+     "payouts": 0.22,
+     "trade_pnl_m": -8,
+     "hold_cons": 2.2,
+     "months_paying": 0.21,
+     "max_risk": 454,
+     "trades_6m": 32.9
+    }
+   },
+   "lit+na_f3_c100": {
+    "H1": {
+     "per_month": 437,
+     "paid_p10": 765,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 92.0,
+     "payouts": 3.3,
+     "trade_pnl_m": 1192,
+     "hold_cons": 46.1,
+     "months_paying": 2.77,
+     "max_risk": 291,
+     "trades_6m": 70.3
+    },
+    "H2": {
+     "per_month": 415,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 25.0,
+     "any_pay": 85.7,
+     "payouts": 3.16,
+     "trade_pnl_m": 1079,
+     "hold_cons": 39.1,
+     "months_paying": 2.68,
+     "max_risk": 422,
+     "trades_6m": 57.5
+    },
+    "2025": {
+     "per_month": 37,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 47.0,
+     "any_pay": 22.4,
+     "payouts": 0.28,
+     "trade_pnl_m": 53,
+     "hold_cons": 4.9,
+     "months_paying": 0.28,
+     "max_risk": 458,
+     "trades_6m": 38.6
+    },
+    "2021-24": {
+     "per_month": 29,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 44.0,
+     "any_pay": 19.2,
+     "payouts": 0.22,
+     "trade_pnl_m": -6,
+     "hold_cons": 2.2,
+     "months_paying": 0.22,
+     "max_risk": 454,
+     "trades_6m": 34.8
+    }
+   },
+   "lit+na_f3_c150": {
+    "H1": {
+     "per_month": 461,
+     "paid_p10": 762,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 92.0,
+     "payouts": 3.48,
+     "trade_pnl_m": 1224,
+     "hold_cons": 43.7,
+     "months_paying": 2.79,
+     "max_risk": 291,
+     "trades_6m": 79.3
+    },
+    "H2": {
+     "per_month": 406,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 25.0,
+     "any_pay": 85.7,
+     "payouts": 3.1,
+     "trade_pnl_m": 1093,
+     "hold_cons": 38.6,
+     "months_paying": 2.62,
+     "max_risk": 422,
+     "trades_6m": 66.8
+    },
+    "2025": {
+     "per_month": 37,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 47.0,
+     "any_pay": 22.4,
+     "payouts": 0.29,
+     "trade_pnl_m": 54,
+     "hold_cons": 4.7,
+     "months_paying": 0.28,
+     "max_risk": 458,
+     "trades_6m": 39.4
+    },
+    "2021-24": {
+     "per_month": 30,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 45.0,
+     "any_pay": 19.2,
+     "payouts": 0.23,
+     "trade_pnl_m": -4,
+     "hold_cons": 2.1,
+     "months_paying": 0.23,
+     "max_risk": 454,
+     "trades_6m": 35.1
+    }
+   },
+   "lit+na_f3_c200": {
+    "H1": {
+     "per_month": 455,
+     "paid_p10": 762,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 92.0,
+     "payouts": 3.44,
+     "trade_pnl_m": 1282,
+     "hold_cons": 44.2,
+     "months_paying": 2.82,
+     "max_risk": 291,
+     "trades_6m": 87.4
+    },
+    "H2": {
+     "per_month": 422,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 25.0,
+     "any_pay": 85.7,
+     "payouts": 3.22,
+     "trade_pnl_m": 1126,
+     "hold_cons": 37.2,
+     "months_paying": 2.66,
+     "max_risk": 422,
+     "trades_6m": 70.0
+    },
+    "2025": {
+     "per_month": 37,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 47.0,
+     "any_pay": 22.4,
+     "payouts": 0.28,
+     "trade_pnl_m": 54,
+     "hold_cons": 4.6,
+     "months_paying": 0.27,
+     "max_risk": 458,
+     "trades_6m": 39.6
+    },
+    "2021-24": {
+     "per_month": 30,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 45.0,
+     "any_pay": 19.2,
+     "payouts": 0.23,
+     "trade_pnl_m": -4,
+     "hold_cons": 2.1,
+     "months_paying": 0.23,
+     "max_risk": 454,
+     "trades_6m": 35.2
+    }
+   },
+   "lit+na_f4_c150": {
+    "H1": {
+     "per_month": 464,
+     "paid_p10": 740,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 91.7,
+     "payouts": 3.52,
+     "trade_pnl_m": 1225,
+     "hold_cons": 42.8,
+     "months_paying": 2.8,
+     "max_risk": 291,
+     "trades_6m": 81.7
+    },
+    "H2": {
+     "per_month": 408,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 25.0,
+     "any_pay": 86.0,
+     "payouts": 3.12,
+     "trade_pnl_m": 1099,
+     "hold_cons": 38.5,
+     "months_paying": 2.62,
+     "max_risk": 422,
+     "trades_6m": 70.3
+    },
+    "2025": {
+     "per_month": 39,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 47.0,
+     "any_pay": 22.8,
+     "payouts": 0.3,
+     "trade_pnl_m": 58,
+     "hold_cons": 4.9,
+     "months_paying": 0.29,
+     "max_risk": 458,
+     "trades_6m": 41.5
+    },
+    "2021-24": {
+     "per_month": 32,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 45.0,
+     "any_pay": 20.3,
+     "payouts": 0.25,
+     "trade_pnl_m": 2,
+     "hold_cons": 2.2,
+     "months_paying": 0.24,
+     "max_risk": 454,
+     "trades_6m": 38.5
+    }
+   },
+   "lit+na_f5_c250": {
+    "H1": {
+     "per_month": 457,
+     "paid_p10": 726,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 91.5,
+     "payouts": 3.47,
+     "trade_pnl_m": 1311,
+     "hold_cons": 40.6,
+     "months_paying": 2.8,
+     "max_risk": 291,
+     "trades_6m": 97.8
+    },
+    "H2": {
+     "per_month": 434,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 25.0,
+     "any_pay": 86.0,
+     "payouts": 3.3,
+     "trade_pnl_m": 1209,
+     "hold_cons": 38.1,
+     "months_paying": 2.77,
+     "max_risk": 422,
+     "trades_6m": 81.8
+    },
+    "2025": {
+     "per_month": 38,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 46.5,
+     "any_pay": 23.4,
+     "payouts": 0.29,
+     "trade_pnl_m": 70,
+     "hold_cons": 5.9,
+     "months_paying": 0.28,
+     "max_risk": 458,
+     "trades_6m": 45.6
+    },
+    "2021-24": {
+     "per_month": 32,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 42.0,
+     "any_pay": 20.3,
+     "payouts": 0.25,
+     "trade_pnl_m": 7,
+     "hold_cons": 2.7,
+     "months_paying": 0.24,
+     "max_risk": 454,
+     "trades_6m": 41.9
+    }
+   },
+   "lit+na_f5_c400": {
+    "H1": {
+     "per_month": 447,
+     "paid_p10": 726,
+     "loss_6m": 0.0,
+     "first_med": 26.0,
+     "any_pay": 91.5,
+     "payouts": 3.4,
+     "trade_pnl_m": 1420,
+     "hold_cons": 40.9,
+     "months_paying": 2.76,
+     "max_risk": 291,
+     "trades_6m": 103.1
+    },
+    "H2": {
+     "per_month": 377,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 25.0,
+     "any_pay": 86.0,
+     "payouts": 2.88,
+     "trade_pnl_m": 1214,
+     "hold_cons": 39.9,
+     "months_paying": 2.5,
+     "max_risk": 422,
+     "trades_6m": 88.8
+    },
+    "2025": {
+     "per_month": 39,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 47.0,
+     "any_pay": 23.4,
+     "payouts": 0.3,
+     "trade_pnl_m": 73,
+     "hold_cons": 5.8,
+     "months_paying": 0.29,
+     "max_risk": 458,
+     "trades_6m": 45.7
+    },
+    "2021-24": {
+     "per_month": 32,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 42.0,
+     "any_pay": 20.3,
+     "payouts": 0.25,
+     "trade_pnl_m": 6,
+     "hold_cons": 2.6,
+     "months_paying": 0.24,
+     "max_risk": 454,
+     "trades_6m": 41.9
+    }
+   },
+   "lit+na_f10_c400": {
+    "H1": {
+     "per_month": 431,
+     "paid_p10": 609,
+     "loss_6m": 0.0,
+     "first_med": 24.0,
+     "any_pay": 90.1,
+     "payouts": 3.27,
+     "trade_pnl_m": 1569,
+     "hold_cons": 42.7,
+     "months_paying": 2.6,
+     "max_risk": 291,
+     "trades_6m": 116.4
+    },
+    "H2": {
+     "per_month": 309,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 29.0,
+     "any_pay": 85.6,
+     "payouts": 2.36,
+     "trade_pnl_m": 1199,
+     "hold_cons": 37.0,
+     "months_paying": 2.12,
+     "max_risk": 422,
+     "trades_6m": 102.7
+    },
+    "2025": {
+     "per_month": 35,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 42.0,
+     "any_pay": 20.8,
+     "payouts": 0.27,
+     "trade_pnl_m": 95,
+     "hold_cons": 7.4,
+     "months_paying": 0.26,
+     "max_risk": 458,
+     "trades_6m": 53.4
+    },
+    "2021-24": {
+     "per_month": 40,
+     "paid_p10": 0,
+     "loss_6m": 0.0,
+     "first_med": 35.0,
+     "any_pay": 23.1,
+     "payouts": 0.31,
+     "trade_pnl_m": 50,
+     "hold_cons": 4.8,
+     "months_paying": 0.3,
+     "max_risk": 454,
+     "trades_6m": 52.2
+    }
+   }
+  }
+ },
+ "stack": {
+  "rows": {
+   "A_7lit__b5": {
+    "H1": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K"
+     ],
+     "net_m": 5016,
+     "net_p10_m": 2705,
+     "p_neg": 0.6,
+     "dry_m4_6": 4.6,
+     "dry3_after_m3": 18.8,
+     "zero_months_after_m3": 29.5,
+     "longest_dry_mean": 1.74,
+     "month_p10_after_m3": 0,
+     "evals": 18.11,
+     "lost": 0.0,
+     "eval_cost_m": 127
+    },
+    "H2": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K"
+     ],
+     "net_m": 4772,
+     "net_p10_m": 2412,
+     "p_neg": 0.8,
+     "dry_m4_6": 6.6,
+     "dry3_after_m3": 20.3,
+     "zero_months_after_m3": 29.8,
+     "longest_dry_mean": 1.82,
+     "month_p10_after_m3": 0,
+     "evals": 18.43,
+     "lost": 0.0,
+     "eval_cost_m": 129
+    },
+    "2025": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K"
+     ],
+     "net_m": 75,
+     "net_p10_m": -244,
+     "p_neg": 66.9,
+     "dry_m4_6": 85.4,
+     "dry3_after_m3": 98.6,
+     "zero_months_after_m3": 93.9,
+     "longest_dry_mean": 7.83,
+     "month_p10_after_m3": 0,
+     "evals": 20.95,
+     "lost": 0.0,
+     "eval_cost_m": 147
+    },
+    "2021-24": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K"
+     ],
+     "net_m": 30,
+     "net_p10_m": -261,
+     "p_neg": 71.1,
+     "dry_m4_6": 82.7,
+     "dry3_after_m3": 98.9,
+     "zero_months_after_m3": 94.7,
+     "longest_dry_mean": 8.0,
+     "month_p10_after_m3": 0,
+     "evals": 22.95,
+     "lost": 0.0,
+     "eval_cost_m": 160
+    }
+   },
+   "B_7mix__b5": {
+    "H1": {
+     "slots": [
+      "LIT+NA 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K"
+     ],
+     "net_m": 5423,
+     "net_p10_m": 2883,
+     "p_neg": 0.4,
+     "dry_m4_6": 4.8,
+     "dry3_after_m3": 16.4,
+     "zero_months_after_m3": 26.8,
+     "longest_dry_mean": 1.65,
+     "month_p10_after_m3": 0,
+     "evals": 19.07,
+     "lost": 0.0,
+     "eval_cost_m": 134
+    },
+    "H2": {
+     "slots": [
+      "LIT+NA 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K"
+     ],
+     "net_m": 5080,
+     "net_p10_m": 2558,
+     "p_neg": 0.8,
+     "dry_m4_6": 4.5,
+     "dry3_after_m3": 14.2,
+     "zero_months_after_m3": 25.9,
+     "longest_dry_mean": 1.6,
+     "month_p10_after_m3": 0,
+     "evals": 19.1,
+     "lost": 0.0,
+     "eval_cost_m": 134
+    },
+    "2025": {
+     "slots": [
+      "LIT+NA 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K"
+     ],
+     "net_m": 86,
+     "net_p10_m": -239,
+     "p_neg": 65.5,
+     "dry_m4_6": 84.1,
+     "dry3_after_m3": 98.7,
+     "zero_months_after_m3": 93.5,
+     "longest_dry_mean": 7.8,
+     "month_p10_after_m3": 0,
+     "evals": 20.96,
+     "lost": 0.0,
+     "eval_cost_m": 147
+    },
+    "2021-24": {
+     "slots": [
+      "LIT+NA 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K"
+     ],
+     "net_m": 63,
+     "net_p10_m": -259,
+     "p_neg": 69.4,
+     "dry_m4_6": 82.4,
+     "dry3_after_m3": 98.6,
+     "zero_months_after_m3": 93.9,
+     "longest_dry_mean": 7.91,
+     "month_p10_after_m3": 0,
+     "evals": 22.97,
+     "lost": 0.0,
+     "eval_cost_m": 160
+    }
+   },
+   "C_5lit_2na__b5": {
+    "H1": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "NA 50K",
+      "NA 50K"
+     ],
+     "net_m": 3345,
+     "net_p10_m": 1786,
+     "p_neg": 0.6,
+     "dry_m4_6": 4.7,
+     "dry3_after_m3": 20.4,
+     "zero_months_after_m3": 31.3,
+     "longest_dry_mean": 1.81,
+     "month_p10_after_m3": 0,
+     "evals": 16.86,
+     "lost": 0.0,
+     "eval_cost_m": 117
+    },
+    "H2": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "NA 50K",
+      "NA 50K"
+     ],
+     "net_m": 3195,
+     "net_p10_m": 1632,
+     "p_neg": 0.8,
+     "dry_m4_6": 6.8,
+     "dry3_after_m3": 21.0,
+     "zero_months_after_m3": 30.4,
+     "longest_dry_mean": 1.83,
+     "month_p10_after_m3": 0,
+     "evals": 16.71,
+     "lost": 0.0,
+     "eval_cost_m": 116
+    },
+    "2025": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "NA 50K",
+      "NA 50K"
+     ],
+     "net_m": 26,
+     "net_p10_m": -203,
+     "p_neg": 67.6,
+     "dry_m4_6": 85.0,
+     "dry3_after_m3": 98.7,
+     "zero_months_after_m3": 93.7,
+     "longest_dry_mean": 7.78,
+     "month_p10_after_m3": 0,
+     "evals": 19.58,
+     "lost": 0.0,
+     "eval_cost_m": 136
+    },
+    "2021-24": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "NA 50K",
+      "NA 50K"
+     ],
+     "net_m": 48,
+     "net_p10_m": -218,
+     "p_neg": 61.5,
+     "dry_m4_6": 79.8,
+     "dry3_after_m3": 98.4,
+     "zero_months_after_m3": 92.4,
+     "longest_dry_mean": 7.56,
+     "month_p10_after_m3": 0,
+     "evals": 21.53,
+     "lost": 0.0,
+     "eval_cost_m": 149
+    }
+   },
+   "E_3lit_4mix__b5": {
+    "H1": {
+     "slots": [
+      "LIT 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT 50K"
+     ],
+     "net_m": 5202,
+     "net_p10_m": 2801,
+     "p_neg": 0.6,
+     "dry_m4_6": 4.6,
+     "dry3_after_m3": 15.0,
+     "zero_months_after_m3": 25.1,
+     "longest_dry_mean": 1.56,
+     "month_p10_after_m3": 0,
+     "evals": 18.57,
+     "lost": 0.0,
+     "eval_cost_m": 130
+    },
+    "H2": {
+     "slots": [
+      "LIT 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT 50K"
+     ],
+     "net_m": 4899,
+     "net_p10_m": 2455,
+     "p_neg": 0.8,
+     "dry_m4_6": 5.5,
+     "dry3_after_m3": 14.7,
+     "zero_months_after_m3": 25.2,
+     "longest_dry_mean": 1.6,
+     "month_p10_after_m3": 0,
+     "evals": 18.76,
+     "lost": 0.0,
+     "eval_cost_m": 132
+    },
+    "2025": {
+     "slots": [
+      "LIT 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT 50K"
+     ],
+     "net_m": 79,
+     "net_p10_m": -243,
+     "p_neg": 65.2,
+     "dry_m4_6": 83.9,
+     "dry3_after_m3": 98.2,
+     "zero_months_after_m3": 93.0,
+     "longest_dry_mean": 7.73,
+     "month_p10_after_m3": 0,
+     "evals": 20.96,
+     "lost": 0.0,
+     "eval_cost_m": 147
+    },
+    "2021-24": {
+     "slots": [
+      "LIT 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT 50K"
+     ],
+     "net_m": 43,
+     "net_p10_m": -259,
+     "p_neg": 69.5,
+     "dry_m4_6": 82.4,
+     "dry3_after_m3": 98.6,
+     "zero_months_after_m3": 93.8,
+     "longest_dry_mean": 7.92,
+     "month_p10_after_m3": 0,
+     "evals": 22.97,
+     "lost": 0.0,
+     "eval_cost_m": 160
+    }
+   },
+   "A_7lit__b21": {
+    "H1": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K"
+     ],
+     "net_m": 5210,
+     "net_p10_m": 3246,
+     "p_neg": 0.1,
+     "dry_m4_6": 2.4,
+     "dry3_after_m3": 10.7,
+     "zero_months_after_m3": 21.5,
+     "longest_dry_mean": 1.33,
+     "month_p10_after_m3": 0,
+     "evals": 17.37,
+     "lost": 0.0,
+     "eval_cost_m": 122
+    },
+    "H2": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K"
+     ],
+     "net_m": 4171,
+     "net_p10_m": 2759,
+     "p_neg": 0.3,
+     "dry_m4_6": 4.1,
+     "dry3_after_m3": 13.0,
+     "zero_months_after_m3": 25.7,
+     "longest_dry_mean": 1.5,
+     "month_p10_after_m3": 0,
+     "evals": 16.91,
+     "lost": 0.0,
+     "eval_cost_m": 119
+    },
+    "2025": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K"
+     ],
+     "net_m": 180,
+     "net_p10_m": -244,
+     "p_neg": 55.8,
+     "dry_m4_6": 77.4,
+     "dry3_after_m3": 98.5,
+     "zero_months_after_m3": 91.4,
+     "longest_dry_mean": 7.42,
+     "month_p10_after_m3": 0,
+     "evals": 20.56,
+     "lost": 0.0,
+     "eval_cost_m": 144
+    },
+    "2021-24": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K",
+      "LIT 50K"
+     ],
+     "net_m": 31,
+     "net_p10_m": -256,
+     "p_neg": 67.9,
+     "dry_m4_6": 81.8,
+     "dry3_after_m3": 99.2,
+     "zero_months_after_m3": 94.2,
+     "longest_dry_mean": 7.89,
+     "month_p10_after_m3": 0,
+     "evals": 22.69,
+     "lost": 0.0,
+     "eval_cost_m": 158
+    }
+   },
+   "B_7mix__b21": {
+    "H1": {
+     "slots": [
+      "LIT+NA 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K"
+     ],
+     "net_m": 5759,
+     "net_p10_m": 3417,
+     "p_neg": 0.1,
+     "dry_m4_6": 2.7,
+     "dry3_after_m3": 9.8,
+     "zero_months_after_m3": 22.0,
+     "longest_dry_mean": 1.37,
+     "month_p10_after_m3": 0,
+     "evals": 18.75,
+     "lost": 0.0,
+     "eval_cost_m": 132
+    },
+    "H2": {
+     "slots": [
+      "LIT+NA 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K"
+     ],
+     "net_m": 4434,
+     "net_p10_m": 2913,
+     "p_neg": 0.2,
+     "dry_m4_6": 3.8,
+     "dry3_after_m3": 10.2,
+     "zero_months_after_m3": 21.6,
+     "longest_dry_mean": 1.36,
+     "month_p10_after_m3": 0,
+     "evals": 17.44,
+     "lost": 0.0,
+     "eval_cost_m": 123
+    },
+    "2025": {
+     "slots": [
+      "LIT+NA 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K"
+     ],
+     "net_m": 197,
+     "net_p10_m": -242,
+     "p_neg": 53.9,
+     "dry_m4_6": 76.5,
+     "dry3_after_m3": 98.6,
+     "zero_months_after_m3": 90.9,
+     "longest_dry_mean": 7.35,
+     "month_p10_after_m3": 0,
+     "evals": 20.55,
+     "lost": 0.0,
+     "eval_cost_m": 144
+    },
+    "2021-24": {
+     "slots": [
+      "LIT+NA 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K"
+     ],
+     "net_m": 59,
+     "net_p10_m": -252,
+     "p_neg": 65.6,
+     "dry_m4_6": 79.5,
+     "dry3_after_m3": 99.0,
+     "zero_months_after_m3": 93.3,
+     "longest_dry_mean": 7.75,
+     "month_p10_after_m3": 0,
+     "evals": 22.71,
+     "lost": 0.0,
+     "eval_cost_m": 158
+    }
+   },
+   "C_5lit_2na__b21": {
+    "H1": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "NA 50K",
+      "NA 50K"
+     ],
+     "net_m": 3442,
+     "net_p10_m": 2128,
+     "p_neg": 0.5,
+     "dry_m4_6": 2.9,
+     "dry3_after_m3": 12.3,
+     "zero_months_after_m3": 24.4,
+     "longest_dry_mean": 1.47,
+     "month_p10_after_m3": 0,
+     "evals": 16.61,
+     "lost": 0.0,
+     "eval_cost_m": 116
+    },
+    "H2": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "NA 50K",
+      "NA 50K"
+     ],
+     "net_m": 2686,
+     "net_p10_m": 1733,
+     "p_neg": 0.7,
+     "dry_m4_6": 5.0,
+     "dry3_after_m3": 15.3,
+     "zero_months_after_m3": 28.5,
+     "longest_dry_mean": 1.64,
+     "month_p10_after_m3": 0,
+     "evals": 16.82,
+     "lost": 0.0,
+     "eval_cost_m": 118
+    },
+    "2025": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "NA 50K",
+      "NA 50K"
+     ],
+     "net_m": 88,
+     "net_p10_m": -208,
+     "p_neg": 58.1,
+     "dry_m4_6": 78.0,
+     "dry3_after_m3": 98.8,
+     "zero_months_after_m3": 91.7,
+     "longest_dry_mean": 7.46,
+     "month_p10_after_m3": 0,
+     "evals": 19.22,
+     "lost": 0.0,
+     "eval_cost_m": 134
+    },
+    "2021-24": {
+     "slots": [
+      "LIT 50K",
+      "LIT 25K",
+      "LIT 25K",
+      "LIT 50K",
+      "LIT 50K",
+      "NA 50K",
+      "NA 50K"
+     ],
+     "net_m": 36,
+     "net_p10_m": -216,
+     "p_neg": 60.5,
+     "dry_m4_6": 78.3,
+     "dry3_after_m3": 98.1,
+     "zero_months_after_m3": 92.1,
+     "longest_dry_mean": 7.51,
+     "month_p10_after_m3": 0,
+     "evals": 21.61,
+     "lost": 0.0,
+     "eval_cost_m": 149
+    }
+   },
+   "E_3lit_4mix__b21": {
+    "H1": {
+     "slots": [
+      "LIT 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT 50K"
+     ],
+     "net_m": 5468,
+     "net_p10_m": 3433,
+     "p_neg": 0.1,
+     "dry_m4_6": 2.2,
+     "dry3_after_m3": 8.8,
+     "zero_months_after_m3": 18.3,
+     "longest_dry_mean": 1.2,
+     "month_p10_after_m3": 0,
+     "evals": 18.04,
+     "lost": 0.0,
+     "eval_cost_m": 126
+    },
+    "H2": {
+     "slots": [
+      "LIT 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT 50K"
+     ],
+     "net_m": 4275,
+     "net_p10_m": 2729,
+     "p_neg": 0.3,
+     "dry_m4_6": 3.9,
+     "dry3_after_m3": 11.5,
+     "zero_months_after_m3": 21.4,
+     "longest_dry_mean": 1.36,
+     "month_p10_after_m3": 0,
+     "evals": 17.15,
+     "lost": 0.0,
+     "eval_cost_m": 121
+    },
+    "2025": {
+     "slots": [
+      "LIT 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT 50K"
+     ],
+     "net_m": 190,
+     "net_p10_m": -241,
+     "p_neg": 53.9,
+     "dry_m4_6": 76.0,
+     "dry3_after_m3": 97.9,
+     "zero_months_after_m3": 90.4,
+     "longest_dry_mean": 7.29,
+     "month_p10_after_m3": 0,
+     "evals": 20.55,
+     "lost": 0.0,
+     "eval_cost_m": 144
+    },
+    "2021-24": {
+     "slots": [
+      "LIT 50K",
+      "LIT+NA 25K",
+      "LIT+NA 25K",
+      "LIT 50K",
+      "LIT+NA 50K",
+      "LIT+NA 50K",
+      "LIT 50K"
+     ],
+     "net_m": 43,
+     "net_p10_m": -252,
+     "p_neg": 66.0,
+     "dry_m4_6": 79.7,
+     "dry3_after_m3": 99.1,
+     "zero_months_after_m3": 93.1,
+     "longest_dry_mean": 7.75,
+     "month_p10_after_m3": 0,
+     "evals": 22.7,
+     "lost": 0.0,
+     "eval_cost_m": 158
+    }
+   }
+  },
+  "na_eval": [
+   0.2,
+   2000
+  ],
+  "na_funded": [
+   0.1,
+   300
+  ],
+  "mix": [
+   0.03,
+   150
+  ]
+ }
+}
