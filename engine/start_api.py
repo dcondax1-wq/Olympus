@@ -33,6 +33,21 @@ _NT = {"t": 0.0, "v": None}
 _FEED = {"t": 0.0, "v": None}
 
 
+def _boot_sha():
+    try:
+        return go.head_sha()
+    except Exception:
+        return None
+
+
+BOOT_SHA = _boot_sha()          # the commit this server booted on (engine/go.server_stale: restart it after an update)
+
+
+@router.get("/api/next/start/boot")
+def r_boot():
+    return _J({"sha": BOOT_SHA})
+
+
 def _J(obj, status=200):
     return Response(json.dumps(obj, separators=(",", ":"), default=str), media_type="application/json", status_code=status)
 

@@ -443,6 +443,19 @@ part yourself or fold it into a script.**
   `data/live_pub.git`, never main = no Pages build). The phone polls it every 30-60 s via api.github.com (raw fallback) and lays
   it over data.json. No extra Actions minutes. Auto-update also checks hourly outside trading time (weekdays 16:00-01:20 ET,
   weekends) when flat, nothing armed and a restart is safe (`engine/autoupdate.py` mode `hourly`).
+- **Updates never blocked by the PC's own files (2026-10-26):** ATLAS's account (the account_b block) lives in the
+  gitignored `data/account_b.json`; `second_model.json` ships `"account_b": null` and is never written for it
+  (`account_b.raw_cfg`: local first, else the tracked block; `set_account_b` / `arm_b` / launch prep / the Start page write
+  the local file). `account_b.migrate_local` moves an older version's block out of the tracked file (local written and read
+  back first, then `git checkout HEAD -- second_model.json`); run at server start, START BOT, and before every update's
+  dirty check. Every update path is `autoupdate.fast_forward` (auto-update, phone "update", UPDATE.bat and START BOT via
+  `python -m engine.autoupdate --pull`, the Start page): bot-made files and files checked out from main by hand
+  (`from_main`: their blob came in with HEAD..main) go back to HEAD first, a shallow history is deepened (`is_ancestor`:
+  `--deepen=300`, then `--unshallow`; the Surface said "refusing to merge unrelated histories" 2026-10-25), a refused
+  `merge --ff-only` to a proven descendant is `reset --keep`; a rollback puts hand-checked-out files back. Any other local
+  edit still blocks. A server older than the checkout (`go.server_stale`, `/api/next/start/boot`) is restarted before the
+  bot starts. Tests `tests.test_account_b_local` (migration + same ATLAS / LIT routes), `tests.test_autorun` (the Surface case
+  on real temp repos).
 - **Alerts plus (2026-10-21, `engine/alerts_plus.py`, `tests/test_alerts_plus.py`, `docs/NOTIFICATIONS.md`):** "LIT setup armed"
   / "Setup expired" pushes (PC `LiveBot._alerts_tick` after routing + cloud, same keys, relay de-dup); critical alerts repeat
   every 10 min (max 6) until "Got it" (phone `tools/web_public/alerts.js` #/ack posts `{"le":"ack"}` to the ntfy relay) or

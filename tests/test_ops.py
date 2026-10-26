@@ -439,12 +439,13 @@ def main() -> int:
                     probs.append(f"{b}: contains {bad}")
         check("bat files: every goto has its label, @echo off, cd to the folder, balanced quotes / ()", not probs, probs)
         u = read("UPDATE.bat")
-        order = [u.find(x) for x in ("--update-guard", "stop_bot.ps1\" -KeepAutostart", "git pull --ff-only origin main",
+        order = [u.find(x) for x in ("--update-guard", "stop_bot.ps1\" -KeepAutostart", "-m engine.autoupdate --pull",
                                       "pip install -r requirements.txt", "scripts\\run_bot.ps1", "--wait-server", "--after-update")]
-        check("UPDATE.bat: guard -> stop (keeps auto-resume) -> pull main -> pip -> run_bot in its own window -> self-test, in order",
+        check("UPDATE.bat: guard -> stop (keeps auto-resume) -> pull main (the auto-update's fast-forward) -> pip -> run_bot in "
+              "its own window -> self-test, in order",
               all(i >= 0 for i in order) and order == sorted(order) and 'start "Liquidity Engine bot"' in u, order)
         check("UPDATE.bat: a failed pull still restarts the bot (no goto out between pull and restart)",
-              "goto" not in u[u.find("git pull"):u.find("scripts\\run_bot.ps1")])
+              "goto" not in u[u.find("-m engine.autoupdate --pull"):u.find("scripts\\run_bot.ps1")])
         check("UPDATE.bat: trade open -> refuses; trading time -> asks Y", "GUARD%\"==\"1\" goto :intrade" in u and "set /p" in u)
         sd = read("START_DASHBOARD.bat")
         check("START_DASHBOARD.bat: pings, starts run_bot only when down, opens localhost:8766",

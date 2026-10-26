@@ -25,8 +25,6 @@ echo.
 
 "%PY%" --version >nul 2>&1
 if errorlevel 1 goto :nopython
-git --version >nul 2>&1
-if errorlevel 1 goto :nogit
 
 rem ---- 1. never during a trade; ask first during trading time
 "%PY%" -X utf8 -m engine.ops_checks --update-guard
@@ -38,23 +36,20 @@ set /p "ANS= Update anyway? Type Y then Enter: "
 if /i not "%ANS%"=="Y" goto :notnow
 :guardok
 
-rem ---- 2. only the main branch
-set "BR="
-for /f "delims=" %%b in ('git rev-parse --abbrev-ref HEAD') do set "BR=%%b"
-if /i not "%BR%"=="main" goto :notmain
+rem ---- 2. only the main branch: checked by step 4 (engine.autoupdate --pull finds git itself, also off PATH)
 
 rem ---- 3. stop the bot server (keeps the auto-resume record, so a Sim / paper bot comes back by itself)
 echo  [..] Stopping the bot server
 powershell -NoProfile -ExecutionPolicy Bypass -File "%HERE%scripts\stop_bot.ps1" -KeepAutostart
 
-rem ---- 4. get the new code
-echo  [..] Getting the new version (git pull)
-rem bot-made tracked files (cache/dash, GEX/VIX, check reports: engine/generated_files.py) that main changes go back to
-rem HEAD first, so they never block the pull; a file changed by hand still blocks it
-"%PY%" -X utf8 -m engine.generated_files --prepare-pull
-git pull --ff-only origin main
+rem ---- 4. get the new code: the auto-update's own fast-forward of main (engine/autoupdate.py --pull). Before it:
+rem ATLAS's account block goes from second_model.json to data\account_b.json, bot-made files (cache/dash, GEX/VIX,
+rem check reports) and files checked out from main by hand go back to HEAD, a shallow history is deepened. A file
+rem changed by hand still blocks it.
+echo  [..] Getting the new version
+"%PY%" -X utf8 -m engine.autoupdate --pull
 if errorlevel 1 set "PULLFAIL=1"
-if defined PULLFAIL echo  [FIX] git pull failed: the old version stays. Send this window to Claude.
+if defined PULLFAIL echo  [FIX] The update did not go through: the old version stays. Send this window to Claude.
 if not defined PULLFAIL echo  [OK]  Code is up to date
 
 rem ---- 5. packages
@@ -90,16 +85,8 @@ goto :end
 echo  Not updated. Best time: after 16:00 ET.
 goto :end
 
-:notmain
-echo  [FIX] The bot folder is on branch "%BR%", not main. Ask Claude to switch it to main.
-goto :end
-
 :nopython
 echo  [FIX] Python not found. Install Python 3.12 from python.org and tick "Add python.exe to PATH".
-goto :end
-
-:nogit
-echo  [FIX] Git not found. Install Git for Windows from git-scm.com.
 goto :end
 
 :end

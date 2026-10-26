@@ -95,7 +95,7 @@ def static_bats():
     check("UPDATE.bat runs from a temp copy before git pull (a pulled UPDATE.bat cannot derail the running one)",
           re.search(r'(?im)^copy\s+/y\s+"%~f0"\s+"%TEMP%[^\r\n]*\r\ncall\s+"%TEMP%[^\r\n]*&\s*exit\s+/b', upd)
           and re.search(r"(?im)^if /i \"%~1\"==\"--from-temp\" goto :main", upd)
-          and upd.index("--from-temp") < re.search(r"(?m)^git pull", upd).start()
+          and upd.index("--from-temp") < upd.index("-m engine.autoupdate --pull")
           and "%~dp0scripts" not in upd, "")
     one = rb("ONE_TIME_SETUP.bat").decode()
     run_line = [ln for ln in one.split("\r\n") if "one_time_setup.ps1" in ln and ln.strip().lower().startswith("powershell")]

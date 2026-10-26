@@ -70,6 +70,8 @@ class World:
         G.sims_passed = lambda: dict(self.sims)
         G.market_open = lambda now=None: self.market
         G.server_up = lambda: self.server
+        G.server_stale = lambda: False
+        G.migrate = lambda: {"status": "clean"}
         G.stop_server = lambda: (self.calls.append("stop_server"), setattr(self, "server", False))
         G.start_server = lambda wait_s=120: (self.calls.append("start_server"), setattr(self, "server", True))[1] or True
         G.startup_shortcuts = lambda: self.calls.append("startup")

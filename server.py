@@ -789,11 +789,24 @@ def _autostart_resume():
         _autostart_alert(f"Liquidity Engine server restarted but the bot resume FAILED: {res.get('error')}")
 
 
+def _migrate_account_b():
+    """ATLAS's account block: out of the tracked second_model.json into data/account_b.json (engine/account_b.py), before
+    the bot can start, so an older version's write no longer blocks every update. Never raises."""
+    try:
+        from engine import account_b as _abm
+        r = _abm.migrate_local()
+        if r.get("status") not in ("clean", "no_git"):
+            print(f"[account_b] {r.get('say')}", flush=True)
+    except Exception as e:
+        print(f"[account_b] migration skipped: {e.__class__.__name__}: {e}", flush=True)
+
+
 def _autostart_startup():
     WATCHDOG.server_started_at = int(time.time())
     if os.environ.get("LE_NO_AUTOSTART") == "1":
         WATCHDOG.autostart_info = {"disabled": "LE_NO_AUTOSTART=1"}
     else:
+        _migrate_account_b()             # before the resume reads ATLAS's account
         threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
     WATCHDOG.start()
     HEARTBEAT.start()

@@ -38,6 +38,9 @@ class World:
         G.SUP_PID = os.path.join(tmp, "supervisor.pid")
         G.bot_running = lambda: self.running
         G.server_up = lambda: self.server
+        G.server_stale = lambda: self.stale                    # the running server's code vs this folder (go.server_stale)
+        self.stale = False
+        G.migrate = lambda: {"status": "clean"}                # never the real second_model.json (engine/account_b.migrate_local)
         G.market_open = lambda now=None: self.market
         G.sims_passed = lambda: dict(self.sims)
         G.stop_server = lambda: (self.calls.append("stop_server"), setattr(self, "server", False))
@@ -200,15 +203,18 @@ def main():
             p = os.path.join(tmp, "second_model.json")
             shutil.copy(SE.CFG_PATH, p)
             ok = lambda: (True, "selftest faked")  # noqa: E731
+            shipped = open(p, encoding="utf-8").read()
             r0 = AB.set_account_b("MFFU25K-2", plan="builder25k", start="2026-10-26", path=p, selftest=ok,
                                   extra={"prior_pnl": -50.0})
-            before = json.load(open(p))
+            before, bb = json.load(open(p)), AB.raw_cfg(p)
             r = g3.arm_b("MFFU25K-2", path=p, selftest=ok)
             after = json.load(open(p))
-            ab = after.get("account_b") or {}
+            ab = AB.raw_cfg(p) or {}
             check("arm_b: armed true", r0.get("ok") and r.get("ok") and ab.get("armed") is True, (r0, r, ab))
-            check("arm_b: other fields kept", {k: v for k, v in ab.items() if k != "armed"} == before["account_b"], (ab, before["account_b"]))
+            check("arm_b: other fields kept", {k: v for k, v in ab.items() if k != "armed"} == bb, (ab, bb))
             check("arm_b: strategies untouched", after["strategies"] == before["strategies"])
+            check("arm_b: written to the local data/account_b.json only (second_model.json byte for byte as shipped)",
+                  open(p, encoding="utf-8").read() == shipped and AB.read_local(p)[1] == ab, AB.local_path(p))
             check("arm_b: twice = no change", g3.arm_b("MFFU25K-2", path=p, selftest=ok).get("already") is True)
             check("arm_b: another name refused", g3.arm_b("OTHER", path=p, selftest=ok).get("ok") is False)
             check("arm_b: spec reads armed", AB.normalize(ab, SE.load_cfg(p)).get("armed") is True)

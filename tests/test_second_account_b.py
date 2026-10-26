@@ -370,22 +370,25 @@ def units(tmp):
     shutil.copy(second.CFG_PATH, p_)
     raw = open(p_, encoding="utf-8").read()
     r1 = AB.set_account_b("Sim102", "builder25k", "2026-10-26", path=p_, selftest=lambda: (False, "FAIL (1/69)"))
-    same = open(p_, encoding="utf-8").read() == raw
+    same = open(p_, encoding="utf-8").read() == raw and not os.path.exists(AB.local_path(p_))
     r0 = AB.set_account_b("Sim101x;", "builder25k", "2026-10-26", path=p_, selftest=lambda: (True, "PASS"))
     # route one strategy on LIT's account first: switching B on turns it off there
     second.set_route("ema_lon_vix", True, path=p_, selftest=lambda: (True, "PASS"))
     r2 = AB.set_account_b("Sim102", "builder25k", "2026-10-26", path=p_, selftest=lambda: (True, "PASS"))
     c2 = json.load(open(p_, encoding="utf-8"))
+    b2, s2 = AB.raw_cfg(p_) or {}, second.load_cfg(p_).get("account_b") or {}
     r3 = second.set_route("macd_sweep", True, path=p_, selftest=lambda: (True, "PASS"))
     lines = [ln for a_, ln in zip(raw.splitlines(), open(p_, encoding="utf-8").read().splitlines()) if a_ != ln]
     r4 = AB.set_account_b("off", path=p_)
     back = open(p_, encoding="utf-8").read() == raw
-    check("switch: refused when engine.ninjatrader --selftest fails (file untouched), refused for an invalid name", not r1["ok"] and same and not r0["ok"], (r1, r0))
-    check("switch: --account-b Sim102 --plan builder25k --start sets the one account_b line; B's strategies route off on LIT's account",
-          r2["ok"] and c2["account_b"]["account"] == "Sim102" and c2["account_b"]["plan"] == "builder25k" and r2["routed_off"] == ["ema_lon_vix"]
-          and not any(c2["strategies"][k]["route"] for k in KEYS), (r2, lines[:3]))
+    check("switch: refused when engine.ninjatrader --selftest fails (nothing written), refused for an invalid name", not r1["ok"] and same and not r0["ok"], (r1, r0))
+    check("switch: --account-b Sim102 --plan builder25k --start writes the LOCAL data/account_b.json (second_model.json keeps "
+          "account_b null, so it never blocks an update); B's strategies route off on LIT's account",
+          r2["ok"] and b2.get("account") == "Sim102" and b2.get("plan") == "builder25k" and s2 == b2 and c2["account_b"] is None
+          and r2["routed_off"] == ["ema_lon_vix"] and not any(c2["strategies"][k]["route"] for k in KEYS), (r2, lines[:3]))
     check("switch: a strategy on account B can not be routed on LIT's account too (--route refused)", not r3["ok"] and "account B" in r3["error"], r3)
-    check("switch: --account-b off restores the file byte for byte", r4["ok"] and back, r4)
+    check("switch: --account-b off: the local file says off, second_model.json byte for byte as shipped", r4["ok"] and back
+          and AB.read_local(p_) == (True, None) and AB.raw_cfg(p_) is None, r4)
     src = open(os.path.join(ROOT, "engine", "account_b.py"), encoding="utf-8").read()
     check("engine/account_b.py never arms anything (sets no environment switch, holds no LIVE phrase)",
           "os.environ[" not in src and "LIVE_PHRASE" not in src and "putenv" not in src)

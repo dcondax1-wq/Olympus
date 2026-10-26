@@ -26,6 +26,7 @@ import argparse
 import datetime as dt
 import json
 import os
+import shutil
 import subprocess
 import threading
 import sys
@@ -367,28 +368,28 @@ def checklist_lines():
     return out, red
 
 
+PULL = None              # tests: a fake engine.autoupdate.pull
+
+
 def update(py=sys.executable) -> bool:
-    """git pull main (fast-forward only) while the bot is stopped; True = new code arrived (START BOT re-runs itself)."""
-    import glob
-    import shutil
-    git = shutil.which("git") or next(iter(glob.glob(os.path.expandvars(r"%ProgramFiles%\Git\cmd\git.exe"))
-                                           + glob.glob(os.path.expandvars(r"%LOCALAPPDATA%\GitHubDesktop\app-*\resources\app\git\cmd\git.exe"))), None)
-    if not git:
+    """The newest main (fast-forward only) while the bot is stopped: engine/autoupdate.pull, the same code as the
+    auto-update and UPDATE.bat (ATLAS's account block moved out of second_model.json, files checked out from main by
+    hand, a shallow history). True = new code arrived (START BOT re-runs itself, the Start page restarts the server)."""
+    from . import autoupdate, generated_files
+    if generated_files.git_exe() == "git" and not shutil.which("git"):
         print(" [..] Update skipped (git not found); starting the version on this PC.")
         return False
-
-    def head():
-        return subprocess.run([git, "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
     try:
-        before = head()
-        r = subprocess.run([git, "pull", "--ff-only", "-q", "origin", "main"], cwd=ROOT, capture_output=True, text=True)
-    except OSError:
-        print(" [..] Update skipped (git did not run); starting the version on this PC.")
+        r = (PULL or autoupdate.pull)()
+    except Exception as e:
+        print(f" [..] Update skipped ({e.__class__.__name__}: {e}); starting the version on this PC.")
         return False
-    if r.returncode:
-        print(" [..] Update skipped (git pull did not fast-forward); starting the version on this PC.")
-        return False
-    return head() != before
+    if r.get("status") == "updated":
+        print(f" [OK] {r.get('say')}")
+        return True
+    if r.get("status") != "up_to_date":
+        print(f" [..] {r.get('say')}; starting the version on this PC.")
+    return False
 
 
 def shortcut():
@@ -523,8 +524,10 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
     if not env_has_live():
         add_env_live()
         added = True
-    if server_up() and (added or env_newer_than_server()):
-        print("     restarting the bot server so it reads the live switch")
+    stale = server_up() and server_stale()
+    if server_up() and (added or env_newer_than_server() or stale):
+        print("     restarting the bot server so it runs the new version" if stale and not added else
+              "     restarting the bot server so it reads the live switch")
         stop_server()
     if not server_up() and not start_server():
         print(' [FIX] The server did not start in 2 minutes. Look at the "Liquidity Engine bot" window.')
@@ -561,8 +564,44 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
     return 0
 
 
+def migrate():
+    """ATLAS's account block out of the tracked second_model.json (engine/account_b.migrate_local); prints what it did."""
+    try:
+        from . import account_b
+        m = account_b.migrate_local()
+        if m.get("status") in ("migrated", "error"):
+            print(f" [{'OK' if m['status'] == 'migrated' else '..'}] {m.get('say')}")
+        return m
+    except Exception as e:
+        return {"status": "error", "say": f"{e.__class__.__name__}: {e}"}
+
+
+def head_sha():
+    from . import generated_files
+    c, out = generated_files._git("rev-parse", "HEAD", cwd=ROOT, timeout=30)
+    s = out.strip()
+    return s if c == 0 and len(s) == 40 else None
+
+
+def server_stale() -> bool:
+    """The bot server runs older code than this folder (an update arrived after it started; an older server has no
+    /api/next/start/boot): it is started again before the bot starts, so the bot never runs the old code (an old
+    server would read ATLAS's account from second_model.json, which the update emptied)."""
+    if not server_up():
+        return False
+    head = head_sha()
+    if not head:
+        return False
+    try:
+        return _http("/api/next/start/boot").get("sha") != head
+    except Exception:
+        return True
+
+
 def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
     print("\n ==== Zlarior + ATLAS: START BOT ====\n")
+    if not dry and not bot_running():
+        migrate()
     if pull and not dry and not bot_running() and update(py):
         print(" Updated to the newest version: restarting START BOT.")
         return subprocess.run([py, "-X", "utf8", "-m", "engine.go", "--no-pull"], cwd=ROOT).returncode

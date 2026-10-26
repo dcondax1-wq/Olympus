@@ -70,9 +70,30 @@ def discard(git, paths) -> tuple:
     return git("checkout", "HEAD", "--", *paths)
 
 
+_GIT = {"exe": None}
+
+
+def git_exe() -> str:
+    """git on PATH, else Git for Windows' or GitHub Desktop's own copy (the owner's Surface had no git on PATH for START
+    BOT, 2026-10-25). Falls back to plain "git"."""
+    if _GIT["exe"]:
+        return _GIT["exe"]
+    import glob
+    import shutil
+    exe = shutil.which("git")
+    if not exe and os.name == "nt":
+        cands = []
+        for base in ("%ProgramFiles%", "%ProgramFiles(x86)%", "%LOCALAPPDATA%\\Programs"):
+            cands += glob.glob(os.path.expandvars(base + r"\Git\cmd\git.exe"))
+        cands += sorted(glob.glob(os.path.expandvars(r"%LOCALAPPDATA%\GitHubDesktop\app-*\resources\app\git\cmd\git.exe")))[::-1]
+        exe = next(iter(cands), None)
+    _GIT["exe"] = exe or "git"
+    return _GIT["exe"]
+
+
 def _git(*args, cwd=ROOT, timeout=180):
     try:
-        r = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, timeout=timeout)
+        r = subprocess.run([git_exe(), *args], cwd=cwd, capture_output=True, text=True, timeout=timeout)
         return r.returncode, (r.stdout or "") + (r.stderr or "")
     except Exception as e:
         return 127, f"{e.__class__.__name__}: {e}"
@@ -80,7 +101,8 @@ def _git(*args, cwd=ROOT, timeout=180):
 
 def prepare_pull(git=_git, branch: str = "main") -> list:
     """Before `git pull --ff-only origin <branch>`: fetch, then discard the dirty generated files the pull changes.
-    Returns the discarded paths. Never touches any other file."""
+    Returns the discarded paths. Never touches any other file (engine/autoupdate.fast_forward does the rest: ATLAS's
+    account block moved out of second_model.json, files checked out from main by hand, a shallow history)."""
     c, st = git("status", "--porcelain", "--untracked-files=no")
     gen, _ = split_dirty(st) if c == 0 else ([], [])
     if not gen:

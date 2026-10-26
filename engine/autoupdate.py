@@ -5,6 +5,7 @@
   python -m engine.autoupdate --status       what it did last
   python -m engine.autoupdate --on-start     scripts/run_bot.ps1 runs this before it starts server.py
   python -m engine.autoupdate --check        one check now (same rules; the server's daily check does this in-process)
+  python -m engine.autoupdate --pull         the update now, bot stopped (UPDATE.bat, START BOT, the Start page)
 
 "Pull all the time" (owner 2026-10-21): besides the main daily check in the halt, the server checks for a new main once an
 hour outside trading time (weekdays 16:00-01:20 ET, i.e. never within 30 min of the 01:50 blackout, and all weekend), with
@@ -20,6 +21,11 @@ Rules (never broken):
     tree (tracked files changed by hand) or a main that is not a fast-forward of HEAD is skipped with an alert.
   * bot-made tracked files (engine/generated_files.py: cache/dash/*, data/GEX_1d.csv, VIX/VXN, check reports) never
     count as dirty; the ones the update changes are put back to HEAD right before the fast-forward (and before a rollback).
+  * (2026-10-26, fast_forward) ATLAS's account block in second_model.json moves to data/account_b.json first
+    (engine/account_b.migrate_local); a file checked out from main by hand is no local work either (from_main: back to
+    HEAD before the move, put back after a rollback); a shallow history is deepened before "not a fast-forward" is
+    decided; a refused `git merge --ff-only` to a proven descendant is done with `git reset --keep`. UPDATE.bat and
+    START BOT use the same code (--pull).
   * after the fast-forward: pip install -r requirements.txt when it changed, then the quick self-tests
     (engine.ninjatrader --selftest, engine.sizing, tests.test_no_yahoo). Any failure rolls back with
     `git reset --keep <old sha>` (the tree was clean, so nothing local can be lost; --keep refuses otherwise), remembers
@@ -216,7 +222,7 @@ class Shell:
             return 127, f"{e.__class__.__name__}: {e}"
 
     def git(self, *args, timeout=120):
-        return self.run(["git", *args], timeout=timeout)
+        return self.run([generated_files.git_exe(), *args], timeout=timeout)
 
     def py(self, args, timeout=600):
         return self.run([self.python, *args], timeout=timeout)
@@ -225,6 +231,155 @@ class Shell:
 def git_head(sh: Shell) -> str | None:
     c, out = sh.git("rev-parse", "HEAD")
     return out.strip() if c == 0 and out.strip() else None
+
+
+# ---------------------------------------------------------------------- the fast-forward every update path uses
+_SHA = __import__("re").compile(r"\b[0-9a-f]{40}\b")
+TRACKED_LOCAL = "second_model.json"          # engine/account_b.migrate_local moves its local block to data/account_b.json
+
+
+def _sha(out: str) -> str | None:
+    m = _SHA.search(out or "")
+    return m.group(0) if m else None
+
+
+def _dirty(sh) -> tuple:
+    c, out = sh.git("status", "--porcelain", "--untracked-files=no")
+    return c, out, generated_files.porcelain_paths(out) if c == 0 else []
+
+
+def is_ancestor(sh, old, new, log=None, branch: str = BRANCH) -> bool:
+    """old is in new's history. A SHALLOW checkout may not show it (the owner's Surface, 2026-10-25 22:33: "refusing to
+    merge unrelated histories" for 94e232d..e20e268 although 94e232d is e20e268's grandparent): deepen, then unshallow."""
+    log = log or (lambda t: None)
+    if sh.git("merge-base", "--is-ancestor", old, new)[0] == 0:
+        return True
+    c, out = sh.git("rev-parse", "--is-shallow-repository")
+    if c != 0 or out.strip() != "true":
+        return False
+    for args in (("fetch", "-q", "--deepen=300", "origin", branch), ("fetch", "-q", "--unshallow", "origin", branch)):
+        c, out = sh.git(*args, timeout=900)
+        log(f"shallow history: git {' '.join(args[1:3])} -> {c}" + (f" ({out.strip()[-120:]})" if c else ""))
+        if sh.git("merge-base", "--is-ancestor", old, new)[0] == 0:
+            return True
+    return False
+
+
+def from_main(sh, path: str, old: str, new: str) -> str | None:
+    """The commit whose version of `path` the local copy is (worktree and index), when that version came in with
+    old..new: a file checked out from main by hand (`git checkout origin/main -- engine/live.py`, the clock fix on the
+    owner's PC 2026-10-25), never the owner's own edit. None = an unknown local change (it blocks the update)."""
+    c, raw = sh.git("log", "--no-abbrev", "--raw", "-m", "--format=commit %H", f"{old}..{new}", "--", path)
+    if c != 0:
+        return None
+    blobs, cur = {}, None
+    for ln in raw.splitlines():
+        if ln.startswith("commit "):
+            cur = ln.split()[1]
+        elif ln.startswith(":") and cur:
+            parts = ln.split("\t", 1)[0].split()
+            if len(parts) >= 4 and set(parts[3]) != {"0"}:
+                blobs.setdefault(parts[3], cur)
+    if not blobs:
+        return None
+    c, head = sh.git("rev-parse", "--verify", "-q", f"HEAD:{path}")
+    head = _sha(head) if c == 0 else None
+    c, work = sh.git("hash-object", "--", path)
+    c2, idx = sh.git("ls-files", "-s", "--", path)
+    work, idx = (_sha(work) if c == 0 else None), (_sha(idx) if c2 == 0 else None)
+    if not work or not idx or not ({work, idx} - {head}):
+        return None
+    if work not in blobs and work != head or idx not in blobs and idx != head:
+        return None
+    return blobs.get(work) or blobs.get(idx)
+
+
+def fast_forward(sh, branch: str = BRANCH, log=None, skip_sha: str | None = None) -> dict:
+    """Move the checkout to origin/<branch> (fast-forward only), the one way every update runs: the auto-update, the
+    phone's "update", UPDATE.bat and START BOT (`python -m engine.autoupdate --pull`), the dashboard's Start page.
+    Before the dirty check: ATLAS's account block an older version wrote into second_model.json goes to
+    data/account_b.json (engine/account_b.migrate_local); bot-made files the update replaces go back to HEAD; a file
+    checked out from main by hand (from_main) goes back to HEAD too (the fast-forward then brings main's version). Any
+    other local change still blocks. A shallow history is deepened (is_ancestor). When `git merge --ff-only` still
+    refuses, `git reset --keep` to the proven descendant does the same move (it refuses on a conflicting local change).
+    Returns {"status": up_to_date | updated | skipped | failed, "reason", "old", "new", "changed", "restore"
+    ({path: commit} of the hand-checked-out files, put back on a rollback), "alert"}."""
+    log = log or sh.log
+    res = {"status": "skipped", "reason": "", "old": None, "new": None, "changed": [], "restore": {}, "alert": False}
+
+    def done(status, reason, alert=False, **kw):
+        res.update(status=status, reason=reason, alert=alert, **kw)
+        return res
+
+    c, cur = sh.git("rev-parse", "--abbrev-ref", "HEAD")
+    if c != 0 or cur.strip() != branch:
+        return done("skipped", f"not on branch {branch} (on {cur.strip()[:60] or '?'})", alert=True)
+    old = git_head(sh)
+    res["old"] = old
+    c, st, paths = _dirty(sh)
+    if c != 0:
+        return done("failed", f"git status failed: {st.strip()[:200]}", alert=True)
+    if TRACKED_LOCAL in paths:
+        from . import account_b
+        m = account_b.migrate_local(root=sh.cwd, git=sh.git)
+        log(f"second_model.json: {m.get('say')}")
+        c, st, paths = _dirty(sh)
+    gen_dirty, other = generated_files.split_dirty(st)
+    c, out = sh.git("fetch", "-q", "origin", branch, timeout=180)
+    if c != 0:
+        return done("skipped", f"git fetch failed: {out.strip()[-200:]}")
+    c, new = sh.git("rev-parse", f"origin/{branch}")
+    new = new.strip() if c == 0 else None
+    res["new"] = new
+    if not new:
+        return done("failed", f"origin/{branch} unknown", alert=True)
+    if new == old:
+        return done("up_to_date", f"at {old[:7]}")
+    if skip_sha and skip_sha == new:
+        return done("skipped", f"{new[:7]} failed its tests before; waiting for a newer main")
+    if not is_ancestor(sh, old, new, log, branch):
+        return done("skipped", f"origin/{branch} {new[:7]} is not a fast-forward of {old[:7]} (local commits?): not touched", alert=True)
+    known = {}
+    for p in other:
+        if p == TRACKED_LOCAL:
+            continue                                  # its block could not be moved: it blocks (below)
+        k = from_main(sh, p, old, new)
+        if k:
+            known[p] = k
+    blocking = [p for p in other if p not in known]
+    if blocking:
+        return done("skipped", "local changes in tracked files (not touched): " + ", ".join(blocking[:4]), alert=True)
+    c, changed = sh.git("diff", "--name-only", old, new)
+    changed = changed.split() if c == 0 else []
+    res["changed"] = changed
+    hit = [p for p in gen_dirty if p in changed]        # bot-made files the update replaces: back to HEAD, else the ff fails
+    if hit:
+        c, out = generated_files.discard(sh.git, hit)
+        log(f"reset {len(hit)} bot-made file(s) the update replaces: {', '.join(hit[:6])}"
+            + (f" (git: {out.strip()[-120:]})" if c else ""))
+    if known:
+        c, out = sh.git("checkout", "HEAD", "--", *known)
+        log(f"{len(known)} file(s) checked out from main by hand go back to HEAD first (the update brings main's version): "
+            f"{', '.join(list(known)[:6])}" + (f" (git: {out.strip()[-120:]})" if c else ""))
+        res["restore"] = dict(known)
+
+    c, out = sh.git("merge", "--ff-only", "-q", new)
+    if c != 0:
+        log(f"git merge --ff-only refused ({out.strip()[-160:]}): git reset --keep {new[:7]}")
+        c, out2 = sh.git("reset", "--keep", new)
+        if c != 0 or git_head(sh) != new:
+            sh.git("reset", "--keep", old)
+            put_back(sh, known)
+            return done("failed", f"fast-forward refused: {(out.strip() or out2.strip())[-200:]}", alert=True)
+    log(f"fast-forwarded {old[:7]} -> {new[:7]} ({len(changed)} files)")
+    return done("updated", f"{old[:7]} -> {new[:7]}")
+
+
+def put_back(sh, restore: dict):
+    """After a rollback (or a refused move): the files that were checked out from main by hand get that version again,
+    so the PC is exactly as before the update."""
+    for p, k in (restore or {}).items():
+        sh.git("checkout", k, "--", p)
 
 
 # ---------------------------------------------------------------------- the update itself
@@ -249,44 +404,11 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
     if flat:
         return done("skipped", f"not flat: {flat}")
     res["checked"] = True
-    c, cur = sh.git("rev-parse", "--abbrev-ref", "HEAD")
-    if c != 0 or cur.strip() != branch:
-        return done("skipped", f"not on branch {branch} (on {cur.strip()[:60] or '?'})", alert=True)
-    old = git_head(sh)
-    res["old"] = old
-    c, dirty = sh.git("status", "--porcelain", "--untracked-files=no")
-    if c != 0:
-        return done("failed", f"git status failed: {dirty.strip()[:200]}", alert=True)
-    gen_dirty, other = generated_files.split_dirty(dirty)
-    if other:
-        return done("skipped", "local changes in tracked files (not touched): " + ", ".join(other[:4]), alert=True)
-    c, out = sh.git("fetch", "-q", "origin", branch, timeout=180)
-    if c != 0:
-        return done("skipped", f"git fetch failed: {out.strip()[-200:]}")
-    c, new = sh.git("rev-parse", f"origin/{branch}")
-    new = new.strip() if c == 0 else None
-    res["new"] = new
-    if not new:
-        return done("failed", f"origin/{branch} unknown", alert=True)
-    if new == old:
-        return done("up_to_date", f"at {old[:7]}")
-    if state.get("bad_sha") == new:
-        return done("skipped", f"{new[:7]} failed its tests before; waiting for a newer main")
-    c, _ = sh.git("merge-base", "--is-ancestor", old, new)
-    if c != 0:
-        return done("skipped", f"origin/{branch} {new[:7]} is not a fast-forward of {old[:7]} (local commits?): not touched", alert=True)
-    c, changed = sh.git("diff", "--name-only", old, new)
-    changed = changed.split() if c == 0 else []
-    hit = [p for p in gen_dirty if p in changed]        # bot-made files the update replaces: back to HEAD, else the ff fails
-    if hit:
-        c, out = generated_files.discard(sh.git, hit)
-        sh.log(f"reset {len(hit)} bot-made file(s) the update replaces: {', '.join(hit[:6])}"
-               + (f" (git: {out.strip()[-120:]})" if c else ""))
-    c, out = sh.git("merge", "--ff-only", "-q", new)
-    if c != 0:
-        sh.git("reset", "--keep", old)                  # a refused ff leaves HEAD alone; this is a no-op then
-        return done("failed", f"fast-forward refused: {out.strip()[-200:]}", alert=True)
-    sh.log(f"fast-forwarded {old[:7]} -> {new[:7]} ({len(changed)} files)")
+    ff = fast_forward(sh, branch, skip_sha=state.get("bad_sha"))
+    old, new, changed = ff.get("old"), ff.get("new"), ff.get("changed") or []
+    res.update(old=old, new=new)
+    if ff["status"] != "updated":
+        return done(ff["status"], ff["reason"], alert=ff.get("alert", False))
 
     def rollback(why):
         # the self-tests may rewrite bot-made files; --keep refuses on a locally changed file the ff changed
@@ -295,6 +417,8 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
             generated_files.discard(sh.git, [p for p in generated_files.split_dirty(st2)[0] if p in changed])
         rc, rout = sh.git("reset", "--keep", old)
         back = git_head(sh) == old
+        if back:
+            put_back(sh, ff.get("restore"))             # files checked out from main by hand: as they were before
         if "requirements.txt" in changed:
             sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt"], timeout=900)
         return done("rolled_back" if back else "failed",
@@ -312,6 +436,21 @@ def run_update(sh: Shell, mode: str = "manual", now=None, flat: str | None = Non
         if c != 0:
             return rollback(f"self-test {' '.join(t[-2:])} failed: {out.strip()[-160:]}")
     return done("updated", f"{old[:7]} -> {new[:7]}, self-tests passed", restart=True)
+
+
+def pull(sh: Shell | None = None, branch: str = BRANCH, pip: bool = True) -> dict:
+    """A manual update with the bot stopped (UPDATE.bat, START BOT, the dashboard's Start page): fast_forward, then
+    pip install when requirements.txt changed. No time window, no self-tests here (UPDATE.bat runs them after the start).
+    Returns fast_forward's result + "say" (one plain line)."""
+    sh = sh or Shell(log=file_log)
+    r = fast_forward(sh, branch)
+    if r["status"] == "updated" and pip and "requirements.txt" in (r.get("changed") or []):
+        c, out = sh.py(["-m", "pip", "install", "-q", "-r", "requirements.txt", "--disable-pip-version-check"], timeout=900)
+        r["pip"] = c
+        sh.log(f"pip install -> {c}")
+    r["say"] = {"updated": f"Updated to the newest version ({r['reason']})", "up_to_date": "Already the newest version",
+                }.get(r["status"]) or f"Not updated: {r['reason']}"
+    return r
 
 
 def record(res: dict, state: dict | None = None, path: str = STATE_PATH) -> dict:
@@ -521,7 +660,13 @@ def main(argv=None) -> int:
     g.add_argument("--status", action="store_true")
     g.add_argument("--on-start", action="store_true", help="scripts/run_bot.ps1, before server.py starts")
     g.add_argument("--check", action="store_true", help="one check now (outside trading hours, when flat)")
+    g.add_argument("--pull", action="store_true", help="UPDATE.bat / START BOT: the update now (bot stopped), the same "
+                                                      "fast-forward as the auto-update; exit 1 when not updated")
     a = ap.parse_args(argv)
+    if a.pull:
+        r = pull()
+        print(f"  [{'OK' if r['status'] in ('updated', 'up_to_date') else 'FIX'}]  {r['say']}")
+        return 0 if r["status"] in ("updated", "up_to_date") else 1
     s = load_state()
     if a.enable or a.disable:
         s["enabled"] = bool(a.enable)
