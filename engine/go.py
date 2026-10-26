@@ -43,6 +43,7 @@ PORT = int(os.environ.get("PORT") or 8766)
 BASE = f"http://127.0.0.1:{PORT}"
 LIVE_LINE = '$env:NINJATRADER_LIVE = "1"'
 LIVE_PHRASE = "I ACCEPT LIVE RISK"
+FEED_FIX = "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"
 # the files the Start page reads / writes; None = the module's own default (tests point them at temp copies)
 SECOND_PATH = None       # second_model.json (account B = ATLAS's account)
 ALLOW_PATH = None        # data/nt_accounts_allow.json
@@ -309,6 +310,36 @@ def ensure_ninjatrader(wait_s=900, connected=None, sleep=time.sleep) -> bool:
     return False
 
 
+def feed_problem():
+    """None = LE_BarFeed's MNQ 5m file is fresh; else why not (engine/ninjatrader.NinjaTraderBars.recent_bars)."""
+    try:
+        from .ninjatrader import NinjaTraderBars, default_folder
+        df, why, _ = NinjaTraderBars(default_folder()).recent_bars("NQ", "5m", "1d")
+        return None if df is not None else (why or "no bars")
+    except Exception as e:
+        return f"{e.__class__.__name__}: {e}"
+
+
+def ensure_feed(wait_s=900, problem=None, sleep=time.sleep) -> bool:
+    """The NinjaTrader bar feed fresh (the Sim test and every trade need it); shows the chart fix once and waits up to
+    15 min for it. True = fresh."""
+    problem = problem or feed_problem
+    why = problem()
+    if why is None:
+        return True
+    print(f"     The bot gets no live bars from NinjaTrader ({why}).")
+    print("     Fix it in NinjaTrader now (this window waits and goes on by itself):")
+    print("       1. Open the MNQ 12-26 chart, set it to 5 Minute (or New > Chart: MNQ 12-26, Minute, 5).")
+    print("       2. Right-click the chart > Indicators > LE_BarFeed > Add > OK (already listed? Remove it, Add it again).")
+    t0 = time.time()
+    while time.time() - t0 < wait_s:
+        sleep(15)
+        if problem() is None:
+            print("     Live bars OK")
+            return True
+    return False
+
+
 def startup_shortcuts():
     """Windows Startup folder (no admin): NinjaTrader and START_DASHBOARD.bat (the bot server; auto-resume then brings the
     bot back on the 50K and the 25K once NinjaTrader connects). Replaces the two it made before."""
@@ -338,10 +369,22 @@ def checklist_lines():
 
 def update(py=sys.executable) -> bool:
     """git pull main (fast-forward only) while the bot is stopped; True = new code arrived (START BOT re-runs itself)."""
+    import glob
+    import shutil
+    git = shutil.which("git") or next(iter(glob.glob(os.path.expandvars(r"%ProgramFiles%\Git\cmd\git.exe"))
+                                           + glob.glob(os.path.expandvars(r"%LOCALAPPDATA%\GitHubDesktop\app-*\resources\app\git\cmd\git.exe"))), None)
+    if not git:
+        print(" [..] Update skipped (git not found); starting the version on this PC.")
+        return False
+
     def head():
-        return subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    before = head()
-    r = subprocess.run(["git", "pull", "--ff-only", "-q", "origin", "main"], cwd=ROOT, capture_output=True, text=True)
+        return subprocess.run([git, "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    try:
+        before = head()
+        r = subprocess.run([git, "pull", "--ff-only", "-q", "origin", "main"], cwd=ROOT, capture_output=True, text=True)
+    except OSError:
+        print(" [..] Update skipped (git did not run); starting the version on this PC.")
+        return False
     if r.returncode:
         print(" [..] Update skipped (git pull did not fast-forward); starting the version on this PC.")
         return False
@@ -403,6 +446,9 @@ def step_sims(py=sys.executable, dry=False, restart=False) -> int:
     if not market_open():
         print(" [WAIT] The market is closed (open Sun 18:00 ET - Fri 17:00 ET, not 17:00-18:00).")
         print("        Double-click START BOT again after it opens.")
+        return 1
+    if not dry and not ensure_feed():
+        print(" [FIX] Still no live bars from the MNQ chart. Send Claude a photo of the chart and this window.")
         return 1
     stopped = False
     if server_up() and not dry:
@@ -667,7 +713,7 @@ def run_setup() -> dict:
     return {"ok": rc == 0, "lines": lines, **({} if rc == 0 else {"error": "Setup failed: see the lines below."})}
 
 
-def status(state=None, connected=None) -> dict:
+def status(state=None, connected=None, feed=None) -> dict:
     """The Start page checklist: one line per step, done or not, the one button that does it and the plain status line."""
     cfg = _read(CFG)
     lit, atlas = _names(cfg)
@@ -680,6 +726,7 @@ def status(state=None, connected=None) -> dict:
         nt = autoresume.nt_connected({"adapter": "ninjatrader"})
     else:
         nt = connected()
+    bars = feed_problem() if feed is None else feed()
     names_bad = None if (lit and atlas and lit != atlas) else "not set"
     if not names_bad:
         names_bad = mixup(lit, atlas)
@@ -703,6 +750,8 @@ def status(state=None, connected=None) -> dict:
          "needs": [], "detail": "connected" if nt is True else
          "not connected: log in to NinjaTrader and connect your MFFU account" if nt is False else
          "not seen: open NinjaTrader and log in"},
+        {"key": "feed", "label": "Live bars from NinjaTrader", "done": bars is None, "action": "recheck", "button": "Check again",
+         "needs": [], "detail": "LE_BarFeed's MNQ 5-minute bars are fresh" if bars is None else f"{bars}: {FEED_FIX}"},
         {"key": "accounts", "label": "Accounts set (50K → Zlarior, 25K → ATLAS)", "done": not names_bad, "action": "names",
          "button": "Set the names", "needs": [],
          "detail": f"Zlarior → 50K {lit} · ATLAS → 25K {atlas}" if not names_bad else
@@ -710,15 +759,15 @@ def status(state=None, connected=None) -> dict:
         {"key": "setup", "label": "Setup done", "done": not miss, "action": "setup", "button": "Run setup", "needs": ["accounts"],
          "detail": f"allowlist, 50K balance and floor, ATLAS on the 25K ({cfg.get('prepped')})" if not miss else "; ".join(miss)},
         {"key": "sims", "label": "Sim tests passed", "done": sims_ok, "action": "sims", "button": "Run the Sim test",
-         "needs": ["nt"], "detail": "both Sim101 roundtrips passed" if sims_ok else
+         "needs": ["nt", "feed"], "detail": "both Sim101 roundtrips passed" if sims_ok else
          "a 1-micro test order on Sim101, about 1 minute, market open only"
          + ("" if market_open() else " (the market is closed now)")},
         {"key": "armed", "label": "Armed", "done": not arm_miss, "action": "arm", "button": "Arm and start",
-         "needs": ["nt", "accounts", "setup", "sims"],
+         "needs": ["nt", "feed", "accounts", "setup", "sims"],
          "detail": "live switch on, 25K armed" if not arm_miss else "; ".join(arm_miss) + " (you type I ACCEPT LIVE RISK)"},
         {"key": "running", "label": "Running and routes verified", "done": bool(running and not probs and not names_bad),
          "action": "stop" if run_bad else "arm", "button": "Stop the bot" if run_bad else "Start",
-         "needs": [] if run_bad else ["nt", "accounts", "setup", "sims"],
+         "needs": [] if run_bad else ["nt", "feed", "accounts", "setup", "sims"],
          "detail": "Zlarior on the 50K, ATLAS on the 25K (checked in the running bot)" if running and not run_bad
          else ("; ".join(probs) or "check the account names") if running else "stopped"},
     ]
@@ -1012,6 +1061,8 @@ def job_start(step, phrase=None, py=sys.executable, popen=None) -> dict:
             return {"ok": False, "error": f"Not yet: {bad}."}
     elif not market_open():
         return {"ok": False, "error": "The market is closed (open Sun 18:00 ET - Fri 17:00 ET, not 17:00-18:00)."}
+    elif feed_problem() is not None:
+        return {"ok": False, "error": f"No live bars from NinjaTrader: {FEED_FIX}."}
     os.makedirs(os.path.dirname(JOB_LOG), exist_ok=True)
     with open(JOB_LOG, "w", encoding="utf-8") as fh:
         fh.write(f" {dt.datetime.now().strftime('%H:%M:%S')} starting: {step}\n")

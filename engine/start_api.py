@@ -30,6 +30,7 @@ from . import cloud_guard, go
 
 router = APIRouter()
 _NT = {"t": 0.0, "v": None}
+_FEED = {"t": 0.0, "v": None}
 
 
 def _J(obj, status=200):
@@ -62,6 +63,13 @@ def _connected():
     return _NT["v"]
 
 
+def _feed():
+    """LE_BarFeed's MNQ 5m bars: None = fresh, else why (go.feed_problem, cached 10 s)."""
+    if time.time() - _FEED["t"] > 10:
+        _FEED.update(t=time.time(), v=go.feed_problem())
+    return _FEED["v"]
+
+
 def _cards() -> dict:
     try:
         from . import pc_cc_api as C
@@ -90,9 +98,11 @@ async def _body(request: Request) -> dict:
 
 
 @router.get("/api/next/start/status")
-def r_status(request: Request):
+def r_status(request: Request, fresh: int = 0):
+    if fresh:                                   # the page's "Check again"
+        _NT["t"] = _FEED["t"] = 0.0
     try:
-        st = go.status(state=_state(), connected=_connected)
+        st = go.status(state=_state(), connected=_connected, feed=_feed)
         st["accounts"] = go.accounts(_cards())
         st["local"] = cloud_guard.local_only(request) is None
         return _J(st)

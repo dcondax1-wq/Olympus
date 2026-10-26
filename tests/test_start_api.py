@@ -81,6 +81,9 @@ class World:
         SE._selftest_ok = lambda timeout=600: (True, "selftest faked")
         S._bot = lambda: self.bot
         S._connected = lambda: True
+        self.feed = None
+        G.feed_problem = lambda: self.feed
+        S._feed = lambda: self.feed
         import engine.launch_prep as LP
         import engine.ninjatrader as NT
 
@@ -154,7 +157,7 @@ def main():
         r = C["phone"].get("/api/next/start/status")
         d = r.json()
         check("phone: status readable, local false", r.status_code == 200 and d.get("local") is False, r.text[:200])
-        check("status: 6 lines in order", [s["key"] for s in d["steps"]] == ["nt", "accounts", "setup", "sims", "armed", "running"], d.get("steps"))
+        check("status: 7 lines in order", [s["key"] for s in d["steps"]] == ["nt", "feed", "accounts", "setup", "sims", "armed", "running"], d.get("steps"))
         check("status: no phrase typed by the bot (job empty, nothing armed)", "not armed" in d["say"] and d["job"]["step"] is None, d["say"])
         r = C["local"].get("/api/next/start/status")
         check("local: status local true", r.json().get("local") is True)
@@ -211,7 +214,15 @@ def main():
         r = post("nt")
         check("nt: answers (no wait)", r.status_code == 200 and "connected" in r.json(), r.text)
 
-        # ---------------------------------------------------------------- the Sim test job
+        # ---------------------------------------------------------------- live bars (LE_BarFeed), then the Sim test job
+        w.feed = "the newest bar is 42 min old"
+        st = {s["key"]: s for s in L.get("/api/next/start/status").json()["steps"]}
+        check("feed: stale bars -> red line with the chart fix, Sim test not ready", not st["feed"]["done"] and "Reload NinjaScript" in st["feed"]["detail"]
+              and st["feed"]["button"] == "Check again" and not st["sims"]["ready"] and st["sims"]["first"] == "Live bars from NinjaTrader", st["feed"])
+        check("feed: Sim test job refused while the bars are stale", post("sims").status_code == 400 and not w.popen)
+        check("feed: fresh=1 answers", L.get("/api/next/start/status?fresh=1").status_code == 200)
+        w.feed = None
+        check("feed: fresh -> green", {s["key"]: s for s in L.get("/api/next/start/status").json()["steps"]}["feed"]["done"])
         w.market = False
         check("sims: refused with the market closed", post("sims").status_code == 400 and not w.popen)
         w.market = True
@@ -271,7 +282,7 @@ def main():
         check("arm job: the log never shows the phrase", all(PHRASE not in ln for ln in G.job_status()["lines"]))
         w.bot.running, w.bot.cfg = True, {"nt_account": L50, "adapter": "ninjatrader", "armed": True}
         d = L.get("/api/next/start/status").json()
-        check("status: all six green", d["all_green"], [(s["key"], s["done"], s["detail"]) for s in d["steps"]])
+        check("status: all seven green", d["all_green"], [(s["key"], s["done"], s["detail"]) for s in d["steps"]])
         check("status: say", d["say"] == f"Zlarior → 50K {L50} · ATLAS → 25K {L25} · both armed · running", d["say"])
         w.bot.cfg = {"nt_account": L25, "adapter": "ninjatrader"}
         st = {s["key"]: s for s in L.get("/api/next/start/status").json()["steps"]}

@@ -122,9 +122,9 @@ function draw() {
 
 function armBtn() { const b = $('#stArmGo'); if (b) b.disabled = $('#stPhrase')?.value !== P.d?.phrase; }
 
-async function load() {
+async function load(fresh = false) {
   try {
-    const r = await fetch('/api/next/start/status');
+    const r = await fetch('/api/next/start/status' + (fresh ? '?fresh=1' : ''));
     const d = await r.json();
     if (!r.ok || d.error) throw new Error(d.error || 'HTTP ' + r.status);
     P.d = d; P.offline = 0;
@@ -161,6 +161,7 @@ function wire(el) {
     if (a && !a.disabled) {
       const k = a.dataset.act;
       if (k === 'names' || k === 'arm') { P.open = P.open === k ? null : k; draw(); if (k === 'arm') $('#stPhrase')?.focus(); return; }
+      if (k === 'recheck') { toast('Checking again…'); return load(true); }
       if (k === 'nt') return act(() => post('nt'), 'Opening NinjaTrader: log in, this line turns green by itself');
       if (k === 'setup') return act(() => post('setup'), 'Setup done');
       if (k === 'sims') { if (!confirm('Run the Sim101 test now?\n\nA 1-micro test order on Sim101 (not real money). The dashboard restarts during it (about 2 minutes).')) return; return act(() => post('sims'), 'Sim test started'); }

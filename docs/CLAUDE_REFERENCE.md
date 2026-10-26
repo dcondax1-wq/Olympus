@@ -319,7 +319,7 @@ part yourself or fold it into a script.**
   main (bot stopped), names asked once (`data/start_bot.json`, gitignored), `launch_prep` once, both Sim101 roundtrips until
   passed once (market open only), owner types the LIVE phrase -> `arm_b` (second_model.json account_b `"armed": true`,
   other fields kept), the live line in `.env.local.ps1`, server (re)started when that file is newer than the supervisor,
-  `ninjatrader --start` on the 50K, launch checklist, dashboard. Wrong phrase = nothing armed. Tests `tests.test_go` 55/55.
+  `ninjatrader --start` on the 50K, launch checklist, dashboard. Wrong phrase = nothing armed. Tests `tests.test_go` 58/58.
   Same steps on the dashboard Start page (Infrastructure, "Start & Accounts page").
 - `python tools/export_backtest.py`: the live-settings 5-year replay → `research/lab/backtest_live.json`. Contains periods, months,
   stop buckets, eval odds, **per-trade reports** (why it entered / plan / result / lessons) and **lessons** (wins vs losses).
@@ -367,7 +367,7 @@ part yourself or fold it into a script.**
 
 ## Infrastructure
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
-  per red line: NinjaTrader connected · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
+  per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.
   Same code as the console: `engine/go.py` is split into `step_prep` / `step_nt` / `step_sims` / `step_arm` (+ `arm_problem`,
   `slot_problem`, `mixup`, `verify_routes`); `run()` calls them for START_BOT.bat, the page calls them through
@@ -385,7 +385,7 @@ part yourself or fold it into a script.**
   **Local only:** every POST is in `cloud_guard.CLOUD_BLOCKED` (`START_WRITES`) and checked by `cloud_guard.local_only`
   (client 127.0.0.1 / ::1, no proxy / tunnel header, Host and Origin localhost, not LE_CLOUD): the phone sees the page
   read-only. UI `web_next/js/next/start.js` + `css/start.css` (sw `le-shell-next-v20`). Tests `python -X utf8 -m
-  tests.test_start_api` (83 checks, temp files only; phone / Tailscale / tunnel / rebind / origin / cloud refused) +
+  tests.test_start_api` (87 checks, temp files only; phone / Tailscale / tunnel / rebind / origin / cloud refused) +
   `tests.test_go`. Shots `research/handoff/2026-10-26/ui_start/`. Untested on the real PC: the detached job window
   (`cmd /c start`), the server restart during the job, opening NinjaTrader from the page.
 - **PC paper bot + dashboard:** `server.py` on http://localhost:8766, supervised by `scripts/run_bot.ps1` (Windows; runs only while
