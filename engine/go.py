@@ -113,6 +113,60 @@ def names(cfg, inp=input):
     return cfg
 
 
+def mixup(lit, atlas, balances=None) -> str | None:
+    """Why the two names look swapped or wrong (None = fine): a name that says the other size ("25K" in the 50K slot,
+    "50K" in the 25K slot), a Sim account, or - when LE_BarFeed's accounts.csv is there - the NinjaTrader balance
+    (the 50K above $35,000, the 25K below)."""
+    from .ninjatrader import is_sim
+    u, v = lit.upper().replace(" ", ""), atlas.upper().replace(" ", "")
+    if is_sim(lit) or is_sim(atlas):
+        return "a Sim account was typed: type the two MFFU accounts, not Sim101"
+    if ("25K" in u and "50K" not in u) or ("50K" in v and "25K" not in v):
+        return f"the names look swapped: {lit} reads like the 25K and/or {atlas} like the 50K"
+    if balances is None:
+        try:
+            from . import broker_balance
+            balances = {n: r.get("netliq") or r.get("cash") for n, r in (broker_balance.read().get("rows") or {}).items()
+                        if r.get("fresh")}
+        except Exception:
+            balances = {}
+    b50, b25 = balances.get(lit), balances.get(atlas)
+    if b50 is not None and float(b50) < 35000:
+        return f"{lit} has ${float(b50):,.0f} in NinjaTrader: that is not the 50K"
+    if b25 is not None and float(b25) > 35000:
+        return f"{atlas} has ${float(b25):,.0f} in NinjaTrader: that is not the 25K"
+    return None
+
+
+def verify_routes(lit, atlas, state=None, b=None) -> list:
+    """After the start: the problems with who trades where ([] = Zlarior on the 50K, ATLAS armed on the 25K)."""
+    from . import second
+    if state is None:
+        try:
+            state = _http("/api/live/state")
+        except Exception as e:
+            return [f"bot state not readable ({e.__class__.__name__})"]
+    b = second.load_cfg().get("account_b") if b is None else b
+    cfg = (state or {}).get("cfg") or {}
+    out = []
+    if not (state or {}).get("running"):
+        out.append("the bot is not running")
+    if cfg.get("nt_account") != lit:
+        out.append(f"Zlarior is on {cfg.get('nt_account')!r}, not the 50K {lit!r}")
+    for e in cfg.get("accounts") or []:                 # extra LIT accounts (data/accounts.json) must not include the 25K
+        if isinstance(e, dict) and e.get("enabled", True) is not False and str(e.get("nt_account") or "") == atlas:
+            out.append(f"Zlarior also lists the 25K {atlas!r} as an extra account (data/accounts.json)")
+    if cfg.get("adapter") != "ninjatrader":
+        out.append(f"the bot runs on {cfg.get('adapter')!r}, not NinjaTrader")
+    if str((b or {}).get("account") or "") != atlas:
+        out.append(f"ATLAS is on {(b or {}).get('account')!r}, not the 25K {atlas!r}")
+    elif (b or {}).get("armed") is not True:
+        out.append("ATLAS's 25K is not armed")
+    if str((b or {}).get("plan") or "") != "builder25k":
+        out.append(f"ATLAS plan is {(b or {}).get('plan')!r}, not builder25k")
+    return out
+
+
 def sims_passed() -> dict:
     from . import launch_check
     r = launch_check.load_sim_result()
@@ -275,6 +329,15 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
     if not names(cfg, inp):
         print(" [FIX] Two different account names are needed. Double-click START BOT again.")
         return 1
+    bad = mixup(cfg["lit"], cfg["atlas"])
+    if bad:
+        print(f" [FIX] {bad}.")
+        print("       Nothing changed. Double-click START BOT again and type the names from NinjaTrader's Accounts tab.")
+        if not dry:
+            for k in ("lit", "atlas", "prepped"):
+                cfg.pop(k, None)
+            _save(cfg)
+        return 1
     if not dry:
         _save(cfg)
     print(f" 50K (Zlarior): {cfg['lit']}    25K (ATLAS): {cfg['atlas']}")
@@ -330,7 +393,10 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
         print("\n 2/4 Sim101 test already passed")
 
     # 3. the owner arms (typed, never by the bot)
-    print("\n 3/4 Real money: the bot will trade your 50K (Zlarior) and your 25K (ATLAS).")
+    print("\n 3/4 Real money:")
+    print(f"       Zlarior (LIT)  ->  50K  {cfg['lit']}")
+    print(f"       ATLAS          ->  25K  {cfg['atlas']}")
+    print("     Check both names against NinjaTrader's Accounts tab (50K about $49,700, 25K about $25,000).")
     print("     Typing the line also lets the bot come back by itself after a restart (PC on + NinjaTrader connected);")
     print("     the kill switch or STOP BOT turns that off.")
     phrase = ask(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing armed)", None, inp)
@@ -360,6 +426,12 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
     if rc:
         print(" [FIX] The bot did not start (see the lines above). Send Claude a photo of this window.")
         return 1
+    probs = verify_routes(cfg["lit"], cfg["atlas"])
+    if probs:
+        print(" [STOP] Wrong account set-up: " + "; ".join(probs) + ". Stopping the bot (nothing traded).")
+        ninjatrader.main(["--stop"])
+        return 1
+    print(f"\n [OK] Zlarior trades the 50K {cfg['lit']} · ATLAS trades the 25K {cfg['atlas']} (checked in the running bot)")
     ninjatrader.main(["--enable-auto-resume", "--account", cfg["lit"], "--confirm", phrase])
     startup_shortcuts()
     print("\n Launch checklist (the bot unlocks entries by itself once everything reconciles):")
