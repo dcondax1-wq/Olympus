@@ -313,13 +313,27 @@ def ensure_ninjatrader(wait_s=900, connected=None, sleep=time.sleep) -> bool:
 
 
 def feed_problem():
-    """None = LE_BarFeed's MNQ 5m file is fresh; else why not (engine/ninjatrader.NinjaTraderBars.recent_bars)."""
+    """None = LE_BarFeed's MNQ 5m file is fresh (the NQ chart's with signal_root "NQ") and the chart is on the order
+    contract; else why not (engine/ninjatrader.NinjaTraderBars.recent_bars; the roll line from engine/roll_watch.problem:
+    the chart still on 12-26 after the Dec 10 roll, when the adapter sends no new entry)."""
     try:
         from .ninjatrader import NinjaTraderBars, default_folder
         df, why, _ = NinjaTraderBars(default_folder()).recent_bars("NQ", "5m", "1d")
-        return None if df is not None else (why or "no bars")
+        if df is None:
+            return why or "no bars"
+        from . import roll_watch
+        return roll_watch.problem(default_folder())
     except Exception as e:
         return f"{e.__class__.__name__}: {e}"
+
+
+def _roll_text(why) -> bool:
+    """Is this feed problem the roll line? It carries its own fix (switch the chart's contract), not FEED_FIX."""
+    try:
+        from . import roll_watch
+        return roll_watch.is_problem_text(why)
+    except Exception:
+        return False
 
 
 def ensure_feed(wait_s=900, problem=None, sleep=time.sleep) -> bool:
@@ -331,7 +345,12 @@ def ensure_feed(wait_s=900, problem=None, sleep=time.sleep) -> bool:
         return True
     print(f"     The bot gets no live bars from NinjaTrader ({why}).")
     print("     Fix it in NinjaTrader now (this window waits and goes on by itself):")
-    print("       1. Open the MNQ 12-26 chart, set it to 5 Minute (or New > Chart: MNQ 12-26, Minute, 5).")
+    try:
+        from .ninjatrader import nt_instrument
+        inst = nt_instrument("MNQ")                     # the order contract today (MNQ 03-27 from Thu 2026-12-10)
+    except Exception:
+        inst = "MNQ 12-26"
+    print(f"       1. Open the {inst} chart, set it to 5 Minute (or New > Chart: {inst}, Minute, 5).")
     print("       2. Right-click the chart > Indicators > LE_BarFeed > Add > OK (already listed? Remove it, Add it again).")
     t0 = time.time()
     while time.time() - t0 < wait_s:
@@ -847,7 +866,8 @@ def status(state=None, connected=None, feed=None) -> dict:
          "not connected: log in to NinjaTrader and connect your MFFU account" if nt is False else
          "not seen: open NinjaTrader and log in"},
         {"key": "feed", "label": "Live bars from NinjaTrader", "done": bars is None, "action": "recheck", "button": "Check again",
-         "needs": [], "detail": "LE_BarFeed's MNQ 5-minute bars are fresh" if bars is None else f"{bars}: {FEED_FIX}"},
+         "needs": [], "detail": "LE_BarFeed's MNQ 5-minute bars are fresh" if bars is None else
+         (bars if _roll_text(bars) else f"{bars}: {FEED_FIX}")},
         {"key": "accounts", "label": "Accounts set (50K → Zlarior, 25K → ATLAS)", "done": not names_bad, "action": "names",
          "button": "Set the names", "needs": [],
          "detail": f"Zlarior → 50K {lit} · ATLAS → 25K {atlas}" if not names_bad else
@@ -1061,11 +1081,14 @@ def step_auto(cfg, phrase="", py=sys.executable, after_update=False, sleep=time.
         why = feed_problem()
         if why is None:
             break
+        roll = _roll_text(why)              # the chart still on the old contract after the roll: its own fix
         if time.time() - t0 > wait_s:
-            _note("feed", f"Still no live bars from NinjaTrader ({why}). In NinjaTrader: {FEED_FIX}. The page tries again by itself.",
+            _note("feed", f"{why}. The page tries again by itself." if roll else
+                  f"Still no live bars from NinjaTrader ({why}). In NinjaTrader: {FEED_FIX}. The page tries again by itself.",
                   retry_s=60)
             return 1
-        _note("feed", f"No live bars from NinjaTrader ({why}). In NinjaTrader: {FEED_FIX}. Checking again every 15 s.",
+        _note("feed", f"{why}. Checking again every 15 s." if roll else
+              f"No live bars from NinjaTrader ({why}). In NinjaTrader: {FEED_FIX}. Checking again every 15 s.",
               retry_s=FEED_EVERY_S)
         sleep(FEED_EVERY_S)
     if not all(sims_passed().values()):
@@ -1451,8 +1474,8 @@ def job_start(step, phrase=None, py=sys.executable, popen=None) -> dict:
             return {"ok": False, "error": f"Not yet: {bad}."}
     elif not market_open():
         return {"ok": False, "error": "The market is closed (open Sun 18:00 ET - Fri 17:00 ET, not 17:00-18:00)."}
-    elif feed_problem() is not None:
-        return {"ok": False, "error": f"No live bars from NinjaTrader: {FEED_FIX}."}
+    elif (fp := feed_problem()) is not None:
+        return {"ok": False, "error": f"{fp}." if _roll_text(fp) else f"No live bars from NinjaTrader: {FEED_FIX}."}
     os.makedirs(os.path.dirname(JOB_LOG), exist_ok=True)
     with open(JOB_LOG, "w", encoding="utf-8") as fh:
         fh.write(f" {dt.datetime.now().strftime('%H:%M:%S')} starting: {step}\n")

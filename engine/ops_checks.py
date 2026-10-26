@@ -755,9 +755,14 @@ def run_checks(ctx: dict) -> list:
     checks += check_account(ctx["hb"], now)
     checks.append(check_nt_folder(folder))
     checks.append(check_nt_connection(nt_connections(folder), now))
-    checks.append(check_feed(folder, 1, now))
-    checks.append(check_feed(folder, 5, now))
-    checks.append(check_open_file(folder, now))
+    try:                                          # the chart the bot decides on: MNQ, or NQ with signal_root "NQ"
+        from .ninjatrader import NinjaTraderBars
+        root = NinjaTraderBars(folder).root_for("NQ") or "MNQ"
+    except Exception:
+        root = "MNQ"
+    checks.append(check_feed(folder, 1, now, root=root))
+    checks.append(check_feed(folder, 5, now, root=root))
+    checks.append(check_open_file(folder, now, root=root))
     checks.append(check_internet(ctx["net"]))
     checks.append(check_clock(ctx["net"]))
     checks.append(check_heartbeat(ctx["ping"], ctx["hb"], now))
@@ -1068,6 +1073,17 @@ def roll_notice(now) -> dict | None:
     return _payload("roll", f"Contract roll {when}: {old} -> {new}", body, f"ops:roll:{new}:{'tomorrow' if n == 1 else 'week'}", now)
 
 
+def roll_late_notice(now, folder: str | None = None) -> dict | None:
+    """On and after the roll day, the LE_BarFeed chart still on the old contract (engine/roll_watch.py; the adapter sends
+    no new entry then): one push per trading day, before the session (the 01:40 ET daily run)."""
+    try:
+        from . import roll_watch
+        n = roll_watch.late_notice(roll_watch.fact(folder or nt_folder(), now=now), now)
+    except Exception:
+        return None
+    return _payload("roll", n["title"], n["body"], n["key"], now) if n else None
+
+
 def watch(ctx: dict, state: dict, now) -> list:
     """Internet / NinjaTrader drops: one notice when it goes (NinjaTrader: after 2 checks in a row), one when it is back.
     The internet notice can only go out once it is back, so it says how long it was down."""
@@ -1354,7 +1370,7 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
                 notes.append(weekly_notice(view, state, checks, now))
                 notes += backlog_notices(state, now)
         if D["daily"]:
-            for n in (inactivity_notice(view, now), roll_notice(now)):
+            for n in (inactivity_notice(view, now), roll_notice(now), roll_late_notice(now, ctx.get("folder"))):
                 if n:
                     notes.append(n)
             if real:

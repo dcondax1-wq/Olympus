@@ -45,6 +45,8 @@ def good_facts():
             "allow": {"n": 2, "lit": True, "lit_sim": False, "b": True, "b_sim": False},
             "startup": {"ok": True, "since": NOW - 300, "problems": []},
             "sim": {"roundtrip": {"t": NOW - 1200, "ok": True, "account": "Sim101"}, "add": {"t": NOW - 900, "ok": True, "account": "Sim101"}},
+            "roll": {"level": "ok", "chart": "MNQ 12-26", "root": "MNQ", "orders": "MNQ 12-26", "signal_root": "MNQ",
+                     "say": "chart MNQ 12-26, orders MNQ 12-26; next roll Thu Dec 10"},
             "lit_armed": True, "bot_started_t": NOW - 400}
 
 
@@ -61,7 +63,12 @@ def item(cl, key):
 def pure_checks():
     cl = LC.checklist(good_facts(), good_health(), True, NOW)
     keys = [i["key"] for i in cl["items"]]
-    check("11 lines in order", keys == ["anchor", "allow", "b", "startup", "nt", "feed", "broker", "sim", "sim_add", "armed", "up"], keys)
+    check("12 lines in order (roll = the chart's contract, 2026-10-26)",
+          keys == ["anchor", "allow", "b", "startup", "nt", "feed", "roll", "broker", "sim", "sim_add", "armed", "up"], keys)
+    f_old = {k: v for k, v in good_facts().items() if k != "roll"}
+    c_old = LC.checklist(f_old, good_health(), True, NOW)
+    check("an older PC without the roll fact: the roll line is info (not counted), still all green",
+          item(c_old, "roll")["state"] == "info" and c_old["all_green"], item(c_old, "roll"))
     check("all green from the good fixture (armed is display only)", cl["all_green"] and cl["n_red"] == 0
           and all(i["state"] == "good" for i in cl["items"] if i["key"] not in ("armed", "broker")), [(i["key"], i["state"]) for i in cl["items"]])
     check("anchor line shows the launch numbers", "$49,710.80" in item(cl, "anchor")["detail"] and "$48,168.20" in item(cl, "anchor")["detail"],
@@ -200,13 +207,16 @@ def wiring_checks():
     bot = SimpleNamespace(cfg={"adapter": "paper"}, running=False, state={}, health={}, ledger=[], log=[])
     hb = heartbeat.Heartbeat(bot, every_s=300, log=lambda *a: None)
     pl = hb.payload()
-    check("heartbeat payload has 'launch' with items", isinstance(pl.get("launch"), dict) and len(pl["launch"].get("items") or []) == 11,
+    check("heartbeat payload has 'launch' with items", isinstance(pl.get("launch"), dict) and len(pl["launch"].get("items") or []) == 12,
           pl.get("launch"))
     check("heartbeat 'launch' under 4 KB", len(json.dumps(pl["launch"])) < 4096, len(json.dumps(pl["launch"])))
+    check("heartbeat 'launch' facts carry the chart contract (roll)", isinstance((pl["launch"].get("facts") or {}).get("roll"), dict),
+          (pl["launch"].get("facts") or {}).get("roll"))
     lj = live_publish.build(pl, now=pl["t"])
     check("live.json carries pc.launch", (lj.get("pc") or {}).get("launch", {}).get("items") == pl["launch"]["items"])
     src = open(os.path.join(ROOT, "tools", "cloud_monitor.py"), encoding="utf-8").read()
-    check("cloud monitor keeps pc.launch in data.json", '"ai", "launch")' in src)
+    check("cloud monitor keeps pc.launch in data.json", '"ai", "launch"' in src)
+    check("cloud monitor pushes the roll notices (engine/roll_watch.cloud_notices)", "roll_watch.cloud_notices(pc, now)" in src)
     check("pc_cc_api home_view has the launch block", "launch" in pc_cc_api.home_view.__code__.co_names or '"launch"' in
           open(pc_cc_api.__file__, encoding="utf-8").read())
     web = os.path.join(ROOT, "tools", "web_public")
@@ -245,7 +255,7 @@ def phone_model_checks():
         check("phone launch.js runs in node", False, r.stderr[-600:])
         return
     check("phone: fresh heartbeat + all-green block -> all green, Home card hidden", o["fresh"]["all"] and o["fresh"]["card"] == ""
-          and o["fresh"]["good"] == o["fresh"]["n"] == 9, o["fresh"])
+          and o["fresh"]["good"] == o["fresh"]["n"] == 10, o["fresh"])
     check("phone: heartbeat 60 min old -> startup / NinjaTrader / feed / up red with the start command, card shown",
           sorted(o["stale"]["red"]) == ["feed", "nt", "startup", "up"] and not o["stale"]["all"] and "run_bot.ps1" in o["stale"]["fix"]
           and o["stale"]["card"], o["stale"])

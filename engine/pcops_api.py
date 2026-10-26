@@ -647,6 +647,9 @@ SETTINGS = [
     ("locked", "Locked", "The rule set is frozen: changes only after a research run proves them on 2026 H1 and H2.", "", "core"),
     ("no_yahoo", "No Yahoo", "Bars come only from NinjaTrader (MNQ) and the TradingView exports. A stale NinjaTrader feed blocks new entries "
      "(FEED STALE) instead of falling back to Yahoo.", "owner rule 2026-10-19", "core"),
+    ("signal_root", "Signal chart", "Which NinjaTrader chart LIT decides on: MNQ (default) or NQ (an NQ chart of the same month with "
+     "LE_BarFeed: the bars the backtest is made of). Orders, stops, targets and size stay MNQ either way.",
+     "research/writeups/mnq-vs-nq-feed.md", "core"),
     ("params.risk_usd", "Risk per trade", "Dollars risked per trade under the LIT size rule, up to the reference stop.", "$800 to a 20-pt stop", "size"),
     ("params.risk_ref_stop", "Reference stop", "Stops wider than this get fewer micros: risk = $800 x 20 / stop (wide stop = less risk).", "", "size"),
     ("params.max_micros", "Max micros", "Never more than this many MNQ micros on one trade.", "", "size"),

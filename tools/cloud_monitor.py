@@ -811,6 +811,14 @@ def run(out):
         other_notices.append(_accounts.verdict_notice(pc_verdict, pc, now))
     # a failed / rolled-back PC auto-update, a refused real-account auto-resume (same keys as the PC's own pushes)
     other_notices += _accounts.auto_notices(pc.get("health") if pc.get("present") else None, now)
+    # the contract roll (engine/roll_watch.py): the dated reminder 7 days / 1 day before (even with the PC off) and "chart
+    # still on the old contract" after the roll day (the PC's heartbeat launch facts), unless the PC's ops helper pushes them
+    try:
+        from engine import roll_watch
+        for n in roll_watch.cloud_notices(pc, now):
+            other_notices.append(push.text_payload("Cloud", "pc", n["title"], n["body"], key=n["key"], t=now))
+    except Exception as e:
+        print("roll notices:", e.__class__.__name__)
     if prev_et and prev_et != now_et["verdict"]:
         other_notices.append(push.text_payload("Cloud", "timing", f"Eval timing: {now_et['verdict'].upper()}",
                                                f"{now_et['reason']} " + ("Good time to buy or reset the MFFU eval." if now_et["verdict"] == "go"

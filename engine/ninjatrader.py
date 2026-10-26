@@ -417,6 +417,81 @@ def nt_instrument(root: str = "MNQ", today: dt.date | None = None) -> str:
     return f"{root} {month:02d}-{year % 100:02d}"
 
 
+# ---------------------------------------------------------------------- which chart LIT decides on: MNQ (default) or NQ
+# research/writeups/mnq-vs-nq-feed.md (2026-10-26): about a third of LIT's setups differ between MNQ and NQ bars (MNQ's
+# thinner book prints other wicks), and the backtest is NQ. signal_root "NQ" = the bot reads an NQ chart's LE_BarFeed files
+# (le_feed\NQ_5m.csv, NQ_1m.csv, NQ_1m_open.csv, NQ_instrument.txt; LE_BarFeed names its files after the chart's
+# instrument root, so they never clash with the MNQ chart's) for every decision, and still sends every order to MNQ:
+# same index points, same 0.25 tick, stops / targets at the same prices, size at MNQ's $2 a point (engine/lit.py PV).
+# No NQ file -> the MNQ chart's files, exactly as before. Default "MNQ": nothing changes.
+SIGNAL_ROOTS = ("MNQ", "NQ")
+SIGNAL_ROOT_ENV = "LE_SIGNAL_ROOT"
+_SR_CACHE: dict = {}
+
+
+def _model_signal_root():
+    """live_model.json "signal_root" (LE_LIVE_MODEL, the tests' model override, first); re-read only when the file changes."""
+    if os.environ.get("LE_LIVE_MODEL"):
+        try:
+            return json.loads(os.environ["LE_LIVE_MODEL"]).get("signal_root")
+        except Exception:
+            return None
+    p = os.path.join(ROOT, "live_model.json")
+    try:
+        st = os.stat(p)
+    except OSError:
+        return None
+    key = (st.st_mtime_ns, st.st_size)
+    hit = _SR_CACHE.get(p)
+    if hit and hit[0] == key:
+        return hit[1]
+    try:
+        with open(p, encoding="utf-8") as fh:
+            v = json.load(fh).get("signal_root")
+    except Exception:
+        v = None
+    _SR_CACHE[p] = (key, v)
+    return v
+
+
+def signal_root(cfg: dict | None = None) -> str:
+    """"MNQ" (default) or "NQ": cfg["signal_root"] > LE_SIGNAL_ROOT > live_model.json "signal_root" > "MNQ"."""
+    v = (cfg or {}).get("signal_root") or os.environ.get(SIGNAL_ROOT_ENV) or _model_signal_root() or "MNQ"
+    v = str(v).strip().upper()
+    return v if v in SIGNAL_ROOTS else "MNQ"
+
+
+def feed_roots(cfg: dict | None = None) -> dict:
+    """{sym: chart roots in the order their LE_BarFeed files are looked for}: cfg["nt_feed_roots"] when set (the start cfg),
+    else MNQ first (default) or NQ first (signal_root "NQ"). NinjaTraderBars reads ONE root per symbol (root_for)."""
+    if cfg and cfg.get("nt_feed_roots"):
+        return cfg["nt_feed_roots"]
+    return {"NQ": ["NQ", "MNQ"] if signal_root(cfg) == "NQ" else ["MNQ", "NQ"], "ES": ["MES", "ES"]}
+
+
+def contract_expiry(name):
+    """(yy, mm) of a dated NinjaTrader contract name ("MNQ 12-26" -> (26, 12)), None for "MNQ ##-##" / unknown."""
+    m = re.search(r"(\d{2})-(\d{2})$", str(name or "").strip())
+    return (int(m.group(2)), int(m.group(1))) if m else None
+
+
+def contract_problem(chart, insts) -> str | None:
+    """The roll guard's verdict: None when the LE_BarFeed chart (`chart`, e.g. "MNQ 12-26" or "NQ 12-26") is on the same
+    contract month as every order instrument in `insts` (the root may differ: an NQ chart prices MNQ orders), else the
+    one-line refusal. Unknown or continuous chart -> None (NinjaTraderAdapter warns about a continuous one itself)."""
+    ce = contract_expiry(chart)
+    if not chart or ce is None:
+        return None
+    for inst in insts:
+        oe = contract_expiry(inst)
+        if oe and ce != oe:
+            want = f"{str(chart).split(' ')[0]} {str(inst).split(' ')[-1]}"
+            if ce < oe:
+                return f"Chart is on the old contract ({chart}): switch it to {want}. Entry not sent (orders go to {inst})."
+            return f"Chart is on {chart} but orders go to {inst}: switch the chart to {want}. Entry not sent."
+    return None
+
+
 def default_folder() -> str:
     """Documents\\NinjaTrader 8 (NINJATRADER_FOLDER overrides). Follows OneDrive-redirected Documents on Windows."""
     env = os.environ.get("NINJATRADER_FOLDER")
@@ -1170,16 +1245,14 @@ class NinjaTraderAdapter:
         or the stop/target (priced from the chart's bars) land a roll gap (~300 pts) off the fill. Unknown chart contract
         (older LE_BarFeed): no check (the fill-gap guard in place_bracket still applies)."""
         try:
-            chart = NinjaTraderBars(self.folder).chart_instrument(self.sym)
+            # the chart the bot decides on (signal_root: the MNQ chart, or the NQ chart when it is on): its prices are the
+            # stop / target sent to the MNQ order contract
+            chart = NinjaTraderBars(self.folder, roots=self.cfg.get("nt_feed_roots")).chart_instrument(self.sym)
         except Exception:
             chart = None
         if not chart:
             return None
-
-        def exp(name):
-            m = re.search(r"(\d{2})-(\d{2})$", name or "")
-            return (int(m.group(2)), int(m.group(1))) if m else None
-        if exp(chart) is None:
+        if contract_expiry(chart) is None:
             # a continuous contract ("MNQ ##-##"): the contract check cannot run, only the fill-gap backstop guards a roll
             day = _trading_day(self.clock())
             if self._cont_warned != (chart, day):
@@ -1188,14 +1261,7 @@ class NinjaTraderAdapter:
                            f"gap backstop is left). Put the chart on the dated contract the orders go to ({', '.join(insts)}).",
                            alert=True)
             return None
-        for inst in insts:
-            ce, oe = exp(chart), exp(inst)
-            if ce and oe and ce != oe:
-                want = f"{chart.split(' ')[0]} {inst.split(' ')[-1]}"
-                if ce < oe:
-                    return f"Chart is on the old contract ({chart}): switch it to {want}. Entry not sent (orders go to {inst})."
-                return f"Chart is on {chart} but orders go to {inst}: switch the chart to {want}. Entry not sent."
-        return None
+        return contract_problem(chart, insts)
 
     def _entry_settled(self, lg) -> bool:
         st = self.read_order(lg["entry_id"])
@@ -2091,22 +2157,33 @@ class NinjaTraderBars:
 
     def __init__(self, folder=None, roots=None, stale_s=None):
         self.dir = os.path.join(folder or default_folder(), FEED_DIR)
-        self.roots = roots or {"NQ": ["MNQ", "NQ"], "ES": ["MES", "ES"]}
+        self.roots = roots or feed_roots()          # MNQ first; NQ first with signal_root "NQ" (live_model.json)
         self.stale_s = stale_s
         self._cache: dict = {}
 
-    def file_for(self, sym, minutes):
+    def root_for(self, sym):
+        """The ONE chart root the bot reads `sym` from: the first of its roots with a 5m or 1m file, else None. Every file
+        (5m, 1m, the forming 1m open, the chart's contract) then comes from that chart, so 5m and 1m bars never mix two
+        instruments (an NQ 5m bar does not rebuild from MNQ 1m bars: the live 1m rule would drop the window)."""
         for root in self.roots.get(sym, [sym]):
-            p = os.path.join(self.dir, f"{root}_{minutes}m.csv")
-            if os.path.exists(p):
-                return p
+            if any(os.path.exists(os.path.join(self.dir, f"{root}_{m}m.csv")) for m in (5, 1)):
+                return root
         return None
 
+    def file_for(self, sym, minutes):
+        root = self.root_for(sym)
+        if root is None:
+            return None
+        p = os.path.join(self.dir, f"{root}_{minutes}m.csv")
+        return p if os.path.exists(p) else None
+
     def chart_instrument(self, sym="NQ"):
-        """The contract the LE_BarFeed chart is on ("MNQ 12-26", from <ROOT>_instrument.txt), None when unknown (an older
-        LE_BarFeed that does not write the file)."""
-        for root in self.roots.get(sym, [sym]):
-            txt = _read_text(os.path.join(self.dir, f"{root}_instrument.txt"))
+        """The contract of the LE_BarFeed chart the bot reads ("MNQ 12-26" / "NQ 12-26", from <ROOT>_instrument.txt), None
+        when unknown (an older LE_BarFeed that does not write the file). No bar file at all: the first instrument file of
+        the roots (as before)."""
+        root = self.root_for(sym)
+        for r in ([root] if root else self.roots.get(sym, [sym])):
+            txt = _read_text(os.path.join(self.dir, f"{r}_instrument.txt"))
             if txt and txt.strip():
                 return txt.strip().splitlines()[0].strip()
         return None
@@ -2207,11 +2284,9 @@ class NinjaTraderBars:
         rewritten on the first trade of every minute), or None (no file, unreadable, or not the current minute). The live
         loop sizes a LIT entry decided on the 1m CISD close from it (the backtest fills at that bar's open + 1 tick)."""
         now = int(now if now is not None else time.time())
-        for root in self.roots.get(sym, [sym]):
-            p = os.path.join(self.dir, f"{root}_1m_open.csv")
-            if os.path.exists(p):
-                break
-        else:
+        root = self.root_for(sym)                   # the chart the bars come from (never another instrument's open)
+        p = os.path.join(self.dir, f"{root}_1m_open.csv") if root else None
+        if p is None or not os.path.exists(p):
             return None
         try:
             with open(p, encoding="utf-8") as fh:
@@ -2269,7 +2344,11 @@ def _cli_status(cfg):
     print(f"Connections        : {st['connections'] or 'no connection file yet (connect, or NinjaTrader just restarted)'}")
     print(f"Positions          : {[(p['instrument'], p['side'], p['qty'], p['avg']) for p in st['positions']] or 'none reported'}")
     print(f"Open brackets      : {len(st['legs'])} (state file {st['state_file']})")
-    feed = NinjaTraderBars(cfg.get("nt_folder"))
+    feed = NinjaTraderBars(cfg.get("nt_folder"), roots=cfg.get("nt_feed_roots"))
+    root = feed.root_for("NQ")
+    bad = contract_problem(feed.chart_instrument("NQ"), st["instruments"])
+    print(f"Signals from       : {root + ' chart' if root else 'no LE_BarFeed chart'} ({feed.chart_instrument('NQ') or 'contract unknown'}; "
+          f"signal_root {signal_root(cfg)}) -> orders {', '.join(st['instruments'])}" + (f"  ** {bad}" if bad else ""))
     for interval in ("5m", "1m", "1h"):
         df, why, full = feed.recent_bars("NQ", interval, "5d")
         if df is None:
