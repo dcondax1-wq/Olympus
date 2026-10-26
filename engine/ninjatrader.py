@@ -2418,8 +2418,10 @@ def _cli_sim_check(cfg, roundtrip=False, add=False):
 def _cli_roundtrip_add(ad, lg, fill):
     """--sim-roundtrip-add, after step 1 (1 MNQ + stop/target): the scale-in route on Sim101. 2. the stop moves up (stands in
     for the breakeven: 10 pts under the fill, so a Sim stop cannot trigger at once), 3. a refused add (stop not yet where it
-    was sized), 4. add 1 MNQ at market -> the one OCO pair resized to 2, 5. CLOSEPOSITION. Check NinjaTrader's Orders tab at
-    step 4: the stop and the target both show quantity 2."""
+    was sized), 4. add 1 MNQ at market -> the one OCO pair resized to 2, 5. the PROOF (2026-10-26, no Orders-tab photo
+    needed): the target is moved 20 pts under the market, so it fills at once; it must fill BOTH micros, the position must
+    end flat and the OCO stop must be cancelled, i.e. NinjaTrader really holds the bracket at quantity 2, 6. CLOSEPOSITION
+    (a safety net: flat already when the proof passed)."""
     be = _tick(fill - 10)
     m = ad.send({"side": "modify", "stop": be, "entry_t": lg["entry_t"]})
     print(("OK  " if m["ok"] else "FAIL") + f" 2. stop moved to {be:.2f} (stands in for breakeven): {m.get('legs')} {m.get('error') or ''}")
@@ -2431,19 +2433,42 @@ def _cli_roundtrip_add(ad, lg, fill):
           f"{lg.get('bracket_qty')} {a.get('error') or a.get('note') or ''}")
     print(f"   position file: {pos}  (expected LONG 2)")
     print(f"   stop {ad.read_order(lg['stop_id'])}, target {ad.read_order(lg['target_id'])}")
-    print(f"   EXPECTED in NinjaTrader's Orders tab now: Sell 2 Stop Market @ {be:.2f} (id {lg['stop_id']}) and Sell 2 Limit "
-          f"@ {lg['target']:.2f} (id {lg['target_id']}), one OCO group. Look before pressing Enter.")
-    try:
-        input("   Press Enter to flatten ... ")
-    except EOFError:
-        pass
+    print(f"   NinjaTrader's Orders tab now: Sell 2 Stop Market @ {be:.2f} (id {lg['stop_id']}) and Sell 2 Limit "
+          f"@ {lg['target']:.2f} (id {lg['target_id']}), one OCO group. The next step proves it by itself.")
+    proof = _add_proof(ad, lg, min(float(fill), float(a.get("fill_px") or fill))) if a["ok"] else {"ok": False, "why": "no add"}
+    print(("OK  " if proof["ok"] else "FAIL") + f" 5. proof: target moved under the market -> filled {proof.get('filled')} of 2, "
+          f"position {proof.get('pos')}, OCO stop {proof.get('stop_state')} {proof.get('why') or ''}")
     x = ad.send({"side": "exit", "reason": "SIM ROUNDTRIP ADD", "entry_t": lg["entry_t"]})
-    print(("OK  " if x["ok"] else "FAIL") + f" 5. CLOSEPOSITION: flat confirmed {x.get('flat_confirmed')}, leftovers cancelled "
-          f"{x.get('cancelled_leftovers')} {x.get('error') or ''}")
+    print(("OK  " if x["ok"] else "FAIL") + f" 6. CLOSEPOSITION (safety net): flat confirmed {x.get('flat_confirmed')}, leftovers "
+          f"cancelled {x.get('cancelled_leftovers')} {x.get('error') or ''}")
     print(f"   position {ad.position_for(lg['instrument'])}")
     ok = m["ok"] and not bad["ok"] and a["ok"] and pos and pos["side"] == "LONG" and int(pos["qty"]) == 2 \
-        and lg.get("bracket_qty") == 2 and x["ok"]
+        and lg.get("bracket_qty") == 2 and proof["ok"] and x["ok"]
+    if ok:
+        print("SCALE-IN READY: NinjaTrader resized and filled the whole bracket (2 micros). Tell Claude it passed.")
     return 0 if ok else 1
+
+
+def _add_proof(ad, lg, ref_px, wait_s=15.0) -> dict:
+    """The scale-in proof: CHANGE the target of the resized OCO pair to 20 pts under ref_px (a long's sell limit under the
+    market fills at once) and wait for it. Passes only when the target filled the whole position (2), the position file
+    reads flat and the OCO stop is no longer working."""
+    tgt = _tick(float(ref_px) - 20.0)
+    r = ad._send_lines([change_line(lg["target_id"], limit=tgt)], "SIM PROOF: TARGET UNDER THE MARKET")
+    if not r.get("ok"):
+        return {"ok": False, "why": f"CHANGE not picked up: {r.get('error')}"}
+    done = ad._wait(lambda: (ad.read_order(lg["target_id"]) or {}).get("state") == FILLED, wait_s)
+    t = ad.read_order(lg["target_id"]) or {}
+    ad._wait(lambda: (ad.position_for(lg["instrument"]) or {}).get("side") in (None, "FLAT")
+             and (ad.read_order(lg["stop_id"]) or {}).get("state") in DEAD, 5.0)
+    p = ad.position_for(lg["instrument"]) or {}
+    st = (ad.read_order(lg["stop_id"]) or {}).get("state")
+    filled = int(t.get("filled") or 0)
+    flat = p.get("side") in (None, "FLAT") or int(p.get("qty") or 0) == 0
+    ok = bool(done) and filled == 2 and flat and st in DEAD
+    why = "" if ok else ("target not filled" if not done else f"filled {filled} (needs 2)" if filled != 2 else
+                         "position not flat" if not flat else f"stop still {st}")
+    return {"ok": ok, "filled": filled, "pos": f"{p.get('side') or 'FLAT'} {p.get('qty') or 0}", "stop_state": st, "why": why}
 
 
 def main(argv=None):
@@ -2630,6 +2655,7 @@ class _FakeNT:
         self.budget = None                  # process at most this many more files, then stop (a freeze mid-trade)
         self.hold_market = False            # accept market orders without filling them (a slow / thin market)
         self.slow_cancel = False            # CANCEL leaves the order CANCELPENDING (it can still fill)
+        self.fill_on_change = False         # a CHANGE that makes a working order marketable fills it (the add proof)
         self._held: list = []
         self._write("Tradovate.txt", "CONNECTED")
 
@@ -2727,6 +2753,8 @@ class _FakeNT:
                 o["limit"] = float(f[6]) or o["limit"]
                 o["stop"] = float(f[7]) or o["stop"]
                 self._state(f[10], o)
+                if self.fill_on_change:            # a limit / stop changed through the market fills at once
+                    self.move(self.price)
         elif cmd == "CANCEL":
             o = self.orders.get(f[10])
             if o and o["state"] in LIVE_STATES:
