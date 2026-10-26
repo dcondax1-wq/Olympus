@@ -44,6 +44,9 @@ class World:
         G.checklist_lines = lambda: (["  [OK] all"], 0)
         G._open = lambda: self.calls.append("open")
         G.shortcut = lambda: None
+        G.startup_shortcuts = lambda: self.calls.append("startup")
+        G.ensure_ninjatrader = lambda: (self.calls.append("nt"), self.nt)[1]
+        self.nt = True
         G.arm_b = lambda atlas, path=None, selftest=None: (self.calls.append(("arm_b", atlas)), {"ok": True})[1]
         G.time.sleep = lambda s: None
         world = self
@@ -86,6 +89,11 @@ def main():
                   ("start", ("--start", "--account", "MFFU50K-1", "--confirm", "I ACCEPT LIVE RISK")) in w.calls, w.calls)
             check("first run: the 25K armed before the start",
                   ("arm_b", "MFFU25K-2") in w.calls and w.calls.index(("arm_b", "MFFU25K-2")) < [i for i, c in enumerate(w.calls) if isinstance(c, tuple) and c[0] == "start"][0], w.calls)
+            check("first run: auto-resume on with the typed phrase after the start",
+                  ("start", ("--enable-auto-resume", "--account", "MFFU50K-1", "--confirm", "I ACCEPT LIVE RISK")) in w.calls
+                  and "startup" in w.calls, w.calls)
+            check("first run: NinjaTrader checked before the Sim test",
+                  w.calls.index("nt") < w.calls.index("--sim-roundtrip"), w.calls)
             check("first run: NINJATRADER_LIVE written", G.env_has_live(), open(G.ENV_FILE).read())
             check("first run: server started after the live line", "start_server" in w.calls, w.calls)
             cfg = G._read(G.CFG)
@@ -112,6 +120,14 @@ def main():
             rc = G.run(inp=answers("A", "B", "I ACCEPT LIVE RISK"), pull=False)
             check("market closed: stops before the Sim test, never started",
                   rc == 1 and not any(isinstance(c, tuple) and c[0] == "start" for c in w.calls), w.calls)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            w = World(tmp)
+            w.nt = False
+            rc = G.run(inp=answers("A", "B", "I ACCEPT LIVE RISK"), pull=False)
+            check("NinjaTrader not connected: stops, no Sim test, never started",
+                  rc == 1 and not any(isinstance(c, str) and c.startswith("--sim") for c in w.calls)
+                  and not any(isinstance(c, tuple) and c[0] == "start" for c in w.calls), w.calls)
 
         with tempfile.TemporaryDirectory() as tmp:
             w = World(tmp, sim_rc=1)
@@ -172,6 +188,10 @@ def main():
             check("arm_b: twice = no change", g3.arm_b("MFFU25K-2", path=p, selftest=ok).get("already") is True)
             check("arm_b: another name refused", g3.arm_b("OTHER", path=p, selftest=ok).get("ok") is False)
             check("arm_b: spec reads armed", AB.normalize(ab, SE.load_cfg(p)).get("armed") is True)
+
+        seq = iter([None, False, True])
+        check("ensure_ninjatrader: waits for CONNECTED", g3.ensure_ninjatrader(wait_s=60, connected=lambda: next(seq), sleep=lambda s: None))
+        check("ensure_ninjatrader: gives up", not g3.ensure_ninjatrader(wait_s=0.01, connected=lambda: False, sleep=lambda s: None))
 
         mk = lambda *a: dt.datetime(*a, tzinfo=ET)  # noqa: E731
         import importlib

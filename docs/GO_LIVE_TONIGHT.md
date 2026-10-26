@@ -4,7 +4,9 @@
 **LE START BOT** icon on the desktop). One window does all of this page: update, both accounts set up once, the
 Sim101 test once (market open), then you type `I ACCEPT LIVE RISK` and it arms the 25K, sets the live switch, starts
 the server and the bot on the 50K and prints the launch checklist. Double-click again any time: done steps are
-skipped, a running bot is left alone (`engine/go.py`, tests `python -X utf8 -m tests.test_go`).
+skipped, a running bot is left alone (`engine/go.py`, tests `python -X utf8 -m tests.test_go`). It opens NinjaTrader
+and waits for your log-in; the same typed line turns on auto-resume and adds NinjaTrader + the bot server to the Windows
+Startup folder, so afterwards turning the PC on (and logging in to NinjaTrader) brings the bot back by itself.
 
 You switch it on yourself. Claude gets everything ready but never arms a real account.
 Do the Sim test first; only go to the eval when the Sim test is clean.
