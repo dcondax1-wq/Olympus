@@ -66,6 +66,10 @@ FIX = {
     "loss": "Nothing to do: the daily loss limit resets at the next session (18:00 ET)",
     "passed": "Eval passed: no new trades on it. Next step: the funded account (Goals page)",
     "failed": "Eval failed: no new trades on it. Buy a new eval when you are ready",
+    "atlas_passed": "Eval passed: no new trades on it. Request the funded account at MFFU, then Start page > Accounts > Passed → funded "
+                    "with its new Name",
+    "funded_end": "Funded account done (lost or under $100 of room): no new trades on it. Buy a new 25K eval for ATLAS",
+    "funded_grad": "5 sim payouts done: MFFU moves the account to live (you must be present); the bot does not trade it",
     "account": "Start & Accounts page on the PC: check this account's line",
     "pause": "You paused the bot: un-pause it on Bot Control",
     "error": "Bot log on the PC shows the full error; restart the bot if it repeats",
@@ -367,10 +371,30 @@ def atlas_now(pc: dict, now: int, second: dict | None = None) -> dict:
         out["waiting"] = "Waiting for the next session."
     first = open_m[0] if open_m else (nxt[0][1] if nxt else None)
     out["window"] = ({**first["window"], "who": first["short"], "hours": first["hours"]} if first else {"open": False, "text": "no entry window in the next days"})
+    funded = ab.get("stage") == "funded"
+    if funded:                  # ATLAS's funded account (engine/account_b.py stage "funded"): the payout tracker
+        fd = _d(ab.get("funded"))
+        out["stage"] = "funded"
+        out["sessions"] = None
+        out["funded"] = {k: fd.get(k) for k in ("status", "text", "buffer", "buffer_balance", "buffer_reached", "above_buffer",
+                                                 "ask_at_balance", "to_ask", "buffer_frac", "cycle_profit", "cycle_days",
+                                                 "cycle_days_need", "best_day", "best_day_pct", "cons_limit_pct", "cons_ok",
+                                                 "more_days", "eligible_from", "eligible", "ready", "max_request", "to_you",
+                                                 "payouts_n", "payouts_max", "paid_to_you", "lost", "graduated")}
+        out["funded"]["text"] = _clean(fd.get("text"), 240)
+        out["funded"]["why"] = [_clean(w, 140) for w in _l(fd.get("why"))][:4]
+        out["eval_account"] = ab.get("eval_account")
     ls = _d(ab.get("size"))
     if ls.get("qty") is not None:
         out["micros"] = {"qty": _i(ls.get("qty")), "member": ATLAS_NAMES.get(ls.get("key"), ls.get("key")), "t": _i(ls.get("t")),
                          "reasons": [_clean(x, 120) for x in _l(ls.get("reasons"))][-3:], "last": True}
+    elif funded:
+        big = str(ab.get("plan") or "") == "builder50k"
+        out["micros"] = {"qty": None, "last": False,
+                         "what": f"Funded size at each entry from its own stop: 60% of the room to the floor, at most "
+                                 f"{'$1,500' if big else '$750'}, a winner at most {'$2,000' if big else '$1,000'} (one max payout "
+                                 f"request), the {_money(out['dll'])} daily loss, max {out['max_micros']} micros; no trade when 1 "
+                                 "micro could reach the floor."}
     else:
         out["micros"] = {"qty": None, "last": False,
                          "what": f"Sized at each entry from its own stop: one winner covers what is left to the target, capped by the "
@@ -383,8 +407,12 @@ def atlas_now(pc: dict, now: int, second: dict | None = None) -> dict:
         blocks.append(_block(f"Account B off: {ab['disabled']}", scope="atlas", kind="account"))
     if ab.get("locked"):
         blocks.append(_block(f"Locked out today: {ab['locked']}", scope="atlas"))
-    if out["status"] in ("passed", "failed", "stuck"):
-        blocks.append(_block(f"Eval {out['status']}", scope="atlas", kind="passed" if out["status"] == "passed" else "failed"))
+    if out["status"] in ("passed", "failed", "stuck") and not funded:
+        blocks.append(_block(f"Eval {out['status']}", scope="atlas", kind="passed" if out["status"] == "passed" else "failed",
+                             fix=FIX["atlas_passed"] if out["status"] == "passed" else None))
+    if funded and out["status"] in ("lost", "stuck", "graduated"):
+        blocks.append(_block(f"Funded account {out['status']}", scope="atlas", kind="passed" if out["status"] == "graduated" else "failed",
+                             fix=FIX["funded_grad"] if out["status"] == "graduated" else FIX["funded_end"]))
     if not ab:
         blocks.append(_block("ATLAS account (account B) is not set up on the PC", scope="atlas", kind="account"))
     out["blocks"] = blocks

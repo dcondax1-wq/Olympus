@@ -90,11 +90,14 @@ def _next_weekday(day: str) -> str:
 
 # ---------------------------------------------------------------------------------------------------- the tracker
 def track(day_pnl: dict, payouts: dict | None = None, plan: str | dict | None = "builder50k", today: str | None = None,
-          today_cum: float = 0.0, start: str | None = None, name: str | None = None) -> dict:
+          today_cum: float = 0.0, start: str | None = None, name: str | None = None, prior: float = 0.0) -> dict:
     """The funded account now. day_pnl = closed P&L per traded day since the funded start (today's may be in it or in
     today_cum, not both); payouts = {day: $ withdrawn at that day's end}. -> balance, floor, room, buffer progress,
     cycle profit, best day vs 50%, traded days, the first-payout date (48 h after the first trade), eligibility, the max
-    request, payouts n of 5, what to do. Pure: no file, no clock unless today is None."""
+    request, payouts n of 5, what to do. prior = $ on the account before the bot traded it (the funded balance at the
+    funded start - the plan start, engine/account_b.py "funded_balance"): it counts in the balance and the trailing floor
+    as one day before the start (engine/sizing.funded_state's "0000-00-00"), never as a traded day of the cycle. 0 = as
+    before. Pure: no file, no clock unless today is None."""
     P = plan if isinstance(plan, dict) else plan_of(plan)
     today = today or _dt.date.today().isoformat()
     days = {str(d): float(v) for d, v in (day_pnl or {}).items() if str(d) != "0000-00-00"}
@@ -104,6 +107,10 @@ def track(day_pnl: dict, payouts: dict | None = None, plan: str | dict | None = 
     # balance / floor (engine/sizing.funded_state rule: EOD trailing, lock at start + $100, payouts lower the balance only)
     bal = peak = 0.0
     floor = -P["mll"]
+    if prior:
+        bal = float(prior)
+        peak = max(peak, bal)
+        floor = min(max(floor, peak - P["mll"]), P["lock"])
     for d in sorted(set(days) | set(pay)):
         bal += days.get(d, 0.0)
         if d < today or d in pay:
@@ -217,11 +224,15 @@ def notices(t: dict, now) -> list:
         out.append(p)
     s = t.get("status")
     if s == "ready":
+        # the record line: an extra account's (engine.eval_life --payout --id) or t["record_cmd"] (ATLAS's account B:
+        # engine.account_b --payout), "{day}" / "{amount}" filled in
+        rec = (str(t["record_cmd"]).replace("{day}", str(t["today"])).replace("{amount}", f"{t['max_request']:.0f}")
+               if t.get("record_cmd") else
+               f"python -X utf8 -m engine.eval_life --payout {t['today']}={t['max_request']:.0f}" + (f" --id {t['id']}" if t.get("id") else ""))
         pl("ready", f"PAYOUT READY: request {_money(t['max_request'])}",
            f"{nm}: balance {_money(t['balance'])}, {_money(t['above_buffer'])} above the {_money(t['buffer'])} buffer, best day "
            f"{t['best_day_pct']:.0f}% of the cycle, {t['cycle_days']} traded days. Request {_money(t['max_request'])} in the MFFU "
-           f"dashboard ({_money(t['to_you'])} to you at 80%). Then record it: python -X utf8 -m engine.eval_life --payout "
-           f"{t['today']}={t['max_request']:.0f}" + (f" --id {t['id']}" if t.get("id") else "") +
+           f"dashboard ({_money(t['to_you'])} to you at 80%). Then record it: {rec}"
            f". Payout {t['payouts_n'] + 1} of {t['payouts_max']}. The bot never requests it for you.", base + ":ready")
     elif s == "consistency":
         pl("cons", f"consistency: best day is {t['best_day_pct']:.0f}% of the cycle, trade {t['more_days']} more days",
