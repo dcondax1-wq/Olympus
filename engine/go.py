@@ -334,10 +334,22 @@ def checklist_lines():
 
 def update(py=sys.executable) -> bool:
     """git pull main (fast-forward only) while the bot is stopped; True = new code arrived (START BOT re-runs itself)."""
+    import glob
+    import shutil
+    git = shutil.which("git") or next(iter(glob.glob(os.path.expandvars(r"%ProgramFiles%\Git\cmd\git.exe"))
+                                           + glob.glob(os.path.expandvars(r"%LOCALAPPDATA%\GitHubDesktop\app-*\resources\app\git\cmd\git.exe"))), None)
+    if not git:
+        print(" [..] Update skipped (git not found); starting the version on this PC.")
+        return False
+
     def head():
-        return subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    before = head()
-    r = subprocess.run(["git", "pull", "--ff-only", "-q", "origin", "main"], cwd=ROOT, capture_output=True, text=True)
+        return subprocess.run([git, "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    try:
+        before = head()
+        r = subprocess.run([git, "pull", "--ff-only", "-q", "origin", "main"], cwd=ROOT, capture_output=True, text=True)
+    except OSError:
+        print(" [..] Update skipped (git did not run); starting the version on this PC.")
+        return False
     if r.returncode:
         print(" [..] Update skipped (git pull did not fast-forward); starting the version on this PC.")
         return False
