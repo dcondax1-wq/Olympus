@@ -10,6 +10,9 @@ It first pulls the newest main (bot stopped only). Each step is skipped when it 
   4. the owner types I ACCEPT LIVE RISK: nothing real is armed without that typed line (paper-only rule: the owner arms)
   5. NINJATRADER_LIVE=1 in .env.local.ps1; the bot server (scripts/run_bot.ps1) started, or restarted when that file is
      newer than the running supervisor (the file is read only when run_bot.ps1 starts)
+  NinjaTrader is opened when it is not running; START BOT waits for its log-in (CONNECTED).
+  After the start: auto-resume on the 50K (same typed phrase) and Startup-folder shortcuts for NinjaTrader and the bot
+  server, so from then on turning the PC on (and NinjaTrader connecting) brings the bot back by itself.
   6. account B armed (second_model.json account_b "armed": true) and the bot started on the 50K (ATLAS trades the 25K
      through account_b), then the launch checklist
      printed and the dashboard opened
@@ -185,6 +188,52 @@ def arm_b(atlas, path=None, selftest=None) -> dict:
                                    selftest=selftest, extra={**keep, "armed": True})
 
 
+NT_EXE = os.environ.get("NINJATRADER_EXE") or r"C:\Program Files\NinjaTrader 8\bin\NinjaTrader.exe"
+
+
+def nt_running() -> bool:
+    if os.name != "nt":
+        return False
+    r = subprocess.run(["tasklist", "/FI", "IMAGENAME eq NinjaTrader.exe", "/NH"], capture_output=True, text=True)
+    return "NinjaTrader.exe" in (r.stdout or "")
+
+
+def ensure_ninjatrader(wait_s=900, connected=None, sleep=time.sleep) -> bool:
+    """NinjaTrader open (started here when it is not) and showing a CONNECTED connection; waits up to 15 min for the
+    owner's NinjaTrader log-in. True = connected."""
+    from . import autoresume
+    connected = connected or (lambda: autoresume.nt_connected({"adapter": "ninjatrader"}))
+    if connected() is True:
+        return True
+    if os.name == "nt" and not nt_running():
+        if os.path.exists(NT_EXE):
+            print("     opening NinjaTrader")
+            subprocess.Popen([NT_EXE], cwd=os.path.dirname(NT_EXE))
+        else:
+            print(f"     NinjaTrader not found at {NT_EXE}: open it yourself")
+    print("     Log in to NinjaTrader and connect your MFFU account (this window waits up to 15 minutes)")
+    t0 = time.time()
+    while time.time() - t0 < wait_s:
+        sleep(5)
+        if connected() is True:
+            print("     NinjaTrader connected")
+            return True
+    return False
+
+
+def startup_shortcuts():
+    """Windows Startup folder (no admin): NinjaTrader and START_DASHBOARD.bat (the bot server; auto-resume then brings the
+    bot back on the 50K and the 25K once NinjaTrader connects). Replaces the two it made before."""
+    if os.name != "nt":
+        return
+    ps = ("$st=[Environment]::GetFolderPath('Startup'); $sh=New-Object -ComObject WScript.Shell; "
+          f"$a=$sh.CreateShortcut((Join-Path $st 'LE bot server.lnk')); $a.TargetPath='{os.path.join(ROOT, 'START_DASHBOARD.bat')}'; "
+          f"$a.WorkingDirectory='{ROOT}'; $a.WindowStyle=7; $a.Save(); "
+          + (f"$n=$sh.CreateShortcut((Join-Path $st 'NinjaTrader 8 (Liquidity Engine).lnk')); $n.TargetPath='{NT_EXE}'; "
+             f"$n.WorkingDirectory='{os.path.dirname(NT_EXE)}'; $n.Save()" if os.path.exists(NT_EXE) else ""))
+    subprocess.run(["powershell", "-NoProfile", "-Command", ps], capture_output=True)
+
+
 def checklist_lines():
     try:
         r = _http("/api/dash/launch", timeout=10)
@@ -251,6 +300,12 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
     else:
         print(f"\n 1/4 Accounts already set up ({cfg['prepped']})")
 
+    # NinjaTrader open and connected (everything after needs it)
+    print("\n     NinjaTrader")
+    if not dry and not ensure_ninjatrader():
+        print(" [FIX] NinjaTrader is not connected. Log in to NinjaTrader, then double-click START BOT again.")
+        return 1
+
     # 2. Sim roundtrips, until both passed once
     sp = sims_passed()
     if not all(sp.values()):
@@ -276,6 +331,8 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
 
     # 3. the owner arms (typed, never by the bot)
     print("\n 3/4 Real money: the bot will trade your 50K (Zlarior) and your 25K (ATLAS).")
+    print("     Typing the line also lets the bot come back by itself after a restart (PC on + NinjaTrader connected);")
+    print("     the kill switch or STOP BOT turns that off.")
     phrase = ask(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing armed)", None, inp)
     if phrase != "I ACCEPT LIVE RISK":
         print(" Stopped. Nothing is armed.")
@@ -303,6 +360,8 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
     if rc:
         print(" [FIX] The bot did not start (see the lines above). Send Claude a photo of this window.")
         return 1
+    ninjatrader.main(["--enable-auto-resume", "--account", cfg["lit"], "--confirm", phrase])
+    startup_shortcuts()
     print("\n Launch checklist (the bot unlocks entries by itself once everything reconciles):")
     lines, red = [], None
     for _ in range(9):                                     # up to ~90 s for the startup reconcile

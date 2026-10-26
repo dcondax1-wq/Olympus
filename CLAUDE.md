@@ -42,7 +42,7 @@ there, not here.
   Report trades/week, % weeks with 2+, PF, net, max DD, and MFFU eval pass/fail within 2 weeks and 1 month.
   **Exception for LIT changes (owner 2026-10-18):** LIT is tuned and judged on 2026 only: pick on Jan-Jun, check on Jul-Oct,
   report both halves; 2021-25 is a reference line, never a gate.
-- **Prop-firm prices:** use the owner's real prices (Builder 25K $63, Builder 50K $91.80, one-time, $0 activation), not list
+- **Prop-firm prices:** use the owner's real prices (Builder 25K $63, the ATLAS 25K of 2026-10-26 $43, Builder 50K $91.80, one-time, $0 activation), not list
   prices; look for current discount codes before quoting any firm's price.
 
 ## The system in one screen (details: `docs/CLAUDE_REFERENCE.md`)
