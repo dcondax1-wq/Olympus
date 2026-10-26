@@ -152,6 +152,8 @@ def overlay(rows: list, lit_eval: dict | None = None, extras: list | None = None
         s = str((ev or {}).get("status") or "").lower()
         p = plan_id(acct_b.get("plan") or acct_b.get("plan_label") or "builder 25k") or "mffu_builder_25k"
         stage = {"open": "eval", "passed": "passed", "failed": "failed", "stuck": "failed"}.get(s)
+        if acct_b.get("stage") == "funded":       # engine/account_b.py funded stage (owner-run switch)
+            stage = {"funded": "funded", "graduated": "closed", "lost": "lost", "stuck": "lost"}.get(s, "funded")
         if stage:
             r = _match(rows, "ATLAS", p)
             if r is None:

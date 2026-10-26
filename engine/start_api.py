@@ -290,4 +290,4 @@ async def r_anchor(request: Request):
 @router.post("/api/next/start/accounts/funded")
 async def r_funded(request: Request):
     d = await _body(request)
-    return _do(request, lambda: go.to_funded(d.get("name"), d.get("funded_name"), d.get("start"), d.get("plan")))
+    return _do(request, lambda: go.to_funded(d.get("name"), d.get("funded_name"), d.get("start"), d.get("plan"), d.get("balance")))

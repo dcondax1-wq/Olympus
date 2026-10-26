@@ -240,10 +240,22 @@ def _atlas_account(data: dict) -> dict:
             stage = "not started"           # bought, the PC has not reported it yet
         src = "scale plan" if planned else "none"
         ev = None
+    funded = isinstance(ab, dict) and ab.get("stage") == "funded" and stage == "eval"
+    if funded:
+        stage = "funded"                    # engine/account_b.py funded stage: the payout line is the goal now
     g = account_goal("atlas25k", ev, stage, src, (ev or {}).get("days_traded"),
                      name=str((ab or {}).get("plan_label") or "MFFU Builder 25K") if isinstance(ab, dict) else "MFFU Builder 25K")
     g["account"] = (ab or {}).get("account") if isinstance(ab, dict) else None
     g["enabled"] = (ab or {}).get("enabled") if isinstance(ab, dict) else False
+    if funded:
+        t = ab.get("funded") if isinstance(ab.get("funded"), dict) else {}
+        st = str((ev or {}).get("status") or "funded")
+        g["status"] = st
+        g["tracker"] = t
+        g["sentence"] = t.get("text") or f"ATLAS's funded {g['name']}: {_money(g.get('to_go'))} to the payout line."
+        g["level"] = ("bad" if st in ("lost", "stuck") else "good" if t.get("ready") or st == "graduated" else
+                      "warn" if t.get("status") == "consistency" else "good")
+        g.pop("days_text", None)
     return g
 
 
@@ -345,8 +357,27 @@ def scorecard_goal(data: dict) -> dict:
             "level": "good" if kind == "ready" else "bad" if kind == "below" else "warn" if kind == "on_track" else "idle"}
 
 
+def _atlas_funded_tracker(data: dict):
+    """ATLAS's funded account tracker (engine/account_b.py stage "funded": second.route.account_b.funded) or None."""
+    S = data.get("second") or {}
+    ab = S.get("account_b") or ((S.get("route") or {}).get("account_b") if isinstance(S.get("route"), dict) else None)
+    if isinstance(ab, dict) and ab.get("stage") == "funded" and isinstance(ab.get("funded"), dict) and ab["funded"].get("status"):
+        return {**ab["funded"], "id": "account_b", "name": ab.get("label") or ab["funded"].get("name")}
+    return None
+
+
 def payout_goal(data: dict, lit: dict) -> dict:
     acc = [a for a in data.get("accounts") or [] if isinstance(a, dict) and a.get("kind") == "funded" and not a.get("error")]
+    abt = _atlas_funded_tracker(data)
+    if not acc and abt:                             # only ATLAS is funded: its tracker is the payout goal
+        acc_t = [abt]
+        t = abt
+        lvl = {"ready": "good", "graduated": "good", "lost": "bad", "consistency": "warn", "eligible": "warn"}.get(t.get("status"), "idle")
+        return {"stage": "funded", "funded": 1, "balance": t.get("balance"), "ask_at": t.get("ask_at_balance"),
+                "frac": t.get("buffer_frac") or 0.0, "ready": bool(t.get("ready")), "status": t.get("status"),
+                "max_request": t.get("max_request"), "payouts_n": t.get("payouts_n"), "payouts_max": t.get("payouts_max"),
+                "best_day_pct": t.get("best_day_pct"), "cycle_profit": t.get("cycle_profit"), "eligible_from": t.get("eligible_from"),
+                "tracker": t, "trackers": acc_t, "sentence": t.get("text") or "", "level": lvl}
     if not acc:
         nxt = "after the 50K passes" if lit.get("status") != "passed" else "add the funded account (engine.eval_life --to-funded)"
         return {"stage": "eval", "funded": 0, "sentence": f"Payouts start on the funded account: {nxt}.", "level": "idle", "frac": 0.0}
@@ -360,6 +391,8 @@ def payout_goal(data: dict, lit: dict) -> dict:
             t = None
         if t:
             trk.append(t)
+    if abt and trk:
+        trk.append(abt)                             # ATLAS's funded 25K after Zlarior's funded accounts
     if not trk:                                     # no day P&L in the section: the old balance-only view
         a = acc[0]
         ev = a.get("eval") or {}
