@@ -118,6 +118,13 @@ def main():
 
         with tempfile.TemporaryDirectory() as tmp:
             w = World(tmp)
+            rc = G.run(inp=answers("A", "B", "i accept  live risk "), pull=False)
+            check("phrase in small letters counts (the exact phrase is passed on)",
+                  rc == 0 and ("start", ("--start", "--account", "A", "--confirm", "I ACCEPT LIVE RISK")) in w.calls, w.calls)
+        check("typed_phrase: other words refused", G.typed_phrase("I accept risk") != G.LIVE_PHRASE and G.typed_phrase("") == "")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            w = World(tmp)
             rc = G.run(inp=answers("A", "B", "yes"), pull=False)
             check("wrong phrase: rc 1, never started", rc == 1 and not any(isinstance(c, tuple) and c[0] == "start" for c in w.calls), w.calls)
             check("wrong phrase: NINJATRADER_LIVE not written, 25K not armed",

@@ -602,8 +602,15 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
     print("     Check both names against NinjaTrader's Accounts tab (50K about $49,700, 25K about $25,000).")
     print("     Typing the line also lets the bot come back by itself after a restart (PC on + NinjaTrader connected);")
     print("     the kill switch or STOP BOT turns that off.")
-    phrase = ask(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing armed)", None, inp)
+    phrase = typed_phrase(ask(" Type  I ACCEPT LIVE RISK  then Enter (anything else stops here, nothing armed)", None, inp))
     return step_arm(cfg, phrase, dry)
+
+
+def typed_phrase(s) -> str:
+    """The owner's typed line: capitals and extra spaces do not matter ("i accept live risk" counts); anything else is
+    passed on unchanged (and refused)."""
+    s = str(s or "")
+    return LIVE_PHRASE if " ".join(s.split()).upper() == LIVE_PHRASE else s
 
 
 # ------------------------------------------------------------------------------------------------ dashboard Start page
