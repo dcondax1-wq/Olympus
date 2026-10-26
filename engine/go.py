@@ -435,9 +435,12 @@ def step_nt(dry=False, wait=True) -> int:
     return 0
 
 
-def step_sims(py=sys.executable, dry=False, restart=False) -> int:
-    """2. the two Sim101 roundtrips, until both passed once (the bot stopped: the server is stopped for it).
+def step_sims(py=sys.executable, dry=False, restart=False, cfg=None) -> int:
+    """2. the two Sim101 roundtrips, until both passed once (the bot stopped: the server is stopped for it). A failed
+    test is tried again with the order file written straight into incoming (--write-mode direct); when that passes,
+    cfg["write_mode"] = "direct" is kept in data/start_bot.json and every start (console or dashboard) uses it.
     restart=True (dashboard job): the server is started again afterwards, so the page comes back."""
+    cfg = _read(CFG) if cfg is None else cfg
     sp = sims_passed()
     if all(sp.values()):
         print("\n 2/4 Sim101 test already passed")
@@ -589,7 +592,7 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
         return 1
     if step_nt(dry):
         return 1
-    if step_sims(py, dry):
+    if step_sims(py, dry, cfg=cfg):
         return 1
 
     # 3. the owner arms (typed, never by the bot)
@@ -1126,7 +1129,7 @@ def job_main(step) -> int:
             if bot_running():
                 print(" [FIX] The bot is running: stop it first.")
             else:
-                rc = step_sims(restart=True)
+                rc = step_sims(restart=True, cfg=cfg)
         elif step == "arm":
             phrase = os.environ.pop("LE_START_CONFIRM", "")
             print(f" Zlarior -> 50K {cfg.get('lit')}    ATLAS -> 25K {cfg.get('atlas')}")

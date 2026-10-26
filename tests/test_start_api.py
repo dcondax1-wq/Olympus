@@ -234,19 +234,25 @@ def main():
         w.server = True
         real_run = G.subprocess.run
 
-        def fake_run(cmd, cwd=None, **k):                   # the Sim roundtrips need NinjaTrader: faked, marked passed
-            w.calls.append(cmd[-1])
-            if cmd[-1] in ("--sim-roundtrip", "--sim-roundtrip-add"):
-                w.sims["add" if cmd[-1].endswith("add") else "roundtrip"] = True
+        def fake_run(cmd, cwd=None, **k):                   # the Sim roundtrips need NinjaTrader: faked
+            flag = next(c for c in cmd if c.startswith("--sim"))
+            direct = "--write-mode" in cmd and cmd[cmd.index("--write-mode") + 1] == "direct"
+            w.calls.append(flag + (" direct" if direct else ""))
+            if not direct:                                   # this "PC" ignores files moved into incoming (the Surface)
+                return SimpleNamespace(returncode=1)
+            w.sims["add" if flag.endswith("add") else "roundtrip"] = True
             return SimpleNamespace(returncode=0)
         G.subprocess.run = fake_run
         try:
             rc = G.job_main("sims")
         finally:
             G.subprocess.run = real_run
-        check("sims job: server stopped for the test, both roundtrips in order, server started again after",
-              rc == 0 and [c for c in w.calls if isinstance(c, str)] == ["stop_server", "--sim-roundtrip", "--sim-roundtrip-add", "start_server"]
+        check("sims job: server stopped, move mode failed -> retried direct, then direct for the 2nd test, server started again",
+              rc == 0 and [c for c in w.calls if isinstance(c, str)] == ["stop_server", "--sim-roundtrip", "--sim-roundtrip direct",
+                                                                         "--sim-roundtrip-add direct", "start_server"]
               and all(w.sims.values()), (rc, w.calls))
+        check("sims job: write_mode direct kept in the temp start_bot.json (names kept)", G._read(G.CFG).get("write_mode") == "direct"
+              and G._read(G.CFG).get("lit") == L50, G._read(G.CFG))
         js = G.job_status()
         check("job status: done, rc 0, lines", js["state"] == "done" and js["rc"] == 0 and js["lines"], js)
 
@@ -275,9 +281,10 @@ def main():
         G.verify_routes = vr
         check("arm job: rc 0, live line in the temp env file, 25K armed in the temp second_model.json",
               rc == 0 and G.env_has_live() and AB.raw_cfg(G.SECOND_PATH).get("armed") is True, (rc, w.calls))
-        check("arm job: started on the 50K with the phrase, auto-resume after, no browser opened",
-              ("nt", ("--start", "--account", L50, "--confirm", PHRASE)) in w.calls
-              and ("nt", ("--enable-auto-resume", "--account", L50, "--confirm", PHRASE)) in w.calls and "open" not in w.calls, w.calls)
+        check("arm job: started on the 50K with the phrase and the saved write mode, auto-resume the same, no browser opened",
+              ("nt", ("--start", "--account", L50, "--confirm", PHRASE, "--write-mode", "direct")) in w.calls
+              and ("nt", ("--enable-auto-resume", "--account", L50, "--confirm", PHRASE, "--write-mode", "direct")) in w.calls
+              and "open" not in w.calls, w.calls)
         check("arm job: the phrase left the environment", "LE_START_CONFIRM" not in os.environ)
         check("arm job: the log never shows the phrase", all(PHRASE not in ln for ln in G.job_status()["lines"]))
         w.bot.running, w.bot.cfg = True, {"nt_account": L50, "adapter": "ninjatrader", "armed": True}

@@ -319,7 +319,7 @@ part yourself or fold it into a script.**
   main (bot stopped), names asked once (`data/start_bot.json`, gitignored), `launch_prep` once, both Sim101 roundtrips until
   passed once (market open only), owner types the LIVE phrase -> `arm_b` (second_model.json account_b `"armed": true`,
   other fields kept), the live line in `.env.local.ps1`, server (re)started when that file is newer than the supervisor,
-  `ninjatrader --start` on the 50K, launch checklist, dashboard. Wrong phrase = nothing armed. Tests `tests.test_go` 58/58.
+  `ninjatrader --start` on the 50K, launch checklist, dashboard. Wrong phrase = nothing armed. Tests `tests.test_go` 59/59.
   Same steps on the dashboard Start page (Infrastructure, "Start & Accounts page").
 - `python tools/export_backtest.py`: the live-settings 5-year replay → `research/lab/backtest_live.json`. Contains periods, months,
   stop buckets, eval odds, **per-trade reports** (why it entered / plan / result / lessons) and **lessons** (wins vs losses).
@@ -373,7 +373,7 @@ part yourself or fold it into a script.**
   `slot_problem`, `mixup`, `verify_routes`); `run()` calls them for START_BOT.bat, the page calls them through
   `engine/start_api.py` (`/api/next/start/*`, mounted by next_api). Sim test and arm run as a detached job
   (`python -m engine.go --step sims|arm`, `logs/start_job.json` + `.log`) because they stop / start the server the page runs
-  on; the page polls and reconnects. Arm: the owner types `I ACCEPT LIVE RISK` in the page (checked by the endpoint, the
+  on; the page polls and reconnects. A failed Sim test is retried with `--write-mode direct` (saved as `write_mode` in `data/start_bot.json`, then passed to every `--start` / `--enable-auto-resume`, console and page alike). Arm: the owner types `I ACCEPT LIVE RISK` in the page (checked by the endpoint, the
   job's `step_arm` and `ninjatrader --start`); the phrase reaches the job in env `LE_START_CONFIRM`, never argv or the log.
   Accounts panel (`go.accounts` / `add_account` / `remove_account` / `set_anchor` / `to_funded`): balance (NinjaTrader
   accounts.csv, else the MFFU anchor, else the plan start), floor, bot, eval / funded, armed; add (name, Builder 50K / 25K,
@@ -385,7 +385,7 @@ part yourself or fold it into a script.**
   **Local only:** every POST is in `cloud_guard.CLOUD_BLOCKED` (`START_WRITES`) and checked by `cloud_guard.local_only`
   (client 127.0.0.1 / ::1, no proxy / tunnel header, Host and Origin localhost, not LE_CLOUD): the phone sees the page
   read-only. UI `web_next/js/next/start.js` + `css/start.css` (sw `le-shell-next-v20`). Tests `python -X utf8 -m
-  tests.test_start_api` (87 checks, temp files only; phone / Tailscale / tunnel / rebind / origin / cloud refused) +
+  tests.test_start_api` (88 checks, temp files only; phone / Tailscale / tunnel / rebind / origin / cloud refused) +
   `tests.test_go`. Shots `research/handoff/2026-10-26/ui_start/`. Untested on the real PC: the detached job window
   (`cmd /c start`), the server restart during the job, opening NinjaTrader from the page.
 - **PC paper bot + dashboard:** `server.py` on http://localhost:8766, supervised by `scripts/run_bot.ps1` (Windows; runs only while
