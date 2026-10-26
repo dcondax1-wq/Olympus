@@ -268,6 +268,16 @@ def _learn():
         return None
 
 
+def _money():
+    """The "money" block (engine/money_goal.heartbeat_block: the owner's savings / jobs / Kalshi figures and goal targets
+    from data/goals_money.json; only the targets when "show on the phone" is off; None before the first save). Never raises."""
+    try:
+        from engine import money_goal
+        return money_goal.heartbeat_block()
+    except Exception:
+        return None
+
+
 def _ai(bot):
     """The AI-watch block (engine/ai_watch.hb_block). Never raises."""
     try:
@@ -325,6 +335,7 @@ class Heartbeat:
                 "launch": _launch(self.bot, health),   # the launch checklist (engine/launch_check.py; read-only, ~2 KB)
                 "exec": _exec(),                # execution quality summary (engine/fill_audit.py), None before the first audit
                 "learn": _learn(),              # live learning (engine/live_learning.py): learned costs + trade reviews, None before
+                "money": _money(),              # Road to $10K / Stingray 3LT: the owner's figures (engine/money_goal.py, ~2 KB)
                 "remote": _remote(),            # phone remote control (engine/remote_ctl.py): the last command and its result
                 "live_pub": _live_pub(),        # the phone's live.json push (engine/live_publish.py): last result, None before it
                 "brain": _brain(self.bot),       # the Bot Brain, phone cut (engine/brain.compact; None before the first LIT poll)

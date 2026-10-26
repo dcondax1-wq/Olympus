@@ -234,7 +234,7 @@ def status(rows: list, money: dict, plan: dict | None = None, now=None) -> dict:
         name = str(x.get("label") or t)
         return f"{'an' if name[:1] in 'AEIOUM' else 'a'} {name} for {x.get('strategy', '?')}"
     out = {"v": VERSION, "plan_built": P.get("built"), "writeup": P.get("writeup"), "day_cap_usd": P.get("day_cap_usd"),
-           "accounts": [{k: r.get(k) for k in ("id", "strategy", "plan", "type", "label", "stage", "src")} for r in rows],
+           "accounts": [{k: r.get(k) for k in ("id", "strategy", "plan", "type", "label", "stage", "src", "start")} for r in rows],
            "money": {**money, "cash": round(float(money.get("budget") or 0) + float(money.get("payouts") or 0) - float(money.get("fees") or 0), 2)},
            "table": P["table"], "steps": steps, "types": T, "curve": P.get("curve"), "honest": P.get("honest")}
     if det["done"] < 0:                                  # step 0 not complete yet: buy what is missing

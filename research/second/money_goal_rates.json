@@ -1,0 +1,40 @@
+{
+ "v": 1,
+ "built": "2026-10-26",
+ "span": "H2",
+ "what": "$ a month to you per FUNDED account, 2026 Jul-Oct (H2, the check half), live funded sizing, after the firm's split, net of fees (one-time evals, $0 activation). Not a promise: 2026 is one good year; ref = 2021-25 / 2021-24.",
+ "types": {
+  "lit_b50": {
+   "usd_month": 915,
+   "usd_month_h1": 929,
+   "usd_month_ref": 66,
+   "ref_span": "2021-25",
+   "src": "research/lit/uprisk_wincap.json builder50k.cap1500_p60_mw2000",
+   "writeup": "research/writeups/uprisk.md"
+  },
+  "atlas_b25": {
+   "usd_month": 517,
+   "usd_month_h1": 582,
+   "usd_month_ref": 39,
+   "ref_span": "2021-24",
+   "src": "research/second/atlas_funded.json configs.live",
+   "writeup": "research/writeups/atlas-funded.md"
+  },
+  "lit_l50": {
+   "usd_month": 938,
+   "usd_month_h1": 989,
+   "usd_month_ref": 43,
+   "ref_span": "2021-25",
+   "src": "research/lit/funded_combo.json t15_be_off lucid_pro_50k funded",
+   "writeup": "research/writeups/lit-funded-combo.md"
+  },
+  "lit_fn50": {
+   "usd_month": 629,
+   "usd_month_h1": 804,
+   "usd_month_ref": 44,
+   "ref_span": "2021-25",
+   "src": "research/lit/funded_combo.json t15_be_off fn_rapid_daily_50k funded",
+   "writeup": "research/writeups/lit-funded-combo.md"
+  }
+ }
+}

@@ -509,6 +509,26 @@ part yourself or fold it into a script.**
   sections + search, `#/features` 142 features with NEW badges, `#/weekcal`, `#/last10`, `#/lights`, `#/evaltl`,
   `#/atstats`, offline badge, haptics, scroll-to-top); sw.js v30. Tests `tests/test_goals.py`; screenshots
   `python -X utf8 -m tests.shots_goals --site <site>` (research/handoff/2026-10-25/ui_phone). New feature -> add a `feat(...)` line.
+- **Road to $10K / Stingray 3LT (2026-10-26, read-only to trading, `engine/money_goal.py`, `tests/test_money_goal.py`):** the
+  owner's money goals, part `money` of goals.build. Card: next action (payout ready > passed eval to switch > buy the next
+  runnable evals in plan order, 2 at a time, with the price + code > wait), the stack = 9 planned slots (MFFU Builder 50K x1
+  Zlarior, MFFU Builder 25K x2 ATLAS (the bot runs ATLAS on one 25K: slot 2 noted), LucidPro 50K x4, FundedNext Rapid Daily
+  50K x2) with states not bought / eval / passed / funded / paying from goals._lit_account, data.json accounts (extras /
+  funded, `funded.payouts`), account B, then business.json via the scale block (`scale_plan.status` rows now carry `start`);
+  $ a month once funded = `research/second/money_goal_rates.json` (H2 2026, to you, live funded sizing: 50K $915, 25K ATLAS
+  $517, LucidPro $938, FundedNext $629 = $6,959 for all 9; 2021-25 ref $404), rebuilt by `tools/money_goal_rates.py` from
+  uprisk_wincap / atlas_funded / funded_combo t15_be_off (test checks the file = the sources). Then **"My goals" at the
+  bottom**: $10K month by Feb 2027 (bar jobs / Kalshi / prop payouts to you this month, + the plan line), 2024 Stingray 3LT
+  before he turns 19 (2027-02-22: target $38,000 = 40% of ~$78K + $7K cushion, stretch marker $46,000, days left, $ a week
+  needed, on pace / behind by $X at the current pace = the savings slope since the $20,000 start of 2026-10-26, needs two
+  balances 7+ days apart), C8 Z06 bar ($60,000, no date). Owner figures: gitignored `data/goals_money.json` (savings
+  history, month jobs / Kalshi, every target / date / name editable, `publish`), written only by the PC Goals page form
+  (`engine/money_api.py` GET/POST `/api/next/money`, POST in `cloud_guard.MONEY_WRITES` / CLOUD_BLOCKED + `local_only`).
+  Heartbeat `money` (heartbeat_block; publish off = targets only) -> cloud state pc.money -> data.json / home.json
+  goals.money; live.json `money` (`money_goal.from_heartbeat`, ~7 KB, dropped first by `fit`). UI `moneycore.js` (MoneyUI,
+  byte-identical phone / PC): phone goals.js v3 (#/goals bottom; the old Goals card on Full overview), PC `money.js` from
+  cc.js Goals (form only when local); sw le-public-v39. The public dashboard site shows the figures while publish is on.
+  Shots research/handoff/2026-10-26/ui_money_goal/.
 - **Phone live feed (2026-10-21, `engine/live_publish.py`, `tools/web_public/live.js`, `tests/test_live_publish.py`):** the PC
   force-pushes one `live.json` (verdict, PC account / eval / position, feed ages, health, check-in time) to branch `live` of the
   PUBLIC Pages repo `nq-dashboard` every 60 s while the bot runs (5 min otherwise; orphan commit, scratch git dir

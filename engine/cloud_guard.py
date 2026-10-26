@@ -23,7 +23,9 @@ START_WRITES = ("/api/next/start/names", "/api/next/start/nt", "/api/next/start/
                 "/api/next/start/arm", "/api/next/start/go", "/api/next/start/resume", "/api/next/start/clock",
                 "/api/next/start/accounts/add", "/api/next/start/accounts/remove",
                 "/api/next/start/accounts/anchor", "/api/next/start/accounts/funded")
-CLOUD_BLOCKED = ("/api/live/arm", "/api/live/golive", "/api/launch/test_webhook", *START_WRITES)
+# the Goals page's money form (engine/money_api.py: the owner's savings / jobs / Kalshi figures): PC only as well
+MONEY_WRITES = ("/api/next/money",)
+CLOUD_BLOCKED = ("/api/live/arm", "/api/live/golive", "/api/launch/test_webhook", *START_WRITES, *MONEY_WRITES)
 LOCAL_HOSTS = ("127.0.0.1", "::1", "localhost", "::ffff:127.0.0.1")
 PROXY_HEADERS = ("x-forwarded-for", "x-forwarded-host", "x-real-ip", "forwarded", "cf-connecting-ip", "true-client-ip",
                  "tailscale-user-login", "x-original-forwarded-for")
