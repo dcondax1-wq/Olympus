@@ -83,6 +83,16 @@ def market_open(now=None) -> bool:
     return h != 17
 
 
+def session_day(now=None) -> str:
+    """The trading session the next bar belongs to: from 18:00 ET it is the next weekday's (Sunday 21:00 -> Monday)."""
+    from zoneinfo import ZoneInfo
+    t = now or dt.datetime.now(ZoneInfo("America/New_York"))
+    d = t.date() + dt.timedelta(days=1 if t.hour >= 18 else 0)
+    while d.weekday() >= 5:
+        d += dt.timedelta(days=1)
+    return d.isoformat()
+
+
 def ask(prompt, default=None, inp=input):
     s = (inp(f"{prompt}{f' [{default}]' if default else ''}: ") or "").strip()
     return s or (default or "")
@@ -233,7 +243,7 @@ def run(dry=False, inp=input, py=sys.executable, pull=True) -> int:
             print("     (dry run: would run engine.launch_prep)")
         else:
             from . import launch_prep
-            if launch_prep.main(["--atlas", cfg["atlas"], "--lit", cfg["lit"]]):
+            if launch_prep.main(["--atlas", cfg["atlas"], "--lit", cfg["lit"], "--atlas-start", session_day()]):
                 print(" [FIX] Setup failed (see above). Send Claude a photo of this window.")
                 return 1
             cfg["prepped"] = dt.date.today().isoformat()

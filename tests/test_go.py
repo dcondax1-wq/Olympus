@@ -79,7 +79,7 @@ def main():
             rc = G.run(inp=answers("MFFU50K-1", "MFFU25K-2", "I ACCEPT LIVE RISK"), pull=False)
             check("first run: rc 0", rc == 0, rc)
             check("first run: launch_prep with both names",
-                  ("prep", ("--atlas", "MFFU25K-2", "--lit", "MFFU50K-1")) in w.calls, w.calls)
+                  any(isinstance(c, tuple) and c[0] == "prep" and c[1][:4] == ("--atlas", "MFFU25K-2", "--lit", "MFFU50K-1") and c[1][4] == "--atlas-start" for c in w.calls), w.calls)
             check("first run: both Sim roundtrips ran, in order",
                   [c for c in w.calls if isinstance(c, str) and c.startswith("--sim")] == ["--sim-roundtrip", "--sim-roundtrip-add"], w.calls)
             check("first run: bot started on the 50K with the typed phrase",
@@ -181,6 +181,10 @@ def main():
         check("market: Mon 17:15 halt", not g2.market_open(mk(2026, 10, 26, 17, 15)))
         check("market: Tue 02:00 open", g2.market_open(mk(2026, 10, 27, 2, 0)))
         check("market: Fri 17:05 closed", not g2.market_open(mk(2026, 10, 30, 17, 5)))
+        check("session: Sun 21:00 -> Mon", g2.session_day(mk(2026, 10, 25, 21, 0)) == "2026-10-26")
+        check("session: Mon 10:00 -> Mon", g2.session_day(mk(2026, 10, 26, 10, 0)) == "2026-10-26")
+        check("session: Mon 19:00 -> Tue", g2.session_day(mk(2026, 10, 26, 19, 0)) == "2026-10-27")
+        check("session: Fri 18:30 -> Mon", g2.session_day(mk(2026, 10, 30, 18, 30)) == "2026-11-02")
         check("market: Sat closed", not g2.market_open(mk(2026, 10, 31, 12, 0)))
     finally:
         G.subprocess.run = real_run
