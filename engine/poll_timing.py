@@ -8,7 +8,8 @@ block that update). server.py installs it for the real bot (LE_POLL_TIMING=0 tur
 without it unless they install it.
 
 Each poll leaves bot.health["poll_stages"]:
-  {"t", "total_ms" (the whole poll, incl. the state save and the post-save part), "cpu_ms" (CPU this thread used),
+  {"t", "total_ms" (the whole poll, incl. the state save and the post-save part), "lit_ms" (poll start -> LIT decided
+   and routed: the part that must stay fast), "cpu_ms" (CPU this thread used),
    "wait_ms" (total - cpu: waiting on disk, network, a lock or other threads), "stages": [{"name", "ms", "cpu_ms", "n"}]
    in poll order ("a > b" = b inside a), "other_ms" (poll code between the stages), "slowest", "threads": the other
    threads that used the most CPU during the poll [{"name", "cpu_ms"}] (a busy background thread slows every stage of the
@@ -125,6 +126,7 @@ def _poll_wrapper(fn):
                 h = self.health
                 recent = (list((h.get("poll_stages") or {}).get("recent_ms") or []) + [int(round((t1 - t0) * 1000))])[-10:]
                 h["poll_stages"] = summarize(rec, t1 - t0, c1 - c0, other, recent)
+                h["poll_stages"]["lit_ms"] = h.get("lit_ms")          # poll start -> LIT decided and routed (engine/live.py)
             except Exception:
                 pass
     poll_once._le_timed = True

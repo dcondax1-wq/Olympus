@@ -14,8 +14,9 @@ Where it runs:
             state key "atlas_v2" (its own frozen paper ledger + eval tracker); pushes of kind "second" titled
             "ATLAS v2 PAPER ...", only when second_model.json "atlas_v2": {"push": true} (default false = recorded, not sent;
             the app's per-kind level for "second" applies on top).
-  PC        engine/live.py LiveBot._second_tick (paper thread, after LIT's routing): the same step on the PC's own second
-            run -> data/live_state_atlas_v2.json (gitignored), heartbeat "second": {"atlas_v2": compact}.
+  PC        engine/live.py LiveBot._second_tick (the paper job of engine/bg_worker.py, a thread when the worker is off;
+            after LIT's routing): the same step on the PC's own second run -> data/live_state_atlas_v2.json (gitignored),
+            heartbeat "second": {"atlas_v2": compact}.
 Nothing here imports a broker / adapter / NinjaTrader or writes an order file (tests/test_atlas_v2_shadow.py checks it);
 second_model.json "account_b" and the live ATLAS are untouched: switching the real ATLAS to v2 later is the one JSON change
 in research/writeups/atlas-v2.md ("weights" + "min_room", engine/account_b.py supports both, off when absent).

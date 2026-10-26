@@ -990,12 +990,14 @@ class LiveBot:
         if changed:
             self._save_state()
 
-    def _learn_es(self, sym, tf, now, secs):
-        """ES 5m bars for the learning loop's ES features, fetched at most every 5 minutes; None when unavailable."""
+    def _learn_es(self, sym, tf, now, secs, refresh=False):
+        """ES 5m bars for the learning loop's ES features, fetched at most every 5 minutes; None when unavailable. The poll
+        reads the last copy (the 5-year ES merge never sits before LIT's routing); refresh=True, after the routing, fetches
+        a new one when it is 5 minutes old. Only the very first poll waits for it."""
         if self.state_path != STATE_PATH:      # test harnesses: no extra feed (the ES features are then unknown)
             return None
         c = getattr(self, "_es_cache", None)
-        if c and now - c[0] < 300:
+        if c and (now - c[0] < 300 or not refresh):
             return c[1]
         es = None
         if PARTNER.get(sym) in YAHOO:
@@ -1253,6 +1255,7 @@ class LiveBot:
         self._emit_events(res, sym)
         self._eod_summary(res, sym, now)
         self._route_signals(res, sym, now, secs)
+        self.health["lit_ms"] = int((time.perf_counter() - t0) * 1000)   # poll start -> LIT decided and routed
         self._guards_tick(now)
         self._alerts_tick(now)
         self.health["poll_ms"] = int((time.perf_counter() - t0) * 1000)
@@ -1260,6 +1263,7 @@ class LiveBot:
         self.health["ok"] = not (self.health["stale"] and mopen) and not self.health["desync"]
         self._save_state()
         if model == "lit":                    # after routing and the state save: never delays an order
+            self._learn_es(sym, tf, now, secs, refresh=True)       # ES bars for the next polls' learning features
             self._brain_tick(res, lit_p, now, brain_keep)
             self._second_route_tick(df_full, df1, res, sym, now)   # routed second strategies (OFF by default): LIT routed first
             self._account_b_tick(df_full, df1, sym, now)           # account B (OFF by default): its own account, after LIT
@@ -1271,20 +1275,94 @@ class LiveBot:
         """Trade pictures (engine/trade_chart.py, read-only): this poll's LIT trades and the ATLAS / candidate strategies'
         trades (their last paper run, LiveBot.second) drawn by one background worker after LIT's routing and the state save
         (never delays an order; a busy worker skips the tick) -> logs/charts/, /api/next/charts + /api/next/chart/<id>.
-        Test harnesses: off unless their cfg asks ("charts": true)."""
+        The worker is a separate process (engine/bg_worker.py, _chart_bg), else PcCharts' thread.
+        Test harnesses: off unless their cfg asks ("charts": true; "charts_root" = their folder)."""
         if self.state_path != STATE_PATH and not self.cfg.get("charts"):
             return
         try:
             from . import trade_chart as _tc
-            if getattr(self, "charts", None) is None:
-                self.charts = _tc.PcCharts()
             lt = [t for t in (res.get("trades") or []) if t.get("entry_t") is not None]
             pos = (res.get("state") or {}).get("position")
             if pos and pos.get("entry_t") is not None and not any(int(t["entry_t"]) == int(pos["entry_t"]) for t in lt):
                 lt.append({**pos, "exit_kind": "OPEN"})
+            if self._chart_bg(_tc, lt, df5, df1, now, keep):
+                return                        # drawn in the background worker process (engine/bg_worker.py)
+            if getattr(self, "charts", None) is None:
+                self.charts = _tc.PcCharts(root=self.cfg.get("charts_root") or _tc.PC_DIR)
             self.charts.tick(lt, getattr(self, "second", None), df5, df1, now, keep=keep)
         except Exception as e:
             self._note_error(f"trade charts failed: {e.__class__.__name__}: {e}")
+
+    # ------------------------------------------------------------------ background worker process (engine/bg_worker.py)
+    # The read-only paper work (second strategies + stop-hunt candidates + ATLAS v2 shadow, trade pictures) runs in a child
+    # process at a lower CPU priority: in a thread here it held this process's GIL while the next poll decided and routed
+    # LIT (poll 0.57 s -> 2.5-5 s measured, tests/test_poll_speed.py). Same functions, same bars. Off (LE_BG_WORKER=0, or
+    # the child cannot start / keeps dying): the old threads.
+    def _bg(self):
+        try:
+            from . import bg_worker
+            w = bg_worker.shared()
+            self.health["bg"] = w.info()
+            return w if w.off_reason is None else None
+        except Exception:
+            return None
+
+    def _second_bg(self, df5, df1, res, now, lit_w) -> bool:
+        """The paper thread's work in the worker process; False = worker off (the caller starts the thread)."""
+        w = self._bg()
+        if w is None:
+            return False
+        try:
+            from . import atlas_v2 as _av2
+            from . import second as _second
+            cfg = _second.load_cfg()
+            cfg["strategies"] = {k: v for k, v in cfg["strategies"].items() if not v.get("cloud_only")}   # e.g. LIT + Asia
+            args = {"cfg": cfg, "lit": lit_w, "res": res, "now": now, "av2_path": _av2.pc_path(self.state_path)}
+        except Exception as e:
+            self._note_error(f"second strategies failed: {e.__class__.__name__}: {e}")
+            self._second_busy = False
+            return True
+
+        def done(r, err):
+            try:
+                if err:
+                    self._note_error(f"second strategies failed: {err}")
+                else:
+                    self.second = r["second"]
+                    if r.get("av2"):              # ATLAS v2 PAPER shadow (engine/atlas_v2.py): never routed, own file
+                        self.atlas_v2 = r["atlas_v2"]
+            finally:
+                self._second_busy = False
+        st = w.submit("second", args, {"df5": df5, "df1": df1}, done, owner=id(self))
+        if st == "off":
+            return False
+        if st != "queued":                    # the child is restarting / still running: the next poll tries again
+            self._second_key, self._second_busy = None, False
+        return True
+
+    def _chart_bg(self, _tc, lt, df5, df1, now, keep) -> bool:
+        """The pictures in the worker process; False = worker off (the caller uses PcCharts' thread). A tick is sent only
+        when a trade's picture is missing or older than the trade (trade_chart.pending, on what the worker drew last)."""
+        w = self._bg()
+        if w is None:
+            return False
+        sec = getattr(self, "second", None)
+        drawn = getattr(self, "_charts_drawn", None)
+        if drawn is not None and not _tc.pending(lt, sec, now, drawn):
+            return True
+        if w.busy("charts", id(self)):
+            return True
+        root = self.cfg.get("charts_root") or getattr(getattr(self, "charts", None), "root", None) or _tc.PC_DIR
+        args = {"root": root, "lit_trades": lt, "second": sec, "now": now,
+                "keep": keep if keep and (drawn is None or _tc.lit_pending(lt, now, drawn)) else None}
+
+        def done(r, err):
+            if err:
+                self._charts_status = {"t": int(now), "error": err}
+            else:
+                self._charts_drawn = r.get("drawn") or {}
+                self._charts_status = {"t": int(now), "last": r.get("last"), "error": r.get("error")}
+        return w.submit("charts", args, {"df5": df5, "df1": df1}, done, owner=id(self)) != "off"
 
     def _lit_all_hours(self) -> bool:
         """LIT all_hours on in the params this bot trades (research/writeups/lit-more-entries.md, the Asia slot): the CME
@@ -1297,8 +1375,9 @@ class LiveBot:
 
     def _second_tick(self, df5, df1, res, now):
         """Second strategies, PAPER ONLY (engine/second.py, second_model.json): EMA / MACD on this poll's bars, after LIT's
-        routing and the state save, in a background thread (never delays LIT, never routes: engine/second.py has no adapter);
-        once per new closed 1m / 5m bar; the heartbeat carries the result as "second". A failure only logs an error."""
+        routing and the state save, in the background worker process (engine/bg_worker.py, _second_bg; a thread when it is
+        off), never delays LIT, never routes: engine/second.py has no adapter; once per new closed 1m / 5m bar; the
+        heartbeat carries the result as "second". A failure only logs an error."""
         if self.state_path != STATE_PATH and not self.cfg.get("second"):
             return                            # test harnesses: off unless asked
         try:
@@ -1310,6 +1389,8 @@ class LiveBot:
         self._second_key, self._second_busy = key, True
         from . import second as _second
         lit_w = _second.lit_windows(res)
+        if self._second_bg(df5, df1, res, now, lit_w):
+            return                            # in the background worker process (engine/bg_worker.py), else this thread:
 
         def run():
             try:
@@ -1699,9 +1780,13 @@ class LiveBot:
             self.health.update(keep)
 
     def _refresh_guard(self):
-        """Refresh the news calendar (archived into the engine's event list) and VIX; log guard transitions."""
+        """Refresh the news calendar (archived into the engine's event list) and VIX; log guard transitions. The real bot
+        downloads them in a background thread (news.background_refresh: a slow network never delays the routing); the guard
+        reads the last copy."""
         try:
             from . import news
+            if self.state_path == STATE_PATH:
+                news.background_refresh(True)     # the real bot: downloads in a thread, never inside the poll (engine/news.py)
             news.ff_calendar()
             news.volatility()
             g = news.guard(now=int(self.clock()), params={**self.cfg.get("params", {})})
