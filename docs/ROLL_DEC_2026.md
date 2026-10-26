@@ -5,6 +5,21 @@ bot's whole LIT window, every level (PDH/PDL, PWH/PWL, PMH/PML, the gaps) and ev
 would on clean data. Tested end to end on the real September roll (`python -X utf8 -m tests.test_roll`, 23/23). The March
 contract trades about 1% higher (~300 pts). That one number is what the roll changes.
 
+## Your steps (3)
+
+1. **Wed Dec 9, after 16:00 ET** (the phone reminds you on Thu Dec 3 and again on Wed Dec 9): in NinjaTrader,
+   right-click the chart with LE_BarFeed > Instrument > **MNQ 03-27** (the NQ chart too, if you use one: NQ 03-27),
+   Days to load 30, OK, then save the workspace.
+2. Copy-paste on the PC: `python tools/roll_check.py` (it should end with OK).
+3. **Thu Dec 10 morning**: the Start page / launch checklist line **Chart contract (roll)** is green. If it is red
+   (or a push "Chart still on MNQ 12-26: no new entries" came), do step 1 now; the bot goes on by itself.
+
+What the bot does by itself: orders move to MNQ 03-27 at Thu 00:00 ET; until the chart is on 03-27 it sends no new
+entry (the roll guard, `tests/test_nt_roll_guard.py`); once the chart is on 03-27 it shifts every older bar onto March
+(`tests/test_dec_roll.py`: on every session after the switch the LIT window equals a consistently adjusted series bar for
+bar, and LIT's signals and trades are identical; same on an NQ chart). Pushes come from the PC's 5-minute helper, or
+from the cloud monitor when that helper is not running (never both; `engine/roll_watch.py`).
+
 ## What to do, day by day (times ET)
 
 | When | You do | The bot does |
@@ -38,5 +53,8 @@ and its LIT trades match the PC's (test scenario E).
 
 ## Files
 
-`tests/test_roll.py` (the simulation) · `tools/roll_check.py` (your check) · `tools/import_tv.py` (the export import, with
-roll detection) · `engine/pcbars.py` (the back-adjustment) · `engine/ninjatrader.py` `nt_instrument` (the order contract).
+`tests/test_roll.py` (the simulation on the real September roll) · `tests/test_dec_roll.py` (the December dates: a
+constant 301.25-pt roll, the reminders, the red lines, the adapter block; MNQ and NQ charts) · `tools/roll_check.py`
+(your check) · `tools/import_tv.py` (the export import, with roll detection) · `engine/pcbars.py` (the back-adjustment) ·
+`engine/ninjatrader.py` `nt_instrument` (the order contract), `contract_problem` (the roll guard) · `engine/roll_watch.py`
+(the chart vs order contract: launch checklist line, Start page line, pushes).

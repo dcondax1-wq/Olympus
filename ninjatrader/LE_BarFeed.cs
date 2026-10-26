@@ -21,6 +21,9 @@
 // Use: ONE MNQ 5-minute chart, Trading hours "CME US Index Futures ETH", 30 days loaded: it writes MNQ_5m.csv and
 // MNQ_1m.csv (the 1-minute series is added by the indicator itself). Do not also run it on a separate 1-minute chart of
 // the same instrument (two writers on MNQ_1m.csv), or switch "Also write 1-minute bars" off there.
+// A chart of ANOTHER instrument writes its own files: an NQ 12-26 chart writes NQ_5m.csv, NQ_1m.csv, NQ_1m_open.csv and
+// NQ_instrument.txt (the root of the chart's instrument), never an MNQ_* file, so it needs no setting changed on either
+// chart (the bot reads it only with signal_root "NQ": engine/ninjatrader.py, ninjatrader/SETUP.md 4c).
 // Only standard NinjaScript: OnStateChange / OnBarUpdate / OnMarketData, Calculate.OnBarClose, File.AppendAllText; C# 5 syntax only
 // (no $"..." strings, no ?. or =>), so it compiles on every NinjaTrader 8 version.
 //

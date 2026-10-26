@@ -6,6 +6,8 @@
   "locked": true,
   "no_yahoo": true,
   "no_yahoo_note": "owner 2026-10-19: bars from NinjaTrader (PC) and the TradingView exports only, never Yahoo; the cloud reads the PC's NinjaTrader bars from the heartbeat branch; VIX from CBOE (engine/pcbars.py)",
+  "signal_root": "MNQ",
+  "signal_root_note": "Which NinjaTrader chart the bot decides on (engine/ninjatrader.signal_root, research/writeups/mnq-vs-nq-feed.md). MNQ (default): the MNQ chart with LE_BarFeed. NQ: an NQ chart of the same month with LE_BarFeed (le_feed NQ_*.csv, the bars the backtest is made of); orders, stops, targets and size stay MNQ ($2 a point). No NQ file: the MNQ chart, as before. Not a rule or size change.",
   "rules": "STRATEGY.md",
   "params": {
     "risk_usd": 800,

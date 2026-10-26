@@ -15,8 +15,12 @@ With `no_yahoo` on (live_model.json "no_yahoo", default true; a start cfg "no_ya
     "waiting for NinjaTrader bars from the PC".
   * VIX / VXN daily closes (the LIT target band) come from CBOE's own history files instead of Yahoo (engine/news.py).
 
-Price basis: TradingView NQ1! (the exports) and NinjaTrader MNQ on the same contract month print the same prices (a tick
-apart at most on a bar's extremes, the same closes). merge_basis() checks every overlap: when the newer source sits a
+Price basis: TradingView NQ1! (the exports) and NinjaTrader MNQ on the same contract month quote the same index points,
+a little apart bar by bar (measured 2026-10-26 on 5,796 shared 5m bars, research/writeups/mnq-vs-nq-feed.md: within
+1 tick on 54-62% of bars, within 1 pt on 92-94%, close offset median 0, MNQ's range 0.4 pt wider; NinjaTrader MNQ and
+TradingView MNQ1! agree exactly on 95% of bars). That noise sits far below ROLL_MIN, so it is never taken for a roll, and
+an NQ chart (signal_root "NQ", engine/ninjatrader.py) merges onto an MNQ archive with no shift. LIT's setups do react to
+it: about a third differ between the two feeds. merge_basis() checks every overlap: when the newer source sits a
 constant amount away from the older one (a contract roll: 100-300 points), the older bars are shifted by it (back-adjusted)
 so levels from before the roll stay on the traded contract's prices; otherwise nothing is shifted. NinjaTrader's "Merge back
 adjusted" history is exactly constant; two contracts' own prices (the chart switched after NinjaTrader's rollover date, or

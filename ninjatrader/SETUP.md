@@ -111,8 +111,13 @@ against verbatim copies of the Help Guide pages (see Sources). Open the official
      repair it.
    - The bot checks every overlap between the TradingView history, its NinjaTrader archive and the live files: when
      the newer bars sit a roll gap away (100-300 pts) it shifts the older ones onto the new contract and logs
-     `... back-adjusted onto NinjaTrader's contract`. MNQ and NQ1! on the same contract need no shift (same prices).
-     Tested end to end in `tests/test_roll.py`. After switching, run `python tools/roll_check.py` (it should say OK).
+     `... back-adjusted onto NinjaTrader's contract`. MNQ and NQ1! on the same contract need no shift (a point apart at
+     most on 93% of bars, median 0). Tested end to end in `tests/test_roll.py` and `tests/test_dec_roll.py` (the December
+     dates). After switching, run `python tools/roll_check.py` (it should say OK).
+   - A week before (Thu Dec 3) and the day before (Wed Dec 9) a phone push reminds you. From Thu Dec 10, while the chart
+     is still on 12-26, the bot sends no new entry, the launch checklist line **Chart contract (roll)** and the Start
+     page's **Live bars from NinjaTrader** line are red with the exact click, and a push "Chart still on MNQ 12-26"
+     goes out before the session (`engine/roll_watch.py`).
      The full December plan, day by day: `docs/ROLL_DEC_2026.md`.
 
 What LE_BarFeed writes: `time,open,high,low,close,volume`, where time is the bar's **open** in unix seconds (UTC).
@@ -187,6 +192,28 @@ What it does with the numbers (switch `"broker_balance": false` in the start con
   balance - $2,000 (50K) / $1,000 (25K)), locked at start + $100. Saved in `data/broker_balance.json` (gitignored).
 - Intraday: room = min(bot ledger room, real net liquidation - floor).
 - Real and ledger balance more than $50 apart for 5 minutes: one phone push "balance differs" with both numbers.
+
+### 4c. Optional: decide on an NQ chart, trade MNQ (`signal_root`, OFF by default, 2026-10-26)
+
+LIT is backtested on CME NQ bars; the MNQ chart's bars differ by a tick or two on most bars (MNQ's book is thinner), and
+about a third of LIT's setups come out differently on them (`research/writeups/mnq-vs-nq-feed.md`). With
+`"signal_root": "NQ"` in `live_model.json` the bot takes every decision from an NQ chart's bars and still sends every
+order, stop and target to **MNQ** (same index points and 0.25 tick; the size stays MNQ's $2 a point).
+
+- File names: LE_BarFeed names its files after the chart's instrument root, so an **NQ 12-26** chart writes
+  `le_feed\NQ_5m.csv`, `NQ_1m.csv`, `NQ_1m_open.csv` and `NQ_instrument.txt` next to the MNQ chart's `MNQ_*` files.
+  The two charts never write the same bar file, so **nothing has to be unticked** on the MNQ chart ("Also write 1-minute
+  bars" stays on; the 1-minute writer clash in step 4 is only for two charts of the same instrument). Both write
+  `accounts.csv` with the same lines (one at a time: they share one file lock); you may untick **Write account
+  balances** on the NQ chart.
+- Setup: **New > Chart**: **NQ 12-26**, Minute, 5, Days to load 30, Trading hours CME US Index Futures ETH, add
+  **LE_BarFeed** (defaults), OK, save the workspace. Keep the MNQ chart open too (it is the fallback).
+- The bot reads ONE chart: NQ when `le_feed\NQ_5m.csv` (or `NQ_1m.csv`) exists, else MNQ as before. It never mixes NQ
+  5-minute with MNQ 1-minute bars. A stale NQ chart blocks new entries (FEED STALE ... NQ_5m.csv); it does not switch
+  to MNQ by itself. To go back: `"signal_root": "MNQ"` (or close the NQ chart and delete its `NQ_*` files).
+- The roll guard checks the chart the bot reads: at the roll switch the **NQ** chart to NQ 03-27 (the MNQ one too).
+- `python -m engine.ninjatrader --status` shows `Signals from : NQ chart (NQ 12-26; signal_root NQ) -> orders MNQ 12-26`.
+- If the NQ chart shows no data, the NinjaTrader connection has no NQ (E-mini) data: leave the switch off.
 
 ## 5. Test on Sim101 (no money involved)
 
@@ -303,7 +330,8 @@ connection = `CONNECTED` or `DISCONNECTED`. The outgoing folder is emptied when 
 
 ## 10. Low-end PC (the Surface as the always-on box)
 
-- **One chart only**: MNQ 5-minute with LE_BarFeed (it writes the 1-minute file too). No second chart.
+- **One chart only**: MNQ 5-minute with LE_BarFeed (it writes the 1-minute file too). No second chart (the one
+  exception: the NQ 5-minute chart of section 4c, only with `signal_root` "NQ").
 - **Nothing else open**: no Market Analyzer, no SuperDOM, no extra charts or workspaces, no browser left running.
 - **Connect on startup** ticked for the Tradovate/MFFU connection (step 2). Save the workspace (step 4) so the chart
   comes back after a reboot.

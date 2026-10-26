@@ -500,6 +500,32 @@ part yourself or fold it into a script.**
   `python -m engine.ninjatrader --selftest` (55 checks, incl. cancel-pending entries, partial exit fills and the CME early-close flat (5 min before the halt; entries stop 15 min before) added 2026-10-18; `LE_BarFeed.cs` also writes `le_feed\MNQ_1m.csv` for LIT, not yet compiled on a real install). Setup for a non-coder: `ninjatrader/SETUP.md`. Known gap: the
   Tradovate adapter never received breakeven moves or non-TIME exits (the NinjaTrader flags `route_all_exits`,
   `route_stop_moves` fix it; apply the same to Tradovate before ever using it).
+- **MNQ feed vs NQ backtest + the NQ signal chart (2026-10-26, `research/writeups/mnq-vs-nq-feed.md`, OFF by default):**
+  the PC's MNQ bars, collected from the heartbeat branch's history (`tools/hb_bars.py`: the branch is one force-pushed
+  commit, older ones fetched by SHA from GitHub's activity API -> `research/feed/nt_mnq_{5m,1m}.csv.gz`; 5m from 09-17,
+  1m from 10-18 = no 1m overlap with NQ_1m.csv) vs NQ1! (`tools/mnq_vs_nq.py`, `research/feed/mnq_vs_nq.json`):
+  NinjaTrader MNQ = TradingView MNQ1! on 95.4% of bars (A1's sample is the live feed); MNQ vs NQ within 1 tick on
+  54-62%, 1 pt on 92-94%; LIT setups 36% on one feed only (40 sessions Aug 24 - Oct 16), trade days 60% differ, 5m-exec
+  net NQ +$2,362 vs MNQ +$367; whole-2026 MNQ-noise study (40 draws, 1m exec): 2026 median $32.8k vs $43.8k, H2 $9.1k vs
+  $9.9k (-$229/mo), only ~28% of trades identical; vendor-noise control: no change. Runs `lit_feed_mnq_noise`,
+  `lit_feed_mnq_live_5m`, `lit_feed_nq_same_5m`. **Switch `signal_root`** (top level of live_model.json +
+  live_model_lit.json, "MNQ"; `LE_SIGNAL_ROOT` / start cfg `nt_feed_roots` override): "NQ" = `NinjaTraderBars` reads an
+  NQ chart's LE_BarFeed files (NQ_5m / NQ_1m / NQ_1m_open / NQ_instrument; LE_BarFeed names files by the chart's root, so
+  no clash and nothing to untick) for every decision, orders / stops / targets / size stay MNQ. One root per symbol
+  (`root_for`: never NQ 5m with MNQ 1m); no NQ file -> MNQ as before; a stale NQ chart blocks (no silent switch). The
+  roll guard, `--status`, HEALTH CHECK feed lines, the heartbeat bars follow that chart. Archive caveat: data/nt_bars
+  keeps its MNQ bars from before a switch (no shift, ~1 tick; gone from the LIT window within ~2 months). Owner steps:
+  SETUP.md 4c. Test `python -X utf8 -m tests.test_signal_root` (22).
+- **December roll safety (2026-10-26, `engine/roll_watch.py`, `tests/test_dec_roll.py` 23, `docs/ROLL_DEC_2026.md`):**
+  the roll guard (`ninjatrader.contract_problem`, chart month vs order month, root-free) already refused entries
+  (`tests.test_nt_roll_guard`); now the chart vs order contract is also: a launch-checklist line `roll` (red after the
+  roll day while the chart is old, good when equal or switched the evening before, info a week before / unknown), the
+  Start page's "Live bars from NinjaTrader" line (`go.feed_problem` -> "Contract roll: ..." with its own fix), pushes
+  (7 days / 1 day before: `ops_checks.roll_notice` keys; "Chart still on MNQ 12-26: no new entries" once a trading day:
+  `ops_checks.roll_late_notice` at 01:40 ET, and the cloud monitor `roll_watch.cloud_notices` when the PC's ops tick is
+  older than 1 h). The test simulates the roll with a constant 301.25-pt offset (TradingView export + archive old, chart
+  switched Wed 17:00): on every session after the switch the LIT window = the adjusted series bar for bar and LIT's
+  signals / trades are identical (MNQ and NQ charts).
 - **Execution audit (2026-10-25, `research/handoff/2026-10-25/A5_execution.md`, test `tests/test_nt_exec_audit.py`):** kill is
   account-scoped (CLOSEPOSITION + CANCEL by id) unless the action carries `"scope": "global"` (only `LiveBot.kill_switch`,
   the owner's kill -> FLATTENEVERYTHING); the OIF writer refuses FLATTENEVERYTHING / CANCELALLORDERS outside that, a line
@@ -637,3 +663,8 @@ part yourself or fold it into a script.**
 5. **Before the Dec 2026 roll:** the live LIT window mixes the TradingView file with NinjaTrader MNQ bars. Since no_yahoo every
    merge checks the overlap (`pcbars.merge_basis`): a constant offset (a roll) back-adjusts the older bars; same contract = no
    shift. Untested on a real roll: the chart switch to MNQ 03-27 must leave an overlap (load 30 days). See `lit-report-tests.md` audit. The cloud paper ledger now freezes finished trades (`tests/test_ledger_freeze.py`).
+   2026-10-26: simulated December roll (`tests/test_dec_roll.py`), reminders + red lines (`engine/roll_watch.py`); owner
+   steps (3) at the top of `docs/ROLL_DEC_2026.md`.
+6. **NQ signal chart** (`signal_root`, built, OFF): recommended in `research/writeups/mnq-vs-nq-feed.md`; needs the
+   owner's NQ 12-26 chart with LE_BarFeed (SETUP.md 4c). Untested: NinjaTrader NQ vs TradingView NQ1! (expected ~equal,
+   as NinjaTrader MNQ = TradingView MNQ1! on 95% of bars), whether the MFFU connection carries NQ data.

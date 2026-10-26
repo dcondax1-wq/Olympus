@@ -157,6 +157,12 @@ def facts(bot, health: dict | None = None, now=None, sim_path: str | None = None
         out["broker"] = broker_fact(bot, lit, now)
     except Exception as e:
         out["broker"] = {"fresh": False, "why": _clean(f"{e.__class__.__name__}: {e}", 120)}
+    # 5c. the chart's contract against the order contract (engine/roll_watch.py: the December 2026 roll, 12-26 -> 03-27)
+    try:
+        from . import roll_watch
+        out["roll"] = roll_watch.compact(roll_watch.fact(cfg=getattr(bot, "cfg", None) or {}, now=now))
+    except Exception as e:
+        out["roll"] = {"level": "unknown", "say": _clean(f"roll check failed: {e.__class__.__name__}", 120)}
     # 6. armed (display only) and the bot's start time
     out["lit_armed"] = bool(((h.get("account") or {}).get("armed")) or (getattr(bot, "cfg", None) or {}).get("armed"))
     sa = getattr(bot, "started_at", None)
@@ -300,6 +306,15 @@ def checklist(f: dict | None, health: dict | None, running: bool, now=None) -> d
         items.append(_item("feed", "Bar feed fresh", "good", f"{fd.get('used') or fd.get('source') or 'ninjatrader'}: {ages}"))
     else:
         items.append(_item("feed", "Bar feed fresh", "bad", f"no fresh bar ({ages}): open the MNQ chart with LE_BarFeed", STATUS_CMD))
+    # 6a. the chart on the order contract (red after the roll day while the LE_BarFeed chart is still on the old month: the
+    #     adapter sends no new entry then); info while the roll is within 7 days or the contract is unknown
+    try:
+        from . import roll_watch
+        ri = roll_watch.launch_item(f.get("roll"))
+    except Exception as e:
+        ri = {"key": "roll", "label": "Chart contract (roll)", "state": "info", "detail": f"not checked ({e.__class__.__name__})",
+              "fix": ""}
+    items.append(_item(ri["key"], ri["label"], ri["state"], ri["detail"], ri["fix"]))
     # 6b. real balance from NinjaTrader: green when fresh; otherwise display only (the bot then sizes from its ledger + the
     #     anchor exactly as before, so it never blocks the launch)
     bk = f.get("broker") or {}
