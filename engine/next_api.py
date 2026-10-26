@@ -500,6 +500,11 @@ router.include_router(_biz_router)
 from .pcops_api import router as _ops_router  # noqa: E402
 router.include_router(_ops_router)
 
+# Start & Accounts page (START BOT as a checklist + the account panel, engine/go.py steps): GET for everyone, every POST
+# local PC only (engine/start_api.py, engine/cloud_guard.local_only + CLOUD_BLOCKED)
+from .start_api import router as _start_router  # noqa: E402
+router.include_router(_start_router)
+
 # Bot Brain (engine/brain.py): what the bot is thinking now, its thought log, any past 2026 day replayed (engine/brain_api.py)
 from .brain_api import router as _brain_router  # noqa: E402
 router.include_router(_brain_router)

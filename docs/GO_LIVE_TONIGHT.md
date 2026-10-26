@@ -1,6 +1,8 @@
 # Go live on the MFFU eval tonight (Sun 2026-10-18, 21:00 ET)
 
-**Easiest way (2026-10-26): double-click `START_BOT.bat` in the bot folder** (after the first run it is the
+**Easiest way (2026-10-26): double-click `START_BOT.bat` in the bot folder, or use the dashboard Start page**
+(http://localhost:8766 on the PC, sidebar **Start**: the same steps as one checklist, one button per red line, and your
+accounts; it only works on the PC itself, the phone can only look). START_BOT.bat (after the first run it is the
 **LE START BOT** icon on the desktop). One window does all of this page: update, both accounts set up once, the
 Sim101 test once (market open), then you type `I ACCEPT LIVE RISK` and it arms the 25K, sets the live switch, starts
 the server and the bot on the 50K and prints the launch checklist. Double-click again any time: done steps are
