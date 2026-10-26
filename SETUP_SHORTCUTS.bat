@@ -1,7 +1,8 @@
 @echo off
-rem Liquidity Engine: one-time setup (double-click once). Puts 4 icons on the desktop (UPDATE, DASHBOARD, HEALTH CHECK,
-rem STOP BOT) and adds the 5-minute helper task (phone notices: pre-session check, day / week summary, internet and
-rem NinjaTrader drops, MFFU reminders; nightly backup). Run it again any time: it replaces what it made before.
+rem Liquidity Engine: one-time setup (double-click once). Puts 2 icons on the desktop (LE START = the dashboard's Start
+rem page, LE STOP BOT; the older icons are removed) and adds the 5-minute helper task (phone notices: pre-session check,
+rem day / week summary, internet and NinjaTrader drops, MFFU reminders; nightly backup). Run it again any time: it
+rem replaces what it made before.
 setlocal EnableExtensions
 title Liquidity Engine - SETUP
 cd /d "%~dp0"

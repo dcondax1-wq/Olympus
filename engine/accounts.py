@@ -71,6 +71,20 @@ def clean_text(s, n=160):
     return s[:n]
 
 
+def poll_stages_block(ps) -> dict | None:
+    """health.poll.stages (engine/poll_timing.py): the last poll's stage times, small enough for the heartbeat: every
+    top-level stage, the nested ones of 50 ms or more, the other threads busy during it. None when not timed."""
+    if not isinstance(ps, dict) or not ps.get("stages"):
+        return None
+    st = [{"name": clean_text(s.get("name"), 90), "ms": _i(s.get("ms")), "cpu_ms": _i(s.get("cpu_ms")), "n": _i(s.get("n"))}
+          for s in ps["stages"] if isinstance(s, dict) and (" > " not in str(s.get("name")) or (_i(s.get("ms")) or 0) >= 50)]
+    return {"t": _i(ps.get("t")), "total_ms": _i(ps.get("total_ms")), "cpu_ms": _i(ps.get("cpu_ms")),
+            "wait_ms": _i(ps.get("wait_ms")), "other_ms": _i(ps.get("other_ms")), "slowest": clean_text(ps.get("slowest"), 90),
+            "stages": st[:40], "threads": [{"name": clean_text(t.get("name"), 40), "cpu_ms": _i(t.get("cpu_ms"))}
+                                           for t in (ps.get("threads") or [])[:4] if isinstance(t, dict)],
+            "recent_ms": [_i(x) for x in (ps.get("recent_ms") or [])[-10:]]}
+
+
 def accounts_cfg(lm: dict | None) -> list:
     """live_model.json "accounts" (top level, or lit_sizing.accounts): the accounts the Accounts page shows, each
     {id, name, firm, plan, kind eval|funded|paper, source pc|cloud}. Default: the MFFU 50K eval on the PC bot."""
@@ -725,7 +739,7 @@ def pc_health(bot, now=None) -> dict:
             "poll": {"last_t": lp, "age_s": (now - lp) if lp else None, "last_ok_t": _i(h.get("last_ok_poll")),
                      "errors": _i(getattr(bot, "errors", 0)), "consecutive_errors": _i(h.get("consecutive_errors")),
                      "last_error": clean_text(h.get("last_error"), 160), "last_error_t": _i(h.get("last_error_t")),
-                     "poll_ms": _i(h.get("poll_ms"))},
+                     "poll_ms": _i(h.get("poll_ms")), "stages": poll_stages_block(h.get("poll_stages"))},
             "lit": {**_lit_stage(st), "setups_today": len(sigs), "last_setup": last_sig,
                     "day_trades": _i(st.get("day_trades")), "price": _f(st.get("price"))},
             "orders": {"today": len(sent), "entries_today": len(entries), "last": last_order,

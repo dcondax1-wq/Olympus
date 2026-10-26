@@ -7,7 +7,12 @@ request comes from a browser on this PC (engine/cloud_guard.local_only: not the 
 tunnel, Host / Origin localhost) and is listed in cloud_guard.CLOUD_BLOCKED. Nothing here arms by itself: arming needs the
 owner's typed I ACCEPT LIVE RISK, checked here and again by engine/go.step_arm and engine/ninjatrader.
 
-  GET  /api/next/start/status            checklist (6 lines), plain status line, accounts, NinjaTrader pick list, the job
+  GET  /api/next/start/status            checklist (6 lines), plain status line, accounts, NinjaTrader pick list, the job,
+                                         need_phrase / resume_why (the one button), the PC clock
+  GET  /api/next/start/boot              the commit this server booted on (engine/go.server_stale)
+  POST /api/next/start/go                {"confirm"?: phrase} the one button "Start trading" (a job: engine/go.step_auto)
+  POST /api/next/start/resume            start without the phrase through the auto-resume gate (engine/go.resume_now)
+  POST /api/next/start/clock             "Sync the clock" (w32tm /resync, else the Windows Settings steps)
   POST /api/next/start/names             {"lit": 50K Name, "atlas": 25K Name}
   POST /api/next/start/nt                open NinjaTrader (no wait)
   POST /api/next/start/setup             launch prep for the saved names (engine/launch_prep)
@@ -31,6 +36,21 @@ from . import cloud_guard, go
 router = APIRouter()
 _NT = {"t": 0.0, "v": None}
 _FEED = {"t": 0.0, "v": None}
+
+
+def _boot_sha():
+    try:
+        return go.head_sha()
+    except Exception:
+        return None
+
+
+BOOT_SHA = _boot_sha()          # the commit this server booted on (engine/go.server_stale: restart it after an update)
+
+
+@router.get("/api/next/start/boot")
+def r_boot():
+    return _J({"sha": BOOT_SHA})
 
 
 def _J(obj, status=200):
@@ -70,6 +90,56 @@ def _feed():
     return _FEED["v"]
 
 
+_CLK = {"t": 0.0, "v": None, "busy": False}
+CLOCK_EVERY_S = 600
+
+
+def _clock_probe():
+    from . import guards
+    return guards.clock_probe()
+
+
+def _clock_run():
+    try:
+        d = _clock_probe()
+        _CLK.update(v=None if d is None else {"drift_s": round(float(d), 2), "t": int(time.time())})
+    except Exception:
+        _CLK["v"] = None
+    finally:
+        _CLK["t"], _CLK["busy"] = time.time(), False
+
+
+def _clock(fresh=False) -> dict:
+    """The PC clock against internet time (engine/guards.clock_probe: only the drift the probe can prove), probed in a
+    thread at most every 10 min (the page never waits for it). The bot's guard blocks new entries above 5 s."""
+    if (fresh or time.time() - _CLK["t"] > CLOCK_EVERY_S) and not _CLK["busy"]:
+        _CLK["busy"] = True
+        import threading
+        threading.Thread(target=_clock_run, name="start-clock", daemon=True).start()
+    v = _CLK["v"]
+    if v is None:
+        return {"known": False, "ok": True, "say": "checking the PC clock against internet time" if _CLK["busy"] else
+                "PC clock not checked (no internet answer)"}
+    d = float(v["drift_s"])
+    ok = abs(d) <= go.CLOCK_MAX_S
+    side = "behind" if d > 0 else "ahead of"
+    return {"known": True, "ok": ok, "drift_s": d, "t": v["t"],
+            "say": "PC clock matches internet time" if abs(d) < 0.5 else
+            f"PC clock {abs(d):.1f} s {side} internet time" + ("" if ok else f": new entries are blocked above {go.CLOCK_MAX_S:.0f} s")}
+
+
+def _poll():
+    """The running bot's last poll, stage by stage (engine/poll_timing.py via accounts.poll_stages_block), else None."""
+    try:
+        b = _bot()
+        if not getattr(b, "running", False):
+            return None
+        from . import accounts
+        return accounts.poll_stages_block((getattr(b, "health", None) or {}).get("poll_stages"))
+    except Exception:
+        return None
+
+
 def _cards() -> dict:
     try:
         from . import pc_cc_api as C
@@ -105,6 +175,8 @@ def r_status(request: Request, fresh: int = 0):
         st = go.status(state=_state(), connected=_connected, feed=_feed)
         st["accounts"] = go.accounts(_cards())
         st["local"] = cloud_guard.local_only(request) is None
+        st["clock"] = _clock(fresh=bool(fresh))
+        st["poll"] = _poll()
         return _J(st)
     except Exception as e:
         return _J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
@@ -151,6 +223,50 @@ async def r_arm(request: Request):
         bad = _local(request)
         return bad if bad is not None else _J({"ok": False, "error": "Type I ACCEPT LIVE RISK exactly. Nothing is armed."}, 400)
     return _do(request, lambda: go.job_start("arm", phrase))
+
+
+@router.post("/api/next/start/go")
+async def r_go(request: Request):
+    """The one button "Start trading": every step in one job (engine/go.step_auto). The phrase is optional: needed only
+    when the status says need_phrase (no valid auto-resume for the 50K); checked here, in the job and by ninjatrader."""
+    d = await _body(request)
+    phrase = go.typed_phrase(str(d.get("confirm") or "")) if d.get("confirm") else None
+    if phrase is not None and phrase != go.LIVE_PHRASE:
+        bad = _local(request)
+        return bad if bad is not None else _J({"ok": False, "error": "Type I ACCEPT LIVE RISK exactly (or leave it empty). Nothing is armed."}, 400)
+    return _do(request, lambda: go.job_start("auto", phrase))
+
+
+def _start_fn():
+    from . import botctl
+    return botctl.HOOKS.get("start") or (lambda body: _bot().start(body))
+
+
+def _stop_fn():
+    from . import botctl
+    return botctl.HOOKS.get("stop") or (lambda: _bot().stop())
+
+
+@router.post("/api/next/start/resume")
+def r_resume(request: Request):
+    """Start without the phrase, through the auto-resume gate (engine/go.resume_now); the "Start trading" job calls it."""
+    _NT["t"] = 0.0
+    return _do(request, lambda: go.resume_now(_start_fn(), connected=_connected(), state_fn=_state, stop_fn=_stop_fn()))
+
+
+@router.post("/api/next/start/clock")
+def r_clock(request: Request):
+    """"Sync the clock": w32tm /resync (engine/go.sync_clock), then a new probe here and in the bot's clock guard."""
+    def run():
+        r = go.sync_clock()
+        try:
+            from . import guards
+            guards._CLOCK["t"] = 0.0                 # the bot's guard probes again at its next poll
+        except Exception:
+            pass
+        _clock(fresh=True)
+        return r
+    return _do(request, run)
 
 
 @router.post("/api/next/start/accounts/add")

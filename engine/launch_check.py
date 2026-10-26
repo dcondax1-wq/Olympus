@@ -126,9 +126,9 @@ def facts(bot, health: dict | None = None, now=None, sim_path: str | None = None
     # 2. account B (second_model.json "account_b")
     b = None
     try:
-        from . import second
-        c = _read_json(second_path or second.CFG_PATH) or {}
-        ab = c.get("account_b") if isinstance(c.get("account_b"), dict) else None
+        from . import account_b as _ab
+        ab = _ab.raw_cfg(second_path)                 # data/account_b.json first, else second_model.json's
+        ab = ab if isinstance(ab, dict) else None
         if ab:
             b = str(ab.get("account") or "").strip() or None
         out["b"] = {"configured": bool(b), "account": _clean(b, 60),

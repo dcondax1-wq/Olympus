@@ -789,12 +789,50 @@ def _autostart_resume():
         _autostart_alert(f"Liquidity Engine server restarted but the bot resume FAILED: {res.get('error')}")
 
 
+def _migrate_account_b():
+    """ATLAS's account block: out of the tracked second_model.json into data/account_b.json (engine/account_b.py), before
+    the bot can start, so an older version's write no longer blocks every update. Never raises."""
+    try:
+        from engine import account_b as _abm
+        r = _abm.migrate_local()
+        if r.get("status") not in ("clean", "no_git"):
+            print(f"[account_b] {r.get('say')}", flush=True)
+    except Exception as e:
+        print(f"[account_b] migration skipped: {e.__class__.__name__}: {e}", flush=True)
+
+
+def _ensure_shortcuts():
+    """The desktop icons (LE START + LE STOP BOT) and the Startup-folder shortcuts of this version, once (engine/go.py,
+    Windows only): an update brings the new icons without a click. Never raises."""
+    try:
+        from engine import go as _go
+        r = _go.ensure_shortcuts()
+        if r.get("made") or not r.get("ok"):
+            print(f"[shortcuts] {r}", flush=True)
+    except Exception as e:
+        print(f"[shortcuts] skipped: {e.__class__.__name__}: {e}", flush=True)
+
+
+def _poll_timing():
+    """Per-stage timing of every poll (engine/poll_timing.py, read-only) -> health.poll.stages in the heartbeat and the
+    dashboard. LE_POLL_TIMING=0 turns it off. Never raises."""
+    try:
+        from engine import poll_timing as _pt
+        if _pt.enabled():
+            _pt.install(BOT)
+    except Exception as e:
+        print(f"[poll timing] off: {e.__class__.__name__}: {e}", flush=True)
+
+
 def _autostart_startup():
     WATCHDOG.server_started_at = int(time.time())
+    _poll_timing()                       # before the bot can start
     if os.environ.get("LE_NO_AUTOSTART") == "1":
         WATCHDOG.autostart_info = {"disabled": "LE_NO_AUTOSTART=1"}
     else:
+        _migrate_account_b()             # before the resume reads ATLAS's account
         threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
+        threading.Thread(target=_ensure_shortcuts, name="shortcuts", daemon=True).start()
     WATCHDOG.start()
     HEARTBEAT.start()
     LIVEPUB.start()                      # phone live.json every minute (engine/live_publish.py)

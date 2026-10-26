@@ -458,12 +458,13 @@ def main() -> int:
                     probs.append(f"{b}: contains {bad}")
         check("bat files: every goto has its label, @echo off, cd to the folder, balanced quotes / ()", not probs, probs)
         u = read("UPDATE.bat")
-        order = [u.find(x) for x in ("--update-guard", "stop_bot.ps1\" -KeepAutostart", "git pull --ff-only origin main",
+        order = [u.find(x) for x in ("--update-guard", "stop_bot.ps1\" -KeepAutostart", "-m engine.autoupdate --pull",
                                       "pip install -r requirements.txt", "scripts\\run_bot.ps1", "--wait-server", "--after-update")]
-        check("UPDATE.bat: guard -> stop (keeps auto-resume) -> pull main -> pip -> run_bot in its own window -> self-test, in order",
+        check("UPDATE.bat: guard -> stop (keeps auto-resume) -> pull main (the auto-update's fast-forward) -> pip -> run_bot in "
+              "its own window -> self-test, in order",
               all(i >= 0 for i in order) and order == sorted(order) and 'start "Liquidity Engine bot"' in u, order)
         check("UPDATE.bat: a failed pull still restarts the bot (no goto out between pull and restart)",
-              "goto" not in u[u.find("git pull"):u.find("scripts\\run_bot.ps1")])
+              "goto" not in u[u.find("-m engine.autoupdate --pull"):u.find("scripts\\run_bot.ps1")])
         check("UPDATE.bat: trade open -> refuses; trading time -> asks Y", "GUARD%\"==\"1\" goto :intrade" in u and "set /p" in u)
         sd = read("START_DASHBOARD.bat")
         check("START_DASHBOARD.bat: pings, starts run_bot only when down, opens localhost:8766",
@@ -486,8 +487,12 @@ def main() -> int:
                 pprobs.append(f"{p}: no -DryRun")
         check("ps1: balanced braces / parens / brackets, param block, -DryRun", not pprobs, pprobs)
         sc = read("scripts/make_shortcuts.ps1")
-        check("shortcuts: UPDATE, DASHBOARD, HEALTH CHECK, STOP on the desktop", all(x in sc for x in ("UPDATE.bat", "START_DASHBOARD.bat", "HEALTH_CHECK.bat",
-                                                                                                        "STOP_BOT.bat")) and "GetFolderPath('Desktop')" in sc)
+        check("shortcuts: LE START (START_DASHBOARD.bat = the Start page) and LE STOP BOT on the desktop, the older icons removed",
+              all(x in sc for x in ("'LE START'", "START_DASHBOARD.bat", "'LE STOP BOT'", "STOP_BOT.bat", "$retired"))
+              and all(x in sc for x in ("'LE UPDATE'", "'LE DASHBOARD'", "'LE HEALTH CHECK'", "'LE START BOT'"))
+              and "GetFolderPath('Desktop')" in sc and "File = 'UPDATE.bat'" not in sc)
+        check("START_DASHBOARD.bat opens the Start page and waits up to 5 min for the server (logon)",
+              "/?page=start" in sd and "lss 150" in sd)
         it = read("scripts/install_ops_task.ps1")
         check("ops task: pythonw scripts\\ops_tick.py every 5 min, limited user, not elevated", "pythonw.exe" in it and "ops_tick.py" in it
               and "New-TimeSpan -Minutes 5" in it and "RunLevel Limited" in it and "Highest" not in it)

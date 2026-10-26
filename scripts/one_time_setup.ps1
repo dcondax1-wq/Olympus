@@ -293,7 +293,7 @@ if ($Nt) {
 # ---------------------------------------------------------------------------------------------- e. desktop icons
 Step "e. Desktop icons"
 & $PsExe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'make_shortcuts.ps1') | Out-Host
-if ($LASTEXITCODE -eq 0) { Say-Ok "Desktop icons: LE UPDATE, LE DASHBOARD, LE HEALTH CHECK, LE STOP BOT" } else { Say-Fix "Desktop icons not made (see above)" }
+if ($LASTEXITCODE -eq 0) { Say-Ok "Desktop icons: LE START (the Start page), LE STOP BOT" } else { Say-Fix "Desktop icons not made (see above)" }
 
 # ---------------------------------------------------------------------------------------------- f. auto-update
 Step "f. The bot updates itself (outside trading hours, when flat)"

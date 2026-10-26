@@ -452,7 +452,8 @@ def rules_snapshot(bot=None) -> dict:
         pass
     try:
         sm = _read(os.path.join(ROOT, "second_model.json"), {}) or {}
-        out["second"] = {"account_b": sm.get("account_b"),
+        from . import account_b as _ab              # ATLAS's account: data/account_b.json first (moving it is no rule change)
+        out["second"] = {"account_b": _ab.raw_cfg(),
                          "strategies": {k: {"on": v.get("on", True), "route": v.get("route", False)}
                                         for k, v in (sm.get("strategies") or {}).items() if isinstance(v, dict)}}
     except Exception:

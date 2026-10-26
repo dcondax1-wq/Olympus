@@ -20,7 +20,8 @@ from fastapi.responses import JSONResponse, Response
 OPEN_PATHS = ("/api/health/ping", "/api/tv/webhook")
 # the Start page's arm / start / account writes (engine/start_api.py): also refused off this PC by local_only() below
 START_WRITES = ("/api/next/start/names", "/api/next/start/nt", "/api/next/start/setup", "/api/next/start/sims",
-                "/api/next/start/arm", "/api/next/start/accounts/add", "/api/next/start/accounts/remove",
+                "/api/next/start/arm", "/api/next/start/go", "/api/next/start/resume", "/api/next/start/clock",
+                "/api/next/start/accounts/add", "/api/next/start/accounts/remove",
                 "/api/next/start/accounts/anchor", "/api/next/start/accounts/funded")
 CLOUD_BLOCKED = ("/api/live/arm", "/api/live/golive", "/api/launch/test_webhook", *START_WRITES)
 LOCAL_HOSTS = ("127.0.0.1", "::1", "localhost", "::ffff:127.0.0.1")

@@ -1,10 +1,19 @@
 // Start & Accounts (2026-10-26): START BOT (engine/go.py) as one checklist, one button per red line, and the account panel.
 // Reads GET /api/next/start/status; every button POSTs to /api/next/start/* (engine/start_api.py), which only answers a
 // browser on this PC (the phone sees the same page read-only). Arming needs the owner's typed I ACCEPT LIVE RISK.
+// One button (2026-10-26 PM, owner: "automatic through the dashboard ONLY"): "Start trading" runs every step in one job
+// (engine/go.step_auto: update, NinjaTrader, live bars, Sim test once, start); the phrase box shows only when arming is
+// needed (no valid auto-resume for the 50K). A stop the page can retry by itself is retried (retry_s) while it is open.
 import { $, esc, toast } from '../util.js';
 import { icon } from './icons.js';
 
-const P = { d: null, timer: null, open: null, busy: false, offline: 0 };
+const P = { d: null, timer: null, open: null, busy: false, offline: 0, retryAt: 0, tick: null, clockMsg: null };
+const SS = { get: (k) => { try { return sessionStorage.getItem('st.' + k); } catch { return null; } },
+  set: (k, v) => { try { if (v == null) sessionStorage.removeItem('st.' + k); else sessionStorage.setItem('st.' + k, String(v)); } catch { /* private mode */ } } };
+const MAX_TRIES = 30;
+const norm = (s) => String(s || '').trim().replace(/\s+/g, ' ').toUpperCase();   // capitals do not matter (engine/go.typed_phrase)
+const STAGES = [['update', 'Update'], ['accounts', 'Accounts'], ['setup', 'Setup'], ['nt', 'NinjaTrader'], ['feed', 'Live bars'],
+  ['sims', 'Sim test'], ['start', 'Start'], ['running', 'Running']];
 const ok = (v) => v != null && v !== '' && !Number.isNaN(+v);
 const usd = (v) => (!ok(v) ? '—' : (v < 0 ? '−' : '') + '$' + Math.abs(+v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 const active = () => document.getElementById('page-start')?.classList.contains('active');
@@ -49,11 +58,92 @@ function panel(kind, d) {
 
 function jobCard(j) {
   if (!j || !j.step) return '';
-  const name = j.step === 'arm' ? 'Arm and start' : 'Sim test';
-  const st = j.running ? chip('running', 'warn') : j.rc === 0 ? chip('done', 'good') : chip(j.state === 'done' ? 'stopped (see the lines)' : 'stopped', 'bad');
+  const name = j.step === 'arm' ? 'Arm and start' : j.step === 'auto' ? 'Start trading: the steps' : 'Sim test';
+  const st = j.running ? chip('running', 'warn') : j.rc === 0 ? chip('done', 'good') : chip(j.state === 'done' ? 'stopped (see the lines)' : 'stopped', j.retry_s || j.need ? 'warn' : 'bad');
   return `<div class="card nx-glass cc-card st-job"><div class="card-h"><h3>${esc(name)}</h3><div class="card-tools">${st}</div></div>
     ${j.running ? `<p class="muted">${j.step === 'sims' ? 'The dashboard restarts during the test (about 2 minutes): this page reconnects by itself.' : 'The bot server may restart once: this page reconnects by itself.'}</p>` : ''}
-    <pre class="st-log">${esc((j.lines || []).join('\n'))}</pre></div>`;
+    ${(j.lines || []).length ? `<pre class="st-log">${esc(j.lines.join('\n'))}</pre>` : ''}</div>`;
+}
+
+// ------------------------------------------------------------------ the one button: Start trading
+function stageOf(j) {
+  const s = j?.step === 'auto' ? (j.stage === 'arm' ? 'start' : j.stage) : null;
+  const i = STAGES.findIndex(([k]) => k === s);
+  return i < 0 ? null : i;
+}
+
+function goCard(d) {
+  const j = d.job || {};
+  const auto = j.step === 'auto';
+  const runOk = d.running && d.steps.find((s) => s.key === 'running')?.done;
+  const i = auto ? stageOf(j) : null;
+  const failed = auto && !j.running && j.rc != null && j.rc !== 0;
+  const pills = STAGES.map(([k, label], n) => {
+    const st = runOk ? 'done' : i == null ? '' : n < i ? 'done' : n === i ? (j.running ? 'now' : failed ? 'bad' : 'done') : '';
+    return `<span class="st-pill ${st}">${st === 'done' ? icon('check') : st === 'now' ? '<i class="st-spin"></i>' : ''}${esc(label)}</span>`;
+  }).join('');
+  const wait = P.retryAt ? Math.max(0, Math.round((P.retryAt - Date.now()) / 1000)) : 0;
+  let say = runOk ? 'Running. Leave the PC on, plugged in, NinjaTrader open. First trades from 02:00 ET.'
+    : auto && j.say ? j.say : d.running ? 'The bot runs with the wrong set-up: see the list below.'
+      : 'Press Start trading: the page does every step by itself.';
+  const tone = runOk ? 'good' : failed ? (j.need || j.retry_s ? 'warn' : 'bad') : j.running ? 'now' : '';
+  const needPhrase = !d.running && d.need_phrase;
+  const lock = !d.local ? 'Only on the PC itself (http://localhost:8766)' : j.running ? 'Working…' : '';
+  const label = needPhrase ? 'Arm and start trading' : 'Start trading';
+  const btn = runOk || d.running ? '' : `<button type="button" class="btn primary st-go" data-do="go" id="stGo" ${lock || (needPhrase && !P.phraseOk) ? 'disabled' : ''}
+      ${lock ? `title="${esc(lock)}"` : ''}>${icon('play')}<span>${j.running && auto ? 'Working…' : label}</span></button>`;
+  const phrase = needPhrase && d.local && !j.running ? `<div class="st-gophrase"><p><b>Real money, once.</b> Zlarior → 50K ${esc(d.lit || '?')} · ATLAS → 25K ${esc(d.atlas || '?')}.
+      Typing it also lets the bot come back by itself after a restart (the kill switch turns that off).</p>
+      <label class="st-phrase">Type <b>${esc(d.phrase)}</b><input id="stGoPhrase" autocomplete="off" spellcheck="false" placeholder="${esc(d.phrase)}"></label></div>` : '';
+  const retry = P.retryAt && SS.get('auto') ? `<span class="st-retry" id="stRetry">Trying again in ${wait} s</span>
+      <button type="button" class="btn ghost sm" data-do="autooff">Stop trying</button>` : '';
+  return `<div class="card nx-glass cc-card st-gocard ${tone}"><div class="st-pills">${pills}</div>
+    <p class="st-gosay">${esc(say)}</p>${phrase}
+    <div class="st-acts">${btn}${retry}${!d.local ? `<span class="muted">${esc(lock)}</span>` : ''}</div></div>`;
+}
+
+function clockRow(d) {
+  const c = d.clock || {};
+  const bad = c.known && !c.ok;
+  const off = c.known && Math.abs(c.drift_s || 0) >= 1;
+  const btn = d.local && (off || P.clockMsg) ? `<button type="button" class="btn ${bad ? 'primary' : 'ghost'} sm" data-do="clock">Sync the clock</button>` : '';
+  return `<div class="st-row ${bad ? 'red' : 'done'}" data-key="clock">${dot(!bad)}<div class="st-txt"><b>PC clock</b><span>${esc(c.say || 'checking')}</span>
+    ${P.clockMsg ? `<em>${esc(P.clockMsg)}</em>` : ''}</div><div class="st-btn">${btn || (c.known && !off ? `<span class="st-ok">${icon('check')}</span>` : '')}</div></div>`;
+}
+
+// the page retries a stopped "Start trading" by itself (retry_s) while it is open and the owner pressed the button
+function autoTick() {
+  const d = P.d;
+  const j = d?.job || {};
+  if (!d || !SS.get('auto')) { P.retryAt = 0; return; }
+  if (d.running || (j.step === 'auto' && !j.running && j.rc === 0) || j.need === 'names' || j.need === 'phrase' || j.need === 'stop') {
+    SS.set('auto', null); SS.set('tries', null); P.retryAt = 0; return;
+  }
+  if (j.running || !(j.step === 'auto' && j.rc) || !j.retry_s) { P.retryAt = 0; return; }
+  const tries = +(SS.get('tries') || 0);
+  if (tries >= MAX_TRIES) { SS.set('auto', null); P.retryAt = 0; return; }
+  const at = (j.t1 || Date.now() / 1000) * 1000 + j.retry_s * 1000;
+  P.retryAt = Math.max(at, Date.now() + 2000);
+}
+
+async function startGo() {
+  const v = $('#stGoPhrase')?.value || '';
+  SS.set('auto', 1);
+  SS.set('tries', +(SS.get('tries') || 0) + 1);
+  P.retryAt = 0;
+  return post('go', norm(v) === norm(P.d?.phrase) && v ? { confirm: v } : {});
+}
+
+// the running bot's last poll, stage by stage (engine/poll_timing.py): where the time goes
+function pollCard(ps) {
+  if (!ps || !ps.stages?.length) return '';
+  const s1 = (ms) => (ms / 1000).toFixed(ms >= 10000 ? 0 : 1) + ' s';
+  const top = ps.stages.filter((s) => !s.name.includes(' > ')).sort((a, b) => b.ms - a.ms).slice(0, 8);
+  const max = Math.max(1, ...top.map((s) => s.ms));
+  const slow = ps.total_ms > 5000;
+  return `<div class="card nx-glass cc-card st-poll"><div class="card-h"><h3>Bot loop</h3><div class="card-tools">${chip(s1(ps.total_ms) + ' a poll', slow ? 'warn' : 'good')}</div></div>
+    <p class="muted">CPU ${s1(ps.cpu_ms || 0)} · waiting ${s1(ps.wait_ms || 0)}${(ps.threads || []).length ? ` · busy meanwhile: ${esc(ps.threads[0].name)} ${s1(ps.threads[0].cpu_ms)}` : ''}</p>
+    ${top.map((s) => `<div class="st-prow"><span>${esc(s.name)}</span><i style="width:${Math.max(2, Math.round(100 * s.ms / max))}%"></i><b>${s1(s.ms)}</b></div>`).join('')}</div>`;
 }
 
 // ------------------------------------------------------------------ the accounts
@@ -99,18 +189,21 @@ function draw() {
   const el = $('#page-start');
   const d = P.d;
   if (!el || !d) return;
-  const keep = { lit: $('#stLit')?.value, atlas: $('#stAtlas')?.value, phrase: $('#stPhrase')?.value, aname: $('#stAName')?.value };
+  const keep = { lit: $('#stLit')?.value, atlas: $('#stAtlas')?.value, phrase: $('#stPhrase')?.value, aname: $('#stAName')?.value,
+    go: $('#stGoPhrase')?.value };
   const n = d.steps.filter((s) => s.done).length;
   const rows = d.accounts?.rows || [];
   el.innerHTML = `<div class="nx-hero cc-hero st-hero"><div><div class="nx-eyebrow">Start &amp; Accounts</div>
       <h2 class="st-say">${esc(d.say)}</h2>
-      <p class="muted">${d.all_green ? 'Everything is done. Leave the PC on, plugged in, NinjaTrader open.' : `${n} of ${d.steps.length} done. Do the red lines from the top.`}</p></div>
+      <p class="muted">${d.all_green ? 'Everything is done. Leave the PC on, plugged in, NinjaTrader open.' : `${n} of ${d.steps.length} done. Start trading does the rest by itself.`}</p></div>
       <div class="st-side">${d.local ? '' : `<div class="st-ro">${icon('phone')}<span>Read-only here: start and change accounts on the PC itself (http://localhost:8766).</span></div>`}
       ${P.offline ? `<div class="st-ro warn">${icon('refresh')}<span>Reconnecting to the bot server…</span></div>` : ''}</div></div>
+    ${goCard(d)}
     ${picks(d)}
-    <div class="st-cols"><div class="card nx-glass cc-card st-list"><div class="card-h"><h3>Start</h3><div class="card-tools">${chip(`${n}/${d.steps.length}`, d.all_green ? 'good' : '')}</div></div>
-      ${d.steps.map((s, i) => stepRow(s, d, i === d.steps.findIndex((x) => x.action === P.open && !x.done))).join('')}</div>
-      ${jobCard(d.job)}</div>
+    <div class="st-cols"><div class="card nx-glass cc-card st-list"><div class="card-h"><h3>Checklist</h3><div class="card-tools">${chip(`${n}/${d.steps.length}`, d.all_green ? 'good' : '')}</div></div>
+      ${d.steps.map((s, i) => stepRow(s, d, i === d.steps.findIndex((x) => x.action === P.open && !x.done))).join('')}
+      ${clockRow(d)}</div>
+      ${jobCard(d.job) + pollCard(d.poll) ? `<div class="st-col2">${jobCard(d.job)}${pollCard(d.poll)}</div>` : ''}</div>
     <div class="card nx-glass cc-card st-accts"><div class="card-h"><h3>Accounts</h3><div class="card-tools">${d.running ? chip('bot running: stop it to add or remove', 'warn') : ''}</div></div>
       ${rows.length ? rows.map((r) => acctRow(r, d)).join('') : '<div class="pc-empty"><b>No accounts yet</b><span>Add the 50K for Zlarior and the 25K for ATLAS.</span></div>'}
       ${addForm(d)}</div>`;
@@ -118,9 +211,16 @@ function draw() {
   if (keep.atlas != null && $('#stAtlas')) $('#stAtlas').value = keep.atlas;
   if (keep.phrase && $('#stPhrase')) { $('#stPhrase').value = keep.phrase; armBtn(); }
   if (keep.aname && $('#stAName')) $('#stAName').value = keep.aname;
+  if (keep.go && $('#stGoPhrase')) { $('#stGoPhrase').value = keep.go; goBtn(); }
 }
 
 function armBtn() { const b = $('#stArmGo'); if (b) b.disabled = $('#stPhrase')?.value !== P.d?.phrase; }
+
+function goBtn() {
+  P.phraseOk = norm($('#stGoPhrase')?.value) === norm(P.d?.phrase);
+  const b = $('#stGo');
+  if (b && P.d?.local && !P.d?.job?.running) b.disabled = !!P.d?.need_phrase && !P.phraseOk;
+}
 
 async function load(fresh = false) {
   try {
@@ -132,14 +232,28 @@ async function load(fresh = false) {
     P.offline += 1;
     if (!P.d) { const el = $('#page-start'); if (el) el.innerHTML = `<div class="card nx-glass cc-card"><div class="pc-empty"><b>Bot server not reachable</b><span>${esc(e.message)}. It may be restarting: this page tries again.</span></div></div>`; }
   }
+  autoTick();
   if (!P.busy && !document.activeElement?.closest?.('#page-start input')) draw();
   schedule();
 }
 
 function schedule() {
   clearTimeout(P.timer);
-  if (!active()) return;
+  if (!active()) { clearInterval(P.tick); P.tick = null; return; }
   P.timer = setTimeout(load, P.offline || P.d?.job?.running ? 3000 : 10000);
+  if (!P.tick) {
+    P.tick = setInterval(() => {                     // the retry countdown, then the retry itself
+      if (!active()) { clearInterval(P.tick); P.tick = null; return; }
+      if (!P.retryAt) return;
+      const left = Math.round((P.retryAt - Date.now()) / 1000);
+      const el = $('#stRetry');
+      if (el) el.textContent = `Trying again in ${Math.max(0, left)} s`;
+      if (left <= 0 && !P.busy && SS.get('auto') && P.d?.local && !P.d?.job?.running) {
+        P.retryAt = 0;
+        act(startGo, 'Trying again');
+      }
+    }, 1000);
+  }
 }
 
 async function act(fn, done) {
@@ -151,7 +265,7 @@ async function act(fn, done) {
 }
 
 function wire(el) {
-  el.addEventListener('input', (e) => { if (e.target.id === 'stPhrase') armBtn(); });
+  el.addEventListener('input', (e) => { if (e.target.id === 'stPhrase') armBtn(); if (e.target.id === 'stGoPhrase') goBtn(); });
   el.addEventListener('click', (e) => {
     const seg = e.target.closest('.st-seg button');
     if (seg) { seg.parentElement.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === seg)); return; }
@@ -172,6 +286,14 @@ function wire(el) {
     if (d && !d.disabled) {
       const k = d.dataset.do;
       if (k === 'close') { P.open = null; draw(); return; }
+      if (k === 'go') { SS.set('tries', null); return act(startGo, 'Starting: the page does every step by itself'); }
+      if (k === 'autooff') { SS.set('auto', null); P.retryAt = 0; draw(); return; }
+      if (k === 'clock') {
+        return act(async () => {
+          try { const r = await post('clock'); P.clockMsg = null; return r; }
+          catch (err) { P.clockMsg = err.message; throw err; }
+        }, 'Clock synced');
+      }
       if (k === 'names') return act(() => post('names', { lit: $('#stLit').value, atlas: $('#stAtlas').value }));
       if (k === 'arm') return act(() => post('arm', { confirm: $('#stPhrase').value }), 'Arming and starting: watch the lines');
       if (k === 'anchor') return act(() => post('accounts/anchor', { name: d.dataset.name, balance: $('#stBal').value, floor: $('#stFloor').value, as_of: $('#stAsOf').value }));

@@ -1,6 +1,9 @@
 """Account B (owner 2026-10-22): the second strategies on their OWN prop account, next to LIT's eval. OFF by default.
 
-second_model.json top level "account_b": null (default = off, the bot is exactly today's) or
+Where the block lives (2026-10-26): data/account_b.json on the PC (local, gitignored: {"account_b": {...} | null}); the
+tracked second_model.json ships "account_b": null and is never written for it (a dirty tracked file blocked every update).
+raw_cfg() reads the local file first, else second_model.json's block; migrate_local() moves an older version's block.
+The block: "account_b": null (default = off, the bot is exactly today's) or
   {"account": "<NinjaTrader account Name>", "plan": "builder25k" | "builder50k", "eval_start": "yyyy-mm-dd",
    "strategies": ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"], "sizing": "need" | "safe"}
   optional (ATLAS v2, research/writeups/atlas-v2.md, BUILT BUT OFF: absent = exactly today's behaviour):
@@ -46,6 +49,7 @@ import datetime as _dt
 import json
 import os
 import threading
+import time as _time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLANS = {
@@ -85,16 +89,70 @@ def _tick(px, d=1, target=False):
 
 
 # ---------------------------------------------------------------------------------------------------------------- config
-def raw_cfg(path: str | None = None):
-    """second_model.json "account_b" (None = off). Never raises."""
+# Where the block lives (owner 2026-10-25, "unblock updates"): the PC's own account B is LOCAL, data/account_b.json next to
+# second_model.json (gitignored) = {"account_b": {...} | null}. The tracked second_model.json keeps shipping
+# "account_b": null, so a block written on the PC (launch prep, arming the 25K) never makes the tracked file dirty again:
+# a dirty second_model.json blocked every auto-update and the phone's "update" (heartbeat 2026-10-25). Read order: the
+# local file when it is there (also when it says null = off), else second_model.json's "account_b" (the cloud, tests,
+# a PC that never wrote one). migrate_local() moves a block an older version wrote into the tracked file.
+LOCAL_REL = os.path.join("data", "account_b.json")
+
+
+def cfg_path(path: str | None = None) -> str:
     from . import second
+    return path or second.CFG_PATH
+
+
+def local_path(path: str | None = None) -> str:
+    """The local file for this second_model.json: <its folder>/data/account_b.json (repo root -> data/account_b.json; a
+    test's temp copy -> <temp>/data/account_b.json, never the real one)."""
+    return os.path.join(os.path.dirname(os.path.abspath(cfg_path(path))), LOCAL_REL)
+
+
+def read_local(path: str | None = None) -> tuple:
+    """(found, block): found False when the local file is missing or unreadable (then second_model.json's block counts)."""
     try:
-        with open(path or second.CFG_PATH, encoding="utf-8") as fh:
+        with open(local_path(path), encoding="utf-8") as fh:
+            c = json.load(fh)
+        if not isinstance(c, dict) or "account_b" not in c:
+            return False, None
+        ab = c.get("account_b")
+        return True, (ab if isinstance(ab, dict) and ab else None)
+    except Exception:
+        return False, None
+
+
+def write_local(block, path: str | None = None, why: str = "") -> str:
+    """data/account_b.json = {"account_b": block} (atomic). Returns the file path."""
+    p = local_path(path)
+    os.makedirs(os.path.dirname(p), exist_ok=True)
+    rec = {"account_b": block if isinstance(block, dict) and block else None, "saved_at": int(_time.time()),
+           "note": "ATLAS's account on this PC (engine/account_b.py). Local, gitignored: second_model.json ships account_b null."
+           + (f" {why}" if why else "")}
+    tmp = p + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(rec, fh, indent=1, ensure_ascii=False)
+    os.replace(tmp, p)
+    return p
+
+
+def tracked_cfg(path: str | None = None):
+    """second_model.json's own "account_b" (None = off / unreadable)."""
+    try:
+        with open(cfg_path(path), encoding="utf-8") as fh:
             c = json.load(fh)
         ab = c.get("account_b") if isinstance(c, dict) else None
-        return ab if isinstance(ab, dict) else None
+        return ab if isinstance(ab, dict) and ab else None
     except Exception:
         return None
+
+
+def raw_cfg(path: str | None = None):
+    """The account_b block (None = off): data/account_b.json when it is there, else second_model.json's. Never raises."""
+    found, ab = read_local(path)
+    if found:
+        return ab
+    return tracked_cfg(path)
 
 
 def normalize(ab: dict | None, scfg: dict | None = None, lit_account: str | None = None) -> dict | None:
@@ -1116,16 +1174,15 @@ def build(bot, ab: dict | None, **kw):
 # ---------------------------------------------------------------------------------------------------------------- switch
 def set_account_b(account: str | None, plan: str = "builder25k", start: str | None = None, sizing: str = "need",
                   strategies=None, path: str | None = None, selftest=None, extra: dict | None = None) -> dict:
-    """second_model.json "account_b" = {...} (account set) or null (account None / "off"): the one "account_b" line of
-    the file. Switching on is refused when engine.ninjatrader --selftest fails or the block is invalid; the strategies on
-    B get "route": false (engine.second.set_route: never also on LIT's account). The rest of the file is untouched."""
-    import re
+    """The account_b block = {...} (account set) or null (account None / "off"), written to the LOCAL file
+    data/account_b.json only (second_model.json is never edited for it: a dirty tracked file blocks every update).
+    Switching on is refused when engine.ninjatrader --selftest fails or the block is invalid; the strategies on B get
+    "route": false (engine.second.set_route: never also on LIT's account; second_model.json ships them all false)."""
     from . import second
     path = path or second.CFG_PATH
     with open(path, encoding="utf-8") as fh:
-        raw = fh.read()
-    c = json.loads(raw)
-    old = c.get("account_b")
+        c = json.loads(fh.read())
+    old = raw_cfg(path)
     if account is None or str(account).strip().lower() in ("off", "none", ""):
         new = None
     else:
@@ -1138,23 +1195,13 @@ def set_account_b(account: str | None, plan: str = "builder25k", start: str | No
         ok, line = (selftest or second._selftest_ok)()
         if not ok:
             return {"ok": False, "error": f"engine.ninjatrader --selftest failed ({line}): account B NOT switched on"}
-    val = json.dumps(new, ensure_ascii=False)
-    rx = re.compile(r'^ "account_b"\s*:.*?,\n(?= "strategies")', re.M | re.S)
-    if rx.search(raw):
-        out = rx.sub(lambda m: f' "account_b": {val},\n', raw, count=1)
-    else:
-        out = re.sub(r'^ "strategies"\s*:', lambda m: f' "account_b": {val},\n "strategies":', raw, count=1, flags=re.M)
-    chk = json.loads(out)
-    if chk.get("account_b") != new or json.dumps(chk["strategies"], sort_keys=True) != json.dumps(c["strategies"], sort_keys=True):
-        return {"ok": False, "error": "second_model.json edit check failed: nothing written"}
-    tmp = path + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as fh:
-        fh.write(out)
-    os.replace(tmp, path)
+    write_local(new, path)
+    if raw_cfg(path) != new:
+        return {"ok": False, "error": f"{LOCAL_REL} write check failed: account B not changed"}
     routed_off = []
     if new:
         for k in new["strategies"]:
-            sc = chk["strategies"].get(k)
+            sc = (c.get("strategies") or {}).get(k)
             if isinstance(sc, dict) and sc.get("route"):
                 r = second.set_route(k, False, path=path)
                 if r.get("ok"):
@@ -1164,3 +1211,117 @@ def set_account_b(account: str | None, plan: str = "builder25k", start: str | No
         from .ninjatrader import is_sim
         sim = is_sim(new["account"])
     return {"ok": True, "from": old, "to": new, "routed_off": routed_off, "sim": sim}
+
+
+# ---------------------------------------------------------------------------------------------------------------- migration
+def _set_tracked_block(path: str, block) -> bool:
+    """second_model.json's one "account_b" line = block (the rest of the file untouched). True when written and checked."""
+    import re
+    with open(path, encoding="utf-8", newline="") as fh:
+        raw = fh.read()
+    c = json.loads(raw)
+    val = json.dumps(block, ensure_ascii=False)
+    rx = re.compile(r'^ "account_b"\s*:.*?,(\r?\n)(?= "strategies")', re.M | re.S)
+    if not rx.search(raw):
+        return False
+    out = rx.sub(lambda m: f' "account_b": {val},{m.group(1)}', raw, count=1)
+    chk = json.loads(out)
+    if chk.get("account_b") != block or json.dumps(chk.get("strategies"), sort_keys=True) != json.dumps(c.get("strategies"), sort_keys=True):
+        return False
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="") as fh:
+        fh.write(out)
+    os.replace(tmp, path)
+    return True
+
+
+def _git_in(root: str):
+    from . import generated_files
+    return lambda *a: generated_files._git(*a, cwd=root, timeout=60)
+
+
+def migrate_local(root: str | None = None, git=None, log=None) -> dict:
+    """Move an account_b block an older version wrote INTO the tracked second_model.json to data/account_b.json, then put
+    the tracked file back to HEAD, so `git pull --ff-only` and the auto-update's dirty check pass again. Run by server.py
+    at start, START BOT / the Start page, the auto-update and the phone's "update" before their dirty check, and
+    UPDATE.bat (engine/autoupdate --pull). The block is never lost: the local file is written and read back before the
+    tracked file is touched; a local file that is already there wins (it is what the bot reads). Other hand edits of
+    second_model.json are kept (only its account_b goes back to HEAD's value).
+    git(*args) -> (code, output) runs in `root` (tests pass a fake). Returns {"status": clean | migrated | no_git | error,
+    "say": one plain line, ...}. Never raises."""
+    log = log or (lambda t: None)
+    root = root or os.path.dirname(os.path.abspath(cfg_path()))
+    tracked = os.path.join(root, "second_model.json")
+    try:
+        git = git or _git_in(root)
+        with open(tracked, encoding="utf-8") as fh:
+            c = json.loads(fh.read())
+        if not isinstance(c, dict):
+            raise ValueError("not an object")
+    except Exception as e:
+        return {"status": "error", "say": f"second_model.json not read ({e.__class__.__name__}): nothing changed"}
+    try:
+        tb = c.get("account_b") if isinstance(c.get("account_b"), dict) and c.get("account_b") else None
+        code, head = git("show", "HEAD:second_model.json")
+        try:
+            hc = json.loads(head) if code == 0 else None
+        except Exception:
+            hc = None
+        if not isinstance(hc, dict):
+            # no git here (or no HEAD copy): only make sure the block is in the local file (every read is the same either way)
+            if tb is not None and not read_local(tracked)[0]:
+                write_local(tb, tracked, why="Copied from second_model.json (git not available: that file is left as it is).")
+                return {"status": "no_git", "copied": True, "block": tb,
+                        "say": "ATLAS's account copied to data/account_b.json (git not found: second_model.json left as it is)"}
+            return {"status": "no_git", "copied": False, "say": "git not available: nothing to do"}
+        hb = hc.get("account_b") if isinstance(hc.get("account_b"), dict) and hc.get("account_b") else None
+        if tb == hb:
+            return {"status": "clean", "say": "second_model.json holds no local ATLAS block"}
+        found, _lb = read_local(tracked)
+        if not found:
+            write_local(tb, tracked, why="Moved from second_model.json by engine/account_b.migrate_local.")
+            f2, lb2 = read_local(tracked)
+            if not f2 or lb2 != tb:
+                return {"status": "error", "say": "data/account_b.json could not be written: second_model.json left as it is"}
+            kept = "moved"
+        else:
+            kept = "local file kept"                 # the bot already reads the local file: the tracked copy is stale
+        rest = {k: v for k, v in c.items() if k != "account_b"}
+        hrest = {k: v for k, v in hc.items() if k != "account_b"}
+        if rest == hrest:
+            code, out = git("checkout", "HEAD", "--", "second_model.json")
+            how = "back to HEAD"
+            if code != 0:
+                return {"status": "error", "kept": kept, "say": f"second_model.json not restored (git: {str(out).strip()[-120:]})"}
+        else:
+            if not _set_tracked_block(tracked, hb):
+                return {"status": "error", "kept": kept, "say": "second_model.json's account_b line not restored (other local edits)"}
+            how = "account_b back to HEAD's value (other local edits kept)"
+        if tracked_cfg(tracked) != hb:
+            return {"status": "error", "kept": kept, "say": "second_model.json still holds a local ATLAS block"}
+        blk = raw_cfg(tracked)
+        say = (f"ATLAS's account moved to data/account_b.json ({(blk or {}).get('account') or 'off'}"
+               f"{', armed' if (blk or {}).get('armed') is True else ''}); second_model.json {how}")
+        log(say)
+        return {"status": "migrated", "kept": kept, "restored": how, "block": blk, "say": say}
+    except Exception as e:
+        return {"status": "error", "say": f"account B migration failed ({e.__class__.__name__}: {e})"[:200]}
+
+
+def main(argv=None) -> int:
+    import argparse
+    ap = argparse.ArgumentParser(prog="python -m engine.account_b", description="ATLAS's account (account B) on this PC")
+    ap.add_argument("--migrate", action="store_true", help="move a local account_b block out of second_model.json "
+                                                            "into data/account_b.json")
+    a = ap.parse_args(argv)
+    if a.migrate:
+        r = migrate_local()
+        print(f"  [{'OK' if r['status'] in ('clean', 'migrated', 'no_git') else '..'}]  {r['say']}")
+        return 0
+    found, _ = read_local()
+    print(json.dumps({"source": LOCAL_REL if found else "second_model.json", "account_b": raw_cfg()}, indent=1))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

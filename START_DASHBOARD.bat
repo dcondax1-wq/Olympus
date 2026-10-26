@@ -1,11 +1,12 @@
 @echo off
-rem Liquidity Engine: open the dashboard (double-click). Starts the bot server first when it is not running.
-rem Starting the server never arms a real account.
+rem Liquidity Engine: the "LE START" icon (double-click) and the Windows Startup folder at logon. Starts the bot server
+rem first when it is not running, then opens the dashboard's Start page (one "Start trading" button does every step).
+rem Starting the server never arms a real account. At logon the server may take a few minutes: it waits up to 5.
 setlocal EnableExtensions
 cd /d "%~dp0"
 set "LEPORT=8766"
 if defined PORT set "LEPORT=%PORT%"
-set "URL=http://localhost:%LEPORT%"
+set "URL=http://localhost:%LEPORT%/?page=start"
 
 curl -s -f -m 3 -o nul "http://127.0.0.1:%LEPORT%/api/health/ping"
 if not errorlevel 1 goto :open
@@ -18,8 +19,8 @@ timeout /t 2 /nobreak >nul
 curl -s -f -m 2 -o nul "http://127.0.0.1:%LEPORT%/api/health/ping"
 if not errorlevel 1 goto :open
 set /a N+=1
-if %N% lss 60 goto :wait
-echo  [FIX] The server did not start in 2 minutes. Look at the "Liquidity Engine bot" window, or double-click HEALTH_CHECK.
+if %N% lss 150 goto :wait
+echo  [FIX] The server did not start in 5 minutes. Look at the "Liquidity Engine bot" window, or double-click HEALTH_CHECK.bat.
 pause
 exit /b 1
 

@@ -283,6 +283,10 @@ def same_instrument(file_inst, inst) -> bool:
     return ka is not None and ka == kb
 
 
+_CONN_SEEN: dict = {}       # outgoing file path -> ((mtime_ns, size), its text upper-cased): NinjaTraderAdapter.connections
+_CONN_LOCK = threading.Lock()
+
+
 def _read_text(path):
     for _ in range(3):
         try:
@@ -935,14 +939,44 @@ class NinjaTraderAdapter:
         return None
 
     def connections(self) -> dict:
+        """{connection name: CONNECTED | DISCONNECTED} from outgoing/<connection>.txt. NinjaTrader's outgoing folder also
+        holds one <order id>.txt per order it has seen, and every call used to open all of them (2026-10-26: 604 file
+        reads per poll with 300 orders, times two adapters; on the owner's OneDrive-synced Documents every open goes
+        through the sync filter). A file is read again only when its size or modified time changed (_CONN_SEEN, shared
+        by every adapter of this process); the answer is the same."""
         out = {}
-        for n in self._listing():
+        try:
+            entries = list(os.scandir(self.outgoing))
+        except OSError:
+            entries = []
+        live = set()
+        for e in entries:
+            n = e.name
             if not n.lower().endswith(".txt") or "_position" in n.lower():
                 continue
-            raw = _read_text(os.path.join(self.outgoing, n))
-            v = (raw or "").strip().upper()
+            try:
+                st = e.stat()
+                key = (st.st_mtime_ns, st.st_size)
+            except OSError:
+                continue
+            live.add(e.path)
+            with _CONN_LOCK:
+                hit = _CONN_SEEN.get(e.path)
+            if hit is not None and hit[0] == key:
+                v = hit[1]
+            else:
+                raw = _read_text(e.path)
+                if raw is None:
+                    continue
+                v = raw.strip().upper()
+                with _CONN_LOCK:
+                    _CONN_SEEN[e.path] = (key, v)
             if v in ("CONNECTED", "DISCONNECTED"):
                 out[n[:-4]] = v
+        pre = os.path.join(self.outgoing, "")
+        with _CONN_LOCK:
+            for p in [p for p in _CONN_SEEN if p.startswith(pre) and p not in live]:
+                _CONN_SEEN.pop(p, None)             # a file NinjaTrader removed (its restart wipes outgoing\)
         return out
 
     def _flat_since(self, instrument, since):

@@ -10,10 +10,11 @@ no sleep, no update restarts, starts at logon, auto-update, the phone says "Surf
 
 | Icon | What it does |
 |---|---|
-| **LE DASHBOARD** | opens the dashboard; starts the bot server first if it is off |
-| **LE HEALTH CHECK** | one screen: green = fine, yellow = look at it, red = fix it (the fix is on the next line) |
-| **LE UPDATE** | gets the new version: stop, update, restart, self-test. Refuses during a trade |
+| **LE START** | opens the dashboard's Start page (starts the bot server first if it is off). Press **Start trading**: it updates, waits for NinjaTrader and the live bars, runs the Sim test once and starts both accounts. It also opens by itself when the PC starts |
 | **LE STOP BOT** | stops the bot and the dashboard (asks first) |
+
+The older icons (LE START BOT, LE UPDATE, LE DASHBOARD, LE HEALTH CHECK) are gone: the Start page does their work.
+`HEALTH_CHECK.bat` and `UPDATE.bat` are still in the bot folder.
 
 **On your phone, by itself** (Liquidity app, notifications on):
 
@@ -33,14 +34,14 @@ no sleep, no update restarts, starts at logon, auto-update, the phone says "Surf
 ## Night before (before 01:45 ET)
 - [ ] Surface **plugged in**, lid open or set to "do nothing", Wi-Fi on.
 - [ ] **NinjaTrader 8** open, connection green, the MNQ chart with **LE_BarFeed** open (30 days loaded).
-- [ ] Double-click **LE HEALTH CHECK**: no red lines.
+- [ ] Open **LE START**: no red lines on the Start page.
 - [ ] Dashboard shows the bot **running** on your **eval** account (not Sim101), unless you want Sim tonight.
 - [ ] At 01:40 the phone says **All green for tonight**. If it says **Fix ...**, do that one thing.
 - [ ] At the desk: tap **I'm here** (Bot page, or phone Remote page) so the presence log shows you watching (MFFU); **Pause until tomorrow** / **Resume entries** sit on the same pages, and the weekly **Hands-off score** shows each time you stepped in.
 
 ## Morning (any time)
 - [ ] Glance at the phone: entries / results overnight. Nothing to do unless a notice says so.
-- [ ] Red notice? Open **LE HEALTH CHECK** on the Surface (or `docs/TROUBLESHOOTING.md`).
+- [ ] Red notice? Open **LE START** on the Surface (or `HEALTH_CHECK.bat` in the bot folder) (or `docs/TROUBLESHOOTING.md`).
 - [ ] Never move or cancel the bot's orders in NinjaTrader by hand.
 
 ## After the close (after 16:00 ET)
@@ -51,8 +52,8 @@ no sleep, no update restarts, starts at logon, auto-update, the phone says "Surf
 ## Weekly (Sunday evening)
 - [ ] Read the **Week** report on the phone.
 - [ ] Windows Update: **Pause updates** (up to 5 weeks) if HEALTH CHECK shows it yellow; install them on a weekend, then
-      restart the PC and run **LE HEALTH CHECK**.
-- [ ] NinjaTrader: restart it once (it frees memory), reconnect, check the LE_BarFeed chart, then **LE HEALTH CHECK**.
+      restart the PC and open **LE START**.
+- [ ] NinjaTrader: restart it once (it frees memory), reconnect, check the LE_BarFeed chart, then **LE START**.
 - [ ] Before Sunday 18:00 ET the bot should be running again for Monday.
 
 ## Switch on scale-in (once, when you have 15 minutes with the market open)

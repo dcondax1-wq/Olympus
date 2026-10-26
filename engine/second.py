@@ -60,7 +60,8 @@ def plugin(kind):
 
 
 def load_cfg(path: str | None = None) -> dict:
-    """second_model.json; a missing / broken file = nothing on (never raises)."""
+    """second_model.json (its "account_b" = data/account_b.json when that local file is there: engine/account_b.raw_cfg);
+    a missing / broken file = nothing on (never raises)."""
     try:
         with open(path or CFG_PATH, encoding="utf-8") as fh:
             c = json.load(fh)
@@ -68,6 +69,13 @@ def load_cfg(path: str | None = None) -> dict:
             raise ValueError("not an object")
     except Exception as e:
         return {"paper": True, "strategies": {}, "error": f"{e.__class__.__name__}: {e}"}
+    try:                              # ATLAS's account on this PC lives in data/account_b.json (engine/account_b.raw_cfg)
+        from . import account_b as _ab
+        found, ab = _ab.read_local(path)
+        if found:
+            c["account_b"] = ab
+    except Exception:
+        pass
     c["paper"] = True                 # this module never routes, whatever the file says (engine/live.py routes "route" ones)
     c.setdefault("strategies", {})
     for sc in c["strategies"].values():
@@ -1834,7 +1842,8 @@ def set_route(key: str, on: bool, path: str | None = None, selftest=_selftest_ok
     if on and not sc.get("on", True):
         return {"ok": False, "error": f"{key} is switched off (\"on\": false): switch it on first"}
     old = bool(sc.get("route", False))
-    ab = c.get("account_b")
+    from . import account_b as _ab
+    ab = _ab.raw_cfg(path)            # the local data/account_b.json first, else this file's
     if on and isinstance(ab, dict) and key in (ab.get("strategies") or ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"]):
         return {"ok": False, "error": f"{key} trades on account B ({ab.get('account')}): it is never also routed on LIT's account "
                                       "(python -m engine.second --account-b off first)"}

@@ -116,9 +116,10 @@ def main() -> int:
         check("update: not on main -> skipped with an alert", r["status"] == "skipped" and r["alert"] and "not on branch main" in r["reason"])
         sh = FakeShell(); sh.dirty = " M engine/live.py\n"
         r = au.run_update(sh, "start", EVENING, None, state=ON, env={})
-        check("update: dirty tree -> skipped + alert, no fetch / merge / reset",
+        check("update: dirty tree (an edit that is not main's) -> skipped + alert, no merge / reset / checkout (a fetch is "
+              "read-only: it tells a hand edit from a file checked out from main)",
               r["status"] == "skipped" and r["alert"] and "engine/live.py" in r["reason"]
-              and not any(c[1] in ("fetch", "merge", "reset") for c in sh.calls if c[0] == "git"), sh.calls)
+              and not any(c[1] in ("merge", "reset", "checkout") for c in sh.calls if c[0] == "git"), sh.calls)
         sh = FakeShell(); sh.remote = sh.head
         r = au.run_update(sh, "start", EVENING, None, state=ON, env={})
         check("update: main unchanged -> up_to_date", r["status"] == "up_to_date" and not r["alert"])
@@ -323,7 +324,7 @@ def main() -> int:
         r = au.run_update(sh, "start", EVENING, None, state=ON, env={})
         check("update: a hand edit next to bot-made files still blocks (reason names only the hand edit)",
               r["status"] == "skipped" and "engine/live.py" in r["reason"] and "cache/dash" not in r["reason"]
-              and not any(c[1] in ("fetch", "merge", "checkout") for c in sh.calls if c[0] == "git"), r)
+              and not any(c[1] in ("merge", "reset", "checkout") for c in sh.calls if c[0] == "git"), r)
         from engine import generated_files as gf
         check("generated: list covers the Surface's files, never code or the model",
               all(gf.is_generated(p) for p in ("cache/dash/5y_NQ.json", "cache/dash/bt_NQ_default.json", "cache/dash/coverage.json",
@@ -336,8 +337,10 @@ def main() -> int:
         here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         upd = open(os.path.join(here, "UPDATE.bat"), encoding="utf-8").read()
         ots = open(os.path.join(here, "scripts", "one_time_setup.ps1"), encoding="utf-8").read()
-        check("scripts: UPDATE.bat and one_time_setup.ps1 reset bot-made files (--prepare-pull) right before git pull",
-              0 < upd.find("engine.generated_files --prepare-pull") < upd.find("git pull --ff-only origin main")
+        check("scripts: UPDATE.bat pulls with the auto-update's own fast-forward (engine.autoupdate --pull: bot-made files, "
+              "ATLAS's block, files checked out from main, shallow history); one_time_setup.ps1 resets bot-made files "
+              "(--prepare-pull) right before git pull",
+              0 < upd.find("-m engine.autoupdate --pull") < upd.find("pip install -r requirements.txt") and "git pull" not in upd
               and 0 < ots.find("--prepare-pull") < ots.find("& git pull --ff-only origin main")
               and ots.find("--discard-all") < ots.find("& git checkout main"))
 
@@ -396,6 +399,80 @@ def main() -> int:
         check("git: UPDATE.bat's --prepare-pull resets only what main changes, then the pull succeeds",
               hit == ["cache/dash/coverage.json"] and pr.returncode == 0 and get(w2, "cache/dash/coverage.json") == "upstream2\n"
               and get(w2, "cache/dash/5y_NQ.json") == "bot\n", (hit, pr.stderr))
+
+        # ------------------------------------------------------------------ the Surface 2026-10-25 (real git repos)
+        # The PC: HEAD at the old main, ATLAS's armed block written INTO the tracked second_model.json (old code), two files
+        # checked out from a newer main by hand (the clock fix; staged), and a shallow cut (a --depth 1 fetch of main), so
+        # `git pull` said "refusing to merge unrelated histories". Then main moves on and changes one of those files again.
+        from engine import account_b as AB
+        shipped = open(os.path.join(here, "second_model.json"), encoding="utf-8").read()
+        BLOCK = {"account": "MFFUEVBLD602936017", "plan": "builder25k", "eval_start": "2026-10-26",
+                 "strategies": ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"], "sizing": "need", "armed": True}
+        bare3, dev3 = os.path.join(tmp, "s.git"), os.path.join(tmp, "sdev")
+        subprocess.run(["git", "init", "-q", "--bare", "-b", "main", bare3], check=True)
+        subprocess.run(["git", "clone", "-q", "file://" + bare3, dev3], check=True, capture_output=True)
+        git(dev3, "config", "user.email", "t@t"); git(dev3, "config", "user.name", "t")
+        git(dev3, "checkout", "-q", "-b", "main")
+        put(dev3, "second_model.json", shipped)
+        for rel, v in (("engine/guards.py", "g1\n"), ("engine/live.py", "l1\n"), ("engine/other.py", "o1\n"), ("data/GEX_1d.csv", "x\n")):
+            put(dev3, rel, v)
+        git(dev3, "add", "."); git(dev3, "commit", "-qm", "base"); git(dev3, "push", "-q", "origin", "main")
+        s_base = git(dev3, "rev-parse", "HEAD")
+
+        def surface(name):
+            pc = os.path.join(tmp, name)
+            subprocess.run(["git", "clone", "-q", "-b", "main", "file://" + bare3, pc], check=True, capture_output=True)
+            git(pc, "config", "user.email", "t@t"); git(pc, "config", "user.name", "t")
+            git(pc, "reset", "-q", "--hard", s_base)
+            return pc
+        pcs = [surface(n) for n in ("pc1", "pc2", "pc3")]
+        put(dev3, "engine/guards.py", "g2\n"); put(dev3, "engine/live.py", "l2\n")
+        git(dev3, "commit", "-qam", "clock fix"); git(dev3, "push", "-q", "origin", "main")
+        s_fix = git(dev3, "rev-parse", "HEAD")
+        for pc in pcs:
+            git(pc, "fetch", "-q", "--depth", "1", "origin", "main")                       # the shallow cut
+            git(pc, "checkout", "origin/main", "--", "engine/guards.py", "engine/live.py")   # the hand patch (staged)
+            AB._set_tracked_block(os.path.join(pc, "second_model.json"), BLOCK)          # what the old set_account_b wrote
+        put(dev3, "engine/live.py", "l3\n"); put(dev3, "engine/other.py", "o2\n")
+        git(dev3, "commit", "-qam", "new work (touches live.py again)"); git(dev3, "push", "-q", "origin", "main")
+        s_new = git(dev3, "rev-parse", "HEAD")
+        pr = subprocess.run(["git", "pull", "--ff-only", "-q", "origin", "main"], cwd=pcs[0], capture_output=True, text=True)
+        mb = subprocess.run(["git", "merge-base", "--is-ancestor", s_base, s_new], cwd=pcs[0], capture_output=True)
+        check("surface: the old plain `git pull --ff-only` fails on this PC (shallow: the old HEAD is not seen in main's "
+              "history; and a hand-patched file main changed again)",
+              pr.returncode != 0 and git(pcs[0], "rev-parse", "HEAD") == s_base and mb.returncode != 0
+              and git(pcs[0], "rev-parse", "--is-shallow-repository") == "true", pr.stderr[-200:])
+        st0 = git(pcs[0], "status", "--porcelain", "--untracked-files=no")
+        r = au.run_update(au.Shell(pcs[0]), "manual", EVENING, None, state=ON, tests=ok_t, env={})
+        sp = os.path.join(pcs[0], "second_model.json")
+        check("surface: run_update deepens the history, moves ATLAS's block to data/account_b.json, resets the hand-patched "
+              "files and fast-forwards: HEAD = main, live.py = main's newest, clean tree",
+              r["status"] == "updated" and git(pcs[0], "rev-parse", "HEAD") == s_new and get(pcs[0], "engine/live.py") == "l3\n"
+              and get(pcs[0], "engine/guards.py") == "g2\n" and get(pcs[0], "engine/other.py") == "o2\n"
+              and not git(pcs[0], "status", "--porcelain", "--untracked-files=no"), (r, st0))
+        check("surface: ATLAS keeps the same account, plan, strategies and armed state (read from data/account_b.json; "
+              "second_model.json byte for byte as shipped)",
+              AB.raw_cfg(sp) == BLOCK and AB.read_local(sp) == (True, BLOCK) and get(pcs[0], "second_model.json") == shipped
+              and AB.normalize(AB.raw_cfg(sp))["armed"] is True, AB.raw_cfg(sp))
+        r = au.run_update(au.Shell(pcs[1]), "manual", EVENING, None, state=ON, tests=bad_t, env={})
+        check("surface: a failing self-test rolls back to the old sha AND puts the hand-patched files back (the PC is as before); "
+              "ATLAS's block stays in data/account_b.json",
+              r["status"] == "rolled_back" and git(pcs[1], "rev-parse", "HEAD") == s_base
+              and get(pcs[1], "engine/guards.py") == "g2\n" and get(pcs[1], "engine/live.py") == "l2\n"
+              and AB.raw_cfg(os.path.join(pcs[1], "second_model.json")) == BLOCK
+              and get(pcs[1], "second_model.json") == shipped, (r, git(pcs[1], "status", "--porcelain")))
+        put(pcs[2], "engine/other.py", "my own edit\n")
+        r = au.run_update(au.Shell(pcs[2]), "manual", EVENING, None, state=ON, tests=ok_t, env={})
+        check("surface: an edit that is not main's still blocks (edit kept, HEAD kept, nothing reset)",
+              r["status"] == "skipped" and "engine/other.py" in r["reason"] and get(pcs[2], "engine/other.py") == "my own edit\n"
+              and git(pcs[2], "rev-parse", "HEAD") == s_base and get(pcs[2], "engine/live.py") == "l2\n", r)
+        git(pcs[2], "checkout", "-q", "HEAD", "--", "engine/other.py")
+        r = au.pull(au.Shell(pcs[2]), pip=False)
+        check("surface: `python -m engine.autoupdate --pull` (UPDATE.bat, START BOT, the Start page) does the same move",
+              r["status"] == "updated" and git(pcs[2], "rev-parse", "HEAD") == s_new and get(pcs[2], "engine/live.py") == "l3\n"
+              and AB.raw_cfg(os.path.join(pcs[2], "second_model.json")) == BLOCK and "Updated" in r["say"], r)
+        r = au.pull(au.Shell(pcs[2]), pip=False)
+        check("surface: run again -> already the newest version", r["status"] == "up_to_date", r)
 
         # ------------------------------------------------------------------ auto-resume: opt-in record
         op = os.path.join(tmp, "auto_resume.json")

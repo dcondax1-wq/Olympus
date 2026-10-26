@@ -315,12 +315,18 @@ part yourself or fold it into a script.**
   (`engine/multi_account.py`, off by default, `data/accounts.json`).
 
 ## Key commands (run from the repo root)
-- **START BOT (owner's one start, 2026-10-26):** `START_BOT.bat` / desktop **LE START BOT** -> `engine/go.py`: git pull
-  main (bot stopped), names asked once (`data/start_bot.json`, gitignored), `launch_prep` once, both Sim101 roundtrips until
-  passed once (market open only), owner types the LIVE phrase -> `arm_b` (second_model.json account_b `"armed": true`,
-  other fields kept), the live line in `.env.local.ps1`, server (re)started when that file is newer than the supervisor,
-  `ninjatrader --start` on the 50K, launch checklist, dashboard. Wrong phrase = nothing armed. Tests `tests.test_go` 59/59.
-  Same steps on the dashboard Start page (Infrastructure, "Start & Accounts page").
+- **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
+  Start page's **Start trading**, `go.step_auto`; Infrastructure, "Start & Accounts page"). `START_BOT.bat` -> `engine/go.py`
+  stays for the console: the update (`autoupdate.pull`, bot stopped), names asked once (`data/start_bot.json`,
+  gitignored), `launch_prep` once, both Sim101 roundtrips until passed once (market open only), owner types the LIVE
+  phrase -> `arm_b` (`data/account_b.json` `"armed": true`, other fields kept), the live line in `.env.local.ps1`, server
+  (re)started when that file is newer than the supervisor or the server runs older code (`go.server_stale`),
+  `ninjatrader --start` on the 50K, launch checklist, dashboard. Wrong phrase = nothing armed. Tests `tests.test_go`.
+- `python -X utf8 -m engine.autoupdate --pull`: the update now with the bot stopped (UPDATE.bat, START BOT); the same
+  fast-forward as the auto-update. `python -X utf8 -m engine.account_b --migrate`: move ATLAS's block out of
+  second_model.json by hand (the server does it at start).
+- `python -X utf8 -m tests.test_poll_timing [--full]`: the poll stage timer and the outgoing-folder cache (`--full` replays
+  test_lit_live's LiveBot with and without the timer, ~15 min).
 - `python tools/export_backtest.py`: the live-settings 5-year replay → `research/lab/backtest_live.json`. Contains periods, months,
   stop buckets, eval odds, **per-trade reports** (why it entered / plan / result / lessons) and **lessons** (wins vs losses).
   About 1 min on 11 processes.
@@ -388,6 +394,31 @@ part yourself or fold it into a script.**
   tests.test_start_api` (88 checks, temp files only; phone / Tailscale / tunnel / rebind / origin / cloud refused) +
   `tests.test_go`. Shots `research/handoff/2026-10-26/ui_start/`. Untested on the real PC: the detached job window
   (`cmd /c start`), the server restart during the job, opening NinjaTrader from the page.
+  **One button "Start trading" (2026-10-26 PM, owner: "automatic through the dashboard ONLY"):** `POST /api/next/start/go`
+  -> job `python -m engine.go --step auto` (`go.step_auto`): update if behind (`go.update` = `autoupdate.pull`; then the
+  server restarts and the job re-runs itself `--after-update`), the ATLAS block migration, names (the only owner input,
+  once), setup, NinjaTrader opened + its log-in waited for (re-checked every 10 s), live bars waited for (every 15 s, the
+  exact chart click shown), the Sim test once (market open), then the start. **No phrase** when `go.resume_problem` is None
+  (the auto-resume opt-in is valid for exactly the 50K, the live switch on, the 25K armed): the job asks the server
+  (`POST /api/next/start/resume` -> `go.resume_now`), which starts through the auto-resume gate (`autoresume.decide`:
+  NINJATRADER_LIVE=1 in the server, no kill / daily loss today, NinjaTrader CONNECTED) with Bot Control's start (autostart
+  record saved) and checks the routes (stops the bot when wrong). Otherwise status `need_phrase` shows the phrase box
+  (any capitals) and the job runs `step_arm`. Every stop is one plain sentence in the job file (`stage`, `say`, `need`
+  names / phrase / market / stop, `retry_s`); the page retries a `retry_s` stop by itself while open (30 tries max, never for
+  names / phrase). PC clock row (`status.clock`, `guards.clock_probe` in a thread, every 10 min) + "Sync the clock"
+  (`POST /api/next/start/clock` -> `go.sync_clock`: `w32tm /resync`; refused -> the Windows Settings steps; then the bot's
+  clock guard probes again). The dashboard opens on Start when the bot is not running (`app.js`, `/api/health/ping`
+  bot_running). Tests `tests.test_start_api` (117); shots `python -X utf8 -m tests.shots_start --pc <url>` ->
+  `research/handoff/2026-10-26/ui_start_auto/` (sw `le-shell-next-v21`).
+  **At PC boot (2026-10-26):** Startup folder (`go.startup_shortcuts`): NinjaTrader + "LE bot server" -> START_DASHBOARD.bat
+  (starts run_bot.ps1 when the server is down, waits up to 5 min, opens `/?page=start`); the server's autostart resumes the
+  bot through the opt-in (`autoresume.resume_live`, waits 30 min for NinjaTrader CONNECTED; after that "Start trading"
+  resumes it without the phrase). NinjaTrader connects by itself only with Connections > Configure > "Connect on startup".
+  Desktop: two icons, **LE START** (START_DASHBOARD.bat = the Start page) and **LE STOP BOT**; make_shortcuts.ps1 deletes
+  the older LE START BOT / LE UPDATE / LE DASHBOARD / LE HEALTH CHECK (the .bat files stay). The server runs
+  `go.ensure_shortcuts` at start (Windows, once per `SHORTCUTS_V`, mark `data/shortcuts.json`), so an update brings the new
+  icons and Startup shortcuts without a click. Tests: test_win_scripts (pwsh sandbox: 2 icons, old ones removed),
+  test_ops, test_go.
 - **Live board (2026-10-26, read-only, both dashboards):** `engine/live_board.py` `build(inp)` turns heartbeat-shaped blocks
   (health, brain, second, acct, crit, live_pub) + accounts / goals / odds into: **Right now** per account (balance, room to
   the floor, $ to go, today, session X of 10, what it waits for = brain stage / each ATLAS member's state, the next entry
@@ -464,6 +495,32 @@ part yourself or fold it into a script.**
   `data/live_pub.git`, never main = no Pages build). The phone polls it every 30-60 s via api.github.com (raw fallback) and lays
   it over data.json. No extra Actions minutes. Auto-update also checks hourly outside trading time (weekdays 16:00-01:20 ET,
   weekends) when flat, nothing armed and a restart is safe (`engine/autoupdate.py` mode `hourly`).
+- **Poll speed diagnostics (2026-10-26, `engine/poll_timing.py`, read-only):** the Surface polled in ~32,300 ms every poll
+  (heartbeat 2026-10-25) against ~0.8 s here. server.py installs a stage timer (LE_POLL_TIMING=0 = off) that wraps
+  LiveBot's stage methods and the few module functions poll_once calls, so `engine/live.py` stays byte-identical (the PC's
+  hand-patched copy must keep fast-forwarding). Each poll -> `bot.health["poll_stages"]` (total / CPU / waiting, every
+  stage in order with nested "a > b", other threads' CPU during the poll via psutil) -> heartbeat `health.poll.stages`
+  (`accounts.poll_stages_block`) -> Home "Bot loop" light (`pc_cc_api.poll_line`) and the Start page's Bot loop card.
+  Findings here: the 20,000-row MNQ_1m.csv parse is 56 ms (`engine="python"`; the C engine gives the same frame in 41 ms:
+  not the cause, left alone); a busy background thread slows a poll ~1.5x (GIL), not 30x; NinjaTrader's `outgoing`
+  holds one file per order and `connections()` opened every one of them twice a poll per adapter (604 reads with 300 orders;
+  every open on the PC passes OneDrive's sync filter) -> now read only when size / time changed (`_CONN_SEEN`, shared by
+  every adapter: 2 reads a poll). The constant ~32 s (= ~2 s of work + one 30 s wait?) is still unproven: the first
+  heartbeat with `health.poll.stages` names the stage (wall >> CPU = waiting on disk / network / a lock). Tests
+  `tests.test_poll_timing` (15; `--full` also replays test_lit_live's LiveBot with and without the timer).
+- **Updates never blocked by the PC's own files (2026-10-26):** ATLAS's account (the account_b block) lives in the
+  gitignored `data/account_b.json`; `second_model.json` ships `"account_b": null` and is never written for it
+  (`account_b.raw_cfg`: local first, else the tracked block; `set_account_b` / `arm_b` / launch prep / the Start page write
+  the local file). `account_b.migrate_local` moves an older version's block out of the tracked file (local written and read
+  back first, then `git checkout HEAD -- second_model.json`); run at server start, START BOT, and before every update's
+  dirty check. Every update path is `autoupdate.fast_forward` (auto-update, phone "update", UPDATE.bat and START BOT via
+  `python -m engine.autoupdate --pull`, the Start page): bot-made files and files checked out from main by hand
+  (`from_main`: their blob came in with HEAD..main) go back to HEAD first, a shallow history is deepened (`is_ancestor`:
+  `--deepen=300`, then `--unshallow`; the Surface said "refusing to merge unrelated histories" 2026-10-25), a refused
+  `merge --ff-only` to a proven descendant is `reset --keep`; a rollback puts hand-checked-out files back. Any other local
+  edit still blocks. A server older than the checkout (`go.server_stale`, `/api/next/start/boot`) is restarted before the
+  bot starts. Tests `tests.test_account_b_local` (migration + same ATLAS / LIT routes), `tests.test_autorun` (the Surface case
+  on real temp repos).
 - **Alerts plus (2026-10-21, `engine/alerts_plus.py`, `tests/test_alerts_plus.py`, `docs/NOTIFICATIONS.md`):** "LIT setup armed"
   / "Setup expired" pushes (PC `LiveBot._alerts_tick` after routing + cloud, same keys, relay de-dup); critical alerts repeat
   every 10 min (max 6) until "Got it" (phone `tools/web_public/alerts.js` #/ack posts `{"le":"ack"}` to the ntfy relay) or

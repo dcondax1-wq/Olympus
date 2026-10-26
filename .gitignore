@@ -111,3 +111,8 @@ data/*_ai.json
 # real balance from NinjaTrader: the day-close anchors (engine/broker_balance.py)
 data/broker_balance.json
 data/broker_balance.json.tmp
+# ATLAS's account on this PC (engine/account_b.py): second_model.json ships account_b null
+data/account_b.json
+data/account_b.json.tmp
+data/shortcuts.json
+data/shortcuts.json.tmp
