@@ -10,6 +10,7 @@ Owner goals (CLAUDE.md, 2026-10-17 / 10-25):
   * month $ inside the backtest's expected band (engine/health_band.py, H2 bootstrap)
   * ATLAS go-live: 20 finished paper trades at / above the expected p10 (engine/second_scorecard.py)
   * then funded accounts and payouts, then scale (engine/scale_plan.py)
+  * a $10,000 month by Jan / Feb 2027, then the car (owner 2026-10-26): part "money" = engine/money_goal.py
 
     python -X utf8 -m engine.goals [data.json]      prints the goals JSON of a built site (default site/data.json)
 """
@@ -485,10 +486,13 @@ def early_closes(today: str, days: int = 45) -> list:
 
 
 # ------------------------------------------------------------------------------------------------ the whole block
-def build(data: dict | None, now=None, band: dict | None = None, news_path: str | None = NEWS_CSV) -> dict:
+def build(data: dict | None, now=None, band: dict | None = None, news_path: str | None = NEWS_CSV, money=None) -> dict:
     """data = data.json (or the PC's equivalent blocks). band = engine.health_band.load() (None: the perf average).
-    -> the goals JSON. Never raises: a broken part becomes {"error"}."""
+    money = the owner's money figures (engine/money_goal: the heartbeat's "money" block in the cloud, the local file on the
+    PC; default data["money_in"]). -> the goals JSON. Never raises: a broken part becomes {"error"}."""
     data = data or {}
+    if money is None:
+        money = data.get("money_in")
     now = int(now or time.time())
     today = trading_day(now)
     out = {"v": VERSION, "t": now, "today": today, "goals": {"sessions": SESSIONS_GOAL, "sessions_max": SESSIONS_MAX,
@@ -512,6 +516,11 @@ def build(data: dict | None, now=None, band: dict | None = None, news_path: str 
     part("scale", lambda: scale_goal(data))
     part("calendar", lambda: {"news": news_rows(today, 14, news_path) if news_path else [], "early_close": early_closes(today),
                               "clocks": clock_changes(today)})
+
+    def _money():                                  # Road to $10K / Stingray 3LT (engine/money_goal.py, read-only)
+        from . import money_goal as MG
+        return MG.build(data, money, now)
+    part("money", _money)
     out["sources"] = {"lit_trades": lit_src, "lit_n": len(lit_rows), "atlas_n": len(at_rows)}
     # the top lines for Home, most important first
     lines = []
@@ -527,19 +536,23 @@ def build(data: dict | None, now=None, band: dict | None = None, news_path: str 
         g = out.get(k)
         if isinstance(g, dict) and g.get("sentence"):
             lines.append({"k": k, "text": g["sentence"], "level": g.get("level")})
+    mg = out.get("money")
+    if isinstance(mg, dict) and isinstance(mg.get("lines"), list):   # only once the owner typed his figures in
+        lines += [x for x in mg["lines"] if isinstance(x, dict) and x.get("text")]
     out["lines"] = lines
     return out
 
 
-def site_block(data: dict, now=None) -> dict:
-    """tools/build_web_dashboard.py: build() with the H2 health band when research/lab has it."""
+def site_block(data: dict, now=None, money=None) -> dict:
+    """tools/build_web_dashboard.py: build() with the H2 health band when research/lab has it. money = the owner's money
+    figures (the heartbeat's "money" block; None: data["money_in"])."""
     band = None
     try:
         from . import health_band as HB
         band = HB.load()
     except Exception:
         band = None
-    return build(data, now=now, band=band)
+    return build(data, now=now, band=band, money=money)
 
 
 if __name__ == "__main__":

@@ -24,7 +24,8 @@ lays it over data.json):
    "pc_verdict": engine/accounts.verdict on it (TRADING YOUR EVAL / ON SIM / DISABLED / FEED STALE ...),
    "accounts": the PC accounts as engine/accounts.build_accounts makes them (eval $ to go / room / session, today's P&L,
                the open position with its stop / target, today's orders, the last trades),
-   "price", "day_pnl", "last_signal", "model_state", "heartbeat": {"t", "ok"} (the last heartbeat push)}
+   "price", "day_pnl", "last_signal", "model_state", "heartbeat": {"t", "ok"} (the last heartbeat push),
+   "money": the Goals card's Road to $10K / Stingray 3LT (engine/money_goal.from_heartbeat, ~7 KB; dropped first if too big)}
 
 Cadence: every FAST_S (60 s) while the bot runs, every SLOW_S (300 s) otherwise; never more often than MIN_GAP_S; after a
 failed push it backs off (2, 4, 8 ... up to 30 min) and logs at most once an hour. A daemon thread: it never touches the
@@ -179,6 +180,11 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
         out["board"] = bd
     except Exception as e:
         out["board"] = {"error": f"{e.__class__.__name__}: {str(e)[:120]}"}
+    try:                                # Road to $10K / Stingray 3LT (engine/money_goal.py): the Goals card, fresher than data.json
+        from . import money_goal
+        out["money"] = money_goal.from_heartbeat(hb, now=now, accounts=out.get("accounts"))
+    except Exception as e:
+        out["money"] = {"error": f"{e.__class__.__name__}: {str(e)[:120]}"}
     out = scrub(out, _phrases())
     return fit(out)
 
@@ -207,6 +213,9 @@ def fit(p: dict, max_bytes: int = MAX_BYTES) -> dict:
         if size() > max_bytes and isinstance(p.get("pc"), dict):
             p["pc"].pop(k, None)
             p["trimmed"] = True
+    if "money" in p and size() > max_bytes:                                 # the Goals money card (data.json keeps one)
+        p.pop("money", None)
+        p["trimmed"] = True
     if bd and size() > max_bytes:                                           # last resort: no board (data.json keeps one)
         p.pop("board", None)
         p["trimmed"] = True

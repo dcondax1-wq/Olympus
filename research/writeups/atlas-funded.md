@@ -118,3 +118,25 @@ then the funded account pays about $520-580 a month to you. A pass inside 3 week
 - Tests: `python -X utf8 -m tests.test_account_b_funded` (switch, sizing, tracker, pushes, Start page, views, one LiveBot
   day on a fake Sim103 next to LIT). ATLAS's eval is unchanged until the switch (tests.test_second_account_b,
   tests.test_account_b_local).
+
+## Why only ~$520-590 a month, and can sizing get more out? (2026-10-26, owner question)
+Commission is in: every ATLAS trade pays $1.90 a micro round trip plus slippage (tools/second_mix.py ECOMM = sizing.TW_COMM
+= 1.90). The funded 25K *makes* about $1,430-1,610 a month trading; the owner *receives* ~$520-590 because MFFU's payout
+rules let only part of it out: at most $1,000 per request x 80% split, a $1,100 buffer first, the 50% consistency rule
+(holds payouts ~45-48 of 126 days) and 5 payouts per funded account (then MFFU moves it on; this study stops counting there).
+
+Sweep (MC 300 paths per half, the live funded rule with one setting changed; tools/atlas_funded.py helpers):
+
+| Funded setting | H1 $/mo to owner | H1 made/mo | H2 $/mo to owner | H2 made/mo | H2 stuck |
+|---|---|---|---|---|---|
+| live (60% room, <= $750 risk, winner <= $1,000) | $593 | $1,610 | **$520** | $1,430 | 7.3% |
+| winner <= $400 | $329 | $619 | $384 | $657 | 10.7% |
+| winner <= $500 | $520 | $894 | $373 | $638 | 16.3% |
+| winner <= $600 | $577 | $1,064 | $368 | $659 | 20.3% |
+| winner <= $750 | $613 | $1,273 | $400 | $855 | 18.3% |
+| risk <= $500 | $570 | $1,515 | $518 | $1,211 | 5.3% |
+| risk <= $1,000 | $600 | $1,627 | $521 | $1,469 | 6.3% |
+
+Verdict: the live rule is already at the top; smaller winner caps pass the consistency rule sooner but make far less, a
+bigger risk cap adds ~$1-7 a month. The ceiling is MFFU's payout rules, not the bot's size. More money = more funded
+accounts (each 25K eval $43-63), not bigger trades.

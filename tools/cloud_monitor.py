@@ -956,7 +956,8 @@ def run(out):
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
                                                "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "learn", "ops", "remote", "live_pub",
-                                               "brain", "second", "ai", "launch")},  # the PC bot's Bot Brain (engine/brain.py compact), second strategies (paper)
+                                               "brain", "second", "ai", "launch", "money")},  # the PC bot's Bot Brain (engine/brain.py compact), second strategies (paper)
+                 # "money": the owner's money figures for the Goals card's Road to $10K (engine/money_goal.heartbeat_block)
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
                  "pc_alert_at": pc_alert_at,
