@@ -315,6 +315,11 @@ part yourself or fold it into a script.**
   (`engine/multi_account.py`, off by default, `data/accounts.json`).
 
 ## Key commands (run from the repo root)
+- **START BOT (owner's one start, 2026-10-26):** `START_BOT.bat` / desktop **LE START BOT** -> `engine/go.py`: git pull
+  main (bot stopped), names asked once (`data/start_bot.json`, gitignored), `launch_prep` once, both Sim101 roundtrips until
+  passed once (market open only), owner types the LIVE phrase -> `arm_b` (second_model.json account_b `"armed": true`,
+  other fields kept), the live line in `.env.local.ps1`, server (re)started when that file is newer than the supervisor,
+  `ninjatrader --start` on the 50K, launch checklist, dashboard. Wrong phrase = nothing armed. Tests `tests.test_go` 32/32.
 - `python tools/export_backtest.py`: the live-settings 5-year replay → `research/lab/backtest_live.json`. Contains periods, months,
   stop buckets, eval odds, **per-trade reports** (why it entered / plan / result / lessons) and **lessons** (wins vs losses).
   About 1 min on 11 processes.

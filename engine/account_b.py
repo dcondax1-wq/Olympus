@@ -1115,7 +1115,7 @@ def build(bot, ab: dict | None, **kw):
 
 # ---------------------------------------------------------------------------------------------------------------- switch
 def set_account_b(account: str | None, plan: str = "builder25k", start: str | None = None, sizing: str = "need",
-                  strategies=None, path: str | None = None, selftest=None) -> dict:
+                  strategies=None, path: str | None = None, selftest=None, extra: dict | None = None) -> dict:
     """second_model.json "account_b" = {...} (account set) or null (account None / "off"): the one "account_b" line of
     the file. Switching on is refused when engine.ninjatrader --selftest fails or the block is invalid; the strategies on
     B get "route": false (engine.second.set_route: never also on LIT's account). The rest of the file is untouched."""
@@ -1131,6 +1131,7 @@ def set_account_b(account: str | None, plan: str = "builder25k", start: str | No
     else:
         new = {"account": str(account).strip(), "plan": plan, "eval_start": start or _dt.date.today().isoformat(),
                "strategies": list(strategies or ["ema_lon_vix", "macd_sweep", "sr_nyreclaim"]), "sizing": sizing}
+        new.update({k: v for k, v in (extra or {}).items() if k not in new})   # e.g. "armed" (engine/go.py, owner-typed)
         spec = normalize(new, second.load_cfg(path))
         if spec["problem"]:
             return {"ok": False, "error": spec["problem"]}
