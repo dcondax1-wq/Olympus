@@ -30,13 +30,33 @@ in a session the PC pushes every FAST_EVERY_S seconds instead of every_s, so the
 On by default only when LE_HEARTBEAT=1 (scripts/run_bot.ps1 sets it; a dev shell does not push anything). Needs git
 with push rights in the project folder (the owner's PC has them). Never raises into the server; failures are logged
 at most once an hour.
+
+Robust push (2026-10-26, after the Surface went silent 22:38 -> 05:20 ET on 2026-10-25/26; tests/test_heartbeat.py):
+  * The commit is built and pushed from a private scratch git dir (SCRATCH = data/heartbeat_pub.git, gitignored), like the
+    phone's live.json (engine/live_publish.py): the project's own .git (shallow, OneDrive, index.lock, a refused pull,
+    a gc) is never written and can no longer block the push; ~1,000 loose objects a day no longer pile up in it.
+  * Every git call has a hard timeout that also holds on Windows (run_cmd: output to temp files, the whole process tree
+    killed; subprocess.run's own timeout waits forever there when git-remote-https / the credential manager hang), never
+    prompts (GIT_TERMINAL_PROMPT=0, GCM_INTERACTIVE=never) and drops a stalled transfer (http.lowSpeedTime).
+  * The push is --force-with-lease on refs/heads/heartbeat only (_BRANCH_RE: never main or any other branch) on the
+    commit this PC pushed last (scratch ref LAST_REF); refused (another writer moved the branch: an old server still
+    running, a second PC) or a one-off failure -> the branch tip is re-read (git ls-remote) and the push retried once
+    with the lease on that tip. The branch stays one disposable orphan commit.
+  * A watchdog thread (every WATCH_S) restarts the push thread when it died or one beat ran longer than STUCK_S, and
+    notices when the whole process was frozen (PC asleep / suspended: its own tick took far longer than asked): it then
+    pushes at once instead of waiting out the rest of the 5 minutes. After a failure the next try comes after RETRY_S.
+  * health.hb in every heartbeat (and live.json): the last push result and error, failures in a row, restarts, the
+    last frozen stretch. GET /api/health/ping "heartbeat" carries the same.
 """
 from __future__ import annotations
 
 import json
 import os
 import platform
+import re
+import signal
 import subprocess
+import tempfile
 import threading
 import time
 
@@ -46,6 +66,21 @@ SILENT_AFTER_S = 20 * 60
 LAST_PATH = os.path.join(ROOT, "logs", "heartbeat_last.json")   # the last payload, for engine/ops_checks (logs/ is gitignored)
 FAST_EVERY_S = 60
 FAST_STAGES = ("limit", "cisd1m", "trade")       # engine/accounts._lit_stage: a setup armed, or in a trade
+SCRATCH_REL = os.path.join("data", "heartbeat_pub.git")   # private git dir the heartbeat pushes from (gitignored)
+LAST_REF = "refs/hb/last"                        # in the scratch dir: the commit this PC pushed last (the lease's value)
+GIT_TIMEOUT_S = 30.0                             # every local git call / ls-remote: hard limit (process tree killed)
+PUSH_TIMEOUT_S = 75.0                            # one git push: hard limit
+STUCK_S = 600.0                                  # a beat running longer than this = stuck: the watchdog restarts the thread
+WATCH_S = 60.0                                   # the watchdog's tick
+FROZEN_S = 180.0                                 # a tick this much longer than asked = the process was frozen (PC asleep)
+RETRY_S = 60.0                                   # after a failed push the next try comes after at most this
+LOCK_WAIT_S = 90.0                               # a second caller (the remote control's "status") waits this long for a beat
+PRUNE_EVERY = 50                                 # scratch dir: drop the unreachable old heartbeat objects every N pushes
+STALE_LOCK_S = 600.0                             # scratch dir only: a *.lock older than this is left over from a killed git
+_BRANCH_RE = re.compile(r"^heartbeat([-_.][A-Za-z0-9._-]+)?$")   # the heartbeat only ever pushes its own status branch
+_MOVED = ("stale info", "rejected", "fetch first", "non-fast-forward")
+_LAST_PUSHED: dict = {}                          # (url, branch) -> the commit this process pushed last (lease fallback)
+_PUSHES = [0]
 
 
 def enabled() -> bool:
@@ -56,49 +91,256 @@ def _git(args, cwd, inp=None, timeout=60):
     return subprocess.run(["git", *args], cwd=cwd, input=inp, capture_output=True, text=True, timeout=timeout)
 
 
-def _blob(data: bytes, cwd) -> str | None:
+# ------------------------------------------------------------------------------------------------ git with a real timeout
+class Ran:
+    """What run_cmd returns (the fields of subprocess.CompletedProcess the heartbeat uses, bytes)."""
+
+    def __init__(self, returncode, stdout=b"", stderr=b"", timed_out=False, took_ms=0):
+        self.returncode, self.stdout, self.stderr, self.timed_out, self.took_ms = returncode, stdout, stderr, timed_out, took_ms
+
+    @property
+    def out(self) -> str:
+        return (self.stdout or b"").decode(errors="replace").strip()
+
+    @property
+    def err(self) -> str:
+        return (self.stderr or b"").decode(errors="replace").strip()
+
+
+def _kill_tree(p):
+    """Stop a process and everything it started (git push -> git-remote-https -> the credential manager)."""
+    try:
+        if os.name == "nt":
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(p.pid)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                           stdin=subprocess.DEVNULL, timeout=15)
+        else:
+            os.killpg(p.pid, signal.SIGKILL)       # start_new_session: the group id is the child's pid
+    except Exception:
+        pass
+    try:
+        p.kill()
+    except Exception:
+        pass
+
+
+def run_cmd(cmd, cwd=None, inp: bytes | None = None, timeout: float = GIT_TIMEOUT_S, env=None) -> Ran:
+    """subprocess.run with a timeout that also holds on Windows. There, subprocess.run(timeout=) kills git.exe and then
+    waits WITHOUT a limit for its output pipes to close, which never happens while git-remote-https.exe or the credential
+    manager (they inherit the pipe) hang: the heartbeat thread blocked for good. Here stdin / stdout / stderr are temp
+    files (no pipe to wait on) and a timeout kills the whole process tree. Never raises (returncode -1 = could not start)."""
+    t0 = time.monotonic()
+    try:
+        with tempfile.TemporaryFile() as fin, tempfile.TemporaryFile() as fo, tempfile.TemporaryFile() as fe:
+            if inp is not None:
+                fin.write(inp)
+                fin.flush()
+                fin.seek(0)
+            kw = {} if os.name == "nt" else {"start_new_session": True}
+            p = subprocess.Popen(cmd, cwd=cwd, env=env, stdin=fin if inp is not None else subprocess.DEVNULL, stdout=fo,
+                                 stderr=fe, **kw)
+            timed_out = False
+            try:
+                p.wait(timeout=timeout)
+            except subprocess.TimeoutExpired:
+                timed_out = True
+                _kill_tree(p)
+                try:
+                    p.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    pass
+            fo.seek(0)
+            fe.seek(0)
+            out, err = fo.read(), fe.read()
+        took = int((time.monotonic() - t0) * 1000)
+        if timed_out:
+            err = (err or b"") + f"\ntimed out after {timeout:g} s (git and its helpers stopped)".encode()
+            return Ran(p.returncode if p.returncode not in (None, 0) else -9, out, err, True, took)
+        return Ran(p.returncode, out, err, False, took)
+    except Exception as e:
+        return Ran(-1, b"", f"{e.__class__.__name__}: {e}".encode(), False, int((time.monotonic() - t0) * 1000))
+
+
+def _redact(s: str) -> str:
+    """No credentials in an error text (https://user:token@host -> https://host)."""
+    return re.sub(r"(https?://)[^@\s/]+@", r"\1", s or "")
+
+
+def _tail(r: Ran, n: int = 200) -> str:
+    lines = [ln for ln in r.err.splitlines() if ln.strip() and "push negotiation failed" not in ln
+             and "expected 'acknowledgments'" not in ln]
+    return _redact("\n".join(lines))[-n:]
+
+
+def _git_env(extra: dict | None = None) -> dict:
+    """Never prompt (a hidden prompt in a server window is a silent hang): no terminal prompt, no credential-manager
+    window. A login that needs the owner fails with its error instead, and health.hb / the ops check show it."""
+    return {**os.environ, "GIT_TERMINAL_PROMPT": "0", "GCM_INTERACTIVE": "never", **(extra or {})}
+
+
+_COMMIT_ENV = {"GIT_AUTHOR_NAME": "liquidity-engine-pc", "GIT_AUTHOR_EMAIL": "pc@liquidity-engine.local",
+               "GIT_COMMITTER_NAME": "liquidity-engine-pc", "GIT_COMMITTER_EMAIL": "pc@liquidity-engine.local"}
+_NET_CFG = ["-c", "http.lowSpeedLimit=1000", "-c", "http.lowSpeedTime=30", "-c", "push.negotiate=false",
+            "-c", "credential.interactive=never"]
+
+
+def scratch_dir(cwd: str = ROOT) -> str:
+    return os.path.join(cwd, SCRATCH_REL)
+
+
+def _clear_stale_locks(git_dir: str, now: float | None = None, older_s: float = STALE_LOCK_S) -> list:
+    """*.lock files a killed git left in the PRIVATE scratch dir (nobody else uses it). Never the project's .git."""
+    now = time.time() if now is None else now
+    gone = []
+    for base, _dirs, names in os.walk(git_dir):
+        for n in names:
+            if n.endswith(".lock"):
+                p = os.path.join(base, n)
+                try:
+                    if now - os.path.getmtime(p) > older_s:
+                        os.remove(p)
+                        gone.append(os.path.relpath(p, git_dir))
+                except OSError:
+                    pass
+    return gone
+
+
+def _scratch(git_dir: str, cwd: str) -> str | None:
+    """Create the scratch bare repo once (with this repo's local credential / ssh / proxy / url settings). Error or None."""
+    try:
+        if not os.path.isdir(os.path.join(git_dir, "objects")):
+            os.makedirs(os.path.dirname(git_dir), exist_ok=True)
+            r = run_cmd(["git", "init", "-q", "--bare", git_dir])
+            if r.returncode:
+                return "git init of the heartbeat's scratch dir failed: " + _tail(r, 120)
+            r = run_cmd(["git", "config", "--local", "--get-regexp", r"^(credential\..*|core\.sshcommand|http\..*|url\..*)$"],
+                        cwd=cwd)
+            for ln in r.out.splitlines():
+                k, _, v = ln.partition(" ")
+                if k and v:
+                    run_cmd(["git", "--git-dir", git_dir, "config", "--add", k, v])
+        _clear_stale_locks(git_dir)
+        return None
+    except Exception as e:
+        return f"{e.__class__.__name__}: {e}"
+
+
+def remote_url(cwd: str = ROOT, remote: str = "origin") -> str | None:
+    """The push URL of `remote` in the repo at cwd (insteadOf applied by git), or `remote` itself when it is a URL / path."""
+    if any(c in remote for c in "/\\:"):
+        return remote
+    r = run_cmd(["git", "remote", "get-url", "--push", remote], cwd=cwd)
+    u = r.out.splitlines()[0].strip() if not r.returncode and r.out else ""
+    if not u:
+        return None
+    if "://" not in u and not re.match(r"^[^/\\]+@[^/\\]+:", u) and not os.path.isabs(u) and os.path.exists(os.path.join(cwd, u)):
+        u = os.path.abspath(os.path.join(cwd, u))      # a relative local path: relative to the project, not the scratch dir
+    return u
+
+
+def remote_tip(url: str, branch: str = BRANCH, git_dir: str | None = None, cwd: str | None = None) -> tuple:
+    """(tip sha, None) of refs/heads/<branch> on the remote ("" = no such branch), or (None, error). git ls-remote: no
+    objects are downloaded and nothing local is written."""
+    r = run_cmd(["git", *_NET_CFG, *(["--git-dir", git_dir] if git_dir else []), "ls-remote", url, f"refs/heads/{branch}"],
+                cwd=cwd, timeout=GIT_TIMEOUT_S, env=_git_env())
+    if r.returncode:
+        return None, _tail(r) or "ls-remote failed"
+    for ln in r.out.splitlines():
+        sha, _, ref = ln.partition("\t")
+        if ref.strip() == f"refs/heads/{branch}" and re.fullmatch(r"[0-9a-f]{40,64}", sha.strip()):
+            return sha.strip(), None
+    return "", None
+
+
+def _blob(data: bytes, cwd, git_dir=None) -> str | None:
     """git hash-object -w of raw bytes (binary stdin: no newline translation on Windows). The id, or None."""
-    r = subprocess.run(["git", "hash-object", "-w", "--stdin"], cwd=cwd, input=data, capture_output=True, timeout=60)
-    out = r.stdout.decode(errors="replace").strip()
+    r = run_cmd(["git", *(["--git-dir", git_dir] if git_dir else []), "hash-object", "-w", "--stdin"], cwd=cwd, inp=data)
+    out = r.out
     return out if not r.returncode and len(out) >= 40 else None
 
 
-def push(payload: dict, cwd: str = ROOT, remote: str = "origin", branch: str = BRANCH, files: dict | None = None) -> dict:
+def _lease_push(gd: list, cwd, url: str, branch: str, commit: str, expect: str, timeout: float) -> Ran:
+    return run_cmd(["git", *_NET_CFG, *gd, "push", "-q", f"--force-with-lease=refs/heads/{branch}:{expect}", url,
+                    f"{commit}:refs/heads/{branch}"], cwd=cwd, timeout=timeout, env=_git_env())
+
+
+def push(payload: dict, cwd: str = ROOT, remote: str = "origin", branch: str = BRANCH, files: dict | None = None,
+         git_dir: str | None = None, timeout: float = PUSH_TIMEOUT_S) -> dict:
     """Write payload as heartbeat.json (+ `files`: {name: bytes}, e.g. the PC's NinjaTrader bars) in an orphan commit and
-    force-push it to remote/branch. Touches neither the working tree nor the index (git plumbing only). Returns {"ok", "error"}."""
+    push it over refs/heads/<branch> of `remote` (the remote's name in the repo at cwd, or a URL), from the private scratch
+    git dir (git_dir, default <cwd>/data/heartbeat_pub.git; falls back to the repo at cwd, plumbing only, when it cannot
+    be made). --force-with-lease on the commit pushed last; refused or failed once -> re-read the tip, retry once.
+    Only ever the heartbeat branch. Returns {"ok", "commit" | "error", "attempts", "retried", "took_ms"}. Never raises."""
+    t0 = time.monotonic()
+    att = 0
+
+    def done(ok, **kw):
+        return {"ok": ok, **kw, "attempts": att, "took_ms": int((time.monotonic() - t0) * 1000)}
     try:
+        if not _BRANCH_RE.match(str(branch or "")):
+            return done(False, error=f"refused: the heartbeat only pushes its own status branch '{BRANCH}', never '{branch}'")
+        url = remote_url(cwd, remote)
+        if not url:
+            return done(False, error=f"no push URL for remote '{remote}'")
+        gdir = git_dir or scratch_dir(cwd)
+        err = _scratch(gdir, cwd)
+        gd = [] if err else ["--git-dir", gdir]       # scratch unusable: the old way (plumbing in the project repo)
         body = json.dumps(payload, separators=(",", ":"))
-        blob = _blob(body.encode("utf-8"), cwd)
+        blob = _blob(body.encode("utf-8"), cwd, gdir if not err else None)
         if not blob:
-            return {"ok": False, "error": "hash-object failed"}
+            return done(False, error="hash-object failed" + (f" ({err})" if err else ""))
         entries = [f"100644 blob {blob}\theartbeat.json\n"]
         for name, data in sorted((files or {}).items()):
             if not data or "/" in name or "\t" in name or "\n" in name:
                 continue
-            b = _blob(bytes(data), cwd)
+            b = _blob(bytes(data), cwd, gdir if not err else None)
             if not b:
-                return {"ok": False, "error": f"hash-object failed ({name})"}
+                return done(False, error=f"hash-object failed ({name})")
             entries.append(f"100644 blob {b}\t{name}\n")
         # bytes, not text: on Windows text-mode stdin turns "\n" into "\r\n" and the file was named "heartbeat.json\r"
-        r = subprocess.run(["git", "mktree"], cwd=cwd, input="".join(entries).encode(),
-                           capture_output=True, timeout=60)
-        r.stdout, r.stderr = r.stdout.decode(errors="replace"), r.stderr.decode(errors="replace")
+        r = run_cmd(["git", *gd, "mktree"], cwd=cwd, inp="".join(entries).encode())
+        if r.returncode or not r.out:
+            return done(False, error=_tail(r) or "mktree failed")
+        tree = r.out
+        # never signed (a signing prompt would hang the beat); "-c" works on every git version
+        r = run_cmd(["git", "-c", "commit.gpgsign=false", *gd, "commit-tree", tree, "-m", f"heartbeat {payload.get('t')}"], cwd=cwd,
+                    env=_git_env(_COMMIT_ENV))
+        if r.returncode or not r.out:
+            return done(False, error=_tail(r) or "commit-tree failed")
+        commit = r.out
+        key = (url, branch)
+        expect = _LAST_PUSHED.get(key)
+        if expect is None and not err:
+            rr = run_cmd(["git", *gd, "rev-parse", "--verify", "-q", LAST_REF], cwd=cwd)
+            expect = rr.out if not rr.returncode and rr.out else None
+        retried = None
+        if expect is None:                     # first push of this PC (or the scratch dir is new): lease on the tip now
+            expect, terr = remote_tip(url, branch, gdir if not err else None, cwd)
+            if expect is None:
+                return done(False, error=f"remote not reachable: {terr}")
+        att += 1
+        r = _lease_push(gd, cwd, url, branch, commit, expect, timeout)
         if r.returncode:
-            return {"ok": False, "error": r.stderr.strip()[:200] or "mktree failed"}
-        tree = r.stdout.strip()
-        env = {**os.environ, "GIT_AUTHOR_NAME": "liquidity-engine-pc", "GIT_AUTHOR_EMAIL": "pc@liquidity-engine.local",
-               "GIT_COMMITTER_NAME": "liquidity-engine-pc", "GIT_COMMITTER_EMAIL": "pc@liquidity-engine.local"}
-        r = subprocess.run(["git", "commit-tree", tree, "-m", f"heartbeat {payload.get('t')}"], cwd=cwd, capture_output=True, text=True,
-                           timeout=60, env=env)
-        if r.returncode:
-            return {"ok": False, "error": r.stderr.strip()[:200] or "commit-tree failed"}
-        commit = r.stdout.strip()
-        r = _git(["push", "-q", "--force", remote, f"{commit}:refs/heads/{branch}"], cwd, timeout=90)
-        if r.returncode:
-            return {"ok": False, "error": r.stderr.strip()[-200:] or "push failed"}
-        return {"ok": True, "commit": commit[:10]}
+            first = _tail(r)
+            moved = any(m in first for m in _MOVED)
+            tip, terr = remote_tip(url, branch, gdir if not err else None, cwd)
+            if tip is None:
+                return done(False, error=first or "push failed", probe=f"ls-remote: {terr}")
+            retried = ("the branch had moved (another writer): pushed over its tip" if moved else
+                       f"retried after: {first[-120:]}")
+            att += 1
+            r = _lease_push(gd, cwd, url, branch, commit, tip, timeout)
+            if r.returncode:
+                return done(False, error=_tail(r) or first or "push failed", first_error=first, retried=retried)
+        _LAST_PUSHED[key] = commit
+        if not err:
+            run_cmd(["git", *gd, "update-ref", LAST_REF, commit], cwd=cwd)
+            _PUSHES[0] += 1
+            if _PUSHES[0] % PRUNE_EVERY == 0:      # the replaced heartbeats are unreachable: drop them (scratch dir only)
+                run_cmd(["git", *gd, "prune", "--expire=now"], cwd=cwd, timeout=120)
+        return done(True, commit=commit[:10], **({"retried": retried} if retried else {}),
+                    **({"scratch_error": err} if err else {}))
     except Exception as e:
-        return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
+        return done(False, error=f"{e.__class__.__name__}: {e}")
 
 
 def read_file(name: str, cwd: str = ROOT, ref: str = "FETCH_HEAD") -> bytes | None:
@@ -286,16 +528,58 @@ def _alerts_plus(bot):
         return {"rules": None, "crit": []}
 
 
-class Heartbeat:
-    """Daemon thread on the PC server: pushes a heartbeat every `every_s` seconds while the server runs."""
+def _hm(t) -> str:
+    try:
+        from zoneinfo import ZoneInfo
+        import datetime as _dt
+        return _dt.datetime.fromtimestamp(float(t), ZoneInfo("America/New_York")).strftime("%a %H:%M")
+    except Exception:
+        return str(int(t or 0))
 
-    def __init__(self, bot, every_s: float = 300.0, log=print, last_path: str = LAST_PATH):
+
+def _dur(s) -> str:
+    s = int(max(0, s or 0))
+    return f"{s // 3600} h {s % 3600 // 60} min" if s >= 3600 else f"{s // 60} min"
+
+
+class Heartbeat:
+    """Daemon thread on the PC server: pushes a heartbeat every `every_s` seconds while the server runs, plus a watchdog
+    thread that restarts it when it died or hung and pushes at once after the PC was asleep (see the module doc)."""
+
+    def __init__(self, bot, every_s: float = 300.0, log=print, last_path: str = LAST_PATH, push_fn=None, clock=time.time,
+                 watch_s: float = WATCH_S, stuck_s: float = STUCK_S, frozen_s: float = FROZEN_S, retry_s: float = RETRY_S,
+                 lock_wait_s: float = LOCK_WAIT_S):
         self.bot, self.every_s, self.log, self.last_path = bot, every_s, log, last_path
+        self.push_fn = push_fn or push
+        self.clock = clock
+        self.watch_s, self.stuck_s, self.frozen_s, self.retry_s, self.lock_wait_s = watch_s, stuck_s, frozen_s, retry_s, lock_wait_s
         self.last: dict = {}
         self._stop = threading.Event()
+        self._wake = threading.Event()       # set = beat now (after the PC woke up, or stop())
         self._thread = None
+        self._watch_thread = None
+        self._gen = 0                        # push-thread generation: a replaced (hung) thread exits when it wakes up
+        self._lock = threading.Lock()        # one beat at a time (the thread + the remote control's "status")
+        self._beat = None                    # the beat running now: {"t0", "phase", "gen"}
+        self._started = False
         self._err_at = 0.0
         self._bars = None                    # engine.pcbars.PCBars, when no_yahoo is on
+        self.loop_t = None                   # the push loop's last sign of life
+        self.fails = 0                       # failed pushes in a row
+        self.last_ok_t = None
+        self.last_error = None
+        self.last_error_t = None
+        self.fail_since = None
+        self.restarts = 0
+        self.restart = None                  # {"t", "why"}: the watchdog's last restart
+        self.frozen = None                   # {"from", "to", "s"}: the last stretch the process was frozen (PC asleep)
+        self.frozen_n = 0
+
+    def _say(self, text):
+        try:
+            self.log(text)
+        except Exception:                    # a closed console must never kill the heartbeat
+            pass
 
     def bar_files(self) -> dict:
         """The PC's NinjaTrader bars for the cloud (no_yahoo, engine/pcbars.py); {} when off or unavailable. Never raises."""
@@ -310,16 +594,31 @@ class Heartbeat:
         except Exception as e:
             if time.time() - self._err_at > 3600:
                 self._err_at = time.time()
-                self.log(f"[heartbeat] bars not attached: {e.__class__.__name__}: {e}")
+                self._say(f"[heartbeat] bars not attached: {e.__class__.__name__}: {e}")
             return {}
+
+    def health_block(self) -> dict:
+        """health.hb: is the heartbeat itself healthy (~300 bytes, secret-free)."""
+        last = self.last or {}
+        b = self._beat
+        return {"ok": last.get("ok"), "at": last.get("at"), "last_ok_t": self.last_ok_t, "fails": self.fails,
+                "fail_since": self.fail_since, "last_error": _redact(str(self.last_error or ""))[:160] or None,
+                "last_error_t": self.last_error_t, "retried": (str(last.get("retried"))[:80] if last.get("retried") else None),
+                "took_ms": last.get("took_ms"), "thread": bool(self._thread and self._thread.is_alive()),
+                "watchdog": bool(self._watch_thread and self._watch_thread.is_alive()), "restarts": self.restarts,
+                "restart": self.restart, "frozen": self.frozen, "frozen_n": self.frozen_n,
+                "beat_s": int(self.clock() - b["t0"]) if b else None}
 
     def payload(self) -> dict:
         st = getattr(self.bot, "state", None) or {}
         cfg = getattr(self.bot, "cfg", None) or {}
         health = _health(self.bot)
+        if isinstance(health, dict):
+            health = {**health, "hb": self.health_block()}     # the heartbeat's own health (last push error, restarts, sleep)
+        strat = st.get("strategy") if isinstance(st, dict) else None
         return {"t": int(time.time()), "running": bool(getattr(self.bot, "running", False)), "adapter": cfg.get("adapter", "paper"),
                 "position": bool(st.get("position")), "model_state": st.get("model_state"), "host": platform.node(),
-                "model": (st.get("strategy") or {}).get("model") or cfg.get("model"),
+                "model": (strat.get("model") if isinstance(strat, dict) else None) or cfg.get("model"),
                 "push_pk": _push_pk(),          # phone notifications: the cloud seals the notification key to this (engine/push.py)
                 "every_s": int(self.every_s), "acct": _acct(self.bot), "health": health, "ops": _ops(),
                 "launch": _launch(self.bot, health),   # the launch checklist (engine/launch_check.py; read-only, ~2 KB)
@@ -333,23 +632,62 @@ class Heartbeat:
                 **_alerts_plus(self.bot)}       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
 
     def beat(self) -> dict:
-        files = self.bar_files()
-        pl = self.payload()
-        if files:
-            from . import pcbars
-            pl["bars"] = pcbars.PCBars.meta(files, self.bot)
-        res = push(pl, files=files)
-        try:                                    # the Status page's uptime samples (engine/uptime.py, logs/uptime_pc.json)
-            from . import uptime
-            uptime.pc_hook(pl)
-        except Exception:
-            pass
-        self.last = {"at": int(time.time()), **res}
-        save_last(pl, res, self.last_path)
-        if not res["ok"] and time.time() - self._err_at > 3600:
-            self._err_at = time.time()
-            self.log(f"[heartbeat] push failed: {res['error']}")
-        return res
+        """One heartbeat: bars + payload + push, the result kept in self.last / logs/heartbeat_last.json. One at a time (a
+        second caller waits up to lock_wait_s, then skips). Never raises."""
+        lock = self._lock
+        if not lock.acquire(timeout=self.lock_wait_s):
+            return {"ok": False, "skipped": "a heartbeat push is already running"}
+        me = {"t0": self.clock(), "phase": "bars", "gen": self._gen}
+        self._beat = me
+        pl = {}
+        try:
+            try:
+                files = self.bar_files()
+                me["phase"] = "payload"
+                pl = self.payload()
+                if files:
+                    try:
+                        from . import pcbars
+                        pl["bars"] = pcbars.PCBars.meta(files, self.bot)
+                    except Exception:
+                        pass
+                me["phase"] = "push"
+                res = self.push_fn(pl, files=files)
+                if not isinstance(res, dict):
+                    res = {"ok": False, "error": f"push returned {type(res).__name__}"}
+            except Exception as e:
+                res = {"ok": False, "error": f"beat failed: {e.__class__.__name__}: {e}"}
+            me["phase"] = "after"
+            try:                                    # the Status page's uptime samples (engine/uptime.py, logs/uptime_pc.json)
+                from . import uptime
+                uptime.pc_hook(pl)
+            except Exception:
+                pass
+            self._note(res)
+            save_last(pl, res, self.last_path)
+            return res
+        finally:
+            if self._beat is me:
+                self._beat = None
+            lock.release()
+
+    def _note(self, res: dict):
+        now = self.clock()
+        self.last = {"at": int(now), **res}
+        if res.get("ok"):
+            if self.fails:
+                self._say(f"[heartbeat] push works again after {self.fails} failed tries"
+                          + (f" (silent since {_hm(self.fail_since)} ET)" if self.fail_since else ""))
+            self.fails, self.fail_since, self.last_ok_t = 0, None, int(now)
+            return
+        if res.get("skipped"):
+            return
+        self.fails += 1
+        self.fail_since = self.fail_since or (self.last_ok_t or int(now))
+        self.last_error, self.last_error_t = _redact(str(res.get("error") or "push failed")), int(now)
+        if now - self._err_at > 3600:
+            self._err_at = now
+            self._say(f"[heartbeat] push failed (try {self.fails}, next in {int(self.next_wait())} s): {self.last_error}")
 
     def wait_s(self) -> float:
         """every_s, or FAST_EVERY_S while a LIT setup is armed / a trade is open in a session (the cloud watcher's bars)."""
@@ -363,23 +701,118 @@ class Heartbeat:
             pass
         return float(self.every_s)
 
-    def _run(self):
+    def next_wait(self) -> float:
+        """wait_s(), or at most retry_s after a failed push (back within a minute once the network / PC is back)."""
+        w = self.wait_s()
+        return float(min(w, self.retry_s)) if self.fails else w
+
+    # ---- the push thread
+    def _run(self, gen: int | None = None):
+        gen = self._gen if gen is None else gen
+        while not self._stop.is_set() and gen == self._gen:
+            self.loop_t = self.clock()
+            try:
+                self.beat()
+            except Exception as e:                  # beat() never raises; the loop survives even if it did
+                self._note({"ok": False, "error": f"beat crashed: {e.__class__.__name__}: {e}"})
+            if gen != self._gen or self._stop.is_set():
+                return                              # replaced by the watchdog while this beat hung: the new thread goes on
+            w = self.next_wait()
+            t0 = self.clock()
+            self.loop_t = t0
+            self._wake.wait(w)
+            self._wake.clear()
+            t1 = self.clock()
+            if t1 - t0 > w + self.frozen_s:          # the wait took far longer than asked: the process was frozen
+                self._note_frozen(t0 + w, t1)
+
+    def _spawn(self):
+        self._thread = threading.Thread(target=self._run, args=(self._gen,), name=f"heartbeat-{self._gen}", daemon=True)
+        self._thread.start()
+
+    # ---- the watchdog
+    def _note_frozen(self, a: float, b: float):
+        """The whole process stood still from a to b (PC asleep / suspended): record it, shift the hang clocks by it."""
+        gap = b - a
+        if self.frozen and abs(self.frozen.get("to", 0) - b) < self.watch_s * 2:
+            self.frozen["from"] = int(min(self.frozen["from"], a))
+            self.frozen["s"] = int(self.frozen["to"] - self.frozen["from"])
+            return
+        self.frozen = {"from": int(a), "to": int(b), "s": int(gap)}
+        self.frozen_n += 1
+        bt = self._beat
+        if bt:
+            bt["t0"] += gap                         # a beat interrupted by the sleep is not a hung beat
+        if self.loop_t:
+            self.loop_t += gap
+        self._say(f"[heartbeat] the PC was asleep or this process frozen for {_dur(gap)} ({_hm(a)} -> {_hm(b)} ET): "
+                  "pushing now")
+
+    def check(self, now: float | None = None) -> str | None:
+        """Restart the push thread when it has stopped or one beat ran longer than stuck_s. The reason, or None."""
+        if self._stop.is_set() or not self._started:
+            return None
+        now = self.clock() if now is None else now
+        b = self._beat
+        why = None
+        if self._thread is None or not self._thread.is_alive():
+            why = "the push thread had stopped"
+        elif b and now - b["t0"] > self.stuck_s:
+            why = f"one push hung {int(now - b['t0'])} s (in '{b.get('phase')}')"
+        elif not b and self.loop_t and now - self.loop_t > self.wait_s() + self.stuck_s:
+            why = f"the push loop stood still {int(now - self.loop_t)} s"
+        if why:
+            self._restart(why, now)
+        return why
+
+    def _restart(self, why: str, now: float | None = None):
+        self._gen += 1
+        self._lock = threading.Lock()               # a hung beat keeps the old lock; the new thread gets its own
+        self._beat = None
+        self.restarts += 1
+        self.restart = {"t": int(self.clock() if now is None else now), "why": why}
+        self._say(f"[heartbeat] watchdog: {why}; push thread restarted (restart {self.restarts})")
+        self._spawn()
+
+    def watch_tick(self, last: float, now: float) -> float:
+        """One watchdog tick (last = the previous tick's time). Returns now. Never raises."""
+        try:
+            if now - last > self.watch_s + self.frozen_s:
+                self._note_frozen(last, now)
+                self._wake.set()                    # beat at once: the cloud sees the PC back within a minute
+            else:
+                self.check(now)
+        except Exception:
+            pass
+        return now
+
+    def _watch(self):
+        last = self.clock()
         while not self._stop.is_set():
-            self.beat()
-            self._stop.wait(self.wait_s())
+            self._stop.wait(self.watch_s)
+            if self._stop.is_set():
+                return
+            last = self.watch_tick(last, self.clock())
 
     def start(self):
         if not enabled():
-            self.log("[heartbeat] off (set LE_HEARTBEAT=1 on the always-on PC)")
+            self._say("[heartbeat] off (set LE_HEARTBEAT=1 on the always-on PC)")
             return False
+        self._started = True
         if self._thread is None or not self._thread.is_alive():
-            self._thread = threading.Thread(target=self._run, name="heartbeat", daemon=True)
-            self._thread.start()
+            self._spawn()
+        if self._watch_thread is None or not self._watch_thread.is_alive():
+            self._watch_thread = threading.Thread(target=self._watch, name="heartbeat-watchdog", daemon=True)
+            self._watch_thread.start()
         return True
+
+    def stop(self):
+        self._stop.set()
+        self._wake.set()
 
     def status(self) -> dict:
         return {"enabled": enabled(), "every_s": self.every_s, "last": self.last,
-                "thread_alive": bool(self._thread and self._thread.is_alive())}
+                "thread_alive": bool(self._thread and self._thread.is_alive()), "health": self.health_block()}
 
 
 def selftest() -> bool:
