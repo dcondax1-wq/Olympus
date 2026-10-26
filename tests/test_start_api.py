@@ -30,7 +30,8 @@ PHRASE = "I ACCEPT LIVE RISK"
 L50, L25, FUND = "MFFUEV50K1", "MFFUEV25K2", "MFFUFUNDED9"
 REAL = [os.path.join(ROOT, p) for p in (".env.local.ps1", "second_model.json", "data/start_bot.json", "data/accounts.json",
                                          "data/nt_accounts_allow.json", "data/eval_anchor.json", "data/autostart.json",
-                                         "data/sim_roundtrip_last.json", "logs/start_job.json", "logs/start_job.log")]
+                                         "data/sim_roundtrip_last.json", "logs/start_job.json", "logs/start_job.log",
+                                         "data/auto_resume.json", "data/account_b.json")]
 
 
 def check(name, cond, info=""):
@@ -86,6 +87,8 @@ class World:
         self.feed = None
         G.feed_problem = lambda: self.feed
         S._feed = lambda: self.feed
+        self.drift = 0.3
+        S._clock_probe = lambda: self.drift                 # never the real internet probe
         import engine.launch_prep as LP
         import engine.ninjatrader as NT
 
@@ -129,6 +132,7 @@ def clients():
 
 
 BODIES = {"names": {"lit": L50, "atlas": L25}, "nt": {}, "setup": {}, "sims": {}, "arm": {"confirm": PHRASE},
+          "go": {"confirm": PHRASE}, "resume": {}, "clock": {},
           "accounts/add": {"name": "MFFUEV25K3", "plan": "builder25k", "strategy": "zlarior"},
           "accounts/remove": {"name": L50}, "accounts/anchor": {"name": L50, "balance": 49800, "floor": 48200, "as_of": "2026-10-23"},
           "accounts/funded": {"name": L50, "funded_name": FUND, "start": "2026-11-02"}}
@@ -298,6 +302,177 @@ def main():
         check("status: Zlarior on the 25K -> running line red, button Stop the bot", not st["running"]["done"]
               and st["running"]["action"] == "stop" and "not the 50K" in st["running"]["detail"], st["running"])
 
+        # ---------------------------------------------------------------- the one button: "Start trading" (engine/go.step_auto)
+        from engine import autoresume as AR
+        w.bot.running, w.bot.cfg = False, {}
+        optin0, nt0, upd0, http0, run0 = AR.OPTIN_PATH, AR.nt_connected, G.update, G._http, G.subprocess.run
+        AR.OPTIN_PATH = os.path.join(tmp, "auto_resume.json")
+        AR.nt_connected = lambda cfg: w.nt_up
+        w.nt_up = True
+        G.update = lambda py=None: w.updated
+        w.updated = False
+        try:
+            d = L.get("/api/next/start/status").json()
+            check("one button: no auto-resume yet -> the phrase box shows (need_phrase), why in plain words",
+                  d["need_phrase"] is True and "auto-resume is off" in (d["resume_why"] or ""), (d["need_phrase"], d["resume_why"]))
+            G._save({}, G.JOB_FILE)
+            os.remove(G.JOB_FILE)
+            n0 = len(w.popen)
+            check("go: a wrong phrase refused, nothing started", post("go", {"confirm": "yes"}).status_code == 400 and len(w.popen) == n0)
+            r = post("go", {})
+            cmd, kw = w.popen[-1]
+            check("go: one job (python -m engine.go --step auto), no phrase in its environment without one typed",
+                  r.status_code == 200 and cmd[-2:] == ["--step", "auto"] and "LE_START_CONFIRM" not in kw["env"], (r.text, cmd))
+            check("go: a second press while it runs is refused", post("go", {}).status_code == 400 and len(w.popen) == n0 + 1)
+            os.remove(G.JOB_FILE)
+            r = post("go", {"confirm": "i accept live risk"})
+            cmd, kw = w.popen[-1]
+            check("go: the phrase in any capitals reaches the job in its environment (never argv)",
+                  r.status_code == 200 and kw["env"].get("LE_START_CONFIRM") == PHRASE and not any(PHRASE in str(c) for c in cmd))
+            os.remove(G.JOB_FILE)
+
+            def job(phrase="", after=False, wait_s=G.AUTO_WAIT_S, sleep=lambda s: w.calls.append(("sleep", s))):
+                G._save({"step": "auto", "state": "running", "t0": time.time()}, G.JOB_FILE)
+                with open(G.JOB_LOG, "w", encoding="utf-8"):
+                    pass
+                rc = G.step_auto(G._read(G.CFG), phrase, after_update=after, sleep=sleep, wait_s=wait_s)
+                return rc, G._read(G.JOB_FILE)
+            w.calls.clear()
+            rc, j = job()
+            check("auto: no auto-resume and no phrase -> stops at the start with need=phrase (nothing armed, nothing started)",
+                  rc == 3 and j.get("need") == "phrase" and j.get("stage") == "arm" and "I ACCEPT LIVE RISK" in j.get("say", "")
+                  and not any(c[0] == "nt" and "--start" in c[1] for c in w.calls if isinstance(c, tuple)), (rc, j, w.calls))
+            seq = iter([False, False, False, True])          # the check, ensure_ninjatrader's own, one wait, connected
+            AR.nt_connected = lambda cfg: next(seq, True)
+            w.feed = "MNQ_5m.csv is stale"
+            fseq = iter(["MNQ_5m.csv is stale", None])
+            G.feed_problem = lambda: next(fseq, None)
+            w.calls.clear()
+            import contextlib
+            import io
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                rc, j = job()
+            sl = [c[1] for c in w.calls if isinstance(c, tuple) and c[0] == "sleep"]
+            log = buf.getvalue()
+            check("auto: waits for NinjaTrader's log-in (every 10 s) and for the live bars (every 15 s, with the exact chart fix)",
+                  sl == [G.NT_EVERY_S, G.FEED_EVERY_S] and "Log in to NinjaTrader" in log and "Reload NinjaScript" in log, (sl, log[-600:]))
+            AR.nt_connected = lambda cfg: w.nt_up
+            G.feed_problem = lambda: w.feed
+            w.feed = "MNQ_5m.csv is stale"
+            rc, j = job(wait_s=0)
+            check("auto: bars still stale -> one plain sentence with the NinjaTrader click and a retry in 60 s",
+                  rc == 1 and j.get("stage") == "feed" and j.get("retry_s") == 60 and "Reload NinjaScript" in j.get("say", ""), j)
+            w.feed = None
+            w.nt_up = False
+            rc, j = job(wait_s=0)
+            check("auto: NinjaTrader never connects -> 'Log in to NinjaTrader' and a retry", rc == 1 and j.get("stage") == "nt"
+                  and j.get("retry_s") == 60 and "Log in to NinjaTrader" in j.get("say", ""), j)
+            w.nt_up = True
+            w.sims.update(add=False)
+            w.market = False
+            rc, j = job()
+            check("auto: Sim test not passed and the market closed -> need=market, tries again in 10 min", rc == 1
+                  and j.get("need") == "market" and j.get("retry_s") == 600, j)
+            w.market = True
+            w.sims.update(add=True)
+            w.updated = True
+            runs = []
+            G.subprocess.run = lambda cmd, cwd=None, env=None, **k: (runs.append((cmd, env)), SimpleNamespace(returncode=0))[1]
+            w.calls.clear()
+            rc, j = job(phrase=PHRASE)
+            G.subprocess.run = run0
+            w.updated = False
+            check("auto: a newer version -> pulled, the server restarted, the job runs again on the new code (phrase in env only)",
+                  rc == 0 and runs and runs[0][0][-3:] == ["--step", "auto", "--after-update"] and runs[0][1].get("LE_START_CONFIRM") == PHRASE
+                  and "start_server" in w.calls, (runs, w.calls))
+            # the opt-in (made when the owner typed the phrase at a start): no phrase needed any more
+            AR.enable(L50, PHRASE, {"adapter": "ninjatrader", "nt_account": L50}, path=AR.OPTIN_PATH)
+            d = L.get("/api/next/start/status").json()
+            check("one button: auto-resume on for the 50K, live switch on, 25K armed -> no phrase box", d["need_phrase"] is False
+                  and d["resume_why"] is None, (d["need_phrase"], d["resume_why"]))
+            other = AR.enable("MFFUEV50KOTHER", PHRASE, {}, path=os.path.join(tmp, "optin_other.json"))
+            check("resume_problem: auto-resume made for another account -> phrase", "not the 50K" in (G.resume_problem(optin=other) or "")
+                  and "auto-resume is off" in (G.resume_problem(optin={**other, "account": L50}) or ""))
+            started = []
+
+            def fake_start(body):
+                started.append(body)
+                w.bot.running, w.bot.cfg = True, {"nt_account": body.get("nt_account"), "adapter": "ninjatrader"}
+                return {"ok": True}
+            state = lambda: {"running": w.bot.running, "cfg": dict(w.bot.cfg)}  # noqa: E731
+            r = G.resume_now(fake_start, connected=True, live_state={}, env={}, state_fn=state)
+            check("resume_now: NINJATRADER_LIVE=1 missing in the server -> refused (the auto-resume gate)", not r["ok"]
+                  and "NINJATRADER_LIVE" in r["error"] and not started, r)
+            r = G.resume_now(fake_start, connected=False, live_state={}, env={"NINJATRADER_LIVE": "1"}, state_fn=state)
+            check("resume_now: NinjaTrader not connected -> refused, wait", not r["ok"] and r.get("wait") and not started, r)
+            from engine.live import trading_day
+            r = G.resume_now(fake_start, connected=True, live_state={"day": trading_day(time.time()), "kill": True},
+                             env={"NINJATRADER_LIVE": "1"}, state_fn=state)
+            check("resume_now: the kill switch was used today -> refused", not r["ok"] and "kill" in r["error"] and not started, r)
+            r = G.resume_now(fake_start, connected=True, live_state={}, env={"NINJATRADER_LIVE": "1"}, state_fn=state)
+            b0 = started[0] if started else {}
+            check("resume_now: all fine -> started on the 50K, armed, saved write mode, the phrase only in memory, routes checked",
+                  r["ok"] and b0.get("nt_account") == L50 and b0.get("armed") is True and b0.get("nt_write_mode") == "direct"
+                  and b0.get("confirm") == PHRASE and "Running" in r["say"], (r, b0))
+            w.bot.running, w.bot.cfg = False, {}
+            started.clear()
+            r = G.resume_now(lambda body: (started.append(body), setattr(w.bot, "running", True),
+                                           setattr(w.bot, "cfg", {"nt_account": L25, "adapter": "ninjatrader"}), {"ok": True})[-1],
+                             connected=True, live_state={}, env={"NINJATRADER_LIVE": "1"}, state_fn=state)
+            check("resume_now: the running bot is on the wrong account -> refused with stop", not r["ok"] and r.get("stop")
+                  and "not the 50K" in r["error"], r)
+            w.bot.running, w.bot.cfg = False, {}
+
+            def fake_http(path, body=None, timeout=5):
+                if path == "/api/next/start/resume":
+                    return G.resume_now(fake_start, connected=True, live_state={}, env={"NINJATRADER_LIVE": "1"}, state_fn=state)
+                if path == "/api/live/state":
+                    return state()
+                return http0(path, body, timeout)
+            G._http = fake_http
+            w.calls.clear()
+            started.clear()
+            rc, j = job()
+            check("auto: with auto-resume on, no phrase: the server starts it through the resume gate -> running, routes checked",
+                  rc == 0 and j.get("stage") == "running" and started and started[0].get("nt_account") == L50
+                  and f"Zlarior → 50K {L50}" in j.get("say", "") and not any(c[0] == "nt" for c in w.calls if isinstance(c, tuple)),
+                  (rc, j, w.calls))
+            rc, j = job()
+            check("auto: pressed again while it runs -> 'Already running', nothing restarted", rc == 0 and j.get("stage") == "running"
+                  and "Already running" in j.get("say", ""), j)
+            w.bot.running, w.bot.cfg = False, {}
+            # the clock
+            fake = lambda out, code: (lambda cmd, **k: SimpleNamespace(stdout=out, stderr="", returncode=code))  # noqa: E731
+            r = G.sync_clock(run=fake("The following error occurred: Access is denied. (0x80070005)", 2147942405))
+            check("clock: w32tm refused (needs an administrator) -> the Windows Settings steps", not r["ok"]
+                  and "administrator" in r["error"] and "Sync now" in r["steps"], r)
+            r = G.sync_clock(run=fake("Sending resync command to local computer\nThe command completed successfully.", 0))
+            check("clock: w32tm /resync worked -> synced", r["ok"], r)
+            r = G.sync_clock(run=fake("The following error occurred. The service has not been started. (0x80070426)", 2147943462))
+            check("clock: the time service is off -> the Windows Settings steps", not r["ok"] and "time service is off" in r["error"], r)
+            w.drift = 6.2
+            S._clock(fresh=True)
+            for _ in range(50):
+                if not S._CLK["busy"]:
+                    break
+                time.sleep(0.05)
+            c = L.get("/api/next/start/status").json()["clock"]
+            check("status: the PC clock 6.2 s behind -> red, says entries are blocked", c["known"] and not c["ok"]
+                  and "6.2 s behind" in c["say"] and "blocked" in c["say"], c)
+            w.drift = -0.2
+            S._clock(fresh=True)
+            for _ in range(50):
+                if not S._CLK["busy"]:
+                    break
+                time.sleep(0.05)
+            c = L.get("/api/next/start/status").json()["clock"]
+            check("status: the PC clock right -> green", c["known"] and c["ok"] and "matches" in c["say"], c)
+        finally:
+            AR.OPTIN_PATH, AR.nt_connected, G.update, G._http, G.subprocess.run = optin0, nt0, upd0, http0, run0
+            G.feed_problem = lambda: w.feed
+            w.feed = None
+
         # ---------------------------------------------------------------- the accounts panel
         w.bot.running, w.bot.cfg = False, {}
         rows = L.get("/api/next/start/status").json()["accounts"]["rows"]
@@ -363,8 +538,17 @@ def main():
         check("routes: Start in the sidebar's Main group", "ids: ['cc', 'start'," in rt and "id: 'start'" in rt)
         check("app.js: start page registered", "from './next/start.js'" in app_js and "start: startPage" in app_js)
         check("index.html: page section + stylesheet", 'id="page-start"' in idx and "/css/start.css" in idx)
-        check("sw.js: shell cache bumped, start.css cached", "le-shell-next-v20" in sw and "/css/start.css" in sw)
+        check("sw.js: shell cache bumped, start.css cached", "le-shell-next-v21" in sw and "/css/start.css" in sw)
         check("start.js: arm button enabled only by the exact phrase", "$('#stPhrase')?.value !== P.d?.phrase" in js)
+        check("start.js: one big Start trading button (POST go), the phrase box only when need_phrase, it stays disabled "
+              "until the phrase is typed (any capitals)",
+              'data-do="go"' in js and "post('go'" in js and "d.need_phrase" in js and "needPhrase && !P.phraseOk" in js
+              and "toUpperCase()" in js)
+        check("start.js: a stop with retry_s is retried by itself while the page is open (max tries), never for names / phrase",
+              "retry_s" in js and "MAX_TRIES" in js and "j.need === 'phrase'" in js and "j.need === 'names'" in js)
+        check("start.js: the PC clock row with Sync the clock", 'data-do="clock"' in js and "post('clock')" in js)
+        check("app.js: the Start page first when the bot is not running (no ?page= given)",
+              "p.bot_running === false" in app_js and "first = 'start'" in app_js)
         check("start.js: only /api/next/start/* and the existing stop are POSTed",
               js.count("fetch('/api/next/start/' + path") == 1 and "/api/live/arm" not in js and "/api/live/start" not in js)
     for k, v in env0.items():

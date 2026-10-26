@@ -388,6 +388,22 @@ part yourself or fold it into a script.**
   tests.test_start_api` (88 checks, temp files only; phone / Tailscale / tunnel / rebind / origin / cloud refused) +
   `tests.test_go`. Shots `research/handoff/2026-10-26/ui_start/`. Untested on the real PC: the detached job window
   (`cmd /c start`), the server restart during the job, opening NinjaTrader from the page.
+  **One button "Start trading" (2026-10-26 PM, owner: "automatic through the dashboard ONLY"):** `POST /api/next/start/go`
+  -> job `python -m engine.go --step auto` (`go.step_auto`): update if behind (`go.update` = `autoupdate.pull`; then the
+  server restarts and the job re-runs itself `--after-update`), the ATLAS block migration, names (the only owner input,
+  once), setup, NinjaTrader opened + its log-in waited for (re-checked every 10 s), live bars waited for (every 15 s, the
+  exact chart click shown), the Sim test once (market open), then the start. **No phrase** when `go.resume_problem` is None
+  (the auto-resume opt-in is valid for exactly the 50K, the live switch on, the 25K armed): the job asks the server
+  (`POST /api/next/start/resume` -> `go.resume_now`), which starts through the auto-resume gate (`autoresume.decide`:
+  NINJATRADER_LIVE=1 in the server, no kill / daily loss today, NinjaTrader CONNECTED) with Bot Control's start (autostart
+  record saved) and checks the routes (stops the bot when wrong). Otherwise status `need_phrase` shows the phrase box
+  (any capitals) and the job runs `step_arm`. Every stop is one plain sentence in the job file (`stage`, `say`, `need`
+  names / phrase / market / stop, `retry_s`); the page retries a `retry_s` stop by itself while open (30 tries max, never for
+  names / phrase). PC clock row (`status.clock`, `guards.clock_probe` in a thread, every 10 min) + "Sync the clock"
+  (`POST /api/next/start/clock` -> `go.sync_clock`: `w32tm /resync`; refused -> the Windows Settings steps; then the bot's
+  clock guard probes again). The dashboard opens on Start when the bot is not running (`app.js`, `/api/health/ping`
+  bot_running). Tests `tests.test_start_api` (117); shots `python -X utf8 -m tests.shots_start --pc <url>` ->
+  `research/handoff/2026-10-26/ui_start_auto/` (sw `le-shell-next-v21`).
 - **PC paper bot + dashboard:** `server.py` on http://localhost:8766, supervised by `scripts/run_bot.ps1` (Windows; runs only while
   the PC is on). The UI is the ES-module SPA in `web_next/` layered over `web/`, with the API in `engine/dash_*.py` and
   `engine/next_api.py`.

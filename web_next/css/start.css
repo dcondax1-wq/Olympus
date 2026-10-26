@@ -62,3 +62,30 @@
 .st-acct .st-panel { margin: 10px 0 0; }
 .st-add { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--nx-line); display: flex; flex-direction: column; gap: 10px; }
 .st-add h4 { margin: 0; font: 650 13px var(--sans); }
+/* the one button "Start trading" (engine/go.step_auto) */
+.st-gocard { margin-bottom: var(--nx-gutter, 20px); display: flex; flex-direction: column; gap: 14px; }
+.st-gocard.good { border-color: color-mix(in srgb, var(--good) 45%, transparent); }
+.st-gocard.bad { border-color: color-mix(in srgb, var(--bad) 45%, transparent); }
+.st-gocard.warn { border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+.st-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.st-pill { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--nx-line);
+  font: 600 12px var(--sans); color: var(--muted); }
+.st-pill svg { width: 13px; height: 13px; }
+.st-pill.done { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
+.st-pill.now { color: var(--ink); border-color: color-mix(in srgb, var(--accent) 55%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.st-pill.bad { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 50%, transparent); }
+.st-spin { width: 11px; height: 11px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--accent) 30%, transparent); border-top-color: var(--accent);
+  animation: st-spin .9s linear infinite; }
+@keyframes st-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .st-spin { animation: none; } }
+.st-gosay { margin: 0; font: 600 17px/1.45 var(--sans); color: var(--ink); overflow-wrap: anywhere; }
+.st-gocard.bad .st-gosay { color: var(--bad); } .st-gocard.warn .st-gosay { color: var(--warn); }
+.st-gophrase { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--bad) 45%, transparent); background: color-mix(in srgb, var(--bad) 6%, transparent); }
+.st-gophrase p { margin: 0; font: 500 12.5px/1.45 var(--sans); color: var(--ink-2); }
+.st-gophrase input { max-width: 420px; }
+.btn.st-go { height: 52px; padding: 0 26px; font: 700 16px var(--sans); border-radius: 14px; display: inline-flex; align-items: center; gap: 10px; }
+.btn.st-go svg { width: 18px; height: 18px; }
+.btn.st-go[disabled] { opacity: .5; cursor: not-allowed; }
+.st-retry { font: 600 13px var(--sans); color: var(--warn); font-variant-numeric: tabular-nums; }
+@media (max-width: 760px) { .btn.st-go { width: 100%; justify-content: center; } }

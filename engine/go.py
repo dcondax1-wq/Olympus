@@ -53,6 +53,7 @@ ANCHOR_PATH = None       # data/eval_anchor.json
 JOB_FILE = os.path.join(ROOT, "logs", "start_job.json")       # the dashboard's running step (logs/ is gitignored)
 JOB_LOG = os.path.join(ROOT, "logs", "start_job.log")
 JOB_MAX_S = 1800
+AUTO_MAX_S = 3 * 3600    # "Start trading" waits for NinjaTrader's log-in and the live bars
 POPEN = None             # tests: a fake subprocess.Popen for job_start
 
 
@@ -775,6 +776,21 @@ def run_setup() -> dict:
     return {"ok": rc == 0, "lines": lines, **({} if rc == 0 else {"error": "Setup failed: see the lines below."})}
 
 
+def setup_missing(cfg=None, b=None, allow=None) -> list:
+    """What the setup step still has to do for the saved names ([] = done): run once, both names allowlisted, ATLAS on
+    the 25K."""
+    cfg = _read(CFG) if cfg is None else cfg
+    lit, atlas = _names(cfg)
+    b = _b() if b is None else b
+    allow = _allowed() if allow is None else allow
+    miss = [] if cfg.get("prepped") else ["not run yet"]
+    miss += [f"{n} is not on the allowlist" for n in (lit, atlas) if n not in allow]
+    b_on = str(b.get("account") or "").strip()
+    if b_on != atlas:
+        miss.append(f"ATLAS is on {b_on or 'no account'}, not {atlas}")
+    return miss
+
+
 def status(state=None, connected=None, feed=None) -> dict:
     """The Start page checklist: one line per step, done or not, the one button that does it and the plain status line."""
     cfg = _read(CFG)
@@ -793,15 +809,7 @@ def status(state=None, connected=None, feed=None) -> dict:
     if not names_bad:
         names_bad = mixup(lit, atlas)
     b_on = str(b.get("account") or "").strip()
-    miss = []
-    if not names_bad:
-        if not cfg.get("prepped"):
-            miss.append("not run yet")
-        miss += [f"{n} is not on the allowlist" for n in (lit, atlas) if n not in allow]
-        if b_on != atlas:
-            miss.append(f"ATLAS is on {b_on or 'no account'}, not {atlas}")
-    else:
-        miss.append("set the account names first")
+    miss = setup_missing(cfg, b, allow) if not names_bad else ["set the account names first"]
     armed_b = bool(atlas) and b_on == atlas and b.get("armed") is True
     probs = verify_routes(lit, atlas, state=st or {}, b=b) if running and not names_bad else []
     sims_ok = all(sp.values())
@@ -841,9 +849,243 @@ def status(state=None, connected=None, feed=None) -> dict:
                       "both armed" if not arm_miss else "ATLAS armed, live switch off" if armed_b else
                       "live switch on, ATLAS not armed" if live else "not armed",
                       ("running" if not run_bad else "running, wrong set-up") if running else "stopped"])
+    why = None if running else resume_problem(cfg, b=b, live=live)
     return {"steps": steps, "all_green": all(done.values()), "say": say, "lit": lit or None, "atlas": atlas or None,
             "suggest_lit": (_read(AUTOSTART).get("nt_account") or "").strip() or None, "running": running,
-            "market_open": market_open(), "job": job_status(), "phrase": LIVE_PHRASE}
+            "market_open": market_open(), "job": job_status(), "phrase": LIVE_PHRASE,
+            "need_phrase": bool(not running and why), "resume_why": why}
+
+
+# ---------------------------------------------------------------------------- one button: "Start trading"
+# The Start page's big button runs every step in order in one job (`python -m engine.go --step auto`, step_auto below):
+# update if behind, NinjaTrader open + connected, live bars, the Sim test (once), then the start. The start needs no typed
+# phrase when the owner's auto-resume opt-in is valid for exactly the 50K (he typed I ACCEPT LIVE RISK for it; the kill
+# switch clears it): then it is the same gate as the auto-resume after a reboot (engine/autoresume.decide), run in the
+# server (resume_now). Otherwise the page asks for the phrase once and the job runs step_arm with it.
+AUTO_WAIT_S = 20 * 60          # NinjaTrader log-in / live bars: the job waits this long, re-checking
+NT_EVERY_S, FEED_EVERY_S = 10, 15
+CLOCK_MAX_S = 5.0
+CLOCK_STEPS = ("On the PC: Windows Settings > Time & language > Date & time: turn on \"Set time automatically\", "
+               "then press \"Sync now\".")
+
+
+def resume_problem(cfg=None, optin=None, b=None, live=None) -> str | None:
+    """Why "Start trading" needs the typed phrase (None = it does not): the auto-resume opt-in (data/auto_resume.json, made
+    when the owner typed I ACCEPT LIVE RISK at a start) valid for exactly the saved 50K, the live switch on, ATLAS's 25K
+    armed."""
+    from . import autoresume
+    cfg = _read(CFG) if cfg is None else cfg
+    lit, atlas = _names(cfg)
+    rec = autoresume.load(autoresume.OPTIN_PATH) if optin is None else optin
+    if not lit or not atlas:
+        return "the account names are not set"
+    if not autoresume.valid(rec):
+        return "auto-resume is off (the first start, or after the kill switch)"
+    if str(rec.get("account") or "") != lit:
+        return f"auto-resume is for {rec.get('account')}, not the 50K {lit}"
+    if not (env_has_live() if live is None else live):
+        return "the live switch is off"
+    b = _b() if b is None else b
+    if str(b.get("account") or "").strip() != atlas or b.get("armed") is not True:
+        return "ATLAS's 25K is not armed"
+    return None
+
+
+def start_body(cfg) -> dict:
+    """The start config `engine.ninjatrader --start --account <50K>` sends (with the saved write_mode and the extra
+    accounts), without any phrase."""
+    body = {"sym": "NQ", "tf": "5m", "adapter": "ninjatrader", "armed": True, "present": True, "poll_sec": 60,
+            "data_source": "ninjatrader", "nt_account": cfg.get("lit")}
+    if cfg.get("write_mode"):
+        body["nt_write_mode"] = cfg["write_mode"]
+    try:
+        from . import multi_account
+        body = multi_account.merge_into_start(body, "")
+    except Exception:
+        pass
+    return body
+
+
+def resume_now(start_fn, connected=None, live_state=None, env=None, state_fn=None, optin=None) -> dict:
+    """In the server: "Start trading" without the phrase. Refused unless resume_problem() is None AND the auto-resume gate
+    passes (engine/autoresume.decide: NINJATRADER_LIVE=1 in this server, no kill switch / daily loss today, no failed start
+    in the last 10 minutes, NinjaTrader CONNECTED). start_fn = Bot Control's start (the bot + its autostart record, the
+    phrase stripped). After the start the routes are checked in the running bot and it is stopped when they are wrong."""
+    from . import autoresume
+    cfg = _read(CFG)
+    why = resume_problem(cfg, optin=optin)
+    if why:
+        return {"ok": False, "error": f"Type I ACCEPT LIVE RISK to start: {why}.", "need": "phrase"}
+    rec = autoresume.load(autoresume.OPTIN_PATH) if optin is None else optin
+    body = start_body(cfg)
+    if connected is None:
+        connected = autoresume.nt_connected(body)
+    if live_state is None:
+        live_state = autoresume._read_json(os.path.join(ROOT, "data", "live_state.json"))
+    d = autoresume.decide(rec, body, live_state, env=env, connected=connected)
+    if not d["resume"]:
+        return {"ok": False, "error": f"Not started: {d['reason']}.", "wait": d.get("wait")}
+    try:
+        r = start_fn(d["cfg"])
+    except Exception as e:
+        r = {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
+    if not r.get("ok") and "already running" not in str(r.get("error") or ""):
+        return {"ok": False, "error": f"Not started: {r.get('error')}"}
+    st = state_fn() if state_fn else _state()
+    probs = verify_routes(cfg["lit"], cfg["atlas"], state=st)
+    if probs:
+        return {"ok": False, "error": "Wrong account set-up, so the bot was stopped: " + "; ".join(probs), "stop": True}
+    return {"ok": True, "say": f"Running: Zlarior → 50K {cfg['lit']} · ATLAS → 25K {cfg['atlas']}",
+            "refused_accounts": d.get("refused_accounts") or []}
+
+
+def sync_clock(run=None) -> dict:
+    """The Start page's "Sync the clock": `w32tm /resync` (Windows' own time service). It may need an administrator: then
+    the Windows Settings steps instead."""
+    if os.name != "nt" and run is None:
+        return {"ok": False, "error": "Only on the Windows PC.", "steps": CLOCK_STEPS}
+    run = run or subprocess.run
+    try:
+        r = run(["w32tm", "/resync"], capture_output=True, text=True, timeout=40)
+        out, code = (r.stdout or "") + (r.stderr or ""), r.returncode
+    except Exception as e:
+        out, code = f"{e.__class__.__name__}: {e}", 1
+    low = out.lower()
+    if code == 0 and "error" not in low and "denied" not in low and "not been started" not in low:
+        return {"ok": True, "say": "Clock synced with internet time.", "out": out.strip()[-200:]}
+    why = ("Windows asks for an administrator to sync the clock" if "denied" in low or "0x80070005" in low else
+           "Windows' time service is off" if "not been started" in low or "0x80070426" in low else
+           "Windows did not sync the clock")
+    return {"ok": False, "error": f"{why}. {CLOCK_STEPS}", "steps": CLOCK_STEPS, "out": out.strip()[-200:]}
+
+
+def _note(stage, say, need=None, retry_s=None):
+    """One plain line for the page: the job file's stage / say / need / retry_s, and the log."""
+    print(f" {say}")
+    try:
+        j = _read(JOB_FILE)
+        if j:
+            j.update(stage=stage, say=say, need=need, retry_s=retry_s)
+            _save(j, JOB_FILE)
+    except Exception:
+        pass
+
+
+def step_auto(cfg, phrase="", py=sys.executable, after_update=False, sleep=time.sleep, wait_s=AUTO_WAIT_S) -> int:
+    """"Start trading": every step in order, each skipped when done; NinjaTrader's log-in and the live bars are waited for
+    (re-checked every 10 / 15 s); stops with one plain sentence (the page's retry_s = try again by itself, need = the
+    owner must do something: names, phrase, market). 0 = running."""
+    phrase = typed_phrase(phrase) if phrase else ""
+    if bot_running():
+        lit, atlas = _names(cfg)
+        probs = verify_routes(lit, atlas) if lit and atlas else ["the account names are not set"]
+        _note("running", "Already running." if not probs else "Running with the wrong set-up: " + "; ".join(probs),
+              need=None if not probs else "stop")
+        return 0 if not probs else 1
+    if not after_update:
+        _note("update", "Looking for a newer version")
+        if update(py):
+            _note("update", "New version downloaded: restarting the bot server on it")
+            if server_up():
+                stop_server()
+            start_server()
+            env = {k: v for k, v in os.environ.items() if k != "LE_START_CONFIRM"}
+            if phrase:
+                env["LE_START_CONFIRM"] = phrase
+            return subprocess.run([py, "-X", "utf8", "-m", "engine.go", "--step", "auto", "--after-update"], cwd=ROOT,
+                                  env=env).returncode
+    migrate()
+    cfg = _read(CFG)
+    lit, atlas = _names(cfg)
+    if not lit or not atlas or lit == atlas:
+        _note("accounts", "Set the two account names below (once): the 50K for Zlarior, the 25K for ATLAS.", need="names")
+        return 1
+    bad = mixup(lit, atlas)
+    if bad:
+        _note("accounts", f"Check the account names: {bad}.", need="names")
+        return 1
+    if setup_missing(cfg):
+        _note("setup", "Setting up both accounts (allowlist, 50K balance and floor, ATLAS on the 25K)")
+        cfg.pop("prepped", None)
+        if step_prep(cfg):
+            _note("setup", "The account setup failed (see the lines below). Trying again in a minute.", retry_s=60)
+            return 1
+    from . import autoresume
+    if autoresume.nt_connected({"adapter": "ninjatrader"}) is not True:
+        _note("nt", "Opening NinjaTrader")
+        ensure_ninjatrader(wait_s=0, sleep=lambda s: None)
+        t0 = time.time()
+        while autoresume.nt_connected({"adapter": "ninjatrader"}) is not True:
+            if time.time() - t0 > wait_s:
+                _note("nt", "NinjaTrader is still not connected. Log in to NinjaTrader; the page tries again by itself.",
+                      retry_s=60)
+                return 1
+            _note("nt", "Log in to NinjaTrader and connect your MFFU account. This page goes on by itself.", retry_s=NT_EVERY_S)
+            sleep(NT_EVERY_S)
+    _note("feed", "NinjaTrader connected. Checking the live bars")
+    t0 = time.time()
+    while True:
+        why = feed_problem()
+        if why is None:
+            break
+        if time.time() - t0 > wait_s:
+            _note("feed", f"Still no live bars from NinjaTrader ({why}). In NinjaTrader: {FEED_FIX}. The page tries again by itself.",
+                  retry_s=60)
+            return 1
+        _note("feed", f"No live bars from NinjaTrader ({why}). In NinjaTrader: {FEED_FIX}. Checking again every 15 s.",
+              retry_s=FEED_EVERY_S)
+        sleep(FEED_EVERY_S)
+    if not all(sims_passed().values()):
+        if not market_open():
+            _note("sims", "The one-time Sim test needs the market open (Sunday 18:00 to Friday 17:00 ET). The page tries again "
+                          "by itself.", need="market", retry_s=600)
+            return 1
+        _note("sims", "One-time Sim test on Sim101 (about 2 minutes; the dashboard restarts during it)")
+        if step_sims(py, restart=True, cfg=cfg):
+            _note("sims", "The Sim test failed. Nothing is armed. Trying again in 5 minutes.", retry_s=300)
+            return 1
+        cfg = _read(CFG)
+    why = resume_problem(cfg)
+    if why is None:
+        _note("start", "Starting Zlarior and ATLAS (no phrase needed: auto-resume is on)")
+        if server_up() and (server_stale() or env_newer_than_server()):
+            stop_server()
+        if not server_up() and not start_server():
+            _note("start", "The bot server did not start. Trying again in a minute.", retry_s=60)
+            return 1
+        for _ in range(3):                                  # a fresh server may resume the bot by itself first
+            if bot_running():
+                break
+            try:
+                r = _http("/api/next/start/resume", {}, timeout=120)
+            except Exception as e:
+                r = {"ok": False, "error": f"the bot server did not answer ({e.__class__.__name__})"}
+            if r.get("ok") or bot_running():
+                break
+            if r.get("need") == "phrase":
+                _note("arm", r.get("error") or "Type I ACCEPT LIVE RISK to start.", need="phrase")
+                return 3
+            _note("start", str(r.get("error") or "Not started.")[:300], retry_s=30)
+            sleep(30)
+        probs = verify_routes(lit, atlas)
+        if probs:
+            if bot_running():
+                from . import ninjatrader
+                ninjatrader.main(["--stop"])
+            _note("start", "Not running: " + "; ".join(probs) + ". Trying again in a minute.", retry_s=60)
+            return 1
+        _note("running", f"Running: Zlarior → 50K {lit} · ATLAS → 25K {atlas}.")
+        return 0
+    if phrase != LIVE_PHRASE:
+        _note("arm", f"Type I ACCEPT LIVE RISK once to arm both accounts ({why}).", need="phrase")
+        return 3
+    _note("arm", "Arming and starting: Zlarior → 50K, ATLAS → 25K")
+    rc = step_arm(cfg, phrase, open_page=False)
+    if rc:
+        _note("arm", "Arming did not finish (see the lines below). Press Start trading to try again.")
+        return rc
+    _note("running", f"Running: Zlarior → 50K {lit} · ATLAS → 25K {atlas}.")
+    return 0
 
 
 # ---------------------------------------------------------------------------- the Accounts panel
@@ -1094,7 +1336,8 @@ def job_status() -> dict:
     j = _read(JOB_FILE)
     if not j:
         return {"step": None, "running": False, "state": None, "lines": []}
-    running = j.get("state") in ("starting", "running") and time.time() - float(j.get("t0") or 0) < JOB_MAX_S \
+    max_s = AUTO_MAX_S if j.get("step") == "auto" else JOB_MAX_S
+    running = j.get("state") in ("starting", "running") and time.time() - float(j.get("t0") or 0) < max_s \
         and (not j.get("pid") or _pid_alive(j["pid"]))
     try:
         with open(JOB_LOG, encoding="utf-8", errors="replace") as fh:
@@ -1103,21 +1346,29 @@ def job_status() -> dict:
         lines = []
     return {"step": j.get("step"), "running": running, "state": "running" if running else "done" if j.get("state") == "done"
             else "stopped", "rc": j.get("rc"), "t0": j.get("t0"), "t1": j.get("t1"),
+            "stage": j.get("stage"), "say": j.get("say"), "need": j.get("need"), "retry_s": j.get("retry_s"),
             "lines": [ln for ln in lines if LIVE_PHRASE not in ln]}
 
 
 def job_start(step, phrase=None, py=sys.executable, popen=None) -> dict:
-    """Start one step in its own window (`python -m engine.go --step sims|arm`): it may stop and start the server the
-    page runs on, so it cannot run inside it. The phrase reaches it in its environment, never on its command line."""
-    if step not in ("sims", "arm"):
+    """Start one step in its own window (`python -m engine.go --step sims|arm|auto`): it may stop and start the server
+    the page runs on, so it cannot run inside it. The phrase reaches it in its environment, never on its command line.
+    "auto" = the one "Start trading" button (step_auto); its phrase is optional (needed only when resume_problem says so)."""
+    if step not in ("sims", "arm", "auto"):
         return {"ok": False, "error": "unknown step"}
     if job_status()["running"]:
         return {"ok": False, "error": "A step is already running: wait for it to finish."}
+    if step == "auto":
+        phrase = typed_phrase(phrase) if phrase else None
+        if phrase and phrase != LIVE_PHRASE:
+            return {"ok": False, "error": "Type I ACCEPT LIVE RISK exactly (or leave it empty). Nothing is armed."}
     if step == "arm" and phrase != LIVE_PHRASE:
         return {"ok": False, "error": "Type I ACCEPT LIVE RISK exactly. Nothing is armed."}
     if bot_running():
-        return {"ok": False, "error": "Stop the bot first (Bot control or STOP BOT)."}
-    if step == "arm":
+        return {"ok": False, "error": "Already running." if step == "auto" else "Stop the bot first (Bot control or STOP BOT)."}
+    if step == "auto":
+        pass
+    elif step == "arm":
         bad = arm_problem(_read(CFG))
         if bad:
             return {"ok": False, "error": f"Not yet: {bad}."}
@@ -1159,8 +1410,8 @@ class _Tee:
         pass
 
 
-def job_main(step) -> int:
-    """`python -m engine.go --step sims|arm`: one step for the dashboard, its lines in logs/start_job.log."""
+def job_main(step, after_update=False) -> int:
+    """`python -m engine.go --step sims|arm|auto`: one step for the dashboard, its lines in logs/start_job.log."""
     os.makedirs(os.path.dirname(JOB_LOG), exist_ok=True)
     log = open(JOB_LOG, "a", encoding="utf-8")
     old = sys.stdout
@@ -1180,6 +1431,8 @@ def job_main(step) -> int:
             phrase = os.environ.pop("LE_START_CONFIRM", "")
             print(f" Zlarior -> 50K {cfg.get('lit')}    ATLAS -> 25K {cfg.get('atlas')}")
             rc = step_arm(cfg, phrase, open_page=False)
+        elif step == "auto":
+            rc = step_auto(cfg, os.environ.pop("LE_START_CONFIRM", ""), after_update=after_update)
     except Exception as e:
         print(f" [FIX] {e.__class__.__name__}: {e}. Send Claude a photo of this page.")
     finally:
@@ -1203,10 +1456,11 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--no-pull", action="store_true", help="skip the git pull of main")
-    ap.add_argument("--step", choices=["sims", "arm"], help="one step for the dashboard Start page (logs/start_job.log)")
+    ap.add_argument("--step", choices=["sims", "arm", "auto"], help="one step for the dashboard Start page (logs/start_job.log)")
+    ap.add_argument("--after-update", action="store_true", help="--step auto, after it updated itself (no second update)")
     a = ap.parse_args(argv)
     if a.step:
-        return job_main(a.step)
+        return job_main(a.step, after_update=a.after_update)
     return run(dry=a.dry_run, pull=not a.no_pull)
 
 

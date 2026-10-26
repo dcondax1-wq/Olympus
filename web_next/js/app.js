@@ -571,7 +571,11 @@ async function boot() {
   tidyTop(); setTimeout(tidyTop, 1500);   // after every layer added its top-bar buttons: the rare ones move into the top bar's "⋯" menu
   renderPlaybook($('#playbook'));
   const want = new URLSearchParams(location.search).get('page');
-  go(want && TITLES[want] ? want : store.get('page', 'cc'));
+  let first = want && TITLES[want] ? want : store.get('page', 'cc');
+  if (!want) {               // the bot is not running: the Start page comes first (owner 2026-10-25: start from the dashboard only)
+    try { const p = await api('/api/health/ping'); if (p && p.bot_running === false && TITLES.start) first = 'start'; } catch { /* keep the last page */ }
+  }
+  go(first);
   await run();
   setTimeout(registerSW, 3000);
 }
