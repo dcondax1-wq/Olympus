@@ -813,8 +813,20 @@ def _ensure_shortcuts():
         print(f"[shortcuts] skipped: {e.__class__.__name__}: {e}", flush=True)
 
 
+def _poll_timing():
+    """Per-stage timing of every poll (engine/poll_timing.py, read-only) -> health.poll.stages in the heartbeat and the
+    dashboard. LE_POLL_TIMING=0 turns it off. Never raises."""
+    try:
+        from engine import poll_timing as _pt
+        if _pt.enabled():
+            _pt.install(BOT)
+    except Exception as e:
+        print(f"[poll timing] off: {e.__class__.__name__}: {e}", flush=True)
+
+
 def _autostart_startup():
     WATCHDOG.server_started_at = int(time.time())
+    _poll_timing()                       # before the bot can start
     if os.environ.get("LE_NO_AUTOSTART") == "1":
         WATCHDOG.autostart_info = {"disabled": "LE_NO_AUTOSTART=1"}
     else:

@@ -81,6 +81,16 @@ def states():
     s.update(running=True, all_green=True, say=f"Zlarior → 50K {L50} · ATLAS → 25K {L25} · both armed · running")
     s["steps"][6].update(done=True, detail="Zlarior on the 50K, ATLAS on the 25K (checked in the running bot)")
     s["job"] = job("running", f"Running: Zlarior → 50K {L50} · ATLAS → 25K {L25}.", running=False, rc=0)
+    s["poll"] = {"t": int(time.time()), "total_ms": 32310, "cpu_ms": 2150, "wait_ms": 30160, "other_ms": 40,
+                 "slowest": "adapter tick (NinjaTrader files) 29.8 s", "threads": [{"name": "second-strategies", "cpu_ms": 1800}],
+                 "recent_ms": [32300, 32290, 32310],
+                 "stages": [{"name": "adapter tick (NinjaTrader files)", "ms": 29800, "cpu_ms": 120, "n": 1},
+                            {"name": "news + VIX refresh", "ms": 12, "cpu_ms": 10, "n": 1},
+                            {"name": "bars: merge", "ms": 420, "cpu_ms": 410, "n": 1},
+                            {"name": "1m bars", "ms": 510, "cpu_ms": 500, "n": 1},
+                            {"name": "LIT model (lit_live.run)", "ms": 1340, "cpu_ms": 1300, "n": 1},
+                            {"name": "route", "ms": 30, "cpu_ms": 20, "n": 1}, {"name": "guards", "ms": 60, "cpu_ms": 50, "n": 1},
+                            {"name": "alerts + AI watch", "ms": 90, "cpu_ms": 80, "n": 1}]}
     out.append(("05_running", s))
     return out
 

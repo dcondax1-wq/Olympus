@@ -315,12 +315,18 @@ part yourself or fold it into a script.**
   (`engine/multi_account.py`, off by default, `data/accounts.json`).
 
 ## Key commands (run from the repo root)
-- **START BOT (owner's one start, 2026-10-26):** `START_BOT.bat` / desktop **LE START BOT** -> `engine/go.py`: git pull
-  main (bot stopped), names asked once (`data/start_bot.json`, gitignored), `launch_prep` once, both Sim101 roundtrips until
-  passed once (market open only), owner types the LIVE phrase -> `arm_b` (second_model.json account_b `"armed": true`,
-  other fields kept), the live line in `.env.local.ps1`, server (re)started when that file is newer than the supervisor,
-  `ninjatrader --start` on the 50K, launch checklist, dashboard. Wrong phrase = nothing armed. Tests `tests.test_go` 59/59.
-  Same steps on the dashboard Start page (Infrastructure, "Start & Accounts page").
+- **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
+  Start page's **Start trading**, `go.step_auto`; Infrastructure, "Start & Accounts page"). `START_BOT.bat` -> `engine/go.py`
+  stays for the console: the update (`autoupdate.pull`, bot stopped), names asked once (`data/start_bot.json`,
+  gitignored), `launch_prep` once, both Sim101 roundtrips until passed once (market open only), owner types the LIVE
+  phrase -> `arm_b` (`data/account_b.json` `"armed": true`, other fields kept), the live line in `.env.local.ps1`, server
+  (re)started when that file is newer than the supervisor or the server runs older code (`go.server_stale`),
+  `ninjatrader --start` on the 50K, launch checklist, dashboard. Wrong phrase = nothing armed. Tests `tests.test_go`.
+- `python -X utf8 -m engine.autoupdate --pull`: the update now with the bot stopped (UPDATE.bat, START BOT); the same
+  fast-forward as the auto-update. `python -X utf8 -m engine.account_b --migrate`: move ATLAS's block out of
+  second_model.json by hand (the server does it at start).
+- `python -X utf8 -m tests.test_poll_timing [--full]`: the poll stage timer and the outgoing-folder cache (`--full` replays
+  test_lit_live's LiveBot with and without the timer, ~15 min).
 - `python tools/export_backtest.py`: the live-settings 5-year replay → `research/lab/backtest_live.json`. Contains periods, months,
   stop buckets, eval odds, **per-trade reports** (why it entered / plan / result / lessons) and **lessons** (wins vs losses).
   About 1 min on 11 processes.
@@ -489,6 +495,19 @@ part yourself or fold it into a script.**
   `data/live_pub.git`, never main = no Pages build). The phone polls it every 30-60 s via api.github.com (raw fallback) and lays
   it over data.json. No extra Actions minutes. Auto-update also checks hourly outside trading time (weekdays 16:00-01:20 ET,
   weekends) when flat, nothing armed and a restart is safe (`engine/autoupdate.py` mode `hourly`).
+- **Poll speed diagnostics (2026-10-26, `engine/poll_timing.py`, read-only):** the Surface polled in ~32,300 ms every poll
+  (heartbeat 2026-10-25) against ~0.8 s here. server.py installs a stage timer (LE_POLL_TIMING=0 = off) that wraps
+  LiveBot's stage methods and the few module functions poll_once calls, so `engine/live.py` stays byte-identical (the PC's
+  hand-patched copy must keep fast-forwarding). Each poll -> `bot.health["poll_stages"]` (total / CPU / waiting, every
+  stage in order with nested "a > b", other threads' CPU during the poll via psutil) -> heartbeat `health.poll.stages`
+  (`accounts.poll_stages_block`) -> Home "Bot loop" light (`pc_cc_api.poll_line`) and the Start page's Bot loop card.
+  Findings here: the 20,000-row MNQ_1m.csv parse is 56 ms (`engine="python"`; the C engine gives the same frame in 41 ms:
+  not the cause, left alone); a busy background thread slows a poll ~1.5x (GIL), not 30x; NinjaTrader's `outgoing`
+  holds one file per order and `connections()` opened every one of them twice a poll per adapter (604 reads with 300 orders;
+  every open on the PC passes OneDrive's sync filter) -> now read only when size / time changed (`_CONN_SEEN`, shared by
+  every adapter: 2 reads a poll). The constant ~32 s (= ~2 s of work + one 30 s wait?) is still unproven: the first
+  heartbeat with `health.poll.stages` names the stage (wall >> CPU = waiting on disk / network / a lock). Tests
+  `tests.test_poll_timing` (15; `--full` also replays test_lit_live's LiveBot with and without the timer).
 - **Updates never blocked by the PC's own files (2026-10-26):** ATLAS's account (the account_b block) lives in the
   gitignored `data/account_b.json`; `second_model.json` ships `"account_b": null` and is never written for it
   (`account_b.raw_cfg`: local first, else the tracked block; `set_account_b` / `arm_b` / launch prep / the Start page write

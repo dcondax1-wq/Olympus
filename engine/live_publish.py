@@ -146,6 +146,9 @@ def build(hb_payload: dict, now=None, lm: dict | None = None, hb_last: dict | No
     pc = {k: hb.get(k) for k in ("running", "adapter", "position", "model_state", "host", "model", "health", "ops", "remote", "acct",
                                  "brain", "second", "ai", "launch")}   # brain: the Bot Brain's phone cut (< 16 KB); second: paper EMA / MACD
     pc.update(present=True, t=now, age_s=0, silent=False, every_s=int(every_s), live=True)
+    if isinstance(pc.get("health"), dict) and isinstance(pc["health"].get("poll"), dict) and "stages" in pc["health"]["poll"]:
+        # the poll's stage table (engine/poll_timing.py) stays in the heartbeat: the phone shows only the poll time
+        pc["health"] = {**pc["health"], "poll": {k: v for k, v in pc["health"]["poll"].items() if k != "stages"}}
     out = {"v": 1, "kind": KIND, "t": now, "every_s": int(every_s), "host": hb.get("host"), "model_state": hb.get("model_state")}
     try:
         from . import accounts

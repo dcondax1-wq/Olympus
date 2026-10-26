@@ -128,6 +128,18 @@ def _clock(fresh=False) -> dict:
             f"PC clock {abs(d):.1f} s {side} internet time" + ("" if ok else f": new entries are blocked above {go.CLOCK_MAX_S:.0f} s")}
 
 
+def _poll():
+    """The running bot's last poll, stage by stage (engine/poll_timing.py via accounts.poll_stages_block), else None."""
+    try:
+        b = _bot()
+        if not getattr(b, "running", False):
+            return None
+        from . import accounts
+        return accounts.poll_stages_block((getattr(b, "health", None) or {}).get("poll_stages"))
+    except Exception:
+        return None
+
+
 def _cards() -> dict:
     try:
         from . import pc_cc_api as C
@@ -164,6 +176,7 @@ def r_status(request: Request, fresh: int = 0):
         st["accounts"] = go.accounts(_cards())
         st["local"] = cloud_guard.local_only(request) is None
         st["clock"] = _clock(fresh=bool(fresh))
+        st["poll"] = _poll()
         return _J(st)
     except Exception as e:
         return _J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)

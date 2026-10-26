@@ -62,7 +62,7 @@ function jobCard(j) {
   const st = j.running ? chip('running', 'warn') : j.rc === 0 ? chip('done', 'good') : chip(j.state === 'done' ? 'stopped (see the lines)' : 'stopped', j.retry_s || j.need ? 'warn' : 'bad');
   return `<div class="card nx-glass cc-card st-job"><div class="card-h"><h3>${esc(name)}</h3><div class="card-tools">${st}</div></div>
     ${j.running ? `<p class="muted">${j.step === 'sims' ? 'The dashboard restarts during the test (about 2 minutes): this page reconnects by itself.' : 'The bot server may restart once: this page reconnects by itself.'}</p>` : ''}
-    <pre class="st-log">${esc((j.lines || []).join('\n'))}</pre></div>`;
+    ${(j.lines || []).length ? `<pre class="st-log">${esc(j.lines.join('\n'))}</pre>` : ''}</div>`;
 }
 
 // ------------------------------------------------------------------ the one button: Start trading
@@ -134,6 +134,18 @@ async function startGo() {
   return post('go', norm(v) === norm(P.d?.phrase) && v ? { confirm: v } : {});
 }
 
+// the running bot's last poll, stage by stage (engine/poll_timing.py): where the time goes
+function pollCard(ps) {
+  if (!ps || !ps.stages?.length) return '';
+  const s1 = (ms) => (ms / 1000).toFixed(ms >= 10000 ? 0 : 1) + ' s';
+  const top = ps.stages.filter((s) => !s.name.includes(' > ')).sort((a, b) => b.ms - a.ms).slice(0, 8);
+  const max = Math.max(1, ...top.map((s) => s.ms));
+  const slow = ps.total_ms > 5000;
+  return `<div class="card nx-glass cc-card st-poll"><div class="card-h"><h3>Bot loop</h3><div class="card-tools">${chip(s1(ps.total_ms) + ' a poll', slow ? 'warn' : 'good')}</div></div>
+    <p class="muted">CPU ${s1(ps.cpu_ms || 0)} · waiting ${s1(ps.wait_ms || 0)}${(ps.threads || []).length ? ` · busy meanwhile: ${esc(ps.threads[0].name)} ${s1(ps.threads[0].cpu_ms)}` : ''}</p>
+    ${top.map((s) => `<div class="st-prow"><span>${esc(s.name)}</span><i style="width:${Math.max(2, Math.round(100 * s.ms / max))}%"></i><b>${s1(s.ms)}</b></div>`).join('')}</div>`;
+}
+
 // ------------------------------------------------------------------ the accounts
 function acctRow(r, d) {
   const can = d.local && !d.running;
@@ -191,7 +203,7 @@ function draw() {
     <div class="st-cols"><div class="card nx-glass cc-card st-list"><div class="card-h"><h3>Checklist</h3><div class="card-tools">${chip(`${n}/${d.steps.length}`, d.all_green ? 'good' : '')}</div></div>
       ${d.steps.map((s, i) => stepRow(s, d, i === d.steps.findIndex((x) => x.action === P.open && !x.done))).join('')}
       ${clockRow(d)}</div>
-      ${jobCard(d.job)}</div>
+      ${jobCard(d.job) + pollCard(d.poll) ? `<div class="st-col2">${jobCard(d.job)}${pollCard(d.poll)}</div>` : ''}</div>
     <div class="card nx-glass cc-card st-accts"><div class="card-h"><h3>Accounts</h3><div class="card-tools">${d.running ? chip('bot running: stop it to add or remove', 'warn') : ''}</div></div>
       ${rows.length ? rows.map((r) => acctRow(r, d)).join('') : '<div class="pc-empty"><b>No accounts yet</b><span>Add the 50K for Zlarior and the 25K for ATLAS.</span></div>'}
       ${addForm(d)}</div>`;

@@ -89,3 +89,11 @@
 .btn.st-go[disabled] { opacity: .5; cursor: not-allowed; }
 .st-retry { font: 600 13px var(--sans); color: var(--warn); font-variant-numeric: tabular-nums; }
 @media (max-width: 760px) { .btn.st-go { width: 100%; justify-content: center; } }
+/* the bot loop, stage by stage (engine/poll_timing.py) */
+.st-col2 { display: flex; flex-direction: column; gap: var(--nx-gutter, 20px); min-width: 0; }
+.st-poll .muted { margin: 0 0 8px; font-size: 12.5px; }
+.st-prow { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 4px 0;
+  font: 500 12.5px var(--sans); color: var(--ink-2); }
+.st-prow span { overflow-wrap: anywhere; }
+.st-prow i { display: block; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--accent) 60%, transparent); }
+.st-prow b { font: 600 12.5px var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }

@@ -236,8 +236,20 @@ def lights(bot, now: int, h: dict) -> list:
     age = poll.get("age_s")
     out.append(_light("poll", "Bot loop", (age is not None and age < 180 and not poll.get("consecutive_errors")) if running else None,
                       ("stopped" if not running else f"last poll {int(age)} s ago" if age is not None else "no poll yet")
-                      + (f", {poll.get('consecutive_errors')} errors in a row" if poll.get("consecutive_errors") else "")))
+                      + (f", {poll.get('consecutive_errors')} errors in a row" if poll.get("consecutive_errors") else "")
+                      + (f"; {poll_line(poll.get('stages'))}" if running and poll.get("stages") else "")))
     return out
+
+
+def poll_line(ps) -> str:
+    """One line from health.poll.stages: '32.3 s a poll (CPU 2.1 s); slowest: adapter tick 29.8 s, LIT model 1.2 s'."""
+    if not isinstance(ps, dict) or not ps.get("total_ms"):
+        return ""
+    top = sorted((s for s in ps.get("stages") or [] if " > " not in str(s.get("name"))), key=lambda s: -(s.get("ms") or 0))[:3]
+    th = [t for t in ps.get("threads") or [] if (t.get("cpu_ms") or 0) >= 500][:1]
+    return (f"{ps['total_ms'] / 1000:.1f} s a poll (CPU {(ps.get('cpu_ms') or 0) / 1000:.1f} s); slowest: "
+            + ", ".join(f"{s['name']} {(s.get('ms') or 0) / 1000:.1f} s" for s in top)
+            + (f"; busy meanwhile: {th[0]['name']} {th[0]['cpu_ms'] / 1000:.1f} s CPU" if th else ""))
 
 
 def _heartbeat():
