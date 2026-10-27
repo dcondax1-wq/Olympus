@@ -30,6 +30,7 @@ GENERATED = (
     "data/VIX_1d.csv", "data/VXN_1d.csv", "data/CBOE_vol_1d.csv",   # engine/news.py CBOE daily closes
     "data/news/ff_thisweek.json", "data/news/ff_archive.csv", "data/news/hub.json",   # engine/news.py, tools/news_hub.py
     "data/lit_learning.json",             # engine/lit_learn.py learning loop
+    "data/lit_journal.jsonl",             # LiveBot._journal: the LIT learning journal (2026-10-27: its 06:12 line blocked the update)
     "data/discovery.json",                # engine/discovery.py cache
     "data/confluence_registry.json", "research/CONFLUENCE_LOG.md",  # server.py learning cycle (engine.confluence_search)
     "research/lit/live_check.json", "research/lit/live_timing.json",  # tests the ops checks run
