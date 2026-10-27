@@ -343,7 +343,7 @@ def _tday(mod: int) -> int:
     return (int(mod) - 1080) % 1440
 
 
-def entry_never_placed(adapter, entry_t, res) -> bool:
+def entry_never_placed(adapter, entry_t, res, now=None) -> bool:
     """True only when the entry entry_t provably never became a position (2026-10-27: ATLAS's 03:30 entry was refused, yet
     kept "open" and its paper P&L was about to be booked): the order's answer `res` is NOT OK, no leg of it reported a
     fill, no leg of the adapter is open / pending for it (legs + this process's retired history), and NinjaTrader shows no
@@ -359,7 +359,7 @@ def entry_never_placed(adapter, entry_t, res) -> bool:
             if isinstance(lg, dict) and int(lg.get("entry_t") or 0) == int(entry_t)]
     if any(lg.get("status") in OPEN_STATUSES or int(lg.get("filled") or 0) > 0 for lg in mine):
         return False
-    if rl and not all(x.get("state") in DEAD for x in rl) and not mine:
+    if rl and not all(x.get("state") in DEAD for x in rl) and not mine and not _no_trace(adapter, entry_t, rl, now):
         return False                                      # a leg was still working when it answered: unknown since
     try:
         insts = set((adapter._instruments() or {}).values()) if callable(getattr(adapter, "_instruments", None)) else set()
@@ -370,6 +370,34 @@ def entry_never_placed(adapter, entry_t, res) -> bool:
     except Exception:
         pass
     return True
+
+
+NO_TRACE_S = 600
+
+
+def _no_trace(adapter, entry_t, rl, now=None) -> bool:
+    """A "fill not reported yet" entry the adapter no longer knows (a restart lost its retired legs) never became a position
+    when, NO_TRACE_S after it: NinjaTrader wrote no order file for any of its orders (outgoing\ holds no name with
+    LE<entry_t>) AND it shows a FLAT position file for every contract of it (2026-10-27: Zlarior's 06:12 SELL 7 and
+    ATLAS's 03:30 BUY 3 were picked up, never answered, the accounts flat). A missing position file proves nothing."""
+    try:
+        if (time.time() if now is None else float(now)) - float(entry_t) < NO_TRACE_S:
+            return False
+        if not callable(getattr(adapter, "_listing", None)) or not callable(getattr(adapter, "position_for", None)):
+            return False
+        tag = f"LE{int(entry_t)}"
+        if any(tag in n for n in adapter._listing()):
+            return False
+        insts = {x.get("instrument") for x in rl if x.get("instrument")}
+        if not insts:
+            return False
+        for inst in insts:
+            p = adapter.position_for(inst)
+            if not p or p.get("side") != "FLAT":
+                return False
+        return True
+    except Exception:
+        return False
 
 
 def is_sim(account: str) -> bool:

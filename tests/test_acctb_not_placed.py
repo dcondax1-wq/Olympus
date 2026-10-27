@@ -336,10 +336,94 @@ def part7(tmp):
           len(c["ent"]) == 1 and c["exi"] and abs(sum(cp) - TL.booked(t0)) < 0.01, (c["ent"], c["exi"]))
 
 
+class TraceAdapter(StubAdapter):
+    """A restarted adapter: no legs, NinjaTrader's outgoing\\ listing and position files as given."""
+
+    def __init__(self, names=(), pos="FLAT"):
+        super().__init__({"ok": True})
+        self.names, self.pos_side = list(names), pos
+
+    def _listing(self):
+        return list(self.names)
+
+    def position_for(self, inst):
+        return None if self.pos_side is None else {"side": self.pos_side, "qty": 0 if self.pos_side == "FLAT" else 7}
+
+
+PENDING = {"ok": False, "error": "MNQ 12-26: fill not reported yet: the stop and target go in the moment NinjaTrader reports it",
+           "legs": [{"instrument": "MNQ 12-26", "qty": 7, "ok": False, "state": None, "note": "fill not reported yet"}]}
+
+
+def part8(tmp):
+    t = 1793095920                       # Zlarior's 06:12 SELL 7 on 2026-10-27
+    f = lambda ad, now: N.entry_never_placed(ad, t, PENDING, now=now)
+    check("8. 'fill not reported yet', adapter restarted, no order file, position FLAT, 10+ min later -> never placed",
+          f(TraceAdapter(), t + 700))
+    check("8. ... within 10 min -> unknown (kept)", not f(TraceAdapter(), t + 300))
+    check("8. ... NinjaTrader wrote an order file of it -> kept", not f(TraceAdapter([f"LE{t}W924ME.txt"]), t + 700))
+    check("8. ... no position file (NinjaTrader restarted) -> kept", not f(TraceAdapter(pos=None), t + 700))
+    check("8. ... a position shown -> kept", not f(TraceAdapter(pos="SHORT"), t + 700))
+    # B's 03:30 BUY 3 the same way: its restored phantom is dropped, the booked HEDGE +$525.30 voided
+    bot, B = make(tmp, TraceAdapter(), now=TB + 3 * 3600)
+    B.ledger = [{"t": TB + 12, "sym": "NQ", "side": "buy", "qty": 3, "entry_t": TB, "src": KEY, "result": dict(PENDING)},
+                {"t": TB + 9724, "sym": "NQ", "side": "exit", "qty": 3, "reason": "HEDGE", "pnl": 525.3, "entry_t": TB, "src": KEY}]
+    B.prov = {TB: {"key": KEY, "short": "MACD", "qty": 3, "dir": 1, "entry": 29323.25, "day": "2026-10-27", "final": True}}
+    B.closes = [["2026-10-27", TB + 9724, 525.3, TB]]
+    B.tick(*frames(), "NQ", TB + 3 * 3600)
+    ev = B.eval_view(TB + 3 * 3600)
+    check(f"8. ATLAS: the HEDGE +$525.30 of the never-filled 03:30 entry voided -> balance ${ev['balance']:,.2f}",
+          not B.closes and abs(ev["balance"] - 25000.0) < 0.01, (B.closes, ev))
+
+
+def part9(tmp):
+    from engine import live
+    t = 1793095920
+    b = live.LiveBot()
+    now = [t + 3 * 3600]
+    b.clock = lambda: now[0]
+    b.state_path = os.path.join(tmp, "ls.json")
+    b.cfg = {"adapter": "ninjatrader", "sym": "NQ", "tf": "5m"}
+    b.adapter = TraceAdapter()
+    b.ledger = [{"t": t + 10, "sym": "NQ", "side": "sell", "qty": 7, "entry_t": t, "result": dict(PENDING)},
+                {"t": t + 1686, "sym": "NQ", "side": "exit", "qty": 7, "reason": "STOP", "pnl": -965.3, "entry_t": t},
+                {"t": t - 9000, "sym": "NQ", "side": "buy", "qty": 2, "entry_t": t - 9100, "result": {"ok": True}},
+                {"t": t - 8000, "sym": "NQ", "side": "exit", "qty": 2, "reason": "TARGET", "pnl": 400.0, "entry_t": t - 9100}]
+    b._void_unplaced_exits()
+    ex = [r for r in b.ledger if r["side"] == "exit"]
+    check("9. Zlarior: the booked -$965.30 STOP of the never-filled 06:12 SELL 7 -> $0 (kept as pnl_void)",
+          ex[0]["pnl"] == 0.0 and ex[0].get("pnl_void") == -965.3 and ex[0].get("void") == "not placed", ex[0])
+    check("9. ... a real trade's +$400 is untouched", ex[1]["pnl"] == 400.0 and not ex[1].get("void"), ex[1])
+    days = b.eval_days()
+    check(f"9. ... the eval day books only the real trade: {days}", abs(sum(v for k, v in days.items() if k != '0000-00-00') - 400.0) < 0.01, days)
+    b._void_unplaced_exits()
+    check("9. ... twice = nothing more", ex[0]["pnl"] == 0.0 and ex[1]["pnl"] == 400.0)
+    b.cfg = {"adapter": "paper", "sym": "NQ", "tf": "5m"}
+    b.ledger[1].update(pnl=-965.3, void=None)
+    b._void_unplaced_exits()
+    check("9. paper bot: never voids", b.ledger[1]["pnl"] == -965.3)
+
+
+def part10(tmp):
+    import datetime as dt
+    from engine import nt_log
+    d = os.path.join(tmp, "NinjaTrader 8", "log")
+    os.makedirs(d)
+    with open(os.path.join(d, "log.20261027.00000.txt"), "w", encoding="utf-8") as fh:
+        fh.write("2026-10-27 06:12:05:101|1|64|Order='LE1793095920W924ME/MFFUEVBLD602936016' New state='Rejected' "
+                 "Error='Order rejected' Native error='x C:\\Users\\someone\\file.txt'\n"
+                 "2026-10-27 06:13:00:000|1|2|Chart refreshed\n2026-10-26 23:00:00:000|1|4|error for bob@mail.com\n"
+                 "2026-10-20 01:00:00:000|1|4|old error line\n")
+    r = nt_log.lines(os.path.dirname(d), today=dt.date(2026, 10, 27))
+    ln = r.get("lines") or []
+    check("10. NinjaTrader log for the heartbeat: our order's rejection line kept", ln and "LE1793095920" in ln[0] and "Rejected" in ln[0], r)
+    check("10. ... no file path, no e-mail, nothing older than yesterday, no unrelated line",
+          all("Users" not in x and "@" not in x for x in ln) and len(ln) == 2 and not any("old" in x or "Chart" in x for x in ln), ln)
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="le_notplaced_")
     try:
-        for part in (part1, part2, part3, part4, part5, part6, part7):
+        for part in (part1, part2, part3, part4, part5, part6, part8, part9, part10, part7):
             d = os.path.join(tmp, part.__name__)
             os.makedirs(d)
             part(d)

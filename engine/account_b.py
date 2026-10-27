@@ -1059,7 +1059,7 @@ class AccountB:
         """True only when B's entry et_ provably never became a position (engine/ninjatrader.entry_never_placed: answer NOT
         OK, no leg filled / open / pending, no position shown on B's contracts; anything unclear = False, kept as before)."""
         from .ninjatrader import entry_never_placed
-        return entry_never_placed(self.adapter, et_, res if isinstance(res, dict) else self.entry_result(et_))
+        return entry_never_placed(self.adapter, et_, res if isinstance(res, dict) else self.entry_result(et_), now=self.clock())
 
     def _drop_unplaced(self, et_, res, now):
         """B's entry et_ never went in: B is flat (no position kept, no exit routed or booked for it, a close booked by an
