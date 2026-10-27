@@ -29,9 +29,9 @@ def _clean(s: str) -> str:
     return s[:MAX_LEN]
 
 
-def files(folder: str, n: int = 2) -> list:
+def files(folder: str, n: int = 2, sub: str = "log") -> list:
     try:
-        fs = glob.glob(os.path.join(folder, "log", "log.*.txt"))
+        fs = glob.glob(os.path.join(folder, sub, f"{sub}.*.txt"))
         return sorted(fs, key=os.path.getmtime)[-n:]
     except Exception:
         return []
@@ -45,18 +45,19 @@ def _tail(path: str) -> str:
         return fh.read().decode("utf-8", "replace")
 
 
-def lines(folder: str | None, today: dt.date | None = None) -> dict:
-    """{"files": n, "lines": [...], "error"?}; nothing found = an empty list."""
+def lines(folder: str | None, today: dt.date | None = None, sub: str = "log") -> dict:
+    """{"files": n, "lines": [...], "error"?}; nothing found = an empty list. sub "trace" = NinjaTrader's trace files
+    (<NinjaTrader 8>\\trace\\trace.*.txt: the ATI's own processing lines)."""
     try:
         if not folder:
             from .ninjatrader import default_folder
             folder = default_folder()
-        fs = files(folder)
+        fs = files(folder, sub=sub)
         if not fs:
-            return {"files": 0, "lines": [], "note": "no NinjaTrader log file found"}
+            return {"files": 0, "lines": [], "note": f"no NinjaTrader {sub} file found"}
         key = tuple((f, os.path.getsize(f), os.path.getmtime(f)) for f in fs)
-        if _CACHE.get("key") == key:
-            return _CACHE["out"]
+        if _CACHE.get(sub, {}).get("key") == key:
+            return _CACHE[sub]["out"]
         today = today or dt.date.today()
         days = {today.isoformat(), (today - dt.timedelta(days=1)).isoformat()}
         out = []
@@ -65,15 +66,55 @@ def lines(folder: str | None, today: dt.date | None = None) -> dict:
                 if ln[:10] in days and _KEY.search(ln):
                     out.append(_clean(ln))
         res = {"files": len(fs), "lines": out[-MAX_LINES:]}
-        _CACHE.update(key=key, out=res)
+        _CACHE[sub] = {"key": key, "out": res}
         return res
     except Exception as e:
         return {"files": 0, "lines": [], "error": f"{e.__class__.__name__}"}
 
 
+def outgoing_summary(folder: str | None) -> dict:
+    """What NinjaTrader's outgoing\\ folder shows, names only: its connection files (<name>.txt holding CONNECTED /
+    DISCONNECTED), the accounts it wrote position files for, how many order files (ours = LE...) it holds, and the
+    newest LE order files (the bot's ids, e.g. whether NinjaTrader answered an entry at all)."""
+    try:
+        if not folder:
+            from .ninjatrader import default_folder
+            folder = default_folder()
+        d = os.path.join(folder, "outgoing")
+        names = os.listdir(d)
+    except Exception as e:
+        return {"error": e.__class__.__name__}
+    pos_accts, conns, ours, other = {}, [], [], 0
+    for n in names:
+        low = n.lower()
+        if low.endswith("_position.txt"):
+            acct = n[:-len("_position.txt")].rsplit("_", 1)[-1]
+            pos_accts[acct] = pos_accts.get(acct, 0) + 1
+        elif n.startswith("LE") and low.endswith(".txt"):
+            ours.append(n)
+        elif low.endswith(".txt") and "_" not in n and len(n) < 60:
+            try:
+                txt = open(os.path.join(d, n), encoding="utf-8", errors="replace").read(40).strip().upper()
+            except Exception:
+                txt = ""
+            if txt in ("CONNECTED", "DISCONNECTED", "CONNECTION LOST"):
+                conns.append(f"{n[:-4]}={txt}")
+            else:
+                other += 1
+        else:
+            other += 1
+    ours.sort(key=lambda n: os.path.getmtime(os.path.join(d, n)) if os.path.exists(os.path.join(d, n)) else 0)
+    return {"files": len(names), "connections": conns, "position_accounts": pos_accts, "le_orders": len(ours),
+            "le_newest": [_clean(x) for x in ours[-8:]], "other": other}
+
+
 def hb_block(bot) -> dict | None:
-    """The heartbeat's "nt_log" block (NinjaTrader bots only)."""
+    """The heartbeat's "nt_log" block (NinjaTrader bots only): the Log-tab lines + the outgoing\\ summary."""
     cfg = getattr(bot, "cfg", None) or {}
     if cfg.get("adapter") != "ninjatrader":
         return None
-    return lines(cfg.get("nt_folder"))
+    out = dict(lines(cfg.get("nt_folder")))
+    tr = lines(cfg.get("nt_folder"), sub="trace")
+    out["trace"] = tr.get("lines", [])[-20:]
+    out["outgoing"] = outgoing_summary(cfg.get("nt_folder"))
+    return out
