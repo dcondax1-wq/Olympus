@@ -738,6 +738,12 @@ from engine import fill_audit as _fa
 EXEC_AUDIT = _fa.Watcher(BOT, log=lambda t: print(t, flush=True))
 
 
+def _open_nt():
+    """After a reboot: open NinjaTrader when it is not running (engine/go.ensure_ninjatrader, no wait)."""
+    from engine import go as _go
+    _go.ensure_ninjatrader(wait_s=0, connected=lambda: None, sleep=lambda s: None)
+
+
 def _autostart_resume():
     rec = _wd.load(_AUTOSTART["path"])
     marker = _au.take_restart_marker()   # set when this restart follows an auto-update (engine/autoupdate.py)
@@ -756,7 +762,9 @@ def _autostart_resume():
         # a real account: only with the owner's opt-in (engine/autoresume.py, every live lock still applies)
         optin = _ar.load()
         if optin and optin.get("enabled"):
-            r = _ar.resume_live(BOT, rec["cfg"], marker, notify=_au.notify, log=_autostart_log)
+            r = _ar.resume_live(BOT, rec["cfg"], marker, notify=_au.notify, log=_autostart_log,
+                                still_on=lambda: bool(_wd.load(_AUTOSTART["path"])),    # the dashboard switch still on Run
+                                open_nt=_open_nt)
             info.update(resumed=bool((r.get("result") or {}).get("ok")), reason=r.get("reason"), result=r.get("result"),
                         auto_resume=True)
             return

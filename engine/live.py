@@ -1070,7 +1070,8 @@ class LiveBot:
             tmp = self.state_path + ".tmp"
             with open(tmp, "w", encoding="utf-8") as f:
                 json.dump(self._state_blob(), f, default=_jsonable)
-            os.replace(tmp, self.state_path)
+            from .fsutil import replace as _replace
+            _replace(tmp, self.state_path)            # retried: Windows refuses a replace while a reader has it open
         except Exception as e:
             self.health["last_error"] = f"state save failed: {e}"
 

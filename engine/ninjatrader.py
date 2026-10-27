@@ -2087,7 +2087,8 @@ class NinjaTraderAdapter:
             tmp = self.state_path + ".tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump(blob, fh, indent=1, default=str)
-            os.replace(tmp, self.state_path)
+            from .fsutil import replace as _replace
+            _replace(tmp, self.state_path)            # retried: Windows refuses a replace while a reader has it open
         except Exception as e:
             self.last_error = f"state save failed: {e}"
 
