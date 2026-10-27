@@ -418,6 +418,14 @@ def part10(tmp):
     check("10. NinjaTrader log for the heartbeat: our order's rejection line kept", ln and "LE1793095920" in ln[0] and "Rejected" in ln[0], r)
     check("10. ... no file path, no e-mail, nothing older than yesterday, no unrelated line",
           all("Users" not in x and "@" not in x for x in ln) and len(ln) == 2 and not any("old" in x or "Chart" in x for x in ln), ln)
+    o = os.path.join(os.path.dirname(d), "outgoing")
+    os.makedirs(o)
+    for n, t in (("Simulation.txt", "CONNECTED"), ("MNQ 12-26 Globex_Sim101_position.txt", "FLAT;0;0"),
+                 ("LE1793095920W924ME.txt", "WORKING;0;0"), ("abc123.txt", "FILLED;1;25000")):
+        open(os.path.join(o, n), "w").write(t)
+    sm = nt_log.outgoing_summary(os.path.dirname(d))
+    check("10. outgoing summary: connections, accounts with position files, our order files", sm.get("connections") == ["Simulation=CONNECTED"]
+          and sm.get("position_accounts") == {"Sim101": 1} and sm.get("le_orders") == 1 and sm.get("files") == 4, sm)
 
 
 def main():
