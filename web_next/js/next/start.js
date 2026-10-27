@@ -85,7 +85,7 @@ function goCard(d) {
   const wait = P.retryAt ? Math.max(0, Math.round((P.retryAt - Date.now()) / 1000)) : 0;
   let say = runOk ? 'Running. Leave the PC on, plugged in, NinjaTrader open. First trades from 02:00 ET.'
     : auto && j.say ? j.say : d.running ? 'The bot runs with the wrong set-up: see the list below.'
-      : 'Press Start trading: the page does every step by itself.';
+      : 'Press Start trading (or Run in the switch at the top of every page: the same thing): the page does every step by itself.';
   const tone = runOk ? 'good' : failed ? (j.need || j.retry_s ? 'warn' : 'bad') : j.running ? 'now' : '';
   const needPhrase = !d.running && d.need_phrase;
   const lock = !d.local ? 'Only on the PC itself (http://localhost:8766)' : j.running ? 'Working…' : '';

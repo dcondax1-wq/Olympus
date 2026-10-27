@@ -59,6 +59,7 @@ import { scale as scalePage } from './next/scale.js';
 import { pages as ccPages, initCC } from './next/cc.js';
 import { learnlit as learnlitPage, learnatlas as learnatlasPage } from './next/learning.js';
 import { start as startPage } from './next/start.js';
+import { initRunSwitch } from './next/runswitch.js';
 import { board as boardPage } from './next/board.js';
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
@@ -545,6 +546,7 @@ function renderClock() {
 // ------------------------------------------------------------------ boot
 async function boot() {
   initShell();
+  initRunSwitch();                    // the Run / Stop switch at the top of every page (runswitch.js)
   initControls();
   initFX();
   applyAppearance();

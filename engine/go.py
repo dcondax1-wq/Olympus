@@ -245,7 +245,9 @@ def _ps(script, *args):
 
 
 def start_server(wait_s=120) -> bool:
-    subprocess.Popen(["cmd", "/c", "start", "Liquidity Engine bot", *_ps(RUN_BOT)], cwd=ROOT)
+    # hidden window (owner 2026-10-27 "I don't wanna use powershell at all"): the dashboard is the bot's face
+    ps = _ps(RUN_BOT)
+    subprocess.Popen(["cmd", "/c", "start", "Liquidity Engine bot", "/min", *ps[:1], "-WindowStyle", "Hidden", *ps[1:]], cwd=ROOT)
     t0 = time.time()
     while time.time() - t0 < wait_s:
         time.sleep(2)
@@ -576,7 +578,7 @@ def step_arm(cfg, phrase, dry=False, open_page=True) -> int:
               "     restarting the bot server so it reads the live switch")
         stop_server()
     if not server_up() and not start_server():
-        print(' [FIX] The server did not start in 2 minutes. Look at the "Liquidity Engine bot" window.')
+        print(' [FIX] The server did not start in 2 minutes. Double-click HEALTH_CHECK.bat (the server runs hidden).')
         return 1
     rb = arm_b(cfg["atlas"])
     print(f"     25K (ATLAS): {'armed' if rb.get('ok') else 'NOT armed: ' + str(rb.get('error'))[:160]}")

@@ -133,7 +133,7 @@ function launchHtml(Lc) {
 function nextStep(d) {
   const red = (d.lights || []).find((l) => l.ok === false);
   if (red) return { k: 'bad', t: `${red.label}: ${red.detail}`, fix: red.fix };
-  if (!d.running) return { k: 'warn', t: 'The bot is stopped. When NinjaTrader is open and connected, start it on Bot Control.', go: 'botctl' };
+  if (!d.running) return { k: 'warn', t: 'The bot is stopped. Press Run in the switch at the top: it opens NinjaTrader and does every step by itself.' };
   if ((d.lights || []).some((l) => l.key === 'startup' && l.ok == null)) return { k: 'warn', t: 'Waiting for STARTUP RECONCILED (a poll or two). Nothing to do unless it stays red.' };
   return { k: 'good', t: 'All green. Nothing to do: the bot trades on its own. Check back after the entry window.' };
 }

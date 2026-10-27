@@ -539,7 +539,9 @@ def main():
         check("routes: Start in the sidebar's Main group", "ids: ['cc', 'start'," in rt and "id: 'start'" in rt)
         check("app.js: start page registered", "from './next/start.js'" in app_js and "start: startPage" in app_js)
         check("index.html: page section + stylesheet", 'id="page-start"' in idx and "/css/start.css" in idx)
-        check("sw.js: shell cache bumped, start.css cached", "le-shell-next-v21" in sw and "/css/start.css" in sw)
+        import re as _re
+        _v = int((_re.search(r"le-shell-next-v(\d+)", sw) or [0, 0])[1])
+        check("sw.js: shell cache bumped (v21+), start.css cached", _v >= 21 and "/css/start.css" in sw, _v)
         check("start.js: arm button enabled only by the exact phrase", "$('#stPhrase')?.value !== P.d?.phrase" in js)
         check("start.js: one big Start trading button (POST go), the phrase box only when need_phrase, it stays disabled "
               "until the phrase is typed (any capitals)",

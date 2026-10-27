@@ -110,7 +110,8 @@ function startHTML(s, compact = false) {
   const btn = running
     ? `<button type="button" class="bc-go stop" data-bc="stop">${icon('stop')}<span><b>STOP</b><em>stops the bot · stays stopped</em></span></button>`
     : `<button type="button" class="bc-go ${live ? 'live' : ''}" data-bc="start" ${can ? '' : 'disabled'}>${icon('play')}<span><b>START${live ? ' LIVE' : ''}</b><em>${!pf.ok ? `fix the ${pf.red} red row${pf.red === 1 ? '' : 's'} first` : live ? 'real account: you type the confirm phrase' : `on ${esc(pf.account)} · one click`}</em></span></button>`;
-  return `<div class="bc-start">${pickerHTML(s)}<div class="bc-go-row">${btn}${head}</div>${checklistHTML(pf, compact)}
+  const hint = `<p class="muted small bc-swhint">Easiest: use the <b>Run / Stop switch at the top</b> of every page (Zlarior 50K + ATLAS 25K, every step by itself). START here is for picking one account by hand (Sim).</p>`;
+  return `<div class="bc-start">${pickerHTML(s)}<div class="bc-go-row">${btn}${head}</div>${hint}${checklistHTML(pf, compact)}
     ${live && !running ? `<p class="bc-warn">${icon('warn')}<span><b>${esc(pf.account)} is a real account.</b> MFFU: live trading only with you at the PC. Every live lock stays: armed + the exact phrase + NINJATRADER_LIVE on this server, then NinjaTrader's own gate.</span></p>` : ''}</div>`;
 }
 
