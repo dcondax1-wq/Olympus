@@ -1056,33 +1056,10 @@ class AccountB:
         return (r or {}).get("result") if r else None
 
     def never_placed(self, et_, res=None) -> bool:
-        """True only when B's entry et_ provably never became a position: the order's answer is NOT OK, no leg of it reported
-        a fill, no leg is open / pending at the adapter, and NinjaTrader shows no position on B's contracts. An answer with
-        a leg still working ("fill not reported yet") counts only once the adapter retired that leg unfilled in this
-        process. Anything unclear = False (B keeps the position and manages it to its exit, as before)."""
-        r = res if isinstance(res, dict) else self.entry_result(et_)
-        if not isinstance(r, dict) or r.get("ok") is not False:
-            return False
-        rl = [x for x in r.get("legs") or [] if isinstance(x, dict)]
-        if any(int(x.get("filled") or 0) > 0 for x in rl):
-            return False
-        ad = self.adapter
-        mine = [lg for lg in list(getattr(ad, "legs", None) or []) + list(getattr(ad, "history", None) or [])
-                if isinstance(lg, dict) and int(lg.get("entry_t") or 0) == int(et_)]
-        from .ninjatrader import DEAD, OPEN_STATUSES
-        if any(lg.get("status") in OPEN_STATUSES or int(lg.get("filled") or 0) > 0 for lg in mine):
-            return False
-        if rl and not all(x.get("state") in DEAD for x in rl) and not mine:
-            return False                                  # a leg was still working when it answered: unknown since
-        try:
-            insts = set((ad._instruments() or {}).values()) if callable(getattr(ad, "_instruments", None)) else set()
-            for inst in insts:
-                p = ad.position_for(inst)
-                if p and p.get("side") not in (None, "FLAT") and int(p.get("qty") or 0) != 0:
-                    return False
-        except Exception:
-            pass
-        return True
+        """True only when B's entry et_ provably never became a position (engine/ninjatrader.entry_never_placed: answer NOT
+        OK, no leg filled / open / pending, no position shown on B's contracts; anything unclear = False, kept as before)."""
+        from .ninjatrader import entry_never_placed
+        return entry_never_placed(self.adapter, et_, res if isinstance(res, dict) else self.entry_result(et_))
 
     def _drop_unplaced(self, et_, res, now):
         """B's entry et_ never went in: B is flat (no position kept, no exit routed or booked for it, a close booked by an

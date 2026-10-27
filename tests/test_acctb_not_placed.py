@@ -2,7 +2,7 @@
 2026-10-27): the 03:30 MACD LONG 3 on the 25K was refused, yet B kept it "open" to its exit (B's other entries blocked all
 day, its paper P&L booked on B's eval, the phone showed a trade that never existed).
 
-    python -X utf8 -m tests.test_acctb_not_placed          # ~5 s, temp folders only
+    python -X utf8 -m tests.test_acctb_not_placed          # ~1 min, temp folders only
 
   1. refused entry (stub adapter): B is flat at once, the entry does not count toward the 2 a day, one "order NOT placed"
      push with the reason (paths removed), no entry push, the heartbeat row carries ok False + the reason.
@@ -13,6 +13,9 @@ day, its paper P&L booked on B's eval, the phone showed a trade that never exist
   5. a state saved by the old version (the phantom kept open, or already closed with its paper P&L booked): the first poll
      drops it, the booked close is voided (B's eval back to its real balance), one push; a placed trade's close is kept.
   6. LIT entering the other way while B holds a never-placed entry: nothing is closed at market, LIT is not held back.
+  7. LIT on the 50K (engine/live.py, the LiveBot replay of tests.test_lit_live on 2026-10-13, a +$3,169 TARGET day): the
+     broker refuses the entry -> one "order NOT placed" push with the reason, no entry push, its exit books $0 (was the
+     backtest's +$3,169 on the eval), no outcome push; control: the same day with the entry taken books the trade.
 """
 from __future__ import annotations
 
@@ -260,10 +263,83 @@ def part6(tmp):
           ok is True and not exits and not B.closes and B.open_t is None, (ok, exits, B.closes))
 
 
+class LitBroker:
+    """A NinjaTrader-like broker for the LiveBot replay: refuses (or takes) every entry, takes every exit / stop move."""
+    name = "ninjatrader"
+    route_all_exits = True
+    route_stop_moves = True
+    reports_fills = True
+
+    def __init__(self, take):
+        self.take, self.sent, self.legs, self.history = take, [], [], []
+
+    def send(self, a):
+        self.sent.append(dict(a))
+        if a.get("side") in ("buy", "sell") and not self.take:
+            return {"ok": False, "error": REFUSED}
+        if a.get("side") in ("buy", "sell"):
+            return {"ok": True, "legs": [{"instrument": "MNQ 12-26", "qty": a.get("qty"), "filled": a.get("qty"), "ok": True}]}
+        return {"ok": True}
+
+    def has_open_bracket(self, entry_t=None):
+        return self.take
+
+    def _instruments(self):
+        return {"mini": "NQ 12-26", "micro": "MNQ 12-26"}
+
+    def position_for(self, inst):
+        return {"side": "FLAT", "qty": 0}
+
+
+def part7(tmp):
+    import collections
+    import json
+    from tests import test_lit_live as TL
+    from tools import lit_final as F
+    P = json.load(open(os.path.join(ROOT, "live_model.json"), encoding="utf-8"))["lit"]
+    day = "2026-10-13"
+    by_day = collections.defaultdict(list)
+    for t in F.run(P):
+        if t["day"] == day:
+            by_day[day].append(t)
+    want = by_day[day]
+    if len(want) != 1:
+        check(f"7. {day} has one LIT trade in the backtest", False, want)
+        return
+    t0 = want[0]
+    out = {}
+    for take in (False, True):
+        held = {}
+
+        def hook(bot, take=take, held=held):
+            bot.cfg["adapter"] = "ninjatrader"
+            bot.adapter = LitBroker(take)
+            held["bot"], held["pushed"] = bot, []
+            bot._push_send = lambda p: held["pushed"].append(p)
+        TL.bot_replay(P, by_day, sessions=(day,), on_bot=hook)
+        b = held["bot"]
+        ent = [r for r in b.ledger if r.get("side") in ("buy", "sell") and int(r.get("entry_t") or 0) == int(t0["entry_t"])]
+        exi = [r for r in b.ledger if r.get("side") == "exit" and int(r.get("entry_t") or 0) == int(t0["entry_t"])]
+        out[take] = {"ent": ent, "exi": exi, "days": b.eval_days(), "pushed": [f"{p.get('title')} | {p.get('body')}" for p in held["pushed"]]}
+    r, c = out[False], out[True]
+    check(f"7. LIT {day}: the refused entry was sent once, NOT OK", len(r["ent"]) == 1 and (r["ent"][0].get("result") or {}).get("ok") is False,
+          r["ent"])
+    np_ = [x for x in r["pushed"] if "NOT placed" in x]
+    check("7. ... one 'order NOT placed' push with the reason (no path), no entry / outcome push", len(np_) == 1 and "DISCONNECTED" in np_[0]
+          and "Users" not in np_[0] and len(r["pushed"]) == 1, r["pushed"])
+    pn = [float(x.get("pnl") or 0) for x in r["exi"]]
+    check(f"7. ... its exit books $0 (the backtest's {t0['exit']} ${t0['pnl']:,.0f} is not on the eval): {pn}, eval day "
+          f"${sum(v for k, v in r['days'].items() if k != '0000-00-00'):,.2f}", r["exi"] and all(abs(v) < 1e-9 for v in pn)
+          and abs(sum(v for k, v in r["days"].items() if k != "0000-00-00")) < 1e-9, (r["exi"], r["days"]))
+    cp = [float(x.get("pnl") or 0) for x in c["exi"]]
+    check(f"7. control: the entry taken -> the trade is booked (${sum(cp):,.2f}, backtest at $1.90 ${TL.booked(t0):,.2f})",
+          len(c["ent"]) == 1 and c["exi"] and abs(sum(cp) - TL.booked(t0)) < 0.01, (c["ent"], c["exi"]))
+
+
 def main():
     tmp = tempfile.mkdtemp(prefix="le_notplaced_")
     try:
-        for part in (part1, part2, part3, part4, part5, part6):
+        for part in (part1, part2, part3, part4, part5, part6, part7):
             d = os.path.join(tmp, part.__name__)
             os.makedirs(d)
             part(d)

@@ -2392,19 +2392,28 @@ class LiveBot:
                         self._remember(tr, sym, note="safety/kill flattened before the model exit: broker fill may differ")
                     continue
                 routed = ("entry", tr["entry_t"]) in self.seen
+                unplaced = routed and self._entry_never_placed(tr["entry_t"])
+                if unplaced:
+                    # its order was refused / never picked up (2026-10-27): the backtest trade did not happen on the account
+                    routed = False
+                    self._log("risk", f"Exit {tr['exit_reason']} for the entry at {_et(tr['entry_t']):%H:%M} ET that NinjaTrader never "
+                                      "took: $0 booked (the trade did not happen on the account)")
                 if not routed:
                     # the model entered during a gap (bot down / feed burst): no order of ours exists for it
                     if self.cfg["adapter"] == "paper":
                         self._log("warn", f"Exit {tr['exit_reason']} for an entry never routed (model entered {_et(tr['entry_t']):%H:%M} ET during a gap) - "
                                           "nothing to flatten on paper")
                         continue
-                    self._log("warn", f"Exit {tr['exit_reason']} for an entry this process never routed (model entered {_et(tr['entry_t']):%H:%M} ET during a gap): "
-                                      "flatten sent in case a broker position exists - verify by hand")
+                    if not unplaced:
+                        self._log("warn", f"Exit {tr['exit_reason']} for an entry this process never routed (model entered {_et(tr['entry_t']):%H:%M} ET during a gap): "
+                                          "flatten sent in case a broker position exists - verify by hand")
                 qty = tr["qty"]
                 if self._open_routed == tr["entry_t"]:
                     self._open_routed = None
                     qty = self._open_qty or tr["qty"]          # what we actually routed (half size in a cold streak)
-                pnl_x = self._routed_pnl(tr, qty)
+                # an entry never routed / never placed had no position of ours: $0 on the eval (was the model's P&L: a
+                # missed 08:37 BE trade booked +$0.10 on the 50K at 23:08 ET 2026-10-26)
+                pnl_x = self._routed_pnl(tr, qty) if routed else 0.0
                 q_add = self._adds_qty(tr["entry_t"])          # LIT scale_in: the adds routed to this position
                 if self.cfg["adapter"] == "paper" or tr["exit_reason"] == "TIME" or getattr(self.adapter, "route_all_exits", False):
                     # brackets handle stop/target at the broker; the bot only flattens on time exits (adapters with
@@ -2547,7 +2556,10 @@ class LiveBot:
         try:
             from . import push
             res = res or {}
-            if getattr(self.adapter, "reports_fills", False) or res.get("ok") is False:
+            if res.get("ok") is False:
+                self._push_entry_failed(pos, qty, res, strategy)
+                return
+            if getattr(self.adapter, "reports_fills", False):
                 return
             p = push.entry_payload(self._push_account(), "LONG" if pos.get("dir") == 1 else "SHORT", qty, pos["entry_t"],
                                    src="pc", contract="MNQ" if sym == "NQ" else "MES" if sym == "ES" else sym,
@@ -2556,6 +2568,40 @@ class LiveBot:
             if strategy:
                 p["body"] = f"{p['body']} ({strategy})"
             self._push_send(p)
+        except Exception as e:
+            self._log("warn", f"phone notification failed: {e.__class__.__name__}")
+
+    def _entry_never_placed(self, entry_t) -> bool:
+        """The routed entry entry_t provably never became a position at the broker (engine/ninjatrader.entry_never_placed on
+        its order's answer: refused / not picked up / rejected, no fill, nothing open, no position shown). Paper or unclear
+        = False (booked as before)."""
+        if (self.cfg or {}).get("adapter") == "paper":
+            return False
+        try:
+            from .ninjatrader import entry_never_placed
+            r = next((r for r in reversed(self.ledger) if r.get("side") in ("buy", "sell") and r.get("entry_t") == entry_t), None)
+            return bool(r) and entry_never_placed(self.adapter, entry_t, r.get("result"))
+        except Exception:
+            return False
+
+    def _push_entry_failed(self, pos, qty, res, strategy=None):
+        """One phone push when an entry order answered NOT OK (2026-10-27): "order NOT placed" + NinjaTrader's reason when
+        it provably never went in, else "order NOT confirmed" (it may be open: check NinjaTrader)."""
+        try:
+            from . import push
+            from .accounts import clean_text
+            et_ = int(pos["entry_t"])
+            err = clean_text(res.get("error") or "no OK from NinjaTrader", 200)
+            what = (f"{strategy + ' ' if strategy else ''}{'LONG' if pos.get('dir') == 1 else 'SHORT'} {qty} MNQ at "
+                    f"{_et(et_):%H:%M} ET")
+            acct = self._push_account()
+            if self._entry_never_placed(et_):
+                title, body = (f"{acct}: order NOT placed", f"{what} did not go in ({err}). Nothing is open, no money at risk; "
+                                                            "the bot keeps looking for its next setup.")
+            else:
+                title, body = f"{acct}: order NOT confirmed", f"{what}: {err}. It may be open: check NinjaTrader."
+            self._log("risk", f"{title}: {body}")
+            self._push_send(push.text_payload("PC", "risk", title, body, key=f"entry_failed:{et_}", t=int(self.clock())))
         except Exception as e:
             self._log("warn", f"phone notification failed: {e.__class__.__name__}")
 

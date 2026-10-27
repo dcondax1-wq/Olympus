@@ -97,7 +97,7 @@ def ref_exit(t):
     return ("TIME" if t["exit"] == "EOD" else t["exit"], int(t["exit_t"]), booked(t))
 
 
-def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15"), lm_extra=None):
+def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15"), lm_extra=None, on_bot=None):
     """LiveBot.poll_once with live_model = LIT, PaperAdapter, a frozen clock and a bar source that only shows closed bars
     (tests/test_live_dryrun.Replay). Polls at every 5m close (every minute from 10 min before each entry to 5 min after its
     exit, as the PC bot polls each minute: scale-in adds and 15-minute cuts are decided on 1m closes).
@@ -131,6 +131,8 @@ def bot_replay(P, by_day, sessions=("2026-10-13", "2026-10-14", "2026-10-15"), l
     errors, ms = [], []
     try:
         bot = rp.bot(start_now=t_start)
+        if on_bot is not None:                    # e.g. a refusing broker (tests/test_acctb_not_placed.py)
+            on_bot(bot)
         for now in sorted(times):
             rp.poll(bot, now + 3, errors)
             ms.append(bot.health.get("poll_ms") or 0)
