@@ -876,6 +876,10 @@ class AccountB:
         False = B's close was refused / is not confirmed yet: LIT must NOT route its opposite entry now (it retries on the
         next poll until its own entry deadline). B stays managed and is never marked flat on an unconfirmed close.
         Pre-launch audit A4 (2026-10-25)."""
+        try:
+            self.reconcile_unplaced(now)                  # an entry the broker never took is nothing to close
+        except Exception as e:
+            self.log("error", f"not-placed check failed: {e.__class__.__name__}: {e}")
         if self.open_t is None:
             return True
         et_ = int(self.open_t)
@@ -900,6 +904,7 @@ class AccountB:
             return
         try:
             from . import second as _second
+            self.reconcile_unplaced(now)                  # an entry the broker never took is not a position
             scfg = _second.load_cfg()
             keys = [k for k in self.spec["keys"] if isinstance((scfg.get("strategies") or {}).get(k), dict)]
             live_prov = [p.get("key") for p in self.prov.values() if not p.get("final")]
@@ -1037,6 +1042,107 @@ class AccountB:
         rr = self.route(act)
         if rr.get("ok") is not False:
             self._push_entry(act, q)
+        elif self.never_placed(tb, rr):
+            self._drop_unplaced(tb, rr, now)
+        else:
+            self._unconfirmed(tb, rr)
+
+    # ---- an entry the broker never took (2026-10-27: the 03:30 MACD LONG 3 on the 25K was refused, yet B kept it "open"
+    # to its exit: B's other entries blocked all day, its paper P&L booked on B's eval, the phone showed a trade that
+    # never existed)
+    def entry_result(self, et_):
+        """The broker's answer to B's entry order of et_ (the last buy / sell ledger row for it), or None."""
+        r = next((r for r in reversed(self.ledger) if r.get("side") in ("buy", "sell") and r.get("entry_t") == int(et_)), None)
+        return (r or {}).get("result") if r else None
+
+    def never_placed(self, et_, res=None) -> bool:
+        """True only when B's entry et_ provably never became a position: the order's answer is NOT OK, no leg of it reported
+        a fill, no leg is open / pending at the adapter, and NinjaTrader shows no position on B's contracts. An answer with
+        a leg still working ("fill not reported yet") counts only once the adapter retired that leg unfilled in this
+        process. Anything unclear = False (B keeps the position and manages it to its exit, as before)."""
+        r = res if isinstance(res, dict) else self.entry_result(et_)
+        if not isinstance(r, dict) or r.get("ok") is not False:
+            return False
+        rl = [x for x in r.get("legs") or [] if isinstance(x, dict)]
+        if any(int(x.get("filled") or 0) > 0 for x in rl):
+            return False
+        ad = self.adapter
+        mine = [lg for lg in list(getattr(ad, "legs", None) or []) + list(getattr(ad, "history", None) or [])
+                if isinstance(lg, dict) and int(lg.get("entry_t") or 0) == int(et_)]
+        from .ninjatrader import DEAD, OPEN_STATUSES
+        if any(lg.get("status") in OPEN_STATUSES or int(lg.get("filled") or 0) > 0 for lg in mine):
+            return False
+        if rl and not all(x.get("state") in DEAD for x in rl) and not mine:
+            return False                                  # a leg was still working when it answered: unknown since
+        try:
+            insts = set((ad._instruments() or {}).values()) if callable(getattr(ad, "_instruments", None)) else set()
+            for inst in insts:
+                p = ad.position_for(inst)
+                if p and p.get("side") not in (None, "FLAT") and int(p.get("qty") or 0) != 0:
+                    return False
+        except Exception:
+            pass
+        return True
+
+    def _drop_unplaced(self, et_, res, now):
+        """B's entry et_ never went in: B is flat (no position kept, no exit routed or booked for it, a close booked by an
+        older version voided), the entry does not count toward the 2 a day, one push with NinjaTrader's reason."""
+        from .accounts import clean_text
+        et_ = int(et_)
+        pv = self.prov.setdefault(et_, {})
+        err = clean_text((res or {}).get("error") or "no OK from NinjaTrader", 200)
+        pv["final"] = True
+        pv["not_placed"] = {"t": int(now), "error": err}
+        if self.open_t is not None and int(self.open_t) == et_:
+            self.open_t = None
+        with self.mx:
+            self.closes = [c for c in self.closes if not (len(c) > 3 and int(c[3]) == et_)]
+            for r in self.ledger:
+                if r.get("side") == "exit" and r.get("entry_t") == et_:
+                    r["void"] = "not placed"
+        side = "LONG" if pv.get("dir") == 1 else "SHORT"
+        what = f"{pv.get('short') or pv.get('key') or 'ATLAS'} {side} {pv.get('qty') or ''} MNQ at {_et(et_):%H:%M} ET"
+        self.log("risk", f"{what} was NOT PLACED on {self.name}: {err}. Nothing is open on account B; it keeps looking for "
+                         "its next setup.")
+        key = f"acctb:notplaced:{et_}"
+        if key not in self.notified:
+            self.notified.append(key)
+            self._push_text(f"{self.label}: order NOT placed",
+                            f"{what} did not go in ({err}). Nothing is open on {self.name}, no money at risk. ATLAS keeps "
+                            "looking for its next setup.", key)
+        self.save()
+
+    def _unconfirmed(self, et_, res):
+        """The entry answered NOT OK but NinjaTrader may hold it (a leg working / filled): kept and managed, one push."""
+        from .accounts import clean_text
+        et_ = int(et_)
+        err = clean_text((res or {}).get("error") or "no OK from NinjaTrader", 200)
+        self.log("risk", f"entry at {_et(et_):%H:%M} ET NOT CONFIRMED on {self.name}: {err}. It may be open: account B keeps it "
+                         "and manages it to its exit.")
+        key = f"acctb:unconfirmed:{et_}"
+        if key not in self.notified:
+            self.notified.append(key)
+            self._push_text(f"{self.label}: order NOT confirmed",
+                            f"Entry at {_et(et_):%H:%M} ET on {self.name}: {err}. It may be open: check NinjaTrader.", key)
+
+    def reconcile_unplaced(self, now):
+        """Each poll: a position B holds whose entry provably never went in is dropped (a refused order, a working leg that
+        NinjaTrader retired unfilled, or a state saved by an older version that kept such an entry open). Once per process,
+        the closes an older version booked for such entries are voided too (their paper P&L never happened on B)."""
+        if not getattr(self, "_unplaced_scanned", False):
+            self._unplaced_scanned = True
+            booked = {int(c[3]) for c in self.closes if len(c) > 3}
+            for et_, pv in sorted(self.prov.items()):
+                if int(et_) in booked and not pv.get("not_placed"):
+                    r = self.entry_result(et_)
+                    if isinstance(r, dict) and r.get("ok") is False and self.never_placed(et_, r):
+                        self._drop_unplaced(et_, r, now)
+        if self.open_t is None:
+            return
+        et_ = int(self.open_t)
+        r = self.entry_result(et_)
+        if isinstance(r, dict) and r.get("ok") is False and self.never_placed(et_, r):
+            self._drop_unplaced(et_, r, now)
 
     def startup_block(self, now):
         """Startup reconcile for account B (bug hunt 2026-10-25): LIT's entries wait for guards.startup_problems, B's did
@@ -1355,8 +1461,8 @@ class AccountB:
         """Heartbeat / live.json / dashboards / Bot Brain: "Account B <name>" with its eval tracker."""
         now = int(now if now is not None else self.clock())
         today = trading_day(now)
-        rows = [{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target")}
-                for r in self.ledger if r.get("side") in ("buy", "sell", "exit")][-8:]
+        rows = [{**{k: r.get(k) for k in ("t", "side", "qty", "reason", "pnl", "entry_t", "src", "strategy", "stop", "target")},
+                 **_answer(r)} for r in self.ledger if r.get("side") in ("buy", "sell", "exit")][-8:]
         out = {"label": self.label, "account": self.name, "plan": self.spec["plan"], "plan_label": self.spec["plan_label"],
                "kind": self.kind(), "sizing": self.spec["sizing"], "keys": list(self.spec["keys"]), "enabled": not self.disabled_reason(),
                "disabled": self.disabled_reason(), "eval": self.eval_view(now), "open": self.position(), "routed": rows,
@@ -1417,6 +1523,19 @@ class AccountB:
             pv = self.prov.get(int(self.open_t)) or {}
             self.log("system", f"restored: open {pv.get('short') or pv.get('key')} {'LONG' if pv.get('dir') == 1 else 'SHORT'} "
                                f"{pv.get('qty')} MNQ from {_et(int(self.open_t)):%H:%M} ET (managed to its exit)")
+
+
+def _answer(r: dict) -> dict:
+    """A ledger row's broker answer for the heartbeat / dashboards: ok (False = refused / not confirmed), NinjaTrader's
+    reason (paths removed), void (an exit of an entry that never went in)."""
+    res = r.get("result") if isinstance(r.get("result"), dict) else {}
+    out = {"ok": res.get("ok")} if res else {}
+    if res.get("ok") is False and res.get("error"):
+        from .accounts import clean_text
+        out["error"] = clean_text(res["error"], 200)
+    if r.get("void"):
+        out["void"] = r["void"]
+    return out
 
 
 TRACKER_KEYS = ("name", "plan", "label", "status", "text", "start", "today", "balance", "profit", "floor", "room", "locked", "mll_after_payout", "buffer", "buffer_balance",
