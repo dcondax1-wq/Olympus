@@ -264,6 +264,18 @@ part yourself or fold it into a script.**
   "order NOT placed" + the reason (or "NOT confirmed" when it may be open), and its model exit books $0 on the eval (was
   the backtest's $: test part 7 replays 2026-10-13, a +$3,169 day). An exit for an entry never routed (bot off) also books
   $0 now (the +$0.10 BE "missed" 08:37 trade booked on the 50K at 23:08 ET 2026-10-26).
+  Same day 06:12 ET Zlarior's SELL 7 answered "fill not reported yet" and was never filled (adapter: cancel never
+  confirmed, account flat): the old code booked -$965.30 on the 50K, B's phantom HEDGE close +$525.30. After a restart
+  the adapter's retired legs are gone, so `_no_trace`: 10 min after the entry, no outgoing\ file with LE<entry_t> and a
+  FLAT position file for every contract = never placed. `LiveBot._void_unplaced_exits` (once per process) sets such
+  booked exits to $0 (`pnl_void` keeps the old figure) + push; B's once-per-process scan voids its closes. Tests
+  `test_acctb_not_placed` 41/41. Why NinjaTrader never answered the MFFU orders: heartbeat `nt_log` (`engine/nt_log.py`,
+  the Log-tab lines with our LE ids / rejects / ATI / errors, paths and e-mails removed).
+- **Start (owner 2026-10-27 "no PowerShell", "PC on = it runs"):** one Run / Stop switch at the top of every PC
+  dashboard page (`web_next/js/next/runswitch.js`, Run = `/api/next/start/go`, Stop = `/api/live/stop`; tests
+  `test_run_switch`). The bot server runs hidden. After a reboot `autoresume.resume_live(still_on=, open_nt=)` opens
+  NinjaTrader and waits for it with no time limit while the switch is on Run (autostart record present).
+  `engine/fsutil.replace` retries state-file replaces on Windows file locks.
 
 ## Trade pictures (2026-10-23, `engine/trade_chart.py`, read-only)
 - One renderer for every strategy's trades (LIT, LIT+Asia, ema / macd / sr, sh_asia / sh_trend): 1600x900 dark PNG (~90 KB),

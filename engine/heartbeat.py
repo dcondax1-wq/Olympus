@@ -397,6 +397,15 @@ def _health(bot):
         return None
 
 
+def _nt_log(bot):
+    """NinjaTrader's own log lines about the bot's orders (engine/nt_log.py). Never raises."""
+    try:
+        from engine import nt_log
+        return nt_log.hb_block(bot)
+    except Exception:
+        return None
+
+
 def _ops():
     """The owner's PC helpers' last result (engine/ops_checks.hb_fields: checks red / yellow, last backup, free disk)."""
     try:
@@ -640,6 +649,7 @@ class Heartbeat:
                 "brain": _brain(self.bot),       # the Bot Brain, phone cut (engine/brain.compact; None before the first LIT poll)
                 "second": _second(self.bot),     # second strategies, PAPER (engine/second.compact; None when off / before the first)
                 "ai": _ai(self.bot),             # AI watch: anomalies, drift, loss caps, rule changes (engine/ai_watch.hb_block)
+                "nt_log": _nt_log(self.bot),     # NinjaTrader's Log-tab lines about our orders (engine/nt_log.py; <= ~10 KB)
                 **_alerts_plus(self.bot)}       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
 
     def beat(self) -> dict:

@@ -1137,6 +1137,9 @@ class LiveBot:
         self.health["fallback"] = False
         self.health["nt_down"] = self.health["nt_down_1m"] = None      # set by this poll's NinjaTrader fetches (no_yahoo)
         self._adapter_tick()
+        if not getattr(self, "_unplaced_scanned", False):
+            self._unplaced_scanned = True
+            self._void_unplaced_exits()
         self._refresh_guard()
         df, drops = self._merged(sym, tf, now, secs)
         if len(df) == 0:
@@ -2581,9 +2584,36 @@ class LiveBot:
         try:
             from .ninjatrader import entry_never_placed
             r = next((r for r in reversed(self.ledger) if r.get("side") in ("buy", "sell") and r.get("entry_t") == entry_t), None)
-            return bool(r) and entry_never_placed(self.adapter, entry_t, r.get("result"))
+            return bool(r) and entry_never_placed(self.adapter, entry_t, r.get("result"), now=self.clock())
         except Exception:
             return False
+
+    def _void_unplaced_exits(self):
+        """Once per process: an exit row that booked $ for an entry NinjaTrader never took (an older version booked the
+        backtest's $: Zlarior's 06:12 SELL 7 on 2026-10-27, -$965.30 on the 50K eval, never filled) books $0 now (the old
+        figure kept as pnl_void), one push. Never raises."""
+        try:
+            fixed = []
+            for r in self.ledger:
+                if r.get("side") != "exit" or r.get("void") or not float(r.get("pnl") or 0):
+                    continue
+                if self._entry_never_placed(r.get("entry_t")):
+                    r["pnl_void"], r["pnl"], r["void"] = r.get("pnl"), 0.0, "not placed"
+                    fixed.append(r)
+            if not fixed:
+                return
+            usd = sum(float(r["pnl_void"]) for r in fixed)
+            txt = ", ".join(f"{_et(int(r['entry_t'])):%H:%M} ET {float(r['pnl_void']):+,.2f}" for r in fixed)
+            self._log("risk", f"Voided {len(fixed)} booked exit(s) of entries NinjaTrader never took ({txt}): the eval ledger "
+                              "is back to the real account")
+            self._save_state()
+            from . import push
+            self._push_send(push.text_payload("PC", "risk", f"{self._push_account()}: fake P&L removed",
+                                              f"{txt} was booked for an order NinjaTrader never took. Removed ({-usd:+,.2f}): "
+                                              "the bot's balance and sizing are back to the real account.",
+                                              key=f"void:{int(fixed[-1]['entry_t'])}", t=int(self.clock())))
+        except Exception as e:
+            self._note_error(f"void check failed: {e.__class__.__name__}: {e}")
 
     def _push_entry_failed(self, pos, qty, res, strategy=None):
         """One phone push when an entry order answered NOT OK (2026-10-27): "order NOT placed" + NinjaTrader's reason when
