@@ -375,12 +375,34 @@ def entry_never_placed(adapter, entry_t, res, now=None) -> bool:
 NO_TRACE_S = 600
 
 
+def _nt_said_no_account(adapter, entry_t) -> bool:
+    """NinjaTrader's Log (<NinjaTrader 8>\\log\\log.*.txt, the newest 3) has the PLACE of this entry (LE<entry_t>) refused
+    with "account does not exist": it never became an order (2026-10-27: every MFFU order went to a Name without the R)."""
+    try:
+        import glob as _glob
+        folder = getattr(adapter, "folder", None)
+        if not folder:
+            return False
+        tag = f"LE{int(entry_t)}"
+        fs = sorted(_glob.glob(os.path.join(folder, "log", "log.*.txt")), key=os.path.getmtime)[-3:]
+        for f in fs:
+            with open(f, encoding="utf-8", errors="replace") as fh:
+                for ln in fh:
+                    if tag in ln and "PLACE;" in ln and "account does not exist" in ln.lower():
+                        return True
+    except Exception:
+        return False
+    return False
+
+
 def _no_trace(adapter, entry_t, rl, now=None) -> bool:
     """A "fill not reported yet" entry the adapter no longer knows (a restart lost its retired legs) never became a position
     when, NO_TRACE_S after it: NinjaTrader wrote no order file for any of its orders (outgoing\ holds no name with
     LE<entry_t>) AND it shows a FLAT position file for every contract of it (2026-10-27: Zlarior's 06:12 SELL 7 and
     ATLAS's 03:30 BUY 3 were picked up, never answered, the accounts flat). A missing position file proves nothing."""
     try:
+        if _nt_said_no_account(adapter, entry_t):
+            return True                               # NinjaTrader's Log: this order went to an account it does not have
         if (time.time() if now is None else float(now)) - float(entry_t) < NO_TRACE_S:
             return False
         if not callable(getattr(adapter, "_listing", None)) or not callable(getattr(adapter, "position_for", None)):
