@@ -363,6 +363,18 @@ def part8(tmp):
     check("8. ... NinjaTrader wrote an order file of it -> kept", not f(TraceAdapter([f"LE{t}W924ME.txt"]), t + 700))
     check("8. ... no position file (NinjaTrader restarted) -> kept", not f(TraceAdapter(pos=None), t + 700))
     check("8. ... a position shown -> kept", not f(TraceAdapter(pos="SHORT"), t + 700))
+    lf = os.path.join(tmp, "NT8", "log")
+    os.makedirs(lf)
+    with open(os.path.join(lf, "log.20261027.00000.txt"), "w") as fh:
+        fh.write(f"10/27/2026 6:12:04 AM|ATI|OIF, 'PLACE;MFFUEVBLD602936016;MNQ 12-26;SELL;7;MARKET;0;0;DAY;;LE{t}W924ME;;' "
+                 "account does not exist 'MFFUEVBLD602936016'\n")
+    ad = TraceAdapter(pos=None)
+    ad.folder = os.path.join(tmp, "NT8")
+    check("8. NinjaTrader's Log: 'account does not exist' for this PLACE -> never placed at once (no position file needed)",
+          N.entry_never_placed(ad, t, PENDING, now=t + 60))
+    ad2 = TraceAdapter(pos=None)
+    ad2.folder = os.path.join(tmp, "NT8")
+    check("8. ... another entry's id -> not proof", not N.entry_never_placed(ad2, t + 300, PENDING, now=t + 400))
     # B's 03:30 BUY 3 the same way: its restored phantom is dropped, the booked HEDGE +$525.30 voided
     bot, B = make(tmp, TraceAdapter(), now=TB + 3 * 3600)
     B.ledger = [{"t": TB + 12, "sym": "NQ", "side": "buy", "qty": 3, "entry_t": TB, "src": KEY, "result": dict(PENDING)},

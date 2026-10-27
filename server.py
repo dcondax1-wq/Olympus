@@ -797,6 +797,21 @@ def _autostart_resume():
         _autostart_alert(f"Liquidity Engine server restarted but the bot resume FAILED: {res.get('error')}")
 
 
+def _fix_account_names():
+    """The account Names NinjaTrader said do not exist, corrected in the bot's local files (engine/account_rename.py,
+    2026-10-27: MFFUEVBLD... -> MFFUEVBLDR...). Never raises."""
+    try:
+        from engine import account_rename as _ar_n
+        r = _ar_n.fix()
+        if r.get("changed") or not r.get("ok"):
+            print(f"[accounts] {r.get('say')}", flush=True)
+            if r.get("changed"):
+                _au.notify("Account names fixed", r.get("say", "")[:300] + ". Press Run on the dashboard and type the live "
+                           "phrase once (it was given for the old name).", key=f"acct:rename:{int(time.time()) // 3600}")
+    except Exception as e:
+        print(f"[accounts] name check skipped: {e.__class__.__name__}: {e}", flush=True)
+
+
 def _migrate_account_b():
     """ATLAS's account block: out of the tracked second_model.json into data/account_b.json (engine/account_b.py), before
     the bot can start, so an older version's write no longer blocks every update. Never raises."""
@@ -838,6 +853,7 @@ def _autostart_startup():
     if os.environ.get("LE_NO_AUTOSTART") == "1":
         WATCHDOG.autostart_info = {"disabled": "LE_NO_AUTOSTART=1"}
     else:
+        _fix_account_names()             # NinjaTrader's real account Names (engine/account_rename.py), before any start
         _migrate_account_b()             # before the resume reads ATLAS's account
         threading.Thread(target=_autostart_resume, name="autostart", daemon=True).start()
         threading.Thread(target=_ensure_shortcuts, name="shortcuts", daemon=True).start()
