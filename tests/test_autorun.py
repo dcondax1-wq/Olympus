@@ -576,6 +576,37 @@ def main() -> int:
                            state_path=os.path.join(tmp, "nols.json"), connected_fn=later, env=env_on)
         check("resume_live: waits for NinjaTrader to connect after a reboot, then resumes", fb.running and len(fb.calls) == 1)
         pushes.clear()
+        # owner 2026-10-27 "if my pc is on it should just run": the switch on Run -> no give-up after 30 min
+        conn2 = {"n": 0}
+
+        def hours(c):
+            conn2["n"] += 1
+            return conn2["n"] > 200                  # NinjaTrader logged in ~2.5 h after the reboot
+        fb, t1, opens = FakeBot(), clock[0], []
+        r = ar.resume_live(fb, auto_cfg, None, notify=lambda *a: pushes.append(a), log=lambda t: None,
+                           sleep=lambda s: clock.__setitem__(0, clock[0] + s), clock=lambda: clock[0], path=op,
+                           state_path=os.path.join(tmp, "nols.json"), connected_fn=hours, env=env_on, still_on=lambda: True,
+                           open_nt=lambda: opens.append(clock[0]))
+        gap = [b - a for a, b in zip(opens, opens[1:])]
+        check(f"resume_live: NinjaTrader opened at the start of the wait, then every 10 min ({len(opens)} times)",
+              opens and opens[0] - t1 < 60 and gap and min(gap) >= 600, (opens[:3], gap[:3]))
+        waits = [p for p in pushes if "Waiting for NinjaTrader" in p[0]]
+        check("resume_live: switch on Run, NinjaTrader logs in hours later -> still resumes, one 'waiting' push, no 'NOT resumed'",
+              fb.running and len(fb.calls) == 1 and len(waits) == 1 and not [p for p in pushes if "NOT resumed" in p[0]]
+              and clock[0] - t1 > ar.CONNECT_WAIT_S, (clock[0] - t1, pushes))
+        pushes.clear()
+        flag = {"on": True, "n": 0}
+
+        def off_later():
+            flag["n"] += 1
+            return flag["n"] < 5                     # the owner presses Stop while it waits (after the 30 min)
+        fb = FakeBot()
+        r = ar.resume_live(fb, auto_cfg, None, notify=lambda *a: pushes.append(a), log=lambda t: None,
+                           sleep=lambda s: clock.__setitem__(0, clock[0] + s), clock=lambda: clock[0], path=op,
+                           state_path=os.path.join(tmp, "nols.json"), connected_fn=lambda c: False, env=env_on, still_on=off_later)
+        check("resume_live: Stop pressed while it waits for NinjaTrader -> the wait ends, never started, no 'NOT resumed' push",
+              not fb.calls and not fb.running and not [p for p in pushes if "NOT resumed" in p[0]], pushes)
+        pushes.clear()
         t_start = clock[0]
         fb = FakeBot(ok=True, disabled="LIVE account refused: start the server with NINJATRADER_LIVE=1")
         r = ar.resume_live(fb, auto_cfg, None, notify=lambda *a: pushes.append(a), log=lambda t: None,

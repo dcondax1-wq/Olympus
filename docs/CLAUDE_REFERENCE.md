@@ -252,6 +252,18 @@ part yourself or fold it into a script.**
   above the expected p10; under p5 = don't go live; shown in data.json / `/api/next/second` "scorecard", secondcore.js v4
   (phone sw le-public-v25), cloud README. Test `tests/test_second_scorecard.py`. Bad-market brake (`tools/second_brake.py`,
   57 rules, runs sb_brake_*): none adopted, none built (cuts dead evals but also passes; real money within +/-$1.6k / 5 y).
+- **Account B entry the broker never took (2026-10-27, `tests/test_acctb_not_placed.py` 24/24):** the 03:30 MACD LONG 3 on
+  the 25K answered NOT OK (heartbeat `entries_today` 0), yet B kept it "open" (other B entries blocked, its paper P&L would
+  be booked on B's eval, the phone showed a trade that never existed). Now `AccountB.never_placed` (answer NOT OK, no leg
+  filled / open / pending, NinjaTrader shows no position on B's contracts; a leg still working counts only once the
+  adapter retired it unfilled; anything unclear = kept) -> `_drop_unplaced`: B flat, no exit routed or booked, a close an
+  older version booked is voided (once per process), push "order NOT placed" + NinjaTrader's reason. A NOT OK answer that
+  may still be open -> kept + push "order NOT confirmed". Checked at the entry, every poll (`reconcile_unplaced`) and
+  before LIT's hedge close. Heartbeat `second.route.account_b.routed` rows carry `ok`, `error` (paths removed), `void`.
+  The rule is `engine/ninjatrader.entry_never_placed`, shared with LIT (`engine/live.py`): a refused LIT entry pushes
+  "order NOT placed" + the reason (or "NOT confirmed" when it may be open), and its model exit books $0 on the eval (was
+  the backtest's $: test part 7 replays 2026-10-13, a +$3,169 day). An exit for an entry never routed (bot off) also books
+  $0 now (the +$0.10 BE "missed" 08:37 trade booked on the 50K at 23:08 ET 2026-10-26).
 
 ## Trade pictures (2026-10-23, `engine/trade_chart.py`, read-only)
 - One renderer for every strategy's trades (LIT, LIT+Asia, ema / macd / sr, sh_asia / sh_trend): 1600x900 dark PNG (~90 KB),

@@ -60,9 +60,9 @@ if not errorlevel 1 echo  [OK]  Packages installed
 
 rem ---- 6. start the server again in its own window
 echo  [..] Starting the bot server in its own window
-start "Liquidity Engine bot" powershell -NoProfile -ExecutionPolicy Bypass -File "%HERE%scripts\run_bot.ps1"
+start "Liquidity Engine bot" /min powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%HERE%scripts\run_bot.ps1"
 "%PY%" -X utf8 -m engine.ops_checks --wait-server 120
-if errorlevel 1 echo  [FIX] The server did not answer in 2 min: look at the "Liquidity Engine bot" window.
+if errorlevel 1 echo  [FIX] The server did not answer in 2 min: double-click HEALTH_CHECK.bat (the server runs hidden; log in logs\server-YYYYMMDD.log).
 
 rem ---- 7. self-tests + health check
 echo  [..] Self-tests and health check (about a minute)

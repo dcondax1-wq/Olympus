@@ -282,14 +282,21 @@ def _read_json(p):
 
 def resume_live(bot, autostart_cfg, marker=None, notify=None, log=print, sleep=time.sleep, clock=time.time,
                 path: str = OPTIN_PATH, state_path: str | None = None, connected_fn=nt_connected,
-                wait_s: float = CONNECT_WAIT_S, env=None) -> dict:
+                wait_s: float = CONNECT_WAIT_S, env=None, still_on=None, open_nt=None) -> dict:
     """Try to resume the real-account bot (waits for NinjaTrader to connect, retries after a failed start). Returns the
-    final decision. notify(title, body, key) pushes the phone."""
+    final decision. notify(title, body, key) pushes the phone.
+    still_on (server.py: the autostart record is still there, i.e. the dashboard switch is on Run): NinjaTrader not
+    connected after wait_s no longer gives up (owner 2026-10-27 "if my pc is on it should just run"): one push "waiting
+    for NinjaTrader", then it keeps checking every minute until NinjaTrader connects, the switch goes to Stop, or the bot
+    was started another way. open_nt (server.py: engine/go.ensure_ninjatrader without waiting): called once at the start
+    of the wait and every 10 minutes after, so NinjaTrader is opened when it is not running (it does nothing when it is)."""
     notify = notify or (lambda *a, **k: None)
     state_path = state_path or os.path.join(ROOT, "data", "live_state.json")
     why = restart_reason(marker)
     t0 = clock()
     tries = 0
+    waiting = False
+    nt_opened = None
     while True:
         now = clock()
         optin = load(path)
@@ -329,9 +336,35 @@ def resume_live(bot, autostart_cfg, marker=None, notify=None, log=print, sleep=t
                        f"auto:refused:{int(now) // 60}")
                 return {**d, "resume": False, "cfg": None, "reason": err}
             continue                                   # decide() now waits out the 10-minute cooldown
+        if d["wait"] and open_nt is not None and "NinjaTrader" in d["reason"] and (nt_opened is None or now - nt_opened >= 600):
+            nt_opened = now
+            try:
+                open_nt()                              # opens NinjaTrader when it is not running (never waits)
+            except Exception as e:
+                log(f"auto-resume: could not open NinjaTrader: {e.__class__.__name__}: {e}")
         if d["wait"] and clock() - t0 < wait_s + (FAIL_COOLDOWN_S if tries else 0):
             sleep(30)
             continue
+        if d["wait"] and not tries and still_on is not None and "NinjaTrader" in d["reason"]:
+            if getattr(bot, "running", False):
+                return {**d, "resume": False, "reason": "bot already running"}
+            try:
+                on = bool(still_on())
+            except Exception:
+                on = False
+            if on:
+                if not waiting:
+                    waiting = True
+                    note(path, last_resume={"t": int(now), "result": "waiting", "reason": d["reason"][:160]})
+                    log(f"auto-resume: still waiting for NinjaTrader ({d['reason']}); checking every minute")
+                    notify(f"Waiting for NinjaTrader ({d.get('account') or 'your eval'})",
+                           "Open NinjaTrader and log in: the bot starts by itself the moment it connects.",
+                           f"auto:waiting:{int(t0)}")
+                sleep(60)
+                continue
+            if waiting:                                # the owner pressed Stop while it waited: nothing to tell
+                log("auto-resume: the switch went to Stop while waiting for NinjaTrader")
+                return {**d, "resume": False, "cfg": None, "reason": "stopped by the owner"}
         if optin and optin.get("enabled"):            # opt-in on but refused: tell the owner
             note(path, last_resume={"t": int(now), "result": "refused", "reason": d["reason"][:160]})
             log(f"auto-resume: refused: {d['reason']}")

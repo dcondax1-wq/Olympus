@@ -343,6 +343,35 @@ def _tday(mod: int) -> int:
     return (int(mod) - 1080) % 1440
 
 
+def entry_never_placed(adapter, entry_t, res) -> bool:
+    """True only when the entry entry_t provably never became a position (2026-10-27: ATLAS's 03:30 entry was refused, yet
+    kept "open" and its paper P&L was about to be booked): the order's answer `res` is NOT OK, no leg of it reported a
+    fill, no leg of the adapter is open / pending for it (legs + this process's retired history), and NinjaTrader shows no
+    position on the order contracts. An answer with a leg still working ("fill not reported yet") counts only once the
+    adapter retired that leg unfilled. Anything unclear = False (kept, managed and booked as before). Used by LIT
+    (engine/live.py) and account B (engine/account_b.py)."""
+    if not isinstance(res, dict) or res.get("ok") is not False:
+        return False
+    rl = [x for x in res.get("legs") or [] if isinstance(x, dict)]
+    if any(int(x.get("filled") or 0) > 0 for x in rl):
+        return False
+    mine = [lg for lg in list(getattr(adapter, "legs", None) or []) + list(getattr(adapter, "history", None) or [])
+            if isinstance(lg, dict) and int(lg.get("entry_t") or 0) == int(entry_t)]
+    if any(lg.get("status") in OPEN_STATUSES or int(lg.get("filled") or 0) > 0 for lg in mine):
+        return False
+    if rl and not all(x.get("state") in DEAD for x in rl) and not mine:
+        return False                                      # a leg was still working when it answered: unknown since
+    try:
+        insts = set((adapter._instruments() or {}).values()) if callable(getattr(adapter, "_instruments", None)) else set()
+        for inst in insts:
+            p = adapter.position_for(inst)
+            if p and p.get("side") not in (None, "FLAT") and int(p.get("qty") or 0) != 0:
+                return False
+    except Exception:
+        pass
+    return True
+
+
 def is_sim(account: str) -> bool:
     return bool(SIM_ACCOUNT.match(str(account or "").strip()))
 
@@ -2058,7 +2087,8 @@ class NinjaTraderAdapter:
             tmp = self.state_path + ".tmp"
             with open(tmp, "w", encoding="utf-8") as fh:
                 json.dump(blob, fh, indent=1, default=str)
-            os.replace(tmp, self.state_path)
+            from .fsutil import replace as _replace
+            _replace(tmp, self.state_path)            # retried: Windows refuses a replace while a reader has it open
         except Exception as e:
             self.last_error = f"state save failed: {e}"
 

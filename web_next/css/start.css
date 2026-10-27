@@ -97,3 +97,42 @@
 .st-prow span { overflow-wrap: anywhere; }
 .st-prow i { display: block; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--accent) 60%, transparent); }
 .st-prow b { font: 600 12.5px var(--mono); color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* The Run / Stop switch at the top of every page (web_next/js/next/runswitch.js). Big, one tap; dashboard tokens only. */
+.rsw-wrap { display: flex; min-width: 0; flex: 0 1 auto; margin-left: auto; }
+.rsw { display: inline-flex; align-items: center; gap: 10px; height: 46px; min-width: 0; max-width: 440px; padding: 0 14px 0 6px; border-radius: 999px;
+  border: 1.5px solid var(--nx-line); background: color-mix(in srgb, var(--surface-2) 80%, transparent); color: var(--ink); font: 600 13px/1.2 var(--sans);
+  cursor: pointer; text-align: left; transition: background .15s, border-color .15s, transform .08s; }
+button.rsw:not([disabled]):active { transform: scale(.98); }
+button.rsw[disabled] { cursor: default; }
+.rsw-knob { width: 36px; height: 36px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--surface-3); color: var(--ink-2); }
+.rsw-knob svg { width: 18px; height: 18px; }
+.rsw-t { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.rsw-t b { font: 700 13.5px/1.2 var(--sans); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rsw-t em { font: 500 11.5px/1.25 var(--sans); font-style: normal; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; }
+.rsw-verb { flex: none; margin-left: 4px; padding: 5px 12px; border-radius: 999px; font: 800 12px/1 var(--sans); letter-spacing: .06em; text-transform: uppercase;
+  background: var(--surface-3); color: var(--ink); }
+.rsw.running { border-color: color-mix(in srgb, var(--good) 60%, transparent); background: color-mix(in srgb, var(--good) 14%, transparent); }
+.rsw.running .rsw-knob { background: var(--good); color: #04140c; }
+.rsw.running .rsw-t b { color: var(--good-ink); }
+.rsw.stopped .rsw-knob { background: color-mix(in srgb, var(--ink-2) 30%, transparent); color: var(--ink); }
+.rsw.stopped .rsw-verb { background: var(--good); color: #04140c; }
+.rsw.starting { border-color: color-mix(in srgb, var(--warn) 60%, transparent); background: color-mix(in srgb, var(--warn) 12%, transparent); }
+.rsw.starting .rsw-knob { background: color-mix(in srgb, var(--warn) 30%, transparent); }
+.rsw.starting .rsw-t b { color: var(--warn); }
+.rsw.need { border-color: color-mix(in srgb, var(--bad) 65%, transparent); background: color-mix(in srgb, var(--bad) 13%, transparent); }
+.rsw.need .rsw-knob { background: var(--bad); color: #fff; }
+.rsw.need .rsw-t b { color: var(--bad); }
+.rsw.need .rsw-t em { color: var(--ink); }
+.rsw.offline { opacity: .75; cursor: default; }
+.rsw.ro { height: 34px; padding: 0 12px; gap: 8px; cursor: default; }
+.rsw-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; }
+.rsw.ro.running .rsw-dot { background: var(--good); }
+.rsw-spin { width: 16px; height: 16px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--warn) 35%, transparent); border-top-color: var(--warn);
+  animation: rsw-spin .9s linear infinite; display: block; }
+@keyframes rsw-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .rsw-spin { animation: none; } }
+@media (max-width: 1480px) { .rsw { max-width: 410px; } .rsw-t em { max-width: 270px; } }
+@media (max-width: 760px) { .nx .topbar.nx-top { flex-wrap: wrap; row-gap: 6px; }
+  .rsw-wrap { order: 3; flex: 1 0 100%; margin-left: 0; } .rsw { width: 100%; max-width: none; height: 44px; } .rsw.ro { height: 30px; }
+  .rsw-t { flex: 1; } .rsw-t em { max-width: none; } }

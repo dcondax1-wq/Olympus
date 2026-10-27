@@ -12,7 +12,7 @@ curl -s -f -m 3 -o nul "http://127.0.0.1:%LEPORT%/api/health/ping"
 if not errorlevel 1 goto :open
 
 echo  [..] The bot server is not running: starting it in its own window
-start "Liquidity Engine bot" powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\run_bot.ps1"
+start "Liquidity Engine bot" /min powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%~dp0scripts\run_bot.ps1"
 set /a N=0
 :wait
 timeout /t 2 /nobreak >nul
@@ -20,7 +20,7 @@ curl -s -f -m 2 -o nul "http://127.0.0.1:%LEPORT%/api/health/ping"
 if not errorlevel 1 goto :open
 set /a N+=1
 if %N% lss 150 goto :wait
-echo  [FIX] The server did not start in 5 minutes. Look at the "Liquidity Engine bot" window, or double-click HEALTH_CHECK.bat.
+echo  [FIX] The server did not start in 5 minutes. Double-click HEALTH_CHECK.bat (the bot server runs hidden; its log is logs\server-YYYYMMDD.log).
 pause
 exit /b 1
 
