@@ -124,3 +124,4 @@ data/goals_money.json.tmp
 
 # big research grids (regenerate with tools/scalp_*): never committed
 research/scalp/*_grid_5m.json
+research/scalp/mr_grid_1m.json
