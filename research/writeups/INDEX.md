@@ -8,8 +8,8 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 | [Adopt-candidates (some are live now: see CLAUDE.md / STRATEGY.md)](#adopt-candidate) | 30 |
 | [Promising leads](#promising) | 14 |
 | [Findings](#finding) | 18 |
-| [Rejected](#rejected) | 33 |
-| [Reference / info](#info) | 21 |
+| [Rejected](#rejected) | 34 |
+| [Reference / info](#info) | 20 |
 
 <a id="adopt-candidate"></a>
 ## Adopt-candidates (some are live now: see CLAUDE.md / STRATEGY.md)
@@ -96,6 +96,7 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 
 | Date | Write-up | Family | Verdict | Runs |
 |---|---|---|---|---:|
+| 2026-10-28 | [Mean-reversion scalps for a third account - none makes money in both 2026 and 2021-25…](scalp-mean-reversion.md) | other | rejected - nothing adopted; no mean-reversion scalp holds in 2026 H1, H2 and 2021-25 after costs<br><sub>Owner 2026-10-28 - a third strategy, a scalper that trades several times a day on its own MFFU account and makes money. Mean-reversion fades (VWAP / band / range-edge…</sub> | 1 |
 | 2026-10-28 | [LIT reversal exits - get out on a violent reversal, trail after 0.5-1R, breakeven near…](lit-reversal-exit.md) | management | rejected<br><sub>The first real live LIT trade (2026-10-28, short 5 MNQ at 29,945) went 0.95R in our favour, then four big green 1m candles took it to the full stop (-$437). The owner…</sub> | 13 |
 | 2026-10-27 | [B-holds vs LIT priority - when ATLAS is in a trade and LIT signals the other way, who…](b-holds-vs-lit-priority.md) | other | rejected<br><sub>Owner (2026-10-27) - "If ATLAS is in a trade and its target is clear it should hold, and not let Zlarior trade?" Today ATLAS went long at 03:30 (MACD, hit its 8R target…</sub> | 4 |
 | 2026-10-24 | [ChatGPT's 20 LIT filters and the VXN / VIX9D target band - 66 tests, nothing worth…](lit-chatgpt-filters.md) | other | rejected<br><sub>The owner's ChatGPT dossier (2026-10-24) proposed 20 skip / cancel filters for LIT (L01-L20, each with a primary and two alternative thresholds) and a target band from…</sub> | 69 |
@@ -155,7 +156,6 @@ tool after adding a write-up. Every write-up's runs are in `research/runs/<id>.j
 | 2026-10-18 | [LIT learning loop - how the bot learns from its losses, what it may change, and what it…](lit-learning-loop.md) | other | info<br><sub>Every finished LIT trade now goes into a journal (data/lit_journal.jsonl) with its 50 entry facts, the outcome, MFE/MAE and a loss cause code. Every Sunday a review…</sub> | 3 |
 | 2026-10-18 | [LIT launch audit - is anything missing for day trading? (2026-10-18)](lit-launch-audit.md) | other | info<br><sub>End-to-end launch check of the LIT bot before the 18:00 ET Sunday open. Real MFFU eval at 21:00 ET - go only after the five checks in section 0 (Sim101 round trip on…</sub> | 1 |
 | 2026-10-17 | [Stress tests of the locked strategy: costs, price feed, worst start, size rounding,…](stress-tests.md) | other | info<br><sub>The locked strategy survives 2-tick slippage or doubled commission (2021-25 still +$13-14k, PF 1.21-1.22) but 3 ticks plus doubled commission takes 58% of its 2021-25…</sub> | 9 |
-| - | [Mean-reversion scalps for a third account (2026-10-28)](scalp-mean-reversion.md) | - | info<br><sub></sub> | 0 |
 
 ## LIT notes (research/lit)
 

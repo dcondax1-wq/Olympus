@@ -1,3 +1,11 @@
+---
+title: Mean-reversion scalps for a third account - none makes money in both 2026 and 2021-25 after costs
+family: other
+date: 2026-10-28
+status: rejected - nothing adopted; no mean-reversion scalp holds in 2026 H1, H2 and 2021-25 after costs
+summary: Owner 2026-10-28 - a third strategy, a scalper that trades several times a day on its own MFFU account and makes money. Mean-reversion fades (VWAP / band / range-edge fades, limit and market entries) were tested on CME NQ1! (1m for 2026, 5m for 2021-25), costs in. The best makes about +$270 to +$360 a month in each 2026 half at $100 risk a trade, but the same idea on 5m bars loses about $320 a month over 2021-25 and its eval pass rate is no better than a coin flip. Nothing built.
+runs: -
+---
 # Mean-reversion scalps for a third account (2026-10-28)
 
 **Short answer: no mean-reversion scalp makes money in both 2026 and 2021-25 after costs. None should be built as a
