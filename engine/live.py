@@ -1092,6 +1092,7 @@ class LiveBot:
             wk = iso_week(today)
             self._week_prev = [r for r in (s.get("week_exits") or []) if r.get("day") and r["day"] != today and iso_week(r["day"]) == wk]
             self._eval_prev = {d: float(v) for d, v in (s.get("eval_days") or {}).items() if d != today}
+            self._void_refused_days()
         if s.get("day") != today or s.get("sym") != self.cfg.get("sym") or s.get("tf") != self.cfg.get("tf"):
             self._log("system", f"Ignoring live_state.json from {s.get('day')} {s.get('sym')} {s.get('tf')} (today is {today})")
             return
@@ -2587,6 +2588,25 @@ class LiveBot:
             return bool(r) and entry_never_placed(self.adapter, entry_t, r.get("result"), now=self.clock())
         except Exception:
             return False
+
+    def _void_refused_days(self):
+        """Earlier eval days NinjaTrader's Log proves nothing was filled on (engine/eval_fix.py: every PLACE refused with
+        "account does not exist", no Execution): their booked P&L -> $0 (2026-10-27: -$965.20 on the 50K). Real
+        NinjaTrader bots only; never raises."""
+        try:
+            if (self.cfg or {}).get("adapter") != "ninjatrader":
+                return
+            from . import eval_fix
+            days = eval_fix.void_days(self._eval_prev, self.cfg.get("nt_folder"))
+            if not days:
+                return
+            txt = ", ".join(f"{d} {self._eval_prev[d]:+,.2f}" for d in days)
+            for d in days:
+                self._eval_prev[d] = 0.0
+            self._log("risk", f"Voided the eval P&L of {txt}: NinjaTrader refused every order that day (account does not exist) "
+                              "and filled nothing")
+        except Exception as e:
+            self._note_error(f"refused-day check failed: {e.__class__.__name__}: {e}")
 
     def _void_unplaced_exits(self):
         """Once per process: an exit row that booked $ for an entry NinjaTrader never took (an older version booked the
