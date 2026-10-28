@@ -164,14 +164,16 @@ function paint() {
   const h = L.geo?.hoverBar, b = h || (d.bars || [])[d.bars.length - 1];
   $('#lvOhlc').innerHTML = b ? `<span>${etHM(b[0])} ET</span> O <b>${fmtPx(b[1])}</b> H <b>${fmtPx(b[2])}</b> L <b>${fmtPx(b[3])}</b> C <b class="${b[4] >= b[1] ? 'lv-ok' : 'lv-no'}">${fmtPx(b[4])}</b>${L.geo?.hoverPx != null ? ` <span class="lv-muted">· cursor ${fmtPx(L.geo.hoverPx)}</span>` : ''}` : '';
   const note = $('#lvNote');
-  const msg = !d.bars?.length ? 'No bars yet: the bot shows its NinjaTrader bars here once it runs.' : (L.on.scalp && d.strategies?.scalp?.placeholder ? 'Strategy 3 (research): placeholder layer, no signals yet.' : '');
+  const msg = !d.bars?.length ? 'No bars yet: the bot shows its NinjaTrader bars here once it runs.' : '';
   note.hidden = !msg; note.textContent = msg;
 }
 
 // ------------------------------------------------------------------ thinking panel
 function stepper(stages) {
   if (!stages?.length) return '';
-  return `<ol class="lv-steps">${stages.map((s) => `<li class="${esc(s.state)}" title="${esc(s.label)}"><i>${s.n}</i><span>${esc(s.label)}</span></li>`).join('')}</ol>`;
+  const cur = stages.find((s) => s.state === 'now');
+  return `<ol class="lv-steps">${stages.map((s) => `<li class="${esc(s.state)}" title="${esc(s.n + '. ' + s.label)}"><i>${s.n}</i></li>`).join('')}</ol>`
+    + (cur ? `<div class="lv-stepnow">Step ${cur.n} of ${stages.length}: <b>${esc(cur.label)}</b></div>` : '');
 }
 function checks(list) {
   if (!list?.length) return '';
@@ -221,7 +223,7 @@ function think() {
       ${at.error ? `<p class="lv-no">${esc(at.error)}</p>` : ''}${at.empty ? `<p class="lv-muted">${esc(at.empty)}</p>` : ''}
       ${posBox(at.position, STRAT.atlas[1], !!at.position)}
       ${mem.map(row).join('')}
-      ${cand.length ? `<details class="lv-mem lv-cand"><summary><b>Stop-hunt candidates</b><span class="lv-pill">research · paper</span></summary>${cand.map(row).join('')}</details>` : ''}
+      ${cand.length ? `<details class="lv-mem lv-cand"><summary><b>Other paper strategies</b><span class="lv-pill">research · paper</span></summary>${cand.map(row).join('')}</details>` : ''}
     </article>`);
   }
   const sc = S.scalp;
@@ -255,6 +257,7 @@ function countdowns() {
 export const liveview = {
   show: () => {
     ensure();
+    window.LE = Object.assign(window.LE || {}, { liveview: { load: () => load(true), state: L } });   // app.js sets window.LE after the imports
     const el = document.getElementById('page-' + ID);
     if (!el.querySelector('#lvRoot')) shell(el);
     load(true);
@@ -263,4 +266,3 @@ export const liveview = {
     L.tick = setInterval(() => { if (!active()) { clearInterval(L.tick); return; } countdowns(); }, 1000);
   },
 };
-window.LE = Object.assign(window.LE || {}, { liveview: { load: () => load(true), state: L } });

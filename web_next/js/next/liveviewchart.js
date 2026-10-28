@@ -135,9 +135,10 @@ export function drawChart(cv, d, o) {
         continue;
       }
       if (l.taken) {
+        if (l.taken_t && l.taken_t < bars[i0][0]) continue;     // swept before the visible bars: nothing to show
         const x1 = l.taken_t ? xt(l.taken_t) : right;
         hline(l.price, PADL, x1, C.litSoft, [5, 4]);
-        notes.push({ x: Math.min(x1, right) + 4, y: Y(l.price) - 7, text: `✓ ${l.label} swept ${l.taken_hm || ''}`, color: C.litSoft, align: 'left', size: 10 });
+        if (W >= 600) notes.push({ x: Math.min(x1, right) + 4, y: Y(l.price) - 7, text: `✓ ${l.label} swept ${l.taken_hm || ''}`, color: C.litSoft, align: 'left', size: 10 });
       } else {
         hline(l.price, PADL, right, C.lit, null, 1);
         tags.push({ y: Y(l.price), text: fmt(l.price), color: C.lit, small: true });
@@ -187,7 +188,7 @@ export function drawChart(cv, d, o) {
     const a = s?.armed;
     if (a && a.limit != null) {
       const x0 = a.armed_t ? xt(a.armed_t) : xNow, x1 = Math.max(xNow + 0.6 * (right - xNow), a.expires_t ? xt(a.expires_t) : xNow);
-      box(x0, x1, a.limit, a.stop, a.target, `ARMED ${a.side || ''} limit ${fmt(a.limit)}`);
+      box(x0, x1, a.limit, a.stop, a.target, `${a.status === 'tapped' ? 'TAPPED · waiting for a 1m CISD ·' : 'ARMED'} ${a.side || ''} limit ${fmt(a.limit)}`);
     }
     const pos = lit.position;
     if (pos && pos.entry != null) {
@@ -207,16 +208,17 @@ export function drawChart(cv, d, o) {
       if (!inY(l.price)) { (l.price > hi ? off.up : off.dn).push({ label: l.label, price: l.price, color }); continue; }
       hline(l.price, x0, right, color, l.style === 'dash' ? [7, 4] : l.style === 'dot' ? [2, 3] : null, l.strong ? 2 : 1.4);
       tags.push({ y: Y(l.price), text: fmt(l.price), color, strong: l.strong });
-      notes.push({ x: right - 4, y: Y(l.price) - 8, text: l.label, color, align: 'right', size: 11, bold: !!l.strong });
+      notes.push(l.strong ? { x: xNow + 8, y: Y(l.price) - 9, text: l.label, color, align: 'left', size: 11.5, bold: true }
+        : { x: right - 4, y: Y(l.price) - 8, text: l.label, color, align: 'right', size: 11, bold: false });
     }
     for (const m of lit.marks || []) {
       if (m.t < bars[i0][0] - secs || m.t > bars[i1][0] + secs || !inY(m.price)) continue;
       const x = xt(m.t), y = Y(m.price);
       if (m.kind === 'setup') {
-        const col = { armed: C.lit, filled: C.good, no_fill: '#d97706', rejected: '#94a3b8', blocked: '#94a3b8' }[m.status] || '#94a3b8';
+        const col = { armed: C.lit, tapped: C.lit, filled: C.good, no_fill: '#d97706', rejected: '#94a3b8', blocked: '#94a3b8' }[m.status] || '#94a3b8';
         g.fillStyle = '#fff'; g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 4.5, 0, Math.PI * 2); g.fill(); g.stroke();
         if (m.status === 'rejected' || m.status === 'blocked') { g.beginPath(); g.moveTo(x - 3, y - 3); g.lineTo(x + 3, y + 3); g.moveTo(x + 3, y - 3); g.lineTo(x - 3, y + 3); g.stroke(); }
-        if (n <= 400) notes.push({ x, y: y - 12, text: m.status === 'rejected' ? 'rejected' : m.status === 'filled' ? 'filled' : m.status === 'armed' ? 'armed' : m.status === 'no_fill' ? 'no fill' : 'skipped', color: col, align: 'center', size: 9.5 });
+        if (n <= 400) notes.push({ x, y: y - 12, text: m.status === 'rejected' ? 'rejected' : m.status === 'filled' ? 'filled' : m.status === 'armed' ? 'armed' : m.status === 'tapped' ? 'tapped' : m.status === 'no_fill' ? 'no fill' : 'skipped', color: col, align: 'center', size: 9.5 });
       } else {
         const ex = m.kind === 'exit';
         g.fillStyle = ex ? ((m.pnl || 0) >= 0 ? C.good : C.bad) : C.lit;
@@ -241,6 +243,20 @@ export function drawChart(cv, d, o) {
   // ---- notes (de-overlapped per column), then the price tags
   g.textBaseline = 'middle';
   const placed = [];
+  // ---- levels / lines off the screen: small arrows at the top / bottom edge
+  g.font = '10.5px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+  const edge = (list, top) => {
+    list.sort((a, b) => top ? a.price - b.price : b.price - a.price);
+    list.slice(0, 3).forEach((l, k) => {
+      const y = top ? TOP + 10 + k * 13 : TOP + ph - 10 - k * 13;
+      const t = `${top ? '▲' : '▼'} ${l.label} ${fmt(l.price)} (${fmt(Math.abs(l.price - last))} pts)`;
+      const w = g.measureText(t).width;
+      g.fillStyle = 'rgba(255,255,255,0.85)'; g.fillRect(right - w - 8, y - 6, w + 6, 12);
+      g.fillStyle = l.color || C.lit; g.textAlign = 'right'; g.fillText(t, right - 4, y);
+      placed.push({ x: right - w - 8, y, w: w + 6 });
+    });
+  };
+  if (o.on.lit || o.on.atlas) { edge(off.up, true); edge(off.dn, false); }
   for (const nt of notes) {
     g.font = `${nt.bold ? '600 ' : ''}${nt.size || 11}px system-ui, -apple-system, Segoe UI, Roboto, sans-serif`;
     const w = g.measureText(nt.text).width;
@@ -265,19 +281,6 @@ export function drawChart(cv, d, o) {
     g.fillStyle = t.color; g.fillRect(right + 1, t.y - 8, AX - 3, 16);
     g.fillStyle = '#fff'; g.textAlign = 'left'; g.fillText(t.text, right + 6, t.y + 0.5);
   }
-  // ---- levels / lines off the screen: small arrows at the top / bottom edge
-  g.font = '10.5px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
-  const edge = (list, top) => {
-    list.sort((a, b) => top ? a.price - b.price : b.price - a.price);
-    list.slice(0, 3).forEach((l, k) => {
-      const y = top ? TOP + 10 + k * 13 : TOP + ph - 10 - k * 13;
-      const t = `${top ? '▲' : '▼'} ${l.label} ${fmt(l.price)} (${fmt(Math.abs(l.price - last))} pts)`;
-      const w = g.measureText(t).width;
-      g.fillStyle = 'rgba(255,255,255,0.85)'; g.fillRect(right - w - 8, y - 6, w + 6, 12);
-      g.fillStyle = l.color || C.lit; g.textAlign = 'right'; g.fillText(t, right - 4, y);
-    });
-  };
-  if (o.on.lit || o.on.atlas) { edge(off.up, true); edge(off.dn, false); }
 
   // ---- crosshair
   let hoverBar = null, hoverPx = null;

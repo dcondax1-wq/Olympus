@@ -164,7 +164,7 @@ def lit_thinking(brain: dict | None, pos: dict | None, price, now: int, rules: d
         return out
     dmin, need_disp = rules.get("depth", 0.5), rules.get("disp", 0.8)
     key = st.get("key")
-    armed = next((s for s in reversed(b.get("setups") or []) if isinstance(s, dict) and s.get("status") == "armed"), None)
+    armed = next((s for s in reversed(b.get("setups") or []) if isinstance(s, dict) and s.get("status") in ("armed", "tapped")), None)
     w = lead_watch(b)
     if key == "trade" and (pos or b.get("trade")):
         tr = b.get("trade") or {}
@@ -286,7 +286,7 @@ def lit_layer(bot, now: int, price) -> dict:
         setup = {"dir": w.get("dir"), "side": w.get("side"), "stage": w.get("stage"), "swept": w.get("swept"), "level": _f(w.get("level")),
                  "ext": _f(w.get("ext")), "ext_t": w.get("ext_t"), "cisd": _f(w.get("cisd")), "cisd_closed": w.get("cisd_closed"),
                  "disp_ok": w.get("disp_ok"), "idm_ok": w.get("idm_ok"), "depth_ok": w.get("depth_ok")}
-    armed = next((s for s in reversed(b.get("setups") or []) if isinstance(s, dict) and s.get("status") == "armed"), None)
+    armed = next((s for s in reversed(b.get("setups") or []) if isinstance(s, dict) and s.get("status") in ("armed", "tapped")), None)
     if armed and armed.get("plan"):
         pl = armed["plan"]
         lines += [{"id": "limit", "label": f"Limit {armed.get('side')} {N.px(pl.get('limit'))} · until {pl.get('expires_hm') or ''}",
@@ -297,7 +297,8 @@ def lit_layer(bot, now: int, price) -> dict:
                    "price": _f(pl.get("target")), "style": "dash", "t0": pl.get("armed_t")}]
         setup = {**(setup or {}), "armed": {"limit": _f(pl.get("limit")), "stop": _f(pl.get("stop")), "target": _f(pl.get("target")),
                                             "armed_t": pl.get("armed_t"), "expires_t": pl.get("expires_t"), "side": armed.get("side"),
-                                            "ext": _f(armed.get("ext")), "cisd": _f(armed.get("cisd")), "t": armed.get("t")}}
+                                            "ext": _f(armed.get("ext")), "cisd": _f(armed.get("cisd")), "t": armed.get("t"),
+                                            "status": armed.get("status")}}
     if pos:
         real = not pos.get("paper")
         q = pos.get("qty") if real else None
@@ -359,7 +360,10 @@ def atlas_layer(bot, now: int, hist5, t0: int, price) -> dict:
     for k, s in (sec.get("strategies") or {}).items():
         if not isinstance(s, dict) or s.get("on") is False:
             continue
-        (scalp if str(k).startswith("scalp") else members).append(_member(k, s, now))
+        m = _member(k, s, now)
+        if str(k).startswith("lit"):                           # Zlarior's own paper variants (the Asia slot): not ATLAS
+            m["candidate"], m["other"] = True, True
+        (scalp if str(k).startswith("scalp") else members).append(m)
     lines, levels = [], []
     for m in members:
         if m.get("candidate"):

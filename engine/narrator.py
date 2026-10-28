@@ -310,13 +310,14 @@ def _atlas_msgs(second: dict, day: str, prev_stage: dict) -> tuple[list, dict]:
     for k, s in (second.get("strategies") or {}).items():
         if not isinstance(s, dict) or s.get("on") is False or (s.get("candidate") and not str(k).startswith("scalp")):
             continue                                   # stop-hunt candidates stay off the feed (research, paper)
-        strat = "scalp" if str(k).startswith("scalp") else "atlas"
+        strat = "scalp" if str(k).startswith("scalp") else "lit" if str(k).startswith("lit") else "atlas"
         st = s.get("state") or {}
         short = s.get("short") or k
+        pre = "Zlarior paper" if strat == "lit" else "Strategy 3" if strat == "scalp" else "ATLAS"
         stg, txt = str(st.get("stage") or ""), str(st.get("text") or "")
         t = _i(second.get("t")) or 0
         if stg and stg != stages.get(k) and stg not in ("off",):
-            out.append(msg(f"{strat}:{k}:{day}:stage:{stg}:{t // 300}", t, strat, "atlas", f"ATLAS {short} · {stg}", txt, "info"))
+            out.append(msg(f"{strat}:{k}:{day}:stage:{stg}:{t // 300}", t, strat, "atlas", f"{pre} {short} · {stg}", txt, "info"))
         stages[k] = stg
         for x in ((s.get("brain") or {}).get("log") or []):
             if not isinstance(x, dict) or not x.get("t"):
@@ -325,18 +326,18 @@ def _atlas_msgs(second: dict, day: str, prev_stage: dict) -> tuple[list, dict]:
             if trading_day(xt) != day:
                 continue
             good = bool(x.get("trade") or x.get("ok"))
-            out.append(msg(f"{strat}:{k}:log:{xt}:{_h8(x.get('text'))}", xt, strat, "atlas", f"ATLAS {short} (paper)",
+            out.append(msg(f"{strat}:{k}:log:{xt}:{_h8(x.get('text'))}", xt, strat, "atlas", f"{pre} {short} (paper)",
                            str(x.get("text") or ""), "info" if good else "dim"))
         for tr in s.get("trades") or []:
             if not isinstance(tr, dict) or tr.get("day") != day or not tr.get("entry_t"):
                 continue
             et_ = int(tr["entry_t"])
-            out.append(msg(f"{strat}:{k}:paper:{et_}", et_, strat, "atlas", f"ATLAS {short} paper entry · {side_word(tr.get('dir'))}",
+            out.append(msg(f"{strat}:{k}:paper:{et_}", et_, strat, "atlas", f"{pre} {short} paper entry · {side_word(tr.get('dir'))}",
                            f"Paper {side_word(tr.get('dir'))} at {px(tr.get('entry'))} · stop {px(tr.get('stop'))} · target {px(tr.get('target'))} "
                            "(paper: not on an account)", "info"))
             ek = str(tr.get("exit_kind") or "")
             if ek and ek != "OPEN" and tr.get("exit_t"):
-                out.append(msg(f"{strat}:{k}:paperx:{et_}", int(tr["exit_t"]), strat, "atlas", f"ATLAS {short} paper exit {ek}",
+                out.append(msg(f"{strat}:{k}:paperx:{et_}", int(tr["exit_t"]), strat, "atlas", f"{pre} {short} paper exit {ek}",
                                f"Paper {ek.lower()}: {float(tr.get('r') or 0):+.2f}R (paper: no real money)", "dim"))
     return out, stages
 

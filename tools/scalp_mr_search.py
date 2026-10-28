@@ -71,10 +71,14 @@ def _job(item):
     fam, p = item
     sig = make(F, fam, p)
     rows = []
+    tf5 = int(F["bm"].iloc[0]) == 5
     for sp in sims(p):
-        T = L.simulate(F, sig, rr=sp["rr"], maxbars=sp["maxbars"], be_r=sp["be_r"], ent=WINDOWS[sp["win"]], max_day=8)
-        h1 = L.stats(T, F, "H1"); h2 = L.stats(T, F, "H2")
-        rows.append({"fam": fam, "p": {k: (list(v) if isinstance(v, tuple) else v) for k, v in p.items()}, "sim": sp, "H1": h1, "H2": h2})
+        mb = max(1, sp["maxbars"] // 5) if tf5 else sp["maxbars"]
+        T = L.simulate(F, sig, rr=sp["rr"], maxbars=mb, be_r=sp["be_r"], ent=WINDOWS[sp["win"]], max_day=8)
+        row = {"fam": fam, "p": {k: (list(v) if isinstance(v, tuple) else v) for k, v in p.items()}, "sim": sp}
+        for span in (("2021-24", "2025", "H1", "H2") if tf5 else ("H1", "H2")):
+            row[span] = L.stats(T, F, span)
+        rows.append(row)
     return rows
 
 
