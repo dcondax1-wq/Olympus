@@ -72,7 +72,7 @@ function shell(el) {
 
 function wire(el) {
   $('#lvTf', el).onclick = (e) => { const b = e.target.closest('button[data-v]'); if (!b) return; L.tf = b.dataset.v; store.set('lv.tf', L.tf); L.view = { n: null, end: 0 }; $$set('#lvTf button', (x) => x.setAttribute('aria-pressed', x.dataset.v === L.tf)); load(true); };
-  el.querySelectorAll('[data-lv-on]').forEach((b) => { b.onclick = () => { const k = b.dataset.lvOn; L.on[k] = !L.on[k]; store.set('lv.on', L.on); b.setAttribute('aria-pressed', L.on[k]); paint(); }; });
+  el.querySelectorAll('[data-lv-on]').forEach((b) => { b.onclick = () => { const k = b.dataset.lvOn; L.on[k] = !L.on[k]; store.set('lv.on', L.on); b.setAttribute('aria-pressed', L.on[k]); paint(); think(); }; });
   $('#lvThinkB', el).onclick = (e) => { L.think = !L.think; store.set('lv.think', L.think); e.currentTarget.setAttribute('aria-pressed', L.think); $('#lvMain').classList.toggle('nothink', !L.think); requestAnimationFrame(paint); };
   $('#lvFeedB', el).onclick = (e) => { L.feed = !L.feed; store.set('lv.feed', L.feed); e.currentTarget.setAttribute('aria-pressed', L.feed); $('#lvFeed').hidden = !L.feed; requestAnimationFrame(paint); };
   $('#lvFF', el).onclick = (e) => { const b = e.target.closest('button[data-v]'); if (!b) return; L.feedF = b.dataset.v; store.set('lv.feedF', L.feedF); $$set('#lvFF button', (x) => x.setAttribute('aria-pressed', x.dataset.v === L.feedF)); feed(); };
