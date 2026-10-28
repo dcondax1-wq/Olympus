@@ -732,7 +732,7 @@ def run(out):
 
     # ---- BLITZ PAPER SHADOW (engine/blitz.py, research/writeups/scalp-momentum.md): the noise-area 1m scalp next to the ATLAS v2
     # shadow on the PC's 1m bars (a cold start warms on data/NQ_1m.csv + those bars) -> its own paper ledger and simulated
-    # Builder 25K eval (state "blitz"). Never routed; never stops the LIT run; no bars = it waits
+    # Builder 25K eval (state "blitz"). Paper only, nothing is sent to any account; never stops the LIT run; no bars = it waits
     blitz_st = None
     try:
         from engine import blitz as _blz
