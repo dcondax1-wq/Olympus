@@ -178,6 +178,7 @@ def _sim(o, h, l, c, mod, dayi, sdir, sstop, stgt, slim, rr, maxbars, be_r, min_
             continue
         if np.isnan(stgt[i]):
             tgt = ent + d * rr * risk
+            tgt = (np.ceil(tgt / TICK_) if d == 1 else np.floor(tgt / TICK_)) * TICK_   # on the tick grid, never closer
         else:
             tgt = stgt[i]
             if (tgt - ent) * d < min_rr * risk:

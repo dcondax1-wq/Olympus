@@ -60,8 +60,8 @@ def score(name, risk25=100.0, risk50=200.0):
         t = T[(T.day >= a) & (T.day <= z)]
         m25 = L.path_money(T, F, span, "25k", risk25); m50 = L.path_money(T, F, span, "50k", risk50)
         cs, cost, gross = cost_share(t, "25k", risk25) if len(t) else (None, 0, 0)
-        e25 = L.eval_sim(T, F, span, "25k", risk_usd=risk25)
-        e50 = L.eval_sim(T, F, span, "50k", risk_usd=risk50)
+        e25 = L.eval_sim(T, F, span, "25k", risk_usd=300.0, room_f=0.5)     # eval: the fastest size that does not just blow up
+        e50 = L.eval_sim(T, F, span, "50k", risk_usd=600.0, room_f=0.5)
         out[span] = {**s, "money25": m25, "money50": m50, "cost25": cost, "gross25": gross, "costs_eat": cs, "eval25": e25, "eval50": e50}
     return out, (F1, T1), (F5, T5)
 
