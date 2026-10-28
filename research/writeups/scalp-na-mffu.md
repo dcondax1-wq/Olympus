@@ -175,9 +175,10 @@ caps of $450+).
 - **(a) Stay a paper shadow: yes, for now.** There are two reasons. LIT's 50K is still in its eval; BLITZ only adds money
   on the funded account. Routing BLITZ there needs engine work that is not built: a second strategy on LIT's account, up to
   6 BLITZ trades a day (today's guards allow 2 when a second strategy routes), the LIT-flat / LIT-first / never-opposite-ATLAS
-  rules, and an entry within a minute. The paper shadow being built (`engine/blitz.py`) runs the **unfiltered** NA rule
-  on a paper 25K. It should add the yesterday's-range filter. The number to watch is BLITZ on a paper copy of LIT's
-  funded 50K (20% of the room, at most $450), not a 25K eval.
+  rules, and an entry within a minute. The paper shadow (`engine/blitz.py`, 2026-10-28) runs this filtered rule
+  (parity 330/330) on a paper 25K at 40% of the room, and a second paper ledger on a funded 50K next to LIT (20% of the
+  room, at most $450; LIT first, never opposite ATLAS; parity 312/312). The number to watch is that 50K ledger, not the
+  25K eval.
 - **(b) Join ATLAS's 25K: no.** At ATLAS's cap of 2 a day it changes nothing useful. Raised to 6 a day it helps 2026 H2 (2-week
   pass 43.5 -> 55.1%) but adds dead evals (H1 0.8 -> 3.4%, 2025 22.5 -> 26.9%, 2021-24 27 -> 36%) for about +$25-35 a month
   funded.
