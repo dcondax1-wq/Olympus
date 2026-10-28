@@ -143,7 +143,8 @@ def _stats(rows, key_pnl="pnl", key_r="r", sessions=None) -> dict:
     out = {"n": n, "win": round(100.0 * sum(1 for r in rows if _num(r[key_r]) > 0) / n, 1) if n else None,
            "pf": (round(gp / gl, 2) if gl > 0 else (99.0 if gp > 0 else None)), "net": round(sum(pn), 0),
            "avg_r": round(sum(_num(r[key_r]) for r in rows) / n, 2) if n else None,
-           "avg_usd": round(sum(pn) / n, 0) if n else None}
+           "avg_usd": round(sum(pn) / n, 0) if n else None,
+           "be": sum(1 for r in rows if str(r.get("exit") or "") == "BE")}
     if sessions:
         out["sessions"] = sessions
         out["per_month"] = round(sum(pn) / (sessions / 21.0), 0)
@@ -188,6 +189,23 @@ def load_journal(path=None) -> list:
     return sorted(best.values(), key=lambda r: r.get("entry_t") or 0)
 
 
+def tagged_2026() -> list:
+    """The 2026 journal trades (grade, session and loss-cause tags) with the outcome of run lit_live (today's live settings)
+    where the run has the same trade (same entry time and side); the journal's own outcome otherwise."""
+    _, T, _ = _lit_run()
+    by = {(int(t["entry_t"]), int(t["dir"])): t for t in T}
+    out = []
+    for r in load_journal():
+        if str(r.get("day", "")) < "2026-01-01":
+            continue
+        x = dict(r)
+        t = by.get((int(r.get("entry_t") or 0), int(r.get("dir") or 0)))
+        if t is not None:
+            x.update(r=t["r"], pnl=t["pnl"], exit=t["exit"], outcome="lit_live")
+        out.append(x)
+    return out
+
+
 def _replay_brain(day, t):
     from . import brain
     return brain.replay(day, t)
@@ -207,7 +225,7 @@ def _bars5(upto=None, n_bytes=1_500_000):
             fh.readline()
         body = fh.read().decode("utf-8", "replace")
     cols = [c.strip().lower() for c in head.split(",")]
-    df = pd.read_csv(io.StringIO(body), header=None, names=cols) if size > n_bytes else pd.read_csv(io.StringIO(head + body))
+    df = pd.read_csv(io.StringIO(body), header=None, names=cols) if size > n_bytes else pd.read_csv(io.StringIO(body))
     df.columns = [c.strip().lower() for c in df.columns]
     if "volume" not in df.columns:
         df["volume"] = 0
@@ -594,7 +612,7 @@ def grade(ctx) -> dict:
 def _confidence(g):
     if not g:
         return None
-    rows = [r for r in load_journal() if r.get("grade") == g and str(r.get("day", "")) >= "2026-01-01"]
+    rows = [r for r in tagged_2026() if r.get("grade") == g]
     st = _stats(rows)
     if not st["n"]:
         return {"grade": g, "text": f"No 2026 trade of grade {g} in the journal yet."}
@@ -608,11 +626,11 @@ def similar(ctx, gr=None) -> dict:
     f = gr.get("setup") or gr.get("last_trade") or {}
     g, sess = f.get("grade"), f.get("session") or (f.get("buckets") or {}).get("session")
     cause = (gr.get("last_trade") or {}).get("cause") if not gr.get("setup") else None
-    J = [r for r in load_journal() if str(r.get("day", "")) >= "2026-01-01"]
+    J = tagged_2026()
     out = {"grade": g, "session": sess, "session_label": SESSION_LABEL.get(sess), "groups": []}
     if J:
         def grp(name, rows):
-            st = _stats([{"r": r.get("r"), "pnl": r.get("pnl")} for r in rows])
+            st = _stats(rows)
             return {"name": name, **st, "trades": [{"day": r.get("day"), "side": r.get("side"), "exit": r.get("exit"), "r": _r(r.get("r")),
                                                     "pnl": _r(r.get("pnl"), 0), "grade": r.get("grade"),
                                                     "session": (r.get("buckets") or {}).get("session"), "cause": r.get("cause")}
@@ -625,7 +643,8 @@ def similar(ctx, gr=None) -> dict:
         if cause:
             out["groups"].append(grp(f"Same loss cause ({cause})", [r for r in J if r.get("cause") == cause]))
         out["groups"].append(grp("Every 2026 trade (baseline)", J))
-        out["source"] = "LIT journal (data/lit_journal.jsonl): 2026 backtest seed + routed trades"
+        out["source"] = ("tags from the LIT journal (data/lit_journal.jsonl), outcome from run lit_live (today's live settings) "
+                         f"for {sum(1 for r in J if r.get('outcome') == 'lit_live')} of {len(J)} trades")
     else:
         _, T, days = _lit_run()
         T = [t for t in T if t["day"] >= "2026-01-01"]
@@ -639,7 +658,7 @@ def similar(ctx, gr=None) -> dict:
         out["source"] = "run lit_live (no journal on this PC)"
     top = out["groups"][0] if out["groups"] else None
     out["text"] = (f"{top['name']}: {top['n']} trades in 2026, {top['win']:.0f}% won, {top['avg_r']:+.2f}R and "
-                   f"${top['avg_usd']:+,.0f} a trade on average." if top and top.get("n") else "No similar 2026 trade found.")
+                   f"{'-' if top['avg_usd'] < 0 else '+'}${abs(top['avg_usd']):,.0f} a trade on average." if top and top.get("n") else "No similar 2026 trade found.")
     return out
 
 
@@ -796,6 +815,36 @@ def _front_matter(path) -> dict:
     return out
 
 
+def grid_summary(rows) -> dict:
+    """A research grid in one line: variants tested, how many made money in both 2026 halves with the owner's frequency
+    (PF > 1 and net > 0 in H1 and H2 on the same bar size, 2+ trades a week and 20+ trades in each half), the best of those
+    by its weaker half's PF (none qualifies: the best by its weaker half among the frequent ones, flagged)."""
+    rows = [r for r in rows if isinstance(r, dict)]
+    fam = next((r.get("fam") for r in rows if r.get("fam")), None)
+    tfs = sorted({k[:-3] for r in rows for k in r if k.endswith("_H1") and isinstance(r.get(k), dict)})
+    both, best = 0, None
+    for r in rows:
+        for tf in tfs:
+            a, b = r.get(tf + "_H1") or {}, r.get(tf + "_H2") or {}
+            pa, pb = _num(a.get("pf")), _num(b.get("pf"))
+            if pa is None or pb is None:
+                continue
+            freq = all((_num(x.get("tpw")) or 0) >= 2 and (_num(x.get("n")) or 0) >= 20 for x in (a, b))
+            if not freq:
+                continue
+            good = pa > 1 and pb > 1 and (_num(a.get("net")) or 0) > 0 and (_num(b.get("net")) or 0) > 0
+            both += good
+            score = (good, min(pa, pb))
+            if best is None or score > best[0]:
+                best = (score, tf, r, a, b)
+    out = {"family": fam, "variants": len(rows), "both_halves": both, "kind": "grid"}
+    if best:
+        _, tf, r, a, b = best
+        out["best"] = {"tf": tf, "params": r.get("p"), "qualifies": bool(best[0][0]), "H1": {k: a.get(k) for k in ("n", "tpw", "win", "pf", "net", "per_month")},
+                       "H2": {k: b.get(k) for k in ("n", "tpw", "win", "pf", "net", "per_month")}}
+    return out
+
+
 def strategy3(ctx=None) -> dict:
     docs = []
     for p in sorted(glob.glob(os.path.join(WRITEUPS, "scalp-*.md")))[-6:]:
@@ -803,8 +852,11 @@ def strategy3(ctx=None) -> dict:
         docs.append({"file": os.path.relpath(p, ROOT).replace(os.sep, "/"), "title": fm.get("title") or os.path.basename(p),
                      "status": fm.get("status"), "date": fm.get("date"), "summary": (fm.get("summary") or "")[:600]})
     data = []
-    for p in sorted(glob.glob(os.path.join(SCALP_DIR, "*.json")))[-6:]:
-        d = _read_json(p) or {}
+    for p in sorted(glob.glob(os.path.join(SCALP_DIR, "*.json")))[-12:]:
+        d = _read_json(p)
+        if isinstance(d, list):                      # a grid (tools/scalp_*.py): one row per variant with <tf>_H1 / <tf>_H2 numbers
+            data.append({"file": os.path.relpath(p, ROOT).replace(os.sep, "/"), **grid_summary(d)})
+            continue
         if not isinstance(d, dict):
             continue
         keep = {k: d.get(k) for k in ("id", "title", "status", "verdict", "built") if d.get(k) is not None}
@@ -814,8 +866,14 @@ def strategy3(ctx=None) -> dict:
                                for k, v in list(nums.items())[:4] if isinstance(v, dict)}
         data.append({"file": os.path.relpath(p, ROOT).replace(os.sep, "/"), **keep})
     status = (docs[-1].get("status") if docs else None) or (data[-1].get("status") if data else None) or "in research"
+    grids = [x for x in data if x.get("kind") == "grid"]
+    if grids and not docs:
+        n, ok = sum(x["variants"] for x in grids), sum(x["both_halves"] for x in grids)
+        status = (f"in research: {n:,} variants tested in {len(grids)} grids, {ok:,} made money in both 2026 halves at 2+ trades a week "
+                  "(picked in-sample; the 2021-25 and better-than-chance checks are still to come)")
     return {"name": "Strategy 3 (scalp)", "status": status, "writeups": docs, "data": data, "paper_only": True,
-            "text": ("Scalp research: " + status + ". Paper only; it trades nothing until the research proves it in 2026 and 2021-25.")
+            "text": ("Strategy 3 (scalp) is " + status + ". Paper only: nothing trades until the research proves it in 2026 and 2021-25 "
+                     "with 2-4 trades a week.")
             if docs or data else "Strategy 3 (scalp) is in research: no write-up or result file yet. Nothing trades."}
 
 
