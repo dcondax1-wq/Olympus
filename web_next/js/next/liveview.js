@@ -141,7 +141,7 @@ function wire(el) {
 const $$set = (sel, fn) => document.querySelectorAll(sel).forEach(fn);
 function zoom(f) {
   const n = (L.d?.bars || []).length; if (!n) return;
-  const cur = L.view.n || L.geo?.n || Math.min(n, L.tf === '1m' ? 180 : 288);
+  const cur = L.view.n || L.geo?.n || Math.min(n, L.tf === '1m' ? 120 : 200);
   L.view.n = Math.max(20, Math.min(n, Math.round(cur * f)));
   paint();
 }

@@ -11,7 +11,7 @@
 // live price and on the entry / stop / target lines) and is cheap enough for every animation frame.
 const THEMES = {
   dark: {
-    bg0: '#0b1430', bg1: '#02040c', glow: 'rgba(56,189,248,0.10)', floor: 'rgba(56,189,248,0.10)', grid: 'rgba(148,163,184,0.09)',
+    bg0: '#0b1430', bg1: '#02040c', glow: 'rgba(56,189,248,0.10)', floor: 'rgba(56,189,248,0.17)', grid: 'rgba(148,163,184,0.09)',
     axis: '#8ea0bf', ink: '#e2e8f0', up: '#22e58a', upSide: '#0d7a48', upTop: '#9dffd2', dn: '#ff3d6e', dnSide: '#8a1634', dnTop: '#ffb1c4',
     off: 'rgba(2,6,23,0.35)', lit: '#4f9bff', litSoft: 'rgba(79,155,255,0.45)', atlas: '#ff9a3d', atlas2: '#ff6a1a', scalp: '#b388ff',
     risk: [255, 61, 110], reward: [34, 229, 138], good: '#22e58a', bad: '#ff3d6e', now: 'rgba(148,163,184,0.35)',
@@ -61,7 +61,7 @@ export function drawChart(cv, d, o) {
   if (!bars.length) return null;
   const secs = d.tf === '5m' ? 300 : 60;
   const N = bars.length;
-  const n = Math.max(10, Math.min(N, o.view?.n || (d.tf === '1m' ? 180 : 288)));
+  const n = Math.max(10, Math.min(N, o.view?.n || (d.tf === '1m' ? 120 : 200)));
   const end = Math.max(0, Math.min(N - 10, o.view?.end || 0));
   const i1 = N - 1 - end, i0 = Math.max(0, i1 - n + 1);
   const barsW = pw * (1 - FUT);
@@ -79,15 +79,16 @@ export function drawChart(cv, d, o) {
   let lo = Infinity, hi = -Infinity;
   for (let i = i0; i <= i1; i++) { lo = Math.min(lo, bars[i][3]); hi = Math.max(hi, bars[i][2]); }
   const rng0 = Math.max(4, hi - lo);
-  const want = [];
+  const want = [];      // [price, how far (x the bars' range) it may stretch the scale]: a far target stays an edge arrow
   const S = d.strategies || {};
   const lit = S.lit || {}, at = S.atlas || {};
+  const far = (l) => /target/.test(l.id || '') ? 0.6 : 2.5;
   if (o.on.lit) {
-    for (const l of lit.lines || []) if (l.price != null) want.push(l.price);
-    if (lit.setup) for (const k of ['ext', 'cisd', 'level']) if (lit.setup[k] != null) want.push(lit.setup[k]);
+    for (const l of lit.lines || []) if (l.price != null) want.push([l.price, far(l)]);
+    if (lit.setup) for (const k of ['ext', 'cisd', 'level']) if (lit.setup[k] != null) want.push([lit.setup[k], 2.5]);
   }
-  if (o.on.atlas) for (const l of at.lines || []) if (l.strong && l.price != null) want.push(l.price);
-  for (const p of want) if (p > lo - 2.5 * rng0 && p < hi + 2.5 * rng0) { lo = Math.min(lo, p); hi = Math.max(hi, p); }
+  if (o.on.atlas) for (const l of at.lines || []) if (l.strong && l.price != null) want.push([l.price, far(l)]);
+  for (const [p, k] of want) if (p > lo - k * rng0 && p < hi + k * rng0) { lo = Math.min(lo, p); hi = Math.max(hi, p); }
   const pad = (hi - lo) * 0.06 || 2;
   lo -= pad; hi += pad;
   const Y = (p) => TOP + (hi - p) / (hi - lo) * ph;
@@ -125,6 +126,7 @@ export function drawChart(cv, d, o) {
   g.save(); g.setLineDash([2, 4]); g.strokeStyle = C.now; g.beginPath(); g.moveTo(xNow, TOP); g.lineTo(xNow, TOP + ph); g.stroke(); g.restore();
 
   const tags = [], notes = [], off = { up: [], dn: [] };
+  g.save(); g.beginPath(); g.rect(PADL, TOP, pw, ph); g.clip();          // layers stay inside the plot
   const hline = (p, x0, x1, color, dash, w = 1, gl = 0) => {
     if (!inY(p)) return;
     const y = Math.round(Y(p)) + 0.5;
@@ -300,6 +302,7 @@ export function drawChart(cv, d, o) {
     }
   }
 
+  g.restore();                                                           // end of the plot clip
   // ---- last price
   const last = bars[N - 1][4];
   const live = inY(last) ? { x: X(i1), y: Y(last), color: last >= bars[N - 1][1] ? C.up : C.dn } : null;

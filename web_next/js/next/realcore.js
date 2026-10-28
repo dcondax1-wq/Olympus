@@ -121,9 +121,16 @@
   }
 
   // ---------------------------------------------------------------- small parts
+  // data-rc-n="key": the number in this element counts up when it first shows or changes (fx() below; never in node)
+  const cn = (key) => (key ? ` data-rc-n="${esc(key)}"` : '');
   const bar = (f, k) => `<div class="rc-bar ${k || ''}"><i style="width:${(clamp(f || 0) * 100).toFixed(1)}%"></i></div>`;
-  function gauge(label, val, f, k, sub) {
-    return `<div class="rc-g"><div class="rc-gh"><span>${label}</span><b class="${k === 'bad' ? 'dn' : ''}">${val}</b></div>${bar(f, k)}${sub ? `<div class="rc-gs">${sub}</div>` : ''}</div>`;
+  function gauge(label, val, f, k, sub, key) {
+    return `<div class="rc-g"><div class="rc-gh"><span>${label}</span><b class="${k === 'bad' ? 'dn' : ''}"${cn(key)}>${val}</b></div>${bar(f, k)}${sub ? `<div class="rc-gs">${sub}</div>` : ''}</div>`;
+  }
+  // the health score as a glowing ring (the arc is the score out of 100)
+  function ring(S, key) {
+    return `<div class="rc-score rc-pop ${S.k}" title="${esc(S.why.join(' · '))}"><svg class="rc-ring" viewBox="0 0 72 72" aria-hidden="true"><circle class="t" cx="36" cy="36" r="31"/>`
+      + `<circle class="f" cx="36" cy="36" r="31" pathLength="100" stroke-dasharray="${S.n} 100"/></svg><b${cn(key)}>${S.n}</b><span>${tip('Health score', 'health')}</span></div>`;
   }
   function win(w) {
     if (!w) return '—';
@@ -177,23 +184,23 @@
     const E = eta(B, a), S = score(B, a), funded = a.stage === 'funded';
     const sess = ok(a.session) ? +a.session : null;
     const altRoom = chk.length && ok(chk[0].room_if_error) ? `<div class="rc-gs warn">about <b>${usd(chk[0].room_if_error)}</b> if the ${esc(chk[0].day)} ${susd(chk[0].usd)} is a ledger error (no real trade that day)</div>` : '';
-    return `<section class="rc-card rc-acct ${k}${S.k === 'bad' ? ' bad' : ''}" aria-label="${NAMES[k]} today">
+    return `<section class="rc-card rc-acct ${k} rc-tilt${S.k === 'bad' ? ' bad' : ''}" aria-label="${NAMES[k]} today">
       <div class="rc-h"><div class="rc-eye">${NAMES[k]} · ${P.size}<em>${esc(a.method || '')}${a.broker ? ' · ' + esc(short(a.broker)) : ''}</em></div><div class="rc-chips">${stateChips(B, a)}</div></div>
-      <div class="rc-top"><div class="rc-big"><span>Today · ${tip('Real', 'real')}</span><b class="${cl(dayPnl)}">${susd(dayPnl, 2)}</b><em>${R.length} of ${a.max_day || (k === 'lit' ? 1 : 2)} trade${(a.max_day || 1) === 1 ? '' : 's'} today</em></div>
-        <div class="rc-score ${S.k}" title="${esc(S.why.join(' · '))}"><b>${S.n}</b><span>${tip('Health score', 'health')}</span></div></div>
+      <div class="rc-top"><div class="rc-big rc-pop"><span>Today · ${tip('Real', 'real')}</span><b class="${cl(dayPnl)}"${cn(k + '-day')}>${susd(dayPnl, 2)}</b><em>${R.length} of ${a.max_day || (k === 'lit' ? 1 : 2)} trade${(a.max_day || 1) === 1 ? '' : 's'} today</em></div>
+        ${ring(S, k + '-score')}</div>
       ${posLine(a.position, k)}
       ${R.filter((r) => !r.open).length ? `<ul class="rc-trs">${R.filter((r) => !r.open).map(tradeLine).join('')}</ul>` : a.position ? '' : `<p class="rc-why"><b>No trade yet today.</b> ${esc(whyNone(B, a))}</p>`}
-      <div class="rc-kv"><div><span>Balance</span><b>${usd(a.balance, 2)}</b></div><div><span>${tip('Eval day')}</span><b>${funded ? 'funded' : sess != null ? `${sess} of ${a.sessions || 10}` : '—'}</b>${E && !funded ? `<em class="${E.k}">${tip('Pass ETA', `pass ≈ day ${E.at}`)}</em>` : ''}</div>
+      <div class="rc-kv"><div><span>Balance</span><b${cn(k + '-bal')}>${usd(a.balance, 2)}</b></div><div><span>${tip('Eval day')}</span><b>${funded ? 'funded' : sess != null ? `${sess} of ${a.sessions || 10}` : '—'}</b>${E && !funded ? `<em class="${E.k}">${tip('Pass ETA', `pass ≈ day ${E.at}`)}</em>` : ''}</div>
         <div><span>Next window</span>${win(a.window)}</div></div>
-      ${gauge(tip('Room to floor'), usd(room), rf, roomK, `floor ${usd(a.floor, 2)} · of ${usd(mll)}${rf != null && rf < 0.25 && !chk.length ? ' · thin: the bot sizes down' : ''}`)}${altRoom}
-      ${gauge(tip('To target'), ok(a.to_target) ? (a.to_target <= 0 ? 'reached' : usd(a.to_target)) : '—', prof != null && tgt ? prof / tgt : 0, 'acc', `${susd(prof)} of +${usd(tgt)}${E ? ` · ≈ ${E.n} more session${E.n > 1 ? 's' : ''} at the backtest pace (${usd(E.ps)} a session)` : ''}`)}
-      ${gauge(tip('Daily loss'), `${usd(used)} of ${usd(dll)}`, used / dll, used / dll > 0.75 ? 'bad' : used / dll > 0.4 ? 'warn' : 'good', used >= dll ? 'limit reached: no new trade today' : `${usd(dll - used)} left today`)}
+      ${gauge(tip('Room to floor'), usd(room), rf, roomK, `floor ${usd(a.floor, 2)} · of ${usd(mll)}${rf != null && rf < 0.25 && !chk.length ? ' · thin: the bot sizes down' : ''}`, k + '-room')}${altRoom}
+      ${gauge(tip('To target'), ok(a.to_target) ? (a.to_target <= 0 ? 'reached' : usd(a.to_target)) : '—', prof != null && tgt ? prof / tgt : 0, 'acc', `${susd(prof)} of +${usd(tgt)}${E ? ` · ≈ ${E.n} more session${E.n > 1 ? 's' : ''} at the backtest pace (${usd(E.ps)} a session)` : ''}`, k + '-tgt')}
+      ${gauge(tip('Daily loss'), `${usd(used)} of ${usd(dll)}`, used / dll, used / dll > 0.75 ? 'bad' : used / dll > 0.4 ? 'warn' : 'good', used >= dll ? 'limit reached: no new trade today' : `${usd(dll - used)} left today`, k + '-dll')}
       ${S.n < 100 ? `<p class="rc-scw">${esc(S.why.join(' · '))}</p>` : ''}
       <div class="rc-f"><button type="button" class="rc-btn" ${goA(o, k === 'lit' ? 'zlarior' : 'atlas')}>Open ${NAMES[k]}</button><button type="button" class="rc-btn" ${goA(o, 'real')}>Real results</button></div>
     </section>`;
   }
   function slot3(o) {
-    return `<section class="rc-card rc-slot" aria-label="Strategy 3 (research)"><div class="rc-h"><div class="rc-eye">Strategy 3 (research)<em>free slot · paper only</em></div>${chip('no account', '')}</div>
+    return `<section class="rc-card rc-slot rc-tilt" aria-label="Strategy 3 (research)"><div class="rc-h"><div class="rc-eye">Strategy 3 (research)<em>free slot · paper only</em></div>${chip('no account', '')}</div>
       <p class="rc-note">Room for a third strategy. It gets a real account only after the research proves it (better in 2026 and in 2021-25, 2-4 trades a week, a 2-week eval pass rate) and you buy the account. Until then nothing routes here.</p>
       <div class="rc-f"><button type="button" class="rc-btn" ${goA(o, 'lab')}>See the research</button></div></section>`;
   }
@@ -286,11 +293,11 @@
       avgR: Rs.length ? Rs.reduce((s, x) => s + x, 0) / Rs.length : null, best: C.reduce((b, r) => (!b || r.usd > b.usd ? r : b), null),
       worst: C.reduce((b, r) => (!b || r.usd < b.usd ? r : b), null), cur, curK, maxL, maxW, Rs };
   }
-  const kpi = (k, v, sub, c) => `<div class="rc-kpi"><span>${k}</span><b class="${c || ''}">${v}</b>${sub ? `<em>${sub}</em>` : ''}</div>`;
+  const kpi = (k, v, sub, c, n) => `<div class="rc-kpi rc-tilt"><span>${k}</span><b class="${c || ''}"${cn(n)}>${v}</b>${sub ? `<em>${sub}</em>` : ''}</div>`;
   function kpis(S) {
-    return `<div class="rc-kpis">${kpi('Real net', susd(S.net, 2), `${S.n} closed trade${S.n === 1 ? '' : 's'}${S.open ? ' + ' + S.open + ' open' : ''}`, cl(S.net))}
-      ${kpi('Win rate', S.win == null ? '—' : pct(S.win), `${S.wins} won · ${S.losses} lost`)}${kpi('Profit factor', S.pf == null ? '—' : S.pf === Infinity ? '∞' : S.pf.toFixed(2))}
-      ${kpi(tip('R', 'Average R'), fR(S.avgR))}${kpi('Avg win / loss', `${susd(S.avgW)} / ${susd(S.avgL)}`)}
+    return `<div class="rc-kpis">${kpi('Real net', susd(S.net, 2), `${S.n} closed trade${S.n === 1 ? '' : 's'}${S.open ? ' + ' + S.open + ' open' : ''}`, cl(S.net), 'k-net-' + F.acct)}
+      ${kpi('Win rate', S.win == null ? '—' : pct(S.win), `${S.wins} won · ${S.losses} lost`, '', 'k-win-' + F.acct)}${kpi('Profit factor', S.pf == null ? '—' : S.pf === Infinity ? '∞' : S.pf.toFixed(2), '', '', 'k-pf-' + F.acct)}
+      ${kpi(tip('R', 'Average R'), fR(S.avgR), '', cl(S.avgR), 'k-r-' + F.acct)}${kpi('Avg win / loss', `${susd(S.avgW)} / ${susd(S.avgL)}`)}
       ${kpi('Streak now', S.curK ? `${S.cur} ${S.curK === 'W' ? 'win' : S.curK === 'L' ? 'loss' : 'BE'}${S.cur > 1 ? (S.curK === 'L' ? 'es' : 's') : ''}` : '—', `longest: ${S.maxW} won · ${S.maxL} lost in a row`)}
       ${kpi('Best / worst', `${susd(S.best && S.best.usd)} / ${susd(S.worst && S.worst.usd)}`)}</div>`;
   }
@@ -328,11 +335,19 @@
       const e = ps * last[0];
       verdict = last[1] >= e ? ['good', `at or above the backtest pace (${susd(e)} expected after ${last[0]} sessions)`] : ['warn', `under the backtest pace (${susd(e)} expected after ${last[0]} sessions); few trades so far, so this says little yet`];
     }
+    // depth: the real line floats over the chart (a soft shadow below it, a neon glow around it, a lit area down to $0)
+    const id = 'rcq' + esc(k), lp = line(pts), z = Y(Math.max(lo, Math.min(hi, 0))).toFixed(1), up = last[1] >= 0;
+    const fillD = `${lp}L${X(last[0]).toFixed(1)},${z}L${X(pts[0][0]).toFixed(1)},${z}Z`;
     return `<figure class="rc-fig"><svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="${NAMES[k]} real equity by session vs the backtest">
-      ${rows ? `<path d="${area(1, 5)}" class="rc-b1"/><path d="${area(2, 4)}" class="rc-b2"/><path d="${line(rows.map((r) => [r[0], r[3]]))}" class="rc-p50"/>` : ''}
+      <defs><linearGradient id="${id}a" x1="0" y1="${up ? 0 : 1}" x2="0" y2="${up ? 1 : 0}"><stop offset="0" class="rc-s0"/><stop offset="1" class="rc-s1"/></linearGradient>
+        <linearGradient id="${id}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="rc-s2"/><stop offset="1" class="rc-s3"/></linearGradient>
+        <filter id="${id}g" x="-10%" y="-30%" width="120%" height="160%"><feGaussianBlur stdDeviation="3.5"/></filter></defs>
+      ${rows ? `<path d="${area(1, 5)}" class="rc-b1" fill="url(#${id}b)"/><path d="${area(2, 4)}" class="rc-b2"/><path d="${line(rows.map((r) => [r[0], r[3]]))}" class="rc-p50"/>` : ''}
       ${!rows && ps ? `<path d="M${X(0)},${Y(0)}L${X(nMax)},${Y(ps * nMax)}" class="rc-p50"/>` : ''}
       ${hl(0, 'rc-zero', '')}${hl(tgt, 'rc-tgt', 'target')}${hl(flo, 'rc-flo', 'floor')}
-      <path d="${line(pts)}" class="rc-real"/>${pts.map((p) => `<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="3" class="rc-dot"/>`).join('')}
+      <path d="${fillD}" class="rc-area" fill="url(#${id}a)"/><path d="${lp}" class="rc-real-sh" transform="translate(0 9)" filter="url(#${id}g)"/>
+      <path d="${lp}" class="rc-real-gl" filter="url(#${id}g)"/><path d="${lp}" class="rc-real"/>${pts.map((p, i) => `<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="${i === pts.length - 1 ? 4.5 : 3}" class="rc-dot${i === pts.length - 1 ? ' last' : ''}"/>`).join('')}
+      <circle cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="9" class="rc-halo"/>
       ${ticks}${xt}</svg>
       <figcaption><span class="rc-ax-l">x: eval session · y: $ since the eval start</span><span class="rc-lg real"></span>real ${susd(last[1], 2)} after ${last[0]} session${last[0] === 1 ? '' : 's'} ${rows ? `<span class="rc-lg band"></span>${tip('Backtest band', 'backtest band')}` : ps ? '<span class="rc-lg pace"></span>backtest pace' : ''}
         ${verdict ? `<b class="rc-vd ${verdict[0]}">${esc(verdict[1])}</b>` : ''}</figcaption></figure>`;
@@ -342,7 +357,7 @@
     const a = accOf(B, k) || {};
     const wk = Math.max(1, sessionsBetween(a.eval_start || today(B), today(B))) / 5;
     const tpw = S.n / wk;
-    return `<div class="rc-vs">${kpi('Backtest $ / month', usd(E.per_month), esc(E.src ? E.src.split(',')[0] : '2026 H2'))}${kpi('Real pace $ / month', susd(A.per_month_pace), `${A.sessions ?? '—'} session${A.sessions === 1 ? '' : 's'} so far`, cl(A.per_month_pace))}
+    return `<div class="rc-vs">${kpi('Backtest $ / month', usd(E.per_month), esc(E.src ? E.src.split(',')[0] : '2026 H2'), '', k + '-btm')}${kpi('Real pace $ / month', susd(A.per_month_pace), `${A.sessions ?? '—'} session${A.sessions === 1 ? '' : 's'} so far`, cl(A.per_month_pace), k + '-pace')}
       ${kpi('Trades a week', `${ok(tpw) ? tpw.toFixed(1) : '—'} real`, `backtest ${E.trades_per_week ?? '—'} · goal ${k === 'lit' ? '2-4' : '3-4'}`)}${O ? kpi('2-week eval odds', `${O.p10}% pass`, `${O.f10}% fail in 10 sessions · median ${O.pass_med}`) : ''}</div>`;
   }
   function daily(B, R) {
@@ -370,8 +385,8 @@
     const G = (B.progress || {});
     const line = (k) => { const w = (G[k] || {}).week || {}; const n = W.filter((r) => r.acct === k).length; return `${NAMES[k]} ${n} trade${n === 1 ? '' : 's'} (goal ${w.lo ?? 2}-${w.hi ?? 4})`; };
     const grade = S.n === 0 ? ['—', 'no real trade yet this week'] : S.net > 0 && S.win >= 40 ? ['A', 'green week'] : S.net > 0 ? ['B', 'green, few wins'] : S.losses <= 2 ? ['C', 'small red: normal for 1-2 stop-outs'] : ['D', 'red week: read the trade reviews'];
-    return `<div class="rc-week"><div class="rc-grade ${S.net > 0 ? 'good' : S.n ? 'warn' : ''}"><b>${grade[0]}</b><span>${esc(grade[1])}</span></div>
-      <div class="rc-wk">${kpi('This week (real)', susd(S.net, 2), `since Mon ${esc(mon.slice(5))}`, cl(S.net))}${kpi('Trades', String(S.n), esc(line('lit') + ' · ' + line('atlas')))}${kpi('Win rate', S.win == null ? '—' : pct(S.win))}</div></div>`;
+    return `<div class="rc-week"><div class="rc-grade rc-tilt ${S.net > 0 ? 'good' : S.n ? 'warn' : ''}"><b class="rc-pop">${grade[0]}</b><span>${esc(grade[1])}</span></div>
+      <div class="rc-wk">${kpi('This week (real)', susd(S.net, 2), `since Mon ${esc(mon.slice(5))}`, cl(S.net), 'k-wk-' + F.acct)}${kpi('Trades', String(S.n), esc(line('lit') + ' · ' + line('atlas')))}${kpi('Win rate', S.win == null ? '—' : pct(S.win))}</div></div>`;
   }
   function incidents(B) {
     const out = [];
@@ -394,7 +409,7 @@
     if (!R.length) return '<p class="rc-note">No real trade yet. The first one shows here the moment the bot closes it.</p>';
     let run = 0;
     const rows = R.map((r) => { if (!r.open && ok(r.usd)) run += +r.usd; return { ...r, run }; }).reverse();
-    return `<div class="rc-log">${rows.map((r, i) => `<div class="rc-lr${F.open === i ? ' on' : ''}"><button type="button" class="rc-lrh" data-rc-row="${i}" aria-expanded="${F.open === i}">
+    return `<div class="rc-log">${rows.map((r, i) => `<div class="rc-lr rc-n-${esc(r.acct)}${F.open === i ? ' on' : ''}"><button type="button" class="rc-lrh" data-rc-row="${i}" aria-expanded="${F.open === i}">
         <span class="mono rc-ld">${esc(dhm(r.entry_t) || r.day)}</span><span class="rc-la"><b>${esc(NAMES[r.acct] || r.acct)}${r.member ? ' · ' + esc(r.member) : ''}</b> ${chip(r.side || '', r.side === 'LONG' ? 'good' : 'bad')}</span>
         <span class="mono rc-lq">${esc(r.qty ?? '?')} × ${px(r.entry)} → ${r.open ? 'open' : px(r.exit_px)}</span><span class="rc-lh">${esc(how(r))} <em class="${cl(r.r)}">${fR(r.r)}</em></span>
         <b class="mono rc-lu ${cl(r.usd)}">${r.open ? 'open' : susd(r.usd, 2)}</b><span class="mono rc-lrun ${cl(r.run)}">${susd(r.run, 2)}</span></button>
@@ -411,11 +426,11 @@
       <div class="rc-tb">${seg}<button type="button" class="rc-btn" data-rc-csv="1">Export real trades (CSV)</button></div>
       ${kpis(S)}
       ${H3('This week', 'report card')}<section class="rc-card">${weekCard(B, R)}</section>
-      ${H3('Live vs backtest', 'is the real account on track?')}<div class="rc-grid2">${ks.map((k) => `<section class="rc-card"><div class="rc-h"><div class="rc-eye">${NAMES[k]} · ${PLAN[k].size}</div></div>${vsBacktest(B, k, stats(all.filter((r) => r.acct === k)))}${curve(B, k)}</section>`).join('')}</div>
-      <div class="rc-grid2"><section class="rc-card"><div class="rc-h"><div class="rc-eye">Daily P&L (real)<em>last 20 trading days with a trade</em></div></div>${daily(B, R)}</section>
-        <section class="rc-card"><div class="rc-h"><div class="rc-eye">${tip('R', 'R')} distribution<em>closed real trades</em></div></div>${rdist(S)}</section></div>
-      <div class="rc-grid2"><section class="rc-card"><div class="rc-h"><div class="rc-eye">$ by strategy<em>real money only</em></div></div>${byStrat(R)}</section>
-        <section class="rc-card"><div class="rc-h"><div class="rc-eye">Incidents<em>refused orders, ledger questions</em></div></div>${incidents(B)}</section></div>
+      ${H3('Live vs backtest', 'is the real account on track?')}<div class="rc-grid2">${ks.map((k) => `<section class="rc-card rc-n-${k} rc-tilt"><div class="rc-h"><div class="rc-eye"><i class="rc-dotn"></i>${NAMES[k]} · ${PLAN[k].size}</div></div>${vsBacktest(B, k, stats(all.filter((r) => r.acct === k)))}${curve(B, k)}</section>`).join('')}</div>
+      <div class="rc-grid2"><section class="rc-card rc-tilt"><div class="rc-h"><div class="rc-eye">Daily P&L (real)<em>last 20 trading days with a trade</em></div></div>${daily(B, R)}</section>
+        <section class="rc-card rc-tilt"><div class="rc-h"><div class="rc-eye">${tip('R', 'R')} distribution<em>closed real trades</em></div></div>${rdist(S)}</section></div>
+      <div class="rc-grid2"><section class="rc-card rc-tilt"><div class="rc-h"><div class="rc-eye">$ by strategy<em>real money only</em></div></div>${byStrat(R)}</section>
+        <section class="rc-card rc-tilt"><div class="rc-h"><div class="rc-eye">Incidents<em>refused orders, ledger questions</em></div></div>${incidents(B)}</section></div>
       ${H3('Real trade log', 'newest first · tap a trade for its timeline · running P&L on the right')}<section class="rc-card">${log(B, R)}</section>
       <p class="rc-src">Real = the PC bot's ledger and NinjaTrader's fills on the MFFU accounts (engine/live_board.py "real"). Paper runs are never mixed in. Backtest: ${esc(((B.real || {}).cone || {}).src || '2026 H2')}; ATLAS research/second/atlas.json.</p></section>`;
   }
@@ -439,6 +454,7 @@
     root.querySelectorAll('[data-rc-row]').forEach((b) => { b.onclick = () => { const i = +b.dataset.rcRow; F.open = F.open === i ? null : i; redraw(root, B, o); }; });
     root.querySelectorAll('[data-rc-csv]').forEach((b) => { b.onclick = () => download(`real_trades_${today(B)}.csv`, csv(realRows(B).filter((r) => F.acct === 'all' || r.acct === F.acct)), o); });
     if (window.BoardUI && window.BoardUI.tick) window.BoardUI.tick(root);
+    try { fx(root); } catch (e) { /* the look only: the numbers are already on the page */ }
   }
   function redraw(root, B, o) {
     const host = root.classList && root.classList.contains('rc-host') ? root : root.querySelector('.rc-host') || root;
@@ -460,6 +476,71 @@
   }
   function remember(B) { if (B && !B.error) LAST = B; hookPics(); }
   hookPics();
+
+  // ---------------------------------------------------------------- depth + motion (presentation only, 2026-10-28 owner:
+  // "make it look sick, very 3D"): cards rise in, numbers count up, the health ring and the gauges sweep in, cards tilt
+  // toward the mouse with a light that follows it. Everything is off with reduced motion / Motion off and on touch screens
+  // (no tilt there); the numbers are always the final ones in the HTML, the animation only plays them in.
+  const still = () => { try { return document.documentElement.dataset.motion === 'off' || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return true; } };
+  const SEEN = {}, NUM = {};
+  const NUMRE = /^([^\d]*?)(\d[\d,]*(?:\.\d+)?)([\s\S]*)$/;
+  function countUp(el, fresh) {
+    const key = el.getAttribute('data-rc-n'), txt = el.textContent, m = txt.match(NUMRE);
+    if (!m) { delete NUM[key]; return; }
+    const to = parseFloat(m[2].replace(/,/g, '')), dec = (m[2].split('.')[1] || '').length;
+    const from = fresh || !(key in NUM) ? 0 : NUM[key];
+    NUM[key] = to;
+    if (from === to || !isFinite(to)) return;
+    const f = (v) => m[1] + v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) + m[3];
+    const t0 = performance.now(), D = fresh ? 1100 : 700;
+    el.textContent = f(from);
+    const step = (now) => {
+      if (!el.isConnected) return;
+      const q = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - q, 3);
+      el.textContent = q < 1 ? f(from + (to - from) * e) : txt;
+      if (q < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+  function fx(root) {
+    const w = root.matches && root.matches('.rc-wrap') ? root : root.querySelector('.rc-wrap');
+    if (!w) return;
+    const kind = w.classList.contains('rc-res') ? 'res' : 'today', now = Date.now();
+    const fresh = !SEEN[kind] || now - SEEN[kind] > 60000;   // a refresh (every 15-30 s) keeps still; a new visit plays in
+    SEEN[kind] = now;
+    if (still()) { root.querySelectorAll('[data-rc-n]').forEach((el) => { const m = el.textContent.match(NUMRE); if (m) NUM[el.getAttribute('data-rc-n')] = parseFloat(m[2].replace(/,/g, '')); }); return; }
+    if (fresh) root.querySelectorAll('.rc-wrap').forEach((x) => { x.classList.add('rc-enter'); setTimeout(() => x.classList.remove('rc-enter'), 2200); });
+    root.querySelectorAll('[data-rc-n]').forEach((el) => countUp(el, fresh));
+  }
+  // tilt: one pointer listener for every real-account card on the page (mouse only; the outermost .rc-tilt under it)
+  let tiltOn = false;
+  function tiltInit() {
+    if (tiltOn || typeof document === 'undefined' || !document.addEventListener || !window.matchMedia || !window.requestAnimationFrame) return;
+    tiltOn = true;
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    let cur = null, ev = null, raf = 0;
+    const reset = (c) => { c.classList.remove('rc-tilting'); for (const p of ['--rx', '--ry', '--px', '--py', '--mx', '--my']) c.style.removeProperty(p); };
+    const frame = () => {
+      raf = 0;
+      const e = ev, t = e && e.target && e.target.closest ? e.target : null;
+      let c = t ? t.closest('.rc-tilt') : null, up;
+      while (c && c.parentElement && (up = c.parentElement.closest('.rc-tilt'))) c = up;
+      if (cur && cur !== c) reset(cur);
+      cur = c;
+      if (!c) return;
+      const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+      const k = 7 * Math.min(1, 340 / Math.max(r.width, r.height));   // small cards tilt up to 7 deg, wide ones less
+      c.classList.add('rc-tilting');
+      c.style.setProperty('--ry', ((x - 0.5) * k).toFixed(2) + 'deg'); c.style.setProperty('--rx', ((0.5 - y) * k).toFixed(2) + 'deg');
+      c.style.setProperty('--px', ((x - 0.5) * 2).toFixed(3)); c.style.setProperty('--py', ((y - 0.5) * 2).toFixed(3));
+      c.style.setProperty('--mx', (x * 100).toFixed(1) + '%'); c.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+    };
+    document.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || !fine.matches || still()) { if (cur) { reset(cur); cur = null; } return; }
+      ev = e; if (!raf) raf = requestAnimationFrame(frame);
+    }, { passive: true });
+    document.documentElement.addEventListener('pointerleave', () => { if (cur) { reset(cur); cur = null; } }, { passive: true });
+  }
 
   const CSS = `.rc-wrap{--rc-line:var(--line,var(--nx-line,rgba(160,170,220,.16)));--rc-s2:var(--surface-2,rgba(127,127,127,.08));--rc-s3:var(--surface-3,rgba(127,127,127,.15));
 --rc-ink:var(--ink,var(--text,inherit));--rc-ink2:var(--ink-2,var(--text-2,#a9b1c3));--rc-mut:var(--muted,#7a8396);--rc-good:var(--good,#22c58b);--rc-bad:var(--bad,#f0506e);--rc-warn:var(--warn,#e8a93a);--rc-acc:var(--accent,#6d7cff);
@@ -540,10 +621,11 @@ display:flex;flex-direction:column;gap:12px;min-width:0;color:var(--rc-ink)}
 .rc-tl li::before{content:'';position:absolute;left:-20px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--rc-acc)}.rc-tl li .mono{color:var(--rc-ink2)}.rc-tl li em{font-style:normal;color:var(--rc-mut)}`;
   function css() {
     if (typeof document === 'undefined' || document.getElementById('rc-css')) return;
-    const s = document.createElement('style'); s.id = 'rc-css'; s.textContent = CSS; document.head.appendChild(s);
+    const s = document.createElement('style'); s.id = 'rc-css'; s.textContent = CSS + DEPTH; document.head.appendChild(s);
+    tiltInit();
   }
   window.RealUI = {
     today: (B, o) => { remember(B); return today_(B, o); }, safety: (B, o) => { remember(B); return safety(B, o); },
-    results: (B, o) => { remember(B); return results(B, o); }, wire, realOf, csv, score, stats, realRows, remember, css, version: 1,
+    results: (B, o) => { remember(B); return results(B, o); }, wire, realOf, csv, score, stats, realRows, remember, css, fx, version: 2,
   };
 })();
