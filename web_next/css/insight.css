@@ -103,3 +103,140 @@
   #page-insight .in-rp input { flex: 1; min-width: 0; }
   #page-insight .in-skel { grid-template-columns: 1fr; }
 }
+
+/* ===== depth layer (2026-10-28, owner: "make it look sick, very 3D"; js/next/depth.js tilts the .dp-tilt cards and counts
+   the [data-dp-n] numbers up): frosted glass cards with lit edges and depth shadows, an aura behind the grid, a neon colour
+   per strategy (Zlarior blue, ATLAS orange, Strategy 3 purple), glowing 3D tubes and steps, beveled grade and number chips.
+   Dark first; the light theme keeps the depth with soft shadows and no glow on text. Motion off / reduced motion: still. */
+#page-insight { --in-e: cubic-bezier(.2, .8, .2, 1); --in-n-lit: #4da3ff; --in-n-atlas: #ff9a3d; --in-n-s3: #b47cff; --in-neon: var(--accent);
+  --in-g1: color-mix(in srgb, var(--surface) 76%, transparent); --in-g2: color-mix(in srgb, var(--surface) 52%, transparent);
+  --in-hi: rgba(255, 255, 255, .09); --in-well: rgba(0, 0, 0, .34); --in-wellhi: rgba(255, 255, 255, .05);
+  --in-tile: linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .012));
+  --in-sh: 0 1px 0 rgba(0, 0, 0, .35), 0 22px 44px -24px rgba(0, 0, 0, .85), 0 46px 90px -52px rgba(0, 0, 0, .7);
+  --in-tsh: inset 0 1px 0 rgba(255, 255, 255, .06), 0 8px 18px -12px rgba(0, 0, 0, .75); }
+:root[data-theme="light"] #page-insight { --in-n-lit: #1f6fe0; --in-n-atlas: #d96500; --in-n-s3: #7a4bd8;
+  --in-g1: color-mix(in srgb, var(--surface) 92%, transparent); --in-g2: color-mix(in srgb, var(--surface) 76%, transparent);
+  --in-hi: rgba(255, 255, 255, .95); --in-well: rgba(20, 40, 90, .09); --in-wellhi: rgba(255, 255, 255, .8);
+  --in-tile: linear-gradient(180deg, rgba(255, 255, 255, .9), rgba(255, 255, 255, .4));
+  --in-sh: 0 1px 2px rgba(20, 40, 90, .07), 0 16px 36px -18px rgba(20, 40, 90, .3), 0 40px 80px -52px rgba(20, 40, 90, .28);
+  --in-tsh: inset 0 1px 0 rgba(255, 255, 255, .9), 0 6px 14px -10px rgba(20, 40, 90, .3); }
+#page-insight .in-n-lit { --in-neon: var(--in-n-lit); } #page-insight .in-n-atlas { --in-neon: var(--in-n-atlas); } #page-insight .in-n-s3 { --in-neon: var(--in-n-s3); }
+#page-insight .in-st-good { --in-neon: var(--good); } #page-insight .in-st-warn { --in-neon: var(--warn); } #page-insight .in-st-bad { --in-neon: var(--bad); }
+
+/* the aura behind the grid shows through the frosted cards */
+#page-insight .in-grid { position: relative; isolation: isolate; }
+#page-insight .in-grid::before { content: ""; position: absolute; inset: -30px 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(30% 16% at 22% 6%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%),
+    radial-gradient(28% 14% at 80% 22%, color-mix(in srgb, var(--in-n-lit) 18%, transparent), transparent 70%),
+    radial-gradient(30% 14% at 20% 48%, color-mix(in srgb, var(--accent-2, var(--in-n-lit)) 12%, transparent), transparent 70%),
+    radial-gradient(30% 14% at 78% 70%, color-mix(in srgb, var(--in-n-atlas) 15%, transparent), transparent 70%),
+    radial-gradient(40% 12% at 50% 94%, color-mix(in srgb, var(--in-n-s3) 18%, transparent), transparent 70%); }
+:root[data-theme="light"] #page-insight .in-grid::before { opacity: .5; }
+
+/* frosted glass cards: lit top edge, a neon rim that fades round the card, depth shadow, a light that follows the mouse */
+#page-insight .in-card { position: relative; isolation: isolate; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--in-neon) 16%, var(--nx-line));
+  background: linear-gradient(90deg, transparent 8%, color-mix(in srgb, var(--in-neon) 70%, #fff) 50%, transparent 92%) top / 100% 1px no-repeat,
+    radial-gradient(120% 70% at 0% 0%, color-mix(in srgb, var(--in-neon) 12%, transparent), transparent 58%), linear-gradient(165deg, var(--in-g1), var(--in-g2));
+  box-shadow: inset 0 1px 0 var(--in-hi), var(--in-sh), 0 30px 70px -46px color-mix(in srgb, var(--in-neon) 80%, transparent);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35); backdrop-filter: blur(18px) saturate(1.35);
+  transition: transform .6s var(--in-e), box-shadow .4s var(--in-e), border-color .3s; }
+#page-insight .in-card::after { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .3), color-mix(in srgb, var(--in-neon) 50%, transparent) 14%, transparent 38%, transparent 72%, color-mix(in srgb, var(--in-neon) 28%, transparent));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: .7; }
+#page-insight .in-card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1; opacity: 0; transition: opacity .35s;
+  background: radial-gradient(460px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .05), color-mix(in srgb, var(--in-neon) 8%, transparent) 32%, transparent 62%); }
+#page-insight .dp-tilting::before { opacity: 1; }
+#page-insight .in-h h3 { letter-spacing: -.005em; }
+#page-insight .in-i { width: 26px; height: 26px; border-radius: 8px; place-items: center; display: inline-grid; color: var(--in-neon);
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--in-neon) 30%, transparent), color-mix(in srgb, var(--in-neon) 10%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 0 0 1px color-mix(in srgb, var(--in-neon) 30%, transparent), 0 0 16px -4px color-mix(in srgb, var(--in-neon) 70%, transparent);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--in-neon) 50%, transparent)); }
+#page-insight .in-n { color: var(--ink-2); border-color: color-mix(in srgb, var(--ink) 12%, transparent); background: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .01));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 2px 0 rgba(0, 0, 0, .45), 0 4px 8px -4px rgba(0, 0, 0, .6); }
+
+/* raised glass tiles inside the cards */
+#page-insight :is(.in-side, .in-mem, .in-win, .in-sc, .in-rng, .in-grid4 > div, .in-tr, .in-news) {
+  background: var(--in-tile), color-mix(in srgb, var(--surface-2) 70%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 7%, transparent); box-shadow: var(--in-tsh); }
+#page-insight :is(.in-mem, .in-win, .in-sc) { position: relative; }
+#page-insight :is(.in-mem, .in-win, .in-sc)::before { content: ""; position: absolute; left: -1px; top: 12px; bottom: 12px; width: 2px; border-radius: 2px;
+  background: var(--in-neon); box-shadow: 0 0 10px var(--in-neon); opacity: .8; }
+#page-insight .in-dot { display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; vertical-align: 1px;
+  background: radial-gradient(circle at 35% 30%, #fff, var(--in-neon) 60%); box-shadow: 0 0 0 3px color-mix(in srgb, var(--in-neon) 22%, transparent), 0 0 12px var(--in-neon); }
+#page-insight .in-grid4 b { letter-spacing: -.01em; }
+#page-insight :is(.in-grid4 b, .in-tbl td, .in-tr b).up, #page-insight :is(.in-grid4 b, .in-tbl td, .in-tr b).dn { text-shadow: 0 0 14px color-mix(in srgb, currentColor 45%, transparent); }
+
+/* glowing 3D tubes and the ten LIT steps */
+#page-insight .in-bar { --c: var(--ink-2); height: 10px; overflow: visible; background: linear-gradient(180deg, var(--in-well), color-mix(in srgb, var(--in-well) 45%, transparent));
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, .5), inset 0 -1px 0 var(--in-wellhi), 0 1px 0 var(--in-wellhi); }
+#page-insight .in-bar i { background: linear-gradient(180deg, color-mix(in srgb, var(--c) 52%, #fff), var(--c) 45%, color-mix(in srgb, var(--c) 70%, #000));
+  box-shadow: 0 0 14px -2px color-mix(in srgb, var(--c) 80%, transparent), inset 0 1px 0 rgba(255, 255, 255, .4); }
+#page-insight .in-bar.accent i, #page-insight .in-bar.good i, #page-insight .in-bar.warn i, #page-insight .in-bar.bad i { background: linear-gradient(180deg, color-mix(in srgb, var(--c) 52%, #fff), var(--c) 45%, color-mix(in srgb, var(--c) 70%, #000)); }
+#page-insight .in-bar.accent { --c: var(--in-neon); } #page-insight .in-bar.good { --c: var(--good); } #page-insight .in-bar.warn { --c: var(--warn); } #page-insight .in-bar.bad { --c: var(--bad); }
+#page-insight .in-steps { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; margin: 10px 0 8px; }
+#page-insight .in-steps i { height: 10px; border-radius: 4px; background: linear-gradient(180deg, var(--in-well), color-mix(in srgb, var(--in-well) 45%, transparent));
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, .5), 0 1px 0 var(--in-wellhi); }
+#page-insight .in-steps i.on { background: linear-gradient(180deg, color-mix(in srgb, var(--in-neon) 50%, #fff), var(--in-neon) 45%, color-mix(in srgb, var(--in-neon) 70%, #000));
+  box-shadow: 0 0 12px -2px color-mix(in srgb, var(--in-neon) 85%, transparent), inset 0 1px 0 rgba(255, 255, 255, .45); }
+#page-insight .in-steps i.now { animation: inGlow 2.2s ease-in-out infinite; }
+
+/* beveled grade badge, the drift word in neon, the price-now row of the levels ladder */
+#page-insight .in-letter { --c: var(--in-neon); position: relative; width: 64px; height: 64px; border-radius: 18px; border-color: color-mix(in srgb, var(--c) 45%, transparent);
+  background: radial-gradient(circle at 30% 18%, rgba(255, 255, 255, .16), transparent 50%), radial-gradient(circle at 50% 62%, color-mix(in srgb, var(--c) 24%, var(--surface-3)), color-mix(in srgb, var(--surface) 85%, #000));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), inset 0 -10px 18px rgba(0, 0, 0, .4), 0 16px 30px -14px rgba(0, 0, 0, .85), 0 0 30px -8px var(--c);
+  text-shadow: 0 0 20px color-mix(in srgb, var(--c) 75%, transparent), 0 2px 0 rgba(0, 0, 0, .45); transition: transform .6s var(--in-e); }
+#page-insight .in-letter.good { --c: var(--good); } #page-insight .in-letter.warn { --c: var(--warn); }
+#page-insight .in-big { text-shadow: 0 0 26px color-mix(in srgb, currentColor 50%, transparent), 0 2px 0 rgba(0, 0, 0, .35); }
+#page-insight .in-lv { border-left-width: 3px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .03); transition: background .2s; }
+#page-insight .in-lv:hover { background: color-mix(in srgb, var(--in-neon) 8%, transparent); }
+#page-insight .in-lv.hi { border-left-color: var(--bad); box-shadow: inset 6px 0 12px -8px var(--bad); } #page-insight .in-lv.lo { border-left-color: var(--good); box-shadow: inset 6px 0 12px -8px var(--good); }
+#page-insight .in-lv.sw { box-shadow: none; }
+#page-insight .in-lv.now { border-left-color: var(--accent); background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 24%, transparent), color-mix(in srgb, var(--accent) 6%, transparent));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 22px -6px var(--accent), inset 0 1px 0 rgba(255, 255, 255, .1); }
+#page-insight .in-lv.now b { text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 70%, transparent); }
+#page-insight .in-tbl tbody tr:hover td { background: color-mix(in srgb, var(--in-neon) 7%, transparent); }
+
+/* the headline tiles and the toolbar */
+#page-insight .in-stats .nx-stat { border-radius: 16px; background: var(--in-tile), linear-gradient(165deg, var(--in-g1), var(--in-g2)); border-color: color-mix(in srgb, var(--accent) 16%, var(--nx-line));
+  box-shadow: inset 0 1px 0 var(--in-hi), var(--in-sh); transition: transform .6s var(--in-e), box-shadow .4s; }
+#page-insight .in-stats .nx-stat b { text-shadow: 0 0 22px color-mix(in srgb, currentColor 35%, transparent); }
+#page-insight .in-rp input { background: var(--in-well); border-color: transparent; box-shadow: inset 0 1px 3px rgba(0, 0, 0, .45), 0 1px 0 var(--in-wellhi); }
+#page-insight .in-skel i { background: linear-gradient(165deg, var(--in-g1), var(--in-g2)); box-shadow: inset 0 1px 0 var(--in-hi), var(--in-sh); }
+
+/* tilt (mouse only) + play-in */
+@media (hover: hover) and (pointer: fine) {
+  #page-insight .dp-tilt.dp-tilting { transform: perspective(1200px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translate3d(0, -3px, 0); transition: transform .12s linear, box-shadow .3s; }
+  #page-insight .in-card.dp-tilting { box-shadow: inset 0 1px 0 var(--in-hi), var(--in-sh), 0 36px 72px -34px color-mix(in srgb, var(--in-neon) 75%, transparent); }
+  #page-insight .dp-tilting .in-letter, #page-insight .dp-tilting .in-big { transform: translate3d(calc(var(--px, 0) * 6px), calc(var(--py, 0) * 5px), 0); }
+}
+#page-insight.dp-enter .in-card, #page-insight.dp-enter .in-stats .nx-stat { animation: inRise .75s var(--in-e) backwards; }
+#page-insight.dp-enter .in-grid > :nth-child(2), #page-insight.dp-enter .in-stats > :nth-child(2) { animation-delay: .06s; }
+#page-insight.dp-enter .in-grid > :nth-child(3), #page-insight.dp-enter .in-stats > :nth-child(3) { animation-delay: .12s; }
+#page-insight.dp-enter .in-grid > :nth-child(4), #page-insight.dp-enter .in-stats > :nth-child(4) { animation-delay: .18s; }
+#page-insight.dp-enter .in-grid > :nth-child(n+5) { animation-delay: .24s; }
+#page-insight.dp-enter .in-bar i { animation: inGrow 1.1s .25s var(--in-e) backwards; }
+#page-insight.dp-enter .in-steps i.on { animation: inStep .5s var(--in-e) backwards; }
+#page-insight.dp-enter .in-steps i:nth-child(2) { animation-delay: .05s; } #page-insight.dp-enter .in-steps i:nth-child(3) { animation-delay: .1s; }
+#page-insight.dp-enter .in-steps i:nth-child(4) { animation-delay: .15s; } #page-insight.dp-enter .in-steps i:nth-child(5) { animation-delay: .2s; }
+#page-insight.dp-enter .in-steps i:nth-child(n+6) { animation-delay: .25s; }
+@keyframes inRise { from { opacity: 0; transform: perspective(900px) translate3d(0, 22px, 0) rotateX(10deg) scale(.98); } }
+@keyframes inGrow { from { width: 0; } }
+@keyframes inStep { from { opacity: 0; transform: scaleY(.2); } }
+@keyframes inGlow { 50% { box-shadow: 0 0 18px 0 color-mix(in srgb, var(--in-neon) 90%, transparent), inset 0 1px 0 rgba(255, 255, 255, .45); } }
+
+@media (max-width: 760px) {
+  #page-insight .in-card { -webkit-backdrop-filter: none; backdrop-filter: none; --in-g1: color-mix(in srgb, var(--surface) 90%, transparent); --in-g2: color-mix(in srgb, var(--surface) 74%, transparent); }
+  #page-insight .in-steps { gap: 3px; }
+}
+:root[data-theme="light"] #page-insight .in-card::after { opacity: .45; }
+:root[data-theme="light"] #page-insight .in-card { box-shadow: inset 0 1px 0 var(--in-hi), var(--in-sh), 0 26px 50px -40px color-mix(in srgb, var(--in-neon) 70%, transparent); }
+:root[data-theme="light"] #page-insight :is(.in-big, .in-letter, .in-lv.now b, .in-stats .nx-stat b, .in-grid4 b, .in-tbl td, .in-tr b) { text-shadow: none; }
+:root[data-theme="light"] #page-insight .in-letter { background: radial-gradient(circle at 30% 18%, #fff, transparent 55%), color-mix(in srgb, var(--c) 12%, var(--surface-2));
+  box-shadow: inset 0 1px 0 #fff, inset 0 -8px 14px rgba(20, 40, 90, .08), 0 12px 24px -14px rgba(20, 40, 90, .4), 0 0 24px -12px var(--c); }
+:root[data-theme="light"] #page-insight :is(.in-bar, .in-steps i, .in-rp input) { box-shadow: inset 0 1px 2px rgba(20, 40, 90, .2), 0 1px 0 #fff; }
+:root[data-theme="light"] #page-insight .in-n { background: linear-gradient(180deg, #fff, var(--surface-2)); box-shadow: inset 0 1px 0 #fff, 0 2px 0 rgba(20, 40, 90, .12); }
+@media (prefers-reduced-motion: reduce) {
+  #page-insight *, #page-insight *::before, #page-insight *::after { animation: none !important; transition: none !important; }
+  #page-insight .dp-tilt.dp-tilting { transform: none; }
+}
+/* a long status (Strategy 3 write-ups) wraps inside its chip instead of widening the page */
+#page-insight .in-row .nx-chip { white-space: normal; height: auto; min-height: 24px; padding: 3px 9px; line-height: 1.35; max-width: 100%; overflow-wrap: anywhere; }

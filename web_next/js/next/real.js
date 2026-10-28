@@ -14,7 +14,7 @@ function loadReal() {
   if (RP) return RP;
   RP = new Promise((res, rej) => {
     const s = document.createElement('script');
-    s.src = new URL('./realcore.js?v=1', import.meta.url).href;
+    s.src = new URL('./realcore.js?v=2', import.meta.url).href;   // v2 (2026-10-28): the 3D / glass look
     s.onload = () => res(); s.onerror = () => { RP = null; rej(new Error('realcore.js did not load')); };
     document.head.appendChild(s);
   });
@@ -26,9 +26,11 @@ const active = () => document.getElementById('page-real')?.classList.contains('a
 
 // the Home slots (cc.js renders them and calls this after every render: the last board at once, then the fresh one)
 export async function fillRealHome() {
+  let painted = null;
   const paint = (B) => {
     const a = document.getElementById('ccReal'), b = document.getElementById('ccSafe');
-    if (!window.RealUI || !B) return;
+    if (!window.RealUI || !B || (B === painted && a?.firstChild)) return;   // the same board twice: keep the cards (and their play-in) as they are
+    painted = B;
     if (a) { a.innerHTML = window.RealUI.today(B, OPTS()); window.RealUI.wire(a, B, OPTS()); }
     if (b) { b.innerHTML = B.error ? '' : window.RealUI.safety(B, OPTS()); }
   };

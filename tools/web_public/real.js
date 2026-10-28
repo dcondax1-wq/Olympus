@@ -16,7 +16,7 @@
   function core(cb) {
     if (window.RealUI) return cb();
     if (!loading) {
-      loading = new Promise((ok, bad) => { const s = document.createElement('script'); s.src = 'realcore.js?v=1'; s.onload = ok; s.onerror = () => { loading = null; bad(); }; document.head.appendChild(s); });
+      loading = new Promise((ok, bad) => { const s = document.createElement('script'); s.src = 'realcore.js?v=2'; s.onload = ok; s.onerror = () => { loading = null; bad(); }; document.head.appendChild(s); });
     }
     loading.then(cb).catch(() => null);
   }

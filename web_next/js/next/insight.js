@@ -6,11 +6,12 @@
 // (index.html stays untouched); app.js registers the page as PAGES.insight.
 import { $, esc, store } from '../util.js';
 import { icon } from './icons.js';
+import { depth } from './depth.js';   // count-ups, play-in and the card tilt (presentation only)
 
 // ------------------------------------------------------------------ page shell (section + stylesheet)
 (function ensure() {
-  if (!document.querySelector('link[href="/css/insight.css"]')) {
-    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/css/insight.css'; document.head.appendChild(l);
+  if (!document.querySelector('link[href^="/css/insight.css"]')) {
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/css/insight.css?v=2'; document.head.appendChild(l);   // v2: the 3D / glass look
   }
   if (!document.getElementById('page-insight')) {
     const ref = document.getElementById('page-board') || document.querySelector('section.page');
@@ -30,11 +31,15 @@ const R = (v) => (ok(v) ? (v > 0 ? '+' : '') + (+v).toFixed(2) + 'R' : '—');
 const pct = (v) => (ok(v) ? Math.round(+v) + '%' : '—');
 const cl = (v) => (v > 0 ? 'up' : v < 0 ? 'dn' : '');
 const chip = (t, k = '') => `<span class="nx-chip ${k}">${t}</span>`;
-const card = (n, title, ic, sentence, body, extra = '') => `<article class="card nx-glass in-card ${extra}">
+const card = (n, title, ic, sentence, body, extra = '') => `<article class="card nx-glass in-card dp-tilt ${extra}">
   <div class="in-h"><span class="in-n">${n}</span><span class="in-i">${icon(ic)}</span><h3>${title}</h3></div>
   ${sentence ? `<p class="in-say">${sentence}</p>` : ''}${body}</article>`;
 const errCard = (n, title, ic, e) => card(n, title, ic, '', `<div class="in-empty">Could not build this panel: ${esc(e)}</div>`);
 const bar = (f, k = '') => `<div class="in-bar ${k}"><i style="width:${Math.max(0, Math.min(100, (f || 0) * 100)).toFixed(1)}%"></i></div>`;
+// the LIT stage as ten glowing steps (lit up to the current one)
+const steps = (n, of = 10) => `<div class="in-steps" role="img" aria-label="step ${n || 0} of ${of}">${Array.from({ length: of }, (_, i) => `<i class="${i < (n || 0) ? 'on' : ''}${i === (n || 0) - 1 ? ' now' : ''}"></i>`).join('')}</div>`;
+const fam = (key) => (key === 'lit' ? 'in-n-lit' : 'in-n-atlas');   // neon per strategy: Zlarior blue, ATLAS orange
+const dn = (key) => ` data-dp-n="${esc(key)}"`;
 const dur = (s) => {
   if (!ok(s)) return '—';
   s = Math.max(0, Math.round(s));
@@ -78,12 +83,12 @@ function pRadar(x) {
       <div class="in-sub">${esc(m.text || '')}</div>
       ${m.checks_n ? `<div class="in-chk">${bar(m.checks_ok / m.checks_n, m.ready ? 'good' : 'accent')}<span>${m.checks_ok}/${m.checks_n} rule checks pass${m.first_fail ? ` · first miss: ${esc(m.first_fail)}` : ''}</span></div>` : ''}
     </div>`).join('');
-  const body = `<div class="in-block"><div class="in-row"><b>Zlarior (LIT)</b>${chip(`step ${L.stage_n || '?'} of 10 · ${esc(L.stage_label || '?')}`, L.stage === 'trade' || L.stage === 'limit' || L.stage === 'cisd1m' ? 'good' : '')}</div>
-      ${bar((L.stage_n || 0) / 10, 'accent')}
+  const body = `<div class="in-block in-n-lit"><div class="in-row"><b><i class="in-dot"></i>Zlarior (LIT)</b>${chip(`step ${L.stage_n || '?'} of 10 · ${esc(L.stage_label || '?')}`, L.stage === 'trade' || L.stage === 'limit' || L.stage === 'cisd1m' ? 'good' : '')}</div>
+      ${steps(L.stage_n, 10)}
       <p class="in-txt">${esc(L.text || '')}</p>
       <div class="nx-chips">${near(L.nearest?.above, '')}${near(L.nearest?.below, '')}</div>
       <div class="in-sides">${sides}</div></div>
-    <div class="in-block"><div class="in-row"><b>ATLAS (paper)</b><span class="muted">EMA · MACD · S/R + 2 candidates</span></div>${members || '<div class="in-empty">ATLAS has not run yet.</div>'}</div>`;
+    <div class="in-block in-n-atlas"><div class="in-row"><b><i class="in-dot"></i>ATLAS (paper)</b><span class="muted">EMA · MACD · S/R + 2 candidates</span></div>${members || '<div class="in-empty">ATLAS has not run yet.</div>'}</div>`;
   return card(21, 'Setup radar', 'radar', esc(x.summary || ''), body, 'in-wide');
 }
 
@@ -94,7 +99,7 @@ function pWindows(x) {
     const st = !n ? chip('no window', '') : n.open ? chip('open', 'good') : chip('closed');
     const cd = !n ? '' : n.open ? `closes in <b class="in-cd" data-to="${n.end_t}">${dur(n.closes_in_s)}</b>` :
       `opens in <b class="in-cd" data-to="${n.start_t}">${dur(n.opens_in_s)}</b> <span class="muted">(${esc(n.start_day || '')} ${esc(n.start_hm || '')} ET)</span>`;
-    return `<div class="in-win"><div class="in-row"><b>${esc(w.short || w.label)}</b>${w.candidate ? chip('candidate') : ''}${st}</div>
+    return `<div class="in-win ${fam(w.key)}"><div class="in-row"><b><i class="in-dot"></i>${esc(w.short || w.label)}</b>${w.candidate ? chip('candidate') : ''}${st}</div>
       <div class="in-sub">${esc(w.window || '—')}${w.note ? ` · ${esc(w.note)}` : ''}</div><div class="in-count">${cd}</div></div>`;
   }).join('');
   const open = (x.rows || []).filter((w) => w.next?.open).map((w) => w.short || w.label);
@@ -104,17 +109,17 @@ function pWindows(x) {
 
 function pScore(x) {
   if (!x || x.error) return errCard(23, 'Live vs backtest', 'robust', x?.error || 'no data');
-  const rows = (x.rows || []).map((r) => {
+  const rows = (x.rows || []).map((r, i) => {
     const [lab, k] = STATUS[r.status] || [r.status_text || '—', ''];
     const h1 = r.research?.H1 || {}, h2 = r.research?.H2 || {};
     const live = r.live || {};
     const exp = r.expected_20?.cum_r ? `after 20 trades the backtest expects ${R(r.expected_20.cum_r[0])} to ${R(r.expected_20.cum_r[2])} (middle ${R(r.expected_20.cum_r[1])})` : '';
-    return `<div class="in-sc">
-      <div class="in-row"><b>${esc(zl(r.label))}</b>${chip(lab + (r.pct != null ? ` · p${Math.round(r.pct)}` : ''), k)}</div>
+    return `<div class="in-sc ${fam(r.key)}">
+      <div class="in-row"><b><i class="in-dot"></i>${esc(zl(r.label))}</b>${chip(lab + (r.pct != null ? ` · p${Math.round(r.pct)}` : ''), k)}</div>
       <div class="in-sub">Live: ${live.n || 0} trades${live.n ? ` · ${live.cum_r != null ? R(live.cum_r) : R(live.avg_r) + ' a trade'} · ${susd(live.usd ?? live.net)}` : ''}${r.detail ? ` · ${esc(r.detail)}` : ''}</div>
       <div class="in-grid4">
-        <div><span>H1 PF</span><b>${num(h1.pf)}</b></div><div><span>H2 PF</span><b>${num(h2.pf)}</b></div>
-        <div><span>H2 net</span><b class="${cl(h2.net)}">${susd(h2.net)}</b></div><div><span>H2 $/mo</span><b class="${cl(h2.per_month)}">${susd(h2.per_month)}</b></div>
+        <div><span>H1 PF</span><b${dn(`sc-${r.key || i}-h1`)}>${num(h1.pf)}</b></div><div><span>H2 PF</span><b${dn(`sc-${r.key || i}-h2`)}>${num(h2.pf)}</b></div>
+        <div><span>H2 net</span><b class="${cl(h2.net)}"${dn(`sc-${r.key || i}-net`)}>${susd(h2.net)}</b></div><div><span>H2 $/mo</span><b class="${cl(h2.per_month)}"${dn(`sc-${r.key || i}-mo`)}>${susd(h2.per_month)}</b></div>
       </div>
       <div class="in-sub">${h2.tpw != null ? `${num(h2.tpw)} trades a week in H2 · ` : ''}${exp}</div></div>`;
   }).join('');
@@ -132,7 +137,7 @@ function pDrift(x) {
     <div class="in-sub">${esc(d.text || d.error || '')}</div>`).join('');
   const an = (x.anomalies || []).length ? `<div class="in-sub">Recent anomalies: ${(x.anomalies || []).map((a) => esc(a.text || a.kind || '')).join(' · ')}</div>` : '';
   return card(24, 'Drift alarm', 'alerts', esc(x.text || ''),
-    `<div class="in-big ${k}">${big}</div>${rows}${an}<p class="in-foot">${esc(x.rule || '')} Source: ${esc(x.source || '')}.</p>`);
+    `<div class="in-big ${k}">${big}</div>${rows}${an}<p class="in-foot">${esc(x.rule || '')} Source: ${esc(x.source || '')}.</p>`, k ? 'in-st-' + k : '');
 }
 
 function pGrade(x) {
@@ -149,7 +154,7 @@ function pGrade(x) {
     body += `<div class="in-sub">No setup today yet: the last trade is shown.</div></div></div>`;
   }
   if (t) body += `<div class="in-sub in-last">Last trade ${esc(t.day || '')}: ${side(t.side)} ${esc(t.exit || '')} ${R(t.r)} (${susd(t.pnl)}) · grade ${esc(t.grade || '?')}${t.cause ? ` · cause ${esc(t.cause)}` : ''} · ${esc(t.source || '')}</div>`;
-  return card(25, 'Setup grade & confidence', 'star', esc(x.text || ''), body);
+  return card(25, 'Setup grade & confidence', 'star', esc(x.text || ''), body, 'in-n-lit');
 }
 
 function pSimilar(x) {
@@ -160,7 +165,7 @@ function pSimilar(x) {
   const first = G[0]?.trades || [];
   const list = first.length ? `<div class="in-sub">Latest of “${esc(G[0].name)}”:</div><div class="in-trades">${first.map((t) =>
     `<div class="in-tr"><span>${esc(t.day)}</span>${side(t.side)}<span>${esc(t.exit || '')}</span><b class="${cl(t.r)}">${R(t.r)}</b><span class="${cl(t.pnl)}">${susd(t.pnl)}</span></div>`).join('')}</div>` : '';
-  return card(26, 'Similar past trades', 'stats', esc(x.text || ''), tbl + list + `<p class="in-foot">${esc(x.source || '')}</p>`);
+  return card(26, 'Similar past trades', 'stats', esc(x.text || ''), tbl + list + `<p class="in-foot">${esc(x.source || '')}</p>`, 'in-n-lit');
 }
 
 function pRegime(x) {
@@ -172,7 +177,7 @@ function pRegime(x) {
     <div class="in-sub">${r.range != null ? `${px(r.low)} – ${px(r.high)} · <b>${num(r.range, 0)} pts</b>${r.pct_avg != null ? ` = ${r.pct_avg}% of its 20-day average (${num(r.avg20, 0)})` : ''}` : 'not formed yet'}</div>
     ${r.pct_avg != null ? bar(Math.min(1, r.pct_avg / 200), r.pct_avg > 130 ? 'warn' : 'accent') : ''}</div>`).join('');
   const body = `<div class="in-grid4">
-      <div><span>VIX</span><b>${num(x.vix)}</b><em>${vb}</em></div><div><span>VXN</span><b>${num(x.vxn)}</b><em>Nasdaq vol</em></div>
+      <div><span>VIX</span><b${dn('rg-vix')}>${num(x.vix)}</b><em>${vb}</em></div><div><span>VXN</span><b${dn('rg-vxn')}>${num(x.vxn)}</b><em>Nasdaq vol</em></div>
       ${tr(x.t15, '15m trend')}${tr(x.t60, '1h trend')}</div>
     ${x.up != null ? `<div class="in-sub">VIX band (Zlarior's target): 18:00 open ${px(x.open18)} ± ${num(x.move, 0)} pts → <b class="up">${px(x.up)}</b> / <b class="dn">${px(x.dn)}</b></div>` : ''}
     <div class="in-news">${icon('news')}<div>${n ? `<b>Next big news: ${esc(n.event)}</b><span>${esc(n.weekday || '')} ${esc(n.time || '')} ET · in <b class="in-cd" data-to="${n.t}">${dur(n.in_s)}</b></span>` : '<b>No high-impact news in the next 7 days.</b>'}
@@ -197,7 +202,7 @@ function pLevels(x) {
   }
   if (!placed) rows.push(`<div class="in-lv now"><span>${px(price)}</span><b>price now</b><em></em></div>`);
   const legend = `<div class="nx-chips">${chip(`${(x.swept || []).length} swept`, 'warn')}${chip(`${(x.untouched || []).length} untouched`)}${chip('✓ = deep enough for LIT (0.5 ATR)')}</div>`;
-  return card(28, 'LIT levels map', 'map', esc(x.text || ''), legend + `<div class="in-ladder">${rows.join('')}</div><p class="in-foot">The 16 levels nearest the price, highest first. Day ${esc(x.day || '')}, ATR ${num(x.atr, 1)} pts.</p>`);
+  return card(28, 'LIT levels map', 'map', esc(x.text || ''), legend + `<div class="in-ladder">${rows.join('')}</div><p class="in-foot">The 16 levels nearest the price, highest first. Day ${esc(x.day || '')}, ATR ${num(x.atr, 1)} pts.</p>`, 'in-n-lit');
 }
 
 function pAtlas(x) {
@@ -212,7 +217,7 @@ function pAtlas(x) {
       ${h2 ? `<div class="in-sub">2026 H2 research: ${h2.n} trades · PF ${num(h2.pf)} · ${susd(h2.net)} (${susd(h2.per_month)}/mo) · ${num(h2.tpw)} a week</div>` : ''}
     </div>`;
   }).join('');
-  return card(29, 'ATLAS members', 'atlas', esc(x.text || ''), rows || '<div class="in-empty">No ATLAS run yet.</div>');
+  return card(29, 'ATLAS members', 'atlas', esc(x.text || ''), rows || '<div class="in-empty">No ATLAS run yet.</div>', 'in-n-atlas');
 }
 
 function pS3(x) {
@@ -223,7 +228,7 @@ function pS3(x) {
     `<tr><td>${esc(g.family || '')} <span class="muted mono">${esc(String(g.file || '').split('/').pop().replace('.json', ''))}</span></td><td>${g.variants}</td><td>${g.both_halves}</td><td>${g.best ? `${esc(g.best.tf)} · PF ${num(g.best.H1?.pf)} / ${num(g.best.H2?.pf)} · ${susd(g.best.H2?.per_month)}/mo H2 · ${num(g.best.H2?.tpw, 1)}/wk` : '—'}</td></tr>`).join('')}</tbody></table></div>` : '';
   const other = (x.data || []).filter((g) => g.kind !== 'grid').map((d) => `<div class="in-sub mono">${esc(d.file)}${d.status ? ' · ' + esc(d.status) : ''}</div>`).join('');
   return card(30, 'Strategy 3 (research)', 'variants', esc(x.text || ''),
-    `<div class="in-row"><b>${esc(x.name || 'Strategy 3')}</b>${chip('paper only · not routed')}</div>${docs}${tbl}${other}`, 'in-wide');
+    `<div class="in-row"><b><i class="in-dot"></i>${esc(x.name || 'Strategy 3')}</b>${chip('paper only · not routed')}</div>${docs}${tbl}${other}`, 'in-wide in-n-s3');
 }
 
 // ------------------------------------------------------------------ the page
@@ -241,7 +246,7 @@ function toolbar(d) {
 function headline(d) {
   const L = d.radar?.lit || {}, w = (d.windows?.rows || [])[0]?.next, g = d.grade?.setup?.grade || d.grade?.last_trade?.grade;
   const dk = { bad: 'dn', warn: 'warn', good: 'up' }[d.drift?.state] || '';
-  const tile = (k, v, s, c = '') => `<div class="nx-stat"><span>${k}</span><b class="${c}">${v}</b>${s ? `<em>${s}</em>` : ''}</div>`;
+  const tile = (k, v, s, c = '') => `<div class="nx-stat dp-tilt"><span>${k}</span><b class="${c}">${v}</b>${s ? `<em>${s}</em>` : ''}</div>`;
   return `<div class="nx-stats in-stats">
     ${d.mode === 'last' ? tile('Zlarior now', 'Bot off', `last session: ${esc(L.stage_label || '—')}`, 'warn') : tile('Zlarior now', esc(L.stage_label || '—'), `step ${L.stage_n || '?'} of 10`)}
     ${tile('Zlarior window', w ? (w.open ? 'open' : 'closed') : '—', w ? (w.open ? `closes in <span class="in-cd" data-to="${w.end_t}">${dur(w.closes_in_s)}</span>` : `opens in <span class="in-cd" data-to="${w.start_t}">${dur(w.opens_in_s)}</span>`) : '', w?.open ? 'up' : '')}
@@ -262,6 +267,7 @@ function draw() {
   el.innerHTML = hero + toolbar(d) + (P.err ? `<div class="banner warn">${esc(P.err)} (showing the last good data)</div>` : '') +
     (d.note ? `<div class="in-note">${icon('info')}<span>${esc(d.note)}</span></div>` : '') + headline(d) +
     `<div class="in-grid">${pRadar(d.radar)}${pWindows(d.windows)}${pGrade(d.grade)}${pScore(d.scorecard)}${pDrift(d.drift)}${pSimilar(d.similar)}${pRegime(d.regime)}${pLevels(d.levels)}${pAtlas(d.atlas)}${pS3(d.strategy3)}</div>`;
+  depth(el, 'insight');
   $('#inRefresh').onclick = () => load(true);
   $('#inGo').onclick = () => {
     const day = $('#inDay').value, hm = $('#inHm').value || '10:00';
