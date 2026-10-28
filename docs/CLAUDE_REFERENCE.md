@@ -450,6 +450,16 @@ part yourself or fold it into a script.**
   raising stub), FEED STALE blocks entries, PC bars push/read roundtrip, roll back-adjustment, CBOE VIX (23 checks, ~10 s).
 
 ## Infrastructure
+- **Dashboard 2026-10-28 (owner: "50 useful features", "what the bot is thinking", "very 3D"):** registry
+  `web_next/FEATURES.md` (status of all 50). Home "Today · real accounts" (`realcore.js`, `cc.js`; phone
+  `tools/web_public/realcore.js`): one card per REAL account (ledger + NinjaTrader fills only, never paper $), gauges, health
+  score, ledger check (`engine/live_board.py` flags an eval day booking $ with no real trade). Real results page (`real.js`,
+  `#/real`, CSV export). AI Insights (`insight.js`, `engine/insight_api.py` `GET /api/next/insight[?day&hm]`, features 21-30).
+  Live View (`liveview*.js`, `engine/liveview_api.py` `GET /api/next/liveview?tf=1m|5m`): full-screen chart, per-strategy
+  colour layers (Zlarior blue, ATLAS orange, BLITZ purple), "what the bot is thinking" panel, feed. Narrator
+  (`engine/narrator.py`, hooked in `LiveBot._alerts_tick`, real bot only, never raises): plain-language feed,
+  `logs/narrator/<day>.jsonl`; phone pushes only for armed / entry / exit / refused (`data/narrator.json`, `LE_NARRATOR_PUSH=0`).
+  Tests: test_real_ui, test_insight_api, test_liveview_api, test_narrator.
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
   per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.
