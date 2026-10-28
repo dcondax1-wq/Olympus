@@ -460,7 +460,7 @@ def check_bars(B, every):
     return (((B["mod"] + B["tf"] - 570) // B["tf"]) % ev == 0).astype(np.bool_)
 
 
-def run(B, p=None, mask=None, F=None, placebo=None):
+def run(B, p=None, mask=None, F=None, placebo=None, late=0):
     """BLITZ trades for parameters p (BASE + overrides) and a candidate mask (None = all). placebo=seed: the same
     candidate bars with a random direction (stop mirrored at the same distance) - does the direction carry the edge?"""
     P = {**BASE, **(p or {})}
@@ -470,6 +470,8 @@ def run(B, p=None, mask=None, F=None, placebo=None):
         nd = rng.choice([-1.0, 1.0], len(F["sig"]))
         ref = B["c"][F["sig"]]
         F = {**F, "dir": nd, "stop": ref - nd * np.abs(ref - F["stop"])}
+    if late:                    # stress: every entry `late` bars later than the signal allows (same stop price)
+        F = {**F, "sig": F["sig"] + int(late)}
     sel = np.ones(len(F["sig"]), bool) if mask is None else np.asarray(mask, bool)
     idx = np.where(sel)[0]
     hold = max(1, int(round(P["hold"] / B["tf"])))

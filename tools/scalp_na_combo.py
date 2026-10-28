@@ -12,8 +12,13 @@
               sizing, the live LIT eval two_week room_f 0.8 and the uprisk funded rule) through tools/div_stack's NA
               dispatch, 6-month account slots on Monte Carlo paths (5-session blocks, seed 23).
 
-    python -X utf8 tools/scalp_na_combo.py atlas
-    python -X utf8 tools/scalp_na_combo.py lit
+    python -X utf8 tools/scalp_na_combo.py atlas          # ATLAS + BLITZ evals (cap 2 / 3, first come / ATLAS first) -> na_combo_atlas.json
+    python -X utf8 tools/scalp_na_combo.py atlas_funded   # ATLAS's funded 25K (live preset) +/- BLITZ -> na_combo_atlas_funded.json
+    python -X utf8 tools/scalp_na_combo.py atlas6         # the same with the daily cap at 6 -> na_combo_atlas_max6.json
+    python -X utf8 tools/scalp_na_combo.py lit            # LIT 50K + BLITZ: second_mix eval windows + slots -> na_combo_lit.json
+    python -X utf8 tools/scalp_na_combo.py lit_grid       # size grid, eval / funded-only, placebo, plain NA -> na_combo_lit_grid.json
+    python -X utf8 tools/scalp_na_combo.py lit_checks     # paired gain, slippage, late entry, real 2026 path -> na_combo_lit_checks.json
+    python -X utf8 tools/scalp_na_combo.py lit_why        # funded 50K only: trading profit vs payouts -> na_combo_lit_why.json
 """
 from __future__ import annotations
 
@@ -61,14 +66,17 @@ def units(T, B):
     return out
 
 
-def blitz_units(lit_flat=False, maxday=None, placebo=None, raw=False):
+def blitz_units(lit_flat=False, maxday=None, placebo=None, raw=False, late=0, xslip=0.0):
     """2021-25 from 5m, 2026 from 1m. lit_flat: BLITZ candidates dropped while LIT holds / has a setup armed (LIT's account).
     raw: the plain NA scalp (no prior-day range filter)."""
     names = ([] if raw else [X.PICK1[1]]) + (["lit_flat"] if lit_flat else [])
     p = {"maxday": maxday} if maxday else None
-    TT = X.blitz_trades(p, names=tuple(names), placebo=placebo)
+    TT = X.blitz_trades(p, names=tuple(names), placebo=placebo, late=late)
     U5 = [u for u in units(TT[5], N.bars(5)) if u["day"] < "2026-01-01"]
     U1 = [u for u in units(TT[1], N.bars(1)) if u["day"] >= "2026-01-01"]
+    if xslip:                   # stress: extra slippage on the entry and on the exit (points per side)
+        U5 = [{**u, "pts": u["pts"] - 2 * xslip, "w1": u["w1"] - xslip, "po": u["po"] - xslip} for u in U5]
+        U1 = [{**u, "pts": u["pts"] - 2 * xslip, "w1": u["w1"] - xslip, "po": u["po"] - xslip} for u in U1]
     return U5 + U1
 
 
@@ -237,6 +245,21 @@ def cmd_atlas_funded():
     json.dump(rows, open(os.path.join(OUT, "na_combo_atlas_funded.json"), "w"), default=float)
 
 
+def cmd_atlas6():
+    """ATLAS today vs + BLITZ with the account's daily cap raised to 6 (BLITZ needs its trend-day re-entries), ATLAS first."""
+    rows = []
+    for nm, f, cap, md, pr in (("ATLAS today max2", None, None, 2, False), ("ATLAS today max6", None, None, 6, False),
+                               ("+ BLITZ f0.1 cap300 max6 ATLAS-priority", 0.1, 300.0, 6, True),
+                               ("+ BLITZ f0.2 cap300 max6 ATLAS-priority", 0.2, 300.0, 6, True),
+                               ("+ BLITZ f0.2 cap450 max6 ATLAS-priority", 0.2, 450.0, 6, True)):
+        o = atlas_score(f, cap, md, pr)
+        fu = atlas_funded(f, cap, md, pr, n=1000)
+        rows.append({"name": nm, "eval": {s_: {k: o[s_].get(k) for k in AKEEP} for s_ in o}, "funded": fu})
+        print(nm + ": " + " | ".join(f"{s_} 2w {o[s_]['p10']}/{o[s_]['dead10']} p60 {o[s_]['p60']} funded ${fu[s_]['per_month']}/mo stuck {fu[s_]['stuck_6m']}%"
+                                    for s_ in o), flush=True)
+    json.dump(rows, open(os.path.join(OUT, "na_combo_atlas_max6.json"), "w"), default=float)
+
+
 # ================================================================================================ LIT (its 50K)
 def lit_by_day():
     """LIT's live trades + armed windows: day -> [(start, end, dir)] (anything that blocks / pre-empts BLITZ on LIT's account)."""
@@ -301,7 +324,8 @@ def yield_to(U, by_other):
     return out
 
 
-def lit_money(nc=None, n=1000, spans=("H1", "H2", "REF"), maxday=None, nc_eval="same", placebo=None, atlas_yield=True, raw=False):
+def lit_money(nc=None, n=1000, spans=("H1", "H2", "REF"), maxday=None, nc_eval="same", placebo=None, atlas_yield=True, raw=False,
+              late=0, xslip=0.0, per_path=False):
     """6-month account slots (eval -> funded -> payouts, net of every eval) for LIT alone (nc None) or LIT + BLITZ (nc =
     {"f", "cap"}), with tools/uprisk + tools/div_stack (live LIT eval / funded sizing). nc_eval: BLITZ's size in the eval
     ("same" = nc, None = BLITZ only once funded). atlas_yield: BLITZ never opposite to ATLAS on account B."""
@@ -321,16 +345,17 @@ def lit_money(nc=None, n=1000, spans=("H1", "H2", "REF"), maxday=None, nc_eval="
             t["et"] = e
     BY = BYL
     if nc is not None:
-        k = ("litm", maxday, placebo, atlas_yield, raw)
+        k = ("litm", maxday, placebo, atlas_yield, raw, late, xslip)
         if k not in _AU:
-            T = blitz_units(lit_flat=True, maxday=maxday, placebo=placebo, raw=raw)
+            T = blitz_units(lit_flat=True, maxday=maxday, placebo=placebo, raw=raw, late=late, xslip=xslip)
             T = cut_on(T, lit_by_day())
             if atlas_yield:
                 T = yield_to(T, atlas_by_day())
             byn = collections.defaultdict(list)
             for t in T:
                 byn[t["day"]].append({"day": t["day"], "src": "na", "risk": t["risk"], "risk_pts": t["risk"], "tgt": None, "tgt_pts": None,
-                                      "pts": t["pts"], "w1": t["w1"], "size_mult": 1.0, "et": t["entry_t"], "xt": t["exit_t"]})
+                                      "pts": t["pts"], "w1": t["w1"], "size_mult": 1.0, "et": t["entry_t"], "xt": t["exit_t"],
+                                      "dir": t["dir"], "exit": t["exit"]})
             _AU[k] = byn
         byn = _AU[k]
         BY = [sorted(BYL[i] + byn.get(d, []), key=lambda t: t.get("et", 0)) for i, d in enumerate(S)]
@@ -342,6 +367,8 @@ def lit_money(nc=None, n=1000, spans=("H1", "H2", "REF"), maxday=None, nc_eval="
         mk_f = (lambda: DS.Funded("builder50k", DS.LIT_F50, nc=nc))
         R = DS.life(BY, P, mk_e, mk_f, 91.80, U.LEN)
         net = np.array([r["net"] for r in R]) / (U.LEN / 21.0)
+        if per_path:
+            out[sp + "_paths"] = [float(x) for x in net]
         out[sp] = {"slot_pm": round(float(net.mean())), "slot_p10": round(float(np.percentile(net, 10))),
                    "slot_lose": round(100.0 * float((net < 0).mean()), 1), "funded_6m": round(float(np.mean([r["funded"] for r in R])), 2),
                    "evals_6m": round(float(np.mean([r["evals"] for r in R])), 2), "lost_6m": round(float(np.mean([r["lost"] for r in R])), 2)}
@@ -420,6 +447,102 @@ def cmd_lit_grid(procs=4):
     json.dump({"base": base, "rows": rows, "pick": pick, "extra": E}, open(os.path.join(OUT, "na_combo_lit_grid.json"), "w"), default=float)
 
 
+PICK_LIT = {"nc": {"f": 0.2, "cap": 450.0}, "maxday": None, "nc_eval": None}      # H1 pick of cmd_lit_grid
+
+
+def lit_by(nc):
+    """(sessions, day lists) of LIT (+ BLITZ when nc) in time order, as lit_money builds them."""
+    import uprisk as U
+    lit_money(nc, n=1, spans=("H1",), nc_eval=None)
+    S, BYL = U.load()
+    import csv
+    import datetime as dt
+    ets = collections.defaultdict(list)
+    for r in csv.DictReader(open(N.LEDGER, encoding="utf-8")):
+        if r["trade_id"].startswith(("T-2026", "REF-")):
+            ets[r["entry_fill_at"][:10]].append(int(dt.datetime.fromisoformat(r["entry_fill_at"][:25]).timestamp()))
+    for i, x in enumerate(BYL):
+        for t, e in zip(x, ets.get(S[i], [])):
+            t["src"], t["et"] = "lit", e
+    if nc is None:
+        return S, BYL
+    byn = _AU[("litm", None, None, True, False, 0, 0.0)]
+    return S, [sorted(BYL[i] + byn.get(d, []), key=lambda t: t.get("et", 0)) for i, d in enumerate(S)]
+
+
+def cmd_lit_why():
+    """Funded 50K only (no eval leg): where the extra money comes from (trading profit vs the payout rules)."""
+    import div_stack as DS
+    out = {}
+    for nm, nc in (("LIT alone", None), ("LIT + BLITZ", PICK_LIT["nc"])):
+        S, BY = lit_by(nc)
+        out[nm] = {}
+        for sp in ("H1", "H2", "REF"):
+            P = DS.paths(S, sp, 1000)
+            o = DS.funded_mc(BY, P, lambda: DS.Funded("builder50k", DS.LIT_F50, nc=nc), "builder50k")
+            out[nm][sp] = o
+            print(f"{nm:12s} {sp:4s} paid ${o['per_month']}/mo (p10 6m ${o['paid_p10']}) trading ${o['trade_pnl_m']}/mo first pay {o['first_med']} "
+                  f"payouts/6m {o['payouts']} months paying {o['months_paying']}/6 held by 50% rule {o['hold_cons']} sessions lost {o['loss_6m']}% "
+                  f"max risk ${o['max_risk']} trades/6m {o['trades_6m']}", flush=True)
+    json.dump(out, open(os.path.join(OUT, "na_combo_lit_why.json"), "w"), default=float)
+
+
+def real_path(nc=None, nc_eval=None, a="2026-01-02", z="2026-10-16"):
+    """The real 2026 sessions, one slot from the first session (no resampling): LIT alone vs LIT + BLITZ."""
+    import uprisk as U
+    import div_stack as DS
+    S, BYL = U.load()
+    lit_money(nc, n=1, spans=("H1",), nc_eval=nc_eval)          # builds the units + the LIT entry times
+    BY = BYL
+    if nc is not None:
+        byn = _AU[("litm", None, None, True, False, 0, 0.0)]
+        BY = [sorted(BYL[i] + byn.get(d, []), key=lambda t: t.get("et", 0)) for i, d in enumerate(S)]
+    ix = [i for i, d in enumerate(S) if a <= d <= z]
+    nce = nc if nc_eval == "same" else nc_eval
+    R = DS.life(BY, [ix], lambda: DS.Eval(DS.LIT_E50, "builder50k", nc=nce), lambda: DS.Funded("builder50k", DS.LIT_F50, nc=nc), 91.80, len(ix))
+    r = R[0]
+    return {"owner": round(r["owner"]), "cost": round(r["cost"], 2), "net": round(r["net"]), "evals": r["evals"], "funded": r["funded"],
+            "payouts": [(S[ix[k - 1]], round(x)) for k, x in r["pays"]]}
+
+
+def cmd_lit_checks():
+    """Stress tests of the LIT + BLITZ pick: paired per-path gain, +1 tick a side, 1 bar late, 2 bars late, no ATLAS
+    yield, and the real 2026 path."""
+    P = PICK_LIT
+    n = 1000
+    base = lit_money(None, n=n, per_path=True)
+    pick = lit_money(P["nc"], n=n, nc_eval=P["nc_eval"], per_path=True)
+    out = {"base": {s: base[s] for s in ("H1", "H2", "REF")}, "pick": {s: pick[s] for s in ("H1", "H2", "REF")}}
+    print("LIT alone:", {s: base[s]["slot_pm"] for s in ("H1", "H2", "REF")}, " LIT + BLITZ:", {s: pick[s]["slot_pm"] for s in ("H1", "H2", "REF")})
+    for s in ("H1", "H2", "REF"):
+        d = np.array(pick[s + "_paths"]) - np.array(base[s + "_paths"])
+        out["paired_" + s] = {"mean": round(float(d.mean())), "p10": round(float(np.percentile(d, 10))), "p90": round(float(np.percentile(d, 90))),
+                              "better": round(100.0 * float((d > 0).mean()), 1), "worse": round(100.0 * float((d < 0).mean()), 1)}
+        print(f"  paired {s}: mean {d.mean():+.0f}/mo, p10 {np.percentile(d, 10):+.0f}, p90 {np.percentile(d, 90):+.0f}, "
+              f"better in {100 * (d > 0).mean():.1f}% of 6-month paths, worse in {100 * (d < 0).mean():.1f}%")
+    for nm, kw in (("+1 tick a side", {"xslip": 0.25}), ("+2 ticks a side", {"xslip": 0.5}), ("1 bar late", {"late": 1}),
+                   ("2 bars late", {"late": 2}), ("no ATLAS yield", {"atlas_yield": False}), ("BLITZ in the eval too", {"nc_eval": "same"})):
+        kw2 = {"nc_eval": P["nc_eval"], **kw}
+        o = lit_money(P["nc"], n=n, **kw2)
+        out[nm] = {s: o[s] for s in ("H1", "H2", "REF")}
+        print(f"  {nm:22s} " + " | ".join(f"{s} ${o[s]['slot_pm']}/mo ({o[s]['slot_pm'] - base[s]['slot_pm']:+}) lose {o[s]['slot_lose']}% 2w {o[s]['p10']}/{o[s]['f10']}"
+                                          for s in ("H1", "H2", "REF")), flush=True)
+    rp0, rp1 = real_path(None), real_path(P["nc"], P["nc_eval"])
+    out["real_2026"] = {"lit": rp0, "lit_blitz": rp1}
+    print("real 2026 path, LIT alone:", rp0)
+    print("real 2026 path, LIT + BLITZ:", rp1)
+    # what BLITZ does on LIT's account
+    T = _AU[("litm", None, None, True, False, 0, 0.0)]
+    T0 = blitz_units()
+    for sp, a, z in (("H1", "2026-01-01", "2026-06-30"), ("H2", "2026-07-01", "2026-12-31"), ("REF", "2021-11-01", "2025-12-31")):
+        n0 = sum(1 for u in T0 if a <= u["day"] <= z)
+        n1 = sum(len([t for t in T.get(d, []) if a <= d <= z]) for d in T)
+        print(f"  BLITZ trades {sp}: {n0} alone -> {n1} on LIT's account (LIT flat, no ATLAS opposite)")
+        out["n_" + sp] = [n0, n1]
+    json.dump(out, open(os.path.join(OUT, "na_combo_lit_checks.json"), "w"), default=float)
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
-    {"atlas": cmd_atlas, "atlas_funded": cmd_atlas_funded, "lit": cmd_lit, "lit_grid": cmd_lit_grid}[a[0] if a else "atlas"]()
+    {"atlas": cmd_atlas, "atlas_funded": cmd_atlas_funded, "lit": cmd_lit, "lit_grid": cmd_lit_grid,
+     "lit_checks": cmd_lit_checks, "lit_why": cmd_lit_why, "atlas6": cmd_atlas6}[a[0] if a else "atlas"]()
