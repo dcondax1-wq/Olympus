@@ -730,6 +730,22 @@ def run(out):
         print("atlas v2 shadow failed:", e.__class__.__name__, e)
         atlas_v2 = {**(st.get("atlas_v2") or {}), "error": f"{e.__class__.__name__}: {e}"} if st.get("atlas_v2") else None
 
+    # ---- BLITZ PAPER SHADOW (engine/blitz.py, research/writeups/scalp-momentum.md): the noise-area 1m scalp next to the ATLAS v2
+    # shadow on the PC's 1m bars (a cold start warms on data/NQ_1m.csv + those bars) -> its own paper ledger and simulated
+    # Builder 25K eval (state "blitz"). Paper only, nothing is sent to any account; never stops the LIT run; no bars = it waits
+    blitz_st = None
+    try:
+        from engine import blitz as _blz
+        if lm["model"] == "lit" and _blz.enabled():
+            prev_b = st.get("blitz") if isinstance(st.get("blitz"), dict) else None
+            cold = not ((prev_b or {}).get("eng") or {}).get("last_t")
+            blitz_st = _blz.step(prev_b, _LIT_IN.get("df1"), now,
+                                 hist=_blz.history_frame(since=now - _blz.WARM_DAYS * 86400) if cold else None,
+                                 res=res, second=second_block if second_block and not second_block.get("error") else None)
+    except Exception as e:
+        print("BLITZ shadow failed:", e.__class__.__name__, e)
+        blitz_st = {**(st.get("blitz") or {}), "error": f"{e.__class__.__name__}: {e}"} if st.get("blitz") else None
+
     # ---- alerts for events not seen before (only events from after the monitor started, like LiveBot._emit_events)
     new_alerts = []
     for ev in res["events"]:
@@ -908,6 +924,24 @@ def run(out):
                                                          "qty", "usd", "exit", "setup")}, "sent": int(r.get("sent") or 0), "at": now})
         except Exception as e:                     # never fails the run
             print("atlas v2 notices failed:", e.__class__.__name__, e)
+    if blitz_st and not blitz_st.get("error"):    # BLITZ PAPER shadow: kind "second", sent only with second_model.json blitz.push true
+        try:
+            from engine import blitz as _blz
+            blz_push = _blz.push_on()
+            for n in _blz.notices(blitz_st, max(push_since - 60, now - PUSH_MAX_AGE_S), money):
+                if notifier.seen(n):
+                    continue
+                q = alerts_plus.apply_level(n, plus["prefs"]) if blz_push else None
+                if q is None:                          # BLITZ pushes off (default) or the app's "second" level off: recorded only
+                    notifier.mark(n)
+                    r = {"sent": 0, "skipped": "off"}
+                else:
+                    r = notifier.notify(q, push_it=True, other_sent=pc_sent)
+                push_res.append(r)
+                notices.append({**{k: n.get(k) for k in ("t", "kind", "src", "key", "title", "body", "url", "side", "entry", "stop", "target",
+                                                         "qty", "usd", "exit", "setup")}, "sent": int(r.get("sent") or 0), "at": now})
+        except Exception as e:                     # never fails the run
+            print("BLITZ notices failed:", e.__class__.__name__, e)
     notices = sorted(notices, key=lambda x: (x.get("t") or 0, x.get("at") or 0))[-80:]
     gone = sorted({g for r in push_res for g in r.get("gone") or []})
     if gone:                                       # expired / made for an old key: the app re-subscribes on its next open
@@ -935,7 +969,7 @@ def run(out):
                  push_state=push_state, pc_health=pc.get("health") if pc.get("present") else None,
                  pc_ops=pc.get("ops") if pc.get("present") else None,
                  pc_remote=pc.get("remote") if pc.get("present") else None, upgrades_live=upgrades_live, pc_line=pc_line,
-                 second=second_block)
+                 second=second_block, blitz=blitz_st)
     new_state = {"first_run": first_run, "last_run": now, "runs": int(st.get("runs", 0)) + 1, "eod_sent": eod_sent,
                  "model": lm["model"],
                  "seen": [list(k) for k in sorted(seen)][-600:], "ledger": {str(k): v for k, v in sorted(ledger.items())},
@@ -964,7 +998,7 @@ def run(out):
                  if lm["model"] == "lit" else None,
                  "pc": {k: pc.get(k) for k in ("present", "t", "age_s", "silent", "running", "adapter", "position", "model_state", "host",
                                                "reason", "model", "push_pk", "acct", "health", "every_s", "exec", "learn", "ops", "remote", "live_pub",
-                                               "brain", "second", "ai", "launch", "money")},  # the PC bot's Bot Brain (engine/brain.py compact), second strategies (paper)
+                                               "brain", "second", "blitz", "ai", "launch", "money")},  # the PC bot's Bot Brain (engine/brain.py compact), second strategies (paper)
                  # "money": the owner's money figures for the Goals card's Road to $10K (engine/money_goal.heartbeat_block)
                  # is the PC bot really trading the eval (engine/accounts.verdict on the heartbeat's "health" block)
                  "pc_verdict": pc_verdict, "pc_verdict_alerts": pc_verdict_alerts,
@@ -994,6 +1028,8 @@ def run(out):
             new_state["lit_asia"] = second_block["strategies"]["lit_asia"]
     if atlas_v2 is not None or st.get("atlas_v2"):   # ATLAS v2 PAPER shadow: its own state key (kept when a run skipped it)
         new_state["atlas_v2"] = atlas_v2 if atlas_v2 is not None else st["atlas_v2"]
+    if blitz_st is not None or st.get("blitz"):      # BLITZ PAPER shadow: its own state key (kept when a run skipped it)
+        new_state["blitz"] = blitz_st if blitz_st is not None else st["blitz"]
     from engine import uptime as _uptime        # status page: 30-day uptime per part + incidents -> state "uptime" (never raises)
     _uptime.cloud_hook(new_state, st, pc, now)
     try:                    # LIT day analyst (engine/lit_brief.py): morning briefing, intraday log, recap -> state "brief" + README
@@ -1303,7 +1339,7 @@ def usd_cell(v):
 
 
 def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, first_run, shadow=None, lm=None, push_state=None,
-                 pc_health=None, pc_ops=None, pc_remote=None, upgrades_live=None, pc_line=None, second=None):
+                 pc_health=None, pc_ops=None, pc_remote=None, upgrades_live=None, pc_line=None, second=None, blitz=None):
     st_day = next((x for x in res["days"] if x["date"] == today), None) or (res["days"][-1] if res["days"] else {})
     setups = state.get("setups") or {}
     arm = []
@@ -1414,6 +1450,12 @@ def write_readme(path, now, state, res, health, ledger, ev_track, today, sent, f
     if second is not None:                    # second strategies, paper only (engine/second.py)
         from engine import second as _second
         L += _second.readme_lines(second, money)
+    if blitz and not blitz.get("error"):      # BLITZ, the scalper PAPER shadow (engine/blitz.py)
+        try:
+            from engine import blitz as _blz
+            L += _blz.readme_lines(blitz)
+        except Exception as e:
+            print("BLITZ readme failed:", e.__class__.__name__, e)
     model = (lm or {}).get("model", "engine")
     L += ["", "---", ("Same LIT rules and settings as the PC paper bot (engine/lit.py via engine/lit_live.py, live_model.json)."
                       if model == "lit" else "Same engine and defaults as the PC paper bot (engine/model.py).")

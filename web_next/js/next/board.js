@@ -12,7 +12,7 @@ function loadCore() {
   if (CP) return CP;
   CP = new Promise((res, rej) => {
     const s = document.createElement('script');
-    s.src = new URL('./boardcore.js?v=1', import.meta.url).href;
+    s.src = new URL('./boardcore.js?v=2', import.meta.url).href;
     s.onload = () => res(); s.onerror = () => { CP = null; rej(new Error('boardcore.js did not load')); };
     document.head.appendChild(s);
   });
@@ -71,3 +71,6 @@ export async function fillBoardHome() {
   try { await loadCore(); } catch { return; }
   paint(await getBoard(10000));
 }
+
+// shared with real.js (the Home "Today" cards and the Real results page read the same board)
+export { getBoard as boardData, loadCore as loadBoardCore, OPTS as boardOpts };

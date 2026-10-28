@@ -1152,6 +1152,8 @@ def index():
 
 from engine.extras_api import router as extras_router; app.include_router(extras_router)
 from engine.next_api import router as next_router; app.include_router(next_router)
+from engine.insight_api import router as insight_router; app.include_router(insight_router)   # AI Insights page (read-only GET /api/next/insight)
+from engine.liveview_api import router as liveview_router; app.include_router(liveview_router)   # Live View page (read-only GET /api/next/liveview)
 # the PC pages' LIT backtest (/api/next/lit_backtest: LIT replay + levels / session boxes of every 2026 day, ~5-25 s) is built
 # in the background at start, so the first dashboard load does not wait for it (LE_PREWARM=0 skips it)
 if os.environ.get("LE_PREWARM", "1") != "0":

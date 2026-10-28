@@ -350,6 +350,7 @@ class LiveBot:
         self.brain = None                # engine/brain.py: the Bot Brain snapshot of the last poll (read-only, built after routing)
         self.second = None               # engine/second.py: the paper second strategies' last run (display)
         self.atlas_v2 = None             # engine/atlas_v2.py: the ATLAS v2 PAPER shadow state (paper thread, never routed)
+        self.blitz = None                # engine/blitz.py: the BLITZ scalper PAPER shadow state (paper thread, never routed)
         # routed second strategies (second_model.json "route": true; OFF by default): ONE position on the account, LIT first
         self._open_src = None            # None = the open routed position is LIT's; else the second_model.json key it belongs to
         self._second_routed = []         # the keys routed at the last poll (guards: max 2 entries a day when any)
@@ -1319,10 +1320,13 @@ class LiveBot:
             return False
         try:
             from . import atlas_v2 as _av2
+            from . import blitz as _blz
             from . import second as _second
             cfg = _second.load_cfg()
             cfg["strategies"] = {k: v for k, v in cfg["strategies"].items() if not v.get("cloud_only")}   # e.g. LIT + Asia
-            args = {"cfg": cfg, "lit": lit_w, "res": res, "now": now, "av2_path": _av2.pc_path(self.state_path)}
+            args = {"cfg": cfg, "lit": lit_w, "res": res, "now": now, "av2_path": _av2.pc_path(self.state_path),
+                    "blitz_path": _blz.pc_path(self.state_path) if _blz.enabled() else None,   # BLITZ PAPER shadow (never routed)
+                    "atlas_open": self._blitz_atlas_open()}
         except Exception as e:
             self._note_error(f"second strategies failed: {e.__class__.__name__}: {e}")
             self._second_busy = False
@@ -1336,6 +1340,8 @@ class LiveBot:
                     self.second = r["second"]
                     if r.get("av2"):              # ATLAS v2 PAPER shadow (engine/atlas_v2.py): never routed, own file
                         self.atlas_v2 = r["atlas_v2"]
+                    if r.get("blz"):              # BLITZ PAPER shadow (engine/blitz.py): never routed, own file
+                        self.blitz = r["blitz"]
             finally:
                 self._second_busy = False
         st = w.submit("second", args, {"df5": df5, "df1": df1}, done, owner=id(self))
@@ -1378,11 +1384,23 @@ class LiveBot:
         except Exception:
             return False
 
+    def _blitz_atlas_open(self):
+        """Account B's open trade {"entry_t", "dir"} for the BLITZ paper 50K ledger (never opposite ATLAS); None = none / off."""
+        try:
+            ab = getattr(self, "acct_b", None)
+            op = ab.position() if ab is not None else None
+            if op and op.get("entry_t") is not None and op.get("dir") is not None:
+                return {"entry_t": int(op["entry_t"]), "dir": 1 if int(op["dir"]) > 0 else -1}
+        except Exception:
+            pass
+        return None
+
     def _second_tick(self, df5, df1, res, now):
         """Second strategies, PAPER ONLY (engine/second.py, second_model.json): EMA / MACD on this poll's bars, after LIT's
         routing and the state save, in the background worker process (engine/bg_worker.py, _second_bg; a thread when it is
         off), never delays LIT, never routes: engine/second.py has no adapter; once per new closed 1m / 5m bar; the
-        heartbeat carries the result as "second". A failure only logs an error."""
+        heartbeat carries the result as "second". The BLITZ scalper PAPER shadow (engine/blitz.py, own file next to the bot
+        state, heartbeat "blitz") runs in the same job. A failure only logs an error."""
         if self.state_path != STATE_PATH and not self.cfg.get("second"):
             return                            # test harnesses: off unless asked
         try:
@@ -1399,12 +1417,25 @@ class LiveBot:
 
         def run():
             try:
-                cfg = _second.load_cfg()
-                cfg["strategies"] = {k: v for k, v in cfg["strategies"].items() if not v.get("cloud_only")}   # e.g. LIT + Asia
-                if any(s.get("on", True) for s in cfg["strategies"].values()):
-                    self.second = _second.run(df5, one_min=df1, now=now, cfg=cfg, lit=lit_w)
-                else:
-                    self.second = None
+                err = None
+                try:
+                    cfg = _second.load_cfg()
+                    cfg["strategies"] = {k: v for k, v in cfg["strategies"].items() if not v.get("cloud_only")}   # e.g. LIT + Asia
+                    if any(s.get("on", True) for s in cfg["strategies"].values()):
+                        self.second = _second.run(df5, one_min=df1, now=now, cfg=cfg, lit=lit_w)
+                    else:
+                        self.second = None
+                except Exception as e:
+                    err = e
+                try:                                      # BLITZ PAPER shadow (engine/blitz.py): 1m bars + LIT / ATLAS state, own file
+                    from . import blitz as _blz
+                    if _blz.enabled():
+                        self.blitz = _blz.pc_step(_blz.pc_path(self.state_path), df1, now, res=res,
+                                                  second=self.second if err is None else None, atlas_open=self._blitz_atlas_open())
+                except Exception as e:
+                    self._note_error(f"BLITZ paper shadow failed: {e.__class__.__name__}: {e}")
+                if err is not None:
+                    raise err
                 if self.second is not None:           # ATLAS v2 PAPER shadow (engine/atlas_v2.py): never routed, own file
                     from . import atlas_v2 as _av2
                     self.atlas_v2 = _av2.pc_step(_av2.pc_path(self.state_path), self.second, res, df5, df1, now)
@@ -2525,6 +2556,11 @@ class LiveBot:
             ai_watch.tick(self, now)
         except Exception as e:
             self._note_error(f"ai watch failed: {e.__class__.__name__}: {e}")
+        try:                                  # narrator: plain-language feed + the important phone pushes (engine/narrator.py; read-only)
+            from . import narrator
+            narrator.tick(self, now)
+        except Exception as e:
+            self._note_error(f"narrator failed: {e.__class__.__name__}: {e}")
 
     # ------------------------------------------------------------------ phone notifications (engine/push.py, Web Push)
     def _push_account(self):

@@ -8,7 +8,8 @@ measured here, the LIT part of a poll went from ~0.57 s to 2.5 s (median) / 5 s 
 
 What runs here (never anything that decides, sizes or routes an order):
   "second"  engine/second.run (the ATLAS members + the stop-hunt candidates, PAPER) + engine/atlas_v2.pc_step (the
-            ATLAS v2 PAPER shadow, its own file)          <- LiveBot._second_tick
+            ATLAS v2 PAPER shadow, its own file) + engine/blitz.pc_step (the BLITZ scalper PAPER shadow, its own file)
+                                                          <- LiveBot._second_tick
   "charts"  engine/trade_chart.PcCharts.draw (the trade pictures, logs/charts/)  <- LiveBot._chart_tick
 Account B (ATLAS on its own account) and the routed second strategies ROUTE orders: they stay in the trading loop.
 
@@ -134,9 +135,19 @@ def job_second(df5, df1, a: dict) -> dict:
     """engine/second.run + the ATLAS v2 shadow step: what LiveBot._second_tick's paper thread did, on the same bars."""
     from engine import second as _second
     cfg = a["cfg"]
-    out = {"second": None, "atlas_v2": None, "av2": False}
-    if any(s.get("on", True) for s in cfg["strategies"].values()):
-        out["second"] = _second.run(df5, one_min=df1, now=a["now"], cfg=cfg, lit=a["lit"])
+    out = {"second": None, "atlas_v2": None, "av2": False, "blitz": None, "blz": False}
+    err = None
+    try:
+        if any(s.get("on", True) for s in cfg["strategies"].values()):
+            out["second"] = _second.run(df5, one_min=df1, now=a["now"], cfg=cfg, lit=a["lit"])
+    except Exception as e:
+        err = e
+    if a.get("blitz_path"):                     # BLITZ PAPER shadow (engine/blitz.py): 1m bars + LIT / ATLAS state, own file, never raises
+        from engine import blitz as _blz
+        out["blitz"], out["blz"] = _blz.pc_step(a["blitz_path"], df1, a["now"], res=a.get("res"), second=out["second"],
+                                                atlas_open=a.get("atlas_open")), True
+    if err is not None:
+        raise err
     if out["second"] is not None and a.get("av2_path"):
         from engine import atlas_v2 as _av2
         out["atlas_v2"], out["av2"] = _av2.pc_step(a["av2_path"], out["second"], a["res"], df5, df1, a["now"]), True

@@ -7,7 +7,7 @@ export function loadPics() {
   if (window.TradePics) return Promise.resolve(window.TradePics);
   if (!loading) loading = new Promise((ok, bad) => {
     const s = document.createElement('script');
-    s.src = new URL('./tradepics.js?v=1', import.meta.url).href;
+    s.src = new URL('./tradepics.js?v=2', import.meta.url).href;
     s.onload = () => ok(window.TradePics); s.onerror = () => { loading = null; bad(new Error('tradepics.js did not load')); };
     document.head.appendChild(s);
   });

@@ -61,6 +61,9 @@ import { learnlit as learnlitPage, learnatlas as learnatlasPage } from './next/l
 import { start as startPage } from './next/start.js';
 import { initRunSwitch } from './next/runswitch.js';
 import { board as boardPage } from './next/board.js';
+import { insight as insightPage } from './next/insight.js';   // AI Insights page (engine/insight_api.py, read-only)
+import { real as realPage } from './next/real.js';
+import { liveview as liveviewPage } from './next/liveview.js';   // Live View page (engine/liveview_api.py, read-only)
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -78,7 +81,9 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
   morning: ops.morning, livechart: ops.livechart, botlog: ops.botlog, ntpanel: ops.ntpanel, timeline: ops.timeline, livesettings: ops.livesettings,
   setups: setupsPage, sensitivity: sensPage, intel: intelPage, brain: brainPage, perf: perfPage, second: secondPage, atlas: atlasPage, scale: scalePage,
   rules: mods.rules, cold: mods.cold, risk: mods.risk, alerts: { show: () => settingsPage.show() }, modules: { show: () => {} },
-  playbook: { show: () => {} }, learnlit: learnlitPage, learnatlas: learnatlasPage, start: startPage, board: boardPage, ...ccPages };
+  playbook: { show: () => {} }, learnlit: learnlitPage, learnatlas: learnatlasPage, start: startPage, board: boardPage, real: realPage, ...ccPages };
+PAGES.insight = insightPage;
+PAGES.liveview = liveviewPage;
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };
 
 // installable home-screen app: register the service worker (no-op where unsupported, e.g. plain http on a LAN IP in some browsers).

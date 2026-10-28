@@ -189,7 +189,8 @@ def static_checks():
           and main and len(re.findall(r"'[a-z]+'", main.group(1))) <= 6, grp)
     # 2026-10-25 PM: the LIT bot is "Zlarior": Main = Home · Zlarior · ATLAS · Results · All tools; each bot page has its sections
     # 2026-10-26: + Start (the Start & Accounts page, engine/start_api.py) after Home
-    check("routes: Main = cc, start, zlarior, atlas, data, modules + BOTS sections", main and re.findall(r"'([a-z]+)'", main.group(1)) == ["cc", "start", "zlarior", "atlas", "data", "modules"]
+    # 2026-10-28: Real results (real money only) takes the Main slot; the backtest page ("Backtest & research") is under Advanced > Results
+    check("routes: Main = cc, start, zlarior, atlas, real, modules + BOTS sections", main and re.findall(r"'([a-z]+)'", main.group(1)) == ["cc", "start", "zlarior", "atlas", "real", "modules"]
           and "export const BOTS" in routes and "['Plan & levels'" in routes and "['Setups'" in routes and "if (page === 'zlarior'" in app, main and main.group(1))
     side = re.findall(r"'([a-z]+)'", routes[routes.index("export const GROUPS"):routes.index("export const NAV_NAMES")])
     check("routes: no page twice in the sidebar, Archive under Advanced", len(side) == len(set(side)) and "archive" in side and side.index("archive") > 5, side)

@@ -187,6 +187,37 @@ part yourself or fold it into a script.**
   `account_b` keys `"weights"` / `"min_room"` are built but OFF (absent = today's sizing / $100 stuck). Test `python -X utf8
   -m tests.test_atlas_v2_shadow [--no-cloud]` (2026 replay = the research executor exactly; the stored run file was scored
   on an older unit cache: 206/207 trades identical, $ within 0.1%).
+- **BLITZ, the scalper (strategy 3) PAPER SHADOW (2026-10-28, `engine/blitz.py`, `research/writeups/scalp-na-mffu.md`):**
+  the noise-area 1m scalp + the prior-day range filter (`prng>=0.8`: trade a day only if yesterday's 09:30-16:00 range >=
+  0.8 x the mean of the last 14 such ranges, yesterday's included, as `tools/scalp_na_lib._day_ctx`); band = 09:30 open x
+  (1 +/- sigma), sigma = 14-session mean of |close / 09:30 open - 1| at that minute; checks at the 1m closes 11:00, 11:30 ...
+  15:30 (research window 10:30-15:30, every 30 bars from 09:30: the first is 11:00); close above / below = long / short at the
+  next open + 1 tick; stop 1.5 x ATR(14) of 5m; trail 1.5R after +1R (20R limit never reached); out after 30 bars / 15:55;
+  one position, 6 a day, -3R day stop; $1.90 + 1 tick per market / stop fill. Option (off): `second_model.json` `"blitz":
+  {"unfiltered": true}` = the plain NA of `scalp-momentum.md` (30% eval size). Two PAPER ledgers, never routed (no adapter /
+  order import; `live_model*.json`, `second_model.json` untouched; optional read-only `"blitz": {"on": false}` / `{"push": true}`):
+  (1) simulated Builder 25K eval at 40% of the room, <= $600 (na_sizing pick), stuck room $249.56, new eval $63 after pass /
+  fail / stuck = `tools/scalp_na_lib.run_eval` back-to-back path; (2) **BLITZ on a funded 50K next to LIT**: its own Engine
+  where a candidate is dropped while LIT holds a trade or has a setup armed at the signal close; skipped when LIT is in a trade
+  or ATLAS holds the other side at the entry; closed at the bar open of LIT's entry (LIT FIRST) / an opposite ATLAS entry
+  (HEDGE); size `div_stack.na_q` (20% of the room, <= $450, the $1,000 DLL left, 40 micros), up to 6 a day; simulated funded
+  50K ($2,000 EOD trailing, lock start + $100) with BLITZ's own P&L only, no payouts. LIT = the bot's lit_live run (trades,
+  position / enter_now, armed setups + pending signals, windows kept in `lit_armed`); ATLAS = the members' paper trades (EMA /
+  MACD / S/R) + account B's open trade (`LiveBot._blitz_atlas_open`). Parity: `backtest(df)` and `Engine` (one closed bar at a
+  time, JSON state; a half day's last bar found by the next bar or the clock at 16:00) = `research/scalp/na_best_trades.json`
+  330/330 (unfiltered = `mo_best_trades.json` 481/481); the 50K ledger on the research's LIT / armed / ATLAS trades =
+  `tools/scalp_na_combo` units (lit_flat -> cut_on -> yield_to) 312/312. PC: `LiveBot._second_tick` paper job (bg_worker
+  `job_second` after `second.run` / thread) -> `pc_step(<state dir>/blitz_state.json, df1, now, res, second, atlas_open)`
+  (gitignored, in memory between polls, ~2 ms a new bar) -> `LiveBot.blitz`, heartbeat `blitz` (compact: state, 25K eval,
+  `funded50`), Live View purple layer (`liveview_api.blitz_layer`: band lines, signals, PAPER positions of both ledgers;
+  the chart JS does not draw `scalp.lines` yet), narrator kind `blitz` (strat scalp, never pushed by default). Cloud: state
+  key `blitz` next to `atlas_v2` with LIT's run + the ATLAS ledgers (cold start warms 35 days of data/NQ_1m.csv + PC bars),
+  pushes kind `second` "BLITZ PAPER ..." recorded unless `blitz.push`, README lines. Replay H1 / H2: 221 / 109 trades, PF
+  1.63 / 1.49, $150 a trade +$5,560 / +$2,143; 25K eval path +$7,193 / +$4,726 (4/2, 3/2 pass / fail+stuck), after fees
+  +$6,752 / +$4,411 (~$1,108 / $1,188 a month), 2-week pass / fail 31.1/10.1, 34.8/2.9; 50K next to LIT (research LIT /
+  ATLAS trades) 207 / 105 trades, +$11,750 / +$7,923 trading P&L (~$1.9k / $2.1k a month at $400-450 risk, no payouts: the
+  research's whole-slot gain after MFFU payout limits is +$301 / +$290 a month). Test `python -X utf8 -m tests.test_blitz
+  [--cloud]` (~65 s).
 - Same code as the research: engine/second.py calls tools/second_ema.py / second_md.py / second_sr.py on LIT's live
   window (retail_standalone.load_frame live_cut, the simulators' live/OPEN mode). "With LIT" view = LIT first, no entry
   while LIT is in a trade, max 2 a day (MACD closed when LIT enters).
@@ -450,6 +481,16 @@ part yourself or fold it into a script.**
   raising stub), FEED STALE blocks entries, PC bars push/read roundtrip, roll back-adjustment, CBOE VIX (23 checks, ~10 s).
 
 ## Infrastructure
+- **Dashboard 2026-10-28 (owner: "50 useful features", "what the bot is thinking", "very 3D"):** registry
+  `web_next/FEATURES.md` (status of all 50). Home "Today · real accounts" (`realcore.js`, `cc.js`; phone
+  `tools/web_public/realcore.js`): one card per REAL account (ledger + NinjaTrader fills only, never paper $), gauges, health
+  score, ledger check (`engine/live_board.py` flags an eval day booking $ with no real trade). Real results page (`real.js`,
+  `#/real`, CSV export). AI Insights (`insight.js`, `engine/insight_api.py` `GET /api/next/insight[?day&hm]`, features 21-30).
+  Live View (`liveview*.js`, `engine/liveview_api.py` `GET /api/next/liveview?tf=1m|5m`): full-screen chart, per-strategy
+  colour layers (Zlarior blue, ATLAS orange, BLITZ purple), "what the bot is thinking" panel, feed. Narrator
+  (`engine/narrator.py`, hooked in `LiveBot._alerts_tick`, real bot only, never raises): plain-language feed,
+  `logs/narrator/<day>.jsonl`; phone pushes only for armed / entry / exit / refused (`data/narrator.json`, `LE_NARRATOR_PUSH=0`).
+  Tests: test_real_ui, test_insight_api, test_liveview_api, test_narrator.
 - **Start & Accounts page (2026-10-26, PC dashboard sidebar "Start", page `start`):** START BOT as one checklist, one button
   per red line: NinjaTrader connected · live bars from NinjaTrader (`go.feed_problem`, fix "right-click the MNQ 5-minute chart > Reload NinjaScript (or re-add LE_BarFeed)"; the Sim job is refused while stale) · accounts set (50K -> Zlarior, 25K -> ATLAS) · setup done · Sim tests passed · armed ·
   running and routes verified, plus the plain line `Zlarior -> 50K <name> · ATLAS -> 25K <name> · both armed · running`.

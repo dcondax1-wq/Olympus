@@ -1,0 +1,1343 @@
+{
+"note": "summary; full grid in na_grid_exits.json (local only)",
+"variants": 4800,
+"today_exit": {
+"name": "trail1.5@1.0 hold30 nopart beNone stop1.5 ext0",
+"p": {
+"trail": 1.5,
+"tstart": 1.0,
+"hold": 30,
+"part_r": null,
+"part_be": false,
+"be": null,
+"stopk": 1.5,
+"ext": 0
+},
+"H1": {
+"n": 221,
+"tpw": 8.63,
+"avg_r": 0.15,
+"pf": 1.63,
+"net": 5560,
+"per_month": 912,
+"dd": -1314,
+"t_r": 2.59
+},
+"H2": {
+"n": 109,
+"tpw": 6.99,
+"avg_r": 0.171,
+"pf": 1.49,
+"net": 2143,
+"per_month": 577,
+"dd": -903,
+"t_r": 2.19
+},
+"R": {
+"n": 1869,
+"tpw": 8.68,
+"avg_r": 0.016,
+"pf": 1.06,
+"net": 4570,
+"per_month": 89,
+"dd": -4783,
+"t_r": 0.78
+}
+},
+"improve_h1": 700,
+"improve_h1_and_h2": 61,
+"improve_h1_and_r": 271,
+"improve_all3": 61,
+"top30_h1": [
+{
+"name": "trail1.0@0.5 hold40 part1.0 beNone stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.5,
+"hold": 40,
+"part_r": 1.0,
+"part_be": false,
+"be": null,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 225,
+"tpw": 8.79,
+"avg_r": 0.163,
+"pf": 1.9,
+"net": 7017,
+"per_month": 1151,
+"dd": -904,
+"t_r": 3.06
+},
+"H2": {
+"n": 112,
+"tpw": 7.18,
+"avg_r": 0.08,
+"pf": 1.22,
+"net": 1177,
+"per_month": 317,
+"dd": -1009,
+"t_r": 1.06
+},
+"R": {
+"n": 1905,
+"tpw": 8.84,
+"avg_r": 0.016,
+"pf": 1.06,
+"net": 4690,
+"per_month": 91,
+"dd": -4078,
+"t_r": 0.87
+}
+},
+{
+"name": "trail1.0@0.5 hold40 part1.0 be1.0 stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.5,
+"hold": 40,
+"part_r": 1.0,
+"part_be": false,
+"be": 1.0,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 225,
+"tpw": 8.79,
+"avg_r": 0.163,
+"pf": 1.9,
+"net": 7017,
+"per_month": 1151,
+"dd": -904,
+"t_r": 3.06
+},
+"H2": {
+"n": 112,
+"tpw": 7.18,
+"avg_r": 0.08,
+"pf": 1.22,
+"net": 1177,
+"per_month": 317,
+"dd": -1009,
+"t_r": 1.06
+},
+"R": {
+"n": 1905,
+"tpw": 8.84,
+"avg_r": 0.016,
+"pf": 1.06,
+"net": 4690,
+"per_month": 91,
+"dd": -4078,
+"t_r": 0.87
+}
+},
+{
+"name": "trail1.0@0.5 hold40 part1.0+BE beNone stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.5,
+"hold": 40,
+"part_r": 1.0,
+"part_be": true,
+"be": null,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 225,
+"tpw": 8.79,
+"avg_r": 0.163,
+"pf": 1.9,
+"net": 7017,
+"per_month": 1151,
+"dd": -904,
+"t_r": 3.06
+},
+"H2": {
+"n": 112,
+"tpw": 7.18,
+"avg_r": 0.08,
+"pf": 1.22,
+"net": 1177,
+"per_month": 317,
+"dd": -1009,
+"t_r": 1.06
+},
+"R": {
+"n": 1905,
+"tpw": 8.84,
+"avg_r": 0.016,
+"pf": 1.06,
+"net": 4690,
+"per_month": 91,
+"dd": -4078,
+"t_r": 0.87
+}
+},
+{
+"name": "trail1.0@0.5 hold40 part1.0+BE be1.0 stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.5,
+"hold": 40,
+"part_r": 1.0,
+"part_be": true,
+"be": 1.0,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 225,
+"tpw": 8.79,
+"avg_r": 0.163,
+"pf": 1.9,
+"net": 7017,
+"per_month": 1151,
+"dd": -904,
+"t_r": 3.06
+},
+"H2": {
+"n": 112,
+"tpw": 7.18,
+"avg_r": 0.08,
+"pf": 1.22,
+"net": 1177,
+"per_month": 317,
+"dd": -1009,
+"t_r": 1.06
+},
+"R": {
+"n": 1905,
+"tpw": 8.84,
+"avg_r": 0.016,
+"pf": 1.06,
+"net": 4690,
+"per_month": 91,
+"dd": -4078,
+"t_r": 0.87
+}
+},
+{
+"name": "trail1.0@0.5 hold40 nopart beNone stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.5,
+"hold": 40,
+"part_r": null,
+"part_be": false,
+"be": null,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 225,
+"tpw": 8.79,
+"avg_r": 0.161,
+"pf": 1.89,
+"net": 6942,
+"per_month": 1139,
+"dd": -904,
+"t_r": 3.02
+},
+"H2": {
+"n": 112,
+"tpw": 7.18,
+"avg_r": 0.082,
+"pf": 1.22,
+"net": 1203,
+"per_month": 324,
+"dd": -1053,
+"t_r": 1.06
+},
+"R": {
+"n": 1905,
+"tpw": 8.84,
+"avg_r": 0.017,
+"pf": 1.06,
+"net": 4890,
+"per_month": 95,
+"dd": -4387,
+"t_r": 0.89
+}
+},
+{
+"name": "trail1.0@0.5 hold40 nopart be1.0 stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.5,
+"hold": 40,
+"part_r": null,
+"part_be": false,
+"be": 1.0,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 225,
+"tpw": 8.79,
+"avg_r": 0.161,
+"pf": 1.89,
+"net": 6942,
+"per_month": 1139,
+"dd": -904,
+"t_r": 3.02
+},
+"H2": {
+"n": 112,
+"tpw": 7.18,
+"avg_r": 0.082,
+"pf": 1.22,
+"net": 1203,
+"per_month": 324,
+"dd": -1053,
+"t_r": 1.06
+},
+"R": {
+"n": 1905,
+"tpw": 8.84,
+"avg_r": 0.017,
+"pf": 1.06,
+"net": 4890,
+"per_month": 95,
+"dd": -4387,
+"t_r": 0.89
+}
+},
+{
+"name": "trail1.25@1.0 hold35 part1.0 beNone stop1.25 ext0",
+"p": {
+"trail": 1.25,
+"tstart": 1.0,
+"hold": 35,
+"part_r": 1.0,
+"part_be": false,
+"be": null,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 235,
+"tpw": 9.18,
+"avg_r": 0.195,
+"pf": 1.62,
+"net": 6111,
+"per_month": 1003,
+"dd": -1110,
+"t_r": 2.96
+},
+"H2": {
+"n": 119,
+"tpw": 7.63,
+"avg_r": 0.086,
+"pf": 1.26,
+"net": 1408,
+"per_month": 379,
+"dd": -1111,
+"t_r": 0.98
+},
+"R": {
+"n": 1967,
+"tpw": 9.13,
+"avg_r": 0.014,
+"pf": 1.04,
+"net": 3942,
+"per_month": 77,
+"dd": -4496,
+"t_r": 0.64
+}
+},
+{
+"name": "trail1.0@0.75 hold40 part1.0 beNone stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.75,
+"hold": 40,
+"part_r": 1.0,
+"part_be": false,
+"be": null,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 223,
+"tpw": 8.71,
+"avg_r": 0.16,
+"pf": 1.86,
+"net": 6826,
+"per_month": 1120,
+"dd": -917,
+"t_r": 2.94
+},
+"H2": {
+"n": 111,
+"tpw": 7.12,
+"avg_r": 0.092,
+"pf": 1.27,
+"net": 1373,
+"per_month": 370,
+"dd": -1066,
+"t_r": 1.22
+},
+"R": {
+"n": 1875,
+"tpw": 8.7,
+"avg_r": 0.023,
+"pf": 1.08,
+"net": 6225,
+"per_month": 121,
+"dd": -3433,
+"t_r": 1.22
+}
+},
+{
+"name": "trail1.0@0.75 hold40 part1.0 be1.0 stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.75,
+"hold": 40,
+"part_r": 1.0,
+"part_be": false,
+"be": 1.0,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 223,
+"tpw": 8.71,
+"avg_r": 0.16,
+"pf": 1.86,
+"net": 6826,
+"per_month": 1120,
+"dd": -917,
+"t_r": 2.94
+},
+"H2": {
+"n": 111,
+"tpw": 7.12,
+"avg_r": 0.092,
+"pf": 1.27,
+"net": 1373,
+"per_month": 370,
+"dd": -1066,
+"t_r": 1.22
+},
+"R": {
+"n": 1875,
+"tpw": 8.7,
+"avg_r": 0.023,
+"pf": 1.08,
+"net": 6225,
+"per_month": 121,
+"dd": -3433,
+"t_r": 1.22
+}
+},
+{
+"name": "trail1.0@0.75 hold40 part1.0+BE beNone stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.75,
+"hold": 40,
+"part_r": 1.0,
+"part_be": true,
+"be": null,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 223,
+"tpw": 8.71,
+"avg_r": 0.16,
+"pf": 1.86,
+"net": 6826,
+"per_month": 1120,
+"dd": -917,
+"t_r": 2.94
+},
+"H2": {
+"n": 111,
+"tpw": 7.12,
+"avg_r": 0.092,
+"pf": 1.27,
+"net": 1373,
+"per_month": 370,
+"dd": -1066,
+"t_r": 1.22
+},
+"R": {
+"n": 1875,
+"tpw": 8.7,
+"avg_r": 0.023,
+"pf": 1.08,
+"net": 6225,
+"per_month": 121,
+"dd": -3433,
+"t_r": 1.22
+}
+},
+{
+"name": "trail1.0@0.75 hold40 part1.0+BE be1.0 stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.75,
+"hold": 40,
+"part_r": 1.0,
+"part_be": true,
+"be": 1.0,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 223,
+"tpw": 8.71,
+"avg_r": 0.16,
+"pf": 1.86,
+"net": 6826,
+"per_month": 1120,
+"dd": -917,
+"t_r": 2.94
+},
+"H2": {
+"n": 111,
+"tpw": 7.12,
+"avg_r": 0.092,
+"pf": 1.27,
+"net": 1373,
+"per_month": 370,
+"dd": -1066,
+"t_r": 1.22
+},
+"R": {
+"n": 1875,
+"tpw": 8.7,
+"avg_r": 0.023,
+"pf": 1.08,
+"net": 6225,
+"per_month": 121,
+"dd": -3433,
+"t_r": 1.22
+}
+},
+{
+"name": "trail1.25@0.75 hold35 part1.0 beNone stop1.25 ext0",
+"p": {
+"trail": 1.25,
+"tstart": 0.75,
+"hold": 35,
+"part_r": 1.0,
+"part_be": false,
+"be": null,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 237,
+"tpw": 9.26,
+"avg_r": 0.187,
+"pf": 1.55,
+"net": 5430,
+"per_month": 891,
+"dd": -1110,
+"t_r": 2.92
+},
+"H2": {
+"n": 119,
+"tpw": 7.63,
+"avg_r": 0.048,
+"pf": 1.11,
+"net": 606,
+"per_month": 163,
+"dd": -1152,
+"t_r": 0.55
+},
+"R": {
+"n": 1988,
+"tpw": 9.23,
+"avg_r": 0.007,
+"pf": 1.03,
+"net": 2908,
+"per_month": 57,
+"dd": -4222,
+"t_r": 0.34
+}
+},
+{
+"name": "trail1.25@1.0 hold35 nopart beNone stop1.25 ext0",
+"p": {
+"trail": 1.25,
+"tstart": 1.0,
+"hold": 35,
+"part_r": null,
+"part_be": false,
+"be": null,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 235,
+"tpw": 9.18,
+"avg_r": 0.197,
+"pf": 1.62,
+"net": 6203,
+"per_month": 1018,
+"dd": -1110,
+"t_r": 2.92
+},
+"H2": {
+"n": 119,
+"tpw": 7.63,
+"avg_r": 0.097,
+"pf": 1.29,
+"net": 1574,
+"per_month": 424,
+"dd": -1133,
+"t_r": 1.05
+},
+"R": {
+"n": 1965,
+"tpw": 9.12,
+"avg_r": 0.011,
+"pf": 1.03,
+"net": 3330,
+"per_month": 65,
+"dd": -5424,
+"t_r": 0.49
+}
+},
+{
+"name": "trail1.0@0.75 hold40 nopart beNone stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.75,
+"hold": 40,
+"part_r": null,
+"part_be": false,
+"be": null,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 223,
+"tpw": 8.71,
+"avg_r": 0.157,
+"pf": 1.85,
+"net": 6751,
+"per_month": 1108,
+"dd": -917,
+"t_r": 2.89
+},
+"H2": {
+"n": 111,
+"tpw": 7.12,
+"avg_r": 0.093,
+"pf": 1.27,
+"net": 1399,
+"per_month": 377,
+"dd": -1111,
+"t_r": 1.22
+},
+"R": {
+"n": 1875,
+"tpw": 8.7,
+"avg_r": 0.023,
+"pf": 1.08,
+"net": 6145,
+"per_month": 120,
+"dd": -3837,
+"t_r": 1.18
+}
+},
+{
+"name": "trail1.0@0.75 hold40 nopart be1.0 stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 0.75,
+"hold": 40,
+"part_r": null,
+"part_be": false,
+"be": 1.0,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 223,
+"tpw": 8.71,
+"avg_r": 0.157,
+"pf": 1.85,
+"net": 6751,
+"per_month": 1108,
+"dd": -917,
+"t_r": 2.89
+},
+"H2": {
+"n": 111,
+"tpw": 7.12,
+"avg_r": 0.093,
+"pf": 1.27,
+"net": 1399,
+"per_month": 377,
+"dd": -1111,
+"t_r": 1.22
+},
+"R": {
+"n": 1875,
+"tpw": 8.7,
+"avg_r": 0.023,
+"pf": 1.08,
+"net": 6145,
+"per_month": 120,
+"dd": -3837,
+"t_r": 1.18
+}
+},
+{
+"name": "trail1.0@1.5 hold40 part1.0 beNone stop1.75 ext0",
+"p": {
+"trail": 1.0,
+"tstart": 1.5,
+"hold": 40,
+"part_r": 1.0,
+"part_be": false,
+"be": null,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 218,
+"tpw": 8.52,
+"avg_r": 0.161,
+"pf": 1.82,
+"net": 6674,
+"per_month": 1095,
+"dd": -964,
+"t_r": 2.89
+},
+"H2": {
+"n": 107,
+"tpw": 6.86,
+"avg_r": 0.141,
+"pf": 1.41,
+"net": 2049,
+"per_month": 552,
+"dd": -1005,
+"t_r": 1.76
+},
+"R": {
+"n": 1835,
+"tpw": 8.52,
+"avg_r": 0.029,
+"pf": 1.1,
+"net": 7861,
+"per_month": 153,
+"dd": -3148,
+"t_r": 1.47
+}
+},
+{
+"name": "trail1.25@0.75 hold35 nopart beNone stop1.25 ext0",
+"p": {
+"trail": 1.25,
+"tstart": 0.75,
+"hold": 35,
+"part_r": null,
+"part_be": false,
+"be": null,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 237,
+"tpw": 9.26,
+"avg_r": 0.189,
+"pf": 1.56,
+"net": 5547,
+"per_month": 910,
+"dd": -1110,
+"t_r": 2.89
+},
+"H2": {
+"n": 119,
+"tpw": 7.63,
+"avg_r": 0.061,
+"pf": 1.14,
+"net": 800,
+"per_month": 215,
+"dd": -1156,
+"t_r": 0.66
+},
+"R": {
+"n": 1986,
+"tpw": 9.22,
+"avg_r": 0.005,
+"pf": 1.03,
+"net": 2481,
+"per_month": 48,
+"dd": -5270,
+"t_r": 0.23
+}
+},
+{
+"name": "trail1.25@1.5 hold35 nopart beNone stop1.25 ext0",
+"p": {
+"trail": 1.25,
+"tstart": 1.5,
+"hold": 35,
+"part_r": null,
+"part_be": false,
+"be": null,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 230,
+"tpw": 8.98,
+"avg_r": 0.191,
+"pf": 1.62,
+"net": 6118,
+"per_month": 1004,
+"dd": -1132,
+"t_r": 2.86
+},
+"H2": {
+"n": 117,
+"tpw": 7.5,
+"avg_r": 0.131,
+"pf": 1.38,
+"net": 2042,
+"per_month": 550,
+"dd": -1128,
+"t_r": 1.37
+},
+"R": {
+"n": 1931,
+"tpw": 8.96,
+"avg_r": 0.024,
+"pf": 1.07,
+"net": 6555,
+"per_month": 128,
+"dd": -2967,
+"t_r": 1.01
+}
+},
+{
+"name": "trail1.25@0.75 hold40 part1.0 beNone stop1.25 ext0",
+"p": {
+"trail": 1.25,
+"tstart": 0.75,
+"hold": 40,
+"part_r": 1.0,
+"part_be": false,
+"be": null,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 236,
+"tpw": 9.22,
+"avg_r": 0.19,
+"pf": 1.53,
+"net": 5438,
+"per_month": 892,
+"dd": -1110,
+"t_r": 2.85
+},
+"H2": {
+"n": 119,
+"tpw": 7.63,
+"avg_r": 0.046,
+"pf": 1.09,
+"net": 547,
+"per_month": 147,
+"dd": -1234,
+"t_r": 0.51
+},
+"R": {
+"n": 1988,
+"tpw": 9.23,
+"avg_r": 0.004,
+"pf": 1.01,
+"net": 1412,
+"per_month": 28,
+"dd": -4333,
+"t_r": 0.17
+}
+},
+{
+"name": "trail1.5@0.5 hold30 part1.0 be1.0 stop1.25 ext0",
+"p": {
+"trail": 1.5,
+"tstart": 0.5,
+"hold": 30,
+"part_r": 1.0,
+"part_be": false,
+"be": 1.0,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 234,
+"tpw": 9.14,
+"avg_r": 0.19,
+"pf": 1.68,
+"net": 6264,
+"per_month": 1028,
+"dd": -972,
+"t_r": 2.85
+},
+"H2": {
+"n": 118,
+"tpw": 7.56,
+"avg_r": 0.033,
+"pf": 1.07,
+"net": 366,
+"per_month": 99,
+"dd": -1139,
+"t_r": 0.41
+},
+"R": {
+"n": 1973,
+"tpw": 9.16,
+"avg_r": 0.006,
+"pf": 1.02,
+"net": 1902,
+"per_month": 37,
+"dd": -4962,
+"t_r": 0.3
+}
+},
+{
+"name": "trail1.5@0.5 hold30 part1.0+BE beNone stop1.25 ext0",
+"p": {
+"trail": 1.5,
+"tstart": 0.5,
+"hold": 30,
+"part_r": 1.0,
+"part_be": true,
+"be": null,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 234,
+"tpw": 9.14,
+"avg_r": 0.19,
+"pf": 1.68,
+"net": 6264,
+"per_month": 1028,
+"dd": -972,
+"t_r": 2.85
+},
+"H2": {
+"n": 118,
+"tpw": 7.56,
+"avg_r": 0.033,
+"pf": 1.07,
+"net": 366,
+"per_month": 99,
+"dd": -1139,
+"t_r": 0.41
+},
+"R": {
+"n": 1971,
+"tpw": 9.15,
+"avg_r": 0.006,
+"pf": 1.02,
+"net": 1867,
+"per_month": 36,
+"dd": -5013,
+"t_r": 0.28
+}
+},
+{
+"name": "trail1.5@0.5 hold30 part1.0+BE be1.0 stop1.25 ext0",
+"p": {
+"trail": 1.5,
+"tstart": 0.5,
+"hold": 30,
+"part_r": 1.0,
+"part_be": true,
+"be": 1.0,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 234,
+"tpw": 9.14,
+"avg_r": 0.19,
+"pf": 1.68,
+"net": 6264,
+"per_month": 1028,
+"dd": -972,
+"t_r": 2.85
+},
+"H2": {
+"n": 118,
+"tpw": 7.56,
+"avg_r": 0.033,
+"pf": 1.07,
+"net": 366,
+"per_month": 99,
+"dd": -1139,
+"t_r": 0.41
+},
+"R": {
+"n": 1973,
+"tpw": 9.16,
+"avg_r": 0.006,
+"pf": 1.02,
+"net": 1902,
+"per_month": 37,
+"dd": -4962,
+"t_r": 0.3
+}
+},
+{
+"name": "trail1.5@0.5 hold35 part1.0 be1.0 stop1.25 ext0",
+"p": {
+"trail": 1.5,
+"tstart": 0.5,
+"hold": 35,
+"part_r": 1.0,
+"part_be": false,
+"be": 1.0,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 234,
+"tpw": 9.14,
+"avg_r": 0.191,
+"pf": 1.62,
+"net": 5826,
+"per_month": 956,
+"dd": -972,
+"t_r": 2.85
+},
+"H2": {
+"n": 118,
+"tpw": 7.56,
+"avg_r": 0.04,
+"pf": 1.08,
+"net": 465,
+"per_month": 125,
+"dd": -1090,
+"t_r": 0.45
+},
+"R": {
+"n": 1973,
+"tpw": 9.16,
+"avg_r": 0.011,
+"pf": 1.03,
+"net": 2998,
+"per_month": 58,
+"dd": -4282,
+"t_r": 0.5
+}
+},
+{
+"name": "trail1.5@0.5 hold35 part1.0+BE beNone stop1.25 ext0",
+"p": {
+"trail": 1.5,
+"tstart": 0.5,
+"hold": 35,
+"part_r": 1.0,
+"part_be": true,
+"be": null,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 234,
+"tpw": 9.14,
+"avg_r": 0.191,
+"pf": 1.62,
+"net": 5826,
+"per_month": 956,
+"dd": -972,
+"t_r": 2.85
+},
+"H2": {
+"n": 118,
+"tpw": 7.56,
+"avg_r": 0.04,
+"pf": 1.08,
+"net": 465,
+"per_month": 125,
+"dd": -1090,
+"t_r": 0.45
+},
+"R": {
+"n": 1971,
+"tpw": 9.15,
+"avg_r": 0.011,
+"pf": 1.03,
+"net": 3011,
+"per_month": 59,
+"dd": -4333,
+"t_r": 0.49
+}
+},
+{
+"name": "trail1.5@0.5 hold35 part1.0+BE be1.0 stop1.25 ext0",
+"p": {
+"trail": 1.5,
+"tstart": 0.5,
+"hold": 35,
+"part_r": 1.0,
+"part_be": true,
+"be": 1.0,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 234,
+"tpw": 9.14,
+"avg_r": 0.191,
+"pf": 1.62,
+"net": 5826,
+"per_month": 956,
+"dd": -972,
+"t_r": 2.85
+},
+"H2": {
+"n": 118,
+"tpw": 7.56,
+"avg_r": 0.04,
+"pf": 1.08,
+"net": 465,
+"per_month": 125,
+"dd": -1090,
+"t_r": 0.45
+},
+"R": {
+"n": 1973,
+"tpw": 9.16,
+"avg_r": 0.011,
+"pf": 1.03,
+"net": 2998,
+"per_month": 58,
+"dd": -4282,
+"t_r": 0.5
+}
+},
+{
+"name": "trail1.5@0.5 hold40 part1.0 be1.0 stop1.25 ext0",
+"p": {
+"trail": 1.5,
+"tstart": 0.5,
+"hold": 40,
+"part_r": 1.0,
+"part_be": false,
+"be": 1.0,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 233,
+"tpw": 9.1,
+"avg_r": 0.202,
+"pf": 1.65,
+"net": 6434,
+"per_month": 1056,
+"dd": -972,
+"t_r": 2.85
+},
+"H2": {
+"n": 118,
+"tpw": 7.56,
+"avg_r": 0.064,
+"pf": 1.12,
+"net": 717,
+"per_month": 193,
+"dd": -1106,
+"t_r": 0.69
+},
+"R": {
+"n": 1973,
+"tpw": 9.16,
+"avg_r": 0.007,
+"pf": 1.01,
+"net": 1249,
+"per_month": 24,
+"dd": -4636,
+"t_r": 0.31
+}
+},
+{
+"name": "trail1.5@0.5 hold40 part1.0+BE beNone stop1.25 ext0",
+"p": {
+"trail": 1.5,
+"tstart": 0.5,
+"hold": 40,
+"part_r": 1.0,
+"part_be": true,
+"be": null,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 233,
+"tpw": 9.1,
+"avg_r": 0.202,
+"pf": 1.65,
+"net": 6434,
+"per_month": 1056,
+"dd": -972,
+"t_r": 2.85
+},
+"H2": {
+"n": 118,
+"tpw": 7.56,
+"avg_r": 0.064,
+"pf": 1.12,
+"net": 717,
+"per_month": 193,
+"dd": -1106,
+"t_r": 0.69
+},
+"R": {
+"n": 1971,
+"tpw": 9.15,
+"avg_r": 0.006,
+"pf": 1.01,
+"net": 1202,
+"per_month": 23,
+"dd": -4687,
+"t_r": 0.29
+}
+},
+{
+"name": "trail1.5@0.5 hold40 part1.0+BE be1.0 stop1.25 ext0",
+"p": {
+"trail": 1.5,
+"tstart": 0.5,
+"hold": 40,
+"part_r": 1.0,
+"part_be": true,
+"be": 1.0,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 233,
+"tpw": 9.1,
+"avg_r": 0.202,
+"pf": 1.65,
+"net": 6434,
+"per_month": 1056,
+"dd": -972,
+"t_r": 2.85
+},
+"H2": {
+"n": 118,
+"tpw": 7.56,
+"avg_r": 0.064,
+"pf": 1.12,
+"net": 717,
+"per_month": 193,
+"dd": -1106,
+"t_r": 0.69
+},
+"R": {
+"n": 1973,
+"tpw": 9.16,
+"avg_r": 0.007,
+"pf": 1.01,
+"net": 1249,
+"per_month": 24,
+"dd": -4636,
+"t_r": 0.31
+}
+},
+{
+"name": "trail0.5@1.5 hold35 nopart beNone stop1.25 ext0",
+"p": {
+"trail": 0.5,
+"tstart": 1.5,
+"hold": 35,
+"part_r": null,
+"part_be": false,
+"be": null,
+"stopk": 1.25,
+"ext": 0
+},
+"H1": {
+"n": 238,
+"tpw": 9.3,
+"avg_r": 0.181,
+"pf": 1.58,
+"net": 6170,
+"per_month": 1012,
+"dd": -976,
+"t_r": 2.84
+},
+"H2": {
+"n": 122,
+"tpw": 7.82,
+"avg_r": 0.169,
+"pf": 1.46,
+"net": 2544,
+"per_month": 685,
+"dd": -1046,
+"t_r": 1.81
+},
+"R": {
+"n": 1977,
+"tpw": 9.18,
+"avg_r": 0.028,
+"pf": 1.07,
+"net": 7349,
+"per_month": 143,
+"dd": -3562,
+"t_r": 1.24
+}
+},
+{
+"name": "trail1.25@1.5 hold40 part1.0 beNone stop1.75 ext0",
+"p": {
+"trail": 1.25,
+"tstart": 1.5,
+"hold": 40,
+"part_r": 1.0,
+"part_be": false,
+"be": null,
+"stopk": 1.75,
+"ext": 0
+},
+"H1": {
+"n": 217,
+"tpw": 8.48,
+"avg_r": 0.158,
+"pf": 1.81,
+"net": 6569,
+"per_month": 1078,
+"dd": -964,
+"t_r": 2.84
+},
+"H2": {
+"n": 106,
+"tpw": 6.79,
+"avg_r": 0.116,
+"pf": 1.31,
+"net": 1566,
+"per_month": 422,
+"dd": -1005,
+"t_r": 1.47
+},
+"R": {
+"n": 1830,
+"tpw": 8.5,
+"avg_r": 0.028,
+"pf": 1.1,
+"net": 7976,
+"per_month": 156,
+"dd": -2910,
+"t_r": 1.42
+}
+}
+]
+}

@@ -150,7 +150,14 @@
     let s = document.getElementById('apBan');
     const L = openAlerts(A.msgs || []), cs = cloudStale();
     let h = '';
-    if (L.length && PAGE !== 'ack') h += `<a class="mo-ban bad ap-ban" href="#/ack/${encodeURIComponent(L[0].id)}" role="alert">${icon('alerts')}<span><b>${L.length === 1 ? esc(L[0].title) : L.length + ' critical alerts'} · tap Got it</b><em>It repeats every 10 min until you acknowledge it or it clears.</em></span></a>`;
+    // 2026-10-28: a floor alert while the live board's ledger check doubts a booked day (no real trade that day) says so
+    let doubt = '';
+    try {
+      const B = window.BoardPages && window.BoardPages.board ? window.BoardPages.board() : null;
+      const c = ((B && B.real && B.real.checks) || []).find((x) => x.acct === 'lit' && x.room_if_error != null);
+      if (c && L.some((a) => /floor|room/i.test(a.title || ''))) doubt = ` Ledger check: ${esc(c.day)} books ${esc(susd(Math.round(c.usd)))} with no real trade; the room may really be ${esc(usd(Math.round(c.room_if_error)))}. Check the MFFU dashboard.`;
+    } catch (e) { doubt = ''; }
+    if (L.length && PAGE !== 'ack') h += `<a class="mo-ban bad ap-ban" href="#/ack/${encodeURIComponent(L[0].id)}" role="alert">${icon('alerts')}<span><b>${L.length === 1 ? esc(L[0].title) : L.length + ' critical alerts'} · tap Got it</b><em>It repeats every 10 min until you acknowledge it or it clears.${doubt}</em></span></a>`;
     if (cs != null) h += `<div class="mo-ban warn" role="status">${icon('clock')}<span><b>Cloud monitor: no publish for ${cs} min</b><em>The PC live feed is fine, but the cloud paper bot and the Surface-offline alarm are blind. GitHub → Actions → cloud-monitor → Run workflow.</em></span></div>`;
     if (!h) { if (s) s.remove(); return; }
     if (!s) { s = document.createElement('div'); s.id = 'apBan'; s.className = 'mo-strip'; }

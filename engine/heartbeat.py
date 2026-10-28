@@ -18,7 +18,9 @@ heartbeat.json: {"t": unix seconds, "running": bot running, "adapter": paper|nin
                            a stop waiting for flat, the last fetch error),
                  "launch": the launch checklist (engine/launch_check.block: items green / red, each red with its fix command),
                  "ops": the owner's PC helpers (engine/ops_checks.hb_fields: last check red / yellow count + first fix,
-                        last backup, free disk; ~200 bytes)}
+                        last backup, free disk; ~200 bytes),
+                 "blitz": the BLITZ scalper PAPER shadow (engine/blitz.compact: state text, today's paper trades, the simulated
+                          25K eval, today's band; never routed; ~3 KB)}
 Every beat also writes the payload to logs/heartbeat_last.json (local, gitignored) for HEALTH_CHECK and the ops task.
 
 No Yahoo (engine/pcbars.py, owner 2026-10-19): next to heartbeat.json the commit carries the PC's NinjaTrader bars,
@@ -501,6 +503,19 @@ def _second(bot):
         return None
 
 
+def _blitz(bot):
+    """The heartbeat's "blitz" block: the BLITZ scalper PAPER shadow (engine/blitz.compact of LiveBot.blitz: state text, today's
+    paper trades, the paper 25K eval, today's band). Paper only, never routed. None before its first run. Never raises."""
+    try:
+        s = getattr(bot, "blitz", None)
+        if not isinstance(s, dict):
+            return None
+        from engine import blitz
+        return blitz.compact(s)
+    except Exception:
+        return None
+
+
 def _exec():
     """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
     try:
@@ -648,6 +663,7 @@ class Heartbeat:
                 "live_pub": _live_pub(),        # the phone's live.json push (engine/live_publish.py): last result, None before it
                 "brain": _brain(self.bot),       # the Bot Brain, phone cut (engine/brain.compact; None before the first LIT poll)
                 "second": _second(self.bot),     # second strategies, PAPER (engine/second.compact; None when off / before the first)
+                "blitz": _blitz(self.bot),       # BLITZ scalper PAPER shadow (engine/blitz.compact; never routed; None before the first)
                 "ai": _ai(self.bot),             # AI watch: anomalies, drift, loss caps, rule changes (engine/ai_watch.hb_block)
                 "nt_log": _nt_log(self.bot),     # NinjaTrader's Log-tab lines about our orders (engine/nt_log.py; <= ~10 KB)
                 **_alerts_plus(self.bot)}       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)

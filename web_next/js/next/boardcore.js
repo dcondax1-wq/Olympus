@@ -11,6 +11,8 @@
 // opts: {charts: trade-picture index (engine/trade_chart index_view), go: (id) => 'data-goto="id"', where: 'pc' | 'phone'}
 // 2026-10-26: ATLAS's funded stage (a.stage 'funded', a.funded = the payout tracker): $ to the payout line, payouts n of 5
 // and a Payout row (buffer, best day vs 50%, traded days, eligibility) instead of the eval's target and session.
+// 2026-10-28: paper rows say PAPER and show the REAL twin ("REAL: 3 micros, +$1,662" / "REAL: no order on the account");
+// a floor alert carries the ledger check's doubt when live_board's "real".checks finds a booked day with no real trade.
 (function () {
   'use strict';
   if (typeof window === 'undefined') return;
@@ -59,7 +61,10 @@
   const win = (w) => w && ok(w.open_t) ? `<b class="bd-cd" data-bd-open="${w.open_t}" data-bd-close="${w.close_t}">${esc(windowText(w.open_t, w.close_t).t)}</b>` : `<b>${esc((w && w.text) || '—')}</b>`;
 
   // ---------------------------------------------------------------- blocks (a guard stops new entries)
-  const blockRow = (b) => `<div class="bd-block"><span class="bd-dot bad"></span><div><b>${esc(b.text)}</b>${b.scope === 'both' ? '<em>both accounts</em>' : ''}
+  // 2026-10-28: a floor alert while the ledger check (live_board "real".checks) doubts a booked day says so next to it
+  let CHK = [];
+  const doubt = (t) => CHK.length && /floor|room \$|stuck/i.test(String(t || '')) ? ` <em class="bd-doubt">Ledger check: ${esc(CHK[0].day)} ${esc(susd(CHK[0].usd))} has no real trade; room may really be ${esc(usd(CHK[0].room_if_error))}. Check MFFU.</em>` : '';
+  const blockRow = (b) => `<div class="bd-block"><span class="bd-dot bad"></span><div><b>${esc(b.text)}</b>${doubt(b.text)}${b.scope === 'both' ? '<em>both accounts</em>' : ''}
     <button type="button" class="bd-fix" data-bd-copy="${esc(b.fix)}" title="Copy the fix">Fix: ${esc(b.fix)}</button></div></div>`;
   function blocksHtml(B, a) {
     const own = (a && a.blocks) || [];
@@ -233,6 +238,13 @@
     for (const x of L) { const g = Math.abs(+x.entry_t - +r.entry_t); if (g < gap) { gap = g; best = x; } }
     return gap <= 600 ? best : null;
   }
+  // 2026-10-28: a paper row's micros and $ are the strategy's own run: it says PAPER and shows the account's REAL twin
+  function realTwin(rows, r) {
+    if (r.src === 'live') return '';
+    const x = rows.find((y) => y.src === 'live' && y.acct === r.acct && y.side === r.side && ok(y.entry_t) && ok(r.entry_t) && Math.abs(y.entry_t - r.entry_t) <= 1800);
+    return x ? `REAL: ${x.qty ?? '?'} micros, ${x.open ? 'open' : susd(x.usd)}` : 'REAL: no order on the account';
+  }
+  const paperTag = (rows, r) => r.src !== 'live' ? ` <em class="bd-paper">paper</em> <em class="bd-real">${esc(realTwin(rows, r))}</em>` : '';
   const F = { acct: 'all', src: 'live' };
   function filt(rows) {
     return rows.filter((r) => (F.acct === 'all' || r.acct === F.acct) && (F.src === 'all' || r.src === F.src));
@@ -251,12 +263,12 @@
     const gl = -closed.filter((r) => r.usd < 0).reduce((s, r) => s + +r.usd, 0), gw = w.reduce((s, r) => s + +r.usd, 0);
     const seg = (key, vals) => `<div class="bd-seg" data-bd-f="${key}">${vals.map(([v, l]) => `<button type="button" data-v="${v}" class="${F[key] === v ? 'on' : ''}">${esc(l)}</button>`).join('')}</div>`;
     const body = R.length ? `<div class="bd-tw"><table class="bd-t"><thead><tr><th>Entry (ET)</th><th>Account</th><th>Side</th><th class="r">Micros</th><th class="r">Entry</th><th class="r">Stop</th><th class="r">Exit</th><th>How</th><th class="r">R</th><th class="r">$</th><th>Picture</th></tr></thead><tbody>
-      ${R.slice(0, 120).map((r, i) => `<tr class="${r.open ? 'open' : ''}"><td class="mono">${esc(ok(r.entry_t) ? dayhm(r.entry_t) : r.day)}</td><td>${esc(NAMES[r.acct] || r.acct)}${r.member ? ' · ' + esc(r.member) : ''}${r.src !== 'live' ? ' <em class="bd-paper">paper</em>' : ''}</td>
+      ${R.slice(0, 120).map((r, i) => `<tr class="${r.open ? 'open' : ''}"><td class="mono">${esc(ok(r.entry_t) ? dayhm(r.entry_t) : r.day)}</td><td>${esc(NAMES[r.acct] || r.acct)}${r.member ? ' · ' + esc(r.member) : ''}${paperTag(rows, r)}</td>
         <td>${chip(r.side || '', r.side === 'LONG' ? 'good' : 'bad')}</td><td class="r mono">${esc(r.qty ?? '')}</td><td class="r mono">${px(r.entry)}</td><td class="r mono">${px(r.stop)}</td><td class="r mono">${px(r.exit_px)}</td>
-        <td>${esc(r.open ? 'open' : KIND[String(r.exit || '').toUpperCase()] || r.exit || '')}</td><td class="r mono ${cl(r.r)}">${fR(r.r)}</td><td class="r mono ${cl(r.usd)}">${susd(r.usd)}</td>
+        <td>${esc(r.open ? 'open' : KIND[String(r.exit || '').toUpperCase()] || r.exit || '')}</td><td class="r mono ${cl(r.r)}">${fR(r.r)}</td><td class="r mono ${cl(r.usd)}">${r.src !== 'live' ? '<em class="bd-mut">paper </em>' : ''}${susd(r.usd)}</td>
         <td>${pi.has(i) && g ? `<button type="button" class="bd-pic" data-tp="${g}" data-tp-i="${pi.get(i)}" title="Open the trade picture">${esc('View')}</button>` : '<span class="bd-mut">—</span>'}</td></tr>`).join('')}</tbody></table></div>
       <div class="bd-tl">${R.slice(0, 60).map((r, i) => `<div class="bd-tc ${r.open ? 'open' : ''}"><div class="bd-tc1"><span class="mono">${esc(ok(r.entry_t) ? dayhm(r.entry_t) : r.day)}</span>
-          <b>${esc(NAMES[r.acct] || r.acct)}${r.member ? ' · ' + esc(r.member) : ''}</b>${r.src !== 'live' ? '<em class="bd-paper">paper</em>' : ''}<b class="bd-tc-u mono ${cl(r.usd)}">${susd(r.usd)}</b></div>
+          <b>${esc(NAMES[r.acct] || r.acct)}${r.member ? ' · ' + esc(r.member) : ''}</b>${paperTag(rows, r)}<b class="bd-tc-u mono ${cl(r.usd)}">${r.src !== 'live' ? '<em class="bd-mut">paper </em>' : ''}${susd(r.usd)}</b></div>
         <div class="bd-tc2">${chip(r.side || '', r.side === 'LONG' ? 'good' : 'bad')}<span class="mono">${esc(r.qty ?? '')} × ${px(r.entry)} → ${px(r.exit_px)}</span>
           <span>${esc(r.open ? 'open' : KIND[String(r.exit || '').toUpperCase()] || r.exit || '')}</span><span class="mono ${cl(r.r)}">${fR(r.r)}</span>
           ${pi.has(i) && g ? `<button type="button" class="bd-pic" data-tp="${g}" data-tp-i="${pi.get(i)}">View</button>` : ''}</div></div>`).join('')}</div>`
@@ -291,7 +303,7 @@
   function lines(B) {
     const L = B.lines || [];
     if (!L.length) return `<div class="bd-banner good"><span class="bd-dot good"></span><span><b>All clear.</b> Nothing blocks new entries; the bot trades on its own.</span></div>`;
-    return L.map((l) => `<div class="bd-banner ${esc(l.level)}"><span class="bd-dot ${esc(l.level)}"></span><span>${esc(l.text)}</span></div>`).join('');
+    return L.map((l) => `<div class="bd-banner ${esc(l.level)}"><span class="bd-dot ${esc(l.level)}"></span><span>${esc(l.text)}${doubt(l.text)}</span></div>`).join('');
   }
   function stale(B) {
     if (!ok(B.data_t)) return '';
@@ -300,8 +312,9 @@
     return `<div class="bd-banner warn"><span class="bd-dot warn"></span><span>This data is <b data-bd-age="${B.data_t}">${esc(dur(a))}</b> old (the PC's last check-in). Countdowns still run; balances and states may have moved.</span></div>`;
   }
   const H2 = (t, s) => `<h3 class="bd-sec">${esc(t)}${s ? ` <span>${esc(s)}</span>` : ''}</h3>`;
+  const setChk = (B) => { CHK = ((B && B.real && B.real.checks) || []).filter((c) => c.acct === 'lit' && ok(c.room_if_error)); };
   function page(B, opts) {
-    css(); opts = opts || {};
+    css(); opts = opts || {}; setChk(B);
     if (!B || B.error) return `<div class="bd-wrap"><p class="bd-note">${esc((B && B.error) || 'No board data yet. It appears after the PC bot reports.')}</p></div>`;
     return `<div class="bd-wrap">${stale(B)}${lines(B)}
       ${H2('Right now', 'both accounts')}<div class="bd-two">${acctCard(B, B.lit, opts)}${acctCard(B, B.atlas, opts)}</div>
@@ -322,7 +335,7 @@
       ${(a.blocks || []).slice(0, 2).map(blockRow).join('')}</div>`;
   }
   function home(B, opts) {
-    css(); opts = opts || {};
+    css(); opts = opts || {}; setChk(B);
     if (!B || B.error) return '';
     const go = opts.go ? opts.go('board') : 'data-goto="board"';
     return `<section class="bd-wrap bd-homecut" aria-label="Right now">${stale(B)}${(B.blocks || []).map(blockRow).join('')}<div class="bd-two">${miniAcct(B, B.lit, opts)}${miniAcct(B, B.atlas, opts)}</div>
@@ -444,7 +457,7 @@ display:flex;flex-direction:column;gap:12px;min-width:0}
 .bd-tc2{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:5px;color:var(--bd-ink2);font-size:12.5px}.bd-tc2 .bd-chip{height:20px;padding:0 8px;font-size:10.5px}.bd-tc2 .bd-pic{margin-left:auto}
 @media (max-width:600px){.bd-trades .bd-tw{display:none}.bd-tl{display:flex}}
 .bd-line.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.bd-paper{font-style:normal;font-size:10.5px;padding:1px 6px;border-radius:99px;background:var(--bd-s3);color:var(--bd-mut)}.bd-mut{color:var(--bd-mut)}
+.bd-paper{font-style:normal;font-size:10.5px;padding:1px 6px;border-radius:99px;background:var(--bd-s3);color:var(--bd-mut)}.bd-real{font-style:normal;font-size:10.5px;padding:1px 6px;border-radius:99px;background:color-mix(in srgb,var(--bd-acc) 14%,transparent);color:var(--ink,inherit);font-weight:700;white-space:nowrap}.bd-doubt{display:block;font-style:normal;font-size:12px;color:var(--bd-warn);margin-top:2px}.bd-mut{color:var(--bd-mut)}
 .bd-pic{min-height:28px;padding:0 10px;border-radius:8px;border:1px solid color-mix(in srgb,var(--bd-acc) 45%,transparent);background:color-mix(in srgb,var(--bd-acc) 10%,transparent);color:var(--ink,inherit);font:600 12px var(--sans,system-ui);cursor:zoom-in}
 .bd-note{margin:6px 0 0;font-size:12.5px;line-height:1.45;color:var(--bd-ink2)}.bd-src{margin:6px 2px 0;font-size:11.5px;color:var(--bd-mut);line-height:1.4}
 .bd-wrap .up{color:var(--bd-good)}.bd-wrap .dn{color:var(--bd-bad)}

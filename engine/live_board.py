@@ -327,7 +327,107 @@ def lit_now(pc: dict, accounts, now: int, brain: dict | None = None) -> dict:
     if out["trades_today"] >= P["max_day"] and not out["position"]:
         out["done_today"] = True
     out["blocks"] = blocks
+    # the real-account ledger the Today cards check (2026-10-28): the eval's booked days, its anchor and the last orders
+    out["eval_start"] = ev.get("start")
+    out["anchor"] = ev.get("anchor") if isinstance(ev.get("anchor"), dict) else None
+    out["prior"] = _f(ev.get("prior"))
+    out["days"] = [[str(d[0]), _r(d[1], 2)] for d in _l(a.get("days")) if isinstance(d, (list, tuple)) and len(d) >= 2][-30:]
+    out["orders"] = _orders(a.get("orders"))
     return out
+
+
+def _orders(rows, n: int = 20) -> list:
+    """The last orders of an account, compact: refused ones carry NinjaTrader's (or the bot's) reason."""
+    out = []
+    for o in _l(rows)[-n:]:
+        o = _d(o)
+        if not o.get("side"):
+            continue
+        r = {"t": _i(o.get("t")), "side": o.get("side"), "qty": _i(o.get("qty")), "entry_t": _i(o.get("entry_t")),
+             "ok": o.get("ok") if isinstance(o.get("ok"), bool) else (_d(o.get("result")).get("ok") if isinstance(o.get("result"), dict) else None),
+             "reason": _clean(o.get("reason"), 30) if o.get("reason") else None, "pnl": _r(o.get("pnl"), 2),
+             "error": _clean(o.get("error") or _d(o.get("result")).get("error"), 200) if (o.get("error") or _d(o.get("result")).get("error")) else None,
+             "src": o.get("src") or o.get("strategy")}
+        out.append({k: v for k, v in r.items() if v is not None})
+    return out
+
+
+def ledger_check(lit: dict, atlas: dict, real_rows: list, now: int | None = None) -> list:
+    """Days the eval books $ on with no real trade listed (2026-10-28: a -$965.20 day of refused orders made a fake
+    'eval near the floor: $140 left'). Each flag says how big it is and the room if it is a ledger error. Reports only."""
+    out = []
+    lit = _d(lit)
+    days_traded = {str(r.get("day")) for r in _l(real_rows) if _d(r).get("acct") == "lit"}
+    anc = _d(lit.get("anchor"))
+    after = str(anc.get("as_of") or lit.get("eval_start") or "")
+    for d, v in _l(lit.get("days")):
+        if d == "0000-00-00" or (after and d <= after) or v is None or abs(v) < 1 or d in days_traded:
+            continue
+        room = _f(lit.get("room"))
+        mll = _f(lit.get("mll"), PLANS["lit"]["mll"])
+        alt = None if room is None else round(min(mll, room - v) if v < 0 else max(0.0, room - v), 2)
+        out.append({"acct": "lit", "day": d, "usd": v, "room_if_error": alt,
+                    "text": f"Zlarior's eval books {_money(v, sign=True)} on {d} but no real trade is listed that day. "
+                            f"If NinjaTrader filled nothing that day this is a ledger error: room would be about {_money(alt)}, not "
+                            f"{_money(room)}. Check the balance on the MFFU dashboard."})
+    at = _d(atlas)
+    today = [r for r in _l(real_rows) if _d(r).get("acct") == "atlas" and not r.get("open") and r.get("usd") is not None
+             and str(r.get("day")) == trading_day(int(now or time.time()))]
+    if today and at.get("today_pnl") is not None and abs(sum(float(r["usd"]) for r in today) - float(at["today_pnl"])) >= 1:
+        s = sum(float(r["usd"]) for r in today)
+        out.append({"acct": "atlas", "day": today[0]["day"], "usd": round(float(at["today_pnl"]) - s, 2),
+                    "text": f"ATLAS books {_money(at['today_pnl'], sign=True)} today but its real trades add up to {_money(s, sign=True)}."})
+    return out
+
+
+def real_block(lit: dict, atlas: dict, trades_all: list, band: dict | None = None, now: int | None = None) -> dict:
+    """Real (live account) trades only, the ledger check and Zlarior's backtest cone (2026 H2, eval sizing)."""
+    rows = [r for r in _l(trades_all) if _d(r).get("src") == "live"]
+    out = {"trades": rows, "checks": ledger_check(lit, atlas, rows, now)}
+    try:
+        from . import health_band as HB
+        b = band if band is not None else HB.load()
+        Bn = _d(_d(_d(b).get("bands")).get("H2"))
+        if Bn.get("usd_eval"):
+            n = max(15, (_i(_d(lit).get("session"), 0) or 0) + 5)
+            out["cone"] = {**HB.cone(Bn, n, "usd_eval"), "src": f"2026 H2 backtest bootstrap ({Bn.get('from')} to {Bn.get('to')}), eval sizing"}
+    except Exception:
+        pass
+    return out
+
+
+def real_week(prog: dict | None, real_rows, lit: dict, atlas: dict) -> dict:
+    """2026-10-28: once an account trades for real, its week strip counts REAL trades and real $ (the paper members'
+    trades and $, e.g. a +$3,879 paper MACD trade at 7 micros, are not the account's). Edits prog in place; returns
+    which accounts switched."""
+    done = {}
+    P = _d(prog)
+    for key, acc in (("lit", lit), ("atlas", atlas)):
+        k = _d(P.get(key))
+        wk = _d(k.get("week"))
+        start = str(_d(acc).get("eval_start") or "")
+        if not wk or not start or not _d(acc).get("badge"):
+            continue
+        rows = [r for r in _l(real_rows) if _d(r).get("acct") == key and _d(r).get("src", "live") == "live"]
+        days = _l(wk.get("days"))
+        if not days:
+            continue
+        n_tot, usd_tot = 0, 0.0
+        for d in days:
+            if not isinstance(d, dict):
+                continue
+            mine = [r for r in rows if str(r.get("day")) == str(d.get("day"))]
+            d["n"] = len(mine)
+            d["usd"] = round(sum(float(r.get("usd") or 0) for r in mine if not r.get("open")), 2)
+            n_tot += d["n"]
+            usd_tot += d["usd"]
+        lo, hi = _i(wk.get("lo"), 2), _i(wk.get("hi"), 4)
+        wk.update(n=n_tot, usd=round(usd_tot, 2), src="real",
+                  status="met" if lo <= n_tot <= hi else "over" if n_tot > hi else "on_pace",
+                  sentence=f"{'Zlarior' if key == 'lit' else 'ATLAS'}: {n_tot} real trade{'' if n_tot == 1 else 's'} this week "
+                           f"({_money(usd_tot, sign=True)}), goal {lo}-{hi}.")
+        done[key] = n_tot
+    return done
 
 
 def _member_line(k: str, s: dict, now: int) -> dict:
@@ -357,7 +457,8 @@ def atlas_now(pc: dict, now: int, second: dict | None = None) -> dict:
            "profit": _f(ev.get("profit")), "today_pnl": _f(ab.get("day_pnl"), _f(ev.get("today"))),
            "status": ev.get("status") or ("not set up" if not ab else "open"), "session": _i(ev.get("session")), "sessions": SESSIONS_GOAL,
            "dll": _f(ev.get("dll"), P["dll"]), "max_day": P["max_day"], "trades_today": _i(ab.get("entries_today"), 0),
-           "max_micros": _i(ev.get("max_micros"), P["max_micros"]), "members": members}
+           "max_micros": _i(ev.get("max_micros"), P["max_micros"]), "members": members,
+           "eval_start": ev.get("start"), "orders": _orders(ab.get("routed"))}
     out["room_frac"] = None if room is None else round(max(0.0, min(1.0, room / P["mll"])), 4)
     live_m = [m for m in members if m["stage"] not in (None, "off")]
     nxt = sorted([(m["window"].get("open_t") or 0, m) for m in members if m["window"].get("open_t")], key=lambda x: x[0])
@@ -766,6 +867,8 @@ def build(inp: dict | None, now=None) -> dict:
     part("progress", lambda: progress(inp.get("goals"), lit, atl, inp.get("odds_lit"), inp.get("odds_src") or "", inp.get("atlas_info"),
                                       inp.get("band"), inp.get("lit_expected")))
     part("trades", lambda: trade_log(inp.get("accounts"), second, inp.get("atlas_ledger"), inp.get("cloud_ledger"), int(inp.get("n_trades") or 60)))
+    part("real", lambda: real_block(lit, atl, trade_log(inp.get("accounts"), second, inp.get("atlas_ledger"), None, 400), inp.get("band"), now))
+    part("week_real", lambda: real_week(out.get("progress"), (out.get("real") or {}).get("trades"), lit, atl))
     # one sentence per account for the top of the page, most urgent first
     blocks = out["blocks"] if isinstance(out.get("blocks"), list) else []
     lines = []

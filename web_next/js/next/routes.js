@@ -98,6 +98,7 @@ export const MODULES = [
 
 // PC upgrade 2026-10-25 (js/next/cc.js, engine/pc_cc_api.py, read-only): top-level pages without a sub bar
 export const CC = [
+  { id: 'real', label: 'Real results', icon: 'results', desc: 'Real money only (both MFFU accounts, never the paper run): running P&L, win rate, streaks, R distribution, $ by strategy, this week, incidents, live vs the backtest band, CSV' },
   { id: 'board', label: 'Live board', icon: 'radar', desc: 'Right now on both accounts (waiting for, next window, size now, what blocks entries), today\'s map, bot health, week and eval odds, every trade with its picture + CSV' },
   { id: 'start', label: 'Start & Accounts', icon: 'power', desc: 'START BOT as one checklist (NinjaTrader, accounts, setup, Sim test, arm, running) and every account: add, balance, funded, remove' },
   { id: 'goals', label: 'Goals', icon: 'target', desc: 'Eval progress per account, 2-4 trades a week, the ATLAS 20-trade scorecard, payout and scale' },
@@ -115,15 +116,15 @@ export const CC = [
 // NAV_NAMES only renames the sidebar entry (the page title stays TITLES[id]).
 // 2026-10-25 PM: Home · Zlarior · ATLAS · Results · All tools; the pages each bot page holds are in BOTS (not repeated here).
 export const GROUPS = [
-  { label: 'Main', ids: ['cc', 'start', 'zlarior', 'atlas', 'data', 'modules'] },
+  { label: 'Main', ids: ['cc', 'start', 'zlarior', 'atlas', 'real', 'modules'] },   // 2026-10-28: Real results in, the backtest page under Advanced > Results
   { label: 'Advanced', advanced: true, sections: [
     { label: 'Accounts', ids: ['board', 'goals', 'sesscal'] },
     { label: 'Bot', ids: ['morning', 'ntpanel', 'botlog', 'timeline'] },
-    { label: 'Results', ids: ['scale', 'lab', 'intel'] },
+    { label: 'Results', ids: ['data', 'scale', 'lab', 'intel'] },
     { label: 'Help', ids: ['runbook', 'audit', 'features', 'archive'] },
   ] },
 ];
-export const NAV_NAMES = { cc: 'Home', start: 'Start', data: 'Results', modules: 'All tools', command: 'Today (classic)', archive: 'Archive (old engine)' };
+export const NAV_NAMES = { cc: 'Home', start: 'Start', real: 'Real results', data: 'Backtest & research', modules: 'All tools', command: 'Today (classic)', archive: 'Archive (old engine)' };
 
 // The two bot pages (2026-10-25 PM): a segmented control on top picks the section; a section with several pages shows
 // them as chips. "atlas:brain" = the one ATLAS page showing one part (second.js atlasPart). Each page belongs to one bot.
@@ -149,12 +150,25 @@ export const BOT_CHIP = { botctl: 'Bot control', accounts: '50K account', evalhq
 export const botOf = (id) => Object.keys(BOTS).find((b) => BOTS[b].segs.some((s) => s[1].some((it) => it.split(':')[0] === id))) || null;
 export const groupIds = (g) => g.ids || (g.sections || []).flatMap((s) => s.ids);
 // phone tab bar (the PC sidebar shows the groups)
-export const TABS = ['cc', 'zlarior', 'atlas', 'data', 'modules'];
+// 2026-10-28: 'real' (Real results, js/next/real.js) in Main; the backtest 'data' page is named "Backtest & research"
+export const TABS = ['cc', 'zlarior', 'atlas', 'real', 'modules'];   // 2026-10-28: Real results replaces the backtest Results tab
 
-export const TITLES = { cc: 'Command center', zlarior: 'Zlarior', data: 'Results', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'All tools', settings: 'Settings' };
+export const TITLES = { cc: 'Home', zlarior: 'Zlarior', data: 'Backtest & research', command: 'Today', brain: 'Bot Brain', atlas: 'ATLAS · strategy 2 (25K)', botctl: 'Bot Control', accounts: 'Accounts', chart: 'Chart', trades: 'Trades', modules: 'All tools', settings: 'Settings' };
 for (const p of [...DATA, ...MODULES, ...CC]) TITLES[p.id] = p.label;
 for (const p of ARCHIVE) TITLES[p.id] = p.label + ' · archive';
 TITLES.learnlit = 'Zlarior · Learning';
 TITLES.learnatlas = 'ATLAS · Learning';
 
 export const groupOf = (id) => id === 'zlarior' ? 'zlarior' : botOf(id) ? botOf(id) : DATA.some(p => p.id === id) ? 'data' : MODULES.some(p => p.id === id) ? 'modules' : ARCHIVE.some(p => p.id === id) ? 'archive' : id;
+
+// AI Insights (js/next/insight.js, engine/insight_api.py; read-only): one entry under the main nav
+export const INSIGHT = { id: 'insight', label: 'AI Insights', icon: 'brain', desc: 'Setup radar, next entry window, live vs backtest, drift alarm, setup grade, similar trades, market regime, LIT levels, ATLAS members, Strategy 3' };
+CC.push(INSIGHT);
+TITLES.insight = INSIGHT.label;
+GROUPS.find((g) => g.label === 'Main')?.ids?.push('insight');
+
+// Live View (js/next/liveview.js, engine/liveview_api.py; read-only): the big white full-screen chart, right after Home
+export const LIVEVIEW = { id: 'liveview', label: 'Live View', icon: 'chart', desc: 'One big full-screen chart on white: Zlarior (blue), ATLAS (orange), Strategy 3 (purple) overlays with a switch each, what each bot is thinking, and the bot\'s running feed' };
+CC.push(LIVEVIEW);
+TITLES.liveview = LIVEVIEW.label;
+{ const g = GROUPS.find((x) => x.label === 'Main'); if (g?.ids && !g.ids.includes('liveview')) g.ids.splice(Math.max(0, g.ids.indexOf('cc') + 1), 0, 'liveview'); }

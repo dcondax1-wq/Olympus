@@ -353,7 +353,7 @@ def static_checks():
     app, html, routes, cc = rd("web_next/js/app.js"), rd("web_next/index.html"), rd("web_next/js/next/routes.js"), rd("web_next/js/next/cc.js")
     check("k. PC: page registered, section in index.html, title in routes", "board: boardPage" in app and 'id="page-board"' in html and "{ id: 'board', label: 'Live board'" in routes)
     check("k. PC sidebar: Main untouched (6 items), the board under Advanced > Accounts", "{ label: 'Accounts', ids: ['board', 'goals', 'sesscal'] }" in routes
-          and "{ label: 'Main', ids: ['cc', 'start', 'zlarior', 'atlas', 'data', 'modules'] }" in routes)
+          and "{ label: 'Main', ids: ['cc', 'start', 'zlarior', 'atlas', 'real', 'modules'] }" in routes)   # 2026-10-28: Real results
     check("k. PC Command center: 'Right now' slot + fillBoardHome after each render", 'id="ccBoard"' in cc and "fillBoardHome().catch" in cc and "import { fillBoardHome }" in cc)
     check("k. data.json / home.json carry the board (build_web_dashboard)", 'data["board"] = _lb.site_block(data, st)' in rd("tools/build_web_dashboard.py")
           and '"board": {**data["board"]' in rd("tools/build_web_dashboard.py"))
