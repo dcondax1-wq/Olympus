@@ -28,13 +28,53 @@ PICKS = {
     "na_scalp": {"fam": "na", "tf": 1, "maxday": 6, "day_stop": 3.0,
                  "p": {"vm": 1.0, "every": 30, "stop": "a5x1.5", "trail": 1.5, "trail_start": 1.0, "win": [630, 930], "hold_min": 30},
                  "title": "Noise-area momentum scalp (1m, checked every 30 min, 10:30-15:30, 30-min max hold)"},
+    "disp_5m": {"fam": "disp", "tf": 5, "maxday": 6, "day_stop": 3.0,
+                "p": {"k": 1.75, "q": 0.25, "entry": "mkt", "win": [570, 930], "rr": 2.0, "trend": "none", "hold_min": 60},
+                "title": "5m displacement-candle continuation (body > 1.75 ATR, close in the outer quarter, 2R, 60-min max hold)"},
+    "trendday_1m": {"fam": "tday", "tf": 1, "maxday": 6, "day_stop": 3.0,
+                    "p": {"k": 1.2, "q": 0.35, "sub": {"kind": "nbar", "n_min": 24, "sb_min": 6}, "trail": 0.5, "trail_start": 0.5, "hold_min": 60},
+                    "title": "Trend-day add-on scalps (wide first hour closing at its edge, then 24-min breakouts with it, 0.5R trail)"},
 }
-SIZES = {"25k": [(f, c) for f in (0.2, 0.3, 0.4, 0.5) for c in (200.0, 300.0, 400.0, 600.0)],
-         "50k": [(f, c) for f in (0.2, 0.3, 0.4) for c in (400.0, 600.0, 800.0, 1200.0)]}
+COMBO = ("na_scalp", "disp_5m", "trendday_1m")
+PICKS["combo"] = {"fam": "combo", "tf": 1, "maxday": 6, "day_stop": 3.0, "p": {"parts": list(COMBO)},
+                  "title": "The three picks on one account (one position, max 6 a day, 3R daily stop)"}
+SIZES = {"25k": [(f, c) for f in (0.2, 0.3, 0.4, 0.6) for c in (200.0, 300.0, 400.0, 600.0)],
+         "50k": [(f, c) for f in (0.2, 0.3, 0.4, 0.6) for c in (400.0, 600.0, 800.0, 1200.0)]}
 FIXED = {"25k": 150.0, "50k": 300.0}
+FSIZES = {"25k": [(f, c) for f in (0.2, 0.3, 0.45) for c in (150.0, 300.0, 450.0)],
+          "50k": [(f, c) for f in (0.2, 0.3, 0.45) for c in (300.0, 600.0, 900.0)]}
+
+
+def combo_trades(names=COMBO, tf2026=None, maxday=6, day_stop=3.0):
+    """The picks on ONE account: every pick's trades in entry order, one position at a time (a trade that starts before the
+    previous one ended is skipped), max trades a day and the daily stop in R over all of them. 2026 on each pick's own
+    timeframe, 2021-25 all on 5m."""
+    allT = []
+    for n in names:
+        for tf in sorted({PICKS[n]["tf"], 5}):
+            B, T = trades(n, tf)
+            for t in T:
+                keep = True if PICKS[n]["tf"] == 5 else ((t["day"] >= "2026-01-01") == (tf == 1))
+                if keep:
+                    allT.append({**t, "src": n})
+    allT.sort(key=lambda t: (t["entry_t"], names.index(t["src"])))
+    out, busy, day, dn, dR = [], 0, None, 0, 0.0
+    for t in allT:
+        if t["day"] != day:
+            day, dn, dR = t["day"], 0, 0.0
+        if t["entry_t"] < busy or dn >= maxday or dR <= -day_stop:
+            continue
+        out.append(t)
+        busy = t["exit_t"]
+        dn += 1
+        dR += t["pnl_pm"] / t["risk_pm"]
+    return out
 
 
 def trades(name, tf=None):
+    if name == "combo":
+        T = combo_trades()
+        return L.bars(1 if (tf or 1) == 1 else 5), [t for t in T if (t["day"] >= "2026-01-01") == ((tf or 1) == 1)]
     P = PICKS[name]
     tf = tf or P["tf"]
     B = L.bars(tf)
@@ -43,6 +83,8 @@ def trades(name, tf=None):
 
 
 def placebo(name, seeds=60):
+    if name == "combo":
+        return None
     P = PICKS[name]
     out = {}
     for tf, spans in ((P["tf"], ("H1", "H2")), (5, ("R",))):
@@ -80,27 +122,33 @@ def report(name):
     for sp, (B, T) in (("H1", (B1, T1)), ("H2", (B1, T1)), ("R", (B5, T5)), ("2025", (B5, T5)), ("2021-24", (B5, T5))):
         Ss = L.sessions(B, sp)
         row = {"fixed25": L.stats(T, Ss, FIXED["25k"], 20), "fixed50": L.stats(T, Ss, FIXED["50k"], 40)}
+        Ts = [t for t in T if Ss[0] <= t["day"] <= Ss[-1]]
         for plan in ("25k", "50k"):
             row["eval_" + plan] = evals(T, B, sp, plan)
+            row["fund_" + plan] = {f"{f}_{int(c)}": L.funded_score(Ts, Ss, plan, f, c) for f, c in FSIZES[plan]}
         lines[sp] = row
     # the eval size: picked on H1 by 2-week pass minus 2-week fail, then the H1 path $ as a tie-break
     for plan in ("25k", "50k"):
         E = lines["H1"]["eval_" + plan]
         best = max(E, key=lambda k: (E[k]["p10"] - E[k]["f10"], E[k]["path_net"]))
         res["size_" + plan] = best
+        Fh = lines["H1"]["fund_" + plan]
+        res["fsize_" + plan] = max(Fh, key=lambda k: (Fh[k].get("fund_pm", -1e9), -Fh[k].get("fund_lost", 100)))
     res["lines"] = lines
     return res, (B1, T1, B5, T5)
 
 
-def fmt_row(sp, r, plan, size):
+def fmt_row(sp, r, plan, size, fsize=None):
     s = r["fixed25" if plan == "25k" else "fixed50"]
     e = r["eval_" + plan][size]
+    fd = r["fund_" + plan].get(fsize, {}) if fsize else {}
     if not s.get("n"):
         return f"  {sp:7} no trades"
     return (f"  {sp:7} {s['tpw']:5}/wk win {s['win']:4}% avgR {s['avg_r']:6} PF {s['pf']:4} net ${s['net']:>7} ${s['per_month']:>5}/mo "
             f"DD ${s['dd']:>6} cost {s['cost_share']:5}% | eval {plan} {size}: p10 {e['p10']:4} f10 {e['f10']:4} dec10 {e['dec10']:4} "
             f"p15 {e['p15']:4} f15 {e['f15']:4} med {e['pass_med']} slow {e['slow_pass']} path ${e['path_net']:>6} (${e['path_pm']}/mo, "
-            f"{e['b2b']} P/F, fees ${e['fees']:.0f}, net-fees ${e['path_net_less_fees']}) qty {e['med_qty']}")
+            f"{e['b2b']} P/F, fees ${e['fees']:.0f}, net-fees ${e['path_net_less_fees']}) qty {e['med_qty']} passes/mo {e['passes_pm']}"
+            f" | funded {fsize}: ${fd.get('fund_pm')}/mo to owner, {fd.get('fund_pay_pm')} payouts/mo, lost {fd.get('fund_lost')}% stuck {fd.get('fund_stuck')}%")
 
 
 def main(save=False, names=None):
@@ -112,10 +160,12 @@ def main(save=False, names=None):
         print(f"== {name}: {PICKS[name]['title']}\n   {json.dumps(PICKS[name]['p'])} maxday {PICKS[name]['maxday']} day_stop {PICKS[name]['day_stop']}R")
         for plan in ("25k", "50k"):
             for sp in ("H1", "H2", "R", "2025", "2021-24"):
-                print(fmt_row(sp, res["lines"][sp], plan, res["size_" + plan]))
+                print(fmt_row(sp, res["lines"][sp], plan, res["size_" + plan], res["fsize_" + plan]))
         print("   placebo (random direction, same bars):", res["placebo"])
         if save:
             store(name, res, T1, T5)
+    if save:
+        print("best trades:", best_trades("na_scalp"))
     json.dump(allres, open(os.path.join(OUT, "mo_picks.json"), "w"), indent=1, default=float)
     return allres
 
@@ -151,10 +201,10 @@ def best_trades(name):
     et = ZoneInfo("America/New_York")
     f = lambda x: dt.datetime.fromtimestamp(x, et).strftime("%Y-%m-%d %H:%M")
     rows = [{"entry_t": f(t["entry_t"]), "exit_t": f(t["exit_t"]), "dir": "long" if t["dir"] > 0 else "short", "entry": t["entry"],
-             "stop": t["stop"], "target": round(t["target"], 2), "exit": t["exit"], "exit_kind": t["exit_kind"], "pts": t["pts"],
+             "stop": round(t["stop"], 2), "target": None if P["p"].get("trail") else round(t["target"], 2), "exit": t["exit"], "exit_kind": t["exit_kind"], "pts": t["pts"],
              "risk_pts": t["risk_pts"], "r": round(t["pnl_pm"] / t["risk_pm"], 3)} for t in T]
     json.dump({"name": name, "title": P["title"], "rule": P["p"], "maxday": P["maxday"], "day_stop_r": P["day_stop"], "tf": f"{P['tf']}m",
-               "note": "entry/exit_t ET = bar open time of the fill bar / end of the exit bar; prices include 1 tick slippage on market and "
+               "note": "target null = no fixed target (trail 1.5R behind the best price after +1R, 30-min time exit); entry/exit_t ET = bar open time of the fill bar / end of the exit bar; prices include 1 tick slippage on market and "
                        "stop fills; target = limit (traded through by 1 tick). $ = pts x $2 x micros - $1.90 a micro.",
                "trades": rows}, open(os.path.join(OUT, "mo_best_trades.json"), "w"), indent=0)
     return len(rows)

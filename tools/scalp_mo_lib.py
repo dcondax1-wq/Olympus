@@ -416,10 +416,13 @@ def _qty(t, room, day_pnl, P, f, cap):
     budget = min(cap, f * room, 0.9 * dll_left)
     if budget <= 0:
         return 0
-    return int(min(P["maxq"], budget // t["risk_pm"]))
+    q = int(min(P["maxq"], budget // t["risk_pm"]))
+    if q == 0 and t["risk_pm"] <= min(0.5 * room, 0.9 * dll_left):
+        q = 1          # a wide-stop trade still gets 1 micro while it fits half the room and the soft daily loss
+    return q
 
 
-def run_eval(days, by, P, f, cap, horizon=20, keep=None):
+def run_eval(days, by, P, f, cap, horizon=20, keep=None, stuck=60.0):
     bal = peak = 0.0
     floor = -P["mll"]
     for kk, d in enumerate(days[:horizon]):
@@ -445,7 +448,7 @@ def run_eval(days, by, P, f, cap, horizon=20, keep=None):
             return "FAIL", kk + 1
         peak = max(peak, bal)
         floor = min(max(floor, peak - P["mll"]), P["lock"])
-        if bal - floor < 60:
+        if bal - floor < stuck:
             return "STUCK", kk + 1
     return "OPEN", min(len(days), horizon)
 
@@ -455,7 +458,9 @@ def eval_score(T, S, plan="25k", f=0.25, cap=300.0):
     by = collections.defaultdict(list)
     for t in T:
         by[t["day"]].append(t)
-    res = [(run_eval(S[i:i + 20], by, P, f, cap), len(S) - i) for i in range(len(S))]
+    # stuck: the room no longer fits 2 x the strategy's median stop-out (1 micro), the account is dead (buy a new one)
+    stuck = 2.0 * float(np.median([t["risk_pm"] for t in T])) if T else 60.0
+    res = [(run_eval(S[i:i + 20], by, P, f, cap, stuck=stuck), len(S) - i) for i in range(len(S))]
     o = {}
     for H in (10, 15, 20):
         R = [r for r, av in res if av >= H]
@@ -469,7 +474,7 @@ def eval_score(T, S, plan="25k", f=0.25, cap=300.0):
     # back-to-back path: a new eval after each pass / fail (no reset), $ of every trade on the path
     k, K, n = 0, [], collections.Counter()
     while k < len(S):
-        r, used = run_eval(S[k:], by, P, f, cap, len(S) - k, keep=K)
+        r, used = run_eval(S[k:], by, P, f, cap, len(S) - k, keep=K, stuck=stuck)
         n[r] += 1
         if r == "OPEN":
             break
@@ -509,3 +514,72 @@ def runlib_trades(T, qty_usd=100.0, maxq=20):
                     "half": 0, "exit": t["exit_kind"], "trigger": t.get("trigger", ""), "mfe": None, "mae": t["mae_pts"],
                     "bars_held": t["bars"], "regime": None, "mult": 1.0, "low": q * t["mae_pm"]})
     return out
+
+
+# ================================================================================================ funded (after a pass)
+FUNDED = {"25k": {"mll": 1000.0, "lock": 100.0, "dll": 600.0, "buffer": 1100.0, "pay_min": 250.0, "pay_max": 1000.0, "split": 0.8,
+                  "cons": 0.5, "cycle_days": 2, "first_wait": 2, "max_payouts": 5, "maxq": 20},
+          "50k": {"mll": 2000.0, "lock": 100.0, "dll": 1000.0, "buffer": 2100.0, "pay_min": 500.0, "pay_max": 2000.0, "split": 0.8,
+                  "cons": 0.5, "cycle_days": 2, "first_wait": 2, "max_payouts": 5, "maxq": 40}}
+
+
+def run_funded(days, by, plan, f, cap, stuck):
+    """MFFU Builder sim-funded account (research/lit/mffu_rules.json limits, as tools/second_account_b.run_funded): EOD trailing
+    max loss to start + $100, payouts of bal - buffer ($min..$max, 80%) after 2 traded days a cycle and the 50% best-day rule,
+    5 payouts. Size = f x room (cap, soft daily loss left). Returns $ to the owner, payouts, lost / stuck day."""
+    F = FUNDED[plan]
+    P = {"dll": F["dll"], "maxq": F["maxq"]}
+    bal = peak = 0.0
+    floor = -F["mll"]
+    paid, n_pay, last_bal, cyc = 0.0, 0, 0.0, []
+    for k, d in enumerate(days):
+        dp = 0.0
+        traded = False
+        for t in by.get(d, ()):
+            room = bal + dp - floor
+            q = _qty(t, room, dp, P, f, cap)
+            if q <= 0:
+                continue
+            if bal + dp + q * t["mae_pm"] <= floor:
+                return {"paid": paid, "n": n_pay, "lost": k + 1}
+            dp += q * t["pnl_pm"]; traded = True
+            if dp <= -F["dll"]:
+                break
+        bal += dp
+        if bal <= floor:
+            return {"paid": paid, "n": n_pay, "lost": k + 1}
+        peak = max(peak, bal)
+        floor = min(max(floor, peak - F["mll"]), F["lock"])
+        if bal - floor < stuck:
+            return {"paid": paid, "n": n_pay, "lost": None, "stuck": k + 1}
+        if traded:
+            cyc.append(dp)
+        if k + 1 < F["first_wait"] or len(cyc) < F["cycle_days"]:
+            continue
+        prof = bal - last_bal
+        if prof <= 0 or max(cyc) > F["cons"] * prof:
+            continue
+        amt = min(bal - F["buffer"], F["pay_max"])
+        if amt < F["pay_min"]:
+            continue
+        paid += amt * F["split"]; n_pay += 1; bal -= amt; last_bal, cyc = bal, []
+        if n_pay >= F["max_payouts"]:
+            break
+    return {"paid": paid, "n": n_pay, "lost": None}
+
+
+def funded_score(T, S, plan="25k", f=0.3, cap=300.0, horizon=63, step=3):
+    by = collections.defaultdict(list)
+    for t in T:
+        by[t["day"]].append(t)
+    stuck = 2.0 * float(np.median([t["risk_pm"] for t in T])) if T else 60.0
+    starts = [i for i in range(0, len(S), step) if i + horizon <= len(S)]
+    if not starts:      # short span (2026 halves): every start, the account runs to the end of the span (scaled per month)
+        starts = list(range(0, max(1, len(S) - 21), step))
+    R = [(run_funded(S[i:i + horizon], by, plan, f, cap, stuck), min(horizon, len(S) - i)) for i in starts]
+    if not R:
+        return {}
+    pm = [r["paid"] / (n / 21.0) for r, n in R]
+    return {"fund_pm": round(float(np.mean(pm))), "fund_pay_pm": round(float(np.mean([r["n"] / (n / 21.0) for r, n in R])), 2),
+            "fund_lost": round(100.0 * sum(1 for r, _ in R if r["lost"]) / len(R), 1),
+            "fund_stuck": round(100.0 * sum(1 for r, _ in R if r.get("stuck")) / len(R), 1), "fund_starts": len(R)}
