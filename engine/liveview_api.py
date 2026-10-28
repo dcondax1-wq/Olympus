@@ -11,8 +11,11 @@ a switch where I can see exactly what the bots are thinking").
                                                (stage, plain sentence, checklist, distance to the trigger, window countdown)
                                         atlas  ATLAS: EMA 21 / 50 on 5m, each member's stage + checks (MACD sweep state, S/R
                                                levels), paper plans (no size), the REAL account B / routed position
-                                        scalp  Strategy 3 (research): placeholder layer, filled by any second_model.json member
-                                               whose key starts with "scalp"
+                                        scalp  Strategy 3 = BLITZ, the scalper PAPER shadow (engine/blitz.py, LiveBot.blitz):
+                                               today's noise band (next check's lines + every check as "band"), its signals,
+                                               the paper position and trades (simulated 25K eval micros, labelled PAPER);
+                                               also any second_model.json member whose key starts with "scalp"; a placeholder
+                                               before either runs
                                       + the narrator's feed (engine/narrator.py, last 100 messages)
   GET /api/next/liveview/feed?after=  just the feed (newest first), for the ticker
 
@@ -424,6 +427,78 @@ def atlas_layer(bot, now: int, hist5, t0: int, price) -> dict:
                                                  "runs as a paper strategy; nothing is traded."}}
 
 
+# ---------------------------------------------------------------------------------------------- BLITZ (strategy 3, PAPER)
+def blitz_layer(bot, now: int, price) -> dict | None:
+    """The purple layer from the BLITZ scalper PAPER shadow (engine/blitz.py, LiveBot.blitz): today's noise band (09:30 open
+    +/- sigma at each check; the next check's lines), its signals, the paper position (paper eval micros, labelled PAPER)
+    and its paper trades. None when BLITZ has not run. Never routed: nothing here has a real size."""
+    S = getattr(bot, "blitz", None)
+    if not isinstance(S, dict) or not (S.get("eng") or S.get("error")):
+        return None
+    from . import blitz as BZ
+    if not S.get("eng"):
+        return {"error": str(S.get("error"))[:200], "members": [{"key": "blitz", "short": "BLITZ", "stage": "error", "text": str(S.get("error"))[:200]}]}
+    c = BZ.compact(S, n=40)
+    day = BZ.et_date(now)
+    st = c.get("state") or {}
+    lines, marks, signals, band = [], [], [], None
+    b = c.get("band") or {}
+    if b.get("o0") is not None and b.get("date") == day:
+        rows = [r for r in b.get("checks") or [] if r.get("up") is not None]
+        band = [[int(r["t"]), r["up"], r["lo"]] for r in rows]
+        nxt = next((r for r in rows if int(r["t"]) > now), rows[-1] if rows else None)
+        if nxt:
+            lines += [{"id": "blz_up", "label": f"BLITZ band {N.px(nxt['up'])} · {nxt['hm']} close above = PAPER LONG", "price": _f(nxt["up"]),
+                       "style": "dash"},
+                      {"id": "blz_lo", "label": f"BLITZ band {N.px(nxt['lo'])} · {nxt['hm']} close below = PAPER SHORT", "price": _f(nxt["lo"]),
+                       "style": "dash"}]
+        lines.append({"id": "blz_o0", "label": f"BLITZ 09:30 open {N.px(b['o0'])}", "price": _f(b["o0"]), "style": "dot"})
+    for x in c.get("signals") or []:
+        side = N.side_word(x.get("dir"))
+        txt = (f"PAPER signal {side}: close {N.px(x.get('close'))} beyond the band {N.px(x.get('band'))}"
+               + ("" if x.get("taken") else f" · not taken ({x.get('why')})"))
+        signals.append({"t": int(x["t"]), "close_t": x.get("close_t"), "side": side, "dir": x.get("dir"), "price": _f(x.get("close")),
+                        "band": _f(x.get("band")), "taken": bool(x.get("taken")), "text": txt})
+        marks.append({"t": int(x["t"]), "kind": "signal", "side": side, "price": _f(x.get("close")), "status": "taken" if x.get("taken") else "skipped",
+                      "text": txt})
+    for r in c.get("today") or []:
+        q = int(r.get("qty") or 0)
+        marks.append({"t": int(r["entry_t"]), "kind": "entry", "side": "buy" if int(r["dir"]) > 0 else "sell", "qty": q or None,
+                      "price": _f(r.get("entry")), "paper": True, "text": "PAPER" + ("" if q else f" (no eval size: {r.get('skip')})")})
+        if r.get("exit_t") and r.get("exit_kind") not in (None, "OPEN"):
+            marks.append({"t": int(r["exit_t"]) - 60, "kind": "exit", "side": r.get("side"), "qty": q or None, "price": _f(r.get("exit")),
+                          "pnl": _f(r.get("usd")), "paper": True, "text": f"PAPER {str(r['exit_kind']).upper()}"})
+    pos = None
+    op = c.get("open")
+    if op and op.get("entry") is not None:
+        d = int(op.get("dir") or 1)
+        q = int(op.get("qty") or 0)
+        entry, stop = _f(op.get("entry")), _f(op.get("stop_now") or op.get("stop"))
+        u = (lambda p_: round((float(p_) - entry) * d * PV * q, 0) if (q and p_ is not None) else None)
+        pos = {"side": N.side_word(d), "dir": d, "qty": q or None, "entry": entry, "stop": stop, "stop0": _f(op.get("stop")), "target": None,
+               "entry_t": op.get("entry_t"), "time_exit_t": op.get("time_exit_t"), "paper": True, "best": _f(op.get("best")),
+               "unrealized_usd": u(price) if price is not None else None, "label": "PAPER (simulated 25K eval micros, never routed)"}
+        us = u(stop) if stop is not None else None
+        lines += [{"id": "blz_entry", "label": f"BLITZ PAPER {pos['side']}" + (f" {q} MNQ" if q else "") + f" @ {N.px(entry)}", "price": entry,
+                   "style": "solid", "strong": True, "t0": op.get("entry_t"), "paper": True},
+                  {"id": "blz_stop", "label": f"BLITZ PAPER stop {N.px(stop)}" + (f" · {N.usd(us)} paper" if us is not None else ""),
+                   "price": stop, "style": "solid", "strong": True, "t0": op.get("entry_t"), "paper": True,
+                   "tone": "good" if us is not None and us >= 0 else "bad"}]
+        if stop is not None and pos["stop0"] is not None and stop == pos["stop0"]:
+            one_r = entry + d * abs(entry - pos["stop0"])
+            lines.append({"id": "blz_trail", "label": f"BLITZ trail starts +1R {N.px(one_r)}", "price": _f(one_r), "style": "dot",
+                          "t0": op.get("entry_t"), "paper": True})
+    ev, m = c.get("eval") or {}, c.get("money") or {}
+    ev_txt = (f"Paper eval {ev.get('n')} ({ev.get('plan')}): session {ev.get('session')}, balance ${float(ev.get('balance') or 0):,.0f}, "
+              f"room ${float(ev.get('room') or 0):,.0f}, ${float(ev.get('to_target') or 0):,.0f} to pass · {m.get('n', 0)} paper trades, "
+              f"${float(m.get('usd') or 0):+,.0f} on the paper eval") if ev.get("n") else ""
+    return {"name": "BLITZ", "sub": "scalper · PAPER shadow", "label": BZ.LABEL, "paper": True, "never_routed": True,
+            "members": [{"key": "blitz", "short": "BLITZ", "label": BZ.LABEL, "stage": st.get("stage"), "text": st.get("text"), "paper": True}],
+            "lines": lines, "marks": marks, "signals": signals, "band": band, "position": pos, "eval": ev, "money": m,
+            "trades": c.get("today") or [], "thinking": {"headline": st.get("text"), "stage": st.get("stage"), "eval": ev_txt},
+            "text": "PAPER only: never routed to an account. " + ev_txt, "t": c.get("t")}
+
+
 # ---------------------------------------------------------------------------------------------- the whole view
 def view(bot, tf: str = "1m", now: int | None = None, narr: N.Narrator | None = None, n_feed: int = 100) -> dict:
     now = int(now or _now(bot))
@@ -452,6 +527,15 @@ def view(bot, tf: str = "1m", now: int | None = None, narr: N.Narrator | None = 
         out["strategies"].update(atlas_layer(bot, now, B["hist5"], B["t0"], price))
     except Exception as e:
         out["strategies"]["atlas"] = {"key": "atlas", "name": "ATLAS", "color": COLORS["atlas"], "error": f"{e.__class__.__name__}: {e}"[:200]}
+    try:                                                       # BLITZ (strategy 3) fills the purple layer once it runs (PAPER)
+        bl = blitz_layer(bot, now, price)
+        if bl:
+            sc = out["strategies"].get("scalp") or {"key": "scalp", "color": COLORS["scalp"], "members": []}
+            others = [m for m in sc.get("members") or [] if m.get("key") != "blitz"]
+            out["strategies"]["scalp"] = {**sc, **bl, "key": "scalp", "color": COLORS["scalp"], "placeholder": False,
+                                          "members": bl["members"] + others}
+    except Exception as e:
+        out["strategies"].setdefault("scalp", {"key": "scalp", "color": COLORS["scalp"]})["error"] = f"BLITZ: {e.__class__.__name__}: {e}"[:200]
     out["narrator"] = narr.feed(n_feed)
     out["push_kinds"] = {k: {"label": v[0], "on": on} for (k, v), on in zip(N.KINDS.items(), N.push_prefs().values())}
     return out

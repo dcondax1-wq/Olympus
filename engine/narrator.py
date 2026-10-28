@@ -11,6 +11,8 @@ already keeps, polled after routing:
   accounts._position   the routed position (NinjaTrader leg fill price, the real micros)
   bot.second           the ATLAS paper run (engine/second.py): each member's stage and decision log
   bot.acct_b.info()    account B (ATLAS on its own account): routed entries / exits / refusals with real $
+  bot.blitz            the BLITZ scalper PAPER shadow (engine/blitz.py): its signals, paper entries / exits (simulated 25K
+                       eval micros, labelled PAPER), paper eval ends; kind "blitz", never pushed by default
   bot.health / kill    FEED STALE episodes, the kill switch
   daily summary        once after the 15:55 flat: trades, real $, setups seen / rejected, ATLAS
 
@@ -67,8 +69,9 @@ KINDS = {
     "stage": ("Stage", False),
     "model": ("Model trade (not routed)", False),
     "atlas": ("ATLAS paper", False),
+    "blitz": ("BLITZ paper", False),
 }
-STRATS = {"lit": "Zlarior", "atlas": "ATLAS", "scalp": "Strategy 3", "sys": "Bot"}
+STRATS = {"lit": "Zlarior", "atlas": "ATLAS", "scalp": "BLITZ", "sys": "Bot"}
 EXIT_WORDS = {"TARGET": "hit the target", "STOP": "stopped out", "BE": "breakeven", "TIME": "closed at the 15-minute check",
               "TCHECK": "cut at the 15-minute check", "EOD": "closed 15:55 (flat)", "FLAT": "closed 15:55 (flat)",
               "BANK": "banked at 8R", "KILL": "closed by the kill switch", "KILL SWITCH": "closed by the kill switch",
@@ -342,6 +345,51 @@ def _atlas_msgs(second: dict, day: str, prev_stage: dict) -> tuple[list, dict]:
     return out, stages
 
 
+def _blitz_msgs(S: dict, day: str) -> list:
+    """BLITZ (strategy 3, PAPER shadow, engine/blitz.py): today's signals, paper entries / exits, paper eval ends. Never routed."""
+    out = []
+    if not isinstance(S, dict) or not isinstance(S.get("ledger"), list):
+        return out
+    for x in S.get("signals") or []:
+        if not isinstance(x, dict) or not x.get("t") or trading_day(int(x["t"])) != day:
+            continue
+        sw = side_word(x.get("dir"))
+        word = "above" if _i(x.get("dir")) == 1 else "below"
+        t = int(x.get("close_t") or int(x["t"]) + 60)
+        if x.get("taken"):
+            out.append(msg(f"scalp:blitz:sig:{int(x['t'])}", t, "scalp", "blitz", f"BLITZ PAPER signal · {sw}",
+                           f"1m close {px(x.get('close'))} at {hm(t)} {word} the noise band {px(x.get('band'))}: PAPER {sw} at the next "
+                           f"open, stop {px(x.get('stop'))} (1.5 x 5m ATR). Paper only: nothing is sent to an account.", "info", dir=_i(x.get("dir"))))
+        else:
+            out.append(msg(f"scalp:blitz:sig:{int(x['t'])}", t, "scalp", "blitz", f"BLITZ signal skipped · {sw}",
+                           f"1m close {px(x.get('close'))} {word} the band {px(x.get('band'))}, not taken: {x.get('why')} (paper).", "dim"))
+    for r in S["ledger"]:
+        if not isinstance(r, dict) or not r.get("entry_t") or trading_day(int(r["entry_t"])) != day:
+            continue
+        et_, sw, q = int(r["entry_t"]), side_word(r.get("dir")), _i(r.get("qty")) or 0
+        size = f"{q} MNQ" if q else "no eval size"
+        out.append(msg(f"scalp:blitz:paper:{et_}", et_, "scalp", "blitz", f"BLITZ PAPER entry · {sw} {size}",
+                       f"PAPER {sw} {size} at {px(r.get('entry'))} · stop {px(r.get('stop'))} · trail 1.5R after +1R · out by "
+                       f"{hm(r.get('time_exit_t'))} at the latest" + (f" (simulated 25K eval: {q} micros)" if q else f" ({r.get('skip')})")
+                       + ". Paper only: never sent to an account.", "info", entry_t=et_, dir=_i(r.get("dir")), qty=q or None, paper=True))
+        ek = str(r.get("exit_kind") or "")
+        if ek and ek != "OPEN" and r.get("exit_t"):
+            u = _f(r.get("usd"))
+            words = {"time": "closed after 30 minutes", "stop": "stopped out" if _f(r.get("r")) is not None and _f(r.get("r")) < 0
+                     else "trailing stop hit", "flat": "closed 15:55 (flat)", "target": "target hit"}.get(ek, ek)
+            out.append(msg(f"scalp:blitz:paperx:{et_}", int(r["exit_t"]), "scalp", "blitz", f"BLITZ PAPER exit {ek.upper()} {usd(u) if q else ''}".strip(),
+                           f"Paper {words} at {px(r.get('exit'))}: " + (f"{usd(u)} on the paper eval" if q else "no eval size")
+                           + f" ({float(r.get('r') or 0):+.2f}R). Paper only, no real money.",
+                           "good" if (u or 0) > 0 else "warn" if (u or 0) < 0 else "dim", entry_t=et_, usd=u if q else None, paper=True))
+    for e in S.get("events") or []:
+        if isinstance(e, dict) and e.get("kind") == "eval" and e.get("day") == day:
+            out.append(msg(f"scalp:blitz:eval:{e.get('n')}:{e.get('result')}", int(e.get("t") or 0), "scalp", "blitz",
+                           f"BLITZ PAPER eval {e.get('n')} {e.get('result')}",
+                           f"Simulated 25K eval {e.get('n')}: {e.get('result')} after {e.get('sessions')} sessions ({usd(e.get('profit'))}); "
+                           "a new paper eval from the next session.", "info"))
+    return out
+
+
 def lit_window(now) -> dict:
     """Zlarior's entry window: 02:00-15:30 ET on a trading weekday. open / the next open / the close, seconds to it."""
     e = _et(now)
@@ -407,6 +455,11 @@ def derive(bot, now=None, prev: dict | None = None) -> tuple[list, dict]:
         out += am
     except Exception:
         pass
+    # BLITZ, the scalper PAPER shadow (strategy 3)
+    try:
+        out += _blitz_msgs(getattr(bot, "blitz", None), day)
+    except Exception:
+        pass
     # feed stale episodes, kill switch (only while the bot runs)
     try:
         h = getattr(bot, "health", None) or {}
@@ -466,6 +519,11 @@ def summary(bot, day, today_rows, now) -> dict:
                   for tr in (s.get("trades") or []) if isinstance(tr, dict) and tr.get("day") == day)
     if sec:
         parts.append(f"ATLAS paper: {n_paper} trade{'s' if n_paper != 1 else ''}")
+    bz = getattr(bot, "blitz", None)
+    if isinstance(bz, dict) and isinstance(bz.get("ledger"), list):
+        rows = [r for r in bz["ledger"] if isinstance(r, dict) and r.get("entry_t") and trading_day(int(r["entry_t"])) == day]
+        parts.append(f"BLITZ paper: {len(rows)} trade{'s' if len(rows) != 1 else ''}, "
+                     f"{usd(sum(float(r.get('usd') or 0) for r in rows))} on the paper eval")
     return msg(f"sys:summary:{day}", now, "sys", "summary", f"Day summary {day}", " · ".join(parts), "info")
 
 

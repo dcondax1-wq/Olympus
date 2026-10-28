@@ -187,6 +187,24 @@ part yourself or fold it into a script.**
   `account_b` keys `"weights"` / `"min_room"` are built but OFF (absent = today's sizing / $100 stuck). Test `python -X utf8
   -m tests.test_atlas_v2_shadow [--no-cloud]` (2026 replay = the research executor exactly; the stored run file was scored
   on an older unit cache: 206/207 trades identical, $ within 0.1%).
+- **BLITZ, the scalper (strategy 3) PAPER SHADOW (2026-10-28, `engine/blitz.py`, `research/writeups/scalp-momentum.md`
+  "na_scalp"):** the noise-area 1m scalp exactly as researched: band = 09:30 open x (1 +/- sigma), sigma = 14-session mean of
+  |close / 09:30 open - 1| at that minute; checks at the 1m closes 11:00, 11:30 ... 15:30 (research window 10:30-15:30, every
+  30 bars from 09:30; NOT 10:30); close above / below = long / short at the next open + 1 tick; stop 1.5 x ATR(14) of 5m;
+  trail 1.5R after +1R (20R limit never reached); out after 30 bars / 15:55; one position, 6 a day, -3R day stop; $1.90 +
+  1 tick per market / stop fill. Paper eval = simulated Builder 25K (30% of room, <= $600, 20 micros, $600 DLL, stuck room
+  $243.20, new eval $63 after pass / fail / stuck) = `tools/scalp_mo_lib.run_eval` back-to-back path. Never routed (no
+  adapter / order import; `live_model*.json`, `second_model.json` untouched; optional read-only `second_model.json`
+  `"blitz": {"on": false}` / `{"push": true}`). `backtest(df)` (whole frame) and `Engine` (one closed bar at a time, JSON
+  state; a half day's last bar is found by the next bar or the clock at 16:00) both = `research/scalp/mo_best_trades.json`
+  481/481. PC: `LiveBot._second_tick` paper job (bg_worker `job_second` / thread) -> `pc_step(<state dir>/blitz_state.json,
+  df1, now)` (gitignored, in memory between polls, ~7 ms a new bar) -> `LiveBot.blitz`, heartbeat `blitz` (compact),
+  Live View purple layer (`liveview_api.blitz_layer`: band lines, signals, PAPER position / marks; the chart JS does not draw
+  `scalp.lines` yet), narrator kind `blitz` (strat scalp, never pushed by default). Cloud: state key `blitz` next to
+  `atlas_v2` (cold start warms 35 days of data/NQ_1m.csv + PC bars), pushes kind `second` "BLITZ PAPER ..." recorded only
+  unless `blitz.push`, README lines. Replay H1 / H2: 304 / 177 trades, PF 1.37 / 1.22, $150 a trade +$4,870 / +$1,729;
+  paper eval path +$5,025 / +$2,476, 4/4 and 3/4 pass / fail+stuck, after fees +$4,458 / +$2,035 (~$731 / $548 a month);
+  2-week pass / fail 21.0/4.2, 21.7/18.8. Test `python -X utf8 -m tests.test_blitz [--cloud]` (~95 s).
 - Same code as the research: engine/second.py calls tools/second_ema.py / second_md.py / second_sr.py on LIT's live
   window (retail_standalone.load_frame live_cut, the simulators' live/OPEN mode). "With LIT" view = LIT first, no entry
   while LIT is in a trade, max 2 a day (MACD closed when LIT enters).

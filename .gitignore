@@ -91,6 +91,9 @@ data/eval_anchor.json.tmp
 data/live_state_accounts.json
 data/live_state_atlas_v2.json
 data/live_state_atlas_v2.json.tmp
+# the BLITZ scalper PAPER shadow's state next to the bot state (engine/blitz.py pc_step)
+data/blitz_state.json
+data/blitz_state.json.tmp
 data/ninjatrader_state_*.json
 
 .claude/worktrees/
