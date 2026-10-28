@@ -136,11 +136,18 @@ def job_second(df5, df1, a: dict) -> dict:
     from engine import second as _second
     cfg = a["cfg"]
     out = {"second": None, "atlas_v2": None, "av2": False, "blitz": None, "blz": False}
-    if a.get("blitz_path"):                     # BLITZ PAPER shadow (engine/blitz.py): 1m bars only, own file, never raises
+    err = None
+    try:
+        if any(s.get("on", True) for s in cfg["strategies"].values()):
+            out["second"] = _second.run(df5, one_min=df1, now=a["now"], cfg=cfg, lit=a["lit"])
+    except Exception as e:
+        err = e
+    if a.get("blitz_path"):                     # BLITZ PAPER shadow (engine/blitz.py): 1m bars + LIT / ATLAS state, own file, never raises
         from engine import blitz as _blz
-        out["blitz"], out["blz"] = _blz.pc_step(a["blitz_path"], df1, a["now"]), True
-    if any(s.get("on", True) for s in cfg["strategies"].values()):
-        out["second"] = _second.run(df5, one_min=df1, now=a["now"], cfg=cfg, lit=a["lit"])
+        out["blitz"], out["blz"] = _blz.pc_step(a["blitz_path"], df1, a["now"], res=a.get("res"), second=out["second"],
+                                                atlas_open=a.get("atlas_open")), True
+    if err is not None:
+        raise err
     if out["second"] is not None and a.get("av2_path"):
         from engine import atlas_v2 as _av2
         out["atlas_v2"], out["av2"] = _av2.pc_step(a["av2_path"], out["second"], a["res"], df5, df1, a["now"]), True

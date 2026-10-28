@@ -740,7 +740,8 @@ def run(out):
             prev_b = st.get("blitz") if isinstance(st.get("blitz"), dict) else None
             cold = not ((prev_b or {}).get("eng") or {}).get("last_t")
             blitz_st = _blz.step(prev_b, _LIT_IN.get("df1"), now,
-                                 hist=_blz.history_frame(since=now - _blz.WARM_DAYS * 86400) if cold else None)
+                                 hist=_blz.history_frame(since=now - _blz.WARM_DAYS * 86400) if cold else None,
+                                 res=res, second=second_block if second_block and not second_block.get("error") else None)
     except Exception as e:
         print("BLITZ shadow failed:", e.__class__.__name__, e)
         blitz_st = {**(st.get("blitz") or {}), "error": f"{e.__class__.__name__}: {e}"} if st.get("blitz") else None

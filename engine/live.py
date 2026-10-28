@@ -1325,7 +1325,8 @@ class LiveBot:
             cfg = _second.load_cfg()
             cfg["strategies"] = {k: v for k, v in cfg["strategies"].items() if not v.get("cloud_only")}   # e.g. LIT + Asia
             args = {"cfg": cfg, "lit": lit_w, "res": res, "now": now, "av2_path": _av2.pc_path(self.state_path),
-                    "blitz_path": _blz.pc_path(self.state_path) if _blz.enabled() else None}   # BLITZ PAPER shadow (never routed)
+                    "blitz_path": _blz.pc_path(self.state_path) if _blz.enabled() else None,   # BLITZ PAPER shadow (never routed)
+                    "atlas_open": self._blitz_atlas_open()}
         except Exception as e:
             self._note_error(f"second strategies failed: {e.__class__.__name__}: {e}")
             self._second_busy = False
@@ -1383,6 +1384,17 @@ class LiveBot:
         except Exception:
             return False
 
+    def _blitz_atlas_open(self):
+        """Account B's open trade {"entry_t", "dir"} for the BLITZ paper 50K ledger (never opposite ATLAS); None = none / off."""
+        try:
+            ab = getattr(self, "acct_b", None)
+            op = ab.position() if ab is not None else None
+            if op and op.get("entry_t") is not None and op.get("dir") is not None:
+                return {"entry_t": int(op["entry_t"]), "dir": 1 if int(op["dir"]) > 0 else -1}
+        except Exception:
+            pass
+        return None
+
     def _second_tick(self, df5, df1, res, now):
         """Second strategies, PAPER ONLY (engine/second.py, second_model.json): EMA / MACD on this poll's bars, after LIT's
         routing and the state save, in the background worker process (engine/bg_worker.py, _second_bg; a thread when it is
@@ -1405,18 +1417,25 @@ class LiveBot:
 
         def run():
             try:
-                try:                                      # BLITZ PAPER shadow (engine/blitz.py): 1m bars only, never routed, own file
+                err = None
+                try:
+                    cfg = _second.load_cfg()
+                    cfg["strategies"] = {k: v for k, v in cfg["strategies"].items() if not v.get("cloud_only")}   # e.g. LIT + Asia
+                    if any(s.get("on", True) for s in cfg["strategies"].values()):
+                        self.second = _second.run(df5, one_min=df1, now=now, cfg=cfg, lit=lit_w)
+                    else:
+                        self.second = None
+                except Exception as e:
+                    err = e
+                try:                                      # BLITZ PAPER shadow (engine/blitz.py): 1m bars + LIT / ATLAS state, own file
                     from . import blitz as _blz
                     if _blz.enabled():
-                        self.blitz = _blz.pc_step(_blz.pc_path(self.state_path), df1, now)
+                        self.blitz = _blz.pc_step(_blz.pc_path(self.state_path), df1, now, res=res,
+                                                  second=self.second if err is None else None, atlas_open=self._blitz_atlas_open())
                 except Exception as e:
                     self._note_error(f"BLITZ paper shadow failed: {e.__class__.__name__}: {e}")
-                cfg = _second.load_cfg()
-                cfg["strategies"] = {k: v for k, v in cfg["strategies"].items() if not v.get("cloud_only")}   # e.g. LIT + Asia
-                if any(s.get("on", True) for s in cfg["strategies"].values()):
-                    self.second = _second.run(df5, one_min=df1, now=now, cfg=cfg, lit=lit_w)
-                else:
-                    self.second = None
+                if err is not None:
+                    raise err
                 if self.second is not None:           # ATLAS v2 PAPER shadow (engine/atlas_v2.py): never routed, own file
                     from . import atlas_v2 as _av2
                     self.atlas_v2 = _av2.pc_step(_av2.pc_path(self.state_path), self.second, res, df5, df1, now)

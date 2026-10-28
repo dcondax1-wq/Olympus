@@ -381,6 +381,37 @@ def _blitz_msgs(S: dict, day: str) -> list:
                            f"Paper {words} at {px(r.get('exit'))}: " + (f"{usd(u)} on the paper eval" if q else "no eval size")
                            + f" ({float(r.get('r') or 0):+.2f}R). Paper only, no real money.",
                            "good" if (u or 0) > 0 else "warn" if (u or 0) < 0 else "dim", entry_t=et_, usd=u if q else None, paper=True))
+    for r in S.get("ledger50") or []:                  # the funded 50K next to LIT (paper, only while LIT is flat)
+        if not isinstance(r, dict) or not r.get("entry_t") or trading_day(int(r["entry_t"])) != day:
+            continue
+        et_, sw, q = int(r["entry_t"]), side_word(r.get("dir")), _i(r.get("qty")) or 0
+        if r.get("exit_kind") == "SKIP":
+            out.append(msg(f"scalp:blitz50:skip:{et_}", et_, "scalp", "blitz", f"BLITZ 50K skipped · {sw}",
+                           f"Not taken on the paper funded 50K next to LIT: {r.get('skip')} (paper).", "dim", entry_t=et_, paper=True))
+            continue
+        out.append(msg(f"scalp:blitz50:paper:{et_}", et_, "scalp", "blitz", f"BLITZ PAPER 50K entry · {sw} {q} MNQ" if q else f"BLITZ PAPER 50K entry · {sw} no size",
+                       f"PAPER {sw} {q} MNQ at {px(r.get('entry'))} on the simulated funded 50K next to LIT (20% of the room, <= $450) · stop "
+                       f"{px(r.get('stop'))}" + ("" if q else f" ({r.get('skip')})") + ". Paper only: never sent to an account.", "info",
+                       entry_t=et_, dir=_i(r.get("dir")), qty=q or None, paper=True))
+        ek = str(r.get("exit_kind") or "")
+        if ek and ek != "OPEN" and r.get("exit_t"):
+            u = _f(r.get("usd"))
+            words = {"LIT FIRST": "closed at the open: LIT entered", "HEDGE": "closed at the open: ATLAS entered the other way"}.get(ek, ek.lower())
+            out.append(msg(f"scalp:blitz50:paperx:{et_}", int(r.get("exit_bar_t") or r["exit_t"]), "scalp", "blitz",
+                           f"BLITZ PAPER 50K exit {ek.upper()} {usd(u) if q else ''}".strip(),
+                           f"Paper 50K {words} at {px(r.get('exit'))}: " + (f"{usd(u)}" if q else "no size") + f" ({float(r.get('r') or 0):+.2f}R)."
+                           " Paper only, no real money.", "good" if (u or 0) > 0 else "warn" if (u or 0) < 0 else "dim", entry_t=et_, paper=True))
+    for x in S.get("skipped50") or []:
+        if isinstance(x, dict) and x.get("t") and trading_day(int(x["t"])) == day:
+            out.append(msg(f"scalp:blitz50:mask:{int(x['t'])}", int(x.get("close_t") or int(x["t"]) + 60), "scalp", "blitz",
+                           f"BLITZ 50K waits for LIT · {side_word(x.get('dir'))}",
+                           f"BLITZ signal at {hm(int(x.get('close_t') or int(x['t']) + 60))} not taken on the 50K next to LIT: {x.get('why')} (paper).", "dim"))
+    for e in S.get("events") or []:
+        if isinstance(e, dict) and e.get("kind") == "acct50" and e.get("day") == day:
+            out.append(msg(f"scalp:blitz50:acct:{e.get('n')}:{e.get('result')}", int(e.get("t") or 0), "scalp", "blitz",
+                           f"BLITZ PAPER 50K account {e.get('n')} {e.get('result')}",
+                           f"Simulated funded 50K {e.get('n')}: {e.get('result')} after {e.get('sessions')} sessions ({usd(e.get('profit'))}); "
+                           "a new paper account from the next session.", "warn"))
     for e in S.get("events") or []:
         if isinstance(e, dict) and e.get("kind") == "eval" and e.get("day") == day:
             out.append(msg(f"scalp:blitz:eval:{e.get('n')}:{e.get('result')}", int(e.get("t") or 0), "scalp", "blitz",
@@ -522,8 +553,11 @@ def summary(bot, day, today_rows, now) -> dict:
     bz = getattr(bot, "blitz", None)
     if isinstance(bz, dict) and isinstance(bz.get("ledger"), list):
         rows = [r for r in bz["ledger"] if isinstance(r, dict) and r.get("entry_t") and trading_day(int(r["entry_t"])) == day]
+        r50 = [r for r in bz.get("ledger50") or [] if isinstance(r, dict) and r.get("entry_t") and trading_day(int(r["entry_t"])) == day
+               and r.get("exit_kind") != "SKIP"]
         parts.append(f"BLITZ paper: {len(rows)} trade{'s' if len(rows) != 1 else ''}, "
-                     f"{usd(sum(float(r.get('usd') or 0) for r in rows))} on the paper eval")
+                     f"{usd(sum(float(r.get('usd') or 0) for r in rows))} on the paper 25K eval, "
+                     f"{usd(sum(float(r.get('usd') or 0) for r in r50))} on the paper 50K next to LIT ({len(r50)})")
     return msg(f"sys:summary:{day}", now, "sys", "summary", f"Day summary {day}", " · ".join(parts), "info")
 
 
