@@ -174,3 +174,7 @@
   .lv-src { width: 100%; }
   .lv-card, .lv-card.tilt { transform: none; }
 }
+
+/* BLITZ (strategy 3) PAPER position: dashed edge, a PAPER caption (never a real size) */
+.lv-pos.lv-paper { border-style: dashed; }
+.lv-paper-t { font: 800 10.5px/1.2 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--c); margin-bottom: 3px; text-shadow: 0 0 calc(8px * var(--lv-glow)) var(--c); }

@@ -5,7 +5,10 @@
 //                    until the expiry), today's setups (dot per 5m CISD), the live position with REAL micros and $ on its
 //                    entry / stop / target / BE lines, entry and exit marks
 //   ATLAS (orange)   EMA 21 / 50 of the 5m bars, S/R levels, paper plans (no size), the real account B position
-//   Strategy 3       placeholder (purple), nothing to draw yet
+//   BLITZ (purple)   strategy 3, the scalper PAPER shadow: today's noise band (09:30 open +/- sigma at each 30-minute
+//                    check) as a glowing corridor, the next check's band lines, its signals (filled = taken, hollow = not),
+//                    PAPER entries / exits, the PAPER position (both paper sizes: 25K eval + funded 50K next to LIT) as a
+//                    dashed glass volume labelled PAPER, the time exit; never a real size
 // Two canvases: drawChart(base, data, o) draws everything static (on new data / zoom / resize: every 3 s at most, plus
 // while dragging with o.fast = no glow); drawFx(overlay, geo, o) draws only the moving parts (crosshair, the pulse on the
 // live price and on the entry / stop / target lines) and is cheap enough for every animation frame.
@@ -88,6 +91,8 @@ export function drawChart(cv, d, o) {
     if (lit.setup) for (const k of ['ext', 'cisd', 'level']) if (lit.setup[k] != null) want.push([lit.setup[k], 2.5]);
   }
   if (o.on.atlas) for (const l of at.lines || []) if (l.strong && l.price != null) want.push([l.price, far(l)]);
+  const sc = S.scalp || {};
+  if (o.on.scalp) for (const l of sc.lines || []) if (l.price != null) want.push([l.price, l.strong ? 2.5 : /blz_(up|lo)/.test(l.id || '') ? 0.6 : 1.0]);
   for (const [p, k] of want) if (p > lo - k * rng0 && p < hi + k * rng0) { lo = Math.min(lo, p); hi = Math.max(hi, p); }
   const pad = (hi - lo) * 0.06 || 2;
   lo -= pad; hi += pad;
@@ -302,6 +307,88 @@ export function drawChart(cv, d, o) {
     }
   }
 
+  // ================================================================ BLITZ (strategy 3, PAPER): band corridor, signals, PAPER position
+  if (o.on.scalp && !sc.placeholder) {
+    const P = C.scalp, pr = C.glowOn ? [179, 136, 255] : [124, 58, 237];
+    const t0v = bars[i0][0], t1v = bars[i1][0] + secs;
+    const band = (sc.band || []).filter((r) => r[1] != null && r[2] != null);
+    if (band.length) {                                       // each check's band holds from the previous check to it
+      g.save();
+      for (let k = 0; k < band.length; k++) {
+        const [t, up, lw] = band[k], ta = k ? band[k - 1][0] : t - 1800;
+        if (t < t0v || ta > t1v) continue;
+        const xa = xt(ta), xb = xt(t);
+        const fg = g.createLinearGradient(0, Y(up), 0, Y(lw));
+        fg.addColorStop(0, rgba(pr, 0.10)); fg.addColorStop(0.5, rgba(pr, 0.03)); fg.addColorStop(1, rgba(pr, 0.10));
+        g.fillStyle = fg; g.fillRect(xa, Y(up), xb - xa, Y(lw) - Y(up));
+        g.strokeStyle = P; g.lineWidth = 1.6; if (glow) { g.shadowColor = P; g.shadowBlur = 10; }
+        g.beginPath(); g.moveTo(xa, Y(up)); g.lineTo(xb, Y(up)); g.moveTo(xa, Y(lw)); g.lineTo(xb, Y(lw)); g.stroke();
+        g.shadowBlur = 0;
+        g.fillStyle = P;                                     // the check point
+        for (const yv of [Y(up), Y(lw)]) { g.beginPath(); g.moveTo(xb, yv - 4); g.lineTo(xb + 4, yv); g.lineTo(xb, yv + 4); g.lineTo(xb - 4, yv); g.closePath(); g.fill(); }
+      }
+      g.restore();
+    }
+    const pos = sc.position;
+    if (pos && pos.entry != null && pos.stop != null) {     // PAPER volume: entry -> stop (no fixed target), dashed edge
+      const x0 = Math.max(PADL, pos.entry_t ? xt(pos.entry_t) : xNow), x1 = right - 10;
+      const ya = Math.min(Y(pos.entry), Y(pos.stop)), yb = Math.max(Y(pos.entry), Y(pos.stop)), dz = 10;
+      const locked = (pos.stop - pos.entry) * (pos.dir || 1) >= 0;
+      const cc = locked ? C.reward : C.risk;
+      if (x1 > x0) {
+        const fg = g.createLinearGradient(0, ya, 0, yb);
+        fg.addColorStop(0, rgba(cc, 0.18)); fg.addColorStop(1, rgba(pr, 0.10));
+        g.fillStyle = fg; g.fillRect(x0, ya, x1 - x0, yb - ya);
+        g.fillStyle = rgba(pr, 0.18); g.beginPath(); g.moveTo(x1, ya); g.lineTo(x1 + dz, ya - dz); g.lineTo(x1 + dz, yb - dz); g.lineTo(x1, yb); g.closePath(); g.fill();
+        g.fillStyle = rgba(pr, 0.28); g.beginPath(); g.moveTo(x0, ya); g.lineTo(x0 + dz, ya - dz); g.lineTo(x1 + dz, ya - dz); g.lineTo(x1, ya); g.closePath(); g.fill();
+        g.save(); g.setLineDash([6, 4]); g.strokeStyle = P; g.lineWidth = 1.2; if (glow) { g.shadowColor = P; g.shadowBlur = 8; }
+        g.strokeRect(x0 + 0.5, ya + 0.5, x1 - x0 - 1, yb - ya - 1); g.restore();
+        const p50 = sc.position50;
+        const sizes = p50 && pos.ledger !== p50.ledger && p50.entry_t === pos.entry_t ? `25K eval ${pos.qty || 0} + 50K ${p50.qty || 0} MNQ` : `${pos.ledger} ${pos.qty || 0} MNQ`;
+        notes.push({ x: x0 + 8, y: (pos.dir || 1) > 0 ? yb + 12 : ya - 12, text: `PAPER · BLITZ ${pos.side} · ${sizes} · never routed`, color: P, align: 'left', size: 11, bold: true });
+      }
+      if (pos.time_exit_t) {                                 // out at the latest (the 30-bar time exit)
+        const xe = xt(pos.time_exit_t);
+        if (xe > PADL && xe < right) {
+          g.save(); g.setLineDash([2, 4]); g.strokeStyle = P; g.globalAlpha = 0.8; g.beginPath(); g.moveTo(xe, TOP); g.lineTo(xe, TOP + ph); g.stroke(); g.restore();
+          notes.push({ x: xe + 4, y: TOP + ph - 30, text: `BLITZ out by ${hm(pos.time_exit_t)}`, color: P, align: 'left', size: 10 });
+        }
+      }
+    }
+    for (const l of sc.lines || []) {
+      if (l.price == null) continue;
+      const color = l.tone === 'good' ? C.good : l.tone === 'bad' ? C.bad : P;
+      if (!inY(l.price)) { if (l.strong || /blz_(up|lo)/.test(l.id || '')) (l.price > hi ? off.up : off.dn).push({ label: l.label, price: l.price, color: P }); continue; }
+      const x0 = l.t0 ? xt(l.t0) : PADL;
+      hline(l.price, x0, right, color, l.style === 'dash' ? [7, 4] : l.style === 'dot' ? [2, 3] : null, l.strong ? 2 : 1.4, l.strong ? 12 : 8);
+      if (l.strong) pulses.push({ y: Math.round(Y(l.price)) + 0.5, x0: Math.max(PADL, x0), x1: right, color });
+      tags.push({ y: Y(l.price), text: fmt(l.price), color: l.strong ? color : P, strong: l.strong });
+      notes.push(l.strong ? { x: xNow + 8, y: Y(l.price) + 11, text: l.label, color, align: 'left', size: 11, bold: true }
+        : { x: right - 4, y: Y(l.price) + 10, text: l.label, color: P, align: 'right', size: 10.5 });
+    }
+    for (const m of sc.marks || []) {
+      if (m.t < bars[i0][0] - secs || m.t > bars[i1][0] + secs || !inY(m.price)) continue;
+      const x = xt(m.t), y = Y(m.price);
+      g.save();
+      if (m.kind === 'signal') {                             // diamond: filled = taken, hollow = not taken
+        const r = 6, up = m.side === 'LONG';
+        g.strokeStyle = P; g.lineWidth = 2; g.fillStyle = m.status === 'taken' ? P : C.setupFill;
+        if (glow) { g.shadowColor = P; g.shadowBlur = m.status === 'taken' ? 12 : 4; }
+        g.beginPath(); g.moveTo(x, y - r); g.lineTo(x + r, y); g.lineTo(x, y + r); g.lineTo(x - r, y); g.closePath(); g.fill(); g.stroke();
+        g.restore();
+        if (n <= 300) notes.push({ x, y: y + (up ? 15 : -15), text: `BLITZ ${up ? 'long' : 'short'} signal${m.status === 'taken' ? '' : ' · not taken'}`, color: P, align: 'center', size: 9.5 });
+        continue;
+      }
+      const ex = m.kind === 'exit';
+      const colm = ex ? ((m.pnl || 0) >= 0 ? C.good : C.bad) : P;
+      g.fillStyle = colm; if (glow) { g.shadowColor = colm; g.shadowBlur = 10; }
+      g.beginPath(); g.arc(x, y, 4, 0, Math.PI * 2); g.fill(); g.restore();
+      if (m.ledger === '25K eval' || ex) {
+        const money = m.pnl != null ? ` ${(m.pnl >= 0 ? '+' : '-') + '$' + Math.abs(Math.round(m.pnl)).toLocaleString('en-US')}` : '';
+        notes.push({ x: x + 7, y: y + (ex ? 13 : -12), text: ex ? `${m.text || 'PAPER exit'}${money}` : `PAPER ${m.side === 'buy' ? 'BUY' : 'SELL'} ${m.qty || ''} (25K eval)`, color: colm, align: 'left', size: 10, bold: true });
+      }
+    }
+  }
   g.restore();                                                           // end of the plot clip
   // ---- last price
   const last = bars[N - 1][4];

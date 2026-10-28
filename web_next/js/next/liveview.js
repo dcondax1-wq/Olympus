@@ -24,7 +24,7 @@ const PAL = {
   dark: { lit: '#4f9bff', atlas: '#ff9a3d', scalp: '#b388ff', sys: '#94a3b8' },
   light: { lit: '#2563eb', atlas: '#ea580c', scalp: '#7c3aed', sys: '#475569' },
 };
-const NAMES = { lit: 'Zlarior', atlas: 'ATLAS', scalp: 'Strategy 3', sys: 'Bot' };
+const NAMES = { lit: 'Zlarior', atlas: 'ATLAS', scalp: 'BLITZ', sys: 'Bot' };
 const col = (k) => (PAL[L.theme][k] || PAL[L.theme].sys);
 const still = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmtPx = (x) => x == null || isNaN(x) ? '—' : Number(x).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
@@ -76,7 +76,7 @@ function shell(el) {
     <section class="lv-feed" id="lvFeed" ${L.feed ? '' : 'hidden'} aria-label="Bot feed">
       <div class="lv-ticker" id="lvTicker" aria-hidden="true"><div class="lv-ticker-r" id="lvTickR"></div></div>
       <div class="lv-feed-h"><b>What the bot says</b>
-        <div class="lv-seg sm" id="lvFF">${[['all', 'All'], ['lit', 'Zlarior'], ['atlas', 'ATLAS'], ['sys', 'Bot']].map(([k, l]) => `<button type="button" data-v="${k}" aria-pressed="${L.feedF === k}">${l}</button>`).join('')}</div>
+        <div class="lv-seg sm" id="lvFF">${[['all', 'All'], ['lit', 'Zlarior'], ['atlas', 'ATLAS'], ['scalp', 'BLITZ'], ['sys', 'Bot']].map(([k, l]) => `<button type="button" data-v="${k}" aria-pressed="${L.feedF === k}">${l}</button>`).join('')}</div>
         <label class="lv-chk"><input type="checkbox" id="lvImp" ${L.important ? 'checked' : ''}> important only</label>
         <span class="lv-muted" id="lvPushes"></span></div>
       <ol class="lv-feed-l" id="lvFeedL"></ol>
@@ -195,8 +195,8 @@ function paint() {
   L.geo = drawChart(cv, d, { on: L.on, view: L.view, tf: L.tf, theme: L.theme, fast: L.fast });
   const leg = ['lit', 'atlas', 'scalp'].filter((k) => L.on[k]).map((k) => {
     const s = d.strategies?.[k] || {};
-    const what = k === 'lit' ? 'levels · setup · position' : k === 'atlas' ? 'EMA 21 / 50 · S/R · plans · position' : (s.placeholder ? 'research: no signals yet' : 'signals');
-    return `<span style="--c:${col(k)}"><i></i>${esc(s.name || NAMES[k])} <em>${esc(what)}</em></span>`;
+    const what = k === 'lit' ? 'levels · setup · position' : k === 'atlas' ? 'EMA 21 / 50 · S/R · plans · position' : (s.placeholder ? 'not running yet' : 'band · signals · PAPER position');
+    return `<span style="--c:${col(k)}"><i></i>${esc(k === 'scalp' ? 'BLITZ (paper)' : s.name || NAMES[k])} <em>${esc(what)}</em></span>`;
   }).join('');
   $('#lvLeg').innerHTML = leg;
   const note = $('#lvNote');
@@ -285,8 +285,17 @@ function think() {
   }
   const sc = S.scalp;
   if (sc && L.on.scalp) {
-    out.push(`<article class="lv-card" style="--c:${col('scalp')}"><header><i></i><b>${esc(sc.name || 'Strategy 3')}</b><span class="lv-pill">${sc.placeholder ? 'research' : 'paper'}</span></header>
-      <p class="lv-muted">${esc(sc.text || '')}</p>${(sc.members || []).map((m) => `<p><b>${esc(m.short)}</b> · ${esc(m.stage || '')}: ${esc(m.text || '')}</p>`).join('')}</article>`);
+    const th = sc.thinking || {};
+    const pp = (p) => p ? `<div><b>${esc(p.ledger)}</b>: ${esc(p.side)} ${p.qty ? `${p.qty} MNQ` : '(no size)'} @ ${fmtPx(p.entry)} · now <b class="${(p.unrealized_usd || 0) >= 0 ? 'lv-ok' : 'lv-no'}">${fmtUsd(p.unrealized_usd)}</b> · stop ${fmtPx(p.stop)} = <b class="${(p.stop_usd || 0) >= 0 ? 'lv-ok' : 'lv-no'}">${fmtUsd(p.stop_usd)}</b></div>` : '';
+    const p1 = sc.position, p2 = sc.position50 && (!p1 || sc.position50.ledger !== p1.ledger) ? sc.position50 : null;
+    const sigs = (sc.signals || []).filter((x) => !x.ledger).slice(-4).reverse();
+    out.push(`<article class="lv-card" style="--c:${col('scalp')}"><header><i></i><b>BLITZ</b><span class="lv-pill">${sc.placeholder ? 'not running' : 'PAPER · never routed'}</span></header>
+      ${sc.error ? `<p class="lv-no">${esc(sc.error)}</p>` : ''}
+      <p class="lv-head">${esc(th.headline || sc.text || '')}</p>
+      ${p1 || p2 ? `<div class="lv-pos lv-paper" style="--c:${col('scalp')}"><div class="lv-paper-t">PAPER position · simulated accounts</div>${pp(p1)}${pp(p2)}</div>` : ''}
+      ${th.eval ? `<p class="small">${esc(th.eval)}</p>` : ''}${th.funded50 ? `<p class="small">${esc(th.funded50)}</p>` : ''}
+      ${sigs.length ? `<ul class="lv-checks">${sigs.map((x) => `<li>${tick(x.taken ? true : null)}<div><b>${esc(new Date(x.t * 1000).toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', hour12: false }))} ${esc(x.side)} signal</b><small>${esc(x.text)}</small></div></li>`).join('')}</ul>` : ''}
+      ${sc.placeholder ? `<p class="lv-muted">${esc(sc.text || '')}</p>` : ''}</article>`);
   }
   el.innerHTML = out.join('') || '<p class="lv-muted">Switch a strategy on to see what it is thinking.</p>';
 }
@@ -296,7 +305,7 @@ function feed() {
   const ol = $('#lvFeedL'); if (!ol || !L.d) return;
   const all = L.d.narrator || [];
   let rows = all;
-  if (L.feedF !== 'all') rows = rows.filter((m) => (L.feedF === 'atlas' ? ['atlas', 'scalp'].includes(m.strat) : m.strat === L.feedF));
+  if (L.feedF !== 'all') rows = rows.filter((m) => m.strat === L.feedF);
   if (L.important) rows = rows.filter((m) => m.level !== 'dim');
   const newest = Math.max(0, ...all.map((m) => m.id));
   const fresh = L.seen ? newest > L.seen : false;
