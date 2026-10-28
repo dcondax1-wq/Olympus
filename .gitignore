@@ -121,3 +121,6 @@ data/shortcuts.json.tmp
 # the owner's money figures for the Goals card's Road to $10K (engine/money_goal.py: savings, jobs, Kalshi, goal targets)
 data/goals_money.json
 data/goals_money.json.tmp
+
+# big research grids (regenerate with tools/scalp_*): never committed
+research/scalp/*_grid_5m.json
