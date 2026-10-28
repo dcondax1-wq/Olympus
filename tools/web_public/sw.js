@@ -43,7 +43,9 @@
 // (boardcore.js): the MFFU payout tracker (engine/account_b.py stage "funded"). New cache name so every iPhone refreshes.
 // v39 (2026-10-26 PM): moneycore.js + goals.js v3 (Road to $10K / Stingray 3LT: "My goals" at the bottom of the Home Goals
 // card and #/goals, the 9-account stack and the next action; data.json goals.money / live.json money, engine/money_goal.py).
-const CACHE = 'le-public-v39';
+// v40 (2026-10-28): realcore.js + real.js (Home "Today · real accounts" cards + Safety, Money > Real results #/real; data.json /
+// live.json board.real, engine/live_board.py), boardcore.js v2 and tradepics.js v2 (PAPER figures carry their REAL twin), clean.js (Home link + Money strip; ?v=3 kept, the new cache name refreshes it).
+const CACHE = 'le-public-v40';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=k31025', './icons/apple-touch-icon.png?v=k31025', './icons/icon-512.png?v=k31025'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

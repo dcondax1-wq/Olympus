@@ -10,6 +10,7 @@ import { icon } from './icons.js';
 import { md } from './lab.js';
 import { moreMenu, item } from './menu.js';
 import { fillBoardHome } from './board.js';
+import { fillRealHome } from './real.js';
 import { fillMoney } from './money.js';
 
 // ------------------------------------------------------------------ helpers (the operator pages' card / stat / chip look)
@@ -182,14 +183,18 @@ function renderHome() {
     '<div class="nx-more-cap">Open</div>' + item('Bot Brain', 'data-goto="brain"', icon('brain')) + item('Live chart', 'data-goto="livechart"', icon('chart')) +
     item('NinjaTrader', 'data-goto="ntpanel"', icon('sources')) + item('Bot log', 'data-goto="botlog"', icon('reports')) +
     item('News hub', 'data-goto="newshub"', icon('radar')) + item('Runbook (emergency)', 'data-goto="runbook"', icon('rules')), 'Refresh, copy, other pages');
-  el.innerHTML = `<div class="cc-head"><div><div class="nx-eyebrow">${esc(d.et || '')}</div><p class="cc-lead">Both accounts at a glance: Zlarior on the 50K, ATLAS on the 25K.</p></div>
+  el.innerHTML = `<div class="cc-head"><div><div class="nx-eyebrow">${esc(d.et || '')}</div><p class="cc-lead">Both real accounts at a glance: Zlarior on the 50K, ATLAS on the 25K. Every $ here is the account's own.</p></div>
       <div class="op-verdict ${lvl}" title="${esc(v.reason || '')}">${dot(lvl === 'good' ? true : lvl === 'bad' ? false : null)}<b>${esc(v.label || (d.running ? 'RUNNING' : 'STOPPED'))}</b><em>${esc(v.reason || '')}</em></div></div>` +
+    `<div id="ccReal" class="cc-real" aria-label="Today on the real accounts"></div>` +
     launchHtml(d.launch) + banners(d) +
     `<div class="cc-now ${ns.k}">${icon(ns.k === 'good' ? 'check' : 'warn')}<div><span class="nx-eyebrow">What to do now</span><b>${esc(ns.t)}</b>
         <span class="cc-now-s">${[d.running && w.say ? `Bot: ${esc(w.say)}` : '', d.day?.phase ? phaseText(d.day.phase) : ''].filter(Boolean).join(' · ')}</span></div>
       ${ns.fix ? `<button type="button" class="nx-chipbtn primary" data-copy="${esc(ns.fix)}">${icon('copy')}<span>Copy the fix</span></button>` : ns.go ? `<button type="button" class="nx-chipbtn primary" data-goto="${ns.go}">${icon('power')}<span>Open Bot Control</span></button>` : ''}</div>
-    <div class="cc-two">${acctCard(d.lit, 'lit')}${acctCard(d.atlas, 'atlas')}</div>
     <div id="ccBoard" class="cc-board" aria-label="Right now (live board)"></div>
+    <div id="ccSafe" class="cc-safe" aria-label="Safety"></div>
+    <details class="cc-today cc-evals"${store.get('nx.cc.evalsOpen', false) ? ' open' : ''}><summary><span>Eval cards (balance, room, position, launch anchor)</span>
+        <em>the same numbers as the Today cards, with every detail</em></summary>
+      <div class="cc-two">${acctCard(d.lit, 'lit')}${acctCard(d.atlas, 'atlas')}</div></details>
     <div class="cc-health"><span class="nx-eyebrow">Health</span>${lightsHtml(d.lights)}</div>
     <details class="cc-today"${store.get('nx.cc.todayOpen', false) ? ' open' : ''}><summary><span>Today: setups, news and the bot log</span>
         <em>${setups.length} setup${setups.length === 1 ? '' : 's'} · ${news.length} news · ${(d.log || []).length} log rows</em></summary>
@@ -208,7 +213,7 @@ function renderHome() {
   $('#ccPause').onclick = () => { H.paused = !H.paused; store.set('nx.cc.paused', H.paused); renderHome(); };
   $('#ccCopy').onclick = () => copy(statusText(d));
   $('#ccNow').onclick = () => loadHome(true);
-  const det = $('#page-cc .cc-today'); if (det) det.ontoggle = () => store.set('nx.cc.todayOpen', det.open);
+  const det = $('#page-cc .cc-today:not(.cc-evals)'); if (det) det.ontoggle = () => store.set('nx.cc.todayOpen', det.open);
   const hd = $('#ccHlD');
   $$('#page-cc .cc-hl').forEach((b) => {
     b.onclick = () => {
@@ -220,6 +225,8 @@ function renderHome() {
   });
   if (H.hl != null && d.lights?.[H.hl]) { hd.hidden = false; hd.innerHTML = lightDetail(d.lights[H.hl]); $(`#page-cc .cc-hl[data-hl="${H.hl}"]`)?.classList.add('on'); }
   fillBoardHome().catch(() => null);             // the "Right now" row (board.js, /api/next/board)
+  fillRealHome().catch(() => null);              // the "Today · real accounts" cards + Safety (real.js, same board)
+  const ev = $('#page-cc .cc-evals'); if (ev) ev.ontoggle = () => store.set('nx.cc.evalsOpen', ev.open);
 }
 
 async function loadHome(force) {

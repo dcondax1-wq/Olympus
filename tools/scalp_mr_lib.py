@@ -132,7 +132,7 @@ def arr(F, k):
 # ------------------------------------------------------------------------------------------------ simulator
 @nb.njit(cache=True)
 def _sim(o, h, l, c, mod, dayi, sdir, sstop, stgt, slim, rr, maxbars, be_r, min_risk, max_risk, ent_lo, ent_hi, flat_mod,
-         max_day, lim_bars, min_rr, slip):
+         max_day, lim_bars, min_rr, slip, thru):
     n = len(o)
     out = np.full((n, 12), np.nan)
     k = 0
@@ -143,7 +143,8 @@ def _sim(o, h, l, c, mod, dayi, sdir, sstop, stgt, slim, rr, maxbars, be_r, min_
         if dayi[i] != cur_day:
             cur_day = dayi[i]; nday = 0
         d = sdir[i]
-        if d == 0 or nday >= max_day or mod[i + 1] < ent_lo or mod[i + 1] > ent_hi or dayi[i + 1] != dayi[i]:
+        inwin = (mod[i + 1] >= ent_lo and mod[i + 1] <= ent_hi) if ent_lo <= ent_hi else (mod[i + 1] >= ent_lo or mod[i + 1] <= ent_hi)
+        if d == 0 or nday >= max_day or not inwin or dayi[i + 1] != dayi[i]:
             i += 1
             continue
         stop = sstop[i]
@@ -154,13 +155,10 @@ def _sim(o, h, l, c, mod, dayi, sdir, sstop, stgt, slim, rr, maxbars, be_r, min_
             lp = slim[i]
             filled = -1
             for j in range(i + 1, min(n, i + 1 + lim_bars)):
-                if dayi[j] != dayi[i] or mod[j] >= flat_mod:
+                if dayi[j] != dayi[i] or (mod[j] >= flat_mod and mod[j] < 1080):
                     break
-                if d == 1 and l[j] <= stop:
-                    break
-                if d == -1 and h[j] >= stop:
-                    break
-                if (d == 1 and l[j] <= lp - TICK_) or (d == -1 and h[j] >= lp + TICK_):
+                # (a bar that reaches the stop has traded through the limit first: filled, then stopped below)
+                if (d == 1 and l[j] <= lp - thru) or (d == -1 and h[j] >= lp + thru):
                     filled = j
                     break
             if filled < 0:
@@ -191,7 +189,7 @@ def _sim(o, h, l, c, mod, dayi, sdir, sstop, stgt, slim, rr, maxbars, be_r, min_
         ex = np.nan; kind = 0; je = -1
         mfe = 0.0; mae = 0.0
         for j in range(j0, n):
-            if dayi[j] != dayi[i] or mod[j] >= flat_mod:      # flat: at the previous bar's close
+            if dayi[j] != dayi[i] or (mod[j] >= flat_mod and mod[j] < 1080):      # flat: at the previous bar's close
                 je = j - 1; ex = c[j - 1] - d * slip; kind = 3
                 break
             # stop first
@@ -232,14 +230,14 @@ KINDS = {0: "target", 1: "stop", 2: "be", 3: "flat", 4: "time"}
 
 
 def simulate(F, sig, rr=1.0, maxbars=60, be_r=0.0, min_risk=3.0, max_risk=40.0, ent=(570, 900), flat=955, max_day=6,
-             lim_bars=10, min_rr=0.5, slip=TICK):
+             lim_bars=10, min_rr=0.5, slip=TICK, thru=TICK):
     sdir, sstop, stgt = sig[0], sig[1], sig[2]
     slim = sig[3] if len(sig) > 3 else np.full(len(sdir), np.nan)
     dayi = pd.factorize(F["day"])[0].astype(np.int64)
     out = _sim(arr(F, "open"), arr(F, "high"), arr(F, "low"), arr(F, "close"), F["mod"].values.astype(np.int64), dayi,
                sdir.astype(np.int64), sstop.astype(float), stgt.astype(float), slim.astype(float), float(rr), int(maxbars),
                float(be_r), float(min_risk), float(max_risk), int(ent[0]), int(ent[1]), int(flat), int(max_day), int(lim_bars),
-               float(min_rr), float(slip))
+               float(min_rr), float(slip), float(thru))
     T = pd.DataFrame(out, columns=["sig_i", "ent_i", "exit_i", "dir", "entry", "stop", "target", "exit", "kind", "pts", "risk",
                                    "mae"])
     for kk in ("sig_i", "ent_i", "exit_i", "dir", "kind"):
@@ -389,3 +387,18 @@ def save_trades(T, F, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     json.dump(rows, open(path, "w"), indent=0)
     return len(rows)
+
+
+def map_5m_to_1m(F5, sig5, F1):
+    """A 5m signal decided at its bar close (t5 + 300 s) lands on the 1m bar whose close is that moment (open t5 + 240),
+    so the trade is executed and managed on 1m bars (finer intrabar path, honest check of a 5m rule)."""
+    n1 = len(F1)
+    pos = pd.Series(np.arange(n1), index=F1["time"].values)
+    tgt_t = F5["time"].values + 240
+    idx = pos.reindex(tgt_t).values
+    out = [np.zeros(n1, np.int64)] + [np.full(n1, np.nan) for _ in range(len(sig5) - 1)]
+    ok = ~np.isnan(idx)
+    ii = idx[ok].astype(int)
+    for a, b in zip(out, sig5):
+        a[ii] = b[ok]
+    return tuple(out)

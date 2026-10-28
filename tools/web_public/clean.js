@@ -157,11 +157,12 @@
       ${planLine()}
       ${lastTrade()}
       <section class="card cl-card cl-list" aria-label="One tap away"><span class="cl-eye">One tap away</span>
+        ${rowLink('real', 'Real results', 'Real money only: both accounts, running P&L, vs the backtest', 'results')}
         ${rowLink('brain', 'Bot Brain', 'What the bot is thinking right now', 'brain')}
         ${rowLink('goals', 'Goals', 'Each eval, this week, this month', 'target')}
         ${rowLink('plan', 'Zlarior plan and levels', 'Today’s levels, the target band, sweeps seen', 'target')}
         ${rowLink('homefull', 'Full overview', 'Every card the old Home showed: health, radar, why no trade', 'layers')}</section>
-      <p class="cl-foot">Paper / eval monitor · read-only${built ? ` · data ${esc(built.toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }))}` : ''}${HD() && HD().home_only ? ' · loading the rest…' : ''}</p>`;
+      <p class="cl-foot">Real accounts + paper monitor · read-only${built ? ` · data ${esc(built.toLocaleString([], { weekday: 'short', hour: '2-digit', minute: '2-digit' }))}` : ''}${HD() && HD().home_only ? ' · loading the rest…' : ''}</p>`;
     if (ins && M.wireInstall) { try { M.wireInstall(el); } catch (e) { /* guide only */ } }
   }
 
@@ -209,7 +210,7 @@
       ${nx ? `<button type="button" class="card cl-card cl-plan" data-go="brain"><span class="cl-ri">${icon('brain')}</span><span class="cl-rt"><span class="cl-eye">Right now</span><b>${esc(nx)}</b><em>Bot Brain: every rule it checks</em></span>${icon('right', 'cl-go')}</button>` : ''}
       ${planLine()}
       ${lastTrade()}
-      <p class="cl-foot">Paper / eval monitor · read-only · Zlarior is the display name of the LIT bot</p>`;
+      <p class="cl-foot">Real accounts + paper monitor · read-only · Zlarior is the display name of the LIT bot</p>`;
   }
 
   // ------------------------------------------------------------------ ATLAS: the one page, in parts (#/atlas/<part>)
@@ -251,7 +252,7 @@
     ['This app', ['settings', 'features']],
   ];
   const ADV = ['lab', 'experiments', 'writeups', 'losses', 'intraday', 'setups', 'learned', 'chart', 'sources', 'parts', 'archive'];
-  const TAB_MAIN = { money: ['money', 'evaltl', 'props', 'whatif', 'scale'] };
+  const TAB_MAIN = { money: ['money', 'real', 'evaltl', 'props', 'whatif', 'scale'] };   // 'real' (Real results, real.js) 2026-10-28
   const ON_TABS = () => [...new Set(ZL_SEGS.flatMap((s) => s[1]).concat(['atlas', 'atstats'], TAB_MAIN.money))];
   function moreView(el) {
     const used = new Set(['today', 'system']);

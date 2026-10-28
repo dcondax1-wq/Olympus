@@ -81,6 +81,25 @@ def _htf(t, c, minutes, n):
 _MEMO = {}
 
 
+def _atr5(t, h, l, c):
+    """Wilder-14 ATR of 5-minute bars built from 1m bars, value of the last COMPLETED 5m bar at each 1m close."""
+    g = t // 300
+    last = np.r_[g[1:] != g[:-1], True]
+    first = np.r_[True, g[1:] != g[:-1]]
+    gid = np.cumsum(first) - 1
+    ng = gid[-1] + 1
+    H = np.full(ng, -np.inf); Lo = np.full(ng, np.inf)
+    np.maximum.at(H, gid, h); np.minimum.at(Lo, gid, l)
+    C = c[last]
+    pc = np.r_[C[0], C[:-1]]
+    tr = np.maximum(H - Lo, np.maximum(abs(H - pc), abs(Lo - pc)))
+    a = np.empty(ng); a[0] = tr[0]
+    for i in range(1, ng):
+        a[i] = a[i - 1] + (tr[i] - a[i - 1]) / 14.0
+    pos = np.where(last, gid, gid - 1)
+    return np.where(pos >= 0, a[np.clip(pos, 0, None)], tr[0])
+
+
 def bars(tf=5, start="2021-11-01"):
     if (tf, start) not in _MEMO:
         _MEMO[(tf, start)] = _bars(tf, start)
@@ -118,6 +137,8 @@ def _bars(tf, start, cut_t=None):
     for i in range(n):
         if endm[i] <= 955:
             flat[did[i]] = i
+    if cut_t is not None and n and flat[-1] < 0:
+        flat[-1] = n - 1          # cut mode: the cut day may trade up to the cut (its open trades are ignored by the check)
     B["flat_of_day"] = flat
     B["flat"] = flat[did]
     # ATR (Wilder 14) on true range, intraday continuous
@@ -130,6 +151,7 @@ def _bars(tf, start, cut_t=None):
     for i in range(1, n):
         atr[i] = atr[i - 1] + (tr[i] - atr[i - 1]) / 14.0
     B["atr"] = atr
+    B["atr5"] = atr if tf == 5 else _atr5(B["t"], h, l, c)
     for k in (9, 21, 50):
         B[f"ema{k}"] = _ema(c, k)
     for m, nm in ((15, "m15"), (60, "h1")):

@@ -2525,6 +2525,11 @@ class LiveBot:
             ai_watch.tick(self, now)
         except Exception as e:
             self._note_error(f"ai watch failed: {e.__class__.__name__}: {e}")
+        try:                                  # narrator: plain-language feed + the important phone pushes (engine/narrator.py; read-only)
+            from . import narrator
+            narrator.tick(self, now)
+        except Exception as e:
+            self._note_error(f"narrator failed: {e.__class__.__name__}: {e}")
 
     # ------------------------------------------------------------------ phone notifications (engine/push.py, Web Push)
     def _push_account(self):

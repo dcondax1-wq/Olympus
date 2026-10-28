@@ -27,6 +27,11 @@ def _trend(F, mode):
         return t.astype(float)
     if mode == "against":
         return -t.astype(float)
+    if mode.startswith("vwflat"):  # VWAP slope over 30 bars < x ATR (range day): both sides, else none
+        x = float(mode[6:] or 1.0)
+        vw = arr(F, "vwap")
+        sl = np.abs(vw - np.roll(vw, 30)) / np.maximum(arr(F, "atr"), 1e-9)
+        return np.where(sl < x, 0, 9).astype(float)
     if mode == "flat":            # only when the 1h/4h EMAs disagree (no trend): both sides
         return np.where(t == 0, 0, 9).astype(float)
     raise ValueError(mode)
@@ -88,7 +93,7 @@ def _sweep(h, l, c, dayi, lv, side, m, maxpen, once):
     side -1 mirror. once: one signal per level per day."""
     n = len(c)
     sd = np.zeros(n, np.int64); st = np.full(n, np.nan)
-    armed = -1; ext = 0.0; used = False; cur = -1
+    armed = -1; ext = 0.0; La = 0.0; used = False; cur = -1
     for i in range(1, n):
         if dayi[i] != cur:
             cur = dayi[i]; armed = -1; used = False
@@ -99,26 +104,26 @@ def _sweep(h, l, c, dayi, lv, side, m, maxpen, once):
         if side == 1:
             if armed < 0:
                 if l[i] < L - TICK_ and c[i - 1] > L:
-                    armed = i; ext = l[i]
+                    armed = i; ext = l[i]; La = L
             else:
                 ext = min(ext, l[i])
             if armed >= 0:
-                if L - ext > maxpen or i - armed >= m:
+                if La - ext > maxpen or i - armed >= m:
                     armed = -1
                     continue
-                if c[i] > L:
+                if c[i] > La:
                     sd[i] = 1; st[i] = ext - TICK_; used = True; armed = -1
         else:
             if armed < 0:
                 if h[i] > L + TICK_ and c[i - 1] < L:
-                    armed = i; ext = h[i]
+                    armed = i; ext = h[i]; La = L
             else:
                 ext = max(ext, h[i])
             if armed >= 0:
-                if ext - L > maxpen or i - armed >= m:
+                if ext - La > maxpen or i - armed >= m:
                     armed = -1
                     continue
-                if c[i] < L:
+                if c[i] < La:
                     sd[i] = -1; st[i] = ext + TICK_; used = True; armed = -1
     return sd, st
 
@@ -128,7 +133,7 @@ LEVELS = {"pd": ("pdh", "pdl"), "on": ("on_h", "on_l"), "asia": ("asia_h", "asia
           "or": ("or_h", "or_l"), "ib": ("ib_h", "ib_l")}
 
 
-def sig_levels(F, levels=("pd", "on", "asia", "lon"), m=3, maxpen=15.0, once=True, tgt="r", trend="none", rnd=0):
+def sig_levels(F, levels=("pd", "on", "asia", "lon"), m=3, maxpen=15.0, once=True, tgt="r", trend="none", rnd=0, swing=0):
     """Sweep-and-reclaim of session levels (and round numbers every `rnd` pts if rnd > 0)."""
     import pandas as pd
     h, l, c = arr(F, "high"), arr(F, "low"), arr(F, "close")
@@ -139,6 +144,12 @@ def sig_levels(F, levels=("pd", "on", "asia", "lon"), m=3, maxpen=15.0, once=Tru
         hk, lk = LEVELS[name]
         for key, side in ((lk, 1), (hk, -1)):
             a, b = _sweep(h, l, c, dayi, arr(F, key), side, m, maxpen, once)
+            new = (a != 0) & (sd == 0)
+            sd[new] = a[new]; st[new] = b[new]
+    if swing:      # N-bar swing high/low (excluding this bar): turtle-soup sweep + reclaim, repeats allowed
+        hiN = np.roll(_highest(h, swing), 1); loN = np.roll(_lowest(l, swing), 1)
+        for lvv, side in ((loN, 1), (hiN, -1)):
+            a, b = _sweep(h, l, c, dayi, lvv, side, m, maxpen, False)
             new = (a != 0) & (sd == 0)
             sd[new] = a[new]; st[new] = b[new]
     if rnd:
@@ -204,3 +215,26 @@ def sig_band_limit(F, k=2.5, anchor="session", stop_sd=1.0, trend="none"):
     st = np.round(st / TICK) * TICK
     tg = np.where(d != 0, vw, NAN)
     return d, st, tg, lim
+
+
+# ------------------------------------------------------------------------------------------------ 5. ES-NQ divergence (SMT)
+def sig_smt(F5, N=12, m=3, trend="none", need_close=True):
+    """5m: NQ sweeps its N-bar low while ES holds above its own N-bar low (and the NQ bar closes up) -> long; mirror short.
+    ES 5m exists from 2025-04 only. Execute on 1m with tools.scalp_mr_lib.map_5m_to_1m."""
+    import os
+    import pandas as pd
+    es = pd.read_csv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", "ES_5m.csv"))
+    es = es.set_index("time").reindex(F5["time"].values)
+    eh, el = es["high"].values, es["low"].values
+    o, h, l, c = arr(F5, "open"), arr(F5, "high"), arr(F5, "low"), arr(F5, "close")
+    nqlo = np.roll(_lowest(l, N), 1); nqhi = np.roll(_highest(h, N), 1)
+    eslo = np.roll(_lowest(el, N), 1); eshi = np.roll(_highest(eh, N), 1)
+    L = (l < nqlo) & (el > eslo)
+    S = (h > nqhi) & (eh < eshi)
+    if need_close:
+        L &= c > o; S &= c < o
+    sd = np.where(L, 1, np.where(S & ~L, -1, 0))
+    sd = np.where(np.isnan(el) | np.isnan(eslo), 0, sd)
+    sd = _apply_trend(sd, _trend(F5, trend)).astype(np.int64)
+    st = np.where(sd == 1, _lowest(l, m) - TICK, np.where(sd == -1, _highest(h, m) + TICK, NAN))
+    return sd, st, np.full(len(c), NAN), np.full(len(c), NAN)

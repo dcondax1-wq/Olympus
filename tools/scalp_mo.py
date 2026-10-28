@@ -422,12 +422,14 @@ def fam_na(B, p):
                 continue
             if p.get("fresh") and ((D > 0 and c[i - 1] > up[i - 1]) or (D < 0 and c[i - 1] < lo[i - 1])):
                 continue
+            if p.get("dirf") and not _ok_trend(B, i, D, p["dirf"]):
+                continue
             if p["stop"] == "band":
                 st = (max(up[i], vw[i]) if D > 0 else min(lo[i], vw[i])) if not np.isnan(vw[i]) else (up[i] if D > 0 else lo[i])
                 if D * (c[i] - st) < 2 * T_:
                     st = c[i] - D * 0.5 * a[i]
             else:
-                st = c[i] - D * float(p["stop"][3:]) * a[i]
+                st = c[i] - D * float(p["stop"][3:]) * (B["atr5"][i] if p["stop"].startswith("a5") else a[i])
             rows.append({"sig": i, "dir": D, "stop": st, **_exit_kw(p)})
     return _stack(rows)
 
@@ -486,11 +488,19 @@ FAMS = {"orb": fam_orb, "disp": fam_disp, "cisd": fam_cisd, "emapb": fam_emapb, 
 
 
 # ================================================================================================ run one config
-def run(B, fam, p, maxday=3, day_stop=2.0, max_loss=99):
+def run(B, fam, p, maxday=3, day_stop=2.0, max_loss=99, placebo=None):
+    """placebo=seed: the same signal bars with a random direction (stop mirrored at the same distance from the signal
+    close, market entries only) - does the direction carry the edge?"""
     pp = dict(p)
     if p.get("hold_min"):
         pp["_hold_bars"] = _tf_bars(B, p["hold_min"])
     C = FAMS[fam](B, pp)
+    if placebo is not None and len(C["sig"]):
+        rng = np.random.default_rng(placebo)
+        nd = rng.choice([-1.0, 1.0], len(C["sig"]))
+        ref = B["c"][C["sig"]]
+        dist = np.abs(ref - C["stop"])
+        C = {**C, "dir": nd, "stop": ref - nd * dist, "kind": np.zeros(len(nd))}
     X = L.simulate(B, C, maxday=maxday, day_stop_r=day_stop, max_loss=max_loss, last_mod=p.get("last_mod", 930))
     return L.to_trades(B, X)
 
@@ -534,6 +544,23 @@ def grid_specs(fam):
     elif fam == "na":
         for vm, ev, st, ex, w, fr in itertools.product((0.75, 1.0, 1.25), (5, 15, 30), ("band", "atr1.5", "atr3"), ex_rr, ("ny", "nyall"), (True, False)):
             G.append(("na", {"vm": vm, "every": ev, "stop": st, **ex, "win": (600, WIN[w][1]), "fresh": fr}))
+    elif fam == "na2":
+        exits = [{"rr": r} for r in (1.0, 1.5, 2.0, 3.0)] + [{"rr": 1.5, "be": 0.75}] + \
+                [{"trail": tr, "trail_start": ts} for tr, ts in ((0.5, 0.5), (0.75, 0.75), (1.0, 1.0), (1.0, 0.5), (1.5, 1.0))]
+        for vm, ev, st, ex, w, h in itertools.product((0.75, 1.0, 1.25, 1.5), (5, 15, 30), ("a5x1.0", "a5x1.5", "a5x2.0"), exits,
+                                                     ((600, 930), (600, 720), (630, 930)), (None, 30)):
+            G.append(("na", {"vm": vm, "every": ev, "stop": st, **ex, "win": w, "hold_min": h}))
+    elif fam in ("disp2", "tday2"):
+        exits = [{"rr": r} for r in (1.0, 1.5, 2.0, 3.0)] + [{"rr": 1.5, "be": 0.75}] + \
+                [{"trail": tr, "trail_start": ts} for tr, ts in ((0.5, 0.5), (1.0, 1.0), (1.5, 1.0))]
+        if fam == "disp2":
+            for k, q, ent, w, ex, h, tr in itertools.product((1.0, 1.25, 1.5, 1.75), (0.25, 0.4), ("mkt", "half"),
+                                                            ((570, 690), (570, 930), (600, 930), (180, 690)), exits, (30, 60), ("none", "m15")):
+                G.append(("disp", {"k": k, "q": q, "entry": ent, "win": w, **ex, "trend": tr, "hold_min": h}))
+        else:
+            subs = [{"kind": "nbar", "n_min": n, "sb_min": sb} for n in (6, 12, 24) for sb in (3, 6)] + [{"kind": "emapb", "lb": 3}, {"kind": "emapb", "lb": 5}]
+            for k, q, sub, ex, h in itertools.product((0.8, 1.0, 1.2), (0.25, 0.35), subs, exits, (30, 60)):
+                G.append(("tday", {"k": k, "q": q, "sub": sub, **ex, "hold_min": h}))
     elif fam == "esl":
         for satr, w, ex, tr in itertools.product((1.0, 2.0, 3.0), ("ny", "nyall"), ex_rr, ("none", "h1")):
             G.append(("esl", {"satr": satr, "win": WIN[w], **ex, "trend": tr, "hold_min": 30}))
@@ -571,7 +598,8 @@ def grid(fams, procs=4):
         t0 = time.time()
         specs = grid_specs(fam)
         tfs = (5,) if fam == "esl" else (1, 5)
-        jobs = [(f, p, tfs, md, ds) for f, p in specs for md, ds in ((3, 2.0), (6, 3.0))]
+        mds = ((6, 3.0),) if fam.endswith("2") else ((3, 2.0), (6, 3.0))
+        jobs = [(f, p, tfs, md, ds) for f, p in specs for md, ds in mds]
         with Pool(procs) as P:
             R = P.map(_job, jobs, chunksize=4)
         json.dump(R, open(os.path.join(OUT, f"mo_grid_{fam}.json"), "w"), default=float)

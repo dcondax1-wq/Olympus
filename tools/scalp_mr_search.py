@@ -18,17 +18,19 @@ from tools import scalp_mr_sig as S  # noqa: E402
 
 OUT = os.path.join(L.ROOT, "research", "scalp")
 WINDOWS = {"lon": (180, 300), "nyo": (570, 660), "am": (570, 720), "lunch": (690, 810), "pm": (810, 930), "rth": (570, 930),
-           "all": (180, 930)}
+           "all": (180, 930), "asia": (1080, 120), "night": (0, 180), "lon2": (120, 420)}
 
 
 def signals():
     for k, m, an, cf, tg, tr in itertools.product((1.5, 2.0, 2.5, 3.0), (2, 4), ("session", "rth"), ("inside", "turn"),
-                                                 ("vwap", "sd1", "r"), ("none", "with", "against")):
+                                                 ("vwap", "sd1", "r"), ("none", "with", "against", "vwflat0.5", "vwflat1.5")):
         yield ("vwap", dict(k=k, m=m, anchor=an, confirm=cf, tgt=tg, trend=tr))
     lvsets = (("pd",), ("on",), ("asia",), ("lon",), ("or",), ("ib",), ("pd", "on"), ("asia", "lon"), ("pd", "on", "asia", "lon"),
               ("pd", "on", "asia", "lon", "or", "ib"))
     for lv, m, mp_, tg, tr in itertools.product(lvsets, (2, 5, 10), (8.0, 20.0), ("r", "vwap"), ("none", "with", "against")):
         yield ("levels", dict(levels=lv, m=m, maxpen=mp_, tgt=tg, trend=tr))
+    for N, m, mp_, tr in itertools.product((15, 30, 60, 120), (2, 5), (6.0, 15.0), ("none", "with", "against", "vwflat1.0")):
+        yield ("swing", dict(levels=(), swing=N, m=m, maxpen=mp_, trend=tr))
     for rnd, m, tr in itertools.product((50, 100), (1, 3), ("none", "with", "against")):
         yield ("round", dict(levels=(), rnd=rnd, m=m, maxpen=8.0, trend=tr))
     for n, lo, m, tr, tg in itertools.product((2, 3, 7), (5, 10, 20), (2, 4), ("none", "with", "against"), ("r", "ema", "vwap")):
@@ -42,7 +44,7 @@ def signals():
 def make(F, fam, p):
     if fam == "vwap":
         return S.sig_vwap(F, **p)
-    if fam in ("levels", "round"):
+    if fam in ("levels", "round", "swing"):
         return S.sig_levels(F, **p)
     if fam == "rsi":
         return S.sig_rsi(F, **p)
@@ -56,7 +58,9 @@ def make(F, fam, p):
 def sims(p):
     fixed_tgt = p.get("tgt") in ("vwap", "sd1", "ema") or "k" in p and "stop_sd" in p
     rrs = (None,) if fixed_tgt else (0.75, 1.0, 1.5, 2.0)
-    for w, rr, mb, be in itertools.product(WINDOWS, rrs, (15, 45), (0.0,)):
+    for w, rr, mb, be in itertools.product(WINDOWS, rrs, (15, 45), (0.0, 1.0)):
+        if be and (rr or 9) < 1.5:
+            continue
         yield dict(win=w, rr=rr or 1.0, maxbars=mb, be_r=be)
 
 

@@ -105,7 +105,8 @@
     const rf = ok(a.room_frac) ? +a.room_frac : null;
     if (rf != null && rf < 0.25) { n -= chk.length ? 15 : 35; why.push(chk.length ? 'room thin by the ledger (may be a ledger error)' : 'room to the floor under 25%'); }
     else if (rf != null && rf < 0.5) { n -= 15; why.push('room to the floor under 50%'); }
-    const blk = (B.blocks || []).length + (a.blocks || []).length;
+    // the 50K's floor alert is global ("both") on the board: it does not cost ATLAS points
+    const blk = (B.blocks || []).filter((b) => a.id === 'lit' || !/near the floor/i.test(b.text || '')).length + (a.blocks || []).length;
     if (blk) { n -= Math.min(40, 20 * blk); why.push(`${blk} guard${blk > 1 ? 's' : ''} blocking entries`); }
     const bad = ((B.health || {}).items || []).filter((x) => x.ok === false);
     if (bad.length) { n -= Math.min(30, 10 * bad.length); why.push(bad.map((x) => x.label).join(', ') + ' red'); }
@@ -154,7 +155,7 @@
       <span class="rc-trh">${esc(how(r))} <em class="${cl(r.r)}">${fR(r.r)}</em></span><b class="rc-tru mono ${cl(r.usd)}">${r.open ? 'open' : susd(r.usd, 2)}</b></li>`;
   }
   function whyNone(B, a) {
-    const blk = (B.blocks || []).concat(a.blocks || []);
+    const blk = (B.blocks || []).filter((b) => a.id === 'lit' || !/near the floor/i.test(b.text || '')).concat(a.blocks || []);
     if (blk.length) return `Blocked: ${blk[0].text}`;
     if (a.done_today) return 'Done for today (its daily trade limit).';
     return a.waiting || 'Watching for a setup.';
@@ -311,13 +312,13 @@
     const ys = pts.map((p) => p[1]).concat(rows ? rows.flatMap((r) => [r[1], r[5]]) : []).concat(ps ? [ps * nMax, 0] : [0]);
     const tgt = (a.target_balance || PLAN[k].start + PLAN[k].target) - PLAN[k].start, flo = -(a.mll || PLAN[k].mll);
     let lo = Math.min(...ys, flo * 0.6), hi = Math.max(...ys, tgt * 0.6); const pad = (hi - lo) * 0.08; lo -= pad; hi += pad;
-    const W = 640, Hh = 220, L = 52, Rr = 10, T = 10, Bt = 26;
+    const W = 520, Hh = 230, L = 62, Rr = 10, T = 12, Bt = 24;
     const X = (n) => L + (W - L - Rr) * (n / nMax), Y = (v) => T + (Hh - T - Bt) * (1 - (v - lo) / (hi - lo || 1));
     const area = (i, j) => rows ? `M${rows.map((r) => `${X(r[0]).toFixed(1)},${Y(r[i]).toFixed(1)}`).join('L')}L${rows.slice().reverse().map((r) => `${X(r[0]).toFixed(1)},${Y(r[j]).toFixed(1)}`).join('L')}Z` : '';
     const line = (P) => P.map((p, i) => `${i ? 'L' : 'M'}${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join('');
     const hl = (v, c, t) => v >= lo && v <= hi ? `<line x1="${L}" x2="${W - Rr}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" class="${c}"/><text x="${W - Rr - 4}" y="${(Y(v) - 4).toFixed(1)}" text-anchor="end" class="rc-ax ${c}">${t}</text>` : '';
-    const ticks = [lo + pad, 0, hi - pad].map((v) => `<text x="${L - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" class="rc-ax">${esc(susd(v))}</text>`).join('');
-    const xt = [0, 5, 10, 15, 20].filter((n) => n <= nMax).map((n) => `<text x="${X(n).toFixed(1)}" y="${Hh - 8}" text-anchor="middle" class="rc-ax">${n}</text>`).join('');
+    const ticks = [flo, 0, tgt].filter((v) => v >= lo && v <= hi).map((v) => `<text x="${L - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" class="rc-ax">${esc(susd(v))}</text>`).join('');
+    const xt = [0, 5, 10, 15, 20].filter((n) => n <= nMax).map((n) => `<text x="${X(n).toFixed(1)}" y="${Hh - 6}" text-anchor="middle" class="rc-ax">${n}</text>`).join('');
     const last = pts[pts.length - 1];
     let verdict = '';
     if (rows && last[0] >= 1) {
@@ -332,8 +333,8 @@
       ${!rows && ps ? `<path d="M${X(0)},${Y(0)}L${X(nMax)},${Y(ps * nMax)}" class="rc-p50"/>` : ''}
       ${hl(0, 'rc-zero', '')}${hl(tgt, 'rc-tgt', 'target')}${hl(flo, 'rc-flo', 'floor')}
       <path d="${line(pts)}" class="rc-real"/>${pts.map((p) => `<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="3" class="rc-dot"/>`).join('')}
-      ${ticks}${xt}<text x="${(L + W) / 2}" y="${Hh}" text-anchor="middle" class="rc-ax">eval session</text></svg>
-      <figcaption><span class="rc-lg real"></span>real ${susd(last[1], 2)} after ${last[0]} session${last[0] === 1 ? '' : 's'} ${rows ? `<span class="rc-lg band"></span>${tip('Backtest band', 'backtest band')}` : ps ? '<span class="rc-lg pace"></span>backtest pace' : ''}
+      ${ticks}${xt}</svg>
+      <figcaption><span class="rc-ax-l">x: eval session · y: $ since the eval start</span><span class="rc-lg real"></span>real ${susd(last[1], 2)} after ${last[0]} session${last[0] === 1 ? '' : 's'} ${rows ? `<span class="rc-lg band"></span>${tip('Backtest band', 'backtest band')}` : ps ? '<span class="rc-lg pace"></span>backtest pace' : ''}
         ${verdict ? `<b class="rc-vd ${verdict[0]}">${esc(verdict[1])}</b>` : ''}</figcaption></figure>`;
   }
   function vsBacktest(B, k, S) {
@@ -520,7 +521,7 @@ display:flex;flex-direction:column;gap:12px;min-width:0;color:var(--rc-ink)}
 .rc-fig{margin:0}.rc-fig svg{width:100%;height:auto;display:block}.rc-fig figcaption{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:12px;color:var(--rc-ink2)}
 .rc-b1{fill:color-mix(in srgb,var(--rc-acc) 12%,transparent)}.rc-b2{fill:color-mix(in srgb,var(--rc-acc) 22%,transparent)}.rc-p50{fill:none;stroke:var(--rc-acc);stroke-width:1.5;stroke-dasharray:4 4}
 .rc-real{fill:none;stroke:var(--rc-ink);stroke-width:2.5;stroke-linejoin:round}.rc-dot{fill:var(--rc-ink)}.rc-zero{stroke:var(--rc-line);stroke-width:1}.rc-tgt{stroke:var(--rc-good);stroke-width:1;stroke-dasharray:2 3}.rc-flo{stroke:var(--rc-bad);stroke-width:1;stroke-dasharray:2 3}
-.rc-ax{fill:var(--rc-mut);font-size:11px;font-family:var(--sans,system-ui)}.rc-ax.rc-tgt{fill:var(--rc-good);stroke:none}.rc-ax.rc-flo{fill:var(--rc-bad);stroke:none}
+.rc-ax{fill:var(--rc-mut);font-size:13px;font-family:var(--sans,system-ui)}.rc-ax-l{width:100%;font-size:11px;color:var(--rc-mut)}.rc-ax.rc-tgt{fill:var(--rc-good);stroke:none}.rc-ax.rc-flo{fill:var(--rc-bad);stroke:none}
 .rc-lg{display:inline-block;width:14px;height:4px;border-radius:2px;vertical-align:middle}.rc-lg.real{background:var(--rc-ink)}.rc-lg.band{background:color-mix(in srgb,var(--rc-acc) 35%,transparent);height:8px}.rc-lg.pace{background:var(--rc-acc)}
 .rc-vd{font-weight:600;font-size:12px}.rc-vd.good{color:var(--rc-good)}.rc-vd.warn{color:var(--rc-warn)}.rc-vd.bad{color:var(--rc-bad)}
 .rc-days{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px}.rc-day{flex:0 0 58px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px}.rc-day em{font-style:normal;color:var(--rc-mut)}

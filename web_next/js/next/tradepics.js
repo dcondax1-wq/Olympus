@@ -35,9 +35,15 @@
     for (const k of keys || Object.keys((charts && charts.strategies) || {})) for (const x of ((charts.strategies[k] || {}).examples || []).slice(0, 4)) if (x && x.url) out.push(x);
     return out.sort((a, b) => (b.entry_t || 0) - (a.entry_t || 0));
   }
+  // 2026-10-28: a paper picture's size and $ are the strategy's own run, never the account's: labelled PAPER, with the REAL
+  // twin next to it when realcore.js knows the account's trades (TradePics.realOf)
+  const isPaper = (x) => !!x && !x.example && x.src && x.src !== 'live';
+  const realTxt = (x) => { try { return isPaper(x) && window.TradePics && window.TradePics.realOf ? window.TradePics.realOf(x) || '' : ''; } catch (e) { return ''; } };
   function title(x) {
-    const res = x.exit_kind === 'OPEN' || x.open ? 'open' : `${KIND[x.exit_kind] || String(x.exit_kind || '').toLowerCase()} ${usd(x.usd)} ${fR(x.r)}`;
-    return `${x.short || x.key || ''} · ${hm(x.entry_t)} ET · ${x.side || ''} · ${res}`.trim();
+    const pp = isPaper(x) ? `PAPER ${x.qty ? x.qty + ' micros ' : ''}` : '';
+    const res = x.exit_kind === 'OPEN' || x.open ? 'open' : `${KIND[x.exit_kind] || String(x.exit_kind || '').toLowerCase()} ${pp}${usd(x.usd)} ${fR(x.r)}`;
+    const rt = realTxt(x);
+    return `${x.short || x.key || ''} · ${hm(x.entry_t)} ET · ${x.side || ''} · ${res}${rt ? ' · ' + rt : ''}`.trim();
   }
   const col = (x) => x.open || x.exit_kind === 'OPEN' ? 'var(--accent,#6d7cff)' : (x.r || 0) > 0.05 ? 'var(--good,#2ee59d)' : (x.r || 0) < -0.05 ? 'var(--bad,#ff5a7a)' : 'var(--muted,#8a93a6)';
   function reg(L) { const g = 'tp' + (++gid); G[g] = L; return g; }
@@ -49,7 +55,7 @@
     if (!L || !L.length) return opts.empty ? `<p class="tp-none">${esc(opts.empty)}</p>` : '';
     const g = opts.group || reg(L), o = opts.offset || 0;
     return `<div class="tp-strip" role="list" aria-label="${esc(opts.label || 'Trade pictures')}">${L.map((x, i) => `<button type="button" class="tp-th" role="listitem" data-tp="${g}" data-tp-i="${i + o}" style="--c:${col(x)}" title="${esc(title(x))}">
-      ${img(x, 'tp-small')}<span class="tp-cap"><b>${esc(x.short || x.key || '')}</b> ${esc(hm(x.entry_t))} · ${esc(x.side || '')}<em style="color:${col(x)}">${esc(x.open ? 'open' : (KIND[x.exit_kind] || '') + ' ' + fR(x.r))}</em>${x.example ? '<i>backtest</i>' : ''}</span></button>`).join('')}</div>`;
+      ${img(x, 'tp-small')}<span class="tp-cap"><b>${esc(x.short || x.key || '')}</b> ${esc(hm(x.entry_t))} · ${esc(x.side || '')}<em style="color:${col(x)}">${esc(x.open ? 'open' : (KIND[x.exit_kind] || '') + ' ' + fR(x.r))}</em>${x.example ? '<i>backtest</i>' : isPaper(x) ? `<i class="tp-real">${esc(realTxt(x) || 'paper')}</i>` : ''}</span></button>`).join('')}</div>`;
   }
   function latest(charts, key, opts) {
     opts = opts || {};
@@ -186,7 +192,7 @@
 .tp-strip{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 8px;-webkit-overflow-scrolling:touch}
 .tp-th{flex:0 0 auto;width:min(62vw,230px);scroll-snap-align:start;display:flex;flex-direction:column;gap:5px;text-align:left;font:inherit;color:inherit;cursor:zoom-in;
 border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:11px;padding:5px;background:color-mix(in srgb,var(--c) 7%,transparent)}
-.tp-th .tp-sk{border-radius:7px}.tp-cap{font-size:11.5px;line-height:1.35;display:block}.tp-cap em{display:block;font-style:normal;font-weight:700}.tp-cap i{font-style:normal;font-size:10.5px;opacity:.65;margin-left:4px}
+.tp-th .tp-sk{border-radius:7px}.tp-cap{font-size:11.5px;line-height:1.35;display:block}.tp-cap em{display:block;font-style:normal;font-weight:700}.tp-cap i{font-style:normal;font-size:10.5px;opacity:.65;margin-left:4px}.tp-cap i.tp-real{display:block;margin:2px 0 0;opacity:.9;font-weight:700}
 .tp-lb{position:fixed;inset:0;z-index:2147483000;background:#05060a;display:none;flex-direction:column;touch-action:none;color:#eef1f8}
 .tp-lb.on{display:flex}.tp-noscroll,.tp-noscroll body{overflow:hidden}
 .tp-lb-top{display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top,0px)) 12px 6px;font-size:13px}.tp-lb-t{flex:1;min-width:0;font-weight:650;line-height:1.35}

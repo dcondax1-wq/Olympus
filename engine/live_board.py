@@ -396,6 +396,40 @@ def real_block(lit: dict, atlas: dict, trades_all: list, band: dict | None = Non
     return out
 
 
+def real_week(prog: dict | None, real_rows, lit: dict, atlas: dict) -> dict:
+    """2026-10-28: once an account trades for real, its week strip counts REAL trades and real $ (the paper members'
+    trades and $, e.g. a +$3,879 paper MACD trade at 7 micros, are not the account's). Edits prog in place; returns
+    which accounts switched."""
+    done = {}
+    P = _d(prog)
+    for key, acc in (("lit", lit), ("atlas", atlas)):
+        k = _d(P.get(key))
+        wk = _d(k.get("week"))
+        start = str(_d(acc).get("eval_start") or "")
+        if not wk or not start or not _d(acc).get("badge"):
+            continue
+        rows = [r for r in _l(real_rows) if _d(r).get("acct") == key and _d(r).get("src", "live") == "live"]
+        days = _l(wk.get("days"))
+        if not days:
+            continue
+        n_tot, usd_tot = 0, 0.0
+        for d in days:
+            if not isinstance(d, dict):
+                continue
+            mine = [r for r in rows if str(r.get("day")) == str(d.get("day"))]
+            d["n"] = len(mine)
+            d["usd"] = round(sum(float(r.get("usd") or 0) for r in mine if not r.get("open")), 2)
+            n_tot += d["n"]
+            usd_tot += d["usd"]
+        lo, hi = _i(wk.get("lo"), 2), _i(wk.get("hi"), 4)
+        wk.update(n=n_tot, usd=round(usd_tot, 2), src="real",
+                  status="met" if lo <= n_tot <= hi else "over" if n_tot > hi else "on_pace",
+                  sentence=f"{'Zlarior' if key == 'lit' else 'ATLAS'}: {n_tot} real trade{'' if n_tot == 1 else 's'} this week "
+                           f"({_money(usd_tot, sign=True)}), goal {lo}-{hi}.")
+        done[key] = n_tot
+    return done
+
+
 def _member_line(k: str, s: dict, now: int) -> dict:
     st = _d(s.get("state"))
     wins = next_windows(now, ATLAS_WINDOWS.get(k, []), n=2, no_monday=k in ATLAS_NO_MONDAY)
@@ -834,6 +868,7 @@ def build(inp: dict | None, now=None) -> dict:
                                       inp.get("band"), inp.get("lit_expected")))
     part("trades", lambda: trade_log(inp.get("accounts"), second, inp.get("atlas_ledger"), inp.get("cloud_ledger"), int(inp.get("n_trades") or 60)))
     part("real", lambda: real_block(lit, atl, trade_log(inp.get("accounts"), second, inp.get("atlas_ledger"), None, 400), inp.get("band"), now))
+    part("week_real", lambda: real_week(out.get("progress"), (out.get("real") or {}).get("trades"), lit, atl))
     # one sentence per account for the top of the page, most urgent first
     blocks = out["blocks"] if isinstance(out.get("blocks"), list) else []
     lines = []
