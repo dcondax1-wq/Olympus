@@ -65,6 +65,7 @@ import { insight as insightPage } from './next/insight.js';   // AI Insights pag
 import { real as realPage } from './next/real.js';
 import { liveview as liveviewPage } from './next/liveview.js';   // Live View page (engine/liveview_api.py, read-only)
 import { mission as missionPage, initMissionSync } from './next/mission.js';   // Mission Control (missioncore.js, read-only, 2026-10-29)
+import { holo as holoPage } from './next/holo.js';   // Holodeck: the day in 3D (holocore.js, fx.js holo.js; read-only, 2026-10-29)
 
 const TITLES_CLASSIC = { command: 'Command Center', briefing: 'Pre-market Briefing', chart: 'Chart', replay: 'Replay', backtest: 'Backtest Lab',
   prop: 'Prop Firms', robust: 'Robustness', conf: 'Confluence Lab', news: 'Markets & News', live: 'Live Bot', journal: 'Journal',
@@ -86,6 +87,7 @@ const PAGES = { chart: chartPage, replay: replayPage, backtest: btPage, prop: pr
 PAGES.insight = insightPage;
 PAGES.liveview = liveviewPage;
 PAGES.mission = missionPage;
+PAGES.holo = holoPage;
 const TITLES = { ...TITLES_CLASSIC, ...NX_TITLES };
 
 // installable home-screen app: register the service worker (no-op where unsupported, e.g. plain http on a LAN IP in some browsers).

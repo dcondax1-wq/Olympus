@@ -24,6 +24,9 @@ copyFileSync(path.join(here, '..', 'tradechart.js'), path.join(root, 'web_next',
 copyFileSync(path.join(here, '..', 'space.css'), path.join(root, 'web_next', 'css', 'space.css'));
 copyFileSync(path.join(here, '..', 'mission.css'), path.join(root, 'web_next', 'css', 'mission.css'));
 copyFileSync(path.join(here, '..', 'missioncore.js'), path.join(root, 'web_next', 'js', 'next', 'missioncore.js'));
+// Holodeck (2026-10-29): the page UI and its styles, one source each (the 3D scene itself is in this bundle: src/holo.js)
+copyFileSync(path.join(here, '..', 'holocore.js'), path.join(root, 'web_next', 'js', 'next', 'holocore.js'));
+copyFileSync(path.join(here, '..', 'holo.css'), path.join(root, 'web_next', 'css', 'holo.css'));
 const v = createHash('sha1').update(readFileSync(out)).digest('hex').slice(0, 8);
 const stamp = (file, re, rep, soft = false) => {
   const p = path.join(root, file), s = readFileSync(p, 'utf8'), t = s.replace(re, rep);
@@ -40,6 +43,16 @@ if (process.env.STAMP !== '0') {     // STAMP=0 npm run build: bundle only, leav
   // the trade chart module (tradechart.js): its content hash in the phone page (const TCV) and in every PC page that imports it
   const tv = createHash('sha1').update(readFileSync(path.join(here, '..', 'tradechart.js'))).digest('hex').slice(0, 8);
   stamp('tools/web_public/index.html', /const TCV = '?[\w]*'?;/, `const TCV = '${tv}';`, true);
+  // Holodeck: holocore.js + holo.css content hashes in both pages (the phone's service worker keeps versioned files forever),
+  // then holo.js's own hash in the phone page's script tag
+  const hc = createHash('sha1').update(readFileSync(path.join(here, '..', 'holocore.js'))).digest('hex').slice(0, 8);
+  const hs = createHash('sha1').update(readFileSync(path.join(here, '..', 'holo.css'))).digest('hex').slice(0, 8);
+  for (const f of ['tools/web_public/holo.js', 'web_next/js/next/holo.js']) {
+    stamp(f, /holocore\.js\?v=[\w]*/, `holocore.js?v=${hc}`, true);
+    stamp(f, /holo\.css\?v=[\w]*/, `holo.css?v=${hs}`, true);
+  }
+  const hj = createHash('sha1').update(readFileSync(path.join(here, '..', 'holo.js'))).digest('hex').slice(0, 8);
+  stamp('tools/web_public/index.html', /holo\.js\?v=[\w]*/, `holo.js?v=${hj}`, true);
   for (const f of ['web_next/js/next/trades.js', 'web_next/js/next/litpages.js']) {
     try { readFileSync(path.join(root, f)); } catch { continue; }
     stamp(f, /\.\.\/tradechart\.js\?v=[\w]*/g, `../tradechart.js?v=${tv}`, true);

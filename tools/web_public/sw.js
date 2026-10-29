@@ -52,7 +52,10 @@
 // v43 (2026-10-29): deep space (space.css: the static CSS sky + glass; fx.js space.js: Earth, the eclipse, the Sun, stars, the
 // bots' satellites, shooting stars on closed trades; 3D on by default), Mission Control (missioncore.js + mission.js +
 // mission.css, #/mission and the Home strip), liveviewchart.js / liveview.css (the market-structure layer), clean.js (Mission Control in More > Today; ?v=3 kept, the new cache name refreshes it).
-const CACHE = 'le-public-v43';
+// v44 (2026-10-29): the Holodeck (holo.js + holocore.js + holo.css, #/holo: the day in 3D, every fill at its exact second and
+// price, the trades as glass volumes, each setup step by step, what every bot is thinking, replay; holo.json / holo_hist.json
+// from the live branch, cross-origin = never cached here; fx.js holo.js: the 3D scene). New cache name so every iPhone refreshes.
+const CACHE = 'le-public-v44';
 const BADGE = 'le-badge', BADGE_URL = './__badge';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png?v=k31025', './icons/apple-touch-icon.png?v=k31025', './icons/icon-512.png?v=k31025'];
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).catch(() => null)); self.skipWaiting(); });

@@ -559,6 +559,19 @@ part yourself or fold it into a script.**
   `#/real`, CSV export). AI Insights (`insight.js`, `engine/insight_api.py` `GET /api/next/insight[?day&hm]`, features 21-30).
   Live View (`liveview*.js`, `engine/liveview_api.py` `GET /api/next/liveview?tf=1m|5m`): full-screen chart, per-strategy
   colour layers (Zlarior blue, ATLAS orange, BLITZ purple), "what the bot is thinking" panel, feed.
+  **Holodeck (2026-10-29, the main feature: "see exactly chart fills, very high quality and 3D, what every bot is thinking"):**
+  scene `tools/web_public/fx/src/holo.js` in fx.js (`FX.holo(el, opts)`, own loop, works with the space background off;
+  instanced candles + wicks + volume, Max = mirrored floor + bloom, Lite = neither, DPR cap 2 PC / 1.5 phone, sleeps off screen):
+  every fill an orb at its exact second / price (real solid, paper / model hollow, the model price as a ghost), trades as glass
+  risk / reward volumes with the stepping stop, the LIT setup anatomy (1 Sweep -> 2 Inducement -> 3 Displacement -> 4 CISD ->
+  5 Entry), thought panels, working orders, levels, structure; camera Flat / 3D / Fly, replay 1x-120x. Page UI `holocore.js` +
+  `holo.css` (byte-identical copies in `web_next/js/next/` and `web_next/css/`, copied + hash-stamped by fx/build.mjs). PC
+  `web_next/js/next/holo.js` (Main after Live View, `GET /api/next/holo[?day=]` every 5 s on today, `/api/next/holo/days`,
+  a "3D" button on Live View); phone `tools/web_public/holo.js` (`#/holo`, Home button under Live View, Mission Control link,
+  More > Today; `holo.json` + `holo_hist.json` from branch `live`, API first, raw fallback). No WebGL 2 / quality 2D: the Live
+  View chart with the fills. Data contract (v 1, kind le-holo) + the API: `engine/holo_api.py`. Test: `python -X utf8 -m
+  tests.test_holo_ui` (fixture `tests/fixtures/holo_fe_sample.json` from `tests/make_holo_fe_fixture.py`, real bars + research
+  trades, mocked real fills 1 tick off the model; `LE_SHOTS=<dir>` saves the screenshots).
   **Phone Live View (2026-10-28, `tools/web_public/liveview.js`, `#/liveview`, Home button under the plan line, More > Today):**
   the same page on the phone. The PC pushes `liveview.json` (`liveview_api.phone_view`: 1m bars of the last 8 h + the 5m
   session as `bars5`, the three layers, thinking, feed 60; < 240 KB) in the same orphan commit as live.json on branch `live`
@@ -569,6 +582,24 @@ part yourself or fold it into a script.**
   (`engine/narrator.py`, hooked in `LiveBot._alerts_tick`, real bot only, never raises): plain-language feed,
   `logs/narrator/<day>.jsonl`; phone pushes only for armed / entry / exit / refused (`data/narrator.json`, `LE_NARRATOR_PUSH=0`).
   Tests: test_real_ui, test_insight_api, test_liveview_api, test_narrator.
+- **Holodeck data (2026-10-29, owner: "see exactly chart fills, very high quality and 3D, where I can see what every bot is
+  thinking"; read-only):** `engine/holo_api.py` builds one JSON per trading day (contract `kind: "le-holo"`, v 1: `bars` 1m/5m
+  `[t,o,h,l,c,v]`, `bots` (Zlarior `#4f9bff`, ATLAS `#ff9a3d`, BLITZ `#b388ff`), `fills`, `trades` (stop_path, model, setup),
+  `orders`, `thoughts`, `levels`, `structure`, `now`, `errors`). `GET /api/next/holo?day=` (no day = today) and
+  `/api/next/holo/days` (last 30 days with trades, real $ / model $). Real fills first: the NinjaTrader adapters' legs (LIT
+  `bot.adapter`, account B ATLAS, account C BLITZ; `fill_px` + `fill_mtime` = NinjaTrader's order-state file time, adds),
+  `logs/exec_audit/{legs.json,orders.jsonl,ledger.jsonl}` (stop / target fill prices + times, past days), the B / C state files;
+  a refused entry is an order REJECTED, never a fill (`ninjatrader.entry_never_placed`). Model: the LIT backtest of the day
+  (`lit_live.run` + `brain.build`, cached per day by its bars, ~0.35 s cold, ~6 ms warm) gives model_px / slip_ticks (+ = worse),
+  the setup timeline (`t_sweep`, `t_idm`, `t_disp`, `t_cisd`, `cisd`, swept levels) and the levels; today uses the Bot Brain and
+  replays only when a new setup / closed trade appears (`_live_model`, <= every 5 min). A day without real fills shows the model
+  trades as `real: false, src: "model"`; ATLAS (`bot.second`) / BLITZ (`bot.blitz` ledgers) paper trades are `src: "paper"`.
+  Thoughts = narrator file + Brain log + order events, time-ordered, with a price anchor. Phone: `Publisher.extra()` ships
+  `holo.json` (today, <= 300 KB, 1m bars trimmed to the trade windows ±30 min first; reuses the minute's phone_view) and
+  `holo_hist.json` (last 10 trading days' trades with fills / thoughts / a ±45 min 1m window, <= 400 KB; cached 10 min or until
+  a ledger changes, at most 1 rebuild a minute) in the live commit; `Publisher.extra_ms` / `--status` show the ms (here: holo
+  ~15 ms warm, hist ~3.4 s cold / ~65 ms warm; the three extras ~30 ms a minute). Sample day for the 3D page: `tests/fixtures/holo_sample.json` (2026-10-13 from
+  real data, fake Sim fills 1 tick off; rebuild `python -X utf8 tools/holo_fixture.py`). Test `tests.test_holo_api` (52).
 - **Deep space + Mission Control (2026-10-29, owner: "make it look cooler ... almost like 3D space"; read-only):** the default
   look of both dashboards. 3D: `tools/web_public/fx/src/space.js` (in fx.js; `FX.init({ level, bg: 'space' | 'galaxy' })`):
   Earth (continents / clouds / city lights baked once from noise into textures, then texture reads + lighting), the Moon

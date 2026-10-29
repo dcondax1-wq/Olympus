@@ -7,6 +7,8 @@ import { L, onLive } from '../dash/live.js';
 import { S } from '../state.js';
 
 let FX = null;
+// the bundle's URL: fx/build.mjs stamps the bundle's content hash into the next line (the first fx.js URL of this file)
+const FX_URL = '/js/fx.js?v=d4f02163';
 const pend = new Map();
 const root = document.documentElement;
 // Deep space by default (owner 2026-10-29: "make it look cooler ... almost like 3D space"; it was off since 2026-10-25, calm).
@@ -22,7 +24,7 @@ export async function initFX() {
   root.dataset.fx = lv;
   if (lv === 'off') { root.dataset.fx = 'off'; return; }      // reduced motion: space.js draws one still frame
   await new Promise(r => setTimeout(r, 300));
-  try { FX = await import('/js/fx.js?v=6c9838c8'); } catch (e) { console.warn('3D layer not loaded', e); root.dataset.fx = 'off'; return; }
+  try { FX = await import(FX_URL); } catch (e) { console.warn('3D layer not loaded', e); root.dataset.fx = 'off'; return; }
   if (!FX.supported()) { FX = null; root.dataset.fx = 'off'; return; }
   root.dataset.fx = FX.init({ level: lv, bg: fxBg() });
   for (const [key, a] of pend) mount3d(key, ...a);
@@ -42,6 +44,8 @@ export function mount3d(key, el, kind, data, opts) {
   if (v) el.closest('[data-fx-card]')?.removeAttribute('hidden');
   return v;
 }
+// the bundle itself, also while the background is off (the Holodeck page, js/next/holo.js, runs its own 3D view)
+export const fxModule = () => (FX ? Promise.resolve(FX) : import(FX_URL));
 export const fxWarp = () => FX?.warp();
 export const fxScene = (page) => FX?.scene?.(page);   // per-page background mood (palette, galaxy tilt, spin)
 export const fxPulse = () => FX?.pulse();

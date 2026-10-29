@@ -13,7 +13,7 @@ import { charts as loadCharts } from './pics.js';
 // `cd tools/web_public/fx && npm run build`): a LIT trade drawn like TradingView's Long / Short Position tool, loaded on demand;
 // records from /api/next/tradechart/<id> (research/lab/replays.json "charts", tools/export_replays.py)
 let TCP = null;
-const loadTC = () => TCP || (TCP = import('../tradechart.js?v=b1526d92').catch((e) => { TCP = null; throw e; }));
+const loadTC = () => TCP || (TCP = import('../tradechart.js?v=3dd26fe6').catch((e) => { TCP = null; throw e; }));
 export function chartInto(box, t, opts = {}) {
   if (!box) return;
   if (!t?.chart) { box.innerHTML = '<div class="muted small">No chart for this trade: charts are drawn for the 2026 LIT replay trades (1-minute data).</div>'; return; }

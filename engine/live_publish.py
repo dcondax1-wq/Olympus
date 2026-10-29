@@ -27,7 +27,9 @@ lays it over data.json):
    "price", "day_pnl", "last_signal", "model_state", "heartbeat": {"t", "ok"} (the last heartbeat push),
    "money": the Goals card's Road to $10K / Stingray 3LT (engine/money_goal.from_heartbeat, ~7 KB; dropped first if too big)}
 Next to it in the same commit: liveview.json (< 240 KB), the phone's Live View (engine/liveview_api.phone_view: the
-chart's 1m / 5m bars, the Zlarior / ATLAS / BLITZ layers, what each bot is thinking, the feed; tools/web_public/liveview.js).
+chart's 1m / 5m bars, the Zlarior / ATLAS / BLITZ layers, what each bot is thinking, the feed; tools/web_public/liveview.js),
+holo.json (< 300 KB, the Holodeck's today: exact fills, trades, orders, thoughts; engine/holo_api.phone) and holo_hist.json
+(< 400 KB, the last 10 trading days' trades; engine/holo_api.hist, cached 10 min).
 
 Cadence: every FAST_S (60 s) while the bot runs, every SLOW_S (300 s) otherwise; never more often than MIN_GAP_S; after a
 failed push it backs off (2, 4, 8 ... up to 30 min) and logs at most once an hour. A daemon thread: it never touches the
@@ -322,6 +324,7 @@ class Publisher:
         self.last_push_t = 0.0
         self.fails = 0
         self.pushes = 0
+        self.extra_ms: dict = {}          # ms each extra file took to build (liveview / holo / holo_hist), last publish
         self._err_at = 0.0
         self._stop = threading.Event()
         self._thread = None
@@ -352,12 +355,33 @@ class Publisher:
 
     def extra(self) -> dict:
         """The other files of the live commit: liveview.json, the phone's Live View (engine/liveview_api.phone_view:
-        the chart, the three strategy layers, what each bot is thinking, the feed). {} when it cannot be built."""
+        the chart, the three strategy layers, what each bot is thinking, the feed), and the Holodeck's holo.json (today:
+        exact fills, trades, orders, thoughts, levels; engine/holo_api.phone, reusing this minute's Live View answer) +
+        holo_hist.json (the last 10 trading days' trades, cached: rebuilt at most every 10 min or when a trade closes).
+        Built here, on the publisher's own thread (never the trading loop); self.extra_ms keeps what each one took.
+        A file that cannot be built is left out."""
+        out, ms, lv = {}, {}, None
+        now = int(self.clock())
         try:
             from . import liveview_api
-            return {liveview_api.PHONE_FILE: scrub(liveview_api.phone_view(self.bot, int(self.clock())), _phrases())}
+            t0 = time.perf_counter()
+            lv = liveview_api.phone_view(self.bot, now)
+            out[liveview_api.PHONE_FILE] = scrub(lv, _phrases())
+            ms["liveview"] = int((time.perf_counter() - t0) * 1000)
         except Exception:
-            return {}
+            pass
+        try:
+            from . import holo_api
+            t0 = time.perf_counter()
+            out[holo_api.PHONE_FILE] = scrub(holo_api.phone(self.bot, now, lv=lv), _phrases())
+            ms["holo"] = int((time.perf_counter() - t0) * 1000)
+            t0 = time.perf_counter()
+            out[holo_api.HIST_FILE] = scrub(holo_api.hist(self.bot, now), _phrases())
+            ms["holo_hist"] = int((time.perf_counter() - t0) * 1000)
+        except Exception:
+            pass
+        self.extra_ms = ms
+        return out
 
     def publish(self, force: bool = False) -> dict:
         """One push (rate-limited: never within MIN_GAP_S of the last attempt unless force). Never raises."""
@@ -408,7 +432,7 @@ class Publisher:
 
     def status(self) -> dict:
         return {"enabled": enabled(), "target": _redact(self.url or ""), "branch": BRANCH, "phone": phone_urls(self.url),
-                "every_s": self.every_s(), "last": self.last, "fails": self.fails,
+                "every_s": self.every_s(), "last": self.last, "fails": self.fails, "extra_ms": dict(self.extra_ms),
                 "thread_alive": bool(self._thread and self._thread.is_alive())}
 
 
