@@ -877,9 +877,15 @@ def _atlas_paper(bot, day) -> list:
     for k, s in (sec.get("strategies") or {}).items():
         if not isinstance(s, dict) or s.get("on") is False or s.get("candidate") or str(k).startswith(("lit", "scalp")):
             continue
+        br = s.get("brain") if isinstance(s.get("brain"), dict) else {}
+        logs = [r for r in br.get("log") or [] if isinstance(r, dict) and r.get("entry_t")]
+        lvl = {str(x.get("name")): _f(x.get("px")) for x in br.get("levels") or [] if isinstance(x, dict) and x.get("name")}
         for t in s.get("trades") or []:
             if isinstance(t, dict) and t.get("entry_t") and (t.get("day") or N.trading_day(int(t["entry_t"]))) == day:
-                out.append({**t, "_key": k, "_short": s.get("short") or k, "_label": s.get("label") or k})
+                why = next((r for r in logs if int(r["entry_t"]) == int(t["entry_t"]) and (r.get("trade") or r.get("ok"))), None) or \
+                    next((r for r in logs if int(r["entry_t"]) == int(t["entry_t"])), None)
+                out.append({**t, "_key": k, "_short": s.get("short") or k, "_label": s.get("label") or k, "_why": why,
+                            "_lvl": (str(why.get("level")), lvl.get(str(why.get("level")))) if why and why.get("level") else None})
     return out
 
 
@@ -897,8 +903,15 @@ def _blitz_paper(bot, day) -> list:
 
 
 def _paper_setup(kind, t, notes=()) -> dict:
-    return {"kind": kind, "t_sweep": _i(t.get("hunt_t")), "sweep_ext": None, "swept": [{"px": _f(t.get("pool_px")), "label": "pool"}] if t.get("pool_px") else [],
-            "t_idm": None, "t_disp": None, "t_cisd": _i(t.get("signal_t")), "cisd": None, "notes": [n for n in notes if n]}
+    """An ATLAS member's setup: its decision row (bot.second brain log: the signal time, the S/R level it swept), the stop-hunt
+    pool, the notes."""
+    why = t.get("_why") if isinstance(t.get("_why"), dict) else {}
+    swept = [{"px": _f(t.get("pool_px")), "label": "pool"}] if t.get("pool_px") else []
+    if t.get("_lvl") and t["_lvl"][1] is not None:
+        swept.append({"px": t["_lvl"][1], "label": t["_lvl"][0]})
+    return {"kind": kind, "t_sweep": _i(t.get("hunt_t")), "sweep_ext": None, "swept": swept, "t_idm": None, "t_disp": None,
+            "t_cisd": _i(t.get("signal_t")) or _i(why.get("t")), "cisd": None,
+            "notes": [n for n in list(notes) + [why.get("text")] if n]}
 
 
 # ============================================================================================ thoughts / levels / now
