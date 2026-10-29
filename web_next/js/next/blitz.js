@@ -137,7 +137,7 @@ async function refreshSlots() {
   const on = SLOTS.filter((s) => active(s.page));
   if (!on.length) return;
   try { await allCores(); } catch { return; }
-  LAST = await sources(on.some((s) => s.page !== 'mission'));
+  LAST = await sources(false);        // Home / Brain / Mission cards never need the Live View data (the PC's heaviest answer)
   on.forEach(place);
   if (on.some((s) => s.page === 'cc') && !seenSet) { seenSet = true; setTimeout(() => window.DeckUI.markSeen(Date.now() / 1000), 8000); }
 }
