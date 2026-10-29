@@ -270,8 +270,14 @@ def main(cmd="all"):
                                           "atlas": "research/runs/atlas_funded_live.json",
                                           "blitz": "research/scalp/na_best_trades.json"}[bot]}
             print(bot, len(rows), round(time.time() - t0, 1), flush=True)
-        with open(MD.STORE_PATH, "w", encoding="utf-8") as fh:
-            json.dump(store, fh, separators=(",", ":"), default=MD._jd)
+        old = MD._read_json(MD.STORE_PATH, {}) or {}
+        same = json.loads(json.dumps(store["bots"], default=MD._jd)) == old.get("bots")
+        if same:                             # unchanged rows: keep the file as it is (no 280 KB diff for a new time stamp)
+            store = old
+            print("store unchanged", flush=True)
+        else:
+            with open(MD.STORE_PATH, "w", encoding="utf-8") as fh:
+                json.dump(store, fh, separators=(",", ":"), default=MD._jd)
     cal = {"v": MD.VERSION, "built": int(time.time()), "similar": calibrate(store), "daytype": model}
     with open(MD.CALIB_PATH, "w", encoding="utf-8") as fh:
         json.dump(cal, fh, indent=1, default=MD._jd)
