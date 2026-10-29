@@ -129,3 +129,7 @@ data/goals_money.json.tmp
 research/scalp/*_grid_5m.json
 research/scalp/mr_grid_1m.json
 research/scalp/na_grid_*.json
+# 2026-10-29: new MFFU account Names seen / dismissed, the autopilot tap log, the PC's last good push config
+data/new_accounts.json
+data/autopilot.jsonl
+data/push_pc_sync.json

@@ -24,6 +24,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATH = os.path.join(ROOT, "data", "autopilot.jsonl")
 KEEP = 600                                  # lines kept in the tap log
 PER_STEP = 10
+DEDUP_S = 30 * 60                           # one Start page write repeated within 30 min = one step
 TAPS = {"/api/next/start/go": "Start trading tapped", "/api/next/start/arm": "Live phrase typed (arm)",
         "/api/next/start/names": "Account Names set", "/api/next/start/nt": "Open NinjaTrader tapped",
         "/api/next/start/setup": "Setup run by hand", "/api/next/start/sims": "Sim test run by hand",
@@ -109,6 +110,16 @@ def week(now=None, path: str = PATH, handsoff_path: str | None = None) -> dict:
     except Exception:
         pass
     items.sort(key=lambda x: x["t"])
+    # the same Start page write again within 30 min is one step (the page's / the Run switch's own retries of a stop,
+    # two open tabs): the owner pressed it once
+    out, last = [], {}
+    for x in items:
+        if x["src"] == "Start page" and x["t"] - last.get(x["what"], -10 ** 9) < DEDUP_S:
+            last[x["what"]] = x["t"]
+            continue
+        last[x["what"]] = x["t"]
+        out.append(x)
+    items = out
     n = len(items)
     for x in items:
         x["when"] = dt.datetime.fromtimestamp(x["t"], ET).strftime("%a %H:%M")

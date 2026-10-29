@@ -170,7 +170,7 @@ def main():
     finally:
         for k, v in keep.items():
             setattr(G, k, v)
-        NA.STATE_PATH = os.path.join(ROOT, "data", "new_accounts.json")
+        NA.STATE_PATH = None
         if env_keep is None:
             os.environ.pop("NINJATRADER_FOLDER", None)
         else:

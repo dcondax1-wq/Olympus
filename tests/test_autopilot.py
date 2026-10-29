@@ -44,13 +44,14 @@ def main():
               and w0["verdict"] == "hands-free" and w0["week"] == "2026-11-02", w0)
         AP.note_tap("/api/next/start/go", now=ts(2026, 11, 2, 7, 0), path=tp)
         AP.note_tap("/api/next/start/arm", now=ts(2026, 11, 2, 7, 1), path=tp)
+        AP.note_tap("/api/next/start/go", now=ts(2026, 11, 2, 7, 10), path=tp)          # the page's own retry: same step
         AP.note_tap("/api/next/start/status", now=ts(2026, 11, 2, 7, 2), path=tp)       # a read: not a step
         AP.note_tap("/api/next/start/go", now=ts(2026, 10, 30, 7, 0), path=tp)          # last week
         HO.record("stop", "pc", "dashboard Stop", now=ts(2026, 11, 3, 10, 0), path=hp)
         HO.record("restart", "pc", "server start", now=ts(2026, 11, 1, 20, 0), path=hp)  # Sunday evening: 0 points, not a step
         w = AP.week(now, tp, hp)
-        check("this week (Mon 11-02 .. Sun 11-08 ET): Start trading + the live phrase + a dashboard Stop = 3 manual steps, "
-              "score 70; last week's tap, a read and an out-of-hours restart are not counted",
+        check("this week (Mon 11-02 .. Sun 11-08 ET): Start trading (+ its retry 10 min later, one step) + the live phrase + a "
+              "dashboard Stop = 3 manual steps, score 70; last week's tap, a read and an out-of-hours restart are not counted",
               w["manual"] == 3 and w["score"] == 70 and [x["what"] for x in w["items"]]
               == ["Start trading tapped", "Live phrase typed (arm)", "Bot stopped by hand"], w)
         c = AP.compact(tmp, now)

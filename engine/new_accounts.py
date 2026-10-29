@@ -30,7 +30,16 @@ import os
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-STATE_PATH = os.path.join(ROOT, "data", "new_accounts.json")
+STATE_PATH = None                          # None = next to engine/go.CFG (data/new_accounts.json; a test's temp go.CFG keeps it temp)
+
+
+def _path(path=None) -> str:
+    if path:
+        return path
+    if STATE_PATH:
+        return STATE_PATH
+    from . import go
+    return os.path.join(os.path.dirname(go.CFG), "new_accounts.json")
 ROLE_LABEL = {"zlarior": "Zlarior", "atlas": "ATLAS", "blitz": "BLITZ"}
 SIZE_SPLIT = 35000.0                       # a balance at / above this is a 50K account, below it a 25K one (= go.slot_problem)
 ROLE_SETTERS: dict = {}                    # role -> fn(name) -> {"ok", "say" | "error"} (BLITZ's slot registers its own)
@@ -38,7 +47,7 @@ ROLE_SETTERS: dict = {}                    # role -> fn(name) -> {"ok", "say" | 
 
 def _load(path: str | None = None) -> dict:
     try:
-        with open(path or STATE_PATH, encoding="utf-8") as fh:
+        with open(_path(path), encoding="utf-8") as fh:
             s = json.load(fh)
         return s if isinstance(s, dict) else {}
     except Exception:
@@ -46,7 +55,7 @@ def _load(path: str | None = None) -> dict:
 
 
 def _save(s: dict, path: str | None = None):
-    p = path or STATE_PATH
+    p = _path(path)
     os.makedirs(os.path.dirname(p), exist_ok=True)
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
