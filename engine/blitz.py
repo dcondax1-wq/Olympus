@@ -99,6 +99,50 @@ LEDGER_KEEP = 400                   # paper trades kept per ledger in the state 
 WARM_DAYS = 35                      # cold start: this many calendar days of 1m bars build the band (14 sessions) and the ATR
 RULE = {"vm": VM, "every": EVERY, "stop": "a5x1.5", "trail": TRAIL_R, "trail_start": TRAIL_START, "win": list(WIN), "hold_min": HOLD,
         "maxday": MAXDAY, "day_stop_r": DAY_STOP_R, "lookback": LOOKBACK, "filter": f"prng>={PRNG_MIN}"}
+# The rule as one params dict (2026-10-29, account C = BLITZ on its own account): today's researched rule is the default; a
+# later research pick plugs in by config only (engine/account_c.py "params"), never by editing this file. None / {} / these
+# exact values = the rule above, byte for byte (tests/test_blitz.py, tests/test_account_c.py).
+DEFAULT_PARAMS = {"vm": VM, "every": EVERY, "win": list(WIN), "stop_atr": STOP_ATR, "trail_r": TRAIL_R, "trail_start": TRAIL_START,
+                  "tgt_r": TGT_R, "hold": HOLD, "maxday": MAXDAY, "day_stop_r": DAY_STOP_R, "lookback": LOOKBACK, "prng_min": PRNG_MIN,
+                  "last_mod": LAST_MOD}
+_P_RANGE = {"vm": (0.2, 5.0), "every": (1, 120), "stop_atr": (0.25, 6.0), "trail_r": (0.25, 10.0), "trail_start": (0.0, 10.0),
+            "tgt_r": (0.5, 50.0), "hold": (1, 390), "maxday": (1, 20), "day_stop_r": (0.5, 20.0), "lookback": (5, 60),
+            "prng_min": (0.0, 3.0), "last_mod": (RTH0, LAST_IN)}
+_P_INT = ("every", "hold", "maxday", "lookback", "last_mod")
+
+
+def rule_params(over: dict | None = None) -> dict:
+    """DEFAULT_PARAMS with `over` laid on top (unknown keys / values out of range -> ValueError). The window "win" is
+    [first signal-bar open minute, end) inside 09:30-15:55."""
+    P = {**DEFAULT_PARAMS, "win": list(WIN)}
+    for k, v in (over or {}).items():
+        if k not in DEFAULT_PARAMS:
+            raise ValueError(f"unknown BLITZ rule parameter {k!r} (known: {', '.join(sorted(DEFAULT_PARAMS))})")
+        if k == "win":
+            if not (isinstance(v, (list, tuple)) and len(v) == 2 and all(isinstance(x, (int, float)) for x in v)
+                    and RTH0 <= int(v[0]) < int(v[1]) <= LAST_IN + 1):
+                raise ValueError(f"win must be [start, end) ET minutes inside 09:30-15:55, got {v!r}")
+            P["win"] = [int(v[0]), int(v[1])]
+            continue
+        if isinstance(v, bool) or not isinstance(v, (int, float)) or v != v:
+            raise ValueError(f"BLITZ rule parameter {k}={v!r} is not a number")
+        lo, hi = _P_RANGE[k]
+        if not lo <= float(v) <= hi:
+            raise ValueError(f"BLITZ rule parameter {k}={v!r} outside [{lo}, {hi}]")
+        P[k] = int(v) if k in _P_INT else float(v)
+    return P
+
+
+def is_default(P: dict | None) -> bool:
+    return P is None or rule_params(P) == rule_params(None)
+
+
+def checks_of(P: dict | None = None) -> tuple:
+    """The signal-bar open minutes of the checks (default CHECKS: closes 11:00, 11:30 ... 15:30)."""
+    if P is None:
+        return CHECKS
+    w0, w1 = P["win"]
+    return tuple(m for m in range(int(w0), int(w1)) if (m + 1 - RTH0) % int(P["every"]) == 0)
 
 # ---------------------------------------------------------------------------------------------------------------- the paper accounts
 PLAN = {"name": "MFFU Builder 25K", "start": 25000.0, "target": 1500.0, "mll": 1000.0, "lock": 100.0, "dll": 600.0, "maxq": 20,
@@ -190,9 +234,11 @@ def at_et(day: str, mod: int) -> int:
 
 
 # ================================================================================================ one bar of an open trade
-def manage(p: dict, o: float, h: float, l: float, c: float, first: bool, flat_bar: bool):
+def manage(p: dict, o: float, h: float, l: float, c: float, first: bool, flat_bar: bool, P: dict | None = None):
     """tools/scalp_mo_lib._sim's loop body for one bar of an open market-entry trade. p: {"dir", "fill", "stp", "tg", "risk",
-    "ext", "mae", "nb" (bars since the entry bar)}; updated in place. Returns (exit price, kind) or None."""
+    "ext", "mae", "nb" (bars since the entry bar)}; updated in place. Returns (exit price, kind) or None. P = rule_params
+    (None = today's rule)."""
+    hold, t_start, t_r = (HOLD, TRAIL_START, TRAIL_R) if P is None else (P["hold"], P["trail_start"], P["trail_r"])
     D = p["dir"]
     stp, tg, fill = p["stp"], p["tg"], p["fill"]
     if not first:
@@ -214,13 +260,13 @@ def manage(p: dict, o: float, h: float, l: float, c: float, first: bool, flat_ba
         return tg, "target"
     if flat_bar:
         return c - D * TICK, "flat"
-    if p["nb"] >= HOLD:
+    if p["nb"] >= hold:
         return c - D * TICK, "time"
     ext = max(p["ext"], h) if D > 0 else min(p["ext"], l)
     p["ext"] = ext
     risk = p["risk"]
-    if D * (ext - fill) >= TRAIL_START * risk:
-        nt = ext - D * TRAIL_R * risk
+    if D * (ext - fill) >= t_start * risk:
+        nt = ext - D * t_r * risk
         if D * (nt - stp) > 0:
             p["stp"] = nt
     return None
@@ -346,39 +392,42 @@ def prior_range(B) -> np.ndarray:
     return out
 
 
-def features(B) -> dict:
-    sig, op = noise(B)
-    return {"atr5": atr5(B), "sigma": sig, "o0": op, "up": op * (1 + VM * sig), "lo": op * (1 - VM * sig), "prng": prior_range(B)}
+def features(B, P: dict | None = None) -> dict:
+    vm = VM if P is None else P["vm"]
+    sig, op = noise(B) if P is None else noise(B, int(P["lookback"]))
+    return {"atr5": atr5(B), "sigma": sig, "o0": op, "up": op * (1 + vm * sig), "lo": op * (1 - vm * sig), "prng": prior_range(B)}
 
 
-def signals(B, F, filtered: bool = True) -> list:
+def signals(B, F, filtered: bool = True, P: dict | None = None) -> list:
     """[(signal bar index, dir, stop)] in bar order: a check-bar close above the upper band (LONG) / below the lower (SHORT);
     filtered: only on days whose prior-day range ratio is >= 0.8 (removed before the executor, as the research's mask)."""
     c, m = B["c"], B["mod"]
+    win, every, pmin, sa = (WIN, EVERY, PRNG_MIN, STOP_ATR) if P is None else (P["win"], int(P["every"]), P["prng_min"], P["stop_atr"])
     out = []
-    for i in np.where((m >= WIN[0]) & (m < WIN[1]) & ~np.isnan(F["sigma"]))[0]:
-        if (m[i] + 1 - RTH0) % EVERY:
+    for i in np.where((m >= win[0]) & (m < win[1]) & ~np.isnan(F["sigma"]))[0]:
+        if (m[i] + 1 - RTH0) % every:
             continue
-        if filtered and not F["prng"][B["day"][i]] >= PRNG_MIN:
+        if filtered and not F["prng"][B["day"][i]] >= pmin:
             continue
         for D in (1, -1):
             if (D > 0 and not c[i] > F["up"][i]) or (D < 0 and not c[i] < F["lo"][i]):
                 continue
-            out.append((int(i), D, float(c[i] - D * STOP_ATR * F["atr5"][i])))
+            out.append((int(i), D, float(c[i] - D * sa * F["atr5"][i])))
     return out
 
 
-def execute(B, sigs: list) -> list:
+def execute(B, sigs: list, P: dict | None = None) -> list:
     """tools/scalp_mo_lib._sim for BLITZ's market entries: one position, max 6 a day, -3R day stop, flat 15:55. -> trades."""
     o, h, l, c, mod, day, flat = B["o"], B["h"], B["l"], B["c"], B["mod"], B["day"], B["flat"]
+    maxday, dstop, lmod, tgr = (MAXDAY, DAY_STOP_R, LAST_MOD, TGT_R) if P is None else (P["maxday"], P["day_stop_r"], P["last_mod"], P["tgt_r"])
     out, busy, cur, dn, dR = [], -1, -1, 0, 0.0
     for s, D, st in sigs:
         if day[s] != cur:
             cur, dn, dR = day[s], 0, 0.0
-        if s < busy or dn >= MAXDAY or dR <= -DAY_STOP_R:
+        if s < busy or dn >= maxday or dR <= -dstop:
             continue
         fe = int(flat[s])
-        if s + 1 > fe or mod[s] > LAST_MOD:
+        if s + 1 > fe or mod[s] > lmod:
             continue
         j = s + 1
         fill = float(o[j]) + D * TICK
@@ -386,11 +435,11 @@ def execute(B, sigs: list) -> list:
         if risk < TICK:
             busy = j
             continue
-        p = {"dir": D, "fill": fill, "stp": st, "tg": fill + D * TGT_R * risk, "risk": risk, "ext": fill, "mae": 0.0, "nb": 0}
+        p = {"dir": D, "fill": fill, "stp": st, "tg": fill + D * tgr * risk, "risk": risk, "ext": fill, "mae": 0.0, "nb": 0}
         x, i = None, j
         for i in range(j, fe + 1):
             p["nb"] = i - j
-            x = manage(p, float(o[i]), float(h[i]), float(l[i]), float(c[i]), i == j, i >= fe)
+            x = manage(p, float(o[i]), float(h[i]), float(l[i]), float(c[i]), i == j, i >= fe, P)
             if x is not None:
                 break
         xp, kind = x
@@ -409,15 +458,17 @@ def _trade_row(day, sig_t, entry_t, exit_bar_t, D, fill, st, xp, kind, pts, risk
             "r": trade_r(pts, risk), **per_micro(pts, risk, mae)}
 
 
-def backtest(df, filtered: bool = True) -> list:
-    """The whole rule on a 1m frame (pure, look-ahead-free by construction: every value at a bar uses bars up to it)."""
+def backtest(df, filtered: bool = True, params: dict | None = None) -> list:
+    """The whole rule on a 1m frame (pure, look-ahead-free by construction: every value at a bar uses bars up to it).
+    params = rule_params overrides (None = today's researched rule)."""
     B = frame(df)
-    return execute(B, signals(B, features(B), filtered))
+    P = None if not params else rule_params(params)
+    return execute(B, signals(B, features(B, P), filtered, P), P)
 
 
 # ================================================================================================ the live state machine
-def _empty_day() -> dict:
-    return {"date": None, "closed": False, "session": False, "rth": False, "o0": None, "mv": [None] * len(CHECKS),
+def _empty_day(n: int = len(CHECKS)) -> dict:
+    return {"date": None, "closed": False, "session": False, "rth": False, "o0": None, "mv": [None] * n,
             "last_in": None, "sig": None, "dn": 0, "dR": 0.0, "rhi": None, "rlo": None, "rn": 0, "prng": None}
 
 
@@ -427,11 +478,11 @@ def new_engine(filtered: bool = True) -> dict:
             "pos": None, "pend": None, "last_exit": None}
 
 
-def _sigma(hist: list):
+def _sigma(hist: list, lookback: int = LOOKBACK):
     """Today's sigma at each check (np.nanmean over the last 14 sessions, as the research), None = not enough history."""
-    if len(hist) < LOOKBACK:
+    if len(hist) < lookback:
         return None
-    a = np.array([[np.nan if _nan(x) else float(x) for x in row] for row in hist[-LOOKBACK:]], dtype=np.float64)
+    a = np.array([[np.nan if _nan(x) else float(x) for x in row] for row in hist[-lookback:]], dtype=np.float64)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", category=RuntimeWarning)
         sg = np.nanmean(a, axis=0)
@@ -444,11 +495,20 @@ class Engine:
     before 15:55 is a flat exit), day_end. gate(signal close time, dir) -> reason | None drops a candidate before the
     executor (the research's mask: the 50K ledger's "LIT holds a trade / has a setup armed")."""
 
-    def __init__(self, state: dict | None = None, filtered: bool | None = None):
+    def __init__(self, state: dict | None = None, filtered: bool | None = None, params: dict | None = None):
         ok = isinstance(state, dict) and state.get("v") == VERSION and "atr" in state
         if ok and filtered is not None and bool(state.get("filter")) != bool(filtered):
             ok = False                                 # the rule changed (filtered <-> unfiltered): start over
         self.s = state if ok else new_engine(True if filtered is None else filtered)
+        # the rule's parameters (rule_params; None / today's values = the constants above, exactly as researched)
+        self.P = None if (not params or is_default(params)) else rule_params(params)
+        P = self.P
+        self.checks = checks_of(P)
+        self.cix = CHECK_IX if P is None else {m: k for k, m in enumerate(self.checks)}
+        self.lb = LOOKBACK if P is None else int(P["lookback"])
+        self.vm, self.sa, self.tgr = (VM, STOP_ATR, TGT_R) if P is None else (P["vm"], P["stop_atr"], P["tgt_r"])
+        self.maxday, self.dstop, self.pmin = (MAXDAY, DAY_STOP_R, PRNG_MIN) if P is None else (P["maxday"], P["day_stop_r"], P["prng_min"])
+        self.lmod = LAST_MOD if P is None else int(P["last_mod"])
 
     # ---- the 5m ATR (Wilder 14), groups of t // 300
     def _atr_close(self):
@@ -493,7 +553,7 @@ class Engine:
             le["kind"] = "flat"                       # research: the day's last bar ends a trade as "flat", not "time"
             ev.append({"ev": "relabel", "entry_t": le["entry_t"], "kind": "flat", "why": why})
         if S["rth"]:                                  # the day joins the noise history (its check minutes are final now)
-            S["hist"] = (S["hist"] + [list(S["mv"])])[-LOOKBACK:]
+            S["hist"] = (S["hist"] + [list(S["mv"])])[-self.lb:]
         ev.append({"ev": "day_end", "date": S["date"], "session": bool(S["session"]), "dn": S["dn"], "dR": round(S["dR"], 4)})
         return ev
 
@@ -506,9 +566,9 @@ class Engine:
 
     def _new_date(self, date: str):
         S = self.s
-        S.update(_empty_day())
+        S.update(_empty_day(len(self.checks)))
         S["date"] = date
-        S["sig"] = _sigma(S["hist"])
+        S["sig"] = _sigma(S["hist"], self.lb)
         rg = list(S.get("rngs") or [])
         S["prng"] = (rg[-1] / float(np.mean(rg[-PRNG_N:]))) if len(rg) >= PRNG_MIN_N else None
         S["last_exit"] = None
@@ -518,7 +578,7 @@ class Engine:
         S = self.s
         if not S.get("filter"):
             return True
-        return S.get("prng") is not None and S["prng"] >= PRNG_MIN and int(S.get("rn") or 0) >= PRNG_MIN_BARS
+        return S.get("prng") is not None and S["prng"] >= self.pmin and int(S.get("rn") or 0) >= PRNG_MIN_BARS
 
     # ---- trades
     def _exit(self, bar_t, xp, kind) -> list:
@@ -564,7 +624,7 @@ class Engine:
             S["rth"] = True
             if S["o0"] is None:
                 S["o0"] = o
-            k = CHECK_IX.get(mod)
+            k = self.cix.get(mod)
             if k is not None:
                 S["mv"][k] = abs(c / S["o0"] - 1)
         # the entry of the signal made at the previous bar's close: market at this bar's open + 1 tick
@@ -577,34 +637,34 @@ class Engine:
             if risk < TICK:
                 ev.append({"ev": "skip", "t": pd_["t"], "dir": D, "why": f"the open {o:,.2f} gapped past the stop: no entry"})
             else:
-                S["pos"] = {"dir": D, "fill": fill, "stp": st, "stop0": st, "tg": fill + D * TGT_R * risk, "risk": risk, "ext": fill,
+                S["pos"] = {"dir": D, "fill": fill, "stp": st, "stop0": st, "tg": fill + D * self.tgr * risk, "risk": risk, "ext": fill,
                             "mae": 0.0, "nb": 0, "entry_t": t, "sig_t": pd_["t"]}
                 ev.append({"ev": "entry", "entry_t": t, "sig_t": pd_["t"], "dir": D, "entry": fill, "stop": st, "risk": risk,
                            "date": date, "band": pd_.get("band"), "close": pd_.get("close"), "atr5": pd_.get("atr5")})
         # the open trade on this bar
         if S["pos"]:
             p = S["pos"]
-            x = manage(p, o, h, l, c, t == p["entry_t"], mod == LAST_IN)
+            x = manage(p, o, h, l, c, t == p["entry_t"], mod == LAST_IN, self.P)
             if x is not None:
                 ev += self._exit(t, x[0], x[1])
             else:
                 p["nb"] += 1
         # the check at this bar's close
-        k = CHECK_IX.get(mod)
-        if k is not None and S["sig"] is not None and S["o0"] is not None and not _nan(S["sig"][k]) and self.day_ok():
+        k = self.cix.get(mod)
+        if k is not None and mod <= self.lmod and S["sig"] is not None and S["o0"] is not None and not _nan(S["sig"][k]) and self.day_ok():
             sg = S["sig"][k]
-            up, lo = S["o0"] * (1 + VM * sg), S["o0"] * (1 - VM * sg)
+            up, lo = S["o0"] * (1 + self.vm * sg), S["o0"] * (1 - self.vm * sg)
             D = 1 if c > up else -1 if c < lo else 0
             if D:
                 a5 = S["atr"]["a"]
                 masked = gate(t + 60, D) if gate is not None else None
-                why = masked or ("in a trade" if S["pos"] else f"{MAXDAY} trades today already" if S["dn"] >= MAXDAY
-                                 else f"day stop: {S['dR']:+.2f}R today" if S["dR"] <= -DAY_STOP_R else None)
+                why = masked or ("in a trade" if S["pos"] else f"{self.maxday} trades today already" if S["dn"] >= self.maxday
+                                 else f"day stop: {S['dR']:+.2f}R today" if S["dR"] <= -self.dstop else None)
                 band = up if D > 0 else lo
                 sgl = {"ev": "signal", "t": t, "close_t": t + 60, "dir": D, "close": c, "band": band, "up": up, "lo": lo,
                        "sigma": sg, "o0": S["o0"], "atr5": a5, "taken": why is None, "why": why, "masked": bool(masked), "date": date}
                 if why is None:
-                    st = c - D * STOP_ATR * a5
+                    st = c - D * self.sa * a5
                     sgl["stop"] = st
                     S["pend"] = {"t": t, "dir": D, "stop": st, "band": band, "close": c, "atr5": a5}
                 ev.append(sgl)
@@ -627,15 +687,15 @@ class Engine:
         """Today's band at every check (None before 14 sessions / before 09:30)."""
         S = self.s
         if S["sig"] is None:
-            return {"ready": False, "sessions": len(S["hist"]), "need": LOOKBACK}
+            return {"ready": False, "sessions": len(S["hist"]), "need": self.lb}
         o0 = S["o0"]
         rows = []
-        for k, m in enumerate(CHECKS):
+        for k, m in enumerate(self.checks):
             sg = S["sig"][k]
             t_close = at_et(S["date"], m + 1) if S["date"] else None
             rows.append({"mod": m, "hm": f"{(m + 1) // 60:02d}:{(m + 1) % 60:02d}", "t": t_close, "sigma": sg,
-                         "up": None if (o0 is None or _nan(sg)) else o0 * (1 + VM * sg),
-                         "lo": None if (o0 is None or _nan(sg)) else o0 * (1 - VM * sg),
+                         "up": None if (o0 is None or _nan(sg)) else o0 * (1 + self.vm * sg),
+                         "lo": None if (o0 is None or _nan(sg)) else o0 * (1 - self.vm * sg),
                          "pts": None if (o0 is None or _nan(sg)) else o0 * sg})
         return {"ready": True, "o0": o0, "date": S["date"], "checks": rows, "prng": S.get("prng"), "day_ok": self.day_ok(),
                 "filter": bool(S.get("filter"))}
