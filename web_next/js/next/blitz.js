@@ -68,7 +68,7 @@ const bModel = (S) => window.BlitzUI.model({ now: Date.now() / 1000, where: 'pc'
 const dModel = (S) => ({ now: Date.now() / 1000, where: 'pc', board: S.board, lv: S.lv, mind: S.mind, news: S.news, cal: S.cal, acc: S.acc });
 const active = (id) => document.getElementById('page-' + id)?.classList.contains('active');
 const timers = {};
-function every(id, ms, fn) { clearInterval(timers[id]); timers[id] = setInterval(() => { if (!active(id)) { clearInterval(timers[id]); return; } if (!document.hidden && !document.querySelector(`#page-${id} details[open]:hover`)) fn(); }, ms); }
+function every(id, ms, fn) { clearInterval(timers[id]); timers[id] = setInterval(() => { if (!active(id)) { clearInterval(timers[id]); return; } if (!document.hidden && !document.querySelector(`#page-${id} details[open]`)) fn(); }, ms); }
 
 // ------------------------------------------------------------------ BLITZ
 async function drawBlitz() {

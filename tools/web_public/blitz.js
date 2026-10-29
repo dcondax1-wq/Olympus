@@ -66,7 +66,8 @@
       paint();
       needLv(() => { if (typeof PAGE !== 'undefined' && PAGE === id && el.isConnected) paint(); });
       clearInterval(el.__t);
-      el.__t = setInterval(() => { if (typeof PAGE === 'undefined' || PAGE !== id || !el.isConnected) { clearInterval(el.__t); return; } if (!document.hidden) paint(); }, 30000);
+      // the 30 s redraw waits while a fold is open (an idea's evidence, the Advanced list): it would close it under the finger
+      el.__t = setInterval(() => { if (typeof PAGE === 'undefined' || PAGE !== id || !el.isConnected) { clearInterval(el.__t); return; } if (!document.hidden && !el.querySelector('details[open]')) paint(); }, 30000);
     };
   }
 
