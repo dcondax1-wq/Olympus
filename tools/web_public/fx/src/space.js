@@ -294,6 +294,11 @@ export class Space extends View {
     this.tA = this.bake(0, eW, eW / 2, true); this.tC = this.bake(1, eW / 2, eW / 4, true);
     this.tS = this.bake(2, sW, sW / 2, true); this.tM = this.bake(3, 256, 128, true);
     this.stats.bakeMs = Math.round(performance.now() - t0);
+    // a lost GPU context (a phone that slept) comes back with empty render targets: bake them again
+    this.canvas.addEventListener('webglcontextrestored', () => {
+      try { for (const rt of [this.tA, this.tC, this.tS, this.tM]) { const [p, w, h, m] = rt.__bake; this.bake(p, w, h, m, rt); } } catch (e) { console.warn('fx re-bake', e); }
+      this.dirty = true; wake();
+    });
 
     // ---- sky sphere (Milky Way + nebulae), drawn first, never writes depth
     this.skyU = { tS: { value: this.tS.texture }, uBright: { value: 1 }, uTint: { value: new THREE.Color('#9fb7ff') }, uTintK: { value: 0 } };
@@ -415,10 +420,11 @@ export class Space extends View {
   gpuName() {
     try { const gl = this.renderer.getContext(), x = gl.getExtension('WEBGL_debug_renderer_info'); return String(x ? gl.getParameter(x.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)); } catch { return ''; }
   }
-  bake(pass, w, h, mip) {
-    const rt = new THREE.WebGLRenderTarget(w, h, { depthBuffer: false, generateMipmaps: !!mip, minFilter: mip ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter, magFilter: THREE.LinearFilter,
+  bake(pass, w, h, mip, into = null) {
+    const rt = into || new THREE.WebGLRenderTarget(w, h, { depthBuffer: false, generateMipmaps: !!mip, minFilter: mip ? THREE.LinearMipmapLinearFilter : THREE.LinearFilter, magFilter: THREE.LinearFilter,
       wrapS: THREE.RepeatWrapping, wrapT: THREE.ClampToEdgeWrapping });
     rt.texture.wrapS = THREE.RepeatWrapping;
+    rt.__bake = [pass, w, h, mip];
     // the Milky Way: its bulge up-left of the view, the band running diagonally across the screen (sky group at rest)
     const gC = new THREE.Vector3(-0.5, 0.32, -1).normalize(), gN = new THREE.Vector3().crossVectors(gC, new THREE.Vector3(1, -0.62, 0.1)).normalize();
     const m = new THREE.ShaderMaterial({ uniforms: { uPass: { value: pass }, uGalN: { value: gN }, uGalC: { value: gC } }, vertexShader: BAKE_V, fragmentShader: BAKE_F, depthTest: false, depthWrite: false });
