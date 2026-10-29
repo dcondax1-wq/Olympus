@@ -184,3 +184,4 @@
 .lv-frames li { display: grid; grid-template-columns: 34px auto 1fr; gap: 8px; align-items: center; font-size: 12.5px; }
 .lv-frames li small { color: var(--lv-mut, #94a3b8); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .lv-sw[hidden] { display: none; }
+.lv-ps li { grid-template-columns: 64px 1fr; } .lv-ps li small { white-space: normal; }

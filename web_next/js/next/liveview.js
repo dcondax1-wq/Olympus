@@ -309,6 +309,9 @@ function think() {
     out.push(`<article class="lv-card lv-struct" style="--c:${col('structure')}"><header><i></i><b>Market structure</b><span class="lv-pill">${esc(z ? (z.premium ? 'in premium' : 'in discount') : 'structure')}</span></header>
       ${st.summary ? `<p class="lv-head">${esc(st.summary)}</p>` : ''}<ul class="lv-frames">${['5m', '15m', '1h'].map(chip).join('')}</ul>
       ${z && z.lo != null && z.hi != null ? `<p class="small">Range ${fmtPx(z.lo)} – ${fmtPx(z.hi)} · equilibrium ${fmtPx(z.eq != null ? z.eq : (z.lo + z.hi) / 2)}</p>` : ''}
+      ${(() => { const ps = st.per_strategy && typeof st.per_strategy === 'object' ? st.per_strategy : {}, nm = { lit: 'Zlarior', atlas: 'ATLAS', scalp: 'BLITZ', blitz: 'BLITZ' };
+        const rows = Object.entries(ps).map(([k, v]) => [nm[k] || k, typeof v === 'string' ? v : v && typeof v === 'object' ? (v.text || v.note || v.summary || v.headline || '') : '']).filter((r) => r[1]);
+        return rows.length ? `<ul class="lv-frames lv-ps">${rows.map(([n, t]) => `<li><b>${esc(n)}</b><small>${esc(String(t).slice(0, 160))}</small></li>`).join('')}</ul>` : ''; })()}
       ${bsl || ssl ? `<p class="small">Liquidity: ${bsl ? `buy side ${fmtPx(bsl.price)}${bsl.label ? ' (' + esc(bsl.label) + ')' : ''}` : ''}${bsl && ssl ? ' · ' : ''}${ssl ? `sell side ${fmtPx(ssl.price)}${ssl.label ? ' (' + esc(ssl.label) + ')' : ''}` : ''}</p>` : ''}</article>`);
   }
   el.innerHTML = out.join('') || '<p class="lv-muted">Switch a strategy on to see what it is thinking.</p>';
