@@ -565,7 +565,7 @@ part yourself or fold it into a script.**
   journal `logs/mind/plans.jsonl`. (4) Reviews of each closed trade (grade, luck / skill), `logs/mind/reviews.jsonl`
   (trades closed > 2 days ago are skipped). (5) Nightly research child after 16:05 ET (`python -m engine.mind research`,
   nice 15, <= 10 min; observations -> size / skip rules -> H1 pick / H2 check / 2021-25, eval speed for LIT) ->
-  `logs/mind/proposals.json` (seed `research/mind/proposals_seed.json`: 17 tested, 0 candidates). Wiring: `narrator.tick`
+  `logs/mind/proposals.json` (seed `research/mind/proposals_seed.json`: 22 tested, 0 candidates). Wiring: `narrator.tick`
   -> `mind.pc_tick` (key check; compute in a thread once per 5m bar, started 15-45 s into a minute, ~50 ms; `LE_MIND=0` off, `LE_MIND_RESEARCH=0` no
   nightly), `liveview_api.view()["mind"]` (cached block), phone_view + heartbeat "mind" + holo "mind" = `mind.compact`
   (< 12 KB), `GET /api/next/mind` (block + history + calibration), narrator kind `brain` (not pushed by default). Contract

@@ -2,8 +2,8 @@
 title: Mind - a thinking layer for Zlarior, ATLAS and BLITZ (similar-setup memory, regime and trend-day odds, game plans, trade reviews, self-research)
 family: other
 date: 2026-10-29
-status: finding - read-only; similar-setup memory does NOT predict outcomes out of sample (shown as context only); the trend-day model is weak but real (AUC 0.66 H2, 0.63 2021-25); the first self-research run rejected all 17 of its own ideas; nothing adopted
-summary: Owner (2026-10-29) - "Give it a brain that's very smart. Can think for itself." engine/mind.py remembers every historical setup of each bot (631 Zlarior, 1,129 ATLAS, 330 BLITZ) with the features the live bot can compute, and for a live setup shows the nearest past setups (win %, average R, $ at today's size, 3 example days). Tested honestly (fit on 2026 H1, checked on 2026 H2 and 2021-25), similarity does not predict the outcome for any bot (Zlarior H2 rank correlation +0.00, top third of predictions made -0.30R less than the bottom third; ATLAS -0.25; BLITZ -0.05), so the dashboards show it as context only and it never claims confidence. With 5 years as memory (fit 2021-25) ATLAS similarity does separate 2026 (top third +1.7R / +1.8R vs bottom +0.5R / +0.2R, p 0.03 in each half): a lead, not a gate passed. A small logistic model gives the trend-day odds at 10:30 ET: AUC 0.66 on 2026 H2 and 0.63 on 2021-25; when it said >= 60%, 51% of 2021-25 days were trend days (base rate 33%). Mind writes an if-then game plan per bot at 01:45 / 10:45 ET, reviews every closed trade (grade, right / wrong, lesson, luck or skill) and runs a nightly self-research job that tests its own ideas on 2026 H1 (pick) / H2 (check) / 2021-25: the first run noticed 9 patterns, tested 17 size / skip rules and rejected all of them.
+status: finding - read-only; similar-setup memory does NOT predict outcomes out of sample (shown as context only); the trend-day model is weak but real (AUC 0.66 H2, 0.63 2021-25); the first self-research run rejected all 22 of its own ideas; nothing adopted
+summary: Owner (2026-10-29) - "Give it a brain that's very smart. Can think for itself." engine/mind.py remembers every historical setup of each bot (631 Zlarior, 1,129 ATLAS, 330 BLITZ) with the features the live bot can compute, and for a live setup shows the nearest past setups (win %, average R, $ at today's size, 3 example days). Tested honestly (fit on 2026 H1, checked on 2026 H2 and 2021-25), similarity does not predict the outcome for any bot (Zlarior H2 rank correlation +0.00, top third of predictions made -0.30R less than the bottom third; ATLAS -0.25; BLITZ -0.05), so the dashboards show it as context only and it never claims confidence. With 5 years as memory (fit 2021-25) ATLAS similarity does separate 2026 (top third +1.7R / +1.8R vs bottom +0.5R / +0.2R, p 0.03 in each half): a lead, not a gate passed. A small logistic model gives the trend-day odds at 10:30 ET: AUC 0.66 on 2026 H2 and 0.63 on 2021-25; when it said >= 60%, 51% of 2021-25 days were trend days (base rate 33%). Mind writes an if-then game plan per bot at 01:45 / 10:45 ET, reviews every closed trade (grade, right / wrong, lesson, luck or skill) and runs a nightly self-research job that tests its own ideas on 2026 H1 (pick) / H2 (check) / 2021-25: the first run noticed 9 patterns, tested 22 size / skip rules (with its standing questions) and rejected all of them.
 runs: none (no strategy change; research/mind/calibration.json, research/mind/proposals_seed.json)
 ---
 
@@ -19,7 +19,7 @@ runs: none (no strategy change; research/mind/calibration.json, research/mind/pr
   ("Context only"), confidence always "low".
 - **Honest result 2 - the trend-day odds are weak but real.** AUC 0.66 (2026 H2) and 0.63 (2021-25), where 0.5 is a coin
   flip. As a yes / no call it is no better than "not a trend day"; as odds it helps (>= 60% odds: 51% trend days vs 33%).
-- **Honest result 3 - Mind's own ideas all failed their test tonight.** 9 patterns noticed, 17 rules tested, 0 candidates.
+- **Honest result 3 - Mind's own ideas all failed their test tonight.** 9 patterns noticed, 22 rules tested (with 5 standing questions), 0 candidates.
 - **Nothing changes in how the bots trade.** A candidate would go to the dashboard with the exact change for the owner.
 
 ## 1. The memory (similar setups)
@@ -119,12 +119,16 @@ A low-priority child process (nice 15 / below normal on Windows), capped at 10 m
    net $, $ a month, PF, max DD, and for Zlarior the MFFU 50K eval speed (2-week pass / fail, median pass).
 4. **File** a proposal: testing / candidate / rejected. Never adopted; a candidate carries the exact change to approve.
 
-First run (seed, `research/mind/proposals_seed.json`): 9 observations, 17 rules, **0 candidates**. Examples:
+First run (seed, `research/mind/proposals_seed.json`): 9 observations + its standing questions (Zlarior in London after 03:30 and against the 1h trend, ATLAS with the 1h trend and on low trend-day odds, BLITZ in the lunch and on low trend-day odds), 22 rules, **0 candidates**. Examples:
 - "14 of the last 20 Zlarior losses came after a buildup (equal highs / lows) sweep": half size there costs 2026 H1
   -$6,097 and H2 -$1,875 (2-week pass 37% -> 29% H1, 23% -> 13% H2): those sweeps also make the money. Rejected.
 - "14 of the last 17 ATLAS losses came with VIX under 15.8": half size H1 +$381, H2 -$1,636. Rejected (a fit to H1).
 - "7 of the last 12 BLITZ losses came in the New York lunch": half size H1 -1,671 / H2 -383 (BLITZ $ at $150 risk a trade).
   Rejected.
+- Standing question "Zlarior in London after 03:30" (the owner's kind of example): half size H1 -$6,430, H2 -$457
+  (2-week pass 37% -> 23% in H1). Rejected.
+- Standing question "BLITZ on days with trend-day odds under 20%": half size H1 -$209, H2 +$11. Rejected (BLITZ made
+  +0.19R a trade on >= 40% days vs +0.03R under 20% in 2026, but cutting the low days does not pay on the pick half).
 
 The observations come from the latest trades (mostly 2026 H2), the pick is always 2026 H1: an idea has to work on trades it
 was not noticed on before the H2 check counts.
