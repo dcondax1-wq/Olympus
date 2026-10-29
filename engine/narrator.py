@@ -11,6 +11,8 @@ already keeps, polled after routing:
   accounts._position   the routed position (NinjaTrader leg fill price, the real micros)
   bot.second           the ATLAS paper run (engine/second.py): each member's stage and decision log
   bot.acct_b.info()    account B (ATLAS on its own account): routed entries / exits / refusals with real $
+  bot.acct_c.info()    account C (BLITZ on its own account, engine/account_c.py): routed entries / exits / refusals with
+                       booked $, labelled REAL (SIM / PAPER on a Sim account / the paper bot), its performance-contract pause
   bot.blitz            the BLITZ scalper PAPER shadow (engine/blitz.py): its signals, paper entries / exits (simulated 25K
                        eval micros, labelled PAPER), paper eval ends; kind "blitz", never pushed by default
   bot.health / kill    FEED STALE episodes, the kill switch
@@ -481,6 +483,21 @@ def derive(bot, now=None, prev: dict | None = None) -> tuple[list, dict]:
             out += _route_rows(rows, "atlas", info.get("label") or "Account B", None, False)
     except Exception:
         pass
+    # account C (BLITZ routed to its OWN account, engine/account_c.py): labelled REAL / SIM (PAPER on the paper bot), apart
+    # from the BLITZ PAPER shadow ledgers below
+    try:
+        ac = getattr(bot, "acct_c", None)
+        if ac is not None:
+            info = ac.info(now)
+            rows = [r for r in (info.get("routed") or []) if r.get("t") and trading_day(int(r["t"])) == day]
+            out += _route_rows(rows, "scalp", f"{info.get('real') or 'PAPER'} · {info.get('label') or 'BLITZ'}", None, info.get("kind") == "PAPER")
+            if info.get("paused") and trading_day(int(info["paused"].get("t") or now)) == day:
+                p = info["paused"]
+                out.append(msg(f"scalp:acctc:pause:{int(p.get('t') or 0)}", int(p.get("t") or now), "scalp", "kill",
+                               f"{info.get('real') or 'PAPER'} · {info.get('label')}: BLITZ PAUSED (performance contract)",
+                               f"{_clean(p.get('why'), 240)}. No new BLITZ entry on its account until you resume it.", "bad"))
+    except Exception:
+        pass
     # ATLAS paper members
     try:
         am, state["atlas"] = _atlas_msgs(getattr(bot, "second", None), day, prev.get("atlas") or {})
@@ -584,6 +601,14 @@ def summary(bot, day, today_rows, now) -> dict:
         if ab is not None:
             info = ab.info(now)
             parts.append(f"ATLAS ({info.get('label') or 'account B'}): {info.get('entries_today') or 0} entries, {usd(info.get('day_pnl') or 0)} real")
+    except Exception:
+        pass
+    try:
+        ac = getattr(bot, "acct_c", None)
+        if ac is not None:
+            info = ac.info(now)
+            parts.append(f"BLITZ ({info.get('real') or 'PAPER'}, {info.get('label') or 'account C'}): {info.get('entries_today') or 0} entries, "
+                         f"{usd(info.get('day_pnl') or 0)} {'real' if info.get('real') == 'REAL' else (info.get('real') or 'paper').lower()}")
     except Exception:
         pass
     sec = getattr(bot, "second", None) or {}

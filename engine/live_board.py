@@ -430,6 +430,60 @@ def real_week(prog: dict | None, real_rows, lit: dict, atlas: dict) -> dict:
     return done
 
 
+# BLITZ, the scalper, on its OWN account (engine/account_c.py; heartbeat "account_c", only when it is on): its checks
+# are the 1m closes 11:00, 11:30 ... 15:30 ET on weekdays (entries at the next bar's open)
+BLITZ_WINDOW = (659, 931)
+
+
+def blitz_now(pc: dict, now: int) -> dict:
+    """The "Right now" card of account C (same keys as the Zlarior / ATLAS cards): balance, room, $ to the target, today,
+    what BLITZ waits for, the next check, the micros of its last entry, its position, the blocks (account off, daily loss,
+    the performance contract's pause, eval over) and its scorecard. Only built when the heartbeat carries "account_c"."""
+    c = _d(pc.get("account_c"))
+    ev = _d(c.get("eval"))
+    R = _d(c.get("rules"))
+    mll = _f(R.get("mll"), 1000.0)
+    bal, room = _f(ev.get("balance")), _f(ev.get("room"))
+    funded = c.get("stage") == "funded"
+    out = {"id": "blitz", "name": "BLITZ", "plan": c.get("plan_label") or "MFFU Builder 25K", "method": "noise-area 1m scalp",
+           "broker": c.get("account"), "badge": c.get("kind"), "real": c.get("real"), "configured": bool(c), "source": "PC bot (account C)",
+           "balance": bal, "floor": _f(ev.get("floor")), "room": room, "mll": mll, "to_target": _f(ev.get("to_target")),
+           "target_balance": _f(ev.get("target"), _f(R.get("start"), 25000.0) + _f(R.get("target"), 1500.0)),
+           "profit": _f(ev.get("profit")), "today_pnl": _f(c.get("day_pnl"), _f(ev.get("today"))), "status": ev.get("status") or "open",
+           "session": _i(ev.get("session")), "sessions": None if funded else SESSIONS_GOAL, "dll": _f(ev.get("dll"), _f(R.get("dll"), 600.0)),
+           "max_day": 6, "trades_today": _i(c.get("entries_today"), 0), "max_micros": _i(ev.get("max_micros"), 20),
+           "eval_start": ev.get("start"), "orders": _orders(c.get("routed")), "stage": "funded" if funded else "eval",
+           "scorecard": c.get("scorecard"), "paused": c.get("paused")}
+    out["room_frac"] = None if room is None or not mll else round(max(0.0, min(1.0, room / mll)), 4)
+    st = _d(c.get("state"))
+    out["waiting"] = _clean(st.get("text"), 240) or "Waiting for the next check (11:00, 11:30 ... 15:30 ET)."
+    wins = next_windows(now, [BLITZ_WINDOW], n=2)
+    out["window"] = {**window_state(now, wins), "who": "BLITZ", "hours": "checks 11:00-15:30 ET"}
+    ls = _d(c.get("size"))
+    out["micros"] = ({"qty": _i(ls.get("qty")), "t": _i(ls.get("t")), "reasons": [_clean(x, 140) for x in _l(ls.get("reasons"))][-2:], "last": True}
+                     if ls.get("qty") is not None else
+                     {"qty": None, "last": False, "what": "Sized at each entry from its own stop (1.5 x the 5m ATR): 40% of the room to the "
+                                                         "floor, at most $600 and 0.9 x the daily loss left, max 20 micros."})
+    pos = c.get("open") if isinstance(c.get("open"), dict) else None
+    out["position"] = {k: pos.get(k) for k in ("side", "dir", "qty", "entry", "stop", "target", "entry_t", "strategy", "time_exit_t")
+                       if pos.get(k) is not None} if pos else None
+    blocks = []
+    if c.get("disabled"):
+        blocks.append(_block(f"Account C off: {c['disabled']}", scope="blitz", kind="account"))
+    if c.get("locked"):
+        blocks.append(_block(f"Locked out today: {c['locked']}", scope="blitz"))
+    if c.get("paused"):
+        blocks.append(_block(f"BLITZ paused by its performance contract: {_d(c.get('paused')).get('why')}", scope="blitz", kind="paused",
+                             fix="Read BLITZ_STRATEGY.md 'Kill switch'; resume only on purpose: python -X utf8 -m engine.account_c --resume"))
+    if out["status"] in ("passed", "failed", "stuck", "lost", "graduated"):
+        blocks.append(_block(f"{'Funded account' if funded else 'Eval'} {out['status']}", scope="blitz",
+                             kind="passed" if out["status"] in ("passed", "graduated") else "failed",
+                             fix="Request the funded account at MFFU, then Start page > BLITZ · 25K > Passed → funded (the bot never "
+                                 "switches by itself)." if out["status"] == "passed" else None))
+    out["blocks"] = blocks
+    return out
+
+
 def _member_line(k: str, s: dict, now: int) -> dict:
     st = _d(s.get("state"))
     wins = next_windows(now, ATLAS_WINDOWS.get(k, []), n=2, no_monday=k in ATLAS_NO_MONDAY)
@@ -830,6 +884,13 @@ def trade_log(accounts=None, second: dict | None = None, atlas_ledger=None, clou
         if any(r["acct"] == "atlas" and r["src"] == "live" and r.get("entry_t") == et_ for r in rows):
             continue
         add(_row("atlas", "paper", t, k, ATLAS_NAMES.get(k, k)))
+    for a in A:                                       # BLITZ's own account (engine/account_c.py): only when it is on
+        if a.get("source") == "pc_blitz":
+            for t in _l(a.get("trades")):
+                add(_row("blitz", "live", t, "blitz", "BLITZ"))
+            p = a.get("position") if isinstance(a.get("position"), dict) else None
+            if p and p.get("entry_t") is not None:
+                add(_row("blitz", "live", {**p, "exit_kind": "OPEN"}, "blitz", "BLITZ"))
     rows.sort(key=lambda r: (r.get("entry_t") or 0, r.get("day") or ""), reverse=True)
     return rows[:n]
 
@@ -860,6 +921,9 @@ def build(inp: dict | None, now=None) -> dict:
     part("lit", lambda: lit_now(pc, inp.get("accounts"), now, brain=brain))
     part("atlas", lambda: atlas_now(pc, now, second=_d(pc.get("second")) or _d(second)))
     part("blocks", lambda: global_blocks(pc, now, out["where"]))
+    if _d(pc.get("account_c")):                       # BLITZ's own account (engine/account_c.py): a third card, only when on
+        part("blitz", lambda: blitz_now(pc, now))
+        out["accts"] = ["lit", "atlas", "blitz"]
     lit = out["lit"] if isinstance(out.get("lit"), dict) and not out["lit"].get("error") else {}
     atl = out["atlas"] if isinstance(out.get("atlas"), dict) and not out["atlas"].get("error") else {}
     part("map", lambda: today_map(brain, _d(lit.get("micros")).get("qty")))
@@ -874,7 +938,8 @@ def build(inp: dict | None, now=None) -> dict:
     lines = []
     for b in blocks:
         lines.append({"level": "bad", "text": f"{b['text'].rstrip('.')}. Fix: {b['fix']}", "kind": b["kind"]})
-    for a in (lit, atl):
+    blz = out["blitz"] if isinstance(out.get("blitz"), dict) and not out["blitz"].get("error") else {}
+    for a in (lit, atl, blz):
         for b in a.get("blocks") or []:
             lines.append({"level": "bad" if b["kind"] not in ("passed",) else "good", "text": f"{a['name']}: {b['text'].rstrip('.')}. {b['fix']}", "kind": b["kind"]})
     hl = _d(out.get("health"))

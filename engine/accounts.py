@@ -552,6 +552,51 @@ def build_accounts(state: dict, lm: dict | None = None, now=None) -> list:
                 out.append(_pc_section(meta, pc, lm or {}, today, now))
         except Exception as e:
             out.append({**meta, "error": f"{e.__class__.__name__}: {clean_text(e, 120)}"})
+    c = pc.get("account_c") if isinstance(pc.get("account_c"), dict) else None
+    if c:                                              # BLITZ on its own account (engine/account_c.py): only when it is on
+        i = next((k for k, a in enumerate(out) if a.get("source") == "cloud"), len(out))
+        try:
+            out.insert(i, blitz_section(c, pc, today, now))
+        except Exception as e:
+            out.insert(i, {"id": "acct_c", "name": "BLITZ", "source": "pc_blitz", "strategy": "BLITZ",
+                           "error": f"{e.__class__.__name__}: {clean_text(e, 120)}"})
+    return out
+
+
+def blitz_section(c: dict, pc: dict, today: str, now: int) -> dict:
+    """The Accounts page section of account C (BLITZ's own MFFU 25K) from the heartbeat's "account_c" block: the same keys
+    as a PC account (eval, pnl, position, orders, trades, days, stats) + strategy BLITZ, its performance scorecard, the
+    REAL / SIM / PAPER word. source "pc_blitz": the Zlarior-only views (live board LIT card, goals) never read it."""
+    if c.get("error"):
+        raise RuntimeError(c["error"])
+    R = c.get("rules") or {}
+    ev = c.get("eval") or {}
+    funded = c.get("stage") == "funded"
+    days = {str(k): float(v) for k, v in (c.get("days") or {}).items()}
+    start = ev.get("start")
+    plan = {"start": float(R.get("start") or 25000.0), "target": float(R.get("target") or 1500.0), "mll": float(R.get("mll") or 1000.0),
+            "lock": float(R.get("start") or 25000.0) + float(R.get("lock") or 100.0), "dll": float(R.get("dll") or 600.0), "sessions": 10}
+    trades = [{**t, "pnl": t.get("pnl"), "reason": t.get("exit_kind")} for t in (c.get("closed") or []) if isinstance(t, dict)]
+    hb_t = _i(pc.get("t"))
+    age = max(0, now - hb_t) if hb_t else None
+    kind = str(c.get("kind") or "PAPER")
+    pos = c.get("open") if isinstance(c.get("open"), dict) else None
+    out = {"id": "acct_c", "name": f"BLITZ {clean_text(c.get('account'), 40) or ''}".strip(), "firm": "MFFU",
+           "plan": clean_text(c.get("plan_label"), 60) or "MFFU Builder 25K", "kind": "funded" if funded else "eval", "source": "pc_blitz",
+           "strategy": "BLITZ", "badge": "LIVE" if kind == "LIVE" else kind, "real": c.get("real"), "broker_account": c.get("account"),
+           "adapter": pc.get("adapter"), "extra": True,
+           "conn": {"present": bool(pc.get("present")), "t": hb_t, "age_s": age, "running": pc.get("running"),
+                    "connected": bool(pc.get("present")) and age is not None and age < 20 * 60, "has_detail": True, "error": None},
+           "eval": None if funded else {**eval_view(days, start, today, now, plan=plan), "status": ev.get("status"),
+                                         "room": ev.get("room", None), "balance": ev.get("balance"), "floor": ev.get("floor")},
+           "pnl": _pnl_views(days, today), "position": pos, "orders": list(c.get("routed") or [])[-MAX_ORDERS:],
+           "trades": trades, "days": [[d, round(v, 2)] for d, v in sorted(days.items()) if d != "0000-00-00"],
+           "stats": stats(trades, days), "kill": False, "running": pc.get("running"),
+           "scorecard": c.get("scorecard"), "paused": c.get("paused"), "locked": c.get("locked"), "enabled": c.get("enabled"),
+           "disabled": c.get("disabled"), "state": c.get("state")}
+    if funded:
+        out["funded"] = c.get("funded")
+        out["funded_eval"] = ev
     return out
 
 

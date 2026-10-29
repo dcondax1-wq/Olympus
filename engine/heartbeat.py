@@ -20,7 +20,9 @@ heartbeat.json: {"t": unix seconds, "running": bot running, "adapter": paper|nin
                  "ops": the owner's PC helpers (engine/ops_checks.hb_fields: last check red / yellow count + first fix,
                         last backup, free disk; ~200 bytes),
                  "blitz": the BLITZ scalper PAPER shadow (engine/blitz.compact: state text, today's paper trades, the simulated
-                          25K eval, today's band; never routed; ~3 KB)}
+                          25K eval, today's band; never routed; ~3 KB),
+                 "account_c": BLITZ routed to its OWN account (engine/account_c.AccountC.hb_block: REAL / SIM / PAPER, eval,
+                              performance scorecard, open trade, today's rows, P&L per day; ~4 KB; key absent when off)}
 Every beat also writes the payload to logs/heartbeat_last.json (local, gitignored) for HEALTH_CHECK and the ops task.
 
 No Yahoo (engine/pcbars.py, owner 2026-10-19): next to heartbeat.json the commit carries the PC's NinjaTrader bars,
@@ -516,6 +518,24 @@ def _blitz(bot):
         return None
 
 
+def _opt(key, val) -> dict:
+    """{key: val} when val is not None, else {} (a block that is off adds no key: the payload stays byte for byte as before)."""
+    return {key: val} if val is not None else {}
+
+
+def _account_c(bot):
+    """The heartbeat's "account_c" block: BLITZ on its own account (engine/account_c.AccountC.hb_block: eval, scorecard, open
+    trade, today's routed rows, P&L per day, closed trades). None when account C is off: the key is then left out (the
+    payload is exactly as before). Never raises."""
+    try:
+        ac = getattr(bot, "acct_c", None)
+        if ac is None:
+            return None
+        return ac.hb_block()
+    except Exception as e:
+        return {"error": f"{e.__class__.__name__}: {e}"[:200]}
+
+
 def _exec():
     """The "exec" block (engine/fill_audit.heartbeat_block: slippage / missed / extra $ against the backtest). Never raises."""
     try:
@@ -666,7 +686,8 @@ class Heartbeat:
                 "blitz": _blitz(self.bot),       # BLITZ scalper PAPER shadow (engine/blitz.compact; never routed; None before the first)
                 "ai": _ai(self.bot),             # AI watch: anomalies, drift, loss caps, rule changes (engine/ai_watch.hb_block)
                 "nt_log": _nt_log(self.bot),     # NinjaTrader's Log-tab lines about our orders (engine/nt_log.py; <= ~10 KB)
-                **_alerts_plus(self.bot)}       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
+                **_alerts_plus(self.bot),       # "rules" (PC-vs-cloud fingerprint) + "crit" (critical conditions, engine/alerts_plus.py)
+                **_opt("account_c", _account_c(self.bot))}   # BLITZ's own account (engine/account_c.py): only when it is on
 
     def beat(self) -> dict:
         """One heartbeat: bars + payload + push, the result kept in self.last / logs/heartbeat_last.json. One at a time (a

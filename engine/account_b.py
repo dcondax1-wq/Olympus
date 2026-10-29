@@ -1031,6 +1031,12 @@ class AccountB:
         if chosen is None:
             return
         k, t, nm, d, head, risk, sz, act = chosen
+        why_c = self._c_yield(d, tb, sym, now, act.get("entry"))
+        if why_c:
+            # BLITZ's close is in flight: B waits for it (probed again at the next poll while this open is fresh, MAX_AGE_S)
+            self.seen.discard(("probe", tb))
+            self.log("risk", f"{head} NOT routed on account B yet: {why_c} (tried again at the next poll while the open is fresh)")
+            return
         q = int(sz["qty"])
         self.open_t = tb
         self.prov[tb] = {"key": k, "short": nm, "qty": q, "model_qty": int(t.get("qty") or 0), "dir": d, "est": est,
@@ -1046,6 +1052,21 @@ class AccountB:
             self._drop_unplaced(tb, rr, now)
         else:
             self._unconfirmed(tb, rr)
+
+    def _c_yield(self, d, tb, sym, now, px=None):
+        """Account C (BLITZ, engine/account_c.py; priority LIT > ATLAS > BLITZ): C holding the other side is closed at market
+        FIRST; B's entry goes out only once that close is CONFIRMED flat. None = route (C off / flat / same side)."""
+        ac = getattr(self.bot, "acct_c", None)
+        if ac is None:
+            return None
+        try:
+            if ac.yield_to(d, "ATLAS", sym, now, px=px, entry_t=tb) is not False:
+                return None
+        except Exception as e:
+            self.log("error", f"account C hedge close failed: {e.__class__.__name__}: {e}")
+            if getattr(ac, "open_t", None) is None:
+                return None
+        return "no hedging: BLITZ's (account C) opposite close is not confirmed yet"
 
     # ---- an entry the broker never took (2026-10-27: the 03:30 MACD LONG 3 on the 25K was refused, yet B kept it "open"
     # to its exit: B's other entries blocked all day, its paper P&L booked on B's eval, the phone showed a trade that

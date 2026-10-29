@@ -130,3 +130,8 @@ research/scalp/*_grid_5m.json
 research/scalp/mr_grid_1m.json
 research/scalp/na_grid_*.json
 research/scalp/b25_grid_*.json
+# BLITZ's own account on this PC (engine/account_c.py): local switch + its state (OFF = no file)
+data/account_c.json
+data/account_c.json.tmp
+data/live_state_acctc*.json
+data/live_state_acctc*.json.tmp

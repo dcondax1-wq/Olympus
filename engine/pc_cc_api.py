@@ -308,6 +308,31 @@ def _atlas_card(bot, now) -> dict:
             "trades": [{k: r.get(k) for k in ("t", "side", "qty", "pnl", "reason", "strategy")} for r in (info.get("routed") or [])][-8:][::-1]}
 
 
+def _blitz_card(bot, now) -> dict | None:
+    """BLITZ on its own 25K (account C, engine/account_c.py): the third account card, the same keys as ATLAS's. None = off
+    (then home_view has no "blitz" key: exactly as before)."""
+    ac = getattr(bot, "acct_c", None)
+    if ac is None:
+        return None
+    info = ac.info(now)
+    ev = info.get("eval") or {}
+    tgt = float(ev.get("target") or (B25["start"] + B25["target"]))
+    start = float(ev.get("start_balance") or B25["start"])
+    prof = ev.get("profit")
+    sc = info.get("scorecard") or {}
+    return {"id": "blitz", "strategy": "BLITZ", "name": "BLITZ · MFFU Builder 25K", "plan": info.get("plan_label") or "Builder 25K",
+            "rules": B25, "max_trades_day": 6, "configured": True, "badge": info.get("kind"), "real": info.get("real"),
+            "broker_account": info.get("account"), "enabled": info.get("enabled"), "disabled": info.get("disabled"),
+            "balance": ev.get("balance"), "profit": prof, "target_balance": tgt, "to_target": ev.get("to_target"),
+            "floor": ev.get("floor"), "room": ev.get("room"), "session": ev.get("session"), "sessions": 10,
+            "progress": None if prof is None else max(0.0, min(1.0, float(prof) / max(1.0, tgt - start))),
+            "status": ev.get("status"), "dll": ev.get("dll"), "today_pnl": info.get("day_pnl"), "trades_today": info.get("entries_today"),
+            "position": info.get("open"), "locked": info.get("locked"), "paused": info.get("paused"), "state": info.get("state"),
+            "scorecard": {k: sc.get(k) for k in ("n", "win_pct", "avg_r", "pf_r", "usd", "lose_days", "status", "why", "floor")},
+            "trades": [{k: r.get(k) for k in ("t", "side", "qty", "pnl", "reason", "strategy")} for r in (info.get("routed") or [])
+                       if r.get("side") in ("buy", "sell", "exit")][-8:][::-1]}
+
+
 def waiting(bot, st_view: dict) -> dict:
     """One plain sentence: what the bot is waiting for now."""
     h = st_view.get("health") or {}
@@ -365,7 +390,8 @@ def home_view(bot, now: int | None = None) -> dict:
             "launch": _safe(lambda: _launch(bot, h, now)),
             "day": d, "log": _safe(lambda: recent_log(bot), []),
             "version": (h.get("auto") or {}).get("version"), "branch": (h.get("auto") or {}).get("branch"),
-            "uptime": h.get("uptime"), "price": st.get("price"), "eval_clock": st.get("eval_clock")}
+            "uptime": h.get("uptime"), "price": st.get("price"), "eval_clock": st.get("eval_clock"),
+            **({"blitz": _safe(lambda: _blitz_card(bot, now))} if getattr(bot, "acct_c", None) is not None else {})}
 
 
 @router.get("/api/next/cc/home")
