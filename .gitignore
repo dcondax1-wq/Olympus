@@ -139,3 +139,4 @@ data/live_state_acctc*.json.tmp
 data/new_accounts.json
 data/autopilot.jsonl
 data/push_pc_sync.json
+research/lit/edge_grid*.json
