@@ -20,10 +20,14 @@ const LIVE = { v: 1, kind: 'le-live', t: T - 10, every_s: 60, host: 'SURFACE', p
   pc_verdict: { code: 'LIVE', label: 'TRADING YOUR EVAL', level: 'good', reason: 'ok', checks: [], t: T }, accounts: [] };
 const fmtPx = (x) => Number(x).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const etHMS = (t) => new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(t * 1000)).replace(/^24/, '00');
+// a hist day in either shape: the API's (fills / thoughts inside each trade, bars_1m) or the flat one
+const dFills = (D) => D.fills || D.trades.flatMap((t) => t.fills || []);
+const dThoughts = (D) => D.thoughts || D.trades.flatMap((t) => t.thoughts || []);
+const dBars = (D) => D.bars || { '1m': D.bars_1m || [], '5m': D.bars_5m || [] };
 function dayDoc(day) {
   if (!day || day === HOLO.day) return HOLO;
   const D = HIST.days.find((x) => x.day === day);
-  return D ? { v: 1, kind: 'le-holo', t: HIST.t, day: D.day, live: false, bars: D.bars, bots: HOLO.bots, fills: D.fills, trades: D.trades, orders: [], thoughts: D.thoughts, levels: [], structure: null, now: null } : null;
+  return D ? { v: 1, kind: 'le-holo', t: HIST.t, day: D.day, live: false, bars: dBars(D), bots: HOLO.bots, fills: dFills(D), trades: D.trades, orders: [], thoughts: dThoughts(D), levels: [], structure: null, now: null } : null;
 }
 function serve(roots, api) {
   return new Promise((res) => {
@@ -75,7 +79,11 @@ async function core(p, tag) {
   await p.evaluate(() => document.querySelector('#hdStage').scrollIntoView({ block: 'start' })); await p.waitForTimeout(300);
   const lab = await p.evaluate((id) => { const e = document.querySelector(`.hd-labs .hd-fill[data-id="${id}"]`); const r = e.getBoundingClientRect(); return { txt: e.textContent, vis: e.style.visibility, x: r.x, y: r.y, w: r.width, focus: e.classList.contains('focus'), card: document.querySelector('#hdCard:not([hidden]) #hdFillTxt')?.textContent || '' }; }, f.id);
   step(`${tag}: fill label shows the exact price + time (${fmtPx(f.px)} · ${etHMS(f.t)})`, lab.txt.includes(fmtPx(f.px)) && lab.txt.includes(etHMS(f.t)) && lab.vis === 'visible' && lab.focus, JSON.stringify(lab));
-  step(`${tag}: fill card: side, qty, price, second, bot, REAL, slip vs the model`, lab.card.includes(`${f.side} ${f.qty} MNQ @ ${fmtPx(f.px)} · ${etHMS(f.t)} ET`) && /REAL/.test(lab.card) && /slip \+1 tick \(model/.test(lab.card), lab.card);
+  const want = f.src === 'sim' ? 'SIM' : 'REAL';
+  step(`${tag}: fill card: side, qty, price, second, bot, ${want}, slip vs the model`, lab.card.includes(`${f.side} ${f.qty} MNQ @ ${fmtPx(f.px)} · ${etHMS(f.t)} ET`) && lab.card.includes(want) && /slip \+1 tick \(model/.test(lab.card), lab.card);
+  const tags = await p.evaluate(() => [...document.querySelectorAll('.hd-labs .hd-fill i')].map((e) => e.textContent));
+  const wantTags = HOLO.fills.map((x) => (x.src === 'sim' ? 'SIM' : x.real ? 'REAL' : x.src === 'model' ? 'MODEL' : 'PAPER'));
+  step(`${tag}: every fill tagged SIM / REAL / MODEL / PAPER as its source (${[...new Set(wantTags)].join(', ')})`, tags.slice().sort().join() === wantTags.slice().sort().join(), tags.join(','));
   if (shots) await p.locator('#hdStage').screenshot({ path: path.join(shots, `${tag}_fill_closeup.png`) });
   await p.click('#hdX');
   await p.click('.hd-tabs button[data-t="minds"]');
@@ -102,11 +110,11 @@ async function replay(p, tag) {
   await p.evaluate(V('(H.pause(), 1)'));
 }
 async function dayPicker(p, tag) {
-  const other = HIST.days.find((d) => d.day !== HOLO.day);
+  const other = HIST.days.find((d) => d.day !== HOLO.day), nOther = dFills(other).length;
   await p.selectOption('#hdDay', other.day);
   const ok = await p.waitForFunction((d) => { const H = window.HOLO?.ui || window.LE?.holo; return H.state.day === d && H.view.counts().fills === H.state.d.fills.length; }, other.day, { timeout: 15000 }).then(() => true, () => false);
   const n = await p.evaluate(V('v.counts().fills'));
-  step(`${tag}: day picker loads ${other.day} (${n} fills = ${other.fills.length})`, ok && n === other.fills.length, n);
+  step(`${tag}: day picker loads ${other.day} from holo_hist (${n} fills = ${nOther})`, ok && n === nOther, n);
   const tl = await p.evaluate(() => [...document.querySelectorAll('#hdDay option')].map((o) => o.value).filter(Boolean).length);
   step(`${tag}: day picker lists every archived day (${HIST.days.length})`, tl === HIST.days.length, tl);
   await p.selectOption('#hdDay', '');
@@ -129,10 +137,11 @@ async function frames(p, tag) {
   const pcSrv = await serve([webNext, web], (u, q) => {
     if (u === '/api/next/holo' && LIVEN && !q.get('day')) {        // Live: today's file grows while the page polls it
       const b = HOLO.bars['1m'].slice(0, LIVEN), tEnd = b.at(-1)[0] + 60;
-      return { ...HOLO, live: true, t: tEnd, bars: { '1m': b, '5m': HOLO.bars['5m'].filter((x) => x[0] < tEnd) }, fills: HOLO.fills.filter((f) => f.t < tEnd), thoughts: HOLO.thoughts.filter((x) => x.t < tEnd) };
+      return { ...HOLO, live: true, t: tEnd + LIVEN, bars: { '1m': b, '5m': HOLO.bars['5m'].filter((x) => x[0] < tEnd) }, fills: HOLO.fills.filter((f) => f.t < tEnd), thoughts: HOLO.thoughts.filter((x) => x.t < tEnd) };
     }
     if (u === '/api/next/holo') return dayDoc(q.get('day'));
-    if (u === '/api/next/holo/days') return { days: HIST.days.map((d) => ({ day: d.day, trades: d.trades.length, usd: d.trades.reduce((a, t) => a + (t.usd || 0), 0) })) };
+    if (u === '/api/next/holo/days') return HIST.days.map((d) => ({ day: d.day, n_trades: d.trades.length, real_n: d.trades.filter((t) => t.real).length,   // engine/holo_api.days
+      real_usd: d.trades.filter((t) => t.real).reduce((a, t) => a + (t.usd || 0), 0), model_n: d.trades.length, model_usd: d.trades.reduce((a, t) => a + (t.usd || 0), 0) }));
     return null;
   });
   const PH = `http://127.0.0.1:${phoneSrv.address().port}`, PC = `http://127.0.0.1:${pcSrv.address().port}`;

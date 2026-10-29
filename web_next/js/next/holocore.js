@@ -27,10 +27,15 @@ const ICON = {
   fs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>',
 };
 
+// what a fill / trade is: SIM (NinjaTrader Sim account), REAL (a live account), MODEL (no broker price: a market close priced
+// from the booked $, or the model twin), PAPER (the paper ledgers)
+const tagOf = (x) => (x && x.src === 'sim' ? 'SIM' : x && x.real ? 'REAL' : x && x.src === 'model' ? 'MODEL' : 'PAPER');
+const bookedNote = (f) => (f && f.src === 'model' && !f.real && f.kind !== 'entry' && f.kind !== 'add' ? ' · price from the booked $' : '');
+const botTag = (b) => (!b ? '' : b.real ? (/^sim/i.test(String(b.account || '')) ? 'SIM' : 'REAL') : 'PAPER');
 export function fillText(f, bots) {
   const b = bk(f.bot), nm = bots?.[b]?.name || BOTN[b] || b;
   const slip = ok(f.slip_ticks) && ok(f.model_px) && f.model_px !== f.px ? ` · slip ${f.slip_ticks > 0 ? '+' : ''}${f.slip_ticks} tick${Math.abs(f.slip_ticks) === 1 ? '' : 's'} (model ${px(f.model_px)})` : '';
-  return `${f.side} ${f.qty ?? ''} MNQ @ ${px(f.px)} · ${etHMS(f.t)} ET · ${nm} · ${f.real ? 'REAL' : 'PAPER'}${slip}`;
+  return `${f.side} ${f.qty ?? ''} MNQ @ ${px(f.px)} · ${etHMS(f.t)} ET · ${nm} · ${tagOf(f)}${slip}${bookedNote(f)}`;
 }
 
 export function mountHolodeck(host, env) {
@@ -197,11 +202,11 @@ export function mountHolodeck(host, env) {
     if (!S.d) return;
     const T = Math.min(S.T, tEnd()), B = S.d.bots || {};
     const by = {};
-    for (const tr of S.d.trades || []) { if (!tr.entry || tr.entry.t > T) continue; const b = bk(tr.bot); by[b] = by[b] || { n: 0, usd: 0, real: tr.real }; by[b].n++; if (tr.exit && tr.exit.t <= T) by[b].usd += tr.usd || 0; }
+    for (const tr of S.d.trades || []) { if (!tr.entry || tr.entry.t > T) continue; const b = bk(tr.bot); by[b] = by[b] || { n: 0, usd: 0, real: tr.real, tag: tagOf(tr) }; by[b].n++; if (tr.exit && tr.exit.t <= T) by[b].usd += tr.usd || 0; }
     const b = bars(), i = b.findLastIndex ? b.findLastIndex((x) => x[0] <= T) : b.length - 1, last = b[Math.max(0, i)];
     $('#hdHud').innerHTML = `<div class="hd-px"><span>NQ</span><b class="mono">${px(last?.[4])}</b><em>${esc(etHM(T))} ET</em></div>`
-      + Object.keys(by).map((k) => `<div class="hd-pnl" style="--c:${BOTC[k]}"><i></i><b>${esc(B[k]?.name || BOTN[k])}</b><span class="${by[k].usd >= 0 ? 'up' : 'dn'}">${usd(by[k].usd)}</span><em>${by[k].n} trade${by[k].n === 1 ? '' : 's'} · ${by[k].real ? 'REAL' : 'PAPER'}</em></div>`).join('');
-    $('#hdLeg').innerHTML = ['lit', 'atlas', 'blitz'].map((k) => `<button type="button" class="hd-bot" data-bot="${k}" aria-pressed="${S.bots[k] !== false}" style="--c:${BOTC[k]}"><i></i>${esc(B[k]?.name || BOTN[k])}${B[k] ? ` <em>${B[k].real ? 'REAL' : 'PAPER'}</em>` : ''}</button>`).join('')
+      + Object.keys(by).map((k) => `<div class="hd-pnl" style="--c:${BOTC[k]}"><i></i><b>${esc(B[k]?.name || BOTN[k])}</b><span class="${by[k].usd >= 0 ? 'up' : 'dn'}">${usd(by[k].usd)}</span><em>${by[k].n} trade${by[k].n === 1 ? '' : 's'} · ${by[k].tag}</em></div>`).join('');
+    $('#hdLeg').innerHTML = ['lit', 'atlas', 'blitz'].map((k) => `<button type="button" class="hd-bot" data-bot="${k}" aria-pressed="${S.bots[k] !== false}" style="--c:${BOTC[k]}"><i></i>${esc(B[k]?.name || BOTN[k])}${B[k] ? ` <em>${botTag(B[k])}</em>` : ''}</button>`).join('')
       + `<span class="hd-key"><i class="solid"></i>real fill <i class="hollow"></i>paper / model</span>`;
     reserve();
   }
@@ -222,13 +227,13 @@ export function mountHolodeck(host, env) {
       const L = (S.d.trades || []).filter((x) => x.entry && ok(x.entry.t));
       P.innerHTML = L.length ? `<ol class="hd-list">${L.map((x) => { const b = bk(x.bot); return `<li><button type="button" data-jump="trade" data-id="${esc(x.id)}" style="--c:${BOTC[b]}" class="${x.entry.t > T ? 'later' : ''}">
         <i></i><b>${esc(B[b]?.name || BOTN[b])} ${esc(x.side)} ${x.qty ?? ''}</b><span class="mono">${etHM(x.entry.t)} → ${x.exit ? etHM(x.exit.t) : 'open'}</span>
-        <span class="${(x.usd ?? 0) >= 0 ? 'up' : 'dn'}">${usd(x.usd)}${ok(x.r) ? ' · ' + (x.r >= 0 ? '+' : '') + x.r.toFixed(2) + 'R' : ''}</span><em>${x.real ? 'REAL' : 'PAPER'} · ${esc(x.exit?.reason || 'open')}</em></button></li>`; }).join('')}</ol>` : '<p class="hd-mut">No trades on this day.</p>';
+        <span class="${(x.usd ?? 0) >= 0 ? 'up' : 'dn'}">${usd(x.usd)}${ok(x.r) ? ' · ' + (x.r >= 0 ? '+' : '') + x.r.toFixed(2) + 'R' : ''}</span><em>${tagOf(x)} · ${esc(x.exit?.reason || 'open')}</em></button></li>`; }).join('')}</ol>` : '<p class="hd-mut">No trades on this day.</p>';
       return;
     }
     if (S.tab === 'fills') {
       const L = (S.d.fills || []).filter((x) => ok(x.t));
       P.innerHTML = L.length ? `<ol class="hd-list hd-fl">${L.map((f) => { const b = bk(f.bot); return `<li><button type="button" data-jump="fill" data-id="${esc(f.id)}" style="--c:${BOTC[b]}" class="${f.t > T ? 'later' : ''} ${f.real ? 'real' : 'paper'}">
-        <i></i><b>${esc(f.side)} ${f.qty ?? ''} @ ${px(f.px)}</b><span class="mono">${etHMS(f.t)} ET</span><em>${esc(B[b]?.name || BOTN[b])} · ${esc(f.kind)} · ${f.real ? 'REAL' : 'PAPER'}${ok(f.slip_ticks) && f.slip_ticks ? ` · slip ${f.slip_ticks > 0 ? '+' : ''}${f.slip_ticks}t` : ''}</em></button></li>`; }).join('')}</ol>` : '<p class="hd-mut">No fills on this day.</p>';
+        <i></i><b>${esc(f.side)} ${f.qty ?? ''} @ ${px(f.px)}</b><span class="mono">${etHMS(f.t)} ET</span><em>${esc(B[b]?.name || BOTN[b])} · ${esc(f.kind)} · ${tagOf(f)}${ok(f.slip_ticks) && f.slip_ticks ? ` · slip ${f.slip_ticks > 0 ? '+' : ''}${f.slip_ticks}t` : ''}</em></button></li>`; }).join('')}</ol>` : '<p class="hd-mut">No fills on this day.</p>';
       return;
     }
     // Minds: each bot's current thinking (now.*, or the newest thought by the replay time) + the timeline
@@ -241,8 +246,9 @@ export function mountHolodeck(host, env) {
       const head = useNow && nh ? nh : last ? `${last.title ? last.title + ': ' : ''}${last.text || ''}` : (nh || 'Waiting');
       const stage = useNow && n?.stage ? (n.stage.label || n.stage) : last?.stage || '';
       const chk = useNow && Array.isArray(n?.checklist) ? n.checklist.slice(0, 5) : [];
-      return `<article class="hd-mind" style="--c:${BOTC[k]}" data-bot="${k}"><header><i></i><b>${esc(b?.name || BOTN[k])}</b><span class="hd-pill">${esc(String(stage || '—'))}</span><em>${b ? (b.real ? 'REAL' : 'PAPER') + (b.account ? ' · ' + esc(b.account) : '') : ''}</em></header>
+      return `<article class="hd-mind" style="--c:${BOTC[k]}" data-bot="${k}"><header><i></i><b>${esc(b?.name || BOTN[k])}</b><span class="hd-pill">${esc(String(stage || '—'))}</span><em>${b ? botTag(b) + (b.account ? ' · ' + esc(b.account) : '') : ''}</em></header>
         <p>${esc(head)}</p>${useNow && n?.detail ? `<p class="hd-mut sm">${esc(n.detail)}</p>` : ''}
+        ${useNow && Array.isArray(n?.members) && n.members.length ? `<ul class="hd-mem">${n.members.filter((m) => !m.candidate).slice(0, 4).map((m) => `<li><b>${esc(m.short || m.key || '')}</b><span class="hd-pill">${esc(m.stage || '—')}</span><small>${esc(m.text || '')}</small>${(m.checks || []).slice(0, 3).map((c) => `<em class="${c.ok === true ? 'y' : c.ok === false ? 'n' : 'w'}">${c.ok === true ? '✓' : c.ok === false ? '✗' : '…'} ${esc(c.label || c.text || '')}</em>`).join('')}</li>`).join('')}</ul>` : ''}
         ${chk.length ? `<ul class="hd-chk">${chk.map((c) => `<li class="${c.ok === true ? 'y' : c.ok === false ? 'n' : 'w'}">${c.ok === true ? '✓' : c.ok === false ? '✗' : '…'} ${esc(c.label || c.text || '')}${c.label && c.text ? ` <small>${esc(c.text)}</small>` : ''}</li>`).join('')}</ul>` : ''}
         ${b?.plan ? `<p class="hd-mut sm">${esc(b.plan)}</p>` : ''}</article>`;
     };
@@ -266,7 +272,7 @@ export function mountHolodeck(host, env) {
     if (kind === 'fill') {
       const f = data || (S.d.fills || []).find((x) => x.id === id); if (!f) return;
       const b = bk(f.bot);
-      h = `<header style="--c:${BOTC[b]}"><i></i><b>${esc(f.side)} ${f.qty ?? ''} MNQ @ ${px(f.px)}</b><span class="hd-pill ${f.real ? 'real' : 'paper'}">${f.real ? 'REAL' : 'PAPER'}</span></header>
+      h = `<header style="--c:${BOTC[b]}"><i></i><b>${esc(f.side)} ${f.qty ?? ''} MNQ @ ${px(f.px)}</b><span class="hd-pill ${f.real ? 'real' : 'paper'}">${tagOf(f)}</span></header>
         <p class="hd-big mono" id="hdFillTxt">${esc(fillText(f, B))}</p>
         <dl><dt>Time</dt><dd class="mono">${etHMS(f.t)} ET</dd><dt>Price</dt><dd class="mono">${px(f.px)}</dd><dt>Model (twin)</dt><dd class="mono">${px(f.model_px)}</dd>
         <dt>Slippage</dt><dd>${ok(f.slip_ticks) ? `${f.slip_ticks > 0 ? '+' : ''}${f.slip_ticks} tick${Math.abs(f.slip_ticks) === 1 ? '' : 's'} (${usd(-(f.slip_ticks || 0) * 0.5 * (f.qty || 1))})` : '—'}</dd>
@@ -276,7 +282,7 @@ export function mountHolodeck(host, env) {
       const b = bk(t.bot), st = t.setup;
       const steps = st && ok(st.t_sweep) ? [['1', 'Sweep', st.t_sweep, st.sweep_ext, (st.swept || []).map((x) => x.label).join(', ')], ['2', 'Inducement', st.t_idm, null, ''], ['3', 'Displacement', st.t_disp, null, ''],
         ['4', 'CISD', st.t_cisd, st.cisd, ''], ['5', 'Entry', t.entry.t, t.entry.px, '']] : [];
-      h = `<header style="--c:${BOTC[b]}"><i></i><b>${esc(B[b]?.name || BOTN[b])} ${esc(t.side)} ${t.qty ?? ''} MNQ</b><span class="hd-pill ${t.real ? 'real' : 'paper'}">${t.real ? 'REAL' : 'PAPER'}</span></header>
+      h = `<header style="--c:${BOTC[b]}"><i></i><b>${esc(B[b]?.name || BOTN[b])} ${esc(t.side)} ${t.qty ?? ''} MNQ</b><span class="hd-pill ${t.real ? 'real' : 'paper'}">${tagOf(t)}</span></header>
         <p class="hd-big"><span class="${(t.usd ?? 0) >= 0 ? 'up' : 'dn'}">${usd(t.usd)}</span>${ok(t.r) ? ` · ${(t.r >= 0 ? '+' : '') + t.r.toFixed(2)}R` : ''} · ${esc(t.exit?.reason || 'open')}</p>
         ${steps.length ? `<ol class="hd-anat">${steps.map(([n, l, tt, p, x]) => `<li><em>${n}</em><b>${l}</b><span class="mono">${ok(tt) ? etHM(tt) : '—'}${ok(p) ? ' · ' + px(p) : ''}</span>${x ? `<small>${esc(x)}</small>` : ''}</li>`).join('<li class="arr">→</li>')}</ol>` : ''}
         <dl><dt>Entry</dt><dd class="mono">${px(t.entry.px)} · ${etHMS(t.entry.t)}</dd><dt>Exit</dt><dd class="mono">${t.exit ? px(t.exit.px) + ' · ' + etHMS(t.exit.t) : 'open'}</dd>
@@ -343,7 +349,7 @@ export function mountHolodeck(host, env) {
       labs.push({ f, x, y, col });
     }
     g.restore();
-    ov.innerHTML = labs.map(({ f, x, y, col }) => `<button type="button" class="hd-lab hd-fill ${f.real ? 'real' : 'paper'}" data-kind="fill" data-id="${esc(f.id)}" data-px="${f.px}" data-t="${f.t}" style="--c:${col};transform:translate(${Math.round(x + 10)}px,${Math.round(y - 10)}px)" title="${esc(fillText(f, S.d.bots))}"><b>${f.side === 'BUY' ? '▲' : '▼'} ${esc(f.side)} ${f.qty ?? ''}</b> @ <span class="px">${px(f.px)}</span> · <span class="tm">${etHMS(f.t)}</span> <i class="${f.real ? 'real' : 'paper'}">${f.real ? 'REAL' : 'PAPER'}</i></button>`).join('');
+    ov.innerHTML = labs.map(({ f, x, y, col }) => `<button type="button" class="hd-lab hd-fill ${f.real ? 'real' : 'paper'}" data-kind="fill" data-id="${esc(f.id)}" data-px="${f.px}" data-t="${f.t}" style="--c:${col};transform:translate(${Math.round(x + 10)}px,${Math.round(y - 10)}px)" title="${esc(fillText(f, S.d.bots))}"><b>${f.side === 'BUY' ? '▲' : '▼'} ${esc(f.side)} ${f.qty ?? ''}</b> @ <span class="px">${px(f.px)}</span> · <span class="tm">${etHMS(f.t)}</span> <i class="${f.real ? 'real' : 'paper'}">${tagOf(f)}</i></button>`).join('');
   }
 
   // ------------------------------------------------------------------ controls

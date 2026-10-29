@@ -39,7 +39,7 @@ import { HeatCube } from './heat.js';
 import { LiquidityMap } from './liqmap.js';
 import { WeekRing } from './weekring.js';
 import { DayClock } from './dayclock.js';
-import { Holo, fillText, etHMS, fmtPx, fmtUsd, BOTC, BOTN } from './holo.js';
+import { Holo, fillText, etHMS, fmtPx, fmtUsd, BOTC, BOTN, tagOf } from './holo.js';
 
 export const version = 1;
 const KINDS = { orb: Orb, galaxy: Galaxy, city: City, candles: Candles, constellation: Constellation, ribbon: Ribbon, reactor: Reactor, pipeline: Pipeline, losses: Losses, jarvis: Jarvis,
@@ -141,5 +141,5 @@ export { enableGyro, Q };
 export function holo(el, opts = {}) {
   const v = new Holo(opts); v.kind = 'holo'; v.attach(el); return v;
 }
-export const holoFmt = { fillText, etHMS, fmtPx, fmtUsd, BOTC, BOTN };
+export const holoFmt = { fillText, etHMS, fmtPx, fmtUsd, BOTC, BOTN, tagOf };
 export { Holo };

@@ -2,7 +2,9 @@
 see what every bot is thinking"): the 3D scene (tools/web_public/fx/src/holo.js in fx.js), the shared page UI (holocore.js,
 holo.css, byte-identical on both dashboards), the phone page (tools/web_public/holo.js, #/holo) and the PC page
 (web_next/js/next/holo.js, Main after Live View), driven by Playwright with tests/fixtures/holo_fe_sample.json (real 2026
-NQ bars + the LIT / ATLAS / BLITZ research trades, mocked real fills 1 tick off the model; tests/make_holo_fe_fixture.py).
+NQ bars + the LIT / ATLAS / BLITZ research trades, mocked real fills 1 tick off the model; tests/make_holo_fe_fixture.py)
+and by default with the API's own holo.json (tests/fixtures/holo_sample.json, engine/holo_api on 2026-10-13 real CME data) plus a
+holo_hist.json in the API's shape (fills / thoughts inside each trade, bars_1m).
 
   python -X utf8 -m tests.test_holo_ui                     # ~60-90 s (Playwright part skipped without node + playwright)
   LE_SHOTS=<dir> python -X utf8 -m tests.test_holo_ui      # also saves the screenshots there
@@ -39,16 +41,43 @@ def rd(*p):
         return f.read()
 
 
+def api_hist(fe_hist: dict, skip_day: str) -> dict:
+    """holo_hist.json in engine/holo_api.hist's shape from the front-end fixture's days: each trade carries its fills, its
+    thoughts and its window; the day its 1m bar window (bars_1m), real, usd, errors. Today (skip_day) is not in it."""
+    days = []
+    for D in fe_hist["days"]:
+        if D["day"] == skip_day:
+            continue
+        trs = []
+        for tr in D["trades"]:
+            a = min((tr.get("setup") or {}).get("t_sweep") or tr["entry"]["t"], tr["entry"]["t"]) - 2700
+            z = ((tr.get("exit") or {}).get("t") or tr["entry"]["t"]) + 2700
+            trs.append({**tr, "fills": [f for f in D["fills"] if f["trade"] == tr["id"]],
+                        "thoughts": [x for x in D["thoughts"] if a <= x["t"] <= z and x["bot"] in (tr["bot"], "sys")], "win": [a, z]})
+        days.append({"day": D["day"], "trades": trs, "bars_1m": D["bars"]["1m"], "real": any(t.get("real") for t in trs),
+                     "usd": round(sum(t.get("usd") or 0 for t in trs), 2), "errors": []})
+    return {"v": 1, "kind": "le-holo-hist", "t": fe_hist["t"], "days": days, "trimmed": False}
+
+
 def main() -> int:
-    fix = os.environ.get("LE_HOLO_FIX") or os.path.join(ROOT, "tests", "fixtures", "holo_fe_sample.json")   # {"holo", "hist"}: another fixture
-    if not os.path.exists(fix):
+    # default: the API's own holo.json (tests/fixtures/holo_sample.json, engine/holo_api on 2026-10-13 real CME data) + a
+    # holo_hist.json in the API's shape; LE_HOLO_FIX=<{"holo", "hist"} file> (e.g. tests/fixtures/holo_fe_sample.json) instead
+    fe = os.path.join(ROOT, "tests", "fixtures", "holo_fe_sample.json")
+    if not os.path.exists(fe):
         subprocess.run([sys.executable, os.path.join(ROOT, "tests", "make_holo_fe_fixture.py")], check=True)
+    tmpd = tempfile.mkdtemp(prefix="holo_fix_")
+    fix = os.environ.get("LE_HOLO_FIX")
+    if not fix:
+        api = json.load(open(os.path.join(ROOT, "tests", "fixtures", "holo_sample.json"), encoding="utf-8"))
+        fix = os.path.join(tmpd, "fix.json")
+        with open(fix, "w", encoding="utf-8") as f:
+            json.dump({"holo": api, "hist": api_hist(json.load(open(fe, encoding="utf-8"))["hist"], api["day"])}, f)
     F = json.load(open(fix, encoding="utf-8"))
     H = F["holo"]
     check("fixture: holo.json contract (v 1, le-holo, bars 1m / 5m, bots, fills with exact seconds, trades, thoughts)",
           H["v"] == 1 and H["kind"] == "le-holo" and H["bars"]["1m"] and H["bars"]["5m"] and set(H["bots"]) == {"lit", "atlas", "blitz"}
           and all(isinstance(f["t"], (int, float)) and f["side"] in ("BUY", "SELL") for f in H["fills"]) and H["trades"] and H["thoughts"])
-    check("fixture: real Zlarior fills 1 tick off the model, paper ATLAS / BLITZ fills", any(f["real"] and f["slip_ticks"] == 1 for f in H["fills"])
+    check("fixture: real / sim fills with the slip vs the model, paper fills", any(f["real"] and f.get("slip_ticks") for f in H["fills"])
           and any(not f["real"] for f in H["fills"]))
     check("fixture: holo_hist.json days", F["hist"]["kind"] == "le-holo-hist" and len(F["hist"]["days"]) >= 3)
 

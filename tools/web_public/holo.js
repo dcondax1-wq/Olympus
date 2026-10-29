@@ -27,7 +27,7 @@
 
   function ensureCss() {
     if (document.querySelector('link[data-hd]')) return;
-    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'holo.css?v=5c6032ef'; l.dataset.hd = '1';
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'holo.css?v=112d824e'; l.dataset.hd = '1';
     document.head.appendChild(l);
   }
   ensureCss();
@@ -69,13 +69,18 @@
     if (!day || (today && today.day === day)) return today;
     const h = await hist(5 * 60e3), D = (h.days || []).find((x) => x.day === day);
     if (!D) throw new Error('no Holodeck data for ' + day);
-    return { v: 1, kind: 'le-holo', t: h.t, day: D.day, live: false, bars: D.bars || {}, bots: (today && today.bots) || null, fills: D.fills || [], trades: D.trades || [],
-      orders: D.orders || [], thoughts: D.thoughts || [], levels: D.levels || [], structure: D.structure || null, now: null };
+    // holo_hist.json (engine/holo_api.hist): each trade carries its own fills and thoughts, the day its bar window
+    // (bars_1m, or bars_5m once trimmed); the older flat shape (fills / thoughts / bars per day) still reads
+    const T = D.trades || [], seen = new Set();
+    const thoughts = (D.thoughts || T.flatMap((t) => t.thoughts || [])).filter((x) => { const k = x.key || (x.t + '|' + x.bot + '|' + x.title); if (seen.has(k)) return false; seen.add(k); return true; }).sort((a, b) => a.t - b.t);
+    const bars = D.bars || { '1m': D.bars_1m || [], '5m': D.bars_5m || [] };
+    return { v: 1, kind: 'le-holo', t: h.t, day: D.day, live: false, bars, bots: (today && today.bots) || null, fills: D.fills || T.flatMap((t) => t.fills || []).sort((a, b) => a.t - b.t),
+      trades: T, orders: D.orders || [], thoughts, levels: D.levels || [], structure: D.structure || null, now: null, trimmed: !!h.trimmed };
   }
   async function getDays() {
     const h = await hist(5 * 60e3).catch(() => ({ days: [] }));
     const sum = (L) => L.reduce((a, t) => a + (okN(t.usd) ? t.usd : 0), 0);
-    return (h.days || []).map((x) => ({ day: x.day, trades: (x.trades || []).length, usd: sum(x.trades || []) })).sort((a, b) => (a.day < b.day ? 1 : -1));
+    return (h.days || []).map((x) => ({ day: x.day, trades: (x.trades || []).length, usd: okN(x.usd) ? x.usd : sum(x.trades || []) })).sort((a, b) => (a.day < b.day ? 1 : -1));
   }
   const FXV_ = () => (typeof FXV !== 'undefined' ? FXV : '');
   const env = {
@@ -87,7 +92,7 @@
   };
   Object.defineProperty(env, 'every', { get: () => H.every });
   let core = null;
-  const coreMod = () => core || (core = import('./holocore.js?v=c453402d').catch((e) => { core = null; throw e; }));
+  const coreMod = () => core || (core = import('./holocore.js?v=1ad153f6').catch((e) => { core = null; throw e; }));
 
   // ------------------------------------------------------------------ the page (#/holo)
   function view(el) {

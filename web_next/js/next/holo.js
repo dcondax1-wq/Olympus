@@ -7,14 +7,14 @@
 // The page: ./holocore.js (byte-identical to tools/web_public/holocore.js) + /css/holo.css. No WebGL 2 (or quality "2D"):
 // the Live View chart (./liveviewchart.js) with the fills drawn on it. Page section is created here (no index.html change).
 import { store } from '../util.js';
-import { mountHolodeck } from './holocore.js?v=c453402d';
+import { mountHolodeck } from './holocore.js?v=1ad153f6';
 import { fxModule, fxLevel } from './fx3d.js';
 
 const ID = 'holo';
 let H = null;
 function ensure() {
   if (!document.querySelector('link[data-hd]')) {
-    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('../../css/holo.css?v=5c6032ef', import.meta.url).href; l.dataset.hd = '1';
+    const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = new URL('../../css/holo.css?v=112d824e', import.meta.url).href; l.dataset.hd = '1';
     document.head.appendChild(l);
   }
   if (document.getElementById('page-' + ID)) return;
@@ -38,7 +38,9 @@ const env = {
   getDays: async () => {
     const j = await getJSON('/api/next/holo/days');
     const L = Array.isArray(j) ? j : Array.isArray(j.days) ? j.days : [];
-    return L.map((x) => (typeof x === 'string' ? { day: x } : x)).filter((x) => x && x.day);
+    // engine/holo_api.days: [{ day, n_trades, real_n, real_usd, model_n, model_usd }], newest first
+    return L.map((x) => (typeof x === 'string' ? { day: x } : x)).filter((x) => x && x.day)
+      .map((x) => ({ ...x, trades: x.trades ?? x.n_trades, usd: x.usd ?? (x.real_n ? x.real_usd : x.model_usd) }));
   },
   quality: fxLevel() === 'lite' ? 'lite' : 'max',
 };

@@ -28,10 +28,15 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 export const BOTC = { lit: '#4f9bff', atlas: '#ff9a3d', blitz: '#b388ff', scalp: '#b388ff', sys: '#94a3b8' };
 export const BOTN = { lit: 'Zlarior', atlas: 'ATLAS', blitz: 'BLITZ', scalp: 'BLITZ', sys: 'Bot' };
 const botKey = (b) => (b === 'scalp' ? 'blitz' : b || 'sys');
+// what a fill / trade is: SIM (NinjaTrader Sim account), REAL (a live account), MODEL (no broker price: a market close priced
+// from the booked $, or the model twin), PAPER (the paper ledgers)
+export const tagOf = (x) => (x && x.src === 'sim' ? 'SIM' : x && x.real ? 'REAL' : x && x.src === 'model' ? 'MODEL' : 'PAPER');
+export const bookedNote = (f) => (f && f.src === 'model' && !f.real && f.kind !== 'entry' && f.kind !== 'add' ? ' · price from the booked $' : '');
+export const botTag = (b) => (!b ? '' : b.real ? (/^sim/i.test(String(b.account || '')) ? 'SIM' : 'REAL') : 'PAPER');
 export function fillText(f, bots) {
-  const b = botKey(f.bot), nm = (bots?.[b]?.name) || BOTN[b] || b, paper = !f.real;
+  const b = botKey(f.bot), nm = (bots?.[b]?.name) || BOTN[b] || b;
   const slip = ok(f.slip_ticks) && ok(f.model_px) && f.model_px !== f.px ? ` · slip ${f.slip_ticks > 0 ? '+' : ''}${f.slip_ticks} tick${Math.abs(f.slip_ticks) === 1 ? '' : 's'} (model ${fmtPx(f.model_px)})` : '';
-  return `${f.side} ${f.qty ?? ''} MNQ @ ${fmtPx(f.px)} · ${etHMS(f.t)} ET · ${nm} · ${paper ? 'PAPER' : 'REAL'}${slip}`;
+  return `${f.side} ${f.qty ?? ''} MNQ @ ${fmtPx(f.px)} · ${etHMS(f.t)} ET · ${nm} · ${tagOf(f)}${slip}${bookedNote(f)}`;
 }
 
 // shaders: the floor grid, the back wall (price / time grid), dashed beams / lines
@@ -348,11 +353,12 @@ export class Holo extends View {
     for (const [k, o] of (this.d.orders || []).entries()) {
       if (!ok(o.px) || !ok(o.t)) continue;
       const b = botKey(o.bot), col = BOTC[b], y = this.Y(o.px);
-      const mat = o.type === 'STOP' ? this._dash(col, 1.1, 9) : this._neon(col, 1.5, 0.95);
+      // a model order (the LIT model's limit, never sent to the broker) is a ghost: dim dashed, labelled MODEL
+      const mat = o.model ? this._dash(new THREE.Color(col).lerp(new THREE.Color('#ffffff'), 0.5), 0.5, 4) : o.type === 'STOP' ? this._dash(col, 1.1, 9) : this._neon(col, 1.5, 0.95);
       const line = this._hbar(this.G.orders, mat, this.X(o.t), this.X(o.t + 60), y, 0.25, 0.028);
       const gl = this._sprite(col, 0.32, 0.8); gl.position.set(this.X(o.t), y, 0.25); this.G.orders.add(gl);
       const id = 'o' + k;
-      const it = this._label('order', `<b>${esc(o.type)} ${esc(o.side || '')} ${o.qty ?? ''}</b> @ ${fmtPx(o.px)} <i>${esc(o.state || '')}</i>`, b, { x: this.X(o.t), y, z: 0.25 },
+      const it = this._label('order', `<b>${o.model ? 'MODEL ' : ''}${esc(o.type)} ${esc(o.side || '')} ${o.qty ?? ''}</b> @ ${fmtPx(o.px)} <i>${esc(o.state || '')}</i>`, b + (o.model ? ' model' : ''), { x: this.X(o.t), y, z: 0.25 },
         { color: col, t: o.t, t1: o.t_end, bot: b, layer: 'orders', pri: 0.6, id, data: o, title: o.why || '' });
       this.orders.push({ o, b, line, gl, it, id });
     }
@@ -389,7 +395,7 @@ export class Holo extends View {
       const hiY = Math.max(yE, ok(tr.target) ? this.Y(tr.target) : yE, ...steps.map((s) => this.Y(s[1])));
       const loY = Math.min(yE, ok(tr.target) ? this.Y(tr.target) : yE, ...steps.map((s) => this.Y(s[1])));
       const nm = this.d.bots?.[b]?.name || BOTN[b];
-      const it = this._label('trade', `<b>${esc(nm)} ${esc(tr.side)} ${tr.qty ?? ''}</b> <span class="${(tr.usd ?? 0) >= 0 ? 'up' : 'dn'}">${fmtUsd(tr.usd)}${ok(tr.r) ? ' · ' + (tr.r >= 0 ? '+' : '') + tr.r.toFixed(2) + 'R' : ''}</span> <i>${tr.real ? 'REAL' : 'PAPER'}${ex ? ' · ' + esc(ex.reason || '') : ' · open'}</i>`, b,
+      const it = this._label('trade', `<b>${esc(nm)} ${esc(tr.side)} ${tr.qty ?? ''}</b> <span class="${(tr.usd ?? 0) >= 0 ? 'up' : 'dn'}">${fmtUsd(tr.usd)}${ok(tr.r) ? ' · ' + (tr.r >= 0 ? '+' : '') + tr.r.toFixed(2) + 'R' : ''}</span> <i>${tagOf(tr)}${ex ? ' · ' + esc(ex.reason || '') : ' · open'}</i>`, b,
         { x: this.X(tr.entry.t), y: long ? hiY : hiY, z: dep / 2, up: true }, { color: col, t: tr.entry.t, bot: b, layer: 'trades', pri: 1.6, id: tr.id, data: tr, lift: 0.16 });
       const setup = this._buildSetup(tr, b, col);
       this.trades.push({ tr, b, g, risk, reward, sp, vSteps, tgtLine, exM, twin, it, ex, setup, E, long, dep, hiY, loY, t0: tr.entry.t });
@@ -478,7 +484,7 @@ export class Holo extends View {
         link = this._vbar(g, this._neon('#ffffff', 1, 0.6), 0.09, 0, this.Y(f.model_px) - y, 0.05, 0.006);
       }
       const side = f.side === 'BUY' ? '▲' : '▼';
-      const it = this._label('fill', `<b>${side} ${esc(f.side)} ${f.qty ?? ''}</b> @ <span class="px">${fmtPx(f.px)}</span> · <span class="tm">${etHMS(f.t)}</span>${real ? ' <i class="real">REAL</i>' : ' <i class="paper">PAPER</i>'}<span class="more"> · ${esc(this.d.bots?.[b]?.name || BOTN[b])}${ok(f.slip_ticks) && ok(f.model_px) && f.model_px !== f.px ? ` · slip ${f.slip_ticks > 0 ? '+' : ''}${f.slip_ticks} tick (model ${fmtPx(f.model_px)})` : ''}</span>`,
+      const it = this._label('fill', `<b>${side} ${esc(f.side)} ${f.qty ?? ''}</b> @ <span class="px">${fmtPx(f.px)}</span> · <span class="tm">${etHMS(f.t)}</span> <i class="${real ? 'real' : 'paper'}">${tagOf(f)}</i><span class="more"> · ${esc(this.d.bots?.[b]?.name || BOTN[b])}${ok(f.slip_ticks) && ok(f.model_px) && f.model_px !== f.px ? ` · slip ${f.slip_ticks > 0 ? '+' : ''}${f.slip_ticks} tick (model ${fmtPx(f.model_px)})` : ''}${bookedNote(f)}</span>`,
         b + (real ? ' real' : ' paper'), { x, y, z, fill: true }, { color: col, t: f.t, bot: b, layer: 'fills', pri: 2, id: f.id, data: f, title: fillText(f, this.d.bots), lift: 0.12 });
       it.el.dataset.px = f.px; it.el.dataset.t = f.t;
       this.fills.push({ f, b, g, orb, halo, beam, ghost, link, it, real, shown: false });
