@@ -113,15 +113,15 @@ async function dayPicker(p, tag) {
   await p.waitForFunction((d) => (window.HOLO?.ui || window.LE?.holo).state.day === d, HOLO.day, { timeout: 15000 }).catch(() => null);
 }
 async function frames(p, tag) {
-  await p.evaluate(V('(v.measure = true, v.st.msAvg = 0, 1)'));      // gl.finish() after each frame: the full frame cost, not only the JS
+  await p.evaluate(V('(v.measure = true, v.st.msAvg = 0, v.st.ring = [], 1)'));      // gl.finish() after each frame: the full frame cost, not only the JS
   await p.waitForTimeout(2000);
   const s = await p.evaluate(V('v.stats()'));
   perf[tag] = s;
   // 3D Lite (no bloom, no reflection): the frame time there too, then back to Max
-  await p.evaluate(V('(v.setQuality("lite"), 1)')); await p.waitForTimeout(1500);
+  await p.evaluate(V('(v.setQuality("lite"), 1)')); await p.waitForTimeout(600); await p.evaluate(V('(v.st.ring = [], 1)')); await p.waitForTimeout(2000);
   perf[tag + '_lite'] = await p.evaluate(V('v.stats()'));
   await p.evaluate(V('(v.setQuality("max"), v.measure = false, 1)')); await p.waitForTimeout(300);
-  step(`${tag}: frame time sane (${s.msAvg} ms a frame, ${s.fps} fps, ${s.calls} draw calls, bloom ${s.bloom})`, s.msAvg > 0 && s.msAvg < 400 && s.frames > 10, JSON.stringify(s));
+  step(`${tag}: frame time sane (median ${s.p50} ms a frame incl. gl.finish, p95 ${s.p95}, ${s.calls} draw calls, bloom ${s.bloom})`, s.p50 > 0 && s.p50 < 250 && s.frames > 10, JSON.stringify(s));
 }
 
 (async () => {

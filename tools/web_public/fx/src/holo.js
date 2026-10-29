@@ -7,7 +7,7 @@
 //   v.setQuality('max' | 'lite'); v.stats(); v.counts(); v.dispose()
 // Data = the holo.json contract (kind le-holo; every field may be null / []). Time on x (DX world units a minute), price on
 // y (one scale for the day, the camera frames the bars in view), depth on z. Candles are instanced (two meshes + wicks +
-// volume); Max adds a mirrored floor reflection and bloom, Lite has neither. Its own animation loop (not the shared one):
+// volume); Max adds a mirrored floor reflection (+ bloom on the PC), Lite has neither. Its own animation loop (not the shared one):
 // renders only while on screen and the tab is visible; prefers-reduced-motion = no camera motion. HTML labels (prices,
 // times, fill cards, thought panels) follow their 3D anchors and are nudged apart so they never overlap.
 import { THREE, View, Q, glowTexture } from './core.js';
@@ -123,7 +123,11 @@ export class Holo extends View {
     if (!this.visible) return;                 // off screen (another page, scrolled away): the loop sleeps until it shows again
     {
       const t0 = performance.now();
-      try { this.renderer.info.reset(); this.update(now / 1000, dt); this._render(); if (this.measure) this.renderer.getContext().finish(); this._errs = 0; }
+      try {
+        this.renderer.info.reset(); this.update(now / 1000, dt); const t1 = performance.now();
+        this._render(); if (this.measure) this.renderer.getContext().finish(); this._errs = 0;
+        const S = this.st; (S.ring || (S.ring = [])).push([t1 - t0, performance.now() - t1]); if (S.ring.length > 90) S.ring.shift();
+      }
       catch (e) { console.warn('holo frame', e); if ((this._errs = (this._errs || 0) + 1) > 30) { this.broken = true; return; } }
       const ms = performance.now() - t0, S = this.st;
       S.frames++; S.ms = ms; S.msAvg = S.msAvg ? S.msAvg * 0.92 + ms * 0.08 : ms; S.acc += dt; S.n++;
@@ -142,7 +146,8 @@ export class Holo extends View {
   detach() { this._io2?.disconnect(); this.ov.remove(); cancelAnimationFrame(this._raf); this._raf = 0; super.detach(); }
   _initComposer() {
     this.composer = null;
-    if (this.lite) return;
+    // bloom: PC Max only (a phone's Max keeps the mirrored floor; bloom there cost ~350 ms a frame in the software-GPU test)
+    if (this.lite || (this.phone && !this.opts.bloom)) return;
     try {
       const c = new EffectComposer(this.renderer);
       c.addPass(new RenderPass(this.scene, this.camera));
@@ -159,7 +164,14 @@ export class Holo extends View {
     this.G.mirror.visible = !lite; this.resize();
   }
   resize() {
-    super.resize();
+    // layout size (clientWidth / Height), not the bounding box: a page's warp-in animation scales it while the view mounts
+    if (!this.el) return;
+    const w = Math.max(10, this.el.clientWidth || 0), h = Math.max(10, this.el.clientHeight || 0);
+    this.w = w; this.h = h;
+    this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, this.opts.dprMax || 2) * Q.dprScale);
+    this.renderer.setSize(w, h, false);
+    this.canvas.style.width = w + 'px'; this.canvas.style.height = h + 'px';
+    this.camera.aspect = w / h; this.camera.updateProjectionMatrix();
     if (this.composer) {
       this.composer.setPixelRatio(this.renderer.getPixelRatio()); this.composer.setSize(this.w, this.h);
       this.bloom?.resolution?.set(this.w / 2, this.h / 2);
@@ -535,8 +547,7 @@ export class Holo extends View {
     }
     // thoughts: the newest ones get the full holographic panel
     const vis = this.thoughts.filter((x) => x.th.t <= T && this.on(x.b));
-    const newest = new Set(vis.slice(this.phone ? -1 : -3).map((x) => x.id));
-    for (const x of this.thoughts) { x.g.visible = x.th.t <= T && this.on(x.b); x.it.el.classList.toggle('newest', newest.has(x.id)); x.it.el.classList.toggle('old', !newest.has(x.id)); }
+    for (const x of this.thoughts) x.g.visible = x.th.t <= T && this.on(x.b);
     this.lastThought = vis.at(-1) || null;
     this.dirty = true; this._wake();
   }
@@ -736,6 +747,12 @@ export class Holo extends View {
     const proj = (x, y, z) => { v.set(x, y, z).project(cam); return { x: (v.x * 0.5 + 0.5) * W, y: (-v.y * 0.5 + 0.5) * H, behind: v.z > 1 || v.z < -1 }; };
     const L = this.layers, T = this.T, shown = [];
     const C = this.cam, Wv = this._winW() * 0.75;
+    // thoughts: of those in view (and already said by the replay time) the newest few keep a label, the very newest get the
+    // full holographic panel (1 on a phone, 3 on the PC); the rest stay glowing diamonds in the scene
+    const ta = this.tAt(C.tx - Wv * 1.6), tb = this.tAt(C.tx + Wv * 1.6);
+    const inWin = this.thoughts.filter((x) => x.th.t <= T && x.th.t >= ta && x.th.t <= tb && this.on(x.b));
+    const keep = new Set(inWin.slice(this.phone ? -6 : -14).map((x) => x.id)), full = new Set(inWin.slice(this.phone ? -1 : -3).map((x) => x.id));
+    for (const x of this.thoughts) { x.it.gate = keep.has(x.id) || x.it === this._focusIt; x.it.el.classList.toggle('newest', full.has(x.id)); x.it.el.classList.toggle('old', !full.has(x.id)); }
     for (const it of this.items) {
       let vis = it.t <= T && (it.gate !== false);
       if (vis && it.layer && L[it.layer] === false) vis = false;
@@ -755,7 +772,10 @@ export class Holo extends View {
     }
     // nudge apart: higher priority first, each moves up / down until it is free (or hides when it cannot be placed)
     shown.sort((a, b) => b.pri - a.pri);
-    const placed = (this.opts.reserve?.() || []).map((r) => ({ x: r.x, y: r.y, it: { w: r.w, h: r.h } }));      // the page's HUD / legend / card
+    const res = this.opts.reserve?.() || [];
+    const placed = res.map((r) => ({ x: r.x, y: r.y, it: { w: r.w, h: r.h } }));      // the page's HUD / legend / card
+    // labels stay between the HUD row at the top and the legend row at the bottom
+    const yTop = res.filter((r) => r.y < 24).reduce((m, r) => Math.max(m, r.y + r.h), 0) + 2, yBot = res.filter((r) => r.y > H - 90).reduce((m, r) => Math.min(m, r.y), H) - 2;
     const hit = (s) => placed.some((q) => s.x < q.x + q.it.w + 4 && s.x + s.it.w + 4 > q.x && s.y < q.y + q.it.h + 3 && s.y + s.it.h + 3 > q.y);
     for (const s of shown) {
       const y0 = s.y; let okP = !hit(s);
@@ -767,7 +787,7 @@ export class Holo extends View {
     for (const s of shown) {
       const el = s.it.el;
       if (s.hide) { if (s.it.on !== false) { el.style.transform = 'translate(-9999px,0)'; el.style.visibility = 'hidden'; s.it.on = false; } continue; }
-      el.style.transform = `translate(${Math.round(Math.max(2, Math.min(W - 40, s.x)))}px,${Math.round(Math.max(2, Math.min(H - 16, s.y)))}px)`;
+      el.style.transform = `translate(${Math.round(Math.max(2, Math.min(W - 40, s.x)))}px,${Math.round(Math.max(yTop, Math.min(yBot - s.it.h, s.y)))}px)`;
       if (s.it.on !== true) { el.style.visibility = 'visible'; s.it.on = true; }
     }
     this._axes(proj);
@@ -807,7 +827,9 @@ export class Holo extends View {
     if (kX !== this._kX) { this.axX.innerHTML = kX; this._kX = kX; }
     this.fU.uSX.value = this.wU.uSX.value = ts / 60 * DX;
   }
-  stats() { const i = this.renderer.info.render; return { frames: this.st.frames, ms: +this.st.ms.toFixed(2), msAvg: +this.st.msAvg.toFixed(2), fps: this.st.fps, calls: i.calls, tris: i.triangles, dpr: this.renderer.getPixelRatio(), lite: this.lite, bloom: !!this.composer }; }
+  stats() {
+    const i = this.renderer.info.render, R = this.st.ring || [], q = (k, p) => { const a = R.map((x) => k < 0 ? x[0] + x[1] : x[k]).sort((m, n) => m - n); return a.length ? +a[Math.min(a.length - 1, Math.floor(a.length * p))].toFixed(2) : 0; };
+    return { frames: this.st.frames, ms: +this.st.ms.toFixed(2), msAvg: +this.st.msAvg.toFixed(2), p50: q(-1, 0.5), p95: q(-1, 0.95), update50: q(0, 0.5), render50: q(1, 0.5), fps: this.st.fps, calls: i.calls, tris: i.triangles, dpr: this.renderer.getPixelRatio(), lite: this.lite, bloom: !!this.composer }; }
   counts() {
     const T = this.T;
     return { bars: this.n, barsShown: this.wk ? this.wk.count : 0, fills: this.fills.length, fillsShown: this.fills.filter((F) => F.f.t <= T && F.g.visible).length, trades: this.trades.length,
