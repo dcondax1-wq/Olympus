@@ -189,8 +189,8 @@ function addForm(d) {
 // real route, no real money); a real MFFU 25K trades only after the owner arms it here with the typed phrase.
 function blitzCard(d) {
   const b = d.blitz || {};
-  const can = d.local && !d.running;
-  const lock = !d.local ? 'Only on the PC itself' : d.running ? 'Stop the bot first' : '';
+  const can = d.local;                                // a running bot picks a change up once BLITZ is flat
+  const lock = !d.local ? 'Only on the PC itself' : '';
   const state = !b.on ? chip('off') : b.sim ? chip('Sim test', 'good') : b.armed ? chip('armed', 'bad') : chip('not armed');
   const arm = b.on && !b.sim && !b.armed && d.local ? `<div class="st-panel st-arm"><p><b>Real money.</b> BLITZ will trade the 25K <b>${esc(b.name)}</b> (its own account, next to Zlarior and ATLAS, never the other way of them).</p>
       <label class="st-phrase">Type <b>${esc(b.phrase || d.phrase)}</b><input id="stCPhrase" autocomplete="off" spellcheck="false" placeholder="${esc(b.phrase || d.phrase)}"></label>

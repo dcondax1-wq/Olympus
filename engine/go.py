@@ -1489,13 +1489,11 @@ def blitz_status(c=None) -> dict:
 
 def set_blitz(name, start=None) -> dict:
     """The BLITZ slot's "Set": BLITZ's own account = name (a Sim account = the Sim test; an MFFU 25K = its real account,
-    NOT armed), or "off". Refused while the bot runs (it reads the accounts at the start / once flat), on Zlarior's or
-    ATLAS's account, or when engine.ninjatrader --selftest fails (account_c.set_account_c)."""
+    NOT armed), or "off". A running bot picks the change up at its next poll, once BLITZ is flat (LiveBot._sync_account_c).
+    Refused on Zlarior's or ATLAS's account, or when engine.ninjatrader --selftest fails (account_c.set_account_c)."""
     from . import account_c
     from .ninjatrader import is_sim
     name = str(name or "").strip()
-    if bot_running():
-        return {"ok": False, "error": "Stop the bot first: it reads BLITZ's account when it starts."}
     if not name or name.lower() == "off":
         r = account_c.set_account_c(None, root=_c_root())
         return {**r, "say": "BLITZ · 25K is off: the bot is exactly as before (the BLITZ paper shadow keeps running)."} if r.get("ok") else r

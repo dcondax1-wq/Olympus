@@ -90,6 +90,9 @@ FUNDED_CMD = 'python -X utf8 -m engine.account_c --to-funded --account "<funded 
 RESUME_CMD = "python -X utf8 -m engine.account_c --resume"
 PAYOUT_CMD = "python -X utf8 -m engine.account_c --payout {day}={amount}"
 EXIT_REASON = {"stop": "STOP", "time": "TIME", "flat": "TIME", "target": "TARGET"}
+# order sanity for BLITZ (engine/guards.sanity): its stop is 1.5 x the 5m ATR, not LIT's sweep stop: 37 of the 330 research
+# trades of 2026 had stops over LIT's 100-pt cap (widest 202 pts; size follows the stop). A stop beyond 250 pts is refused.
+MAX_STOP_PTS = 250.0
 
 
 def _et(ts):
@@ -296,7 +299,8 @@ def band_at(n: int, B: dict | None = None) -> dict | None:
 def score(trades: list, B: dict | None = None) -> dict:
     """The live scorecard of account C's finished trades [{"day", "r", "usd"}] (routed, booked, not voided): count, win %,
     avg R, PF (R and $), net $, losing days in a row now, the floor and the verdict ("warming" under 20 trades, "ok",
-    "below": average R or PF(R) under the floor, or SCORE_LOSE_DAYS losing days in a row)."""
+    "below": average R or PF(R) under the floor, or SCORE_LOSE_DAYS losing days in a row; a losing day = its trades' R sum
+    under 0, the research's measure, so a smaller size after a loss does not count as a loss)."""
     rows = [t for t in trades or [] if isinstance(t, dict) and t.get("r") is not None]
     n = len(rows)
     rs = [float(t["r"]) for t in rows]
@@ -305,7 +309,7 @@ def score(trades: list, B: dict | None = None) -> dict:
     gwu, glu = sum(x for x in us if x > 0), -sum(x for x in us if x < 0)
     days = {}
     for t in rows:
-        days[str(t.get("day"))] = days.get(str(t.get("day")), 0.0) + float(t.get("usd") or 0.0)
+        days[str(t.get("day"))] = days.get(str(t.get("day")), 0.0) + float(t["r"])   # a losing day = its trades' R sum < 0 (size-free)
     streak = 0
     for d in sorted(days, reverse=True):
         if days[d] < 0:
@@ -1255,7 +1259,7 @@ class AccountC:
             if c.get("calendar"):
                 out += G.calendar(int(entry_t), int(now), session_from=120, flat_mod=955)
             if c.get("order_sanity"):
-                out += G.sanity(act, act["qty"], int(self.rules["max_micros"]), c)
+                out += G.sanity(act, act["qty"], int(self.rules["max_micros"]), {**c, "max_stop_pts": MAX_STOP_PTS})
             p = G.clock_problem(self.bot, c)
             if p:
                 out.append(p)
@@ -1843,6 +1847,9 @@ def main(argv=None) -> int:
         if not r["ok"]:
             print(f"  [FIX] {r['error']}")
             return 1
+        if not r["sim"]:
+            from .ninjatrader import allow_account
+            allow_account(r["to"]["account"])            # a real account must be on the NinjaTrader allowlist (still not armed)
         print(f"  [OK]  BLITZ -> {r['to']['account']} ({'Sim' if r['sim'] else 'REAL account: trades only after you arm it on the Start page'}), "
               f"eval from {r['to']['eval_start']}. It joins at the bot's next poll (once flat).")
         return 0

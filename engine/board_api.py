@@ -79,7 +79,7 @@ def pc_payload(bot, now: int) -> dict:
           "adapter": cfg.get("adapter", "paper"), "position": bool(st.get("position")), "model_state": st.get("model_state"),
           "host": platform.node(), "model": (st.get("strategy") or {}).get("model") or cfg.get("model"),
           "health": HB._health(bot), "acct": HB._acct(bot), "brain": HB._brain(bot), "second": HB._second(bot),
-          "live_pub": HB._live_pub()}
+          "live_pub": HB._live_pub(), **HB._opt("account_c", HB._account_c(bot))}   # BLITZ's own account: only when on
     pc["crit"] = (_safe(lambda: HB._alerts_plus(bot), {}) or {}).get("crit") or []
     return pc
 
@@ -90,7 +90,7 @@ def board_view(bot, now: int | None = None) -> dict:
     lm = _lm()
     pc = pc_payload(bot, now)
     accounts = _safe(lambda: [a for a in A.build_accounts({"pc": {**pc, "age_s": 0, "silent": False}, "last_run": now}, lm, now)
-                              if a.get("source") == "pc"], [])
+                              if a.get("source") in ("pc", "pc_blitz")], [])     # pc_blitz = account C (only when on)
     goals = None
     try:
         from . import goals as G

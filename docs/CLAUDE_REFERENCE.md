@@ -218,6 +218,39 @@ part yourself or fold it into a script.**
   ATLAS trades) 207 / 105 trades, +$11,750 / +$7,923 trading P&L (~$1.9k / $2.1k a month at $400-450 risk, no payouts: the
   research's whole-slot gain after MFFU payout limits is +$301 / +$290 a month). Test `python -X utf8 -m tests.test_blitz
   [--cloud]` (~65 s).
+- **Account C = BLITZ routed to its OWN MFFU Builder 25K (2026-10-29, owner "the scalping on a 25"), built, OFF:**
+  `engine/account_c.py` (LiveBot.acct_c, `_account_c_tick` after account B), plain-language rules + bands + kill switch in
+  `BLITZ_STRATEGY.md`. Switch = local `data/account_c.json` (gitignored; absent / null = the bot is exactly as before: no
+  adapter, no heartbeat key) `{"account", "plan": "builder25k", "eval_start", "armed": false}`; CLI `python -X utf8 -m
+  engine.account_c --account "<Name>" --plan builder25k --start <day>` | `off` | `--status` | `--resume` | `--to-funded`
+  (refused when the NinjaTrader self-test fails; a real Name is allowlisted, never armed). Own adapter (OIF tag `acctc_`,
+  `ninjatrader_state_acctc.json`), state `live_state_acctc.json`, startup reconcile, guards (order sanity stop cap 250 pts:
+  37 of the 330 2026 stops are over LIT's 100), live gate as account B (armed + the phrase at the bot's start +
+  NINJATRADER_LIVE). Rule = `blitz.Engine` on the closed 1m bars (default `blitz.DEFAULT_PARAMS`; the block's "params" plugs
+  a research pick by config only: research/scalp/blitz_25k_pick.json is NOT read): signal close -> MARKET at once (late > 50 s
+  = not chased), stop + OCO 20R, the model's trail -> stop CHANGE (tighter only), 30-bar / 15:55 (+60 s clock) / CME early
+  close (flat -5 min, no entry -15 min) exits, 6 a day, -3R; a blocked signal keeps its model trade on paper (the slot is
+  used, as the research eval). Size = `blitz.PLAN` (40% of the room, <= $600, <= 0.9 x the $600 DLL left, 20 micros);
+  stuck room < $249.56; funded (owner's switch, new Name, disarmed) 10% / $150 / +$400 day stop (na_life 25k pick).
+  No hedging, LIT > ATLAS > BLITZ: C blocked while LIT holds / enters / has a setup armed the other way, B holds or closes the
+  other way, an extra account holds it; LIT's opposite entry -> `LiveBot._hedge_clear` -> `_hedge_clear_c` (C closed at market
+  first, LIT routes once confirmed flat, else HEDGE WAIT / "HEDGE BLOCKED: BLITZ close not confirmed"); ATLAS's ->
+  `AccountB._c_yield` right before B routes. Never-placed orders as account B (not booked, push). Performance contract
+  `account_c.score`: 20+ finished trades with avg R or PF(R) under the 2026 bootstrap p5 (20: -0.150 / 0.62, 40: -0.061 /
+  0.83, 100: +0.019 / 1.06), or 6 losing R-days in a row -> PAUSED (no entry on C, push); `--resume` = "resume_after" in the
+  block. Data (only when on): heartbeat `account_c` (`AccountC.hb_block`), `accounts.blitz_section` (source `pc_blitz`, so
+  Zlarior-only views never read it), live board `blitz` card + `accts` + trade log acct "blitz" (`boardcore.js` does not
+  draw the third card yet: renderer work), Mission Control `pc_cc_api` home `blitz`, /api/next/board, narrator REAL / SIM
+  rows + pause, live.json / cloud state `pc.account_c`. Start page: card "BLITZ · 25K" (Set its 25K, Sim test = Sim101,
+  Arm BLITZ with the typed phrase, Off; Add account bot BLITZ; Passed → funded; `go.set_blitz` / `arm_c` / `blitz_status` /
+  `_c_to_funded`, POST `/api/next/start/blitz`, `/blitz/arm`; a running bot picks a change up once C is flat). Replay of
+  2026 through account C's live loop (paper adapter, minute polls, a new $63 eval after each end): all 330 model trades =
+  `blitz.backtest`; routed H1 182 / H2 88, +$8,262 / +$5,559 inside evals (PF $ 1.60 / 2.11), 9 passes, 0 fails, 6 stuck,
+  never paused; inside-eval $ is not paid money (the research whole slot: $224 / $3 / -$40 a month). Test `python -X utf8 -m
+  tests.test_account_c [--quick]`.
+  **Owner's turn-on (next week):** 1. buy the Builder 25K for BLITZ and connect it in NinjaTrader; 2. Start page > BLITZ ·
+  25K: its Name, Set BLITZ's 25K, Arm BLITZ (type I ACCEPT LIVE RISK); 3. Start trading. Console for step 2:
+  `python -X utf8 -m engine.account_c --account "<the 25K Name>" --plan builder25k --start 2026-11-02`.
 - Same code as the research: engine/second.py calls tools/second_ema.py / second_md.py / second_sr.py on LIT's live
   window (retail_standalone.load_frame live_cut, the simulators' live/OPEN mode). "With LIT" view = LIT first, no entry
   while LIT is in a trade, max 2 a day (MACD closed when LIT enters).
