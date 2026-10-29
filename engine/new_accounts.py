@@ -25,13 +25,14 @@ Read-only toward NinjaTrader; never raises in status / notices.
 from __future__ import annotations
 
 import json
+import re
 import os
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATE_PATH = os.path.join(ROOT, "data", "new_accounts.json")
 ROLE_LABEL = {"zlarior": "Zlarior", "atlas": "ATLAS", "blitz": "BLITZ"}
-SIZE_SPLIT = 40000.0                       # a balance at / above this is a 50K account, below it a 25K one
+SIZE_SPLIT = 35000.0                       # a balance at / above this is a 50K account, below it a 25K one (= go.slot_problem)
 ROLE_SETTERS: dict = {}                    # role -> fn(name) -> {"ok", "say" | "error"} (BLITZ's slot registers its own)
 
 
@@ -100,11 +101,37 @@ def options(c: dict, outcomes: dict, lit: str = "", atlas: str = "") -> list:
     return out
 
 
+_ACCT_RE = re.compile(r"OnConnectionStatus: account='([^']+)'")
+
+
+def log_names(folder: str | None = None) -> list:
+    """Account Names NinjaTrader's own trace / log lists when a connection comes up ("Cbi.Account.OnConnectionStatus:
+    account='MFFUEVBLDR602936016' ..." for every account of the connection, at each start / reconnect): a new MFFU account
+    shows up here even before it has a position file or a balance row. Sim / Playback accounts left out. Never raises."""
+    try:
+        from . import nt_log
+        from .ninjatrader import default_folder, is_sim
+        folder = folder or default_folder()
+        out = []
+        for sub in ("trace", "log"):
+            for f in nt_log.files(folder, n=2, sub=sub):
+                for n in _ACCT_RE.findall(nt_log._tail(f)):
+                    n = n.strip()
+                    if n and not is_sim(n) and n not in out:
+                        out.append(n)
+        return out
+    except Exception:
+        return []
+
+
 def candidates(folder: str | None = None, path: str | None = None, names=None, role_of=None, now=None) -> list:
     """[{"name", "balance", "src", "roles", "first_seen"}] of NinjaTrader Names no bot uses yet."""
     from . import go
     s = _load(path)
-    names = go.nt_names(folder) if names is None else names
+    if names is None:
+        names = list(go.nt_names(folder))
+        have = {str(r.get("name") or "").strip() for r in names}
+        names += [{"name": n, "balance": None, "src": "NinjaTrader connection log"} for n in log_names(folder) if n not in have]
     role_of = role_of or go.role_of
     skip = set(s.get("dismissed") or []) | set((s.get("retired") or {}).keys())
     out = []
@@ -160,6 +187,8 @@ def use(name: str, act: str, path: str | None = None, folder: str | None = None,
     if not name:
         return {"ok": False, "error": "No account name."}
     names = {str(r.get("name") or "").strip(): r for r in go.nt_names(folder)}
+    for n in log_names(folder):
+        names.setdefault(n, {"name": n, "balance": None, "src": "NinjaTrader connection log"})
     if name not in names:
         return {"ok": False, "error": f"NinjaTrader does not show {name}: open NinjaTrader (Accounts tab) and try again."}
     if role not in fits(names[name].get("balance")):

@@ -30,6 +30,7 @@ from engine import start_api as S  # noqa: E402
 RES = []
 L50, L25 = "MFFUEVBLDR602936016", "MFFUEVBLDR602936017"
 NEW50, NEW25, FUNDED = "MFFUFBLDR700000001", "MFFUEVBLDR602936099", "MFFUFDBLDR700000002"
+LOGONLY = "MFFUEVBLDR602936123"                 # only in the connection trace (no balance row, no position file)
 
 
 def check(name, ok, info=""):
@@ -55,6 +56,12 @@ def world(tmp):
                  f"{L50},{now},52710.80,0,0,52710.80\n{L25},{now},24100,0,0,24100\nSim101,{now},100000,0,0,100000\n"
                  f"{NEW50},{now},50000,0,0,50000\n{NEW25},{now},25000,0,0,25000\n")
     open(os.path.join(nt, "outgoing", f"MNQ DEC26 Globex_{FUNDED}_Position.txt"), "w").write("FLAT;0;0")
+    # NinjaTrader's trace at a (re)connect lists every account of the connection (the real line format, 2026-10-27)
+    os.makedirs(os.path.join(nt, "trace"), exist_ok=True)
+    with open(os.path.join(nt, "trace", "trace.20261029.00000.txt"), "w") as fh:
+        for a in (L50, LOGONLY, "Sim101"):
+            fh.write(f"2026-10-29 18:01:13:215 (Simulation) Cbi.Account.OnConnectionStatus: account='{a}' fcm='' "
+                     "status=Connected previousStatus=Connecting message=''\n")
     os.environ["NINJATRADER_FOLDER"] = nt
     return nt
 
@@ -68,10 +75,11 @@ def main():
         nt = world(tmp)
         G.bot_running = lambda: False
         c = {r["name"]: r for r in NA.candidates(nt, state)}
-        check("candidates: the new 50K (Zlarior), the new 25K (ATLAS / BLITZ) and a Name seen only in a position file (any "
-              "role); the two Names the bots use and Sim101 are not offered",
-              set(c) == {NEW50, NEW25, FUNDED} and c[NEW50]["roles"] == ["zlarior"] and c[NEW25]["roles"] == ["atlas", "blitz"]
-              and c[FUNDED]["roles"] == ["zlarior", "atlas", "blitz"], c)
+        check("candidates: the new 50K (Zlarior), the new 25K (ATLAS / BLITZ), a Name seen only in a position file and one seen "
+              "only in NinjaTrader's connection trace (any role: no balance yet); the two Names the bots use and Sim101 are not "
+              "offered", set(c) == {NEW50, NEW25, FUNDED, LOGONLY} and c[NEW50]["roles"] == ["zlarior"]
+              and c[NEW25]["roles"] == ["atlas", "blitz"] and c[FUNDED]["roles"] == ["zlarior", "atlas", "blitz"]
+              and c[LOGONLY]["src"] == "NinjaTrader connection log", c)
         st = NA.status(nt, state)
         o50 = next(x for x in st["new"] if x["name"] == NEW50)["options"]
         o25 = next(x for x in st["new"] if x["name"] == NEW25)["options"]
@@ -97,7 +105,7 @@ def main():
             for p in NA.notices(folder=nt, path=state):
                 OC.send(p, ostate, sender=lambda pl: (sent.append(pl["key"]), {"sent": 1})[1])
         check("phone push: one per new Name (key newacct:<Name>), the second ops tick sends nothing again",
-              sorted(sent) == sorted(f"newacct:{n}" for n in (NEW50, NEW25, FUNDED)), sent)
+              sorted(sent) == sorted(f"newacct:{n}" for n in (NEW50, NEW25, FUNDED, LOGONLY)), sent)
         # the owner's taps
         before = json.load(open(G.CFG))
         r_bad = NA.use(NEW25, "zlarior", path=state, folder=nt)
