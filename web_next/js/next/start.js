@@ -192,7 +192,7 @@ function newAcctLine(d) {
   const rows = d.new_accounts?.new || [];
   if (!rows.length) return '';
   const can = d.local && !d.running;
-  return rows.map((r) => `<div class="st-ro warn st-newacct">${icon('info')}<span>${esc(r.say)}</span>${!d.local ? '' : `<span class="st-acts">
+  return rows.map((r) => `<div class="st-ro warn st-newacct" style="flex-wrap:wrap">${icon('info')}<span style="flex:1 1 220px;min-width:0">${esc(r.say)}</span>${!d.local ? '' : `<span class="st-acts">
       ${(r.options || []).map((o) => `<button type="button" class="btn primary sm" data-na-use="${esc(o.act)}" data-label="${esc(o.label)}" data-name="${esc(r.name)}" ${can ? '' : 'disabled title="Stop the bot first"'}>${esc(o.label)}</button>`).join('')}
       <button type="button" class="btn ghost sm" data-na-no="${esc(r.name)}">Not for the bot</button></span>`}</div>`).join('');
 }
