@@ -114,6 +114,70 @@ def t_advisor():
     check("advisor.py never writes an order file (no 'oif' / 'outgoing' / '_route')", not re.search(r"oif|outgoing|_route\(", src))
 
 
+def t_store_lock():
+    """Windows (2026-10-27 WinError 5 on live_state.json): os.replace fails while a reader / antivirus holds the file. A
+    tally.json replace that fails must not leave the scored trade re-queued (a new scoring thread every 1m bar for 24 h) and
+    tally.json without it: fsutil.replace retries a short lock; after a longer one the next bar redoes tally.json, then stops."""
+    import pandas as pd
+    from engine import fsutil
+    rows, trade = scenario()
+    base = AD.walk([r for r in rows if r[0] >= trade["entry_t"]], 0, 1, trade["entry"], trade["stop"], trade["target"],
+                   AD._manage_spec("lit", trade))
+    et, xt = trade["entry_t"], base["t_exit"]
+    led = [{"t": et + 2, "side": "buy", "qty": 4, "entry_t": et, "entry": trade["entry"], "stop": trade["stop"], "target": trade["target"],
+            "result": {"ok": True}},
+           {"t": xt, "side": "exit", "qty": 4, "entry_t": et, "exit_t": xt, "pnl": 0.4, "reason": "BE"}]
+    df = pd.DataFrame(rows, columns=["time", "open", "high", "low", "close"])
+    n0 = int((df["time"] + 60 <= xt + 60).sum())
+    real, waits, fails = os.replace, fsutil.WAITS, {"n": 0}
+
+    def flaky(src, dst):
+        if dst.endswith("tally.json") and fails["n"] > 0:
+            fails["n"] -= 1
+            raise PermissionError(13, "Access is denied (test: tally.json held open)")
+        return real(src, dst)
+
+    def run(n_fail, n_bars=3):
+        out = []
+        with tempfile.TemporaryDirectory() as tmp:
+            AD._PC.update(last=None, seen=None, store=None, thread=None)
+            fails["n"] = n_fail
+            for k in range(n_bars):
+                bot = type("B", (), {"_lit_1m_store": df.iloc[:n0 + k], "ledger": led, "second": None, "blitz": None})()
+                out.append(AD.pc_tick(bot, None, store=tmp, background=False))
+            return out, "lit" in AD.load_tally(tmp), len(AD._jl_read(os.path.join(tmp, "lit.jsonl")))
+    os.replace = flaky
+    try:
+        r1, t1, n1 = run(1)
+        fsutil.WAITS = ()                         # a lock longer than fsutil's retries: the write fails this bar
+        r2, t2, n2 = run(1)
+    finally:
+        os.replace, fsutil.WAITS = real, waits
+        AD._PC.update(last=None, seen=None, store=None, thread=None)
+    check("a short tally.json lock is retried: scored once, in tally.json, never re-queued on the next bars",
+          (r1[0].get("lit") or {}).get("new") == 1 and r1[1:] == [{}, {}] and t1 and n1 == 1, (r1, t1, n1))
+    check("a longer lock: the next bar redoes tally.json, then nothing is re-queued (no thread every bar)",
+          "error" in (r2[0].get("lit") or {}) and (r2[1].get("lit") or {}).get("new") == 0 and r2[2] == {} and t2 and n2 == 1, (r2, t2, n2))
+
+
+def t_ledger_trades():
+    """The PC hook scores only trades that happened: an entry NinjaTrader refused (result ok False, then the model's exit
+    routed with $0, as on 2026-10-27) and an entry voided as NO TRADE are not trades (narrator: "nothing is open from it";
+    guards: NO TRADE does not count)."""
+    et = T(9, 44)
+    ok = [{"t": et + 2, "side": "sell", "qty": 5, "entry_t": et, "entry": 29945.0, "stop": 29987.5, "target": 29665.75, "result": {"ok": True}},
+          {"t": et + 1140, "side": "exit", "qty": 5, "entry_t": et, "exit_t": et + 1140, "pnl": -437.0, "reason": "STOP"}]
+    e2, e3 = et + 7200, et + 9000
+    bad = [{"t": e2 + 2, "side": "buy", "qty": 3, "entry_t": e2, "entry": 29900.0, "stop": 29880.0, "target": 30000.0,
+            "result": {"ok": False, "error": "REFUSED: account does not exist"}},
+           {"t": e2 + 600, "side": "exit", "qty": 3, "entry_t": e2, "exit_t": e2 + 600, "pnl": 0.0, "reason": "STOP"},
+           {"t": e3 + 2, "side": "buy", "qty": 2, "entry_t": e3, "entry": 29910.0, "stop": 29890.0, "target": 30010.0, "result": {"ok": True}},
+           {"t": e3 + 120, "side": "exit", "qty": 2, "entry_t": e3, "pnl": 0.0, "reason": "NO TRADE"}]
+    got = AD._ledger_trades(type("B", (), {"ledger": ok + bad})())
+    check("PC ledger -> advisor trades: the filled trade only (a refused entry and a NO TRADE void are not scored)",
+          [(t["entry_t"], t["usd"]) for t in got] == [(et, -437.0)], got)
+
+
 def t_playbook():
     ids = [r["id"] for r in PB.RULES]
     check("playbook: rule ids unique", len(ids) == len(set(ids)))
@@ -173,6 +237,8 @@ def t_real_trade():
 
 def main():
     t_advisor()
+    t_store_lock()
+    t_ledger_trades()
     t_playbook()
     t_real_trade()
     n, ok = len(RES), sum(RES)
