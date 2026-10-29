@@ -418,6 +418,16 @@ part yourself or fold it into a script.**
   cons_aware, stack payout reserves (cap a month) and pre-buying the next eval at the 4th payout: see the write-ups before
   redoing. Eval: keeping two_week after session 10 (`two_week_until` 999) is the one change that held in H1, H2 and 2021-25
   (+$14-21/mo per slot; owner decides, not switched).
+- **Structure management (2026-10-29, `structure-management.md`, `tools/structure_manage.py` LIT 95 variants, runs
+  `lit_struct_*`; `tools/structure_atlas.py` ATLAS 24, runs `atlas_struct_*`):** with `engine/structure.py` (closed-bar BOS /
+  CHoCH / protected swing / pools): target at the next opposing pool (cap / instead of the band), half off at the first pool,
+  stop to the protected swing after a BOS (1m / 5m / 15m), exit / BE on a CHoCH against after +0.5-2R, 1h / 15m trend skip /
+  size. None beats live LIT in both halves on both sizings (the owner's BE on a 5m CHoCH after +0.75R: H1 -$1,442 / H2 -$775;
+  1h skip: H1 -$15.0k / H2 -$7.5k, ~1 trade a week). Lead, not switched: 15m structure trail after +1R (H1 +$467 / H2 +$13,
+  eval +$1,019 / +$3,762, one more 2-week fail in H1, 7 trades changed): the advisor's `trail_15m` tally watches it. ATLAS:
+  the 15m protected-swing stop passes the 25K account gates but its trades lose R in every span at a fixed risk (sizing
+  path): rejected; every ATLAS exit / trail loses in 2026. The executors' base = live exactly (LIT 0 mismatches; ATLAS 96%
+  within 0.5 pt, difference method).
 
 ## Key commands (run from the repo root)
 - **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
@@ -481,6 +491,19 @@ part yourself or fold it into a script.**
   raising stub), FEED STALE blocks entries, PC bars push/read roundtrip, roll back-adjustment, CBOE VIX (23 checks, ~10 s).
 
 ## Infrastructure
+- **Market structure, playbook, discretion advisor (2026-10-29, read-only, never an order):** `engine/structure.py`
+  (Tracker per timeframe on closed bars: fractal k=2 swings, HH/HL/LH/LL, BOS / CHoCH on a close, protected swing = origin
+  of the breaking leg, pools = today's Asia / London / NY-open boxes + prior day + equal highs / lows (`lit.buildups`) +
+  unbroken 1h swings, premium / discount of the 15m dealing range, displacement legs; `block()` = the Live View
+  "structure" shape, cached per closed bar, ~13-20 ms a recompute here; `frame_events()` for research). Live View
+  `liveview_api.view()["structure"]` (+ phone_view; thinking panel `structure` / `rule` / `advice` lines, ATLAS / BLITZ
+  `structure_note`), narrator kind `structure` (15m / 1h breaks, advice on an open Zlarior trade; not pushed by default).
+  `docs/PLAYBOOK.md` + `engine/playbook.py` (rules Z1-Z18, A1-A8, B1-B8 + structure advice Z-S / A-S / B-S; `now()` = the
+  rule being applied, `applying()`, one check function per rule). `engine/advisor.py`: six rules (be_choch, exit_choch,
+  trail_15m, trail_5m, tp_pool, skip_htf) scored on every finished trade by the difference method; PC via `narrator.tick`
+  (`logs/advisor/<strategy>.jsonl`, `tally.json`, gitignored), cloud via `live_learning.cloud_hook` (state "advisor");
+  cards in `live_learning.suggestions` (no approve command). Its backtest = the research (`tools/structure_manage.py
+  advisor`). Tests `tests.test_structure`, `tests.test_advisor`.
 - **Dashboard 2026-10-28 (owner: "50 useful features", "what the bot is thinking", "very 3D"):** registry
   `web_next/FEATURES.md` (status of all 50). Home "Today · real accounts" (`realcore.js`, `cc.js`; phone
   `tools/web_public/realcore.js`): one card per REAL account (ledger + NinjaTrader fills only, never paper $), gauges, health

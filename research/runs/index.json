@@ -1,5 +1,5 @@
 {
- "built": "2026-10-29 01:53",
+ "built": "2026-10-29 02:00",
  "baseline": "baseline",
  "count": 2144,
  "columns": {
@@ -11940,106 +11940,6 @@
      "slow_pass": 52.3,
      "pass_med": 17.0,
      "b2b": "8/2"
-    }
-   }
-  },
-  {
-   "id": "atlas_struct_pstop_15m_cap3.0",
-   "title": "ATLAS structure management: pstop_15m_cap3.0",
-   "family": "stops",
-   "question": "Owner 2026-10-28: trade like a person; ATLAS with structure exits / trails / the stop at the protected swing",
-   "status": "adopt-candidate",
-   "verdict": "H1: H1 2w 65.5/0.0 st 0.8 med 5.0 p60 89.1 net +10,104 (+1,658/mo) PF 3.13 DD -926 tpw 2.11 f3m $2072 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +4,811 (+1,295/mo) PF 3.21 DD -807 tpw 1.6 f3m $1349 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 29.7/0.0 st 18.9 med 4.0 p60 33.7 net +1,171 (+95/mo) PF 1.1 DD -2,784 tpw 2.66 f3m $230 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 22.6/0.0 st 23.9 med 5.0 p60 31.8 net +3,479 (+90/mo) PF 1.07 DD -6,874 tpw 3.13 f3m $239 (base +2,457, 2w 22.9/27.1) ; gates {'2026': True, '2021-25': True, 'freq': True, 'all': True}",
-   "writeup": "structure-management",
-   "tags": [
-    "atlas",
-    "structure"
-   ],
-   "params": {
-    "x_struct": {
-     "pstop": {
-      "tf": "15m",
-      "cap": 3.0
-     }
-    }
-   },
-   "sizing": {},
-   "built": "2026-10-29 01:51",
-   "spans": {
-    "2026": {
-     "n": 79,
-     "tpw": 5.9,
-     "wk2": 66,
-     "win": 49.4,
-     "pf": 3.15,
-     "net": 14915,
-     "dd": -1106,
-     "avg_r": 0.949,
-     "stop": 39.0,
-     "worst_day": -586,
-     "risk": 183.0,
-     "half": 0,
-     "per_month": 4675,
-     "p10": 41.8,
-     "f10": 0.0,
-     "p15": 61.2,
-     "f15": 0.0,
-     "p20": 68.7,
-     "f20": 0.0,
-     "dec10": 41.8,
-     "slow_pass": 25.5,
-     "pass_med": 10.0,
-     "b2b": "4/0"
-    },
-    "2021-25": {
-     "n": 647,
-     "tpw": 6.06,
-     "wk2": 85,
-     "win": 37.6,
-     "pf": 1.08,
-     "net": 4649,
-     "dd": -6639,
-     "avg_r": 0.054,
-     "stop": 22.8,
-     "worst_day": -595,
-     "risk": 117.0,
-     "half": 0,
-     "per_month": 183,
-     "p10": 5.6,
-     "f10": 0.7,
-     "p15": 7.7,
-     "f15": 8.2,
-     "p20": 11.2,
-     "f20": 15.2,
-     "dec10": 6.3,
-     "slow_pass": 74.8,
-     "pass_med": 31.0,
-     "b2b": "6/9"
-    },
-    "all": {
-     "n": 726,
-     "tpw": 6.04,
-     "wk2": 82,
-     "win": 38.8,
-     "pf": 1.3,
-     "net": 19564,
-     "dd": -6639,
-     "avg_r": 0.151,
-     "stop": 24.2,
-     "worst_day": -595,
-     "risk": 122.0,
-     "half": 0,
-     "per_month": 684,
-     "p10": 9.7,
-     "f10": 0.7,
-     "p15": 13.6,
-     "f15": 7.3,
-     "p20": 17.6,
-     "f20": 13.5,
-     "dec10": 10.4,
-     "slow_pass": 67.1,
-     "pass_med": 27.0,
-     "b2b": "10/9"
     }
    }
   },
@@ -103996,7 +103896,7 @@
    "family": "management",
    "question": "Owner 2026-10-28: trade like a person; ATLAS with structure exits / trails / the stop at the protected swing",
    "status": "rejected",
-   "verdict": "H1: H1 2w 60.5/0.0 st 0.0 med 5.0 p60 93.0 net +5,952 (+977/mo) PF 2.24 DD -835 tpw 2.46 f3m $1347 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +1,283 (+345/mo) PF 1.66 DD -816 tpw 1.54 f3m $400 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 27.7/0.0 st 18.5 med 4.0 p60 29.5 net -2,603 (-212/mo) PF 0.66 DD -2,603 tpw 2.13 f3m $193 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 23.5/0.0 st 20.7 med 5.0 p60 29.6 net -4,587 (-118/mo) PF 0.88 DD -10,041 tpw 3.2 f3m $200 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': False, 'freq': False, 'all': False}",
+   "verdict": "H1: H1 2w 60.5/0.0 st 0.0 med 5.0 p60 93.0 net +5,952 (+977/mo) PF 2.24 DD -835 tpw 2.46 f3m $1347 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +1,283 (+345/mo) PF 1.66 DD -816 tpw 1.54 f3m $400 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 27.7/0.0 st 18.5 med 4.0 p60 29.5 net -2,603 (-212/mo) PF 0.66 DD -2,603 tpw 2.13 f3m $193 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 23.5/0.0 st 20.7 med 5.0 p60 29.6 net -4,587 (-118/mo) PF 0.88 DD -10,041 tpw 3.2 f3m $200 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': False, 'freq': False, 'trades_R': False, 'all': False} ; trades total R {'H1': 108.77, 'H2': 23.66, '2025': 40.87, '2021-24': 72.53} (base {'H1': 123.35, 'H2': 31.6, '2025': 52.96, '2021-24': 87.27})",
    "writeup": "structure-management",
    "tags": [
     "atlas",
@@ -104012,7 +103912,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-29 01:50",
+   "built": "2026-10-29 01:59",
    "spans": {
     "2026": {
      "n": 87,
@@ -104097,7 +103997,7 @@
    "family": "management",
    "question": "Owner 2026-10-28: trade like a person; ATLAS with structure exits / trails / the stop at the protected swing",
    "status": "rejected",
-   "verdict": "H1: H1 2w 52.1/0.0 st 0.8 med 7.0 p60 91.4 net +3,208 (+526/mo) PF 2.67 DD -872 tpw 1.17 f3m $1076 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 39.1/0.0 st 0.0 med 7.0 p60 100.0 net +2,502 (+674/mo) PF 2.2 DD -816 tpw 1.67 f3m $550 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 12.4/0.0 st 15.7 med 5.0 p60 15.5 net -4,436 (-361/mo) PF 0.67 DD -4,437 tpw 3.29 f3m $30 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 16.6/0.0 st 21.2 med 6.0 p60 24.0 net -1,183 (-31/mo) PF 0.97 DD -5,246 tpw 3.14 f3m $67 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': False, 'freq': False, 'all': False}",
+   "verdict": "H1: H1 2w 52.1/0.0 st 0.8 med 7.0 p60 91.4 net +3,208 (+526/mo) PF 2.67 DD -872 tpw 1.17 f3m $1076 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 39.1/0.0 st 0.0 med 7.0 p60 100.0 net +2,502 (+674/mo) PF 2.2 DD -816 tpw 1.67 f3m $550 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 12.4/0.0 st 15.7 med 5.0 p60 15.5 net -4,436 (-361/mo) PF 0.67 DD -4,437 tpw 3.29 f3m $30 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 16.6/0.0 st 21.2 med 6.0 p60 24.0 net -1,183 (-31/mo) PF 0.97 DD -5,246 tpw 3.14 f3m $67 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': False, 'freq': False, 'trades_R': False, 'all': False} ; trades total R {'H1': 91.28, 'H2': 23.61, '2025': 4.3, '2021-24': 27.55} (base {'H1': 123.35, 'H2': 31.6, '2025': 52.96, '2021-24': 87.27})",
    "writeup": "structure-management",
    "tags": [
     "atlas",
@@ -104113,7 +104013,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-29 01:50",
+   "built": "2026-10-29 01:58",
    "spans": {
     "2026": {
      "n": 56,
@@ -104198,7 +104098,7 @@
    "family": "management",
    "question": "Owner 2026-10-28: trade like a person; ATLAS with structure exits / trails / the stop at the protected swing",
    "status": "rejected",
-   "verdict": "H1: H1 2w 59.7/0.0 st 0.8 med 6.0 p60 91.4 net +5,351 (+878/mo) PF 2.1 DD -926 tpw 2.11 f3m $1369 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +2,498 (+673/mo) PF 2.2 DD -816 tpw 1.67 f3m $550 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 23.3/0.0 st 22.9 med 4.0 p60 27.1 net -1,253 (-102/mo) PF 0.87 DD -4,917 tpw 2.31 f3m $215 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 19.3/0.0 st 23.4 med 4.0 p60 24.8 net +3,636 (+94/mo) PF 1.08 DD -8,138 tpw 3.05 f3m $154 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': True, 'freq': True, 'all': False}",
+   "verdict": "H1: H1 2w 59.7/0.0 st 0.8 med 6.0 p60 91.4 net +5,351 (+878/mo) PF 2.1 DD -926 tpw 2.11 f3m $1369 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +2,498 (+673/mo) PF 2.2 DD -816 tpw 1.67 f3m $550 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 23.3/0.0 st 22.9 med 4.0 p60 27.1 net -1,253 (-102/mo) PF 0.87 DD -4,917 tpw 2.31 f3m $215 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 19.3/0.0 st 23.4 med 4.0 p60 24.8 net +3,636 (+94/mo) PF 1.08 DD -8,138 tpw 3.05 f3m $154 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': True, 'freq': True, 'trades_R': False, 'all': False} ; trades total R {'H1': 114.26, 'H2': 26.74, '2025': 33.95, '2021-24': 69.83} (base {'H1': 123.35, 'H2': 31.6, '2025': 52.96, '2021-24': 87.27})",
    "writeup": "structure-management",
    "tags": [
     "atlas",
@@ -104214,7 +104114,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-29 01:50",
+   "built": "2026-10-29 01:59",
    "spans": {
     "2026": {
      "n": 80,
@@ -261301,7 +261201,7 @@
    "family": "stops",
    "question": "Owner 2026-10-28: trade like a person; ATLAS with structure exits / trails / the stop at the protected swing",
    "status": "rejected",
-   "verdict": "H1: H1 2w 68.1/0.0 st 0.8 med 5.0 p60 89.1 net +5,601 (+919/mo) PF 2.09 DD -926 tpw 2.07 f3m $1894 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +4,797 (+1,292/mo) PF 3.35 DD -820 tpw 1.6 f3m $1349 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 29.7/0.0 st 20.5 med 4.0 p60 33.7 net +937 (+76/mo) PF 1.08 DD -2,730 tpw 2.52 f3m $224 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 23.2/0.0 st 26.8 med 5.0 p60 30.6 net +899 (+23/mo) PF 1.02 DD -8,253 tpw 3.12 f3m $240 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': False, 'freq': True, 'all': False}",
+   "verdict": "H1: H1 2w 68.1/0.0 st 0.8 med 5.0 p60 89.1 net +5,601 (+919/mo) PF 2.09 DD -926 tpw 2.07 f3m $1894 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +4,797 (+1,292/mo) PF 3.35 DD -820 tpw 1.6 f3m $1349 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 29.7/0.0 st 20.5 med 4.0 p60 33.7 net +937 (+76/mo) PF 1.08 DD -2,730 tpw 2.52 f3m $224 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 23.2/0.0 st 26.8 med 5.0 p60 30.6 net +899 (+23/mo) PF 1.02 DD -8,253 tpw 3.12 f3m $240 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': False, 'freq': True, 'trades_R': False, 'all': False} ; trades total R {'H1': 125.82, 'H2': 30.29, '2025': 46.78, '2021-24': 86.29} (base {'H1': 123.35, 'H2': 31.6, '2025': 52.96, '2021-24': 87.27})",
    "writeup": "structure-management",
    "tags": [
     "atlas",
@@ -261316,7 +261216,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-29 01:51",
+   "built": "2026-10-29 01:59",
    "spans": {
     "2026": {
      "n": 78,
@@ -261396,12 +261296,112 @@
    }
   },
   {
+   "id": "atlas_struct_pstop_15m_cap3.0",
+   "title": "ATLAS structure management: pstop_15m_cap3.0",
+   "family": "stops",
+   "question": "Owner 2026-10-28: trade like a person; ATLAS with structure exits / trails / the stop at the protected swing",
+   "status": "rejected",
+   "verdict": "H1: H1 2w 65.5/0.0 st 0.8 med 5.0 p60 89.1 net +10,104 (+1,658/mo) PF 3.13 DD -926 tpw 2.11 f3m $2072 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +4,811 (+1,295/mo) PF 3.21 DD -807 tpw 1.6 f3m $1349 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 29.7/0.0 st 18.9 med 4.0 p60 33.7 net +1,171 (+95/mo) PF 1.1 DD -2,784 tpw 2.66 f3m $230 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 22.6/0.0 st 23.9 med 5.0 p60 31.8 net +3,479 (+90/mo) PF 1.07 DD -6,874 tpw 3.13 f3m $239 (base +2,457, 2w 22.9/27.1) ; gates {'2026': True, '2021-25': True, 'freq': True, 'trades_R': False, 'all': False} ; trades total R {'H1': 122.77, 'H2': 29.74, '2025': 46.2, '2021-24': 84.16} (base {'H1': 123.35, 'H2': 31.6, '2025': 52.96, '2021-24': 87.27})",
+   "writeup": "structure-management",
+   "tags": [
+    "atlas",
+    "structure"
+   ],
+   "params": {
+    "x_struct": {
+     "pstop": {
+      "tf": "15m",
+      "cap": 3.0
+     }
+    }
+   },
+   "sizing": {},
+   "built": "2026-10-29 01:59",
+   "spans": {
+    "2026": {
+     "n": 79,
+     "tpw": 5.9,
+     "wk2": 66,
+     "win": 49.4,
+     "pf": 3.15,
+     "net": 14915,
+     "dd": -1106,
+     "avg_r": 0.949,
+     "stop": 39.0,
+     "worst_day": -586,
+     "risk": 183.0,
+     "half": 0,
+     "per_month": 4675,
+     "p10": 41.8,
+     "f10": 0.0,
+     "p15": 61.2,
+     "f15": 0.0,
+     "p20": 68.7,
+     "f20": 0.0,
+     "dec10": 41.8,
+     "slow_pass": 25.5,
+     "pass_med": 10.0,
+     "b2b": "4/0"
+    },
+    "2021-25": {
+     "n": 647,
+     "tpw": 6.06,
+     "wk2": 85,
+     "win": 37.6,
+     "pf": 1.08,
+     "net": 4649,
+     "dd": -6639,
+     "avg_r": 0.054,
+     "stop": 22.8,
+     "worst_day": -595,
+     "risk": 117.0,
+     "half": 0,
+     "per_month": 183,
+     "p10": 5.6,
+     "f10": 0.7,
+     "p15": 7.7,
+     "f15": 8.2,
+     "p20": 11.2,
+     "f20": 15.2,
+     "dec10": 6.3,
+     "slow_pass": 74.8,
+     "pass_med": 31.0,
+     "b2b": "6/9"
+    },
+    "all": {
+     "n": 726,
+     "tpw": 6.04,
+     "wk2": 82,
+     "win": 38.8,
+     "pf": 1.3,
+     "net": 19564,
+     "dd": -6639,
+     "avg_r": 0.151,
+     "stop": 24.2,
+     "worst_day": -595,
+     "risk": 122.0,
+     "half": 0,
+     "per_month": 684,
+     "p10": 9.7,
+     "f10": 0.7,
+     "p15": 13.6,
+     "f15": 7.3,
+     "p20": 17.6,
+     "f20": 13.5,
+     "dec10": 10.4,
+     "slow_pass": 67.1,
+     "pass_med": 27.0,
+     "b2b": "10/9"
+    }
+   }
+  },
+  {
    "id": "atlas_struct_pstop_1h_cap3.0",
    "title": "ATLAS structure management: pstop_1h_cap3.0",
    "family": "stops",
    "question": "Owner 2026-10-28: trade like a person; ATLAS with structure exits / trails / the stop at the protected swing",
    "status": "rejected",
-   "verdict": "H1: H1 2w 54.6/0.0 st 0.8 med 6.0 p60 95.3 net +9,103 (+1,493/mo) PF 2.53 DD -926 tpw 2.62 f3m $1776 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 5.0 p60 100.0 net +4,444 (+1,197/mo) PF 2.79 DD -1,063 tpw 1.6 f3m $1349 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 33.3/0.0 st 18.9 med 5.0 p60 36.8 net -1,637 (-133/mo) PF 0.8 DD -4,552 tpw 2.05 f3m $89 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 22.5/0.0 st 25.6 med 4.0 p60 29.1 net +4,835 (+125/mo) PF 1.1 DD -5,330 tpw 3.18 f3m $189 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': True, 'freq': True, 'all': False}",
+   "verdict": "H1: H1 2w 54.6/0.0 st 0.8 med 6.0 p60 95.3 net +9,103 (+1,493/mo) PF 2.53 DD -926 tpw 2.62 f3m $1776 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 5.0 p60 100.0 net +4,444 (+1,197/mo) PF 2.79 DD -1,063 tpw 1.6 f3m $1349 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 33.3/0.0 st 18.9 med 5.0 p60 36.8 net -1,637 (-133/mo) PF 0.8 DD -4,552 tpw 2.05 f3m $89 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 22.5/0.0 st 25.6 med 4.0 p60 29.1 net +4,835 (+125/mo) PF 1.1 DD -5,330 tpw 3.18 f3m $189 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': True, 'freq': True, 'trades_R': False, 'all': False} ; trades total R {'H1': 111.79, 'H2': 31.47, '2025': 58.04, '2021-24': 90.76} (base {'H1': 123.35, 'H2': 31.6, '2025': 52.96, '2021-24': 87.27})",
    "writeup": "structure-management",
    "tags": [
     "atlas",
@@ -261416,7 +261416,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-29 01:51",
+   "built": "2026-10-29 01:59",
    "spans": {
     "2026": {
      "n": 92,
@@ -261501,7 +261501,7 @@
    "family": "stops",
    "question": "Owner 2026-10-28: trade like a person; ATLAS with structure exits / trails / the stop at the protected swing",
    "status": "rejected",
-   "verdict": "H1: H1 2w 68.9/0.0 st 0.8 med 5.0 p60 93.8 net +6,397 (+1,050/mo) PF 2.26 DD -926 tpw 1.99 f3m $1883 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +4,411 (+1,188/mo) PF 3.14 DD -854 tpw 1.47 f3m $1350 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 31.3/0.0 st 22.1 med 4.0 p60 35.7 net -1,993 (-162/mo) PF 0.82 DD -5,657 tpw 2.27 f3m $319 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 22.6/0.0 st 27.5 med 4.0 p60 29.4 net +1,757 (+45/mo) PF 1.04 DD -10,259 tpw 3.27 f3m $202 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': False, 'freq': False, 'all': False}",
+   "verdict": "H1: H1 2w 68.9/0.0 st 0.8 med 5.0 p60 93.8 net +6,397 (+1,050/mo) PF 2.26 DD -926 tpw 1.99 f3m $1883 (base +6,485, 2w 65.5/0.8) ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +4,411 (+1,188/mo) PF 3.14 DD -854 tpw 1.47 f3m $1350 (base +4,434, 2w 43.5/0.0) ; 2025: 2025 2w 31.3/0.0 st 22.1 med 4.0 p60 35.7 net -1,993 (-162/mo) PF 0.82 DD -5,657 tpw 2.27 f3m $319 (base -2,152, 2w 30.1/23.3) ; 2021-24: 2021-24 2w 22.6/0.0 st 27.5 med 4.0 p60 29.4 net +1,757 (+45/mo) PF 1.04 DD -10,259 tpw 3.27 f3m $202 (base +2,457, 2w 22.9/27.1) ; gates {'2026': False, '2021-25': False, 'freq': False, 'trades_R': False, 'all': False} ; trades total R {'H1': 120.0, 'H2': 30.65, '2025': 59.47, '2021-24': 76.33} (base {'H1': 123.35, 'H2': 31.6, '2025': 52.96, '2021-24': 87.27})",
    "writeup": "structure-management",
    "tags": [
     "atlas",
@@ -261516,7 +261516,7 @@
     }
    },
    "sizing": {},
-   "built": "2026-10-29 01:51",
+   "built": "2026-10-29 01:59",
    "spans": {
     "2026": {
      "n": 74,
@@ -275166,7 +275166,7 @@
    "family": "management",
    "question": "Owner 2026-10-28: trade like a person; ATLAS with structure exits / trails / the stop at the protected swing",
    "status": "info",
-   "verdict": "H1: H1 2w 65.5/0.0 st 0.8 med 5.0 p60 92.2 net +6,485 (+1,064/mo) PF 2.3 DD -926 tpw 2.11 f3m $1842 ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +4,434 (+1,194/mo) PF 3.18 DD -816 tpw 1.6 f3m $1349 ; 2025: 2025 2w 30.1/0.0 st 23.3 med 4.0 p60 32.6 net -2,152 (-175/mo) PF 0.82 DD -5,816 tpw 2.58 f3m $190 ; 2021-24: 2021-24 2w 22.9/0.0 st 27.1 med 4.0 p60 29.9 net +2,457 (+63/mo) PF 1.05 DD -7,805 tpw 3.05 f3m $246",
+   "verdict": "H1: H1 2w 65.5/0.0 st 0.8 med 5.0 p60 92.2 net +6,485 (+1,064/mo) PF 2.3 DD -926 tpw 2.11 f3m $1842 ; H2: H2 2w 43.5/0.0 st 0.0 med 6.0 p60 100.0 net +4,434 (+1,194/mo) PF 3.18 DD -816 tpw 1.6 f3m $1349 ; 2025: 2025 2w 30.1/0.0 st 23.3 med 4.0 p60 32.6 net -2,152 (-175/mo) PF 0.82 DD -5,816 tpw 2.58 f3m $190 ; 2021-24: 2021-24 2w 22.9/0.0 st 27.1 med 4.0 p60 29.9 net +2,457 (+63/mo) PF 1.05 DD -7,805 tpw 3.05 f3m $246 ; trades total R {'H1': 123.35, 'H2': 31.6, '2025': 52.96, '2021-24': 87.27} (base {'H1': 123.35, 'H2': 31.6, '2025': 52.96, '2021-24': 87.27})",
    "writeup": "structure-management",
    "tags": [
     "atlas",
@@ -275176,7 +275176,7 @@
     "x_struct": {}
    },
    "sizing": {},
-   "built": "2026-10-29 01:50",
+   "built": "2026-10-29 01:58",
    "spans": {
     "2026": {
      "n": 79,

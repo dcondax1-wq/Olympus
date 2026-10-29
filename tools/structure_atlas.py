@@ -211,36 +211,50 @@ def check():
     print(f"{time.time() - t0:.0f} s")
 
 
+RSPANS = {"H1": ("2026-01-01", "2026-06-30"), "H2": ("2026-07-01", "2026-12-31"), "2025": ("2025-01-01", "2025-12-31"),
+          "2021-24": ("2021-01-01", "2024-12-31")}
+
+
+def rsum(U):
+    """The members' own trades at a fixed risk: total R per span (no account rules, no sizing path)."""
+    return {s: round(sum(u["pts"] / u["risk"] for src in ("EMA", "MD", "SR") for u in U[src] if a <= u["day"] <= z), 2)
+            for s, (a, z) in RSPANS.items()}
+
+
 def grid():
     res = json.load(open(OUT)) if os.path.exists(OUT) else {}
     for nm, X in variants().items():
-        if nm in res:
+        if nm in res and "r" in res[nm]:
             continue
         t1 = time.time()
-        U, n = units(X) if X else (None, {})
+        U, n = units(X) if X else (M.units(), {})
         o = score_X(X)
-        res[nm] = {"X": X, "o": o, "n": n}
+        res[nm] = {"X": X, "o": o, "n": n, "r": rsum(U)}
         print(f"{nm:24s} " + " | ".join(fmt(o, s) for s in o) + f" | fired {n.get('fired')} ({time.time() - t1:.0f}s)", flush=True)
         json.dump(res, open(OUT, "w"), indent=1, default=str)
     return res
 
 
-def gates(o, b):
-    """ATLAS gate: better 2-week pass - fail (incl. stuck) AND net in H1 and H2, net not worse in 2025 and 2021-24, 2+ a week."""
+def gates(o, b, r=None, rb=None):
+    """ATLAS gate: better 2-week pass - fail (incl. stuck) AND net in H1 and H2 on the 25K account, net not worse in 2025 and
+    2021-24, the trade rate kept, AND the trades themselves better (total R at a fixed risk not lower in H1 and H2): an
+    account gain that comes only from the sizing path is not an edge."""
     ok = all(o[s]["net"] > b[s]["net"] and (o[s]["p10"] - o[s]["dead10"]) >= (b[s]["p10"] - b[s]["dead10"]) for s in ("H1", "H2"))
     ref = all(o[s]["net"] >= b[s]["net"] for s in ("2025", "2021-24"))
     freq = o["H1"]["tpw"] >= b["H1"]["tpw"] - 0.05 and o["H2"]["tpw"] >= b["H2"]["tpw"] - 0.05
-    return {"2026": ok, "2021-25": ref, "freq": freq, "all": ok and ref and freq}
+    trades = None if r is None or rb is None else all(r[s] >= rb[s] for s in ("H1", "H2"))
+    return {"2026": ok, "2021-25": ref, "freq": freq, "trades_R": trades, "all": ok and ref and freq and trades is not False}
 
 
 def report():
     res = json.load(open(OUT))
     b = res["base"]["o"]
+    rb = res["base"].get("r")
     for nm, r in res.items():
         if nm == "base":
             continue
         o = r["o"]
-        g = gates(o, b)
+        g = gates(o, b, r.get("r"), rb)
         d = {s: o[s]["net"] - b[s]["net"] for s in o}
         print(f"{'PASS' if g['all'] else '    '} {nm:24s} dnet " + " ".join(f"{s} {d[s]:+,}" for s in d)
               + f" | 2w H1 {o['H1']['p10']}/{o['H1']['dead10']} H2 {o['H2']['p10']}/{o['H2']['dead10']} | {g}")
@@ -260,7 +274,7 @@ def save():
             continue
         X = res[nm]["X"]
         o = res[nm]["o"]
-        g = gates(o, b) if nm != "base" else None
+        g = gates(o, b, res[nm].get("r"), res["base"].get("r")) if nm != "base" else None
         M.units()
         saved = M._UC["u"]
         M._UC["u"] = units(X)[0] if X else saved
@@ -276,7 +290,7 @@ def save():
                  "bars_held": None, "regime": "", "mult": 1.0} for t in T]
         st = "info" if nm == "base" else ("adopt-candidate" if g["all"] else "rejected")
         ver = " ; ".join(f"{s}: {fmt(o, s)}" + ("" if nm == "base" else f" (base {b[s]['net']:+,}, 2w {b[s]['p10']}/{b[s]['dead10']})")
-                         for s in o) + (f" ; gates {g}" if g else "")
+                         for s in o) + (f" ; gates {g}" if g else "") + f" ; trades total R {res[nm].get('r')} (base {res['base'].get('r')})"
         rl.save(f"atlas_struct_{nm}", f"ATLAS structure management: {nm}", "management" if not nm.startswith("pstop") else "stops",
                 "Owner 2026-10-28: trade like a person; ATLAS with structure exits / trails / the stop at the protected swing",
                 params={"x_struct": X}, trades=rows, status=st, verdict=ver,
