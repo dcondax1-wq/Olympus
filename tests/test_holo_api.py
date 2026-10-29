@@ -371,6 +371,9 @@ def main():
     check("GET /api/next/holo?day= and /api/next/holo/days", r1.status_code == 200 and r1.json()["day"] == PAST and r1.json()["kind"] == "le-holo"
           and r2.status_code == 200 and r2.json()["days"][0]["day"] == DAY, (r1.status_code, r2.text[:200]))
     check("bad day -> today's session + an error line, never a 500", c.get("/api/next/holo?day=nope").json().get("day") == DAY)
+    srv = open(os.path.join(ROOT, "server.py"), encoding="utf-8").read()
+    check("server.py mounts the Holodeck router once (one include line)", srv.count("from engine.holo_api import router as holo_router") == 1
+          and srv.count("app.include_router(holo_router)") == 1)
 
     # ---- phone files: size caps, cache
     ph = H.phone(b, now)
