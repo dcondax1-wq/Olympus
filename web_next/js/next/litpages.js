@@ -6,7 +6,7 @@
 //   Today (command): a strip with the day clock and the setup tracker above the command grid
 // Data: the PC bot's LIT state (/api/live/state: state.lit, state.session, state.active_pools, setups, position, lit_rules, ledger,
 // bars), /api/next/lit_extra (plan, size rule, rules, boxes, 2026 stats), /api/dash/eval (the paper eval), /api/next/news?compact=1.
-import * as LK from '../litkit.js?v=35e4b9c3';
+import * as LK from '../litkit.js?v=a16e2e7f';
 import { $, api, esc, fmt$ } from '../util.js';
 import { L, onLive } from '../dash/live.js';
 import { mount3d } from './fx3d.js';
@@ -41,7 +41,7 @@ function posTrade(C) {
 const posCard = (t) => (t ? card(`Today’s trade · ${t.side} · paper`, '<div class="nx-tcbox" id="nxLitTC"></div>', '<span class="muted small">open position · 5m bars</span>') : '');
 function posMount(t, C) {
   const box = $('#nxLitTC'); if (!t || !box) return;
-  import('../tradechart.js?v=b1526d92').then((TC) => { if (box.isConnected) TC.mount(box, TC.fromTrade(t, C.bars)); }).catch(() => { box.innerHTML = '<div class="muted small">Chart unavailable.</div>'; });
+  import('../tradechart.js?v=3dd26fe6').then((TC) => { if (box.isConnected) TC.mount(box, TC.fromTrade(t, C.bars)); }).catch(() => { box.innerHTML = '<div class="muted small">Chart unavailable.</div>'; });
 }
 function phase(C) { if (C.closed) return 'Market closed'; const p = LK.et(C.now), m = p.min; return m >= 1080 || m < 120 ? 'Asia session' : m < 300 ? 'London session' : m < 570 ? 'Pre-market' : m < 690 ? 'New York AM' : m < 810 ? 'New York lunch' : m < 960 ? 'New York PM' : m < 1020 ? 'After hours' : 'Daily halt'; }
 
