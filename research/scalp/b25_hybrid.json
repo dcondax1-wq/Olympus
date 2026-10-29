@@ -1,0 +1,1534 @@
+{
+ "funded_at_1_micro": {
+  "today": {
+   "H1": {
+    "fund_pm": 108,
+    "fund_pay_pm": 0.26,
+    "fund_lost": 0.0,
+    "fund_stuck": 45.5,
+    "fund_starts": 22
+   },
+   "H2": {
+    "fund_pm": 0,
+    "fund_pay_pm": 0.0,
+    "fund_lost": 0.0,
+    "fund_stuck": 100.0,
+    "fund_starts": 6
+   },
+   "R": {
+    "fund_pm": 2,
+    "fund_pay_pm": 0.01,
+    "fund_lost": 0.0,
+    "fund_stuck": 28.9,
+    "fund_starts": 339
+   }
+  },
+  "h1t_clock": {
+   "H1": {
+    "fund_pm": 189,
+    "fund_pay_pm": 0.36,
+    "fund_lost": 0.0,
+    "fund_stuck": 0.0,
+    "fund_starts": 22
+   },
+   "H2": {
+    "fund_pm": 0,
+    "fund_pay_pm": 0.0,
+    "fund_lost": 0.0,
+    "fund_stuck": 0.0,
+    "fund_starts": 6
+   },
+   "R": {
+    "fund_pm": 5,
+    "fund_pay_pm": 0.01,
+    "fund_lost": 0.0,
+    "fund_stuck": 21.8,
+    "fund_starts": 339
+   }
+  },
+  "h1t_target": {
+   "H1": {
+    "fund_pm": 118,
+    "fund_pay_pm": 0.38,
+    "fund_lost": 0.0,
+    "fund_stuck": 0.0,
+    "fund_starts": 22
+   },
+   "H2": {
+    "fund_pm": 0,
+    "fund_pay_pm": 0.0,
+    "fund_lost": 0.0,
+    "fund_stuck": 0.0,
+    "fund_starts": 6
+   },
+   "R": {
+    "fund_pm": 5,
+    "fund_pay_pm": 0.01,
+    "fund_lost": 0.0,
+    "fund_stuck": 28.0,
+    "fund_starts": 339
+   }
+  },
+  "h1t_structure": {
+   "H1": {
+    "fund_pm": 127,
+    "fund_pay_pm": 0.35,
+    "fund_lost": 0.0,
+    "fund_stuck": 0.0,
+    "fund_starts": 22
+   },
+   "H2": {
+    "fund_pm": 73,
+    "fund_pay_pm": 0.28,
+    "fund_lost": 0.0,
+    "fund_stuck": 33.3,
+    "fund_starts": 6
+   },
+   "R": {
+    "fund_pm": 3,
+    "fund_pay_pm": 0.01,
+    "fund_lost": 0.0,
+    "fund_stuck": 37.5,
+    "fund_starts": 339
+   }
+  },
+  "h1_eval60": {
+   "H1": {
+    "fund_pm": 120,
+    "fund_pay_pm": 0.32,
+    "fund_lost": 0.0,
+    "fund_stuck": 0.0,
+    "fund_starts": 22
+   },
+   "H2": {
+    "fund_pm": 0,
+    "fund_pay_pm": 0.0,
+    "fund_lost": 0.0,
+    "fund_stuck": 100.0,
+    "fund_starts": 6
+   },
+   "R": {
+    "fund_pm": 6,
+    "fund_pay_pm": 0.01,
+    "fund_lost": 0.0,
+    "fund_stuck": 41.3,
+    "fund_starts": 339
+   }
+  },
+  "h1_eval40": {
+   "H1": {
+    "fund_pm": 168,
+    "fund_pay_pm": 0.35,
+    "fund_lost": 0.0,
+    "fund_stuck": 0.0,
+    "fund_starts": 22
+   },
+   "H2": {
+    "fund_pm": 87,
+    "fund_pay_pm": 0.33,
+    "fund_lost": 0.0,
+    "fund_stuck": 33.3,
+    "fund_starts": 6
+   },
+   "R": {
+    "fund_pm": 3,
+    "fund_pay_pm": 0.01,
+    "fund_lost": 0.0,
+    "fund_stuck": 37.8,
+    "fund_starts": 339
+   }
+  }
+ },
+ "funded_rule": "h1t_clock",
+ "funded_rule_v": {
+  "stop": "low60",
+  "dmin": 0.5,
+  "dmax": 2.0,
+  "hold": 45,
+  "trail": 1.0,
+  "tstart": 0.5,
+  "part": "liq",
+  "p_min": 0.5,
+  "part_be": false
+ },
+ "rows": [
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0
+   },
+   "name": "funded rule today [frac f0.1 cap150]",
+   "H1": {
+    "life_pm": 258,
+    "life_p10": 19,
+    "life_lose": 7.3,
+    "funded_per_6m": 1.26
+   },
+   "H2": {
+    "life_pm": 38,
+    "life_p10": -63,
+    "life_lose": 52.0,
+    "funded_per_6m": 1.45
+   },
+   "R": {
+    "life_pm": -44,
+    "life_p10": -94,
+    "life_lose": 91.0,
+    "funded_per_6m": 1.38
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 300.0
+   },
+   "name": "funded rule today [frac f0.1 cap300]",
+   "H1": {
+    "life_pm": 250,
+    "life_p10": 15,
+    "life_lose": 7.7,
+    "funded_per_6m": 1.23
+   },
+   "H2": {
+    "life_pm": 36,
+    "life_p10": -63,
+    "life_lose": 52.0,
+    "funded_per_6m": 1.45
+   },
+   "R": {
+    "life_pm": -44,
+    "life_p10": -94,
+    "life_lose": 90.7,
+    "funded_per_6m": 1.38
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 450.0
+   },
+   "name": "funded rule today [frac f0.1 cap450]",
+   "H1": {
+    "life_pm": 240,
+    "life_p10": 15,
+    "life_lose": 7.7,
+    "funded_per_6m": 1.22
+   },
+   "H2": {
+    "life_pm": 37,
+    "life_p10": -63,
+    "life_lose": 52.0,
+    "funded_per_6m": 1.45
+   },
+   "R": {
+    "life_pm": -44,
+    "life_p10": -94,
+    "life_lose": 90.7,
+    "funded_per_6m": 1.38
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 150.0
+   },
+   "name": "funded rule today [frac f0.2 cap150]",
+   "H1": {
+    "life_pm": 247,
+    "life_p10": 7,
+    "life_lose": 9.7,
+    "funded_per_6m": 1.37
+   },
+   "H2": {
+    "life_pm": 55,
+    "life_p10": -52,
+    "life_lose": 41.0,
+    "funded_per_6m": 1.44
+   },
+   "R": {
+    "life_pm": -42,
+    "life_p10": -96,
+    "life_lose": 86.0,
+    "funded_per_6m": 1.52
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 300.0
+   },
+   "name": "funded rule today [frac f0.2 cap300]",
+   "H1": {
+    "life_pm": 228,
+    "life_p10": -21,
+    "life_lose": 12.0,
+    "funded_per_6m": 1.37
+   },
+   "H2": {
+    "life_pm": 143,
+    "life_p10": -52,
+    "life_lose": 33.3,
+    "funded_per_6m": 1.31
+   },
+   "R": {
+    "life_pm": -38,
+    "life_p10": -105,
+    "life_lose": 82.7,
+    "funded_per_6m": 1.58
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 450.0
+   },
+   "name": "funded rule today [frac f0.2 cap450]",
+   "H1": {
+    "life_pm": 179,
+    "life_p10": -21,
+    "life_lose": 14.3,
+    "funded_per_6m": 1.35
+   },
+   "H2": {
+    "life_pm": 131,
+    "life_p10": -52,
+    "life_lose": 35.7,
+    "funded_per_6m": 1.3
+   },
+   "R": {
+    "life_pm": -41,
+    "life_p10": -105,
+    "life_lose": 83.0,
+    "funded_per_6m": 1.59
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 150.0
+   },
+   "name": "funded rule today [frac f0.3 cap150]",
+   "H1": {
+    "life_pm": 244,
+    "life_p10": 3,
+    "life_lose": 10.0,
+    "funded_per_6m": 1.4
+   },
+   "H2": {
+    "life_pm": 58,
+    "life_p10": -52,
+    "life_lose": 41.0,
+    "funded_per_6m": 1.43
+   },
+   "R": {
+    "life_pm": -42,
+    "life_p10": -105,
+    "life_lose": 86.3,
+    "funded_per_6m": 1.56
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 300.0
+   },
+   "name": "funded rule today [frac f0.3 cap300]",
+   "H1": {
+    "life_pm": 216,
+    "life_p10": -42,
+    "life_lose": 17.7,
+    "funded_per_6m": 1.63
+   },
+   "H2": {
+    "life_pm": 154,
+    "life_p10": -63,
+    "life_lose": 31.0,
+    "funded_per_6m": 1.38
+   },
+   "R": {
+    "life_pm": -37,
+    "life_p10": -105,
+    "life_lose": 78.7,
+    "funded_per_6m": 1.87
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 450.0
+   },
+   "name": "funded rule today [frac f0.3 cap450]",
+   "H1": {
+    "life_pm": 160,
+    "life_p10": -42,
+    "life_lose": 22.7,
+    "funded_per_6m": 1.6
+   },
+   "H2": {
+    "life_pm": 145,
+    "life_p10": -63,
+    "life_lose": 30.7,
+    "funded_per_6m": 1.42
+   },
+   "R": {
+    "life_pm": -45,
+    "life_p10": -105,
+    "life_lose": 83.3,
+    "funded_per_6m": 1.89
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 150.0
+   },
+   "name": "funded rule today [frac f0.45 cap150]",
+   "H1": {
+    "life_pm": 244,
+    "life_p10": -3,
+    "life_lose": 10.3,
+    "funded_per_6m": 1.41
+   },
+   "H2": {
+    "life_pm": 59,
+    "life_p10": -52,
+    "life_lose": 40.7,
+    "funded_per_6m": 1.41
+   },
+   "R": {
+    "life_pm": -44,
+    "life_p10": -105,
+    "life_lose": 85.0,
+    "funded_per_6m": 1.59
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 300.0
+   },
+   "name": "funded rule today [frac f0.45 cap300]",
+   "H1": {
+    "life_pm": 211,
+    "life_p10": -52,
+    "life_lose": 17.0,
+    "funded_per_6m": 1.89
+   },
+   "H2": {
+    "life_pm": 158,
+    "life_p10": -63,
+    "life_lose": 30.7,
+    "funded_per_6m": 1.43
+   },
+   "R": {
+    "life_pm": -40,
+    "life_p10": -117,
+    "life_lose": 75.0,
+    "funded_per_6m": 2.1
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 450.0
+   },
+   "name": "funded rule today [frac f0.45 cap450]",
+   "H1": {
+    "life_pm": 131,
+    "life_p10": -74,
+    "life_lose": 30.3,
+    "funded_per_6m": 2.1
+   },
+   "H2": {
+    "life_pm": 146,
+    "life_p10": -63,
+    "life_lose": 31.0,
+    "funded_per_6m": 1.53
+   },
+   "R": {
+    "life_pm": -56,
+    "life_p10": -126,
+    "life_lose": 80.7,
+    "funded_per_6m": 2.2
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.1 cap150 dtp400]",
+   "H1": {
+    "life_pm": 277,
+    "life_p10": 12,
+    "life_lose": 8.7,
+    "funded_per_6m": 1.34
+   },
+   "H2": {
+    "life_pm": 30,
+    "life_p10": -63,
+    "life_lose": 53.0,
+    "funded_per_6m": 1.44
+   },
+   "R": {
+    "life_pm": -41,
+    "life_p10": -94,
+    "life_lose": 87.0,
+    "funded_per_6m": 1.38
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 300.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.1 cap300 dtp400]",
+   "H1": {
+    "life_pm": 272,
+    "life_p10": 12,
+    "life_lose": 8.7,
+    "funded_per_6m": 1.34
+   },
+   "H2": {
+    "life_pm": 31,
+    "life_p10": -63,
+    "life_lose": 53.0,
+    "funded_per_6m": 1.45
+   },
+   "R": {
+    "life_pm": -41,
+    "life_p10": -94,
+    "life_lose": 87.0,
+    "funded_per_6m": 1.38
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 450.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.1 cap450 dtp400]",
+   "H1": {
+    "life_pm": 272,
+    "life_p10": 12,
+    "life_lose": 8.7,
+    "funded_per_6m": 1.33
+   },
+   "H2": {
+    "life_pm": 31,
+    "life_p10": -63,
+    "life_lose": 53.0,
+    "funded_per_6m": 1.45
+   },
+   "R": {
+    "life_pm": -41,
+    "life_p10": -94,
+    "life_lose": 87.0,
+    "funded_per_6m": 1.38
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.2 cap150 dtp400]",
+   "H1": {
+    "life_pm": 269,
+    "life_p10": -3,
+    "life_lose": 10.7,
+    "funded_per_6m": 1.47
+   },
+   "H2": {
+    "life_pm": 45,
+    "life_p10": -54,
+    "life_lose": 47.7,
+    "funded_per_6m": 1.45
+   },
+   "R": {
+    "life_pm": -39,
+    "life_p10": -96,
+    "life_lose": 83.3,
+    "funded_per_6m": 1.51
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 300.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.2 cap300 dtp400]",
+   "H1": {
+    "life_pm": 252,
+    "life_p10": -21,
+    "life_lose": 14.3,
+    "funded_per_6m": 1.52
+   },
+   "H2": {
+    "life_pm": 113,
+    "life_p10": -52,
+    "life_lose": 34.3,
+    "funded_per_6m": 1.43
+   },
+   "R": {
+    "life_pm": -28,
+    "life_p10": -105,
+    "life_lose": 75.3,
+    "funded_per_6m": 1.55
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 450.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.2 cap450 dtp400]",
+   "H1": {
+    "life_pm": 228,
+    "life_p10": -21,
+    "life_lose": 14.3,
+    "funded_per_6m": 1.49
+   },
+   "H2": {
+    "life_pm": 112,
+    "life_p10": -52,
+    "life_lose": 34.3,
+    "funded_per_6m": 1.43
+   },
+   "R": {
+    "life_pm": -29,
+    "life_p10": -105,
+    "life_lose": 75.3,
+    "funded_per_6m": 1.55
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.3 cap150 dtp400]",
+   "H1": {
+    "life_pm": 267,
+    "life_p10": -11,
+    "life_lose": 11.3,
+    "funded_per_6m": 1.49
+   },
+   "H2": {
+    "life_pm": 48,
+    "life_p10": -63,
+    "life_lose": 45.7,
+    "funded_per_6m": 1.42
+   },
+   "R": {
+    "life_pm": -40,
+    "life_p10": -105,
+    "life_lose": 83.0,
+    "funded_per_6m": 1.54
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 300.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.3 cap300 dtp400]",
+   "H1": {
+    "life_pm": 221,
+    "life_p10": -42,
+    "life_lose": 20.7,
+    "funded_per_6m": 1.81
+   },
+   "H2": {
+    "life_pm": 143,
+    "life_p10": -63,
+    "life_lose": 30.3,
+    "funded_per_6m": 1.48
+   },
+   "R": {
+    "life_pm": -29,
+    "life_p10": -105,
+    "life_lose": 76.0,
+    "funded_per_6m": 1.85
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 450.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.3 cap450 dtp400]",
+   "H1": {
+    "life_pm": 184,
+    "life_p10": -42,
+    "life_lose": 20.3,
+    "funded_per_6m": 1.84
+   },
+   "H2": {
+    "life_pm": 148,
+    "life_p10": -63,
+    "life_lose": 29.7,
+    "funded_per_6m": 1.62
+   },
+   "R": {
+    "life_pm": -32,
+    "life_p10": -105,
+    "life_lose": 76.0,
+    "funded_per_6m": 1.88
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.45 cap150 dtp400]",
+   "H1": {
+    "life_pm": 266,
+    "life_p10": -13,
+    "life_lose": 11.7,
+    "funded_per_6m": 1.51
+   },
+   "H2": {
+    "life_pm": 49,
+    "life_p10": -54,
+    "life_lose": 45.7,
+    "funded_per_6m": 1.43
+   },
+   "R": {
+    "life_pm": -41,
+    "life_p10": -105,
+    "life_lose": 82.3,
+    "funded_per_6m": 1.57
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 300.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.45 cap300 dtp400]",
+   "H1": {
+    "life_pm": 215,
+    "life_p10": -57,
+    "life_lose": 23.3,
+    "funded_per_6m": 2.21
+   },
+   "H2": {
+    "life_pm": 137,
+    "life_p10": -63,
+    "life_lose": 29.3,
+    "funded_per_6m": 1.65
+   },
+   "R": {
+    "life_pm": -34,
+    "life_p10": -126,
+    "life_lose": 77.3,
+    "funded_per_6m": 2.12
+   }
+  },
+  {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 450.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.45 cap450 dtp400]",
+   "H1": {
+    "life_pm": 142,
+    "life_p10": -74,
+    "life_lose": 31.0,
+    "funded_per_6m": 2.54
+   },
+   "H2": {
+    "life_pm": 164,
+    "life_p10": -63,
+    "life_lose": 30.0,
+    "funded_per_6m": 1.75
+   },
+   "R": {
+    "life_pm": -34,
+    "life_p10": -126,
+    "life_lose": 73.0,
+    "funded_per_6m": 2.24
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0
+   },
+   "name": "funded rule h1t_clock [frac f0.1 cap150]",
+   "H1": {
+    "life_pm": 190,
+    "life_p10": 3,
+    "life_lose": 9.7,
+    "funded_per_6m": 1.04
+   },
+   "H2": {
+    "life_pm": -16,
+    "life_p10": -52,
+    "life_lose": 90.3,
+    "funded_per_6m": 1.04
+   },
+   "R": {
+    "life_pm": -43,
+    "life_p10": -94,
+    "life_lose": 95.7,
+    "funded_per_6m": 1.18
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 300.0
+   },
+   "name": "funded rule h1t_clock [frac f0.1 cap300]",
+   "H1": {
+    "life_pm": 181,
+    "life_p10": 3,
+    "life_lose": 9.7,
+    "funded_per_6m": 1.04
+   },
+   "H2": {
+    "life_pm": -15,
+    "life_p10": -52,
+    "life_lose": 90.3,
+    "funded_per_6m": 1.04
+   },
+   "R": {
+    "life_pm": -43,
+    "life_p10": -94,
+    "life_lose": 95.7,
+    "funded_per_6m": 1.18
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 450.0
+   },
+   "name": "funded rule h1t_clock [frac f0.1 cap450]",
+   "H1": {
+    "life_pm": 181,
+    "life_p10": 3,
+    "life_lose": 9.7,
+    "funded_per_6m": 1.04
+   },
+   "H2": {
+    "life_pm": -15,
+    "life_p10": -52,
+    "life_lose": 90.3,
+    "funded_per_6m": 1.04
+   },
+   "R": {
+    "life_pm": -44,
+    "life_p10": -94,
+    "life_lose": 95.7,
+    "funded_per_6m": 1.18
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 150.0
+   },
+   "name": "funded rule h1t_clock [frac f0.2 cap150]",
+   "H1": {
+    "life_pm": 221,
+    "life_p10": 11,
+    "life_lose": 9.3,
+    "funded_per_6m": 1.07
+   },
+   "H2": {
+    "life_pm": -2,
+    "life_p10": -52,
+    "life_lose": 77.7,
+    "funded_per_6m": 1.02
+   },
+   "R": {
+    "life_pm": -48,
+    "life_p10": -94,
+    "life_lose": 92.3,
+    "funded_per_6m": 1.34
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 300.0
+   },
+   "name": "funded rule h1t_clock [frac f0.2 cap300]",
+   "H1": {
+    "life_pm": 241,
+    "life_p10": 19,
+    "life_lose": 8.3,
+    "funded_per_6m": 1.11
+   },
+   "H2": {
+    "life_pm": 29,
+    "life_p10": -52,
+    "life_lose": 66.7,
+    "funded_per_6m": 1.03
+   },
+   "R": {
+    "life_pm": -51,
+    "life_p10": -105,
+    "life_lose": 93.0,
+    "funded_per_6m": 1.42
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 450.0
+   },
+   "name": "funded rule h1t_clock [frac f0.2 cap450]",
+   "H1": {
+    "life_pm": 238,
+    "life_p10": 19,
+    "life_lose": 8.7,
+    "funded_per_6m": 1.1
+   },
+   "H2": {
+    "life_pm": 12,
+    "life_p10": -52,
+    "life_lose": 67.3,
+    "funded_per_6m": 1.03
+   },
+   "R": {
+    "life_pm": -51,
+    "life_p10": -105,
+    "life_lose": 93.3,
+    "funded_per_6m": 1.42
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 150.0
+   },
+   "name": "funded rule h1t_clock [frac f0.3 cap150]",
+   "H1": {
+    "life_pm": 224,
+    "life_p10": 19,
+    "life_lose": 7.7,
+    "funded_per_6m": 1.12
+   },
+   "H2": {
+    "life_pm": 1,
+    "life_p10": -43,
+    "life_lose": 75.0,
+    "funded_per_6m": 1.01
+   },
+   "R": {
+    "life_pm": -53,
+    "life_p10": -96,
+    "life_lose": 91.7,
+    "funded_per_6m": 1.47
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 300.0
+   },
+   "name": "funded rule h1t_clock [frac f0.3 cap300]",
+   "H1": {
+    "life_pm": 266,
+    "life_p10": -21,
+    "life_lose": 10.3,
+    "funded_per_6m": 1.22
+   },
+   "H2": {
+    "life_pm": 76,
+    "life_p10": -42,
+    "life_lose": 41.7,
+    "funded_per_6m": 1.05
+   },
+   "R": {
+    "life_pm": -56,
+    "life_p10": -105,
+    "life_lose": 91.0,
+    "funded_per_6m": 1.73
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 450.0
+   },
+   "name": "funded rule h1t_clock [frac f0.3 cap450]",
+   "H1": {
+    "life_pm": 267,
+    "life_p10": -21,
+    "life_lose": 11.7,
+    "funded_per_6m": 1.22
+   },
+   "H2": {
+    "life_pm": 49,
+    "life_p10": -52,
+    "life_lose": 53.7,
+    "funded_per_6m": 1.05
+   },
+   "R": {
+    "life_pm": -56,
+    "life_p10": -105,
+    "life_lose": 91.3,
+    "funded_per_6m": 1.74
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 150.0
+   },
+   "name": "funded rule h1t_clock [frac f0.45 cap150]",
+   "H1": {
+    "life_pm": 226,
+    "life_p10": 16,
+    "life_lose": 7.3,
+    "funded_per_6m": 1.14
+   },
+   "H2": {
+    "life_pm": 1,
+    "life_p10": -43,
+    "life_lose": 75.0,
+    "funded_per_6m": 1.01
+   },
+   "R": {
+    "life_pm": -53,
+    "life_p10": -105,
+    "life_lose": 90.3,
+    "funded_per_6m": 1.56
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 300.0
+   },
+   "name": "funded rule h1t_clock [frac f0.45 cap300]",
+   "H1": {
+    "life_pm": 264,
+    "life_p10": -7,
+    "life_lose": 11.0,
+    "funded_per_6m": 1.41
+   },
+   "H2": {
+    "life_pm": 111,
+    "life_p10": -42,
+    "life_lose": 29.0,
+    "funded_per_6m": 1.11
+   },
+   "R": {
+    "life_pm": -62,
+    "life_p10": -116,
+    "life_lose": 87.3,
+    "funded_per_6m": 1.99
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 450.0
+   },
+   "name": "funded rule h1t_clock [frac f0.45 cap450]",
+   "H1": {
+    "life_pm": 285,
+    "life_p10": 44,
+    "life_lose": 9.3,
+    "funded_per_6m": 1.44
+   },
+   "H2": {
+    "life_pm": 42,
+    "life_p10": -52,
+    "life_lose": 56.3,
+    "funded_per_6m": 1.28
+   },
+   "R": {
+    "life_pm": -63,
+    "life_p10": -117,
+    "life_lose": 85.3,
+    "funded_per_6m": 2.06
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.1 cap150 dtp400]",
+   "H1": {
+    "life_pm": 191,
+    "life_p10": -2,
+    "life_lose": 10.7,
+    "funded_per_6m": 1.04
+   },
+   "H2": {
+    "life_pm": -18,
+    "life_p10": -52,
+    "life_lose": 90.7,
+    "funded_per_6m": 1.04
+   },
+   "R": {
+    "life_pm": -44,
+    "life_p10": -94,
+    "life_lose": 95.3,
+    "funded_per_6m": 1.17
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 300.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.1 cap300 dtp400]",
+   "H1": {
+    "life_pm": 186,
+    "life_p10": -2,
+    "life_lose": 10.7,
+    "funded_per_6m": 1.04
+   },
+   "H2": {
+    "life_pm": -18,
+    "life_p10": -52,
+    "life_lose": 90.7,
+    "funded_per_6m": 1.04
+   },
+   "R": {
+    "life_pm": -43,
+    "life_p10": -94,
+    "life_lose": 95.3,
+    "funded_per_6m": 1.17
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 450.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.1 cap450 dtp400]",
+   "H1": {
+    "life_pm": 187,
+    "life_p10": -2,
+    "life_lose": 10.7,
+    "funded_per_6m": 1.04
+   },
+   "H2": {
+    "life_pm": -18,
+    "life_p10": -52,
+    "life_lose": 90.7,
+    "funded_per_6m": 1.04
+   },
+   "R": {
+    "life_pm": -43,
+    "life_p10": -94,
+    "life_lose": 95.3,
+    "funded_per_6m": 1.17
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.2 cap150 dtp400]",
+   "H1": {
+    "life_pm": 211,
+    "life_p10": -4,
+    "life_lose": 10.3,
+    "funded_per_6m": 1.08
+   },
+   "H2": {
+    "life_pm": -2,
+    "life_p10": -52,
+    "life_lose": 74.0,
+    "funded_per_6m": 1.02
+   },
+   "R": {
+    "life_pm": -47,
+    "life_p10": -94,
+    "life_lose": 89.7,
+    "funded_per_6m": 1.34
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 300.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.2 cap300 dtp400]",
+   "H1": {
+    "life_pm": 215,
+    "life_p10": 3,
+    "life_lose": 9.7,
+    "funded_per_6m": 1.13
+   },
+   "H2": {
+    "life_pm": 23,
+    "life_p10": -43,
+    "life_lose": 65.3,
+    "funded_per_6m": 1.04
+   },
+   "R": {
+    "life_pm": -45,
+    "life_p10": -105,
+    "life_lose": 88.7,
+    "funded_per_6m": 1.41
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.2,
+    "cap": 450.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.2 cap450 dtp400]",
+   "H1": {
+    "life_pm": 208,
+    "life_p10": 3,
+    "life_lose": 9.7,
+    "funded_per_6m": 1.11
+   },
+   "H2": {
+    "life_pm": 17,
+    "life_p10": -43,
+    "life_lose": 65.3,
+    "funded_per_6m": 1.04
+   },
+   "R": {
+    "life_pm": -46,
+    "life_p10": -105,
+    "life_lose": 89.0,
+    "funded_per_6m": 1.41
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.3 cap150 dtp400]",
+   "H1": {
+    "life_pm": 209,
+    "life_p10": 5,
+    "life_lose": 9.7,
+    "funded_per_6m": 1.13
+   },
+   "H2": {
+    "life_pm": 0,
+    "life_p10": -42,
+    "life_lose": 71.0,
+    "funded_per_6m": 1.01
+   },
+   "R": {
+    "life_pm": -51,
+    "life_p10": -96,
+    "life_lose": 90.0,
+    "funded_per_6m": 1.47
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 300.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.3 cap300 dtp400]",
+   "H1": {
+    "life_pm": 229,
+    "life_p10": -32,
+    "life_lose": 15.0,
+    "funded_per_6m": 1.28
+   },
+   "H2": {
+    "life_pm": 77,
+    "life_p10": -42,
+    "life_lose": 41.3,
+    "funded_per_6m": 1.05
+   },
+   "R": {
+    "life_pm": -50,
+    "life_p10": -105,
+    "life_lose": 87.7,
+    "funded_per_6m": 1.71
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.3,
+    "cap": 450.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.3 cap450 dtp400]",
+   "H1": {
+    "life_pm": 212,
+    "life_p10": -32,
+    "life_lose": 16.0,
+    "funded_per_6m": 1.28
+   },
+   "H2": {
+    "life_pm": 59,
+    "life_p10": -43,
+    "life_lose": 49.0,
+    "funded_per_6m": 1.04
+   },
+   "R": {
+    "life_pm": -50,
+    "life_p10": -105,
+    "life_lose": 88.7,
+    "funded_per_6m": 1.72
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.45 cap150 dtp400]",
+   "H1": {
+    "life_pm": 210,
+    "life_p10": 5,
+    "life_lose": 9.7,
+    "funded_per_6m": 1.14
+   },
+   "H2": {
+    "life_pm": 1,
+    "life_p10": -42,
+    "life_lose": 70.0,
+    "funded_per_6m": 1.01
+   },
+   "R": {
+    "life_pm": -52,
+    "life_p10": -105,
+    "life_lose": 89.7,
+    "funded_per_6m": 1.58
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 300.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.45 cap300 dtp400]",
+   "H1": {
+    "life_pm": 241,
+    "life_p10": -32,
+    "life_lose": 12.0,
+    "funded_per_6m": 1.51
+   },
+   "H2": {
+    "life_pm": 110,
+    "life_p10": -42,
+    "life_lose": 28.7,
+    "funded_per_6m": 1.12
+   },
+   "R": {
+    "life_pm": -57,
+    "life_p10": -116,
+    "life_lose": 86.3,
+    "funded_per_6m": 1.97
+   }
+  },
+  {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 450.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule h1t_clock [frac f0.45 cap450 dtp400]",
+   "H1": {
+    "life_pm": 235,
+    "life_p10": -42,
+    "life_lose": 15.7,
+    "funded_per_6m": 1.59
+   },
+   "H2": {
+    "life_pm": 29,
+    "life_p10": -52,
+    "life_lose": 57.7,
+    "funded_per_6m": 1.32
+   },
+   "R": {
+    "life_pm": -53,
+    "life_p10": -116,
+    "life_lose": 82.3,
+    "funded_per_6m": 2.02
+   }
+  }
+ ],
+ "final": {
+  "today": {
+   "funded_rule": "today",
+   "fz": {
+    "mode": "frac",
+    "f": 0.1,
+    "cap": 150.0,
+    "day_tp": 400.0
+   },
+   "name": "funded rule today [frac f0.1 cap150 dtp400]",
+   "H1": {
+    "life_pm": 270,
+    "life_p10": 10,
+    "life_lose": 9.0,
+    "funded_per_6m": 1.3
+   },
+   "H2": {
+    "life_pm": 37,
+    "life_p10": -52,
+    "life_lose": 52.4,
+    "funded_per_6m": 1.41
+   },
+   "R": {
+    "life_pm": -40,
+    "life_p10": -94,
+    "life_lose": 87.9,
+    "funded_per_6m": 1.37
+   }
+  },
+  "h1t_clock": {
+   "funded_rule": "h1t_clock",
+   "fz": {
+    "mode": "frac",
+    "f": 0.45,
+    "cap": 450.0
+   },
+   "name": "funded rule h1t_clock [frac f0.45 cap450]",
+   "H1": {
+    "life_pm": 276,
+    "life_p10": -32,
+    "life_lose": 11.7,
+    "funded_per_6m": 1.48
+   },
+   "H2": {
+    "life_pm": 49,
+    "life_p10": -52,
+    "life_lose": 56.3,
+    "funded_per_6m": 1.3
+   },
+   "R": {
+    "life_pm": -64,
+    "life_p10": -126,
+    "life_lose": 86.2,
+    "funded_per_6m": 2.07
+   }
+  }
+ },
+ "n_better_all": 0
+}
