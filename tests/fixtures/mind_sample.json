@@ -1,0 +1,77 @@
+{
+ "t": 1792303500,
+ "v": 1,
+ "kind": "le-mind",
+ "regime": {
+  "label": "Trending down · normal volatility",
+  "trend": "down",
+  "vol": "normal",
+  "day_type": {"p_trend": 0.41, "label": "Unclear day (41% trend-day odds at 10:30)",
+               "acc_note": "Trend-day model (fit 2026 H1): 2026 H2 AUC 0.66, 2021-25 AUC 0.64; base rate 31%. Weak but real: shown as odds, not a call."},
+  "why": "15m and 1h structure both down (last 1h BOS down through 30,712); 5m ATR 12.4 pts = 1.02x its 7-day median; VIX 18.2"
+ },
+ "plans": {
+  "lit": {
+   "t": 1792302300,
+   "headline": "Zlarior game plan for Fri 2026-10-30: both sides open, structure favours shorts (15m + 1h down)",
+   "scenarios": [
+    {"if": "Price sweeps the Asia high 30,891 by >= 0.5 ATR (to ~30,897) and a 5m candle closes back below 30,860",
+     "then": "Zlarior looks for a SHORT 5m CISD; target band 30,495; stop ~65 pts -> 7 micros at today's room = about +$5,400 / -$920",
+     "levels": [30891.0, 30860.0, 30495.0], "exp_usd": 310.0, "odds": 0.43},
+    {"if": "Price sweeps the London low 30,640 by >= 0.5 ATR (to ~30,634) and a 5m candle closes back above 30,672",
+     "then": "Zlarior looks for a LONG 5m CISD; target band 31,287; stop ~45 pts -> 10 micros = about +$12,900 / -$910",
+     "levels": [30640.0, 30672.0, 31287.0], "exp_usd": 120.0, "odds": 0.38}
+   ],
+   "change_mind": "A 1h close above 30,950 (the 1h protected high) would turn the 1h trend up: shorts would then be against the trend. VIX above 25 or a high-impact release at 08:30 would make the first hour noisy."
+  },
+  "atlas": {
+   "t": 1792302300,
+   "headline": "ATLAS game plan: EMA trend member watches the 5m EMA 21/50 (down), S/R levels 30,780 / 30,640",
+   "scenarios": [
+    {"if": "5m closes stay below the EMA 50 (30,812) and MACD sweeps a high",
+     "then": "ATLAS MACD member looks for a short (paper plan; account B sizes it)",
+     "levels": [30812.0, 30780.0], "exp_usd": null, "odds": 0.47}
+   ],
+   "change_mind": "A 15m BOS up through 30,860 would put the trend members on the long side."
+  },
+  "blitz": {
+   "t": 1792330800,
+   "headline": "BLITZ game plan: day filter ON (yesterday's range 1.12x its average), trend-day odds 41%",
+   "scenarios": [
+    {"if": "A 1m close at a check from 11:00 goes above 30,912 (the upper noise band)",
+     "then": "BLITZ PAPER LONG at the next open, stop 1.5 x 5m ATR (~19 pts) -> 6 micros on the paper 25K = -$230 if stopped",
+     "levels": [30912.0], "exp_usd": 20.0, "odds": 0.36},
+    {"if": "A 1m close at a check from 11:00 goes below 30,688 (the lower noise band)",
+     "then": "BLITZ PAPER SHORT at the next open, stop 1.5 x 5m ATR (~19 pts) -> 6 micros = -$230 if stopped",
+     "levels": [30688.0], "exp_usd": 25.0, "odds": 0.37}
+   ],
+   "change_mind": "A first hour inside its 14-day average range with no close outside the band by 12:00 points to a range day: BLITZ's best days are trend days."
+  }
+ },
+ "similar": {
+  "lit": {"n": 20, "win": 0.4, "avg_r": 0.62, "usd": 480.0, "conf": "low", "valid": false,
+          "examples": [{"day": "2026-03-12", "r": 4.1, "usd": 2210.0}, {"day": "2025-06-04", "r": -1.02, "usd": -380.0},
+                       {"day": "2026-08-19", "r": 0.05, "usd": 12.0}]},
+  "atlas": null,
+  "blitz": null
+ },
+ "reviews": [
+  {"t": 1792186000, "bot": "lit", "trade": "2026-10-14 SHORT 09:44 -> TARGET +3.80R",
+   "grade": "B", "right": ["Followed the written plan: 1m CISD entry, stop 1 tick beyond the sweep high, VIX-band target",
+                           "Similar setups averaged +0.6R: a fair setup"],
+   "wrong": ["Wide 76-pt stop: only 1 micro"],
+   "lesson": "Wide stops pay the same R with less money: the size rule did its job.",
+   "luck": "mixed"}
+ ],
+ "proposals": [
+  {"id": "lit-kz-london-late-half", "bot": "lit", "idea": "Half size for LIT entries in London after 03:30 ET",
+   "evidence": {"h1": "2026 H1: +$1,240 vs live (n 31, PF 4.3 -> 4.6)", "h2": "2026 H2: -$410 vs live (n 12)",
+                "r2125": "2021-25 (reference): +$2,100", "usd_month": -95.0},
+   "status": "rejected", "t": 1792202700, "change": null}
+ ],
+ "alerts": [
+  {"t": 1792302300, "bot": "lit", "text": "Game plan ready: shorts favoured (15m + 1h down).", "level": "info"}
+ ],
+ "iq": {"store_n": {"lit": 631, "atlas": 1129, "blitz": 330},
+        "calibration": "Similar-setup memory (fit 2026 H1): LIT H2 rank corr +0.05, 2021-25 +0.02: does NOT predict outcomes yet, shown as context only."}
+}
