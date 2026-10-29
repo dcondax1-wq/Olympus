@@ -302,6 +302,13 @@ def part2():
         if a != b:
             sz_bad.append((room, cum, rk, a, b))
     check("2. ... account C's size = engine/blitz.qty (40% of the room, <= $600, <= 0.9 x the daily loss left, 20 micros)", not sz_bad, sz_bad)
+    s4 = AC.qty(spec(), 60.0, {"room": 1000.0, "cum": 0.0, "session": 4})["qty"]
+    s5 = AC.qty(spec(), 60.0, {"room": 1000.0, "cum": 0.0, "session": 5})
+    sp = AC.qty(spec(sizing="paper"), 60.0, {"room": 1000.0, "cum": 0.0, "session": 5})["qty"]
+    s5b = AC.qty(spec(), 60.0, {"room": 300.0, "cum": -100.0, "session": 9})["qty"]
+    check("2. ... the 25K speed size (research/scalp/blitz_25k_pick.json eval_25k): session 4 40% of $1,000 -> 3; session 5 the full "
+          "room, <= $600 and 0.9 x $600 = $540 -> 4; sizing 'paper' stays 40% -> 3; $300 room, -$100 today: 0.9 x $500 caps -> 2",
+          (s4, s5["qty"], sp, s5b) == (3, 4, 3, 2) and "from session 5" in s5["reasons"][0], (s4, s5, sp, s5b))
     # numbers
     H = {"H1": ("2026-01-01", "2026-06-30"), "H2": ("2026-07-01", "2026-12-31")}
     lines = []
@@ -425,6 +432,39 @@ def part3():
     i = src.find("k, t, nm, d, head, risk, sz, act = chosen")
     check("3. AccountB.entry asks account C to yield right before routing (after its own blocks / size / guards)",
           i > 0 and "self._c_yield(d, tb, sym, now" in src[i:i + 300])
+
+
+def part3b():
+    """The no-hedging mask on a real day (2026-10-15, 6 BLITZ longs in the research): with LIT's SHORT setup armed all day,
+    every long candidate is masked at the signal (no model trade, no order); without it the day is the backtest's."""
+    df = pd.read_csv(os.path.join(ROOT, "data", "NQ_1m.csv"))
+    day = "2026-10-15"
+    df = df[(df["time"] >= at_et(day, 0, 0) - 45 * 86400) & (df["time"] < at_et(day, 17, 0))].reset_index(drop=True)
+    ref = [t for t in BZ.backtest(df) if t["day"] == day]
+    o1 = dict(zip(df["time"].astype("int64"), df["open"].astype(float)))
+    out = {}
+    for armed in (True, False):
+        bot, C = make("2026-10-01")
+        if armed:
+            bot.state["setups"] = {"short": {"arm_t": at_et(day, 10, 0)}}
+        for k, now in enumerate([at_et(day, 10, 58, 2)] + [at_et(day, 10, 59, 2) + 60 * i for i in range(0, 304)]):
+            bot._now = now
+            tb = now - now % 60
+            if tb in o1:
+                bot._forming = {("NQ", 60): (tb, o1[tb])}
+                bot.state["price"] = o1[tb]
+            C.tick(df[df["time"] < now - 59], "NQ", now)
+        out[armed] = C
+    Ca, Cb = out[True], out[False]
+    ma = [r for r in Ca.rows if r.get("masked") and r["day"] == day]
+    ta = [r for r in Ca.rows if r.get("model_entry_t") and r["day"] == day]
+    tb_ = [r for r in Cb.rows if r.get("model_entry_t") and r["day"] == day]
+    check(f"3b. {day} with LIT's SHORT setup armed all day: every BLITZ long candidate masked at the signal ({len(ma)}), no model "
+          "trade, nothing routed", ma and not ta and not [a for a in Ca.adapter.sent if a.get("side") in ("buy", "sell")]
+          and all("no hedging" in str(r.get("skip")) for r in ma), (len(ma), len(ta)))
+    same = [(int(r["model_entry_t"]), r["exit_kind"]) for r in tb_] == [(int(t["entry_t"]), t["exit_kind"]) for t in ref]
+    check(f"3b. ... the same day without it: account C's {len(tb_)} trades = the backtest's {len(ref)} (the mask frees the slot only when used)",
+          same and len(ref) >= 3, ([(r.get("model_entry_t"), r.get("exit_kind")) for r in tb_], [(t["entry_t"], t["exit_kind"]) for t in ref]))
 
 
 # ================================================================================================ 4. refused order
@@ -652,11 +692,29 @@ def part9():
             by_day[t["day"]].append(t)
     holder = {}
 
+    lat = []
+    real_route = AC.AccountC.route
+
+    def timed_route(self, action):                   # wall time from the poll's start to account C's entry order
+        if action.get("side") in ("buy", "sell"):
+            lat.append(time.perf_counter() - getattr(self.bot, "_t0_wall", time.perf_counter()))
+        return real_route(self, action)
+
     def on_bot(bot):
         bot.cfg["account_c"] = {"account": "Sim103", "plan": "builder25k", "eval_start": "2026-10-13"}
         bot.cfg["acct_c_history"] = True
         holder["bot"] = bot
-    r_on = TL.bot_replay(P, by_day, sessions=sessions, on_bot=on_bot)
+        orig = bot.poll_once
+
+        def poll_once():
+            bot._t0_wall = time.perf_counter()
+            return orig()
+        bot.poll_once = poll_once
+    AC.AccountC.route = timed_route
+    try:
+        r_on = TL.bot_replay(P, by_day, sessions=sessions, on_bot=on_bot)
+    finally:
+        AC.AccountC.route = real_route
     bot = holder.get("bot")
     C = getattr(bot, "acct_c", None)
     not_routed = [x for x in r_on.get("not_routed") or [] if "[BLITZ" not in x]
@@ -674,6 +732,11 @@ def part9():
         routed = [r for r in rows if r.get("routed")]
         check(f"9. ... routed on account C: {len(routed)} (BLITZ rows on C's ledger, none on LIT's)",
               len([a for a in C.ledger if a.get("side") in ("buy", "sell")]) == len(routed) and routed)
+        ents = [a for a in C.ledger if a.get("side") in ("buy", "sell")]
+        dl = [int(a["t"]) - int(a["entry_t"]) for a in ents]
+        check(f"9. ... latency: BLITZ's entries go out in the main poll right after the signal bar closed ({dl} s after the entry bar's "
+              f"open at a poll 3 s after it; wall time from the poll's start {', '.join(f'{x:.2f}' for x in lat)} s on this machine)",
+              ents and all(0 <= x <= 5 for x in dl) and lat and max(lat) < 10.0, (dl, lat))
 
 
 # ================================================================================================ 10. switches
@@ -693,6 +756,37 @@ def part10():
         check("10. arm(): armed true, everything else kept", r["ok"] and AC.raw_cfg(tmp)["armed"] is True and AC.raw_cfg(tmp)["eval_start"] == "2026-11-02")
         r = AC.set_account_c("off", root=tmp)
         check("10. off: account_c null", r["ok"] and AC.raw_cfg(tmp) is None)
+        # the Start page's backend (engine/go.py) on temp files only
+        from engine import go as G
+        from engine import second as SE
+        keep = (G.SECOND_PATH, G.ALLOW_PATH, G.CFG, AC._selftest_ok, G.bot_running)
+        try:
+            G.SECOND_PATH = os.path.join(tmp, "second_model.json")
+            shutil.copy(SE.CFG_PATH, G.SECOND_PATH)
+            G.ALLOW_PATH = os.path.join(tmp, "allow.json")
+            G.CFG = os.path.join(tmp, "data", "start_bot.json")
+            AC._selftest_ok = ok
+            G.bot_running = lambda: False
+            check("10. Start page: BLITZ slot off by default (status 'blitz' on False, no BLITZ account row)",
+                  G.blitz_status()["on"] is False and not any(r.get("bot") == "BLITZ" for r in G.accounts({})["rows"]))
+            r = G.set_blitz("Sim101", "2026-11-02")
+            check("10. Start page: Sim test -> BLITZ on Sim101 (no arming needed)", r["ok"] and r["sim"] and G.blitz_status()["sim"]
+                  and G.arm_c("I ACCEPT LIVE RISK")["ok"] is False)
+            r = G.set_blitz("MFFUEVBLDRTEST7", "2026-11-02")
+            st = G.blitz_status()
+            check("10. Start page: an MFFU 25K -> set, allowlisted, NOT armed", r["ok"] and st["on"] and not st["sim"] and st["armed"] is False
+                  and "MFFUEVBLDRTEST7" in G._allowed(), (r, st))
+            check("10. Start page: the BLITZ row in Accounts (role c, not armed)", any(x.get("bot") == "BLITZ" and x["role"] == "c" and x["armed"] is False
+                                                                                    for x in G.accounts({})["rows"]))
+            check("10. Start page: arm refused without the exact phrase", G.arm_c("yes")["ok"] is False and AC.raw_cfg(tmp)["armed"] is False)
+            r = G.arm_c("i accept live risk")
+            check("10. Start page: Arm BLITZ with the typed phrase -> armed (nothing else changed)", r["ok"] and AC.raw_cfg(tmp)["armed"] is True
+                  and AC.raw_cfg(tmp)["eval_start"] == "2026-11-02")
+            check("10. Start page: BLITZ's Name is taken (not usable for ATLAS / Zlarior)", G.role_of("MFFUEVBLDRTEST7") == "BLITZ's 25K")
+            r = G.remove_account("MFFUEVBLDRTEST7")
+            check("10. Start page: Remove -> off, off the allowlist", r["ok"] and AC.raw_cfg(tmp) is None and "MFFUEVBLDRTEST7" not in G._allowed(), r)
+        finally:
+            G.SECOND_PATH, G.ALLOW_PATH, G.CFG, AC._selftest_ok, G.bot_running = keep
         gi = open(os.path.join(ROOT, ".gitignore"), encoding="utf-8").read().splitlines()
         check("10. .gitignore: data/account_c.json and live_state_acctc.json", "data/account_c.json" in gi and "data/live_state_acctc*.json" in gi)
         from engine import go
@@ -753,7 +847,7 @@ def part11():
 
 def main():
     quick = "--quick" in sys.argv
-    for name, fn in (("1", part1), ("3", part3), ("4", part4), ("5", part5), ("6", part6), ("7", part7), ("8", part8), ("10", part10),
+    for name, fn in (("1", part1), ("3", part3), ("3b", part3b), ("4", part4), ("5", part5), ("6", part6), ("7", part7), ("8", part8), ("10", part10),
                      ("11", part11)):
         try:
             fn()

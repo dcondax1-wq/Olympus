@@ -192,7 +192,7 @@ function blitzCard(d) {
   const can = d.local;                                // a running bot picks a change up once BLITZ is flat
   const lock = !d.local ? 'Only on the PC itself' : '';
   const state = !b.on ? chip('off') : b.sim ? chip('Sim test', 'good') : b.armed ? chip('armed', 'bad') : chip('not armed');
-  const arm = b.on && !b.sim && !b.armed && d.local ? `<div class="st-panel st-arm"><p><b>Real money.</b> BLITZ will trade the 25K <b>${esc(b.name)}</b> (its own account, next to Zlarior and ATLAS, never the other way of them).</p>
+  const arm = b.on && !b.sim && !b.armed && d.local ? `<div class="st-panel st-arm"><p><b>Real money.</b> BLITZ will trade the 25K <b>${esc(b.name)}</b> (its own account, next to Zlarior and ATLAS, never trading against them).</p>
       <label class="st-phrase">Type <b>${esc(b.phrase || d.phrase)}</b><input id="stCPhrase" autocomplete="off" spellcheck="false" placeholder="${esc(b.phrase || d.phrase)}"></label>
       <div class="st-acts"><button type="button" class="btn primary sm" data-do="carm" id="stCArm" disabled>Arm BLITZ</button></div></div>` : '';
   const form = d.local ? `<div class="st-grid three">

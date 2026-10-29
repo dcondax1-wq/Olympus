@@ -78,9 +78,14 @@ ADAPTER_FACTORY = None          # tests: (spec, adapter cfg) -> adapter; None = 
 STAGES = ("eval", "funded")
 FUNDED_KEYS = ("stage", "funded_start", "funded_balance", "payouts", "eval_account", "funded_set")
 STOP_STATUSES = ("passed", "failed", "stuck", "lost", "graduated")
-# sizes (research): eval = engine/blitz.PLAN (na_sizing pick); funded = research/scalp/na_life.json picks["25k"]["fz"]
-SIZE_EVAL = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None}
-SIZE_FUNDED = {"f": 0.1, "cap": 150.0, "dll_frac": 0.9, "day_tp": 400.0}
+# sizes (research/writeups/blitz-25k.md, research/scalp/blitz_25k_pick.json "eval_25k" / "funded_25k", 2026-10-29): the 25K
+# eval at 40% of the room for sessions 1-4, then 100% of the room from session 5 (both <= $600 and 0.9 x the soft daily loss
+# left; 1 micro while it fits): 71-74% of evals decided in 2 weeks instead of ~40% at the paper ledger's flat 40%, the same
+# money. account_c "sizing": "paper" = the paper ledger's flat 40% (engine/blitz.PLAN). Funded: 10%, <= $150, +$400 day stop.
+SIZE_EVAL = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None, "push_from": 5, "push_f": 1.0}
+SIZE_PAPER = {"f": 0.4, "cap": 600.0, "dll_frac": 0.9, "day_tp": None, "push_from": None, "push_f": None}
+SIZE_FUNDED = {"f": 0.1, "cap": 150.0, "dll_frac": 0.9, "day_tp": 400.0, "push_from": None, "push_f": None}
+SIZINGS = ("speed", "paper")
 # the performance contract (BLITZ_STRATEGY.md): bands = bootstrap of the 330 research trades of 2026 (na_best_trades.json)
 SCORE_MIN_TRADES = 20
 SCORE_LOSE_DAYS = 6             # losing days in a row (2026 worst 3; p95 of a 40-traded-day stretch 6)
@@ -168,7 +173,7 @@ def normalize(blk: dict | None, lit_account: str | None = None, b_account: str |
     out = {"account": str(blk.get("account") or "").strip(), "plan": plan, "eval_start": str(blk.get("eval_start") or ""),
            "armed": blk.get("armed") is True, "prior_pnl": float(_num(blk.get("prior_pnl"), 0.0)), "eval_anchor": blk.get("eval_anchor"),
            "filtered": blk.get("unfiltered") is not True, "params": None, "problem": None,
-           "resume_after": _num(blk.get("resume_after"))}
+           "resume_after": _num(blk.get("resume_after")), "sizing": str(blk.get("sizing") or "speed")}
     out["preset"] = (P or PLANS["builder25k"])["preset"]
     out["plan_label"] = (P or {}).get("label") or plan
     out["rules"] = MA.rules_of({"preset": out["preset"]})
@@ -183,6 +188,8 @@ def normalize(blk: dict | None, lit_account: str | None = None, b_account: str |
         out["problem"] = f"{nm} is Zlarior's (LIT's) own account: BLITZ needs its own account"
     elif b_account and nm == str(b_account).strip():
         out["problem"] = f"{nm} is ATLAS's account (account B): BLITZ needs its own account"
+    elif out["sizing"] not in SIZINGS:
+        out["problem"] = f"unknown sizing {out['sizing']!r} (speed or paper)"
     elif out["eval_start"]:
         try:
             _dt.date.fromisoformat(out["eval_start"])
@@ -215,7 +222,9 @@ def is_funded(spec: dict | None) -> bool:
 
 
 def size_rule(spec: dict | None) -> dict:
-    return dict(SIZE_FUNDED if is_funded(spec) else SIZE_EVAL)
+    if is_funded(spec):
+        return dict(SIZE_FUNDED)
+    return dict(SIZE_PAPER if (spec or {}).get("sizing") == "paper" else SIZE_EVAL)
 
 
 def frac_qty(risk_pm: float, room: float, cum: float, f: float, cap: float, dll: float, maxq: int, dll_frac: float = 0.9) -> int:
@@ -247,9 +256,15 @@ def qty(spec: dict, risk_pts: float, state: dict | None) -> dict:
     if S.get("day_tp") is not None and cum >= float(S["day_tp"]):
         return {"qty": 0, "reasons": [f"day profit stop: +${cum:,.0f} today (no new trade after +${float(S['day_tp']):,.0f}: research funded pick)"]}
     risk_pm = (float(risk) + TICK) * PV + COMM
-    q = frac_qty(risk_pm, room, cum, S["f"], S["cap"], float(R["dll"]), int(R["max_micros"]), S["dll_frac"])
-    why = [f"{S['f']:.0%} of the ${room:,.0f} room, <= ${S['cap']:,.0f}, <= {S['dll_frac']:.0%} of the ${float(R['dll']) + cum:,.0f} "
-           f"daily loss left: ${risk_pm:,.2f} a micro at a {float(risk):.2f}-pt stop -> {q}"]
+    f = float(S["f"])
+    sess = _num(state.get("session"))
+    if S.get("push_from") and sess is not None and sess >= int(S["push_from"]):
+        f = float(S["push_f"])                           # the speed pick: the full room from session 5
+    q = frac_qty(risk_pm, room, cum, f, S["cap"], float(R["dll"]), int(R["max_micros"]), S["dll_frac"])
+    why = [f"{f:.0%} of the ${room:,.0f} room" + (f" (session {int(sess)}: from session {int(S['push_from'])} the full room)"
+                                                  if S.get("push_from") and sess is not None and sess >= int(S["push_from"]) else "")
+           + f", <= ${S['cap']:,.0f}, <= {S['dll_frac']:.0%} of the ${float(R['dll']) + cum:,.0f} daily loss left: ${risk_pm:,.2f} a micro "
+           f"at a {float(risk):.2f}-pt stop -> {q}"]
     return {"qty": int(q), "reasons": why}
 
 
@@ -868,7 +883,9 @@ class AccountC:
                 if bars is not None and len(bars[0]):
                     t, o, h, l, c = bars
                     for i in range(len(t)):
-                        self._events(E.on_bar(int(t[i]), o[i], h[i], l[i], c[i]), sym, now, bar=(int(t[i]), float(o[i])))
+                        fresh = int(t[i]) + 60 >= now - MAX_AGE_S     # the other accounts' state now = at this bar's close
+                        self._events(E.on_bar(int(t[i]), o[i], h[i], l[i], c[i], gate=self._gate if fresh else None), sym, now,
+                                     bar=(int(t[i]), float(o[i])))
                 self._events(E.on_clock(now), sym, now)
                 self.eng = E.s
                 self._trail(sym)
@@ -893,6 +910,16 @@ class AccountC:
         px = (getattr(self.bot, "state", None) or {}).get("price")
         return (float(px) if px else None), True
 
+    def _gate(self, t, D):
+        """engine/blitz.Engine's gate at the signal close: a candidate opposite to LIT / ATLAS (open, entering, armed) does not
+        exist for account C (research/writeups/blitz-25k.md: the anti-hedge skip frees BLITZ's slot for a later check; it
+        cost nothing in 2026). None = the candidate stands."""
+        try:
+            h = self.opposite(1 if int(D) > 0 else -1)
+        except Exception as e:
+            h = f"the other accounts' state unreadable ({e.__class__.__name__}): fails closed"
+        return f"no hedging: {h}" if h else None
+
     def _row(self, et_=None, sig_t=None):
         for r in reversed(self.rows):
             if (et_ is not None and r.get("entry_t") == int(et_)) or (sig_t is not None and r.get("sig_t") == int(sig_t)):
@@ -913,6 +940,14 @@ class AccountC:
                                                                                        "stop", "taken", "why")}]
                 if x.get("taken"):
                     self._enter(x, sym, now)
+                elif x.get("masked"):                      # the no-hedging mask: no model trade, BLITZ's slot stays free
+                    tb = int(x["t"]) + 60
+                    self.rows = (self.rows + [{"id": f"BLZC:{tb}", "day": trading_day(tb), "sig_t": int(x["t"]), "entry_t": tb,
+                                               "dir": int(x["dir"]), "side": _side(x["dir"]), "close": x.get("close"), "qty": 0,
+                                               "routed": False, "masked": True, "skip": x.get("why"), "exit_kind": "SKIP",
+                                               "decided_t": int(now)}])[-400:]
+                    self.note(("mask", tb), "risk", f"BLITZ {_side(x['dir'])} at the {_et(tb):%H:%M} ET open skipped: {x.get('why')} "
+                                                   "(no model trade: a later check may enter)")
             elif k == "entry":
                 et_, pv = self._pv_of(x["sig_t"])
                 r = self._row(sig_t=x["sig_t"])
@@ -1649,7 +1684,7 @@ def set_account_c(account: str | None, plan: str = "builder25k", start: str | No
                "armed": False}
         new.update({k: v for k, v in (extra or {}).items() if k not in ("account", "plan", "eval_start")})
         if isinstance(old, dict) and str(old.get("account") or "").strip() == new["account"]:
-            for k in ("params", "unfiltered", "resume_after", "prior_pnl", "eval_anchor") + FUNDED_KEYS:
+            for k in ("params", "unfiltered", "sizing", "resume_after", "prior_pnl", "eval_anchor") + FUNDED_KEYS:
                 if k in old and k not in new:
                     new[k] = old[k]
             if str(old.get("stage") or "").lower() == "funded":
