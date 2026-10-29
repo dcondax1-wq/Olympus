@@ -123,8 +123,40 @@ def liveview(now):
     t0 = PL.F.T(4, 50)
     v = L.phone_view(PL.fixture(t0), t0, narr=N.Narrator())
     v = json.loads(json.dumps(v, default=str))
+    synth_bars(v)
     v["structure"] = structure_of(v.get("bars5") or [])
     return shift(v, now - t0)
+
+
+def synth_bars(v):
+    """Swinging prices around the fixture's levels (30,740-30,900) on the fixture's timestamps, so the structure layer has real
+    swings to label in the pictures; the 5m bars are the 1m bars grouped."""
+    import math
+    import random
+    rnd = random.Random(7)
+    one = v.get("bars") or []
+    if not one:
+        return
+    px, out = 30800.0, []
+    for i, r in enumerate(one):
+        tgt = 30812 + 52 * math.sin(i / 64.0) + 21 * math.sin(i / 13.0 + 1.3)
+        o = px
+        c = o + (tgt - o) * 0.35 + rnd.uniform(-2.2, 2.2)
+        h, lo = max(o, c) + rnd.uniform(0, 2.5), min(o, c) - rnd.uniform(0, 2.5)
+        out.append([r[0], round(o * 4) / 4, round(h * 4) / 4, round(lo * 4) / 4, round(c * 4) / 4] + list(r[5:]))
+        px = c
+    v["bars"] = out
+    five = {}
+    for r in out:
+        k = r[0] - r[0] % 300
+        if k not in five:
+            five[k] = [k, r[1], r[2], r[3], r[4]]
+        else:
+            f = five[k]; f[2] = max(f[2], r[2]); f[3] = min(f[3], r[3]); f[4] = r[4]
+    old5 = [b for b in (v.get("bars5") or []) if b[0] < out[0][0]]
+    shift5 = (out[0][1] - old5[-1][4]) if old5 else 0
+    v["bars5"] = [[b[0], b[1] + shift5, b[2] + shift5, b[3] + shift5, b[4] + shift5] for b in old5[-60:]] + [five[k] for k in sorted(five)]
+    v["price"] = out[-1][4]
 
 
 # ------------------------------------------------------------------------------------------------ a. static

@@ -22,7 +22,7 @@ export async function initFX() {
   root.dataset.fx = lv;
   if (lv === 'off') { root.dataset.fx = 'off'; return; }      // reduced motion: space.js draws one still frame
   await new Promise(r => setTimeout(r, 300));
-  try { FX = await import('/js/fx.js?v=5439e381'); } catch (e) { console.warn('3D layer not loaded', e); root.dataset.fx = 'off'; return; }
+  try { FX = await import('/js/fx.js?v=d64a08cc'); } catch (e) { console.warn('3D layer not loaded', e); root.dataset.fx = 'off'; return; }
   if (!FX.supported()) { FX = null; root.dataset.fx = 'off'; return; }
   root.dataset.fx = FX.init({ level: lv, bg: fxBg() });
   for (const [key, a] of pend) mount3d(key, ...a);

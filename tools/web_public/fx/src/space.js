@@ -185,8 +185,9 @@ void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0);
   float tw = 1.0 - uTw * (0.5 + 0.5 * sin(uTime * (1.3 + aSeed * 3.1) + aSeed * 60.0)) * step(0.35, aSeed);
   gl_PointSize = clamp(aS * uPix * (0.75 + 0.25 * tw), 1.0, 9.0);
   gl_Position = projectionMatrix * mv; vColor = aCol * uBright * (0.55 + 0.45 * tw); vAlpha = 1.0; }`;
-const WARP_V = `attribute float aEnd; attribute vec3 aCol; uniform vec3 uCam; uniform float uWarp; varying vec3 vC;
-void main(){ vec3 p = position + normalize(position - uCam) * aEnd * uWarp * 26.0; vC = aCol * uWarp * (1.0 - aEnd * 0.85);
+const WARP_V = `attribute float aEnd; attribute vec3 aCol; uniform vec3 uCam; uniform vec3 uFwd; uniform float uWarp; varying vec3 vC;
+void main(){ vec3 w = (modelMatrix * vec4(position, 1.0)).xyz; float z = dot(w - uCam, uFwd);
+  vec3 p = w - uFwd * aEnd * uWarp * max(z, 0.0) * 0.55; vC = aCol * uWarp * (1.0 - aEnd * 0.9) * step(0.0, z);
   gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0); }`;
 const WARP_F = `varying vec3 vC; void main(){ gl_FragColor = vec4(vC, 1.0); }`;
 // the Sun: photosphere, corona streamers and a warm halo (a camera-facing quad)
@@ -212,7 +213,7 @@ void main(){ vec3 p = uC + (uU * cos(aA) + uV * sin(aA)) * uRad; float da = mod(
 const LINE_F = `varying vec3 vC; void main(){ gl_FragColor = vec4(vC, 1.0); }`;
 const METEOR_V = `attribute float aI; uniform float uPix; uniform vec3 uCol; uniform float uOn; varying vec3 vColor; varying float vAlpha;
 void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); float k = 1.0 - aI;
-  gl_PointSize = clamp((1.0 + 6.0 * k * k) * uPix / -mv.z, 0.0, 24.0); gl_Position = projectionMatrix * mv;
+  gl_PointSize = clamp((2.5 + 16.0 * k * k) * uPix / -mv.z, 1.0, 26.0); gl_Position = projectionMatrix * mv;
   vColor = mix(uCol, vec3(1.0), k * k * k) * 1.5; vAlpha = k * uOn; }`;
 
 // ------------------------------------------------------------------ helpers
@@ -307,14 +308,14 @@ export class Space extends View {
     this.starU = { uTime: this.u.uTime, uPix: { value: 1 }, uBright: { value: 1 }, uTw: { value: Q.reduced ? 0 : 0.5 } };
     this.stars = new THREE.Points(sg, new THREE.ShaderMaterial({ uniforms: this.starU, vertexShader: STAR_V, fragmentShader: POINT_FRAG, ...additive() }));
     this.stars.frustumCulled = false; this.skyG.add(this.stars);
-    const W = Math.min(N, count(700, 300)), wp = new Float32Array(W * 6), we = new Float32Array(W * 2), wc = new Float32Array(W * 6);
+    const W = Math.min(N, count(900, 360)), wp = new Float32Array(W * 6), we = new Float32Array(W * 2), wc = new Float32Array(W * 6);
     for (let i = 0; i < W; i++) {
       const j = i * 3, d = 0.25 + R() * 0.75;
-      for (const e of [0, 1]) { wp.set([pos[j], pos[j + 1], pos[j + 2]], (i * 2 + e) * 3); we[i * 2 + e] = e; wc.set([0.55 * d, 0.7 * d, 1.0 * d], (i * 2 + e) * 3); }
+      for (const e of [0, 1]) { wp.set([pos[j], pos[j + 1], pos[j + 2]], (i * 2 + e) * 3); we[i * 2 + e] = e; wc.set([0.7 * d, 0.85 * d, 1.25 * d], (i * 2 + e) * 3); }
     }
     const wg = new THREE.BufferGeometry();
     wg.setAttribute('position', new THREE.BufferAttribute(wp, 3)); wg.setAttribute('aEnd', new THREE.BufferAttribute(we, 1)); wg.setAttribute('aCol', new THREE.BufferAttribute(wc, 3));
-    this.warpU = { uCam: { value: new THREE.Vector3() }, uWarp: { value: 0 } };
+    this.warpU = { uCam: { value: new THREE.Vector3() }, uFwd: { value: new THREE.Vector3(0, 0, -1) }, uWarp: { value: 0 } };
     this.warpL = new THREE.LineSegments(wg, new THREE.ShaderMaterial({ uniforms: this.warpU, vertexShader: WARP_V, fragmentShader: WARP_F, ...additive() }));
     this.warpL.frustumCulled = false; this.warpL.visible = false; this.skyG.add(this.warpL);
     // a few hero stars with diffraction spikes
@@ -387,6 +388,7 @@ export class Space extends View {
     this.meteorP = new THREE.Points(mg, new THREE.ShaderMaterial({ uniforms: this.mU, vertexShader: METEOR_V, fragmentShader: POINT_FRAG, ...additive() }));
     this.meteorP.frustumCulled = false; S.add(this.meteorP);
     this.mHead = sprite(glowTexture(), '#ffffff', 0); S.add(this.mHead);
+    this.mStreak = sprite(glowTexture(), '#ffffff', 0); S.add(this.mStreak);
     this.meteor = null; this.queue = []; this.nextQuiet = 25 + R() * 20;
 
     this.aura = new Aura();
@@ -542,7 +544,7 @@ export class Space extends View {
     this.skyG.rotation.set(sh.sky * 0.25, t * 0.0016 * drift + sh.sky, 0);
     this.skyU.uBright.value = 0.95 + w * 0.4;
     this.starU.uBright.value = 1 + w * 0.8;
-    this.warpU.uWarp.value = w; this.warpL.visible = w > 0.01; this.warpU.uCam.value.copy(cam.position);
+    this.warpU.uWarp.value = w; this.warpL.visible = w > 0.01; this.warpU.uCam.value.copy(cam.position); cam.getWorldDirection(this.warpU.uFwd.value);
     for (const spk of this.spikes) spk.material.opacity = 0.55 + 0.3 * Math.sin(t * 0.8 + spk.userData.seed) * drift;
     // Earth: spin, clouds, aurora, the eclipse shadow
     this.spin += dt * 0.018 * drift;
@@ -624,7 +626,7 @@ export class Space extends View {
       this.nextQuiet -= dt;
       let kind = this.queue.shift();
       if (!kind && this.nextQuiet <= 0 && !Q.reduced && Q.level === 'max') { kind = 'quiet'; }
-      if (!kind) { U.uOn.value = Math.max(0, U.uOn.value - dt * 3); this.mHead.material.opacity = 0; this.meteorP.visible = U.uOn.value > 0.01; return; }
+      if (!kind) { U.uOn.value = Math.max(0, U.uOn.value - dt * 3); this.mHead.material.opacity = 0; this.mStreak.material.opacity = 0; this.meteorP.visible = U.uOn.value > 0.01; return; }
       if (kind === 'quiet') this.nextQuiet = 35 + Math.random() * 40;
       // across the upper sky, 30 units in front of the camera, diagonal down
       const cam = this.camera, dir = Math.random() < 0.5 ? 1 : -1, yTop = 0.55 + Math.random() * 0.3;
@@ -632,7 +634,9 @@ export class Space extends View {
       const o = cam.position, f = (p) => p.sub(o).normalize().multiplyScalar(30).add(o);
       f(from); f(to);
       const col = kind === 'win' ? theme.good : kind === 'loss' ? new THREE.Color('#ff4d6d') : new THREE.Color('#dfe8ff');
-      U.uCol.value.copy(col); this.mHead.material.color.copy(col).lerp(new THREE.Color('#ffffff'), 0.5);
+      U.uCol.value.copy(col); this.mHead.material.color.copy(col).lerp(new THREE.Color('#ffffff'), 0.5); this.mStreak.material.color.copy(col);
+      const a = from.clone().project(cam), b2 = to.clone().project(cam);
+      this.mStreak.material.rotation = Math.atan2((b2.y - a.y), (b2.x - a.x) * this.aspect);
       this.meteor = { from, to, s: 0, dur: kind === 'quiet' ? 0.9 : 1.6, kind };
       for (let i = 0; i < this.mPos.length; i += 3) this.mPos.set([from.x, from.y, from.z], i);
       this.meteorP.visible = true; this.lastKind = kind; this.shots = (this.shots || 0) + 1;
@@ -643,7 +647,11 @@ export class Space extends View {
     this.mPos.copyWithin(3, 0, this.mPos.length - 3); this.mPos.set([p.x, p.y, p.z], 0);
     this.meteorP.geometry.attributes.position.needsUpdate = true;
     const fade = Math.min(1, s * 5) * (1 - Math.max(0, (s - 0.75) / 0.25));
-    U.uOn.value = fade; this.mHead.position.copy(p); const hs = M.kind === 'quiet' ? 0.5 : 0.9; this.mHead.scale.set(hs, hs, 1); this.mHead.material.opacity = fade;
+    U.uOn.value = fade; this.mHead.position.copy(p); const hs = M.kind === 'quiet' ? 0.8 : 1.8; this.mHead.scale.set(hs, hs, 1); this.mHead.material.opacity = fade;
+    // the streak: a long thin glow behind the head, along the motion
+    const back = _w.copy(M.to).sub(M.from).normalize();
+    this.mStreak.position.copy(p).addScaledVector(back, -(M.kind === 'quiet' ? 1.9 : 3.6) * Math.min(1, s * 3));
+    this.mStreak.scale.set((M.kind === 'quiet' ? 4.2 : 8.5) * Math.min(1, s * 3), M.kind === 'quiet' ? 0.14 : 0.3, 1); this.mStreak.material.opacity = fade;
     if (M.s >= 1) this.meteor = null;
   }
   dispose() { this.aura?.dispose(); for (const rt of [this.tA, this.tC, this.tS, this.tM]) rt?.dispose(); this.ov.traverse((o) => o.material?.dispose?.()); super.dispose(); }
