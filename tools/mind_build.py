@@ -53,13 +53,8 @@ def _row(bot, base: dict, f: dict):
 
 
 def _ptrend(H, model, T):
-    """The trend-day probability known at T (None before 10:30 ET of that day)."""
-    e = dt.datetime.fromtimestamp(int(T), ET)
-    if not (630 <= e.hour * 60 + e.minute < 1080):
-        return None
-    k = H.k_of[H.idx(T)]
-    x = MD.daytype_x(H, int(k))
-    return MD._f(MD.daytype_prob(model, x), 3) if x else None
+    """The trend-day probability known at T (None before 10:30 ET of that day): engine/mind.p_trend_at, the live path."""
+    return MD.p_trend_at(H, T, {"daytype": model})
 
 
 def lit_rows(H, model):

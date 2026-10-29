@@ -199,10 +199,10 @@
     "usd_month": -544.0
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "14 of the last 20 Zlarior losses came after a buildup level sweep (22 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "lit-lvl-buildup-skip",
@@ -215,10 +215,10 @@
     "usd_month": -867.0
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "14 of the last 20 Zlarior losses came after a buildup level sweep (22 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "atlas-vix-low-half",
@@ -231,10 +231,10 @@
     "usd_month": -519.0
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "14 of the last 17 ATLAS losses came with VIX under 15.8 (24 of its last 40 trades, history + live, were there). Verdict: helped H1 but not the H2 check: a fit to H1.",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "atlas-vix-low-skip",
@@ -247,10 +247,10 @@
     "usd_month": -792.0
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "14 of the last 17 ATLAS losses came with VIX under 15.8 (24 of its last 40 trades, history + live, were there). Verdict: helped H1 but not the H2 check: a fit to H1.",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "atlas-dir-long-half",
@@ -263,10 +263,10 @@
     "usd_month": -269.0
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "9 of the last 17 ATLAS losses came on longs (19 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "atlas-dir-long-skip",
@@ -279,10 +279,10 @@
     "usd_month": -585.0
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "9 of the last 17 ATLAS losses came on longs (19 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "atlas-tr1h-against-half",
@@ -295,10 +295,10 @@
     "usd_month": -106.0
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "9 of the last 17 ATLAS losses came against the 1h structure trend (18 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "atlas-tr1h-against-skip",
@@ -311,10 +311,10 @@
     "usd_month": -873.0
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "9 of the last 17 ATLAS losses came against the 1h structure trend (18 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "atlas-atr-hot-half",
@@ -327,10 +327,10 @@
     "usd_month": -187.0
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "9 of the last 17 ATLAS losses came when the 5m ATR is above 1.34x its 7-day median (its top third) (16 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "atlas-atr-hot-skip",
@@ -343,10 +343,10 @@
     "usd_month": -435.0
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "9 of the last 17 ATLAS losses came when the 5m ATR is above 1.34x its 7-day median (its top third) (16 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "blitz-vix-low-focus",
@@ -360,10 +360,10 @@
     "note": "BLITZ $ at $150 risk a trade (the store has R only)"
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "BLITZ trades with VIX under 16.9 made 64% of its 2026 R with 33% of the trades. Verdict: does not help 2026 H1 (the pick half).",
-   "first_t": 1793315452
+   "first_t": 1793315642
   },
   {
    "id": "blitz-kz-lunch-half",
@@ -377,10 +377,10 @@
     "note": "BLITZ $ at $150 risk a trade (the store has R only)"
    },
    "status": "rejected",
-   "t": 1793315452,
+   "t": 1793315642,
    "change": null,
    "why": "7 of the last 12 BLITZ losses came in New York lunch (21 of its last 40 trades, history + live, were there). Verdict: does not help 2026 H1 (the pick half).",
-   "first_t": 1793315452
+   "first_t": 1793315642
   }
  ],
  "alerts": [
@@ -415,9 +415,9 @@
    "atlas": 1131,
    "blitz": 330
   },
-  "calibration": "Similar-setup memory, out of sample: Zlarior: does NOT predict (fit 2026 H1; H2 rank corr +0.00, top-third minus bottom-third -0.30R; 2021-25 rank corr +0.03, top-third minus bottom-third +0.25R); with 2021-25 as memory: 2026 H1 +1.02R (p 0.09), 2026 H2 +1.10R (p 0.13) | ATLAS: does NOT predict (fit 2026 H1; H2 rank corr -0.25, top-third minus bottom-third -0.30R; 2021-25 rank corr -0.05, top-third minus bottom-third +0.13R); with 2021-25 as memory: 2026 H1 +1.17R (p 0.03), 2026 H2 +1.56R (p 0.03) | BLITZ: does NOT predict (fit 2026 H1; H2 rank corr -0.07, top-third minus bottom-third -0.14R). Not predictive = shown as context only, no confidence claims.",
+  "calibration": "Similar-setup memory, out of sample: Zlarior: does NOT predict (fit 2026 H1; H2 rank corr +0.00, top-third minus bottom-third -0.30R; 2021-25 rank corr +0.03, top-third minus bottom-third +0.25R); with 2021-25 as memory: 2026 H1 +1.02R (p 0.09), 2026 H2 +1.10R (p 0.13) | ATLAS: does NOT predict (fit 2026 H1; H2 rank corr -0.25, top-third minus bottom-third -0.30R; 2021-25 rank corr -0.05, top-third minus bottom-third +0.13R); with 2021-25 as memory: 2026 H1 +1.17R (p 0.03), 2026 H2 +1.56R (p 0.03) | BLITZ: does NOT predict (fit 2026 H1; H2 rank corr -0.05, top-third minus bottom-third -0.16R). Not predictive = shown as context only, no confidence claims.",
   "daytype": "Trend-day model (fit 2026 H1, 127 days): 2026 H2 AUC 0.655, 2021-25 AUC 0.633 (0.5 = coin flip); base rate 32% of days; when it said >= 60%, 51% were trend days in 2021-25 (n 73). Weak but real: odds, not a call (as a yes/no call it is no better than 'not a trend day').",
-  "ms": 198,
+  "ms": 199,
   "error": null
  }
 }

@@ -3,7 +3,7 @@ title: Mind - a thinking layer for Zlarior, ATLAS and BLITZ (similar-setup memor
 family: other
 date: 2026-10-29
 status: finding - read-only; similar-setup memory does NOT predict outcomes out of sample (shown as context only); the trend-day model is weak but real (AUC 0.66 H2, 0.63 2021-25); the first self-research run rejected all 17 of its own ideas; nothing adopted
-summary: Owner (2026-10-29) - "Give it a brain that's very smart. Can think for itself." engine/mind.py remembers every historical setup of each bot (631 Zlarior, 1,129 ATLAS, 330 BLITZ) with the features the live bot can compute, and for a live setup shows the nearest past setups (win %, average R, $ at today's size, 3 example days). Tested honestly (fit on 2026 H1, checked on 2026 H2 and 2021-25), similarity does not predict the outcome for any bot (Zlarior H2 rank correlation +0.00, top third of predictions made -0.30R less than the bottom third; ATLAS -0.25; BLITZ -0.07), so the dashboards show it as context only and it never claims confidence. With 5 years as memory (fit 2021-25) ATLAS similarity does separate 2026 (top third +1.7R / +1.8R vs bottom +0.5R / +0.2R, p 0.03 in each half): a lead, not a gate passed. A small logistic model gives the trend-day odds at 10:30 ET: AUC 0.66 on 2026 H2 and 0.63 on 2021-25; when it said >= 60%, 51% of 2021-25 days were trend days (base rate 33%). Mind writes an if-then game plan per bot at 01:45 / 10:45 ET, reviews every closed trade (grade, right / wrong, lesson, luck or skill) and runs a nightly self-research job that tests its own ideas on 2026 H1 (pick) / H2 (check) / 2021-25: the first run noticed 9 patterns, tested 17 size / skip rules and rejected all of them.
+summary: Owner (2026-10-29) - "Give it a brain that's very smart. Can think for itself." engine/mind.py remembers every historical setup of each bot (631 Zlarior, 1,129 ATLAS, 330 BLITZ) with the features the live bot can compute, and for a live setup shows the nearest past setups (win %, average R, $ at today's size, 3 example days). Tested honestly (fit on 2026 H1, checked on 2026 H2 and 2021-25), similarity does not predict the outcome for any bot (Zlarior H2 rank correlation +0.00, top third of predictions made -0.30R less than the bottom third; ATLAS -0.25; BLITZ -0.05), so the dashboards show it as context only and it never claims confidence. With 5 years as memory (fit 2021-25) ATLAS similarity does separate 2026 (top third +1.7R / +1.8R vs bottom +0.5R / +0.2R, p 0.03 in each half): a lead, not a gate passed. A small logistic model gives the trend-day odds at 10:30 ET: AUC 0.66 on 2026 H2 and 0.63 on 2021-25; when it said >= 60%, 51% of 2021-25 days were trend days (base rate 33%). Mind writes an if-then game plan per bot at 01:45 / 10:45 ET, reviews every closed trade (grade, right / wrong, lesson, luck or skill) and runs a nightly self-research job that tests its own ideas on 2026 H1 (pick) / H2 (check) / 2021-25: the first run noticed 9 patterns, tested 17 size / skip rules and rejected all of them.
 runs: none (no strategy change; research/mind/calibration.json, research/mind/proposals_seed.json)
 ---
 
@@ -30,7 +30,7 @@ Every historical setup of each bot, with the features the PC bot can compute at 
 |---|---|---|---|
 | Zlarior (LIT) | 631 (2021-25 5m: 511, 2026 1m: 120) | run `lit_live` settings, `tools/lit_final.run` on `live_model.json` "lit" | sweep depth (ATR), displacement (ATR), inducements, stop (ATR), R to the VIX band, swept level family |
 | ATLAS | 1,129 (2021-11 -> 2026-10) | run `atlas_funded_live` | member (EMA / MACD / S/R), stop (ATR) |
-| BLITZ | 330 (2026 only, it needs 1m bars) | `research/scalp/na_best_trades.json` | first-hour range vs its 14-day average |
+| BLITZ | 330 (2026 only, it needs 1m bars) | `research/scalp/na_best_trades.json` | first-hour range vs its 14-day average, the trend-day odds at the signal (from 10:30) |
 
 Shared context (all bots): minutes since the 18:00 open, killzone, VIX (prior close, CBOE file), 15m and 1h structure trend
 vs the trade (engine/structure, closed bars), prior-day 09:30-16:00 range vs its 14-day average, where price sits in the
@@ -49,7 +49,7 @@ stored features exactly (tests/test_mind.py).
 | Zlarior | 2021-25 | 511 | +0.03 | +0.25R | 0.06 | 0.262 vs 0.251 (worse) |
 | ATLAS | 2026 H2 | 45 | -0.25 | -0.30R | 0.61 | 0.256 vs 0.247 (worse) |
 | ATLAS | 2021-25 | 983 | -0.05 | +0.13R | 0.24 | 0.256 vs 0.260 |
-| BLITZ | 2026 H2 | 109 | -0.07 | -0.14R | 0.78 | 0.264 vs 0.248 (worse) |
+| BLITZ | 2026 H2 | 109 | -0.05 | -0.16R | 0.79 | 0.252 vs 0.248 (worse) |
 
 Rule: similarity counts as predictive only if every checked span has a positive rank correlation, a positive top-minus-
 bottom spread and p < 0.10. **No bot passes.** So the block carries `"valid": false`, `"conf": "low"` and the sentence

@@ -76,9 +76,9 @@ SPEC = {
               "w": {"stop_atr": 1.0, "mod": 0.7, "vix": 0.8, "tr15": 0.8, "tr1h": 0.8, "prev_rng": 0.6, "day_pos": 0.7,
                     "atr_r": 0.6, "member": 3.0, "dir": 0.5, "kz": 0.6}},
     "blitz": {"k": 20,
-              "num": ["mod", "vix", "tr15", "tr1h", "prev_rng", "fh_ratio", "day_pos", "atr_r"],
+              "num": ["mod", "vix", "tr15", "tr1h", "prev_rng", "fh_ratio", "p_trend", "day_pos", "atr_r"],
               "cat": ["dir"],
-              "w": {"mod": 0.7, "vix": 0.8, "tr15": 0.8, "tr1h": 0.8, "prev_rng": 1.0, "fh_ratio": 1.0, "day_pos": 0.8,
+              "w": {"mod": 0.7, "vix": 0.8, "tr15": 0.8, "tr1h": 0.8, "prev_rng": 1.0, "fh_ratio": 1.0, "p_trend": 1.0, "day_pos": 0.8,
                     "atr_r": 0.6, "dir": 0.5}},
 }
 ROW0 = ["day", "t", "dir", "r", "usd", "exit", "src"]        # every store row starts with these, then the bot's features
@@ -979,7 +979,22 @@ def blitz_now(bot, H: Hist, now: int) -> dict | None:
             return None
         d, T, what = int(sg.get("dir") or 1), int(sg.get("close_t") or int(sg["t"]) + 60), "signal " + ("taken" if sg.get("taken") else "skipped")
     f = H.ctx(T, d)
-    return {"f": f, "what": f"{'LONG' if d == 1 else 'SHORT'} {what}", "dir": d} if f else None
+    if not f:
+        return None
+    f["p_trend"] = p_trend_at(H, T)
+    return {"f": f, "what": f"{'LONG' if d == 1 else 'SHORT'} {what}", "dir": d}
+
+
+def p_trend_at(H: Hist, T: int, C: dict | None = None):
+    """The trend-day odds known at T (None before 10:30 ET): the same number the store's p_trend column holds."""
+    if not (630 <= et_mod(T) < 1080):
+        return None
+    i = H.idx(T)
+    if i < 0:
+        return None
+    x = daytype_x(H, int(H.k_of[i]))
+    p = daytype_prob(((C if C is not None else load_calib()).get("daytype") or {}), x) if x else None
+    return _f(p, 3)
 
 
 def similar(bot_key: str, live: dict | None, risk_usd=None, store=None, C=None, log_dir=None) -> dict | None:
@@ -1910,17 +1925,42 @@ class Mind:
         th = self.thread
         return th is not None and th.is_alive()
 
-    def kick(self, bot, now: int, background: bool = True) -> bool:
-        """Compute once per 5m bar (wall clock): in a background thread unless background=False. True when started."""
+    def nightly(self, now: int) -> int | None:
+        """After 16:05 ET on a weekday, once a day: the self-research as a low-priority child process (Mind's thread)."""
+        if os.environ.get("LE_MIND_RESEARCH", "1") == "0":
+            return None
+        e = _et(now)
+        day = e.strftime("%Y-%m-%d")
+        if e.weekday() >= 5 or not (965 <= e.hour * 60 + e.minute < 1430) or self.research_day == day:
+            return None
+        self.research_day = day
+        last = _read_json(os.path.join(self.ld, "research_last.json"), {}) or {}
+        if last.get("day") == day:
+            return None
+        pid = spawn_research(600, self.log_dir)
+        _write_json(os.path.join(self.ld, "research_last.json"), {"day": day, "t": int(now), "pid": pid})
+        return pid
+
+    def _job(self, bot, now: int, nightly: bool):
+        self.compute(bot, now)
+        if nightly:
+            try:
+                self.nightly(now)
+            except Exception:
+                pass
+
+    def kick(self, bot, now: int, background: bool = True, nightly: bool = False) -> bool:
+        """Compute once per 5m bar (wall clock): in a background thread unless background=False (+ the nightly research
+        check, also in that thread). True when started."""
         key = int(now) // 300
         with self.mx:
             if self.key == key or self.busy():
                 return False
             self.key = key
         if not background:
-            self.compute(bot, now)
+            self._job(bot, int(now), nightly)
             return True
-        th = threading.Thread(target=self.compute, args=(bot, int(now)), name="mind", daemon=True)
+        th = threading.Thread(target=self._job, args=(bot, int(now), nightly), name="mind", daemon=True)
         self.thread = th
         th.start()
         return True
@@ -2068,17 +2108,7 @@ def pc_tick(bot, now=None, background: bool = True, spawn: bool = True, mind: Mi
     try:
         M = mind or MIND
         now = int(now if now is not None else (bot.clock() if callable(getattr(bot, "clock", None)) else time.time()))
-        started = M.kick(bot, now, background=background)
-        if spawn and os.environ.get("LE_MIND_RESEARCH", "1") != "0":
-            e = _et(now)
-            day = e.strftime("%Y-%m-%d")
-            if e.weekday() < 5 and 965 <= e.hour * 60 + e.minute < 1430 and M.research_day != day:
-                M.research_day = day
-                last = _read_json(os.path.join(M.ld, "research_last.json"), {}) or {}
-                if last.get("day") != day:
-                    pid = spawn_research(600, M.log_dir)
-                    _write_json(os.path.join(M.ld, "research_last.json"), {"day": day, "t": now, "pid": pid})
-        return started
+        return M.kick(bot, now, background=background, nightly=spawn)
     except Exception:
         return None
 
