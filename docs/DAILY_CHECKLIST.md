@@ -79,8 +79,10 @@ NinjaTrader. The 15-minute check and breakeven + costs are already on.
 ## Pass day / fail day (the bot handles it, `engine/eval_life.py`)
 - **Pass** (eval balance $53,000 = +$3,000): the bot stops trading that eval by itself. If MFFU still needs a 2nd traded
   day, it takes one 1-micro trade the next session, then nothing. Your phone gets **"EVAL PASSED 🎉 next steps"**:
-  1. Check MFFU shows the eval PASSED. 2. Sign the funded agreement. 3. Note the funded account's Name (NinjaTrader,
-     Accounts tab). 4. One command adds it with funded sizing (40% of the room, max $800, a winner <= $1,500):
+  1. Check MFFU shows the eval PASSED. 2. Sign the funded agreement. 3. When the funded account appears in NinjaTrader
+     the phone says **New MFFU account: <Name>** and the Start page shows **Use as Zlarior's funded account**: stop the
+     bot, tap it (nothing is armed; Start trading asks for the phrase). 4. Or by hand, one command adds it with funded
+     sizing (40% of the room, max $800, a winner <= $1,500):
      `python -X utf8 -m engine.eval_life --to-funded --account "<Name>" --start <first funded day>`, then restart the bot.
      It is disarmed: a real account trades only after you arm it yourself (as for the eval).
   5. Payouts: ask only once the balance is **$53,600+** ($1,500 above the $2,100 buffer), up to $2,000 a request. Record
