@@ -1,0 +1,312 @@
+{
+ "live": {
+  "H1": {
+   "life": {
+    "net_m": 827,
+    "owner_m": 853,
+    "cost_m": 26.0,
+    "net_6m": 4963,
+    "net_p10": 1416,
+    "net_p50": 4708,
+    "p_neg": 5.3,
+    "p_zero_pay": 5.3,
+    "evals": 1.7,
+    "funded": 1.2,
+    "funded_m": 0.2,
+    "lost": 0.01,
+    "grads": 0.26,
+    "first_pay_med": 43.0,
+    "pays": 3.23
+   },
+   "eval": {
+    "p10": 51.6,
+    "f10": 17.2,
+    "dec10": 68.8,
+    "p_ever": 73.3,
+    "pass_med": 5.0,
+    "slow_pass": 18.7,
+    "usd_per_pass": 125.2,
+    "max_risk": 991,
+    "sess_per_try": 10.2
+   }
+  },
+  "H2": {
+   "life": {
+    "net_m": 804,
+    "owner_m": 830,
+    "cost_m": 26.3,
+    "net_6m": 4824,
+    "net_p10": 1325,
+    "net_p50": 4708,
+    "p_neg": 6.2,
+    "p_zero_pay": 6.2,
+    "evals": 1.72,
+    "funded": 1.17,
+    "funded_m": 0.19,
+    "lost": 0.02,
+    "grads": 0.23,
+    "first_pay_med": 40.0,
+    "pays": 3.15
+   },
+   "eval": {
+    "p10": 57.6,
+    "f10": 21.9,
+    "dec10": 79.5,
+    "p_ever": 70.9,
+    "pass_med": 5.0,
+    "slow_pass": 14.8,
+    "usd_per_pass": 129.5,
+    "max_risk": 995,
+    "sess_per_try": 9.0
+   }
+  }
+ },
+ "scale_in": {
+  "H1": {
+   "life": {
+    "net_m": 822,
+    "owner_m": 849,
+    "cost_m": 27.4,
+    "net_6m": 4932,
+    "net_p10": 1416,
+    "net_p50": 4708,
+    "p_neg": 6.3,
+    "p_zero_pay": 6.3,
+    "evals": 1.79,
+    "funded": 1.19,
+    "funded_m": 0.2,
+    "lost": 0.02,
+    "grads": 0.27,
+    "first_pay_med": 42.0,
+    "pays": 3.21
+   },
+   "eval": {
+    "p10": 53.5,
+    "f10": 19.4,
+    "dec10": 72.9,
+    "p_ever": 70.7,
+    "pass_med": 5.0,
+    "slow_pass": 16.5,
+    "usd_per_pass": 129.8,
+    "max_risk": 991,
+    "sess_per_try": 9.4
+   }
+  },
+  "H2": {
+   "life": {
+    "net_m": 818,
+    "owner_m": 844,
+    "cost_m": 26.5,
+    "net_6m": 4907,
+    "net_p10": 1324,
+    "net_p50": 4708,
+    "p_neg": 6.7,
+    "p_zero_pay": 6.7,
+    "evals": 1.73,
+    "funded": 1.19,
+    "funded_m": 0.2,
+    "lost": 0.02,
+    "grads": 0.24,
+    "first_pay_med": 39.0,
+    "pays": 3.2
+   },
+   "eval": {
+    "p10": 60.9,
+    "f10": 21.2,
+    "dec10": 82.1,
+    "p_ever": 71.9,
+    "pass_med": 4.0,
+    "slow_pass": 11.8,
+    "usd_per_pass": 127.7,
+    "max_risk": 995,
+    "sess_per_try": 7.8
+   }
+  }
+ },
+ "scale_in_s3": {
+  "H1": {
+   "life": {
+    "net_m": 823,
+    "owner_m": 850,
+    "cost_m": 27.4,
+    "net_6m": 4936,
+    "net_p10": 1416,
+    "net_p50": 4708,
+    "p_neg": 5.7,
+    "p_zero_pay": 5.7,
+    "evals": 1.79,
+    "funded": 1.19,
+    "funded_m": 0.2,
+    "lost": 0.02,
+    "grads": 0.27,
+    "first_pay_med": 42.0,
+    "pays": 3.21
+   },
+   "eval": {
+    "p10": 52.7,
+    "f10": 19.4,
+    "dec10": 72.1,
+    "p_ever": 71.0,
+    "pass_med": 5.0,
+    "slow_pass": 16.2,
+    "usd_per_pass": 129.3,
+    "max_risk": 991,
+    "sess_per_try": 9.6
+   }
+  },
+  "H2": {
+   "life": {
+    "net_m": 818,
+    "owner_m": 844,
+    "cost_m": 26.5,
+    "net_6m": 4907,
+    "net_p10": 1325,
+    "net_p50": 4708,
+    "p_neg": 6.7,
+    "p_zero_pay": 6.7,
+    "evals": 1.73,
+    "funded": 1.19,
+    "funded_m": 0.2,
+    "lost": 0.02,
+    "grads": 0.24,
+    "first_pay_med": 39.0,
+    "pays": 3.2
+   },
+   "eval": {
+    "p10": 61.1,
+    "f10": 21.7,
+    "dec10": 82.8,
+    "p_ever": 71.6,
+    "pass_med": 4.0,
+    "slow_pass": 11.3,
+    "usd_per_pass": 128.2,
+    "max_risk": 995,
+    "sess_per_try": 7.8
+   }
+  }
+ },
+ "scale_in_s5": {
+  "H1": {
+   "life": {
+    "net_m": 827,
+    "owner_m": 854,
+    "cost_m": 26.8,
+    "net_6m": 4963,
+    "net_p10": 1416,
+    "net_p50": 4708,
+    "p_neg": 5.4,
+    "p_zero_pay": 5.4,
+    "evals": 1.75,
+    "funded": 1.2,
+    "funded_m": 0.2,
+    "lost": 0.02,
+    "grads": 0.26,
+    "first_pay_med": 42.5,
+    "pays": 3.23
+   },
+   "eval": {
+    "p10": 52.7,
+    "f10": 17.9,
+    "dec10": 70.6,
+    "p_ever": 72.4,
+    "pass_med": 5.0,
+    "slow_pass": 15.9,
+    "usd_per_pass": 126.8,
+    "max_risk": 991,
+    "sess_per_try": 9.4
+   }
+  },
+  "H2": {
+   "life": {
+    "net_m": 815,
+    "owner_m": 841,
+    "cost_m": 26.2,
+    "net_6m": 4890,
+    "net_p10": 1325,
+    "net_p50": 4708,
+    "p_neg": 6.8,
+    "p_zero_pay": 6.8,
+    "evals": 1.71,
+    "funded": 1.18,
+    "funded_m": 0.2,
+    "lost": 0.01,
+    "grads": 0.24,
+    "first_pay_med": 39.0,
+    "pays": 3.19
+   },
+   "eval": {
+    "p10": 60.5,
+    "f10": 22.1,
+    "dec10": 82.6,
+    "p_ever": 72.1,
+    "pass_med": 5.0,
+    "slow_pass": 12.1,
+    "usd_per_pass": 127.3,
+    "max_risk": 995,
+    "sess_per_try": 7.9
+   }
+  }
+ },
+ "scale_in_s6": {
+  "H1": {
+   "life": {
+    "net_m": 827,
+    "owner_m": 853,
+    "cost_m": 26.5,
+    "net_6m": 4959,
+    "net_p10": 1416,
+    "net_p50": 4708,
+    "p_neg": 5.7,
+    "p_zero_pay": 5.7,
+    "evals": 1.73,
+    "funded": 1.2,
+    "funded_m": 0.2,
+    "lost": 0.02,
+    "grads": 0.27,
+    "first_pay_med": 42.0,
+    "pays": 3.22
+   },
+   "eval": {
+    "p10": 51.4,
+    "f10": 17.2,
+    "dec10": 68.6,
+    "p_ever": 73.2,
+    "pass_med": 5.0,
+    "slow_pass": 17.6,
+    "usd_per_pass": 125.4,
+    "max_risk": 991,
+    "sess_per_try": 9.7
+   }
+  },
+  "H2": {
+   "life": {
+    "net_m": 815,
+    "owner_m": 841,
+    "cost_m": 26.3,
+    "net_6m": 4890,
+    "net_p10": 1325,
+    "net_p50": 4708,
+    "p_neg": 6.6,
+    "p_zero_pay": 6.6,
+    "evals": 1.72,
+    "funded": 1.18,
+    "funded_m": 0.2,
+    "lost": 0.01,
+    "grads": 0.24,
+    "first_pay_med": 39.0,
+    "pays": 3.19
+   },
+   "eval": {
+    "p10": 59.7,
+    "f10": 22.1,
+    "dec10": 81.8,
+    "p_ever": 71.9,
+    "pass_med": 5.0,
+    "slow_pass": 12.2,
+    "usd_per_pass": 127.7,
+    "max_risk": 995,
+    "sess_per_try": 8.0
+   }
+  }
+ }
+}
