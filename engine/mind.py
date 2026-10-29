@@ -323,8 +323,7 @@ class Hist:
         k = int(self.k_of[i])
         day = str(np.datetime64(int(self.days[k]), "D"))
         mod = et_mod(T)
-        f = {"mod": mod if mod >= 1080 - 1440 else mod, "kz": killzone(mod), "dir": int(d)}
-        f["mod"] = (mod - 1080) % 1440                           # minutes since the 18:00 open (Asia first, no wrap)
+        f = {"mod": (mod - 1080) % 1440, "kz": killzone(mod), "dir": int(d)}     # mod: minutes since the 18:00 open (no wrap)
         f["vix"] = self.vix_before(day)
         f["tr15"] = self.trend("15m", T) * int(d)
         f["tr1h"] = self.trend("1h", T) * int(d)
@@ -626,3 +625,1383 @@ def daytype_prob(model: dict, x: dict) -> float | None:
         v = model["mu"][j] if v is None else v
         z += model["w"][j] * (v - model["mu"][j]) / model["sd"][j]
     return float(1 / (1 + math.exp(-max(-30.0, min(30.0, z)))))
+
+
+# ================================================================================================ the memory on disk
+_MEM: dict = {}
+
+
+def load_store(path: str | None = None) -> dict:
+    """research/mind/store.json (tools/mind_build.py), cached by mtime. {} when missing."""
+    p = path or STORE_PATH
+    try:
+        mt = os.path.getmtime(p)
+    except OSError:
+        return {}
+    hit = _MEM.get(("store", p))
+    if hit and hit[0] == mt:
+        return hit[1]
+    S = _read_json(p, {}) or {}
+    _MEM[("store", p)] = (mt, S)
+    return S
+
+
+def load_calib(path: str | None = None) -> dict:
+    p = path or CALIB_PATH
+    try:
+        mt = os.path.getmtime(p)
+    except OSError:
+        return {}
+    hit = _MEM.get(("calib", p))
+    if hit and hit[0] == mt:
+        return hit[1]
+    C = _read_json(p, {}) or {}
+    _MEM[("calib", p)] = (mt, C)
+    return C
+
+
+def live_rows(bot: str, log_dir: str | None = None) -> list:
+    """The bot's live / paper trades Mind has added to its memory (logs/mind/<bot>_live.jsonl) as store rows."""
+    return [r["row"] for r in _jl_read(os.path.join(log_dir or LOG_DIR, f"{bot}_live.jsonl")) if isinstance(r, dict) and r.get("row")]
+
+
+def memory(bot: str, store: dict | None = None, log_dir: str | None = None) -> Memory | None:
+    """The bot's whole memory (history + live rows), z-scored on all of it (what live queries use)."""
+    S = store if store is not None else load_store()
+    blk = (S.get("bots") or {}).get(bot)
+    if not blk:
+        return None
+    lr = live_rows(bot, log_dir)
+    key = ("mem", bot, id(S), len(lr), log_dir)
+    hit = _MEM.get(key)
+    if hit is not None:
+        return hit
+    rows = list(blk["rows"]) + [r for r in lr if isinstance(r, list) and len(r) == len(blk["cols"])]
+    m = Memory(bot, blk["cols"], rows)
+    for k in [k for k in _MEM if isinstance(k, tuple) and k[:2] == ("mem", bot)]:
+        _MEM.pop(k, None)
+    _MEM[key] = m
+    return m
+
+
+def calib_valid(bot: str, C: dict | None = None) -> tuple:
+    c = ((C if C is not None else load_calib()).get("similar") or {}).get(bot) or {}
+    return bool(c.get("valid")), c
+
+
+def calibration_line(C: dict | None = None) -> str:
+    """One honest sentence per bot: does similarity predict outcomes out of sample?"""
+    C = C if C is not None else load_calib()
+    out = []
+    for bot, nm in BOTS.items():
+        c = (C.get("similar") or {}).get(bot)
+        if not c:
+            continue
+        sp = c.get("spans") or {}
+        bits = [f"{k} rank corr {float((v or {}).get('spearman') or 0):+.2f}, top-third minus bottom-third {float((v or {}).get('spread_r') or 0):+.2f}R"
+                for k, v in sp.items() if v and v.get("n")]
+        rev = ((c.get("reverse") or {}).get("spans") or {})
+        rv = [f"{k} {float((v or {}).get('spread_r') or 0):+.2f}R (p {float((v or {}).get('p_perm') or 1):.2f})" for k, v in rev.items() if v and v.get("n")]
+        out.append(f"{nm}: " + ("PREDICTS" if c.get("valid") else "does NOT predict") + " (fit 2026 H1; " + "; ".join(bits) + ")"
+                   + (f"; with 2021-25 as memory: {', '.join(rv)}" if rv else ""))
+    if not out:
+        return "No calibration yet (python -X utf8 tools/mind_build.py)."
+    return "Similar-setup memory, out of sample: " + " | ".join(out) + ". Not predictive = shown as context only, no confidence claims."
+
+
+def daytype_note(C: dict | None = None) -> str:
+    m = (C if C is not None else load_calib()).get("daytype") or {}
+    rep = m.get("report") or {}
+    h2, r = rep.get("H2") or {}, rep.get("2021-25") or {}
+    if not h2 and not r:
+        return "Trend-day model not built yet."
+    s = (f"Trend-day model (fit 2026 H1, {m.get('n_fit')} days): 2026 H2 AUC {h2.get('auc')}, 2021-25 AUC {r.get('auc')} "
+         f"(0.5 = coin flip); base rate {round(100 * (r.get('base_rate') or 0))}% of days")
+    if r.get("n_p60"):
+        s += f"; when it said >= 60%, {round(100 * (r.get('hit_p60') or 0))}% were trend days in 2021-25 (n {r['n_p60']})"
+    s += ". Weak but real: odds, not a call (as a yes/no call it is no better than 'not a trend day')."
+    return s
+
+
+# ================================================================================================ the live bars
+_HC: dict = {"key": None, "H": None}
+CSV_HIST = True                                              # tests can switch the data/NQ_5m.csv tail off
+HIST_DAYS = 45
+
+
+def _rows_of_frame(df) -> list:
+    return [[int(t), float(o), float(h), float(l_), float(c)] for t, o, h, l_, c in
+            zip(df["time"].to_numpy(), df["open"].to_numpy(), df["high"].to_numpy(), df["low"].to_numpy(), df["close"].to_numpy())]
+
+
+def live_hist(bot, now: int) -> Hist | None:
+    """Hist for the live bot: the TradingView 5m export's tail, the bot's archive of NinjaTrader 5m bars, the bot's 1m
+    store aggregated to 5m and bars_tail (later sources win on the same bar); closed bars only. Cached per closed 5m bar."""
+    from . import pcdash_api
+    now = int(now)
+    try:
+        b5, b1 = pcdash_api.bot_bars(bot, now - 14 * 86400)
+    except Exception:
+        b5, b1 = [], []
+    key = (id(bot), now // 300, len(b5), b5[-1][0] if b5 else None, len(b1), b1[-1][0] if b1 else None)
+    if _HC.get("key") == key and _HC.get("H") is not None:
+        return _HC["H"]
+    rows = {}
+    t_from = now - HIST_DAYS * 86400
+    if CSV_HIST:
+        try:
+            df = pcdash_api._csv("NQ", "5m")
+            if df is not None and len(df):
+                for r in _rows_of_frame(df[(df["time"] >= t_from) & (df["time"] + 300 <= now)]):
+                    rows[r[0]] = r
+        except Exception:
+            pass
+        try:
+            from . import pcbars
+            sym = str((getattr(bot, "cfg", None) or {}).get("sym") or "NQ")
+            for s_ in dict.fromkeys((sym, "MNQ", "NQ")):
+                a = pcbars.archive_read(s_, "5m")
+                if a is not None and len(a):
+                    for r in _rows_of_frame(a[(a["time"] >= t_from) & (a["time"] + 300 <= now)]):
+                        rows[r[0]] = r
+                    break
+        except Exception:
+            pass
+    if b1:
+        agg = {}
+        for r in b1:
+            b = int(r[0]) // 300 * 300
+            if b + 300 > now:
+                continue
+            a = agg.get(b)
+            agg[b] = [b, float(r[1]), float(r[2]), float(r[3]), float(r[4])] if a is None else \
+                [b, a[1], max(a[2], float(r[2])), min(a[3], float(r[3])), float(r[4])]
+        rows.update(agg)
+    for r in b5:
+        if int(r[0]) + 300 <= now:
+            rows[int(r[0])] = [int(r[0]), float(r[1]), float(r[2]), float(r[3]), float(r[4])]
+    if len(rows) < 300:
+        return None
+    H = hist_from_rows([rows[k] for k in sorted(rows)], vix=_vix_cached())
+    _HC.update(key=key, H=H)
+    return H
+
+
+def _vix_cached() -> dict:
+    p = os.path.join(ROOT, "data", "VIX_1d.csv")
+    try:
+        mt = os.path.getmtime(p)
+    except OSError:
+        return {}
+    hit = _MEM.get(("vix", p))
+    if hit and hit[0] == mt:
+        return hit[1]
+    v = load_vix(p)
+    _MEM[("vix", p)] = (mt, v)
+    return v
+
+
+# ================================================================================================ regime + day type
+def regime(H: Hist | None, now: int, C: dict | None = None) -> dict:
+    """{"label", "trend", "vol", "day_type", "why"} at the last closed 5m bar."""
+    if H is None or H.idx(now) < 50:
+        return {"label": "No bars yet", "trend": "range", "vol": "normal", "day_type": None,
+                "why": "Mind needs the bot's bars (NinjaTrader) or the TradingView export to read the market."}
+    i = H.idx(now)
+    t15, t1h = H.trend("15m", now), H.trend("1h", now)
+    trend = ("up" if t1h > 0 else "down") if (t15 == t1h and t1h != 0) or (t1h != 0 and t15 == 0) else "range"
+    a = float(H.atr[i])
+    lo = max(0, i - 2016)
+    med = float(np.median(H.atr[lo:i])) if i - lo > 50 else a
+    ar = a / med if med else 1.0
+    k = int(H.k_of[i])
+    day = str(np.datetime64(int(H.days[k]), "D"))
+    vx = H.vix_before(day)
+    vol = "high" if (ar >= 1.35 or (vx or 0) >= 25) else "quiet" if (ar <= 0.75 and (vx if vx is not None else 99) < 16) else "normal"
+    word = {-1: "down", 0: "range", 1: "up"}
+    why = [f"15m structure {word[t15]}, 1h {word[t1h]}"]
+    ev = H.ev.get("1h")
+    if ev is not None and len(ev["known_t"]):
+        j = int(np.searchsorted(ev["known_t"], int(now), side="right")) - 1
+        if j >= 0:
+            why.append(f"last 1h {'CHoCH' if int(ev['kind'][j]) == 2 else 'BOS'} {'up' if int(ev['dir'][j]) > 0 else 'down'} "
+                       f"through {px(ev['level'][j])} at {_et(int(ev['known_t'][j])):%a %H:%M} ET")
+    why.append(f"5m ATR {a:.1f} pts = {ar:.2f}x its 7-day median")
+    if vx is not None:
+        why.append(f"VIX {vx:.1f}")
+    lab = {"up": "Trending up", "down": "Trending down", "range": "Range"}[trend] + " · " + \
+        {"high": "high volatility", "normal": "normal volatility", "quiet": "quiet"}[vol]
+    return {"label": lab, "trend": trend, "vol": vol, "day_type": day_type(H, now, C), "why": "; ".join(why),
+            "atr": round(a, 2), "atr_r": round(ar, 3), "vix": vx}
+
+
+def day_type(H: Hist, now: int, C: dict | None = None) -> dict | None:
+    """From 10:30 ET on a weekday: the trend-day probability of today (the model fit on 2026 H1) with its measured accuracy."""
+    e = _et(now)
+    if e.weekday() >= 5:
+        return None
+    C = C if C is not None else load_calib()
+    model = C.get("daytype") or {}
+    note = daytype_note(C)
+    mod = e.hour * 60 + e.minute
+    if not (630 <= mod < 1080):
+        return {"p_trend": None, "label": "Trend-day odds come at 10:30 ET (after the first hour)", "acc_note": note}
+    i = H.idx(now)
+    k = int(H.k_of[i])
+    if str(np.datetime64(int(H.days[k]), "D")) != trading_day(now):
+        return {"p_trend": None, "label": "No bars of today's first hour yet", "acc_note": note}
+    x = daytype_x(H, k)
+    p = daytype_prob(model, x) if x else None
+    if p is None:
+        return {"p_trend": None, "label": "Trend-day odds unavailable (first hour missing)", "acc_note": note}
+    lab = (f"Trend day likely ({p:.0%} odds)" if p >= 0.5 else f"Range / rotation day likely (trend-day odds {p:.0%})" if p <= 0.2
+           else f"Unclear day ({p:.0%} trend-day odds)")
+    return {"p_trend": round(p, 3), "label": lab, "acc_note": note,
+            "x": {k_: (round(v, 3) if isinstance(v, float) else v) for k_, v in (x or {}).items() if k_ != "day"}}
+
+
+# ================================================================================================ live setups -> similar
+def _check(s: dict, key: str):
+    for c in s.get("checks") or []:
+        if isinstance(c, dict) and c.get("key") == key:
+            return c.get("value")
+        if isinstance(c, (list, tuple)) and c and c[0] == key:
+            return None
+    return None
+
+
+def lit_now(bot, H: Hist, now: int) -> dict | None:
+    """Zlarior's setup that matters now: the open trade's setup, an armed / tapped setup, else the forming side (swept)."""
+    b = getattr(bot, "brain", None) or {}
+    if not isinstance(b, dict) or not b:
+        return None
+    S = [s for s in b.get("setups") or [] if isinstance(s, dict)]
+    key = (b.get("stage") or {}).get("key")
+    pick = None
+    if key == "trade":
+        pick = next((s for s in reversed(S) if s.get("trade") or s.get("status") == "filled"), None)
+    if pick is None:
+        pick = next((s for s in reversed(S) if s.get("status") in ("armed", "tapped", "entering")), None)
+    if pick is not None and pick.get("t"):
+        d = int(pick.get("dir") or 1)
+        f = H.ctx(int(pick["t"]), d)
+        if not f:
+            return None
+        stop = _check(pick, "stop") or (pick.get("plan") or {}).get("stop_pts")
+        f.update(lit_feats(_check(pick, "depth"), _check(pick, "disp"), _check(pick, "idm"), stop, pick.get("atr"),
+                           _check(pick, "target") or (pick.get("plan") or {}).get("rr"), pick.get("swept")))
+        what = f"{pick.get('side') or ('LONG' if d == 1 else 'SHORT')} setup {pick.get('hm') or ''} ({pick.get('status') or 'live'})"
+        return {"f": f, "what": what.strip(), "dir": d, "stage": key}
+    from .liveview_api import lead_watch
+    w = lead_watch(b)
+    if not w or key in ("done",):
+        return None
+    d = int(w.get("dir") or 1)
+    f = H.ctx(now, d)
+    if not f:
+        return None
+    f.update(lit_feats(w.get("depth_atr"), w.get("disp"), w.get("idm_n"), w.get("stop_preview"), w.get("atr") or f.get("atr"),
+                       None, w.get("swept")))
+    return {"f": f, "what": f"forming {w.get('side') or ''} ({w.get('stage') or 'sweep'})".replace("  ", " "), "dir": d, "stage": key}
+
+
+MEMBER = {"ema": "EMA", "macd": "MD", "sr": "SR"}
+
+
+def member_of(key: str) -> str | None:
+    k = str(key or "").lower()
+    for p, m in MEMBER.items():
+        if k.startswith(p):
+            return m
+    return None
+
+
+def _dir_from_text(txt) -> int | None:
+    s = str(txt or "").lower()
+    if "(long" in s or " long" in s[:40]:
+        return 1
+    if "(short" in s or " short" in s[:40]:
+        return -1
+    return None
+
+
+def atlas_now(bot, H: Hist, now: int) -> dict | None:
+    sec = getattr(bot, "second", None) or {}
+    best = None
+    for k, s in ((sec.get("strategies") or {}) if isinstance(sec, dict) else {}).items():
+        m = member_of(k)
+        if not m or not isinstance(s, dict) or s.get("on") is False:
+            continue
+        st = s.get("state") or {}
+        stage = st.get("stage")
+        op = next((t for t in reversed(s.get("trades") or []) if isinstance(t, dict) and t.get("exit_kind") == "OPEN"), None)
+        if op:
+            d, T, stop_pts = int(op.get("dir") or 1), int(op.get("entry_t") or now), abs(float(op.get("entry") or 0) - float(op.get("stop") or 0))
+            rank = 2
+        elif stage == "armed":
+            pl = ((s.get("brain") or {}).get("plan") or {})
+            d = _dir_from_text(st.get("text")) or (1 if str(pl.get("side") or "").lower().startswith("l") else -1 if pl.get("side") else None)
+            if d is None:
+                continue
+            T = now
+            stop_pts = abs(float(pl.get("entry") or 0) - float(pl.get("stop") or 0)) if pl.get("entry") is not None and pl.get("stop") is not None else None
+            rank = 1
+        else:
+            continue
+        if best is None or rank > best[0]:
+            best = (rank, k, m, d, T, stop_pts, s.get("short") or k, stage if not op else "in_trade")
+    if best is None:
+        return None
+    _r_, k, m, d, T, stop_pts, short, stage = best
+    f = H.ctx(T, d)
+    if not f:
+        return None
+    f["member"] = m
+    f["stop_atr"] = round(stop_pts / f["atr"], 3) if stop_pts and f.get("atr") else None
+    return {"f": f, "what": f"{short} {'LONG' if d == 1 else 'SHORT'} ({stage})", "dir": d, "key": k}
+
+
+def blitz_now(bot, H: Hist, now: int) -> dict | None:
+    S = getattr(bot, "blitz", None)
+    if not isinstance(S, dict):
+        return None
+    day = trading_day(now)
+    op = next((r for r in reversed(S.get("ledger") or []) if isinstance(r, dict) and r.get("exit_kind") == "OPEN"), None)
+    if op and op.get("entry_t"):
+        d, T, what = int(op.get("dir") or 1), int(op["entry_t"]), "open PAPER trade"
+    else:
+        sg = next((x for x in reversed(S.get("signals") or []) if isinstance(x, dict) and x.get("t") and trading_day(int(x["t"])) == day
+                   and now - int(x.get("close_t") or int(x["t"]) + 60) <= 1800), None)
+        if not sg:
+            return None
+        d, T, what = int(sg.get("dir") or 1), int(sg.get("close_t") or int(sg["t"]) + 60), "signal " + ("taken" if sg.get("taken") else "skipped")
+    f = H.ctx(T, d)
+    return {"f": f, "what": f"{'LONG' if d == 1 else 'SHORT'} {what}", "dir": d} if f else None
+
+
+def similar(bot_key: str, live: dict | None, risk_usd=None, store=None, C=None, log_dir=None) -> dict | None:
+    """The contract's similar[bot]: the k nearest past setups of a live setup."""
+    if not live or not live.get("f"):
+        return None
+    mem = memory(bot_key, store, log_dir)
+    if mem is None or not mem.rows:
+        return None
+    valid, cal = calib_valid(bot_key, C)
+    q = mem.query(live["f"])
+    if not q.get("n"):
+        return None
+    n, win, avg_r, sd = q["n"], q["win"], q["avg_r"], q["sd"]
+    ru = _f(risk_usd)
+    u = round(avg_r * ru, 0) if ru else None
+    ex = []
+    for j in q["idx"][:3]:
+        ex.append({"day": mem.days[j], "r": round(float(mem.r[j]), 2), "usd": _f(mem.usd[j], 0)})
+    conf = conf_of(n, avg_r, sd, valid)
+    txt = (f"Resembles {n} past {BOTS[bot_key]} setups ({live.get('what')}): {win:.0%} won, average {avg_r:+.2f}R"
+           + (f", {usd(u)} a trade at today's size" if u is not None else "") + f" (spread {sd:.2f}R). "
+           + ("Similarity predicted outcomes out of sample: confidence " + conf + "." if valid else
+              "Context only: out of sample, similar setups did not predict the outcome (" + str(cal.get("note") or "no calibration") + ")."))
+    return {"n": int(n), "win": round(float(win), 3), "avg_r": round(float(avg_r), 3), "usd": u, "conf": conf, "valid": bool(valid),
+            "examples": ex, "text": txt}
+
+
+# ================================================================================================ game plans
+PLAN_AT = {"lit": 105, "atlas": 105, "blitz": 645}           # ET minute: 01:45 (Zlarior + ATLAS), 10:45 (BLITZ)
+LVL_KINDS = ("asia", "london", "ny", "x_ny", "pre", "pd", "pw", "pm", "buildup", "gap")
+
+
+def _hist_stats(bot_key: str, pred, store=None, log_dir=None, min_n: int = 8) -> dict | None:
+    """Win rate / average R / average $ of the stored setups matching pred(row dict) (plain history, not a model)."""
+    mem = memory(bot_key, store, log_dir)
+    if mem is None:
+        return None
+    rr, uu = [], []
+    for j, r in enumerate(mem.rows):
+        row = dict(zip(mem.cols, r))
+        try:
+            if pred(row):
+                rr.append(float(mem.r[j])); uu.append(mem.usd[j])
+        except Exception:
+            continue
+    if len(rr) < min_n:
+        return None
+    a = np.array(rr)
+    u = [x for x in uu if x is not None]
+    return {"n": len(rr), "win": float((a > 0).mean()), "avg_r": float(a.mean()), "avg_usd": float(np.mean(u)) if u else None}
+
+
+def _sizing_for(bot, stop_pts: float, tgt_pts: float, now: int) -> dict | None:
+    """Zlarior's micros / $ for a planned stop + target with the bot's own sizing math (engine/brain._sizing, read-only)."""
+    try:
+        from . import brain as BR
+        b = getattr(bot, "brain", None) or {}
+        ctx = BR.bot_ctx(bot, now)
+        s = BR._sizing({"risk": float(stop_pts), "tgt": float(tgt_pts), "what": "game plan"}, ctx, b.get("rules") or {},
+                       {"vix_move": ((b.get("guards") or {}).get("vix") or {}).get("move")}, b.get("price"))
+        return {"qty": int(s["qty"]), "risk_usd": float(s["risk_usd"]), "win_usd": float(s["win_usd"])}
+    except Exception:
+        return None
+
+
+def _struct(bot, now):
+    try:
+        from .liveview_api import structure_block
+        return structure_block(bot, now, compute=False) or {}
+    except Exception:
+        return {}
+
+
+def plan_lit(bot, H: Hist, now: int, reg: dict, store=None, log_dir=None) -> dict | None:
+    b = getattr(bot, "brain", None) or {}
+    if not isinstance(b, dict) or not b.get("levels"):
+        return None
+    i = H.idx(now) if H is not None else -1
+    price = _f(b.get("price")) or (H.price(now) if H is not None else None)
+    atr = _f(b.get("atr")) or (float(H.atr[i]) if i >= 0 else None)
+    if price is None or not atr:
+        return None
+    rules = b.get("rules") or {}
+    dmin = float(rules.get("depth", 0.5))
+    vx = (b.get("guards") or {}).get("vix") or {}
+    o18, move = _f(vx.get("open18")), _f(vx.get("move"))
+    lv = [x for x in b.get("levels") or [] if isinstance(x, dict) and not x.get("taken") and _f(x.get("price")) is not None
+          and (x.get("kind") in LVL_KINDS or x.get("kind") is None)]
+    above = sorted([x for x in lv if float(x["price"]) > price], key=lambda x: float(x["price"]))
+    below = sorted([x for x in lv if float(x["price"]) < price], key=lambda x: -float(x["price"]))
+    mem = memory("lit", store, log_dir)
+    scen = []
+    for d, L in ((-1, above[:1]), (1, below[:1])):
+        if not L:
+            continue
+        x = L[0]
+        lvl = float(x["price"])
+        side = "SHORT" if d == -1 else "LONG"
+        med = None
+        if mem is not None:
+            sa = [float(r[mem.ci["stop_atr"]]) for r in mem.rows if r[mem.ci["dir"]] == d and _f(r[mem.ci["stop_atr"]]) is not None]
+            med = float(np.median(sa)) if sa else None
+        stop_pts = round(max(8.0, min(80.0, (med or 2.5) * atr)), 1)
+        sweep_to = round((lvl - d * dmin * atr) * 4) / 4
+        cisd = round((lvl + d * 0.5 * atr) * 4) / 4
+        entry = cisd
+        tgt = (o18 + d * move) if (o18 is not None and move) else None
+        tgt_pts = (tgt - entry) * d if tgt is not None else None
+        word = "below" if d == -1 else "above"
+        then = f"Zlarior looks for a {side} 5m CISD then the 1m CISD; stop ~{stop_pts:.0f} pts (1 tick beyond the sweep extreme)"
+        exp = odds = None
+        sz = None
+        if tgt_pts is not None and tgt_pts > 0:
+            rr = tgt_pts / stop_pts
+            tp = min(tgt_pts, 8.0 * stop_pts)
+            sz = _sizing_for(bot, stop_pts, tp, now)
+            then += f"; target band {px(tgt)} ({rr:.1f}R" + (", banked at 8R" if rr > 8 else "") + ")"
+            if rr < float(rules.get("min_rr", 1.5)):
+                then += f" - under {rules.get('min_rr', 1.5)}R: no trade unless the sweep goes deeper"
+        if sz:
+            then += f" -> {sz['qty']} micro{'s' if sz['qty'] != 1 else ''} at today's room = about {usd(sz['win_usd'])} / {usd(-sz['risk_usd'])}"
+        cls = lvl_class([x.get("label"), x.get("kind")])
+        hs = _hist_stats("lit", lambda r, d=d, cls=cls: r["dir"] == d and r.get("lvl") == cls, store, log_dir) or \
+            _hist_stats("lit", lambda r, d=d: r["dir"] == d, store, log_dir)
+        if hs:
+            odds = round(hs["win"], 3)
+            if sz:
+                exp = round(hs["avg_r"] * sz["risk_usd"], 0)
+            then += f". History: {hs['n']} Zlarior {side.lower()}s like it won {hs['win']:.0%}, average {hs['avg_r']:+.2f}R"
+        scen.append({"if": f"Price sweeps the {x.get('label')} {px(lvl)} by >= {dmin:g} ATR (to ~{px(sweep_to)}) and a 5m "
+                           f"candle closes back {word} ~{px(cisd)} (the CISD)",
+                     "then": then, "levels": [round(lvl, 2), round(cisd, 2)] + ([round(tgt, 2)] if tgt is not None else []),
+                     "exp_usd": exp, "odds": odds})
+    S = _struct(bot, now)
+    fr = (S.get("frames") or {}).get("1h") or {}
+    prot = fr.get("protected") or {}
+    t1h = fr.get("trend") or reg.get("trend")
+    cm = []
+    if t1h == "down" and _f(prot.get("high")):
+        cm.append(f"A 1h close above {px(prot['high'])} (the 1h protected high) turns the 1h structure up: shorts would then be against it")
+    elif t1h == "up" and _f(prot.get("low")):
+        cm.append(f"A 1h close below {px(prot['low'])} (the 1h protected low) turns the 1h structure down: longs would then be against it")
+    else:
+        cm.append("A 1h break (BOS) either way would give the day a side; until then both sweeps count the same")
+    w = _hist_stats("lit", lambda r: r.get("tr1h") == 1, store, log_dir)
+    a = _hist_stats("lit", lambda r: r.get("tr1h") == -1, store, log_dir)
+    if w and a:
+        cm.append(f"(history: with the 1h trend {w['avg_r']:+.2f}R a trade, n {w['n']}; against {a['avg_r']:+.2f}R, n {a['n']}: both pay)")
+    vxx = reg.get("vix")
+    cm.append(f"VIX {'above 25' if not vxx or vxx < 25 else 'falling back under 25'} or a high-impact release would change the size of the move")
+    tr = {"up": "longs", "down": "shorts"}.get(reg.get("trend"))
+    head = (f"Zlarior game plan for {trading_day(now)}: " + (f"structure favours {tr} ({reg.get('label')})" if tr else f"no structure side ({reg.get('label')})")
+            + (f"; VIX band {px(o18 - move)} / {px(o18 + move)}" if o18 is not None and move else ""))
+    return {"t": int(now), "headline": head, "scenarios": scen, "change_mind": "; ".join(cm) + "."}
+
+
+def plan_atlas(bot, H: Hist, now: int, reg: dict, store=None, log_dir=None) -> dict | None:
+    sec = getattr(bot, "second", None) or {}
+    mem_ok = memory("atlas", store, log_dir) is not None
+    scen = []
+    for k, s in ((sec.get("strategies") or {}) if isinstance(sec, dict) else {}).items():
+        m = member_of(k)
+        if not m or not isinstance(s, dict) or s.get("on") is False:
+            continue
+        st = s.get("state") or {}
+        br = s.get("brain") or {}
+        lv = [round(float(x["px"]), 2) for x in br.get("levels") or [] if isinstance(x, dict) and _f(x.get("px")) is not None][:3]
+        pl = br.get("plan") if isinstance(br.get("plan"), dict) else {}
+        d = _dir_from_text(st.get("text"))
+        hs = _hist_stats("atlas", (lambda r, m=m, d=d: r.get("member") == m and (d is None or r["dir"] == d)), store, log_dir) if mem_ok else None
+        ff = br.get("first_fail")
+        then = f"ATLAS {s.get('short') or k} " + (f"takes the {'long' if d == 1 else 'short'}" if d else "looks for its entry") + \
+            " (account B sizes it; paper here)"
+        if hs:
+            then += f". History: {hs['n']} {m} trades like it won {hs['win']:.0%}, average {hs['avg_r']:+.2f}R"
+        scen.append({"if": str(st.get("text") or ff or f"{s.get('short') or k} waits for its signal")[:200], "then": then,
+                     "levels": lv + ([round(float(pl["entry"]), 2)] if _f(pl.get("entry")) is not None else []),
+                     "exp_usd": round(hs["avg_usd"], 0) if hs and hs.get("avg_usd") is not None else None,
+                     "odds": round(hs["win"], 3) if hs else None})
+    if not scen:
+        return None
+    S = _struct(bot, now)
+    note = ((S.get("per_strategy") or {}).get("atlas") or {}).get("note")
+    return {"t": int(now), "headline": f"ATLAS game plan: {len(scen)} members on watch; {reg.get('label')}",
+            "scenarios": scen[:4], "change_mind": (note or "A 15m / 1h break against the members' side would put them on the other side") +
+            " A 1h trend flip changes which members can fire."}
+
+
+def plan_blitz(bot, H: Hist, now: int, reg: dict, store=None, log_dir=None) -> dict | None:
+    S = getattr(bot, "blitz", None)
+    if not isinstance(S, dict) or not S.get("eng"):
+        return None
+    from . import blitz as BZ
+    E = S.get("eng") or {}
+    day = BZ.et_date(now)
+    b = BZ.Engine(E).band_now() if E.get("date") == day else None
+    if not b or not b.get("ready"):
+        return {"t": int(now), "headline": "BLITZ game plan: the noise band is not ready yet (needs today's 09:30 open)", "scenarios": [],
+                "change_mind": "The plan comes once the band is known."}
+    dt_ = (reg.get("day_type") or {})
+    p = dt_.get("p_trend")
+    if b.get("day_ok") is False:
+        return {"t": int(now), "headline": f"BLITZ game plan: NO trades today: the day filter is off (yesterday's range {float(b.get('prng') or 0):.2f}x "
+                                           "its 14-day average, needs 0.8x)", "scenarios": [],
+                "change_mind": "Nothing changes it today: the filter is decided before the open."}
+    rows = [r for r in b.get("checks") or [] if r.get("up") is not None]
+    nxt = next((r for r in rows if int(r["t"]) > now), None)
+    i = H.idx(now) if H is not None else -1
+    atr = float(H.atr[i]) if i >= 0 else None
+    ev = BZ.eval_view(S) or {}
+    room = _f(ev.get("room"))
+    scen = []
+    pb = (lambda r: (r.get("p_trend") is not None and r["p_trend"] >= 0.4)) if (p is not None and p >= 0.4) else \
+        (lambda r: (r.get("p_trend") is not None and r["p_trend"] < 0.2)) if (p is not None and p < 0.2) else \
+        (lambda r: (r.get("p_trend") is not None and 0.2 <= r["p_trend"] < 0.4)) if p is not None else (lambda r: True)
+    if nxt:
+        for d, lvl in ((1, nxt["up"]), (-1, nxt["lo"])):
+            side = "LONG" if d == 1 else "SHORT"
+            stop = round(1.5 * atr, 1) if atr else None
+            q = rpm = None
+            if stop and room is not None:
+                rpm = stop * PV + 1.90 + 0.5
+                q = BZ.qty(rpm, room, float(ev.get("today") or 0))
+            hs = _hist_stats("blitz", lambda r, d=d, pb=pb: r["dir"] == d and pb(r), store, log_dir, min_n=6)
+            then = f"BLITZ PAPER {side} at the next open, stop 1.5 x 5m ATR (~{stop:.0f} pts)" if stop else f"BLITZ PAPER {side} at the next open"
+            if q:
+                then += f" -> {q} micros on the paper 25K = {usd(-q * rpm)} if stopped; trail 1.5R after +1R, out after 30 bars"
+            if hs:
+                then += f". History on days like today: {hs['n']} {side.lower()}s won {hs['win']:.0%}, average {hs['avg_r']:+.2f}R"
+            scen.append({"if": f"A 1m close at the {nxt.get('hm')} check (or a later one) goes {'above' if d == 1 else 'below'} "
+                               f"{px(lvl)} (the {'upper' if d == 1 else 'lower'} noise band)",
+                         "then": then, "levels": [round(float(lvl), 2)],
+                         "exp_usd": round(hs["avg_r"] * q * rpm, 0) if (hs and q) else None, "odds": round(hs["win"], 3) if hs else None})
+    hi = _hist_stats("blitz", lambda r: r.get("p_trend") is not None and r["p_trend"] >= 0.4, store, log_dir, min_n=5)
+    lo = _hist_stats("blitz", lambda r: r.get("p_trend") is not None and r["p_trend"] < 0.2, store, log_dir, min_n=5)
+    cm = "A first hour inside its average range with no close outside the band by 12:00 points to a range day"
+    if hi and lo:
+        cm += f" (history: trend-day odds >= 40% {hi['avg_r']:+.2f}R a trade, n {hi['n']}; under 20% {lo['avg_r']:+.2f}R, n {lo['n']})"
+    head = f"BLITZ game plan: day filter ON (yesterday's range {float(b.get('prng') or 0):.2f}x its average)" + \
+        (f", trend-day odds {p:.0%}" if p is not None else "")
+    return {"t": int(now), "headline": head, "scenarios": scen, "change_mind": cm + "."}
+
+
+PLANNERS = {"lit": plan_lit, "atlas": plan_atlas, "blitz": plan_blitz}
+
+
+# ================================================================================================ reviews (after each close)
+RULE_EXITS = {"TARGET", "STOP", "BE", "TIME", "TCHECK", "T15", "EOD", "FLAT", "BANK", "CUT", "HEDGE", "LIT FIRST", "TRAIL"}
+
+
+def closed_trades(bot) -> list:
+    """Every finished trade the bot knows (Zlarior's routed ledger, ATLAS members' paper trades, BLITZ paper) in one shape."""
+    from . import advisor as AD
+    out = []
+    for nm, fn in (("lit", AD._ledger_trades), ("atlas", AD._second_trades), ("blitz", AD._blitz_trades)):
+        try:
+            for t in fn(bot):
+                if nm == "atlas" and not member_of(t.get("key")):
+                    continue
+                if t.get("entry_t") is None or t.get("exit_t") is None or t.get("exit_kind") in (None, "", "OPEN"):
+                    continue
+                out.append({**t, "bot": nm})
+        except Exception:
+            continue
+    return out
+
+
+def _r_of(t: dict):
+    r = _f(t.get("r"))
+    if r is not None:
+        return r
+    e, s, q, u = _f(t.get("entry")), _f(t.get("stop")), _f(t.get("qty")), _f(t.get("usd"))
+    if e is None or s is None or not q or u is None or abs(e - s) <= 0:
+        return None
+    return u / (abs(e - s) * PV * q)
+
+
+def _path(H: Hist | None, t: dict):
+    """(MFE R, MAE R) from the 5m bars between entry and exit (approximate: 5m highs / lows)."""
+    if H is None:
+        return None, None
+    e, s = _f(t.get("entry")), _f(t.get("stop"))
+    if e is None or s is None or e == s:
+        return None, None
+    d = int(t.get("dir") or 1)
+    a = int(np.searchsorted(H.t, int(t["entry_t"]) // 300 * 300))
+    z = int(np.searchsorted(H.t, int(t["exit_t"]), side="right"))
+    if z <= a:
+        return None, None
+    risk = abs(e - s)
+    fav = ((H.h[a:z] - e) if d == 1 else (e - H.l[a:z])).max() / risk
+    adv = ((e - H.l[a:z]) if d == 1 else (H.h[a:z] - e)).max() / risk
+    return round(float(fav), 2), round(float(max(0.0, adv)), 2)
+
+
+def _advice_of(t: dict, adv_dir: str | None = None):
+    from . import advisor as AD
+    strat = {"lit": "lit", "atlas": "atlas", "blitz": "scalp"}[t["bot"]]
+    key = f"{strat}|{t.get('day') or trading_day(int(t['entry_t']))}|{int(t['entry_t'])}|{int(t['dir'])}"
+    for r in reversed(AD._jl_read(AD._p(adv_dir, f"{strat}.jsonl"))):
+        if r.get("key") == key:
+            return r
+    return None
+
+
+def review(t: dict, H: Hist | None, store=None, C=None, log_dir=None, adv_dir=None, now: int | None = None) -> dict:
+    """The contract's review of one closed trade: grade, right / wrong, lesson, luck or skill."""
+    bot = t["bot"]
+    d = int(t.get("dir") or 1)
+    r = _r_of(t)
+    ek = str(t.get("exit_kind") or "").upper()
+    valid, _cal = calib_valid(bot, C)
+    exp = None
+    if H is not None:
+        f = H.ctx(int(t["entry_t"]), d)
+        if f:
+            if bot == "atlas":
+                f["member"] = member_of(t.get("key"))
+            if t.get("entry") is not None and t.get("stop") is not None and f.get("atr"):
+                f["stop_atr"] = round(abs(float(t["entry"]) - float(t["stop"])) / f["atr"], 3)
+            mem = memory(bot, store, log_dir)
+            if mem is not None:
+                q = mem.query(f, exclude_day=t.get("day") or trading_day(int(t["entry_t"])))
+                if q.get("n"):
+                    exp = q
+    mfe, mae = _path(H, t)
+    right, wrong = [], []
+    score = 1.0
+    if ek in RULE_EXITS or ek.startswith(("TARGET", "STOP", "BE", "TIME", "FLAT")):
+        score += 1.0
+        right.append(f"Plan followed: the written rules closed it ({ek.lower()})")
+    elif ek in ("KILL", "KILL SWITCH", "REMOTE FLATTEN", "TIME SAFETY", "MANUAL"):
+        score -= 0.5
+        wrong.append(f"Closed outside the plan ({ek.lower()})")
+    if exp:
+        w = 1.0 if valid else 0.5
+        if exp["avg_r"] >= 0.5:
+            score += w
+            right.append(f"Good setup: {exp['n']} similar setups averaged {exp['avg_r']:+.2f}R" + ("" if valid else " (context only)"))
+        elif exp["avg_r"] <= 0:
+            score -= w
+            wrong.append(f"Weak setup: {exp['n']} similar setups averaged {exp['avg_r']:+.2f}R" + ("" if valid else " (context only)"))
+    if r is not None:
+        if r > 0:
+            score += 1.0
+            right.append(f"Result {r:+.2f}R ({usd(t.get('usd')) if t.get('usd') is not None else 'paper'})")
+        elif r < -0.5:
+            score -= 0.5
+            wrong.append(f"Result {r:+.2f}R ({usd(t.get('usd')) if t.get('usd') is not None else 'paper'})")
+    rec = None
+    try:
+        rec = _advice_of(t, adv_dir)
+    except Exception:
+        rec = None
+    best = None
+    if rec:
+        fired = [a for a in rec.get("advice") or [] if a.get("fired")]
+        best = max(fired, key=lambda a: a.get("delta_usd") or 0, default=None)
+        risk_usd = abs(float(t.get("entry") or 0) - float(t.get("stop") or 0)) * PV * float(t.get("qty") or 1)
+        if best and (best.get("delta_usd") or 0) > 0.25 * max(risk_usd, 1):
+            score -= 0.5
+            wrong.append(f"Management: the advisor's {best['rule']} would have made {usd(best['delta_usd'])} more")
+        elif fired and all((a.get("delta_usd") or 0) <= 0 for a in fired):
+            score += 0.5
+            right.append("Management beat every structure rule the advisor tried")
+    if mfe is not None and r is not None and r <= 0 and mfe >= 1.0:
+        wrong.append(f"It was +{mfe:.1f}R first and still closed at {r:+.2f}R")
+    grade = "A" if score >= 3.5 else "B" if score >= 2.5 else "C" if score >= 1.5 else "D" if score >= 0.5 else "F"
+    # luck or skill: outcome vs what similar setups made (only when similarity predicts), else the trade's own path
+    if valid and exp and r is not None:
+        e = exp["avg_r"]
+        luck = "skill" if ((r > 0 and e >= 0.3) or (r <= 0 and e < 0)) else "luck" if ((r > 0 and e < 0) or (r <= 0 and e >= 0.3)) else "mixed"
+        why = f"similar setups averaged {e:+.2f}R, this one made {r:+.2f}R"
+    elif r is not None and mae is not None:
+        if r > 0:
+            luck = "luck" if mae >= 0.8 else "skill" if mae < 0.5 else "mixed"
+            why = f"it went {mae:.1f}R against first" + (" - nearly stopped" if mae >= 0.8 else "")
+        else:
+            luck = "skill" if (mfe is not None and mfe < 0.3) else "luck" if (mfe is not None and mfe >= 1.0) else "mixed"
+            why = ("the setup failed at once (never +0.3R): a read error, not bad luck" if luck == "skill" else
+                   f"it was +{mfe:.1f}R first: the market took it back" if luck == "luck" else f"best +{mfe or 0:.1f}R before the loss")
+    else:
+        luck, why = "mixed", "not enough data to tell luck from skill"
+    if r is not None and r > 0:
+        lesson = ("Clean setup, clean result: the trade to repeat." if luck == "skill" else
+                  "Won, but it nearly stopped first: don't read too much into it." if luck == "luck" else "A fair trade that paid.")
+    elif r is not None:
+        lesson = ("The setup was wrong from the start: note what it shared with other quick losses (the nightly research looks)." if luck == "skill"
+                  else "Good trade, bad outcome: the market took back a move in our favour; the rules stay." if luck == "luck"
+                  else "A normal loss inside the plan: size kept it small.")
+    else:
+        lesson = "Not enough data on this trade for a lesson."
+    if best and (best.get("delta_usd") or 0) > 0:
+        lesson += f" Advisor note: {best['rule']} ({usd(best['delta_usd'])}) - advice only, the rules decide."
+    when = _et(int(t["entry_t"]))
+    label = (f"{t.get('day') or trading_day(int(t['entry_t']))} {BOTS[bot]}{(' ' + str(t.get('key'))) if bot == 'atlas' else ''} "
+             f"{'LONG' if d == 1 else 'SHORT'} {when:%H:%M} -> {ek} " + (f"{r:+.2f}R" if r is not None else ""))
+    return {"t": int(now or t.get("exit_t") or time.time()), "bot": bot, "trade": label.strip(), "grade": grade, "right": right[:4],
+            "wrong": wrong[:4], "lesson": lesson, "luck": luck, "why": why, "entry_t": int(t["entry_t"]), "r": _f(r, 3),
+            "usd": _f(t.get("usd"), 2), "exp_r": _f((exp or {}).get("avg_r"), 3), "exp_n": (exp or {}).get("n"), "mfe": mfe, "mae": mae}
+
+
+def _trade_key(t: dict) -> str:
+    return f"{t['bot']}|{t.get('key') or ''}|{int(t['entry_t'])}|{int(t.get('dir') or 0)}"
+
+
+# ================================================================================================ self-research (nightly)
+COMM = 1.90
+BLITZ_RISK = 150.0                                            # BLITZ store rows carry R only: $ at $150 risk a trade
+HALVES = {"london": 210, "asia": 240, "pre": 405, "ny_am": 585, "lunch": 735, "ny_pm": 885}   # ET minute splitting each killzone
+
+
+def _et_min(row) -> int | None:
+    m = _i(row.get("mod"))
+    return None if m is None else (m + 1080) % 1440
+
+
+def _hm_of(m) -> str:
+    return f"{int(m) // 60:02d}:{int(m) % 60:02d}"
+
+
+def _buckets(bot: str, rows: list, cols: list) -> list:
+    """(id, words, predicate) buckets the research looks at (time, side, structure, VIX, ranges, member, day-type odds)."""
+    R = [dict(zip(cols, r)) for r in rows]
+    B = []
+    for kz, split in HALVES.items():
+        B.append((f"kz-{kz}", f"in {KZ_WORD[kz]}", lambda r, kz=kz: r.get("kz") == kz if r.get("kz") is not None else killzone(_et_min(r) or 0) == kz))
+        B.append((f"kz-{kz}-late", f"in {KZ_WORD[kz]} after {_hm_of(split)} ET",
+                  lambda r, kz=kz, s=split: killzone(_et_min(r) or 0) == kz and ((_et_min(r) or 0) - s) % 1440 < 720))
+    B += [("dir-long", "on longs", lambda r: r.get("dir") == 1), ("dir-short", "on shorts", lambda r: r.get("dir") == -1),
+          ("tr1h-against", "against the 1h structure trend", lambda r: r.get("tr1h") == -1),
+          ("tr1h-with", "with the 1h structure trend", lambda r: r.get("tr1h") == 1),
+          ("tr15-against", "against the 15m structure trend", lambda r: r.get("tr15") == -1),
+          ("prev-small", "after a small prior day (< 0.8x its average range)", lambda r: _f(r.get("prev_rng")) is not None and r["prev_rng"] < 0.8),
+          ("prev-big", "after a big prior day (> 1.3x its average range)", lambda r: _f(r.get("prev_rng")) is not None and r["prev_rng"] > 1.3),
+          ]
+    ar = sorted(float(r["atr_r"]) for r in R if _f(r.get("atr_r")) is not None)
+    if len(ar) > 30:
+        hi = ar[2 * len(ar) // 3]
+        B.append(("atr-hot", f"when the 5m ATR is above {hi:.2f}x its 7-day median (its top third)",
+                  lambda r, hi=hi: _f(r.get("atr_r")) is not None and r["atr_r"] > hi))
+    vx = sorted(float(r["vix"]) for r in R if _f(r.get("vix")) is not None)
+    if len(vx) > 30:
+        lo, hi = vx[len(vx) // 3], vx[2 * len(vx) // 3]
+        B += [(f"vix-low", f"with VIX under {lo:.1f}", lambda r, lo=lo: _f(r.get("vix")) is not None and r["vix"] < lo),
+              (f"vix-high", f"with VIX above {hi:.1f}", lambda r, hi=hi: _f(r.get("vix")) is not None and r["vix"] > hi)]
+    sa = sorted(float(r["stop_atr"]) for r in R if _f(r.get("stop_atr")) is not None)
+    if len(sa) > 30:
+        hi = sa[2 * len(sa) // 3]
+        B.append(("stop-wide", f"with a wide stop (> {hi:.1f} ATR)", lambda r, hi=hi: _f(r.get("stop_atr")) is not None and r["stop_atr"] > hi))
+    for dw, nm in enumerate(("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")):
+        B.append((f"dow-{dw}", f"on {nm}s", lambda r, dw=dw: r.get("dow") == dw))
+    if bot == "lit":
+        for c in ("asia", "london", "ny", "htf", "buildup"):
+            B.append((f"lvl-{c}", f"after a {c} level sweep", lambda r, c=c: r.get("lvl") == c))
+        B.append(("idm-0", "with no inducement", lambda r: _i(r.get("idm_n")) == 0))
+    if bot == "atlas":
+        for m in ("EMA", "MD", "SR"):
+            B.append((f"member-{m.lower()}", f"for the {m} member", lambda r, m=m: r.get("member") == m))
+    if bot in ("blitz", "atlas"):
+        B += [("ptrend-hi", "on days with trend-day odds >= 40% at 10:30", lambda r: _f(r.get("p_trend")) is not None and r["p_trend"] >= 0.4),
+              ("ptrend-lo", "on days with trend-day odds under 20% at 10:30", lambda r: _f(r.get("p_trend")) is not None and r["p_trend"] < 0.2)]
+    return B
+
+
+def _usd_rows(bot, R: list, mult) -> np.ndarray:
+    """$ of each row at a size multiplier (exact linear re-size on the stored micros, floor 1 micro, 0 = skipped)."""
+    out = np.zeros(len(R))
+    for j, r in enumerate(R):
+        m = float(mult[j])
+        if bot == "blitz" or _f(r.get("usd")) is None or not _i(r.get("qty")):
+            out[j] = (_f(r.get("r")) or 0.0) * BLITZ_RISK * m
+            continue
+        q0 = int(r["qty"])
+        if m <= 0:
+            continue
+        q = max(1, int(q0 * m + 1e-9)) if m < 1 else int(q0 * m + 1e-9)
+        per = (float(r["usd"]) + COMM * q0) / q0
+        out[j] = per * q - COMM * q
+    return out
+
+
+def _span_stats(R: list, U: np.ndarray, kept: np.ndarray, sp) -> dict:
+    ix = [j for j, r in enumerate(R) if _span(r["day"], sp)]
+    if not ix:
+        return {"n": 0}
+    days = [R[j]["day"] for j in ix]
+    d0, d1 = dt.date.fromisoformat(min(days)), dt.date.fromisoformat(max(days))
+    weeks = max(1.0, ((d1 - d0).days + 1) / 7.0)
+    months = max(1.0, ((d1 - d0).days + 1) / 30.44)
+    u = np.array([U[j] for j in ix if kept[j]])
+    n = len(u)
+    wk = {}
+    for j in ix:
+        if kept[j]:
+            y, w, _ = dt.date.fromisoformat(R[j]["day"]).isocalendar()
+            wk[(y, w)] = wk.get((y, w), 0) + 1
+    gl = -u[u < 0].sum() if n else 0.0
+    eq = np.cumsum(u) if n else np.zeros(1)
+    dd = float((eq - np.maximum.accumulate(np.r_[0.0, eq])[1:]).min()) if n else 0.0
+    return {"n": n, "tpw": round(n / weeks, 2), "net": round(float(u.sum()) if n else 0.0), "pf": round(float(u[u > 0].sum() / gl), 2) if gl else None,
+            "per_month": round(float(u.sum()) / months if n else 0.0), "dd": round(dd),
+            "wk2": round(100.0 * sum(1 for v in wk.values() if v >= 2) / max(1, int(round(weeks))), 1)}
+
+
+def test_rule(bot: str, R: list, pred, mult: float) -> dict:
+    """The rule (size x mult when pred) vs the stored live rule on 2026 H1 / H2 / 2021-25."""
+    m_rule = np.array([mult if pred(r) else 1.0 for r in R])
+    base, alt = _usd_rows(bot, R, np.ones(len(R))), _usd_rows(bot, R, m_rule)
+    kept_b, kept_a = np.ones(len(R), bool), m_rule > 0
+    out = {}
+    for nm, sp in (("H1", H1), ("H2", H2), ("2021-25", R2125)):
+        b, a = _span_stats(R, base, kept_b, sp), _span_stats(R, alt, kept_a, sp)
+        if b.get("n"):
+            out[nm] = {"base": b, "rule": a, "d_net": a["net"] - b["net"], "d_month": a["per_month"] - b["per_month"],
+                       "n_hit": int(sum(1 for r in R if _span(r["day"], sp) and pred(r)))}
+    return out
+
+
+def _ev_txt(nm, x, unit="$") -> str:
+    if not x:
+        return f"{nm}: no trades"
+    b, a = x["base"], x["rule"]
+    return (f"{nm}: {x['d_net']:+,.0f} {unit} vs live ({x['n_hit']} of {b['n']} trades hit; PF {b['pf']} -> {a['pf']}, "
+            f"{a['tpw']}/wk, {a['per_month']:+,.0f} {unit}/mo, max DD {a['dd']:,})")
+
+
+def judge_rule(bot: str, ev: dict, mult: float) -> tuple:
+    """(status, why). Zlarior: picked on 2026 H1, checked on 2026 H2 (2021-25 reference only, CLAUDE.md LIT exception).
+    ATLAS / BLITZ: better on H1, H2 and 2021-25 (where there are trades). Always 2+ trades a week."""
+    h1, h2, r5 = ev.get("H1"), ev.get("H2"), ev.get("2021-25")
+    if not h1 or not h2:
+        return "rejected", "not enough trades in 2026 H1 / H2 to judge"
+    if h1["n_hit"] < 5 or h2["n_hit"] < 3:
+        return "rejected", f"too few trades hit ({h1['n_hit']} in H1, {h2['n_hit']} in H2) to trust"
+    if h1["d_net"] <= 0:
+        return "rejected", "does not help 2026 H1 (the pick half)"
+    if h2["d_net"] <= 0:
+        return "rejected", "helped H1 but not the H2 check: a fit to H1"
+    if bot != "lit" and r5 and r5["d_net"] <= 0:
+        return "rejected", "helped 2026 but not 2021-25"
+    if (h2["rule"].get("tpw") or 0) < 2.0 and mult == 0:
+        return "rejected", "leaves fewer than 2 trades a week"
+    return "candidate", "better on the pick half and the check half" + ("" if bot == "lit" else " and 2021-25")
+
+
+def observations(bot: str, R: list, buckets: list, last_n: int = 40) -> list:
+    """What Mind noticed in its own recent trades: where the recent losses bunch up, where the money came from."""
+    out = []
+    rec = sorted(R, key=lambda r: r.get("t") or 0)[-last_n:]
+    loss = [r for r in rec if (_f(r.get("r")) or 0) < -0.2]
+    for bid, words, pred in buckets:
+        try:
+            hl = sum(1 for r in loss if pred(r))
+            ht = sum(1 for r in rec if pred(r))
+        except Exception:
+            continue
+        if len(loss) >= 4 and hl >= 3 and hl / len(loss) >= 0.5 and (ht / max(1, len(rec))) < hl / len(loss):
+            out.append({"kind": "losses", "bucket": bid, "text": f"{hl} of the last {len(loss)} {BOTS[bot]} losses came {words} "
+                                                                f"({ht} of its last {len(rec)} trades, history + live, were there)",
+                        "score": hl / len(loss)})
+    R26 = [r for r in R if r["day"] >= "2026"]
+    tot = sum(float(r.get("r") or 0) for r in R26)
+    if tot > 0 and len(R26) >= 30:
+        for bid, words, pred in buckets:
+            try:
+                s = [r for r in R26 if pred(r)]
+            except Exception:
+                continue
+            got = sum(float(r.get("r") or 0) for r in s)
+            if len(s) >= 10 and got / tot >= 0.6 and len(s) / len(R26) <= 0.45:
+                out.append({"kind": "money", "bucket": bid, "text": f"{BOTS[bot]} trades {words} made {got / tot:.0%} of its 2026 R "
+                                                                    f"with {len(s) / len(R26):.0%} of the trades", "score": got / tot})
+    out.sort(key=lambda o: -o["score"])
+    return out[:6]
+
+
+def change_text(bot: str, words: str, mult: float, focus: bool) -> str:
+    what = (f"x{mult:g} size {words}" if not focus else f"x{mult:g} size on every trade NOT {words}") if mult > 0 else f"skip trades {words}"
+    where = {"lit": 'live_model.json + live_model_lit.json "lit" (a lit_sizing size rule; then python tools/lit_losses.py live)',
+             "atlas": 'second_model.json (the ATLAS member / account B sizing)',
+             "blitz": 'second_model.json "blitz" (the paper shadow sizing)'}[bot]
+    return f"{BOTS[bot]}: {what}. Where: {where}. Not built yet: the owner approves first, then it is built and re-tested in the run library."
+
+
+def research(budget_s: float = 600.0, store: dict | None = None, log_dir: str | None = None, now: int | None = None,
+             write: bool = True) -> dict:
+    """The nightly self-research: observations -> hypotheses -> tests -> proposals. Never adopts anything."""
+    t_start = time.monotonic()
+    now = int(now or time.time())
+    S = store if store is not None else load_store()
+    ld = log_dir or LOG_DIR
+    prev = {p["id"]: p for p in ((_read_json(os.path.join(ld, "proposals.json"), {}) or {}).get("proposals") or []) if isinstance(p, dict)}
+    props, obs_all, tested = [], [], 0
+    for bot in BOTS:
+        blk = (S.get("bots") or {}).get(bot)
+        if not blk:
+            continue
+        cols = blk["cols"]
+        R = [dict(zip(cols, r)) for r in list(blk["rows"]) + [x for x in live_rows(bot, ld) if isinstance(x, list) and len(x) == len(cols)]]
+        B = _buckets(bot, blk["rows"], cols)
+        bmap = {b[0]: b for b in B}
+        obs = observations(bot, R, B)
+        obs_all += [{**o, "bot": bot} for o in obs]
+        hyps = []
+        for o in obs:
+            bid, words, pred = bmap[o["bucket"]]
+            if o["kind"] == "losses":
+                hyps.append((f"{bot}-{bid}-half", f"Half size for {BOTS[bot]} trades {words}", pred, 0.5, False, o["text"], words))
+                hyps.append((f"{bot}-{bid}-skip", f"Skip {BOTS[bot]} trades {words}", pred, 0.0, False, o["text"], words))
+            else:
+                hyps.append((f"{bot}-{bid}-focus", f"Half size for {BOTS[bot]} trades NOT {words}", (lambda r, p=pred: not p(r)), 0.5, True,
+                             o["text"], words))
+        for hid, idea, pred, mult, focus, why, words in hyps:
+            if time.monotonic() - t_start > budget_s:
+                props.append({"id": hid, "bot": bot, "idea": idea, "evidence": {"h1": "", "h2": "", "r2125": "", "usd_month": None},
+                              "status": "testing", "t": now, "change": None, "why": why})
+                continue
+            ev = test_rule(bot, R, pred, mult)
+            tested += 1
+            st, verdict = judge_rule(bot, ev, mult)
+            unit = "$"
+            props.append({"id": hid, "bot": bot, "idea": idea,
+                          "evidence": {"h1": _ev_txt("2026 H1 (pick)", ev.get("H1"), unit), "h2": _ev_txt("2026 H2 (check)", ev.get("H2"), unit),
+                                       "r2125": _ev_txt("2021-25" + (" (reference)" if bot == "lit" else ""), ev.get("2021-25"), unit),
+                                       "usd_month": _f((ev.get("H2") or {}).get("d_month"), 0),
+                                       **({"note": "BLITZ $ at $150 risk a trade (the store has R only)"} if bot == "blitz" else {})},
+                          "status": st, "t": now, "change": change_text(bot, words, mult, focus) if st == "candidate" else None,
+                          "why": f"{why}. Verdict: {verdict}.", "first_t": (prev.get(hid) or {}).get("first_t") or now})
+    took = round(time.monotonic() - t_start, 2)
+    order = {"candidate": 0, "testing": 1, "rejected": 2}
+    keep = {p["id"]: p for p in prev.values()}
+    for p in props:
+        keep[p["id"]] = p
+    allp = sorted(keep.values(), key=lambda p: (order.get(p.get("status"), 3), -(p.get("t") or 0)))[:60]
+    out = {"v": VERSION, "t": now, "took_s": took, "tested": tested, "observations": obs_all, "proposals": allp,
+           "note": "Mind's own research: it never adopts anything. A candidate holds on the pick half and the check half; the "
+                   "owner decides, then it is built and re-tested in the run library (tools/runlib.py)."}
+    if write:
+        _write_json(os.path.join(ld, "proposals.json"), out)
+    return out
+
+
+def proposals(log_dir: str | None = None) -> list:
+    d = _read_json(os.path.join(log_dir or LOG_DIR, "proposals.json")) or _read_json(SEED_PROPOSALS) or {}
+    return [p for p in d.get("proposals") or [] if isinstance(p, dict)]
+
+
+def spawn_research(budget_s: int = 600, log_dir: str | None = None) -> int | None:
+    """Start the nightly research as a low-priority child process (nice 15 / BELOW_NORMAL on Windows), capped at budget_s
+    inside the job. Returns its pid or None. Never raises."""
+    try:
+        import subprocess
+        import sys
+        ld = log_dir or LOG_DIR
+        os.makedirs(ld, exist_ok=True)
+        log = open(os.path.join(ld, "research.log"), "a", encoding="utf-8")
+        cmd = [sys.executable, "-X", "utf8", "-m", "engine.mind", "research", "--budget", str(int(budget_s))]
+        if log_dir:
+            cmd += ["--log-dir", ld]
+        kw = {"cwd": ROOT, "stdout": log, "stderr": log, "stdin": subprocess.DEVNULL}
+        if os.name == "nt":
+            kw["creationflags"] = 0x00004000 | 0x08000000            # BELOW_NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW
+        else:
+            kw["preexec_fn"] = lambda: os.nice(15)
+        p = subprocess.Popen(cmd, **kw)
+        return p.pid
+    except Exception:
+        return None
+
+
+# ================================================================================================ the Mind (state + block)
+class Mind:
+    def __init__(self, log_dir: str | None = None):
+        from collections import deque
+        self.mx = threading.Lock()
+        self.log_dir = log_dir
+        self.block: dict | None = None
+        self.key = None
+        self.thread: threading.Thread | None = None
+        self.plans: dict = {}
+        self.frozen: dict = {}
+        self.reviews = deque(maxlen=50)
+        self.reviewed: set | None = None
+        self.alerts = deque(maxlen=30)
+        self.events = deque(maxlen=80)
+        self.history = deque(maxlen=300)
+        self.last_regime = None
+        self.ms = None
+        self.research_day = None
+        self.err = None
+
+    @property
+    def ld(self):
+        return self.log_dir or LOG_DIR
+
+    def _event(self, key, t, bot, kind, title, text, level="info"):
+        self.events.append({"key": key, "t": int(t), "bot": bot, "kind": kind, "title": str(title)[:120], "text": str(text)[:400], "level": level})
+
+    def _alert(self, t, bot, text, level="info"):
+        self.alerts.append({"t": int(t), "bot": bot, "text": str(text)[:240], "level": level})
+
+    def _restore(self):
+        if self.reviewed is not None:
+            return
+        rows = _jl_read(os.path.join(self.ld, "reviews.jsonl"), 400)
+        self.reviewed = {r.get("key") for r in rows if isinstance(r, dict)}
+        for r in rows[-50:]:
+            if isinstance(r, dict):
+                self.reviews.append({k: v for k, v in r.items() if k != "key"})
+        for r in _jl_read(os.path.join(self.ld, "plans.jsonl"), 20):
+            if isinstance(r, dict) and r.get("bot") and r.get("day"):
+                self.frozen[r["bot"]] = r["day"]
+
+    def compute(self, bot, now: int) -> dict | None:
+        t0 = time.perf_counter()
+        try:
+            now = int(now)
+            self._restore()
+            store, C = load_store(), load_calib()
+            H = live_hist(bot, now)
+            reg = regime(H, now, C)
+            sim = {"lit": None, "atlas": None, "blitz": None}
+            if H is not None:
+                b = getattr(bot, "brain", None) or {}
+                sim["lit"] = similar("lit", lit_now(bot, H, now), ((b.get("sizing") or {}) if isinstance(b, dict) else {}).get("risk_usd"),
+                                     store, C, self.ld)
+                sim["atlas"] = similar("atlas", atlas_now(bot, H, now), None, store, C, self.ld)
+                bz = blitz_now(bot, H, now)
+                rk = None
+                try:
+                    S_ = getattr(bot, "blitz", None) or {}
+                    op = next((r for r in reversed(S_.get("ledger") or []) if r.get("exit_kind") == "OPEN"), None)
+                    if op and op.get("qty"):
+                        rk = abs(float(op["entry"]) - float(op["stop"])) * PV * int(op["qty"])
+                except Exception:
+                    rk = None
+                sim["blitz"] = similar("blitz", bz, rk, store, C, self.ld)
+            e = _et(now)
+            mod, day = e.hour * 60 + e.minute, trading_day(now)
+            for bk, fn in PLANNERS.items():
+                try:
+                    p = fn(bot, H, now, reg, store, self.ld)
+                except Exception as ex:
+                    p = None
+                    self.err = f"plan {bk}: {ex.__class__.__name__}: {ex}"[:200]
+                if not p:
+                    continue
+                self.plans[bk] = p
+                if e.weekday() < 5 and PLAN_AT[bk] <= mod < 1080 and self.frozen.get(bk) != day:
+                    self.frozen[bk] = day
+                    _jl_append(os.path.join(self.ld, "plans.jsonl"), [{"bot": bk, "day": day, **p}])
+                    sc = p.get("scenarios") or []
+                    txt = p["headline"] + (". " + " | ".join(f"IF {s['if']} THEN {s['then']}" for s in sc[:2]) if sc else "") + \
+                        (f". What would change my mind: {p.get('change_mind')}" if p.get("change_mind") else "")
+                    self._event(f"mind:plan:{bk}:{day}", now, bk, "plan", f"{BOTS[bk]} game plan", txt)
+                    self._alert(now, bk, f"Game plan ready: {p['headline']}", "info")
+            self._reviews(bot, H, store, C, now)
+            if reg.get("label") != self.last_regime:
+                if self.last_regime is not None:
+                    self._alert(now, "all", f"Regime now: {reg['label']} ({reg.get('why', '')[:120]})", "info")
+                self.last_regime = reg.get("label")
+            self.history.append({"t": now, "label": reg.get("label"), "trend": reg.get("trend"), "vol": reg.get("vol"),
+                                 "p_trend": (reg.get("day_type") or {}).get("p_trend")})
+            props = proposals(self.ld)
+            seen = {e_["key"] for e_ in self.events}
+            for p in props:
+                if p.get("status") == "candidate" and f"mind:prop:{p['id']}" not in seen and now - int(p.get("t") or 0) < 3 * 86400:
+                    self._event(f"mind:prop:{p['id']}", int(p.get("t") or now), p.get("bot") or "lit", "proposal",
+                                f"Mind proposal: {p.get('idea')}", f"{p.get('idea')}. {p['evidence'].get('h1')} | {p['evidence'].get('h2')}. "
+                                "Nothing changes unless you approve it.", "good")
+                    self._alert(int(p.get("t") or now), p.get("bot") or "lit", f"New idea to approve: {p.get('idea')}", "good")
+            n = {bk: len(((store.get("bots") or {}).get(bk) or {}).get("rows") or []) + len(live_rows(bk, self.ld)) for bk in BOTS}
+            self.ms = int((time.perf_counter() - t0) * 1000)
+            blk = {"t": now, "v": VERSION, "kind": KIND, "regime": reg, "plans": dict(self.plans), "similar": sim,
+                   "reviews": list(self.reviews)[-10:][::-1], "proposals": props[:12], "alerts": list(self.alerts)[-10:][::-1],
+                   "iq": {"store_n": n, "calibration": calibration_line(C), "daytype": daytype_note(C), "ms": self.ms,
+                          "error": self.err}}
+            with self.mx:
+                self.block = blk
+            return blk
+        except Exception as ex:
+            self.err = f"{ex.__class__.__name__}: {ex}"[:200]
+            return None
+
+    def _reviews(self, bot, H, store, C, now):
+        try:
+            todo = [t for t in closed_trades(bot) if _trade_key(t) not in self.reviewed]
+        except Exception:
+            todo = []
+        for t in todo[-20:]:
+            k = _trade_key(t)
+            self.reviewed.add(k)
+            try:
+                rv = review(t, H, store, C, self.ld, None, now)
+            except Exception:
+                continue
+            self.reviews.append(rv)
+            _jl_append(os.path.join(self.ld, "reviews.jsonl"), [{**rv, "key": k}])
+            self._add_live_row(t, H, rv)
+            if now - int(t.get("exit_t") or now) < 86400:
+                self._event(f"mind:review:{k}", now, t["bot"], "review", f"{BOTS[t['bot']]} trade review: {rv['grade']}",
+                            f"{rv['trade']}: grade {rv['grade']} ({rv['luck']}: {rv.get('why')}). " + rv["lesson"],
+                            "good" if rv["grade"] in ("A", "B") else "warn" if rv["grade"] in ("D", "F") else "info")
+                self._alert(now, t["bot"], f"Reviewed {rv['trade']}: {rv['grade']}", "info")
+
+    def _add_live_row(self, t, H, rv):
+        """The closed trade joins the bot's memory (logs/mind/<bot>_live.jsonl) with the same columns as the store."""
+        try:
+            bk = t["bot"]
+            blk = (load_store().get("bots") or {}).get(bk)
+            if not blk or H is None or rv.get("r") is None:
+                return
+            d = int(t.get("dir") or 1)
+            f = H.ctx(int(t["entry_t"]), d)
+            if not f:
+                return
+            if bk == "atlas":
+                f["member"] = member_of(t.get("key"))
+            if t.get("entry") is not None and t.get("stop") is not None and f.get("atr"):
+                f["stop_atr"] = round(abs(float(t["entry"]) - float(t["stop"])) / f["atr"], 3)
+            e = _et(int(t["entry_t"]))
+            base = {"day": t.get("day") or trading_day(int(t["entry_t"])), "t": int(t["entry_t"]), "dir": d, "r": rv["r"], "usd": _f(t.get("usd"), 2),
+                    "exit": str(t.get("exit_kind") or "").upper(), "src": "live", "qty": _i(t.get("qty")),
+                    "risk_pts": _f(abs(float(t.get("entry") or 0) - float(t.get("stop") or 0)), 2), "hm": e.strftime("%H:%M"), "dow": e.weekday()}
+            row = [base[c] if c in base else f.get(c) for c in blk["cols"]]
+            _jl_append(os.path.join(self.ld, f"{bk}_live.jsonl"), [{"key": _trade_key(t), "row": row}])
+        except Exception:
+            pass
+
+    def cached(self) -> dict | None:
+        with self.mx:
+            return self.block
+
+    def busy(self) -> bool:
+        th = self.thread
+        return th is not None and th.is_alive()
+
+    def kick(self, bot, now: int, background: bool = True) -> bool:
+        """Compute once per 5m bar (wall clock): in a background thread unless background=False. True when started."""
+        key = int(now) // 300
+        with self.mx:
+            if self.key == key or self.busy():
+                return False
+            self.key = key
+        if not background:
+            self.compute(bot, now)
+            return True
+        th = threading.Thread(target=self.compute, args=(bot, int(now)), name="mind", daemon=True)
+        self.thread = th
+        th.start()
+        return True
+
+
+MIND = Mind()
+
+
+def skeleton(now: int, why: str = "Mind starts after the bot's next 5m bar.") -> dict:
+    return {"t": int(now), "v": VERSION, "kind": KIND,
+            "regime": {"label": "Mind is starting", "trend": "range", "vol": "normal", "day_type": None, "why": why},
+            "plans": {}, "similar": {"lit": None, "atlas": None, "blitz": None}, "reviews": [], "proposals": proposals()[:12],
+            "alerts": [], "iq": {"store_n": {bk: len(((load_store().get("bots") or {}).get(bk) or {}).get("rows") or []) for bk in BOTS},
+                                 "calibration": calibration_line()}}
+
+
+def view_block(bot=None, now: int | None = None, mind: Mind | None = None) -> dict:
+    """The liveview / holo "mind" block: the last computed block (never computes here: pc_tick or the API does)."""
+    try:
+        M = mind or MIND
+        b = M.cached()
+        return b if b is not None else skeleton(int(now or time.time()))
+    except Exception:
+        return skeleton(int(now or time.time()), "Mind unavailable")
+
+
+def _cut(s, n):
+    s = str(s or "")
+    return s if len(s) <= n else s[:n - 1] + "…"
+
+
+def compact(b: dict | None, max_bytes: int = 12_000) -> dict | None:
+    """The phone / heartbeat cut of the block (< max_bytes)."""
+    if not isinstance(b, dict):
+        return None
+    reg = dict(b.get("regime") or {})
+    if isinstance(reg.get("day_type"), dict):
+        reg["day_type"] = {k: reg["day_type"].get(k) for k in ("p_trend", "label", "acc_note")}
+        reg["day_type"]["acc_note"] = _cut(reg["day_type"].get("acc_note"), 260)
+    reg = {k: reg.get(k) for k in ("label", "trend", "vol", "day_type", "why")}
+    reg["why"] = _cut(reg.get("why"), 240)
+    plans = {}
+    for k, p in (b.get("plans") or {}).items():
+        if isinstance(p, dict):
+            plans[k] = {"t": p.get("t"), "headline": _cut(p.get("headline"), 200), "change_mind": _cut(p.get("change_mind"), 300),
+                        "scenarios": [{"if": _cut(s.get("if"), 200), "then": _cut(s.get("then"), 300), "levels": (s.get("levels") or [])[:4],
+                                       "exp_usd": s.get("exp_usd"), "odds": s.get("odds")} for s in (p.get("scenarios") or [])[:3]]}
+    sim = {}
+    for k in BOTS:
+        s = (b.get("similar") or {}).get(k)
+        sim[k] = None if not isinstance(s, dict) else {**{x: s.get(x) for x in ("n", "win", "avg_r", "usd", "conf", "valid")},
+                                                       "examples": (s.get("examples") or [])[:3], "text": _cut(s.get("text"), 260)}
+    out = {"t": b.get("t"), "v": b.get("v", VERSION), "kind": KIND, "compact": True, "regime": reg, "plans": plans, "similar": sim,
+           "reviews": [{**{x: r.get(x) for x in ("t", "bot", "trade", "grade", "luck")}, "right": [_cut(x, 120) for x in (r.get("right") or [])[:2]],
+                        "wrong": [_cut(x, 120) for x in (r.get("wrong") or [])[:2]], "lesson": _cut(r.get("lesson"), 200)}
+                       for r in (b.get("reviews") or [])[:3]],
+           "proposals": [{"id": p.get("id"), "bot": p.get("bot"), "idea": _cut(p.get("idea"), 140), "status": p.get("status"), "t": p.get("t"),
+                          "change": _cut(p.get("change"), 220) if p.get("change") else None,
+                          "evidence": {"h1": _cut((p.get("evidence") or {}).get("h1"), 140), "h2": _cut((p.get("evidence") or {}).get("h2"), 140),
+                                       "r2125": _cut((p.get("evidence") or {}).get("r2125"), 140),
+                                       "usd_month": (p.get("evidence") or {}).get("usd_month")}}
+                         for p in (b.get("proposals") or [])[:5]],
+           "alerts": [{k: a.get(k) for k in ("t", "bot", "text", "level")} for a in (b.get("alerts") or [])[:5]],
+           "iq": {"store_n": (b.get("iq") or {}).get("store_n"), "calibration": _cut((b.get("iq") or {}).get("calibration"), 420)}}
+
+    def size():
+        return len(json.dumps(out, separators=(",", ":"), default=str))
+    for key in ("proposals", "reviews", "alerts"):
+        while size() > max_bytes and out[key]:
+            out[key] = out[key][:-1]
+    if size() > max_bytes:
+        for p in out["plans"].values():
+            p["scenarios"] = p["scenarios"][:1]
+    return out
+
+
+# ================================================================================================ hooks
+def pc_tick(bot, now=None, background: bool = True, spawn: bool = True, mind: Mind | None = None) -> bool | None:
+    """engine/narrator.tick hook (PC, after routing): once per 5m bar start Mind's compute in a background thread; after
+    16:05 ET on a weekday start the nightly research once (a low-priority child process). The poll thread only checks a
+    key. Never raises."""
+    if os.environ.get("LE_MIND", "1") == "0":
+        return None
+    try:
+        M = mind or MIND
+        now = int(now if now is not None else (bot.clock() if callable(getattr(bot, "clock", None)) else time.time()))
+        started = M.kick(bot, now, background=background)
+        if spawn and os.environ.get("LE_MIND_RESEARCH", "1") != "0":
+            e = _et(now)
+            day = e.strftime("%Y-%m-%d")
+            if e.weekday() < 5 and 965 <= e.hour * 60 + e.minute < 1430 and M.research_day != day:
+                M.research_day = day
+                last = _read_json(os.path.join(M.ld, "research_last.json"), {}) or {}
+                if last.get("day") != day:
+                    pid = spawn_research(600, M.log_dir)
+                    _write_json(os.path.join(M.ld, "research_last.json"), {"day": day, "t": now, "pid": pid})
+        return started
+    except Exception:
+        return None
+
+
+def narrator_msgs(day: str, mind: Mind | None = None) -> list:
+    """Today's Mind events for engine/narrator (kind "brain": plan / review / proposal; no phone push by default)."""
+    M = mind or MIND
+    try:
+        with M.mx:
+            ev = list(M.events)
+    except Exception:
+        return []
+    return [e for e in ev if trading_day(e["t"]) == day]
+
+
+def api_view(bot, now: int | None = None, mind: Mind | None = None) -> dict:
+    """GET /api/next/mind: the full block + history (regime per 5m bar today, the last plans, reviews, proposals, the
+    calibration report). A stale block starts a background compute (the answer is the last block)."""
+    M = mind or MIND
+    now = int(now or (bot.clock() if callable(getattr(bot, "clock", None)) else time.time()))
+    try:
+        M.kick(bot, now, background=True)
+    except Exception:
+        pass
+    C = load_calib()
+    prop = _read_json(os.path.join(M.ld, "proposals.json")) or _read_json(SEED_PROPOSALS) or {}
+    return {"t": now, "block": view_block(bot, now, M), "busy": M.busy(),
+            "history": {"regime": [h for h in list(M.history) if trading_day(h["t"]) == trading_day(now)],
+                        "plans": _jl_read(os.path.join(M.ld, "plans.jsonl"), 30)[::-1],
+                        "reviews": [{k: v for k, v in r.items() if k != "key"} for r in _jl_read(os.path.join(M.ld, "reviews.jsonl"), 100)][::-1],
+                        "proposals": prop.get("proposals") or [], "observations": prop.get("observations") or [],
+                        "research": {"t": prop.get("t"), "took_s": prop.get("took_s"), "tested": prop.get("tested"), "note": prop.get("note")}},
+            "calibration": {"similar": C.get("similar"), "daytype": {k: v for k, v in (C.get("daytype") or {}).items() if k in ("report", "fit", "label", "n_fit")}},
+            "read_only": "Mind thinks, predicts, explains and proposes. It never changes a rule, a size or an order: the owner approves changes."}
+
+
+try:
+    from fastapi import APIRouter
+    from fastapi.responses import Response
+    router = APIRouter()
+
+    def _bot():
+        from .live import BOT
+        return BOT
+
+    @router.get("/api/next/mind")
+    def r_mind():
+        try:
+            return Response(json.dumps(api_view(_bot()), separators=(",", ":"), default=_jd), media_type="application/json")
+        except Exception as e:
+            return Response(json.dumps({"error": f"{e.__class__.__name__}: {e}"[:200]}), media_type="application/json", status_code=500)
+except Exception:                                             # fastapi missing (cloud tools): the module still works
+    router = None
+
+
+def _main(argv):
+    import argparse
+    ap = argparse.ArgumentParser(prog="engine.mind")
+    ap.add_argument("cmd", choices=["research", "show", "calib"])
+    ap.add_argument("--budget", type=float, default=600.0)
+    ap.add_argument("--log-dir", default=None)
+    a = ap.parse_args(argv)
+    if a.cmd == "research":
+        t0 = time.time()
+        out = research(a.budget, log_dir=a.log_dir)
+        print(f"{_et(int(t0)):%Y-%m-%d %H:%M} research: {out['tested']} tests, {out['took_s']} s, "
+              f"{sum(1 for p in out['proposals'] if p['status'] == 'candidate')} candidates", flush=True)
+        for o in out["observations"]:
+            print("  noticed:", o["text"])
+        for p in out["proposals"][:20]:
+            print(f"  [{p['status']}] {p['idea']}: {p['evidence'].get('h1')} | {p['evidence'].get('h2')}")
+    elif a.cmd == "calib":
+        print(calibration_line())
+        print(daytype_note())
+    else:
+        print(json.dumps(view_block(), indent=1, default=_jd)[:4000])
+
+
+if __name__ == "__main__":
+    import sys as _sys
+    _main(_sys.argv[1:])
