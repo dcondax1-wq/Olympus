@@ -483,6 +483,63 @@ def t_never_raises():
           and not MD.contract_errors(blk), (blk or {}).get("regime"))
 
 
+def t_livebot():
+    """End to end on the real engine/live.py LiveBot (paper adapter, temp state, frozen clock, bars revealed as they close,
+    the 1m feed's forming bar): LIT's 2026-10-14 short (05:24 ET -> TARGET 09:58). After each poll Mind computes inline
+    from the bot's own attributes (brain, bars_tail, the 1m store, ledger): contract blocks all day, a similar-setup read while
+    the setup forms / trades, a review of the routed trade after its exit, the bot unchanged by Mind."""
+    import pandas as pd
+    from engine import news
+    from tests.test_live_dryrun import Replay
+    rp = Replay()
+    keep = (news.ff_calendar, news.volatility, news.guard)
+    df1 = pd.read_csv(os.path.join(ROOT, "data", "NQ_1m.csv"))
+    ent = 1791969840
+    rp.frames[("NQ", "1m")] = df1[df1["time"] >= ent - 75 * 86400].reset_index(drop=True)
+    o1 = dict(zip(df1["time"].astype("int64"), df1["open"].astype(float)))
+
+    def forming(sym, interval, period="5d"):
+        t = rp.now - rp.now % 60
+        if sym == "NQ" and interval == "1m" and t in o1:
+            return pd.DataFrame([{"time": t, "open": o1[t], "high": o1[t], "low": o1[t], "close": o1[t], "volume": 0.0}])
+        return pd.DataFrame()
+    rp.recent_hook = forming
+    rp.install_globals()
+    errors, blocks, ms, changed = [], [], [], []
+    M = MD.Mind(log_dir=tempfile.mkdtemp())
+    try:
+        b = rp.bot(cfg={"nt_archive": None, "account_b": None}, state_path=os.path.join(rp.tmp, "live_state.json"), start_now=T("2026-10-14", 3, 55))
+        times = sorted(set(range(T("2026-10-14", 4, 0), T("2026-10-14", 10, 31), 300)) | set(range(ent - 300, ent + 301, 60)))
+        for now in times:
+            rp.poll(b, now, errors)
+            snap = copy.deepcopy((b.brain, b.ledger, b.state.get("position")))
+            t0 = time.perf_counter()
+            MD.pc_tick(b, now + 20, background=False, spawn=False, mind=M)
+            ms.append((time.perf_counter() - t0) * 1000)
+            if copy.deepcopy((b.brain, b.ledger, b.state.get("position"))) != snap:
+                changed.append(now)
+            blk = M.cached()
+            if blk is not None and blk["t"] == now + 20:
+                blocks.append(blk)
+    finally:
+        news.ff_calendar, news.volatility, news.guard = keep
+        rp.cleanup()
+    bad = [(bk["t"], MD.contract_errors(bk)) for bk in blocks if MD.contract_errors(bk)]
+    sim = [bk["similar"]["lit"] for bk in blocks if bk["similar"]["lit"]]
+    rev = [r for r in (blocks[-1]["reviews"] if blocks else []) if r["bot"] == "lit"]
+    routed = [r for r in b.ledger if r.get("side") in ("buy", "sell")]
+    print(f"   LiveBot day: {len(times)} polls, {len(blocks)} Mind blocks, compute median {sorted(ms)[len(ms) // 2]:.0f} ms "
+          f"(max {max(ms):.0f}), {len(sim)} with a Zlarior similar-setup read, routed {len(routed)}, reviews {[(r['trade'], r['grade']) for r in rev]}; "
+          f"err {M.err}")
+    check("LiveBot: no poll error, every Mind block keeps the contract", not errors and blocks and not bad, (errors[:1], bad[:2]))
+    check("LiveBot: the plan + regime come from the bot's own Brain and bars", any("lit" in bk["plans"] for bk in blocks)
+          and blocks[-1]["regime"]["label"] != "No bars yet", blocks[-1]["regime"] if blocks else None)
+    check("LiveBot: a similar-setup read while Zlarior's setup forms / trades (context only)", sim and all(s["conf"] == "low" or s["valid"] for s in sim))
+    check("LiveBot: the routed 05:24 short is reviewed after its exit (once)", len(routed) == 1 and len(rev) == 1 and "SHORT 05:24" in rev[0]["trade"],
+          (routed[:1], rev))
+    check("LiveBot: Mind never changed the bot (brain, ledger, position)", not changed, changed[:3])
+
+
 def t_compact_cap():
     big = MD.skeleton(1)
     rv = {"t": 1, "bot": "lit", "trade": "x" * 100, "grade": "B", "right": ["r" * 300] * 5, "wrong": ["w" * 300] * 5, "lesson": "l" * 900, "luck": "mixed"}
@@ -508,6 +565,7 @@ def main():
     t_research()
     t_hooks(blk)
     t_never_raises()
+    t_livebot()
     t_compact_cap()
     n, ok = len(RES), sum(RES)
     print(f"\nmind: {ok}/{n} " + ("ALL PASS" if ok == n else "FAILED"))
