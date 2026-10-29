@@ -266,7 +266,7 @@ def wiring_checks():
     check("f. build_web_dashboard: the heartbeat's money into goals, not left in data.json / live.pc",
           'data["money_in"] = (st.get("pc") or {}).get("money")' in b and 'data.pop("money_in", None)' in b and '"learn", "money")' in b)
     cm = rd("tools/cloud_monitor.py")
-    check("f. cloud monitor keeps the heartbeat's money block in state pc", '"brain", "second", "ai", "launch", "money")' in cm)
+    check("f. cloud monitor keeps the heartbeat's money block in state pc", '"brain", "second", "blitz", "ai", "launch", "money")' in cm)
     hb = rd("engine/heartbeat.py")
     check("f. heartbeat payload carries money (money_goal.heartbeat_block)", '"money": _money()' in hb and "money_goal.heartbeat_block()" in hb)
     na = rd("engine/next_api.py")

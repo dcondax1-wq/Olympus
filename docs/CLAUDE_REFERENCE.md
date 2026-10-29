@@ -487,7 +487,14 @@ part yourself or fold it into a script.**
   score, ledger check (`engine/live_board.py` flags an eval day booking $ with no real trade). Real results page (`real.js`,
   `#/real`, CSV export). AI Insights (`insight.js`, `engine/insight_api.py` `GET /api/next/insight[?day&hm]`, features 21-30).
   Live View (`liveview*.js`, `engine/liveview_api.py` `GET /api/next/liveview?tf=1m|5m`): full-screen chart, per-strategy
-  colour layers (Zlarior blue, ATLAS orange, BLITZ purple), "what the bot is thinking" panel, feed. Narrator
+  colour layers (Zlarior blue, ATLAS orange, BLITZ purple), "what the bot is thinking" panel, feed.
+  **Phone Live View (2026-10-28, `tools/web_public/liveview.js`, `#/liveview`, Home button under the plan line, More > Today):**
+  the same page on the phone. The PC pushes `liveview.json` (`liveview_api.phone_view`: 1m bars of the last 8 h + the 5m
+  session as `bars5`, the three layers, thinking, feed 60; < 240 KB) in the same orphan commit as live.json on branch `live`
+  (`live_publish.push(extra=)`, `Publisher.extra`). Phone reads it via the GitHub API (raw fallback, shares `LIVE.apiUntil`),
+  every 30-60 s while open; live.js waits ~3 min on that page. `liveviewchart.js` / `liveview.css` byte-identical copies;
+  full screen = Fullscreen API, else the root moves to `<body>` with `lv-max` (iPhone); sideways = chart-only bar.
+  Banner when the PC has not sent for 20 min. Sw `le-public-v42`. Test `tests.test_phone_liveview` (37, Playwright). Narrator
   (`engine/narrator.py`, hooked in `LiveBot._alerts_tick`, real bot only, never raises): plain-language feed,
   `logs/narrator/<day>.jsonl`; phone pushes only for armed / entry / exit / refused (`data/narrator.json`, `LE_NARRATOR_PUSH=0`).
   Tests: test_real_ui, test_insight_api, test_liveview_api, test_narrator.

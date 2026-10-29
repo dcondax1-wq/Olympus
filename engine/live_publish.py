@@ -26,6 +26,8 @@ lays it over data.json):
                the open position with its stop / target, today's orders, the last trades),
    "price", "day_pnl", "last_signal", "model_state", "heartbeat": {"t", "ok"} (the last heartbeat push),
    "money": the Goals card's Road to $10K / Stingray 3LT (engine/money_goal.from_heartbeat, ~7 KB; dropped first if too big)}
+Next to it in the same commit: liveview.json (< 240 KB), the phone's Live View (engine/liveview_api.phone_view: the
+chart's 1m / 5m bars, the Zlarior / ATLAS / BLITZ layers, what each bot is thinking, the feed; tools/web_public/liveview.js).
 
 Cadence: every FAST_S (60 s) while the bot runs, every SLOW_S (300 s) otherwise; never more often than MIN_GAP_S; after a
 failed push it backs off (2, 4, 8 ... up to 30 min) and logs at most once an hour. A daemon thread: it never touches the
@@ -241,21 +243,34 @@ def _scratch(git_dir: str, cwd: str = ROOT) -> str | None:
         return f"{e.__class__.__name__}: {e}"
 
 
-def push(payload: dict, url: str, branch: str = BRANCH, git_dir: str = SCRATCH, cwd: str = ROOT, prune: bool = False) -> dict:
-    """Write payload as live.json in one orphan commit and force-push it to url/branch (replaces the branch: no history).
-    Returns {"ok", "error"|"commit", "bytes"}. Never raises."""
+_EXTRA_NAME = re.compile(r"^[a-z0-9_-]+\.json$")
+
+
+def push(payload: dict, url: str, branch: str = BRANCH, git_dir: str = SCRATCH, cwd: str = ROOT, prune: bool = False,
+         extra: dict | None = None) -> dict:
+    """Write payload as live.json (plus extra = {"name.json": payload}, e.g. liveview.json) in one orphan commit and
+    force-push it to url/branch (replaces the branch: no history). Returns {"ok", "error"|"commit", "bytes", "extra_bytes"}.
+    Never raises."""
     try:
         if not url:
             return {"ok": False, "error": "no target repo (origin is not on GitHub; set LE_LIVE_REPO)"}
         err = _scratch(git_dir, cwd)
         if err:
             return {"ok": False, "error": err}
-        body = json.dumps(payload, separators=(",", ":"), default=str).encode("utf-8")
-        r = _git(["hash-object", "-w", "--stdin"], git_dir=git_dir, inp=body)
-        blob = _out(r)
-        if r.returncode or len(blob) < 40:
-            return {"ok": False, "error": "hash-object failed"}
-        r = _git(["mktree"], git_dir=git_dir, inp=f"100644 blob {blob}\t{FILE}\n".encode())
+        files = {FILE: payload}
+        for name, pl in (extra or {}).items():
+            if name != FILE and pl is not None and _EXTRA_NAME.match(str(name)):
+                files[name] = pl
+        entries, sizes = [], {}
+        for name in sorted(files):
+            body = json.dumps(files[name], separators=(",", ":"), default=str).encode("utf-8")
+            r = _git(["hash-object", "-w", "--stdin"], git_dir=git_dir, inp=body)
+            blob = _out(r)
+            if r.returncode or len(blob) < 40:
+                return {"ok": False, "error": "hash-object failed" + ("" if name == FILE else f" ({name})")}
+            entries.append(f"100644 blob {blob}\t{name}\n")
+            sizes[name] = len(body)
+        r = _git(["mktree"], git_dir=git_dir, inp="".join(entries).encode())
         tree = _out(r)
         if r.returncode or not tree:
             return {"ok": False, "error": "mktree failed"}
@@ -274,7 +289,8 @@ def push(payload: dict, url: str, branch: str = BRANCH, git_dir: str = SCRATCH, 
         if prune:                                    # the old live commits are unreachable: drop them (only this scratch dir)
             _git(["update-ref", "refs/heads/last", commit], git_dir=git_dir, timeout=20)
             _git(["prune", "--expire=now"], git_dir=git_dir, timeout=120)
-        return {"ok": True, "commit": commit[:10], "bytes": len(body)}
+        return {"ok": True, "commit": commit[:10], "bytes": sizes[FILE],
+                "extra_bytes": {k: v for k, v in sizes.items() if k != FILE}}
     except Exception as e:
         return {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
 
@@ -332,6 +348,15 @@ class Publisher:
             hbp = {}
         return build(hbp, self.clock(), hb_last=getattr(self.hb, "last", None), every_s=self.every_s())
 
+    def extra(self) -> dict:
+        """The other files of the live commit: liveview.json, the phone's Live View (engine/liveview_api.phone_view:
+        the chart, the three strategy layers, what each bot is thinking, the feed). {} when it cannot be built."""
+        try:
+            from . import liveview_api
+            return {liveview_api.PHONE_FILE: scrub(liveview_api.phone_view(self.bot, int(self.clock())), _phrases())}
+        except Exception:
+            return {}
+
     def publish(self, force: bool = False) -> dict:
         """One push (rate-limited: never within MIN_GAP_S of the last attempt unless force). Never raises."""
         now = self.clock()
@@ -340,7 +365,8 @@ class Publisher:
         self.last_push_t = now
         try:
             pl = self.payload()
-            res = self.push_fn(pl, self.url, git_dir=self.git_dir, prune=(self.pushes % PRUNE_EVERY == PRUNE_EVERY - 1))
+            res = self.push_fn(pl, self.url, git_dir=self.git_dir, prune=(self.pushes % PRUNE_EVERY == PRUNE_EVERY - 1),
+                               extra=self.extra())
         except Exception as e:
             res = {"ok": False, "error": f"{e.__class__.__name__}: {e}"}
         self.last = {"at": int(now), **res}

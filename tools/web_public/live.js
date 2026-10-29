@@ -99,6 +99,8 @@
   }
   LIVE.poll = async function (force) {
     if (LIVE.busy || (!force && document.hidden)) return;
+    // the Live View page (liveview.js) polls its own liveview.json from the same API: live.json waits ~3 min there
+    if (!force && typeof PAGE !== 'undefined' && PAGE === 'liveview' && Date.now() - LIVE.at < 170e3) return;
     LIVE.busy = true;
     try {
       const { j, src } = await fetchLive();

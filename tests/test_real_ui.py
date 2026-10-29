@@ -108,10 +108,10 @@ def part_d():
     check(f"d. from_heartbeat builds 'real' in {time.time() - t0:.1f} s", isinstance(b.get("real"), dict) and not b["real"].get("error"), b.get("real"))
     ch = b["real"].get("checks") or []
     lit = b.get("lit") or {}
-    if any(d == "2026-10-27" for d, _ in lit.get("days") or []) and not any(r.get("day") == "2026-10-27" for r in b["real"]["trades"] if r.get("acct") == "lit"):
+    if any(d == "2026-10-27" and abs(float(x or 0)) > 0.5 for d, x in lit.get("days") or []) and not any(r.get("day") == "2026-10-27" for r in b["real"]["trades"] if r.get("acct") == "lit"):
         check("d. the heartbeat's 2026-10-27 day is flagged; room if error > room", any(c["day"] == "2026-10-27" and c["room_if_error"] > (lit.get("room") or 0) for c in ch), ch)
     else:
-        check("d. heartbeat without the doubted day: no lit check", not [c for c in ch if c["acct"] == "lit" and c["day"] == "2026-10-27"], ch)
+        check("d. heartbeat without the doubted day (or voided to $0 since 2026-10-28): no lit check", not [c for c in ch if c["acct"] == "lit" and c["day"] == "2026-10-27"], ch)
     check("d. every real trade is a live row", all(r.get("src") == "live" for r in b["real"]["trades"]))
     return b
 
