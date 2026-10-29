@@ -80,7 +80,8 @@ def save_sim_result(kind: str, ok: bool, account: str | None, steps=None, path: 
         tmp = p + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(d, fh, indent=1)
-        os.replace(tmp, p)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, p)
         return rec
     except Exception:
         return None

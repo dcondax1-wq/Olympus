@@ -9,7 +9,7 @@ One read-only GET built from data the bot already has. Nothing here starts, arms
 
 Panels (each built on its own: one failing panel returns {"error"} and never breaks the others):
   radar      21  what Zlarior (LIT) and each ATLAS member waits for now and how far price is from the trigger
-  windows    22  next entry window per strategy (open now / opens in), weekends skipped (CME holidays not counted)
+  windows    22  next entry window per strategy (open now / opens in), weekends + CME holidays skipped, early closes cut
   scorecard  23  live vs backtest per strategy: Zlarior on engine/health_band (run lit_live H2 band, via ai_watch.drift_lit),
                  ATLAS members on engine/second_scorecard (2026 H2 bootstrap), research H1 / H2 numbers next to them
   drift      24  the AI watch block (engine/ai_watch.py hb_block; else drift_lit / drift_b / drift_exec computed here)
@@ -381,15 +381,18 @@ def _at(d: dt.date, m: int) -> int:
 
 def next_window(wins, now: int, skip_monday: bool = False) -> dict | None:
     """The window open at `now` (closes_in) or the next one to open (opens_in), on trading days Mon-Fri (an evening start
-    belongs to the next trading day). CME holidays are not counted."""
+    belongs to the next trading day). CME holidays (engine/cme_calendar.py, 2026-10-29): a closed date is skipped, an
+    early close ends the day's window 15 min before the halt (the bot's entry cut)."""
     if not wins:
         return None
+    from . import cme_calendar as _cc
     d0 = _et(now).date()
     spans = []
     for k in range(-2, 10):
         d = d0 + dt.timedelta(days=k)
-        if d.weekday() >= 5 or (skip_monday and d.weekday() == 0):
+        if d.weekday() >= 5 or (skip_monday and d.weekday() == 0) or _cc.full_closure(d):
             continue
+        cut = _at(d, _cc.entry_cut(d)) if _cc.early_close(d) is not None else None
         for a, z in wins:
             if a >= 18 * 60:                               # starts the evening before trading day d
                 prev = d - dt.timedelta(days=1)
@@ -397,6 +400,10 @@ def next_window(wins, now: int, skip_monday: bool = False) -> dict | None:
                 e = _at(prev, z) if z > a else _at(d, z)
             else:
                 s, e = _at(d, a), _at(d, z)
+            if cut is not None:
+                e = min(e, cut)
+                if e <= s:
+                    continue
             spans.append((s, e))
     spans.sort()
     for s, e in spans:
@@ -424,7 +431,7 @@ def windows(ctx) -> dict:
         rows.append({"key": k, "label": s.get("label"), "short": s.get("short"), "candidate": bool(s.get("candidate")),
                      "window": wt, "note": "never on a Monday" if k == "ema_lon_vix" else None,
                      "next": next_window(windows_of(wt), now, skip_monday=(k == "ema_lon_vix"))})
-    return {"now": now, "rows": rows, "note": "Weekends skipped; CME holidays and early closes are not counted here."}
+    return {"now": now, "rows": rows, "note": "Weekends and CME holidays skipped; an early close ends the window 15 min before the halt."}
 
 
 # ================================================================================================ 23 scorecard

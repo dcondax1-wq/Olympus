@@ -46,7 +46,8 @@ def save(rows: list, path: str = LEDGER) -> None:
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(sorted(rows, key=lambda x: x["entry_t"])[-500:], fh)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def record(trades: list, path: str = LEDGER) -> int:

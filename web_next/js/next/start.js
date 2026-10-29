@@ -209,6 +209,32 @@ function blitzCard(d) {
 
 function cArmBtn() { const b = $('#stCArm'); if (b) b.disabled = norm($('#stCPhrase')?.value) !== norm(P.d?.blitz?.phrase || P.d?.phrase); }
 
+// ------------------------------------------------------------------ new MFFU account Names (engine/new_accounts.py)
+// 2026-10-29: after a pass / fail MFFU issues a new account Name; when NinjaTrader shows a Name no bot uses, one line per Name
+// with one tap per role that fits its size. The tap only assigns the Name (POST /api/next/start/newacct): nothing is armed,
+// the next Start trading asks for the live phrase. Kept in these two functions (the BLITZ slot lives elsewhere on the page).
+function newAcctLine(d) {
+  const rows = d.new_accounts?.new || [];
+  if (!rows.length) return '';
+  const can = d.local && !d.running;
+  return rows.map((r) => `<div class="st-ro warn st-newacct" style="flex-wrap:wrap">${icon('info')}<span style="flex:1 1 220px;min-width:0">${esc(r.say)}</span>${!d.local ? '' : `<span class="st-acts">
+      ${(r.options || []).map((o) => `<button type="button" class="btn primary sm" data-na-use="${esc(o.act)}" data-label="${esc(o.label)}" data-name="${esc(r.name)}" ${can ? '' : 'disabled title="Stop the bot first"'}>${esc(o.label)}</button>`).join('')}
+      <button type="button" class="btn ghost sm" data-na-no="${esc(r.name)}">Not for the bot</button></span>`}</div>`).join('');
+}
+
+function wireNewAcct(el) {
+  el.addEventListener('click', (e) => {
+    const u = e.target.closest('[data-na-use]');
+    if (u && !u.disabled) {
+      if (!confirm(`${u.dataset.label}: ${u.dataset.name}?\n\nNothing is armed: Start trading runs the setup for it and asks for I ACCEPT LIVE RISK.`)) return;
+      act(() => post('newacct', { name: u.dataset.name, act: u.dataset.naUse }));
+      return;
+    }
+    const n = e.target.closest('[data-na-no]');
+    if (n) act(() => post('newacct', { name: n.dataset.naNo, dismiss: true }));
+  });
+}
+
 // ------------------------------------------------------------------ draw
 function draw() {
   const el = $('#page-start');
@@ -224,6 +250,7 @@ function draw() {
       <div class="st-side">${d.local ? '' : `<div class="st-ro">${icon('phone')}<span>Read-only here: start and change accounts on the PC itself (http://localhost:8766).</span></div>`}
       ${P.offline ? `<div class="st-ro warn">${icon('refresh')}<span>Reconnecting to the bot server…</span></div>` : ''}</div></div>
     ${goCard(d)}
+    ${newAcctLine(d)}
     ${picks(d)}
     <div class="st-cols"><div class="card nx-glass cc-card st-list"><div class="card-h"><h3>Checklist</h3><div class="card-tools">${chip(`${n}/${d.steps.length}`, d.all_green ? 'good' : '')}</div></div>
       ${d.steps.map((s, i) => stepRow(s, d, i === d.steps.findIndex((x) => x.action === P.open && !x.done))).join('')}
@@ -346,7 +373,7 @@ function wire(el) {
 export const start = {
   show() {
     const el = $('#page-start');
-    if (el && !el.dataset.wired) { el.dataset.wired = '1'; wire(el); }
+    if (el && !el.dataset.wired) { el.dataset.wired = '1'; wire(el); wireNewAcct(el); }
     if (!P.d && el) el.innerHTML = '<div class="empty">Loading the start list…</div>';
     load();
   },

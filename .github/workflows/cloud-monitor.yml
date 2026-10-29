@@ -56,6 +56,19 @@ jobs:
             # the midday lull 11:30-13:30 ET (no killzone) keeps the old filter: about one run an hour there
             if [ $mod -ge 690 ] && [ $mod -lt 810 ] && [ $((m % 30)) -ge 15 ]; then go=0; fi
           fi
+          # Actions minutes (engine/actions_budget.py): near the 2,000 free minutes the monitor writes "saver": true into
+          # budget.json on the dashboard branch; then only the 01:30 night check and the first run of each hour (outside
+          # the midday lull) go. No file / unreadable / another month -> nothing changes.
+          if [ "$go" = "1" ] && [ "${GITHUB_ACTIONS:-}" = "true" ] && [ "${{ github.event.schedule }}" != "47 21 * * 0" ]; then
+            b=$(curl -fsS --max-time 10 -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github.raw" \
+                "https://api.github.com/repos/${{ github.repository }}/contents/budget.json?ref=dashboard" 2>/dev/null || true)
+            month=$(TZ=America/New_York date +%Y-%m)
+            if echo "$b" | grep -q "\"month\": *\"$month\"" && echo "$b" | grep -q '"saver": *true'; then
+              if [ $mod -ge 120 ] && { [ $m -ge 30 ] || { [ $mod -ge 690 ] && [ $mod -lt 810 ]; }; }; then
+                go=0; echo "Actions saver mode (budget.json): this half-hour run is skipped"
+              fi
+            fi
+          fi
           echo "ET $(TZ=America/New_York date '+%a %H:%M') -> go=$go"
           echo "go=$go" >> "$GITHUB_OUTPUT"
 

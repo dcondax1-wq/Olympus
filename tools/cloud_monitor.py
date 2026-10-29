@@ -1108,6 +1108,14 @@ def run(out):
             print(f"charts: {len(new_state['charts']['made'])} drawn in {new_state['charts'].get('secs')} s")
     except Exception as e:  # never fails the run
         print("charts failed:", e.__class__.__name__, e)
+    # ---- GitHub Actions minutes (engine/actions_budget.py): this month's estimate + budget.json (the workflow's guard step
+    # reads it: saver mode near the free 2,000 keeps the night check and one run an hour)
+    try:
+        from engine import actions_budget
+        new_state["actions"] = actions_budget.on_run(out, st.get("actions"), now, time.time() - now)
+        print(new_state["actions"]["estimate"]["text"])
+    except Exception as e:  # never fails the run
+        print("actions budget failed:", e.__class__.__name__, e)
     with open(os.path.join(out, "state.json"), "w", encoding="utf-8") as fh:
         json.dump(new_state, fh, indent=1, default=str)
     print(f"ok: last bar {health['last_bar']}, model {state.get('model_state')}, ledger {len(ledger)}, alerts {len(new_alerts)} {sent}"

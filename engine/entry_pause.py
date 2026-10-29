@@ -103,7 +103,8 @@ def set_pause(until, now=None, path: str = PATH, src: str = "pc", cid: str | Non
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(rec, fh, indent=1)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
     return {"ok": True, **rec}
 
 

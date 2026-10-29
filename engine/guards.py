@@ -128,7 +128,8 @@ def save_state(bot, s: dict):
         tmp = p + ".tmp"
         with open(tmp, "w", encoding="utf-8") as fh:
             json.dump(s, fh, indent=1)
-        os.replace(tmp, p)
+        from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+        _fs_replace(tmp, p)
     except Exception as e:
         bot._note_error(f"guards state save failed: {e}")
 
@@ -205,14 +206,8 @@ def account_max(bot):
 def full_closure(day: str) -> bool:
     """CME equity futures closed all day (no Globex session): New Year's Day and Christmas Day (observed on Monday when
     they fall on a Sunday). Good Friday / Thanksgiving / the other holidays trade with an early close (lit_live.early_close)."""
-    d = dt.date.fromisoformat(day)
-    for m, dd in ((1, 1), (12, 25)):
-        h = dt.date(d.year, m, dd)
-        if h.weekday() == 6:
-            h += dt.timedelta(days=1)
-        if d == h:
-            return True
-    return False
+    from . import cme_calendar             # 2026-10-29: one calendar for every strategy (+ Christmas on a Saturday: Fri closed)
+    return cme_calendar.full_closure(day)
 
 
 def tday_mod(mod: int) -> int:

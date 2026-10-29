@@ -180,7 +180,8 @@ def trading_day(ts) -> str:
 
 
 def market_open(ts) -> bool:
-    """Is CME Globex expected to be printing bars at `ts`? Sun 18:00 ET -> Fri 17:00 ET, daily break 17:00-18:00."""
+    """Is CME Globex expected to be printing bars at `ts`? Sun 18:00 ET -> Fri 17:00 ET, daily break 17:00-18:00, CME
+    holiday closures / early halts (engine/cme_calendar.halted)."""
     e = _et(ts)
     mod = e.hour * 60 + e.minute
     if e.weekday() == 5:
@@ -189,7 +190,13 @@ def market_open(ts) -> bool:
         return False
     if e.weekday() == 4 and mod >= 1020:
         return False
-    return not (1020 <= mod < 1080)
+    if 1020 <= mod < 1080:
+        return False
+    try:                                  # CME holidays (engine/cme_calendar.py): a full closure, or after an early halt
+        from .cme_calendar import halted
+        return not halted(ts)             # (no FEED STALE / gap alarms on Christmas or Thanksgiving afternoon)
+    except Exception:
+        return True
 
 
 TICK = 0.25
@@ -1749,10 +1756,10 @@ class LiveBot:
             pv["final"] = True
 
     def _second_past_flat(self, pv, now):
-        """15:55 ET of the trade's day reached (the research flat), or the CME session ended early."""
+        """15:55 ET of the trade's day reached (the research flat), or 5 min before a CME early close (cme_calendar)."""
         try:
-            flat = int(_dt.datetime.combine(_dt.date.fromisoformat(pv["day"]), _dt.time(15, 55), ET_TZ).timestamp())
-            return int(now) >= flat
+            from .cme_calendar import flat_ts
+            return int(now) >= flat_ts(pv["day"], 955)
         except Exception:
             return False
 

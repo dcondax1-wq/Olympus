@@ -91,7 +91,8 @@ def _write_json(path, obj):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(obj, fh, indent=1, default=str)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def trading_day(t) -> str:
@@ -879,7 +880,8 @@ def _jl_write(path, rows):
     with open(tmp, "w", encoding="utf-8") as fh:
         for r in rows:
             fh.write(json.dumps(r, default=str) + "\n")
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def heartbeat_block(store=None) -> dict | None:

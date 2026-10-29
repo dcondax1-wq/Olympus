@@ -169,7 +169,8 @@ def save_done(d: dict, path: str = DONE_PATH):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(d, f, indent=1)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def hb_field(path: str | None = None, env=None, now=None) -> dict:
@@ -205,6 +206,11 @@ def _extras(folder: str, now=None) -> dict:
         from . import handsoff
         out["handsoff"] = handsoff.compact(path=os.path.join(folder, "handsoff.jsonl"),
                                            presence_path=os.path.join(folder, "presence.jsonl"))
+    except Exception:
+        pass
+    try:                                         # manual steps this week (engine/autopilot.py, docs/AUTOPILOT.md)
+        from . import autopilot
+        out["autopilot"] = autopilot.compact(folder, now)
     except Exception:
         pass
     return out

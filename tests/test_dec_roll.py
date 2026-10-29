@@ -284,6 +284,64 @@ def adapter_part():
         ad.send({"side": "exit", "reason": "x", "entry_t": t})
 
 
+def accounts_part():
+    """D (2026-10-29). Every account the bot routes (Zlarior's 50K, ATLAS's 25K, a future account C / BLITZ) has its own
+    NinjaTraderAdapter (engine/live.ADAPTERS, account_b / multi_account build theirs from the same table), so each one carries
+    the roll guard: chart left on 12-26 on Thu 12-10 -> refused on all three; chart on 03-27 -> each entry goes to MNQ 03-27 on
+    its own account. An order contract pinned in a config (nt_instrument "MNQ 12-26") is refused after its roll even when the
+    chart is left on the same old contract; a pin to the new contract is allowed."""
+    from engine import live
+    from tests.test_lit_add_safety import World
+    from engine.ninjatrader import NinjaTraderAdapter
+    check("D. every adapter kind the accounts build for NinjaTrader is the one class with the roll guard",
+          live.ADAPTERS["ninjatrader"] is NinjaTraderAdapter)
+    with Env(LE_SIGNAL_ROOT=None, LE_LIVE_MODEL=None):
+        w = World()
+        fake = w.fake
+        d = os.path.join(w.folder, FEED_DIR)
+        os.makedirs(d, exist_ok=True)
+        w.now[0] = dt.datetime(2026, 12, 10, 2, 5, 3, tzinfo=ET).timestamp()
+
+        def make(acct, sp, **extra):
+            cfg = {"adapter": "ninjatrader", "sym": "NQ", "armed": True, "nt_folder": w.folder, "nt_account": acct,
+                   "params": {"max_micros": 40, "flat_mod": 955}, "model": "lit", "model_params": {"window": [[120, 930]]},
+                   "nt_state_path": os.path.join(w.tmp, sp), "nt_audit_log": os.path.join(w.tmp, "oif_" + sp + ".log"), **extra}
+            ad = NinjaTraderAdapter(cfg, clock=lambda: w.now[0])
+            ad._sleep = lambda s: (fake.process(), w.now.__setitem__(0, w.now[0] + s))
+            ad._alert_fn = w.alerts.append
+            return ad
+
+        accts = {"Zlarior 50K": "Sim101", "ATLAS 25K": "Sim102", "account C": "Sim103"}
+        ads = {k: make(a, f"d_{a}.json") for k, a in accts.items()}
+        fake.move(25330.0)
+        t = int(w.now[0]) - 3
+        order = {"sym": "NQ", "side": "buy", "qty": 1, "stop": 25300.0, "target": 25400.0, "entry": 25330.0, "entry_t": t}
+        open(os.path.join(d, "MNQ_instrument.txt"), "w").write("MNQ 12-26")
+        k = len(fake.files)
+        res = {n: ad.send(dict(order)) for n, ad in ads.items()}
+        check("D. Thu 12-10, chart left on MNQ 12-26: the entry is refused on all three accounts (Zlarior, ATLAS, account C), "
+              "no order file", all(not r["ok"] and "12-26" in r["error"] for r in res.values()) and len(fake.files) == k, res)
+        open(os.path.join(d, "MNQ_instrument.txt"), "w").write("MNQ 03-27")
+        sent = {}
+        for n, ad in ads.items():
+            k = len(fake.files)
+            r = ad.send(dict(order))
+            lines = [ln for _, ls in fake.files[k:] for ln in ls]
+            sent[n] = r["ok"] and any(f";{accts[n]};MNQ 03-27;BUY;1;" in ln for ln in lines) and not any(";MNQ 12-26;" in ln for ln in lines)
+            ad.send({"side": "exit", "reason": "x", "entry_t": t})
+        check("D. chart on MNQ 03-27: each account's entry goes to MNQ 03-27 on its own account name, nothing to 12-26", all(sent.values()), sent)
+        open(os.path.join(d, "MNQ_instrument.txt"), "w").write("MNQ 12-26")
+        pin_old = make("Sim104", "d_pin_old.json", nt_instrument="MNQ 12-26")
+        k = len(fake.files)
+        r_old = pin_old.send(dict(order))
+        check("D. a config pinned to MNQ 12-26 (nt_instrument) with the chart also left on 12-26: refused on Thu 12-10 (the chart "
+              "check alone would pass), the refusal says to remove the pin", not r_old["ok"] and "pinned" in r_old["error"]
+              and "MNQ 03-27" in r_old["error"] and len(fake.files) == k, r_old)
+        w.now[0] = dt.datetime(2026, 12, 9, 10, 0, 3, tzinfo=ET).timestamp()
+        r_pre = make("Sim105", "d_pin_pre.json", nt_instrument="MNQ 12-26").send({**order, "entry_t": int(w.now[0]) - 3})
+        check("D. the same pin on Wed 12-09 (before the roll) is still allowed", r_pre["ok"], r_pre)
+
+
 def main():
     from engine import alerts, news
     alerts.send = lambda *a, **kw: None
@@ -294,6 +352,7 @@ def main():
     try:
         dates_part(tmp)
         adapter_part()
+        accounts_part()
         merge_part(tmp, "MNQ", None)
         merge_part(tmp, "NQ", "NQ")
         check("no Yahoo call anywhere", not undo.calls, undo.calls)

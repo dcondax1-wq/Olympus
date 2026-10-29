@@ -480,7 +480,8 @@ def allow_account(name: str, path: str | None = None, remove: bool = False) -> l
     tmp = p + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump({"accounts": cur, "note": "NinjaTrader account Names the bot may send orders to (Sim accounts always)"}, fh, indent=1)
-    os.replace(tmp, p)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, p)
     return cur
 
 
@@ -1167,6 +1168,12 @@ class NinjaTraderAdapter:
                                               f"{self.session_from // 60:02d}:{self.session_from % 60:02d}-"
                                               f"{cut // 60:02d}:{cut % 60:02d} ET on weekdays"
                                               + (", CME early close today" if cut < self.flat_mod else "") + ")"}
+            try:                              # 2026-10-29: a CME full-closure date (Christmas, New Year) never takes an entry
+                from .cme_calendar import full_closure
+                if full_closure(_trading_day(self.clock())):
+                    return {"ok": False, "error": f"REFUSED: {_trading_day(self.clock())} is a CME holiday (no session)"}
+            except Exception:
+                pass
         return None
 
     def _flat_today(self, e, entry=False) -> int:
@@ -1323,6 +1330,24 @@ class NinjaTraderAdapter:
         """The roll guard: the LE_BarFeed chart's contract (le_feed/<ROOT>_instrument.txt) must be the one the orders go to,
         or the stop/target (priced from the chart's bars) land a roll gap (~300 pts) off the fill. Unknown chart contract
         (older LE_BarFeed): no check (the fill-gap guard in place_bracket still applies)."""
+        try:
+            # 2026-10-29: an order contract pinned in the config (nt_instrument / nt_instrument_mini, e.g. "MNQ 12-26" typed
+            # once) never follows the roll: past its roll date (8 days before expiry) it is refused for every account, even
+            # when the chart is left on the same old contract (the chart check below would pass: both old).
+            today = dt.datetime.fromtimestamp(self.clock(), ET).date()
+            for kind, pin in (self.inst_override or {}).items():
+                pe = contract_expiry(pin) if pin and pin in insts else None
+                if pe is None:
+                    continue
+                root = str(pin).split()[0]
+                front = nt_instrument(root, today)
+                fe = contract_expiry(front)
+                if fe and pe < fe:
+                    return (f"Order contract pinned to {pin} in the bot's settings (nt_instrument), but it rolled: orders belong "
+                            f"on {front} now. Remove the pinned contract (Start page > Accounts, or the nt_instrument line) "
+                            "and put the chart on " + front)
+        except Exception:
+            pass
         try:
             # the chart the bot decides on (signal_root: the MNQ chart, or the NQ chart when it is on): its prices are the
             # stop / target sent to the MNQ order contract

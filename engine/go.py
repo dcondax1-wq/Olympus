@@ -71,7 +71,8 @@ def _save(cfg, path=None):
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as fh:
         json.dump(cfg, fh, indent=1)
-    os.replace(tmp, path)
+    from .fsutil import replace as _fs_replace   # retried: Windows / OneDrive lock the target a moment
+    _fs_replace(tmp, path)
 
 
 def _http(path, body=None, timeout=5):
@@ -96,13 +97,19 @@ def bot_running() -> bool:
 
 
 def market_open(now=None) -> bool:
-    """CME Globex: Sun 18:00 ET -> Fri 17:00 ET, closed 17:00-18:00 ET every weekday."""
+    """CME Globex: Sun 18:00 ET -> Fri 17:00 ET, closed 17:00-18:00 ET every weekday and on CME holidays (cme_calendar)."""
     from zoneinfo import ZoneInfo
     t = now or dt.datetime.now(ZoneInfo("America/New_York"))
     wd, h = t.weekday(), t.hour
     if wd == 5 or (wd == 6 and h < 18) or (wd == 4 and h >= 17):
         return False
-    return h != 17
+    if h == 17:
+        return False
+    try:                                  # CME holiday closure / after an early halt (engine/cme_calendar.py)
+        from .cme_calendar import halted
+        return not halted((t if t.tzinfo else t.replace(tzinfo=ZoneInfo("America/New_York"))).timestamp())
+    except Exception:
+        return True
 
 
 def session_day(now=None) -> str:
