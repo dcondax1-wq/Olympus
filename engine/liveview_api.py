@@ -620,6 +620,9 @@ def structure_block(bot, now: int, price=None, compute: bool = True) -> dict | N
     return ST.block_from(A, int(now), price)
 
 
+_ADVICE = {"key": None, "val": []}         # the open Zlarior trade's advisor notes, recomputed once per new closed 1m bar
+
+
 def _structure_notes(out: dict, bot, now: int):
     """One structure line + the playbook rule in each strategy's thinking panel (advice only), and for an open Zlarior trade the
     discretion advisor's live notes (engine/advisor.advise_open: what a structure trader would do, never an order)."""
@@ -636,9 +639,15 @@ def _structure_notes(out: dict, bot, now: int):
         if isinstance(pos, dict) and pos.get("entry") is not None and pos.get("entry_t"):
             try:
                 from . import advisor as AD, pcdash_api
-                _, b1 = pcdash_api.bot_bars(bot, int(pos["entry_t"]) - 6 * 86400)
-                adv = AD.advise_open("lit", {**pos, "dir": int(pos.get("dir") or (1 if pos.get("side") == "LONG" else -1))}, b1, now)
-                th["advice"] = [{"t": a["t"], "rule": a["rule"], "text": a["why"], "playbook": a.get("playbook")} for a in adv[:3]]
+                d_ = int(pos.get("dir") or (1 if pos.get("side") == "LONG" else -1))
+                st1 = getattr(bot, "_lit_1m_store", None)
+                last_t = int(st1["time"].iloc[-1]) if st1 is not None and len(st1) else 0
+                key = (int(pos["entry_t"]), d_, pos.get("stop"), pos.get("target"), last_t)
+                if _ADVICE["key"] != key:        # once per new 1m bar: the page polls every 3 s, the 6-day bar copy is not free
+                    _, b1 = pcdash_api.bot_bars(bot, int(pos["entry_t"]) - 6 * 86400)
+                    adv = AD.advise_open("lit", {**pos, "dir": d_}, b1, now)
+                    _ADVICE.update(key=key, val=[{"t": a["t"], "rule": a["rule"], "text": a["why"], "playbook": a.get("playbook")} for a in adv[:3]])
+                th["advice"] = list(_ADVICE["val"])
             except Exception:
                 th["advice"] = []
     at = strats.get("atlas")
