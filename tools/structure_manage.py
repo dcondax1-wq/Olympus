@@ -171,13 +171,14 @@ def manage(X, BX, fill, d, entry, stop, tg, s_day, risk, part=None):
     cur, be_done, mfe, worst = stop, False, 0.0, 0.0
     moved, tag, cut = False, None, None
     curs = {}
-    for key in ("strail", "choch"):
+    for key in ("strail", "choch", "runner"):
         o = X.get(key)
         if o:
             tf = o.get("tf", "5m")
             if tf == "1m" and not on1:
                 tf = "5m"
             curs[key] = (EvCursor(events(tf), int(B.t[fill])), events(tf))
+    run_on = False             # runner: the VIX target was reached, the rest trails on structure
     banked = None              # (share, pts) of the partial
     pf = None
     if part:
@@ -200,6 +201,20 @@ def manage(X, BX, fill, d, entry, stop, tg, s_day, risk, part=None):
                 cur, moved, tag = entry + BE_OFF, True, "BE"
                 be_done = True
         if hi_d[k] >= tg:
+            if X.get("runner") and not run_on:
+                o = X["runner"]
+                f = float(o.get("f", 0.5))
+                banked = (f, tg - entry) if f > 0 else None
+                lock = entry + float(o.get("lock", 0.5)) * (tg - entry)
+                cur, moved, tag, run_on = max(cur, lock), True, "RUNNER", True
+                be_done = True
+                tg = float("inf")
+                if f >= 1.0:
+                    exit_px, kind = entry + banked[1], "TARGET"; break
+                if lo_d[k] <= cur:                       # same bar: assume the pullback came after the high (pessimistic)
+                    exit_px, kind = cur - SLIP, "RUNNER"; break
+                k += 1
+                continue
             exit_px, kind = tg, "TARGET"; break
         if be_r is not None and not be_done and hi_d[k] >= entry + be_r * risk:
             if entry + BE_OFF > cur:
@@ -250,6 +265,13 @@ def manage(X, BX, fill, d, entry, stop, tg, s_day, risk, part=None):
                 lvl = float(E["prot"][i]) * d - TICK
                 if (not o.get("lock") or lvl >= entry + BE_OFF) and lvl > cur and lvl < c_d[k]:
                     cur, moved, tag = lvl, True, "TRAIL"
+        if "runner" in curs:
+            cu, E = curs["runner"]
+            for i in cu.new(close_t):
+                if run_on and int(E["dir"][i]) == d:
+                    lvl = float(E["prot"][i]) * d - TICK
+                    if lvl > cur and lvl < c_d[k]:
+                        cur, moved, tag = lvl, True, "RUNNER"
         k += 1
     if exit_px is None:
         return None
@@ -459,6 +481,14 @@ def variants():
     V["strail_15m_k1.0_any_lock"] = {"strail": {"tf": "15m", "k": 1.0, "kinds": "any", "lock": True}}
     for tf in ("5m", "1m"):
         V[f"breakany_{tf}_k0.75_be"] = {"choch": {"tf": tf, "k": 0.75, "act": "be", "kinds": "any"}}
+    # 4b. a runner past the VIX target: bank f there, the rest locks lock x the target distance and trails on tf structure
+    for f in (0.5, 0.0):
+        for lock in (0.5, 0.75):
+            for tf in ("5m", "15m"):
+                V[f"runner_f{f}_lock{lock}_{tf}"] = {"runner": {"f": f, "lock": lock, "tf": tf}}
+    V["runner_f0.0_lock0.9_15m"] = {"runner": {"f": 0.0, "lock": 0.9, "tf": "15m"}}
+    V["runner_f0.0_lock1.0_15m"] = {"runner": {"f": 0.0, "lock": 1.0, "tf": "15m"}}
+    V["runner_f0.0_lock0.75_1h"] = {"runner": {"f": 0.0, "lock": 0.75, "tf": "1h"}}
     # 5. higher-timeframe structure agreement at the entry
     for tf in ("1h", "15m", "both"):
         V[f"htf_{tf}_skip_against"] = {"htf": {"tf": tf, "mode": "skip_against"}}
@@ -552,7 +582,12 @@ SAVE = [   # run id, variant, family (status from the gates at save time)
     ("lit_struct_htf_1h_skip", "htf_1h_skip_against", "filters"),
     ("lit_struct_htf_both_skip", "htf_both_skip_against", "filters"),
     ("lit_struct_htf_1h_size", "htf_1h_size", "risk"),
+    ("lit_struct_runner_075_15m", "runner_f0.0_lock0.75_15m", "targets"),
+    ("lit_struct_runner_09_15m", "runner_f0.0_lock0.9_15m", "targets"),
 ]
+# statuses set by hand after the trade-level check (the gates alone would say "promising"): the runner's 2026 H1 gain is two
+# trend days (2026-04-17 +$13,473, 2026-03-18 +$6,176), it gives back 25% on most target trades and the eval path loses
+OVERRIDE = {"runner_f0.0_lock0.75_15m": "rejected", "runner_f0.0_lock0.9_15m": "rejected"}
 
 
 def save(extra=()):
@@ -568,6 +603,7 @@ def save(extra=()):
         S = rl.score(L, F.SESS)
         g = gates(o, b) if nm != "live" else None
         st = "info" if nm == "live" else ("adopt-candidate" if g["all"] else ("promising" if g["lit"] and g["freq"] else "rejected"))
+        st = OVERRIDE.get(nm, st)
         h = lambda s: (f"PF {o['lit'][s]['pf']} net {o['lit'][s]['net']:+,} (${o['lit'][s]['per_month']:,}/mo) DD {o['lit'][s]['dd']:,} "
                        f"2w {o['lit'][s]['p10']}/{o['lit'][s]['f10']} tpw {o['lit'][s]['tpw']}")
         ver = f"LIT size: H1 {h('H1')}; H2 {h('H2')}; 2021-25 ref {h('2021-25')}."

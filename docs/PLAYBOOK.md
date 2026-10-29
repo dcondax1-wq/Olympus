@@ -133,12 +133,15 @@ The noise-area momentum scalp: when NQ breaks out of its normal intraday noise, 
   Nothing switches on by itself; a rule that keeps earning goes to the owner with its numbers.
 
 ## Tonight's verdict (2026-10-29, `research/writeups/structure-management.md`)
-95 LIT and 24 ATLAS structure ideas were tested on the real trades. None makes more money than the live rules in both
+101 LIT and 24 ATLAS structure ideas were tested on the real trades. None makes more money than the live rules in both
 halves of 2026 on both sizings, so Zlarior keeps Z12-Z18 and ATLAS keeps A6-A8 unchanged.
 - The owner's "breakeven after a strong reversal" (BE on a 5m CHoCH against after +0.75R): H1 -$1,442, H2 -$775. It would
   not have fired on the 2026-10-28 trade.
 - Targets at the next liquidity pool: H1 -$6.6k to -$17.4k. Skipping trades against the 1h trend: H1 -$15.0k, H2 -$7.5k,
   about 1 trade a week (it would have skipped the 2026-10-28 short).
+- "Not a fixed RR" (let the winner run past the target, stop locks 75%, trails on the 15m structure): H1 +$13.6k, H2 +$956
+  at the LIT size, but two trend days are the whole gain, 18 of 25 target trades give back up to a quarter, and the eval
+  path loses (2-week pass 57% -> 36% in H1). The one clear target stays (Z14).
 - The one lead (watched by the advisor, not switched on): after a 15m break in the trade's favour once +1R, the stop to the
   15m protected swing: H1 +$467, H2 +$13 at the LIT size, eval path +$1,019 / +$3,762, but one more 2-week fail in H1 and
   only 7 trades changed in 2026.

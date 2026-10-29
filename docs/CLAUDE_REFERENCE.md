@@ -418,12 +418,14 @@ part yourself or fold it into a script.**
   cons_aware, stack payout reserves (cap a month) and pre-buying the next eval at the 4th payout: see the write-ups before
   redoing. Eval: keeping two_week after session 10 (`two_week_until` 999) is the one change that held in H1, H2 and 2021-25
   (+$14-21/mo per slot; owner decides, not switched).
-- **Structure management (2026-10-29, `structure-management.md`, `tools/structure_manage.py` LIT 95 variants, runs
+- **Structure management (2026-10-29, `structure-management.md`, `tools/structure_manage.py` LIT 101 variants, runs
   `lit_struct_*`; `tools/structure_atlas.py` ATLAS 24, runs `atlas_struct_*`):** with `engine/structure.py` (closed-bar BOS /
   CHoCH / protected swing / pools): target at the next opposing pool (cap / instead of the band), half off at the first pool,
   stop to the protected swing after a BOS (1m / 5m / 15m), exit / BE on a CHoCH against after +0.5-2R, 1h / 15m trend skip /
   size. None beats live LIT in both halves on both sizings (the owner's BE on a 5m CHoCH after +0.75R: H1 -$1,442 / H2 -$775;
-  1h skip: H1 -$15.0k / H2 -$7.5k, ~1 trade a week). Lead, not switched: 15m structure trail after +1R (H1 +$467 / H2 +$13,
+  1h skip: H1 -$15.0k / H2 -$7.5k, ~1 trade a week; runner past the target, lock 75% + 15m trail: H1 +$13.6k / H2 +$956 at
+  the LIT size but two trend days are the gain and the eval path loses, 2-week pass 57 -> 36% H1, rejected). Lead, not
+  switched: 15m structure trail after +1R (H1 +$467 / H2 +$13,
   eval +$1,019 / +$3,762, one more 2-week fail in H1, 7 trades changed): the advisor's `trail_15m` tally watches it. ATLAS:
   the 15m protected-swing stop passes the 25K account gates but its trades lose R in every span at a fixed risk (sizing
   path): rejected; every ATLAS exit / trail loses in 2026. The executors' base = live exactly (LIT 0 mismatches; ATLAS 96%

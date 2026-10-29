@@ -3,8 +3,8 @@ title: Trade like a person - market structure targets, trails, CHoCH exits and h
 family: management
 date: 2026-10-29
 status: no adopt-candidate; one promising lead (LIT 15m structure trail, thin: 7 trades in 2026)
-summary: Owner (2026-10-28) - "Written rules the bot knows, trade like a person, not a fixed rr, learn market structure." A new market-structure engine (swings, BOS, CHoCH, protected swing, liquidity pools, premium / discount on 5m / 15m / 1h) was used to test 95 LIT and 24 ATLAS management ideas on the real trades. Nothing beats the live rules in both halves of 2026 on both sizings, so nothing changes. The owner's idea "breakeven after a strong reversal" (BE on a 5m CHoCH against after +0.75R) costs H1 -$1,442 / H2 -$775. Targets at the next liquidity pool cost H1 -$6.6k to -$17.4k. Skipping trades against the 1h trend would have saved the -$437 trade of 2026-10-28 but costs H1 -$15.0k / H2 -$7.5k and halves the trade rate. The one lead: after a 15m break in the trade's favour (+1R) move the stop to the 15m protected swing: H1 +$467, H2 +$13 (LIT size), eval path H1 +$1,019 / H2 +$3,762, but one more 2-week fail in H1 (1.7% to 2.5%) and only 7 trades changed: watch it in the advisor, don't switch it on. ATLAS: the stop at the 15m protected swing passes the 25K account gates (H1 +$3.6k) but its trades lose R in every span at a fixed risk (a sizing-path effect, not an edge): rejected. The new discretion advisor scores every live and paper trade with these rules in dollars from now on.
-runs: lit_struct_base, lit_struct_strail_15m_k1_any, lit_struct_choch_5m_k075_be, lit_struct_choch_5m_k1_exit, lit_struct_choch_15m_k1_exit, lit_struct_strail_5m_k1, lit_struct_tgt_cap_lit_r1.5, lit_struct_tgt_pool_lit_r3, lit_struct_tgt_cap_1h_r3, lit_struct_part_lit_r1, lit_struct_htf_1h_skip, lit_struct_htf_both_skip, lit_struct_htf_1h_size, atlas_struct_base, atlas_struct_pstop_15m_cap3.0, atlas_struct_pstop_15m_cap2.0, atlas_struct_pstop_5m_cap2.5, atlas_struct_pstop_1h_cap3.0, atlas_struct_trail_15m_k1.0, atlas_struct_choch_5m_k1.0_exit, atlas_struct_choch_5m_k0.5_be
+summary: Owner (2026-10-28) - "Written rules the bot knows, trade like a person, not a fixed rr, learn market structure." A new market-structure engine (swings, BOS, CHoCH, protected swing, liquidity pools, premium / discount on 5m / 15m / 1h) was used to test 101 LIT and 24 ATLAS management ideas on the real trades. "Not a fixed RR" (let the winner run past the target on the 15m structure) makes H1 +$13.6k / H2 +$956 at the LIT size, but two trend days are the whole gain and the eval path loses (2-week pass 57% -> 36% H1): rejected. Nothing beats the live rules in both halves of 2026 on both sizings, so nothing changes. The owner's idea "breakeven after a strong reversal" (BE on a 5m CHoCH against after +0.75R) costs H1 -$1,442 / H2 -$775. Targets at the next liquidity pool cost H1 -$6.6k to -$17.4k. Skipping trades against the 1h trend would have saved the -$437 trade of 2026-10-28 but costs H1 -$15.0k / H2 -$7.5k and halves the trade rate. The one lead: after a 15m break in the trade's favour (+1R) move the stop to the 15m protected swing: H1 +$467, H2 +$13 (LIT size), eval path H1 +$1,019 / H2 +$3,762, but one more 2-week fail in H1 (1.7% to 2.5%) and only 7 trades changed: watch it in the advisor, don't switch it on. ATLAS: the stop at the 15m protected swing passes the 25K account gates (H1 +$3.6k) but its trades lose R in every span at a fixed risk (a sizing-path effect, not an edge): rejected. The new discretion advisor scores every live and paper trade with these rules in dollars from now on.
+runs: lit_struct_base, lit_struct_strail_15m_k1_any, lit_struct_runner_075_15m, lit_struct_runner_09_15m, lit_struct_choch_5m_k075_be, lit_struct_choch_5m_k1_exit, lit_struct_choch_15m_k1_exit, lit_struct_strail_5m_k1, lit_struct_tgt_cap_lit_r1.5, lit_struct_tgt_pool_lit_r3, lit_struct_tgt_cap_1h_r3, lit_struct_part_lit_r1, lit_struct_htf_1h_skip, lit_struct_htf_both_skip, lit_struct_htf_1h_size, atlas_struct_base, atlas_struct_pstop_15m_cap3.0, atlas_struct_pstop_15m_cap2.0, atlas_struct_pstop_5m_cap2.5, atlas_struct_pstop_1h_cap3.0, atlas_struct_trail_15m_k1.0, atlas_struct_choch_5m_k1.0_exit, atlas_struct_choch_5m_k0.5_be
 ---
 
 ## In one minute
@@ -36,6 +36,7 @@ runs: lit_struct_base, lit_struct_strail_15m_k1_any, lit_struct_choch_5m_k075_be
 | Target = the nearer of the VIX band and the next LIT pool >= 1.5R | -$17,399 | -$979 | +$7,339 | reject |
 | Target = the next LIT pool >= 3R instead of the band | -$11,264 | +$226 | +$17,727 | reject |
 | Half off at the first LIT pool >= 1R | -$9,481 | -$1,388 | +$5,709 | reject |
+| Let the winner run past the target (stop locks 75%, 15m trail) | +$13,600 | +$956 | -$10,278 | reject (2 trend days; eval -$12.2k H1) |
 | Skip trades against the 1h trend | -$14,968 | -$7,479 | +$736 | reject (1 trade a week) |
 | 1.5x with the 1h trend, 0.5x against | +$2,278 | -$2,478 | +$778 | reject |
 
@@ -93,7 +94,7 @@ $ are changes vs live at the LIT size rule (run `lit_live`, costs in, $1.40 + 1 
   trades. Scored by `tools/atlas.score` (the real account-B rules on the Builder 25K: need sizing, LIT first, no hedge, LIT's
   armed setups block, max 2 a day, $600 soft daily loss). ATLAS is judged on 2026 AND 2021-25, plus a per-trade check (total
   R at a fixed risk not lower in H1 and H2).
-- **All variants:** `research/lit/structure_results.json` (95), `research/second/structure_atlas.json` (24).
+- **All variants:** `research/lit/structure_results.json` (101; 9 of them equal live: a breakeven at +1R or later is the live rule), `research/second/structure_atlas.json` (24).
 
 ## Results: LIT (selected; all variants in the JSON)
 
@@ -120,6 +121,25 @@ $ are changes vs live at the LIT size rule (run `lit_live`, costs in, $1.40 + 1 
 | Skip when the 1h trend is against the trade | -14,968 | -7,479 | +736 | 1.09 / 1.03 | -15,826 | -10,584 | 34.5 / 0.0 | 34.8 / 0.0 | reject |
 | Skip when the 1h AND 15m trends are against | -9,534 | -7,771 | +9,710 | 1.37 / 1.47 | -10,695 | -10,276 | 47.9 / 0.0 | 42.0 / 0.0 | reject |
 | 1.5x with the 1h trend, 0.5x against (LIT size only) | +2,278 | -2,478 | +778 | 3.12 / 2.56 | - | - | - | - | reject |
+
+**"Not a fixed RR": let the winner run past the target on the 15m structure** (`lit_struct_runner_075_15m`,
+`lit_struct_runner_09_15m`): when the VIX target (or the 8R bank) is reached, nothing is taken; the stop locks 75% (or 90%)
+of the target distance and then trails to each new 15m protected swing; out on that stop or at 15:55.
+
+| Runner | LIT size H1 | H2 | 2021-25 ref | Eval path H1 | H2 | Eval 2-wk pass/fail H1 | H2 | Verdict |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| Live (bank at the target) | +$33,901 | +$9,919 | +$1,265 | +$34,822 | +$16,264 | 57.1 / 1.7 | 52.2 / 5.8 | stays |
+| Lock 75%, 15m trail | **+$13,600** | **+$956** | -$10,278 | -$12,192 | +$5,479 | 36.1 / 1.7 | 44.9 / 5.8 | reject |
+| Lock 90%, 15m trail | +$10,719 | +$1,055 | -$2,425 | -$13,614 | -$1,869 | 43.7 / 1.7 | 44.9 / 5.8 | reject |
+| Lock 75%, bank half at the target | +$6,800 | +$478 | -$5,139 | -$15,272 | -$732 | 36.1 / 1.7 | 46.4 / 5.8 | reject |
+
+- On the LIT size rule it makes more in both halves of 2026, but the H1 gain is two trend days: 2026-04-17 (+$6,226 ->
+  +$19,699, the move ran 29.7R) and 2026-03-18 (+$4,649 -> +$10,825). On 18 of the 25 target trades it gives back up to a
+  quarter of the target (-$2 to -$1,310 each). Without those two days H1 is about -$6,000.
+- On the eval path it is clearly worse (2-week pass 57.1% -> 36.1% H1, 52.2% -> 44.9% H2): "one winner passes" needs the
+  target banked the moment it trades.
+- On a funded account it would also make the big days that MFFU's 50% best-day consistency rule punishes. Rejected; the
+  live target stays (Z14).
 
 **The lead in full** (`lit_struct_strail_15m_k1_any`):
 

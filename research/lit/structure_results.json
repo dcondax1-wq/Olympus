@@ -14985,5 +14985,1831 @@
    "usd": 0,
    "mfe_r": 0.95
   }
+ },
+ "runner_f0.5_lock0.5_5m": {
+  "X": {
+   "runner": {
+    "f": 0.5,
+    "lock": 0.5,
+    "tf": "5m"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 5.23,
+    "net": 36020,
+    "per_month": 5910,
+    "dd": -2196,
+    "tot_r": 69.48,
+    "p10": 26.6,
+    "f10": 1.6,
+    "dec10": 28.2,
+    "p15": 39.8,
+    "f15": 4.7,
+    "slow_pass": 35.4,
+    "pass_med": 12.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.76,
+    "net": 9175,
+    "per_month": 2470,
+    "dd": -1396,
+    "tot_r": 29.93,
+    "p10": 20.5,
+    "f10": 0.0,
+    "dec10": 20.5,
+    "p15": 30.8,
+    "f15": 0.0,
+    "slow_pass": 66.2,
+    "pass_med": 22.0
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 0.97,
+    "net": -2705,
+    "per_month": -53,
+    "dd": -21317,
+    "tot_r": 16.12,
+    "p10": 5.2,
+    "f10": 13.3,
+    "dec10": 18.5,
+    "p15": 8.4,
+    "f15": 23.0,
+    "slow_pass": 68.3,
+    "pass_med": 24.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 75,
+    "tpw": 2.93,
+    "wk2": 81,
+    "win": 60.0,
+    "pf": 2.77,
+    "net": 23369,
+    "per_month": 3834,
+    "dd": -3915,
+    "avg_win": 812,
+    "avg_loss": -440,
+    "p10": 39.5,
+    "f10": 1.7,
+    "p15": 53.5,
+    "f15": 1.8,
+    "dec10": 41.2,
+    "slow_pass": 32.2,
+    "pass_med": 10.0,
+    "mc": {
+     "p10": 37.0,
+     "f10": 3.6
+    },
+    "b2b": "7/1/9"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.49,
+    "net": 14901,
+    "per_month": 4012,
+    "dd": -3075,
+    "avg_win": 1245,
+    "avg_loss": -500,
+    "p10": 46.4,
+    "f10": 5.8,
+    "p15": 53.1,
+    "f15": 6.2,
+    "dec10": 52.2,
+    "slow_pass": 25.8,
+    "pass_med": 7.5,
+    "mc": {
+     "p10": 45.0,
+     "f10": 2.3
+    },
+    "b2b": "4/0/7"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 10,
+    "cut_usd": -5869,
+    "other_usd": 7988,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 6,
+    "cut_usd": -1659,
+    "other_usd": 916,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 29,
+    "cut_usd": -11785,
+    "other_usd": 7815,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 23,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 10
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
+ },
+ "runner_f0.5_lock0.5_15m": {
+  "X": {
+   "runner": {
+    "f": 0.5,
+    "lock": 0.5,
+    "tf": "15m"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 5.5,
+    "net": 38401,
+    "per_month": 6300,
+    "dd": -2196,
+    "tot_r": 73.23,
+    "p10": 26.6,
+    "f10": 1.6,
+    "dec10": 28.2,
+    "p15": 36.7,
+    "f15": 4.7,
+    "slow_pass": 40.5,
+    "pass_med": 12.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.87,
+    "net": 9740,
+    "per_month": 2622,
+    "dd": -1396,
+    "tot_r": 30.66,
+    "p10": 20.5,
+    "f10": 0.0,
+    "dec10": 20.5,
+    "p15": 32.1,
+    "f15": 0.0,
+    "slow_pass": 64.3,
+    "pass_med": 22.5
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 0.99,
+    "net": -1444,
+    "per_month": -28,
+    "dd": -20525,
+    "tot_r": 20.2,
+    "p10": 5.5,
+    "f10": 12.5,
+    "dec10": 18.0,
+    "p15": 8.1,
+    "f15": 21.8,
+    "slow_pass": 70.1,
+    "pass_med": 25.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 75,
+    "tpw": 2.93,
+    "wk2": 81,
+    "win": 60.0,
+    "pf": 2.9,
+    "net": 25033,
+    "per_month": 4107,
+    "dd": -3915,
+    "avg_win": 849,
+    "avg_loss": -440,
+    "p10": 39.5,
+    "f10": 1.7,
+    "p15": 53.5,
+    "f15": 1.8,
+    "dec10": 41.2,
+    "slow_pass": 32.2,
+    "pass_med": 10.0,
+    "mc": {
+     "p10": 37.0,
+     "f10": 3.6
+    },
+    "b2b": "7/1/9"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.48,
+    "net": 14933,
+    "per_month": 4020,
+    "dd": -3075,
+    "avg_win": 1250,
+    "avg_loss": -504,
+    "p10": 46.4,
+    "f10": 5.8,
+    "p15": 51.6,
+    "f15": 6.2,
+    "dec10": 52.2,
+    "slow_pass": 27.4,
+    "pass_med": 7.0,
+    "mc": {
+     "p10": 44.5,
+     "f10": 2.4
+    },
+    "b2b": "4/0/7"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 10,
+    "cut_usd": -5976,
+    "other_usd": 10475,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 7,
+    "cut_usd": -1713,
+    "other_usd": 1535,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 29,
+    "cut_usd": -12960,
+    "other_usd": 10251,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 17,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 16
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
+ },
+ "runner_f0.5_lock0.75_5m": {
+  "X": {
+   "runner": {
+    "f": 0.5,
+    "lock": 0.75,
+    "tf": "5m"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 5.48,
+    "net": 38214,
+    "per_month": 6270,
+    "dd": -2196,
+    "tot_r": 73.09,
+    "p10": 28.9,
+    "f10": 1.6,
+    "dec10": 30.5,
+    "p15": 43.0,
+    "f15": 3.9,
+    "slow_pass": 36.8,
+    "pass_med": 12.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.89,
+    "net": 9812,
+    "per_month": 2642,
+    "dd": -1396,
+    "tot_r": 31.29,
+    "p10": 23.1,
+    "f10": 0.0,
+    "dec10": 23.1,
+    "p15": 33.3,
+    "f15": 0.0,
+    "slow_pass": 65.3,
+    "pass_med": 21.0
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 0.94,
+    "net": -6150,
+    "per_month": -120,
+    "dd": -21551,
+    "tot_r": 3.29,
+    "p10": 3.8,
+    "f10": 13.3,
+    "dec10": 17.1,
+    "p15": 6.4,
+    "f15": 23.0,
+    "slow_pass": 69.3,
+    "pass_med": 24.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 75,
+    "tpw": 2.93,
+    "wk2": 81,
+    "win": 60.0,
+    "pf": 2.37,
+    "net": 18007,
+    "per_month": 2954,
+    "dd": -3915,
+    "avg_win": 692,
+    "avg_loss": -438,
+    "p10": 36.1,
+    "f10": 1.7,
+    "p15": 53.5,
+    "f15": 1.8,
+    "dec10": 37.8,
+    "slow_pass": 33.0,
+    "pass_med": 11.0,
+    "mc": {
+     "p10": 36.5,
+     "f10": 3.5
+    },
+    "b2b": "6/1/9"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.6,
+    "net": 15332,
+    "per_month": 4128,
+    "dd": -3022,
+    "avg_win": 1247,
+    "avg_loss": -480,
+    "p10": 46.4,
+    "f10": 5.8,
+    "p15": 53.1,
+    "f15": 6.2,
+    "dec10": 52.2,
+    "slow_pass": 25.8,
+    "pass_med": 8.0,
+    "mc": {
+     "p10": 43.5,
+     "f10": 2.4
+    },
+    "b2b": "4/0/7"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 11,
+    "cut_usd": -3190,
+    "other_usd": 7503,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 6,
+    "cut_usd": -1023,
+    "other_usd": 916,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 41,
+    "cut_usd": -9285,
+    "other_usd": 1870,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 24,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 9
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
+ },
+ "runner_f0.5_lock0.75_15m": {
+  "X": {
+   "runner": {
+    "f": 0.5,
+    "lock": 0.75,
+    "tf": "15m"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 5.77,
+    "net": 40701,
+    "per_month": 6678,
+    "dd": -2196,
+    "tot_r": 76.99,
+    "p10": 28.9,
+    "f10": 1.6,
+    "dec10": 30.5,
+    "p15": 43.0,
+    "f15": 3.9,
+    "slow_pass": 36.8,
+    "pass_med": 12.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 3.0,
+    "net": 10397,
+    "per_month": 2799,
+    "dd": -1396,
+    "tot_r": 32.08,
+    "p10": 23.1,
+    "f10": 0.0,
+    "dec10": 23.1,
+    "p15": 34.6,
+    "f15": 0.0,
+    "slow_pass": 63.0,
+    "pass_med": 21.0
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 0.96,
+    "net": -3874,
+    "per_month": -76,
+    "dd": -20085,
+    "tot_r": 7.91,
+    "p10": 4.9,
+    "f10": 12.5,
+    "dec10": 17.4,
+    "p15": 7.6,
+    "f15": 21.8,
+    "slow_pass": 67.3,
+    "pass_med": 23.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 75,
+    "tpw": 2.93,
+    "wk2": 81,
+    "win": 60.0,
+    "pf": 2.49,
+    "net": 19550,
+    "per_month": 3207,
+    "dd": -3915,
+    "avg_win": 727,
+    "avg_loss": -438,
+    "p10": 36.1,
+    "f10": 1.7,
+    "p15": 53.5,
+    "f15": 1.8,
+    "dec10": 37.8,
+    "slow_pass": 33.0,
+    "pass_med": 11.0,
+    "mc": {
+     "p10": 36.6,
+     "f10": 3.5
+    },
+    "b2b": "6/1/9"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.62,
+    "net": 15532,
+    "per_month": 4182,
+    "dd": -3022,
+    "avg_win": 1257,
+    "avg_loss": -480,
+    "p10": 46.4,
+    "f10": 5.8,
+    "p15": 54.7,
+    "f15": 6.2,
+    "dec10": 52.2,
+    "slow_pass": 24.2,
+    "pass_med": 8.0,
+    "mc": {
+     "p10": 42.9,
+     "f10": 2.4
+    },
+    "b2b": "4/0/7"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 11,
+    "cut_usd": -3190,
+    "other_usd": 9990,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 7,
+    "cut_usd": -1057,
+    "other_usd": 1535,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 41,
+    "cut_usd": -9357,
+    "other_usd": 4218,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 19,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 14
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
+ },
+ "runner_f0.0_lock0.5_5m": {
+  "X": {
+   "runner": {
+    "f": 0.0,
+    "lock": 0.5,
+    "tf": "5m"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 5.47,
+    "net": 38140,
+    "per_month": 6257,
+    "dd": -2196,
+    "tot_r": 69.77,
+    "p10": 20.3,
+    "f10": 1.6,
+    "dec10": 21.9,
+    "p15": 35.2,
+    "f15": 6.2,
+    "slow_pass": 33.8,
+    "pass_med": 13.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.62,
+    "net": 8432,
+    "per_month": 2270,
+    "dd": -1396,
+    "tot_r": 29.49,
+    "p10": 12.8,
+    "f10": 0.0,
+    "dec10": 12.8,
+    "p15": 23.1,
+    "f15": 0.0,
+    "slow_pass": 71.9,
+    "pass_med": 32.0
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 0.93,
+    "net": -6676,
+    "per_month": -131,
+    "dd": -23208,
+    "tot_r": 14.12,
+    "p10": 4.2,
+    "f10": 13.8,
+    "dec10": 18.0,
+    "p15": 7.4,
+    "f15": 23.3,
+    "slow_pass": 71.6,
+    "pass_med": 24.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 78,
+    "tpw": 3.05,
+    "wk2": 85,
+    "win": 59.0,
+    "pf": 3.14,
+    "net": 29613,
+    "per_month": 4858,
+    "dd": -3915,
+    "avg_win": 944,
+    "avg_loss": -432,
+    "p10": 37.0,
+    "f10": 1.7,
+    "p15": 51.8,
+    "f15": 1.8,
+    "dec10": 38.7,
+    "slow_pass": 30.6,
+    "pass_med": 10.0,
+    "mc": {
+     "p10": 32.5,
+     "f10": 3.9
+    },
+    "b2b": "6/1/10"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.28,
+    "net": 13885,
+    "per_month": 3738,
+    "dd": -3129,
+    "avg_win": 1235,
+    "avg_loss": -541,
+    "p10": 46.4,
+    "f10": 5.8,
+    "p15": 42.2,
+    "f15": 6.2,
+    "dec10": 52.2,
+    "slow_pass": 37.1,
+    "pass_med": 7.5,
+    "mc": {
+     "p10": 42.5,
+     "f10": 2.4
+    },
+    "b2b": "4/0/7"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 10,
+    "cut_usd": -11738,
+    "other_usd": 15977,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 6,
+    "cut_usd": -3318,
+    "other_usd": 1831,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 29,
+    "cut_usd": -23570,
+    "other_usd": 15629,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 23,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 10
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
+ },
+ "runner_f0.0_lock0.5_15m": {
+  "X": {
+   "runner": {
+    "f": 0.0,
+    "lock": 0.5,
+    "tf": "15m"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 6.03,
+    "net": 42900,
+    "per_month": 7038,
+    "dd": -2196,
+    "tot_r": 77.28,
+    "p10": 20.3,
+    "f10": 1.6,
+    "dec10": 21.9,
+    "p15": 35.2,
+    "f15": 7.0,
+    "slow_pass": 31.8,
+    "pass_med": 12.5
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.84,
+    "net": 9562,
+    "per_month": 2574,
+    "dd": -1396,
+    "tot_r": 30.93,
+    "p10": 12.8,
+    "f10": 0.0,
+    "dec10": 12.8,
+    "p15": 19.2,
+    "f15": 0.0,
+    "slow_pass": 75.0,
+    "pass_med": 30.5
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 0.96,
+    "net": -4152,
+    "per_month": -81,
+    "dd": -21624,
+    "tot_r": 22.26,
+    "p10": 5.2,
+    "f10": 13.0,
+    "dec10": 18.2,
+    "p15": 8.3,
+    "f15": 22.5,
+    "slow_pass": 65.9,
+    "pass_med": 22.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 78,
+    "tpw": 3.05,
+    "wk2": 85,
+    "win": 59.0,
+    "pf": 3.37,
+    "net": 32729,
+    "per_month": 5370,
+    "dd": -3915,
+    "avg_win": 1012,
+    "avg_loss": -432,
+    "p10": 37.0,
+    "f10": 1.7,
+    "p15": 53.5,
+    "f15": 1.8,
+    "dec10": 38.7,
+    "slow_pass": 28.2,
+    "pass_med": 10.0,
+    "mc": {
+     "p10": 32.8,
+     "f10": 3.9
+    },
+    "b2b": "6/1/10"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.24,
+    "net": 13661,
+    "per_month": 3678,
+    "dd": -3129,
+    "avg_win": 1236,
+    "avg_loss": -553,
+    "p10": 46.4,
+    "f10": 5.8,
+    "p15": 43.8,
+    "f15": 6.2,
+    "dec10": 52.2,
+    "slow_pass": 35.5,
+    "pass_med": 7.5,
+    "mc": {
+     "p10": 42.5,
+     "f10": 2.3
+    },
+    "b2b": "4/0/7"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 10,
+    "cut_usd": -11952,
+    "other_usd": 20951,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 7,
+    "cut_usd": -3427,
+    "other_usd": 3070,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 29,
+    "cut_usd": -25919,
+    "other_usd": 20502,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 17,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 16
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
+ },
+ "runner_f0.0_lock0.75_5m": {
+  "X": {
+   "runner": {
+    "f": 0.0,
+    "lock": 0.75,
+    "tf": "5m"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 5.99,
+    "net": 42527,
+    "per_month": 6977,
+    "dd": -2196,
+    "tot_r": 77.0,
+    "p10": 26.6,
+    "f10": 1.6,
+    "dec10": 28.2,
+    "p15": 39.8,
+    "f15": 4.7,
+    "slow_pass": 34.6,
+    "pass_med": 12.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.87,
+    "net": 9704,
+    "per_month": 2613,
+    "dd": -1396,
+    "tot_r": 32.21,
+    "p10": 23.1,
+    "f10": 0.0,
+    "dec10": 23.1,
+    "p15": 33.3,
+    "f15": 0.0,
+    "slow_pass": 65.3,
+    "pass_med": 21.0
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 0.86,
+    "net": -13565,
+    "per_month": -266,
+    "dd": -24146,
+    "tot_r": -11.56,
+    "p10": 3.0,
+    "f10": 13.3,
+    "dec10": 16.3,
+    "p15": 4.8,
+    "f15": 22.9,
+    "slow_pass": 75.4,
+    "pass_med": 27.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 75,
+    "tpw": 2.93,
+    "wk2": 81,
+    "win": 60.0,
+    "pf": 2.47,
+    "net": 19399,
+    "per_month": 3183,
+    "dd": -3915,
+    "avg_win": 724,
+    "avg_loss": -440,
+    "p10": 36.1,
+    "f10": 1.7,
+    "p15": 53.5,
+    "f15": 1.8,
+    "dec10": 37.8,
+    "slow_pass": 30.7,
+    "pass_med": 11.0,
+    "mc": {
+     "p10": 33.6,
+     "f10": 3.6
+    },
+    "b2b": "6/1/9"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 3.13,
+    "net": 21610,
+    "per_month": 5818,
+    "dd": -3075,
+    "avg_win": 1588,
+    "avg_loss": -508,
+    "p10": 44.9,
+    "f10": 5.8,
+    "p15": 46.9,
+    "f15": 6.2,
+    "dec10": 50.7,
+    "slow_pass": 32.3,
+    "pass_med": 8.0,
+    "mc": {
+     "p10": 39.6,
+     "f10": 2.4
+    },
+    "b2b": "5/0/7"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 11,
+    "cut_usd": -6380,
+    "other_usd": 15007,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 6,
+    "cut_usd": -2046,
+    "other_usd": 1831,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 41,
+    "cut_usd": -18570,
+    "other_usd": 3740,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 24,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 9
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
+ },
+ "runner_f0.0_lock0.75_15m": {
+  "X": {
+   "runner": {
+    "f": 0.0,
+    "lock": 0.75,
+    "tf": "15m"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 6.57,
+    "net": 47501,
+    "per_month": 7793,
+    "dd": -2196,
+    "tot_r": 84.8,
+    "p10": 26.6,
+    "f10": 1.6,
+    "dec10": 28.2,
+    "p15": 39.8,
+    "f15": 4.7,
+    "slow_pass": 34.6,
+    "pass_med": 12.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 3.09,
+    "net": 10875,
+    "per_month": 2928,
+    "dd": -1396,
+    "tot_r": 33.77,
+    "p10": 23.1,
+    "f10": 0.0,
+    "dec10": 23.1,
+    "p15": 34.6,
+    "f15": 0.0,
+    "slow_pass": 62.5,
+    "pass_med": 24.5
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 0.91,
+    "net": -9013,
+    "per_month": -177,
+    "dd": -20744,
+    "tot_r": -2.31,
+    "p10": 4.7,
+    "f10": 12.5,
+    "dec10": 17.2,
+    "p15": 6.7,
+    "f15": 21.5,
+    "slow_pass": 69.5,
+    "pass_med": 24.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 75,
+    "tpw": 2.93,
+    "wk2": 81,
+    "win": 60.0,
+    "pf": 2.72,
+    "net": 22630,
+    "per_month": 3713,
+    "dd": -3915,
+    "avg_win": 796,
+    "avg_loss": -440,
+    "p10": 36.1,
+    "f10": 1.7,
+    "p15": 56.1,
+    "f15": 1.8,
+    "dec10": 37.8,
+    "slow_pass": 27.3,
+    "pass_med": 11.0,
+    "mc": {
+     "p10": 33.8,
+     "f10": 3.6
+    },
+    "b2b": "6/1/9"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 3.13,
+    "net": 21743,
+    "per_month": 5854,
+    "dd": -3075,
+    "avg_win": 1599,
+    "avg_loss": -511,
+    "p10": 44.9,
+    "f10": 5.8,
+    "p15": 43.8,
+    "f15": 6.2,
+    "dec10": 50.7,
+    "slow_pass": 35.5,
+    "pass_med": 8.0,
+    "mc": {
+     "p10": 39.4,
+     "f10": 2.4
+    },
+    "b2b": "5/0/7"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 11,
+    "cut_usd": -6380,
+    "other_usd": 19981,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 7,
+    "cut_usd": -2114,
+    "other_usd": 3070,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 41,
+    "cut_usd": -18715,
+    "other_usd": 8437,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 19,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 14
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
+ },
+ "runner_f0.0_lock0.9_15m": {
+  "X": {
+   "runner": {
+    "f": 0.0,
+    "lock": 0.9,
+    "tf": "15m"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 6.23,
+    "net": 44620,
+    "per_month": 7320,
+    "dd": -2196,
+    "tot_r": 81.79,
+    "p10": 29.7,
+    "f10": 1.6,
+    "dec10": 31.3,
+    "p15": 44.5,
+    "f15": 3.9,
+    "slow_pass": 34.5,
+    "pass_med": 12.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 3.11,
+    "net": 10974,
+    "per_month": 2955,
+    "dd": -1396,
+    "tot_r": 31.67,
+    "p10": 20.5,
+    "f10": 0.0,
+    "dec10": 20.5,
+    "p15": 32.1,
+    "f15": 0.0,
+    "slow_pass": 64.3,
+    "pass_med": 21.5
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 0.99,
+    "net": -1160,
+    "per_month": -23,
+    "dd": -17944,
+    "tot_r": 10.68,
+    "p10": 6.2,
+    "f10": 12.5,
+    "dec10": 18.7,
+    "p15": 9.4,
+    "f15": 21.7,
+    "slow_pass": 61.2,
+    "pass_med": 20.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 75,
+    "tpw": 2.93,
+    "wk2": 81,
+    "win": 60.0,
+    "pf": 2.57,
+    "net": 21208,
+    "per_month": 3479,
+    "dd": -3915,
+    "avg_win": 771,
+    "avg_loss": -450,
+    "p10": 43.7,
+    "f10": 1.7,
+    "p15": 55.3,
+    "f15": 1.8,
+    "dec10": 45.4,
+    "slow_pass": 30.8,
+    "pass_med": 9.0,
+    "mc": {
+     "p10": 40.0,
+     "f10": 3.5
+    },
+    "b2b": "6/1/10"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.6,
+    "net": 14395,
+    "per_month": 3876,
+    "dd": -2436,
+    "avg_win": 1170,
+    "avg_loss": -451,
+    "p10": 44.9,
+    "f10": 5.8,
+    "p15": 54.7,
+    "f15": 6.2,
+    "dec10": 50.7,
+    "slow_pass": 24.2,
+    "pass_med": 8.0,
+    "mc": {
+     "p10": 44.7,
+     "f10": 2.3
+    },
+    "b2b": "5/1/5"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 12,
+    "cut_usd": -3085,
+    "other_usd": 13804,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 9,
+    "cut_usd": -1062,
+    "other_usd": 2118,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 47,
+    "cut_usd": -8354,
+    "other_usd": 5929,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 21,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 12
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
+ },
+ "runner_f0.0_lock1.0_15m": {
+  "X": {
+   "runner": {
+    "f": 0.0,
+    "lock": 1.0,
+    "tf": "15m"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 4.97,
+    "net": 33838,
+    "per_month": 5552,
+    "dd": -2196,
+    "tot_r": 69.07,
+    "p10": 35.9,
+    "f10": 1.6,
+    "dec10": 37.5,
+    "p15": 50.8,
+    "f15": 3.9,
+    "slow_pass": 25.3,
+    "pass_med": 10.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.9,
+    "net": 9899,
+    "per_month": 2665,
+    "dd": -1396,
+    "tot_r": 30.32,
+    "p10": 23.1,
+    "f10": 0.0,
+    "dec10": 23.1,
+    "p15": 33.3,
+    "f15": 0.0,
+    "slow_pass": 65.3,
+    "pass_med": 21.0
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 1.01,
+    "net": 1082,
+    "per_month": 21,
+    "dd": -19490,
+    "tot_r": 17.76,
+    "p10": 5.9,
+    "f10": 13.3,
+    "dec10": 19.2,
+    "p15": 9.5,
+    "f15": 23.0,
+    "slow_pass": 63.0,
+    "pass_med": 20.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 75,
+    "tpw": 2.93,
+    "wk2": 81,
+    "win": 60.0,
+    "pf": 3.5,
+    "net": 34767,
+    "per_month": 5704,
+    "dd": -3915,
+    "avg_win": 1081,
+    "avg_loss": -463,
+    "p10": 57.1,
+    "f10": 1.7,
+    "p15": 64.9,
+    "f15": 1.8,
+    "dec10": 58.8,
+    "slow_pass": 18.7,
+    "pass_med": 6.0,
+    "mc": {
+     "p10": 53.4,
+     "f10": 3.5
+    },
+    "b2b": "13/1/8"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.5,
+    "net": 16230,
+    "per_month": 4370,
+    "dd": -2436,
+    "avg_win": 1351,
+    "avg_loss": -539,
+    "p10": 52.2,
+    "f10": 5.8,
+    "p15": 53.1,
+    "f15": 6.2,
+    "dec10": 58.0,
+    "slow_pass": 25.8,
+    "pass_med": 5.0,
+    "mc": {
+     "p10": 56.5,
+     "f10": 2.4
+    },
+    "b2b": "6/1/5"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 15,
+    "cut_usd": -62,
+    "other_usd": 0,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 10,
+    "cut_usd": -20,
+    "other_usd": 0,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 50,
+    "cut_usd": -183,
+    "other_usd": 0,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 25,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 8
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
+ },
+ "runner_f0.0_lock0.75_1h": {
+  "X": {
+   "runner": {
+    "f": 0.0,
+    "lock": 0.75,
+    "tf": "1h"
+   }
+  },
+  "lit": {
+   "H1": {
+    "n": 80,
+    "tpw": 3.12,
+    "wk2": 85,
+    "win": 58.8,
+    "pf": 6.56,
+    "net": 47412,
+    "per_month": 7778,
+    "dd": -2196,
+    "tot_r": 84.53,
+    "p10": 26.6,
+    "f10": 1.6,
+    "dec10": 28.2,
+    "p15": 39.8,
+    "f15": 4.7,
+    "slow_pass": 34.6,
+    "pass_med": 12.0
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 2.91,
+    "net": 9942,
+    "per_month": 2677,
+    "dd": -1396,
+    "tot_r": 30.91,
+    "p10": 23.1,
+    "f10": 0.0,
+    "dec10": 23.1,
+    "p15": 29.5,
+    "f15": 0.0,
+    "slow_pass": 66.2,
+    "pass_med": 26.5
+   },
+   "2021-25": {
+    "n": 511,
+    "tpw": 2.38,
+    "wk2": 76,
+    "win": 53.8,
+    "pf": 0.91,
+    "net": -9352,
+    "per_month": -183,
+    "dd": -20744,
+    "tot_r": -2.93,
+    "p10": 4.7,
+    "f10": 12.5,
+    "dec10": 17.2,
+    "p15": 6.7,
+    "f15": 21.5,
+    "slow_pass": 69.5,
+    "pass_med": 24.0
+   }
+  },
+  "eval": {
+   "H1": {
+    "n": 75,
+    "tpw": 2.93,
+    "wk2": 81,
+    "win": 60.0,
+    "pf": 2.71,
+    "net": 22607,
+    "per_month": 3709,
+    "dd": -3915,
+    "avg_win": 796,
+    "avg_loss": -440,
+    "p10": 35.3,
+    "f10": 1.7,
+    "p15": 55.3,
+    "f15": 1.8,
+    "dec10": 37.0,
+    "slow_pass": 28.4,
+    "pass_med": 11.0,
+    "mc": {
+     "p10": 33.9,
+     "f10": 3.6
+    },
+    "b2b": "6/1/9"
+   },
+   "H2": {
+    "n": 40,
+    "tpw": 2.56,
+    "wk2": 81,
+    "win": 50.0,
+    "pf": 3.18,
+    "net": 16248,
+    "per_month": 4374,
+    "dd": -3057,
+    "avg_win": 1185,
+    "avg_loss": -372,
+    "p10": 29.0,
+    "f10": 5.8,
+    "p15": 28.1,
+    "f15": 6.2,
+    "dec10": 34.8,
+    "slow_pass": 50.8,
+    "pass_med": 16.0,
+    "mc": {
+     "p10": 26.8,
+     "f10": 2.4
+    },
+    "b2b": "3/0/7"
+   }
+  },
+  "chg": {
+   "H1": {
+    "changed": 15,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 11,
+    "cut_usd": -6470,
+    "other_usd": 19981,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "H2": {
+    "changed": 10,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 8,
+    "cut_usd": -2759,
+    "other_usd": 2782,
+    "dropped": 0,
+    "dropped_usd": 0
+   },
+   "2021-25": {
+    "changed": 50,
+    "losers_saved": 0,
+    "saved_usd": 0,
+    "winners_cut": 41,
+    "cut_usd": -19053,
+    "other_usd": 8437,
+    "dropped": 0,
+    "dropped_usd": 0
+   }
+  },
+  "n_moved": {
+   "tgt": 0,
+   "part": 0,
+   "exits": {
+    "BE": 35,
+    "RUNNER": 19,
+    "STOP": 39,
+    "CUT_T15": 13,
+    "EOD": 14
+   }
+  },
+  "today": {
+   "exit": "STOP",
+   "exit_et": "2026-10-28 04:01",
+   "pts": -42.75,
+   "qty": 5,
+   "usd": -437,
+   "mfe_r": 0.95
+  }
  }
 }
