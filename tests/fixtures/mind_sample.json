@@ -52,11 +52,11 @@
      "odds": 0.583
     }
    ],
-   "change_mind": "A 1h close above 30,861.75 (the 1h protected high) turns the 1h structure up: shorts would then be against it; (history: with the 1h trend +0.25R a trade, n 224; against +0.12R, n 407: both pay); VIX above 25 or a high-impact release would change the size of the move."
+   "change_mind": "A 1h close above 30,861.75 (the 1h protected high) turns the 1h structure up: shorts would then be against it; (history: with the 1h trend +0.25R a trade, n 224; against +0.12R, n 407: both pay); VIX above 25 would change the size of the move."
   },
   "atlas": {
    "t": 1791989400,
-   "headline": "ATLAS game plan: 2 members on watch (EMA off now); Trending down \u00b7 high volatility",
+   "headline": "ATLAS game plan: 2 members on watch (EMA off until its next window); Trending down \u00b7 high volatility",
    "scenarios": [
     {
      "if": "MACD: Armed (long): a level at 30,535.00 was swept at 09:30 ET (extreme 30,453.00); waiting until 11:30 ET for a 5m CISD close with MACD divergence",
@@ -399,7 +399,7 @@
   {
    "t": 1791989400,
    "bot": "atlas",
-   "text": "Game plan ready: ATLAS game plan: 2 members on watch (EMA off now); Trending down \u00b7 high volatility",
+   "text": "Game plan ready: ATLAS game plan: 2 members on watch (EMA off until its next window); Trending down \u00b7 high volatility",
    "level": "info"
   },
   {
@@ -417,7 +417,7 @@
   },
   "calibration": "Similar-setup memory, out of sample: Zlarior: does NOT predict (fit 2026 H1; H2 rank corr +0.00, top-third minus bottom-third -0.30R; 2021-25 rank corr +0.03, top-third minus bottom-third +0.25R); with 2021-25 as memory: 2026 H1 +1.02R (p 0.09), 2026 H2 +1.10R (p 0.13) | ATLAS: does NOT predict (fit 2026 H1; H2 rank corr -0.25, top-third minus bottom-third -0.30R; 2021-25 rank corr -0.05, top-third minus bottom-third +0.13R); with 2021-25 as memory: 2026 H1 +1.17R (p 0.03), 2026 H2 +1.56R (p 0.03) | BLITZ: does NOT predict (fit 2026 H1; H2 rank corr -0.05, top-third minus bottom-third -0.16R). Not predictive = shown as context only, no confidence claims.",
   "daytype": "Trend-day model (fit 2026 H1, 127 days): 2026 H2 AUC 0.655, 2021-25 AUC 0.633 (0.5 = coin flip); base rate 32% of days; when it said >= 60%, 51% were trend days in 2021-25 (n 73). Weak but real: odds, not a call (as a yes/no call it is no better than 'not a trend day').",
-  "ms": 199,
+  "ms": 245,
   "error": null
  }
 }

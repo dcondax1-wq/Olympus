@@ -911,6 +911,12 @@ def lit_now(bot, H: Hist, now: int) -> dict | None:
 MEMBER = {"ema": "EMA", "macd": "MD", "sr": "SR"}
 
 
+def windows_of(text) -> list:
+    """"03:00-09:30 ET" -> [(180, 570)] (the ATLAS members' entry windows, as engine/liveview_api.windows_of)."""
+    import re
+    return [(int(a) * 60 + int(b), int(c) * 60 + int(d)) for a, b, c, d in re.findall(r"(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})", str(text or ""))]
+
+
 def member_of(key: str) -> str | None:
     k = str(key or "").lower()
     for p, m in MEMBER.items():
@@ -1152,7 +1158,11 @@ def plan_lit(bot, H: Hist, now: int, reg: dict, store=None, log_dir=None) -> dic
     if w and a:
         cm.append(f"(history: with the 1h trend {w['avg_r']:+.2f}R a trade, n {w['n']}; against {a['avg_r']:+.2f}R, n {a['n']}: both pay)")
     vxx = reg.get("vix")
-    cm.append(f"VIX {'above 25' if not vxx or vxx < 25 else 'falling back under 25'} or a high-impact release would change the size of the move")
+    news = [n for n in ((b.get("guards") or {}).get("news") or []) if isinstance(n, dict) and n.get("title")]
+    if news:
+        cm.append("high-impact news today: " + ", ".join(f"{n.get('time') or '?'} {n['title']}" for n in news[:3])
+                  + " - the minutes after a release are noise, a sweep into it is not a setup until the 5m closes back")
+    cm.append(f"VIX {'above 25' if not vxx or vxx < 25 else 'falling back under 25'} would change the size of the move")
     tr = {"up": "longs", "down": "shorts"}.get(reg.get("trend"))
     head = (f"Zlarior game plan for {trading_day(now)}: " + (f"structure favours {tr} ({reg.get('label')})" if tr else f"no structure side ({reg.get('label')})")
             + (f"; VIX band {px(o18 - move)} / {px(o18 + move)}" if o18 is not None and move else ""))
@@ -1169,8 +1179,18 @@ def plan_atlas(bot, H: Hist, now: int, reg: dict, store=None, log_dir=None) -> d
             continue
         st = s.get("state") or {}
         br = s.get("brain") or {}
-        if st.get("stage") in ("off", "done", "error"):
-            idle.append(f"{s.get('short') or k} {'done for today' if st.get('stage') == 'done' else 'off now'}")
+        later = [a for a, _z in windows_of(st.get("window")) if a > et_mod(now)]      # its window still opens today
+        if st.get("stage") in ("done", "error") or (st.get("stage") == "off" and not later):
+            idle.append(f"{s.get('short') or k} {'done for today' if st.get('stage') == 'done' else 'off until its next window'}")
+            continue
+        if st.get("stage") == "off":                       # its window opens later today: what it will look for then
+            hs = _hist_stats("atlas", (lambda r, m=m: r.get("member") == m), store, log_dir) if mem_ok else None
+            then = f"ATLAS {s.get('short') or k} looks for: {s.get('label') or k} (account B sizes it; paper here)"
+            if hs:
+                then += f". History: {hs['n']} {m} trades won {hs['win']:.0%}, average {hs['avg_r']:+.2f}R"
+            scen.append({"if": f"{s.get('short') or k}: its window opens ({st.get('window')})", "then": then, "levels": [],
+                         "exp_usd": round(hs["avg_usd"], 0) if hs and hs.get("avg_usd") is not None else None,
+                         "odds": round(hs["win"], 3) if hs else None})
             continue
         lv = [round(float(x["px"]), 2) for x in br.get("levels") or [] if isinstance(x, dict) and _f(x.get("px")) is not None][:3]
         pl = br.get("plan") if isinstance(br.get("plan"), dict) else {}
@@ -1256,6 +1276,7 @@ PLANNERS = {"lit": plan_lit, "atlas": plan_atlas, "blitz": plan_blitz}
 # ================================================================================================ reviews (after each close)
 RULE_EXITS = {"TARGET", "STOP", "BE", "TIME", "TCHECK", "T15", "EOD", "FLAT", "BANK", "CUT", "HEDGE", "LIT FIRST", "TRAIL"}
 REVIEW_BACK_S = 2 * 86400                                    # trades that closed longer ago are not reviewed (first start)
+REVIEW_WAIT_S = 120                                          # the advisor scores a close within a minute or two: review after it
 
 
 def closed_trades(bot) -> list:
@@ -1838,7 +1859,8 @@ class Mind:
                 self.err = f"reviews: {ex.__class__.__name__}: {ex}"[:200]
             if reg.get("label") != self.last_regime:
                 if self.last_regime is not None:
-                    self._alert(now, "all", f"Regime now: {reg['label']} ({reg.get('why', '')[:120]})", "info")
+                    self._alert(now, "all", f"Regime now: {reg['label']} ({reg.get('why', '')[:120]})",
+                                "warn" if reg.get("vol") == "high" else "info")
                 self.last_regime = reg.get("label")
             self.history.append({"t": now, "label": reg.get("label"), "trend": reg.get("trend"), "vol": reg.get("vol"),
                                  "p_trend": (reg.get("day_type") or {}).get("p_trend")})
@@ -1889,7 +1911,7 @@ class Mind:
         old = [t for t in todo if int(t.get("exit_t") or 0) < now - REVIEW_BACK_S]
         for t in old:                              # older than 2 days (a first start, a long paper ledger): not reviewed now
             self.reviewed.add(_trade_key(t))
-        for t in [t for t in todo if int(t.get("exit_t") or 0) >= now - REVIEW_BACK_S][-20:]:
+        for t in [t for t in todo if now - REVIEW_BACK_S <= int(t.get("exit_t") or 0) <= now - REVIEW_WAIT_S][-20:]:
             k = _trade_key(t)
             self.reviewed.add(k)
             try:
