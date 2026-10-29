@@ -203,6 +203,11 @@ def t_strategies(tmp):
           OC.due(ts(2026, 12, 24, 1, 45))["presession"], OC.due(ts(2026, 11, 26, 1, 45))["presession"], OC.due(ts(2026, 12, 27, 18, 0))["weekly"]]
     check("ops pushes: no pre-session check / day summary on Christmas and New Year's Day (no session); Christmas Eve and "
           "Thanksgiving keep theirs; the Sunday week report stays", dd == [False, False, False, True, True, True], dd)
+    from engine import push
+    po = [push.pc_offline_window(ts(2026, 12, 25, 9, 0)), push.pc_offline_window(ts(2027, 1, 1, 9, 0)),
+          push.pc_offline_window(ts(2026, 12, 24, 9, 0)), push.pc_offline_window(ts(2026, 11, 26, 9, 0))]
+    check("cloud 'Surface offline' alarm: not on Christmas / New Year's Day (no session), still on Christmas Eve / Thanksgiving",
+          po == [False, False, True, True], po)
     from engine import insight_api
     n1 = insight_api.next_window([[120, 930]], ts(2026, 11, 26, 12, 0))
     n2 = insight_api.next_window([[120, 930]], ts(2026, 12, 24, 14, 0))

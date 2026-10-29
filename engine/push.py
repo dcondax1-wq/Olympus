@@ -402,7 +402,13 @@ def pc_offline_window(now) -> bool:
     """True on a weekday 01:30-16:00 ET (LIT enters 02:00-15:30 ET; the 01:30 run checks the PC before the session)."""
     e = _et_dt(now)
     mod = e.hour * 60 + e.minute
-    return e.weekday() < 5 and PC_OFFLINE_WINDOW[0] <= mod <= PC_OFFLINE_WINDOW[1]
+    if not (e.weekday() < 5 and PC_OFFLINE_WINDOW[0] <= mod <= PC_OFFLINE_WINDOW[1]):
+        return False
+    try:                                   # 2026-10-29: not on a CME full closure (Christmas, New Year's Day: no session)
+        from .cme_calendar import full_closure
+        return not full_closure(e.date())
+    except Exception:
+        return True
 
 
 def pc_since_text(t, now) -> str:
