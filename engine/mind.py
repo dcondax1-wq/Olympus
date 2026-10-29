@@ -860,7 +860,7 @@ def day_type(H: Hist, now: int, C: dict | None = None) -> dict | None:
     lab = (f"Trend day likely ({p:.0%} odds)" if p >= 0.5 else f"Range / rotation day likely (trend-day odds {p:.0%})" if p <= 0.2
            else f"Unclear day ({p:.0%} trend-day odds)")
     return {"p_trend": round(p, 3), "label": lab, "acc_note": note,
-            "x": {k_: (round(v, 3) if isinstance(v, float) else v) for k_, v in (x or {}).items() if k_ != "day"}}
+            "x": {k_: (round(float(v), 3) if isinstance(v, float) else v) for k_, v in (x or {}).items() if k_ != "day"}}
 
 
 # ================================================================================================ live setups -> similar
@@ -1651,6 +1651,9 @@ def judge_rule(bot: str, ev: dict, mult: float) -> tuple:
     return "candidate", "better on the pick half and the check half" + ("" if bot == "lit" else " and 2021-25")
 
 
+STANDING = {"lit": ("kz-london-late", "tr1h-against"), "atlas": ("ptrend-lo", "tr1h-with"), "blitz": ("ptrend-lo", "kz-lunch")}
+
+
 def observations(bot: str, R: list, buckets: list, last_n: int = 40) -> list:
     """What Mind noticed in its own recent trades: where the recent losses bunch up, where the money came from."""
     out = []
@@ -1718,6 +1721,12 @@ def research(budget_s: float = 600.0, store: dict | None = None, log_dir: str | 
             else:
                 hyps.append((f"{bot}-{bid}-focus", f"Half size for {BOTS[bot]} trades NOT {words}", (lambda r, p=pred: not p(r)), 0.5, True,
                              o["text"], words))
+        have = {h[0] for h in hyps}
+        for bid in STANDING.get(bot, ()):                  # its standing questions, asked every night with the fresh trades
+            if bid in bmap and f"{bot}-{bid}-half" not in have:
+                _b, words, pred = bmap[bid]
+                hyps.append((f"{bot}-{bid}-half", f"Half size for {BOTS[bot]} trades {words}", pred, 0.5, False,
+                             f"Standing question: do {BOTS[bot]} trades {words} deserve less size?", words))
         for hid, idea, pred, mult, focus, why, words in hyps:
             if time.monotonic() - t_start > budget_s:
                 props.append({"id": hid, "bot": bot, "idea": idea, "evidence": {"h1": "", "h2": "", "r2125": "", "usd_month": None},
@@ -1733,7 +1742,7 @@ def research(budget_s: float = 600.0, store: dict | None = None, log_dir: str | 
                                        "usd_month": _f((ev.get("H2") or {}).get("d_month"), 0),
                                        **({"note": "BLITZ $ at $150 risk a trade (the store has R only)"} if bot == "blitz" else {})},
                           "status": st, "t": now, "change": change_text(bot, words, mult, focus) if st == "candidate" else None,
-                          "why": f"{why}. Verdict: {verdict}.", "first_t": (prev.get(hid) or {}).get("first_t") or now})
+                          "why": f"{why.rstrip('.')}{'' if why.endswith('?') else '.'} Verdict: {verdict}.", "first_t": (prev.get(hid) or {}).get("first_t") or now})
     took = round(time.monotonic() - t_start, 2)
     order = {"candidate": 0, "testing": 1, "rejected": 2}
     keep = {p["id"]: p for p in prev.values()}
