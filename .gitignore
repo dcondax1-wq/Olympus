@@ -129,3 +129,4 @@ data/goals_money.json.tmp
 research/scalp/*_grid_5m.json
 research/scalp/mr_grid_1m.json
 research/scalp/na_grid_*.json
+research/scalp/b25_grid_*.json
