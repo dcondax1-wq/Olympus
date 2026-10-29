@@ -198,6 +198,11 @@ def t_strategies(tmp):
     check("board next windows: Thu 02:00-12:45, Fri 02:00-13:00, Mon 11-30; after Christmas Eve the next is Mon 12-28",
           lab[:2] == ["Thu 02:00-12:45 ET", "Fri 02:00-13:00 ET"] and w[2]["day"] == "2026-11-30" and w2 and w2[0]["day"] == "2026-12-28",
           (lab, w2))
+    from engine import ops_checks as OC
+    dd = [OC.due(ts(2026, 12, 25, 1, 45))["presession"], OC.due(ts(2026, 12, 25, 16, 10))["eod"], OC.due(ts(2027, 1, 1, 1, 45))["presession"],
+          OC.due(ts(2026, 12, 24, 1, 45))["presession"], OC.due(ts(2026, 11, 26, 1, 45))["presession"], OC.due(ts(2026, 12, 27, 18, 0))["weekly"]]
+    check("ops pushes: no pre-session check / day summary on Christmas and New Year's Day (no session); Christmas Eve and "
+          "Thanksgiving keep theirs; the Sunday week report stays", dd == [False, False, False, True, True, True], dd)
     from engine import insight_api
     n1 = insight_api.next_window([[120, 930]], ts(2026, 11, 26, 12, 0))
     n2 = insight_api.next_window([[120, 930]], ts(2026, 12, 24, 14, 0))

@@ -1359,6 +1359,12 @@ def due(now) -> dict:
     """Which timed notices are in their window now (ET)."""
     e = _et(now)
     mod, wd = e.hour * 60 + e.minute, e.weekday()
+    try:                                       # 2026-10-29: no session on a CME full closure (Christmas, New Year's Day):
+        from .cme_calendar import full_closure  # no pre-session / day-summary push that day (only noise: "feed stale" ...)
+        if wd < 5 and full_closure(e.date()):
+            wd = 7
+    except Exception:
+        pass
     return {"presession": wd < 5 and 100 <= mod <= 135,            # 01:40-02:15 ET
             "eod": wd < 5 and 965 <= mod <= 1020,                   # 16:05-17:00 ET
             "weekly": wd == 6 and 1020 <= mod <= 1439,              # Sunday 17:00-23:59 ET
