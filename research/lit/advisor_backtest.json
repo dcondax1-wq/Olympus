@@ -1,0 +1,105 @@
+{
+ "t": 1793238372,
+ "counts": {
+  "H1": {
+   "n": 79,
+   "base_same": 79,
+   "be_choch_fired": 1,
+   "exit_choch_fired": 23,
+   "trail_15m_fired": 12,
+   "trail_5m_fired": 22,
+   "tp_pool_fired": 18,
+   "skip_htf_fired": 52
+  },
+  "H2": {
+   "n": 40,
+   "base_same": 40,
+   "be_choch_fired": 6,
+   "exit_choch_fired": 9,
+   "trail_15m_fired": 5,
+   "trail_5m_fired": 9,
+   "tp_pool_fired": 9,
+   "skip_htf_fired": 24
+  }
+ },
+ "rules": {
+  "be_choch": {
+   "advisor": {
+    "H1": -1449,
+    "H2": -775
+   },
+   "research": {
+    "H1": -1442,
+    "H2": -775
+   },
+   "variant": "choch_5m_k0.75_be",
+   "label": "Breakeven on a 5m CHoCH against after +0.75R",
+   "tally": "Breakeven on a 5m CHoCH against after +0.75R: would have cost $2,224 over 119 trades (fired on 7: +$216 / -$2,440)"
+  },
+  "exit_choch": {
+   "advisor": {
+    "H1": -5215,
+    "H2": -2153
+   },
+   "research": {
+    "H1": -5215,
+    "H2": -2150
+   },
+   "variant": "choch_5m_k1.0_exit",
+   "label": "Exit on a 5m CHoCH against after +1R",
+   "tally": "Exit on a 5m CHoCH against after +1R: would have cost $7,368 over 119 trades (fired on 32: +$4,329 / -$11,697)"
+  },
+  "trail_15m": {
+   "advisor": {
+    "H1": 466,
+    "H2": 13
+   },
+   "research": {
+    "H1": 467,
+    "H2": 13
+   },
+   "variant": "strail_15m_k1.0_any",
+   "label": "Trail to the 15m protected swing after a 15m break in favour (+1R)",
+   "tally": "Trail to the 15m protected swing after a 15m break in favour (+1R): would have saved $480 over 119 trades (fired on 17: +$604 / -$124)"
+  },
+  "trail_5m": {
+   "advisor": {
+    "H1": -6305,
+    "H2": 129
+   },
+   "research": {
+    "H1": -6305,
+    "H2": 128
+   },
+   "variant": "strail_5m_k1.0_bos",
+   "label": "Trail to the 5m protected swing after a 5m BOS in favour (+1R)",
+   "tally": "Trail to the 5m protected swing after a 5m BOS in favour (+1R): would have cost $6,177 over 119 trades (fired on 31: +$2,526 / -$8,703)"
+  },
+  "tp_pool": {
+   "advisor": {
+    "H1": -14616,
+    "H2": -987
+   },
+   "research": {
+    "H1": -16695,
+    "H2": -1305
+   },
+   "variant": "tgt_cap_lit1h_r1.5",
+   "label": "Take profit at the first opposing liquidity pool (>= 1.5R)",
+   "tally": "Take profit at the first opposing liquidity pool (>= 1.5R): would have cost $15,603 over 119 trades (fired on 27: +$4,523 / -$20,126)"
+  },
+  "skip_htf": {
+   "advisor": {
+    "H1": -14808,
+    "H2": -7351
+   },
+   "research": {
+    "H1": -14968,
+    "H2": -7479
+   },
+   "variant": "htf_1h_skip_against",
+   "label": "Skip when the 1h trend is against the trade",
+   "tally": "Skip when the 1h trend is against the trade: would have cost $22,159 over 119 trades (fired on 76: +$8,713 / -$30,872)"
+  }
+ }
+}
