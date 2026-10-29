@@ -341,6 +341,27 @@ def cmd_checks(seeds=40):
     json.dump(out, open(os.path.join(OUT, "b25_checks.json"), "w"), default=float, indent=1)
 
 
+# ================================================================================================ the post-hoc lead on LIT's funded 50K
+def cmd_lit50k(n=1000):
+    """the 'What is left' lead (found by looking at H2 / 2021-25, so NOT a clean test): BLITZ with a 1.0 x ATR stop, a 45-minute
+    clock and no trail as the add-on on LIT's funded Builder 50K (tools/scalp_na_combo.lit_money, the scalp-na-mffu.md pick
+    size: 20% of the room, <= $450, only once funded, only while LIT is flat, never opposite ATLAS) vs today's BLITZ there."""
+    from tools import scalp_na as X
+    from tools import scalp_na_combo as C
+    P = C.PICK_LIT
+    out = {"lit_alone": C.lit_money(None, n=n)}
+    for nm, pp in (("today", {}), ("atr1.0_hold45_notrail", {"stopk": 1.0, "hold": 45, "trail": None})):   # (combo units are 1-leg)
+        X.PICK_P.clear()
+        X.PICK_P.update(pp)
+        C._AU.pop(("litm", None, None, True, False, 0, 0.0), None)
+        out[nm] = C.lit_money(P["nc"], n=n, nc_eval=P["nc_eval"])
+        print(nm, {sp: (out[nm][sp]["slot_pm"], out[nm][sp]["slot_pm"] - out["lit_alone"][sp]["slot_pm"]) for sp in ("H1", "H2", "REF")}, flush=True)
+    X.PICK_P.clear()
+    print("LIT alone", {sp: out["lit_alone"][sp]["slot_pm"] for sp in ("H1", "H2", "REF")})
+    json.dump(out, open(os.path.join(OUT, "b25_lit50k_lead.json"), "w"), default=float, indent=1)
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
-    {"baseline": cmd_baseline, "stops": cmd_stops, "mgmt": cmd_mgmt, "ideas": cmd_ideas, "checks": cmd_checks}[a[0] if a else "baseline"]()
+    {"baseline": cmd_baseline, "stops": cmd_stops, "mgmt": cmd_mgmt, "ideas": cmd_ideas, "checks": cmd_checks,
+     "lit50k": cmd_lit50k}[a[0] if a else "baseline"]()

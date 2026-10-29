@@ -258,8 +258,7 @@ def _lfjob(a):
 
 
 def load_rules(cmode="lit+atlas"):
-    """the rules that go to sizing: today's + the stage-2 H1 picks (b25_mgmt.json), all as account C."""
-    M = json.load(open(os.path.join(OUT, "b25_mgmt.json")))
+    """the rules that go to sizing: today's + the stage-2 H1 picks (the local grid b25_grid_mgmt.json), all as account C."""
     R = {"today": {}}
     G = json.load(open(os.path.join(OUT, "b25_grid_mgmt.json")))["rows"]
     ok = [r for r in G if r["H1"]["tpw"] >= 3.0 and r["H1"]["wk2"] >= 70.0]

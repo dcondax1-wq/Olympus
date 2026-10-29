@@ -162,6 +162,7 @@ def pick_file(pk, sz, base, mg, ck):
                              "rule_slots": {k: {"name": BG.vname(v["v"]), **{sp: v["slot"][sp]["life_pm"] for sp in ("H1", "H2", "R")}}
                                             for k, v in sizeg["picks"].items()}},
            "ideas_beat_all": ideas.get("beat_all"),
+           "lit50k_lead_atr1_hold45": (lambda d: {k: {sp: d[k][sp]["slot_pm"] for sp in ("H1", "H2", "REF")} for k in d if k != "note"})(J("b25_lit50k_lead.json")),
            "hybrid_eval_today_funded_structure": (lambda h: {"funded_rule": BG.vname(h["funded_rule_v"]),
                                                              **{k: {sp: v[sp]["life_pm"] for sp in ("H1", "H2", "R")} for k, v in h["final"].items()},
                                                              "verdict": "rejected (2021-25 worse)"})(J("b25_hybrid.json")),

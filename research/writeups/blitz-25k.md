@@ -202,6 +202,8 @@ in both stages; 0 of 24 funded sizes beat today's slot in all three spans. Rejec
   the eval engine equals scalp_na_lib's eval and slot (`tools/blitz25k_size.py selfcheck`). Hand-checked skips and hedge
   cuts (e.g. 2026-03-20 11:30 short skipped while LIT was long 11:25-12:32; 2026-08-06 11:00 long closed at 11:15 when the
   other account went short).
+- **Short check half**: H2 has 78 sessions (69 eval starts with 10 sessions ahead, overlapping), so a 2-week pass or fail
+  rate there moves by about +/-10 points on noise alone; H1 has 128 sessions, 2021-25 1,077.
 - **Multiple testing**: 1,997 rule variants (+ 24 eval / funded hybrids). Picking on H1 alone found nothing that held; the
   4 that held on money in all three spans were found by looking at all three, and they fail the 25K eval anyway.
 - **What is not modelled**: 2021-25 is the same rule on 5m bars (coarser fills; the 1m swings are 5m swings of strength 1
@@ -225,10 +227,11 @@ in both stages; 0 of 24 funded sizes beat today's slot in all three spans. Rejec
 
 ## What is left
 
-- **A lead for LIT's funded 50K, not the 25K:** "1.0 x ATR stop, 45-minute clock, no trail" made more per trade than today
-  in all three spans at a fixed $150 (+$46 / +$376 / +$210 a month), but it loses more often in a row, which hurts a 25K.
-  It was found by looking at H2 and 2021-25, so it needs its own test on LIT's 50K add-on (tools/scalp_na_combo.py lit_grid)
-  before anything changes.
+- **The one lead is closed.** "1.0 x ATR stop, 45-minute clock, no trail" made more per trade than today in all three spans
+  at a fixed $150 (+$46 / +$376 / +$210 a month) but loses more often in a row, which hurts a 25K. Tried where the room is
+  bigger, as the add-on on LIT's funded 50K (tools/scalp_na_combo.lit_money, 20% of the room, <= $450, only while LIT is flat):
+  the LIT slot gains +$253 / **-$31** / +$21 a month (H1 / H2 / 2021-25) against today's BLITZ +$301 / +$290 / +$16
+  (`research/scalp/b25_lit50k_lead.json`). Worse in H2: today's BLITZ stays there too.
 - The engine (engine/account_c.py, engine/blitz.py) needs: the anti-hedge skip / close-first, the push size, and an entry
   within a minute of the check.
 
@@ -237,12 +240,13 @@ in both stages; 0 of 24 funded sizes beat today's slot in all three spans. Rejec
 - `tools/blitz25k_lib.py`: structure (1m / 5m swing pivots, 15m / 1h break-of-structure state), liquidity levels, the
   candidate builder (stops, targets, windows, retest entries, structure filters / size), account-C arrays, the numba
   executor (= scalp_na_lib's fills + targets, swing trail, change of character, retest limits, the anti-hedge skip / close).
-- `tools/blitz25k_grid.py`: `baseline` (account C vs alone), `stops`, `mgmt`, `ideas`, `checks`.
+- `tools/blitz25k_grid.py`: `baseline` (account C vs alone), `stops`, `mgmt`, `ideas`, `checks`, `lit50k` (the lead on
+  LIT's 50K).
 - `tools/blitz25k_size.py`: `selfcheck`, `grid` (the rule picks x sizes x slots), `today` (today's rule: eval sizes, slots,
   neighbours, random directions), `table`, `hybrid` (today's rule in the eval, a structure rule once funded).
 - `tools/blitz25k_save.py`: the runs and `research/scalp/blitz_25k_pick.json`.
 - Results: `research/scalp/b25_baseline.json`, `b25_stops.json`, `b25_mgmt.json` (summary; the full grid `b25_grid_mgmt.json`
   is local only), `b25_ideas.json`, `b25_checks.json`, `b25_size.json`, `b25_today_sizing.json`, `b25_size_table.json`,
-  `b25_hybrid.json`, `blitz_25k_pick.json` (the 25K / today grids `b25_grid_size.json`, `b25_grid_today.json` are local only).
+  `b25_hybrid.json`, `b25_lit50k_lead.json`, `blitz_25k_pick.json` (the 25K / today grids `b25_grid_size.json`, `b25_grid_today.json` are local only).
 - Runs: `blitz25k_today_acct_c` (today's rule as account C, $150 a trade), `blitz25k_h1pick` and `blitz25k_structure`
   (rejected).

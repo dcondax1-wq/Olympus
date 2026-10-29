@@ -424,7 +424,7 @@ part yourself or fold it into a script.**
   partials / swing trails / change-of-character exits / no clock (1,920), opening drive, London band, retest limits, 15m / 1h
   BOS filters (32), funded-only structure rule: none beats today's rule in H1, H2 and 2021-25. 25K size: 40% of the room,
   100% from eval session 5 (decided in 2 weeks 71-74% vs 29-41%, same money: slot $270 / $37 / -$40 a month; random
-  directions make the same H2 slot $). Lead (post-hoc, for LIT's 50K add-on only): 1.0 x ATR stop, 45 min, no trail.
+  directions make the same H2 slot $). The post-hoc 1.0 x ATR / 45 min / no trail variant is worse on LIT's 50K too (H2).
 
 ## Key commands (run from the repo root)
 - **START BOT (owner's one start, 2026-10-26):** the owner now starts from the dashboard only (desktop **LE START** -> the
