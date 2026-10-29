@@ -57,9 +57,10 @@ two fail for every pass ($63 each).
 
 **Account C's own live loop on 2026** (`tests/test_account_c.py` part 2: the paper adapter, minute polls, one eval at a
 time, a new $63 eval after each pass / fail / stuck, no Zlarior / ATLAS trades in the replay): every one of the 330 BLITZ
-trades seen exactly as the research; the routed trades and the $ inside the evals are in `docs/CLAUDE_REFERENCE.md`
-(account C). Inside-eval money is not paid money: it reaches you only through a funded account's payouts, which is why the
-slot line above is the honest one.
+trades seen exactly as the research; **H1 182 / H2 82 routed, +$10,900 / +$4,709 inside the evals (PF in $ 1.62 / 1.60), 14
+evals passed, 0 failed, 12 stuck** (room under $249.56: the eval is dead before the floor), the kill switch never fired.
+Inside-eval money is not paid money: it reaches you only through a funded account's payouts, which is why the slot line
+above is the honest one.
 
 ## The rule (exact)
 
@@ -134,7 +135,7 @@ trading) when, after its own finished trades:
    | PF (R) under | 0.62 | 0.74 | 0.83 | 0.94 | 1.06 | 1.19 |
    | (expected) | +0.15R, PF 1.58 | | | | | |
 
-2. **6 losing days in a row** (a day's trades sum under 0R; 2026's worst was 3).
+2. **6 losing days in a row** (a day's BLITZ trades, routed or not, sum under 0R: the research's count; 2026's worst was 3).
 
 Also stopping it: the eval's fail / stuck (no new trade), the $600 soft daily loss (rest of the day), 6 trades or -3R in a
 day. **Resume is the owner's decision:** `python -X utf8 -m engine.account_c --resume` (the pause lifts at the next poll).

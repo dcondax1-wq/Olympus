@@ -247,8 +247,10 @@ part yourself or fold it into a script.**
   Arm BLITZ with the typed phrase, Off; Add account bot BLITZ; Passed → funded; `go.set_blitz` / `arm_c` / `blitz_status` /
   `_c_to_funded`, POST `/api/next/start/blitz`, `/blitz/arm`; a running bot picks a change up once C is flat). Replay of
   2026 through account C's live loop (paper adapter, minute polls, a new $63 eval after each end): all 330 model trades =
-  `blitz.backtest`; routed H1 182 / H2 88, +$8,262 / +$5,559 inside evals (PF $ 1.60 / 2.11), 9 passes, 0 fails, 6 stuck,
-  never paused; inside-eval $ is not paid money (the research whole slot: $224 / $3 / -$40 a month). Test `python -X utf8 -m
+  `blitz.backtest`; with the speed size routed H1 182 / H2 82, +$10,900 / +$4,709 inside evals (PF $ 1.62 / 1.60), 14 passes,
+  0 fails, 12 stuck (room < $249.56 ends an eval before the floor: research counts it dead), never paused; inside-eval $ is
+  not paid money (blitz-25k.md whole slot: $270 / $37 / -$40 a month; the losing-days streak counts all of a day's model
+  trades, routed or not: the routed ones alone hit 6 in May 2026 because the eval / daily loss stopped days early). Test `python -X utf8 -m
   tests.test_account_c [--quick]`.
   **Owner's turn-on (next week):** 1. buy the Builder 25K for BLITZ and connect it in NinjaTrader; 2. Start page > BLITZ ·
   25K: its Name, Set BLITZ's 25K, Arm BLITZ (type I ACCEPT LIVE RISK); 3. Start trading. Console for step 2:

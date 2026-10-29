@@ -311,11 +311,12 @@ def band_at(n: int, B: dict | None = None) -> dict | None:
     return {k: round(B[lo][k] + w * (B[hi][k] - B[lo][k]), 4) for k in B[lo]}
 
 
-def score(trades: list, B: dict | None = None) -> dict:
+def score(trades: list, B: dict | None = None, day_r: dict | None = None) -> dict:
     """The live scorecard of account C's finished trades [{"day", "r", "usd"}] (routed, booked, not voided): count, win %,
     avg R, PF (R and $), net $, losing days in a row now, the floor and the verdict ("warming" under 20 trades, "ok",
-    "below": average R or PF(R) under the floor, or SCORE_LOSE_DAYS losing days in a row; a losing day = its trades' R sum
-    under 0, the research's measure, so a smaller size after a loss does not count as a loss)."""
+    "below": average R or PF(R) under the floor, or SCORE_LOSE_DAYS losing days in a row). A losing day = the R sum of ALL of
+    BLITZ's model trades that day (day_r: routed or not, as the research counts days; the routed ones alone are a biased
+    sample once the eval or the daily loss stops a day early); without day_r the routed trades' R per day."""
     rows = [t for t in trades or [] if isinstance(t, dict) and t.get("r") is not None]
     n = len(rows)
     rs = [float(t["r"]) for t in rows]
@@ -325,6 +326,8 @@ def score(trades: list, B: dict | None = None) -> dict:
     days = {}
     for t in rows:
         days[str(t.get("day"))] = days.get(str(t.get("day")), 0.0) + float(t["r"])   # a losing day = its trades' R sum < 0 (size-free)
+    if day_r is not None:
+        days = {str(k): float(v) for k, v in day_r.items()}
     streak = 0
     for d in sorted(days, reverse=True):
         if days[d] < 0:
@@ -715,9 +718,22 @@ class AccountC:
         return [{"day": c[0], "exit_t": c[1], "usd": float(c[2]), "r": float(c[4]), "entry_t": c[3]} for c in self.closes
                 if len(c) > 4 and c[4] is not None]
 
+    def model_day_r(self) -> dict:
+        """R per day of BLITZ's finished model trades since account C started (routed or not; the no-hedging masks are no
+        trades): the losing-days streak of the performance contract, as the research counts days."""
+        start = (self.spec.get("funded") or {}).get("start") if self.funded() else self.spec.get("eval_start")
+        out = {}
+        for r in self.rows:
+            if r.get("model_entry_t") is None or r.get("r") is None or r.get("masked"):
+                continue
+            if start and str(r.get("day")) < str(start):
+                continue
+            out[str(r["day"])] = out.get(str(r["day"]), 0.0) + float(r["r"])
+        return out
+
     def scorecard(self) -> dict:
         try:
-            s = score(self.finished())
+            s = score(self.finished(), day_r=self.model_day_r())
         except Exception as e:
             s = {"status": "error", "why": [f"{e.__class__.__name__}: {e}"], "n": len(self.closes)}
         s["paused"] = self.paused
