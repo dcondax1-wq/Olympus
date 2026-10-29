@@ -22,7 +22,7 @@ OPEN_PATHS = ("/api/health/ping", "/api/tv/webhook")
 START_WRITES = ("/api/next/start/names", "/api/next/start/nt", "/api/next/start/setup", "/api/next/start/sims",
                 "/api/next/start/arm", "/api/next/start/go", "/api/next/start/resume", "/api/next/start/clock",
                 "/api/next/start/accounts/add", "/api/next/start/accounts/remove",
-                "/api/next/start/accounts/anchor", "/api/next/start/accounts/funded")
+                "/api/next/start/accounts/anchor", "/api/next/start/accounts/funded", "/api/next/start/newacct")
 # the Goals page's money form (engine/money_api.py: the owner's savings / jobs / Kalshi figures): PC only as well
 MONEY_WRITES = ("/api/next/money",)
 CLOUD_BLOCKED = ("/api/live/arm", "/api/live/golive", "/api/launch/test_webhook", *START_WRITES, *MONEY_WRITES)

@@ -177,6 +177,7 @@ def r_status(request: Request, fresh: int = 0):
         st["local"] = cloud_guard.local_only(request) is None
         st["clock"] = _clock(fresh=bool(fresh))
         st["poll"] = _poll()
+        st["new_accounts"] = _new_accounts()
         return _J(st)
     except Exception as e:
         return _J({"error": f"{e.__class__.__name__}: {e}"[:200]}, 500)
@@ -267,6 +268,26 @@ def r_clock(request: Request):
         _clock(fresh=True)
         return r
     return _do(request, run)
+
+
+def _new_accounts() -> dict:
+    """New MFFU account Names NinjaTrader shows that no bot uses (engine/new_accounts.py): the page's one line."""
+    try:
+        from . import new_accounts
+        return new_accounts.status()
+    except Exception as e:
+        return {"new": [], "error": f"{e.__class__.__name__}"}
+
+
+@router.post("/api/next/start/newacct")
+async def r_newacct(request: Request):
+    """The owner's tap on the "New account" line: {"name", "role": zlarior | atlas | blitz} assigns the Name (never arms:
+    the next Start trading asks for the live phrase), {"name", "dismiss": true} stops offering it."""
+    d = await _body(request)
+    from . import new_accounts
+    if d.get("dismiss"):
+        return _do(request, lambda: new_accounts.dismiss(d.get("name")))
+    return _do(request, lambda: new_accounts.use(d.get("name"), d.get("role")))
 
 
 @router.post("/api/next/start/accounts/add")

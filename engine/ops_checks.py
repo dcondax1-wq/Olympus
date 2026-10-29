@@ -1418,6 +1418,12 @@ def tick(now=None, ctx=None, state=None, sender=None, state_path: str = STATE_PA
                 notes += business_notices(view, now)
         if D["weekly"] and real:
             notes += watch_notices(state, now)
+        if real:                       # a new MFFU account Name in NinjaTrader (engine/new_accounts.py): one push per Name
+            try:
+                from . import new_accounts
+                notes += new_accounts.notices(now, folder=ctx.get("folder"))
+            except Exception as e:
+                ops_log(f"new account check failed: {e.__class__.__name__}")
         if D.get("mffu_check"):
             n = mffu_check_notice(ctx["hb"] or {}, view, now)
             if n:
