@@ -1361,7 +1361,14 @@ def review(t: dict, H: Hist | None, store=None, C=None, log_dir=None, adv_dir=No
                    f"it was +{mfe:.1f}R first: the market took it back" if luck == "luck" else f"best +{mfe or 0:.1f}R before the loss")
     else:
         luck, why = "mixed", "not enough data to tell luck from skill"
-    if r is not None and r > 0:
+    scratch = r is not None and abs(r) < 0.1
+    if scratch:                                   # breakeven / a scratch: neither a win nor a loss
+        luck = "mixed"
+        why = "a scratch (about 0R): no money either way" + (f"; it was +{mfe:.1f}R first" if mfe else "")
+    if scratch:
+        lesson = (f"Scratch: it was +{mfe:.1f}R first and the breakeven stop took the risk off - the rule did its job." if (mfe or 0) >= 1.0
+                  else "Scratch trade: nothing to learn from the result itself.")
+    elif r is not None and r > 0:
         lesson = ("Clean setup, clean result: the trade to repeat." if luck == "skill" else
                   "Won, but it nearly stopped first: don't read too much into it." if luck == "luck" else "A fair trade that paid.")
     elif r is not None:
@@ -1851,6 +1858,67 @@ def view_block(bot=None, now: int | None = None, mind: Mind | None = None) -> di
         return b if b is not None else skeleton(int(now or time.time()))
     except Exception:
         return skeleton(int(now or time.time()), "Mind unavailable")
+
+
+def contract_errors(b) -> list:
+    """What is wrong with a block against the contract the dashboards render (tests/fixtures/mind_sample.json); [] = fine."""
+    E = []
+    num = (int, float)
+
+    def need(c, msg):
+        if not c:
+            E.append(msg)
+    if not isinstance(b, dict):
+        return ["not a dict"]
+    need(isinstance(b.get("t"), int), "t int")
+    r = b.get("regime")
+    need(isinstance(r, dict), "regime dict")
+    if isinstance(r, dict):
+        need(isinstance(r.get("label"), str) and isinstance(r.get("why"), str), "regime label / why str")
+        need(r.get("trend") in ("up", "down", "range"), f"regime trend {r.get('trend')}")
+        need(r.get("vol") in ("high", "normal", "quiet"), f"regime vol {r.get('vol')}")
+        dt_ = r.get("day_type")
+        need(dt_ is None or (isinstance(dt_, dict) and (dt_.get("p_trend") is None or isinstance(dt_.get("p_trend"), num))
+                             and isinstance(dt_.get("label"), str) and isinstance(dt_.get("acc_note"), str)), "regime day_type")
+    pl = b.get("plans")
+    need(isinstance(pl, dict) and set(pl) <= set(BOTS), "plans dict of lit / atlas / blitz")
+    for k, p in (pl or {}).items() if isinstance(pl, dict) else []:
+        need(isinstance(p, dict) and isinstance(p.get("t"), int) and isinstance(p.get("headline"), str) and isinstance(p.get("change_mind"), str)
+             and isinstance(p.get("scenarios"), list), f"plan {k}")
+        for s in (p or {}).get("scenarios") or []:
+            need(isinstance(s.get("if"), str) and isinstance(s.get("then"), str) and isinstance(s.get("levels"), list)
+                 and all(isinstance(x, num) for x in s.get("levels") or []) and (s.get("exp_usd") is None or isinstance(s.get("exp_usd"), num))
+                 and (s.get("odds") is None or isinstance(s.get("odds"), num)), f"plan {k} scenario")
+    sm = b.get("similar")
+    need(isinstance(sm, dict) and set(sm) == set(BOTS), "similar has lit / atlas / blitz")
+    for k, s in (sm or {}).items() if isinstance(sm, dict) else []:
+        if s is None:
+            continue
+        need(isinstance(s.get("n"), int) and isinstance(s.get("win"), num) and isinstance(s.get("avg_r"), num)
+             and (s.get("usd") is None or isinstance(s.get("usd"), num)) and s.get("conf") in ("low", "medium", "high")
+             and isinstance(s.get("valid"), bool) and isinstance(s.get("examples"), list), f"similar {k}")
+        need(s.get("valid") or s.get("conf") == "low", f"similar {k}: no confidence claim when not valid")
+        for x in s.get("examples") or []:
+            need(isinstance(x.get("day"), str) and isinstance(x.get("r"), num) and (x.get("usd") is None or isinstance(x.get("usd"), num)),
+                 f"similar {k} example")
+    for v in b.get("reviews") if isinstance(b.get("reviews"), list) else [None]:
+        need(isinstance(v, dict) and isinstance(v.get("t"), int) and isinstance(v.get("bot"), str) and isinstance(v.get("trade"), str)
+             and v.get("grade") in ("A", "B", "C", "D", "F") and isinstance(v.get("right"), list) and isinstance(v.get("wrong"), list)
+             and isinstance(v.get("lesson"), str) and v.get("luck") in ("luck", "skill", "mixed"), "review")
+    for p in b.get("proposals") if isinstance(b.get("proposals"), list) else [None]:
+        ev = (p or {}).get("evidence") if isinstance(p, dict) else None
+        need(isinstance(p, dict) and isinstance(p.get("id"), str) and isinstance(p.get("bot"), str) and isinstance(p.get("idea"), str)
+             and isinstance(ev, dict) and all(isinstance(ev.get(x), str) for x in ("h1", "h2", "r2125"))
+             and (ev.get("usd_month") is None or isinstance(ev.get("usd_month"), num))
+             and p.get("status") in ("testing", "candidate", "rejected") and isinstance(p.get("t"), int)
+             and (p.get("change") is None or isinstance(p.get("change"), str)), f"proposal {(p or {}).get('id') if isinstance(p, dict) else p}")
+    for a in b.get("alerts") if isinstance(b.get("alerts"), list) else [None]:
+        need(isinstance(a, dict) and isinstance(a.get("t"), int) and isinstance(a.get("bot"), str) and isinstance(a.get("text"), str)
+             and a.get("level") in ("info", "good", "warn"), "alert")
+    iq = b.get("iq")
+    need(isinstance(iq, dict) and isinstance(iq.get("store_n"), dict) and all(isinstance((iq.get("store_n") or {}).get(k), int) for k in BOTS)
+         and isinstance(iq.get("calibration"), str), "iq")
+    return E
 
 
 def _cut(s, n):
