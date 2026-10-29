@@ -18,6 +18,7 @@ a switch where I can see exactly what the bots are thinking").
                                                before either runs
                                       + the narrator's feed (engine/narrator.py, last 100 messages)
   GET /api/next/liveview/feed?after=  just the feed (newest first), for the ticker
+  phone_view()                        liveview.json for the phone (same layers; 1m + 5m bars), pushed by engine/live_publish
 
 Only READS the bot (engine/live.BOT: brain, state, ledger, health, bars_tail, the 1m store, second, acct_b, adapter legs via
 engine/accounts._position). Nothing here starts, arms, routes, sizes or changes anything; no answer carries a confirm
@@ -568,6 +569,42 @@ def view(bot, tf: str = "1m", now: int | None = None, narr: N.Narrator | None = 
     out["narrator"] = narr.feed(n_feed)
     out["push_kinds"] = {k: {"label": v[0], "on": on} for (k, v), on in zip(N.KINDS.items(), N.push_prefs().values())}
     return out
+
+
+# ---------------------------------------------------------------------------------------------- phone (liveview.json)
+PHONE_FILE = "liveview.json"
+PHONE_KIND = "le-liveview"
+PHONE_MAX = 240 * 1024        # bytes; the 1m bars go first, then the feed
+PHONE_N1 = 480                # 1m bars on the phone (8 hours); the 5m session goes whole as "bars5"
+PHONE_FEED = 60
+
+
+def phone_view(bot, now: int | None = None, narr: N.Narrator | None = None) -> dict:
+    """liveview.json, the phone's Live View (tools/web_public/liveview.js; owner 2026-10-28: "add it to the phone too").
+    engine/live_publish pushes it next to live.json every minute. The PC page's view() on 1m (last PHONE_N1 bars) plus
+    today's 5m session as "bars5" (the phone switches 1m / 5m without asking the PC), the feed cut to PHONE_FEED, trimmed
+    under PHONE_MAX. The same read-only layers as the PC page. Never raises."""
+    t = int(now or _now(bot))
+    try:
+        v = view(bot, "1m", t, narr, n_feed=PHONE_FEED)
+        try:
+            v["bars5"] = bars(bot, "5m", v["t"])["bars"]
+        except Exception:
+            v["bars5"] = []
+        v["bars"] = (v.get("bars") or [])[-PHONE_N1:]
+        v.update(kind=PHONE_KIND, v=1)
+
+        def size():
+            return len(json.dumps(v, separators=(",", ":"), default=str))
+        while size() > PHONE_MAX and len(v["bars"]) > 120:
+            v["bars"] = v["bars"][-max(120, len(v["bars"]) * 2 // 3):]
+            v["trimmed"] = True
+        while size() > PHONE_MAX and len(v.get("narrator") or []) > 10:
+            v["narrator"] = v["narrator"][:len(v["narrator"]) // 2]
+            v["trimmed"] = True
+        return v
+    except Exception as e:
+        return {"kind": PHONE_KIND, "v": 1, "t": t, "error": f"{e.__class__.__name__}: {e}"[:200]}
 
 
 @router.get("/api/next/liveview")
