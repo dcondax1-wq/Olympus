@@ -571,7 +571,12 @@ export class Space extends View {
     r.render(this.scene, this.camera);
     r.autoClear = false;
     if (this.ovOn) r.render(this.ov, this.ovCam);
-    if (this.aura && Q.level !== 'off' && this.aura.step(t, step, this.w, this.h, r.getPixelRatio())) r.render(this.aura.scene, this.aura.cam);
+    // card auras: their rects are read every other frame unless the page scrolls (the DOM reads are the costly part on a big page)
+    if (this.aura && Q.level !== 'off') {
+      const moved = par.scroll !== this._sc; this._sc = par.scroll;
+      if (moved || !(this.stats.frames & 1) || this._auraOn == null) this._auraOn = this.aura.step(t, step, this.w, this.h, r.getPixelRatio());
+      if (this._auraOn) r.render(this.aura.scene, this.aura.cam);
+    }
     r.autoClear = true;
     const ms = performance.now() - c0, S = this.stats;
     S.frames++; S.last = ms; if (S.frames === 3) S.ms = ms; else if (S.frames > 3) S.ms = S.ms * 0.9 + ms * 0.1;   // the first frames compile the shaders
