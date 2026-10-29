@@ -1808,20 +1808,11 @@ class Mind:
             reg = regime(H, now, C)
             sim = {"lit": None, "atlas": None, "blitz": None}
             if H is not None:
-                b = getattr(bot, "brain", None) or {}
-                sim["lit"] = similar("lit", lit_now(bot, H, now), ((b.get("sizing") or {}) if isinstance(b, dict) else {}).get("risk_usd"),
-                                     store, C, self.ld)
-                sim["atlas"] = similar("atlas", atlas_now(bot, H, now), None, store, C, self.ld)
-                bz = blitz_now(bot, H, now)
-                rk = None
-                try:
-                    S_ = getattr(bot, "blitz", None) or {}
-                    op = next((r for r in reversed(S_.get("ledger") or []) if r.get("exit_kind") == "OPEN"), None)
-                    if op and op.get("qty"):
-                        rk = abs(float(op["entry"]) - float(op["stop"])) * PV * int(op["qty"])
-                except Exception:
-                    rk = None
-                sim["blitz"] = similar("blitz", bz, rk, store, C, self.ld)
+                for bk in BOTS:                                # one bot failing never blanks the others
+                    try:
+                        sim[bk] = self._similar(bk, bot, H, now, store, C)
+                    except Exception as ex:
+                        self.err = f"similar {bk}: {ex.__class__.__name__}: {ex}"[:200]
             e = _et(now)
             mod, day = e.hour * 60 + e.minute, trading_day(now)
             for bk, fn in PLANNERS.items():
@@ -1841,7 +1832,10 @@ class Mind:
                         (f". What would change my mind: {p.get('change_mind')}" if p.get("change_mind") else "")
                     self._event(f"mind:plan:{bk}:{day}", now, bk, "plan", f"{BOTS[bk]} game plan", txt)
                     self._alert(now, bk, f"Game plan ready: {p['headline']}", "info")
-            self._reviews(bot, H, store, C, now)
+            try:
+                self._reviews(bot, H, store, C, now)
+            except Exception as ex:
+                self.err = f"reviews: {ex.__class__.__name__}: {ex}"[:200]
             if reg.get("label") != self.last_regime:
                 if self.last_regime is not None:
                     self._alert(now, "all", f"Regime now: {reg['label']} ({reg.get('why', '')[:120]})", "info")
@@ -1868,6 +1862,23 @@ class Mind:
         except Exception as ex:
             self.err = f"{ex.__class__.__name__}: {ex}"[:200]
             return None
+
+    def _similar(self, bk, bot, H, now, store, C):
+        if bk == "lit":
+            b = getattr(bot, "brain", None) or {}
+            return similar("lit", lit_now(bot, H, now), ((b.get("sizing") or {}) if isinstance(b, dict) else {}).get("risk_usd"),
+                           store, C, self.ld)
+        if bk == "atlas":
+            return similar("atlas", atlas_now(bot, H, now), None, store, C, self.ld)
+        rk = None
+        try:
+            S_ = getattr(bot, "blitz", None) or {}
+            op = next((r for r in reversed(S_.get("ledger") or []) if r.get("exit_kind") == "OPEN"), None)
+            if op and op.get("qty"):
+                rk = abs(float(op["entry"]) - float(op["stop"])) * PV * int(op["qty"])
+        except Exception:
+            rk = None
+        return similar("blitz", blitz_now(bot, H, now), rk, store, C, self.ld)
 
     def _reviews(self, bot, H, store, C, now):
         try:

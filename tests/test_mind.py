@@ -403,6 +403,44 @@ def t_hooks(blk):
           in open(os.path.join(ROOT, "server.py"), encoding="utf-8").read())
 
 
+def t_never_raises():
+    """Junk everywhere (a broken brain, odd ledgers, a half BLITZ state, no bars): compute still returns a contract block or
+    None, pc_tick / view_block / compact / api_view never raise."""
+    now = T("2026-10-14", 10, 50)
+    junk = [
+        fake_bot(now, "garbage"),
+        fake_bot(now, {"setups": [{"t": "x", "dir": "?"}, None, 5], "watch": [{"swept": ["x"], "dir": None}], "levels": [{"price": "?"}],
+                       "stage": {"key": "trade"}}, ledger=[{"side": "exit"}, {"t": "bad"}, None], second={"strategies": {"ema_x": None, "macd": {"state": None}}},
+                 blitz={"eng": {"date": "x"}, "ledger": [{"exit_kind": "OPEN"}], "signals": [{"t": None}]}),
+        fake_bot(now, {}, bars_tail=[[1, 2, 3]], _lit_1m_store="not a frame"),
+    ]
+    ok = True
+    errs = []
+    for b in junk:
+        try:
+            M = MD.Mind(log_dir=tempfile.mkdtemp())
+            blk = M.compute(b, now)
+            if blk is not None and MD.contract_errors(blk):
+                ok = False
+                errs.append(MD.contract_errors(blk))
+            MD.compact(blk)
+            MD.view_block(b, now, M)
+            MD.pc_tick(b, now, background=False, spawn=False, mind=MD.Mind(log_dir=tempfile.mkdtemp()))
+            MD.api_view(b, now, mind=MD.Mind(log_dir=tempfile.mkdtemp()))
+        except Exception as e:
+            ok = False
+            errs.append(f"{e.__class__.__name__}: {e}")
+    check("never raises: junk brains / ledgers / paper states / bars -> a contract block or None", ok, errs)
+    CSV0 = MD.CSV_HIST
+    MD.CSV_HIST = False
+    try:
+        blk = MD.Mind(log_dir=tempfile.mkdtemp()).compute(fake_bot(now, None), now)
+    finally:
+        MD.CSV_HIST = CSV0
+    check("no bars at all: the regime says so, the block keeps the contract", blk is not None and blk["regime"]["label"] == "No bars yet"
+          and not MD.contract_errors(blk), (blk or {}).get("regime"))
+
+
 def t_compact_cap():
     big = MD.skeleton(1)
     rv = {"t": 1, "bot": "lit", "trade": "x" * 100, "grade": "B", "right": ["r" * 300] * 5, "wrong": ["w" * 300] * 5, "lesson": "l" * 900, "luck": "mixed"}
@@ -427,6 +465,7 @@ def main():
     t_reviews()
     t_research()
     t_hooks(blk)
+    t_never_raises()
     t_compact_cap()
     n, ok = len(RES), sum(RES)
     print(f"\nmind: {ok}/{n} " + ("ALL PASS" if ok == n else "FAILED"))
