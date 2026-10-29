@@ -313,6 +313,77 @@ def t_real():
     check("real: analyze() on a 12-day 1m window < 150 ms median", med < 150, med)
 
 
+def shape_ok(B) -> bool:
+    if set(B) != {"t", "summary", "frames", "pools", "zone", "per_strategy"} or set(B["frames"]) != {"5m", "15m", "1h"}:
+        return False
+    for f in B["frames"].values():
+        if set(f) != {"trend", "last_event", "swings", "protected"} or f["trend"] not in ("up", "down", "range"):
+            return False
+        if set(f["protected"]) != {"high", "low"} or len(f["swings"]) > 20:
+            return False
+        if any(set(s) != {"t", "price", "kind"} for s in f["swings"]):
+            return False
+        if f["last_event"] is not None and set(f["last_event"]) != {"kind", "dir", "t", "price"}:
+            return False
+    if any(set(p) != {"price", "side", "label", "t0", "swept"} for p in B["pools"]):
+        return False
+    if B["zone"] is not None and set(B["zone"]) != {"lo", "hi", "eq", "premium"}:
+        return False
+    return set(B["per_strategy"]) == {"lit", "atlas", "scalp"} and isinstance(B["t"], int) and isinstance(B["summary"], str)
+
+
+def t_liveview():
+    """engine/liveview_api.view() / phone_view() carry the structure block (exact shape), the thinking panel's structure line
+    and playbook rule; the narrator's structure kind; the advisor's PC hook on a fake bot; speed of the cached path."""
+    import json
+    import tempfile
+    from tests import test_liveview_api as TL       # its fake bot (synthetic bars, Brain), CSV fallback off
+    from engine import liveview_api as L, narrator as N, advisor as AD
+    now = TL.T(4, 50)
+    b = TL.bot(now)
+    L._SB.clear()
+    t1 = time.perf_counter()
+    v = L.view(b, "1m", now, narr=N.Narrator())
+    ms_first = (time.perf_counter() - t1) * 1000
+    S = v.get("structure") or {}
+    check("view(): a 'structure' block with exactly the Live View shape", shape_ok(S), S if not isinstance(S, dict) else sorted(S))
+    th = v["strategies"]["lit"]["thinking"]
+    check("view(): Zlarior's thinking panel has a structure line and the playbook rule it is on",
+          isinstance(th.get("structure"), str) and th["structure"] and (th.get("rule") or {}).get("id", "").startswith("Z"), (th.get("structure"), th.get("rule")))
+    check("view(): ATLAS and BLITZ layers carry their structure note", all(isinstance(v["strategies"][k].get("structure_note"), str)
+                                                                         for k in ("atlas", "scalp")))
+    t1 = time.perf_counter()
+    for k in range(10):
+        L.structure_block(b, now + 2 + k)
+    ms_cached = (time.perf_counter() - t1) * 100
+    print(f"   structure in view(): first {ms_first:.0f} ms (whole view), cached structure_block {ms_cached:.2f} ms")
+    check("structure_block cached on the same bars and minute: < 10 ms a call", ms_cached < 10, f"{ms_cached:.2f} ms")
+    ph = L.phone_view(b, now, narr=N.Narrator())
+    sz = len(json.dumps(ph, separators=(",", ":"), default=str))
+    check("phone_view(): structure block included, still under the 240 KB cap", shape_ok(ph.get("structure") or {}) and sz <= L.PHONE_MAX, sz)
+    t1 = time.perf_counter()
+    msgs, _ = N.derive(b, now + 3)
+    ms_der = (time.perf_counter() - t1) * 1000
+    check("narrator.derive with the structure part stays fast on a cached bar (< 60 ms)", ms_der < 60, f"{ms_der:.1f} ms")
+    check("narrator: 'structure' kind exists, never pushed by default", "structure" in N.KINDS and N.KINDS["structure"][1] is False)
+    # the advisor's PC hook on the fake bot: one finished routed LIT trade in the ledger
+    et = TL.T(3, 30)
+    b.ledger = [{"t": et + 2, "side": "buy", "qty": 2, "entry_t": et, "entry": 30800.0, "stop": 30780.0, "target": 30900.0, "result": {"ok": True}},
+                {"t": TL.T(4, 10), "side": "exit", "qty": 2, "entry_t": et, "exit_t": TL.T(4, 10), "pnl": -80.0, "reason": "STOP"}]
+    with tempfile.TemporaryDirectory() as tmp:
+        AD._PC.update(last=None, seen=None, store=None)
+        r1 = AD.pc_tick(b, now, store=tmp)
+        r2 = AD.pc_tick(b, now, store=tmp)
+        check("advisor.pc_tick: scores the finished routed trade into the temp store, nothing twice in the same bar",
+              r1 and (r1.get("lit") or {}).get("new") == 1 and r2 is None and os.path.exists(os.path.join(tmp, "lit.jsonl")), (r1, r2))
+        b._lit_1m_store = b._lit_1m_store.iloc[:-1]
+        AD._PC["last"] = None
+        t1 = time.perf_counter()
+        r3 = AD.pc_tick(b, now, store=tmp)
+        ms_pc = (time.perf_counter() - t1) * 1000
+        check("advisor.pc_tick on a new bar with nothing new to score: no bars converted, < 20 ms", r3 == {} and ms_pc < 20, (r3, ms_pc))
+
+
 def main():
     t_synthetic()
     t_pivots()
@@ -320,6 +391,7 @@ def main():
     t_resample()
     t_pools()
     t_block_shape()
+    t_liveview()
     if "--quick" not in sys.argv:
         t_real()
     n = len(RES)

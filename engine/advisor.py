@@ -507,7 +507,7 @@ def cloud_block(new_state: dict, old_state: dict | None, d1, now: int, keep: int
 
 
 # ================================================================================================ PC hook (narrator.tick)
-_PC = {"last": None}
+_PC = {"last": None, "seen": None, "store": None}
 
 
 def _ledger_trades(bot) -> list:
@@ -550,26 +550,45 @@ def _blitz_trades(bot) -> list:
     return out
 
 
+def _key(strategy: str, t: dict) -> str:
+    return f"{strategy}|{t.get('day') or ST.trading_day(int(t['entry_t']))}|{int(t['entry_t'])}|{int(t['dir'])}"
+
+
 def pc_tick(bot, now=None, store: str | None = None) -> dict | None:
     """engine/narrator.tick hook (PC): once per new 1m bar, score every finished Zlarior / ATLAS / BLITZ trade not scored yet on
-    the bot's own 1m store (NinjaTrader bars, 12 days). Read-only towards the bot. Never raises."""
+    the bot's own 1m store (NinjaTrader bars, 12 days). The bars are only converted when there is a new finished trade (the
+    scored keys are kept in memory). Read-only towards the bot. Never raises."""
     try:
         st = getattr(bot, "_lit_1m_store", None)
         if st is None or not len(st):
             return None
-        last = int(st["time"].max())
+        last = int(st["time"].iloc[-1])
         if _PC["last"] == last:
             return None
         _PC["last"] = last
-        b1 = ST.as_rows(st)
-        out = {}
+        if _PC.get("seen") is None or _PC.get("store") != store:
+            _PC["seen"] = {s: {r.get("key") for r in _jl_read(_p(store, f"{s}.jsonl"))} for s in STRATS}
+            _PC["store"] = store
+        todo = {}
         for strat, fn in (("lit", _ledger_trades), ("atlas", _second_trades), ("scalp", _blitz_trades)):
             try:
                 tr = fn(bot)
             except Exception:
                 tr = []
-            if tr:
-                out[strat] = update(strat, tr, b1, store)
+            new = [t for t in tr if t.get("exit_kind") not in (None, "", "OPEN") and t.get("exit_t") is not None
+                   and t.get("entry_t") is not None and _key(strat, t) not in _PC["seen"][strat]]
+            if new:
+                todo[strat] = new
+        if not todo:
+            return {}
+        t0 = min(int(t["entry_t"]) for v in todo.values() for t in v) - 7 * 86400
+        b1 = ST.as_rows(st[st["time"] >= t0])
+        out = {}
+        for strat, tr in todo.items():
+            out[strat] = update(strat, tr, b1, store)
+            for t in tr:                         # scored, or too old for the 12-day store: never retried every bar
+                if out[strat].get("new") or int(t["exit_t"]) < last - 86400:
+                    _PC["seen"][strat].add(_key(strat, t))
         return out
     except Exception:
         return None

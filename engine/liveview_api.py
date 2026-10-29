@@ -600,8 +600,9 @@ def structure_block(bot, now: int, price=None) -> dict:
     last5 = tail[-1] if tail else None
     sig = (id(bot), l1, len(tail), (last5.get("time") if isinstance(last5, dict) else (last5[0] if last5 else None)))
     hit = _SB.get("v")
-    if hit and hit[0] == sig and now - hit[1] < 3600:
-        b1, b5 = hit[2], hit[3]
+    t_now = int(now)
+    if hit and hit[0] == sig and t_now // 60 == hit[1] // 60:
+        A = hit[2]                                             # same bars, same minute: no rows rebuilt, no recompute
     else:
         b5, b1 = pcdash_api.bot_bars(bot, now - 15 * 86400)
         if not b1 and not b5 and CSV_FALLBACK:
@@ -609,9 +610,10 @@ def structure_block(bot, now: int, price=None) -> dict:
             if df is not None and len(df):
                 end = min(int(now), int(df["time"].iloc[-1]) + 60)
                 b1 = pcdash_api._rows_from_frame(df[(df["time"] >= end - 12 * 86400) & (df["time"] < end)])
-                now = end if not getattr(bot, "running", False) else now
-        _SB["v"] = (sig, now, b1, b5)
-    return ST.block(b1, b5, now=now, price=price, key=f"lv{id(bot)}")
+                t_now = end if not getattr(bot, "running", False) else t_now
+        A = ST.analyze(ST.closed_only(b1, 60, t_now), ST.closed_only(b5, 300, t_now), t_now, None)
+        _SB["v"] = (sig, int(now), A)
+    return ST.block_from(A, int(now), price)
 
 
 def _structure_notes(out: dict, bot, now: int):

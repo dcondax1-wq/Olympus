@@ -402,6 +402,8 @@ def pools(b5: list, now: int | None = None, h1_swings: list | None = None, price
                         "t0": int(T[ki]) + 300, "swept": swept_after(ki, sd, px)})
     # unbroken 1h swings (buy-side above swing highs, sell-side below swing lows)
     for s in (h1_swings or [])[-12:]:
+        if int(s["t"]) < int(T[0]):
+            continue                                   # older than these 5m bars: "unbroken" cannot be checked
         sd = "buy" if s.get("side", 1) == 1 else "sell"
         px = float(s["price"])
         i0 = int(np.searchsorted(T, int(s["t"]) + 3600))
@@ -456,23 +458,16 @@ def frames_from(b1: list | None, b5: list | None, now: int | None = None, tfs=("
         else:
             s1 = [r for r in b1 if r[0] >= t_from]
             s5 = [r for r in b5 if r[0] >= t_from]
-            if tf == "5m":
-                src = (s5, 300) if s5 else (s1, 60)
-                # 1m bars newer than the last 5m bar extend it (the 5m tail lags the 1m store)
-                rows = list(src[0]) if src[1] == 300 else resample(src[0], 300, 60, now)
-                if src[1] == 300 and s1:
+            a1 = s1[0][0] if s1 else None
+            a5 = s5[0][0] if s5 else None
+            if a5 is not None and (a1 is None or a5 <= a1):
+                # the 5m source reaches further back; 1m bars newer than its last bucket extend it (the 5m tail lags)
+                rows = resample(s5, secs, 300, now)
+                if s1:
                     last = rows[-1][0] if rows else -1
-                    rows += [r for r in resample([x for x in s1 if x[0] >= last + 300], 300, 60, now) if r[0] > last]
+                    rows += [r for r in resample([x for x in s1 if x[0] >= last + secs], secs, 60, now) if r[0] > last]
             else:
-                a1 = s1[0][0] if s1 else None
-                a5 = s5[0][0] if s5 else None
-                if a5 is not None and (a1 is None or a5 <= a1):
-                    rows = resample(s5, secs, 300, now)
-                    if s1:
-                        last = rows[-1][0] if rows else -1
-                        rows += [r for r in resample([x for x in s1 if x[0] >= last + secs], secs, 60, now) if r[0] > last]
-                else:
-                    rows = resample(s1, secs, 60, now)
+                rows = resample(s1, secs, 60, now)
         out[tf] = rows[-W[tf]:]
     return out
 
@@ -530,9 +525,11 @@ def bias_for(A: dict) -> dict:
         out["lit"] = {"bias": "long", "note": "1h up and price in the discount half: a long after a sell-side sweep fits the structure."}
     elif h1 == "down" and prem is True:
         out["lit"] = {"bias": "short", "note": "1h down and price in the premium half: a short after a buy-side sweep fits the structure."}
+    elif h1 in ("up", "down") and prem is None:
+        out["lit"] = {"bias": side[h1], "note": f"1h {h1}; no dealing range yet for premium / discount. LIT's own rules decide."}
     elif h1 in ("up", "down"):
         out["lit"] = {"bias": side[h1], "note": f"1h {h1}, but price is in the {'premium' if prem else 'discount'} half: "
-                      f"a {side[h1]} would buy {'high' if prem else 'low'}; LIT's own rules decide."}
+                      f"a {side[h1]} here would {'buy high' if h1 == 'up' else 'sell low'}; LIT's own rules decide."}
     else:
         out["lit"] = {"bias": "none", "note": "1h has no trend yet (range): no structure side for LIT; LIT's own rules decide."}
     # ATLAS: trend pullbacks / sweeps on 5m with the 15m + 1h trend.
@@ -604,6 +601,11 @@ def block(b1=None, b5=None, now: int | None = None, price: float | None = None, 
         _CACHE[key] = (sig, A)
         if len(_CACHE) > 8:
             _CACHE.pop(next(iter(_CACHE)))
+    return block_from(A, now, price)
+
+
+def block_from(A: dict, now: int | None = None, price: float | None = None) -> dict:
+    """to_block of an analyze() result with the current price (summary + premium flag) and time."""
     if price is not None:
         A = {**A, "price": _r(price)}
         if A.get("zone"):
