@@ -15,8 +15,9 @@ runs: lit_struct_base, lit_struct_strail_15m_k1_any, lit_struct_runner_075_15m, 
 - **What was built tonight (all read-only, nothing routes):**
   - `engine/structure.py`: market structure on closed bars (1m / 5m / 15m / 1h): swing highs and lows, HH / HL / LH / LL,
     trend, BOS and CHoCH, the protected swing, liquidity pools (session boxes, prior day, equal highs / lows, 1h swings, swept
-    or not), premium / discount, displacement legs. About 13-20 ms for a full recompute on a 12-day 1m window here (median of
-    20 cuts of 2026; the Surface is slower), and only once per closed bar (cached).
+    or not), premium / discount, displacement legs. A full recompute on a 12-day 1m window takes about 15-50 ms here
+    (median of 20 cuts of 2026, depending on the machine's load; the Surface is slower), once per closed bar, in the page /
+    live_publish thread; the poll thread only reads the cached block (+0 ms; the poll-speed test passes 27/27).
   - `docs/PLAYBOOK.md` + `engine/playbook.py`: the written rules of Zlarior, ATLAS and BLITZ; the bot names the rule it is on.
   - `engine/advisor.py`: the discretion advisor. On every finished live and paper trade it writes down what each structure
     rule would have done and why, and scores it in dollars. Its tally shows on the Learning page as suggestions.
