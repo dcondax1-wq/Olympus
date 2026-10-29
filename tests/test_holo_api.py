@@ -211,7 +211,8 @@ def model_stub(day, errors=None, now=None):
                            {"entry_t": T13(11, 5), "exit_t": T13(11, 30), "dir": -1, "entry": 30710.0, "exit_price": 30729.25, "stop": 30729.0,
                             "target": 30650.0, "qty": 3, "pnl": -63.45, "pnl_r": -1.0, "exit_reason": "STOP", "be_t": None}],
                 "setups": [{"id": "9:1", "t": e - 300, "dir": 1, "swept": ["Asia low"], "ext": 30629.75, "cisd": 30645.0, "status": "filled",
-                            "trade": {"entry_t": e}, "detail": {"t_sweep": T13(2, 40), "t_idm": T13(2, 0), "t_disp": T13(2, 55), "t_cisd": e - 300,
+                            "plan": {"limit": 30645.0, "stop": 30629.5, "target": 30700.0, "armed_t": e - 300, "expires_t": e + 1500},
+                            "trade": {"entry_t": e, "qty": 5}, "detail": {"t_sweep": T13(2, 40), "t_idm": T13(2, 0), "t_disp": T13(2, 55), "t_cisd": e - 300,
                                                                  "cisd": 30645.0, "sweep_ext": 30629.75}}],
                 "levels": [{"bot": "lit", "px": 30640.25, "label": "Asia low", "t0": T13(0, 0), "t1": None, "taken_t": T13(2, 40), "side": "L"}],
                 "log": [{"key": "cisd:9:1", "t": e - 300, "kind": "cisd", "text": "5m CISD up closed at 30,645: swept Asia low"}]}
@@ -297,6 +298,10 @@ def main():
     miss = [t for t in vp["trades"] if not t["real"] and t["bot"] == "lit"]
     check("past day: the model trade the bot did not take shows as real=false src model", len(miss) == 1 and miss[0]["src"] == "model"
           and all(not f["real"] and f["src"] == "model" for f in vp["fills"] if f["trade"] == miss[0]["id"]), miss)
+    ml = [o for o in vp["orders"] if o.get("model")]
+    check("past day: the armed LIT limit as the model's order (not routed), FILLED at the entry",
+          len(ml) == 1 and ml[0]["type"] == "LIMIT" and ml[0]["state"] == "FILLED" and ml[0]["t"] == e - 300 and ml[0]["t_end"] == e
+          and ml[0]["acct"] is None and ml[0]["px"] == 30645.0, ml)
     check("past day: the narrator's feed from logs/narrator/<day>.jsonl (+ BLITZ as blitz)",
           any(x["title"] == "Level swept" and x["px"] == 30640.25 for x in vp["thoughts"]) and any(x["bot"] == "blitz" for x in vp["thoughts"])
           and sum(1 for x in vp["thoughts"] if x["stage"] == "entry") == 1, [(x["bot"], x["stage"], x["title"]) for x in vp["thoughts"]])

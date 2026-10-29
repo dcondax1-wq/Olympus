@@ -142,7 +142,38 @@ def _read_json(path, default):
         return default
 
 
+_FC: dict = {}
+
+
+def _cached_file(path, loader, default):
+    """loader(path) cached by the file's (mtime, size): holo_hist builds 10 days from the same archives."""
+    try:
+        st = os.stat(path)
+    except OSError:
+        return default
+    k = (st.st_mtime_ns, st.st_size)
+    with _MX:
+        hit = _FC.get(path)
+        if hit and hit[0] == k:
+            return hit[1]
+    val = loader(path)
+    with _MX:
+        if len(_FC) > 64:
+            _FC.clear()
+        _FC[path] = (k, val)
+    return val
+
+
 def _jl(path) -> list:
+    return list(_cached_file(path, _jl_read, []))
+
+
+def _rjson(path, default):
+    v = _cached_file(path, lambda p: _read_json(p, None), None)
+    return default if v is None else v
+
+
+def _jl_read(path) -> list:
     out = []
     try:
         with open(path, encoding="utf-8") as fh:
@@ -158,11 +189,13 @@ def _jl(path) -> list:
     return out
 
 
-_PX = re.compile(r"(?<![\d.])(\d{1,2},\d{3}(?:\.\d{1,2})?|\d{5}(?:\.\d{1,2})?)(?![\d])")
+_PX = re.compile(r"(?<![\d.,$])(\d{2},\d{3}(?:\.\d{1,2})?|\d{5}(?:\.\d{1,2})?)(?![\d,])")
+_USD = re.compile(r"[+-]?\$\s?[+-]?[\d,]+(?:\.\d+)?")
 
 
 def _first_px(text):
-    m = _PX.search(str(text or ""))
+    """The first NQ-like price (5 digits, e.g. 30,747.25) in a sentence; $ amounts are never a price."""
+    m = _PX.search(_USD.sub(" ", str(text or "")))
     return _f(m.group(1).replace(",", "")) if m else None
 
 
@@ -402,7 +435,7 @@ def _disk_ledgers(bot) -> dict:
     out = {"lit": _jl(os.path.join(_store(), "ledger.jsonl"))}
     base, ext = os.path.splitext(_state_path(bot))
     for key, suf in (("atlas", "_acctb"), ("blitz", "_acctc")):
-        out[key] = list((_read_json(base + suf + (ext or ".json"), {}) or {}).get("ledger") or [])
+        out[key] = list((_rjson(base + suf + (ext or ".json"), {}) or {}).get("ledger") or [])
     return out
 
 
@@ -432,11 +465,23 @@ def _orders_raw(bot, accts) -> dict:
         folders = {_g(ad, "folder", None) for _k, _a, ad, _l, _n in accts if ad is not None}
         for fo in folders:
             if fo and os.path.isdir(os.path.join(fo, "outgoing")):
-                for oid, st in tfa.read_outgoing(fo).items():
+                with _MX:
+                    hit = _OUT.get(fo)
+                if hit and time.time() - hit[0] < OUT_TTL_S:
+                    cur = hit[1]
+                else:
+                    cur = tfa.read_outgoing(fo)
+                    with _MX:
+                        _OUT[fo] = (time.time(), cur)
+                for oid, st in cur.items():
                     put(oid, st)
     except Exception:
         pass
     return rows
+
+
+_OUT: dict = {}
+OUT_TTL_S = 15.0             # NinjaTrader's outgoing folder read at most every 15 s (holo_hist builds 10 days at once)
 
 
 def _legs(accts, bot) -> dict:
@@ -450,7 +495,7 @@ def _legs(accts, bot) -> dict:
                 if old is None or int(lg.get("filled") or 0) >= int(old.get("filled") or 0):
                     seen[lg["entry_id"]] = lg
         if key == "lit":
-            for eid, lg in (_read_json(os.path.join(_store(), "legs.json"), {}) or {}).items():
+            for eid, lg in (_rjson(os.path.join(_store(), "legs.json"), {}) or {}).items():
                 if isinstance(lg, dict) and eid not in seen:
                     seen[eid] = {**lg, "entry_id": eid}
         for lg in seen.values():
@@ -686,7 +731,7 @@ def _one_real(key, A, ad, acct_name, et_, x, legs, orders, now, comm, fills, ord
             "setup": {"kind": str(e.get("strategy") or e.get("src") or ("LIT" if bot_key == "lit" else bot_key)).upper() if bot_key != "lit" else "LIT",
                       "t_sweep": None, "sweep_ext": None, "swept": [], "t_idm": None, "t_disp": None, "t_cisd": None, "cisd": None,
                       "notes": [n for n in (e.get("strategy"), e.get("reason")) if n]},
-            "entry_t": et_, "dir": d, "routed_t": t_route}
+            "entry_t": et_, "dir": d, "routed_t": t_route, "_src": e.get("src")}
 
 
 def _px_from_pnl(pnl, e_px, d, qty, comm):
@@ -743,10 +788,14 @@ def _model_trade(t, bot="lit", src="model", setup=None, acct=None) -> tuple:
 
 
 def _match(model_trades: list, real: list) -> list:
-    """[(model, real|None)]: same entry_t first, then the same side within 10 minutes (engine/fill_audit._match)."""
+    """[(model, real|None)]: same entry_t first, then the same side within 10 minutes (engine/fill_audit._match); a paper
+    trade of an ATLAS member prefers the real trade routed for that member (its "src" key)."""
     used, out = set(), []
     for m in model_trades:
         c = [r for r in real if id(r) not in used]
+        if m.get("_key"):
+            c = [r for r in c if r.get("_src") in (None, m["_key"])]
+            c.sort(key=lambda r: r.get("_src") != m["_key"])
         hit = next((r for r in c if int(r["entry_t"]) == int(m["entry_t"])), None) or \
             next((r for r in c if r["dir"] == int(m["dir"]) and abs(int(r["entry_t"]) - int(m["entry_t"])) <= 600), None)
         if hit is not None:
@@ -774,6 +823,26 @@ def _attach_model(tr, m, fills, mfills):
             f["model_px"] = x
             if f.get("real"):
                 f["slip_ticks"] = _ticks(x, f["px"], d)
+
+
+def _model_limits(setups: dict, now: int) -> list:
+    """Each armed LIT setup's limit as the model's order ("model": true, acct null: LIT routes at market on the 1m CISD; the
+    limit is the backtest's level, live 30 min): FILLED when the setup filled, CANCELLED when it expired, WORKING while armed."""
+    out = []
+    for s in setups.values():
+        pl = (s or {}).get("plan") if isinstance(s, dict) else None
+        if not isinstance(pl, dict) or pl.get("limit") is None or not pl.get("armed_t"):
+            continue
+        st = str(s.get("status") or "")
+        tr = s.get("trade") if isinstance(s.get("trade"), dict) else {}
+        state = "FILLED" if st == "filled" or tr.get("entry_t") else "WORKING" if st in ("armed", "tapped") and int(pl.get("expires_t") or 0) > now \
+            else "CANCELLED"
+        end = _i(tr.get("entry_t")) if state == "FILLED" else (None if state == "WORKING" else _i(pl.get("expires_t")))
+        out.append({"t": int(pl["armed_t"]), "t_end": end, "bot": "lit", "acct": None, "type": "LIMIT",
+                    "side": "SELL" if int(s.get("dir") or 0) == -1 else "BUY", "px": _f(pl["limit"]), "qty": _i(tr.get("qty")) or 0,
+                    "state": state, "why": f"model limit (LIT setup {s.get('id')}, not routed): {s.get('status_text') or st}"[:200],
+                    "model": True, "stop": _f(pl.get("stop")), "target": _f(pl.get("target"))})
+    return out
 
 
 def _atlas_paper(bot, day) -> list:
@@ -815,7 +884,7 @@ def _thought_of(m: dict) -> dict:
         px = _first_px(m.get("text"))
     return {"t": int(m.get("t") or 0), "bot": STRAT_BOT.get(m.get("strat"), "sys"), "stage": m.get("kind"),
             "title": str(m.get("title") or "")[:120], "text": str(m.get("text") or "")[:400], "level": lvl, "px": px,
-            "key": m.get("key")}
+            "key": m.get("key"), "_et": _i(m.get("entry_t"))}
 
 
 _BRAIN_TITLE = {"sweep": "Level swept", "box": "Session box closed", "cisd": "5m CISD", "armed": "Setup armed", "expired": "Setup expired",
@@ -923,6 +992,11 @@ def _now_panels(bot, now, lv=None) -> dict | None:
                     lv["strategies"]["scalp"] = bl
             except Exception:
                 pass
+            try:                                       # the structure line, the playbook rule, the open trade's advice
+                lv["structure"] = LV.structure_block(bot, now, price)
+                LV._structure_notes(lv, bot, now)
+            except Exception:
+                pass
         S = lv.get("strategies") or {}
         at = S.get("atlas") or {}
         sc = S.get("scalp") or {}
@@ -967,6 +1041,10 @@ def _structure(bot, day, live, now, bars, lv, errors):
 
 
 # ============================================================================================ the whole answer
+def _ninja(ad) -> bool:
+    return ad is not None and str(_g(ad, "name", "") or "").lower().startswith("ninja")
+
+
 def _bots(bot) -> dict:
     try:
         acct = bot._push_account() if callable(_g(bot, "_push_account", None)) else None
@@ -990,9 +1068,9 @@ def _bots(bot) -> dict:
     return {"lit": {"name": BOTS["lit"][0], "color": BOTS["lit"][1], "account": acct or _g(ad, "account", None), "real": lit_real,
                     "plan": "LIT method · MFFU eval"},
             "atlas": {"name": BOTS["atlas"][0], "color": BOTS["atlas"][1], "account": _g(ab, "name", None) if ab is not None else None,
-                      "real": ab is not None and _g(ab, "adapter", None) is not None, "plan": plan_of(ab) or "EMA · MACD · S/R (paper)"},
+                      "real": ab is not None and _ninja(_g(ab, "adapter", None)), "plan": plan_of(ab) or "EMA · MACD · S/R (paper)"},
             "blitz": {"name": BOTS["blitz"][0], "color": BOTS["blitz"][1], "account": _g(ac, "name", None) if ac is not None else None,
-                      "real": bool(c_real), "plan": plan_of(ac) or "scalper · PAPER shadow"}}
+                      "real": bool(c_real) and _ninja(_g(ac, "adapter", None)), "plan": plan_of(ac) or "scalper · PAPER shadow"}}
 
 
 def _empty(now, day, why) -> dict:
@@ -1121,6 +1199,10 @@ def _build(bot, day, now, lv) -> dict:
                     rt["setup"] = lit_setup(s, lit_levels)
     except Exception as e:
         _err(errors, "LIT model", e)
+    try:
+        orders += _model_limits(setups, now)
+    except Exception as e:
+        _err(errors, "LIT model limits", e)
     # 3. ATLAS / BLITZ paper ledgers (real=false), matched to their real account trades when routed
     try:
         real_at = [t for t in trades if t["bot"] == "atlas" and t.get("src") != "model"]
@@ -1165,19 +1247,35 @@ def _build(bot, day, now, lv) -> dict:
         thoughts = [x for x in thoughts if x.get("key") not in keys]       # the narrator already told these order events
         logs = []
         if live and isinstance(brain, dict):
-            logs = list(brain.get("log") or [])
-        if not logs:
-            try:
-                from . import brain as BR
-                logs = BR.read_day_log(day, BRAIN_DIR or BR.BRAIN_DIR)
-            except Exception:
-                logs = []
+            logs = list(brain.get("log") or [])          # the newest rows; the day's file has the rest
+        try:
+            from . import brain as BR
+            have = {r.get("key") for r in logs if isinstance(r, dict)}
+            logs += [r for r in BR.read_day_log(day, BRAIN_DIR or BR.BRAIN_DIR, keep=2000) if r.get("key") not in have]
+        except Exception:
+            pass
         if not logs and M:
             logs = M.get("log") or []
         bt_ = [_brain_thought(r, setups) for r in logs if isinstance(r, dict) and r.get("key")]
-        real_et = {t["entry_t"] for t in trades if t["bot"] == "lit" and t.get("real")}
-        bt_ = [x for x in bt_ if x["key"] not in keys and not (x["stage"] in ("entry", "exit") and _i(str(x["key"]).rsplit(":", 1)[-1]) in real_et)]
-        allt = narr + thoughts + bt_
+        # the Brain's / narrator's "model entry / exit" rows of a trade that was routed: the real fills tell it
+        real_lit = [t for t in trades if t["bot"] == "lit" and t.get("real")]
+        model_ts = {t["entry_t"] for t in real_lit} | {int(t["model"]["entry_t"]) for t in real_lit if t.get("model")} | \
+            {int(t["model"]["exit_t"]) for t in real_lit if t.get("model") and t["model"].get("exit_t")}
+        bt_ = [x for x in bt_ if x["key"] not in keys]
+
+        def routed_model_row(x):
+            k_ = str(x.get("key") or "")
+            return x["bot"] == "lit" and (k_.startswith("lit:entry:") or k_.startswith("lit:exit:")) and _i(k_.rsplit(":", 1)[-1]) in model_ts
+        allt = [x for x in narr + thoughts + bt_ if not routed_model_row(x)]
+        # an entry / exit message without a price: anchored at its trade's fill
+        by_et = {(t["bot"], int(t["entry_t"])): t for t in trades if t.get("entry_t") is not None}
+        for x in allt:
+            tr_ = by_et.get((x["bot"], x.get("_et"))) if x.get("_et") else None
+            if tr_ and x["stage"] == "exit" and (tr_.get("exit") or {}).get("px") is not None:
+                x["px"] = tr_["exit"]["px"]
+            elif tr_ and x["px"] is None:
+                x["px"] = tr_["entry"]["px"]
+        allt = [{k: v for k, v in x.items() if k != "_et"} for x in allt]
         allt = [x for x in allt if t0 - 3600 <= int(x["t"]) <= t1 + 3600]
         seen, uniq = set(), []
         for x in sorted(allt, key=lambda x: (x["t"], x["bot"])):
@@ -1189,11 +1287,12 @@ def _build(bot, day, now, lv) -> dict:
         out["thoughts"] = uniq
     except Exception as e:
         _err(errors, "thoughts", e)
-        out["thoughts"] = sorted(thoughts, key=lambda x: x["t"])
+        out["thoughts"] = sorted([{k: v for k, v in x.items() if k != "_et"} for x in thoughts], key=lambda x: x["t"])
     for tr in trades:
         tr.pop("entry_t", None)
         tr.pop("dir", None)
         tr.pop("routed_t", None)
+        tr.pop("_src", None)
         tr.setdefault("src", "model")
     out["fills"] = sorted(fills, key=lambda f: (f["t"], f["id"]))
     out["trades"] = sorted(trades, key=lambda t: (t["entry"]["t"] or 0, t["id"]))
@@ -1238,7 +1337,7 @@ def days(bot, n: int = 30, now: int | None = None) -> list:
     except Exception:
         pass
     try:
-        rc = _read_json(os.path.join(_store(), "replay_cache.json"), {}) or {}
+        rc = _rjson(os.path.join(_store(), "replay_cache.json"), {}) or {}
         for d, v in rc.items():
             ts = (v or {}).get("trades") or []
             if ts:
@@ -1249,7 +1348,7 @@ def days(bot, n: int = 30, now: int | None = None) -> list:
         pass
     if CSV_FALLBACK:
         try:
-            r = _read_json(os.path.join(ROOT, "research", "runs", "lit_live.json"), {}) or {}
+            r = _rjson(os.path.join(ROOT, "research", "runs", "lit_live.json"), {}) or {}
             cols = r.get("trade_cols") or []
             for t in r.get("trades") or []:
                 row = dict(zip(cols, t))
